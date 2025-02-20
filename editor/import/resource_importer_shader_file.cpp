@@ -71,6 +71,7 @@ bool ResourceImporterShaderFile::get_option_visibility(const String &p_path, con
 	return true;
 }
 
+#ifdef RD_ENABLED
 static String _include_function(const String &p_path, void *userpointer) {
 	Error err;
 
@@ -87,6 +88,7 @@ static String _include_function(const String &p_path, void *userpointer) {
 	}
 	return file_inc->get_as_utf8_string();
 }
+#endif // RD_ENABLED
 
 Error ResourceImporterShaderFile::import(ResourceUID::ID p_source_id, const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
 	/* STEP 1, Read shader code */
@@ -94,6 +96,7 @@ Error ResourceImporterShaderFile::import(ResourceUID::ID p_source_id, const Stri
 	ERR_FAIL_COND_V_EDMSG((OS::get_singleton()->get_current_rendering_method() == "dummy"), ERR_UNAVAILABLE, "Cannot import custom .glsl shaders when using the Dummy renderer. Please switch to the Forward+ or Mobile renderer to use custom shaders.");
 	ERR_FAIL_COND_V_EDMSG((DisplayServer::get_singleton()->get_name() == "headless"), ERR_UNAVAILABLE, "Cannot import custom .glsl shaders when running in headless mode.");
 
+#ifdef RD_ENABLED
 	Error err;
 	Ref<FileAccess> file = FileAccess::open(p_source_file, FileAccess::READ, &err);
 	ERR_FAIL_COND_V(err != OK, ERR_CANT_OPEN);
@@ -114,4 +117,5 @@ Error ResourceImporterShaderFile::import(ResourceUID::ID p_source_id, const Stri
 	ResourceSaver::save(shader_file, p_save_path + ".res");
 
 	return OK;
+#endif // RD_ENABLED
 }
