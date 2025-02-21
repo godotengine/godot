@@ -86,6 +86,8 @@ public class GodotInputHandler implements InputManager.InputDeviceListener, Sens
 
 	private int rotaryInputAxis = ROTARY_INPUT_VERTICAL_AXIS;
 
+	private boolean overrideVolumeButtons = false;
+
 	public GodotInputHandler(Context context, Godot godot) {
 		this.godot = godot;
 		mInputManager = (InputManager)context.getSystemService(Context.INPUT_SERVICE);
@@ -133,6 +135,10 @@ public class GodotInputHandler implements InputManager.InputDeviceListener, Sens
 		rotaryInputAxis = axis;
 	}
 
+	public void setOverrideVolumeButtons(boolean value) {
+		overrideVolumeButtons = value;
+	}
+
 	boolean hasHardwareKeyboard() {
 		return !mHardwareKeyboardIds.isEmpty();
 	}
@@ -154,10 +160,6 @@ public class GodotInputHandler implements InputManager.InputDeviceListener, Sens
 	}
 
 	public boolean onKeyUp(final int keyCode, KeyEvent event) {
-		if (keyCode == KeyEvent.KEYCODE_VOLUME_UP || keyCode == KeyEvent.KEYCODE_VOLUME_DOWN) {
-			return false;
-		}
-
 		int source = event.getSource();
 		if (isKeyEventGameDevice(source)) {
 			// Check if the device exists
@@ -175,14 +177,14 @@ public class GodotInputHandler implements InputManager.InputDeviceListener, Sens
 			handleKeyEvent(physical_keycode, unicode, key_label, false, event.getRepeatCount() > 0);
 		};
 
+		if (keyCode == KeyEvent.KEYCODE_VOLUME_UP || keyCode == KeyEvent.KEYCODE_VOLUME_DOWN) {
+			return overrideVolumeButtons;
+		}
+
 		return true;
 	}
 
 	public boolean onKeyDown(final int keyCode, KeyEvent event) {
-		if (keyCode == KeyEvent.KEYCODE_VOLUME_UP || keyCode == KeyEvent.KEYCODE_VOLUME_DOWN) {
-			return false;
-		}
-
 		int source = event.getSource();
 
 		final int deviceId = event.getDeviceId();
@@ -201,6 +203,10 @@ public class GodotInputHandler implements InputManager.InputDeviceListener, Sens
 			final int unicode = event.getUnicodeChar();
 			final int key_label = event.getDisplayLabel();
 			handleKeyEvent(physical_keycode, unicode, key_label, true, event.getRepeatCount() > 0);
+		}
+
+		if (keyCode == KeyEvent.KEYCODE_VOLUME_UP || keyCode == KeyEvent.KEYCODE_VOLUME_DOWN) {
+			return overrideVolumeButtons;
 		}
 
 		return true;
