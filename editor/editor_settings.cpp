@@ -525,6 +525,8 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	EDITOR_SETTING(Variant::BOOL, PROPERTY_HINT_NONE, "interface/inspector/horizontal_vector2_editing", false, "")
 	EDITOR_SETTING(Variant::BOOL, PROPERTY_HINT_NONE, "interface/inspector/horizontal_vector_types_editing", true, "")
 	EDITOR_SETTING(Variant::BOOL, PROPERTY_HINT_NONE, "interface/inspector/open_resources_in_current_inspector", true, "")
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_FLAGS, "interface/inspector/embedded_list_buttons", 3, "Left Side Buttons,Right Side Buttons");
+	EDITOR_SETTING(Variant::BOOL, PROPERTY_HINT_NONE, "interface/inspector/condensed_size_controls_layout", true, "");
 
 	PackedStringArray open_in_new_inspector_defaults;
 	// Required for the script editor to work.
