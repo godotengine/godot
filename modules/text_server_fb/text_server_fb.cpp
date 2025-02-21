@@ -4794,7 +4794,9 @@ PackedInt32Array TextServerFallback::_string_get_word_breaks(const String &p_str
 }
 
 void TextServerFallback::_update_settings() {
-	lcd_subpixel_layout.set((TextServer::FontLCDSubpixelLayout)(int)GLOBAL_GET("gui/theme/lcd_subpixel_layout"));
+	if (ProjectSettings::get_singleton()->has_setting(SNAME("gui/theme/lcd_subpixel_layout"))) {
+		lcd_subpixel_layout.set((TextServer::FontLCDSubpixelLayout)(int)GLOBAL_GET(SNAME("gui/theme/lcd_subpixel_layout")));
+	}
 }
 
 TextServerFallback::TextServerFallback() {
