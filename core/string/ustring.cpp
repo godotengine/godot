@@ -4308,19 +4308,16 @@ String String::lstrip(const String &p_chars) const {
 
 String String::rstrip(const String &p_chars) const {
 	int len = length();
-	int end;
+	int end = len - p_chars.length();
 
-	for (end = len - 1; end >= 0; end--) {
-		if (p_chars.find_char(get(end)) == -1) {
-			break;
-		}
-	}
-
-	if (end == len - 1) {
+	if (end < 0) {
 		return *this;
 	}
 
-	return substr(0, end + 1);
+	String head = substr(0, end);
+	String tail = substr(end, len);
+
+	return tail == p_chars ? head : *this;
 }
 
 bool String::is_network_share_path() const {
