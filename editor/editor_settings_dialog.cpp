@@ -56,13 +56,13 @@ void EditorSettingsDialog::ok_pressed() {
 	if (!EditorSettings::get_singleton()) {
 		return;
 	}
-
 	_settings_save();
-	timer->stop();
 }
 
 void EditorSettingsDialog::_settings_changed() {
-	timer->start();
+	if (is_visible()) {
+		timer->start();
+	}
 }
 
 void EditorSettingsDialog::_settings_property_edited(const String &p_name) {
@@ -174,6 +174,9 @@ void EditorSettingsDialog::_set_shortcut_input(const String &p_name, Ref<InputEv
 }
 
 void EditorSettingsDialog::_settings_save() {
+	if (!timer->is_stopped()) {
+		timer->stop();
+	}
 	EditorSettings::get_singleton()->notify_changes();
 	EditorSettings::get_singleton()->save();
 }
