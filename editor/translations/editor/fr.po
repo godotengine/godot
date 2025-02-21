@@ -121,7 +121,7 @@
 # Dricom Dragon <dev@jovian-hersemeule.eu>, 2023.
 # t8y <contact@t3y.eu>, 2023.
 # Jean-Michel Bernard <jmb462@gmail.com>, 2023.
-# Paul Cordellier <cordellierp@gmail.com>, 2023.
+# Paul Cordellier <cordellierp@gmail.com>, 2023, 2025.
 # Hugo cartier <hugo.toticartier@gmail.com>, 2023.
 # Rémy Lapointe <remy-lapointe@hotmail.ca>, 2023.
 # "Dimitri A." <dimitripilot3@gmail.com>, 2023.
@@ -180,13 +180,15 @@
 # Florian Echelard <florian.echelard@gmail.com>, 2024.
 # paul-arg <paul.arguillere@gmail.com>, 2024, 2025.
 # Patrice Ferlet <metal3d@gmail.com>, 2025.
+# vitawrap <thevitawrap@gmail.com>, 2025.
+# Alexandre Demers-Roberge <rotmgiobsidian@gmail.com>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-01-28 15:53+0000\n"
-"Last-Translator: Patrice Ferlet <metal3d@gmail.com>\n"
+"PO-Revision-Date: 2025-02-15 13:01+0000\n"
+"Last-Translator: Paul Cordellier <cordellierp@gmail.com>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/godot-engine/godot/"
 "fr/>\n"
 "Language: fr\n"
@@ -194,7 +196,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 5.10-dev\n"
+"X-Generator: Weblate 5.10\n"
 
 msgid "Main Thread"
 msgstr "Fil principal"
@@ -553,6 +555,9 @@ msgstr "Afficher les fichiers cachés"
 msgid "Swap Input Direction"
 msgstr "Échanger les Directions d'Entrée"
 
+msgid "Start Unicode Character Input"
+msgstr "Entrer des caractères Unicode"
+
 msgid "Invalid input %d (not passed) in expression"
 msgstr "Entrée non valide %d (non transmise) dans l’expression"
 
@@ -796,6 +801,41 @@ msgstr "Modifier la durée de l’animation"
 
 msgid "Change Animation Loop"
 msgstr "Changer la boucle d’animation"
+
+msgid ""
+"Can't change loop mode on animation instanced from an imported scene.\n"
+"\n"
+"To change this animation's loop mode, navigate to the scene's Advanced Import "
+"settings and select the animation.\n"
+"You can then change the loop mode from the inspector menu."
+msgstr ""
+"Le mode de répétition d'une animation instanciée depuis une scène importée ne "
+"peut pas être changé.\n"
+"\n"
+"Pour changer ce mode, naviguez vers les réglages avancés d'importation et "
+"sélectionnez l'animation.\n"
+"Vous pourrez ensuite changer le mode de répétition depuis l'inspecteur."
+
+msgid "Can't change loop mode on animation instanced from an imported resource."
+msgstr ""
+"Impossible de changer le mode de répétition d'animations instanciées depuis "
+"une ressource importée."
+
+msgid ""
+"Can't change loop mode on animation embedded in another scene.\n"
+"\n"
+"You must open this scene and change the animation's loop mode from there."
+msgstr ""
+"Impossible de changer le mode de répétition d'animations intégrées dans une "
+"autre scène.\n"
+"\n"
+"Vous devez ouvrir cette scène et ensuite y changer le mode de répétition de "
+"l'animation."
+
+msgid "Can't change loop mode on animation embedded in another resource."
+msgstr ""
+"Impossible de changer le mode de répétition d'animations intégrées dans une "
+"autre ressource."
 
 msgid "Property Track..."
 msgstr "Piste de propriétés..."
@@ -1200,6 +1240,12 @@ msgstr ""
 msgid "Group tracks by node or display them as plain list."
 msgstr "Grouper les pistes par nœuds ou les afficher dans une liste simple."
 
+msgid "Apply snapping to timeline cursor."
+msgstr "Appliquer la magnétisation sur le curseur chronologique."
+
+msgid "Apply snapping to selected key(s)."
+msgstr "Appliquer magnétisation sur la(les) clé(s) sélectionnée(s)."
+
 msgid "Animation step value."
 msgstr "Valeur du pas d'animation."
 
@@ -1420,11 +1466,50 @@ msgstr "Tout Sélectionner/Désélectionner"
 msgid "Animation Change Keyframe Time"
 msgstr "Modifier le temps de la clé d'animation"
 
+msgid "Marker name is read-only in the inspector."
+msgstr "Cette propriété est en lecture seule dans l'inspecteur."
+
+msgid ""
+"A marker's name can only be changed by right-clicking it in the animation "
+"editor and selecting \"Rename Marker\", in order to make sure that marker "
+"names are all unique."
+msgstr ""
+"Le nom d’une clé ne peut être modifié qu’en faisant un clic droit dessus dans "
+"l’éditeur d’animation et en sélectionnant « Renommer la clé », afin de "
+"garantir que tous les noms de clés soient uniques."
+
+msgid "Rename Marker"
+msgstr "Renommer le calque"
+
+msgid "Delete Marker(s)"
+msgstr "Supprimer les clé(s)"
+
+msgid "Show All Marker Names"
+msgstr "Afficher tous les noms des clés"
+
+msgid "Marker:"
+msgstr "Clé:"
+
+msgid "Insert Marker"
+msgstr "Insérer une clé"
+
+msgid "Marker Name"
+msgstr "Modifier le nom de la clé"
+
+msgid "Marker Color"
+msgstr "Couleur de la clé"
+
 msgid "Close"
 msgstr "Fermer"
 
 msgid "Error!"
 msgstr "Erreur !"
+
+msgid "Change Marker Name:"
+msgstr "Modifier le nom de la clé :"
+
+msgid "Edit Marker Color"
+msgstr "Définir la couleur de la clé"
 
 msgid "Add Audio Track Clip"
 msgstr "Ajouter un clip audio"
@@ -1674,6 +1759,9 @@ msgstr "Créer un nouveau %s"
 msgid "No results for \"%s\"."
 msgstr "Aucun résultats pour \"%s\"."
 
+msgid "Script path: %s"
+msgstr "Nom du script : %s"
+
 msgid "This class is marked as deprecated."
 msgstr "Cette classe a été annotée comme étant obsolète."
 
@@ -1704,6 +1792,9 @@ msgstr "Description :"
 msgid "Remote %s:"
 msgstr "%s distant :"
 
+msgid "Session %d"
+msgstr "Session %d"
+
 msgid "Debugger"
 msgstr "Débogueur"
 
@@ -1733,6 +1824,9 @@ msgstr ""
 
 msgid "Toggle Visibility"
 msgstr "Basculer la visibilité"
+
+msgid "Expression to evaluate"
+msgstr "Expression à évaluer"
 
 msgid "Clear"
 msgstr "Vider"
@@ -2064,6 +2158,9 @@ msgstr ""
 
 msgid "Cannot remove:"
 msgstr "Impossible à enlever :"
+
+msgid "Dependencies of files to be deleted:"
+msgstr "Dépendances des fichiers à supprimer :"
 
 msgid "Error loading:"
 msgstr "Erreur au chargement :"
@@ -2856,6 +2953,18 @@ msgstr "Profil(s) d'importation"
 msgid "Manage Editor Feature Profiles"
 msgstr "Gérer les profils de fonctionnalités de l'éditeur"
 
+msgid "Verifying GDExtensions..."
+msgstr "Vérification des GDExtensions..."
+
+msgid "Creating autoload scripts..."
+msgstr "Création des scripts de chargement automatique…"
+
+msgid "Initializing plugins..."
+msgstr "Initialisation des extensions..."
+
+msgid "Starting file scan..."
+msgstr "Démarrage du scan de fichiers..."
+
 msgid "Some extensions need the editor to restart to take effect."
 msgstr ""
 "Certaines extensions nécessitent un redémarrage de l'éditeur pour prendre "
@@ -2880,8 +2989,23 @@ msgstr ""
 msgid "(Re)Importing Assets"
 msgstr "Ré-importation des assets"
 
+msgid "Preparing files to reimport..."
+msgstr "Préparation des fichiers pour la réimportation..."
+
+msgid "Executing pre-reimport operations..."
+msgstr "Exécution des opérations de pré-réimportation..."
+
 msgid "Import resources of type: %s"
 msgstr "Importer les ressources de type : %s"
+
+msgid "Finalizing Asset Import..."
+msgstr "Finalisation des importations de ressources..."
+
+msgid "Executing post-reimport operations..."
+msgstr "Exécution des opérations post-réimportation..."
+
+msgid "Copying files..."
+msgstr "Copie des fichiers..."
 
 msgid "This method supports a variable number of arguments."
 msgstr "Cette méthode peut prendre un nombre variable d'arguments."
@@ -2906,6 +3030,9 @@ msgid ""
 msgstr ""
 "Cette méthode n'a pas besoin d'instanciation afin d'être appelée.\n"
 "Elle peut être appelée en utilisant directement son nom de classe."
+
+msgid "Code snippet copied to clipboard."
+msgstr "Extrait de code copié dans le presse-papiers."
 
 msgid "No return value."
 msgstr "Pas de valeur retournée."
@@ -3062,6 +3189,11 @@ msgstr "Icônes"
 msgid "Styles"
 msgstr "Styles"
 
+msgid "This theme property may be changed or removed in future versions."
+msgstr ""
+"Cette propriété de thème pourra être modifiée ou supprimée dans les versions "
+"futures."
+
 msgid "There is currently no description for this theme property."
 msgstr "Il n'y a actuellement pas de description pour cette propriété du thème."
 
@@ -3146,6 +3278,10 @@ msgstr "Cliquez pour copier."
 msgid "No description available."
 msgstr "Aucune description disponible."
 
+msgid "This annotation may be changed or removed in future versions."
+msgstr ""
+"Cette annotation pourra être modifiée ou supprimée dans les versions futures."
+
 msgid "Show in FileSystem"
 msgstr "Montrer dans le système de fichiers"
 
@@ -3155,11 +3291,23 @@ msgstr "Ouvrir dans le gestionnaire de fichiers"
 msgid "Class"
 msgstr "Classe"
 
+msgid "Enumeration"
+msgstr "Énumération"
+
 msgid "Constant"
 msgstr "Constante"
 
+msgid "Metadata"
+msgstr "Métadonnées"
+
+msgid "Setting"
+msgstr "Réglage"
+
 msgid "Property"
 msgstr "Propriété"
+
+msgid "Internal Property"
+msgstr "Propriété Interne"
 
 msgid "This property can only be set in the Inspector."
 msgstr "Cette propriété ne peut être établie que dans l'Inspecteur."
@@ -3176,8 +3324,14 @@ msgstr "Signaux"
 msgid "Annotation"
 msgstr "Annotation"
 
+msgid "Local Constant"
+msgstr "Constante Locale"
+
 msgid "File"
 msgstr "Fichier"
+
+msgid "This path does not exist."
+msgstr "Ce chemin n'existe pas."
 
 msgid "%d match."
 msgstr "%d correspondance trouvée."
@@ -3241,6 +3395,12 @@ msgstr "Ce membre est signalé comme obsolète."
 
 msgid "This member is marked as experimental."
 msgstr "Ce membre est signalé comme expérimental."
+
+msgid "Favorite Property"
+msgstr "Propriétés Favorites"
+
+msgid "Make this property be placed at the top for all objects of this class."
+msgstr "Placer cette propriété en haut de tous les objets de cette classe."
 
 msgid "Pin Value"
 msgstr "Épingler la valeur"
@@ -4209,6 +4369,15 @@ msgstr "Bibliothèque d'exportation"
 msgid "Open & Run a Script"
 msgstr "Ouvrir et exécuter un script"
 
+msgid "The following files are newer on disk:"
+msgstr "Les fichiers suivants sont plus récents sur le disque :"
+
+msgid "What action should be taken?"
+msgstr "Quelle action doit être prise ?"
+
+msgid "Ignore external changes"
+msgstr "Ignore les changements externes"
+
 msgid "Create/Override Version Control Metadata..."
 msgstr "Créer/Remplacer les métadonnées de contrôle de version..."
 
@@ -4362,6 +4531,12 @@ msgstr "Nouvelle Valeur :"
 
 msgid "(Nil) %s"
 msgstr "(Nul) %s"
+
+msgid "%s%s (size %d)"
+msgstr "%s%s (taille %d)"
+
+msgid "%s (size %d)"
+msgstr "%s (taille %d)"
 
 msgid "Size:"
 msgstr "Taille :"
@@ -5779,6 +5954,9 @@ msgstr "Aucune sous-ressource n'a été trouvée."
 
 msgid "Open a list of sub-resources."
 msgstr "Ouvrir une liste de sous-ressources."
+
+msgid "Start searching to find files..."
+msgstr "Commence à rechercher des fichiers..."
 
 msgid "Play the project."
 msgstr "Lancer le projet."
@@ -10382,6 +10560,9 @@ msgid "Can't drop nodes because script '%s' does not inherit Node."
 msgstr ""
 "Impossible de déposer les nœuds car le script '%s' n’hérite pas de Node."
 
+msgid "Emoji & Symbols"
+msgstr "Émojis & Symboles"
+
 msgid "Pick Color"
 msgstr "Prélever une couleur"
 
@@ -10565,6 +10746,9 @@ msgstr "Écraser la position de repos"
 
 msgid "Set Bone Transform"
 msgstr "Définir transformation de l'os"
+
+msgid "Modify metadata '%s' for bone '%s'"
+msgstr "Modifie les métadonnées « %s » pour l'os « %s »"
 
 msgid "Set Bone Rest"
 msgstr "Définir pose au repos de l'os"
@@ -15304,6 +15488,42 @@ msgstr ""
 msgid "Restart & Upgrade"
 msgstr "Redémarrer et mettre à jour"
 
+msgid ""
+"As of Godot 4.4, scenes and resources use UIDs to reference scripts and "
+"shaders.\n"
+"\n"
+"Normally, this update is applied to a single scene or resource once you save "
+"it in Godot 4.4 for the first time. If you have a lot of scenes and/or "
+"resources, doing this manually may be time-consuming. This tool will update "
+"all of the project's scenes and resources at once.\n"
+"\n"
+"Click \"Restart & Upgrade\" to restart the editor and update all of the "
+"scenes and resources in this project. Depending on the project size, it may "
+"take several minutes.\n"
+"\n"
+"Note: Please make sure you have your project backed up before running the "
+"tool, to avoid the possibility of data loss. Additionally, make sure to "
+"commit all .uid files into version control (and do not add them to ignore-"
+"lists like .gitignore)."
+msgstr ""
+"Avec la version 4.4 de Godot, les scènes et les ressources utilisent des UIDs "
+"pour référencer les scripts et les shaders.\n"
+"\n"
+"Normalement, cette mise à jour est appliquée à une scène ou à une ressource "
+"une fois sauvegardée avec Godot 4.4 pour la première fois. Si vous avez "
+"beaucoup de scènes et/ou de ressources, faire cela manuellement peut être "
+"chronophage. Cet outil va mettre à jour chaque scène et ressource du projet.\n"
+"\n"
+"Cliquez sur « Redémarrer et mettre à jour » pour redémarrer l'éditeur et "
+"mettre à jour toutes les scènes et ressources de ce projet. Cela peut prendre "
+"plusieurs minutes en fonction de la taille de votre projet.\n"
+"\n"
+"Note : Veuillez vous assurer qu'une copie de votre projet est sauvegardée "
+"avant de lancer cet outil, pour éviter la possibilité de perte de données. De "
+"plus, veuillez commit tous les fichiers .uid dans les logiciels de gestion de "
+"versions (et ne les ajoutez pas dans les listes pour ignorer les fichiers "
+"comme .gitignore)."
+
 msgid "Make this panel floating in the screen %d."
 msgstr "Rendre ce panneau flottant sur l'écran %d."
 
@@ -16376,14 +16596,6 @@ msgid ""
 msgstr ""
 "La bibliothèque de modèle '%s' requise n'est pas trouvée. Elle peut être "
 "manquante de votre archive de modèle."
-
-msgid "ARM64 simulator library, generating from device library."
-msgstr ""
-"Bibliothèque de simulateur ARM64, générée à partir de la bibliothèque pour "
-"appareil."
-
-msgid "Unable to generate ARM64 simulator library."
-msgstr "Impossible de générer la bibliothèque de simulateur ARM64."
 
 msgid "Could not copy a file at path \"%s\" to \"%s\"."
 msgstr "Impossible de copier un fichier sur le chemin \"%s\" vers \"%s\"."
@@ -17693,6 +17905,9 @@ msgstr ""
 msgid "This body will be ignored until you set a mesh."
 msgstr "Ce corps sera ignoré jusqu'à ce que vous définissiez un maillage."
 
+msgid "Parent node should be a SpringBoneSimulator3D node."
+msgstr "Le nœud parent devrait être un nœud SpringBoneSimulator3D."
+
 msgid ""
 "A SpriteFrames resource must be created or set in the \"Sprite Frames\" "
 "property in order for AnimatedSprite3D to display frames."
@@ -17880,6 +18095,16 @@ msgid ""
 msgstr ""
 "La police actuelle ne prend pas en charge un ou plusieurs caractères utilisés "
 "dans le texte de ce Label."
+
+msgid ""
+"The current theme style has shadows and/or rounded corners for popups, but "
+"those won't display correctly if \"display/window/per_pixel_transparency/"
+"allowed\" isn't enabled in the Project Settings, nor if it isn't supported."
+msgstr ""
+"Le style du thème actuel a des ombres et/ou des coins arrondis pour des "
+"fenêtres contextuelles, mais celles-ci ne s'afficheront pas correctement si "
+"« display/window/per_pixel_transparency/allowed » n'est pas activé dans les "
+"réglages du projet, ou si ce n'est pas supporté."
 
 msgid "If \"Exp Edit\" is enabled, \"Min Value\" must be greater than 0."
 msgstr ""
@@ -18071,6 +18296,9 @@ msgstr "Utiliser toutes les surfaces"
 
 msgid "Surface Index"
 msgstr "Indexe de surface"
+
+msgid "Division by zero error."
+msgstr "Erreur de division par zéro."
 
 msgid ""
 "Invalid number of arguments when calling stage function '%s', which expects "
@@ -18293,11 +18521,6 @@ msgstr "Un objet de type « %s » ne peut pas être indexé."
 msgid "Invalid base type for increment/decrement operator."
 msgstr "Type de base invalide pour incrémenter/décrémenter l'opérateur."
 
-msgid "Invalid use of increment/decrement operator in a constant expression."
-msgstr ""
-"Utilisation invalide d'un opérateur d'incrémentation / de décrémentation dans "
-"une expression constante."
-
 msgid "Invalid token for the operator: '%s'."
 msgstr "Token invalide pour l'opérateur : '%s'."
 
@@ -18372,6 +18595,9 @@ msgstr "Utiliser '%s' dans la fonction du processeur '%s' est incorrect."
 
 msgid "Expected '%s' with an expression of type '%s'."
 msgstr "'%s' est attendu dans une expression de type '%s'."
+
+msgid "'%s' function cannot return a value."
+msgstr "La fonction « %s » ne peut par retourner de valeur."
 
 msgid "Expected return with an expression of type '%s'."
 msgstr "Une valeur retournée est attendue avec une expression de type '%s'."

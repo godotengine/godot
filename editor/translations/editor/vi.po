@@ -44,13 +44,14 @@
 # duongmai <flashlight135790@gmail.com>, 2024.
 # a <anhkietcb2008@gmail.com>, 2024.
 # Nguyễn Minh Khôi <minhkhoiheovang2007@gmail.com>, 2024.
+# IoeCmcomc <IoeCmcomc@users.noreply.hosted.weblate.org>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-12-20 08:00+0000\n"
-"Last-Translator: Nguyễn Minh Khôi <minhkhoiheovang2007@gmail.com>\n"
+"PO-Revision-Date: 2025-02-19 13:35+0000\n"
+"Last-Translator: IoeCmcomc <IoeCmcomc@users.noreply.hosted.weblate.org>\n"
 "Language-Team: Vietnamese <https://hosted.weblate.org/projects/godot-engine/"
 "godot/vi/>\n"
 "Language: vi\n"
@@ -58,7 +59,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.9.2-dev\n"
+"X-Generator: Weblate 5.10.1-dev\n"
 
 msgid "Main Thread"
 msgstr "Chủ đề chính"
@@ -1050,6 +1051,9 @@ msgstr "Tạo %s mới"
 msgid "No results for \"%s\"."
 msgstr "Không tìm thấy kết quả cho \"%s\"."
 
+msgid "Script path: %s"
+msgstr "Tên tập lệnh: %s"
+
 msgid "This class is marked as deprecated."
 msgstr "Lớp này được đánh dấu là không dùng nữa."
 
@@ -1335,6 +1339,9 @@ msgstr "Tên thư mục chứa ký tự không hợp lệ."
 
 msgid "Folder with that name already exists."
 msgstr "Thư mục với tên này đã tồn tại."
+
+msgid "Base path: %s"
+msgstr "Đường dẫn cơ sở: %s"
 
 msgid "Folder name is valid."
 msgstr "Tên thư mục hợp lệ."

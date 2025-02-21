@@ -61,13 +61,14 @@
 # SusBon Tan <susbontan@gmail.com>, 2024.
 # WerewolfwolfyXD <wer.xd@qq.com>, 2025.
 # Oscar Su <oscar517730@gmail.com>, 2025.
+# codetea <codetea@users.noreply.hosted.weblate.org>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-01-27 21:46+0000\n"
-"Last-Translator: Oscar Su <oscar517730@gmail.com>\n"
+"PO-Revision-Date: 2025-02-09 14:12+0000\n"
+"Last-Translator: codetea <codetea@users.noreply.hosted.weblate.org>\n"
 "Language-Team: Chinese (Traditional Han script) <https://hosted.weblate.org/"
 "projects/godot-engine/godot/zh_Hant/>\n"
 "Language: zh_TW\n"
@@ -670,6 +671,15 @@ msgstr "更改動畫長度"
 
 msgid "Change Animation Loop"
 msgstr "更改動畫循環"
+
+msgid ""
+"Can't change loop mode on animation embedded in another scene.\n"
+"\n"
+"You must open this scene and change the animation's loop mode from there."
+msgstr ""
+"無法更改從其他場景嵌入的動畫的循環播放模式。\n"
+"\n"
+"您必須開啟該場景，並從該處更改動畫的循環模式。"
 
 msgid "Property Track..."
 msgstr "屬性軌道…"
@@ -15600,7 +15610,7 @@ msgid ""
 "The rcedit tool must be configured in the Editor Settings (Export > Windows > "
 "rcedit) to change the icon or app information data."
 msgstr ""
-"必須在編輯器設定中田素 rcedit 工具（匯出 > Windows > Rcedit）才能修改圖示或應"
+"必須在編輯器設定中填入 rcedit 工具（匯出 > Windows > Rcedit）才能修改圖示或應"
 "用程式訊息資料。"
 
 msgid "Windows executables cannot be >= 4 GiB."
@@ -16549,9 +16559,6 @@ msgstr "型別為”%s“的物件不能被索引。"
 
 msgid "Invalid base type for increment/decrement operator."
 msgstr "遞增/遞減運算子的基礎型別無效。"
-
-msgid "Invalid use of increment/decrement operator in a constant expression."
-msgstr "在純量表示式中使用遞增/遞減運算子無效。"
 
 msgid "Invalid token for the operator: '%s'."
 msgstr "運算子標記無效：”%s\"。"

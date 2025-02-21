@@ -50,7 +50,7 @@
 # MizunagiKB <mizukb@live.jp>, 2023.
 # Saitos <purifyzombie@gmail.com>, 2023.
 # UENO Masahiro <ueno.mshr@gmail.com>, 2023.
-# ueshita <nalto32@gmail.com>, 2023, 2024.
+# ueshita <nalto32@gmail.com>, 2023, 2024, 2025.
 # a-ori-a <ma_hiro25@outlook.jp>, 2023.
 # Usamiki <amarantus0499@gmail.com>, 2023.
 # "Takefumi \"abell\" Ota" <taketakegogo@gmail.com>, 2023.
@@ -85,8 +85,8 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-01-20 18:26+0000\n"
-"Last-Translator: Binnaga <polycharacter@gmail.com>\n"
+"PO-Revision-Date: 2025-02-12 18:36+0000\n"
+"Last-Translator: nitenook <admin@alterbaum.net>\n"
 "Language-Team: Japanese <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ja/>\n"
 "Language: ja\n"
@@ -115,16 +115,16 @@ msgid "Middle Mouse Button"
 msgstr "マウス中央ボタン"
 
 msgid "Mouse Wheel Up"
-msgstr "マウス上ホイール"
+msgstr "マウスホイール上"
 
 msgid "Mouse Wheel Down"
-msgstr "マウス下ホイール"
+msgstr "マウスホイール下"
 
 msgid "Mouse Wheel Left"
-msgstr "マウス左ホイール"
+msgstr "マウスホイール左"
 
 msgid "Mouse Wheel Right"
-msgstr "マウス右ホイール"
+msgstr "マウスホイール右"
 
 msgid "Mouse Thumb Button 1"
 msgstr "マウスボタン1"
@@ -451,6 +451,9 @@ msgstr "非表示を表示"
 msgid "Swap Input Direction"
 msgstr "入力方向の入れ替え"
 
+msgid "Start Unicode Character Input"
+msgstr "Unicode文字の入力を開始"
+
 msgid "Invalid input %d (not passed) in expression"
 msgstr "式に無効入力 %d (渡されていません)"
 
@@ -691,6 +694,41 @@ msgstr "アニメーションの長さを変更"
 
 msgid "Change Animation Loop"
 msgstr "アニメーションのループを変更"
+
+msgid ""
+"Can't change loop mode on animation instanced from an imported scene.\n"
+"\n"
+"To change this animation's loop mode, navigate to the scene's Advanced Import "
+"settings and select the animation.\n"
+"You can then change the loop mode from the inspector menu."
+msgstr ""
+"アニメーションはインポートされたシーンからインスタンス化されているため、ループ"
+"モードを変更できません。\n"
+"\n"
+"このアニメーションのループモードを変更するには、シーンの\"高度なインポート設定"
+"\"に移動して、アニメーションを選択してください。\n"
+"その後、インスペクターメニューからループモードを変更できます。"
+
+msgid "Can't change loop mode on animation instanced from an imported resource."
+msgstr ""
+"アニメーションはインポートされたリソースからインスタンス化されているため、ルー"
+"プモードを変更できません。"
+
+msgid ""
+"Can't change loop mode on animation embedded in another scene.\n"
+"\n"
+"You must open this scene and change the animation's loop mode from there."
+msgstr ""
+"アニメーションが別のシーンに埋め込まれているため、ループモードを変更できませ"
+"ん。\n"
+"\n"
+"そのシーンを開き、そこからアニメーションのループモードを変更する必要がありま"
+"す。"
+
+msgid "Can't change loop mode on animation embedded in another resource."
+msgstr ""
+"アニメーションは別のシーンに埋め込まれているため、ループモードを変更できませ"
+"ん。"
 
 msgid "Property Track..."
 msgstr "プロパティトラック…"
@@ -1089,6 +1127,15 @@ msgid "Group tracks by node or display them as plain list."
 msgstr ""
 "ノードごとにトラックをグループ化するか、プレーンなリストとして表示します。"
 
+msgid "Apply snapping to timeline cursor."
+msgstr "タイムラインカーソルにスナップする。"
+
+msgid "Apply snapping to selected key(s)."
+msgstr "選択したキーにスナップする。"
+
+msgid "Apply snapping to the nearest integer FPS."
+msgstr "最も近い整数フレームにスナップする。"
+
 msgid "Animation step value."
 msgstr "アニメーションステップの値。"
 
@@ -1309,11 +1356,53 @@ msgstr "すべてを選択/解除"
 msgid "Animation Change Keyframe Time"
 msgstr "アニメーションキーフレームの時間を変更"
 
+msgid "Marker name is read-only in the inspector."
+msgstr "マーカー名はインスペクターでは読み取り専用です。"
+
+msgid "Insert Marker..."
+msgstr "マーカーを挿入…"
+
+msgid "Rename Marker"
+msgstr "マーカー名を変更"
+
+msgid "Delete Marker(s)"
+msgstr "マーカーを削除"
+
+msgid "Show All Marker Names"
+msgstr "すべてのマーカー名を表示"
+
+msgid "Marker:"
+msgstr "マーカー:"
+
+msgid "Marker '%s' already exists!"
+msgstr "マーカー '%s' はすでに存在します！"
+
+msgid "Add Marker Key"
+msgstr "マーカーキーの追加"
+
+msgid "Empty marker names are not allowed."
+msgstr "マーカー名は空にできません。"
+
+msgid "Insert Marker"
+msgstr "マーカーを挿入"
+
+msgid "Marker Name"
+msgstr "マーカー名"
+
+msgid "Marker Color"
+msgstr "マーカーの色"
+
 msgid "Close"
 msgstr "閉じる"
 
 msgid "Error!"
 msgstr "エラー！"
+
+msgid "Change Marker Name:"
+msgstr "マーカー名を変更:"
+
+msgid "Edit Marker Color"
+msgstr "マーカーの色の設定"
 
 msgid "Add Audio Track Clip"
 msgstr "オーディオトラッククリップの追加"
@@ -1343,6 +1432,12 @@ msgstr[0] "%d件の一致が見つかりました"
 msgid "%d of %d match"
 msgid_plural "%d of %d matches"
 msgstr[0] "%d / %d 件の一致が見つかりました"
+
+msgid "Hide Replace"
+msgstr "置換を隠す"
+
+msgid "Show Replace"
+msgstr "置換を表示"
 
 msgid "Find"
 msgstr "検索"
@@ -1399,6 +1494,13 @@ msgstr "警告"
 
 msgid "Zoom factor"
 msgstr "ズーム倍率"
+
+msgid ""
+"%sMouse wheel, %s/%s: Finetune\n"
+"%s: Reset"
+msgstr ""
+"%sマウスホイール, %s/%s: 微調整\n"
+"%s: リセット"
 
 msgid "Line and column numbers."
 msgstr "行番号と列番号。"
@@ -1558,6 +1660,12 @@ msgstr "%s を新規作成"
 msgid "No results for \"%s\"."
 msgstr "\"%s\" の結果はありません。"
 
+msgid "Script path: %s"
+msgstr "スクリプトパス: %s"
+
+msgid "The script will run in the editor."
+msgstr "このスクリプトはエディターで実行されます。"
+
 msgid "This class is marked as deprecated."
 msgstr "このクラスは非推奨としてマークされています。"
 
@@ -1588,6 +1696,9 @@ msgstr "説明:"
 msgid "Remote %s:"
 msgstr "リモート %s:"
 
+msgid "Session %d"
+msgstr "セッション %d"
+
 msgid "Debugger"
 msgstr "デバッガー"
 
@@ -1617,6 +1728,15 @@ msgstr ""
 
 msgid "Toggle Visibility"
 msgstr "可視性の切り替え"
+
+msgid "Expression to evaluate"
+msgstr "評価する式"
+
+msgid "Clear on Run"
+msgstr "実行時にクリア"
+
+msgid "Evaluate"
+msgstr "評価"
 
 msgid "Clear"
 msgstr "クリア"
@@ -1662,6 +1782,9 @@ msgstr "停止"
 
 msgid "Start"
 msgstr "開始"
+
+msgid "Autostart"
+msgstr "自動起動"
 
 msgid "Measure:"
 msgstr "測定:"
@@ -1819,6 +1942,9 @@ msgstr "すべて展開"
 msgid "Collapse All"
 msgstr "すべて折りたたむ"
 
+msgid "Evaluator"
+msgstr "式の評価"
+
 msgid "Profiler"
 msgstr "プロファイラー"
 
@@ -1945,6 +2071,12 @@ msgstr ""
 msgid "Cannot remove:"
 msgstr "除去不可:"
 
+msgid "Files to be deleted:"
+msgstr "削除されるファイル:"
+
+msgid "Dependencies of files to be deleted:"
+msgstr "削除されるファイルの依存関係:"
+
 msgid "Error loading:"
 msgstr "読み込みエラー:"
 
@@ -1981,14 +2113,26 @@ msgstr "所有権が明示的でないリソース:"
 msgid "Name cannot be empty."
 msgstr "名前を空にすることはできません。"
 
+msgid "File name can't end with /."
+msgstr "ファイル名の末尾を /. にすることはできません。"
+
+msgid "File name cannot be empty."
+msgstr "ファイル名を空にすることはできません。"
+
 msgid "Folder name cannot be empty."
 msgstr "フォルダ名を空にすることはできません。"
+
+msgid "File name contains invalid characters."
+msgstr "ファイル名に無効な文字が含まれています。"
 
 msgid "Folder name contains invalid characters."
 msgstr "フォルダ名に無効な文字が含まれています。"
 
 msgid "File name begins with a dot."
 msgstr "ファイル名がドットから始まっています。"
+
+msgid "Folder name begins with a dot."
+msgstr "フォルダ名がドットから始まっています。"
 
 msgid "File with that name already exists."
 msgstr "同名のファイルがすでに存在します。"
@@ -1999,6 +2143,19 @@ msgstr "同名のフォルダがすでに存在します。"
 msgid "Using slashes in folder names will create subfolders recursively."
 msgstr ""
 "フォルダ名にスラッシュを使用すると、サブフォルダが再帰的に作成されます。"
+
+msgid ""
+"Using slashes in path will create the file in subfolder, creating new "
+"subfolders if necessary."
+msgstr ""
+"パスにスラッシュを使用すると、サブフォルダーにファイルが作成されます。必要に応"
+"じて新しいサブフォルダーも作成されます。"
+
+msgid "File name is valid."
+msgstr "ファイル名は有効です。"
+
+msgid "Base path: %s"
+msgstr "ベースパス: %s"
 
 msgid "Folder name is valid."
 msgstr "フォルダ名は有効です。"
@@ -2281,6 +2438,9 @@ msgstr "オーディオバスのレイアウト"
 msgid "Invalid name."
 msgstr "無効な名前です。"
 
+msgid "Must be a valid Unicode identifier."
+msgstr "有効なUnicode識別子である必要があります。"
+
 msgid "Must not collide with an existing engine class name."
 msgstr "既存のエンジンのクラス名と衝突してはいけません。"
 
@@ -2548,6 +2708,12 @@ msgstr "[空]"
 msgid "[unsaved]"
 msgstr "[未保存]"
 
+msgid "Open the %s dock."
+msgstr "%sドックを開く。"
+
+msgid "Focus on the %s dock."
+msgstr "%sドックにフォーカスする。"
+
 msgid "%s - Godot Engine"
 msgstr "%s - Godot エンジン"
 
@@ -2599,6 +2765,9 @@ msgstr "インポートドック"
 msgid "History Dock"
 msgstr "履歴ドック"
 
+msgid "Game View"
+msgstr "ゲームビュー"
+
 msgid "Allows to view and edit 3D scenes."
 msgstr "3Dシーンの表示と編集ができます。"
 
@@ -2627,6 +2796,9 @@ msgstr ""
 
 msgid "Provides an overview of the editor's and each scene's undo history."
 msgstr "エディターと各シーンのアンドゥ履歴の概要を提供します。"
+
+msgid "Provides tools for selecting and debugging nodes at runtime."
+msgstr "実行時にノードを選択およびデバッグするためのツールを提供します。"
 
 msgid "(current)"
 msgstr "(現在)"
@@ -2718,6 +2890,30 @@ msgstr "プロファイルをインポート"
 msgid "Manage Editor Feature Profiles"
 msgstr "エディター機能のプロファイルの管理"
 
+msgid "Project initialization"
+msgstr "プロジェクトの初期化"
+
+msgid "Scanning file structure..."
+msgstr "ファイル構造をスキャン中..."
+
+msgid "Loading global class names..."
+msgstr "グローバルクラス名を読み込み中..."
+
+msgid "Verifying GDExtensions..."
+msgstr "GDExtensionを検証中..."
+
+msgid "Creating autoload scripts..."
+msgstr "自動読み込みスクリプトを作成中..."
+
+msgid "Initializing plugins..."
+msgstr "プラグインを初期化中..."
+
+msgid "Starting file scan..."
+msgstr "ファイルスキャンを開始..."
+
+msgid "Scanning actions..."
+msgstr "アクションをスキャン中..."
+
 msgid "Some extensions need the editor to restart to take effect."
 msgstr ""
 "いくつかの拡張機能を有効にするには、エディタを再起動する必要があります。"
@@ -2731,11 +2927,42 @@ msgstr "保存して再起動"
 msgid "ScanSources"
 msgstr "スキャンソース"
 
+msgid "Registering global classes..."
+msgstr "グローバルクラスを登録中..."
+
+msgid "Updating scripts documentation"
+msgstr "スクリプトドキュメントを更新中"
+
+msgid "Updating Scene Groups"
+msgstr "シーングループを更新中"
+
+msgid ""
+"There are multiple importers for different types pointing to file %s, import "
+"aborted"
+msgstr ""
+"ファイル %s を指す異なるタイプの複数のインポーターがあります。インポートは中断"
+"されました"
+
 msgid "(Re)Importing Assets"
 msgstr "アセットを(再)インポート中"
 
+msgid "Preparing files to reimport..."
+msgstr "再インポートするファイルを準備中..."
+
+msgid "Executing pre-reimport operations..."
+msgstr "再インポート前の操作を実行中..."
+
 msgid "Import resources of type: %s"
 msgstr "次のタイプのリソースをインポート: %s"
+
+msgid "Finalizing Asset Import..."
+msgstr "アセットインポートを終了しています..."
+
+msgid "Executing post-reimport operations..."
+msgstr "再インポート後の操作を実行中..."
+
+msgid "Copying files..."
+msgstr "ファイルをコピー中..."
 
 msgid "This method supports a variable number of arguments."
 msgstr "このメソッドは、可変数の引数をサポートしています。"
@@ -2760,6 +2987,9 @@ msgid ""
 msgstr ""
 "このメソッドは、呼び出すためにインスタンスを必要としません。\n"
 "クラス名を使って直接呼び出すことができます。"
+
+msgid "Code snippet copied to clipboard."
+msgstr "クリップボードにコードスニペットをコピー。"
 
 msgid "No return value."
 msgstr "戻り値はありません。"
@@ -2915,6 +3145,11 @@ msgstr "アイコン"
 msgid "Styles"
 msgstr "スタイル"
 
+msgid "This theme property may be changed or removed in future versions."
+msgstr ""
+"このテーマのプロパティは、将来のバージョンで変更または削除される可能性がありま"
+"す。"
+
 msgid "There is currently no description for this theme property."
 msgstr "現在、このテーマプロパティの説明はありません。"
 
@@ -2995,8 +3230,15 @@ msgstr "エディター"
 msgid "Click to copy."
 msgstr "クリックでコピーする。"
 
+msgid "Click to open in browser."
+msgstr "クリックでブラウザを開く。"
+
 msgid "No description available."
 msgstr "説明はありません。"
+
+msgid "This annotation may be changed or removed in future versions."
+msgstr ""
+"このアノテーションは将来のバージョンで変更または削除される可能性があります。"
 
 msgid "Show in FileSystem"
 msgstr "ファイルシステム上で表示"
@@ -3007,11 +3249,23 @@ msgstr "ファイルマネージャーで開く"
 msgid "Class"
 msgstr "クラス"
 
+msgid "Enumeration"
+msgstr "列挙体"
+
 msgid "Constant"
 msgstr "コンスタント"
 
+msgid "Metadata"
+msgstr "メタデータ"
+
+msgid "Setting"
+msgstr "設定"
+
 msgid "Property"
 msgstr "プロパティ"
+
+msgid "Internal Property"
+msgstr "内部プロパティ"
 
 msgid "This property can only be set in the Inspector."
 msgstr "このプロパティはインスペクターでのみ設定できます。"
@@ -3028,8 +3282,35 @@ msgstr "シグナル"
 msgid "Annotation"
 msgstr "アノテーション"
 
+msgid "Local Constant"
+msgstr "ローカル定数"
+
+msgid "Local Variable"
+msgstr "ローカル変数"
+
+msgid "This variable may be changed or removed in future versions."
+msgstr "この変数は将来のバージョンで変更または削除される可能性があります。"
+
+msgid "TextFile"
+msgstr "テキストファイル"
+
 msgid "File"
 msgstr "ファイル"
+
+msgid "Directory"
+msgstr "ディレクトリ"
+
+msgid "Invalid UID"
+msgstr "無効なUID"
+
+msgid "This UID does not point to any valid Resource."
+msgstr "このUIDは有効なリソースを指していません。"
+
+msgid "Invalid path"
+msgstr "無効なパス"
+
+msgid "This path does not exist."
+msgstr "このパスは存在しません。"
 
 msgid "%d match."
 msgstr "%d件の一致が見つかりました。"
@@ -3088,11 +3369,17 @@ msgstr "メンバータイプ"
 msgid "Keywords"
 msgstr "キーワード"
 
+msgid "Matches the \"%s\" keyword."
+msgstr "\"%s\" キーワードと一致します。"
+
 msgid "This member is marked as deprecated."
 msgstr "このメンバーは非推奨としてマークされています。"
 
 msgid "This member is marked as experimental."
 msgstr "このメンバーは実験用としてマークされています。"
+
+msgid "Unfavorite Property"
+msgstr "お気に入りを解除"
 
 msgid "Pin Value"
 msgstr "値をピン留めする"
@@ -3103,6 +3390,9 @@ msgstr "値をピン留めする ['%s' は editor-only のため無効]"
 msgid "Pinning a value forces it to be saved even if it's equal to the default."
 msgstr ""
 "値をピン留めすると、値がデフォルトと等しい場合でも強制的に保存されます。"
+
+msgid "Unfavorite All"
+msgstr "すべてのお気に入りを解除"
 
 msgid "(%d change)"
 msgid_plural "(%d changes)"
@@ -3277,6 +3567,9 @@ msgstr "ネイティブ シェーダー ソース インスペクター"
 msgid "Unnamed Project"
 msgstr "名無しのプロジェクト"
 
+msgid "Recovery Mode is enabled. Editor functionality has been restricted."
+msgstr "リカバリーモードが有効です。エディターの機能は制限されています。"
+
 msgid ""
 "Spins when the editor window redraws.\n"
 "Update Continuously is enabled, which can increase power usage. Click to "
@@ -3333,6 +3626,9 @@ msgstr "ファイル '%s' の解析中にエラーが発生しました。"
 
 msgid "Scene file '%s' appears to be invalid/corrupt."
 msgstr "シーンファイル '%s' は無効、もしくは壊れているようです。"
+
+msgid "Missing file '%s' or one of its dependencies."
+msgstr "ファイル '%s' またはその依存関係が見つかりません。"
 
 msgid ""
 "File '%s' is saved in a format that is newer than the formats supported by "
@@ -3430,6 +3726,13 @@ msgstr ""
 "トをお読みください。"
 
 msgid ""
+"This resource belongs to a scene that was instantiated or inherited.\n"
+"Changes to it must be made inside the original scene."
+msgstr ""
+"このリソースはインスタンス化または継承されたシーンに属しています。\n"
+"リソースの変更は元のシーン内で行う必要があります。"
+
+msgid ""
 "This resource was imported, so it's not editable. Change its settings in the "
 "import panel and then re-import."
 msgstr ""
@@ -3460,6 +3763,13 @@ msgid "%s no longer exists! Please specify a new save location."
 msgstr "%s はもう存在しません！新しい保存場所を指定してください。"
 
 msgid ""
+"The current scene has no root node, but %d modified external resource(s) and/"
+"or plugin data were saved anyway."
+msgstr ""
+"現行シーンにはルートノードがありませんが、%d 個の変更された外部リソースとプラ"
+"グイン データが保存されました。"
+
+msgid ""
 "A root node is required to save the scene. You can add a root node using the "
 "Scene tree dock."
 msgstr ""
@@ -3468,6 +3778,9 @@ msgstr ""
 
 msgid "Save Scene As..."
 msgstr "名前を付けてシーンを保存..."
+
+msgid "Pack Project as ZIP..."
+msgstr "プロジェクトをZIPにパック..."
 
 msgid "Can't undo while mouse buttons are pressed."
 msgstr "マウスボタンが押されている間は元に戻せません。"
@@ -3499,21 +3812,24 @@ msgstr "リモートやり直す: %s"
 msgid "Scene Redo: %s"
 msgstr "シーンやり直す: %s"
 
+msgid "Can't reload a scene that was never saved."
+msgstr "保存されていないシーンを再ロードすることはできません。"
+
 msgid "Reload Saved Scene"
-msgstr "保存済みシーンをリロード"
+msgstr "保存済みシーンを再読み込み"
 
 msgid ""
 "The current scene has unsaved changes.\n"
 "Reload the saved scene anyway? This action cannot be undone."
 msgstr ""
 "現在のシーンには未保存の変更があります。\n"
-"それでも保存済みシーンをリロードしますか？ この動作は取り消せません。"
+"それでも保存済みシーンを再読み込みしますか？ この動作は取り消せません。"
 
 msgid "Save & Reload"
 msgstr "保存して再読み込み"
 
 msgid "Save modified resources before reloading?"
-msgstr "リロードする前に変更したリソースを保存しますか？"
+msgstr "再読み込みする前に変更したリソースを保存しますか？"
 
 msgid "Save & Quit"
 msgstr "保存して終了"
@@ -3546,6 +3862,9 @@ msgstr "この操作はシーンがないと実行できません。"
 
 msgid "Export Mesh Library"
 msgstr "メッシュライブラリのエクスポート"
+
+msgid "Quick Open Color Palette..."
+msgstr "カラーパレットをクイックオープン..."
 
 msgid "Unable to enable addon plugin at: '%s' parsing of config failed."
 msgstr "アドオンプラグインを有効にできません: '%s' 設定の解析に失敗しました。"
@@ -3628,6 +3947,52 @@ msgstr "最近開いたシーンの履歴をクリア"
 msgid "There is no defined scene to run."
 msgstr "実行するシーンはありません。"
 
+msgid "Loading editor"
+msgstr "エディターの読み込み"
+
+msgid "Loading editor layout..."
+msgstr "エディターレイアウトを読み込み中..."
+
+msgid "Loading docks..."
+msgstr "ドックを読み込み中..."
+
+msgid "Reopening scenes..."
+msgstr "シーンを再オープン中..."
+
+msgid "Loading central editor layout..."
+msgstr "中央エディターを読み込み中..."
+
+msgid "Loading plugin window layout..."
+msgstr "プラグインのウィンドウレイアウトを読み込み中..."
+
+msgid "Editor layout ready."
+msgstr "エディターレイアウトの準備完了。"
+
+msgid ""
+"No main scene has ever been defined. Select one?\n"
+"You can change it later in \"Project Settings\" under the 'application' "
+"category."
+msgstr ""
+"メインシーンが定義されていません。選択しますか？\n"
+"'アプリケーション' カテゴリの下の \"プロジェクト設定\" で後から変更できます。"
+
+msgid ""
+"Selected scene '%s' does not exist. Select a valid one?\n"
+"You can change it later in \"Project Settings\" under the 'application' "
+"category."
+msgstr ""
+"選択したシーン '%s' は存在しません。有効なシーンを選択しますか？\n"
+"'アプリケーション' カテゴリの下の \"プロジェクト設定\" で後から変更できます。"
+
+msgid ""
+"Selected scene '%s' is not a scene file. Select a valid one?\n"
+"You can change it later in \"Project Settings\" under the 'application' "
+"category."
+msgstr ""
+"選択したシーン '%s' はシーンファイルではありません。有効なシーンを選択します"
+"か？\n"
+"'アプリケーション' カテゴリの下の \"プロジェクト設定\" で後から変更できます。"
+
 msgid "Save Layout..."
 msgstr "レイアウトを保存…"
 
@@ -3687,7 +4052,7 @@ msgstr ""
 "ありません。"
 
 msgid "Preparing scenes for reload"
-msgstr "再読込のためのシーンの準備"
+msgstr "再読み込みのためのシーンの準備"
 
 msgid "Analyzing scene %s"
 msgstr "シーン %s を分析中"
@@ -3702,7 +4067,7 @@ msgid "Reloading..."
 msgstr "再読み込み中..."
 
 msgid "Reloading done."
-msgstr "リロード完了。"
+msgstr "再読み込み完了。"
 
 msgid ""
 "Changing the renderer requires restarting the editor.\n"
@@ -3789,6 +4154,9 @@ msgstr "シーンを開く..."
 msgid "Reopen Closed Scene"
 msgstr "閉じたシーンを再び開く"
 
+msgid "Open Recent"
+msgstr "最近開いたシーンを開く"
+
 msgid "Save Scene"
 msgstr "シーンを保存"
 
@@ -3849,8 +4217,11 @@ msgstr "エンジンのコンパイル構成エディタ..."
 msgid "Upgrade Mesh Surfaces..."
 msgstr "メッシュサーフェスをアップグレード..."
 
+msgid "Upgrade UIDs..."
+msgstr "UIDをアップグレード..."
+
 msgid "Reload Current Project"
-msgstr "現在のプロジェクトをリロード"
+msgstr "現在のプロジェクトを再読み込み"
 
 msgid "Quit to Project List"
 msgstr "終了してプロジェクト一覧を開く"
@@ -4006,6 +4377,21 @@ msgstr "ライブラリのエクスポート"
 msgid "Open & Run a Script"
 msgstr "スクリプトを開いて実行"
 
+msgid "Files have been modified outside Godot"
+msgstr "ファイルはGodotの外部で変更されました"
+
+msgid "The following files are newer on disk:"
+msgstr "以下のファイルはより新しいものがディスク上に存在します。"
+
+msgid "What action should be taken?"
+msgstr "どのアクションを実行しますか？"
+
+msgid "Reload from disk"
+msgstr "ディスクから再読み込み"
+
+msgid "Ignore external changes"
+msgstr "外部の変更を無視"
+
 msgid "Create/Override Version Control Metadata..."
 msgstr "バージョン管理用メタデータの作成/上書き..."
 
@@ -4029,6 +4415,9 @@ msgstr "3Dエディターを開く"
 
 msgid "Open Script Editor"
 msgstr "スクリプトエディターを開く"
+
+msgid "Open Game View"
+msgstr "ゲームビューを開く"
 
 msgid "Open Asset Library"
 msgstr "アセットライブラリを開く"
@@ -4159,6 +4548,12 @@ msgstr "新規の値:"
 msgid "(Nil) %s"
 msgstr "(Nil) %s"
 
+msgid "%s%s (size %d)"
+msgstr "%s%s (サイズ %d)"
+
+msgid "%s (size %d)"
+msgstr "%s (サイズ %d)"
+
 msgid "Size:"
 msgstr "サイズ:"
 
@@ -4210,6 +4605,9 @@ msgstr "名前を付けて保存..."
 msgid "Convert to %s"
 msgstr "%s に変換"
 
+msgid "Select resources to make unique:"
+msgstr "ユニークにするリソースを選択する:"
+
 msgid "New %s"
 msgstr "新規 %s"
 
@@ -4222,6 +4620,12 @@ msgstr "スクリプトを拡張..."
 msgid "New Shader..."
 msgstr "新規シェーダー…"
 
+msgid "No Remote Deploy export presets configured."
+msgstr "リモートデプロイのエクスポートプリセットが設定されていません。"
+
+msgid "Remote Deploy"
+msgstr "リモートデプロイ"
+
 msgid ""
 "No runnable export preset found for this platform.\n"
 "Please add a runnable preset in the Export menu or define an existing preset "
@@ -4231,6 +4635,29 @@ msgstr ""
 "エクスポートメニューに実行可能なプリセットを追加するか、既存のプリセットを実行"
 "可能にしてください。"
 
+msgid ""
+"Warning: The CPU architecture \"%s\" is not active in your export preset.\n"
+"\n"
+msgstr ""
+"警告: このCPUアーキテクチャ '%s' は、使用しているエクスポートプリセットでは有"
+"効になっていません\n"
+"\n"
+
+msgid "Run \"Remote Deploy\" anyway?"
+msgstr "無視してリモートデプロイを実行しますか？"
+
+msgid "Deploy to First Device in List"
+msgstr "リストの1番目のデバイスにデプロイ"
+
+msgid "Deploy to Second Device in List"
+msgstr "リストの2番目のデバイスにデプロイ"
+
+msgid "Deploy to Third Device in List"
+msgstr "リストの3番目のデバイスにデプロイ"
+
+msgid "Deploy to Fourth Device in List"
+msgstr "リストの4番目のデバイスにデプロイ"
+
 msgid "Project Run"
 msgstr "プロジェクトの実行"
 
@@ -4239,6 +4666,9 @@ msgstr "ロジックを _run() メソッドに記述する。"
 
 msgid "The current scene already has a root node."
 msgstr "現在のシーンには既にルートノードがあります。"
+
+msgid "Advanced settings are always shown when searching."
+msgstr "検索時には常に詳細設定が表示されます。"
 
 msgid "Edit Built-in Action: %s"
 msgstr "組み込みアクションの編集: %s"
@@ -4251,6 +4681,9 @@ msgstr "None"
 
 msgid "Common"
 msgstr "一般"
+
+msgid "Event %d"
+msgstr "イベント %d"
 
 msgid "Editor Settings"
 msgstr "エディター設定"
@@ -4453,6 +4886,12 @@ msgstr "不明なエラー"
 msgid "Export failed with error code %d."
 msgstr "出力にエラーコード %d で失敗しました。"
 
+msgid "Patch Creation"
+msgstr "パッチ生成"
+
+msgid "Could not load patch pack with path \"%s\"."
+msgstr "パス \"%s\" のパッチパックを読み込めませんでした。"
+
 msgid "Storing File: %s"
 msgstr "ファイルの保存: %s"
 
@@ -4461,6 +4900,29 @@ msgstr "ファイルの保存:"
 
 msgid "No export template found at the expected path:"
 msgstr "想定されたパスにエクスポートテンプレートが見つかりません:"
+
+msgid ""
+"Using user provided text server data, text display in the exported project "
+"might be broken if export template was built with different ICU version!"
+msgstr ""
+"ユーザーが指定したテキストサーバーのデータを使用する場合、異なるICUバージョン"
+"でエクスポートテンプレートが作成された場合にエクスポートしたプロジェクトのテキ"
+"スト表示が破損する可能性があります！"
+
+msgid ""
+"Using editor embedded text server data, text display in the exported project "
+"might be broken if export template was built with different ICU version!"
+msgstr ""
+"エディター組み込みのテキストサーバーのデータを使用する場合、異なるICUバージョ"
+"ンでエクスポートテンプレートが作成された場合にエクスポートしたプロジェクトのテ"
+"キスト表示が破損する可能性があります！"
+
+msgid ""
+"Missing text server data, text display in the exported project might be "
+"broken!"
+msgstr ""
+"テキストサーバーのデータが見つかりません。エクスポートするプロジェクトのテキス"
+"ト表示が破損する可能性があります！"
 
 msgid "ZIP Creation"
 msgstr "ZIPの作成"
@@ -4480,6 +4942,9 @@ msgstr "ファイル \"%s\" を作成できませんでした。"
 msgid "Failed to export project files."
 msgstr "プロジェクトファイルをエクスポートできませんでした。"
 
+msgid "No files or changes to export."
+msgstr "エクスポートするファイルや変更がありません。"
+
 msgid "Can't open file for writing at path \"%s\"."
 msgstr "パス \"%s\" に書き込み用のファイルを開くことができません。"
 
@@ -4497,6 +4962,9 @@ msgstr "読み込むファイルをパス \"%s\" から開けません。"
 
 msgid "Save ZIP"
 msgstr "ZIPを保存"
+
+msgid "Failed to move temporary file \"%s\" to \"%s\"."
+msgstr "一時ファイル \"%s\" を\"%s\" に移動できませんでした。"
 
 msgid "Custom debug template not found."
 msgstr "カスタム デバッグテンプレートが見つかりません。"
@@ -4528,6 +4996,12 @@ msgstr "PCKの埋め込み"
 
 msgid "On 32-bit exports the embedded PCK cannot be bigger than 4 GiB."
 msgstr "32ビットのエクスポートでは、組み込みPCKは4GiBを超えることはできません。"
+
+msgid "GDExtension"
+msgstr "GDExtension"
+
+msgid "Failed to copy shared object \"%s\"."
+msgstr "共有オブジェクト \"%s\" をコピーできませんでした。"
 
 msgid "Plugin \"%s\" is not supported on \"%s\""
 msgstr "プラグイン \"%s\" は \"%s\" ではサポートされていません"
@@ -4661,6 +5135,15 @@ msgstr ""
 "エクスポート テンプレートが見つかりません。ファイルからインストールしてくださ"
 "い。"
 
+msgid "Not available in offline mode"
+msgstr "オフラインモードでは利用不可"
+
+msgid "Template downloading is disabled in offline mode."
+msgstr "オフラインモードでは、テンプレートのダウンロードは無効です。"
+
+msgid "No templates for development builds"
+msgstr "開発用ビルドのテンプレートはありません"
+
 msgid "Official export templates aren't available for development builds."
 msgstr "公式のエクスポートテンプレートは開発用ビルドの場合は使用できません。"
 
@@ -4771,8 +5254,14 @@ msgstr "エクスポートするリソース:"
 msgid "(Inherited)"
 msgstr "（継承）"
 
+msgid "Delete patch '%s' from list?"
+msgstr "パッチ '%s' をリストから削除しますか？"
+
 msgid "Export With Debug"
 msgstr "デバッグ付きエクスポート"
+
+msgid "Export As Patch"
+msgstr "パッチとしてエクスポート"
 
 msgid "%s Export"
 msgstr "%s エクスポート"
@@ -4861,8 +5350,17 @@ msgstr ""
 "プロジェクトからファイル/フォルダーを除外するフィルター\n"
 "(コンマ区切り、 例: *.json, *.txt, docs/*)"
 
+msgid "Patches"
+msgstr "パッチ"
+
+msgid "Base Packs:"
+msgstr "ベースパック:"
+
 msgid "Godot Project Pack"
 msgstr "Godotプロジェクトパック"
+
+msgid "Add Pack"
+msgstr "パックを追加"
 
 msgid "Features"
 msgstr "機能"
@@ -5023,6 +5521,9 @@ msgstr "参照"
 msgid "Confirm Path"
 msgstr "パスの確認"
 
+msgid "Link to: %s"
+msgstr "リンク先: %s"
+
 msgid "View items as a grid of thumbnails."
 msgstr "アイテムをサムネイルでグリッド表示する。"
 
@@ -5052,8 +5553,19 @@ msgstr "移動中のエラー:"
 msgid "Error duplicating:"
 msgstr "複製エラー:"
 
+msgid "Error duplicating directory:"
+msgstr "ディレクトリの複製エラー:"
+
 msgid "Unable to update dependencies for:"
 msgstr "依存関係を更新できません:"
+
+msgid ""
+"This filename begins with a dot rendering the file invisible to the editor.\n"
+"If you want to rename it anyway, use your operating system's file manager."
+msgstr ""
+"このファイル名はドットで始まっているため、エディターによって認識されません。\n"
+"それでも名前を変更したい場合は、オペレーティングシステムのファイルマネージャー"
+"を使用してください。"
 
 msgid ""
 "This file extension is not recognized by the editor.\n"
@@ -5069,6 +5581,9 @@ msgstr ""
 
 msgid "A file or folder with this name already exists."
 msgstr "同名のファイルまたはフォルダーがあります。"
+
+msgid "Could not create base directory: %s"
+msgstr "ベースディレクトリ \"%s\" を作成できませんでした"
 
 msgid ""
 "The following files or folders conflict with items in the target location "
@@ -5107,6 +5622,14 @@ msgstr "フォルダーを複製:"
 
 msgid "Create Folder"
 msgstr "フォルダーを作成"
+
+msgid ""
+"Do you wish to convert these files to %s? (This operation cannot be undone!)"
+msgstr ""
+"これらのファイルを %s に変換しますか？（この操作は取り消しできません！）"
+
+msgid "Could not create folder: %s"
+msgstr "フォルダーを作成できませんでした: %s"
 
 msgid "New Inherited Scene"
 msgstr "新しい継承シーン"
@@ -5168,11 +5691,17 @@ msgstr "お気に入りに追加"
 msgid "Remove from Favorites"
 msgstr "お気に入りから削除"
 
+msgid "Convert to..."
+msgstr "変換..."
+
 msgid "Reimport"
 msgstr "再インポート"
 
 msgid "Open in Terminal"
 msgstr "ターミナルで開く"
+
+msgid "Open Folder in Terminal"
+msgstr "フォルダをターミナルで開く"
 
 msgid "New Folder..."
 msgstr "新規フォルダー..."
@@ -5283,6 +5812,9 @@ msgstr "両方を保持する"
 msgid "Create Script"
 msgstr "スクリプト作成"
 
+msgid "Convert"
+msgstr "変換"
+
 msgid "Find in Files"
 msgstr "複数ファイル内を検索"
 
@@ -5318,6 +5850,9 @@ msgstr "すべて置換（アンドゥ不可）"
 
 msgid "Searching..."
 msgstr "検索中..."
+
+msgid "Remove result"
+msgstr "結果を削除"
 
 msgid "%d match in %d file"
 msgstr "%d 件の一致が見つかりました (%d 個のファイル内)"
@@ -5447,6 +5982,9 @@ msgstr ""
 msgid "Select This Folder"
 msgstr "このフォルダーを選択"
 
+msgid "Show Package Contents"
+msgstr "パッケージの内容を表示"
+
 msgid "All Files"
 msgstr "すべてのファイル"
 
@@ -5499,6 +6037,9 @@ msgstr "モード切り替え"
 msgid "Focus Path"
 msgstr "パスにフォーカス"
 
+msgid "Focus Filter"
+msgstr "フィルタにフォーカス"
+
 msgid "Move Favorite Up"
 msgstr "お気に入りを上へ"
 
@@ -5529,8 +6070,17 @@ msgstr "ディレクトリとファイル:"
 msgid "Toggle the visibility of hidden files."
 msgstr "隠しファイルの表示 / 非表示を切り替えます。"
 
+msgid "Sort files"
+msgstr "ファイルの並び替え"
+
+msgid "Toggle the visibility of the filter for file names."
+msgstr "ファイル名のフィルターの表示 / 非表示を切り替えます。"
+
 msgid "Preview:"
 msgstr "プレビュー:"
+
+msgid "Filter:"
+msgstr "フィルター:"
 
 msgid "Filter"
 msgstr "フィルター"
@@ -5555,6 +6105,45 @@ msgstr "サブリソースが見つかりませんでした。"
 msgid "Open a list of sub-resources."
 msgstr "サブリソースのリストを開く。"
 
+msgid "Search files..."
+msgstr "ファイルを検索…"
+
+msgid "Select Resource"
+msgstr "リソースを選択"
+
+msgid "Select Scene"
+msgstr "シーンを選択"
+
+msgid "Fuzzy Search"
+msgstr "あいまい検索"
+
+msgid "Enable fuzzy matching"
+msgstr "あいまいマッチを有効化"
+
+msgid "Addons"
+msgstr "アドオン"
+
+msgid "Include files from addons"
+msgstr "アドオンのファイルを含める"
+
+msgid "No files found for this type"
+msgstr "このタイプのファイルは見つかりません"
+
+msgid "Start searching to find files..."
+msgstr "ファイルの検索を開始..."
+
+msgid "No results found"
+msgstr "結果はありません"
+
+msgid " (recently opened)"
+msgstr " (最近開いた)"
+
+msgid "Grid view"
+msgstr "グリッド表示"
+
+msgid "List view"
+msgstr "リスト表示"
+
 msgid "Play the project."
 msgstr "プロジェクトを実行。"
 
@@ -5565,7 +6154,7 @@ msgid "Play a custom scene."
 msgstr "カスタムシーンを実行"
 
 msgid "Reload the played scene."
-msgstr "再生されたシーンをリロード"
+msgstr "再生されたシーンを再読み込み"
 
 msgid ""
 "Movie Maker mode is enabled, but no movie file path has been specified.\n"
@@ -5587,8 +6176,71 @@ msgstr ""
 msgid "Could not start subprocess(es)!"
 msgstr "サブプロセスを開始できませんでした！"
 
+msgid "Recovery Mode is enabled. Disable it to run the project."
+msgstr ""
+"リカバリーモードが有効です。プロジェクトを実行するには無効にしてください。"
+
+msgid ""
+"Autostart is enabled for the following profilers, which can have a "
+"performance impact:"
+msgstr ""
+"自動起動が次のプロファイラーで有効になっており、パフォーマンスに影響を与える可"
+"能性があります:"
+
 msgid "Network Profiler"
 msgstr "ネットワークプロファイラー"
+
+msgid "Click to open the first profiler for which autostart is enabled."
+msgstr "クリックで自動起動が有効な最初のプロファイラーを開きます。"
+
+msgid "Recovery Mode"
+msgstr "リカバリーモード"
+
+msgid ""
+"Godot opened the project in Recovery Mode, which is a special mode that can "
+"help recover projects that crash the engine upon initialization. The "
+"following features have been temporarily disabled:"
+msgstr ""
+"Godotはプロジェクトをリカバリーモードで開きました。これは、初期化時にエンジン"
+"がクラッシュするプロジェクトを回復するのに役立つ可能性がある特殊なモードです。"
+"次の機能が一時的に無効になりました:"
+
+msgid "Tool scripts"
+msgstr "ツールスクリプト"
+
+msgid "Editor plugins"
+msgstr "エディタープラグイン"
+
+msgid "GDExtension addons"
+msgstr "GDExtensionアドオン"
+
+msgid "Automatic scene restoring"
+msgstr "シーンの自動復元"
+
+msgid ""
+"If the project cannot be opened outside of this mode, then it's very likely "
+"any of these components is preventing this project from launching. This mode "
+"is intended only for basic editing to troubleshoot such issues, and therefore "
+"it is not possible to run a project in this mode."
+msgstr ""
+"プロジェクトがこのモード以外で開けない場合、これらのコンポーネントのいずれかが"
+"プロジェクトの起動を妨げている可能性が非常に高いです。このモードは、このような"
+"問題のトラブルシューティングのための基本的な編集のみを目的としているため、この"
+"モード中にプロジェクトを実行することはできません。"
+
+msgid ""
+"To disable Recovery Mode, reload the project by pressing the Reload button "
+"next to the Recovery Mode banner, or by reopening the project normally."
+msgstr ""
+"リカバリーモードを無効にするには、\"リカバリーモード\"バナーの横にある再読み込"
+"みボタンを押すか、プロジェクトを通常通り開き直してプロジェクトを再読み込みしま"
+"す。"
+
+msgid "Disable recovery mode and reload the project."
+msgstr "リカバリーモードを無効化し、プロジェクトを再読み込みします。"
+
+msgid "Recovery Mode is enabled. Click for more details."
+msgstr "リカバリーモードが有効です。クリックで詳細を表示。"
 
 msgid "Run the project's default scene."
 msgstr "プロジェクトのデフォルトシーンを実行します。"
@@ -5608,11 +6260,23 @@ msgstr "現在実行中のプロジェクトを停止します。"
 msgid "Stop Running Project"
 msgstr "プロジェクトの実行を停止"
 
+msgid "Run Scene in Regular Mode"
+msgstr "シーンを通常モードで実行"
+
+msgid "Run Scene in XR Mode"
+msgstr "シーンをXRモードで実行"
+
 msgid "Run the currently edited scene."
 msgstr "現在編集中のシーンを実行します。"
 
 msgid "Run Current Scene"
 msgstr "現在のシーンを実行"
+
+msgid "Run in Regular Mode"
+msgstr "通常モードで実行"
+
+msgid "Run in XR Mode"
+msgstr "XRモードで実行"
 
 msgid "Run a specific scene."
 msgstr "特定のシーンを実行します。"
@@ -5707,6 +6371,13 @@ msgstr[0] "ノードは次のグループ内にあります:"
 
 msgid "Click to show signals dock."
 msgstr "クリックでシグナルのドックを表示します。"
+
+msgid ""
+"This script can run in the editor.\n"
+"It is currently disabled due to recovery mode."
+msgstr ""
+"このスクリプトはエディターで実行可能です。\n"
+"リカバリーモードのため現在は無効です。"
 
 msgid "This script is currently running in the editor."
 msgstr "このスクリプトはエディターで実行されています。"
@@ -6049,7 +6720,7 @@ msgstr ""
 "セット(最大 4 倍)に対して事前にレンダリングされる場合があります。"
 
 msgid "Advanced Import Settings for '%s'"
-msgstr "'%s' のインポートの詳細設定"
+msgstr "'%s' の高度なインポート設定"
 
 msgid "Rendering Options"
 msgstr "レンダリング オプション"
@@ -6366,8 +7037,20 @@ msgstr "オブジェクトのプロパティを管理。"
 msgid "This cannot be undone. Are you sure?"
 msgstr "これは元に戻せません。本当によろしいですか？"
 
+msgid "Add %d Translation"
+msgid_plural "Add %d Translations"
+msgstr[0] "%d個の翻訳を追加"
+
 msgid "Remove Translation"
 msgstr "翻訳を除去"
+
+msgid "Translation Resource Remap: Add %d Path"
+msgid_plural "Translation Resource Remap: Add %d Paths"
+msgstr[0] "翻訳リソースの再マップ: %d個のパスを追加"
+
+msgid "Translation Resource Remap: Add %d Remap"
+msgid_plural "Translation Resource Remap: Add %d Remaps"
+msgstr[0] "翻訳リソースの再マップ: %d個の再マップを追加"
 
 msgid "Change Resource Remap Language"
 msgstr "リソースの再マップ言語を変更"
@@ -6377,6 +7060,10 @@ msgstr "リソースの再マップを削除"
 
 msgid "Remove Resource Remap Option"
 msgstr "リソース再マップオプションを削除"
+
+msgid "Add %d file for POT generation"
+msgid_plural "Add %d files for POT generation"
+msgstr[0] "POT生成用に%d個のファイルを追加"
 
 msgid "Remove file from POT generation"
 msgstr "POT生成からファイルを削除"
@@ -6419,6 +7106,9 @@ msgstr "組み込み文字列をPOTに追加"
 
 msgid "Add strings from built-in components such as certain Control nodes."
 msgstr "特定のControlノードなどの組み込みコンポーネントから文字列を追加する。"
+
+msgid "Set %s on %d nodes"
+msgstr "%s を%d個のノードに設定"
 
 msgid "%s (%d Selected)"
 msgstr "%s (%d 個選択済み)"
@@ -8059,6 +8749,13 @@ msgstr ""
 msgid "Edit Plugin"
 msgstr "プラグインの編集"
 
+msgid ""
+"Recovery mode is enabled. Enabled plugins will not run while this mode is "
+"active."
+msgstr ""
+"リカバリーモードが有効です。このモードが有効な間は、有効化されたプラグインは実"
+"行されません。"
+
 msgid "Installed Plugins:"
 msgstr "インストール済プラグイン:"
 
@@ -8135,8 +8832,149 @@ msgstr "東アジア言語の横幅"
 msgid "Numeral Alignment"
 msgstr "数字の配置"
 
+msgid "Variation"
+msgstr "バリエーション"
+
 msgid "Unable to preview font"
 msgstr "フォントをプレビューできません"
+
+msgid "Connection impossible to the game process."
+msgstr "ゲームプロセスに接続できません。"
+
+msgid "Game starting..."
+msgstr "ゲーム起動中..."
+
+msgid "Game running not embedded."
+msgstr "ゲームが埋め込みなしで実行中。"
+
+msgid "Press play to start the game."
+msgstr "ゲームを開始するには再生ボタンを押します。"
+
+msgid "Embedding is disabled."
+msgstr "埋め込みは無効です。"
+
+msgid "Game embedding not available on your OS."
+msgstr "ゲームの埋め込みは現在のOSでは利用できません。"
+
+msgid ""
+"Game embedding not available when the game starts minimized.\n"
+"Consider overriding the window mode project setting with the editor feature "
+"tag to Windowed to use game embedding while leaving the exported project "
+"intact."
+msgstr ""
+"ゲームが最小化の状態で起動する場合、ゲームの埋め込みは利用できません。\n"
+"エクスポートするプロジェクトに影響を与えずゲーム埋め込みを利用するために、プロ"
+"ジェクト設定のエディター機能タグを利用してウィンドウモードをWindowedにすること"
+"を検討してください。"
+
+msgid ""
+"Game embedding not available when the game starts maximized.\n"
+"Consider overriding the window mode project setting with the editor feature "
+"tag to Windowed to use game embedding while leaving the exported project "
+"intact."
+msgstr ""
+"ゲームが最大化の状態で起動する場合、ゲームの埋め込みは利用できません。\n"
+"エクスポートするプロジェクトに影響を与えずゲーム埋め込みを利用するために、プロ"
+"ジェクト設定のエディター機能タグを利用してウィンドウモードをWindowedにすること"
+"を検討してください。"
+
+msgid ""
+"Game embedding not available when the game starts in fullscreen.\n"
+"Consider overriding the window mode project setting with the editor feature "
+"tag to Windowed to use game embedding while leaving the exported project "
+"intact."
+msgstr ""
+"ゲームがフルスクリーンで起動する場合、ゲームの埋め込みは利用できません。\n"
+"エクスポートするプロジェクトに影響を与えずゲーム埋め込みを利用するために、プロ"
+"ジェクト設定のエディター機能タグを利用してウィンドウモードをWindowedにすること"
+"を検討してください。"
+
+msgid "Game embedding not available in single window mode."
+msgstr "シングルウィンドウモードではゲームの埋め込みは利用できません。"
+
+msgid "Suspend"
+msgstr "中断"
+
+msgid "Next Frame"
+msgstr "次フレーム"
+
+msgid "Input"
+msgstr "入力"
+
+msgid "Allow game input."
+msgstr "ゲームの入力を許可します。"
+
+msgid ""
+"Disable game input and allow to select Node2Ds, Controls, and manipulate the "
+"2D camera."
+msgstr ""
+"ゲームの入力を無効化し、Node2DやControlの選択、2Dカメラの操作を可能にします。"
+
+msgid ""
+"Disable game input and allow to select Node3Ds and manipulate the 3D camera."
+msgstr "ゲームの入力を無効化し、Node3Dの選択、3Dカメラの操作を可能にします。"
+
+msgid "Toggle Selection Visibility"
+msgstr "選択範囲の表示を切り替え"
+
+msgid "Alt+RMB: Show list of all nodes at position clicked."
+msgstr "Alt+右クリック: クリックした位置のすべてのノードを一覧で表示。"
+
+msgid "Override the in-game camera."
+msgstr "ゲーム内のカメラをオーバーライドします。"
+
+msgid "Camera Override Options"
+msgstr "カメラのオーバーライドオプション"
+
+msgid "Reset 2D Camera"
+msgstr "2Dカメラをリセット"
+
+msgid "Reset 3D Camera"
+msgstr "3Dカメラをリセット"
+
+msgid "Manipulate In-Game"
+msgstr "ゲーム内で操作"
+
+msgid "Manipulate From Editors"
+msgstr "エディターから操作"
+
+msgid ""
+"Embedded game size is based on project settings.\n"
+"The 'Keep Aspect' mode is used when the Game Workspace is smaller than the "
+"desired size."
+msgstr ""
+"ゲームの埋め込みのサイズは、プロジェクト設定に依存します。\n"
+"ゲームのワークスペースが目的のサイズより小さい場合、 'Keep Aspect' モードが使"
+"用されます。"
+
+msgid "Keep the aspect ratio of the embedded game."
+msgstr "ゲームの埋め込みのアスペクト比を維持します。"
+
+msgid "Embedded game size stretches to fit the Game Workspace."
+msgstr ""
+"ゲームのワークスペースに合わせて、ゲームの埋め込みのサイズが拡大します。"
+
+msgid "Embedding Options"
+msgstr "埋め込みオプション"
+
+msgid "Embed Game on Next Play"
+msgstr "次の実行時にゲームを埋め込む"
+
+msgid "Make Game Workspace Floating on Next Play"
+msgstr "次の実行時にゲームのワークスペースをフローティング化する"
+
+msgid "Game Workspace"
+msgstr "ゲームのワークスペース"
+
+msgid ""
+"No \"%s\" library found for GDExtension: \"%s\". Possible feature flags for "
+"your platform: %s"
+msgstr ""
+"GDExtension用のライブラリ \"%s\" が見つかりません: \"%s\"。このプラットフォー"
+"ムで可能な機能フラグ: %s"
+
+msgid "Multiple \"%s\" libraries found for GDExtension: \"%s\": \"%s\"."
+msgstr "GDExtension用のライブラリ \"%s\" が複数見つかりました: \"%s\":\"%s\"。"
 
 msgid "Change AudioStreamPlayer3D Emission Angle"
 msgstr "AudioStreamPlayer3Dの放射角度を変更する"
@@ -8676,6 +9514,9 @@ msgstr "後面 平行投影"
 
 msgid "Rear Perspective"
 msgstr "後面 透視投影"
+
+msgid "[auto]"
+msgstr "[自動]"
 
 msgid "X-Axis Transform."
 msgstr "X軸トランスフォーム。"
@@ -9812,6 +10653,9 @@ msgstr ""
 "アニメーションミキサーに有効なルートノードのパスがないため、トラック名を取得で"
 "きません。"
 
+msgid "Current value: "
+msgstr "現在の値: "
+
 msgid "Can't open '%s'. The file could have been moved or deleted."
 msgstr ""
 "'%s' を開くことができません。ファイルが移動または削除された可能性があります。"
@@ -9938,6 +10782,9 @@ msgstr "ツールスクリプトをソフトリロード"
 
 msgid "Copy Script Path"
 msgstr "スクリプトのパスをコピー"
+
+msgid "Copy Script UID"
+msgstr "スクリプトのUIDをコピー"
 
 msgid "History Previous"
 msgstr "前の履歴"
@@ -13590,6 +14437,35 @@ msgstr ""
 "見つからないすべてのプロジェクトを一覧から削除しますか？\n"
 "プロジェクトフォルダーの内容は変更されません。"
 
+msgid ""
+"It looks like Godot crashed when opening this project the last time. If "
+"you're having problems editing this project, you can try to open it in "
+"Recovery Mode."
+msgstr ""
+"前回このプロジェクトを開いたときにGodotがクラッシュしたようです。このプロジェ"
+"クトの編集に問題がある場合は、リカバリーモードで開くことができます。"
+
+msgid ""
+"Recovery Mode is a special mode that may help to recover projects that crash "
+"the engine during initialization. This mode temporarily disables the "
+"following features:"
+msgstr ""
+"リカバリーモードは、初期化中にエンジンがクラッシュするプロジェクトを回復するの"
+"に役立つ可能性がある特殊なモードです。このモードでは、以下の機能が一時的に無効"
+"になります:"
+
+msgid ""
+"This mode is intended only for basic editing to troubleshoot such issues, and "
+"therefore it will not be possible to run the project during this mode. It is "
+"also a good idea to make a backup of your project before proceeding."
+msgstr ""
+"このモードは、このような問題のトラブルシューティングのための基本的な編集のみを"
+"目的としているため、このモード中にプロジェクトを実行することはできません。ま"
+"た、実行する前にプロジェクトのバックアップを取ることを推奨します。"
+
+msgid "Edit the project in Recovery Mode?"
+msgstr "プロジェクトをリカバリーモードで編集しますか？"
+
 msgid "Couldn't load project at '%s'. It may be missing or corrupted."
 msgstr ""
 "%s のプロジェクトを読み込めませんでした。見つからないか破損している可能性があ"
@@ -13662,9 +14538,9 @@ msgid ""
 "importing one that exists, or by downloading a project template from the "
 "Asset Library!"
 msgstr ""
-"まずは新規作成するか既存のプロジェクトをインポート、\n"
-"またはアセットライブラリからプロジェクトテンプレートをダウンロードして始めま"
-"しょう！"
+"まずは新規作成から始めましょう。\n"
+"もしくは既存のプロジェクトをインポートするか、アセットライブラリからプロジェク"
+"トテンプレートをダウンロードしましょう！"
 
 msgid "Create New Project"
 msgstr "新規プロジェクトを作成"
@@ -13681,6 +14557,9 @@ msgstr ""
 
 msgid "Edit Project"
 msgstr "プロジェクトを編集"
+
+msgid "Edit in recovery mode"
+msgstr "リカバリーモードで編集"
 
 msgid "Rename Project"
 msgstr "プロジェクト名の変更"
@@ -13706,6 +14585,9 @@ msgstr "スキャンするフォルダーを選択"
 
 msgid "Remove All"
 msgstr "すべて除去"
+
+msgid "Edit in Recovery Mode"
+msgstr "リカバリーモードで編集"
 
 msgid "Convert Full Project"
 msgstr "プロジェクト全体を変換"
@@ -13916,6 +14798,9 @@ msgstr "バージョン管理メタデータ:"
 
 msgid "Git"
 msgstr "Git"
+
+msgid "Edit Now"
+msgstr "今すぐ編集を始める"
 
 msgid "This project was last edited in a different Godot version: "
 msgstr "このプロジェクトはGodotの別バージョンで最終変更されました: "
@@ -14842,6 +15727,46 @@ msgstr ""
 msgid "Restart & Upgrade"
 msgstr "再起動してアップグレード"
 
+msgid "Updating Script UIDs"
+msgstr "スクリプトのUIDをアップデート中"
+
+msgid ""
+"As of Godot 4.4, scenes and resources use UIDs to reference scripts and "
+"shaders.\n"
+"\n"
+"Normally, this update is applied to a single scene or resource once you save "
+"it in Godot 4.4 for the first time. If you have a lot of scenes and/or "
+"resources, doing this manually may be time-consuming. This tool will update "
+"all of the project's scenes and resources at once.\n"
+"\n"
+"Click \"Restart & Upgrade\" to restart the editor and update all of the "
+"scenes and resources in this project. Depending on the project size, it may "
+"take several minutes.\n"
+"\n"
+"Note: Please make sure you have your project backed up before running the "
+"tool, to avoid the possibility of data loss. Additionally, make sure to "
+"commit all .uid files into version control (and do not add them to ignore-"
+"lists like .gitignore)."
+msgstr ""
+"Godot 4.4以降、シーンとリソースはスクリプトやシェーダーの参照にUIDを使用しま"
+"す。\n"
+"\n"
+"通常このアップデートは、シーンやリソースごとにGodot 4.4で初めて保存した時点で"
+"適用されます。しかし、シーンやリソースが多数存在する場合、手動でこれを行うのは"
+"時間がかかる可能性があります。このツールは、プロジェクトの全てのシーンとリソー"
+"スを一度にアップデートします。\n"
+"\n"
+"\"再起動してアップグレード\"をクリックすることで、エディタを再起動してこのプロ"
+"ジェクトのすべてのシーンとリソースをアップデートします。プロジェクトのサイズに"
+"よっては数分かかる場合があります。\n"
+"\n"
+"注意: データ損失の可能性を避けるため、ツールを実行する前にプロジェクトをバック"
+"アップしてください。また、すべての.uidファイルはバージョン管理にコミットしてく"
+"ださい（.gitignoreのような無視リストに追加しないでください）。"
+
+msgid "Learn More"
+msgstr "詳細を表示"
+
 msgid "Make this panel floating in the screen %d."
 msgstr "このパネルを画面%dにフローティングさせます。"
 
@@ -15166,6 +16091,20 @@ msgstr "クラス名は有効な識別子である必要があります"
 
 msgid "Not enough bytes for decoding bytes, or invalid format."
 msgstr "デコードするにはバイトが足りないか、または無効な形式です。"
+
+msgid ""
+"Unable to load .NET runtime, no compatible version was found.\n"
+"Attempting to create/edit a project will lead to a crash.\n"
+"\n"
+"Please install the .NET SDK 8.0 or later from https://get.dot.net and restart "
+"Godot."
+msgstr ""
+".NETランタイムの読み込みに失敗しました。互換性のあるバージョンが見つかりませ"
+"ん。\n"
+"プロジェクトの作成・編集を行うとクラッシュする可能性があります。\n"
+"\n"
+".NET SDK 8.0またはそれ以降のバージョンを https://get.dot.net よりインストール"
+"し、Godotを再起動してください。"
 
 msgid "Failed to load .NET runtime"
 msgstr ".NETランタイムの読み込みに失敗しました"
@@ -15863,12 +16802,6 @@ msgid ""
 msgstr ""
 "要求されたテンプレートライブラリ \"%s\" が見つかりません。あなたのテンプレート"
 "アーカイブから欠落している可能性があります。"
-
-msgid "ARM64 simulator library, generating from device library."
-msgstr "ARM64 シミュレータライブラリ、デバイスライブラリから生成します。"
-
-msgid "Unable to generate ARM64 simulator library."
-msgstr "ARM64 シミュレータライブラリを生成できません。"
 
 msgid "Could not copy a file at path \"%s\" to \"%s\"."
 msgstr "パス \"%s\" から \"%s\" へファイルをコピーできませんでした。"
@@ -17257,6 +18190,9 @@ msgstr ""
 msgid "Copy this constructor in a script."
 msgstr "このコンストラクターをスクリプトにコピーします。"
 
+msgid "Quick Load"
+msgstr "クイックロード"
+
 msgid "Switch between hexadecimal and code values."
 msgstr "16進数とコード値を切り替えます。"
 
@@ -17696,9 +18632,6 @@ msgstr "型「%s」のオブジェクトはインデックスできません。"
 
 msgid "Invalid base type for increment/decrement operator."
 msgstr "インクリメント/デクリメント演算子が無効な基本タイプです。"
-
-msgid "Invalid use of increment/decrement operator in a constant expression."
-msgstr "インクリメント/デクリメント演算子の使用が無効な定数式です。"
 
 msgid "Invalid token for the operator: '%s'."
 msgstr "オペレータのトークンが無効です: '%s'。"

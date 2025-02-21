@@ -2527,14 +2527,14 @@ msgstr "工具提示位置偏移"
 msgid "Show Image"
 msgstr "顯示圖像"
 
-msgid "Image"
-msgstr "圖像"
-
 msgid "Fullsize"
 msgstr "全尺寸"
 
 msgid "Use Filter"
 msgstr "使用篩選器"
+
+msgid "Image"
+msgstr "圖像"
 
 msgid "Minimum Display Time"
 msgstr "最短顯示時間"
@@ -6793,23 +6793,14 @@ msgstr "最大顯示接觸數"
 msgid "Draw 2D Outlines"
 msgstr "繪製 2D 輪廓"
 
-msgid "Anti Aliasing"
-msgstr "抗鋸齒"
-
-msgid "MSAA 2D"
-msgstr "MSAA 2D"
-
-msgid "MSAA 3D"
-msgstr "MSAA 3D"
-
 msgid "Viewport"
 msgstr "檢視區"
 
 msgid "Transparent Background"
 msgstr "透明背景"
 
-msgid "HDR 2D"
-msgstr "HDR 2D"
+msgid "Anti Aliasing"
+msgstr "抗鋸齒"
 
 msgid "Screen Space AA"
 msgstr "螢幕空間 AA"
@@ -6852,9 +6843,6 @@ msgstr "位置陰影"
 
 msgid "Atlas Size"
 msgstr "合集大小"
-
-msgid "Atlas 16 Bits"
-msgstr "16 點陣合集"
 
 msgid "Atlas Quadrant 0 Subdiv"
 msgstr "合集象限 0 細分"
@@ -6909,6 +6897,12 @@ msgstr "透明背景"
 
 msgid "Handle Input Locally"
 msgstr "輸入本地處理"
+
+msgid "MSAA 2D"
+msgstr "MSAA 2D"
+
+msgid "MSAA 3D"
+msgstr "MSAA 3D"
 
 msgid "Debug Draw"
 msgstr "除錯繪製"
@@ -9520,6 +9514,9 @@ msgstr "使用物理光線單位"
 msgid "Soft Shadow Filter Quality"
 msgstr "柔和陰影篩選品質"
 
+msgid "Atlas 16 Bits"
+msgstr "16 點陣合集"
+
 msgid "Shadow Atlas"
 msgstr "陰影合集"
 
@@ -9618,6 +9615,9 @@ msgstr "淡出起點"
 
 msgid "Fadeout To"
 msgstr "淡出終點"
+
+msgid "HDR 2D"
+msgstr "HDR 2D"
 
 msgid "Screen Space Roughness Limiter"
 msgstr "螢幕空間粗糙度極限器"

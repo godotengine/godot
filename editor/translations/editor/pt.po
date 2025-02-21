@@ -72,13 +72,14 @@
 # Moises Braz <moisesbroz1@gmail.com>, 2024.
 # Saulo de Freitas <saulodefreitas0@gmail.com>, 2025.
 # jk yano <jkyano397@gmail.com>, 2025.
+# rtvr5656 <rtvr5656@gmail.com>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-02-06 23:02+0000\n"
-"Last-Translator: jk yano <jkyano397@gmail.com>\n"
+"PO-Revision-Date: 2025-02-21 01:36+0000\n"
+"Last-Translator: rtvr5656 <rtvr5656@gmail.com>\n"
 "Language-Team: Portuguese <https://hosted.weblate.org/projects/godot-engine/"
 "godot/pt/>\n"
 "Language: pt\n"
@@ -86,7 +87,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.10-dev\n"
+"X-Generator: Weblate 5.10.1-dev\n"
 
 msgid "Main Thread"
 msgstr "Thread Principal"
@@ -443,6 +444,9 @@ msgstr "Mostrar Ocultos"
 
 msgid "Swap Input Direction"
 msgstr "Trocar Direção da Entrada"
+
+msgid "Start Unicode Character Input"
+msgstr "Começa Unicode Character Input"
 
 msgid "Invalid input %d (not passed) in expression"
 msgstr "Entrada inválida %d (não passada) na expressão"
@@ -15790,13 +15794,6 @@ msgstr ""
 "Falha ao exportar plugins do iOS com código %d. Por favor verifique o log de "
 "saída."
 
-msgid "ARM64 simulator library, generating from device library."
-msgstr ""
-"Biblioteca de simulador ARM64, gerando a partir da biblioteca do dispositivo."
-
-msgid "Unable to generate ARM64 simulator library."
-msgstr "Não é possível gerar a biblioteca do simulador ARM64."
-
 msgid "Could not copy a file at path \"%s\" to \"%s\"."
 msgstr "Não foi possível copiar um arquivo do caminho \"%s\" para \"%s\"."
 
@@ -17535,10 +17532,6 @@ msgstr "Um objeto do tipo '%s' não pode ser indexado."
 
 msgid "Invalid base type for increment/decrement operator."
 msgstr "Tipo de base inválido para operador de incremento/decremento."
-
-msgid "Invalid use of increment/decrement operator in a constant expression."
-msgstr ""
-"Uso inválido do operador de incremento/decremento numa expressão constante."
 
 msgid "Invalid token for the operator: '%s'."
 msgstr "Token inválido para o operador: '%s'."

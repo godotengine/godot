@@ -109,13 +109,15 @@
 # Lorenzo Tilli <lorenzo.tilli@students.uniroma2.eu>, 2024.
 # norax Nnx <norax.noxx@gmail.com>, 2024.
 # ali elmoutaouakil <elmoutaouakil.ali08@gmail.com>, 2024.
+# SG <s.gallerini@users.noreply.hosted.weblate.org>, 2025.
+# BloodyBlade05 <giacomo.alfano@studenti.unipg.it>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-12-28 01:45+0000\n"
-"Last-Translator: Micky <micheledevita2@gmail.com>\n"
+"PO-Revision-Date: 2025-02-14 00:37+0000\n"
+"Last-Translator: BloodyBlade05 <giacomo.alfano@studenti.unipg.it>\n"
 "Language-Team: Italian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/it/>\n"
 "Language: it\n"
@@ -123,7 +125,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.10-dev\n"
+"X-Generator: Weblate 5.10-rc\n"
 
 msgid "Main Thread"
 msgstr "Thread principale"
@@ -481,6 +483,9 @@ msgstr "Mostra i file nascosti"
 msgid "Swap Input Direction"
 msgstr "Inverti la direzione di input"
 
+msgid "Start Unicode Character Input"
+msgstr "Avviare l'immissione dei caratteri Unicode"
+
 msgid "Invalid input %d (not passed) in expression"
 msgstr "Input %d non valido (assente) nell'espressione"
 
@@ -723,6 +728,26 @@ msgstr "Cambia la durata di un'animazione"
 
 msgid "Change Animation Loop"
 msgstr "Cambia ciclo di animazione"
+
+msgid "Can't change loop mode on animation instanced from an imported resource."
+msgstr ""
+"Impossibile cambiare la modalità di ripetizione di un'animazione istanziata "
+"da una scena importata."
+
+msgid ""
+"Can't change loop mode on animation embedded in another scene.\n"
+"\n"
+"You must open this scene and change the animation's loop mode from there."
+msgstr ""
+"Impossibile cambiare la modalità di ripetizione di un'animazione integrata in "
+"un'altra scena.\n"
+"\n"
+"Devi aprire quella scena e cambiare la modalità di ripetizione da li."
+
+msgid "Can't change loop mode on animation embedded in another resource."
+msgstr ""
+"Impossibile cambiare la modalità di ripetizione di un'animazione integrata in "
+"un'altra risorsa."
 
 msgid "Property Track..."
 msgstr "Traccia di proprietà..."
@@ -16260,12 +16285,6 @@ msgstr ""
 "La libreria di modelli '%s' richiesta non è stata trovata. Potrebbe essere "
 "mancante dall'archivio dei modelli."
 
-msgid "ARM64 simulator library, generating from device library."
-msgstr "Libreria di simulatore ARM64, generata dalle librerie del dispositivo."
-
-msgid "Unable to generate ARM64 simulator library."
-msgstr "Impossibile generare la libreria del simulatore ARM64."
-
 msgid "Could not copy a file at path \"%s\" to \"%s\"."
 msgstr "Impossibile copiare un file dal percorso \"%s\" a \"%s\"."
 
@@ -18156,11 +18175,6 @@ msgstr "Un oggetto di tipo \"%s\" non può essere indicizzato."
 
 msgid "Invalid base type for increment/decrement operator."
 msgstr "Tipo di base invalido per l'operatore d'incremento/decremento."
-
-msgid "Invalid use of increment/decrement operator in a constant expression."
-msgstr ""
-"Uso non valido dell'operatore d'incremento/decremento in un'espressione "
-"costante."
 
 msgid "Invalid token for the operator: '%s'."
 msgstr "Token invalido per l'operatore: '%s'."

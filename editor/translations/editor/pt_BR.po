@@ -198,13 +198,14 @@
 # GSPAtens <g007sp@gmail.com>, 2024.
 # dweob <dweob@c0de.wtf>, 2024.
 # DX_studios1 <biel.escarabichi@gmail.com>, 2025.
+# Smiter <friverick321@gmail.com>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: 2016-05-30\n"
-"PO-Revision-Date: 2025-01-22 04:17+0000\n"
-"Last-Translator: DX_studios1 <biel.escarabichi@gmail.com>\n"
+"PO-Revision-Date: 2025-02-11 01:02+0000\n"
+"Last-Translator: Smiter <friverick321@gmail.com>\n"
 "Language-Team: Portuguese (Brazil) <https://hosted.weblate.org/projects/godot-"
 "engine/godot/pt_BR/>\n"
 "Language: pt_BR\n"
@@ -810,6 +811,20 @@ msgstr "Alterar Duração da Animação"
 
 msgid "Change Animation Loop"
 msgstr "Alterar Repetição da Animação"
+
+msgid ""
+"Can't change loop mode on animation instanced from an imported scene.\n"
+"\n"
+"To change this animation's loop mode, navigate to the scene's Advanced Import "
+"settings and select the animation.\n"
+"You can then change the loop mode from the inspector menu."
+msgstr ""
+"Não é possível alterar o modo de repetição em uma animação instanciada a "
+"partir de uma cena importada.\n"
+"\n"
+"Para modificar o modo de repetição desta animação, acesse as Configurações "
+"Avançadas de Importação da cena e selecione a animação.\n"
+"Em seguida você poderá ajustar o modo de repetição diretamente no Inspetor."
 
 msgid "Property Track..."
 msgstr "Faixa de Propriedades..."
@@ -15951,13 +15966,6 @@ msgstr ""
 msgid "Could not create a directory at path \"%s\"."
 msgstr "Não foi possível criar o diretório no caminho \"%s\"."
 
-msgid "ARM64 simulator library, generating from device library."
-msgstr ""
-"Biblioteca de simulador ARM64, gerando a partir da biblioteca do dispositivo."
-
-msgid "Unable to generate ARM64 simulator library."
-msgstr "Não foi possível gerar a biblioteca do simulador ARM64."
-
 msgid "Could not copy a file at path \"%s\" to \"%s\"."
 msgstr "Não foi possível copiar um arquivo/file no caminho \"%s\" para \"%s\"."
 
@@ -17604,10 +17612,6 @@ msgstr "Um objeto do tipo '%s' não pode ser indexado."
 
 msgid "Invalid base type for increment/decrement operator."
 msgstr "Tipo de base inválido para operador de incremento/decremento."
-
-msgid "Invalid use of increment/decrement operator in a constant expression."
-msgstr ""
-"Uso inválido do operador de incremento/decremento em uma expressão constante."
 
 msgid "Invalid token for the operator: '%s'."
 msgstr "Token inválido para o operador: '%s'."

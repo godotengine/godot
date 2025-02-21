@@ -95,13 +95,15 @@
 # User <user938193@gmail.com>, 2024.
 # Piotr Wieczorek <wieczorek.piotr.praga@protonmail.com>, 2024.
 # Cyprian Klimaszewski <cyprian.klimaszewski@gmail.com>, 2024.
+# Kordian Lipiecki <kordian.lipiecki4@gmail.com>, 2025.
+# Piotr Jurczak <piotr5jurczak@gmail.com>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-01-16 14:00+0000\n"
-"Last-Translator: Tomek <kobewi4e@gmail.com>\n"
+"PO-Revision-Date: 2025-02-20 13:15+0000\n"
+"Last-Translator: Piotr Jurczak <piotr5jurczak@gmail.com>\n"
 "Language-Team: Polish <https://hosted.weblate.org/projects/godot-engine/godot-"
 "properties/pl/>\n"
 "Language: pl\n"
@@ -110,7 +112,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 "
 "|| n%100>=20) ? 1 : 2);\n"
-"X-Generator: Weblate 5.10-dev\n"
+"X-Generator: Weblate 5.10.1-dev\n"
 
 msgid "Application"
 msgstr "Aplikacja"
@@ -213,6 +215,9 @@ msgstr "Rozszerz do tytułu"
 
 msgid "No Focus"
 msgstr "Bez skupienia"
+
+msgid "Sharp Corners"
+msgstr "Ostre krawędzie"
 
 msgid "Window Width Override"
 msgstr "Nadpisanie szerokości okna"
@@ -528,6 +533,15 @@ msgstr "Kompatybilny"
 
 msgid "Legacy Just Pressed Behavior"
 msgstr "Stare zachowanie Just Pressed"
+
+msgid "Sensors"
+msgstr "Sensory"
+
+msgid "Enable Gravity"
+msgstr "Zezwól na Grawitację"
+
+msgid "Enable Gyroscope"
+msgstr "Zezwól na Żyroskop"
 
 msgid "Device"
 msgstr "Urządzenie"
@@ -874,6 +888,12 @@ msgstr "Etykieta"
 msgid "Read Only"
 msgstr "Tylko do odczytu"
 
+msgid "Draw Label"
+msgstr "Rysuj Etykietę"
+
+msgid "Draw Background"
+msgstr "Rysuj Tło"
+
 msgid "Checkable"
 msgstr "Zaznaczalne"
 
@@ -888,6 +908,9 @@ msgstr "Kluczowanie"
 
 msgid "Deletable"
 msgstr "Usuwalne"
+
+msgid "Selectable"
+msgstr "Możliwe do zaznaczenia"
 
 msgid "Distraction Free Mode"
 msgstr "Tryb bez rozproszeń"
@@ -1017,6 +1040,9 @@ msgstr "Doki"
 
 msgid "Scene Tree"
 msgstr "Drzewo sceny"
+
+msgid "Ask Before Revoking Unique Name"
+msgstr "Pytaj przed unieważnieniem unikalnej nazwy"
 
 msgid "Inspector"
 msgstr "Inspektor"
@@ -1154,6 +1180,12 @@ msgstr "Tryb wyświetlania"
 msgid "Thumbnail Size"
 msgstr "Rozmiar miniaturki"
 
+msgid "Include Addons"
+msgstr "Zawrzyj Dodatki"
+
+msgid "Default Display Mode"
+msgstr "Domyślny Tryb wyświetlania"
+
 msgid "Import"
 msgstr "Zaimportuj"
 
@@ -1201,6 +1233,9 @@ msgstr "Zawsze pokazuj foldery"
 
 msgid "TextFile Extensions"
 msgstr "Rozszerzenia plików tekstowych"
+
+msgid "Other File Extensions"
+msgstr "Inne rozszerzenia plików tekstowych"
 
 msgid "Property Editor"
 msgstr "Edytor właściwości"
@@ -2784,14 +2819,14 @@ msgstr "Przesunięcie pozycji podpowiedzi"
 msgid "Show Image"
 msgstr "Pokaż obraz"
 
-msgid "Image"
-msgstr "Obraz"
-
 msgid "Fullsize"
 msgstr "Pełny rozmiar"
 
 msgid "Use Filter"
 msgstr "Użyj filtra"
+
+msgid "Image"
+msgstr "Obraz"
 
 msgid "Minimum Display Time"
 msgstr "Minimalny czas wyświetlania"
@@ -3017,6 +3052,9 @@ msgstr "Liczba"
 
 msgid "Sparse Indices Buffer View"
 msgstr "Parsowanie bufora indeksów rzadkich"
+
+msgid "Sparse Indices Component Type"
+msgstr "Parsowanie Geometrii"
 
 msgid "Loop"
 msgstr "Zapętl"
@@ -3289,7 +3327,7 @@ msgid "Current"
 msgstr "Bieżący"
 
 msgid "Max Distance"
-msgstr "Odległość maks."
+msgstr "Odległość maksymalna"
 
 msgid "Rect"
 msgstr "Prostokąt"
@@ -3388,7 +3426,10 @@ msgid "Navigation Layers"
 msgstr "Warstwy nawigacji"
 
 msgid "Max Speed"
-msgstr "Szybkość maks."
+msgstr "Szybkość maksymalna"
+
+msgid "Skew"
+msgstr "Skośność"
 
 msgid "Repeat"
 msgstr "Powtórz"
@@ -3507,6 +3548,9 @@ msgstr "Rozmazanie"
 msgid "Quality"
 msgstr "Jakość"
 
+msgid "Shadowmask Mode"
+msgstr "Tryb maski cieni"
+
 msgid "Use Denoiser"
 msgstr "Używaj odszumiacza"
 
@@ -3533,6 +3577,9 @@ msgstr "Precyzja symulacji"
 
 msgid "Ignore Occlusion Culling"
 msgstr "Ignoruj usuwanie niewidocznych powierzchni"
+
+msgid "Global Illumination"
+msgstr "Globalne oświetlenie"
 
 msgid "Pose"
 msgstr "Poza"
@@ -3794,6 +3841,9 @@ msgstr "Bliskie przejście"
 
 msgid "Shutter Speed"
 msgstr "Szybkość migawki"
+
+msgid "Max Domain"
+msgstr "Odległość maksymalna"
 
 msgid "Source"
 msgstr "Źródło"

@@ -54,13 +54,15 @@
 # Максим Горпиніч <mgorpinic2005@gmail.com>, 2024.
 # plsnotascii <john-city-revert@duck.com>, 2025.
 # ogyrec <ogyrec.off@gmail.com>, 2025.
+# Максим Горпиніч <maksimgorpinic2005a@gmail.com>, 2025.
+# Mister Ky <afanasievsergiy3524@gmail.com>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Ukrainian (Godot Engine)\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-01-26 10:28+0000\n"
-"Last-Translator: ogyrec <ogyrec.off@gmail.com>\n"
+"PO-Revision-Date: 2025-02-17 21:25+0000\n"
+"Last-Translator: Максим Горпиніч <maksimgorpinic2005a@gmail.com>\n"
 "Language-Team: Ukrainian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/uk/>\n"
 "Language: uk\n"
@@ -69,7 +71,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
 "n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
-"X-Generator: Weblate 5.10-dev\n"
+"X-Generator: Weblate 5.10.1-dev\n"
 
 msgid "Main Thread"
 msgstr "Головний потік"
@@ -426,6 +428,9 @@ msgstr "Показувати приховане"
 msgid "Swap Input Direction"
 msgstr "Змінити напрям введення"
 
+msgid "Start Unicode Character Input"
+msgstr "Розпочніть введення символів Unicode"
+
 msgid "Invalid input %d (not passed) in expression"
 msgstr "Некоректні вхідні дані %d (не передано) у виразі"
 
@@ -668,6 +673,35 @@ msgstr "Змінити тривалість анімації"
 
 msgid "Change Animation Loop"
 msgstr "Змінити цикл анімації"
+
+msgid ""
+"Can't change loop mode on animation instanced from an imported scene.\n"
+"\n"
+"To change this animation's loop mode, navigate to the scene's Advanced Import "
+"settings and select the animation.\n"
+"You can then change the loop mode from the inspector menu."
+msgstr ""
+"Неможливо змінити режим циклу для анімації, створеної з імпортованої сцени. \n"
+"\n"
+"Щоб змінити режим циклу цієї анімації, перейдіть до розширених налаштувань "
+"імпорту сцени та виберіть анімацію. \n"
+"Потім ви можете змінити режим циклу з меню інспектора."
+
+msgid "Can't change loop mode on animation instanced from an imported resource."
+msgstr ""
+"Неможливо змінити режим циклу для анімації, створеної з імпортованого ресурсу."
+
+msgid ""
+"Can't change loop mode on animation embedded in another scene.\n"
+"\n"
+"You must open this scene and change the animation's loop mode from there."
+msgstr ""
+"Неможливо змінити режим циклу для анімації, вбудованої в іншу сцену.\n"
+"\n"
+"Ви повинні відкрити цю сцену та змінити режим циклу анімації звідти."
+
+msgid "Can't change loop mode on animation embedded in another resource."
+msgstr "Неможливо змінити режим циклу для анімації, вбудованої в інший ресурс."
 
 msgid "Property Track..."
 msgstr "Доріжка Властивостей..."
@@ -1062,6 +1096,15 @@ msgid "Group tracks by node or display them as plain list."
 msgstr ""
 "Групувати доріжки за вузлами або показувати їх у форматі простого списку."
 
+msgid "Apply snapping to timeline cursor."
+msgstr "Застосувати прив’язку до курсору шкали часу."
+
+msgid "Apply snapping to selected key(s)."
+msgstr "Застосувати прив’язку до вибраних клавіш."
+
+msgid "Apply snapping to the nearest integer FPS."
+msgstr "Застосуйте прив’язку до найближчого цілого числа FPS."
+
 msgid "Animation step value."
 msgstr "Значення кроку анімації."
 
@@ -1282,11 +1325,74 @@ msgstr "Позначити все/Скасувати позначення"
 msgid "Animation Change Keyframe Time"
 msgstr "Змінити час ключового кадру анімації"
 
+msgid "Marker name is read-only in the inspector."
+msgstr "Назва маркера доступна лише для читання в інспекторі."
+
+msgid ""
+"A marker's name can only be changed by right-clicking it in the animation "
+"editor and selecting \"Rename Marker\", in order to make sure that marker "
+"names are all unique."
+msgstr ""
+"Назву маркера можна змінити, лише клацнувши його правою кнопкою миші в "
+"редакторі анімації та вибравши «Перейменувати маркер», щоб переконатися, що "
+"всі назви маркерів унікальні."
+
+msgid "Insert Marker..."
+msgstr "Вставити маркер..."
+
+msgid "Rename Marker"
+msgstr "Перейменувати маркер"
+
+msgid "Delete Marker(s)"
+msgstr "Видалити маркер(и)"
+
+msgid "Show All Marker Names"
+msgstr "Показати всі назви маркерів"
+
+msgid "Marker:"
+msgstr "Маркер:"
+
+msgid "Animation Move Markers"
+msgstr "Маркери переміщення анімації"
+
+msgid "Animation Delete Markers"
+msgstr "Маркери видалення анімації"
+
+msgid "Marker '%s' already exists!"
+msgstr "Маркер \"%s\" вже існує!"
+
+msgid "Add Marker Key"
+msgstr "Додати ключ маркера"
+
+msgid "Empty marker names are not allowed."
+msgstr "Порожні назви маркерів не допускаються."
+
+msgid "Insert Marker"
+msgstr "Вставити маркер"
+
+msgid "Marker Name"
+msgstr "Назва маркера"
+
+msgid "Marker Color"
+msgstr "Колір маркера"
+
 msgid "Close"
 msgstr "Закрити"
 
 msgid "Error!"
 msgstr "Помилка!"
+
+msgid "Change Marker Name:"
+msgstr "Змінити назву маркера:"
+
+msgid "Edit Marker Color"
+msgstr "Редагувати колір маркера"
+
+msgid "Multi Edit Marker Color"
+msgstr "Колір маркера мультиредагування"
+
+msgid "Animation Change Marker Time"
+msgstr "Час маркера зміни анімації"
 
 msgid "Add Audio Track Clip"
 msgstr "Додати кліп звукової доріжки"
@@ -1321,6 +1427,12 @@ msgstr[0] "%d з %d збіг"
 msgstr[1] "%d з %d збіги"
 msgstr[2] "%d з %d збігів"
 
+msgid "Hide Replace"
+msgstr "Сховати Замінити"
+
+msgid "Show Replace"
+msgstr "Показати Замінити"
+
 msgid "Find"
 msgstr "Знайти"
 
@@ -1354,7 +1466,7 @@ msgstr "Пробіли"
 
 msgctxt "Indentation"
 msgid "Tabs"
-msgstr "Tabs"
+msgstr "Вкладки"
 
 msgid "Toggle Scripts Panel"
 msgstr "Перемкнути панель скриптів"
@@ -1375,7 +1487,14 @@ msgid "Warnings"
 msgstr "Попередження"
 
 msgid "Zoom factor"
-msgstr "Зум"
+msgstr "Коефіцієнт масштабування"
+
+msgid ""
+"%sMouse wheel, %s/%s: Finetune\n"
+"%s: Reset"
+msgstr ""
+"%sКолесо миші, %s/%s: тонке налаштування\n"
+"%s: скинути"
 
 msgid "Line and column numbers."
 msgstr "Номери рядків і позицій."
@@ -1537,6 +1656,12 @@ msgstr "Створити новий %s"
 msgid "No results for \"%s\"."
 msgstr "Нічого не знайдено для «%s»."
 
+msgid "Script path: %s"
+msgstr "Шлях сценарію: %s"
+
+msgid "The script will run in the editor."
+msgstr "Сценарій запуститься в редакторі."
+
 msgid "This class is marked as deprecated."
 msgstr "Цей клас позначено як застарілий."
 
@@ -1567,6 +1692,9 @@ msgstr "Опис:"
 msgid "Remote %s:"
 msgstr "Віддалений %s:"
 
+msgid "Session %d"
+msgstr "Сесія %d"
+
 msgid "Debugger"
 msgstr "Засіб діагностики"
 
@@ -1596,6 +1724,15 @@ msgstr ""
 
 msgid "Toggle Visibility"
 msgstr "Перемкнути видимість"
+
+msgid "Expression to evaluate"
+msgstr "Вираз для оцінки"
+
+msgid "Clear on Run"
+msgstr "Очистити під час запуску"
+
+msgid "Evaluate"
+msgstr "Оцініть"
 
 msgid "Clear"
 msgstr "Очистити"
@@ -1641,6 +1778,9 @@ msgstr "Зупинити"
 
 msgid "Start"
 msgstr "Початок"
+
+msgid "Autostart"
+msgstr "Автозапуск"
 
 msgid "Measure:"
 msgstr "Вимірювати:"
@@ -1798,6 +1938,9 @@ msgstr "Розгорнути все"
 msgid "Collapse All"
 msgstr "Згорнути все"
 
+msgid "Evaluator"
+msgstr "Оцінювач"
+
 msgid "Profiler"
 msgstr "Профайлер"
 
@@ -1927,6 +2070,12 @@ msgstr ""
 msgid "Cannot remove:"
 msgstr "Неможливо вилучити:"
 
+msgid "Files to be deleted:"
+msgstr "Файли для видалення:"
+
+msgid "Dependencies of files to be deleted:"
+msgstr "Залежності файлів, які потрібно видалити:"
+
 msgid "Error loading:"
 msgstr "Помилка завантаження:"
 
@@ -1963,14 +2112,26 @@ msgstr "Ресурси без явної власності:"
 msgid "Name cannot be empty."
 msgstr "Назва не може бути пустою."
 
+msgid "File name can't end with /."
+msgstr "Назва файлу не може закінчуватися на /."
+
+msgid "File name cannot be empty."
+msgstr "Назва файлу не може бути пустою."
+
 msgid "Folder name cannot be empty."
 msgstr "Ім'я теки не може бути порожнім."
+
+msgid "File name contains invalid characters."
+msgstr "Назва файлу містить неприпустимі символи."
 
 msgid "Folder name contains invalid characters."
 msgstr "Надане ім'я містить некоректні символи."
 
 msgid "File name begins with a dot."
 msgstr "Назва файлу починається з крапки."
+
+msgid "Folder name begins with a dot."
+msgstr "Назва папки починається з крапки."
 
 msgid "File with that name already exists."
 msgstr "Файл із такою назвою вже існує."
@@ -1982,6 +2143,19 @@ msgid "Using slashes in folder names will create subfolders recursively."
 msgstr ""
 "Використання похилих рисок у назвах тек призведе до рекурсивного створення "
 "підтек."
+
+msgid ""
+"Using slashes in path will create the file in subfolder, creating new "
+"subfolders if necessary."
+msgstr ""
+"Використання скісної риски в шляху створить файл у підтеці, створюючи нові "
+"підтеки, якщо необхідно."
+
+msgid "File name is valid."
+msgstr "Назва файлу дійсна."
+
+msgid "Base path: %s"
+msgstr "Базовий шлях: %s"
 
 msgid "Folder name is valid."
 msgstr "Некоректна назва теки."
@@ -2074,8 +2248,8 @@ msgstr "%s (вже існує)"
 msgid "%d file conflicts with your project and won't be installed"
 msgid_plural "%d files conflict with your project and won't be installed"
 msgstr[0] "Файл %d конфліктує з вашим проектом і не буде інстальований"
-msgstr[1] "Файли %d конфліктують з вашим проектом і не будуть встановлені"
-msgstr[2] "Файли %d конфліктують з вашим проектом і не будуть встановлені"
+msgstr[1] "Файли %d конфліктують з вашим проектом і не будуть інстальовано"
+msgstr[2] "Файли %d конфліктують з вашим проектом і не будуть інстальовані"
 
 msgid "This asset doesn't have a root directory, so it can't be ignored."
 msgstr "Цей ресурс не має кореневого каталогу, тому його не можна ігнорувати."
@@ -2264,6 +2438,9 @@ msgstr "Компонування звукової шини"
 
 msgid "Invalid name."
 msgstr "Недійсне ім'я."
+
+msgid "Must be a valid Unicode identifier."
+msgstr "Має бути дійсний ідентифікатор Unicode."
 
 msgid "Must not collide with an existing engine class name."
 msgstr "Не повинно конфліктувати з існуючою назвою класу рушія."
@@ -2533,6 +2710,12 @@ msgstr "[порожньо]"
 msgid "[unsaved]"
 msgstr "[не збережено]"
 
+msgid "Open the %s dock."
+msgstr "Відкрийте док-станцію %s."
+
+msgid "Focus on the %s dock."
+msgstr "Зосередьтеся на док-станції %s."
+
 msgid "%s - Godot Engine"
 msgstr "%s - Godot Engine"
 
@@ -2584,6 +2767,9 @@ msgstr "Бічна панель імпортування"
 msgid "History Dock"
 msgstr "Панель Історія"
 
+msgid "Game View"
+msgstr "Перегляд гри"
+
 msgid "Allows to view and edit 3D scenes."
 msgstr "Надає змогу переглядати і редагувати 3D сцени."
 
@@ -2617,6 +2803,9 @@ msgstr ""
 
 msgid "Provides an overview of the editor's and each scene's undo history."
 msgstr "Надає огляд історії скасувань редактора та кожної сцени."
+
+msgid "Provides tools for selecting and debugging nodes at runtime."
+msgstr "Надає інструменти для вибору та налагодження вузлів під час виконання."
 
 msgid "(current)"
 msgstr "(поточний)"
@@ -2707,6 +2896,30 @@ msgstr "Імпортувати профілі"
 msgid "Manage Editor Feature Profiles"
 msgstr "Керування профілями можливостей редактора"
 
+msgid "Project initialization"
+msgstr "Ініціалізація проекту"
+
+msgid "Scanning file structure..."
+msgstr "Сканування структури файлу..."
+
+msgid "Loading global class names..."
+msgstr "Завантаження глобальних назв класів..."
+
+msgid "Verifying GDExtensions..."
+msgstr "Перевірка GDExtensions..."
+
+msgid "Creating autoload scripts..."
+msgstr "Створення сценаріїв автозавантаження..."
+
+msgid "Initializing plugins..."
+msgstr "Ініціалізація плагінів..."
+
+msgid "Starting file scan..."
+msgstr "Початок сканування файлів..."
+
+msgid "Scanning actions..."
+msgstr "Дії сканування..."
+
 msgid "Some extensions need the editor to restart to take effect."
 msgstr "Щоб деякі розширення вступили в силу, редактор слід перезапустити."
 
@@ -2719,6 +2932,15 @@ msgstr "Зберегти і перезапустити"
 msgid "ScanSources"
 msgstr "Сканувати сирці"
 
+msgid "Registering global classes..."
+msgstr "Реєстрація глобальних класів..."
+
+msgid "Updating scripts documentation"
+msgstr "Оновлення документації скриптів"
+
+msgid "Updating Scene Groups"
+msgstr "Оновлення груп сцен"
+
 msgid ""
 "There are multiple importers for different types pointing to file %s, import "
 "aborted"
@@ -2729,8 +2951,23 @@ msgstr ""
 msgid "(Re)Importing Assets"
 msgstr "Імпортування ресурсів"
 
+msgid "Preparing files to reimport..."
+msgstr "Підготовка файлів до повторного імпорту..."
+
+msgid "Executing pre-reimport operations..."
+msgstr "Виконання операцій перед повторним імпортом..."
+
 msgid "Import resources of type: %s"
 msgstr "Імпорт ресурсів типу: %s"
+
+msgid "Finalizing Asset Import..."
+msgstr "Завершення імпорту активів..."
+
+msgid "Executing post-reimport operations..."
+msgstr "Виконання операцій після повторного імпорту..."
+
+msgid "Copying files..."
+msgstr "Копіювання файлів..."
 
 msgid "This method supports a variable number of arguments."
 msgstr "Цей метод підтримує змінну кількість аргументів."
@@ -2755,6 +2992,9 @@ msgid ""
 msgstr ""
 "Для виклику цього методу не потрібен екземпляр.\n"
 "Його можна викликати безпосередньо за допомогою назви класу."
+
+msgid "Code snippet copied to clipboard."
+msgstr "Фрагмент коду скопійовано в буфер обміну."
 
 msgid "No return value."
 msgstr "Значення не повертається."
@@ -2911,6 +3151,9 @@ msgstr "Піктограми"
 msgid "Styles"
 msgstr "Стилі"
 
+msgid "This theme property may be changed or removed in future versions."
+msgstr "Ця властивість теми може бути змінена або видалена в наступних версіях."
+
 msgid "There is currently no description for this theme property."
 msgstr "Наразі немає опису для цієї властивості теми."
 
@@ -2993,8 +3236,14 @@ msgstr "Редактор"
 msgid "Click to copy."
 msgstr "Натисніть, щоб скопіювати."
 
+msgid "Click to open in browser."
+msgstr "Натисніть, щоб відкрити в браузері."
+
 msgid "No description available."
 msgstr "Опис відсутній."
+
+msgid "This annotation may be changed or removed in future versions."
+msgstr "Ця анотація може бути змінена або видалена в наступних версіях."
 
 msgid "Show in FileSystem"
 msgstr "Показати у файловій системі"
@@ -3005,11 +3254,23 @@ msgstr "Відкрити у менеджері файлів"
 msgid "Class"
 msgstr "Клас"
 
+msgid "Enumeration"
+msgstr "Перерахування"
+
 msgid "Constant"
 msgstr "Сталий"
 
+msgid "Metadata"
+msgstr "Метадані"
+
+msgid "Setting"
+msgstr "Налаштування"
+
 msgid "Property"
 msgstr "Властивість"
+
+msgid "Internal Property"
+msgstr "Внутрішня власність"
 
 msgid "This property can only be set in the Inspector."
 msgstr "Цю властивість можна встановити лише в інспекторі."
@@ -3026,8 +3287,35 @@ msgstr "Сигнал"
 msgid "Annotation"
 msgstr "Анотація"
 
+msgid "Local Constant"
+msgstr "Локальна константа"
+
+msgid "Local Variable"
+msgstr "Локальна змінна"
+
+msgid "This variable may be changed or removed in future versions."
+msgstr "Ця змінна може бути змінена або видалена в наступних версіях."
+
+msgid "TextFile"
+msgstr "Текстовий файл"
+
 msgid "File"
 msgstr "Файл"
+
+msgid "Directory"
+msgstr "Довідник"
+
+msgid "Invalid UID"
+msgstr "Недійсний UID"
+
+msgid "This UID does not point to any valid Resource."
+msgstr "Цей UID не вказує на дійсний ресурс."
+
+msgid "Invalid path"
+msgstr "Недійсний шлях"
+
+msgid "This path does not exist."
+msgstr "Цього шляху не існує."
 
 msgid "%d match."
 msgstr "%d співпадає."
@@ -3086,11 +3374,28 @@ msgstr "Тип члена"
 msgid "Keywords"
 msgstr "Ключові слова"
 
+msgid "Matches the \"%s\" keyword."
+msgstr "Відповідає ключовому слову \"%s\"."
+
 msgid "This member is marked as deprecated."
 msgstr "Цей член позначено як застарілий."
 
 msgid "This member is marked as experimental."
 msgstr "Цей член позначений як експериментальний."
+
+msgid "Unfavorite Property"
+msgstr "Внутрішня власність"
+
+msgid "Make this property be put back at its original place."
+msgstr "Повернути це майно на колишнє місце."
+
+msgid "Favorite Property"
+msgstr "Улюблене майно"
+
+msgid "Make this property be placed at the top for all objects of this class."
+msgstr ""
+"Зробіть так, щоб ця властивість розміщувалася вгорі для всіх об’єктів цього "
+"класу."
 
 msgid "Pin Value"
 msgstr "Зафіксувати значення"
@@ -3103,6 +3408,9 @@ msgid "Pinning a value forces it to be saved even if it's equal to the default."
 msgstr ""
 "Зафіксування значення спричиняє його збереження незалежно від того, чи є воно "
 "стандартним."
+
+msgid "Unfavorite All"
+msgstr "Видалити всі з вибраного"
 
 msgid "(%d change)"
 msgid_plural "(%d changes)"
@@ -3236,7 +3544,7 @@ msgstr "Мова:"
 
 msgctxt "Locale"
 msgid "Script:"
-msgstr "Писемність:"
+msgstr "Сценарій:"
 
 msgid "Country:"
 msgstr "Країна:"
@@ -3246,7 +3554,7 @@ msgstr "Мова"
 
 msgctxt "Locale"
 msgid "Script"
-msgstr "Писемність"
+msgstr "Сценарій"
 
 msgid "Country"
 msgstr "Країна"
@@ -3289,6 +3597,9 @@ msgstr "Інспектор джерел нативних шейдерів"
 
 msgid "Unnamed Project"
 msgstr "Проєкт без назви"
+
+msgid "Recovery Mode is enabled. Editor functionality has been restricted."
+msgstr "Режим відновлення ввімкнено. Функціональність редактора обмежена."
 
 msgid ""
 "Spins when the editor window redraws.\n"
@@ -3502,6 +3813,9 @@ msgstr ""
 msgid "Save Scene As..."
 msgstr "Зберегти сцену як..."
 
+msgid "Pack Project as ZIP..."
+msgstr "Запакувати проект як ZIP..."
+
 msgid "Can't undo while mouse buttons are pressed."
 msgstr "Скасування неможливе, доки натиснуто кнопки миші."
 
@@ -3583,6 +3897,9 @@ msgstr "Ця операція не обійдеться без сцени."
 
 msgid "Export Mesh Library"
 msgstr "Експортувати бібліотеку сіті"
+
+msgid "Quick Open Color Palette..."
+msgstr "Швидке відкриття палітри кольорів..."
 
 msgid "Unable to enable addon plugin at: '%s' parsing of config failed."
 msgstr ""
@@ -3667,6 +3984,51 @@ msgstr "Очистити недавні сцени"
 msgid "There is no defined scene to run."
 msgstr "Немає визначеної сцени для запуску."
 
+msgid "Loading editor"
+msgstr "Завантаження редактора"
+
+msgid "Loading editor layout..."
+msgstr "Завантаження макета редактора..."
+
+msgid "Loading docks..."
+msgstr "Завантаження доків..."
+
+msgid "Reopening scenes..."
+msgstr "Повторне відкриття сцен..."
+
+msgid "Loading central editor layout..."
+msgstr "Завантаження макета центрального редактора..."
+
+msgid "Loading plugin window layout..."
+msgstr "Завантаження макета вікна плагіна..."
+
+msgid "Editor layout ready."
+msgstr "Макет редактора готовий."
+
+msgid ""
+"No main scene has ever been defined. Select one?\n"
+"You can change it later in \"Project Settings\" under the 'application' "
+"category."
+msgstr ""
+"Жодної головної сцени ніколи не було визначено. Виберіть один?\n"
+"Ви можете змінити це пізніше в «Налаштуваннях проекту» в категорії «програма»."
+
+msgid ""
+"Selected scene '%s' does not exist. Select a valid one?\n"
+"You can change it later in \"Project Settings\" under the 'application' "
+"category."
+msgstr ""
+"Вибрана сцена '%s' не існує. Виберіть дійсний?\n"
+"Ви можете змінити це пізніше в «Налаштуваннях проекту» в категорії «програма»."
+
+msgid ""
+"Selected scene '%s' is not a scene file. Select a valid one?\n"
+"You can change it later in \"Project Settings\" under the 'application' "
+"category."
+msgstr ""
+"Вибрана сцена '%s' не є файлом сцени. Виберіть дійсний?\n"
+"Ви можете змінити це пізніше в «Налаштуваннях проекту» в категорії «програма»."
+
 msgid "Save Layout..."
 msgstr "Зберегти макет..."
 
@@ -3687,20 +4049,20 @@ msgstr "Ця сцена так і не була збережена."
 
 msgid "%d second ago"
 msgid_plural "%d seconds ago"
-msgstr[0] "%d секунду тому"
-msgstr[1] "%d секунд тому"
-msgstr[2] "%d секунд тому"
+msgstr[0] "%d секунд тому"
+msgstr[1] "%d секунда тому"
+msgstr[2] "%d секунди тому"
 
 msgid "%d minute ago"
 msgid_plural "%d minutes ago"
 msgstr[0] "%d хвилину тому"
-msgstr[1] "%d хвилин тому"
+msgstr[1] "%d хвилини тому"
 msgstr[2] "%d хвилин тому"
 
 msgid "%d hour ago"
 msgid_plural "%d hours ago"
 msgstr[0] "%d годину тому"
-msgstr[1] "%d годин тому"
+msgstr[1] "%d години тому"
 msgstr[2] "%d годин тому"
 
 msgid ""
@@ -3897,6 +4259,9 @@ msgstr "Редактор конфігурації компіляції двиг�
 msgid "Upgrade Mesh Surfaces..."
 msgstr "Оновлення сітчастих поверхонь..."
 
+msgid "Upgrade UIDs..."
+msgstr "Оновити UID..."
+
 msgid "Reload Current Project"
 msgstr "Перезавантажити поточний проєкт"
 
@@ -4002,7 +4367,7 @@ msgid "Hide Update Spinner"
 msgstr "Приховати оновлення лічильника"
 
 msgid "FileSystem"
-msgstr "файлова система"
+msgstr "Файлова система"
 
 msgid "Toggle FileSystem Bottom Panel"
 msgstr "Перемкнути нижню панель FileSystem"
@@ -4054,6 +4419,21 @@ msgstr "Експортувати бібліотеку"
 msgid "Open & Run a Script"
 msgstr "Відкрити і запустити скрипт"
 
+msgid "Files have been modified outside Godot"
+msgstr "Файли були змінені за межами Godot"
+
+msgid "The following files are newer on disk:"
+msgstr "Наступні файли є новішими на диску:"
+
+msgid "What action should be taken?"
+msgstr "Які дії слід вжити?"
+
+msgid "Reload from disk"
+msgstr "Джерело отримання"
+
+msgid "Ignore external changes"
+msgstr "Ігнорувати зовнішні зміни"
+
 msgid "Create/Override Version Control Metadata..."
 msgstr "Створити/замінити метадані керування версіями..."
 
@@ -4077,6 +4457,9 @@ msgstr "Відкрити 3D редактор"
 
 msgid "Open Script Editor"
 msgstr "Відкрити редактор скриптів"
+
+msgid "Open Game View"
+msgstr "Відкрийте вікно гри"
 
 msgid "Open Asset Library"
 msgstr "Відкрити бібліотеку ресурсів"
@@ -4207,6 +4590,12 @@ msgstr "Нове значення:"
 msgid "(Nil) %s"
 msgstr "(Ніл) %s"
 
+msgid "%s%s (size %d)"
+msgstr "%s%s (розмір %d)"
+
+msgid "%s (size %d)"
+msgstr "%s (розмір %d)"
+
 msgid "Size:"
 msgstr "Розмір:"
 
@@ -4276,6 +4665,12 @@ msgstr "Розширити сценарій..."
 msgid "New Shader..."
 msgstr "Новий шейдер..."
 
+msgid "No Remote Deploy export presets configured."
+msgstr "Немає попередніх налаштувань експорту Remote Deploy."
+
+msgid "Remote Deploy"
+msgstr "Віддалене розгортання"
+
 msgid ""
 "No runnable export preset found for this platform.\n"
 "Please add a runnable preset in the Export menu or define an existing preset "
@@ -4286,6 +4681,28 @@ msgstr ""
 "Будь ласка, додайте придатний до використання набір параметрів за допомогою "
 "меню «Експорт» або визначне наявний набір як придатний до використання."
 
+msgid ""
+"Warning: The CPU architecture \"%s\" is not active in your export preset.\n"
+"\n"
+msgstr ""
+"Попередження: архітектура ЦП \"%s\" не активна у вашому стилі експорту.\n"
+"\n"
+
+msgid "Run \"Remote Deploy\" anyway?"
+msgstr "Усе одно запустити \"Віддалене розгортання\"?"
+
+msgid "Deploy to First Device in List"
+msgstr "Розгорнути на першому пристрої в списку"
+
+msgid "Deploy to Second Device in List"
+msgstr "Розгорнути на другому пристрої в списку"
+
+msgid "Deploy to Third Device in List"
+msgstr "Розгорнути на третьому пристрої зі списку"
+
+msgid "Deploy to Fourth Device in List"
+msgstr "Розгорнути на четвертому пристрої в списку"
+
 msgid "Project Run"
 msgstr "Запуск проєкту"
 
@@ -4294,6 +4711,9 @@ msgstr "Напишіть свою логіку в методі _run ()."
 
 msgid "The current scene already has a root node."
 msgstr "У поточній сцені вже є кореневий вузол."
+
+msgid "Advanced settings are always shown when searching."
+msgstr "Розширені налаштування завжди відображаються під час пошуку."
 
 msgid "Edit Built-in Action: %s"
 msgstr "Редагувати вбудовану дію: %s"
@@ -4304,8 +4724,14 @@ msgstr "Ярлик редагування: %s"
 msgid "None"
 msgstr "Немає"
 
+msgid "Primary"
+msgstr "Первинний"
+
 msgid "Common"
 msgstr "Загальні"
+
+msgid "Event %d"
+msgstr "Елемент %d"
 
 msgid "Editor Settings"
 msgstr "Параметри редактора"
@@ -4508,6 +4934,12 @@ msgstr "Невідома помилка"
 msgid "Export failed with error code %d."
 msgstr "Помилка експортування, код: %d."
 
+msgid "Patch Creation"
+msgstr "Створення патча"
+
+msgid "Could not load patch pack with path \"%s\"."
+msgstr "Не вдалося завантажити пакет виправлень із шляхом \"%s\"."
+
 msgid "Storing File: %s"
 msgstr "Збереження файлу: %s"
 
@@ -4516,6 +4948,29 @@ msgstr "Збереження файлу:"
 
 msgid "No export template found at the expected path:"
 msgstr "Не знайдено шаблон експорту на очікуваному шляху:"
+
+msgid ""
+"Using user provided text server data, text display in the exported project "
+"might be broken if export template was built with different ICU version!"
+msgstr ""
+"Використовуючи надані користувачем дані текстового сервера, відображення "
+"тексту в експортованому проекті може бути порушено, якщо шаблон експорту "
+"створено з іншою версією ICU!"
+
+msgid ""
+"Using editor embedded text server data, text display in the exported project "
+"might be broken if export template was built with different ICU version!"
+msgstr ""
+"Використовуючи вбудовані дані текстового сервера редактора, відображення "
+"тексту в експортованому проекті може бути порушено, якщо шаблон експорту "
+"створено з іншою версією ICU!"
+
+msgid ""
+"Missing text server data, text display in the exported project might be "
+"broken!"
+msgstr ""
+"Відсутні дані текстового сервера, відображення тексту в експортованому "
+"проекті може бути порушено!"
 
 msgid "ZIP Creation"
 msgstr "Створення ZIP"
@@ -4535,6 +4990,9 @@ msgstr "Не вдалося створити файл «%s»."
 msgid "Failed to export project files."
 msgstr "Не вдалося експортувати файли проєкту."
 
+msgid "No files or changes to export."
+msgstr "Немає файлів або змін для експорту."
+
 msgid "Can't open file for writing at path \"%s\"."
 msgstr "Неможливо відкрити для запису файл по шляху \"%s\"."
 
@@ -4552,6 +5010,9 @@ msgstr "Не вдається відкрити файл для читання з
 
 msgid "Save ZIP"
 msgstr "Зберегти ZIP"
+
+msgid "Failed to move temporary file \"%s\" to \"%s\"."
+msgstr "Не вдалося перемістити тимчасовий файл \"%s\" до \"%s\"."
 
 msgid "Custom debug template not found."
 msgstr "Нетипового шаблону діагностики не знайдено."
@@ -4585,6 +5046,12 @@ msgid "On 32-bit exports the embedded PCK cannot be bigger than 4 GiB."
 msgstr ""
 "При експортуванні у 32-бітовому режимі вбудовані PCK не можуть перевищувати "
 "за розміром 4 ГіБ."
+
+msgid "GDExtension"
+msgstr "GDExtension"
+
+msgid "Failed to copy shared object \"%s\"."
+msgstr "Не вдалося скопіювати спільний об'єкт \"%s\"."
 
 msgid "Plugin \"%s\" is not supported on \"%s\""
 msgstr "Плагін \"%s\" не підтримується на \"%s\""
@@ -4717,6 +5184,15 @@ msgstr ""
 msgid "Export templates are missing. Install them from a file."
 msgstr "Відсутні шаблони експорту. Встановіть їх із файлу.."
 
+msgid "Not available in offline mode"
+msgstr "Недоступно в автономному режимі"
+
+msgid "Template downloading is disabled in offline mode."
+msgstr "Завантаження шаблонів вимкнено в автономному режимі."
+
+msgid "No templates for development builds"
+msgstr "Немає шаблонів для розробки збірок"
+
 msgid "Official export templates aren't available for development builds."
 msgstr "Для тестових збірок не передбачено офіційних шаблонів експортування."
 
@@ -4826,8 +5302,14 @@ msgstr "Експортовані ресурси:"
 msgid "(Inherited)"
 msgstr "(Успадковано)"
 
+msgid "Delete patch '%s' from list?"
+msgstr "Видалити патч \"%s\" зі списку?"
+
 msgid "Export With Debug"
 msgstr "Експортувати із діагностикою"
+
+msgid "Export As Patch"
+msgstr "Експорт як патч"
 
 msgid "%s Export"
 msgstr "Експорт на %s"
@@ -4911,8 +5393,17 @@ msgstr ""
 "Фільтри виключення файлів або тек з проєкту\n"
 "(з відокремленням комами, приклад: *.json, *.txt, docs/*)"
 
+msgid "Patches"
+msgstr "Патчі"
+
+msgid "Base Packs:"
+msgstr "Базові пакети:"
+
 msgid "Godot Project Pack"
 msgstr "Пакунок проєкту Godot"
+
+msgid "Add Pack"
+msgstr "Додати пакет"
 
 msgid "Features"
 msgstr "Можливості"
@@ -4952,6 +5443,9 @@ msgstr ""
 
 msgid "Encryption Key (256-bits as hexadecimal):"
 msgstr "Ключ шифрування (256-біт, як шістнадцяткове число):"
+
+msgid "Initialization vector seed"
+msgstr "Насіння вектора ініціалізації"
 
 msgid ""
 "Note: Encryption key needs to be stored in the binary,\n"
@@ -5072,6 +5566,9 @@ msgstr "Вибрати"
 msgid "Confirm Path"
 msgstr "Підтвердіть шлях"
 
+msgid "Link to: %s"
+msgstr "Посилання на: %s"
+
 msgid "View items as a grid of thumbnails."
 msgstr "Перегляд елементів у вигляді сітки ескізів."
 
@@ -5101,6 +5598,9 @@ msgstr "Помилка переміщення:"
 msgid "Error duplicating:"
 msgstr "Помилка дублювання:"
 
+msgid "Error duplicating directory:"
+msgstr "Помилка дублювання каталогу:"
+
 msgid "Unable to update dependencies for:"
 msgstr "Неможливо оновити залежності для:"
 
@@ -5126,6 +5626,9 @@ msgstr ""
 
 msgid "A file or folder with this name already exists."
 msgstr "Файл або тека з таким іменем вже існує."
+
+msgid "Could not create base directory: %s"
+msgstr "Не вдалося створити базовий каталог: %s"
 
 msgid ""
 "The following files or folders conflict with items in the target location "
@@ -5165,6 +5668,14 @@ msgstr "Дублювання теки:"
 
 msgid "Create Folder"
 msgstr "Створити теку"
+
+msgid ""
+"Do you wish to convert these files to %s? (This operation cannot be undone!)"
+msgstr ""
+"Ви бажаєте перетворити ці файли на %s? (Цю операцію неможливо скасувати!)"
+
+msgid "Could not create folder: %s"
+msgstr "Не вдалося створити папку: %s"
 
 msgid "New Inherited Scene"
 msgstr "Нова успадкована сцена"
@@ -5226,11 +5737,17 @@ msgstr "Додати до улюблених"
 msgid "Remove from Favorites"
 msgstr "Вилучити з улюблених"
 
+msgid "Convert to..."
+msgstr "Перетворити на..."
+
 msgid "Reimport"
 msgstr "Переімпортувати"
 
 msgid "Open in Terminal"
 msgstr "Відкрийте в терміналі"
+
+msgid "Open Folder in Terminal"
+msgstr "Відкрийте папку в терміналі"
 
 msgid "New Folder..."
 msgstr "Створити теку..."
@@ -5341,6 +5858,9 @@ msgstr "Зберегти обидва"
 msgid "Create Script"
 msgstr "Створити скрипт"
 
+msgid "Convert"
+msgstr "Конвертувати"
+
 msgid "Find in Files"
 msgstr "Знайти у файлах"
 
@@ -5377,6 +5897,9 @@ msgstr "Замінити всі (без скасування)"
 
 msgid "Searching..."
 msgstr "Шукаємо…"
+
+msgid "Remove result"
+msgstr "Видалити результат"
 
 msgid "%d match in %d file"
 msgstr "%d відповідник у %d файлі"
@@ -5468,6 +5991,27 @@ msgstr "Додайте нову групу."
 msgid "Filter Groups"
 msgstr "Групи фільтрів"
 
+msgid ""
+"Scroll Left\n"
+"Hold Ctrl to scroll to the begin.\n"
+"Hold Shift to scroll one page."
+msgstr ""
+"Прокрутіть ліворуч\n"
+"Утримуйте Ctrl, щоб перейти до початку.\n"
+"Утримуйте Shift, щоб прокрутити одну сторінку."
+
+msgid ""
+"Scroll Right\n"
+"Hold Ctrl to scroll to the end.\n"
+"Hold Shift to scroll one page."
+msgstr ""
+"Прокрутити вправо\n"
+"Утримуйте Ctrl, щоб прокрутити до кінця.\n"
+"Утримуйте Shift, щоб прокрутити одну сторінку."
+
+msgid "Pin Bottom Panel Switching"
+msgstr "Перемикання на нижній панелі"
+
 msgid "Expand Bottom Panel"
 msgstr "Розгорнути нижню панель"
 
@@ -5507,6 +6051,9 @@ msgstr ""
 
 msgid "Select This Folder"
 msgstr "Вибрати цю теку"
+
+msgid "Show Package Contents"
+msgstr "Показати вміст упаковки"
 
 msgid "All Files"
 msgstr "Усі файли"
@@ -5559,6 +6106,9 @@ msgstr "Перемкнути режим"
 msgid "Focus Path"
 msgstr "Фокусувати шлях"
 
+msgid "Focus Filter"
+msgstr "Фільтр фокусування"
+
 msgid "Move Favorite Up"
 msgstr "Перемістити вибране вище"
 
@@ -5589,8 +6139,17 @@ msgstr "Каталоги та файли:"
 msgid "Toggle the visibility of hidden files."
 msgstr "Увімкнути або вимкнути видимість прихованих файлів."
 
+msgid "Sort files"
+msgstr "Сортування файлів"
+
+msgid "Toggle the visibility of the filter for file names."
+msgstr "Увімкніть видимість фільтра для імен файлів."
+
 msgid "Preview:"
 msgstr "Попередній перегляд:"
+
+msgid "Filter:"
+msgstr "Фільтр:"
 
 msgid "Filter"
 msgstr "Фільтр"
@@ -5614,6 +6173,45 @@ msgstr "Підлеглих ресурсів не знайдено."
 
 msgid "Open a list of sub-resources."
 msgstr "Відкрити список підлеглих ресурсів."
+
+msgid "Search files..."
+msgstr "Пошук файлів..."
+
+msgid "Select Resource"
+msgstr "Виберіть Ресурс"
+
+msgid "Select Scene"
+msgstr "Виберіть Сцена"
+
+msgid "Fuzzy Search"
+msgstr "Нечіткий пошук"
+
+msgid "Enable fuzzy matching"
+msgstr "Увімкнути нечітку відповідність"
+
+msgid "Addons"
+msgstr "Аддони"
+
+msgid "Include files from addons"
+msgstr "Включати файли з аддонів"
+
+msgid "No files found for this type"
+msgstr "Файли цього типу не знайдено"
+
+msgid "Start searching to find files..."
+msgstr "Почніть пошук, щоб знайти файли..."
+
+msgid "No results found"
+msgstr "Результатів не знайдено"
+
+msgid " (recently opened)"
+msgstr " (нещодавно відкрито)"
+
+msgid "Grid view"
+msgstr "Вигляд сітки"
+
+msgid "List view"
+msgstr "Перегляд списку"
 
 msgid "Play the project."
 msgstr "Запустити проект."
@@ -5647,8 +6245,71 @@ msgstr ""
 msgid "Could not start subprocess(es)!"
 msgstr "Не вдалося запустити підпроцес(и)!"
 
+msgid "Recovery Mode is enabled. Disable it to run the project."
+msgstr "Режим відновлення ввімкнено. Вимкніть його, щоб запустити проект."
+
+msgid ""
+"Autostart is enabled for the following profilers, which can have a "
+"performance impact:"
+msgstr ""
+"Автозапуск увімкнено для таких профайлерів, що може вплинути на "
+"продуктивність:"
+
 msgid "Network Profiler"
 msgstr "Засіб профілювання мережі"
+
+msgid "Click to open the first profiler for which autostart is enabled."
+msgstr ""
+"Натисніть, щоб відкрити перший профайлер, для якого ввімкнено автозапуск."
+
+msgid "Recovery Mode"
+msgstr "Режим відновлення"
+
+msgid ""
+"Godot opened the project in Recovery Mode, which is a special mode that can "
+"help recover projects that crash the engine upon initialization. The "
+"following features have been temporarily disabled:"
+msgstr ""
+"Годо відкрив проект у режимі відновлення, який є спеціальним режимом, який "
+"може допомогти відновити проекти, у яких після ініціалізації відбувається "
+"збій двигуна. Наступні функції тимчасово вимкнено:"
+
+msgid "Tool scripts"
+msgstr "Скрипти інструментів"
+
+msgid "Editor plugins"
+msgstr "Плагіни редактора"
+
+msgid "GDExtension addons"
+msgstr "Надбудови GDExtension"
+
+msgid "Automatic scene restoring"
+msgstr "Автоматичне відновлення сцени"
+
+msgid ""
+"If the project cannot be opened outside of this mode, then it's very likely "
+"any of these components is preventing this project from launching. This mode "
+"is intended only for basic editing to troubleshoot such issues, and therefore "
+"it is not possible to run a project in this mode."
+msgstr ""
+"Якщо проект неможливо відкрити поза цим режимом, то, дуже ймовірно, будь-який "
+"із цих компонентів перешкоджає запуску цього проекту. Цей режим призначений "
+"лише для базового редагування з метою усунення таких проблем, тому в цьому "
+"режимі неможливо запустити проект."
+
+msgid ""
+"To disable Recovery Mode, reload the project by pressing the Reload button "
+"next to the Recovery Mode banner, or by reopening the project normally."
+msgstr ""
+"Щоб вимкнути режим відновлення, перезавантажте проект, натиснувши кнопку "
+"«Перезавантажити» поруч із банером «Режим відновлення», або знову відкрийте "
+"проект у звичайному режимі."
+
+msgid "Disable recovery mode and reload the project."
+msgstr "Вимкніть режим відновлення та перезавантажте проект."
+
+msgid "Recovery Mode is enabled. Click for more details."
+msgstr "Режим відновлення ввімкнено. Натисніть, щоб дізнатися більше."
 
 msgid "Run the project's default scene."
 msgstr "Запустити сцену проекту за замовчуванням."
@@ -5668,11 +6329,23 @@ msgstr "Зупинити поточний проект."
 msgid "Stop Running Project"
 msgstr "Зупинити виконання проекту"
 
+msgid "Run Scene in Regular Mode"
+msgstr "Запустіть сцену в звичайному режимі"
+
+msgid "Run Scene in XR Mode"
+msgstr "Запустіть сцену в режимі XR"
+
 msgid "Run the currently edited scene."
 msgstr "Запустити поточну відредаговану сцену."
 
 msgid "Run Current Scene"
 msgstr "Запустити поточну сцену"
+
+msgid "Run in Regular Mode"
+msgstr "Запуск у звичайному режимі"
+
+msgid "Run in XR Mode"
+msgstr "Запуск у режимі XR"
 
 msgid "Run a specific scene."
 msgstr "Запустити певну сцену."
@@ -5739,6 +6412,15 @@ msgstr ""
 "Дата коміту в Git: %s\n"
 "Натисніть, щоб скопіювати інформацію про версію."
 
+msgid ""
+"The root node of a scene is recommended to not be transformed, since "
+"instances of the scene will usually override this. Reset the transform and "
+"reload the scene to remove this warning."
+msgstr ""
+"Рекомендується не перетворювати кореневий вузол сцени, оскільки екземпляри "
+"сцени зазвичай замінюють це. Скиньте трансформацію та перезавантажте сцену, "
+"щоб видалити це попередження."
+
 msgid "Toggle Visible"
 msgstr "Перемкнути видимість"
 
@@ -5747,6 +6429,9 @@ msgstr "Розблокувати вузол"
 
 msgid "Ungroup Children"
 msgstr "Розгрупувати дітей"
+
+msgid "Revoke unique name for node \"%s\"?"
+msgstr "Скасувати унікальне ім’я для вузла \"%s\"?"
 
 msgid "Disable Scene Unique Name"
 msgstr "Вимкнути унікальна назва сцени"
@@ -5757,6 +6442,16 @@ msgstr "(Джерело з'єднання)"
 msgid "Node configuration warning:"
 msgstr "Попередження щодо налаштовування вузла:"
 
+msgid ""
+"This node can be accessed from anywhere within the scene it belongs to by "
+"using the '%s' prefix in the node path."
+msgstr ""
+"До цього вузла можна отримати доступ з будь-якої точки сцени, до якої він "
+"належить, використовуючи префікс «%s» у шляху вузла."
+
+msgid "Click to disable this."
+msgstr "Натисніть, щоб вимкнути це."
+
 msgid "Node has one connection."
 msgid_plural "Node has {num} connections."
 msgstr[0] "Вузол має одне з'єднання."
@@ -5766,11 +6461,21 @@ msgstr[2] "Вузол має {num} з'єднань."
 msgid "Node is in this group:"
 msgid_plural "Node is in the following groups:"
 msgstr[0] "Вузол у цій групі:"
-msgstr[1] "Вузли у наступних групах:"
+msgstr[1] "Вузли у наступного групах:"
 msgstr[2] "Вузли у наступних групах:"
 
 msgid "Click to show signals dock."
 msgstr "Клацніть, щоб переглянути панель сигналів."
+
+msgid "Click to show groups dock."
+msgstr "Натисніть, щоб показати док груп."
+
+msgid ""
+"This script can run in the editor.\n"
+"It is currently disabled due to recovery mode."
+msgstr ""
+"Цей скрипт можна запускати в редакторі.\n"
+"Наразі його вимкнено через режим відновлення."
 
 msgid "This script is currently running in the editor."
 msgstr "Цей скрипт в даний час запущений в редакторі."
@@ -5808,6 +6513,13 @@ msgstr "Відкрити в редакторі"
 msgid "\"%s\" is not a known filter."
 msgstr "\"%s\" є не відомим фільтром."
 
+msgid ""
+"Root nodes cannot be accessed as unique names in their own scene. Instantiate "
+"in another scene and set as unique name there."
+msgstr ""
+"Кореневі вузли не можуть бути доступні як унікальні імена у власній сцені. "
+"Створіть екземпляр в іншій сцені та встановіть там унікальне ім’я."
+
 msgid "Invalid node name, the following characters are not allowed:"
 msgstr "Некоректна назва вузла. Не можна використовувати такі символи:"
 
@@ -5828,6 +6540,19 @@ msgstr "Дерево сцени (вузли):"
 
 msgid "Node Configuration Warning!"
 msgstr "Попередження щодо налаштування вузлів!"
+
+msgid "Revoke"
+msgstr "Відкликати"
+
+msgid "Don't Ask Again"
+msgstr "Не питай знову"
+
+msgid ""
+"This dialog can also be enabled/disabled in the Editor Settings: Docks > "
+"Scene Tree > Ask Before Revoking Unique Name."
+msgstr ""
+"Це діалогове вікно також можна ввімкнути/вимкнути в налаштуваннях редактора: "
+"Доки > Дерево сцен > Запитувати перед відкликанням унікального імені."
 
 msgid "Allowed:"
 msgstr "Дозвольте:"
@@ -6000,6 +6725,12 @@ msgstr "Матеріали"
 
 msgid "Selected Animation Play/Pause"
 msgstr "Відтворення/пауза вибраної анімації"
+
+msgid "Selected Animation Stop"
+msgstr "Вибрана зупинка анімації"
+
+msgid "Toggle Animation Skeleton Visibility"
+msgstr "Перемкнути видимість скелета анімації"
 
 msgid "Rotate Lights With Model"
 msgstr "Обертання світла з моделлю"
@@ -6442,8 +7173,26 @@ msgstr "Керувати властивостями об'єкта."
 msgid "This cannot be undone. Are you sure?"
 msgstr "Це не можна скасувати. Ви впевнені?"
 
+msgid "Add %d Translation"
+msgid_plural "Add %d Translations"
+msgstr[0] "Додати %d переклад"
+msgstr[1] "Додати %d переклади"
+msgstr[2] "Додати %d перекладів"
+
 msgid "Remove Translation"
 msgstr "Вилучити переклад"
+
+msgid "Translation Resource Remap: Add %d Path"
+msgid_plural "Translation Resource Remap: Add %d Paths"
+msgstr[0] "Переналаштування ресурсу перекладу: додайте %d шлях"
+msgstr[1] "Переналаштування ресурсів перекладу: додайте %d шляху"
+msgstr[2] "Переналаштування ресурсів перекладу: додайте %d шляхів"
+
+msgid "Translation Resource Remap: Add %d Remap"
+msgid_plural "Translation Resource Remap: Add %d Remaps"
+msgstr[0] "Перевідображення ресурс переклад: Додайте %d перевідображення"
+msgstr[1] "Перевідображення ресурсу перекладу: додайте %d перевідображення"
+msgstr[2] "Перевідображення ресурсу перекладів: додайте %d перевідображення"
 
 msgid "Change Resource Remap Language"
 msgstr "Змінити мову переспрямовування ресурсу"
@@ -6453,6 +7202,12 @@ msgstr "Вилучити переспрямування ресурсу"
 
 msgid "Remove Resource Remap Option"
 msgstr "Вилучити параметр переспрямування ресурсу"
+
+msgid "Add %d file for POT generation"
+msgid_plural "Add %d files for POT generation"
+msgstr[0] "Додайте %d файл для створення POT"
+msgstr[1] "Додайте %d файли для створення POT"
+msgstr[2] "Додайте %d файлів для POT generationAdd"
 
 msgid "Remove file from POT generation"
 msgstr "Видалити файл з генерації POT"
@@ -6501,7 +7256,7 @@ msgid "Set %s on %d nodes"
 msgstr "Встановити %s на вузлах %d"
 
 msgid "%s (%d Selected)"
-msgstr "%s (%d вибрано)"
+msgstr "%s (%d Вибрано)"
 
 msgid "Groups"
 msgstr "Групи"
@@ -6728,6 +7483,24 @@ msgstr "Заповнити вибрані дочірні елементи"
 
 msgid "Invert"
 msgstr "Інвертувати"
+
+msgid "Start of Animation"
+msgstr "Початок анімації"
+
+msgid "End of Animation"
+msgstr "Кінець анімації"
+
+msgid "Set Custom Timeline from Marker"
+msgstr "Встановіть спеціальну часову шкалу з маркера"
+
+msgid "Select Markers"
+msgstr "Виберіть маркери"
+
+msgid "Start Marker"
+msgstr "Почати маркер"
+
+msgid "End Marker"
+msgstr "Кінцевий маркер"
 
 msgid "Library Name:"
 msgstr "Назва Бібліотеки:"
@@ -6958,6 +7731,21 @@ msgstr "Дубльована назва анімації:"
 msgid "Onion skinning requires a RESET animation."
 msgstr "Для очищення цибулі від шкірки потрібна анімація RESET."
 
+msgid "Play Animation Backwards"
+msgstr "Відтворення анімації назад"
+
+msgid "Play Animation Backwards from End"
+msgstr "Відтворення анімації назад від кінця"
+
+msgid "Pause/Stop Animation"
+msgstr "Пауза/зупинка анімації"
+
+msgid "Play Animation from Start"
+msgstr "Відтворення анімації з початку"
+
+msgid "Play Animation"
+msgstr "Грати в анімацію"
+
 msgid "Animation position (in seconds)."
 msgstr "Позиція анімації (в секундах)."
 
@@ -7032,6 +7820,12 @@ msgstr "Час змішування:"
 
 msgid "Next (Auto Queue):"
 msgstr "Далі (автоматична черга):"
+
+msgid "Go to Next Keyframe"
+msgstr "Перейти до наступного ключового кадру"
+
+msgid "Go to Previous Keyframe"
+msgstr "Перейти до попереднього ключового кадру"
 
 msgid "Toggle Animation Bottom Panel"
 msgstr "Перемкнути нижню панель анімації"
@@ -7523,6 +8317,9 @@ msgstr ""
 "Alt+ПКМ: показати список усіх вузлів у позиції клацання, включно із "
 "заблокованими."
 
+msgid "(Available in all modes.)"
+msgstr "(Доступний у всіх режимах.)"
+
 msgid "RMB: Add node at position clicked."
 msgstr "ПКМ: додати вузол у позиції клацання."
 
@@ -7540,6 +8337,19 @@ msgstr "Shift: масштабувати пропорційно."
 
 msgid "Show list of selectable nodes at position clicked."
 msgstr "Показати список виділених вузлів у позиції клацання."
+
+msgid "Click to change object's pivot."
+msgstr "Клацніть, щоб змінити опору об'єкта."
+
+msgid "Shift: Set temporary pivot."
+msgstr "Shift: встановити тимчасову опору."
+
+msgid ""
+"Click this button while holding Shift to put the temporary pivot in the "
+"center of the selected nodes."
+msgstr ""
+"Натисніть цю кнопку, утримуючи Shift, щоб розмістити тимчасову опору в центрі "
+"вибраних вузлів."
 
 msgid "Pan Mode"
 msgstr "Режим панорамування"
@@ -7638,7 +8448,7 @@ msgid "View"
 msgstr "Перегляд"
 
 msgid "Show"
-msgstr "&Показати"
+msgstr "Показати"
 
 msgid "Show When Snapping"
 msgstr "Інтелектуальне прилипання"
@@ -8155,6 +8965,13 @@ msgstr ""
 msgid "Edit Plugin"
 msgstr "Редагування додатка"
 
+msgid ""
+"Recovery mode is enabled. Enabled plugins will not run while this mode is "
+"active."
+msgstr ""
+"Режим відновлення ввімкнено. Увімкнені плагіни не працюватимуть, поки цей "
+"режим активний."
+
 msgid "Installed Plugins:"
 msgstr "Встановлені плаґіни:"
 
@@ -8231,8 +9048,151 @@ msgstr "Східноазійські ширини"
 msgid "Numeral Alignment"
 msgstr "Вирівнювання чисел"
 
+msgid "Variation"
+msgstr "Варіація"
+
 msgid "Unable to preview font"
 msgstr "Неможливо переглянути шрифт"
+
+msgid "Connection impossible to the game process."
+msgstr "Встановлюємо з'єднання із дзеркалом."
+
+msgid "Game starting..."
+msgstr "Початок гри..."
+
+msgid "Game running not embedded."
+msgstr "Гра працює не вбудовано."
+
+msgid "Press play to start the game."
+msgstr "Натисніть кнопку відтворення, щоб почати гру."
+
+msgid "Embedding is disabled."
+msgstr "Вбудовування вимкнено."
+
+msgid "Game embedding not available on your OS."
+msgstr "Вбудована гра недоступна у вашій ОС."
+
+msgid ""
+"Game embedding not available when the game starts minimized.\n"
+"Consider overriding the window mode project setting with the editor feature "
+"tag to Windowed to use game embedding while leaving the exported project "
+"intact."
+msgstr ""
+"Вбудовування гри недоступне, коли гра починається згорнуто. \n"
+"Спробуйте замінити налаштування проекту віконного режиму тегом функції "
+"редактора на Windowed, щоб використовувати вбудовування гри, залишаючи "
+"експортований проект без змін."
+
+msgid ""
+"Game embedding not available when the game starts maximized.\n"
+"Consider overriding the window mode project setting with the editor feature "
+"tag to Windowed to use game embedding while leaving the exported project "
+"intact."
+msgstr ""
+"Вбудовування гри недоступне, коли гра починається розгорнуто. \n"
+"Спробуйте замінити налаштування проекту віконного режиму тегом функції "
+"редактора на Windowed, щоб використовувати вбудовування гри, залишаючи "
+"експортований проект без змін."
+
+msgid ""
+"Game embedding not available when the game starts in fullscreen.\n"
+"Consider overriding the window mode project setting with the editor feature "
+"tag to Windowed to use game embedding while leaving the exported project "
+"intact."
+msgstr ""
+"Вбудовування гри недоступне, коли гра запускається в повноекранному режимі. \n"
+"Спробуйте замінити налаштування проекту віконного режиму тегом функції "
+"редактора на Windowed, щоб використовувати вбудовування гри, залишаючи "
+"експортований проект без змін."
+
+msgid "Game embedding not available in single window mode."
+msgstr "Вставлення гри недоступне в режимі одного вікна."
+
+msgid "Suspend"
+msgstr "Призупинити"
+
+msgid "Next Frame"
+msgstr "Наступний кадр"
+
+msgid "Input"
+msgstr "Введення"
+
+msgid "Allow game input."
+msgstr "Дозволити введення в гру."
+
+msgid ""
+"Disable game input and allow to select Node2Ds, Controls, and manipulate the "
+"2D camera."
+msgstr ""
+"Вимкніть ігровий вхід і дозвольте вибирати Node2D, елементи керування та "
+"керувати 2D-камерою."
+
+msgid ""
+"Disable game input and allow to select Node3Ds and manipulate the 3D camera."
+msgstr ""
+"Вимкніть ігровий вхід і дозвольте вибирати Node3D і керувати 3D-камерою."
+
+msgid "Toggle Selection Visibility"
+msgstr "Перемкнути видимість виділеного"
+
+msgid "Alt+RMB: Show list of all nodes at position clicked."
+msgstr "Alt+ПКМ: Показати список усіх вузлів у положенні, яке ви натиснули."
+
+msgid "Override the in-game camera."
+msgstr "Перевизначте камеру в грі."
+
+msgid "Camera Override Options"
+msgstr "Параметри перевизначення камери"
+
+msgid "Reset 2D Camera"
+msgstr "Скинути налаштування 2D-камери"
+
+msgid "Reset 3D Camera"
+msgstr "Скинути 3D-камеру"
+
+msgid "Manipulate In-Game"
+msgstr "Маніпулювання в грі"
+
+msgid "Manipulate From Editors"
+msgstr "Маніпулювання з редакторів"
+
+msgid ""
+"Embedded game size is based on project settings.\n"
+"The 'Keep Aspect' mode is used when the Game Workspace is smaller than the "
+"desired size."
+msgstr ""
+"Розмір вбудованої гри залежить від параметрів проекту.\n"
+"Режим «Зберігати пропорції» використовується, коли робоча область гри менша "
+"за потрібний розмір."
+
+msgid "Keep the aspect ratio of the embedded game."
+msgstr "Зберігайте співвідношення сторін вбудованої гри."
+
+msgid "Embedded game size stretches to fit the Game Workspace."
+msgstr ""
+"Розмір вбудованої гри розтягується відповідно до ігрового робочого простору."
+
+msgid "Embedding Options"
+msgstr "Параметри вбудовування"
+
+msgid "Embed Game on Next Play"
+msgstr "Вставити гру під час наступного відтворення"
+
+msgid "Make Game Workspace Floating on Next Play"
+msgstr "Зробіть ігрову робочу область плаваючою під час наступної гри"
+
+msgid "Game Workspace"
+msgstr "Ігровий робочий простір"
+
+msgid ""
+"No \"%s\" library found for GDExtension: \"%s\". Possible feature flags for "
+"your platform: %s"
+msgstr ""
+"Не знайдено бібліотеку \"%s\" для GDExtension: \"%s\". Можливі позначки "
+"функції для вашої платформи: %s"
+
+msgid "Multiple \"%s\" libraries found for GDExtension: \"%s\": \"%s\"."
+msgstr "Для GDExtension знайдено кілька бібліотек \"%s\": \"%s\": \"%s\"."
 
 msgid "Change AudioStreamPlayer3D Emission Angle"
 msgstr "Змінити кут випромінювання AudioStreamPlayer3D"
@@ -8369,6 +9329,47 @@ msgstr ""
 "Не вдається визначити шлях для збереження карт освітлення.\n"
 "Збережіть вашу сцену і повторіть спробу."
 
+msgid ""
+"No meshes with lightmapping support to bake. Make sure they contain UV2 data "
+"and their Global Illumination property is set to Static."
+msgstr ""
+"Немає сіток із підтримкою відображення світла. Переконайтеся, що вони містять "
+"дані UV2, а для властивості Global Illumination встановлено значення Static."
+
+msgid ""
+"To import a scene with lightmapping support, set Meshes > Light Baking to "
+"Static Lightmaps in the Import dock."
+msgstr ""
+"Щоб імпортувати сцену з підтримкою відображення світла, установіть для "
+"«Сітки» > «Випікання світла» значення «Статичні карти освітлення» в док-"
+"станції «Імпорт»."
+
+msgid ""
+"To enable lightmapping support on a primitive mesh, edit the PrimitiveMesh "
+"resource in the inspector and check Add UV2."
+msgstr ""
+"Щоб увімкнути підтримку відображення світла на примітивній сітці, "
+"відредагуйте ресурс PrimitiveMesh в інспекторі та позначте «Додати UV2»."
+
+msgid ""
+"To enable lightmapping support on a CSG mesh, select the root CSG node and "
+"choose CSG > Bake Mesh Instance at the top of the 3D editor viewport.\n"
+"Select the generated MeshInstance3D node and choose Mesh > Unwrap UV2 for "
+"Lightmap/AO at the top of the 3D editor viewport."
+msgstr ""
+"Щоб увімкнути підтримку відображення світла на сітці CSG, виберіть кореневий "
+"вузол CSG і виберіть CSG > Випікати екземпляр сіті у верхній частині вікна "
+"перегляду 3D-редактора. \n"
+"Виберіть згенерований вузол MeshInstance3D і виберіть Mesh > Unwrap UV2 for "
+"Lightmap/AO у верхній частині вікна перегляду 3D-редактора."
+
+msgid ""
+"Failed creating lightmap images. Make sure the lightmap destination path is "
+"writable."
+msgstr ""
+"Не вдалося створити зображення карти освітлення. Переконайтеся, що шлях "
+"призначення карти освітлення доступний для запису."
+
 msgid "No editor scene root found."
 msgstr "Коренева сцена редактора не знайдена."
 
@@ -8385,6 +9386,15 @@ msgstr ""
 "рекомендується розбити сцену на більшу кількість об'єктів."
 
 msgid ""
+"Failed creating lightmap images. Make sure all meshes to bake have the "
+"Lightmap Size Hint property set high enough, and the LightmapGI's Texel Scale "
+"value is not too low."
+msgstr ""
+"Не вдалося створити зображення світлової карти. Переконайтеся, що для всіх "
+"мешів вибраних для запікання встановлено достатньо високе значення "
+"`lightmap_size_hint`, а значення `texel_scale` у LightmapGI не є занизьким."
+
+msgid ""
 "Failed fitting a lightmap image into an atlas. This should never happen and "
 "should be reported."
 msgstr ""
@@ -8394,11 +9404,27 @@ msgstr ""
 msgid "Bake Lightmaps"
 msgstr "Запікати карти освітлення"
 
+msgid "Lightmap baking is not supported on this GPU (%s)."
+msgstr "Запікання карти освітлення не підтримується на цьому GPU (%s)."
+
+msgid "Lightmaps cannot be baked on %s."
+msgstr "Карти освітлення не можна запікати на %s."
+
+msgid ""
+"Lightmaps cannot be baked, as the `lightmapper_rd` module was disabled at "
+"compile-time."
+msgstr ""
+"Карти освітлення неможливо запекти, оскільки модуль `lightmapper_rd` було "
+"вимкнено під час компіляції."
+
 msgid "LightMap Bake"
 msgstr "Приготування карти освітлення"
 
 msgid "Select lightmap bake file:"
 msgstr "Виберіть файл приготування карти освітлення:"
+
+msgid "Preview is not available for this shader mode."
+msgstr "Попередній перегляд недоступний для цього режиму шейдера."
 
 msgid "Couldn't create a Trimesh collision shape."
 msgstr "Не вдалося створити форму зіткнення Trimesh."
@@ -8591,6 +9617,29 @@ msgstr ""
 msgid "UV Channel Debug"
 msgstr "Діагностика UV-каналу"
 
+msgid "Create NavigationMesh"
+msgstr "Створити NavigationMesh"
+
+msgid ""
+"Before converting a rendering mesh to a navigation mesh, please verify:\n"
+"\n"
+"- The mesh is two-dimensional.\n"
+"- The mesh has no surface overlap.\n"
+"- The mesh has no self-intersection.\n"
+"- The mesh surfaces have indices.\n"
+"\n"
+"If the mesh does not fulfill these requirements, the pathfinding will be "
+"broken."
+msgstr ""
+"Перш ніж перетворювати сітку візуалізації на сітку навігації, перевірте: \n"
+"\n"
+"- Сітка двовимірна. \n"
+"- Сітка не має поверхневого перекриття. \n"
+"- Сітка не має самоперетину. \n"
+"- Сітчасті поверхні мають індекси. \n"
+"\n"
+"Якщо сітка не відповідає цим вимогам, пошук шляху буде порушено."
+
 msgid "Remove item %d?"
 msgstr "Видалення елемента %d?"
 
@@ -8703,8 +9752,44 @@ msgstr "Задати start_position"
 msgid "Set end_position"
 msgstr "Задати end_position"
 
+msgid "Set Obstacle Vertices"
+msgstr "Встановити вершини перешкод"
+
+msgid "Edit Obstacle (Flip Winding)"
+msgstr "Редагувати перешкоду (Flip Winding)"
+
+msgid "Edit Obstacle (Clear Vertices)"
+msgstr "Редагувати перешкоду (очистити вершини)"
+
+msgid "Add Vertex"
+msgstr "Додати вершину"
+
+msgid "Edit Vertex"
+msgstr "Редагувати вершину"
+
+msgid "Delete Vertex"
+msgstr "Видалити вершину"
+
+msgid "Flip Winding"
+msgstr "Фліп вітер"
+
+msgid "Clear Vertices"
+msgstr "Очистити вершини"
+
+msgid "Edit Obstacle (Add Vertex)"
+msgstr "Редагувати перешкоду (Додати вершину)"
+
+msgid "Edit Obstacle (Move Vertex)"
+msgstr "Редагувати перешкоду (перемістити вершину)"
+
+msgid "Edit Obstacle (Remove Vertex)"
+msgstr "Редагувати перешкоду (Видалити вершину)"
+
 msgid "Please Confirm..."
 msgstr "Будь ласка, підтвердьте..."
+
+msgid "Remove all vertices?"
+msgstr "Видалити всі вершини?"
 
 msgid "Create Navigation Polygon"
 msgstr "Створення навігаційного полігону"
@@ -8778,6 +9863,9 @@ msgstr "Задній ортогональний"
 
 msgid "Rear Perspective"
 msgstr "Задній перспективний"
+
+msgid "[auto]"
+msgstr "[авто]"
 
 msgid "X-Axis Transform."
 msgstr "Перетворення за віссю X."
@@ -8983,6 +10071,9 @@ msgstr "Перегляд середовища"
 msgid "View Gizmos"
 msgstr "Перегляд гаджетів"
 
+msgid "View Transform Gizmo"
+msgstr "Переглянути Transform Gizmo"
+
 msgid "View Grid"
 msgstr "Перегляд ґратки"
 
@@ -9006,6 +10097,24 @@ msgstr "Кінематичний перегляд"
 
 msgid "Not available when using the OpenGL renderer."
 msgstr "Недоступно при використанні рендеринга OpenGL."
+
+msgid "Viewport Orbit Modifier 1"
+msgstr "Модифікатор орбіти вікна перегляду 1"
+
+msgid "Viewport Orbit Modifier 2"
+msgstr "Модифікатор орбіти вікна перегляду 2"
+
+msgid "Viewport Pan Modifier 1"
+msgstr "Модифікатор Pan Viewport 1"
+
+msgid "Viewport Pan Modifier 2"
+msgstr "Модифікатор Pan Viewport 2"
+
+msgid "Viewport Zoom Modifier 1"
+msgstr "Модифікатор масштабування вікна перегляду 1"
+
+msgid "Viewport Zoom Modifier 2"
+msgstr "Модифікатор масштабування вікна перегляду 2"
 
 msgid "Freelook Left"
 msgstr "Огляд ліворуч"
@@ -9057,6 +10166,9 @@ msgstr "Почати Перетворення Обертання"
 
 msgid "Begin Scale Transformation"
 msgstr "Почати перетворення Масштабу"
+
+msgid "Reposition Using Collisions"
+msgstr "Зміна позиції за допомогою колізій"
 
 msgid "Toggle Camera Preview"
 msgstr "Перемкнути попередній перегляд камери"
@@ -9138,6 +10250,9 @@ msgid ""
 msgstr ""
 "Групує вибраний вузол з його дочірніми вузлами. Вибирає батьківський вузол "
 "при натисканні будь-якого дочірнього вузла у 2D та 3D відображенні."
+
+msgid "LMB+Drag: Measure the distance between two points in 3D space."
+msgstr "LMB+перетягування: Виміряйте відстань між двома точками в 3D-просторі."
 
 msgid "Use Local Space"
 msgstr "Використати локальний простір"
@@ -9453,6 +10568,9 @@ msgstr "Створення області видимості (Очікуванн
 msgid "Generating..."
 msgstr "Створення..."
 
+msgid "Loading emission mask requires ParticleProcessMaterial."
+msgstr "Для завантаження емісійної маски потрібен ParticleProcessMaterial."
+
 msgid "GPUParticles2D"
 msgstr "CPUParticles2D"
 
@@ -9516,6 +10634,9 @@ msgstr "Джерело випромінювання:"
 msgid "A processor material of type 'ParticleProcessMaterial' is required."
 msgstr "Потрібен матеріал типу 'ParticlesProcessMaterial'."
 
+msgid "Create Emission Points"
+msgstr "Створення точок викидів"
+
 msgid "GPUParticles3D"
 msgstr "GPUParticles3D"
 
@@ -9558,6 +10679,9 @@ msgstr "Закрийте криву"
 msgid "Clear Curve Points"
 msgstr "Очистити точки кривої"
 
+msgid "Create Curve in Path2D"
+msgstr "Створіть криву в Path2D"
+
 msgid "Select Points"
 msgstr "Виберіть пункти"
 
@@ -9597,6 +10721,9 @@ msgstr "Віддзеркалити кути елемента керування"
 msgid "Mirror Handle Lengths"
 msgstr "Віддзеркалити довжини елемента керування"
 
+msgid "Create Curve"
+msgstr "Створити криву"
+
 msgid "Curve Point #"
 msgstr "Точку кривої #"
 
@@ -9635,6 +10762,12 @@ msgstr "Скинути контрольну точку"
 
 msgid "Reset Point Tilt"
 msgstr "Скинути точку нахилу"
+
+msgid "Toggle Open/Closed Curve"
+msgstr "Перемикач відкрита/закрита крива"
+
+msgid "Create Curve in Path3D"
+msgstr "Створіть криву в Path3D"
 
 msgid "Shift+Click: Select multiple Points"
 msgstr "Shift+клацання: вибір кількох точок"
@@ -9735,6 +10868,13 @@ msgstr ""
 msgid "Script Name:"
 msgstr "Назва скрипту:"
 
+msgid ""
+"Optional. The name of the script file. If left empty, will default to the "
+"subfolder name."
+msgstr ""
+"Необов'язково. Ім'я файлу сценарію. Якщо залишити порожнім, за умовчанням "
+"використовуватиметься ім’я вкладеної папки."
+
 msgid "Activate now?"
 msgstr "Задіяти зараз?"
 
@@ -9806,8 +10946,14 @@ msgstr "Кістки"
 msgid "Move Points"
 msgstr "Переміщення очок"
 
+msgid "%s: Rotate"
+msgstr "%s: Обертати"
+
 msgid "Shift: Move All"
 msgstr "Shift: перемістити все"
+
+msgid "%s + Shift: Scale"
+msgstr "%s + Shift: Масштаб"
 
 msgid "Move Polygon"
 msgstr "Перемістити полігон"
@@ -9876,6 +11022,12 @@ msgstr "Крок сітки за Y:"
 msgid "Sync Bones to Polygon"
 msgstr "Синхронізувати кістки з полігоном"
 
+msgid "Polygon"
+msgstr "Багатокутник"
+
+msgid "Toggle Polygon Bottom Panel"
+msgstr "Перемкнути нижню панель багатокутника"
+
 msgid "Create Polygon3D"
 msgstr "Створити Polygon3D"
 
@@ -9917,6 +11069,12 @@ msgid ""
 msgstr ""
 "AnimationMixer не має дійсного шляху кореневого вузла, тому неможливо "
 "отримати назви доріжок."
+
+msgid "(truncated)"
+msgstr "(усічений)"
+
+msgid "Current value: "
+msgstr "Поточне значення: "
 
 msgid "Can't open '%s'. The file could have been moved or deleted."
 msgstr "Не вдалося відкрити «%s». Файл могло бути пересунуто або вилучено."
@@ -10044,6 +11202,9 @@ msgstr "Скрипт інструменту м'якого перезаванта
 msgid "Copy Script Path"
 msgstr "Копіювати шлях до скрипту"
 
+msgid "Copy Script UID"
+msgstr "Копіювати UID сценарію"
+
 msgid "History Previous"
 msgstr "Попередній у журналі"
 
@@ -10083,6 +11244,13 @@ msgstr "Перейти до попереднього редагованого д
 msgid "Go to next edited document."
 msgstr "Перейти до наступного редагованого документа."
 
+msgid ""
+"Make the script editor floating.\n"
+"Right-click to open the screen selector."
+msgstr ""
+"Зробіть редактор сценаріїв плаваючим.\n"
+"Клацніть правою кнопкою миші, щоб відкрити селектор екрана."
+
 msgid "Discard"
 msgstr "Скинути"
 
@@ -10120,7 +11288,10 @@ msgid "Plain Text"
 msgstr "Звичайний текст"
 
 msgid "JSON"
-msgstr "ДЖЕСОН"
+msgstr "JSON"
+
+msgid "Markdown"
+msgstr "Markdown"
 
 msgid "Connections to method:"
 msgstr "З'єднання з методом:"
@@ -10168,6 +11339,9 @@ msgstr "Неможливо скинути вузли без відкритої �
 
 msgid "Can't drop nodes because script '%s' does not inherit Node."
 msgstr "Неможливо видалити вузли, оскільки сценарій «%s» не успадковує вузол."
+
+msgid "Emoji & Symbols"
+msgstr "Емодзі та символи"
 
 msgid "Pick Color"
 msgstr "Вибрати колір"
@@ -10301,11 +11475,21 @@ msgstr "Зберегти файл"
 msgid "Open File in Inspector"
 msgstr "Відкрити файл в Інспекторі"
 
+msgid "Inspect Native Shader Code..."
+msgstr "Перевірте рідний код шейдера..."
+
 msgid "Close File"
 msgstr "Закрити файл"
 
 msgid "Shader Editor"
 msgstr "Редактор шейдера"
+
+msgid ""
+"Make the shader editor floating.\n"
+"Right-click to open the screen selector."
+msgstr ""
+"Зробіть редактор шейдерів плаваючим.\n"
+"Клацніть правою кнопкою миші, щоб відкрити селектор екрана."
 
 msgid "Toggle Shader Editor Bottom Panel"
 msgstr "Перемкнути нижню панель редактора шейдерів"
@@ -10339,7 +11523,7 @@ msgid "Create Rest Pose from Bones"
 msgstr "Створити вільну позу з кісток"
 
 msgid "Skeleton2D"
-msgstr "Skeleton2D (Скелет 2Д)"
+msgstr "Skeleton 2D"
 
 msgid "Reset to Rest Pose"
 msgstr "Відновити вільну позу"
@@ -10347,8 +11531,23 @@ msgstr "Відновити вільну позу"
 msgid "Overwrite Rest Pose"
 msgstr "Перезаписати вільну позу"
 
+msgid "Bone Metadata"
+msgstr "Метадані кістки"
+
+msgid "Add Bone Metadata"
+msgstr "Додайте метадані кістки"
+
 msgid "Set Bone Transform"
 msgstr "Задати перетворення кістки"
+
+msgid "Modify metadata '%s' for bone '%s'"
+msgstr "Змінити метадані \"%s\" для кістки \"%s\""
+
+msgid "Remove metadata '%s' from bone '%s'"
+msgstr "Видалити метадані \"%s\" з кістки \"%s\""
+
+msgid "Add metadata '%s' to bone '%s'"
+msgstr "Додайте метадані \"%s\" до кістки \"%s\""
 
 msgid "Set Bone Rest"
 msgstr "Перемкнути нижню панель ShaderFile"
@@ -10368,8 +11567,14 @@ msgstr "Експортувати профіль скелета як..."
 msgid "Set Bone Parentage"
 msgstr "Задати кістці предка"
 
+msgid "Revert Bone"
+msgstr "Повернути кістку"
+
+msgid "Revert"
+msgstr "Повернути"
+
 msgid "Skeleton3D"
-msgstr "Skeleton3D (Скелет 3Д)"
+msgstr "Skeleton 3D"
 
 msgid "Reset All Bone Poses"
 msgstr "Скинути всі пози кісток"
@@ -10466,7 +11671,7 @@ msgid "Create LightOccluder2D Sibling"
 msgstr "Створити близнюка LightOccluder2D"
 
 msgid "Sprite2D"
-msgstr "Спрайт2Д"
+msgstr "Sprite2D"
 
 msgid "Simplification:"
 msgstr "Спрощення:"
@@ -11274,7 +12479,7 @@ msgid "Merge TileSetAtlasSource"
 msgstr "Об'єднати TileSetAtlasSource"
 
 msgid "%s (ID: %d)"
-msgstr "%s (АЙДИ: %d)"
+msgstr "%s (ID: %d)"
 
 msgid "Atlas Merging"
 msgstr "Об'єднати атласи"
@@ -11449,6 +12654,9 @@ msgstr "Малювати плитки"
 msgid "Paste tiles"
 msgstr "Вставити плитки"
 
+msgid "Selection Tool"
+msgstr "Інструмент виділення"
+
 msgid "Shift: Draw line."
 msgstr "Shift: малює лінію."
 
@@ -11488,6 +12696,13 @@ msgstr "Розсіювання:"
 
 msgid "Tiles"
 msgstr "Плитки"
+
+msgid ""
+"This TileMap's TileSet has no Tile Source configured. Go to the TileSet "
+"bottom panel to add one."
+msgstr ""
+"TileSet цього TileMap не має налаштованого джерела плиток. Перейдіть до "
+"нижньої панелі TileSet, щоб додати його."
 
 msgid "Sort sources"
 msgstr "Сортувати джерела"
@@ -12033,6 +13248,9 @@ msgstr "Видалити джерело"
 msgid "Add atlas source"
 msgstr "Додати джерело атласу"
 
+msgid "Tile Sources"
+msgstr "Джерела плитки"
+
 msgid "Sort Sources"
 msgstr "Сортувати джерела"
 
@@ -12114,6 +13332,24 @@ msgstr "Властивості колекції сцен:"
 
 msgid "Tile properties:"
 msgstr "Властивості плитки:"
+
+msgid "Paint Tool"
+msgstr "Інструмент для малювання"
+
+msgid "Line Tool"
+msgstr "Інструмент «Лінія»"
+
+msgid "Rect Tool"
+msgstr "Інструмент Rect"
+
+msgid "Bucket Tool"
+msgstr "Відро інструмент"
+
+msgid "Eraser Tool"
+msgstr "Гумковий Інструмент"
+
+msgid "Picker Tool"
+msgstr "Інструмент вибору"
 
 msgid "TileMap"
 msgstr "TileMap"
@@ -12385,6 +13621,12 @@ msgstr ""
 "2D-перегляд не може коректно показати результат, отриманий з параметра "
 "екземпляра."
 
+msgid "Copy Preview Shader Parameters From Material"
+msgstr "Копіювати параметри шейдера попереднього перегляду з матеріалу"
+
+msgid "Paste Preview Shader Parameters To Material"
+msgstr "Вставити параметри шейдера попереднього перегляду в матеріал"
+
 msgid "Add Input Port"
 msgstr "Додати вхідний порт"
 
@@ -12502,6 +13744,9 @@ msgstr "Увімкніть автоматичне зменшення"
 msgid "Enable Tint Color"
 msgstr "Увімкнути колір відтінку"
 
+msgid "Edit Preview Parameter: %s"
+msgstr "Редагувати параметр попереднього перегляду: %s"
+
 msgid "Duplicate VisualShader Node(s)"
 msgstr "Дублювати вузол(и) VisualShader"
 
@@ -12529,8 +13774,14 @@ msgstr "Некоректна назва для варіації."
 msgid "Varying with that name is already exist."
 msgstr "Варіація з такою назвою вже існує."
 
+msgid "Boolean type cannot be used with `%s` varying mode."
+msgstr "Логічний тип не можна використовувати зі змінним режимом `%s`."
+
 msgid "Add Node(s) to Visual Shader"
 msgstr "Додати вузол(и) до Visual Shader"
+
+msgid "Hold %s Key To Swap Connections"
+msgstr "Утримуйте клавішу %s, щоб поміняти з’єднання"
 
 msgid "Vertex"
 msgstr "Вершина"
@@ -12565,6 +13816,9 @@ msgstr "Видалити варіацію"
 msgid "Show generated shader code."
 msgstr "Показати згенерований код шейдера."
 
+msgid "Toggle shader preview."
+msgstr "Увімкнути попередній перегляд шейдера."
+
 msgid "Generated Shader Code"
 msgstr "Згенерований код шейдера"
 
@@ -12579,6 +13833,15 @@ msgstr "Вставте новий вузол"
 
 msgid "Insert New Reroute"
 msgstr "Вставити новий маршрут"
+
+msgid "Filter Parameters"
+msgstr "Параметри фільтра"
+
+msgid "Copy Parameters From Material"
+msgstr "Копіювати параметри з матеріалу"
+
+msgid "Paste Parameters To Material"
+msgstr "Вставити параметри в матеріал"
 
 msgid "High-end node"
 msgstr "Висококласний вузол"
@@ -12604,11 +13867,17 @@ msgstr "Функція відтінків сірого."
 msgid "Converts HSV vector to RGB equivalent."
 msgstr "Перетворює вектор HSV на еквівалентний колір RGB."
 
+msgid "Converts color from linear to sRGB color space."
+msgstr "Перетворює колір із лінійного простору кольорів у sRGB."
+
 msgid "Converts RGB vector to HSV equivalent."
 msgstr "Перетворює вектор RGB на еквівалентний колір HSV."
 
 msgid "Sepia function."
 msgstr "Функція сепії."
+
+msgid "Converts color from sRGB to linear color space."
+msgstr "Перетворює колір із sRGB на лінійний колірний простір."
 
 msgid "Burn operator."
 msgstr "Оператор вигоряння."
@@ -12645,6 +13914,9 @@ msgstr "Параметр кольору."
 
 msgid "(Fragment/Light mode only) Derivative function."
 msgstr "(лише у режимі фрагментів або світла) Похідна функція."
+
+msgid "Derivative function."
+msgstr "Похідна функції."
 
 msgid "Returns the boolean result of the %s comparison between two parameters."
 msgstr "Повертає булевий результат порівняння %s між двома параметрами."
@@ -12885,6 +14157,12 @@ msgstr ""
 "(лише у режимі фрагментів або світла) (скаляр) Похідна у «y» на основі "
 "локального диференціювання."
 
+msgid "(Scalar) Derivative in 'x' using local differencing."
+msgstr "(Scalar) Похідна від 'x' з використанням локальної різниці."
+
+msgid "(Scalar) Derivative in 'y' using local differencing."
+msgstr "(Scalar) Похідна по 'y' з використанням локальної різниці."
+
 msgid "Base-e Exponential."
 msgstr "Показникова функція із основою e (експонента)."
 
@@ -12938,6 +14216,9 @@ msgstr "Перетворює значення у градусах на знач�
 msgid "1.0 / scalar"
 msgstr "1.0 / скаляр"
 
+msgid "Remaps a value from the input range to the output range."
+msgstr "Переставляє значення з вхідного діапазону на вихідний діапазон."
+
 msgid "Finds the nearest integer to the parameter."
 msgstr "Знаходить найближче ціле значення до параметра."
 
@@ -12985,6 +14266,9 @@ msgid ""
 "(Fragment/Light mode only) (Scalar) Sum of absolute derivative in 'x' and 'y'."
 msgstr ""
 "(лише у режимі фрагментів або світла) Сума похідних за модулем у «x» та «y»."
+
+msgid "(Scalar) Sum of absolute derivative in 'x' and 'y'."
+msgstr "(Scalar) Сума абсолютної похідної за «x» і «y»."
 
 msgid "Returns the tangent of the parameter."
 msgstr "Повертає тангенс параметра."
@@ -13323,6 +14607,12 @@ msgstr ""
 "(лише у режимі фрагментів або світла) (вектор) Похідна у «y» на основі "
 "локального диференціювання."
 
+msgid "(Vector) Derivative in 'x' using local differencing."
+msgstr "(Вектор) Похідна від 'x' за допомогою локальної різниці."
+
+msgid "(Vector) Derivative in 'y' using local differencing."
+msgstr "(Вектор) Похідна за 'y' з використанням локальної різниці."
+
 msgid "Returns the distance between two points."
 msgstr "Повертає відстань між точками."
 
@@ -13380,6 +14670,16 @@ msgstr ""
 msgid "Returns the vector that points in the direction of refraction."
 msgstr "Повертає вектор, який вказує напрямок рефракції."
 
+msgid "Remaps a vector from the input range to the output range."
+msgstr "Переставляє вектор із вхідного діапазону на вихідний."
+
+msgid ""
+"Remaps a vector from the input range to the output range. Ranges defined with "
+"scalars."
+msgstr ""
+"Переставляє вектор із вхідного діапазону на вихідний. Діапазони, визначені за "
+"допомогою скалярів."
+
 msgid ""
 "SmoothStep function( vector(edge0), vector(edge1), vector(x) ).\n"
 "\n"
@@ -13429,6 +14729,9 @@ msgid ""
 msgstr ""
 "(лише у режимі фрагментів або світла) (вектор) Сума похідних за модулем у «x» "
 "та «y»."
+
+msgid "(Vector) Sum of absolute derivative in 'x' and 'y'."
+msgstr "(Вектор) Сума абсолютної похідної за «x» і «y»."
 
 msgid "Adds 2D vector to 2D vector."
 msgstr "Додає 2D-вектор до 2D-вектора."
@@ -13755,6 +15058,36 @@ msgstr ""
 "Вилучити усі проєкти, яких не знайдено, зі списку?\n"
 "Вміст тек проєктів змінено не буде."
 
+msgid ""
+"It looks like Godot crashed when opening this project the last time. If "
+"you're having problems editing this project, you can try to open it in "
+"Recovery Mode."
+msgstr ""
+"Схоже, у Godot стався збій під час відкриття цього проекту востаннє. Якщо у "
+"вас виникли проблеми з редагуванням цього проекту, ви можете спробувати "
+"відкрити його в режимі відновлення."
+
+msgid ""
+"Recovery Mode is a special mode that may help to recover projects that crash "
+"the engine during initialization. This mode temporarily disables the "
+"following features:"
+msgstr ""
+"Режим відновлення — це спеціальний режим, який може допомогти відновити "
+"проекти, у яких під час ініціалізації відбувається збій двигуна. Цей режим "
+"тимчасово вимикає такі функції:"
+
+msgid ""
+"This mode is intended only for basic editing to troubleshoot such issues, and "
+"therefore it will not be possible to run the project during this mode. It is "
+"also a good idea to make a backup of your project before proceeding."
+msgstr ""
+"Цей режим призначений лише для базового редагування з метою усунення подібних "
+"проблем, тому запустити проект у цьому режимі буде неможливо. Також доцільно "
+"створити резервну копію вашого проекту, перш ніж продовжити."
+
+msgid "Edit the project in Recovery Mode?"
+msgstr "Редагувати проект у режимі відновлення?"
+
 msgid "Couldn't load project at '%s'. It may be missing or corrupted."
 msgstr ""
 "Не вдалося завантажити проект на «%s». Він може бути відсутнім або "
@@ -13845,6 +15178,9 @@ msgstr ""
 msgid "Edit Project"
 msgstr "Редагувати проєкт"
 
+msgid "Edit in recovery mode"
+msgstr "Редагувати в режимі відновлення"
+
 msgid "Rename Project"
 msgstr "Перейменувати проєкт"
 
@@ -13869,6 +15205,12 @@ msgstr "Виберіть теку для сканування"
 
 msgid "Remove All"
 msgstr "Вилучити усі"
+
+msgid "Edit normally"
+msgstr "Відредагуйте нормально"
+
+msgid "Edit in Recovery Mode"
+msgstr "Редагувати в режимі відновлення"
 
 msgid "Convert Full Project"
 msgstr "Перетворити повний проект"
@@ -14005,6 +15347,9 @@ msgstr "Швидкий рендеринг простих сцен."
 msgid "Supports desktop, mobile + web platforms."
 msgstr "Підтримує настільні, мобільні та веб-платформи."
 
+msgid "Least advanced 3D graphics."
+msgstr "Найменш просунута 3D-графіка."
+
 msgid "Intended for low-end/older devices."
 msgstr "Призначений для бюджетних/старіших пристроїв."
 
@@ -14064,6 +15409,15 @@ msgstr "Шлях встановлення проєкту:"
 msgid "Renderer:"
 msgstr "Обробник:"
 
+msgid ""
+"RenderingDevice-based methods not available on this GPU:\n"
+"%s\n"
+"Please use the Compatibility renderer."
+msgstr ""
+"Методи на основі RenderingDevice недоступні на цьому GPU:\n"
+"%s\n"
+"Будь ласка, скористайтеся рендерером сумісності."
+
 msgid "The renderer can be changed later, but scenes may need to be adjusted."
 msgstr ""
 "Обробник можна змінити пізніше, але, можливо, виникне потреба у коригуванні "
@@ -14074,6 +15428,9 @@ msgstr "Метадані керування версіями:"
 
 msgid "Git"
 msgstr "Git"
+
+msgid "Edit Now"
+msgstr "Редагувати зараз"
 
 msgid "This project was last edited in a different Godot version: "
 msgstr "Цей проект востаннє редагувався в іншій версії Godot: "
@@ -14086,6 +15443,12 @@ msgstr "Помилка: у файловій системі немає проєк
 
 msgid "Last edited timestamp"
 msgstr "Час останнього редагування"
+
+msgid "Scanning"
+msgstr "Сканування"
+
+msgid "Scanning for projects..."
+msgstr "Сканування проектів..."
 
 msgid "Missing Project"
 msgstr "Проєкт відсутній"
@@ -14264,10 +15627,10 @@ msgid "Case"
 msgstr "Регістр"
 
 msgid "To Lowercase"
-msgstr "нижній регістр"
+msgstr "До малого регістру"
 
 msgid "To Uppercase"
-msgstr "ВЕРХНІЙ РЕГІСТР"
+msgstr "До верхнього регістру"
 
 msgid "Reset"
 msgstr "Скинути"
@@ -14404,7 +15767,7 @@ msgid "Instantiate Scene"
 msgid_plural "Instantiate Scenes"
 msgstr[0] "Екземпляр сцени"
 msgstr[1] "Створення екземплярів сцен"
-msgstr[2] "Створення екземплярів сцен"
+msgstr[2] "Створення екземплярів сцени"
 
 msgid "Error loading audio stream from %s"
 msgstr "Помилка завантаження аудіопотоку з %s"
@@ -14595,6 +15958,15 @@ msgstr "Репрезентувати на новий вузол"
 msgid "This operation requires a single selected node."
 msgstr "Ця операція вимагає одного обраного вузла."
 
+msgid "Reset Position"
+msgstr "Скинути позицію"
+
+msgid "Reset Scale"
+msgstr "Скинути шкалу"
+
+msgid "Reset Rotation"
+msgstr "Скинути обертання"
+
 msgid ""
 "Couldn't save new scene. Likely dependencies (instances) couldn't be "
 "satisfied."
@@ -14610,6 +15982,9 @@ msgstr "Помилка під час дублювання сцени для її
 
 msgid "Instantiate Script"
 msgstr "Вставити екземпляр скрипту"
+
+msgid "<unknown>"
+msgstr "<невідомий>"
 
 msgid "Sub-Resources"
 msgstr "Підресурси"
@@ -14641,6 +16016,9 @@ msgid ""
 msgstr ""
 "Якщо ввімкнено, Reparent to New Node створить новий вузол у центрі вибраних "
 "вузлів, якщо це можливо."
+
+msgid "Hide Filtered Out Parents"
+msgstr "Приховати відфільтровані батьківські елементи"
 
 msgid "All Scene Sub-Resources"
 msgstr "Усі підресурси сцени"
@@ -14753,6 +16131,9 @@ msgstr "Долучити новий або наявний скрипт до по
 
 msgid "Detach the script from the selected node."
 msgstr "Від'єднати скрипт від позначеного вузла."
+
+msgid "Extend the script of the selected node."
+msgstr "Розширити сценарій вибраного вузла."
 
 msgid "Extra scene options."
 msgstr "Додаткові параметри сцени."
@@ -15007,6 +16388,47 @@ msgstr ""
 msgid "Restart & Upgrade"
 msgstr "Перезапуск и обновление"
 
+msgid "Updating Script UIDs"
+msgstr "Оновлення UID сценарію"
+
+msgid ""
+"As of Godot 4.4, scenes and resources use UIDs to reference scripts and "
+"shaders.\n"
+"\n"
+"Normally, this update is applied to a single scene or resource once you save "
+"it in Godot 4.4 for the first time. If you have a lot of scenes and/or "
+"resources, doing this manually may be time-consuming. This tool will update "
+"all of the project's scenes and resources at once.\n"
+"\n"
+"Click \"Restart & Upgrade\" to restart the editor and update all of the "
+"scenes and resources in this project. Depending on the project size, it may "
+"take several minutes.\n"
+"\n"
+"Note: Please make sure you have your project backed up before running the "
+"tool, to avoid the possibility of data loss. Additionally, make sure to "
+"commit all .uid files into version control (and do not add them to ignore-"
+"lists like .gitignore)."
+msgstr ""
+"Починаючи з Godot 4.4, сцени та ресурси використовують UID для посилань на "
+"сценарії та шейдери. \n"
+"\n"
+"Зазвичай це оновлення застосовується до однієї сцени чи ресурсу, коли ви "
+"вперше зберігаєте його в Godot 4.4. Якщо у вас багато сцен і/або ресурсів, "
+"виконання цього вручну може зайняти багато часу. Цей інструмент оновить усі "
+"сцени та ресурси проекту одночасно. \n"
+"\n"
+"Натисніть «Перезапустити та оновити», щоб перезапустити редактор і оновити "
+"всі сцени та ресурси в цьому проекті. Залежно від розміру проекту це може "
+"зайняти кілька хвилин. \n"
+"\n"
+"Примітка: перед запуском інструменту переконайтеся, що у вас є резервна копія "
+"вашого проекту, щоб уникнути можливості втрати даних. Крім того, "
+"переконайтеся, що всі файли .uid передано в контроль версій (і не додавайте "
+"їх до списків ігнорування, як .gitignore)."
+
+msgid "Learn More"
+msgstr "Дізнайтеся більше"
+
 msgid "Make this panel floating in the screen %d."
 msgstr "Зробити цю панель плаваючою на екрані %d."
 
@@ -15019,6 +16441,66 @@ msgstr ""
 
 msgid "Select Screen"
 msgstr "Виберіть екран"
+
+msgid ""
+"The CSGShape3D has an empty shape.\n"
+"CSGShape3D empty shapes typically occur because the mesh is not manifold.\n"
+"A manifold mesh forms a solid object without gaps, holes, or loose edges.\n"
+"Each edge must be a member of exactly two faces."
+msgstr ""
+"CSGShape3D має порожню форму. \n"
+"Порожні форми CSGShape3D зазвичай виникають через те, що сітка не є "
+"колектором. \n"
+"Сітка колектора утворює твердий об’єкт без проміжків, отворів або нещільних "
+"країв. \n"
+"Кожне ребро має бути членом рівно двох граней."
+
+msgid "CSG operation returned an empty array."
+msgstr "Операція CSG повернула порожній масив."
+
+msgid ""
+"Can not add a baked mesh as sibling for the scene root.\n"
+"Move the CSG root node below a parent node."
+msgstr ""
+"Неможливо додати запечену сітку як брата для кореня сцени.\n"
+"Перемістіть кореневий вузол CSG нижче батьківського вузла."
+
+msgid "CSG operation returned an empty mesh."
+msgstr "Операція CSG повернула порожню сітку."
+
+msgid "Create baked CSGShape3D Mesh Instance"
+msgstr "Створіть запечений екземпляр сіті CSGShape3D"
+
+msgid ""
+"Can not add a baked collision shape as sibling for the scene root.\n"
+"Move the CSG root node below a parent node."
+msgstr ""
+"Неможливо додати запечену форму зіткнення як рідну для кореня сцени.\n"
+"Перемістіть кореневий вузол CSG нижче батьківського вузла."
+
+msgid "CSG operation returned an empty shape."
+msgstr "Операція CSG повернула порожню форму."
+
+msgid "Create baked CSGShape3D Collision Shape"
+msgstr "Створіть запечену форму зіткнення CSGShape3D"
+
+msgid "CSG"
+msgstr "CSG"
+
+msgid "Bake Mesh Instance"
+msgstr "Примірник Bake Mesh"
+
+msgid "Bake Collision Shape"
+msgstr "Випікайте форму зіткнення"
+
+msgid "Change CSG Box Size"
+msgstr "Змінити розмір коробки CSG"
+
+msgid "Change CSG Cylinder Radius"
+msgstr "Змінити радіус циліндра CSG"
+
+msgid "Change CSG Cylinder Height"
+msgstr "Змінити висоту циліндра CSG"
 
 msgid "Change Torus Inner Radius"
 msgstr "Змінити внутрішній радіус тора"
@@ -15034,6 +16516,29 @@ msgstr "Неможливо змінити розмір масиву."
 
 msgid "Step argument is zero!"
 msgstr "Аргумент кроку нуль!"
+
+msgid "Not a script with an instance."
+msgstr "Не сценарій з екземпляром."
+
+msgid "Not based on a script."
+msgstr "Не на основі сценарію."
+
+msgid "Not based on a resource file."
+msgstr "Не базується на файлі ресурсів."
+
+msgid "Invalid instance dictionary format (missing @path)."
+msgstr "Недійсний формат словника екземплярів (відсутній @path)."
+
+msgid "Invalid instance dictionary format (can't load script at @path)."
+msgstr ""
+"Недійсний формат словника екземпляра (не вдається завантажити сценарій за "
+"@path)."
+
+msgid "Invalid instance dictionary format (invalid script at @path)."
+msgstr "Недійсний формат словника екземпляра (недійсний сценарій на @path)."
+
+msgid "Invalid instance dictionary (invalid subclasses)."
+msgstr "Недійсний словник екземплярів (недійсні підкласи)."
 
 msgid "Cannot instantiate GDScript class."
 msgstr "Не вдається інстанціювати клас GDScript."
@@ -15157,6 +16662,12 @@ msgstr "Редагувати вісь Y"
 msgid "Edit Z Axis"
 msgstr "Редагувати вісь Z"
 
+msgid "Keep Selection"
+msgstr "Зберегти виділення"
+
+msgid "Clear Rotation"
+msgstr "Очистити обертання"
+
 msgid "GridMap Settings"
 msgstr "Параметри GridMap"
 
@@ -15165,6 +16676,9 @@ msgstr "Відстань вибору:"
 
 msgid "Selection"
 msgstr "Вибір"
+
+msgid "Erase"
+msgstr "Стерти"
 
 msgid "Cursor Rotate X"
 msgstr "Обертання вказівника навколо X"
@@ -15175,12 +16689,27 @@ msgstr "Обертання вказівника навколо Y"
 msgid "Cursor Rotate Z"
 msgstr "Обертання вказівника навколо Z"
 
+msgid ""
+"Change Grid Floor:\n"
+"Previous Plane (%s)\n"
+"Next Plane (%s)"
+msgstr ""
+"Змінити підлогу сітки:\n"
+"Попередній літак (%s)\n"
+"Наступний літак (%s)"
+
 msgid "Filter Meshes"
 msgstr "Фільтрувати сітки"
 
 msgid "Give a MeshLibrary resource to this GridMap to use its meshes."
 msgstr ""
 "Додайте ресурс MeshLibrary до цього GridMap, щоб скористатися його сітками."
+
+msgid "GridMap"
+msgstr "GridMap"
+
+msgid "Toggle GridMap Bottom Panel"
+msgstr "Перемкнути нижню панель GridMap"
 
 msgid "All Clips"
 msgstr "Всі кліпи"
@@ -15195,10 +16724,10 @@ msgid "Disabled"
 msgstr "Вимкнено"
 
 msgid "Fade-In"
-msgstr "поступове посилення"
+msgstr "Поступове посилення"
 
 msgid "Fade-Out"
-msgstr "поступове затухання"
+msgstr "Поступове затухання"
 
 msgid "Cross-Fade"
 msgstr "Перехресне зникнення"
@@ -15236,11 +16765,11 @@ msgstr "Те саме"
 
 msgctxt "Transition Time Position"
 msgid "Start"
-msgstr "старт"
+msgstr "Старт"
 
 msgctxt "Transition Time Position"
 msgid "Prev"
-msgstr "попередня"
+msgstr "Попередня"
 
 msgid "From / To"
 msgstr "Від/До"
@@ -15308,11 +16837,17 @@ msgstr "Неоклюзійна геометрія"
 msgid "Plot direct lighting"
 msgstr "Пряме освітлення ділянки"
 
+msgid "Plot direct lighting %d%%"
+msgstr "Пряме освітлення ділянки %d%%"
+
 msgid "Integrate indirect lighting"
 msgstr "Інтеграція непрямого освітлення"
 
 msgid "Integrate indirect lighting %d%%"
 msgstr "Інтегрувати непряме освітлення %d%%"
+
+msgid "Baking light probes"
+msgstr "Світлові зонди для випічки"
 
 msgid "Integrating light probes %d%%"
 msgstr "Інтеграція світлових зондів %d%%"
@@ -15332,6 +16867,20 @@ msgstr "Ім'я класу має бути дійсним ідентифікат
 msgid "Not enough bytes for decoding bytes, or invalid format."
 msgstr "Недостатньо байтів для їх декодування або вказано некоректний формат."
 
+msgid ""
+"Unable to load .NET runtime, no compatible version was found.\n"
+"Attempting to create/edit a project will lead to a crash.\n"
+"\n"
+"Please install the .NET SDK 8.0 or later from https://get.dot.net and restart "
+"Godot."
+msgstr ""
+"Не вдалося завантажити середовище виконання .NET, сумісної версії не "
+"знайдено. \n"
+"Спроба створити/редагувати проект призведе до збою. \n"
+"\n"
+"Установіть .NET SDK 8.0 або новішої версії з https://get.dot.net і "
+"перезапустіть Godot."
+
 msgid "Failed to load .NET runtime"
 msgstr "Не вдалося завантажити середовище виконання .NET"
 
@@ -15344,6 +16893,19 @@ msgstr ""
 
 msgid ".NET assemblies not found"
 msgstr ".NET збірок не знайдено"
+
+msgid ""
+"Unable to load .NET runtime, specifically hostfxr.\n"
+"Attempting to create/edit a project will lead to a crash.\n"
+"\n"
+"Please install the .NET SDK 8.0 or later from https://get.dot.net and restart "
+"Godot."
+msgstr ""
+"Не вдалося завантажити середовище виконання .NET, зокрема hostfxr. \n"
+"Спроба створити/редагувати проект призведе до збою. \n"
+"\n"
+"Установіть .NET SDK 8.0 або новішої версії з https://get.dot.net і "
+"перезапустіть Godot."
 
 msgid "%d (%s)"
 msgstr "%d (%s)"
@@ -15375,7 +16937,7 @@ msgid "Count"
 msgstr "Кількість"
 
 msgid "Replication"
-msgstr "тиражування"
+msgstr "Тиражування"
 
 msgid "Toggle Replication Bottom Panel"
 msgstr "Перемкнути нижню панель реплікації"
@@ -15601,6 +17163,23 @@ msgstr "Додати дію."
 msgid "Remove action set."
 msgstr "Видалити набір дій."
 
+msgid "Remove binding modifier."
+msgstr "Видалити модифікатор прив’язки."
+
+msgid "Remove binding modifier"
+msgstr "Видалити модифікатор прив’язки"
+
+msgid "Add binding modifier"
+msgstr "Додати модифікатор прив’язки"
+
+msgid "Note: modifiers will only be applied if supported on the host system."
+msgstr ""
+"Примітка: модифікатори застосовуватимуться, лише якщо вони підтримуються в "
+"системі хосту."
+
+msgid "Binding modifiers for:"
+msgstr "Модифікатори прив'язки для:"
+
 msgid "OpenXR Action Map"
 msgstr "Карта дій OpenXR"
 
@@ -15610,11 +17189,20 @@ msgstr "Перемкнути нижню панель карти дій OpenXR"
 msgid "Remove action from interaction profile"
 msgstr "Видалити дію з інтерактивного профілю"
 
+msgid "Edit binding modifiers"
+msgstr "Редагувати модифікатори прив’язки"
+
+msgid "Note: This interaction profile requires extension %s support."
+msgstr "Примітка. Цей профіль взаємодії потребує підтримки розширення %s."
+
 msgid "Add binding"
 msgstr "Додати прив'язку"
 
 msgid "Remove binding"
 msgstr "Вилучити прив'язку"
+
+msgid "Note: This binding path requires extension %s support."
+msgstr "Примітка. Цей шлях зв’язування вимагає підтримки розширення %s."
 
 msgid "Pose"
 msgstr "Поза"
@@ -15631,6 +17219,9 @@ msgstr "Вибрати дію"
 msgid "Select an interaction profile"
 msgstr "Виберіть профіль взаємодії"
 
+msgid "All interaction profiles have been added to the action map."
+msgstr "Усі профілі взаємодії додано до карти дій."
+
 msgid "Choose an XR runtime."
 msgstr "Виберіть середовище виконання XR."
 
@@ -15640,6 +17231,13 @@ msgid ""
 msgstr ""
 "Неможливо використовувати той самий SubViewport із кількома композиційними "
 "шарами OpenXR. Спочатку очистіть його від поточного шару."
+
+msgid ""
+"Cannot set SubViewport on an OpenXR composition layer when using an Android "
+"surface."
+msgstr ""
+"Неможливо встановити SubViewport на композиційному шарі OpenXR під час "
+"використання поверхні Android."
 
 msgid "OpenXR composition layers must have an XROrigin3D node as their parent."
 msgstr "Композиційні шари OpenXR повинні мати вузол XROrigin3D як батьківський."
@@ -15656,6 +17254,9 @@ msgid ""
 msgstr ""
 "Перфорація не працюватиме належним чином, якщо порядок сортування не буде "
 "меншим за нуль."
+
+msgid "OpenXR visibility mask must have an XRCamera3D node as their parent."
+msgstr "Маска видимості OpenXR повинна мати вузол XRCamera3D як батьківський."
 
 msgid "Package name is missing."
 msgstr "Відсутня назва пакета."
@@ -15683,6 +17284,11 @@ msgstr "Некоректний відкритий ключ для розгорт
 
 msgid "Invalid package name:"
 msgstr "Некоректна назва пакунка:"
+
+msgid "\"Use Gradle Build\" is required to enable \"Swipe to dismiss\"."
+msgstr ""
+"\"Використовувати збірку Gradle\" потрібен, щоб увімкнути \"Проведіть "
+"пальцем, щоб відхилити\"."
 
 msgid "\"Use Gradle Build\" must be enabled to use the plugins."
 msgstr ""
@@ -15735,6 +17341,21 @@ msgid "\"Target SDK\" version must be greater or equal to \"Min SDK\" version."
 msgstr ""
 "Версія \"Цільовий SDK\" має бути більшою або рівною за версію \"Min SDK\"."
 
+msgid "\"Use Gradle Build\" must be enabled to enable \"Show In Android Tv\"."
+msgstr ""
+"\"Використовувати збірку Gradle\" потрібно ввімкнути, щоб увімкнути функцію "
+"\"Показувати в Android Tv\"."
+
+msgid "\"Use Gradle Build\" must be enabled to enable \"Show As Launcher App\"."
+msgstr ""
+"\"Використовувати збірку Gradle\" потрібно ввімкнути, щоб увімкнути "
+"\"Показати як програму запуску\"."
+
+msgid "\"Use Gradle Build\" must be enabled to disable \"Show In App Library\"."
+msgstr ""
+"\"Використовувати збірку Gradle\" потрібно ввімкнути, щоб вимкнути "
+"\"Показувати в бібліотеці програм\"."
+
 msgid "Select device from the list"
 msgstr "Вибрати пристрій зі списку"
 
@@ -15765,6 +17386,9 @@ msgstr ""
 
 msgid "Exporting to Android when using C#/.NET is experimental."
 msgstr "Експортування в Android при використанні C#/.NET є експериментальним."
+
+msgid "Gradle build is not supported for the Android editor."
+msgstr "Збірка Gradle не підтримується для редактора Android."
 
 msgid "Custom Android source template not found."
 msgstr "Користувацький вихідний шаблон Android не знайдено."
@@ -15868,8 +17492,36 @@ msgstr ""
 msgid "Code Signing"
 msgstr "Підписання коду"
 
+msgid "AAB signing is not supported"
+msgstr "Підписання AAB не підтримується"
+
+msgid "Signing debug APK..."
+msgstr "Підписання налагоджувального APK..."
+
+msgid "Signing release APK..."
+msgstr "Підписання випуску APK..."
+
 msgid "Could not find keystore, unable to export."
 msgstr "Не вдалося знайти сховище ключів. Неможливо виконати експортування."
+
+msgid "Unable to sign apk."
+msgstr "Неможливо підписати apk."
+
+msgid ""
+"All 'apksigner' tools located in Android SDK 'build-tools' directory failed "
+"to execute. Please check that you have the correct version installed for your "
+"target sdk version. The resulting APK is unsigned."
+msgstr ""
+"Не вдалося виконати всі інструменти «apksigner», розташовані в каталозі "
+"«build-tools» Android SDK. Перевірте, чи встановлено правильну версію для "
+"цільової версії SDK. Отриманий APK не підписаний."
+
+msgid ""
+"'apksigner' could not be found. Please check that the command is available in "
+"the Android SDK build-tools directory. The resulting APK is unsigned."
+msgstr ""
+"'apksigner' не вдалося знайти. Будь ласка, переконайтеся, що команда доступна "
+"в каталозі інструментів збірки Android SDK. Отриманий APK не підписаний."
 
 msgid "Could not start apksigner executable."
 msgstr "Не вдалося запустити виконуваний файл apksigner."
@@ -15883,6 +17535,15 @@ msgid ""
 msgstr ""
 "Вивід: \n"
 "%s"
+
+msgid "Verifying APK..."
+msgstr "Перевірка APK..."
+
+msgid "Unable to verify signed apk."
+msgstr "Не вдалося перевірити підписаний файл apk."
+
+msgid "'apksigner' verification of APK failed."
+msgstr "'apksigner' перевірити APK не вдалося."
 
 msgid "Target folder does not exist or is inaccessible: \"%s\""
 msgstr "Цільова папка не існує або недоступна: \"%s\""
@@ -15949,6 +17610,12 @@ msgstr "Пересування виведених даних"
 
 msgid "Unable to copy and rename export file:"
 msgstr "Неможливо скопіювати та перейменувати файл експорту:"
+
+msgid "Debug export template not found: \"%s\"."
+msgstr "Шаблон експорту налагодження не знайдено: \"%s\"."
+
+msgid "Release export template not found: \"%s\"."
+msgstr "Шаблон експорту випуску не знайдено: \"%s\"."
 
 msgid "Creating APK..."
 msgstr "Створення APK…"
@@ -16051,12 +17718,6 @@ msgstr ""
 "Запитану бібліотеку шаблонів \"%s\" не знайдено. Можливо, він відсутній у "
 "вашому архіві шаблонів."
 
-msgid "ARM64 simulator library, generating from device library."
-msgstr "Бібліотека симулятора ARM64, створена з бібліотеки пристроїв."
-
-msgid "Unable to generate ARM64 simulator library."
-msgstr "Не вдалося створити бібліотеку симулятора ARM64."
-
 msgid "Could not copy a file at path \"%s\" to \"%s\"."
 msgstr "Не вдалося скопіювати файл на шляху \"%s\" до \"%s\"."
 
@@ -16100,6 +17761,9 @@ msgstr "Експорт в iOS при використанні C#/.NET є екс�
 msgid "Invalid additional PList content: "
 msgstr "Недійсний додатковий вміст PList: "
 
+msgid "Metal renderer require iOS 14+."
+msgstr "Metal renderer вимагає iOS 14+."
+
 msgid "Identifier is missing."
 msgstr "Ідентифікатор відсутній."
 
@@ -16130,11 +17794,32 @@ msgstr "Експорт сценарію налагодження"
 msgid "Could not open file \"%s\"."
 msgstr "Не вдалося відкрити файл \"%s\"."
 
+msgid ""
+"Mismatching custom export template executable architecture, found \"%s\", "
+"expected \"%s\"."
+msgstr ""
+"Невідповідна архітектура виконуваного шаблону спеціального експорту, знайдено "
+"\"%s\", очікується \"%s\"."
+
 msgid "Debug Console Export"
 msgstr "Експорт консолі налагодження"
 
 msgid "Could not create console wrapper."
 msgstr "Не вдалося створити оболонку консолі."
+
+msgid ""
+"Mismatching custom debug export template executable architecture: found "
+"\"%s\", expected \"%s\"."
+msgstr ""
+"Невідповідна архітектура виконуваного файлу спеціального шаблону експорту "
+"налагодження: знайдено \"%s\", очікується \"%s\"."
+
+msgid ""
+"Mismatching custom release export template executable architecture: found "
+"\"%s\", expected \"%s\"."
+msgstr ""
+"Невідповідна архітектура шаблону експорту спеціального випуску: знайдено "
+"\"%s\", очікується \"%s\"."
 
 msgid "Failed to open executable file \"%s\"."
 msgstr "Не вдалося відкрити виконуваний файл \"%s\"."
@@ -16388,6 +18073,14 @@ msgstr ""
 msgid "Could not created symlink \"%s\" -> \"%s\"."
 msgstr "Не вдалося створити символічне посилання \"%s\" -> \"%s\"."
 
+msgid ""
+"Unable to set Unix permissions for executable \"%s\". Use \"chmod +x\" to set "
+"it after transferring the exported .app to macOS or Linux."
+msgstr ""
+"Не вдалося встановити дозволи Unix для виконуваного файлу \"%s\". "
+"Використовуйте \"chmod +x\", щоб установити його після перенесення "
+"експортованого .app до macOS або Linux."
+
 msgid "Could not open \"%s\"."
 msgstr "Не вдалося відкрити \"%s\"."
 
@@ -16524,7 +18217,7 @@ msgid "Could not write file: \"%s\"."
 msgstr "Не вдалося записати файл: \"%s\"."
 
 msgid "Icon Creation"
-msgstr "Ф"
+msgstr "Створення значків"
 
 msgid "Could not read file: \"%s\"."
 msgstr "Не вдалося прочитати файл: \"%s\"."
@@ -16584,6 +18277,13 @@ msgstr "Модифікація ресурсів"
 
 msgid "Icon size \"%d\" is missing."
 msgstr "Відсутній розмір піктограми \"%d\"."
+
+msgid ""
+"Mismatching custom export template executable architecture: found \"%s\", "
+"expected \"%s\"."
+msgstr ""
+"Невідповідна архітектура виконуваного шаблону спеціального експорту: знайдено "
+"\"%s\", очікується \"%s\"."
 
 msgid "Failed to rename temporary file \"%s\"."
 msgstr "Не вдалося перейменувати тимчасовий файл \"%s\"."
@@ -16711,6 +18411,19 @@ msgstr ""
 "параметром «Анімація часток»."
 
 msgid ""
+"Particle trails are only available when using the Forward+ or Mobile "
+"renderers."
+msgstr ""
+"Сліди частинок доступні лише під час використання засобів візуалізації "
+"Forward+ або Mobile."
+
+msgid ""
+"Particle sub-emitters are not available when using the Compatibility renderer."
+msgstr ""
+"Субвипромінювачі частинок недоступні під час використання рендерера "
+"сумісності."
+
+msgid ""
 "A texture with the shape of the light must be supplied to the \"Texture\" "
 "property."
 msgstr "Для властивості «Texture» слід надати текстуру із формою освітлення."
@@ -16738,6 +18451,21 @@ msgid ""
 msgstr ""
 "Початкова позиція NavigationLink2D повинна відрізнятися від кінцевої, щоб "
 "бути корисною."
+
+msgid "NavigationObstacle2D does not support negative or zero scaling."
+msgstr "NavigationObstacle2D не підтримує негативне або нульове масштабування."
+
+msgid ""
+"The agent radius can only be scaled uniformly. The largest value along the "
+"two axes of the global scale will be used to scale the radius. This value may "
+"change in unexpected ways when the node is rotated."
+msgstr ""
+"Радіус агента можна масштабувати лише рівномірно. Найбільше значення по двох "
+"осях глобального масштабу буде використано для масштабування радіуса. Це "
+"значення може змінитися неочікуваним чином під час обертання вузла."
+
+msgid "Skew has no effect on the agent radius."
+msgstr "Перекіс не впливає на радіус агента."
 
 msgid ""
 "A NavigationMesh resource must be set or created for this node to work. "
@@ -16809,6 +18537,13 @@ msgid ""
 msgstr ""
 "Для забезпечення працездатності CollisionShape2D слід надати форму. Будь "
 "ласка, створіть ресурс форми для цього елемента!"
+
+msgid ""
+"The CollisionShape2D node has limited editing options for polygon-based "
+"shapes. Consider using a CollisionPolygon2D node instead."
+msgstr ""
+"Вузол CollisionShape2D має обмежені можливості редагування форм на основі "
+"багатокутників. Натомість подумайте про використання вузла CollisionPolygon2D."
 
 msgid "Node A and Node B must be PhysicsBody2Ds"
 msgstr "Вузол A і вузол B мають бути PhysicsBody2D"
@@ -16962,6 +18697,10 @@ msgstr ""
 "Анімація CPUParticles3D вимагає використання StandardMaterial3D, режим "
 "Billboard Mode якого встановлено на \"Particle Billboard\"."
 
+msgid "Decals are only available when using the Forward+ or Mobile renderers."
+msgstr ""
+"Наклейки доступні лише під час використання рендерів Forward+ або Mobile."
+
 msgid ""
 "The decal has no textures loaded into any of its texture properties, and will "
 "therefore not be visible."
@@ -16990,6 +18729,10 @@ msgstr ""
 "на жодному шарі.\n"
 " Щоб вирішити цю проблему, увімкніть принаймні один біт у властивості Cull "
 "Mask."
+
+msgid "Fog Volumes are only visible when using the Forward+ renderer."
+msgstr ""
+"Об’єми туману відображаються лише під час використання рендерера Forward+."
 
 msgid ""
 "Fog Volumes need volumetric fog to be enabled in the scene's Environment in "
@@ -17034,6 +18777,13 @@ msgstr ""
 "налаштовані для візуалізації трейлів."
 
 msgid ""
+"Particle sub-emitters are only available when using the Forward+ or Mobile "
+"renderers."
+msgstr ""
+"Субвипромінювачі частинок доступні лише під час використання засобів "
+"візуалізації Forward+ або Mobile."
+
+msgid ""
 "The Bake Mask has no bits enabled, which means baking will not produce any "
 "collision for this GPUParticlesCollisionSDF3D.\n"
 "To resolve this, enable at least one bit in the Bake Mask property."
@@ -17047,6 +18797,13 @@ msgstr "Масштаб світильника не впливає на візу�
 
 msgid "Projector texture only works with shadows active."
 msgstr "Текстура проектора працює лише з активними тінями."
+
+msgid ""
+"Projector textures are not supported when using the Compatibility renderer "
+"yet. Support will be added in a future release."
+msgstr ""
+"Текстури проектора ще не підтримуються під час використання рендерера "
+"сумісності. Підтримку буде додано в майбутньому випуску."
 
 msgid "A SpotLight3D with an angle wider than 90 degrees cannot cast shadows."
 msgstr ""
@@ -17077,6 +18834,46 @@ msgid "Generating Probe Acceleration Structures"
 msgstr "Генерация ускоряющих структур зонда"
 
 msgid ""
+"Lightmaps can only be baked from a GPU that supports the RenderingDevice "
+"backends.\n"
+"Your GPU (%s) does not support RenderingDevice, as it does not support "
+"Vulkan, Direct3D 12, or Metal.\n"
+"Lightmap baking will not be available on this device, although rendering "
+"existing baked lightmaps will work."
+msgstr ""
+"Карти освітлення можна створювати лише з графічного процесора, який підтримує "
+"серверні модулі RenderingDevice. \n"
+"Ваш графічний процесор (%s) не підтримує RenderingDevice, оскільки він не "
+"підтримує Vulkan, Direct3D 12 або Metal. \n"
+"Запікання карт освітлення не буде доступне на цьому пристрої, хоча рендеринг "
+"існуючих запечених карт освітлення працюватиме."
+
+msgid ""
+"The lightmap has no baked shadowmask textures. Please rebake with the "
+"Shadowmask Mode set to anything other than None."
+msgstr ""
+"Карта освітлення не має текстур тіньової маски. Будь ласка, перезапустіть, "
+"встановивши для режиму Shadowmask будь-яке значення, крім None."
+
+msgid ""
+"Lightmaps cannot be baked on %s. Rendering existing baked lightmaps will "
+"still work."
+msgstr ""
+"Карти освітлення не можна запікати на %s. Візуалізація існуючих запечених "
+"карт світла все одно працюватиме."
+
+msgid ""
+"Lightmaps cannot be baked, as the `lightmapper_rd` module was disabled at "
+"compile-time. Rendering existing baked lightmaps will still work."
+msgstr ""
+"Карти освітлення неможливо запекти, оскільки модуль `lightmapper_rd` було "
+"вимкнено під час компіляції. Візуалізація існуючих запечених карт світла все "
+"одно працюватиме."
+
+msgid "Forward axis and primary rotation axis must not be parallel."
+msgstr "Передня вісь і основна вісь обертання не повинні бути паралельні."
+
+msgid ""
 "The NavigationAgent3D can be used only under a Node3D inheriting parent node."
 msgstr ""
 "NavigationAgent3D можна використовувати лише під успадковуючим батьківським "
@@ -17088,6 +18885,24 @@ msgid ""
 msgstr ""
 "Початкова позиція NavigationLink3D повинна відрізнятися від кінцевої, щоб "
 "бути корисною."
+
+msgid ""
+"NavigationObstacle3D only takes global rotation around the y-axis into "
+"account. Rotations around the x-axis or z-axis might lead to unexpected "
+"results."
+msgstr ""
+"NavigationObstacle3D враховує лише глобальне обертання навколо осі y. "
+"Обертання навколо осі x або z може призвести до неочікуваних результатів."
+
+msgid "NavigationObstacle3D does not support negative or zero scaling."
+msgstr "NavigationObstacle3D не підтримує негативне або нульове масштабування."
+
+msgid ""
+"The agent radius can only be scaled uniformly. The largest scale value along "
+"the three axes will be used."
+msgstr ""
+"Радіус агента можна масштабувати лише рівномірно. Використовуватиметься "
+"найбільше значення масштабу по трьох осях."
 
 msgid ""
 "Occlusion culling is disabled in the Project Settings, which means occlusion "
@@ -17309,6 +19124,9 @@ msgstr ""
 "Властивість \"Remote Path\" має вказувати на дійсний вузол Node3D або "
 "похідний вузол Node3D, щоб працювати."
 
+msgid "There is no child Skeleton3D!"
+msgstr "Дочірнього Skeleton3D немає!"
+
 msgid "Skeleton3D node not set! SkeletonModifier3D must be child of Skeleton3D."
 msgstr ""
 "Вузол Skeleton3D не встановлено! SkeletonModifier3D має бути дочірнім "
@@ -17316,6 +19134,9 @@ msgstr ""
 
 msgid "This body will be ignored until you set a mesh."
 msgstr "Це тіло буде проігноровано, аж доки ви не встановите сітку."
+
+msgid "Parent node should be a SpringBoneSimulator3D node."
+msgstr "Батьківський вузол має бути вузлом SpringBoneSimulator3D."
 
 msgid ""
 "A SpriteFrames resource must be created or set in the \"Sprite Frames\" "
@@ -17378,6 +19199,13 @@ msgstr "Генерування поля відстані"
 
 msgid "Finishing Plot"
 msgstr "Завершальна ділянка"
+
+msgid ""
+"VoxelGI nodes are not supported when using the Compatibility renderer yet. "
+"Support will be added in a future release."
+msgstr ""
+"Вузли VoxelGI поки що не підтримуються під час використання інструмента "
+"візуалізації сумісності. Підтримку буде додано в майбутньому випуску."
 
 msgid ""
 "No VoxelGI data set, so this node is disabled. Bake static objects to enable "
@@ -17459,6 +19287,15 @@ msgstr ""
 msgid "Copy this constructor in a script."
 msgstr "Скопіюйте цей конструктор у скрипт."
 
+msgid "Load Color Palette"
+msgstr "Завантажити палітру кольорів"
+
+msgid "Save Color Palette"
+msgstr "Зберегти палітру кольорів"
+
+msgid "Quick Load"
+msgstr "Швидке завантаження"
+
 msgid "Switch between hexadecimal and code values."
 msgstr "Перемикання між шістнадцятковими значеннями і кодами."
 
@@ -17502,6 +19339,16 @@ msgid ""
 msgstr ""
 "Поточний шрифт не підтримує відображення одного або декількох символів, що "
 "використовуються в тексті цієї мітки."
+
+msgid ""
+"The current theme style has shadows and/or rounded corners for popups, but "
+"those won't display correctly if \"display/window/per_pixel_transparency/"
+"allowed\" isn't enabled in the Project Settings, nor if it isn't supported."
+msgstr ""
+"Поточний стиль теми має тіні та/або закруглені кути для спливаючих вікон, але "
+"вони не відображатимуться належним чином, якщо «display/window/"
+"per_pixel_transparency/allowed» не ввімкнено в налаштуваннях проекту або якщо "
+"він не підтримується."
 
 msgid "If \"Exp Edit\" is enabled, \"Min Value\" must be greater than 0."
 msgstr "Якщо увімкнено «Exp Edit», «Min Value» має бути > 0."
@@ -17688,6 +19535,12 @@ msgstr "Використовувати всі поверхні"
 msgid "Surface Index"
 msgstr "Індекс поверхні"
 
+msgid "Division by zero error."
+msgstr "Помилка ділення на нуль."
+
+msgid "Modulo by zero error."
+msgstr "Похибка за модулем нуля."
+
 msgid ""
 "Invalid number of arguments when calling stage function '%s', which expects "
 "%d arguments."
@@ -17761,6 +19614,16 @@ msgstr "Очікується ',' або ')' після аргументу."
 msgid "Varying may not be assigned in the '%s' function."
 msgstr "Варіанти не можуть бути призначені у функції '%s'."
 
+msgid "Varying with '%s' data type may only be assigned in the '%s' function."
+msgstr "Зміна типу даних \"%s\" може бути призначена лише у функції \"%s\"."
+
+msgid ""
+"Varyings which assigned in '%s' function may not be reassigned in '%s' or "
+"'%s'."
+msgstr ""
+"Варіанти, призначені у функції «%s», не можуть бути перепризначені у «%s» або "
+"«%s»."
+
 msgid "'%s' cannot be used within the '%s' processor function."
 msgstr "'%s' не може бути використаний у функції процесора '%s'."
 
@@ -17819,6 +19682,9 @@ msgstr "Очікується додатна ціла константа."
 msgid "Invalid data type for the array."
 msgstr "Некоректний тип даних для масиву."
 
+msgid "Array size mismatch. Expected %d elements (found %d)."
+msgstr "Невідповідність розміру масиву. Очікувано %d елементів (знайдено %d)."
+
 msgid "Expected array initialization."
 msgstr "Очікується ініціалізація масиву."
 
@@ -17871,6 +19737,12 @@ msgstr ""
 " Щоб продовжити з мінімальними змінами коду, додайте 'uniform sampler2D %s : "
 "hint_%s, filter_linear_mipmap;' біля верхньої частини шейдера."
 
+msgid "Varying with '%s' data type may only be used in the '%s' function."
+msgstr "Варіанти типу даних \"%s\" можна використовувати лише у функції \"%s\"."
+
+msgid "Varying '%s' must be assigned in the '%s' function first."
+msgstr "Змінний '%s' має бути спочатку призначений у функції '%s'."
+
 msgid "Can't use function as identifier: '%s'."
 msgstr "Не можна використовувати функцію як ідентифікатор: '%s'."
 
@@ -17900,11 +19772,6 @@ msgstr "Об'єкт типу '%s' не може бути проіндексов�
 
 msgid "Invalid base type for increment/decrement operator."
 msgstr "Неправильний базовий тип для оператора інкременту/декременту."
-
-msgid "Invalid use of increment/decrement operator in a constant expression."
-msgstr ""
-"Неправильне використання оператора інкременту/декременту в константному "
-"виразі."
 
 msgid "Invalid token for the operator: '%s'."
 msgstr "Недійсний маркер для оператора: '%s'."
@@ -17958,6 +19825,9 @@ msgstr ""
 msgid "Expected a boolean expression."
 msgstr "Очікувався логічний вираз."
 
+msgid "Expected an integer or unsigned integer expression."
+msgstr "Очікувався цілий або беззнаковий цілий вираз."
+
 msgid "Cases must be defined before default case."
 msgstr "Регістри повинні бути визначені перед регістром за замовчуванням."
 
@@ -17966,6 +19836,9 @@ msgstr "Регістр за замовчуванням повинен бути �
 
 msgid "'%s' must be placed within a '%s' block."
 msgstr "'%s' має бути розміщено всередині блоку '%s'."
+
+msgid "Expected an unsigned integer constant."
+msgstr "Очікується ціла константа без знаку."
 
 msgid "Expected an integer constant."
 msgstr "Очікувалась цілочисельна константа."
@@ -17979,14 +19852,23 @@ msgstr "Використання '%s' у функції процесора '%s' 
 msgid "Expected '%s' with an expression of type '%s'."
 msgstr "Очікувався '%s' з виразом типу '%s'."
 
+msgid "'%s' function cannot return a value."
+msgstr "Функція '%s' не може повернути значення."
+
 msgid "Expected return with an expression of type '%s'."
 msgstr "Очікуваний результат із виразом типу \"%s\"."
+
+msgid "Use of '%s' is not supported for the '%s' shader type."
+msgstr "Використання «%s» не підтримується для типу шейдера «%s»."
 
 msgid "'%s' is not allowed outside of a loop or '%s' statement."
 msgstr "'%s' не допускається поза циклом або оператором '%s'."
 
 msgid "'%s' is not allowed outside of a loop."
 msgstr "'%s' не допускається поза циклом."
+
+msgid "The middle expression is expected to have a boolean data type."
+msgstr "Очікується, що середній вираз матиме логічний тип даних."
 
 msgid "The left expression is expected to be a variable declaration."
 msgstr "Очікується, що лівий вираз буде оголошенням змінної."
@@ -18106,6 +19988,15 @@ msgstr "Очікується ',' після цілої константи."
 msgid "Expected an integer constant after ','."
 msgstr "Очікується ціла константа після ','."
 
+msgid "Enum hint is for '%s' only."
+msgstr "Підказка Enum лише для «%s»."
+
+msgid "Expected a string constant."
+msgstr "Очікується рядкова константа."
+
+msgid "Expected ',' or ')' after string constant."
+msgstr "Очікується \",\" або \")\" після константи рядка."
+
 msgid "Can only specify '%s' once."
 msgstr "'%s' можна вказати лише один раз."
 
@@ -18116,6 +20007,13 @@ msgid "Allowed instance uniform indices must be within [0..%d] range."
 msgstr ""
 "Допустимі рівномірні індекси екземплярів повинні знаходитися в діапазоні [0.."
 "%d]."
+
+msgid ""
+"'hint_normal_roughness_texture' is only available when using the Forward+ "
+"renderer."
+msgstr ""
+"'hint_normal_roughness_texture' доступний лише під час використання засобу "
+"візуалізації Forward+."
 
 msgid "'hint_normal_roughness_texture' is not supported in '%s' shaders."
 msgstr "'hint_normal_roughness_texture' не підтримується у шейдерах '%s'."
@@ -18202,6 +20100,9 @@ msgstr ""
 msgid "Expected an identifier after type."
 msgstr "Очікується ідентифікатор після типу."
 
+msgid "'%s' qualifier cannot be used with a function return type."
+msgstr "'%s' кваліфікатор не можна використовувати з типом повернення функції."
+
 msgid ""
 "The '%s' qualifier cannot be used within a function parameter declared with "
 "'%s'."
@@ -18232,6 +20133,13 @@ msgstr "Очікується '{' на початку функції."
 
 msgid "Expected at least one '%s' statement in a non-void function."
 msgstr "Очікується хоча б один оператор '%s' у функції, що не є void."
+
+msgid ""
+"Varying with integer data type must be declared with `%s` interpolation "
+"qualifier."
+msgstr ""
+"Варіанти з цілочисельним типом даних повинні бути оголошені за допомогою "
+"кваліфікатора інтерполяції `%s`."
 
 msgid "uniform buffer"
 msgstr "рівномірний буфер"
@@ -18269,11 +20177,17 @@ msgstr "'##' не має з'являтися на початку розгорт�
 msgid "'##' must not appear at end of macro expansion."
 msgstr "'##' не має з’являтися в кінці розгортання макросу."
 
+msgid "Unmatched '%s' directive."
+msgstr "Невідповідна директива \"%s\"."
+
 msgid "Missing condition."
 msgstr "Відсутня умова."
 
 msgid "Condition evaluation error."
 msgstr "Помилка при аналізі умови."
+
+msgid "Invalid '%s' directive."
+msgstr "Недійсна директива \"%s\"."
 
 msgid "Shader include file does not exist:"
 msgstr "Файл включення шейдера не існує:"
@@ -18292,6 +20206,9 @@ msgstr "Знайдено циклічне включення"
 
 msgid "Shader max include depth exceeded."
 msgstr "Перевищено максимальну глибину включення шейдерів."
+
+msgid "Cannot use '%s' on built-in define."
+msgstr "Не можна використовувати '%s' у вбудованому визначенні."
 
 msgid "Macro expansion limit exceeded."
 msgstr "Перевищено ліміт макророзширення."

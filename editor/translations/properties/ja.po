@@ -2454,14 +2454,14 @@ msgstr "ツールチップ位置のオフセット"
 msgid "Show Image"
 msgstr "画像を表示"
 
-msgid "Image"
-msgstr "画像"
-
 msgid "Fullsize"
 msgstr "フルサイズ"
 
 msgid "Use Filter"
 msgstr "フィルターを使用"
+
+msgid "Image"
+msgstr "画像"
 
 msgid "Minimum Display Time"
 msgstr "最小表示時間"
@@ -3540,11 +3540,11 @@ msgstr "ノード名の命名規則"
 msgid "Shapes"
 msgstr "シェイプ"
 
-msgid "Anti Aliasing"
-msgstr "アンチエイリアス"
-
 msgid "Viewport"
 msgstr "ビューポート"
+
+msgid "Anti Aliasing"
+msgstr "アンチエイリアス"
 
 msgid "Screen Space AA"
 msgstr "スクリーンスペースAA"

@@ -2837,14 +2837,14 @@ msgstr "Offset della posizione dei suggerimenti"
 msgid "Show Image"
 msgstr "Mostra immagine"
 
-msgid "Image"
-msgstr "Immagine"
-
 msgid "Fullsize"
 msgstr "Dimensioni intere"
 
 msgid "Use Filter"
 msgstr "Usa filtro"
+
+msgid "Image"
+msgstr "Immagine"
 
 msgid "Minimum Display Time"
 msgstr "Tempo minimo di visualizzazione"
@@ -7439,23 +7439,14 @@ msgstr "Contatti visualizzati massimi"
 msgid "Draw 2D Outlines"
 msgstr "Disegna contorni 2D"
 
-msgid "Anti Aliasing"
-msgstr "Antialiasing"
-
-msgid "MSAA 2D"
-msgstr "2D MSAA"
-
-msgid "MSAA 3D"
-msgstr "3D MSAA"
-
 msgid "Viewport"
 msgstr "Viewport"
 
 msgid "Transparent Background"
 msgstr "Sfondo trasparente"
 
-msgid "HDR 2D"
-msgstr "Alta gamma dinamica 2D (HDR)"
+msgid "Anti Aliasing"
+msgstr "Antialiasing"
 
 msgid "Screen Space AA"
 msgstr "Antialiasing nello spazio dello schermo"
@@ -7498,9 +7489,6 @@ msgstr "Ombre posizionali"
 
 msgid "Atlas Size"
 msgstr "Grandezza dell'atlante"
-
-msgid "Atlas 16 Bits"
-msgstr "Atlante a 16 bit"
 
 msgid "Atlas Quadrant 0 Subdiv"
 msgstr "Suddivisione del quadrante n.0 nell'atlante"
@@ -7555,6 +7543,12 @@ msgstr "Sfondo trasparente"
 
 msgid "Handle Input Locally"
 msgstr "Gestisci gli input localmente"
+
+msgid "MSAA 2D"
+msgstr "2D MSAA"
+
+msgid "MSAA 3D"
+msgstr "3D MSAA"
 
 msgid "Debug Draw"
 msgstr "Disegno per debug"
@@ -10334,6 +10328,9 @@ msgstr "Usa unità di luce fisica"
 msgid "Soft Shadow Filter Quality"
 msgstr "Qualità del filtro di ombre morbide"
 
+msgid "Atlas 16 Bits"
+msgstr "Atlante a 16 bit"
+
 msgid "Shadow Atlas"
 msgstr "Atlas delle ombre"
 
@@ -10432,6 +10429,9 @@ msgstr "Dissolvenza da"
 
 msgid "Fadeout To"
 msgstr "Dissolvenza a"
+
+msgid "HDR 2D"
+msgstr "Alta gamma dinamica 2D (HDR)"
 
 msgid "Screen Space Roughness Limiter"
 msgstr "Limitatore di rugosità nello spazio dello schermo"

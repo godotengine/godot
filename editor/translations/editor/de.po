@@ -16272,12 +16272,6 @@ msgstr ""
 "Benötigte Vorlagen-Bibliothek „%s“ nicht gefunden. Es könnte im Vorlagen-"
 "Archiv fehlen."
 
-msgid "ARM64 simulator library, generating from device library."
-msgstr "ARM64-Simulatorbibliothek, aus Gerätebibliothek generieren."
-
-msgid "Unable to generate ARM64 simulator library."
-msgstr "ARM64-Simulator-Bibliothek kann nicht generiert werden."
-
 msgid "Could not copy a file at path \"%s\" to \"%s\"."
 msgstr "Datei im Pfad „%s“ konnte nicht nach \"%s\" kopiert werden."
 
@@ -18156,10 +18150,6 @@ msgstr "Ein Objekt des Typs ‚%s‘ kann nicht indiziert werden."
 
 msgid "Invalid base type for increment/decrement operator."
 msgstr "Ungültiger Basistyp für Inkrement-/Dekrement-Operator."
-
-msgid "Invalid use of increment/decrement operator in a constant expression."
-msgstr ""
-"Ungültige Verwendung von Inkrement-/Dekrement-Operator in konstantem Ausdruck."
 
 msgid "Invalid token for the operator: '%s'."
 msgstr "Ungültiges Zeichen für Operator: ‚%s‘."
