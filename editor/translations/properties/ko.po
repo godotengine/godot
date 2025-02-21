@@ -2556,14 +2556,14 @@ msgstr "툴팁 위치 오프셋"
 msgid "Show Image"
 msgstr "이미지 표시"
 
-msgid "Image"
-msgstr "영상"
-
 msgid "Fullsize"
 msgstr "전체 크기"
 
 msgid "Use Filter"
 msgstr "필터 사용"
+
+msgid "Image"
+msgstr "영상"
 
 msgid "Minimum Display Time"
 msgstr "최소 표시 시간"
@@ -6126,20 +6126,14 @@ msgstr "표시할 최대 접촉 수"
 msgid "Draw 2D Outlines"
 msgstr "2D 윤곽선 그리기"
 
-msgid "Anti Aliasing"
-msgstr "안티 앨리어싱"
-
-msgid "MSAA 2D"
-msgstr "MSAA 2D"
-
-msgid "MSAA 3D"
-msgstr "MSAA 3D"
-
 msgid "Viewport"
 msgstr "뷰포트"
 
 msgid "Transparent Background"
 msgstr "투명한 배경색"
+
+msgid "Anti Aliasing"
+msgstr "안티 앨리어싱"
 
 msgid "Screen Space AA"
 msgstr "화면공간 AA"
@@ -6179,6 +6173,12 @@ msgstr "빛과 그림자"
 
 msgid "SDF"
 msgstr "SDF"
+
+msgid "MSAA 2D"
+msgstr "MSAA 2D"
+
+msgid "MSAA 3D"
+msgstr "MSAA 3D"
 
 msgid "Audio Listener"
 msgstr "오디오 리스너"

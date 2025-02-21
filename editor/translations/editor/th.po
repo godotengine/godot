@@ -6792,9 +6792,6 @@ msgstr "Object ของประเภท '%s' ไม่สามารถ Inde
 msgid "Invalid base type for increment/decrement operator."
 msgstr "Base Type ของ Increment/Decrement Operator ไม่ถูกต้อง"
 
-msgid "Invalid use of increment/decrement operator in a constant expression."
-msgstr "การใช้ Increment/Decrement Operator สำหรับ Constant Expression ไม่ถูกต้อง"
-
 msgid "Invalid token for the operator: '%s'."
 msgstr "Token สำหรับ Operator ไม่ถูกต้อง: '%s'"
 

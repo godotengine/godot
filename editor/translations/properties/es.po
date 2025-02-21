@@ -2908,14 +2908,14 @@ msgstr "Offset de Posición del Tooltip"
 msgid "Show Image"
 msgstr "Mostrar Imagen"
 
-msgid "Image"
-msgstr "imagen"
-
 msgid "Fullsize"
 msgstr "Tamaño completo"
 
 msgid "Use Filter"
 msgstr "Usar Filtro"
+
+msgid "Image"
+msgstr "imagen"
 
 msgid "Minimum Display Time"
 msgstr "Tiempo Mínimo de Visualización"
@@ -7597,23 +7597,14 @@ msgstr "Máximo de Contactos Mostrados"
 msgid "Draw 2D Outlines"
 msgstr "Dibujar Contornos 2D"
 
-msgid "Anti Aliasing"
-msgstr "Anti Aliasing"
-
-msgid "MSAA 2D"
-msgstr "MSAA 2D"
-
-msgid "MSAA 3D"
-msgstr "MSAA 3D"
-
 msgid "Viewport"
 msgstr "Viewport"
 
 msgid "Transparent Background"
 msgstr "Fondo Transparente"
 
-msgid "HDR 2D"
-msgstr "Alto Rango Dinámico 2D (HDR)"
+msgid "Anti Aliasing"
+msgstr "Anti Aliasing"
 
 msgid "Screen Space AA"
 msgstr "Espacio de Pantalla AA"
@@ -7656,9 +7647,6 @@ msgstr "Sombra Posicional"
 
 msgid "Atlas Size"
 msgstr "Tamaño de Atlas"
-
-msgid "Atlas 16 Bits"
-msgstr "Atlas de 16 Bits"
 
 msgid "Atlas Quadrant 0 Subdiv"
 msgstr "Subdivisión del Cuadrante 0 del Atlas"
@@ -7713,6 +7701,12 @@ msgstr "Fondo Transparente"
 
 msgid "Handle Input Locally"
 msgstr "Manejar Entradas Localmente"
+
+msgid "MSAA 2D"
+msgstr "MSAA 2D"
+
+msgid "MSAA 3D"
+msgstr "MSAA 3D"
 
 msgid "Debug Draw"
 msgstr "Depurar Dibujo"
@@ -10507,6 +10501,9 @@ msgstr "Usar Unidades de Luz Física"
 msgid "Soft Shadow Filter Quality"
 msgstr "Calidad del Filtro de Sombras Suaves"
 
+msgid "Atlas 16 Bits"
+msgstr "Atlas de 16 Bits"
+
 msgid "Shadow Atlas"
 msgstr "Sombra del Atlas"
 
@@ -10605,6 +10602,9 @@ msgstr "Desvanecimiento desde"
 
 msgid "Fadeout To"
 msgstr "Desvanecimiento hasta"
+
+msgid "HDR 2D"
+msgstr "Alto Rango Dinámico 2D (HDR)"
 
 msgid "Screen Space Roughness Limiter"
 msgstr "Limitador de Rugosidad en Espacio de Pantalla"

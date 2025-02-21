@@ -1966,14 +1966,14 @@ msgstr "Hiire Kursor"
 msgid "Show Image"
 msgstr "Näita Pilti"
 
-msgid "Image"
-msgstr "Pilt"
-
 msgid "Fullsize"
 msgstr "Täissuurus"
 
 msgid "Use Filter"
 msgstr "Kasuta Filtrit"
+
+msgid "Image"
+msgstr "Pilt"
 
 msgid "Minimum Display Time"
 msgstr "Minimaalne Näitamise Aeg"

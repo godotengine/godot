@@ -2554,14 +2554,14 @@ msgstr "Deslocamento de Posição da Dica de Ferramenta"
 msgid "Show Image"
 msgstr "Mostrar Imagem"
 
-msgid "Image"
-msgstr "Imagem"
-
 msgid "Fullsize"
 msgstr "Tamanho Inteiro"
 
 msgid "Use Filter"
 msgstr "Usar Filtro"
+
+msgid "Image"
+msgstr "Imagem"
 
 msgid "Minimum Display Time"
 msgstr "Tempo mínimo de exibição"
@@ -5313,15 +5313,6 @@ msgstr "Cor da Geometria"
 msgid "Anti Aliasing"
 msgstr "Anti Serrilhamento"
 
-msgid "MSAA 2D"
-msgstr "'MSAA 2D'"
-
-msgid "MSAA 3D"
-msgstr "'MSAA 3D'"
-
-msgid "HDR 2D"
-msgstr "HDR 2D(High Dynamic Range 2d / Alto Alcance Dinâmico 2d)"
-
 msgid "Use Debanding"
 msgstr "Usar Debanding"
 
@@ -5363,6 +5354,12 @@ msgstr "Início Automático"
 
 msgid "Transparent BG"
 msgstr "Fundo Transparente"
+
+msgid "MSAA 2D"
+msgstr "'MSAA 2D'"
+
+msgid "MSAA 3D"
+msgstr "'MSAA 3D'"
 
 msgid "Debug Draw"
 msgstr "Desenho da Depuração"
@@ -6533,6 +6530,9 @@ msgstr "Usar Filtro Mipmap Mais Próximo"
 
 msgid "Depth of Field Use Jitter"
 msgstr "Profundidade de campo usando jitter"
+
+msgid "HDR 2D"
+msgstr "HDR 2D(High Dynamic Range 2d / Alto Alcance Dinâmico 2d)"
 
 msgid "Screen Space Roughness Limiter"
 msgstr "Limitador de rugosidade do espaço da tela"

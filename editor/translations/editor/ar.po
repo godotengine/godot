@@ -16269,9 +16269,6 @@ msgstr "لا يمكن فهرسة كائن من النوع '%s'."
 msgid "Invalid base type for increment/decrement operator."
 msgstr "نوع أساسي غير صالح لعامل الزيادة/الإنقاص."
 
-msgid "Invalid use of increment/decrement operator in a constant expression."
-msgstr "استخدام غير صالح لعامل الزيادة/التناقص في تعبير ثابت."
-
 msgid "Invalid token for the operator: '%s'."
 msgstr "رمز مميز غير صالح لعامل التشغيل: '%s'."
 

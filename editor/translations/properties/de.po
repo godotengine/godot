@@ -2902,14 +2902,14 @@ msgstr "Versatz des Tooltips"
 msgid "Show Image"
 msgstr "Bild anzeigen"
 
-msgid "Image"
-msgstr "Bild"
-
 msgid "Fullsize"
 msgstr "Orginalgröße"
 
 msgid "Use Filter"
 msgstr "Filter verwenden"
+
+msgid "Image"
+msgstr "Bild"
 
 msgid "Minimum Display Time"
 msgstr "Minimale Anzeigedauer"
@@ -7591,23 +7591,14 @@ msgstr "Max. angezeigte Kontakte"
 msgid "Draw 2D Outlines"
 msgstr "2D-Umrisse zeichnen"
 
-msgid "Anti Aliasing"
-msgstr "Antialiasing"
-
-msgid "MSAA 2D"
-msgstr "MSAA 2D"
-
-msgid "MSAA 3D"
-msgstr "MSAA 3D"
-
 msgid "Viewport"
 msgstr "Viewport"
 
 msgid "Transparent Background"
 msgstr "Transparenter Hintergrund"
 
-msgid "HDR 2D"
-msgstr "HDR 2D"
+msgid "Anti Aliasing"
+msgstr "Antialiasing"
 
 msgid "Screen Space AA"
 msgstr "Screen-Space AA"
@@ -7650,9 +7641,6 @@ msgstr "Positionsschatten"
 
 msgid "Atlas Size"
 msgstr "Atlasgröße"
-
-msgid "Atlas 16 Bits"
-msgstr "Atlas 16 Bits"
 
 msgid "Atlas Quadrant 0 Subdiv"
 msgstr "Atlas-Quadrant 0 Subdiv"
@@ -7707,6 +7695,12 @@ msgstr "Transparenter HG"
 
 msgid "Handle Input Locally"
 msgstr "Eingaben lokal behandeln"
+
+msgid "MSAA 2D"
+msgstr "MSAA 2D"
+
+msgid "MSAA 3D"
+msgstr "MSAA 3D"
 
 msgid "Debug Draw"
 msgstr "Debug-Zeichnen"
@@ -10501,6 +10495,9 @@ msgstr "Physikalische Lichteinheiten verwenden"
 msgid "Soft Shadow Filter Quality"
 msgstr "Weichschattenfilterqualität"
 
+msgid "Atlas 16 Bits"
+msgstr "Atlas 16 Bits"
+
 msgid "Shadow Atlas"
 msgstr "Schattenatlas"
 
@@ -10599,6 +10596,9 @@ msgstr "Fade-Out von"
 
 msgid "Fadeout To"
 msgstr "Fade-Out nach"
+
+msgid "HDR 2D"
+msgstr "HDR 2D"
 
 msgid "Screen Space Roughness Limiter"
 msgstr "Screen-Space-Grobheitsbegrenzer"

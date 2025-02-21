@@ -204,13 +204,14 @@
 # СТАРЫЙ ХЛЕБ <ctapiuxleb1@gmail.com>, 2024.
 # Kiril Yakymchuk <stbestich@gmail.com>, 2025.
 # ogyrec <ogyrec.off@gmail.com>, 2025.
+# Mister Ky <afanasievsergiy3524@gmail.com>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-01-26 10:28+0000\n"
-"Last-Translator: ogyrec <ogyrec.off@gmail.com>\n"
+"PO-Revision-Date: 2025-02-11 01:02+0000\n"
+"Last-Translator: Mister Ky <afanasievsergiy3524@gmail.com>\n"
 "Language-Team: Russian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ru/>\n"
 "Language: ru\n"
@@ -820,6 +821,16 @@ msgstr "Изменить длину анимации"
 msgid "Change Animation Loop"
 msgstr "Изменить цикл анимации"
 
+msgid ""
+"Can't change loop mode on animation embedded in another scene.\n"
+"\n"
+"You must open this scene and change the animation's loop mode from there."
+msgstr ""
+"Невозможно изменить режим зацикливания для анимации, встроенной в другую "
+"сцену.\n"
+"\n"
+"Вы должны открыть эту сцену и оттуда изменить режим зацикливания анимации."
+
 msgid "Property Track..."
 msgstr "Дорожка свойства…"
 
@@ -1211,6 +1222,9 @@ msgstr "Показывать дорожки только выделенных в
 
 msgid "Group tracks by node or display them as plain list."
 msgstr "Группировать дорожки по узлам или показывать их как простой список."
+
+msgid "Apply snapping to selected key(s)."
+msgstr "Дублировать выделенные ключи."
 
 msgid "Animation step value."
 msgstr "Значение шага анимации."
@@ -1685,7 +1699,13 @@ msgid "Create New %s"
 msgstr "Создать %s"
 
 msgid "No results for \"%s\"."
-msgstr "Нет результатов для «%s»."
+msgstr "Нет результатов для \"%s\"."
+
+msgid "Script path: %s"
+msgstr "Путь скрипта: %s"
+
+msgid "The script will run in the editor."
+msgstr "Скрипт будет запущен в редакторе."
 
 msgid "This class is marked as deprecated."
 msgstr "Этот класс помечен как устаревший."
@@ -2132,6 +2152,9 @@ msgid "Using slashes in folder names will create subfolders recursively."
 msgstr ""
 "Использование косой черты в именах папок приведет к рекурсивному созданию "
 "подпапок."
+
+msgid "Base path: %s"
+msgstr "Базовый путь: %s"
 
 msgid "Folder name is valid."
 msgstr "Имя папки является допустимым."
@@ -2855,6 +2878,9 @@ msgstr "Импорт профилей"
 
 msgid "Manage Editor Feature Profiles"
 msgstr "Управление профилями возможностей редактора"
+
+msgid "Verifying GDExtensions..."
+msgstr "Проверка GDExtensions..."
 
 msgid "Some extensions need the editor to restart to take effect."
 msgstr ""
@@ -4340,6 +4366,12 @@ msgstr "Новое значение:"
 msgid "(Nil) %s"
 msgstr "(Nil) %s"
 
+msgid "%s%s (size %d)"
+msgstr "%s%s (размер %d)"
+
+msgid "%s (size %d)"
+msgstr "%s (размер %d)"
+
 msgid "Size:"
 msgstr "Размер:"
 
@@ -4437,6 +4469,9 @@ msgstr "Нет"
 
 msgid "Common"
 msgstr "Общие"
+
+msgid "Event %d"
+msgstr "Событие %d"
 
 msgid "Editor Settings"
 msgstr "Настройки редактора"
@@ -4683,6 +4718,9 @@ msgstr "Не удалось открыть файл для чтения из и�
 
 msgid "Save ZIP"
 msgstr "Сохранить ZIP"
+
+msgid "Failed to move temporary file \"%s\" to \"%s\"."
+msgstr "Не удалось переместить временный файл \"%s\" в \"%s\"."
 
 msgid "Custom debug template not found."
 msgstr "Пользовательский отладочный шаблон не найден."
@@ -5298,6 +5336,9 @@ msgstr "Дублирование папки:"
 msgid "Create Folder"
 msgstr "Создать папку"
 
+msgid "Could not create folder: %s"
+msgstr "Не удалось создать папку: %s"
+
 msgid "New Inherited Scene"
 msgstr "Новая унаследованная сцена"
 
@@ -5357,6 +5398,9 @@ msgstr "Добавить в избранное"
 
 msgid "Remove from Favorites"
 msgstr "Удалить из избранного"
+
+msgid "Convert to..."
+msgstr "Преобразовать в..."
 
 msgid "Reimport"
 msgstr "Повторить импорт"
@@ -5747,6 +5791,12 @@ msgstr "Вложенные ресурсы не найдены."
 msgid "Open a list of sub-resources."
 msgstr "Открыть список вложенных ресурсов."
 
+msgid "No results found"
+msgstr "Результатов не найдено"
+
+msgid " (recently opened)"
+msgstr " (недавно открыт)"
+
 msgid "Play the project."
 msgstr "Запустить проект."
 
@@ -5879,6 +5929,9 @@ msgstr "Разблокировать узел"
 
 msgid "Ungroup Children"
 msgstr "Разгруппировать дочерние элементы"
+
+msgid "Revoke unique name for node \"%s\"?"
+msgstr "Отменить уникальное имя для узла \"%s\"?"
 
 msgid "Disable Scene Unique Name"
 msgstr "Отключить уникальное имя в сцене"
@@ -8365,6 +8418,9 @@ msgstr "Размер восточноазиатских шрифтов"
 msgid "Numeral Alignment"
 msgstr "Выравнивание для чисел"
 
+msgid "Variation"
+msgstr "Вариация"
+
 msgid "Unable to preview font"
 msgstr "Не удалось отобразить шрифт"
 
@@ -8529,11 +8585,17 @@ msgstr ""
 msgid "Bake Lightmaps"
 msgstr "Запекать карты освещения"
 
+msgid "Lightmap baking is not supported on this GPU (%s)."
+msgstr "Запекание карты освещения не поддерживается на этом GPU (%s)."
+
 msgid "LightMap Bake"
 msgstr "Запекание карты освещения"
 
 msgid "Select lightmap bake file:"
 msgstr "Выберите файл запекания карты освещения:"
+
+msgid "Preview is not available for this shader mode."
+msgstr "Предварительный просмотр недоступен для этого режима шейдера."
 
 msgid "Couldn't create a Trimesh collision shape."
 msgstr "Невозможно создать форму столкновений с треугольной сеткой."
@@ -8916,6 +8978,9 @@ msgstr "Задний ортогональный"
 
 msgid "Rear Perspective"
 msgstr "Задний перспективный"
+
+msgid "[auto]"
+msgstr "[авто]"
 
 msgid "X-Axis Transform."
 msgstr "Преобразование по X."
@@ -16212,13 +16277,6 @@ msgstr ""
 "Запрошенная библиотека шаблонов «%s» не найдена. Возможно, она отсутствует в "
 "вашем архиве шаблонов."
 
-msgid "ARM64 simulator library, generating from device library."
-msgstr ""
-"Библиотека моделирования ARM64, генерируемая на основе библиотеки устройств."
-
-msgid "Unable to generate ARM64 simulator library."
-msgstr "Не удалось сгенерировать библиотеку моделирования ARM64."
-
 msgid "Could not copy a file at path \"%s\" to \"%s\"."
 msgstr "Не удалось скопировать файл по пути «%s» в «%s»."
 
@@ -18072,11 +18130,6 @@ msgstr "Объект типа «%s» нельзя проиндексироват
 msgid "Invalid base type for increment/decrement operator."
 msgstr "Некорректный базовый тип для оператора инкремента/декремента."
 
-msgid "Invalid use of increment/decrement operator in a constant expression."
-msgstr ""
-"Некорректное использование оператора инкремента/декремента в константном "
-"выражении."
-
 msgid "Invalid token for the operator: '%s'."
 msgstr "Неверный токен для оператора: «%s»."
 
@@ -18439,6 +18492,9 @@ msgstr "«##» не должно появляться в начале развё
 
 msgid "'##' must not appear at end of macro expansion."
 msgstr "«##» не должно появляться в конце развёртывания макроса."
+
+msgid "Unmatched '%s' directive."
+msgstr "Несоответствующая директива \"%s\"."
 
 msgid "Missing condition."
 msgstr "Пропущено условие."

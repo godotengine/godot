@@ -6,13 +6,13 @@
 # George Dzavashvili <dzavashviligeorge@gmail.com>, 2018.
 # დემეტრე შონია <blender.animation.maker@gmail.com>, 2019.
 # Rati Nikolaishvili <rati.nikolaishvili@gmail.com>, 2019.
-# Temuri Doghonadze <temuri.doghonadze@gmail.com>, 2023, 2024.
+# Temuri Doghonadze <temuri.doghonadze@gmail.com>, 2023, 2024, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-08-03 08:09+0000\n"
+"PO-Revision-Date: 2025-02-11 01:03+0000\n"
 "Last-Translator: Temuri Doghonadze <temuri.doghonadze@gmail.com>\n"
 "Language-Team: Georgian <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/ka/>\n"
@@ -21,7 +21,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.7-dev\n"
+"X-Generator: Weblate 5.10-dev\n"
 
 msgid "Application"
 msgstr "აპლიკაცია"
@@ -1836,11 +1836,11 @@ msgstr "ხელით მითითებული გამოსახუ�
 msgid "Show Image"
 msgstr "გამოსახულების ჩვენება"
 
-msgid "Image"
-msgstr "გამოსახულება"
-
 msgid "Use Filter"
 msgstr "ფილტრის გამოყენება"
+
+msgid "Image"
+msgstr "გამოსახულება"
 
 msgid "Minimum Display Time"
 msgstr "მინიმალური ჩვენების დრო"
@@ -4533,23 +4533,14 @@ msgstr "გეომეტრიის სიგანე"
 msgid "Max Contacts Displayed"
 msgstr "მაქს ნაჩვენები კონტაქტები"
 
-msgid "Anti Aliasing"
-msgstr "მომრგვალება"
-
-msgid "MSAA 2D"
-msgstr "MSAA 2D"
-
-msgid "MSAA 3D"
-msgstr "MSAA 3D"
-
 msgid "Viewport"
 msgstr "ჩვენების არე"
 
 msgid "Transparent Background"
 msgstr "გამჭვირვალე ფონი"
 
-msgid "HDR 2D"
-msgstr "HDR 2D"
+msgid "Anti Aliasing"
+msgstr "მომრგვალება"
 
 msgid "Snap"
 msgstr "მიბმა"
@@ -4562,9 +4553,6 @@ msgstr "VRS"
 
 msgid "Positional Shadow"
 msgstr "პოზიციური ჩრდილი"
-
-msgid "Atlas 16 Bits"
-msgstr "Atlas 16 Bits"
 
 msgid "SDF"
 msgstr "SDF"
@@ -4589,6 +4577,12 @@ msgstr "3D-ის გათიშვა"
 
 msgid "World 3D"
 msgstr "სამყარო 3D"
+
+msgid "MSAA 2D"
+msgstr "MSAA 2D"
+
+msgid "MSAA 3D"
+msgstr "MSAA 3D"
 
 msgid "Scaling 3D"
 msgstr "3D-ის დამასშტაბება"
@@ -5210,6 +5204,9 @@ msgstr "ტექსტურის არხი"
 
 msgid "Operator"
 msgstr "ოპერატორი"
+
+msgid "Rim"
+msgstr "ფერსო"
 
 msgid "Clearcoat"
 msgstr "გამჭვირვალე ზედაპირი"
@@ -6408,6 +6405,9 @@ msgstr "შეკუმშვის მეთოდი"
 msgid "Lossless Compression Factor"
 msgstr "კარგვისგარეშე შეკუმშვის ფაქტორი"
 
+msgid "Atlas 16 Bits"
+msgstr "Atlas 16 Bits"
+
 msgid "Shader Compiler"
 msgstr "შეიდერის კომპილატორი"
 
@@ -6473,6 +6473,9 @@ msgstr "მინავლება საიდან"
 
 msgid "Fadeout To"
 msgstr "მინავლება სადამდე"
+
+msgid "HDR 2D"
+msgstr "HDR 2D"
 
 msgid "Light Projectors"
 msgstr "სინათლის პროექტორები"

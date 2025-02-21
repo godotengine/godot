@@ -112,12 +112,13 @@
 # Makro <23makro@gmail.com>, 2024.
 # Emre Kadir Karagöz <emrekadir197@gmail.com>, 2024.
 # ulk <ulk.info@gmail.com>, 2024, 2025.
+# Murateba <robloxmurat5@gmail.com>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-01-01 13:01+0000\n"
+"PO-Revision-Date: 2025-02-19 01:08+0000\n"
 "Last-Translator: ulk <ulk.info@gmail.com>\n"
 "Language-Team: Turkish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/tr/>\n"
@@ -126,7 +127,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.10-dev\n"
+"X-Generator: Weblate 5.10.1-dev\n"
 
 msgid "Main Thread"
 msgstr "Ana İş Parçası"
@@ -340,7 +341,7 @@ msgid "Page Down"
 msgstr "Sayfa Aşağı Tuşu"
 
 msgid "Home"
-msgstr "Home"
+msgstr "Baş konum"
 
 msgid "End"
 msgstr "Bitiş"
@@ -1345,11 +1346,50 @@ msgstr "Tümünü Seç /Seçimleri Kaldır"
 msgid "Animation Change Keyframe Time"
 msgstr "Canlandırma Anahtar Kare Zamanını Değiştir"
 
+msgid "Insert Marker..."
+msgstr "İşaretçi Ekle..."
+
+msgid "Rename Marker"
+msgstr "İşaretçiyi Yeniden Adlandır"
+
+msgid "Delete Marker(s)"
+msgstr "İşaretçi(leri) Sil"
+
+msgid "Show All Marker Names"
+msgstr "Tüm İşaretçi İsimlerini Göster"
+
+msgid "Marker:"
+msgstr "İşaretçi:"
+
+msgid "Marker '%s' already exists!"
+msgstr "'%s' işaretçisi zaten var!"
+
+msgid "Add Marker Key"
+msgstr "İşaretçi Anahtarı Ekle"
+
+msgid "Empty marker names are not allowed."
+msgstr "Boş işaretçi isimlerine izin verilmez."
+
+msgid "Insert Marker"
+msgstr "İşaretçi Ekle"
+
+msgid "Marker Name"
+msgstr "İşaretçi İsmi"
+
+msgid "Marker Color"
+msgstr "İşaretçi Rengi"
+
 msgid "Close"
 msgstr "Kapat"
 
 msgid "Error!"
 msgstr "Hata!"
+
+msgid "Change Marker Name:"
+msgstr "İşaretçi İsmini Değiştir:"
+
+msgid "Multi Edit Marker Color"
+msgstr "İşaretçi Rengini Çoklu Düzenle"
 
 msgid "Add Audio Track Clip"
 msgstr "Ses İz Parçası Ekle"
@@ -1596,6 +1636,9 @@ msgstr "Yeni %s Oluştur"
 msgid "No results for \"%s\"."
 msgstr "\"%s\" için sonuç yok."
 
+msgid "Script path: %s"
+msgstr "Betik yolu: %s"
+
 msgid "This class is marked as deprecated."
 msgstr "Bu sınıf, kullanım dışı olarak işaretlenmiştir."
 
@@ -1626,6 +1669,9 @@ msgstr "Tanımlama:"
 msgid "Remote %s:"
 msgstr "Uzak %s:"
 
+msgid "Session %d"
+msgstr "Oturum %d"
+
 msgid "Debugger"
 msgstr "Hata Ayıklayıcı"
 
@@ -1655,6 +1701,9 @@ msgstr ""
 
 msgid "Toggle Visibility"
 msgstr "Görünürlüğü Aç/Kapat"
+
+msgid "Expression to evaluate"
+msgstr "Değerlendirilecek işlem"
 
 msgid "Clear"
 msgstr "Temizle"
@@ -1858,6 +1907,9 @@ msgstr "Hepsini Genişlet"
 msgid "Collapse All"
 msgstr "Hepsini Daralt"
 
+msgid "Evaluator"
+msgstr "Değerlendirici"
+
 msgid "Profiler"
 msgstr "Profil Çıkarıcı"
 
@@ -1985,6 +2037,9 @@ msgstr ""
 
 msgid "Cannot remove:"
 msgstr "Kaldırılamıyor:"
+
+msgid "Dependencies of files to be deleted:"
+msgstr "Dosyaların silinecek bağımlılıkları:"
 
 msgid "Error loading:"
 msgstr "Yüklerken hata:"
@@ -2680,6 +2735,9 @@ msgid "Provides an overview of the editor's and each scene's undo history."
 msgstr ""
 "Düzenleyicinin ve her sahnenin geri alma geçmişine genel bir bakış sağlar."
 
+msgid "Provides tools for selecting and debugging nodes at runtime."
+msgstr "Çalışma zamanında düğümleri seçme ve hata ayıklama için araçlar sağlar."
+
 msgid "(current)"
 msgstr "(geçerli olan)"
 
@@ -2769,6 +2827,9 @@ msgstr "Profil(leri) İçe Aktar"
 msgid "Manage Editor Feature Profiles"
 msgstr "Düzenleyici Özellik Profillerini Yönet"
 
+msgid "Initializing plugins..."
+msgstr "Eklentiler başlatılıyor..."
+
 msgid "Some extensions need the editor to restart to take effect."
 msgstr ""
 "Bazı uzantılar etkili olabilmeleri için editörün yeniden başlatılmasını "
@@ -2793,8 +2854,17 @@ msgstr ""
 msgid "(Re)Importing Assets"
 msgstr "Varlıklar (Yeniden)İçe Aktarılıyor"
 
+msgid "Executing pre-reimport operations..."
+msgstr "Yeniden içe aktarma öncesi işlemler yürütülüyor..."
+
 msgid "Import resources of type: %s"
 msgstr "Şu tür kaynakları içe aktar: %s"
+
+msgid "Finalizing Asset Import..."
+msgstr "Varlık İçe Aktarımı Tamamlanıyor..."
+
+msgid "Executing post-reimport operations..."
+msgstr "Yeniden içe aktarma sonrası işlemler yürütülüyor..."
 
 msgid "This method supports a variable number of arguments."
 msgstr "Bu yöntem, değişen sayıda girdi değişkenini destekler."
@@ -3082,8 +3152,14 @@ msgstr "Sinyal"
 msgid "Annotation"
 msgstr "EkTanımlayıcı"
 
+msgid "TextFile"
+msgstr "MetinDosyası"
+
 msgid "File"
 msgstr "Dosya"
+
+msgid "Invalid path"
+msgstr "Geçersiz yol"
 
 msgid "%d match."
 msgstr "%d eşleşme."
@@ -3141,6 +3217,9 @@ msgstr "Üye Tipi"
 
 msgid "Keywords"
 msgstr "Anahtar Kelimeler"
+
+msgid "Matches the \"%s\" keyword."
+msgstr "\"%s\" anahtar sözcüğü ile uyuşuyor."
 
 msgid "This member is marked as deprecated."
 msgstr "Bu üye kullanım dışı olarak işaretlendi."
@@ -3342,6 +3421,9 @@ msgstr "Özgün Gölgelendirici Kaynak Denetleyicisi"
 
 msgid "Unnamed Project"
 msgstr "İsimsiz Proje"
+
+msgid "Recovery Mode is enabled. Editor functionality has been restricted."
+msgstr "Kurtarma Kipi aktif. Düzenleyici yetenekleri kısıtlandı."
 
 msgid ""
 "Spins when the editor window redraws.\n"
@@ -3551,6 +3633,9 @@ msgstr ""
 
 msgid "Save Scene As..."
 msgstr "Sahneyi Farklı Kaydet..."
+
+msgid "Pack Project as ZIP..."
+msgstr "Projeyi ZIP Olarak Paketle..."
 
 msgid "Can't undo while mouse buttons are pressed."
 msgstr "Fare düğmelerine basılıyken geri alma yapılamaz."
@@ -4249,6 +4334,12 @@ msgstr "Yeni Değer:"
 msgid "(Nil) %s"
 msgstr "(Boş) %s"
 
+msgid "%s%s (size %d)"
+msgstr "%s%s (boyut %d)"
+
+msgid "%s (size %d)"
+msgstr "%s (boyut %d)"
+
 msgid "Size:"
 msgstr "Boyut:"
 
@@ -4326,6 +4417,18 @@ msgstr ""
 "Bu platform için çalıştırılabilir dışa aktarma hazırayarı bulunamadı.\n"
 "Lütfen Dışa Aktar menüsüne çalıştırılabilir bir hazıayar ekleyin, veya mevcut "
 "bir hazırayarı çalıştırılabilir olarak tanımlayın."
+
+msgid "Deploy to First Device in List"
+msgstr "Listedeki İlk Cihaza Yayınla"
+
+msgid "Deploy to Second Device in List"
+msgstr "Listedeki İkinci Cihaza Yayınla"
+
+msgid "Deploy to Third Device in List"
+msgstr "Listedeki Üçüncü Cihaza Yayınla"
+
+msgid "Deploy to Fourth Device in List"
+msgstr "Listedeki Dördüncü Cihaza Yayınla"
 
 msgid "Project Run"
 msgstr "Projeyi Çalıştır"
@@ -4760,6 +4863,12 @@ msgstr ""
 
 msgid "Export templates are missing. Install them from a file."
 msgstr "Dışa aktarma şablonları eksik. Bunları bir dosyadan kurun."
+
+msgid "Not available in offline mode"
+msgstr "Çevrim dışı kipte kullanılabilir değil"
+
+msgid "Template downloading is disabled in offline mode."
+msgstr "Şablon indirme çevrim dışı kipte devre dışı."
 
 msgid "Official export templates aren't available for development builds."
 msgstr ""
@@ -5218,6 +5327,9 @@ msgstr "Klasör çoğaltılıyor:"
 msgid "Create Folder"
 msgstr "Klasör Oluştur"
 
+msgid "Could not create folder: %s"
+msgstr "Klasör oluşturulamadı: %s"
+
 msgid "New Inherited Scene"
 msgstr "Yeni Miras Alınmış Sahne"
 
@@ -5528,8 +5640,8 @@ msgstr "Taşı/Çoğalt: %s"
 
 msgid "Move/Duplicate %d Item"
 msgid_plural "Move/Duplicate %d Items"
-msgstr[0] "%d Ögeyi Taşı/Çoğalt%d Ögeyi Taşı/Çoğalt"
-msgstr[1] ""
+msgstr[0] "%d Ögeyi Taşı/Çoğalt"
+msgstr[1] "%d Ögeleri Taşı/Çoğalt"
 
 msgid "Choose target directory:"
 msgstr "Hedef dizini seçin:"
@@ -5558,6 +5670,9 @@ msgstr ""
 
 msgid "Select This Folder"
 msgstr "Bu Klasörü Seç"
+
+msgid "Show Package Contents"
+msgstr "Paket İçeriklerini Göster"
 
 msgid "All Files"
 msgstr "Tüm Dosyalar"
@@ -5665,6 +5780,12 @@ msgstr "Alt-kaynaklar bulunamadı."
 
 msgid "Open a list of sub-resources."
 msgstr "Alt-kaynakların bir listesini aç."
+
+msgid "Grid view"
+msgstr "Izgara görünümü"
+
+msgid "List view"
+msgstr "Liste görünümü"
 
 msgid "Play the project."
 msgstr "Projeyi oynat."
@@ -6776,6 +6897,12 @@ msgstr "Seçilen Alt Ögeleri Doldur"
 msgid "Invert"
 msgstr "Ters Çevir"
 
+msgid "Start of Animation"
+msgstr "Canlandırma Başı"
+
+msgid "End of Animation"
+msgstr "Canlandırma Sonu"
+
 msgid "Library Name:"
 msgstr "Kütüphane İsmi:"
 
@@ -7004,6 +7131,18 @@ msgstr "Yinelenen Canlandırma İsmi:"
 
 msgid "Onion skinning requires a RESET animation."
 msgstr "Onion skinning, bir RESET (Sıfırlama) canlandırması gerektiriyor."
+
+msgid "Play Animation Backwards from End"
+msgstr "Canlandırmayı Sondan Geriye Doğru Oynat"
+
+msgid "Pause/Stop Animation"
+msgstr "Canlandırmayı Duraklat/Durdur"
+
+msgid "Play Animation from Start"
+msgstr "Canlandırmayı Başlangıç Anından Oynat"
+
+msgid "Play Animation"
+msgstr "Canlandırmayı Oynat"
 
 msgid "Animation position (in seconds)."
 msgstr "Canlandırma konumu (saniye olarak)."
@@ -8585,7 +8724,7 @@ msgstr "Durağan Cisim Alt Ögesi"
 
 msgid "Creates a StaticBody3D as child and assigns collision shapes to it."
 msgstr ""
-"Alt öge olarak bir StaticBody3D oluşturur ve çarpışma şekillerini ona atar."
+"Alt öge olarak bir DurağanCisim3B oluşturur ve çarpışma şekillerini ona atar."
 
 msgid "Collision Shape Type"
 msgstr "Çarpışma Şekli Türü"
@@ -16115,12 +16254,6 @@ msgstr ""
 "İstenilen şablon dosyası, \"%s\", bulunamadı. Şablon arşivinizde eksik "
 "olabilir."
 
-msgid "ARM64 simulator library, generating from device library."
-msgstr "ARM64 simülatör kütüphanesi, cihaz kütüphanesinden üretiliyor."
-
-msgid "Unable to generate ARM64 simulator library."
-msgstr "ARM64 simülatör kütüphanesi üretilemiyor."
-
 msgid "Could not copy a file at path \"%s\" to \"%s\"."
 msgstr "\"%s\" yolundaki bir dosya \"%s\" konumuna kopyalanamadı."
 
@@ -16842,7 +16975,7 @@ msgid ""
 msgstr ""
 "CollisionPolygon2D, yalnızca CollisionObject2D 'den türeyen düğümlere bir "
 "çarpışma şekli sağlamaya hizmet eder. Lütfen onu yalnızca, şunlara şekil "
-"vermek için, onların alt ögesi olarak kullanın: Area2D, StaticBody2D, "
+"vermek için, onların alt ögesi olarak kullanın: Area2D, DurağanCisim2B, "
 "RigidBody2D, CharacterBody2D, vb."
 
 msgid "An empty CollisionPolygon2D has no effect on collision."
@@ -16869,7 +17002,7 @@ msgid ""
 msgstr ""
 "CollisionShape2D (ÇarpışmaŞekil2B) yalnızca CollisionObject2D "
 "(ÇarpışmaŞekil2B) 'den türetilmiş bir düğüme çarpışma şekli vermeye yarar.\n"
-"Lütfen bunu sadece Area2D (Alan2B), StaticBody2D (DuranCisim2B), RigidBody2D "
+"Lütfen bunu sadece Area2D (Alan2B), DurağanCisim2B, RigidBody2D "
 "(KatıCisim2B), CharacterBody2D (HareketliCisim2B), vb. ögelerin alt ögesi "
 "olarak ve onlara bir şekil vermek için kullanın."
 
@@ -17270,9 +17403,9 @@ msgid ""
 msgstr ""
 "ÇarpışmaÇokgen3B (CollisionPolygon3D), yalnızca ÇarpışmaNesne3B "
 "(CollisionObject3D)'den türetilmiş bir düğüme çarpışma şekli vermeye yarar.\n"
-"Lütfen bunu, yalnızca Alan3B (Area3D), DuranCisim3B (StaticBody3D), "
-"KatıCisim3B (RigidBody3D), KarakterCisim3B (CharacterBody3D), vb. düğümlere "
-"bir şekil vermek amacıyla, onların alt-ögesi olarak kullanın."
+"Lütfen bunu, yalnızca Alan3B (Area3D), DurağanCisim3B, KatıCisim3B "
+"(RigidBody3D), KarakterCisim3B (CharacterBody3D), vb. düğümlere bir şekil "
+"vermek amacıyla, onların alt-ögesi olarak kullanın."
 
 msgid "An empty CollisionPolygon3D has no effect on collision."
 msgstr ""
@@ -17298,9 +17431,9 @@ msgid ""
 msgstr ""
 "ÇarpışmaŞekil3B (CollisionShape3D), yalnızca ÇarpışmaNesne3B "
 "(CollisionObject3D)'den türetilmiş bir düğüme, çarpışma şekli vermeye yarar.\n"
-"Lütfen bunu, yalnızca Alan3B (Area3D), DurgunCisim3B (StaticBody3D), "
-"KatıCisim3B (RigidBody3D), KarakterCisim3B (CharacterBody3D), vb. düğümlere "
-"bir şekil vermek amacıyla, onların alt-ögesi olarak kullanın."
+"Lütfen bunu, yalnızca Alan3B (Area3D), DurağanCisim3B, KatıCisim3B "
+"(RigidBody3D), KarakterCisim3B (CharacterBody3D), vb. düğümlere bir şekil "
+"vermek amacıyla, onların alt-ögesi olarak kullanın."
 
 msgid ""
 "A shape must be provided for CollisionShape3D to function. Please create a "
@@ -17316,7 +17449,7 @@ msgid ""
 "set to FREEZE_MODE_STATIC)."
 msgstr ""
 "Çarpışma için kullanılması halinde, ConcavePolygonShape3D düğümü, "
-"StaticBody3D gibi statik CollisionObject3D düğümleriyle çalışmak üzere "
+"DurağanCisim3B gibi durağan CollisionObject3D düğümleriyle çalışmak üzere "
 "tasarlanmıştır.\n"
 "Muhtemelen %s'ler için iyi şekilde davranmayacaktır (dondurulup ve "
 "freeze_mode (donma kipi) değerinin FREEZE_MODE_STATIC olarak ayarlanması "
@@ -17334,7 +17467,7 @@ msgid ""
 "It will likely not behave well for CharacterBody3Ds."
 msgstr ""
 "Çarpışma için kullanılması halinde, ConcavePolygonShape3D düğümü, "
-"StaticBody3D gibi statik CollisionObject3D düğümleriyle çalışmak üzere "
+"DurağanCisim3B gibi durağan CollisionObject3D düğümleriyle çalışmak üzere "
 "tasarlanmıştır.\n"
 "CharacterBody3D'ler için muhtemelen iyi şekilde davranmayacaktır."
 
@@ -17481,7 +17614,7 @@ msgid ""
 "GI."
 msgstr ""
 "Hiç VoxelGI veri kümesi yok, bu nedenle bu düğüm devre dışı bırakıldı. GI'yi "
-"etkinleştirmek için statik nesneleri pişirin."
+"etkinleştirmek için durağan nesneleri pişirin."
 
 msgid ""
 "To have any visible effect, WorldEnvironment requires its \"Environment\" "
@@ -18010,9 +18143,6 @@ msgstr "'%s' türündeki bir nesne, dizine eklenemez."
 
 msgid "Invalid base type for increment/decrement operator."
 msgstr "Artırma/azaltma işleci için geçersiz temel tip."
-
-msgid "Invalid use of increment/decrement operator in a constant expression."
-msgstr "Sabit bir ifade içindeki artırma/azaltma işlecinin geçersiz kullanımı."
 
 msgid "Invalid token for the operator: '%s'."
 msgstr "İşleç için geçersiz simge: '%s'."

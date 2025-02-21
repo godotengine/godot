@@ -2532,14 +2532,14 @@ msgstr "Offset Posisi Tooltip"
 msgid "Show Image"
 msgstr "Tampilkan Gambar"
 
-msgid "Image"
-msgstr "Gambar"
-
 msgid "Fullsize"
 msgstr "Ukuran penuh"
 
 msgid "Use Filter"
 msgstr "Gunakan Filter"
+
+msgid "Image"
+msgstr "Gambar"
 
 msgid "Minimum Display Time"
 msgstr "Waktu Tampilan Minimal"
@@ -6684,20 +6684,14 @@ msgstr "Kontak Maks Ditampilkan"
 msgid "Draw 2D Outlines"
 msgstr "Gambar Garis Besar 2D"
 
-msgid "Anti Aliasing"
-msgstr "Anti Alias"
-
-msgid "MSAA 2D"
-msgstr "MSAA 2D"
-
-msgid "MSAA 3D"
-msgstr "MSAA 3D"
-
 msgid "Viewport"
 msgstr "Viewport"
 
 msgid "Transparent Background"
 msgstr "Latar Belakang Transparan"
+
+msgid "Anti Aliasing"
+msgstr "Anti Alias"
 
 msgid "Screen Space AA"
 msgstr "Ruang Layar AA"
@@ -6740,9 +6734,6 @@ msgstr "Bayangan Posisi"
 
 msgid "Atlas Size"
 msgstr "Ukuran Atlas"
-
-msgid "Atlas 16 Bits"
-msgstr "Atlas 16 Bit"
 
 msgid "Atlas Quadrant 0 Subdiv"
 msgstr "Subdivisi Kuadran 0 Atlas"
@@ -6797,6 +6788,12 @@ msgstr "BG transparan"
 
 msgid "Handle Input Locally"
 msgstr "Tangani Input Secara Lokal"
+
+msgid "MSAA 2D"
+msgstr "MSAA 2D"
+
+msgid "MSAA 3D"
+msgstr "MSAA 3D"
 
 msgid "Debug Draw"
 msgstr "Debug Gambar"
@@ -9263,6 +9260,9 @@ msgstr "Gunakan Satuan Cahaya Fisik"
 
 msgid "Soft Shadow Filter Quality"
 msgstr "Kualitas Filter Bayangan Lembut"
+
+msgid "Atlas 16 Bits"
+msgstr "Atlas 16 Bit"
 
 msgid "Shadow Atlas"
 msgstr "Atlas Bayangan"
