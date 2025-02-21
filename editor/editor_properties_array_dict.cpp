@@ -304,32 +304,40 @@ void EditorPropertyArray::_create_new_property_slot() {
 	int idx = slots.size();
 	HBoxContainer *hbox = memnew(HBoxContainer);
 
+	EditorProperty *prop = memnew(EditorPropertyNil);
+
 	Button *reorder_button = memnew(Button);
 	reorder_button->set_button_icon(get_editor_theme_icon(SNAME("TripleBar")));
 	reorder_button->set_default_cursor_shape(Control::CURSOR_MOVE);
 	reorder_button->set_disabled(is_read_only());
+	reorder_button->set_flat(true);
 	reorder_button->connect(SceneStringName(gui_input), callable_mp(this, &EditorPropertyArray::_reorder_button_gui_input));
 	reorder_button->connect(SNAME("button_up"), callable_mp(this, &EditorPropertyArray::_reorder_button_up));
 	reorder_button->connect(SNAME("button_down"), callable_mp(this, &EditorPropertyArray::_reorder_button_down).bind(idx));
 
-	hbox->add_child(reorder_button);
-	EditorProperty *prop = memnew(EditorPropertyNil);
+	prop->add_inline_control(reorder_button, LEFT);
 	hbox->add_child(prop);
 
 	bool is_untyped_array = object->get_array().get_type() == Variant::ARRAY && subtype == Variant::NIL;
 
+	Button *edit_btn = nullptr;
+	Button *remove_btn = nullptr;
+
 	if (is_untyped_array) {
-		Button *edit_btn = memnew(Button);
+		edit_btn = memnew(Button);
 		edit_btn->set_button_icon(get_editor_theme_icon(SNAME("Edit")));
 		edit_btn->set_disabled(is_read_only());
+		edit_btn->set_flat(true);
 		edit_btn->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyArray::_change_type).bind(edit_btn, idx));
-		hbox->add_child(edit_btn);
-	} else {
-		Button *remove_btn = memnew(Button);
+		prop->add_inline_control(edit_btn, CENTER);
+	}
+	{
+		remove_btn = memnew(Button);
 		remove_btn->set_button_icon(get_editor_theme_icon(SNAME("Remove")));
 		remove_btn->set_disabled(is_read_only());
+		remove_btn->set_flat(true);
 		remove_btn->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyArray::_remove_pressed).bind(idx));
-		hbox->add_child(remove_btn);
+		prop->add_inline_control(remove_btn, RIGHT);
 	}
 	property_vbox->add_child(hbox);
 
@@ -338,6 +346,8 @@ void EditorPropertyArray::_create_new_property_slot() {
 	slot.object = object;
 	slot.container = hbox;
 	slot.reorder_button = reorder_button;
+	slot.edit_button = edit_btn;
+	slot.remove_button = remove_btn;
 	slot.set_index(idx + page_index * page_length);
 	slots.push_back(slot);
 }
@@ -381,6 +391,7 @@ void EditorPropertyArray::update_property() {
 			set_bottom_editor(nullptr);
 			memdelete(container);
 			button_add_item = nullptr;
+			inline_button_add_item = nullptr;
 			container = nullptr;
 			slots.clear();
 		}
@@ -408,13 +419,14 @@ void EditorPropertyArray::update_property() {
 		edit->set_text_alignment(HORIZONTAL_ALIGNMENT_LEFT);
 		edit->set_button_icon(get_editor_theme_icon(array_type_name));
 		edit->set_text(vformat("%s%s", array_sub_type_name, ctr_str));
-		edit->set_tooltip_text(vformat(TTR("%s%s (size %d)"), array_type_name, array_sub_type_name, size));
+		edit->set_tooltip_text(vformat(TTR("%s%s (%d)"), array_type_name, array_sub_type_name, size));
 	} else {
 		edit->set_text_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 		edit->set_button_icon(Ref<Texture2D>());
-		edit->set_text(vformat(TTR("%s (size %d)"), array_type_name, size));
+		edit->set_text(vformat(TTR("%s (%d)"), array_type_name, size));
 	}
 
+	bool condensed = EDITOR_GET("interface/inspector/condensed_size_controls_layout");
 	bool unfolded = get_edited_object()->editor_is_section_unfolded(get_edited_property());
 	if (edit->is_pressed() != unfolded) {
 		edit->set_pressed(unfolded);
@@ -432,11 +444,14 @@ void EditorPropertyArray::update_property() {
 			container->add_child(vbox);
 
 			HBoxContainer *hbox = memnew(HBoxContainer);
-			vbox->add_child(hbox);
 
-			Label *size_label = memnew(Label(TTR("Size:")));
+			Label *size_label = memnew(Label(get_label() + " " + TTR("Size:")));
 			size_label->set_h_size_flags(SIZE_EXPAND_FILL);
 			hbox->add_child(size_label);
+
+			HBoxContainer *right_hbox = memnew(HBoxContainer);
+			right_hbox->set_h_size_flags(SIZE_EXPAND_FILL);
+			hbox->add_child(right_hbox);
 
 			size_slider = memnew(EditorSpinSlider);
 			size_slider->set_step(1);
@@ -445,22 +460,57 @@ void EditorPropertyArray::update_property() {
 			size_slider->set_h_size_flags(SIZE_EXPAND_FILL);
 			size_slider->set_read_only(is_read_only());
 			size_slider->connect(SceneStringName(value_changed), callable_mp(this, &EditorPropertyArray::_length_changed));
-			hbox->add_child(size_slider);
+			right_hbox->add_child(size_slider);
 
 			property_vbox = memnew(VBoxContainer);
 			property_vbox->set_h_size_flags(SIZE_EXPAND_FILL);
-			vbox->add_child(property_vbox);
 
-			button_add_item = EditorInspector::create_inspector_action_button(TTR("Add Element"));
-			button_add_item->set_button_icon(get_editor_theme_icon(SNAME("Add")));
-			button_add_item->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyArray::_add_element));
-			button_add_item->connect(SceneStringName(draw), callable_mp(this, &EditorPropertyArray::_button_add_item_draw));
-			SET_DRAG_FORWARDING_CD(button_add_item, EditorPropertyArray);
-			button_add_item->set_disabled(is_read_only());
-			vbox->add_child(button_add_item);
+			if (condensed) {
+				if (!inline_button_add_item) {
+					inline_button_add_item = memnew(Button);
+					inline_button_add_item->set_button_icon(get_editor_theme_icon(SNAME("Add")));
+					inline_button_add_item->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyArray::_add_element));
+					inline_button_add_item->set_disabled(is_read_only());
+					inline_button_add_item->set_flat(true);
+					add_inline_control(inline_button_add_item, CENTER);
+				} else {
+					inline_button_add_item->set_visible(true);
+				}
+				//inline_button_add_item->get_parent()->move_child(inline_button_add_item, 0);
+
+				if (!button_add_item) {
+					button_add_item = memnew(Button);
+					button_add_item->set_button_icon(get_editor_theme_icon(SNAME("Add")));
+					button_add_item->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyArray::_add_element));
+					button_add_item->connect(SceneStringName(draw), callable_mp(this, &EditorPropertyArray::_button_add_item_draw));
+					SET_DRAG_FORWARDING_CD(button_add_item, EditorPropertyArray);
+					button_add_item->set_disabled(is_read_only());
+					button_add_item->set_flat(true);
+					right_hbox->add_child(button_add_item);
+				} else {
+					if (button_add_item->get_parent() != right_hbox) {
+						button_add_item->reparent(right_hbox);
+					}
+				}
+			}
 
 			paginator = memnew(EditorPaginator);
 			paginator->connect("page_changed", callable_mp(this, &EditorPropertyArray::_page_changed));
+
+			if (!condensed) {
+				vbox->add_child(hbox);
+			}
+			vbox->add_child(property_vbox);
+			if (!condensed) {
+				button_add_item = EditorInspector::create_inspector_action_button(TTR("Add Element"));
+				button_add_item->set_button_icon(get_editor_theme_icon(SNAME("Add")));
+				button_add_item->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyArray::_add_element));
+				button_add_item->set_disabled(is_read_only());
+				vbox->add_child(button_add_item);
+			}
+			if (condensed) {
+				vbox->add_child(hbox);
+			}
 			vbox->add_child(paginator);
 
 			for (int i = 0; i < page_length; i++) {
@@ -470,9 +520,16 @@ void EditorPropertyArray::update_property() {
 
 		size_slider->set_value(size);
 		property_vbox->set_visible(size > 0);
-		button_add_item->set_visible(page_index == max_page);
+		if (!condensed) {
+			button_add_item->set_visible(page_index == max_page);
+		} else {
+			button_add_item->set_visible(true);
+		}
 		paginator->update(page_index, max_page);
 		paginator->set_visible(max_page > 0);
+		if (!condensed) {
+			button_add_item->set_visible((size - (page_length * page_index)) > 0);
+		}
 
 		for (Slot &slot : slots) {
 			bool slot_visible = &slot != &reorder_slot && slot.index < size;
@@ -508,6 +565,17 @@ void EditorPropertyArray::update_property() {
 				new_prop->connect(SNAME("object_id_selected"), callable_mp(this, &EditorPropertyArray::_object_id_selected));
 				new_prop->set_h_size_flags(SIZE_EXPAND_FILL);
 				new_prop->set_read_only(is_read_only());
+
+				if (slot.reorder_button) {
+					new_prop->add_inline_control(slot.reorder_button, LEFT);
+				}
+				if (slot.edit_button) {
+					new_prop->add_inline_control(slot.edit_button, CENTER);
+				}
+				if (slot.remove_button) {
+					new_prop->add_inline_control(slot.remove_button, RIGHT);
+				}
+
 				slot.prop->add_sibling(new_prop, false);
 				slot.prop->queue_free();
 				slot.prop = new_prop;
@@ -527,6 +595,9 @@ void EditorPropertyArray::update_property() {
 			set_bottom_editor(nullptr);
 			memdelete(container);
 			button_add_item = nullptr;
+			if (inline_button_add_item) {
+				inline_button_add_item->set_visible(false);
+			}
 			container = nullptr;
 			slots.clear();
 		}
@@ -536,6 +607,12 @@ void EditorPropertyArray::update_property() {
 void EditorPropertyArray::_remove_pressed(int p_slot_index) {
 	Variant array = object->get_array().duplicate();
 	array.call("remove_at", slots[p_slot_index].index);
+
+	// Sync folded state after deletion.
+	for (int i = p_slot_index; i < (int)array.call("size"); i++) {
+		bool folded = object->editor_is_section_unfolded("indices/" + itos(i + 1));
+		object->editor_set_section_unfold("indices/" + itos(i), folded);
+	}
 
 	emit_changed(get_edited_property(), array);
 }
@@ -762,6 +839,9 @@ void EditorPropertyArray::_notification(int p_what) {
 			if (button_add_item) {
 				button_add_item->set_button_icon(get_editor_theme_icon(SNAME("Add")));
 			}
+			if (inline_button_add_item) {
+				inline_button_add_item->set_button_icon(get_editor_theme_icon(SNAME("Add")));
+			}
 		} break;
 
 		case NOTIFICATION_DRAG_BEGIN: {
@@ -922,6 +1002,24 @@ void EditorPropertyArray::_reorder_button_up() {
 	if (reorder_slot.index != reorder_to_index) {
 		// Move the element.
 		Variant array = object->get_array().duplicate();
+		int min_i = MIN(reorder_slot.index, reorder_to_index);
+		int max_i = MAX(reorder_slot.index, reorder_to_index);
+
+		// Sync folding state after move.
+		Vector<bool> folds;
+		for (int i = min_i; i <= max_i; i++) {
+			StringName p = "indices/" + itos(i);
+			bool folded = object->editor_is_section_unfolded(p);
+			folds.append(folded);
+		}
+		bool f = folds[reorder_slot.index - min_i];
+		folds.remove_at(reorder_slot.index - min_i);
+		folds.insert(reorder_to_index - min_i, f);
+
+		for (int i = 0; i < folds.size(); i++) {
+			bool folded = folds[i];
+			object->editor_set_section_unfold("indices/" + itos(i + min_i), folded);
+		}
 
 		property_vbox->move_child(reorder_slot.container, reorder_slot.index % page_length);
 		Variant value_to_move = array.get(reorder_slot.index);
@@ -1049,31 +1147,35 @@ void EditorPropertyDictionary::_create_new_property_slot(int p_idx) {
 	EditorProperty *prop_key = nullptr;
 	if (p_idx != EditorPropertyDictionaryObject::NEW_KEY_INDEX && p_idx != EditorPropertyDictionaryObject::NEW_VALUE_INDEX) {
 		prop_key = memnew(EditorPropertyNil);
-		hbox->add_child(prop_key);
 	}
 
 	EditorProperty *prop = memnew(EditorPropertyNil);
 	prop->set_h_size_flags(SIZE_EXPAND_FILL);
-	if (p_idx != EditorPropertyDictionaryObject::NEW_KEY_INDEX && p_idx != EditorPropertyDictionaryObject::NEW_VALUE_INDEX) {
-		prop->set_draw_label(false);
-	}
 	hbox->add_child(prop);
+	if (prop_key) {
+		prop->add_inline_control(prop_key, LEFT);
+	}
 
 	bool use_key = p_idx == EditorPropertyDictionaryObject::NEW_KEY_INDEX;
 	bool is_untyped_dict = (use_key ? key_subtype : value_subtype) == Variant::NIL;
 
+	Button *edit_btn = nullptr;
+	Button *remove_btn = nullptr;
 	if (is_untyped_dict) {
-		Button *edit_btn = memnew(Button);
+		edit_btn = memnew(Button);
 		edit_btn->set_button_icon(get_editor_theme_icon(SNAME("Edit")));
 		edit_btn->set_disabled(is_read_only());
+		edit_btn->set_flat(true);
 		edit_btn->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyDictionary::_change_type).bind(edit_btn, slots.size()));
-		hbox->add_child(edit_btn);
-	} else if (p_idx >= 0) {
-		Button *remove_btn = memnew(Button);
+		prop->add_inline_control(edit_btn, CENTER);
+	}
+	if (p_idx >= 0) {
+		remove_btn = memnew(Button);
 		remove_btn->set_button_icon(get_editor_theme_icon(SNAME("Remove")));
 		remove_btn->set_disabled(is_read_only());
+		remove_btn->set_flat(true);
 		remove_btn->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyDictionary::_remove_pressed).bind(slots.size()));
-		hbox->add_child(remove_btn);
+		prop->add_inline_control(remove_btn, RIGHT);
 	}
 
 	if (add_panel) {
@@ -1087,6 +1189,8 @@ void EditorPropertyDictionary::_create_new_property_slot(int p_idx) {
 	slot.prop_key = prop_key;
 	slot.object = object;
 	slot.container = hbox;
+	slot.edit_button = edit_btn;
+	slot.remove_button = remove_btn;
 	int index = p_idx + (p_idx >= 0 ? page_index * page_length : 0);
 	slot.set_index(index);
 	slots.push_back(slot);
@@ -1237,11 +1341,11 @@ void EditorPropertyDictionary::update_property() {
 		edit->set_text_alignment(HORIZONTAL_ALIGNMENT_LEFT);
 		edit->set_button_icon(get_editor_theme_icon(dict_type_name));
 		edit->set_text(vformat("%s%s", dict_sub_type_name, ctr_str));
-		edit->set_tooltip_text(vformat(TTR("%s%s (size %d)"), dict_type_name, dict_sub_type_name, dict.size()));
+		edit->set_tooltip_text(vformat(TTR("%s%s (%d)"), dict_type_name, dict_sub_type_name, dict.size()));
 	} else {
 		edit->set_text_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 		edit->set_button_icon(Ref<Texture2D>());
-		edit->set_text(vformat(TTR("%s (size %d)"), dict_type_name, dict.size()));
+		edit->set_text(vformat(TTR("%s (%d)"), dict_type_name, dict.size()));
 	}
 
 	bool unfolded = get_edited_object()->editor_is_section_unfolded(get_edited_property());
@@ -1342,6 +1446,9 @@ void EditorPropertyDictionary::update_property() {
 						dict_prop->set_preview_value(true);
 					}
 					slot.set_key_prop(new_prop);
+					if (slot.prop) {
+						slot.prop->add_inline_control(new_prop, LEFT);
+					}
 				}
 			}
 
@@ -1370,10 +1477,22 @@ void EditorPropertyDictionary::update_property() {
 				new_prop->connect(SNAME("object_id_selected"), callable_mp(this, &EditorPropertyDictionary::_object_id_selected));
 				new_prop->set_h_size_flags(SIZE_EXPAND_FILL);
 				if (slot.index != EditorPropertyDictionaryObject::NEW_KEY_INDEX && slot.index != EditorPropertyDictionaryObject::NEW_VALUE_INDEX) {
-					new_prop->set_draw_label(false);
+					new_prop->set_label(" ");
+					new_prop->set_label_overlayed(true);
 				}
 				new_prop->set_read_only(is_read_only());
+				if (slot.remove_button) {
+					new_prop->add_inline_control(slot.remove_button, RIGHT);
+				}
+				if (slot.edit_button) {
+					new_prop->add_inline_control(slot.edit_button, CENTER);
+				}
+				if (slot.prop_key) {
+					new_prop->add_inline_control(slot.prop_key, LEFT);
+				}
+
 				slot.set_prop(new_prop);
+
 			} else if (slot.index != EditorPropertyDictionaryObject::NEW_KEY_INDEX && slot.index != EditorPropertyDictionaryObject::NEW_VALUE_INDEX) {
 				Variant key = dict.get_key_at_index(slot.index);
 				String cs = key.get_construct_string();
