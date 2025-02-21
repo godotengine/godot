@@ -162,7 +162,7 @@
 			<return type="Vector3" />
 			<param index="0" name="contact_idx" type="int" />
 			<description>
-				Returns the local normal at the contact point.
+				Returns the local normal in the global coordinate system at the contact point.
 			</description>
 		</method>
 		<method name="get_contact_local_position" qualifiers="const">
