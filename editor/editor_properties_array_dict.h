@@ -103,6 +103,8 @@ class EditorPropertyArray : public EditorProperty {
 		bool as_id = false;
 		EditorProperty *prop = nullptr;
 		Button *reorder_button = nullptr;
+		Button *edit_button = nullptr;
+		Button *remove_button = nullptr;
 
 		void set_index(int p_idx) {
 			String prop_name = "indices/" + itos(p_idx);
@@ -123,6 +125,8 @@ class EditorPropertyArray : public EditorProperty {
 	VBoxContainer *property_vbox = nullptr;
 	EditorSpinSlider *size_slider = nullptr;
 	Button *button_add_item = nullptr;
+	Button *inline_button_add_item = nullptr;
+	Control *inline_spacer = nullptr;
 	EditorPaginator *paginator = nullptr;
 	Variant::Type array_type;
 	Variant::Type subtype;
@@ -188,6 +192,8 @@ class EditorPropertyDictionary : public EditorProperty {
 		bool key_as_id = false;
 		EditorProperty *prop = nullptr;
 		EditorProperty *prop_key = nullptr;
+		Button *edit_button = nullptr;
+		Button *remove_button = nullptr;
 		String prop_name;
 		String key_name;
 
