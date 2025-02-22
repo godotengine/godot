@@ -241,6 +241,14 @@
 				Return [code]true[/code] if the plugin supports the given [param platform].
 			</description>
 		</method>
+		<method name="_update_android_prebuilt_manifest" qualifiers="virtual const">
+			<return type="PackedByteArray" />
+			<param index="0" name="platform" type="EditorExportPlatform" />
+			<param index="1" name="manifest_data" type="PackedByteArray" />
+			<description>
+				Provide access to the Android prebuilt manifest and allows the plugin to modify it if needed.
+			</description>
+		</method>
 		<method name="add_file">
 			<return type="void" />
 			<param index="0" name="path" type="String" />
