@@ -95,6 +95,7 @@ class GameView : public VBoxContainer {
 		CAMERA_MODE_EDITORS,
 		EMBED_RUN_GAME_EMBEDDED,
 		EMBED_MAKE_FLOATING_ON_PLAY,
+		EMBED_DISTRACTION_FREE_MODE,
 	};
 
 	enum EmbedSizeMode {
@@ -125,6 +126,7 @@ class GameView : public VBoxContainer {
 
 	bool embed_on_play = true;
 	bool make_floating_on_play = true;
+	bool distraction_free_on_play = true;
 	EmbedSizeMode embed_size_mode = SIZE_MODE_FIXED;
 	bool paused = false;
 	Size2 size_paused;
