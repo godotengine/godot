@@ -3791,8 +3791,11 @@ DisplayServerMacOS::DisplayServerMacOS(const String &p_rendering_driver, WindowM
 #if defined(VULKAN_ENABLED)
 #if defined(__x86_64__)
 	bool fallback_to_vulkan = GLOBAL_GET("rendering/rendering_device/fallback_to_vulkan");
+	if (!fallback_to_vulkan) {
+		WARN_PRINT("Metal is not supported on Intel Macs, switching to Vulkan.");
+	}
 	// Metal rendering driver not available on Intel.
-	if (fallback_to_vulkan && rendering_driver == "metal") {
+	if (rendering_driver == "metal") {
 		rendering_driver = "vulkan";
 		OS::get_singleton()->set_current_rendering_driver_name(rendering_driver);
 	}
