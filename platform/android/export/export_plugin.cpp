@@ -30,7 +30,6 @@
 
 #include "export_plugin.h"
 
-#include "gradle_export_util.h"
 #include "logo_svg.gen.h"
 #include "run_icon_svg.gen.h"
 
@@ -943,7 +942,7 @@ void EditorExportPlatformAndroid::_create_editor_debug_keystore_if_needed() {
 	print_verbose("Updated editor debug keystore to " + keystore_path);
 }
 
-void EditorExportPlatformAndroid::_get_permissions(const Ref<EditorExportPreset> &p_preset, bool p_give_internet, Vector<String> &r_permissions) {
+void EditorExportPlatformAndroid::_get_manifest_info(const Ref<EditorExportPreset> &p_preset, bool p_give_internet, Vector<String> &r_permissions, Vector<FeatureInfo> &r_features, Vector<MetadataInfo> &r_metadata) {
 	const char **aperms = ANDROID_PERMS;
 	while (*aperms) {
 		bool enabled = p_preset->get("permissions/" + String(*aperms).to_lower());
@@ -964,6 +963,36 @@ void EditorExportPlatformAndroid::_get_permissions(const Ref<EditorExportPreset>
 			r_permissions.push_back("android.permission.INTERNET");
 		}
 	}
+
+	if (_uses_vulkan()) {
+		// Require vulkan hardware level 1 support
+		FeatureInfo vulkan_level = {
+			"android.hardware.vulkan.level", // name
+			false, // required
+			"1" // version
+		};
+		r_features.append(vulkan_level);
+
+		// Require vulkan version 1.0
+		FeatureInfo vulkan_version = {
+			"android.hardware.vulkan.version", // name
+			true, // required
+			"0x400003" // version - Encoded value for api version 1.0
+		};
+		r_features.append(vulkan_version);
+	}
+
+	MetadataInfo rendering_method_metadata = {
+		"org.godotengine.rendering.method",
+		GLOBAL_GET("rendering/renderer/rendering_method.mobile")
+	};
+	r_metadata.append(rendering_method_metadata);
+
+	MetadataInfo editor_version_metadata = {
+		"org.godotengine.editor.version",
+		String(VERSION_FULL_CONFIG)
+	};
+	r_metadata.append(editor_version_metadata);
 }
 
 void EditorExportPlatformAndroid::_write_tmp_manifest(const Ref<EditorExportPreset> &p_preset, bool p_give_internet, bool p_debug) {
@@ -977,7 +1006,9 @@ void EditorExportPlatformAndroid::_write_tmp_manifest(const Ref<EditorExportPres
 	manifest_text += _get_gles_tag();
 
 	Vector<String> perms;
-	_get_permissions(p_preset, p_give_internet, perms);
+	Vector<FeatureInfo> features;
+	Vector<MetadataInfo> manifest_metadata;
+	_get_manifest_info(p_preset, p_give_internet, perms, features, manifest_metadata);
 	for (int i = 0; i < perms.size(); i++) {
 		String permission = perms.get(i);
 		if (permission == "android.permission.WRITE_EXTERNAL_STORAGE" || (permission == "android.permission.READ_EXTERNAL_STORAGE" && _has_manage_external_storage_permission(perms))) {
@@ -987,9 +1018,8 @@ void EditorExportPlatformAndroid::_write_tmp_manifest(const Ref<EditorExportPres
 		}
 	}
 
-	if (_uses_vulkan()) {
-		manifest_text += "    <uses-feature tools:node=\"replace\" android:name=\"android.hardware.vulkan.level\" android:required=\"false\" android:version=\"1\" />\n";
-		manifest_text += "    <uses-feature tools:node=\"replace\" android:name=\"android.hardware.vulkan.version\" android:required=\"true\" android:version=\"0x400003\" />\n";
+	for (int i = 0; i < features.size(); i++) {
+		manifest_text += vformat("    <uses-feature tools:node=\"replace\" android:name=\"%s\" android:required=\"%s\" android:version=\"%s\" />\n", features[i].name, features[i].required, features[i].version);
 	}
 
 	Vector<Ref<EditorExportPlugin>> export_plugins = EditorExport::get_singleton()->get_export_plugins();
@@ -1003,7 +1033,7 @@ void EditorExportPlatformAndroid::_write_tmp_manifest(const Ref<EditorExportPres
 		}
 	}
 
-	manifest_text += _get_application_tag(Ref<EditorExportPlatform>(this), p_preset, _has_read_write_storage_permission(perms), p_debug);
+	manifest_text += _get_application_tag(Ref<EditorExportPlatform>(this), p_preset, _has_read_write_storage_permission(perms), p_debug, manifest_metadata);
 	manifest_text += "</manifest>\n";
 	String manifest_path = ExportTemplateManager::get_android_build_directory(p_preset).path_join(vformat("src/%s/AndroidManifest.xml", (p_debug ? "debug" : "release")));
 
@@ -1105,8 +1135,9 @@ void EditorExportPlatformAndroid::_fix_manifest(const Ref<EditorExportPreset> &p
 	bool is_resizeable = bool(GLOBAL_GET("display/window/size/resizable"));
 
 	Vector<String> perms;
-	// Write permissions into the perms variable.
-	_get_permissions(p_preset, p_give_internet, perms);
+	Vector<FeatureInfo> features;
+	Vector<MetadataInfo> manifest_metadata;
+	_get_manifest_info(p_preset, p_give_internet, perms, features, manifest_metadata);
 	bool has_read_write_storage_permission = _has_read_write_storage_permission(perms);
 
 	while (ofs < (uint32_t)p_manifest.size()) {
@@ -1250,42 +1281,25 @@ void EditorExportPlatformAndroid::_fix_manifest(const Ref<EditorExportPreset> &p
 				uint32_t name = decode_uint32(&p_manifest[iofs + 12]);
 				String tname = string_table[name];
 
-				if (tname == "uses-feature") {
-					Vector<String> feature_names;
-					Vector<bool> feature_required_list;
-					Vector<int> feature_versions;
+				if (tname == "manifest" || tname == "application") {
+					// save manifest ending so we can restore it
+					Vector<uint8_t> manifest_end;
+					uint32_t manifest_cur_size = p_manifest.size();
 
-					if (_uses_vulkan()) {
-						// Require vulkan hardware level 1 support
-						feature_names.push_back("android.hardware.vulkan.level");
-						feature_required_list.push_back(false);
-						feature_versions.push_back(1);
+					manifest_end.resize(p_manifest.size() - ofs);
+					memcpy(manifest_end.ptrw(), &p_manifest[ofs], manifest_end.size());
 
-						// Require vulkan version 1.0
-						feature_names.push_back("android.hardware.vulkan.version");
-						feature_required_list.push_back(true);
-						feature_versions.push_back(0x400003); // Encoded value for api version 1.0
+					int32_t attr_name_string = string_table.find("name");
+					ERR_FAIL_COND_MSG(attr_name_string == -1, "Template does not have 'name' attribute.");
+
+					int32_t ns_android_string = string_table.find("http://schemas.android.com/apk/res/android");
+					if (ns_android_string == -1) {
+						string_table.push_back("http://schemas.android.com/apk/res/android");
+						ns_android_string = string_table.size() - 1;
 					}
 
-					if (feature_names.size() > 0) {
-						ofs += 24; // skip over end tag
-
-						// save manifest ending so we can restore it
-						Vector<uint8_t> manifest_end;
-						uint32_t manifest_cur_size = p_manifest.size();
-
-						manifest_end.resize(p_manifest.size() - ofs);
-						memcpy(manifest_end.ptrw(), &p_manifest[ofs], manifest_end.size());
-
-						int32_t attr_name_string = string_table.find("name");
-						ERR_FAIL_COND_MSG(attr_name_string == -1, "Template does not have 'name' attribute.");
-
-						int32_t ns_android_string = string_table.find("http://schemas.android.com/apk/res/android");
-						if (ns_android_string == -1) {
-							string_table.push_back("http://schemas.android.com/apk/res/android");
-							ns_android_string = string_table.size() - 1;
-						}
-
+					if (tname == "manifest") {
+						// Updating manifest features
 						int32_t attr_uses_feature_string = string_table.find("uses-feature");
 						if (attr_uses_feature_string == -1) {
 							string_table.push_back("uses-feature");
@@ -1298,11 +1312,11 @@ void EditorExportPlatformAndroid::_fix_manifest(const Ref<EditorExportPreset> &p
 							attr_required_string = string_table.size() - 1;
 						}
 
-						for (int i = 0; i < feature_names.size(); i++) {
-							const String &feature_name = feature_names[i];
-							bool feature_required = feature_required_list[i];
-							int feature_version = feature_versions[i];
-							bool has_version_attribute = feature_version != -1;
+						for (int i = 0; i < features.size(); i++) {
+							const String &feature_name = features[i].name;
+							bool feature_required = features[i].required;
+							String feature_version = features[i].version;
+							bool has_version_attribute = !feature_version.is_empty();
 
 							print_line("Adding feature " + feature_name);
 
@@ -1330,9 +1344,9 @@ void EditorExportPlatformAndroid::_fix_manifest(const Ref<EditorExportPreset> &p
 									attr_version_string = string_table.size() - 1;
 								}
 
-								version_value = string_table.find(itos(feature_version));
+								version_value = string_table.find(feature_version);
 								if (version_value == -1) {
-									string_table.push_back(itos(feature_version));
+									string_table.push_back(feature_version);
 									version_value = string_table.size() - 1;
 								}
 
@@ -1404,79 +1418,149 @@ void EditorExportPlatformAndroid::_fix_manifest(const Ref<EditorExportPreset> &p
 
 							ofs += 24;
 						}
-						memcpy(&p_manifest.write[ofs], manifest_end.ptr(), manifest_end.size());
-						ofs -= 24; // go back over back end
-					}
-				}
-				if (tname == "manifest") {
-					// save manifest ending so we can restore it
-					Vector<uint8_t> manifest_end;
-					uint32_t manifest_cur_size = p_manifest.size();
 
-					manifest_end.resize(p_manifest.size() - ofs);
-					memcpy(manifest_end.ptrw(), &p_manifest[ofs], manifest_end.size());
-
-					int32_t attr_name_string = string_table.find("name");
-					ERR_FAIL_COND_MSG(attr_name_string == -1, "Template does not have 'name' attribute.");
-
-					int32_t ns_android_string = string_table.find("android");
-					ERR_FAIL_COND_MSG(ns_android_string == -1, "Template does not have 'android' namespace.");
-
-					int32_t attr_uses_permission_string = string_table.find("uses-permission");
-					if (attr_uses_permission_string == -1) {
-						string_table.push_back("uses-permission");
-						attr_uses_permission_string = string_table.size() - 1;
-					}
-
-					for (int i = 0; i < perms.size(); ++i) {
-						print_line("Adding permission " + perms[i]);
-
-						manifest_cur_size += 56 + 24; // node + end node
-						p_manifest.resize(manifest_cur_size);
-
-						// Add permission to the string pool
-						int32_t perm_string = string_table.find(perms[i]);
-						if (perm_string == -1) {
-							string_table.push_back(perms[i]);
-							perm_string = string_table.size() - 1;
+						// Updating manifest permissions
+						int32_t attr_uses_permission_string = string_table.find("uses-permission");
+						if (attr_uses_permission_string == -1) {
+							string_table.push_back("uses-permission");
+							attr_uses_permission_string = string_table.size() - 1;
 						}
 
-						// start tag
-						encode_uint16(0x102, &p_manifest.write[ofs]); // type
-						encode_uint16(16, &p_manifest.write[ofs + 2]); // headersize
-						encode_uint32(56, &p_manifest.write[ofs + 4]); // size
-						encode_uint32(0, &p_manifest.write[ofs + 8]); // lineno
-						encode_uint32(-1, &p_manifest.write[ofs + 12]); // comment
-						encode_uint32(-1, &p_manifest.write[ofs + 16]); // ns
-						encode_uint32(attr_uses_permission_string, &p_manifest.write[ofs + 20]); // name
-						encode_uint16(20, &p_manifest.write[ofs + 24]); // attr_start
-						encode_uint16(20, &p_manifest.write[ofs + 26]); // attr_size
-						encode_uint16(1, &p_manifest.write[ofs + 28]); // num_attrs
-						encode_uint16(0, &p_manifest.write[ofs + 30]); // id_index
-						encode_uint16(0, &p_manifest.write[ofs + 32]); // class_index
-						encode_uint16(0, &p_manifest.write[ofs + 34]); // style_index
+						for (int i = 0; i < perms.size(); ++i) {
+							print_line("Adding permission " + perms[i]);
 
-						// attribute
-						encode_uint32(ns_android_string, &p_manifest.write[ofs + 36]); // ns
-						encode_uint32(attr_name_string, &p_manifest.write[ofs + 40]); // 'name'
-						encode_uint32(perm_string, &p_manifest.write[ofs + 44]); // raw_value
-						encode_uint16(8, &p_manifest.write[ofs + 48]); // typedvalue_size
-						p_manifest.write[ofs + 50] = 0; // typedvalue_always0
-						p_manifest.write[ofs + 51] = 0x03; // typedvalue_type (string)
-						encode_uint32(perm_string, &p_manifest.write[ofs + 52]); // typedvalue reference
+							manifest_cur_size += 56 + 24; // node + end node
+							p_manifest.resize(manifest_cur_size);
 
-						ofs += 56;
+							// Add permission to the string pool
+							int32_t perm_string = string_table.find(perms[i]);
+							if (perm_string == -1) {
+								string_table.push_back(perms[i]);
+								perm_string = string_table.size() - 1;
+							}
 
-						// end tag
-						encode_uint16(0x103, &p_manifest.write[ofs]); // type
-						encode_uint16(16, &p_manifest.write[ofs + 2]); // headersize
-						encode_uint32(24, &p_manifest.write[ofs + 4]); // size
-						encode_uint32(0, &p_manifest.write[ofs + 8]); // lineno
-						encode_uint32(-1, &p_manifest.write[ofs + 12]); // comment
-						encode_uint32(-1, &p_manifest.write[ofs + 16]); // ns
-						encode_uint32(attr_uses_permission_string, &p_manifest.write[ofs + 20]); // name
+							// start tag
+							encode_uint16(0x102, &p_manifest.write[ofs]); // type
+							encode_uint16(16, &p_manifest.write[ofs + 2]); // headersize
+							encode_uint32(56, &p_manifest.write[ofs + 4]); // size
+							encode_uint32(0, &p_manifest.write[ofs + 8]); // lineno
+							encode_uint32(-1, &p_manifest.write[ofs + 12]); // comment
+							encode_uint32(-1, &p_manifest.write[ofs + 16]); // ns
+							encode_uint32(attr_uses_permission_string, &p_manifest.write[ofs + 20]); // name
+							encode_uint16(20, &p_manifest.write[ofs + 24]); // attr_start
+							encode_uint16(20, &p_manifest.write[ofs + 26]); // attr_size
+							encode_uint16(1, &p_manifest.write[ofs + 28]); // num_attrs
+							encode_uint16(0, &p_manifest.write[ofs + 30]); // id_index
+							encode_uint16(0, &p_manifest.write[ofs + 32]); // class_index
+							encode_uint16(0, &p_manifest.write[ofs + 34]); // style_index
 
-						ofs += 24;
+							// attribute
+							encode_uint32(ns_android_string, &p_manifest.write[ofs + 36]); // ns
+							encode_uint32(attr_name_string, &p_manifest.write[ofs + 40]); // 'name'
+							encode_uint32(perm_string, &p_manifest.write[ofs + 44]); // raw_value
+							encode_uint16(8, &p_manifest.write[ofs + 48]); // typedvalue_size
+							p_manifest.write[ofs + 50] = 0; // typedvalue_always0
+							p_manifest.write[ofs + 51] = 0x03; // typedvalue_type (string)
+							encode_uint32(perm_string, &p_manifest.write[ofs + 52]); // typedvalue reference
+
+							ofs += 56;
+
+							// end tag
+							encode_uint16(0x103, &p_manifest.write[ofs]); // type
+							encode_uint16(16, &p_manifest.write[ofs + 2]); // headersize
+							encode_uint32(24, &p_manifest.write[ofs + 4]); // size
+							encode_uint32(0, &p_manifest.write[ofs + 8]); // lineno
+							encode_uint32(-1, &p_manifest.write[ofs + 12]); // comment
+							encode_uint32(-1, &p_manifest.write[ofs + 16]); // ns
+							encode_uint32(attr_uses_permission_string, &p_manifest.write[ofs + 20]); // name
+
+							ofs += 24;
+						}
+					}
+
+					if (tname == "application") {
+						// Updating application meta-data
+						int32_t attr_meta_data_string = string_table.find("meta-data");
+						if (attr_meta_data_string == -1) {
+							string_table.push_back("meta-data");
+							attr_meta_data_string = string_table.size() - 1;
+						}
+
+						int32_t attr_value_string = string_table.find("value");
+						if (attr_value_string == -1) {
+							string_table.push_back("value");
+							attr_value_string = string_table.size() - 1;
+						}
+
+						for (int i = 0; i < manifest_metadata.size(); i++) {
+							String meta_data_name = manifest_metadata[i].name;
+							String meta_data_value = manifest_metadata[i].value;
+
+							print_line("Adding application metadata " + meta_data_name);
+
+							int32_t meta_data_name_string = string_table.find(meta_data_name);
+							if (meta_data_name_string == -1) {
+								string_table.push_back(meta_data_name);
+								meta_data_name_string = string_table.size() - 1;
+							}
+
+							int32_t meta_data_value_string = string_table.find(meta_data_value);
+							if (meta_data_value_string == -1) {
+								string_table.push_back(meta_data_value);
+								meta_data_value_string = string_table.size() - 1;
+							}
+
+							int tag_size = 76; // node and two attrs + end node
+							int attr_count = 2;
+							manifest_cur_size += tag_size + 24;
+							p_manifest.resize(manifest_cur_size);
+
+							// start tag
+							encode_uint16(0x102, &p_manifest.write[ofs]); // type
+							encode_uint16(16, &p_manifest.write[ofs + 2]); // headersize
+							encode_uint32(tag_size, &p_manifest.write[ofs + 4]); // size
+							encode_uint32(0, &p_manifest.write[ofs + 8]); // lineno
+							encode_uint32(-1, &p_manifest.write[ofs + 12]); // comment
+							encode_uint32(-1, &p_manifest.write[ofs + 16]); // ns
+							encode_uint32(attr_meta_data_string, &p_manifest.write[ofs + 20]); // name
+							encode_uint16(20, &p_manifest.write[ofs + 24]); // attr_start
+							encode_uint16(20, &p_manifest.write[ofs + 26]); // attr_size
+							encode_uint16(attr_count, &p_manifest.write[ofs + 28]); // num_attrs
+							encode_uint16(0, &p_manifest.write[ofs + 30]); // id_index
+							encode_uint16(0, &p_manifest.write[ofs + 32]); // class_index
+							encode_uint16(0, &p_manifest.write[ofs + 34]); // style_index
+
+							// android:name attribute
+							encode_uint32(ns_android_string, &p_manifest.write[ofs + 36]); // ns
+							encode_uint32(attr_name_string, &p_manifest.write[ofs + 40]); // 'name'
+							encode_uint32(meta_data_name_string, &p_manifest.write[ofs + 44]); // raw_value
+							encode_uint16(8, &p_manifest.write[ofs + 48]); // typedvalue_size
+							p_manifest.write[ofs + 50] = 0; // typedvalue_always0
+							p_manifest.write[ofs + 51] = 0x03; // typedvalue_type (string)
+							encode_uint32(meta_data_name_string, &p_manifest.write[ofs + 52]); // typedvalue reference
+
+							// android:value attribute
+							encode_uint32(ns_android_string, &p_manifest.write[ofs + 56]); // ns
+							encode_uint32(attr_value_string, &p_manifest.write[ofs + 60]); // 'value'
+							encode_uint32(meta_data_value_string, &p_manifest.write[ofs + 64]); // raw_value
+							encode_uint16(8, &p_manifest.write[ofs + 68]); // typedvalue_size
+							p_manifest.write[ofs + 70] = 0; // typedvalue_always0
+							p_manifest.write[ofs + 71] = 0x03; // typedvalue_type (string)
+							encode_uint32(meta_data_value_string, &p_manifest.write[ofs + 72]); // typedvalue reference
+
+							ofs += 76;
+
+							// end tag
+							encode_uint16(0x103, &p_manifest.write[ofs]); // type
+							encode_uint16(16, &p_manifest.write[ofs + 2]); // headersize
+							encode_uint32(24, &p_manifest.write[ofs + 4]); // size
+							encode_uint32(0, &p_manifest.write[ofs + 8]); // lineno
+							encode_uint32(-1, &p_manifest.write[ofs + 12]); // comment
+							encode_uint32(-1, &p_manifest.write[ofs + 16]); // ns
+							encode_uint32(attr_meta_data_string, &p_manifest.write[ofs + 20]); // name
+
+							ofs += 24;
+						}
 					}
 
 					// copy footer back in
@@ -1488,7 +1572,7 @@ void EditorExportPlatformAndroid::_fix_manifest(const Ref<EditorExportPreset> &p
 		ofs += size;
 	}
 
-	//create new andriodmanifest binary
+	// Create new android manifest binary.
 
 	Vector<uint8_t> ret;
 	ret.resize(string_table_begins + string_table.size() * 4);
@@ -1868,15 +1952,9 @@ String EditorExportPlatformAndroid::get_export_option_warning(const EditorExport
 			}
 		} else if (p_name == "gradle_build/use_gradle_build") {
 			bool gradle_build_enabled = p_preset->get("gradle_build/use_gradle_build");
-			String enabled_plugins_names = _get_plugins_names(Ref<EditorExportPreset>(p_preset));
-			if (!enabled_plugins_names.is_empty() && !gradle_build_enabled) {
+			String enabled_deprecated_plugins_names = _get_deprecated_plugins_names(Ref<EditorExportPreset>(p_preset));
+			if (!enabled_deprecated_plugins_names.is_empty() && !gradle_build_enabled) {
 				return TTR("\"Use Gradle Build\" must be enabled to use the plugins.");
-			}
-		} else if (p_name == "xr_features/xr_mode") {
-			bool gradle_build_enabled = p_preset->get("gradle_build/use_gradle_build");
-			int xr_mode_index = p_preset->get("xr_features/xr_mode");
-			if (xr_mode_index == XR_MODE_OPENXR && !gradle_build_enabled) {
-				return TTR("OpenXR requires \"Use Gradle Build\" to be enabled");
 			}
 		} else if (p_name == "gradle_build/compress_native_libraries") {
 			bool gradle_build_enabled = p_preset->get("gradle_build/use_gradle_build");
@@ -2608,6 +2686,7 @@ bool EditorExportPlatformAndroid::has_valid_export_configuration(const Ref<Edito
 			if (!dvalid) {
 				template_err += TTR("Custom debug template not found.") + "\n";
 			}
+			has_export_templates |= dvalid;
 		} else {
 			has_export_templates |= exists_export_template("android_debug.apk", &template_err);
 		}
@@ -2617,6 +2696,7 @@ bool EditorExportPlatformAndroid::has_valid_export_configuration(const Ref<Edito
 			if (!rvalid) {
 				template_err += TTR("Custom release template not found.") + "\n";
 			}
+			has_export_templates |= rvalid;
 		} else {
 			has_export_templates |= exists_export_template("android_release.apk", &template_err);
 		}
@@ -3164,6 +3244,17 @@ String EditorExportPlatformAndroid::join_abis(const Vector<EditorExportPlatformA
 	return ret;
 }
 
+String EditorExportPlatformAndroid::_get_deprecated_plugins_names(const Ref<EditorExportPreset> &p_preset) const {
+	Vector<String> names;
+
+#ifndef DISABLE_DEPRECATED
+	PluginConfigAndroid::get_plugins_names(get_enabled_plugins(p_preset), names);
+#endif // DISABLE_DEPRECATED
+
+	String plugins_names = String("|").join(names);
+	return plugins_names;
+}
+
 String EditorExportPlatformAndroid::_get_plugins_names(const Ref<EditorExportPreset> &p_preset) const {
 	Vector<String> names;
 
@@ -3469,7 +3560,6 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 		}
 
 		String addons_directory = ProjectSettings::get_singleton()->globalize_path("res://addons");
-		String current_renderer = GLOBAL_GET("rendering/renderer/rendering_method.mobile");
 
 		cmdline.push_back("-p"); // argument to specify the start directory.
 		cmdline.push_back(build_path); // start directory.
@@ -3486,8 +3576,6 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 		cmdline.push_back("-Pperform_zipalign=" + zipalign_flag); // argument to specify whether the build should be zipaligned.
 		cmdline.push_back("-Pperform_signing=" + sign_flag); // argument to specify whether the build should be signed.
 		cmdline.push_back("-Pcompress_native_libraries=" + compress_native_libraries_flag); // argument to specify whether the build should compress native libraries.
-		cmdline.push_back("-Pgodot_editor_version=" + String(GODOT_VERSION_FULL_CONFIG));
-		cmdline.push_back("-Pgodot_rendering_method=" + current_renderer);
 
 		// NOTE: The release keystore is not included in the verbose logging
 		// to avoid accidentally leaking sensitive information when sharing verbose logs for troubleshooting.
@@ -3668,6 +3756,17 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 		//write
 		if (file == "AndroidManifest.xml") {
 			_fix_manifest(p_preset, data, p_give_internet);
+
+			// Allow editor export plugins to update the prebuilt manifest as needed.
+			Vector<Ref<EditorExportPlugin>> export_plugins = EditorExport::get_singleton()->get_export_plugins();
+			for (int i = 0; i < export_plugins.size(); i++) {
+				if (export_plugins[i]->supports_platform(Ref<EditorExportPlatform>(this))) {
+					PackedByteArray export_plugin_data = export_plugins[i]->update_android_prebuilt_manifest(Ref<EditorExportPlatform>(this), data);
+					if (!export_plugin_data.is_empty()) {
+						data = export_plugin_data;
+					}
+				}
+			}
 		}
 		if (file == "resources.arsc") {
 			_fix_resources(p_preset, data);

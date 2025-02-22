@@ -90,6 +90,8 @@
         <!-- Enable passthrough background during the splash screen -->
         <meta-data android:name="com.oculus.ossplash.background" android:value="passthrough-contextual"/>
 
+        <meta-data android:name="com.oculus.handtracking.version" android:value="V2.0" />
+
     </application>
 
 </manifest>
