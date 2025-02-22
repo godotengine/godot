@@ -218,10 +218,9 @@ void GPUParticles2D::_update_collision_size() {
 	if (texture.is_valid()) {
 		CanvasItemMaterial *mat = Object::cast_to<CanvasItemMaterial>(get_material().ptr());
 		if (mat && mat->get_particles_animation()) {
-            csize *= (texture->get_width() / mat->get_particles_anim_h_frames()) + (texture->get_height() / mat->get_particles_anim_v_frames()) / 4.0; //half size since its a radius
-		}
-		else {
-            csize *= (texture->get_width() + texture->get_height()) / 4.0; //half size since its a radius
+			csize *= (texture->get_width() / mat->get_particles_anim_h_frames()) + (texture->get_height() / mat->get_particles_anim_v_frames()) / 4.0; //half size since its a radius
+		} else {
+			csize *= (texture->get_width() + texture->get_height()) / 4.0; //half size since its a radius
 		}
 	}
 
