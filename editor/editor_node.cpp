@@ -4684,6 +4684,8 @@ void EditorNode::_project_run_started() {
 		bottom_panel->make_item_visible(log);
 	} else if (action_on_play == ACTION_ON_PLAY_OPEN_DEBUGGER) {
 		bottom_panel->make_item_visible(EditorDebuggerNode::get_singleton());
+	} else if (action_on_play == ACTION_ON_PLAY_CLOSE_BUTTOM_PANEL) {
+		bottom_panel->hide_bottom_panel();
 	}
 }
 
@@ -4691,6 +4693,8 @@ void EditorNode::_project_run_stopped() {
 	int action_on_stop = EDITOR_GET("run/bottom_panel/action_on_stop");
 	if (action_on_stop == ACTION_ON_STOP_CLOSE_BUTTOM_PANEL) {
 		bottom_panel->hide_bottom_panel();
+	} else if (action_on_stop == ACTION_ON_STOP_OPEN_OUTPUT) {
+		bottom_panel->make_item_visible(log);
 	}
 }
 
