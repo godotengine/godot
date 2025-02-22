@@ -64,6 +64,9 @@ void GDScriptTextDocument::_bind_methods() {
 
 void GDScriptTextDocument::didOpen(const Variant &p_param) {
 	lsp::TextDocumentItem doc = load_document_item(p_param);
+	if (!is_valid_gd_file(doc)) {
+		return;
+	}
 	sync_script_content(doc.uri, doc.text);
 }
 
@@ -74,6 +77,10 @@ void GDScriptTextDocument::didClose(const Variant &p_param) {
 
 void GDScriptTextDocument::didChange(const Variant &p_param) {
 	lsp::TextDocumentItem doc = load_document_item(p_param);
+	if (!is_valid_gd_file(doc)) {
+		return;
+	}
+
 	Dictionary dict = p_param;
 	Array contentChanges = dict["contentChanges"];
 	for (int i = 0; i < contentChanges.size(); ++i) {
@@ -86,6 +93,9 @@ void GDScriptTextDocument::didChange(const Variant &p_param) {
 
 void GDScriptTextDocument::willSaveWaitUntil(const Variant &p_param) {
 	lsp::TextDocumentItem doc = load_document_item(p_param);
+	if (!is_valid_gd_file(doc)) {
+		return;
+	}
 
 	String path = GDScriptLanguageProtocol::get_singleton()->get_workspace()->get_file_path(doc.uri);
 	Ref<Script> scr = ResourceLoader::load(path);
@@ -96,6 +106,10 @@ void GDScriptTextDocument::willSaveWaitUntil(const Variant &p_param) {
 
 void GDScriptTextDocument::didSave(const Variant &p_param) {
 	lsp::TextDocumentItem doc = load_document_item(p_param);
+	if (!is_valid_gd_file(doc)) {
+		return;
+	}
+
 	Dictionary dict = p_param;
 	String text = dict["text"];
 
@@ -131,6 +145,11 @@ lsp::TextDocumentItem GDScriptTextDocument::load_document_item(const Variant &p_
 	Dictionary params = p_param;
 	doc.load(params["textDocument"]);
 	return doc;
+}
+
+bool GDScriptTextDocument::is_valid_gd_file(const lsp::TextDocumentItem &p_doc) {
+	// LanguageId isn't always set, but check it for good practice
+	return p_doc.languageId == "gdscript" || p_doc.uri.ends_with(".gd");
 }
 
 void GDScriptTextDocument::notify_client_show_symbol(const lsp::DocumentSymbol *symbol) {
