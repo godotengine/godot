@@ -12,9 +12,13 @@ def get_configurations():
 
 
 def get_build_prefix(env):
+    if not env.msvc:
+        return []
     batch_file = methods.find_visual_c_batch_file(env)
     return [
+        "cmd /V /C",
         "set &quot;plat=$(PlatformTarget)&quot;",
-        "(if &quot;$(PlatformTarget)&quot;==&quot;x64&quot; (set &quot;plat=x86_amd64&quot;))",
-        f"call &quot;{batch_file}&quot; !plat!",
+        "^&amp; (if &quot;$(PlatformTarget)&quot;==&quot;x64&quot; (set &quot;plat=x86_amd64&quot;))",
+        f"^&amp; call &quot;{batch_file}&quot; !plat!",
+        "^&amp;",
     ]

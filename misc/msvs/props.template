@@ -18,6 +18,30 @@
   <ItemGroup Condition="%%CONDITION%%">
     %%EXTRA_ITEMS%%
   </ItemGroup>
+
+  <!-- Required for Rider below this line-->
+  <PropertyGroup Condition=" '$(PlatformToolset)' == 'Clang' ">
+    <LocalDebuggerCommand Condition="'$(LocalDebuggerCommand)' == ''">$(NMakeOutput)</LocalDebuggerCommand>
+    <DefaultPlatformToolset>$(PlatformToolset)</DefaultPlatformToolset>
+  </PropertyGroup>
+
+  <Target Name="Build" Condition=" '$(PlatformToolset)' == 'Clang' ">
+    <Exec Command="$(NMakeBuildCommandLine)"/>
+  </Target>
+  <Target Name="Rebuild" Condition=" '$(PlatformToolset)' == 'Clang' ">
+    <Exec Command="$(NMakeReBuildCommandLine)"/>
+  </Target>
+  <Target Name="Clean" Condition=" '$(PlatformToolset)' == 'Clang' ">
+    <Exec Command="$(NMakeCleanCommandLine)"/>
+  </Target>
+
+  <ItemDefinitionGroup Condition=" '$(PlatformToolset)' == 'Clang' ">
+    <ClCompile>
+      <PreprocessorDefinitions>
+        $(NMakePreprocessorDefinitions)
+      </PreprocessorDefinitions>
+    </ClCompile>
+  </ItemDefinitionGroup>
 </Project>
 <!-- CHECKSUM
 %%HASH%%
