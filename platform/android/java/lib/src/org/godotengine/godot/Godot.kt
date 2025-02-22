@@ -825,10 +825,11 @@ class Godot(private val context: Context) {
 	 * Returns true if `Vulkan` is used for rendering.
 	 */
 	private fun usesVulkan(): Boolean {
-		var rendererSource = "ProjectSettings"
-		var renderer = GodotLib.getGlobal("rendering/renderer/rendering_method")
+		val rendererInfo = GodotLib.getRendererInfo()
 		var renderingDeviceSource = "ProjectSettings"
-		var renderingDevice = GodotLib.getGlobal("rendering/rendering_device/driver")
+		var renderingDevice = rendererInfo[0]
+		var rendererSource = "ProjectSettings"
+		var renderer = rendererInfo[1]
 		val cmdline = getCommandLine()
 		var index = cmdline.indexOf("--rendering-method")
 		if (index > -1 && cmdline.size > index + 1) {
