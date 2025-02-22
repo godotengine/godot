@@ -710,10 +710,10 @@ void Label::_notification(int p_what) {
 						Vector2 line_offset = _get_line_rect(p, i).position;
 						ofs.x = line_offset.x;
 
-						int asc = TS->shaped_text_get_ascent(line_rid);
-						int dsc = TS->shaped_text_get_descent(line_rid);
+						double asc = TS->shaped_text_get_ascent(line_rid);
+						double dsc = TS->shaped_text_get_descent(line_rid);
 						if (asc + dsc < font_h) {
-							int diff = font_h - (asc + dsc);
+							double diff = font_h - (asc + dsc);
 							asc += diff / 2;
 							dsc += diff - (diff / 2);
 						}
