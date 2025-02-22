@@ -1543,10 +1543,13 @@ void TextureStorage::texture_replace(RID p_texture, RID p_by_texture) {
 		return;
 	}
 
-	if (tex->rd_texture_srgb.is_valid()) {
+	// Only when the user frees the texture_rd_rid of TextureRD and resets it, we need to check the texture_owner to avoid printing errors.
+	if (tex->rd_texture_srgb.is_valid() && likely(texture_owner.owns(tex->rd_texture_srgb))) {
 		RD::get_singleton()->free(tex->rd_texture_srgb);
 	}
-	RD::get_singleton()->free(tex->rd_texture);
+	if (likely(texture_owner.owns(tex->rd_texture))) {
+		RD::get_singleton()->free(tex->rd_texture);
+	}
 
 	if (tex->canvas_texture) {
 		memdelete(tex->canvas_texture);
