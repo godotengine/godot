@@ -1377,14 +1377,8 @@ void LineEdit::_notification(int p_what) {
 
 		case MainLoop::NOTIFICATION_OS_IME_UPDATE: {
 			if (editing) {
-				const String &new_ime_text = DisplayServer::get_singleton()->ime_get_text();
-				const Vector2i &new_ime_selection = DisplayServer::get_singleton()->ime_get_selection();
-				if (ime_text == new_ime_text && ime_selection == new_ime_selection) {
-					break;
-				}
-
-				ime_text = new_ime_text;
-				ime_selection = new_ime_selection;
+				ime_text = DisplayServer::get_singleton()->ime_get_text();
+				ime_selection = DisplayServer::get_singleton()->ime_get_selection();
 
 				if (!ime_text.is_empty()) {
 					selection_delete();

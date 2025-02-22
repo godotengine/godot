@@ -48,22 +48,15 @@ void CPUParticles3D::set_emitting(bool p_emitting) {
 		return;
 	}
 
-	if (p_emitting && !use_fixed_seed) {
-		set_seed(Math::rand());
-	}
-
 	emitting = p_emitting;
 	if (emitting) {
-		_set_emitting();
-	}
-}
+		active = true;
+		set_process_internal(true);
 
-void CPUParticles3D::_set_emitting() {
-	active = true;
-	set_process_internal(true);
-	// first update before rendering to avoid one frame delay after emitting starts
-	if (time == 0) {
-		_update_internal();
+		// first update before rendering to avoid one frame delay after emitting starts
+		if (time == 0) {
+			_update_internal();
+		}
 	}
 }
 
@@ -258,8 +251,7 @@ void CPUParticles3D::restart(bool p_keep_seed) {
 		seed = Math::rand();
 	}
 
-	emitting = true;
-	_set_emitting();
+	set_emitting(true);
 }
 
 void CPUParticles3D::set_direction(Vector3 p_direction) {

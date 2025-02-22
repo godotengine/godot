@@ -39,7 +39,7 @@ void GDScriptEditorTranslationParserPlugin::get_recognized_extensions(List<Strin
 	GDScriptLanguage::get_singleton()->get_recognized_extensions(r_extensions);
 }
 
-Error GDScriptEditorTranslationParserPlugin::parse_file(const String &p_path, Vector<Vector<String>> *r_translations) {
+Error GDScriptEditorTranslationParserPlugin::parse_file(const String &p_path, Vector<String> *r_ids, Vector<Vector<String>> *r_ids_ctx_plural) {
 	// Extract all translatable strings using the parsed tree from GDScriptParser.
 	// The strategy is to find all ExpressionNode and AssignmentNode from the tree and extract strings if relevant, i.e
 	// Search strings in ExpressionNode -> CallNode -> tr(), set_text(), set_placeholder() etc.
@@ -49,7 +49,11 @@ Error GDScriptEditorTranslationParserPlugin::parse_file(const String &p_path, Ve
 	Ref<Resource> loaded_res = ResourceLoader::load(p_path, "", ResourceFormatLoader::CACHE_MODE_REUSE, &err);
 	ERR_FAIL_COND_V_MSG(err, err, "Failed to load " + p_path);
 
-	translations = r_translations;
+	ids = r_ids;
+	ids_ctx_plural = r_ids_ctx_plural;
+
+	ids_comment.clear();
+	ids_ctx_plural_comment.clear();
 
 	Ref<GDScript> gdscript = loaded_res;
 	String source_code = gdscript->get_source_code();
@@ -71,6 +75,11 @@ Error GDScriptEditorTranslationParserPlugin::parse_file(const String &p_path, Ve
 	comment_data = nullptr;
 
 	return OK;
+}
+
+void GDScriptEditorTranslationParserPlugin::get_comments(Vector<String> *r_ids_comment, Vector<String> *r_ids_ctx_plural_comment) {
+	r_ids_comment->append_array(ids_comment);
+	r_ids_ctx_plural_comment->append_array(ids_ctx_plural_comment);
 }
 
 bool GDScriptEditorTranslationParserPlugin::_is_constant_string(const GDScriptParser::ExpressionNode *p_expression) {
@@ -126,7 +135,8 @@ void GDScriptEditorTranslationParserPlugin::_add_id(const String &p_id, int p_li
 		return;
 	}
 
-	translations->push_back({ p_id, String(), String(), comment });
+	ids->push_back(p_id);
+	ids_comment.push_back(comment);
 }
 
 void GDScriptEditorTranslationParserPlugin::_add_id_ctx_plural(const Vector<String> &p_id_ctx_plural, int p_line) {
@@ -136,7 +146,8 @@ void GDScriptEditorTranslationParserPlugin::_add_id_ctx_plural(const Vector<Stri
 		return;
 	}
 
-	translations->push_back({ p_id_ctx_plural[0], p_id_ctx_plural[1], p_id_ctx_plural[2], comment });
+	ids_ctx_plural->push_back(p_id_ctx_plural);
+	ids_ctx_plural_comment.push_back(comment);
 }
 
 void GDScriptEditorTranslationParserPlugin::_traverse_class(const GDScriptParser::ClassNode *p_class) {
