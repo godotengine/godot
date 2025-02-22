@@ -861,15 +861,20 @@ void main() {
 			light_for_texture += light;
 
 #ifdef USE_SH_LIGHTMAPS
-			// These coefficients include the factored out SH evaluation, diffuse convolution, and final application, as well as the BRDF 1/PI and the spherical monte carlo factor.
-			// LO: 1/(2*sqrtPI) * 1/(2*sqrtPI) * PI * PI * 1/PI = 0.25
-			// L1: sqrt(3/(4*pi)) * sqrt(3/(4*pi)) * (PI*2/3) * (2 * PI) * 1/PI = 1.0
-			// Note: This only works because we aren't scaling, rotating, or combing harmonics, we are just directing applying them in the shader.
+			// Since we don't want to double attenuate the light we need to undo attenuation based on the surface
+			// normal before encoding it into SH coefficients
+			if (dot(normal, light_dir) <= 0.0001) {
+				continue;
+			}
+			light /= max(0.0, dot(normal, light_dir));
 
+			// Different coefficients are used because we are directly encoding point lights.
+			// L0: Zero is used since the lighting should be able to attenuate to zero (at 90 degrees)
+			// L1: 1 is to no increase or decrease the lights intensity. This should match dynamic lighting.
 			float c[4] = float[](
-					0.25, //l0
+					0, //l0
 					light_dir.y, //l1n1
-					light_dir.z, //l1n0
+					light_dir.z, //l1n0 (Should always be positive)
 					light_dir.x //l1p1
 			);
 
@@ -1253,26 +1258,26 @@ void main() {
 #endif
 
 #ifdef MODE_PACK_L1_COEFFS
-	vec4 base_coeff = texelFetch(sampler2DArray(source_light, linear_sampler), ivec3(atlas_pos, params.atlas_slice * 4), 0);
+	vec4 c = vec4(0, 0, 0, 0);
 
-	for (int i = 1; i < 4; i++) {
-		vec4 c = texelFetch(sampler2DArray(source_light, linear_sampler), ivec3(atlas_pos, params.atlas_slice * 4 + i), 0);
+	// Using the logistic sigmoid function to compress the L1 between 0 and 1
+	//l1n1
+	c = texelFetch(sampler2DArray(source_light, linear_sampler), ivec3(atlas_pos, params.atlas_slice * 4 + 1), 0);
+	c.rgb = 1 / (1 + exp(-c.rgb * 4.0));
+	c.rgb = clamp(c.rgb, vec3(0.0), vec3(1.0));
+	imageStore(dest_light, ivec3(atlas_pos, params.atlas_slice * 4 + 1), c);
 
-		if (abs(base_coeff.r) > 0.0) {
-			c.r /= (base_coeff.r * 8);
-		}
+	//l1n0
+	c = texelFetch(sampler2DArray(source_light, linear_sampler), ivec3(atlas_pos, params.atlas_slice * 4 + 2), 0);
+	c.rgb = 1 / (1 + exp(-c.rgb * 4.0));
+	c.rgb = clamp(c.rgb, vec3(0.0), vec3(1.0));
+	imageStore(dest_light, ivec3(atlas_pos, params.atlas_slice * 4 + 2), c);
 
-		if (abs(base_coeff.g) > 0.0) {
-			c.g /= (base_coeff.g * 8);
-		}
+	//l1n1
+	c = texelFetch(sampler2DArray(source_light, linear_sampler), ivec3(atlas_pos, params.atlas_slice * 4 + 3), 0);
+	c.rgb = 1 / (1 + exp(-c.rgb * 4.0));
+	c.rgb = clamp(c.rgb, vec3(0.0), vec3(1.0));
+	imageStore(dest_light, ivec3(atlas_pos, params.atlas_slice * 4 + 3), c);
 
-		if (abs(base_coeff.b) > 0.0) {
-			c.b /= (base_coeff.b * 8);
-		}
-
-		c.rgb += vec3(0.5);
-		c.rgb = clamp(c.rgb, vec3(0.0), vec3(1.0));
-		imageStore(dest_light, ivec3(atlas_pos, params.atlas_slice * 4 + i), c);
-	}
 #endif
 }
