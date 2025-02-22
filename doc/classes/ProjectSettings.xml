@@ -2684,38 +2684,26 @@
 		<member name="rendering/environment/volumetric_fog/volume_size" type="int" setter="" getter="" default="64">
 			Base size used to determine size of froxel buffer in the camera X-axis and Y-axis. The final size is scaled by the aspect ratio of the screen, so actual values may differ from what is set. Set a larger size for more detailed fog, set a smaller size for better performance.
 		</member>
-		<member name="rendering/gl_compatibility/driver" type="String" setter="" getter="" default="&quot;auto&quot;">
+		<member name="rendering/gl_compatibility/driver" type="String" setter="" getter="">
 			Sets the driver to be used by the renderer when using the Compatibility renderer. This property can not be edited directly, instead, set the driver using the platform-specific overrides.
-			Supported values are:
-			- [code]auto[/code], currently defaults to [code]opengl3[/code] on all platforms.
-			- [code]opengl3[/code], OpenGL 3.3 on desktop platforms, OpenGL ES 3.0 on mobile platforms, WebGL 2.0 on web.
-			- [code]opengl3_angle[/code], OpenGL ES 3.0 over ANGLE compatibility layer, supported on macOS (over native OpenGL) and Windows (over Direct3D 11).
-			- [code]opengl3_es[/code], OpenGL ES 3.0 on Linux/BSD.
-			[b]Note:[/b] The availability of these options depends on whether the engine was compiled with support for them (determined by SCons options [code]opengl3[/code] and [code]angle_libs[/code]).
 		</member>
-		<member name="rendering/gl_compatibility/driver.android" type="String" setter="" getter="" default="&quot;auto&quot;">
+		<member name="rendering/gl_compatibility/driver.android" type="String" setter="" getter="">
 			Android override for [member rendering/gl_compatibility/driver].
-			The [code]auto[/code] setting is equivalent to [code]opengl3[/code] on this platform.
 		</member>
-		<member name="rendering/gl_compatibility/driver.ios" type="String" setter="" getter="" default="&quot;auto&quot;">
+		<member name="rendering/gl_compatibility/driver.ios" type="String" setter="" getter="">
 			iOS override for [member rendering/gl_compatibility/driver].
-			The [code]auto[/code] setting is equivalent to [code]opengl3[/code] on this platform.
 		</member>
-		<member name="rendering/gl_compatibility/driver.linuxbsd" type="String" setter="" getter="" default="&quot;auto&quot;">
+		<member name="rendering/gl_compatibility/driver.linuxbsd" type="String" setter="" getter="">
 			LinuxBSD override for [member rendering/gl_compatibility/driver].
-			The [code]auto[/code] setting is equivalent to [code]opengl3[/code] on this platform. [code]opengl3_es[/code] is available as an option, which is also used as a fallback on devices that don't support OpenGL 3.3.
 		</member>
-		<member name="rendering/gl_compatibility/driver.macos" type="String" setter="" getter="" default="&quot;auto&quot;">
+		<member name="rendering/gl_compatibility/driver.macos" type="String" setter="" getter="">
 			macOS override for [member rendering/gl_compatibility/driver].
-			The [code]auto[/code] setting is equivalent to [code]opengl3[/code] on this platform. [code]opengl3_angle[/code] is available as an option if ANGLE support was compiled in.
 		</member>
-		<member name="rendering/gl_compatibility/driver.web" type="String" setter="" getter="" default="&quot;auto&quot;">
+		<member name="rendering/gl_compatibility/driver.web" type="String" setter="" getter="">
 			Web override for [member rendering/gl_compatibility/driver].
-			The [code]auto[/code] setting is equivalent to [code]opengl3[/code] on this platform.
 		</member>
-		<member name="rendering/gl_compatibility/driver.windows" type="String" setter="" getter="" default="&quot;auto&quot;">
+		<member name="rendering/gl_compatibility/driver.windows" type="String" setter="" getter="">
 			Windows override for [member rendering/gl_compatibility/driver].
-			The [code]auto[/code] setting is equivalent to [code]opengl3[/code] on this platform. [code]opengl3_angle[/code] is available as an option if ANGLE supported was compiled in. In such case, ANGLE is used preferentially on lower end devices with known problematic native OpenGL drivers (see [member rendering/gl_compatibility/force_angle_on_devices]).
 		</member>
 		<member name="rendering/gl_compatibility/fallback_to_angle" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], the compatibility renderer will fall back to ANGLE if native OpenGL is not supported or the device is listed in [member rendering/gl_compatibility/force_angle_on_devices].
@@ -2981,40 +2969,24 @@
 			The number of entries in the sampler descriptors heap the Direct3D 12 rendering driver uses each frame, used for most rendering operations.
 			Depending on the complexity of scenes, this value may be lowered or may need to be raised.
 		</member>
-		<member name="rendering/rendering_device/driver" type="String" setter="" getter="" default="&quot;auto&quot;">
+		<member name="rendering/rendering_device/driver" type="String" setter="" getter="">
 			Sets the driver to be used by the renderer when using a RenderingDevice-based renderer like the Forward+ or Mobile renderers. This property can't be edited directly. Instead, set the driver using the platform-specific overrides. This can be overridden using the [code]--rendering-driver &lt;driver&gt;[/code] command line argument.
-			Supported values are:
-			- [code]auto[/code], Metal on Apple Silicon Macs and iOS, Vulkan on other built-in platforms. On Windows, Direct3D 12 is the default if the engine was compiled without Vulkan support.
-			- [code]metal[/code], Metal (supported on Apple Silicon Macs and iOS).
-			- [code]vulkan[/code], Vulkan (supported on all desktop and mobile platforms).
-			- [code]d3d12[/code], Direct3D 12 (supported on Windows).
-			[b]Note:[/b] The availability of these options depends on whether the engine was compiled with support for them (determined by SCons options [code]vulkan[/code], [code]metal[/code], and [code]d3d12[/code]).
 			[b]Note:[/b] The actual rendering driver may be automatically changed by the engine as a result of a fallback, or a user-specified command line argument. To get the actual rendering driver that is used at runtime, use [method RenderingServer.get_current_rendering_driver_name] instead of reading this project setting's value.
 		</member>
-		<member name="rendering/rendering_device/driver.android" type="String" setter="" getter="" default="&quot;auto&quot;">
+		<member name="rendering/rendering_device/driver.android" type="String" setter="" getter="">
 			Android override for [member rendering/rendering_device/driver].
-			The [code]auto[/code] setting is equivalent to [code]vulkan[/code] on this platform.
-			[b]Note:[/b] If Vulkan was disabled at compile time, there is no alternative RenderingDevice driver.
 		</member>
-		<member name="rendering/rendering_device/driver.ios" type="String" setter="" getter="" default="&quot;auto&quot;">
+		<member name="rendering/rendering_device/driver.ios" type="String" setter="" getter="">
 			iOS override for [member rendering/rendering_device/driver].
-			The [code]auto[/code] setting is equivalent to [code]metal[/code] on this platform.
-			[b]Note:[/b] If Metal was disabled at compile time, the default becomes [code]vulkan[/code]. If both Metal and Vulkan were disabled at compile time, there is no alternative RenderingDevice driver.
 		</member>
-		<member name="rendering/rendering_device/driver.linuxbsd" type="String" setter="" getter="" default="&quot;auto&quot;">
+		<member name="rendering/rendering_device/driver.linuxbsd" type="String" setter="" getter="">
 			LinuxBSD override for [member rendering/rendering_device/driver].
-			The [code]auto[/code] setting is equivalent to [code]vulkan[/code] on this platform.
-			[b]Note:[/b] If Vulkan was disabled at compile time, there is no alternative RenderingDevice driver.
 		</member>
-		<member name="rendering/rendering_device/driver.macos" type="String" setter="" getter="" default="&quot;auto&quot;">
+		<member name="rendering/rendering_device/driver.macos" type="String" setter="" getter="">
 			macOS override for [member rendering/rendering_device/driver].
-			The [code]auto[/code] setting is equivalent to [code]metal[/code] on Apple Silicon Macs, and [code]vulkan[/code] (MoltenVK) on Intel Macs. Metal isn't supported on Intel Macs, so even if setting [code]metal[/code] explicitly, it will fallback to Vulkan on Intel Macs.
-			[b]Note:[/b] If Metal was disabled at compile time, the default becomes [code]vulkan[/code] for both Apple Silicon and Intel Macs. If both Metal and Vulkan were disabled at compile time, there is no alternative RenderingDevice driver.
 		</member>
-		<member name="rendering/rendering_device/driver.windows" type="String" setter="" getter="" default="&quot;auto&quot;">
+		<member name="rendering/rendering_device/driver.windows" type="String" setter="" getter="">
 			Windows override for [member rendering/rendering_device/driver].
-			The [code]auto[/code] setting is equivalent to [code]vulkan[/code] on this platform.
-			[b]Note:[/b] If Vulkan was disabled at compile time, the default becomes [code]d3d12[/code]. If both Vulkan and Direct3D 12 were disabled at compile time, there is no alternative RenderingDevice driver.
 		</member>
 		<member name="rendering/rendering_device/fallback_to_d3d12" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], the forward renderer will fall back to Direct3D 12 if Vulkan is not supported.
