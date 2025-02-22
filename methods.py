@@ -1217,7 +1217,7 @@ def generate_vs_project(env, original_args, project_name="godot"):
             properties.append(
                 "<ActiveProjectItemList_%s>;%s;</ActiveProjectItemList_%s>" % (x, ";".join(itemlist[x]), x)
             )
-        output = f"bin\\godot{env['PROGSUFFIX']}"
+        output = os.path.join("bin", f"godot{env['PROGSUFFIX']}")
 
         with open("misc/msvs/props.template", "r", encoding="utf-8") as file:
             props_template = file.read()
@@ -1389,6 +1389,21 @@ def generate_vs_project(env, original_args, project_name="godot"):
         proj_template = proj_template.replace("%%DEFAULT_ITEMS%%", "\n    ".join(all_items))
         proj_template = proj_template.replace("%%PROPERTIES%%", "\n  ".join(properties))
 
+        toolset = "v143"
+        if not env.msvc:
+            toolset = "CLang"
+        proj_template = proj_template.replace("%%PlatformToolset%%", toolset)
+
+        if not env.msvc:
+            proplist = [str(j) for j in env["CPPPATH"]]
+            proplist += [str(j) for j in env.get("VSHINT_INCLUDES", [])]
+            proplist += [str(j) for j in get_default_include_directories(env)]
+            proj_template = proj_template.replace("%%INCLUDES%%", ";".join(proplist))
+
+        proplist = [format_key_value(v) for v in list(env["CPPDEFINES"])]
+        proplist += [format_key_value(j) for j in env.get("VSHINT_DEFINES", [])]
+        proj_template = proj_template.replace("%%DEFINES%%", ";".join(proplist))
+
         with open(f"{project_name}.vcxproj", "w", encoding="utf-8", newline="\r\n") as f:
             f.write(proj_template)
 
@@ -1554,3 +1569,26 @@ def to_raw_cstring(value: Union[str, List[str]]) -> str:
         split += [segment]
 
     return " ".join(f'R"<!>({x.decode()})<!>"' for x in split)
+
+
+def get_default_include_directories(env):
+    output = subprocess.Popen(
+        [env["CXX"], "-x", "c++", "-E", "-v", "-"],
+        stdin=subprocess.DEVNULL,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.PIPE,
+    )
+    stderr = output.stderr.read().decode()
+    start = False
+    paths = []
+    for line in stderr.splitlines():
+        line = line.strip()  # Remove leading/trailing spaces
+        if not start:
+            if line == "#include <...> search starts here:":
+                start = True
+        elif start:
+            if line == "End of search list.":
+                break
+            else:
+                paths.append(os.path.abspath(line))
+    return paths
