@@ -621,12 +621,6 @@ int Skeleton3D::add_bone(const String &p_name) {
 	Bone b;
 	b.name = p_name;
 	bones.push_back(b);
-
-	// update ancellary data, see also: clear_bones()
-	bone_global_pose_dirty.push_back(true);
-	// ESTEE: this seems to work set to zero, but I'm not sure it is correct.
-	nested_set_offset_to_bone_index.push_back(0);
-
 	int new_idx = bones.size() - 1;
 	name_to_bone_index.insert(p_name, new_idx);
 	process_order_dirty = true;
@@ -845,9 +839,7 @@ void Skeleton3D::clear_bones() {
 	bones.clear();
 	name_to_bone_index.clear();
 
-	// clear ancellary data when bones are cleared,
-	// without this we end up with cache mismatches
-	// see also: add_bone()
+	// All these structures contain references to now invalid bone indices.
 	skin_bindings.clear();
 	bone_global_pose_dirty.clear();
 	parentless_bones.clear();
@@ -1105,6 +1097,9 @@ void Skeleton3D::force_update_bone_children_transforms(int p_bone_idx) {
 void Skeleton3D::_force_update_bone_children_transforms(int p_bone_idx) const {
 	const int bone_size = bones.size();
 	ERR_FAIL_INDEX(p_bone_idx, bone_size);
+
+	// from https://github.com/detomon/godot/commit/5203489d6c10945a35bbb82b149a4d32b25ab7b8
+	_update_process_order();
 
 	Bone *bonesptr = bones.ptr();
 
