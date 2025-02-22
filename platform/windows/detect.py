@@ -732,7 +732,7 @@ def configure_mingw(env: "SConsEnvironment"):
         if env["use_static_cpp"]:
             env.Append(LINKFLAGS=["-static"])
 
-    if env["arch"] in ["x86_32", "x86_64"]:
+    if env["arch"] == "x86_32":
         env["x86_libtheora_opt_gcc"] = True
 
     env.Append(CCFLAGS=["-ffp-contract=off"])
