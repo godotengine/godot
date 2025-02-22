@@ -503,7 +503,6 @@
 			<param index="3" name="coords_to" type="Vector2i" />
 			<description>
 				Creates a coordinates-level proxy for the given identifiers. A proxy will map set of tile identifiers to another set of identifiers. The alternative tile ID is kept the same when using coordinates-level proxies.
-				This can be used to replace a tile in all TileMaps using this TileSet, as TileMapLayer nodes will find and use the proxy's target tile when one is available.
 				Proxied tiles can be automatically replaced in TileMapLayer nodes using the editor.
 			</description>
 		</method>
@@ -602,7 +601,6 @@
 			<param index="1" name="source_to" type="int" />
 			<description>
 				Creates a source-level proxy for the given source ID. A proxy will map set of tile identifiers to another set of identifiers. Both the atlas coordinates ID and the alternative tile ID are kept the same when using source-level proxies.
-				This can be used to replace a source in all TileMaps using this TileSet, as TileMapLayer nodes will find and use the proxy's target source when one is available.
 				Proxied tiles can be automatically replaced in TileMapLayer nodes using the editor.
 			</description>
 		</method>
@@ -656,7 +654,7 @@
 		</constant>
 		<constant name="TILE_SHAPE_ISOMETRIC" value="1" enum="TileShape">
 			Diamond tile shape (for isometric look).
-			[b]Note:[/b] Isometric [TileSet] works best if all sibling [TileMapLayer]s and their parent Node2D need Y-sort enabled.
+			[b]Note:[/b] Isometric [TileSet] works best if all sibling [TileMapLayer]s and their parent Node2D have Y-sort enabled.
 		</constant>
 		<constant name="TILE_SHAPE_HALF_OFFSET_SQUARE" value="2" enum="TileShape">
 			Rectangular tile shape with one row/column out of two offset by half a tile.
