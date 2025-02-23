@@ -117,6 +117,12 @@
 				[b]Note:[/b] When creating custom editor UI, prefer accessing theme items directly from your GUI nodes using the [code]get_theme_*[/code] methods.
 			</description>
 		</method>
+		<method name="get_editor_toaster" qualifiers="const">
+			<return type="EditorToaster" />
+			<description>
+				Returns the editor's [EditorToaster].
+			</description>
+		</method>
 		<method name="get_editor_undo_redo" qualifiers="const">
 			<return type="EditorUndoRedoManager" />
 			<description>
@@ -241,8 +247,9 @@
 		<method name="open_scene_from_path">
 			<return type="void" />
 			<param index="0" name="scene_filepath" type="String" />
+			<param index="1" name="set_inherited" type="bool" default="false" />
 			<description>
-				Opens the scene at the given path.
+				Opens the scene at the given path. If [param set_inherited] is [code]true[/code], creates a new inherited scene.
 			</description>
 		</method>
 		<method name="play_current_scene">
@@ -262,6 +269,23 @@
 			<return type="void" />
 			<description>
 				Plays the main scene.
+			</description>
+		</method>
+		<method name="popup_create_dialog" experimental="">
+			<return type="void" />
+			<param index="0" name="callback" type="Callable" />
+			<param index="1" name="base_type" type="StringName" default="&quot;&quot;" />
+			<param index="2" name="current_type" type="String" default="&quot;&quot;" />
+			<param index="3" name="dialog_title" type="String" default="&quot;&quot;" />
+			<param index="4" name="type_blocklist" type="StringName[]" default="[]" />
+			<description>
+				Pops up an editor dialog for creating an object.
+				The [param callback] must take a single argument of type [StringName] which will contain the type name of the selected object or be empty if no item is selected.
+				The [param base_type] specifies the base type of objects to display. For example, if you set this to "Resource", all types derived from [Resource] will display in the create dialog.
+				The [param current_type] will be passed in the search box of the create dialog, and the specified type can be immediately selected when the dialog pops up. If the [param current_type] is not derived from [param base_type], there will be no result of the type in the dialog.
+				The [param dialog_title] allows you to define a custom title for the dialog. This is useful if you want to accurately hint the usage of the dialog. If the [param dialog_title] is an empty string, the dialog will use "Create New 'Base Type'" as the default title.
+				The [param type_blocklist] contains a list of type names, and the types in the blocklist will be hidden from the create dialog.
+				[b]Note:[/b] Trying to list the base type in the [param type_blocklist] will hide all types derived from the base type from the create dialog.
 			</description>
 		</method>
 		<method name="popup_dialog">
@@ -299,6 +323,15 @@
 			<description>
 				Pops up the [param dialog] in the editor UI with [method Window.popup_exclusive_centered_ratio]. The dialog must have no current parent, otherwise the method fails.
 				See also [method Window.set_unparent_when_invisible].
+			</description>
+		</method>
+		<method name="popup_method_selector">
+			<return type="void" />
+			<param index="0" name="object" type="Object" />
+			<param index="1" name="callback" type="Callable" />
+			<param index="2" name="current_value" type="String" default="&quot;&quot;" />
+			<description>
+				Pops up an editor dialog for selecting a method from [param object]. The [param callback] must take a single argument of type [String] which will contain the name of the selected method or be empty if the dialog is canceled. If [param current_value] is provided, the method will be selected automatically in the method list, if it exists.
 			</description>
 		</method>
 		<method name="popup_node_selector">

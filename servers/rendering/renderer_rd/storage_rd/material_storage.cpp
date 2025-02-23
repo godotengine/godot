@@ -32,6 +32,8 @@
 #include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "core/io/resource_loader.h"
+#include "servers/rendering/renderer_rd/forward_clustered/scene_shader_forward_clustered.h"
+#include "servers/rendering/renderer_rd/forward_mobile/scene_shader_forward_mobile.h"
 #include "servers/rendering/storage/variant_converters.h"
 #include "texture_storage.h"
 
@@ -342,7 +344,7 @@ static void _fill_std140_variant_ubo_value(ShaderLanguage::DataType type, int p_
 	}
 }
 
-_FORCE_INLINE_ static void _fill_std140_ubo_value(ShaderLanguage::DataType type, const Vector<ShaderLanguage::Scalar> &value, uint8_t *data) {
+_FORCE_INLINE_ static void _fill_std140_ubo_value(ShaderLanguage::DataType type, const Vector<ShaderLanguage::Scalar> &value, uint8_t *data, bool p_use_linear_color) {
 	switch (type) {
 		case ShaderLanguage::TYPE_BOOL: {
 			uint32_t *gui = (uint32_t *)data;
@@ -439,18 +441,28 @@ _FORCE_INLINE_ static void _fill_std140_ubo_value(ShaderLanguage::DataType type,
 
 		} break;
 		case ShaderLanguage::TYPE_VEC3: {
+			Color c = Color(value[0].real, value[1].real, value[2].real);
+			if (p_use_linear_color) {
+				c = c.srgb_to_linear();
+			}
+
 			float *gui = reinterpret_cast<float *>(data);
 
 			for (int i = 0; i < 3; i++) {
-				gui[i] = value[i].real;
+				gui[i] = c.components[i];
 			}
 
 		} break;
 		case ShaderLanguage::TYPE_VEC4: {
+			Color c = Color(value[0].real, value[1].real, value[2].real, value[3].real);
+			if (p_use_linear_color) {
+				c = c.srgb_to_linear();
+			}
+
 			float *gui = reinterpret_cast<float *>(data);
 
 			for (int i = 0; i < 4; i++) {
-				gui[i] = value[i].real;
+				gui[i] = c.components[i];
 			}
 		} break;
 		case ShaderLanguage::TYPE_MAT2: {
@@ -567,6 +579,9 @@ Variant MaterialStorage::ShaderData::get_default_parameter(const StringName &p_p
 	if (uniforms.has(p_parameter)) {
 		ShaderLanguage::ShaderNode::Uniform uniform = uniforms[p_parameter];
 		Vector<ShaderLanguage::Scalar> default_value = uniform.default_value;
+		if (default_value.is_empty()) {
+			return ShaderLanguage::get_default_datatype_value(uniform.type, uniform.array_size, uniform.hint);
+		}
 		return ShaderLanguage::constant_value_to_variant(default_value, uniform.type, uniform.array_size, uniform.hint);
 	}
 	return Variant();
@@ -784,7 +799,7 @@ void MaterialStorage::MaterialData::update_uniform_buffer(const HashMap<StringNa
 
 		} else if (E.value.default_value.size()) {
 			//default value
-			_fill_std140_ubo_value(E.value.type, E.value.default_value, data);
+			_fill_std140_ubo_value(E.value.type, E.value.default_value, data, p_use_linear_color);
 			//value=E.value.default_value;
 		} else {
 			//zero because it was not provided
@@ -1177,24 +1192,25 @@ void MaterialStorage::MaterialData::set_as_used() {
 ///////////////////////////////////////////////////////////////////////////
 // MaterialStorage::Samplers
 
-Vector<RD::Uniform> MaterialStorage::Samplers::get_uniforms(int p_first_index) const {
-	Vector<RD::Uniform> uniforms;
+template void MaterialStorage::Samplers::append_uniforms(LocalVector<RD::Uniform> &p_uniforms, int p_first_index) const;
 
+template void MaterialStorage::Samplers::append_uniforms(Vector<RD::Uniform> &p_uniforms, int p_first_index) const;
+
+template <typename Collection>
+void MaterialStorage::Samplers::append_uniforms(Collection &p_uniforms, int p_first_index) const {
 	// Binding ids are aligned with samplers_inc.glsl.
-	uniforms.push_back(RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, p_first_index + 0, rids[RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST][RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED]));
-	uniforms.push_back(RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, p_first_index + 1, rids[RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR][RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED]));
-	uniforms.push_back(RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, p_first_index + 2, rids[RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS][RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED]));
-	uniforms.push_back(RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, p_first_index + 3, rids[RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS][RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED]));
-	uniforms.push_back(RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, p_first_index + 4, rids[RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS_ANISOTROPIC][RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED]));
-	uniforms.push_back(RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, p_first_index + 5, rids[RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC][RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED]));
-	uniforms.push_back(RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, p_first_index + 6, rids[RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST][RS::CANVAS_ITEM_TEXTURE_REPEAT_ENABLED]));
-	uniforms.push_back(RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, p_first_index + 7, rids[RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR][RS::CANVAS_ITEM_TEXTURE_REPEAT_ENABLED]));
-	uniforms.push_back(RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, p_first_index + 8, rids[RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS][RS::CANVAS_ITEM_TEXTURE_REPEAT_ENABLED]));
-	uniforms.push_back(RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, p_first_index + 9, rids[RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS][RS::CANVAS_ITEM_TEXTURE_REPEAT_ENABLED]));
-	uniforms.push_back(RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, p_first_index + 10, rids[RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS_ANISOTROPIC][RS::CANVAS_ITEM_TEXTURE_REPEAT_ENABLED]));
-	uniforms.push_back(RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, p_first_index + 11, rids[RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC][RS::CANVAS_ITEM_TEXTURE_REPEAT_ENABLED]));
-
-	return uniforms;
+	p_uniforms.push_back(RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, p_first_index + 0, rids[RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST][RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED]));
+	p_uniforms.push_back(RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, p_first_index + 1, rids[RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR][RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED]));
+	p_uniforms.push_back(RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, p_first_index + 2, rids[RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS][RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED]));
+	p_uniforms.push_back(RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, p_first_index + 3, rids[RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS][RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED]));
+	p_uniforms.push_back(RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, p_first_index + 4, rids[RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS_ANISOTROPIC][RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED]));
+	p_uniforms.push_back(RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, p_first_index + 5, rids[RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC][RS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED]));
+	p_uniforms.push_back(RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, p_first_index + 6, rids[RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST][RS::CANVAS_ITEM_TEXTURE_REPEAT_ENABLED]));
+	p_uniforms.push_back(RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, p_first_index + 7, rids[RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR][RS::CANVAS_ITEM_TEXTURE_REPEAT_ENABLED]));
+	p_uniforms.push_back(RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, p_first_index + 8, rids[RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS][RS::CANVAS_ITEM_TEXTURE_REPEAT_ENABLED]));
+	p_uniforms.push_back(RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, p_first_index + 9, rids[RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS][RS::CANVAS_ITEM_TEXTURE_REPEAT_ENABLED]));
+	p_uniforms.push_back(RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, p_first_index + 10, rids[RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS_ANISOTROPIC][RS::CANVAS_ITEM_TEXTURE_REPEAT_ENABLED]));
+	p_uniforms.push_back(RD::Uniform(RD::UNIFORM_TYPE_SAMPLER, p_first_index + 11, rids[RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC][RS::CANVAS_ITEM_TEXTURE_REPEAT_ENABLED]));
 }
 
 bool MaterialStorage::Samplers::is_valid() const {
@@ -2301,6 +2317,24 @@ bool MaterialStorage::material_casts_shadows(RID p_material) {
 	return true; //by default everything casts shadows
 }
 
+RS::CullMode RendererRD::MaterialStorage::material_get_cull_mode(RID p_material) const {
+	Material *material = material_owner.get_or_null(p_material);
+	ERR_FAIL_NULL_V(material, RS::CULL_MODE_DISABLED);
+	ERR_FAIL_NULL_V(material->shader, RS::CULL_MODE_DISABLED);
+	if (material->shader->type == ShaderType::SHADER_TYPE_3D && material->shader->data) {
+		RendererSceneRenderImplementation::SceneShaderForwardClustered::ShaderData *sd_clustered = dynamic_cast<RendererSceneRenderImplementation::SceneShaderForwardClustered::ShaderData *>(material->shader->data);
+		if (sd_clustered) {
+			return (RS::CullMode)sd_clustered->cull_mode;
+		}
+
+		RendererSceneRenderImplementation::SceneShaderForwardMobile::ShaderData *sd_mobile = dynamic_cast<RendererSceneRenderImplementation::SceneShaderForwardMobile::ShaderData *>(material->shader->data);
+		if (sd_mobile) {
+			return (RS::CullMode)sd_mobile->cull_mode;
+		}
+	}
+	return RS::CULL_MODE_DISABLED;
+}
+
 void MaterialStorage::material_get_instance_shader_parameters(RID p_material, List<InstanceShaderParam> *r_parameters) {
 	Material *material = material_owner.get_or_null(p_material);
 	ERR_FAIL_NULL(material);
@@ -2322,11 +2356,11 @@ void MaterialStorage::material_update_dependency(RID p_material, DependencyTrack
 	}
 }
 
-MaterialStorage::Samplers MaterialStorage::samplers_rd_allocate(float p_mipmap_bias) const {
+MaterialStorage::Samplers MaterialStorage::samplers_rd_allocate(float p_mipmap_bias, RS::ViewportAnisotropicFiltering anisotropic_filtering_level) const {
 	Samplers samplers;
 	samplers.mipmap_bias = p_mipmap_bias;
+	samplers.anisotropic_filtering_level = (int)anisotropic_filtering_level;
 	samplers.use_nearest_mipmap_filter = GLOBAL_GET("rendering/textures/default_filters/use_nearest_mipmap_filter");
-	samplers.anisotropic_filtering_level = int(GLOBAL_GET("rendering/textures/default_filters/anisotropic_filtering_level"));
 
 	RD::SamplerFilter mip_filter = samplers.use_nearest_mipmap_filter ? RD::SAMPLER_FILTER_NEAREST : RD::SAMPLER_FILTER_LINEAR;
 	float anisotropy_max = float(1 << samplers.anisotropic_filtering_level);

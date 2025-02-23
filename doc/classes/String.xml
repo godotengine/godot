@@ -6,7 +6,7 @@
 	<description>
 		This is the built-in string Variant type (and the one used by GDScript). Strings may contain any number of Unicode characters, and expose methods useful for manipulating and generating strings. Strings are reference-counted and use a copy-on-write approach (every modification to a string returns a new [String]), so passing them around is cheap in resources.
 		Some string methods have corresponding variations. Variations suffixed with [code]n[/code] ([method countn], [method findn], [method replacen], etc.) are [b]case-insensitive[/b] (they make no distinction between uppercase and lowercase letters). Method variations prefixed with [code]r[/code] ([method rfind], [method rsplit], etc.) are reversed, and start from the end of the string, instead of the beginning.
-		To convert any Variant to or from a string, see [method @GlobalScope.str], [method @GlobalScope.str_to_var], and [method @GlobalScope.var_to_str].
+		To convert any [Variant] to or from a string, see [method @GlobalScope.str], [method @GlobalScope.str_to_var], and [method @GlobalScope.var_to_str].
 		[b]Note:[/b] In a boolean context, a string will evaluate to [code]false[/code] if it is empty ([code]""[/code]). Otherwise, a string will always evaluate to [code]true[/code].
 	</description>
 	<tutorials>
@@ -139,8 +139,8 @@
 				print("I" in "team")         # Prints false
 				[/gdscript]
 				[csharp]
-				GD.Print("Node".Contains("de")); // Prints true
-				GD.Print("team".Contains("I"));  // Prints false
+				GD.Print("Node".Contains("de")); // Prints True
+				GD.Print("team".Contains("I"));  // Prints False
 				[/csharp]
 				[/codeblocks]
 				If you need to know where [param what] is within the string, use [method find]. See also [method containsn].
@@ -248,7 +248,7 @@
 			<param index="1" name="placeholder" type="String" default="&quot;{_}&quot;" />
 			<description>
 				Formats the string by replacing all occurrences of [param placeholder] with the elements of [param values].
-				[param values] can be a [Dictionary], an [Array] or an [Object]. Any underscores in [param placeholder] will be replaced with the corresponding keys in advance. Array elements use their index as keys.
+				[param values] can be a [Dictionary], an [Array], or an [Object]. Any underscores in [param placeholder] will be replaced with the corresponding keys in advance. Array elements use their index as keys.
 				[codeblock]
 				# Prints "Waiting for Godot is a play by Samuel Beckett, and Godot Engine is named after it."
 				var use_array_values = "Waiting for {0} is a play by {1}, and {0} Engine is named after it."
@@ -265,17 +265,17 @@
 				[/codeblock]
 				When passing an [Object], the property names from [method Object.get_property_list] are used as keys.
 				[codeblock]
-				# Prints: Visible true, position (0, 0).
+				# Prints "Visible true, position (0, 0)"
 				var node = Node2D.new()
 				print("Visible {visible}, position {position}".format(node))
 				[/codeblock]
 				See also the [url=$DOCS_URL/tutorials/scripting/gdscript/gdscript_format_string.html]GDScript format string[/url] tutorial.
-				[b]Note:[/b] The replacement of placeholders is not done all at once, instead each placeholder is replaced in the order they are passed, this means that if one of the replacement strings contains a key it will also be replaced. This can be very powerful, but can also cause unexpected results if you are not careful. If you do not need to perform replacement in the replacement strings, make sure your replacements do not contain placeholders to ensure reliable results.
+				[b]Note:[/b] Each replacement is done sequentially for each element of [param values], [b]not[/b] all at once. This means that if any element is inserted and it contains another placeholder, it may be changed by the next replacement. While this can be very useful, it often causes unexpected results. If not necessary, make sure [param values]'s elements do not contain placeholders.
 				[codeblock]
-				print("{0} {1}".format(["{1}", "x"]))                       # Prints "x x".
-				print("{0} {1}".format(["x", "{0}"]))                       # Prints "x {0}".
-				print("{foo} {bar}".format({"foo": "{bar}", "bar": "baz"})) # Prints "baz baz".
-				print("{foo} {bar}".format({"bar": "baz", "foo": "{bar}"})) # Prints "{bar} baz".
+				print("{0} {1}".format(["{1}", "x"]))           # Prints "x x"
+				print("{0} {1}".format(["x", "{0}"]))           # Prints "x {0}"
+				print("{a} {b}".format({"a": "{b}", "b": "c"})) # Prints "c c"
+				print("{a} {b}".format({"b": "c", "a": "{b}"})) # Prints "{b} c"
 				[/codeblock]
 				[b]Note:[/b] In C#, it's recommended to [url=https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/tokens/interpolated]interpolate strings with "$"[/url], instead.
 			</description>
@@ -571,7 +571,7 @@
 				print("---".join(fruits)) # Prints "Apple---Orange---Pear---Kiwi"
 				[/gdscript]
 				[csharp]
-				var fruits = new string[] {"Apple", "Orange", "Pear", "Kiwi"};
+				string[] fruits = ["Apple", "Orange", "Pear", "Kiwi"];
 
 				// In C#, this method is static.
 				GD.Print(string.Join(", ", fruits));  // Prints "Apple, Orange, Pear, Kiwi"
@@ -887,7 +887,7 @@
 			<return type="float" />
 			<param index="0" name="text" type="String" />
 			<description>
-				Returns the similarity index ([url=https://en.wikipedia.org/wiki/S%C3%B8rensen%E2%80%93Dice_coefficient]Sorensen-Dice coefficient[/url]) of this string compared to another. A result of [code]1.0[/code] means totally similar, while [code]0.0[/code] means totally dissimilar.
+				Returns the similarity index ([url=https://en.wikipedia.org/wiki/S%C3%B8rensen%E2%80%93Dice_coefficient]Sørensen-Dice coefficient[/url]) of this string compared to another. A result of [code]1.0[/code] means totally similar, while [code]0.0[/code] means totally dissimilar.
 				[codeblock]
 				print("ABC123".similarity("ABC123")) # Prints 1.0
 				print("ABC123".similarity("XYZ456")) # Prints 0.0

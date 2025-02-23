@@ -35,6 +35,8 @@
 #include "core/os/memory.h"
 #include "core/templates/sort_array.h"
 
+#include <initializer_list>
+
 /**
  * Generic Templatized Linked List Implementation.
  * The implementation differs from the STL one because
@@ -224,7 +226,7 @@ private:
 		Element *last = nullptr;
 		int size_cache = 0;
 
-		bool erase(const Element *p_I) {
+		bool erase(Element *p_I) {
 			ERR_FAIL_NULL_V(p_I, false);
 			ERR_FAIL_COND_V(p_I->data != this, false);
 
@@ -244,7 +246,7 @@ private:
 				p_I->next_ptr->prev_ptr = p_I->prev_ptr;
 			}
 
-			memdelete_allocator<Element, A>(const_cast<Element *>(p_I));
+			memdelete_allocator<Element, A>(p_I);
 			size_cache--;
 
 			return true;
@@ -430,7 +432,7 @@ public:
 	/**
 	 * erase an element in the list, by iterator pointing to it. Return true if it was found/erased.
 	 */
-	bool erase(const Element *p_I) {
+	bool erase(Element *p_I) {
 		if (_data && p_I) {
 			bool ret = _data->erase(p_I);
 
@@ -521,6 +523,15 @@ public:
 			push_back(it->get());
 			it = it->next();
 		}
+	}
+	void operator=(List &&p_list) {
+		if (unlikely(this == &p_list)) {
+			return;
+		}
+
+		clear();
+		_data = p_list._data;
+		p_list._data = nullptr;
 	}
 
 	// Random access to elements, use with care,
@@ -760,8 +771,18 @@ public:
 			it = it->next();
 		}
 	}
+	List(List &&p_list) {
+		_data = p_list._data;
+		p_list._data = nullptr;
+	}
 
 	List() {}
+
+	List(std::initializer_list<T> p_init) {
+		for (const T &E : p_init) {
+			push_back(E);
+		}
+	}
 
 	~List() {
 		clear();

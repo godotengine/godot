@@ -35,8 +35,6 @@
 #include "core/os/os.h"
 #include "core/version.h"
 
-#include <stdio.h>
-
 Error PackedData::add_pack(const String &p_path, bool p_replace_files, uint64_t p_offset) {
 	for (int i = 0; i < sources.size(); i++) {
 		if (sources[i]->try_open_pack(p_path, p_replace_files, p_offset)) {
@@ -48,7 +46,7 @@ Error PackedData::add_pack(const String &p_path, bool p_replace_files, uint64_t 
 }
 
 void PackedData::add_path(const String &p_pkg_path, const String &p_path, uint64_t p_ofs, uint64_t p_size, const uint8_t *p_md5, PackSource *p_src, bool p_replace_files, bool p_encrypted) {
-	String simplified_path = p_path.simplify_path();
+	String simplified_path = p_path.simplify_path().trim_prefix("res://");
 	PathMD5 pmd5(simplified_path.md5_buffer());
 
 	bool exists = files.has(pmd5);
@@ -68,13 +66,11 @@ void PackedData::add_path(const String &p_pkg_path, const String &p_path, uint64
 	}
 
 	if (!exists) {
-		//search for dir
-		String p = simplified_path.replace_first("res://", "");
+		// Search for directory.
 		PackedDir *cd = root;
 
-		if (p.contains("/")) { //in a subdir
-
-			Vector<String> ds = p.get_base_dir().split("/");
+		if (simplified_path.contains_char('/')) { // In a subdirectory.
+			Vector<String> ds = simplified_path.get_base_dir().split("/");
 
 			for (int j = 0; j < ds.size(); j++) {
 				if (!cd->subdirs.has(ds[j])) {
@@ -89,11 +85,38 @@ void PackedData::add_path(const String &p_pkg_path, const String &p_path, uint64
 			}
 		}
 		String filename = simplified_path.get_file();
-		// Don't add as a file if the path points to a directory
+		// Don't add as a file if the path points to a directory.
 		if (!filename.is_empty()) {
 			cd->files.insert(filename);
 		}
 	}
+}
+
+void PackedData::remove_path(const String &p_path) {
+	String simplified_path = p_path.simplify_path().trim_prefix("res://");
+	PathMD5 pmd5(simplified_path.md5_buffer());
+	if (!files.has(pmd5)) {
+		return;
+	}
+
+	// Search for directory.
+	PackedDir *cd = root;
+
+	if (simplified_path.contains_char('/')) { // In a subdirectory.
+		Vector<String> ds = simplified_path.get_base_dir().split("/");
+
+		for (int j = 0; j < ds.size(); j++) {
+			if (!cd->subdirs.has(ds[j])) {
+				return; // Subdirectory does not exist, do not bother creating.
+			} else {
+				cd = cd->subdirs[ds[j]];
+			}
+		}
+	}
+
+	cd->files.erase(simplified_path.get_file());
+
+	files.erase(pmd5);
 }
 
 void PackedData::add_pack_source(PackSource *p_source) {
@@ -103,13 +126,30 @@ void PackedData::add_pack_source(PackSource *p_source) {
 }
 
 uint8_t *PackedData::get_file_hash(const String &p_path) {
-	PathMD5 pmd5(p_path.md5_buffer());
+	String simplified_path = p_path.simplify_path().trim_prefix("res://");
+	PathMD5 pmd5(simplified_path.md5_buffer());
 	HashMap<PathMD5, PackedFile, PathMD5>::Iterator E = files.find(pmd5);
-	if (!E || E->value.offset == 0) {
+	if (!E) {
 		return nullptr;
 	}
 
 	return E->value.md5;
+}
+
+HashSet<String> PackedData::get_file_paths() const {
+	HashSet<String> file_paths;
+	_get_file_paths(root, root->name, file_paths);
+	return file_paths;
+}
+
+void PackedData::_get_file_paths(PackedDir *p_dir, const String &p_parent_dir, HashSet<String> &r_paths) const {
+	for (const String &E : p_dir->files) {
+		r_paths.insert(p_parent_dir.path_join(E));
+	}
+
+	for (const KeyValue<String, PackedDir *> &E : p_dir->subdirs) {
+		_get_file_paths(E.value, p_parent_dir.path_join(E.key), r_paths);
+	}
 }
 
 void PackedData::clear() {
@@ -267,15 +307,19 @@ bool PackedSourcePCK::try_open_pack(const String &p_path, bool p_replace_files, 
 		cs[sl] = 0;
 
 		String path;
-		path.parse_utf8(cs.ptr());
+		path.parse_utf8(cs.ptr(), sl);
 
-		uint64_t ofs = file_base + f->get_64();
+		uint64_t ofs = f->get_64();
 		uint64_t size = f->get_64();
 		uint8_t md5[16];
 		f->get_buffer(md5, 16);
 		uint32_t flags = f->get_32();
 
-		PackedData::get_singleton()->add_path(p_path, path, ofs + p_offset, size, md5, this, p_replace_files, (flags & PACK_FILE_ENCRYPTED));
+		if (flags & PACK_FILE_REMOVAL) { // The file was removed.
+			PackedData::get_singleton()->remove_path(path);
+		} else {
+			PackedData::get_singleton()->add_path(p_path, path, file_base + ofs + p_offset, size, md5, this, p_replace_files, (flags & PACK_FILE_ENCRYPTED));
+		}
 	}
 
 	return true;
@@ -283,6 +327,44 @@ bool PackedSourcePCK::try_open_pack(const String &p_path, bool p_replace_files, 
 
 Ref<FileAccess> PackedSourcePCK::get_file(const String &p_path, PackedData::PackedFile *p_file) {
 	return memnew(FileAccessPack(p_path, *p_file));
+}
+
+//////////////////////////////////////////////////////////////////
+
+bool PackedSourceDirectory::try_open_pack(const String &p_path, bool p_replace_files, uint64_t p_offset) {
+	// Load with offset feature only supported for PCK files.
+	ERR_FAIL_COND_V_MSG(p_offset != 0, false, "Invalid PCK data. Note that loading files with a non-zero offset isn't supported with directories.");
+
+	if (p_path != "res://") {
+		return false;
+	}
+	add_directory(p_path, p_replace_files);
+	return true;
+}
+
+Ref<FileAccess> PackedSourceDirectory::get_file(const String &p_path, PackedData::PackedFile *p_file) {
+	Ref<FileAccess> ret = FileAccess::create_for_path(p_path);
+	ret->reopen(p_path, FileAccess::READ);
+	return ret;
+}
+
+void PackedSourceDirectory::add_directory(const String &p_path, bool p_replace_files) {
+	Ref<DirAccess> da = DirAccess::open(p_path);
+	if (da.is_null()) {
+		return;
+	}
+	da->set_include_hidden(true);
+
+	for (const String &file_name : da->get_files()) {
+		String file_path = p_path.path_join(file_name);
+		uint8_t md5[16] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+		PackedData::get_singleton()->add_path(p_path, file_path, 0, 0, md5, this, p_replace_files, false);
+	}
+
+	for (const String &sub_dir_name : da->get_directories()) {
+		String sub_dir_path = p_path.path_join(sub_dir_name);
+		add_directory(sub_dir_path, p_replace_files);
+	}
 }
 
 //////////////////////////////////////////////////////////////////
@@ -371,8 +453,8 @@ void FileAccessPack::flush() {
 	ERR_FAIL();
 }
 
-void FileAccessPack::store_buffer(const uint8_t *p_src, uint64_t p_length) {
-	ERR_FAIL();
+bool FileAccessPack::store_buffer(const uint8_t *p_src, uint64_t p_length) {
+	ERR_FAIL_V(false);
 }
 
 bool FileAccessPack::file_exists(const String &p_name) {
@@ -544,8 +626,6 @@ String DirAccessPack::get_current_dir(bool p_include_drive) const {
 }
 
 bool DirAccessPack::file_exists(String p_file) {
-	p_file = fix_path(p_file);
-
 	PackedData::PackedDir *pd = _find_dir(p_file.get_base_dir());
 	if (!pd) {
 		return false;
@@ -554,8 +634,6 @@ bool DirAccessPack::file_exists(String p_file) {
 }
 
 bool DirAccessPack::dir_exists(String p_dir) {
-	p_dir = fix_path(p_dir);
-
 	return _find_dir(p_dir) != nullptr;
 }
 

@@ -122,8 +122,8 @@
 				print("I" in "team")         # Prints false
 				[/gdscript]
 				[csharp]
-				GD.Print("Node".Contains("de")); // Prints true
-				GD.Print("team".Contains("I"));  // Prints false
+				GD.Print("Node".Contains("de")); // Prints True
+				GD.Print("team".Contains("I"));  // Prints False
 				[/csharp]
 				[/codeblocks]
 				If you need to know where [param what] is within the string, use [method find]. See also [method containsn].
@@ -231,7 +231,7 @@
 			<param index="1" name="placeholder" type="String" default="&quot;{_}&quot;" />
 			<description>
 				Formats the string by replacing all occurrences of [param placeholder] with the elements of [param values].
-				[param values] can be a [Dictionary] or an [Array]. Any underscores in [param placeholder] will be replaced with the corresponding keys in advance. Array elements use their index as keys.
+				[param values] can be a [Dictionary], an [Array], or an [Object]. Any underscores in [param placeholder] will be replaced with the corresponding keys in advance. Array elements use their index as keys.
 				[codeblock]
 				# Prints "Waiting for Godot is a play by Samuel Beckett, and Godot Engine is named after it."
 				var use_array_values = "Waiting for {0} is a play by {1}, and {0} Engine is named after it."
@@ -246,7 +246,20 @@
 				print("User {} is {}.".format([42, "Godot"], "{}"))
 				print("User {id} is {name}.".format([["id", 42], ["name", "Godot"]]))
 				[/codeblock]
+				When passing an [Object], the property names from [method Object.get_property_list] are used as keys.
+				[codeblock]
+				# Prints "Visible true, position (0, 0)"
+				var node = Node2D.new()
+				print("Visible {visible}, position {position}".format(node))
+				[/codeblock]
 				See also the [url=$DOCS_URL/tutorials/scripting/gdscript/gdscript_format_string.html]GDScript format string[/url] tutorial.
+				[b]Note:[/b] Each replacement is done sequentially for each element of [param values], [b]not[/b] all at once. This means that if any element is inserted and it contains another placeholder, it may be changed by the next replacement. While this can be very useful, it often causes unexpected results. If not necessary, make sure [param values]'s elements do not contain placeholders.
+				[codeblock]
+				print("{0} {1}".format(["{1}", "x"]))           # Prints "x x"
+				print("{0} {1}".format(["x", "{0}"]))           # Prints "x {0}"
+				print("{a} {b}".format({"a": "{b}", "b": "c"})) # Prints "c c"
+				print("{a} {b}".format({"b": "c", "a": "{b}"})) # Prints "{b} c"
+				[/codeblock]
 				[b]Note:[/b] In C#, it's recommended to [url=https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/tokens/interpolated]interpolate strings with "$"[/url], instead.
 			</description>
 		</method>
@@ -299,7 +312,7 @@
 			<param index="0" name="delimiter" type="String" />
 			<param index="1" name="slice" type="int" />
 			<description>
-				Splits the string using a [param delimiter] and returns the substring at index [param slice]. Returns an empty string if the [param slice] does not exist.
+				Splits the string using a [param delimiter] and returns the substring at index [param slice]. Returns the original string if [param delimiter] does not occur in the string. Returns an empty string if the [param slice] does not exist.
 				This is faster than [method split], if you only need one substring.
 				[codeblock]
 				print("i/am/example/hi".get_slice("/", 2)) # Prints "example"
@@ -533,7 +546,7 @@
 				print("---".join(fruits)) # Prints "Apple---Orange---Pear---Kiwi"
 				[/gdscript]
 				[csharp]
-				var fruits = new string[] {"Apple", "Orange", "Pear", "Kiwi"};
+				string[] fruits = ["Apple", "Orange", "Pear", "Kiwi"];
 
 				// In C#, this method is static.
 				GD.Print(string.Join(", ", fruits));  // Prints "Apple, Orange, Pear, Kiwi"
@@ -782,7 +795,7 @@
 			<return type="float" />
 			<param index="0" name="text" type="String" />
 			<description>
-				Returns the similarity index ([url=https://en.wikipedia.org/wiki/S%C3%B8rensen%E2%80%93Dice_coefficient]Sorensen-Dice coefficient[/url]) of this string compared to another. A result of [code]1.0[/code] means totally similar, while [code]0.0[/code] means totally dissimilar.
+				Returns the similarity index ([url=https://en.wikipedia.org/wiki/S%C3%B8rensen%E2%80%93Dice_coefficient]Sørensen-Dice coefficient[/url]) of this string compared to another. A result of [code]1.0[/code] means totally similar, while [code]0.0[/code] means totally dissimilar.
 				[codeblock]
 				print("ABC123".similarity("ABC123")) # Prints 1.0
 				print("ABC123".similarity("XYZ456")) # Prints 0.0
@@ -871,7 +884,7 @@
 		<method name="to_ascii_buffer" qualifiers="const">
 			<return type="PackedByteArray" />
 			<description>
-				Converts the string to an [url=https://en.wikipedia.org/wiki/ASCII]ASCII[/url]/Latin-1 encoded [PackedByteArray]. This method is slightly faster than [method to_utf8_buffer], but replaces all unsupported characters with spaces.
+				Converts the string to an [url=https://en.wikipedia.org/wiki/ASCII]ASCII[/url]/Latin-1 encoded [PackedByteArray]. This method is slightly faster than [method to_utf8_buffer], but replaces all unsupported characters with spaces. This is the inverse of [method PackedByteArray.get_string_from_ascii].
 			</description>
 		</method>
 		<method name="to_camel_case" qualifiers="const">
@@ -885,11 +898,11 @@
 			<description>
 				Converts the string representing a decimal number into a [float]. This method stops on the first non-number character, except the first decimal point ([code].[/code]) and the exponent letter ([code]e[/code]). See also [method is_valid_float].
 				[codeblock]
-				var a = "12.35".to_float() # a is 12.35
-				var b = "1.2.3".to_float() # b is 1.2
-				var c = "12xy3".to_float() # c is 12.0
-				var d = "1e3".to_float()   # d is 1000.0
-				var e = "Hello!".to_int()  # e is 0.0
+				var a = "12.35".to_float()  # a is 12.35
+				var b = "1.2.3".to_float()  # b is 1.2
+				var c = "12xy3".to_float()  # c is 12.0
+				var d = "1e3".to_float()    # d is 1000.0
+				var e = "Hello!".to_float() # e is 0.0
 				[/codeblock]
 			</description>
 		</method>
@@ -945,25 +958,25 @@
 		<method name="to_utf8_buffer" qualifiers="const">
 			<return type="PackedByteArray" />
 			<description>
-				Converts the string to a [url=https://en.wikipedia.org/wiki/UTF-8]UTF-8[/url] encoded [PackedByteArray]. This method is slightly slower than [method to_ascii_buffer], but supports all UTF-8 characters. For most cases, prefer using this method.
+				Converts the string to a [url=https://en.wikipedia.org/wiki/UTF-8]UTF-8[/url] encoded [PackedByteArray]. This method is slightly slower than [method to_ascii_buffer], but supports all UTF-8 characters. For most cases, prefer using this method. This is the inverse of [method PackedByteArray.get_string_from_utf8].
 			</description>
 		</method>
 		<method name="to_utf16_buffer" qualifiers="const">
 			<return type="PackedByteArray" />
 			<description>
-				Converts the string to a [url=https://en.wikipedia.org/wiki/UTF-16]UTF-16[/url] encoded [PackedByteArray].
+				Converts the string to a [url=https://en.wikipedia.org/wiki/UTF-16]UTF-16[/url] encoded [PackedByteArray]. This is the inverse of [method PackedByteArray.get_string_from_utf16].
 			</description>
 		</method>
 		<method name="to_utf32_buffer" qualifiers="const">
 			<return type="PackedByteArray" />
 			<description>
-				Converts the string to a [url=https://en.wikipedia.org/wiki/UTF-32]UTF-32[/url] encoded [PackedByteArray].
+				Converts the string to a [url=https://en.wikipedia.org/wiki/UTF-32]UTF-32[/url] encoded [PackedByteArray]. This is the inverse of [method PackedByteArray.get_string_from_utf32].
 			</description>
 		</method>
 		<method name="to_wchar_buffer" qualifiers="const">
 			<return type="PackedByteArray" />
 			<description>
-				Converts the string to a [url=https://en.wikipedia.org/wiki/Wide_character]wide character[/url] ([code]wchar_t[/code], UTF-16 on Windows, UTF-32 on other platforms) encoded [PackedByteArray].
+				Converts the string to a [url=https://en.wikipedia.org/wiki/Wide_character]wide character[/url] ([code]wchar_t[/code], UTF-16 on Windows, UTF-32 on other platforms) encoded [PackedByteArray]. This is the inverse of [method PackedByteArray.get_string_from_wchar].
 			</description>
 		</method>
 		<method name="trim_prefix" qualifiers="const">
@@ -990,7 +1003,7 @@
 		<method name="uri_decode" qualifiers="const">
 			<return type="String" />
 			<description>
-				Decodes the string from its URL-encoded format. This method is meant to properly decode the parameters in a URL when receiving an HTTP request.
+				Decodes the string from its URL-encoded format. This method is meant to properly decode the parameters in a URL when receiving an HTTP request. See also [method uri_encode].
 				[codeblocks]
 				[gdscript]
 				var url = "$DOCS_URL/?highlight=Godot%20Engine%3%docs"
@@ -1006,7 +1019,7 @@
 		<method name="uri_encode" qualifiers="const">
 			<return type="String" />
 			<description>
-				Encodes the string to URL-friendly format. This method is meant to properly encode the parameters in a URL when sending an HTTP request.
+				Encodes the string to URL-friendly format. This method is meant to properly encode the parameters in a URL when sending an HTTP request. See also [method uri_decode].
 				[codeblocks]
 				[gdscript]
 				var prefix = "$DOCS_URL/?highlight="

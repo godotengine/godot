@@ -36,6 +36,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/io/marshalls.h"
+#include "core/io/xml_parser.h"
 #include "core/version.h"
 #include "drivers/png/png_driver_common.h"
 #include "main/main.h"
@@ -131,12 +132,18 @@ bool DisplayServerWindows::has_feature(Feature p_feature) const {
 		case FEATURE_NATIVE_DIALOG_INPUT:
 		case FEATURE_NATIVE_DIALOG_FILE:
 		case FEATURE_NATIVE_DIALOG_FILE_EXTRA:
+		//case FEATURE_NATIVE_DIALOG_FILE_MIME:
 		case FEATURE_SWAP_BUFFERS:
 		case FEATURE_KEEP_SCREEN_ON:
 		case FEATURE_TEXT_TO_SPEECH:
 		case FEATURE_SCREEN_CAPTURE:
 		case FEATURE_STATUS_INDICATOR:
+		case FEATURE_WINDOW_EMBEDDING:
+		case FEATURE_WINDOW_DRAG:
+		case FEATURE_SCREEN_EXCLUDE_FROM_CAPTURE:
 			return true;
+		case FEATURE_EMOJI_AND_SYMBOL_PICKER:
+			return (os_ver.dwBuildNumber >= 17134); // Windows 10 Redstone 4 (1803)+ only.
 		default:
 			return false;
 	}
@@ -505,7 +512,7 @@ void DisplayServerWindows::_thread_fd_monitor(void *p_ud) {
 	}
 	if (filter_names.is_empty()) {
 		filter_exts.push_back(String("*.*").utf16());
-		filter_names.push_back(RTR("All Files").utf16());
+		filter_names.push_back((RTR("All Files") + " (*.*)").utf16());
 	}
 
 	Vector<COMDLG_FILTERSPEC> filters;
@@ -554,7 +561,7 @@ void DisplayServerWindows::_thread_fd_monitor(void *p_ud) {
 			flags |= FOS_FORCESHOWHIDDEN;
 		}
 		pfd->SetOptions(flags | FOS_FORCEFILESYSTEM);
-		pfd->SetTitle((LPCWSTR)fd->title.utf16().ptr());
+		pfd->SetTitle((LPCWSTR)fd->title.utf16().get_data());
 
 		String dir = ProjectSettings::get_singleton()->globalize_path(fd->current_directory);
 		if (dir == ".") {
@@ -572,10 +579,7 @@ void DisplayServerWindows::_thread_fd_monitor(void *p_ud) {
 			}
 		}
 		dir = dir.simplify_path();
-		dir = dir.replace("/", "\\");
-		if (!dir.is_network_share_path() && !dir.begins_with(R"(\\?\)")) {
-			dir = R"(\\?\)" + dir;
-		}
+		dir = dir.trim_prefix(R"(\\?\)").replace("/", "\\");
 
 		IShellItem *shellitem = nullptr;
 		hr = SHCreateItemFromParsingName((LPCWSTR)dir.utf16().ptr(), nullptr, IID_IShellItem, (void **)&shellitem);
@@ -584,7 +588,7 @@ void DisplayServerWindows::_thread_fd_monitor(void *p_ud) {
 			pfd->SetFolder(shellitem);
 		}
 
-		pfd->SetFileName((LPCWSTR)fd->filename.utf16().ptr());
+		pfd->SetFileName((LPCWSTR)fd->filename.utf16().get_data());
 		pfd->SetFileTypes(filters.size(), filters.ptr());
 		pfd->SetFileTypeIndex(0);
 
@@ -789,21 +793,63 @@ void DisplayServerWindows::process_file_dialog_callbacks() {
 	}
 }
 
-void DisplayServerWindows::mouse_set_mode(MouseMode p_mode) {
+void DisplayServerWindows::beep() const {
+	MessageBeep(MB_OK);
+}
+
+void DisplayServerWindows::_mouse_update_mode() {
 	_THREAD_SAFE_METHOD_
 
-	if (mouse_mode == p_mode) {
+	MouseMode wanted_mouse_mode = mouse_mode_override_enabled
+			? mouse_mode_override
+			: mouse_mode_base;
+
+	if (mouse_mode == wanted_mouse_mode) {
 		// Already in the same mode; do nothing.
 		return;
 	}
 
-	mouse_mode = p_mode;
+	mouse_mode = wanted_mouse_mode;
 
-	_set_mouse_mode_impl(p_mode);
+	_set_mouse_mode_impl(wanted_mouse_mode);
+}
+
+void DisplayServerWindows::mouse_set_mode(MouseMode p_mode) {
+	ERR_FAIL_INDEX(p_mode, MouseMode::MOUSE_MODE_MAX);
+	if (p_mode == mouse_mode_base) {
+		return;
+	}
+	mouse_mode_base = p_mode;
+	_mouse_update_mode();
 }
 
 DisplayServer::MouseMode DisplayServerWindows::mouse_get_mode() const {
 	return mouse_mode;
+}
+
+void DisplayServerWindows::mouse_set_mode_override(MouseMode p_mode) {
+	ERR_FAIL_INDEX(p_mode, MouseMode::MOUSE_MODE_MAX);
+	if (p_mode == mouse_mode_override) {
+		return;
+	}
+	mouse_mode_override = p_mode;
+	_mouse_update_mode();
+}
+
+DisplayServer::MouseMode DisplayServerWindows::mouse_get_mode_override() const {
+	return mouse_mode_override;
+}
+
+void DisplayServerWindows::mouse_set_mode_override_enabled(bool p_override_enabled) {
+	if (p_override_enabled == mouse_mode_override_enabled) {
+		return;
+	}
+	mouse_mode_override_enabled = p_override_enabled;
+	_mouse_update_mode();
+}
+
+bool DisplayServerWindows::mouse_is_mode_override_enabled() const {
+	return mouse_mode_override_enabled;
 }
 
 void DisplayServerWindows::warp_mouse(const Point2i &p_position) {
@@ -1394,6 +1440,62 @@ Ref<Image> DisplayServerWindows::screen_get_image(int p_screen) const {
 	return img;
 }
 
+Ref<Image> DisplayServerWindows::screen_get_image_rect(const Rect2i &p_rect) const {
+	Point2i pos = p_rect.position + _get_screens_origin();
+	Size2i size = p_rect.size;
+
+	POINT p1;
+	p1.x = pos.x;
+	p1.y = pos.y;
+
+	POINT p2;
+	p2.x = pos.x + size.x;
+	p2.y = pos.y + size.y;
+	if (win81p_LogicalToPhysicalPointForPerMonitorDPI) {
+		win81p_LogicalToPhysicalPointForPerMonitorDPI(0, &p1);
+		win81p_LogicalToPhysicalPointForPerMonitorDPI(0, &p2);
+	}
+
+	Ref<Image> img;
+	HDC dc = GetDC(0);
+	if (dc) {
+		HDC hdc = CreateCompatibleDC(dc);
+		int width = p2.x - p1.x;
+		int height = p2.y - p1.y;
+		if (hdc) {
+			HBITMAP hbm = CreateCompatibleBitmap(dc, width, height);
+			if (hbm) {
+				SelectObject(hdc, hbm);
+				BitBlt(hdc, 0, 0, width, height, dc, p1.x, p1.y, SRCCOPY);
+
+				BITMAPINFO bmp_info = {};
+				bmp_info.bmiHeader.biSize = sizeof(bmp_info.bmiHeader);
+				bmp_info.bmiHeader.biWidth = width;
+				bmp_info.bmiHeader.biHeight = -height;
+				bmp_info.bmiHeader.biPlanes = 1;
+				bmp_info.bmiHeader.biBitCount = 32;
+				bmp_info.bmiHeader.biCompression = BI_RGB;
+
+				Vector<uint8_t> img_data;
+				img_data.resize(width * height * 4);
+				GetDIBits(hdc, hbm, 0, height, img_data.ptrw(), &bmp_info, DIB_RGB_COLORS);
+
+				uint8_t *wr = (uint8_t *)img_data.ptrw();
+				for (int i = 0; i < width * height; i++) {
+					SWAP(wr[i * 4 + 0], wr[i * 4 + 2]); // Swap B and R.
+				}
+				img = Image::create_from_data(width, height, false, Image::FORMAT_RGBA8, img_data);
+
+				DeleteObject(hbm);
+			}
+			DeleteDC(hdc);
+		}
+		ReleaseDC(NULL, dc);
+	}
+
+	return img;
+}
+
 float DisplayServerWindows::screen_get_refresh_rate(int p_screen) const {
 	_THREAD_SAFE_METHOD_
 
@@ -1423,7 +1525,6 @@ void DisplayServerWindows::screen_set_keep_on(bool p_enable) {
 	if (p_enable) {
 		const String reason = "Godot Engine running with display/window/energy_saving/keep_screen_on = true";
 		Char16String reason_utf16 = reason.utf16();
-
 		REASON_CONTEXT context;
 		context.Version = POWER_REQUEST_CONTEXT_VERSION;
 		context.Flags = POWER_REQUEST_CONTEXT_SIMPLE_STRING;
@@ -1483,7 +1584,7 @@ DisplayServer::WindowID DisplayServerWindows::get_window_at_screen_position(cons
 DisplayServer::WindowID DisplayServerWindows::create_sub_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect, bool p_exclusive, WindowID p_transient_parent) {
 	_THREAD_SAFE_METHOD_
 
-	WindowID window_id = _create_window(p_mode, p_vsync_mode, p_flags, p_rect, p_exclusive, p_transient_parent);
+	WindowID window_id = _create_window(p_mode, p_vsync_mode, p_flags, p_rect, p_exclusive, p_transient_parent, NULL);
 	ERR_FAIL_COND_V_MSG(window_id == INVALID_WINDOW_ID, INVALID_WINDOW_ID, "Failed to create sub window.");
 
 	WindowData &wd = windows[window_id];
@@ -1505,6 +1606,14 @@ DisplayServer::WindowID DisplayServerWindows::create_sub_window(WindowMode p_mod
 	}
 	if (p_flags & WINDOW_FLAG_MOUSE_PASSTHROUGH_BIT) {
 		wd.mpass = true;
+	}
+	if (p_flags & WINDOW_FLAG_EXCLUDE_FROM_CAPTURE_BIT) {
+		wd.hide_from_capture = true;
+		if (os_ver.dwBuildNumber >= 19041) {
+			SetWindowDisplayAffinity(wd.hWnd, WDA_EXCLUDEFROMCAPTURE);
+		} else {
+			SetWindowDisplayAffinity(wd.hWnd, WDA_MONITOR);
+		}
 	}
 	if (p_flags & WINDOW_FLAG_POPUP_BIT) {
 		wd.is_popup = true;
@@ -1537,8 +1646,22 @@ DisplayServer::WindowID DisplayServerWindows::create_sub_window(WindowMode p_mod
 		rendering_device->screen_create(window_id);
 	}
 #endif
-	wd.initialized = true;
 	return window_id;
+}
+
+bool DisplayServerWindows::_is_always_on_top_recursive(WindowID p_window) const {
+	ERR_FAIL_COND_V(!windows.has(p_window), false);
+
+	const WindowData &wd = windows[p_window];
+	if (wd.always_on_top) {
+		return true;
+	}
+
+	if (wd.transient_parent != INVALID_WINDOW_ID) {
+		return _is_always_on_top_recursive(wd.transient_parent);
+	}
+
+	return false;
 }
 
 void DisplayServerWindows::show_window(WindowID p_id) {
@@ -1550,6 +1673,7 @@ void DisplayServerWindows::show_window(WindowID p_id) {
 	if (p_id != MAIN_WINDOW_ID) {
 		_update_window_style(p_id);
 	}
+	wd.initialized = true;
 
 	if (wd.maximized) {
 		ShowWindow(wd.hWnd, SW_SHOWMAXIMIZED);
@@ -1568,7 +1692,7 @@ void DisplayServerWindows::show_window(WindowID p_id) {
 		SetForegroundWindow(wd.hWnd); // Slightly higher priority.
 		SetFocus(wd.hWnd); // Set keyboard focus.
 	}
-	if (wd.always_on_top) {
+	if (_is_always_on_top_recursive(p_id)) {
 		SetWindowPos(wd.hWnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOSIZE | ((wd.no_focus || wd.is_popup) ? SWP_NOACTIVATE : 0));
 	}
 }
@@ -1810,7 +1934,6 @@ void DisplayServerWindows::window_set_mouse_passthrough(const Vector<Vector2> &p
 
 void DisplayServerWindows::_update_window_mouse_passthrough(WindowID p_window) {
 	ERR_FAIL_COND(!windows.has(p_window));
-
 	if (windows[p_window].mpass || windows[p_window].mpath.size() == 0) {
 		SetWindowRgn(windows[p_window].hWnd, nullptr, FALSE);
 	} else {
@@ -1851,6 +1974,7 @@ void DisplayServerWindows::window_set_current_screen(int p_screen, WindowID p_wi
 		return;
 	}
 	const WindowData &wd = windows[p_window];
+	ERR_FAIL_COND_MSG(wd.parent_hwnd, "Embedded window can't be moved to another screen.");
 	if (wd.fullscreen) {
 		Point2 pos = screen_get_position(p_screen) + _get_screens_origin();
 		Size2 size = screen_get_size(p_screen);
@@ -1930,6 +2054,8 @@ void DisplayServerWindows::window_set_position(const Point2i &p_position, Window
 
 	ERR_FAIL_COND(!windows.has(p_window));
 	WindowData &wd = windows[p_window];
+
+	ERR_FAIL_COND_MSG(wd.parent_hwnd, "Embedded window can't be moved.");
 
 	if (wd.fullscreen || wd.maximized) {
 		return;
@@ -2015,6 +2141,8 @@ void DisplayServerWindows::window_set_max_size(const Size2i p_size, WindowID p_w
 	ERR_FAIL_COND(!windows.has(p_window));
 	WindowData &wd = windows[p_window];
 
+	ERR_FAIL_COND_MSG(wd.parent_hwnd, "Embedded windows can't have a maximum size.");
+
 	if ((p_size != Size2()) && ((p_size.x < wd.min_size.x) || (p_size.y < wd.min_size.y))) {
 		ERR_PRINT("Maximum window size can't be smaller than minimum window size!");
 		return;
@@ -2036,6 +2164,8 @@ void DisplayServerWindows::window_set_min_size(const Size2i p_size, WindowID p_w
 	ERR_FAIL_COND(!windows.has(p_window));
 	WindowData &wd = windows[p_window];
 
+	ERR_FAIL_COND_MSG(wd.parent_hwnd, "Embedded windows can't have a minimum size.");
+
 	if ((p_size != Size2()) && (wd.max_size != Size2()) && ((p_size.x > wd.max_size.x) || (p_size.y > wd.max_size.y))) {
 		ERR_PRINT("Minimum window size can't be larger than maximum window size!");
 		return;
@@ -2056,6 +2186,8 @@ void DisplayServerWindows::window_set_size(const Size2i p_size, WindowID p_windo
 
 	ERR_FAIL_COND(!windows.has(p_window));
 	WindowData &wd = windows[p_window];
+
+	ERR_FAIL_COND_MSG(wd.parent_hwnd, "Embedded window can't be resized.");
 
 	if (wd.fullscreen || wd.maximized) {
 		return;
@@ -2108,7 +2240,7 @@ Size2i DisplayServerWindows::window_get_size_with_decorations(WindowID p_window)
 	return Size2();
 }
 
-void DisplayServerWindows::_get_window_style(bool p_main_window, bool p_initialized, bool p_fullscreen, bool p_multiwindow_fs, bool p_borderless, bool p_resizable, bool p_minimized, bool p_maximized, bool p_maximized_fs, bool p_no_activate_focus, DWORD &r_style, DWORD &r_style_ex) {
+void DisplayServerWindows::_get_window_style(bool p_main_window, bool p_initialized, bool p_fullscreen, bool p_multiwindow_fs, bool p_borderless, bool p_resizable, bool p_minimized, bool p_maximized, bool p_maximized_fs, bool p_no_activate_focus, bool p_embed_child, DWORD &r_style, DWORD &r_style_ex) {
 	// Windows docs for window styles:
 	// https://docs.microsoft.com/en-us/windows/win32/winmsg/window-styles
 	// https://docs.microsoft.com/en-us/windows/win32/winmsg/extended-window-styles
@@ -2116,13 +2248,19 @@ void DisplayServerWindows::_get_window_style(bool p_main_window, bool p_initiali
 	r_style = 0;
 	r_style_ex = WS_EX_WINDOWEDGE;
 	if (p_main_window) {
-		r_style_ex |= WS_EX_APPWINDOW;
+		// When embedded, we don't want the window to have WS_EX_APPWINDOW because it will
+		// show the embedded process in the taskbar and Alt-Tab.
+		if (!p_embed_child) {
+			r_style_ex |= WS_EX_APPWINDOW;
+		}
 		if (p_initialized) {
 			r_style |= WS_VISIBLE;
 		}
 	}
 
-	if (p_fullscreen || p_borderless) {
+	if (p_embed_child) {
+		r_style |= WS_POPUP;
+	} else if (p_fullscreen || p_borderless) {
 		r_style |= WS_POPUP; // p_borderless was WS_EX_TOOLWINDOW in the past.
 		if (p_minimized) {
 			r_style |= WS_MINIMIZE;
@@ -2157,7 +2295,7 @@ void DisplayServerWindows::_get_window_style(bool p_main_window, bool p_initiali
 		}
 	}
 
-	if (p_no_activate_focus) {
+	if (p_no_activate_focus && !p_embed_child) {
 		r_style_ex |= WS_EX_TOPMOST | WS_EX_NOACTIVATE;
 	}
 
@@ -2167,6 +2305,10 @@ void DisplayServerWindows::_get_window_style(bool p_main_window, bool p_initiali
 
 	r_style |= WS_CLIPCHILDREN | WS_CLIPSIBLINGS;
 	r_style_ex |= WS_EX_ACCEPTFILES;
+
+	if (OS::get_singleton()->get_current_rendering_driver_name() == "d3d12") {
+		r_style_ex |= WS_EX_NOREDIRECTIONBITMAP;
+	}
 }
 
 void DisplayServerWindows::_update_window_style(WindowID p_window, bool p_repaint) {
@@ -2178,7 +2320,7 @@ void DisplayServerWindows::_update_window_style(WindowID p_window, bool p_repain
 	DWORD style = 0;
 	DWORD style_ex = 0;
 
-	_get_window_style(p_window == MAIN_WINDOW_ID, wd.initialized, wd.fullscreen, wd.multiwindow_fs, wd.borderless, wd.resizable, wd.minimized, wd.maximized, wd.maximized_fs, wd.no_focus || wd.is_popup, style, style_ex);
+	_get_window_style(p_window == MAIN_WINDOW_ID, wd.initialized, wd.fullscreen, wd.multiwindow_fs, wd.borderless, wd.resizable, wd.minimized, wd.maximized, wd.maximized_fs, wd.no_focus || wd.is_popup, wd.parent_hwnd, style, style_ex);
 
 	SetWindowLongPtr(wd.hWnd, GWL_STYLE, style);
 	SetWindowLongPtr(wd.hWnd, GWL_EXSTYLE, style_ex);
@@ -2187,11 +2329,12 @@ void DisplayServerWindows::_update_window_style(WindowID p_window, bool p_repain
 		set_icon(icon);
 	}
 
-	SetWindowPos(wd.hWnd, wd.always_on_top ? HWND_TOPMOST : HWND_NOTOPMOST, 0, 0, 0, 0, SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOSIZE | ((wd.no_focus || wd.is_popup) ? SWP_NOACTIVATE : 0));
+	SetWindowPos(wd.hWnd, _is_always_on_top_recursive(p_window) ? HWND_TOPMOST : HWND_NOTOPMOST, 0, 0, 0, 0, SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOSIZE | ((wd.no_focus || wd.is_popup) ? SWP_NOACTIVATE : 0));
 
 	if (p_repaint) {
 		RECT rect;
 		GetWindowRect(wd.hWnd, &rect);
+
 		MoveWindow(wd.hWnd, rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top, TRUE);
 	}
 }
@@ -2202,15 +2345,23 @@ void DisplayServerWindows::window_set_mode(WindowMode p_mode, WindowID p_window)
 	ERR_FAIL_COND(!windows.has(p_window));
 	WindowData &wd = windows[p_window];
 
+	ERR_FAIL_COND_MSG(p_mode != WINDOW_MODE_WINDOWED && wd.parent_hwnd, "Embedded window only supports Windowed mode.");
+
+	bool was_fullscreen = wd.fullscreen;
+	wd.was_fullscreen_pre_min = false;
+
 	if (wd.fullscreen && p_mode != WINDOW_MODE_FULLSCREEN && p_mode != WINDOW_MODE_EXCLUSIVE_FULLSCREEN) {
 		RECT rect;
 
 		wd.fullscreen = false;
 		wd.multiwindow_fs = false;
-		wd.maximized = wd.was_maximized;
+
+		// Restore previous maximized state.
+		wd.maximized = wd.was_maximized_pre_fs;
 
 		_update_window_style(p_window, false);
 
+		// Restore window rect after exiting fullscreen.
 		if (wd.pre_fs_valid) {
 			rect = wd.pre_fs_rect;
 		} else {
@@ -2218,7 +2369,6 @@ void DisplayServerWindows::window_set_mode(WindowMode p_mode, WindowID p_window)
 			rect.right = wd.width;
 			rect.top = 0;
 			rect.bottom = wd.height;
-			wd.pre_fs_valid = true;
 		}
 
 		ShowWindow(wd.hWnd, SW_RESTORE);
@@ -2246,6 +2396,7 @@ void DisplayServerWindows::window_set_mode(WindowMode p_mode, WindowID p_window)
 		ShowWindow(wd.hWnd, SW_MINIMIZE);
 		wd.maximized = false;
 		wd.minimized = true;
+		wd.was_fullscreen_pre_min = was_fullscreen;
 	}
 
 	if (p_mode == WINDOW_MODE_EXCLUSIVE_FULLSCREEN) {
@@ -2260,10 +2411,14 @@ void DisplayServerWindows::window_set_mode(WindowMode p_mode, WindowID p_window)
 		if (wd.minimized || wd.maximized) {
 			ShowWindow(wd.hWnd, SW_RESTORE);
 		}
-		wd.was_maximized = wd.maximized;
 
-		if (wd.pre_fs_valid) {
+		// Save previous maximized stare.
+		wd.was_maximized_pre_fs = wd.maximized;
+
+		if (!was_fullscreen) {
+			// Save non-fullscreen rect before entering fullscreen.
 			GetWindowRect(wd.hWnd, &wd.pre_fs_rect);
+			wd.pre_fs_valid = true;
 		}
 
 		int cs = window_get_current_screen(p_window);
@@ -2325,6 +2480,7 @@ void DisplayServerWindows::window_set_flag(WindowFlags p_flag, bool p_enabled, W
 	WindowData &wd = windows[p_window];
 	switch (p_flag) {
 		case WINDOW_FLAG_RESIZE_DISABLED: {
+			ERR_FAIL_COND_MSG(p_enabled && wd.parent_hwnd, "Embedded window resize can't be disabled.");
 			wd.resizable = !p_enabled;
 			_update_window_style(p_window);
 		} break;
@@ -2335,7 +2491,8 @@ void DisplayServerWindows::window_set_flag(WindowFlags p_flag, bool p_enabled, W
 			ShowWindow(wd.hWnd, (wd.no_focus || wd.is_popup) ? SW_SHOWNOACTIVATE : SW_SHOW); // Show the window.
 		} break;
 		case WINDOW_FLAG_ALWAYS_ON_TOP: {
-			ERR_FAIL_COND_MSG(wd.transient_parent != INVALID_WINDOW_ID && p_enabled, "Transient windows can't become on top");
+			ERR_FAIL_COND_MSG(wd.transient_parent != INVALID_WINDOW_ID && p_enabled, "Transient windows can't become on top.");
+			ERR_FAIL_COND_MSG(p_enabled && wd.parent_hwnd, "Embedded window can't become on top.");
 			wd.always_on_top = p_enabled;
 			_update_window_style(p_window);
 		} break;
@@ -2380,9 +2537,22 @@ void DisplayServerWindows::window_set_flag(WindowFlags p_flag, bool p_enabled, W
 			wd.mpass = p_enabled;
 			_update_window_mouse_passthrough(p_window);
 		} break;
+		case WINDOW_FLAG_EXCLUDE_FROM_CAPTURE: {
+			wd.hide_from_capture = p_enabled;
+			if (p_enabled) {
+				if (os_ver.dwBuildNumber >= 19041) {
+					SetWindowDisplayAffinity(wd.hWnd, WDA_EXCLUDEFROMCAPTURE);
+				} else {
+					SetWindowDisplayAffinity(wd.hWnd, WDA_MONITOR);
+				}
+			} else {
+				SetWindowDisplayAffinity(wd.hWnd, WDA_NONE);
+			}
+		} break;
 		case WINDOW_FLAG_POPUP: {
 			ERR_FAIL_COND_MSG(p_window == MAIN_WINDOW_ID, "Main window can't be popup.");
 			ERR_FAIL_COND_MSG(IsWindowVisible(wd.hWnd) && (wd.is_popup != p_enabled), "Popup flag can't changed while window is opened.");
+			ERR_FAIL_COND_MSG(p_enabled && wd.parent_hwnd, "Embedded window can't be popup.");
 			wd.is_popup = p_enabled;
 		} break;
 		default:
@@ -2405,6 +2575,9 @@ bool DisplayServerWindows::window_get_flag(WindowFlags p_flag, WindowID p_window
 		case WINDOW_FLAG_ALWAYS_ON_TOP: {
 			return wd.always_on_top;
 		} break;
+		case WINDOW_FLAG_SHARP_CORNERS: {
+			return wd.sharp_corners;
+		} break;
 		case WINDOW_FLAG_TRANSPARENT: {
 			return wd.layered_window;
 		} break;
@@ -2413,6 +2586,9 @@ bool DisplayServerWindows::window_get_flag(WindowFlags p_flag, WindowID p_window
 		} break;
 		case WINDOW_FLAG_MOUSE_PASSTHROUGH: {
 			return wd.mpass;
+		} break;
+		case WINDOW_FLAG_EXCLUDE_FROM_CAPTURE: {
+			return wd.hide_from_capture;
 		} break;
 		case WINDOW_FLAG_POPUP: {
 			return wd.is_popup;
@@ -2731,6 +2907,184 @@ void DisplayServerWindows::enable_for_stealing_focus(OS::ProcessID pid) {
 	AllowSetForegroundWindow(pid);
 }
 
+struct WindowEnumData {
+	DWORD process_id;
+	HWND parent_hWnd;
+	HWND hWnd;
+};
+
+static BOOL CALLBACK _enum_proc_find_window_from_process_id_callback(HWND hWnd, LPARAM lParam) {
+	WindowEnumData &ed = *(WindowEnumData *)lParam;
+	DWORD process_id = 0x0;
+
+	GetWindowThreadProcessId(hWnd, &process_id);
+	if (ed.process_id == process_id) {
+		if (GetParent(hWnd) != ed.parent_hWnd) {
+			return TRUE;
+		}
+
+		// Found it.
+		ed.hWnd = hWnd;
+		SetLastError(ERROR_SUCCESS);
+		return FALSE;
+	}
+	// Continue enumeration.
+	return TRUE;
+}
+
+HWND DisplayServerWindows::_find_window_from_process_id(OS::ProcessID p_pid, HWND p_current_hwnd) {
+	DWORD pid = p_pid;
+	WindowEnumData ed = { pid, p_current_hwnd, NULL };
+
+	// First, check our own child, maybe it's already embedded.
+	if (!EnumChildWindows(p_current_hwnd, _enum_proc_find_window_from_process_id_callback, (LPARAM)&ed) && (GetLastError() == ERROR_SUCCESS)) {
+		if (ed.hWnd) {
+			return ed.hWnd;
+		}
+	}
+
+	// Then check all the opened windows on the computer.
+	if (!EnumWindows(_enum_proc_find_window_from_process_id_callback, (LPARAM)&ed) && (GetLastError() == ERROR_SUCCESS)) {
+		return ed.hWnd;
+	}
+
+	return NULL;
+}
+
+Error DisplayServerWindows::embed_process(WindowID p_window, OS::ProcessID p_pid, const Rect2i &p_rect, bool p_visible, bool p_grab_focus) {
+	_THREAD_SAFE_METHOD_
+
+	ERR_FAIL_COND_V(!windows.has(p_window), FAILED);
+
+	const WindowData &wd = windows[p_window];
+
+	EmbeddedProcessData *ep = nullptr;
+	if (embedded_processes.has(p_pid)) {
+		ep = embedded_processes.get(p_pid);
+	} else {
+		// New process, trying to find the window.
+		HWND handle_to_embed = _find_window_from_process_id(p_pid, wd.hWnd);
+		if (!handle_to_embed) {
+			return ERR_DOES_NOT_EXIST;
+		}
+
+		const DWORD style = GetWindowLongPtr(handle_to_embed, GWL_STYLE);
+
+		ep = memnew(EmbeddedProcessData);
+		ep->window_handle = handle_to_embed;
+		ep->parent_window_handle = wd.hWnd;
+		ep->is_visible = (style & WS_VISIBLE) == WS_VISIBLE;
+
+		embedded_processes.insert(p_pid, ep);
+	}
+
+	if (p_rect.size.x <= 100 || p_rect.size.y <= 100) {
+		p_visible = false;
+	}
+
+	// In Godot, the window position is offset by the screen's origin coordinates.
+	// We need to adjust for this when a screen is positioned in the negative space
+	// (e.g., a screen to the left of the main screen).
+	const Rect2i adjusted_rect = Rect2i(p_rect.position + _get_screens_origin(), p_rect.size);
+
+	// Use HWND_BOTTOM to prevent reordering of the embedded window over another popup.
+	SetWindowPos(ep->window_handle, HWND_BOTTOM, adjusted_rect.position.x, adjusted_rect.position.y, adjusted_rect.size.x, adjusted_rect.size.y, SWP_NOZORDER | SWP_NOACTIVATE | SWP_ASYNCWINDOWPOS);
+
+	if (ep->is_visible != p_visible) {
+		if (p_visible) {
+			ShowWindow(ep->window_handle, SW_SHOWNA);
+		} else {
+			ShowWindow(ep->window_handle, SW_HIDE);
+		}
+		ep->is_visible = p_visible;
+	}
+
+	if (p_grab_focus) {
+		SetForegroundWindow(ep->window_handle);
+		SetFocus(ep->window_handle);
+	}
+
+	return OK;
+}
+
+Error DisplayServerWindows::request_close_embedded_process(OS::ProcessID p_pid) {
+	_THREAD_SAFE_METHOD_
+
+	if (!embedded_processes.has(p_pid)) {
+		return ERR_DOES_NOT_EXIST;
+	}
+
+	EmbeddedProcessData *ep = embedded_processes.get(p_pid);
+
+	// Send a close message to gracefully close the process.
+	PostMessage(ep->window_handle, WM_CLOSE, 0, 0);
+
+	return OK;
+}
+
+Error DisplayServerWindows::remove_embedded_process(OS::ProcessID p_pid) {
+	_THREAD_SAFE_METHOD_
+
+	if (!embedded_processes.has(p_pid)) {
+		return ERR_DOES_NOT_EXIST;
+	}
+
+	EmbeddedProcessData *ep = embedded_processes.get(p_pid);
+
+	request_close_embedded_process(p_pid);
+
+	// This is a workaround to ensure the parent window correctly regains focus after the
+	// embedded window is closed. When the embedded window is closed while it has focus,
+	// the parent window (the editor) does not become active. It appears focused but is not truly activated.
+	// Opening a new window and closing it forces Windows to set the focus and activation correctly.
+	DWORD style = WS_POPUP | WS_VISIBLE;
+	DWORD style_ex = WS_EX_TOPMOST;
+
+	WNDCLASSW wcTemp = {};
+	wcTemp.lpfnWndProc = DefWindowProcW;
+	wcTemp.hInstance = GetModuleHandle(nullptr);
+	wcTemp.lpszClassName = L"Engine temp window";
+	RegisterClassW(&wcTemp);
+
+	HWND hWnd = CreateWindowExW(
+			style_ex,
+			L"Engine temp window", L"",
+			style,
+			0,
+			0,
+			1,
+			1,
+			ep->parent_window_handle,
+			nullptr,
+			GetModuleHandle(nullptr),
+			nullptr);
+
+	SetWindowPos(hWnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOSIZE);
+
+	DestroyWindow(hWnd);
+	UnregisterClassW(L"Engine temp window", GetModuleHandle(nullptr));
+
+	SetForegroundWindow(ep->parent_window_handle);
+
+	embedded_processes.erase(p_pid);
+	memdelete(ep);
+
+	return OK;
+}
+
+OS::ProcessID DisplayServerWindows::get_focused_process_id() {
+	HWND hwnd = GetForegroundWindow();
+	if (!hwnd) {
+		return 0;
+	}
+
+	// Get the process ID of the window.
+	DWORD processID;
+	GetWindowThreadProcessId(hwnd, &processID);
+
+	return processID;
+}
+
 static HRESULT CALLBACK win32_task_dialog_callback(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam, LONG_PTR lpRefData) {
 	if (msg == TDN_CREATED) {
 		// To match the input text dialog.
@@ -2755,17 +3109,23 @@ Error DisplayServerWindows::dialog_show(String p_title, String p_description, Ve
 		buttons.push_back(s.utf16());
 	}
 
+	WindowID window_id = _get_focused_window_or_popup();
+	if (!windows.has(window_id)) {
+		window_id = MAIN_WINDOW_ID;
+	}
+
 	config.pszWindowTitle = (LPCWSTR)(title.get_data());
 	config.pszContent = (LPCWSTR)(message.get_data());
+	config.hwndParent = windows[window_id].hWnd;
 
-	const int button_count = MIN((int)buttons.size(), 8);
+	const int button_count = buttons.size();
 	config.cButtons = button_count;
 
 	// No dynamic stack array size :(
 	TASKDIALOG_BUTTON *tbuttons = button_count != 0 ? (TASKDIALOG_BUTTON *)alloca(sizeof(TASKDIALOG_BUTTON) * button_count) : nullptr;
 	if (tbuttons) {
 		for (int i = 0; i < button_count; i++) {
-			tbuttons[i].nButtonID = i;
+			tbuttons[i].nButtonID = i + 100;
 			tbuttons[i].pszButtonText = (LPCWSTR)(buttons[i].get_data());
 		}
 	}
@@ -2782,7 +3142,7 @@ Error DisplayServerWindows::dialog_show(String p_title, String p_description, Ve
 
 		if (task_dialog_indirect && SUCCEEDED(task_dialog_indirect(&config, &button_pressed, nullptr, nullptr))) {
 			if (p_callback.is_valid()) {
-				Variant button = button_pressed;
+				Variant button = button_pressed - 100;
 				const Variant *args[1] = { &button };
 				Variant ret;
 				Callable::CallError ce;
@@ -2932,7 +3292,7 @@ Error DisplayServerWindows::dialog_input_text(String p_title, String p_descripti
 		WCHAR font[13]; // must be "MS Shell Dlg"
 	} template_base = {
 		1, 0xFFFF, 0, 0,
-		DS_SYSMODAL | DS_SETFONT | DS_MODALFRAME | DS_3DLOOK | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU,
+		DS_SYSMODAL | DS_SETFONT | DS_MODALFRAME | DS_3DLOOK | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTION,
 		3, 0, 0, 20, 20, L"", L"#32770", L"", 8, FW_NORMAL, 0, DEFAULT_CHARSET, L"MS Shell Dlg"
 	};
 
@@ -3140,6 +3500,27 @@ Key DisplayServerWindows::keyboard_get_label_from_physical(Key p_keycode) const 
 	return p_keycode;
 }
 
+void DisplayServerWindows::show_emoji_and_symbol_picker() const {
+	// Send Win + Period shortcut, there's no non-WinRT public API.
+
+	INPUT input[4] = {};
+	input[0].type = INPUT_KEYBOARD; // Win down.
+	input[0].ki.wVk = VK_LWIN;
+
+	input[1].type = INPUT_KEYBOARD; // Period down.
+	input[1].ki.wVk = VK_OEM_PERIOD;
+
+	input[2].type = INPUT_KEYBOARD; // Win up.
+	input[2].ki.wVk = VK_LWIN;
+	input[2].ki.dwFlags = KEYEVENTF_KEYUP;
+
+	input[3].type = INPUT_KEYBOARD; // Period up.
+	input[3].ki.wVk = VK_OEM_PERIOD;
+	input[3].ki.dwFlags = KEYEVENTF_KEYUP;
+
+	SendInput(4, input, sizeof(INPUT));
+}
+
 String DisplayServerWindows::_get_keyboard_layout_display_name(const String &p_klid) const {
 	String ret;
 	HKEY key;
@@ -3243,6 +3624,10 @@ void DisplayServerWindows::process_events() {
 		DispatchMessageW(&msg);
 	}
 	_THREAD_SAFE_UNLOCK_
+
+	if (tts) {
+		tts->process_events();
+	}
 
 	if (!drop_events) {
 		_process_key_events();
@@ -3512,7 +3897,7 @@ DisplayServer::IndicatorID DisplayServerWindows::create_status_indicator(const R
 	ndat.uFlags = NIF_ICON | NIF_TIP | NIF_MESSAGE;
 	ndat.uCallbackMessage = WM_INDICATOR_CALLBACK_MESSAGE;
 	ndat.hIcon = hicon;
-	memcpy(ndat.szTip, p_tooltip.utf16().ptr(), MIN(p_tooltip.utf16().length(), 127) * sizeof(WCHAR));
+	memcpy(ndat.szTip, p_tooltip.utf16().get_data(), MIN(p_tooltip.utf16().length(), 127) * sizeof(WCHAR));
 	ndat.uVersion = NOTIFYICON_VERSION;
 
 	Shell_NotifyIconW(NIM_ADD, &ndat);
@@ -3595,7 +3980,7 @@ void DisplayServerWindows::status_indicator_set_tooltip(IndicatorID p_id, const 
 	ndat.hWnd = windows[MAIN_WINDOW_ID].hWnd;
 	ndat.uID = p_id;
 	ndat.uFlags = NIF_TIP;
-	memcpy(ndat.szTip, p_tooltip.utf16().ptr(), MIN(p_tooltip.utf16().length(), 127) * sizeof(WCHAR));
+	memcpy(ndat.szTip, p_tooltip.utf16().get_data(), MIN(p_tooltip.utf16().length(), 127) * sizeof(WCHAR));
 	ndat.uVersion = NOTIFYICON_VERSION;
 
 	Shell_NotifyIconW(NIM_MODIFY, &ndat);
@@ -3686,6 +4071,75 @@ DisplayServer::VSyncMode DisplayServerWindows::window_get_vsync_mode(WindowID p_
 	}
 #endif
 	return DisplayServer::VSYNC_ENABLED;
+}
+
+void DisplayServerWindows::window_start_drag(WindowID p_window) {
+	_THREAD_SAFE_METHOD_
+
+	ERR_FAIL_COND(!windows.has(p_window));
+	WindowData &wd = windows[p_window];
+
+	if (wd.parent_hwnd) {
+		return; // Embedded window.
+	}
+
+	ReleaseCapture();
+
+	POINT coords;
+	GetCursorPos(&coords);
+	ScreenToClient(wd.hWnd, &coords);
+
+	SendMessage(wd.hWnd, WM_SYSCOMMAND, SC_MOVE | HTCAPTION, MAKELPARAM(coords.x, coords.y));
+}
+
+void DisplayServerWindows::window_start_resize(WindowResizeEdge p_edge, WindowID p_window) {
+	_THREAD_SAFE_METHOD_
+
+	ERR_FAIL_INDEX(int(p_edge), WINDOW_EDGE_MAX);
+	ERR_FAIL_COND(!windows.has(p_window));
+	WindowData &wd = windows[p_window];
+
+	if (wd.parent_hwnd) {
+		return; // Embedded window.
+	}
+
+	ReleaseCapture();
+
+	POINT coords;
+	GetCursorPos(&coords);
+	ScreenToClient(wd.hWnd, &coords);
+
+	DWORD op = 0;
+	switch (p_edge) {
+		case DisplayServer::WINDOW_EDGE_TOP_LEFT: {
+			op = WMSZ_TOPLEFT;
+		} break;
+		case DisplayServer::WINDOW_EDGE_TOP: {
+			op = WMSZ_TOP;
+		} break;
+		case DisplayServer::WINDOW_EDGE_TOP_RIGHT: {
+			op = WMSZ_TOPRIGHT;
+		} break;
+		case DisplayServer::WINDOW_EDGE_LEFT: {
+			op = WMSZ_LEFT;
+		} break;
+		case DisplayServer::WINDOW_EDGE_RIGHT: {
+			op = WMSZ_RIGHT;
+		} break;
+		case DisplayServer::WINDOW_EDGE_BOTTOM_LEFT: {
+			op = WMSZ_BOTTOMLEFT;
+		} break;
+		case DisplayServer::WINDOW_EDGE_BOTTOM: {
+			op = WMSZ_BOTTOM;
+		} break;
+		case DisplayServer::WINDOW_EDGE_BOTTOM_RIGHT: {
+			op = WMSZ_BOTTOMRIGHT;
+		} break;
+		default:
+			break;
+	}
+
+	SendMessage(wd.hWnd, WM_SYSCOMMAND, SC_SIZE | op, MAKELPARAM(coords.x, coords.y));
 }
 
 void DisplayServerWindows::set_context(Context p_context) {
@@ -3800,12 +4254,16 @@ void DisplayServerWindows::_dispatch_input_event(const Ref<InputEvent> &p_event)
 			}
 		}
 	} else {
-		// Send to all windows.
-		for (const KeyValue<WindowID, WindowData> &E : windows) {
-			const Callable callable = E.value.input_event_callback;
+		// Send to all windows. Copy all pending callbacks, since callback can erase window.
+		Vector<Callable> cbs;
+		for (KeyValue<WindowID, WindowData> &E : windows) {
+			Callable callable = E.value.input_event_callback;
 			if (callable.is_valid()) {
-				callable.call(p_event);
+				cbs.push_back(callable);
 			}
+		}
+		for (const Callable &cb : cbs) {
+			cb.call(p_event);
 		}
 	}
 
@@ -4086,6 +4544,12 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			if (windows[window_id].no_focus || windows[window_id].is_popup) {
 				return MA_NOACTIVATE; // Do not activate, but process mouse messages.
 			}
+			// When embedded, the window is a child of the parent and is not activated
+			// by default because it lacks native controls.
+			if (windows[window_id].parent_hwnd) {
+				SetFocus(windows[window_id].hWnd);
+				return MA_ACTIVATE;
+			}
 		} break;
 		case WM_ACTIVATEAPP: {
 			bool new_app_focused = (bool)wParam;
@@ -4102,8 +4566,15 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			// Therefore, it's safer to defer the delivery of the event.
 			// It's important to set an nIDEvent different from the SetTimer for move_timer_id because
 			// if the same nIDEvent is passed, the timer is replaced and the same timer_id is returned.
-			windows[window_id].activate_timer_id = SetTimer(windows[window_id].hWnd, DisplayServerWindows::TIMER_ID_WINDOW_ACTIVATION, USER_TIMER_MINIMUM, (TIMERPROC) nullptr);
+			// The problem with the timer is that the window cannot be resized or the buttons cannot be used correctly
+			// if the window is not activated first. This happens because the code in the activation process runs
+			// after the mouse click is handled. To address this, the timer is now used only when the window is created.
 			windows[window_id].activate_state = GET_WM_ACTIVATE_STATE(wParam, lParam);
+			if (windows[window_id].first_activation_done) {
+				_process_activate_event(window_id);
+			} else {
+				windows[window_id].activate_timer_id = SetTimer(windows[window_id].hWnd, DisplayServerWindows::TIMER_ID_WINDOW_ACTIVATION, USER_TIMER_MINIMUM, (TIMERPROC) nullptr);
+			}
 			return 0;
 		} break;
 		case WM_GETMINMAXINFO: {
@@ -4281,7 +4752,9 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 					// If multiple Shifts are held down at the same time,
 					// Windows natively only sends a KEYUP for the last one to be released.
 					if (raw->data.keyboard.Flags & RI_KEY_BREAK) {
-						if (!mods.has_flag(WinKeyModifierMask::SHIFT)) {
+						// Make sure to check the latest key state since
+						// we're in the middle of the message queue.
+						if (GetAsyncKeyState(VK_SHIFT) < 0) {
 							// A Shift is released, but another Shift is still held
 							ERR_BREAK(key_event_pos >= KEY_EVENT_BUFFER_SIZE);
 
@@ -4792,9 +5265,12 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				break;
 			}
 
-			DisplayServer::WindowID receiving_window_id = _get_focused_window_or_popup();
-			if (receiving_window_id == INVALID_WINDOW_ID) {
-				receiving_window_id = window_id;
+			DisplayServer::WindowID receiving_window_id = window_id;
+			if (!windows[window_id].no_focus) {
+				receiving_window_id = _get_focused_window_or_popup();
+				if (receiving_window_id == INVALID_WINDOW_ID) {
+					receiving_window_id = window_id;
+				}
 			}
 
 			const BitField<WinKeyModifierMask> &mods = _get_mods();
@@ -5154,6 +5630,32 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 					ClientToScreen(window.hWnd, (POINT *)&crect.right);
 					ClipCursor(&crect);
 				}
+
+				if (!window.minimized && window.was_fullscreen_pre_min) {
+					// Restore fullscreen mode if window was in fullscreen before it was minimized.
+					int cs = window_get_current_screen(window_id);
+					Point2 pos = screen_get_position(cs) + _get_screens_origin();
+					Size2 size = screen_get_size(cs);
+
+					window.was_fullscreen_pre_min = false;
+					window.fullscreen = true;
+					window.maximized = false;
+					window.minimized = false;
+
+					_update_window_style(window_id, false);
+
+					MoveWindow(window.hWnd, pos.x, pos.y, size.width, size.height, TRUE);
+				}
+			} else {
+				if (window.parent_hwnd) {
+					// WM_WINDOWPOSCHANGED is sent when the parent changes.
+					// If we are supposed to have a parent and now we don't, it's likely
+					// because the parent was closed. We will close our window as well.
+					// This prevents an embedded game from staying alive when the editor is closed or crashes.
+					if (!GetParent(window.hWnd)) {
+						SendMessage(window.hWnd, WM_CLOSE, 0, 0);
+					}
+				}
 			}
 
 			// Return here to prevent WM_MOVE and WM_SIZE from being sent
@@ -5181,6 +5683,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				_process_activate_event(window_id);
 				KillTimer(windows[window_id].hWnd, windows[window_id].activate_timer_id);
 				windows[window_id].activate_timer_id = 0;
+				windows[window_id].first_activation_done = true;
 			}
 		} break;
 		case WM_SYSKEYUP:
@@ -5405,7 +5908,9 @@ void DisplayServerWindows::_process_key_events() {
 					Ref<InputEventKey> k;
 					k.instantiate();
 
-					Key keycode = KeyMappingWindows::get_keysym(MapVirtualKey((ke.lParam >> 16) & 0xFF, MAPVK_VSC_TO_VK));
+					UINT vk = MapVirtualKey((ke.lParam >> 16) & 0xFF, MAPVK_VSC_TO_VK);
+					bool is_oem = (vk >= 0xB8) && (vk <= 0xE6);
+					Key keycode = KeyMappingWindows::get_keysym(vk);
 					Key key_label = keycode;
 					Key physical_keycode = KeyMappingWindows::get_scansym((ke.lParam >> 16) & 0xFF, ke.lParam & (1 << 24));
 
@@ -5416,7 +5921,12 @@ void DisplayServerWindows::_process_key_events() {
 					if (!(ke.lParam & (1 << 24)) && ToUnicodeEx(extended_code, (ke.lParam >> 16) & 0xFF, keyboard_state, chars, 255, 4, GetKeyboardLayout(0)) > 0) {
 						String keysym = String::utf16((char16_t *)chars, 255);
 						if (!keysym.is_empty()) {
-							key_label = fix_key_label(keysym[0], keycode);
+							char32_t unicode_value = keysym[0];
+							// For printable ASCII characters (0x20-0x7E), override the original keycode with the character value.
+							if (is_oem && Key::SPACE <= (Key)unicode_value && (Key)unicode_value <= Key::ASCIITILDE) {
+								keycode = fix_keycode(unicode_value, (Key)unicode_value);
+							}
+							key_label = fix_key_label(unicode_value, keycode);
 						}
 					}
 
@@ -5438,7 +5948,7 @@ void DisplayServerWindows::_process_key_events() {
 					k->set_physical_keycode(physical_keycode);
 					k->set_key_label(key_label);
 					k->set_unicode(fix_unicode(unicode));
-					if (k->get_unicode() && ke.altgr) {
+					if (k->get_unicode() && ke.altgr && windows[ke.window_id].ime_active) {
 						k->set_alt_pressed(false);
 						k->set_ctrl_pressed(false);
 					}
@@ -5456,6 +5966,7 @@ void DisplayServerWindows::_process_key_events() {
 				k->set_window_id(ke.window_id);
 				k->set_pressed(ke.uMsg == WM_KEYDOWN);
 
+				bool is_oem = (ke.wParam >= 0xB8) && (ke.wParam <= 0xE6);
 				Key keycode = KeyMappingWindows::get_keysym(ke.wParam);
 				if ((ke.lParam & (1 << 24)) && (ke.wParam == VK_RETURN)) {
 					// Special case for Numpad Enter key.
@@ -5472,7 +5983,12 @@ void DisplayServerWindows::_process_key_events() {
 				if (!(ke.lParam & (1 << 24)) && ToUnicodeEx(extended_code, (ke.lParam >> 16) & 0xFF, keyboard_state, chars, 255, 4, GetKeyboardLayout(0)) > 0) {
 					String keysym = String::utf16((char16_t *)chars, 255);
 					if (!keysym.is_empty()) {
-						key_label = fix_key_label(keysym[0], keycode);
+						char32_t unicode_value = keysym[0];
+						// For printable ASCII characters (0x20-0x7E), override the original keycode with the character value.
+						if (is_oem && Key::SPACE <= (Key)unicode_value && (Key)unicode_value <= Key::ASCIITILDE) {
+							keycode = fix_keycode(unicode_value, (Key)unicode_value);
+						}
+						key_label = fix_key_label(unicode_value, keycode);
 					}
 				}
 
@@ -5514,7 +6030,7 @@ void DisplayServerWindows::_process_key_events() {
 					}
 					k->set_unicode(fix_unicode(unicode));
 				}
-				if (k->get_unicode() && ke.altgr) {
+				if (k->get_unicode() && ke.altgr && windows[ke.window_id].ime_active) {
 					k->set_alt_pressed(false);
 					k->set_ctrl_pressed(false);
 				}
@@ -5569,11 +6085,11 @@ void DisplayServerWindows::_update_tablet_ctx(const String &p_old_driver, const 
 	}
 }
 
-DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect, bool p_exclusive, WindowID p_transient_parent) {
+DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect, bool p_exclusive, WindowID p_transient_parent, HWND p_parent_hwnd) {
 	DWORD dwExStyle;
 	DWORD dwStyle;
 
-	_get_window_style(window_id_counter == MAIN_WINDOW_ID, false, (p_mode == WINDOW_MODE_FULLSCREEN || p_mode == WINDOW_MODE_EXCLUSIVE_FULLSCREEN), p_mode != WINDOW_MODE_EXCLUSIVE_FULLSCREEN, p_flags & WINDOW_FLAG_BORDERLESS_BIT, !(p_flags & WINDOW_FLAG_RESIZE_DISABLED_BIT), p_mode == WINDOW_MODE_MINIMIZED, p_mode == WINDOW_MODE_MAXIMIZED, false, (p_flags & WINDOW_FLAG_NO_FOCUS_BIT) | (p_flags & WINDOW_FLAG_POPUP), dwStyle, dwExStyle);
+	_get_window_style(window_id_counter == MAIN_WINDOW_ID, false, (p_mode == WINDOW_MODE_FULLSCREEN || p_mode == WINDOW_MODE_EXCLUSIVE_FULLSCREEN), p_mode != WINDOW_MODE_EXCLUSIVE_FULLSCREEN, p_flags & WINDOW_FLAG_BORDERLESS_BIT, !(p_flags & WINDOW_FLAG_RESIZE_DISABLED_BIT), p_mode == WINDOW_MODE_MINIMIZED, p_mode == WINDOW_MODE_MAXIMIZED, false, (p_flags & WINDOW_FLAG_NO_FOCUS_BIT) | (p_flags & WINDOW_FLAG_POPUP), p_parent_hwnd, dwStyle, dwExStyle);
 
 	RECT WindowRect;
 
@@ -5587,27 +6103,30 @@ DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, 
 		rq_screen = get_primary_screen(); // Requested window rect is outside any screen bounds.
 	}
 
-	if (p_mode == WINDOW_MODE_FULLSCREEN || p_mode == WINDOW_MODE_EXCLUSIVE_FULLSCREEN) {
-		Rect2i screen_rect = Rect2i(screen_get_position(rq_screen), screen_get_size(rq_screen));
+	Point2i offset = _get_screens_origin();
 
-		WindowRect.left = screen_rect.position.x;
-		WindowRect.right = screen_rect.position.x + screen_rect.size.x;
-		WindowRect.top = screen_rect.position.y;
-		WindowRect.bottom = screen_rect.position.y + screen_rect.size.y;
-	} else {
-		Rect2i srect = screen_get_usable_rect(rq_screen);
-		Point2i wpos = p_rect.position;
-		if (srect != Rect2i()) {
-			wpos = wpos.clamp(srect.position, srect.position + srect.size - p_rect.size / 3);
+	if (!p_parent_hwnd) {
+		if (p_mode == WINDOW_MODE_FULLSCREEN || p_mode == WINDOW_MODE_EXCLUSIVE_FULLSCREEN) {
+			Rect2i screen_rect = Rect2i(screen_get_position(rq_screen), screen_get_size(rq_screen));
+
+			WindowRect.left = screen_rect.position.x;
+			WindowRect.right = screen_rect.position.x + screen_rect.size.x;
+			WindowRect.top = screen_rect.position.y;
+			WindowRect.bottom = screen_rect.position.y + screen_rect.size.y;
+		} else {
+			Rect2i srect = screen_get_usable_rect(rq_screen);
+			Point2i wpos = p_rect.position;
+			if (srect != Rect2i()) {
+				wpos = wpos.clamp(srect.position, srect.position + srect.size - p_rect.size / 3);
+			}
+
+			WindowRect.left = wpos.x;
+			WindowRect.right = wpos.x + p_rect.size.x;
+			WindowRect.top = wpos.y;
+			WindowRect.bottom = wpos.y + p_rect.size.y;
 		}
-
-		WindowRect.left = wpos.x;
-		WindowRect.right = wpos.x + p_rect.size.x;
-		WindowRect.top = wpos.y;
-		WindowRect.bottom = wpos.y + p_rect.size.y;
 	}
 
-	Point2i offset = _get_screens_origin();
 	WindowRect.left += offset.x;
 	WindowRect.right += offset.x;
 	WindowRect.top += offset.y;
@@ -5621,7 +6140,9 @@ DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, 
 	{
 		WindowData *wd_transient_parent = nullptr;
 		HWND owner_hwnd = nullptr;
-		if (p_transient_parent != INVALID_WINDOW_ID) {
+		if (p_parent_hwnd) {
+			owner_hwnd = p_parent_hwnd;
+		} else if (p_transient_parent != INVALID_WINDOW_ID) {
 			if (!windows.has(p_transient_parent)) {
 				ERR_PRINT("Condition \"!windows.has(p_transient_parent)\" is true.");
 				p_transient_parent = INVALID_WINDOW_ID;
@@ -5655,13 +6176,37 @@ DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, 
 			windows.erase(id);
 			ERR_FAIL_V_MSG(INVALID_WINDOW_ID, "Failed to create Windows OS window.");
 		}
+
+		wd.parent_hwnd = p_parent_hwnd;
+
+		// Detach the input queue from the parent window.
+		// This prevents the embedded window from waiting on the main window's input queue,
+		// causing lags input lags when resizing or moving the main window.
+		if (p_parent_hwnd) {
+			DWORD mainThreadId = GetWindowThreadProcessId(owner_hwnd, nullptr);
+			DWORD embeddedThreadId = GetCurrentThreadId();
+			AttachThreadInput(embeddedThreadId, mainThreadId, FALSE);
+		}
+
 		if (p_mode == WINDOW_MODE_FULLSCREEN || p_mode == WINDOW_MODE_EXCLUSIVE_FULLSCREEN) {
 			wd.fullscreen = true;
 			if (p_mode == WINDOW_MODE_FULLSCREEN) {
 				wd.multiwindow_fs = true;
 			}
 		}
-		if (p_mode != WINDOW_MODE_FULLSCREEN && p_mode != WINDOW_MODE_EXCLUSIVE_FULLSCREEN) {
+
+		if (p_mode == WINDOW_MODE_FULLSCREEN || p_mode == WINDOW_MODE_EXCLUSIVE_FULLSCREEN) {
+			// Save initial non-fullscreen rect.
+			Rect2i srect = screen_get_usable_rect(rq_screen);
+			Point2i wpos = p_rect.position;
+			if (srect != Rect2i()) {
+				wpos = wpos.clamp(srect.position, srect.position + srect.size - p_rect.size / 3);
+			}
+
+			wd.pre_fs_rect.left = wpos.x + offset.x;
+			wd.pre_fs_rect.right = wpos.x + p_rect.size.x + offset.x;
+			wd.pre_fs_rect.top = wpos.y + offset.y;
+			wd.pre_fs_rect.bottom = wpos.y + p_rect.size.y + offset.y;
 			wd.pre_fs_valid = true;
 		}
 
@@ -5989,21 +6534,33 @@ void DisplayServerWindows::tablet_set_current_driver(const String &p_driver) {
 	if (tablet_get_driver_count() == 0) {
 		return;
 	}
+
+	String driver = p_driver;
+	if (driver == "auto") {
+		if (winink_available && !winink_disabled) {
+			driver = "winink";
+		} else if (wintab_available) {
+			driver = "wintab";
+		} else {
+			driver = "dummy";
+		}
+	}
+
 	bool found = false;
 	for (int i = 0; i < tablet_get_driver_count(); i++) {
-		if (p_driver == tablet_get_driver_name(i)) {
+		if (driver == tablet_get_driver_name(i)) {
 			found = true;
 		}
 	}
 	if (found) {
-		_update_tablet_ctx(tablet_driver, p_driver);
-		tablet_driver = p_driver;
+		_update_tablet_ctx(tablet_driver, driver);
+		tablet_driver = driver;
 	} else {
 		ERR_PRINT("Unknown tablet driver " + p_driver + ".");
 	}
 }
 
-DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, Error &r_error) {
+DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, int64_t p_parent_window, Error &r_error) {
 	KeyMappingWindows::initialize();
 
 	tested_drivers.clear();
@@ -6030,7 +6587,6 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 	screen_set_keep_on(GLOBAL_GET("display/window/energy_saving/keep_screen_on"));
 
 	// Load Windows version info.
-	OSVERSIONINFOW os_ver;
 	ZeroMemory(&os_ver, sizeof(OSVERSIONINFOW));
 	os_ver.dwOSVersionInfoSize = sizeof(OSVERSIONINFOW);
 
@@ -6097,6 +6653,8 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 		}
 	}
 
+	tablet_drivers.push_back("auto");
+
 	// Note: Windows Ink API for pen input, available on Windows 8+ only.
 	// Note: DPI conversion API, available on Windows 8.1+ only.
 	HMODULE user32_lib = LoadLibraryW(L"user32.dll");
@@ -6130,6 +6688,27 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 	}
 
 	tablet_drivers.push_back("dummy");
+
+	String wacom_cfg = OS::get_singleton()->get_config_path().path_join("WTablet").path_join("Wacom_Tablet.dat");
+	if (FileAccess::exists(wacom_cfg)) {
+		Ref<XMLParser> parser;
+		parser.instantiate();
+		if (parser->open(wacom_cfg) == OK) {
+			while (parser->read() == OK) {
+				if (parser->get_node_type() != XMLParser::NODE_ELEMENT) {
+					continue;
+				}
+				if (parser->get_node_name() == "WinUseInk") {
+					parser->read();
+					if (parser->get_node_type() == XMLParser::NODE_TEXT) {
+						winink_disabled = (parser->get_node_data().to_lower().strip_edges() != "true");
+						print_verbose(vformat("Wacom tablet config found at \"%s\", Windows Ink support is %s.", wacom_cfg, winink_disabled ? "disabled" : "enabled"));
+						break;
+					}
+				}
+			}
+		}
+	}
 
 	if (OS::get_singleton()->is_hidpi_allowed()) {
 		HMODULE Shcore = LoadLibraryW(L"Shcore.dll");
@@ -6404,7 +6983,13 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 		window_position = scr_rect.position + (scr_rect.size - p_resolution) / 2;
 	}
 
-	WindowID main_window = _create_window(p_mode, p_vsync_mode, p_flags, Rect2i(window_position, p_resolution), false, INVALID_WINDOW_ID);
+	HWND parent_hwnd = NULL;
+	if (p_parent_window) {
+		// Parented window.
+		parent_hwnd = (HWND)p_parent_window;
+	}
+
+	WindowID main_window = _create_window(p_mode, p_vsync_mode, p_flags, Rect2i(window_position, p_resolution), false, INVALID_WINDOW_ID, parent_hwnd);
 	if (main_window == INVALID_WINDOW_ID) {
 		r_error = ERR_UNAVAILABLE;
 		ERR_FAIL_MSG("Failed to create main window.");
@@ -6418,7 +7003,6 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 		}
 	}
 
-	windows[MAIN_WINDOW_ID].initialized = true;
 	show_window(MAIN_WINDOW_ID);
 
 #if defined(RD_ENABLED)
@@ -6482,8 +7066,8 @@ Vector<String> DisplayServerWindows::get_rendering_drivers_func() {
 	return drivers;
 }
 
-DisplayServer *DisplayServerWindows::create_func(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, Error &r_error) {
-	DisplayServer *ds = memnew(DisplayServerWindows(p_rendering_driver, p_mode, p_vsync_mode, p_flags, p_position, p_resolution, p_screen, p_context, r_error));
+DisplayServer *DisplayServerWindows::create_func(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, int64_t p_parent_window, Error &r_error) {
+	DisplayServer *ds = memnew(DisplayServerWindows(p_rendering_driver, p_mode, p_vsync_mode, p_flags, p_position, p_resolution, p_screen, p_context, p_parent_window, r_error));
 	if (r_error != OK) {
 		if (tested_drivers == 0) {
 			OS::get_singleton()->alert("Failed to register the window class.", "Unable to initialize DisplayServer");

@@ -133,7 +133,7 @@
 			<return type="bool" />
 			<param index="0" name="agent" type="RID" />
 			<description>
-				Returns true if the map got changed the previous frame.
+				Returns [code]true[/code] if the map got changed the previous frame.
 			</description>
 		</method>
 		<method name="agent_set_avoidance_callback">
@@ -215,7 +215,7 @@
 			<param index="0" name="agent" type="RID" />
 			<param index="1" name="paused" type="bool" />
 			<description>
-				If [param paused] is true the specified [param agent] will not be processed, e.g. calculate avoidance velocities or receive avoidance callbacks.
+				If [param paused] is [code]true[/code] the specified [param agent] will not be processed, e.g. calculate avoidance velocities or receive avoidance callbacks.
 			</description>
 		</method>
 		<method name="agent_set_position">
@@ -533,7 +533,7 @@
 				Returns all navigation obstacle [RID]s that are currently assigned to the requested navigation [param map].
 			</description>
 		</method>
-		<method name="map_get_path" qualifiers="const">
+		<method name="map_get_path">
 			<return type="PackedVector2Array" />
 			<param index="0" name="map" type="RID" />
 			<param index="1" name="origin" type="Vector2" />
@@ -562,6 +562,13 @@
 				Returns all navigation regions [RID]s that are currently assigned to the requested navigation [param map].
 			</description>
 		</method>
+		<method name="map_get_use_async_iterations" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="map" type="RID" />
+			<description>
+				Returns [code]true[/code] if the [param map] synchronization uses an async process that runs on a background thread.
+			</description>
+		</method>
 		<method name="map_get_use_edge_connections" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="map" type="RID" />
@@ -573,7 +580,7 @@
 			<return type="bool" />
 			<param index="0" name="map" type="RID" />
 			<description>
-				Returns true if the map is active.
+				Returns [code]true[/code] if the map is active.
 			</description>
 		</method>
 		<method name="map_set_active">
@@ -606,6 +613,14 @@
 			<param index="1" name="radius" type="float" />
 			<description>
 				Set the map's link connection radius used to connect links to navigation polygons.
+			</description>
+		</method>
+		<method name="map_set_use_async_iterations">
+			<return type="void" />
+			<param index="0" name="map" type="RID" />
+			<param index="1" name="enabled" type="bool" />
+			<description>
+				If [param enabled] is [code]true[/code] the [param map] synchronization uses an async process that runs on a background thread.
 			</description>
 		</method>
 		<method name="map_set_use_edge_connections">
@@ -707,7 +722,7 @@
 			<param index="0" name="obstacle" type="RID" />
 			<param index="1" name="paused" type="bool" />
 			<description>
-				If [param paused] is true the specified [param obstacle] will not be processed, e.g. affect avoidance velocities.
+				If [param paused] is [code]true[/code] the specified [param obstacle] will not be processed, e.g. affect avoidance velocities.
 			</description>
 		</method>
 		<method name="obstacle_set_position">
@@ -754,18 +769,26 @@
 				[b]Performance:[/b] While convenient, reading data arrays from [Mesh] resources can affect the frame rate negatively. The data needs to be received from the GPU, stalling the [RenderingServer] in the process. For performance prefer the use of e.g. collision shapes or creating the data arrays entirely in code.
 			</description>
 		</method>
-		<method name="query_path" qualifiers="const">
+		<method name="query_path">
 			<return type="void" />
 			<param index="0" name="parameters" type="NavigationPathQueryParameters2D" />
 			<param index="1" name="result" type="NavigationPathQueryResult2D" />
+			<param index="2" name="callback" type="Callable" default="Callable()" />
 			<description>
-				Queries a path in a given navigation map. Start and target position and other parameters are defined through [NavigationPathQueryParameters2D]. Updates the provided [NavigationPathQueryResult2D] result object with the path among other results requested by the query.
+				Queries a path in a given navigation map. Start and target position and other parameters are defined through [NavigationPathQueryParameters2D]. Updates the provided [NavigationPathQueryResult2D] result object with the path among other results requested by the query. After the process is finished the optional [param callback] will be called.
 			</description>
 		</method>
 		<method name="region_create">
 			<return type="RID" />
 			<description>
 				Creates a new region.
+			</description>
+		</method>
+		<method name="region_get_bounds" qualifiers="const">
+			<return type="Rect2" />
+			<param index="0" name="region" type="RID" />
+			<description>
+				Returns the axis-aligned rectangle for the [param region]'s transformed navigation mesh.
 			</description>
 		</method>
 		<method name="region_get_closest_point" qualifiers="const">

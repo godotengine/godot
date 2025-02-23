@@ -135,6 +135,70 @@ TEST_CASE("[Callable] Argument count") {
 
 	memdelete(my_test);
 }
+
+class TestBoundUnboundArgumentCount : public Object {
+	GDCLASS(TestBoundUnboundArgumentCount, Object);
+
+protected:
+	static void _bind_methods() {
+		ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "test_func", &TestBoundUnboundArgumentCount::test_func, MethodInfo("test_func"));
+	}
+
+public:
+	Variant test_func(const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
+		Array result;
+		result.resize(p_argcount);
+		for (int i = 0; i < p_argcount; i++) {
+			result[i] = *p_args[i];
+		}
+		return result;
+	}
+
+	static String get_output(const Callable &p_callable) {
+		Array effective_args;
+		effective_args.push_back(7);
+		effective_args.push_back(8);
+		effective_args.push_back(9);
+
+		effective_args.resize(3 - p_callable.get_unbound_arguments_count());
+		effective_args.append_array(p_callable.get_bound_arguments());
+
+		return vformat(
+				"%d %d %s %s %s",
+				p_callable.get_unbound_arguments_count(),
+				p_callable.get_bound_arguments_count(),
+				p_callable.get_bound_arguments(),
+				p_callable.call(7, 8, 9),
+				effective_args);
+	}
+};
+
+TEST_CASE("[Callable] Bound and unbound argument count") {
+	String (*get_output)(const Callable &) = TestBoundUnboundArgumentCount::get_output;
+
+	TestBoundUnboundArgumentCount *test_instance = memnew(TestBoundUnboundArgumentCount);
+
+	Callable test_func = Callable(test_instance, "test_func");
+
+	CHECK(get_output(test_func) == "0 0 [] [7, 8, 9] [7, 8, 9]");
+	CHECK(get_output(test_func.bind(1, 2)) == "0 2 [1, 2] [7, 8, 9, 1, 2] [7, 8, 9, 1, 2]");
+	CHECK(get_output(test_func.bind(1, 2).unbind(1)) == "1 2 [1, 2] [7, 8, 1, 2] [7, 8, 1, 2]");
+	CHECK(get_output(test_func.bind(1, 2).unbind(1).bind(3, 4)) == "0 3 [3, 1, 2] [7, 8, 9, 3, 1, 2] [7, 8, 9, 3, 1, 2]");
+	CHECK(get_output(test_func.bind(1, 2).unbind(1).bind(3, 4).unbind(1)) == "1 3 [3, 1, 2] [7, 8, 3, 1, 2] [7, 8, 3, 1, 2]");
+
+	CHECK(get_output(test_func.bind(1).bind(2).bind(3).unbind(1)) == "1 3 [3, 2, 1] [7, 8, 3, 2, 1] [7, 8, 3, 2, 1]");
+	CHECK(get_output(test_func.bind(1).bind(2).unbind(1).bind(3)) == "0 2 [2, 1] [7, 8, 9, 2, 1] [7, 8, 9, 2, 1]");
+	CHECK(get_output(test_func.bind(1).unbind(1).bind(2).bind(3)) == "0 2 [3, 1] [7, 8, 9, 3, 1] [7, 8, 9, 3, 1]");
+	CHECK(get_output(test_func.unbind(1).bind(1).bind(2).bind(3)) == "0 2 [3, 2] [7, 8, 9, 3, 2] [7, 8, 9, 3, 2]");
+
+	CHECK(get_output(test_func.unbind(1).unbind(1).unbind(1).bind(1, 2, 3)) == "0 0 [] [7, 8, 9] [7, 8, 9]");
+	CHECK(get_output(test_func.unbind(1).unbind(1).bind(1, 2, 3).unbind(1)) == "1 1 [1] [7, 8, 1] [7, 8, 1]");
+	CHECK(get_output(test_func.unbind(1).bind(1, 2, 3).unbind(1).unbind(1)) == "2 2 [1, 2] [7, 1, 2] [7, 1, 2]");
+	CHECK(get_output(test_func.bind(1, 2, 3).unbind(1).unbind(1).unbind(1)) == "3 3 [1, 2, 3] [1, 2, 3] [1, 2, 3]");
+
+	memdelete(test_instance);
+}
+
 } // namespace TestCallable
 
 #endif // TEST_CALLABLE_H

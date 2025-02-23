@@ -18,6 +18,9 @@ msgstr ""
 "Plural-Forms: nplurals=1; plural=0;\n"
 "X-Generator: Weblate 5.5-dev\n"
 
+msgid "All Recognized"
+msgstr "인식 가능한 모든 파일"
+
 msgid "New Code Region"
 msgstr "새 코드 구역"
 
@@ -74,14 +77,14 @@ msgstr "열기"
 msgid "Select Current Folder"
 msgstr "현재 폴더 선택"
 
+msgid "Save"
+msgstr "저장"
+
 msgid "Select This Folder"
 msgstr "이 폴더 선택"
 
 msgid "You don't have permission to access contents of this folder."
 msgstr "이 폴더에 접근할 권한이 없습니다."
-
-msgid "All Recognized"
-msgstr "인식 가능한 모든 파일"
 
 msgid "All Files"
 msgstr "모든 파일"
@@ -97,9 +100,6 @@ msgstr "디렉토리 열기"
 
 msgid "Open a File or Directory"
 msgstr "디렉토리 또는 파일 열기"
-
-msgid "Save"
-msgstr "저장"
 
 msgid "Save a File"
 msgstr "파일로 저장"

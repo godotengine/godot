@@ -75,7 +75,7 @@ void ResourceImporterImageFont::get_import_options(const String &p_path, List<Im
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "scaling_mode", PROPERTY_HINT_ENUM, "Disabled,Enabled (Integer),Enabled (Fractional)"), TextServer::FIXED_SIZE_SCALE_ENABLED));
 }
 
-Error ResourceImporterImageFont::import(const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
+Error ResourceImporterImageFont::import(ResourceUID::ID p_source_id, const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
 	print_verbose("Importing image font from: " + p_source_file);
 
 	int columns = p_options["columns"];
@@ -112,6 +112,7 @@ Error ResourceImporterImageFont::import(const String &p_source_file, const Strin
 	font->set_multichannel_signed_distance_field(false);
 	font->set_fixed_size(chr_height);
 	font->set_subpixel_positioning(TextServer::SUBPIXEL_POSITIONING_DISABLED);
+	font->set_keep_rounding_remainders(true);
 	font->set_force_autohinter(false);
 	font->set_allow_system_fallback(false);
 	font->set_hinting(TextServer::HINTING_NONE);
@@ -158,7 +159,7 @@ Error ResourceImporterImageFont::import(const String &p_source_file, const Strin
 								c++; // Skip "+".
 								continue;
 							}
-						} else if (range[c] == '0' && (c <= range.length() - 2) && range[c + 1] == 'x') {
+						} else if (range[c] == '0' && (c <= range.length() - 2) && (range[c + 1] == 'x' || range[c + 1] == 'X')) {
 							// Read hexadecimal value, start.
 							token = String();
 							if (step == STEP_START_BEGIN) {
@@ -199,7 +200,7 @@ Error ResourceImporterImageFont::import(const String &p_source_file, const Strin
 					case STEP_OFF_Y_BEGIN: {
 						// Read advance and offset.
 						if (range[c] == ' ') {
-							int next = range.find(" ", c + 1);
+							int next = range.find_char(' ', c + 1);
 							if (next < c) {
 								next = range.length();
 							}

@@ -1523,7 +1523,6 @@ const char *RenamesMap3To4::class_renames[][2] = {
 	{ "GradientTexture", "GradientTexture2D" },
 	{ "HeightMapShape", "HeightMapShape3D" },
 	{ "HingeJoint", "HingeJoint3D" },
-	{ "IP_Unix", "IPUnix" },
 	{ "ImmediateGeometry", "ImmediateMesh" },
 	{ "ImmediateGeometry3D", "ImmediateMesh" },
 	{ "InterpolatedCamera", "Camera3D" },

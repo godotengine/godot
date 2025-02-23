@@ -38,7 +38,7 @@
 #include "drivers/unix/dir_access_unix.h"
 #include "drivers/unix/file_access_unix.h"
 #include "drivers/unix/file_access_unix_pipe.h"
-#include "drivers/unix/net_socket_posix.h"
+#include "drivers/unix/net_socket_unix.h"
 #include "drivers/unix/thread_posix.h"
 #include "servers/rendering_server.h"
 
@@ -77,6 +77,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/resource.h>
+#include <sys/stat.h>
 #include <sys/time.h>
 #include <sys/wait.h>
 #include <time.h>
@@ -166,8 +167,10 @@ void OS_Unix::initialize_core() {
 	DirAccess::make_default<DirAccessUnix>(DirAccess::ACCESS_USERDATA);
 	DirAccess::make_default<DirAccessUnix>(DirAccess::ACCESS_FILESYSTEM);
 
-	NetSocketPosix::make_default();
+#ifndef UNIX_SOCKET_UNAVAILABLE
+	NetSocketUnix::make_default();
 	IPUnix::make_default();
+#endif
 	process_map = memnew((HashMap<ProcessID, ProcessInfo>));
 
 	_setup_clock();
@@ -175,16 +178,96 @@ void OS_Unix::initialize_core() {
 
 void OS_Unix::finalize_core() {
 	memdelete(process_map);
-	NetSocketPosix::cleanup();
+#ifndef UNIX_SOCKET_UNAVAILABLE
+	NetSocketUnix::cleanup();
+#endif
 }
 
 Vector<String> OS_Unix::get_video_adapter_driver_info() const {
 	return Vector<String>();
 }
 
-String OS_Unix::get_stdin_string() {
-	char buff[1024];
-	return String::utf8(fgets(buff, 1024, stdin));
+String OS_Unix::get_stdin_string(int64_t p_buffer_size) {
+	Vector<uint8_t> data;
+	data.resize(p_buffer_size);
+	if (fgets((char *)data.ptrw(), data.size(), stdin)) {
+		return String::utf8((char *)data.ptr()).replace("\r\n", "\n").rstrip("\n");
+	}
+	return String();
+}
+
+PackedByteArray OS_Unix::get_stdin_buffer(int64_t p_buffer_size) {
+	Vector<uint8_t> data;
+	data.resize(p_buffer_size);
+	size_t sz = fread((void *)data.ptrw(), 1, data.size(), stdin);
+	if (sz > 0) {
+		data.resize(sz);
+		return data;
+	}
+	return PackedByteArray();
+}
+
+OS_Unix::StdHandleType OS_Unix::get_stdin_type() const {
+	int h = fileno(stdin);
+	if (h == -1) {
+		return STD_HANDLE_INVALID;
+	}
+
+	if (isatty(h)) {
+		return STD_HANDLE_CONSOLE;
+	}
+	struct stat statbuf;
+	if (fstat(h, &statbuf) < 0) {
+		return STD_HANDLE_UNKNOWN;
+	}
+	if (S_ISFIFO(statbuf.st_mode)) {
+		return STD_HANDLE_PIPE;
+	} else if (S_ISREG(statbuf.st_mode) || S_ISLNK(statbuf.st_mode)) {
+		return STD_HANDLE_FILE;
+	}
+	return STD_HANDLE_UNKNOWN;
+}
+
+OS_Unix::StdHandleType OS_Unix::get_stdout_type() const {
+	int h = fileno(stdout);
+	if (h == -1) {
+		return STD_HANDLE_INVALID;
+	}
+
+	if (isatty(h)) {
+		return STD_HANDLE_CONSOLE;
+	}
+	struct stat statbuf;
+	if (fstat(h, &statbuf) < 0) {
+		return STD_HANDLE_UNKNOWN;
+	}
+	if (S_ISFIFO(statbuf.st_mode)) {
+		return STD_HANDLE_PIPE;
+	} else if (S_ISREG(statbuf.st_mode) || S_ISLNK(statbuf.st_mode)) {
+		return STD_HANDLE_FILE;
+	}
+	return STD_HANDLE_UNKNOWN;
+}
+
+OS_Unix::StdHandleType OS_Unix::get_stderr_type() const {
+	int h = fileno(stderr);
+	if (h == -1) {
+		return STD_HANDLE_INVALID;
+	}
+
+	if (isatty(h)) {
+		return STD_HANDLE_CONSOLE;
+	}
+	struct stat statbuf;
+	if (fstat(h, &statbuf) < 0) {
+		return STD_HANDLE_UNKNOWN;
+	}
+	if (S_ISFIFO(statbuf.st_mode)) {
+		return STD_HANDLE_PIPE;
+	} else if (S_ISREG(statbuf.st_mode) || S_ISLNK(statbuf.st_mode)) {
+		return STD_HANDLE_FILE;
+	}
+	return STD_HANDLE_UNKNOWN;
 }
 
 Error OS_Unix::get_entropy(uint8_t *r_buffer, int p_bytes) {
@@ -223,6 +306,10 @@ String OS_Unix::get_distribution_name() const {
 
 String OS_Unix::get_version() const {
 	return "";
+}
+
+String OS_Unix::get_temp_path() const {
+	return "/tmp";
 }
 
 double OS_Unix::get_unix_time() const {
@@ -777,7 +864,7 @@ String OS_Unix::get_locale() const {
 	}
 
 	String locale = get_environment("LANG");
-	int tp = locale.find(".");
+	int tp = locale.find_char('.');
 	if (tp != -1) {
 		locale = locale.substr(0, tp);
 	}
@@ -862,32 +949,18 @@ String OS_Unix::get_environment(const String &p_var) const {
 }
 
 void OS_Unix::set_environment(const String &p_var, const String &p_value) const {
-	ERR_FAIL_COND_MSG(p_var.is_empty() || p_var.contains("="), vformat("Invalid environment variable name '%s', cannot be empty or include '='.", p_var));
+	ERR_FAIL_COND_MSG(p_var.is_empty() || p_var.contains_char('='), vformat("Invalid environment variable name '%s', cannot be empty or include '='.", p_var));
 	int err = setenv(p_var.utf8().get_data(), p_value.utf8().get_data(), /* overwrite: */ 1);
 	ERR_FAIL_COND_MSG(err != 0, vformat("Failed setting environment variable '%s', the system is out of memory.", p_var));
 }
 
 void OS_Unix::unset_environment(const String &p_var) const {
-	ERR_FAIL_COND_MSG(p_var.is_empty() || p_var.contains("="), vformat("Invalid environment variable name '%s', cannot be empty or include '='.", p_var));
+	ERR_FAIL_COND_MSG(p_var.is_empty() || p_var.contains_char('='), vformat("Invalid environment variable name '%s', cannot be empty or include '='.", p_var));
 	unsetenv(p_var.utf8().get_data());
 }
 
-String OS_Unix::get_user_data_dir() const {
-	String appname = get_safe_dir_name(GLOBAL_GET("application/config/name"));
-	if (!appname.is_empty()) {
-		bool use_custom_dir = GLOBAL_GET("application/config/use_custom_user_dir");
-		if (use_custom_dir) {
-			String custom_dir = get_safe_dir_name(GLOBAL_GET("application/config/custom_user_dir_name"), true);
-			if (custom_dir.is_empty()) {
-				custom_dir = appname;
-			}
-			return get_data_path().path_join(custom_dir);
-		} else {
-			return get_data_path().path_join(get_godot_dir_name()).path_join("app_userdata").path_join(appname);
-		}
-	}
-
-	return get_data_path().path_join(get_godot_dir_name()).path_join("app_userdata").path_join("[unnamed project]");
+String OS_Unix::get_user_data_dir(const String &p_user_dir) const {
+	return get_data_path().path_join(p_user_dir);
 }
 
 String OS_Unix::get_executable_path() const {

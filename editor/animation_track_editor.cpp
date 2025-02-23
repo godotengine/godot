@@ -50,6 +50,7 @@
 #include "scene/animation/tween.h"
 #include "scene/gui/check_box.h"
 #include "scene/gui/color_picker.h"
+#include "scene/gui/flow_container.h"
 #include "scene/gui/grid_container.h"
 #include "scene/gui/option_button.h"
 #include "scene/gui/panel_container.h"
@@ -63,7 +64,6 @@
 
 constexpr double FPS_DECIMAL = 1.0;
 constexpr double SECOND_DECIMAL = 0.0001;
-constexpr double FPS_STEP_FRACTION = 0.0625;
 
 void AnimationTrackKeyEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_update_obj"), &AnimationTrackKeyEdit::_update_obj);
@@ -1299,12 +1299,12 @@ void AnimationTimelineEdit::_zoom_changed(double) {
 	double timeline_right = timeline_left + timeline_width_seconds;
 	double timeline_center = timeline_left + timeline_width_seconds / 2.0;
 
-	if (zoom_callback_occured) { // Zooming with scroll wheel will focus on the position of the mouse.
+	if (zoom_callback_occurred) { // Zooming with scroll wheel will focus on the position of the mouse.
 		double zoom_scroll_origin_norm = (zoom_scroll_origin.x - get_name_limit()) / timeline_width_pixels;
 		zoom_scroll_origin_norm = MAX(zoom_scroll_origin_norm, 0);
 		zoom_pivot = timeline_left + timeline_width_seconds * zoom_scroll_origin_norm;
 		zoom_pivot_delta = updated_timeline_width_seconds * zoom_scroll_origin_norm;
-		zoom_callback_occured = false;
+		zoom_callback_occurred = false;
 	} else { // Zooming with slider will depend on the current play position.
 		// If the play position is not in range, or exactly in the center, zoom in on the center.
 		if (get_play_position() < timeline_left || get_play_position() > timeline_left + timeline_width_seconds || get_play_position() == timeline_center) {
@@ -1401,12 +1401,26 @@ void AnimationTimelineEdit::_anim_loop_pressed() {
 		undo_redo->add_undo_method(this, "update_values");
 		undo_redo->commit_action();
 	} else {
-		String base_path = animation->get_path();
-		if (FileAccess::exists(base_path + ".import")) {
-			EditorNode::get_singleton()->show_warning(TTR("Can't change loop mode on animation instanced from imported scene."));
-		} else {
-			EditorNode::get_singleton()->show_warning(TTR("Can't change loop mode on animation embedded in another scene."));
+		String base = animation->get_path();
+		int srpos = base.find("::");
+		if (srpos != -1) {
+			base = animation->get_path().substr(0, srpos);
 		}
+
+		if (FileAccess::exists(base + ".import")) {
+			if (ResourceLoader::get_resource_type(base) == "PackedScene") {
+				EditorNode::get_singleton()->show_warning(TTR("Can't change loop mode on animation instanced from an imported scene.\n\nTo change this animation's loop mode, navigate to the scene's Advanced Import settings and select the animation.\nYou can then change the loop mode from the inspector menu."));
+			} else {
+				EditorNode::get_singleton()->show_warning(TTR("Can't change loop mode on animation instanced from an imported resource."));
+			}
+		} else {
+			if (ResourceLoader::get_resource_type(base) == "PackedScene") {
+				EditorNode::get_singleton()->show_warning(TTR("Can't change loop mode on animation embedded in another scene.\n\nYou must open this scene and change the animation's loop mode from there."));
+			} else {
+				EditorNode::get_singleton()->show_warning(TTR("Can't change loop mode on animation embedded in another resource."));
+			}
+		}
+
 		update_values();
 	}
 }
@@ -1438,7 +1452,6 @@ int AnimationTimelineEdit::get_name_limit() const {
 
 void AnimationTimelineEdit::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			add_track->set_button_icon(get_editor_theme_icon(SNAME("Add")));
 			loop->set_button_icon(get_editor_theme_icon(SNAME("Loop")));
@@ -1457,9 +1470,14 @@ void AnimationTimelineEdit::_notification(int p_what) {
 		} break;
 
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
-			if (EditorSettings::get_singleton()->check_changed_settings_in_group("editors/panning")) {
-				panner->setup((ViewPanner::ControlScheme)EDITOR_GET("editors/panning/animation_editors_panning_scheme").operator int(), ED_GET_SHORTCUT("canvas_item_editor/pan_view"), bool(EDITOR_GET("editors/panning/simple_panning")));
+			if (!EditorSettings::get_singleton()->check_changed_settings_in_group("editors/panning")) {
+				break;
 			}
+			[[fallthrough]];
+		}
+		case NOTIFICATION_ENTER_TREE: {
+			panner->setup((ViewPanner::ControlScheme)EDITOR_GET("editors/panning/animation_editors_panning_scheme").operator int(), ED_GET_SHORTCUT("canvas_item_editor/pan_view"), bool(EDITOR_GET("editors/panning/simple_panning")));
+			panner->setup_warped_panning(get_viewport(), EDITOR_GET("editors/panning/warped_mouse_panning"));
 		} break;
 
 		case NOTIFICATION_RESIZED: {
@@ -1859,7 +1877,7 @@ void AnimationTimelineEdit::_play_position_draw() {
 void AnimationTimelineEdit::gui_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
-	if (panner->gui_input(p_event)) {
+	if (panner->gui_input(p_event, get_global_rect())) {
 		accept_event();
 		return;
 	}
@@ -1939,7 +1957,7 @@ void AnimationTimelineEdit::_pan_callback(Vector2 p_scroll_vec, Ref<InputEvent> 
 void AnimationTimelineEdit::_zoom_callback(float p_zoom_factor, Vector2 p_origin, Ref<InputEvent> p_event) {
 	double current_zoom_value = get_zoom()->get_value();
 	zoom_scroll_origin = p_origin;
-	zoom_callback_occured = true;
+	zoom_callback_occurred = true;
 	get_zoom()->set_value(MAX(0.01, current_zoom_value - (1.0 - p_zoom_factor)));
 }
 
@@ -2048,7 +2066,7 @@ void AnimationTrackEdit::_notification(int p_what) {
 
 			const Ref<StyleBox> &stylebox_odd = get_theme_stylebox(SNAME("odd"), SNAME("AnimationTrackEdit"));
 			const Ref<StyleBox> &stylebox_focus = get_theme_stylebox(SNAME("focus"), SNAME("AnimationTrackEdit"));
-			const Ref<StyleBox> &stylebox_hover = get_theme_stylebox(SNAME("hover"), SNAME("AnimationTrackEdit"));
+			const Ref<StyleBox> &stylebox_hover = get_theme_stylebox(SceneStringName(hover), SNAME("AnimationTrackEdit"));
 
 			const Color h_line_color = get_theme_color(SNAME("h_line_color"), SNAME("AnimationTrackEdit"));
 			const int h_separation = get_theme_constant(SNAME("h_separation"), SNAME("AnimationTrackEdit"));
@@ -2192,7 +2210,7 @@ void AnimationTrackEdit::_notification(int p_what) {
 						offset = offset * scale + limit;
 						Color marker_color = animation->get_marker_color(marker);
 						marker_color.a = 0.2;
-						draw_line(Point2(offset, 0), Point2(offset, get_size().height), marker_color);
+						draw_line(Point2(offset, 0), Point2(offset, get_size().height), marker_color, Math::round(EDSCALE));
 					}
 				}
 			}
@@ -3111,7 +3129,7 @@ void AnimationTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 			path = memnew(LineEdit);
 			path_popup->add_child(path);
 			path->set_anchors_and_offsets_preset(PRESET_FULL_RECT);
-			path->connect("text_submitted", callable_mp(this, &AnimationTrackEdit::_path_submitted));
+			path->connect(SceneStringName(text_submitted), callable_mp(this, &AnimationTrackEdit::_path_submitted));
 		}
 
 		path->set_text(animation->track_get_path(track));
@@ -3648,7 +3666,7 @@ void AnimationTrackEditGroup::_notification(int p_what) {
 						offset = offset * scale + limit;
 						Color marker_color = editor->get_current_animation()->get_marker_color(marker);
 						marker_color.a = 0.2;
-						draw_line(Point2(offset, 0), Point2(offset, get_size().height), marker_color);
+						draw_line(Point2(offset, 0), Point2(offset, get_size().height), marker_color, Math::round(EDSCALE));
 					}
 				}
 			}
@@ -3776,6 +3794,7 @@ void AnimationTrackEditor::set_animation(const Ref<Animation> &p_anim, bool p_re
 		step->set_read_only(false);
 		snap_keys->set_disabled(false);
 		snap_timeline->set_disabled(false);
+		fps_compat->set_disabled(false);
 		snap_mode->set_disabled(false);
 		auto_fit->set_disabled(false);
 		auto_fit_bezier->set_disabled(false);
@@ -3798,6 +3817,7 @@ void AnimationTrackEditor::set_animation(const Ref<Animation> &p_anim, bool p_re
 		step->set_read_only(true);
 		snap_keys->set_disabled(true);
 		snap_timeline->set_disabled(true);
+		fps_compat->set_disabled(true);
 		snap_mode->set_disabled(true);
 		bezier_edit_icon->set_disabled(true);
 		auto_fit->set_disabled(true);
@@ -4339,7 +4359,7 @@ void AnimationTrackEditor::insert_node_value_key(Node *p_node, const String &p_p
 			if (track_path == np) {
 				actual_value = value; // All good.
 			} else {
-				int sep = track_path.rfind(":");
+				int sep = track_path.rfind_char(':');
 				if (sep != -1) {
 					String base_path = track_path.substr(0, sep);
 					if (base_path == np) {
@@ -5029,7 +5049,12 @@ void AnimationTrackEditor::_snap_mode_changed(int p_mode) {
 	}
 	marker_edit->set_use_fps(use_fps);
 	// To ensure that the conversion results are consistent between serialization and load, the value is snapped with 0.0625 to be a rational number when FPS mode is used.
-	step->set_step(use_fps ? FPS_STEP_FRACTION : SECOND_DECIMAL);
+	step->set_step(use_fps ? FPS_DECIMAL : SECOND_DECIMAL);
+	if (use_fps) {
+		fps_compat->hide();
+	} else {
+		fps_compat->show();
+	}
 	_update_step_spinbox();
 }
 
@@ -5045,13 +5070,26 @@ void AnimationTrackEditor::_update_step_spinbox() {
 		} else {
 			step->set_value(1.0 / animation->get_step());
 		}
-
 	} else {
 		step->set_value(animation->get_step());
 	}
 
 	step->set_block_signals(false);
 	_update_snap_unit();
+}
+
+void AnimationTrackEditor::_update_fps_compat_mode(bool p_enabled) {
+	_update_snap_unit();
+}
+
+void AnimationTrackEditor::_update_nearest_fps_label() {
+	bool is_fps_invalid = nearest_fps == 0;
+	if (is_fps_invalid) {
+		nearest_fps_label->hide();
+	} else {
+		nearest_fps_label->show();
+		nearest_fps_label->set_text("Nearest FPS: " + itos(nearest_fps));
+	}
 }
 
 void AnimationTrackEditor::_animation_update() {
@@ -5105,16 +5143,16 @@ void AnimationTrackEditor::_notification(int p_what) {
 			}
 			[[fallthrough]];
 		}
-
 		case NOTIFICATION_ENTER_TREE: {
 			panner->setup((ViewPanner::ControlScheme)EDITOR_GET("editors/panning/animation_editors_panning_scheme").operator int(), ED_GET_SHORTCUT("canvas_item_editor/pan_view"), bool(EDITOR_GET("editors/panning/simple_panning")));
-			[[fallthrough]];
-		}
+			panner->setup_warped_panning(get_viewport(), EDITOR_GET("editors/panning/warped_mouse_panning"));
+		} break;
 		case NOTIFICATION_THEME_CHANGED: {
 			zoom_icon->set_texture(get_editor_theme_icon(SNAME("Zoom")));
 			bezier_edit_icon->set_button_icon(get_editor_theme_icon(SNAME("EditBezier")));
 			snap_timeline->set_button_icon(get_editor_theme_icon(SNAME("SnapTimeline")));
 			snap_keys->set_button_icon(get_editor_theme_icon(SNAME("SnapKeys")));
+			fps_compat->set_button_icon(get_editor_theme_icon(SNAME("FPS")));
 			view_group->set_button_icon(get_editor_theme_icon(view_group->is_pressed() ? SNAME("AnimationTrackList") : SNAME("AnimationTrackGroup")));
 			selected_filter->set_button_icon(get_editor_theme_icon(SNAME("AnimationFilter")));
 			imported_anim_warning->set_button_icon(get_editor_theme_icon(SNAME("NodeWarning")));
@@ -5160,9 +5198,8 @@ void AnimationTrackEditor::_update_step(double p_new_step) {
 	double step_value = p_new_step;
 	if (timeline->is_using_fps()) {
 		if (step_value != 0.0) {
-			// step_value must also be less than or equal to 1000 to ensure that no error accumulates due to interactions with retrieving values from inner range.
+			// A step_value should be less than or equal to 1000 to ensure that no error accumulates due to interactions with retrieving values from inner range.
 			step_value = 1.0 / MIN(1000.0, p_new_step);
-			;
 		}
 		timeline->queue_redraw();
 	}
@@ -5297,6 +5334,28 @@ void AnimationTrackEditor::_add_track(int p_type) {
 		return;
 	}
 	adding_track_type = p_type;
+	Vector<StringName> valid_types;
+	switch (adding_track_type) {
+		case Animation::TYPE_BLEND_SHAPE: {
+			// Blend Shape is a property of MeshInstance3D.
+			valid_types.push_back(SNAME("MeshInstance3D"));
+		} break;
+		case Animation::TYPE_POSITION_3D:
+		case Animation::TYPE_ROTATION_3D:
+		case Animation::TYPE_SCALE_3D: {
+			// 3D Properties come from nodes inheriting Node3D.
+			valid_types.push_back(SNAME("Node3D"));
+		} break;
+		case Animation::TYPE_AUDIO: {
+			valid_types.push_back(SNAME("AudioStreamPlayer"));
+			valid_types.push_back(SNAME("AudioStreamPlayer2D"));
+			valid_types.push_back(SNAME("AudioStreamPlayer3D"));
+		} break;
+		case Animation::TYPE_ANIMATION: {
+			valid_types.push_back(SNAME("AnimationPlayer"));
+		} break;
+	}
+	pick_track->set_valid_types(valid_types);
 	pick_track->popup_scenetree_dialog(nullptr, root_node);
 	pick_track->get_filter_line_edit()->clear();
 	pick_track->get_filter_line_edit()->grab_focus();
@@ -5883,7 +5942,7 @@ void AnimationTrackEditor::_box_selection_draw() {
 
 void AnimationTrackEditor::_scroll_input(const Ref<InputEvent> &p_event) {
 	if (!box_selecting) {
-		if (panner->gui_input(p_event)) {
+		if (panner->gui_input(p_event, scroll->get_global_rect())) {
 			scroll->accept_event();
 			return;
 		}
@@ -6454,7 +6513,7 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 					path = NodePath(node->get_path().get_names(), path.get_subnames(), true); // Store full path instead for copying.
 				} else {
 					text = path;
-					int sep = text.find(":");
+					int sep = text.find_char(':');
 					if (sep != -1) {
 						text = text.substr(sep + 1, text.length());
 					}
@@ -6587,6 +6646,7 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 		case EDIT_SCALE_SELECTION:
 		case EDIT_SCALE_FROM_CURSOR: {
 			scale_dialog->popup_centered(Size2(200, 100) * EDSCALE);
+			scale->get_line_edit()->grab_focus();
 		} break;
 		case EDIT_SCALE_CONFIRM: {
 			if (selection.is_empty()) {
@@ -7314,37 +7374,52 @@ void AnimationTrackEditor::_selection_changed() {
 }
 
 void AnimationTrackEditor::_update_snap_unit() {
+	nearest_fps = 0;
+
 	if (step->get_value() <= 0) {
 		snap_unit = 0;
+		_update_nearest_fps_label();
 		return; // Avoid zero div.
 	}
 
 	if (timeline->is_using_fps()) {
 		snap_unit = 1.0 / step->get_value();
 	} else {
-		double integer;
-		double fraction = Math::modf(step->get_value(), &integer);
-		fraction = 1.0 / Math::round(1.0 / fraction);
-		snap_unit = integer + fraction;
+		if (fps_compat->is_pressed()) {
+			snap_unit = CLAMP(step->get_value(), 0.0, 1.0);
+			if (!Math::is_zero_approx(snap_unit)) {
+				real_t fps = Math::round(1.0 / snap_unit);
+				nearest_fps = int(fps);
+				snap_unit = 1.0 / fps;
+			}
+		} else {
+			snap_unit = step->get_value();
+		}
 	}
+	_update_nearest_fps_label();
 }
 
 float AnimationTrackEditor::snap_time(float p_value, bool p_relative) {
 	if (is_snap_keys_enabled()) {
+		double current_snap = snap_unit;
 		if (Input::get_singleton()->is_key_pressed(Key::SHIFT)) {
 			// Use more precise snapping when holding Shift.
-			snap_unit *= 0.25;
+			current_snap *= 0.25;
 		}
 
 		if (p_relative) {
-			double rel = Math::fmod(timeline->get_value(), snap_unit);
-			p_value = Math::snapped(p_value + rel, snap_unit) - rel;
+			double rel = Math::fmod(timeline->get_value(), current_snap);
+			p_value = Math::snapped(p_value + rel, current_snap) - rel;
 		} else {
-			p_value = Math::snapped(p_value, snap_unit);
+			p_value = Math::snapped(p_value, current_snap);
 		}
 	}
 
 	return p_value;
+}
+
+float AnimationTrackEditor::get_snap_unit() {
+	return snap_unit;
 }
 
 void AnimationTrackEditor::_show_imported_anim_warning() {
@@ -7532,31 +7607,34 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	track_vbox->set_h_size_flags(SIZE_EXPAND_FILL);
 	scroll->set_horizontal_scroll_mode(ScrollContainer::SCROLL_MODE_DISABLED);
 
-	HBoxContainer *bottom_hb = memnew(HBoxContainer);
-	add_child(bottom_hb);
+	HFlowContainer *bottom_hf = memnew(HFlowContainer);
+	add_child(bottom_hf);
 
 	imported_anim_warning = memnew(Button);
 	imported_anim_warning->hide();
 	imported_anim_warning->set_text(TTR("Imported Scene"));
 	imported_anim_warning->set_tooltip_text(TTR("Warning: Editing imported animation"));
 	imported_anim_warning->connect(SceneStringName(pressed), callable_mp(this, &AnimationTrackEditor::_show_imported_anim_warning));
-	bottom_hb->add_child(imported_anim_warning);
+	bottom_hf->add_child(imported_anim_warning);
 
 	dummy_player_warning = memnew(Button);
 	dummy_player_warning->hide();
 	dummy_player_warning->set_text(TTR("Dummy Player"));
 	dummy_player_warning->set_tooltip_text(TTR("Warning: Editing dummy AnimationPlayer"));
 	dummy_player_warning->connect(SceneStringName(pressed), callable_mp(this, &AnimationTrackEditor::_show_dummy_player_warning));
-	bottom_hb->add_child(dummy_player_warning);
+	bottom_hf->add_child(dummy_player_warning);
 
 	inactive_player_warning = memnew(Button);
 	inactive_player_warning->hide();
 	inactive_player_warning->set_text(TTR("Inactive Player"));
 	inactive_player_warning->set_tooltip_text(TTR("Warning: AnimationPlayer is inactive"));
 	inactive_player_warning->connect(SceneStringName(pressed), callable_mp(this, &AnimationTrackEditor::_show_inactive_player_warning));
-	bottom_hb->add_child(inactive_player_warning);
+	bottom_hf->add_child(inactive_player_warning);
 
-	bottom_hb->add_spacer();
+	Control *spacer = memnew(Control);
+	spacer->set_mouse_filter(MOUSE_FILTER_PASS);
+	spacer->set_h_size_flags(SIZE_EXPAND_FILL);
+	bottom_hf->add_child(spacer);
 
 	bezier_edit_icon = memnew(Button);
 	bezier_edit_icon->set_flat(true);
@@ -7565,7 +7643,7 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	bezier_edit_icon->connect(SceneStringName(pressed), callable_mp(this, &AnimationTrackEditor::_toggle_bezier_edit));
 	bezier_edit_icon->set_tooltip_text(TTR("Toggle between the bezier curve editor and track editor."));
 
-	bottom_hb->add_child(bezier_edit_icon);
+	bottom_hf->add_child(bezier_edit_icon);
 
 	selected_filter = memnew(Button);
 	selected_filter->set_flat(true);
@@ -7573,7 +7651,7 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	selected_filter->set_toggle_mode(true);
 	selected_filter->set_tooltip_text(TTR("Only show tracks from nodes selected in tree."));
 
-	bottom_hb->add_child(selected_filter);
+	bottom_hf->add_child(selected_filter);
 
 	view_group = memnew(Button);
 	view_group->set_flat(true);
@@ -7581,12 +7659,12 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	view_group->set_toggle_mode(true);
 	view_group->set_tooltip_text(TTR("Group tracks by node or display them as plain list."));
 
-	bottom_hb->add_child(view_group);
-	bottom_hb->add_child(memnew(VSeparator));
+	bottom_hf->add_child(view_group);
+	bottom_hf->add_child(memnew(VSeparator));
 
 	snap_timeline = memnew(Button);
 	snap_timeline->set_flat(true);
-	bottom_hb->add_child(snap_timeline);
+	bottom_hf->add_child(snap_timeline);
 	snap_timeline->set_disabled(true);
 	snap_timeline->set_toggle_mode(true);
 	snap_timeline->set_pressed(false);
@@ -7594,11 +7672,23 @@ AnimationTrackEditor::AnimationTrackEditor() {
 
 	snap_keys = memnew(Button);
 	snap_keys->set_flat(true);
-	bottom_hb->add_child(snap_keys);
+	bottom_hf->add_child(snap_keys);
 	snap_keys->set_disabled(true);
 	snap_keys->set_toggle_mode(true);
 	snap_keys->set_pressed(true);
 	snap_keys->set_tooltip_text(TTR("Apply snapping to selected key(s)."));
+
+	fps_compat = memnew(Button);
+	fps_compat->set_flat(true);
+	bottom_hf->add_child(fps_compat);
+	fps_compat->set_disabled(true);
+	fps_compat->set_toggle_mode(true);
+	fps_compat->set_pressed(true);
+	fps_compat->set_tooltip_text(TTR("Apply snapping to the nearest integer FPS."));
+	fps_compat->connect(SceneStringName(toggled), callable_mp(this, &AnimationTrackEditor::_update_fps_compat_mode));
+
+	nearest_fps_label = memnew(Label);
+	bottom_hf->add_child(nearest_fps_label);
 
 	step = memnew(EditorSpinSlider);
 	step->set_min(0);
@@ -7607,22 +7697,23 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	step->set_hide_slider(true);
 	step->set_custom_minimum_size(Size2(100, 0) * EDSCALE);
 	step->set_tooltip_text(TTR("Animation step value."));
-	bottom_hb->add_child(step);
+	bottom_hf->add_child(step);
 	step->connect(SceneStringName(value_changed), callable_mp(this, &AnimationTrackEditor::_update_step));
 	step->set_read_only(true);
 
 	snap_mode = memnew(OptionButton);
 	snap_mode->add_item(TTR("Seconds"));
 	snap_mode->add_item(TTR("FPS"));
-	bottom_hb->add_child(snap_mode);
+	bottom_hf->add_child(snap_mode);
 	snap_mode->connect(SceneStringName(item_selected), callable_mp(this, &AnimationTrackEditor::_snap_mode_changed));
 	snap_mode->set_disabled(true);
 
-	bottom_hb->add_child(memnew(VSeparator));
+	bottom_hf->add_child(memnew(VSeparator));
 
+	HBoxContainer *zoom_hb = memnew(HBoxContainer);
 	zoom_icon = memnew(TextureRect);
 	zoom_icon->set_v_size_flags(SIZE_SHRINK_CENTER);
-	bottom_hb->add_child(zoom_icon);
+	zoom_hb->add_child(zoom_icon);
 	zoom = memnew(HSlider);
 	zoom->set_step(0.01);
 	zoom->set_min(0.0);
@@ -7630,23 +7721,24 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	zoom->set_value(1.0);
 	zoom->set_custom_minimum_size(Size2(200, 0) * EDSCALE);
 	zoom->set_v_size_flags(SIZE_SHRINK_CENTER);
-	bottom_hb->add_child(zoom);
+	zoom_hb->add_child(zoom);
+	bottom_hf->add_child(zoom_hb);
 	timeline->set_zoom(zoom);
 
-	ED_SHORTCUT("animation_editor/auto_fit", TTR("Fit to panel"), KeyModifierMask::ALT | Key::F);
+	ED_SHORTCUT("animation_editor/auto_fit", TTRC("Fit to panel"), KeyModifierMask::ALT | Key::F);
 
 	auto_fit = memnew(Button);
 	auto_fit->set_flat(true);
 	auto_fit->connect(SceneStringName(pressed), callable_mp(this, &AnimationTrackEditor::_auto_fit));
 	auto_fit->set_shortcut(ED_GET_SHORTCUT("animation_editor/auto_fit"));
-	bottom_hb->add_child(auto_fit);
+	bottom_hf->add_child(auto_fit);
 
 	auto_fit_bezier = memnew(Button);
 	auto_fit_bezier->set_flat(true);
 	auto_fit_bezier->set_visible(false);
 	auto_fit_bezier->connect(SceneStringName(pressed), callable_mp(this, &AnimationTrackEditor::_auto_fit_bezier));
 	auto_fit_bezier->set_shortcut(ED_GET_SHORTCUT("animation_editor/auto_fit"));
-	bottom_hb->add_child(auto_fit_bezier);
+	bottom_hf->add_child(auto_fit_bezier);
 
 	edit = memnew(MenuButton);
 	edit->set_shortcut_context(this);
@@ -7660,27 +7752,27 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	edit->get_popup()->add_item(TTR("Scale Selection..."), EDIT_SCALE_SELECTION);
 	edit->get_popup()->add_item(TTR("Scale From Cursor..."), EDIT_SCALE_FROM_CURSOR);
 	edit->get_popup()->add_separator();
-	edit->get_popup()->add_shortcut(ED_SHORTCUT("animation_editor/set_start_offset", TTR("Set Start Offset (Audio)"), KeyModifierMask::CMD_OR_CTRL | Key::BRACKETLEFT), EDIT_SET_START_OFFSET);
-	edit->get_popup()->add_shortcut(ED_SHORTCUT("animation_editor/set_end_offset", TTR("Set End Offset (Audio)"), KeyModifierMask::CMD_OR_CTRL | Key::BRACKETRIGHT), EDIT_SET_END_OFFSET);
+	edit->get_popup()->add_shortcut(ED_SHORTCUT("animation_editor/set_start_offset", TTRC("Set Start Offset (Audio)"), KeyModifierMask::CMD_OR_CTRL | Key::BRACKETLEFT), EDIT_SET_START_OFFSET);
+	edit->get_popup()->add_shortcut(ED_SHORTCUT("animation_editor/set_end_offset", TTRC("Set End Offset (Audio)"), KeyModifierMask::CMD_OR_CTRL | Key::BRACKETRIGHT), EDIT_SET_END_OFFSET);
 	edit->get_popup()->add_separator();
 	edit->get_popup()->add_item(TTR("Make Easing Selection..."), EDIT_EASE_SELECTION);
 	edit->get_popup()->add_separator();
-	edit->get_popup()->add_shortcut(ED_SHORTCUT("animation_editor/duplicate_selected_keys", TTR("Duplicate Selected Keys"), KeyModifierMask::CMD_OR_CTRL | Key::D), EDIT_DUPLICATE_SELECTED_KEYS);
-	edit->get_popup()->add_shortcut(ED_SHORTCUT("animation_editor/cut_selected_keys", TTR("Cut Selected Keys"), KeyModifierMask::CMD_OR_CTRL | Key::X), EDIT_CUT_KEYS);
-	edit->get_popup()->add_shortcut(ED_SHORTCUT("animation_editor/copy_selected_keys", TTR("Copy Selected Keys"), KeyModifierMask::CMD_OR_CTRL | Key::C), EDIT_COPY_KEYS);
-	edit->get_popup()->add_shortcut(ED_SHORTCUT("animation_editor/paste_keys", TTR("Paste Keys"), KeyModifierMask::CMD_OR_CTRL | Key::V), EDIT_PASTE_KEYS);
-	edit->get_popup()->add_shortcut(ED_SHORTCUT("animation_editor/add_reset_value", TTR("Add RESET Value(s)")));
+	edit->get_popup()->add_shortcut(ED_SHORTCUT("animation_editor/duplicate_selected_keys", TTRC("Duplicate Selected Keys"), KeyModifierMask::CMD_OR_CTRL | Key::D), EDIT_DUPLICATE_SELECTED_KEYS);
+	edit->get_popup()->add_shortcut(ED_SHORTCUT("animation_editor/cut_selected_keys", TTRC("Cut Selected Keys"), KeyModifierMask::CMD_OR_CTRL | Key::X), EDIT_CUT_KEYS);
+	edit->get_popup()->add_shortcut(ED_SHORTCUT("animation_editor/copy_selected_keys", TTRC("Copy Selected Keys"), KeyModifierMask::CMD_OR_CTRL | Key::C), EDIT_COPY_KEYS);
+	edit->get_popup()->add_shortcut(ED_SHORTCUT("animation_editor/paste_keys", TTRC("Paste Keys"), KeyModifierMask::CMD_OR_CTRL | Key::V), EDIT_PASTE_KEYS);
+	edit->get_popup()->add_shortcut(ED_SHORTCUT("animation_editor/add_reset_value", TTRC("Add RESET Value(s)")));
 	edit->get_popup()->add_separator();
-	edit->get_popup()->add_shortcut(ED_SHORTCUT("animation_editor/move_first_selected_key_to_cursor", TTR("Move First Selected Key to Cursor"), Key::BRACKETLEFT), EDIT_MOVE_FIRST_SELECTED_KEY_TO_CURSOR);
-	edit->get_popup()->add_shortcut(ED_SHORTCUT("animation_editor/move_last_selected_key_to_cursor", TTR("Move Last Selected Key to Cursor"), Key::BRACKETRIGHT), EDIT_MOVE_LAST_SELECTED_KEY_TO_CURSOR);
+	edit->get_popup()->add_shortcut(ED_SHORTCUT("animation_editor/move_first_selected_key_to_cursor", TTRC("Move First Selected Key to Cursor"), Key::BRACKETLEFT), EDIT_MOVE_FIRST_SELECTED_KEY_TO_CURSOR);
+	edit->get_popup()->add_shortcut(ED_SHORTCUT("animation_editor/move_last_selected_key_to_cursor", TTRC("Move Last Selected Key to Cursor"), Key::BRACKETRIGHT), EDIT_MOVE_LAST_SELECTED_KEY_TO_CURSOR);
 	edit->get_popup()->add_separator();
-	edit->get_popup()->add_shortcut(ED_SHORTCUT("animation_editor/delete_selection", TTR("Delete Selection"), Key::KEY_DELETE), EDIT_DELETE_SELECTION);
+	edit->get_popup()->add_shortcut(ED_SHORTCUT("animation_editor/delete_selection", TTRC("Delete Selection"), Key::KEY_DELETE), EDIT_DELETE_SELECTION);
 
 	edit->get_popup()->add_separator();
-	edit->get_popup()->add_shortcut(ED_SHORTCUT("animation_editor/goto_next_step", TTR("Go to Next Step"), KeyModifierMask::CMD_OR_CTRL | Key::RIGHT), EDIT_GOTO_NEXT_STEP);
-	edit->get_popup()->add_shortcut(ED_SHORTCUT("animation_editor/goto_prev_step", TTR("Go to Previous Step"), KeyModifierMask::CMD_OR_CTRL | Key::LEFT), EDIT_GOTO_PREV_STEP);
+	edit->get_popup()->add_shortcut(ED_SHORTCUT("animation_editor/goto_next_step", TTRC("Go to Next Step"), KeyModifierMask::CMD_OR_CTRL | Key::RIGHT), EDIT_GOTO_NEXT_STEP);
+	edit->get_popup()->add_shortcut(ED_SHORTCUT("animation_editor/goto_prev_step", TTRC("Go to Previous Step"), KeyModifierMask::CMD_OR_CTRL | Key::LEFT), EDIT_GOTO_PREV_STEP);
 	edit->get_popup()->add_separator();
-	edit->get_popup()->add_shortcut(ED_SHORTCUT("animation_editor/apply_reset", TTR("Apply Reset")), EDIT_APPLY_RESET);
+	edit->get_popup()->add_shortcut(ED_SHORTCUT("animation_editor/apply_reset", TTRC("Apply Reset")), EDIT_APPLY_RESET);
 	edit->get_popup()->add_separator();
 	edit->get_popup()->add_item(TTR("Bake Animation..."), EDIT_BAKE_ANIMATION);
 	edit->get_popup()->add_item(TTR("Optimize Animation (no undo)..."), EDIT_OPTIMIZE_ANIMATION);
@@ -7807,9 +7899,12 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	scale->set_min(-99999);
 	scale->set_max(99999);
 	scale->set_step(0.001);
+	scale->set_select_all_on_focus(true);
 	vbc->add_margin_child(TTR("Scale Ratio:"), scale);
-	scale_dialog->connect(SceneStringName(confirmed), callable_mp(this, &AnimationTrackEditor::_edit_menu_pressed).bind(EDIT_SCALE_CONFIRM));
+	scale_dialog->connect(SceneStringName(confirmed), callable_mp(this, &AnimationTrackEditor::_edit_menu_pressed).bind(EDIT_SCALE_CONFIRM), CONNECT_DEFERRED);
 	add_child(scale_dialog);
+
+	scale_dialog->register_text_enter(scale->get_line_edit());
 
 	//
 	ease_dialog = memnew(ConfirmationDialog);
@@ -7914,6 +8009,11 @@ AnimationTrackEditor::~AnimationTrackEditor() {
 
 // AnimationTrackKeyEditEditorPlugin.
 
+void AnimationTrackKeyEditEditor::_time_edit_spun() {
+	_time_edit_entered();
+	_time_edit_exited();
+}
+
 void AnimationTrackKeyEditEditor::_time_edit_entered() {
 	int key = animation->track_find_key(track, key_ofs, Animation::FIND_MODE_APPROX);
 	if (key == -1) {
@@ -7941,7 +8041,7 @@ void AnimationTrackKeyEditEditor::_time_edit_exited() {
 
 	int existing = animation->track_find_key(track, new_time, Animation::FIND_MODE_APPROX);
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-	undo_redo->create_action(TTR("Animation Change Keyframe Time"), UndoRedo::MERGE_ENDS);
+	undo_redo->create_action(TTR("Animation Change Keyframe Time"));
 
 	if (existing != -1) {
 		undo_redo->add_do_method(animation.ptr(), "track_remove_key_at_time", track, animation->track_get_key_time(track, existing));
@@ -7972,7 +8072,7 @@ void AnimationTrackKeyEditEditor::_time_edit_exited() {
 }
 
 AnimationTrackKeyEditEditor::AnimationTrackKeyEditEditor(Ref<Animation> p_animation, int p_track, real_t p_key_ofs, bool p_use_fps) {
-	if (!p_animation.is_valid()) {
+	if (p_animation.is_null()) {
 		return;
 	}
 
@@ -7988,6 +8088,7 @@ AnimationTrackKeyEditEditor::AnimationTrackKeyEditEditor(Ref<Animation> p_animat
 	spinner->set_min(0);
 	spinner->set_allow_greater(true);
 	spinner->set_allow_lesser(true);
+	add_child(spinner);
 
 	if (use_fps) {
 		spinner->set_step(FPS_DECIMAL);
@@ -7996,13 +8097,12 @@ AnimationTrackKeyEditEditor::AnimationTrackKeyEditEditor(Ref<Animation> p_animat
 			fps = 1.0 / fps;
 		}
 		spinner->set_value(key_ofs * fps);
+		spinner->connect("updown_pressed", callable_mp(this, &AnimationTrackKeyEditEditor::_time_edit_spun), CONNECT_DEFERRED);
 	} else {
 		spinner->set_step(SECOND_DECIMAL);
 		spinner->set_value(key_ofs);
 		spinner->set_max(animation->get_length());
 	}
-
-	add_child(spinner);
 
 	spinner->connect("grabbed", callable_mp(this, &AnimationTrackKeyEditEditor::_time_edit_entered), CONNECT_DEFERRED);
 	spinner->connect("ungrabbed", callable_mp(this, &AnimationTrackKeyEditEditor::_time_edit_exited), CONNECT_DEFERRED);
@@ -8238,9 +8338,6 @@ void AnimationMarkerEdit::_notification(int p_what) {
 
 			Ref<Font> font = get_theme_font(SceneStringName(font), SNAME("Label"));
 			Color color = get_theme_color(SceneStringName(font_color), SNAME("Label"));
-			int hsep = get_theme_constant(SNAME("h_separation"), SNAME("ItemList"));
-			Color linecolor = color;
-			linecolor.a = 0.2;
 
 			// SECTION PREVIEW //
 
@@ -8299,31 +8396,21 @@ void AnimationMarkerEdit::_notification(int p_what) {
 
 					draw_key(name, scale, int(offset), is_selected, limit, limit_end);
 
-					const int font_size = 16;
+					const int font_size = 12 * EDSCALE;
 					Size2 string_size = font->get_string_size(name, HORIZONTAL_ALIGNMENT_LEFT, -1.0, font_size);
 					if (int(offset) <= limit_end && int(offset) >= limit && should_show_all_marker_names) {
 						float bottom = get_size().height + string_size.y - font->get_descent(font_size);
 						float extrusion = MAX(0, offset + string_size.x - limit_end); // How much the string would extrude outside limit_end if unadjusted.
 						Color marker_color = animation->get_marker_color(name);
-						draw_string(font, Point2(offset - extrusion, bottom), name, HORIZONTAL_ALIGNMENT_LEFT, -1.0, font_size, marker_color);
-						draw_string_outline(font, Point2(offset - extrusion, bottom), name, HORIZONTAL_ALIGNMENT_LEFT, -1.0, font_size, 1, color);
+						float margin = 4 * EDSCALE;
+						Point2 pos = Point2(offset - extrusion + margin, bottom + margin);
+						draw_string(font, pos, name, HORIZONTAL_ALIGNMENT_LEFT, -1.0, font_size, marker_color);
+						draw_string_outline(font, pos, name, HORIZONTAL_ALIGNMENT_LEFT, -1.0, font_size, 1, color);
 					}
 				}
 			}
 
 			draw_fg(limit, get_size().width - timeline->get_buttons_width());
-
-			// BUTTONS //
-
-			{
-				int ofs = get_size().width - timeline->get_buttons_width();
-
-				draw_line(Point2(ofs, 0), Point2(ofs, get_size().height), linecolor, Math::round(EDSCALE));
-
-				ofs += hsep;
-			}
-
-			draw_line(Vector2(0, get_size().height), get_size(), linecolor, Math::round(EDSCALE));
 		} break;
 
 		case NOTIFICATION_MOUSE_ENTER:
@@ -8967,9 +9054,9 @@ AnimationMarkerEdit::AnimationMarkerEdit() {
 	menu = memnew(PopupMenu);
 	add_child(menu);
 	menu->connect(SceneStringName(id_pressed), callable_mp(this, &AnimationMarkerEdit::_menu_selected));
-	menu->add_shortcut(ED_SHORTCUT("animation_marker_edit/rename_marker", TTR("Rename Marker"), Key::R), MENU_KEY_RENAME);
-	menu->add_shortcut(ED_SHORTCUT("animation_marker_edit/delete_selection", TTR("Delete Marker(s)"), Key::KEY_DELETE), MENU_KEY_DELETE);
-	menu->add_shortcut(ED_SHORTCUT("animation_marker_edit/toggle_marker_names", TTR("Show All Marker Names"), Key::M), MENU_KEY_TOGGLE_MARKER_NAMES);
+	menu->add_shortcut(ED_SHORTCUT("animation_marker_edit/rename_marker", TTRC("Rename Marker"), Key::R), MENU_KEY_RENAME);
+	menu->add_shortcut(ED_SHORTCUT("animation_marker_edit/delete_selection", TTRC("Delete Marker(s)"), Key::KEY_DELETE), MENU_KEY_DELETE);
+	menu->add_shortcut(ED_SHORTCUT("animation_marker_edit/toggle_marker_names", TTRC("Show All Marker Names"), Key::M), MENU_KEY_TOGGLE_MARKER_NAMES);
 
 	marker_insert_confirm = memnew(ConfirmationDialog);
 	marker_insert_confirm->set_title(TTR("Insert Marker"));
@@ -9124,9 +9211,6 @@ void AnimationMultiMarkerKeyEdit::_get_property_list(List<PropertyInfo> *p_list)
 
 // AnimationMarkerKeyEditEditorPlugin
 
-void AnimationMarkerKeyEditEditor::_time_edit_entered() {
-}
-
 void AnimationMarkerKeyEditEditor::_time_edit_exited() {
 	real_t new_time = spinner->get_value();
 
@@ -9145,7 +9229,7 @@ void AnimationMarkerKeyEditEditor::_time_edit_exited() {
 	}
 
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-	undo_redo->create_action(TTR("Animation Change Marker Time"), UndoRedo::MERGE_ENDS);
+	undo_redo->create_action(TTR("Animation Change Marker Time"));
 
 	Color color = animation->get_marker_color(marker_name);
 	undo_redo->add_do_method(animation.ptr(), "add_marker", marker_name, new_time);
@@ -9186,6 +9270,7 @@ AnimationMarkerKeyEditEditor::AnimationMarkerKeyEditEditor(Ref<Animation> p_anim
 	spinner->set_min(0);
 	spinner->set_allow_greater(true);
 	spinner->set_allow_lesser(true);
+	add_child(spinner);
 
 	float time = animation->get_marker_time(marker_name);
 
@@ -9196,17 +9281,14 @@ AnimationMarkerKeyEditEditor::AnimationMarkerKeyEditEditor(Ref<Animation> p_anim
 			fps = 1.0 / fps;
 		}
 		spinner->set_value(time * fps);
+		spinner->connect("updown_pressed", callable_mp(this, &AnimationMarkerKeyEditEditor::_time_edit_exited), CONNECT_DEFERRED);
 	} else {
 		spinner->set_step(SECOND_DECIMAL);
 		spinner->set_value(time);
 		spinner->set_max(animation->get_length());
 	}
 
-	add_child(spinner);
-
-	spinner->connect("grabbed", callable_mp(this, &AnimationMarkerKeyEditEditor::_time_edit_entered), CONNECT_DEFERRED);
 	spinner->connect("ungrabbed", callable_mp(this, &AnimationMarkerKeyEditEditor::_time_edit_exited), CONNECT_DEFERRED);
-	spinner->connect("value_focus_entered", callable_mp(this, &AnimationMarkerKeyEditEditor::_time_edit_entered), CONNECT_DEFERRED);
 	spinner->connect("value_focus_exited", callable_mp(this, &AnimationMarkerKeyEditEditor::_time_edit_exited), CONNECT_DEFERRED);
 }
 

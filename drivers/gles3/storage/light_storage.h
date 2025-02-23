@@ -38,9 +38,7 @@
 
 #include "core/templates/local_vector.h"
 #include "core/templates/rid_owner.h"
-#include "core/templates/self_list.h"
 #include "drivers/gles3/storage/texture_storage.h"
-#include "servers/rendering/renderer_compositor.h"
 #include "servers/rendering/storage/light_storage.h"
 #include "servers/rendering/storage/utilities.h"
 
@@ -118,6 +116,7 @@ struct ReflectionProbe {
 	RS::ReflectionProbeUpdateMode update_mode = RS::REFLECTION_PROBE_UPDATE_ONCE;
 	int resolution = 256;
 	float intensity = 1.0;
+	float blend_distance = 1.0;
 	RS::ReflectionProbeAmbientMode ambient_mode = RS::REFLECTION_PROBE_AMBIENT_ENVIRONMENT;
 	Color ambient_color;
 	float ambient_color_energy = 1.0;
@@ -177,12 +176,14 @@ struct ReflectionProbeInstance {
 
 struct Lightmap {
 	RID light_texture;
+	RID shadow_texture;
 	bool uses_spherical_harmonics = false;
 	bool interior = false;
 	AABB bounds = AABB(Vector3(), Vector3(1, 1, 1));
 	float baked_exposure = 1.0;
 	Vector2i light_texture_size;
 	int32_t array_index = -1; //unassigned
+	RS::ShadowmaskMode shadowmask_mode = RS::SHADOWMASK_MODE_NONE;
 	PackedVector3Array points;
 	PackedColorArray point_sh;
 	PackedInt32Array tetrahedra;
@@ -231,8 +232,6 @@ private:
 	mutable RID_Owner<ReflectionProbeInstance> reflection_probe_instance_owner;
 
 	/* LIGHTMAP */
-
-	Vector<RID> lightmap_textures;
 	float lightmap_probe_capture_update_speed = 4;
 
 	mutable RID_Owner<Lightmap, true> lightmap_owner;
@@ -642,6 +641,7 @@ public:
 
 	virtual void reflection_probe_set_update_mode(RID p_probe, RS::ReflectionProbeUpdateMode p_mode) override;
 	virtual void reflection_probe_set_intensity(RID p_probe, float p_intensity) override;
+	virtual void reflection_probe_set_blend_distance(RID p_probe, float p_blend_distance) override;
 	virtual void reflection_probe_set_ambient_mode(RID p_probe, RS::ReflectionProbeAmbientMode p_mode) override;
 	virtual void reflection_probe_set_ambient_color(RID p_probe, const Color &p_color) override;
 	virtual void reflection_probe_set_ambient_energy(RID p_probe, float p_energy) override;
@@ -737,6 +737,10 @@ public:
 	virtual void lightmap_set_probe_capture_update_speed(float p_speed) override;
 	virtual float lightmap_get_probe_capture_update_speed() const override;
 
+	virtual void lightmap_set_shadowmask_textures(RID p_lightmap, RID p_shadow) override;
+	virtual RS::ShadowmaskMode lightmap_get_shadowmask_mode(RID p_lightmap) override;
+	virtual void lightmap_set_shadowmask_mode(RID p_lightmap, RS::ShadowmaskMode p_mode) override;
+
 	/* LIGHTMAP INSTANCE */
 
 	LightmapInstance *get_lightmap_instance(RID p_rid) { return lightmap_instance_owner.get_or_null(p_rid); }
@@ -753,7 +757,7 @@ public:
 	virtual void shadow_atlas_free(RID p_atlas) override;
 	virtual void shadow_atlas_set_size(RID p_atlas, int p_size, bool p_16_bits = true) override;
 	virtual void shadow_atlas_set_quadrant_subdivision(RID p_atlas, int p_quadrant, int p_subdivision) override;
-	virtual bool shadow_atlas_update_light(RID p_atlas, RID p_light_intance, float p_coverage, uint64_t p_light_version) override;
+	virtual bool shadow_atlas_update_light(RID p_atlas, RID p_light_instance, float p_coverage, uint64_t p_light_version) override;
 
 	_FORCE_INLINE_ bool shadow_atlas_owns_light_instance(RID p_atlas, RID p_light_instance) {
 		ShadowAtlas *atlas = shadow_atlas_owner.get_or_null(p_atlas);
@@ -879,7 +883,7 @@ public:
 	virtual void shadow_atlas_update(RID p_atlas) override;
 
 	virtual void directional_shadow_atlas_set_size(int p_size, bool p_16_bits = true) override;
-	virtual int get_directional_light_shadow_size(RID p_light_intance) override;
+	virtual int get_directional_light_shadow_size(RID p_light_instance) override;
 	virtual void set_directional_shadow_count(int p_count) override;
 
 	Rect2i get_directional_shadow_rect();

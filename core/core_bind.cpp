@@ -35,8 +35,6 @@
 #include "core/crypto/crypto_core.h"
 #include "core/debugger/engine_debugger.h"
 #include "core/debugger/script_debugger.h"
-#include "core/io/file_access_compressed.h"
-#include "core/io/file_access_encrypted.h"
 #include "core/io/marshalls.h"
 #include "core/math/geometry_2d.h"
 #include "core/math/geometry_3d.h"
@@ -115,12 +113,12 @@ PackedStringArray ResourceLoader::get_dependencies(const String &p_path) {
 }
 
 bool ResourceLoader::has_cached(const String &p_path) {
-	String local_path = ProjectSettings::get_singleton()->localize_path(p_path);
+	String local_path = ::ResourceLoader::_validate_local_path(p_path);
 	return ResourceCache::has(local_path);
 }
 
 Ref<Resource> ResourceLoader::get_cached_ref(const String &p_path) {
-	String local_path = ProjectSettings::get_singleton()->localize_path(p_path);
+	String local_path = ::ResourceLoader::_validate_local_path(p_path);
 	return ResourceCache::get_ref(local_path);
 }
 
@@ -130,6 +128,10 @@ bool ResourceLoader::exists(const String &p_path, const String &p_type_hint) {
 
 ResourceUID::ID ResourceLoader::get_resource_uid(const String &p_path) {
 	return ::ResourceLoader::get_resource_uid(p_path);
+}
+
+Vector<String> ResourceLoader::list_directory(const String &p_directory) {
+	return ::ResourceLoader::list_directory(p_directory);
 }
 
 void ResourceLoader::_bind_methods() {
@@ -147,6 +149,7 @@ void ResourceLoader::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_cached_ref", "path"), &ResourceLoader::get_cached_ref);
 	ClassDB::bind_method(D_METHOD("exists", "path", "type_hint"), &ResourceLoader::exists, DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("get_resource_uid", "path"), &ResourceLoader::get_resource_uid);
+	ClassDB::bind_method(D_METHOD("list_directory", "directory_path"), &ResourceLoader::list_directory);
 
 	BIND_ENUM_CONSTANT(THREAD_LOAD_INVALID_RESOURCE);
 	BIND_ENUM_CONSTANT(THREAD_LOAD_IN_PROGRESS);
@@ -303,8 +306,24 @@ Error OS::shell_show_in_file_manager(const String &p_path, bool p_open_folder) {
 	return ::OS::get_singleton()->shell_show_in_file_manager(p_path, p_open_folder);
 }
 
-String OS::read_string_from_stdin() {
-	return ::OS::get_singleton()->get_stdin_string();
+String OS::read_string_from_stdin(int64_t p_buffer_size) {
+	return ::OS::get_singleton()->get_stdin_string(p_buffer_size);
+}
+
+PackedByteArray OS::read_buffer_from_stdin(int64_t p_buffer_size) {
+	return ::OS::get_singleton()->get_stdin_buffer(p_buffer_size);
+}
+
+OS::StdHandleType OS::get_stdin_type() const {
+	return (OS::StdHandleType)::OS::get_singleton()->get_stdin_type();
+}
+
+OS::StdHandleType OS::get_stdout_type() const {
+	return (OS::StdHandleType)::OS::get_singleton()->get_stdout_type();
+}
+
+OS::StdHandleType OS::get_stderr_type() const {
+	return (OS::StdHandleType)::OS::get_singleton()->get_stderr_type();
 }
 
 int OS::execute(const String &p_path, const Vector<String> &p_arguments, Array r_output, bool p_read_stderr, bool p_open_console) {
@@ -401,6 +420,10 @@ String OS::get_distribution_name() const {
 
 String OS::get_version() const {
 	return ::OS::get_singleton()->get_version();
+}
+
+String OS::get_version_alias() const {
+	return ::OS::get_singleton()->get_version_alias();
 }
 
 Vector<String> OS::get_video_adapter_driver_info() const {
@@ -556,6 +579,11 @@ String OS::get_cache_dir() const {
 	return ::OS::get_singleton()->get_cache_path();
 }
 
+String OS::get_temp_dir() const {
+	// Exposed as `get_temp_dir()` instead of `get_temp_path()` for consistency with other exposed OS methods.
+	return ::OS::get_singleton()->get_temp_path();
+}
+
 bool OS::is_debug_build() const {
 #ifdef DEBUG_ENABLED
 	return true;
@@ -628,7 +656,13 @@ void OS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_system_font_path", "font_name", "weight", "stretch", "italic"), &OS::get_system_font_path, DEFVAL(400), DEFVAL(100), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("get_system_font_path_for_text", "font_name", "text", "locale", "script", "weight", "stretch", "italic"), &OS::get_system_font_path_for_text, DEFVAL(String()), DEFVAL(String()), DEFVAL(400), DEFVAL(100), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("get_executable_path"), &OS::get_executable_path);
-	ClassDB::bind_method(D_METHOD("read_string_from_stdin"), &OS::read_string_from_stdin);
+
+	ClassDB::bind_method(D_METHOD("read_string_from_stdin", "buffer_size"), &OS::read_string_from_stdin);
+	ClassDB::bind_method(D_METHOD("read_buffer_from_stdin", "buffer_size"), &OS::read_buffer_from_stdin);
+	ClassDB::bind_method(D_METHOD("get_stdin_type"), &OS::get_stdin_type);
+	ClassDB::bind_method(D_METHOD("get_stdout_type"), &OS::get_stdout_type);
+	ClassDB::bind_method(D_METHOD("get_stderr_type"), &OS::get_stderr_type);
+
 	ClassDB::bind_method(D_METHOD("execute", "path", "arguments", "output", "read_stderr", "open_console"), &OS::execute, DEFVAL_ARRAY, DEFVAL(false), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("execute_with_pipe", "path", "arguments", "blocking"), &OS::execute_with_pipe, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("create_process", "path", "arguments", "open_console"), &OS::create_process, DEFVAL(false));
@@ -648,6 +682,7 @@ void OS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_name"), &OS::get_name);
 	ClassDB::bind_method(D_METHOD("get_distribution_name"), &OS::get_distribution_name);
 	ClassDB::bind_method(D_METHOD("get_version"), &OS::get_version);
+	ClassDB::bind_method(D_METHOD("get_version_alias"), &OS::get_version_alias);
 	ClassDB::bind_method(D_METHOD("get_cmdline_args"), &OS::get_cmdline_args);
 	ClassDB::bind_method(D_METHOD("get_cmdline_user_args"), &OS::get_cmdline_user_args);
 
@@ -678,6 +713,7 @@ void OS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_config_dir"), &OS::get_config_dir);
 	ClassDB::bind_method(D_METHOD("get_data_dir"), &OS::get_data_dir);
 	ClassDB::bind_method(D_METHOD("get_cache_dir"), &OS::get_cache_dir);
+	ClassDB::bind_method(D_METHOD("get_temp_dir"), &OS::get_temp_dir);
 	ClassDB::bind_method(D_METHOD("get_unique_id"), &OS::get_unique_id);
 
 	ClassDB::bind_method(D_METHOD("get_keycode_string", "code"), &OS::get_keycode_string);
@@ -720,6 +756,12 @@ void OS::_bind_methods() {
 	BIND_ENUM_CONSTANT(SYSTEM_DIR_MUSIC);
 	BIND_ENUM_CONSTANT(SYSTEM_DIR_PICTURES);
 	BIND_ENUM_CONSTANT(SYSTEM_DIR_RINGTONES);
+
+	BIND_ENUM_CONSTANT(STD_HANDLE_INVALID);
+	BIND_ENUM_CONSTANT(STD_HANDLE_CONSOLE);
+	BIND_ENUM_CONSTANT(STD_HANDLE_FILE);
+	BIND_ENUM_CONSTANT(STD_HANDLE_PIPE);
+	BIND_ENUM_CONSTANT(STD_HANDLE_UNKNOWN);
 }
 
 ////// Geometry2D //////
@@ -1864,6 +1906,10 @@ bool Engine::is_editor_hint() const {
 	return ::Engine::get_singleton()->is_editor_hint();
 }
 
+bool Engine::is_embedded_in_editor() const {
+	return ::Engine::get_singleton()->is_embedded_in_editor();
+}
+
 String Engine::get_write_movie_path() const {
 	return ::Engine::get_singleton()->get_write_movie_path();
 }
@@ -1941,6 +1987,7 @@ void Engine::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_script_language", "index"), &Engine::get_script_language);
 
 	ClassDB::bind_method(D_METHOD("is_editor_hint"), &Engine::is_editor_hint);
+	ClassDB::bind_method(D_METHOD("is_embedded_in_editor"), &Engine::is_embedded_in_editor);
 
 	ClassDB::bind_method(D_METHOD("get_write_movie_path"), &Engine::get_write_movie_path);
 

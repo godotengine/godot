@@ -69,6 +69,11 @@ public:
 		String class_name;
 
 		/**
+		 * Name of the native class this script derives from.
+		 */
+		StringName native_base_name;
+
+		/**
 		 * Path to the icon that will be used for this class by the editor.
 		 */
 		String icon_path;
@@ -238,6 +243,7 @@ public:
 	void set_source_code(const String &p_code) override;
 
 #ifdef TOOLS_ENABLED
+	virtual StringName get_doc_class_name() const override { return StringName(); } // TODO
 	virtual Vector<DocData::ClassDoc> get_documentation() const override {
 		// TODO
 		Vector<DocData::ClassDoc> docs;
@@ -524,7 +530,7 @@ public:
 
 	/* SCRIPT GLOBAL CLASS FUNCTIONS */
 	virtual bool handles_global_class_type(const String &p_type) const override;
-	virtual String get_global_class_name(const String &p_path, String *r_base_type = nullptr, String *r_icon_path = nullptr) const override;
+	virtual String get_global_class_name(const String &p_path, String *r_base_type = nullptr, String *r_icon_path = nullptr, bool *r_is_abstract = nullptr, bool *r_is_tool = nullptr) const override;
 
 	/* DEBUGGER FUNCTIONS */
 	String debug_get_error() const override;

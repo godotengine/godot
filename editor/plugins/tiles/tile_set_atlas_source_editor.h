@@ -104,7 +104,7 @@ public:
 		Ref<TileSetAtlasSource> get_edited_tile_set_atlas_source() const { return tile_set_atlas_source; }
 		RBSet<TileSelection> get_edited_tiles() const { return tiles; }
 
-		// Update the proxyed object.
+		// Update the proxied object.
 		void edit(Ref<TileSetAtlasSource> p_tile_set_atlas_source, const RBSet<TileSelection> &p_tiles = RBSet<TileSelection>());
 
 		AtlasTileProxyObject(TileSetAtlasSourceEditor *p_tiles_set_atlas_source_editor) {
@@ -253,6 +253,7 @@ private:
 	PopupMenu *alternative_tile_popup_menu = nullptr;
 	Control *alternative_tiles_control = nullptr;
 	Control *alternative_tiles_control_unscaled = nullptr;
+	void _tile_alternatives_create_button_pressed(const Vector2i &p_atlas_coords);
 	void _tile_alternatives_control_draw();
 	void _tile_alternatives_control_unscaled_draw();
 	void _tile_alternatives_control_mouse_exited();

@@ -32,6 +32,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/core_bind.h"
+#include "core/io/dir_access.h"
 #include "core/io/file_access.h"
 #include "core/io/resource_importer.h"
 #include "core/object/script_language.h"
@@ -40,6 +41,7 @@
 #include "core/os/safe_binary_mutex.h"
 #include "core/string/print_string.h"
 #include "core/string/translation_server.h"
+#include "core/templates/rb_set.h"
 #include "core/variant/variant_parser.h"
 #include "servers/rendering_server.h"
 
@@ -112,8 +114,19 @@ String ResourceFormatLoader::get_resource_script_class(const String &p_path) con
 
 ResourceUID::ID ResourceFormatLoader::get_resource_uid(const String &p_path) const {
 	int64_t uid = ResourceUID::INVALID_ID;
-	GDVIRTUAL_CALL(_get_resource_uid, p_path, uid);
+	if (has_custom_uid_support()) {
+		GDVIRTUAL_CALL(_get_resource_uid, p_path, uid);
+	} else {
+		Ref<FileAccess> file = FileAccess::open(p_path + ".uid", FileAccess::READ);
+		if (file.is_valid()) {
+			uid = ResourceUID::get_singleton()->text_to_id(file->get_line());
+		}
+	}
 	return uid;
+}
+
+bool ResourceFormatLoader::has_custom_uid_support() const {
+	return GDVIRTUAL_IS_OVERRIDDEN(_get_resource_uid);
 }
 
 void ResourceFormatLoader::get_recognized_extensions_for_type(const String &p_type, List<String> *p_extensions) const {
@@ -281,6 +294,8 @@ Ref<Resource> ResourceLoader::_load(const String &p_path, const String &p_origin
 	}
 	load_paths_stack.push_back(original_path);
 
+	print_verbose(vformat("Loading resource: %s", p_path));
+
 	// Try all loaders and pick the first match for the type hint
 	bool found = false;
 	Ref<Resource> res;
@@ -290,7 +305,7 @@ Ref<Resource> ResourceLoader::_load(const String &p_path, const String &p_origin
 		}
 		found = true;
 		res = loader[i]->load(p_path, original_path, r_error, p_use_sub_threads, r_progress, p_cache_mode);
-		if (!res.is_null()) {
+		if (res.is_valid()) {
 			break;
 		}
 	}
@@ -299,18 +314,40 @@ Ref<Resource> ResourceLoader::_load(const String &p_path, const String &p_origin
 	res_ref_overrides.erase(load_nesting);
 	load_nesting--;
 
-	if (!res.is_null()) {
+	if (res.is_valid()) {
 		return res;
+	} else {
+		print_verbose(vformat("Failed loading resource: %s", p_path));
 	}
 
+#ifdef TOOLS_ENABLED
+	if (Engine::get_singleton()->is_editor_hint()) {
+		if (ResourceFormatImporter::get_singleton()->get_importer_by_extension(p_path.get_extension()).is_valid()) {
+			// The format is known to the editor, but the file hasn't been imported
+			// (otherwise, ResourceFormatImporter would have been found as a suitable loader).
+			found = true;
+			if (r_error) {
+				*r_error = ERR_FILE_NOT_FOUND;
+			}
+		}
+	}
+#endif
 	ERR_FAIL_COND_V_MSG(found, Ref<Resource>(),
 			vformat("Failed loading resource: %s. Make sure resources have been imported by opening the project in the editor at least once.", p_path));
 
 #ifdef TOOLS_ENABLED
 	Ref<FileAccess> file_check = FileAccess::create(FileAccess::ACCESS_RESOURCES);
-	ERR_FAIL_COND_V_MSG(!file_check->file_exists(p_path), Ref<Resource>(), vformat("Resource file not found: %s (expected type: %s)", p_path, p_type_hint));
+	if (!file_check->file_exists(p_path)) {
+		if (r_error) {
+			*r_error = ERR_FILE_NOT_FOUND;
+		}
+		ERR_FAIL_V_MSG(Ref<Resource>(), vformat("Resource file not found: %s (expected type: %s)", p_path, p_type_hint));
+	}
 #endif
 
+	if (r_error) {
+		*r_error = ERR_FILE_UNRECOGNIZED;
+	}
 	ERR_FAIL_V_MSG(Ref<Resource>(), vformat("No loader found for resource: %s (expected type: %s)", p_path, p_type_hint));
 }
 
@@ -348,16 +385,10 @@ void ResourceLoader::_run_load_task(void *p_userdata) {
 	bool xl_remapped = false;
 	const String &remapped_path = _path_remap(load_task.local_path, &xl_remapped);
 
-	print_verbose("Loading resource: " + remapped_path);
-
 	Error load_err = OK;
 	Ref<Resource> res = _load(remapped_path, remapped_path != load_task.local_path ? load_task.local_path : String(), load_task.type_hint, load_task.cache_mode, &load_err, load_task.use_sub_threads, &load_task.progress);
 	if (MessageQueue::get_singleton() != MessageQueue::get_main_singleton()) {
 		MessageQueue::get_singleton()->flush();
-	}
-
-	if (res.is_null()) {
-		print_verbose("Failed loading resource: " + remapped_path);
 	}
 
 	thread_load_mutex.lock();
@@ -464,7 +495,7 @@ void ResourceLoader::_run_load_task(void *p_userdata) {
 	curr_load_task = curr_load_task_backup;
 }
 
-static String _validate_local_path(const String &p_path) {
+String ResourceLoader::_validate_local_path(const String &p_path) {
 	ResourceUID::ID uid = ResourceUID::get_singleton()->text_to_id(p_path);
 	if (uid != ResourceUID::INVALID_ID) {
 		return ResourceUID::get_singleton()->get_id_path(uid);
@@ -514,7 +545,7 @@ Ref<Resource> ResourceLoader::load(const String &p_path, const String &p_type_hi
 		thread_mode = LOAD_THREAD_SPAWN_SINGLE;
 	}
 	Ref<LoadToken> load_token = _load_start(p_path, p_type_hint, thread_mode, p_cache_mode);
-	if (!load_token.is_valid()) {
+	if (load_token.is_null()) {
 		if (r_error) {
 			*r_error = FAILED;
 		}
@@ -872,7 +903,7 @@ bool ResourceLoader::_ensure_load_progress() {
 	// Some servers may need a new engine iteration to allow the load to progress.
 	// Since the only known one is the rendering server (in single thread mode), let's keep it simple and just sync it.
 	// This may be refactored in the future to support other servers and have less coupling.
-	if (OS::get_singleton()->get_render_thread_mode() == OS::RENDER_SEPARATE_THREAD) {
+	if (OS::get_singleton()->is_separate_thread_rendering_enabled()) {
 		return false; // Not needed.
 	}
 	RenderingServer::get_singleton()->sync();
@@ -934,7 +965,7 @@ Ref<Resource> ResourceLoader::ensure_resource_ref_override_for_outer_load(const 
 		Object *obj = ClassDB::instantiate(p_res_type);
 		ERR_FAIL_NULL_V(obj, Ref<Resource>());
 		Ref<Resource> res(obj);
-		if (!res.is_valid()) {
+		if (res.is_null()) {
 			memdelete(obj);
 			ERR_FAIL_V(Ref<Resource>());
 		}
@@ -1150,6 +1181,35 @@ ResourceUID::ID ResourceLoader::get_resource_uid(const String &p_path) {
 	return ResourceUID::INVALID_ID;
 }
 
+bool ResourceLoader::has_custom_uid_support(const String &p_path) {
+	String local_path = _validate_local_path(p_path);
+
+	for (int i = 0; i < loader_count; i++) {
+		if (!loader[i]->recognize_path(local_path)) {
+			continue;
+		}
+		if (loader[i]->has_custom_uid_support()) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
+bool ResourceLoader::should_create_uid_file(const String &p_path) {
+	const String local_path = _validate_local_path(p_path);
+	if (FileAccess::exists(local_path + ".uid")) {
+		return false;
+	}
+
+	for (int i = 0; i < loader_count; i++) {
+		if (loader[i]->recognize_path(local_path)) {
+			return !loader[i]->has_custom_uid_support();
+		}
+	}
+	return false;
+}
+
 String ResourceLoader::_path_remap(const String &p_path, bool *r_translation_remapped) {
 	String new_path = p_path;
 
@@ -1169,7 +1229,7 @@ String ResourceLoader::_path_remap(const String &p_path, bool *r_translation_rem
 
 		int best_score = 0;
 		for (int i = 0; i < res_remaps.size(); i++) {
-			int split = res_remaps[i].rfind(":");
+			int split = res_remaps[i].rfind_char(':');
 			if (split == -1) {
 				continue;
 			}
@@ -1200,6 +1260,7 @@ String ResourceLoader::_path_remap(const String &p_path, bool *r_translation_rem
 	} else {
 		// Try file remap.
 		// Usually, there's no remap file and FileAccess::exists() is faster than FileAccess::open().
+		new_path = ResourceUID::ensure_path(new_path);
 		if (FileAccess::exists(new_path + ".remap")) {
 			Error err;
 			Ref<FileAccess> f = FileAccess::open(new_path + ".remap", FileAccess::READ, &err);
@@ -1437,6 +1498,60 @@ void ResourceLoader::remove_custom_loaders() {
 bool ResourceLoader::is_cleaning_tasks() {
 	MutexLock lock(thread_load_mutex);
 	return cleaning_tasks;
+}
+
+Vector<String> ResourceLoader::list_directory(const String &p_directory) {
+	RBSet<String> files_found;
+	Ref<DirAccess> dir = DirAccess::open(p_directory);
+	if (dir.is_null()) {
+		return Vector<String>();
+	}
+
+	Error err = dir->list_dir_begin();
+	if (err != OK) {
+		return Vector<String>();
+	}
+
+	String d = dir->get_next();
+	while (!d.is_empty()) {
+		bool recognized = false;
+		if (dir->current_is_dir()) {
+			if (d != "." && d != "..") {
+				d += "/";
+				recognized = true;
+			}
+		} else {
+			if (d.ends_with(".import") || d.ends_with(".remap") || d.ends_with(".uid")) {
+				d = d.substr(0, d.rfind_char('.'));
+			}
+
+			if (d.ends_with(".gdc")) {
+				d = d.substr(0, d.rfind_char('.'));
+				d += ".gd";
+			}
+
+			const String full_path = p_directory.path_join(d);
+			// Try all loaders and pick the first match for the type hint.
+			for (int i = 0; i < loader_count; i++) {
+				if (loader[i]->recognize_path(full_path)) {
+					recognized = true;
+					break;
+				}
+			}
+		}
+
+		if (recognized) {
+			files_found.insert(d);
+		}
+		d = dir->get_next();
+	}
+
+	Vector<String> ret;
+	for (const String &f : files_found) {
+		ret.push_back(f);
+	}
+
+	return ret;
 }
 
 void ResourceLoader::initialize() {}

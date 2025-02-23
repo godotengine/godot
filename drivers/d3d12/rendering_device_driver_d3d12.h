@@ -284,6 +284,7 @@ public:
 	virtual uint64_t buffer_get_allocation_size(BufferID p_buffer) override final;
 	virtual uint8_t *buffer_map(BufferID p_buffer) override final;
 	virtual void buffer_unmap(BufferID p_buffer) override final;
+	virtual uint64_t buffer_get_device_address(BufferID p_buffer) override final;
 
 	/*****************/
 	/**** TEXTURE ****/
@@ -430,10 +431,14 @@ private:
 	struct CommandPoolInfo {
 		CommandQueueFamilyID queue_family;
 		CommandBufferType buffer_type = COMMAND_BUFFER_TYPE_PRIMARY;
+		// Since there are no command pools in D3D12, we need to track the command buffers created by this pool
+		// so that we can free them when the pool is freed.
+		SelfList<CommandBufferInfo>::List command_buffers;
 	};
 
 public:
 	virtual CommandPoolID command_pool_create(CommandQueueFamilyID p_cmd_queue_family, CommandBufferType p_cmd_buffer_type) override final;
+	virtual bool command_pool_reset(CommandPoolID p_cmd_pool) override final;
 	virtual void command_pool_free(CommandPoolID p_cmd_pool) override final;
 
 	// ----- BUFFER -----
@@ -457,6 +462,9 @@ private:
 	// Leveraging knowledge of actual usage and D3D12 specifics (namely, command lists from the same allocator
 	// can't be freely begun and ended), an allocator per list works better.
 	struct CommandBufferInfo {
+		// Store a self list reference to be used by the command pool.
+		SelfList<CommandBufferInfo> command_buffer_info_elem{ this };
+
 		ComPtr<ID3D12CommandAllocator> cmd_allocator;
 		ComPtr<ID3D12GraphicsCommandList> cmd_list;
 
@@ -697,7 +705,7 @@ private:
 public:
 	virtual String shader_get_binary_cache_key() override final;
 	virtual Vector<uint8_t> shader_compile_binary_from_spirv(VectorView<ShaderStageSPIRVData> p_spirv, const String &p_shader_name) override final;
-	virtual ShaderID shader_create_from_bytecode(const Vector<uint8_t> &p_shader_binary, ShaderDescription &r_shader_desc, String &r_name) override final;
+	virtual ShaderID shader_create_from_bytecode(const Vector<uint8_t> &p_shader_binary, ShaderDescription &r_shader_desc, String &r_name, const Vector<ImmutableSampler> &p_immutable_samplers) override final;
 	virtual uint32_t shader_get_layout_hash(ShaderID p_shader) override final;
 	virtual void shader_free(ShaderID p_shader) override final;
 	virtual void shader_destroy_modules(ShaderID p_shader) override final;
@@ -747,7 +755,7 @@ private:
 	};
 
 public:
-	virtual UniformSetID uniform_set_create(VectorView<BoundUniform> p_uniforms, ShaderID p_shader, uint32_t p_set_index) override final;
+	virtual UniformSetID uniform_set_create(VectorView<BoundUniform> p_uniforms, ShaderID p_shader, uint32_t p_set_index, int p_linear_pool_index) override final;
 	virtual void uniform_set_free(UniformSetID p_uniform_set) override final;
 
 	// ----- COMMANDS -----
@@ -757,6 +765,7 @@ public:
 private:
 	void _command_check_descriptor_sets(CommandBufferID p_cmd_buffer);
 	void _command_bind_uniform_set(CommandBufferID p_cmd_buffer, UniformSetID p_uniform_set, ShaderID p_shader, uint32_t p_set_index, bool p_for_compute);
+	void _command_bind_uniform_sets(CommandBufferID p_cmd_buffer, VectorView<UniformSetID> p_uniform_sets, ShaderID p_shader, uint32_t p_first_set_index, uint32_t p_set_count, bool p_for_compute);
 
 public:
 	/******************/
@@ -846,6 +855,7 @@ public:
 	// Binding.
 	virtual void command_bind_render_pipeline(CommandBufferID p_cmd_buffer, PipelineID p_pipeline) override final;
 	virtual void command_bind_render_uniform_set(CommandBufferID p_cmd_buffer, UniformSetID p_uniform_set, ShaderID p_shader, uint32_t p_set_index) override final;
+	virtual void command_bind_render_uniform_sets(CommandBufferID p_cmd_buffer, VectorView<UniformSetID> p_uniform_sets, ShaderID p_shader, uint32_t p_first_set_index, uint32_t p_set_count) override final;
 
 	// Drawing.
 	virtual void command_render_draw(CommandBufferID p_cmd_buffer, uint32_t p_vertex_count, uint32_t p_instance_count, uint32_t p_base_vertex, uint32_t p_first_instance) override final;
@@ -893,6 +903,7 @@ public:
 	// Binding.
 	virtual void command_bind_compute_pipeline(CommandBufferID p_cmd_buffer, PipelineID p_pipeline) override final;
 	virtual void command_bind_compute_uniform_set(CommandBufferID p_cmd_buffer, UniformSetID p_uniform_set, ShaderID p_shader, uint32_t p_set_index) override final;
+	virtual void command_bind_compute_uniform_sets(CommandBufferID p_cmd_buffer, VectorView<UniformSetID> p_uniform_sets, ShaderID p_shader, uint32_t p_first_set_index, uint32_t p_set_count) override final;
 
 	// Dispatching.
 	virtual void command_compute_dispatch(CommandBufferID p_cmd_buffer, uint32_t p_x_groups, uint32_t p_y_groups, uint32_t p_z_groups) override final;
@@ -986,6 +997,7 @@ public:
 	virtual void set_object_name(ObjectType p_type, ID p_driver_id, const String &p_name) override final;
 	virtual uint64_t get_resource_native_handle(DriverResource p_type, ID p_driver_id) override final;
 	virtual uint64_t get_total_memory_used() override final;
+	virtual uint64_t get_lazily_memory_used() override final;
 	virtual uint64_t limit_get(Limit p_limit) override final;
 	virtual uint64_t api_trait_get(ApiTrait p_trait) override final;
 	virtual bool has_feature(Features p_feature) override final;

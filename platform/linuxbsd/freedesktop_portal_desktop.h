@@ -50,14 +50,15 @@ private:
 	bool read_setting(const char *p_namespace, const char *p_key, int p_type, void *r_value);
 
 	static void append_dbus_string(DBusMessageIter *p_iter, const String &p_string);
-	static void append_dbus_dict_options(DBusMessageIter *p_iter, const TypedArray<Dictionary> &p_options);
-	static void append_dbus_dict_filters(DBusMessageIter *p_iter, const Vector<String> &p_filter_names, const Vector<String> &p_filter_exts);
+	static void append_dbus_dict_options(DBusMessageIter *p_iter, const TypedArray<Dictionary> &p_options, HashMap<String, String> &r_ids);
+	static void append_dbus_dict_filters(DBusMessageIter *p_iter, const Vector<String> &p_filter_names, const Vector<String> &p_filter_exts, const Vector<String> &p_filter_mimes);
 	static void append_dbus_dict_string(DBusMessageIter *p_iter, const String &p_key, const String &p_value, bool p_as_byte_array = false);
 	static void append_dbus_dict_bool(DBusMessageIter *p_iter, const String &p_key, bool p_value);
-	static bool file_chooser_parse_response(DBusMessageIter *p_iter, const Vector<String> &p_names, bool &r_cancel, Vector<String> &r_urls, int &r_index, Dictionary &r_options);
+	static bool file_chooser_parse_response(DBusMessageIter *p_iter, const Vector<String> &p_names, const HashMap<String, String> &p_ids, bool &r_cancel, Vector<String> &r_urls, int &r_index, Dictionary &r_options);
 
 	struct FileDialogData {
 		Vector<String> filter_names;
+		HashMap<String, String> option_ids;
 		DisplayServer::WindowID prev_focus = DisplayServer::INVALID_WINDOW_ID;
 		Callable callback;
 		String filter;
@@ -84,6 +85,7 @@ private:
 	String theme_path;
 	Callable system_theme_changed;
 	void _system_theme_changed_callback();
+	bool _is_interface_supported(const char *p_iface);
 
 	static void _thread_monitor(void *p_ud);
 
@@ -92,9 +94,15 @@ public:
 	~FreeDesktopPortalDesktop();
 
 	bool is_supported() { return !unsupported; }
+	bool is_file_chooser_supported();
+	bool is_settings_supported();
+
+	// org.freedesktop.portal.FileChooser methods.
 
 	Error file_dialog_show(DisplayServer::WindowID p_window_id, const String &p_xid, const String &p_title, const String &p_current_directory, const String &p_root, const String &p_filename, DisplayServer::FileDialogMode p_mode, const Vector<String> &p_filters, const TypedArray<Dictionary> &p_options, const Callable &p_callback, bool p_options_in_cb);
 	void process_file_dialog_callbacks();
+
+	// org.freedesktop.portal.Settings methods.
 
 	// Retrieve the system's preferred color scheme.
 	// 0: No preference or unknown.

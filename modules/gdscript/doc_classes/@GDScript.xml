@@ -11,7 +11,7 @@
 		<link title="GDScript exports">$DOCS_URL/tutorials/scripting/gdscript/gdscript_exports.html</link>
 	</tutorials>
 	<methods>
-		<method name="Color8">
+		<method name="Color8" deprecated="Use [method Color.from_rgba8] instead.">
 			<return type="Color" />
 			<param index="0" name="r8" type="int" />
 			<param index="1" name="g8" type="int" />
@@ -74,7 +74,7 @@
 				[/codeblock]
 			</description>
 		</method>
-		<method name="dict_to_inst">
+		<method name="dict_to_inst" deprecated="Consider using [method JSON.to_native] or [method Object.get_property_list] instead.">
 			<return type="Object" />
 			<param index="0" name="dictionary" type="Dictionary" />
 			<description>
@@ -103,12 +103,11 @@
 				[b]Note:[/b] Calling this function from a [Thread] is not supported. Doing so will return an empty array.
 			</description>
 		</method>
-		<method name="inst_to_dict">
+		<method name="inst_to_dict" deprecated="Consider using [method JSON.from_native] or [method Object.get_property_list] instead.">
 			<return type="Dictionary" />
 			<param index="0" name="instance" type="Object" />
 			<description>
 				Returns the passed [param instance] converted to a Dictionary. Can be useful for serializing.
-				[b]Note:[/b] Cannot be used to serialize objects with built-in scripts attached or objects allocated within built-in scripts.
 				[codeblock]
 				var foo = "bar"
 				func _ready():
@@ -121,6 +120,8 @@
 				[@subpath, @path, foo]
 				[, res://test.gd, bar]
 				[/codeblock]
+				[b]Note:[/b] This function can only be used to serialize objects with an attached [GDScript] stored in a separate file. Objects without an attached script, with a script written in another language, or with a built-in script are not supported.
+				[b]Note:[/b] This function is not recursive, which means that nested objects will not be represented as dictionaries. Also, properties passed by reference ([Object], [Dictionary], [Array], and packed arrays) are copied by reference, not duplicated.
 			</description>
 		</method>
 		<method name="is_instance_of">
@@ -666,7 +667,19 @@
 				@export var car_label = "Speedy"
 				@export var car_number = 3
 				[/codeblock]
-				[b]Note:[/b] Subgroups cannot be nested, they only provide one extra level of depth. Just like the next group ends the previous group, so do the subsequent subgroups.
+				[b]Note:[/b] Subgroups cannot be nested, but you can use the slash separator ([code]/[/code]) to achieve the desired effect:
+				[codeblock]
+				@export_group("Car Properties")
+				@export_subgroup("Wheels", "wheel_")
+				@export_subgroup("Wheels/Front", "front_wheel_")
+				@export var front_wheel_strength = 10
+				@export var front_wheel_mobility = 5
+				@export_subgroup("Wheels/Rear", "rear_wheel_")
+				@export var rear_wheel_strength = 8
+				@export var rear_wheel_mobility = 3
+				@export_subgroup("Wheels", "wheel_")
+				@export var wheel_material: PhysicsMaterial
+				[/codeblock]
 			</description>
 		</annotation>
 		<annotation name="@export_tool_button">
@@ -714,7 +727,7 @@
 				[/codeblock]
 				[b]Note:[/b] Only the script can have a custom icon. Inner classes are not supported.
 				[b]Note:[/b] As annotations describe their subject, the [annotation @icon] annotation must be placed before the class definition and inheritance.
-				[b]Note:[/b] Unlike other annotations, the argument of the [annotation @icon] annotation must be a string literal (constant expressions are not supported).
+				[b]Note:[/b] Unlike most other annotations, the argument of the [annotation @icon] annotation must be a string literal (constant expressions are not supported).
 			</description>
 		</annotation>
 		<annotation name="@onready">
@@ -722,7 +735,7 @@
 			<description>
 				Mark the following property as assigned when the [Node] is ready. Values for these properties are not assigned immediately when the node is initialized ([method Object._init]), and instead are computed and stored right before [method Node._ready].
 				[codeblock]
-				@onready var character_name: Label = $Label
+				@onready var character_name = $Label
 				[/codeblock]
 			</description>
 		</annotation>
@@ -782,6 +795,33 @@
 				    @warning_ignore("unreachable_code")
 				    print("unreachable")
 				[/codeblock]
+				See also [annotation @warning_ignore_start] and [annotation @warning_ignore_restore].
+			</description>
+		</annotation>
+		<annotation name="@warning_ignore_restore" qualifiers="vararg">
+			<return type="void" />
+			<param index="0" name="warning" type="String" />
+			<description>
+				Stops ignoring the listed warning types after [annotation @warning_ignore_start]. Ignoring the specified warning types will be reset to Project Settings. This annotation can be omitted to ignore the warning types until the end of the file.
+				[b]Note:[/b] Unlike most other annotations, arguments of the [annotation @warning_ignore_restore] annotation must be string literals (constant expressions are not supported).
+			</description>
+		</annotation>
+		<annotation name="@warning_ignore_start" qualifiers="vararg">
+			<return type="void" />
+			<param index="0" name="warning" type="String" />
+			<description>
+				Starts ignoring the listed warning types until the end of the file or the [annotation @warning_ignore_restore] annotation with the given warning type.
+				[codeblock]
+				func test():
+				    var a = 1 # Warning (if enabled in the Project Settings).
+				    @warning_ignore_start("unused_variable")
+				    var b = 2 # No warning.
+				    var c = 3 # No warning.
+				    @warning_ignore_restore("unused_variable")
+				    var d = 4 # Warning (if enabled in the Project Settings).
+				[/codeblock]
+				[b]Note:[/b] To suppress a single warning, use [annotation @warning_ignore] instead.
+				[b]Note:[/b] Unlike most other annotations, arguments of the [annotation @warning_ignore_start] annotation must be string literals (constant expressions are not supported).
 			</description>
 		</annotation>
 	</annotations>

@@ -217,13 +217,14 @@ void AnimationBezierTrackEdit::_notification(int p_what) {
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 			if (EditorSettings::get_singleton()->check_changed_settings_in_group("editors/panning")) {
 				panner->setup((ViewPanner::ControlScheme)EDITOR_GET("editors/panning/animation_editors_panning_scheme").operator int(), ED_GET_SHORTCUT("canvas_item_editor/pan_view"), bool(EDITOR_GET("editors/panning/simple_panning")));
+				panner->setup_warped_panning(get_viewport(), EDITOR_GET("editors/panning/warped_mouse_panning"));
 			}
 		} break;
 
 		case NOTIFICATION_ENTER_TREE: {
 			panner->setup((ViewPanner::ControlScheme)EDITOR_GET("editors/panning/animation_editors_panning_scheme").operator int(), ED_GET_SHORTCUT("canvas_item_editor/pan_view"), bool(EDITOR_GET("editors/panning/simple_panning")));
-			[[fallthrough]];
-		}
+			panner->setup_warped_panning(get_viewport(), EDITOR_GET("editors/panning/warped_mouse_panning"));
+		} break;
 		case NOTIFICATION_THEME_CHANGED: {
 			bezier_icon = get_editor_theme_icon(SNAME("KeyBezierPoint"));
 			bezier_handle_icon = get_editor_theme_icon(SNAME("KeyBezierHandle"));
@@ -275,7 +276,7 @@ void AnimationBezierTrackEdit::_notification(int p_what) {
 				}
 
 				String base_path = animation->track_get_path(i);
-				int end = base_path.find(":");
+				int end = base_path.find_char(':');
 				if (end != -1) {
 					base_path = base_path.substr(0, end + 1);
 				}
@@ -688,7 +689,7 @@ void AnimationBezierTrackEdit::set_editor(AnimationTrackEditor *p_editor) {
 }
 
 void AnimationBezierTrackEdit::_play_position_draw() {
-	if (!animation.is_valid() || play_position_pos < 0) {
+	if (animation.is_null() || play_position_pos < 0) {
 		return;
 	}
 
@@ -1650,7 +1651,7 @@ void AnimationBezierTrackEdit::_zoom_callback(float p_zoom_factor, Vector2 p_ori
 	Ref<InputEventWithModifiers> iewm = p_event;
 	if (iewm.is_valid() && iewm->is_alt_pressed()) {
 		// Alternate zoom (doesn't affect timeline).
-		timeline_v_zoom = CLAMP(timeline_v_zoom * p_zoom_factor, 0.000001, 100000);
+		timeline_v_zoom = CLAMP(timeline_v_zoom / p_zoom_factor, 0.000001, 100000);
 	} else {
 		float zoom_factor = p_zoom_factor > 1.0 ? AnimationTimelineEdit::SCROLL_ZOOM_FACTOR_IN : AnimationTimelineEdit::SCROLL_ZOOM_FACTOR_OUT;
 		timeline->_zoom_callback(zoom_factor, p_origin, p_event);
@@ -1995,9 +1996,9 @@ AnimationBezierTrackEdit::AnimationBezierTrackEdit() {
 
 	set_clip_contents(true);
 
-	ED_SHORTCUT("animation_bezier_editor/focus", TTR("Focus"), Key::F);
-	ED_SHORTCUT("animation_bezier_editor/select_all_keys", TTR("Select All Keys"), KeyModifierMask::CMD_OR_CTRL | Key::A);
-	ED_SHORTCUT("animation_bezier_editor/deselect_all_keys", TTR("Deselect All Keys"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::A);
+	ED_SHORTCUT("animation_bezier_editor/focus", TTRC("Focus"), Key::F);
+	ED_SHORTCUT("animation_bezier_editor/select_all_keys", TTRC("Select All Keys"), KeyModifierMask::CMD_OR_CTRL | Key::A);
+	ED_SHORTCUT("animation_bezier_editor/deselect_all_keys", TTRC("Deselect All Keys"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::A);
 
 	menu = memnew(PopupMenu);
 	add_child(menu);

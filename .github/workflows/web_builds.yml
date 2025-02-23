@@ -8,16 +8,12 @@ env:
   GODOT_BASE_BRANCH: master
   SCONSFLAGS: verbose=yes warnings=extra werror=yes debug_symbols=no use_closure_compiler=yes strict_checks=yes
   EM_VERSION: 3.1.64
-  EM_CACHE_FOLDER: emsdk-cache
-
-concurrency:
-  group: ci-${{ github.actor }}-${{ github.head_ref || github.run_number }}-${{ github.ref }}-web
-  cancel-in-progress: true
 
 jobs:
   web-template:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     name: ${{ matrix.name }}
+    timeout-minutes: 60
     strategy:
       fail-fast: false
       matrix:
@@ -46,8 +42,7 @@ jobs:
         uses: mymindstorm/setup-emsdk@v14
         with:
           version: ${{ env.EM_VERSION }}
-          actions-cache-folder: ${{ env.EM_CACHE_FOLDER }}
-          cache-key: emsdk-${{ matrix.cache-name }}-${{ env.GODOT_BASE_BRANCH }}-${{ github.ref }}-${{ github.sha }}
+          no-cache: true
 
       - name: Verify Emscripten setup
         run: |
@@ -69,6 +64,7 @@ jobs:
           platform: web
           target: ${{ matrix.target }}
           tests: ${{ matrix.tests }}
+          scons-cache-limit: 0.5
 
       - name: Save Godot build cache
         uses: ./.github/actions/godot-cache-save

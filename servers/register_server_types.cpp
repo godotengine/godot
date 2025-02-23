@@ -62,7 +62,6 @@
 #include "movie_writer/movie_writer.h"
 #include "movie_writer/movie_writer_mjpeg.h"
 #include "movie_writer/movie_writer_pngwav.h"
-#include "rendering/renderer_compositor.h"
 #include "rendering/renderer_rd/framebuffer_cache_rd.h"
 #include "rendering/renderer_rd/storage_rd/render_data_rd.h"
 #include "rendering/renderer_rd/storage_rd/render_scene_buffers_rd.h"
@@ -70,6 +69,7 @@
 #include "rendering/renderer_rd/uniform_set_cache_rd.h"
 #include "rendering/rendering_device.h"
 #include "rendering/rendering_device_binds.h"
+#include "rendering/shader_include_db.h"
 #include "rendering/storage/render_data.h"
 #include "rendering/storage/render_scene_buffers.h"
 #include "rendering/storage/render_scene_data.h"
@@ -83,7 +83,6 @@
 #include "navigation_server_2d.h"
 #include "physics_server_2d.h"
 #include "physics_server_2d_dummy.h"
-#include "physics_server_2d_wrap_mt.h"
 #include "servers/extensions/physics_server_2d_extension.h"
 
 // 3D physics and navigation (3D navigation is needed for 2D).
@@ -91,7 +90,6 @@
 #ifndef _3D_DISABLED
 #include "physics_server_3d.h"
 #include "physics_server_3d_dummy.h"
-#include "physics_server_3d_wrap_mt.h"
 #include "servers/extensions/physics_server_3d_extension.h"
 #include "xr/xr_body_tracker.h"
 #include "xr/xr_controller_tracker.h"
@@ -210,6 +208,7 @@ void register_server_types() {
 	}
 
 	GDREGISTER_ABSTRACT_CLASS(RenderingDevice);
+	GDREGISTER_CLASS(ShaderIncludeDB);
 	GDREGISTER_CLASS(RDTextureFormat);
 	GDREGISTER_CLASS(RDTextureView);
 	GDREGISTER_CLASS(RDAttachmentFormat);

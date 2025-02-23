@@ -31,7 +31,6 @@
 #include "directory_create_dialog.h"
 
 #include "core/io/dir_access.h"
-#include "editor/editor_file_system.h"
 #include "editor/editor_node.h"
 #include "editor/gui/editor_validation_panel.h"
 #include "editor/themes/editor_scale.h"
@@ -67,8 +66,8 @@ String DirectoryCreateDialog::_validate_path(const String &p_path) const {
 				return TTR("Folder name cannot be empty.");
 			}
 		}
-		if (part.contains("\\") || part.contains(":") || part.contains("*") ||
-				part.contains("|") || part.contains(">") || part.ends_with(".") || part.ends_with(" ")) {
+		if (part.contains_char('\\') || part.contains_char(':') || part.contains_char('*') ||
+				part.contains_char('|') || part.contains_char('>') || part.ends_with(".") || part.ends_with(" ")) {
 			if (is_file) {
 				return TTR("File name contains invalid characters.");
 			} else {
@@ -101,7 +100,7 @@ void DirectoryCreateDialog::_on_dir_path_changed() {
 	const String error = _validate_path(path);
 
 	if (error.is_empty()) {
-		if (path.contains("/")) {
+		if (path.contains_char('/')) {
 			if (mode == MODE_DIRECTORY) {
 				validation_panel->set_message(EditorValidationPanel::MSG_ID_DEFAULT, TTR("Using slashes in folder names will create subfolders recursively."), EditorValidationPanel::MSG_OK);
 			} else {
@@ -142,7 +141,7 @@ void DirectoryCreateDialog::config(const String &p_base_dir, const Callable &p_a
 	validation_panel->update();
 
 	if (p_mode == MODE_FILE) {
-		int extension_pos = p_default_name.rfind(".");
+		int extension_pos = p_default_name.rfind_char('.');
 		if (extension_pos > -1) {
 			dir_path->select(0, extension_pos);
 			return;

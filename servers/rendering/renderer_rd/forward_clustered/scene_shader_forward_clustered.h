@@ -31,8 +31,8 @@
 #ifndef SCENE_SHADER_FORWARD_CLUSTERED_H
 #define SCENE_SHADER_FORWARD_CLUSTERED_H
 
+#include "../storage_rd/material_storage.h"
 #include "servers/rendering/renderer_rd/pipeline_hash_map_rd.h"
-#include "servers/rendering/renderer_rd/renderer_scene_render_rd.h"
 #include "servers/rendering/renderer_rd/shaders/forward_clustered/scene_forward_clustered.glsl.gen.h"
 
 namespace RendererSceneRenderImplementation {
@@ -50,18 +50,19 @@ public:
 		SHADER_GROUP_ADVANCED_MULTIVIEW,
 	};
 
-	enum ShaderVersion {
-		SHADER_VERSION_DEPTH_PASS,
-		SHADER_VERSION_DEPTH_PASS_DP,
-		SHADER_VERSION_DEPTH_PASS_WITH_NORMAL_AND_ROUGHNESS,
-		SHADER_VERSION_DEPTH_PASS_WITH_NORMAL_AND_ROUGHNESS_AND_VOXEL_GI,
-		SHADER_VERSION_DEPTH_PASS_MULTIVIEW,
-		SHADER_VERSION_DEPTH_PASS_WITH_NORMAL_AND_ROUGHNESS_MULTIVIEW,
-		SHADER_VERSION_DEPTH_PASS_WITH_NORMAL_AND_ROUGHNESS_AND_VOXEL_GI_MULTIVIEW,
-		SHADER_VERSION_DEPTH_PASS_WITH_MATERIAL,
-		SHADER_VERSION_DEPTH_PASS_WITH_SDF,
-		SHADER_VERSION_COLOR_PASS,
-		SHADER_VERSION_MAX
+	// Not an enum because these values are constants that are processed as numbers
+	// to arrive at a unique version for a particular shader.
+	struct ShaderVersion {
+		constexpr static uint16_t SHADER_VERSION_DEPTH_PASS = 0;
+		constexpr static uint16_t SHADER_VERSION_DEPTH_PASS_DP = 1;
+		constexpr static uint16_t SHADER_VERSION_DEPTH_PASS_WITH_NORMAL_AND_ROUGHNESS = 2;
+		constexpr static uint16_t SHADER_VERSION_DEPTH_PASS_WITH_NORMAL_AND_ROUGHNESS_AND_VOXEL_GI = 3;
+		constexpr static uint16_t SHADER_VERSION_DEPTH_PASS_MULTIVIEW = 4;
+		constexpr static uint16_t SHADER_VERSION_DEPTH_PASS_WITH_NORMAL_AND_ROUGHNESS_MULTIVIEW = 5;
+		constexpr static uint16_t SHADER_VERSION_DEPTH_PASS_WITH_NORMAL_AND_ROUGHNESS_AND_VOXEL_GI_MULTIVIEW = 6;
+		constexpr static uint16_t SHADER_VERSION_DEPTH_PASS_WITH_MATERIAL = 7;
+		constexpr static uint16_t SHADER_VERSION_DEPTH_PASS_WITH_SDF = 8;
+		constexpr static uint16_t SHADER_VERSION_COLOR_PASS = 9;
 	};
 
 	enum ShaderColorPassFlags {
@@ -99,6 +100,8 @@ public:
 
 	struct ShaderSpecialization {
 		union {
+			uint32_t packed_0;
+
 			struct {
 				uint32_t use_forward_gi : 1;
 				uint32_t use_light_projector : 1;
@@ -113,19 +116,17 @@ public:
 				uint32_t directional_soft_shadow_samples : 6;
 				uint32_t directional_penumbra_shadow_samples : 6;
 			};
-
-			uint32_t packed_0;
 		};
 
 		union {
+			uint32_t packed_1;
+
 			struct {
 				uint32_t multimesh : 1;
 				uint32_t multimesh_format_2d : 1;
 				uint32_t multimesh_has_color : 1;
 				uint32_t multimesh_has_custom_data : 1;
 			};
-
-			uint32_t packed_1;
 		};
 
 		uint32_t packed_2;
@@ -133,11 +134,11 @@ public:
 
 	struct UbershaderConstants {
 		union {
+			uint32_t packed_0;
+
 			struct {
 				uint32_t cull_mode : 2;
 			};
-
-			uint32_t packed_0;
 		};
 	};
 
@@ -151,12 +152,6 @@ public:
 		enum DepthTest {
 			DEPTH_TEST_DISABLED,
 			DEPTH_TEST_ENABLED
-		};
-
-		enum Cull {
-			CULL_DISABLED,
-			CULL_FRONT,
-			CULL_BACK
 		};
 
 		enum CullVariant {
@@ -205,7 +200,7 @@ public:
 
 		RID version;
 
-		static const uint32_t VERTEX_INPUT_MASKS_SIZE = SHADER_VERSION_DEPTH_PASS_WITH_MATERIAL + SHADER_VERSION_COLOR_PASS + SHADER_COLOR_PASS_FLAG_COUNT;
+		static const uint32_t VERTEX_INPUT_MASKS_SIZE = ShaderVersion::SHADER_VERSION_DEPTH_PASS_WITH_MATERIAL + ShaderVersion::SHADER_VERSION_COLOR_PASS + SHADER_COLOR_PASS_FLAG_COUNT;
 		std::atomic<uint64_t> vertex_input_masks[VERTEX_INPUT_MASKS_SIZE] = {};
 
 		Vector<ShaderCompiler::GeneratedCode::Texture> texture_uniforms;
@@ -250,7 +245,7 @@ public:
 		bool writes_modelview_or_projection = false;
 		bool uses_world_coordinates = false;
 		bool uses_screen_texture_mipmaps = false;
-		Cull cull_mode = CULL_DISABLED;
+		RS::CullMode cull_mode = RS::CULL_MODE_DISABLED;
 
 		uint64_t last_pass = 0;
 		uint32_t index = 0;
@@ -272,8 +267,8 @@ public:
 		}
 
 		_FORCE_INLINE_ bool uses_shared_shadow_material() const {
-			bool backface_culling = cull_mode == CULL_BACK;
-			return !uses_particle_trails && !writes_modelview_or_projection && !uses_vertex && !uses_position && !uses_discard && !uses_depth_prepass_alpha && !uses_alpha_clip && !uses_alpha_antialiasing && backface_culling && !uses_point_size && !uses_world_coordinates;
+			bool backface_culling = cull_mode == RS::CULL_MODE_BACK;
+			return !uses_particle_trails && !writes_modelview_or_projection && !uses_vertex && !uses_position && !uses_discard && !uses_depth_prepass_alpha && !uses_alpha_clip && !uses_alpha_antialiasing && backface_culling && !uses_point_size && !uses_world_coordinates && !wireframe;
 		}
 
 		virtual void set_code(const String &p_Code);
@@ -281,8 +276,8 @@ public:
 		virtual bool is_animated() const;
 		virtual bool casts_shadows() const;
 		virtual RS::ShaderNativeSourceCode get_native_source_code() const;
-		ShaderVersion _get_shader_version(PipelineVersion p_pipeline_version, uint32_t p_color_pass_flags, bool p_ubershader) const;
-		RID _get_shader_variant(ShaderVersion p_shader_version) const;
+		uint16_t _get_shader_version(PipelineVersion p_pipeline_version, uint32_t p_color_pass_flags, bool p_ubershader) const;
+		RID _get_shader_variant(uint16_t p_shader_version) const;
 		void _clear_vertex_input_mask_cache();
 		RID get_shader_variant(PipelineVersion p_pipeline_version, uint32_t p_color_pass_flags, bool p_ubershader) const;
 		uint64_t get_vertex_input_mask(PipelineVersion p_pipeline_version, uint32_t p_color_pass_flags, bool p_ubershader);

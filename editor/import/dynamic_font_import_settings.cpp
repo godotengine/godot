@@ -31,16 +31,15 @@
 #include "dynamic_font_import_settings.h"
 
 #include "core/config/project_settings.h"
-#include "core/string/translation_server.h"
+#include "core/string/translation.h"
 #include "editor/editor_file_system.h"
 #include "editor/editor_inspector.h"
 #include "editor/editor_locale_dialog.h"
 #include "editor/editor_node.h"
-#include "editor/editor_property_name_processor.h"
-#include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/themes/editor_scale.h"
+#include "scene/gui/split_container.h"
 
 /*************************************************************************/
 /* Settings data                                                         */
@@ -474,6 +473,7 @@ void DynamicFontImportSettingsDialog::_main_prop_changed(const String &p_edited_
 	if (font_preview.is_valid()) {
 		if (p_edited_property == "antialiasing") {
 			font_preview->set_antialiasing((TextServer::FontAntialiasing)import_settings_data->get("antialiasing").operator int());
+			_variations_validate();
 		} else if (p_edited_property == "generate_mipmaps") {
 			font_preview->set_generate_mipmaps(import_settings_data->get("generate_mipmaps"));
 		} else if (p_edited_property == "disable_embedded_bitmaps") {
@@ -493,7 +493,18 @@ void DynamicFontImportSettingsDialog::_main_prop_changed(const String &p_edited_
 		} else if (p_edited_property == "hinting") {
 			font_preview->set_hinting((TextServer::Hinting)import_settings_data->get("hinting").operator int());
 		} else if (p_edited_property == "subpixel_positioning") {
-			font_preview->set_subpixel_positioning((TextServer::SubpixelPositioning)import_settings_data->get("subpixel_positioning").operator int());
+			int font_subpixel_positioning = import_settings_data->get("subpixel_positioning").operator int();
+			if (font_subpixel_positioning == 4 /* Auto (Except Pixel Fonts) */) {
+				if (is_pixel) {
+					font_subpixel_positioning = TextServer::SUBPIXEL_POSITIONING_DISABLED;
+				} else {
+					font_subpixel_positioning = TextServer::SUBPIXEL_POSITIONING_AUTO;
+				}
+			}
+			font_preview->set_subpixel_positioning((TextServer::SubpixelPositioning)font_subpixel_positioning);
+			_variations_validate();
+		} else if (p_edited_property == "keep_rounding_remainders") {
+			font_preview->set_keep_rounding_remainders(import_settings_data->get("keep_rounding_remainders"));
 		} else if (p_edited_property == "oversampling") {
 			font_preview->set_oversampling(import_settings_data->get("oversampling"));
 		}
@@ -619,7 +630,15 @@ void DynamicFontImportSettingsDialog::_variations_validate() {
 	if ((TextServer::FontAntialiasing)(int)import_settings_data->get("antialiasing") == TextServer::FONT_ANTIALIASING_LCD) {
 		warn += "\n" + TTR("Note: LCD Subpixel antialiasing is selected, each of the glyphs will be pre-rendered for all supported subpixel layouts (5x).");
 	}
-	if ((TextServer::SubpixelPositioning)(int)import_settings_data->get("subpixel_positioning") != TextServer::SUBPIXEL_POSITIONING_DISABLED) {
+	int font_subpixel_positioning = import_settings_data->get("subpixel_positioning").operator int();
+	if (font_subpixel_positioning == 4 /* Auto (Except Pixel Fonts) */) {
+		if (is_pixel) {
+			font_subpixel_positioning = TextServer::SUBPIXEL_POSITIONING_DISABLED;
+		} else {
+			font_subpixel_positioning = TextServer::SUBPIXEL_POSITIONING_AUTO;
+		}
+	}
+	if ((TextServer::SubpixelPositioning)font_subpixel_positioning != TextServer::SUBPIXEL_POSITIONING_DISABLED) {
 		warn += "\n" + TTR("Note: Subpixel positioning is selected, each of the glyphs might be pre-rendered for multiple subpixel offsets (up to 4x).");
 	}
 	if (warn.is_empty()) {
@@ -960,6 +979,7 @@ void DynamicFontImportSettingsDialog::_re_import() {
 	main_settings["force_autohinter"] = import_settings_data->get("force_autohinter");
 	main_settings["hinting"] = import_settings_data->get("hinting");
 	main_settings["subpixel_positioning"] = import_settings_data->get("subpixel_positioning");
+	main_settings["keep_rounding_remainders"] = import_settings_data->get("keep_rounding_remainders");
 	main_settings["oversampling"] = import_settings_data->get("oversampling");
 	main_settings["fallbacks"] = import_settings_data->get("fallbacks");
 	main_settings["compress"] = import_settings_data->get("compress");
@@ -1084,6 +1104,34 @@ void DynamicFontImportSettingsDialog::open_settings(const String &p_path) {
 	// Load font for preview.
 	font_preview.instantiate();
 	font_preview->set_data(font_data);
+
+	Array rids = font_preview->get_rids();
+	if (!rids.is_empty()) {
+		PackedInt32Array glyphs = TS->font_get_supported_glyphs(rids[0]);
+		is_pixel = true;
+		for (int32_t gl : glyphs) {
+			Dictionary ct = TS->font_get_glyph_contours(rids[0], 16, gl);
+			PackedInt32Array contours = ct["contours"];
+			PackedVector3Array points = ct["points"];
+			int prev_start = 0;
+			for (int i = 0; i < contours.size(); i++) {
+				for (int j = prev_start; j <= contours[i]; j++) {
+					int next_point = (j < contours[i]) ? (j + 1) : prev_start;
+					if ((points[j].z != TextServer::CONTOUR_CURVE_TAG_ON) || (!Math::is_equal_approx(points[j].x, points[next_point].x) && !Math::is_equal_approx(points[j].y, points[next_point].y))) {
+						is_pixel = false;
+						break;
+					}
+				}
+				prev_start = contours[i] + 1;
+				if (!is_pixel) {
+					break;
+				}
+			}
+			if (!is_pixel) {
+				break;
+			}
+		}
+	}
 
 	String font_name = vformat("%s (%s)", font_preview->get_font_name(), font_preview->get_font_style_name());
 	String sample;
@@ -1235,7 +1283,16 @@ void DynamicFontImportSettingsDialog::open_settings(const String &p_path) {
 		font_preview->set_allow_system_fallback(import_settings_data->get("allow_system_fallback"));
 		font_preview->set_force_autohinter(import_settings_data->get("force_autohinter"));
 		font_preview->set_hinting((TextServer::Hinting)import_settings_data->get("hinting").operator int());
-		font_preview->set_subpixel_positioning((TextServer::SubpixelPositioning)import_settings_data->get("subpixel_positioning").operator int());
+		int font_subpixel_positioning = import_settings_data->get("subpixel_positioning").operator int();
+		if (font_subpixel_positioning == 4 /* Auto (Except Pixel Fonts) */) {
+			if (is_pixel) {
+				font_subpixel_positioning = TextServer::SUBPIXEL_POSITIONING_DISABLED;
+			} else {
+				font_subpixel_positioning = TextServer::SUBPIXEL_POSITIONING_AUTO;
+			}
+		}
+		font_preview->set_subpixel_positioning((TextServer::SubpixelPositioning)font_subpixel_positioning);
+		font_preview->set_keep_rounding_remainders(import_settings_data->get("keep_rounding_remainders"));
 		font_preview->set_oversampling(import_settings_data->get("oversampling"));
 	}
 	font_preview_label->add_theme_font_override(SceneStringName(font), font_preview);
@@ -1267,7 +1324,8 @@ DynamicFontImportSettingsDialog::DynamicFontImportSettingsDialog() {
 	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::BOOL, "allow_system_fallback"), true));
 	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::BOOL, "force_autohinter"), false));
 	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::INT, "hinting", PROPERTY_HINT_ENUM, "None,Light,Normal"), 1));
-	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::INT, "subpixel_positioning", PROPERTY_HINT_ENUM, "Disabled,Auto,One Half of a Pixel,One Quarter of a Pixel"), 1));
+	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::INT, "subpixel_positioning", PROPERTY_HINT_ENUM, "Disabled,Auto,One Half of a Pixel,One Quarter of a Pixel,Auto (Except Pixel Fonts)"), 4));
+	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::BOOL, "keep_rounding_remainders"), true));
 	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::FLOAT, "oversampling", PROPERTY_HINT_RANGE, "0,10,0.1"), 0.0));
 
 	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::NIL, "Metadata Overrides", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_GROUP), Variant()));

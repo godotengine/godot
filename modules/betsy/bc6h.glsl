@@ -7,7 +7,6 @@ unsigned = "#define QUALITY"; // The "Quality" preset causes artifacting on sign
 #version 450
 
 #include "CrossPlatformSettings_piece_all.glsl"
-#include "UavCrossPlatform_piece_all.glsl"
 
 #VERSION_DEFINES
 

@@ -81,12 +81,6 @@
 		return CONV_R(NavigationServer3D::get_singleton()->FUNC_NAME(CONV_0(D_0), CONV_1(D_1))); \
 	}
 
-#define FORWARD_5_R_C(CONV_R, FUNC_NAME, T_0, D_0, T_1, D_1, T_2, D_2, T_3, D_3, T_4, D_4, CONV_0, CONV_1, CONV_2, CONV_3, CONV_4)      \
-	GodotNavigationServer2D::FUNC_NAME(T_0 D_0, T_1 D_1, T_2 D_2, T_3 D_3, T_4 D_4)                                                     \
-			const {                                                                                                                     \
-		return CONV_R(NavigationServer3D::get_singleton()->FUNC_NAME(CONV_0(D_0), CONV_1(D_1), CONV_2(D_2), CONV_3(D_3), CONV_4(D_4))); \
-	}
-
 static RID rid_to_rid(const RID d) {
 	return d;
 }
@@ -164,10 +158,19 @@ static Ref<NavigationMesh> poly_to_mesh(Ref<NavigationPolygon> d) {
 	}
 }
 
+static Rect2 aabb_to_rect2(AABB aabb) {
+	Rect2 rect2;
+	rect2.position = Vector2(aabb.position.x, aabb.position.z);
+	rect2.size = Vector2(aabb.size.x, aabb.size.z);
+	return rect2;
+}
+
 void GodotNavigationServer2D::init() {
 #ifdef CLIPPER2_ENABLED
 	navmesh_generator_2d = memnew(NavMeshGenerator2D);
 	ERR_FAIL_NULL_MSG(navmesh_generator_2d, "Failed to init NavMeshGenerator2D.");
+	RWLockRead read_lock(geometry_parser_rwlock);
+	navmesh_generator_2d->set_generator_parsers(generator_parsers);
 #endif // CLIPPER2_ENABLED
 }
 
@@ -191,7 +194,7 @@ void GodotNavigationServer2D::finish() {
 
 void GodotNavigationServer2D::parse_source_geometry_data(const Ref<NavigationPolygon> &p_navigation_mesh, const Ref<NavigationMeshSourceGeometryData2D> &p_source_geometry_data, Node *p_root_node, const Callable &p_callback) {
 	ERR_FAIL_COND_MSG(!Thread::is_main_thread(), "The SceneTree can only be parsed on the main thread. Call this function from the main thread or use call_deferred().");
-	ERR_FAIL_COND_MSG(!p_navigation_mesh.is_valid(), "Invalid navigation polygon.");
+	ERR_FAIL_COND_MSG(p_navigation_mesh.is_null(), "Invalid navigation polygon.");
 	ERR_FAIL_NULL_MSG(p_root_node, "No parsing root node specified.");
 	ERR_FAIL_COND_MSG(!p_root_node->is_inside_tree(), "The root node needs to be inside the SceneTree.");
 
@@ -202,8 +205,8 @@ void GodotNavigationServer2D::parse_source_geometry_data(const Ref<NavigationPol
 }
 
 void GodotNavigationServer2D::bake_from_source_geometry_data(const Ref<NavigationPolygon> &p_navigation_mesh, const Ref<NavigationMeshSourceGeometryData2D> &p_source_geometry_data, const Callable &p_callback) {
-	ERR_FAIL_COND_MSG(!p_navigation_mesh.is_valid(), "Invalid navigation polygon.");
-	ERR_FAIL_COND_MSG(!p_source_geometry_data.is_valid(), "Invalid NavigationMeshSourceGeometryData2D.");
+	ERR_FAIL_COND_MSG(p_navigation_mesh.is_null(), "Invalid navigation polygon.");
+	ERR_FAIL_COND_MSG(p_source_geometry_data.is_null(), "Invalid NavigationMeshSourceGeometryData2D.");
 
 #ifdef CLIPPER2_ENABLED
 	ERR_FAIL_NULL(NavMeshGenerator2D::get_singleton());
@@ -212,8 +215,8 @@ void GodotNavigationServer2D::bake_from_source_geometry_data(const Ref<Navigatio
 }
 
 void GodotNavigationServer2D::bake_from_source_geometry_data_async(const Ref<NavigationPolygon> &p_navigation_mesh, const Ref<NavigationMeshSourceGeometryData2D> &p_source_geometry_data, const Callable &p_callback) {
-	ERR_FAIL_COND_MSG(!p_navigation_mesh.is_valid(), "Invalid navigation mesh.");
-	ERR_FAIL_COND_MSG(!p_source_geometry_data.is_valid(), "Invalid NavigationMeshSourceGeometryData2D.");
+	ERR_FAIL_COND_MSG(p_navigation_mesh.is_null(), "Invalid navigation mesh.");
+	ERR_FAIL_COND_MSG(p_source_geometry_data.is_null(), "Invalid NavigationMeshSourceGeometryData2D.");
 
 #ifdef CLIPPER2_ENABLED
 	ERR_FAIL_NULL(NavMeshGenerator2D::get_singleton());
@@ -265,6 +268,14 @@ uint32_t GodotNavigationServer2D::map_get_iteration_id(RID p_map) const {
 	return NavigationServer3D::get_singleton()->map_get_iteration_id(p_map);
 }
 
+void GodotNavigationServer2D::map_set_use_async_iterations(RID p_map, bool p_enabled) {
+	return NavigationServer3D::get_singleton()->map_set_use_async_iterations(p_map, p_enabled);
+}
+
+bool GodotNavigationServer2D::map_get_use_async_iterations(RID p_map) const {
+	return NavigationServer3D::get_singleton()->map_get_use_async_iterations(p_map);
+}
+
 void FORWARD_2(map_set_cell_size, RID, p_map, real_t, p_cell_size, rid_to_rid, real_to_real);
 real_t FORWARD_1_C(map_get_cell_size, RID, p_map, rid_to_rid);
 
@@ -277,7 +288,9 @@ real_t FORWARD_1_C(map_get_edge_connection_margin, RID, p_map, rid_to_rid);
 void FORWARD_2(map_set_link_connection_radius, RID, p_map, real_t, p_connection_radius, rid_to_rid, real_to_real);
 real_t FORWARD_1_C(map_get_link_connection_radius, RID, p_map, rid_to_rid);
 
-Vector<Vector2> FORWARD_5_R_C(vector_v3_to_v2, map_get_path, RID, p_map, Vector2, p_origin, Vector2, p_destination, bool, p_optimize, uint32_t, p_layers, rid_to_rid, v2_to_v3, v2_to_v3, bool_to_bool, uint32_to_uint32);
+Vector<Vector2> GodotNavigationServer2D::map_get_path(RID p_map, Vector2 p_origin, Vector2 p_destination, bool p_optimize, uint32_t p_navigation_layers) {
+	return vector_v3_to_v2(NavigationServer3D::get_singleton()->map_get_path(p_map, v2_to_v3(p_origin), v2_to_v3(p_destination), p_optimize, p_navigation_layers));
+}
 
 Vector2 FORWARD_2_R_C(v3_to_v2, map_get_closest_point, RID, p_map, const Vector2 &, p_point, rid_to_rid, v2_to_v3);
 RID FORWARD_2_C(map_get_closest_point_owner, RID, p_map, const Vector2 &, p_point, rid_to_rid, v2_to_v3);
@@ -326,6 +339,11 @@ Vector2 GodotNavigationServer2D::region_get_closest_point(RID p_region, const Ve
 Vector2 GodotNavigationServer2D::region_get_random_point(RID p_region, uint32_t p_navigation_layers, bool p_uniformly) const {
 	Vector3 result = NavigationServer3D::get_singleton()->region_get_random_point(p_region, p_navigation_layers, p_uniformly);
 	return v3_to_v2(result);
+}
+
+Rect2 GodotNavigationServer2D::region_get_bounds(RID p_region) const {
+	AABB bounds = NavigationServer3D::get_singleton()->region_get_bounds(p_region);
+	return aabb_to_rect2(bounds);
 }
 
 RID FORWARD_0(link_create);
@@ -395,12 +413,19 @@ void FORWARD_2(agent_set_paused, RID, p_agent, bool, p_paused, rid_to_rid, bool_
 bool FORWARD_1_C(agent_get_paused, RID, p_agent, rid_to_rid);
 
 void GodotNavigationServer2D::free(RID p_object) {
-#ifdef CLIPPER2_ENABLED
-	if (navmesh_generator_2d && navmesh_generator_2d->owns(p_object)) {
-		navmesh_generator_2d->free(p_object);
+	if (geometry_parser_owner.owns(p_object)) {
+		RWLockWrite write_lock(geometry_parser_rwlock);
+
+		NavMeshGeometryParser2D *parser = geometry_parser_owner.get_or_null(p_object);
+		ERR_FAIL_NULL(parser);
+
+		generator_parsers.erase(parser);
+#ifndef CLIPPER2_ENABLED
+		NavMeshGenerator2D::get_singleton()->set_generator_parsers(generator_parsers);
+#endif
+		geometry_parser_owner.free(parser->self);
 		return;
 	}
-#endif // CLIPPER2_ENABLED
 	NavigationServer3D::get_singleton()->free(p_object);
 }
 
@@ -456,31 +481,70 @@ Vector<Vector2> GodotNavigationServer2D::obstacle_get_vertices(RID p_obstacle) c
 	return vector_v3_to_v2(NavigationServer3D::get_singleton()->obstacle_get_vertices(p_obstacle));
 }
 
-void GodotNavigationServer2D::query_path(const Ref<NavigationPathQueryParameters2D> &p_query_parameters, Ref<NavigationPathQueryResult2D> p_query_result) const {
-	ERR_FAIL_COND(!p_query_parameters.is_valid());
-	ERR_FAIL_COND(!p_query_result.is_valid());
+void GodotNavigationServer2D::query_path(const Ref<NavigationPathQueryParameters2D> &p_query_parameters, Ref<NavigationPathQueryResult2D> p_query_result, const Callable &p_callback) {
+	ERR_FAIL_COND(p_query_parameters.is_null());
+	ERR_FAIL_COND(p_query_result.is_null());
 
-	const NavigationUtilities::PathQueryResult _query_result = NavigationServer3D::get_singleton()->_query_path(p_query_parameters->get_parameters());
+	Ref<NavigationPathQueryParameters3D> query_parameters;
+	query_parameters.instantiate();
 
-	p_query_result->set_path(vector_v3_to_v2(_query_result.path));
-	p_query_result->set_path_types(_query_result.path_types);
-	p_query_result->set_path_rids(_query_result.path_rids);
-	p_query_result->set_path_owner_ids(_query_result.path_owner_ids);
+	query_parameters->set_map(p_query_parameters->get_map());
+	query_parameters->set_start_position(v2_to_v3(p_query_parameters->get_start_position()));
+	query_parameters->set_target_position(v2_to_v3(p_query_parameters->get_target_position()));
+	query_parameters->set_navigation_layers(p_query_parameters->get_navigation_layers());
+	query_parameters->set_pathfinding_algorithm(NavigationPathQueryParameters3D::PathfindingAlgorithm::PATHFINDING_ALGORITHM_ASTAR);
+
+	switch (p_query_parameters->get_path_postprocessing()) {
+		case NavigationPathQueryParameters2D::PathPostProcessing::PATH_POSTPROCESSING_CORRIDORFUNNEL: {
+			query_parameters->set_path_postprocessing(NavigationPathQueryParameters3D::PathPostProcessing::PATH_POSTPROCESSING_CORRIDORFUNNEL);
+		} break;
+		case NavigationPathQueryParameters2D::PathPostProcessing::PATH_POSTPROCESSING_EDGECENTERED: {
+			query_parameters->set_path_postprocessing(NavigationPathQueryParameters3D::PathPostProcessing::PATH_POSTPROCESSING_EDGECENTERED);
+		} break;
+		case NavigationPathQueryParameters2D::PathPostProcessing::PATH_POSTPROCESSING_NONE: {
+			query_parameters->set_path_postprocessing(NavigationPathQueryParameters3D::PathPostProcessing::PATH_POSTPROCESSING_NONE);
+		} break;
+		default: {
+			WARN_PRINT("No match for used PathPostProcessing - fallback to default");
+			query_parameters->set_path_postprocessing(NavigationPathQueryParameters3D::PathPostProcessing::PATH_POSTPROCESSING_CORRIDORFUNNEL);
+		} break;
+	}
+
+	query_parameters->set_metadata_flags((int64_t)p_query_parameters->get_metadata_flags());
+	query_parameters->set_simplify_path(p_query_parameters->get_simplify_path());
+	query_parameters->set_simplify_epsilon(p_query_parameters->get_simplify_epsilon());
+
+	Ref<NavigationPathQueryResult3D> query_result;
+	query_result.instantiate();
+
+	NavigationServer3D::get_singleton()->query_path(query_parameters, query_result, p_callback);
+
+	p_query_result->set_path(vector_v3_to_v2(query_result->get_path()));
+	p_query_result->set_path_types(query_result->get_path_types());
+	p_query_result->set_path_rids(query_result->get_path_rids());
+	p_query_result->set_path_owner_ids(query_result->get_path_owner_ids());
 }
 
 RID GodotNavigationServer2D::source_geometry_parser_create() {
+	RWLockWrite write_lock(geometry_parser_rwlock);
+
+	RID rid = geometry_parser_owner.make_rid();
+
+	NavMeshGeometryParser2D *parser = geometry_parser_owner.get_or_null(rid);
+	parser->self = rid;
+
+	generator_parsers.push_back(parser);
 #ifdef CLIPPER2_ENABLED
-	if (navmesh_generator_2d) {
-		return navmesh_generator_2d->source_geometry_parser_create();
-	}
-#endif // CLIPPER2_ENABLED
-	return RID();
+	NavMeshGenerator2D::get_singleton()->set_generator_parsers(generator_parsers);
+#endif
+	return rid;
 }
 
 void GodotNavigationServer2D::source_geometry_parser_set_callback(RID p_parser, const Callable &p_callback) {
-#ifdef CLIPPER2_ENABLED
-	if (navmesh_generator_2d) {
-		navmesh_generator_2d->source_geometry_parser_set_callback(p_parser, p_callback);
-	}
-#endif // CLIPPER2_ENABLED
+	RWLockWrite write_lock(geometry_parser_rwlock);
+
+	NavMeshGeometryParser2D *parser = geometry_parser_owner.get_or_null(p_parser);
+	ERR_FAIL_NULL(parser);
+
+	parser->callback = p_callback;
 }

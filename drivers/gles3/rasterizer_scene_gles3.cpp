@@ -238,7 +238,7 @@ void RasterizerSceneGLES3::_geometry_instance_add_surface_with_material(Geometry
 
 	GLES3::SceneMaterialData *material_shadow = nullptr;
 	void *surface_shadow = nullptr;
-	if (!p_material->shader_data->uses_particle_trails && !p_material->shader_data->writes_modelview_or_projection && !p_material->shader_data->uses_vertex && !p_material->shader_data->uses_discard && !p_material->shader_data->uses_depth_prepass_alpha && !p_material->shader_data->uses_alpha_clip && !p_material->shader_data->uses_world_coordinates) {
+	if (!p_material->shader_data->uses_particle_trails && !p_material->shader_data->writes_modelview_or_projection && !p_material->shader_data->uses_vertex && !p_material->shader_data->uses_discard && !p_material->shader_data->uses_depth_prepass_alpha && !p_material->shader_data->uses_alpha_clip && !p_material->shader_data->uses_world_coordinates && !p_material->shader_data->wireframe) {
 		flags |= GeometryInstanceSurface::FLAG_USES_SHARED_SHADOW_MATERIAL;
 		material_shadow = static_cast<GLES3::SceneMaterialData *>(GLES3::MaterialStorage::get_singleton()->material_get_data(scene_globals.default_material, RS::SHADER_SPATIAL));
 
@@ -977,7 +977,7 @@ void RasterizerSceneGLES3::_update_sky_radiance(RID p_env, const Projection &p_p
 		glBindFramebuffer(GL_FRAMEBUFFER, sky->radiance_framebuffer);
 
 		scene_state.reset_gl_state();
-		scene_state.set_gl_cull_mode(GLES3::SceneShaderData::CULL_DISABLED);
+		scene_state.set_gl_cull_mode(RS::CULL_MODE_DISABLED);
 		scene_state.enable_gl_blend(false);
 
 		for (int i = 0; i < 6; i++) {
@@ -1000,7 +1000,7 @@ void RasterizerSceneGLES3::_update_sky_radiance(RID p_env, const Projection &p_p
 	} else {
 		if (sky_mode == RS::SKY_MODE_INCREMENTAL && sky->processing_layer < max_processing_layer) {
 			scene_state.reset_gl_state();
-			scene_state.set_gl_cull_mode(GLES3::SceneShaderData::CULL_DISABLED);
+			scene_state.set_gl_cull_mode(RS::CULL_MODE_DISABLED);
 			scene_state.enable_gl_blend(false);
 
 			cubemap_filter->filter_radiance(sky->raw_radiance, sky->radiance, sky->radiance_framebuffer, sky->radiance_size, sky->mipmap_count, sky->processing_layer);
@@ -1302,15 +1302,12 @@ void RasterizerSceneGLES3::_fill_render_list(RenderListType p_render_list, const
 					int32_t shadow_id = light_storage->light_instance_get_shadow_id(light_instance);
 
 					if (light_storage->light_has_shadow(light) && shadow_id >= 0) {
-						// Skip static lights when a lightmap is used.
-						if (!inst->lightmap_instance.is_valid() || light_storage->light_get_bake_mode(light) != RenderingServer::LIGHT_BAKE_STATIC) {
-							GeometryInstanceGLES3::LightPass pass;
-							pass.light_id = light_storage->light_instance_get_gl_id(light_instance);
-							pass.shadow_id = shadow_id;
-							pass.light_instance_rid = light_instance;
-							pass.is_omni = true;
-							inst->light_passes.push_back(pass);
-						}
+						GeometryInstanceGLES3::LightPass pass;
+						pass.light_id = light_storage->light_instance_get_gl_id(light_instance);
+						pass.shadow_id = shadow_id;
+						pass.light_instance_rid = light_instance;
+						pass.is_omni = true;
+						inst->light_passes.push_back(pass);
 					} else {
 						// Lights without shadow can all go in base pass.
 						inst->omni_light_gl_cache.push_back((uint32_t)light_storage->light_instance_get_gl_id(light_instance));
@@ -1328,14 +1325,11 @@ void RasterizerSceneGLES3::_fill_render_list(RenderListType p_render_list, const
 					int32_t shadow_id = light_storage->light_instance_get_shadow_id(light_instance);
 
 					if (light_storage->light_has_shadow(light) && shadow_id >= 0) {
-						// Skip static lights when a lightmap is used.
-						if (!inst->lightmap_instance.is_valid() || light_storage->light_get_bake_mode(light) != RenderingServer::LIGHT_BAKE_STATIC) {
-							GeometryInstanceGLES3::LightPass pass;
-							pass.light_id = light_storage->light_instance_get_gl_id(light_instance);
-							pass.shadow_id = shadow_id;
-							pass.light_instance_rid = light_instance;
-							inst->light_passes.push_back(pass);
-						}
+						GeometryInstanceGLES3::LightPass pass;
+						pass.light_id = light_storage->light_instance_get_gl_id(light_instance);
+						pass.shadow_id = shadow_id;
+						pass.light_instance_rid = light_instance;
+						inst->light_passes.push_back(pass);
 					} else {
 						// Lights without shadow can all go in base pass.
 						inst->spot_light_gl_cache.push_back((uint32_t)light_storage->light_instance_get_gl_id(light_instance));
@@ -1437,6 +1431,10 @@ void RasterizerSceneGLES3::_fill_render_list(RenderListType p_render_list, const
 
 			} else if (p_pass_mode == PASS_MODE_SHADOW) {
 				if (surf->flags & GeometryInstanceSurface::FLAG_PASS_SHADOW) {
+					rl->add_element(surf);
+				}
+			} else if (p_pass_mode == PASS_MODE_MATERIAL) {
+				if (surf->flags & (GeometryInstanceSurface::FLAG_PASS_DEPTH | GeometryInstanceSurface::FLAG_PASS_OPAQUE | GeometryInstanceSurface::FLAG_PASS_ALPHA)) {
 					rl->add_element(surf);
 				}
 			} else {
@@ -2135,7 +2133,7 @@ void RasterizerSceneGLES3::_render_shadow_pass(RID p_light, RID p_shadow_atlas, 
 				light_transform = light_storage->light_instance_get_shadow_transform(p_light, p_pass);
 				shadow_size = shadow_size / 2;
 			} else {
-				ERR_FAIL_MSG("Dual paraboloid shadow mode not supported in GL Compatibility renderer. Please use Cubemap shadow mode instead.");
+				ERR_FAIL_MSG("Dual paraboloid shadow mode not supported in the Compatibility renderer. Please use CubeMap shadow mode instead.");
 			}
 
 			shadow_bias = light_storage->light_get_param(base, RS::LIGHT_PARAM_SHADOW_BIAS);
@@ -2216,7 +2214,7 @@ void RasterizerSceneGLES3::_render_shadow_pass(RID p_light, RID p_shadow_atlas, 
 	scene_state.enable_gl_depth_test(false);
 	scene_state.enable_gl_depth_draw(true);
 	glDisable(GL_CULL_FACE);
-	scene_state.cull_mode = GLES3::SceneShaderData::CULL_DISABLED;
+	scene_state.cull_mode = RS::CULL_MODE_DISABLED;
 	glBindFramebuffer(GL_FRAMEBUFFER, GLES3::TextureStorage::system_fbo);
 }
 
@@ -2256,7 +2254,12 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 	RenderDataGLES3 render_data;
 	{
 		render_data.render_buffers = rb;
-		render_data.transparent_bg = rt ? rt->is_transparent : false;
+
+		if (rt) {
+			render_data.transparent_bg = rt->is_transparent;
+			render_data.render_region = rt->render_region;
+		}
+
 		// Our first camera is used by default
 		render_data.cam_transform = p_camera_data->main_transform;
 		render_data.inv_cam_transform = render_data.cam_transform.affine_inverse();
@@ -2386,6 +2389,7 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 	bool draw_sky = false;
 	bool draw_sky_fog_only = false;
 	bool keep_color = false;
+	bool draw_canvas = false;
 	bool draw_feed = false;
 	float sky_energy_multiplier = 1.0;
 	int camera_feed_id = -1;
@@ -2427,7 +2431,7 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 				draw_sky = !render_data.transparent_bg;
 			} break;
 			case RS::ENV_BG_CANVAS: {
-				keep_color = true;
+				draw_canvas = true;
 			} break;
 			case RS::ENV_BG_KEEP: {
 				keep_color = true;
@@ -2435,6 +2439,7 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 			case RS::ENV_BG_CAMERA_FEED: {
 				camera_feed_id = environment_get_camera_feed_id(render_data.environment);
 				draw_feed = true;
+				keep_color = true;
 			} break;
 			default: {
 			}
@@ -2493,6 +2498,10 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 		RENDER_TIMESTAMP("Depth Prepass");
 		//pre z pass
 
+		if (render_data.render_region != Rect2i()) {
+			glViewport(render_data.render_region.position.x, render_data.render_region.position.y, render_data.render_region.size.width, render_data.render_region.size.height);
+		}
+
 		scene_state.enable_gl_depth_test(true);
 		scene_state.enable_gl_depth_draw(true);
 		scene_state.enable_gl_blend(false);
@@ -2546,10 +2555,14 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 		glClear(GL_DEPTH_BUFFER_BIT);
 	}
 
-	if (!keep_color && !draw_feed) {
+	// Need to clear framebuffer unless:
+	// a) We explicitly request not to (i.e. ENV_BG_KEEP).
+	// b) We are rendering to a non-intermediate framebuffer with ENV_BG_CANVAS (shared between 2D and 3D).
+	if (!keep_color && (!draw_canvas || fbo != rt->fbo)) {
 		clear_color.a = render_data.transparent_bg ? 0.0f : 1.0f;
 		glClearBufferfv(GL_COLOR, 0, clear_color.components);
-	} else if (fbo != rt->fbo) {
+	}
+	if ((keep_color || draw_canvas) && fbo != rt->fbo) {
 		// Need to copy our current contents to our intermediate/MSAA buffer
 		GLES3::CopyEffects *copy_effects = GLES3::CopyEffects::get_singleton();
 
@@ -2567,6 +2580,10 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 
 	RENDER_TIMESTAMP("Render Opaque Pass");
 	uint64_t spec_constant_base_flags = 0;
+
+	if (render_data.render_region != Rect2i()) {
+		glViewport(render_data.render_region.position.x, render_data.render_region.position.y, render_data.render_region.size.width, render_data.render_region.size.height);
+	}
 
 	{
 		// Specialization Constants that apply for entire rendering pass.
@@ -2593,7 +2610,7 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 		scene_state.enable_gl_depth_draw(false);
 		scene_state.enable_gl_depth_test(false);
 		scene_state.enable_gl_blend(false);
-		scene_state.set_gl_cull_mode(GLES3::SceneShaderData::CULL_BACK);
+		scene_state.set_gl_cull_mode(RS::CULL_MODE_BACK);
 
 		Ref<CameraFeed> feed = CameraServer::get_singleton()->get_feed_by_id(camera_feed_id);
 
@@ -2621,7 +2638,7 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 
 		scene_state.enable_gl_depth_test(true);
 		scene_state.enable_gl_blend(false);
-		scene_state.set_gl_cull_mode(GLES3::SceneShaderData::CULL_BACK);
+		scene_state.set_gl_cull_mode(RS::CULL_MODE_BACK);
 
 		Transform3D transform = render_data.cam_transform;
 		Projection projection = render_data.cam_projection;
@@ -2666,14 +2683,14 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 				glBlitFramebuffer(0, 0, size.x, size.y,
 						0, 0, size.x, size.y,
 						GL_COLOR_BUFFER_BIT, GL_NEAREST);
-				glActiveTexture(GL_TEXTURE0 + config->max_texture_image_units - 5);
+				glActiveTexture(GL_TEXTURE0 + config->max_texture_image_units - 6);
 				glBindTexture(GL_TEXTURE_2D, backbuffer);
 			}
 			if (scene_state.used_depth_texture) {
 				glBlitFramebuffer(0, 0, size.x, size.y,
 						0, 0, size.x, size.y,
 						GL_DEPTH_BUFFER_BIT, GL_NEAREST);
-				glActiveTexture(GL_TEXTURE0 + config->max_texture_image_units - 6);
+				glActiveTexture(GL_TEXTURE0 + config->max_texture_image_units - 7);
 				glBindTexture(GL_TEXTURE_2D, backbuffer_depth);
 			}
 		}
@@ -3105,19 +3122,19 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 			}
 
 			// Find cull variant.
-			GLES3::SceneShaderData::Cull cull_mode = shader->cull_mode;
+			RS::CullMode cull_mode = shader->cull_mode;
 
 			if (p_pass_mode == PASS_MODE_MATERIAL || (surf->flags & GeometryInstanceSurface::FLAG_USES_DOUBLE_SIDED_SHADOWS)) {
-				cull_mode = GLES3::SceneShaderData::CULL_DISABLED;
+				cull_mode = RS::CULL_MODE_DISABLED;
 			} else {
 				bool mirror = inst->mirror;
 				if (p_params->reverse_cull) {
 					mirror = !mirror;
 				}
-				if (cull_mode == GLES3::SceneShaderData::CULL_FRONT && mirror) {
-					cull_mode = GLES3::SceneShaderData::CULL_BACK;
-				} else if (cull_mode == GLES3::SceneShaderData::CULL_BACK && mirror) {
-					cull_mode = GLES3::SceneShaderData::CULL_FRONT;
+				if (cull_mode == RS::CULL_MODE_FRONT && mirror) {
+					cull_mode = RS::CULL_MODE_BACK;
+				} else if (cull_mode == RS::CULL_MODE_BACK && mirror) {
+					cull_mode = RS::CULL_MODE_FRONT;
 				}
 			}
 
@@ -3157,7 +3174,7 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 			}
 
 			bool use_wireframe = false;
-			if (p_params->force_wireframe) {
+			if (p_params->force_wireframe || shader->wireframe) {
 				GLuint wireframe_index_array_gl = mesh_storage->mesh_surface_get_index_buffer_wireframe(mesh_surface);
 				if (wireframe_index_array_gl) {
 					index_array_gl = wireframe_index_array_gl;
@@ -3251,8 +3268,28 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 					spec_constants |= SceneShaderGLES3::DISABLE_LIGHT_OMNI;
 					spec_constants |= SceneShaderGLES3::DISABLE_LIGHT_SPOT;
 					spec_constants |= SceneShaderGLES3::DISABLE_LIGHT_DIRECTIONAL;
-					spec_constants |= SceneShaderGLES3::DISABLE_LIGHTMAP;
 					spec_constants |= SceneShaderGLES3::DISABLE_REFLECTION_PROBE;
+
+					bool disable_lightmaps = true;
+
+					// Additive directional passes may use shadowmasks, so enable lightmaps for them.
+					if (pass >= int32_t(inst->light_passes.size()) && inst->lightmap_instance.is_valid()) {
+						GLES3::LightmapInstance *li = GLES3::LightStorage::get_singleton()->get_lightmap_instance(inst->lightmap_instance);
+						GLES3::Lightmap *lm = GLES3::LightStorage::get_singleton()->get_lightmap(li->lightmap);
+
+						if (lm->shadowmask_mode != RS::SHADOWMASK_MODE_NONE) {
+							spec_constants |= SceneShaderGLES3::USE_LIGHTMAP;
+							disable_lightmaps = false;
+
+							if (lightmap_bicubic_upscale) {
+								spec_constants |= SceneShaderGLES3::LIGHTMAP_BICUBIC_FILTER;
+							}
+						}
+					}
+
+					if (disable_lightmaps) {
+						spec_constants |= SceneShaderGLES3::DISABLE_LIGHTMAP;
+					}
 				}
 
 				if (uses_additive_lighting) {
@@ -3314,10 +3351,6 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 				}
 
 				material_storage->shaders.scene_shader.version_set_uniform(SceneShaderGLES3::OPAQUE_PREPASS_THRESHOLD, opaque_prepass_threshold, shader->version, instance_variant, spec_constants);
-
-				prev_shader = shader;
-				prev_variant = instance_variant;
-				prev_spec_constants = spec_constants;
 			}
 
 			// Pass in lighting uniforms.
@@ -3351,11 +3384,38 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 						GLuint tex = GLES3::LightStorage::get_singleton()->directional_shadow_get_texture();
 						glActiveTexture(GL_TEXTURE0 + config->max_texture_image_units - 3);
 						glBindTexture(GL_TEXTURE_2D, tex);
+
+						if (inst->lightmap_instance.is_valid()) {
+							// Use shadowmasks for directional light passes.
+							GLES3::LightmapInstance *li = GLES3::LightStorage::get_singleton()->get_lightmap_instance(inst->lightmap_instance);
+							GLES3::Lightmap *lm = GLES3::LightStorage::get_singleton()->get_lightmap(li->lightmap);
+
+							material_storage->shaders.scene_shader.version_set_uniform(SceneShaderGLES3::LIGHTMAP_SLICE, inst->lightmap_slice_index, shader->version, instance_variant, spec_constants);
+
+							Vector4 uv_scale(inst->lightmap_uv_scale.position.x, inst->lightmap_uv_scale.position.y, inst->lightmap_uv_scale.size.x, inst->lightmap_uv_scale.size.y);
+							material_storage->shaders.scene_shader.version_set_uniform(SceneShaderGLES3::LIGHTMAP_UV_SCALE, uv_scale, shader->version, instance_variant, spec_constants);
+
+							if (lightmap_bicubic_upscale) {
+								Vector2 light_texture_size(lm->light_texture_size.x, lm->light_texture_size.y);
+								material_storage->shaders.scene_shader.version_set_uniform(SceneShaderGLES3::LIGHTMAP_TEXTURE_SIZE, light_texture_size, shader->version, instance_variant, spec_constants);
+							}
+
+							material_storage->shaders.scene_shader.version_set_uniform(SceneShaderGLES3::LIGHTMAP_SHADOWMASK_MODE, (uint32_t)lm->shadowmask_mode, shader->version, instance_variant, spec_constants);
+
+							if (lm->shadow_texture.is_valid()) {
+								tex = GLES3::TextureStorage::get_singleton()->texture_get_texid(lm->shadow_texture);
+							} else {
+								tex = GLES3::TextureStorage::get_singleton()->texture_get_texid(GLES3::TextureStorage::get_singleton()->texture_gl_get_default(GLES3::DEFAULT_GL_TEXTURE_2D_ARRAY_WHITE));
+							}
+
+							glActiveTexture(GL_TEXTURE0 + config->max_texture_image_units - 5);
+							glBindTexture(GL_TEXTURE_2D_ARRAY, tex);
+						}
 					}
 				}
 
 				// Pass light count and array of light indices for base pass.
-				if ((prev_inst != inst || prev_shader != shader || prev_variant != instance_variant) && pass == 0) {
+				if ((prev_inst != inst || prev_shader != shader || prev_variant != instance_variant || prev_spec_constants != spec_constants) && pass == 0) {
 					// Rebind the light indices.
 					material_storage->shaders.scene_shader.version_set_uniform(SceneShaderGLES3::OMNI_LIGHT_COUNT, inst->omni_light_gl_cache.size(), shader->version, instance_variant, spec_constants);
 					material_storage->shaders.scene_shader.version_set_uniform(SceneShaderGLES3::SPOT_LIGHT_COUNT, inst->spot_light_gl_cache.size(), shader->version, instance_variant, spec_constants);
@@ -3409,13 +3469,17 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 							};
 							glUniformMatrix3fv(material_storage->shaders.scene_shader.version_get_uniform(SceneShaderGLES3::LIGHTMAP_NORMAL_XFORM, shader->version, instance_variant, spec_constants), 1, GL_FALSE, matrix);
 						}
+
 					} else if (inst->lightmap_sh) {
 						glUniform4fv(material_storage->shaders.scene_shader.version_get_uniform(SceneShaderGLES3::LIGHTMAP_CAPTURES, shader->version, instance_variant, spec_constants), 9, reinterpret_cast<const GLfloat *>(inst->lightmap_sh->sh));
 					}
-
 					prev_inst = inst;
 				}
 			}
+
+			prev_shader = shader;
+			prev_variant = instance_variant;
+			prev_spec_constants = spec_constants;
 
 			// Pass in reflection probe data
 			if constexpr (p_pass_mode == PASS_MODE_COLOR || p_pass_mode == PASS_MODE_COLOR_TRANSPARENT) {
@@ -3436,8 +3500,9 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 						material_storage->shaders.scene_shader.version_set_uniform(SceneShaderGLES3::REFPROBE1_AMBIENT_MODE, int(probe->ambient_mode), shader->version, instance_variant, spec_constants);
 						material_storage->shaders.scene_shader.version_set_uniform(SceneShaderGLES3::REFPROBE1_AMBIENT_COLOR, probe->ambient_color * probe->ambient_color_energy, shader->version, instance_variant, spec_constants);
 						material_storage->shaders.scene_shader.version_set_uniform(SceneShaderGLES3::REFPROBE1_LOCAL_MATRIX, inst->reflection_probes_local_transform_cache[0], shader->version, instance_variant, spec_constants);
+						material_storage->shaders.scene_shader.version_set_uniform(SceneShaderGLES3::REFPROBE1_BLEND_DISTANCE, probe->blend_distance, shader->version, instance_variant, spec_constants);
 
-						glActiveTexture(GL_TEXTURE0 + config->max_texture_image_units - 7);
+						glActiveTexture(GL_TEXTURE0 + config->max_texture_image_units - 8);
 						glBindTexture(GL_TEXTURE_CUBE_MAP, light_storage->reflection_probe_instance_get_texture(inst->reflection_probe_rid_cache[0]));
 					}
 
@@ -3454,8 +3519,9 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 						material_storage->shaders.scene_shader.version_set_uniform(SceneShaderGLES3::REFPROBE2_AMBIENT_MODE, int(probe->ambient_mode), shader->version, instance_variant, spec_constants);
 						material_storage->shaders.scene_shader.version_set_uniform(SceneShaderGLES3::REFPROBE2_AMBIENT_COLOR, probe->ambient_color * probe->ambient_color_energy, shader->version, instance_variant, spec_constants);
 						material_storage->shaders.scene_shader.version_set_uniform(SceneShaderGLES3::REFPROBE2_LOCAL_MATRIX, inst->reflection_probes_local_transform_cache[1], shader->version, instance_variant, spec_constants);
+						material_storage->shaders.scene_shader.version_set_uniform(SceneShaderGLES3::REFPROBE2_BLEND_DISTANCE, probe->blend_distance, shader->version, instance_variant, spec_constants);
 
-						glActiveTexture(GL_TEXTURE0 + config->max_texture_image_units - 8);
+						glActiveTexture(GL_TEXTURE0 + config->max_texture_image_units - 9);
 						glBindTexture(GL_TEXTURE_CUBE_MAP, light_storage->reflection_probe_instance_get_texture(inst->reflection_probe_rid_cache[1]));
 
 						spec_constants |= SceneShaderGLES3::SECOND_REFLECTION_PROBE;
@@ -3789,7 +3855,7 @@ void RasterizerSceneGLES3::_render_buffers_debug_draw(Ref<RenderSceneBuffersGLES
 			glActiveTexture(GL_TEXTURE0);
 			scene_state.enable_gl_depth_draw(true);
 			glDepthFunc(GL_ALWAYS);
-			scene_state.set_gl_cull_mode(GLES3::SceneShaderData::CULL_DISABLED);
+			scene_state.set_gl_cull_mode(RS::CULL_MODE_DISABLED);
 
 			// Loop through quadrants and copy shadows over.
 			for (int quadrant = 0; quadrant < 4; quadrant++) {
@@ -3925,7 +3991,7 @@ TypedArray<Image> RasterizerSceneGLES3::bake_render_uv2(RID p_base, const TypedA
 	// Consider rendering to RGBA8 encoded as RGBE, then manually convert to RGBAH on CPU.
 	glBindTexture(GL_TEXTURE_2D, emission_tex);
 	if (config->float_texture_supported) {
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, p_image_size.width, p_image_size.height, 0, GL_RGBA, GL_FLOAT, nullptr);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, p_image_size.width, p_image_size.height, 0, GL_RGBA, GL_FLOAT, nullptr);
 		GLES3::Utilities::get_singleton()->texture_allocated_data(emission_tex, p_image_size.width * p_image_size.height * 16, "Lightmap emission texture");
 	} else {
 		// Fallback to RGBA8 on devices that don't support rendering to floating point textures. This will look bad, but we have no choice.
@@ -4028,9 +4094,9 @@ TypedArray<Image> RasterizerSceneGLES3::bake_render_uv2(RID p_base, const TypedA
 	{
 		tex->tex_id = emission_tex;
 		if (config->float_texture_supported) {
-			tex->format = Image::FORMAT_RGBAF;
+			tex->format = Image::FORMAT_RGBAH;
 			tex->real_format = Image::FORMAT_RGBAH;
-			tex->gl_type_cache = GL_FLOAT;
+			tex->gl_type_cache = GL_HALF_FLOAT;
 		}
 		Ref<Image> img = GLES3::TextureStorage::get_singleton()->texture_2d_get(tex_rid);
 		GLES3::Utilities::get_singleton()->texture_free_data(emission_tex);

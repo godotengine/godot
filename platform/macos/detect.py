@@ -2,7 +2,7 @@ import os
 import sys
 from typing import TYPE_CHECKING
 
-from methods import detect_darwin_sdk_path, get_compiler_version, is_vanilla_clang, print_error, print_warning
+from methods import detect_darwin_sdk_path, get_compiler_version, is_apple_clang, print_error, print_warning
 from platform_methods import detect_arch, detect_mvk, validate_arch
 
 if TYPE_CHECKING:
@@ -70,14 +70,6 @@ def configure(env: "SConsEnvironment"):
     supported_arches = ["x86_64", "arm64"]
     validate_arch(env["arch"], get_name(), supported_arches)
 
-    ## Build type
-
-    if env["target"] == "template_release":
-        if env["arch"] != "arm64":
-            env.Prepend(CCFLAGS=["-msse2"])
-    elif env.dev_build:
-        env.Prepend(LINKFLAGS=["-Xlinker", "-no_deduplicate"])
-
     ## Compiler configuration
 
     # Save this in environment for use by other modules
@@ -97,17 +89,22 @@ def configure(env: "SConsEnvironment"):
         env.Append(LINKFLAGS=["-arch", "x86_64", "-mmacosx-version-min=10.13"])
 
     env.Append(CCFLAGS=["-ffp-contract=off"])
+    env.Append(CCFLAGS=["-fobjc-arc"])
 
     cc_version = get_compiler_version(env)
     cc_version_major = cc_version["apple_major"]
     cc_version_minor = cc_version["apple_minor"]
-    vanilla = is_vanilla_clang(env)
 
     # Workaround for Xcode 15 linker bug.
-    if not vanilla and cc_version_major == 1500 and cc_version_minor == 0:
+    if is_apple_clang(env) and cc_version_major == 1500 and cc_version_minor == 0:
         env.Prepend(LINKFLAGS=["-ld_classic"])
 
-    env.Append(CCFLAGS=["-fobjc-arc"])
+    if env.dev_build:
+        env.Prepend(LINKFLAGS=["-Xlinker", "-no_deduplicate"])
+
+    ccache_path = os.environ.get("CCACHE", "")
+    if ccache_path != "":
+        ccache_path = ccache_path + " "
 
     if "osxcross" not in env:  # regular native build
         if env["macports_clang"] != "no":
@@ -119,8 +116,8 @@ def configure(env: "SConsEnvironment"):
             env["RANLIB"] = mpprefix + "/libexec/llvm-" + mpclangver + "/bin/llvm-ranlib"
             env["AS"] = mpprefix + "/libexec/llvm-" + mpclangver + "/bin/llvm-as"
         else:
-            env["CC"] = "clang"
-            env["CXX"] = "clang++"
+            env["CC"] = ccache_path + "clang"
+            env["CXX"] = ccache_path + "clang++"
 
         detect_darwin_sdk_path("macos", env)
         env.Append(CCFLAGS=["-isysroot", "$MACOS_SDK_PATH"])
@@ -133,15 +130,8 @@ def configure(env: "SConsEnvironment"):
         else:
             basecmd = root + "/target/bin/x86_64-apple-" + env["osxcross_sdk"] + "-"
 
-        ccache_path = os.environ.get("CCACHE")
-        if ccache_path is None:
-            env["CC"] = basecmd + "cc"
-            env["CXX"] = basecmd + "c++"
-        else:
-            # there aren't any ccache wrappers available for macOS cross-compile,
-            # to enable caching we need to prepend the path to the ccache binary
-            env["CC"] = ccache_path + " " + basecmd + "cc"
-            env["CXX"] = ccache_path + " " + basecmd + "c++"
+        env["CC"] = ccache_path + basecmd + "cc"
+        env["CXX"] = ccache_path + basecmd + "c++"
         env["AR"] = basecmd + "ar"
         env["RANLIB"] = basecmd + "ranlib"
         env["AS"] = basecmd + "as"
@@ -227,6 +217,8 @@ def configure(env: "SConsEnvironment"):
             "QuartzCore",
             "-framework",
             "Security",
+            "-framework",
+            "UniformTypeIdentifiers",
         ]
     )
     env.Append(LIBS=["pthread", "z"])
@@ -253,6 +245,7 @@ def configure(env: "SConsEnvironment"):
         env.AppendUnique(CPPDEFINES=["METAL_ENABLED", "RD_ENABLED"])
         extra_frameworks.add("Metal")
         extra_frameworks.add("MetalKit")
+        extra_frameworks.add("MetalFX")
         env.Prepend(CPPPATH=["#thirdparty/spirv-cross"])
 
     if env["vulkan"]:

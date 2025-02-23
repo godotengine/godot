@@ -31,15 +31,15 @@
 #ifndef RENDER_SCENE_BUFFERS_RD_H
 #define RENDER_SCENE_BUFFERS_RD_H
 
-#include "../effects/fsr2.h"
+#ifdef METAL_ENABLED
+#include "../effects/metal_fx.h"
+#endif
 #include "../effects/vrs.h"
-#include "../framebuffer_cache_rd.h"
 #include "core/templates/hash_map.h"
 #include "material_storage.h"
 #include "render_buffer_custom_data_rd.h"
 #include "servers/rendering/rendering_device.h"
 #include "servers/rendering/rendering_device_binds.h"
-#include "servers/rendering/rendering_method.h"
 #include "servers/rendering/storage/render_scene_buffers.h"
 
 #define RB_SCOPE_BUFFERS SNAME("render_buffers")
@@ -81,8 +81,13 @@ private:
 	RS::ViewportScaling3DMode scaling_3d_mode = RS::VIEWPORT_SCALING_3D_MODE_OFF;
 	float fsr_sharpness = 0.2f;
 	float texture_mipmap_bias = 0.0f;
+	RS::ViewportAnisotropicFiltering anisotropic_filtering_level = RS::VIEWPORT_ANISOTROPY_4X;
 
-	// Aliassing settings
+#ifdef METAL_ENABLED
+	RendererRD::MFXSpatialContext *mfx_spatial_context = nullptr;
+#endif
+
+	// Aliasing settings
 	RS::ViewportMSAA msaa_3d = RS::VIEWPORT_MSAA_DISABLED;
 	RS::ViewportScreenSpaceAA screen_space_aa = RS::VIEWPORT_SCREEN_SPACE_AA_DISABLED;
 	bool use_taa = false;
@@ -190,12 +195,18 @@ public:
 	void configure_for_reflections(const Size2i p_reflection_size);
 	virtual void set_fsr_sharpness(float p_fsr_sharpness) override;
 	virtual void set_texture_mipmap_bias(float p_texture_mipmap_bias) override;
+	virtual void set_anisotropic_filtering_level(RS::ViewportAnisotropicFiltering p_anisotropic_filtering_level) override;
 	virtual void set_use_debanding(bool p_use_debanding) override;
+
+#ifdef METAL_ENABLED
+	void ensure_mfx(RendererRD::MFXSpatialEffect *p_effect);
+	_FORCE_INLINE_ RendererRD::MFXSpatialContext *get_mfx_spatial_context() const { return mfx_spatial_context; }
+#endif
 
 	// Named Textures
 
 	bool has_texture(const StringName &p_context, const StringName &p_texture_name) const;
-	RID create_texture(const StringName &p_context, const StringName &p_texture_name, const RD::DataFormat p_data_format, const uint32_t p_usage_bits, const RD::TextureSamples p_texture_samples = RD::TEXTURE_SAMPLES_1, const Size2i p_size = Size2i(0, 0), const uint32_t p_layers = 0, const uint32_t p_mipmaps = 1, bool p_unique = true);
+	RID create_texture(const StringName &p_context, const StringName &p_texture_name, const RD::DataFormat p_data_format, const uint32_t p_usage_bits, const RD::TextureSamples p_texture_samples = RD::TEXTURE_SAMPLES_1, const Size2i p_size = Size2i(0, 0), const uint32_t p_layers = 0, const uint32_t p_mipmaps = 1, bool p_unique = true, bool p_discardable = false);
 	RID create_texture_from_format(const StringName &p_context, const StringName &p_texture_name, const RD::TextureFormat &p_texture_format, RD::TextureView p_view = RD::TextureView(), bool p_unique = true);
 	RID create_texture_view(const StringName &p_context, const StringName &p_texture_name, const StringName &p_view_name, RD::TextureView p_view = RD::TextureView());
 	RID get_texture(const StringName &p_context, const StringName &p_texture_name) const;
@@ -422,6 +433,8 @@ private:
 	RID _get_depth_layer_compat_80214(const uint32_t p_layer);
 	RID _get_velocity_texture_compat_80214();
 	RID _get_velocity_layer_compat_80214(const uint32_t p_layer);
+
+	RID _create_texture_bind_compat_98670(const StringName &p_context, const StringName &p_texture_name, const RD::DataFormat p_data_format, const uint32_t p_usage_bits, const RD::TextureSamples p_texture_samples, const Size2i p_size, const uint32_t p_layers, const uint32_t p_mipmaps, bool p_unique);
 
 	static void _bind_compatibility_methods();
 

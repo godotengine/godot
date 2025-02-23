@@ -132,7 +132,7 @@
 			<description>
 				Emitted when a [Shape2D] of the received [param area] enters a shape of this area. Requires [member monitoring] to be set to [code]true[/code].
 				[param local_shape_index] and [param area_shape_index] contain indices of the interacting shapes from this area and the other area, respectively. [param area_rid] contains the [RID] of the other area. These values can be used with the [PhysicsServer2D].
-				[b]Example of getting the[/b] [CollisionShape2D] [b]node from the shape index:[/b]
+				[b]Example:[/b] Get the [CollisionShape2D] node from the shape index:
 				[codeblocks]
 				[gdscript]
 				var other_shape_owner = area.shape_find_owner(area_shape_index)
@@ -174,7 +174,7 @@
 			<description>
 				Emitted when a [Shape2D] of the received [param body] enters a shape of this area. [param body] can be a [PhysicsBody2D] or a [TileMap]. [TileMap]s are detected if their [TileSet] has collision shapes configured. Requires [member monitoring] to be set to [code]true[/code].
 				[param local_shape_index] and [param body_shape_index] contain indices of the interacting shapes from this area and the interacting body, respectively. [param body_rid] contains the [RID] of the body. These values can be used with the [PhysicsServer2D].
-				[b]Example of getting the[/b] [CollisionShape2D] [b]node from the shape index:[/b]
+				[b]Example:[/b] Get the [CollisionShape2D] node from the shape index:
 				[codeblocks]
 				[gdscript]
 				var body_shape_owner = body.shape_find_owner(body_shape_index)

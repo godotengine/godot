@@ -93,7 +93,7 @@
 			<param index="0" name="extension" type="GLTFDocumentExtension" />
 			<param index="1" name="first_priority" type="bool" default="false" />
 			<description>
-				Registers the given [GLTFDocumentExtension] instance with GLTFDocument. If [param first_priority] is true, this extension will be run first. Otherwise, it will be run last.
+				Registers the given [GLTFDocumentExtension] instance with GLTFDocument. If [param first_priority] is [code]true[/code], this extension will be run first. Otherwise, it will be run last.
 				[b]Note:[/b] Like GLTFDocument itself, all GLTFDocumentExtension classes must be stateless in order to function properly. If you need to store data, use the [code]set_additional_data[/code] and [code]get_additional_data[/code] methods in [GLTFState] or [GLTFNode].
 			</description>
 		</method>

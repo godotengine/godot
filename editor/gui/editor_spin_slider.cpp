@@ -67,6 +67,7 @@ void EditorSpinSlider::gui_input(const Ref<InputEvent> &p_event) {
 					} else {
 						set_value(get_value() - get_step());
 					}
+					emit_signal("updown_pressed");
 					return;
 				}
 				_grab_start();
@@ -365,7 +366,7 @@ void EditorSpinSlider::_draw_spin_slider() {
 				}
 				if (glyphs[i].font_rid != RID()) {
 					TS->font_draw_glyph(glyphs[i].font_rid, ci, glyphs[i].font_size, text_ofs + Vector2(glyphs[i].x_off, glyphs[i].y_off), glyphs[i].index, color);
-				} else if ((glyphs[i].flags & TextServer::GRAPHEME_IS_VIRTUAL) != TextServer::GRAPHEME_IS_VIRTUAL) {
+				} else if (((glyphs[i].flags & TextServer::GRAPHEME_IS_VIRTUAL) != TextServer::GRAPHEME_IS_VIRTUAL) && ((glyphs[i].flags & TextServer::GRAPHEME_IS_EMBEDDED_OBJECT) != TextServer::GRAPHEME_IS_EMBEDDED_OBJECT)) {
 					TS->draw_hex_code_box(ci, glyphs[i].font_size, text_ofs + Vector2(glyphs[i].x_off, glyphs[i].y_off), glyphs[i].index, color);
 				}
 			}
@@ -375,7 +376,7 @@ void EditorSpinSlider::_draw_spin_slider() {
 	TS->free_rid(num_rid);
 
 	if (!hide_slider) {
-		if (get_step() == 1) {
+		if (editing_integer) {
 			Ref<Texture2D> updown2 = read_only ? theme_cache.updown_disabled_icon : theme_cache.updown_icon;
 			int updown_vofs = (size.height - updown2->get_height()) / 2;
 			if (rtl) {
@@ -437,7 +438,7 @@ void EditorSpinSlider::_draw_spin_slider() {
 				Vector2 scale = get_global_transform_with_canvas().get_scale();
 				grabber->set_scale(scale);
 				grabber->reset_size();
-				grabber->set_position(get_global_position() + (grabber_rect.get_center() - grabber->get_size() * 0.5) * scale);
+				grabber->set_position((grabber_rect.get_center() - grabber->get_size() * 0.5) * scale);
 
 				if (mousewheel_over_grabber) {
 					Input::get_singleton()->warp_mouse(grabber->get_position() + grabber_rect.size);
@@ -527,6 +528,19 @@ void EditorSpinSlider::set_hide_slider(bool p_hide) {
 
 bool EditorSpinSlider::is_hiding_slider() const {
 	return hide_slider;
+}
+
+void EditorSpinSlider::set_editing_integer(bool p_editing_integer) {
+	if (p_editing_integer == editing_integer) {
+		return;
+	}
+
+	editing_integer = p_editing_integer;
+	queue_redraw();
+}
+
+bool EditorSpinSlider::is_editing_integer() const {
+	return editing_integer;
 }
 
 void EditorSpinSlider::set_label(const String &p_label) {
@@ -688,14 +702,19 @@ void EditorSpinSlider::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_hide_slider", "hide_slider"), &EditorSpinSlider::set_hide_slider);
 	ClassDB::bind_method(D_METHOD("is_hiding_slider"), &EditorSpinSlider::is_hiding_slider);
 
+	ClassDB::bind_method(D_METHOD("set_editing_integer", "editing_integer"), &EditorSpinSlider::set_editing_integer);
+	ClassDB::bind_method(D_METHOD("is_editing_integer"), &EditorSpinSlider::is_editing_integer);
+
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "label"), "set_label", "get_label");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "suffix"), "set_suffix", "get_suffix");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "read_only"), "set_read_only", "is_read_only");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flat"), "set_flat", "is_flat");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "hide_slider"), "set_hide_slider", "is_hiding_slider");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "editing_integer"), "set_editing_integer", "is_editing_integer");
 
 	ADD_SIGNAL(MethodInfo("grabbed"));
 	ADD_SIGNAL(MethodInfo("ungrabbed"));
+	ADD_SIGNAL(MethodInfo("updown_pressed"));
 	ADD_SIGNAL(MethodInfo("value_focus_entered"));
 	ADD_SIGNAL(MethodInfo("value_focus_exited"));
 
@@ -713,11 +732,12 @@ void EditorSpinSlider::_ensure_input_popup() {
 	add_child(value_input_popup);
 
 	value_input = memnew(LineEdit);
+	value_input->set_emoji_menu_enabled(false);
 	value_input->set_focus_mode(FOCUS_CLICK);
 	value_input_popup->add_child(value_input);
 	value_input->set_anchors_and_offsets_preset(PRESET_FULL_RECT);
 	value_input_popup->connect(SceneStringName(hidden), callable_mp(this, &EditorSpinSlider::_value_input_closed));
-	value_input->connect("text_submitted", callable_mp(this, &EditorSpinSlider::_value_input_submitted));
+	value_input->connect(SceneStringName(text_submitted), callable_mp(this, &EditorSpinSlider::_value_input_submitted));
 	value_input->connect(SceneStringName(focus_exited), callable_mp(this, &EditorSpinSlider::_value_focus_exited));
 	value_input->connect(SceneStringName(gui_input), callable_mp(this, &EditorSpinSlider::_value_input_gui_input));
 
@@ -731,7 +751,7 @@ EditorSpinSlider::EditorSpinSlider() {
 	grabber = memnew(TextureRect);
 	add_child(grabber);
 	grabber->hide();
-	grabber->set_as_top_level(true);
+	grabber->set_z_index(1);
 	grabber->set_mouse_filter(MOUSE_FILTER_STOP);
 	grabber->connect(SceneStringName(mouse_entered), callable_mp(this, &EditorSpinSlider::_grabber_mouse_entered));
 	grabber->connect(SceneStringName(mouse_exited), callable_mp(this, &EditorSpinSlider::_grabber_mouse_exited));

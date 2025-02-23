@@ -30,7 +30,7 @@
 
 #include "touch_screen_button.h"
 
-#include "scene/main/window.h"
+#include "scene/main/viewport.h"
 
 void TouchScreenButton::set_texture_normal(const Ref<Texture2D> &p_texture) {
 	if (texture_normal == p_texture) {
@@ -340,7 +340,7 @@ Rect2 TouchScreenButton::_edit_get_rect() const {
 }
 
 bool TouchScreenButton::_edit_use_rect() const {
-	return !texture_normal.is_null();
+	return texture_normal.is_valid();
 }
 #endif // DEBUG_ENABLED
 
@@ -430,6 +430,6 @@ void TouchScreenButton::_bind_methods() {
 }
 
 TouchScreenButton::TouchScreenButton() {
-	unit_rect = Ref<RectangleShape2D>(memnew(RectangleShape2D));
+	unit_rect.instantiate();
 	unit_rect->set_size(Vector2(1, 1));
 }

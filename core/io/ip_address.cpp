@@ -34,7 +34,6 @@ IPAddress::operator Variant() const {
 	return operator String();
 }*/
 
-#include <stdio.h>
 #include <string.h>
 
 IPAddress::operator String() const {
@@ -202,7 +201,7 @@ IPAddress::IPAddress(const String &p_string) {
 		// Wildcard (not a valid IP)
 		wildcard = true;
 
-	} else if (p_string.contains(":")) {
+	} else if (p_string.contains_char(':')) {
 		// IPv6
 		_parse_ipv6(p_string);
 		valid = true;

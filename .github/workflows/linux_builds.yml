@@ -10,15 +10,14 @@ env:
   DOTNET_NOLOGO: true
   DOTNET_CLI_TELEMETRY_OPTOUT: true
   TSAN_OPTIONS: suppressions=misc/error_suppressions/tsan.txt
-
-concurrency:
-  group: ci-${{ github.actor }}-${{ github.head_ref || github.run_number }}-${{ github.ref }}-linux
-  cancel-in-progress: true
+  UBSAN_OPTIONS: suppressions=misc/error_suppressions/ubsan.txt
 
 jobs:
   build-linux:
-    runs-on: ubuntu-20.04
+    # Stay one LTS before latest to increase portability of Linux artifacts.
+    runs-on: ubuntu-22.04
     name: ${{ matrix.name }}
+    timeout-minutes: 120
     strategy:
       fail-fast: false
       matrix:
@@ -34,6 +33,9 @@ jobs:
             proj-conv: true
             api-compat: true
             artifact: true
+            # Validate godot-cpp compatibility on one arbitrary editor build.
+            godot-cpp: true
+            cache-limit: 2
 
           - name: Editor with doubles and GCC sanitizers (target=editor, tests=yes, dev_build=yes, scu_build=yes, precision=double, use_asan=yes, use_ubsan=yes, linker=gold)
             cache-name: linux-editor-double-sanitizers
@@ -44,10 +46,9 @@ jobs:
             build-mono: false
             tests: true
             proj-test: true
-            # Generate an API dump for godot-cpp tests.
-            api-dump: true
             # Skip 2GiB artifact speeding up action.
             artifact: false
+            cache-limit: 7
 
           - name: Editor with clang sanitizers (target=editor, tests=yes, dev_build=yes, use_asan=yes, use_ubsan=yes, use_llvm=yes, linker=lld)
             cache-name: linux-editor-llvm-sanitizers
@@ -60,6 +61,7 @@ jobs:
             artifact: false
             # Test our oldest supported SCons/Python versions on one arbitrary editor build.
             legacy-scons: true
+            cache-limit: 7
 
           - name: Editor with ThreadSanitizer (target=editor, tests=yes, dev_build=yes, use_tsan=yes, use_llvm=yes, linker=lld)
             cache-name: linux-editor-thread-sanitizer
@@ -70,8 +72,9 @@ jobs:
             build-mono: false
             # Skip 2GiB artifact speeding up action.
             artifact: false
+            cache-limit: 5
 
-          - name: Template w/ Mono (target=template_release, tests=yes)
+          - name: Template w/ Mono, release (target=template_release, tests=yes)
             cache-name: linux-template-mono
             target: template_release
             sconsflags: module_mono_enabled=yes
@@ -79,6 +82,17 @@ jobs:
             build-mono: false
             tests: true
             artifact: true
+            cache-limit: 1
+
+          - name: Template w/ Mono, debug (target=template_debug, tests=yes)
+            cache-name: linux-template-mono-debug
+            target: template_debug
+            sconsflags: module_mono_enabled=yes
+            bin: ./bin/godot.linuxbsd.template_debug.x86_64.mono
+            build-mono: false
+            tests: true
+            artifact: true
+            cache-limit: 1
 
           - name: Minimal template (target=template_release, tests=yes, everything disabled)
             cache-name: linux-template-minimal
@@ -87,6 +101,7 @@ jobs:
             bin: ./bin/godot.linuxbsd.template_release.x86_64
             tests: true
             artifact: true
+            cache-limit: 1
 
     steps:
       - name: Checkout
@@ -100,7 +115,7 @@ jobs:
         run: |
           sudo rm -f /etc/apt/sources.list.d/microsoft-prod.list
           sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys EB8B81E14DA65431D7504EA8F63F0F2B90935439
-          sudo add-apt-repository "deb https://ppa.launchpadcontent.net/kisak/turtle/ubuntu focal main"
+          sudo add-apt-repository "deb https://ppa.launchpadcontent.net/kisak/turtle/ubuntu jammy main"
           sudo apt-get install -qq mesa-vulkan-drivers
 
       # TODO: Figure out somehow how to embed this one.
@@ -121,7 +136,7 @@ jobs:
         continue-on-error: true
 
       - name: Setup Python and SCons
-        if: '!matrix.legacy-scons'
+        if: "!matrix.legacy-scons"
         uses: ./.github/actions/godot-deps
 
       - name: Setup Python and SCons (legacy versions)
@@ -129,11 +144,20 @@ jobs:
         uses: ./.github/actions/godot-deps
         with:
           # Sync with Ensure*Version in SConstruct.
-          python-version: 3.6
-          scons-version: 3.1.2
+          python-version: 3.8
+          scons-version: 4.0
 
-      - name: Setup GCC problem matcher
-        uses: ammaraskar/gcc-problem-matcher@master
+      - name: Force remove preinstalled .NET SDKs
+        if: matrix.build-mono
+        run: |
+          sudo rm -rf /usr/share/dotnet/sdk/*
+
+      - name: Setup older .NET SDK as baseline
+        if: matrix.build-mono
+        uses: actions/setup-dotnet@v4
+        with:
+          # Targeting the oldest version we want to support to ensure it still builds.
+          dotnet-version: 8.0.100
 
       - name: Compilation
         uses: ./.github/actions/godot-build
@@ -142,6 +166,14 @@ jobs:
           platform: linuxbsd
           target: ${{ matrix.target }}
           tests: ${{ matrix.tests }}
+          scons-cache-limit: ${{ matrix.cache-limit }}
+
+      - name: Compilation (godot-cpp)
+        uses: ./.github/actions/godot-cpp-build
+        if: matrix.godot-cpp
+        with:
+          bin: ${{ matrix.bin }}
+          scons-flags: target=template_debug dev_build=yes verbose=yes
 
       - name: Save Godot build cache
         uses: ./.github/actions/godot-cache-save
@@ -157,7 +189,8 @@ jobs:
       - name: Build .NET solutions
         if: matrix.build-mono
         run: |
-          ./modules/mono/build_scripts/build_assemblies.py --godot-output-dir=./bin --godot-platform=linuxbsd
+          dotnet --info
+          ./modules/mono/build_scripts/build_assemblies.py --godot-output-dir=./bin --godot-platform=linuxbsd --werror
 
       - name: Prepare artifact
         if: matrix.artifact
@@ -170,12 +203,6 @@ jobs:
         if: matrix.artifact
         with:
           name: ${{ matrix.cache-name }}
-
-      - name: Dump Godot API
-        uses: ./.github/actions/godot-api-dump
-        if: matrix.api-dump
-        with:
-          bin: ${{ matrix.bin }}
 
       - name: Unit tests
         if: matrix.tests

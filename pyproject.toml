@@ -1,22 +1,22 @@
 [tool.mypy]
-ignore_missing_imports = true
 disallow_any_generics = true
+explicit_package_bases = true
+ignore_missing_imports = true
+namespace_packages = true
 no_implicit_optional = true
 pretty = true
 show_column_numbers = true
 warn_redundant_casts = true
 warn_return_any = true
 warn_unreachable = true
-namespace_packages = true
-explicit_package_bases = true
 exclude = ["thirdparty/"]
 python_version = "3.8"
 
 [tool.ruff]
 extend-exclude = ["thirdparty"]
-extend-include = ["SConstruct", "SCsub"]
+extend-include = ["*SConstruct", "*SCsub"]
 line-length = 120
-target-version = "py37"
+target-version = "py38"
 
 [tool.ruff.lint]
 extend-select = [
@@ -42,50 +42,51 @@ section-order = [
 ]
 
 [tool.codespell]
-enable-colors = ""
-write-changes = ""
-check-hidden = ""
+enable-colors = true
+write-changes = true
+check-hidden = true
 quiet-level = 3
-builtin = "clear,rare,en-GB_to_en-US"
-skip = """\
-	.mailmap,
-	*.desktop,
-	*.gitignore,
-	*.po,
-	*.pot,
-	*.rc,
-	AUTHORS.md,
-	COPYRIGHT.txt,
-	core/input/gamecontrollerdb.txt,
-	core/string/locales.h,
-	DONORS.md,
-	editor/project_converter_3_to_4.cpp,
-	platform/android/java/lib/src/com/*,
-	platform/web/package-lock.json
-"""
-ignore-words-list = """\
-	breaked,
-	cancelled,
-	checkin,
-	colour,
-	curvelinear,
-	doubleclick,
-	expct,
-	findn,
-	gird,
-	hel,
-	inout,
-	labelin,
-	lod,
-	mis,
-	nd,
-	numer,
-	ot,
-	outin,
-	parm,
-	requestor,
-	te,
-	textin,
-	thirdparty,
-	vai
-"""
+builtin = ["clear", "rare", "en-GB_to_en-US"]
+skip = [
+	".mailmap",
+	"*.desktop",
+	"*.gitignore",
+	"*.po",
+	"*.pot",
+	"*.rc",
+	"AUTHORS.md",
+	"COPYRIGHT.txt",
+	"core/input/gamecontrollerdb.txt",
+	"core/string/locales.h",
+	"DONORS.md",
+	"editor/project_converter_3_to_4.cpp",
+	"platform/android/java/lib/src/com/*",
+	"platform/web/package-lock.json",
+]
+ignore-words-list = [
+	"breaked",
+	"cancelled",
+	"checkin",
+	"colour",
+	"curvelinear",
+	"doubleclick",
+	"expct",
+	"findn",
+	"gird",
+	"hel",
+	"inout",
+	"labelin",
+	"lod",
+	"mis",
+	"nd",
+	"numer",
+	"ot",
+	"outin",
+	"parm",
+	"requestor",
+	"streamin",
+	"te",
+	"textin",
+	"thirdparty",
+	"vai",
+]

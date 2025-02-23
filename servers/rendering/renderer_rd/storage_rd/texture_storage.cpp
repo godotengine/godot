@@ -43,9 +43,15 @@ using namespace RendererRD;
 void TextureStorage::CanvasTexture::clear_cache() {
 	info_cache[0] = CanvasTextureCache();
 	info_cache[1] = CanvasTextureCache();
+	if (invalidated_callback != nullptr) {
+		invalidated_callback(false, invalidated_callback_userdata);
+	}
 }
 
 TextureStorage::CanvasTexture::~CanvasTexture() {
+	if (invalidated_callback != nullptr) {
+		invalidated_callback(true, invalidated_callback_userdata);
+	}
 }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -733,6 +739,16 @@ TextureStorage::CanvasTextureInfo TextureStorage::canvas_texture_get_info(RID p_
 	res.use_specular = ct->use_specular_cache;
 
 	return res;
+}
+
+void TextureStorage::canvas_texture_set_invalidation_callback(RID p_canvas_texture, InvalidationCallback p_callback, void *p_userdata) {
+	CanvasTexture *ct = canvas_texture_owner.get_or_null(p_canvas_texture);
+	if (!ct) {
+		return;
+	}
+
+	ct->invalidated_callback = p_callback;
+	ct->invalidated_callback_userdata = p_userdata;
 }
 
 /* Texture API */
@@ -1446,7 +1462,11 @@ Ref<Image> TextureStorage::texture_2d_get(RID p_texture) const {
 		image = Image::create_from_data(tex->width, tex->height, tex->mipmaps > 1, tex->validated_format, data);
 	}
 
-	ERR_FAIL_COND_V(image->is_empty(), Ref<Image>());
+	if (image->is_empty()) {
+		const String &path_str = tex->path.is_empty() ? "with no path" : vformat("with path '%s'", tex->path);
+		ERR_FAIL_V_MSG(Ref<Image>(), vformat("Texture %s has no data.", path_str));
+	}
+
 	if (tex->format != tex->validated_format) {
 		image->convert(tex->format);
 	}
@@ -1467,7 +1487,10 @@ Ref<Image> TextureStorage::texture_2d_layer_get(RID p_texture, int p_layer) cons
 	Vector<uint8_t> data = RD::get_singleton()->texture_get_data(tex->rd_texture, p_layer);
 	ERR_FAIL_COND_V(data.is_empty(), Ref<Image>());
 	Ref<Image> image = Image::create_from_data(tex->width, tex->height, tex->mipmaps > 1, tex->validated_format, data);
-	ERR_FAIL_COND_V(image->is_empty(), Ref<Image>());
+	if (image->is_empty()) {
+		const String &path_str = tex->path.is_empty() ? "with no path" : vformat("with path '%s'", tex->path);
+		ERR_FAIL_V_MSG(Ref<Image>(), vformat("Texture %s has no data.", path_str));
+	}
 	if (tex->format != tex->validated_format) {
 		image->convert(tex->format);
 	}
@@ -1494,6 +1517,10 @@ Vector<Ref<Image>> TextureStorage::texture_3d_get(RID p_texture) const {
 
 		Ref<Image> img = Image::create_from_data(bs.size.width, bs.size.height, false, tex->validated_format, sub_region);
 		ERR_FAIL_COND_V(img->is_empty(), Vector<Ref<Image>>());
+		if (img->is_empty()) {
+			const String &path_str = tex->path.is_empty() ? "with no path" : vformat("with path '%s'", tex->path);
+			ERR_FAIL_V_MSG(Vector<Ref<Image>>(), vformat("Texture %s has no data.", path_str));
+		}
 		if (tex->format != tex->validated_format) {
 			img->convert(tex->format);
 		}
@@ -1666,7 +1693,9 @@ void TextureStorage::texture_rd_initialize(RID p_texture, const RID &p_rd_textur
 			ERR_FAIL_COND(tf.array_layers != 1);
 			texture.type = TextureStorage::TYPE_2D;
 		} break;
-		case RD::TEXTURE_TYPE_2D_ARRAY: {
+		case RD::TEXTURE_TYPE_2D_ARRAY:
+		case RD::TEXTURE_TYPE_CUBE:
+		case RD::TEXTURE_TYPE_CUBE_ARRAY: {
 			// RenderingDevice doesn't distinguish between Array textures and Cube textures
 			// this condition covers TextureArrays, TextureCube, and TextureCubeArray.
 			ERR_FAIL_COND(tf.array_layers == 1);
@@ -2172,10 +2201,15 @@ Ref<Image> TextureStorage::_validate_texture_format(const Ref<Image> &p_image, T
 				}
 			} else {
 				//not supported, reconvert
-				r_format.format = RD::DATA_FORMAT_R8G8B8A8_UNORM;
-				r_format.format_srgb = RD::DATA_FORMAT_R8G8B8A8_SRGB;
 				image->decompress();
-				image->convert(Image::FORMAT_RGBA8);
+				if (p_image->get_format() == Image::FORMAT_ASTC_4x4) {
+					r_format.format = RD::DATA_FORMAT_R8G8B8A8_UNORM;
+					r_format.format_srgb = RD::DATA_FORMAT_R8G8B8A8_SRGB;
+					image->convert(Image::FORMAT_RGBA8);
+				} else {
+					r_format.format = RD::DATA_FORMAT_R16G16B16A16_SFLOAT;
+					image->convert(Image::FORMAT_RGBAH);
+				}
 			}
 			r_format.swizzle_r = RD::TEXTURE_SWIZZLE_R;
 			r_format.swizzle_g = RD::TEXTURE_SWIZZLE_G;
@@ -2192,10 +2226,15 @@ Ref<Image> TextureStorage::_validate_texture_format(const Ref<Image> &p_image, T
 				}
 			} else {
 				//not supported, reconvert
-				r_format.format = RD::DATA_FORMAT_R8G8B8A8_UNORM;
-				r_format.format_srgb = RD::DATA_FORMAT_R8G8B8A8_SRGB;
 				image->decompress();
-				image->convert(Image::FORMAT_RGBA8);
+				if (p_image->get_format() == Image::FORMAT_ASTC_8x8) {
+					r_format.format = RD::DATA_FORMAT_R8G8B8A8_UNORM;
+					r_format.format_srgb = RD::DATA_FORMAT_R8G8B8A8_SRGB;
+					image->convert(Image::FORMAT_RGBA8);
+				} else {
+					r_format.format = RD::DATA_FORMAT_R16G16B16A16_SFLOAT;
+					image->convert(Image::FORMAT_RGBAH);
+				}
 			}
 			r_format.swizzle_r = RD::TEXTURE_SWIZZLE_R;
 			r_format.swizzle_g = RD::TEXTURE_SWIZZLE_G;
@@ -2319,7 +2358,7 @@ void TextureStorage::_texture_format_from_rd(RD::DataFormat p_rd_format, Texture
 			r_format.swizzle_a = RD::TEXTURE_SWIZZLE_ONE;
 		} break;
 		case RD::DATA_FORMAT_R32G32B32A32_SFLOAT: {
-			r_format.image_format = Image::FORMAT_RGBF;
+			r_format.image_format = Image::FORMAT_RGBAF;
 			r_format.rd_format = RD::DATA_FORMAT_R32G32B32A32_SFLOAT;
 			r_format.swizzle_r = RD::TEXTURE_SWIZZLE_R;
 			r_format.swizzle_g = RD::TEXTURE_SWIZZLE_G;
@@ -2492,7 +2531,6 @@ void TextureStorage::_texture_format_from_rd(RD::DataFormat p_rd_format, Texture
 			r_format.swizzle_a = RD::TEXTURE_SWIZZLE_ONE;
 
 		} break;
-		/* already maps to FORMAT_ETC2_RGBA8
 		case RD::DATA_FORMAT_ETC2_R8G8B8A8_UNORM_BLOCK:
 		case RD::DATA_FORMAT_ETC2_R8G8B8A8_SRGB_BLOCK: {
 			r_format.image_format = Image::FORMAT_ETC2_RGBA8;
@@ -2503,7 +2541,6 @@ void TextureStorage::_texture_format_from_rd(RD::DataFormat p_rd_format, Texture
 			r_format.swizzle_b = RD::TEXTURE_SWIZZLE_B;
 			r_format.swizzle_a = RD::TEXTURE_SWIZZLE_A;
 		} break;
-		*/
 		case RD::DATA_FORMAT_ETC2_R8G8B8A1_UNORM_BLOCK:
 		case RD::DATA_FORMAT_ETC2_R8G8B8A1_SRGB_BLOCK: {
 			r_format.image_format = Image::FORMAT_ETC2_RGB8A1;
@@ -2514,6 +2551,7 @@ void TextureStorage::_texture_format_from_rd(RD::DataFormat p_rd_format, Texture
 			r_format.swizzle_b = RD::TEXTURE_SWIZZLE_B;
 			r_format.swizzle_a = RD::TEXTURE_SWIZZLE_A;
 		} break;
+		/* already maps to FORMAT_ETC2_RGBA8
 		case RD::DATA_FORMAT_ETC2_R8G8B8A8_UNORM_BLOCK:
 		case RD::DATA_FORMAT_ETC2_R8G8B8A8_SRGB_BLOCK: {
 			r_format.image_format = Image::FORMAT_ETC2_RA_AS_RG;
@@ -2523,7 +2561,7 @@ void TextureStorage::_texture_format_from_rd(RD::DataFormat p_rd_format, Texture
 			r_format.swizzle_g = RD::TEXTURE_SWIZZLE_A;
 			r_format.swizzle_b = RD::TEXTURE_SWIZZLE_ZERO;
 			r_format.swizzle_a = RD::TEXTURE_SWIZZLE_ONE;
-		} break;
+		} break;*/
 		/* already maps to FORMAT_DXT5
 		case RD::DATA_FORMAT_BC3_UNORM_BLOCK:
 		case RD::DATA_FORMAT_BC3_SRGB_BLOCK: {
@@ -2559,6 +2597,10 @@ void TextureStorage::_texture_format_from_rd(RD::DataFormat p_rd_format, Texture
 			// Q: Do we do as we do below, just create the sRGB variant?
 			r_format.image_format = Image::FORMAT_ASTC_8x8;
 			r_format.rd_format = RD::DATA_FORMAT_ASTC_8x8_UNORM_BLOCK;
+			r_format.swizzle_r = RD::TEXTURE_SWIZZLE_R;
+			r_format.swizzle_g = RD::TEXTURE_SWIZZLE_G;
+			r_format.swizzle_b = RD::TEXTURE_SWIZZLE_B;
+			r_format.swizzle_a = RD::TEXTURE_SWIZZLE_A;
 		} break;
 		case RD::DATA_FORMAT_ASTC_8x8_SRGB_BLOCK: {
 			r_format.image_format = Image::FORMAT_ASTC_8x8_HDR;
@@ -2892,7 +2934,7 @@ void TextureStorage::update_decal_atlas() {
 				Vector<Color> cc;
 				cc.push_back(clear_color);
 
-				RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(mm.fb, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_STORE, RD::INITIAL_ACTION_DISCARD, RD::FINAL_ACTION_DISCARD, cc);
+				RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(mm.fb, RD::DRAW_CLEAR_ALL, cc);
 
 				for (const KeyValue<RID, DecalAtlas::Texture> &E : decal_atlas.textures) {
 					DecalAtlas::Texture *t = decal_atlas.textures.getptr(E.key);
@@ -3434,7 +3476,7 @@ RID TextureStorage::render_target_get_texture(RID p_render_target) {
 	return rt->texture;
 }
 
-void TextureStorage::render_target_set_override(RID p_render_target, RID p_color_texture, RID p_depth_texture, RID p_velocity_texture) {
+void TextureStorage::render_target_set_override(RID p_render_target, RID p_color_texture, RID p_depth_texture, RID p_velocity_texture, RID p_velocity_depth_texture) {
 	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
 	ERR_FAIL_NULL(rt);
 
@@ -3500,6 +3542,20 @@ RID TextureStorage::render_target_get_override_velocity_slice(RID p_render_targe
 
 		return rt->overridden.cached_slices[key];
 	}
+}
+
+void RendererRD::TextureStorage::render_target_set_render_region(RID p_render_target, const Rect2i &p_render_region) {
+	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
+	ERR_FAIL_NULL(rt);
+
+	rt->render_region = p_render_region;
+}
+
+Rect2i RendererRD::TextureStorage::render_target_get_render_region(RID p_render_target) const {
+	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
+	ERR_FAIL_NULL_V(rt, Rect2i());
+
+	return rt->render_region;
 }
 
 void TextureStorage::render_target_set_transparent(RID p_render_target, bool p_is_transparent) {
@@ -3573,7 +3629,7 @@ void TextureStorage::render_target_do_msaa_resolve(RID p_render_target) {
 	if (!rt->msaa_needs_resolve) {
 		return;
 	}
-	RD::get_singleton()->draw_list_begin(rt->get_framebuffer(), RD::INITIAL_ACTION_LOAD, RD::FINAL_ACTION_STORE, RD::INITIAL_ACTION_LOAD, RD::FINAL_ACTION_DISCARD);
+	RD::get_singleton()->draw_list_begin(rt->get_framebuffer());
 	RD::get_singleton()->draw_list_end();
 	rt->msaa_needs_resolve = false;
 }
@@ -3690,7 +3746,7 @@ void TextureStorage::render_target_do_clear_request(RID p_render_target) {
 	}
 	Vector<Color> clear_colors;
 	clear_colors.push_back(rt->use_hdr ? rt->clear_color.srgb_to_linear() : rt->clear_color);
-	RD::get_singleton()->draw_list_begin(rt->get_framebuffer(), RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_STORE, RD::INITIAL_ACTION_LOAD, RD::FINAL_ACTION_DISCARD, clear_colors);
+	RD::get_singleton()->draw_list_begin(rt->get_framebuffer(), RD::DRAW_CLEAR_COLOR_0, clear_colors);
 	RD::get_singleton()->draw_list_end();
 	rt->clear_requested = false;
 	rt->msaa_needs_resolve = false;

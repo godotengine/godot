@@ -89,7 +89,7 @@
 		[/codeblocks]
 		Some [Tweener]s use transitions and eases. The first accepts a [enum TransitionType] constant, and refers to the way the timing of the animation is handled (see [url=https://easings.net/]easings.net[/url] for some examples). The second accepts an [enum EaseType] constant, and controls where the [code]trans_type[/code] is applied to the interpolation (in the beginning, the end, or both). If you don't know which transition and easing to pick, you can try different [enum TransitionType] constants with [constant EASE_IN_OUT], and use the one that looks best.
 		[url=https://raw.githubusercontent.com/godotengine/godot-docs/master/img/tween_cheatsheet.webp]Tween easing and transition types cheatsheet[/url]
-		[b]Note:[/b] Tweens are not designed to be re-used and trying to do so results in an undefined behavior. Create a new Tween for each animation and every time you replay an animation from start. Keep in mind that Tweens start immediately, so only create a Tween when you want to start animating.
+		[b]Note:[/b] Tweens are not designed to be reused and trying to do so results in an undefined behavior. Create a new Tween for each animation and every time you replay an animation from start. Keep in mind that Tweens start immediately, so only create a Tween when you want to start animating.
 		[b]Note:[/b] The tween is processed after all of the nodes in the current frame, i.e. node's [method Node._process] method would be called before the tween (or [method Node._physics_process] depending on the value passed to [method set_process_mode]).
 	</description>
 	<tutorials>
@@ -218,8 +218,21 @@
 			<return type="Tween" />
 			<param index="0" name="ease" type="int" enum="Tween.EaseType" />
 			<description>
-				Sets the default ease type for [PropertyTweener]s and [MethodTweener]s animated by this [Tween].
-				If not specified, the default value is [constant EASE_IN_OUT].
+				Sets the default ease type for [PropertyTweener]s and [MethodTweener]s appended after this method.
+				Before this method is called, the default ease type is [constant EASE_IN_OUT].
+				[codeblock]
+				var tween = create_tween()
+				tween.tween_property(self, "position", Vector2(300, 0), 0.5) # Uses EASE_IN_OUT.
+				tween.set_ease(Tween.EASE_IN)
+				tween.tween_property(self, "rotation_degrees", 45.0, 0.5) # Uses EASE_IN.
+				[/codeblock]
+			</description>
+		</method>
+		<method name="set_ignore_time_scale">
+			<return type="Tween" />
+			<param index="0" name="ignore" type="bool" default="true" />
+			<description>
+				If [param ignore] is [code]true[/code], the tween will ignore [member Engine.time_scale] and update with the real, elapsed time. This affects all [Tweener]s and their delays. Default value is [code]false[/code].
 			</description>
 		</method>
 		<method name="set_loops">
@@ -271,14 +284,36 @@
 			<return type="Tween" />
 			<param index="0" name="trans" type="int" enum="Tween.TransitionType" />
 			<description>
-				Sets the default transition type for [PropertyTweener]s and [MethodTweener]s animated by this [Tween].
-				If not specified, the default value is [constant TRANS_LINEAR].
+				Sets the default transition type for [PropertyTweener]s and [MethodTweener]s appended after this method.
+				Before this method is called, the default transition type is [constant TRANS_LINEAR].
+				[codeblock]
+				var tween = create_tween()
+				tween.tween_property(self, "position", Vector2(300, 0), 0.5) # Uses TRANS_LINEAR.
+				tween.set_trans(Tween.TRANS_SINE)
+				tween.tween_property(self, "rotation_degrees", 45.0, 0.5) # Uses TRANS_SINE.
+				[/codeblock]
 			</description>
 		</method>
 		<method name="stop">
 			<return type="void" />
 			<description>
 				Stops the tweening and resets the [Tween] to its initial state. This will not remove any appended [Tweener]s.
+				[b]Note:[/b] This does [i]not[/i] reset targets of [PropertyTweener]s to their values when the [Tween] first started.
+				[codeblock]
+				var tween = create_tween()
+
+				# Will move from 0 to 500 over 1 second.
+				position.x = 0.0
+				tween.tween_property(self, "position:x", 500, 1.0)
+
+				# Will be at (about) 250 when the timer finishes.
+				await get_tree().create_timer(0.5).timeout
+
+				# Will now move from (about) 250 to 500 over 1 second,
+				# thus at half the speed as before.
+				tween.stop()
+				tween.play()
+				[/codeblock]
 				[b]Note:[/b] If a Tween is stopped and not bound to any node, it will exist indefinitely until manually started or invalidated. If you lose a reference to such Tween, you can retrieve it using [method SceneTree.get_processed_tweens].
 			</description>
 		</method>
@@ -436,6 +471,27 @@
 				tween.TweenProperty(GetNode("Sprite"), "position", Vector2.Right * 300.0f, 1.0f).AsRelative().FromCurrent().SetTrans(Tween.TransitionType.Expo);
 				[/csharp]
 				[/codeblocks]
+			</description>
+		</method>
+		<method name="tween_subtween">
+			<return type="SubtweenTweener" />
+			<param index="0" name="subtween" type="Tween" />
+			<description>
+				Creates and appends a [SubtweenTweener]. This method can be used to nest [param subtween] within this [Tween], allowing for the creation of more complex and composable sequences.
+				[codeblock]
+				# Subtween will rotate the object.
+				var subtween = create_tween()
+				subtween.tween_property(self, "rotation_degrees", 45.0, 1.0)
+				subtween.tween_property(self, "rotation_degrees", 0.0, 1.0)
+
+				# Parent tween will execute the subtween as one of its steps.
+				var tween = create_tween()
+				tween.tween_property(self, "position:x", 500, 3.0)
+				tween.tween_subtween(subtween)
+				tween.tween_property(self, "position:x", 300, 2.0)
+				[/codeblock]
+				[b]Note:[/b] The methods [method pause], [method stop], and [method set_loops] can cause the parent [Tween] to get stuck on the subtween step; see the documentation for those methods for more information.
+				[b]Note:[/b] The pause and process modes set by [method set_pause_mode] and [method set_process_mode] on [param subtween] will be overridden by the parent [Tween]'s settings.
 			</description>
 		</method>
 	</methods>

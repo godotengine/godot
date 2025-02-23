@@ -56,7 +56,7 @@ class MDCommandBuffer;
 class PixelFormats;
 class MDResourceCache;
 
-class API_AVAILABLE(macos(11.0), ios(14.0)) RenderingContextDriverMetal : public RenderingContextDriver {
+class API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0)) RenderingContextDriverMetal : public RenderingContextDriver {
 protected:
 #ifdef __OBJC__
 	id<MTLDevice> metal_device = nullptr;
@@ -94,7 +94,7 @@ public:
 #endif
 	};
 
-	class API_AVAILABLE(macos(11.0), ios(14.0)) Surface {
+	class API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0)) Surface {
 	protected:
 #ifdef __OBJC__
 		id<MTLDevice> device;
@@ -107,6 +107,7 @@ public:
 		uint32_t height = 0;
 		DisplayServer::VSyncMode vsync_mode = DisplayServer::VSYNC_ENABLED;
 		bool needs_resize = false;
+		double present_minimum_duration = 0.0;
 
 		Surface(
 #ifdef __OBJC__
@@ -123,6 +124,7 @@ public:
 		virtual Error resize(uint32_t p_desired_framebuffer_count) = 0;
 		virtual RDD::FramebufferID acquire_next_frame_buffer() = 0;
 		virtual void present(MDCommandBuffer *p_cmd_buffer) = 0;
+		void set_max_fps(int p_max_fps) { present_minimum_duration = p_max_fps ? 1.0 / p_max_fps : 0.0; }
 	};
 
 #ifdef __OBJC__

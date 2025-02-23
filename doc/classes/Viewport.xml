@@ -48,7 +48,7 @@
 		<method name="get_camera_2d" qualifiers="const">
 			<return type="Camera2D" />
 			<description>
-				Returns the currently active 2D camera. Returns null if there are no active cameras.
+				Returns the currently active 2D camera. Returns [code]null[/code] if there are no active cameras.
 			</description>
 		</method>
 		<method name="get_camera_3d" qualifiers="const">
@@ -104,6 +104,13 @@
 				Returns the transform from the Viewport's coordinates to the screen coordinates of the containing window manager window.
 			</description>
 		</method>
+		<method name="get_stretch_transform" qualifiers="const">
+			<return type="Transform2D" />
+			<description>
+				Returns the automatically computed 2D stretch transform, taking the [Viewport]'s stretch settings into account. The final value is multiplied by [member Window.content_scale_factor], but only for the root viewport. If this method is called on a [SubViewport] (e.g., in a scene tree with [SubViewportContainer] and [SubViewport]), the scale factor of the root window will not be applied. Using [method Transform2D.get_scale] on the returned value, this can be used to compensate for scaling when zooming a [Camera2D] node, or to scale down a [TextureRect] to be pixel-perfect regardless of the automatically computed scale factor.
+				[b]Note:[/b] Due to how pixel scaling works, the returned transform's X and Y scale may differ slightly, even when [member Window.content_scale_aspect] is set to a mode that preserves the pixels' aspect ratio. If [member Window.content_scale_aspect] is [constant Window.CONTENT_SCALE_ASPECT_IGNORE], the X and Y scale may differ [i]significantly[/i].
+			</description>
+		</method>
 		<method name="get_texture" qualifiers="const">
 			<return type="ViewportTexture" />
 			<description>
@@ -144,13 +151,13 @@
 		<method name="gui_get_focus_owner" qualifiers="const">
 			<return type="Control" />
 			<description>
-				Returns the [Control] having the focus within this viewport. If no [Control] has the focus, returns null.
+				Returns the currently focused [Control] within this viewport. If no [Control] is focused, returns [code]null[/code].
 			</description>
 		</method>
 		<method name="gui_get_hovered_control" qualifiers="const">
 			<return type="Control" />
 			<description>
-				Returns the [Control] that the mouse is currently hovering over in this viewport. If no [Control] has the cursor, returns null.
+				Returns the [Control] that the mouse is currently hovering over in this viewport. If no [Control] has the cursor, returns [code]null[/code].
 				Typically the leaf [Control] node or deepest level of the subtree which claims hover. This is very useful when used together with [method Node.is_ancestor_of] to find if the mouse is within a control tree.
 			</description>
 		</method>
@@ -179,6 +186,20 @@
 				Returns whether the current [InputEvent] has been handled. Input events are not handled until [method set_input_as_handled] has been called during the lifetime of an [InputEvent].
 				This is usually done as part of input handling methods like [method Node._input], [method Control._gui_input] or others, as well as in corresponding signal handlers.
 				If [member handle_input_locally] is set to [code]false[/code], this method will try finding the first parent viewport that is set to handle input locally, and return its value for [method is_input_handled] instead.
+			</description>
+		</method>
+		<method name="notify_mouse_entered">
+			<return type="void" />
+			<description>
+				Inform the Viewport that the mouse has entered its area. Use this function before sending an [InputEventMouseButton] or [InputEventMouseMotion] to the [Viewport] with [method Viewport.push_input]. See also [method notify_mouse_exited].
+				[b]Note:[/b] In most cases, it is not necessary to call this function because [SubViewport] nodes that are children of [SubViewportContainer] are notified automatically. This is only necessary when interacting with viewports in non-default ways, for example as textures in [TextureRect] or with an [Area3D] that forwards input events.
+			</description>
+		</method>
+		<method name="notify_mouse_exited">
+			<return type="void" />
+			<description>
+				Inform the Viewport that the mouse has left its area. Use this function when the node that displays the viewport notices the mouse has left the area of the displayed viewport. See also [method notify_mouse_entered].
+				[b]Note:[/b] In most cases, it is not necessary to call this function because [SubViewport] nodes that are children of [SubViewportContainer] are notified automatically. This is only necessary when interacting with viewports in non-default ways, for example as textures in [TextureRect] or with an [Area3D] that forwards input events.
 			</description>
 		</method>
 		<method name="push_input">
@@ -261,6 +282,12 @@
 		</method>
 	</methods>
 	<members>
+		<member name="anisotropic_filtering_level" type="int" setter="set_anisotropic_filtering_level" getter="get_anisotropic_filtering_level" enum="Viewport.AnisotropicFiltering" default="2">
+			Sets the maximum number of samples to take when using anisotropic filtering on textures (as a power of two). A higher sample count will result in sharper textures at oblique angles, but is more expensive to compute. A value of [code]0[/code] forcibly disables anisotropic filtering, even on materials where it is enabled.
+			The anisotropic filtering level also affects decals and light projectors if they are configured to use anisotropic filtering. See [member ProjectSettings.rendering/textures/decals/filter] and [member ProjectSettings.rendering/textures/light_projectors/filter].
+			[b]Note:[/b] In 3D, for this setting to have an effect, set [member BaseMaterial3D.texture_filter] to [constant BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC] or [constant BaseMaterial3D.TEXTURE_FILTER_NEAREST_WITH_MIPMAPS_ANISOTROPIC] on materials.
+			[b]Note:[/b] In 2D, for this setting to have an effect, set [member CanvasItem.texture_filter] to [constant CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC] or [constant CanvasItem.TEXTURE_FILTER_NEAREST_WITH_MIPMAPS_ANISOTROPIC] on the [CanvasItem] node displaying the texture (or in [CanvasTexture]). However, anisotropic filtering is rarely useful in 2D, so only enable it for textures in 2D if it makes a meaningful visual difference.
+		</member>
 		<member name="audio_listener_enable_2d" type="bool" setter="set_as_audio_listener_2d" getter="is_audio_listener_2d" default="false">
 			If [code]true[/code], the viewport will process 2D audio streams.
 		</member>
@@ -316,7 +343,7 @@
 			See also [member ProjectSettings.rendering/anti_aliasing/quality/msaa_2d] and [method RenderingServer.viewport_set_msaa_2d].
 		</member>
 		<member name="msaa_3d" type="int" setter="set_msaa_3d" getter="get_msaa_3d" enum="Viewport.MSAA" default="0">
-			The multisample antialiasing mode for 3D rendering. A higher number results in smoother edges at the cost of significantly worse performance. A value of [constant Viewport.MSAA_2X] or [constant Viewport.MSAA_4X] is best unless targeting very high-end systems. See also bilinear scaling 3d [member scaling_3d_mode] for supersampling, which provides higher quality but is much more expensive. This has no effect on shader-induced aliasing or texture aliasing.
+			The multisample antialiasing mode for 3D rendering. A higher number results in smoother edges at the cost of significantly worse performance. A value of [constant Viewport.MSAA_2X] or [constant Viewport.MSAA_4X] is best unless targeting very high-end systems. See also bilinear scaling 3D [member scaling_3d_mode] for supersampling, which provides higher quality but is much more expensive. This has no effect on shader-induced aliasing or texture aliasing.
 			See also [member ProjectSettings.rendering/anti_aliasing/quality/msaa_3d] and [method RenderingServer.viewport_set_msaa_3d].
 		</member>
 		<member name="own_world_3d" type="bool" setter="set_use_own_world_3d" getter="is_using_own_world_3d" default="false">
@@ -357,7 +384,7 @@
 			[b]Note:[/b] If this is set to [code]0[/code], no positional shadows will be visible at all. This can improve performance significantly on low-end systems by reducing both the CPU and GPU load (as fewer draw calls are needed to draw the scene without shadows).
 		</member>
 		<member name="scaling_3d_mode" type="int" setter="set_scaling_3d_mode" getter="get_scaling_3d_mode" enum="Viewport.Scaling3DMode" default="0">
-			Sets scaling 3d mode. Bilinear scaling renders at different resolution to either undersample or supersample the viewport. FidelityFX Super Resolution 1.0, abbreviated to FSR, is an upscaling technology that produces high quality images at fast framerates by using a spatially aware upscaling algorithm. FSR is slightly more expensive than bilinear, but it produces significantly higher image quality. FSR should be used where possible.
+			Sets scaling 3D mode. Bilinear scaling renders at different resolution to either undersample or supersample the viewport. FidelityFX Super Resolution 1.0, abbreviated to FSR, is an upscaling technology that produces high quality images at fast framerates by using a spatially aware upscaling algorithm. FSR is slightly more expensive than bilinear, but it produces significantly higher image quality. FSR should be used where possible.
 			To control this property on the root viewport, set the [member ProjectSettings.rendering/scaling_3d/mode] project setting.
 		</member>
 		<member name="scaling_3d_scale" type="float" setter="set_scaling_3d_scale" getter="get_scaling_3d_scale" default="1.0">
@@ -398,7 +425,7 @@
 		</member>
 		<member name="use_hdr_2d" type="bool" setter="set_use_hdr_2d" getter="is_using_hdr_2d" default="false">
 			If [code]true[/code], 2D rendering will use an high dynamic range (HDR) format framebuffer matching the bit depth of the 3D framebuffer. When using the Forward+ renderer this will be an [code]RGBA16[/code] framebuffer, while when using the Mobile renderer it will be an [code]RGB10_A2[/code] framebuffer. Additionally, 2D rendering will take place in linear color space and will be converted to sRGB space immediately before blitting to the screen (if the Viewport is attached to the screen). Practically speaking, this means that the end result of the Viewport will not be clamped into the [code]0-1[/code] range and can be used in 3D rendering without color space adjustments. This allows 2D rendering to take advantage of effects requiring high dynamic range (e.g. 2D glow) as well as substantially improves the appearance of effects requiring highly detailed gradients.
-			[b]Note:[/b] This setting will have no effect when using the GL Compatibility renderer as the GL Compatibility renderer always renders in low dynamic range for performance reasons.
+			[b]Note:[/b] This setting will have no effect when using the Compatibility renderer, which always renders in low dynamic range for performance reasons.
 		</member>
 		<member name="use_occlusion_culling" type="bool" setter="set_use_occlusion_culling" getter="is_using_occlusion_culling" default="false">
 			If [code]true[/code], [OccluderInstance3D] nodes will be usable for occlusion culling in 3D for this viewport. For the root viewport, [member ProjectSettings.rendering/occlusion_culling/use_occlusion_culling] must be set to [code]true[/code] instead.
@@ -490,7 +517,21 @@
 		<constant name="SCALING_3D_MODE_FSR2" value="2" enum="Scaling3DMode">
 			Use AMD FidelityFX Super Resolution 2.2 upscaling for the viewport's 3D buffer. The amount of scaling can be set using [member Viewport.scaling_3d_scale]. Values less than [code]1.0[/code] will be result in the viewport being upscaled using FSR2. Values greater than [code]1.0[/code] are not supported and bilinear downsampling will be used instead. A value of [code]1.0[/code] will use FSR2 at native resolution as a TAA solution.
 		</constant>
-		<constant name="SCALING_3D_MODE_MAX" value="3" enum="Scaling3DMode">
+		<constant name="SCALING_3D_MODE_METALFX_SPATIAL" value="3" enum="Scaling3DMode">
+			Use the [url=https://developer.apple.com/documentation/metalfx/mtlfxspatialscaler#overview]MetalFX spatial upscaler[/url] for the viewport's 3D buffer.
+			The amount of scaling can be set using [member scaling_3d_scale].
+			Values less than [code]1.0[/code] will be result in the viewport being upscaled using MetalFX. Values greater than [code]1.0[/code] are not supported and bilinear downsampling will be used instead. A value of [code]1.0[/code] disables scaling.
+			More information: [url=https://developer.apple.com/documentation/metalfx]MetalFX[/url].
+			[b]Note:[/b] Only supported when the Metal rendering driver is in use, which limits this scaling mode to macOS and iOS.
+		</constant>
+		<constant name="SCALING_3D_MODE_METALFX_TEMPORAL" value="4" enum="Scaling3DMode">
+			Use the [url=https://developer.apple.com/documentation/metalfx/mtlfxtemporalscaler#overview]MetalFX temporal upscaler[/url] for the viewport's 3D buffer.
+			The amount of scaling can be set using [member scaling_3d_scale]. To determine the minimum input scale, use the [method RenderingDevice.limit_get] method with [constant RenderingDevice.LIMIT_METALFX_TEMPORAL_SCALER_MIN_SCALE].
+			Values less than [code]1.0[/code] will be result in the viewport being upscaled using MetalFX. Values greater than [code]1.0[/code] are not supported and bilinear downsampling will be used instead. A value of [code]1.0[/code] will use MetalFX at native resolution as a TAA solution.
+			More information: [url=https://developer.apple.com/documentation/metalfx]MetalFX[/url].
+			[b]Note:[/b] Only supported when the Metal rendering driver is in use, which limits this scaling mode to macOS and iOS.
+		</constant>
+		<constant name="SCALING_3D_MODE_MAX" value="5" enum="Scaling3DMode">
 			Represents the size of the [enum Scaling3DMode] enum.
 		</constant>
 		<constant name="MSAA_DISABLED" value="0" enum="MSAA">
@@ -507,6 +548,24 @@
 		</constant>
 		<constant name="MSAA_MAX" value="4" enum="MSAA">
 			Represents the size of the [enum MSAA] enum.
+		</constant>
+		<constant name="ANISOTROPY_DISABLED" value="0" enum="AnisotropicFiltering">
+			Anisotropic filtering is disabled.
+		</constant>
+		<constant name="ANISOTROPY_2X" value="1" enum="AnisotropicFiltering">
+			Use 2× anisotropic filtering.
+		</constant>
+		<constant name="ANISOTROPY_4X" value="2" enum="AnisotropicFiltering">
+			Use 4× anisotropic filtering. This is the default value.
+		</constant>
+		<constant name="ANISOTROPY_8X" value="3" enum="AnisotropicFiltering">
+			Use 8× anisotropic filtering.
+		</constant>
+		<constant name="ANISOTROPY_16X" value="4" enum="AnisotropicFiltering">
+			Use 16× anisotropic filtering.
+		</constant>
+		<constant name="ANISOTROPY_MAX" value="5" enum="AnisotropicFiltering">
+			Represents the size of the [enum AnisotropicFiltering] enum.
 		</constant>
 		<constant name="SCREEN_SPACE_AA_DISABLED" value="0" enum="ScreenSpaceAA">
 			Do not perform any antialiasing in the full screen post-process.
@@ -555,6 +614,7 @@
 		</constant>
 		<constant name="DEBUG_DRAW_WIREFRAME" value="4" enum="DebugDraw">
 			Objects are displayed as wireframe models.
+			[b]Note:[/b] [method RenderingServer.set_debug_generate_wireframes] must be called before loading any meshes for wireframes to be visible when using the Compatibility renderer.
 		</constant>
 		<constant name="DEBUG_DRAW_NORMAL_BUFFER" value="5" enum="DebugDraw">
 			Objects are displayed without lighting information and their textures replaced by normal mapping.

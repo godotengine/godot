@@ -248,6 +248,9 @@ String Engine::get_architecture_name() const {
 	return "ppc";
 #endif
 
+#elif defined(__loongarch64)
+	return "loongarch64";
+
 #elif defined(__wasm__)
 #if defined(__wasm64__)
 	return "wasm64";
@@ -410,6 +413,14 @@ bool Engine::notify_frame_server_synced() {
 
 void Engine::set_freeze_time_scale(bool p_frozen) {
 	freeze_time_scale = p_frozen;
+}
+
+void Engine::set_embedded_in_editor(bool p_enabled) {
+	embedded_in_editor = p_enabled;
+}
+
+bool Engine::is_embedded_in_editor() const {
+	return embedded_in_editor;
 }
 
 Engine::Engine() {

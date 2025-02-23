@@ -30,6 +30,8 @@
 
 #include "tls_context_mbedtls.h"
 
+#include "core/config/project_settings.h"
+
 static void my_debug(void *ctx, int level,
 		const char *file, int line,
 		const char *str) {
@@ -144,6 +146,13 @@ Error TLSContextMbedTLS::init_server(int p_transport, Ref<TLSOptions> p_options,
 		cookies = p_cookies;
 		mbedtls_ssl_conf_dtls_cookies(&conf, mbedtls_ssl_cookie_write, mbedtls_ssl_cookie_check, &(cookies->cookie_ctx));
 	}
+
+#if MBEDTLS_VERSION_MAJOR >= 3
+	if (Engine::get_singleton()->is_editor_hint() || !(bool)GLOBAL_GET("network/tls/enable_tls_v1.3")) {
+		mbedtls_ssl_conf_max_tls_version(&conf, MBEDTLS_SSL_VERSION_TLS1_2);
+	}
+#endif
+
 	mbedtls_ssl_setup(&tls, &conf);
 	return OK;
 }
@@ -186,6 +195,12 @@ Error TLSContextMbedTLS::init_client(int p_transport, const String &p_hostname, 
 			ERR_FAIL_V_MSG(ERR_UNCONFIGURED, "SSL module failed to initialize!");
 		}
 	}
+
+#if MBEDTLS_VERSION_MAJOR >= 3
+	if (Engine::get_singleton()->is_editor_hint() || !(bool)GLOBAL_GET("network/tls/enable_tls_v1.3")) {
+		mbedtls_ssl_conf_max_tls_version(&conf, MBEDTLS_SSL_VERSION_TLS1_2);
+	}
+#endif
 
 	// Set valid CAs
 	mbedtls_ssl_conf_ca_chain(&conf, &(cas->cert), nullptr);

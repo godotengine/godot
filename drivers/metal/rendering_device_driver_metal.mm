@@ -62,6 +62,7 @@
 #import <Metal/Metal.h>
 #import <os/log.h>
 #import <os/signpost.h>
+#import <spirv.hpp>
 #import <spirv_msl.hpp>
 #import <spirv_parser.hpp>
 
@@ -158,6 +159,18 @@ void RenderingDeviceDriverMetal::buffer_unmap(BufferID p_buffer) {
 	// Nothing to do.
 }
 
+uint64_t RenderingDeviceDriverMetal::buffer_get_device_address(BufferID p_buffer) {
+	if (@available(iOS 16.0, macOS 13.0, *)) {
+		id<MTLBuffer> obj = rid::get(p_buffer);
+		return obj.gpuAddress;
+	} else {
+#if DEV_ENABLED
+		WARN_PRINT_ONCE("buffer_get_device_address is not supported on this OS version.");
+#endif
+		return 0;
+	}
+}
+
 #pragma mark - Texture
 
 #pragma mark - Format Conversions
@@ -218,7 +231,7 @@ RDD::TextureID RenderingDeviceDriverMetal::texture_create(const TextureFormat &p
 	// desc.compressionType = MTLTextureCompressionTypeLossy;
 
 	if (p_format.samples > TEXTURE_SAMPLES_1) {
-		SampleCount supported = (*metal_device_properties).find_nearest_supported_sample_count(p_format.samples);
+		SampleCount supported = (*device_properties).find_nearest_supported_sample_count(p_format.samples);
 
 		if (supported > SampleCount1) {
 			bool ok = p_format.texture_type == TEXTURE_TYPE_2D || p_format.texture_type == TEXTURE_TYPE_2D_ARRAY;
@@ -275,11 +288,19 @@ RDD::TextureID RenderingDeviceDriverMetal::texture_create(const TextureFormat &p
 	}
 
 	// Usage.
-	MTLResourceOptions options = MTLResourceCPUCacheModeDefaultCache | MTLResourceHazardTrackingModeTracked;
-	if (p_format.usage_bits & TEXTURE_USAGE_CPU_READ_BIT) {
-		options |= MTLResourceStorageModeShared;
+
+	MTLResourceOptions options = 0;
+	const bool supports_memoryless = (*device_properties).features.highestFamily >= MTLGPUFamilyApple2 && (*device_properties).features.highestFamily < MTLGPUFamilyMac1;
+	if (supports_memoryless && p_format.usage_bits & TEXTURE_USAGE_TRANSIENT_BIT) {
+		options = MTLResourceStorageModeMemoryless | MTLResourceHazardTrackingModeTracked;
+		desc.storageMode = MTLStorageModeMemoryless;
 	} else {
-		options |= MTLResourceStorageModePrivate;
+		options = MTLResourceCPUCacheModeDefaultCache | MTLResourceHazardTrackingModeTracked;
+		if (p_format.usage_bits & TEXTURE_USAGE_CPU_READ_BIT) {
+			options |= MTLResourceStorageModeShared;
+		} else {
+			options |= MTLResourceStorageModePrivate;
+		}
 	}
 	desc.resourceOptions = options;
 
@@ -291,8 +312,10 @@ RDD::TextureID RenderingDeviceDriverMetal::texture_create(const TextureFormat &p
 		desc.usage |= MTLTextureUsageShaderWrite;
 	}
 
-	if (p_format.usage_bits & TEXTURE_USAGE_STORAGE_ATOMIC_BIT) {
-		desc.usage |= MTLTextureUsageShaderWrite;
+	if (@available(macOS 14.0, iOS 17.0, tvOS 17.0, *)) {
+		if (format_caps & kMTLFmtCapsAtomic) {
+			desc.usage |= MTLTextureUsageShaderAtomic;
+		}
 	}
 
 	bool can_be_attachment = flags::any(format_caps, (kMTLFmtCapsColorAtt | kMTLFmtCapsDSAtt));
@@ -335,7 +358,7 @@ RDD::TextureID RenderingDeviceDriverMetal::texture_create(const TextureFormat &p
 
 	// Check if it is a linear format for atomic operations and therefore needs a buffer,
 	// as generally Metal does not support atomic operations on textures.
-	bool needs_buffer = is_linear || (p_format.array_layers == 1 && p_format.mipmaps == 1 && p_format.texture_type == TEXTURE_TYPE_2D && flags::any(p_format.usage_bits, TEXTURE_USAGE_STORAGE_BIT) && (p_format.format == DATA_FORMAT_R32_UINT || p_format.format == DATA_FORMAT_R32_SINT));
+	bool needs_buffer = is_linear || (p_format.array_layers == 1 && p_format.mipmaps == 1 && p_format.texture_type == TEXTURE_TYPE_2D && flags::any(p_format.usage_bits, TEXTURE_USAGE_STORAGE_BIT) && (p_format.format == DATA_FORMAT_R32_UINT || p_format.format == DATA_FORMAT_R32_SINT || p_format.format == DATA_FORMAT_R32G32_UINT || p_format.format == DATA_FORMAT_R32G32_SINT));
 
 	id<MTLTexture> obj = nil;
 	if (needs_buffer) {
@@ -358,11 +381,25 @@ RDD::TextureID RenderingDeviceDriverMetal::texture_create(const TextureFormat &p
 }
 
 RDD::TextureID RenderingDeviceDriverMetal::texture_create_from_extension(uint64_t p_native_texture, TextureType p_type, DataFormat p_format, uint32_t p_array_layers, bool p_depth_stencil) {
-	id<MTLTexture> obj = (__bridge id<MTLTexture>)(void *)(uintptr_t)p_native_texture;
+	id<MTLTexture> res = (__bridge id<MTLTexture>)(void *)(uintptr_t)p_native_texture;
 
-	// We only need to create a RDD::TextureID for an existing, natively-provided texture.
+	// If the requested format is different, we need to create a view.
+	MTLPixelFormat format = pixel_formats->getMTLPixelFormat(p_format);
+	if (res.pixelFormat != format) {
+		MTLTextureSwizzleChannels swizzle = MTLTextureSwizzleChannelsMake(
+				MTLTextureSwizzleRed,
+				MTLTextureSwizzleGreen,
+				MTLTextureSwizzleBlue,
+				MTLTextureSwizzleAlpha);
+		res = [res newTextureViewWithPixelFormat:format
+									 textureType:res.textureType
+										  levels:NSMakeRange(0, res.mipmapLevelCount)
+										  slices:NSMakeRange(0, p_array_layers)
+										 swizzle:swizzle];
+		ERR_FAIL_NULL_V_MSG(res, TextureID(), "Unable to create texture view.");
+	}
 
-	return rid::make(obj);
+	return rid::make(res);
 }
 
 RDD::TextureID RenderingDeviceDriverMetal::texture_create_shared(TextureID p_original_texture, const TextureView &p_view) {
@@ -667,7 +704,7 @@ static const MTLBlendOperation BLEND_OPERATIONS[RD::BLEND_OP_MAX] = {
 	MTLBlendOperationMax,
 };
 
-static const API_AVAILABLE(macos(11.0), ios(14.0)) MTLSamplerAddressMode ADDRESS_MODES[RD::SAMPLER_REPEAT_MODE_MAX] = {
+static const API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0)) MTLSamplerAddressMode ADDRESS_MODES[RD::SAMPLER_REPEAT_MODE_MAX] = {
 	MTLSamplerAddressModeRepeat,
 	MTLSamplerAddressModeMirrorRepeat,
 	MTLSamplerAddressModeClampToEdge,
@@ -675,7 +712,7 @@ static const API_AVAILABLE(macos(11.0), ios(14.0)) MTLSamplerAddressMode ADDRESS
 	MTLSamplerAddressModeMirrorClampToEdge,
 };
 
-static const API_AVAILABLE(macos(11.0), ios(14.0)) MTLSamplerBorderColor SAMPLER_BORDER_COLORS[RD::SAMPLER_BORDER_COLOR_MAX] = {
+static const API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0)) MTLSamplerBorderColor SAMPLER_BORDER_COLORS[RD::SAMPLER_BORDER_COLOR_MAX] = {
 	MTLSamplerBorderColorTransparentBlack,
 	MTLSamplerBorderColorTransparentBlack,
 	MTLSamplerBorderColorOpaqueBlack,
@@ -710,7 +747,7 @@ RDD::SamplerID RenderingDeviceDriverMetal::sampler_create(const SamplerState &p_
 	desc.normalizedCoordinates = !p_state.unnormalized_uvw;
 
 	if (p_state.lod_bias != 0.0) {
-		WARN_VERBOSE("Metal does not support LOD bias for samplers.");
+		WARN_PRINT_ONCE("Metal does not support LOD bias for samplers.");
 	}
 
 	id<MTLSamplerState> obj = [device newSamplerStateWithDescriptor:desc];
@@ -876,6 +913,10 @@ RDD::CommandPoolID RenderingDeviceDriverMetal::command_pool_create(CommandQueueF
 	return rid::make(device_queue);
 }
 
+bool RenderingDeviceDriverMetal::command_pool_reset(CommandPoolID p_cmd_pool) {
+	return true;
+}
+
 void RenderingDeviceDriverMetal::command_pool_free(CommandPoolID p_cmd_pool) {
 	rid::release(p_cmd_pool);
 }
@@ -982,6 +1023,12 @@ RDD::DataFormat RenderingDeviceDriverMetal::swap_chain_get_format(SwapChainID p_
 	return swap_chain->data_format;
 }
 
+void RenderingDeviceDriverMetal::swap_chain_set_max_fps(SwapChainID p_swap_chain, int p_max_fps) {
+	SwapChain *swap_chain = (SwapChain *)(p_swap_chain.id);
+	RenderingContextDriverMetal::Surface *metal_surface = (RenderingContextDriverMetal::Surface *)(swap_chain->surface);
+	metal_surface->set_max_fps(p_max_fps);
+}
+
 void RenderingDeviceDriverMetal::swap_chain_free(SwapChainID p_swap_chain) {
 	SwapChain *swap_chain = (SwapChain *)(p_swap_chain.id);
 	_swap_chain_release(swap_chain);
@@ -1026,7 +1073,7 @@ void RenderingDeviceDriverMetal::framebuffer_free(FramebufferID p_framebuffer) {
 
 #pragma mark - Shader
 
-const uint32_t SHADER_BINARY_VERSION = 1;
+const uint32_t SHADER_BINARY_VERSION = 4;
 
 // region Serialization
 
@@ -1166,8 +1213,9 @@ class BufReader {
 	uint64_t pos = 0;
 
 	bool check_length(size_t p_size) {
-		if (status != Status::OK)
+		if (status != Status::OK) {
 			return false;
+		}
 
 		if (pos + p_size > length) {
 			status = Status::SHORT_BUFFER;
@@ -1330,23 +1378,32 @@ struct ComputeSize {
 
 struct ShaderStageData {
 	RD::ShaderStage stage = RD::ShaderStage::SHADER_STAGE_MAX;
+	uint32_t is_position_invariant = UINT32_MAX;
+	uint32_t supports_fast_math = UINT32_MAX;
 	CharString entry_point_name;
 	CharString source;
 
 	size_t serialize_size() const {
 		int comp_size = Compression::get_max_compressed_buffer_size(source.length(), Compression::MODE_ZSTD);
 		return sizeof(uint32_t) // Stage.
-				+ sizeof(uint32_t) /* entry_point_name.utf8().length */ + entry_point_name.length() + sizeof(uint32_t) /* uncompressed size */ + sizeof(uint32_t) /* compressed size */ + comp_size;
+				+ sizeof(uint32_t) // is_position_invariant
+				+ sizeof(uint32_t) // supports_fast_math
+				+ sizeof(uint32_t) /* entry_point_name.utf8().length */
+				+ entry_point_name.length() + sizeof(uint32_t) /* uncompressed size */ + sizeof(uint32_t) /* compressed size */ + comp_size;
 	}
 
 	void serialize(BufWriter &p_writer) const {
 		p_writer.write((uint32_t)stage);
+		p_writer.write(is_position_invariant);
+		p_writer.write(supports_fast_math);
 		p_writer.write(entry_point_name);
 		p_writer.write_compressed(source);
 	}
 
 	void deserialize(BufReader &p_reader) {
 		p_reader.read((uint32_t &)stage);
+		p_reader.read(is_position_invariant);
+		p_reader.read(supports_fast_math);
 		p_reader.read(entry_point_name);
 		p_reader.read_compressed(source);
 	}
@@ -1383,7 +1440,7 @@ struct SpecializationConstantData {
 	}
 };
 
-struct API_AVAILABLE(macos(11.0), ios(14.0)) UniformData {
+struct API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0)) UniformData {
 	RD::UniformType type = RD::UniformType::UNIFORM_TYPE_MAX;
 	uint32_t binding = UINT32_MAX;
 	bool writable = false;
@@ -1439,7 +1496,7 @@ struct API_AVAILABLE(macos(11.0), ios(14.0)) UniformData {
 	}
 };
 
-struct API_AVAILABLE(macos(11.0), ios(14.0)) UniformSetData {
+struct API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0)) UniformSetData {
 	uint32_t index = UINT32_MAX;
 	LocalVector<UniformData> uniforms;
 
@@ -1462,6 +1519,9 @@ struct API_AVAILABLE(macos(11.0), ios(14.0)) UniformSetData {
 		p_reader.read(index);
 		p_reader.read(uniforms);
 	}
+	UniformSetData() = default;
+	UniformSetData(uint32_t p_index) :
+			index(p_index) {}
 };
 
 struct PushConstantData {
@@ -1494,7 +1554,12 @@ struct PushConstantData {
 	}
 };
 
-struct API_AVAILABLE(macos(11.0), ios(14.0)) ShaderBinaryData {
+struct API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0)) ShaderBinaryData {
+	enum Flags : uint32_t {
+		NONE = 0,
+		NEEDS_VIEW_MASK_BUFFER = 1 << 0,
+		USES_ARGUMENT_BUFFERS = 1 << 1,
+	};
 	CharString shader_name;
 	// The Metal language version specified when compiling SPIR-V to MSL.
 	// Format is major * 10000 + minor * 100 + patch.
@@ -1502,7 +1567,7 @@ struct API_AVAILABLE(macos(11.0), ios(14.0)) ShaderBinaryData {
 	uint32_t vertex_input_mask = UINT32_MAX;
 	uint32_t fragment_output_mask = UINT32_MAX;
 	uint32_t spirv_specialization_constants_ids_mask = UINT32_MAX;
-	uint32_t is_compute = UINT32_MAX;
+	uint32_t flags = NONE;
 	ComputeSize compute_local_size;
 	PushConstantData push_constant;
 	LocalVector<ShaderStageData> stages;
@@ -1515,16 +1580,46 @@ struct API_AVAILABLE(macos(11.0), ios(14.0)) ShaderBinaryData {
 		return MTLLanguageVersion((major << 0x10) + minor);
 	}
 
+	bool is_compute() const {
+		return std::any_of(stages.begin(), stages.end(), [](ShaderStageData const &e) {
+			return e.stage == RD::ShaderStage::SHADER_STAGE_COMPUTE;
+		});
+	}
+
+	bool needs_view_mask_buffer() const {
+		return flags & NEEDS_VIEW_MASK_BUFFER;
+	}
+
+	void set_needs_view_mask_buffer(bool p_value) {
+		if (p_value) {
+			flags |= NEEDS_VIEW_MASK_BUFFER;
+		} else {
+			flags &= ~NEEDS_VIEW_MASK_BUFFER;
+		}
+	}
+
+	bool uses_argument_buffers() const {
+		return flags & USES_ARGUMENT_BUFFERS;
+	}
+
+	void set_uses_argument_buffers(bool p_value) {
+		if (p_value) {
+			flags |= USES_ARGUMENT_BUFFERS;
+		} else {
+			flags &= ~USES_ARGUMENT_BUFFERS;
+		}
+	}
+
 	size_t serialize_size() const {
 		size_t size = 0;
 		size += sizeof(uint32_t) + shader_name.length(); // shader_name
-		size += sizeof(uint32_t); // msl_version
-		size += sizeof(uint32_t); // vertex_input_mask
-		size += sizeof(uint32_t); // fragment_output_mask
-		size += sizeof(uint32_t); // spirv_specialization_constants_ids_mask
-		size += sizeof(uint32_t); // is_compute
-		size += compute_local_size.serialize_size(); // compute_local_size
-		size += push_constant.serialize_size(); // push_constant
+		size += sizeof(msl_version);
+		size += sizeof(vertex_input_mask);
+		size += sizeof(fragment_output_mask);
+		size += sizeof(spirv_specialization_constants_ids_mask);
+		size += sizeof(flags);
+		size += compute_local_size.serialize_size();
+		size += push_constant.serialize_size();
 		size += sizeof(uint32_t); // stages.size()
 		for (ShaderStageData const &e : stages) {
 			size += e.serialize_size();
@@ -1546,7 +1641,7 @@ struct API_AVAILABLE(macos(11.0), ios(14.0)) ShaderBinaryData {
 		p_writer.write(vertex_input_mask);
 		p_writer.write(fragment_output_mask);
 		p_writer.write(spirv_specialization_constants_ids_mask);
-		p_writer.write(is_compute);
+		p_writer.write(flags);
 		p_writer.write(compute_local_size);
 		p_writer.write(push_constant);
 		p_writer.write(VectorView(stages));
@@ -1560,7 +1655,7 @@ struct API_AVAILABLE(macos(11.0), ios(14.0)) ShaderBinaryData {
 		p_reader.read(vertex_input_mask);
 		p_reader.read(fragment_output_mask);
 		p_reader.read(spirv_specialization_constants_ids_mask);
-		p_reader.read(is_compute);
+		p_reader.read(flags);
 		p_reader.read(compute_local_size);
 		p_reader.read(push_constant);
 		p_reader.read(stages);
@@ -1572,14 +1667,16 @@ struct API_AVAILABLE(macos(11.0), ios(14.0)) ShaderBinaryData {
 // endregion
 
 String RenderingDeviceDriverMetal::shader_get_binary_cache_key() {
-	return "Metal-SV" + uitos(SHADER_BINARY_VERSION);
+	static const String cache_key = "Metal-SV" + uitos(SHADER_BINARY_VERSION);
+	return cache_key;
 }
 
-Error RenderingDeviceDriverMetal::_reflect_spirv16(VectorView<ShaderStageSPIRVData> p_spirv, ShaderReflection &r_reflection) {
+Error RenderingDeviceDriverMetal::_reflect_spirv16(VectorView<ShaderStageSPIRVData> p_spirv, ShaderReflection &r_reflection, ShaderMeta &r_shader_meta) {
 	using namespace spirv_cross;
 	using spirv_cross::Resource;
 
 	r_reflection = {};
+	r_shader_meta = {};
 
 	for (uint32_t i = 0; i < p_spirv.size(); i++) {
 		ShaderStageSPIRVData const &v = p_spirv[i];
@@ -1811,6 +1908,20 @@ Error RenderingDeviceDriverMetal::_reflect_spirv16(VectorView<ShaderStageSPIRVDa
 			}
 		}
 
+		for (const BuiltInResource &res : resources.builtin_inputs) {
+			if (res.builtin == spv::BuiltInViewIndex || res.builtin == spv::BuiltInViewportIndex) {
+				r_shader_meta.has_multiview = true;
+			}
+		}
+
+		if (!r_shader_meta.has_multiview) {
+			for (const BuiltInResource &res : resources.builtin_outputs) {
+				if (res.builtin == spv::BuiltInViewIndex || res.builtin == spv::BuiltInViewportIndex) {
+					r_shader_meta.has_multiview = true;
+				}
+			}
+		}
+
 		// Specialization constants.
 		for (SpecializationConstant const &constant : compiler.get_specialization_constants()) {
 			int32_t existing = -1;
@@ -1874,7 +1985,8 @@ Vector<uint8_t> RenderingDeviceDriverMetal::shader_compile_binary_from_spirv(Vec
 	using spirv_cross::Resource;
 
 	ShaderReflection spirv_data;
-	ERR_FAIL_COND_V(_reflect_spirv16(p_spirv, spirv_data), Result());
+	ShaderMeta shader_meta;
+	ERR_FAIL_COND_V(_reflect_spirv16(p_spirv, spirv_data, shader_meta), Result());
 
 	ShaderBinaryData bin_data{};
 	if (!p_shader_name.is_empty()) {
@@ -1890,13 +2002,13 @@ Vector<uint8_t> RenderingDeviceDriverMetal::shader_compile_binary_from_spirv(Vec
 		.y = spirv_data.compute_local_size[1],
 		.z = spirv_data.compute_local_size[2],
 	};
-	bin_data.is_compute = spirv_data.is_compute;
 	bin_data.push_constant.size = spirv_data.push_constant_size;
 	bin_data.push_constant.stages = (ShaderStageUsage)(uint8_t)spirv_data.push_constant_stages;
+	bin_data.set_needs_view_mask_buffer(shader_meta.has_multiview);
 
 	for (uint32_t i = 0; i < spirv_data.uniform_sets.size(); i++) {
 		const ::Vector<ShaderUniform> &spirv_set = spirv_data.uniform_sets[i];
-		UniformSetData set{ .index = i };
+		UniformSetData set(i);
 		for (const ShaderUniform &spirv_uniform : spirv_set) {
 			UniformData binding{};
 			binding.type = spirv_uniform.type;
@@ -1924,10 +2036,6 @@ Vector<uint8_t> RenderingDeviceDriverMetal::shader_compile_binary_from_spirv(Vec
 
 	CompilerMSL::Options msl_options{};
 	msl_options.set_msl_version(version_major, version_minor);
-	if (version_major == 3 && version_minor >= 1) {
-		// TODO(sgc): Restrict to Metal 3.0 for now, until bugs in SPIRV-cross image atomics are resolved.
-		msl_options.set_msl_version(3, 0);
-	}
 	bin_data.msl_version = msl_options.msl_version;
 #if TARGET_OS_OSX
 	msl_options.platform = CompilerMSL::Options::macOS;
@@ -1935,18 +2043,38 @@ Vector<uint8_t> RenderingDeviceDriverMetal::shader_compile_binary_from_spirv(Vec
 	msl_options.platform = CompilerMSL::Options::iOS;
 #endif
 
-#if TARGET_OS_IOS
-	msl_options.ios_use_simdgroup_functions = (*metal_device_properties).features.simdPermute;
+#if TARGET_OS_IPHONE
+	msl_options.ios_use_simdgroup_functions = (*device_properties).features.simdPermute;
 #endif
 
-	msl_options.argument_buffers = true;
-	msl_options.force_active_argument_buffer_resources = true; // Same as MoltenVK when using argument buffers.
-	// msl_options.pad_argument_buffer_resources = true; // Same as MoltenVK when using argument buffers.
+	bool disable_argument_buffers = false;
+	if (String v = OS::get_singleton()->get_environment(U"GODOT_DISABLE_ARGUMENT_BUFFERS"); v == U"1") {
+		disable_argument_buffers = true;
+	}
+
+	if (device_properties->features.argument_buffers_tier >= MTLArgumentBuffersTier2 && !disable_argument_buffers) {
+		msl_options.argument_buffers_tier = CompilerMSL::Options::ArgumentBuffersTier::Tier2;
+		msl_options.argument_buffers = true;
+		bin_data.set_uses_argument_buffers(true);
+	} else {
+		msl_options.argument_buffers_tier = CompilerMSL::Options::ArgumentBuffersTier::Tier1;
+		// Tier 1 argument buffers don't support writable textures, so we disable them completely.
+		msl_options.argument_buffers = false;
+		bin_data.set_uses_argument_buffers(false);
+	}
+	msl_options.force_active_argument_buffer_resources = true;
+	// We can't use this, as we have to add the descriptor sets via compiler.add_msl_resource_binding.
+	// msl_options.pad_argument_buffer_resources = true;
 	msl_options.texture_buffer_native = true; // Enable texture buffer support.
 	msl_options.use_framebuffer_fetch_subpasses = false;
 	msl_options.pad_fragment_output_components = true;
 	msl_options.r32ui_alignment_constant_id = R32UI_ALIGNMENT_CONSTANT_ID;
 	msl_options.agx_manual_cube_grad_fixup = true;
+	if (shader_meta.has_multiview) {
+		msl_options.multiview = true;
+		msl_options.multiview_layered_rendering = true;
+		msl_options.view_mask_buffer_index = VIEW_MASK_BUFFER_INDEX;
+	}
 
 	CompilerGLSL::Options options{};
 	options.vertex.flip_vert_y = true;
@@ -1974,11 +2102,17 @@ Vector<uint8_t> RenderingDeviceDriverMetal::shader_compile_binary_from_spirv(Vec
 		std::unordered_set<VariableID> active = compiler.get_active_interface_variables();
 		ShaderResources resources = compiler.get_shader_resources();
 
-		std::string source = compiler.compile();
+		std::string source;
+		try {
+			source = compiler.compile();
+		} catch (CompilerError &e) {
+			ERR_FAIL_V_MSG(Result(), "Failed to compile stage " + String(SHADER_STAGE_NAMES[stage]) + ": " + e.what());
+		}
 
 		ERR_FAIL_COND_V_MSG(compiler.get_entry_points_and_stages().size() != 1, Result(), "Expected a single entry point and stage.");
 
-		EntryPoint &entry_point_stage = compiler.get_entry_points_and_stages().front();
+		SmallVector<EntryPoint> entry_pts_stages = compiler.get_entry_points_and_stages();
+		EntryPoint &entry_point_stage = entry_pts_stages.front();
 		SPIREntryPoint &entry_point = compiler.get_entry_point(entry_point_stage.name, entry_point_stage.execution_model);
 
 		// Process specialization constants.
@@ -2019,8 +2153,8 @@ Vector<uint8_t> RenderingDeviceDriverMetal::shader_compile_binary_from_spirv(Vec
 			return res;
 		};
 
-		auto descriptor_bindings = [&compiler, &active, &uniform_sets, stage, &get_decoration](SmallVector<Resource> &resources, Writable writable) {
-			for (Resource const &res : resources) {
+		auto descriptor_bindings = [&compiler, &active, &uniform_sets, stage, &get_decoration](SmallVector<Resource> &p_resources, Writable p_writable) {
+			for (Resource const &res : p_resources) {
 				uint32_t dset = get_decoration(res.id, spv::DecorationDescriptorSet);
 				uint32_t dbin = get_decoration(res.id, spv::DecorationBinding);
 				UniformData *found = nullptr;
@@ -2126,7 +2260,7 @@ Vector<uint8_t> RenderingDeviceDriverMetal::shader_compile_binary_from_spirv(Vec
 				}
 
 				// Update writable.
-				if (writable == Writable::Maybe) {
+				if (p_writable == Writable::Maybe) {
 					if (basetype == BT::Struct) {
 						Bitset flags = compiler.get_buffer_block_flags(res.id);
 						if (!flags.get(spv::DecorationNonWritable)) {
@@ -2260,6 +2394,8 @@ Vector<uint8_t> RenderingDeviceDriverMetal::shader_compile_binary_from_spirv(Vec
 
 		ShaderStageData stage_data;
 		stage_data.stage = v.shader_stage;
+		stage_data.is_position_invariant = compiler.is_position_invariant();
+		stage_data.supports_fast_math = !entry_point.flags.get(spv::ExecutionModeSignedZeroInfNanPreserve);
 		stage_data.entry_point_name = entry_point.name.c_str();
 		stage_data.source = source.c_str();
 		bin_data.stages.push_back(stage_data);
@@ -2288,7 +2424,7 @@ void RenderingDeviceDriverMetal::shader_cache_free_entry(const SHA256Digest &key
 	}
 }
 
-RDD::ShaderID RenderingDeviceDriverMetal::shader_create_from_bytecode(const Vector<uint8_t> &p_shader_binary, ShaderDescription &r_shader_desc, String &r_name) {
+RDD::ShaderID RenderingDeviceDriverMetal::shader_create_from_bytecode(const Vector<uint8_t> &p_shader_binary, ShaderDescription &r_shader_desc, String &r_name, const Vector<ImmutableSampler> &p_immutable_samplers) {
 	r_shader_desc = {}; // Driver-agnostic.
 
 	const uint8_t *binptr = p_shader_binary.ptr();
@@ -2313,6 +2449,11 @@ RDD::ShaderID RenderingDeviceDriverMetal::shader_create_from_bytecode(const Vect
 			ERR_FAIL_V_MSG(ShaderID(), "Unexpected end of buffer");
 	}
 
+	// We need to regenerate the shader if the cache is moved to an incompatible device.
+	ERR_FAIL_COND_V_MSG(device_properties->features.argument_buffers_tier < MTLArgumentBuffersTier2 && binary_data.uses_argument_buffers(),
+			ShaderID(),
+			"Shader was generated with argument buffers, but device has limited support");
+
 	MTLCompileOptions *options = [MTLCompileOptions new];
 	options.languageVersion = binary_data.get_msl_version();
 	HashMap<ShaderStage, MDLibrary *> libraries;
@@ -2332,7 +2473,8 @@ RDD::ShaderID RenderingDeviceDriverMetal::shader_create_from_bytecode(const Vect
 		ShaderCacheEntry *cd = memnew(ShaderCacheEntry(*this, key));
 		cd->name = binary_data.shader_name;
 		cd->stage = shader_data.stage;
-
+		options.preserveInvariance = shader_data.is_position_invariant;
+		options.fastMathEnabled = YES;
 		MDLibrary *library = [MDLibrary newLibraryWithCacheEntry:cd
 														  device:device
 														  source:source
@@ -2388,8 +2530,9 @@ RDD::ShaderID RenderingDeviceDriverMetal::shader_create_from_bytecode(const Vect
 
 			for (UniformInfo const &uniform : set.uniforms) {
 				BindingInfo const *binding_info = uniform.bindings.getptr(stage);
-				if (binding_info == nullptr)
+				if (binding_info == nullptr) {
 					continue;
+				}
 
 				[descriptors addObject:binding_info->new_argument_descriptor()];
 				BindingInfo const *secondary_binding_info = uniform.bindings_secondary.getptr(stage);
@@ -2433,8 +2576,12 @@ RDD::ShaderID RenderingDeviceDriverMetal::shader_create_from_bytecode(const Vect
 	}
 
 	MDShader *shader = nullptr;
-	if (binary_data.is_compute) {
-		MDComputeShader *cs = new MDComputeShader(binary_data.shader_name, uniform_sets, libraries[ShaderStage::SHADER_STAGE_COMPUTE]);
+	if (binary_data.is_compute()) {
+		MDComputeShader *cs = new MDComputeShader(
+				binary_data.shader_name,
+				uniform_sets,
+				binary_data.uses_argument_buffers(),
+				libraries[ShaderStage::SHADER_STAGE_COMPUTE]);
 
 		uint32_t *binding = binary_data.push_constant.msl_binding.getptr(SHADER_STAGE_COMPUTE);
 		if (binding) {
@@ -2448,7 +2595,13 @@ RDD::ShaderID RenderingDeviceDriverMetal::shader_create_from_bytecode(const Vect
 #endif
 		shader = cs;
 	} else {
-		MDRenderShader *rs = new MDRenderShader(binary_data.shader_name, uniform_sets, libraries[ShaderStage::SHADER_STAGE_VERTEX], libraries[ShaderStage::SHADER_STAGE_FRAGMENT]);
+		MDRenderShader *rs = new MDRenderShader(
+				binary_data.shader_name,
+				uniform_sets,
+				binary_data.needs_view_mask_buffer(),
+				binary_data.uses_argument_buffers(),
+				libraries[ShaderStage::SHADER_STAGE_VERTEX],
+				libraries[ShaderStage::SHADER_STAGE_FRAGMENT]);
 
 		uint32_t *vert_binding = binary_data.push_constant.msl_binding.getptr(SHADER_STAGE_VERTEX);
 		if (vert_binding) {
@@ -2475,7 +2628,7 @@ RDD::ShaderID RenderingDeviceDriverMetal::shader_create_from_bytecode(const Vect
 
 	r_shader_desc.vertex_input_mask = binary_data.vertex_input_mask;
 	r_shader_desc.fragment_output_mask = binary_data.fragment_output_mask;
-	r_shader_desc.is_compute = binary_data.is_compute;
+	r_shader_desc.is_compute = binary_data.is_compute();
 	r_shader_desc.compute_local_size[0] = binary_data.compute_local_size.x;
 	r_shader_desc.compute_local_size[1] = binary_data.compute_local_size.y;
 	r_shader_desc.compute_local_size[2] = binary_data.compute_local_size.z;
@@ -2497,8 +2650,10 @@ void RenderingDeviceDriverMetal::shader_destroy_modules(ShaderID p_shader) {
 /**** UNIFORM SET ****/
 /*********************/
 
-RDD::UniformSetID RenderingDeviceDriverMetal::uniform_set_create(VectorView<BoundUniform> p_uniforms, ShaderID p_shader, uint32_t p_set_index) {
-	MDUniformSet *set = new MDUniformSet();
+RDD::UniformSetID RenderingDeviceDriverMetal::uniform_set_create(VectorView<BoundUniform> p_uniforms, ShaderID p_shader, uint32_t p_set_index, int p_linear_pool_index) {
+	//p_linear_pool_index = -1; // TODO:? Linear pools not implemented or not supported by API backend.
+
+	MDUniformSet *set = memnew(MDUniformSet);
 	Vector<BoundUniform> bound_uniforms;
 	bound_uniforms.resize(p_uniforms.size());
 	for (uint32_t i = 0; i < p_uniforms.size(); i += 1) {
@@ -2512,7 +2667,7 @@ RDD::UniformSetID RenderingDeviceDriverMetal::uniform_set_create(VectorView<Boun
 
 void RenderingDeviceDriverMetal::uniform_set_free(UniformSetID p_uniform_set) {
 	MDUniformSet *obj = (MDUniformSet *)p_uniform_set.id;
-	delete obj;
+	memdelete(obj);
 }
 
 void RenderingDeviceDriverMetal::command_uniform_set_prepare_for_use(CommandBufferID p_cmd_buffer, UniformSetID p_uniform_set, ShaderID p_shader, uint32_t p_set_index) {
@@ -2726,7 +2881,7 @@ void RenderingDeviceDriverMetal::command_clear_color_texture(CommandBufferID p_c
 		uint32_t layerCnt = p_subresources.layer_count;
 		uint32_t layerEnd = layerStart + layerCnt;
 
-		MetalFeatures const &features = (*metal_device_properties).features;
+		MetalFeatures const &features = (*device_properties).features;
 
 		// Iterate across mipmap levels and layers, and perform and empty render to clear each.
 		for (uint32_t mipLvl = mipLvlStart; mipLvl < mipLvlEnd; mipLvl++) {
@@ -2763,7 +2918,7 @@ void RenderingDeviceDriverMetal::command_clear_color_texture(CommandBufferID p_c
 	}
 }
 
-API_AVAILABLE(macos(11.0), ios(14.0))
+API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0))
 bool isArrayTexture(MTLTextureType p_type) {
 	return (p_type == MTLTextureType3D ||
 			p_type == MTLTextureType2DArray ||
@@ -2956,6 +3111,7 @@ RDD::RenderPassID RenderingDeviceDriverMetal::render_pass_create(VectorView<Atta
 	for (uint32_t i = 0; i < subpass_count; i++) {
 		MDSubpass &subpass = subpasses.write[i];
 		subpass.subpass_index = i;
+		subpass.view_count = p_view_count;
 		subpass.input_references = p_subpasses[i].input_references;
 		subpass.color_references = p_subpasses[i].color_references;
 		subpass.depth_stencil_reference = p_subpasses[i].depth_stencil_reference;
@@ -2982,7 +3138,7 @@ RDD::RenderPassID RenderingDeviceDriverMetal::render_pass_create(VectorView<Atta
 		MTLPixelFormat format = pf.getMTLPixelFormat(a.format);
 		mda.format = format;
 		if (a.samples > TEXTURE_SAMPLES_1) {
-			mda.samples = (*metal_device_properties).find_nearest_supported_sample_count(a.samples);
+			mda.samples = (*device_properties).find_nearest_supported_sample_count(a.samples);
 		}
 		mda.loadAction = LOAD_ACTIONS[a.load_op];
 		mda.storeAction = STORE_ACTIONS[a.store_op];
@@ -3049,6 +3205,11 @@ void RenderingDeviceDriverMetal::command_bind_render_pipeline(CommandBufferID p_
 void RenderingDeviceDriverMetal::command_bind_render_uniform_set(CommandBufferID p_cmd_buffer, UniformSetID p_uniform_set, ShaderID p_shader, uint32_t p_set_index) {
 	MDCommandBuffer *cb = (MDCommandBuffer *)(p_cmd_buffer.id);
 	cb->render_bind_uniform_set(p_uniform_set, p_shader, p_set_index);
+}
+
+void RenderingDeviceDriverMetal::command_bind_render_uniform_sets(CommandBufferID p_cmd_buffer, VectorView<UniformSetID> p_uniform_sets, ShaderID p_shader, uint32_t p_first_set_index, uint32_t p_set_count) {
+	MDCommandBuffer *cb = (MDCommandBuffer *)(p_cmd_buffer.id);
+	cb->render_bind_uniform_sets(p_uniform_sets, p_shader, p_first_set_index, p_set_count);
 }
 
 void RenderingDeviceDriverMetal::command_render_draw(CommandBufferID p_cmd_buffer, uint32_t p_vertex_count, uint32_t p_instance_count, uint32_t p_base_vertex, uint32_t p_first_instance) {
@@ -3356,7 +3517,7 @@ RDD::PipelineID RenderingDeviceDriverMetal::render_pipeline_create(
 	}
 
 	if (p_multisample_state.sample_count > TEXTURE_SAMPLES_1) {
-		pipeline->sample_count = (*metal_device_properties).find_nearest_supported_sample_count(p_multisample_state.sample_count);
+		pipeline->sample_count = (*device_properties).find_nearest_supported_sample_count(p_multisample_state.sample_count);
 	}
 	desc.rasterSampleCount = static_cast<NSUInteger>(pipeline->sample_count);
 	desc.alphaToCoverageEnabled = p_multisample_state.enable_alpha_to_coverage;
@@ -3522,6 +3683,11 @@ void RenderingDeviceDriverMetal::command_bind_compute_uniform_set(CommandBufferI
 	cb->compute_bind_uniform_set(p_uniform_set, p_shader, p_set_index);
 }
 
+void RenderingDeviceDriverMetal::command_bind_compute_uniform_sets(CommandBufferID p_cmd_buffer, VectorView<UniformSetID> p_uniform_sets, ShaderID p_shader, uint32_t p_first_set_index, uint32_t p_set_count) {
+	MDCommandBuffer *cb = (MDCommandBuffer *)(p_cmd_buffer.id);
+	cb->compute_bind_uniform_sets(p_uniform_sets, p_shader, p_first_set_index, p_set_count);
+}
+
 void RenderingDeviceDriverMetal::command_compute_dispatch(CommandBufferID p_cmd_buffer, uint32_t p_x_groups, uint32_t p_y_groups, uint32_t p_z_groups) {
 	MDCommandBuffer *cb = (MDCommandBuffer *)(p_cmd_buffer.id);
 	cb->compute_dispatch(p_x_groups, p_y_groups, p_z_groups);
@@ -3675,8 +3841,7 @@ void RenderingDeviceDriverMetal::set_object_name(ObjectType p_type, ID p_driver_
 uint64_t RenderingDeviceDriverMetal::get_resource_native_handle(DriverResource p_type, ID p_driver_id) {
 	switch (p_type) {
 		case DRIVER_RESOURCE_LOGICAL_DEVICE: {
-			uintptr_t devicePtr = (uintptr_t)(__bridge void *)device;
-			return (uint64_t)devicePtr;
+			return (uint64_t)(uintptr_t)(__bridge void *)device;
 		}
 		case DRIVER_RESOURCE_PHYSICAL_DEVICE: {
 			return 0;
@@ -3685,7 +3850,7 @@ uint64_t RenderingDeviceDriverMetal::get_resource_native_handle(DriverResource p
 			return 0;
 		}
 		case DRIVER_RESOURCE_COMMAND_QUEUE: {
-			return 0;
+			return (uint64_t)(uintptr_t)(__bridge void *)device_queue;
 		}
 		case DRIVER_RESOURCE_QUEUE_FAMILY: {
 			return 0;
@@ -3702,15 +3867,20 @@ uint64_t RenderingDeviceDriverMetal::get_resource_native_handle(DriverResource p
 		case DRIVER_RESOURCE_SAMPLER: {
 			return p_driver_id.id;
 		}
-		case DRIVER_RESOURCE_UNIFORM_SET:
+		case DRIVER_RESOURCE_UNIFORM_SET: {
 			return 0;
+		}
 		case DRIVER_RESOURCE_BUFFER: {
 			return p_driver_id.id;
 		}
-		case DRIVER_RESOURCE_COMPUTE_PIPELINE:
-			return 0;
-		case DRIVER_RESOURCE_RENDER_PIPELINE:
-			return 0;
+		case DRIVER_RESOURCE_COMPUTE_PIPELINE: {
+			MDComputePipeline *pipeline = (MDComputePipeline *)(p_driver_id.id);
+			return (uint64_t)(uintptr_t)(__bridge void *)pipeline->state;
+		}
+		case DRIVER_RESOURCE_RENDER_PIPELINE: {
+			MDRenderPipeline *pipeline = (MDRenderPipeline *)(p_driver_id.id);
+			return (uint64_t)(uintptr_t)(__bridge void *)pipeline->state;
+		}
 		default: {
 			return 0;
 		}
@@ -3721,8 +3891,12 @@ uint64_t RenderingDeviceDriverMetal::get_total_memory_used() {
 	return device.currentAllocatedSize;
 }
 
+uint64_t RenderingDeviceDriverMetal::get_lazily_memory_used() {
+	return 0; // TODO: Track this (grep for memoryless in Godot's Metal backend).
+}
+
 uint64_t RenderingDeviceDriverMetal::limit_get(Limit p_limit) {
-	MetalDeviceProperties const &props = (*metal_device_properties);
+	MetalDeviceProperties const &props = (*device_properties);
 	MetalLimits const &limits = props.limits;
 
 #if defined(DEV_ENABLED)
@@ -3818,11 +3992,19 @@ uint64_t RenderingDeviceDriverMetal::limit_get(Limit p_limit) {
 		case LIMIT_SUBGROUP_MAX_SIZE:
 			return limits.maxSubgroupSize;
 		case LIMIT_SUBGROUP_IN_SHADERS:
-			return (int64_t)limits.subgroupSupportedShaderStages;
+			return (uint64_t)limits.subgroupSupportedShaderStages;
 		case LIMIT_SUBGROUP_OPERATIONS:
-			return (int64_t)limits.subgroupSupportedOperations;
+			return (uint64_t)limits.subgroupSupportedOperations;
+		case LIMIT_METALFX_TEMPORAL_SCALER_MIN_SCALE:
+			return (uint64_t)((1.0 / limits.temporalScalerInputContentMaxScale) * 1000'000);
+		case LIMIT_METALFX_TEMPORAL_SCALER_MAX_SCALE:
+			return (uint64_t)((1.0 / limits.temporalScalerInputContentMinScale) * 1000'000);
+		case LIMIT_MAX_SHADER_VARYINGS:
+			return limits.maxShaderVaryings;
 		UNKNOWN(LIMIT_VRS_TEXEL_WIDTH);
 		UNKNOWN(LIMIT_VRS_TEXEL_HEIGHT);
+		UNKNOWN(LIMIT_VRS_MAX_FRAGMENT_WIDTH);
+		UNKNOWN(LIMIT_VRS_MAX_FRAGMENT_HEIGHT);
 		default:
 			ERR_FAIL_V(0);
 	}
@@ -3842,7 +4024,7 @@ uint64_t RenderingDeviceDriverMetal::api_trait_get(ApiTrait p_trait) {
 bool RenderingDeviceDriverMetal::has_feature(Features p_feature) {
 	switch (p_feature) {
 		case SUPPORTS_MULTIVIEW:
-			return false;
+			return multiview_capabilities.is_supported;
 		case SUPPORTS_FSR_HALF_FLOAT:
 			return true;
 		case SUPPORTS_ATTACHMENT_VRS:
@@ -3854,6 +4036,12 @@ bool RenderingDeviceDriverMetal::has_feature(Features p_feature) {
 			return false;
 		case SUPPORTS_FRAGMENT_SHADER_WITH_ONLY_SIDE_EFFECTS:
 			return true;
+		case SUPPORTS_BUFFER_DEVICE_ADDRESS:
+			return device_properties->features.supports_gpu_address;
+		case SUPPORTS_METALFX_SPATIAL:
+			return device_properties->features.metal_fx_spatial;
+		case SUPPORTS_METALFX_TEMPORAL:
+			return device_properties->features.metal_fx_temporal;
 		default:
 			return false;
 	}
@@ -3949,14 +4137,25 @@ Error RenderingDeviceDriverMetal::initialize(uint32_t p_device_index, uint32_t p
 	// Set the pipeline cache ID based on the Metal version.
 	pipeline_cache_id = "metal-driver-" + get_api_version();
 
-	metal_device_properties = memnew(MetalDeviceProperties(device));
-	pixel_formats = memnew(PixelFormats(device));
+	device_properties = memnew(MetalDeviceProperties(device));
+	pixel_formats = memnew(PixelFormats(device, device_properties->features));
+	if (device_properties->features.layeredRendering) {
+		multiview_capabilities.is_supported = true;
+		multiview_capabilities.max_view_count = device_properties->limits.maxViewports;
+		// NOTE: I'm not sure what the limit is as I don't see it referenced anywhere
+		multiview_capabilities.max_instance_count = UINT32_MAX;
 
-	// Check required features and abort if any of them is missing.
-	if (!metal_device_properties->features.imageCubeArray) {
-		// NOTE: Apple A11 (Apple4) GPUs support image cube arrays, which are devices from 2017 and newer.
-		String error_string = vformat("Your Apple GPU does not support the following features which are required to use Metal-based renderers in Godot:\n\n");
-		if (!metal_device_properties->features.imageCubeArray) {
+		print_verbose("- Metal multiview supported:");
+		print_verbose("  max view count: " + itos(multiview_capabilities.max_view_count));
+		print_verbose("  max instances: " + itos(multiview_capabilities.max_instance_count));
+	} else {
+		print_verbose("- Metal multiview not supported");
+	}
+
+	// The Metal renderer requires Apple4 family. This is 2017 era A11 chips and newer.
+	if (device_properties->features.highestFamily < MTLGPUFamilyApple4) {
+		String error_string = vformat("Your Apple GPU does not support the following features, which are required to use Metal-based renderers in Godot:\n\n");
+		if (!device_properties->features.imageCubeArray) {
 			error_string += "- No support for image cube arrays.\n";
 		}
 

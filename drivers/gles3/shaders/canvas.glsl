@@ -1,17 +1,16 @@
 /* clang-format off */
 #[modes]
 
-mode_quad =
-mode_ninepatch = #define USE_NINEPATCH
-mode_primitive = #define USE_PRIMITIVE
-mode_attributes = #define USE_ATTRIBUTES
-mode_instanced = #define USE_ATTRIBUTES \n#define USE_INSTANCING
+mode_default =
 
 #[specializations]
 
 DISABLE_LIGHTING = true
 USE_RGBA_SHADOWS = false
-SINGLE_INSTANCE = false
+USE_NINEPATCH = false
+USE_PRIMITIVE = false
+USE_ATTRIBUTES = false
+USE_INSTANCING = false
 
 #[vertex]
 
@@ -84,7 +83,7 @@ layout(location = 15) in highp uvec4 attrib_H;
 #endif
 
 #define read_draw_data_flags attrib_G.z
-#define read_draw_data_specular_shininess attrib_G.w
+#define read_draw_data_instance_offset attrib_G.w
 #define read_draw_data_lights attrib_H
 
 // Varyings so the per-instance info can be used in the fragment shader
@@ -111,6 +110,9 @@ layout(std140) uniform MaterialUniforms{ //ubo:4
 
 };
 #endif
+
+uniform mediump uint batch_flags;
+
 /* clang-format on */
 #include "canvas_uniforms_inc.glsl"
 
@@ -140,7 +142,7 @@ void main() {
 #endif // !USE_ATTRIBUTES
 #endif // USE_PRIMITIVE
 
-	varying_F = uvec2(read_draw_data_flags, read_draw_data_specular_shininess);
+	varying_F = uvec2(read_draw_data_flags, read_draw_data_instance_offset);
 	varying_G = read_draw_data_lights;
 
 	vec4 instance_custom = vec4(0.0);
@@ -180,13 +182,13 @@ void main() {
 	vec2 uv = uv_attrib;
 
 #ifdef USE_INSTANCING
-	if (bool(read_draw_data_flags & FLAGS_INSTANCING_HAS_COLORS)) {
+	if (bool(batch_flags & BATCH_FLAGS_INSTANCING_HAS_COLORS)) {
 		vec4 instance_color;
 		instance_color.xy = unpackHalf2x16(uint(instance_color_custom_data.x));
 		instance_color.zw = unpackHalf2x16(uint(instance_color_custom_data.y));
 		color *= instance_color;
 	}
-	if (bool(read_draw_data_flags & FLAGS_INSTANCING_HAS_CUSTOM_DATA)) {
+	if (bool(batch_flags & BATCH_FLAGS_INSTANCING_HAS_CUSTOM_DATA)) {
 		instance_custom.xy = unpackHalf2x16(instance_color_custom_data.z);
 		instance_custom.zw = unpackHalf2x16(instance_color_custom_data.w);
 	}
@@ -206,20 +208,21 @@ void main() {
 	// no crash or freeze on all Adreno 3xx	with 'if / else if' and slightly faster!
 	int vertex_id = gl_VertexID % 6;
 	vec2 vertex_base;
-	if (vertex_id == 0)
+	if (vertex_id == 0) {
 		vertex_base = vec2(0.0, 0.0);
-	else if (vertex_id == 1)
+	} else if (vertex_id == 1) {
 		vertex_base = vec2(0.0, 1.0);
-	else if (vertex_id == 2)
+	} else if (vertex_id == 2) {
 		vertex_base = vec2(1.0, 1.0);
-	else if (vertex_id == 3)
+	} else if (vertex_id == 3) {
 		vertex_base = vec2(1.0, 0.0);
-	else if (vertex_id == 4)
+	} else if (vertex_id == 4) {
 		vertex_base = vec2(0.0, 0.0);
-	else if (vertex_id == 5)
+	} else if (vertex_id == 5) {
 		vertex_base = vec2(1.0, 1.0);
+	}
 
-	vec2 uv = read_draw_data_src_rect.xy + abs(read_draw_data_src_rect.zw) * ((read_draw_data_flags & FLAGS_TRANSPOSE_RECT) != uint(0) ? vertex_base.yx : vertex_base.xy);
+	vec2 uv = read_draw_data_src_rect.xy + abs(read_draw_data_src_rect.zw) * ((read_draw_data_flags & INSTANCE_FLAGS_TRANSPOSE_RECT) != uint(0) ? vertex_base.yx : vertex_base.xy);
 	vec4 color = read_draw_data_modulation;
 	vec2 vertex = read_draw_data_dst_rect.xy + abs(read_draw_data_dst_rect.zw) * mix(vertex_base, vec2(1.0, 1.0) - vertex_base, lessThan(read_draw_data_src_rect.zw, vec2(0.0, 0.0)));
 
@@ -323,7 +326,7 @@ flat in vec4 varying_E;
 flat in uvec2 varying_F;
 flat in uvec4 varying_G;
 #define read_draw_data_flags varying_F.x
-#define read_draw_data_specular_shininess varying_F.y
+#define read_draw_data_instance_offset varying_F.y
 #define read_draw_data_lights varying_G
 
 #ifndef DISABLE_LIGHTING
@@ -336,6 +339,9 @@ uniform sampler2D normal_texture; //texunit:-6
 uniform sampler2D specular_texture; //texunit:-7
 
 uniform sampler2D color_texture; //texunit:0
+
+uniform mediump uint batch_flags;
+uniform highp uint specular_shininess_in;
 
 layout(location = 0) out vec4 frag_color;
 
@@ -520,7 +526,7 @@ float map_ninepatch_axis(float pixel, float draw_size, float tex_pixel_size, flo
 	} else if (pixel >= draw_size - margin_end) {
 		return (tex_size - (draw_size - pixel)) * tex_pixel_size;
 	} else {
-		if (!bool(read_draw_data_flags & FLAGS_NINEPACH_DRAW_CENTER)) {
+		if (!bool(read_draw_data_flags & INSTANCE_FLAGS_NINEPATCH_DRAW_CENTER)) {
 			draw_center--;
 		}
 
@@ -568,8 +574,8 @@ void main() {
 
 	int draw_center = 2;
 	uv = vec2(
-			map_ninepatch_axis(pixel_size_interp.x, abs(read_draw_data_dst_rect_z), read_draw_data_color_texture_pixel_size.x, read_draw_data_ninepatch_margins.x, read_draw_data_ninepatch_margins.z, int(read_draw_data_flags >> FLAGS_NINEPATCH_H_MODE_SHIFT) & 0x3, draw_center),
-			map_ninepatch_axis(pixel_size_interp.y, abs(read_draw_data_dst_rect_w), read_draw_data_color_texture_pixel_size.y, read_draw_data_ninepatch_margins.y, read_draw_data_ninepatch_margins.w, int(read_draw_data_flags >> FLAGS_NINEPATCH_V_MODE_SHIFT) & 0x3, draw_center));
+			map_ninepatch_axis(pixel_size_interp.x, abs(read_draw_data_dst_rect_z), read_draw_data_color_texture_pixel_size.x, read_draw_data_ninepatch_margins.x, read_draw_data_ninepatch_margins.z, int(read_draw_data_flags >> INSTANCE_FLAGS_NINEPATCH_H_MODE_SHIFT) & 0x3, draw_center),
+			map_ninepatch_axis(pixel_size_interp.y, abs(read_draw_data_dst_rect_w), read_draw_data_color_texture_pixel_size.y, read_draw_data_ninepatch_margins.y, read_draw_data_ninepatch_margins.w, int(read_draw_data_flags >> INSTANCE_FLAGS_NINEPATCH_V_MODE_SHIFT) & 0x3, draw_center));
 
 	if (draw_center == 0) {
 		color.a = 0.0;
@@ -578,7 +584,7 @@ void main() {
 	uv = uv * read_draw_data_src_rect.zw + read_draw_data_src_rect.xy; //apply region if needed
 
 #endif
-	if (bool(read_draw_data_flags & FLAGS_CLIP_RECT_UV)) {
+	if (bool(read_draw_data_flags & INSTANCE_FLAGS_CLIP_RECT_UV)) {
 		vec2 half_texpixel = read_draw_data_color_texture_pixel_size * 0.5;
 		uv = clamp(uv, read_draw_data_src_rect.xy + half_texpixel, read_draw_data_src_rect.xy + abs(read_draw_data_src_rect.zw) - half_texpixel);
 	}
@@ -586,7 +592,7 @@ void main() {
 #endif
 
 #ifndef USE_PRIMITIVE
-	if (bool(read_draw_data_flags & FLAGS_USE_MSDF)) {
+	if (bool(read_draw_data_flags & INSTANCE_FLAGS_USE_MSDF)) {
 		float px_range = read_draw_data_ninepatch_margins.x;
 		float outline_thickness = read_draw_data_ninepatch_margins.y;
 
@@ -604,7 +610,7 @@ void main() {
 			float a = clamp(d * px_size + 0.5, 0.0, 1.0);
 			color.a = a * color.a;
 		}
-	} else if (bool(read_draw_data_flags & FLAGS_USE_LCD)) {
+	} else if (bool(read_draw_data_flags & INSTANCE_FLAGS_USE_LCD)) {
 		vec4 lcd_sample = texture(color_texture, uv);
 		if (lcd_sample.a == 1.0) {
 			color.rgb = lcd_sample.rgb * color.a;
@@ -618,7 +624,7 @@ void main() {
 		color *= texture(color_texture, uv);
 	}
 
-	uint light_count = (read_draw_data_flags >> uint(FLAGS_LIGHT_COUNT_SHIFT)) & uint(0xF); //max 16 lights
+	uint light_count = read_draw_data_flags & uint(0xF); // Max 16 lights.
 	bool using_light = light_count > 0u || directional_light_count > 0u;
 
 	vec3 normal;
@@ -629,17 +635,16 @@ void main() {
 	bool normal_used = false;
 #endif
 
-	if (normal_used || (using_light && bool(read_draw_data_flags & FLAGS_DEFAULT_NORMAL_MAP_USED))) {
+	if (normal_used || (using_light && bool(batch_flags & BATCH_FLAGS_DEFAULT_NORMAL_MAP_USED))) {
 		normal.xy = texture(normal_texture, uv).xy * vec2(2.0, -2.0) - vec2(1.0, -1.0);
-		if (bool(read_draw_data_flags & FLAGS_TRANSPOSE_RECT)) {
+
+#if !defined(USE_ATTRIBUTES) && !defined(USE_PRIMITIVE)
+		if (bool(read_draw_data_flags & INSTANCE_FLAGS_TRANSPOSE_RECT)) {
 			normal.xy = normal.yx;
 		}
-		if (bool(read_draw_data_flags & FLAGS_FLIP_H)) {
-			normal.x = -normal.x;
-		}
-		if (bool(read_draw_data_flags & FLAGS_FLIP_V)) {
-			normal.y = -normal.y;
-		}
+		normal.xy *= sign(read_draw_data_src_rect.zw);
+#endif
+
 		normal.z = sqrt(max(0.0, 1.0 - dot(normal.xy, normal.xy)));
 		normal_used = true;
 	} else {
@@ -655,9 +660,9 @@ void main() {
 	bool specular_shininess_used = false;
 #endif
 
-	if (specular_shininess_used || (using_light && normal_used && bool(read_draw_data_flags & FLAGS_DEFAULT_SPECULAR_MAP_USED))) {
+	if (specular_shininess_used || (using_light && normal_used && bool(batch_flags & BATCH_FLAGS_DEFAULT_SPECULAR_MAP_USED))) {
 		specular_shininess = texture(specular_texture, uv);
-		specular_shininess *= godot_unpackUnorm4x8(read_draw_data_specular_shininess);
+		specular_shininess *= godot_unpackUnorm4x8(specular_shininess_in);
 		specular_shininess_used = true;
 	} else {
 		specular_shininess = vec4(1.0);
@@ -803,7 +808,7 @@ void main() {
 		}
 #endif
 
-		if (bool(light_array[light_base].flags & LIGHT_FLAGS_HAS_SHADOW)) {
+		if (bool(light_array[light_base].flags & LIGHT_FLAGS_HAS_SHADOW) && bool(read_draw_data_flags & uint(INSTANCE_FLAGS_SHADOW_MASKED << i))) {
 			vec2 shadow_pos = (vec4(shadow_vertex, 0.0, 1.0) * mat4(light_array[light_base].shadow_matrix[0], light_array[light_base].shadow_matrix[1], vec4(0.0, 0.0, 1.0, 0.0), vec4(0.0, 0.0, 0.0, 1.0))).xy; //multiply inverse given its transposed. Optimizer removes useless operations.
 
 			vec2 pos_norm = normalize(shadow_pos);

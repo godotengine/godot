@@ -42,7 +42,6 @@
 #include "net_socket_android.h"
 #include "os_android.h"
 #include "plugin/godot_plugin_jni.h"
-#include "string_android.h"
 #include "thread_jandroid.h"
 #include "tts_android.h"
 
@@ -488,63 +487,53 @@ JNIEXPORT jstring JNICALL Java_org_godotengine_godot_GodotLib_getEditorSetting(J
 	return env->NewStringUTF(editor_setting_value.utf8().get_data());
 }
 
-JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_callobject(JNIEnv *env, jclass clazz, jlong ID, jstring method, jobjectArray params) {
-	Object *obj = ObjectDB::get_instance(ObjectID(ID));
-	ERR_FAIL_NULL(obj);
-
-	String str_method = jstring_to_string(method, env);
-
-	int count = env->GetArrayLength(params);
-
-	Variant *vlist = (Variant *)alloca(sizeof(Variant) * count);
-	const Variant **vptr = (const Variant **)alloca(sizeof(Variant *) * count);
-
-	for (int i = 0; i < count; i++) {
-		jobject jobj = env->GetObjectArrayElement(params, i);
-		ERR_FAIL_NULL(jobj);
-		memnew_placement(&vlist[i], Variant(_jobject_to_variant(env, jobj)));
-		vptr[i] = &vlist[i];
-		env->DeleteLocalRef(jobj);
+JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_setEditorSetting(JNIEnv *env, jclass clazz, jstring p_key, jobject p_data) {
+#ifdef TOOLS_ENABLED
+	if (EditorSettings::get_singleton() != nullptr) {
+		String key = jstring_to_string(p_key, env);
+		Variant data = _jobject_to_variant(env, p_data);
+		EditorSettings::get_singleton()->set(key, data);
 	}
-
-	Callable::CallError err;
-	obj->callp(str_method, vptr, count, err);
+#else
+	WARN_PRINT("Access to the Editor Settings in only available on Editor builds");
+#endif
 }
 
-JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_calldeferred(JNIEnv *env, jclass clazz, jlong ID, jstring method, jobjectArray params) {
-	Object *obj = ObjectDB::get_instance(ObjectID(ID));
-	ERR_FAIL_NULL(obj);
+JNIEXPORT jobject JNICALL Java_org_godotengine_godot_GodotLib_getEditorProjectMetadata(JNIEnv *env, jclass clazz, jstring p_section, jstring p_key, jobject p_default_value) {
+	jvalret result;
 
-	String str_method = jstring_to_string(method, env);
-
-	int count = env->GetArrayLength(params);
-
-	Variant *args = (Variant *)alloca(sizeof(Variant) * count);
-	const Variant **argptrs = (const Variant **)alloca(sizeof(Variant *) * count);
-
-	for (int i = 0; i < count; i++) {
-		jobject jobj = env->GetObjectArrayElement(params, i);
-		ERR_FAIL_NULL(jobj);
-		memnew_placement(&args[i], Variant(_jobject_to_variant(env, jobj)));
-		argptrs[i] = &args[i];
-		env->DeleteLocalRef(jobj);
+#ifdef TOOLS_ENABLED
+	if (EditorSettings::get_singleton() != nullptr) {
+		String section = jstring_to_string(p_section, env);
+		String key = jstring_to_string(p_key, env);
+		Variant default_value = _jobject_to_variant(env, p_default_value);
+		Variant data = EditorSettings::get_singleton()->get_project_metadata(section, key, default_value);
+		result = _variant_to_jvalue(env, data.get_type(), &data, true);
 	}
+#else
+	WARN_PRINT("Access to the Editor Settings Project Metadata is only available on Editor builds");
+#endif
 
-	Callable(obj, str_method).call_deferredp(argptrs, count);
+	return result.obj;
+}
+
+JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_setEditorProjectMetadata(JNIEnv *env, jclass clazz, jstring p_section, jstring p_key, jobject p_data) {
+#ifdef TOOLS_ENABLED
+	if (EditorSettings::get_singleton() != nullptr) {
+		String section = jstring_to_string(p_section, env);
+		String key = jstring_to_string(p_key, env);
+		Variant data = _jobject_to_variant(env, p_data);
+		EditorSettings::get_singleton()->set_project_metadata(section, key, data);
+	}
+#else
+	WARN_PRINT("Access to the Editor Settings Project Metadata is only available on Editor builds");
+#endif
 }
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_onNightModeChanged(JNIEnv *env, jclass clazz) {
 	DisplayServerAndroid *ds = (DisplayServerAndroid *)DisplayServer::get_singleton();
 	if (ds) {
 		ds->emit_system_theme_changed();
-	}
-}
-
-JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_inputDialogCallback(JNIEnv *env, jclass clazz, jstring p_text) {
-	DisplayServerAndroid *ds = (DisplayServerAndroid *)DisplayServer::get_singleton();
-	if (ds) {
-		String text = jstring_to_string(p_text, env);
-		ds->emit_input_dialog_callback(text);
 	}
 }
 
@@ -608,5 +597,20 @@ JNIEXPORT jboolean JNICALL Java_org_godotengine_godot_GodotLib_shouldDispatchInp
 JNIEXPORT jstring JNICALL Java_org_godotengine_godot_GodotLib_getProjectResourceDir(JNIEnv *env, jclass clazz) {
 	const String resource_dir = OS::get_singleton()->get_resource_dir();
 	return env->NewStringUTF(resource_dir.utf8().get_data());
+}
+JNIEXPORT jboolean JNICALL Java_org_godotengine_godot_GodotLib_isEditorHint(JNIEnv *env, jclass clazz) {
+	Engine *engine = Engine::get_singleton();
+	if (engine) {
+		return engine->is_editor_hint();
+	}
+	return false;
+}
+
+JNIEXPORT jboolean JNICALL Java_org_godotengine_godot_GodotLib_isProjectManagerHint(JNIEnv *env, jclass clazz) {
+	Engine *engine = Engine::get_singleton();
+	if (engine) {
+		return engine->is_project_manager_hint();
+	}
+	return false;
 }
 }

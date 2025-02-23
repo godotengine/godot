@@ -474,7 +474,7 @@ public class GodotFragment extends Fragment implements IDownloaderClient, GodotH
 		if (parentHost != null) {
 			return parentHost.onNewGodotInstanceRequested(args);
 		}
-		return 0;
+		return -1;
 	}
 
 	@Override
@@ -508,5 +508,12 @@ public class GodotFragment extends Fragment implements IDownloaderClient, GodotH
 			return parentHost.supportsFeature(featureTag);
 		}
 		return false;
+	}
+
+	@Override
+	public void onEditorWorkspaceSelected(String workspace) {
+		if (parentHost != null) {
+			parentHost.onEditorWorkspaceSelected(workspace);
+		}
 	}
 }

@@ -30,9 +30,7 @@
 
 #include "multiplayer_spawner.h"
 
-#include "core/io/marshalls.h"
 #include "scene/main/multiplayer_api.h"
-#include "scene/main/window.h"
 
 #ifdef TOOLS_ENABLED
 /* This is editor only */
@@ -46,7 +44,7 @@ bool MultiplayerSpawner::_set(const StringName &p_name, const Variant &p_value) 
 		if (ns.begins_with("scenes/")) {
 			uint32_t index = ns.get_slicec('/', 1).to_int();
 			ERR_FAIL_UNSIGNED_INDEX_V(index, spawnable_scenes.size(), false);
-			spawnable_scenes[index].path = p_value;
+			spawnable_scenes[index].path = ResourceUID::ensure_path(p_value);
 			return true;
 		}
 	}
@@ -62,7 +60,7 @@ bool MultiplayerSpawner::_get(const StringName &p_name, Variant &r_ret) const {
 		if (ns.begins_with("scenes/")) {
 			uint32_t index = ns.get_slicec('/', 1).to_int();
 			ERR_FAIL_UNSIGNED_INDEX_V(index, spawnable_scenes.size(), false);
-			r_ret = spawnable_scenes[index].path;
+			r_ret = ResourceUID::path_to_uid(spawnable_scenes[index].path);
 			return true;
 		}
 	}
@@ -97,9 +95,9 @@ PackedStringArray MultiplayerSpawner::get_configuration_warnings() const {
 
 void MultiplayerSpawner::add_spawnable_scene(const String &p_path) {
 	SpawnableScene sc;
-	sc.path = p_path;
+	sc.path = ResourceUID::ensure_path(p_path);
 	if (Engine::get_singleton()->is_editor_hint()) {
-		ERR_FAIL_COND(!ResourceLoader::exists(p_path));
+		ERR_FAIL_COND(!ResourceLoader::exists(sc.path));
 	}
 	spawnable_scenes.push_back(sc);
 #ifdef TOOLS_ENABLED
@@ -139,7 +137,7 @@ Vector<String> MultiplayerSpawner::_get_spawnable_scenes() const {
 	Vector<String> ss;
 	ss.resize(spawnable_scenes.size());
 	for (int i = 0; i < ss.size(); i++) {
-		ss.write[i] = spawnable_scenes[i].path;
+		ss.write[i] = ResourceUID::path_to_uid(spawnable_scenes[i].path);
 	}
 	return ss;
 }

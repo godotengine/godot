@@ -23,7 +23,7 @@
 			<return type="void" />
 			<description>
 				Shuts down the system MIDI driver. Godot will no longer receive [InputEventMIDI]. See also [method open_midi_inputs] and [method get_connected_midi_inputs].
-				[b]Note:[/b] This method is implemented on Linux, macOS and Windows.
+				[b]Note:[/b] This method is implemented on Linux, macOS, Windows, and Web.
 			</description>
 		</method>
 		<method name="crash">
@@ -53,13 +53,13 @@
 				Creates a new process that runs independently of Godot. It will not terminate when Godot terminates. The path specified in [param path] must exist and be an executable file or macOS [code].app[/code] bundle. The path is resolved based on the current platform. The [param arguments] are used in the given order and separated by a space.
 				On Windows, if [param open_console] is [code]true[/code] and the process is a console app, a new terminal window will be opened.
 				If the process is successfully created, this method returns its process ID, which you can use to monitor the process (and potentially terminate it with [method kill]). Otherwise, this method returns [code]-1[/code].
-				For example, running another instance of the project:
+				[b]Example:[/b] Run another instance of the project:
 				[codeblocks]
 				[gdscript]
 				var pid = OS.create_process(OS.get_executable_path(), [])
 				[/gdscript]
 				[csharp]
-				var pid = OS.CreateProcess(OS.GetExecutablePath(), new string[] {});
+				var pid = OS.CreateProcess(OS.GetExecutablePath(), []);
 				[/csharp]
 				[/codeblocks]
 				See [method execute] if you wish to run an external command and retrieve the results.
@@ -105,8 +105,8 @@
 				var exit_code = OS.execute("ls", ["-l", "/tmp"], output)
 				[/gdscript]
 				[csharp]
-				var output = new Godot.Collections.Array();
-				int exitCode = OS.Execute("ls", new string[] {"-l", "/tmp"}, output);
+				Godot.Collections.Array output = [];
+				int exitCode = OS.Execute("ls", ["-l", "/tmp"], output);
 				[/csharp]
 				[/codeblocks]
 				If you wish to access a shell built-in or execute a composite command, a platform-specific shell can be invoked. For example:
@@ -116,8 +116,8 @@
 				OS.execute("CMD.exe", ["/C", "cd %TEMP% &amp;&amp; dir"], output)
 				[/gdscript]
 				[csharp]
-				var output = new Godot.Collections.Array();
-				OS.Execute("CMD.exe", new string[] {"/C", "cd %TEMP% &amp;&amp; dir"}, output);
+				Godot.Collections.Array output = [];
+				OS.Execute("CMD.exe", ["/C", "cd %TEMP% &amp;&amp; dir"], output);
 				[/csharp]
 				[/codeblocks]
 				[b]Note:[/b] This method is implemented on Android, Linux, macOS, and Windows.
@@ -184,7 +184,7 @@
 				Command-line arguments can be written in any form, including both [code]--key value[/code] and [code]--key=value[/code] forms so they can be properly parsed, as long as custom command-line arguments do not conflict with engine arguments.
 				You can also incorporate environment variables using the [method get_environment] method.
 				You can set [member ProjectSettings.editor/run/main_run_args] to define command-line arguments to be passed by the editor when running the project.
-				Here's a minimal example on how to parse command-line arguments into a [Dictionary] using the [code]--key=value[/code] form for arguments:
+				[b]Example:[/b] Parse command-line arguments into a [Dictionary] using the [code]--key=value[/code] form for arguments:
 				[codeblocks]
 				[gdscript]
 				var arguments = {}
@@ -244,7 +244,9 @@
 			<return type="PackedStringArray" />
 			<description>
 				Returns an array of connected MIDI device names, if they exist. Returns an empty array if the system MIDI driver has not previously been initialized with [method open_midi_inputs]. See also [method close_midi_inputs].
-				[b]Note:[/b] This method is implemented on Linux, macOS and Windows.
+				[b]Note:[/b] This method is implemented on Linux, macOS, Windows, and Web.
+				[b]Note:[/b] On the Web platform, Web MIDI needs to be supported by the browser. [url=https://caniuse.com/midi]For the time being[/url], it is currently supported by all major browsers, except Safari.
+				[b]Note:[/b] On the Web platform, using MIDI input requires a browser permission to be granted first. This permission request is performed when calling [method open_midi_inputs]. The browser will refrain from processing MIDI input until the user accepts the permission request.
 			</description>
 		</method>
 		<method name="get_data_dir" qualifiers="const">
@@ -356,7 +358,7 @@
 			<return type="String" />
 			<description>
 				Returns the model name of the current device.
-				[b]Note:[/b] This method is implemented on Android and iOS. Returns [code]"GenericDevice"[/code] on unsupported platforms.
+				[b]Note:[/b] This method is implemented on Android, iOS, macOS, and Windows. Returns [code]"GenericDevice"[/code] on unsupported platforms.
 			</description>
 		</method>
 		<method name="get_name" qualifiers="const">
@@ -466,6 +468,24 @@
 				Returns the amount of static memory being used by the program in bytes. Only works in debug builds.
 			</description>
 		</method>
+		<method name="get_stderr_type" qualifiers="const">
+			<return type="int" enum="OS.StdHandleType" />
+			<description>
+				Returns type of the standard error device.
+			</description>
+		</method>
+		<method name="get_stdin_type" qualifiers="const">
+			<return type="int" enum="OS.StdHandleType" />
+			<description>
+				Returns type of the standard input device.
+			</description>
+		</method>
+		<method name="get_stdout_type" qualifiers="const">
+			<return type="int" enum="OS.StdHandleType" />
+			<description>
+				Returns type of the standard output device.
+			</description>
+		</method>
 		<method name="get_system_ca_certificates">
 			<return type="String" />
 			<description>
@@ -519,6 +539,12 @@
 				[b]Note:[/b] This method is implemented on Android, iOS, Linux, macOS and Windows.
 			</description>
 		</method>
+		<method name="get_temp_dir" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns the [i]global[/i] temporary data directory according to the operating system's standards.
+			</description>
+		</method>
 		<method name="get_thread_caller_id" qualifiers="const">
 			<return type="int" />
 			<description>
@@ -556,6 +582,13 @@
 				- For macOS and iOS, the major and minor version are returned, as well as the patch number.
 				- For Android, the SDK version and the incremental build number are returned. If it's a custom ROM, it attempts to return its version instead.
 				[b]Note:[/b] This method is not supported on the Web platform. It returns an empty string.
+			</description>
+		</method>
+		<method name="get_version_alias" qualifiers="const">
+			<return type="String" />
+			<description>
+				Returns the branded version used in marketing, followed by the build number (on Windows) or the version number (on macOS). Examples include [code]11 (build 22000)[/code] and [code]Sequoia (15.0.0)[/code]. This value can then be appended to [method get_name] to get a full, human-readable operating system name and version combination for the operating system. Windows feature updates such as 24H2 are not contained in the resulting string, but Windows Server is recognized as such (e.g. [code]2025 (build 26100)[/code] for Windows Server 2025).
+				[b]Note:[/b] This method is only supported on Windows and macOS. On other operating systems, it returns the same value as [method get_version].
 			</description>
 		</method>
 		<method name="get_video_adapter_driver_info" qualifiers="const">
@@ -605,10 +638,10 @@
 				print(OS.is_keycode_unicode(KEY_ESCAPE)) # Prints false
 				[/gdscript]
 				[csharp]
-				GD.Print(OS.IsKeycodeUnicode((long)Key.G));      // Prints true
-				GD.Print(OS.IsKeycodeUnicode((long)Key.Kp4));    // Prints true
-				GD.Print(OS.IsKeycodeUnicode((long)Key.Tab));    // Prints false
-				GD.Print(OS.IsKeycodeUnicode((long)Key.Escape)); // Prints false
+				GD.Print(OS.IsKeycodeUnicode((long)Key.G));      // Prints True
+				GD.Print(OS.IsKeycodeUnicode((long)Key.Kp4));    // Prints True
+				GD.Print(OS.IsKeycodeUnicode((long)Key.Tab));    // Prints False
+				GD.Print(OS.IsKeycodeUnicode((long)Key.Escape)); // Prints False
 				[/csharp]
 				[/codeblocks]
 			</description>
@@ -680,29 +713,53 @@
 			<return type="void" />
 			<description>
 				Initializes the singleton for the system MIDI driver, allowing Godot to receive [InputEventMIDI]. See also [method get_connected_midi_inputs] and [method close_midi_inputs].
-				[b]Note:[/b] This method is implemented on Linux, macOS and Windows.
+				[b]Note:[/b] This method is implemented on Linux, macOS, Windows, and Web.
+				[b]Note:[/b] On the Web platform, Web MIDI needs to be supported by the browser. [url=https://caniuse.com/midi]For the time being[/url], it is currently supported by all major browsers, except Safari.
+				[b]Note:[/b] On the Web platform, using MIDI input requires a browser permission to be granted first. This permission request is performed when calling [method open_midi_inputs]. The browser will refrain from processing MIDI input until the user accepts the permission request.
+			</description>
+		</method>
+		<method name="read_buffer_from_stdin">
+			<return type="PackedByteArray" />
+			<param index="0" name="buffer_size" type="int" />
+			<description>
+				Reads a user input as raw data from the standard input. This operation can be [i]blocking[/i], which causes the window to freeze if [method read_string_from_stdin] is called on the main thread.
+				- If standard input is console, this method will block until the program receives a line break in standard input (usually by the user pressing [kbd]Enter[/kbd]).
+				- If standard input is pipe, this method will block until a specific amount of data is read or pipe is closed.
+				- If standard input is a file, this method will read a specific amount of data (or less if end-of-file is reached) and return immediately.
+				[b]Note:[/b] This method is implemented on Linux, macOS, and Windows.
+				[b]Note:[/b] On exported Windows builds, run the console wrapper executable to access the terminal. If standard input is console, calling this method without console wrapped will freeze permanently. If standard input is pipe or file, it can be used without console wrapper. If you need a single executable with full console support, use a custom build compiled with the [code]windows_subsystem=console[/code] flag.
 			</description>
 		</method>
 		<method name="read_string_from_stdin">
 			<return type="String" />
+			<param index="0" name="buffer_size" type="int" />
 			<description>
-				Reads a user input string from the standard input (usually the terminal). This operation is [i]blocking[/i], which causes the window to freeze if [method read_string_from_stdin] is called on the main thread. The thread calling [method read_string_from_stdin] will block until the program receives a line break in standard input (usually by the user pressing [kbd]Enter[/kbd]).
-				[b]Note:[/b] This method is implemented on Linux, macOS and Windows.
-				[b]Note:[/b] On exported Windows builds, run the console wrapper executable to access the terminal. Otherwise, the standard input will not work correctly. If you need a single executable with console support, use a custom build compiled with the [code]windows_subsystem=console[/code] flag.
+				Reads a user input as a UTF-8 encoded string from the standard input. This operation can be [i]blocking[/i], which causes the window to freeze if [method read_string_from_stdin] is called on the main thread.
+				- If standard input is console, this method will block until the program receives a line break in standard input (usually by the user pressing [kbd]Enter[/kbd]).
+				- If standard input is pipe, this method will block until a specific amount of data is read or pipe is closed.
+				- If standard input is a file, this method will read a specific amount of data (or less if end-of-file is reached) and return immediately.
+				[b]Note:[/b] This method automatically replaces [code]\r\n[/code] line breaks with [code]\n[/code] and removes them from the end of the string. Use [method read_buffer_from_stdin] to read the unprocessed data.
+				[b]Note:[/b] This method is implemented on Linux, macOS, and Windows.
+				[b]Note:[/b] On exported Windows builds, run the console wrapper executable to access the terminal. If standard input is console, calling this method without console wrapped will freeze permanently. If standard input is pipe or file, it can be used without console wrapper. If you need a single executable with full console support, use a custom build compiled with the [code]windows_subsystem=console[/code] flag.
 			</description>
 		</method>
 		<method name="request_permission">
 			<return type="bool" />
 			<param index="0" name="name" type="String" />
 			<description>
-				Requests permission from the OS for the given [param name]. Returns [code]true[/code] if the permission has been successfully granted.
-				[b]Note:[/b] This method is currently only implemented on Android, to specifically request permission for [code]"RECORD_AUDIO"[/code] by [code]AudioDriverOpenSL[/code].
+				Requests permission from the OS for the given [param name]. Returns [code]true[/code] if the permission has already been granted. See also [signal MainLoop.on_request_permissions_result].
+				The [param name] must be the full permission name. For example:
+				- [code]OS.request_permission("android.permission.READ_EXTERNAL_STORAGE")[/code]
+				- [code]OS.request_permission("android.permission.POST_NOTIFICATIONS")[/code]
+				[b]Note:[/b] Permission must be checked during export.
+				[b]Note:[/b] This method is only implemented on Android.
 			</description>
 		</method>
 		<method name="request_permissions">
 			<return type="bool" />
 			<description>
-				Requests [i]dangerous[/i] permissions from the OS. Returns [code]true[/code] if permissions have been successfully granted.
+				Requests [i]dangerous[/i] permissions from the OS. Returns [code]true[/code] if permissions have already been granted. See also [signal MainLoop.on_request_permissions_result].
+				[b]Note:[/b] Permissions must be checked during export.
 				[b]Note:[/b] This method is only implemented on Android. Normal permissions are automatically granted at install time in Android applications.
 			</description>
 		</method>
@@ -752,7 +809,8 @@
 			<param index="0" name="uri" type="String" />
 			<description>
 				Requests the OS to open a resource identified by [param uri] with the most appropriate program. For example:
-				- [code]OS.shell_open("C:\\Users\name\Downloads")[/code] on Windows opens the file explorer at the user's Downloads folder.
+				- [code]OS.shell_open("C:\\Users\\name\\Downloads")[/code] on Windows opens the file explorer at the user's Downloads folder.
+				- [code]OS.shell_open("C:/Users/name/Downloads")[/code] also works on Windows and opens the file explorer at the user's Downloads folder.
 				- [code]OS.shell_open("https://godotengine.org")[/code] opens the default web browser on the official Godot website.
 				- [code]OS.shell_open("mailto:example@example.com")[/code] opens the default email client with the "To" field set to [code]example@example.com[/code]. See [url=https://datatracker.ietf.org/doc/html/rfc2368]RFC 2368 - The [code]mailto[/code] URL scheme[/url] for a list of fields that can be added.
 				Use [method ProjectSettings.globalize_path] to convert a [code]res://[/code] or [code]user://[/code] project path into a system path for use with this method.
@@ -830,6 +888,21 @@
 		</constant>
 		<constant name="SYSTEM_DIR_RINGTONES" value="7" enum="SystemDir">
 			Refers to the Ringtones directory path.
+		</constant>
+		<constant name="STD_HANDLE_INVALID" value="0" enum="StdHandleType">
+			Standard I/O device is invalid. No data can be received from or sent to these standard I/O devices.
+		</constant>
+		<constant name="STD_HANDLE_CONSOLE" value="1" enum="StdHandleType">
+			Standard I/O device is a console. This typically occurs when Godot is run from a terminal with no redirection. This is also used for all standard I/O devices when running Godot from the editor, at least on desktop platforms.
+		</constant>
+		<constant name="STD_HANDLE_FILE" value="2" enum="StdHandleType">
+			Standard I/O device is a regular file. This typically occurs with redirection from a terminal, e.g. [code]godot &gt; stdout.txt[/code], [code]godot &lt; stdin.txt[/code] or [code]godot &gt; stdout_stderr.txt 2&gt;&amp;1[/code].
+		</constant>
+		<constant name="STD_HANDLE_PIPE" value="3" enum="StdHandleType">
+			Standard I/O device is a FIFO/pipe. This typically occurs with pipe usage from a terminal, e.g. [code]echo "Hello" | godot[/code].
+		</constant>
+		<constant name="STD_HANDLE_UNKNOWN" value="4" enum="StdHandleType">
+			Standard I/O device type is unknown.
 		</constant>
 	</constants>
 </class>

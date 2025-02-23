@@ -20,17 +20,25 @@
 		[/csharp]
 		[/codeblocks]
 		The above [PCKPacker] creates package [code]test.pck[/code], then adds a file named [code]text.txt[/code] at the root of the package.
+		[b]Note:[/b] PCK is Godot's own pack file format. To create ZIP archives that can be read by any program, use [ZIPPacker] instead.
 	</description>
 	<tutorials>
 	</tutorials>
 	<methods>
 		<method name="add_file">
 			<return type="int" enum="Error" />
-			<param index="0" name="pck_path" type="String" />
+			<param index="0" name="target_path" type="String" />
 			<param index="1" name="source_path" type="String" />
 			<param index="2" name="encrypt" type="bool" default="false" />
 			<description>
-				Adds the [param source_path] file to the current PCK package at the [param pck_path] internal path (should start with [code]res://[/code]).
+				Adds the [param source_path] file to the current PCK package at the [param target_path] internal path. The [code]res://[/code] prefix for [param target_path] is optional and stripped internally.
+			</description>
+		</method>
+		<method name="add_file_removal">
+			<return type="int" enum="Error" />
+			<param index="0" name="target_path" type="String" />
+			<description>
+				Registers a file removal of the [param target_path] internal path to the PCK. This is mainly used for patches. If the file at this path has been loaded from a previous PCK, it will be removed. The [code]res://[/code] prefix for [param target_path] is optional and stripped internally.
 			</description>
 		</method>
 		<method name="flush">

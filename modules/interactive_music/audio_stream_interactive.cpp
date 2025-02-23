@@ -31,7 +31,6 @@
 #include "audio_stream_interactive.h"
 
 #include "core/math/math_funcs.h"
-#include "core/string/print_string.h"
 
 AudioStreamInteractive::AudioStreamInteractive() {
 }
@@ -484,8 +483,6 @@ void AudioStreamInteractive::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_clip_auto_advance_next_clip", "clip_index", "auto_advance_next_clip"), &AudioStreamInteractive::set_clip_auto_advance_next_clip);
 	ClassDB::bind_method(D_METHOD("get_clip_auto_advance_next_clip", "clip_index"), &AudioStreamInteractive::get_clip_auto_advance_next_clip);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "initial_clip", PROPERTY_HINT_ENUM, "", PROPERTY_USAGE_DEFAULT), "set_initial_clip", "get_initial_clip");
-
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "clip_count", PROPERTY_HINT_RANGE, "1," + itos(MAX_CLIPS), PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_ARRAY, "Clips,clip_,page_size=999,unfoldable,numbered,swap_method=_inspector_array_swap_clip,add_button_text=" + String(RTR("Add Clip"))), "set_clip_count", "get_clip_count");
 	for (int i = 0; i < MAX_CLIPS; i++) {
 		ADD_PROPERTYI(PropertyInfo(Variant::STRING_NAME, "clip_" + itos(i) + "/name", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_INTERNAL), "set_clip_name", "get_clip_name", i);
@@ -493,6 +490,9 @@ void AudioStreamInteractive::_bind_methods() {
 		ADD_PROPERTYI(PropertyInfo(Variant::INT, "clip_" + itos(i) + "/auto_advance", PROPERTY_HINT_ENUM, "Disabled,Enabled,ReturnToHold", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_INTERNAL), "set_clip_auto_advance", "get_clip_auto_advance", i);
 		ADD_PROPERTYI(PropertyInfo(Variant::INT, "clip_" + itos(i) + "/next_clip", PROPERTY_HINT_ENUM, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_INTERNAL), "set_clip_auto_advance_next_clip", "get_clip_auto_advance_next_clip", i);
 	}
+
+	// Needs to be registered after `clip_*` properties, as it depends on them.
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "initial_clip", PROPERTY_HINT_ENUM, "", PROPERTY_USAGE_DEFAULT), "set_initial_clip", "get_initial_clip");
 
 	// TRANSITIONS
 
@@ -592,7 +592,7 @@ void AudioStreamPlaybackInteractive::start(double p_from_pos) {
 	if (current < 0 || current >= stream->clip_count) {
 		return; // No playback possible.
 	}
-	if (!states[current].playback.is_valid()) {
+	if (states[current].playback.is_null()) {
 		return; //no playback possible
 	}
 	active = true;
@@ -691,9 +691,14 @@ void AudioStreamPlaybackInteractive::_queue(int p_to_clip_index, bool p_is_auto_
 				src_fade_wait = beat_sec - remainder;
 			} break;
 			case AudioStreamInteractive::TRANSITION_FROM_TIME_NEXT_BAR: {
-				float bar_sec = beat_sec * from_state.stream->get_bar_beats();
-				float remainder = Math::fmod(current_pos, bar_sec);
-				src_fade_wait = bar_sec - remainder;
+				if (from_state.stream->get_bar_beats() > 0) {
+					float bar_sec = beat_sec * from_state.stream->get_bar_beats();
+					float remainder = Math::fmod(current_pos, bar_sec);
+					src_fade_wait = bar_sec - remainder;
+				} else {
+					// Stream does not have a number of beats per bar - avoid NaN, and play immediately.
+					src_fade_wait = 0;
+				}
 			} break;
 			case AudioStreamInteractive::TRANSITION_FROM_TIME_END: {
 				float end = from_state.stream->get_beat_count() > 0 ? float(from_state.stream->get_beat_count() * beat_sec) : from_state.stream->get_length();
@@ -1013,6 +1018,10 @@ void AudioStreamPlaybackInteractive::switch_to_clip(int p_index) {
 	switch_request = p_index;
 }
 
+int AudioStreamPlaybackInteractive::get_current_clip_index() const {
+	return playback_current;
+}
+
 int AudioStreamPlaybackInteractive::get_loop_count() const {
 	return 0; // Looping not supported
 }
@@ -1028,4 +1037,5 @@ bool AudioStreamPlaybackInteractive::is_playing() const {
 void AudioStreamPlaybackInteractive::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("switch_to_clip_by_name", "clip_name"), &AudioStreamPlaybackInteractive::switch_to_clip_by_name);
 	ClassDB::bind_method(D_METHOD("switch_to_clip", "clip_index"), &AudioStreamPlaybackInteractive::switch_to_clip);
+	ClassDB::bind_method(D_METHOD("get_current_clip_index"), &AudioStreamPlaybackInteractive::get_current_clip_index);
 }

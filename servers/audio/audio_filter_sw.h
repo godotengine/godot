@@ -31,16 +31,16 @@
 #ifndef AUDIO_FILTER_SW_H
 #define AUDIO_FILTER_SW_H
 
-#include "core/math/math_funcs.h"
+#include "core/typedefs.h"
 
 class AudioFilterSW {
 public:
 	struct Coeffs {
-		float a1 = 0.0f;
-		float a2 = 0.0f;
-		float b0 = 0.0f;
-		float b1 = 0.0f;
-		float b2 = 0.0f;
+		double a1 = 0.0;
+		double a2 = 0.0;
+		double b0 = 0.0;
+		double b1 = 0.0;
+		double b2 = 0.0;
 	};
 
 	enum Mode {

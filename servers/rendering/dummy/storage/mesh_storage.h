@@ -31,22 +31,22 @@
 #ifndef MESH_STORAGE_DUMMY_H
 #define MESH_STORAGE_DUMMY_H
 
-#include "core/templates/local_vector.h"
 #include "core/templates/rid_owner.h"
 #include "servers/rendering/storage/mesh_storage.h"
 
 namespace RendererDummy {
 
+struct DummyMesh {
+	Vector<RS::SurfaceData> surfaces;
+	int blend_shape_count;
+	RS::BlendShapeMode blend_shape_mode;
+	PackedFloat32Array blend_shape_values;
+	Dependency dependency;
+};
+
 class MeshStorage : public RendererMeshStorage {
 private:
 	static MeshStorage *singleton;
-
-	struct DummyMesh {
-		Vector<RS::SurfaceData> surfaces;
-		int blend_shape_count;
-		RS::BlendShapeMode blend_shape_mode;
-		PackedFloat32Array blend_shape_values;
-	};
 
 	mutable RID_Owner<DummyMesh> mesh_owner;
 
@@ -63,7 +63,7 @@ public:
 	~MeshStorage();
 
 	/* MESH API */
-
+	DummyMesh *get_mesh(RID p_rid) { return mesh_owner.get_or_null(p_rid); }
 	bool owns_mesh(RID p_rid) { return mesh_owner.owns(p_rid); }
 
 	virtual RID mesh_allocate() override;
@@ -93,6 +93,7 @@ public:
 		s->blend_shape_data = p_surface.blend_shape_data;
 		s->uv_scale = p_surface.uv_scale;
 		s->material = p_surface.material;
+		m->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_MESH);
 	}
 
 	virtual int mesh_get_blend_shape_count(RID p_mesh) const override { return 0; }
@@ -129,6 +130,8 @@ public:
 	virtual String mesh_get_path(RID p_mesh) const override { return String(); }
 
 	virtual void mesh_set_shadow_mesh(RID p_mesh, RID p_shadow_mesh) override {}
+
+	virtual void mesh_surface_remove(RID p_mesh, int p_surface) override;
 	virtual void mesh_clear(RID p_mesh) override;
 
 	/* MESH INSTANCE */
@@ -150,7 +153,7 @@ public:
 	virtual void _multimesh_initialize(RID p_rid) override;
 	virtual void _multimesh_free(RID p_rid) override;
 
-	virtual void _multimesh_allocate_data(RID p_multimesh, int p_instances, RS::MultimeshTransformFormat p_transform_format, bool p_use_colors = false, bool p_use_custom_data = false) override {}
+	virtual void _multimesh_allocate_data(RID p_multimesh, int p_instances, RS::MultimeshTransformFormat p_transform_format, bool p_use_colors = false, bool p_use_custom_data = false, bool p_use_indirect = false) override {}
 	virtual int _multimesh_get_instance_count(RID p_multimesh) const override { return 0; }
 
 	virtual void _multimesh_set_mesh(RID p_multimesh, RID p_mesh) override {}
@@ -170,6 +173,8 @@ public:
 	virtual Color _multimesh_instance_get_color(RID p_multimesh, int p_index) const override { return Color(); }
 	virtual Color _multimesh_instance_get_custom_data(RID p_multimesh, int p_index) const override { return Color(); }
 	virtual void _multimesh_set_buffer(RID p_multimesh, const Vector<float> &p_buffer) override;
+	virtual RID _multimesh_get_command_buffer_rd_rid(RID p_multimesh) const override { return RID(); }
+	virtual RID _multimesh_get_buffer_rd_rid(RID p_multimesh) const override { return RID(); }
 	virtual Vector<float> _multimesh_get_buffer(RID p_multimesh) const override;
 
 	virtual void _multimesh_set_visible_instances(RID p_multimesh, int p_visible) override {}

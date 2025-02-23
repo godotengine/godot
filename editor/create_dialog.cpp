@@ -31,7 +31,6 @@
 #include "create_dialog.h"
 
 #include "core/object/class_db.h"
-#include "core/os/keyboard.h"
 #include "editor/editor_feature_profile.h"
 #include "editor/editor_node.h"
 #include "editor/editor_paths.h"
@@ -112,10 +111,28 @@ bool CreateDialog::_is_type_preferred(const String &p_type) const {
 	return EditorNode::get_editor_data().script_class_is_parent(p_type, preferred_search_result_type);
 }
 
+void CreateDialog::_script_button_clicked(TreeItem *p_item, int p_column, int p_button_id, MouseButton p_mouse_button_index) {
+	if (p_mouse_button_index != MouseButton::LEFT) {
+		return;
+	}
+	// The id of opening-script button is 1.
+	if (p_button_id != 1) {
+		return;
+	}
+
+	String scr_path = ScriptServer::get_global_class_path(p_item->get_text(0));
+	Ref<Script> scr = ResourceLoader::load(scr_path, "Script");
+	ERR_FAIL_COND_MSG(scr.is_null(), vformat("Could not load the script from resource path: %s", scr_path));
+	EditorNode::get_singleton()->push_item_no_inspector(scr.ptr());
+
+	hide();
+	_cleanup();
+}
+
 bool CreateDialog::_is_class_disabled_by_feature_profile(const StringName &p_class) const {
 	Ref<EditorFeatureProfile> profile = EditorFeatureProfileManager::get_singleton()->get_current_profile();
 
-	return !profile.is_null() && profile->is_class_disabled(p_class);
+	return profile.is_valid() && profile->is_class_disabled(p_class);
 }
 
 bool CreateDialog::_should_hide_type(const StringName &p_type) const {
@@ -145,6 +162,11 @@ bool CreateDialog::_should_hide_type(const StringName &p_type) const {
 				return true; // Parent type is blacklisted.
 			}
 		}
+		for (const StringName &F : custom_type_blocklist) {
+			if (ClassDB::is_parent_class(p_type, F)) {
+				return true; // Parent type is excluded in custom type blocklist.
+			}
+		}
 	} else {
 		if (!ScriptServer::is_global_class(p_type)) {
 			return true;
@@ -154,19 +176,23 @@ bool CreateDialog::_should_hide_type(const StringName &p_type) const {
 		}
 
 		StringName native_type = ScriptServer::get_global_class_native_base(p_type);
-		if (ClassDB::class_exists(native_type) && !ClassDB::can_instantiate(native_type)) {
-			return true;
+		if (ClassDB::class_exists(native_type)) {
+			if (!ClassDB::can_instantiate(native_type)) {
+				return true;
+			} else if (custom_type_blocklist.has(p_type) || custom_type_blocklist.has(native_type)) {
+				return true;
+			}
 		}
 
 		String script_path = ScriptServer::get_global_class_path(p_type);
 		if (script_path.begins_with("res://addons/")) {
-			int i = script_path.find("/", 13); // 13 is length of "res://addons/".
+			int i = script_path.find_char('/', 13); // 13 is length of "res://addons/".
 			while (i > -1) {
 				const String plugin_path = script_path.substr(0, i).path_join("plugin.cfg");
 				if (FileAccess::exists(plugin_path)) {
 					return !EditorNode::get_singleton()->is_addon_plugin_enabled(plugin_path);
 				}
-				i = script_path.find("/", i + 1);
+				i = script_path.find_char('/', i + 1);
 			}
 		}
 	}
@@ -231,14 +257,9 @@ void CreateDialog::_add_type(const StringName &p_type, TypeCategory p_type_categ
 		inherits = ClassDB::get_parent_class(p_type);
 		inherited_type = TypeCategory::CPP_TYPE;
 	} else {
-		if (p_type_category == TypeCategory::PATH_TYPE || ScriptServer::is_global_class(p_type)) {
-			Ref<Script> scr;
-			if (p_type_category == TypeCategory::PATH_TYPE) {
-				ERR_FAIL_COND(!ResourceLoader::exists(p_type, "Script"));
-				scr = ResourceLoader::load(p_type, "Script");
-			} else {
-				scr = EditorNode::get_editor_data().script_class_load_script(p_type);
-			}
+		if (p_type_category == TypeCategory::PATH_TYPE) {
+			ERR_FAIL_COND(!ResourceLoader::exists(p_type, "Script"));
+			Ref<Script> scr = ResourceLoader::load(p_type, "Script");
 			ERR_FAIL_COND(scr.is_null());
 
 			Ref<Script> base = scr->get_base_script();
@@ -260,6 +281,10 @@ void CreateDialog::_add_type(const StringName &p_type, TypeCategory p_type_categ
 					inherited_type = TypeCategory::PATH_TYPE;
 				}
 			}
+		} else if (ScriptServer::is_global_class(p_type)) {
+			inherits = ScriptServer::get_global_class_base(p_type);
+			bool is_native_class = ClassDB::class_exists(inherits);
+			inherited_type = is_native_class ? TypeCategory::CPP_TYPE : TypeCategory::OTHER_TYPE;
 		} else {
 			inherits = custom_type_parents[p_type];
 			if (ClassDB::class_exists(inherits)) {
@@ -288,12 +313,19 @@ void CreateDialog::_configure_search_option_item(TreeItem *r_item, const StringN
 	} else if (script_type) {
 		r_item->set_metadata(0, p_type);
 		r_item->set_text(0, p_type);
-		String script_path = ScriptServer::get_global_class_path(p_type);
-		r_item->set_suffix(0, "(" + script_path.get_file() + ")");
 
-		Ref<Script> scr = ResourceLoader::load(script_path, "Script");
-		ERR_FAIL_COND(!scr.is_valid());
-		is_abstract = scr->is_abstract();
+		is_abstract = ScriptServer::is_global_class_abstract(p_type);
+
+		String tooltip = TTR("Script path: %s");
+		bool is_tool = ScriptServer::is_global_class_tool(p_type);
+		if (is_tool) {
+			tooltip = TTR("The script will run in the editor.") + "\n" + tooltip;
+		}
+		r_item->add_button(0, get_editor_theme_icon(SNAME("Script")), 1, false, vformat(tooltip, ScriptServer::get_global_class_path(p_type)));
+		if (is_tool) {
+			int button_index = r_item->get_button_count(0) - 1;
+			r_item->set_button_color(0, button_index, get_theme_color(SNAME("accent_color"), EditorStringName(Editor)));
+		}
 	} else {
 		r_item->set_metadata(0, custom_type_parents[p_type]);
 		r_item->set_text(0, p_type);
@@ -764,6 +796,7 @@ CreateDialog::CreateDialog() {
 	favorites->connect("cell_selected", callable_mp(this, &CreateDialog::_favorite_selected));
 	favorites->connect("item_activated", callable_mp(this, &CreateDialog::_favorite_activated));
 	favorites->add_theme_constant_override("draw_guides", 1);
+	favorites->set_theme_type_variation("TreeSecondary");
 	SET_DRAG_FORWARDING_GCD(favorites, CreateDialog);
 	fav_vb->add_margin_child(TTR("Favorites:"), favorites, true);
 
@@ -779,6 +812,7 @@ CreateDialog::CreateDialog() {
 	recent->connect(SceneStringName(item_selected), callable_mp(this, &CreateDialog::_history_selected));
 	recent->connect("item_activated", callable_mp(this, &CreateDialog::_history_activated));
 	recent->add_theme_constant_override("draw_guides", 1);
+	recent->set_theme_type_variation("ItemListSecondary");
 
 	VBoxContainer *vbc = memnew(VBoxContainer);
 	vbc->set_custom_minimum_size(Size2(300, 0) * EDSCALE);
@@ -805,10 +839,11 @@ CreateDialog::CreateDialog() {
 	search_options->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	search_options->connect("item_activated", callable_mp(this, &CreateDialog::_confirmed));
 	search_options->connect("cell_selected", callable_mp(this, &CreateDialog::_item_selected));
+	search_options->connect("button_clicked", callable_mp(this, &CreateDialog::_script_button_clicked));
 	vbc->add_margin_child(TTR("Matches:"), search_options, true);
 
 	help_bit = memnew(EditorHelpBit);
-	help_bit->set_content_height_limits(64 * EDSCALE, 64 * EDSCALE);
+	help_bit->set_content_height_limits(80 * EDSCALE, 80 * EDSCALE);
 	help_bit->connect("request_hide", callable_mp(this, &CreateDialog::_hide_requested));
 	vbc->add_margin_child(TTR("Description:"), help_bit);
 

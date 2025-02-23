@@ -45,7 +45,7 @@ private:
 		return drivers;
 	}
 
-	static DisplayServer *create_func(const String &p_rendering_driver, DisplayServer::WindowMode p_mode, DisplayServer::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, Error &r_error) {
+	static DisplayServer *create_func(const String &p_rendering_driver, DisplayServer::WindowMode p_mode, DisplayServer::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, int64_t p_parent_window, Error &r_error) {
 		r_error = OK;
 		RasterizerDummy::make_current();
 		return memnew(DisplayServerHeadless());
@@ -170,6 +170,8 @@ public:
 	void tts_stop() override {}
 
 	void mouse_set_mode(MouseMode p_mode) override {}
+	void mouse_set_mode_override(MouseMode p_mode) override {}
+	void mouse_set_mode_override_enabled(bool p_override_enabled) override {}
 	Point2i mouse_get_position() const override { return Point2i(); }
 	void clipboard_set(const String &p_text) override {}
 	void clipboard_set_primary(const String &p_text) override {}

@@ -53,6 +53,7 @@ public:
 	virtual void particles_set_lifetime(RID p_particles, double p_lifetime) = 0;
 	virtual void particles_set_one_shot(RID p_particles, bool p_one_shot) = 0;
 	virtual void particles_set_pre_process_time(RID p_particles, double p_time) = 0;
+	virtual void particles_request_process_time(RID p_particles, real_t p_request_process_time) = 0;
 	virtual void particles_set_explosiveness_ratio(RID p_particles, real_t p_ratio) = 0;
 	virtual void particles_set_randomness_ratio(RID p_particles, real_t p_ratio) = 0;
 	virtual void particles_set_custom_aabb(RID p_particles, const AABB &p_aabb) = 0;
@@ -66,6 +67,8 @@ public:
 	virtual void particles_set_collision_base_size(RID p_particles, real_t p_size) = 0;
 
 	virtual void particles_set_transform_align(RID p_particles, RS::ParticlesTransformAlign p_transform_align) = 0;
+
+	virtual void particles_set_seed(RID p_particles, uint32_t p_seed) = 0;
 
 	virtual void particles_set_trails(RID p_particles, bool p_enable, double p_length) = 0;
 	virtual void particles_set_trail_bind_poses(RID p_particles, const Vector<Transform3D> &p_bind_poses) = 0;
@@ -117,6 +120,8 @@ public:
 	virtual void particles_collision_set_height_field_resolution(RID p_particles_collision, RS::ParticlesCollisionHeightfieldResolution p_resolution) = 0; //for SDF and vector field
 	virtual AABB particles_collision_get_aabb(RID p_particles_collision) const = 0;
 	virtual bool particles_collision_is_heightfield(RID p_particles_collision) const = 0;
+	virtual uint32_t particles_collision_get_height_field_mask(RID p_particles_collision) const = 0;
+	virtual void particles_collision_set_height_field_mask(RID p_particles_collision, uint32_t p_heightfield_mask) = 0;
 
 	//used from 2D and 3D
 	virtual RID particles_collision_instance_create(RID p_collision) = 0;

@@ -551,18 +551,18 @@ void InputEventConfigurationDialog::_input_list_item_selected() {
 }
 
 void InputEventConfigurationDialog::_device_selection_changed(int p_option_button_index) {
-	// Option index 0 corresponds to "All Devices" (value of -3).
-	// Otherwise subtract 1 as option index 1 corresponds to device 0, etc...
-	event->set_device(p_option_button_index == 0 ? InputEvent::DEVICE_ID_ALL_DEVICES : p_option_button_index - 1);
+	// Subtract 1 as option index 0 corresponds to "All Devices" (value of -1)
+	// and option index 1 corresponds to device 0, etc...
+	event->set_device(p_option_button_index - 1);
 	event_as_text->set_text(EventListenerLineEdit::get_event_text(event, true));
 }
 
 void InputEventConfigurationDialog::_set_current_device(int p_device) {
-	device_id_option->select(p_device == InputEvent::DEVICE_ID_ALL_DEVICES ? 0 : p_device + 1);
+	device_id_option->select(p_device + 1);
 }
 
 int InputEventConfigurationDialog::_get_current_device() const {
-	return device_id_option->get_selected() == 0 ? InputEvent::DEVICE_ID_ALL_DEVICES : device_id_option->get_selected() - 1;
+	return device_id_option->get_selected() - 1;
 }
 
 void InputEventConfigurationDialog::_notification(int p_what) {
@@ -637,7 +637,7 @@ void InputEventConfigurationDialog::set_allowed_input_types(int p_type_masks) {
 InputEventConfigurationDialog::InputEventConfigurationDialog() {
 	allowed_input_types = INPUT_KEY | INPUT_MOUSE_BUTTON | INPUT_JOY_BUTTON | INPUT_JOY_MOTION;
 
-	set_min_size(Size2i(550, 0) * EDSCALE);
+	set_min_size(Size2i(800, 0) * EDSCALE);
 
 	VBoxContainer *main_vbox = memnew(VBoxContainer);
 	add_child(main_vbox);
@@ -674,7 +674,7 @@ InputEventConfigurationDialog::InputEventConfigurationDialog() {
 
 	input_list_tree = memnew(Tree);
 	input_list_tree->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
-	input_list_tree->set_custom_minimum_size(Size2(0, 100 * EDSCALE)); // Min height for tree
+	input_list_tree->set_custom_minimum_size(Size2(0, 300 * EDSCALE)); // Min height for tree
 	input_list_tree->connect("item_activated", callable_mp(this, &InputEventConfigurationDialog::_input_list_item_activated));
 	input_list_tree->connect(SceneStringName(item_selected), callable_mp(this, &InputEventConfigurationDialog::_input_list_item_selected));
 	input_list_tree->set_v_size_flags(Control::SIZE_EXPAND_FILL);
@@ -705,12 +705,11 @@ InputEventConfigurationDialog::InputEventConfigurationDialog() {
 
 	device_id_option = memnew(OptionButton);
 	device_id_option->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	device_id_option->add_item(EventListenerLineEdit::get_device_string(InputEvent::DEVICE_ID_ALL_DEVICES));
-	for (int i = 0; i < 8; i++) {
+	for (int i = -1; i < 8; i++) {
 		device_id_option->add_item(EventListenerLineEdit::get_device_string(i));
 	}
 	device_id_option->connect(SceneStringName(item_selected), callable_mp(this, &InputEventConfigurationDialog::_device_selection_changed));
-	_set_current_device(InputEvent::DEVICE_ID_ALL_DEVICES);
+	_set_current_device(InputMap::ALL_DEVICES);
 	device_container->add_child(device_id_option);
 
 	device_container->hide();

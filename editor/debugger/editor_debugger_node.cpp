@@ -91,6 +91,10 @@ EditorDebuggerNode::EditorDebuggerNode() {
 	remote_scene_tree_timeout = EDITOR_GET("debugger/remote_scene_tree_refresh_interval");
 	inspect_edited_object_timeout = EDITOR_GET("debugger/remote_inspect_refresh_interval");
 
+	if (Engine::get_singleton()->is_recovery_mode_hint()) {
+		return;
+	}
+
 	EditorRunBar::get_singleton()->get_pause_button()->connect(SceneStringName(pressed), callable_mp(this, &EditorDebuggerNode::_paused));
 }
 
@@ -120,7 +124,7 @@ ScriptEditorDebugger *EditorDebuggerNode::_add_debugger() {
 
 	tabs->add_child(node);
 
-	node->set_name("Session " + itos(tabs->get_tab_count()));
+	node->set_name(vformat(TTR("Session %d"), tabs->get_tab_count()));
 	if (tabs->get_tab_count() > 1) {
 		node->clear_style();
 		tabs->set_tabs_visible(true);
@@ -160,9 +164,9 @@ void EditorDebuggerNode::_text_editor_stack_goto(const ScriptEditorDebugger *p_d
 	} else {
 		// If the script is built-in, it can be opened only if the scene is loaded in memory.
 		int i = file.find("::");
-		int j = file.rfind("(", i);
+		int j = file.rfind_char('(', i);
 		if (j > -1) { // If the script is named, the string is "name (file)", so we need to extract the path.
-			file = file.substr(j + 1, file.find(")", i) - j - 1);
+			file = file.substr(j + 1, file.find_char(')', i) - j - 1);
 		}
 		Ref<PackedScene> ps = ResourceLoader::load(file.get_slice("::", 0));
 		stack_script = ResourceLoader::load(file);
@@ -183,9 +187,9 @@ void EditorDebuggerNode::_text_editor_stack_clear(const ScriptEditorDebugger *p_
 	} else {
 		// If the script is built-in, it can be opened only if the scene is loaded in memory.
 		int i = file.find("::");
-		int j = file.rfind("(", i);
+		int j = file.rfind_char('(', i);
 		if (j > -1) { // If the script is named, the string is "name (file)", so we need to extract the path.
-			file = file.substr(j + 1, file.find(")", i) - j - 1);
+			file = file.substr(j + 1, file.find_char(')', i) - j - 1);
 		}
 		Ref<PackedScene> ps = ResourceLoader::load(file.get_slice("::", 0));
 		stack_script = ResourceLoader::load(file);
@@ -263,6 +267,10 @@ void EditorDebuggerNode::set_keep_open(bool p_keep_open) {
 }
 
 Error EditorDebuggerNode::start(const String &p_uri) {
+	if (Engine::get_singleton()->is_recovery_mode_hint()) {
+		return ERR_UNAVAILABLE;
+	}
+
 	ERR_FAIL_COND_V(!p_uri.contains("://"), ERR_INVALID_PARAMETER);
 	if (keep_open && current_uri == p_uri && server.is_valid()) {
 		return OK;
@@ -331,7 +339,7 @@ void EditorDebuggerNode::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_PROCESS: {
-			if (!server.is_valid()) {
+			if (server.is_null()) {
 				return;
 			}
 

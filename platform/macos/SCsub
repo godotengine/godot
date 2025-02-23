@@ -27,11 +27,22 @@ def generate_bundle(target, source, env):
         target_bin = lipo(bin_dir + "/" + prefix, env.extra_suffix + env.module_version_string)
 
         # Assemble .app bundle and update version info.
-        app_dir = Dir("#bin/" + (prefix + env.extra_suffix + env.module_version_string).replace(".", "_") + ".app").abspath
+        app_dir = Dir(
+            "#bin/" + (prefix + env.extra_suffix + env.module_version_string).replace(".", "_") + ".app"
+        ).abspath
         templ = Dir("#misc/dist/macos_tools.app").abspath
         if os.path.exists(app_dir):
             shutil.rmtree(app_dir)
-        shutil.copytree(templ, app_dir, ignore=shutil.ignore_patterns("Contents/Info.plist"))
+
+        # Create the .app bundle directory itself from scratch so that the creation
+        # date is accurate, but copy the rest of the template over.
+        os.mkdir(app_dir)
+        shutil.copytree(
+            os.path.join(templ, "Contents"),
+            os.path.join(app_dir, "Contents"),
+            ignore=shutil.ignore_patterns("Info.plist"),
+        )
+
         if not os.path.isdir(app_dir + "/Contents/MacOS"):
             os.mkdir(app_dir + "/Contents/MacOS")
         if target_bin != "":
@@ -64,6 +75,7 @@ def generate_bundle(target, source, env):
                 sign_command += [Dir("#misc/dist/macos").abspath + "/editor.entitlements"]
             sign_command += [app_dir]
             subprocess.run(sign_command)
+
     else:
         # Template bundle.
         app_prefix = "godot." + env["platform"]
@@ -121,7 +133,6 @@ files = [
     "native_menu_macos.mm",
     "dir_access_macos.mm",
     "tts_macos.mm",
-    "joypad_macos.mm",
     "rendering_context_driver_vulkan_macos.mm",
     "gl_manager_macos_angle.mm",
     "gl_manager_macos_legacy.mm",

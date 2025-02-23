@@ -33,39 +33,28 @@
 
 #include "core/io/file_access.h"
 #include "core/io/resource_loader.h"
-#include "core/os/semaphore.h"
 #include "core/os/thread.h"
-#include "core/templates/ring_buffer.h"
-#include "core/templates/safe_refcount.h"
 #include "scene/resources/video_stream.h"
-#include "servers/audio_server.h"
 
 #include <theora/theoradec.h>
 #include <vorbis/codec.h>
 
 class ImageTexture;
 
-//#define THEORA_USE_THREAD_STREAMING
-
 class VideoStreamPlaybackTheora : public VideoStreamPlayback {
 	GDCLASS(VideoStreamPlaybackTheora, VideoStreamPlayback);
 
-	enum {
-		MAX_FRAMES = 4,
-	};
-
-	//Image frames[MAX_FRAMES];
 	Image::Format format = Image::Format::FORMAT_L8;
 	Vector<uint8_t> frame_data;
 	int frames_pending = 0;
 	Ref<FileAccess> file;
 	String file_name;
-	int audio_frames_wrote = 0;
 	Point2i size;
+	Rect2i region;
 
 	int buffer_data();
 	int queue_page(ogg_page *page);
-	void video_write();
+	void video_write(th_ycbcr_buffer yuv);
 	double get_time() const;
 
 	bool theora_eos = false;
@@ -83,42 +72,29 @@ class VideoStreamPlaybackTheora : public VideoStreamPlayback {
 	vorbis_block vb;
 	vorbis_comment vc;
 	th_pixel_fmt px_fmt;
-	double videobuf_time = 0;
-	int pp_inc = 0;
+	double frame_duration;
 
 	int theora_p = 0;
 	int vorbis_p = 0;
 	int pp_level_max = 0;
 	int pp_level = 0;
-	int videobuf_ready = 0;
+	int pp_inc = 0;
 
 	bool playing = false;
 	bool buffering = false;
+	bool paused = false;
 
-	double last_update_time = 0;
+	bool dup_frame = false;
+	bool video_ready = false;
+	bool video_done = false;
+	bool audio_done = false;
+
 	double time = 0;
+	double next_frame_time = 0;
+	double current_frame_time = 0;
 	double delay_compensation = 0;
 
 	Ref<ImageTexture> texture;
-
-	bool paused = false;
-
-#ifdef THEORA_USE_THREAD_STREAMING
-
-	enum {
-		RB_SIZE_KB = 1024
-	};
-
-	RingBuffer<uint8_t> ring_buffer;
-	Vector<uint8_t> read_buffer;
-	bool thread_eof = false;
-	Semaphore *thread_sem = nullptr;
-	Thread thread;
-	SafeFlag thread_exit;
-
-	static void _streaming_thread(void *ud);
-
-#endif
 
 	int audio_track = 0;
 

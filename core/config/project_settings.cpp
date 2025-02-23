@@ -39,7 +39,6 @@
 #include "core/io/marshalls.h"
 #include "core/io/resource_uid.h"
 #include "core/object/script_language.h"
-#include "core/os/keyboard.h"
 #include "core/templates/rb_set.h"
 #include "core/variant/typed_array.h"
 #include "core/variant/variant_parser.h"
@@ -194,7 +193,7 @@ String ProjectSettings::localize_path(const String &p_path) const {
 
 		return cwd.replace_first(res_path, "res://");
 	} else {
-		int sep = path.rfind("/");
+		int sep = path.rfind_char('/');
 		if (sep == -1) {
 			return "res://" + path;
 		}
@@ -262,6 +261,12 @@ String ProjectSettings::globalize_path(const String &p_path) const {
 			return p_path.replace("res:/", resource_path);
 		}
 		return p_path.replace("res://", "");
+	} else if (p_path.begins_with("uid://")) {
+		const String path = ResourceUID::uid_to_path(p_path);
+		if (!resource_path.is_empty()) {
+			return path.replace("res:/", resource_path);
+		}
+		return path.replace("res://", "");
 	} else if (p_path.begins_with("user://")) {
 		String data_dir = OS::get_singleton()->get_user_data_dir();
 		if (!data_dir.is_empty()) {
@@ -300,7 +305,7 @@ bool ProjectSettings::_set(const StringName &p_name, const Variant &p_value) {
 		}
 
 		{ // Feature overrides.
-			int dot = p_name.operator String().find(".");
+			int dot = p_name.operator String().find_char('.');
 			if (dot != -1) {
 				Vector<String> s = p_name.operator String().split(".");
 
@@ -435,7 +440,7 @@ void ProjectSettings::_get_property_list(List<PropertyInfo> *p_list) const {
 
 	for (const _VCSort &E : vclist) {
 		String prop_info_name = E.name;
-		int dot = prop_info_name.find(".");
+		int dot = prop_info_name.find_char('.');
 		if (dot != -1 && !custom_prop_info.has(prop_info_name)) {
 			prop_info_name = prop_info_name.substr(0, dot);
 		}
@@ -467,13 +472,30 @@ void ProjectSettings::_emit_changed() {
 	emit_signal("settings_changed");
 }
 
-bool ProjectSettings::_load_resource_pack(const String &p_pack, bool p_replace_files, int p_offset) {
+bool ProjectSettings::load_resource_pack(const String &p_pack, bool p_replace_files, int p_offset) {
+	return ProjectSettings::_load_resource_pack(p_pack, p_replace_files, p_offset, false);
+}
+
+bool ProjectSettings::_load_resource_pack(const String &p_pack, bool p_replace_files, int p_offset, bool p_main_pack) {
 	if (PackedData::get_singleton()->is_disabled()) {
 		return false;
 	}
 
-	bool ok = PackedData::get_singleton()->add_pack(p_pack, p_replace_files, p_offset) == OK;
+	if (p_pack == "res://") {
+		// Loading the resource directory as a pack source is reserved for internal use only.
+		return false;
+	}
 
+	if (!p_main_pack && !using_datapack && !OS::get_singleton()->get_resource_dir().is_empty()) {
+		// Add the project's resource file system to PackedData so directory access keeps working when
+		// the game is running without a main pack, like in the editor or on Android.
+		PackedData::get_singleton()->add_pack_source(memnew(PackedSourceDirectory));
+		PackedData::get_singleton()->add_pack("res://", false, 0);
+		DirAccess::make_default<DirAccessPack>(DirAccess::ACCESS_RESOURCES);
+		using_datapack = true;
+	}
+
+	bool ok = PackedData::get_singleton()->add_pack(p_pack, p_replace_files, p_offset) == OK;
 	if (!ok) {
 		return false;
 	}
@@ -486,9 +508,11 @@ bool ProjectSettings::_load_resource_pack(const String &p_pack, bool p_replace_f
 		ResourceUID::get_singleton()->load_from_cache(false);
 	}
 
-	//if data.pck is found, all directory access will be from here
-	DirAccess::make_default<DirAccessPack>(DirAccess::ACCESS_RESOURCES);
-	using_datapack = true;
+	// If the data pack was found, all directory access will be from here.
+	if (!using_datapack) {
+		DirAccess::make_default<DirAccessPack>(DirAccess::ACCESS_RESOURCES);
+		using_datapack = true;
+	}
 
 	return true;
 }
@@ -505,21 +529,6 @@ void ProjectSettings::_convert_to_last_version(int p_from_version) {
 				action["deadzone"] = Variant(0.5f);
 				action["events"] = array;
 				E.value.variant = action;
-			}
-		}
-	}
-	if (p_from_version <= 5) {
-		// Converts the device in events from -1 (emulated events) to -3 (all events).
-		for (KeyValue<StringName, ProjectSettings::VariantContainer> &E : props) {
-			if (String(E.key).begins_with("input/")) {
-				Dictionary action = E.value.variant;
-				Array events = action["events"];
-				for (int i = 0; i < events.size(); i++) {
-					Ref<InputEvent> ev = events[i];
-					if (ev.is_valid() && ev->get_device() == -1) { // -1 was the previous value (GH-97707).
-						ev->set_device(InputEvent::DEVICE_ID_ALL_DEVICES);
-					}
-				}
 			}
 		}
 	}
@@ -564,7 +573,7 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 	// Attempt with a user-defined main pack first
 
 	if (!p_main_pack.is_empty()) {
-		bool ok = _load_resource_pack(p_main_pack);
+		bool ok = _load_resource_pack(p_main_pack, false, 0, true);
 		ERR_FAIL_COND_V_MSG(!ok, ERR_CANT_OPEN, vformat("Cannot open resource pack '%s'.", p_main_pack));
 
 		Error err = _load_settings_text_or_binary("res://project.godot", "res://project.binary");
@@ -583,7 +592,7 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 		// and if so, we attempt loading it at the end.
 
 		// Attempt with PCK bundled into executable.
-		bool found = _load_resource_pack(exec_path);
+		bool found = _load_resource_pack(exec_path, false, 0, true);
 
 		// Attempt with exec_name.pck.
 		// (This is the usual case when distributing a Godot game.)
@@ -599,20 +608,20 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 #ifdef MACOS_ENABLED
 		if (!found) {
 			// Attempt to load PCK from macOS .app bundle resources.
-			found = _load_resource_pack(OS::get_singleton()->get_bundle_resource_dir().path_join(exec_basename + ".pck")) || _load_resource_pack(OS::get_singleton()->get_bundle_resource_dir().path_join(exec_filename + ".pck"));
+			found = _load_resource_pack(OS::get_singleton()->get_bundle_resource_dir().path_join(exec_basename + ".pck"), false, 0, true) || _load_resource_pack(OS::get_singleton()->get_bundle_resource_dir().path_join(exec_filename + ".pck"), false, 0, true);
 		}
 #endif
 
 		if (!found) {
 			// Try to load data pack at the location of the executable.
 			// As mentioned above, we have two potential names to attempt.
-			found = _load_resource_pack(exec_dir.path_join(exec_basename + ".pck")) || _load_resource_pack(exec_dir.path_join(exec_filename + ".pck"));
+			found = _load_resource_pack(exec_dir.path_join(exec_basename + ".pck"), false, 0, true) || _load_resource_pack(exec_dir.path_join(exec_filename + ".pck"), false, 0, true);
 		}
 
 		if (!found) {
 			// If we couldn't find them next to the executable, we attempt
 			// the current working directory. Same story, two tests.
-			found = _load_resource_pack(exec_basename + ".pck") || _load_resource_pack(exec_filename + ".pck");
+			found = _load_resource_pack(exec_basename + ".pck", false, 0, true) || _load_resource_pack(exec_filename + ".pck", false, 0, true);
 		}
 
 		// If we opened our package, try and load our project.
@@ -639,6 +648,28 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 		}
 		return err;
 	}
+
+#ifdef MACOS_ENABLED
+	// Attempt to load project file from macOS .app bundle resources.
+	resource_path = OS::get_singleton()->get_bundle_resource_dir();
+	if (!resource_path.is_empty()) {
+		if (resource_path[resource_path.length() - 1] == '/') {
+			resource_path = resource_path.substr(0, resource_path.length() - 1); // Chop end.
+		}
+		Ref<DirAccess> d = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+		ERR_FAIL_COND_V_MSG(d.is_null(), ERR_CANT_CREATE, vformat("Cannot create DirAccess for path '%s'.", resource_path));
+		d->change_dir(resource_path);
+
+		Error err;
+
+		err = _load_settings_text_or_binary(resource_path.path_join("project.godot"), resource_path.path_join("project.binary"));
+		if (err == OK && !p_ignore_override) {
+			// Optional, we don't mind if it fails.
+			_load_settings_text(resource_path.path_join("override.cfg"));
+			return err;
+		}
+	}
+#endif
 
 	// Nothing was found, try to find a project file in provided path (`p_path`)
 	// or, if requested (`p_upwards`) in parent directories.
@@ -740,7 +771,7 @@ Error ProjectSettings::_load_settings_binary(const String &p_path) {
 		cs[slen] = 0;
 		f->get_buffer((uint8_t *)cs.ptr(), slen);
 		String key;
-		key.parse_utf8(cs.ptr());
+		key.parse_utf8(cs.ptr(), slen);
 
 		uint32_t vlen = f->get_32();
 		Vector<uint8_t> d;
@@ -889,7 +920,7 @@ Error ProjectSettings::_save_settings_binary(const String &p_file, const RBMap<S
 
 	if (!p_custom_features.is_empty()) {
 		// Store how many properties are saved, add one for custom features, which must always go first.
-		file->store_32(count + 1);
+		file->store_32(uint32_t(count + 1));
 		String key = CoreStringName(_custom_features);
 		file->store_pascal_string(key);
 
@@ -902,12 +933,12 @@ Error ProjectSettings::_save_settings_binary(const String &p_file, const RBMap<S
 
 		err = encode_variant(p_custom_features, buff.ptrw(), len, false);
 		ERR_FAIL_COND_V(err != OK, err);
-		file->store_32(len);
+		file->store_32(uint32_t(len));
 		file->store_buffer(buff.ptr(), buff.size());
 
 	} else {
 		// Store how many properties are saved.
-		file->store_32(count);
+		file->store_32(uint32_t(count));
 	}
 
 	for (const KeyValue<String, List<String>> &E : p_props) {
@@ -934,7 +965,7 @@ Error ProjectSettings::_save_settings_binary(const String &p_file, const RBMap<S
 
 			err = encode_variant(value, buff.ptrw(), len, true);
 			ERR_FAIL_COND_V_MSG(err != OK, ERR_INVALID_DATA, "Error when trying to encode Variant.");
-			file->store_32(len);
+			file->store_32(uint32_t(len));
 			file->store_buffer(buff.ptr(), buff.size());
 		}
 	}
@@ -1092,7 +1123,7 @@ Error ProjectSettings::save_custom(const String &p_path, const CustomMap &p_cust
 		String category = E.name;
 		String name = E.name;
 
-		int div = category.find("/");
+		int div = category.find_char('/');
 
 		if (div < 0) {
 			category = "";
@@ -1214,10 +1245,10 @@ void ProjectSettings::refresh_global_class_list() {
 	Array script_classes = get_global_class_list();
 	for (int i = 0; i < script_classes.size(); i++) {
 		Dictionary c = script_classes[i];
-		if (!c.has("class") || !c.has("language") || !c.has("path") || !c.has("base")) {
+		if (!c.has("class") || !c.has("language") || !c.has("path") || !c.has("base") || !c.has("is_abstract") || !c.has("is_tool")) {
 			continue;
 		}
-		ScriptServer::add_global_class(c["class"], c["base"], c["language"], c["path"]);
+		ScriptServer::add_global_class(c["class"], c["base"], c["language"], c["path"], c["is_abstract"], c["is_tool"]);
 	}
 }
 
@@ -1388,7 +1419,7 @@ void ProjectSettings::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("localize_path", "path"), &ProjectSettings::localize_path);
 	ClassDB::bind_method(D_METHOD("globalize_path", "path"), &ProjectSettings::globalize_path);
 	ClassDB::bind_method(D_METHOD("save"), &ProjectSettings::save);
-	ClassDB::bind_method(D_METHOD("load_resource_pack", "pack", "replace_files", "offset"), &ProjectSettings::_load_resource_pack, DEFVAL(true), DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("load_resource_pack", "pack", "replace_files", "offset"), &ProjectSettings::load_resource_pack, DEFVAL(true), DEFVAL(0));
 
 	ClassDB::bind_method(D_METHOD("save_custom", "file"), &ProjectSettings::_save_custom_bnd);
 
@@ -1408,7 +1439,7 @@ void ProjectSettings::_add_builtin_input_map() {
 			}
 
 			Dictionary action;
-			action["deadzone"] = Variant(0.2f);
+			action["deadzone"] = Variant(InputMap::DEFAULT_DEADZONE);
 			action["events"] = events;
 
 			String action_name = "input/" + E.key;
@@ -1507,7 +1538,11 @@ ProjectSettings::ProjectSettings() {
 	GLOBAL_DEF("display/window/frame_pacing/android/enable_frame_pacing", true);
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "display/window/frame_pacing/android/swappy_mode", PROPERTY_HINT_ENUM, "pipeline_forced_on,auto_fps_pipeline_forced_on,auto_fps_auto_pipeline"), 2);
 
-	custom_prop_info["rendering/driver/threads/thread_model"] = PropertyInfo(Variant::INT, "rendering/driver/threads/thread_model", PROPERTY_HINT_ENUM, "Single-Unsafe,Single-Safe,Multi-Threaded");
+#ifdef DISABLE_DEPRECATED
+	custom_prop_info["rendering/driver/threads/thread_model"] = PropertyInfo(Variant::INT, "rendering/driver/threads/thread_model", PROPERTY_HINT_ENUM, "Safe:1,Separate");
+#else
+	custom_prop_info["rendering/driver/threads/thread_model"] = PropertyInfo(Variant::INT, "rendering/driver/threads/thread_model", PROPERTY_HINT_ENUM, "Unsafe (deprecated),Safe,Separate");
+#endif
 	GLOBAL_DEF("physics/2d/run_on_separate_thread", false);
 	GLOBAL_DEF("physics/3d/run_on_separate_thread", false);
 
@@ -1550,6 +1585,7 @@ ProjectSettings::ProjectSettings() {
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/rendering_device/staging_buffer/block_size_kb", PROPERTY_HINT_RANGE, "4,2048,1,or_greater"), 256);
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/rendering_device/staging_buffer/max_size_mb", PROPERTY_HINT_RANGE, "1,1024,1,or_greater"), 128);
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/rendering_device/staging_buffer/texture_upload_region_size_px", PROPERTY_HINT_RANGE, "1,256,1,or_greater"), 64);
+	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/rendering_device/staging_buffer/texture_download_region_size_px", PROPERTY_HINT_RANGE, "1,256,1,or_greater"), 64);
 	GLOBAL_DEF_RST(PropertyInfo(Variant::BOOL, "rendering/rendering_device/pipeline_cache/enable"), true);
 	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "rendering/rendering_device/pipeline_cache/save_chunk_size_mb", PROPERTY_HINT_RANGE, "0.000001,64.0,0.001,or_greater"), 3.0);
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/rendering_device/vulkan/max_descriptors_per_pool", PROPERTY_HINT_RANGE, "1,256,1,or_greater"), 64);
@@ -1565,7 +1601,7 @@ ProjectSettings::ProjectSettings() {
 	// installed by the scripts provided in the repository
 	// (check `misc/scripts/install_d3d12_sdk_windows.py`).
 	// For example, if the script installs 1.613.3, the default value must be 613.
-	GLOBAL_DEF_RST(PropertyInfo(Variant::INT, "rendering/rendering_device/d3d12/agility_sdk_version"), 613);
+	GLOBAL_DEF_RST(PropertyInfo(Variant::INT, "rendering/rendering_device/d3d12/agility_sdk_version", PROPERTY_HINT_RANGE, "0,10000,1,or_greater,hide_slider"), 613);
 
 	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "rendering/textures/canvas_textures/default_texture_filter", PROPERTY_HINT_ENUM, "Nearest,Linear,Linear Mipmap,Nearest Mipmap"), 1);
 	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "rendering/textures/canvas_textures/default_texture_repeat", PROPERTY_HINT_ENUM, "Disable,Enable,Mirror"), 0);

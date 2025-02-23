@@ -52,9 +52,11 @@
 #include "main/splash.gen.h"
 #include "scene/resources/image_texture.h"
 
-#include "modules/modules_enabled.gen.h" // For mono and svg.
-#ifdef MODULE_SVG_ENABLED
+#include "modules/modules_enabled.gen.h" // For mono.
 #include "modules/svg/image_loader_svg.h"
+
+#ifdef MODULE_MONO_ENABLED
+#include "modules/mono/utils/path_utils.h"
 #endif
 
 #ifdef ANDROID_ENABLED
@@ -63,11 +65,12 @@
 
 #include <string.h>
 
-static const char *android_perms[] = {
+static const char *ANDROID_PERMS[] = {
 	"ACCESS_CHECKIN_PROPERTIES",
 	"ACCESS_COARSE_LOCATION",
 	"ACCESS_FINE_LOCATION",
 	"ACCESS_LOCATION_EXTRA_COMMANDS",
+	"ACCESS_MEDIA_LOCATION",
 	"ACCESS_MOCK_LOCATION",
 	"ACCESS_NETWORK_STATE",
 	"ACCESS_SURFACE_FLINGER",
@@ -155,6 +158,10 @@ static const char *android_perms[] = {
 	"READ_HISTORY_BOOKMARKS",
 	"READ_INPUT_STATE",
 	"READ_LOGS",
+	"READ_MEDIA_AUDIO",
+	"READ_MEDIA_IMAGES",
+	"READ_MEDIA_VIDEO",
+	"READ_MEDIA_VISUAL_USER_SELECTED",
 	"READ_PHONE_STATE",
 	"READ_PROFILE",
 	"READ_SMS",
@@ -218,13 +225,25 @@ static const char *MISMATCHED_VERSIONS_MESSAGE = "Android build version mismatch
 
 static const char *GDEXTENSION_LIBS_PATH = "libs/gdextensionlibs.json";
 
-static const int icon_densities_count = 6;
-static const char *launcher_icon_option = PNAME("launcher_icons/main_192x192");
-static const char *launcher_adaptive_icon_foreground_option = PNAME("launcher_icons/adaptive_foreground_432x432");
-static const char *launcher_adaptive_icon_background_option = PNAME("launcher_icons/adaptive_background_432x432");
-static const char *launcher_adaptive_icon_monochrome_option = PNAME("launcher_icons/adaptive_monochrome_432x432");
+// This template string must be in sync with the content of 'platform/android/java/lib/res/mipmap-anydpi-v26/icon.xml'.
+static const String ICON_XML_TEMPLATE =
+		"<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"
+		"<adaptive-icon xmlns:android=\"http://schemas.android.com/apk/res/android\">\n"
+		"    <background android:drawable=\"@mipmap/icon_background\"/>\n"
+		"    <foreground android:drawable=\"@mipmap/icon_foreground\"/>\n"
+		"%s" // Placeholder for the optional monochrome tag.
+		"</adaptive-icon>";
 
-static const LauncherIcon launcher_icons[icon_densities_count] = {
+static const String ICON_XML_PATH = "res/mipmap-anydpi-v26/icon.xml";
+static const String THEMED_ICON_XML_PATH = "res/mipmap-anydpi-v26/themed_icon.xml";
+
+static const int ICON_DENSITIES_COUNT = 6;
+static const char *LAUNCHER_ICON_OPTION = PNAME("launcher_icons/main_192x192");
+static const char *LAUNCHER_ADAPTIVE_ICON_FOREGROUND_OPTION = PNAME("launcher_icons/adaptive_foreground_432x432");
+static const char *LAUNCHER_ADAPTIVE_ICON_BACKGROUND_OPTION = PNAME("launcher_icons/adaptive_background_432x432");
+static const char *LAUNCHER_ADAPTIVE_ICON_MONOCHROME_OPTION = PNAME("launcher_icons/adaptive_monochrome_432x432");
+
+static const LauncherIcon LAUNCHER_ICONS[ICON_DENSITIES_COUNT] = {
 	{ "res/mipmap-xxxhdpi-v4/icon.png", 192 },
 	{ "res/mipmap-xxhdpi-v4/icon.png", 144 },
 	{ "res/mipmap-xhdpi-v4/icon.png", 96 },
@@ -233,7 +252,7 @@ static const LauncherIcon launcher_icons[icon_densities_count] = {
 	{ "res/mipmap/icon.png", 192 }
 };
 
-static const LauncherIcon launcher_adaptive_icon_foregrounds[icon_densities_count] = {
+static const LauncherIcon LAUNCHER_ADAPTIVE_ICON_FOREGROUNDS[ICON_DENSITIES_COUNT] = {
 	{ "res/mipmap-xxxhdpi-v4/icon_foreground.png", 432 },
 	{ "res/mipmap-xxhdpi-v4/icon_foreground.png", 324 },
 	{ "res/mipmap-xhdpi-v4/icon_foreground.png", 216 },
@@ -242,7 +261,7 @@ static const LauncherIcon launcher_adaptive_icon_foregrounds[icon_densities_coun
 	{ "res/mipmap/icon_foreground.png", 432 }
 };
 
-static const LauncherIcon launcher_adaptive_icon_backgrounds[icon_densities_count] = {
+static const LauncherIcon LAUNCHER_ADAPTIVE_ICON_BACKGROUNDS[ICON_DENSITIES_COUNT] = {
 	{ "res/mipmap-xxxhdpi-v4/icon_background.png", 432 },
 	{ "res/mipmap-xxhdpi-v4/icon_background.png", 324 },
 	{ "res/mipmap-xhdpi-v4/icon_background.png", 216 },
@@ -251,7 +270,7 @@ static const LauncherIcon launcher_adaptive_icon_backgrounds[icon_densities_coun
 	{ "res/mipmap/icon_background.png", 432 }
 };
 
-static const LauncherIcon launcher_adaptive_icon_monochromes[icon_densities_count] = {
+static const LauncherIcon LAUNCHER_ADAPTIVE_ICON_MONOCHROMES[ICON_DENSITIES_COUNT] = {
 	{ "res/mipmap-xxxhdpi-v4/icon_monochrome.png", 432 },
 	{ "res/mipmap-xxhdpi-v4/icon_monochrome.png", 324 },
 	{ "res/mipmap-xhdpi-v4/icon_monochrome.png", 216 },
@@ -783,15 +802,16 @@ Error EditorExportPlatformAndroid::save_apk_so(void *p_userdata, const SharedObj
 	return OK;
 }
 
-Error EditorExportPlatformAndroid::save_apk_file(void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total, const Vector<String> &p_enc_in_filters, const Vector<String> &p_enc_ex_filters, const Vector<uint8_t> &p_key) {
+Error EditorExportPlatformAndroid::save_apk_file(void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total, const Vector<String> &p_enc_in_filters, const Vector<String> &p_enc_ex_filters, const Vector<uint8_t> &p_key, uint64_t p_seed) {
 	APKExportData *ed = static_cast<APKExportData *>(p_userdata);
-	String dst_path = p_path.replace_first("res://", "assets/");
+	const String path = ResourceUID::ensure_path(p_path);
+	const String dst_path = path.replace_first("res://", "assets/");
 
-	store_in_apk(ed, dst_path, p_data, _should_compress_asset(p_path, p_data) ? Z_DEFLATED : 0);
+	store_in_apk(ed, dst_path, p_data, _should_compress_asset(path, p_data) ? Z_DEFLATED : 0);
 	return OK;
 }
 
-Error EditorExportPlatformAndroid::ignore_apk_file(void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total, const Vector<String> &p_enc_in_filters, const Vector<String> &p_enc_ex_filters, const Vector<uint8_t> &p_key) {
+Error EditorExportPlatformAndroid::ignore_apk_file(void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total, const Vector<String> &p_enc_in_filters, const Vector<String> &p_enc_ex_filters, const Vector<uint8_t> &p_key, uint64_t p_seed) {
 	return OK;
 }
 
@@ -920,7 +940,7 @@ void EditorExportPlatformAndroid::_create_editor_debug_keystore_if_needed() {
 }
 
 void EditorExportPlatformAndroid::_get_permissions(const Ref<EditorExportPreset> &p_preset, bool p_give_internet, Vector<String> &r_permissions) {
-	const char **aperms = android_perms;
+	const char **aperms = ANDROID_PERMS;
 	while (*aperms) {
 		bool enabled = p_preset->get("permissions/" + String(*aperms).to_lower());
 		if (enabled) {
@@ -985,6 +1005,56 @@ void EditorExportPlatformAndroid::_write_tmp_manifest(const Ref<EditorExportPres
 
 	print_verbose("Storing manifest into " + manifest_path + ": " + "\n" + manifest_text);
 	store_string_at_path(manifest_path, manifest_text);
+}
+
+void EditorExportPlatformAndroid::_fix_themes_xml(const Ref<EditorExportPreset> &p_preset) {
+	const String themes_xml_path = ExportTemplateManager::get_android_build_directory(p_preset).path_join("res/values/themes.xml");
+	bool enable_swipe_to_dismiss = p_preset->get("gesture/swipe_to_dismiss");
+
+	if (!FileAccess::exists(themes_xml_path)) {
+		print_error("res/values/themes.xml does not exist.");
+		return;
+	}
+
+	String xml_content;
+	Ref<FileAccess> file = FileAccess::open(themes_xml_path, FileAccess::READ);
+	PackedStringArray lines = file->get_as_text().split("\n");
+	file->close();
+
+	// Check if the themes.xml already contains <item name="android:windowSwipeToDismiss"> element.
+	// If found, update its value based on `enable_swipe_to_dismiss`.
+	bool found = false;
+	bool modified = false;
+	for (int i = 0; i < lines.size(); i++) {
+		String line = lines[i];
+		if (line.contains("<item name") && line.contains("\"android:windowSwipeToDismiss\">")) {
+			lines.set(i, vformat("		<item name=\"android:windowSwipeToDismiss\">%s</item>", bool_to_string(enable_swipe_to_dismiss)));
+			found = true;
+			modified = true;
+			break;
+		}
+	}
+
+	// If <item name="android:windowSwipeToDismiss"> is not found and `enable_swipe_to_dismiss` is false:
+	// Add a new <item> element before the closing </style> tag.
+	if (!found && !enable_swipe_to_dismiss) {
+		for (int i = 0; i < lines.size(); i++) {
+			if (lines[i].contains("</style>")) {
+				lines.insert(i, "		<item name=\"android:windowSwipeToDismiss\">false</item>");
+				modified = true;
+				break;
+			}
+		}
+	}
+
+	// Reconstruct the XML content from the modified lines.
+	if (modified) {
+		xml_content = String("\n").join(lines);
+		store_string_at_path(themes_xml_path, xml_content);
+		print_verbose("Successfully modified " + themes_xml_path + ": " + "\n" + xml_content);
+	} else {
+		print_verbose("No changes needed for " + themes_xml_path);
+	}
 }
 
 void EditorExportPlatformAndroid::_fix_manifest(const Ref<EditorExportPreset> &p_preset, Vector<uint8_t> &p_manifest, bool p_give_internet) {
@@ -1519,7 +1589,7 @@ String EditorExportPlatformAndroid::_parse_string(const uint8_t *p_bytes, bool p
 		}
 		str8.write[len] = 0;
 		String str;
-		str.parse_utf8((const char *)str8.ptr());
+		str.parse_utf8((const char *)str8.ptr(), len);
 		return str;
 	} else {
 		String str;
@@ -1559,7 +1629,7 @@ void EditorExportPlatformAndroid::_fix_resources(const Ref<EditorExportPreset> &
 				str = get_project_name(package_name);
 
 			} else {
-				String lang = str.substr(str.rfind("-") + 1, str.length()).replace("-", "_");
+				String lang = str.substr(str.rfind_char('-') + 1, str.length()).replace("-", "_");
 				if (appnames.has(lang)) {
 					str = appnames[lang];
 				} else {
@@ -1657,43 +1727,46 @@ void EditorExportPlatformAndroid::_process_launcher_icons(const String &p_file_n
 void EditorExportPlatformAndroid::load_icon_refs(const Ref<EditorExportPreset> &p_preset, Ref<Image> &icon, Ref<Image> &foreground, Ref<Image> &background, Ref<Image> &monochrome) {
 	String project_icon_path = GLOBAL_GET("application/config/icon");
 
-	icon.instantiate();
-	foreground.instantiate();
-	background.instantiate();
-	monochrome.instantiate();
+	Error err = OK;
 
 	// Regular icon: user selection -> project icon -> default.
-	String path = static_cast<String>(p_preset->get(launcher_icon_option)).strip_edges();
+	String path = static_cast<String>(p_preset->get(LAUNCHER_ICON_OPTION)).strip_edges();
 	print_verbose("Loading regular icon from " + path);
-	if (path.is_empty() || ImageLoader::load_image(path, icon) != OK) {
+	if (!path.is_empty()) {
+		icon = _load_icon_or_splash_image(path, &err);
+	}
+	if (path.is_empty() || err != OK || icon.is_null() || icon->is_empty()) {
 		print_verbose("- falling back to project icon: " + project_icon_path);
 		if (!project_icon_path.is_empty()) {
-			ImageLoader::load_image(project_icon_path, icon);
+			icon = _load_icon_or_splash_image(project_icon_path, &err);
 		} else {
 			ERR_PRINT("No project icon specified. Please specify one in the Project Settings under Application -> Config -> Icon");
 		}
 	}
 
 	// Adaptive foreground: user selection -> regular icon (user selection -> project icon -> default).
-	path = static_cast<String>(p_preset->get(launcher_adaptive_icon_foreground_option)).strip_edges();
+	path = static_cast<String>(p_preset->get(LAUNCHER_ADAPTIVE_ICON_FOREGROUND_OPTION)).strip_edges();
 	print_verbose("Loading adaptive foreground icon from " + path);
-	if (path.is_empty() || ImageLoader::load_image(path, foreground) != OK) {
+	if (!path.is_empty()) {
+		foreground = _load_icon_or_splash_image(path, &err);
+	}
+	if (path.is_empty() || err != OK || foreground.is_null() || foreground->is_empty()) {
 		print_verbose("- falling back to using the regular icon");
 		foreground = icon;
 	}
 
 	// Adaptive background: user selection -> default.
-	path = static_cast<String>(p_preset->get(launcher_adaptive_icon_background_option)).strip_edges();
+	path = static_cast<String>(p_preset->get(LAUNCHER_ADAPTIVE_ICON_BACKGROUND_OPTION)).strip_edges();
 	if (!path.is_empty()) {
 		print_verbose("Loading adaptive background icon from " + path);
-		ImageLoader::load_image(path, background);
+		background = _load_icon_or_splash_image(path, &err);
 	}
 
 	// Adaptive monochrome: user selection -> default.
-	path = static_cast<String>(p_preset->get(launcher_adaptive_icon_monochrome_option)).strip_edges();
+	path = static_cast<String>(p_preset->get(LAUNCHER_ADAPTIVE_ICON_MONOCHROME_OPTION)).strip_edges();
 	if (!path.is_empty()) {
 		print_verbose("Loading adaptive monochrome icon from " + path);
-		ImageLoader::load_image(path, monochrome);
+		monochrome = _load_icon_or_splash_image(path, &err);
 	}
 }
 
@@ -1704,41 +1777,47 @@ void EditorExportPlatformAndroid::_copy_icons_to_gradle_project(const Ref<Editor
 		const Ref<Image> &p_monochrome) {
 	String gradle_build_dir = ExportTemplateManager::get_android_build_directory(p_preset);
 
+	String monochrome_tag = "";
+
 	// Prepare images to be resized for the icons. If some image ends up being uninitialized,
 	// the default image from the export template will be used.
 
-	for (int i = 0; i < icon_densities_count; ++i) {
+	for (int i = 0; i < ICON_DENSITIES_COUNT; ++i) {
 		if (p_main_image.is_valid() && !p_main_image->is_empty()) {
-			print_verbose("Processing launcher icon for dimension " + itos(launcher_icons[i].dimensions) + " into " + launcher_icons[i].export_path);
+			print_verbose("Processing launcher icon for dimension " + itos(LAUNCHER_ICONS[i].dimensions) + " into " + LAUNCHER_ICONS[i].export_path);
 			Vector<uint8_t> data;
-			_process_launcher_icons(launcher_icons[i].export_path, p_main_image, launcher_icons[i].dimensions, data);
-			store_file_at_path(gradle_build_dir.path_join(launcher_icons[i].export_path), data);
+			_process_launcher_icons(LAUNCHER_ICONS[i].export_path, p_main_image, LAUNCHER_ICONS[i].dimensions, data);
+			store_file_at_path(gradle_build_dir.path_join(LAUNCHER_ICONS[i].export_path), data);
 		}
 
 		if (p_foreground.is_valid() && !p_foreground->is_empty()) {
-			print_verbose("Processing launcher adaptive icon p_foreground for dimension " + itos(launcher_adaptive_icon_foregrounds[i].dimensions) + " into " + launcher_adaptive_icon_foregrounds[i].export_path);
+			print_verbose("Processing launcher adaptive icon p_foreground for dimension " + itos(LAUNCHER_ADAPTIVE_ICON_FOREGROUNDS[i].dimensions) + " into " + LAUNCHER_ADAPTIVE_ICON_FOREGROUNDS[i].export_path);
 			Vector<uint8_t> data;
-			_process_launcher_icons(launcher_adaptive_icon_foregrounds[i].export_path, p_foreground,
-					launcher_adaptive_icon_foregrounds[i].dimensions, data);
-			store_file_at_path(gradle_build_dir.path_join(launcher_adaptive_icon_foregrounds[i].export_path), data);
+			_process_launcher_icons(LAUNCHER_ADAPTIVE_ICON_FOREGROUNDS[i].export_path, p_foreground,
+					LAUNCHER_ADAPTIVE_ICON_FOREGROUNDS[i].dimensions, data);
+			store_file_at_path(gradle_build_dir.path_join(LAUNCHER_ADAPTIVE_ICON_FOREGROUNDS[i].export_path), data);
 		}
 
 		if (p_background.is_valid() && !p_background->is_empty()) {
-			print_verbose("Processing launcher adaptive icon p_background for dimension " + itos(launcher_adaptive_icon_backgrounds[i].dimensions) + " into " + launcher_adaptive_icon_backgrounds[i].export_path);
+			print_verbose("Processing launcher adaptive icon p_background for dimension " + itos(LAUNCHER_ADAPTIVE_ICON_BACKGROUNDS[i].dimensions) + " into " + LAUNCHER_ADAPTIVE_ICON_BACKGROUNDS[i].export_path);
 			Vector<uint8_t> data;
-			_process_launcher_icons(launcher_adaptive_icon_backgrounds[i].export_path, p_background,
-					launcher_adaptive_icon_backgrounds[i].dimensions, data);
-			store_file_at_path(gradle_build_dir.path_join(launcher_adaptive_icon_backgrounds[i].export_path), data);
+			_process_launcher_icons(LAUNCHER_ADAPTIVE_ICON_BACKGROUNDS[i].export_path, p_background,
+					LAUNCHER_ADAPTIVE_ICON_BACKGROUNDS[i].dimensions, data);
+			store_file_at_path(gradle_build_dir.path_join(LAUNCHER_ADAPTIVE_ICON_BACKGROUNDS[i].export_path), data);
 		}
 
 		if (p_monochrome.is_valid() && !p_monochrome->is_empty()) {
-			print_verbose("Processing launcher adaptive icon p_monochrome for dimension " + itos(launcher_adaptive_icon_monochromes[i].dimensions) + " into " + launcher_adaptive_icon_monochromes[i].export_path);
+			print_verbose("Processing launcher adaptive icon p_monochrome for dimension " + itos(LAUNCHER_ADAPTIVE_ICON_MONOCHROMES[i].dimensions) + " into " + LAUNCHER_ADAPTIVE_ICON_MONOCHROMES[i].export_path);
 			Vector<uint8_t> data;
-			_process_launcher_icons(launcher_adaptive_icon_monochromes[i].export_path, p_monochrome,
-					launcher_adaptive_icon_monochromes[i].dimensions, data);
-			store_file_at_path(gradle_build_dir.path_join(launcher_adaptive_icon_monochromes[i].export_path), data);
+			_process_launcher_icons(LAUNCHER_ADAPTIVE_ICON_MONOCHROMES[i].export_path, p_monochrome,
+					LAUNCHER_ADAPTIVE_ICON_MONOCHROMES[i].dimensions, data);
+			store_file_at_path(gradle_build_dir.path_join(LAUNCHER_ADAPTIVE_ICON_MONOCHROMES[i].export_path), data);
+			monochrome_tag = "    <monochrome android:drawable=\"@mipmap/icon_monochrome\"/>\n";
 		}
 	}
+
+	// Finalize the icon.xml by formatting the template with the optional monochrome tag.
+	store_string_at_path(gradle_build_dir.path_join(ICON_XML_PATH), vformat(ICON_XML_TEMPLATE, monochrome_tag));
 }
 
 Vector<EditorExportPlatformAndroid::ABI> EditorExportPlatformAndroid::get_enabled_abis(const Ref<EditorExportPreset> &p_preset) {
@@ -1778,11 +1857,10 @@ String EditorExportPlatformAndroid::get_export_option_warning(const EditorExport
 			if (!is_package_name_valid(pn, &pn_err)) {
 				return TTR("Invalid package name:") + " " + pn_err;
 			}
-		} else if (p_name == launcher_adaptive_icon_monochrome_option) {
-			String monochrome_icon_path = p_preset->get(launcher_adaptive_icon_monochrome_option);
-
-			if (monochrome_icon_path.is_empty()) {
-				return TTR("No adaptive monochrome icon specified; default Godot monochrome icon will be used.");
+		} else if (p_name == "gesture/swipe_to_dismiss") {
+			bool gradle_build_enabled = p_preset->get("gradle_build/use_gradle_build");
+			if (bool(p_preset->get("gesture/swipe_to_dismiss")) && !gradle_build_enabled) {
+				return TTR("\"Use Gradle Build\" is required to enable \"Swipe to dismiss\".");
 			}
 		} else if (p_name == "gradle_build/use_gradle_build") {
 			bool gradle_build_enabled = p_preset->get("gradle_build/use_gradle_build");
@@ -1846,6 +1924,21 @@ String EditorExportPlatformAndroid::get_export_option_warning(const EditorExport
 					}
 				}
 			}
+		} else if (p_name == "package/show_in_android_tv") {
+			bool gradle_build_enabled = p_preset->get("gradle_build/use_gradle_build");
+			if (bool(p_preset->get("package/show_in_android_tv")) && !gradle_build_enabled) {
+				return TTR("\"Use Gradle Build\" must be enabled to enable \"Show In Android Tv\".");
+			}
+		} else if (p_name == "package/show_as_launcher_app") {
+			bool gradle_build_enabled = p_preset->get("gradle_build/use_gradle_build");
+			if (bool(p_preset->get("package/show_as_launcher_app")) && !gradle_build_enabled) {
+				return TTR("\"Use Gradle Build\" must be enabled to enable \"Show As Launcher App\".");
+			}
+		} else if (p_name == "package/show_in_app_library") {
+			bool gradle_build_enabled = p_preset->get("gradle_build/use_gradle_build");
+			if (!bool(p_preset->get("package/show_in_app_library")) && !gradle_build_enabled) {
+				return TTR("\"Use Gradle Build\" must be enabled to disable \"Show In App Library\".");
+			}
 		}
 	}
 	return String();
@@ -1898,21 +1991,23 @@ void EditorExportPlatformAndroid::get_export_options(List<ExportOption> *r_optio
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "package/unique_name", PROPERTY_HINT_PLACEHOLDER_TEXT, "ext.domain.name"), "com.example.$genname", false, true));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "package/name", PROPERTY_HINT_PLACEHOLDER_TEXT, "Game Name [default if blank]"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "package/signed"), true));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "package/app_category", PROPERTY_HINT_ENUM, "Accessibility,Audio,Game,Image,Maps,News,Productivity,Social,Video"), APP_CATEGORY_GAME));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "package/app_category", PROPERTY_HINT_ENUM, "Accessibility,Audio,Game,Image,Maps,News,Productivity,Social,Video,Undefined"), APP_CATEGORY_GAME));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "package/retain_data_on_uninstall"), false));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "package/exclude_from_recents"), false));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "package/show_in_android_tv"), false));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "package/show_in_app_library"), true));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "package/show_as_launcher_app"), false));
 
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, launcher_icon_option, PROPERTY_HINT_FILE, "*.png"), ""));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, launcher_adaptive_icon_foreground_option, PROPERTY_HINT_FILE, "*.png"), ""));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, launcher_adaptive_icon_background_option, PROPERTY_HINT_FILE, "*.png"), ""));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, launcher_adaptive_icon_monochrome_option, PROPERTY_HINT_FILE, "*.png"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, LAUNCHER_ICON_OPTION, PROPERTY_HINT_FILE, "*.png"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, LAUNCHER_ADAPTIVE_ICON_FOREGROUND_OPTION, PROPERTY_HINT_FILE, "*.png"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, LAUNCHER_ADAPTIVE_ICON_BACKGROUND_OPTION, PROPERTY_HINT_FILE, "*.png"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, LAUNCHER_ADAPTIVE_ICON_MONOCHROME_OPTION, PROPERTY_HINT_FILE, "*.png"), ""));
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "graphics/opengl_debug"), false));
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "xr_features/xr_mode", PROPERTY_HINT_ENUM, "Regular,OpenXR"), XR_MODE_REGULAR, false, true));
+
+	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "gesture/swipe_to_dismiss"), false));
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "screen/immersive_mode"), true));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "screen/support_small"), true));
@@ -1930,7 +2025,7 @@ void EditorExportPlatformAndroid::get_export_options(List<ExportOption> *r_optio
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::PACKED_STRING_ARRAY, "permissions/custom_permissions"), PackedStringArray()));
 
-	const char **perms = android_perms;
+	const char **perms = ANDROID_PERMS;
 	while (*perms) {
 		r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, vformat("%s/%s", PNAME("permissions"), String(*perms).to_lower())), false));
 		perms++;
@@ -1951,6 +2046,7 @@ bool EditorExportPlatformAndroid::get_export_option_visibility(const EditorExpor
 			p_option == "package/exclude_from_recents" ||
 			p_option == "package/show_in_app_library" ||
 			p_option == "package/show_as_launcher_app" ||
+			p_option == "gesture/swipe_to_dismiss" ||
 			p_option == "apk_expansion/enable" ||
 			p_option == "apk_expansion/SALT" ||
 			p_option == "apk_expansion/public_key") {
@@ -1961,7 +2057,7 @@ bool EditorExportPlatformAndroid::get_export_option_visibility(const EditorExpor
 	}
 	if (p_option == "custom_template/debug" || p_option == "custom_template/release") {
 		// The APK templates are ignored if Gradle build is enabled.
-		return !bool(p_preset->get("gradle_build/use_gradle_build"));
+		return advanced_options_enabled && !bool(p_preset->get("gradle_build/use_gradle_build"));
 	}
 
 	// Hide .NET embedding option (always enabled).
@@ -2067,13 +2163,16 @@ Error EditorExportPlatformAndroid::run(const Ref<EditorExportPreset> &p_preset, 
 		p_debug_flags.set_flag(DEBUG_FLAG_REMOTE_DEBUG_LOCALHOST);
 	}
 
-	String tmp_export_path = EditorPaths::get_singleton()->get_cache_dir().path_join("tmpexport." + uitos(OS::get_singleton()->get_unix_time()) + ".apk");
+	String tmp_export_path = EditorPaths::get_singleton()->get_temp_dir().path_join("tmpexport." + uitos(OS::get_singleton()->get_unix_time()) + ".apk");
 
-#define CLEANUP_AND_RETURN(m_err)                         \
-	{                                                     \
-		DirAccess::remove_file_or_error(tmp_export_path); \
-		return m_err;                                     \
-	}                                                     \
+#define CLEANUP_AND_RETURN(m_err)                                        \
+	{                                                                    \
+		DirAccess::remove_file_or_error(tmp_export_path);                \
+		if (FileAccess::exists(tmp_export_path + ".idsig")) {            \
+			DirAccess::remove_file_or_error(tmp_export_path + ".idsig"); \
+		}                                                                \
+		return m_err;                                                    \
+	}                                                                    \
 	((void)0)
 
 	// Export to temporary APK before sending to device.
@@ -2101,6 +2200,10 @@ Error EditorExportPlatformAndroid::run(const Ref<EditorExportPreset> &p_preset, 
 		args.push_back("-s");
 		args.push_back(devices[p_device].id);
 		args.push_back("uninstall");
+		if ((bool)EDITOR_GET("export/android/force_system_user") && devices[p_device].api_level >= 17) {
+			args.push_back("--user");
+			args.push_back("0");
+		}
 		args.push_back(get_package_name(package_name));
 
 		output.clear();
@@ -2117,6 +2220,10 @@ Error EditorExportPlatformAndroid::run(const Ref<EditorExportPreset> &p_preset, 
 	args.push_back("-s");
 	args.push_back(devices[p_device].id);
 	args.push_back("install");
+	if ((bool)EDITOR_GET("export/android/force_system_user") && devices[p_device].api_level >= 17) {
+		args.push_back("--user");
+		args.push_back("0");
+	}
 	args.push_back("-r");
 	args.push_back(tmp_export_path);
 
@@ -2192,21 +2299,37 @@ Error EditorExportPlatformAndroid::run(const Ref<EditorExportPreset> &p_preset, 
 	args.push_back("shell");
 	args.push_back("am");
 	args.push_back("start");
-	if ((bool)EDITOR_GET("export/android/force_system_user") && devices[p_device].api_level >= 17) { // Multi-user introduced in Android 17
+	if ((bool)EDITOR_GET("export/android/force_system_user") && devices[p_device].api_level >= 17) {
 		args.push_back("--user");
 		args.push_back("0");
 	}
 	args.push_back("-a");
 	args.push_back("android.intent.action.MAIN");
-	args.push_back("-n");
-	args.push_back(get_package_name(package_name) + "/com.godot.game.GodotApp");
+
+	// Going with implicit launch first based on the LAUNCHER category and the app's package.
+	args.push_back("-c");
+	args.push_back("android.intent.category.LAUNCHER");
+	args.push_back(get_package_name(package_name));
 
 	output.clear();
 	err = OS::get_singleton()->execute(adb, args, &output, &rv, true);
 	print_verbose(output);
-	if (err || rv != 0) {
-		add_message(EXPORT_MESSAGE_ERROR, TTR("Run"), TTR("Could not execute on device."));
-		CLEANUP_AND_RETURN(ERR_CANT_CREATE);
+	if (err || rv != 0 || output.contains("Error: Activity not started")) {
+		// The implicit launch failed, let's try an explicit launch by specifying the component name before giving up.
+		const String component_name = get_package_name(package_name) + "/com.godot.game.GodotApp";
+		print_line("Implicit launch failed.. Trying explicit launch using", component_name);
+		args.erase(get_package_name(package_name));
+		args.push_back("-n");
+		args.push_back(component_name);
+
+		output.clear();
+		err = OS::get_singleton()->execute(adb, args, &output, &rv, true);
+		print_verbose(output);
+
+		if (err || rv != 0 || output.begins_with("Error: Activity not started")) {
+			add_message(EXPORT_MESSAGE_ERROR, TTR("Run"), TTR("Could not execute on device."));
+			CLEANUP_AND_RETURN(ERR_CANT_CREATE);
+		}
 	}
 
 	CLEANUP_AND_RETURN(OK);
@@ -2407,6 +2530,43 @@ bool EditorExportPlatformAndroid::has_valid_username_and_password(const Ref<Edit
 	return valid;
 }
 
+#ifdef MODULE_MONO_ENABLED
+bool _validate_dotnet_tfm(const String &required_tfm, String &r_error) {
+	String assembly_name = path::get_csharp_project_name();
+	String project_path = ProjectSettings::get_singleton()->globalize_path("res://" + assembly_name + ".csproj");
+
+	if (!FileAccess::exists(project_path)) {
+		return true;
+	}
+
+	String pipe;
+	List<String> args;
+	args.push_back("build");
+	args.push_back(project_path);
+	args.push_back("--getProperty:TargetFramework");
+
+	int exitcode;
+	Error err = OS::get_singleton()->execute("dotnet", args, &pipe, &exitcode, true);
+	if (err != OK || exitcode != 0) {
+		if (err != OK) {
+			WARN_PRINT("Failed to execute dotnet command. Error " + String(error_names[err]));
+		} else if (exitcode != 0) {
+			print_line(pipe);
+			WARN_PRINT("dotnet command exited with code " + itos(exitcode) + ". See output above for more details.");
+		}
+		r_error += vformat(TTR("Unable to determine the C# project's TFM, it may be incompatible. The export template only supports '%s'. Make sure the project targets '%s' or consider using gradle builds instead."), required_tfm, required_tfm) + "\n";
+	} else {
+		String tfm = pipe.strip_edges();
+		if (tfm != required_tfm) {
+			r_error += vformat(TTR("C# project targets '%s' but the export template only supports '%s'. Consider using gradle builds instead."), tfm, required_tfm) + "\n";
+			return false;
+		}
+	}
+
+	return true;
+}
+#endif
+
 bool EditorExportPlatformAndroid::has_valid_export_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates, bool p_debug) const {
 	String err;
 	bool valid = false;
@@ -2415,6 +2575,15 @@ bool EditorExportPlatformAndroid::has_valid_export_configuration(const Ref<Edito
 #ifdef MODULE_MONO_ENABLED
 	// Android export is still a work in progress, keep a message as a warning.
 	err += TTR("Exporting to Android when using C#/.NET is experimental.") + "\n";
+
+	if (!gradle_build_enabled) {
+		// For template exports we only support .NET 8 because the template
+		// includes .jar dependencies that may only be compatible with .NET 8.
+		if (!_validate_dotnet_tfm("net8.0", err)) {
+			r_error = err;
+			return false;
+		}
+	}
 #endif
 
 	// Look for export templates (first official, and if defined custom templates).
@@ -2523,7 +2692,7 @@ bool EditorExportPlatformAndroid::has_valid_export_configuration(const Ref<Edito
 		// Check for the bin directory.
 		Ref<DirAccess> da = DirAccess::open(java_sdk_path.path_join("bin"), &errn);
 		if (errn != OK) {
-			err += TTR("Invalid Java SDK path in Editor Settings.");
+			err += TTR("Invalid Java SDK path in Editor Settings.") + " ";
 			err += TTR("Missing 'bin' directory!");
 			err += "\n";
 			valid = false;
@@ -2531,7 +2700,7 @@ bool EditorExportPlatformAndroid::has_valid_export_configuration(const Ref<Edito
 			// Check for the `java` command.
 			String java_path = get_java_path();
 			if (!FileAccess::exists(java_path)) {
-				err += TTR("Unable to find 'java' command using the Java SDK path.");
+				err += TTR("Unable to find 'java' command using the Java SDK path.") + " ";
 				err += TTR("Please check the Java SDK directory specified in Editor Settings.");
 				err += "\n";
 				valid = false;
@@ -2548,7 +2717,7 @@ bool EditorExportPlatformAndroid::has_valid_export_configuration(const Ref<Edito
 		// Check for the platform-tools directory.
 		Ref<DirAccess> da = DirAccess::open(sdk_path.path_join("platform-tools"), &errn);
 		if (errn != OK) {
-			err += TTR("Invalid Android SDK path in Editor Settings.");
+			err += TTR("Invalid Android SDK path in Editor Settings.") + " ";
 			err += TTR("Missing 'platform-tools' directory!");
 			err += "\n";
 			valid = false;
@@ -2557,7 +2726,7 @@ bool EditorExportPlatformAndroid::has_valid_export_configuration(const Ref<Edito
 		// Validate that adb is available.
 		String adb_path = get_adb_path();
 		if (!FileAccess::exists(adb_path)) {
-			err += TTR("Unable to find Android SDK platform-tools' adb command.");
+			err += TTR("Unable to find Android SDK platform-tools' adb command.") + " ";
 			err += TTR("Please check in the Android SDK directory specified in Editor Settings.");
 			err += "\n";
 			valid = false;
@@ -2566,7 +2735,7 @@ bool EditorExportPlatformAndroid::has_valid_export_configuration(const Ref<Edito
 		// Check for the build-tools directory.
 		Ref<DirAccess> build_tools_da = DirAccess::open(sdk_path.path_join("build-tools"), &errn);
 		if (errn != OK) {
-			err += TTR("Invalid Android SDK path in Editor Settings.");
+			err += TTR("Invalid Android SDK path in Editor Settings.") + " ";
 			err += TTR("Missing 'build-tools' directory!");
 			err += "\n";
 			valid = false;
@@ -2579,7 +2748,7 @@ bool EditorExportPlatformAndroid::has_valid_export_configuration(const Ref<Edito
 		// Validate that apksigner is available.
 		String apksigner_path = get_apksigner_path(target_sdk_version.to_int());
 		if (!FileAccess::exists(apksigner_path)) {
-			err += TTR("Unable to find Android SDK build-tools' apksigner command.");
+			err += TTR("Unable to find Android SDK build-tools' apksigner command.") + " ";
 			err += TTR("Please check in the Android SDK directory specified in Editor Settings.");
 			err += "\n";
 			valid = false;
@@ -2724,6 +2893,13 @@ void EditorExportPlatformAndroid::get_command_line_flags(const Ref<EditorExportP
 		command_line_strings.push_back("--xr_mode_openxr");
 	} else { // XRMode.REGULAR is the default.
 		command_line_strings.push_back("--xr_mode_regular");
+
+		// Also override the 'xr/openxr/enabled' project setting.
+		// This is useful for multi-platforms projects supporting both XR and non-XR devices. The project would need
+		// to enable openxr for development, and would create multiple XR and non-XR export presets.
+		// These command line args ensure that the non-XR export presets will have openxr disabled.
+		command_line_strings.push_back("--xr-mode");
+		command_line_strings.push_back("off");
 	}
 
 	bool immersive = p_preset->get("screen/immersive_mode");
@@ -3153,6 +3329,8 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 		_copy_icons_to_gradle_project(p_preset, main_image, foreground, background, monochrome);
 		// Write an AndroidManifest.xml file into the Gradle project directory.
 		_write_tmp_manifest(p_preset, p_give_internet, p_debug);
+		// Modify res/values/themes.xml file.
+		_fix_themes_xml(p_preset);
 
 		//stores all the project files inside the Gradle project directory. Also includes all ABIs
 		_clear_assets_directory(p_preset);
@@ -3165,9 +3343,9 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 			user_data.libs_directory = gradle_build_directory.path_join("libs");
 			user_data.debug = p_debug;
 			if (p_flags.has_flag(DEBUG_FLAG_DUMB_CLIENT)) {
-				err = export_project_files(p_preset, p_debug, ignore_apk_file, &user_data, copy_gradle_so);
+				err = export_project_files(p_preset, p_debug, ignore_apk_file, nullptr, &user_data, copy_gradle_so);
 			} else {
-				err = export_project_files(p_preset, p_debug, rename_and_store_file_in_gradle_project, &user_data, copy_gradle_so);
+				err = export_project_files(p_preset, p_debug, rename_and_store_file_in_gradle_project, nullptr, &user_data, copy_gradle_so);
 			}
 			if (err != OK) {
 				add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), TTR("Could not export project files to gradle project."));
@@ -3278,6 +3456,7 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 		}
 
 		String addons_directory = ProjectSettings::get_singleton()->globalize_path("res://addons");
+		String current_renderer = GLOBAL_GET("rendering/renderer/rendering_method.mobile");
 
 		cmdline.push_back("-p"); // argument to specify the start directory.
 		cmdline.push_back(build_path); // start directory.
@@ -3295,6 +3474,7 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 		cmdline.push_back("-Pperform_signing=" + sign_flag); // argument to specify whether the build should be signed.
 		cmdline.push_back("-Pcompress_native_libraries=" + compress_native_libraries_flag); // argument to specify whether the build should compress native libraries.
 		cmdline.push_back("-Pgodot_editor_version=" + String(VERSION_FULL_CONFIG));
+		cmdline.push_back("-Pgodot_rendering_method=" + current_renderer);
 
 		// NOTE: The release keystore is not included in the verbose logging
 		// to avoid accidentally leaking sensitive information when sharing verbose logs for troubleshooting.
@@ -3404,7 +3584,7 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 			src_apk = find_export_template("android_release.apk");
 		}
 		if (src_apk.is_empty()) {
-			add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("%s export template not found: \"%s\"."), (p_debug ? "Debug" : "Release"), src_apk));
+			add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(p_debug ? TTR("Debug export template not found: \"%s\".") : TTR("Release export template not found: \"%s\"."), src_apk));
 			return ERR_FILE_NOT_FOUND;
 		}
 	}
@@ -3427,7 +3607,7 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 	Ref<FileAccess> io2_fa;
 	zlib_filefunc_def io2 = zipio_create_io(&io2_fa);
 
-	String tmp_unaligned_path = EditorPaths::get_singleton()->get_cache_dir().path_join("tmpexport-unaligned." + uitos(OS::get_singleton()->get_unix_time()) + ".apk");
+	String tmp_unaligned_path = EditorPaths::get_singleton()->get_temp_dir().path_join("tmpexport-unaligned." + uitos(OS::get_singleton()->get_unix_time()) + ".apk");
 
 #define CLEANUP_AND_RETURN(m_err)                            \
 	{                                                        \
@@ -3446,6 +3626,11 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 	String apk_expansion_pkey = p_preset->get("apk_expansion/public_key");
 
 	Vector<ABI> invalid_abis(enabled_abis);
+
+	//To temporarily store icon xml data.
+	Vector<uint8_t> themed_icon_xml_data;
+	int icon_xml_compression_method = -1;
+
 	while (ret == UNZ_OK) {
 		//get filename
 		unz_file_info info;
@@ -3475,26 +3660,40 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 			_fix_resources(p_preset, data);
 		}
 
+		if (file == THEMED_ICON_XML_PATH) {
+			// Store themed_icon.xml data.
+			themed_icon_xml_data = data;
+			skip = true;
+		}
+
+		if (file == ICON_XML_PATH) {
+			if (monochrome.is_valid() && !monochrome->is_empty()) {
+				// Defer processing of icon.xml until after themed_icon.xml is read.
+				icon_xml_compression_method = info.compression_method;
+				skip = true;
+			}
+		}
+
 		if (file.ends_with(".png") && file.contains("mipmap")) {
-			for (int i = 0; i < icon_densities_count; ++i) {
+			for (int i = 0; i < ICON_DENSITIES_COUNT; ++i) {
 				if (main_image.is_valid() && !main_image->is_empty()) {
-					if (file == launcher_icons[i].export_path) {
-						_process_launcher_icons(file, main_image, launcher_icons[i].dimensions, data);
+					if (file == LAUNCHER_ICONS[i].export_path) {
+						_process_launcher_icons(file, main_image, LAUNCHER_ICONS[i].dimensions, data);
 					}
 				}
 				if (foreground.is_valid() && !foreground->is_empty()) {
-					if (file == launcher_adaptive_icon_foregrounds[i].export_path) {
-						_process_launcher_icons(file, foreground, launcher_adaptive_icon_foregrounds[i].dimensions, data);
+					if (file == LAUNCHER_ADAPTIVE_ICON_FOREGROUNDS[i].export_path) {
+						_process_launcher_icons(file, foreground, LAUNCHER_ADAPTIVE_ICON_FOREGROUNDS[i].dimensions, data);
 					}
 				}
 				if (background.is_valid() && !background->is_empty()) {
-					if (file == launcher_adaptive_icon_backgrounds[i].export_path) {
-						_process_launcher_icons(file, background, launcher_adaptive_icon_backgrounds[i].dimensions, data);
+					if (file == LAUNCHER_ADAPTIVE_ICON_BACKGROUNDS[i].export_path) {
+						_process_launcher_icons(file, background, LAUNCHER_ADAPTIVE_ICON_BACKGROUNDS[i].dimensions, data);
 					}
 				}
 				if (monochrome.is_valid() && !monochrome->is_empty()) {
-					if (file == launcher_adaptive_icon_monochromes[i].export_path) {
-						_process_launcher_icons(file, monochrome, launcher_adaptive_icon_monochromes[i].dimensions, data);
+					if (file == LAUNCHER_ADAPTIVE_ICON_MONOCHROMES[i].export_path) {
+						_process_launcher_icons(file, monochrome, LAUNCHER_ADAPTIVE_ICON_MONOCHROMES[i].dimensions, data);
 					}
 				}
 			}
@@ -3544,6 +3743,28 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 		ret = unzGoToNextFile(pkg);
 	}
 
+	// Process deferred icon.xml and replace it's data with themed_icon.xml.
+	if (monochrome.is_valid() && !monochrome->is_empty()) {
+		print_line("ADDING: " + ICON_XML_PATH + " (replacing with themed_icon.xml data)");
+
+		const bool uncompressed = icon_xml_compression_method == 0;
+		zip_fileinfo zipfi = get_zip_fileinfo();
+
+		zipOpenNewFileInZip(unaligned_apk,
+				ICON_XML_PATH.utf8().get_data(),
+				&zipfi,
+				nullptr,
+				0,
+				nullptr,
+				0,
+				nullptr,
+				uncompressed ? 0 : Z_DEFLATED,
+				Z_DEFAULT_COMPRESSION);
+
+		zipWriteInFileInZip(unaligned_apk, themed_icon_xml_data.ptr(), themed_icon_xml_data.size());
+		zipCloseFileInZip(unaligned_apk);
+	}
+
 	if (!invalid_abis.is_empty()) {
 		add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("Missing libraries in the export template for the selected architectures: %s. Please build a template with all required libraries, or uncheck the missing architectures in the export preset."), join_abis(invalid_abis, ", ", false)));
 		CLEANUP_AND_RETURN(ERR_FILE_NOT_FOUND);
@@ -3558,7 +3779,7 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 		APKExportData ed;
 		ed.ep = &ep;
 		ed.apk = unaligned_apk;
-		err = export_project_files(p_preset, p_debug, ignore_apk_file, &ed, save_apk_so);
+		err = export_project_files(p_preset, p_debug, ignore_apk_file, nullptr, &ed, save_apk_so);
 	} else {
 		if (apk_expansion) {
 			err = save_apk_expansion_file(p_preset, p_debug, p_path);
@@ -3570,7 +3791,7 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 			APKExportData ed;
 			ed.ep = &ep;
 			ed.apk = unaligned_apk;
-			err = export_project_files(p_preset, p_debug, save_apk_file, &ed, save_apk_so);
+			err = export_project_files(p_preset, p_debug, save_apk_file, nullptr, &ed, save_apk_so);
 		}
 	}
 
@@ -3700,7 +3921,6 @@ void EditorExportPlatformAndroid::resolve_platform_feature_priorities(const Ref<
 
 EditorExportPlatformAndroid::EditorExportPlatformAndroid() {
 	if (EditorNode::get_singleton()) {
-#ifdef MODULE_SVG_ENABLED
 		Ref<Image> img = memnew(Image);
 		const bool upsample = !Math::is_equal_approx(Math::round(EDSCALE), EDSCALE);
 
@@ -3709,7 +3929,6 @@ EditorExportPlatformAndroid::EditorExportPlatformAndroid() {
 
 		ImageLoaderSVG::create_image_from_string(img, _android_run_icon_svg, EDSCALE, upsample, false);
 		run_icon = ImageTexture::create_from_image(img);
-#endif
 
 		devices_changed.set();
 #ifndef DISABLE_DEPRECATED

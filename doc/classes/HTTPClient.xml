@@ -143,7 +143,7 @@
 			<param index="3" name="body" type="String" default="&quot;&quot;" />
 			<description>
 				Sends a request to the connected host.
-				The URL parameter is usually just the part after the host, so for [code]https://somehost.com/index.php[/code], it is [code]/index.php[/code]. When sending requests to an HTTP proxy server, it should be an absolute URL. For [constant HTTPClient.METHOD_OPTIONS] requests, [code]*[/code] is also allowed. For [constant HTTPClient.METHOD_CONNECT] requests, it should be the authority component ([code]host:port[/code]).
+				The URL parameter is usually just the part after the host, so for [code]https://example.com/index.php[/code], it is [code]/index.php[/code]. When sending requests to an HTTP proxy server, it should be an absolute URL. For [constant HTTPClient.METHOD_OPTIONS] requests, [code]*[/code] is also allowed. For [constant HTTPClient.METHOD_CONNECT] requests, it should be the authority component ([code]host:port[/code]).
 				Headers are HTTP request headers. For available HTTP methods, see [enum Method].
 				To create a POST request with query strings to push to the server, do:
 				[codeblocks]
@@ -156,7 +156,7 @@
 				[csharp]
 				var fields = new Godot.Collections.Dictionary { { "username", "user" }, { "password", "pass" } };
 				string queryString = new HttpClient().QueryStringFromDict(fields);
-				string[] headers = { "Content-Type: application/x-www-form-urlencoded", $"Content-Length: {queryString.Length}" };
+				string[] headers = ["Content-Type: application/x-www-form-urlencoded", $"Content-Length: {queryString.Length}"];
 				var result = new HttpClient().Request(HttpClient.Method.Post, "index.php", headers, queryString);
 				[/csharp]
 				[/codeblocks]
@@ -171,7 +171,7 @@
 			<param index="3" name="body" type="PackedByteArray" />
 			<description>
 				Sends a raw request to the connected host.
-				The URL parameter is usually just the part after the host, so for [code]https://somehost.com/index.php[/code], it is [code]/index.php[/code]. When sending requests to an HTTP proxy server, it should be an absolute URL. For [constant HTTPClient.METHOD_OPTIONS] requests, [code]*[/code] is also allowed. For [constant HTTPClient.METHOD_CONNECT] requests, it should be the authority component ([code]host:port[/code]).
+				The URL parameter is usually just the part after the host, so for [code]https://example.com/index.php[/code], it is [code]/index.php[/code]. When sending requests to an HTTP proxy server, it should be an absolute URL. For [constant HTTPClient.METHOD_OPTIONS] requests, [code]*[/code] is also allowed. For [constant HTTPClient.METHOD_CONNECT] requests, it should be the authority component ([code]host:port[/code]).
 				Headers are HTTP request headers. For available HTTP methods, see [enum Method].
 				Sends the body data raw, as a byte array and does not encode it in any way.
 			</description>
@@ -277,7 +277,11 @@
 			HTTP status code [code]102 Processing[/code] (WebDAV). Indicates that the server has received and is processing the request, but no response is available yet.
 		</constant>
 		<constant name="RESPONSE_OK" value="200" enum="ResponseCode">
-			HTTP status code [code]200 OK[/code]. The request has succeeded. Default response for successful requests. Meaning varies depending on the request. GET: The resource has been fetched and is transmitted in the message body. HEAD: The entity headers are in the message body. POST: The resource describing the result of the action is transmitted in the message body. TRACE: The message body contains the request message as received by the server.
+			HTTP status code [code]200 OK[/code]. The request has succeeded. Default response for successful requests. Meaning varies depending on the request:
+			- [constant METHOD_GET]: The resource has been fetched and is transmitted in the message body.
+			- [constant METHOD_HEAD]: The entity headers are in the message body.
+			- [constant METHOD_POST]: The resource describing the result of the action is transmitted in the message body.
+			- [constant METHOD_TRACE]: The message body contains the request message as received by the server.
 		</constant>
 		<constant name="RESPONSE_CREATED" value="201" enum="ResponseCode">
 			HTTP status code [code]201 Created[/code]. The request has succeeded and a new resource has been created as a result of it. This is typically the response sent after a PUT request.

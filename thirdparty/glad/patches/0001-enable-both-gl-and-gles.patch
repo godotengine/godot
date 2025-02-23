@@ -1,0 +1,62 @@
+diff --git a/thirdparty/glad/gl.c b/thirdparty/glad/gl.c
+index e8cc5ff1d9..ee0cc188fc 100644
+--- a/thirdparty/glad/gl.c
++++ b/thirdparty/glad/gl.c
+@@ -2475,7 +2475,7 @@ static GLADapiproc glad_gl_get_proc(void *vuserptr, const char *name) {
+     return result;
+ }
+ 
+-static void* _glad_GL_loader_handle = NULL;
++static void* _glad_gles_loader_handle = NULL;
+ 
+ static void* glad_gl_dlopen_handle(void) {
+ #if GLAD_PLATFORM_APPLE
+@@ -2497,11 +2497,11 @@ static void* glad_gl_dlopen_handle(void) {
+     };
+ #endif
+ 
+-    if (_glad_GL_loader_handle == NULL) {
+-        _glad_GL_loader_handle = glad_get_dlopen_handle(NAMES, sizeof(NAMES) / sizeof(NAMES[0]));
++    if (_glad_gles_loader_handle == NULL) {
++        _glad_gles_loader_handle = glad_get_dlopen_handle(NAMES, sizeof(NAMES) / sizeof(NAMES[0]));
+     }
+ 
+-    return _glad_GL_loader_handle;
++    return _glad_gles_loader_handle;
+ }
+ 
+ static struct _glad_gl_userptr glad_gl_build_userptr(void *handle) {
+@@ -2527,7 +2527,7 @@ int gladLoaderLoadGL(void) {
+     int did_load = 0;
+     struct _glad_gl_userptr userptr;
+ 
+-    did_load = _glad_GL_loader_handle == NULL;
++    did_load = _glad_gles_loader_handle == NULL;
+     handle = glad_gl_dlopen_handle();
+     if (handle) {
+         userptr = glad_gl_build_userptr(handle);
+@@ -2545,9 +2545,9 @@ int gladLoaderLoadGL(void) {
+ 
+ 
+ void gladLoaderUnloadGL(void) {
+-    if (_glad_GL_loader_handle != NULL) {
+-        glad_close_dlopen_handle(_glad_GL_loader_handle);
+-        _glad_GL_loader_handle = NULL;
++    if (_glad_gles_loader_handle != NULL) {
++        glad_close_dlopen_handle(_glad_gles_loader_handle);
++        _glad_gles_loader_handle = NULL;
+     }
+ }
+ 
+diff --git a/thirdparty/glad/glad/gl.h b/thirdparty/glad/glad/gl.h
+index 7f77d6a13f..307ea4dbb8 100644
+--- a/thirdparty/glad/glad/gl.h
++++ b/thirdparty/glad/glad/gl.h
+@@ -67,6 +67,7 @@
+ #endif
+ 
+ #define GLAD_GL
++#define GLAD_GLES2
+ #define GLAD_OPTION_GL_LOADER
+ 
+ #ifdef __cplusplus

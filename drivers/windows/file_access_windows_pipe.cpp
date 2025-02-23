@@ -102,6 +102,14 @@ String FileAccessWindowsPipe::get_path_absolute() const {
 	return path_src;
 }
 
+uint64_t FileAccessWindowsPipe::get_length() const {
+	ERR_FAIL_COND_V_MSG(fd[0] == nullptr, -1, "Pipe must be opened before use.");
+
+	DWORD buf_rem = 0;
+	ERR_FAIL_COND_V(!PeekNamedPipe(fd[0], nullptr, 0, nullptr, &buf_rem, nullptr), 0);
+	return buf_rem;
+}
+
 uint64_t FileAccessWindowsPipe::get_buffer(uint8_t *p_dst, uint64_t p_length) const {
 	ERR_FAIL_COND_V_MSG(fd[0] == nullptr, -1, "Pipe must be opened before use.");
 	ERR_FAIL_COND_V(!p_dst && p_length > 0, -1);
@@ -119,16 +127,18 @@ Error FileAccessWindowsPipe::get_error() const {
 	return last_error;
 }
 
-void FileAccessWindowsPipe::store_buffer(const uint8_t *p_src, uint64_t p_length) {
-	ERR_FAIL_COND_MSG(fd[1] == nullptr, "Pipe must be opened before use.");
-	ERR_FAIL_COND(!p_src && p_length > 0);
+bool FileAccessWindowsPipe::store_buffer(const uint8_t *p_src, uint64_t p_length) {
+	ERR_FAIL_COND_V_MSG(fd[1] == nullptr, false, "Pipe must be opened before use.");
+	ERR_FAIL_COND_V(!p_src && p_length > 0, false);
 
 	DWORD read = -1;
 	bool ok = WriteFile(fd[1], p_src, p_length, &read, nullptr);
 	if (!ok || read != p_length) {
 		last_error = ERR_FILE_CANT_WRITE;
+		return false;
 	} else {
 		last_error = OK;
+		return true;
 	}
 }
 

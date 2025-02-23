@@ -87,6 +87,8 @@ void EditorExport::_save() {
 
 		config->set_value(section, "encryption_include_filters", preset->get_enc_in_filter());
 		config->set_value(section, "encryption_exclude_filters", preset->get_enc_ex_filter());
+		config->set_value(section, "seed", preset->get_seed());
+
 		config->set_value(section, "encrypt_pck", preset->get_enc_pck());
 		config->set_value(section, "encrypt_directory", preset->get_enc_directory());
 		config->set_value(section, "script_export_mode", preset->get_script_export_mode());
@@ -254,7 +256,7 @@ void EditorExport::load_config() {
 			}
 		}
 
-		if (!preset.is_valid()) {
+		if (preset.is_null()) {
 			index++;
 			continue; // Unknown platform, skip without error (platform might be loaded later).
 		}
@@ -307,6 +309,9 @@ void EditorExport::load_config() {
 		preset->set_script_export_mode(config->get_value(section, "script_export_mode", EditorExportPreset::MODE_SCRIPT_BINARY_TOKENS_COMPRESSED));
 		preset->set_patches(config->get_value(section, "patches", Vector<String>()));
 
+		if (config->has_section_key(section, "seed")) {
+			preset->set_seed(config->get_value(section, "seed"));
+		}
 		if (config->has_section_key(section, "encrypt_pck")) {
 			preset->set_enc_pck(config->get_value(section, "encrypt_pck"));
 		}

@@ -100,9 +100,10 @@ private:
 
 		int h_separation = 0;
 		int icon_max_width = 0;
+		int line_spacing = 0;
 	} theme_cache;
 
-	void _shape(Ref<TextParagraph> p_paragraph = Ref<TextParagraph>(), String p_text = "");
+	void _shape(Ref<TextParagraph> p_paragraph = Ref<TextParagraph>(), String p_text = "") const;
 	void _texture_changed();
 
 protected:

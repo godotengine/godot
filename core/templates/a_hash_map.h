@@ -35,12 +35,12 @@
 
 struct HashMapData {
 	union {
+		uint64_t data;
 		struct
 		{
 			uint32_t hash;
 			uint32_t hash_to_key;
 		};
-		uint64_t data;
 	};
 };
 
@@ -622,10 +622,11 @@ public:
 	}
 
 	// Inserts an element without checking if it already exists.
-	void insert_new(const TKey &p_key, const TValue &p_value) {
+	Iterator insert_new(const TKey &p_key, const TValue &p_value) {
 		DEV_ASSERT(!has(p_key));
 		uint32_t hash = _hash(p_key);
-		_insert_element(p_key, p_value, hash);
+		uint32_t pos = _insert_element(p_key, p_value, hash);
+		return Iterator(elements + pos, elements, elements + num_elements);
 	}
 
 	/* Array methods. */
@@ -700,6 +701,13 @@ public:
 	}
 	AHashMap() :
 			capacity(INITIAL_CAPACITY - 1) {
+	}
+
+	AHashMap(std::initializer_list<KeyValue<TKey, TValue>> p_init) {
+		reserve(p_init.size());
+		for (const KeyValue<TKey, TValue> &E : p_init) {
+			insert(E.key, E.value);
+		}
 	}
 
 	void reset() {

@@ -816,6 +816,11 @@ void ShaderPreprocessor::process_undef(Tokenizer *p_tokenizer) {
 	}
 
 	if (state->defines.has(label)) {
+		if (state->defines[label]->is_builtin) {
+			set_error(vformat(RTR("Cannot use '%s' on built-in define."), "undef"), line);
+			return;
+		}
+
 		memdelete(state->defines[label]);
 		state->defines.erase(label);
 	}
@@ -1231,6 +1236,13 @@ ShaderPreprocessor::Define *ShaderPreprocessor::create_define(const String &p_bo
 	return define;
 }
 
+void ShaderPreprocessor::insert_builtin_define(String p_name, String p_value, State &p_state) {
+	Define *define = memnew(Define);
+	define->is_builtin = true;
+	define->body = p_value;
+	p_state.defines[p_name] = define;
+}
+
 void ShaderPreprocessor::clear_state() {
 	if (state != nullptr) {
 		for (const RBMap<String, Define *>::Element *E = state->defines.front(); E; E = E->next()) {
@@ -1324,6 +1336,24 @@ Error ShaderPreprocessor::preprocess(const String &p_code, const String &p_filen
 		pp_state.current_filename = p_filename;
 		pp_state.save_regions = r_regions != nullptr;
 	}
+
+	// Built-in defines.
+	{
+		const String rendering_method = OS::get_singleton()->get_current_rendering_method();
+
+		if (rendering_method == "forward_plus") {
+			insert_builtin_define("CURRENT_RENDERER", _MKSTR(2), pp_state);
+		} else if (rendering_method == "mobile") {
+			insert_builtin_define("CURRENT_RENDERER", _MKSTR(1), pp_state);
+		} else { // gl_compatibility
+			insert_builtin_define("CURRENT_RENDERER", _MKSTR(0), pp_state);
+		}
+
+		insert_builtin_define("RENDERER_COMPATIBILITY", _MKSTR(0), pp_state);
+		insert_builtin_define("RENDERER_MOBILE", _MKSTR(1), pp_state);
+		insert_builtin_define("RENDERER_FORWARD_PLUS", _MKSTR(2), pp_state);
+	}
+
 	Error err = preprocess(&pp_state, p_code, r_result);
 	if (err != OK) {
 		if (r_error_text) {

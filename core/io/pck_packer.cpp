@@ -48,7 +48,8 @@ static int _get_pad(int p_alignment, int p_n) {
 
 void PCKPacker::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("pck_start", "pck_path", "alignment", "key", "encrypt_directory"), &PCKPacker::pck_start, DEFVAL(32), DEFVAL("0000000000000000000000000000000000000000000000000000000000000000"), DEFVAL(false));
-	ClassDB::bind_method(D_METHOD("add_file", "pck_path", "source_path", "encrypt"), &PCKPacker::add_file, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("add_file", "target_path", "source_path", "encrypt"), &PCKPacker::add_file, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("add_file_removal", "target_path"), &PCKPacker::add_file_removal);
 	ClassDB::bind_method(D_METHOD("flush", "verbose"), &PCKPacker::flush, DEFVAL(false));
 }
 
@@ -106,23 +107,42 @@ Error PCKPacker::pck_start(const String &p_pck_path, int p_alignment, const Stri
 	return OK;
 }
 
-Error PCKPacker::add_file(const String &p_pck_path, const String &p_src, bool p_encrypt) {
+Error PCKPacker::add_file_removal(const String &p_target_path) {
 	ERR_FAIL_COND_V_MSG(file.is_null(), ERR_INVALID_PARAMETER, "File must be opened before use.");
 
-	Ref<FileAccess> f = FileAccess::open(p_src, FileAccess::READ);
+	File pf;
+	// Simplify path here and on every 'files' access so that paths that have extra '/'
+	// symbols or 'res://' in them still match the MD5 hash for the saved path.
+	pf.path = p_target_path.simplify_path().trim_prefix("res://");
+	pf.ofs = ofs;
+	pf.size = 0;
+	pf.removal = true;
+
+	pf.md5.resize(16);
+	pf.md5.fill(0);
+
+	files.push_back(pf);
+
+	return OK;
+}
+
+Error PCKPacker::add_file(const String &p_target_path, const String &p_source_path, bool p_encrypt) {
+	ERR_FAIL_COND_V_MSG(file.is_null(), ERR_INVALID_PARAMETER, "File must be opened before use.");
+
+	Ref<FileAccess> f = FileAccess::open(p_source_path, FileAccess::READ);
 	if (f.is_null()) {
 		return ERR_FILE_CANT_OPEN;
 	}
 
 	File pf;
 	// Simplify path here and on every 'files' access so that paths that have extra '/'
-	// symbols in them still match to the MD5 hash for the saved path.
-	pf.path = p_pck_path.simplify_path();
-	pf.src_path = p_src;
+	// symbols or 'res://' in them still match the MD5 hash for the saved path.
+	pf.path = p_target_path.simplify_path().trim_prefix("res://");
+	pf.src_path = p_source_path;
 	pf.ofs = ofs;
 	pf.size = f->get_length();
 
-	Vector<uint8_t> data = FileAccess::get_file_as_bytes(p_src);
+	Vector<uint8_t> data = FileAccess::get_file_as_bytes(p_source_path);
 	{
 		unsigned char hash[16];
 		CryptoCore::md5(data.ptr(), data.size(), hash);
@@ -162,7 +182,7 @@ Error PCKPacker::flush(bool p_verbose) {
 	}
 
 	// write the index
-	file->store_32(files.size());
+	file->store_32(uint32_t(files.size()));
 
 	Ref<FileAccessEncrypted> fae;
 	Ref<FileAccess> fhead = file;
@@ -178,11 +198,12 @@ Error PCKPacker::flush(bool p_verbose) {
 	}
 
 	for (int i = 0; i < files.size(); i++) {
-		int string_len = files[i].path.utf8().length();
+		CharString utf8_string = files[i].path.utf8();
+		int string_len = utf8_string.length();
 		int pad = _get_pad(4, string_len);
 
-		fhead->store_32(string_len + pad);
-		fhead->store_buffer((const uint8_t *)files[i].path.utf8().get_data(), string_len);
+		fhead->store_32(uint32_t(string_len + pad));
+		fhead->store_buffer((const uint8_t *)utf8_string.get_data(), string_len);
 		for (int j = 0; j < pad; j++) {
 			fhead->store_8(0);
 		}
@@ -194,6 +215,9 @@ Error PCKPacker::flush(bool p_verbose) {
 		uint32_t flags = 0;
 		if (files[i].encrypted) {
 			flags |= PACK_FILE_ENCRYPTED;
+		}
+		if (files[i].removal) {
+			flags |= PACK_FILE_REMOVAL;
 		}
 		fhead->store_32(flags);
 	}
@@ -208,7 +232,7 @@ Error PCKPacker::flush(bool p_verbose) {
 		file->store_8(0);
 	}
 
-	int64_t file_base = file->get_position();
+	uint64_t file_base = file->get_position();
 	file->seek(file_base_ofs);
 	file->store_64(file_base); // update files base
 	file->seek(file_base);
@@ -218,6 +242,10 @@ Error PCKPacker::flush(bool p_verbose) {
 
 	int count = 0;
 	for (int i = 0; i < files.size(); i++) {
+		if (files[i].removal) {
+			continue;
+		}
+
 		Ref<FileAccess> src = FileAccess::open(files[i].src_path, FileAccess::READ);
 		uint64_t to_write = files[i].size;
 

@@ -42,15 +42,16 @@ class TextParagraph : public RefCounted {
 	_THREAD_SAFE_CLASS_
 
 private:
-	RID dropcap_rid;
-	int dropcap_lines = 0;
+	mutable RID dropcap_rid;
+	mutable int dropcap_lines = 0;
 	Rect2 dropcap_margins;
 
 	RID rid;
-	LocalVector<RID> lines_rid;
+	mutable LocalVector<RID> lines_rid;
 
-	bool lines_dirty = true;
+	mutable bool lines_dirty = true;
 
+	float line_spacing = 0.0;
 	float width = -1.0;
 	int max_lines_visible = -1;
 
@@ -66,7 +67,7 @@ private:
 protected:
 	static void _bind_methods();
 
-	void _shape_lines();
+	void _shape_lines() const;
 
 public:
 	RID get_rid() const;
@@ -122,6 +123,9 @@ public:
 	void set_max_lines_visible(int p_lines);
 	int get_max_lines_visible() const;
 
+	void set_line_spacing(float p_spacing);
+	float get_line_spacing() const;
+
 	Size2 get_non_wrapped_size() const;
 
 	Size2 get_size() const;
@@ -151,6 +155,8 @@ public:
 	void draw_dropcap_outline(RID p_canvas, const Vector2 &p_pos, int p_outline_size = 1, const Color &p_color = Color(1, 1, 1)) const;
 
 	int hit_test(const Point2 &p_coords) const;
+
+	bool is_dirty();
 
 	Mutex &get_mutex() const { return _thread_safe_; }
 
