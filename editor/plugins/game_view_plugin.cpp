@@ -812,10 +812,28 @@ void GameView::_update_arguments_for_instance(int p_idx, List<String> &r_argumen
 	_update_embed_window_size();
 	Rect2i rect = embedded_process->get_screen_embedded_window_rect();
 
+	// On the first startup, the global rect of the embedded process control is invalid because it was
+	// never displayed. We will calculated it manually.
+	if (!window_wrapper->get_window_enabled() && rect.size.y < embedded_process->get_custom_minimum_size().y) {
+		Size2 old_min_size = embedded_process->get_custom_minimum_size();
+		embedded_process->set_custom_minimum_size(Size2i());
+
+		Control *container = EditorNode::get_singleton()->get_editor_main_screen()->get_control();
+		rect = container->get_global_rect();
+
+		Size2 wrapped_min_size = window_wrapper->get_minimum_size();
+		rect.position.y += wrapped_min_size.y;
+		rect.size.y -= wrapped_min_size.y;
+
+		rect = embedded_process->get_adjusted_embedded_window_rect(rect);
+
+		embedded_process->set_custom_minimum_size(old_min_size);
+	}
+
 	// When using the floating window, we need to force the position and size from the
 	// editor/project settings, because the get_screen_embedded_window_rect of the
 	// embedded_process will be updated only on the next frame.
-	if (p_idx == 0 && window_wrapper->get_window_enabled()) {
+	if (window_wrapper->get_window_enabled()) {
 		EditorRun::WindowPlacement placement = EditorRun::get_window_placement();
 		if (placement.position != Point2i(INT_MAX, INT_MAX)) {
 			rect.position = placement.position;

@@ -83,6 +83,7 @@ public:
 	void set_keep_aspect(bool p_keep_aspect);
 	void queue_update_embedded_process();
 
+	Rect2i get_adjusted_embedded_window_rect(Rect2i p_rect);
 	Rect2i get_screen_embedded_window_rect();
 	int get_margin_size(Side p_side) const;
 	Size2 get_margins_size();
