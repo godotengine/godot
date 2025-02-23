@@ -3189,6 +3189,74 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_grouping(ExpressionNode *p
 	return grouped;
 }
 
+// A formatted string is a string with expressions inside braces.
+// It is represented by the following token stream:
+// FORMATTED_STRING_BEGIN
+// (STRING_LITERAL | (BRACE_OPEN EXPRESSION BRACE_CLOSE))*
+// FORMATTED_STRING_END
+// The parser will build a function call to build a format string with a slot {} for each expression and 
+// call .format with the embedded expressions as the arguments.
+GDScriptParser::ExpressionNode *GDScriptParser::parse_formatted_string(ExpressionNode *p_previous_operand, bool p_can_assign) {
+	// Accumulate format strings and format args until the end of the formatted string.
+	Vector<String> format_string_parts;
+	ArrayNode* format_values = alloc_node<ArrayNode>();
+	update_extents(format_values);
+	complete_extents(format_values);
+
+	while (!match(GDScriptTokenizer::Token::FORMATTED_STRING_END) && !is_at_end()) {
+		if (match(GDScriptTokenizer::Token::LITERAL)) {
+			format_string_parts.push_back(String(previous.literal));
+			continue;
+		}
+		if (match(GDScriptTokenizer::Token::BRACE_OPEN)) {
+			ExpressionNode *arg = parse_expression(false);
+			if (arg == nullptr) {
+				push_error(R"(Expected expression in formatted string slot.)");
+			}
+			format_values->elements.push_back(arg);
+			format_string_parts.push_back("{}");
+			consume(GDScriptTokenizer::Token::BRACE_CLOSE, R"(Expected closing "}" after slot expression in formatted string.)");
+			continue;
+		}
+		push_error(R"(Expected String or Expression in formatted string.)");
+		advance();
+	}
+
+	LiteralNode *format_string = alloc_node<LiteralNode>();
+	reset_extents(format_string, format_values);
+	update_extents(format_string);
+	complete_extents(format_string);
+	format_string->value = Variant(String("").join(format_string_parts));
+
+	if (format_values->elements.is_empty()) {
+		return format_string;
+	}
+
+	// Build function call of the form: format_string.format(format_values, "{}")
+	SubscriptNode *format_function = alloc_node<SubscriptNode>();
+	update_extents(format_function);
+	complete_extents(format_function);
+	format_function->base = format_string;
+	format_function->is_attribute = true;
+	format_function->attribute = alloc_node<IdentifierNode>();
+	update_extents(format_function->attribute);
+	complete_extents(format_function->attribute);
+	format_function->attribute->name = SNAME("format");
+	LiteralNode *placeholder = alloc_node<LiteralNode>();
+	update_extents(placeholder);
+	complete_extents(placeholder);
+	placeholder->value = Variant("{}");
+
+	CallNode *format_call = alloc_node<CallNode>();
+	reset_extents(format_call, p_previous_operand);
+	format_call->callee = format_function;
+	format_call->function_name = SNAME("format");  // No idea what this is for.
+	format_call->arguments.append(format_values);
+	format_call->arguments.append(placeholder);
+	complete_extents(format_call);
+	return format_call;
+}
+
 GDScriptParser::ExpressionNode *GDScriptParser::parse_attribute(ExpressionNode *p_previous_operand, bool p_can_assign) {
 	SubscriptNode *attribute = alloc_node<SubscriptNode>();
 	reset_extents(attribute, p_previous_operand);
@@ -4112,6 +4180,9 @@ GDScriptParser::ParseRule *GDScriptParser::get_rule(GDScriptTokenizer::Token::Ty
 		{ &GDScriptParser::parse_get_node,               	nullptr,                                        PREC_NONE }, // DOLLAR,
 		{ nullptr,                                          nullptr,                                        PREC_NONE }, // FORWARD_ARROW,
 		{ nullptr,                                          nullptr,                                        PREC_NONE }, // UNDERSCORE,
+		// FormattedString
+		{ &GDScriptParser::parse_formatted_string,          nullptr,                                        PREC_NONE }, // FORMATTED_STRING_BEGIN,
+		{ nullptr,                                          nullptr,                                        PREC_NONE }, // FORMATTED_STRING_END,
 		// Whitespace
 		{ nullptr,                                          nullptr,                                        PREC_NONE }, // NEWLINE,
 		{ nullptr,                                          nullptr,                                        PREC_NONE }, // INDENT,
