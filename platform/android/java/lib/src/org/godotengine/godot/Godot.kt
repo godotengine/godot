@@ -664,6 +664,8 @@ class Godot(private val context: Context) {
 	 * Configuration change callback
 	*/
 	fun onConfigurationChanged(newConfig: Configuration) {
+		renderView?.inputHandler?.onConfigurationChanged(newConfig)
+
 		val newDarkMode = newConfig.uiMode.and(Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES
 		if (darkMode != newDarkMode) {
 			darkMode = newDarkMode
