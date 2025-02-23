@@ -35,6 +35,7 @@
 #include "editor/docks/filesystem_dock.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/gui/editor_file_dialog.h"
+#include "editor/gui/editor_quick_open_dialog.h"
 #include "editor/gui/editor_toaster.h"
 #include "editor/settings/editor_command_palette.h"
 #include "editor/settings/editor_settings.h"
@@ -370,6 +371,12 @@ void LocalizationEditor::_template_source_add(const PackedStringArray &p_paths) 
 	undo_redo->commit_action();
 }
 
+void LocalizationEditor::_template_source_add_one(const String &p_path) {
+	if (!p_path.is_empty()) {
+		_template_source_add({ p_path });
+	}
+}
+
 void LocalizationEditor::_template_source_delete(Object *p_item, int p_column, int p_button, MouseButton p_mouse_button) {
 	if (p_mouse_button != MouseButton::LEFT) {
 		return;
@@ -403,6 +410,10 @@ void LocalizationEditor::_template_source_file_open() {
 
 void LocalizationEditor::_template_generate_open() {
 	template_generate_dialog->popup_file_dialog();
+}
+
+void LocalizationEditor::_template_generate_quick_open() {
+	template_source_quick_open_dialog->popup_dialog({ "PackedScene", "Script" }, callable_mp(this, &LocalizationEditor::_template_source_add_one));
 }
 
 void LocalizationEditor::_template_generate_command() {
@@ -877,6 +888,10 @@ LocalizationEditor::LocalizationEditor() {
 		addtr->connect(SceneStringName(pressed), callable_mp(this, &LocalizationEditor::_template_source_file_open));
 		thb->add_child(addtr);
 
+		addtr = memnew(Button(TTRC("Quick Add...")));
+		addtr->connect(SceneStringName(pressed), callable_mp(this, &LocalizationEditor::_template_generate_quick_open));
+		thb->add_child(addtr);
+
 		template_generate_button = memnew(Button(TTRC("Generate")));
 		template_generate_button->connect(SceneStringName(pressed), callable_mp(this, &LocalizationEditor::_template_generate_open));
 		thb->add_child(template_generate_button);
@@ -903,6 +918,9 @@ LocalizationEditor::LocalizationEditor() {
 		template_generate_dialog->set_current_path(EditorSettings::get_singleton()->get_project_metadata("pot_generator", "last_pot_path", String()));
 		template_generate_dialog->connect("file_selected", callable_mp(this, &LocalizationEditor::_template_generate));
 		add_child(template_generate_dialog);
+
+		template_source_quick_open_dialog = memnew(EditorQuickOpenDialog);
+		add_child(template_source_quick_open_dialog);
 
 		template_source_open_dialog = memnew(EditorFileDialog);
 		template_source_open_dialog->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILES);
