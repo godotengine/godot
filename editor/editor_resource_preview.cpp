@@ -330,7 +330,8 @@ void EditorResourcePreview::_iterate() {
 			cache_valid = false;
 			f.unref();
 		} else if (last_modtime != modtime) {
-			String last_md5 = f->get_line();
+			// String last_md5 = f->get_line(); // Why? this should be an image file
+			String last_md5 = hash;
 			String md5 = FileAccess::get_md5(item.path);
 			f.unref();
 
