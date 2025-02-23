@@ -321,10 +321,15 @@ void EmbeddedProcess::_check_mouse_over() {
 		return;
 	}
 
-	// When there's a modal window, we don't want to grab the focus to prevent
-	// the game window to go in front of the modal window.
-	if (_get_current_modal_window()) {
-		return;
+	// Check if there's an exclusive popup, an open menu, or a tooltip.
+	// We don't want to grab focus to prevent the game window from coming to the front of the modal window
+	// or the open menu from closing when the mouse cursor moves outside the menu and over the embedded game.
+	Vector<DisplayServer::WindowID> wl = DisplayServer::get_singleton()->get_window_list();
+	for (const DisplayServer::WindowID &window_id : wl) {
+		Window *w = Window::get_from_id(window_id);
+		if (w && (w->is_exclusive() || w->get_flag(Window::FLAG_POPUP))) {
+			return;
+		}
 	}
 
 	// Force "regrabbing" the game window focus.

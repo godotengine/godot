@@ -3000,6 +3000,7 @@ Error DisplayServerWindows::embed_process(WindowID p_window, OS::ProcessID p_pid
 	}
 
 	if (p_grab_focus) {
+		SetForegroundWindow(ep->window_handle);
 		SetFocus(ep->window_handle);
 	}
 
