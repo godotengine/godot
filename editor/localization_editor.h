@@ -77,8 +77,10 @@ class LocalizationEditor : public VBoxContainer {
 	void _translation_res_option_selected(const String &p_locale);
 
 	void _pot_add(const PackedStringArray &p_paths);
+	void _pot_add_one(const String &p_path);
 	void _pot_delete(Object *p_item, int p_column, int p_button, MouseButton p_mouse_button);
 	void _pot_file_open();
+	void _pot_file_quick_open();
 	void _pot_generate_open();
 	void _pot_add_builtin_toggled();
 	void _pot_generate(const String &p_file);
