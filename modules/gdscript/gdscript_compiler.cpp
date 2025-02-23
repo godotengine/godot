@@ -37,6 +37,7 @@
 
 #include "core/config/engine.h"
 #include "core/config/project_settings.h"
+#include "core/string/string_buffer.h"
 
 #include "scene/scene_string_names.h"
 
@@ -575,6 +576,50 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 				}
 			}
 
+			return result;
+		} break;
+		case GDScriptParser::Node::FORMATTED_STRING: {
+			const GDScriptParser::FormattedStringNode *fsn = static_cast<const GDScriptParser::FormattedStringNode *>(p_expression);
+
+			GDScriptCodeGenerator::Address result = codegen.add_temporary(_gdtype_from_datatype(fsn->get_datatype(), codegen.script, false));
+
+			// Build an Array[String] for all template parts, which we will join() below.
+			GDScriptCodeGenerator::Address parts_array = codegen.add_temporary();
+			Vector<GDScriptCodeGenerator::Address> part_values;
+			for (const GDScriptParser::FormattedStringNode::TemplatePiece &piece : fsn->template_pieces) {
+				switch (piece.type) {
+					case GDScriptParser::FormattedStringNode::TemplatePiece::TEXT:
+						part_values.push_back(codegen.add_constant(Variant(piece.text)));
+						break;
+					case GDScriptParser::FormattedStringNode::TemplatePiece::SLOT:
+						if (piece.slot->is_constant) {
+							const String value = piece.slot->reduced_value.operator String();
+							part_values.push_back(codegen.add_constant(Variant(value)));
+						} else {
+							GDScriptCodeGenerator::Address val = _parse_expression(codegen, r_error, piece.slot);
+							if (r_error) {
+								return GDScriptCodeGenerator::Address();
+							}
+							part_values.push_back(val);
+						}
+						break;
+				}
+			}
+			codegen.generator->write_construct_array(parts_array, part_values);
+
+			// Release the expression temporaries.
+			for (GDScriptCodeGenerator::Address &val : part_values) {
+				if (val.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
+					codegen.generator->pop_temporary();
+				}
+			}
+
+			// Perform a function call: "".join(Array[part_values]).
+			GDScriptCodeGenerator::Address empty_string = codegen.add_constant(Variant(""));
+			Vector<GDScriptCodeGenerator::Address> join_arguments;
+			join_arguments.push_back(parts_array);
+			codegen.generator->write_call_builtin_type(result, empty_string, Variant::Type::STRING, SNAME("join"), join_arguments);
+			codegen.generator->pop_temporary(); // parts_array
 			return result;
 		} break;
 		case GDScriptParser::Node::CAST: {

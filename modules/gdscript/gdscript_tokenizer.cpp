@@ -138,6 +138,9 @@ static const char *token_names[] = {
 	"$", // DOLLAR,
 	"->", // FORWARD_ARROW,
 	"_", // UNDERSCORE,
+	// Formatted String
+	"Formatted string begin", // FORMATTED_STRING_BEGIN,
+	"Formatted string end", // FORMATTED_STRING_END,
 	// Whitespace
 	"Newline", // NEWLINE,
 	"Indent", // INDENT,
@@ -342,6 +345,14 @@ void GDScriptTokenizerText::push_paren(char32_t p_char) {
 	paren_stack.push_back(p_char);
 }
 
+// Peek p_offset levels up the stack.
+char32_t GDScriptTokenizerText::peek_paren() {
+	if (paren_stack.is_empty()) {
+		return 0;
+	}
+	return paren_stack.back()->get();
+}
+
 bool GDScriptTokenizerText::pop_paren(char32_t p_expected) {
 	if (paren_stack.is_empty()) {
 		return false;
@@ -350,6 +361,20 @@ bool GDScriptTokenizerText::pop_paren(char32_t p_expected) {
 	paren_stack.pop_back();
 
 	return actual == p_expected;
+}
+
+void GDScriptTokenizerText::push_fstring_config(char32_t p_quote_char, bool p_is_raw, bool p_is_multiline) {
+	fstring_config_stack.push_back(FormattedStringConfig(p_is_raw, p_is_multiline, p_quote_char));
+}
+
+GDScriptTokenizerText::FormattedStringConfig GDScriptTokenizerText::peek_fstring_config() {
+	DEV_ASSERT(!fstring_config_stack.is_empty());
+	return fstring_config_stack.back()->get();
+}
+
+void GDScriptTokenizerText::pop_fstring_config() {
+	DEV_ASSERT(!fstring_config_stack.is_empty());
+	fstring_config_stack.pop_back();
 }
 
 GDScriptTokenizer::Token GDScriptTokenizerText::pop_error() {
@@ -455,37 +480,38 @@ GDScriptTokenizer::Token GDScriptTokenizerText::make_paren_error(char32_t p_pare
 }
 
 GDScriptTokenizer::Token GDScriptTokenizerText::check_vcs_marker(char32_t p_test, Token::Type p_double_type) {
-	const char32_t *next = _current + 1;
-	int chars = 2; // Two already matched.
+	const char32_t *next = _current + 2;
+	int matches = 2; // Two already matched.
 
-	// Test before consuming characters, since we don't want to consume more than needed.
+	// Count how many duplicate characters match.
 	while (*next == p_test) {
-		chars++;
+		matches++;
 		next++;
 	}
-	if (chars >= 7) {
+	if (matches >= 7) {
 		// It is a VCS conflict marker.
-		while (chars > 1) {
-			// Consume all characters (first was already consumed by scan()).
+		while (matches > 0) {
+			// Consume all characters
 			_advance();
-			chars--;
+			matches--;
 		}
 		return make_token(Token::VCS_CONFLICT_MARKER);
 	} else {
-		// It is only a regular double character token, so we consume the second character.
+		// It is only a regular double character token, so we consume both.
+		_advance();
 		_advance();
 		return make_token(p_double_type);
 	}
 }
 
 GDScriptTokenizer::Token GDScriptTokenizerText::annotation() {
-	if (is_unicode_identifier_start(_peek())) {
-		_advance(); // Consume start character.
-	} else {
+	DEV_ASSERT(_peek() == '@');
+	_advance(); // Consume '@'
+	if (!is_unicode_identifier_start(_peek())) {
 		push_error("Expected annotation identifier after \"@\".");
 	}
+	_advance();
 	while (is_unicode_identifier_continue(_peek())) {
-		// Consume all identifier characters.
 		_advance();
 	}
 	Token annotation = make_token(Token::ANNOTATION);
@@ -571,7 +597,9 @@ void GDScriptTokenizerText::make_keyword_list() {
 #endif // DEBUG_ENABLED
 
 GDScriptTokenizer::Token GDScriptTokenizerText::potential_identifier() {
-	bool only_ascii = _peek(-1) < 128;
+	DEV_ASSERT(is_unicode_identifier_start(_peek()));
+	bool only_ascii = _peek() < 128;
+	_advance();
 
 	// Consume all identifier characters.
 	while (is_unicode_identifier_continue(_peek())) {
@@ -680,6 +708,9 @@ void GDScriptTokenizerText::newline(bool p_make_token) {
 	leftmost_column = 1;
 }
 
+// Tokenizes a number. Can start with '-', '+', '.', or a digit.
+// It can be in hexadecimal (0x), binary (0b), or decimal (default) format.
+// It can have underscores between digits.
 GDScriptTokenizer::Token GDScriptTokenizerText::number() {
 	int base = 10;
 	bool has_decimal = false;
@@ -688,25 +719,27 @@ GDScriptTokenizer::Token GDScriptTokenizerText::number() {
 	bool need_digits = false;
 	bool (*digit_check_func)(char32_t) = is_digit;
 
-	// Sign before hexadecimal or binary.
-	if ((_peek(-1) == '+' || _peek(-1) == '-') && _peek() == '0') {
+	// Skip leading +/-.
+	if (_peek() == '+' || _peek() == '-') {
 		_advance();
 	}
-
-	if (_peek(-1) == '.') {
+	if (_peek() == '.') {
 		has_decimal = true;
-	} else if (_peek(-1) == '0') {
-		if (_peek() == 'x' || _peek() == 'X') {
+		_advance();
+	} else if (_peek() == '0') {
+		if (_peek(1) == 'x' || _peek(1) == 'X') {
 			// Hexadecimal.
 			base = 16;
 			digit_check_func = is_hex_digit;
 			need_digits = true;
 			_advance();
-		} else if (_peek() == 'b' || _peek() == 'B') {
+			_advance();
+		} else if (_peek(1) == 'b' || _peek(1) == 'B') {
 			// Binary.
 			base = 2;
 			digit_check_func = is_binary_digit;
 			need_digits = true;
+			_advance();
 			_advance();
 		}
 	}
@@ -892,26 +925,133 @@ GDScriptTokenizer::Token GDScriptTokenizerText::string() {
 	bool is_multiline = false;
 	StringType type = STRING_REGULAR;
 
-	if (_peek(-1) == 'r') {
+	if (_peek() == 'r') {
 		is_raw = true;
 		_advance();
-	} else if (_peek(-1) == '&') {
+	} else if (_peek() == '&') {
 		type = STRING_NAME;
 		_advance();
-	} else if (_peek(-1) == '^') {
+	} else if (_peek() == '^') {
 		type = STRING_NODEPATH;
 		_advance();
 	}
 
-	char32_t quote_char = _peek(-1);
+	char32_t quote_char = _advance();
 
 	if (_peek() == quote_char && _peek(1) == quote_char) {
 		is_multiline = true;
-		// Consume all quotes.
+		// Consume the last two quotes.
 		_advance();
 		_advance();
 	}
 
+	Token string_token = string_piece(is_raw, is_multiline, /*is_fstring=*/false, quote_char);
+	if (string_token.type == Token::ERROR) {
+		// If we've hit the end of the file while parsing a formatted string slot, we never closed the slot.
+		// This is likely to happen inside of the string parser because the ending quote from the formatted
+		// string will be taken to be the starting quote of a string inside of the slot.
+		if (get_fstring_parse_context() == IN_SLOT && String(string_token.literal).contains("Unterminated")) {
+			string_token.literal = "Unterminated slot.";
+		}
+		return string_token;
+	}
+	_advance(); // Consume the terminating quote.
+
+	// Rewrap the string as the appropriately-typed literal and with new extent that includes the closing quote.
+	switch (type) {
+		case STRING_NAME:
+			return make_literal(StringName(string_token.literal));
+		case STRING_NODEPATH:
+			return make_literal(NodePath(string_token.literal));
+		case STRING_REGULAR:
+			return make_literal(string_token.literal);
+		default:
+			return make_error("Invalid string type.");
+	}
+}
+
+GDScriptTokenizerText::FormattedStringParseContext GDScriptTokenizerText::get_fstring_parse_context() {
+	if (fstring_parse_depth == 0) {
+		return NOT_IN_FORMATTED_STRING;
+	}
+	if (fstring_parse_depth % 2 == 1) {
+		return NOT_IN_SLOT;
+	}
+	return IN_SLOT;
+}
+
+std::optional<GDScriptTokenizer::Token> GDScriptTokenizerText::try_raw_string() {
+	if (_peek() != 'r') {
+		return std::nullopt;
+	}
+	char32_t quote_char = _peek(1);
+	if (quote_char != '"' && quote_char != '\'') {
+		return std::nullopt;
+	}
+	return string();
+}
+
+std::optional<GDScriptTokenizer::Token> GDScriptTokenizerText::try_fstring_begin() {
+	if (_peek() != 'f') {
+		return std::nullopt;
+	}
+	int quote_pos = 1; // Where can we expect to find the quote character.
+	int prefix_size = 1; // How many characters precede the body of the string.
+	bool is_raw = false;
+	if (_peek(1) == 'r') {
+		++quote_pos;
+		++prefix_size;
+		is_raw = true;
+	}
+	char32_t quote_char = _peek(quote_pos);
+	if (quote_char != '"' && quote_char != '\'') {
+		return std::nullopt;
+	}
+	++prefix_size;
+
+	bool is_multiline = false;
+	if (_peek(quote_pos + 1) == quote_char && _peek(quote_pos + 2) == quote_char) {
+		is_multiline = true;
+		prefix_size += 2;
+	}
+
+	// Consume the full string prefix.
+	while (prefix_size > 0) {
+		_advance();
+		--prefix_size;
+	}
+
+	push_fstring_config(quote_char, is_raw, is_multiline);
+	++fstring_parse_depth;
+	push_paren('<'); // We use '<' as the formatted string paren character to enforce paren nesting.
+
+	return make_token(Token::FORMATTED_STRING_BEGIN);
+}
+
+GDScriptTokenizer::Token GDScriptTokenizerText::fstring_piece() {
+	DEV_ASSERT(get_fstring_parse_context() == NOT_IN_SLOT);
+	FormattedStringConfig fconfig = peek_fstring_config();
+	if (_peek() == fconfig.quote_char) { // Closing quote.
+		_advance();
+		--fstring_parse_depth;
+		pop_fstring_config();
+		if (!pop_paren('<')) {
+			return make_paren_error(_peek(-1));
+		}
+		return make_token(Token::FORMATTED_STRING_END);
+	}
+	if (_peek() == '{') { // Start a slot.
+		_advance();
+		++fstring_parse_depth;
+		push_paren('{');
+		return make_token(Token::BRACE_OPEN);
+	}
+	// else we'll consume a string until the start of the next slot or end of the formatted string.
+	return string_piece(fconfig.is_raw, fconfig.is_multiline, /*is_fstring=*/true, fconfig.quote_char);
+}
+
+GDScriptTokenizer::Token GDScriptTokenizerText::string_piece(
+		bool is_raw, bool is_multiline, bool is_fstring, char32_t quote_char) {
 	String result;
 	char32_t prev = 0;
 	int prev_pos = 0;
@@ -921,10 +1061,63 @@ GDScriptTokenizer::Token GDScriptTokenizerText::string() {
 		if (_is_at_end()) {
 			return make_error("Unterminated string.");
 		}
-
 		char32_t ch = _peek();
 
+		// Handle fstring brace escaping first so we don't prematurely end the string.
+		if (is_fstring && ch == '{' && _peek(1) == '{') {
+			_advance();
+			_advance();
+			result += '{';
+			continue;
+		}
+		if (is_fstring && ch == '}' && _peek(1) == '}') {
+			_advance();
+			_advance();
+			result += '}';
+			continue;
+		}
+
+		if (ch == quote_char) {
+			if (prev != 0) {
+				Token error = make_error("Invalid UTF-16 sequence in string, unpaired lead surrogate");
+				error.start_column = prev_pos;
+				error.leftmost_column = error.start_column;
+				push_error(error);
+				prev = 0;
+			}
+			if (is_multiline) {
+				if (_peek(1) == quote_char && _peek(2) == quote_char) {
+					// Ended the multiline string. Consume first two quotes.
+					_advance();
+					_advance();
+					// Leave last quote for the caller to consume.
+					break;
+				} else {
+					// Not a multiline string termination, quote is part of the string.
+					_advance();
+					result += quote_char;
+					continue;
+				}
+			} else {
+				// Ended single-line string.
+				// Leave last quote for the caller to consume.
+				break;
+			}
+		} else if (is_fstring && ch == '{') {
+			// We've hit the next slot, so we're done with this string piece.
+			if (prev != 0) {
+				Token error = make_error("Invalid UTF-16 sequence in string, unpaired lead surrogate");
+				error.start_column = prev_pos;
+				error.leftmost_column = error.start_column;
+				push_error(error);
+				prev = 0;
+			}
+			// Leave the '{' for the caller to consume.
+			break;
+		}
+
 		if (ch == 0x200E || ch == 0x200F || (ch >= 0x202A && ch <= 0x202E) || (ch >= 0x2066 && ch <= 0x2069)) {
+			_advance();
 			Token error;
 			if (is_raw) {
 				error = make_error("Invisible text direction control character present in the string, use regular string literal instead of r-string.");
@@ -1104,29 +1297,6 @@ GDScriptTokenizer::Token GDScriptTokenizerText::string() {
 					result += escaped;
 				}
 			}
-		} else if (ch == quote_char) {
-			if (prev != 0) {
-				Token error = make_error("Invalid UTF-16 sequence in string, unpaired lead surrogate");
-				error.start_column = prev_pos;
-				error.leftmost_column = error.start_column;
-				push_error(error);
-				prev = 0;
-			}
-			_advance();
-			if (is_multiline) {
-				if (_peek() == quote_char && _peek(1) == quote_char) {
-					// Ended the multiline string. Consume all quotes.
-					_advance();
-					_advance();
-					break;
-				} else {
-					// Not a multiline string termination, add consumed quote.
-					result += quote_char;
-				}
-			} else {
-				// Ended single-line string.
-				break;
-			}
 		} else {
 			if (prev != 0) {
 				Token error = make_error("Invalid UTF-16 sequence in string, unpaired lead surrogate");
@@ -1149,22 +1319,7 @@ GDScriptTokenizer::Token GDScriptTokenizerText::string() {
 		push_error(error);
 		prev = 0;
 	}
-
-	// Make the literal.
-	Variant string;
-	switch (type) {
-		case STRING_NAME:
-			string = StringName(result);
-			break;
-		case STRING_NODEPATH:
-			string = NodePath(result);
-			break;
-		case STRING_REGULAR:
-			string = result;
-			break;
-	}
-
-	return make_literal(string);
+	return make_literal(result);
 }
 
 void GDScriptTokenizerText::check_indent() {
@@ -1404,12 +1559,35 @@ void GDScriptTokenizerText::_skip_whitespace() {
 	}
 }
 
+void GDScriptTokenizerText::init_extents() {
+	_start = _current;
+	start_line = line;
+	start_column = column;
+	leftmost_column = column;
+	rightmost_column = column;
+}
+
+// Parsing _advance() policy: each function returning a token should be the one to _advance() the buffer past that token.
+// This is to ensure that the buffer is always in a consistent state between parsing functions:
+// - when a tokenizing function is called, the first character for that token is at the current position.
+// - when a tokenizing function returns a token, the buffer has been advanced past the characters used by that token.
 GDScriptTokenizer::Token GDScriptTokenizerText::scan() {
 	if (has_error()) {
 		return pop_error();
 	}
 
+	// Handle the formatted string early to avoid the whitespace/indent handling within a formatted string.
+	if (get_fstring_parse_context() == NOT_IN_SLOT) {
+		// Since we're shortcutting the normal tokenization flow, we need to repeat some setup work here.
+		if (_is_at_end()) {
+			return make_token(Token::TK_EOF);
+		}
+		init_extents();
+		return fstring_piece();
+	}
+
 	_skip_whitespace();
+	init_extents();
 
 	if (pending_newline) {
 		pending_newline = false;
@@ -1423,12 +1601,6 @@ GDScriptTokenizer::Token GDScriptTokenizerText::scan() {
 	if (has_error()) {
 		return pop_error();
 	}
-
-	_start = _current;
-	start_line = line;
-	start_column = column;
-	leftmost_column = column;
-	rightmost_column = column;
 
 	if (pending_indents != 0) {
 		// Adjust position for indent.
@@ -1453,9 +1625,10 @@ GDScriptTokenizer::Token GDScriptTokenizerText::scan() {
 		return make_token(Token::TK_EOF);
 	}
 
-	const char32_t c = _advance();
+	const char32_t c = _peek();
 
 	if (c == '\\') {
+		_advance();
 		// Line continuation with backslash.
 		if (_peek() == '\r') {
 			if (_peek(1) != '\n') {
@@ -1478,13 +1651,13 @@ GDScriptTokenizer::Token GDScriptTokenizerText::scan() {
 
 	if (is_digit(c)) {
 		return number();
-	} else if (c == 'r' && (_peek() == '"' || _peek() == '\'')) {
-		// Raw string literals.
-		return string();
+	} else if (std::optional<Token> raw_string_token = try_raw_string(); raw_string_token.has_value()) {
+		return *raw_string_token;
+	} else if (std::optional<Token> fstring_begin_token = try_fstring_begin(); fstring_begin_token.has_value()) {
+		return *fstring_begin_token;
 	} else if (is_unicode_identifier_start(c)) {
 		return potential_identifier();
 	}
-
 	switch (c) {
 		// String literals.
 		case '"':
@@ -1497,189 +1670,237 @@ GDScriptTokenizer::Token GDScriptTokenizerText::scan() {
 
 		// Single characters.
 		case '~':
+			_advance();
 			return make_token(Token::TILDE);
 		case ',':
+			_advance();
 			return make_token(Token::COMMA);
 		case ':':
+			_advance();
 			return make_token(Token::COLON);
 		case ';':
+			_advance();
 			return make_token(Token::SEMICOLON);
 		case '$':
+			_advance();
 			return make_token(Token::DOLLAR);
 		case '?':
+			_advance();
 			return make_token(Token::QUESTION_MARK);
 		case '`':
+			_advance();
 			return make_token(Token::BACKTICK);
 
 		// Parens.
 		case '(':
+			_advance();
 			push_paren('(');
 			return make_token(Token::PARENTHESIS_OPEN);
 		case '[':
+			_advance();
 			push_paren('[');
 			return make_token(Token::BRACKET_OPEN);
 		case '{':
+			_advance();
 			push_paren('{');
 			return make_token(Token::BRACE_OPEN);
 		case ')':
+			_advance();
 			if (!pop_paren('(')) {
 				return make_paren_error(c);
 			}
 			return make_token(Token::PARENTHESIS_CLOSE);
 		case ']':
+			_advance();
 			if (!pop_paren('[')) {
 				return make_paren_error(c);
 			}
 			return make_token(Token::BRACKET_CLOSE);
 		case '}':
+			_advance();
 			if (!pop_paren('{')) {
 				return make_paren_error(c);
+			}
+			// Check whether this is a formatted string slot ending.
+			// Even if we're inside a slot, this is only true if this closing brace has returned us to
+			// the paren level of a formatted string. Otherwise this is just a nested brace close
+			// within the slot expression.
+			if (get_fstring_parse_context() == IN_SLOT && peek_paren() == '<') {
+				--fstring_parse_depth;
 			}
 			return make_token(Token::BRACE_CLOSE);
 
 		// Double characters.
 		case '!':
-			if (_peek() == '=') {
+			if (_peek(1) == '=') {
+				_advance();
 				_advance();
 				return make_token(Token::BANG_EQUAL);
 			} else {
+				_advance();
 				return make_token(Token::BANG);
 			}
 		case '.':
-			if (_peek() == '.') {
+			if (_peek(1) == '.') {
+				_advance();
 				_advance();
 				return make_token(Token::PERIOD_PERIOD);
-			} else if (is_digit(_peek())) {
+			} else if (is_digit(_peek(1))) {
 				// Number starting with '.'.
 				return number();
 			} else {
+				_advance();
 				return make_token(Token::PERIOD);
 			}
 		case '+':
-			if (_peek() == '=') {
+			if (_peek(1) == '=') {
+				_advance();
 				_advance();
 				return make_token(Token::PLUS_EQUAL);
-			} else if (is_digit(_peek()) && !last_token.can_precede_bin_op()) {
+			} else if (is_digit(_peek(1)) && !last_token.can_precede_bin_op()) {
 				// Number starting with '+'.
 				return number();
 			} else {
+				_advance();
 				return make_token(Token::PLUS);
 			}
 		case '-':
-			if (_peek() == '=') {
+			if (_peek(1) == '=') {
+				_advance();
 				_advance();
 				return make_token(Token::MINUS_EQUAL);
-			} else if (is_digit(_peek()) && !last_token.can_precede_bin_op()) {
+			} else if (is_digit(_peek(1)) && !last_token.can_precede_bin_op()) {
 				// Number starting with '-'.
 				return number();
-			} else if (_peek() == '>') {
+			} else if (_peek(1) == '>') {
+				_advance();
 				_advance();
 				return make_token(Token::FORWARD_ARROW);
 			} else {
+				_advance();
 				return make_token(Token::MINUS);
 			}
 		case '*':
-			if (_peek() == '=') {
+			if (_peek(1) == '=') {
+				_advance();
 				_advance();
 				return make_token(Token::STAR_EQUAL);
-			} else if (_peek() == '*') {
-				if (_peek(1) == '=') {
-					_advance();
-					_advance(); // Advance both '*' and '='
-					return make_token(Token::STAR_STAR_EQUAL);
-				}
+			} else if (_peek(1) == '*' && _peek(2) == '=') {
+				_advance();
+				_advance();
+				_advance();
+				return make_token(Token::STAR_STAR_EQUAL);
+			} else if (_peek(1) == '*') {
+				_advance();
 				_advance();
 				return make_token(Token::STAR_STAR);
 			} else {
+				_advance();
 				return make_token(Token::STAR);
 			}
 		case '/':
-			if (_peek() == '=') {
+			if (_peek(1) == '=') {
+				_advance();
 				_advance();
 				return make_token(Token::SLASH_EQUAL);
 			} else {
+				_advance();
 				return make_token(Token::SLASH);
 			}
 		case '%':
-			if (_peek() == '=') {
+			if (_peek(1) == '=') {
+				_advance();
 				_advance();
 				return make_token(Token::PERCENT_EQUAL);
 			} else {
+				_advance();
 				return make_token(Token::PERCENT);
 			}
 		case '^':
-			if (_peek() == '=') {
+			if (_peek(1) == '=') {
+				_advance();
 				_advance();
 				return make_token(Token::CARET_EQUAL);
-			} else if (_peek() == '"' || _peek() == '\'') {
+			} else if (_peek(1) == '"' || _peek(1) == '\'') {
 				// Node path
 				return string();
 			} else {
+				_advance();
 				return make_token(Token::CARET);
 			}
 		case '&':
-			if (_peek() == '&') {
+			if (_peek(1) == '&') {
+				_advance();
 				_advance();
 				return make_token(Token::AMPERSAND_AMPERSAND);
-			} else if (_peek() == '=') {
+			} else if (_peek(1) == '=') {
+				_advance();
 				_advance();
 				return make_token(Token::AMPERSAND_EQUAL);
-			} else if (_peek() == '"' || _peek() == '\'') {
+			} else if (_peek(1) == '"' || _peek(1) == '\'') {
 				// String Name
 				return string();
 			} else {
+				_advance();
 				return make_token(Token::AMPERSAND);
 			}
 		case '|':
-			if (_peek() == '|') {
+			if (_peek(1) == '|') {
+				_advance();
 				_advance();
 				return make_token(Token::PIPE_PIPE);
-			} else if (_peek() == '=') {
+			} else if (_peek(1) == '=') {
+				_advance();
 				_advance();
 				return make_token(Token::PIPE_EQUAL);
 			} else {
+				_advance();
 				return make_token(Token::PIPE);
 			}
 
 		// Potential VCS conflict markers.
 		case '=':
-			if (_peek() == '=') {
+			if (_peek(1) == '=') {
 				return check_vcs_marker('=', Token::EQUAL_EQUAL);
 			} else {
+				_advance();
 				return make_token(Token::EQUAL);
 			}
 		case '<':
-			if (_peek() == '=') {
+			if (_peek(1) == '=') {
+				_advance();
 				_advance();
 				return make_token(Token::LESS_EQUAL);
-			} else if (_peek() == '<') {
-				if (_peek(1) == '=') {
-					_advance();
-					_advance(); // Advance both '<' and '='
-					return make_token(Token::LESS_LESS_EQUAL);
-				} else {
-					return check_vcs_marker('<', Token::LESS_LESS);
-				}
+			} else if (_peek(1) == '<' && _peek(2) == '=') {
+				_advance();
+				_advance();
+				_advance();
+				return make_token(Token::LESS_LESS_EQUAL);
+			} else if (_peek(1) == '<') {
+				return check_vcs_marker('<', Token::LESS_LESS);
 			} else {
+				_advance();
 				return make_token(Token::LESS);
 			}
 		case '>':
-			if (_peek() == '=') {
+			if (_peek(1) == '=') {
+				_advance();
 				_advance();
 				return make_token(Token::GREATER_EQUAL);
-			} else if (_peek() == '>') {
-				if (_peek(1) == '=') {
-					_advance();
-					_advance(); // Advance both '>' and '='
-					return make_token(Token::GREATER_GREATER_EQUAL);
-				} else {
-					return check_vcs_marker('>', Token::GREATER_GREATER);
-				}
+			} else if (_peek(1) == '>' && _peek(2) == '=') {
+				_advance();
+				_advance();
+				_advance();
+				return make_token(Token::GREATER_GREATER_EQUAL);
+			} else if (_peek(1) == '>') {
+				return check_vcs_marker('>', Token::GREATER_GREATER);
 			} else {
+				_advance();
 				return make_token(Token::GREATER);
 			}
 
 		default:
+			_advance();
 			if (is_whitespace(c)) {
 				return make_error(vformat(R"(Invalid white space character U+%04X.)", static_cast<int32_t>(c)));
 			} else {

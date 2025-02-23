@@ -606,9 +606,11 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 			in_annotation = false;
 		}
 
-		const bool in_raw_string_prefix = in_region == -1 && str[j] == 'r' && j + 1 < line_length && (str[j + 1] == '"' || str[j + 1] == '\'');
+		const bool in_raw_or_formatted_string_prefix = in_region == -1 &&
+				(((str[j] == 'f' || str[j] == 'r') && j + 1 < line_length && (str[j + 1] == '"' || str[j + 1] == '\'')) || // (f|r)(\"|\')
+						(str[j] == 'f' && j + 2 < line_length && str[j + 1] == 'r' && (str[j + 2] == '"' || str[j + 2] == '\''))); // fr(\"|\')
 
-		if (in_raw_string_prefix) {
+		if (in_raw_or_formatted_string_prefix) {
 			color = string_color;
 		} else if (in_node_ref) {
 			next_type = NODE_REF;
