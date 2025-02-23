@@ -241,10 +241,24 @@ GDExtensionInterfaceFunctionPtr gdextension_get_proc_address(const char *p_name)
 	return GDExtension::get_interface_function(p_name);
 }
 
+#ifndef DISABLE_DEPRECATED
 static void gdextension_get_godot_version(GDExtensionGodotVersion *r_godot_version) {
 	r_godot_version->major = VERSION_MAJOR;
 	r_godot_version->minor = VERSION_MINOR;
 	r_godot_version->patch = VERSION_PATCH;
+	r_godot_version->string = VERSION_FULL_NAME;
+}
+#endif
+
+static void gdextension_get_godot_version2(GDExtensionGodotVersion2 *r_godot_version) {
+	r_godot_version->major = VERSION_MAJOR;
+	r_godot_version->minor = VERSION_MINOR;
+	r_godot_version->patch = VERSION_PATCH;
+	r_godot_version->hex = VERSION_HEX;
+	r_godot_version->status = VERSION_STATUS;
+	r_godot_version->build = VERSION_BUILD;
+	r_godot_version->hash = VERSION_HASH;
+	r_godot_version->timestamp = VERSION_TIMESTAMP;
 	r_godot_version->string = VERSION_FULL_NAME;
 }
 
@@ -1666,7 +1680,10 @@ static void gdextension_editor_help_load_xml_from_utf8_chars(const char *p_data)
 #define REGISTER_INTERFACE_FUNC(m_name) GDExtension::register_interface_function(#m_name, (GDExtensionInterfaceFunctionPtr) & gdextension_##m_name)
 
 void gdextension_setup_interface() {
+#ifndef DISABLE_DEPRECATED
 	REGISTER_INTERFACE_FUNC(get_godot_version);
+#endif // DISABLE_DEPRECATED
+	REGISTER_INTERFACE_FUNC(get_godot_version2);
 	REGISTER_INTERFACE_FUNC(mem_alloc);
 	REGISTER_INTERFACE_FUNC(mem_realloc);
 	REGISTER_INTERFACE_FUNC(mem_free);
