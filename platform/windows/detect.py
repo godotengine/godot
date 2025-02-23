@@ -732,7 +732,7 @@ def configure_mingw(env: "SConsEnvironment"):
         if env["use_static_cpp"]:
             env.Append(LINKFLAGS=["-static"])
 
-    if env["arch"] in ["x86_32", "x86_64"]:
+    if env["arch"] == "x86_32":
         env["x86_libtheora_opt_gcc"] = True
 
     env.Append(CCFLAGS=["-ffp-contract=off"])
@@ -781,6 +781,10 @@ def configure_mingw(env: "SConsEnvironment"):
         else:
             env.Append(CCFLAGS=["-flto"])
             env.Append(LINKFLAGS=["-flto"])
+        if not env["use_llvm"]:
+            # For mingw-gcc LTO, disable linker plugin and enable whole program to work around GH-102867.
+            env.Append(CCFLAGS=["-fno-use-linker-plugin", "-fwhole-program"])
+            env.Append(LINKFLAGS=["-fno-use-linker-plugin", "-fwhole-program"])
 
     if env["use_asan"]:
         env.Append(LINKFLAGS=["-Wl,--stack," + str(STACK_SIZE_SANITIZERS)])

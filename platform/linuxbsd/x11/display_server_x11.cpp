@@ -3765,7 +3765,7 @@ void DisplayServerX11::_handle_key_event(WindowID p_window, XKeyEvent *p_event, 
 	// keysym, so it works in all platforms the same.
 
 	Key keycode = Key::NONE;
-	if (KeyMappingX11::is_sym_numpad(keysym_unicode)) {
+	if (KeyMappingX11::is_sym_numpad(keysym_unicode) || KeyMappingX11::is_sym_numpad(keysym_keycode)) {
 		// Special case for numpad keys.
 		keycode = KeyMappingX11::get_keycode(keysym_unicode);
 	}
@@ -4227,12 +4227,16 @@ void DisplayServerX11::_dispatch_input_event(const Ref<InputEvent> &p_event) {
 			}
 		}
 	} else {
-		// Send to all windows.
+		// Send to all windows. Copy all pending callbacks, since callback can erase window.
+		Vector<Callable> cbs;
 		for (KeyValue<WindowID, WindowData> &E : windows) {
 			Callable callable = E.value.input_event_callback;
 			if (callable.is_valid()) {
-				callable.call(p_event);
+				cbs.push_back(callable);
 			}
+		}
+		for (const Callable &cb : cbs) {
+			cb.call(p_event);
 		}
 	}
 }
@@ -5926,7 +5930,7 @@ Error DisplayServerX11::embed_process(WindowID p_window, OS::ProcessID p_pid, co
 	return OK;
 }
 
-Error DisplayServerX11::remove_embedded_process(OS::ProcessID p_pid) {
+Error DisplayServerX11::request_close_embedded_process(OS::ProcessID p_pid) {
 	_THREAD_SAFE_METHOD_
 
 	if (!embedded_processes.has(p_pid)) {
@@ -5955,6 +5959,20 @@ Error DisplayServerX11::remove_embedded_process(OS::ProcessID p_pid) {
 
 	// Restore default error handler.
 	XSetErrorHandler(oldHandler);
+
+	return OK;
+}
+
+Error DisplayServerX11::remove_embedded_process(OS::ProcessID p_pid) {
+	_THREAD_SAFE_METHOD_
+
+	if (!embedded_processes.has(p_pid)) {
+		return ERR_DOES_NOT_EXIST;
+	}
+
+	EmbeddedProcessData *ep = embedded_processes.get(p_pid);
+
+	request_close_embedded_process(p_pid);
 
 	embedded_processes.erase(p_pid);
 	memdelete(ep);

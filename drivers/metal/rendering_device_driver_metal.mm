@@ -3999,6 +3999,8 @@ uint64_t RenderingDeviceDriverMetal::limit_get(Limit p_limit) {
 			return (uint64_t)((1.0 / limits.temporalScalerInputContentMaxScale) * 1000'000);
 		case LIMIT_METALFX_TEMPORAL_SCALER_MAX_SCALE:
 			return (uint64_t)((1.0 / limits.temporalScalerInputContentMinScale) * 1000'000);
+		case LIMIT_MAX_SHADER_VARYINGS:
+			return limits.maxShaderVaryings;
 		UNKNOWN(LIMIT_VRS_TEXEL_WIDTH);
 		UNKNOWN(LIMIT_VRS_TEXEL_HEIGHT);
 		UNKNOWN(LIMIT_VRS_MAX_FRAGMENT_WIDTH);

@@ -18,6 +18,9 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
 "X-Generator: Weblate 5.5-dev\n"
 
+msgid "All Recognized"
+msgstr "Tous les types de fichiers reconnus"
+
 msgid "New Code Region"
 msgstr "Nouvelle section de code"
 
@@ -86,14 +89,14 @@ msgstr "Ouvrir"
 msgid "Select Current Folder"
 msgstr "Sélectionner le dossier courant"
 
+msgid "Save"
+msgstr "Enregistrer"
+
 msgid "Select This Folder"
 msgstr "Sélectionner ce dossier"
 
 msgid "You don't have permission to access contents of this folder."
 msgstr "Vous n'avez pas l'autorisation d'accéder au contenu de ce dossier."
-
-msgid "All Recognized"
-msgstr "Tous les types de fichiers reconnus"
 
 msgid "All Files"
 msgstr "Tous les fichiers"
@@ -109,9 +112,6 @@ msgstr "Ouvrir un répertoire"
 
 msgid "Open a File or Directory"
 msgstr "Ouvrir un fichier ou un répertoire"
-
-msgid "Save"
-msgstr "Enregistrer"
 
 msgid "Save a File"
 msgstr "Enregistrer un fichier"

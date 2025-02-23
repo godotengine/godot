@@ -405,6 +405,7 @@ class DisplayServerWindows : public DisplayServer {
 	void _update_tablet_ctx(const String &p_old_driver, const String &p_new_driver);
 	String tablet_driver;
 	Vector<String> tablet_drivers;
+	bool winink_disabled = false;
 
 	enum DriverID {
 		DRIVER_ID_COMPAT_OPENGL3 = 1 << 0,
@@ -837,6 +838,7 @@ public:
 
 	virtual void enable_for_stealing_focus(OS::ProcessID pid) override;
 	virtual Error embed_process(WindowID p_window, OS::ProcessID p_pid, const Rect2i &p_rect, bool p_visible, bool p_grab_focus) override;
+	virtual Error request_close_embedded_process(OS::ProcessID p_pid) override;
 	virtual Error remove_embedded_process(OS::ProcessID p_pid) override;
 	virtual OS::ProcessID get_focused_process_id() override;
 

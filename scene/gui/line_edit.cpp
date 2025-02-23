@@ -1377,8 +1377,14 @@ void LineEdit::_notification(int p_what) {
 
 		case MainLoop::NOTIFICATION_OS_IME_UPDATE: {
 			if (editing) {
-				ime_text = DisplayServer::get_singleton()->ime_get_text();
-				ime_selection = DisplayServer::get_singleton()->ime_get_selection();
+				const String &new_ime_text = DisplayServer::get_singleton()->ime_get_text();
+				const Vector2i &new_ime_selection = DisplayServer::get_singleton()->ime_get_selection();
+				if (ime_text == new_ime_text && ime_selection == new_ime_selection) {
+					break;
+				}
+
+				ime_text = new_ime_text;
+				ime_selection = new_ime_selection;
 
 				if (!ime_text.is_empty()) {
 					selection_delete();
@@ -2701,6 +2707,7 @@ Key LineEdit::_get_menu_action_accelerator(const String &p_action) {
 void LineEdit::_generate_context_menu() {
 	menu = memnew(PopupMenu);
 	add_child(menu, false, INTERNAL_MODE_FRONT);
+	menu->force_parent_owned();
 
 	menu_dir = memnew(PopupMenu);
 	menu_dir->add_radio_check_item(ETR("Same as Layout Direction"), MENU_DIR_INHERITED);

@@ -1,5 +1,5 @@
 /* read.c -- File views without mmap.
-   Copyright (C) 2012-2024 Free Software Foundation, Inc.
+   Copyright (C) 2012-2021 Free Software Foundation, Inc.
    Written by Ian Lance Taylor, Google.
 
 Redistribution and use in source and binary forms, with or without
@@ -65,12 +65,13 @@ backtrace_get_view (struct backtrace_state *state, int descriptor,
   view->len = size;
 
   got = 0;
+  void *ptr = view->base;
   while (got < size)
     {
       uint64_t sz = size - got;
       if (sz > INT_MAX)
         sz = INT_MAX;
-      r = _read (descriptor, view->base, sz);
+      r = _read (descriptor, ptr, sz);
       if (r < 0)
 	{
 	  error_callback (data, "read", errno);
@@ -80,7 +81,7 @@ backtrace_get_view (struct backtrace_state *state, int descriptor,
       if (r == 0)
 	break;
       got += (uint64_t) r;
-      view->base += r;
+      ptr += r;
     }
 
   if (got < size)

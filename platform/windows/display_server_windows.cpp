@@ -36,6 +36,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/io/marshalls.h"
+#include "core/io/xml_parser.h"
 #include "core/version.h"
 #include "drivers/png/png_driver_common.h"
 #include "main/main.h"
@@ -1645,7 +1646,6 @@ DisplayServer::WindowID DisplayServerWindows::create_sub_window(WindowMode p_mod
 		rendering_device->screen_create(window_id);
 	}
 #endif
-	wd.initialized = true;
 	return window_id;
 }
 
@@ -1673,6 +1673,7 @@ void DisplayServerWindows::show_window(WindowID p_id) {
 	if (p_id != MAIN_WINDOW_ID) {
 		_update_window_style(p_id);
 	}
+	wd.initialized = true;
 
 	if (wd.maximized) {
 		ShowWindow(wd.hWnd, SW_SHOWMAXIMIZED);
@@ -2986,7 +2987,8 @@ Error DisplayServerWindows::embed_process(WindowID p_window, OS::ProcessID p_pid
 	// (e.g., a screen to the left of the main screen).
 	const Rect2i adjusted_rect = Rect2i(p_rect.position + _get_screens_origin(), p_rect.size);
 
-	SetWindowPos(ep->window_handle, nullptr, adjusted_rect.position.x, adjusted_rect.position.y, adjusted_rect.size.x, adjusted_rect.size.y, SWP_NOZORDER | SWP_NOACTIVATE | SWP_ASYNCWINDOWPOS);
+	// Use HWND_BOTTOM to prevent reordering of the embedded window over another popup.
+	SetWindowPos(ep->window_handle, HWND_BOTTOM, adjusted_rect.position.x, adjusted_rect.position.y, adjusted_rect.size.x, adjusted_rect.size.y, SWP_NOZORDER | SWP_NOACTIVATE | SWP_ASYNCWINDOWPOS);
 
 	if (ep->is_visible != p_visible) {
 		if (p_visible) {
@@ -2998,8 +3000,24 @@ Error DisplayServerWindows::embed_process(WindowID p_window, OS::ProcessID p_pid
 	}
 
 	if (p_grab_focus) {
+		SetForegroundWindow(ep->window_handle);
 		SetFocus(ep->window_handle);
 	}
+
+	return OK;
+}
+
+Error DisplayServerWindows::request_close_embedded_process(OS::ProcessID p_pid) {
+	_THREAD_SAFE_METHOD_
+
+	if (!embedded_processes.has(p_pid)) {
+		return ERR_DOES_NOT_EXIST;
+	}
+
+	EmbeddedProcessData *ep = embedded_processes.get(p_pid);
+
+	// Send a close message to gracefully close the process.
+	PostMessage(ep->window_handle, WM_CLOSE, 0, 0);
 
 	return OK;
 }
@@ -3013,8 +3031,7 @@ Error DisplayServerWindows::remove_embedded_process(OS::ProcessID p_pid) {
 
 	EmbeddedProcessData *ep = embedded_processes.get(p_pid);
 
-	// Send a close message to gracefully close the process.
-	PostMessage(ep->window_handle, WM_CLOSE, 0, 0);
+	request_close_embedded_process(p_pid);
 
 	// This is a workaround to ensure the parent window correctly regains focus after the
 	// embedded window is closed. When the embedded window is closed while it has focus,
@@ -4237,12 +4254,16 @@ void DisplayServerWindows::_dispatch_input_event(const Ref<InputEvent> &p_event)
 			}
 		}
 	} else {
-		// Send to all windows.
-		for (const KeyValue<WindowID, WindowData> &E : windows) {
-			const Callable callable = E.value.input_event_callback;
+		// Send to all windows. Copy all pending callbacks, since callback can erase window.
+		Vector<Callable> cbs;
+		for (KeyValue<WindowID, WindowData> &E : windows) {
+			Callable callable = E.value.input_event_callback;
 			if (callable.is_valid()) {
-				callable.call(p_event);
+				cbs.push_back(callable);
 			}
+		}
+		for (const Callable &cb : cbs) {
+			cb.call(p_event);
 		}
 	}
 
@@ -6104,15 +6125,15 @@ DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, 
 			WindowRect.top = wpos.y;
 			WindowRect.bottom = wpos.y + p_rect.size.y;
 		}
+	}
 
-		WindowRect.left += offset.x;
-		WindowRect.right += offset.x;
-		WindowRect.top += offset.y;
-		WindowRect.bottom += offset.y;
+	WindowRect.left += offset.x;
+	WindowRect.right += offset.x;
+	WindowRect.top += offset.y;
+	WindowRect.bottom += offset.y;
 
-		if (p_mode != WINDOW_MODE_FULLSCREEN && p_mode != WINDOW_MODE_EXCLUSIVE_FULLSCREEN) {
-			AdjustWindowRectEx(&WindowRect, dwStyle, FALSE, dwExStyle);
-		}
+	if (p_mode != WINDOW_MODE_FULLSCREEN && p_mode != WINDOW_MODE_EXCLUSIVE_FULLSCREEN) {
+		AdjustWindowRectEx(&WindowRect, dwStyle, FALSE, dwExStyle);
 	}
 
 	WindowID id = window_id_counter;
@@ -6157,6 +6178,15 @@ DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, 
 		}
 
 		wd.parent_hwnd = p_parent_hwnd;
+
+		// Detach the input queue from the parent window.
+		// This prevents the embedded window from waiting on the main window's input queue,
+		// causing lags input lags when resizing or moving the main window.
+		if (p_parent_hwnd) {
+			DWORD mainThreadId = GetWindowThreadProcessId(owner_hwnd, nullptr);
+			DWORD embeddedThreadId = GetCurrentThreadId();
+			AttachThreadInput(embeddedThreadId, mainThreadId, FALSE);
+		}
 
 		if (p_mode == WINDOW_MODE_FULLSCREEN || p_mode == WINDOW_MODE_EXCLUSIVE_FULLSCREEN) {
 			wd.fullscreen = true;
@@ -6504,15 +6534,27 @@ void DisplayServerWindows::tablet_set_current_driver(const String &p_driver) {
 	if (tablet_get_driver_count() == 0) {
 		return;
 	}
+
+	String driver = p_driver;
+	if (driver == "auto") {
+		if (winink_available && !winink_disabled) {
+			driver = "winink";
+		} else if (wintab_available) {
+			driver = "wintab";
+		} else {
+			driver = "dummy";
+		}
+	}
+
 	bool found = false;
 	for (int i = 0; i < tablet_get_driver_count(); i++) {
-		if (p_driver == tablet_get_driver_name(i)) {
+		if (driver == tablet_get_driver_name(i)) {
 			found = true;
 		}
 	}
 	if (found) {
-		_update_tablet_ctx(tablet_driver, p_driver);
-		tablet_driver = p_driver;
+		_update_tablet_ctx(tablet_driver, driver);
+		tablet_driver = driver;
 	} else {
 		ERR_PRINT("Unknown tablet driver " + p_driver + ".");
 	}
@@ -6611,6 +6653,8 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 		}
 	}
 
+	tablet_drivers.push_back("auto");
+
 	// Note: Windows Ink API for pen input, available on Windows 8+ only.
 	// Note: DPI conversion API, available on Windows 8.1+ only.
 	HMODULE user32_lib = LoadLibraryW(L"user32.dll");
@@ -6644,6 +6688,27 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 	}
 
 	tablet_drivers.push_back("dummy");
+
+	String wacom_cfg = OS::get_singleton()->get_config_path().path_join("WTablet").path_join("Wacom_Tablet.dat");
+	if (FileAccess::exists(wacom_cfg)) {
+		Ref<XMLParser> parser;
+		parser.instantiate();
+		if (parser->open(wacom_cfg) == OK) {
+			while (parser->read() == OK) {
+				if (parser->get_node_type() != XMLParser::NODE_ELEMENT) {
+					continue;
+				}
+				if (parser->get_node_name() == "WinUseInk") {
+					parser->read();
+					if (parser->get_node_type() == XMLParser::NODE_TEXT) {
+						winink_disabled = (parser->get_node_data().to_lower().strip_edges() != "true");
+						print_verbose(vformat("Wacom tablet config found at \"%s\", Windows Ink support is %s.", wacom_cfg, winink_disabled ? "disabled" : "enabled"));
+						break;
+					}
+				}
+			}
+		}
+	}
 
 	if (OS::get_singleton()->is_hidpi_allowed()) {
 		HMODULE Shcore = LoadLibraryW(L"Shcore.dll");
@@ -6938,7 +7003,6 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 		}
 	}
 
-	windows[MAIN_WINDOW_ID].initialized = true;
 	show_window(MAIN_WINDOW_ID);
 
 #if defined(RD_ENABLED)

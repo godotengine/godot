@@ -1261,6 +1261,8 @@ void RuntimeNodeSelect::_setup(const Dictionary &p_settings) {
 #ifndef _3D_DISABLED
 	cursor = Cursor();
 
+	freelook_speed = p_settings.get("editors/3d/freelook/freelook_base_speed", FREELOOK_BASE_SPEED);
+
 	/// 3D Selection Box Generation
 	// Copied from the Node3DEditor implementation.
 
@@ -1443,7 +1445,7 @@ void RuntimeNodeSelect::_process_frame() {
 			direction -= up;
 		}
 
-		real_t speed = FREELOOK_BASE_SPEED;
+		real_t speed = freelook_speed;
 		if (input->is_physical_key_pressed(Key::SHIFT)) {
 			speed *= 3.0;
 		}
@@ -1959,6 +1961,8 @@ bool RuntimeNodeSelect::_handle_3d_input(const Ref<InputEvent> &p_event) {
 			case MouseButton::WHEEL_UP: {
 				if (!camera_freelook) {
 					_cursor_scale_distance(1.0 / zoom_factor);
+				} else {
+					_scale_freelook_speed(zoom_factor);
 				}
 
 				return true;
@@ -1966,6 +1970,8 @@ bool RuntimeNodeSelect::_handle_3d_input(const Ref<InputEvent> &p_event) {
 			case MouseButton::WHEEL_DOWN: {
 				if (!camera_freelook) {
 					_cursor_scale_distance(zoom_factor);
+				} else {
+					_scale_freelook_speed(1.0 / zoom_factor);
 				}
 
 				return true;
@@ -2062,6 +2068,16 @@ void RuntimeNodeSelect::_cursor_scale_distance(real_t p_scale) {
 	cursor.distance = CLAMP(cursor.distance * p_scale, min_distance, max_distance);
 
 	SceneTree::get_singleton()->get_root()->set_camera_3d_override_transform(_get_cursor_transform());
+}
+
+void RuntimeNodeSelect::_scale_freelook_speed(real_t p_scale) {
+	real_t min_speed = MAX(CAMERA_ZNEAR * 4, VIEW_3D_MIN_ZOOM);
+	real_t max_speed = MIN(CAMERA_ZFAR / 4, VIEW_3D_MAX_ZOOM);
+	if (unlikely(min_speed > max_speed)) {
+		freelook_speed = (min_speed + max_speed) / 2;
+	} else {
+		freelook_speed = CLAMP(freelook_speed * p_scale, min_speed, max_speed);
+	}
 }
 
 void RuntimeNodeSelect::_cursor_look(Ref<InputEventWithModifiers> p_event) {

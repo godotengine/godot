@@ -1282,10 +1282,8 @@ void ItemList::_notification(int p_what) {
 				}
 
 				Vector2 text_ofs;
+				Size2 icon_size;
 				if (items[i].icon.is_valid()) {
-					Size2 icon_size;
-					//= _adjust_to_max_size(items[i].get_icon_size(),fixed_icon_size) * icon_scale;
-
 					if (fixed_icon_size.x > 0 && fixed_icon_size.y > 0) {
 						icon_size = fixed_icon_size * icon_scale;
 					} else {
@@ -1417,14 +1415,14 @@ void ItemList::_notification(int p_what) {
 						text_ofs += base_ofs;
 						text_ofs += items[i].rect_cache.position;
 
-						float text_w = items[i].rect_cache.size.width - (items[i].get_icon_size().x * icon_scale) - MAX(theme_cache.h_separation, 0);
+						float text_w = items[i].rect_cache.size.width - icon_size.x - MAX(theme_cache.h_separation, 0);
 						if (wraparound_items && items[i].rect_cache.size.width > width) {
 							text_w -= items[i].rect_cache.size.width - width;
 						}
 						items.write[i].text_buf->set_width(text_w);
 
 						if (rtl) {
-							text_ofs.x = size.width - items[i].rect_cache.size.width + (items[i].get_icon_size().x * icon_scale) - text_ofs.x + MAX(theme_cache.h_separation, 0);
+							text_ofs.x = size.width - items[i].rect_cache.size.width + icon_size.x - text_ofs.x + MAX(theme_cache.h_separation, 0);
 							if (wraparound_items) {
 								text_ofs.x += MAX(items[i].rect_cache.size.width - width, 0);
 							}
@@ -1438,12 +1436,12 @@ void ItemList::_notification(int p_what) {
 						}
 
 						if (fixed_column_width > 0) {
-							if (items[i].rect_cache.size.width - (items[i].get_icon_size().x * icon_scale) - MAX(theme_cache.h_separation, 0) > 0) {
+							if (items[i].rect_cache.size.width - icon_size.x - MAX(theme_cache.h_separation, 0) > 0) {
 								items[i].text_buf->draw(get_canvas_item(), text_ofs, txt_modulate);
 							}
 						} else {
 							if (wraparound_items) {
-								if (width - (items[i].get_icon_size().x * icon_scale) - MAX(theme_cache.h_separation, 0) - int(scroll_bar_h->get_value()) > 0) {
+								if (width - icon_size.x - MAX(theme_cache.h_separation, 0) - int(scroll_bar_h->get_value()) > 0) {
 									items[i].text_buf->draw(get_canvas_item(), text_ofs, txt_modulate);
 								}
 							} else {

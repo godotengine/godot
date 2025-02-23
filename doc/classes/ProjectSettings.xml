@@ -386,7 +386,9 @@
 			[b]Note:[/b] If the operating system blocks access to audio input devices (due to the user's privacy settings), audio capture will only return silence. On Windows 10 and later, make sure that apps are allowed to access the microphone in the OS' privacy settings.
 		</member>
 		<member name="audio/driver/mix_rate" type="int" setter="" getter="" default="44100">
-			The mixing rate used for audio (in Hz). In general, it's better to not touch this and leave it to the host operating system.
+			Target mixing rate used for audio (in Hz). In general, it's better to not touch this and leave it to the host operating system.
+			[b]Note:[/b] On iOS and macOS, mixing rate is determined by audio driver, this value is ignored.
+			[b]Note:[/b] Input and output mixing rates might be different. Use [method AudioServer.get_mix_rate] and [method AudioServer.get_input_mix_rate] to get actual values.
 		</member>
 		<member name="audio/driver/mix_rate.web" type="int" setter="" getter="" default="0">
 			Safer override for [member audio/driver/mix_rate] in the Web platform. Here [code]0[/code] means "let the browser choose" (since some browsers do not like forcing the mix rate).
@@ -1427,9 +1429,14 @@
 		<member name="input_devices/pen_tablet/driver" type="String" setter="" getter="">
 			Specifies the tablet driver to use. If left empty, the default driver will be used.
 			[b]Note:[/b] The driver in use can be overridden at runtime via the [code]--tablet-driver[/code] [url=$DOCS_URL/tutorials/editor/command_line_tutorial.html]command line argument[/url].
+			[b]Note:[/b] Use [method DisplayServer.tablet_set_current_driver] to switch tablet driver in runtime.
 		</member>
 		<member name="input_devices/pen_tablet/driver.windows" type="String" setter="" getter="">
-			Override for [member input_devices/pen_tablet/driver] on Windows.
+			Override for [member input_devices/pen_tablet/driver] on Windows. Supported values are:
+			- [code]auto[/code] (default), uses [code]wintab[/code] if Windows Ink is disabled in the Wacom Tablet Properties or system settings, [code]winink[/code] otherwise.
+			- [code]winink[/code], uses Windows native "Windows Ink" driver.
+			- [code]wintab[/code], uses Wacom "WinTab" driver.
+			- [code]dummy[/code], tablet input is disabled.
 		</member>
 		<member name="input_devices/pointing/android/enable_long_press_as_right_click" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], long press events on an Android touchscreen are transformed into right click events.
@@ -1460,14 +1467,16 @@
 		</member>
 		<member name="internationalization/locale/fallback" type="String" setter="" getter="" default="&quot;en&quot;">
 			The locale to fall back to if a translation isn't available in a given language. If left empty, [code]en[/code] (English) will be used.
+			[b]Note:[/b] Not to be confused with [TextServerFallback].
 		</member>
 		<member name="internationalization/locale/include_text_server_data" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], text server break iteration rule sets, dictionaries and other optional data are included in the exported project.
 			[b]Note:[/b] "ICU / HarfBuzz / Graphite" text server data includes dictionaries for Burmese, Chinese, Japanese, Khmer, Lao and Thai as well as Unicode Standard Annex #29 and Unicode Standard Annex #14 word and line breaking rules. Data is about 4 MB large.
-			[b]Note:[/b] "Fallback" text server does not use additional data.
+			[b]Note:[/b] [TextServerFallback] does not use additional data.
 		</member>
 		<member name="internationalization/locale/test" type="String" setter="" getter="" default="&quot;&quot;">
-			If non-empty, this locale will be used when running the project from the editor.
+			If non-empty, this locale will be used instead of the automatically detected system locale.
+			[b]Note:[/b] This setting also applies to the exported project. To only affect testing within the editor, override this setting with an [code]editor[/code] [url=$DOCS_URL/tutorials/export/feature_tags.html]feature tag[/url] for localization testing purposes.
 		</member>
 		<member name="internationalization/pseudolocalization/double_vowels" type="bool" setter="" getter="" default="false">
 			Double vowels in strings during pseudolocalization to simulate the lengthening of text due to localization.
@@ -1476,7 +1485,7 @@
 			The expansion ratio to use during pseudolocalization. A value of [code]0.3[/code] is sufficient for most practical purposes, and will increase the length of each string by 30%.
 		</member>
 		<member name="internationalization/pseudolocalization/fake_bidi" type="bool" setter="" getter="" default="false">
-			If [code]true[/code], emulate bidirectional (right-to-left) text when pseudolocalization is enabled. This can be used to spot issues with RTL layout and UI mirroring that will crop up if the project is localized to RTL languages such as Arabic or Hebrew.
+			If [code]true[/code], emulate bidirectional (right-to-left) text when pseudolocalization is enabled. This can be used to spot issues with RTL layout and UI mirroring that will crop up if the project is localized to RTL languages such as Arabic or Hebrew. See also [member internationalization/rendering/force_right_to_left_layout_direction].
 		</member>
 		<member name="internationalization/pseudolocalization/override" type="bool" setter="" getter="" default="false">
 			Replace all characters in the string with [code]*[/code]. Useful for finding non-localizable strings.
@@ -1498,7 +1507,7 @@
 			[b]Note:[/b] This property is only read when the project starts. To toggle pseudolocalization at run-time, use [member TranslationServer.pseudolocalization_enabled] instead.
 		</member>
 		<member name="internationalization/rendering/force_right_to_left_layout_direction" type="bool" setter="" getter="" default="false">
-			Force layout direction and text writing direction to RTL for all controls.
+			Force layout direction and text writing direction to RTL for all controls, even if the current locale is intended to use a left-to-right layout and text writing direction. This should be enabled for testing purposes only. See also [member internationalization/pseudolocalization/fake_bidi].
 		</member>
 		<member name="internationalization/rendering/root_node_auto_translate" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], root node will use [constant Node.AUTO_TRANSLATE_MODE_ALWAYS], otherwise [constant Node.AUTO_TRANSLATE_MODE_DISABLED] will be used.
@@ -1509,7 +1518,7 @@
 		</member>
 		<member name="internationalization/rendering/text_driver" type="String" setter="" getter="" default="&quot;&quot;">
 			Specifies the [TextServer] to use. If left empty, the default will be used.
-			"ICU / HarfBuzz / Graphite" is the most advanced text driver, supporting right-to-left typesetting and complex scripts (for languages like Arabic, Hebrew, etc.). The "Fallback" text driver does not support right-to-left typesetting and complex scripts.
+			"ICU / HarfBuzz / Graphite" ([TextServerAdvanced]) is the most advanced text driver, supporting right-to-left typesetting and complex scripts (for languages like Arabic, Hebrew, etc.). The "Fallback" text driver ([TextServerFallback]) does not support right-to-left typesetting and complex scripts.
 			[b]Note:[/b] The driver in use can be overridden at runtime via the [code]--text-driver[/code] [url=$DOCS_URL/tutorials/editor/command_line_tutorial.html]command line argument[/url].
 			[b]Note:[/b] There is an additional [code]Dummy[/code] text driver available, which disables all text rendering and font-related functionality. This driver is not listed in the project settings, but it can be enabled when running the editor or project using the [code]--text-driver Dummy[/code] [url=$DOCS_URL/tutorials/editor/command_line_tutorial.html]command line argument[/url].
 		</member>
@@ -2195,6 +2204,11 @@
 			The CA certificates bundle to use for TLS connections. If this is set to a non-empty value, this will [i]override[/i] Godot's default [url=https://github.com/godotengine/godot/blob/master/thirdparty/certs/ca-certificates.crt]Mozilla certificate bundle[/url]. If left empty, the default certificate bundle will be used.
 			If in doubt, leave this setting empty.
 		</member>
+		<member name="network/tls/enable_tls_v1.3" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], enable TLSv1.3 negotiation.
+			[b]Note:[/b] This is experimental, and may cause connections to fail in some cases (notably, if the remote server uses TLS handshake fragmentation).
+			[b]Note:[/b] Only supported when using Mbed TLS 3.0 or later (Linux distribution packages may be compiled against older system Mbed TLS packages), otherwise the maximum supported TLS version is always TLSv1.2.
+		</member>
 		<member name="physics/2d/default_angular_damp" type="float" setter="" getter="" default="1.0">
 			The default rotational motion damping in 2D. Damping is used to gradually slow down physical objects over time. RigidBodies will fall back to this value when combining their own damping values and no area damping value is present.
 			Suggested values are in the range [code]0[/code] to [code]30[/code]. At value [code]0[/code] objects will keep moving with the same velocity. Greater values will stop the object faster. A value equal to or greater than the physics tick rate ([member physics/common/physics_ticks_per_second]) will bring the object to a stop in one iteration.
@@ -2328,6 +2342,7 @@
 		</member>
 		<member name="physics/3d/run_on_separate_thread" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], the 3D physics server runs on a separate thread, making better use of multi-core CPUs. If [code]false[/code], the 3D physics server runs on the main thread. Running the physics server on a separate thread can increase performance, but restricts API access to only physics process.
+			[b]Note:[/b] When [member physics/3d/physics_engine] is set to [code]Jolt Physics[/code], enabling this setting will prevent the 3D physics server from being able to provide any context when reporting errors and warnings, and will instead always refer to nodes as [code]&lt;unknown&gt;[/code].
 		</member>
 		<member name="physics/3d/sleep_threshold_angular" type="float" setter="" getter="" default="0.139626">
 			Threshold angular velocity under which a 3D physics body will be considered inactive. See [constant PhysicsServer3D.SPACE_PARAM_BODY_ANGULAR_VELOCITY_SLEEP_THRESHOLD].
@@ -2669,26 +2684,38 @@
 		<member name="rendering/environment/volumetric_fog/volume_size" type="int" setter="" getter="" default="64">
 			Base size used to determine size of froxel buffer in the camera X-axis and Y-axis. The final size is scaled by the aspect ratio of the screen, so actual values may differ from what is set. Set a larger size for more detailed fog, set a smaller size for better performance.
 		</member>
-		<member name="rendering/gl_compatibility/driver" type="String" setter="" getter="">
+		<member name="rendering/gl_compatibility/driver" type="String" setter="" getter="" default="&quot;auto&quot;">
 			Sets the driver to be used by the renderer when using the Compatibility renderer. This property can not be edited directly, instead, set the driver using the platform-specific overrides.
+			Supported values are:
+			- [code]auto[/code], currently defaults to [code]opengl3[/code] on all platforms.
+			- [code]opengl3[/code], OpenGL 3.3 on desktop platforms, OpenGL ES 3.0 on mobile platforms, WebGL 2.0 on web.
+			- [code]opengl3_angle[/code], OpenGL ES 3.0 over ANGLE compatibility layer, supported on macOS (over native OpenGL) and Windows (over Direct3D 11).
+			- [code]opengl3_es[/code], OpenGL ES 3.0 on Linux/BSD.
+			[b]Note:[/b] The availability of these options depends on whether the engine was compiled with support for them (determined by SCons options [code]opengl3[/code] and [code]angle_libs[/code]).
 		</member>
-		<member name="rendering/gl_compatibility/driver.android" type="String" setter="" getter="">
+		<member name="rendering/gl_compatibility/driver.android" type="String" setter="" getter="" default="&quot;auto&quot;">
 			Android override for [member rendering/gl_compatibility/driver].
+			The [code]auto[/code] setting is equivalent to [code]opengl3[/code] on this platform.
 		</member>
-		<member name="rendering/gl_compatibility/driver.ios" type="String" setter="" getter="">
+		<member name="rendering/gl_compatibility/driver.ios" type="String" setter="" getter="" default="&quot;auto&quot;">
 			iOS override for [member rendering/gl_compatibility/driver].
+			The [code]auto[/code] setting is equivalent to [code]opengl3[/code] on this platform.
 		</member>
-		<member name="rendering/gl_compatibility/driver.linuxbsd" type="String" setter="" getter="">
+		<member name="rendering/gl_compatibility/driver.linuxbsd" type="String" setter="" getter="" default="&quot;auto&quot;">
 			LinuxBSD override for [member rendering/gl_compatibility/driver].
+			The [code]auto[/code] setting is equivalent to [code]opengl3[/code] on this platform. [code]opengl3_es[/code] is available as an option, which is also used as a fallback on devices that don't support OpenGL 3.3.
 		</member>
-		<member name="rendering/gl_compatibility/driver.macos" type="String" setter="" getter="">
+		<member name="rendering/gl_compatibility/driver.macos" type="String" setter="" getter="" default="&quot;auto&quot;">
 			macOS override for [member rendering/gl_compatibility/driver].
+			The [code]auto[/code] setting is equivalent to [code]opengl3[/code] on this platform. [code]opengl3_angle[/code] is available as an option if ANGLE support was compiled in.
 		</member>
-		<member name="rendering/gl_compatibility/driver.web" type="String" setter="" getter="">
+		<member name="rendering/gl_compatibility/driver.web" type="String" setter="" getter="" default="&quot;auto&quot;">
 			Web override for [member rendering/gl_compatibility/driver].
+			The [code]auto[/code] setting is equivalent to [code]opengl3[/code] on this platform.
 		</member>
-		<member name="rendering/gl_compatibility/driver.windows" type="String" setter="" getter="">
+		<member name="rendering/gl_compatibility/driver.windows" type="String" setter="" getter="" default="&quot;auto&quot;">
 			Windows override for [member rendering/gl_compatibility/driver].
+			The [code]auto[/code] setting is equivalent to [code]opengl3[/code] on this platform. [code]opengl3_angle[/code] is available as an option if ANGLE supported was compiled in. In such case, ANGLE is used preferentially on lower end devices with known problematic native OpenGL drivers (see [member rendering/gl_compatibility/force_angle_on_devices]).
 		</member>
 		<member name="rendering/gl_compatibility/fallback_to_angle" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], the compatibility renderer will fall back to ANGLE if native OpenGL is not supported or the device is listed in [member rendering/gl_compatibility/force_angle_on_devices].
@@ -2735,17 +2762,21 @@
 			The VoxelGI quality to use. High quality leads to more precise lighting and better reflections, but is slower to render. This setting does not affect the baked data and doesn't require baking the [VoxelGI] again to apply.
 			[b]Note:[/b] This property is only read when the project starts. To control VoxelGI quality at runtime, call [method RenderingServer.voxel_gi_set_quality] instead.
 		</member>
-		<member name="rendering/lightmapping/bake_performance/max_rays_per_pass" type="int" setter="" getter="" default="32">
+		<member name="rendering/lightmapping/bake_performance/max_rays_per_pass" type="int" setter="" getter="" default="4">
 			The maximum number of rays that can be thrown per pass when baking lightmaps with [LightmapGI]. Depending on the scene, adjusting this value may result in higher GPU utilization when baking lightmaps, leading to faster bake times.
+			[b]Note:[/b] Using a value that is too high for your system can cause crashes due to the GPU being unresponsive for long periods of time, and the graphics driver being reset by the OS.
 		</member>
 		<member name="rendering/lightmapping/bake_performance/max_rays_per_probe_pass" type="int" setter="" getter="" default="64">
 			The maximum number of rays that can be thrown per pass when baking dynamic object lighting in [LightmapProbe]s with [LightmapGI]. Depending on the scene, adjusting this value may result in higher GPU utilization when baking lightmaps, leading to faster bake times.
+			[b]Note:[/b] Using a value that is too high for your system can cause crashes due to the GPU being unresponsive for long periods of time, and the graphics driver being reset by the OS.
 		</member>
 		<member name="rendering/lightmapping/bake_performance/max_transparency_rays" type="int" setter="" getter="" default="8">
 			The maximum number of retry rays that can be thrown per pass when hitting a transparent surface when baking lightmaps with [LightmapGI]. Depending on the scene, reducing this value may lead to faster bake times.
+			[b]Note:[/b] Using a value that is too high for your system can cause crashes due to the GPU being unresponsive for long periods of time, and the graphics driver being reset by the OS.
 		</member>
 		<member name="rendering/lightmapping/bake_performance/region_size" type="int" setter="" getter="" default="512">
-			The region size to use when baking lightmaps with [LightmapGI].
+			The region size to use when baking lightmaps with [LightmapGI]. The specified value is rounded up to the nearest power of 2.
+			[b]Note:[/b] Using a value that is too high for your system can cause crashes due to the GPU being unresponsive for long periods of time, and the graphics driver being reset by the OS.
 		</member>
 		<member name="rendering/lightmapping/bake_quality/high_quality_probe_ray_count" type="int" setter="" getter="" default="512">
 			The number of rays to use for baking dynamic object lighting in [LightmapProbe]s when [member LightmapGI.quality] is [constant LightmapGI.BAKE_QUALITY_HIGH].
@@ -2950,24 +2981,40 @@
 			The number of entries in the sampler descriptors heap the Direct3D 12 rendering driver uses each frame, used for most rendering operations.
 			Depending on the complexity of scenes, this value may be lowered or may need to be raised.
 		</member>
-		<member name="rendering/rendering_device/driver" type="String" setter="" getter="">
+		<member name="rendering/rendering_device/driver" type="String" setter="" getter="" default="&quot;auto&quot;">
 			Sets the driver to be used by the renderer when using a RenderingDevice-based renderer like the Forward+ or Mobile renderers. This property can't be edited directly. Instead, set the driver using the platform-specific overrides. This can be overridden using the [code]--rendering-driver &lt;driver&gt;[/code] command line argument.
+			Supported values are:
+			- [code]auto[/code], Metal on Apple Silicon Macs and iOS, Vulkan on other built-in platforms. On Windows, Direct3D 12 is the default if the engine was compiled without Vulkan support.
+			- [code]metal[/code], Metal (supported on Apple Silicon Macs and iOS).
+			- [code]vulkan[/code], Vulkan (supported on all desktop and mobile platforms).
+			- [code]d3d12[/code], Direct3D 12 (supported on Windows).
+			[b]Note:[/b] The availability of these options depends on whether the engine was compiled with support for them (determined by SCons options [code]vulkan[/code], [code]metal[/code], and [code]d3d12[/code]).
 			[b]Note:[/b] The actual rendering driver may be automatically changed by the engine as a result of a fallback, or a user-specified command line argument. To get the actual rendering driver that is used at runtime, use [method RenderingServer.get_current_rendering_driver_name] instead of reading this project setting's value.
 		</member>
-		<member name="rendering/rendering_device/driver.android" type="String" setter="" getter="">
+		<member name="rendering/rendering_device/driver.android" type="String" setter="" getter="" default="&quot;auto&quot;">
 			Android override for [member rendering/rendering_device/driver].
+			The [code]auto[/code] setting is equivalent to [code]vulkan[/code] on this platform.
+			[b]Note:[/b] If Vulkan was disabled at compile time, there is no alternative RenderingDevice driver.
 		</member>
-		<member name="rendering/rendering_device/driver.ios" type="String" setter="" getter="">
+		<member name="rendering/rendering_device/driver.ios" type="String" setter="" getter="" default="&quot;auto&quot;">
 			iOS override for [member rendering/rendering_device/driver].
+			The [code]auto[/code] setting is equivalent to [code]metal[/code] on this platform.
+			[b]Note:[/b] If Metal was disabled at compile time, the default becomes [code]vulkan[/code]. If both Metal and Vulkan were disabled at compile time, there is no alternative RenderingDevice driver.
 		</member>
-		<member name="rendering/rendering_device/driver.linuxbsd" type="String" setter="" getter="">
+		<member name="rendering/rendering_device/driver.linuxbsd" type="String" setter="" getter="" default="&quot;auto&quot;">
 			LinuxBSD override for [member rendering/rendering_device/driver].
+			The [code]auto[/code] setting is equivalent to [code]vulkan[/code] on this platform.
+			[b]Note:[/b] If Vulkan was disabled at compile time, there is no alternative RenderingDevice driver.
 		</member>
-		<member name="rendering/rendering_device/driver.macos" type="String" setter="" getter="">
+		<member name="rendering/rendering_device/driver.macos" type="String" setter="" getter="" default="&quot;auto&quot;">
 			macOS override for [member rendering/rendering_device/driver].
+			The [code]auto[/code] setting is equivalent to [code]metal[/code] on Apple Silicon Macs, and [code]vulkan[/code] (MoltenVK) on Intel Macs. Metal isn't supported on Intel Macs, so even if setting [code]metal[/code] explicitly, it will fallback to Vulkan on Intel Macs.
+			[b]Note:[/b] If Metal was disabled at compile time, the default becomes [code]vulkan[/code] for both Apple Silicon and Intel Macs. If both Metal and Vulkan were disabled at compile time, there is no alternative RenderingDevice driver.
 		</member>
-		<member name="rendering/rendering_device/driver.windows" type="String" setter="" getter="">
+		<member name="rendering/rendering_device/driver.windows" type="String" setter="" getter="" default="&quot;auto&quot;">
 			Windows override for [member rendering/rendering_device/driver].
+			The [code]auto[/code] setting is equivalent to [code]vulkan[/code] on this platform.
+			[b]Note:[/b] If Vulkan was disabled at compile time, the default becomes [code]d3d12[/code]. If both Vulkan and Direct3D 12 were disabled at compile time, there is no alternative RenderingDevice driver.
 		</member>
 		<member name="rendering/rendering_device/fallback_to_d3d12" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], the forward renderer will fall back to Direct3D 12 if Vulkan is not supported.
@@ -2978,8 +3025,8 @@
 			[b]Note:[/b] This setting is implemented only on Windows, Android, macOS, iOS, and Linux/X11.
 		</member>
 		<member name="rendering/rendering_device/fallback_to_vulkan" type="bool" setter="" getter="" default="true">
-			If [code]true[/code], the forward renderer will fall back to Vulkan if Direct3D 12 is not supported.
-			[b]Note:[/b] This setting is implemented only on Windows.
+			If [code]true[/code], the forward renderer will fall back to Vulkan if Direct3D 12 (on Windows) or Metal (on macOS x86_64) are not supported.
+			[b]Note:[/b] This setting is implemented only on Windows and macOS.
 		</member>
 		<member name="rendering/rendering_device/pipeline_cache/enable" type="bool" setter="" getter="" default="true">
 			Enable the pipeline cache that is saved to disk if the graphics API supports it.

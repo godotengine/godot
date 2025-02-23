@@ -1695,6 +1695,7 @@ void ColorPicker::_add_preset_pressed() {
 
 void ColorPicker::_pick_button_pressed() {
 	is_picking_color = true;
+	pre_picking_color = color;
 
 	if (!picker_window) {
 		picker_window = memnew(Popup);
@@ -1740,6 +1741,7 @@ void ColorPicker::_pick_button_pressed() {
 		picker_preview_color->add_theme_style_override(SceneStringName(panel), picker_preview_style_box_color);
 
 		add_child(picker_window, false, INTERNAL_MODE_FRONT);
+		picker_window->force_parent_owned();
 	}
 	set_process_internal(true);
 
@@ -1748,9 +1750,34 @@ void ColorPicker::_pick_button_pressed() {
 
 void ColorPicker::_target_gui_input(const Ref<InputEvent> &p_event) {
 	const Ref<InputEventMouseButton> mouse_event = p_event;
-	if (mouse_event.is_valid() && mouse_event->is_pressed()) {
+	if (mouse_event.is_null()) {
+		return;
+	}
+	if (mouse_event->get_button_index() == MouseButton::LEFT) {
+		if (mouse_event->is_pressed()) {
+			picker_window->hide();
+			_pick_finished();
+		}
+	} else if (mouse_event->get_button_index() == MouseButton::RIGHT) {
+		set_pick_color(pre_picking_color); // Cancel.
+		is_picking_color = false;
+		set_process_internal(false);
 		picker_window->hide();
-		_pick_finished();
+	} else {
+		Window *w = picker_window->get_parent_visible_window();
+		while (w) {
+			Point2i win_mpos = w->get_mouse_position(); // Mouse position local to the window.
+			Size2i win_size = w->get_size();
+			if (win_mpos.x >= 0 && win_mpos.y >= 0 && win_mpos.x <= win_size.x && win_mpos.y <= win_size.y) {
+				// Mouse event inside window bounds, forward this event to the window.
+				Ref<InputEventMouseButton> new_ev = p_event->duplicate();
+				new_ev->set_position(win_mpos);
+				new_ev->set_global_position(win_mpos);
+				w->push_input(new_ev, true);
+				return;
+			}
+			w = w->get_parent_visible_window();
+		}
 	}
 }
 
@@ -1760,7 +1787,7 @@ void ColorPicker::_pick_finished() {
 	}
 
 	if (Input::get_singleton()->is_action_just_pressed(SNAME("ui_cancel"))) {
-		set_pick_color(old_color);
+		set_pick_color(pre_picking_color);
 	} else {
 		emit_signal(SNAME("color_changed"), color);
 	}
@@ -1856,12 +1883,14 @@ void ColorPicker::_pick_button_pressed_legacy() {
 	if (!is_inside_tree()) {
 		return;
 	}
+	pre_picking_color = color;
 
 	if (!picker_window) {
 		picker_window = memnew(Popup);
 		picker_window->hide();
 		picker_window->set_transient(true);
 		add_child(picker_window, false, INTERNAL_MODE_FRONT);
+		picker_window->force_parent_owned();
 
 		picker_texture_rect = memnew(TextureRect);
 		picker_texture_rect->set_anchors_preset(Control::PRESET_FULL_RECT);
@@ -2535,6 +2564,7 @@ void ColorPickerButton::_update_picker() {
 		picker->set_anchors_and_offsets_preset(PRESET_FULL_RECT);
 		popup->add_child(picker);
 		add_child(popup, false, INTERNAL_MODE_FRONT);
+		popup->force_parent_owned();
 		picker->connect("color_changed", callable_mp(this, &ColorPickerButton::_color_changed));
 		popup->connect("about_to_popup", callable_mp(this, &ColorPickerButton::_about_to_popup));
 		popup->connect("popup_hide", callable_mp(this, &ColorPickerButton::_modal_closed));

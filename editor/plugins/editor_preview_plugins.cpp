@@ -100,6 +100,13 @@ Ref<Texture2D> EditorTexturePreviewPlugin::generate(const Ref<Resource> &p_from,
 			return Ref<Texture2D>();
 		}
 
+		if (atlas->is_compressed()) {
+			atlas = atlas->duplicate();
+			if (atlas->decompress() != OK) {
+				return Ref<Texture2D>();
+			}
+		}
+
 		if (!tex_atlas->get_region().has_area()) {
 			return Ref<Texture2D>();
 		}

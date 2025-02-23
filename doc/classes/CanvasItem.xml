@@ -109,8 +109,9 @@
 			<param index="5" name="aligned" type="bool" default="true" />
 			<param index="6" name="antialiased" type="bool" default="false" />
 			<description>
-				Draws a dashed line from a 2D point to another, with a given color and width. See also [method draw_multiline] and [method draw_polyline].
+				Draws a dashed line from a 2D point to another, with a given color and width. See also [method draw_line], [method draw_multiline], and [method draw_polyline].
 				If [param width] is negative, then a two-point primitives will be drawn instead of a four-point ones. This means that when the CanvasItem is scaled, the line parts will remain thin. If this behavior is not desired, then pass a positive [param width] like [code]1.0[/code].
+				[param dash] is the length of each dash in pixels, with the gap between each dash being the same length. If [param aligned] is [code]true[/code], the length of the first and last dashes may be shortened or lengthened to allow the line to begin and end at the precise points defined by [param from] and [param to]. Both ends are always symmetrical when [param aligned] is [code]true[/code]. If [param aligned] is [code]false[/code], all dashes will have the same length, but the line may appear incomplete at the end due to the dash length not dividing evenly into the line length. Only full dashes are drawn when [param aligned] is [code]false[/code].
 				If [param antialiased] is [code]true[/code], half transparent "feathers" will be attached to the boundary, making outlines smooth.
 				[b]Note:[/b] [param antialiased] is only effective if [param width] is greater than [code]0.0[/code].
 			</description>
@@ -146,7 +147,7 @@
 			<param index="3" name="width" type="float" default="-1.0" />
 			<param index="4" name="antialiased" type="bool" default="false" />
 			<description>
-				Draws a line from a 2D point to another, with a given color and width. It can be optionally antialiased. See also [method draw_multiline] and [method draw_polyline].
+				Draws a line from a 2D point to another, with a given color and width. It can be optionally antialiased. See also [method draw_dashed_line], [method draw_multiline], and [method draw_polyline].
 				If [param width] is negative, then a two-point primitive will be drawn instead of a four-point one. This means that when the CanvasItem is scaled, the line will remain thin. If this behavior is not desired, then pass a positive [param width] like [code]1.0[/code].
 			</description>
 		</method>

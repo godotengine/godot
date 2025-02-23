@@ -3659,10 +3659,12 @@ void CanvasItemEditor::_draw_selection() {
 	}
 
 	// Remove non-movable nodes.
-	for (CanvasItem *ci : selection) {
-		if (!_is_node_movable(ci)) {
-			selection.erase(ci);
+	for (List<CanvasItem *>::Element *E = selection.front(); E;) {
+		List<CanvasItem *>::Element *N = E->next();
+		if (!_is_node_movable(E->get())) {
+			selection.erase(E);
 		}
+		E = N;
 	}
 
 	if (!selection.is_empty() && transform_tool && show_transformation_gizmos) {

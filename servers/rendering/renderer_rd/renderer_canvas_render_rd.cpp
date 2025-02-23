@@ -2913,12 +2913,13 @@ void RendererCanvasRenderRD::_record_item_commands(const Item *p_item, RenderTar
 			r_current_batch->tex_info = tex_info;
 		}
 
+		_update_transform_2d_to_mat2x3(base_transform, world);
 		InstanceData *instance_data = new_instance_data(world, lights, base_flags, r_index, uniforms_ofs, tex_info);
 
 		Rect2 src_rect;
 		Rect2 dst_rect;
 
-		dst_rect = Rect2(Vector2(), p_item->rect.size);
+		dst_rect = p_item->rect;
 		if (dst_rect.size.width < 0) {
 			dst_rect.position.x += dst_rect.size.width;
 			dst_rect.size.width *= -1;
@@ -3299,6 +3300,8 @@ void RendererCanvasRenderRD::_prepare_batch_texture_info(RID p_texture, TextureS
 
 RendererCanvasRenderRD::~RendererCanvasRenderRD() {
 	RendererRD::MaterialStorage *material_storage = RendererRD::MaterialStorage::get_singleton();
+	RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
+
 	//canvas state
 
 	material_storage->material_free(default_canvas_group_material);
@@ -3346,7 +3349,9 @@ RendererCanvasRenderRD::~RendererCanvasRenderRD() {
 		}
 	}
 
-	RendererRD::TextureStorage::get_singleton()->canvas_texture_free(default_canvas_texture);
+	// Disable the callback, as we're tearing everything down
+	texture_storage->canvas_texture_set_invalidation_callback(default_canvas_texture, nullptr, nullptr);
+	texture_storage->canvas_texture_free(default_canvas_texture);
 	//pipelines don't need freeing, they are all gone after shaders are gone
 
 	memdelete(shader.default_version_data);

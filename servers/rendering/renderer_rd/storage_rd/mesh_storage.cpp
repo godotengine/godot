@@ -370,7 +370,8 @@ void MeshStorage::mesh_add_surface(RID p_mesh, const RS::SurfaceData &p_surface)
 	s->format = new_surface.format;
 	s->primitive = new_surface.primitive;
 
-	bool use_as_storage = (new_surface.skin_data.size() || mesh->blend_shape_count > 0);
+	const bool use_as_storage = (new_surface.skin_data.size() || mesh->blend_shape_count > 0);
+	const BitField<RD::BufferCreationBits> as_storage_flag = use_as_storage ? RD::BUFFER_CREATION_AS_STORAGE_BIT : 0;
 
 	if (new_surface.vertex_data.size()) {
 		// If we have an uncompressed surface that contains normals, but not tangents, we need to differentiate the array
@@ -384,10 +385,10 @@ void MeshStorage::mesh_add_surface(RID p_mesh, const RS::SurfaceData &p_surface)
 			Vector<uint8_t> new_vertex_data;
 			new_vertex_data.resize_zeroed(new_surface.vertex_data.size() + sizeof(uint16_t) * 2);
 			memcpy(new_vertex_data.ptrw(), new_surface.vertex_data.ptr(), new_surface.vertex_data.size());
-			s->vertex_buffer = RD::get_singleton()->vertex_buffer_create(new_vertex_data.size(), new_vertex_data, use_as_storage);
+			s->vertex_buffer = RD::get_singleton()->vertex_buffer_create(new_vertex_data.size(), new_vertex_data, as_storage_flag);
 			s->vertex_buffer_size = new_vertex_data.size();
 		} else {
-			s->vertex_buffer = RD::get_singleton()->vertex_buffer_create(new_surface.vertex_data.size(), new_surface.vertex_data, use_as_storage);
+			s->vertex_buffer = RD::get_singleton()->vertex_buffer_create(new_surface.vertex_data.size(), new_surface.vertex_data, as_storage_flag);
 			s->vertex_buffer_size = new_surface.vertex_data.size();
 		}
 	}
@@ -396,7 +397,7 @@ void MeshStorage::mesh_add_surface(RID p_mesh, const RS::SurfaceData &p_surface)
 		s->attribute_buffer = RD::get_singleton()->vertex_buffer_create(new_surface.attribute_data.size(), new_surface.attribute_data);
 	}
 	if (new_surface.skin_data.size()) {
-		s->skin_buffer = RD::get_singleton()->vertex_buffer_create(new_surface.skin_data.size(), new_surface.skin_data, use_as_storage);
+		s->skin_buffer = RD::get_singleton()->vertex_buffer_create(new_surface.skin_data.size(), new_surface.skin_data, as_storage_flag);
 		s->skin_buffer_size = new_surface.skin_data.size();
 	}
 
@@ -1007,7 +1008,7 @@ void MeshStorage::_mesh_instance_add_surface(MeshInstance *mi, Mesh *mesh, uint3
 }
 
 void MeshStorage::_mesh_instance_add_surface_buffer(MeshInstance *mi, Mesh *mesh, MeshInstance::Surface *s, uint32_t p_surface, uint32_t p_buffer_index) {
-	s->vertex_buffer[p_buffer_index] = RD::get_singleton()->vertex_buffer_create(mesh->surfaces[p_surface]->vertex_buffer_size, Vector<uint8_t>(), true);
+	s->vertex_buffer[p_buffer_index] = RD::get_singleton()->vertex_buffer_create(mesh->surfaces[p_surface]->vertex_buffer_size, Vector<uint8_t>(), RD::BUFFER_CREATION_AS_STORAGE_BIT);
 
 	Vector<RD::Uniform> uniforms;
 	{

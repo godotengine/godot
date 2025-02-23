@@ -2238,6 +2238,8 @@ def format_text_block(
                         repl_text = target_name
                         if target_class_name != state.current_class:
                             repl_text = f"{target_class_name}.{target_name}"
+                        if tag_state.name == "method":
+                            repl_text = f"{repl_text}()"
                         tag_text = f":ref:`{repl_text}<class_{sanitize_class_name(target_class_name)}{ref_type}_{target_name}>`"
                         escape_pre = True
                         escape_post = True

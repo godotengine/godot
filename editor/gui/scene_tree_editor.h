@@ -90,6 +90,7 @@ class SceneTreeEditor : public Control {
 
 		HashMap<Node *, CachedNode>::Iterator add(Node *p_node, TreeItem *p_item);
 		HashMap<Node *, CachedNode>::Iterator get(Node *p_node, bool p_deleted_ok = true);
+		bool has(Node *p_node);
 		void remove(Node *p_node, bool p_recursive = false);
 		void mark_dirty(Node *p_node, bool p_parents = true);
 		void mark_children_dirty(Node *p_node, bool p_recursive = false);

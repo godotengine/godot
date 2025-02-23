@@ -37,7 +37,7 @@ class EmbeddedProcess : public Control {
 	GDCLASS(EmbeddedProcess, Control);
 
 	bool application_has_focus = true;
-	bool embedded_process_was_focused = false;
+	uint64_t last_application_focus_time = 0;
 	OS::ProcessID focused_process_id = 0;
 	OS::ProcessID current_process_id = 0;
 	bool embedding_grab_focus = false;
@@ -68,6 +68,7 @@ class EmbeddedProcess : public Control {
 	void _check_focused_process_id();
 	bool _is_embedded_process_updatable();
 	Rect2i _get_global_embedded_window_rect();
+	Window *_get_current_modal_window();
 
 protected:
 	static void _bind_methods();
@@ -76,11 +77,13 @@ protected:
 public:
 	void embed_process(OS::ProcessID p_pid);
 	void reset();
+	void request_close();
 
 	void set_window_size(const Size2i p_window_size);
 	void set_keep_aspect(bool p_keep_aspect);
 	void queue_update_embedded_process();
 
+	Rect2i get_adjusted_embedded_window_rect(Rect2i p_rect);
 	Rect2i get_screen_embedded_window_rect();
 	int get_margin_size(Side p_side) const;
 	Size2 get_margins_size();

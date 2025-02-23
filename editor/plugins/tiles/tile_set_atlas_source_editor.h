@@ -253,6 +253,7 @@ private:
 	PopupMenu *alternative_tile_popup_menu = nullptr;
 	Control *alternative_tiles_control = nullptr;
 	Control *alternative_tiles_control_unscaled = nullptr;
+	void _tile_alternatives_create_button_pressed(const Vector2i &p_atlas_coords);
 	void _tile_alternatives_control_draw();
 	void _tile_alternatives_control_unscaled_draw();
 	void _tile_alternatives_control_mouse_exited();

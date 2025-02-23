@@ -878,8 +878,7 @@ static void _get_directory_contents(EditorFileSystemDirectory *p_dir, HashMap<St
 		if (requires_type && !ClassDB::is_parent_class(p_dir->get_file_type(i), p_required_type)) {
 			continue;
 		}
-		ScriptLanguage::CodeCompletionOption option(p_dir->get_file_path(i), ScriptLanguage::CODE_COMPLETION_KIND_FILE_PATH);
-		option.insert_text = option.display.quote(quote_style);
+		ScriptLanguage::CodeCompletionOption option(p_dir->get_file_path(i).quote(quote_style), ScriptLanguage::CODE_COMPLETION_KIND_FILE_PATH);
 		r_list.insert(option.display, option);
 	}
 
@@ -889,7 +888,11 @@ static void _get_directory_contents(EditorFileSystemDirectory *p_dir, HashMap<St
 }
 
 static void _find_annotation_arguments(const GDScriptParser::AnnotationNode *p_annotation, int p_argument, const String p_quote_style, HashMap<String, ScriptLanguage::CodeCompletionOption> &r_result, String &r_arghint) {
-	r_arghint = _make_arguments_hint(p_annotation->info->info, p_argument, true);
+	ERR_FAIL_NULL(p_annotation);
+
+	if (p_annotation->info != nullptr) {
+		r_arghint = _make_arguments_hint(p_annotation->info->info, p_argument, true);
+	}
 	if (p_annotation->name == SNAME("@export_range")) {
 		if (p_argument == 3 || p_argument == 4 || p_argument == 5) {
 			// Slider hint.
@@ -3956,10 +3959,14 @@ static Error _lookup_symbol_from_base(const GDScriptParser::DataType &p_base, co
 						} else {
 							const int dot_pos = doc_enum_name.rfind_char('.');
 							if (dot_pos >= 0) {
+								Error err = OK;
 								r_result.type = ScriptLanguage::LOOKUP_RESULT_CLASS_CONSTANT;
-								r_result.class_name = doc_enum_name.left(dot_pos);
-								r_result.class_member = p_symbol;
 								if (base_type.class_type != nullptr) {
+									// For script enums the value isn't accessible as class constant so we need the full enum name.
+									r_result.class_name = doc_enum_name;
+									r_result.class_member = p_symbol;
+									r_result.script = GDScriptCache::get_shallow_script(base_type.script_path, err);
+									r_result.script_path = base_type.script_path;
 									const String enum_name = doc_enum_name.substr(dot_pos + 1);
 									if (base_type.class_type->has_member(enum_name)) {
 										const GDScriptParser::ClassNode::Member member = base_type.class_type->get_member(enum_name);
@@ -3972,8 +3979,19 @@ static Error _lookup_symbol_from_base(const GDScriptParser::DataType &p_base, co
 											}
 										}
 									}
+								} else if (base_type.script_type.is_valid()) {
+									// For script enums the value isn't accessible as class constant so we need the full enum name.
+									r_result.class_name = doc_enum_name;
+									r_result.class_member = p_symbol;
+									r_result.script = base_type.script_type;
+									r_result.script_path = base_type.script_path;
+									// TODO: Find a way to obtain enum value location for a script
+									r_result.location = base_type.script_type->get_member_line(doc_enum_name.substr(dot_pos + 1));
+								} else {
+									r_result.class_name = doc_enum_name.left(dot_pos);
+									r_result.class_member = p_symbol;
 								}
-								return OK;
+								return err;
 							}
 						}
 					} else if (Variant::has_builtin_method(Variant::DICTIONARY, p_symbol)) {

@@ -333,7 +333,7 @@ class Godot(private val context: Context) {
 	 * Toggle immersive mode.
 	 * Must be called from the UI thread.
 	 */
-	private fun enableImmersiveMode(enabled: Boolean, override: Boolean = false) {
+	fun enableImmersiveMode(enabled: Boolean, override: Boolean = false) {
 		val activity = getActivity() ?: return
 		val window = activity.window ?: return
 
@@ -664,6 +664,8 @@ class Godot(private val context: Context) {
 	 * Configuration change callback
 	*/
 	fun onConfigurationChanged(newConfig: Configuration) {
+		renderView?.inputHandler?.onConfigurationChanged(newConfig)
+
 		val newDarkMode = newConfig.uiMode.and(Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES
 		if (darkMode != newDarkMode) {
 			darkMode = newDarkMode
@@ -1069,6 +1071,16 @@ class Godot(private val context: Context) {
 	}
 
 	/**
+	 * Returns true if this is the Godot editor.
+	 */
+	fun isEditorHint() = isEditorBuild() && GodotLib.isEditorHint()
+
+	/**
+	 * Returns true if this is the Godot project manager.
+	 */
+	fun isProjectManagerHint() = isEditorBuild() && GodotLib.isProjectManagerHint()
+
+	/**
 	 * Return true if the given feature is supported.
 	 */
 	@Keep
@@ -1176,5 +1188,10 @@ class Godot(private val context: Context) {
 	private fun nativeVerifyApk(apkPath: String): Int {
 		val verifyResult = primaryHost?.verifyApk(apkPath) ?: Error.ERR_UNAVAILABLE
 		return verifyResult.toNativeValue()
+	}
+
+	@Keep
+	private fun nativeOnEditorWorkspaceSelected(workspace: String) {
+		primaryHost?.onEditorWorkspaceSelected(workspace)
 	}
 }

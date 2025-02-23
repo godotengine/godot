@@ -211,6 +211,7 @@ private:
 
 	Color color;
 	Color old_color;
+	Color pre_picking_color;
 	bool is_picking_color = false;
 
 	bool display_old_color = false;

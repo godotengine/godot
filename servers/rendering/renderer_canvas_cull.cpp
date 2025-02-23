@@ -2605,8 +2605,8 @@ bool RendererCanvasCull::free(RID p_rid) {
 		}
 
 		canvas_item_set_material(canvas_item->self, RID());
-		canvas_item->instance_uniforms.free(canvas_item->self);
 		update_dirty_items();
+		canvas_item->instance_uniforms.free(canvas_item->self);
 
 		if (canvas_item->canvas_group != nullptr) {
 			memdelete(canvas_item->canvas_group);
