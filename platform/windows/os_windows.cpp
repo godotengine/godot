@@ -62,6 +62,24 @@
 #include <wbemcli.h>
 #include <wincrypt.h>
 
+#if defined(RD_ENABLED)
+#include "servers/rendering/rendering_device.h"
+#endif
+
+#if defined(GLES3_ENABLED)
+#include "gl_manager_windows_native.h"
+#endif
+
+#if defined(VULKAN_ENABLED)
+#include "rendering_context_driver_vulkan_windows.h"
+#endif
+#if defined(D3D12_ENABLED)
+#include "drivers/d3d12/rendering_context_driver_d3d12.h"
+#endif
+#if defined(GLES3_ENABLED)
+#include "drivers/gles3/rasterizer_gles3.h"
+#endif
+
 #ifdef DEBUG_ENABLED
 #pragma pack(push, before_imagehlp, 8)
 #include <imagehlp.h>
@@ -2344,6 +2362,99 @@ void OS_Windows::add_frame_delay(bool p_can_draw) {
 		current_ticks = get_ticks_usec();
 		target_ticks = MIN(MAX(target_ticks, current_ticks - dynamic_delay), current_ticks + dynamic_delay);
 	}
+}
+
+bool OS_Windows::_test_create_rendering_device() const {
+	// Tests Rendering Device creation.
+
+	bool ok = false;
+#if defined(RD_ENABLED)
+	Error err;
+	RenderingContextDriver *rcd = nullptr;
+
+#if defined(VULKAN_ENABLED)
+	rcd = memnew(RenderingContextDriverVulkan);
+#endif
+#ifdef D3D12_ENABLED
+	if (rcd == nullptr) {
+		rcd = memnew(RenderingContextDriverD3D12);
+	}
+#endif
+	if (rcd != nullptr) {
+		err = rcd->initialize();
+		if (err == OK) {
+			RenderingDevice *rd = memnew(RenderingDevice);
+			err = rd->initialize(rcd);
+			memdelete(rd);
+			rd = nullptr;
+			if (err == OK) {
+				ok = true;
+			}
+		}
+		memdelete(rcd);
+		rcd = nullptr;
+	}
+#endif
+
+	return ok;
+}
+
+bool OS_Windows::_test_create_rendering_device_and_gl() const {
+	// Tests OpenGL context and Rendering Device simultaneous creation. This function is expected to crash on some NVIDIA drivers.
+
+	WNDCLASSEXW wc_probe;
+	memset(&wc_probe, 0, sizeof(WNDCLASSEXW));
+	wc_probe.cbSize = sizeof(WNDCLASSEXW);
+	wc_probe.style = CS_OWNDC | CS_DBLCLKS;
+	wc_probe.lpfnWndProc = (WNDPROC)::DefWindowProcW;
+	wc_probe.cbClsExtra = 0;
+	wc_probe.cbWndExtra = 0;
+	wc_probe.hInstance = GetModuleHandle(nullptr);
+	wc_probe.hIcon = LoadIcon(nullptr, IDI_WINLOGO);
+	wc_probe.hCursor = nullptr;
+	wc_probe.hbrBackground = nullptr;
+	wc_probe.lpszMenuName = nullptr;
+	wc_probe.lpszClassName = L"Engine probe window";
+
+	if (!RegisterClassExW(&wc_probe)) {
+		return false;
+	}
+
+	HWND hWnd = CreateWindowExW(WS_EX_WINDOWEDGE, L"Engine probe window", L"", WS_OVERLAPPEDWINDOW, 0, 0, 800, 600, nullptr, nullptr, GetModuleHandle(nullptr), nullptr);
+	if (!hWnd) {
+		UnregisterClassW(L"Engine probe window", GetModuleHandle(nullptr));
+		return false;
+	}
+
+	bool ok = true;
+#ifdef GLES3_ENABLED
+	GLManagerNative_Windows *test_gl_manager_native = memnew(GLManagerNative_Windows);
+	if (test_gl_manager_native->window_create(DisplayServer::MAIN_WINDOW_ID, hWnd, GetModuleHandle(nullptr), 800, 600) == OK) {
+		RasterizerGLES3::make_current(true);
+	} else {
+		ok = false;
+	}
+#endif
+
+	MSG msg = {};
+	while (PeekMessageW(&msg, nullptr, 0, 0, PM_REMOVE)) {
+		TranslateMessage(&msg);
+		DispatchMessageW(&msg);
+	}
+
+	if (ok) {
+		ok = _test_create_rendering_device();
+	}
+
+#ifdef GLES3_ENABLED
+	if (test_gl_manager_native) {
+		memdelete(test_gl_manager_native);
+	}
+#endif
+
+	DestroyWindow(hWnd);
+	UnregisterClassW(L"Engine probe window", GetModuleHandle(nullptr));
+	return ok;
 }
 
 OS_Windows::OS_Windows(HINSTANCE _hInstance) {
