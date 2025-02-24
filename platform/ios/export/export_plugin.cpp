@@ -2540,7 +2540,9 @@ bool EditorExportPlatformIOS::has_valid_export_configuration(const Ref<EditorExp
 		}
 	}
 
-	if (GLOBAL_GET("rendering/rendering_device/driver.ios") == "metal") {
+	String rendering_method = GLOBAL_GET("rendering/renderer/rendering_method.mobile");
+	String rendering_driver = GLOBAL_GET("rendering/rendering_device/driver.ios");
+	if ((rendering_method == "forward_plus" || rendering_method == "mobile") && rendering_driver == "metal") {
 		float version = p_preset->get("application/min_ios_version").operator String().to_float();
 		if (version < 14.0) {
 			err += TTR("Metal renderer require iOS 14+.") + "\n";
