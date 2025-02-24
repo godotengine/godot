@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "core/io/dir_access.h"
 #include "scene/gui/box_container.h"
 
 class Button;
@@ -45,6 +46,9 @@ class EditorResourcePicker : public HBoxContainer {
 
 	String base_type;
 	Ref<Resource> edited_resource;
+
+	String directory_path = String();
+	Ref<DirAccess> dir_access;
 
 	bool editable = true;
 	bool dropping = false;
@@ -75,6 +79,8 @@ class EditorResourcePicker : public HBoxContainer {
 		OBJ_MENU_COPY,
 		OBJ_MENU_PASTE,
 		OBJ_MENU_SHOW_IN_FILE_SYSTEM,
+		OBJ_MENU_LOAD_FILE,
+		OBJ_MENU_LOAD_FILE_FROM_LIST,
 
 		TYPE_BASE_ID = 100,
 		CONVERT_BASE_ID = 1000,
@@ -94,7 +100,10 @@ class EditorResourcePicker : public HBoxContainer {
 
 	void _update_menu();
 	void _update_menu_items();
+	void add_menu_options();
+	void add_menu_files();
 	void _edit_menu_cbk(int p_which);
+	void _on_file_pressed(int index);
 
 	void _button_draw();
 	void _button_input(const Ref<InputEvent> &p_event);
@@ -143,6 +152,8 @@ public:
 
 	void set_editable(bool p_editable);
 	bool is_editable() const;
+
+	void set_directory(const String &d_path);
 
 	virtual void set_create_options(Object *p_menu_node);
 	virtual bool handle_menu_selected(int p_which);
