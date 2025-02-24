@@ -587,7 +587,7 @@ EditorRunBar::EditorRunBar() {
 	run_native->connect("native_run", callable_mp(this, &EditorRunBar::_run_native));
 
 	bool add_play_xr_mode_options = false;
-#ifndef _3D_DISABLED
+#ifndef XR_DISABLED
 	if (OS::get_singleton()->has_feature("xr_editor") &&
 			(XRServer::get_xr_mode() == XRServer::XRMODE_ON ||
 					(XRServer::get_xr_mode() == XRServer::XRMODE_DEFAULT && GLOBAL_GET("xr/openxr/enabled")))) {
@@ -596,7 +596,7 @@ EditorRunBar::EditorRunBar() {
 		// either regular mode or XR mode.
 		add_play_xr_mode_options = true;
 	}
-#endif // _3D_DISABLED
+#endif // XR_DISABLED
 
 	if (add_play_xr_mode_options) {
 		MenuButton *menu_button = memnew(MenuButton);

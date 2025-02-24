@@ -135,7 +135,7 @@ void VRS::update_vrs_texture(RID p_vrs_fb, RID p_render_target) {
 					copy_vrs(rd_texture, p_vrs_fb, layers > 1);
 				}
 			}
-#ifndef _3D_DISABLED
+#ifndef XR_DISABLED
 		} else if (vrs_mode == RS::VIEWPORT_VRS_XR) {
 			Ref<XRInterface> interface = XRServer::get_singleton()->get_primary_interface();
 			if (interface.is_valid()) {
@@ -150,7 +150,7 @@ void VRS::update_vrs_texture(RID p_vrs_fb, RID p_render_target) {
 					}
 				}
 			}
-#endif // _3D_DISABLED
+#endif // XR_DISABLED
 		}
 
 		if (vrs_update_mode == RS::VIEWPORT_VRS_UPDATE_ONCE) {

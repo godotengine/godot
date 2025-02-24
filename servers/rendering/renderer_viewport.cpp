@@ -38,6 +38,10 @@
 #include "rendering_server_globals.h"
 #include "storage/texture_storage.h"
 
+#ifndef XR_DISABLED
+#include "servers/xr/xr_interface.h"
+#endif // XR_DISABLED
+
 static Transform2D _canvas_get_transform(RendererViewport::Viewport *p_viewport, RendererCanvasCull::Canvas *p_canvas, RendererViewport::Viewport::CanvasData *p_canvas_data, const Vector2 &p_vp_size) {
 	Transform2D xf = p_viewport->global_transform;
 
@@ -272,9 +276,11 @@ void RendererViewport::_draw_3d(Viewport *p_viewport) {
 	RENDER_TIMESTAMP("> Render 3D Scene");
 
 	Ref<XRInterface> xr_interface;
+#ifndef XR_DISABLED
 	if (p_viewport->use_xr && XRServer::get_singleton() != nullptr) {
 		xr_interface = XRServer::get_singleton()->get_primary_interface();
 	}
+#endif // XR_DISABLED
 
 	if (p_viewport->use_occlusion_culling) {
 		if (p_viewport->occlusion_buffer_dirty) {
@@ -713,7 +719,7 @@ void RendererViewport::_draw_viewport(Viewport *p_viewport) {
 void RendererViewport::draw_viewports(bool p_swap_buffers) {
 	timestamp_vp_map.clear();
 
-#ifndef _3D_DISABLED
+#ifndef XR_DISABLED
 	// get our xr interface in case we need it
 	Ref<XRInterface> xr_interface;
 	XRServer *xr_server = XRServer::get_singleton();
@@ -724,7 +730,7 @@ void RendererViewport::draw_viewports(bool p_swap_buffers) {
 		// retrieve the interface responsible for rendering
 		xr_interface = xr_server->get_primary_interface();
 	}
-#endif // _3D_DISABLED
+#endif // XR_DISABLED
 
 	if (Engine::get_singleton()->is_editor_hint()) {
 		RSG::texture_storage->set_default_clear_color(GLOBAL_GET("rendering/environment/defaults/default_clear_color"));
@@ -757,7 +763,7 @@ void RendererViewport::draw_viewports(bool p_swap_buffers) {
 
 		bool visible = vp->viewport_to_screen_rect != Rect2();
 
-#ifndef _3D_DISABLED
+#ifndef XR_DISABLED
 		if (vp->use_xr) {
 			if (xr_interface.is_valid()) {
 				// Ignore update mode we have to commit frames to our XR interface
@@ -772,7 +778,7 @@ void RendererViewport::draw_viewports(bool p_swap_buffers) {
 				vp->size = Size2();
 			}
 		} else
-#endif // _3D_DISABLED
+#endif // XR_DISABLED
 		{
 			if (vp->update_mode == RS::VIEWPORT_UPDATE_ALWAYS || vp->update_mode == RS::VIEWPORT_UPDATE_ONCE) {
 				visible = true;
@@ -811,7 +817,7 @@ void RendererViewport::draw_viewports(bool p_swap_buffers) {
 		RENDER_TIMESTAMP("> Render Viewport " + itos(i));
 
 		RSG::texture_storage->render_target_set_as_unused(vp->render_target);
-#ifndef _3D_DISABLED
+#ifndef XR_DISABLED
 		if (vp->use_xr && xr_interface.is_valid()) {
 			// Inform XR interface we're about to render its viewport,
 			// if this returns false we don't render.
@@ -860,7 +866,7 @@ void RendererViewport::draw_viewports(bool p_swap_buffers) {
 				}
 			}
 		} else
-#endif // _3D_DISABLED
+#endif // XR_DISABLED
 		{
 			RSG::scene->set_debug_draw_mode(vp->debug_draw);
 
