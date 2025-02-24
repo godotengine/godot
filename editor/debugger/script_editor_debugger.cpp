@@ -451,9 +451,19 @@ void ScriptEditorDebugger::_msg_servers_memory_usage(uint64_t p_thread_id, const
 		it->set_text(3, String::humanize_size(bytes));
 		total += bytes;
 
-		if (has_theme_icon(type, EditorStringName(EditorIcons))) {
-			it->set_icon(0, get_editor_theme_icon(type));
+		// If it does not have a theme icon, just go up the inheritance tree until we find one.
+		if (!has_theme_icon(type, EditorStringName(EditorIcons))) {
+			StringName base_type = type;
+			while (base_type != "Resource" || base_type != "") {
+				base_type = ClassDB::get_parent_class(base_type);
+				if (has_theme_icon(base_type, EditorStringName(EditorIcons))) {
+					type = base_type;
+					break;
+				}
+			}
 		}
+
+		it->set_icon(0, get_editor_theme_icon(type));
 	}
 
 	vmem_total->set_tooltip_text(TTR("Bytes:") + " " + itos(total));
@@ -1004,6 +1014,7 @@ void ScriptEditorDebugger::_notification(int p_what) {
 			next->set_button_icon(get_editor_theme_icon(SNAME("DebugNext")));
 			dobreak->set_button_icon(get_editor_theme_icon(SNAME("Pause")));
 			docontinue->set_button_icon(get_editor_theme_icon(SNAME("DebugContinue")));
+			vmem_notice_icon->set_texture(get_editor_theme_icon(SNAME("NodeInfo")));
 			vmem_refresh->set_button_icon(get_editor_theme_icon(SNAME("Reload")));
 			vmem_export->set_button_icon(get_editor_theme_icon(SNAME("Save")));
 			search->set_right_icon(get_editor_theme_icon(SNAME("Search")));
@@ -2185,11 +2196,32 @@ ScriptEditorDebugger::ScriptEditorDebugger() {
 	{ //vmem inspect
 		VBoxContainer *vmem_vb = memnew(VBoxContainer);
 		HBoxContainer *vmem_hb = memnew(HBoxContainer);
-		Label *vmlb = memnew(Label(TTR("List of Video Memory Usage by Resource:") + " "));
-		vmlb->set_theme_type_variation("HeaderSmall");
 
-		vmlb->set_h_size_flags(SIZE_EXPAND_FILL);
+		Label *vmlb = memnew(Label(TTRC("List of Video Memory Usage by Resource:")));
+		vmlb->set_theme_type_variation("HeaderSmall");
 		vmem_hb->add_child(vmlb);
+
+		{ // Add notice icon.
+			vmem_notice_icon = memnew(TextureRect);
+			vmem_notice_icon->set_stretch_mode(TextureRect::STRETCH_KEEP_CENTERED);
+			vmem_notice_icon->set_h_size_flags(SIZE_SHRINK_CENTER);
+			vmem_notice_icon->set_visible(true);
+			vmem_notice_icon->set_tooltip_text(TTR(R"(Notice:
+This tool only reports memory allocations tracked by the engine.
+Therefore, total VRAM usage is inaccurate compared to what the Monitors tab or external tools can report.
+Instead, use the monitors tab to obtain more precise VRAM usage.
+
+- Buffer Memory (e.g. GPUParticles) is not tracked.
+- Meshes are not tracked in the Compatibility renderer.)"));
+			vmem_hb->add_child(vmem_notice_icon);
+		}
+
+		{ // Add some space to move the rest of the controls to the right.
+			Control *space = memnew(Control);
+			space->set_h_size_flags(SIZE_EXPAND_FILL);
+			vmem_hb->add_child(space);
+		}
+
 		vmem_hb->add_child(memnew(Label(TTR("Total:") + " ")));
 		vmem_total = memnew(LineEdit);
 		vmem_total->set_editable(false);

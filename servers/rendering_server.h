@@ -183,6 +183,7 @@ public:
 		Image::Format format;
 		int64_t bytes;
 		String path;
+		TextureType type;
 	};
 
 	virtual void texture_debug_usage(List<TextureInfo> *r_info) = 0;
@@ -441,6 +442,20 @@ public:
 
 	virtual void mesh_surface_remove(RID p_mesh, int p_surface) = 0;
 	virtual void mesh_clear(RID p_mesh) = 0;
+
+	struct MeshInfo {
+		RID mesh;
+		String path;
+		uint32_t vertex_buffer_size = 0;
+		uint32_t attribute_buffer_size = 0;
+		uint32_t skin_buffer_size = 0;
+		uint32_t index_buffer_size = 0;
+		uint32_t blend_shape_buffer_size = 0;
+		uint32_t lod_index_buffers_size = 0;
+		uint64_t vertex_count = 0;
+	};
+
+	virtual void mesh_debug_usage(List<MeshInfo> *r_info) = 0;
 
 	/* MULTIMESH API */
 
