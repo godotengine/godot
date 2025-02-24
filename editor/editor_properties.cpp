@@ -3333,6 +3333,10 @@ void EditorPropertyResource::setup(Object *p_object, const String &p_path, const
 	}
 }
 
+void EditorPropertyResource::set_directory(const String &dir_path) {
+	resource_picker->set_directory(dir_path);
+}
+
 void EditorPropertyResource::update_property() {
 	Ref<Resource> res = get_edited_property_display_value();
 
@@ -3867,9 +3871,24 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 				return editor;
 			} else {
 				EditorPropertyResource *editor = memnew(EditorPropertyResource);
-				editor->setup(p_object, p_path, p_hint == PROPERTY_HINT_RESOURCE_TYPE ? p_hint_text : "Resource");
+				const bool hint_uses_res = p_hint == PROPERTY_HINT_RESOURCE_TYPE || p_hint == PROPERTY_HINT_RES_FROM_DIR;
+				String sub_res = p_hint_text;
+				String dir_path = "";
+				if (p_hint == PROPERTY_HINT_RES_FROM_DIR) {
+					Vector<String> args = sub_res.split(",", false);
 
-				if (p_hint == PROPERTY_HINT_RESOURCE_TYPE) {
+					sub_res = args[0];
+					if (args.size() > 1) {
+						dir_path = args[1];
+					} else {
+						dir_path = "res://";
+					}
+				}
+
+				editor->setup(p_object, p_path, hint_uses_res ? sub_res : "Resource");
+				editor->set_directory(dir_path);
+
+				if (hint_uses_res) {
 					const PackedStringArray open_in_new_inspector = EDITOR_GET("interface/inspector/resources_to_open_in_new_inspector");
 
 					for (const String &type : open_in_new_inspector) {
