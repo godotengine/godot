@@ -520,7 +520,7 @@ public:
 	String rstrip(const String &p_chars) const;
 	String get_extension() const;
 	String get_basename() const;
-	String path_join(const String &p_file) const;
+	String path_join(const String &p_path) const;
 	char32_t unicode_at(int p_idx) const;
 
 	CharString ascii(bool p_allow_extended = false) const;
