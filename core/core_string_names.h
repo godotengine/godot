@@ -48,6 +48,7 @@ public:
 	const StringName free_ = StaticCString::create("free"); // free would conflict with C++ keyword.
 	const StringName changed = StaticCString::create("changed");
 	const StringName script = StaticCString::create("script");
+	const StringName script_changing = StaticCString::create("script_changing");
 	const StringName script_changed = StaticCString::create("script_changed");
 	const StringName _iter_init = StaticCString::create("_iter_init");
 	const StringName _iter_next = StaticCString::create("_iter_next");
