@@ -340,15 +340,11 @@ void ScrollContainer::ensure_control_visible(Control *p_control) {
 		}
 
 		const Rect2 rect = sc->_get_local_visible_rect();
-		const Rect2 target_rect = target_in_sc.xform(target_rect_local);
-		const Rect2 rect_in_target = target_in_sc.affine_inverse().xform(rect);
+		target_rect_local = target_rect_local.intersection_transformed(target_in_sc.affine_inverse(), rect);
 
-		if (!target_rect_local.intersects(rect_in_target) || !rect.intersects(target_rect)) {
+		if (!target_rect_local.has_area()) {
 			ERR_FAIL_MSG("Unable to make the control visible because it is obscured by the inner ScrollContainer.");
 		}
-
-		// It is possible that part of the visible area is covered by sc, so recalculate the size of the visible area of p_control.
-		target_rect_local.size = target_rect_local.size.min(target_rect_local.intersection(rect_in_target).size);
 	}
 
 	// Calculates the amount to scroll in this ScrollContainer.
