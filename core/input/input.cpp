@@ -614,7 +614,7 @@ void Input::joy_connection_changed(int p_idx, bool p_connected, const String &p_
 Vector3 Input::get_gravity() const {
 	_THREAD_SAFE_METHOD_
 
-#ifdef DEBUG_ENABLED
+#if defined(DEBUG_ENABLED) && defined(ANDROID_ENABLED)
 	if (!gravity_enabled) {
 		WARN_PRINT_ONCE("`input_devices/sensors/enable_gravity` is not enabled in project settings.");
 	}
@@ -626,7 +626,7 @@ Vector3 Input::get_gravity() const {
 Vector3 Input::get_accelerometer() const {
 	_THREAD_SAFE_METHOD_
 
-#ifdef DEBUG_ENABLED
+#if defined(DEBUG_ENABLED) && defined(ANDROID_ENABLED)
 	if (!accelerometer_enabled) {
 		WARN_PRINT_ONCE("`input_devices/sensors/enable_accelerometer` is not enabled in project settings.");
 	}
@@ -638,7 +638,7 @@ Vector3 Input::get_accelerometer() const {
 Vector3 Input::get_magnetometer() const {
 	_THREAD_SAFE_METHOD_
 
-#ifdef DEBUG_ENABLED
+#if defined(DEBUG_ENABLED) && defined(ANDROID_ENABLED)
 	if (!magnetometer_enabled) {
 		WARN_PRINT_ONCE("`input_devices/sensors/enable_magnetometer` is not enabled in project settings.");
 	}
@@ -650,7 +650,7 @@ Vector3 Input::get_magnetometer() const {
 Vector3 Input::get_gyroscope() const {
 	_THREAD_SAFE_METHOD_
 
-#ifdef DEBUG_ENABLED
+#if defined(DEBUG_ENABLED) && defined(ANDROID_ENABLED)
 	if (!gyroscope_enabled) {
 		WARN_PRINT_ONCE("`input_devices/sensors/enable_gyroscope` is not enabled in project settings.");
 	}
