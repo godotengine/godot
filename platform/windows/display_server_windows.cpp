@@ -6764,8 +6764,8 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 	_register_raw_input_devices(INVALID_WINDOW_ID);
 
 #if defined(RD_ENABLED)
-	bool fallback_to_vulkan = GLOBAL_GET("rendering/rendering_device/fallback_to_vulkan");
-	bool fallback_to_d3d12 = GLOBAL_GET("rendering/rendering_device/fallback_to_d3d12");
+	[[maybe_unused]] bool fallback_to_vulkan = GLOBAL_GET("rendering/rendering_device/fallback_to_vulkan");
+	[[maybe_unused]] bool fallback_to_d3d12 = GLOBAL_GET("rendering/rendering_device/fallback_to_d3d12");
 
 #if defined(VULKAN_ENABLED)
 	if (rendering_driver == "vulkan") {
