@@ -652,8 +652,10 @@ public:
 	// Used to cache the result of `can_create_rendering_device()` when RenderingDevice isn't currently being used.
 	// This is done as creating a RenderingDevice is quite slow.
 	static inline RenderingDeviceCreationStatus created_rendering_device = RenderingDeviceCreationStatus::UNKNOWN;
-
 	static bool can_create_rendering_device();
+
+	static inline RenderingDeviceCreationStatus supported_rendering_device = RenderingDeviceCreationStatus::UNKNOWN;
+	static bool is_rendering_device_supported();
 
 	DisplayServer();
 	~DisplayServer();

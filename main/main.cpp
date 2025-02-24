@@ -979,6 +979,10 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	String project_path = ".";
 	bool upwards = false;
 	String debug_uri = "";
+#if defined(TOOLS_ENABLED) && defined(WINDOWS_ENABLED)
+	bool test_rd_creation = false;
+	bool test_rd_support = false;
+#endif
 	bool skip_breakpoints = false;
 	String main_pack;
 	bool quiet_stdout = false;
@@ -1667,6 +1671,12 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		} else if (arg == "--debug-stringnames") {
 			StringName::set_debug_stringnames(true);
 #endif
+#if defined(TOOLS_ENABLED) && defined(WINDOWS_ENABLED)
+		} else if (arg == "--test-rd-support") {
+			test_rd_support = true;
+		} else if (arg == "--test-rd-creation") {
+			test_rd_creation = true;
+#endif
 		} else if (arg == "--remote-debug") {
 			if (N) {
 				debug_uri = N->get();
@@ -1869,6 +1879,30 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		WorkerThreadPool::get_singleton()->init(0, 0);
 #endif
 	}
+
+#if defined(TOOLS_ENABLED) && defined(WINDOWS_ENABLED)
+	if (test_rd_support) {
+		// Test Rendering Device creation and exit.
+
+		OS::get_singleton()->set_crash_handler_silent();
+		if (OS::get_singleton()->_test_create_rendering_device()) {
+			exit_err = ERR_HELP;
+		} else {
+			exit_err = ERR_UNAVAILABLE;
+		}
+		goto error;
+	} else if (test_rd_creation) {
+		// Test OpenGL context and Rendering Device simultaneous creation and exit.
+
+		OS::get_singleton()->set_crash_handler_silent();
+		if (OS::get_singleton()->_test_create_rendering_device_and_gl()) {
+			exit_err = ERR_HELP;
+		} else {
+			exit_err = ERR_UNAVAILABLE;
+		}
+		goto error;
+	}
+#endif
 
 #ifdef TOOLS_ENABLED
 	if (editor) {
