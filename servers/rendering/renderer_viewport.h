@@ -37,10 +37,6 @@
 #include "servers/rendering_server.h"
 #include "storage/render_scene_buffers.h"
 
-#ifndef _3D_DISABLED
-#include "servers/xr/xr_interface.h"
-#endif // _3D_DISABLED
-
 class RendererViewport {
 public:
 	struct CanvasBase {
