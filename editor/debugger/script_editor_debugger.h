@@ -137,6 +137,7 @@ private:
 	Button *vmem_refresh = nullptr;
 	Button *vmem_export = nullptr;
 	LineEdit *vmem_total = nullptr;
+	TextureRect *vmem_notice_icon = nullptr;
 
 	Tree *stack_dump = nullptr;
 	LineEdit *search = nullptr;
