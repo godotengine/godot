@@ -198,6 +198,7 @@ private:
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
+	virtual void _physics_interpolated_changed() override;
 
 public:
 	PackedStringArray get_configuration_warnings() const override;

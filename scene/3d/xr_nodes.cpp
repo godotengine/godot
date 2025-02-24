@@ -714,6 +714,12 @@ void XROrigin3D::_set_current(bool p_enabled, bool p_update_others) {
 		ERR_FAIL_NULL(xr_server);
 
 		xr_server->set_world_origin(get_global_transform());
+
+		if (is_physics_interpolated()) {
+			set_process_internal(true);
+		}
+	} else if (is_physics_interpolated()) {
+		set_process_internal(false);
 	}
 
 	// Check if we need to update our other origin nodes accordingly
@@ -784,8 +790,14 @@ void XROrigin3D::_notification(int p_what) {
 
 		case NOTIFICATION_LOCAL_TRANSFORM_CHANGED:
 		case NOTIFICATION_TRANSFORM_CHANGED: {
-			if (current && !Engine::get_singleton()->is_editor_hint()) {
+			if (current && !Engine::get_singleton()->is_editor_hint() && !is_physics_interpolated_and_enabled()) {
 				xr_server->set_world_origin(get_global_transform());
+			}
+		} break;
+
+		case NOTIFICATION_INTERNAL_PROCESS: {
+			if (current && !Engine::get_singleton()->is_editor_hint() && is_physics_interpolated_and_enabled()) {
+				xr_server->set_world_origin(get_global_transform_interpolated());
 			}
 		} break;
 	}
@@ -798,5 +810,11 @@ void XROrigin3D::_notification(int p_what) {
 				interface->notification(p_what);
 			}
 		}
+	}
+}
+
+void XROrigin3D::_physics_interpolated_changed() {
+	if (current && !Engine::get_singleton()->is_editor_hint()) {
+		set_process_internal(is_physics_interpolated());
 	}
 }
