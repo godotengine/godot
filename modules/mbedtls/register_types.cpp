@@ -52,7 +52,7 @@ void initialize_mbedtls_module(ModuleInitializationLevel p_level) {
 		return;
 	}
 
-	GLOBAL_DEF("network/tls/enable_tls_v1.3", false);
+	GLOBAL_DEF("network/tls/enable_tls_v1.3", true);
 
 #if MBEDTLS_VERSION_MAJOR >= 3
 	int status = psa_crypto_init();
