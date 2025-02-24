@@ -1057,28 +1057,6 @@ read_record_header:
         MBEDTLS_SSL_DEBUG_MSG(1, ("bad client hello message"));
         return MBEDTLS_ERR_SSL_UNEXPECTED_MESSAGE;
     }
-    {
-        size_t handshake_len = MBEDTLS_GET_UINT24_BE(buf, 1);
-        MBEDTLS_SSL_DEBUG_MSG(3, ("client hello v3, handshake len.: %u",
-                                  (unsigned) handshake_len));
-
-        /* The record layer has a record size limit of 2^14 - 1 and
-         * fragmentation is not supported, so buf[1] should be zero. */
-        if (buf[1] != 0) {
-            MBEDTLS_SSL_DEBUG_MSG(1, ("bad client hello message: %u != 0",
-                                      (unsigned) buf[1]));
-            return MBEDTLS_ERR_SSL_DECODE_ERROR;
-        }
-
-        /* We don't support fragmentation of ClientHello (yet?) */
-        if (msg_len != mbedtls_ssl_hs_hdr_len(ssl) + handshake_len) {
-            MBEDTLS_SSL_DEBUG_MSG(1, ("bad client hello message: %u != %u + %u",
-                                      (unsigned) msg_len,
-                                      (unsigned) mbedtls_ssl_hs_hdr_len(ssl),
-                                      (unsigned) handshake_len));
-            return MBEDTLS_ERR_SSL_DECODE_ERROR;
-        }
-    }
 
 #if defined(MBEDTLS_SSL_PROTO_DTLS)
     if (ssl->conf->transport == MBEDTLS_SSL_TRANSPORT_DATAGRAM) {
