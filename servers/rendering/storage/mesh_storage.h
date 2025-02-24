@@ -76,6 +76,8 @@ public:
 	virtual void mesh_surface_remove(RID p_mesh, int p_surface) = 0;
 	virtual void mesh_clear(RID p_mesh) = 0;
 
+	virtual void mesh_debug_usage(List<RS::MeshInfo> *r_info) = 0;
+
 	virtual bool mesh_needs_instance(RID p_mesh, bool p_has_skeleton) = 0;
 
 	/* MESH INSTANCE */
