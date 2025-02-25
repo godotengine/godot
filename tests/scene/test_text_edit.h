@@ -31,7 +31,7 @@
 #ifndef TEST_TEXT_EDIT_H
 #define TEST_TEXT_EDIT_H
 
-#include "scene/gui/text_edit.h"
+#include "scene/gui/advanced/text_edit.h"
 
 #include "tests/test_macros.h"
 

@@ -31,9 +31,9 @@
 #ifndef GRAPH_EDIT_H
 #define GRAPH_EDIT_H
 
+#include "scene/gui/advanced/graph_frame.h"
+#include "scene/gui/advanced/graph_node.h"
 #include "scene/gui/box_container.h"
-#include "scene/gui/graph_frame.h"
-#include "scene/gui/graph_node.h"
 
 class Button;
 class GraphEdit;

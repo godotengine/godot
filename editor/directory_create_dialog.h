@@ -31,7 +31,7 @@
 #ifndef DIRECTORY_CREATE_DIALOG_H
 #define DIRECTORY_CREATE_DIALOG_H
 
-#include "scene/gui/dialogs.h"
+#include "scene/gui/advanced/dialogs.h"
 
 class EditorValidationPanel;
 class Label;

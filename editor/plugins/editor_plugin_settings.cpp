@@ -37,10 +37,10 @@
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/themes/editor_scale.h"
+#include "scene/gui/advanced/tree.h"
 #include "scene/gui/margin_container.h"
 #include "scene/gui/separator.h"
 #include "scene/gui/texture_rect.h"
-#include "scene/gui/tree.h"
 
 void EditorPluginSettings::_notification(int p_what) {
 	switch (p_what) {

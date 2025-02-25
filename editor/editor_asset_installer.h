@@ -31,8 +31,8 @@
 #ifndef EDITOR_ASSET_INSTALLER_H
 #define EDITOR_ASSET_INSTALLER_H
 
-#include "scene/gui/dialogs.h"
-#include "scene/gui/tree.h"
+#include "scene/gui/advanced/dialogs.h"
+#include "scene/gui/advanced/tree.h"
 
 class CheckBox;
 class EditorFileDialog;

@@ -31,7 +31,7 @@
 #ifndef UID_UPGRADE_TOOL_H
 #define UID_UPGRADE_TOOL_H
 
-#include "scene/gui/dialogs.h"
+#include "scene/gui/advanced/dialogs.h"
 
 class EditorFileSystemDirectory;
 

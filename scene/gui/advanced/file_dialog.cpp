@@ -32,10 +32,10 @@
 
 #include "core/config/project_settings.h"
 #include "core/os/keyboard.h"
+#include "scene/gui/advanced/option_button.h"
 #include "scene/gui/check_box.h"
 #include "scene/gui/grid_container.h"
 #include "scene/gui/label.h"
-#include "scene/gui/option_button.h"
 #include "scene/theme/theme_db.h"
 
 FileDialog::GetIconFunc FileDialog::get_icon_func = nullptr;

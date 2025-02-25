@@ -31,7 +31,7 @@
 #ifndef PROJECT_DIALOG_H
 #define PROJECT_DIALOG_H
 
-#include "scene/gui/dialogs.h"
+#include "scene/gui/advanced/dialogs.h"
 
 class Button;
 class CheckBox;

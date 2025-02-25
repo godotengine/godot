@@ -31,7 +31,7 @@
 #ifndef PROPERTY_SELECTOR_H
 #define PROPERTY_SELECTOR_H
 
-#include "scene/gui/dialogs.h"
+#include "scene/gui/advanced/dialogs.h"
 
 class EditorHelpBit;
 class LineEdit;

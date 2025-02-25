@@ -32,9 +32,9 @@
 #define EDITOR_HELP_SEARCH_H
 
 #include "editor/plugins/editor_plugin.h"
-#include "scene/gui/dialogs.h"
-#include "scene/gui/option_button.h"
-#include "scene/gui/tree.h"
+#include "scene/gui/advanced/dialogs.h"
+#include "scene/gui/advanced/option_button.h"
+#include "scene/gui/advanced/tree.h"
 
 class EditorHelpSearch : public ConfirmationDialog {
 	GDCLASS(EditorHelpSearch, ConfirmationDialog);

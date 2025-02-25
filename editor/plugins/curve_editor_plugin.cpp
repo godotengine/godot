@@ -41,9 +41,9 @@
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/gui/editor_spin_slider.h"
 #include "editor/themes/editor_scale.h"
+#include "scene/gui/advanced/menu_button.h"
+#include "scene/gui/advanced/popup_menu.h"
 #include "scene/gui/flow_container.h"
-#include "scene/gui/menu_button.h"
-#include "scene/gui/popup_menu.h"
 #include "scene/gui/separator.h"
 #include "scene/resources/image_texture.h"
 

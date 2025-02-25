@@ -32,9 +32,9 @@
 #define ADD_METADATA_DIALOG_H
 
 #include "editor/gui/editor_validation_panel.h"
-#include "scene/gui/dialogs.h"
+#include "scene/gui/advanced/dialogs.h"
+#include "scene/gui/advanced/option_button.h"
 #include "scene/gui/line_edit.h"
-#include "scene/gui/option_button.h"
 
 class AddMetadataDialog : public ConfirmationDialog {
 	GDCLASS(AddMetadataDialog, ConfirmationDialog);

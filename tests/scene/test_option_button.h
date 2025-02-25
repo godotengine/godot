@@ -31,7 +31,7 @@
 #ifndef TEST_OPTION_BUTTON_H
 #define TEST_OPTION_BUTTON_H
 
-#include "scene/gui/option_button.h"
+#include "scene/gui/advanced/option_button.h"
 
 #include "tests/test_macros.h"
 

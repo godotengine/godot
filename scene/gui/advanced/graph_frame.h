@@ -31,7 +31,7 @@
 #ifndef GRAPH_FRAME_H
 #define GRAPH_FRAME_H
 
-#include "scene/gui/graph_element.h"
+#include "scene/gui/advanced/graph_element.h"
 
 class HBoxContainer;
 
