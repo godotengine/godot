@@ -129,11 +129,13 @@ void ShaderCreateDialog::_path_hbox_sorted() {
 void ShaderCreateDialog::_mode_changed(int p_mode) {
 	current_mode = p_mode;
 	EditorSettings::get_singleton()->set_project_metadata("shader_setup", "last_selected_mode", p_mode);
+
+	_update_templates();
 }
 
 void ShaderCreateDialog::_template_changed(int p_template) {
 	current_template = p_template;
-	EditorSettings::get_singleton()->set_project_metadata("shader_setup", "last_selected_template", p_template);
+	EditorSettings::get_singleton()->set_project_metadata("shader_setup", vformat("last_selected_template_%d", current_mode), p_template);
 }
 
 void ShaderCreateDialog::ok_pressed() {
@@ -226,6 +228,33 @@ void fog() {
 }
 )";
 				}
+			} else if (current_mode == Shader::MODE_SPATIAL && current_template == TEMPLATE_SPATIAL_SPRITE3D) {
+				// Spatial: Sprite3D template.
+				code += R"(render_mode unshaded;
+
+uniform sampler2D texture_albedo; // Required for Sprite3D.
+uniform ivec2 albedo_texture_size; // Required for Sprite3D.
+
+varying vec4 color;
+void vertex() {
+	// Called for every vertex the material is visible on.
+	// Sprite3D's "modulate" property changes the vertex color, so
+	// assigning COLOR to a varying lets the material take advantage of modulate.
+	color = COLOR;
+}
+
+void fragment() {
+	// Called for every pixel the material is visible on.
+	vec4 col = color * texture(texture_albedo, UV);
+	ALBEDO = col.rgb;
+	ALPHA = col.a;
+}
+
+//void light() {
+//	// Called for every pixel for every light affecting the material.
+//	// Uncomment to replace the default light processing function with this one.
+//}
+)";
 			}
 			text_shader->set_code(code.as_string());
 		} break;
@@ -323,13 +352,10 @@ void ShaderCreateDialog::_type_changed(int p_language) {
 	template_menu->clear();
 
 	if (shader_type_data.use_templates) {
-		int last_template = EditorSettings::get_singleton()->get_project_metadata("shader_setup", "last_selected_template", 0);
-
 		template_menu->add_item(TTRC("Default"));
 		template_menu->add_item(TTRC("Empty"));
 
-		template_menu->select(last_template);
-		current_template = last_template;
+		_update_templates();
 	} else {
 		template_menu->add_item(TTRC("N/A"));
 	}
@@ -426,17 +452,19 @@ void ShaderCreateDialog::config(const String &p_base_path, bool p_built_in_enabl
 		internal->set_pressed(EditorSettings::get_singleton()->get_project_metadata("shader_setup", "create_built_in_shader", false));
 	}
 
-	if (p_preferred_type > -1) {
-		type_menu->select(p_preferred_type);
-		_type_changed(p_preferred_type);
-	}
-
+	// Mode change should happen before type change because the list of templates also depends on the shader mode.
 	if (p_preferred_mode > -1) {
 		mode_menu->select(p_preferred_mode);
 		_mode_changed(p_preferred_mode);
 	}
 
-	_type_changed(current_type);
+	if (p_preferred_type > -1) {
+		type_menu->select(p_preferred_type);
+		_type_changed(p_preferred_type);
+	} else {
+		_type_changed(current_type);
+	}
+
 	_path_changed(file_path->get_text());
 }
 
@@ -551,6 +579,25 @@ void ShaderCreateDialog::_update_dialog() {
 		set_ok_button_text(TTR("Create"));
 		validation_panel->set_message(MSG_ID_PATH, TTR("Shader file already exists."), EditorValidationPanel::MSG_ERROR);
 	}
+}
+
+void ShaderCreateDialog::_update_templates() {
+	int last_template = EditorSettings::get_singleton()->get_project_metadata("shader_setup", vformat("last_selected_template_%d", current_mode), 0);
+
+	// Remove previous mode-specific templates.
+	for (int i = template_menu->get_item_count() - 1; i >= 2; i--) {
+		template_menu->remove_item(i);
+	}
+
+	// Add new mode-specific templates.
+	switch (current_mode) {
+		case Shader::MODE_SPATIAL: {
+			template_menu->add_icon_item(get_editor_theme_icon(SNAME("Sprite3D")), TTR("Spatial: Sprite3D"));
+		} break;
+	}
+
+	template_menu->select(last_template);
+	_template_changed(last_template);
 }
 
 void ShaderCreateDialog::_bind_methods() {

@@ -88,6 +88,14 @@ void SpriteBase3D::_notification(int p_what) {
 	}
 }
 
+void SpriteBase3D::_validate_property(PropertyInfo &p_property) const {
+	if (get_material_override().is_valid()) {
+		if (p_property.name == "billboard" || p_property.name == "transparent" || p_property.name == "shaded" || p_property.name == "double_sided" || p_property.name == "no_depth_test" || p_property.name == "fixed_size" || p_property.name == "alpha_cut" || p_property.name == "alpha_scissor_threshold" || p_property.name == "alpha_hash_scale" || p_property.name == "alpha_antialiasing_mode" || p_property.name == "alpha_antialiasing_edge" || p_property.name == "texture_filter" || p_property.name == "render_priority") {
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		}
+	}
+}
+
 void SpriteBase3D::draw_texture_rect(Ref<Texture2D> p_texture, Rect2 p_dst_rect, Rect2 p_src_rect) {
 	ERR_FAIL_COND(p_texture.is_null());
 
@@ -272,38 +280,46 @@ void SpriteBase3D::draw_texture_rect(Ref<Texture2D> p_texture, Rect2 p_dst_rect,
 	RS::get_singleton()->mesh_set_custom_aabb(mesh_new, aabb_new);
 	set_aabb(aabb_new);
 
-	RS::get_singleton()->material_set_param(get_material(), "alpha_scissor_threshold", alpha_scissor_threshold);
-	RS::get_singleton()->material_set_param(get_material(), "alpha_hash_scale", alpha_hash_scale);
-	RS::get_singleton()->material_set_param(get_material(), "alpha_antialiasing_edge", alpha_antialiasing_edge);
+	if (get_material_override().is_null()) {
+		RS::get_singleton()->material_set_param(get_material(), "alpha_scissor_threshold", alpha_scissor_threshold);
+		RS::get_singleton()->material_set_param(get_material(), "alpha_hash_scale", alpha_hash_scale);
+		RS::get_singleton()->material_set_param(get_material(), "alpha_antialiasing_edge", alpha_antialiasing_edge);
 
-	BaseMaterial3D::Transparency mat_transparency = BaseMaterial3D::Transparency::TRANSPARENCY_DISABLED;
-	if (get_draw_flag(FLAG_TRANSPARENT)) {
-		if (get_alpha_cut_mode() == ALPHA_CUT_DISCARD) {
-			mat_transparency = BaseMaterial3D::Transparency::TRANSPARENCY_ALPHA_SCISSOR;
-		} else if (get_alpha_cut_mode() == ALPHA_CUT_OPAQUE_PREPASS) {
-			mat_transparency = BaseMaterial3D::Transparency::TRANSPARENCY_ALPHA_DEPTH_PRE_PASS;
-		} else if (get_alpha_cut_mode() == ALPHA_CUT_HASH) {
-			mat_transparency = BaseMaterial3D::Transparency::TRANSPARENCY_ALPHA_HASH;
-		} else {
-			mat_transparency = BaseMaterial3D::Transparency::TRANSPARENCY_ALPHA;
+		BaseMaterial3D::Transparency mat_transparency = BaseMaterial3D::Transparency::TRANSPARENCY_DISABLED;
+		if (get_draw_flag(FLAG_TRANSPARENT)) {
+			if (get_alpha_cut_mode() == ALPHA_CUT_DISCARD) {
+				mat_transparency = BaseMaterial3D::Transparency::TRANSPARENCY_ALPHA_SCISSOR;
+			} else if (get_alpha_cut_mode() == ALPHA_CUT_OPAQUE_PREPASS) {
+				mat_transparency = BaseMaterial3D::Transparency::TRANSPARENCY_ALPHA_DEPTH_PRE_PASS;
+			} else if (get_alpha_cut_mode() == ALPHA_CUT_HASH) {
+				mat_transparency = BaseMaterial3D::Transparency::TRANSPARENCY_ALPHA_HASH;
+			} else {
+				mat_transparency = BaseMaterial3D::Transparency::TRANSPARENCY_ALPHA;
+			}
 		}
-	}
 
-	RID shader_rid;
-	StandardMaterial3D::get_material_for_2d(get_draw_flag(FLAG_SHADED), mat_transparency, get_draw_flag(FLAG_DOUBLE_SIDED), get_billboard_mode() == StandardMaterial3D::BILLBOARD_ENABLED, get_billboard_mode() == StandardMaterial3D::BILLBOARD_FIXED_Y, false, get_draw_flag(FLAG_DISABLE_DEPTH_TEST), get_draw_flag(FLAG_FIXED_SIZE), get_texture_filter(), alpha_antialiasing_mode, &shader_rid);
+		RID shader_rid;
+		StandardMaterial3D::get_material_for_2d(get_draw_flag(FLAG_SHADED), mat_transparency, get_draw_flag(FLAG_DOUBLE_SIDED), get_billboard_mode() == StandardMaterial3D::BILLBOARD_ENABLED, get_billboard_mode() == StandardMaterial3D::BILLBOARD_FIXED_Y, false, get_draw_flag(FLAG_DISABLE_DEPTH_TEST), get_draw_flag(FLAG_FIXED_SIZE), get_texture_filter(), alpha_antialiasing_mode, &shader_rid);
 
-	if (last_shader != shader_rid) {
-		RS::get_singleton()->material_set_shader(get_material(), shader_rid);
-		last_shader = shader_rid;
-	}
-	if (last_texture != p_texture->get_rid()) {
-		RS::get_singleton()->material_set_param(get_material(), "texture_albedo", p_texture->get_rid());
-		RS::get_singleton()->material_set_param(get_material(), "albedo_texture_size", Vector2i(p_texture->get_width(), p_texture->get_height()));
-		last_texture = p_texture->get_rid();
-	}
-	if (get_alpha_cut_mode() == ALPHA_CUT_DISABLED) {
-		RS::get_singleton()->material_set_render_priority(get_material(), get_render_priority());
-		RS::get_singleton()->mesh_surface_set_material(mesh, 0, get_material());
+		if (last_shader != shader_rid) {
+			RS::get_singleton()->material_set_shader(get_material(), shader_rid);
+			last_shader = shader_rid;
+		}
+		if (last_texture != p_texture->get_rid()) {
+			RS::get_singleton()->material_set_param(get_material(), "texture_albedo", p_texture->get_rid());
+			RS::get_singleton()->material_set_param(get_material(), "albedo_texture_size", Vector2i(p_texture->get_width(), p_texture->get_height()));
+			last_texture = p_texture->get_rid();
+		}
+		if (get_alpha_cut_mode() == ALPHA_CUT_DISABLED) {
+			RS::get_singleton()->material_set_render_priority(get_material(), get_render_priority());
+			RS::get_singleton()->mesh_surface_set_material(mesh, 0, get_material());
+		}
+	} else {
+		if (last_texture != p_texture->get_rid()) {
+			RS::get_singleton()->material_set_param(get_material_override()->get_rid(), "texture_albedo", p_texture->get_rid());
+			RS::get_singleton()->material_set_param(get_material_override()->get_rid(), "albedo_texture_size", Vector2i(p_texture->get_width(), p_texture->get_height()));
+			last_texture = p_texture->get_rid();
+		}
 	}
 }
 
@@ -497,6 +513,37 @@ Ref<TriangleMesh> SpriteBase3D::generate_triangle_mesh() const {
 	triangle_mesh->create(faces);
 
 	return triangle_mesh;
+}
+
+PackedStringArray SpriteBase3D::get_configuration_warnings() const {
+	PackedStringArray warnings = GeometryInstance3D::get_configuration_warnings();
+	Ref<Material> mat_override = get_material_override();
+	if (mat_override.is_valid()) {
+		RID shader = mat_override->get_shader_rid();
+		if (shader.is_null()) {
+			warnings.push_back(RTR("Material Override must be assigned a shader in order to work correctly."));
+		} else {
+			List<PropertyInfo> parameters;
+			RS::get_singleton()->get_shader_parameter_list(shader, &parameters);
+			bool found_texture_albedo = false;
+			bool found_albedo_texture_size = false;
+			for (const PropertyInfo &parameter : parameters) {
+				if (!found_texture_albedo && parameter.name == "texture_albedo" && parameter.type == Variant::OBJECT && parameter.hint_string == "Texture2D") {
+					found_texture_albedo = true;
+				} else if (!found_albedo_texture_size && parameter.name == "albedo_texture_size" && parameter.type == Variant::VECTOR2I) {
+					found_albedo_texture_size = true;
+				}
+			}
+
+			if (!found_texture_albedo) {
+				warnings.push_back(RTR("Sprite shaders must contain uniform \"texture_albedo\" of type: sampler2D."));
+			}
+			if (!found_albedo_texture_size) {
+				warnings.push_back(RTR("Sprite shaders must contain uniform \"albedo_texture_size\" of type: ivec2."));
+			}
+		}
+	}
+	return warnings;
 }
 
 void SpriteBase3D::set_draw_flag(DrawFlags p_flag, bool p_enable) {
@@ -769,6 +816,8 @@ SpriteBase3D::SpriteBase3D() {
 	RS::get_singleton()->mesh_surface_make_offsets_from_format(sd.format, sd.vertex_count, sd.index_count, mesh_surface_offsets, vertex_stride, normal_tangent_stride, attrib_stride, skin_stride);
 	RS::get_singleton()->mesh_add_surface(mesh, sd);
 	set_base(mesh);
+
+	connect(CoreStringName(property_list_changed), callable_mp((Node *)this, &Node::update_configuration_warnings));
 }
 
 SpriteBase3D::~SpriteBase3D() {
