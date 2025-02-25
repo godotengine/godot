@@ -127,6 +127,7 @@ private:
 
 	struct ThemeCache {
 		int h_separation = 0;
+		int tab_separation = 0;
 		int icon_max_width = 0;
 
 		Ref<StyleBox> tab_unselected_style;

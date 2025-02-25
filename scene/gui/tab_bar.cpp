@@ -452,7 +452,7 @@ void TabBar::_notification(int p_what) {
 						col = theme_cache.font_unselected_color;
 					}
 
-					_draw_tab(sb, col, i, rtl ? size.width - ofs - tabs[i].size_cache : ofs, false);
+					_draw_tab(sb, col, i, rtl ? size.width - ofs - tabs[i].size_cache - i * theme_cache.tab_separation : ofs + i * theme_cache.tab_separation, false);
 				}
 
 				ofs += tabs[i].size_cache;
@@ -461,7 +461,7 @@ void TabBar::_notification(int p_what) {
 			// Draw selected tab in the front, but only if it's visible.
 			if (current >= offset && current <= max_drawn_tab && !tabs[current].hidden) {
 				Ref<StyleBox> sb = tabs[current].disabled ? theme_cache.tab_disabled_style : theme_cache.tab_selected_style;
-				float x = rtl ? size.width - tabs[current].ofs_cache - tabs[current].size_cache : tabs[current].ofs_cache;
+				float x = rtl ? size.width - tabs[current].ofs_cache - tabs[current].size_cache - current * theme_cache.tab_separation : tabs[current].ofs_cache + current * theme_cache.tab_separation;
 
 				_draw_tab(sb, theme_cache.font_selected_color, current, x, has_focus());
 			}
@@ -1053,12 +1053,18 @@ void TabBar::_update_cache(bool p_update_hover) {
 		}
 
 		w += tabs[i].size_cache;
+		if (i < max_drawn_tab) {
+			w += theme_cache.tab_separation;
+		}
 
 		// Check if all tabs would fit inside the area.
 		if (clip_tabs && i > offset && (w > limit || (offset > 0 && w > limit_minus_buttons))) {
 			tabs.write[i].ofs_cache = 0;
 
 			w -= tabs[i].size_cache;
+			if (i < max_drawn_tab) {
+				w -= theme_cache.tab_separation;
+			}
 			max_drawn_tab = i - 1;
 
 			while (w > limit_minus_buttons && max_drawn_tab > offset) {
@@ -1083,10 +1089,11 @@ void TabBar::_update_cache(bool p_update_hover) {
 		return;
 	}
 
+	int total_tab_separation = max_drawn_tab * theme_cache.tab_separation;
 	if (tab_alignment == ALIGNMENT_CENTER) {
-		w = ((buttons_visible ? limit_minus_buttons : limit) - w) / 2;
+		w = ((buttons_visible ? limit_minus_buttons : limit) - w - total_tab_separation) / 2;
 	} else if (tab_alignment == ALIGNMENT_RIGHT) {
-		w = (buttons_visible ? limit_minus_buttons : limit) - w;
+		w = (buttons_visible ? limit_minus_buttons : limit) - w - total_tab_separation;
 	}
 
 	for (int i = offset; i <= max_drawn_tab; i++) {
@@ -1648,9 +1655,9 @@ void TabBar::ensure_tab_visible(int p_idx) {
 Rect2 TabBar::get_tab_rect(int p_tab) const {
 	ERR_FAIL_INDEX_V(p_tab, tabs.size(), Rect2());
 	if (is_layout_rtl()) {
-		return Rect2(get_size().width - tabs[p_tab].ofs_cache - tabs[p_tab].size_cache, 0, tabs[p_tab].size_cache, get_size().height);
+		return Rect2(get_size().width - tabs[p_tab].ofs_cache - tabs[p_tab].size_cache - p_tab * theme_cache.tab_separation, 0, tabs[p_tab].size_cache, get_size().height);
 	} else {
-		return Rect2(tabs[p_tab].ofs_cache, 0, tabs[p_tab].size_cache, get_size().height);
+		return Rect2(tabs[p_tab].ofs_cache + p_tab * theme_cache.tab_separation, 0, tabs[p_tab].size_cache, get_size().height);
 	}
 }
 
@@ -1847,6 +1854,7 @@ void TabBar::_bind_methods() {
 	BIND_ENUM_CONSTANT(CLOSE_BUTTON_MAX);
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, TabBar, h_separation);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, TabBar, tab_separation);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, TabBar, icon_max_width);
 
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, TabBar, tab_unselected_style, "tab_unselected");
