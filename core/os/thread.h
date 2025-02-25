@@ -56,7 +56,25 @@
 #include "thirdparty/mingw-std-threads/mingw.thread.h"
 #define THREADING_NAMESPACE mingw_stdthread
 #else
+#if defined(MACOS_ENABLED) || defined(IOS_ENABLED)
+// Increase thread stack size from 512 KiB to 2 MiB.
+#include <__threading_support>
+_LIBCPP_BEGIN_NAMESPACE_STD
+static inline int __libcpp_thread_create_with_stack_size(__libcpp_thread_t *thread_id, void *(*thread_func)(void *arg), void *arg) {
+	pthread_attr_t attr;
+	pthread_attr_init(&attr);
+	pthread_attr_setstacksize(&attr, 2 * 1024 * 1024);
+	int ret = pthread_create(thread_id, &attr, thread_func, arg);
+	pthread_attr_destroy(&attr);
+	return ret;
+}
+_LIBCPP_END_NAMESPACE_STD
+#define __libcpp_thread_create __libcpp_thread_create_with_stack_size
 #include <thread>
+#undef __libcpp_thread_create
+#else
+#include <thread>
+#endif
 #define THREADING_NAMESPACE std
 #endif
 
