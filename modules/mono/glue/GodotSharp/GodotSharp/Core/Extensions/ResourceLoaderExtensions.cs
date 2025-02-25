@@ -21,10 +21,10 @@ namespace Godot
         /// <exception cref="InvalidCastException">
         /// The loaded resource can't be casted to the given type <typeparamref name="T"/>.
         /// </exception>
-        /// <typeparam name="T">The type to cast to. Should be a descendant of <see cref="Resource"/>.</typeparam>
-        public static T Load<T>(string path, string typeHint = null, CacheMode cacheMode = CacheMode.Reuse) where T : class
+        /// <typeparam name="T">The <see cref="Resource"/> type to cast to..</typeparam>
+        public static T Load<T>(string path, string typeHint = null, CacheMode cacheMode = CacheMode.Reuse) where T : Resource
         {
-            return (T)(object)Load(path, typeHint, cacheMode);
+            return (T)Load(path, typeHint, cacheMode);
         }
     }
 }

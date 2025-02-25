@@ -38,13 +38,13 @@ namespace Godot
         /// <exception cref="InvalidCastException">
         /// The fetched node can't be casted to the given type <typeparamref name="T"/>.
         /// </exception>
-        /// <typeparam name="T">The type to cast to. Should be a descendant of <see cref="Node"/>.</typeparam>
+        /// <typeparam name="T">The <see cref="Node"/> type to cast to.</typeparam>
         /// <returns>
         /// The <see cref="Node"/> at the given <paramref name="path"/>.
         /// </returns>
-        public T GetNode<T>(NodePath path) where T : class
+        public T GetNode<T>(NodePath path) where T : Node
         {
-            return (T)(object)GetNode(path);
+            return (T)GetNode(path);
         }
 
         /// <summary>
@@ -73,11 +73,11 @@ namespace Godot
         /// </example>
         /// <seealso cref="GetNode{T}(NodePath)"/>
         /// <param name="path">The path to the node to fetch.</param>
-        /// <typeparam name="T">The type to cast to. Should be a descendant of <see cref="Node"/>.</typeparam>
+        /// <typeparam name="T">The <see cref="Node"/> type to cast to.</typeparam>
         /// <returns>
         /// The <see cref="Node"/> at the given <paramref name="path"/>, or <see langword="null"/> if not found.
         /// </returns>
-        public T GetNodeOrNull<T>(NodePath path) where T : class
+        public T GetNodeOrNull<T>(NodePath path) where T : Node
         {
             return GetNodeOrNull(path) as T;
         }
@@ -97,13 +97,13 @@ namespace Godot
         /// <exception cref="InvalidCastException">
         /// The fetched node can't be casted to the given type <typeparamref name="T"/>.
         /// </exception>
-        /// <typeparam name="T">The type to cast to. Should be a descendant of <see cref="Node"/>.</typeparam>
+        /// <typeparam name="T">The <see cref="Node"/> type to cast to.</typeparam>
         /// <returns>
         /// The child <see cref="Node"/> at the given index <paramref name="idx"/>.
         /// </returns>
-        public T GetChild<T>(int idx, bool includeInternal = false) where T : class
+        public T GetChild<T>(int idx, bool includeInternal = false) where T : Node
         {
-            return (T)(object)GetChild(idx, includeInternal);
+            return (T)GetChild(idx, includeInternal);
         }
 
         /// <summary>
@@ -118,11 +118,11 @@ namespace Godot
         /// If <see langword="false"/>, internal children are skipped (see <c>internal</c>
         /// parameter in <see cref="AddChild(Node, bool, InternalMode)"/>).
         /// </param>
-        /// <typeparam name="T">The type to cast to. Should be a descendant of <see cref="Node"/>.</typeparam>
+        /// <typeparam name="T">The <see cref="Node"/> type to cast to.</typeparam>
         /// <returns>
         /// The child <see cref="Node"/> at the given index <paramref name="idx"/>, or <see langword="null"/> if not found.
         /// </returns>
-        public T GetChildOrNull<T>(int idx, bool includeInternal = false) where T : class
+        public T GetChildOrNull<T>(int idx, bool includeInternal = false) where T : Node
         {
             int count = GetChildCount(includeInternal);
             return idx >= -count && idx < count ? GetChild(idx, includeInternal) as T : null;
@@ -139,13 +139,13 @@ namespace Godot
         /// <exception cref="InvalidCastException">
         /// The fetched node can't be casted to the given type <typeparamref name="T"/>.
         /// </exception>
-        /// <typeparam name="T">The type to cast to. Should be a descendant of <see cref="Node"/>.</typeparam>
+        /// <typeparam name="T">The <see cref="Node"/> type to cast to.</typeparam>
         /// <returns>
         /// The owner <see cref="Node"/>.
         /// </returns>
-        public T GetOwner<T>() where T : class
+        public T GetOwner<T>() where T : Node
         {
-            return (T)(object)Owner;
+            return (T)Owner;
         }
 
         /// <summary>
@@ -173,13 +173,13 @@ namespace Godot
         /// <exception cref="InvalidCastException">
         /// The fetched node can't be casted to the given type <typeparamref name="T"/>.
         /// </exception>
-        /// <typeparam name="T">The type to cast to. Should be a descendant of <see cref="Node"/>.</typeparam>
+        /// <typeparam name="T">The <see cref="Node"/> type to cast to.</typeparam>
         /// <returns>
         /// The parent <see cref="Node"/>.
         /// </returns>
-        public T GetParent<T>() where T : class
+        public T GetParent<T>() where T : Node
         {
-            return (T)(object)GetParent();
+            return (T)GetParent();
         }
 
         /// <summary>

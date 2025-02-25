@@ -123,8 +123,8 @@ namespace Godot
         /// </code>
         /// </example>
         /// <param name="path">Path of the <see cref="Resource"/> to load.</param>
-        /// <typeparam name="T">The type to cast to. Should be a descendant of <see cref="Resource"/>.</typeparam>
-        public static T Load<T>(string path) where T : class
+        /// <typeparam name="T">The <see cref="Resource"/> type to cast to.</typeparam>
+        public static T Load<T>(string path) where T : Resource
         {
             return ResourceLoader.Load<T>(path);
         }
