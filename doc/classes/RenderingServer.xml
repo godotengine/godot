@@ -3725,7 +3725,7 @@
 			<param index="7" name="layered_type" type="int" enum="RenderingServer.TextureLayeredType" default="0" />
 			<description>
 				Creates a texture based on a native handle that was created outside of Godot's renderer.
-				[b]Note:[/b] If using the rendering device renderer, using [method RenderingDevice.texture_create_from_extension] rather than this method is recommended. It will give you much more control over the texture's format and usage.
+				[b]Note:[/b] If using only the rendering device renderer, it's recommend to use [method RenderingDevice.texture_create_from_extension] together with [method RenderingServer.texture_rd_create], rather than this method. It will give you much more control over the texture's format and usage.
 			</description>
 		</method>
 		<method name="texture_get_format" qualifiers="const">
