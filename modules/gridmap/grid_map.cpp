@@ -203,6 +203,15 @@ real_t GridMap::get_collision_priority() const {
 	return collision_priority;
 }
 
+void GridMap::set_debug_collisions(bool p_debug) {
+	debug_collisions = p_debug;
+	_recreate_octant_data();
+}
+
+bool GridMap::is_debug_collisions() const {
+	return debug_collisions;
+}
+
 void GridMap::set_physics_material(Ref<PhysicsMaterial> p_material) {
 	physics_material = p_material;
 	_update_physics_bodies_characteristics();
@@ -385,7 +394,7 @@ void GridMap::set_cell_item(const Vector3i &p_position, int p_item, int p_rot) {
 		}
 		SceneTree *st = SceneTree::get_singleton();
 
-		if (st && st->is_debugging_collisions_hint()) {
+		if (st && (st->is_debugging_collisions_hint() || debug_collisions)) {
 			g->collision_debug = RenderingServer::get_singleton()->mesh_create();
 			g->collision_debug_instance = RenderingServer::get_singleton()->instance_create();
 			RenderingServer::get_singleton()->instance_set_base(g->collision_debug_instance, g->collision_debug);
@@ -1076,6 +1085,9 @@ void GridMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_collision_priority", "priority"), &GridMap::set_collision_priority);
 	ClassDB::bind_method(D_METHOD("get_collision_priority"), &GridMap::get_collision_priority);
 
+	ClassDB::bind_method(D_METHOD("set_debug_collisions", "debug_collisions"), &GridMap::set_debug_collisions);
+	ClassDB::bind_method(D_METHOD("is_debug_collisions"), &GridMap::is_debug_collisions);
+
 	ClassDB::bind_method(D_METHOD("set_physics_material", "material"), &GridMap::set_physics_material);
 	ClassDB::bind_method(D_METHOD("get_physics_material"), &GridMap::get_physics_material);
 
@@ -1143,6 +1155,7 @@ void GridMap::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_layer", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_collision_layer", "get_collision_layer");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_mask", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_collision_mask", "get_collision_mask");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "collision_priority"), "set_collision_priority", "get_collision_priority");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "collision_debug"), "set_debug_collisions", "is_debug_collisions");
 	ADD_GROUP("Navigation", "");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "bake_navigation"), "set_bake_navigation", "is_baking_navigation");
 
