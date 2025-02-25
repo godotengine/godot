@@ -719,15 +719,6 @@ Error Main::test_setup() {
 	initialize_modules(MODULE_INITIALIZATION_LEVEL_SERVERS);
 	GDExtensionManager::get_singleton()->initialize_extensions(GDExtension::INITIALIZATION_LEVEL_SERVERS);
 
-	translation_server->setup(); //register translations, load them, etc.
-	if (!locale.is_empty()) {
-		translation_server->set_locale(locale);
-	}
-	translation_server->load_translations();
-	ResourceLoader::load_translation_remaps(); //load remaps for resources
-
-	ResourceLoader::load_path_remaps();
-
 	// Initialize ThemeDB early so that scene types can register their theme items.
 	// Default theme will be initialized later, after modules and ScriptServer are ready.
 	initialize_theme_db();
@@ -742,6 +733,15 @@ Error Main::test_setup() {
 
 	initialize_modules(MODULE_INITIALIZATION_LEVEL_SCENE);
 	GDExtensionManager::get_singleton()->initialize_extensions(GDExtension::INITIALIZATION_LEVEL_SCENE);
+
+	translation_server->setup(); //register translations, load them, etc.
+	if (!locale.is_empty()) {
+		translation_server->set_locale(locale);
+	}
+	translation_server->load_translations();
+	ResourceLoader::load_translation_remaps(); //load remaps for resources
+
+	ResourceLoader::load_path_remaps();
 
 #ifdef TOOLS_ENABLED
 	ClassDB::set_current_api(ClassDB::API_EDITOR);
@@ -3277,25 +3277,6 @@ Error Main::setup2(bool p_show_boot_logo) {
 		OS::get_singleton()->benchmark_end_measure("Startup", "Setup Window and Boot");
 	}
 
-	MAIN_PRINT("Main: Load Translations and Remaps");
-
-	/* Setup translations and remaps */
-
-	{
-		OS::get_singleton()->benchmark_begin_measure("Startup", "Translations and Remaps");
-
-		translation_server->setup(); //register translations, load them, etc.
-		if (!locale.is_empty()) {
-			translation_server->set_locale(locale);
-		}
-		translation_server->load_translations();
-		ResourceLoader::load_translation_remaps(); //load remaps for resources
-
-		ResourceLoader::load_path_remaps();
-
-		OS::get_singleton()->benchmark_end_measure("Startup", "Translations and Remaps");
-	}
-
 	MAIN_PRINT("Main: Load TextServer");
 
 	/* Setup Text Server */
@@ -3462,6 +3443,25 @@ Error Main::setup2(bool p_show_boot_logo) {
 	}
 
 #endif
+
+	MAIN_PRINT("Main: Load Translations and Remaps");
+
+	/* Setup translations and remaps */
+
+	{
+		OS::get_singleton()->benchmark_begin_measure("Startup", "Translations and Remaps");
+
+		translation_server->setup(); //register translations, load them, etc.
+		if (!locale.is_empty()) {
+			translation_server->set_locale(locale);
+		}
+		translation_server->load_translations();
+		ResourceLoader::load_translation_remaps(); //load remaps for resources
+
+		ResourceLoader::load_path_remaps();
+
+		OS::get_singleton()->benchmark_end_measure("Startup", "Translations and Remaps");
+	}
 
 	theme_db->initialize_theme();
 	audio_server->load_default_bus_layout();
@@ -4673,6 +4673,10 @@ void Main::cleanup(bool p_force) {
 	ResourceLoader::clear_translation_remaps();
 	ResourceLoader::clear_path_remaps();
 
+	if (translation_server) {
+		memdelete(translation_server);
+	}
+
 	WorkerThreadPool::get_singleton()->exit_languages_threads();
 
 	ScriptServer::finish_languages();
@@ -4751,9 +4755,6 @@ void Main::cleanup(bool p_force) {
 	}
 	if (input_map) {
 		memdelete(input_map);
-	}
-	if (translation_server) {
-		memdelete(translation_server);
 	}
 	if (tsman) {
 		memdelete(tsman);
