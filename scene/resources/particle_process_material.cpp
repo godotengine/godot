@@ -1121,9 +1121,12 @@ void ParticleProcessMaterial::_update_shader() {
 		code += "		params.scale *= texture(scale_over_velocity_curve, vec2(0.0)).rgb;\n";
 		code += "	}\n";
 	}
-	code += "	TRANSFORM[0].xyz *= sign(params.scale.x) * max(abs(params.scale.x), 0.001);\n";
-	code += "	TRANSFORM[1].xyz *= sign(params.scale.y) * max(abs(params.scale.y), 0.001);\n";
-	code += "	TRANSFORM[2].xyz *= sign(params.scale.z) * max(abs(params.scale.z), 0.001);\n";
+	// Zero scale results in no emission at some amounts (including 3 and 6).
+	// Do not use `sign(scale) * max(abs(scale), 0.001)`, for this, because sign() returns 0 for 0.
+	// So, it ends up multiplying the minimum value of 0.001 by 0, nullifying the guard entirely.
+	code += "	TRANSFORM[0].xyz *= params.scale.x == 0.0 ? 0.001 : params.scale.x;\n";
+	code += "	TRANSFORM[1].xyz *= params.scale.y == 0.0 ? 0.001 : params.scale.y;\n";
+	code += "	TRANSFORM[2].xyz *= params.scale.z == 0.0 ? 0.001 : params.scale.z;\n";
 	code += "\n";
 	code += "	CUSTOM.z = params.animation_offset + lifetime_percent * params.animation_speed;\n\n";
 
