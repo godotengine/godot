@@ -51,6 +51,7 @@
 #if defined(GLES3_ENABLED)
 #include "drivers/gles3/rasterizer_gles3.h"
 #endif
+#include "servers/rendering/dummy/rasterizer_dummy.h"
 
 #include <avrt.h>
 #include <dwmapi.h>
@@ -6411,8 +6412,6 @@ DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, 
 	return id;
 }
 
-BitField<DisplayServerWindows::DriverID> DisplayServerWindows::tested_drivers = 0;
-
 // WinTab API.
 bool DisplayServerWindows::wintab_available = false;
 WTOpenPtr DisplayServerWindows::wintab_WTOpen = nullptr;
@@ -6781,180 +6780,132 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 
 	_register_raw_input_devices(INVALID_WINDOW_ID);
 
+	Vector<String> driver_list;
+	for (const String &drv : p_rendering_driver.split(",")) {
+		if (!driver_list.has(drv)) {
+			driver_list.push_back(drv);
+		}
+	}
+	if (GLOBAL_GET("rendering/renderer/fallback_to_opengl3").operator bool()) {
+		for (const String &drv : GLOBAL_GET("rendering/gl_compatibility/driver").operator String().split(",")) {
+			if (!driver_list.has(drv)) {
+				driver_list.push_back(drv);
+			}
+		}
+	}
+	if (GLOBAL_GET("rendering/renderer/fallback_to_dummy").operator bool()) {
+		if (!driver_list.has("dummy")) {
+			driver_list.push_back("dummy");
+		}
+	}
+
+	bool gl_support_checked = false;
+	bool force_angle = false;
+	bool driver_found = false;
+	for (const String &driver : driver_list) {
+		print_line(vformat("Trying to initialize \"%s\" rendering driver.", get_readable_driver_name(driver)));
+		tested_drivers.push_back(driver);
 #if defined(RD_ENABLED)
-	[[maybe_unused]] bool fallback_to_vulkan = GLOBAL_GET("rendering/rendering_device/fallback_to_vulkan");
-	[[maybe_unused]] bool fallback_to_d3d12 = GLOBAL_GET("rendering/rendering_device/fallback_to_d3d12");
-
-#if defined(VULKAN_ENABLED)
-	if (rendering_driver == "vulkan") {
-		rendering_context = memnew(RenderingContextDriverVulkanWindows);
-		tested_drivers.set_flag(DRIVER_ID_RD_VULKAN);
-	}
-#else
-	fallback_to_d3d12 = true; // Always enable fallback if engine was built w/o other driver support.
-#endif
 #if defined(D3D12_ENABLED)
-	if (rendering_driver == "d3d12") {
-		rendering_context = memnew(RenderingContextDriverD3D12);
-		tested_drivers.set_flag(DRIVER_ID_RD_D3D12);
-	}
-#else
-	fallback_to_vulkan = true; // Always enable fallback if engine was built w/o other driver support.
-#endif
-
-	if (rendering_context) {
-		if (rendering_context->initialize() != OK) {
-			bool failed = true;
+		if (driver == "d3d12") {
+			rendering_context = memnew(RenderingContextDriverD3D12);
+			if (rendering_context->initialize() == OK) {
+				rendering_driver = driver;
+				OS::get_singleton()->set_current_rendering_driver_name(rendering_driver);
+				driver_found = true;
+				break;
+			}
+			memdelete(rendering_context);
+			rendering_context = nullptr;
+		}
+#endif // METAL_ENABLED
 #if defined(VULKAN_ENABLED)
-			if (failed && fallback_to_vulkan && rendering_driver != "vulkan") {
-				memdelete(rendering_context);
-				rendering_context = memnew(RenderingContextDriverVulkanWindows);
-				tested_drivers.set_flag(DRIVER_ID_RD_VULKAN);
-				if (rendering_context->initialize() == OK) {
-					WARN_PRINT("Your video card drivers seem not to support Direct3D 12, switching to Vulkan.");
-					rendering_driver = "vulkan";
-					OS::get_singleton()->set_current_rendering_driver_name(rendering_driver);
-					failed = false;
-				}
+		if (driver == "vulkan") {
+			rendering_context = memnew(RenderingContextDriverVulkanWindows);
+			if (rendering_context->initialize() == OK) {
+				rendering_driver = driver;
+				OS::get_singleton()->set_current_rendering_driver_name(rendering_driver);
+				driver_found = true;
+				break;
 			}
-#endif
-#if defined(D3D12_ENABLED)
-			if (failed && fallback_to_d3d12 && rendering_driver != "d3d12") {
-				memdelete(rendering_context);
-				rendering_context = memnew(RenderingContextDriverD3D12);
-				tested_drivers.set_flag(DRIVER_ID_RD_D3D12);
-				if (rendering_context->initialize() == OK) {
-					WARN_PRINT("Your video card drivers seem not to support Vulkan, switching to Direct3D 12.");
-					rendering_driver = "d3d12";
-					OS::get_singleton()->set_current_rendering_driver_name(rendering_driver);
-					failed = false;
-				}
-			}
-#endif
+			memdelete(rendering_context);
+			rendering_context = nullptr;
+		}
+#endif // VULKAN_ENABLED
+#endif // RD_ENABLED
 #if defined(GLES3_ENABLED)
-			bool fallback_to_opengl3 = GLOBAL_GET("rendering/rendering_device/fallback_to_opengl3");
-			if (failed && fallback_to_opengl3 && rendering_driver != "opengl3") {
-				memdelete(rendering_context);
-				rendering_context = nullptr;
-				tested_drivers.set_flag(DRIVER_ID_COMPAT_OPENGL3);
-				WARN_PRINT("Your video card drivers seem not to support Direct3D 12 or Vulkan, switching to OpenGL 3.");
-				rendering_driver = "opengl3";
+		if (driver == "opengl3" || driver == "opengl3_angle") {
+			if (!gl_support_checked) {
+				gl_support_checked = true;
+
+				Dictionary gl_info = detect_wgl();
+				if (gl_info["version"].operator int() >= 30003) {
+					Vector2i device_id = _get_device_ids(gl_info["name"]);
+					Array device_list = GLOBAL_GET("rendering/gl_compatibility/force_angle_on_devices");
+					for (int i = 0; i < device_list.size(); i++) {
+						const Dictionary &device = device_list[i];
+						if (device.has("vendor") && device.has("name")) {
+							const String &vendor = device["vendor"];
+							const String &name = device["name"];
+							if (device_id != Vector2i() && vendor.begins_with("0x") && name.begins_with("0x") && device_id.x == vendor.lstrip("0x").hex_to_int() && device_id.y == name.lstrip("0x").hex_to_int()) {
+								// Check vendor/device IDs.
+								force_angle = true;
+								break;
+							} else if (gl_info["vendor"].operator String().to_upper().contains(vendor.to_upper()) && (name == "*" || gl_info["name"].operator String().to_upper().contains(name.to_upper()))) {
+								// Check vendor/device names.
+								force_angle = true;
+								break;
+							}
+						}
+					}
+				} else {
+					force_angle = true;
+				}
+			}
+		}
+		if (!force_angle && driver == "opengl3") {
+			gl_manager_native = memnew(GLManagerNative_Windows);
+			if (gl_manager_native->initialize() == OK) {
+				rendering_driver = driver;
 				OS::get_singleton()->set_current_rendering_method("gl_compatibility");
 				OS::get_singleton()->set_current_rendering_driver_name(rendering_driver);
-				failed = false;
+				driver_found = true;
+				break;
 			}
-#endif
-			if (failed) {
-				memdelete(rendering_context);
-				rendering_context = nullptr;
-				r_error = ERR_UNAVAILABLE;
-				return;
-			}
-		}
-	}
-#endif
-// Init context and rendering device
-#if defined(GLES3_ENABLED)
-
-	bool fallback = GLOBAL_GET("rendering/gl_compatibility/fallback_to_angle");
-	bool show_warning = true;
-
-	if (rendering_driver == "opengl3") {
-		// There's no native OpenGL drivers on Windows for ARM, always enable fallback.
-#if defined(__arm__) || defined(__aarch64__) || defined(_M_ARM) || defined(_M_ARM64)
-		fallback = true;
-		show_warning = false;
-#else
-		typedef BOOL(WINAPI * IsWow64Process2Ptr)(HANDLE, USHORT *, USHORT *);
-
-		IsWow64Process2Ptr IsWow64Process2 = (IsWow64Process2Ptr)(void *)GetProcAddress(GetModuleHandle(TEXT("kernel32")), "IsWow64Process2");
-		if (IsWow64Process2) {
-			USHORT process_arch = 0;
-			USHORT machine_arch = 0;
-			if (!IsWow64Process2(GetCurrentProcess(), &process_arch, &machine_arch)) {
-				machine_arch = 0;
-			}
-			if (machine_arch == 0xAA64) {
-				fallback = true;
-				show_warning = false;
-			}
-		}
-#endif
-	}
-
-	bool gl_supported = true;
-	if (fallback && (rendering_driver == "opengl3")) {
-		Dictionary gl_info = detect_wgl();
-
-		bool force_angle = false;
-		gl_supported = gl_info["version"].operator int() >= 30003;
-
-		Vector2i device_id = _get_device_ids(gl_info["name"]);
-		Array device_list = GLOBAL_GET("rendering/gl_compatibility/force_angle_on_devices");
-		for (int i = 0; i < device_list.size(); i++) {
-			const Dictionary &device = device_list[i];
-			if (device.has("vendor") && device.has("name")) {
-				const String &vendor = device["vendor"];
-				const String &name = device["name"];
-				if (device_id != Vector2i() && vendor.begins_with("0x") && name.begins_with("0x") && device_id.x == vendor.lstrip("0x").hex_to_int() && device_id.y == name.lstrip("0x").hex_to_int()) {
-					// Check vendor/device IDs.
-					force_angle = true;
-					break;
-				} else if (gl_info["vendor"].operator String().to_upper().contains(vendor.to_upper()) && (name == "*" || gl_info["name"].operator String().to_upper().contains(name.to_upper()))) {
-					// Check vendor/device names.
-					force_angle = true;
-					break;
-				}
-			}
-		}
-
-		if (force_angle || (gl_info["version"].operator int() < 30003)) {
-			tested_drivers.set_flag(DRIVER_ID_COMPAT_OPENGL3);
-			if (show_warning) {
-				if (gl_info["version"].operator int() < 30003) {
-					WARN_PRINT("Your video card drivers seem not to support the required OpenGL 3.3 version, switching to ANGLE.");
-				} else {
-					WARN_PRINT("Your video card drivers are known to have low quality OpenGL 3.3 support, switching to ANGLE.");
-				}
-			}
-			rendering_driver = "opengl3_angle";
-			OS::get_singleton()->set_current_rendering_driver_name(rendering_driver);
-		}
-	}
-
-	if (rendering_driver == "opengl3_angle") {
-		gl_manager_angle = memnew(GLManagerANGLE_Windows);
-		tested_drivers.set_flag(DRIVER_ID_COMPAT_ANGLE_D3D11);
-
-		if (gl_manager_angle->initialize() != OK) {
-			memdelete(gl_manager_angle);
-			gl_manager_angle = nullptr;
-			bool fallback_to_native = GLOBAL_GET("rendering/gl_compatibility/fallback_to_native");
-			if (fallback_to_native && gl_supported) {
-#ifdef EGL_STATIC
-				WARN_PRINT("Your video card drivers seem not to support GLES3 / ANGLE, switching to native OpenGL.");
-#else
-				WARN_PRINT("Your video card drivers seem not to support GLES3 / ANGLE or ANGLE dynamic libraries (libEGL.dll and libGLESv2.dll) are missing, switching to native OpenGL.");
-#endif
-				rendering_driver = "opengl3";
-			} else {
-				r_error = ERR_UNAVAILABLE;
-				ERR_FAIL_MSG("Could not initialize ANGLE OpenGL.");
-			}
-		}
-	}
-	if (rendering_driver == "opengl3") {
-		gl_manager_native = memnew(GLManagerNative_Windows);
-		tested_drivers.set_flag(DRIVER_ID_COMPAT_OPENGL3);
-
-		if (gl_manager_native->initialize() != OK) {
 			memdelete(gl_manager_native);
 			gl_manager_native = nullptr;
-			r_error = ERR_UNAVAILABLE;
-			ERR_FAIL_MSG("Could not initialize native OpenGL.");
 		}
+		if (force_angle || driver == "opengl3_angle") {
+			gl_manager_angle = memnew(GLManagerANGLE_Windows);
+			if (gl_manager_angle->initialize() == OK) {
+				rendering_driver = "opengl3_angle";
+				OS::get_singleton()->set_current_rendering_method("gl_compatibility");
+				OS::get_singleton()->set_current_rendering_driver_name(rendering_driver);
+				driver_found = true;
+				break;
+			}
+			memdelete(gl_manager_angle);
+			gl_manager_angle = nullptr;
+		}
+#endif // GLES3_ENABLED
+		if (driver == "dummy") {
+			rendering_driver = driver;
+			OS::get_singleton()->set_current_rendering_method("gl_compatibility");
+			OS::get_singleton()->set_current_rendering_driver_name(rendering_driver);
+			driver_found = true;
+			break;
+		}
+		print_line(vformat("  \"%s\" rendering driver initialization failed.", get_readable_driver_name(driver)));
 	}
 
+	if (driver_found) {
+		print_line(vformat("  \"%s\" rendering driver initialized successfully.", get_readable_driver_name(rendering_driver)));
+	} else {
+		r_error = ERR_UNAVAILABLE;
+		ERR_FAIL_MSG("Could not initialize any of the rendering drivers.");
+	}
+
+#if defined(GLES3_ENABLED)
 	if (rendering_driver == "opengl3") {
 		RasterizerGLES3::make_current(true);
 	}
@@ -6962,6 +6913,10 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 		RasterizerGLES3::make_current(false);
 	}
 #endif
+	if (rendering_driver == "dummy") {
+		RasterizerDummy::make_current();
+	}
+
 	String appname;
 	if (Engine::get_singleton()->is_editor_hint()) {
 		appname = "Godot.GodotEditor." + String(VERSION_FULL_CONFIG);
@@ -7085,47 +7040,53 @@ Vector<String> DisplayServerWindows::get_rendering_drivers_func() {
 	drivers.push_back("opengl3");
 	drivers.push_back("opengl3_angle");
 #endif
+	drivers.push_back("dummy");
 
 	return drivers;
 }
 
+String DisplayServerWindows::get_readable_driver_name(const String &p_driver) const {
+	if (p_driver == "d3d12") {
+		return "Direct3D 12";
+	} else if (p_driver == "vulkan") {
+		return "Vulkan";
+	} else if (p_driver == "opengl3") {
+		return "OpenGL 3.2";
+	} else if (p_driver == "opengl3_angle") {
+		return "OpenGLES 3.0 (ANGLE)";
+	} else if (p_driver == "dummy") {
+		return "Dummy";
+	} else {
+		return p_driver;
+	}
+}
+
 DisplayServer *DisplayServerWindows::create_func(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, int64_t p_parent_window, Error &r_error) {
-	DisplayServer *ds = memnew(DisplayServerWindows(p_rendering_driver, p_mode, p_vsync_mode, p_flags, p_position, p_resolution, p_screen, p_context, p_parent_window, r_error));
+	DisplayServerWindows *ds = memnew(DisplayServerWindows(p_rendering_driver, p_mode, p_vsync_mode, p_flags, p_position, p_resolution, p_screen, p_context, p_parent_window, r_error));
 	if (r_error != OK) {
-		if (tested_drivers == 0) {
-			OS::get_singleton()->alert("Failed to register the window class.", "Unable to initialize DisplayServer");
-		} else if (tested_drivers.has_flag(DRIVER_ID_RD_VULKAN) || tested_drivers.has_flag(DRIVER_ID_RD_D3D12)) {
-			Vector<String> drivers;
-			if (tested_drivers.has_flag(DRIVER_ID_RD_VULKAN)) {
-				drivers.push_back("Vulkan");
-			}
-			if (tested_drivers.has_flag(DRIVER_ID_RD_D3D12)) {
-				drivers.push_back("Direct3D 12");
-			}
-			String executable_name = OS::get_singleton()->get_executable_path().get_file();
+		Vector<String> names;
+		for (const String &driver : ds->tested_drivers) {
+			names.push_back(ds->get_readable_driver_name(driver));
+		}
+
+		if (!ds->tested_drivers.has("opengl3") && !ds->tested_drivers.has("opengl3_angle")) {
+			String executable_command = vformat("\"%s\" --rendering-driver opengl3", OS::get_singleton()->get_executable_path());
+
 			OS::get_singleton()->alert(
-					vformat("Your video card drivers seem not to support the required %s version.\n\n"
-							"If possible, consider updating your video card drivers or using the OpenGL 3 driver.\n\n"
+					vformat("Your video card drivers seem not to support the required version of the following drivers:\n%s.\n\n"
+							"If possible, consider updating your video card drivers or using the OpenGL 3 driver.\n"
+							"If you have recently updated your video card drivers, try rebooting.\n\n"
 							"You can enable the OpenGL 3 driver by starting the engine from the\n"
-							"command line with the command:\n\n    \"%s\" --rendering-driver opengl3\n\n"
-							"If you have recently updated your video card drivers, try rebooting.",
-							String(" or ").join(drivers),
-							executable_name),
+							"command line with the command:\n\n    %s",
+							String(", ").join(names),
+							executable_command),
 					"Unable to initialize video driver");
 		} else {
-			Vector<String> drivers;
-			if (tested_drivers.has_flag(DRIVER_ID_COMPAT_OPENGL3)) {
-				drivers.push_back("OpenGL 3.3");
-			}
-			if (tested_drivers.has_flag(DRIVER_ID_COMPAT_ANGLE_D3D11)) {
-				drivers.push_back("Direct3D 11");
-			}
 			OS::get_singleton()->alert(
-					vformat(
-							"Your video card drivers seem not to support the required %s version.\n\n"
-							"If possible, consider updating your video card drivers.\n\n"
+					vformat("Your video card drivers seem not to support the required version of the following drivers:\n%s.\n\n"
+							"If possible, consider updating your video card drivers\n"
 							"If you have recently updated your video card drivers, try rebooting.",
-							String(" or ").join(drivers)),
+							String(", ").join(names)),
 					"Unable to initialize video driver");
 		}
 	}

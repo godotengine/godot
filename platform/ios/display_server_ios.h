@@ -89,6 +89,9 @@ class DisplayServerIOS : public DisplayServer {
 
 public:
 	String rendering_driver;
+	Vector<String> tested_drivers;
+
+	String get_readable_driver_name(const String &p_driver) const override;
 
 	static DisplayServerIOS *get_singleton();
 
