@@ -1812,7 +1812,11 @@ Ref<Animation> ResourceImporterScene::_save_animation_to_file(Ref<Animation> ani
 		}
 	}
 	anim->set_path(p_save_to_path, true); // Set path to save externally.
-	Error err = ResourceSaver::save(anim, p_save_to_path, ResourceSaver::FLAG_CHANGE_PATH);
+	int flags = ResourceSaver::FLAG_CHANGE_PATH;
+	if (EDITOR_GET("filesystem/on_save/compress_binary_resources")) {
+		flags |= ResourceSaver::FLAG_COMPRESS;
+	}
+	Error err = ResourceSaver::save(anim, p_save_to_path, flags);
 	ERR_FAIL_COND_V_MSG(err != OK, anim, "Saving of animation failed: " + p_save_to_path);
 	return anim;
 }
@@ -2591,7 +2595,11 @@ Node *ResourceImporterScene::_generate_meshes(Node *p_node, const Dictionary &p_
 					}
 					mesh = src_mesh_node->get_mesh()->get_mesh(existing);
 
-					ResourceSaver::save(mesh, save_to_file); //override
+					int flags = 0;
+					if (EDITOR_GET("filesystem/on_save/compress_binary_resources")) {
+						flags |= ResourceSaver::FLAG_COMPRESS;
+					}
+					ResourceSaver::save(mesh, save_to_file, flags); //override
 
 					mesh->set_path(save_to_file, true); //takeover existing, if needed
 
@@ -3151,7 +3159,7 @@ Error ResourceImporterScene::import(ResourceUID::ID p_source_id, const String &p
 	progress.step(TTR("Saving..."), 104);
 
 	int flags = 0;
-	if (EditorSettings::get_singleton() && EDITOR_GET("filesystem/on_save/compress_binary_resources")) {
+	if (EDITOR_GET("filesystem/on_save/compress_binary_resources")) {
 		flags |= ResourceSaver::FLAG_COMPRESS;
 	}
 
