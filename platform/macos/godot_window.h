@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef GODOT_WINDOW_H
-#define GODOT_WINDOW_H
+#pragma once
 
 #include "servers/display_server.h"
 
@@ -45,5 +44,3 @@
 - (void)setAnimDuration:(NSTimeInterval)duration;
 
 @end
-
-#endif // GODOT_WINDOW_H

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef PROPERTY_UTILS_H
-#define PROPERTY_UTILS_H
+#pragma once
 
 #include "scene/main/node.h"
 #include "scene/resources/packed_scene.h"
@@ -50,5 +49,3 @@ public:
 	static void assign_custom_type_script(Object *p_object, const Ref<Script> &p_script);
 	static Ref<Script> get_custom_type_script(const Object *p_object);
 };
-
-#endif // PROPERTY_UTILS_H
