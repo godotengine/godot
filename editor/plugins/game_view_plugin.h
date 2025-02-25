@@ -53,6 +53,7 @@ private:
 	int node_type = RuntimeNodeSelect::NODE_TYPE_NONE;
 	bool selection_visible = true;
 	int select_mode = RuntimeNodeSelect::SELECT_MODE_SINGLE;
+	bool mute_audio = false;
 	EditorDebuggerNode::CameraOverride camera_override_mode = EditorDebuggerNode::OVERRIDE_INGAME;
 
 	void _session_started(Ref<EditorDebuggerSession> p_session);
@@ -71,6 +72,8 @@ public:
 	void set_select_mode(int p_mode);
 
 	void set_selection_visible(bool p_visible);
+
+	void set_debug_mute_audio(bool p_enabled);
 
 	void set_camera_override(bool p_enabled);
 	void set_camera_manipulate_mode(EditorDebuggerNode::CameraOverride p_mode);
@@ -130,6 +133,8 @@ class GameView : public VBoxContainer {
 	Rect2i floating_window_rect;
 	int floating_window_screen = -1;
 
+	bool debug_mute_audio = false;
+
 	Button *suspend_button = nullptr;
 	Button *next_frame_button = nullptr;
 
@@ -137,6 +142,8 @@ class GameView : public VBoxContainer {
 	Button *select_mode_button[RuntimeNodeSelect::SELECT_MODE_MAX];
 
 	Button *hide_selection = nullptr;
+
+	Button *debug_mute_audio_button = nullptr;
 
 	Button *camera_override_button = nullptr;
 	MenuButton *camera_override_menu = nullptr;
@@ -180,6 +187,8 @@ class GameView : public VBoxContainer {
 	void _show_update_window_wrapper();
 
 	void _hide_selection_toggled(bool p_pressed);
+
+	void _debug_mute_audio_button_pressed();
 
 	void _camera_override_button_toggled(bool p_pressed);
 	void _camera_override_menu_id_pressed(int p_id);
