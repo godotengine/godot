@@ -31,7 +31,7 @@
 #ifndef XR_FACE_MODIFIER_3D_H
 #define XR_FACE_MODIFIER_3D_H
 
-#include "mesh_instance_3d.h"
+#include "scene/3d/mesh_instance_3d.h"
 #include "scene/3d/node_3d.h"
 
 /**
