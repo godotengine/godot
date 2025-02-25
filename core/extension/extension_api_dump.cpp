@@ -118,6 +118,12 @@ Dictionary GDExtensionAPIDump::generate_extension_api(bool p_include_docs) {
 		header["version_build"] = VERSION_BUILD;
 		header["version_full_name"] = VERSION_FULL_NAME;
 
+#if REAL_T_IS_DOUBLE
+		header["precision"] = "double";
+#else
+		header["precision"] = "single";
+#endif
+
 		api_dump["header"] = header;
 	}
 
