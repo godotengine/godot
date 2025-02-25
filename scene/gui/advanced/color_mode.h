@@ -31,7 +31,7 @@
 #ifndef COLOR_MODE_H
 #define COLOR_MODE_H
 
-#include "scene/gui/color_picker.h"
+#include "scene/gui/advanced/color_picker.h"
 
 class GradientTexture2D;
 

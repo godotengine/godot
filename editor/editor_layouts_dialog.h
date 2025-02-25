@@ -31,7 +31,7 @@
 #ifndef EDITOR_LAYOUTS_DIALOG_H
 #define EDITOR_LAYOUTS_DIALOG_H
 
-#include "scene/gui/dialogs.h"
+#include "scene/gui/advanced/dialogs.h"
 
 class LineEdit;
 class ItemList;

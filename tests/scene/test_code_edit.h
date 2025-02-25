@@ -31,7 +31,7 @@
 #ifndef TEST_CODE_EDIT_H
 #define TEST_CODE_EDIT_H
 
-#include "scene/gui/code_edit.h"
+#include "scene/gui/advanced/code_edit.h"
 
 #include "tests/test_macros.h"
 

@@ -31,9 +31,9 @@
 #ifndef TREE_H
 #define TREE_H
 
+#include "scene/gui/advanced/popup_menu.h"
 #include "scene/gui/control.h"
 #include "scene/gui/line_edit.h"
-#include "scene/gui/popup_menu.h"
 #include "scene/gui/scroll_bar.h"
 #include "scene/gui/slider.h"
 #include "scene/resources/text_paragraph.h"

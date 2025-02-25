@@ -31,7 +31,7 @@
 #ifndef SCENE_CREATE_DIALOG_H
 #define SCENE_CREATE_DIALOG_H
 
-#include "scene/gui/dialogs.h"
+#include "scene/gui/advanced/dialogs.h"
 
 class ButtonGroup;
 class CheckBox;

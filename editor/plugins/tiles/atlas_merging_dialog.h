@@ -32,7 +32,7 @@
 #define ATLAS_MERGING_DIALOG_H
 
 #include "editor/editor_properties.h"
-#include "scene/gui/dialogs.h"
+#include "scene/gui/advanced/dialogs.h"
 #include "scene/gui/item_list.h"
 #include "scene/gui/texture_rect.h"
 #include "scene/resources/2d/tile_set.h"

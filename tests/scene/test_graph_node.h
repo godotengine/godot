@@ -31,7 +31,7 @@
 #ifndef TEST_GRAPH_NODE_H
 #define TEST_GRAPH_NODE_H
 
-#include "scene/gui/graph_node.h"
+#include "scene/gui/advanced/graph_node.h"
 #include "scene/main/window.h"
 
 #include "tests/test_macros.h"

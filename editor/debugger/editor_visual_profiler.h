@@ -31,15 +31,15 @@
 #ifndef EDITOR_VISUAL_PROFILER_H
 #define EDITOR_VISUAL_PROFILER_H
 
+#include "scene/gui/advanced/option_button.h"
+#include "scene/gui/advanced/spin_box.h"
+#include "scene/gui/advanced/split_container.h"
+#include "scene/gui/advanced/tree.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/check_box.h"
 #include "scene/gui/label.h"
-#include "scene/gui/option_button.h"
-#include "scene/gui/spin_box.h"
-#include "scene/gui/split_container.h"
 #include "scene/gui/texture_rect.h"
-#include "scene/gui/tree.h"
 
 class ImageTexture;
 
