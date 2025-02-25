@@ -330,6 +330,7 @@ private:
 	Vector2i _coords_to_debug_quadrant_coords(const Vector2i &p_coords) const;
 	bool _debug_was_cleaned_up = false;
 	void _debug_update(bool p_force_cleanup);
+	void _debug_full_update();
 	void _debug_quadrants_update_cell(CellData &r_cell_data, SelfList<DebugQuadrant>::List &r_dirty_debug_quadrant_list);
 #endif // DEBUG_ENABLED
 
