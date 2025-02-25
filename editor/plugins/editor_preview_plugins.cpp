@@ -38,6 +38,7 @@
 #include "editor/editor_paths.h"
 #include "editor/editor_settings.h"
 #include "editor/themes/editor_scale.h"
+#include "main/main.h"
 #include "scene/2d/animated_sprite_2d.h"
 #include "scene/2d/camera_2d.h"
 #include "scene/2d/line_2d.h"
@@ -310,7 +311,6 @@ bool EditorPackedScenePreviewPlugin::handles(const String &p_type) const {
 }
 
 Ref<Texture2D> EditorPackedScenePreviewPlugin::generate(const Ref<Resource> &p_from, const Size2 &p_size, Dictionary &p_metadata) const {
-	aborted = false;
 	return generate_from_path(p_from->get_path(), p_size, p_metadata);
 }
 
@@ -318,6 +318,9 @@ Ref<Texture2D> EditorPackedScenePreviewPlugin::generate_from_path(const String &
 	// Safe checks, since this function interacts with EditorNode to render previews
 	ERR_FAIL_COND_V_MSG(!Engine::get_singleton()->is_editor_hint(), Ref<Texture2D>(), "This function can only be called from the editor.");
 	ERR_FAIL_COND_V_MSG(EditorNode::get_singleton() == nullptr, Ref<Texture2D>(), "EditorNode doesn't exist.");
+
+	// Lower abort flag
+	aborted = false;
 
 	Error load_error;
 	Ref<PackedScene> pack = ResourceLoader::load(p_path, "PackedScene", ResourceFormatLoader::CACHE_MODE_IGNORE, &load_error); // no more cache issues?
@@ -746,9 +749,9 @@ void EditorPackedScenePreviewPlugin::_calculate_scene_rect(Node *p_node, Rect2 &
 
 	// Merge the calculated node 2d rect
 	if (scene_rect.get_size().length() == 0.0f) { // Avoid accounting scene origin (0,0) into scene rect
-		scene_rect = n2d_rect;
+		scene_rect = n2d_rect.abs();
 	} else {
-		scene_rect = scene_rect.merge(n2d_rect);
+		scene_rect = scene_rect.merge(n2d_rect.abs());
 	}
 
 	for (int i = 0; i < p_node->get_child_count(); i++) {
@@ -788,8 +791,12 @@ void EditorPackedScenePreviewPlugin::_wait_frames(const uint64_t &n) const {
 	if (n <= 0) {
 		return;
 	}
-	const uint64_t pause_frame = Engine::get_singleton()->get_process_frames();
-	while (Engine::get_singleton()->get_process_frames() - pause_frame < n + 1) { // Wait for n frames == (n+1) frames has rendered
+	const uint64_t prev_frame = Engine::get_singleton()->get_frames_drawn();
+	while (Engine::get_singleton()->get_frames_drawn() - prev_frame < n + 1) { // Wait for n frames == (n+1) frames has rendered
+		if (!EditorResourcePreview::get_singleton()->is_threaded()) {
+			// Is running this on main thread, iterate main loop (or will get stuck here forever)
+			Main::iteration();
+		}
 		if (aborted) {
 			break;
 		}
