@@ -1316,8 +1316,87 @@ void DisplayServer::_input_set_custom_mouse_cursor_func(const Ref<Resource> &p_i
 	singleton->cursor_set_custom_image(p_image, (CursorShape)p_shape, p_hotspot);
 }
 
+bool DisplayServer::is_rendering_device_supported() {
+#if defined(RD_ENABLED)
+	RenderingDevice *device = RenderingDevice::get_singleton();
+	if (device) {
+		return true;
+	}
+
+	if (supported_rendering_device == RenderingDeviceCreationStatus::SUCCESS) {
+		return true;
+	} else if (supported_rendering_device == RenderingDeviceCreationStatus::FAILURE) {
+		return false;
+	}
+
+	Error err;
+
+#ifdef WINDOWS_ENABLED
+	// On some NVIDIA drivers combining OpenGL and RenderingDevice can result in crash, offload the check to the subprocess.
+	List<String> arguments;
+	arguments.push_back("--test-rd-support");
+
+	String pipe;
+	int exitcode = 0;
+	err = OS::get_singleton()->execute(OS::get_singleton()->get_executable_path(), arguments, &pipe, &exitcode);
+	if (err == OK && exitcode == 0) {
+		supported_rendering_device = RenderingDeviceCreationStatus::SUCCESS;
+		return true;
+	} else {
+		supported_rendering_device = RenderingDeviceCreationStatus::FAILURE;
+		return false;
+	}
+#endif
+
+	RenderingContextDriver *rcd = nullptr;
+
+#if defined(VULKAN_ENABLED)
+	rcd = memnew(RenderingContextDriverVulkan);
+#endif
+#ifdef D3D12_ENABLED
+	if (rcd == nullptr) {
+		rcd = memnew(RenderingContextDriverD3D12);
+	}
+#endif
+#ifdef METAL_ENABLED
+	if (rcd == nullptr) {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunguarded-availability"
+		// Eliminate "RenderingContextDriverMetal is only available on iOS 14.0 or newer".
+		rcd = memnew(RenderingContextDriverMetal);
+#pragma clang diagnostic pop
+	}
+#endif
+
+	if (rcd != nullptr) {
+		err = rcd->initialize();
+		if (err == OK) {
+			RenderingDevice *rd = memnew(RenderingDevice);
+			err = rd->initialize(rcd);
+			memdelete(rd);
+			rd = nullptr;
+			if (err == OK) {
+				// Creating a RenderingDevice is quite slow.
+				// Cache the result for future usage, so that it's much faster on subsequent calls.
+				supported_rendering_device = RenderingDeviceCreationStatus::SUCCESS;
+				memdelete(rcd);
+				rcd = nullptr;
+				return true;
+			} else {
+				supported_rendering_device = RenderingDeviceCreationStatus::FAILURE;
+			}
+		}
+
+		memdelete(rcd);
+		rcd = nullptr;
+	}
+
+#endif // RD_ENABLED
+	return false;
+}
+
 bool DisplayServer::can_create_rendering_device() {
-	if (get_singleton()->get_name() == "headless") {
+	if (get_singleton() && get_singleton()->get_name() == "headless") {
 		return false;
 	}
 
@@ -1334,6 +1413,24 @@ bool DisplayServer::can_create_rendering_device() {
 	}
 
 	Error err;
+
+#ifdef WINDOWS_ENABLED
+	// On some NVIDIA drivers combining OpenGL and RenderingDevice can result in crash, offload the check to the subprocess.
+	List<String> arguments;
+	arguments.push_back("--test-rd-creation");
+
+	String pipe;
+	int exitcode = 0;
+	err = OS::get_singleton()->execute(OS::get_singleton()->get_executable_path(), arguments, &pipe, &exitcode);
+	if (err == OK && exitcode == 0) {
+		created_rendering_device = RenderingDeviceCreationStatus::SUCCESS;
+		return true;
+	} else {
+		created_rendering_device = RenderingDeviceCreationStatus::FAILURE;
+		return false;
+	}
+#endif
+
 	RenderingContextDriver *rcd = nullptr;
 
 #if defined(VULKAN_ENABLED)
