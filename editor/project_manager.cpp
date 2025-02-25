@@ -1618,7 +1618,14 @@ ProjectManager::ProjectManager(bool p_custom_res) {
 		ask_update_settings = memnew(ConfirmationDialog);
 		ask_update_settings->set_autowrap(true);
 		ask_update_settings->get_ok_button()->connect(SceneStringName(pressed), callable_mp(this, &ProjectManager::_open_selected_projects_with_migration));
-		full_convert_button = ask_update_settings->add_button(TTR("Convert Full Project"), !GLOBAL_GET("gui/common/swap_cancel_ok"));
+		bool swap_cancel_ok = false;
+		String swap_cancel_ok_str = GLOBAL_GET("gui/common/swap_cancel_ok");
+		if (swap_cancel_ok_str == "auto") {
+			swap_cancel_ok = DisplayServer::get_singleton()->get_swap_cancel_ok();
+		} else {
+			swap_cancel_ok = (swap_cancel_ok_str == "yes");
+		}
+		full_convert_button = ask_update_settings->add_button(TTR("Convert Full Project"), !swap_cancel_ok);
 		full_convert_button->connect(SceneStringName(pressed), callable_mp(this, &ProjectManager::_full_convert_button_pressed));
 		add_child(ask_update_settings);
 
