@@ -2073,7 +2073,7 @@ void RuntimeNodeSelect::_cursor_scale_distance(real_t p_scale) {
 void RuntimeNodeSelect::_scale_freelook_speed(real_t p_scale) {
 	real_t min_speed = MAX(CAMERA_ZNEAR * 4, VIEW_3D_MIN_ZOOM);
 	real_t max_speed = MIN(CAMERA_ZFAR / 4, VIEW_3D_MAX_ZOOM);
-	if (unlikely(min_speed > max_speed)) {
+	if (min_speed > max_speed) [[unlikely]] {
 		freelook_speed = (min_speed + max_speed) / 2;
 	} else {
 		freelook_speed = CLAMP(freelook_speed * p_scale, min_speed, max_speed);
