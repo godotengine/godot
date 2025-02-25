@@ -8460,10 +8460,11 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 
 			pos = _get_tkpos();
 			tk = _get_token();
-			TokenType prev_type;
+
+			bool default_defined = false;
 			if (tk.type == TK_CF_CASE || tk.type == TK_CF_DEFAULT) {
-				prev_type = tk.type;
 				_set_tkpos(pos);
+				default_defined = tk.type == TK_CF_DEFAULT;
 			} else {
 				_set_expected_error("case", "default");
 				return ERR_PARSE_ERROR;
@@ -8477,16 +8478,13 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 				pos = _get_tkpos();
 				tk = _get_token();
 				if (tk.type == TK_CF_CASE || tk.type == TK_CF_DEFAULT) {
-					if (prev_type == TK_CF_DEFAULT) {
-						if (tk.type == TK_CF_CASE) {
-							_set_error(RTR("Cases must be defined before default case."));
-							return ERR_PARSE_ERROR;
-						} else if (prev_type == TK_CF_DEFAULT) {
+					if (tk.type == TK_CF_DEFAULT) {
+						if (default_defined) {
 							_set_error(RTR("Default case must be defined only once."));
 							return ERR_PARSE_ERROR;
 						}
+						default_defined = true;
 					}
-					prev_type = tk.type;
 					_set_tkpos(pos);
 					continue;
 				} else {
