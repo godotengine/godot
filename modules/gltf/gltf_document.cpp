@@ -1198,10 +1198,11 @@ Error GLTFDocument::_encode_buffer_view(Ref<GLTFState> p_state, const double *p_
 					dst_i++;
 				}
 			}
-			int64_t old_size = gltf_buffer.size();
-			gltf_buffer.resize(old_size + (buffer.size() * sizeof(int8_t)));
-			memcpy(gltf_buffer.ptrw() + old_size, buffer.ptrw(), buffer.size() * sizeof(int8_t));
-			bv->byte_length = buffer.size() * sizeof(int8_t);
+			const int64_t old_size = gltf_buffer.size();
+			const size_t buffer_size = buffer.size() * sizeof(int8_t);
+			gltf_buffer.resize(old_size + buffer_size);
+			memcpy(gltf_buffer.ptrw() + old_size, buffer.ptrw(), buffer_size);
+			bv->byte_length = buffer_size;
 		} break;
 		case GLTFAccessor::COMPONENT_TYPE_UNSIGNED_BYTE: {
 			Vector<uint8_t> buffer;
@@ -1223,7 +1224,8 @@ Error GLTFDocument::_encode_buffer_view(Ref<GLTFState> p_state, const double *p_
 				}
 			}
 			gltf_buffer.append_array(buffer);
-			bv->byte_length = buffer.size() * sizeof(uint8_t);
+			const size_t buffer_size = buffer.size() * sizeof(uint8_t);
+			bv->byte_length = buffer_size;
 		} break;
 		case GLTFAccessor::COMPONENT_TYPE_SIGNED_SHORT: {
 			Vector<int16_t> buffer;
@@ -1244,10 +1246,11 @@ Error GLTFDocument::_encode_buffer_view(Ref<GLTFState> p_state, const double *p_
 					dst_i++;
 				}
 			}
-			int64_t old_size = gltf_buffer.size();
-			gltf_buffer.resize(old_size + (buffer.size() * sizeof(int16_t)));
-			memcpy(gltf_buffer.ptrw() + old_size, buffer.ptrw(), buffer.size() * sizeof(int16_t));
-			bv->byte_length = buffer.size() * sizeof(int16_t);
+			const int64_t old_size = gltf_buffer.size();
+			const size_t buffer_size = buffer.size() * sizeof(int16_t);
+			gltf_buffer.resize(old_size + buffer_size);
+			memcpy(gltf_buffer.ptrw() + old_size, buffer.ptrw(), buffer_size);
+			bv->byte_length = buffer_size;
 		} break;
 		case GLTFAccessor::COMPONENT_TYPE_UNSIGNED_SHORT: {
 			Vector<uint16_t> buffer;
@@ -1268,10 +1271,11 @@ Error GLTFDocument::_encode_buffer_view(Ref<GLTFState> p_state, const double *p_
 					dst_i++;
 				}
 			}
-			int64_t old_size = gltf_buffer.size();
-			gltf_buffer.resize(old_size + (buffer.size() * sizeof(uint16_t)));
-			memcpy(gltf_buffer.ptrw() + old_size, buffer.ptrw(), buffer.size() * sizeof(uint16_t));
-			bv->byte_length = buffer.size() * sizeof(uint16_t);
+			const int64_t old_size = gltf_buffer.size();
+			const size_t buffer_size = buffer.size() * sizeof(uint16_t);
+			gltf_buffer.resize(old_size + buffer_size);
+			memcpy(gltf_buffer.ptrw() + old_size, buffer.ptrw(), buffer_size);
+			bv->byte_length = buffer_size;
 		} break;
 		case GLTFAccessor::COMPONENT_TYPE_SIGNED_INT: {
 			Vector<int32_t> buffer;
@@ -1288,10 +1292,11 @@ Error GLTFDocument::_encode_buffer_view(Ref<GLTFState> p_state, const double *p_
 					dst_i++;
 				}
 			}
-			int64_t old_size = gltf_buffer.size();
-			gltf_buffer.resize(old_size + (buffer.size() * sizeof(uint32_t)));
-			memcpy(gltf_buffer.ptrw() + old_size, buffer.ptrw(), buffer.size() * sizeof(uint32_t));
-			bv->byte_length = buffer.size() * sizeof(uint32_t);
+			const int64_t old_size = gltf_buffer.size();
+			const size_t buffer_size = buffer.size() * sizeof(int32_t);
+			gltf_buffer.resize(old_size + buffer_size);
+			memcpy(gltf_buffer.ptrw() + old_size, buffer.ptrw(), buffer_size);
+			bv->byte_length = buffer_size;
 		} break;
 		case GLTFAccessor::COMPONENT_TYPE_UNSIGNED_INT: {
 			Vector<uint32_t> buffer;
@@ -1308,10 +1313,11 @@ Error GLTFDocument::_encode_buffer_view(Ref<GLTFState> p_state, const double *p_
 					dst_i++;
 				}
 			}
-			int64_t old_size = gltf_buffer.size();
-			gltf_buffer.resize(old_size + (buffer.size() * sizeof(uint32_t)));
-			memcpy(gltf_buffer.ptrw() + old_size, buffer.ptrw(), buffer.size() * sizeof(uint32_t));
-			bv->byte_length = buffer.size() * sizeof(uint32_t);
+			const int64_t old_size = gltf_buffer.size();
+			const size_t buffer_size = buffer.size() * sizeof(uint32_t);
+			gltf_buffer.resize(old_size + buffer_size);
+			memcpy(gltf_buffer.ptrw() + old_size, buffer.ptrw(), buffer_size);
+			bv->byte_length = buffer_size;
 		} break;
 		case GLTFAccessor::COMPONENT_TYPE_SINGLE_FLOAT: {
 			Vector<float> buffer;
@@ -1328,10 +1334,11 @@ Error GLTFDocument::_encode_buffer_view(Ref<GLTFState> p_state, const double *p_
 					dst_i++;
 				}
 			}
-			int64_t old_size = gltf_buffer.size();
-			gltf_buffer.resize(old_size + (buffer.size() * sizeof(float)));
-			memcpy(gltf_buffer.ptrw() + old_size, buffer.ptrw(), buffer.size() * sizeof(float));
-			bv->byte_length = buffer.size() * sizeof(float);
+			const int64_t old_size = gltf_buffer.size();
+			const size_t buffer_size = buffer.size() * sizeof(float);
+			gltf_buffer.resize(old_size + buffer_size);
+			memcpy(gltf_buffer.ptrw() + old_size, buffer.ptrw(), buffer_size);
+			bv->byte_length = buffer_size;
 		} break;
 		case GLTFAccessor::COMPONENT_TYPE_DOUBLE_FLOAT: {
 			Vector<double> buffer;
@@ -1348,10 +1355,11 @@ Error GLTFDocument::_encode_buffer_view(Ref<GLTFState> p_state, const double *p_
 					dst_i++;
 				}
 			}
-			int64_t old_size = gltf_buffer.size();
-			gltf_buffer.resize(old_size + (buffer.size() * sizeof(double)));
-			memcpy(gltf_buffer.ptrw() + old_size, buffer.ptrw(), buffer.size() * sizeof(double));
-			bv->byte_length = buffer.size() * sizeof(double);
+			const int64_t old_size = gltf_buffer.size();
+			const size_t buffer_size = buffer.size() * sizeof(double);
+			gltf_buffer.resize(old_size + buffer_size);
+			memcpy(gltf_buffer.ptrw() + old_size, buffer.ptrw(), buffer_size);
+			bv->byte_length = buffer_size;
 		} break;
 		case GLTFAccessor::COMPONENT_TYPE_HALF_FLOAT: {
 			ERR_FAIL_V_MSG(ERR_UNAVAILABLE, "glTF: Half float not supported yet.");
@@ -1372,10 +1380,11 @@ Error GLTFDocument::_encode_buffer_view(Ref<GLTFState> p_state, const double *p_
 					dst_i++;
 				}
 			}
-			int64_t old_size = gltf_buffer.size();
-			gltf_buffer.resize(old_size + (buffer.size() * sizeof(int64_t)));
-			memcpy(gltf_buffer.ptrw() + old_size, buffer.ptrw(), buffer.size() * sizeof(int64_t));
-			bv->byte_length = buffer.size() * sizeof(int64_t);
+			const int64_t old_size = gltf_buffer.size();
+			const size_t buffer_size = buffer.size() * sizeof(int64_t);
+			gltf_buffer.resize(old_size + buffer_size);
+			memcpy(gltf_buffer.ptrw() + old_size, buffer.ptrw(), buffer_size);
+			bv->byte_length = buffer_size;
 		} break;
 		case GLTFAccessor::COMPONENT_TYPE_UNSIGNED_LONG: {
 			Vector<uint64_t> buffer;
@@ -1393,10 +1402,11 @@ Error GLTFDocument::_encode_buffer_view(Ref<GLTFState> p_state, const double *p_
 					dst_i++;
 				}
 			}
-			int64_t old_size = gltf_buffer.size();
-			gltf_buffer.resize(old_size + (buffer.size() * sizeof(uint64_t)));
-			memcpy(gltf_buffer.ptrw() + old_size, buffer.ptrw(), buffer.size() * sizeof(uint64_t));
-			bv->byte_length = buffer.size() * sizeof(uint64_t);
+			const int64_t old_size = gltf_buffer.size();
+			const size_t buffer_size = buffer.size() * sizeof(uint64_t);
+			gltf_buffer.resize(old_size + buffer_size);
+			memcpy(gltf_buffer.ptrw() + old_size, buffer.ptrw(), buffer_size);
+			bv->byte_length = buffer_size;
 		} break;
 	}
 	ERR_FAIL_COND_V(buffer_end > bv->byte_length, ERR_INVALID_DATA);
