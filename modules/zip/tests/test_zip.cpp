@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  zip_reader.h                                                          */
+/*  test_zip.cpp                                                          */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,31 +28,14 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#pragma once
+#include "test_zip.h"
 
-#include "core/io/file_access.h"
-#include "core/object/ref_counted.h"
+namespace TestZip {
 
-#include "thirdparty/minizip/unzip.h"
+void check_file_size(const String &p_path, int p_expected_size) {
+	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ);
+	CHECK(f.is_valid());
+	CHECK(f->get_length() == p_expected_size);
+}
 
-class ZIPReader : public RefCounted {
-	GDCLASS(ZIPReader, RefCounted)
-
-	Ref<FileAccess> fa;
-	unzFile uzf = nullptr;
-
-protected:
-	static void _bind_methods();
-
-public:
-	Error open(const String &p_path);
-	Error close();
-
-	PackedStringArray get_files();
-	PackedByteArray read_file(const String &p_path, bool p_case_sensitive);
-	bool file_exists(const String &p_path, bool p_case_sensitive);
-	int get_compression_level(const String &p_path, bool p_case_sensitive);
-
-	ZIPReader();
-	~ZIPReader();
-};
+} // namespace TestZip

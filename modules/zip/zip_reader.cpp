@@ -140,6 +140,25 @@ bool ZIPReader::file_exists(const String &p_path, bool p_case_sensitive) {
 	return true;
 }
 
+int ZIPReader::get_compression_level(const String &p_path, bool p_case_sensitive) {
+	ERR_FAIL_COND_V_MSG(fa.is_null(), -1, "ZIPReader must be opened before use.");
+
+	int cs = p_case_sensitive ? 1 : 2;
+	if (unzLocateFile(uzf, p_path.utf8().get_data(), cs) != UNZ_OK) {
+		return -1;
+	}
+
+	int method;
+	int level;
+	if (unzOpenCurrentFile2(uzf, &method, &level, 1) != UNZ_OK) {
+		return -1;
+	}
+
+	unzCloseCurrentFile(uzf);
+
+	return level;
+}
+
 ZIPReader::ZIPReader() {}
 
 ZIPReader::~ZIPReader() {
@@ -154,4 +173,5 @@ void ZIPReader::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_files"), &ZIPReader::get_files);
 	ClassDB::bind_method(D_METHOD("read_file", "path", "case_sensitive"), &ZIPReader::read_file, DEFVAL(Variant(true)));
 	ClassDB::bind_method(D_METHOD("file_exists", "path", "case_sensitive"), &ZIPReader::file_exists, DEFVAL(Variant(true)));
+	ClassDB::bind_method(D_METHOD("get_compression_level", "path", "case_sensitive"), &ZIPReader::get_compression_level, DEFVAL(Variant(true)));
 }
