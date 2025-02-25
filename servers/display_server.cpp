@@ -1344,9 +1344,8 @@ bool DisplayServer::is_rendering_device_supported() {
 		return true;
 	} else {
 		supported_rendering_device = RenderingDeviceCreationStatus::FAILURE;
-		return false;
 	}
-#endif
+#else // WINDOWS_ENABLED
 
 	RenderingContextDriver *rcd = nullptr;
 
@@ -1391,6 +1390,7 @@ bool DisplayServer::is_rendering_device_supported() {
 		rcd = nullptr;
 	}
 
+#endif // WINDOWS_ENABLED
 #endif // RD_ENABLED
 	return false;
 }
@@ -1427,9 +1427,8 @@ bool DisplayServer::can_create_rendering_device() {
 		return true;
 	} else {
 		created_rendering_device = RenderingDeviceCreationStatus::FAILURE;
-		return false;
 	}
-#endif
+#else // WINDOWS_ENABLED
 
 	RenderingContextDriver *rcd = nullptr;
 
@@ -1474,6 +1473,7 @@ bool DisplayServer::can_create_rendering_device() {
 		rcd = nullptr;
 	}
 
+#endif // WINDOWS_ENABLED
 #endif // RD_ENABLED
 	return false;
 }
