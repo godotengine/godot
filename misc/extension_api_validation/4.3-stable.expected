@@ -334,3 +334,12 @@ Validate extension JSON: Error: Field 'classes/EditorTranslationParserPlugin/met
 Validate extension JSON: JSON file: Field was added in a way that breaks compatibility 'classes/EditorTranslationParserPlugin/methods/_parse_file': return_value
 
 Returning by argument reference is not safe in extensions, changed to returning as an Array and merged with `get_comments`. Compatibility method registered.
+
+
+GH-76829
+--------
+Validate extension JSON: Error: Field 'classes/RichTextLabel/methods/add_image/arguments': size changed value in new API, from 10 to 11.
+Validate extension JSON: Error: Field 'classes/RichTextLabel/methods/push_table/arguments': size changed value in new API, from 3 to 4.
+Validate extension JSON: Error: Field 'classes/TreeItem/methods/add_button/arguments': size changed value in new API, from 5 to 6.
+
+Added optional arguments. Compatibility methods registered.
