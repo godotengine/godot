@@ -51,7 +51,7 @@
 #include "editor/editor_translation.h"
 #include "editor/engine_update_label.h"
 #include "modules/regex/regex.h"
-#include "scene/gui/color_picker.h"
+#include "scene/gui/advanced/color_picker.h"
 #include "scene/main/node.h"
 #include "scene/main/scene_tree.h"
 #include "scene/main/window.h"

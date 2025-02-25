@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  menu_button.h                                                         */
+/*  graph_frame.h                                                         */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -30,50 +30,77 @@
 
 #pragma once
 
-#include "scene/gui/button.h"
-#include "scene/gui/popup_menu.h"
-#include "scene/property_list_helper.h"
+#include "scene/gui/advanced/graph_element.h"
 
-class MenuButton : public Button {
-	GDCLASS(MenuButton, Button);
+class HBoxContainer;
 
-	bool clicked = false;
-	bool switch_on_hover = false;
-	bool disable_shortcuts = false;
-	PopupMenu *popup = nullptr;
+class GraphFrame : public GraphElement {
+	GDCLASS(GraphFrame, GraphElement);
 
-	static inline PropertyListHelper base_property_helper;
-	PropertyListHelper property_helper;
+	struct _MinSizeCache {
+		int min_size = 0;
+		bool will_stretch = false;
+		int final_size = 0;
+	};
 
-	void _popup_visibility_changed(bool p_visible);
+	struct ThemeCache {
+		Ref<StyleBox> panel;
+		Ref<StyleBox> panel_selected;
+		Ref<StyleBox> titlebar;
+		Ref<StyleBox> titlebar_selected;
+
+		Ref<Texture2D> resizer;
+		Color resizer_color;
+	} theme_cache;
+
+private:
+	String title;
+
+	HBoxContainer *titlebar_hbox = nullptr;
+	Label *title_label = nullptr;
+
+	bool autoshrink_enabled = true;
+	int autoshrink_margin = 40;
+	int drag_margin = 16;
+
+	bool tint_color_enabled = false;
+	Color tint_color = Color(0.3, 0.3, 0.3, 0.75);
 
 protected:
+	virtual void gui_input(const Ref<InputEvent> &p_event) override;
+	virtual CursorShape get_cursor_shape(const Point2 &p_pos = Point2i()) const override;
+
 	void _notification(int p_what);
-	bool _set(const StringName &p_name, const Variant &p_value);
-	bool _get(const StringName &p_name, Variant &r_ret) const;
-	void _get_property_list(List<PropertyInfo> *p_list) const { property_helper.get_property_list(p_list); }
-	bool _property_can_revert(const StringName &p_name) const { return property_helper.property_can_revert(p_name); }
-	bool _property_get_revert(const StringName &p_name, Variant &r_property) const { return property_helper.property_get_revert(p_name, r_property); }
 	static void _bind_methods();
-	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
+
+	void _validate_property(PropertyInfo &p_property) const;
+
+	virtual void _resort() override;
 
 public:
-	virtual void pressed() override;
+	void set_title(const String &p_title);
+	String get_title() const;
 
-	PopupMenu *get_popup() const;
-	void show_popup();
+	void set_autoshrink_enabled(bool p_enable);
+	bool is_autoshrink_enabled() const;
 
-	void set_switch_on_hover(bool p_enabled);
-	bool is_switch_on_hover();
-	void set_disable_shortcuts(bool p_disabled);
+	void set_autoshrink_margin(const int &p_margin);
+	int get_autoshrink_margin() const;
 
-	void set_item_count(int p_count);
-	int get_item_count() const;
+	HBoxContainer *get_titlebar_hbox();
+	Size2 get_titlebar_size() const;
 
-#ifdef TOOLS_ENABLED
-	PackedStringArray get_configuration_warnings() const override;
-#endif
+	void set_drag_margin(int p_margin);
+	int get_drag_margin() const;
 
-	MenuButton(const String &p_text = String());
-	~MenuButton();
+	void set_tint_color_enabled(bool p_enable);
+	bool is_tint_color_enabled() const;
+
+	void set_tint_color(const Color &p_tint_color);
+	Color get_tint_color() const;
+
+	virtual bool has_point(const Point2 &p_point) const override;
+	virtual Size2 get_minimum_size() const override;
+
+	GraphFrame();
 };

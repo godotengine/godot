@@ -31,7 +31,7 @@
 #pragma once
 
 #include "core/templates/hash_map.h"
-#include "scene/gui/dialogs.h"
+#include "scene/gui/advanced/dialogs.h"
 
 // Performs the actual search
 class FindInFiles : public Node {

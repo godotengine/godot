@@ -33,11 +33,11 @@
 #include "../multiplayer_debugger.h"
 
 #include "scene/debugger/scene_debugger.h"
+#include "scene/gui/advanced/split_container.h"
+#include "scene/gui/advanced/tree.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/label.h"
-#include "scene/gui/split_container.h"
-#include "scene/gui/tree.h"
 
 class EditorNetworkProfiler : public VBoxContainer {
 	GDCLASS(EditorNetworkProfiler, VBoxContainer)

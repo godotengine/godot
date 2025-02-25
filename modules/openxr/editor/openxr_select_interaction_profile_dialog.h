@@ -30,8 +30,8 @@
 
 #pragma once
 
+#include "scene/gui/advanced/dialogs.h"
 #include "scene/gui/box_container.h"
-#include "scene/gui/dialogs.h"
 #include "scene/gui/label.h"
 #include "scene/gui/scroll_container.h"
 

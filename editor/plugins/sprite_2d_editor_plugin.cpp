@@ -42,10 +42,11 @@
 #include "scene/2d/mesh_instance_2d.h"
 #include "scene/2d/physics/collision_polygon_2d.h"
 #include "scene/2d/polygon_2d.h"
+#include "scene/gui/advanced/menu_button.h"
 #include "scene/gui/box_container.h"
-#include "scene/gui/menu_button.h"
 #include "scene/gui/panel.h"
 #include "scene/gui/view_panner.h"
+#include "scene/resources/bit_map.h"
 #include "thirdparty/clipper2/include/clipper2/clipper.h"
 
 #define PRECISION 1

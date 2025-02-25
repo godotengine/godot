@@ -35,8 +35,8 @@
 #include "core/math/math_funcs.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
+#include "scene/gui/advanced/text_edit.h"
 #include "scene/gui/box_container.h"
-#include "scene/gui/text_edit.h"
 #include "scene/main/window.h"
 #include "scene/theme/theme_db.h"
 

@@ -46,7 +46,7 @@
 #include "scene/resources/3d/convex_polygon_shape_3d.h"
 #include "scene/resources/surface_tool.h"
 #endif // _3D_DISABLED
-#include "scene/gui/popup_menu.h"
+#include "scene/gui/advanced/popup_menu.h"
 #include "scene/main/canvas_layer.h"
 #include "scene/main/scene_tree.h"
 #include "scene/main/window.h"
