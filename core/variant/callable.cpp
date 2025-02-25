@@ -335,9 +335,8 @@ void Callable::operator=(const Callable &p_callable) {
 	if (p_callable.is_custom()) {
 		method = StringName();
 		object = 0;
-		if (p_callable.custom->ref_count.ref()) {
-			custom = p_callable.custom;
-		}
+		p_callable.custom->ref_count.ref();
+		custom = p_callable.custom;
 	} else {
 		method = p_callable.method;
 		object = p_callable.object;
@@ -424,12 +423,9 @@ Callable::Callable(CallableCustom *p_custom) {
 
 Callable::Callable(const Callable &p_callable) {
 	if (p_callable.is_custom()) {
-		if (!p_callable.custom->ref_count.ref()) {
-			object = 0;
-		} else {
-			object = 0;
-			custom = p_callable.custom;
-		}
+		p_callable.custom->ref_count.ref();
+		object = 0;
+		custom = p_callable.custom;
 	} else {
 		method = p_callable.method;
 		object = p_callable.object;
@@ -483,7 +479,7 @@ int CallableCustom::get_unbound_arguments_count() const {
 }
 
 CallableCustom::CallableCustom() {
-	ref_count.init();
+	ref_count.init(1);
 }
 
 //////////////////////////////////
