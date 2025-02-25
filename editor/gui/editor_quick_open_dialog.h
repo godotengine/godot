@@ -31,7 +31,7 @@
 #pragma once
 
 #include "core/templates/oa_hash_map.h"
-#include "scene/gui/dialogs.h"
+#include "scene/gui/advanced/dialogs.h"
 #include "scene/gui/margin_container.h"
 
 class Button;

@@ -4,3 +4,5 @@ from misc.utility.scons_hints import *
 Import("env")
 
 env.add_source_files(env.scene_sources, "*.cpp")
+if not env["disable_advanced_gui"]:
+    env.add_source_files(env.scene_sources, "advanced/*.cpp")

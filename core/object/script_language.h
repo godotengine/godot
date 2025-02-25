@@ -287,7 +287,7 @@ public:
 	virtual ScriptNameCasing preferred_file_name_casing() const { return SCRIPT_NAME_CASING_SNAKE_CASE; }
 
 	// Keep enums in sync with:
-	// scene/gui/code_edit.h - CodeEdit::CodeCompletionKind
+	// scene/gui/advanced/code_edit.h - CodeEdit::CodeCompletionKind
 	enum CodeCompletionKind {
 		CODE_COMPLETION_KIND_CLASS,
 		CODE_COMPLETION_KIND_FUNCTION,
@@ -302,7 +302,7 @@ public:
 		CODE_COMPLETION_KIND_MAX
 	};
 
-	// scene/gui/code_edit.h - CodeEdit::CodeCompletionLocation
+	// scene/gui/advanced/code_edit.h - CodeEdit::CodeCompletionLocation
 	enum CodeCompletionLocation {
 		LOCATION_LOCAL = 0,
 		LOCATION_PARENT_MASK = 1 << 8,

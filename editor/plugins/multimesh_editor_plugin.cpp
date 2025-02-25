@@ -35,9 +35,9 @@
 #include "editor/gui/scene_tree_editor.h"
 #include "editor/plugins/node_3d_editor_plugin.h"
 #include "scene/3d/mesh_instance_3d.h"
+#include "scene/gui/advanced/menu_button.h"
+#include "scene/gui/advanced/option_button.h"
 #include "scene/gui/box_container.h"
-#include "scene/gui/menu_button.h"
-#include "scene/gui/option_button.h"
 
 void MultiMeshEditor::_node_removed(Node *p_node) {
 	if (p_node == node) {

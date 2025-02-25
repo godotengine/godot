@@ -39,9 +39,10 @@
 #include "editor/plugins/script_editor_plugin.h"
 #include "editor/themes/editor_scale.h"
 #include "editor/themes/editor_theme_manager.h"
+#include "scene/gui/advanced/menu_button.h"
 #include "scene/gui/line_edit.h"
-#include "scene/gui/menu_button.h"
 #include "scene/gui/separator.h"
+#include "scene/gui/texture_button.h"
 #include "scene/resources/font.h"
 
 void GotoLinePopup::popup_find_line(CodeTextEditor *p_text_editor) {

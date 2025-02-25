@@ -42,11 +42,10 @@
 #include "editor/export/editor_export_preset.h"
 #include "editor/progress_dialog.h"
 #include "editor/themes/editor_scale.h"
-#include "scene/gui/file_dialog.h"
+#include "scene/gui/advanced/file_dialog.h"
+#include "scene/gui/advanced/menu_button.h"
 #include "scene/gui/link_button.h"
-#include "scene/gui/menu_button.h"
 #include "scene/gui/separator.h"
-#include "scene/gui/tree.h"
 #include "scene/main/http_request.h"
 
 enum DownloadsAvailability {

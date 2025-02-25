@@ -36,15 +36,15 @@
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/themes/editor_scale.h"
+#include "scene/gui/advanced/file_dialog.h"
+#include "scene/gui/advanced/tree.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/check_box.h"
-#include "scene/gui/file_dialog.h"
 #include "scene/gui/grid_container.h"
 #include "scene/gui/label.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/progress_bar.h"
-#include "scene/gui/tree.h"
 
 const char *FindInFiles::SIGNAL_RESULT_FOUND = "result_found";
 

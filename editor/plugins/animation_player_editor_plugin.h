@@ -34,11 +34,11 @@
 #include "editor/plugins/animation_library_editor.h"
 #include "editor/plugins/editor_plugin.h"
 #include "scene/animation/animation_player.h"
-#include "scene/gui/dialogs.h"
+#include "scene/gui/advanced/dialogs.h"
+#include "scene/gui/advanced/spin_box.h"
+#include "scene/gui/advanced/tree.h"
 #include "scene/gui/slider.h"
-#include "scene/gui/spin_box.h"
 #include "scene/gui/texture_button.h"
-#include "scene/gui/tree.h"
 
 class AnimationPlayerEditorPlugin;
 class ImageTexture;

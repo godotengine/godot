@@ -38,7 +38,7 @@
 #include "editor/editor_string_names.h"
 #include "editor/themes/editor_scale.h"
 #include "editor/themes/editor_theme_manager.h"
-#include "scene/gui/split_container.h"
+#include "scene/gui/advanced/split_container.h"
 #include "servers/rendering/shader_preprocessor.h"
 #include "servers/rendering/shader_types.h"
 

@@ -39,7 +39,7 @@
 #include "editor/plugins/canvas_item_editor_plugin.h"
 #include "editor/plugins/node_3d_editor_plugin.h"
 #include "editor/themes/editor_scale.h"
-#include "scene/gui/color_picker.h"
+#include "scene/gui/advanced/color_picker.h"
 #include "scene/gui/flow_container.h"
 #include "scene/gui/popup.h"
 #include "scene/gui/separator.h"

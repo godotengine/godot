@@ -46,9 +46,9 @@
 #include "editor/plugins/embedded_process.h"
 #include "editor/themes/editor_scale.h"
 #include "editor/window_wrapper.h"
+#include "scene/gui/advanced/menu_button.h"
 #include "scene/gui/button.h"
 #include "scene/gui/label.h"
-#include "scene/gui/menu_button.h"
 #include "scene/gui/panel.h"
 #include "scene/gui/separator.h"
 

@@ -38,11 +38,11 @@
 #include "editor/themes/editor_scale.h"
 #include "scene/2d/node_2d.h"
 #include "scene/3d/node_3d.h"
+#include "scene/gui/advanced/option_button.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/check_box.h"
 #include "scene/gui/grid_container.h"
 #include "scene/gui/line_edit.h"
-#include "scene/gui/option_button.h"
 #include "scene/resources/packed_scene.h"
 
 void SceneCreateDialog::_notification(int p_what) {

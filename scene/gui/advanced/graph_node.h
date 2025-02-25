@@ -30,7 +30,7 @@
 
 #pragma once
 
-#include "scene/gui/graph_element.h"
+#include "scene/gui/advanced/graph_element.h"
 
 class HBoxContainer;
 

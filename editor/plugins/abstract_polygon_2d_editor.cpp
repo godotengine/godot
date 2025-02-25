@@ -38,8 +38,8 @@
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/themes/editor_scale.h"
+#include "scene/gui/advanced/dialogs.h"
 #include "scene/gui/button.h"
-#include "scene/gui/dialogs.h"
 
 bool AbstractPolygon2DEditor::Vertex::operator==(const AbstractPolygon2DEditor::Vertex &p_vertex) const {
 	return polygon == p_vertex.polygon && vertex == p_vertex.vertex;

@@ -44,53 +44,55 @@
 #include "scene/animation/tween.h"
 #include "scene/audio/audio_stream_player.h"
 #include "scene/debugger/scene_debugger.h"
+#ifndef ADVANCED_GUI_DISABLED
+#include "scene/gui/advanced/code_edit.h"
+#include "scene/gui/advanced/color_picker.h"
+#include "scene/gui/advanced/dialogs.h"
+#include "scene/gui/advanced/file_dialog.h"
+#include "scene/gui/advanced/graph_edit.h"
+#include "scene/gui/advanced/graph_frame.h"
+#include "scene/gui/advanced/graph_node.h"
+#include "scene/gui/advanced/menu_bar.h"
+#include "scene/gui/advanced/menu_button.h"
+#include "scene/gui/advanced/option_button.h"
+#include "scene/gui/advanced/popup_menu.h"
+#include "scene/gui/advanced/rich_text_effect.h"
+#include "scene/gui/advanced/rich_text_label.h"
+#include "scene/gui/advanced/spin_box.h"
+#include "scene/gui/advanced/split_container.h"
+#include "scene/gui/advanced/subviewport_container.h"
+#include "scene/gui/advanced/text_edit.h"
+#include "scene/gui/advanced/tree.h"
+#endif // ADVANCED_GUI_DISABLED
 #include "scene/gui/aspect_ratio_container.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/center_container.h"
 #include "scene/gui/check_box.h"
 #include "scene/gui/check_button.h"
-#include "scene/gui/code_edit.h"
-#include "scene/gui/color_picker.h"
 #include "scene/gui/color_rect.h"
 #include "scene/gui/control.h"
-#include "scene/gui/dialogs.h"
-#include "scene/gui/file_dialog.h"
 #include "scene/gui/flow_container.h"
-#include "scene/gui/graph_edit.h"
-#include "scene/gui/graph_frame.h"
-#include "scene/gui/graph_node.h"
 #include "scene/gui/grid_container.h"
 #include "scene/gui/item_list.h"
 #include "scene/gui/label.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/link_button.h"
 #include "scene/gui/margin_container.h"
-#include "scene/gui/menu_bar.h"
-#include "scene/gui/menu_button.h"
 #include "scene/gui/nine_patch_rect.h"
-#include "scene/gui/option_button.h"
 #include "scene/gui/panel.h"
 #include "scene/gui/panel_container.h"
-#include "scene/gui/popup_menu.h"
 #include "scene/gui/progress_bar.h"
 #include "scene/gui/reference_rect.h"
-#include "scene/gui/rich_text_effect.h"
-#include "scene/gui/rich_text_label.h"
 #include "scene/gui/scroll_bar.h"
 #include "scene/gui/scroll_container.h"
 #include "scene/gui/separator.h"
 #include "scene/gui/slider.h"
-#include "scene/gui/spin_box.h"
-#include "scene/gui/split_container.h"
-#include "scene/gui/subviewport_container.h"
 #include "scene/gui/tab_bar.h"
 #include "scene/gui/tab_container.h"
-#include "scene/gui/text_edit.h"
 #include "scene/gui/texture_button.h"
 #include "scene/gui/texture_progress_bar.h"
 #include "scene/gui/texture_rect.h"
-#include "scene/gui/tree.h"
 #include "scene/gui/video_stream_player.h"
 #include "scene/main/canvas_item.h"
 #include "scene/main/canvas_layer.h"
@@ -518,7 +520,7 @@ void register_scene_types() {
 		swap_cancel_ok = GLOBAL_DEF_NOVAL("gui/common/swap_cancel_ok", bool(DisplayServer::get_singleton()->get_swap_cancel_ok()));
 	}
 	AcceptDialog::set_swap_cancel_ok(swap_cancel_ok);
-#endif
+#endif // ADVANCED_GUI_DISABLED
 
 	int root_dir = GLOBAL_GET("internationalization/rendering/root_node_layout_direction");
 	Control::set_root_layout_direction(root_dir);
@@ -1315,11 +1317,13 @@ void register_scene_types() {
 		GLOBAL_DEF_BASIC(vformat("%s/layer_%d", PNAME("layer_names/avoidance"), i + 1), "");
 	}
 
+#ifndef ADVANCED_GUI_DISABLED
 	if (RenderingServer::get_singleton()) {
 		// RenderingServer needs to exist for this to succeed.
 		ColorPicker::init_shaders();
 		GraphEdit::init_shaders();
 	}
+#endif // ADVANCED_GUI_DISABLED
 
 	SceneDebugger::initialize();
 
@@ -1379,8 +1383,10 @@ void unregister_scene_types() {
 
 	ParticleProcessMaterial::finish_shaders();
 	CanvasItemMaterial::finish_shaders();
+#ifndef ADVANCED_GUI_DISABLED
 	ColorPicker::finish_shaders();
 	GraphEdit::finish_shaders();
+#endif // ADVANCED_GUI_DISABLED
 	SceneStringNames::free();
 
 	OS::get_singleton()->benchmark_end_measure("Scene", "Unregister Types");

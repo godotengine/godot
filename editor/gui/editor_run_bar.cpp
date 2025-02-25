@@ -42,9 +42,9 @@
 #include "editor/gui/editor_quick_open_dialog.h"
 #include "editor/gui/editor_toaster.h"
 #include "editor/themes/editor_scale.h"
+#include "scene/gui/advanced/menu_button.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
-#include "scene/gui/menu_button.h"
 #include "scene/gui/panel_container.h"
 
 #ifndef XR_DISABLED
