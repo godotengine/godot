@@ -37,8 +37,12 @@
 #include "scene/gui/label.h"
 #include "scene/gui/margin_container.h"
 #include "scene/gui/panel_container.h"
-#include "scene/gui/rich_text_label.h"
-#include "scene/main/canvas_item.h"
+#ifdef ADVANCED_GUI_DISABLED
+#include "scene/gui/scroll_container.h"
+#else
+#include "scene/gui/advanced/rich_text_label.h"
+#endif // ADVANCED_GUI_DISABLED
+#include "scene/main/viewport.h"
 #include "scene/resources/style_box_flat.h"
 
 void LicensesDialog::_close_button_pressed() {
@@ -123,28 +127,45 @@ LicensesDialog::LicensesDialog() {
 		long_text += "    " + licensebody.replace("\n", "\n    ") + "\n\n";
 	}
 
-	RichTextLabel *rich_text_label = memnew(RichTextLabel);
-	rich_text_label->set_text(long_text);
-	rich_text_label->set_threaded(true);
-	rich_text_label->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	rich_text_label->set_focus_mode(Control::FOCUS_ALL);
-	rich_text_label->add_theme_font_size_override("normal_font_size", Math::round(0.75 * default_font_size));
-
-	// Add a background to the scrollable area with the license text.
+	// Create a background for the scrollable area with the license text.
 	Ref<StyleBoxFlat> background;
 	background.instantiate();
 	background->set_bg_color(Color(0, 0, 0, 0.5));
 	background->set_content_margin_all(Math::round(10 * default_base_scale));
-	rich_text_label->add_theme_style_override(CoreStringName(normal), background);
-
-	vbox_container->add_child(rich_text_label);
-	// Allow for keyboard navigation by grabbing focus immediately on the scrollable control.
-	callable_mp((Control *)rich_text_label, &Control::grab_focus).call_deferred();
 
 	Button *close_button = memnew(Button);
 	close_button->set_text(RTR("Close"));
 	close_button->set_h_size_flags(Control::SIZE_SHRINK_CENTER);
 	close_button->set_custom_minimum_size(Vector2(100, 40) * default_base_scale);
 	close_button->connect(SceneStringName(pressed), callable_mp(this, &LicensesDialog::_close_button_pressed));
+
+	const float license_font_size = Math::round(0.75 * default_font_size);
+#ifdef ADVANCED_GUI_DISABLED
+	Label *text_control = memnew(Label);
+	text_control->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
+	text_control->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	text_control->add_theme_font_size_override("font_size", license_font_size);
+	ScrollContainer *scroll = memnew(ScrollContainer);
+	scroll->add_child(text_control);
+	scroll->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	scroll->add_theme_style_override("panel", background);
+	vbox_container->add_child(scroll);
+
+	// Since `ScrollContainer` doesn't allow for keyboard navigation, give focus to the close button.
+	callable_mp((Control *)close_button, &Control::grab_focus).call_deferred();
+#else
+	RichTextLabel *text_control = memnew(RichTextLabel);
+	text_control->set_threaded(true);
+	text_control->set_focus_mode(Control::FOCUS_ALL);
+	text_control->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	text_control->add_theme_style_override(CoreStringName(normal), background);
+	text_control->add_theme_font_size_override("normal_font_size", license_font_size);
+	vbox_container->add_child(text_control);
+
+	// Allow for keyboard navigation by grabbing focus immediately on the scrollable control.
+	callable_mp((Control *)text_control, &Control::grab_focus).call_deferred();
+#endif // ADVANCED_GUI_DISABLED
+	text_control->set_text(long_text);
+
 	vbox_container->add_child(close_button);
 }

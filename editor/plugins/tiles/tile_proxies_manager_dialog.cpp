@@ -33,7 +33,7 @@
 #include "editor/editor_properties_vector.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_undo_redo_manager.h"
-#include "scene/gui/popup_menu.h"
+#include "scene/gui/advanced/popup_menu.h"
 #include "scene/gui/separator.h"
 
 void TileProxiesManagerDialog::_right_clicked(int p_item, Vector2 p_local_mouse_pos, MouseButton p_mouse_button_index, Object *p_item_list) {
