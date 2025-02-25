@@ -202,6 +202,7 @@ EditorPropertyNameProcessor::EditorPropertyNameProcessor() {
 	capitalize_string_remaps["gles2"] = "GLES2";
 	capitalize_string_remaps["gles3"] = "GLES3";
 	capitalize_string_remaps["gltf"] = "glTF";
+	capitalize_string_remaps["gridmap"] = "GridMap";
 	capitalize_string_remaps["gpu"] = "GPU";
 	capitalize_string_remaps["gui"] = "GUI";
 	capitalize_string_remaps["guid"] = "GUID";
@@ -235,6 +236,7 @@ EditorPropertyNameProcessor::EditorPropertyNameProcessor() {
 	capitalize_string_remaps["linuxbsd"] = "Linux/*BSD";
 	capitalize_string_remaps["lod"] = "LOD";
 	capitalize_string_remaps["lods"] = "LODs";
+	capitalize_string_remaps["loongarch64"] = "loongarch64";
 	capitalize_string_remaps["lowpass"] = "Low-pass";
 	capitalize_string_remaps["macos"] = "macOS";
 	capitalize_string_remaps["mb"] = "(MB)"; // Unit.

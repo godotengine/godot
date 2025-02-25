@@ -30,19 +30,16 @@
 
 #include "codesign.h"
 
+#include "core/crypto/crypto_core.h"
+#include "core/io/dir_access.h"
+#include "core/io/plist.h"
+#include "editor/editor_paths.h"
 #include "lipo.h"
 #include "macho.h"
 
-#include "core/io/plist.h"
-#include "core/os/os.h"
-#include "editor/editor_paths.h"
-#include "editor/editor_settings.h"
-
-#include "modules/modules_enabled.gen.h" // For regex.
+#include "modules/regex/regex.h"
 
 #include <ctime>
-
-#ifdef MODULE_REGEX_ENABLED
 
 /*************************************************************************/
 /* CodeSignCodeResources                                                 */
@@ -214,7 +211,7 @@ bool CodeSignCodeResources::add_nested_file(const String &p_root, const String &
 
 	Vector<String> files_to_add;
 	if (LipO::is_lipo(p_exepath)) {
-		String tmp_path_name = EditorPaths::get_singleton()->get_cache_dir().path_join("_lipo");
+		String tmp_path_name = EditorPaths::get_singleton()->get_temp_dir().path_join("_lipo");
 		Error err = da->make_dir_recursive(tmp_path_name);
 		ERR_FAIL_COND_V_MSG(err != OK, false, vformat("CodeSign/CodeResources: Failed to create \"%s\" subfolder.", tmp_path_name));
 		LipO lip;
@@ -1248,7 +1245,7 @@ Error CodeSign::_codesign_file(bool p_use_hardened_runtime, bool p_force, const 
 	Vector<String> files_to_sign;
 	if (LipO::is_lipo(main_exe)) {
 		print_verbose(vformat("CodeSign: Executable is fat, extracting..."));
-		String tmp_path_name = EditorPaths::get_singleton()->get_cache_dir().path_join("_lipo");
+		String tmp_path_name = EditorPaths::get_singleton()->get_temp_dir().path_join("_lipo");
 		Error err = da->make_dir_recursive(tmp_path_name);
 		if (err != OK) {
 			r_error_msg = vformat(TTR("Failed to create \"%s\" subfolder."), tmp_path_name);
@@ -1569,5 +1566,3 @@ Error CodeSign::codesign(bool p_use_hardened_runtime, bool p_force, const String
 		ERR_FAIL_V_MSG(FAILED, "CodeSign: Unknown object type.");
 	}
 }
-
-#endif // MODULE_REGEX_ENABLED

@@ -1879,7 +1879,7 @@ void GDScriptByteCodeGenerator::end_block() {
 
 void GDScriptByteCodeGenerator::clear_temporaries() {
 	for (int slot_idx : temporaries_pending_clear) {
-		// The temporary may have been re-used as something else since it was added to the list.
+		// The temporary may have been reused as something else since it was added to the list.
 		// In that case, there's **no** need to clear it.
 		if (temporaries[slot_idx].can_contain_object) {
 			clear_address(Address(Address::TEMPORARY, slot_idx)); // Can contain `RefCounted`, so clear it.
@@ -1928,7 +1928,7 @@ void GDScriptByteCodeGenerator::clear_address(const Address &p_address) {
 	}
 }
 
-// Returns `true` if the local has been re-used and not cleaned up with `clear_address()`.
+// Returns `true` if the local has been reused and not cleaned up with `clear_address()`.
 bool GDScriptByteCodeGenerator::is_local_dirty(const Address &p_address) const {
 	ERR_FAIL_COND_V(p_address.mode != Address::LOCAL_VARIABLE, false);
 	return dirty_locals.has(p_address.address);

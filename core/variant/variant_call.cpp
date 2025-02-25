@@ -1034,6 +1034,18 @@ struct _VariantCall {
 		return len;
 	}
 
+	static PackedByteArray func_PackedStringArray_to_byte_array(PackedStringArray *p_instance) {
+		PackedByteArray ret;
+		uint64_t size = p_instance->size();
+		const String *r = p_instance->ptr();
+
+		for (uint64_t i = 0; i < size; i++) {
+			ret.append_array(r[i].to_utf8_buffer());
+			ret.append(0);
+		}
+		return ret;
+	}
+
 	static void func_Callable_call(Variant *v, const Variant **p_args, int p_argcount, Variant &r_ret, Callable::CallError &r_error) {
 		Callable *callable = VariantGetInternalPtr<Callable>::get_ptr(v);
 		callable->callp(p_args, p_argcount, r_ret, r_error);
@@ -2104,11 +2116,12 @@ static void _register_variant_builtin_methods_math() {
 	bind_static_method(Color, hex64, sarray("hex"), varray());
 	bind_static_method(Color, html, sarray("rgba"), varray());
 	bind_static_method(Color, html_is_valid, sarray("color"), varray());
+
 	bind_static_method(Color, from_string, sarray("str", "default"), varray());
 	bind_static_method(Color, from_hsv, sarray("h", "s", "v", "alpha"), varray(1.0));
 	bind_static_method(Color, from_ok_hsl, sarray("h", "s", "l", "alpha"), varray(1.0));
-
 	bind_static_method(Color, from_rgbe9995, sarray("rgbe"), varray());
+	bind_static_method(Color, from_rgba8, sarray("r8", "g8", "b8", "a8"), varray(255));
 }
 
 static void _register_variant_builtin_methods_misc() {
@@ -2576,7 +2589,7 @@ static void _register_variant_builtin_methods_array() {
 	bind_method(PackedStringArray, has, sarray("value"), varray());
 	bind_method(PackedStringArray, reverse, sarray(), varray());
 	bind_method(PackedStringArray, slice, sarray("begin", "end"), varray(INT_MAX));
-	bind_method(PackedStringArray, to_byte_array, sarray(), varray());
+	bind_function(PackedStringArray, to_byte_array, _VariantCall::func_PackedStringArray_to_byte_array, sarray(), varray());
 	bind_method(PackedStringArray, sort, sarray(), varray());
 	bind_method(PackedStringArray, bsearch, sarray("value", "before"), varray(true));
 	bind_method(PackedStringArray, duplicate, sarray(), varray());

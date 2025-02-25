@@ -18,6 +18,9 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
 "X-Generator: Weblate 5.5-dev\n"
 
+msgid "All Recognized"
+msgstr "Tutti i formati riconosciuti"
+
 msgid "Pick a color from the application window."
 msgstr "Seleziona un colore dalla finestra applicativa."
 
@@ -56,11 +59,11 @@ msgstr "Apri"
 msgid "Select Current Folder"
 msgstr "Seleziona la cartella attuale"
 
+msgid "Save"
+msgstr "Salva"
+
 msgid "Select This Folder"
 msgstr "Seleziona questa cartella"
-
-msgid "All Recognized"
-msgstr "Tutti i formati riconosciuti"
 
 msgid "All Files"
 msgstr "Tutti i file"
@@ -76,9 +79,6 @@ msgstr "Apri una cartella"
 
 msgid "Open a File or Directory"
 msgstr "Apri un file o una cartella"
-
-msgid "Save"
-msgstr "Salva"
 
 msgid "Save a File"
 msgstr "Salva un file"

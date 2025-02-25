@@ -216,6 +216,8 @@ namespace GodotTools.Export
 
             bool embedBuildResults = ((bool)GetOption("dotnet/embed_build_outputs") || platform == OS.Platforms.Android) && platform != OS.Platforms.MacOS;
 
+            var exportedJars = new HashSet<string>();
+
             foreach (PublishConfig config in targets)
             {
                 string ridOS = config.RidOS;
@@ -323,7 +325,9 @@ namespace GodotTools.Export
                                 {
                                     if (platform == OS.Platforms.Android)
                                     {
-                                        if (IsSharedObject(Path.GetFileName(path)))
+                                        string fileName = Path.GetFileName(path);
+
+                                        if (IsSharedObject(fileName))
                                         {
                                             AddSharedObject(path, tags: new string[] { arch },
                                                 Path.Join(projectDataDirName,
@@ -333,10 +337,19 @@ namespace GodotTools.Export
                                             return;
                                         }
 
-                                        static bool IsSharedObject(string fileName)
+                                        bool IsSharedObject(string fileName)
                                         {
-                                            if (fileName.EndsWith(".so") || fileName.EndsWith(".a")
-                                             || fileName.EndsWith(".jar") || fileName.EndsWith(".dex"))
+                                            if (fileName.EndsWith(".jar"))
+                                            {
+                                                // Don't export the same jar twice. Otherwise we will have conflicts.
+                                                // This can happen when exporting for multiple architectures. Dotnet
+                                                // stores the jars in .godot/mono/temp/bin/Export[Debug|Release] per
+                                                // target architecture. Jars are cpu agnostic so only 1 is needed.
+                                                var jarName = Path.GetFileName(fileName);
+                                                return exportedJars.Add(jarName);
+                                            }
+
+                                            if (fileName.EndsWith(".so") || fileName.EndsWith(".a") || fileName.EndsWith(".dex"))
                                             {
                                                 return true;
                                             }

@@ -60,7 +60,7 @@ class FileSystemTree : public Tree {
 class FileSystemList : public ItemList {
 	GDCLASS(FileSystemList, ItemList);
 
-	bool popup_edit_commited = true;
+	bool popup_edit_committed = true;
 	VBoxContainer *popup_editor_vb = nullptr;
 	Popup *popup_editor = nullptr;
 	LineEdit *line_editor = nullptr;
@@ -133,6 +133,7 @@ private:
 		CONVERT_BASE_ID = 1000,
 	};
 
+	HashMap<String, TreeItem *> folder_map;
 	HashMap<String, Color> folder_colors;
 	Dictionary assigned_folder_colors;
 
@@ -248,7 +249,7 @@ private:
 
 	Ref<Texture2D> _get_tree_item_icon(bool p_is_valid, const String &p_file_type, const String &p_icon_path);
 	void _create_tree(TreeItem *p_parent, EditorFileSystemDirectory *p_dir, Vector<String> &uncollapsed_paths, bool p_select_in_favorites, bool p_unfold_path = false);
-	void _update_tree(const Vector<String> &p_uncollapsed_paths = Vector<String>(), bool p_uncollapse_root = false, bool p_select_in_favorites = false, bool p_unfold_path = false);
+	void _update_tree(const Vector<String> &p_uncollapsed_paths = Vector<String>(), bool p_uncollapse_root = false, bool p_scroll_to_selected = true);
 	void _navigate_to_path(const String &p_path, bool p_select_in_favorites = false);
 	bool _update_filtered_items(TreeItem *p_tree_item = nullptr);
 
@@ -262,7 +263,7 @@ private:
 	void _set_file_display(bool p_active);
 	void _fs_changed();
 
-	void _select_file(const String &p_path, bool p_select_in_favorites = false);
+	void _select_file(const String &p_path, bool p_select_in_favorites = false, bool p_navigate = true);
 	void _tree_activate_file();
 	void _file_list_activate_file(int p_idx);
 	void _file_multi_selected(int p_index, bool p_selected);
@@ -356,8 +357,11 @@ private:
 	bool _can_dock_horizontal() const;
 	void _set_dock_horizontal(bool p_enable);
 
+	void _save_layout_to_config(Ref<ConfigFile> p_layout, const String &p_section) const;
+	void _load_layout_from_config(Ref<ConfigFile> p_layout, const String &p_section);
+
 private:
-	static FileSystemDock *singleton;
+	inline static FileSystemDock *singleton = nullptr;
 
 public:
 	static FileSystemDock *get_singleton() { return singleton; }
@@ -380,6 +384,7 @@ public:
 
 	String get_current_path() const;
 	String get_current_directory() const;
+	String get_folder_path_at_mouse_position() const;
 
 	void navigate_to_path(const String &p_path);
 	void focus_on_path();
@@ -411,9 +416,6 @@ public:
 	void add_resource_tooltip_plugin(const Ref<EditorResourceTooltipPlugin> &p_plugin);
 	void remove_resource_tooltip_plugin(const Ref<EditorResourceTooltipPlugin> &p_plugin);
 	Control *create_tooltip_for_path(const String &p_path) const;
-
-	void save_layout_to_config(Ref<ConfigFile> p_layout, const String &p_section) const;
-	void load_layout_from_config(Ref<ConfigFile> p_layout, const String &p_section);
 
 	FileSystemDock();
 	~FileSystemDock();

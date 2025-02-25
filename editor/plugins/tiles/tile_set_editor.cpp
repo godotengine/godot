@@ -44,12 +44,11 @@
 #include "scene/gui/box_container.h"
 #include "scene/gui/control.h"
 #include "scene/gui/dialogs.h"
-#include "scene/gui/tab_container.h"
 
 TileSetEditor *TileSetEditor::singleton = nullptr;
 
 void TileSetEditor::_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) {
-	ERR_FAIL_COND(!tile_set.is_valid());
+	ERR_FAIL_COND(tile_set.is_null());
 
 	if (!_can_drop_data_fw(p_point, p_data, p_from)) {
 		return;
@@ -64,7 +63,7 @@ void TileSetEditor::_drop_data_fw(const Point2 &p_point, const Variant &p_data, 
 }
 
 bool TileSetEditor::_can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const {
-	ERR_FAIL_COND_V(!tile_set.is_valid(), false);
+	ERR_FAIL_COND_V(tile_set.is_null(), false);
 
 	if (read_only) {
 		return false;
@@ -203,7 +202,7 @@ void TileSetEditor::_update_sources_list(int force_selected_id) {
 		if (item_text.is_empty()) {
 			item_text = vformat(TTR("Unknown Type Source (ID: %d)"), source_id);
 		}
-		if (!texture.is_valid()) {
+		if (texture.is_null()) {
 			texture = missing_texture_texture;
 		}
 
@@ -241,7 +240,7 @@ void TileSetEditor::_update_sources_list(int force_selected_id) {
 }
 
 void TileSetEditor::_source_selected(int p_source_index) {
-	ERR_FAIL_COND(!tile_set.is_valid());
+	ERR_FAIL_COND(tile_set.is_null());
 
 	// Update the selected source.
 	sources_delete_button->set_disabled(p_source_index < 0 || read_only);
@@ -273,7 +272,7 @@ void TileSetEditor::_source_selected(int p_source_index) {
 }
 
 void TileSetEditor::_source_delete_pressed() {
-	ERR_FAIL_COND(!tile_set.is_valid());
+	ERR_FAIL_COND(tile_set.is_null());
 
 	// Update the selected source.
 	int to_delete = sources_list->get_item_metadata(sources_list->get_current());
@@ -291,7 +290,7 @@ void TileSetEditor::_source_delete_pressed() {
 }
 
 void TileSetEditor::_source_add_id_pressed(int p_id_pressed) {
-	ERR_FAIL_COND(!tile_set.is_valid());
+	ERR_FAIL_COND(tile_set.is_null());
 
 	switch (p_id_pressed) {
 		case 0: {
@@ -329,7 +328,7 @@ void TileSetEditor::_source_add_id_pressed(int p_id_pressed) {
 }
 
 void TileSetEditor::_sources_advanced_menu_id_pressed(int p_id_pressed) {
-	ERR_FAIL_COND(!tile_set.is_valid());
+	ERR_FAIL_COND(tile_set.is_null());
 
 	switch (p_id_pressed) {
 		case 0: {
@@ -406,7 +405,7 @@ void TileSetEditor::_notification(int p_what) {
 }
 
 void TileSetEditor::_patterns_item_list_gui_input(const Ref<InputEvent> &p_event) {
-	ERR_FAIL_COND(!tile_set.is_valid());
+	ERR_FAIL_COND(tile_set.is_null());
 
 	if (EditorNode::get_singleton()->is_resource_read_only(tile_set)) {
 		return;
@@ -437,7 +436,7 @@ void TileSetEditor::_pattern_preview_done(Ref<TileMapPattern> p_pattern, Ref<Tex
 }
 
 void TileSetEditor::_update_patterns_list() {
-	ERR_FAIL_COND(!tile_set.is_valid());
+	ERR_FAIL_COND(tile_set.is_null());
 
 	// Recreate the items.
 	patterns_item_list->clear();
@@ -845,7 +844,7 @@ TileSetEditor::TileSetEditor() {
 
 	source_sort_button = memnew(MenuButton);
 	source_sort_button->set_flat(false);
-	source_sort_button->set_theme_type_variation("FlatButton");
+	source_sort_button->set_theme_type_variation(SceneStringName(FlatButton));
 	source_sort_button->set_tooltip_text(TTR("Sort Sources"));
 
 	PopupMenu *p = source_sort_button->get_popup();
@@ -861,6 +860,7 @@ TileSetEditor::TileSetEditor() {
 	sources_list->set_fixed_icon_size(Size2(60, 60) * EDSCALE);
 	sources_list->set_h_size_flags(SIZE_EXPAND_FILL);
 	sources_list->set_v_size_flags(SIZE_EXPAND_FILL);
+	sources_list->set_theme_type_variation("ItemListSecondary");
 	sources_list->connect(SceneStringName(item_selected), callable_mp(this, &TileSetEditor::_source_selected));
 	sources_list->connect(SceneStringName(item_selected), callable_mp(TilesEditorUtils::get_singleton(), &TilesEditorUtils::set_sources_lists_current));
 	sources_list->connect(SceneStringName(visibility_changed), callable_mp(TilesEditorUtils::get_singleton(), &TilesEditorUtils::synchronize_sources_list).bind(sources_list, source_sort_button));
@@ -875,14 +875,14 @@ TileSetEditor::TileSetEditor() {
 	split_container_left_side->add_child(sources_bottom_actions);
 
 	sources_delete_button = memnew(Button);
-	sources_delete_button->set_theme_type_variation("FlatButton");
+	sources_delete_button->set_theme_type_variation(SceneStringName(FlatButton));
 	sources_delete_button->set_disabled(true);
 	sources_delete_button->connect(SceneStringName(pressed), callable_mp(this, &TileSetEditor::_source_delete_pressed));
 	sources_bottom_actions->add_child(sources_delete_button);
 
 	sources_add_button = memnew(MenuButton);
 	sources_add_button->set_flat(false);
-	sources_add_button->set_theme_type_variation("FlatButton");
+	sources_add_button->set_theme_type_variation(SceneStringName(FlatButton));
 	sources_add_button->get_popup()->add_item(TTR("Atlas"));
 	sources_add_button->get_popup()->set_item_tooltip(-1, TTR("A palette of tiles made from a texture."));
 	sources_add_button->get_popup()->add_item(TTR("Scenes Collection"));
@@ -892,7 +892,7 @@ TileSetEditor::TileSetEditor() {
 
 	sources_advanced_menu_button = memnew(MenuButton);
 	sources_advanced_menu_button->set_flat(false);
-	sources_advanced_menu_button->set_theme_type_variation("FlatButton");
+	sources_advanced_menu_button->set_theme_type_variation(SceneStringName(FlatButton));
 	sources_advanced_menu_button->get_popup()->add_item(TTR("Open Atlas Merging Tool"));
 	sources_advanced_menu_button->get_popup()->add_item(TTR("Manage Tile Proxies"));
 	sources_advanced_menu_button->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &TileSetEditor::_sources_advanced_menu_id_pressed));
@@ -946,6 +946,7 @@ TileSetEditor::TileSetEditor() {
 	patterns_item_list->set_max_text_lines(2);
 	patterns_item_list->set_fixed_icon_size(Size2(thumbnail_size, thumbnail_size));
 	patterns_item_list->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	patterns_item_list->set_theme_type_variation("ItemListSecondary");
 	patterns_item_list->connect(SceneStringName(gui_input), callable_mp(this, &TileSetEditor::_patterns_item_list_gui_input));
 	main_vb->add_child(patterns_item_list);
 	patterns_item_list->hide();

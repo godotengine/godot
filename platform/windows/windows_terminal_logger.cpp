@@ -81,7 +81,7 @@ void WindowsTerminalLogger::log_error(const char *p_function, const char *p_file
 
 	HANDLE hCon = GetStdHandle(STD_OUTPUT_HANDLE);
 	if (OS::get_singleton()->get_stdout_type() != OS::STD_HANDLE_CONSOLE || !hCon || hCon == INVALID_HANDLE_VALUE) {
-		StdLogger::log_error(p_function, p_file, p_line, p_code, p_rationale, p_type);
+		StdLogger::log_error(p_function, p_file, p_line, p_code, p_rationale, p_editor_notify, p_type);
 	} else {
 		CONSOLE_SCREEN_BUFFER_INFO sbi; //original
 		GetConsoleScreenBufferInfo(hCon, &sbi);

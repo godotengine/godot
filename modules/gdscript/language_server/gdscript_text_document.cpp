@@ -34,7 +34,6 @@
 #include "gdscript_extend_parser.h"
 #include "gdscript_language_protocol.h"
 
-#include "core/os/os.h"
 #include "editor/editor_settings.h"
 #include "editor/plugins/script_text_editor.h"
 #include "servers/display_server.h"
@@ -112,10 +111,19 @@ void GDScriptTextDocument::didSave(const Variant &p_param) {
 		}
 
 		scr->update_exports();
-		ScriptEditor::get_singleton()->reload_scripts(true);
-		ScriptEditor::get_singleton()->update_docs_from_script(scr);
-		ScriptEditor::get_singleton()->trigger_live_script_reload(scr->get_path());
+
+		if (!Thread::is_main_thread()) {
+			callable_mp(this, &GDScriptTextDocument::reload_script).call_deferred(scr);
+		} else {
+			reload_script(scr);
+		}
 	}
+}
+
+void GDScriptTextDocument::reload_script(Ref<GDScript> p_to_reload_script) {
+	ScriptEditor::get_singleton()->reload_scripts(true);
+	ScriptEditor::get_singleton()->update_docs_from_script(p_to_reload_script);
+	ScriptEditor::get_singleton()->trigger_live_script_reload(p_to_reload_script->get_path());
 }
 
 lsp::TextDocumentItem GDScriptTextDocument::load_document_item(const Variant &p_param) {
@@ -299,7 +307,7 @@ Dictionary GDScriptTextDocument::resolve(const Dictionary &p_params) {
 	} else if (data.is_string()) {
 		String query = data;
 
-		Vector<String> param_symbols = query.split(SYMBOL_SEPERATOR, false);
+		Vector<String> param_symbols = query.split(SYMBOL_SEPARATOR, false);
 
 		if (param_symbols.size() >= 2) {
 			StringName class_name = param_symbols[0];

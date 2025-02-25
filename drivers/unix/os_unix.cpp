@@ -169,8 +169,8 @@ void OS_Unix::initialize_core() {
 
 #ifndef UNIX_SOCKET_UNAVAILABLE
 	NetSocketUnix::make_default();
-#endif
 	IPUnix::make_default();
+#endif
 	process_map = memnew((HashMap<ProcessID, ProcessInfo>));
 
 	_setup_clock();
@@ -191,7 +191,7 @@ String OS_Unix::get_stdin_string(int64_t p_buffer_size) {
 	Vector<uint8_t> data;
 	data.resize(p_buffer_size);
 	if (fgets((char *)data.ptrw(), data.size(), stdin)) {
-		return String::utf8((char *)data.ptr());
+		return String::utf8((char *)data.ptr()).replace("\r\n", "\n").rstrip("\n");
 	}
 	return String();
 }
@@ -306,6 +306,10 @@ String OS_Unix::get_distribution_name() const {
 
 String OS_Unix::get_version() const {
 	return "";
+}
+
+String OS_Unix::get_temp_path() const {
+	return "/tmp";
 }
 
 double OS_Unix::get_unix_time() const {
@@ -945,32 +949,18 @@ String OS_Unix::get_environment(const String &p_var) const {
 }
 
 void OS_Unix::set_environment(const String &p_var, const String &p_value) const {
-	ERR_FAIL_COND_MSG(p_var.is_empty() || p_var.contains("="), vformat("Invalid environment variable name '%s', cannot be empty or include '='.", p_var));
+	ERR_FAIL_COND_MSG(p_var.is_empty() || p_var.contains_char('='), vformat("Invalid environment variable name '%s', cannot be empty or include '='.", p_var));
 	int err = setenv(p_var.utf8().get_data(), p_value.utf8().get_data(), /* overwrite: */ 1);
 	ERR_FAIL_COND_MSG(err != 0, vformat("Failed setting environment variable '%s', the system is out of memory.", p_var));
 }
 
 void OS_Unix::unset_environment(const String &p_var) const {
-	ERR_FAIL_COND_MSG(p_var.is_empty() || p_var.contains("="), vformat("Invalid environment variable name '%s', cannot be empty or include '='.", p_var));
+	ERR_FAIL_COND_MSG(p_var.is_empty() || p_var.contains_char('='), vformat("Invalid environment variable name '%s', cannot be empty or include '='.", p_var));
 	unsetenv(p_var.utf8().get_data());
 }
 
-String OS_Unix::get_user_data_dir() const {
-	String appname = get_safe_dir_name(GLOBAL_GET("application/config/name"));
-	if (!appname.is_empty()) {
-		bool use_custom_dir = GLOBAL_GET("application/config/use_custom_user_dir");
-		if (use_custom_dir) {
-			String custom_dir = get_safe_dir_name(GLOBAL_GET("application/config/custom_user_dir_name"), true);
-			if (custom_dir.is_empty()) {
-				custom_dir = appname;
-			}
-			return get_data_path().path_join(custom_dir);
-		} else {
-			return get_data_path().path_join(get_godot_dir_name()).path_join("app_userdata").path_join(appname);
-		}
-	}
-
-	return get_data_path().path_join(get_godot_dir_name()).path_join("app_userdata").path_join("[unnamed project]");
+String OS_Unix::get_user_data_dir(const String &p_user_dir) const {
+	return get_data_path().path_join(p_user_dir);
 }
 
 String OS_Unix::get_executable_path() const {

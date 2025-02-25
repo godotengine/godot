@@ -32,9 +32,7 @@
 #include "rendering_server.compat.inc"
 
 #include "core/config/project_settings.h"
-#include "core/object/worker_thread_pool.h"
 #include "core/variant/typed_array.h"
-#include "servers/rendering/rendering_server_globals.h"
 #include "servers/rendering/shader_language.h"
 #include "servers/rendering/shader_warnings.h"
 
@@ -1868,6 +1866,8 @@ int RenderingServer::global_shader_uniform_type_get_shader_datatype(GlobalShader
 			return ShaderLanguage::TYPE_SAMPLER3D;
 		case RS::GLOBAL_VAR_TYPE_SAMPLERCUBE:
 			return ShaderLanguage::TYPE_SAMPLERCUBE;
+		case RS::GLOBAL_VAR_TYPE_SAMPLEREXT:
+			return ShaderLanguage::TYPE_SAMPLEREXT;
 		default:
 			return ShaderLanguage::TYPE_MAX; // Invalid or not found.
 	}
@@ -2047,6 +2047,12 @@ Dictionary RenderingServer::_mesh_get_surface(RID p_mesh, int p_idx) {
 TypedArray<Dictionary> RenderingServer::_instance_geometry_get_shader_parameter_list(RID p_instance) const {
 	List<PropertyInfo> params;
 	instance_geometry_get_shader_parameter_list(p_instance, &params);
+	return convert_property_list(&params);
+}
+
+TypedArray<Dictionary> RenderingServer::_canvas_item_get_instance_shader_parameter_list(RID p_instance) const {
+	List<PropertyInfo> params;
+	canvas_item_get_instance_shader_parameter_list(p_instance, &params);
 	return convert_property_list(&params);
 }
 
@@ -2346,6 +2352,7 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("mesh_get_surface_count", "mesh"), &RenderingServer::mesh_get_surface_count);
 	ClassDB::bind_method(D_METHOD("mesh_set_custom_aabb", "mesh", "aabb"), &RenderingServer::mesh_set_custom_aabb);
 	ClassDB::bind_method(D_METHOD("mesh_get_custom_aabb", "mesh"), &RenderingServer::mesh_get_custom_aabb);
+	ClassDB::bind_method(D_METHOD("mesh_surface_remove", "mesh", "surface"), &RenderingServer::mesh_surface_remove);
 	ClassDB::bind_method(D_METHOD("mesh_clear", "mesh"), &RenderingServer::mesh_clear);
 
 	ClassDB::bind_method(D_METHOD("mesh_surface_update_vertex_region", "mesh", "surface", "offset", "data"), &RenderingServer::mesh_surface_update_vertex_region);
@@ -2434,7 +2441,7 @@ void RenderingServer::_bind_methods() {
 	/* MULTIMESH API */
 
 	ClassDB::bind_method(D_METHOD("multimesh_create"), &RenderingServer::multimesh_create);
-	ClassDB::bind_method(D_METHOD("multimesh_allocate_data", "multimesh", "instances", "transform_format", "color_format", "custom_data_format"), &RenderingServer::multimesh_allocate_data, DEFVAL(false), DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("multimesh_allocate_data", "multimesh", "instances", "transform_format", "color_format", "custom_data_format", "use_indirect"), &RenderingServer::multimesh_allocate_data, DEFVAL(false), DEFVAL(false), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("multimesh_get_instance_count", "multimesh"), &RenderingServer::multimesh_get_instance_count);
 	ClassDB::bind_method(D_METHOD("multimesh_set_mesh", "multimesh", "mesh"), &RenderingServer::multimesh_set_mesh);
 	ClassDB::bind_method(D_METHOD("multimesh_instance_set_transform", "multimesh", "index", "transform"), &RenderingServer::multimesh_instance_set_transform);
@@ -2452,6 +2459,7 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("multimesh_set_visible_instances", "multimesh", "visible"), &RenderingServer::multimesh_set_visible_instances);
 	ClassDB::bind_method(D_METHOD("multimesh_get_visible_instances", "multimesh"), &RenderingServer::multimesh_get_visible_instances);
 	ClassDB::bind_method(D_METHOD("multimesh_set_buffer", "multimesh", "buffer"), &RenderingServer::multimesh_set_buffer);
+	ClassDB::bind_method(D_METHOD("multimesh_get_command_buffer_rd_rid", "multimesh"), &RenderingServer::multimesh_get_command_buffer_rd_rid);
 	ClassDB::bind_method(D_METHOD("multimesh_get_buffer_rd_rid", "multimesh"), &RenderingServer::multimesh_get_buffer_rd_rid);
 	ClassDB::bind_method(D_METHOD("multimesh_get_buffer", "multimesh"), &RenderingServer::multimesh_get_buffer);
 
@@ -2569,6 +2577,7 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("reflection_probe_create"), &RenderingServer::reflection_probe_create);
 	ClassDB::bind_method(D_METHOD("reflection_probe_set_update_mode", "probe", "mode"), &RenderingServer::reflection_probe_set_update_mode);
 	ClassDB::bind_method(D_METHOD("reflection_probe_set_intensity", "probe", "intensity"), &RenderingServer::reflection_probe_set_intensity);
+	ClassDB::bind_method(D_METHOD("reflection_probe_set_blend_distance", "probe", "blend_distance"), &RenderingServer::reflection_probe_set_blend_distance);
 	ClassDB::bind_method(D_METHOD("reflection_probe_set_ambient_mode", "probe", "mode"), &RenderingServer::reflection_probe_set_ambient_mode);
 	ClassDB::bind_method(D_METHOD("reflection_probe_set_ambient_color", "probe", "color"), &RenderingServer::reflection_probe_set_ambient_color);
 	ClassDB::bind_method(D_METHOD("reflection_probe_set_ambient_energy", "probe", "energy"), &RenderingServer::reflection_probe_set_ambient_energy);
@@ -2673,6 +2682,7 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("particles_set_lifetime", "particles", "lifetime"), &RenderingServer::particles_set_lifetime);
 	ClassDB::bind_method(D_METHOD("particles_set_one_shot", "particles", "one_shot"), &RenderingServer::particles_set_one_shot);
 	ClassDB::bind_method(D_METHOD("particles_set_pre_process_time", "particles", "time"), &RenderingServer::particles_set_pre_process_time);
+	ClassDB::bind_method(D_METHOD("particles_request_process_time", "particles", "time"), &RenderingServer::particles_request_process_time);
 	ClassDB::bind_method(D_METHOD("particles_set_explosiveness_ratio", "particles", "ratio"), &RenderingServer::particles_set_explosiveness_ratio);
 	ClassDB::bind_method(D_METHOD("particles_set_randomness_ratio", "particles", "ratio"), &RenderingServer::particles_set_randomness_ratio);
 	ClassDB::bind_method(D_METHOD("particles_set_interp_to_end", "particles", "factor"), &RenderingServer::particles_set_interp_to_end);
@@ -2735,6 +2745,7 @@ void RenderingServer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("particles_collision_height_field_update", "particles_collision"), &RenderingServer::particles_collision_height_field_update);
 	ClassDB::bind_method(D_METHOD("particles_collision_set_height_field_resolution", "particles_collision", "resolution"), &RenderingServer::particles_collision_set_height_field_resolution);
+	ClassDB::bind_method(D_METHOD("particles_collision_set_height_field_mask", "particles_collision", "mask"), &RenderingServer::particles_collision_set_height_field_mask);
 
 	BIND_ENUM_CONSTANT(PARTICLES_COLLISION_TYPE_SPHERE_ATTRACT);
 	BIND_ENUM_CONSTANT(PARTICLES_COLLISION_TYPE_BOX_ATTRACT);
@@ -2805,6 +2816,7 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("viewport_set_scaling_3d_scale", "viewport", "scale"), &RenderingServer::viewport_set_scaling_3d_scale);
 	ClassDB::bind_method(D_METHOD("viewport_set_fsr_sharpness", "viewport", "sharpness"), &RenderingServer::viewport_set_fsr_sharpness);
 	ClassDB::bind_method(D_METHOD("viewport_set_texture_mipmap_bias", "viewport", "mipmap_bias"), &RenderingServer::viewport_set_texture_mipmap_bias);
+	ClassDB::bind_method(D_METHOD("viewport_set_anisotropic_filtering_level", "viewport", "anisotropic_filtering_level"), &RenderingServer::viewport_set_anisotropic_filtering_level);
 	ClassDB::bind_method(D_METHOD("viewport_set_update_mode", "viewport", "update_mode"), &RenderingServer::viewport_set_update_mode);
 	ClassDB::bind_method(D_METHOD("viewport_get_update_mode", "viewport"), &RenderingServer::viewport_get_update_mode);
 	ClassDB::bind_method(D_METHOD("viewport_set_clear_mode", "viewport", "clear_mode"), &RenderingServer::viewport_set_clear_mode);
@@ -2858,6 +2870,8 @@ void RenderingServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(VIEWPORT_SCALING_3D_MODE_BILINEAR);
 	BIND_ENUM_CONSTANT(VIEWPORT_SCALING_3D_MODE_FSR);
 	BIND_ENUM_CONSTANT(VIEWPORT_SCALING_3D_MODE_FSR2);
+	BIND_ENUM_CONSTANT(VIEWPORT_SCALING_3D_MODE_METALFX_SPATIAL);
+	BIND_ENUM_CONSTANT(VIEWPORT_SCALING_3D_MODE_METALFX_TEMPORAL);
 	BIND_ENUM_CONSTANT(VIEWPORT_SCALING_3D_MODE_MAX);
 
 	BIND_ENUM_CONSTANT(VIEWPORT_UPDATE_DISABLED);
@@ -2891,6 +2905,13 @@ void RenderingServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(VIEWPORT_MSAA_4X);
 	BIND_ENUM_CONSTANT(VIEWPORT_MSAA_8X);
 	BIND_ENUM_CONSTANT(VIEWPORT_MSAA_MAX);
+
+	BIND_ENUM_CONSTANT(VIEWPORT_ANISOTROPY_DISABLED);
+	BIND_ENUM_CONSTANT(VIEWPORT_ANISOTROPY_2X);
+	BIND_ENUM_CONSTANT(VIEWPORT_ANISOTROPY_4X);
+	BIND_ENUM_CONSTANT(VIEWPORT_ANISOTROPY_8X);
+	BIND_ENUM_CONSTANT(VIEWPORT_ANISOTROPY_16X);
+	BIND_ENUM_CONSTANT(VIEWPORT_ANISOTROPY_MAX);
 
 	BIND_ENUM_CONSTANT(VIEWPORT_SCREEN_SPACE_AA_DISABLED);
 	BIND_ENUM_CONSTANT(VIEWPORT_SCREEN_SPACE_AA_FXAA);
@@ -2998,7 +3019,7 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("environment_set_bg_color", "env", "color"), &RenderingServer::environment_set_bg_color);
 	ClassDB::bind_method(D_METHOD("environment_set_bg_energy", "env", "multiplier", "exposure_value"), &RenderingServer::environment_set_bg_energy);
 	ClassDB::bind_method(D_METHOD("environment_set_canvas_max_layer", "env", "max_layer"), &RenderingServer::environment_set_canvas_max_layer);
-	ClassDB::bind_method(D_METHOD("environment_set_ambient_light", "env", "color", "ambient", "energy", "sky_contibution", "reflection_source"), &RenderingServer::environment_set_ambient_light, DEFVAL(RS::ENV_AMBIENT_SOURCE_BG), DEFVAL(1.0), DEFVAL(0.0), DEFVAL(RS::ENV_REFLECTION_SOURCE_BG));
+	ClassDB::bind_method(D_METHOD("environment_set_ambient_light", "env", "color", "ambient", "energy", "sky_contribution", "reflection_source"), &RenderingServer::environment_set_ambient_light, DEFVAL(RS::ENV_AMBIENT_SOURCE_BG), DEFVAL(1.0), DEFVAL(0.0), DEFVAL(RS::ENV_REFLECTION_SOURCE_BG));
 	ClassDB::bind_method(D_METHOD("environment_set_glow", "env", "enable", "levels", "intensity", "strength", "mix", "bloom_threshold", "blend_mode", "hdr_bleed_threshold", "hdr_bleed_scale", "hdr_luminance_cap", "glow_map_strength", "glow_map"), &RenderingServer::environment_set_glow);
 	ClassDB::bind_method(D_METHOD("environment_set_tonemap", "env", "tone_mapper", "exposure", "white"), &RenderingServer::environment_set_tonemap);
 	ClassDB::bind_method(D_METHOD("environment_set_adjustment", "env", "enable", "brightness", "contrast", "saturation", "use_1d_color_correction", "color_correction"), &RenderingServer::environment_set_adjustment);
@@ -3054,6 +3075,7 @@ void RenderingServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(ENV_TONE_MAPPER_REINHARD);
 	BIND_ENUM_CONSTANT(ENV_TONE_MAPPER_FILMIC);
 	BIND_ENUM_CONSTANT(ENV_TONE_MAPPER_ACES);
+	BIND_ENUM_CONSTANT(ENV_TONE_MAPPER_AGX);
 
 	BIND_ENUM_CONSTANT(ENV_SSR_ROUGHNESS_QUALITY_DISABLED);
 	BIND_ENUM_CONSTANT(ENV_SSR_ROUGHNESS_QUALITY_LOW);
@@ -3287,6 +3309,11 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("canvas_item_set_draw_index", "item", "index"), &RenderingServer::canvas_item_set_draw_index);
 	ClassDB::bind_method(D_METHOD("canvas_item_set_material", "item", "material"), &RenderingServer::canvas_item_set_material);
 	ClassDB::bind_method(D_METHOD("canvas_item_set_use_parent_material", "item", "enabled"), &RenderingServer::canvas_item_set_use_parent_material);
+
+	ClassDB::bind_method(D_METHOD("canvas_item_set_instance_shader_parameter", "instance", "parameter", "value"), &RenderingServer::canvas_item_set_instance_shader_parameter);
+	ClassDB::bind_method(D_METHOD("canvas_item_get_instance_shader_parameter", "instance", "parameter"), &RenderingServer::canvas_item_get_instance_shader_parameter);
+	ClassDB::bind_method(D_METHOD("canvas_item_get_instance_shader_parameter_default_value", "instance", "parameter"), &RenderingServer::canvas_item_get_instance_shader_parameter_default_value);
+	ClassDB::bind_method(D_METHOD("canvas_item_get_instance_shader_parameter_list", "instance"), &RenderingServer::_canvas_item_get_instance_shader_parameter_list);
 
 	ClassDB::bind_method(D_METHOD("canvas_item_set_visibility_notifier", "item", "enable", "area", "enter_callable", "exit_callable"), &RenderingServer::canvas_item_set_visibility_notifier);
 	ClassDB::bind_method(D_METHOD("canvas_item_set_canvas_group_mode", "item", "mode", "clear_margin", "fit_empty", "fit_margin", "blur_mipmaps"), &RenderingServer::canvas_item_set_canvas_group_mode, DEFVAL(5.0), DEFVAL(false), DEFVAL(0.0), DEFVAL(false));
@@ -3569,7 +3596,7 @@ void RenderingServer::init() {
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/textures/webp_compression/compression_method", PROPERTY_HINT_RANGE, "0,6,1"), 2);
 	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "rendering/textures/webp_compression/lossless_compression_factor", PROPERTY_HINT_RANGE, "0,100,1"), 25);
 
-	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "rendering/limits/time/time_rollover_secs", PROPERTY_HINT_RANGE, "0,10000,1,or_greater"), 3600);
+	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "rendering/limits/time/time_rollover_secs", PROPERTY_HINT_RANGE, "1,10000,1,or_greater,suffix:s"), 3600);
 
 	GLOBAL_DEF_RST("rendering/lights_and_shadows/use_physical_light_units", false);
 
@@ -3581,10 +3608,11 @@ void RenderingServer::init() {
 
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/lights_and_shadows/positional_shadow/soft_shadow_filter_quality", PROPERTY_HINT_ENUM, "Hard (Fastest),Soft Very Low (Faster),Soft Low (Fast),Soft Medium (Average),Soft High (Slow),Soft Ultra (Slowest)"), 2);
 	GLOBAL_DEF("rendering/lights_and_shadows/positional_shadow/soft_shadow_filter_quality.mobile", 0);
+	GLOBAL_DEF("rendering/lights_and_shadows/positional_shadow/atlas_16_bits", true);
 
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/2d/shadow_atlas/size", PROPERTY_HINT_RANGE, "128,16384"), 2048);
 	GLOBAL_DEF_RST(PropertyInfo(Variant::INT, "rendering/2d/batching/item_buffer_size", PROPERTY_HINT_RANGE, "128,1048576,1"), 16384);
-	GLOBAL_DEF_RST(PropertyInfo(Variant::INT, "rendering/2d/batching/uniform_set_cache_size", PROPERTY_HINT_RANGE, "256,1048576,1"), 256);
+	GLOBAL_DEF_RST(PropertyInfo(Variant::INT, "rendering/2d/batching/uniform_set_cache_size", PROPERTY_HINT_RANGE, "256,1048576,1"), 4096);
 
 	// Number of commands that can be drawn per frame.
 	GLOBAL_DEF_RST(PropertyInfo(Variant::INT, "rendering/gl_compatibility/item_buffer_size", PROPERTY_HINT_RANGE, "128,1048576,1"), 16384);
@@ -3617,7 +3645,7 @@ void RenderingServer::init() {
 	GLOBAL_DEF_RST("rendering/driver/depth_prepass/disable_for_vendors", "PowerVR,Mali,Adreno,Apple");
 
 	GLOBAL_DEF_RST("rendering/textures/default_filters/use_nearest_mipmap_filter", false);
-	GLOBAL_DEF_RST(PropertyInfo(Variant::INT, "rendering/textures/default_filters/anisotropic_filtering_level", PROPERTY_HINT_ENUM, String::utf8("Disabled (Fastest),2× (Faster),4× (Fast),8× (Average),16× (Slow)")), 2);
+	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/textures/default_filters/anisotropic_filtering_level", PROPERTY_HINT_ENUM, String::utf8("Disabled (Fastest),2× (Faster),4× (Fast),8× (Average),16× (Slow)")), 2);
 
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/camera/depth_of_field/depth_of_field_bokeh_shape", PROPERTY_HINT_ENUM, "Box (Fast),Hexagon (Average),Circle (Slowest)"), 1);
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/camera/depth_of_field/depth_of_field_bokeh_quality", PROPERTY_HINT_ENUM, "Very Low (Fastest),Low (Fast),Medium (Average),High (Slow)"), 1);
@@ -3637,15 +3665,36 @@ void RenderingServer::init() {
 	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "rendering/environment/ssil/fadeout_from", PROPERTY_HINT_RANGE, "0.0,512,0.1,or_greater"), 50.0);
 	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "rendering/environment/ssil/fadeout_to", PROPERTY_HINT_RANGE, "64,65536,0.1,or_greater"), 300.0);
 
+	// Move the project setting definitions here so they are available when we init the rendering internals.
+	GLOBAL_DEF_BASIC("rendering/viewport/hdr_2d", false);
+
+	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "rendering/anti_aliasing/quality/msaa_2d", PROPERTY_HINT_ENUM, String::utf8("Disabled (Fastest),2× (Average),4× (Slow),8× (Slowest)")), 0);
+	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "rendering/anti_aliasing/quality/msaa_3d", PROPERTY_HINT_ENUM, String::utf8("Disabled (Fastest),2× (Average),4× (Slow),8× (Slowest)")), 0);
+
 	GLOBAL_DEF("rendering/anti_aliasing/screen_space_roughness_limiter/enabled", true);
 	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "rendering/anti_aliasing/screen_space_roughness_limiter/amount", PROPERTY_HINT_RANGE, "0.01,4.0,0.01"), 0.25);
 	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "rendering/anti_aliasing/screen_space_roughness_limiter/limit", PROPERTY_HINT_RANGE, "0.01,1.0,0.01"), 0.18);
 
-	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/scaling_3d/mode", PROPERTY_HINT_ENUM, "Bilinear (Fastest),FSR 1.0 (Fast),FSR 2.2 (Slow)"), 0);
+	{
+		String mode_hints;
+		String mode_hints_metal;
+		{
+			Vector<String> mode_hints_arr = { "Bilinear (Fastest)", "FSR 1.0 (Fast)", "FSR 2.2 (Slow)" };
+			mode_hints = String(",").join(mode_hints_arr);
+
+			mode_hints_arr.push_back("MetalFX (Spatial)");
+			mode_hints_arr.push_back("MetalFX (Temporal)");
+			mode_hints_metal = String(",").join(mode_hints_arr);
+		}
+
+		GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/scaling_3d/mode", PROPERTY_HINT_ENUM, mode_hints), 0);
+		GLOBAL_DEF_NOVAL(PropertyInfo(Variant::INT, "rendering/scaling_3d/mode.ios", PROPERTY_HINT_ENUM, mode_hints_metal), 0);
+		GLOBAL_DEF_NOVAL(PropertyInfo(Variant::INT, "rendering/scaling_3d/mode.macos", PROPERTY_HINT_ENUM, mode_hints_metal), 0);
+	}
 	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "rendering/scaling_3d/scale", PROPERTY_HINT_RANGE, "0.25,2.0,0.01"), 1.0);
 	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "rendering/scaling_3d/fsr_sharpness", PROPERTY_HINT_RANGE, "0,2,0.1"), 0.2f);
-	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "rendering/textures/default_filters/texture_mipmap_bias", PROPERTY_HINT_RANGE, "-2,2,0.001"), 0.0f);
 
+	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "rendering/textures/default_filters/texture_mipmap_bias", PROPERTY_HINT_RANGE, "-2,2,0.001"), 0.0f);
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/textures/decals/filter", PROPERTY_HINT_ENUM, "Nearest (Fast),Linear (Fast),Nearest Mipmap (Fast),Linear Mipmap (Fast),Nearest Mipmap Anisotropic (Average),Linear Mipmap Anisotropic (Average)"), DECAL_FILTER_LINEAR_MIPMAPS);
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "rendering/textures/light_projectors/filter", PROPERTY_HINT_ENUM, "Nearest (Fast),Linear (Fast),Nearest Mipmap (Fast),Linear Mipmap (Fast),Nearest Mipmap Anisotropic (Average),Linear Mipmap Anisotropic (Average)"), LIGHT_PROJECTOR_FILTER_LINEAR_MIPMAPS);
 

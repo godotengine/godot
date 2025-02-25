@@ -234,7 +234,8 @@ bool AnimationTreeEditor::can_edit(const Ref<AnimationNode> &p_node) const {
 }
 
 Vector<String> AnimationTreeEditor::get_animation_list() {
-	if (!singleton->tree || !singleton->is_visible()) {
+	// This can be called off the main thread due to resource preview generation. Quit early in that case.
+	if (!singleton->tree || !Thread::is_main_thread() || !singleton->is_visible()) {
 		// When tree is empty, singleton not in the main thread.
 		return Vector<String>();
 	}
@@ -304,7 +305,7 @@ AnimationTreeEditorPlugin::AnimationTreeEditorPlugin() {
 	anim_tree_editor = memnew(AnimationTreeEditor);
 	anim_tree_editor->set_custom_minimum_size(Size2(0, 300) * EDSCALE);
 
-	button = EditorNode::get_bottom_panel()->add_item(TTR("AnimationTree"), anim_tree_editor, ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_animation_tree_bottom_panel", TTR("Toggle AnimationTree Bottom Panel")));
+	button = EditorNode::get_bottom_panel()->add_item(TTR("AnimationTree"), anim_tree_editor, ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_animation_tree_bottom_panel", TTRC("Toggle AnimationTree Bottom Panel")));
 	button->hide();
 }
 

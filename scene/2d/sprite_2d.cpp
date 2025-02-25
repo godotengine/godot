@@ -30,7 +30,7 @@
 
 #include "sprite_2d.h"
 
-#include "scene/main/window.h"
+#include "scene/main/viewport.h"
 
 #ifdef TOOLS_ENABLED
 Dictionary Sprite2D::_edit_get_state() const {
@@ -423,7 +423,7 @@ void Sprite2D::_validate_property(PropertyInfo &p_property) const {
 		p_property.usage |= PROPERTY_USAGE_KEYING_INCREMENTS;
 	}
 
-	if (!region_enabled && (p_property.name == "region_rect" || p_property.name == "region_filter_clip")) {
+	if (!region_enabled && (p_property.name == "region_rect" || p_property.name == "region_filter_clip_enabled")) {
 		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
 }

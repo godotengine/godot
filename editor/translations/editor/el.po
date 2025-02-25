@@ -30,13 +30,14 @@
 # Lentiles GR <lentiles.gr@gmail.com>, 2024.
 # mantis-goatman <toads.r.epic@gmail.com>, 2024.
 # "Anthony V." <anthonyv156@outlook.com>, 2024.
+# Giannis Krommydas <john1052004@gmail.com>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-09-09 10:11+0000\n"
-"Last-Translator: \"Anthony V.\" <anthonyv156@outlook.com>\n"
+"PO-Revision-Date: 2025-01-11 17:09+0000\n"
+"Last-Translator: Giannis Krommydas <john1052004@gmail.com>\n"
 "Language-Team: Greek <https://hosted.weblate.org/projects/godot-engine/godot/"
 "el/>\n"
 "Language: el\n"
@@ -44,7 +45,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.8-dev\n"
+"X-Generator: Weblate 5.10-dev\n"
 
 msgid "Main Thread"
 msgstr "Κύριο νήμα"
@@ -293,6 +294,9 @@ msgstr "Νέα Γραμμή από πάνω"
 msgid "Indent"
 msgstr "Στοιχειοθέτηση"
 
+msgid "Dedent"
+msgstr "Μείωση εσοχής"
+
 msgid "Backspace"
 msgstr "Οπισθοδιαγραφή"
 
@@ -346,6 +350,12 @@ msgstr "Δείκτης στην αρχή της Τεκμηρίωσης"
 
 msgid "Caret Document End"
 msgstr "Δείκτης στο τέλος της Τεκμηρίωσης"
+
+msgid "Caret Add Below"
+msgstr "Προσθήκη δείκτη πρως τα κάτω"
+
+msgid "Caret Add Above"
+msgstr "Προσθήκη δείκτη πρως τα πάνω"
 
 msgid "Scroll Up"
 msgstr "Κύλιση άνω"
@@ -497,6 +507,15 @@ msgstr "Ενέργεια"
 msgid "Deadzone"
 msgstr "Νεκρή Ζώνη"
 
+msgid "Name:"
+msgstr "Όνομα:"
+
+msgid "Type:"
+msgstr "Τύπος:"
+
+msgid "Add Metadata Property for \"%s\""
+msgstr "Προσθήκη Ιδιότητας Μεταδεδομένων για \"%s\""
+
 msgid "Time:"
 msgstr "Χρόνος:"
 
@@ -557,6 +576,9 @@ msgstr "Αποκοπή Κλειδιών Κίνησης"
 msgid "Animation Paste Keys"
 msgstr "Επικόλληση Κλειδιών Κίνησης"
 
+msgid "Animation Delete Keys"
+msgstr "Διαγραφή Κλειδιών Κίνησης"
+
 msgid "Focus"
 msgstr "Εστίαση"
 
@@ -598,13 +620,6 @@ msgstr "Αλλαγή Μήκους Κίνησης"
 
 msgid "Change Animation Loop"
 msgstr "Αλλαγή βρόχου κίνησης"
-
-msgid "Can't change loop mode on animation instanced from imported scene."
-msgstr "Αδυναμίας αλλαγής λειτουργίας βρόχου σε κίνηση από εισηγμένη σκηνή."
-
-msgid "Can't change loop mode on animation embedded in another scene."
-msgstr ""
-"Αδυναμία αλλαγής λειτουργίας βρόχου σε κίνηση ενσωματωμένη σε άλλη σκηνή."
 
 msgid "Property Track..."
 msgstr "Κομμάτι Ιδιότητας..."
@@ -686,9 +701,6 @@ msgstr "Κλιμάκωση:"
 
 msgid "Blend Shape:"
 msgstr "Σχήμα Ανάμειξης:"
-
-msgid "Type:"
-msgstr "Τύπος:"
 
 msgid "(Invalid, expected type: %s)"
 msgstr "(Άκυρο, αναμενόμενος τύπος: %s)"
@@ -821,7 +833,7 @@ msgid "Animation Insert Key"
 msgstr "Εισαγωγή Κλειδιού Κίνησης"
 
 msgid "node '%s'"
-msgstr "κόμβος '%s'."
+msgstr "κόμβος '%s'"
 
 msgid "animation"
 msgstr "κίνηση"
@@ -915,6 +927,12 @@ msgstr "Το πρόχειρο είναι άδειο!"
 msgid "Paste Tracks"
 msgstr "Επικόλληση κομματιών"
 
+msgid "Animation Set End Offset"
+msgstr "Το κλειδί κίνησης έχει εισαχθεί"
+
+msgid "Bake Animation as Linear Keys"
+msgstr "Μάσκα μεταγλώττισης για εισαγόμενα κλειδιά"
+
 msgid "Select an AnimationPlayer node to create and edit animations."
 msgstr ""
 "Επιλέξτε έναν κόμβο AnimationPlayer για δημιουργία και επεξεργασία κινήσεων."
@@ -927,9 +945,6 @@ msgstr "Δείξε μόνο κομμάτια απο επιλεγμένους κ�
 
 msgid "Group tracks by node or display them as plain list."
 msgstr "Ομαδοποίηση κομματιών ανα κόμβο, ή εμφάνιση σε λίστα."
-
-msgid "Snap:"
-msgstr "Κούμπωμα:"
 
 msgid "Animation step value."
 msgstr "Τιμή βήματος κίνησης."
@@ -946,6 +961,18 @@ msgstr "Επεξεργασία"
 msgid "Animation properties."
 msgstr "Ιδιότητες κίνησης."
 
+msgid "Copy Tracks..."
+msgstr "Αντιγραφή κομματιών..."
+
+msgid "Scale Selection..."
+msgstr "Μεγέθυνση επιλογής..."
+
+msgid "Scale From Cursor..."
+msgstr "Μεγέθυνση από τον δείκτη..."
+
+msgid "Make Easing Selection..."
+msgstr "Διαγραφή επιλογής..."
+
 msgid "Delete Selection"
 msgstr "Διαγραφή επιλογής"
 
@@ -954,6 +981,15 @@ msgstr "Επόμενο Βήμα"
 
 msgid "Go to Previous Step"
 msgstr "Προηγούμενο Βήμα"
+
+msgid "Bake Animation..."
+msgstr "Επικόλληση κίνησης..."
+
+msgid "Optimize Animation (no undo)..."
+msgstr "Βελτιστοποίηση κινήσεων (χωρίς επιστροφή)..."
+
+msgid "Clean-Up Animation (no undo)..."
+msgstr "Καθαρισμός κινήσεων (χωρίς επιστροφή)..."
 
 msgid "Use Bezier Curves"
 msgstr "Χρήση καμπυλών Bezier"
@@ -979,11 +1015,32 @@ msgstr "Εκκαθάριση"
 msgid "Scale Ratio:"
 msgstr "Λόγος μεγέθυνσης:"
 
+msgid "Transition Type:"
+msgstr "Τύπος Μετάβασης:"
+
+msgid "Ease Type:"
+msgstr "Τύπος Ευκολίας:"
+
+msgid "Animation Baker"
+msgstr "Όνομα κίνησης"
+
+msgid "3D Pos/Rot/Scl Track:"
+msgstr "3D Pos/Rot/Scl Μονοπάτι:"
+
+msgid "Value Track:"
+msgstr "Μονοπάτι αξίας:"
+
 msgid "Select Tracks to Copy"
 msgstr "Επιλογή Κομματιών για Αντιγραφή"
 
 msgid "Select All/None"
 msgstr "Επιλογή Όλων/Κανένα"
+
+msgid "Close"
+msgstr "Κλείσιμο"
+
+msgid "Error!"
+msgstr "Σφάλμα!"
 
 msgid "Add Audio Track Clip"
 msgstr "Προσθήκη αποσπάσματος ήχου"
@@ -1015,6 +1072,9 @@ msgid "%d of %d match"
 msgid_plural "%d of %d matches"
 msgstr[0] "%d απο %d αποτέλεσμα"
 msgstr[1] "%d απο %d αποτελέσματα"
+
+msgid "Find"
+msgstr "Εύρεση"
 
 msgid "Next Match"
 msgstr "Επόμενο Αποτέλεσμα"
@@ -1116,9 +1176,6 @@ msgstr "Αποσυνδέει το σήμα μετά την πρώτη του ε�
 msgid "Cannot connect signal"
 msgstr "Αδύνατη η σύνδεση σήματος"
 
-msgid "Close"
-msgstr "Κλείσιμο"
-
 msgid "Connect"
 msgstr "Σύνδεση"
 
@@ -1167,7 +1224,7 @@ msgid "Edit..."
 msgstr "Επεξεργασία..."
 
 msgid "Change Type of \"%s\""
-msgstr "Αλλαγή τύπου \"%S\""
+msgstr "Αλλαγή τύπου \"%s\""
 
 msgid "Change"
 msgstr "Αλλαγή"
@@ -1214,6 +1271,15 @@ msgstr "Στιγμιότυπο:"
 msgid "Toggle Visibility"
 msgstr "Εναλλαγή ορατότητας"
 
+msgid "Clear"
+msgstr "Εκκαθάριση"
+
+msgid "Decompressing remote file system"
+msgstr "Αποσυμπίεση απομακρυσμένου συστήματος αρχείων"
+
+msgid "Scanning for local changes"
+msgstr "Έρευνα για τοπικές αλλαγές"
+
 msgid "Monitors"
 msgstr "Παρακολούθηση"
 
@@ -1234,9 +1300,6 @@ msgstr "Διακοπή"
 msgid "Start"
 msgstr "Εκκινιση"
 
-msgid "Clear"
-msgstr "Εκκαθάριση"
-
 msgid "Measure:"
 msgstr "Μέτρο:"
 
@@ -1251,6 +1314,9 @@ msgstr "Περιοκτικός"
 
 msgid "Self"
 msgstr "Εαυτός"
+
+msgid "Display internal functions"
+msgstr "Ανάθεση σε συνάρτηση"
 
 msgid "Frame #:"
 msgstr "Καρέ #:"
@@ -1267,8 +1333,14 @@ msgstr "Κλήσεις"
 msgid "Linked"
 msgstr "Συνδεδεμένο"
 
+msgid "CPU"
+msgstr "Επεξεργαστής"
+
 msgid "Bytes:"
 msgstr "Ψηφιολέξεις:"
+
+msgid "Warning:"
+msgstr "Προσοχή:"
 
 msgid "Error:"
 msgstr "Σφάλμα:"
@@ -1419,6 +1491,11 @@ msgstr "Επεξεργαστής εξαρτήσεων"
 msgid "Search Replacement Resource:"
 msgstr "Αναζήτηση αντικαταστάτη πόρου:"
 
+msgid "Open Scene"
+msgid_plural "Open Scenes"
+msgstr[0] "Άνοιγμα σκηνής"
+msgstr[1] "Άνοιγμα σκηνών"
+
 msgid "Open"
 msgstr "Άνοιγμα"
 
@@ -1458,14 +1535,8 @@ msgstr "Κατέχει"
 msgid "Resources Without Explicit Ownership:"
 msgstr "Πόροι χωρίς ρητή ιδιοκτησία:"
 
-msgid "Could not create folder."
-msgstr "Αδύνατη η δημιουργία φακέλου."
-
-msgid "Create new folder in %s:"
-msgstr "Δημιουργία νέου φακέλου στο %s:"
-
-msgid "Create Folder"
-msgstr "Δημιουργία φακέλου"
+msgid "Folder name cannot be empty."
+msgstr "Ήδη υπαρκτό όνομα κίνησης."
 
 msgid "Thanks from the Godot community!"
 msgstr "Ευχαριστίες από την κοινότητα της Godot!"
@@ -1542,6 +1613,9 @@ msgstr "Επιτυχία!"
 
 msgid "No files conflict with your project"
 msgstr "Δεν υπάρχουν αρχεία που συγκρούονται με το έργο σας"
+
+msgid "Installation preview:"
+msgstr "Προεπισκόπηση εγκατάστασης:"
 
 msgid "Install"
 msgstr "Εγκατάσταση"
@@ -1624,17 +1698,11 @@ msgstr "Τοποθεσία για νέα διάταξη..."
 msgid "Open Audio Bus Layout"
 msgstr "Άνοιγμα διάταξης διαύλων ήχου"
 
-msgid "There is no '%s' file."
-msgstr "Δεν υπάρχει αρχείο «%s»."
+msgid "Error saving file: %s"
+msgstr "Σφάλμα αποθήκευσης αρχείου: %s"
 
 msgid "Layout:"
 msgstr "Διάταξη:"
-
-msgid "Invalid file, not an audio bus layout."
-msgstr "Άκυρο αρχείο, δεν είναι διάταξη διαύλων ήχου."
-
-msgid "Error saving file: %s"
-msgstr "Σφάλμα αποθήκευσης αρχείου: %s"
 
 msgid "Add Bus"
 msgstr "Προσθήκη διαύλου"
@@ -1662,9 +1730,6 @@ msgstr "Φόρτωση προεπιλεγμένης διάταξης διαύλ�
 
 msgid "Create a new Bus Layout."
 msgstr "Δημιουργία νέας διάταξης διαύλων ήχου."
-
-msgid "Valid characters:"
-msgstr "Έγκυροι χαρακτήρες:"
 
 msgid "Autoload '%s' already exists!"
 msgstr "AutoLoad '%s' υπάρχει ήδη!"
@@ -1880,6 +1945,12 @@ msgstr "Καμία τιμή επιστροφής."
 msgid "Experimental"
 msgstr "Πειραματικό"
 
+msgid "Deprecated:"
+msgstr "Έχει καταργηθεί:"
+
+msgid "Experimental:"
+msgstr "Πειραματικό:"
+
 msgid "Constructors"
 msgstr "Κατασκευαστής"
 
@@ -1950,20 +2021,14 @@ msgstr "Επεξεργαστής"
 msgid "No description available."
 msgstr "Δεν υπάρχει διαθέσιμη περιγραφή."
 
-msgid "Property:"
-msgstr "Ιδιότητα:"
+msgid "Show in FileSystem"
+msgstr "Εμφάνιση στο Σύστημα Αρχείων"
 
-msgid "Signal:"
-msgstr "Σήμα:"
+msgid "Open in File Manager"
+msgstr "Άνοιγμα στη διαχείριση αρχείων"
 
-msgid "%d matches."
-msgstr "%d αποτελέσματα."
-
-msgid "Method"
-msgstr "Μέθοδος"
-
-msgid "Signal"
-msgstr "Σήμα"
+msgid "Class"
+msgstr "Κλάση"
 
 msgid "Constant"
 msgstr "Σταθερή"
@@ -1974,8 +2039,20 @@ msgstr "Ιδιόκτησία"
 msgid "Theme Property"
 msgstr "Ιδιότητα Θέματος"
 
+msgid "Method"
+msgstr "Μέθοδος"
+
+msgid "Signal"
+msgstr "Σήμα"
+
 msgid "Annotation"
 msgstr "Σχολιασμός"
+
+msgid "File"
+msgstr "Αρχείο"
+
+msgid "%d matches."
+msgstr "%d αποτελέσματα."
 
 msgid "Search Help"
 msgstr "Αναζήτηση βοήθειας"
@@ -2013,9 +2090,6 @@ msgstr "Μόνο ιδιότητες θέματος"
 msgid "Member Type"
 msgstr "Είδος μέλους"
 
-msgid "Class"
-msgstr "Κλάση"
-
 msgid "(%d change)"
 msgid_plural "(%d changes)"
 msgstr[0] "{Αλλαγή %d}"
@@ -2048,11 +2122,8 @@ msgstr "Ορισμός πολλών: %s"
 msgid "Remove metadata %s"
 msgstr "Αφαίρεση μεταδεδομένων %s"
 
-msgid "Name:"
-msgstr "Όνομα:"
-
-msgid "Add Metadata Property for \"%s\""
-msgstr "Προσθήκη Ιδιότητας Μεταδεδομένων για \"%s\""
+msgid "Favorites"
+msgstr "Αγαπημένα"
 
 msgid "Creating Mesh Previews"
 msgstr "Δημιουργία προεπισκοπήσεων πλεγμάτων"
@@ -2122,8 +2193,11 @@ msgstr ""
 msgid "Save Resource As..."
 msgstr "Αποθήκευση πόρου ως..."
 
+msgid "Missing file '%s' or one of its dependencies."
+msgstr "Λείπει η σκηνή '%s' ή μία από τις εξαρτήσεις της."
+
 msgid "Error while loading file '%s'."
-msgstr "Σφάλμα κατά την φόρτωση αρχείου '%s':"
+msgstr "Σφάλμα κατά την φόρτωση αρχείου '%s'."
 
 msgid "Saving Scene"
 msgstr "Αποθήκευση σκηνής"
@@ -2190,20 +2264,8 @@ msgstr ""
 msgid "Open Base Scene"
 msgstr "Άνοιγμα σκηνής βάσης"
 
-msgid "Quick Open..."
-msgstr "Γρήγορο Άνοιγμα..."
-
-msgid "Quick Open Scene..."
-msgstr "Γρήγορο άνοιγμα σκηνής..."
-
-msgid "Quick Open Script..."
-msgstr "Γρήγορη άνοιγμα δέσμης ενεργειών..."
-
 msgid "Save Scene As..."
 msgstr "Αποθήκευση σκηνή ως..."
-
-msgid "Current scene not saved. Open anyway?"
-msgstr "Η τρέχουσα σκηνή δεν έχει αποθηκευτεί. Συνέχεια με το άνοιγμα;"
 
 msgid "Global Undo: %s"
 msgstr "Παγκόσμια Αναίρεση: %s"
@@ -2292,34 +2354,6 @@ msgstr "Η σκηνή '%s' έχει σπασμένες εξαρτήσεις:"
 msgid "Clear Recent Scenes"
 msgstr "Εκκαθάριση πρόσφατων σκηνών"
 
-msgid ""
-"No main scene has ever been defined, select one?\n"
-"You can change it later in \"Project Settings\" under the 'application' "
-"category."
-msgstr ""
-"Δεν έχει καθοριστεί κύρια σκηνή, θέλετε να επιλέξετε μία;\n"
-"Μπορείτε να την αλλάξετε αργότερα στις «Ρυθμίσεις έργου» κάτω από την "
-"κατηγορία «Εφαρμογή»."
-
-msgid ""
-"Selected scene '%s' does not exist, select a valid one?\n"
-"You can change it later in \"Project Settings\" under the 'application' "
-"category."
-msgstr ""
-"Η επιλεγμένη σκηνή '%s' δεν υπάρχει, θέλετε να επιλέξετε μία έγκυρη;\n"
-"Μπορείτε να την αλλάξετε αργότερα στις «Ρυθμίσεις έργου» κάτω από την "
-"κατηγορία «εφαρμογή»."
-
-msgid ""
-"Selected scene '%s' is not a scene file, select a valid one?\n"
-"You can change it later in \"Project Settings\" under the 'application' "
-"category."
-msgstr ""
-"Η επιλεγμένη σκηνή '%s' δεν είναι αρχείο σκηνής, θέλετε να επιλέξετε μία "
-"έγκυρη;\n"
-"Μπορείτε να την αλλάξετε αργότερα στις «Ρυθμίσεις έργου» κάτω από την "
-"κατηγορία «εφαρμογή»."
-
 msgid "Default"
 msgstr "Προεπιλεγμένο"
 
@@ -2346,6 +2380,9 @@ msgstr "%d περισσότερα αρχεία"
 
 msgid "Analyzing scene %s"
 msgstr "Ανάλυση σκηνής %s"
+
+msgid "Preparation done."
+msgstr "Προετοιμασία έτοιμη."
 
 msgid "Forward+"
 msgstr "Εμπρός+"
@@ -2385,6 +2422,15 @@ msgstr "Άνοιγμα πρόσφατων"
 
 msgid "Save Scene"
 msgstr "Αποθηκεύση σκηνής"
+
+msgid "Quick Open..."
+msgstr "Γρήγορο Άνοιγμα..."
+
+msgid "Quick Open Scene..."
+msgstr "Γρήγορο άνοιγμα σκηνής..."
+
+msgid "Quick Open Script..."
+msgstr "Γρήγορη άνοιγμα δέσμης ενεργειών..."
 
 msgid "Export As..."
 msgstr "Εξαγωγή ως..."
@@ -2505,13 +2551,6 @@ msgstr "Εξαγωγή βιβλιοθήκης"
 msgid "Open & Run a Script"
 msgstr "Άνοιξε & Τρέξε μία δέσμη ενεργειών"
 
-msgid ""
-"The following files are newer on disk.\n"
-"What action should be taken?"
-msgstr ""
-"Τα ακόλουθα αρχεία είναι νεότερα στον δίσκο.\n"
-"Τι δράση να ληφθεί;"
-
 msgid "New Inherited"
 msgstr "Νέα κληρονομημένη"
 
@@ -2599,6 +2638,9 @@ msgstr "Νέο κλειδί:"
 msgid "New Value:"
 msgstr "Νέα τιμή:"
 
+msgid "Size:"
+msgstr "Μέγεθος:"
+
 msgid "Remove Item"
 msgstr "Αφαίρεση στοιχείου"
 
@@ -2624,9 +2666,6 @@ msgstr "Κάνε μοναδικό"
 msgid "Save As..."
 msgstr "Αποθήκευση ως..."
 
-msgid "Show in FileSystem"
-msgstr "Εμφάνιση στο Σύστημα Αρχείων"
-
 msgid "New %s"
 msgstr "Νέο %s"
 
@@ -2641,9 +2680,6 @@ msgstr ""
 "Δεν βρέθηκε εκτελέσιμη διαμόρφωση εξαγωγής για αυτή την πλατφόρμα.\n"
 "Παρακαλούμε προσθέστε μία εκτελέσιμη διαμόρφωση στο μενού εξαγωγής."
 
-msgid "Run 'Remote Debug' anyway?"
-msgstr "Εκτέλεση της 'Απομακρυσμένης Αποσφαλμάτωσης' ούτως ή άλλως;"
-
 msgid "Write your logic in the _run() method."
 msgstr "Γράψτε τη λογική σας στη μέθοδο _run()."
 
@@ -2652,6 +2688,9 @@ msgstr "Επεξεργασία ενσωματωμένης ενέργειας: %s
 
 msgid "Edit Shortcut: %s"
 msgstr "Eπεξεργασία συντόμευσης: %s"
+
+msgid "None"
+msgstr "Τίποτα"
 
 msgid "Editor Settings"
 msgstr "Ρυθμίσεις επεξεργαστή"
@@ -2710,6 +2749,12 @@ msgstr "Αδύνατη η δημιουργία αρχείου \"%s\"."
 msgid "Failed to export project files."
 msgstr "Απέτυχε η εξαγωγή αρχείων έργου."
 
+msgid "Can't open file for writing at path \"%s\"."
+msgstr "Αδύνατο το άνοιγμα αρχείου για εγγραφή στο μονοπάτι \"%s\"."
+
+msgid "Can't open encrypted file to write."
+msgstr "Αδύνατο το άνοιγμα κρυπτογραφημένου αρχείου για εγγραφή."
+
 msgid "Can't open file to read from path \"%s\"."
 msgstr "Αδύνατο το άνοιγμα αρχείου για ανάγνωση απο το μονοπάτι \"%s\"."
 
@@ -2725,6 +2770,9 @@ msgstr "Η δεδομένη διαδρομή εξαγωγής δεν υπάρχ�
 msgid "Template file not found: \"%s\"."
 msgstr "Δεν βρέθηκε το αρχείο προτύπου: \"%s\"."
 
+msgid "Failed to copy export template."
+msgstr "Απέτυχε η αντιγραφή προτύπου εξαγωγής."
+
 msgid "On 32-bit exports the embedded PCK cannot be bigger than 4 GiB."
 msgstr ""
 "Σε εξαγωγές 32-bit, το ενσωματωμένο PCK δεν μπορεί να υπερβαίνει τα 4 GiB."
@@ -2732,8 +2780,20 @@ msgstr ""
 msgid "Error requesting URL:"
 msgstr "Σφάλμα αίτησης URL:"
 
+msgid "Can't resolve the requested address."
+msgstr "Δεν μπορεί να επιλυθεί η ζητούμενη διεύθυνση."
+
+msgid "Can't connect to the mirror."
+msgstr "Δεν ήταν δυνατή η σύνδεση στον κεντρικό υπολογιστή."
+
+msgid "No response from the mirror."
+msgstr "Δεν λήφθηκε απόκριση από τον κεντρικό υπολογιστή."
+
 msgid "Request failed."
 msgstr "Το αίτημα απέτυχε."
+
+msgid "Request failed:"
+msgstr "Το αίτημα απέτυχε:"
 
 msgid "Cannot remove temporary file:"
 msgstr "Αδυναμία αφαίρεσης προσωρινού αρχείου:"
@@ -2767,6 +2827,12 @@ msgstr "Εξαγωγή προτύπων εξαγωγής"
 msgid "Importing:"
 msgstr "Εισαγωγή:"
 
+msgid "Export templates are missing. Install them from a file."
+msgstr "Λείπουν τα πρότυπα εξαγωγής. Εγκαταστήστε τα από ένα αρχείο."
+
+msgid "Official export templates aren't available for development builds."
+msgstr "Τα επίσημα πρότυπα εξαγωγής δεν είναι διαθέσιμα για εκδόσεις ανάπτυξης."
+
 msgid "Uncompressing Android Build Sources"
 msgstr "Αποσυμπίεση Πηγών Δόμησης Android"
 
@@ -2779,8 +2845,8 @@ msgstr "Τρέχουσα έκδοση:"
 msgid "Uninstall"
 msgstr "Απεγκατάσταση"
 
-msgid "Official export templates aren't available for development builds."
-msgstr "Τα επίσημα πρότυπα εξαγωγής δεν είναι διαθέσιμα για εκδόσεις ανάπτυξης."
+msgid "Download from:"
+msgstr "Λήψη από:"
 
 msgid "Select Template File"
 msgstr "Επιλογή Αρχείου Προτύπων"
@@ -2796,6 +2862,9 @@ msgstr "Διαγραφή διαμόρφωσης '%s';"
 
 msgid "Resources to export:"
 msgstr "Πόροι για εξαγωγή:"
+
+msgid "(Inherited)"
+msgstr "(Κληρονομίθηκε)"
 
 msgid "Export With Debug"
 msgstr "Εξαγωγή με αποσφαλμάτωση"
@@ -2876,6 +2945,9 @@ msgstr "Λίστα δυνατοτήτων:"
 msgid "Export All"
 msgstr "Εξαγωγή Όλων"
 
+msgid "Choose an export mode:"
+msgstr "Επιλέξτε μια λειτουργία εξαγωγής:"
+
 msgid "ZIP File"
 msgstr "Αρχείο ZIP"
 
@@ -2887,9 +2959,6 @@ msgstr "Διαχείριση προτύπων εξαγωγής"
 
 msgid "Browse"
 msgstr "Περιήγηση"
-
-msgid "Favorites"
-msgstr "Αγαπημένα"
 
 msgid "View items as a grid of thumbnails."
 msgstr "Εμφάνιση αντικειμένων σε πλέγμα μικργραφιών."
@@ -2923,11 +2992,20 @@ msgstr "Σφάλμα κατά τον διπλασιασμό:"
 msgid "A file or folder with this name already exists."
 msgstr "Υπάρχει ήδη ένα αρχείο ή φάκελος με αυτό το όνομα."
 
+msgid ""
+"The following files or folders conflict with items in the target location "
+"'%s':"
+msgstr ""
+"Τα ακόλουθα αρχεία ή φάκελοι συγκρούονται με στοιχεία στον προορισμό \"%s\":"
+
 msgid "Duplicating file:"
 msgstr "Διπλασιασμός αρχείου:"
 
 msgid "Duplicating folder:"
 msgstr "Διπλασιασμός καταλόγου:"
+
+msgid "Create Folder"
+msgstr "Δημιουργία φακέλου"
 
 msgid "New Inherited Scene"
 msgstr "Νέα Κληρονομημένη Σκηνή"
@@ -2949,9 +3027,6 @@ msgstr "Κατάργηση από τα Αγαπημένα"
 
 msgid "Reimport"
 msgstr "Επανεισαγωγή"
-
-msgid "Open in File Manager"
-msgstr "Άνοιγμα στη διαχείριση αρχείων"
 
 msgid "New Folder..."
 msgstr "Νέος φάκελος..."
@@ -3027,8 +3102,22 @@ msgstr "Προσθήκη σε Ομάδα"
 msgid "Remove from Group"
 msgstr "Κατάργηση από την ομάδα"
 
+msgid "Convert to Scene Group"
+msgstr "Μετατροπή σε ομάδα σκηνών"
+
+msgid "Global"
+msgstr "Παγκόσμια"
+
 msgid "Expand Bottom Panel"
 msgstr "Ανάπτυξη κάτω πλαισίου"
+
+msgid "Move/Duplicate %d Item"
+msgid_plural "Move/Duplicate %d Items"
+msgstr[0] "Μετακίνηση/Διπλασιασμός %d αντικειμένου"
+msgstr[1] "Μετακίνηση/Διπλασιασμός %d αντικειμένων"
+
+msgid "Choose target directory:"
+msgstr "Επιλέξτε τον κατάλογο-στόχο:"
 
 msgid "Move"
 msgstr "Μετακίνηση"
@@ -3041,12 +3130,6 @@ msgstr "Επιλογή τρέχοντα φακέλου"
 
 msgid "Select This Folder"
 msgstr "Επιλογή αυτού του φακέλου"
-
-msgid "All Recognized"
-msgstr "Όλα τα αναγνωρισμένα"
-
-msgid "All Files (*)"
-msgstr "Όλα τα αρχεία (*)"
 
 msgid "Open a File"
 msgstr "Άνοιγμα αρχείου"
@@ -3062,6 +3145,9 @@ msgstr "Άνοιγμα αρχείου ή φακέλου"
 
 msgid "Save a File"
 msgstr "Αποθήκευση αρχείου"
+
+msgid "Could not create folder."
+msgstr "Αδύνατη η δημιουργία φακέλου."
 
 msgid "Go Back"
 msgstr "Επιστροφή"
@@ -3105,11 +3191,11 @@ msgstr "Ανανέωση αρχείων."
 msgid "(Un)favorite current folder."
 msgstr "Εναλλαγή αγαπημένου τρέχοντος φακέλου."
 
-msgid "Toggle the visibility of hidden files."
-msgstr "Εναλλαγή ορατότητας κρυφών αρχείων."
-
 msgid "Directories & Files:"
 msgstr "Φάκελοι & Αρχεία:"
+
+msgid "Toggle the visibility of hidden files."
+msgstr "Εναλλαγή ορατότητας κρυφών αρχείων."
 
 msgid "Preview:"
 msgstr "Προεπισκόπηση:"
@@ -3132,8 +3218,8 @@ msgstr "Αναπαραγωγή προσαρμοσμένης σκηνής."
 msgid "Reload the played scene."
 msgstr "Ανανέωση της αναπαραγόμενης σκηνής."
 
-msgid "Quick Run Scene..."
-msgstr "Γρήγορη εκτέλεση σκηνής..."
+msgid "Network Profiler"
+msgstr "Πρόγραμμα Δημιουργίας Δικτυακού Προφίλ"
 
 msgid "Play This Scene"
 msgstr "Αναπαραγωγή σκηνής"
@@ -3159,17 +3245,39 @@ msgstr "Νέο Παράθυρο"
 msgid "Add a new scene."
 msgstr "Προσθήκη νέας σκηνής."
 
+msgid "No notifications."
+msgstr "Δεν υπάρχουν ειδοποιήσεις."
+
+msgid "Show notifications."
+msgstr "Εμφάνιση ειδοποιήσεων."
+
+msgid "Silence the notifications."
+msgstr "Σιωπή των ειδοποιήσεων."
+
 msgid "Toggle Visible"
 msgstr "Εναλλαγή Ορατότητας"
 
 msgid "Unlock Node"
 msgstr "Ξεκλείδωμα Κόμβου"
 
+msgid "Disable Scene Unique Name"
+msgstr "Απενεργοποίηση Μοναδικού ονόματος σκηνής"
+
 msgid "(Connecting From)"
 msgstr "(Πηγή Σύνδεση)"
 
 msgid "Node configuration warning:"
 msgstr "Προειδοποίηση διαμόρφωσης κόμβου:"
+
+msgid "Node has one connection."
+msgid_plural "Node has {num} connections."
+msgstr[0] "Ο κόμβος έχει μία σύνδεση."
+msgstr[1] "Ο κόμβος έχει {num} συνδέσεις."
+
+msgid "Node is in this group:"
+msgid_plural "Node is in the following groups:"
+msgstr[0] "Ο κόμβος βρίσκεται σε αυτήν την ομάδα:"
+msgstr[1] "Ο κόμβος βρίσκεται στις ακόλουθες ομάδες:"
 
 msgid "Open Script:"
 msgstr "Άνοιγμα Δέσμης Ενεργειών:"
@@ -3232,11 +3340,29 @@ msgstr "Σφάλμα κατά την φόρτωση σκηνής"
 msgid "Extract"
 msgstr "Εξαγωγή"
 
+msgid "Primary Light"
+msgstr "Πρωτεύον φως"
+
 msgid "Status"
 msgstr "Κατάσταση"
 
+msgid "Save Extension:"
+msgstr "Αποθήκευση επέκτασης:"
+
 msgid "Offset:"
 msgstr "Μετατόπιση:"
+
+msgid "Loop:"
+msgstr "Επανάληψη:"
+
+msgid "Beat Count:"
+msgstr "αριθμός Beat:"
+
+msgid "Music Playback:"
+msgstr "Αναπαραγωγή μουσικής:"
+
+msgid "Configuration:"
+msgstr "Διαμόρφωση:"
 
 msgid "Importer:"
 msgstr "Εισαγωγέας:"
@@ -3256,11 +3382,17 @@ msgstr "Εισαγωγή ώς:"
 msgid "Preset"
 msgstr "Προρύθμιση"
 
+msgid "Joypad Axes"
+msgstr "Άξονες Joypad"
+
 msgid "Device:"
 msgstr "Συσκευή:"
 
 msgid "Failed to load resource."
 msgstr "Απέτυχε η φόρτωση πόρου."
+
+msgid "Property Name Style"
+msgstr "Όνομα ακινήτου Στυλ"
 
 msgid "Make Sub-Resources Unique"
 msgstr "Κάνε τους υπό-πόρους μοναδικούς"
@@ -3309,6 +3441,12 @@ msgstr "Ανακατευθύνσεις ανά περιοχή:"
 
 msgid "Locale"
 msgstr "Μικρός λοβός"
+
+msgid "Add Built-in Strings to POT"
+msgstr "Προσθήκη ενσωματωμένων συμβολοσειρών στο POT"
+
+msgid "Set %s on %d nodes"
+msgstr "Όρισε %s σε %d κόμβους"
 
 msgid "Groups"
 msgstr "Ομάδες"
@@ -3392,6 +3530,9 @@ msgstr "Επιλογή και μετακίνηση σημείων, δημιου�
 msgid "Enable snap and show grid."
 msgstr "Ενεργοποίηση κουμπώματος και εμφάνιση πλέγματος."
 
+msgid "Sync:"
+msgstr "Συγχρονισμός:"
+
 msgid "Blend:"
 msgstr "Ανάμειξη:"
 
@@ -3433,6 +3574,9 @@ msgstr "Διαγραφή σημείων και τριγώνων."
 
 msgid "Generate blend triangles automatically (instead of manually)"
 msgstr "Δημιουργία τριγώνων μίξης αυτόματα (αντι για χειροκινητα)"
+
+msgid "Inspect Filters"
+msgstr "Έλενχος φίλτρων"
 
 msgid "Output node can't be added to the blend tree."
 msgstr "Ο κόμβος εξόδου δεν μπορεί να προστεθεί στο δέντρο μίξης."
@@ -3497,8 +3641,17 @@ msgstr "Προσθήκη Κόμβου..."
 msgid "Enable Filtering"
 msgstr "Ενεργοποίηση Φίλτρου"
 
+msgid "Library Name:"
+msgstr "Όνομα βιβλιοθήκης:"
+
 msgid "Load Animation"
 msgstr "Φόρτωση κίνησης"
+
+msgid "Add Animation Libraries"
+msgstr "Προσθήκη βιβλιοθηκών κίνησης"
+
+msgid "[Global]"
+msgstr "[Παγκόσμια]"
 
 msgid "Animation Name:"
 msgstr "Όνομα κίνησης:"
@@ -3508,6 +3661,9 @@ msgstr "Επικολλημένη κίνηση"
 
 msgid "Open in Inspector"
 msgstr "Άνοιγμα για επιθεώρηση"
+
+msgid "Edit Animation Libraries"
+msgstr "Επεξεργασία βιβλιοθηκών κινήσεων"
 
 msgid "Toggle Autoplay"
 msgstr "Εναλλαγή αυτόματης αναπαραγωγής"
@@ -3538,18 +3694,6 @@ msgstr "Το επόμενο στην μείξη κίνησης άλλαξε"
 
 msgid "Change Blend Time"
 msgstr "Αλλαγή χρόνου ανάμειξης"
-
-msgid "Play selected animation backwards from current pos. (A)"
-msgstr "Αναπαραγωγή της επιλεγμένης κίνησης ανάποδα από την τρέχουσα θέση. (A)"
-
-msgid "Play selected animation backwards from end. (Shift+A)"
-msgstr "Αναπαραγωγή της επιλεγμένης κίνησης ανάποδα από το τέλος. (Shift + A)"
-
-msgid "Play selected animation from start. (Shift+D)"
-msgstr "Αναπαραγωγή της επιλεγμένης κίνησης από την αρχή. (Shift + D)"
-
-msgid "Play selected animation from current pos. (D)"
-msgstr "Αναπαραγωγή της επιλεγμένης κίνησης από την τρέχουσα θέση. (D)"
 
 msgid "Animation position (in seconds)."
 msgstr "Θέση κίνησης (σε δευτερόλεπτα)."
@@ -3611,9 +3755,6 @@ msgstr "Συμπεριέλαβε τα μαραφέτια (3D)"
 msgid "Pin AnimationPlayer"
 msgstr "Καρφίτσωμα AnimationPlayer"
 
-msgid "Error!"
-msgstr "Σφάλμα!"
-
 msgid "Cross-Animation Blend Times"
 msgstr "Χρόνοι ανάμειξης κινήσεων"
 
@@ -3661,6 +3802,9 @@ msgstr "Σύνδεση κόμβων."
 
 msgid "Remove selected node or transition."
 msgstr "Αφαίρεση επιλεγμένου κόμβου ή μετάβασης."
+
+msgid "Transition:"
+msgstr "Μετάβαση:"
 
 msgid "Play Mode:"
 msgstr "Λειτουργία Αναπαραγωγής:"
@@ -3870,6 +4014,9 @@ msgstr "Μετακίνηση άγκυρας του CanvasItem \"%s\""
 msgid "Scale Node2D \"%s\" to (%s, %s)"
 msgstr "Αλλαγή μεγέθους scaling Node2D \"%s\" σε (%s, %s)"
 
+msgid "Scaling:"
+msgstr "Κλιμάκωση:"
+
 msgid "Lock Selected"
 msgstr "Κλείδωσε το Επιλεγμένο"
 
@@ -4055,6 +4202,9 @@ msgstr "Προσθήκη %s..."
 msgid "Create Node"
 msgstr "Δημιουργία κόμβου"
 
+msgid "Instantiating: "
+msgstr "Στιγμιότυπο: "
+
 msgid "Change Default Type"
 msgstr "Αλλαγή Προεπιλεγμένου Τύπου"
 
@@ -4108,30 +4258,6 @@ msgstr "Ευρεία Δεξιά"
 
 msgid "Full Rect"
 msgstr "Γεμάτο Ορθογώνιο Παραλληλόγραμμο"
-
-msgid "Load Emission Mask"
-msgstr "Φόρτωση μάσκας εκπομπής"
-
-msgid "Emission Mask"
-msgstr "Μάσκα εκπομπής"
-
-msgid "Solid Pixels"
-msgstr "Αμιγή Εικονοστοιχεία"
-
-msgid "Border Pixels"
-msgstr "Εικονοστοιχεία Περιγράμματος"
-
-msgid "Directed Border Pixels"
-msgstr "Εικονοστοιχεία Προσανατολισμένου Περιγράμματος"
-
-msgid "Generate Visibility AABB"
-msgstr "Δημιουρία AABB ορατότητας"
-
-msgid "Create Emission Points From Node"
-msgstr "Δημιουργία σημείων εκπομπής από κόμβο"
-
-msgid "Generation Time (sec):"
-msgstr "Χρόνος Παραγωγής (sec):"
 
 msgid "Load Curve Preset"
 msgstr "Φόρτωση διαμόρφωσης καμπύλης"
@@ -4241,8 +4367,8 @@ msgstr "Επεγεργασία επέκτασης"
 msgid "Installed Plugins:"
 msgstr "Εγκατεστημένα πρόσθετα:"
 
-msgid " - Variation"
-msgstr " Διαχωρισμός"
+msgid "Size: %s"
+msgstr "Μέγεθος:%s"
 
 msgid "Change AudioStreamPlayer3D Emission Angle"
 msgstr "Αλλαγή γωνίας εκπομπής του AudioStreamPlayer3D"
@@ -4274,36 +4400,6 @@ msgstr "Αλλαγή διαμέτρου φωτός"
 msgid "Change Notifier AABB"
 msgstr "Ειδοποιητής Αλλαγής AABB"
 
-msgid "Generate Visibility Rect"
-msgstr "Δημιουργία ορθογωνίου ορατότητας"
-
-msgid "The geometry's faces don't contain any area."
-msgstr "Οι όψεις της γεωμετρίας δεν περιέχουν καμία περιοχή."
-
-msgid "The geometry doesn't contain any faces."
-msgstr "Η γεωμετρία δεν περιέχει καθόλου όψεις."
-
-msgid "\"%s\" doesn't contain geometry."
-msgstr "\"%s\" δεν περιέχει γεωμετρία."
-
-msgid "\"%s\" doesn't contain face geometry."
-msgstr "\"%s\" δεν περιέχει γεωμετρική όψη."
-
-msgid "Create Emitter"
-msgstr "Δημιουργία πομπού"
-
-msgid "Emission Points:"
-msgstr "Σημεία εκπομπής:"
-
-msgid "Surface Points"
-msgstr "Σημεία επιφάνειας"
-
-msgid "Surface Points+Normal (Directed)"
-msgstr "Σημεία επιφάνειας + Κανονικό δίανυσμα (Κατευθηνόμενο)"
-
-msgid "Volume"
-msgstr "Ένταση"
-
 msgid "Create Occluder Polygon"
 msgstr "Δημιουργία πολυγώνου εμποδίου"
 
@@ -4313,11 +4409,6 @@ msgid ""
 msgstr ""
 "Δεν ήταν δυνατός ο προσδιορισμός διαδρομής αποθήκευσης για εικόνες lightmap.\n"
 "Αποθηκεύστε τη σκηνή σας και δοκιμάστε ξανα."
-
-msgid "Failed creating lightmap images, make sure path is writable."
-msgstr ""
-"Απέτυχε η δημιουργία της εικόνας lightmap, σιγουρευτείτε ότι η διαδρομή είναι "
-"εγγράψιμη."
 
 msgid "Bake Lightmaps"
 msgstr "Προετοιμασία Lightmaps"
@@ -4334,9 +4425,6 @@ msgstr "Αδυναμία δημιουργίας σχημάτων σύγκρου�
 msgid "Mesh is empty!"
 msgstr "Το πλέγμα είναι άδειο!"
 
-msgid "Create Navigation Mesh"
-msgstr "Δημιουργία πλέγματος πλοήγησης"
-
 msgid "Contained Mesh is not of type ArrayMesh."
 msgstr "Το περιεχόμενο πλέγμα δεν είναι τύπου ArrayMesh."
 
@@ -4345,6 +4433,9 @@ msgstr "Το ξεδίπλωμα των UV απέτυχε, το πλέγμα μπ
 
 msgid "No mesh to debug."
 msgstr "Κανένα πλέγμα για αποσφαλμάτωση."
+
+msgid "Create Navigation Mesh"
+msgstr "Δημιουργία πλέγματος πλοήγησης"
 
 msgid "Create Outline"
 msgstr "Δημιουργία περιγράμματος"
@@ -4369,6 +4460,9 @@ msgstr "Δημιουργία πλέγματος περιγράμματος"
 
 msgid "Outline Size:"
 msgstr "Μέγεθος περιγράμματος:"
+
+msgid "Sibling"
+msgstr "Αδερφός"
 
 msgid ""
 "Creates a polygon-based collision shape.\n"
@@ -4477,11 +4571,8 @@ msgstr "Ποσότητα:"
 msgid "Populate"
 msgstr "Συμπλήρωση"
 
-msgid "Edit Poly"
-msgstr "Επεγεργασία πολυγώνου"
-
-msgid "Edit Poly (Remove Point)"
-msgstr "Επεγεργασία πολυγώνου (Αφαίρεση σημείου)"
+msgid "Please Confirm..."
+msgstr "Παρακαλώ επιβεβαιώστε..."
 
 msgid "Create Navigation Polygon"
 msgstr "Δημιουργία πολυγώνου πλοήγησης"
@@ -4514,8 +4605,14 @@ msgstr ""
 msgid "Animation Key Inserted."
 msgstr "Το κλειδί κίνησης έχει εισαχθεί."
 
+msgid "Objects: %d\n"
+msgstr "Αντικείμενα:%d\n"
+
 msgid "FPS: %d"
 msgstr "FPS: %d"
+
+msgid "Translating:"
+msgstr "Μετάφραση:"
 
 msgid "Top View."
 msgstr "Πάνω όψη."
@@ -4541,11 +4638,14 @@ msgstr "Στοίχιση Μετασχηματισμού με Προβολή"
 msgid "Align Rotation with View"
 msgstr "Στοίχιση Περιστροφής με Προβολή"
 
-msgid "None"
-msgstr "Τίποτα"
-
 msgid "Rotating %s degrees."
 msgstr "Περιστροφή %s μοίρες."
+
+msgid "Translating %s."
+msgstr "Μετάφραση:%s."
+
+msgid "Scaling %s."
+msgstr "Κλιμάκωση:%s."
 
 msgid "Auto Orthogonal Enabled"
 msgstr "Αυτόματη Αξονομετρική Ενεργή"
@@ -4564,6 +4664,12 @@ msgstr "Εμφάνιση προσθετικού σχεδιασμού"
 
 msgid "Display Unshaded"
 msgstr "Εμφάνιση χωρίς σκιές"
+
+msgid "Normal Buffer"
+msgstr "Κανονικός Ρυθμιστής"
+
+msgid "Internal Buffer"
+msgstr "Εσωτερικός Ρυθμιστής"
 
 msgid "View Environment"
 msgstr "Εμφάνιση περιβάλλοντος"
@@ -4750,6 +4856,63 @@ msgstr "Πριν"
 msgid "Post"
 msgstr "Μετά"
 
+msgid "Generate Visibility Rect"
+msgstr "Δημιουργία ορθογωνίου ορατότητας"
+
+msgid "Load Emission Mask"
+msgstr "Φόρτωση μάσκας εκπομπής"
+
+msgid "Solid Pixels"
+msgstr "Αμιγή Εικονοστοιχεία"
+
+msgid "Border Pixels"
+msgstr "Εικονοστοιχεία Περιγράμματος"
+
+msgid "Directed Border Pixels"
+msgstr "Εικονοστοιχεία Προσανατολισμένου Περιγράμματος"
+
+msgid "Emission Mask"
+msgstr "Μάσκα εκπομπής"
+
+msgid "Generation Time (sec):"
+msgstr "Χρόνος Παραγωγής (sec):"
+
+msgid "Generate Visibility AABB"
+msgstr "Δημιουρία AABB ορατότητας"
+
+msgid "\"%s\" doesn't contain geometry."
+msgstr "\"%s\" δεν περιέχει γεωμετρία."
+
+msgid "\"%s\" doesn't contain face geometry."
+msgstr "\"%s\" δεν περιέχει γεωμετρική όψη."
+
+msgid "Create Emission Points From Node"
+msgstr "Δημιουργία σημείων εκπομπής από κόμβο"
+
+msgid "The geometry's faces don't contain any area."
+msgstr "Οι όψεις της γεωμετρίας δεν περιέχουν καμία περιοχή."
+
+msgid "The geometry doesn't contain any faces."
+msgstr "Η γεωμετρία δεν περιέχει καθόλου όψεις."
+
+msgid "Create Emitter"
+msgstr "Δημιουργία πομπού"
+
+msgid "Emission Points:"
+msgstr "Σημεία εκπομπής:"
+
+msgid "Surface Points"
+msgstr "Σημεία επιφάνειας"
+
+msgid "Surface Points+Normal (Directed)"
+msgstr "Σημεία επιφάνειας + Κανονικό δίανυσμα (Κατευθηνόμενο)"
+
+msgid "Volume"
+msgstr "Ένταση"
+
+msgid "Emission Source:"
+msgstr "Πηγή εκπομπής:"
+
 msgid "Remove Point from Curve"
 msgstr "Αφαίρεση σημείου από την καμπύλη"
 
@@ -4785,9 +4948,6 @@ msgstr "Διαγραφή σημείου"
 
 msgid "Close Curve"
 msgstr "κλείσιμο καμπύλης"
-
-msgid "Please Confirm..."
-msgstr "Παρακαλώ επιβεβαιώστε..."
 
 msgid "Remove all curve points?"
 msgstr "Αφαίρεση όλων των σημείων καμπύλης;"
@@ -4850,13 +5010,6 @@ msgstr "Η ιδιότητα skeleton του Polygon2D δεν δείχνει σε
 msgid "Sync Bones"
 msgstr "Συγχρονισμός Οστών"
 
-msgid ""
-"No texture in this polygon.\n"
-"Set a texture to be able to edit UV."
-msgstr ""
-"Καμιά υφή στο πολύγωνο.\n"
-"Ορίστε υφή για να επεξεργαστείτε τα UV."
-
 msgid "Create UV Map"
 msgstr "Δημιουργία χάρτη UV"
 
@@ -4894,20 +5047,14 @@ msgstr "Μετασχηματισμού Πολυγώνου"
 msgid "Paint Bone Weights"
 msgstr "Ζωγράφισμα Βαρών Οστών"
 
-msgid "Open Polygon 2D UV editor."
-msgstr "Άνοιγμα Επεξεργαστή UV Polygon2D."
-
-msgid "Polygon 2D UV Editor"
-msgstr "Επεξεργαστής δισδιάστατου πολυγώνου"
-
-msgid "UV"
-msgstr "UV"
-
 msgid "Points"
 msgstr "Σημεία"
 
 msgid "Polygons"
 msgstr "Πολύγωνα"
+
+msgid "UV"
+msgstr "UV"
 
 msgid "Bones"
 msgstr "Οστά"
@@ -4976,6 +5123,12 @@ msgstr "Συγχρονισμός Οστών σε Πολύγωνο"
 
 msgid "Create Polygon3D"
 msgstr "Δημιουργία 3D Πολυγώνου"
+
+msgid "Edit Poly"
+msgstr "Επεγεργασία πολυγώνου"
+
+msgid "Edit Poly (Remove Point)"
+msgstr "Επεγεργασία πολυγώνου (Αφαίρεση σημείου)"
 
 msgid "ERROR: Couldn't load resource!"
 msgstr "Σφάλμα: Δεν ήταν δυνατή η φόρτωση πόρου!"
@@ -5049,9 +5202,6 @@ msgstr "Εναλλαγή αλφαβητικής ταξινόμησης λίστ�
 
 msgid "Sort"
 msgstr "Ταξινόμηση"
-
-msgid "File"
-msgstr "Αρχείο"
 
 msgid "Open..."
 msgstr "Άνοιγμα..."
@@ -5143,9 +5293,6 @@ msgstr "[Παράβλεψη]"
 msgid "Go to Function"
 msgstr "Πήγαινε σε συνάρτηση"
 
-msgid "Lookup Symbol"
-msgstr "Αναζήτηση Συμβόλου"
-
 msgid "Pick Color"
 msgstr "Επιλογή χρώματος"
 
@@ -5221,6 +5368,9 @@ msgstr "Πήγαινε σε συνάρτηση..."
 msgid "Go to Line..."
 msgstr "Πήγαινε σε γραμμή..."
 
+msgid "Lookup Symbol"
+msgstr "Αναζήτηση Συμβόλου"
+
 msgid "Toggle Breakpoint"
 msgstr "Εναλλαγή σημείου διακοπής"
 
@@ -5233,6 +5383,9 @@ msgstr "Πήγαινε στο επόμενο σημείο διακοπής"
 msgid "Go to Previous Breakpoint"
 msgstr "Επιστροφή στο προηγούμενο σημείο διακοπής"
 
+msgid "There are unsaved changes in the following built-in shaders(s):"
+msgstr "Υπάρχουν μη αποθηκευμένες αλλαγές στα ακόλουθα ενσωματωμένα shader:"
+
 msgid "This skeleton has no bones, create some children Bone2D nodes."
 msgstr ""
 "Αυτός ο σκελετός δεν έχει οστά, δώστε του κάποιους κόμβους-παιδιά Bone2D."
@@ -5244,7 +5397,7 @@ msgid "Create Rest Pose from Bones"
 msgstr "Δημιουργία Στάσης Αδράνειας από Οστά"
 
 msgid "Skeleton2D"
-msgstr "Skeleton2D"
+msgstr "Σκελετός2D"
 
 msgid "Create physical bones"
 msgstr "Δημιουργία φυσικών οστών"
@@ -5291,6 +5444,15 @@ msgstr "Άκυρη γεωμετρία, αδύνατη η δημιουργία ε
 msgid "Create LightOccluder2D Sibling"
 msgstr "Δημιουργία Αδελφού LightOccluder2D"
 
+msgid "Simplification:"
+msgstr "Απλοποίηση:"
+
+msgid "Shrink (Pixels):"
+msgstr "Σμίκρυνση (Pixels):"
+
+msgid "Grow (Pixels):"
+msgstr "Αύξηση (Pixels):"
+
 msgid "Update Preview"
 msgstr "Ανανέωση Προεπισκόπησης"
 
@@ -5330,8 +5492,23 @@ msgstr "(άδειο)"
 msgid "Animations:"
 msgstr "Κινήσεις:"
 
+msgid "Delete Animation"
+msgstr "Διαγραφή κίνησης"
+
 msgid "Animation Frames:"
 msgstr "Καρέ Κίνησης:"
+
+msgid "Play selected animation backwards from current pos. (A)"
+msgstr "Αναπαραγωγή της επιλεγμένης κίνησης ανάποδα από την τρέχουσα θέση. (A)"
+
+msgid "Play selected animation backwards from end. (Shift+A)"
+msgstr "Αναπαραγωγή της επιλεγμένης κίνησης ανάποδα από το τέλος. (Shift + A)"
+
+msgid "Play selected animation from start. (Shift+D)"
+msgstr "Αναπαραγωγή της επιλεγμένης κίνησης από την αρχή. (Shift + D)"
+
+msgid "Play selected animation from current pos. (D)"
+msgstr "Αναπαραγωγή της επιλεγμένης κίνησης από την τρέχουσα θέση. (D)"
 
 msgid "Zoom Reset"
 msgstr "Επαναφορά Μεγέθυνσης"
@@ -5341,6 +5518,9 @@ msgstr "Επιλογή Καρέ"
 
 msgid "Size"
 msgstr "Μέγεθος"
+
+msgid "Auto Slice"
+msgstr "Αυτόματο κόψιμο"
 
 msgid "Create Frames from Sprite Sheet"
 msgstr "Δημιουργία Καρέ από Φύλλο Sprite"
@@ -5366,14 +5546,21 @@ msgstr "Κούμπωμα στα εικονοστοιχεία"
 msgid "Grid Snap"
 msgstr "Κούμπωμα στο πλέγμα"
 
-msgid "Auto Slice"
-msgstr "Αυτόματο κόψιμο"
-
 msgid "Step:"
 msgstr "Βήμα:"
 
 msgid "Separation:"
 msgstr "Διαχωρισμός:"
+
+msgid "1 color"
+msgid_plural "{num} colors"
+msgstr[0] "1 χρώμα"
+msgstr[1] "{num} χρώματα"
+
+msgid "1 constant"
+msgid_plural "{num} constants"
+msgstr[0] "1 σταθερά"
+msgstr[1] "{num} σταθερές"
 
 msgid "No constants found."
 msgstr "Δεν βρέθηκαν σταθερές."
@@ -5381,11 +5568,26 @@ msgstr "Δεν βρέθηκαν σταθερές."
 msgid "No fonts found."
 msgstr "Δεν βρέθηκαν γραμματοσειρές."
 
+msgid "1 font size"
+msgid_plural "{num} font sizes"
+msgstr[0] "1 μέγεθος γραμματοσειράς"
+msgstr[1] "{num} μεγέθη γραμματοσειρών"
+
 msgid "No icons found."
 msgstr "Δεν βρέθηκαν εικόνες."
 
+msgid "1 stylebox"
+msgid_plural "{num} styleboxes"
+msgstr[0] "1 κουτί στυλ"
+msgstr[1] "{num} κουτιά στυλ"
+
 msgid "No styleboxes found."
 msgstr "Δεν βρέθηκαν πλαίσια στυλ."
+
+msgid "{num} currently selected"
+msgid_plural "{num} currently selected"
+msgstr[0] "{num} επιλεγμένο αυτήν τη στιγμή"
+msgstr[1] "{num} επιλεγμένα αυτήν τη στιγμή"
 
 msgid "Importing Theme Items"
 msgstr "Εισαγωγή Θέματος Αντικειμένων"
@@ -5562,6 +5764,9 @@ msgstr "Αναστροφή Οριζόντια"
 msgid "Flip Vertically"
 msgstr "Αναστροφή Κάθετα"
 
+msgid "Scattering:"
+msgstr "Διασκόρπιση:"
+
 msgid "Tiles"
 msgstr "Πλακάκια"
 
@@ -5594,6 +5799,12 @@ msgstr "Απόρριψη όλων των αλλαγών"
 
 msgid "Commit Changes"
 msgstr "Αλλαγές Δέσμευσης"
+
+msgid "Remote Name"
+msgstr "Απομακρυσμένο όνομα"
+
+msgid "Remote URL"
+msgstr "Απομακρυσμένο URL"
 
 msgid "Modified"
 msgstr "Τροποποιήθηκε"
@@ -6208,17 +6419,8 @@ msgstr "Σφάλμα ανοίγματος αρχείου πακέτου, δεν 
 msgid "The following files failed extraction from package:"
 msgstr "Η εξαγωγή των ακόλουθων αρχείων από το πακέτο απέτυχε:"
 
-msgid "Import & Edit"
-msgstr "Εισαγωγή & Επεξεργασία"
-
-msgid "Create & Edit"
-msgstr "Δημιουργία & Επεξεργασία"
-
 msgid "Install Project:"
 msgstr "Εγκατάσταση έργου:"
-
-msgid "Install & Edit"
-msgstr "Εγκατάσταση & Επεξεργασία"
 
 msgid "Project Name:"
 msgstr "Όνομα έργου:"
@@ -6363,8 +6565,21 @@ msgstr "3D Σκηνή"
 msgid "User Interface"
 msgstr "Περιβάλλον χρήστη"
 
+msgid "Root Name:"
+msgstr "Όνομα ρίζας:"
+
 msgid "Error loading scene from %s"
 msgstr "Σφάλμα κατά τη φόρτωση σκηνής από %s"
+
+msgid "Instantiate Scene"
+msgid_plural "Instantiate Scenes"
+msgstr[0] "Ενσωμάτωση σκηνής"
+msgstr[1] "Ενσωμάτωση σκηνών"
+
+msgid "Create AudioStreamPlayer"
+msgid_plural "Create AudioStreamPlayers"
+msgstr[0] "Δημιουργία AudioStreamPlayer"
+msgstr[1] "Δημιουργία AudioStreamPlayers"
 
 msgid "Replace with Branch Scene"
 msgstr "Αποθήκευση κλαδιού ως σκηνή"
@@ -6505,6 +6720,9 @@ msgstr "Απομακρυσμένο"
 msgid "Local"
 msgstr "Τοπικό"
 
+msgid "Delete Related Animation Tracks"
+msgstr "Διαγραφή σχετικών κομματιών κίνησης"
+
 msgid "Clear Inheritance? (No Undo!)"
 msgstr "Εκκαθάριση κληρονομικότητας; (Δεν γίνεται ανέραιση!)"
 
@@ -6587,35 +6805,11 @@ msgstr "Άκυρη βασική διαδρομή."
 msgid "Wrong extension chosen."
 msgstr "Επιλέχθηκε εσφαλμένη επέκταση."
 
-msgid "Change Cylinder Radius"
-msgstr "Αλλαγή Ακτίνας Κυλίνδρου"
-
-msgid "Change Cylinder Height"
-msgstr "Αλλαγή Ύψους Κυλίνδρου"
-
 msgid "Change Torus Inner Radius"
 msgstr "Αλλαγή Εσωτερική Ακτίνας Τόρου"
 
 msgid "Change Torus Outer Radius"
 msgstr "Αλλαγή Εξωτερικής Ακτίνας Τόρου"
-
-msgid "Next Plane"
-msgstr "Επόμενο επίπεδο"
-
-msgid "Previous Plane"
-msgstr "Προηγούμενο επίπεδο"
-
-msgid "Plane:"
-msgstr "Επίπεδο:"
-
-msgid "Next Floor"
-msgstr "Επόμενο πάτωμα"
-
-msgid "Previous Floor"
-msgstr "Προηγούμενο πάτωμα"
-
-msgid "Floor:"
-msgstr "Δάπεδο:"
 
 msgid "GridMap Delete Selection"
 msgstr "GridMap Διαγραφή επιλογής"
@@ -6629,6 +6823,12 @@ msgstr "GridMap Επικόλληση Επιλογής"
 msgid "GridMap Paint"
 msgstr "GridMap Ζωγραφική"
 
+msgid "Previous Floor"
+msgstr "Προηγούμενο πάτωμα"
+
+msgid "Next Floor"
+msgstr "Επόμενο πάτωμα"
+
 msgid "Edit X Axis"
 msgstr "Επεξεργασία άξονα Χ"
 
@@ -6637,6 +6837,12 @@ msgstr "Επεξεργασία άξονα Υ"
 
 msgid "Edit Z Axis"
 msgstr "Επεξεργασία άξονα Ζ"
+
+msgid "GridMap Settings"
+msgstr "Ρυθμίσεις GridMap"
+
+msgid "Pick Distance:"
+msgstr "Επιλογή απόστασης:"
 
 msgid "Cursor Rotate X"
 msgstr "Δρομέας περιστροφή Χ"
@@ -6647,41 +6853,17 @@ msgstr "Δρομέας περιστροφή Υ"
 msgid "Cursor Rotate Z"
 msgstr "Δρομέας περιστροφή Ζ"
 
-msgid "Cursor Back Rotate X"
-msgstr "Πίσω δρομέας περιστροφή Χ"
-
-msgid "Cursor Back Rotate Y"
-msgstr "Πίσω δρομέας περιστροφή Υ"
-
-msgid "Cursor Back Rotate Z"
-msgstr "Πίσω δρομέας περιστροφή Ζ"
-
-msgid "Cursor Clear Rotation"
-msgstr "Εκκαθάριση περιστροφής δρομέα"
-
-msgid "Paste Selects"
-msgstr "Επιλογή Επικόλλησης"
-
-msgid "Cut Selection"
-msgstr "Αποκοπή Επιλογής"
-
-msgid "Clear Selection"
-msgstr "Εκκαθάριση επιλογής"
-
-msgid "Fill Selection"
-msgstr "Γέμισμα Επιλογής"
-
-msgid "Grid Map"
-msgstr "Χάρτης δικτύου"
-
-msgid "GridMap Settings"
-msgstr "Ρυθμίσεις GridMap"
-
-msgid "Pick Distance:"
-msgstr "Επιλογή απόστασης:"
-
 msgid "Give a MeshLibrary resource to this GridMap to use its meshes."
 msgstr "Ορίστε έναν πόρο MeshLibrary στο GridMap για χρήση των πλεγμάτων του."
+
+msgid "Use Transition:"
+msgstr "Μετάβαση:"
+
+msgid "Transition From:"
+msgstr "Μετάβαση από:"
+
+msgid "Transition To:"
+msgstr "Μετάβαση σε:"
 
 msgid "Class name can't be a reserved keyword"
 msgstr "Το όνομα της κλάσης δεν μπορεί να είναι λέξη-κλειδί"
@@ -6697,9 +6879,6 @@ msgstr "Εισερχόμενα RPC"
 
 msgid "Outgoing RPC"
 msgstr "Εξερχόμενα RPC"
-
-msgid "Network Profiler"
-msgstr "Πρόγραμμα Δημιουργίας Δικτυακού Προφίλ"
 
 msgid "A NavigationMesh resource must be set or created for this node to work."
 msgstr ""
@@ -6731,14 +6910,14 @@ msgid "Release keystore incorrectly configured in the export preset."
 msgstr ""
 "Εσφαλμένη ρύθμιση αποθετηρίου κλειδιών διανομής στην διαμόρφωση εξαγωγής."
 
-msgid "Signing release %s..."
-msgstr "Υπογραφή έκδοσης %s..."
-
 msgid "Invalid filename! Android APK requires the *.apk extension."
 msgstr "Μή Έγκυρο όνομα αρχείου! Το Android APK δέχεται μόνο την .apk κατάληξη."
 
 msgid "Unsupported export format!"
 msgstr "Μη αποδεκτή μορφή εξαγωγής!"
+
+msgid "Could not export project files to gradle project."
+msgstr "Δεν ήταν δυνατή η εξαγωγή των αρχείων έργου στο gradle έργο."
 
 msgid "Building Android Project (gradle)"
 msgstr "Δόμηση Έργου Android (gradle)"
@@ -6748,6 +6927,9 @@ msgstr "Μετακίνηση της εξόδου"
 
 msgid "Invalid Identifier:"
 msgstr "Άκυρο Αναγνωριστικό:"
+
+msgid "Could not copy a file at path \"%s\" to \"%s\"."
+msgstr "Δεν ήταν δυνατή η αντιγραφή του αρχείου στο μονοπάτι\"%s\"σε\"%s\"."
 
 msgid "Run in Browser"
 msgstr "Εκτέλεση στον περιηγητή"
@@ -6829,13 +7011,6 @@ msgstr ""
 "Ένα σχήμα πρέπει να δοθεί στο CollisionShape2D για να λειτουργήσει. "
 "Δημιουργήστε ένα πόρο σχήματος για αυτό!"
 
-msgid ""
-"Polygon-based shapes are not meant be used nor edited directly through the "
-"CollisionShape2D node. Please use the CollisionPolygon2D node instead."
-msgstr ""
-"Τα σχήματα βασισμένα σε πολύγωνα δεν σχεδιάστικαν ώστε να είναι επεξεργάσιμα "
-"από τον κόμβο CollisionShape2D. Χρησιμοποιήστε τον κόμβο CollisionPolygon2D."
-
 msgid "Node A and Node B must be PhysicsBody2Ds"
 msgstr "Ο Κόμβος Α και ο Κόμβος Β πρέπει να είναι του τύπου PhysicsBody2Ds"
 
@@ -6869,6 +7044,9 @@ msgstr "Τίποτα δεν είναι ορατό, επειδή δεν έχει 
 msgid "Nothing is visible because meshes have not been assigned to draw passes."
 msgstr ""
 "Τίποτα δεν είναι ορατό, επειδή δεν έχουν οριστεί περάσματα για τα πλέγματα."
+
+msgid "Generating Probe Volumes"
+msgstr "Δημιουργία τόμων ανιχνευτή"
 
 msgid "This body will be ignored until you set a mesh."
 msgstr "Το σώμα αυτό δε θα ληφθεί υπόψιν μέχρι να ορίσετε ένα πλέγμα (mesh)."
@@ -6938,3 +7116,15 @@ msgstr "Άκυρη συνάρτηση σύγκρισης για αυτόν το�
 
 msgid "Constants cannot be modified."
 msgstr "Οι σταθερές δεν μπορούν να τροποποιηθούν."
+
+msgid "Invalid argument name."
+msgstr "Μη έγκυρο όνομα ορίσματος."
+
+msgid "Invalid macro argument list."
+msgstr "Μη έγκυρη λίστα ορισμών μακροεντολών."
+
+msgid "Invalid macro argument."
+msgstr "Μη έγκυρη μακροεντολή."
+
+msgid "Invalid macro argument count."
+msgstr "Μη έγκυρο πλήθος ορίσματος μακροεντολών."

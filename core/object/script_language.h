@@ -35,7 +35,6 @@
 #include "core/io/resource.h"
 #include "core/object/script_instance.h"
 #include "core/templates/pair.h"
-#include "core/templates/rb_map.h"
 #include "core/templates/safe_refcount.h"
 #include "core/variant/typed_array.h"
 
@@ -63,6 +62,8 @@ class ScriptServer {
 		StringName language;
 		String path;
 		StringName base;
+		bool is_abstract = false;
+		bool is_tool = false;
 	};
 
 	static HashMap<StringName, GlobalScriptClass> global_classes;
@@ -87,7 +88,7 @@ public:
 	static void thread_exit();
 
 	static void global_classes_clear();
-	static void add_global_class(const StringName &p_class, const StringName &p_base, const StringName &p_language, const String &p_path);
+	static void add_global_class(const StringName &p_class, const StringName &p_base, const StringName &p_language, const String &p_path, bool p_is_abstract, bool p_is_tool);
 	static void remove_global_class(const StringName &p_class);
 	static void remove_global_class_by_path(const String &p_path);
 	static bool is_global_class(const StringName &p_class);
@@ -95,6 +96,8 @@ public:
 	static String get_global_class_path(const String &p_class);
 	static StringName get_global_class_base(const String &p_class);
 	static StringName get_global_class_native_base(const String &p_class);
+	static bool is_global_class_abstract(const String &p_class);
+	static bool is_global_class_tool(const String &p_class);
 	static void get_global_class_list(List<StringName> *r_global_classes);
 	static void get_inheriters_list(const StringName &p_base_type, List<StringName> *r_classes);
 	static void save_global_classes();
@@ -150,6 +153,7 @@ public:
 	virtual Error reload(bool p_keep_state = false) = 0;
 
 #ifdef TOOLS_ENABLED
+	virtual StringName get_doc_class_name() const = 0;
 	virtual Vector<DocData::ClassDoc> get_documentation() const = 0;
 	virtual String get_class_icon_path() const = 0;
 	virtual PropertyInfo get_class_category() const;
@@ -181,7 +185,7 @@ public:
 	virtual int get_member_line(const StringName &p_member) const { return -1; }
 
 	virtual void get_constants(HashMap<StringName, Variant> *p_constants) {}
-	virtual void get_members(HashSet<StringName> *p_constants) {}
+	virtual void get_members(HashSet<StringName> *p_members) {}
 
 	virtual bool is_placeholder_fallback_enabled() const { return false; }
 
@@ -340,25 +344,46 @@ public:
 	virtual Error complete_code(const String &p_code, const String &p_path, Object *p_owner, List<CodeCompletionOption> *r_options, bool &r_force, String &r_call_hint) { return ERR_UNAVAILABLE; }
 
 	enum LookupResultType {
-		LOOKUP_RESULT_SCRIPT_LOCATION,
+		LOOKUP_RESULT_SCRIPT_LOCATION, // Use if none of the options below apply.
 		LOOKUP_RESULT_CLASS,
 		LOOKUP_RESULT_CLASS_CONSTANT,
 		LOOKUP_RESULT_CLASS_PROPERTY,
 		LOOKUP_RESULT_CLASS_METHOD,
 		LOOKUP_RESULT_CLASS_SIGNAL,
 		LOOKUP_RESULT_CLASS_ENUM,
-		LOOKUP_RESULT_CLASS_TBD_GLOBALSCOPE,
+		LOOKUP_RESULT_CLASS_TBD_GLOBALSCOPE, // Deprecated.
 		LOOKUP_RESULT_CLASS_ANNOTATION,
-		LOOKUP_RESULT_MAX
+		LOOKUP_RESULT_LOCAL_CONSTANT,
+		LOOKUP_RESULT_LOCAL_VARIABLE,
+		LOOKUP_RESULT_MAX,
 	};
 
 	struct LookupResult {
 		LookupResultType type;
-		Ref<Script> script;
+
+		// For `CLASS_*`.
 		String class_name;
 		String class_member;
-		String class_path;
-		int location;
+
+		// For `LOCAL_*`.
+		String description;
+		bool is_deprecated = false;
+		String deprecated_message;
+		bool is_experimental = false;
+		String experimental_message;
+
+		// For `LOCAL_*`.
+		String doc_type;
+		String enumeration;
+		bool is_bitfield = false;
+
+		// For `LOCAL_*`.
+		String value;
+
+		// `SCRIPT_LOCATION` and `LOCAL_*` must have, `CLASS_*` can have.
+		Ref<Script> script;
+		String script_path;
+		int location = -1;
 	};
 
 	virtual Error lookup_code(const String &p_code, const String &p_symbol, const String &p_path, Object *p_owner, LookupResult &r_result) { return ERR_UNAVAILABLE; }
@@ -422,7 +447,7 @@ public:
 	virtual void frame();
 
 	virtual bool handles_global_class_type(const String &p_type) const { return false; }
-	virtual String get_global_class_name(const String &p_path, String *r_base_type = nullptr, String *r_icon_path = nullptr) const { return String(); }
+	virtual String get_global_class_name(const String &p_path, String *r_base_type = nullptr, String *r_icon_path = nullptr, bool *r_is_abstract = nullptr, bool *r_is_tool = nullptr) const { return String(); }
 
 	virtual ~ScriptLanguage() {}
 };

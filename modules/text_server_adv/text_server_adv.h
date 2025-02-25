@@ -83,7 +83,6 @@ using namespace godot;
 // Headers for building as built-in module.
 
 #include "core/extension/ext_wrappers.gen.inc"
-#include "core/object/worker_thread_pool.h"
 #include "core/templates/hash_map.h"
 #include "core/templates/rid_owner.h"
 #include "core/templates/safe_refcount.h"
@@ -148,7 +147,8 @@ class TextServerAdvanced : public TextServerExtension {
 		HashSet<StringName> lang;
 		String digits;
 		String percent_sign;
-		String exp;
+		String exp_l;
+		String exp_u;
 	};
 
 	Vector<NumSystemData> num_systems;
@@ -328,6 +328,7 @@ class TextServerAdvanced : public TextServerExtension {
 		bool force_autohinter = false;
 		TextServer::Hinting hinting = TextServer::HINTING_LIGHT;
 		TextServer::SubpixelPositioning subpixel_positioning = TextServer::SUBPIXEL_POSITIONING_AUTO;
+		bool keep_rounding_remainders = true;
 		Dictionary variation_coordinates;
 		double oversampling = 0.0;
 		double embolden = 0.0;
@@ -489,6 +490,8 @@ class TextServerAdvanced : public TextServerExtension {
 			Variant meta;
 		};
 		Vector<Span> spans;
+		int first_span = 0; // First span in the parent ShapedTextData.
+		int last_span = 0;
 
 		struct EmbeddedObject {
 			int start = -1;
@@ -588,6 +591,7 @@ class TextServerAdvanced : public TextServerExtension {
 		int fixed_size = 0;
 		TextServer::Hinting hinting = TextServer::HINTING_LIGHT;
 		TextServer::SubpixelPositioning subpixel_positioning = TextServer::SUBPIXEL_POSITIONING_AUTO;
+		bool keep_rounding_remainders = true;
 		Dictionary variation_coordinates;
 		double oversampling = 0.0;
 		double embolden = 0.0;
@@ -596,7 +600,7 @@ class TextServerAdvanced : public TextServerExtension {
 		double baseline_offset = 0.0;
 
 		bool operator==(const SystemFontKey &p_b) const {
-			return (font_name == p_b.font_name) && (antialiasing == p_b.antialiasing) && (italic == p_b.italic) && (disable_embedded_bitmaps == p_b.disable_embedded_bitmaps) && (mipmaps == p_b.mipmaps) && (msdf == p_b.msdf) && (force_autohinter == p_b.force_autohinter) && (weight == p_b.weight) && (stretch == p_b.stretch) && (msdf_range == p_b.msdf_range) && (msdf_source_size == p_b.msdf_source_size) && (fixed_size == p_b.fixed_size) && (hinting == p_b.hinting) && (subpixel_positioning == p_b.subpixel_positioning) && (variation_coordinates == p_b.variation_coordinates) && (oversampling == p_b.oversampling) && (embolden == p_b.embolden) && (transform == p_b.transform) && (extra_spacing[SPACING_TOP] == p_b.extra_spacing[SPACING_TOP]) && (extra_spacing[SPACING_BOTTOM] == p_b.extra_spacing[SPACING_BOTTOM]) && (extra_spacing[SPACING_SPACE] == p_b.extra_spacing[SPACING_SPACE]) && (extra_spacing[SPACING_GLYPH] == p_b.extra_spacing[SPACING_GLYPH]) && (baseline_offset == p_b.baseline_offset);
+			return (font_name == p_b.font_name) && (antialiasing == p_b.antialiasing) && (italic == p_b.italic) && (disable_embedded_bitmaps == p_b.disable_embedded_bitmaps) && (mipmaps == p_b.mipmaps) && (msdf == p_b.msdf) && (force_autohinter == p_b.force_autohinter) && (weight == p_b.weight) && (stretch == p_b.stretch) && (msdf_range == p_b.msdf_range) && (msdf_source_size == p_b.msdf_source_size) && (fixed_size == p_b.fixed_size) && (hinting == p_b.hinting) && (subpixel_positioning == p_b.subpixel_positioning) && (keep_rounding_remainders == p_b.keep_rounding_remainders) && (variation_coordinates == p_b.variation_coordinates) && (oversampling == p_b.oversampling) && (embolden == p_b.embolden) && (transform == p_b.transform) && (extra_spacing[SPACING_TOP] == p_b.extra_spacing[SPACING_TOP]) && (extra_spacing[SPACING_BOTTOM] == p_b.extra_spacing[SPACING_BOTTOM]) && (extra_spacing[SPACING_SPACE] == p_b.extra_spacing[SPACING_SPACE]) && (extra_spacing[SPACING_GLYPH] == p_b.extra_spacing[SPACING_GLYPH]) && (baseline_offset == p_b.baseline_offset);
 		}
 
 		SystemFontKey(const String &p_font_name, bool p_italic, int p_weight, int p_stretch, RID p_font, const TextServerAdvanced *p_fb) {
@@ -614,6 +618,7 @@ class TextServerAdvanced : public TextServerExtension {
 			force_autohinter = p_fb->_font_is_force_autohinter(p_font);
 			hinting = p_fb->_font_get_hinting(p_font);
 			subpixel_positioning = p_fb->_font_get_subpixel_positioning(p_font);
+			keep_rounding_remainders = p_fb->_font_get_keep_rounding_remainders(p_font);
 			variation_coordinates = p_fb->_font_get_variation_coordinates(p_font);
 			oversampling = p_fb->_font_get_oversampling(p_font);
 			embolden = p_fb->_font_get_embolden(p_font);
@@ -656,7 +661,7 @@ class TextServerAdvanced : public TextServerExtension {
 			hash = hash_murmur3_one_32(p_a.extra_spacing[SPACING_SPACE], hash);
 			hash = hash_murmur3_one_32(p_a.extra_spacing[SPACING_GLYPH], hash);
 			hash = hash_murmur3_one_double(p_a.baseline_offset, hash);
-			return hash_fmix32(hash_murmur3_one_32(((int)p_a.mipmaps) | ((int)p_a.msdf << 1) | ((int)p_a.italic << 2) | ((int)p_a.force_autohinter << 3) | ((int)p_a.hinting << 4) | ((int)p_a.subpixel_positioning << 8) | ((int)p_a.antialiasing << 12) | ((int)p_a.disable_embedded_bitmaps << 14), hash));
+			return hash_fmix32(hash_murmur3_one_32(((int)p_a.mipmaps) | ((int)p_a.msdf << 1) | ((int)p_a.italic << 2) | ((int)p_a.force_autohinter << 3) | ((int)p_a.hinting << 4) | ((int)p_a.subpixel_positioning << 8) | ((int)p_a.antialiasing << 12) | ((int)p_a.disable_embedded_bitmaps << 14) | ((int)p_a.keep_rounding_remainders << 15), hash));
 		}
 	};
 	mutable HashMap<SystemFontKey, SystemFontCache, SystemFontKeyHasher> system_fonts;
@@ -732,6 +737,7 @@ public:
 	MODBIND0RC(String, get_support_data_filename);
 	MODBIND0RC(String, get_support_data_info);
 	MODBIND1RC(bool, save_support_data, const String &);
+	MODBIND0RC(PackedByteArray, get_support_data);
 
 	MODBIND1RC(bool, is_locale_right_to_left, const String &);
 
@@ -799,6 +805,9 @@ public:
 
 	MODBIND2(font_set_subpixel_positioning, const RID &, SubpixelPositioning);
 	MODBIND1RC(SubpixelPositioning, font_get_subpixel_positioning, const RID &);
+
+	MODBIND2(font_set_keep_rounding_remainders, const RID &, bool);
+	MODBIND1RC(bool, font_get_keep_rounding_remainders, const RID &);
 
 	MODBIND2(font_set_embolden, const RID &, double);
 	MODBIND1RC(double, font_get_embolden, const RID &);
@@ -951,6 +960,7 @@ public:
 
 	MODBIND1RC(int64_t, shaped_get_span_count, const RID &);
 	MODBIND2RC(Variant, shaped_get_span_meta, const RID &, int64_t);
+	MODBIND2RC(Variant, shaped_get_span_embedded_object, const RID &, int64_t);
 	MODBIND5(shaped_set_span_update_font, const RID &, int64_t, const TypedArray<RID> &, int64_t, const Dictionary &);
 
 	MODBIND3RC(RID, shaped_text_substr, const RID &, int64_t, int64_t);

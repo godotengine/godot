@@ -47,10 +47,8 @@ public:
 	typedef HashMap<String, Variant> CustomMap;
 	static const String PROJECT_DATA_DIR_NAME_SUFFIX;
 
-	enum {
-		// Properties that are not for built in values begin from this value, so builtin ones are displayed first.
-		NO_BUILTIN_ORDER_BASE = 1 << 16
-	};
+	// Properties that are not for built in values begin from this value, so builtin ones are displayed first.
+	constexpr static const int32_t NO_BUILTIN_ORDER_BASE = 1 << 16;
 
 #ifdef TOOLS_ENABLED
 	const static PackedStringArray get_required_features();
@@ -137,7 +135,8 @@ protected:
 
 	void _convert_to_last_version(int p_from_version);
 
-	bool _load_resource_pack(const String &p_pack, bool p_replace_files = true, int p_offset = 0);
+	bool load_resource_pack(const String &p_pack, bool p_replace_files, int p_offset);
+	bool _load_resource_pack(const String &p_pack, bool p_replace_files = true, int p_offset = 0, bool p_main_pack = false);
 
 	void _add_property_info_bind(const Dictionary &p_info);
 

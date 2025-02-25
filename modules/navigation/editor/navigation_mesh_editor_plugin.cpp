@@ -32,11 +32,8 @@
 
 #ifdef TOOLS_ENABLED
 
-#include "core/io/marshalls.h"
-#include "core/io/resource_saver.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
-#include "scene/3d/mesh_instance_3d.h"
 #include "scene/3d/navigation_region_3d.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
@@ -65,7 +62,7 @@ void NavigationMeshEditor::_bake_pressed() {
 
 	ERR_FAIL_NULL(node);
 	Ref<NavigationMesh> navmesh = node->get_navigation_mesh();
-	if (!navmesh.is_valid()) {
+	if (navmesh.is_null()) {
 		err_dialog->set_text(TTR("A NavigationMesh resource must be set or created for this node to work."));
 		err_dialog->popup_centered();
 		return;
@@ -130,7 +127,7 @@ NavigationMeshEditor::NavigationMeshEditor() {
 	bake_hbox = memnew(HBoxContainer);
 
 	button_bake = memnew(Button);
-	button_bake->set_theme_type_variation("FlatButton");
+	button_bake->set_theme_type_variation(SceneStringName(FlatButton));
 	bake_hbox->add_child(button_bake);
 	button_bake->set_toggle_mode(true);
 	button_bake->set_text(TTR("Bake NavigationMesh"));
@@ -138,7 +135,7 @@ NavigationMeshEditor::NavigationMeshEditor() {
 	button_bake->connect(SceneStringName(pressed), callable_mp(this, &NavigationMeshEditor::_bake_pressed));
 
 	button_reset = memnew(Button);
-	button_reset->set_theme_type_variation("FlatButton");
+	button_reset->set_theme_type_variation(SceneStringName(FlatButton));
 	bake_hbox->add_child(button_reset);
 	button_reset->set_text(TTR("Clear NavigationMesh"));
 	button_reset->set_tooltip_text(TTR("Clears the internal NavigationMesh vertices and polygons."));

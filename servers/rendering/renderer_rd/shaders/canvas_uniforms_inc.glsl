@@ -23,7 +23,7 @@ struct InstanceData {
 	vec2 world_y;
 	vec2 world_ofs;
 	uint flags;
-	uint pad2;
+	uint instance_uniforms_ofs;
 #ifdef USE_PRIMITIVE
 	vec2 points[3];
 	vec2 uvs[3];
@@ -37,7 +37,7 @@ struct InstanceData {
 
 #endif
 	vec2 color_texture_pixel_size;
-	uint lights[4];
+	uvec4 lights;
 };
 
 //1 means enabled, 2+ means trails in use

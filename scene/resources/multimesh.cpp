@@ -195,6 +195,15 @@ Vector<Color> MultiMesh::_get_custom_data_array() const {
 #endif // DISABLE_DEPRECATED
 
 void MultiMesh::set_buffer(const Vector<float> &p_buffer) {
+	if (instance_count == 0) {
+		return;
+	}
+
+	uint32_t stride = transform_format == TRANSFORM_2D ? 8 : 12;
+	stride += use_colors ? 4 : 0;
+	stride += use_custom_data ? 4 : 0;
+	ERR_FAIL_COND_MSG(stride * instance_count != p_buffer.size(), "Cannot set a buffer on a Multimesh that is a different size from the Multimesh's existing buffer.");
+
 	RS::get_singleton()->multimesh_set_buffer(multimesh, p_buffer);
 }
 
@@ -208,7 +217,7 @@ void MultiMesh::set_buffer_interpolated(const Vector<float> &p_buffer_curr, cons
 
 void MultiMesh::set_mesh(const Ref<Mesh> &p_mesh) {
 	mesh = p_mesh;
-	if (!mesh.is_null()) {
+	if (mesh.is_valid()) {
 		RenderingServer::get_singleton()->multimesh_set_mesh(multimesh, mesh->get_rid());
 	} else {
 		RenderingServer::get_singleton()->multimesh_set_mesh(multimesh, RID());
@@ -246,39 +255,56 @@ void MultiMesh::set_physics_interpolation_quality(PhysicsInterpolationQuality p_
 }
 
 void MultiMesh::set_instance_transform(int p_instance, const Transform3D &p_transform) {
+	ERR_FAIL_INDEX_MSG(p_instance, instance_count, "Instance index out of bounds. Instance index must be less than `instance_count` and greater than or equal to zero.");
+	ERR_FAIL_COND_MSG(transform_format == TRANSFORM_2D, "Can't set Transform3D on a Multimesh configured to use Transform2D. Ensure that you have set the `transform_format` to `TRANSFORM_3D`.");
 	RenderingServer::get_singleton()->multimesh_instance_set_transform(multimesh, p_instance, p_transform);
 }
 
 void MultiMesh::set_instance_transform_2d(int p_instance, const Transform2D &p_transform) {
+	ERR_FAIL_INDEX_MSG(p_instance, instance_count, "Instance index out of bounds. Instance index must be less than `instance_count` and greater than or equal to zero.");
+	ERR_FAIL_COND_MSG(transform_format == TRANSFORM_3D, "Can't set Transform2D on a Multimesh configured to use Transform3D. Ensure that you have set the `transform_format` to `TRANSFORM_2D`.");
 	RenderingServer::get_singleton()->multimesh_instance_set_transform_2d(multimesh, p_instance, p_transform);
 	emit_changed();
 }
 
 Transform3D MultiMesh::get_instance_transform(int p_instance) const {
+	ERR_FAIL_INDEX_V_MSG(p_instance, instance_count, Transform3D(), "Instance index out of bounds. Instance index must be less than `instance_count` and greater than or equal to zero.");
+	ERR_FAIL_COND_V_MSG(transform_format == TRANSFORM_2D, Transform3D(), "Can't get Transform3D on a Multimesh configured to use Transform2D. Ensure that you have set the `transform_format` to `TRANSFORM_3D`.");
 	return RenderingServer::get_singleton()->multimesh_instance_get_transform(multimesh, p_instance);
 }
 
 Transform2D MultiMesh::get_instance_transform_2d(int p_instance) const {
+	ERR_FAIL_INDEX_V_MSG(p_instance, instance_count, Transform2D(), "Instance index out of bounds. Instance index must be less than `instance_count` and greater than or equal to zero.");
+	ERR_FAIL_COND_V_MSG(transform_format == TRANSFORM_3D, Transform2D(), "Can't get Transform2D on a Multimesh configured to use Transform3D. Ensure that you have set the `transform_format` to `TRANSFORM_2D`.");
 	return RenderingServer::get_singleton()->multimesh_instance_get_transform_2d(multimesh, p_instance);
 }
 
 void MultiMesh::set_instance_color(int p_instance, const Color &p_color) {
+	ERR_FAIL_INDEX_MSG(p_instance, instance_count, "Instance index out of bounds. Instance index must be less than `instance_count` and greater than or equal to zero.");
+	ERR_FAIL_COND_MSG(!use_colors, "Can't set instance color on a Multimesh that isn't using colors. Ensure that you have `use_colors` property of this Multimesh set to `true`.");
 	RenderingServer::get_singleton()->multimesh_instance_set_color(multimesh, p_instance, p_color);
 }
 
 Color MultiMesh::get_instance_color(int p_instance) const {
+	ERR_FAIL_INDEX_V_MSG(p_instance, instance_count, Color(), "Instance index out of bounds. Instance index must be less than `instance_count` and greater than or equal to zero.");
+	ERR_FAIL_COND_V_MSG(!use_colors, Color(), "Can't get instance color on a Multimesh that isn't using colors. Ensure that you have `use_colors` property of this Multimesh set to `true`.");
 	return RenderingServer::get_singleton()->multimesh_instance_get_color(multimesh, p_instance);
 }
 
 void MultiMesh::set_instance_custom_data(int p_instance, const Color &p_custom_data) {
+	ERR_FAIL_INDEX_MSG(p_instance, instance_count, "Instance index out of bounds. Instance index must be less than `instance_count` and greater than or equal to zero.");
+	ERR_FAIL_COND_MSG(!use_custom_data, "Can't get instance custom data on a Multimesh that isn't using custom data. Ensure that you have `use_custom_data` property of this Multimesh set to `true`.");
 	RenderingServer::get_singleton()->multimesh_instance_set_custom_data(multimesh, p_instance, p_custom_data);
 }
 
 Color MultiMesh::get_instance_custom_data(int p_instance) const {
+	ERR_FAIL_INDEX_V_MSG(p_instance, instance_count, Color(), "Instance index out of bounds. Instance index must be less than `instance_count` and greater than or equal to zero.");
+	ERR_FAIL_COND_V_MSG(!use_custom_data, Color(), "Can't get instance custom data on a Multimesh that isn't using custom data. Ensure that you have `use_custom_data` property of this Multimesh set to `true`.");
 	return RenderingServer::get_singleton()->multimesh_instance_get_custom_data(multimesh, p_instance);
 }
 
 void MultiMesh::reset_instance_physics_interpolation(int p_instance) {
+	ERR_FAIL_INDEX_MSG(p_instance, instance_count, "Instance index out of bounds. Instance index must be less than `instance_count` and greater than or equal to zero.");
 	RenderingServer::get_singleton()->multimesh_instance_reset_physics_interpolation(multimesh, p_instance);
 }
 
@@ -305,7 +331,7 @@ RID MultiMesh::get_rid() const {
 }
 
 void MultiMesh::set_use_colors(bool p_enable) {
-	ERR_FAIL_COND(instance_count > 0);
+	ERR_FAIL_COND_MSG(instance_count > 0, "Instance count must be 0 to toggle whether colors are used.");
 	use_colors = p_enable;
 }
 
@@ -314,7 +340,7 @@ bool MultiMesh::is_using_colors() const {
 }
 
 void MultiMesh::set_use_custom_data(bool p_enable) {
-	ERR_FAIL_COND(instance_count > 0);
+	ERR_FAIL_COND_MSG(instance_count > 0, "Instance count must be 0 to toggle whether custom data is used.");
 	use_custom_data = p_enable;
 }
 
@@ -323,7 +349,7 @@ bool MultiMesh::is_using_custom_data() const {
 }
 
 void MultiMesh::set_transform_format(TransformFormat p_transform_format) {
-	ERR_FAIL_COND(instance_count > 0);
+	ERR_FAIL_COND_MSG(instance_count > 0, "Instance count must be 0 to change the transform format.");
 	transform_format = p_transform_format;
 }
 

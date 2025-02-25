@@ -255,6 +255,7 @@ private:
 
 	bool camera_first_override = true;
 	bool camera_freelook = false;
+	real_t freelook_speed = FREELOOK_BASE_SPEED;
 
 	Vector2 previous_mouse_position;
 
@@ -295,6 +296,9 @@ private:
 	void _clear_selection();
 	void _set_selection_visible(bool p_visible);
 
+	void _open_selection_list(const Vector<SelectResult> &p_items, const Point2 &p_pos);
+	void _close_selection_list();
+
 	void _find_canvas_items_at_pos(const Point2 &p_pos, Node *p_node, Vector<SelectResult> &r_items, const Transform2D &p_parent_xform = Transform2D(), const Transform2D &p_canvas_xform = Transform2D());
 	void _pan_callback(Vector2 p_scroll_vec, Ref<InputEvent> p_event);
 	void _zoom_callback(float p_zoom_factor, Vector2 p_origin, Ref<InputEvent> p_event);
@@ -306,6 +310,7 @@ private:
 	bool _handle_3d_input(const Ref<InputEvent> &p_event);
 	void _set_camera_freelook_enabled(bool p_enabled);
 	void _cursor_scale_distance(real_t p_scale);
+	void _scale_freelook_speed(real_t p_scale);
 	void _cursor_look(Ref<InputEventWithModifiers> p_event);
 	void _cursor_pan(Ref<InputEventWithModifiers> p_event);
 	void _cursor_orbit(Ref<InputEventWithModifiers> p_event);

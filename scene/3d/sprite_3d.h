@@ -172,7 +172,7 @@ public:
 
 	virtual AABB get_aabb() const override;
 
-	Ref<TriangleMesh> generate_triangle_mesh() const;
+	virtual Ref<TriangleMesh> generate_triangle_mesh() const override;
 
 	SpriteBase3D();
 	~SpriteBase3D();
@@ -231,7 +231,7 @@ class AnimatedSprite3D : public SpriteBase3D {
 	String autoplay;
 
 	bool playing = false;
-	StringName animation = "default";
+	StringName animation = SceneStringName(default_);
 	int frame = 0;
 	float speed_scale = 1.0;
 	float custom_speed_scale = 1.0;

@@ -30,10 +30,7 @@
 
 #include "rendering_server_default.h"
 
-#include "core/config/project_settings.h"
-#include "core/io/marshalls.h"
 #include "core/os/os.h"
-#include "core/templates/sort_array.h"
 #include "renderer_canvas_cull.h"
 #include "renderer_scene_cull.h"
 #include "rendering_server_globals.h"
@@ -77,6 +74,7 @@ void RenderingServerDefault::_draw(bool p_swap_buffers, double frame_step) {
 
 	RENDER_TIMESTAMP("Prepare Render Frame");
 	RSG::scene->update(); //update scenes stuff before updating instances
+	RSG::canvas->update();
 
 	frame_setup_time = double(OS::get_singleton()->get_ticks_usec() - time_usec) / 1000.0;
 
@@ -406,15 +404,15 @@ void RenderingServerDefault::sync() {
 	}
 }
 
-void RenderingServerDefault::draw(bool p_swap_buffers, double frame_step) {
+void RenderingServerDefault::draw(bool p_present, double frame_step) {
 	ERR_FAIL_COND_MSG(!Thread::is_main_thread(), "Manually triggering the draw function from the RenderingServer can only be done on the main thread. Call this function from the main thread or use call_deferred().");
 	// Needs to be done before changes is reset to 0, to not force the editor to redraw.
 	RS::get_singleton()->emit_signal(SNAME("frame_pre_draw"));
 	changes = 0;
 	if (create_thread) {
-		command_queue.push(this, &RenderingServerDefault::_draw, p_swap_buffers, frame_step);
+		command_queue.push(this, &RenderingServerDefault::_draw, p_present, frame_step);
 	} else {
-		_draw(p_swap_buffers, frame_step);
+		_draw(p_present, frame_step);
 	}
 }
 

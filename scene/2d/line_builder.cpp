@@ -112,6 +112,11 @@ void LineBuilder::build() {
 		}
 	}
 
+	if (point_count < 2 || (distance_required && Math::is_zero_approx(total_distance))) {
+		// Zero-length line, nothing to build.
+		return;
+	}
+
 	if (_interpolate_color) {
 		color0 = gradient->get_color(0);
 	} else {
@@ -370,7 +375,7 @@ void LineBuilder::build() {
 			}
 
 			if (!is_intersecting) {
-				// In this case the joint is too corrupted to be re-used,
+				// In this case the joint is too corrupted to be reused,
 				// start again the strip with fallback points
 				strip_begin(pos_up0, pos_down0, color1, uvx1);
 			}

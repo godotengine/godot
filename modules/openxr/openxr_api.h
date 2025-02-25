@@ -40,10 +40,7 @@
 #include "core/math/projection.h"
 #include "core/math/transform_3d.h"
 #include "core/math/vector2.h"
-#include "core/os/memory.h"
-#include "core/string/print_string.h"
 #include "core/string/ustring.h"
-#include "core/templates/rb_map.h"
 #include "core/templates/rid_owner.h"
 #include "core/templates/vector.h"
 #include "servers/rendering_server.h"
@@ -91,28 +88,26 @@ private:
 	OpenXRInterface *xr_interface = nullptr;
 
 	// layers
-	uint32_t num_layer_properties = 0;
-	XrApiLayerProperties *layer_properties = nullptr;
+	LocalVector<XrApiLayerProperties> layer_properties;
 
 	// extensions
-	uint32_t num_supported_extensions = 0;
-	XrExtensionProperties *supported_extensions = nullptr;
+	LocalVector<XrExtensionProperties> supported_extensions;
 	Vector<CharString> enabled_extensions;
 
 	// composition layer providers
 	Vector<OpenXRCompositionLayerProvider *> composition_layer_providers;
 
+	// projection views extensions
+	Vector<OpenXRExtensionWrapper *> projection_views_extensions;
+
 	// view configuration
-	uint32_t num_view_configuration_types = 0;
-	XrViewConfigurationType *supported_view_configuration_types = nullptr;
+	LocalVector<XrViewConfigurationType> supported_view_configuration_types;
 
 	// reference spaces
-	uint32_t num_reference_spaces = 0;
-	XrReferenceSpaceType *supported_reference_spaces = nullptr;
+	LocalVector<XrReferenceSpaceType> supported_reference_spaces;
 
 	// swapchains (note these are platform dependent)
-	uint32_t num_swapchain_formats = 0;
-	int64_t *supported_swapchain_formats = nullptr;
+	PackedInt64Array supported_swapchain_formats;
 
 	// system info
 	String runtime_name;
@@ -128,8 +123,7 @@ private:
 	// blend mode
 	XrEnvironmentBlendMode environment_blend_mode = XR_ENVIRONMENT_BLEND_MODE_OPAQUE;
 	XrEnvironmentBlendMode requested_environment_blend_mode = XR_ENVIRONMENT_BLEND_MODE_OPAQUE;
-	uint32_t num_supported_environment_blend_modes = 0;
-	XrEnvironmentBlendMode *supported_environment_blend_modes = nullptr;
+	Vector<XrEnvironmentBlendMode> supported_environment_blend_modes;
 	bool emulate_environment_blend_mode_alpha_blend = false;
 
 	// state
@@ -143,17 +137,16 @@ private:
 	bool running = false;
 	XrFrameState frame_state = { XR_TYPE_FRAME_STATE, nullptr, 0, 0, false };
 	double render_target_size_multiplier = 1.0;
+	Rect2i render_region;
 
 	OpenXRGraphicsExtensionWrapper *graphics_extension = nullptr;
 	XrSystemGraphicsProperties graphics_properties;
 
-	uint32_t view_count = 0;
-	XrViewConfigurationView *view_configuration_views = nullptr;
+	LocalVector<XrViewConfigurationView> view_configuration_views;
 
 	enum OpenXRSwapChainTypes {
 		OPENXR_SWAPCHAIN_COLOR,
 		OPENXR_SWAPCHAIN_DEPTH,
-		// OPENXR_SWAPCHAIN_VELOCITY,
 		OPENXR_SWAPCHAIN_MAX
 	};
 
@@ -164,6 +157,10 @@ private:
 	XrSpace play_space = XR_NULL_HANDLE;
 	XrSpace view_space = XR_NULL_HANDLE;
 	XRPose::TrackingConfidence head_pose_confidence = XRPose::XR_TRACKING_CONFIDENCE_NONE;
+
+	RID velocity_texture;
+	RID velocity_depth_texture;
+	Size2i velocity_target_size;
 
 	// When LOCAL_FLOOR isn't supported, we use an approach based on the example code in the
 	// OpenXR spec in order to emulate it.
@@ -300,6 +297,7 @@ private:
 		String name; // Name of the interaction profile (i.e. "/interaction_profiles/valve/index_controller")
 		XrPath path; // OpenXR path for this profile
 		Vector<XrActionSuggestedBinding> bindings; // OpenXR action bindings
+		Vector<PackedByteArray> modifiers; // Array of modifiers we'll add into XrBindingModificationsKHR
 	};
 	RID_Owner<InteractionProfile, true> interaction_profile_owner;
 	RID get_interaction_profile_rid(XrPath p_path);
@@ -337,13 +335,25 @@ private:
 		XrSpace play_space = XR_NULL_HANDLE;
 		double render_target_size_multiplier = 1.0;
 		uint64_t frame = 0;
+		Rect2i render_region;
 
-		uint32_t view_count = 0;
-		XrView *views = nullptr;
-		XrCompositionLayerProjectionView *projection_views = nullptr;
-		XrCompositionLayerDepthInfoKHR *depth_views = nullptr; // Only used by Composition Layer Depth Extension if available
+		LocalVector<XrView> views;
+		LocalVector<XrCompositionLayerProjectionView> projection_views;
+		LocalVector<XrCompositionLayerDepthInfoKHR> depth_views; // Only used by Composition Layer Depth Extension if available
 		bool submit_depth_buffer = false; // if set to true we submit depth buffers to OpenXR if a suitable extension is enabled.
 		bool view_pose_valid = false;
+
+		double z_near = 0.0;
+		double z_far = 0.0;
+
+		XrCompositionLayerProjection projection_layer = {
+			XR_TYPE_COMPOSITION_LAYER_PROJECTION, // type
+			nullptr, // next
+			0, // layerFlags
+			XR_NULL_HANDLE, // space
+			0, // viewCount
+			nullptr // views
+		};
 
 		Size2i main_swapchain_size;
 		OpenXRSwapChainInfo main_swapchains[OPENXR_SWAPCHAIN_MAX];
@@ -354,6 +364,7 @@ private:
 	static void _set_render_display_info(XrTime p_predicted_display_time, bool p_should_render);
 	static void _set_render_play_space(uint64_t p_play_space);
 	static void _set_render_state_multiplier(double p_render_target_size_multiplier);
+	static void _set_render_state_render_region(const Rect2i &p_render_region);
 
 	_FORCE_INLINE_ void allocate_view_buffers(uint32_t p_view_count, bool p_submit_depth_buffer) {
 		// If we're rendering on a separate thread, we may still be processing the last frame, don't communicate this till we're ready...
@@ -395,6 +406,13 @@ private:
 		rendering_server->call_on_render_thread(callable_mp_static(&OpenXRAPI::_set_render_state_multiplier).bind(p_render_target_size_multiplier));
 	}
 
+	_FORCE_INLINE_ void set_render_state_render_region(const Rect2i &p_render_region) {
+		RenderingServer *rendering_server = RenderingServer::get_singleton();
+		ERR_FAIL_NULL(rendering_server);
+
+		rendering_server->call_on_render_thread(callable_mp_static(&OpenXRAPI::_set_render_state_render_region).bind(p_render_region));
+	}
+
 public:
 	XrInstance get_instance() const { return instance; }
 	XrSystemId get_system_id() const { return system_id; }
@@ -410,8 +428,8 @@ public:
 	XRPose::TrackingConfidence transform_from_location(const XrSpaceLocation &p_location, Transform3D &r_transform);
 	XRPose::TrackingConfidence transform_from_location(const XrHandJointLocationEXT &p_location, Transform3D &r_transform);
 	void parse_velocities(const XrSpaceVelocity &p_velocity, Vector3 &r_linear_velocity, Vector3 &r_angular_velocity);
-
 	bool xr_result(XrResult result, const char *format, Array args = Array()) const;
+	XrPath get_xr_path(const String &p_path);
 	bool is_top_level_path_supported(const String &p_toplevel_path);
 	bool is_interaction_profile_supported(const String &p_ip_path);
 	bool interaction_profile_supports_io_path(const String &p_ip_path, const String &p_io_path);
@@ -435,6 +453,7 @@ public:
 	static const Vector<OpenXRExtensionWrapper *> &get_registered_extension_wrappers();
 	static void register_extension_metadata();
 	static void cleanup_extension_wrappers();
+	static PackedStringArray get_all_requested_extensions();
 
 	void set_form_factor(XrFormFactor p_form_factor);
 	XrFormFactor get_form_factor() const { return form_factor; }
@@ -477,6 +496,13 @@ public:
 	XrSwapchain get_color_swapchain();
 	RID get_color_texture();
 	RID get_depth_texture();
+	void set_velocity_texture(RID p_render_target);
+	RID get_velocity_texture();
+	void set_velocity_depth_texture(RID p_render_target);
+	RID get_velocity_depth_texture();
+	void set_velocity_target_size(const Size2i &p_target_size);
+	Size2i get_velocity_target_size();
+	const XrCompositionLayerProjection *get_projection_layer() const;
 	void post_draw_viewport(RID p_render_target);
 	void end_frame();
 
@@ -488,6 +514,9 @@ public:
 	// Render Target size multiplier
 	double get_render_target_size_multiplier() const;
 	void set_render_target_size_multiplier(double multiplier);
+
+	Rect2i get_render_region() const;
+	void set_render_region(const Rect2i &p_render_region);
 
 	// Foveation settings
 	bool is_foveation_supported() const;
@@ -502,8 +531,12 @@ public:
 	Size2 get_play_space_bounds() const;
 
 	// swapchains
+	PackedInt64Array get_supported_swapchain_formats();
 	int64_t get_color_swapchain_format() const { return color_swapchain_format; }
 	int64_t get_depth_swapchain_format() const { return depth_swapchain_format; }
+
+	double get_render_state_z_near() const { return render_state.z_near; }
+	double get_render_state_z_far() const { return render_state.z_far; }
 
 	// action map
 	String get_default_action_map_resource_name();
@@ -515,22 +548,26 @@ public:
 
 	RID action_set_create(const String p_name, const String p_localized_name, const int p_priority);
 	String action_set_get_name(RID p_action_set);
+	XrActionSet action_set_get_handle(RID p_action_set);
 	bool attach_action_sets(const Vector<RID> &p_action_sets);
 	void action_set_free(RID p_action_set);
 
 	RID action_create(RID p_action_set, const String p_name, const String p_localized_name, OpenXRAction::ActionType p_action_type, const Vector<RID> &p_trackers);
 	String action_get_name(RID p_action);
+	XrAction action_get_handle(RID p_action);
 	void action_free(RID p_action);
 
 	RID interaction_profile_create(const String p_name);
 	String interaction_profile_get_name(RID p_interaction_profile);
 	void interaction_profile_clear_bindings(RID p_interaction_profile);
-	bool interaction_profile_add_binding(RID p_interaction_profile, RID p_action, const String p_path);
+	int interaction_profile_add_binding(RID p_interaction_profile, RID p_action, const String p_path);
+	bool interaction_profile_add_modifier(RID p_interaction_profile, const PackedByteArray &p_modifier);
 	bool interaction_profile_suggest_bindings(RID p_interaction_profile);
 	void interaction_profile_free(RID p_interaction_profile);
 
 	RID find_tracker(const String &p_name);
-	RID find_action(const String &p_name);
+	RID find_action_set(const String p_name);
+	RID find_action(const String &p_name, const RID &p_action_set = RID());
 
 	bool sync_action_sets(const Vector<RID> p_active_sets);
 	bool get_action_bool(RID p_action, RID p_tracker);
@@ -542,7 +579,10 @@ public:
 	void register_composition_layer_provider(OpenXRCompositionLayerProvider *provider);
 	void unregister_composition_layer_provider(OpenXRCompositionLayerProvider *provider);
 
-	const XrEnvironmentBlendMode *get_supported_environment_blend_modes(uint32_t &count);
+	void register_projection_views_extension(OpenXRExtensionWrapper *p_extension);
+	void unregister_projection_views_extension(OpenXRExtensionWrapper *p_extension);
+
+	const Vector<XrEnvironmentBlendMode> get_supported_environment_blend_modes();
 	bool is_environment_blend_mode_supported(XrEnvironmentBlendMode p_blend_mode) const;
 	bool set_environment_blend_mode(XrEnvironmentBlendMode p_blend_mode);
 	XrEnvironmentBlendMode get_environment_blend_mode() const { return requested_environment_blend_mode; }

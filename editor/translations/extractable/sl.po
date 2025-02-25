@@ -19,6 +19,9 @@ msgstr ""
 "n%100==4 ? 2 : 3;\n"
 "X-Generator: Weblate 5.2\n"
 
+msgid "All Recognized"
+msgstr "Vse Prepoznano"
+
 msgid "Network"
 msgstr "Omrežje"
 
@@ -28,8 +31,8 @@ msgstr "Odpri"
 msgid "Select Current Folder"
 msgstr "Izberite Trenutno Mapo"
 
-msgid "All Recognized"
-msgstr "Vse Prepoznano"
+msgid "Save"
+msgstr "Shrani"
 
 msgid "Open a File"
 msgstr "Odpri v Datoteki"
@@ -42,9 +45,6 @@ msgstr "Odpri v Mapi"
 
 msgid "Open a File or Directory"
 msgstr "Odpri Datoteko ali Mapo"
-
-msgid "Save"
-msgstr "Shrani"
 
 msgid "Save a File"
 msgstr "Shrani Datoteko"

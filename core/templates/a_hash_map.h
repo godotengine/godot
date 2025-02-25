@@ -35,12 +35,12 @@
 
 struct HashMapData {
 	union {
+		uint64_t data;
 		struct
 		{
 			uint32_t hash;
 			uint32_t hash_to_key;
 		};
-		uint64_t data;
 	};
 };
 
@@ -701,6 +701,13 @@ public:
 	}
 	AHashMap() :
 			capacity(INITIAL_CAPACITY - 1) {
+	}
+
+	AHashMap(std::initializer_list<KeyValue<TKey, TValue>> p_init) {
+		reserve(p_init.size());
+		for (const KeyValue<TKey, TValue> &E : p_init) {
+			insert(E.key, E.value);
+		}
 	}
 
 	void reset() {

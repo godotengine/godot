@@ -39,7 +39,7 @@
 #include "editor/editor_paths.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
-#include "editor/export/editor_export.h"
+#include "editor/export/editor_export_preset.h"
 #include "editor/progress_dialog.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/file_dialog.h"
@@ -437,6 +437,13 @@ bool ExportTemplateManager::_install_file_selected(const String &p_file, bool p_
 		}
 
 		String file = String::utf8(fname);
+
+		// Skip the __MACOSX directory created by macOS's built-in file zipper.
+		if (file.begins_with("__MACOSX")) {
+			ret = unzGoToNextFile(pkg);
+			continue;
+		}
+
 		if (file.ends_with("version.txt")) {
 			Vector<uint8_t> uncomp_data;
 			uncomp_data.resize(info.uncompressed_size);
@@ -512,7 +519,8 @@ bool ExportTemplateManager::_install_file_selected(const String &p_file, bool p_
 
 		String file = file_path.get_file();
 
-		if (file.size() == 0) {
+		// Skip the __MACOSX directory created by macOS's built-in file zipper.
+		if (file.is_empty() || file.begins_with("__MACOSX")) {
 			ret = unzGoToNextFile(pkg);
 			continue;
 		}

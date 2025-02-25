@@ -34,8 +34,6 @@
 #include "core/debugger/engine_profiler.h"
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
-#include "core/object/script_language.h"
-#include "core/os/os.h"
 #include "core/os/semaphore.h"
 #include "core/os/thread.h"
 #include "core/templates/safe_refcount.h"
@@ -208,6 +206,7 @@ public:
 	String get_name() const;
 	String get_distribution_name() const;
 	String get_version() const;
+	String get_version_alias() const;
 	Vector<String> get_cmdline_args();
 	Vector<String> get_cmdline_user_args();
 
@@ -262,6 +261,7 @@ public:
 	String get_config_dir() const;
 	String get_data_dir() const;
 	String get_cache_dir() const;
+	String get_temp_dir() const;
 
 	Error set_thread_name(const String &p_name);
 	::Thread::ID get_thread_caller_id() const;
@@ -583,6 +583,8 @@ public:
 
 	void set_editor_hint(bool p_enabled);
 	bool is_editor_hint() const;
+
+	bool is_embedded_in_editor() const;
 
 	// `set_write_movie_path()` is not exposed to the scripting API as changing it at run-time has no effect.
 	String get_write_movie_path() const;

@@ -104,7 +104,7 @@ void TileSetScenesCollectionSourceEditor::TileSetScenesCollectionProxyObject::_b
 }
 
 void TileSetScenesCollectionSourceEditor::TileSetScenesCollectionProxyObject::edit(Ref<TileSet> p_tile_set, TileSetScenesCollectionSource *p_tile_set_scenes_collection_source, int p_source_id) {
-	ERR_FAIL_COND(!p_tile_set.is_valid());
+	ERR_FAIL_COND(p_tile_set.is_null());
 	ERR_FAIL_NULL(p_tile_set_scenes_collection_source);
 	ERR_FAIL_COND(p_source_id < 0);
 	ERR_FAIL_COND(p_tile_set->get_source(p_source_id) != p_tile_set_scenes_collection_source);
@@ -398,7 +398,7 @@ void TileSetScenesCollectionSourceEditor::_notification(int p_what) {
 }
 
 void TileSetScenesCollectionSourceEditor::edit(Ref<TileSet> p_tile_set, TileSetScenesCollectionSource *p_tile_set_scenes_collection_source, int p_source_id) {
-	ERR_FAIL_COND(!p_tile_set.is_valid());
+	ERR_FAIL_COND(p_tile_set.is_null());
 	ERR_FAIL_NULL(p_tile_set_scenes_collection_source);
 	ERR_FAIL_COND(p_source_id < 0);
 	ERR_FAIL_COND(p_tile_set->get_source(p_source_id) != p_tile_set_scenes_collection_source);
@@ -571,12 +571,12 @@ TileSetScenesCollectionSourceEditor::TileSetScenesCollectionSourceEditor() {
 	right_vbox_container->add_child(scenes_bottom_actions);
 
 	scene_tile_add_button = memnew(Button);
-	scene_tile_add_button->set_theme_type_variation("FlatButton");
+	scene_tile_add_button->set_theme_type_variation(SceneStringName(FlatButton));
 	scene_tile_add_button->connect(SceneStringName(pressed), callable_mp(this, &TileSetScenesCollectionSourceEditor::_source_add_pressed));
 	scenes_bottom_actions->add_child(scene_tile_add_button);
 
 	scene_tile_delete_button = memnew(Button);
-	scene_tile_delete_button->set_theme_type_variation("FlatButton");
+	scene_tile_delete_button->set_theme_type_variation(SceneStringName(FlatButton));
 	scene_tile_delete_button->set_disabled(true);
 	scene_tile_delete_button->connect(SceneStringName(pressed), callable_mp(this, &TileSetScenesCollectionSourceEditor::_source_delete_pressed));
 	scenes_bottom_actions->add_child(scene_tile_delete_button);

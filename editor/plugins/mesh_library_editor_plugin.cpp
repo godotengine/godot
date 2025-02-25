@@ -40,10 +40,8 @@
 #include "main/main.h"
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/3d/navigation_region_3d.h"
-#include "scene/3d/physics/physics_body_3d.h"
 #include "scene/3d/physics/static_body_3d.h"
 #include "scene/gui/menu_button.h"
-#include "scene/main/window.h"
 #include "scene/resources/packed_scene.h"
 
 void MeshLibraryEditor::edit(const Ref<MeshLibrary> &p_mesh_library) {
@@ -156,6 +154,25 @@ void MeshLibraryEditor::_import_scene_parse_node(Ref<MeshLibrary> p_library, Has
 	}
 	p_library->set_item_mesh(item_id, item_mesh);
 
+	GeometryInstance3D::ShadowCastingSetting gi3d_cast_shadows_setting = mesh_instance_node->get_cast_shadows_setting();
+	switch (gi3d_cast_shadows_setting) {
+		case GeometryInstance3D::ShadowCastingSetting::SHADOW_CASTING_SETTING_OFF: {
+			p_library->set_item_mesh_cast_shadow(item_id, RS::ShadowCastingSetting::SHADOW_CASTING_SETTING_OFF);
+		} break;
+		case GeometryInstance3D::ShadowCastingSetting::SHADOW_CASTING_SETTING_ON: {
+			p_library->set_item_mesh_cast_shadow(item_id, RS::ShadowCastingSetting::SHADOW_CASTING_SETTING_ON);
+		} break;
+		case GeometryInstance3D::ShadowCastingSetting::SHADOW_CASTING_SETTING_DOUBLE_SIDED: {
+			p_library->set_item_mesh_cast_shadow(item_id, RS::ShadowCastingSetting::SHADOW_CASTING_SETTING_DOUBLE_SIDED);
+		} break;
+		case GeometryInstance3D::ShadowCastingSetting::SHADOW_CASTING_SETTING_SHADOWS_ONLY: {
+			p_library->set_item_mesh_cast_shadow(item_id, RS::ShadowCastingSetting::SHADOW_CASTING_SETTING_SHADOWS_ONLY);
+		} break;
+		default: {
+			p_library->set_item_mesh_cast_shadow(item_id, RS::ShadowCastingSetting::SHADOW_CASTING_SETTING_ON);
+		} break;
+	}
+
 	Transform3D item_mesh_transform;
 	if (p_apply_xforms) {
 		item_mesh_transform = mesh_instance_node->get_transform();
@@ -181,7 +198,7 @@ void MeshLibraryEditor::_import_scene_parse_node(Ref<MeshLibrary> p_library, Has
 			shape_transform *= static_body_node->get_transform() * static_body_node->shape_owner_get_transform(E);
 			for (int k = 0; k < static_body_node->shape_owner_get_shape_count(E); k++) {
 				Ref<Shape3D> collision_shape = static_body_node->shape_owner_get_shape(E, k);
-				if (!collision_shape.is_valid()) {
+				if (collision_shape.is_null()) {
 					continue;
 				}
 				MeshLibrary::ShapeData shape_data;
@@ -199,7 +216,7 @@ void MeshLibraryEditor::_import_scene_parse_node(Ref<MeshLibrary> p_library, Has
 			continue;
 		}
 		Ref<NavigationMesh> navigation_mesh = navigation_region_node->get_navigation_mesh();
-		if (!navigation_mesh.is_null()) {
+		if (navigation_mesh.is_valid()) {
 			Transform3D navigation_mesh_transform = navigation_region_node->get_transform();
 			p_library->set_item_navigation_mesh(item_id, navigation_mesh);
 			p_library->set_item_navigation_mesh_transform(item_id, navigation_mesh_transform);

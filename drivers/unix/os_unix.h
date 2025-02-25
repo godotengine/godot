@@ -76,6 +76,8 @@ public:
 	virtual String get_distribution_name() const override;
 	virtual String get_version() const override;
 
+	virtual String get_temp_path() const override;
+
 	virtual DateTime get_datetime(bool p_utc) const override;
 	virtual TimeZoneInfo get_time_zone_info() const override;
 
@@ -104,7 +106,7 @@ public:
 	virtual void initialize_debugging() override;
 
 	virtual String get_executable_path() const override;
-	virtual String get_user_data_dir() const override;
+	virtual String get_user_data_dir(const String &p_user_dir) const override;
 };
 
 class UnixTerminalLogger : public StdLogger {

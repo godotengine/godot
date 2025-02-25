@@ -274,7 +274,7 @@ void XRNode3D::set_tracker(const StringName &p_tracker_name) {
 
 	// copy the name
 	tracker_name = p_tracker_name;
-	pose_name = "default";
+	pose_name = SceneStringName(default_);
 
 	// see if it's already available
 	_bind_tracker();
@@ -612,7 +612,7 @@ Vector2 XRController3D::get_vector2(const StringName &p_name) const {
 
 XRPositionalTracker::TrackerHand XRController3D::get_tracker_hand() const {
 	// get our XRServer
-	if (!tracker.is_valid()) {
+	if (tracker.is_null()) {
 		return XRPositionalTracker::TRACKER_HAND_UNKNOWN;
 	}
 

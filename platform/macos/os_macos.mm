@@ -51,7 +51,7 @@ void OS_MacOS::pre_wait_observer_cb(CFRunLoopObserverRef p_observer, CFRunLoopAc
 	// Do not redraw when rendering is done from the separate thread, it will conflict with the OpenGL context updates.
 
 	DisplayServerMacOS *ds = (DisplayServerMacOS *)DisplayServer::get_singleton();
-	if (get_singleton()->get_main_loop() && ds && (get_singleton()->get_render_thread_mode() != RENDER_SEPARATE_THREAD) && !ds->get_is_resizing()) {
+	if (get_singleton()->get_main_loop() && ds && !get_singleton()->is_separate_thread_rendering_enabled() && !ds->get_is_resizing()) {
 		Main::force_redraw();
 		if (!Main::is_iterating()) { // Avoid cyclic loop.
 			Main::iteration();
@@ -142,13 +142,13 @@ void OS_MacOS::finalize() {
 
 	delete_main_loop();
 
-	if (joypad_macos) {
-		memdelete(joypad_macos);
+	if (joypad_apple) {
+		memdelete(joypad_apple);
 	}
 }
 
 void OS_MacOS::initialize_joypads() {
-	joypad_macos = memnew(JoypadMacOS());
+	joypad_apple = memnew(JoypadApple());
 }
 
 void OS_MacOS::set_main_loop(MainLoop *p_main_loop) {
@@ -183,6 +183,33 @@ String OS_MacOS::get_distribution_name() const {
 String OS_MacOS::get_version() const {
 	NSOperatingSystemVersion ver = [NSProcessInfo processInfo].operatingSystemVersion;
 	return vformat("%d.%d.%d", (int64_t)ver.majorVersion, (int64_t)ver.minorVersion, (int64_t)ver.patchVersion);
+}
+
+String OS_MacOS::get_version_alias() const {
+	NSOperatingSystemVersion ver = [NSProcessInfo processInfo].operatingSystemVersion;
+	String macos_string;
+	if (ver.majorVersion == 15) {
+		macos_string += "Sequoia";
+	} else if (ver.majorVersion == 14) {
+		macos_string += "Sonoma";
+	} else if (ver.majorVersion == 13) {
+		macos_string += "Ventura";
+	} else if (ver.majorVersion == 12) {
+		macos_string += "Monterey";
+	} else if (ver.majorVersion == 11 || (ver.majorVersion == 10 && ver.minorVersion == 16)) {
+		// Big Sur was 10.16 during beta, but it became 11 for the stable version.
+		macos_string += "Big Sur";
+	} else if (ver.majorVersion == 10 && ver.minorVersion == 15) {
+		macos_string += "Catalina";
+	} else if (ver.majorVersion == 10 && ver.minorVersion == 14) {
+		macos_string += "Mojave";
+	} else if (ver.majorVersion == 10 && ver.minorVersion == 13) {
+		macos_string += "High Sierra";
+	} else {
+		macos_string += "Unknown";
+	}
+	// macOS versions older than 10.13 cannot run Godot.
+	return vformat("%s (%s)", macos_string, get_version());
 }
 
 void OS_MacOS::alert(const String &p_alert, const String &p_title) {
@@ -274,6 +301,19 @@ String OS_MacOS::get_cache_path() const {
 		return get_environment("HOME").path_join("Library/Caches");
 	}
 	return get_config_path();
+}
+
+String OS_MacOS::get_temp_path() const {
+	static String ret;
+	if (ret.is_empty()) {
+		NSURL *url = [NSURL fileURLWithPath:NSTemporaryDirectory()
+								isDirectory:YES];
+		if (url) {
+			ret = String::utf8([url.path UTF8String]);
+			ret = ret.trim_prefix("file://");
+		}
+	}
+	return ret;
 }
 
 String OS_MacOS::get_bundle_resource_dir() const {
@@ -794,7 +834,7 @@ void OS_MacOS::run() {
 				if (DisplayServer::get_singleton()) {
 					DisplayServer::get_singleton()->process_events(); // Get rid of pending events.
 				}
-				joypad_macos->start_processing();
+				joypad_apple->process_joypads();
 
 				if (Main::iteration()) {
 					quit = true;

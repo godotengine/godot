@@ -18,6 +18,9 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
 "X-Generator: Weblate 5.0-dev\n"
 
+msgid "All Recognized"
+msgstr "Всички разпознати"
+
 msgid "Network"
 msgstr "Мрежа"
 
@@ -27,11 +30,11 @@ msgstr "Отваряне"
 msgid "Select Current Folder"
 msgstr "Избиране на текущата папка"
 
+msgid "Save"
+msgstr "Запазване"
+
 msgid "Select This Folder"
 msgstr "Избиране на тази папка"
-
-msgid "All Recognized"
-msgstr "Всички разпознати"
 
 msgid "Open a File"
 msgstr "Отваряне на файл"
@@ -44,9 +47,6 @@ msgstr "Отваряне на папка"
 
 msgid "Open a File or Directory"
 msgstr "Отваряне на файл или папка"
-
-msgid "Save"
-msgstr "Запазване"
 
 msgid "Save a File"
 msgstr "Запазване на файл"

@@ -30,8 +30,6 @@
 
 #include "animation_blend_space_2d_editor.h"
 
-#include "core/config/project_settings.h"
-#include "core/input/input.h"
 #include "core/io/resource_loader.h"
 #include "core/math/geometry_2d.h"
 #include "core/os/keyboard.h"
@@ -71,7 +69,7 @@ void AnimationNodeBlendSpace2DEditor::edit(const Ref<AnimationNode> &p_node) {
 	blend_space = p_node;
 	read_only = false;
 
-	if (!blend_space.is_null()) {
+	if (blend_space.is_valid()) {
 		read_only = EditorNode::get_singleton()->is_resource_read_only(blend_space);
 
 		blend_space->connect("triangles_updated", callable_mp(this, &AnimationNodeBlendSpace2DEditor::_blend_space_changed));
@@ -355,7 +353,7 @@ void AnimationNodeBlendSpace2DEditor::_add_menu_type(int p_index) {
 		node = Ref<AnimationNode>(an);
 	}
 
-	if (!node.is_valid()) {
+	if (node.is_null()) {
 		EditorNode::get_singleton()->show_warning(TTR("This type of node can't be used. Only root nodes are allowed."));
 		return;
 	}
@@ -882,7 +880,7 @@ AnimationNodeBlendSpace2DEditor::AnimationNodeBlendSpace2DEditor() {
 	bg.instantiate();
 
 	tool_blend = memnew(Button);
-	tool_blend->set_theme_type_variation("FlatButton");
+	tool_blend->set_theme_type_variation(SceneStringName(FlatButton));
 	tool_blend->set_toggle_mode(true);
 	tool_blend->set_button_group(bg);
 	top_hb->add_child(tool_blend);
@@ -891,7 +889,7 @@ AnimationNodeBlendSpace2DEditor::AnimationNodeBlendSpace2DEditor() {
 	tool_blend->connect(SceneStringName(pressed), callable_mp(this, &AnimationNodeBlendSpace2DEditor::_tool_switch).bind(3));
 
 	tool_select = memnew(Button);
-	tool_select->set_theme_type_variation("FlatButton");
+	tool_select->set_theme_type_variation(SceneStringName(FlatButton));
 	tool_select->set_toggle_mode(true);
 	tool_select->set_button_group(bg);
 	top_hb->add_child(tool_select);
@@ -899,7 +897,7 @@ AnimationNodeBlendSpace2DEditor::AnimationNodeBlendSpace2DEditor() {
 	tool_select->connect(SceneStringName(pressed), callable_mp(this, &AnimationNodeBlendSpace2DEditor::_tool_switch).bind(0));
 
 	tool_create = memnew(Button);
-	tool_create->set_theme_type_variation("FlatButton");
+	tool_create->set_theme_type_variation(SceneStringName(FlatButton));
 	tool_create->set_toggle_mode(true);
 	tool_create->set_button_group(bg);
 	top_hb->add_child(tool_create);
@@ -907,7 +905,7 @@ AnimationNodeBlendSpace2DEditor::AnimationNodeBlendSpace2DEditor() {
 	tool_create->connect(SceneStringName(pressed), callable_mp(this, &AnimationNodeBlendSpace2DEditor::_tool_switch).bind(1));
 
 	tool_triangle = memnew(Button);
-	tool_triangle->set_theme_type_variation("FlatButton");
+	tool_triangle->set_theme_type_variation(SceneStringName(FlatButton));
 	tool_triangle->set_toggle_mode(true);
 	tool_triangle->set_button_group(bg);
 	top_hb->add_child(tool_triangle);
@@ -917,7 +915,7 @@ AnimationNodeBlendSpace2DEditor::AnimationNodeBlendSpace2DEditor() {
 	tool_erase_sep = memnew(VSeparator);
 	top_hb->add_child(tool_erase_sep);
 	tool_erase = memnew(Button);
-	tool_erase->set_theme_type_variation("FlatButton");
+	tool_erase->set_theme_type_variation(SceneStringName(FlatButton));
 	top_hb->add_child(tool_erase);
 	tool_erase->set_tooltip_text(TTR("Erase points and triangles."));
 	tool_erase->connect(SceneStringName(pressed), callable_mp(this, &AnimationNodeBlendSpace2DEditor::_erase_selected));
@@ -926,7 +924,7 @@ AnimationNodeBlendSpace2DEditor::AnimationNodeBlendSpace2DEditor() {
 	top_hb->add_child(memnew(VSeparator));
 
 	auto_triangles = memnew(Button);
-	auto_triangles->set_theme_type_variation("FlatButton");
+	auto_triangles->set_theme_type_variation(SceneStringName(FlatButton));
 	top_hb->add_child(auto_triangles);
 	auto_triangles->connect(SceneStringName(pressed), callable_mp(this, &AnimationNodeBlendSpace2DEditor::_auto_triangles_toggled));
 	auto_triangles->set_toggle_mode(true);
@@ -935,7 +933,7 @@ AnimationNodeBlendSpace2DEditor::AnimationNodeBlendSpace2DEditor() {
 	top_hb->add_child(memnew(VSeparator));
 
 	snap = memnew(Button);
-	snap->set_theme_type_variation("FlatButton");
+	snap->set_theme_type_variation(SceneStringName(FlatButton));
 	snap->set_toggle_mode(true);
 	top_hb->add_child(snap);
 	snap->set_pressed(true);

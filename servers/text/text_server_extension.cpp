@@ -42,6 +42,7 @@ void TextServerExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_get_support_data_filename);
 	GDVIRTUAL_BIND(_get_support_data_info);
 	GDVIRTUAL_BIND(_save_support_data, "filename");
+	GDVIRTUAL_BIND(_get_support_data);
 
 	GDVIRTUAL_BIND(_is_locale_right_to_left, "locale");
 
@@ -112,6 +113,9 @@ void TextServerExtension::_bind_methods() {
 
 	GDVIRTUAL_BIND(_font_set_subpixel_positioning, "font_rid", "subpixel_positioning");
 	GDVIRTUAL_BIND(_font_get_subpixel_positioning, "font_rid");
+
+	GDVIRTUAL_BIND(_font_set_keep_rounding_remainders, "font_rid", "keep_rounding_remainders");
+	GDVIRTUAL_BIND(_font_get_keep_rounding_remainders, "font_rid");
 
 	GDVIRTUAL_BIND(_font_set_embolden, "font_rid", "strength");
 	GDVIRTUAL_BIND(_font_get_embolden, "font_rid");
@@ -264,6 +268,7 @@ void TextServerExtension::_bind_methods() {
 
 	GDVIRTUAL_BIND(_shaped_get_span_count, "shaped");
 	GDVIRTUAL_BIND(_shaped_get_span_meta, "shaped", "index");
+	GDVIRTUAL_BIND(_shaped_get_span_embedded_object, "shaped", "index");
 	GDVIRTUAL_BIND(_shaped_set_span_update_font, "shaped", "index", "fonts", "size", "opentype_features");
 
 	GDVIRTUAL_BIND(_shaped_text_substr, "shaped", "start", "length");
@@ -399,6 +404,12 @@ String TextServerExtension::get_support_data_info() const {
 bool TextServerExtension::save_support_data(const String &p_filename) const {
 	bool ret = false;
 	GDVIRTUAL_CALL(_save_support_data, p_filename, ret);
+	return ret;
+}
+
+PackedByteArray TextServerExtension::get_support_data() const {
+	PackedByteArray ret;
+	GDVIRTUAL_CALL(_get_support_data, ret);
 	return ret;
 }
 
@@ -637,6 +648,16 @@ void TextServerExtension::font_set_subpixel_positioning(const RID &p_font_rid, T
 TextServer::SubpixelPositioning TextServerExtension::font_get_subpixel_positioning(const RID &p_font_rid) const {
 	TextServer::SubpixelPositioning ret = TextServer::SUBPIXEL_POSITIONING_DISABLED;
 	GDVIRTUAL_CALL(_font_get_subpixel_positioning, p_font_rid, ret);
+	return ret;
+}
+
+void TextServerExtension::font_set_keep_rounding_remainders(const RID &p_font_rid, bool p_keep_rounding_remainders) {
+	GDVIRTUAL_CALL(_font_set_keep_rounding_remainders, p_font_rid, p_keep_rounding_remainders);
+}
+
+bool TextServerExtension::font_get_keep_rounding_remainders(const RID &p_font_rid) const {
+	bool ret = true;
+	GDVIRTUAL_CALL(_font_get_keep_rounding_remainders, p_font_rid, ret);
 	return ret;
 }
 
@@ -1167,8 +1188,14 @@ int64_t TextServerExtension::shaped_get_span_count(const RID &p_shaped) const {
 }
 
 Variant TextServerExtension::shaped_get_span_meta(const RID &p_shaped, int64_t p_index) const {
-	Variant ret = false;
+	Variant ret;
 	GDVIRTUAL_CALL(_shaped_get_span_meta, p_shaped, p_index, ret);
+	return ret;
+}
+
+Variant TextServerExtension::shaped_get_span_embedded_object(const RID &p_shaped, int64_t p_index) const {
+	Variant ret;
+	GDVIRTUAL_CALL(_shaped_get_span_embedded_object, p_shaped, p_index, ret);
 	return ret;
 }
 

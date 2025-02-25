@@ -130,8 +130,6 @@ public:
 
 	//easier wrap to avoid mistakes
 
-	struct Item;
-
 	typedef uint64_t PolygonID;
 	virtual PolygonID request_polygon(const Vector<int> &p_indices, const Vector<Point2> &p_points, const Vector<Color> &p_colors, const Vector<Point2> &p_uvs = Vector<Point2>(), const Vector<int> &p_bones = Vector<int>(), const Vector<float> &p_weights = Vector<float>()) = 0;
 	virtual void free_polygon(PolygonID p_polygon) = 0;
@@ -323,6 +321,7 @@ public:
 		bool update_when_visible : 1;
 		bool on_interpolate_transform_list : 1;
 		bool interpolated : 1;
+		bool use_identity_transform : 1;
 
 		struct CanvasGroup {
 			RS::CanvasGroupMode mode;
@@ -342,6 +341,8 @@ public:
 		mutable Rect2 rect;
 		RID material;
 		RID skeleton;
+
+		int32_t instance_allocated_shader_uniforms_offset = -1;
 
 		Item *next = nullptr;
 
@@ -486,6 +487,7 @@ public:
 			repeat_source = false;
 			on_interpolate_transform_list = false;
 			interpolated = true;
+			use_identity_transform = false;
 		}
 		virtual ~Item() {
 			clear();
@@ -531,7 +533,7 @@ public:
 	virtual RID light_create() = 0;
 	virtual void light_set_texture(RID p_rid, RID p_texture) = 0;
 	virtual void light_set_use_shadow(RID p_rid, bool p_enable) = 0;
-	virtual void light_update_shadow(RID p_rid, int p_shadow_index, const Transform2D &p_light_xform, int p_light_mask, float p_near, float p_far, LightOccluderInstance *p_occluders) = 0;
+	virtual void light_update_shadow(RID p_rid, int p_shadow_index, const Transform2D &p_light_xform, int p_light_mask, float p_near, float p_far, LightOccluderInstance *p_occluders, const Rect2 &p_light_rect) = 0;
 	virtual void light_update_directional_shadow(RID p_rid, int p_shadow_index, const Transform2D &p_light_xform, int p_light_mask, float p_cull_distance, const Rect2 &p_clip_rect, LightOccluderInstance *p_occluders) = 0;
 
 	virtual void render_sdf(RID p_render_target, LightOccluderInstance *p_occluders) = 0;

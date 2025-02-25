@@ -31,9 +31,7 @@
 #include "animation_blend_tree_editor_plugin.h"
 
 #include "core/config/project_settings.h"
-#include "core/input/input.h"
 #include "core/io/resource_loader.h"
-#include "core/os/keyboard.h"
 #include "editor/editor_inspector.h"
 #include "editor/editor_node.h"
 #include "editor/editor_properties.h"
@@ -43,17 +41,14 @@
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/3d/skeleton_3d.h"
-#include "scene/animation/animation_player.h"
 #include "scene/gui/check_box.h"
 #include "scene/gui/grid_container.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/option_button.h"
-#include "scene/gui/panel.h"
 #include "scene/gui/progress_bar.h"
 #include "scene/gui/separator.h"
 #include "scene/gui/view_panner.h"
 #include "scene/main/window.h"
-#include "scene/resources/style_box_flat.h"
 
 void AnimationNodeBlendTreeEditor::add_custom_type(const String &p_name, const Ref<Script> &p_script) {
 	for (int i = 0; i < add_options.size(); i++) {
@@ -154,7 +149,7 @@ void AnimationNodeBlendTreeEditor::update_graph() {
 		node->set_draggable(!read_only);
 
 		Ref<AnimationNode> agnode = blend_tree->get_node(E);
-		ERR_CONTINUE(!agnode.is_valid());
+		ERR_CONTINUE(agnode.is_null());
 
 		node->set_position_offset(blend_tree->get_node_position(E) * EDSCALE);
 
@@ -162,14 +157,15 @@ void AnimationNodeBlendTreeEditor::update_graph() {
 		node->set_name(E);
 
 		int base = 0;
-		if (String(E) != "output") {
+		if (E != SceneStringName(output)) {
 			LineEdit *name = memnew(LineEdit);
 			name->set_text(E);
 			name->set_editable(!read_only);
 			name->set_expand_to_text_length_enabled(true);
+			name->set_custom_minimum_size(Vector2(100, 0) * EDSCALE);
 			node->add_child(name);
 			node->set_slot(0, false, 0, Color(), true, read_only ? -1 : 0, get_theme_color(SceneStringName(font_color), SNAME("Label")));
-			name->connect("text_submitted", callable_mp(this, &AnimationNodeBlendTreeEditor::_node_renamed).bind(agnode), CONNECT_DEFERRED);
+			name->connect(SceneStringName(text_submitted), callable_mp(this, &AnimationNodeBlendTreeEditor::_node_renamed).bind(agnode), CONNECT_DEFERRED);
 			name->connect(SceneStringName(focus_exited), callable_mp(this, &AnimationNodeBlendTreeEditor::_node_renamed_focus_out).bind(agnode), CONNECT_DEFERRED);
 			name->connect(SceneStringName(text_changed), callable_mp(this, &AnimationNodeBlendTreeEditor::_node_rename_lineedit_changed), CONNECT_DEFERRED);
 			base = 1;
@@ -206,6 +202,14 @@ void AnimationNodeBlendTreeEditor::update_graph() {
 				prop->update_property();
 				prop->set_name_split_ratio(0);
 				prop->connect("property_changed", callable_mp(this, &AnimationNodeBlendTreeEditor::_property_changed));
+
+				if (F.hint == PROPERTY_HINT_RESOURCE_TYPE) {
+					// Give the resource editor some more space to make the inside readable.
+					prop->set_custom_minimum_size(Vector2(180, 0) * EDSCALE);
+					// Align the size of the node with the resource editor, its un-expanding does not trigger a resize.
+					prop->connect(SceneStringName(resized), Callable(node, "reset_size"));
+				}
+
 				node->add_child(prop);
 				visible_properties.push_back(prop);
 			}
@@ -267,17 +271,14 @@ void AnimationNodeBlendTreeEditor::update_graph() {
 			mb->get_popup()->connect("index_pressed", callable_mp(this, &AnimationNodeBlendTreeEditor::_anim_selected).bind(options, E), CONNECT_DEFERRED);
 		}
 
-		// TODO: Avoid using strings, expose a method on GraphNode instead.
-		Ref<StyleBoxFlat> sb = node->get_theme_stylebox(SceneStringName(panel));
-		Color c = sb->get_border_color();
-		Color mono_color = ((c.r + c.g + c.b) / 3) < 0.7 ? Color(1.0, 1.0, 1.0) : Color(0.0, 0.0, 0.0);
-		mono_color.a = 0.85;
-		c = mono_color;
+		Ref<StyleBox> sb_panel = node->get_theme_stylebox(SceneStringName(panel), "GraphNode")->duplicate();
+		if (sb_panel.is_valid()) {
+			sb_panel->set_content_margin(SIDE_TOP, 12 * EDSCALE);
+			sb_panel->set_content_margin(SIDE_BOTTOM, 12 * EDSCALE);
+			node->add_theme_style_override(SceneStringName(panel), sb_panel);
+		}
 
-		node->add_theme_color_override("title_color", c);
-		c.a = 0.7;
-		node->add_theme_color_override("close_color", c);
-		node->add_theme_color_override("resizer_color", c);
+		node->add_theme_constant_override("separation", 4 * EDSCALE);
 	}
 
 	List<AnimationNodeBlendTree::NodeConnection> node_connections;
@@ -326,7 +327,7 @@ void AnimationNodeBlendTreeEditor::_add_node(int p_idx) {
 		base_name = anode->get_class();
 	} else if (p_idx == MENU_PASTE) {
 		anode = EditorSettings::get_singleton()->get_resource_clipboard();
-		ERR_FAIL_COND(!anode.is_valid());
+		ERR_FAIL_COND(anode.is_null());
 		base_name = anode->get_class();
 	} else if (!add_options[p_idx].type.is_empty()) {
 		AnimationNode *an = Object::cast_to<AnimationNode>(ClassDB::instantiate(add_options[p_idx].type));
@@ -497,7 +498,7 @@ void AnimationNodeBlendTreeEditor::_anim_selected(int p_index, const Array &p_op
 	String option = p_options[p_index];
 
 	Ref<AnimationNodeAnimation> anim = blend_tree->get_node(p_node);
-	ERR_FAIL_COND(!anim.is_valid());
+	ERR_FAIL_COND(anim.is_null());
 
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(TTR("Set Animation"));
@@ -583,14 +584,14 @@ void AnimationNodeBlendTreeEditor::_node_selected(Object *p_node) {
 	String name = gn->get_name();
 
 	Ref<AnimationNode> anode = blend_tree->get_node(name);
-	ERR_FAIL_COND(!anode.is_valid());
+	ERR_FAIL_COND(anode.is_null());
 
 	EditorNode::get_singleton()->push_item(anode.ptr(), "", true);
 }
 
 void AnimationNodeBlendTreeEditor::_open_in_editor(const String &p_which) {
 	Ref<AnimationNode> an = blend_tree->get_node(p_which);
-	ERR_FAIL_COND(!an.is_valid());
+	ERR_FAIL_COND(an.is_null());
 	AnimationTreeEditor::get_singleton()->enter_editor(p_which);
 }
 
@@ -917,7 +918,7 @@ void AnimationNodeBlendTreeEditor::_inspect_filters(const String &p_which) {
 	filter_enabled->set_disabled(read_only);
 
 	Ref<AnimationNode> anode = blend_tree->get_node(p_which);
-	ERR_FAIL_COND(!anode.is_valid());
+	ERR_FAIL_COND(anode.is_null());
 
 	_filter_edit = anode;
 	if (!_update_filters(anode)) {
@@ -929,7 +930,7 @@ void AnimationNodeBlendTreeEditor::_inspect_filters(const String &p_which) {
 
 void AnimationNodeBlendTreeEditor::_update_editor_settings() {
 	graph->get_panner()->setup((ViewPanner::ControlScheme)EDITOR_GET("editors/panning/sub_editors_panning_scheme").operator int(), ED_GET_SHORTCUT("canvas_item_editor/pan_view"), bool(EDITOR_GET("editors/panning/simple_panning")));
-	graph->set_warped_panning(bool(EDITOR_GET("editors/panning/warped_mouse_panning")));
+	graph->set_warped_panning(EDITOR_GET("editors/panning/warped_mouse_panning"));
 }
 
 void AnimationNodeBlendTreeEditor::_notification(int p_what) {
@@ -1062,7 +1063,7 @@ void AnimationNodeBlendTreeEditor::_node_renamed(const String &p_text, Ref<Anima
 
 	const String &new_name = p_text;
 
-	ERR_FAIL_COND(new_name.is_empty() || new_name.contains(".") || new_name.contains("/"));
+	ERR_FAIL_COND(new_name.is_empty() || new_name.contains_char('.') || new_name.contains_char('/'));
 
 	if (new_name == prev_name) {
 		return; //nothing to do

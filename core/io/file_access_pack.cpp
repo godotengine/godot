@@ -35,8 +35,6 @@
 #include "core/os/os.h"
 #include "core/version.h"
 
-#include <stdio.h>
-
 Error PackedData::add_pack(const String &p_path, bool p_replace_files, uint64_t p_offset) {
 	for (int i = 0; i < sources.size(); i++) {
 		if (sources[i]->try_open_pack(p_path, p_replace_files, p_offset)) {
@@ -71,7 +69,7 @@ void PackedData::add_path(const String &p_pkg_path, const String &p_path, uint64
 		// Search for directory.
 		PackedDir *cd = root;
 
-		if (simplified_path.contains("/")) { // In a subdirectory.
+		if (simplified_path.contains_char('/')) { // In a subdirectory.
 			Vector<String> ds = simplified_path.get_base_dir().split("/");
 
 			for (int j = 0; j < ds.size(); j++) {
@@ -104,7 +102,7 @@ void PackedData::remove_path(const String &p_path) {
 	// Search for directory.
 	PackedDir *cd = root;
 
-	if (simplified_path.contains("/")) { // In a subdirectory.
+	if (simplified_path.contains_char('/')) { // In a subdirectory.
 		Vector<String> ds = simplified_path.get_base_dir().split("/");
 
 		for (int j = 0; j < ds.size(); j++) {
@@ -309,7 +307,7 @@ bool PackedSourcePCK::try_open_pack(const String &p_path, bool p_replace_files, 
 		cs[sl] = 0;
 
 		String path;
-		path.parse_utf8(cs.ptr());
+		path.parse_utf8(cs.ptr(), sl);
 
 		uint64_t ofs = f->get_64();
 		uint64_t size = f->get_64();
@@ -329,6 +327,44 @@ bool PackedSourcePCK::try_open_pack(const String &p_path, bool p_replace_files, 
 
 Ref<FileAccess> PackedSourcePCK::get_file(const String &p_path, PackedData::PackedFile *p_file) {
 	return memnew(FileAccessPack(p_path, *p_file));
+}
+
+//////////////////////////////////////////////////////////////////
+
+bool PackedSourceDirectory::try_open_pack(const String &p_path, bool p_replace_files, uint64_t p_offset) {
+	// Load with offset feature only supported for PCK files.
+	ERR_FAIL_COND_V_MSG(p_offset != 0, false, "Invalid PCK data. Note that loading files with a non-zero offset isn't supported with directories.");
+
+	if (p_path != "res://") {
+		return false;
+	}
+	add_directory(p_path, p_replace_files);
+	return true;
+}
+
+Ref<FileAccess> PackedSourceDirectory::get_file(const String &p_path, PackedData::PackedFile *p_file) {
+	Ref<FileAccess> ret = FileAccess::create_for_path(p_path);
+	ret->reopen(p_path, FileAccess::READ);
+	return ret;
+}
+
+void PackedSourceDirectory::add_directory(const String &p_path, bool p_replace_files) {
+	Ref<DirAccess> da = DirAccess::open(p_path);
+	if (da.is_null()) {
+		return;
+	}
+	da->set_include_hidden(true);
+
+	for (const String &file_name : da->get_files()) {
+		String file_path = p_path.path_join(file_name);
+		uint8_t md5[16] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+		PackedData::get_singleton()->add_path(p_path, file_path, 0, 0, md5, this, p_replace_files, false);
+	}
+
+	for (const String &sub_dir_name : da->get_directories()) {
+		String sub_dir_path = p_path.path_join(sub_dir_name);
+		add_directory(sub_dir_path, p_replace_files);
+	}
 }
 
 //////////////////////////////////////////////////////////////////
@@ -417,8 +453,8 @@ void FileAccessPack::flush() {
 	ERR_FAIL();
 }
 
-void FileAccessPack::store_buffer(const uint8_t *p_src, uint64_t p_length) {
-	ERR_FAIL();
+bool FileAccessPack::store_buffer(const uint8_t *p_src, uint64_t p_length) {
+	ERR_FAIL_V(false);
 }
 
 bool FileAccessPack::file_exists(const String &p_name) {

@@ -37,7 +37,6 @@
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/gui/scene_tree_editor.h"
-#include "editor/inspector_dock.h"
 #include "editor/property_selector.h"
 #include "editor/themes/editor_scale.h"
 #include "editor/themes/editor_theme_manager.h"
@@ -236,7 +235,7 @@ ReplicationEditor::ReplicationEditor() {
 	np_line_edit = memnew(LineEdit);
 	np_line_edit->set_placeholder(":property");
 	np_line_edit->set_h_size_flags(SIZE_EXPAND_FILL);
-	np_line_edit->connect("text_submitted", callable_mp(this, &ReplicationEditor::_np_text_submitted));
+	np_line_edit->connect(SceneStringName(text_submitted), callable_mp(this, &ReplicationEditor::_np_text_submitted));
 	hb->add_child(np_line_edit);
 
 	add_from_path_button = memnew(Button);
@@ -249,7 +248,7 @@ ReplicationEditor::ReplicationEditor() {
 	hb->add_child(vs);
 
 	pin = memnew(Button);
-	pin->set_theme_type_variation("FlatButton");
+	pin->set_theme_type_variation(SceneStringName(FlatButton));
 	pin->set_toggle_mode(true);
 	pin->set_tooltip_text(TTR("Pin replication editor"));
 	hb->add_child(pin);
@@ -491,7 +490,7 @@ void ReplicationEditor::_update_config() {
 	tree->clear();
 	tree->create_item();
 	drop_label->set_visible(true);
-	if (!config.is_valid()) {
+	if (config.is_null()) {
 		return;
 	}
 	TypedArray<NodePath> props = config->get_properties();

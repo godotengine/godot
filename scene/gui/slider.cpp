@@ -30,7 +30,6 @@
 
 #include "slider.h"
 
-#include "core/os/keyboard.h"
 #include "scene/theme/theme_db.h"
 
 Size2 Slider::get_minimum_size() const {
@@ -74,7 +73,8 @@ void Slider::gui_input(const Ref<InputEvent> &p_event) {
 				if (orientation == VERTICAL) {
 					set_as_ratio(1 - (((double)grab.pos - (grab_height / 2.0)) / max));
 				} else {
-					set_as_ratio(((double)grab.pos - (grab_width / 2.0)) / max);
+					double v = ((double)grab.pos - (grab_width / 2.0)) / max;
+					set_as_ratio(is_layout_rtl() ? 1 - v : v);
 				}
 				set_block_signals(false);
 				grab.active = true;
@@ -113,6 +113,8 @@ void Slider::gui_input(const Ref<InputEvent> &p_event) {
 			double motion = (orientation == VERTICAL ? mm->get_position().y : mm->get_position().x) - grab.pos;
 			if (orientation == VERTICAL) {
 				motion = -motion;
+			} else if (is_layout_rtl()) {
+				motion = -motion;
 			}
 			double areasize = orientation == VERTICAL ? size.height - grab_height : size.width - grab_width;
 			if (areasize <= 0) {
@@ -128,7 +130,7 @@ void Slider::gui_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventJoypadButton> joypadbutton_event = p_event;
 	bool is_joypad_event = (joypadmotion_event.is_valid() || joypadbutton_event.is_valid());
 
-	if (!mm.is_valid() && !mb.is_valid()) {
+	if (mm.is_null() && mb.is_null()) {
 		if (p_event->is_action_pressed("ui_left", true)) {
 			if (orientation != HORIZONTAL) {
 				return;
@@ -139,7 +141,11 @@ void Slider::gui_input(const Ref<InputEvent> &p_event) {
 				}
 				set_process_internal(true);
 			}
-			set_value(get_value() - (custom_step >= 0 ? custom_step : get_step()));
+			if (is_layout_rtl()) {
+				set_value(get_value() + (custom_step >= 0 ? custom_step : get_step()));
+			} else {
+				set_value(get_value() - (custom_step >= 0 ? custom_step : get_step()));
+			}
 			accept_event();
 		} else if (p_event->is_action_pressed("ui_right", true)) {
 			if (orientation != HORIZONTAL) {
@@ -151,7 +157,11 @@ void Slider::gui_input(const Ref<InputEvent> &p_event) {
 				}
 				set_process_internal(true);
 			}
-			set_value(get_value() + (custom_step >= 0 ? custom_step : get_step()));
+			if (is_layout_rtl()) {
+				set_value(get_value() - (custom_step >= 0 ? custom_step : get_step()));
+			} else {
+				set_value(get_value() + (custom_step >= 0 ? custom_step : get_step()));
+			}
 			accept_event();
 		} else if (p_event->is_action_pressed("ui_up", true)) {
 			if (orientation != VERTICAL) {
@@ -203,11 +213,19 @@ void Slider::_notification(int p_what) {
 				gamepad_event_delay_ms = GAMEPAD_EVENT_REPEAT_RATE_MS + gamepad_event_delay_ms;
 				if (orientation == HORIZONTAL) {
 					if (input->is_action_pressed("ui_left")) {
-						set_value(get_value() - (custom_step >= 0 ? custom_step : get_step()));
+						if (is_layout_rtl()) {
+							set_value(get_value() + (custom_step >= 0 ? custom_step : get_step()));
+						} else {
+							set_value(get_value() - (custom_step >= 0 ? custom_step : get_step()));
+						}
 					}
 
 					if (input->is_action_pressed("ui_right")) {
-						set_value(get_value() + (custom_step >= 0 ? custom_step : get_step()));
+						if (is_layout_rtl()) {
+							set_value(get_value() - (custom_step >= 0 ? custom_step : get_step()));
+						} else {
+							set_value(get_value() + (custom_step >= 0 ? custom_step : get_step()));
+						}
 					}
 				} else if (orientation == VERTICAL) {
 					if (input->is_action_pressed("ui_down")) {
@@ -292,9 +310,15 @@ void Slider::_notification(int p_what) {
 				int widget_height = style->get_minimum_size().height;
 				double areasize = size.width - (theme_cache.center_grabber ? 0 : grabber->get_size().width);
 				int grabber_shift = theme_cache.center_grabber ? -grabber->get_width() / 2 : 0;
+				bool rtl = is_layout_rtl();
 
 				style->draw(ci, Rect2i(Point2i(0, (size.height - widget_height) / 2), Size2i(size.width, widget_height)));
-				grabber_area->draw(ci, Rect2i(Point2i(0, (size.height - widget_height) / 2), Size2i(areasize * ratio + grabber->get_width() / 2 + grabber_shift, widget_height)));
+				int p = areasize * (rtl ? 1 - ratio : ratio) + grabber->get_width() / 2 + grabber_shift;
+				if (rtl) {
+					grabber_area->draw(ci, Rect2i(Point2i(p, (size.height - widget_height) / 2), Size2i(size.width - p, widget_height)));
+				} else {
+					grabber_area->draw(ci, Rect2i(Point2i(0, (size.height - widget_height) / 2), Size2i(p, widget_height)));
+				}
 
 				if (ticks > 1) {
 					int grabber_offset = (grabber->get_width() / 2 - tick->get_width() / 2);
@@ -306,7 +330,7 @@ void Slider::_notification(int p_what) {
 						tick->draw(ci, Point2i(ofs, (size.height - widget_height) / 2));
 					}
 				}
-				grabber->draw(ci, Point2i(ratio * areasize + grabber_shift, size.height / 2 - grabber->get_height() / 2 + theme_cache.grabber_offset));
+				grabber->draw(ci, Point2i((rtl ? 1 - ratio : ratio) * areasize + grabber_shift, size.height / 2 - grabber->get_height() / 2 + theme_cache.grabber_offset));
 			}
 		} break;
 	}

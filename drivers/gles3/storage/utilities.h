@@ -226,6 +226,8 @@ public:
 	virtual String get_video_adapter_api_version() const override;
 
 	virtual Size2i get_maximum_viewport_size() const override;
+	virtual uint32_t get_maximum_shader_varyings() const override;
+	virtual uint64_t get_maximum_uniform_buffer_size() const override;
 };
 
 } // namespace GLES3

@@ -1,0 +1,102 @@
+diff --git a/thirdparty/spirv-reflect/spirv_reflect.c b/thirdparty/spirv-reflect/spirv_reflect.c
+index b4f6bc17c2..ba64a3f54d 100644
+--- a/thirdparty/spirv-reflect/spirv_reflect.c
++++ b/thirdparty/spirv-reflect/spirv_reflect.c
+@@ -1571,6 +1571,8 @@ static SpvReflectResult ParseDecorations(SpvReflectPrvParser* p_parser, SpvRefle
+       } break;
+ 
+       case SpvDecorationSpecId: {
++        uint32_t word_offset = p_node->word_offset + member_offset+ 3;
++        CHECKED_READU32(p_parser, word_offset, p_target_decorations->spec_id);
+         spec_constant_count++;
+       } break;
+ 
+@@ -1692,21 +1694,43 @@ static SpvReflectResult ParseDecorations(SpvReflectPrvParser* p_parser, SpvRefle
+   }
+   for (uint32_t i = 0; i < p_parser->node_count; ++i) {
+     SpvReflectPrvNode* p_node = &(p_parser->nodes[i]);
+-    if (p_node->op == SpvOpDecorate) {
+-      uint32_t decoration = (uint32_t)INVALID_VALUE;
+-      CHECKED_READU32(p_parser, p_node->word_offset + 2, decoration);
+-      if (decoration == SpvDecorationSpecId) {
+-        const uint32_t count = p_module->spec_constant_count;
+-        CHECKED_READU32(p_parser, p_node->word_offset + 1, p_module->spec_constants[count].spirv_id);
+-        CHECKED_READU32(p_parser, p_node->word_offset + 3, p_module->spec_constants[count].constant_id);
+-        // If being used for a OpSpecConstantComposite (ex. LocalSizeId), there won't be a name
+-        SpvReflectPrvNode* target_node = FindNode(p_parser, p_module->spec_constants[count].spirv_id);
+-        if (IsNotNull(target_node)) {
+-          p_module->spec_constants[count].name = target_node->name;
++    const uint32_t count = p_module->spec_constant_count;
++    switch(p_node->op) {
++      default: continue;
++      case SpvOpSpecConstantTrue: {
++        p_module->spec_constants[count].constant_type = SPV_REFLECT_SPECIALIZATION_CONSTANT_BOOL;
++        p_module->spec_constants[count].default_value.int_bool_value = 1;
++      } break;
++      case SpvOpSpecConstantFalse: {
++        p_module->spec_constants[count].constant_type = SPV_REFLECT_SPECIALIZATION_CONSTANT_BOOL;
++        p_module->spec_constants[count].default_value.int_bool_value = 0;
++      } break;
++      case SpvOpSpecConstant: {
++        SpvReflectResult result = SPV_REFLECT_RESULT_SUCCESS;
++        uint32_t element_type_id = (uint32_t)INVALID_VALUE;
++        uint32_t default_value = 0;
++        CHECKED_READU32(p_parser, p_node->word_offset + 1, element_type_id);
++        CHECKED_READU32(p_parser, p_node->word_offset + 3, default_value);
++
++        SpvReflectPrvNode* p_next_node = FindNode(p_parser, element_type_id);
++
++        if (p_next_node->op == SpvOpTypeInt) {
++          p_module->spec_constants[count].constant_type = SPV_REFLECT_SPECIALIZATION_CONSTANT_INT;
++        } else if (p_next_node->op == SpvOpTypeFloat) {
++          p_module->spec_constants[count].constant_type = SPV_REFLECT_SPECIALIZATION_CONSTANT_FLOAT;
++        } else {
++          return SPV_REFLECT_RESULT_ERROR_PARSE_FAILED;
+         }
+-        p_module->spec_constant_count++;
+-      }
++
++        p_module->spec_constants[count].default_value.int_bool_value = default_value; //bits are the same for int and float
++      } break;
+     }
++
++    p_module->spec_constants[count].name = p_node->name;
++    p_module->spec_constants[count].constant_id = p_node->decorations.spec_id;
++    p_module->spec_constants[count].spirv_id = p_node->result_id;
++
++    p_module->spec_constant_count++;
+   }
+ 
+   return SPV_REFLECT_RESULT_SUCCESS;
+diff --git a/thirdparty/spirv-reflect/spirv_reflect.h b/thirdparty/spirv-reflect/spirv_reflect.h
+index 9a42f14eed..cf8cfe2183 100644
+--- a/thirdparty/spirv-reflect/spirv_reflect.h
++++ b/thirdparty/spirv-reflect/spirv_reflect.h
+@@ -568,6 +568,15 @@ typedef struct SpvReflectCapability {
+ } SpvReflectCapability;
+ 
+ 
++/*! @enum SpvReflectSpecializationConstantType
++
++*/
++typedef enum SpvReflectSpecializationConstantType {
++  SPV_REFLECT_SPECIALIZATION_CONSTANT_BOOL = 0,
++  SPV_REFLECT_SPECIALIZATION_CONSTANT_INT = 1,
++  SPV_REFLECT_SPECIALIZATION_CONSTANT_FLOAT = 2,
++} SpvReflectSpecializationConstantType;
++
+ /*! @struct SpvReflectSpecId
+ 
+ */
+@@ -575,6 +584,11 @@ typedef struct SpvReflectSpecializationConstant {
+   uint32_t spirv_id;
+   uint32_t constant_id;
+   const char* name;
++  SpvReflectSpecializationConstantType constant_type;
++  union {
++    float float_value;
++    uint32_t int_bool_value;
++  } default_value;
+ } SpvReflectSpecializationConstant;
+ 
+ /*! @struct SpvReflectShaderModule

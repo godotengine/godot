@@ -7,70 +7,24 @@ import re
 import subprocess
 import sys
 from collections import OrderedDict
-from enum import Enum
-from io import StringIO, TextIOWrapper
+from io import StringIO, TextIOBase
 from pathlib import Path
 from typing import Generator, List, Optional, Union, cast
+
+from misc.utility.color import print_error, print_info, print_warning
 
 # Get the "Godot" folder name ahead of time
 base_folder_path = str(os.path.abspath(Path(__file__).parent)) + "/"
 base_folder_only = os.path.basename(os.path.normpath(base_folder_path))
+
 # Listing all the folders we have converted
 # for SCU in scu_builders.py
 _scu_folders = set()
-# Colors are disabled in non-TTY environments such as pipes. This means
-# that if output is redirected to a file, it won't contain color codes.
-# Colors are always enabled on continuous integration.
-_colorize = bool(sys.stdout.isatty() or os.environ.get("CI"))
 
 
 def set_scu_folders(scu_folders):
     global _scu_folders
     _scu_folders = scu_folders
-
-
-class ANSI(Enum):
-    """
-    Enum class for adding ansi colorcodes directly into strings.
-    Automatically converts values to strings representing their
-    internal value, or an empty string in a non-colorized scope.
-    """
-
-    RESET = "\x1b[0m"
-
-    BOLD = "\x1b[1m"
-    ITALIC = "\x1b[3m"
-    UNDERLINE = "\x1b[4m"
-    STRIKETHROUGH = "\x1b[9m"
-    REGULAR = "\x1b[22;23;24;29m"
-
-    BLACK = "\x1b[30m"
-    RED = "\x1b[31m"
-    GREEN = "\x1b[32m"
-    YELLOW = "\x1b[33m"
-    BLUE = "\x1b[34m"
-    MAGENTA = "\x1b[35m"
-    CYAN = "\x1b[36m"
-    WHITE = "\x1b[37m"
-
-    PURPLE = "\x1b[38;5;93m"
-    PINK = "\x1b[38;5;206m"
-    ORANGE = "\x1b[38;5;214m"
-    GRAY = "\x1b[38;5;244m"
-
-    def __str__(self) -> str:
-        global _colorize
-        return str(self.value) if _colorize else ""
-
-
-def print_warning(*values: object) -> None:
-    """Prints a warning message with formatting."""
-    print(f"{ANSI.YELLOW}{ANSI.BOLD}WARNING:{ANSI.REGULAR}", *values, ANSI.RESET, file=sys.stderr)
-
-
-def print_error(*values: object) -> None:
-    """Prints an error message with formatting."""
-    print(f"{ANSI.RED}{ANSI.BOLD}ERROR:{ANSI.REGULAR}", *values, ANSI.RESET, file=sys.stderr)
 
 
 def add_source_files_orig(self, sources, files, allow_gen=False):
@@ -102,6 +56,7 @@ def add_source_files_scu(self, sources, files, allow_gen=False):
         subdir = os.path.dirname(files)
         subdir = subdir if subdir == "" else subdir + "/"
         section_name = self.Dir(subdir).tpath
+        section_name = section_name.replace("\\", "/")  # win32
         # if the section name is in the hash table?
         # i.e. is it part of the SCU build?
         global _scu_folders
@@ -129,9 +84,10 @@ def disable_warnings(self):
     if self.msvc and not using_clang(self):
         # We have to remove existing warning level defines before appending /w,
         # otherwise we get: "warning D9025 : overriding '/W3' with '/w'"
-        self["CCFLAGS"] = [x for x in self["CCFLAGS"] if not (x.startswith("/W") or x.startswith("/w"))]
-        self["CFLAGS"] = [x for x in self["CFLAGS"] if not (x.startswith("/W") or x.startswith("/w"))]
-        self["CXXFLAGS"] = [x for x in self["CXXFLAGS"] if not (x.startswith("/W") or x.startswith("/w"))]
+        WARN_FLAGS = ["/Wall", "/W4", "/W3", "/W2", "/W1", "/W0"]
+        self["CCFLAGS"] = [x for x in self["CCFLAGS"] if x not in WARN_FLAGS]
+        self["CFLAGS"] = [x for x in self["CFLAGS"] if x not in WARN_FLAGS]
+        self["CXXFLAGS"] = [x for x in self["CXXFLAGS"] if x not in WARN_FLAGS]
         self.AppendUnique(CCFLAGS=["/w"])
     else:
         self.AppendUnique(CCFLAGS=["-w"])
@@ -162,7 +118,7 @@ def get_version_info(module_version_string="", silent=False):
     if os.getenv("BUILD_NAME") is not None:
         build_name = str(os.getenv("BUILD_NAME"))
         if not silent:
-            print(f"Using custom build name: '{build_name}'.")
+            print_info(f"Using custom build name: '{build_name}'.")
 
     import version
 
@@ -184,7 +140,7 @@ def get_version_info(module_version_string="", silent=False):
     if os.getenv("GODOT_VERSION_STATUS") is not None:
         version_info["status"] = str(os.getenv("GODOT_VERSION_STATUS"))
         if not silent:
-            print(f"Using version status '{version_info['status']}', overriding the original '{version.status}'.")
+            print_info(f"Using version status '{version_info['status']}', overriding the original '{version.status}'.")
 
     # Parse Git hash if we're in a Git repo.
     githash = ""
@@ -440,7 +396,9 @@ def use_windows_spawn_fix(self, platform=None):
 
 
 def no_verbose(env):
-    colors = [ANSI.BLUE, ANSI.BOLD, ANSI.REGULAR, ANSI.RESET]
+    from misc.utility.color import Ansi
+
+    colors = [Ansi.BLUE, Ansi.BOLD, Ansi.REGULAR, Ansi.RESET]
 
     # There is a space before "..." to ensure that source file names can be
     # Ctrl + clicked in the VS Code terminal.
@@ -655,12 +613,14 @@ def detect_darwin_sdk_path(platform, env):
 
 
 def is_apple_clang(env):
+    import shlex
+
     if env["platform"] not in ["macos", "ios"]:
         return False
     if not using_clang(env):
         return False
     try:
-        version = subprocess.check_output([env.subst(env["CXX"]), "--version"]).strip().decode("utf-8")
+        version = subprocess.check_output(shlex.split(env.subst(env["CXX"])) + ["--version"]).strip().decode("utf-8")
     except (subprocess.CalledProcessError, OSError):
         print_warning("Couldn't parse CXX environment variable to infer compiler version.")
         return False
@@ -675,6 +635,8 @@ def get_compiler_version(env):
     - metadata1, metadata2: Extra information
     - date: Date of the build
     """
+    import shlex
+
     ret = {
         "major": -1,
         "minor": -1,
@@ -725,7 +687,7 @@ def get_compiler_version(env):
     # Clang used to return hardcoded 4.2.1: # https://reviews.llvm.org/D56803
     try:
         version = subprocess.check_output(
-            [env.subst(env["CXX"]), "--version"], shell=(os.name == "nt"), encoding="utf-8"
+            shlex.split(env.subst(env["CXX"])) + ["--version"], shell=(os.name == "nt"), encoding="utf-8"
         ).strip()
     except (subprocess.CalledProcessError, OSError):
         print_warning("Couldn't parse CXX environment variable to infer compiler version.")
@@ -788,10 +750,8 @@ def using_emcc(env):
 
 
 def show_progress(env):
-    # Progress reporting is not available in non-TTY environments since it messes with the output
-    # (for example, when writing to a file). Ninja has its own progress/tracking tool that clashes
-    # with ours.
-    if not env["progress"] or not sys.stdout.isatty() or env["ninja"]:
+    # Ninja has its own progress/tracking tool that clashes with ours.
+    if env["ninja"]:
         return
 
     NODE_COUNT_FILENAME = f"{base_folder_path}.scons_node_count"
@@ -805,33 +765,36 @@ def show_progress(env):
                     self.max = int(f.readline())
             except OSError:
                 pass
-            if self.max == 0:
-                print("NOTE: Performing initial build, progress percentage unavailable!")
+
+            # Progress reporting is not available in non-TTY environments since it
+            # messes with the output (for example, when writing to a file).
+            self.display = cast(bool, self.max and env["progress"] and sys.stdout.isatty())
+            if self.display and not self.max:
+                print_info("Performing initial build, progress percentage unavailable!")
 
         def __call__(self, node, *args, **kw):
             self.count += 1
-            if self.max != 0:
+            if self.display:
                 percent = int(min(self.count * 100 / self.max, 100))
                 sys.stdout.write(f"\r[{percent:3d}%] ")
                 sys.stdout.flush()
 
     from SCons.Script import Progress
+    from SCons.Script.Main import GetBuildFailures
 
     progressor = ShowProgress()
     Progress(progressor)
 
-    def progress_finish(target, source, env):
+    def progress_finish():
+        if GetBuildFailures() or not progressor.count:
+            return
         try:
             with open(NODE_COUNT_FILENAME, "w", encoding="utf-8", newline="\n") as f:
                 f.write(f"{progressor.count}\n")
         except OSError:
             pass
 
-    env.AlwaysBuild(
-        env.CommandNoCache(
-            "progress_finish", [], env.Action(progress_finish, "Building node count database .scons_node_count")
-        )
-    )
+    atexit.register(progress_finish)
 
 
 def convert_size(size_bytes: int) -> str:
@@ -853,64 +816,40 @@ def get_size(start_path: str = ".") -> int:
     return total_size
 
 
-def clean_cache(cache_path: str, cache_limit: int, verbose: bool):
+def clean_cache(cache_path: str, cache_limit: int, verbose: bool) -> None:
+    if not cache_limit:
+        return
+
     files = glob.glob(os.path.join(cache_path, "*", "*"))
     if not files:
         return
 
-    # Remove all text files, store binary files in list of (filename, size, atime).
-    purge = []
-    texts = []
+    # Store files in list of (filename, size, atime).
     stats = []
     for file in files:
         try:
-            # Save file stats to rewrite after modifying.
-            tmp_stat = os.stat(file)
-            # Failing a utf-8 decode is the easiest way to determine if a file is binary.
-            try:
-                with open(file, encoding="utf-8") as out:
-                    out.read(1024)
-            except UnicodeDecodeError:
-                stats.append((file, *tmp_stat[6:8]))
-                # Restore file stats after reading.
-                os.utime(file, (tmp_stat[7], tmp_stat[8]))
-            else:
-                texts.append(file)
+            stats.append((file, *os.stat(file)[6:8]))
         except OSError:
             print_error(f'Failed to access cache file "{file}"; skipping.')
 
-    if texts:
-        count = len(texts)
-        for file in texts:
-            try:
-                os.remove(file)
-            except OSError:
-                print_error(f'Failed to remove cache file "{file}"; skipping.')
-                count -= 1
-        if verbose:
-            print("Purging %d text %s from cache..." % (count, "files" if count > 1 else "file"))
-
-    if cache_limit:
-        # Sort by most recent access (most sensible to keep) first. Search for the first entry where
-        # the cache limit is reached.
-        stats.sort(key=lambda x: x[2], reverse=True)
-        sum = 0
-        for index, stat in enumerate(stats):
-            sum += stat[1]
-            if sum > cache_limit:
-                purge.extend([x[0] for x in stats[index:]])
-                break
-
-    if purge:
-        count = len(purge)
-        for file in purge:
-            try:
-                os.remove(file)
-            except OSError:
-                print_error(f'Failed to remove cache file "{file}"; skipping.')
-                count -= 1
-        if verbose:
-            print("Purging %d %s from cache..." % (count, "files" if count > 1 else "file"))
+    # Sort by most recent access (most sensible to keep) first. Search for the first entry where
+    # the cache limit is reached.
+    stats.sort(key=lambda x: x[2], reverse=True)
+    sum = 0
+    for index, stat in enumerate(stats):
+        sum += stat[1]
+        if sum > cache_limit:
+            purge = [x[0] for x in stats[index:]]
+            count = len(purge)
+            for file in purge:
+                try:
+                    os.remove(file)
+                except OSError:
+                    print_error(f'Failed to remove cache file "{file}"; skipping.')
+                    count -= 1
+            if verbose and count:
+                print_info(f"Purged {count} file{'s' if count else ''} from cache.")
+            break
 
 
 def prepare_cache(env) -> None:
@@ -947,6 +886,31 @@ def prepare_cache(env) -> None:
         )
 
     atexit.register(clean_cache, cache_path, cache_limit, env["verbose"])
+
+
+def prepare_purge(env):
+    from SCons.Script.Main import GetBuildFailures
+
+    def purge_flaky_files():
+        paths_to_keep = [env["ninja_file"]]
+        for build_failure in GetBuildFailures():
+            path = build_failure.node.path
+            if os.path.isfile(path) and path not in paths_to_keep:
+                os.remove(path)
+
+    atexit.register(purge_flaky_files)
+
+
+def prepare_timer():
+    import time
+
+    def print_elapsed_time(time_at_start: float):
+        time_elapsed = time.time() - time_at_start
+        time_formatted = time.strftime("%H:%M:%S", time.gmtime(time_elapsed))
+        time_centiseconds = round((time_elapsed % 1) * 100)
+        print_info(f"Time elapsed: {time_formatted}.{time_centiseconds}")
+
+    atexit.register(print_elapsed_time, time.time())
 
 
 def dump(env):
@@ -1237,7 +1201,7 @@ def generate_vs_project(env, original_args, project_name="godot"):
         vsconf = ""
         for a in vs_configuration["arches"]:
             if arch == a["architecture"]:
-                vsconf = f'{target}|{a["platform"]}'
+                vsconf = f"{target}|{a['platform']}"
                 break
 
         condition = "'$(GodotConfiguration)|$(GodotPlatform)'=='" + vsconf + "'"
@@ -1253,7 +1217,7 @@ def generate_vs_project(env, original_args, project_name="godot"):
             properties.append(
                 "<ActiveProjectItemList_%s>;%s;</ActiveProjectItemList_%s>" % (x, ";".join(itemlist[x]), x)
             )
-        output = f'bin\\godot{env["PROGSUFFIX"]}'
+        output = f"bin\\godot{env['PROGSUFFIX']}"
 
         with open("misc/msvs/props.template", "r", encoding="utf-8") as file:
             props_template = file.read()
@@ -1479,7 +1443,7 @@ def generate_copyright_header(filename: str) -> str:
 """
     filename = filename.split("/")[-1].ljust(MARGIN)
     if len(filename) > MARGIN:
-        print(f'WARNING: Filename "{filename}" too large for copyright header.')
+        print_warning(f'Filename "{filename}" too large for copyright header.')
     return TEMPLATE % filename
 
 
@@ -1489,7 +1453,7 @@ def generated_wrapper(
     guard: Optional[bool] = None,
     prefix: str = "",
     suffix: str = "",
-) -> Generator[TextIOWrapper, None, None]:
+) -> Generator[TextIOBase, None, None]:
     """
     Wrapper class to automatically handle copyright headers and header guards
     for generated scripts. Meant to be invoked via `with` statement similar to
@@ -1511,8 +1475,7 @@ def generated_wrapper(
         if isinstance(path, list):
             if len(path) > 1:
                 print_warning(
-                    "Attempting to use generated wrapper with multiple targets; "
-                    f"will only use first entry: {path[0]}"
+                    f"Attempting to use generated wrapper with multiple targets; will only use first entry: {path[0]}"
                 )
             path = path[0]
         if not hasattr(path, "get_abspath"):

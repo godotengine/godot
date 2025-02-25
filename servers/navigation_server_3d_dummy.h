@@ -55,7 +55,7 @@ public:
 	real_t map_get_edge_connection_margin(RID p_map) const override { return 0; }
 	void map_set_link_connection_radius(RID p_map, real_t p_connection_radius) override {}
 	real_t map_get_link_connection_radius(RID p_map) const override { return 0; }
-	Vector<Vector3> map_get_path(RID p_map, Vector3 p_origin, Vector3 p_destination, bool p_optimize, uint32_t p_navigation_layers) const override { return Vector<Vector3>(); }
+	Vector<Vector3> map_get_path(RID p_map, Vector3 p_origin, Vector3 p_destination, bool p_optimize, uint32_t p_navigation_layers) override { return Vector<Vector3>(); }
 	Vector3 map_get_closest_point_to_segment(RID p_map, const Vector3 &p_from, const Vector3 &p_to, const bool p_use_collision) const override { return Vector3(); }
 	Vector3 map_get_closest_point(RID p_map, const Vector3 &p_point) const override { return Vector3(); }
 	Vector3 map_get_closest_point_normal(RID p_map, const Vector3 &p_point) const override { return Vector3(); }
@@ -67,6 +67,8 @@ public:
 	TypedArray<RID> map_get_obstacles(RID p_map) const override { return TypedArray<RID>(); }
 	void map_force_update(RID p_map) override {}
 	uint32_t map_get_iteration_id(RID p_map) const override { return 0; }
+	void map_set_use_async_iterations(RID p_map, bool p_enabled) override {}
+	bool map_get_use_async_iterations(RID p_map) const override { return false; }
 
 	RID region_create() override { return RID(); }
 	void region_set_enabled(RID p_region, bool p_enabled) override {}
@@ -97,6 +99,7 @@ public:
 	Vector3 region_get_closest_point(RID p_region, const Vector3 &p_point) const override { return Vector3(); }
 	Vector3 region_get_closest_point_normal(RID p_region, const Vector3 &p_point) const override { return Vector3(); }
 	Vector3 region_get_random_point(RID p_region, uint32_t p_navigation_layers, bool p_uniformly) const override { return Vector3(); }
+	AABB region_get_bounds(RID p_region) const override { return AABB(); }
 
 	RID link_create() override { return RID(); }
 	void link_set_map(RID p_link, RID p_map) override {}
@@ -178,6 +181,8 @@ public:
 	void obstacle_set_avoidance_layers(RID p_obstacle, uint32_t p_layers) override {}
 	uint32_t obstacle_get_avoidance_layers(RID p_obstacle) const override { return 0; }
 
+	virtual void query_path(const Ref<NavigationPathQueryParameters3D> &p_query_parameters, Ref<NavigationPathQueryResult3D> p_query_result, const Callable &p_callback = Callable()) override {}
+
 #ifndef _3D_DISABLED
 	void parse_source_geometry_data(const Ref<NavigationMesh> &p_navigation_mesh, const Ref<NavigationMeshSourceGeometryData3D> &p_source_geometry_data, Node *p_root_node, const Callable &p_callback = Callable()) override {}
 	void bake_from_source_geometry_data(const Ref<NavigationMesh> &p_navigation_mesh, const Ref<NavigationMeshSourceGeometryData3D> &p_source_geometry_data, const Callable &p_callback = Callable()) override {}
@@ -197,7 +202,6 @@ public:
 	void sync() override {}
 	void finish() override {}
 
-	NavigationUtilities::PathQueryResult _query_path(const NavigationUtilities::PathQueryParameters &p_parameters) const override { return NavigationUtilities::PathQueryResult(); }
 	int get_process_info(ProcessInfo p_info) const override { return 0; }
 
 	void set_debug_enabled(bool p_enabled) {}

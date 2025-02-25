@@ -34,6 +34,8 @@
 #include "godot_physics_server_3d.h"
 
 #include "core/config/project_settings.h"
+#include "godot_area_pair_3d.h"
+#include "godot_body_pair_3d.h"
 
 #define TEST_MOTION_MARGIN_MIN_VALUE 0.0001
 #define TEST_MOTION_MIN_CONTACT_DEPTH_FACTOR 0.05
@@ -468,7 +470,7 @@ static void _rest_cbk_result(const Vector3 &p_point_A, int p_index_A, const Vect
 		real_t tested_len = is_best_result ? rd->best_result.len : len;
 		for (; result_index < prev_result_count - 1; ++result_index) {
 			if (tested_len > rd->other_results[result_index].len) {
-				// Re-using a previous result.
+				// Reusing a previous result.
 				rd->result_count--;
 				break;
 			}
@@ -970,6 +972,7 @@ bool GodotSpace3D::test_body_motion(GodotBody3D *p_body, const PhysicsServer3D::
 
 				rcd.object = col_obj;
 				rcd.shape = shape_idx;
+				rcd.local_shape = j;
 				bool sc = GodotCollisionSolver3D::solve_static(body_shape, body_shape_xform, col_obj->get_shape(shape_idx), col_obj->get_transform() * col_obj->get_shape_transform(shape_idx), _rest_cbk_result, &rcd, nullptr, margin);
 				if (!sc) {
 					continue;

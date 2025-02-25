@@ -32,12 +32,16 @@
 
 #include "nav_map.h"
 
+#include "3d/nav_map_builder_3d.h"
 #include "3d/nav_mesh_queries_3d.h"
+#include "3d/nav_region_iteration_3d.h"
 
 void NavRegion::set_map(NavMap *p_map) {
 	if (map == p_map) {
 		return;
 	}
+
+	cancel_sync_request();
 
 	if (map) {
 		map->remove_region(this);
@@ -48,6 +52,7 @@ void NavRegion::set_map(NavMap *p_map) {
 
 	if (map) {
 		map->add_region(this);
+		request_sync();
 	}
 }
 
@@ -59,6 +64,8 @@ void NavRegion::set_enabled(bool p_enabled) {
 
 	// TODO: This should not require a full rebuild as the region has not really changed.
 	polygons_dirty = true;
+
+	request_sync();
 }
 
 void NavRegion::set_use_edge_connections(bool p_enabled) {
@@ -66,6 +73,8 @@ void NavRegion::set_use_edge_connections(bool p_enabled) {
 		use_edge_connections = p_enabled;
 		polygons_dirty = true;
 	}
+
+	request_sync();
 }
 
 void NavRegion::set_transform(Transform3D p_transform) {
@@ -74,6 +83,8 @@ void NavRegion::set_transform(Transform3D p_transform) {
 	}
 	transform = p_transform;
 	polygons_dirty = true;
+
+	request_sync();
 
 #ifdef DEBUG_ENABLED
 	if (map && Math::rad_to_deg(map->get_up().angle_to(transform.basis.get_column(1))) >= 90.0f) {
@@ -103,6 +114,8 @@ void NavRegion::set_navigation_mesh(Ref<NavigationMesh> p_navigation_mesh) {
 	}
 
 	polygons_dirty = true;
+
+	request_sync();
 }
 
 Vector3 NavRegion::get_closest_point_to_segment(const Vector3 &p_from, const Vector3 &p_to, bool p_use_collision) const {
@@ -128,10 +141,54 @@ Vector3 NavRegion::get_random_point(uint32_t p_navigation_layers, bool p_uniform
 	return NavMeshQueries3D::polygons_get_random_point(get_polygons(), p_navigation_layers, p_uniformly);
 }
 
+void NavRegion::set_navigation_layers(uint32_t p_navigation_layers) {
+	if (navigation_layers == p_navigation_layers) {
+		return;
+	}
+	navigation_layers = p_navigation_layers;
+	region_dirty = true;
+
+	request_sync();
+}
+
+void NavRegion::set_enter_cost(real_t p_enter_cost) {
+	real_t new_enter_cost = MAX(p_enter_cost, 0.0);
+	if (enter_cost == new_enter_cost) {
+		return;
+	}
+	enter_cost = new_enter_cost;
+	region_dirty = true;
+
+	request_sync();
+}
+
+void NavRegion::set_travel_cost(real_t p_travel_cost) {
+	real_t new_travel_cost = MAX(p_travel_cost, 0.0);
+	if (travel_cost == new_travel_cost) {
+		return;
+	}
+	travel_cost = new_travel_cost;
+	region_dirty = true;
+
+	request_sync();
+}
+
+void NavRegion::set_owner_id(ObjectID p_owner_id) {
+	if (owner_id == p_owner_id) {
+		return;
+	}
+	owner_id = p_owner_id;
+	region_dirty = true;
+
+	request_sync();
+}
+
 bool NavRegion::sync() {
 	RWLockWrite write_lock(region_rwlock);
 
-	bool something_changed = polygons_dirty /* || something_dirty? */;
+	bool something_changed = region_dirty || polygons_dirty;
+
+	region_dirty = false;
 
 	update_polygons();
 
@@ -142,8 +199,9 @@ void NavRegion::update_polygons() {
 	if (!polygons_dirty) {
 		return;
 	}
-	polygons.clear();
+	navmesh_polygons.clear();
 	surface_area = 0.0;
+	bounds = AABB();
 	polygons_dirty = false;
 
 	if (map == nullptr) {
@@ -163,14 +221,15 @@ void NavRegion::update_polygons() {
 
 	const Vector3 *vertices_r = pending_navmesh_vertices.ptr();
 
-	polygons.resize(pending_navmesh_polygons.size());
+	navmesh_polygons.resize(pending_navmesh_polygons.size());
 
 	real_t _new_region_surface_area = 0.0;
+	AABB _new_bounds;
 
-	// Build
+	bool first_vertex = true;
 	int navigation_mesh_polygon_index = 0;
-	for (gd::Polygon &polygon : polygons) {
-		polygon.owner = this;
+
+	for (gd::Polygon &polygon : navmesh_polygons) {
 		polygon.surface_area = 0.0;
 
 		Vector<int> navigation_mesh_polygon = pending_navmesh_polygons[navigation_mesh_polygon_index];
@@ -210,7 +269,14 @@ void NavRegion::update_polygons() {
 
 			Vector3 point_position = transform.xform(vertices_r[idx]);
 			polygon.points[j].pos = point_position;
-			polygon.points[j].key = map->get_point_key(point_position);
+			polygon.points[j].key = NavMapBuilder3D::get_point_key(point_position, map->get_merge_rasterizer_cell_size());
+
+			if (first_vertex) {
+				first_vertex = false;
+				_new_bounds.position = point_position;
+			} else {
+				_new_bounds.expand_to(point_position);
+			}
 		}
 
 		if (!valid) {
@@ -219,4 +285,49 @@ void NavRegion::update_polygons() {
 	}
 
 	surface_area = _new_region_surface_area;
+	bounds = _new_bounds;
+}
+
+void NavRegion::get_iteration_update(NavRegionIteration &r_iteration) {
+	r_iteration.navigation_layers = get_navigation_layers();
+	r_iteration.enter_cost = get_enter_cost();
+	r_iteration.travel_cost = get_travel_cost();
+	r_iteration.owner_object_id = get_owner_id();
+	r_iteration.owner_type = get_type();
+	r_iteration.owner_rid = get_self();
+
+	r_iteration.enabled = get_enabled();
+	r_iteration.transform = get_transform();
+	r_iteration.owner_use_edge_connections = get_use_edge_connections();
+	r_iteration.bounds = get_bounds();
+	r_iteration.surface_area = get_surface_area();
+
+	r_iteration.navmesh_polygons.clear();
+	r_iteration.navmesh_polygons.resize(navmesh_polygons.size());
+	for (uint32_t i = 0; i < navmesh_polygons.size(); i++) {
+		gd::Polygon &navmesh_polygon = navmesh_polygons[i];
+		navmesh_polygon.owner = &r_iteration;
+		r_iteration.navmesh_polygons[i] = navmesh_polygon;
+	}
+}
+
+void NavRegion::request_sync() {
+	if (map && !sync_dirty_request_list_element.in_list()) {
+		map->add_region_sync_dirty_request(&sync_dirty_request_list_element);
+	}
+}
+
+void NavRegion::cancel_sync_request() {
+	if (map && sync_dirty_request_list_element.in_list()) {
+		map->remove_region_sync_dirty_request(&sync_dirty_request_list_element);
+	}
+}
+
+NavRegion::NavRegion() :
+		sync_dirty_request_list_element(this) {
+	type = NavigationUtilities::PathSegmentType::PATH_SEGMENT_TYPE_REGION;
+}
+
+NavRegion::~NavRegion() {
+	cancel_sync_request();
 }
