@@ -38,7 +38,7 @@
 #include "jolt_body_3d.h"
 #include "jolt_group_filter.h"
 
-#include "servers/rendering_server.h"
+#include "servers/rendering/rendering_server.h"
 
 #include "Jolt/Physics/SoftBody/SoftBodyMotionProperties.h"
 

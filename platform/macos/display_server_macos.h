@@ -32,7 +32,7 @@
 #define DISPLAY_SERVER_MACOS_H
 
 #include "core/input/input.h"
-#include "servers/display_server.h"
+#include "servers/display/display_server.h"
 
 #if defined(GLES3_ENABLED)
 #include "gl_manager_macos_angle.h"

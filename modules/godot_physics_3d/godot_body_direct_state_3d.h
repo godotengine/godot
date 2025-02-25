@@ -31,7 +31,7 @@
 #ifndef GODOT_BODY_DIRECT_STATE_3D_H
 #define GODOT_BODY_DIRECT_STATE_3D_H
 
-#include "servers/physics_server_3d.h"
+#include "servers/physics_3d/physics_server_3d.h"
 
 class GodotBody3D;
 

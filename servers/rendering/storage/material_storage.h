@@ -31,7 +31,7 @@
 #ifndef MATERIAL_STORAGE_H
 #define MATERIAL_STORAGE_H
 
-#include "servers/rendering_server.h"
+#include "servers/rendering/rendering_server.h"
 #include "utilities.h"
 
 class RendererMaterialStorage {

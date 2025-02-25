@@ -31,7 +31,7 @@
 #ifndef SERVERS_DEBUGGER_H
 #define SERVERS_DEBUGGER_H
 
-#include "servers/rendering_server.h"
+#include "servers/rendering/rendering_server.h"
 
 class ServersDebugger {
 public:
