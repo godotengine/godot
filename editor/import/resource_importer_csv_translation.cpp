@@ -34,6 +34,7 @@
 #include "core/io/resource_saver.h"
 #include "core/string/optimized_translation.h"
 #include "core/string/translation_server.h"
+#include "editor/editor_settings.h"
 
 String ResourceImporterCSVTranslation::get_importer_name() const {
 	return "csv_translation";
@@ -150,7 +151,11 @@ Error ResourceImporterCSVTranslation::import(ResourceUID::ID p_source_id, const 
 			save_path = ResourceUID::get_singleton()->get_id_path(save_id);
 		}
 
-		ResourceSaver::save(xlt, save_path);
+		int flags = 0;
+		if (EDITOR_GET("filesystem/on_save/compress_binary_resources")) {
+			flags |= ResourceSaver::FLAG_COMPRESS;
+		}
+		ResourceSaver::save(xlt, save_path, flags);
 		if (r_gen_files) {
 			r_gen_files->push_back(save_path);
 		}
