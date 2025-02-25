@@ -78,12 +78,19 @@ void NavigationMeshSourceGeometryData3D::clear() {
 	vertices.clear();
 	indices.clear();
 	_projected_obstructions.clear();
+	_projected_areas.clear();
 	bounds_dirty = true;
 }
 
 void NavigationMeshSourceGeometryData3D::clear_projected_obstructions() {
 	RWLockWrite write_lock(geometry_rwlock);
 	_projected_obstructions.clear();
+	bounds_dirty = true;
+}
+
+void NavigationMeshSourceGeometryData3D::clear_projected_areas() {
+	RWLockWrite write_lock(geometry_rwlock);
+	_projected_areas.clear();
 	bounds_dirty = true;
 }
 
@@ -228,8 +235,9 @@ void NavigationMeshSourceGeometryData3D::merge(const Ref<NavigationMeshSourceGeo
 	Vector<float> other_vertices;
 	Vector<int> other_indices;
 	Vector<ProjectedObstruction> other_projected_obstructions;
+	Vector<ProjectedArea> other_projected_areas;
 
-	p_other_geometry->get_data(other_vertices, other_indices, other_projected_obstructions);
+	p_other_geometry->get_data(other_vertices, other_indices, other_projected_obstructions, other_projected_areas);
 
 	RWLockWrite write_lock(geometry_rwlock);
 	const int64_t number_of_vertices_before_merge = vertices.size();
@@ -243,6 +251,73 @@ void NavigationMeshSourceGeometryData3D::merge(const Ref<NavigationMeshSourceGeo
 	}
 
 	_projected_obstructions.append_array(other_projected_obstructions);
+	_projected_areas.append_array(other_projected_areas);
+	bounds_dirty = true;
+}
+
+void NavigationMeshSourceGeometryData3D::add_projected_area_box(const AABB &p_aabb, uint32_t p_navigation_layers, int p_priority) {
+	ERR_FAIL_COND(!p_aabb.has_surface());
+
+	ProjectedArea projected_area;
+	projected_area.aabb = p_aabb;
+	projected_area.navigation_layers = p_navigation_layers;
+	projected_area.priority = p_priority;
+	projected_area.shape_type = ProjectedArea::ShapeType::BOX;
+
+	RWLockWrite write_lock(geometry_rwlock);
+	_projected_areas.push_back(projected_area);
+	bounds_dirty = true;
+}
+
+void NavigationMeshSourceGeometryData3D::add_projected_area_cylinder(const Vector3 &p_position, float p_radius, float p_height, uint32_t p_navigation_layers, int p_priority) {
+	ERR_FAIL_COND(p_radius <= 0.0);
+
+	ProjectedArea projected_area;
+	projected_area.position = p_position;
+	projected_area.radius = p_radius;
+	projected_area.height = p_height;
+	projected_area.navigation_layers = p_navigation_layers;
+	projected_area.priority = p_priority;
+	projected_area.shape_type = ProjectedArea::ShapeType::CYLINDER;
+
+	AABB area_aabb;
+	area_aabb.position = p_position + Vector3(-p_radius, 0.0, p_radius);
+	area_aabb.size = Vector3(p_radius * 2.0, p_height, p_radius * 2.0);
+	projected_area.aabb = area_aabb;
+
+	RWLockWrite write_lock(geometry_rwlock);
+	_projected_areas.push_back(projected_area);
+	bounds_dirty = true;
+}
+
+void NavigationMeshSourceGeometryData3D::add_projected_area_polygon(const Vector<Vector3> &p_vertices, float p_elevation, float p_height, uint32_t p_navigation_layers, int p_priority) {
+	ERR_FAIL_COND(p_vertices.size() < 3);
+	ERR_FAIL_COND(p_height < 0.0);
+
+	ProjectedArea projected_area;
+	projected_area.vertices.resize(p_vertices.size() * 3);
+	projected_area.elevation = p_elevation;
+	projected_area.height = p_height;
+	projected_area.navigation_layers = p_navigation_layers;
+	projected_area.priority = p_priority;
+	projected_area.shape_type = ProjectedArea::ShapeType::POLYGON;
+
+	float *obstruction_vertices_ptrw = projected_area.vertices.ptrw();
+
+	AABB area_aabb;
+	area_aabb.position = p_vertices[0];
+
+	int vertex_index = 0;
+	for (const Vector3 &vertex : p_vertices) {
+		obstruction_vertices_ptrw[vertex_index++] = vertex.x;
+		obstruction_vertices_ptrw[vertex_index++] = vertex.y;
+		obstruction_vertices_ptrw[vertex_index++] = vertex.z;
+		area_aabb.expand_to(vertex);
+	}
+	projected_area.aabb = area_aabb;
+
+	RWLockWrite write_lock(geometry_rwlock);
+	_projected_areas.push_back(projected_area);
 	bounds_dirty = true;
 }
 
@@ -325,9 +400,91 @@ Array NavigationMeshSourceGeometryData3D::get_projected_obstructions() const {
 	return ret;
 }
 
+void NavigationMeshSourceGeometryData3D::set_projected_areas(const Array &p_array) {
+	clear_projected_areas();
+
+	for (int i = 0; i < p_array.size(); i++) {
+		Dictionary data = p_array[i];
+		ERR_FAIL_COND(!data.has("version"));
+
+		uint32_t po_version = data["version"];
+
+		if (po_version == 1) {
+			ERR_FAIL_COND(!data.has("vertices"));
+			ERR_FAIL_COND(!data.has("aabb"));
+			ERR_FAIL_COND(!data.has("position"));
+			ERR_FAIL_COND(!data.has("radius"));
+			ERR_FAIL_COND(!data.has("elevation"));
+			ERR_FAIL_COND(!data.has("height"));
+			ERR_FAIL_COND(!data.has("navigation_layers"));
+			ERR_FAIL_COND(!data.has("priority"));
+			ERR_FAIL_COND(!data.has("shape_type"));
+		}
+
+		ProjectedArea projected_area;
+		projected_area.vertices = Vector<float>(data["vertices"]);
+		projected_area.aabb = data["aabb"];
+		projected_area.position = data["position"];
+		projected_area.radius = data["radius"];
+		projected_area.elevation = data["elevation"];
+		projected_area.height = data["height"];
+		projected_area.navigation_layers = data["navigation_layers"];
+		projected_area.priority = data["priority"];
+		switch ((int)data["shape_type"]) {
+			case 0:
+				projected_area.shape_type = ProjectedArea::ShapeType::NONE;
+				break;
+			case 1:
+				projected_area.shape_type = ProjectedArea::ShapeType::BOX;
+				break;
+			case 2:
+				projected_area.shape_type = ProjectedArea::ShapeType::CYLINDER;
+				break;
+			case 3:
+				projected_area.shape_type = ProjectedArea::ShapeType::POLYGON;
+				break;
+		}
+
+		RWLockWrite write_lock(geometry_rwlock);
+		_projected_areas.push_back(projected_area);
+		bounds_dirty = true;
+	}
+}
+
+Array NavigationMeshSourceGeometryData3D::get_projected_areas() const {
+	RWLockRead read_lock(geometry_rwlock);
+
+	Array ret;
+	ret.resize(_projected_areas.size());
+
+	for (int i = 0; i < _projected_areas.size(); i++) {
+		const ProjectedArea &projected_area = _projected_areas[i];
+
+		Dictionary data;
+		data["version"] = (int)ProjectedObstruction::VERSION;
+		data["vertices"] = projected_area.vertices;
+		data["aabb"] = projected_area.aabb;
+		data["position"] = projected_area.position;
+		data["radius"] = projected_area.radius;
+		data["elevation"] = projected_area.elevation;
+		data["height"] = projected_area.height;
+		data["navigation_layers"] = projected_area.navigation_layers;
+		data["priority"] = projected_area.priority;
+		data["shape_type"] = (int)projected_area.shape_type;
+
+		ret[i] = data;
+	}
+
+	return ret;
+}
+
 bool NavigationMeshSourceGeometryData3D::_set(const StringName &p_name, const Variant &p_value) {
 	if (p_name == "projected_obstructions") {
 		set_projected_obstructions(p_value);
+		return true;
+	}
+	if (p_name == "projected_areas") {
+		set_projected_areas(p_value);
 		return true;
 	}
 	return false;
@@ -338,22 +495,28 @@ bool NavigationMeshSourceGeometryData3D::_get(const StringName &p_name, Variant 
 		r_ret = get_projected_obstructions();
 		return true;
 	}
+	if (p_name == "projected_areas") {
+		r_ret = get_projected_areas();
+		return true;
+	}
 	return false;
 }
 
-void NavigationMeshSourceGeometryData3D::set_data(const Vector<float> &p_vertices, const Vector<int> &p_indices, Vector<ProjectedObstruction> &p_projected_obstructions) {
+void NavigationMeshSourceGeometryData3D::set_data(const Vector<float> &p_vertices, const Vector<int> &p_indices, Vector<ProjectedObstruction> &p_projected_obstructions, Vector<ProjectedArea> &r_projected_areas) {
 	RWLockWrite write_lock(geometry_rwlock);
 	vertices = p_vertices;
 	indices = p_indices;
 	_projected_obstructions = p_projected_obstructions;
+	_projected_areas = r_projected_areas;
 	bounds_dirty = true;
 }
 
-void NavigationMeshSourceGeometryData3D::get_data(Vector<float> &r_vertices, Vector<int> &r_indices, Vector<ProjectedObstruction> &r_projected_obstructions) {
+void NavigationMeshSourceGeometryData3D::get_data(Vector<float> &r_vertices, Vector<int> &r_indices, Vector<ProjectedObstruction> &r_projected_obstructions, Vector<ProjectedArea> &r_projected_areas) {
 	RWLockRead read_lock(geometry_rwlock);
 	r_vertices = vertices;
 	r_indices = indices;
 	r_projected_obstructions = _projected_obstructions;
+	r_projected_areas = _projected_areas;
 }
 
 AABB NavigationMeshSourceGeometryData3D::get_bounds() {
@@ -387,6 +550,9 @@ AABB NavigationMeshSourceGeometryData3D::get_bounds() {
 				}
 			}
 		}
+		for (const ProjectedArea &projected_area : _projected_areas) {
+			bounds.merge_with(projected_area.aabb);
+		}
 	} else {
 		geometry_rwlock.read_unlock();
 	}
@@ -417,9 +583,17 @@ void NavigationMeshSourceGeometryData3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_projected_obstructions", "projected_obstructions"), &NavigationMeshSourceGeometryData3D::set_projected_obstructions);
 	ClassDB::bind_method(D_METHOD("get_projected_obstructions"), &NavigationMeshSourceGeometryData3D::get_projected_obstructions);
 
+	ClassDB::bind_method(D_METHOD("add_projected_area_box", "aabb", "navigation_layers", "priority"), &NavigationMeshSourceGeometryData3D::add_projected_area_box);
+	ClassDB::bind_method(D_METHOD("add_projected_area_cylinder", "position", "radius", "height", "navigation_layers", "priority"), &NavigationMeshSourceGeometryData3D::add_projected_area_cylinder);
+	ClassDB::bind_method(D_METHOD("add_projected_area_polygon", "vertices", "elevation", "height", "navigation_layers", "priority"), &NavigationMeshSourceGeometryData3D::add_projected_area_polygon);
+	ClassDB::bind_method(D_METHOD("clear_projected_areas"), &NavigationMeshSourceGeometryData3D::clear_projected_obstructions);
+	ClassDB::bind_method(D_METHOD("set_projected_areas", "projected_areas"), &NavigationMeshSourceGeometryData3D::set_projected_areas);
+	ClassDB::bind_method(D_METHOD("get_projected_areas"), &NavigationMeshSourceGeometryData3D::get_projected_areas);
+
 	ClassDB::bind_method(D_METHOD("get_bounds"), &NavigationMeshSourceGeometryData3D::get_bounds);
 
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_VECTOR3_ARRAY, "vertices", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "set_vertices", "get_vertices");
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_INT32_ARRAY, "indices", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "set_indices", "get_indices");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "projected_obstructions", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "set_projected_obstructions", "get_projected_obstructions");
+	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "projected_areas", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "set_projected_areas", "get_projected_areas");
 }

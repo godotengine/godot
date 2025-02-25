@@ -251,6 +251,7 @@
 #include "scene/3d/multimesh_instance_3d.h"
 #include "scene/3d/navigation_agent_3d.h"
 #include "scene/3d/navigation_link_3d.h"
+#include "scene/3d/navigation_mesh_area_3d.h"
 #include "scene/3d/navigation_obstacle_3d.h"
 #include "scene/3d/navigation_region_3d.h"
 #include "scene/3d/node_3d.h"
@@ -657,6 +658,10 @@ void register_scene_types() {
 	GDREGISTER_CLASS(NavigationAgent3D);
 	GDREGISTER_CLASS(NavigationObstacle3D);
 	GDREGISTER_CLASS(NavigationLink3D);
+	GDREGISTER_VIRTUAL_CLASS(NavigationMeshArea3D);
+	GDREGISTER_CLASS(NavigationMeshAreaBox3D);
+	GDREGISTER_CLASS(NavigationMeshAreaCylinder3D);
+	GDREGISTER_CLASS(NavigationMeshAreaPolygon3D);
 
 	OS::get_singleton()->yield(); // may take time to init
 #endif // _3D_DISABLED
@@ -1051,6 +1056,7 @@ void register_scene_types() {
 	MultiMeshInstance3D::navmesh_parse_init();
 	NavigationObstacle3D::navmesh_parse_init();
 	StaticBody3D::navmesh_parse_init();
+	NavigationMeshArea3D::navmesh_parse_init();
 #endif
 
 	OS::get_singleton()->yield(); // may take time to init
@@ -1258,6 +1264,7 @@ void register_scene_types() {
 		GLOBAL_DEF_BASIC(vformat("%s/layer_%d", PNAME("layer_names/2d_navigation"), i + 1), "");
 		GLOBAL_DEF_BASIC(vformat("%s/layer_%d", PNAME("layer_names/3d_physics"), i + 1), "");
 		GLOBAL_DEF_BASIC(vformat("%s/layer_%d", PNAME("layer_names/3d_navigation"), i + 1), "");
+		GLOBAL_DEF_BASIC(PropertyInfo(Variant::FLOAT, vformat("%s/layer_%d_cost", PNAME("layer_names/3d_navigation"), i + 1), PROPERTY_HINT_RANGE, "1.0,100.0,0.01,or_greater"), 1.0);
 	}
 
 	for (int i = 0; i < 32; i++) {

@@ -30,6 +30,7 @@
 
 #include "nav_map.h"
 
+#include "3d/nav_area_3d.h"
 #include "3d/nav_map_builder_3d.h"
 #include "3d/nav_mesh_queries_3d.h"
 #include "3d/nav_region_iteration_3d.h"
@@ -249,6 +250,19 @@ void NavMap::remove_link(NavLink *p_link) {
 	int64_t link_index = links.find(p_link);
 	if (link_index >= 0) {
 		links.remove_at_unordered(link_index);
+		iteration_dirty = true;
+	}
+}
+
+void NavMap::add_area(NavArea3D *p_area) {
+	areas.push_back(p_area);
+	iteration_dirty = true;
+}
+
+void NavMap::remove_area(NavArea3D *p_area) {
+	int64_t area_index = areas.find(p_area);
+	if (area_index >= 0) {
+		areas.remove_at_unordered(area_index);
 		iteration_dirty = true;
 	}
 }
@@ -739,6 +753,13 @@ void NavMap::add_link_sync_dirty_request(SelfList<NavLink> *p_sync_request) {
 	sync_dirty_requests.links.add(p_sync_request);
 }
 
+void NavMap::add_area_sync_dirty_request(SelfList<NavArea3D> *p_sync_request) {
+	if (p_sync_request->in_list()) {
+		return;
+	}
+	sync_dirty_requests.areas.add(p_sync_request);
+}
+
 void NavMap::add_agent_sync_dirty_request(SelfList<NavAgent> *p_sync_request) {
 	if (p_sync_request->in_list()) {
 		return;
@@ -767,6 +788,13 @@ void NavMap::remove_link_sync_dirty_request(SelfList<NavLink> *p_sync_request) {
 	sync_dirty_requests.links.remove(p_sync_request);
 }
 
+void NavMap::remove_area_sync_dirty_request(SelfList<NavArea3D> *p_sync_request) {
+	if (!p_sync_request->in_list()) {
+		return;
+	}
+	sync_dirty_requests.areas.remove(p_sync_request);
+}
+
 void NavMap::remove_agent_sync_dirty_request(SelfList<NavAgent> *p_sync_request) {
 	if (!p_sync_request->in_list()) {
 		return;
@@ -791,7 +819,7 @@ void NavMap::_sync_dirty_map_update_requests() {
 	}
 
 	if (!iteration_dirty) {
-		iteration_dirty = sync_dirty_requests.regions.first() || sync_dirty_requests.links.first();
+		iteration_dirty = sync_dirty_requests.regions.first() || sync_dirty_requests.links.first() || sync_dirty_requests.areas.first();
 	}
 
 	// Sync NavRegions.
@@ -805,6 +833,12 @@ void NavMap::_sync_dirty_map_update_requests() {
 		element->self()->sync();
 	}
 	sync_dirty_requests.links.clear();
+
+	// Sync NavAreas.
+	for (SelfList<NavArea3D> *element = sync_dirty_requests.areas.first(); element; element = element->next()) {
+		element->self()->sync();
+	}
+	sync_dirty_requests.areas.clear();
 }
 
 void NavMap::_sync_dirty_avoidance_update_requests() {
