@@ -10,14 +10,12 @@ namespace Godot
         /// <see cref="Node.NotificationSceneInstantiated"/> notification on the root node.
         /// </summary>
         /// <seealso cref="InstantiateOrNull{T}(GenEditState)"/>
-        /// <exception cref="InvalidCastException">
-        /// The instantiated node can't be casted to the given type <typeparamref name="T"/>.
-        /// </exception>
-        /// <typeparam name="T">The type to cast to. Should be a descendant of <see cref="Node"/>.</typeparam>
+        /// <exception cref="InvalidCastException">The instantiated node can't be casted to the given type <typeparamref name="T"/>.</exception>
+        /// <typeparam name="T">The <see cref="Node"/> type to cast to.</typeparam>
         /// <returns>The instantiated scene.</returns>
-        public T Instantiate<T>(PackedScene.GenEditState editState = (PackedScene.GenEditState)0) where T : class
+        public T Instantiate<T>(GenEditState editState = default) where T : Node
         {
-            return (T)(object)Instantiate(editState);
+            return (T)Instantiate(editState);
         }
 
         /// <summary>
@@ -26,9 +24,9 @@ namespace Godot
         /// <see cref="Node.NotificationSceneInstantiated"/> notification on the root node.
         /// </summary>
         /// <seealso cref="Instantiate{T}(GenEditState)"/>
-        /// <typeparam name="T">The type to cast to. Should be a descendant of <see cref="Node"/>.</typeparam>
+        /// <typeparam name="T">The <see cref="Node"/> type to cast to.</typeparam>
         /// <returns>The instantiated scene.</returns>
-        public T InstantiateOrNull<T>(PackedScene.GenEditState editState = (PackedScene.GenEditState)0) where T : class
+        public T InstantiateOrNull<T>(GenEditState editState = default) where T : Node
         {
             return Instantiate(editState) as T;
         }
