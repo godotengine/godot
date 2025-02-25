@@ -5,6 +5,10 @@
 	</brief_description>
 	<description>
 		A multiline text editor. It also has limited facilities for editing code, such as syntax highlighting support. For more advanced facilities for editing code, see [CodeEdit].
+		While entering text, it is possible to insert special characters using Unicode, OEM or Windows alt codes:
+		- To enter Unicode codepoints, hold [kbd]Alt[/kbd] and type the codepoint on the numpad. For example, to enter the character [code]á[/code] (U+00E1), hold [kbd]Alt[/kbd] and type [kbd]+E1[/kbd] on the numpad (the leading zeroes can be omitted).
+		- To enter OEM codepoints, hold [kbd]Alt[/kbd] and type the code on the numpad. For example, to enter the character [code]á[/code] (OEM 160), hold [kbd]Alt[/kbd] and type [code]160[/code] on the numpad.
+		- To enter Windows codepoints, hold [kbd]Alt[/kbd] and type the code on the numpad. For example, to enter the character [code]á[/code] (Windows 0225), hold [kbd]Alt[/kbd] and type [kbd]0[/kbd], [kbd]2[/kbd], [kbd]2[/kbd], [kbd]5[/kbd] on the numpad. The leading zero here must [b]not[/b] be omitted, as this is how Windows codepoints are distinguished from OEM codepoints.
 		[b]Note:[/b] Most viewport, caret, and edit methods contain a [code]caret_index[/code] argument for [member caret_multiple] support. The argument should be one of the following: [code]-1[/code] for all carets, [code]0[/code] for the main caret, or greater than [code]0[/code] for secondary carets in the order they were created.
 		[b]Note:[/b] When holding down [kbd]Alt[/kbd], the vertical scroll wheel will scroll 5 times as fast as it would normally do. This also works in the Godot script editor.
 	</description>
