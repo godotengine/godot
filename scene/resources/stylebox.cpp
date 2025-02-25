@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  style_box.cpp                                                         */
+/*  stylebox.cpp                                                         */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "style_box.h"
+#include "stylebox.h"
 
 #include "scene/main/canvas_item.h"
 

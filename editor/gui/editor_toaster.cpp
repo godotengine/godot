@@ -36,7 +36,7 @@
 #include "scene/gui/button.h"
 #include "scene/gui/label.h"
 #include "scene/gui/panel_container.h"
-#include "scene/resources/style_box_flat.h"
+#include "scene/resources/stylebox_flat.h"
 
 EditorToaster *EditorToaster::singleton = nullptr;
 
@@ -301,7 +301,7 @@ void EditorToaster::_draw_progress(Control *panel) {
 			default:
 				break;
 		}
-		panel->draw_style_box(stylebox, Rect2(Vector2(), size));
+		panel->draw_stylebox(stylebox, Rect2(Vector2(), size));
 	}
 }
 

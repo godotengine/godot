@@ -1580,7 +1580,7 @@ void AnimationTimelineEdit::_notification(int p_what) {
 			int begin_px = -get_value() * scale;
 
 			{
-				draw_style_box(stylebox_time_unavailable, Rect2(Point2(get_name_limit(), 0), Point2(zoomw - 1, h)));
+				draw_stylebox(stylebox_time_unavailable, Rect2(Point2(get_name_limit(), 0), Point2(zoomw - 1, h)));
 
 				if (begin_px < zoomw && end_px > 0) {
 					if (begin_px < 0) {
@@ -1590,7 +1590,7 @@ void AnimationTimelineEdit::_notification(int p_what) {
 						end_px = zoomw;
 					}
 
-					draw_style_box(stylebox_time_available, Rect2(Point2(get_name_limit() + begin_px, 0), Point2(end_px - begin_px, h)));
+					draw_stylebox(stylebox_time_available, Rect2(Point2(get_name_limit() + begin_px, 0), Point2(end_px - begin_px, h)));
 				}
 			}
 #define SC_ADJ 100
@@ -2074,17 +2074,17 @@ void AnimationTrackEdit::_notification(int p_what) {
 
 			if (track % 2 == 1) {
 				// Draw a background over odd lines to make long lists of tracks easier to read.
-				draw_style_box(stylebox_odd, Rect2(Point2(1 * EDSCALE, 0), get_size() - Size2(1 * EDSCALE, 0)));
+				draw_stylebox(stylebox_odd, Rect2(Point2(1 * EDSCALE, 0), get_size() - Size2(1 * EDSCALE, 0)));
 			}
 
 			if (hovered) {
 				// Draw hover feedback.
-				draw_style_box(stylebox_hover, Rect2(Point2(1 * EDSCALE, 0), get_size() - Size2(1 * EDSCALE, 0)));
+				draw_stylebox(stylebox_hover, Rect2(Point2(1 * EDSCALE, 0), get_size() - Size2(1 * EDSCALE, 0)));
 			}
 
 			if (has_focus()) {
 				// Offside so the horizontal sides aren't cutoff.
-				draw_style_box(stylebox_focus, Rect2(Point2(1 * EDSCALE, 0), get_size() - Size2(1 * EDSCALE, 0)));
+				draw_stylebox(stylebox_focus, Rect2(Point2(1 * EDSCALE, 0), get_size() - Size2(1 * EDSCALE, 0)));
 			}
 
 			const Ref<Font> font = get_theme_font(SceneStringName(font), SNAME("Label"));
@@ -3611,7 +3611,7 @@ void AnimationTrackEditGroup::_notification(int p_what) {
 				}
 			}
 
-			draw_style_box(stylebox_header, Rect2(Point2(), get_size()));
+			draw_stylebox(stylebox_header, Rect2(Point2(), get_size()));
 
 			int limit = timeline->get_name_limit();
 

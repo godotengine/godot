@@ -310,7 +310,7 @@ void EditorSpinSlider::_draw_spin_slider() {
 
 	Ref<StyleBox> sb = get_theme_stylebox(read_only ? SNAME("read_only") : CoreStringName(normal), SNAME("LineEdit"));
 	if (!flat) {
-		draw_style_box(sb, Rect2(Vector2(), size));
+		draw_stylebox(sb, Rect2(Vector2(), size));
 	}
 	Ref<Font> font = get_theme_font(SceneStringName(font), SNAME("LineEdit"));
 	int font_size = get_theme_font_size(SceneStringName(font_size), SNAME("LineEdit"));
@@ -332,15 +332,15 @@ void EditorSpinSlider::_draw_spin_slider() {
 	if (flat && !label.is_empty()) {
 		Ref<StyleBox> label_bg = get_theme_stylebox(SNAME("label_bg"), SNAME("EditorSpinSlider"));
 		if (rtl) {
-			draw_style_box(label_bg, Rect2(Vector2(size.width - (sb->get_offset().x * 2 + label_width), 0), Vector2(sb->get_offset().x * 2 + label_width, size.height)));
+			draw_stylebox(label_bg, Rect2(Vector2(size.width - (sb->get_offset().x * 2 + label_width), 0), Vector2(sb->get_offset().x * 2 + label_width, size.height)));
 		} else {
-			draw_style_box(label_bg, Rect2(Vector2(), Vector2(sb->get_offset().x * 2 + label_width, size.height)));
+			draw_stylebox(label_bg, Rect2(Vector2(), Vector2(sb->get_offset().x * 2 + label_width, size.height)));
 		}
 	}
 
 	if (has_focus()) {
 		Ref<StyleBox> focus = get_theme_stylebox(SNAME("focus"), SNAME("LineEdit"));
-		draw_style_box(focus, Rect2(Vector2(), size));
+		draw_stylebox(focus, Rect2(Vector2(), size));
 	}
 
 	if (rtl) {

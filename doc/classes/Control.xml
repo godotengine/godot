@@ -1072,11 +1072,11 @@
 			The tooltip popup will use either a default implementation, or a custom one that you can provide by overriding [method _make_custom_tooltip]. The default tooltip includes a [PopupPanel] and [Label] whose theme properties can be customized using [Theme] methods with the [code]"TooltipPanel"[/code] and [code]"TooltipLabel"[/code] respectively. For example:
 			[codeblocks]
 			[gdscript]
-			var style_box = StyleBoxFlat.new()
-			style_box.set_bg_color(Color(1, 1, 0))
-			style_box.set_border_width_all(2)
+			var stylebox = StyleBoxFlat.new()
+			stylebox.set_bg_color(Color(1, 1, 0))
+			stylebox.set_border_width_all(2)
 			# We assume here that the `theme` property has been assigned a custom Theme beforehand.
-			theme.set_stylebox("panel", "TooltipPanel", style_box)
+			theme.set_stylebox("panel", "TooltipPanel", stylebox)
 			theme.set_color("font_color", "TooltipLabel", Color(0, 1, 1))
 			[/gdscript]
 			[csharp]

@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  style_box_flat.cpp                                                    */
+/*  stylebox_flat.cpp                                                    */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "style_box_flat.h"
+#include "stylebox_flat.h"
 
 #include "scene/main/scene_tree.h"
 #include "scene/main/window.h"

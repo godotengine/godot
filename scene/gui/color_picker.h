@@ -137,8 +137,8 @@ private:
 	TextureRect *picker_texture_zoom = nullptr;
 	Panel *picker_preview = nullptr;
 	Panel *picker_preview_color = nullptr;
-	Ref<StyleBoxFlat> picker_preview_style_box;
-	Ref<StyleBoxFlat> picker_preview_style_box_color;
+	Ref<StyleBoxFlat> picker_preview_stylebox;
+	Ref<StyleBoxFlat> picker_preview_stylebox_color;
 
 	// Legacy color picking.
 	TextureRect *picker_texture_rect = nullptr;

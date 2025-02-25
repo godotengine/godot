@@ -1125,7 +1125,7 @@ void ItemList::_notification(int p_what) {
 				width -= scroll_bar_v_min.width;
 			}
 
-			draw_style_box(theme_cache.panel_style, Rect2(Point2(), size));
+			draw_stylebox(theme_cache.panel_style, Rect2(Point2(), size));
 
 			Ref<StyleBox> sbsel;
 			Ref<StyleBox> cursor;
@@ -1264,17 +1264,17 @@ void ItemList::_notification(int p_what) {
 					}
 
 					if (should_draw_selected_bg) {
-						draw_style_box(sbsel, r);
+						draw_stylebox(sbsel, r);
 					}
 					if (should_draw_hovered_selected_bg) {
 						if (has_focus()) {
-							draw_style_box(theme_cache.hovered_selected_focus_style, r);
+							draw_stylebox(theme_cache.hovered_selected_focus_style, r);
 						} else {
-							draw_style_box(theme_cache.hovered_selected_style, r);
+							draw_stylebox(theme_cache.hovered_selected_style, r);
 						}
 					}
 					if (should_draw_hovered_bg) {
-						draw_style_box(theme_cache.hovered_style, r);
+						draw_stylebox(theme_cache.hovered_style, r);
 					}
 					if (should_draw_custom_bg) {
 						draw_rect(r, items[i].custom_bg);
@@ -1463,13 +1463,13 @@ void ItemList::_notification(int p_what) {
 					cursor_rcache.position.x = size.width - cursor_rcache.position.x - cursor_rcache.size.x;
 				}
 
-				draw_style_box(cursor, cursor_rcache);
+				draw_stylebox(cursor, cursor_rcache);
 			}
 
 			if (has_focus()) {
 				RenderingServer::get_singleton()->canvas_item_add_clip_ignore(get_canvas_item(), true);
 				size.x -= (scroll_bar_h->get_max() - scroll_bar_h->get_page());
-				draw_style_box(theme_cache.focus_style, Rect2(Point2(), size));
+				draw_stylebox(theme_cache.focus_style, Rect2(Point2(), size));
 				RenderingServer::get_singleton()->canvas_item_add_clip_ignore(get_canvas_item(), false);
 			}
 		} break;

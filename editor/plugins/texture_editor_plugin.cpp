@@ -42,7 +42,7 @@
 #include "scene/resources/compressed_texture.h"
 #include "scene/resources/image_texture.h"
 #include "scene/resources/portable_compressed_texture.h"
-#include "scene/resources/style_box_flat.h"
+#include "scene/resources/stylebox_flat.h"
 
 constexpr const char *texture_2d_shader = R"(
 shader_type canvas_item;

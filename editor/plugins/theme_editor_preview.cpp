@@ -132,7 +132,7 @@ void ThemeEditorPreview::_draw_picker_overlay() {
 	if (hovered_control) {
 		Rect2 highlight_rect = hovered_control->get_global_rect();
 		highlight_rect.position = picker_overlay->get_global_transform().affine_inverse().xform(highlight_rect.position);
-		picker_overlay->draw_style_box(theme_cache.preview_picker_overlay, highlight_rect);
+		picker_overlay->draw_stylebox(theme_cache.preview_picker_overlay, highlight_rect);
 
 		String highlight_name = hovered_control->get_theme_type_variation();
 		if (highlight_name == StringName()) {
@@ -151,7 +151,7 @@ void ThemeEditorPreview::_draw_picker_overlay() {
 
 		highlight_label_rect.position = highlight_label_rect.position.clamp(Vector2(), picker_overlay->get_size());
 
-		picker_overlay->draw_style_box(theme_cache.preview_picker_label, highlight_label_rect);
+		picker_overlay->draw_stylebox(theme_cache.preview_picker_label, highlight_label_rect);
 
 		Point2 label_pos = highlight_label_rect.position;
 		label_pos.y += highlight_label_rect.size.y - margin_bottom;

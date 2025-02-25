@@ -115,7 +115,7 @@ void EditorPerformanceProfiler::_monitor_draw() {
 
 	info_message->hide();
 
-	Ref<StyleBox> graph_style_box = get_theme_stylebox(CoreStringName(normal), SNAME("TextEdit"));
+	Ref<StyleBox> graph_stylebox = get_theme_stylebox(CoreStringName(normal), SNAME("TextEdit"));
 	Ref<Font> graph_font = get_theme_font(SceneStringName(font), SNAME("TextEdit"));
 	int font_size = get_theme_font_size(SceneStringName(font_size), SNAME("TextEdit"));
 
@@ -132,10 +132,10 @@ void EditorPerformanceProfiler::_monitor_draw() {
 	for (int i = 0; i < active.size(); i++) {
 		Monitor &current = monitors[active[i]];
 		Rect2i rect(Point2i(i % columns, i / columns) * cell_size + Point2i(MARGIN, MARGIN), cell_size - Point2i(MARGIN, MARGIN) * 2);
-		monitor_draw->draw_style_box(graph_style_box, rect);
+		monitor_draw->draw_stylebox(graph_stylebox, rect);
 
-		rect.position += graph_style_box->get_offset();
-		rect.size -= graph_style_box->get_minimum_size();
+		rect.position += graph_stylebox->get_offset();
+		rect.size -= graph_stylebox->get_minimum_size();
 		Color draw_color = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
 		draw_color.set_hsv(Math::fmod(hue_shift * float(current.frame_index), 0.9f), draw_color.get_s() * 0.9f, draw_color.get_v() * value_multiplier, 0.6f);
 		monitor_draw->draw_string(graph_font, rect.position + Point2(0, graph_font->get_ascent(font_size)), current.item->get_text(0), HORIZONTAL_ALIGNMENT_LEFT, rect.size.x, font_size, draw_color);
@@ -280,9 +280,9 @@ void EditorPerformanceProfiler::_marker_input(const Ref<InputEvent> &p_event) {
 				} else {
 					marker_key = "";
 				}
-				Ref<StyleBox> graph_style_box = get_theme_stylebox(CoreStringName(normal), SNAME("TextEdit"));
-				rect.position += graph_style_box->get_offset();
-				rect.size -= graph_style_box->get_minimum_size();
+				Ref<StyleBox> graph_stylebox = get_theme_stylebox(CoreStringName(normal), SNAME("TextEdit"));
+				rect.position += graph_stylebox->get_offset();
+				rect.size -= graph_stylebox->get_minimum_size();
 				Vector2 point = mb->get_position() - rect.position;
 				if (point.x >= rect.size.x) {
 					marker_frame = 0;

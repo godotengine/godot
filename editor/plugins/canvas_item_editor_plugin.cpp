@@ -63,7 +63,7 @@
 #include "scene/main/canvas_layer.h"
 #include "scene/main/window.h"
 #include "scene/resources/packed_scene.h"
-#include "scene/resources/style_box_texture.h"
+#include "scene/resources/stylebox_texture.h"
 
 #define RULER_WIDTH (15 * EDSCALE)
 #define DRAG_THRESHOLD (8 * EDSCALE)
