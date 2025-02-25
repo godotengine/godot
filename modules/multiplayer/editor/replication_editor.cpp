@@ -40,9 +40,9 @@
 #include "editor/property_selector.h"
 #include "editor/themes/editor_scale.h"
 #include "editor/themes/editor_theme_manager.h"
-#include "scene/gui/dialogs.h"
+#include "scene/gui/advanced/dialogs.h"
+#include "scene/gui/advanced/tree.h"
 #include "scene/gui/separator.h"
-#include "scene/gui/tree.h"
 
 void ReplicationEditor::_pick_node_filter_text_changed(const String &p_newtext) {
 	TreeItem *root_item = pick_node->get_scene_tree()->get_scene_tree()->get_root();

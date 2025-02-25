@@ -40,7 +40,7 @@
 #include "editor/plugins/canvas_item_editor_plugin.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/2d/tile_map_layer.h"
-#include "scene/gui/split_container.h"
+#include "scene/gui/advanced/split_container.h"
 
 #include "core/input/input.h"
 #include "core/math/geometry_2d.h"

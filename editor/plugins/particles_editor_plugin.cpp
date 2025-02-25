@@ -42,9 +42,9 @@
 #include "scene/3d/cpu_particles_3d.h"
 #include "scene/3d/gpu_particles_3d.h"
 #include "scene/3d/mesh_instance_3d.h"
+#include "scene/gui/advanced/menu_button.h"
+#include "scene/gui/advanced/spin_box.h"
 #include "scene/gui/box_container.h"
-#include "scene/gui/menu_button.h"
-#include "scene/gui/spin_box.h"
 #include "scene/resources/image_texture.h"
 #include "scene/resources/particle_process_material.h"
 

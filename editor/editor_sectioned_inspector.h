@@ -30,7 +30,7 @@
 
 #pragma once
 
-#include "scene/gui/split_container.h"
+#include "scene/gui/advanced/split_container.h"
 
 class CheckButton;
 class EditorInspector;

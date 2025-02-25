@@ -45,7 +45,7 @@
 #include "editor/plugins/script_editor_plugin.h"
 #include "editor/scene_tree_dock.h"
 #include "editor/themes/editor_theme_manager.h"
-#include "scene/gui/menu_button.h"
+#include "scene/gui/advanced/menu_button.h"
 #include "scene/gui/tab_container.h"
 #include "scene/resources/packed_scene.h"
 

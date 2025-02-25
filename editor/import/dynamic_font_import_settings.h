@@ -32,10 +32,10 @@
 
 #include "core/io/resource_importer.h"
 
-#include "scene/gui/dialogs.h"
+#include "scene/gui/advanced/dialogs.h"
+#include "scene/gui/advanced/text_edit.h"
+#include "scene/gui/advanced/tree.h"
 #include "scene/gui/tab_container.h"
-#include "scene/gui/text_edit.h"
-#include "scene/gui/tree.h"
 #include "scene/resources/font.h"
 
 class DynamicFontImportSettingsDialog;

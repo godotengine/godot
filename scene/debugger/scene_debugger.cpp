@@ -36,7 +36,7 @@
 #include "core/math/math_fieldwise.h"
 #include "core/object/script_language.h"
 #include "core/templates/local_vector.h"
-#include "scene/gui/popup_menu.h"
+#include "scene/gui/advanced/popup_menu.h"
 #include "scene/main/canvas_layer.h"
 #include "scene/main/scene_tree.h"
 #include "scene/main/window.h"
