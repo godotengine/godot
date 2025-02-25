@@ -7,7 +7,7 @@
 # Zuzana Palenikova <sousana.is@gmail.com>, 2019.
 # MineGame159 <petulko08@gmail.com>, 2019, 2020.
 # Michal <alladinsiffon@gmail.com>, 2019.
-# Richard <rgarlik@gmail.com>, 2019.
+# Richard <rgarlik@gmail.com>, 2019, 2025.
 # Richard Urban <redasuio1@gmail.com>, 2020.
 # Anonymous <noreply@weblate.org>, 2020.
 # Mario-projects-dev <m.vitek.mv@gmail.com>, 2021.
@@ -28,8 +28,8 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-10-28 14:43+0000\n"
-"Last-Translator: David Chorváth <dadulo33@gmail.com>\n"
+"PO-Revision-Date: 2025-02-22 12:18+0000\n"
+"Last-Translator: Richard <rgarlik@gmail.com>\n"
 "Language-Team: Slovak <https://hosted.weblate.org/projects/godot-engine/godot/"
 "sk/>\n"
 "Language: sk\n"
@@ -37,7 +37,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=((n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2);\n"
-"X-Generator: Weblate 5.8.2-dev\n"
+"X-Generator: Weblate 5.10.1-dev\n"
 
 msgid "Main Thread"
 msgstr "Hlavné vlákno"
@@ -395,6 +395,9 @@ msgstr "Zobraziť Skryté"
 msgid "Swap Input Direction"
 msgstr "Prevrátiť smer vstupu"
 
+msgid "Start Unicode Character Input"
+msgstr "Začať vstup znaku Unicode"
+
 msgid "Invalid input %d (not passed) in expression"
 msgstr "Nesprávny vstup %d (neprešiel) vo výraze"
 
@@ -602,6 +605,9 @@ msgstr "Animácia Zmeniť Pozíciu3D"
 
 msgid "Animation Change Rotation3D"
 msgstr "Animácia: Zmena 3D Rotácie"
+
+msgid "Animation Change Scale3D"
+msgstr "Animácia: Zmeniť 3D Zväčšenie"
 
 msgid "Change Animation Length"
 msgstr "Zmeniť Dĺžku Animácie (Change Animation Length)"

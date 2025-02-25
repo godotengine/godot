@@ -173,7 +173,7 @@
 # Dmitry <www.dimon271296000@gmail.com>, 2024.
 # John Blacko <sporrershik@gmail.com>, 2024.
 # G-Shadow <18046412+gshadows@users.noreply.github.com>, 2024.
-# Макар Разин <makarrazin14@gmail.com>, 2024.
+# Макар Разин <makarrazin14@gmail.com>, 2024, 2025.
 # Artem <artemka.hvostov@yandex.ru>, 2024.
 # viktordino <truehorrorwebsite@gmail.com>, 2024.
 # Marsic112 <gsrsov@gmail.com>, 2024.
@@ -210,8 +210,8 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-02-11 01:02+0000\n"
-"Last-Translator: Mister Ky <afanasievsergiy3524@gmail.com>\n"
+"PO-Revision-Date: 2025-02-23 18:34+0000\n"
+"Last-Translator: Макар Разин <makarrazin14@gmail.com>\n"
 "Language-Team: Russian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ru/>\n"
 "Language: ru\n"
@@ -220,7 +220,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
 "n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
-"X-Generator: Weblate 5.10-dev\n"
+"X-Generator: Weblate 5.10.1-dev\n"
 
 msgid "Main Thread"
 msgstr "Главный поток"
@@ -576,6 +576,9 @@ msgstr "Показывать скрытые"
 
 msgid "Swap Input Direction"
 msgstr "Сменить направление ввода"
+
+msgid "Start Unicode Character Input"
+msgstr "Запустить ввод символов Unicode"
 
 msgid "Invalid input %d (not passed) in expression"
 msgstr "Некорректный ввод %d (не передан) в выражении"

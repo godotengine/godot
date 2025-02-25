@@ -48,7 +48,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-02-20 15:46+0000\n"
+"PO-Revision-Date: 2025-02-25 13:43+0000\n"
 "Last-Translator: Vojtech Krajnansky <vojtech.krajnansky@gmail.com>\n"
 "Language-Team: Czech <https://hosted.weblate.org/projects/godot-engine/godot-"
 "properties/cs/>\n"
@@ -57,7 +57,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=((n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2);\n"
-"X-Generator: Weblate 5.10.1-dev\n"
+"X-Generator: Weblate 5.10.2-dev\n"
 
 msgid "Application"
 msgstr "Aplikace"
@@ -195,7 +195,7 @@ msgid "Buses"
 msgstr "Sběrnice"
 
 msgid "Default Bus Layout"
-msgstr "Výchozí rozložení sběrnice"
+msgstr "Výchozí rozvržení sběrnice"
 
 msgid "General"
 msgstr "Obecné"
@@ -324,10 +324,10 @@ msgid "Internationalization"
 msgstr "Internacionalizace"
 
 msgid "Force Right to Left Layout Direction"
-msgstr "Vynutit směr rozložení zprava doleva"
+msgstr "Vynutit směr rozvržení zprava doleva"
 
 msgid "Root Node Layout Direction"
-msgstr "Směr rozložení kořenového uzlu"
+msgstr "Směr rozvržení kořenového uzlu"
 
 msgid "Root Node Auto Translate"
 msgstr "Automatický posun kořenového uzlu"
@@ -921,7 +921,7 @@ msgid "Localize Settings"
 msgstr "Lokalizovat nastavení"
 
 msgid "UI Layout Direction"
-msgstr "Směr rozložení uživatelského rozhraní"
+msgstr "Směr rozvržení uživatelského rozhraní"
 
 msgid "Display Scale"
 msgstr "Měřítko zobrazení"
@@ -2580,7 +2580,7 @@ msgid "Arrangement"
 msgstr "Uspořádání"
 
 msgid "Layout"
-msgstr "Rozložení"
+msgstr "Rozvržení"
 
 msgid "Normal Map"
 msgstr "Normálová mapa"
@@ -5455,7 +5455,7 @@ msgid "Gravity Scale"
 msgstr "Měřítko gravitace"
 
 msgid "Mass Distribution"
-msgstr "Rozložení hmotnosti"
+msgstr "Rozvržení hmotnosti"
 
 msgid "Center of Mass Mode"
 msgstr "Režim těžiště"
@@ -6483,10 +6483,10 @@ msgid "Custom Minimum Size"
 msgstr "Vlastní minimální velikost"
 
 msgid "Layout Direction"
-msgstr "Směr rozložení"
+msgstr "Směr rozvržení"
 
 msgid "Layout Mode"
-msgstr "Režim rozložení"
+msgstr "Režim rozvržení"
 
 msgid "Anchors Preset"
 msgstr "Profil ukotvení"
@@ -7025,6 +7025,9 @@ msgstr "Terény"
 msgid "Custom Data"
 msgstr "Vlastní data"
 
+msgid "Tile Layout"
+msgstr "Odstranit rozvržení"
+
 msgid "UV Clipping"
 msgstr "Ořez UV"
 
@@ -7252,6 +7255,9 @@ msgstr "Uzel"
 
 msgid "Default Font Subpixel Positioning"
 msgstr "Výchozí subpixelové polohování fontů"
+
+msgid "LCD Subpixel Layout"
+msgstr "Odstranit rozvržení"
 
 msgid "Soft Clip dB"
 msgstr "dB měkkého oříznutí"

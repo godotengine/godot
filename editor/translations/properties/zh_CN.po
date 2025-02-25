@@ -98,7 +98,7 @@ msgstr ""
 "Project-Id-Version: Chinese (Simplified) (Godot Engine)\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: 2018-01-20 12:15+0200\n"
-"PO-Revision-Date: 2025-02-10 00:46+0000\n"
+"PO-Revision-Date: 2025-02-21 19:26+0000\n"
 "Last-Translator: Haoyu Qiu <timothyqiu32@gmail.com>\n"
 "Language-Team: Chinese (Simplified Han script) <https://hosted.weblate.org/"
 "projects/godot-engine/godot-properties/zh_Hans/>\n"
@@ -107,7 +107,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.10-dev\n"
+"X-Generator: Weblate 5.10.1-dev\n"
 
 msgid "Application"
 msgstr "应用"
@@ -1443,6 +1443,12 @@ msgstr "保存时自动重新加载并解析脚本"
 
 msgid "Open Dominant Script on Scene Change"
 msgstr "场景变化时打开主导脚本"
+
+msgid "Documentation"
+msgstr "文档"
+
+msgid "Enable Tooltips"
+msgstr "启用工具提示"
 
 msgid "Script List"
 msgstr "脚本列表"
@@ -3895,6 +3901,9 @@ msgstr "降噪"
 
 msgid "Denoiser"
 msgstr "降噪器"
+
+msgid "Enable TLS V 1"
+msgstr "启用 TLSv1"
 
 msgid "BPM"
 msgstr "BPM"
@@ -10822,6 +10831,9 @@ msgstr "撤离时间（毫秒）"
 
 msgid "Surround"
 msgstr "环绕"
+
+msgid "Mix Rate Mode"
+msgstr "混音率模式"
 
 msgid "Enable Input"
 msgstr "启用输入"
