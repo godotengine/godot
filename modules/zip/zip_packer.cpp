@@ -55,6 +55,23 @@ Error ZIPPacker::close() {
 	return err;
 }
 
+void ZIPPacker::set_compression_level(CompressionLevel p_compression_level) {
+	switch (p_compression_level) {
+		case COMPRESSION_NONE:
+			compression_level = Z_NO_COMPRESSION;
+			break;
+		case COMPRESSION_BEST_SPEED:
+			compression_level = Z_BEST_SPEED;
+			break;
+		case COMPRESSION_BEST:
+			compression_level = Z_BEST_COMPRESSION;
+			break;
+		case COMPRESSION_DEFAULT:
+		default:
+			compression_level = Z_DEFAULT_COMPRESSION;
+	}
+}
+
 Error ZIPPacker::start_file(const String &p_path) {
 	ERR_FAIL_COND_V_MSG(fa.is_null(), FAILED, "ZIPPacker must be opened before use.");
 
@@ -81,7 +98,7 @@ Error ZIPPacker::start_file(const String &p_path) {
 			0,
 			nullptr,
 			Z_DEFLATED,
-			Z_DEFAULT_COMPRESSION,
+			compression_level,
 			0,
 			-MAX_WBITS,
 			DEF_MEM_LEVEL,
@@ -107,6 +124,7 @@ Error ZIPPacker::close_file() {
 
 void ZIPPacker::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("open", "path", "append"), &ZIPPacker::open, DEFVAL(Variant(APPEND_CREATE)));
+	ClassDB::bind_method(D_METHOD("set_compression_level", "compression_level"), &ZIPPacker::set_compression_level);
 	ClassDB::bind_method(D_METHOD("start_file", "path"), &ZIPPacker::start_file);
 	ClassDB::bind_method(D_METHOD("write_file", "data"), &ZIPPacker::write_file);
 	ClassDB::bind_method(D_METHOD("close_file"), &ZIPPacker::close_file);
@@ -115,9 +133,16 @@ void ZIPPacker::_bind_methods() {
 	BIND_ENUM_CONSTANT(APPEND_CREATE);
 	BIND_ENUM_CONSTANT(APPEND_CREATEAFTER);
 	BIND_ENUM_CONSTANT(APPEND_ADDINZIP);
+
+	BIND_ENUM_CONSTANT(COMPRESSION_NONE);
+	BIND_ENUM_CONSTANT(COMPRESSION_DEFAULT);
+	BIND_ENUM_CONSTANT(COMPRESSION_BEST);
+	BIND_ENUM_CONSTANT(COMPRESSION_BEST_SPEED);
 }
 
-ZIPPacker::ZIPPacker() {}
+ZIPPacker::ZIPPacker() {
+	compression_level = Z_DEFAULT_COMPRESSION;
+}
 
 ZIPPacker::~ZIPPacker() {
 	if (fa.is_valid()) {
