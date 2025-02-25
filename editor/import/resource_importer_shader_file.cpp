@@ -33,6 +33,7 @@
 #include "core/io/file_access.h"
 #include "core/io/resource_saver.h"
 #include "editor/editor_node.h"
+#include "editor/editor_settings.h"
 #include "editor/plugins/shader_file_editor_plugin.h"
 #include "servers/rendering/rendering_device_binds.h"
 
@@ -110,7 +111,11 @@ Error ResourceImporterShaderFile::import(ResourceUID::ID p_source_id, const Stri
 		}
 	}
 
-	ResourceSaver::save(shader_file, p_save_path + ".res");
+	int flags = 0;
+	if (EDITOR_GET("filesystem/on_save/compress_binary_resources")) {
+		flags |= ResourceSaver::FLAG_COMPRESS;
+	}
+	ResourceSaver::save(shader_file, p_save_path + ".res", flags);
 
 	return OK;
 }

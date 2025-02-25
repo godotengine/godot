@@ -32,6 +32,7 @@
 
 #include "core/io/file_access.h"
 #include "core/io/resource_saver.h"
+#include "editor/editor_settings.h"
 #include "scene/3d/importer_mesh_instance_3d.h"
 #include "scene/3d/node_3d.h"
 #include "scene/resources/3d/importer_mesh.h"
@@ -674,7 +675,11 @@ Error ResourceImporterOBJ::import(ResourceUID::ID p_source_id, const String &p_s
 
 	String save_path = p_save_path + ".mesh";
 
-	err = ResourceSaver::save(meshes.front()->get()->get_mesh(), save_path);
+	int flags = 0;
+	if (EDITOR_GET("filesystem/on_save/compress_binary_resources")) {
+		flags |= ResourceSaver::FLAG_COMPRESS;
+	}
+	err = ResourceSaver::save(meshes.front()->get()->get_mesh(), save_path, flags);
 
 	ERR_FAIL_COND_V_MSG(err != OK, err, "Cannot save Mesh to file '" + save_path + "'.");
 

@@ -34,6 +34,7 @@
 #include "core/io/resource_saver.h"
 
 #ifdef TOOLS_ENABLED
+#include "editor/editor_settings.h"
 #include "editor/import/audio_stream_import_settings.h"
 #endif
 
@@ -112,7 +113,13 @@ Error ResourceImporterMP3::import(ResourceUID::ID p_source_id, const String &p_s
 	mp3_stream->set_beat_count(beat_count);
 	mp3_stream->set_bar_beats(bar_beats);
 
-	return ResourceSaver::save(mp3_stream, p_save_path + ".mp3str");
+	int flags = ResourceSaver::FLAG_COMPRESS;
+#ifdef TOOLS_ENABLED
+	if (!EDITOR_GET("filesystem/on_save/compress_binary_resources")) {
+		flags &= ~ResourceSaver::FLAG_COMPRESS;
+	}
+#endif
+	return ResourceSaver::save(mp3_stream, p_save_path + ".mp3str", flags);
 }
 
 ResourceImporterMP3::ResourceImporterMP3() {
