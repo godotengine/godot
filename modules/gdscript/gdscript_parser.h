@@ -1553,6 +1553,7 @@ private:
 	ExpressionNode *parse_assignment(ExpressionNode *p_previous_operand, bool p_can_assign);
 	ExpressionNode *parse_array(ExpressionNode *p_previous_operand, bool p_can_assign);
 	ExpressionNode *parse_dictionary(ExpressionNode *p_previous_operand, bool p_can_assign);
+	ExpressionNode *parse_formatted_string(ExpressionNode *p_previous_operand, bool p_can_assign);
 	ExpressionNode *parse_call(ExpressionNode *p_previous_operand, bool p_can_assign);
 	ExpressionNode *parse_get_node(ExpressionNode *p_previous_operand, bool p_can_assign);
 	ExpressionNode *parse_preload(ExpressionNode *p_previous_operand, bool p_can_assign);
