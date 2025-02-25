@@ -194,6 +194,7 @@ AnimationNodeStateMachineTransition::AnimationNodeStateMachineTransition() {
 
 void AnimationNodeStateMachinePlayback::_set_current(AnimationNodeStateMachine *p_state_machine, const StringName &p_state) {
 	current = p_state;
+
 	if (current == StringName()) {
 		group_start_transition = Ref<AnimationNodeStateMachineTransition>();
 		group_end_transition = Ref<AnimationNodeStateMachineTransition>();
@@ -490,6 +491,7 @@ void AnimationNodeStateMachinePlayback::_start(AnimationNodeStateMachine *p_stat
 	teleport_request = true;
 	stop_request = false;
 	start_request = StringName();
+	p_state_machine->_notify_tree(AnimationNodeStateMachine::ANIMATION_NODE_NOTIFICATION_STATE_MACHINE_STARTED);
 }
 
 bool AnimationNodeStateMachinePlayback::_travel(AnimationTree *p_tree, AnimationNodeStateMachine *p_state_machine, bool p_is_allow_transition_to_self, bool p_test_only) {
@@ -719,6 +721,7 @@ AnimationNode::NodeTimeInfo AnimationNodeStateMachinePlayback::_process(const St
 		travel_request = StringName();
 		path.clear();
 		playing = false;
+		p_state_machine->_notify_tree(AnimationNodeStateMachine::ANIMATION_NODE_NOTIFICATION_STATE_MACHINE_FINISHED);
 		return AnimationNode::NodeTimeInfo();
 	}
 
@@ -883,7 +886,13 @@ AnimationNode::NodeTimeInfo AnimationNodeStateMachinePlayback::_process(const St
 	if (will_end || ((p_state_machine->get_state_machine_type() == AnimationNodeStateMachine::STATE_MACHINE_TYPE_NESTED) && !p_state_machine->has_transition_from(current))) {
 		// There is no next transition.
 		if (fading_from != StringName()) {
+			if (MAX(current_nti.get_remain(), fadeing_from_nti.get_remain()) <= 0) {
+				p_state_machine->_notify_tree(AnimationNodeStateMachine::ANIMATION_NODE_NOTIFICATION_STATE_MACHINE_FINISHED);
+			}
 			return Animation::is_greater_approx(current_nti.get_remain(), fadeing_from_nti.get_remain()) ? current_nti : fadeing_from_nti;
+		}
+		if (current_nti.get_remain() <= 0) {
+			p_state_machine->_notify_tree(AnimationNodeStateMachine::ANIMATION_NODE_NOTIFICATION_STATE_MACHINE_FINISHED);
 		}
 		return current_nti;
 	}
@@ -1828,6 +1837,9 @@ void AnimationNodeStateMachine::_bind_methods() {
 	BIND_ENUM_CONSTANT(STATE_MACHINE_TYPE_ROOT);
 	BIND_ENUM_CONSTANT(STATE_MACHINE_TYPE_NESTED);
 	BIND_ENUM_CONSTANT(STATE_MACHINE_TYPE_GROUPED);
+
+	BIND_CONSTANT(ANIMATION_NODE_NOTIFICATION_STATE_MACHINE_STARTED);
+	BIND_CONSTANT(ANIMATION_NODE_NOTIFICATION_STATE_MACHINE_FINISHED);
 }
 
 Vector<StringName> AnimationNodeStateMachine::get_nodes_with_transitions_from(const StringName &p_node) const {

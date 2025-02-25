@@ -116,6 +116,11 @@ public:
 		STATE_MACHINE_TYPE_GROUPED,
 	};
 
+	enum {
+		ANIMATION_NODE_NOTIFICATION_STATE_MACHINE_STARTED = 6,
+		ANIMATION_NODE_NOTIFICATION_STATE_MACHINE_FINISHED = 7
+	};
+
 private:
 	friend class AnimationNodeStateMachinePlayback;
 
