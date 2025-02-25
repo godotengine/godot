@@ -173,7 +173,7 @@ void VoxelGIEditorPlugin::_voxel_gi_save_path_and_bake(const String &p_path) {
 		Ref<VoxelGIData> voxel_gi_data = voxel_gi->get_probe_data();
 		ERR_FAIL_COND(voxel_gi_data.is_null());
 		voxel_gi_data->set_path(p_path);
-		ResourceSaver::save(voxel_gi_data, p_path, ResourceSaver::FLAG_CHANGE_PATH);
+		ResourceSaver::save(voxel_gi_data, p_path, ResourceSaver::FLAG_CHANGE_PATH | ResourceSaver::FLAG_COMPRESS);
 	}
 }
 
