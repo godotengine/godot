@@ -30,7 +30,7 @@
 
 #pragma once
 
-#include "scene/gui/tree.h"
+#include "scene/gui/advanced/tree.h"
 
 #include "tests/test_macros.h"
 

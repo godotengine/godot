@@ -33,7 +33,9 @@
 #include "scene/2d/physics/area_2d.h"
 #include "scene/2d/physics/collision_shape_2d.h"
 #include "scene/gui/control.h"
-#include "scene/gui/subviewport_container.h"
+#ifndef ADVANCED_GUI_DISABLED
+#include "scene/gui/advanced/subviewport_container.h"
+#endif // ADVANCED_GUI_DISABLED
 #include "scene/main/canvas_layer.h"
 #include "scene/main/window.h"
 #include "scene/resources/2d/rectangle_shape_2d.h"
@@ -1363,6 +1365,7 @@ TEST_CASE("[SceneTree][Viewport] Controls and InputEvent handling") {
 		}
 
 		SUBCASE("[Viewport][GuiInputEvent][DnD] Drag to a different Viewport.") {
+#ifndef ADVANCED_GUI_DISABLED
 			SubViewportContainer *svc = memnew(SubViewportContainer);
 			svc->set_size(Size2(100, 100));
 			svc->set_position(Point2(200, 50));
@@ -1384,6 +1387,7 @@ TEST_CASE("[SceneTree][Viewport] Controls and InputEvent handling") {
 			sv_b->set_size(Size2(20, 20));
 			sv->add_child(sv_b);
 			Point2i on_svb = Point2i(235, 85);
+#endif // ADVANCED_GUI_DISABLED
 
 			Window *ew = memnew(Window);
 			ew->set_position(Point2(50, 200));
@@ -1402,6 +1406,7 @@ TEST_CASE("[SceneTree][Viewport] Controls and InputEvent handling") {
 			ew->add_child(ew_b);
 			Point2i on_ewb = Point2i(85, 235);
 
+#ifndef ADVANCED_GUI_DISABLED
 			SUBCASE("[Viewport][GuiInputEvent][DnD] Drag to SubViewport") {
 				sv_b->valid_drop = false;
 				SEND_GUI_MOUSE_BUTTON_EVENT(on_a, MouseButton::LEFT, MouseButtonMask::LEFT, Key::NONE);
@@ -1429,6 +1434,7 @@ TEST_CASE("[SceneTree][Viewport] Controls and InputEvent handling") {
 				CHECK(node_d->valid_drop);
 				CHECK(!node_d->during_drag);
 			}
+#endif // ADVANCED_GUI_DISABLED
 
 			SUBCASE("[Viewport][GuiInputEvent][DnD] Drag to embedded Window") {
 				ew_b->valid_drop = false;
@@ -1461,10 +1467,12 @@ TEST_CASE("[SceneTree][Viewport] Controls and InputEvent handling") {
 			memdelete(ew_a);
 			memdelete(ew_b);
 			memdelete(ew);
+#ifndef ADVANCED_GUI_DISABLED
 			memdelete(sv_a);
 			memdelete(sv_b);
 			memdelete(sv);
 			memdelete(svc);
+#endif // ADVANCED_GUI_DISABLED
 		}
 	}
 
@@ -1481,6 +1489,7 @@ TEST_CASE("[SceneTree][Viewport] Controls and InputEvent handling") {
 }
 
 TEST_CASE("[SceneTree][Viewport] Control mouse cursor shape") {
+#ifndef ADVANCED_GUI_DISABLED
 	SUBCASE("[Viewport][CursorShape] Mouse cursor is not overridden by SubViewportContainer") {
 		SubViewportContainer *node_a = memnew(SubViewportContainer);
 		SubViewport *node_b = memnew(SubViewport);
@@ -1518,6 +1527,7 @@ TEST_CASE("[SceneTree][Viewport] Control mouse cursor shape") {
 		memdelete(node_b);
 		memdelete(node_a);
 	}
+#endif // ADVANCED_GUI_DISABLED
 }
 
 class TestArea2D : public Area2D {
