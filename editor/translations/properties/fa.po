@@ -51,7 +51,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-02-20 15:46+0000\n"
+"PO-Revision-Date: 2025-02-22 19:05+0000\n"
 "Last-Translator: Atur <aturaseman9@gmail.com>\n"
 "Language-Team: Persian <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/fa/>\n"
@@ -225,7 +225,7 @@ msgid "Subwindows"
 msgstr "زیر پنجره ها"
 
 msgid "Embed Subwindows"
-msgstr "جاسازی زیر پنجره ها"
+msgstr "نهادینه‌سازی زیرپنجره‌ها"
 
 msgid "Android"
 msgstr "اندروید"
@@ -602,6 +602,9 @@ msgstr "اندازه سلول"
 msgid "Jumping Enabled"
 msgstr "پرش بکارافتاده"
 
+msgid "Diagonal Mode"
+msgstr "حالت قطر"
+
 msgid "Seed"
 msgstr "دانه"
 
@@ -658,6 +661,9 @@ msgstr "بومی‌سازی نمایشی"
 
 msgid "Use Pseudolocalization"
 msgstr "به‌کارگیری بومی‌سازی نمایشی"
+
+msgid "Replace With Accents"
+msgstr "جایگزینی با آکسان‌ها"
 
 msgid "Double Vowels"
 msgstr "جفت واکه‌ها"
@@ -782,6 +788,9 @@ msgstr "صفحهٔ ویراستار"
 msgid "Project Manager Screen"
 msgstr "صفحه مدیر پروژه"
 
+msgid "Use Embedded Menu"
+msgstr "به‌کارگیری گزینگان نهادینه‌شده"
+
 msgid "Main Font"
 msgstr "قلم اصلی"
 
@@ -820,6 +829,9 @@ msgstr "داک‌ها"
 
 msgid "Scene Tree"
 msgstr "درخت صحنه"
+
+msgid "Ask Before Revoking Unique Name"
+msgstr "پیش از ریواندن (معزول کردن) نام یکتا بپرس"
 
 msgid "Inspector"
 msgstr "بازرس"
@@ -914,8 +926,14 @@ msgstr "حالت نمایش"
 msgid "Max Results"
 msgstr "نتایج بیشینه‌"
 
+msgid "Show Search Highlight"
+msgstr "نمایش برجسته‌های جستجو"
+
 msgid "Import"
 msgstr "درون‌برد"
+
+msgid "Blender Path"
+msgstr "مسیر بلندر"
 
 msgid "FBX"
 msgstr "اف‌بی‌اکس (FBX)"
@@ -928,6 +946,9 @@ msgstr "ابزارها"
 
 msgid "OIDN"
 msgstr "OIDN"
+
+msgid "Auto Expand to Selected"
+msgstr "گسترش خودکار به برگزیده"
 
 msgid "Always Show Folders"
 msgstr "همیشه پوشه‌ها نمایش داده شوند"
@@ -965,6 +986,9 @@ msgstr "خطوط"
 msgid "Autowrap Mode"
 msgstr "حالت پوشانیدن خودکار"
 
+msgid "Draw Spaces"
+msgstr "کشیدن فاصله‌ها"
+
 msgid "Behavior"
 msgstr "رفتار"
 
@@ -979,6 +1003,9 @@ msgstr "پیمایش یکنواخت"
 
 msgid "V Scroll Speed"
 msgstr "تندی پیمایش عمودی"
+
+msgid "Drag and Drop Selection"
+msgstr "کشاندن و انداختن برگزیده"
 
 msgid "Stay in Script Editor on Node Selected"
 msgstr "ماندن درون ویراستار اسکریپت هنگام گزینش گره"
@@ -1004,11 +1031,20 @@ msgstr "فایل‌ها"
 msgid "Restore Scripts on Load"
 msgstr "برگرداندن اسکریپت‌ها هنگام بارکردن"
 
+msgid "Convert Indent on Save"
+msgstr "تبدیل کردن تورفتگی هنگام ذخیره‌سازی"
+
 msgid "Auto Reload Scripts on External Change"
 msgstr "بازبارکردن خودکار اسکریپت‌ها هنگام دگرش بیرونی"
 
 msgid "Open Dominant Script on Scene Change"
 msgstr "گشودن اسکریپت چیره بر دگرگونی صحنه"
+
+msgid "Documentation"
+msgstr "مستندات"
+
+msgid "Enable Tooltips"
+msgstr "به‌کاراندازی پندابزار"
 
 msgid "Script List"
 msgstr "فهرست اسکریپت"
@@ -1024,6 +1060,9 @@ msgstr "حرارت اسکریپت فعال شد"
 
 msgid "Script Temperature History Size"
 msgstr "اندازه تاریخچه حرارت اسکریپت"
+
+msgid "Highlight Scene Scripts"
+msgstr "برجسته‌سازی اسکریپت‌های صحنه"
 
 msgid "Group Help Pages"
 msgstr "گروه‌بندی صفحات کمکی"
@@ -1049,6 +1088,9 @@ msgstr "به‌کارگیری ویراستار خارجی"
 msgid "Help"
 msgstr "راهنما"
 
+msgid "Show Help Index"
+msgstr "نمایش اندیس راهنما"
+
 msgid "Sort Functions Alphabetically"
 msgstr "چینش تابع‌ها بر پایهٔ الفبا"
 
@@ -1057,6 +1099,12 @@ msgstr "گیزمو‌های سه‌بعدی"
 
 msgid "Gizmo Colors"
 msgstr "رنگ‌های گیزمو"
+
+msgid "Instantiated"
+msgstr "نمونه‌سازی‌شده"
+
+msgid "Joint"
+msgstr "مفصل"
 
 msgid "AABB"
 msgstr "ای‌ای‌بی‌بی"
@@ -1308,7 +1356,7 @@ msgid "Binary Format"
 msgstr "چارچوب باینری"
 
 msgid "Embed PCK"
-msgstr "جاسازی PCK"
+msgstr "نهادینه‌سازی پی.سی.کی"
 
 msgid "Texture Format"
 msgstr "چارچوب بافت"
@@ -1889,6 +1937,9 @@ msgstr "زمان پریدگی"
 
 msgid "Region Size"
 msgstr "اندازهٔ دامنه"
+
+msgid "Enable TLS V 1"
+msgstr "به‌کاراندازی تی.ال.اس نسخهٔ ۱"
 
 msgid "Loop Offset"
 msgstr "بازه از مبدای چرخه"
@@ -3792,6 +3843,12 @@ msgstr "تیک"
 
 msgid "Updown"
 msgstr "بالاپایین"
+
+msgid "Embedded Border"
+msgstr "مرز نهادینه‌شده"
+
+msgid "Embedded Unfocused Border"
+msgstr "مرز نامتمرکز نهادینه‌شده"
 
 msgid "Title Outline Size"
 msgstr "اندازهٔ پیراخط عنوان"

@@ -24,13 +24,14 @@
 # Hideri <foreheadchann@googlemail.com>, 2024.
 # Emil Hakala <emil.hakala44@gmail.com>, 2024.
 # Ricky Tigg <ricky.tigg@gmail.com>, 2025.
+# V Lo <vil.lokasaari@gmail.com>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-01-14 16:52+0000\n"
-"Last-Translator: Ricky Tigg <ricky.tigg@gmail.com>\n"
+"PO-Revision-Date: 2025-02-24 06:34+0000\n"
+"Last-Translator: V Lo <vil.lokasaari@gmail.com>\n"
 "Language-Team: Finnish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fi/>\n"
 "Language: fi\n"
@@ -38,7 +39,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.10-dev\n"
+"X-Generator: Weblate 5.10.1-dev\n"
 
 msgid "Main Thread"
 msgstr "Pääsäie"
@@ -189,6 +190,9 @@ msgstr "Ohjaimen painike %d"
 
 msgid "Pressure:"
 msgstr "Paine:"
+
+msgid "canceled"
+msgstr "peruutettu"
 
 msgid "touched"
 msgstr "koskettu"
@@ -362,6 +366,9 @@ msgstr "Valitse Sana Sirkumfleksin alta"
 msgid "Add Selection for Next Occurrence"
 msgstr "Lisää Valinta Seuraavalle Tapahtumalle"
 
+msgid "Skip Selection for Next Occurrence"
+msgstr "Ohita Valinta Seuraavalle Tapahtumalle"
+
 msgid "Clear Carets and Selection"
 msgstr "Poista Karetit ja Valinta"
 
@@ -388,6 +395,9 @@ msgstr "Näytä Piilotetut"
 
 msgid "Swap Input Direction"
 msgstr "Vaihda Syötteen Suunta"
+
+msgid "Start Unicode Character Input"
+msgstr "Aloita Unicode Syöttö"
 
 msgid "Invalid input %d (not passed) in expression"
 msgstr "Virheellinen syöte %d (ei välitetty) lausekkeessa"

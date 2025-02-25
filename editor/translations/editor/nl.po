@@ -78,7 +78,7 @@
 # Philip Goto <philip.goto@gmail.com>, 2024.
 # Tycho <tychoschurink@outlook.com>, 2024.
 # Leroy <Leroyvanraaij@gmail.com>, 2024.
-# pim wagemans <pimwagemans09@gmail.com>, 2024.
+# pim wagemans <pimwagemans09@gmail.com>, 2024, 2025.
 # Yannick Kartodikromo <yannickkartodikromo0001@gmail.com>, 2024.
 # NicolasDed <nicolas-dedoyard@outlook.com>, 2024.
 # "Julian F." <info@julianfitzpatrick.nl>, 2024.
@@ -90,8 +90,8 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-02-03 04:50+0000\n"
-"Last-Translator: tristanvong <tristan.vong@student.ehb.be>\n"
+"PO-Revision-Date: 2025-02-25 07:59+0000\n"
+"Last-Translator: pim wagemans <pimwagemans09@gmail.com>\n"
 "Language-Team: Dutch <https://hosted.weblate.org/projects/godot-engine/godot/"
 "nl/>\n"
 "Language: nl\n"
@@ -99,7 +99,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.10-dev\n"
+"X-Generator: Weblate 5.10.2-dev\n"
 
 msgid "Main Thread"
 msgstr "Hoofd Thread"
@@ -458,6 +458,9 @@ msgstr "Verborgen tonen"
 msgid "Swap Input Direction"
 msgstr "Invoerrichting wisselen"
 
+msgid "Start Unicode Character Input"
+msgstr "Start invoegen van Unicode karakters"
+
 msgid "Invalid input %d (not passed) in expression"
 msgstr "Ongeldige invoer %d (niet doorgegeven) in uitdrukking"
 
@@ -699,6 +702,15 @@ msgstr "Animatielengte wijzigen"
 
 msgid "Change Animation Loop"
 msgstr "Animatielus wijzigen"
+
+msgid "Can't change loop mode on animation instanced from an imported resource."
+msgstr ""
+"Kan lusmodus niet wijzigen voor animatie die geïnstantieerd is vanuit een "
+"geïmporteerde bron."
+
+msgid "Can't change loop mode on animation embedded in another resource."
+msgstr ""
+"Kan lusmodus niet wijzigen voor animatie die ingebed is in een andere bron."
 
 msgid "Property Track..."
 msgstr "Eigenschap Track..."
@@ -1315,11 +1327,62 @@ msgstr "Alles/niets selecteren"
 msgid "Animation Change Keyframe Time"
 msgstr "Animatie sleutelframe-tijd wijzigen"
 
+msgid "Marker name is read-only in the inspector."
+msgstr "Naam van de markering kan niet bewerkt worden in de inspecteur."
+
+msgid ""
+"A marker's name can only be changed by right-clicking it in the animation "
+"editor and selecting \"Rename Marker\", in order to make sure that marker "
+"names are all unique."
+msgstr ""
+"De naam van een markering kan aleen aangepast worden door er op te "
+"rechtsklikken in de animatie editor en \"Markering hernoemen\" te selecteren "
+"om ervoor te zorgen dat alle markering namen allemaal uniek zijn."
+
+msgid "Insert Marker..."
+msgstr "Voeg markering in..."
+
+msgid "Rename Marker"
+msgstr "Hernoem markering"
+
+msgid "Delete Marker(s)"
+msgstr "Markeringen(s) verwijderen"
+
+msgid "Show All Marker Names"
+msgstr "Laat alle markering namen zien"
+
+msgid "Marker:"
+msgstr "Markering:"
+
+msgid "Marker '%s' already exists!"
+msgstr "Markering '%s' bestaat al!"
+
+msgid "Add Marker Key"
+msgstr "Markeringssleutel toevoegen"
+
+msgid "Empty marker names are not allowed."
+msgstr "Lege markerings namen zijn niet toegestaan."
+
+msgid "Insert Marker"
+msgstr "Markering invoegen"
+
+msgid "Marker Name"
+msgstr "Naam van markering"
+
+msgid "Marker Color"
+msgstr "Kleur van markering"
+
 msgid "Close"
 msgstr "Sluiten"
 
 msgid "Error!"
 msgstr "Fout!"
+
+msgid "Change Marker Name:"
+msgstr "Markering hernoemen:"
+
+msgid "Edit Marker Color"
+msgstr "Kleur van markering aanpassen"
 
 msgid "Add Audio Track Clip"
 msgstr "Audiotrack-clip toevoegen"
@@ -1600,6 +1663,9 @@ msgstr "Omschrijving:"
 msgid "Remote %s:"
 msgstr "Remote %s:"
 
+msgid "Session %d"
+msgstr "Sessie %d"
+
 msgid "Debugger"
 msgstr "Fout­opspoorder"
 
@@ -1626,6 +1692,9 @@ msgstr ""
 
 msgid "Toggle Visibility"
 msgstr "Zichtbaarheid omschakelen"
+
+msgid "Expression to evaluate"
+msgstr "Expressie om te evalueren"
 
 msgid "Clear"
 msgstr "Wissen"
@@ -2736,6 +2805,9 @@ msgstr "Profiel(en) importeren"
 msgid "Manage Editor Feature Profiles"
 msgstr "Eigenschapsprofielen Editor beheren"
 
+msgid "Initializing plugins..."
+msgstr "Plugins initialiseren..."
+
 msgid "Some extensions need the editor to restart to take effect."
 msgstr ""
 "Sommige extensies vereisen dat de editor opnieuw wordt opgestart om effect te "
@@ -2759,6 +2831,9 @@ msgstr ""
 
 msgid "(Re)Importing Assets"
 msgstr "Bronnen (her)importeren"
+
+msgid "Executing pre-reimport operations..."
+msgstr "Pre-import operaties aan het uitvoeren..."
 
 msgid "Import resources of type: %s"
 msgstr "Resources van type %s importeren"
@@ -3119,6 +3194,11 @@ msgstr "Dit lid is gemarkeerd als verouderd."
 
 msgid "This member is marked as experimental."
 msgstr "Dit lid is gemarkeerd als experimenteel."
+
+msgid "Make this property be placed at the top for all objects of this class."
+msgstr ""
+"Zorg ervoor dat deze eigenschap boven alle andere objecten in deze klasse "
+"word geplaatst."
 
 msgid "Pin Value"
 msgstr "Waarde vastzetten"
@@ -6194,6 +6274,9 @@ msgstr "Plak Houding"
 
 msgid "Clear Guides"
 msgstr "Wis hulplijnen"
+
+msgid "Zoom to 1600%"
+msgstr "Zoom naar 1600%"
 
 msgid "Select Mode"
 msgstr "Selecteermodus"
@@ -9407,6 +9490,9 @@ msgstr "Controleer de opgegeven Android SDK map in de Editor instellingen."
 
 msgid "Missing 'build-tools' directory!"
 msgstr "'build tools' map ontbreekt!"
+
+msgid "Unable to find Android SDK build-tools' apksigner command."
+msgstr "Kon Android sdk build-tools apksigner commando niet vinden."
 
 msgid "Invalid filename! Android App Bundle requires the *.aab extension."
 msgstr ""

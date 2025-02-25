@@ -57,7 +57,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-02-20 15:46+0000\n"
+"PO-Revision-Date: 2025-02-25 23:00+0000\n"
 "Last-Translator: Atur <aturaseman9@gmail.com>\n"
 "Language-Team: Persian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fa/>\n"
@@ -66,7 +66,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 5.10.1-dev\n"
+"X-Generator: Weblate 5.10.2-dev\n"
 
 msgid "Main Thread"
 msgstr "ریسهٔ اصلی"
@@ -2758,7 +2758,7 @@ msgid "Allows to view and edit 3D scenes."
 msgstr "اجازه دیدن و ویرایش صحنه‌های سه‌بعدی را می‌دهد."
 
 msgid "Allows to edit scripts using the integrated script editor."
-msgstr "اجازهٔ ویرایش اسکریپت‌ها با استفاده از ویرایشگر اسکریپت داخلی را می‌دهد."
+msgstr "اجازهٔ ویرایش اسکریپت‌ها با ویراستار اسکریپت درونی را می‌دهد."
 
 msgid "Provides built-in access to the Asset Library."
 msgstr "دسترسی تعبیه‌ شده به کتابخانه دارایی را فراهم می‌کند."
@@ -2872,7 +2872,7 @@ msgid "Import Profile(s)"
 msgstr "درون‌برد نمایه(ها)"
 
 msgid "Manage Editor Feature Profiles"
-msgstr "مدیریت ویژگی نمایه‌های ویرایشگر"
+msgstr "مدیریت ویژگی نمایه‌های ویراستار"
 
 msgid "Project initialization"
 msgstr "راه‌اندازی آغازین پروژه"
@@ -3569,7 +3569,7 @@ msgstr ""
 "ازکاراندازی کلیک کنید."
 
 msgid "Spins when the editor window redraws."
-msgstr "هنگامی که پنجره ویرایشگر دوباره ترسیم می شود می چرخد."
+msgstr "هنگامی که پنجرهٔ ویراستار دوباره کشیده می‌شود می‌چرخد."
 
 msgid "Imported resources can't be saved."
 msgstr "بنمایه‌های درون‌برد شده نمی‌توانند ذخیره شوند."
@@ -3914,8 +3914,8 @@ msgid ""
 "Multi-window support is not available because Interface > Editor > Single "
 "Window Mode is enabled in the editor settings."
 msgstr ""
-"پشتیبانی از چند پنجره در دسترس نیست زیرا رابط > ویرایشگر > حالت پنجره واحد در "
-"تنظیمات ویرایشگر فعال است."
+"پشتیبانی از چندپنجرگی در دسترس نیست زیرا در تنظیمات ویراستار «میانا > "
+"ویراستار > حالت تک‌پنجره» به‌کارافتاده است."
 
 msgid ""
 "Multi-window support is not available because Interface > Multi Window > "
@@ -4238,7 +4238,7 @@ msgid "Open Editor Settings Folder"
 msgstr "گشودن پوشهٔ تنظیمات ویراستار"
 
 msgid "Manage Editor Features..."
-msgstr "مدیریت ویژگی‌های ویرایشگر..."
+msgstr "مدیریت ویژگی‌های ویراستار..."
 
 msgid "Manage Export Templates..."
 msgstr "مدیریت برون‌برد قالب‌ها..."
@@ -4873,6 +4873,22 @@ msgstr "ذخیره فایل:"
 msgid "No export template found at the expected path:"
 msgstr "هیچ قالب برون‌بردی در مسیر مورد انتظار یافت نشد:"
 
+msgid ""
+"Using user provided text server data, text display in the exported project "
+"might be broken if export template was built with different ICU version!"
+msgstr ""
+"با به‌کارگیری دادهٔ سِرور نوشتاری فراهم‌شده به دست کاربران، اگر قالب برون‌برد با "
+"نسخهٔ آی.سی.یوی متفاوتی ساخته شده باشد، ممکن است نمایش نوشتار در پروژهٔ "
+"برون‌بردشده خراب باشد!"
+
+msgid ""
+"Using editor embedded text server data, text display in the exported project "
+"might be broken if export template was built with different ICU version!"
+msgstr ""
+"با به‌کارگیری دادهٔ سِرور نوشتار ویراستار نهادینه‌شده، اگر قالب برون‌برد با نسخهٔ "
+"آی.سی.یوی متفاوتی ساخته شده باشد، ممکن است نمایش نوشتار در پروژهٔ برون‌بردشده "
+"خراب باشد!"
+
 msgid "ZIP Creation"
 msgstr "ساخت ZIP"
 
@@ -4941,10 +4957,11 @@ msgid "Failed to copy export template."
 msgstr "ناکامی در روگرفتن قالب برون‌برد."
 
 msgid "PCK Embedding"
-msgstr "نهادینه کردن PCK"
+msgstr "نهادینه‌سازی پی.سی.کی"
 
 msgid "On 32-bit exports the embedded PCK cannot be bigger than 4 GiB."
-msgstr "در برون‌بردهای ۳۲ بیتی PCK نهادینه نمی‌تواند بزرگتر از ۴ گیبی‌بایت باشد."
+msgstr ""
+"در برون‌بردهای ۳۲ بیتی پی.سی.کی نهادینه‌شده نمی‌تواند بزرگتر از ۴ گیبی‌بایت باشد."
 
 msgid "GDExtension"
 msgstr "جی.دی.اِکستِنشِن"
@@ -5192,6 +5209,9 @@ msgstr "بنمایه‌های برای برون‌برد:"
 
 msgid "(Inherited)"
 msgstr "(وارث)"
+
+msgid "Delete patch '%s' from list?"
+msgstr "زدایش پَچ «%s» از فهرست؟"
 
 msgid "Export With Debug"
 msgstr "برون‌برد با اشکال‌زدا"
@@ -6028,6 +6048,13 @@ msgstr "ناتوانی در آغاز کردن زیرفرآیند(ها)!"
 msgid "Recovery Mode is enabled. Disable it to run the project."
 msgstr "حالت بازیابی به‌کارافتاده است. برای اجرای پروژه آن را از کار بیندازید."
 
+msgid ""
+"Autostart is enabled for the following profilers, which can have a "
+"performance impact:"
+msgstr ""
+"خودراه‌اندازی برای واکاوهای زیر به‌کارافتاده است، که می‌تواند روی کارایی اثر "
+"بگذارد:"
+
 msgid "Network Profiler"
 msgstr "واکاو شبکه"
 
@@ -6261,6 +6288,13 @@ msgstr "گشودن در ویراستار"
 
 msgid "\"%s\" is not a known filter."
 msgstr "\"%s\" یک پالایهٔ شناخته شده نیست."
+
+msgid ""
+"Root nodes cannot be accessed as unique names in their own scene. Instantiate "
+"in another scene and set as unique name there."
+msgstr ""
+"گره‌های ریشه نمی‌توانند در صحنهٔ خود به‌عنوان نام یکتا در دسترس قرار بگیرند. در "
+"صحنهٔ دیگری نمونه‌سازی کرده و در آنجا آن را به‌عنوان نام یکتا بنشانید."
 
 msgid "Invalid node name, the following characters are not allowed:"
 msgstr "نام گره نامعتبر است، نویسه‌های زیر مجاز نیستند:"
@@ -6734,6 +6768,11 @@ msgstr "جایگاه فیزیکی"
 
 msgid "Any"
 msgstr "هر"
+
+msgid ""
+"The following resources will be duplicated and embedded within this resource/"
+"object."
+msgstr "بنمایه‌های زیر درون این بنمایه/شیء دوتاسازی و نهادینه خواهند شد."
 
 msgid "This object has no resources."
 msgstr "این شیء هیچ بنمایه‌ای ندارد."
@@ -8324,6 +8363,36 @@ msgstr "گوناگونی"
 msgid "Unable to preview font"
 msgstr "ناتوانی در پیش‌نمایش قلم"
 
+msgid "Game running not embedded."
+msgstr "اجرای بازی نهادینه‌شده نیست."
+
+msgid "Embedding is disabled."
+msgstr "نهادینه‌سازی ازکارافتاده است."
+
+msgid ""
+"Game embedding not available on Wayland.\n"
+"Wayland can be disabled in the Editor Settings (Run > Platforms > Linux/*BSD "
+"> Prefer Wayland)."
+msgstr ""
+"نهادینه‌سازی بازی در وِی‌لَند (Wayland) در دسترس نیست.\n"
+"وی‌لند می‌تواند در تنظیمات ویراستار (اجرا > سکوها > لینوکس/*بی.اس.دی > ترجیح "
+"دادن وی‌لند) از کار بیفتد."
+
+msgid "Game embedding not available on your OS."
+msgstr "نهادینه‌سازی بازی در سامانهٔ عامل شما در دسترس نیست."
+
+msgid ""
+"Game embedding not available for the Display Server: '%s'.\n"
+"Display Server can be modified in the Project Settings (Display > Display "
+"Server > Driver)."
+msgstr ""
+"نهادینه‌سازی بازی برای سِرور نمایش در دسترس نیست: «%s».\n"
+"سرور نمایش می‌تواند در تنظیمات ویراستار (نمایش > سرور نمایش > دِرایوِر) دگرگون "
+"شود."
+
+msgid "Game embedding not available in single window mode."
+msgstr "نهادینه‌سازی بازی در حالت تک‌پنجرگی در دسترس نیست."
+
 msgid "Next Frame"
 msgstr "فریم بعدی"
 
@@ -8350,6 +8419,24 @@ msgstr "دستکاری درون بازی"
 
 msgid "Manipulate From Editors"
 msgstr "دستکاری از ویراستارها"
+
+msgid ""
+"Embedded game size is based on project settings.\n"
+"The 'Keep Aspect' mode is used when the Game Workspace is smaller than the "
+"desired size."
+msgstr ""
+"اندازهٔ بازی نهادینه‌شده به تنظیمات پروژه بستگی دارد.\n"
+"هنگامی که محیط کاری کوچکتر از اندازهٔ مطلوب باشد حالت «نگهداری نسبت» به کار "
+"می‌رود."
+
+msgid "Keep the aspect ratio of the embedded game."
+msgstr "نسبت نمای بازی نهادینه‌شده را نگه دارید."
+
+msgid "Embedded game size stretches to fit the Game Workspace."
+msgstr "اندازهٔ بازی نهادینه‌شده کشش می‌یابد تا در محیط کاری بازی بگنجد."
+
+msgid "Embedding Options"
+msgstr "گزینه‌های نهادینه‌سازی"
 
 msgid "Make Game Workspace Floating on Next Play"
 msgstr "شناورسازی محیط کاری بازی در اجرای بعدی"
@@ -11715,8 +11802,8 @@ msgid ""
 "Note: Built-in scripts have some limitations and can't be edited using an "
 "external editor."
 msgstr ""
-"توجه: اسکریپت‌های داخلی محدود‌هایی دارند و نمی‌توانند با استفاده از ویرایشگر "
-"خارجی ویرایش شوند."
+"بدانید: اسکریپت‌های درون‌ساخته محدودیت‌هایی دارند و نمی‌توانند با ویراستارهای "
+"بیرونی ویراسته شوند."
 
 msgid ""
 "Warning: Having the script name be the same as a built-in type is usually not "
@@ -11758,7 +11845,7 @@ msgstr "پسوند نادرستی را برگزیدید."
 
 msgid "Note: Built-in shaders can't be edited using an external editor."
 msgstr ""
-"توجه: شیدر‌های تعبیه شده نمی‌توانند با استفاده از ویرایشگر خارجی ویرایش شوند."
+"بدانید: سایه‌زن‌های درون‌ساخته نمی‌توانند با ویراستارهای بیرونی ویراسته شوند."
 
 msgid "Will load an existing shader file."
 msgstr "یک پروندهٔ سایه‌زن موجود را بار خواهد کرد."
@@ -12036,6 +12123,13 @@ msgid "Could not install to device: %s"
 msgstr "در دستگاه نصب نشد: %s"
 
 msgid ""
+"C# project targets '%s' but the export template only supports '%s'. Consider "
+"using gradle builds instead."
+msgstr ""
+"پروژهٔ سی.شارپ «%s» را هدف می‌گیرد ولی قالب برون‌برد تنها از «%s» پشتیبانی "
+"می‌کند. به‌جای آن به‌کارگیری ساخت‌های گِرِیدِل را در نظر بگیرید."
+
+msgid ""
 "The \"%s\" renderer is designed for Desktop devices, and is not suitable for "
 "Android devices."
 msgstr ""
@@ -12131,6 +12225,10 @@ msgstr "نمی‌توان پروندهٔ \"%s\" را گشود."
 
 msgid "Failed to open executable file \"%s\"."
 msgstr "ناکامی در گشودن پروندهٔ اجراپذیر \"%s\"."
+
+msgid "32-bit executables cannot have embedded data >= 4 GiB."
+msgstr ""
+"اجراپذیرهای ۳۲ بیتی نمی‌توانند دادهٔ نهادینه‌شدهٔ >= ۴ گیبی‌بایت داشته باشند."
 
 msgid "Running..."
 msgstr "در حال اجرا..."

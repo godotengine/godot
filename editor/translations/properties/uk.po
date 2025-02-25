@@ -42,7 +42,7 @@ msgstr ""
 "Project-Id-Version: Ukrainian (Godot Engine)\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-02-18 07:42+0000\n"
+"PO-Revision-Date: 2025-02-21 19:26+0000\n"
 "Last-Translator: Максим Горпиніч <maksimgorpinic2005a@gmail.com>\n"
 "Language-Team: Ukrainian <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/uk/>\n"
@@ -1388,6 +1388,12 @@ msgstr "Автоматичне перезавантаження та аналі�
 
 msgid "Open Dominant Script on Scene Change"
 msgstr "Відкрийте домінуючий сценарій під час зміни сцени"
+
+msgid "Documentation"
+msgstr "Документація"
+
+msgid "Enable Tooltips"
+msgstr "Увімкнути підказки"
 
 msgid "Script List"
 msgstr "Список скриптів"
@@ -3840,6 +3846,9 @@ msgstr "Усунення шуму"
 
 msgid "Denoiser"
 msgstr "Деноайзер"
+
+msgid "Enable TLS V 1"
+msgstr "Увімкніть TLS V1"
 
 msgid "BPM"
 msgstr "BPM"
@@ -10767,6 +10776,9 @@ msgstr "Відтягування часу (мс)"
 
 msgid "Surround"
 msgstr "Об'ємний 7.1"
+
+msgid "Mix Rate Mode"
+msgstr "Режим швидкості змішування"
 
 msgid "Enable Input"
 msgstr "Увімкнути введення"
