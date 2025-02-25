@@ -37,8 +37,6 @@
 #include "core/os/os.h"
 #endif
 
-#include <stdint.h>
-
 #ifdef DEBUG_ENABLED
 _FORCE_INLINE_ void SceneMultiplayer::_profile_bandwidth(const String &p_what, int p_value) {
 	if (EngineDebugger::is_profiling("multiplayer:bandwidth")) {

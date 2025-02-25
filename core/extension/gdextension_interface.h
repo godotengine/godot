@@ -35,16 +35,16 @@
  * Together with the JSON file, you should be able to generate any binder.
  */
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stddef.h>
 #include <stdint.h>
 
 #ifndef __cplusplus
 typedef uint32_t char32_t;
 typedef uint16_t char16_t;
-#endif
-
-#ifdef __cplusplus
-extern "C" {
 #endif
 
 /* VARIANT TYPES */
