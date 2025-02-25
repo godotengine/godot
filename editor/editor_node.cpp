@@ -4700,14 +4700,6 @@ bool EditorNode::_find_scene_in_use(Node *p_node, const String &p_path) const {
 	return false;
 }
 
-bool EditorNode::is_scene_in_use(const String &p_path) {
-	Node *es = get_edited_scene();
-	if (es) {
-		return _find_scene_in_use(es, p_path);
-	}
-	return false;
-}
-
 OS::ProcessID EditorNode::has_child_process(OS::ProcessID p_pid) const {
 	return project_run_bar->has_child_process(p_pid);
 }
@@ -5195,8 +5187,6 @@ void EditorNode::_editor_file_dialog_unregister(EditorFileDialog *p_dialog) {
 	singleton->editor_file_dialogs.erase(p_dialog);
 }
 
-Vector<EditorNodeInitCallback> EditorNode::_init_callbacks;
-
 void EditorNode::_begin_first_scan() {
 	// In headless mode, scan right away.
 	// This allows users to continue using `godot --headless --editor --quit` to prepare a project.
@@ -5222,10 +5212,6 @@ Error EditorNode::export_preset(const String &p_preset, const String &p_path, bo
 	export_defer.patches = p_patches;
 	cmdline_export_mode = true;
 	return OK;
-}
-
-bool EditorNode::is_project_exporting() const {
-	return project_export && project_export->is_exporting();
 }
 
 void EditorNode::show_accept(const String &p_text, const String &p_title) {
@@ -6525,42 +6511,12 @@ void EditorNode::_remove_all_not_owned_children(Node *p_node, Node *p_owner) {
 	}
 }
 
-int EditorNode::plugin_init_callback_count = 0;
-
-void EditorNode::add_plugin_init_callback(EditorPluginInitializeCallback p_callback) {
-	ERR_FAIL_COND(plugin_init_callback_count == MAX_INIT_CALLBACKS);
-
-	plugin_init_callbacks[plugin_init_callback_count++] = p_callback;
-}
-
-EditorPluginInitializeCallback EditorNode::plugin_init_callbacks[EditorNode::MAX_INIT_CALLBACKS];
-
-int EditorNode::build_callback_count = 0;
-
-void EditorNode::add_build_callback(EditorBuildCallback p_callback) {
-	ERR_FAIL_COND(build_callback_count == MAX_INIT_CALLBACKS);
-
-	build_callbacks[build_callback_count++] = p_callback;
-}
-
-EditorBuildCallback EditorNode::build_callbacks[EditorNode::MAX_BUILD_CALLBACKS];
-
 bool EditorNode::call_build() {
-	bool builds_successful = true;
-
-	for (int i = 0; i < build_callback_count && builds_successful; i++) {
-		if (!build_callbacks[i]()) {
-			ERR_PRINT("A Godot Engine build callback failed.");
-			builds_successful = false;
-		}
-	}
-
-	if (builds_successful && !editor_data.call_build()) {
+	if (!editor_data.call_build()) {
 		ERR_PRINT("An EditorPlugin build callback failed.");
-		builds_successful = false;
+		return false;
 	}
-
-	return builds_successful;
+	return true;
 }
 
 void EditorNode::_inherit_imported(const String &p_action) {
@@ -6575,10 +6531,6 @@ void EditorNode::_open_imported() {
 void EditorNode::dim_editor(bool p_dimming) {
 	dimmed = p_dimming;
 	gui_base->set_modulate(p_dimming ? Color(0.5, 0.5, 0.5) : Color(1, 1, 1));
-}
-
-bool EditorNode::is_editor_dimmed() const {
-	return dimmed;
 }
 
 void EditorNode::open_export_template_manager() {
@@ -7922,10 +7874,6 @@ EditorNode::EditorNode() {
 	}
 	GDExtensionEditorPlugins::editor_node_add_plugin = &EditorNode::add_extension_editor_plugin;
 	GDExtensionEditorPlugins::editor_node_remove_plugin = &EditorNode::remove_extension_editor_plugin;
-
-	for (int i = 0; i < plugin_init_callback_count; i++) {
-		plugin_init_callbacks[i]();
-	}
 
 	resource_preview->add_preview_generator(Ref<EditorTexturePreviewPlugin>(memnew(EditorTexturePreviewPlugin)));
 	resource_preview->add_preview_generator(Ref<EditorImagePreviewPlugin>(memnew(EditorImagePreviewPlugin)));
