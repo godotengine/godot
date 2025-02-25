@@ -686,9 +686,11 @@ bool EditorResourcePicker::_is_drop_valid(const Dictionary &p_drag_data) const {
 			return true;
 		}
 
-		StringName custom_class = EditorNode::get_singleton()->get_object_custom_type_name(res.ptr());
-		if (_is_type_valid(custom_class, allowed_types)) {
-			return true;
+		if (res->get_script()) {
+			StringName custom_class = EditorNode::get_singleton()->get_object_custom_type_name(res->get_script());
+			if (_is_type_valid(custom_class, allowed_types)) {
+				return true;
+			}
 		}
 	}
 
