@@ -3072,6 +3072,9 @@
 		<constant name="METHOD_FLAG_OBJECT_CORE" value="64" enum="MethodFlags" is_bitfield="true">
 			Used internally. Allows to not dump core virtual methods (such as [method Object._notification]) to the JSON API.
 		</constant>
+		<constant name="METHOD_FLAG_VIRTUAL_REQUIRED" value="128" enum="MethodFlags" is_bitfield="true">
+			Flag for a virtual method that is required.
+		</constant>
 		<constant name="METHOD_FLAGS_DEFAULT" value="1" enum="MethodFlags" is_bitfield="true">
 			Default method flags (normal).
 		</constant>
