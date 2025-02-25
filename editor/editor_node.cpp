@@ -1729,7 +1729,9 @@ void EditorNode::_find_node_types(Node *p_node, int &count_2d, int &count_3d) {
 	}
 }
 
+// **Deprecated** now generates preview at EditorPackedScenePreviewPlugin
 void EditorNode::_save_scene_with_preview(String p_file, int p_idx) {
+	return; // Disable
 	save_scene_progress = memnew(EditorProgress("save", TTR("Saving Scene"), 4));
 
 	if (editor_data.get_edited_scene_root() != nullptr) {
@@ -2049,7 +2051,7 @@ void EditorNode::try_autosave() {
 		Node *scene = editor_data.get_edited_scene_root();
 
 		if (scene && !scene->get_scene_file_path().is_empty()) { // Only autosave if there is a scene and if it has a path.
-			_save_scene_with_preview(scene->get_scene_file_path());
+			_save_scene(scene->get_scene_file_path());
 		}
 	}
 	_menu_option(FILE_SAVE_ALL_SCENES);
@@ -2069,7 +2071,7 @@ void EditorNode::_save_all_scenes() {
 				if (i != editor_data.get_edited_scene()) {
 					_save_scene(scene->get_scene_file_path(), i);
 				} else {
-					_save_scene_with_preview(scene->get_scene_file_path());
+					_save_scene(scene->get_scene_file_path());
 				}
 			} else if (!scene->get_scene_file_path().is_empty()) {
 				all_saved = false;
@@ -2142,7 +2144,7 @@ void EditorNode::_dialog_action(String p_file) {
 				}
 
 				save_default_environment();
-				_save_scene_with_preview(p_file, scene_idx);
+				_save_scene(p_file, scene_idx);
 				_add_to_recent_scenes(p_file);
 				save_editor_layout_delayed();
 
@@ -2159,7 +2161,7 @@ void EditorNode::_dialog_action(String p_file) {
 		case FILE_SAVE_AND_RUN: {
 			if (file->get_file_mode() == EditorFileDialog::FILE_MODE_SAVE_FILE) {
 				save_default_environment();
-				_save_scene_with_preview(p_file);
+				_save_scene(p_file);
 				project_run_bar->play_custom_scene(p_file);
 			}
 		} break;
@@ -2170,7 +2172,7 @@ void EditorNode::_dialog_action(String p_file) {
 
 			if (file->get_file_mode() == EditorFileDialog::FILE_MODE_SAVE_FILE) {
 				save_default_environment();
-				_save_scene_with_preview(p_file);
+				_save_scene(p_file);
 				project_run_bar->play_main_scene((bool)pick_main_scene->get_meta("from_native", false));
 			}
 		} break;
@@ -2285,7 +2287,7 @@ void EditorNode::_dialog_action(String p_file) {
 		default: {
 			// Save scene?
 			if (file->get_file_mode() == EditorFileDialog::FILE_MODE_SAVE_FILE) {
-				_save_scene_with_preview(p_file);
+				_save_scene(p_file);
 			}
 
 		} break;
@@ -2794,9 +2796,9 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 			if (scene && !scene->get_scene_file_path().is_empty()) {
 				if (DirAccess::exists(scene->get_scene_file_path().get_base_dir())) {
 					if (scene_idx != editor_data.get_edited_scene()) {
-						_save_scene_with_preview(scene->get_scene_file_path(), scene_idx);
+						_save_scene(scene->get_scene_file_path(), scene_idx);
 					} else {
-						_save_scene_with_preview(scene->get_scene_file_path());
+						_save_scene(scene->get_scene_file_path());
 					}
 
 					if (scene_idx != -1) {
