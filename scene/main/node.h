@@ -209,6 +209,7 @@ private:
 		PhysicsInterpolationMode physics_interpolation_mode : 2;
 
 		bool physics_process : 1;
+		bool late_physics_process : 1;
 		bool process : 1;
 
 		bool physics_process_internal : 1;
@@ -386,6 +387,7 @@ protected:
 
 	GDVIRTUAL1(_process, double)
 	GDVIRTUAL1(_physics_process, double)
+	GDVIRTUAL1(_late_physics_process, double)
 	GDVIRTUAL0(_enter_tree)
 	GDVIRTUAL0(_exit_tree)
 	GDVIRTUAL0(_ready)
@@ -420,6 +422,7 @@ public:
 		NOTIFICATION_DISABLED = 28,
 		NOTIFICATION_ENABLED = 29,
 		NOTIFICATION_RESET_PHYSICS_INTERPOLATION = 2001, // A GodotSpace Odyssey.
+		NOTIFICATION_LATE_PHYSICS_PROCESS = 2002,
 		// Keep these linked to Node.
 		NOTIFICATION_WM_MOUSE_ENTER = 1002,
 		NOTIFICATION_WM_MOUSE_EXIT = 1003,
@@ -584,6 +587,9 @@ public:
 	double get_physics_process_delta_time() const;
 	bool is_physics_processing() const;
 
+	void set_late_physics_process(bool p_process);
+	bool is_late_physics_processing() const;
+
 	void set_process(bool p_process);
 	double get_process_delta_time() const;
 	bool is_processing() const;
@@ -616,7 +622,7 @@ public:
 	bool is_processing_unhandled_key_input() const;
 
 	_FORCE_INLINE_ bool _is_any_processing() const {
-		return data.process || data.process_internal || data.physics_process || data.physics_process_internal;
+		return data.process || data.process_internal || data.physics_process || data.physics_process_internal || data.late_physics_process;
 	}
 	_FORCE_INLINE_ bool is_accessible_from_caller_thread() const {
 		if (current_process_thread_group == nullptr) {
