@@ -200,6 +200,10 @@ void GridMapEditor::_update_cursor_transform() {
 	cursor_transform = node->get_global_transform() * cursor_transform;
 
 	if (mode_buttons_group->get_pressed_button() == paint_mode_button) {
+		// Auto-deselect the selection when painting.
+		if (selection.active) {
+			_set_selection(false);
+		}
 		// Rotation is only applied in paint mode, we don't want the cursor box to rotate otherwise.
 		cursor_transform.basis = node->get_basis_with_orthogonal_index(cursor_rot);
 		if (selected_palette >= 0 && node && node->get_mesh_library().is_valid()) {
