@@ -93,7 +93,16 @@ void Spatial::_update_local_transform() const {
 
 	data.dirty &= ~DIRTY_LOCAL;
 }
+
 void Spatial::_propagate_transform_changed(Spatial *p_origin) {
+	// Wrapper function, to do the heavy lifting to decide
+	// whether we need to check interpolation on / off for each node
+	// to determine whether to send notifications.
+	_propagate_transform_changed(p_origin,
+			Engine::get_singleton()->is_in_physics_frame() && is_inside_tree() && get_tree()->is_physics_interpolation_enabled());
+}
+
+void Spatial::_propagate_transform_changed(Spatial *p_origin, bool p_check_physics_interpolation_state) {
 	if (!is_inside_tree()) {
 		return;
 	}
@@ -106,16 +115,33 @@ void Spatial::_propagate_transform_changed(Spatial *p_origin) {
 	data.children_lock++;
 
 	for (List<Spatial *>::Element *E = data.children.front(); E; E = E->next()) {
-		if (E->get()->data.toplevel_active) {
-			continue; //don't propagate to a toplevel
+		Spatial *child = E->get();
+
+		// Don't propagate to a toplevel.
+		if (child->data.toplevel_active) {
+			continue;
 		}
-		E->get()->_propagate_transform_changed(p_origin);
+
+		// Don't propagate from interpolated to non-interpolated children.
+
+		// The first non-interpolated child is responsible for grabbing
+		// the interpolated xform from the parent / target on each frame.
+		// If this is not done, there will be judder, because the non-interpolated child
+		// will be matching the PHYSICS xform of the parent, rather than the interpolated
+		// xform.
+		if (p_check_physics_interpolation_state && !child->is_physics_interpolated() && p_origin->is_physics_interpolated()) {
+			continue;
+		}
+
+		child->_propagate_transform_changed(p_origin);
 	}
+
+	bool notify_transform = data.notify_transform;
 #ifdef TOOLS_ENABLED
-	if ((data.gizmo.is_valid() || data.notify_transform) && !data.ignore_notification && !xform_change.in_list()) {
-#else
-	if (data.notify_transform && !data.ignore_notification && !xform_change.in_list()) {
+	notify_transform = notify_transform || data.gizmo.is_valid();
 #endif
+
+	if (notify_transform && !data.ignore_notification && !xform_change.in_list()) {
 		get_tree()->xform_change_list.add(&xform_change);
 	}
 	data.dirty |= DIRTY_GLOBAL;

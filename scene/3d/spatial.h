@@ -129,6 +129,7 @@ private:
 	void _update_gizmo();
 	void _notify_dirty();
 	void _propagate_transform_changed(Spatial *p_origin);
+	void _propagate_transform_changed(Spatial *p_origin, bool p_check_physics_interpolation_state);
 
 	void _propagate_visibility_changed();
 	void _propagate_merging_allowed(bool p_merging_allowed);
