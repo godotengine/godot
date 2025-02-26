@@ -43,7 +43,7 @@ struct NavRegionIteration2D;
 struct NavMapIteration2D;
 
 struct NavMapIterationBuild2D {
-	Vector3 merge_rasterizer_cell_size;
+	Vector2 merge_rasterizer_cell_size;
 	bool use_edge_connections = true;
 	real_t edge_connection_margin;
 	real_t link_connection_radius;
@@ -76,7 +76,6 @@ struct NavMapIteration2D {
 	mutable SafeNumeric<uint32_t> users;
 	RWLock rwlock;
 
-	Vector3 map_up;
 	LocalVector<nav_2d::Polygon> link_polygons;
 
 	LocalVector<NavRegionIteration2D> region_iterations;

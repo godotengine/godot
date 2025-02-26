@@ -33,15 +33,14 @@
 #include "../nav_utils_2d.h"
 #include "nav_base_iteration_2d.h"
 
-#include "core/math/aabb.h"
+#include "core/math/rect2.h"
 
 struct NavRegionIteration2D : NavBaseIteration2D {
-	Transform3D transform;
-
+	Transform2D transform;
 	real_t surface_area = 0.0;
-	AABB bounds;
+	Rect2 bounds;
 
-	const Transform3D &get_transform() const { return transform; }
+	const Transform2D &get_transform() const { return transform; }
 	real_t get_surface_area() const { return surface_area; }
-	AABB get_bounds() const { return bounds; }
+	Rect2 get_bounds() const { return bounds; }
 };

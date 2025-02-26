@@ -74,7 +74,7 @@ void NavLink2D::set_bidirectional(bool p_bidirectional) {
 	request_sync();
 }
 
-void NavLink2D::set_start_position(const Vector3 p_position) {
+void NavLink2D::set_start_position(const Vector2 &p_position) {
 	if (start_position == p_position) {
 		return;
 	}
@@ -84,7 +84,7 @@ void NavLink2D::set_start_position(const Vector3 p_position) {
 	request_sync();
 }
 
-void NavLink2D::set_end_position(const Vector3 p_position) {
+void NavLink2D::set_end_position(const Vector2 &p_position) {
 	if (end_position == p_position) {
 		return;
 	}
