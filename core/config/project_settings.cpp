@@ -422,6 +422,7 @@ void ProjectSettings::_get_property_list(List<PropertyInfo> *p_list) const {
 	_THREAD_SAFE_METHOD_
 
 	RBSet<_VCSort> vclist;
+	HashMap<String, Vector<_VCSort>> setting_overrides;
 
 	for (const KeyValue<StringName, VariantContainer> &E : props) {
 		const VariantContainer *v = &E.value;
@@ -462,23 +463,41 @@ void ProjectSettings::_get_property_list(List<PropertyInfo> *p_list) const {
 		if (v->restart_if_changed) {
 			vc.flags |= PROPERTY_USAGE_RESTART_IF_CHANGED;
 		}
-		vclist.insert(vc);
+
+		int dot = vc.name.rfind_char('.');
+		if (dot != -1 && !custom_prop_info.has(vc.name)) {
+			StringName n = vc.name.substr(0, dot);
+			if (props.has(n)) { // Property is an override.
+				setting_overrides[n].append(vc);
+			} else {
+				vclist.insert(vc);
+			}
+		} else {
+			vclist.insert(vc);
+		}
 	}
 
-	for (const _VCSort &E : vclist) {
-		String prop_info_name = E.name;
-		int dot = prop_info_name.find_char('.');
-		if (dot != -1 && !custom_prop_info.has(prop_info_name)) {
-			prop_info_name = prop_info_name.substr(0, dot);
-		}
-
-		if (custom_prop_info.has(prop_info_name)) {
-			PropertyInfo pi = custom_prop_info[prop_info_name];
-			pi.name = E.name;
-			pi.usage = E.flags;
+	for (const _VCSort &base : vclist) {
+		if (custom_prop_info.has(base.name)) {
+			PropertyInfo pi = custom_prop_info[base.name];
+			pi.name = base.name;
+			pi.usage = base.flags;
 			p_list->push_back(pi);
 		} else {
-			p_list->push_back(PropertyInfo(E.type, E.name, PROPERTY_HINT_NONE, "", E.flags));
+			p_list->push_back(PropertyInfo(base.type, base.name, PROPERTY_HINT_NONE, "", base.flags));
+		}
+
+		if (setting_overrides.has(base.name)) {
+			for (const _VCSort &over : setting_overrides.get(base.name)) {
+				if (custom_prop_info.has(over.name)) {
+					PropertyInfo pi = custom_prop_info[over.name];
+					pi.name = over.name;
+					pi.usage = over.flags;
+					p_list->push_back(pi);
+				} else {
+					p_list->push_back(PropertyInfo(over.type, over.name, PROPERTY_HINT_NONE, "", over.flags));
+				}
+			}
 		}
 	}
 }
