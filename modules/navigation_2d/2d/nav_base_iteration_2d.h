@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  test_navigation_agent_3d.h                                            */
+/*  nav_base_iteration_2d.h                                               */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -30,39 +30,29 @@
 
 #pragma once
 
-#include "scene/3d/navigation_agent_3d.h"
-#include "scene/3d/node_3d.h"
-#include "scene/main/window.h"
+#include "../nav_utils_2d.h"
 
-#include "tests/test_macros.h"
+#include "servers/navigation/navigation_utilities.h"
 
-namespace TestNavigationAgent3D {
+struct NavBaseIteration2D {
+	uint32_t id = UINT32_MAX;
+	bool enabled = true;
+	uint32_t navigation_layers = 1;
+	real_t enter_cost = 0.0;
+	real_t travel_cost = 1.0;
+	NavigationUtilities::PathSegmentType owner_type;
+	ObjectID owner_object_id;
+	RID owner_rid;
+	bool owner_use_edge_connections = false;
+	LocalVector<nav_2d::Polygon> navmesh_polygons;
 
-TEST_SUITE("[Navigation3D]") {
-	TEST_CASE("[SceneTree][NavigationAgent3D] New agent should have valid RID") {
-		NavigationAgent3D *agent_node = memnew(NavigationAgent3D);
-		CHECK(agent_node->get_rid().is_valid());
-		memdelete(agent_node);
-	}
-
-	TEST_CASE("[SceneTree][NavigationAgent3D] New agent should attach to default map") {
-		Node3D *node_3d = memnew(Node3D);
-		SceneTree::get_singleton()->get_root()->add_child(node_3d);
-
-		NavigationAgent3D *agent_node = memnew(NavigationAgent3D);
-
-		// agent should not be attached to any map when outside of tree
-		CHECK_FALSE(agent_node->get_navigation_map().is_valid());
-
-		SUBCASE("Agent should attach to default map when it enters the tree") {
-			node_3d->add_child(agent_node);
-			CHECK(agent_node->get_navigation_map().is_valid());
-			CHECK(agent_node->get_navigation_map() == node_3d->get_world_3d()->get_navigation_map());
-		}
-
-		memdelete(agent_node);
-		memdelete(node_3d);
-	}
-}
-
-} //namespace TestNavigationAgent3D
+	bool get_enabled() const { return enabled; }
+	NavigationUtilities::PathSegmentType get_type() const { return owner_type; }
+	RID get_self() const { return owner_rid; }
+	ObjectID get_owner_id() const { return owner_object_id; }
+	uint32_t get_navigation_layers() const { return navigation_layers; }
+	real_t get_enter_cost() const { return enter_cost; }
+	real_t get_travel_cost() const { return travel_cost; }
+	bool get_use_edge_connections() const { return owner_use_edge_connections; }
+	const LocalVector<nav_2d::Polygon> &get_navmesh_polygons() const { return navmesh_polygons; }
+};

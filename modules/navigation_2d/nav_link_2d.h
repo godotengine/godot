@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  register_types.h                                                      */
+/*  nav_link_2d.h                                                         */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -30,7 +30,70 @@
 
 #pragma once
 
-#include "modules/register_module_types.h"
+#include "2d/nav_base_iteration_2d.h"
+#include "nav_base_2d.h"
+#include "nav_utils_2d.h"
 
-void initialize_navigation_module(ModuleInitializationLevel p_level);
-void uninitialize_navigation_module(ModuleInitializationLevel p_level);
+struct NavLinkIteration2D : NavBaseIteration2D {
+	bool bidirectional = true;
+	Vector2 start_position;
+	Vector2 end_position;
+
+	Vector2 get_start_position() const { return start_position; }
+	Vector2 get_end_position() const { return end_position; }
+	bool is_bidirectional() const { return bidirectional; }
+};
+
+#include "core/templates/self_list.h"
+
+class NavLink2D : public NavBase2D {
+	NavMap2D *map = nullptr;
+	bool bidirectional = true;
+	Vector2 start_position;
+	Vector2 end_position;
+	bool enabled = true;
+
+	bool link_dirty = true;
+
+	SelfList<NavLink2D> sync_dirty_request_list_element;
+
+public:
+	NavLink2D();
+	~NavLink2D();
+
+	void set_map(NavMap2D *p_map);
+	NavMap2D *get_map() const {
+		return map;
+	}
+
+	void set_enabled(bool p_enabled);
+	bool get_enabled() const { return enabled; }
+
+	void set_bidirectional(bool p_bidirectional);
+	bool is_bidirectional() const {
+		return bidirectional;
+	}
+
+	void set_start_position(const Vector2 &p_position);
+	Vector2 get_start_position() const {
+		return start_position;
+	}
+
+	void set_end_position(const Vector2 &p_position);
+	Vector2 get_end_position() const {
+		return end_position;
+	}
+
+	// NavBase properties.
+	virtual void set_navigation_layers(uint32_t p_navigation_layers) override;
+	virtual void set_enter_cost(real_t p_enter_cost) override;
+	virtual void set_travel_cost(real_t p_travel_cost) override;
+	virtual void set_owner_id(ObjectID p_owner_id) override;
+
+	bool is_dirty() const;
+	void sync();
+	void request_sync();
+	void cancel_sync_request();
+
+	void get_iteration_update(NavLinkIteration2D &r_iteration);
+};
