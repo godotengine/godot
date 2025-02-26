@@ -31,6 +31,7 @@
 #pragma once
 
 #include "core/object/ref_counted.h"
+#include "servers/navigation/navigation_layers_cost_map_3d.h"
 #include "servers/navigation/navigation_utilities.h"
 
 class NavigationPathQueryParameters3D : public RefCounted {
@@ -68,8 +69,11 @@ private:
 	BitField<PathMetadataFlags> metadata_flags = PATH_METADATA_INCLUDE_ALL;
 	bool simplify_path = false;
 	real_t simplify_epsilon = 0.0;
+
 	LocalVector<RID> _excluded_regions;
 	LocalVector<RID> _included_regions;
+
+	Ref<NavigationLayersCostMap3D> navigation_layers_cost_map;
 
 public:
 	void set_pathfinding_algorithm(const PathfindingAlgorithm p_pathfinding_algorithm);
@@ -90,6 +94,9 @@ public:
 	void set_navigation_layers(uint32_t p_navigation_layers);
 	uint32_t get_navigation_layers() const;
 
+	void set_navigation_layer_value(int p_layer_number, bool p_value);
+	bool get_navigation_layer_value(int p_layer_number) const;
+
 	void set_metadata_flags(BitField<NavigationPathQueryParameters3D::PathMetadataFlags> p_flags);
 	BitField<NavigationPathQueryParameters3D::PathMetadataFlags> get_metadata_flags() const;
 
@@ -104,6 +111,9 @@ public:
 
 	void set_included_regions(const TypedArray<RID> &p_regions);
 	TypedArray<RID> get_included_regions() const;
+
+	void set_navigation_layers_cost_map(const Ref<NavigationLayersCostMap3D> &p_cost_map);
+	Ref<NavigationLayersCostMap3D> get_navigation_layers_cost_map() const;
 };
 
 VARIANT_ENUM_CAST(NavigationPathQueryParameters3D::PathfindingAlgorithm);

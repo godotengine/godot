@@ -277,11 +277,13 @@ void NavMeshGenerator3D::generator_bake_from_source_geometry_data(Ref<Navigation
 	Vector<float> source_geometry_vertices;
 	Vector<int> source_geometry_indices;
 	Vector<NavigationMeshSourceGeometryData3D::ProjectedObstruction> projected_obstructions;
+	Vector<NavigationMeshSourceGeometryData3D::ProjectedArea> projected_areas;
 
 	p_source_geometry_data->get_data(
 			source_geometry_vertices,
 			source_geometry_indices,
-			projected_obstructions);
+			projected_obstructions,
+			projected_areas);
 
 	if (source_geometry_vertices.size() < 3 || source_geometry_indices.size() < 3) {
 		return;
@@ -447,6 +449,89 @@ void NavMeshGenerator3D::generator_bake_from_source_geometry_data(Ref<Navigation
 
 	ERR_FAIL_COND(!rcErodeWalkableArea(&ctx, cfg.walkableRadius, *chf));
 
+	struct AreaPrioritySort {
+		bool operator()(const NavigationMeshSourceGeometryData3D::ProjectedArea &a, const NavigationMeshSourceGeometryData3D::ProjectedArea &b) const {
+			return a.priority < b.priority;
+		}
+	};
+
+	// Sort areas by priority so in case of area overlap low-priority areas apply
+	// to cells first and properties get overridden by high-priority areas later.
+	projected_areas.sort_custom<AreaPrioritySort>();
+
+	HashMap<uint32_t, uint32_t> navigation_layers_to_area_id;
+	HashMap<uint32_t, uint32_t> area_id_to_navigation_layers;
+
+	navigation_layers_to_area_id[0] = RC_NULL_AREA;
+	navigation_layers_to_area_id[1] = RC_WALKABLE_AREA;
+
+	area_id_to_navigation_layers[static_cast<uint32_t>(RC_NULL_AREA)] = 0;
+	area_id_to_navigation_layers[static_cast<uint32_t>(RC_WALKABLE_AREA)] = 1;
+
+	uint32_t next_free_area_id = 1;
+	uint32_t AREA_ID_MAX = RC_WALKABLE_AREA; // Recast unsigned char RC_WALKABLE_AREA = 63 is maximum allowed area id.
+
+	if (!projected_areas.is_empty()) {
+		for (const NavigationMeshSourceGeometryData3D::ProjectedArea &projected_area : projected_areas) {
+			uint32_t area_navigation_layers = projected_area.navigation_layers;
+
+			unsigned char recast_areaId = RC_WALKABLE_AREA;
+
+			HashMap<uint32_t, uint32_t>::Iterator existing_layer = navigation_layers_to_area_id.find(area_navigation_layers);
+			if (!existing_layer) {
+				uint32_t area_id = next_free_area_id;
+				if (area_id >= AREA_ID_MAX) {
+					ERR_PRINT("Navigation mesh area id limit reached. The excess area was ignored. Lower the number of unique 'navigation_layers' used by baked navigation mesh areas to stay below the limit of " + itos(AREA_ID_MAX) + " unique ids");
+					continue;
+				}
+
+				navigation_layers_to_area_id.insert(area_navigation_layers, area_id);
+				area_id_to_navigation_layers.insert(area_id, area_navigation_layers);
+
+				recast_areaId = static_cast<unsigned char>(area_id);
+
+				next_free_area_id++;
+
+			} else {
+				recast_areaId = static_cast<unsigned char>(existing_layer->value);
+			}
+
+			if (projected_area.shape_type == NavigationMeshSourceGeometryData3D::ProjectedArea::ShapeType::BOX) {
+				const Vector3 aabb_pos = projected_area.aabb.position;
+				const Vector3 aabb_end = projected_area.aabb.get_end();
+
+				const Vector<float> area_v_bmin = { float(aabb_pos.x), float(aabb_pos.y), float(aabb_pos.z) };
+				const Vector<float> area_v_bmax = { float(aabb_end.x), float(aabb_end.y), float(aabb_end.z) };
+
+				const float *area_bmin = area_v_bmin.ptr();
+				const float *area_bmax = area_v_bmax.ptr();
+
+				rcMarkBoxArea(&ctx, area_bmin, area_bmax, recast_areaId, *chf);
+
+			} else if (projected_area.shape_type == NavigationMeshSourceGeometryData3D::ProjectedArea::ShapeType::CYLINDER) {
+				const Vector<float> area_v_pos = { float(projected_area.position.x), float(projected_area.position.y), float(projected_area.position.z) };
+
+				const float *area_pos = area_v_pos.ptr();
+				const float area_r = projected_area.radius;
+				const float area_h = projected_area.height;
+
+				rcMarkCylinderArea(&ctx, area_pos, area_r, area_h, recast_areaId, *chf);
+
+			} else if (projected_area.shape_type == NavigationMeshSourceGeometryData3D::ProjectedArea::ShapeType::POLYGON) {
+				if (projected_area.vertices.is_empty() || projected_area.vertices.size() % 3 != 0) {
+					continue;
+				}
+
+				const float *area_verts = projected_area.vertices.ptr();
+				const int area_nverts = projected_area.vertices.size() / 3;
+				const float area_hmin = projected_area.elevation;
+				const float area_hmax = projected_area.elevation + projected_area.height;
+
+				rcMarkConvexPolyArea(&ctx, area_verts, area_nverts, area_hmin, area_hmax, recast_areaId, *chf);
+			}
+		}
+	}
+
 	// Carve obstacles to the eroded geometry. Those will NOT be affected by e.g. agent_radius because that step is already done.
 	if (!projected_obstructions.is_empty()) {
 		for (const NavigationMeshSourceGeometryData3D::ProjectedObstruction &projected_obstruction : projected_obstructions) {
@@ -499,6 +584,12 @@ void NavMeshGenerator3D::generator_bake_from_source_geometry_data(Ref<Navigation
 
 	bake_state = "Converting to native navigation mesh..."; // step #10
 
+	//print_line("ReCast Details:");
+	//print_line(poly_mesh->npolys);
+	//print_line(detail_mesh->nmeshes);
+
+	Vector<uint32_t> nav_polygons_meta;
+
 	Vector<Vector3> nav_vertices;
 	Vector<Vector<int>> nav_polygons;
 
@@ -521,6 +612,8 @@ void NavMeshGenerator3D::generator_bake_from_source_geometry_data(Ref<Navigation
 	}
 
 	for (int i = 0; i < detail_mesh->nmeshes; i++) {
+		uint32_t navigation_layers = area_id_to_navigation_layers[static_cast<uint32_t>(poly_mesh->areas[i])];
+
 		const unsigned int *detail_mesh_m = &detail_mesh->meshes[i * 4];
 		const unsigned int detail_mesh_bverts = detail_mesh_m[0];
 		const unsigned int detail_mesh_m_btris = detail_mesh_m[2];
@@ -539,10 +632,19 @@ void NavMeshGenerator3D::generator_bake_from_source_geometry_data(Ref<Navigation
 			nav_indices.write[2] = recast_index_to_native_index[index3];
 
 			nav_polygons.push_back(nav_indices);
+			nav_polygons_meta.push_back(navigation_layers);
 		}
 	}
 
-	p_navigation_mesh->set_data(nav_vertices, nav_polygons);
+	p_navigation_mesh->set_data(nav_vertices, nav_polygons, nav_polygons_meta);
+	//print_line("Polygon Meta:");
+	//print_line(nav_polygons.size());
+	//print_line(nav_polygons_meta.size());
+	//print_line("Polygon Meta Detail:");
+	//for (uint32_t i = 0; i < nav_polygons_meta.size(); i++) {
+	//	print_line(nav_polygons_meta[i]);
+	//}
+	//p_navigation_mesh->set_polygon_meta(nav_polygons_meta);
 
 	bake_state = "Cleanup..."; // step #11
 
