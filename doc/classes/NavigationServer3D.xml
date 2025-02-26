@@ -1207,6 +1207,18 @@
 		</signal>
 	</signals>
 	<constants>
+		<constant name="AREA_SHAPE_NONE" value="0" enum="AreaShapeType3D">
+			Constant for areas of type none shape.
+		</constant>
+		<constant name="AREA_SHAPE_BOX" value="1" enum="AreaShapeType3D">
+			Constant for areas of type box shape.
+		</constant>
+		<constant name="AREA_SHAPE_CYLINDER" value="2" enum="AreaShapeType3D">
+			Constant for areas of type cylinder shape.
+		</constant>
+		<constant name="AREA_SHAPE_POLYGON" value="3" enum="AreaShapeType3D">
+			Constant for areas of type polygon shape.
+		</constant>
 		<constant name="INFO_ACTIVE_MAPS" value="0" enum="ProcessInfo">
 			Constant to get the number of active navigation maps.
 		</constant>

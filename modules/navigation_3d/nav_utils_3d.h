@@ -95,6 +95,7 @@ struct Edge {
 struct Polygon {
 	/// Id of the polygon in the map.
 	uint32_t id = UINT32_MAX;
+	uint32_t navigation_layers = 1;
 
 	/// Navigation region or link that contains this polygon.
 	const NavBaseIteration3D *owner = nullptr;

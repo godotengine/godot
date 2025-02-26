@@ -58,6 +58,7 @@ class NavRegion3D : public NavBase3D {
 	RWLock navmesh_rwlock;
 	Vector<Vector3> pending_navmesh_vertices;
 	Vector<Vector<int>> pending_navmesh_polygons;
+	Vector<uint32_t> pending_navmesh_polygons_meta;
 
 	uint32_t iteration_id = 0;
 

@@ -255,6 +255,7 @@
 #ifndef NAVIGATION_3D_DISABLED
 #include "scene/3d/navigation/navigation_agent_3d.h"
 #include "scene/3d/navigation/navigation_link_3d.h"
+#include "scene/3d/navigation/navigation_mesh_area_3d.h"
 #include "scene/3d/navigation/navigation_obstacle_3d.h"
 #include "scene/3d/navigation/navigation_region_3d.h"
 #include "scene/resources/3d/navigation_mesh_source_geometry_data_3d.h"
@@ -710,6 +711,11 @@ void register_scene_types() {
 	GDREGISTER_CLASS(NavigationAgent3D);
 	GDREGISTER_CLASS(NavigationObstacle3D);
 	GDREGISTER_CLASS(NavigationLink3D);
+
+	GDREGISTER_VIRTUAL_CLASS(NavigationMeshArea3D);
+	GDREGISTER_CLASS(NavigationMeshAreaBox3D);
+	GDREGISTER_CLASS(NavigationMeshAreaCylinder3D);
+	GDREGISTER_CLASS(NavigationMeshAreaPolygon3D);
 #endif // NAVIGATION_3D_DISABLED
 
 	OS::get_singleton()->yield(); // may take time to init
@@ -1132,6 +1138,7 @@ void register_scene_types() {
 	MeshInstance3D::navmesh_parse_init();
 	MultiMeshInstance3D::navmesh_parse_init();
 	NavigationObstacle3D::navmesh_parse_init();
+	NavigationMeshArea3D::navmesh_parse_init();
 #ifndef PHYSICS_3D_DISABLED
 	StaticBody3D::navmesh_parse_init();
 #endif // PHYSICS_3D_DISABLED
