@@ -167,7 +167,8 @@
 /modules/gridmap/                             @godotengine/3d-nodes
 /modules/gridmap/doc_classes/                 @godotengine/3d-nodes @godotengine/documentation
 /modules/gridmap/icons/                       @godotengine/3d-nodes @godotengine/usability
-/modules/navigation/                          @godotengine/navigation
+/modules/navigation_2d/                       @godotengine/navigation
+/modules/navigation_3d/                       @godotengine/navigation
 /modules/noise/                               @godotengine/core
 /modules/noise/doc_classes/                   @godotengine/core @godotengine/documentation
 /modules/noise/icons/                         @godotengine/core @godotengine/usability

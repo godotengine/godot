@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  test_navigation_agent_3d.h                                            */
+/*  register_types.cpp                                                    */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,41 +28,55 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#pragma once
+#include "register_types.h"
 
-#include "scene/3d/navigation_agent_3d.h"
-#include "scene/3d/node_3d.h"
-#include "scene/main/window.h"
+#include "3d/godot_navigation_server_3d.h"
 
-#include "tests/test_macros.h"
+#ifndef DISABLE_DEPRECATED
+#include "3d/navigation_mesh_generator.h"
+#endif // DISABLE_DEPRECATED
 
-namespace TestNavigationAgent3D {
+#ifdef TOOLS_ENABLED
+#include "editor/navigation_mesh_editor_plugin.h"
+#endif
 
-TEST_SUITE("[Navigation3D]") {
-	TEST_CASE("[SceneTree][NavigationAgent3D] New agent should have valid RID") {
-		NavigationAgent3D *agent_node = memnew(NavigationAgent3D);
-		CHECK(agent_node->get_rid().is_valid());
-		memdelete(agent_node);
-	}
+#include "core/config/engine.h"
+#include "servers/navigation_server_3d.h"
 
-	TEST_CASE("[SceneTree][NavigationAgent3D] New agent should attach to default map") {
-		Node3D *node_3d = memnew(Node3D);
-		SceneTree::get_singleton()->get_root()->add_child(node_3d);
+#ifndef DISABLE_DEPRECATED
+NavigationMeshGenerator *_nav_mesh_generator = nullptr;
+#endif // DISABLE_DEPRECATED
 
-		NavigationAgent3D *agent_node = memnew(NavigationAgent3D);
-
-		// agent should not be attached to any map when outside of tree
-		CHECK_FALSE(agent_node->get_navigation_map().is_valid());
-
-		SUBCASE("Agent should attach to default map when it enters the tree") {
-			node_3d->add_child(agent_node);
-			CHECK(agent_node->get_navigation_map().is_valid());
-			CHECK(agent_node->get_navigation_map() == node_3d->get_world_3d()->get_navigation_map());
-		}
-
-		memdelete(agent_node);
-		memdelete(node_3d);
-	}
+NavigationServer3D *new_navigation_server_3d() {
+	return memnew(GodotNavigationServer3D);
 }
 
-} //namespace TestNavigationAgent3D
+void initialize_navigation_3d_module(ModuleInitializationLevel p_level) {
+	if (p_level == MODULE_INITIALIZATION_LEVEL_SERVERS) {
+		NavigationServer3DManager::set_default_server(new_navigation_server_3d);
+
+#ifndef DISABLE_DEPRECATED
+		_nav_mesh_generator = memnew(NavigationMeshGenerator);
+		GDREGISTER_CLASS(NavigationMeshGenerator);
+		Engine::get_singleton()->add_singleton(Engine::Singleton("NavigationMeshGenerator", NavigationMeshGenerator::get_singleton()));
+#endif // DISABLE_DEPRECATED
+	}
+
+#ifdef TOOLS_ENABLED
+	if (p_level == MODULE_INITIALIZATION_LEVEL_EDITOR) {
+		EditorPlugins::add_by_type<NavigationMeshEditorPlugin>();
+	}
+#endif
+}
+
+void uninitialize_navigation_3d_module(ModuleInitializationLevel p_level) {
+	if (p_level != MODULE_INITIALIZATION_LEVEL_SERVERS) {
+		return;
+	}
+
+#ifndef DISABLE_DEPRECATED
+	if (_nav_mesh_generator) {
+		memdelete(_nav_mesh_generator);
+	}
+#endif // DISABLE_DEPRECATED
+}

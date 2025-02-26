@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  register_types.cpp                                                    */
+/*  nav_region_2d.h                                                       */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,70 +28,87 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "register_types.h"
+#pragma once
 
-#include "2d/godot_navigation_server_2d.h"
-#include "3d/godot_navigation_server_3d.h"
+#include "nav_base_2d.h"
+#include "nav_utils_2d.h"
 
-#ifndef DISABLE_DEPRECATED
-#ifndef _3D_DISABLED
-#include "3d/navigation_mesh_generator.h"
-#endif
-#endif // DISABLE_DEPRECATED
+#include "core/os/rw_lock.h"
+#include "scene/resources/2d/navigation_polygon.h"
 
-#ifdef TOOLS_ENABLED
-#include "editor/navigation_mesh_editor_plugin.h"
-#endif
+struct NavRegionIteration2D;
 
-#include "core/config/engine.h"
-#include "servers/navigation_server_2d.h"
-#include "servers/navigation_server_3d.h"
+class NavRegion2D : public NavBase2D {
+	RWLock region_rwlock;
 
-#ifndef DISABLE_DEPRECATED
-#ifndef _3D_DISABLED
-NavigationMeshGenerator *_nav_mesh_generator = nullptr;
-#endif
-#endif // DISABLE_DEPRECATED
+	NavMap2D *map = nullptr;
+	Transform2D transform;
+	bool enabled = true;
 
-NavigationServer3D *new_navigation_server_3d() {
-	return memnew(GodotNavigationServer3D);
-}
+	bool use_edge_connections = true;
 
-NavigationServer2D *new_navigation_server_2d() {
-	return memnew(GodotNavigationServer2D);
-}
+	bool region_dirty = true;
+	bool polygons_dirty = true;
 
-void initialize_navigation_module(ModuleInitializationLevel p_level) {
-	if (p_level == MODULE_INITIALIZATION_LEVEL_SERVERS) {
-		NavigationServer3DManager::set_default_server(new_navigation_server_3d);
-		NavigationServer2DManager::set_default_server(new_navigation_server_2d);
+	LocalVector<nav_2d::Polygon> navmesh_polygons;
 
-#ifndef DISABLE_DEPRECATED
-#ifndef _3D_DISABLED
-		_nav_mesh_generator = memnew(NavigationMeshGenerator);
-		GDREGISTER_CLASS(NavigationMeshGenerator);
-		Engine::get_singleton()->add_singleton(Engine::Singleton("NavigationMeshGenerator", NavigationMeshGenerator::get_singleton()));
-#endif
-#endif // DISABLE_DEPRECATED
+	real_t surface_area = 0.0;
+	Rect2 bounds;
+
+	RWLock navmesh_rwlock;
+	Vector<Vector2> pending_navmesh_vertices;
+	Vector<Vector<int>> pending_navmesh_polygons;
+
+	SelfList<NavRegion2D> sync_dirty_request_list_element;
+
+public:
+	NavRegion2D();
+	~NavRegion2D();
+
+	void scratch_polygons() {
+		polygons_dirty = true;
 	}
 
-#ifdef TOOLS_ENABLED
-	if (p_level == MODULE_INITIALIZATION_LEVEL_EDITOR) {
-		EditorPlugins::add_by_type<NavigationMeshEditorPlugin>();
-	}
-#endif
-}
+	void set_enabled(bool p_enabled);
+	bool get_enabled() const { return enabled; }
 
-void uninitialize_navigation_module(ModuleInitializationLevel p_level) {
-	if (p_level != MODULE_INITIALIZATION_LEVEL_SERVERS) {
-		return;
+	void set_map(NavMap2D *p_map);
+	NavMap2D *get_map() const {
+		return map;
 	}
 
-#ifndef DISABLE_DEPRECATED
-#ifndef _3D_DISABLED
-	if (_nav_mesh_generator) {
-		memdelete(_nav_mesh_generator);
+	virtual void set_use_edge_connections(bool p_enabled) override;
+	virtual bool get_use_edge_connections() const override { return use_edge_connections; }
+
+	void set_transform(const Transform2D &p_transform);
+	const Transform2D &get_transform() const {
+		return transform;
 	}
-#endif
-#endif // DISABLE_DEPRECATED
-}
+
+	void set_navigation_polygon(Ref<NavigationPolygon> p_navigation_polygon);
+
+	LocalVector<nav_2d::Polygon> const &get_polygons() const {
+		return navmesh_polygons;
+	}
+
+	nav_2d::ClosestPointQueryResult get_closest_point_info(const Vector2 &p_point) const;
+	Vector2 get_random_point(uint32_t p_navigation_layers, bool p_uniformly) const;
+
+	real_t get_surface_area() const { return surface_area; }
+	Rect2 get_bounds() const { return bounds; }
+
+	// NavBase properties.
+	virtual void set_navigation_layers(uint32_t p_navigation_layers) override;
+	virtual void set_enter_cost(real_t p_enter_cost) override;
+	virtual void set_travel_cost(real_t p_travel_cost) override;
+	virtual void set_owner_id(ObjectID p_owner_id) override;
+
+	bool sync();
+	void request_sync();
+	void cancel_sync_request();
+
+	void get_iteration_update(NavRegionIteration2D &r_iteration);
+
+private:
+	void update_polygons();
+};

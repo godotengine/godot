@@ -240,11 +240,6 @@ NavigationServer3D::NavigationServer3D() {
 	ERR_FAIL_COND(singleton != nullptr);
 	singleton = this;
 
-	GLOBAL_DEF_BASIC(PropertyInfo(Variant::FLOAT, "navigation/2d/default_cell_size", PROPERTY_HINT_RANGE, NavigationDefaults2D::navmesh_cell_size_hint), NavigationDefaults2D::navmesh_cell_size);
-	GLOBAL_DEF("navigation/2d/use_edge_connections", true);
-	GLOBAL_DEF_BASIC(PropertyInfo(Variant::FLOAT, "navigation/2d/default_edge_connection_margin", PROPERTY_HINT_RANGE, "0.01,10,0.001,or_greater"), NavigationDefaults2D::edge_connection_margin);
-	GLOBAL_DEF_BASIC(PropertyInfo(Variant::FLOAT, "navigation/2d/default_link_connection_radius", PROPERTY_HINT_RANGE, "0.01,10,0.001,or_greater"), NavigationDefaults2D::link_connection_radius);
-
 	GLOBAL_DEF_BASIC(PropertyInfo(Variant::FLOAT, "navigation/3d/default_cell_size", PROPERTY_HINT_RANGE, NavigationDefaults3D::navmesh_cell_size_hint), NavigationDefaults3D::navmesh_cell_size);
 	GLOBAL_DEF_BASIC(PropertyInfo(Variant::FLOAT, "navigation/3d/default_cell_height", PROPERTY_HINT_RANGE, "0.001,100,0.001,or_greater"), NavigationDefaults3D::navmesh_cell_height);
 	GLOBAL_DEF("navigation/3d/default_up", Vector3(0, 1, 0));
@@ -253,48 +248,90 @@ NavigationServer3D::NavigationServer3D() {
 	GLOBAL_DEF_BASIC(PropertyInfo(Variant::FLOAT, "navigation/3d/default_edge_connection_margin", PROPERTY_HINT_RANGE, "0.01,10,0.001,or_greater"), NavigationDefaults3D::edge_connection_margin);
 	GLOBAL_DEF_BASIC(PropertyInfo(Variant::FLOAT, "navigation/3d/default_link_connection_radius", PROPERTY_HINT_RANGE, "0.01,10,0.001,or_greater"), NavigationDefaults3D::link_connection_radius);
 
-	GLOBAL_DEF("navigation/world/map_use_async_iterations", true);
-
-	GLOBAL_DEF("navigation/avoidance/thread_model/avoidance_use_multiple_threads", true);
-	GLOBAL_DEF("navigation/avoidance/thread_model/avoidance_use_high_priority_threads", true);
-
-	GLOBAL_DEF("navigation/pathfinding/max_threads", 4);
-
-	GLOBAL_DEF("navigation/baking/use_crash_prevention_checks", true);
-	GLOBAL_DEF("navigation/baking/thread_model/baking_use_multiple_threads", true);
-	GLOBAL_DEF("navigation/baking/thread_model/baking_use_high_priority_threads", true);
-
 #ifdef DEBUG_ENABLED
-	debug_navigation_edge_connection_color = GLOBAL_DEF("debug/shapes/navigation/edge_connection_color", Color(1.0, 0.0, 1.0, 1.0));
-	debug_navigation_geometry_edge_color = GLOBAL_DEF("debug/shapes/navigation/geometry_edge_color", Color(0.5, 1.0, 1.0, 1.0));
-	debug_navigation_geometry_face_color = GLOBAL_DEF("debug/shapes/navigation/geometry_face_color", Color(0.5, 1.0, 1.0, 0.4));
-	debug_navigation_geometry_edge_disabled_color = GLOBAL_DEF("debug/shapes/navigation/geometry_edge_disabled_color", Color(0.5, 0.5, 0.5, 1.0));
-	debug_navigation_geometry_face_disabled_color = GLOBAL_DEF("debug/shapes/navigation/geometry_face_disabled_color", Color(0.5, 0.5, 0.5, 0.4));
-	debug_navigation_link_connection_color = GLOBAL_DEF("debug/shapes/navigation/link_connection_color", Color(1.0, 0.5, 1.0, 1.0));
-	debug_navigation_link_connection_disabled_color = GLOBAL_DEF("debug/shapes/navigation/link_connection_disabled_color", Color(0.5, 0.5, 0.5, 1.0));
-	debug_navigation_agent_path_color = GLOBAL_DEF("debug/shapes/navigation/agent_path_color", Color(1.0, 0.0, 0.0, 1.0));
+#ifndef DISABLE_DEPRECATED
+#define MOVE_PROJECT_SETTING_1(m_old_setting, m_new_setting)                                                                             \
+	if (!ProjectSettings::get_singleton()->has_setting(m_new_setting) && ProjectSettings::get_singleton()->has_setting(m_old_setting)) { \
+		Variant value = GLOBAL_GET(m_old_setting);                                                                                       \
+		ProjectSettings::get_singleton()->set_setting(m_new_setting, value);                                                             \
+		ProjectSettings::get_singleton()->clear(m_old_setting);                                                                          \
+	}
+#define MOVE_PROJECT_SETTING_2(m_old_setting, m_new_setting_1, m_new_setting_2)                                                                 \
+	if ((!ProjectSettings::get_singleton()->has_setting(m_new_setting_1) || !ProjectSettings::get_singleton()->has_setting(m_new_setting_2)) && \
+			ProjectSettings::get_singleton()->has_setting(m_old_setting)) {                                                                     \
+		Variant value = GLOBAL_GET(m_old_setting);                                                                                              \
+		if (!ProjectSettings::get_singleton()->has_setting(m_new_setting_1)) {                                                                  \
+			ProjectSettings::get_singleton()->set_setting(m_new_setting_1, value);                                                              \
+		}                                                                                                                                       \
+		if (!ProjectSettings::get_singleton()->has_setting(m_new_setting_2)) {                                                                  \
+			ProjectSettings::get_singleton()->set_setting(m_new_setting_2, value);                                                              \
+		}                                                                                                                                       \
+		ProjectSettings::get_singleton()->clear(m_old_setting);                                                                                 \
+	}
+	MOVE_PROJECT_SETTING_2("debug/shapes/navigation/edge_connection_color", "debug/shapes/navigation/2d/edge_connection_color", "debug/shapes/navigation/3d/edge_connection_color");
+	MOVE_PROJECT_SETTING_2("debug/shapes/navigation/geometry_edge_color", "debug/shapes/navigation/2d/geometry_edge_color", "debug/shapes/navigation/3d/geometry_edge_color");
+	MOVE_PROJECT_SETTING_2("debug/shapes/navigation/geometry_face_color", "debug/shapes/navigation/2d/geometry_face_color", "debug/shapes/navigation/3d/geometry_face_color");
+	MOVE_PROJECT_SETTING_2("debug/shapes/navigation/geometry_edge_disabled_color", "debug/shapes/navigation/2d/geometry_edge_disabled_color", "debug/shapes/navigation/3d/geometry_edge_disabled_color");
+	MOVE_PROJECT_SETTING_2("debug/shapes/navigation/geometry_face_disabled_color", "debug/shapes/navigation/2d/geometry_face_disabled_color", "debug/shapes/navigation/3d/geometry_face_disabled_color");
+	MOVE_PROJECT_SETTING_2("debug/shapes/navigation/link_connection_color", "debug/shapes/navigation/2d/link_connection_color", "debug/shapes/navigation/3d/link_connection_color");
+	MOVE_PROJECT_SETTING_2("debug/shapes/navigation/link_connection_disabled_color", "debug/shapes/navigation/2d/link_connection_disabled_color", "debug/shapes/navigation/3d/link_connection_disabled_color");
+	MOVE_PROJECT_SETTING_2("debug/shapes/navigation/agent_path_color", "debug/shapes/navigation/2d/agent_path_color", "debug/shapes/navigation/3d/agent_path_color");
 
-	debug_navigation_enable_edge_connections = GLOBAL_DEF("debug/shapes/navigation/enable_edge_connections", true);
-	debug_navigation_enable_edge_connections_xray = GLOBAL_DEF("debug/shapes/navigation/enable_edge_connections_xray", true);
-	debug_navigation_enable_edge_lines = GLOBAL_DEF("debug/shapes/navigation/enable_edge_lines", true);
-	debug_navigation_enable_edge_lines_xray = GLOBAL_DEF("debug/shapes/navigation/enable_edge_lines_xray", true);
-	debug_navigation_enable_geometry_face_random_color = GLOBAL_DEF("debug/shapes/navigation/enable_geometry_face_random_color", true);
-	debug_navigation_enable_link_connections = GLOBAL_DEF("debug/shapes/navigation/enable_link_connections", true);
-	debug_navigation_enable_link_connections_xray = GLOBAL_DEF("debug/shapes/navigation/enable_link_connections_xray", true);
+	MOVE_PROJECT_SETTING_2("debug/shapes/navigation/enable_edge_connections", "debug/shapes/navigation/2d/enable_edge_connections", "debug/shapes/navigation/3d/enable_edge_connections");
+	MOVE_PROJECT_SETTING_1("debug/shapes/navigation/enable_edge_connections_xray", "debug/shapes/navigation/3d/enable_edge_connections_xray");
+	MOVE_PROJECT_SETTING_2("debug/shapes/navigation/enable_edge_lines", "debug/shapes/navigation/2d/enable_edge_lines", "debug/shapes/navigation/3d/enable_edge_lines");
+	MOVE_PROJECT_SETTING_1("debug/shapes/navigation/enable_edge_lines_xray", "debug/shapes/navigation/3d/enable_edge_lines_xray");
+	MOVE_PROJECT_SETTING_2("debug/shapes/navigation/enable_geometry_face_random_color", "debug/shapes/navigation/2d/enable_geometry_face_random_color", "debug/shapes/navigation/3d/enable_geometry_face_random_color");
+	MOVE_PROJECT_SETTING_2("debug/shapes/navigation/enable_link_connections", "debug/shapes/navigation/2d/enable_link_connections", "debug/shapes/navigation/3d/enable_link_connections");
+	MOVE_PROJECT_SETTING_1("debug/shapes/navigation/enable_link_connections_xray", "debug/shapes/navigation/3d/enable_link_connections_xray");
 
-	debug_navigation_enable_agent_paths = GLOBAL_DEF("debug/shapes/navigation/enable_agent_paths", true);
-	debug_navigation_enable_agent_paths_xray = GLOBAL_DEF("debug/shapes/navigation/enable_agent_paths_xray", true);
-	debug_navigation_agent_path_point_size = GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "debug/shapes/navigation/agent_path_point_size", PROPERTY_HINT_RANGE, "0.01,10,0.001,or_greater"), 4.0);
+	MOVE_PROJECT_SETTING_2("debug/shapes/navigation/enable_agent_paths", "debug/shapes/navigation/2d/enable_agent_paths", "debug/shapes/navigation/3d/enable_agent_paths");
+	MOVE_PROJECT_SETTING_1("debug/shapes/navigation/enable_agent_paths_xray", "debug/shapes/navigation/3d/enable_agent_paths_xray");
+	MOVE_PROJECT_SETTING_2("debug/shapes/navigation/agent_path_point_size", "debug/shapes/navigation/2d/agent_path_point_size", "debug/shapes/navigation/3d/agent_path_point_size");
 
-	debug_navigation_avoidance_agents_radius_color = GLOBAL_DEF("debug/shapes/avoidance/agents_radius_color", Color(1.0, 1.0, 0.0, 0.25));
-	debug_navigation_avoidance_obstacles_radius_color = GLOBAL_DEF("debug/shapes/avoidance/obstacles_radius_color", Color(1.0, 0.5, 0.0, 0.25));
-	debug_navigation_avoidance_static_obstacle_pushin_face_color = GLOBAL_DEF("debug/shapes/avoidance/obstacles_static_face_pushin_color", Color(1.0, 0.0, 0.0, 0.0));
-	debug_navigation_avoidance_static_obstacle_pushin_edge_color = GLOBAL_DEF("debug/shapes/avoidance/obstacles_static_edge_pushin_color", Color(1.0, 0.0, 0.0, 1.0));
-	debug_navigation_avoidance_static_obstacle_pushout_face_color = GLOBAL_DEF("debug/shapes/avoidance/obstacles_static_face_pushout_color", Color(1.0, 1.0, 0.0, 0.5));
-	debug_navigation_avoidance_static_obstacle_pushout_edge_color = GLOBAL_DEF("debug/shapes/avoidance/obstacles_static_edge_pushout_color", Color(1.0, 1.0, 0.0, 1.0));
-	debug_navigation_avoidance_enable_agents_radius = GLOBAL_DEF("debug/shapes/avoidance/enable_agents_radius", true);
-	debug_navigation_avoidance_enable_obstacles_radius = GLOBAL_DEF("debug/shapes/avoidance/enable_obstacles_radius", true);
-	debug_navigation_avoidance_enable_obstacles_static = GLOBAL_DEF("debug/shapes/avoidance/enable_obstacles_static", true);
+	MOVE_PROJECT_SETTING_2("debug/shapes/avoidance/agents_radius_color", "debug/shapes/avoidance/2d/agents_radius_color", "debug/shapes/avoidance/3d/agents_radius_color");
+	MOVE_PROJECT_SETTING_2("debug/shapes/avoidance/obstacles_radius_color", "debug/shapes/avoidance/2d/obstacles_radius_color", "debug/shapes/avoidance/3d/obstacles_radius_color");
+	MOVE_PROJECT_SETTING_2("debug/shapes/avoidance/obstacles_static_face_pushin_color", "debug/shapes/avoidance/2d/obstacles_static_face_pushin_color", "debug/shapes/avoidance/3d/obstacles_static_face_pushin_color");
+	MOVE_PROJECT_SETTING_2("debug/shapes/avoidance/obstacles_static_edge_pushin_color", "debug/shapes/avoidance/2d/obstacles_static_edge_pushin_color", "debug/shapes/avoidance/3d/obstacles_static_edge_pushin_color");
+	MOVE_PROJECT_SETTING_2("debug/shapes/avoidance/obstacles_static_face_pushout_color", "debug/shapes/avoidance/2d/obstacles_static_face_pushout_color", "debug/shapes/avoidance/3d/obstacles_static_face_pushout_color");
+	MOVE_PROJECT_SETTING_2("debug/shapes/avoidance/obstacles_static_edge_pushout_color", "debug/shapes/avoidance/2d/obstacles_static_edge_pushout_color", "debug/shapes/avoidance/3d/obstacles_static_edge_pushout_color");
+	MOVE_PROJECT_SETTING_2("debug/shapes/avoidance/enable_agents_radius", "debug/shapes/avoidance/2d/enable_agents_radius", "debug/shapes/avoidance/3d/enable_agents_radius");
+	MOVE_PROJECT_SETTING_2("debug/shapes/avoidance/enable_obstacles_radius", "debug/shapes/avoidance/2d/enable_obstacles_radius", "debug/shapes/avoidance/2d/enable_obstacles_static");
+	MOVE_PROJECT_SETTING_2("debug/shapes/avoidance/enable_obstacles_radius", "debug/shapes/avoidance/3d/enable_obstacles_radius", "debug/shapes/avoidance/3d/enable_obstacles_static");
+#undef MOVE_PROJECT_SETTING_1
+#undef MOVE_PROJECT_SETTING_2
+#endif // DISABLE_DEPRECATED
+
+	debug_navigation_edge_connection_color = GLOBAL_DEF("debug/shapes/navigation/3d/edge_connection_color", Color(1.0, 0.0, 1.0, 1.0));
+	debug_navigation_geometry_edge_color = GLOBAL_DEF("debug/shapes/navigation/3d/geometry_edge_color", Color(0.5, 1.0, 1.0, 1.0));
+	debug_navigation_geometry_face_color = GLOBAL_DEF("debug/shapes/navigation/3d/geometry_face_color", Color(0.5, 1.0, 1.0, 0.4));
+	debug_navigation_geometry_edge_disabled_color = GLOBAL_DEF("debug/shapes/navigation/3d/geometry_edge_disabled_color", Color(0.5, 0.5, 0.5, 1.0));
+	debug_navigation_geometry_face_disabled_color = GLOBAL_DEF("debug/shapes/navigation/3d/geometry_face_disabled_color", Color(0.5, 0.5, 0.5, 0.4));
+	debug_navigation_link_connection_color = GLOBAL_DEF("debug/shapes/navigation/3d/link_connection_color", Color(1.0, 0.5, 1.0, 1.0));
+	debug_navigation_link_connection_disabled_color = GLOBAL_DEF("debug/shapes/navigation/3d/link_connection_disabled_color", Color(0.5, 0.5, 0.5, 1.0));
+	debug_navigation_agent_path_color = GLOBAL_DEF("debug/shapes/navigation/3d/agent_path_color", Color(1.0, 0.0, 0.0, 1.0));
+
+	debug_navigation_enable_edge_connections = GLOBAL_DEF("debug/shapes/navigation/3d/enable_edge_connections", true);
+	debug_navigation_enable_edge_connections_xray = GLOBAL_DEF("debug/shapes/navigation/3d/enable_edge_connections_xray", true);
+	debug_navigation_enable_edge_lines = GLOBAL_DEF("debug/shapes/navigation/3d/enable_edge_lines", true);
+	debug_navigation_enable_edge_lines_xray = GLOBAL_DEF("debug/shapes/navigation/3d/enable_edge_lines_xray", true);
+	debug_navigation_enable_geometry_face_random_color = GLOBAL_DEF("debug/shapes/navigation/3d/enable_geometry_face_random_color", true);
+	debug_navigation_enable_link_connections = GLOBAL_DEF("debug/shapes/navigation/3d/enable_link_connections", true);
+	debug_navigation_enable_link_connections_xray = GLOBAL_DEF("debug/shapes/navigation/3d/enable_link_connections_xray", true);
+
+	debug_navigation_enable_agent_paths = GLOBAL_DEF("debug/shapes/navigation/3d/enable_agent_paths", true);
+	debug_navigation_enable_agent_paths_xray = GLOBAL_DEF("debug/shapes/navigation/3d/enable_agent_paths_xray", true);
+	debug_navigation_agent_path_point_size = GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "debug/shapes/navigation/3d/agent_path_point_size", PROPERTY_HINT_RANGE, "0.01,10,0.001,or_greater"), 4.0);
+
+	debug_navigation_avoidance_agents_radius_color = GLOBAL_DEF("debug/shapes/avoidance/3d/agents_radius_color", Color(1.0, 1.0, 0.0, 0.25));
+	debug_navigation_avoidance_obstacles_radius_color = GLOBAL_DEF("debug/shapes/avoidance/3d/obstacles_radius_color", Color(1.0, 0.5, 0.0, 0.25));
+	debug_navigation_avoidance_static_obstacle_pushin_face_color = GLOBAL_DEF("debug/shapes/avoidance/3d/obstacles_static_face_pushin_color", Color(1.0, 0.0, 0.0, 0.0));
+	debug_navigation_avoidance_static_obstacle_pushin_edge_color = GLOBAL_DEF("debug/shapes/avoidance/3d/obstacles_static_edge_pushin_color", Color(1.0, 0.0, 0.0, 1.0));
+	debug_navigation_avoidance_static_obstacle_pushout_face_color = GLOBAL_DEF("debug/shapes/avoidance/3d/obstacles_static_face_pushout_color", Color(1.0, 1.0, 0.0, 0.5));
+	debug_navigation_avoidance_static_obstacle_pushout_edge_color = GLOBAL_DEF("debug/shapes/avoidance/3d/obstacles_static_edge_pushout_color", Color(1.0, 1.0, 0.0, 1.0));
+	debug_navigation_avoidance_enable_agents_radius = GLOBAL_DEF("debug/shapes/avoidance/3d/enable_agents_radius", true);
+	debug_navigation_avoidance_enable_obstacles_radius = GLOBAL_DEF("debug/shapes/avoidance/3d/enable_obstacles_radius", true);
+	debug_navigation_avoidance_enable_obstacles_static = GLOBAL_DEF("debug/shapes/avoidance/3d/enable_obstacles_static", true);
 
 	if (Engine::get_singleton()->is_editor_hint()) {
 		// enable NavigationServer3D when in Editor or else navigation mesh edge connections are invisible
