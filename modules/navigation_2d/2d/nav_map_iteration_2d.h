@@ -30,31 +30,31 @@
 
 #pragma once
 
-#include "../nav_rid_3d.h"
-#include "../nav_utils_3d.h"
-#include "nav_mesh_queries_3d.h"
+#include "../nav_rid_2d.h"
+#include "../nav_utils_2d.h"
+#include "nav_mesh_queries_2d.h"
 
 #include "core/math/math_defs.h"
 #include "core/os/semaphore.h"
 
-struct NavLinkIteration3D;
-class NavRegion3D;
-struct NavRegionIteration3D;
-struct NavMapIteration3D;
+struct NavLinkIteration2D;
+class NavRegion2D;
+struct NavRegionIteration2D;
+struct NavMapIteration2D;
 
-struct NavMapIterationBuild3D {
+struct NavMapIterationBuild2D {
 	Vector3 merge_rasterizer_cell_size;
 	bool use_edge_connections = true;
 	real_t edge_connection_margin;
 	real_t link_connection_radius;
-	nav_3d::PerformanceData performance_data;
+	nav_2d::PerformanceData performance_data;
 	int polygon_count = 0;
 	int free_edge_count = 0;
 
-	HashMap<nav_3d::EdgeKey, nav_3d::EdgeConnectionPair, nav_3d::EdgeKey> iter_connection_pairs_map;
-	LocalVector<nav_3d::Edge::Connection> iter_free_edges;
+	HashMap<nav_2d::EdgeKey, nav_2d::EdgeConnectionPair, nav_2d::EdgeKey> iter_connection_pairs_map;
+	LocalVector<nav_2d::Edge::Connection> iter_free_edges;
 
-	NavMapIteration3D *map_iteration = nullptr;
+	NavMapIteration2D *map_iteration = nullptr;
 
 	int navmesh_polygon_count = 0;
 	int link_polygon_count = 0;
@@ -72,39 +72,39 @@ struct NavMapIterationBuild3D {
 	}
 };
 
-struct NavMapIteration3D {
+struct NavMapIteration2D {
 	mutable SafeNumeric<uint32_t> users;
 	RWLock rwlock;
 
 	Vector3 map_up;
-	LocalVector<nav_3d::Polygon> link_polygons;
+	LocalVector<nav_2d::Polygon> link_polygons;
 
-	LocalVector<NavRegionIteration3D> region_iterations;
-	LocalVector<NavLinkIteration3D> link_iterations;
+	LocalVector<NavRegionIteration2D> region_iterations;
+	LocalVector<NavLinkIteration2D> link_iterations;
 
 	int navmesh_polygon_count = 0;
 	int link_polygon_count = 0;
 
 	// The edge connections that the map builds on top with the edge connection margin.
-	HashMap<uint32_t, LocalVector<nav_3d::Edge::Connection>> external_region_connections;
+	HashMap<uint32_t, LocalVector<nav_2d::Edge::Connection>> external_region_connections;
 
-	HashMap<NavRegion3D *, uint32_t> region_ptr_to_region_id;
+	HashMap<NavRegion2D *, uint32_t> region_ptr_to_region_id;
 
-	LocalVector<NavMeshQueries3D::PathQuerySlot> path_query_slots;
+	LocalVector<NavMeshQueries2D::PathQuerySlot> path_query_slots;
 	Mutex path_query_slots_mutex;
 	Semaphore path_query_slots_semaphore;
 };
 
-class NavMapIterationRead3D {
-	const NavMapIteration3D &map_iteration;
+class NavMapIterationRead2D {
+	const NavMapIteration2D &map_iteration;
 
 public:
-	_ALWAYS_INLINE_ NavMapIterationRead3D(const NavMapIteration3D &p_iteration) :
+	_ALWAYS_INLINE_ NavMapIterationRead2D(const NavMapIteration2D &p_iteration) :
 			map_iteration(p_iteration) {
 		map_iteration.rwlock.read_lock();
 		map_iteration.users.increment();
 	}
-	_ALWAYS_INLINE_ ~NavMapIterationRead3D() {
+	_ALWAYS_INLINE_ ~NavMapIterationRead2D() {
 		map_iteration.users.decrement();
 		map_iteration.rwlock.read_unlock();
 	}

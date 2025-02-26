@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  nav_region_iteration_2d.h                                             */
+/*  triangle2.h                                                           */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -30,18 +30,23 @@
 
 #pragma once
 
-#include "../nav_utils_2d.h"
-#include "nav_base_iteration_2d.h"
+#include "core/math/vector2.h"
 
-#include "core/math/aabb.h"
+struct Triangle2 {
+	Vector2 vertex[3];
 
-struct NavRegionIteration2D : NavBaseIteration2D {
-	Transform3D transform;
+	real_t get_area() const {
+		return Math::sqrt((vertex[0] - vertex[1]).cross(vertex[0] - vertex[2])) * 0.5f;
+	}
 
-	real_t surface_area = 0.0;
-	AABB bounds;
+	Vector2 get_random_point_inside() const;
 
-	const Transform3D &get_transform() const { return transform; }
-	real_t get_surface_area() const { return surface_area; }
-	AABB get_bounds() const { return bounds; }
+	Vector2 get_closest_point_to(const Vector2 &p_point) const;
+
+	Triangle2() {}
+	Triangle2(const Vector2 &p_v1, const Vector2 &p_v2, const Vector2 &p_v3) {
+		vertex[0] = p_v1;
+		vertex[1] = p_v2;
+		vertex[2] = p_v3;
+	}
 };

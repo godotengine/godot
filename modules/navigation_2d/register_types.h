@@ -28,12 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef NAVIGATION_2D_REGISTER_TYPES_H
-#define NAVIGATION_2D_REGISTER_TYPES_H
+#pragma once
 
 #include "modules/register_module_types.h"
 
-void initialize_navigation_module(ModuleInitializationLevel p_level);
-void uninitialize_navigation_module(ModuleInitializationLevel p_level);
-
-#endif // NAVIGATION_2D_REGISTER_TYPES_H
+void initialize_navigation_2d_module(ModuleInitializationLevel p_level);
+void uninitialize_navigation_2d_module(ModuleInitializationLevel p_level);

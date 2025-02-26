@@ -28,19 +28,17 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef _3D_DISABLED
+#include "nav_map_builder_2d.h"
 
-#include "nav_map_builder_3d.h"
+#include "../nav_link_2d.h"
+#include "../nav_map_2d.h"
+#include "../nav_region_2d.h"
+#include "nav_map_iteration_2d.h"
+#include "nav_region_iteration_2d.h"
 
-#include "../nav_link_3d.h"
-#include "../nav_map_3d.h"
-#include "../nav_region_3d.h"
-#include "nav_map_iteration_3d.h"
-#include "nav_region_iteration_3d.h"
+using namespace nav_2d;
 
-using namespace nav_3d;
-
-PointKey NavMapBuilder3D::get_point_key(const Vector3 &p_pos, const Vector3 &p_cell_size) {
+PointKey NavMapBuilder2D::get_point_key(const Vector3 &p_pos, const Vector3 &p_cell_size) {
 	const int x = static_cast<int>(Math::floor(p_pos.x / p_cell_size.x));
 	const int y = static_cast<int>(Math::floor(p_pos.y / p_cell_size.y));
 	const int z = static_cast<int>(Math::floor(p_pos.z / p_cell_size.z));
@@ -53,7 +51,7 @@ PointKey NavMapBuilder3D::get_point_key(const Vector3 &p_pos, const Vector3 &p_c
 	return p;
 }
 
-void NavMapBuilder3D::build_navmap_iteration(NavMapIterationBuild3D &r_build) {
+void NavMapBuilder2D::build_navmap_iteration(NavMapIterationBuild2D &r_build) {
 	PerformanceData &performance_data = r_build.performance_data;
 
 	performance_data.pm_polygon_count = 0;
@@ -75,22 +73,22 @@ void NavMapBuilder3D::build_navmap_iteration(NavMapIterationBuild3D &r_build) {
 	_build_update_map_iteration(r_build);
 }
 
-void NavMapBuilder3D::_build_step_gather_region_polygons(NavMapIterationBuild3D &r_build) {
+void NavMapBuilder2D::_build_step_gather_region_polygons(NavMapIterationBuild2D &r_build) {
 	PerformanceData &performance_data = r_build.performance_data;
-	NavMapIteration3D *map_iteration = r_build.map_iteration;
+	NavMapIteration2D *map_iteration = r_build.map_iteration;
 
-	LocalVector<NavRegionIteration3D> &regions = map_iteration->region_iterations;
+	LocalVector<NavRegionIteration2D> &regions = map_iteration->region_iterations;
 	HashMap<uint32_t, LocalVector<Edge::Connection>> &region_external_connections = map_iteration->external_region_connections;
 
 	// Remove regions connections.
 	region_external_connections.clear();
-	for (const NavRegionIteration3D &region : regions) {
+	for (const NavRegionIteration2D &region : regions) {
 		region_external_connections[region.id] = LocalVector<Edge::Connection>();
 	}
 
 	// Copy all region polygons in the map.
 	int polygon_count = 0;
-	for (NavRegionIteration3D &region : regions) {
+	for (NavRegionIteration2D &region : regions) {
 		if (!region.get_enabled()) {
 			continue;
 		}
@@ -105,9 +103,9 @@ void NavMapBuilder3D::_build_step_gather_region_polygons(NavMapIterationBuild3D 
 	r_build.polygon_count = polygon_count;
 }
 
-void NavMapBuilder3D::_build_step_find_edge_connection_pairs(NavMapIterationBuild3D &r_build) {
+void NavMapBuilder2D::_build_step_find_edge_connection_pairs(NavMapIterationBuild2D &r_build) {
 	PerformanceData &performance_data = r_build.performance_data;
-	NavMapIteration3D *map_iteration = r_build.map_iteration;
+	NavMapIteration2D *map_iteration = r_build.map_iteration;
 	int polygon_count = r_build.polygon_count;
 
 	HashMap<EdgeKey, EdgeConnectionPair, EdgeKey> &connection_pairs_map = r_build.iter_connection_pairs_map;
@@ -117,7 +115,7 @@ void NavMapBuilder3D::_build_step_find_edge_connection_pairs(NavMapIterationBuil
 	connection_pairs_map.reserve(polygon_count);
 	int free_edges_count = 0; // How many ConnectionPairs have only one Connection.
 
-	for (NavRegionIteration3D &region : map_iteration->region_iterations) {
+	for (NavRegionIteration2D &region : map_iteration->region_iterations) {
 		if (!region.get_enabled()) {
 			continue;
 		}
@@ -159,7 +157,7 @@ void NavMapBuilder3D::_build_step_find_edge_connection_pairs(NavMapIterationBuil
 	r_build.free_edge_count = free_edges_count;
 }
 
-void NavMapBuilder3D::_build_step_merge_edge_connection_pairs(NavMapIterationBuild3D &r_build) {
+void NavMapBuilder2D::_build_step_merge_edge_connection_pairs(NavMapIterationBuild2D &r_build) {
 	PerformanceData &performance_data = r_build.performance_data;
 
 	HashMap<EdgeKey, EdgeConnectionPair, EdgeKey> &connection_pairs_map = r_build.iter_connection_pairs_map;
@@ -188,10 +186,9 @@ void NavMapBuilder3D::_build_step_merge_edge_connection_pairs(NavMapIterationBui
 		}
 	}
 }
-
-void NavMapBuilder3D::_build_step_edge_connection_margin_connections(NavMapIterationBuild3D &r_build) {
+void NavMapBuilder2D::_build_step_edge_connection_margin_connections(NavMapIterationBuild2D &r_build) {
 	PerformanceData &performance_data = r_build.performance_data;
-	NavMapIteration3D *map_iteration = r_build.map_iteration;
+	NavMapIteration2D *map_iteration = r_build.map_iteration;
 
 	real_t edge_connection_margin = r_build.edge_connection_margin;
 	LocalVector<Edge::Connection> &free_edges = r_build.iter_free_edges;
@@ -266,14 +263,14 @@ void NavMapBuilder3D::_build_step_edge_connection_margin_connections(NavMapItera
 	}
 }
 
-void NavMapBuilder3D::_build_step_navlink_connections(NavMapIterationBuild3D &r_build) {
-	NavMapIteration3D *map_iteration = r_build.map_iteration;
+void NavMapBuilder2D::_build_step_navlink_connections(NavMapIterationBuild2D &r_build) {
+	NavMapIteration2D *map_iteration = r_build.map_iteration;
 
 	real_t link_connection_radius = r_build.link_connection_radius;
 	Vector3 merge_rasterizer_cell_size = r_build.merge_rasterizer_cell_size;
 
 	LocalVector<Polygon> &link_polygons = map_iteration->link_polygons;
-	LocalVector<NavLinkIteration3D> &links = map_iteration->link_iterations;
+	LocalVector<NavLinkIteration2D> &links = map_iteration->link_iterations;
 	int polygon_count = r_build.polygon_count;
 
 	real_t link_connection_radius_sqr = link_connection_radius * link_connection_radius;
@@ -281,7 +278,7 @@ void NavMapBuilder3D::_build_step_navlink_connections(NavMapIterationBuild3D &r_
 	link_polygons.resize(links.size());
 
 	// Search for polygons within range of a nav link.
-	for (const NavLinkIteration3D &link : links) {
+	for (const NavLinkIteration2D &link : links) {
 		if (!link.get_enabled()) {
 			continue;
 		}
@@ -296,7 +293,7 @@ void NavMapBuilder3D::_build_step_navlink_connections(NavMapIterationBuild3D &r_
 		real_t closest_end_sqr_dist = link_connection_radius_sqr;
 		Vector3 closest_end_point;
 
-		for (NavRegionIteration3D &region : map_iteration->region_iterations) {
+		for (NavRegionIteration2D &region : map_iteration->region_iterations) {
 			if (!region.get_enabled()) {
 				continue;
 			}
@@ -389,8 +386,8 @@ void NavMapBuilder3D::_build_step_navlink_connections(NavMapIterationBuild3D &r_
 	}
 }
 
-void NavMapBuilder3D::_build_update_map_iteration(NavMapIterationBuild3D &r_build) {
-	NavMapIteration3D *map_iteration = r_build.map_iteration;
+void NavMapBuilder2D::_build_update_map_iteration(NavMapIterationBuild2D &r_build) {
+	NavMapIteration2D *map_iteration = r_build.map_iteration;
 
 	LocalVector<Polygon> &link_polygons = map_iteration->link_polygons;
 
@@ -398,7 +395,7 @@ void NavMapBuilder3D::_build_update_map_iteration(NavMapIterationBuild3D &r_buil
 	map_iteration->link_polygon_count = link_polygons.size();
 
 	map_iteration->path_query_slots_mutex.lock();
-	for (NavMeshQueries3D::PathQuerySlot &p_path_query_slot : map_iteration->path_query_slots) {
+	for (NavMeshQueries2D::PathQuerySlot &p_path_query_slot : map_iteration->path_query_slots) {
 		p_path_query_slot.traversable_polys.clear();
 		p_path_query_slot.traversable_polys.reserve(map_iteration->navmesh_polygon_count * 0.25);
 		p_path_query_slot.path_corridor.clear();
@@ -406,5 +403,3 @@ void NavMapBuilder3D::_build_update_map_iteration(NavMapIterationBuild3D &r_buil
 	}
 	map_iteration->path_query_slots_mutex.unlock();
 }
-
-#endif // _3D_DISABLED

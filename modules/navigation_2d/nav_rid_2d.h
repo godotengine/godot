@@ -32,7 +32,7 @@
 
 #include "core/templates/rid.h"
 
-class NavRid3D {
+class NavRid2D {
 	RID self;
 
 public:

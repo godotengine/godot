@@ -28,12 +28,12 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "nav_obstacle_3d.h"
+#include "nav_obstacle_2d.h"
 
-#include "nav_agent_3d.h"
-#include "nav_map_3d.h"
+#include "nav_agent_2d.h"
+#include "nav_map_2d.h"
 
-void NavObstacle3D::set_agent(NavAgent3D *p_agent) {
+void NavObstacle2D::set_agent(NavAgent2D *p_agent) {
 	if (agent == p_agent) {
 		return;
 	}
@@ -45,7 +45,7 @@ void NavObstacle3D::set_agent(NavAgent3D *p_agent) {
 	request_sync();
 }
 
-void NavObstacle3D::set_avoidance_enabled(bool p_enabled) {
+void NavObstacle2D::set_avoidance_enabled(bool p_enabled) {
 	if (avoidance_enabled == p_enabled) {
 		return;
 	}
@@ -58,7 +58,7 @@ void NavObstacle3D::set_avoidance_enabled(bool p_enabled) {
 	request_sync();
 }
 
-void NavObstacle3D::set_use_3d_avoidance(bool p_enabled) {
+void NavObstacle2D::set_use_3d_avoidance(bool p_enabled) {
 	if (use_3d_avoidance == p_enabled) {
 		return;
 	}
@@ -73,7 +73,7 @@ void NavObstacle3D::set_use_3d_avoidance(bool p_enabled) {
 	request_sync();
 }
 
-void NavObstacle3D::set_map(NavMap3D *p_map) {
+void NavObstacle2D::set_map(NavMap2D *p_map) {
 	if (map == p_map) {
 		return;
 	}
@@ -98,7 +98,7 @@ void NavObstacle3D::set_map(NavMap3D *p_map) {
 	}
 }
 
-void NavObstacle3D::set_position(const Vector3 p_position) {
+void NavObstacle2D::set_position(const Vector3 p_position) {
 	if (position == p_position) {
 		return;
 	}
@@ -113,7 +113,7 @@ void NavObstacle3D::set_position(const Vector3 p_position) {
 	request_sync();
 }
 
-void NavObstacle3D::set_radius(real_t p_radius) {
+void NavObstacle2D::set_radius(real_t p_radius) {
 	if (radius == p_radius) {
 		return;
 	}
@@ -125,7 +125,7 @@ void NavObstacle3D::set_radius(real_t p_radius) {
 	}
 }
 
-void NavObstacle3D::set_height(const real_t p_height) {
+void NavObstacle2D::set_height(const real_t p_height) {
 	if (height == p_height) {
 		return;
 	}
@@ -140,7 +140,7 @@ void NavObstacle3D::set_height(const real_t p_height) {
 	request_sync();
 }
 
-void NavObstacle3D::set_velocity(const Vector3 p_velocity) {
+void NavObstacle2D::set_velocity(const Vector3 p_velocity) {
 	velocity = p_velocity;
 
 	if (agent) {
@@ -148,7 +148,7 @@ void NavObstacle3D::set_velocity(const Vector3 p_velocity) {
 	}
 }
 
-void NavObstacle3D::set_vertices(const Vector<Vector3> &p_vertices) {
+void NavObstacle2D::set_vertices(const Vector<Vector3> &p_vertices) {
 	if (vertices == p_vertices) {
 		return;
 	}
@@ -159,7 +159,7 @@ void NavObstacle3D::set_vertices(const Vector<Vector3> &p_vertices) {
 	request_sync();
 }
 
-bool NavObstacle3D::is_map_changed() {
+bool NavObstacle2D::is_map_changed() {
 	if (map) {
 		bool is_changed = map->get_iteration_id() != last_map_iteration_id;
 		last_map_iteration_id = map->get_iteration_id();
@@ -169,7 +169,7 @@ bool NavObstacle3D::is_map_changed() {
 	}
 }
 
-void NavObstacle3D::set_avoidance_layers(uint32_t p_layers) {
+void NavObstacle2D::set_avoidance_layers(uint32_t p_layers) {
 	if (avoidance_layers == p_layers) {
 		return;
 	}
@@ -184,15 +184,15 @@ void NavObstacle3D::set_avoidance_layers(uint32_t p_layers) {
 	request_sync();
 }
 
-bool NavObstacle3D::is_dirty() const {
+bool NavObstacle2D::is_dirty() const {
 	return obstacle_dirty;
 }
 
-void NavObstacle3D::sync() {
+void NavObstacle2D::sync() {
 	obstacle_dirty = false;
 }
 
-void NavObstacle3D::internal_update_agent() {
+void NavObstacle2D::internal_update_agent() {
 	if (agent) {
 		agent->set_neighbor_distance(0.0);
 		agent->set_max_neighbors(0.0);
@@ -212,7 +212,7 @@ void NavObstacle3D::internal_update_agent() {
 	}
 }
 
-void NavObstacle3D::set_paused(bool p_paused) {
+void NavObstacle2D::set_paused(bool p_paused) {
 	if (paused == p_paused) {
 		return;
 	}
@@ -229,26 +229,26 @@ void NavObstacle3D::set_paused(bool p_paused) {
 	internal_update_agent();
 }
 
-bool NavObstacle3D::get_paused() const {
+bool NavObstacle2D::get_paused() const {
 	return paused;
 }
 
-void NavObstacle3D::request_sync() {
+void NavObstacle2D::request_sync() {
 	if (map && !sync_dirty_request_list_element.in_list()) {
 		map->add_obstacle_sync_dirty_request(&sync_dirty_request_list_element);
 	}
 }
 
-void NavObstacle3D::cancel_sync_request() {
+void NavObstacle2D::cancel_sync_request() {
 	if (map && sync_dirty_request_list_element.in_list()) {
 		map->remove_obstacle_sync_dirty_request(&sync_dirty_request_list_element);
 	}
 }
 
-NavObstacle3D::NavObstacle3D() :
+NavObstacle2D::NavObstacle2D() :
 		sync_dirty_request_list_element(this) {
 }
 
-NavObstacle3D::~NavObstacle3D() {
+NavObstacle2D::~NavObstacle2D() {
 	cancel_sync_request();
 }

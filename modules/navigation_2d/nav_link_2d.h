@@ -30,11 +30,11 @@
 
 #pragma once
 
-#include "3d/nav_base_iteration_3d.h"
-#include "nav_base_3d.h"
-#include "nav_utils_3d.h"
+#include "2d/nav_base_iteration_2d.h"
+#include "nav_base_2d.h"
+#include "nav_utils_2d.h"
 
-struct NavLinkIteration3D : NavBaseIteration3D {
+struct NavLinkIteration2D : NavBaseIteration2D {
 	bool bidirectional = true;
 	Vector3 start_position;
 	Vector3 end_position;
@@ -46,8 +46,8 @@ struct NavLinkIteration3D : NavBaseIteration3D {
 
 #include "core/templates/self_list.h"
 
-class NavLink3D : public NavBase3D {
-	NavMap3D *map = nullptr;
+class NavLink2D : public NavBase2D {
+	NavMap2D *map = nullptr;
 	bool bidirectional = true;
 	Vector3 start_position;
 	Vector3 end_position;
@@ -55,14 +55,14 @@ class NavLink3D : public NavBase3D {
 
 	bool link_dirty = true;
 
-	SelfList<NavLink3D> sync_dirty_request_list_element;
+	SelfList<NavLink2D> sync_dirty_request_list_element;
 
 public:
-	NavLink3D();
-	~NavLink3D();
+	NavLink2D();
+	~NavLink2D();
 
-	void set_map(NavMap3D *p_map);
-	NavMap3D *get_map() const {
+	void set_map(NavMap2D *p_map);
+	NavMap2D *get_map() const {
 		return map;
 	}
 
@@ -95,5 +95,5 @@ public:
 	void request_sync();
 	void cancel_sync_request();
 
-	void get_iteration_update(NavLinkIteration3D &r_iteration);
+	void get_iteration_update(NavLinkIteration2D &r_iteration);
 };

@@ -30,18 +30,18 @@
 
 #pragma once
 
-#include "nav_base_3d.h"
-#include "nav_utils_3d.h"
+#include "nav_base_2d.h"
+#include "nav_utils_2d.h"
 
 #include "core/os/rw_lock.h"
 #include "scene/resources/navigation_mesh.h"
 
-struct NavRegionIteration3D;
+struct NavRegionIteration2D;
 
-class NavRegion3D : public NavBase3D {
+class NavRegion2D : public NavBase2D {
 	RWLock region_rwlock;
 
-	NavMap3D *map = nullptr;
+	NavMap2D *map = nullptr;
 	Transform3D transform;
 	bool enabled = true;
 
@@ -50,7 +50,7 @@ class NavRegion3D : public NavBase3D {
 	bool region_dirty = true;
 	bool polygons_dirty = true;
 
-	LocalVector<nav_3d::Polygon> navmesh_polygons;
+	LocalVector<nav_2d::Polygon> navmesh_polygons;
 
 	real_t surface_area = 0.0;
 	AABB bounds;
@@ -59,11 +59,11 @@ class NavRegion3D : public NavBase3D {
 	Vector<Vector3> pending_navmesh_vertices;
 	Vector<Vector<int>> pending_navmesh_polygons;
 
-	SelfList<NavRegion3D> sync_dirty_request_list_element;
+	SelfList<NavRegion2D> sync_dirty_request_list_element;
 
 public:
-	NavRegion3D();
-	~NavRegion3D();
+	NavRegion2D();
+	~NavRegion2D();
 
 	void scratch_polygons() {
 		polygons_dirty = true;
@@ -72,8 +72,8 @@ public:
 	void set_enabled(bool p_enabled);
 	bool get_enabled() const { return enabled; }
 
-	void set_map(NavMap3D *p_map);
-	NavMap3D *get_map() const {
+	void set_map(NavMap2D *p_map);
+	NavMap2D *get_map() const {
 		return map;
 	}
 
@@ -87,12 +87,12 @@ public:
 
 	void set_navigation_mesh(Ref<NavigationMesh> p_navigation_mesh);
 
-	LocalVector<nav_3d::Polygon> const &get_polygons() const {
+	LocalVector<nav_2d::Polygon> const &get_polygons() const {
 		return navmesh_polygons;
 	}
 
 	Vector3 get_closest_point_to_segment(const Vector3 &p_from, const Vector3 &p_to, bool p_use_collision) const;
-	nav_3d::ClosestPointQueryResult get_closest_point_info(const Vector3 &p_point) const;
+	nav_2d::ClosestPointQueryResult get_closest_point_info(const Vector3 &p_point) const;
 	Vector3 get_random_point(uint32_t p_navigation_layers, bool p_uniformly) const;
 
 	real_t get_surface_area() const { return surface_area; }
@@ -108,7 +108,7 @@ public:
 	void request_sync();
 	void cancel_sync_request();
 
-	void get_iteration_update(NavRegionIteration3D &r_iteration);
+	void get_iteration_update(NavRegionIteration2D &r_iteration);
 
 private:
 	void update_polygons();

@@ -36,9 +36,9 @@
 #include "servers/navigation/nav_heap.h"
 #include "servers/navigation/navigation_utilities.h"
 
-struct NavBaseIteration3D;
+struct NavBaseIteration2D;
 
-namespace nav_3d {
+namespace nav_2d {
 struct Polygon;
 
 union PointKey {
@@ -102,7 +102,7 @@ struct Polygon {
 	uint32_t id = UINT32_MAX;
 
 	/// Navigation region or link that contains this polygon.
-	const NavBaseIteration3D *owner = nullptr;
+	const NavBaseIteration2D *owner = nullptr;
 
 	/// The points of this `Polygon`
 	LocalVector<Point> points;
@@ -213,4 +213,4 @@ struct PerformanceData {
 	}
 };
 
-} // namespace nav_3d
+} // namespace nav_2d

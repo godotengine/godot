@@ -30,20 +30,20 @@
 
 #pragma once
 
-#include "../nav_utils_3d.h"
+#include "../nav_utils_2d.h"
 
-struct NavMapIterationBuild3D;
+struct NavMapIterationBuild2D;
 
-class NavMapBuilder3D {
-	static void _build_step_gather_region_polygons(NavMapIterationBuild3D &r_build);
-	static void _build_step_find_edge_connection_pairs(NavMapIterationBuild3D &r_build);
-	static void _build_step_merge_edge_connection_pairs(NavMapIterationBuild3D &r_build);
-	static void _build_step_edge_connection_margin_connections(NavMapIterationBuild3D &r_build);
-	static void _build_step_navlink_connections(NavMapIterationBuild3D &r_build);
-	static void _build_update_map_iteration(NavMapIterationBuild3D &r_build);
+class NavMapBuilder2D {
+	static void _build_step_gather_region_polygons(NavMapIterationBuild2D &r_build);
+	static void _build_step_find_edge_connection_pairs(NavMapIterationBuild2D &r_build);
+	static void _build_step_merge_edge_connection_pairs(NavMapIterationBuild2D &r_build);
+	static void _build_step_edge_connection_margin_connections(NavMapIterationBuild2D &r_build);
+	static void _build_step_navlink_connections(NavMapIterationBuild2D &r_build);
+	static void _build_update_map_iteration(NavMapIterationBuild2D &r_build);
 
 public:
-	static nav_3d::PointKey get_point_key(const Vector3 &p_pos, const Vector3 &p_cell_size);
+	static nav_2d::PointKey get_point_key(const Vector3 &p_pos, const Vector3 &p_cell_size);
 
-	static void build_navmap_iteration(NavMapIterationBuild3D &r_build);
+	static void build_navmap_iteration(NavMapIterationBuild2D &r_build);
 };

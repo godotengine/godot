@@ -28,17 +28,17 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "nav_region_3d.h"
+#include "nav_region_2d.h"
 
-#include "nav_map_3d.h"
+#include "nav_map_2d.h"
 
-#include "3d/nav_map_builder_3d.h"
-#include "3d/nav_mesh_queries_3d.h"
-#include "3d/nav_region_iteration_3d.h"
+#include "2d/nav_map_builder_2d.h"
+#include "2d/nav_mesh_queries_2d.h"
+#include "2d/nav_region_iteration_2d.h"
 
-using namespace nav_3d;
+using namespace nav_2d;
 
-void NavRegion3D::set_map(NavMap3D *p_map) {
+void NavRegion2D::set_map(NavMap2D *p_map) {
 	if (map == p_map) {
 		return;
 	}
@@ -58,7 +58,7 @@ void NavRegion3D::set_map(NavMap3D *p_map) {
 	}
 }
 
-void NavRegion3D::set_enabled(bool p_enabled) {
+void NavRegion2D::set_enabled(bool p_enabled) {
 	if (enabled == p_enabled) {
 		return;
 	}
@@ -70,7 +70,7 @@ void NavRegion3D::set_enabled(bool p_enabled) {
 	request_sync();
 }
 
-void NavRegion3D::set_use_edge_connections(bool p_enabled) {
+void NavRegion2D::set_use_edge_connections(bool p_enabled) {
 	if (use_edge_connections != p_enabled) {
 		use_edge_connections = p_enabled;
 		polygons_dirty = true;
@@ -79,7 +79,7 @@ void NavRegion3D::set_use_edge_connections(bool p_enabled) {
 	request_sync();
 }
 
-void NavRegion3D::set_transform(Transform3D p_transform) {
+void NavRegion2D::set_transform(Transform3D p_transform) {
 	if (transform == p_transform) {
 		return;
 	}
@@ -95,7 +95,7 @@ void NavRegion3D::set_transform(Transform3D p_transform) {
 #endif // DEBUG_ENABLED
 }
 
-void NavRegion3D::set_navigation_mesh(Ref<NavigationMesh> p_navigation_mesh) {
+void NavRegion2D::set_navigation_mesh(Ref<NavigationMesh> p_navigation_mesh) {
 #ifdef DEBUG_ENABLED
 	if (map && p_navigation_mesh.is_valid() && !Math::is_equal_approx(double(map->get_cell_size()), double(p_navigation_mesh->get_cell_size()))) {
 		ERR_PRINT_ONCE(vformat("Attempted to update a navigation region with a navigation mesh that uses a `cell_size` of %s while assigned to a navigation map set to a `cell_size` of %s. The cell size for navigation maps can be changed by using the NavigationServer map_set_cell_size() function. The cell size for default navigation maps can also be changed in the ProjectSettings.", double(p_navigation_mesh->get_cell_size()), double(map->get_cell_size())));
@@ -120,30 +120,30 @@ void NavRegion3D::set_navigation_mesh(Ref<NavigationMesh> p_navigation_mesh) {
 	request_sync();
 }
 
-Vector3 NavRegion3D::get_closest_point_to_segment(const Vector3 &p_from, const Vector3 &p_to, bool p_use_collision) const {
+Vector3 NavRegion2D::get_closest_point_to_segment(const Vector3 &p_from, const Vector3 &p_to, bool p_use_collision) const {
 	RWLockRead read_lock(region_rwlock);
 
-	return NavMeshQueries3D::polygons_get_closest_point_to_segment(
+	return NavMeshQueries2D::polygons_get_closest_point_to_segment(
 			get_polygons(), p_from, p_to, p_use_collision);
 }
 
-ClosestPointQueryResult NavRegion3D::get_closest_point_info(const Vector3 &p_point) const {
+ClosestPointQueryResult NavRegion2D::get_closest_point_info(const Vector3 &p_point) const {
 	RWLockRead read_lock(region_rwlock);
 
-	return NavMeshQueries3D::polygons_get_closest_point_info(get_polygons(), p_point);
+	return NavMeshQueries2D::polygons_get_closest_point_info(get_polygons(), p_point);
 }
 
-Vector3 NavRegion3D::get_random_point(uint32_t p_navigation_layers, bool p_uniformly) const {
+Vector3 NavRegion2D::get_random_point(uint32_t p_navigation_layers, bool p_uniformly) const {
 	RWLockRead read_lock(region_rwlock);
 
 	if (!get_enabled()) {
 		return Vector3();
 	}
 
-	return NavMeshQueries3D::polygons_get_random_point(get_polygons(), p_navigation_layers, p_uniformly);
+	return NavMeshQueries2D::polygons_get_random_point(get_polygons(), p_navigation_layers, p_uniformly);
 }
 
-void NavRegion3D::set_navigation_layers(uint32_t p_navigation_layers) {
+void NavRegion2D::set_navigation_layers(uint32_t p_navigation_layers) {
 	if (navigation_layers == p_navigation_layers) {
 		return;
 	}
@@ -153,7 +153,7 @@ void NavRegion3D::set_navigation_layers(uint32_t p_navigation_layers) {
 	request_sync();
 }
 
-void NavRegion3D::set_enter_cost(real_t p_enter_cost) {
+void NavRegion2D::set_enter_cost(real_t p_enter_cost) {
 	real_t new_enter_cost = MAX(p_enter_cost, 0.0);
 	if (enter_cost == new_enter_cost) {
 		return;
@@ -164,7 +164,7 @@ void NavRegion3D::set_enter_cost(real_t p_enter_cost) {
 	request_sync();
 }
 
-void NavRegion3D::set_travel_cost(real_t p_travel_cost) {
+void NavRegion2D::set_travel_cost(real_t p_travel_cost) {
 	real_t new_travel_cost = MAX(p_travel_cost, 0.0);
 	if (travel_cost == new_travel_cost) {
 		return;
@@ -175,7 +175,7 @@ void NavRegion3D::set_travel_cost(real_t p_travel_cost) {
 	request_sync();
 }
 
-void NavRegion3D::set_owner_id(ObjectID p_owner_id) {
+void NavRegion2D::set_owner_id(ObjectID p_owner_id) {
 	if (owner_id == p_owner_id) {
 		return;
 	}
@@ -185,7 +185,7 @@ void NavRegion3D::set_owner_id(ObjectID p_owner_id) {
 	request_sync();
 }
 
-bool NavRegion3D::sync() {
+bool NavRegion2D::sync() {
 	RWLockWrite write_lock(region_rwlock);
 
 	bool something_changed = region_dirty || polygons_dirty;
@@ -197,7 +197,7 @@ bool NavRegion3D::sync() {
 	return something_changed;
 }
 
-void NavRegion3D::update_polygons() {
+void NavRegion2D::update_polygons() {
 	if (!polygons_dirty) {
 		return;
 	}
@@ -271,7 +271,7 @@ void NavRegion3D::update_polygons() {
 
 			Vector3 point_position = transform.xform(vertices_r[idx]);
 			polygon.points[j].pos = point_position;
-			polygon.points[j].key = NavMapBuilder3D::get_point_key(point_position, map->get_merge_rasterizer_cell_size());
+			polygon.points[j].key = NavMapBuilder2D::get_point_key(point_position, map->get_merge_rasterizer_cell_size());
 
 			if (first_vertex) {
 				first_vertex = false;
@@ -290,7 +290,7 @@ void NavRegion3D::update_polygons() {
 	bounds = _new_bounds;
 }
 
-void NavRegion3D::get_iteration_update(NavRegionIteration3D &r_iteration) {
+void NavRegion2D::get_iteration_update(NavRegionIteration2D &r_iteration) {
 	r_iteration.navigation_layers = get_navigation_layers();
 	r_iteration.enter_cost = get_enter_cost();
 	r_iteration.travel_cost = get_travel_cost();
@@ -313,23 +313,23 @@ void NavRegion3D::get_iteration_update(NavRegionIteration3D &r_iteration) {
 	}
 }
 
-void NavRegion3D::request_sync() {
+void NavRegion2D::request_sync() {
 	if (map && !sync_dirty_request_list_element.in_list()) {
 		map->add_region_sync_dirty_request(&sync_dirty_request_list_element);
 	}
 }
 
-void NavRegion3D::cancel_sync_request() {
+void NavRegion2D::cancel_sync_request() {
 	if (map && sync_dirty_request_list_element.in_list()) {
 		map->remove_region_sync_dirty_request(&sync_dirty_request_list_element);
 	}
 }
 
-NavRegion3D::NavRegion3D() :
+NavRegion2D::NavRegion2D() :
 		sync_dirty_request_list_element(this) {
 	type = NavigationUtilities::PathSegmentType::PATH_SEGMENT_TYPE_REGION;
 }
 
-NavRegion3D::~NavRegion3D() {
+NavRegion2D::~NavRegion2D() {
 	cancel_sync_request();
 }
