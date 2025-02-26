@@ -3076,6 +3076,7 @@
 		</member>
 		<member name="rendering/reflections/sky_reflections/texture_array_reflections" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], uses texture arrays instead of mipmaps for reflection probes and panorama backgrounds (sky). This reduces jitter noise and upscaling artifacts on reflections, but is significantly slower to compute and uses [member rendering/reflections/sky_reflections/roughness_layers] times more memory.
+			[b]Note:[/b] Texture array reflections are always disabled on macOS on Intel GPUs due to driver bugs.
 		</member>
 		<member name="rendering/reflections/sky_reflections/texture_array_reflections.mobile" type="bool" setter="" getter="" default="false">
 			Lower-end override for [member rendering/reflections/sky_reflections/texture_array_reflections] on mobile devices, due to performance concerns or driver support.
