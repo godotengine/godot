@@ -95,22 +95,22 @@ Array::ConstIterator Array::end() const {
 	return ConstIterator(_p->array.ptr() + _p->array.size(), _p->read_only);
 }
 
-Variant &Array::operator[](int p_idx) {
-	ERR_FAIL_INDEX_MSG(p_idx, size(), _p->array[0]);
-	if (unlikely(_p->read_only)) {
-		*_p->read_only = _p->array[p_idx];
-		return *_p->read_only;
-	}
-	return _p->array.write[p_idx];
+Variant Array::operator[](int p_idx) {
+    ERR_FAIL_INDEX_V_MSG(p_idx < 0 || p_idx >= size(), Variant());
+    if (unlikely(_p->read_only)) {
+        *_p->read_only = _p->array[p_idx];
+        return *_p->read_only;
+    }
+    return _p->array[p_idx];
 }
 
-const Variant &Array::operator[](int p_idx) const {
-	ERR_FAIL_INDEX_MSG(p_idx, size(), _p->array[0]);
-	if (unlikely(_p->read_only)) {
-		*_p->read_only = _p->array[p_idx];
-		return *_p->read_only;
-	}
-	return _p->array[p_idx];
+const Variant Array::operator[](int p_idx) const {
+    ERR_FAIL_INDEX_V_MSG(p_idx < 0 || p_idx >= size(), Variant());
+    if (unlikely(_p->read_only)) {
+        *_p->read_only = _p->array[p_idx];
+        return *_p->read_only;
+    }
+    return _p->array[p_idx];
 }
 
 int Array::size() const {
@@ -494,9 +494,9 @@ void Array::set(int p_idx, const Variant &p_value) {
 	operator[](p_idx) = value;
 }
 
-const Variant &Array::get(int p_idx) const {
-	ERR_FAIL_INDEX_MSG(p_idx, size(), Variant());
-	return operator[](p_idx);
+Variant Array::get(int p_idx) const {
+    ERR_FAIL_INDEX_V_MSG(p_idx < 0 || p_idx >= size(), Variant());
+    return operator[](p_idx);
 }
 
 Array Array::duplicate(bool p_deep) const {
