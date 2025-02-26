@@ -33,6 +33,42 @@
 #include "scene/3d/visual_instance_3d.h"
 #include "scene/resources/sprite_frames.h"
 
+struct SpriteMeshKey {
+	// Mesh vertices are derived from final_rect.position, final_rect.size, axis, and px_size
+	// axis and px_size are moved down to improve struct packing.
+	Rect2 final_rect;
+	// Mesh uvs are derived from final_src_rect.position, final_src_rect.size, hflip, vflip and texture size
+	// Texture size depends on the texture, and we're already including the texture for material checks,
+	// so we won't include texture size here.
+	// hflip and vflip are moved down to improve struct packing.
+	Rect2 final_src_rect;
+	uint32_t v_color;
+	uint32_t v_normal;
+	RID shader;
+	RID texture;
+	float px_size;
+	int render_priority;
+	uint8_t axis; // Vector3::Axis will only ever have 3 members. We store it as a uint8_t instead of int to save space.
+	bool hflip;
+	bool vflip;
+	bool alpha_cut_disabled;
+	float alpha_scissor_threshold;
+	float alpha_hash_scale;
+	float alpha_antialiasing_edge;
+	bool operator==(const SpriteMeshKey &other) const {
+		return memcmp(this, &other, sizeof(SpriteMeshKey)) == 0;
+	}
+	bool operator!=(const SpriteMeshKey &other) const {
+		return memcmp(this, &other, sizeof(SpriteMeshKey)) != 0;
+	}
+};
+
+struct SpriteMeshHasher {
+	static _FORCE_INLINE_ uint32_t hash(const SpriteMeshKey &p_mesh_key) {
+		return hash_murmur3_buffer(&p_mesh_key, sizeof(SpriteMeshKey));
+	}
+};
+
 class SpriteBase3D : public GeometryInstance3D {
 	GDCLASS(SpriteBase3D, GeometryInstance3D);
 
@@ -58,6 +94,12 @@ public:
 	};
 
 private:
+	Vector<SpriteBase3D *> users;
+	SpriteMeshKey last_sprite_mesh_key;
+	SpriteBase3D *using_sprite = nullptr;
+	int using_sprite_user_index = -1; // Used to invalidate this sprite's entry in another sprite's users vector.
+	bool sharing_own_mesh = false;
+
 	bool color_dirty = true;
 	Color color_accum;
 
@@ -96,6 +138,8 @@ private:
 	void _im_update();
 
 	void _propagate_color_changed();
+	void _stop_sharing_sprite();
+	void _stop_using_sprite();
 
 protected:
 	Color _get_color_accum();
@@ -104,7 +148,7 @@ protected:
 	virtual void _draw() = 0;
 	void draw_texture_rect(Ref<Texture2D> p_texture, Rect2 p_dst_rect, Rect2 p_src_rect);
 	_FORCE_INLINE_ void set_aabb(const AABB &p_aabb) { aabb = p_aabb; }
-	_FORCE_INLINE_ RID &get_mesh() { return mesh; }
+	_FORCE_INLINE_ RID &get_mesh() { return using_sprite ? using_sprite->mesh : mesh; }
 	_FORCE_INLINE_ RID &get_material() { return material; }
 
 	uint32_t mesh_surface_offsets[RS::ARRAY_MAX];
