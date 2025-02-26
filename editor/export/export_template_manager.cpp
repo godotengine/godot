@@ -57,9 +57,6 @@ enum DownloadsAvailability {
 
 static DownloadsAvailability _get_downloads_availability() {
 	const int network_mode = EDITOR_GET("network/connection/network_mode");
-	if (network_mode == EditorSettings::NETWORK_OFFLINE) {
-		return DOWNLOADS_NOT_AVAILABLE_IN_OFFLINE_MODE;
-	}
 
 	// Downloadable export templates are only available for stable and official alpha/beta/RC builds
 	// (which always have a number following their status, e.g. "alpha1").
@@ -70,6 +67,10 @@ static DownloadsAvailability _get_downloads_availability() {
 			String(VERSION_STATUS) == String("beta") ||
 			String(VERSION_STATUS) == String("rc")) {
 		return DOWNLOADS_NOT_AVAILABLE_FOR_DEV_BUILDS;
+	}
+
+	if (network_mode == EditorSettings::NETWORK_OFFLINE) {
+		return DOWNLOADS_NOT_AVAILABLE_IN_OFFLINE_MODE;
 	}
 
 	return DOWNLOADS_AVAILABLE;

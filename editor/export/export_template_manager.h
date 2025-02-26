@@ -37,7 +37,6 @@ class EditorExportPreset;
 class ExportTemplateVersion;
 class FileDialog;
 class HTTPRequest;
-class LinkButton;
 class MenuButton;
 class OptionButton;
 class ProgressBar;
