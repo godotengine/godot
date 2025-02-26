@@ -2045,6 +2045,7 @@ Vector<uint8_t> RenderingDeviceDriverMetal::shader_compile_binary_from_spirv(Vec
 
 #if TARGET_OS_IPHONE
 	msl_options.ios_use_simdgroup_functions = (*device_properties).features.simdPermute;
+	msl_options.ios_support_base_vertex_instance = true;
 #endif
 
 	bool disable_argument_buffers = false;
