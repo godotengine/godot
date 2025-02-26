@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="NavigationMeshAreaCylinder3D" inherits="NavigationMeshArea3D" experimental="" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		An axis-aligned area with a projected shape of cylinder to affect navigation mesh geometry and properties (when baked).
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="radius" type="float" setter="set_radius" getter="get_radius" default="1.0">
+			The radius of the projected cylinder shape. The projected area shape is extruded along the y-axis controlled by [member NavigationMeshArea3D.height].
+			[b]Note:[/b] The roundness of the cylinder should be expected to be only very coarse. The result is very much affected by the used navigation mesh cell grid resolution and other navigation mesh bake related properties.
+		</member>
+	</members>
+</class>
