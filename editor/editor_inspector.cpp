@@ -918,6 +918,9 @@ void EditorProperty::gui_input(const Ref<InputEvent> &p_event) {
 
 	if (me.is_valid()) {
 		Vector2 mpos = me->get_position();
+		if (bottom_child_rect.has_point(mpos)) {
+			return; // Makes child EditorProperties behave like sibling nodes when handling mouse events.
+		}
 		if (is_layout_rtl()) {
 			mpos.x = get_size().x - mpos.x;
 		}
@@ -2714,8 +2717,6 @@ VBoxContainer *EditorInspectorArray::get_vbox(int p_index) {
 
 EditorInspectorArray::EditorInspectorArray(bool p_read_only) {
 	read_only = p_read_only;
-
-	set_mouse_filter(Control::MOUSE_FILTER_STOP);
 
 	odd_style.instantiate();
 	even_style.instantiate();
