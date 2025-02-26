@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  nav_link.h                                                            */
+/*  nav_link_3d.h                                                         */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -31,10 +31,10 @@
 #pragma once
 
 #include "3d/nav_base_iteration_3d.h"
-#include "nav_base.h"
-#include "nav_utils.h"
+#include "nav_base_3d.h"
+#include "nav_utils_3d.h"
 
-struct NavLinkIteration : NavBaseIteration {
+struct NavLinkIteration3D : NavBaseIteration3D {
 	bool bidirectional = true;
 	Vector3 start_position;
 	Vector3 end_position;
@@ -46,8 +46,8 @@ struct NavLinkIteration : NavBaseIteration {
 
 #include "core/templates/self_list.h"
 
-class NavLink : public NavBase {
-	NavMap *map = nullptr;
+class NavLink3D : public NavBase3D {
+	NavMap3D *map = nullptr;
 	bool bidirectional = true;
 	Vector3 start_position;
 	Vector3 end_position;
@@ -55,14 +55,14 @@ class NavLink : public NavBase {
 
 	bool link_dirty = true;
 
-	SelfList<NavLink> sync_dirty_request_list_element;
+	SelfList<NavLink3D> sync_dirty_request_list_element;
 
 public:
-	NavLink();
-	~NavLink();
+	NavLink3D();
+	~NavLink3D();
 
-	void set_map(NavMap *p_map);
-	NavMap *get_map() const {
+	void set_map(NavMap3D *p_map);
+	NavMap3D *get_map() const {
 		return map;
 	}
 
@@ -95,5 +95,5 @@ public:
 	void request_sync();
 	void cancel_sync_request();
 
-	void get_iteration_update(NavLinkIteration &r_iteration);
+	void get_iteration_update(NavLinkIteration3D &r_iteration);
 };
