@@ -179,6 +179,7 @@
 #include "tests/scene/test_primitives.h"
 #include "tests/scene/test_skeleton_3d.h"
 #include "tests/scene/test_sky.h"
+#include "tests/scene/test_sprite_3d.h"
 #endif // _3D_DISABLED
 
 #ifndef PHYSICS_3D_DISABLED
