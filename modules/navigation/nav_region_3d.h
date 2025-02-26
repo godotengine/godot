@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  nav_obstacle.h                                                        */
+/*  nav_region_3d.h                                                       */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -30,79 +30,86 @@
 
 #pragma once
 
-#include "nav_rid.h"
+#include "nav_base_3d.h"
+#include "nav_utils_3d.h"
 
-#include "core/object/class_db.h"
-#include "core/templates/self_list.h"
+#include "core/os/rw_lock.h"
+#include "scene/resources/navigation_mesh.h"
 
-class NavAgent;
-class NavMap;
+struct NavRegionIteration3D;
 
-class NavObstacle : public NavRid {
-	NavAgent *agent = nullptr;
-	NavMap *map = nullptr;
-	Vector3 velocity;
-	Vector3 position;
-	Vector<Vector3> vertices;
+class NavRegion3D : public NavBase3D {
+	RWLock region_rwlock;
 
-	real_t radius = 0.0;
-	real_t height = 0.0;
+	NavMap3D *map = nullptr;
+	Transform3D transform;
+	bool enabled = true;
 
-	bool avoidance_enabled = false;
-	bool use_3d_avoidance = false;
-	uint32_t avoidance_layers = 1;
+	bool use_edge_connections = true;
 
-	bool obstacle_dirty = true;
+	bool region_dirty = true;
+	bool polygons_dirty = true;
 
-	uint32_t last_map_iteration_id = 0;
-	bool paused = false;
+	LocalVector<nav_3d::Polygon> navmesh_polygons;
 
-	SelfList<NavObstacle> sync_dirty_request_list_element;
+	real_t surface_area = 0.0;
+	AABB bounds;
+
+	RWLock navmesh_rwlock;
+	Vector<Vector3> pending_navmesh_vertices;
+	Vector<Vector<int>> pending_navmesh_polygons;
+
+	SelfList<NavRegion3D> sync_dirty_request_list_element;
 
 public:
-	NavObstacle();
-	~NavObstacle();
+	NavRegion3D();
+	~NavRegion3D();
 
-	void set_avoidance_enabled(bool p_enabled);
-	bool is_avoidance_enabled() { return avoidance_enabled; }
+	void scratch_polygons() {
+		polygons_dirty = true;
+	}
 
-	void set_use_3d_avoidance(bool p_enabled);
-	bool get_use_3d_avoidance() { return use_3d_avoidance; }
+	void set_enabled(bool p_enabled);
+	bool get_enabled() const { return enabled; }
 
-	void set_map(NavMap *p_map);
-	NavMap *get_map() { return map; }
+	void set_map(NavMap3D *p_map);
+	NavMap3D *get_map() const {
+		return map;
+	}
 
-	void set_agent(NavAgent *p_agent);
-	NavAgent *get_agent() { return agent; }
+	virtual void set_use_edge_connections(bool p_enabled) override;
+	virtual bool get_use_edge_connections() const override { return use_edge_connections; }
 
-	void set_position(const Vector3 p_position);
-	const Vector3 &get_position() const { return position; }
+	void set_transform(Transform3D transform);
+	const Transform3D &get_transform() const {
+		return transform;
+	}
 
-	void set_radius(real_t p_radius);
-	real_t get_radius() const { return radius; }
+	void set_navigation_mesh(Ref<NavigationMesh> p_navigation_mesh);
 
-	void set_height(const real_t p_height);
-	real_t get_height() const { return height; }
+	LocalVector<nav_3d::Polygon> const &get_polygons() const {
+		return navmesh_polygons;
+	}
 
-	void set_velocity(const Vector3 p_velocity);
-	const Vector3 &get_velocity() const { return velocity; }
+	Vector3 get_closest_point_to_segment(const Vector3 &p_from, const Vector3 &p_to, bool p_use_collision) const;
+	nav_3d::ClosestPointQueryResult get_closest_point_info(const Vector3 &p_point) const;
+	Vector3 get_random_point(uint32_t p_navigation_layers, bool p_uniformly) const;
 
-	void set_vertices(const Vector<Vector3> &p_vertices);
-	const Vector<Vector3> &get_vertices() const { return vertices; }
+	real_t get_surface_area() const { return surface_area; }
+	AABB get_bounds() const { return bounds; }
 
-	bool is_map_changed();
+	// NavBase properties.
+	virtual void set_navigation_layers(uint32_t p_navigation_layers) override;
+	virtual void set_enter_cost(real_t p_enter_cost) override;
+	virtual void set_travel_cost(real_t p_travel_cost) override;
+	virtual void set_owner_id(ObjectID p_owner_id) override;
 
-	void set_avoidance_layers(uint32_t p_layers);
-	uint32_t get_avoidance_layers() const { return avoidance_layers; }
-
-	void set_paused(bool p_paused);
-	bool get_paused() const;
-
-	bool is_dirty() const;
-	void sync();
+	bool sync();
 	void request_sync();
 	void cancel_sync_request();
 
+	void get_iteration_update(NavRegionIteration3D &r_iteration);
+
 private:
-	void internal_update_agent();
+	void update_polygons();
 };

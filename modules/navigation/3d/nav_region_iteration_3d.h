@@ -30,12 +30,12 @@
 
 #pragma once
 
-#include "../nav_utils.h"
+#include "../nav_utils_3d.h"
 #include "nav_base_iteration_3d.h"
 
 #include "core/math/aabb.h"
 
-struct NavRegionIteration : NavBaseIteration {
+struct NavRegionIteration3D : NavBaseIteration3D {
 	Transform3D transform;
 	real_t surface_area = 0.0;
 	AABB bounds;
