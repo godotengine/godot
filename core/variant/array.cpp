@@ -96,6 +96,7 @@ Array::ConstIterator Array::end() const {
 }
 
 Variant &Array::operator[](int p_idx) {
+	ERR_FAIL_INDEX_MSG(p_idx, size(), _p->array[0]);
 	if (unlikely(_p->read_only)) {
 		*_p->read_only = _p->array[p_idx];
 		return *_p->read_only;
@@ -104,6 +105,7 @@ Variant &Array::operator[](int p_idx) {
 }
 
 const Variant &Array::operator[](int p_idx) const {
+	ERR_FAIL_INDEX_MSG(p_idx, size(), _p->array[0]);
 	if (unlikely(_p->read_only)) {
 		*_p->read_only = _p->array[p_idx];
 		return *_p->read_only;
@@ -493,6 +495,7 @@ void Array::set(int p_idx, const Variant &p_value) {
 }
 
 const Variant &Array::get(int p_idx) const {
+	ERR_FAIL_INDEX_MSG(p_idx, size(), Variant());
 	return operator[](p_idx);
 }
 
