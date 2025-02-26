@@ -679,7 +679,6 @@ Error GLTFDocument::_parse_nodes(Ref<GLTFState> p_state) {
 }
 
 void GLTFDocument::_compute_node_heights(Ref<GLTFState> p_state) {
-	p_state->root_nodes.clear();
 	for (GLTFNodeIndex node_i = 0; node_i < p_state->nodes.size(); ++node_i) {
 		Ref<GLTFNode> node = p_state->nodes[node_i];
 		node->height = 0;
@@ -691,10 +690,6 @@ void GLTFDocument::_compute_node_heights(Ref<GLTFState> p_state) {
 				++node->height;
 			}
 			current_i = parent_i;
-		}
-
-		if (node->height == 0) {
-			p_state->root_nodes.push_back(node_i);
 		}
 	}
 }
