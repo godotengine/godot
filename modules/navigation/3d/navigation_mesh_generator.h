@@ -30,8 +30,6 @@
 
 #pragma once
 
-#ifndef _3D_DISABLED
-
 #include "scene/3d/navigation_region_3d.h"
 #include "scene/resources/navigation_mesh.h"
 
@@ -57,5 +55,3 @@ public:
 	void parse_source_geometry_data(const Ref<NavigationMesh> &p_navigation_mesh, Ref<NavigationMeshSourceGeometryData3D> p_source_geometry_data, Node *p_root_node, const Callable &p_callback = Callable());
 	void bake_from_source_geometry_data(Ref<NavigationMesh> p_navigation_mesh, const Ref<NavigationMeshSourceGeometryData3D> &p_source_geometry_data, const Callable &p_callback = Callable());
 };
-
-#endif
