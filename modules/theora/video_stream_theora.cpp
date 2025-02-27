@@ -734,6 +734,9 @@ void VideoStreamPlaybackTheora::seek(double p_time) {
 				}
 				if (keyframe_found) {
 					int64_t videobuf_granulepos;
+					if (op.granulepos >= 0) {
+						th_decode_ctl(td, TH_DECCTL_SET_GRANPOS, &op.granulepos, sizeof(op.granulepos));
+					}
 					int ret = th_decode_packetin(td, &op, &videobuf_granulepos);
 					if (ret == 0 || ret == TH_DUPFRAME) {
 						last_video_time = th_granule_time(td, videobuf_granulepos);
