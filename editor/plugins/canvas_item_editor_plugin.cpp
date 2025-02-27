@@ -2520,6 +2520,14 @@ bool CanvasItemEditor::_gui_input_select(const Ref<InputEvent> &p_event) {
 			_get_canvas_items_at_pos(click, selection);
 			if (!selection.is_empty()) {
 				ci = selection[0].item;
+				uint32_t z_final = RenderingServer::get_singleton()->canvas_item_get_z_render(ci->get_canvas_item());
+				for (int i = 1; i < selection.size(); i++) {
+					uint32_t z_current = RenderingServer::get_singleton()->canvas_item_get_z_render(selection[i].item->get_canvas_item());
+					if (z_current > z_final) {
+						z_final = z_current;
+						ci = selection[i].item;
+					}
+				}
 			}
 
 			// Shift also allows forcing box selection when item was clicked.
