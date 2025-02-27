@@ -378,6 +378,8 @@ public:
 	FUNC2(mesh_surface_remove, RID, int)
 	FUNC1(mesh_clear, RID)
 
+	FUNC1(mesh_debug_usage, List<MeshInfo> *)
+
 	/* MULTIMESH API */
 
 	FUNCRIDSPLIT(multimesh)
