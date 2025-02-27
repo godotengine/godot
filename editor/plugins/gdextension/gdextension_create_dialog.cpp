@@ -250,8 +250,8 @@ GDExtensionCreateDialog::GDExtensionCreateDialog() {
 	validation_panel = memnew(EditorValidationPanel);
 	validation_panel->set_custom_minimum_size(Size2(500, 200) * EDSCALE);
 	validation_panel->add_line(MSG_ID_BASE_NAME, TTR("Please specify a base name."));
-	validation_panel->add_line(MSG_ID_LIBRARY_NAME, TTR("Please specify a base name."));
-	validation_panel->add_line(MSG_ID_PATH, TTR("Please specify a base name."));
+	validation_panel->add_line(MSG_ID_LIBRARY_NAME, TTR("Please specify a library name."));
+	validation_panel->add_line(MSG_ID_PATH, TTR("Please specify a path."));
 	validation_panel->set_update_callback(callable_mp(this, &GDExtensionCreateDialog::_on_required_text_changed));
 	validation_panel->set_accept_button(get_ok_button());
 	vbox->add_child(validation_panel);
