@@ -49,6 +49,7 @@ class NavLink;
 class NavRegion;
 class NavAgent;
 class NavObstacle;
+class NavArea3D;
 
 class NavMap : public NavRid {
 	/// Map Up
@@ -79,6 +80,8 @@ class NavMap : public NavRid {
 
 	/// Map links
 	LocalVector<NavLink *> links;
+
+	LocalVector<NavArea3D *> areas;
 
 	/// RVO avoidance worlds
 	RVO2D::RVOSimulator2D rvo_simulation_2d;
@@ -116,6 +119,7 @@ class NavMap : public NavRid {
 	struct {
 		SelfList<NavRegion>::List regions;
 		SelfList<NavLink>::List links;
+		SelfList<NavArea3D>::List areas;
 		SelfList<NavAgent>::List agents;
 		SelfList<NavObstacle>::List obstacles;
 	} sync_dirty_requests;
@@ -202,6 +206,10 @@ public:
 		return links;
 	}
 
+	void add_area(NavArea3D *p_area);
+	void remove_area(NavArea3D *p_area);
+	const LocalVector<NavArea3D *> &get_areas() const { return areas; }
+
 	bool has_agent(NavAgent *agent) const;
 	void add_agent(NavAgent *agent);
 	void remove_agent(NavAgent *agent);
@@ -242,11 +250,13 @@ public:
 
 	void add_region_sync_dirty_request(SelfList<NavRegion> *p_sync_request);
 	void add_link_sync_dirty_request(SelfList<NavLink> *p_sync_request);
+	void add_area_sync_dirty_request(SelfList<NavArea3D> *p_sync_request);
 	void add_agent_sync_dirty_request(SelfList<NavAgent> *p_sync_request);
 	void add_obstacle_sync_dirty_request(SelfList<NavObstacle> *p_sync_request);
 
 	void remove_region_sync_dirty_request(SelfList<NavRegion> *p_sync_request);
 	void remove_link_sync_dirty_request(SelfList<NavLink> *p_sync_request);
+	void remove_area_sync_dirty_request(SelfList<NavArea3D> *p_sync_request);
 	void remove_agent_sync_dirty_request(SelfList<NavAgent> *p_sync_request);
 	void remove_obstacle_sync_dirty_request(SelfList<NavObstacle> *p_sync_request);
 

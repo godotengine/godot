@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  nav_region.h                                                          */
+/*  nav_area_3d.h                                                         */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,92 +28,89 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef NAV_REGION_H
-#define NAV_REGION_H
+#ifndef NAV_AREA_3D_H
+#define NAV_AREA_3D_H
 
-#include "nav_base.h"
-#include "nav_utils.h"
+#include "../nav_rid.h"
+#include "../nav_utils.h"
 
+#include "core/math/aabb.h"
 #include "core/os/rw_lock.h"
-#include "scene/resources/navigation_mesh.h"
+#include "core/templates/self_list.h"
+#include "servers/navigation_server_3d.h"
 
-struct NavRegionIteration;
+class NavMap;
 
-class NavRegion : public NavBase {
-	RWLock region_rwlock;
+class NavArea3D : public NavRid {
+	RWLock area_rwlock;
 
 	NavMap *map = nullptr;
-	Transform3D transform;
+
+	NavigationServer3D::AreaShapeType3D shape_type = NavigationServer3D::AreaShapeType3D::AREA_SHAPE_NONE;
 	bool enabled = true;
-
-	bool use_edge_connections = true;
-
-	bool region_dirty = true;
-	bool polygons_dirty = true;
-
-	LocalVector<gd::Polygon> navmesh_polygons;
-
-	real_t surface_area = 0.0;
 	AABB bounds;
 
-	RWLock navmesh_rwlock;
-	Vector<Vector3> pending_navmesh_vertices;
-	Vector<Vector<int>> pending_navmesh_polygons;
-	Vector<uint32_t> pending_navmesh_polygons_meta;
+	Vector3 position;
+	uint32_t navigation_layers = 1;
+	int priority = 0;
+	float height = 1.0;
+	ObjectID owner_id;
 
-	SelfList<NavRegion> sync_dirty_request_list_element;
+	Vector3 size = Vector3(1.0, height, 1.0);
+	float radius = 1.0;
+	LocalVector<Vector3> vertices;
+
+	bool area_dirty = true;
+
+	SelfList<NavArea3D> sync_dirty_request_list_element;
+
+private:
+	void _update_bounds();
 
 public:
-	NavRegion();
-	~NavRegion();
+	NavArea3D();
+	~NavArea3D();
 
-	void scratch_polygons() {
-		polygons_dirty = true;
-	}
+	void set_shape_type(NavigationServer3D::AreaShapeType3D p_shape_type);
+	NavigationServer3D::AreaShapeType3D get_shape_type() const { return shape_type; }
 
 	void set_enabled(bool p_enabled);
 	bool get_enabled() const { return enabled; }
 
 	void set_map(NavMap *p_map);
-	NavMap *get_map() const {
-		return map;
-	}
+	NavMap *get_map() const { return map; }
 
-	virtual void set_use_edge_connections(bool p_enabled) override;
-	virtual bool get_use_edge_connections() const override { return use_edge_connections; }
+	void set_position(Vector3 p_position);
+	Vector3 get_position() const { return position; }
 
-	void set_transform(Transform3D transform);
-	const Transform3D &get_transform() const {
-		return transform;
-	}
+	void set_height(float p_height);
+	float get_height() const { return height; }
 
-	void set_navigation_mesh(Ref<NavigationMesh> p_navigation_mesh);
+	void set_navigation_layers(uint32_t p_navigation_layers);
+	uint32_t get_navigation_layers() const { return navigation_layers; }
 
-	LocalVector<gd::Polygon> const &get_polygons() const {
-		return navmesh_polygons;
-	}
+	void set_priority(int p_priority);
+	int get_priority() const { return priority; }
 
-	Vector3 get_closest_point_to_segment(const Vector3 &p_from, const Vector3 &p_to, bool p_use_collision) const;
-	gd::ClosestPointQueryResult get_closest_point_info(const Vector3 &p_point) const;
-	Vector3 get_random_point(uint32_t p_navigation_layers, bool p_uniformly) const;
+	void set_owner_id(ObjectID p_owner_id) { owner_id = p_owner_id; }
+	ObjectID get_owner_id() const { return owner_id; }
 
-	real_t get_surface_area() const { return surface_area; }
+	void set_size(Vector3 p_size);
+	Vector3 get_size() const { return size; }
+
+	void set_radius(float p_radius);
+	float get_radius() const { return radius; }
+
+	void set_vertices(const Vector<Vector3> &p_vertices);
+	const LocalVector<Vector3> &get_vertices() const { return vertices; }
+
 	AABB get_bounds() const { return bounds; }
 
-	// NavBase properties.
-	virtual void set_navigation_layers(uint32_t p_navigation_layers) override;
-	virtual void set_enter_cost(real_t p_enter_cost) override;
-	virtual void set_travel_cost(real_t p_travel_cost) override;
-	virtual void set_owner_id(ObjectID p_owner_id) override;
+	bool has_point(const Vector3 &p_point);
 
 	bool sync();
 	void request_sync();
 	void cancel_sync_request();
-
-	void get_iteration_update(NavRegionIteration &r_iteration);
-
-private:
-	void update_polygons();
 };
 
-#endif // NAV_REGION_H
+#endif // NAV_AREA_3D_H
