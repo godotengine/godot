@@ -4047,7 +4047,7 @@ void RendererSceneCull::_update_dirty_instance(Instance *p_instance) const {
 			bool can_cast_shadows = true;
 			bool is_animated = false;
 
-			p_instance->instance_uniforms.materials_start();
+			p_instance->instance_uniforms.materials_start(true);
 
 			if (p_instance->cast_shadows == RS::SHADOW_CASTING_SETTING_OFF) {
 				can_cast_shadows = false;
