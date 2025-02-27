@@ -34,10 +34,13 @@
 #include "extensions/gltf_document_extension_texture_ktx.h"
 #include "extensions/gltf_document_extension_texture_webp.h"
 #include "extensions/gltf_spec_gloss.h"
-#include "extensions/physics/gltf_document_extension_physics.h"
 #include "gltf_document.h"
 #include "gltf_state.h"
 #include "structures/gltf_object_model_property.h"
+
+#ifndef PHYSICS_3D_DISABLED
+#include "extensions/physics/gltf_document_extension_physics.h"
+#endif // PHYSICS_3D_DISABLED
 
 #ifdef TOOLS_ENABLED
 #include "editor/editor_import_blend_runner.h"
@@ -114,17 +117,21 @@ void initialize_gltf_module(ModuleInitializationLevel p_level) {
 		GDREGISTER_CLASS(GLTFMesh);
 		GDREGISTER_CLASS(GLTFNode);
 		GDREGISTER_CLASS(GLTFObjectModelProperty);
+#ifndef PHYSICS_3D_DISABLED
 		GDREGISTER_CLASS(GLTFPhysicsBody);
 		GDREGISTER_CLASS(GLTFPhysicsShape);
+#endif // PHYSICS_3D_DISABLED
 		GDREGISTER_CLASS(GLTFSkeleton);
 		GDREGISTER_CLASS(GLTFSkin);
 		GDREGISTER_CLASS(GLTFSpecGloss);
 		GDREGISTER_CLASS(GLTFState);
 		GDREGISTER_CLASS(GLTFTexture);
 		GDREGISTER_CLASS(GLTFTextureSampler);
-		// Register GLTFDocumentExtension classes with GLTFDocument.
+// Register GLTFDocumentExtension classes with GLTFDocument.
+#ifndef PHYSICS_3D_DISABLED
 		// Ensure physics is first in this list so that physics nodes are created before other nodes.
 		GLTF_REGISTER_DOCUMENT_EXTENSION(GLTFDocumentExtensionPhysics);
+#endif // PHYSICS_3D_DISABLED
 		GLTF_REGISTER_DOCUMENT_EXTENSION(GLTFDocumentExtensionTextureKTX);
 		GLTF_REGISTER_DOCUMENT_EXTENSION(GLTFDocumentExtensionTextureWebP);
 		bool is_editor = Engine::get_singleton()->is_editor_hint();

@@ -60,9 +60,13 @@ void CSGShape3D::navmesh_parse_source_geometry(const Ref<NavigationMesh> &p_navi
 	}
 
 	NavigationMesh::ParsedGeometryType parsed_geometry_type = p_navigation_mesh->get_parsed_geometry_type();
-	uint32_t parsed_collision_mask = p_navigation_mesh->get_collision_mask();
 
-	if (parsed_geometry_type == NavigationMesh::PARSED_GEOMETRY_MESH_INSTANCES || (parsed_geometry_type == NavigationMesh::PARSED_GEOMETRY_STATIC_COLLIDERS && csgshape3d->is_using_collision() && (csgshape3d->get_collision_layer() & parsed_collision_mask)) || parsed_geometry_type == NavigationMesh::PARSED_GEOMETRY_BOTH) {
+#ifndef PHYSICS_3D_DISABLED
+	bool nav_collision = (parsed_geometry_type == NavigationMesh::PARSED_GEOMETRY_STATIC_COLLIDERS && csgshape3d->is_using_collision() && (csgshape3d->get_collision_layer() & p_navigation_mesh->get_collision_mask()));
+#else
+	bool nav_collision = false;
+#endif // PHYSICS_3D_DISABLED
+	if (parsed_geometry_type == NavigationMesh::PARSED_GEOMETRY_MESH_INSTANCES || nav_collision || parsed_geometry_type == NavigationMesh::PARSED_GEOMETRY_BOTH) {
 		Array meshes = csgshape3d->get_meshes();
 		if (!meshes.is_empty()) {
 			Ref<Mesh> mesh = meshes[1];
@@ -73,6 +77,7 @@ void CSGShape3D::navmesh_parse_source_geometry(const Ref<NavigationMesh> &p_navi
 	}
 }
 
+#ifndef PHYSICS_3D_DISABLED
 void CSGShape3D::set_use_collision(bool p_enable) {
 	if (use_collision == p_enable) {
 		return;
@@ -186,6 +191,7 @@ void CSGShape3D::set_collision_priority(real_t p_priority) {
 real_t CSGShape3D::get_collision_priority() const {
 	return collision_priority;
 }
+#endif // PHYSICS_3D_DISABLED
 
 bool CSGShape3D::is_root_shape() const {
 	return !parent_shape;
@@ -207,15 +213,20 @@ float CSGShape3D::get_snap() const {
 #endif // DISABLE_DEPRECATED
 
 void CSGShape3D::_make_dirty(bool p_parent_removing) {
+#ifndef PHYSICS_3D_DISABLED
 	if ((p_parent_removing || is_root_shape()) && !dirty) {
 		callable_mp(this, &CSGShape3D::update_shape).call_deferred(); // Must be deferred; otherwise, is_root_shape() will use the previous parent.
 	}
+#endif // PHYSICS_3D_DISABLED
 
 	if (!is_root_shape()) {
 		parent_shape->_make_dirty();
-	} else if (!dirty) {
+	}
+#ifndef PHYSICS_3D_DISABLED
+	else if (!dirty) {
 		callable_mp(this, &CSGShape3D::update_shape).call_deferred();
 	}
+#endif // PHYSICS_3D_DISABLED
 
 	dirty = true;
 }
@@ -711,9 +722,20 @@ void CSGShape3D::update_shape() {
 
 	set_base(root_mesh->get_rid());
 
+#ifndef PHYSICS_3D_DISABLED
 	_update_collision_faces();
+#endif // PHYSICS_3D_DISABLED
 }
 
+Ref<ArrayMesh> CSGShape3D::bake_static_mesh() {
+	Ref<ArrayMesh> baked_mesh;
+	if (is_root_shape() && root_mesh.is_valid()) {
+		baked_mesh = root_mesh;
+	}
+	return baked_mesh;
+}
+
+#ifndef PHYSICS_3D_DISABLED
 Vector<Vector3> CSGShape3D::_get_brush_collision_faces() {
 	Vector<Vector3> collision_faces;
 	CSGBrush *n = _get_brush();
@@ -744,14 +766,6 @@ void CSGShape3D::_update_collision_faces() {
 			_update_debug_collision_shape();
 		}
 	}
-}
-
-Ref<ArrayMesh> CSGShape3D::bake_static_mesh() {
-	Ref<ArrayMesh> baked_mesh;
-	if (is_root_shape() && root_mesh.is_valid()) {
-		baked_mesh = root_mesh;
-	}
-	return baked_mesh;
 }
 
 Ref<ConcavePolygonShape3D> CSGShape3D::bake_collision_shape() {
@@ -800,6 +814,7 @@ void CSGShape3D::_on_transform_changed() {
 		RS::get_singleton()->instance_set_transform(root_collision_debug_instance, debug_shape_old_transform);
 	}
 }
+#endif // PHYSICS_3D_DISABLED
 
 AABB CSGShape3D::get_aabb() const {
 	return node_aabb;
@@ -872,6 +887,7 @@ void CSGShape3D::_notification(int p_what) {
 			}
 		} break;
 
+#ifndef PHYSICS_3D_DISABLED
 		case NOTIFICATION_ENTER_TREE: {
 			if (use_collision && is_root_shape()) {
 				root_collision_shape.instantiate();
@@ -904,6 +920,7 @@ void CSGShape3D::_notification(int p_what) {
 			}
 			_on_transform_changed();
 		} break;
+#endif // PHYSICS_3D_DISABLED
 	}
 }
 
@@ -980,6 +997,7 @@ void CSGShape3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_snap"), &CSGShape3D::get_snap);
 #endif // DISABLE_DEPRECATED
 
+#ifndef PHYSICS_3D_DISABLED
 	ClassDB::bind_method(D_METHOD("set_use_collision", "operation"), &CSGShape3D::set_use_collision);
 	ClassDB::bind_method(D_METHOD("is_using_collision"), &CSGShape3D::is_using_collision);
 
@@ -1000,13 +1018,15 @@ void CSGShape3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_collision_priority", "priority"), &CSGShape3D::set_collision_priority);
 	ClassDB::bind_method(D_METHOD("get_collision_priority"), &CSGShape3D::get_collision_priority);
 
+	ClassDB::bind_method(D_METHOD("bake_collision_shape"), &CSGShape3D::bake_collision_shape);
+#endif // PHYSICS_3D_DISABLED
+
 	ClassDB::bind_method(D_METHOD("set_calculate_tangents", "enabled"), &CSGShape3D::set_calculate_tangents);
 	ClassDB::bind_method(D_METHOD("is_calculating_tangents"), &CSGShape3D::is_calculating_tangents);
 
 	ClassDB::bind_method(D_METHOD("get_meshes"), &CSGShape3D::get_meshes);
 
 	ClassDB::bind_method(D_METHOD("bake_static_mesh"), &CSGShape3D::bake_static_mesh);
-	ClassDB::bind_method(D_METHOD("bake_collision_shape"), &CSGShape3D::bake_collision_shape);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "operation", PROPERTY_HINT_ENUM, "Union,Intersection,Subtraction"), "set_operation", "get_operation");
 #ifndef DISABLE_DEPRECATED
@@ -1014,11 +1034,13 @@ void CSGShape3D::_bind_methods() {
 #endif // DISABLE_DEPRECATED
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "calculate_tangents"), "set_calculate_tangents", "is_calculating_tangents");
 
+#ifndef PHYSICS_3D_DISABLED
 	ADD_GROUP("Collision", "collision_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_collision"), "set_use_collision", "is_using_collision");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_layer", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_collision_layer", "get_collision_layer");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_mask", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_collision_mask", "get_collision_mask");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "collision_priority"), "set_collision_priority", "get_collision_priority");
+#endif // PHYSICS_3D_DISABLED
 
 	BIND_ENUM_CONSTANT(OPERATION_UNION);
 	BIND_ENUM_CONSTANT(OPERATION_INTERSECTION);

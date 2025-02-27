@@ -691,7 +691,9 @@ void Camera3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_frustum"), &Camera3D::_get_frustum);
 	ClassDB::bind_method(D_METHOD("is_position_in_frustum", "world_point"), &Camera3D::is_position_in_frustum);
 	ClassDB::bind_method(D_METHOD("get_camera_rid"), &Camera3D::get_camera);
+#ifndef PHYSICS_3D_DISABLED
 	ClassDB::bind_method(D_METHOD("get_pyramid_shape_rid"), &Camera3D::get_pyramid_shape_rid);
+#endif // PHYSICS_3D_DISABLED
 
 	ClassDB::bind_method(D_METHOD("set_cull_mask_value", "layer_number", "value"), &Camera3D::set_cull_mask_value);
 	ClassDB::bind_method(D_METHOD("get_cull_mask_value", "layer_number"), &Camera3D::get_cull_mask_value);
@@ -854,6 +856,7 @@ Vector3 Camera3D::get_doppler_tracked_velocity() const {
 	}
 }
 
+#ifndef PHYSICS_3D_DISABLED
 RID Camera3D::get_pyramid_shape_rid() {
 	ERR_FAIL_COND_V_MSG(!is_inside_tree(), RID(), "Camera is not inside scene.");
 	if (pyramid_shape == RID()) {
@@ -881,6 +884,7 @@ RID Camera3D::get_pyramid_shape_rid() {
 
 	return pyramid_shape;
 }
+#endif // PHYSICS_3D_DISABLED
 
 Camera3D::Camera3D() {
 	camera = RenderingServer::get_singleton()->camera_create();
@@ -895,8 +899,10 @@ Camera3D::Camera3D() {
 Camera3D::~Camera3D() {
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
 	RenderingServer::get_singleton()->free(camera);
+#ifndef PHYSICS_3D_DISABLED
 	if (pyramid_shape.is_valid()) {
 		ERR_FAIL_NULL(PhysicsServer3D::get_singleton());
 		PhysicsServer3D::get_singleton()->free(pyramid_shape);
 	}
+#endif // PHYSICS_3D_DISABLED
 }
