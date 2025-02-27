@@ -60,6 +60,19 @@ void PhysicsBody2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "layers", PROPERTY_HINT_LAYERS_2D_PHYSICS, "", 0), "_set_layers", "_get_layers"); //for backwards compat
 }
 
+String PhysicsBody2D::get_configuration_warning() const {
+	String warning = CollisionObject2D::get_configuration_warning();
+
+	if (!is_physics_interpolated()) {
+		if (!warning.empty()) {
+			warning += "\n\n";
+		}
+		warning += TTR("PhysicsBody2D will not work correctly on a non-interpolated branch of the SceneTree.\nCheck the node's inherited physics_interpolation_mode.");
+	}
+
+	return warning;
+}
+
 PhysicsBody2D::PhysicsBody2D(Physics2DServer::BodyMode p_mode) :
 		CollisionObject2D(RID_PRIME(Physics2DServer::get_singleton()->body_create()), false) {
 	Physics2DServer::get_singleton()->body_set_mode(get_rid(), p_mode);
@@ -808,7 +821,7 @@ void RigidBody2D::_notification(int p_what) {
 String RigidBody2D::get_configuration_warning() const {
 	Transform2D t = get_transform();
 
-	String warning = CollisionObject2D::get_configuration_warning();
+	String warning = PhysicsBody2D::get_configuration_warning();
 
 	if ((get_mode() == MODE_RIGID || get_mode() == MODE_CHARACTER) && (ABS(t.elements[0].length() - 1.0) > 0.05 || ABS(t.elements[1].length() - 1.0) > 0.05)) {
 		if (warning != String()) {
