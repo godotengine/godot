@@ -300,6 +300,7 @@ EditorPropertyNameProcessor::EditorPropertyNameProcessor() {
 	capitalize_string_remaps["us"] = U"(µs)"; // Unit.
 	capitalize_string_remaps["usb"] = "USB";
 	capitalize_string_remaps["usec"] = U"(µsec)"; // Unit.
+	capitalize_string_remaps["uid"] = "UID";
 	capitalize_string_remaps["uuid"] = "UUID";
 	capitalize_string_remaps["uv"] = "UV";
 	capitalize_string_remaps["uv1"] = "UV1";
