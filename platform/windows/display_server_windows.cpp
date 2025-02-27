@@ -1969,7 +1969,10 @@ void DisplayServerWindows::window_set_current_screen(int p_screen, WindowID p_wi
 		return;
 	}
 	const WindowData &wd = windows[p_window];
-	ERR_FAIL_COND_MSG(wd.parent_hwnd, "Embedded window can't be moved to another screen.");
+	if (wd.parent_hwnd) {
+		print_line("Embedded window can't be moved to another screen.");
+		return;
+	}
 	if (wd.fullscreen) {
 		Point2 pos = screen_get_position(p_screen) + _get_screens_origin();
 		Size2 size = screen_get_size(p_screen);
@@ -2050,7 +2053,10 @@ void DisplayServerWindows::window_set_position(const Point2i &p_position, Window
 	ERR_FAIL_COND(!windows.has(p_window));
 	WindowData &wd = windows[p_window];
 
-	ERR_FAIL_COND_MSG(wd.parent_hwnd, "Embedded window can't be moved.");
+	if (wd.parent_hwnd) {
+		print_line("Embedded window can't be moved.");
+		return;
+	}
 
 	if (wd.fullscreen || wd.maximized) {
 		return;
@@ -2136,7 +2142,10 @@ void DisplayServerWindows::window_set_max_size(const Size2i p_size, WindowID p_w
 	ERR_FAIL_COND(!windows.has(p_window));
 	WindowData &wd = windows[p_window];
 
-	ERR_FAIL_COND_MSG(wd.parent_hwnd, "Embedded windows can't have a maximum size.");
+	if (wd.parent_hwnd) {
+		print_line("Embedded windows can't have a maximum size.");
+		return;
+	}
 
 	if ((p_size != Size2()) && ((p_size.x < wd.min_size.x) || (p_size.y < wd.min_size.y))) {
 		ERR_PRINT("Maximum window size can't be smaller than minimum window size!");
@@ -2159,7 +2168,10 @@ void DisplayServerWindows::window_set_min_size(const Size2i p_size, WindowID p_w
 	ERR_FAIL_COND(!windows.has(p_window));
 	WindowData &wd = windows[p_window];
 
-	ERR_FAIL_COND_MSG(wd.parent_hwnd, "Embedded windows can't have a minimum size.");
+	if (wd.parent_hwnd) {
+		print_line("Embedded windows can't have a minimum size.");
+		return;
+	}
 
 	if ((p_size != Size2()) && (wd.max_size != Size2()) && ((p_size.x > wd.max_size.x) || (p_size.y > wd.max_size.y))) {
 		ERR_PRINT("Minimum window size can't be larger than maximum window size!");
@@ -2182,7 +2194,10 @@ void DisplayServerWindows::window_set_size(const Size2i p_size, WindowID p_windo
 	ERR_FAIL_COND(!windows.has(p_window));
 	WindowData &wd = windows[p_window];
 
-	ERR_FAIL_COND_MSG(wd.parent_hwnd, "Embedded window can't be resized.");
+	if (wd.parent_hwnd) {
+		print_line("Embedded window can't be resized.");
+		return;
+	}
 
 	if (wd.fullscreen || wd.maximized) {
 		return;
@@ -2340,7 +2355,10 @@ void DisplayServerWindows::window_set_mode(WindowMode p_mode, WindowID p_window)
 	ERR_FAIL_COND(!windows.has(p_window));
 	WindowData &wd = windows[p_window];
 
-	ERR_FAIL_COND_MSG(p_mode != WINDOW_MODE_WINDOWED && wd.parent_hwnd, "Embedded window only supports Windowed mode.");
+	if (p_mode != WINDOW_MODE_WINDOWED && wd.parent_hwnd) {
+		print_line("Embedded window only supports Windowed mode.");
+		return;
+	}
 
 	bool was_fullscreen = wd.fullscreen;
 	wd.was_fullscreen_pre_min = false;
@@ -2475,7 +2493,10 @@ void DisplayServerWindows::window_set_flag(WindowFlags p_flag, bool p_enabled, W
 	WindowData &wd = windows[p_window];
 	switch (p_flag) {
 		case WINDOW_FLAG_RESIZE_DISABLED: {
-			ERR_FAIL_COND_MSG(p_enabled && wd.parent_hwnd, "Embedded window resize can't be disabled.");
+			if (p_enabled && wd.parent_hwnd) {
+				print_line("Embedded window resize can't be disabled.");
+				return;
+			}
 			wd.resizable = !p_enabled;
 			_update_window_style(p_window);
 		} break;
@@ -2487,7 +2508,10 @@ void DisplayServerWindows::window_set_flag(WindowFlags p_flag, bool p_enabled, W
 		} break;
 		case WINDOW_FLAG_ALWAYS_ON_TOP: {
 			ERR_FAIL_COND_MSG(wd.transient_parent != INVALID_WINDOW_ID && p_enabled, "Transient windows can't become on top.");
-			ERR_FAIL_COND_MSG(p_enabled && wd.parent_hwnd, "Embedded window can't become on top.");
+			if (p_enabled && wd.parent_hwnd) {
+				print_line("Embedded window can't become on top.");
+				return;
+			}
 			wd.always_on_top = p_enabled;
 			_update_window_style(p_window);
 		} break;
@@ -2547,7 +2571,10 @@ void DisplayServerWindows::window_set_flag(WindowFlags p_flag, bool p_enabled, W
 		case WINDOW_FLAG_POPUP: {
 			ERR_FAIL_COND_MSG(p_window == MAIN_WINDOW_ID, "Main window can't be popup.");
 			ERR_FAIL_COND_MSG(IsWindowVisible(wd.hWnd) && (wd.is_popup != p_enabled), "Popup flag can't changed while window is opened.");
-			ERR_FAIL_COND_MSG(p_enabled && wd.parent_hwnd, "Embedded window can't be popup.");
+			if (p_enabled && wd.parent_hwnd) {
+				print_line("Embedded window can't be popup.");
+				return;
+			}
 			wd.is_popup = p_enabled;
 		} break;
 		default:
