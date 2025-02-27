@@ -31,6 +31,8 @@
 #ifndef GDSCRIPT_TOKENIZER_H
 #define GDSCRIPT_TOKENIZER_H
 
+#include <optional>
+
 #include "core/templates/hash_map.h"
 #include "core/templates/list.h"
 #include "core/templates/vector.h"
@@ -149,6 +151,9 @@ public:
 			DOLLAR,
 			FORWARD_ARROW,
 			UNDERSCORE,
+			// Formatted string
+			FORMATTED_STRING_BEGIN,
+			FORMATTED_STRING_END,
 			// Whitespace
 			NEWLINE,
 			INDENT,
@@ -234,6 +239,16 @@ class GDScriptTokenizerText : public GDScriptTokenizer {
 	int start_line = 0, start_column = 0;
 	int leftmost_column = 0, rightmost_column = 0;
 
+	// The configuration for parsing each nested formatted string.
+	struct FormattedStringConfig {
+		bool is_raw = false;
+		bool is_multiline = false;
+		char32_t quote_char = 'x'; // Default to invalid quote character to ensure we set this explicitly.
+		FormattedStringConfig() {}
+		FormattedStringConfig(bool p_is_raw, bool p_is_multiline, char32_t p_quote_char) :
+				is_raw(p_is_raw), is_multiline(p_is_multiline), quote_char(p_quote_char) {}
+	};
+
 	// Info cache.
 	bool line_continuation = false; // Whether this line is a continuation of the previous, like when using '\'.
 	bool multiline_mode = false;
@@ -245,9 +260,20 @@ class GDScriptTokenizerText : public GDScriptTokenizer {
 	List<int> indent_stack;
 	List<List<int>> indent_stack_stack; // For lambdas, which require manipulating the indentation point.
 	List<char32_t> paren_stack;
+	List<FormattedStringConfig> fstring_config_stack; // For tracking nested formatted string configurations.
 	char32_t indent_char = '\0';
 	int position = 0;
 	int length = 0;
+
+	// Tracks the state of the formatted string tokenizer.
+	// The semantics of this are exposed by get_fstring_parse_context() and are as follows:
+	// 0: Not tokenizing a formatted string. context = NOT_IN_FORMATTED_STRING.
+	// 1: Tokenizing a formatted string, but not inside a slot. f"here". context = NOT_IN_SLOT.
+	// 2: Tokenizing a formatted string, inside of a slot (so we're tokenizing an expression in the local context). f"foo {here}". context = IN_SLOT.
+	// 3,5,7,...: We're tokenizing a nested formatted string. f"foo {f"here"}". context = NOT_IN_SLOT.
+	// 4,6,8,...: We're tokenizing a nested formatted string inside of a slot. f"foo {f"bar {here}"}". context = IN_SLOT.
+	int fstring_parse_depth = 0;
+
 	Vector<int> continuation_lines;
 #ifdef DEBUG_ENABLED
 	Vector<String> keyword_list;
@@ -266,6 +292,7 @@ class GDScriptTokenizerText : public GDScriptTokenizer {
 	String _get_indent_char_name(char32_t ch);
 	void _skip_whitespace();
 	void check_indent();
+	void init_extents();
 
 #ifdef DEBUG_ENABLED
 	void make_keyword_list();
@@ -280,13 +307,46 @@ class GDScriptTokenizerText : public GDScriptTokenizer {
 	Token make_identifier(const StringName &p_identifier);
 	Token check_vcs_marker(char32_t p_test, Token::Type p_double_type);
 	void push_paren(char32_t p_char);
+	char32_t peek_paren();
 	bool pop_paren(char32_t p_expected);
+	void push_fstring_config(char32_t p_quote_char, bool p_is_raw, bool p_is_multiline);
+	FormattedStringConfig peek_fstring_config();
+	void pop_fstring_config();
 
 	void newline(bool p_make_token);
 	Token number();
 	Token potential_identifier();
 	Token string();
 	Token annotation();
+
+	// If the current tokenizing position is at the start of a raw string, this will return it.
+	// Otherwise this will return an empty optional.
+	std::optional<Token> try_raw_string();
+	// If the current tokenizing position is at the start of a formatted string, this will start tokenizing it,
+	// setting our formatted string context to NOT_IN_SLOT and returning the FORMATTED_STRING_BEGIN token.
+	// Otherwise this will return an empty optional.
+	std::optional<Token> try_fstring_begin();
+	// When within a formatted string context (NOT_IN_SLOT) this will return the next formatted string token
+	// (which might be a string literal, a slot start, or a formatted string end).
+	Token fstring_piece();
+
+	// Fetch and return the next piece of a string until a string end or slot begin character is found.
+	// On success it returns the string literal. On tokenization error it returns an error token.
+	// Precondition: _peek() refers to the first character within the string to tokenize (or the end string char if there is no string left).
+	// Postcondition: _peek() refers to the quote_char or term_char after the found string.
+	// Used by both string() and fstring_piece() tokenizers.
+	Token string_piece(bool is_raw, bool is_multiline, bool is_fstring, char32_t quote_char);
+
+	// Are we currently parsing within the context of a formatted string or not?
+	enum FormattedStringParseContext {
+		// Not tokenizing a formatted string. e.g. here f"not here".
+		NOT_IN_FORMATTED_STRING,
+		// Tokenizing a formatted string, but not inside a slot. e.g. f"here".
+		NOT_IN_SLOT,
+		// Tokenizing a formatted string, and inside of a slot (so we're tokenizing an expression in the local context). e.g. f"foo {here}".
+		IN_SLOT,
+	};
+	FormattedStringParseContext get_fstring_parse_context();
 
 public:
 	void set_source_code(const String &p_source_code);
