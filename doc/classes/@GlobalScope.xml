@@ -2444,6 +2444,30 @@
 		<constant name="MOUSE_BUTTON_MASK_MB_XBUTTON2" value="256" enum="MouseButtonMask" is_bitfield="true">
 			Extra mouse button 2 mask.
 		</constant>
+		<constant name="PLAYER_ID_P1" value="0" enum="PlayerId">
+			Player 1.
+		</constant>
+		<constant name="PLAYER_ID_P2" value="1" enum="PlayerId">
+			Player 1.
+		</constant>
+		<constant name="PLAYER_ID_P3" value="2" enum="PlayerId">
+			Player 1.
+		</constant>
+		<constant name="PLAYER_ID_P4" value="3" enum="PlayerId">
+			Player 1.
+		</constant>
+		<constant name="PLAYER_ID_P5" value="4" enum="PlayerId">
+			Player 1.
+		</constant>
+		<constant name="PLAYER_ID_P6" value="5" enum="PlayerId">
+			Player 1.
+		</constant>
+		<constant name="PLAYER_ID_P7" value="6" enum="PlayerId">
+			Player 1.
+		</constant>
+		<constant name="PLAYER_ID_P8" value="7" enum="PlayerId">
+			Player 1.
+		</constant>
 		<constant name="JOY_BUTTON_INVALID" value="-1" enum="JoyButton">
 			An invalid game controller button.
 		</constant>
@@ -2815,6 +2839,9 @@
 		</constant>
 		<constant name="PROPERTY_HINT_LAYERS_AVOIDANCE" value="37" enum="PropertyHint">
 			Hints that an integer property is a bitmask using the optionally named avoidance layers.
+		</constant>
+		<constant name="PROPERTY_HINT_LAYERS_PLAYER_MASK" value="38" enum="PropertyHint">
+			Hints that an integer property is a bitmask using the optionally named player mask layers.
 		</constant>
 		<constant name="PROPERTY_HINT_FILE" value="13" enum="PropertyHint">
 			Hints that a [String] property is a path to a file. Editing it will show a file dialog for picking the path. The hint string can be a set of filters with wildcards like [code]"*.png,*.jpg"[/code].

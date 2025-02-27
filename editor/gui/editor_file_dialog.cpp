@@ -2266,7 +2266,7 @@ void EditorFileDialog::set_show_search_filter(bool p_show) {
 		search_string.clear();
 		filter_box->clear();
 		if (filter_box->has_focus()) {
-			item_list->call_deferred("grab_focus");
+			item_list->call_deferred("grab_focus", PlayerId::P1);
 		}
 	}
 	show_search_filter = p_show;

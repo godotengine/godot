@@ -138,4 +138,36 @@ inline MouseButtonMask mouse_button_to_mask(MouseButton button) {
 	return MouseButtonMask(1 << ((int)button - 1));
 }
 
+enum class PlayerId : uint8_t {
+	P1 = 0,
+	P2 = 1,
+	P3 = 2,
+	P4 = 3,
+	P5 = 4,
+	P6 = 5,
+	P7 = 6,
+	P8 = 7,
+};
+
+enum {
+	PLAYERS_MAX = 8,
+};
+
+enum PlayerMask : uint8_t {
+	PLAYER_NONE = 0U,
+	PLAYER_1 = 1U << 0,
+	PLAYER_2 = 1U << 1,
+	PLAYER_3 = 1U << 2,
+	PLAYER_4 = 1U << 3,
+	PLAYER_5 = 1U << 4,
+	PLAYER_6 = 1U << 5,
+	PLAYER_7 = 1U << 6,
+	PLAYER_8 = 1U << 7,
+	PLAYER_ALL = 0xFFU,
+};
+
+inline PlayerMask player_id_to_mask(PlayerId id) {
+	return PlayerMask(1U << (uint8_t)id);
+}
+
 #endif // INPUT_ENUMS_H
