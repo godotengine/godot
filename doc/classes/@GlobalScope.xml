@@ -2954,7 +2954,11 @@
 		<constant name="PROPERTY_HINT_ONESHOT" value="40" enum="PropertyHint">
 			Hints that a property will be changed on its own after setting, such as [member AudioStreamPlayer.playing] or [member GPUParticles3D.emitting].
 		</constant>
-		<constant name="PROPERTY_HINT_MAX" value="42" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_ORDERED_LIST" value="42" enum="PropertyHint">
+			Hints that a property is ordered list of values.
+			The hint string is a comma separated list of display name/value pairs separated by [code]:[/code] such as [code]"Hello:hello,Something Else:else"[/code].
+		</constant>
+		<constant name="PROPERTY_HINT_MAX" value="43" enum="PropertyHint">
 			Represents the size of the [enum PropertyHint] enum.
 		</constant>
 		<constant name="PROPERTY_USAGE_NONE" value="0" enum="PropertyUsageFlags" is_bitfield="true">
