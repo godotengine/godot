@@ -1121,9 +1121,16 @@ void ParticleProcessMaterial::_update_shader() {
 		code += "		params.scale *= texture(scale_over_velocity_curve, vec2(0.0)).rgb;\n";
 		code += "	}\n";
 	}
-	code += "	TRANSFORM[0].xyz *= sign(params.scale.x) * max(abs(params.scale.x), 0.001);\n";
-	code += "	TRANSFORM[1].xyz *= sign(params.scale.y) * max(abs(params.scale.y), 0.001);\n";
-	code += "	TRANSFORM[2].xyz *= sign(params.scale.z) * max(abs(params.scale.z), 0.001);\n";
+	// A scale of 0 results in no emission at some emission amounts (including 3 and 6).
+	// `sign(scale)` is unsuitable, because sign(0) returns 0, nullifying the minimum value.
+	// The following evaluates to 1 when scale is 0, falling back to a positive minimum value.
+	code += "	float scale_sign_x = params.scale.x < 0.0 ? -1.0 : 1.0;\n";
+	code += "	float scale_sign_y = params.scale.y < 0.0 ? -1.0 : 1.0;\n";
+	code += "	float scale_sign_z = params.scale.z < 0.0 ? -1.0 : 1.0;\n";
+	code += "	float scale_minimum = 0.001;\n";
+	code += "	TRANSFORM[0].xyz *= scale_sign_x * max(abs(params.scale.x), scale_minimum);\n";
+	code += "	TRANSFORM[1].xyz *= scale_sign_y * max(abs(params.scale.y), scale_minimum);\n";
+	code += "	TRANSFORM[2].xyz *= scale_sign_z * max(abs(params.scale.z), scale_minimum);\n";
 	code += "\n";
 	code += "	CUSTOM.z = params.animation_offset + lifetime_percent * params.animation_speed;\n\n";
 
