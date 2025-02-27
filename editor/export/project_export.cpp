@@ -1746,11 +1746,13 @@ ProjectExportDialog::ProjectExportDialog() {
 	export_error = memnew(Label);
 	main_vb->add_child(export_error);
 	export_error->hide();
+	export_error->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
 	export_error->add_theme_color_override(SceneStringName(font_color), EditorNode::get_singleton()->get_editor_theme()->get_color(SNAME("error_color"), EditorStringName(Editor)));
 
 	export_warning = memnew(Label);
 	main_vb->add_child(export_warning);
 	export_warning->hide();
+	export_warning->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
 	export_warning->add_theme_color_override(SceneStringName(font_color), EditorNode::get_singleton()->get_editor_theme()->get_color(SNAME("warning_color"), EditorStringName(Editor)));
 
 	export_templates_error = memnew(HBoxContainer);
