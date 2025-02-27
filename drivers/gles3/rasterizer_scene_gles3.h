@@ -463,6 +463,7 @@ private:
 
 		GLES3::SceneShaderData::BlendMode current_blend_mode = GLES3::SceneShaderData::BLEND_MODE_MIX;
 		RS::CullMode cull_mode = RS::CULL_MODE_BACK;
+		GLES3::SceneShaderData::DepthFunction current_depth_function = GLES3::SceneShaderData::DEPTH_FUNCTION_GREATER_OR_EQUAL;
 
 		bool current_blend_enabled = false;
 		bool current_depth_draw_enabled = false;
@@ -484,6 +485,9 @@ private:
 			current_depth_draw_enabled = false;
 			glDisable(GL_DEPTH_TEST);
 			current_depth_test_enabled = false;
+
+			glDepthFunc(GL_GEQUAL);
+			current_depth_function = GLES3::SceneShaderData::DEPTH_FUNCTION_GREATER_OR_EQUAL;
 		}
 
 		void set_gl_cull_mode(RS::CullMode p_mode) {
@@ -538,6 +542,24 @@ private:
 					glDisable(GL_DEPTH_TEST);
 				}
 				current_depth_test_enabled = p_enabled;
+			}
+		}
+
+		void set_gl_depth_func(GLES3::SceneShaderData::DepthFunction p_depth_func) {
+			if (current_depth_function != p_depth_func) {
+				GLenum depth_function_table[GLES3::SceneShaderData::DEPTH_FUNCTION_MAX] = {
+					GL_LEQUAL,
+					GL_LESS,
+					GL_EQUAL,
+					GL_GREATER,
+					GL_NOTEQUAL,
+					GL_GEQUAL,
+					GL_ALWAYS,
+					GL_NEVER,
+				};
+
+				glDepthFunc(depth_function_table[p_depth_func]);
+				current_depth_function = p_depth_func;
 			}
 		}
 

@@ -920,6 +920,7 @@ void RenderForwardClustered::_fill_render_list(RenderListType p_render_list, con
 		if (p_render_list == RENDER_LIST_OPAQUE) {
 			// Opaque fills motion and alpha lists.
 			render_list[RENDER_LIST_MOTION].clear();
+			render_list[RENDER_LIST_OPAQUE_NO_DEPTH_PREPASS].clear(); // Opaque fills opaque_no_depth_prepass too.
 			render_list[RENDER_LIST_ALPHA].clear();
 		}
 	}
@@ -1112,7 +1113,12 @@ void RenderForwardClustered::_fill_render_list(RenderListType p_render_list, con
 				}
 
 				if (!force_alpha && (surf->flags & (GeometryInstanceSurfaceDataCache::FLAG_PASS_DEPTH | GeometryInstanceSurfaceDataCache::FLAG_PASS_OPAQUE))) {
-					rl->add_element(surf);
+					if (surf->flags & GeometryInstanceSurfaceDataCache::FLAG_NO_DEPTH_PREPASS) {
+						render_list[RENDER_LIST_OPAQUE_NO_DEPTH_PREPASS].add_element(surf);
+						scene_state.used_opaque_no_depth_prepass = true;
+					} else {
+						rl->add_element(surf);
+					}
 				}
 
 				if (force_alpha || (surf->flags & GeometryInstanceSurfaceDataCache::FLAG_PASS_ALPHA)) {
@@ -1869,11 +1875,13 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 	_fill_render_list(RENDER_LIST_OPAQUE, p_render_data, PASS_MODE_COLOR, using_sdfgi, using_sdfgi || using_voxelgi, using_motion_pass);
 	render_list[RENDER_LIST_OPAQUE].sort_by_key();
 	render_list[RENDER_LIST_MOTION].sort_by_key();
+	render_list[RENDER_LIST_OPAQUE_NO_DEPTH_PREPASS].sort_by_key();
 	render_list[RENDER_LIST_ALPHA].sort_by_reverse_depth_and_priority();
 
 	int *render_info = p_render_data->render_info ? p_render_data->render_info->info[RS::VIEWPORT_RENDER_INFO_TYPE_VISIBLE] : (int *)nullptr;
 	_fill_instance_data(RENDER_LIST_OPAQUE, render_info);
 	_fill_instance_data(RENDER_LIST_MOTION, render_info);
+	_fill_instance_data(RENDER_LIST_OPAQUE_NO_DEPTH_PREPASS, render_info);
 	_fill_instance_data(RENDER_LIST_ALPHA, render_info);
 
 	RD::get_singleton()->draw_command_end_label();
@@ -2157,8 +2165,17 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 
 			uint32_t opaque_color_pass_flags = using_motion_pass ? (color_pass_flags & ~uint32_t(COLOR_PASS_FLAG_MOTION_VECTORS)) : color_pass_flags;
 			RID opaque_framebuffer = using_motion_pass ? rb_data->get_color_pass_fb(opaque_color_pass_flags) : color_framebuffer;
-			RenderListParameters render_list_params(render_list[RENDER_LIST_OPAQUE].elements.ptr(), render_list[RENDER_LIST_OPAQUE].element_info.ptr(), render_list[RENDER_LIST_OPAQUE].elements.size(), reverse_cull, PASS_MODE_COLOR, opaque_color_pass_flags, rb_data.is_null(), p_render_data->directional_light_soft_shadows, rp_uniform_set, get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_WIREFRAME, Vector2(), p_render_data->scene_data->lod_distance_multiplier, p_render_data->scene_data->screen_mesh_lod_threshold, p_render_data->scene_data->view_count, 0, base_specialization);
-			_render_list_with_draw_list(&render_list_params, opaque_framebuffer, RD::DrawFlags(load_color ? RD::DRAW_DEFAULT_ALL : RD::DRAW_CLEAR_COLOR_ALL) | (depth_pre_pass ? RD::DRAW_DEFAULT_ALL : RD::DRAW_CLEAR_DEPTH), c, 0.0f, 0u, p_render_data->render_region);
+
+			{
+				RenderListParameters render_list_params(render_list[RENDER_LIST_OPAQUE].elements.ptr(), render_list[RENDER_LIST_OPAQUE].element_info.ptr(), render_list[RENDER_LIST_OPAQUE].elements.size(), reverse_cull, PASS_MODE_COLOR, opaque_color_pass_flags, rb_data.is_null(), p_render_data->directional_light_soft_shadows, rp_uniform_set, get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_WIREFRAME, Vector2(), p_render_data->scene_data->lod_distance_multiplier, p_render_data->scene_data->screen_mesh_lod_threshold, p_render_data->scene_data->view_count, 0, base_specialization);
+				_render_list_with_draw_list(&render_list_params, opaque_framebuffer, RD::DrawFlags(load_color ? RD::DRAW_DEFAULT_ALL : RD::DRAW_CLEAR_COLOR_ALL) | (depth_pre_pass ? RD::DRAW_DEFAULT_ALL : RD::DRAW_CLEAR_DEPTH), c, 0.0f, 0u, p_render_data->render_region);
+			}
+
+			if (scene_state.used_opaque_no_depth_prepass) {
+				rp_uniform_set = _setup_render_pass_uniform_set(RENDER_LIST_OPAQUE_NO_DEPTH_PREPASS, p_render_data, radiance_texture, samplers, true);
+				RenderListParameters render_list_params(render_list[RENDER_LIST_OPAQUE_NO_DEPTH_PREPASS].elements.ptr(), render_list[RENDER_LIST_OPAQUE_NO_DEPTH_PREPASS].element_info.ptr(), render_list[RENDER_LIST_OPAQUE_NO_DEPTH_PREPASS].elements.size(), reverse_cull, PASS_MODE_COLOR, opaque_color_pass_flags, rb_data.is_null(), p_render_data->directional_light_soft_shadows, rp_uniform_set, get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_WIREFRAME, Vector2(), p_render_data->scene_data->lod_distance_multiplier, p_render_data->scene_data->screen_mesh_lod_threshold, p_render_data->scene_data->view_count, 0, base_specialization);
+				_render_list_with_draw_list(&render_list_params, opaque_framebuffer, RD::DRAW_DEFAULT_ALL, c, 0.0f, 0u, p_render_data->render_region);
+			}
 		}
 
 		RD::get_singleton()->draw_command_end_label();
@@ -3991,6 +4008,13 @@ void RenderForwardClustered::_geometry_instance_add_surface_with_material(Geomet
 
 	if (p_material->shader_data->is_animated()) {
 		flags |= GeometryInstanceSurfaceDataCache::FLAG_USES_MOTION_VECTOR;
+	}
+
+	if (p_material->shader_data->stencil_enabled) {
+		// Stencil materials which read from the stencil buffer must be sorted after all other depth-related operations.
+		if (p_material->shader_data->stencil_flags & SceneShaderForwardClustered::ShaderData::STENCIL_FLAG_READ) {
+			flags |= GeometryInstanceSurfaceDataCache::FLAG_NO_DEPTH_PREPASS;
+		}
 	}
 
 	SceneShaderForwardClustered::MaterialData *material_shadow = nullptr;
