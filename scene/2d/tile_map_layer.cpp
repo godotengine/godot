@@ -2652,6 +2652,17 @@ void TileMapLayer::draw_tile(RID p_canvas_item, const Vector2 &p_position, const
 	}
 }
 
+uint32_t TileMapLayer::get_z_render() {
+	if (rendering_quadrant_map.is_empty()) {
+		return 0;
+	}
+	List<RID> items = rendering_quadrant_map.begin()->value->canvas_items;
+	if (items.is_empty()) {
+		return 0;
+	}
+	return RenderingServer::get_singleton()->canvas_item_get_z_render(items.get(0));
+}
+
 void TileMapLayer::set_cell(const Vector2i &p_coords, int p_source_id, const Vector2i &p_atlas_coords, int p_alternative_tile) {
 	// Set the current cell tile (using integer position).
 	Vector2i pk(p_coords);
