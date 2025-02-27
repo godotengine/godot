@@ -909,6 +909,9 @@
 			[b]Note:[/b] To query whether the editor can use multiple windows in an editor plugin, use [method EditorInterface.is_multi_window_enabled] instead of querying the value of this editor setting.
 			[b]Note:[/b] If [code]true[/code], game embedding is disabled.
 		</member>
+		<member name="interface/editor/tablet_driver" type="int" setter="" getter="">
+			Overrides the tablet driver used by the editor.
+		</member>
 		<member name="interface/editor/ui_layout_direction" type="int" setter="" getter="">
 			Editor UI default layout direction.
 		</member>
