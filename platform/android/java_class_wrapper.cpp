@@ -1087,11 +1087,12 @@ bool JavaClass::_convert_object_to_variant(JNIEnv *env, jobject obj, Variant &va
 			jobjectArray arr = (jobjectArray)obj;
 
 			int count = env->GetArrayLength(arr);
+			ret.resize(count);
 
 			for (int i = 0; i < count; i++) {
 				jboolean val;
-				env->GetBooleanArrayRegion((jbooleanArray)arr, 0, 1, &val);
-				ret.push_back(val);
+				env->GetBooleanArrayRegion((jbooleanArray)arr, i, 1, &val);
+				ret[i] = (bool)val;
 			}
 
 			var = ret;
@@ -1099,106 +1100,85 @@ bool JavaClass::_convert_object_to_variant(JNIEnv *env, jobject obj, Variant &va
 
 		} break;
 		case ARG_ARRAY_BIT | ARG_TYPE_BYTE: {
-			Array ret;
+			PackedByteArray ret;
 			jobjectArray arr = (jobjectArray)obj;
 
 			int count = env->GetArrayLength(arr);
-
-			for (int i = 0; i < count; i++) {
-				jbyte val;
-				env->GetByteArrayRegion((jbyteArray)arr, 0, 1, &val);
-				ret.push_back(val);
-			}
+			ret.resize(count);
+			env->GetByteArrayRegion((jbyteArray)arr, 0, count, (int8_t *)ret.ptrw());
 
 			var = ret;
 			return true;
 		} break;
 		case ARG_ARRAY_BIT | ARG_TYPE_CHAR: {
-			Array ret;
+			PackedByteArray ret;
 			jobjectArray arr = (jobjectArray)obj;
 
 			int count = env->GetArrayLength(arr);
-
-			for (int i = 0; i < count; i++) {
-				jchar val;
-				env->GetCharArrayRegion((jcharArray)arr, 0, 1, &val);
-				ret.push_back(val);
-			}
+			// Char arrays are UTF-16 encoded, so it's double the length.
+			ret.resize(count * 2);
+			env->GetCharArrayRegion((jcharArray)arr, 0, count, (jchar *)ret.ptrw());
 
 			var = ret;
 			return true;
 		} break;
 		case ARG_ARRAY_BIT | ARG_TYPE_SHORT: {
-			Array ret;
+			PackedInt32Array ret;
 			jobjectArray arr = (jobjectArray)obj;
 
 			int count = env->GetArrayLength(arr);
+			ret.resize(count);
 
+			int32_t *ptr = ret.ptrw();
 			for (int i = 0; i < count; i++) {
 				jshort val;
-				env->GetShortArrayRegion((jshortArray)arr, 0, 1, &val);
-				ret.push_back(val);
+				env->GetShortArrayRegion((jshortArray)arr, i, 1, &val);
+				ptr[i] = val;
 			}
 
 			var = ret;
 			return true;
 		} break;
 		case ARG_ARRAY_BIT | ARG_TYPE_INT: {
-			Array ret;
+			PackedInt32Array ret;
 			jobjectArray arr = (jobjectArray)obj;
 
 			int count = env->GetArrayLength(arr);
-
-			for (int i = 0; i < count; i++) {
-				jint val;
-				env->GetIntArrayRegion((jintArray)arr, 0, 1, &val);
-				ret.push_back(val);
-			}
+			ret.resize(count);
+			env->GetIntArrayRegion((jintArray)arr, 0, count, ret.ptrw());
 
 			var = ret;
 			return true;
 		} break;
 		case ARG_ARRAY_BIT | ARG_TYPE_LONG: {
-			Array ret;
+			PackedInt64Array ret;
 			jobjectArray arr = (jobjectArray)obj;
 
 			int count = env->GetArrayLength(arr);
-
-			for (int i = 0; i < count; i++) {
-				jlong val;
-				env->GetLongArrayRegion((jlongArray)arr, 0, 1, &val);
-				ret.push_back((int64_t)val);
-			}
+			ret.resize(count);
+			env->GetLongArrayRegion((jlongArray)arr, 0, count, ret.ptrw());
 
 			var = ret;
 			return true;
 		} break;
 		case ARG_ARRAY_BIT | ARG_TYPE_FLOAT: {
-			Array ret;
+			PackedFloat32Array ret;
 			jobjectArray arr = (jobjectArray)obj;
 
 			int count = env->GetArrayLength(arr);
-
-			for (int i = 0; i < count; i++) {
-				jfloat val;
-				env->GetFloatArrayRegion((jfloatArray)arr, 0, 1, &val);
-				ret.push_back(val);
-			}
+			ret.resize(count);
+			env->GetFloatArrayRegion((jfloatArray)arr, 0, count, ret.ptrw());
 
 			var = ret;
 			return true;
 		} break;
 		case ARG_ARRAY_BIT | ARG_TYPE_DOUBLE: {
-			Array ret;
+			PackedFloat64Array ret;
 			jobjectArray arr = (jobjectArray)obj;
 
 			int count = env->GetArrayLength(arr);
-
-			for (int i = 0; i < count; i++) {
-				jdouble val;
-				env->GetDoubleArrayRegion((jdoubleArray)arr, 0, 1, &val);
-				ret.push_back(val);
-			}
+			ret.resize(count);
+			env->GetDoubleArrayRegion((jdoubleArray)arr, 0, count, ret.ptrw());
 
 			var = ret;
 			return true;
@@ -1208,14 +1188,13 @@ bool JavaClass::_convert_object_to_variant(JNIEnv *env, jobject obj, Variant &va
 			jobjectArray arr = (jobjectArray)obj;
 
 			int count = env->GetArrayLength(arr);
+			ret.resize(count);
 
 			for (int i = 0; i < count; i++) {
 				jobject o = env->GetObjectArrayElement(arr, i);
-				if (!o) {
-					ret.push_back(Variant());
-				} else {
+				if (o) {
 					bool val = env->CallBooleanMethod(o, JavaClassWrapper::singleton->Boolean_booleanValue);
-					ret.push_back(val);
+					ret[i] = val;
 				}
 				env->DeleteLocalRef(o);
 			}
@@ -1225,18 +1204,20 @@ bool JavaClass::_convert_object_to_variant(JNIEnv *env, jobject obj, Variant &va
 
 		} break;
 		case ARG_NUMBER_CLASS_BIT | ARG_ARRAY_BIT | ARG_TYPE_BYTE: {
-			Array ret;
+			PackedByteArray ret;
 			jobjectArray arr = (jobjectArray)obj;
 
 			int count = env->GetArrayLength(arr);
+			ret.resize(count);
 
+			uint8_t *ptr = ret.ptrw();
 			for (int i = 0; i < count; i++) {
 				jobject o = env->GetObjectArrayElement(arr, i);
 				if (!o) {
-					ret.push_back(Variant());
+					ptr[i] = 0;
 				} else {
 					int val = env->CallByteMethod(o, JavaClassWrapper::singleton->Byte_byteValue);
-					ret.push_back(val);
+					ptr[i] = (uint8_t)val;
 				}
 				env->DeleteLocalRef(o);
 			}
@@ -1245,18 +1226,22 @@ bool JavaClass::_convert_object_to_variant(JNIEnv *env, jobject obj, Variant &va
 			return true;
 		} break;
 		case ARG_NUMBER_CLASS_BIT | ARG_ARRAY_BIT | ARG_TYPE_CHAR: {
-			Array ret;
+			PackedByteArray ret;
 			jobjectArray arr = (jobjectArray)obj;
 
 			int count = env->GetArrayLength(arr);
+			// Char arrays are UTF-16 encoded, so it's double the length.
+			ret.resize(count * 2);
 
+			jchar *ptr = (jchar *)ret.ptrw();
 			for (int i = 0; i < count; i++) {
 				jobject o = env->GetObjectArrayElement(arr, i);
 				if (!o) {
-					ret.push_back(Variant());
+					count = i;
+					break;
 				} else {
 					int val = env->CallCharMethod(o, JavaClassWrapper::singleton->Character_characterValue);
-					ret.push_back(val);
+					ptr[i] = (jchar)val;
 				}
 				env->DeleteLocalRef(o);
 			}
@@ -1265,18 +1250,20 @@ bool JavaClass::_convert_object_to_variant(JNIEnv *env, jobject obj, Variant &va
 			return true;
 		} break;
 		case ARG_NUMBER_CLASS_BIT | ARG_ARRAY_BIT | ARG_TYPE_SHORT: {
-			Array ret;
+			PackedInt32Array ret;
 			jobjectArray arr = (jobjectArray)obj;
 
 			int count = env->GetArrayLength(arr);
+			ret.resize(count);
 
+			int32_t *ptr = ret.ptrw();
 			for (int i = 0; i < count; i++) {
 				jobject o = env->GetObjectArrayElement(arr, i);
 				if (!o) {
-					ret.push_back(Variant());
+					ptr[i] = 0;
 				} else {
 					int val = env->CallShortMethod(o, JavaClassWrapper::singleton->Short_shortValue);
-					ret.push_back(val);
+					ptr[i] = val;
 				}
 				env->DeleteLocalRef(o);
 			}
@@ -1285,18 +1272,20 @@ bool JavaClass::_convert_object_to_variant(JNIEnv *env, jobject obj, Variant &va
 			return true;
 		} break;
 		case ARG_NUMBER_CLASS_BIT | ARG_ARRAY_BIT | ARG_TYPE_INT: {
-			Array ret;
+			PackedInt32Array ret;
 			jobjectArray arr = (jobjectArray)obj;
 
 			int count = env->GetArrayLength(arr);
+			ret.resize(count);
 
+			int32_t *ptr = ret.ptrw();
 			for (int i = 0; i < count; i++) {
 				jobject o = env->GetObjectArrayElement(arr, i);
 				if (!o) {
-					ret.push_back(Variant());
+					ptr[i] = 0;
 				} else {
 					int val = env->CallIntMethod(o, JavaClassWrapper::singleton->Integer_integerValue);
-					ret.push_back(val);
+					ptr[i] = val;
 				}
 				env->DeleteLocalRef(o);
 			}
@@ -1305,18 +1294,20 @@ bool JavaClass::_convert_object_to_variant(JNIEnv *env, jobject obj, Variant &va
 			return true;
 		} break;
 		case ARG_NUMBER_CLASS_BIT | ARG_ARRAY_BIT | ARG_TYPE_LONG: {
-			Array ret;
+			PackedInt64Array ret;
 			jobjectArray arr = (jobjectArray)obj;
 
 			int count = env->GetArrayLength(arr);
+			ret.resize(count);
 
+			int64_t *ptr = ret.ptrw();
 			for (int i = 0; i < count; i++) {
 				jobject o = env->GetObjectArrayElement(arr, i);
 				if (!o) {
-					ret.push_back(Variant());
+					ptr[i] = 0;
 				} else {
 					int64_t val = env->CallLongMethod(o, JavaClassWrapper::singleton->Long_longValue);
-					ret.push_back(val);
+					ptr[i] = val;
 				}
 				env->DeleteLocalRef(o);
 			}
@@ -1325,18 +1316,20 @@ bool JavaClass::_convert_object_to_variant(JNIEnv *env, jobject obj, Variant &va
 			return true;
 		} break;
 		case ARG_NUMBER_CLASS_BIT | ARG_ARRAY_BIT | ARG_TYPE_FLOAT: {
-			Array ret;
+			PackedFloat32Array ret;
 			jobjectArray arr = (jobjectArray)obj;
 
 			int count = env->GetArrayLength(arr);
+			ret.resize(count);
 
+			float *ptr = ret.ptrw();
 			for (int i = 0; i < count; i++) {
 				jobject o = env->GetObjectArrayElement(arr, i);
 				if (!o) {
-					ret.push_back(Variant());
+					ptr[i] = 0.0;
 				} else {
 					float val = env->CallFloatMethod(o, JavaClassWrapper::singleton->Float_floatValue);
-					ret.push_back(val);
+					ptr[i] = val;
 				}
 				env->DeleteLocalRef(o);
 			}
@@ -1345,18 +1338,20 @@ bool JavaClass::_convert_object_to_variant(JNIEnv *env, jobject obj, Variant &va
 			return true;
 		} break;
 		case ARG_NUMBER_CLASS_BIT | ARG_ARRAY_BIT | ARG_TYPE_DOUBLE: {
-			Array ret;
+			PackedFloat64Array ret;
 			jobjectArray arr = (jobjectArray)obj;
 
 			int count = env->GetArrayLength(arr);
+			ret.resize(count);
 
+			double *ptr = ret.ptrw();
 			for (int i = 0; i < count; i++) {
 				jobject o = env->GetObjectArrayElement(arr, i);
 				if (!o) {
-					ret.push_back(Variant());
+					ptr[i] = 0.0;
 				} else {
 					double val = env->CallDoubleMethod(o, JavaClassWrapper::singleton->Double_doubleValue);
-					ret.push_back(val);
+					ptr[i] = val;
 				}
 				env->DeleteLocalRef(o);
 			}
@@ -1366,18 +1361,18 @@ bool JavaClass::_convert_object_to_variant(JNIEnv *env, jobject obj, Variant &va
 		} break;
 
 		case ARG_ARRAY_BIT | ARG_TYPE_STRING: {
-			Array ret;
+			PackedStringArray ret;
 			jobjectArray arr = (jobjectArray)obj;
 
 			int count = env->GetArrayLength(arr);
+			ret.resize(count);
 
+			String *ptr = ret.ptrw();
 			for (int i = 0; i < count; i++) {
 				jobject o = env->GetObjectArrayElement(arr, i);
-				if (!o) {
-					ret.push_back(Variant());
-				} else {
+				if (o) {
 					String val = jstring_to_string((jstring)o, env);
-					ret.push_back(val);
+					ptr[i] = val;
 				}
 				env->DeleteLocalRef(o);
 			}
@@ -1386,18 +1381,18 @@ bool JavaClass::_convert_object_to_variant(JNIEnv *env, jobject obj, Variant &va
 			return true;
 		} break;
 		case ARG_ARRAY_BIT | ARG_TYPE_CHARSEQUENCE: {
-			Array ret;
+			PackedStringArray ret;
 			jobjectArray arr = (jobjectArray)obj;
 
 			int count = env->GetArrayLength(arr);
+			ret.resize(count);
 
+			String *ptr = ret.ptrw();
 			for (int i = 0; i < count; i++) {
 				jobject o = env->GetObjectArrayElement(arr, i);
-				if (!o) {
-					ret.push_back(Variant());
-				} else {
+				if (o) {
 					String val = charsequence_to_string(env, o);
-					ret.push_back(val);
+					ptr[i] = val;
 				}
 				env->DeleteLocalRef(o);
 			}
@@ -1409,13 +1404,12 @@ bool JavaClass::_convert_object_to_variant(JNIEnv *env, jobject obj, Variant &va
 			Array ret;
 			jobjectArray jarr = (jobjectArray)obj;
 			int count = env->GetArrayLength(jarr);
+			ret.resize(count);
 			for (int i = 0; i < count; i++) {
 				jobject o = env->GetObjectArrayElement(jarr, i);
-				if (!o) {
-					ret.push_back(Variant());
-				} else {
+				if (o) {
 					Callable callable = jcallable_to_callable(env, o);
-					ret.push_back(callable);
+					ret[i] = callable;
 				}
 				env->DeleteLocalRef(o);
 			}
@@ -1424,6 +1418,27 @@ bool JavaClass::_convert_object_to_variant(JNIEnv *env, jobject obj, Variant &va
 			return true;
 		} break;
 		case ARG_ARRAY_BIT | ARG_TYPE_CLASS: {
+			Array ret;
+			jobjectArray jarr = (jobjectArray)obj;
+			int count = env->GetArrayLength(jarr);
+			ret.resize(count);
+			for (int i = 0; i < count; i++) {
+				jobject obj = env->GetObjectArrayElement(jarr, i);
+				if (obj) {
+					jclass java_class = env->GetObjectClass(obj);
+					Ref<JavaClass> java_class_wrapped = JavaClassWrapper::singleton->wrap_jclass(java_class);
+					env->DeleteLocalRef(java_class);
+
+					if (java_class_wrapped.is_valid()) {
+						Ref<JavaObject> java_obj_wrapped = Ref<JavaObject>(memnew(JavaObject(java_class_wrapped, obj)));
+						ret[i] = java_obj_wrapped;
+					}
+				}
+				env->DeleteLocalRef(obj);
+			}
+
+			var = ret;
+			return true;
 		} break;
 	}
 
