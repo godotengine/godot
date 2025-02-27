@@ -34,7 +34,7 @@
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/panel_container.h"
-#include "scene/resources/style_box_flat.h"
+#include "scene/resources/stylebox_flat.h"
 
 ColorChannelSelector::ColorChannelSelector() {
 	toggle_button = memnew(Button);

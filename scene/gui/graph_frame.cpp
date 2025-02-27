@@ -32,8 +32,8 @@
 
 #include "scene/gui/box_container.h"
 #include "scene/gui/label.h"
-#include "scene/resources/style_box_flat.h"
-#include "scene/resources/style_box_texture.h"
+#include "scene/resources/stylebox_flat.h"
+#include "scene/resources/stylebox_texture.h"
 #include "scene/theme/theme_db.h"
 
 void GraphFrame::gui_input(const Ref<InputEvent> &p_ev) {
@@ -115,18 +115,18 @@ void GraphFrame::_notification(int p_what) {
 					sb_panel_flat = sb_panel_flat->duplicate();
 					sb_panel_flat->set_bg_color(tint_color);
 					sb_panel_flat->set_border_color(selected ? original_border_color : tint_color.lightened(0.3));
-					draw_style_box(sb_panel_flat, body_rect);
+					draw_stylebox(sb_panel_flat, body_rect);
 				} else if (sb_panel_texture.is_valid()) {
 					sb_panel_texture = sb_panel_texture->duplicate();
 					sb_panel_texture->set_modulate(tint_color);
-					draw_style_box(sb_panel_texture, body_rect);
+					draw_stylebox(sb_panel_texture, body_rect);
 				}
 			} else {
-				draw_style_box(sb_panel_flat, body_rect);
+				draw_stylebox(sb_panel_flat, body_rect);
 			}
 
 			// Draw title bar stylebox above.
-			draw_style_box(sb_to_draw_titlebar, titlebar_rect);
+			draw_stylebox(sb_to_draw_titlebar, titlebar_rect);
 
 			// Only draw the resize handle if the frame is not auto-resizing.
 			if (resizable && !autoshrink_enabled) {

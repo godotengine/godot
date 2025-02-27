@@ -54,7 +54,7 @@
 #include "scene/gui/texture_rect.h"
 #include "scene/property_utils.h"
 #include "scene/resources/packed_scene.h"
-#include "scene/resources/style_box_flat.h"
+#include "scene/resources/stylebox_flat.h"
 #include "scene/scene_string_names.h"
 
 bool EditorInspector::_property_path_matches(const String &p_property_path, const String &p_filter, EditorPropertyNameProcessor::Style p_style) {
@@ -389,15 +389,15 @@ void EditorProperty::_notification(int p_what) {
 				size.height = 0;
 			} else {
 				Ref<StyleBox> sb = get_theme_stylebox(selected ? SNAME("bg_selected") : SNAME("bg"));
-				draw_style_box(sb, Rect2(Vector2(), size));
+				draw_stylebox(sb, Rect2(Vector2(), size));
 			}
 
 			Ref<StyleBox> bg_stylebox = get_theme_stylebox(SNAME("child_bg"));
 			if (draw_top_bg && right_child_rect != Rect2() && draw_background) {
-				draw_style_box(bg_stylebox, right_child_rect);
+				draw_stylebox(bg_stylebox, right_child_rect);
 			}
 			if (bottom_child_rect != Rect2() && draw_background) {
-				draw_style_box(bg_stylebox, bottom_child_rect);
+				draw_stylebox(bg_stylebox, bottom_child_rect);
 			}
 
 			Color color;
@@ -463,9 +463,9 @@ void EditorProperty::_notification(int p_what) {
 
 					Ref<StyleBox> sb_hover = get_theme_stylebox(SceneStringName(hover), "Button");
 					if (rtl) {
-						draw_style_box(sb_hover, Rect2(rtl_pos, revert_rect.size));
+						draw_stylebox(sb_hover, Rect2(rtl_pos, revert_rect.size));
 					} else {
-						draw_style_box(sb_hover, revert_rect);
+						draw_stylebox(sb_hover, revert_rect);
 					}
 				}
 				if (rtl) {
@@ -525,9 +525,9 @@ void EditorProperty::_notification(int p_what) {
 
 					Ref<StyleBox> sb_hover = get_theme_stylebox(SceneStringName(hover), "Button");
 					if (rtl) {
-						draw_style_box(sb_hover, Rect2(rtl_pos, keying_rect.size));
+						draw_stylebox(sb_hover, Rect2(rtl_pos, keying_rect.size));
 					} else {
-						draw_style_box(sb_hover, keying_rect);
+						draw_stylebox(sb_hover, keying_rect);
 					}
 				}
 
@@ -562,9 +562,9 @@ void EditorProperty::_notification(int p_what) {
 
 					Ref<StyleBox> sb_hover = get_theme_stylebox(SceneStringName(hover), "Button");
 					if (rtl) {
-						draw_style_box(sb_hover, Rect2(rtl_pos, delete_rect.size));
+						draw_stylebox(sb_hover, Rect2(rtl_pos, delete_rect.size));
 					} else {
-						draw_style_box(sb_hover, delete_rect);
+						draw_stylebox(sb_hover, delete_rect);
 					}
 				}
 
@@ -1483,7 +1483,7 @@ void EditorInspectorCategory::_notification(int p_what) {
 		case NOTIFICATION_DRAW: {
 			Ref<StyleBox> sb = get_theme_stylebox(SNAME("bg"));
 
-			draw_style_box(sb, Rect2(Vector2(), get_size()));
+			draw_stylebox(sb, Rect2(Vector2(), get_size()));
 
 			Ref<Font> font = get_theme_font(SNAME("bold"), EditorStringName(EditorFonts));
 			int font_size = get_theme_font_size(SNAME("bold_size"), EditorStringName(EditorFonts));
@@ -1776,7 +1776,7 @@ void EditorInspectorSection::_notification(int p_what) {
 				} else {
 					indent_rect.position.x = section_indent_style->get_margin(SIDE_LEFT);
 				}
-				draw_style_box(section_indent_style, indent_rect);
+				draw_stylebox(section_indent_style, indent_rect);
 			}
 		} break;
 
@@ -2059,7 +2059,7 @@ void EditorInspectorArray::_panel_draw(int p_index) {
 		return;
 	}
 	if (array_elements[p_index].panel->has_focus()) {
-		array_elements[p_index].panel->draw_style_box(style, Rect2(Vector2(), array_elements[p_index].panel->get_size()));
+		array_elements[p_index].panel->draw_stylebox(style, Rect2(Vector2(), array_elements[p_index].panel->get_size()));
 	}
 }
 

@@ -46,7 +46,7 @@
 #include "scene/gui/spin_box.h"
 #include "scene/gui/view_panner.h"
 #include "scene/resources/atlas_texture.h"
-#include "scene/resources/style_box_texture.h"
+#include "scene/resources/stylebox_texture.h"
 
 Transform2D TextureRegionEditor::_get_offset_transform() const {
 	Transform2D mtx;

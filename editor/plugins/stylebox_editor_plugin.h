@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  style_box_line.h                                                      */
+/*  stylebox_editor_plugin.h                                             */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,43 +28,51 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef STYLE_BOX_LINE_H
-#define STYLE_BOX_LINE_H
+#ifndef STYLEBOX_EDITOR_PLUGIN_H
+#define STYLEBOX_EDITOR_PLUGIN_H
 
-#include "scene/resources/style_box.h"
+#include "editor/editor_inspector.h"
+#include "editor/plugins/editor_plugin.h"
+#include "scene/gui/texture_rect.h"
 
-class StyleBoxLine : public StyleBox {
-	GDCLASS(StyleBoxLine, StyleBox);
-	Color color;
-	int thickness = 1;
-	bool vertical = false;
-	float grow_begin = 1.0;
-	float grow_end = 1.0;
+class Button;
+class StyleBox;
+
+class StyleBoxPreview : public TextureRect {
+	GDCLASS(StyleBoxPreview, TextureRect);
+
+	Button *grid_preview = nullptr;
+	Ref<StyleBox> stylebox;
+
+	void _sb_changed();
+	void _redraw();
+	static bool grid_preview_enabled;
+	void _grid_preview_toggled(bool p_active);
 
 protected:
-	virtual float get_style_margin(Side p_side) const override;
-	static void _bind_methods();
+	void _notification(int p_what);
 
 public:
-	void set_color(const Color &p_color);
-	Color get_color() const;
+	void edit(const Ref<StyleBox> &p_stylebox);
 
-	void set_thickness(int p_thickness);
-	int get_thickness() const;
-
-	void set_vertical(bool p_vertical);
-	bool is_vertical() const;
-
-	void set_grow_begin(float p_grow);
-	float get_grow_begin() const;
-
-	void set_grow_end(float p_grow);
-	float get_grow_end() const;
-
-	virtual void draw(RID p_canvas_item, const Rect2 &p_rect) const override;
-
-	StyleBoxLine();
-	~StyleBoxLine();
+	StyleBoxPreview();
 };
 
-#endif // STYLE_BOX_LINE_H
+class EditorInspectorPluginStyleBox : public EditorInspectorPlugin {
+	GDCLASS(EditorInspectorPluginStyleBox, EditorInspectorPlugin);
+
+public:
+	virtual bool can_handle(Object *p_object) override;
+	virtual void parse_begin(Object *p_object) override;
+};
+
+class StyleBoxEditorPlugin : public EditorPlugin {
+	GDCLASS(StyleBoxEditorPlugin, EditorPlugin);
+
+public:
+	virtual String get_plugin_name() const override { return "StyleBox"; }
+
+	StyleBoxEditorPlugin();
+};
+
+#endif // STYLEBOX_EDITOR_PLUGIN_H
