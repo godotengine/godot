@@ -39,6 +39,7 @@ void initialize_betsy_module(ModuleInitializationLevel p_level) {
 
 	Image::_image_compress_bptc_rd_func = _betsy_compress_bptc;
 	Image::_image_compress_bc_rd_func = _betsy_compress_s3tc;
+	Image::_image_compress_astc_rd_func = _betsy_compress_astc;
 }
 
 void uninitialize_betsy_module(ModuleInitializationLevel p_level) {
