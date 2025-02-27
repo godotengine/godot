@@ -31,14 +31,18 @@
 #ifndef TEST_VIEWPORT_H
 #define TEST_VIEWPORT_H
 
-#include "scene/2d/physics/area_2d.h"
-#include "scene/2d/physics/collision_shape_2d.h"
 #include "scene/gui/control.h"
 #include "scene/gui/subviewport_container.h"
 #include "scene/main/canvas_layer.h"
 #include "scene/main/window.h"
+#ifndef PHYSICS_2D_DISABLED
+#include "scene/2d/physics/area_2d.h"
+#include "scene/2d/physics/collision_shape_2d.h"
 #include "scene/resources/2d/rectangle_shape_2d.h"
 #include "servers/physics_server_2d_dummy.h"
+#else
+#include "scene/2d/node_2d.h"
+#endif // PHYSICS_2D_DISABLED
 
 #include "tests/test_macros.h"
 
@@ -1521,6 +1525,7 @@ TEST_CASE("[SceneTree][Viewport] Control mouse cursor shape") {
 	}
 }
 
+#ifndef PHYSICS_2D_DISABLED
 class TestArea2D : public Area2D {
 	GDCLASS(TestArea2D, Area2D);
 
@@ -1928,6 +1933,7 @@ TEST_CASE("[SceneTree][Viewport] Physics Picking 2D") {
 		memdelete(E.a);
 	}
 }
+#endif // PHYSICS_2D_DISABLED
 
 TEST_CASE("[SceneTree][Viewport] Embedded Windows") {
 	Window *root = SceneTree::get_singleton()->get_root();

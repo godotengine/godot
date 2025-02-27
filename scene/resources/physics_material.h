@@ -31,6 +31,7 @@
 #ifndef PHYSICS_MATERIAL_H
 #define PHYSICS_MATERIAL_H
 
+#if !defined(PHYSICS_2D_DISABLED) || !defined(PHYSICS_3D_DISABLED)
 #include "core/io/resource.h"
 
 class PhysicsMaterial : public Resource {
@@ -69,5 +70,6 @@ public:
 
 	PhysicsMaterial() {}
 };
+#endif // PHYSICS_2D_DISABLED || PHYSICS_2D_DISABLED
 
 #endif // PHYSICS_MATERIAL_H
