@@ -184,8 +184,8 @@
 		<method name="_is_highend" qualifiers="virtual const">
 			<return type="bool" />
 			<description>
-				Override this method to enable high-end mark in the Visual Shader Editor's members dialog.
-				Defining this method is [b]optional[/b]. If not overridden, it's [code]false[/code].
+				Override this method to enable the high-end mark in the Visual Shader Editor's members dialog. This should return [code]true[/code] for nodes that only work when using the Forward+ and Mobile renderers.
+				Defining this method is [b]optional[/b]. If not overridden, it's [code]false[/code], which indicates this node works with all renderers (including Compatibility).
 			</description>
 		</method>
 		<method name="get_option_index" qualifiers="const">
