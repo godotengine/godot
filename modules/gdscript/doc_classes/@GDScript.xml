@@ -530,6 +530,13 @@
 				[/codeblock]
 			</description>
 		</annotation>
+		<annotation name="@export_from_dir" qualifiers="vararg">
+			<return type="void" />
+			<param index="0" name="directory" type="String" default="&quot;res://&quot;" />
+			<description>
+				Export a [Resource] property as a list of resource files in a [param directory].
+			</description>
+		</annotation>
 		<annotation name="@export_global_dir">
 			<return type="void" />
 			<description>
