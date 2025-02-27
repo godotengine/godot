@@ -343,6 +343,7 @@ def generate_scu_files(max_includes_per_scu):
     process_folder(["scene/3d"])
     process_folder(["scene/3d/physics"])
     process_folder(["scene/3d/physics/joints"])
+    process_folder(["scene/3d/xr"])
     process_folder(["scene/animation"])
     process_folder(["scene/gui"])
     process_folder(["scene/main"])
