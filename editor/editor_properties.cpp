@@ -52,6 +52,7 @@
 #include "scene/3d/gpu_particles_3d.h"
 #include "scene/gui/color_picker.h"
 #include "scene/gui/grid_container.h"
+#include "scene/gui/tree.h"
 #include "scene/main/window.h"
 #include "scene/resources/font.h"
 #include "scene/resources/mesh.h"
@@ -247,6 +248,225 @@ EditorPropertyMultilineText::EditorPropertyMultilineText(bool p_expression) {
 		highlighter.instantiate();
 		text->set_syntax_highlighter(highlighter);
 	}
+}
+
+///////////////////// ORDERED LIST /////////////////////////
+
+void EditorPropertyOrderedList::_set_read_only(bool p_read_only) {
+	read_only = p_read_only;
+	_update_tree();
+}
+
+void EditorPropertyOrderedList::_update_tree() {
+	tree->clear();
+
+	TreeItem *root = tree->create_item(nullptr);
+	// Add missing keys to the value.
+	for (const KeyValue<String, String> &E : names) {
+		if (!values.has(E.key)) {
+			values.push_back(E.key);
+		}
+	}
+
+	// Update tree.
+	for (int i = 0; i < values.size(); i++) {
+		if (!names.has(values[i])) {
+			WARN_PRINT(vformat("Invalid list item %s for property %s.", values[i], get_edited_property()));
+			continue;
+		}
+		TreeItem *it = tree->create_item(root);
+		it->set_text(0, names[values[i]]);
+		it->set_metadata(0, values[i]);
+		if (!read_only) {
+			it->add_button(0, get_editor_theme_icon(SNAME("ArrowUp")), BUTTON_UP, (i == 0), TTR("Move Up"));
+			it->add_button(0, get_editor_theme_icon(SNAME("ArrowDown")), BUTTON_DOWN, (i == values.size() - 1), TTR("Move Down"));
+		}
+	}
+
+	// Update size.
+	Ref<Font> font = get_theme_font(SceneStringName(font), SNAME("TextEdit"));
+	int font_size = get_theme_font_size(SceneStringName(font_size), SNAME("TextEdit"));
+	tree->set_custom_minimum_size(tree->get_background_size() + Size2i(0, MIN(tree->get_internal_min_size().height, 6 * font->get_height(font_size))));
+}
+
+Variant EditorPropertyOrderedList::get_drag_data_fw(const Point2 &p_point, Control *p_from) {
+	if (read_only) {
+		return Variant();
+	}
+
+	if (tree->get_button_id_at_position(p_point) != -1) {
+		return Variant();
+	}
+
+	TreeItem *item = tree->get_next_selected(nullptr);
+	if (!item) {
+		return Variant();
+	}
+	String value = item->get_metadata(0);
+	if (!names.has(value)) {
+		return Variant();
+	}
+	String name = names[value];
+
+	// Preview.
+	HBoxContainer *hb = memnew(HBoxContainer);
+	Label *label_prev = memnew(Label(vformat("%s (%s)", name, value)));
+	label_prev->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
+	hb->add_child(label_prev);
+	set_drag_preview(hb);
+
+	// Drag data.
+	Dictionary drag_data;
+	drag_data["type"] = "list_reorder";
+	drag_data["id"] = get_instance_id();
+	drag_data["value"] = value;
+
+	tree->set_drop_mode_flags(Tree::DROP_MODE_INBETWEEN);
+
+	return drag_data;
+}
+
+bool EditorPropertyOrderedList::can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const {
+	if (read_only) {
+		return false;
+	}
+
+	Dictionary d = p_data;
+	if (!d.has("type") || !d.has("id") || !d.has("value")) {
+		return false;
+	}
+
+	if (d["type"] != "list_reorder" || d["id"] != get_instance_id()) {
+		return false;
+	}
+
+	TreeItem *item = tree->get_item_at_position(p_point);
+	if (!item) {
+		return false;
+	}
+
+	int section = tree->get_drop_section_at_position(p_point);
+	if (section == -100) {
+		return false;
+	}
+
+	return true;
+}
+
+void EditorPropertyOrderedList::drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) {
+	if (!can_drop_data_fw(p_point, p_data, p_from)) {
+		return;
+	}
+	Dictionary d = p_data;
+	String drop_value = d["value"];
+
+	TreeItem *item = tree->get_item_at_position(p_point);
+	ERR_FAIL_COND(!item);
+	String target_value = item->get_metadata(0);
+
+	int section = tree->get_drop_section_at_position(p_point);
+	ERR_FAIL_COND(section == -100);
+
+	tree->set_drop_mode_flags(Tree::DROP_MODE_DISABLED);
+
+	Vector<String> new_values = values;
+	new_values.erase(drop_value);
+	if (section == 1) {
+		int pos = new_values.find(target_value);
+		if (pos == -1) {
+			return;
+		}
+		new_values.insert(pos + 1, drop_value);
+	} else {
+		int pos = new_values.find(target_value);
+		if (pos == -1) {
+			return;
+		}
+		new_values.insert(pos, drop_value);
+	}
+	values = new_values;
+	_update_tree();
+	emit_changed(get_edited_property(), String(",").join(values));
+}
+
+void EditorPropertyOrderedList::_tree_button_pressed(TreeItem *p_item, int p_column, int p_id, MouseButton p_button) {
+	ERR_FAIL_COND(!p_item);
+	if (p_button != MouseButton::LEFT) {
+		return;
+	}
+
+	String drop_value = p_item->get_metadata(0);
+	Vector<String> new_values = values;
+	if (p_id == BUTTON_DOWN) {
+		int pos = new_values.find(drop_value);
+		if (pos == -1) {
+			return;
+		}
+		new_values.erase(drop_value);
+		new_values.insert(pos + 1, drop_value);
+	} else {
+		int pos = new_values.find(drop_value);
+		if (pos == -1) {
+			return;
+		}
+		new_values.erase(drop_value);
+		new_values.insert(pos - 1, drop_value);
+	}
+	values = new_values;
+	_update_tree();
+	emit_changed(get_edited_property(), String(",").join(values));
+}
+
+void EditorPropertyOrderedList::update_property() {
+	String current_value = get_edited_property_value();
+	values = current_value.split(",");
+	print_line(values);
+	_update_tree();
+}
+
+void EditorPropertyOrderedList::setup(const Vector<String> &p_options) {
+	values.clear();
+	names.clear();
+
+	for (const String &option : p_options) {
+		Vector<String> text_split = option.split(":");
+		if (text_split.size() != 1) {
+			names[text_split[1]] = text_split[0];
+		} else {
+			names[text_split[0]] = text_split[0];
+		}
+	}
+	_update_tree();
+}
+
+void EditorPropertyOrderedList::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
+		case NOTIFICATION_THEME_CHANGED: {
+			tree->add_theme_style_override(SNAME("panel"), get_theme_stylebox(SNAME("normal"), SNAME("Button")));
+			tree->add_theme_style_override(SNAME("focus"), get_theme_stylebox(SNAME("focus"), SNAME("Button")));
+			_update_tree();
+		} break;
+	}
+}
+
+EditorPropertyOrderedList::EditorPropertyOrderedList() {
+	HBoxContainer *hb = memnew(HBoxContainer);
+	add_child(hb);
+
+	default_layout = memnew(HBoxContainer);
+	default_layout->set_h_size_flags(SIZE_EXPAND_FILL);
+	hb->add_child(default_layout);
+
+	tree = memnew(Tree);
+	tree->set_h_size_flags(SIZE_EXPAND_FILL);
+	tree->set_hide_root(true);
+	tree->connect("button_clicked", callable_mp(this, &EditorPropertyOrderedList::_tree_button_pressed));
+	default_layout->add_child(tree);
+
+	SET_DRAG_FORWARDING_GCD(tree, EditorPropertyOrderedList);
+
+	add_focusable(tree);
 }
 
 ///////////////////// TEXT ENUM /////////////////////////
@@ -3615,7 +3835,12 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 			}
 		} break;
 		case Variant::STRING: {
-			if (p_hint == PROPERTY_HINT_ENUM || p_hint == PROPERTY_HINT_ENUM_SUGGESTION) {
+			if (p_hint == PROPERTY_HINT_ORDERED_LIST) {
+				EditorPropertyOrderedList *editor = memnew(EditorPropertyOrderedList);
+				Vector<String> options = p_hint_text.split(",", false);
+				editor->setup(options);
+				return editor;
+			} else if (p_hint == PROPERTY_HINT_ENUM || p_hint == PROPERTY_HINT_ENUM_SUGGESTION) {
 				EditorPropertyTextEnum *editor = memnew(EditorPropertyTextEnum);
 				Vector<String> options = p_hint_text.split(",", false);
 				editor->setup(options, false, (p_hint == PROPERTY_HINT_ENUM_SUGGESTION));
