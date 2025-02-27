@@ -37,10 +37,10 @@
 #include "editor/gui/editor_toaster.h"
 #include "editor/gui/editor_version_button.h"
 #include "editor/themes/editor_scale.h"
+#include "scene/gui/advanced/split_container.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/scroll_container.h"
-#include "scene/gui/split_container.h"
 
 void EditorBottomPanel::_notification(int p_what) {
 	switch (p_what) {

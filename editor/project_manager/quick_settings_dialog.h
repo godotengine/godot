@@ -31,7 +31,7 @@
 #ifndef QUICK_SETTINGS_DIALOG_H
 #define QUICK_SETTINGS_DIALOG_H
 
-#include "scene/gui/dialogs.h"
+#include "scene/gui/advanced/dialogs.h"
 
 class Button;
 class Label;

@@ -31,7 +31,7 @@
 #ifndef MENU_BAR_H
 #define MENU_BAR_H
 
-#include "scene/gui/popup_menu.h"
+#include "scene/gui/advanced/popup_menu.h"
 
 class MenuBar : public Control {
 	GDCLASS(MenuBar, Control);

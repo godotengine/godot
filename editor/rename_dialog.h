@@ -32,7 +32,7 @@
 #define RENAME_DIALOG_H
 
 #include "editor/gui/scene_tree_editor.h"
-#include "scene/gui/dialogs.h"
+#include "scene/gui/advanced/dialogs.h"
 #include "scene/gui/line_edit.h"
 
 class Button;

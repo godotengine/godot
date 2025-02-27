@@ -31,7 +31,7 @@
 #ifndef RUN_INSTANCES_DIALOG_H
 #define RUN_INSTANCES_DIALOG_H
 
-#include "scene/gui/dialogs.h"
+#include "scene/gui/advanced/dialogs.h"
 
 class CheckBox;
 class LineEdit;

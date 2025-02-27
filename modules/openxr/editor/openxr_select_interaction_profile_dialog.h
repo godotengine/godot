@@ -31,8 +31,8 @@
 #ifndef OPENXR_SELECT_INTERACTION_PROFILE_DIALOG_H
 #define OPENXR_SELECT_INTERACTION_PROFILE_DIALOG_H
 
+#include "scene/gui/advanced/dialogs.h"
 #include "scene/gui/box_container.h"
-#include "scene/gui/dialogs.h"
 #include "scene/gui/label.h"
 #include "scene/gui/scroll_container.h"
 

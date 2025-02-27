@@ -32,9 +32,9 @@
 #define SHADER_FILE_EDITOR_PLUGIN_H
 
 #include "editor/plugins/editor_plugin.h"
+#include "scene/gui/advanced/rich_text_label.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/panel_container.h"
-#include "scene/gui/rich_text_label.h"
 #include "servers/rendering/rendering_device_binds.h"
 
 class ItemList;

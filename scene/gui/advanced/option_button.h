@@ -31,8 +31,8 @@
 #ifndef OPTION_BUTTON_H
 #define OPTION_BUTTON_H
 
+#include "scene/gui/advanced/popup_menu.h"
 #include "scene/gui/button.h"
-#include "scene/gui/popup_menu.h"
 #include "scene/property_list_helper.h"
 
 class OptionButton : public Button {

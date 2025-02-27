@@ -31,7 +31,7 @@
 #ifndef EXPORT_TEMPLATE_MANAGER_H
 #define EXPORT_TEMPLATE_MANAGER_H
 
-#include "scene/gui/dialogs.h"
+#include "scene/gui/advanced/dialogs.h"
 
 class EditorExportPreset;
 class ExportTemplateVersion;

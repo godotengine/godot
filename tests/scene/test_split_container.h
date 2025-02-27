@@ -31,7 +31,7 @@
 #ifndef TEST_SPLIT_CONTAINER_H
 #define TEST_SPLIT_CONTAINER_H
 
-#include "scene/gui/split_container.h"
+#include "scene/gui/advanced/split_container.h"
 #include "scene/main/window.h"
 
 #include "tests/test_macros.h"
