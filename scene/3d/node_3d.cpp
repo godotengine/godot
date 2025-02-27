@@ -104,14 +104,33 @@ void Node3D::_propagate_transform_changed_deferred() {
 }
 
 void Node3D::_propagate_transform_changed(Node3D *p_origin) {
+	// Wrapper function, to do the heavy lifting to decide
+	// whether we need to check interpolation on / off for each node
+	// to determine whether to send notifications.
+	_propagate_transform_changed(p_origin,
+			Engine::get_singleton()->is_in_physics_frame() && is_inside_tree() && get_tree()->is_physics_interpolation_enabled());
+}
+
+void Node3D::_propagate_transform_changed(Node3D *p_origin, bool p_check_physics_interpolation_state) {
 	if (!is_inside_tree()) {
 		return;
 	}
 
 	for (Node3D *&E : data.children) {
+		// Don't propagate to a top_level.
 		if (E->data.top_level) {
-			continue; //don't propagate to a top_level
+			continue;
 		}
+
+		// The first non-interpolated child is responsible for grabbing
+		// the interpolated xform from the parent / target on each frame.
+		// If this is not done, there will be judder, because the non-interpolated child
+		// will be matching the PHYSICS xform of the parent, rather than the interpolated
+		// xform.
+		if (p_check_physics_interpolation_state && !E->is_physics_interpolated() && p_origin->is_physics_interpolated()) {
+			continue;
+		}
+
 		E->_propagate_transform_changed(p_origin);
 	}
 #ifdef TOOLS_ENABLED
