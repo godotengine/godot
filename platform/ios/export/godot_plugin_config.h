@@ -31,7 +31,6 @@
 #ifndef IOS_GODOT_PLUGIN_CONFIG_H
 #define IOS_GODOT_PLUGIN_CONFIG_H
 
-#include "core/error/error_list.h"
 #include "core/io/config_file.h"
 #include "core/string/ustring.h"
 
