@@ -1439,7 +1439,7 @@ void ProjectSettings::_add_builtin_input_map() {
 			}
 
 			Dictionary action;
-			action["deadzone"] = Variant(InputMap::DEFAULT_DEADZONE);
+			action["deadzone"] = Variant(InputMap::DEFAULT_TOGGLE_DEADZONE);
 			action["events"] = events;
 
 			String action_name = "input/" + E.key;
