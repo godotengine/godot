@@ -36,7 +36,9 @@
 #include "core/templates/rb_set.h"
 #include "scene/2d/light_occluder_2d.h"
 #include "scene/main/canvas_item.h"
+#ifndef PHYSICS_2D_DISABLED
 #include "scene/resources/2d/convex_polygon_shape_2d.h"
+#endif // PHYSICS_2D_DISABLED
 #include "scene/resources/2d/navigation_polygon.h"
 #include "scene/resources/image_texture.h"
 #include "scene/resources/packed_scene.h"
@@ -153,7 +155,9 @@ private:
 		Vector2i autotile_coords;
 		bool one_way;
 		float one_way_margin;
+#ifndef PHYSICS_2D_DISABLED
 		Ref<Shape2D> shape;
+#endif // PHYSICS_2D_DISABLED
 		Transform2D transform;
 	};
 
@@ -322,6 +326,7 @@ private:
 	Ref<ArrayMesh> tile_filled_mesh;
 	mutable bool tile_meshes_dirty = true;
 
+#ifndef PHYSICS_2D_DISABLED
 	// Physics
 	struct PhysicsLayer {
 		uint32_t collision_layer = 1;
@@ -330,6 +335,7 @@ private:
 		Ref<PhysicsMaterial> physics_material;
 	};
 	Vector<PhysicsLayer> physics_layers;
+#endif // PHYSICS_2D_DISABLED
 
 	// Terrains
 	struct Terrain {
@@ -439,6 +445,7 @@ public:
 	void set_occlusion_layer_sdf_collision(int p_layer_index, bool p_sdf_collision);
 	bool get_occlusion_layer_sdf_collision(int p_layer_index) const;
 
+#ifndef PHYSICS_2D_DISABLED
 	// Physics
 	int get_physics_layers_count() const;
 	void add_physics_layer(int p_index = -1);
@@ -452,6 +459,7 @@ public:
 	real_t get_physics_layer_collision_priority(int p_layer_index) const;
 	void set_physics_layer_physics_material(int p_layer_index, Ref<PhysicsMaterial> p_physics_material);
 	Ref<PhysicsMaterial> get_physics_layer_physics_material(int p_layer_index) const;
+#endif // PHYSICS_2D_DISABLED
 
 	// Terrain sets
 	int get_terrain_sets_count() const;
@@ -685,9 +693,11 @@ public:
 	virtual void add_occlusion_layer(int p_index) override;
 	virtual void move_occlusion_layer(int p_from_index, int p_to_pos) override;
 	virtual void remove_occlusion_layer(int p_index) override;
+#ifndef PHYSICS_2D_DISABLED
 	virtual void add_physics_layer(int p_index) override;
 	virtual void move_physics_layer(int p_from_index, int p_to_pos) override;
 	virtual void remove_physics_layer(int p_index) override;
+#endif // PHYSICS_2D_DISABLED
 	virtual void add_terrain_set(int p_index) override;
 	virtual void move_terrain_set(int p_from_index, int p_to_pos) override;
 	virtual void remove_terrain_set(int p_index) override;
@@ -852,6 +862,7 @@ private:
 	};
 	Vector<OcclusionLayerTileData> occluders;
 
+#ifndef PHYSICS_2D_DISABLED
 	// Physics
 	struct PhysicsLayerTileData {
 		struct PolygonShapeTileData {
@@ -867,7 +878,8 @@ private:
 		Vector<PolygonShapeTileData> polygons;
 	};
 	Vector<PhysicsLayerTileData> physics;
-	// TODO add support for areas.
+// TODO add support for areas.
+#endif // PHYSICS_2D_DISABLED
 
 	// Terrain
 	int terrain_set = -1;
@@ -907,9 +919,11 @@ public:
 	void add_occlusion_layer(int p_index);
 	void move_occlusion_layer(int p_from_index, int p_to_pos);
 	void remove_occlusion_layer(int p_index);
+#ifndef PHYSICS_2D_DISABLED
 	void add_physics_layer(int p_index);
 	void move_physics_layer(int p_from_index, int p_to_pos);
 	void remove_physics_layer(int p_index);
+#endif // PHYSICS_2D_DISABLED
 	void add_terrain_set(int p_index);
 	void move_terrain_set(int p_from_index, int p_to_pos);
 	void remove_terrain_set(int p_index);
@@ -959,6 +973,7 @@ public:
 	void set_occluder_polygon(int p_layer_id, int p_polygon_index, const Ref<OccluderPolygon2D> &p_occluder_polygon);
 	Ref<OccluderPolygon2D> get_occluder_polygon(int p_layer_id, int p_polygon_index, bool p_flip_h = false, bool p_flip_v = false, bool p_transpose = false) const;
 
+#ifndef PHYSICS_2D_DISABLED
 	// Physics
 	void set_constant_linear_velocity(int p_layer_id, const Vector2 &p_velocity);
 	Vector2 get_constant_linear_velocity(int p_layer_id) const;
@@ -976,6 +991,7 @@ public:
 	float get_collision_polygon_one_way_margin(int p_layer_id, int p_polygon_index) const;
 	int get_collision_polygon_shapes_count(int p_layer_id, int p_polygon_index) const;
 	Ref<ConvexPolygonShape2D> get_collision_polygon_shape(int p_layer_id, int p_polygon_index, int shape_index, bool p_flip_h = false, bool p_flip_v = false, bool p_transpose = false) const;
+#endif // PHYSICS_2D_DISABLED
 
 	// Terrain
 	void set_terrain_set(int p_terrain_id);

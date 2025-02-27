@@ -597,6 +597,7 @@ TileMapCell TileMap::get_cell(int p_layer, const Vector2i &p_coords, bool p_use_
 	TILEMAP_CALL_FOR_LAYER_V(p_layer, TileMapCell(), get_cell, p_coords);
 }
 
+#ifndef PHYSICS_2D_DISABLED
 Vector2i TileMap::get_coords_for_body_rid(RID p_physics_body) {
 	for (const TileMapLayer *layer : layers) {
 		if (layer->has_body_rid(p_physics_body)) {
@@ -614,6 +615,7 @@ int TileMap::get_layer_for_body_rid(RID p_physics_body) {
 	}
 	ERR_FAIL_V_MSG(-1, vformat("No tiles for the given body RID %d.", p_physics_body.get_id()));
 }
+#endif // PHYSICS_2D_DISABLED
 
 void TileMap::fix_invalid_tiles() {
 	for (TileMapLayer *layer : layers) {
@@ -947,8 +949,10 @@ void TileMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_cell_flipped_v", "layer", "coords", "use_proxies"), &TileMap::is_cell_flipped_v, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("is_cell_transposed", "layer", "coords", "use_proxies"), &TileMap::is_cell_transposed, DEFVAL(false));
 
+#ifndef PHYSICS_2D_DISABLED
 	ClassDB::bind_method(D_METHOD("get_coords_for_body_rid", "body"), &TileMap::get_coords_for_body_rid);
 	ClassDB::bind_method(D_METHOD("get_layer_for_body_rid", "body"), &TileMap::get_layer_for_body_rid);
+#endif // PHYSICS_2D_DISABLED
 
 	ClassDB::bind_method(D_METHOD("get_pattern", "layer", "coords_array"), &TileMap::get_pattern);
 	ClassDB::bind_method(D_METHOD("map_pattern", "position_in_tilemap", "coords_in_pattern", "pattern"), &TileMap::map_pattern);
