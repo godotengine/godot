@@ -236,6 +236,8 @@ public:
 
 	virtual List<String> get_binary_extensions(const Ref<EditorExportPreset> &p_preset) const override;
 
+	String _get_deprecated_plugins_names(const Ref<EditorExportPreset> &p_preset) const;
+
 	String _get_plugins_names(const Ref<EditorExportPreset> &p_preset) const;
 
 	String _resolve_export_plugin_android_library_path(const String &p_android_library_path) const;
