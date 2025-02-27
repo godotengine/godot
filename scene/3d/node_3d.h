@@ -151,6 +151,7 @@ private:
 	void _update_gizmos();
 	void _notify_dirty();
 	void _propagate_transform_changed(Node3D *p_origin);
+	void _propagate_transform_changed(Node3D *p_origin, bool p_check_physics_interpolation_state);
 
 	void _propagate_visibility_changed();
 
