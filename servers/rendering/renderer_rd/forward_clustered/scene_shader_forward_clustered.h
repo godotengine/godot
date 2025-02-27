@@ -154,6 +154,18 @@ public:
 			DEPTH_TEST_ENABLED
 		};
 
+		enum DepthFunction {
+			DEPTH_FUNCTION_LESS_OR_EQUAL,
+			DEPTH_FUNCTION_LESS,
+			DEPTH_FUNCTION_EQUAL,
+			DEPTH_FUNCTION_GREATER,
+			DEPTH_FUNCTION_NOT_EQUAL,
+			DEPTH_FUNCTION_GREATER_OR_EQUAL,
+			DEPTH_FUNCTION_ALWAYS,
+			DEPTH_FUNCTION_NEVER,
+			DEPTH_FUNCTION_MAX
+		};
+
 		enum CullVariant {
 			CULL_VARIANT_NORMAL,
 			CULL_VARIANT_REVERSED,
@@ -211,6 +223,7 @@ public:
 		String code;
 
 		DepthDraw depth_draw = DEPTH_DRAW_OPAQUE;
+		DepthFunction depth_function = DEPTH_FUNCTION_GREATER_OR_EQUAL;
 		DepthTest depth_test = DEPTH_TEST_ENABLED;
 
 		int blend_mode = BLEND_MODE_MIX;
