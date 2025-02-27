@@ -4526,6 +4526,13 @@ bool GDScriptParser::export_annotations(AnnotationNode *p_annotation, Node *p_ta
 		if (export_type.builtin_type == Variant::DICTIONARY) {
 			variable->export_info.type = Variant::DICTIONARY;
 		}
+	} else if (p_annotation->name == SNAME("@export_from_dir")) {
+		use_default_variable_type_check = false;
+
+		if (!ClassDB::is_parent_class(export_type.native_type, SNAME("Resource"))) {
+			push_error(R"(Export type can only be a resource.)", p_annotation);
+			return false;
+		}
 	} else if (p_annotation->name == SNAME("@export")) {
 		use_default_variable_type_check = false;
 
