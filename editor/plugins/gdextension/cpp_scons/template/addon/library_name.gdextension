@@ -8,8 +8,8 @@ reloadable = true
 
 macos.debug = "bin/lib__LIBRARY_NAME__.macos.debug.framework"
 macos.release = "bin/lib__LIBRARY_NAME__.macos.release.framework"
-windows.debug.x86_64 = "bin/lib__LIBRARY_NAME__.windows.debug.x86_64.dll"
-windows.release.x86_64 = "bin/lib__LIBRARY_NAME__.windows.release.x86_64.dll"
+windows.debug.x86_64 = "bin/__LIBRARY_NAME__.windows.debug.x86_64.dll"
+windows.release.x86_64 = "bin/__LIBRARY_NAME__.windows.release.x86_64.dll"
 linux.debug.x86_64 = "bin/lib__LIBRARY_NAME__.linux.debug.x86_64.so"
 linux.release.x86_64 = "bin/lib__LIBRARY_NAME__.linux.release.x86_64.so"
 linux.debug.arm64 = "bin/lib__LIBRARY_NAME__.linux.debug.arm64.so"
