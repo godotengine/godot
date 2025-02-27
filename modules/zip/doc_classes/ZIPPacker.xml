@@ -45,6 +45,13 @@
 				This must be called before everything else.
 			</description>
 		</method>
+		<method name="set_compression_level">
+			<return type="void" />
+			<param index="0" name="compression_level" type="int" enum="ZIPPacker.CompressionLevel" />
+			<description>
+				Set the compression level used when [method start_file] is called.
+			</description>
+		</method>
 		<method name="start_file">
 			<return type="int" enum="Error" />
 			<param index="0" name="path" type="String" />
@@ -71,6 +78,18 @@
 		</constant>
 		<constant name="APPEND_ADDINZIP" value="2" enum="ZipAppend">
 			Add new files to the existing zip archive at the given path.
+		</constant>
+		<constant name="COMPRESSION_NONE" value="1" enum="CompressionLevel">
+			Start a file with no compression.
+		</constant>
+		<constant name="COMPRESSION_DEFAULT" value="0" enum="CompressionLevel">
+			Start a file with the default compression level.
+		</constant>
+		<constant name="COMPRESSION_BEST" value="3" enum="CompressionLevel">
+			Start a file with the the best compression level.
+		</constant>
+		<constant name="COMPRESSION_BEST_SPEED" value="2" enum="CompressionLevel">
+			Start a file with the the best and fast compression level.
 		</constant>
 	</constants>
 </class>
