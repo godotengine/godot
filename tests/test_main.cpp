@@ -135,7 +135,9 @@
 #include "tests/scene/test_parallax_2d.h"
 #include "tests/scene/test_path_2d.h"
 #include "tests/scene/test_path_follow_2d.h"
+#ifndef PHYSICS_3D_DISABLED
 #include "tests/scene/test_physics_material.h"
+#endif // PHYSICS_3D_DISABLED
 #include "tests/scene/test_sprite_frames.h"
 #include "tests/scene/test_style_box_texture.h"
 #include "tests/scene/test_texture_progress_bar.h"
@@ -176,7 +178,9 @@
 #include "tests/scene/test_arraymesh.h"
 #include "tests/scene/test_camera_3d.h"
 #include "tests/scene/test_gltf_document.h"
+#ifndef PHYSICS_3D_DISABLED
 #include "tests/scene/test_height_map_shape_3d.h"
+#endif // PHYSICS_3D_DISABLED
 #include "tests/scene/test_path_3d.h"
 #include "tests/scene/test_path_follow_3d.h"
 #include "tests/scene/test_primitives.h"
@@ -194,12 +198,14 @@
 #include "servers/navigation_server_2d.h"
 #include "servers/navigation_server_3d.h"
 #endif // _3D_DISABLED
+#ifndef PHYSICS_2D_DISABLED
 #include "servers/physics_server_2d.h"
 #include "servers/physics_server_2d_dummy.h"
-#ifndef _3D_DISABLED
+#endif // PHYSICS_2D_DISABLED
+#ifndef PHYSICS_3D_DISABLED
 #include "servers/physics_server_3d.h"
 #include "servers/physics_server_3d_dummy.h"
-#endif // _3D_DISABLED
+#endif // PHYSICS_3D_DISABLED
 #include "servers/rendering/rendering_server_default.h"
 
 int test_main(int argc, char *argv[]) {
@@ -274,9 +280,13 @@ struct GodotTestCaseListener : public doctest::IReporter {
 
 	SignalWatcher *signal_watcher = nullptr;
 
+#ifndef PHYSICS_2D_DISABLED
 	PhysicsServer2D *physics_server_2d = nullptr;
-#ifndef _3D_DISABLED
+#endif // PHYSICS_2D_DISABLED
+#ifndef PHYSICS_3D_DISABLED
 	PhysicsServer3D *physics_server_3d = nullptr;
+#endif // PHYSICS_3D_DISABLED
+#ifndef _3D_DISABLED
 	NavigationServer3D *navigation_server_3d = nullptr;
 	NavigationServer2D *navigation_server_2d = nullptr;
 #endif // _3D_DISABLED
@@ -311,19 +321,21 @@ struct GodotTestCaseListener : public doctest::IReporter {
 			ThemeDB::get_singleton()->finalize_theme();
 			ThemeDB::get_singleton()->initialize_theme();
 
-#ifndef _3D_DISABLED
+#ifndef PHYSICS_3D_DISABLED
 			physics_server_3d = PhysicsServer3DManager::get_singleton()->new_default_server();
 			if (!physics_server_3d) {
 				physics_server_3d = memnew(PhysicsServer3DDummy);
 			}
 			physics_server_3d->init();
-#endif // _3D_DISABLED
+#endif // PHYSICS_3D_DISABLED
 
+#ifndef PHYSICS_2D_DISABLED
 			physics_server_2d = PhysicsServer2DManager::get_singleton()->new_default_server();
 			if (!physics_server_2d) {
 				physics_server_2d = memnew(PhysicsServer2DDummy);
 			}
 			physics_server_2d->init();
+#endif // PHYSICS_2D_DISABLED
 
 #ifndef _3D_DISABLED
 			ERR_PRINT_OFF;
@@ -411,19 +423,21 @@ struct GodotTestCaseListener : public doctest::IReporter {
 		}
 #endif // _3D_DISABLED
 
-#ifndef _3D_DISABLED
+#ifndef PHYSICS_3D_DISABLED
 		if (physics_server_3d) {
 			physics_server_3d->finish();
 			memdelete(physics_server_3d);
 			physics_server_3d = nullptr;
 		}
-#endif // _3D_DISABLED
+#endif // PHYSICS_3D_DISABLED
 
+#ifndef PHYSICS_2D_DISABLED
 		if (physics_server_2d) {
 			physics_server_2d->finish();
 			memdelete(physics_server_2d);
 			physics_server_2d = nullptr;
 		}
+#endif // PHYSICS_2D_DISABLED
 
 		if (Input::get_singleton()) {
 			memdelete(Input::get_singleton());

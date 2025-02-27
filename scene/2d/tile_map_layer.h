@@ -108,9 +108,11 @@ struct CellData {
 	SelfList<CellData> rendering_quadrant_list_element;
 	LocalVector<LocalVector<RID>> occluders;
 
+#ifndef PHYSICS_2D_DISABLED
 	// Physics.
 	Ref<PhysicsQuadrant> physics_quadrant;
 	SelfList<CellData> physics_quadrant_list_element;
+#endif // PHYSICS_2D_DISABLED
 
 	// Navigation.
 	LocalVector<RID> navigation_regions;
@@ -432,6 +434,7 @@ private:
 	void _rendering_draw_cell_debug(const RID &p_canvas_item, const Vector2 &p_quadrant_pos, const CellData &r_cell_data);
 #endif // DEBUG_ENABLED
 
+#ifndef PHYSICS_2D_DISABLED
 	HashMap<Vector2i, Ref<PhysicsQuadrant>> physics_quadrant_map;
 	HashMap<RID, Vector2i> bodies_coords; // Mapping for RID to coords.
 	bool _physics_was_cleaned_up = false;
@@ -443,6 +446,7 @@ private:
 #ifdef DEBUG_ENABLED
 	void _physics_draw_quadrant_debug(const RID &p_canvas_item, DebugQuadrant &r_debug_quadrant);
 #endif // DEBUG_ENABLED
+#endif // PHYSICS_2D_DISABLED
 
 	bool _navigation_was_cleaned_up = false;
 	void _navigation_update(bool p_force_cleanup);

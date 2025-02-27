@@ -32,9 +32,9 @@
 #include "skeleton_3d.compat.inc"
 
 #include "scene/3d/skeleton_modifier_3d.h"
-#ifndef DISABLE_DEPRECATED
-#include "scene/3d/physical_bone_simulator_3d.h"
-#endif // _DISABLE_DEPRECATED
+#if !defined(DISABLE_DEPRECATED) && !defined(PHYSICS_3D_DISABLED)
+#include "scene/3d/physics/physical_bone_simulator_3d.h"
+#endif // _DISABLE_DEPRECATED && PHYSICS_3D_DISABLED
 
 void SkinReference::_skin_changed() {
 	if (skeleton_node) {
@@ -67,12 +67,12 @@ SkinReference::~SkinReference() {
 ///////////////////////////////////////
 
 bool Skeleton3D::_set(const StringName &p_path, const Variant &p_value) {
-#ifndef DISABLE_DEPRECATED
+#if !defined(DISABLE_DEPRECATED) && !defined(PHYSICS_3D_DISABLED)
 	if (p_path == SNAME("animate_physical_bones")) {
 		set_animate_physical_bones(p_value);
 		return true;
 	}
-#endif
+#endif // _DISABLE_DEPRECATED && PHYSICS_3D_DISABLED
 	String path = p_path;
 
 	if (!path.begins_with("bones/")) {
@@ -139,12 +139,12 @@ bool Skeleton3D::_set(const StringName &p_path, const Variant &p_value) {
 }
 
 bool Skeleton3D::_get(const StringName &p_path, Variant &r_ret) const {
-#ifndef DISABLE_DEPRECATED
+#if !defined(DISABLE_DEPRECATED) && !defined(PHYSICS_3D_DISABLED)
 	if (p_path == SNAME("animate_physical_bones")) {
 		r_ret = get_animate_physical_bones();
 		return true;
 	}
-#endif
+#endif // _DISABLE_DEPRECATED && PHYSICS_3D_DISABLED
 	String path = p_path;
 
 	if (!path.begins_with("bones/")) {
@@ -297,7 +297,7 @@ StringName Skeleton3D::get_concatenated_bone_names() const {
 	return concatenated_bone_names;
 }
 
-#ifndef DISABLE_DEPRECATED
+#if !defined(DISABLE_DEPRECATED) && !defined(PHYSICS_3D_DISABLED)
 void Skeleton3D::setup_simulator() {
 	if (simulator && simulator->get_parent() == this) {
 		remove_child(simulator);
@@ -310,7 +310,7 @@ void Skeleton3D::setup_simulator() {
 	add_child(simulator, false, INTERNAL_MODE_BACK);
 	set_animate_physical_bones(animate_physical_bones);
 }
-#endif // _DISABLE_DEPRECATED
+#endif // _DISABLE_DEPRECATED && PHYSICS_3D_DISABLED
 
 void Skeleton3D::_notification(int p_what) {
 	switch (p_what) {
@@ -319,9 +319,9 @@ void Skeleton3D::_notification(int p_what) {
 			_make_dirty();
 			_make_modifiers_dirty();
 			force_update_all_dirty_bones();
-#ifndef DISABLE_DEPRECATED
+#if !defined(DISABLE_DEPRECATED) && !defined(PHYSICS_3D_DISABLED)
 			setup_simulator();
-#endif // _DISABLE_DEPRECATED
+#endif // _DISABLE_DEPRECATED && PHYSICS_3D_DISABLED
 			update_flags = UPDATE_FLAG_POSE;
 			_notification(NOTIFICATION_UPDATE_SKELETON);
 		} break;
@@ -1320,6 +1320,7 @@ void Skeleton3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_bone_global_pose_override", "bone_idx"), &Skeleton3D::get_bone_global_pose_override);
 	ClassDB::bind_method(D_METHOD("get_bone_global_pose_no_override", "bone_idx"), &Skeleton3D::get_bone_global_pose_no_override);
 
+#ifndef PHYSICS_3D_DISABLED
 	ClassDB::bind_method(D_METHOD("set_animate_physical_bones", "enabled"), &Skeleton3D::set_animate_physical_bones);
 	ClassDB::bind_method(D_METHOD("get_animate_physical_bones"), &Skeleton3D::get_animate_physical_bones);
 	ClassDB::bind_method(D_METHOD("physical_bones_stop_simulation"), &Skeleton3D::physical_bones_stop_simulation);
@@ -1329,6 +1330,7 @@ void Skeleton3D::_bind_methods() {
 
 	ADD_GROUP("Deprecated", "");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "animate_physical_bones"), "set_animate_physical_bones", "get_animate_physical_bones");
+#endif // PHYSICS_3D_DISABLED
 #endif // _DISABLE_DEPRECATED
 }
 
@@ -1365,6 +1367,7 @@ Transform3D Skeleton3D::get_bone_global_pose_no_override(int p_bone) const {
 	return bones[p_bone].pose_global_no_override;
 }
 
+#ifndef PHYSICS_3D_DISABLED
 Node *Skeleton3D::get_simulator() {
 	return simulator;
 }
@@ -1415,6 +1418,7 @@ void Skeleton3D::physical_bones_remove_collision_exception(RID p_exception) {
 	}
 	sim->physical_bones_remove_collision_exception(p_exception);
 }
+#endif // PHYSICS_3D_DISABLED
 #endif // _DISABLE_DEPRECATED
 
 Skeleton3D::Skeleton3D() {
