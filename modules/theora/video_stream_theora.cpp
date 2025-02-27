@@ -685,10 +685,11 @@ void VideoStreamPlaybackTheora::seek(double p_time) {
 	double last_audio_time = 0;
 	double last_video_time = 0;
 	bool first_frame_decoded = false;
-	bool start_audio = false;
-	bool start_video = false;
+	bool start_audio = (audio_granulepos == 0);
+	bool start_video = (video_granulepos == (1 << ti.keyframe_granule_shift));
 	bool keyframe_found = false;
 	uint64_t current_frame = 0;
+
 	// Read from the streams skipping pages until we reach the granules we want. We won't skip pages from both video and
 	// audio streams, only one of them, until decoding of both starts.
 	// video_granulepos and audio_granulepos are guaranteed to be found by checking the granulepos in the packets, no
@@ -709,7 +710,7 @@ void VideoStreamPlaybackTheora::seek(double p_time) {
 					vorbis_synthesis_read(&vd, samples_consumed);
 					last_audio_time += (double)samples_consumed / vi.rate;
 				}
-			} else if (op.granulepos >= audio_granulepos || audio_granulepos == 0) {
+			} else if (op.granulepos >= audio_granulepos) {
 				last_audio_time = vorbis_granule_time(&vd, op.granulepos);
 				// Start tracking audio now. This won't produce any samples but will update the decoder state.
 				if (vorbis_synthesis_trackonly(&vb, &op) == 0) {
