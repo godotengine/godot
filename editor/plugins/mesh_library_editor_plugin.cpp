@@ -146,9 +146,12 @@ void MeshLibraryEditor::_import_scene_parse_node(Ref<MeshLibrary> p_library, Has
 	p_mesh_instances[item_id] = mesh_instance_node;
 
 	Ref<Mesh> item_mesh = source_mesh->duplicate();
+	Ref<Material> material_override = mesh_instance_node->get_material_override();
 	for (int i = 0; i < item_mesh->get_surface_count(); i++) {
 		Ref<Material> surface_override_material = mesh_instance_node->get_surface_override_material(i);
-		if (surface_override_material.is_valid()) {
+		if (material_override.is_valid()) {
+			item_mesh->surface_set_material(i, material_override);
+		} else if (surface_override_material.is_valid()) {
 			item_mesh->surface_set_material(i, surface_override_material);
 		}
 	}
