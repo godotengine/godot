@@ -1837,7 +1837,7 @@ RendererCanvasRenderRD::RendererCanvasRenderRD() {
 		actions.base_varying_index = 5;
 
 		actions.global_buffer_array_variable = "global_shader_uniforms.data";
-		actions.instance_uniform_index_variable = "draw_data.instance_uniforms_ofs";
+		actions.instance_uniform_index_variable = "instances.data[instance_index].instance_uniforms_ofs";
 
 		shader.compiler.initialize(actions);
 	}
