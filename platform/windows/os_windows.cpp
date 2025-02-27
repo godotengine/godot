@@ -106,11 +106,6 @@ __declspec(dllexport) void NoHotPatch() {} // Disable Nahimic code injection.
 #define DWRITE_FONT_WEIGHT_SEMI_LIGHT (DWRITE_FONT_WEIGHT)350
 #endif
 
-#if defined(__GNUC__)
-// Workaround GCC warning from -Wcast-function-type.
-#define GetProcAddress (void *)GetProcAddress
-#endif
-
 static String fix_path(const String &p_path) {
 	String path = p_path;
 	if (p_path.is_relative_path()) {
@@ -503,8 +498,8 @@ Error OS_Windows::open_dynamic_library(const String &p_path, void *&p_library_ha
 	typedef DLL_DIRECTORY_COOKIE(WINAPI * PAddDllDirectory)(PCWSTR);
 	typedef BOOL(WINAPI * PRemoveDllDirectory)(DLL_DIRECTORY_COOKIE);
 
-	PAddDllDirectory add_dll_directory = (PAddDllDirectory)GetProcAddress(GetModuleHandle("kernel32.dll"), "AddDllDirectory");
-	PRemoveDllDirectory remove_dll_directory = (PRemoveDllDirectory)GetProcAddress(GetModuleHandle("kernel32.dll"), "RemoveDllDirectory");
+	PAddDllDirectory add_dll_directory = (PAddDllDirectory)(void *)GetProcAddress(GetModuleHandle("kernel32.dll"), "AddDllDirectory");
+	PRemoveDllDirectory remove_dll_directory = (PRemoveDllDirectory)(void *)GetProcAddress(GetModuleHandle("kernel32.dll"), "RemoveDllDirectory");
 
 	bool has_dll_directory_api = ((add_dll_directory != nullptr) && (remove_dll_directory != nullptr));
 	DLL_DIRECTORY_COOKIE cookie = nullptr;
@@ -603,7 +598,7 @@ String OS_Windows::get_distribution_name() const {
 }
 
 String OS_Windows::get_version() const {
-	RtlGetVersionPtr version_ptr = (RtlGetVersionPtr)GetProcAddress(GetModuleHandle("ntdll.dll"), "RtlGetVersion");
+	RtlGetVersionPtr version_ptr = (RtlGetVersionPtr)(void *)GetProcAddress(GetModuleHandle("ntdll.dll"), "RtlGetVersion");
 	if (version_ptr != nullptr) {
 		RTL_OSVERSIONINFOEXW fow;
 		ZeroMemory(&fow, sizeof(fow));
@@ -616,7 +611,7 @@ String OS_Windows::get_version() const {
 }
 
 String OS_Windows::get_version_alias() const {
-	RtlGetVersionPtr version_ptr = (RtlGetVersionPtr)GetProcAddress(GetModuleHandle("ntdll.dll"), "RtlGetVersion");
+	RtlGetVersionPtr version_ptr = (RtlGetVersionPtr)(void *)GetProcAddress(GetModuleHandle("ntdll.dll"), "RtlGetVersion");
 	if (version_ptr != nullptr) {
 		RTL_OSVERSIONINFOEXW fow;
 		ZeroMemory(&fow, sizeof(fow));
@@ -789,7 +784,7 @@ bool OS_Windows::get_user_prefers_integrated_gpu() const {
 		HMODULE kernel32 = GetModuleHandleW(L"kernel32.dll");
 		if (kernel32) {
 			using GetCurrentApplicationUserModelIdPtr = LONG(WINAPI *)(UINT32 * length, PWSTR id);
-			GetCurrentApplicationUserModelIdPtr GetCurrentApplicationUserModelId = (GetCurrentApplicationUserModelIdPtr)GetProcAddress(kernel32, "GetCurrentApplicationUserModelId");
+			GetCurrentApplicationUserModelIdPtr GetCurrentApplicationUserModelId = (GetCurrentApplicationUserModelIdPtr)(void *)GetProcAddress(kernel32, "GetCurrentApplicationUserModelId");
 
 			if (GetCurrentApplicationUserModelId) {
 				UINT32 length = sizeof(value_name) / sizeof(value_name[0]);
@@ -991,7 +986,7 @@ Dictionary OS_Windows::get_memory_info() const {
 	GetPerformanceInfo(&pref_info, sizeof(pref_info));
 
 	typedef void(WINAPI * PGetCurrentThreadStackLimits)(PULONG_PTR, PULONG_PTR);
-	PGetCurrentThreadStackLimits GetCurrentThreadStackLimits = (PGetCurrentThreadStackLimits)GetProcAddress(GetModuleHandleA("kernel32.dll"), "GetCurrentThreadStackLimits");
+	PGetCurrentThreadStackLimits GetCurrentThreadStackLimits = (PGetCurrentThreadStackLimits)(void *)GetProcAddress(GetModuleHandleA("kernel32.dll"), "GetCurrentThreadStackLimits");
 
 	ULONG_PTR LowLimit = 0;
 	ULONG_PTR HighLimit = 0;

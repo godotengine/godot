@@ -135,7 +135,7 @@ typedef BOOL(WINAPI *LPFN_ISWOW64PROCESS)(HANDLE, PBOOL);
 BOOL is_wow64() {
 	BOOL wow64 = FALSE;
 
-	LPFN_ISWOW64PROCESS fnIsWow64Process = (LPFN_ISWOW64PROCESS)GetProcAddress(GetModuleHandle(TEXT("kernel32")), "IsWow64Process");
+	LPFN_ISWOW64PROCESS fnIsWow64Process = (LPFN_ISWOW64PROCESS)(void *)GetProcAddress(GetModuleHandle(TEXT("kernel32")), "IsWow64Process");
 
 	if (fnIsWow64Process) {
 		if (!fnIsWow64Process(GetCurrentProcess(), &wow64)) {

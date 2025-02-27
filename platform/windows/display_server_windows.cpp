@@ -83,11 +83,6 @@
 
 #define WM_INDICATOR_CALLBACK_MESSAGE (WM_USER + 1)
 
-#if defined(__GNUC__)
-// Workaround GCC warning from -Wcast-function-type.
-#define GetProcAddress (void *)GetProcAddress
-#endif
-
 static String format_error_message(DWORD id) {
 	LPWSTR messageBuffer = nullptr;
 	size_t size = FormatMessageW(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
@@ -1294,7 +1289,7 @@ static int QueryDpiForMonitor(HMONITOR hmon, _MonitorDpiType dpiType = MDT_Defau
 
 	if (Shcore == nullptr) {
 		Shcore = LoadLibraryW(L"Shcore.dll");
-		getDPIForMonitor = Shcore ? (GetDPIForMonitor_t)GetProcAddress(Shcore, "GetDpiForMonitor") : nullptr;
+		getDPIForMonitor = Shcore ? (GetDPIForMonitor_t)(void *)GetProcAddress(Shcore, "GetDpiForMonitor") : nullptr;
 
 		if ((Shcore == nullptr) || (getDPIForMonitor == nullptr)) {
 			if (Shcore) {
@@ -3137,7 +3132,7 @@ Error DisplayServerWindows::dialog_show(String p_title, String p_description, Ve
 	if (comctl) {
 		typedef HRESULT(WINAPI * TaskDialogIndirectPtr)(const TASKDIALOGCONFIG *pTaskConfig, int *pnButton, int *pnRadioButton, BOOL *pfVerificationFlagChecked);
 
-		TaskDialogIndirectPtr task_dialog_indirect = (TaskDialogIndirectPtr)GetProcAddress(comctl, "TaskDialogIndirect");
+		TaskDialogIndirectPtr task_dialog_indirect = (TaskDialogIndirectPtr)(void *)GetProcAddress(comctl, "TaskDialogIndirect");
 		int button_pressed;
 
 		if (task_dialog_indirect && SUCCEEDED(task_dialog_indirect(&config, &button_pressed, nullptr, nullptr))) {
@@ -6592,9 +6587,9 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 
 	HMODULE nt_lib = LoadLibraryW(L"ntdll.dll");
 	if (nt_lib) {
-		WineGetVersionPtr wine_get_version = (WineGetVersionPtr)GetProcAddress(nt_lib, "wine_get_version"); // Do not read Windows build number under Wine, it can be set to arbitrary value.
+		WineGetVersionPtr wine_get_version = (WineGetVersionPtr)(void *)GetProcAddress(nt_lib, "wine_get_version"); // Do not read Windows build number under Wine, it can be set to arbitrary value.
 		if (!wine_get_version) {
-			RtlGetVersionPtr RtlGetVersion = (RtlGetVersionPtr)GetProcAddress(nt_lib, "RtlGetVersion");
+			RtlGetVersionPtr RtlGetVersion = (RtlGetVersionPtr)(void *)GetProcAddress(nt_lib, "RtlGetVersion");
 			if (RtlGetVersion) {
 				RtlGetVersion(&os_ver);
 			}
@@ -6605,28 +6600,28 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 	// Load Shell API.
 	HMODULE shellapi_lib = LoadLibraryW(L"shlwapi.dll");
 	if (shellapi_lib) {
-		load_indirect_string = (SHLoadIndirectStringPtr)GetProcAddress(shellapi_lib, "SHLoadIndirectString");
+		load_indirect_string = (SHLoadIndirectStringPtr)(void *)GetProcAddress(shellapi_lib, "SHLoadIndirectString");
 	}
 
 	// Load UXTheme, available on Windows 10+ only.
 	if (os_ver.dwBuildNumber >= 10240) {
 		HMODULE ux_theme_lib = LoadLibraryW(L"uxtheme.dll");
 		if (ux_theme_lib) {
-			ShouldAppsUseDarkMode = (ShouldAppsUseDarkModePtr)GetProcAddress(ux_theme_lib, MAKEINTRESOURCEA(132));
-			GetImmersiveColorFromColorSetEx = (GetImmersiveColorFromColorSetExPtr)GetProcAddress(ux_theme_lib, MAKEINTRESOURCEA(95));
-			GetImmersiveColorTypeFromName = (GetImmersiveColorTypeFromNamePtr)GetProcAddress(ux_theme_lib, MAKEINTRESOURCEA(96));
-			GetImmersiveUserColorSetPreference = (GetImmersiveUserColorSetPreferencePtr)GetProcAddress(ux_theme_lib, MAKEINTRESOURCEA(98));
+			ShouldAppsUseDarkMode = (ShouldAppsUseDarkModePtr)(void *)GetProcAddress(ux_theme_lib, MAKEINTRESOURCEA(132));
+			GetImmersiveColorFromColorSetEx = (GetImmersiveColorFromColorSetExPtr)(void *)GetProcAddress(ux_theme_lib, MAKEINTRESOURCEA(95));
+			GetImmersiveColorTypeFromName = (GetImmersiveColorTypeFromNamePtr)(void *)GetProcAddress(ux_theme_lib, MAKEINTRESOURCEA(96));
+			GetImmersiveUserColorSetPreference = (GetImmersiveUserColorSetPreferencePtr)(void *)GetProcAddress(ux_theme_lib, MAKEINTRESOURCEA(98));
 			if (os_ver.dwBuildNumber >= 17763) { // Windows 10 Redstone 5 (1809)+ only.
 				AllowDarkModeForAppPtr AllowDarkModeForApp = nullptr;
 				SetPreferredAppModePtr SetPreferredAppMode = nullptr;
 				FlushMenuThemesPtr FlushMenuThemes = nullptr;
 				if (os_ver.dwBuildNumber < 18362) { // Windows 10 Redstone 5 (1809) and 19H1 (1903) only.
-					AllowDarkModeForApp = (AllowDarkModeForAppPtr)GetProcAddress(ux_theme_lib, MAKEINTRESOURCEA(135));
+					AllowDarkModeForApp = (AllowDarkModeForAppPtr)(void *)GetProcAddress(ux_theme_lib, MAKEINTRESOURCEA(135));
 				} else { // Windows 10 19H2 (1909)+ only.
-					SetPreferredAppMode = (SetPreferredAppModePtr)GetProcAddress(ux_theme_lib, MAKEINTRESOURCEA(135));
-					FlushMenuThemes = (FlushMenuThemesPtr)GetProcAddress(ux_theme_lib, MAKEINTRESOURCEA(136));
+					SetPreferredAppMode = (SetPreferredAppModePtr)(void *)GetProcAddress(ux_theme_lib, MAKEINTRESOURCEA(135));
+					FlushMenuThemes = (FlushMenuThemesPtr)(void *)GetProcAddress(ux_theme_lib, MAKEINTRESOURCEA(136));
 				}
-				RefreshImmersiveColorPolicyStatePtr RefreshImmersiveColorPolicyState = (RefreshImmersiveColorPolicyStatePtr)GetProcAddress(ux_theme_lib, MAKEINTRESOURCEA(104));
+				RefreshImmersiveColorPolicyStatePtr RefreshImmersiveColorPolicyState = (RefreshImmersiveColorPolicyStatePtr)(void *)GetProcAddress(ux_theme_lib, MAKEINTRESOURCEA(104));
 				if (ShouldAppsUseDarkMode) {
 					bool dark_mode = ShouldAppsUseDarkMode();
 					if (SetPreferredAppMode) {
@@ -6659,10 +6654,10 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 	// Note: DPI conversion API, available on Windows 8.1+ only.
 	HMODULE user32_lib = LoadLibraryW(L"user32.dll");
 	if (user32_lib) {
-		win8p_GetPointerType = (GetPointerTypePtr)GetProcAddress(user32_lib, "GetPointerType");
-		win8p_GetPointerPenInfo = (GetPointerPenInfoPtr)GetProcAddress(user32_lib, "GetPointerPenInfo");
-		win81p_LogicalToPhysicalPointForPerMonitorDPI = (LogicalToPhysicalPointForPerMonitorDPIPtr)GetProcAddress(user32_lib, "LogicalToPhysicalPointForPerMonitorDPI");
-		win81p_PhysicalToLogicalPointForPerMonitorDPI = (PhysicalToLogicalPointForPerMonitorDPIPtr)GetProcAddress(user32_lib, "PhysicalToLogicalPointForPerMonitorDPI");
+		win8p_GetPointerType = (GetPointerTypePtr)(void *)GetProcAddress(user32_lib, "GetPointerType");
+		win8p_GetPointerPenInfo = (GetPointerPenInfoPtr)(void *)GetProcAddress(user32_lib, "GetPointerPenInfo");
+		win81p_LogicalToPhysicalPointForPerMonitorDPI = (LogicalToPhysicalPointForPerMonitorDPIPtr)(void *)GetProcAddress(user32_lib, "LogicalToPhysicalPointForPerMonitorDPI");
+		win81p_PhysicalToLogicalPointForPerMonitorDPI = (PhysicalToLogicalPointForPerMonitorDPIPtr)(void *)GetProcAddress(user32_lib, "PhysicalToLogicalPointForPerMonitorDPI");
 
 		winink_available = win8p_GetPointerType && win8p_GetPointerPenInfo;
 	}
@@ -6674,11 +6669,11 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 	// Note: Wacom WinTab driver API for pen input, for devices incompatible with Windows Ink.
 	HMODULE wintab_lib = LoadLibraryW(L"wintab32.dll");
 	if (wintab_lib) {
-		wintab_WTOpen = (WTOpenPtr)GetProcAddress(wintab_lib, "WTOpenW");
-		wintab_WTClose = (WTClosePtr)GetProcAddress(wintab_lib, "WTClose");
-		wintab_WTInfo = (WTInfoPtr)GetProcAddress(wintab_lib, "WTInfoW");
-		wintab_WTPacket = (WTPacketPtr)GetProcAddress(wintab_lib, "WTPacket");
-		wintab_WTEnable = (WTEnablePtr)GetProcAddress(wintab_lib, "WTEnable");
+		wintab_WTOpen = (WTOpenPtr)(void *)GetProcAddress(wintab_lib, "WTOpenW");
+		wintab_WTClose = (WTClosePtr)(void *)GetProcAddress(wintab_lib, "WTClose");
+		wintab_WTInfo = (WTInfoPtr)(void *)GetProcAddress(wintab_lib, "WTInfoW");
+		wintab_WTPacket = (WTPacketPtr)(void *)GetProcAddress(wintab_lib, "WTPacket");
+		wintab_WTEnable = (WTEnablePtr)(void *)GetProcAddress(wintab_lib, "WTEnable");
 
 		wintab_available = wintab_WTOpen && wintab_WTClose && wintab_WTInfo && wintab_WTPacket && wintab_WTEnable;
 	}
@@ -6716,7 +6711,7 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 		if (Shcore != nullptr) {
 			typedef HRESULT(WINAPI * SetProcessDpiAwareness_t)(SHC_PROCESS_DPI_AWARENESS);
 
-			SetProcessDpiAwareness_t SetProcessDpiAwareness = (SetProcessDpiAwareness_t)GetProcAddress(Shcore, "SetProcessDpiAwareness");
+			SetProcessDpiAwareness_t SetProcessDpiAwareness = (SetProcessDpiAwareness_t)(void *)GetProcAddress(Shcore, "SetProcessDpiAwareness");
 
 			if (SetProcessDpiAwareness) {
 				SetProcessDpiAwareness(SHC_PROCESS_SYSTEM_DPI_AWARE);
@@ -6727,7 +6722,7 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 	HMODULE comctl32 = LoadLibraryW(L"comctl32.dll");
 	if (comctl32) {
 		typedef BOOL(WINAPI * InitCommonControlsExPtr)(_In_ const INITCOMMONCONTROLSEX *picce);
-		InitCommonControlsExPtr init_common_controls_ex = (InitCommonControlsExPtr)GetProcAddress(comctl32, "InitCommonControlsEx");
+		InitCommonControlsExPtr init_common_controls_ex = (InitCommonControlsExPtr)(void *)GetProcAddress(comctl32, "InitCommonControlsEx");
 
 		// Fails if the incorrect version was loaded. Probably not a big enough deal to print an error about.
 		if (init_common_controls_ex) {
@@ -6849,7 +6844,7 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 #else
 		typedef BOOL(WINAPI * IsWow64Process2Ptr)(HANDLE, USHORT *, USHORT *);
 
-		IsWow64Process2Ptr IsWow64Process2 = (IsWow64Process2Ptr)GetProcAddress(GetModuleHandle(TEXT("kernel32")), "IsWow64Process2");
+		IsWow64Process2Ptr IsWow64Process2 = (IsWow64Process2Ptr)(void *)GetProcAddress(GetModuleHandle(TEXT("kernel32")), "IsWow64Process2");
 		if (IsWow64Process2) {
 			USHORT process_arch = 0;
 			USHORT machine_arch = 0;
