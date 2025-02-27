@@ -230,11 +230,25 @@
 				Registers the given extension as a composition layer provider.
 			</description>
 		</method>
+		<method name="register_frame_info_extension">
+			<return type="void" />
+			<param index="0" name="extension" type="OpenXRExtensionWrapper" />
+			<description>
+				Registers the given extension as modifying frame info via the [method OpenXRExtensionWrapper._set_frame_wait_info_and_get_next_pointer], [method OpenXRExtensionWrapper._set_view_locate_info_and_get_next_pointer], or [method OpenXRExtensionWrapper._set_frame_end_info_and_get_next_pointer] virtual methods.
+			</description>
+		</method>
 		<method name="register_projection_views_extension">
 			<return type="void" />
 			<param index="0" name="extension" type="OpenXRExtensionWrapper" />
 			<description>
 				Registers the given extension as a provider of additional data structures to projections views.
+			</description>
+		</method>
+		<method name="set_custom_play_space">
+			<return type="void" />
+			<param index="0" name="space" type="const void*" />
+			<description>
+				Sets the reference space used by OpenXR to the given [url=https://registry.khronos.org/OpenXR/specs/1.0/man/html/XrSpace.html]XrSpace[/url] (cast to a [code]void *[/code]).
 			</description>
 		</method>
 		<method name="set_emulate_environment_blend_mode_alpha_blend">
@@ -293,6 +307,13 @@
 			<param index="0" name="extension" type="OpenXRExtensionWrapper" />
 			<description>
 				Unregisters the given extension as a composition layer provider.
+			</description>
+		</method>
+		<method name="unregister_frame_info_extension">
+			<return type="void" />
+			<param index="0" name="extension" type="OpenXRExtensionWrapper" />
+			<description>
+				Unregisters the given extension as modifying frame info.
 			</description>
 		</method>
 		<method name="unregister_projection_views_extension">

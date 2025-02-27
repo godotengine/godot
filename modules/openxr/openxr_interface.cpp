@@ -753,6 +753,8 @@ XRInterface::PlayAreaMode OpenXRInterface::get_play_area_mode() const {
 		return XRInterface::XR_PLAY_AREA_ROOMSCALE;
 	} else if (reference_space == XR_REFERENCE_SPACE_TYPE_STAGE) {
 		return XRInterface::XR_PLAY_AREA_STAGE;
+	} else if (reference_space == XR_REFERENCE_SPACE_TYPE_MAX_ENUM) {
+		return XRInterface::XR_PLAY_AREA_CUSTOM;
 	}
 
 	return XRInterface::XR_PLAY_AREA_UNKNOWN;
