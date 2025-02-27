@@ -63,6 +63,11 @@ public:
 	virtual void *set_swapchain_create_info_and_get_next_pointer(void *p_next_pointer) { return p_next_pointer; } // Add additional data structures when creating OpenXR swap chains.
 	virtual void *set_hand_joint_locations_and_get_next_pointer(int p_hand_index, void *p_next_pointer) { return p_next_pointer; }
 	virtual void *set_projection_views_and_get_next_pointer(int p_view_index, void *p_next_pointer) { return p_next_pointer; }
+	virtual void *set_reference_space_create_info_and_get_next_pointer(int p_reference_space_type, void *p_next_pointer) { return p_next_pointer; }
+	// These will only be called for extensions registered via OpenXRApi::register_frame_info_extension().
+	virtual void *set_frame_wait_info_and_get_next_pointer(void *p_next_pointer) { return p_next_pointer; } // Add additional data structures when calling xrWaitFrame
+	virtual void *set_view_locate_info_and_get_next_pointer(void *p_next_pointer) { return p_next_pointer; } // Add additional data structures when calling xrLocateViews
+	virtual void *set_frame_end_info_and_get_next_pointer(void *p_next_pointer) { return p_next_pointer; } // Add additional data structures when calling xrEndFrame
 
 	virtual PackedStringArray get_suggested_tracker_names() { return PackedStringArray(); }
 

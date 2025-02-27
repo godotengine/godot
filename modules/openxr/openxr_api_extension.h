@@ -71,6 +71,7 @@ public:
 	bool is_initialized();
 	bool is_running();
 
+	void set_custom_play_space(GDExtensionConstPtr<const void> p_custom_space);
 	uint64_t get_play_space();
 	int64_t get_predicted_display_time();
 	int64_t get_next_frame_time();
@@ -86,6 +87,9 @@ public:
 
 	void register_projection_views_extension(OpenXRExtensionWrapperExtension *p_extension);
 	void unregister_projection_views_extension(OpenXRExtensionWrapperExtension *p_extension);
+
+	void register_frame_info_extension(OpenXRExtensionWrapperExtension *p_extension);
+	void unregister_frame_info_extension(OpenXRExtensionWrapperExtension *p_extension);
 
 	double get_render_state_z_near();
 	double get_render_state_z_far();
