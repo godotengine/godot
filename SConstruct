@@ -1082,11 +1082,11 @@ if "check_c_headers" in env:
     for header in headers:
         if conf.CheckCHeader(header):
             env.AppendUnique(CPPDEFINES=[headers[header]])
+conf.Finish()
 
-
-methods.show_progress(env)
-# TODO: replace this with `env.Dump(format="json")`
-# once we start requiring SCons 4.0 as min version.
-methods.dump(env)
-methods.prepare_purge(env)
-methods.prepare_timer()
+# Miscellaneous & post-build methods.
+if not env.GetOption("clean") and not env.GetOption("help"):
+    methods.dump(env)
+    methods.show_progress(env)
+    methods.prepare_purge(env)
+    methods.prepare_timer()
