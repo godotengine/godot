@@ -463,7 +463,7 @@ Voxelizer::BakeResult Voxelizer::plot_mesh(const Transform3D &p_xform, Ref<Mesh>
 
 				if (nr) {
 					for (int k = 0; k < 3; k++) {
-						normal[k] = nr[ir[j * 3 + k]];
+						normal[k] = p_xform.basis.inverse().transposed().xform(nr[ir[j * 3 + k]]).normalized();
 					}
 				}
 
