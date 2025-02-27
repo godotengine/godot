@@ -9,6 +9,10 @@
 		- To enter edit mode, click on the control with the mouse, see also [member keep_editing_on_text_submit].
 		- To exit edit mode, press [code]ui_text_submit[/code] or [code]ui_cancel[/code] (by default [kbd]Escape[/kbd]) actions.
 		- Check [method edit], [method unedit], [method is_editing], and [signal editing_toggled] for more information.
+		While entering text, it is possible to insert special characters using Unicode, OEM or Windows alt codes:
+		- To enter Unicode codepoints, hold [kbd]Alt[/kbd] and type the codepoint on the numpad. For example, to enter the character [code]á[/code] (U+00E1), hold [kbd]Alt[/kbd] and type [kbd]+E1[/kbd] on the numpad (the leading zeroes can be omitted).
+		- To enter OEM codepoints, hold [kbd]Alt[/kbd] and type the code on the numpad. For example, to enter the character [code]á[/code] (OEM 160), hold [kbd]Alt[/kbd] and type [code]160[/code] on the numpad.
+		- To enter Windows codepoints, hold [kbd]Alt[/kbd] and type the code on the numpad. For example, to enter the character [code]á[/code] (Windows 0225), hold [kbd]Alt[/kbd] and type [kbd]0[/kbd], [kbd]2[/kbd], [kbd]2[/kbd], [kbd]5[/kbd] on the numpad. The leading zero here must [b]not[/b] be omitted, as this is how Windows codepoints are distinguished from OEM codepoints.
 		[b]Important:[/b]
 		- Focusing the [LineEdit] with [code]ui_focus_next[/code] (by default [kbd]Tab[/kbd]) or [code]ui_focus_prev[/code] (by default [kbd]Shift + Tab[/kbd]) or [method Control.grab_focus] still enters edit mode (for compatibility).
 		[LineEdit] features many built-in shortcuts that are always available ([kbd]Ctrl[/kbd] here maps to [kbd]Cmd[/kbd] on macOS):
