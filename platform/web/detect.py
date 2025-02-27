@@ -208,6 +208,10 @@ def configure(env: "SConsEnvironment"):
     env.Prepend(CPPPATH=["#platform/web"])
     env.Append(CPPDEFINES=["WEB_ENABLED", "UNIX_ENABLED", "UNIX_SOCKET_UNAVAILABLE"])
 
+    if env["rendering_device"]:
+        # Not available in the web platform.
+        env["rendering_device"] = False
+
     if env["opengl3"]:
         env.AppendUnique(CPPDEFINES=["GLES3_ENABLED"])
         # This setting just makes WebGL 2 APIs available, it does NOT disable WebGL 1.

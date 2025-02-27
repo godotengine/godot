@@ -31,8 +31,8 @@
 #ifndef NAVIGATION_SERVER_3D_H
 #define NAVIGATION_SERVER_3D_H
 
-#include "core/object/class_db.h"
 #include "core/templates/rid.h"
+#include "core/templates/rid_owner.h"
 
 #include "scene/resources/3d/navigation_mesh_source_geometry_data_3d.h"
 #include "scene/resources/navigation_mesh.h"
