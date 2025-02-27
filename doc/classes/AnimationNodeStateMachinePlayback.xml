@@ -82,11 +82,26 @@
 		<method name="travel">
 			<return type="void" />
 			<param index="0" name="to_node" type="StringName" />
-			<param index="1" name="reset_on_teleport" type="bool" default="true" />
 			<description>
 				Transitions from the current state to another one, following the shortest path.
-				If the path does not connect from the current state, the animation will play after the state teleports.
-				If [param reset_on_teleport] is [code]true[/code], the animation is played from the beginning when the travel cause a teleportation.
+				If the path does not connect from the current state, the state machine's default transition will be used to jump directly to the destination state.
+			</description>
+		</method>
+		<method name="queue_travel">
+			<return type="void" />
+			<param index="0" name="to_node" type="StringName" />
+			<description>
+				Appends a series of transitions from the last state in the current travel path to another one, following the shortest path.
+				If the path does not connect, the state machine's default transition will be used to jump to the destination state.
+			</description>
+		</method>
+		<method name="queue">
+			<return type="void" />
+			<param index="0" name="to_node" type="StringName" />
+			<description>
+				Queues the requested state, using the state machine's default transition if a direct connection is not available.
+
+				You can emulate traveling with a transition by calling [code]clear_path()[/code] beforehand.
 			</description>
 		</method>
 	</methods>
