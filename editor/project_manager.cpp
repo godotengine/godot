@@ -63,7 +63,9 @@
 #include "scene/theme/theme_db.h"
 #include "servers/display_server.h"
 #include "servers/navigation_server_3d.h"
+#ifndef PHYSICS_2D_DISABLED
 #include "servers/physics_server_2d.h"
+#endif // PHYSICS_2D_DISABLED
 
 constexpr int GODOT4_CONFIG_VERSION = 5;
 
@@ -1164,10 +1166,14 @@ ProjectManager::ProjectManager(bool p_custom_res) {
 
 	set_translation_domain("godot.editor");
 
-	// Turn off some servers we aren't going to be using in the Project Manager.
+// Turn off some servers we aren't going to be using in the Project Manager.
+#ifndef PHYSICS_3D_DISABLED
 	NavigationServer3D::get_singleton()->set_active(false);
+#endif // PHYSICS_3D_DISABLED
 	PhysicsServer3D::get_singleton()->set_active(false);
+#ifndef PHYSICS_2D_DISABLED
 	PhysicsServer2D::get_singleton()->set_active(false);
+#endif // PHYSICS_2D_DISABLED
 
 	// Initialize settings.
 	{
