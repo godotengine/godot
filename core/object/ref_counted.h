@@ -37,15 +37,18 @@
 class RefCounted : public Object {
 	GDCLASS(RefCounted, Object);
 	SafeRefCount refcount;
-	SafeRefCount refcount_init;
 
 protected:
 	static void _bind_methods();
 
+	// Legacy API support.
+	_FORCE_INLINE_ bool reference_then_return_true() {
+		reference();
+		return true;
+	}
+
 public:
-	_FORCE_INLINE_ bool is_referenced() const { return refcount_init.get() != 1; }
-	bool init_ref();
-	bool reference(); // returns false if refcount is at zero and didn't get increased
+	void reference(); // returns false if refcount is at zero and didn't get increased
 	bool unreference();
 	int get_reference_count() const;
 
@@ -58,10 +61,9 @@ class Ref {
 	T *reference = nullptr;
 
 	_FORCE_INLINE_ void ref(const Ref &p_from) {
-		ref_pointer<false>(p_from.reference);
+		ref_pointer(p_from.reference);
 	}
 
-	template <bool Init>
 	_FORCE_INLINE_ void ref_pointer(T *p_refcounted) {
 		if (p_refcounted == reference) {
 			return;
@@ -72,15 +74,7 @@ class Ref {
 		cleanup_ref.reference = reference;
 		reference = p_refcounted;
 		if (reference) {
-			if constexpr (Init) {
-				if (!reference->init_ref()) {
-					reference = nullptr;
-				}
-			} else {
-				if (!reference->reference()) {
-					reference = nullptr;
-				}
-			}
+			reference->reference();
 		}
 	}
 
@@ -130,11 +124,11 @@ public:
 
 	template <typename T_Other>
 	void operator=(const Ref<T_Other> &p_from) {
-		ref_pointer<false>(Object::cast_to<T>(p_from.ptr()));
+		ref_pointer(Object::cast_to<T>(p_from.ptr()));
 	}
 
 	void operator=(T *p_from) {
-		ref_pointer<true>(p_from);
+		ref_pointer(p_from);
 	}
 
 	void operator=(const Variant &p_variant) {
@@ -144,7 +138,7 @@ public:
 			return;
 		}
 
-		ref_pointer<false>(Object::cast_to<T>(object));
+		ref_pointer(Object::cast_to<T>(object));
 	}
 
 	template <typename T_Other>
@@ -153,7 +147,7 @@ public:
 			return;
 		}
 
-		ref_pointer<true>(Object::cast_to<T>(p_ptr));
+		ref_pointer(Object::cast_to<T>(p_ptr));
 	}
 
 	Ref(const Ref &p_from) {
