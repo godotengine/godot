@@ -62,8 +62,8 @@ jobs:
       - name: Download pre-built Android Swappy Frame Pacing Library
         uses: dsaltares/fetch-gh-release-asset@1.1.2
         with:
-          repo: darksylinc/godot-swappy
-          version: tags/v2023.3.0.0
+          repo: godotengine/godot-swappy
+          version: tags/from-source-2025-01-31
           file: godot-swappy.7z
           target: swappy/godot-swappy.7z
 
