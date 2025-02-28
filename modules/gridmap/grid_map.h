@@ -154,6 +154,7 @@ class GridMap : public Node3D {
 	uint32_t collision_layer = 1;
 	uint32_t collision_mask = 1;
 	real_t collision_priority = 1.0;
+	bool debug_collisions = false;
 	Ref<PhysicsMaterial> physics_material;
 	bool bake_navigation = false;
 	RID map_override;
@@ -248,6 +249,9 @@ public:
 
 	void set_collision_priority(real_t p_priority);
 	real_t get_collision_priority() const;
+
+	void set_debug_collisions(bool p_debug);
+	bool is_debug_collisions() const;
 
 	void set_physics_material(Ref<PhysicsMaterial> p_material);
 	Ref<PhysicsMaterial> get_physics_material() const;
