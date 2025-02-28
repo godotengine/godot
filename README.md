@@ -76,3 +76,41 @@ for more information.
 [![Code Triagers Badge](https://www.codetriage.com/godotengine/godot/badges/users.svg)](https://www.codetriage.com/godotengine/godot)
 [![Translate on Weblate](https://hosted.weblate.org/widgets/godot-engine/-/godot/svg-badge.svg)](https://hosted.weblate.org/engage/godot-engine/?utm_source=widget)
 [![TODOs](https://badgen.net/https/api.tickgit.com/badgen/github.com/godotengine/godot)](https://www.tickgit.com/browse?repo=github.com/godotengine/godot)
+
+## Personal edg3 Additions
+This branch is for my personal style adjustments for Godot 4.3 C# use, in the future at some point, so it won't ever touch the master branch.
+
+#### Features
+- My first personal build
+
+### 0. Unimportant Notes
+- ```shift + right-click``` in win file explorer is old menu immediately, neat
+
+### 1. Personal Compiling Tutorial
+- Install VS2022; make sure Desktop C++ is selected in install
+- ```git clone https://github.com/edg3/godot.git```
+- Python 3.11 Used - ```https://www.python.org/downloads/```
+- Used Scoop
+    - Powershell Not as Admin:
+        - ```Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser```
+        - ```Invoke-RestMethod -Uri https://get.scoop.sh | Invoke-Expression```
+    - Powershell as Admin:
+        - ```scoop install gcc scons make mingw```
+- in the cloned ```godot``` folder: ```scons platform=windows``` - this compiles it for windows, first Time elapsed: 00:51:43.37
+- tried again with ```scons -j4 platform=windows``` uses 4 thread instead, second Time elapsed: 00:00:24.93, so noted it likely doesn't recompile if no changes on files
+- in ```godot\bin``` you will see the binaries; run ```godot.windows.editor.x86_64.exe``` and it will launch the editor
+- To swap to build and run in VS2022; run ```scons -j4 platform=windows vsproj=yes```, you will see a new ```godot\godot.sln``` file in the godot folder
+- You can add export template if you'd like, check documentation for more info if you need
+
+```
+\godot> scons platform=windows target=template_debug arch=x86_32
+\godot> scons platform=windows target=template_release arch=x86_32
+\godot> scons platform=windows target=template_debug arch=x86_64
+\godot> scons platform=windows target=template_release arch=x86_64
+\godot> scons platform=windows target=template_debug arch=arm64
+\godot> scons platform=windows target=template_release arch=arm64
+```
+----------------- NOTE: This needs a revamp; dbl check latest docs on web first, then in code, perhaps?
+- run ```scons -j4 p=windows tools=yes module_mono_enabled=yes mono_glue=no``` we have to build without the glue before we build with the glue; Time elapsed: 00:16:14.83
+- when it has built run ```bin\godot.windows.tools.64.mono.exe --generate-mono-glue modules/mono/glue```; it will show godot launch and list all generated connections; wait till you see ```The Godot API sources were successfully generated```; wasn't too long
+- then run ```scons -j4 p=windows target=editor tools=yes module_mono_enabled=yes``` and it should give a build to run off of! Time elapsed: 00:00:41.7
