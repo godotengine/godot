@@ -197,7 +197,7 @@ private:
 
 	// This Data struct is to avoid namespace pollution in derived classes.
 	struct Data {
-		String scene_file_path;
+		ResourceUID::ID scene_file_uid = ResourceUID::INVALID_ID;
 		Ref<SceneState> instance_state;
 		Ref<SceneState> inherited_state;
 
@@ -628,6 +628,7 @@ public:
 
 	void set_scene_file_path(const String &p_scene_file_path);
 	String get_scene_file_path() const;
+	ResourceUID::ID get_scene_file_uid() const { return data.scene_file_uid; }
 
 	void set_editor_description(const String &p_editor_description);
 	String get_editor_description() const;
@@ -872,7 +873,7 @@ public:
 
 	/* HELPER */
 
-	bool is_instance() const { return !data.scene_file_path.is_empty(); }
+	bool is_instance() const { return data.scene_file_uid != ResourceUID::INVALID_ID; }
 
 	// These inherited functions need proper multithread locking when overridden in Node.
 #ifdef DEBUG_ENABLED
