@@ -30,9 +30,9 @@
 
 #include "translation_po.h"
 
+#ifdef DEBUG_TRANSLATION_PO
 #include "core/io/file_access.h"
 
-#ifdef DEBUG_TRANSLATION_PO
 void TranslationPO::print_translation_map() {
 	Error err;
 	Ref<FileAccess> file = FileAccess::open("translation_map_print_test.txt", FileAccess::WRITE, &err);

@@ -34,8 +34,7 @@
 #include "core/error/error_macros.h"
 #include "core/templates/safe_refcount.h"
 
-#include <stddef.h>
-#include <new>
+#include <new> // IWYU pragma: keep // `new` operators.
 #include <type_traits>
 
 class Memory {
