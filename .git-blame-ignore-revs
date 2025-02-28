@@ -66,3 +66,6 @@ bb5f390fb9b466be35a5df7651323d7e66afca31
 
 # Style: Enforce `AllowShortFunctionsOnASingleLine`
 e06d83860d798b6766b23d6eae48557387a7db85
+
+# Style: Enforce trailing newlines on svgs
+7e5baa042639ffa835271703c720e2595e90afb8
