@@ -2072,32 +2072,25 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 	{
 		// RenderingDevice driver overrides per platform.
-		GLOBAL_DEF_RST("rendering/rendering_device/driver", "vulkan");
-		GLOBAL_DEF_RST(PropertyInfo(Variant::STRING, "rendering/rendering_device/driver.windows", PROPERTY_HINT_ENUM, "vulkan,d3d12"), "vulkan");
-		GLOBAL_DEF_RST(PropertyInfo(Variant::STRING, "rendering/rendering_device/driver.linuxbsd", PROPERTY_HINT_ENUM, "vulkan"), "vulkan");
-		GLOBAL_DEF_RST(PropertyInfo(Variant::STRING, "rendering/rendering_device/driver.android", PROPERTY_HINT_ENUM, "vulkan"), "vulkan");
-		GLOBAL_DEF_RST(PropertyInfo(Variant::STRING, "rendering/rendering_device/driver.ios", PROPERTY_HINT_ENUM, "metal,vulkan"), "metal");
-		GLOBAL_DEF_RST(PropertyInfo(Variant::STRING, "rendering/rendering_device/driver.macos", PROPERTY_HINT_ENUM, "metal,vulkan"), "metal");
-
-		GLOBAL_DEF_RST("rendering/rendering_device/fallback_to_vulkan", true);
-		GLOBAL_DEF_RST("rendering/rendering_device/fallback_to_d3d12", true);
-		GLOBAL_DEF_RST("rendering/rendering_device/fallback_to_opengl3", true);
+		GLOBAL_DEF_RST(PropertyInfo(Variant::STRING, "rendering/rendering_device/driver", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "vulkan");
+		GLOBAL_DEF_RST(PropertyInfo(Variant::STRING, "rendering/rendering_device/driver.windows", PROPERTY_HINT_ORDERED_LIST, "Vulkan:vulkan,Direct3D 12:d3d12"), "vulkan,d3d12");
+		GLOBAL_DEF_RST(PropertyInfo(Variant::STRING, "rendering/rendering_device/driver.linuxbsd", PROPERTY_HINT_ORDERED_LIST, "Vulkan:vulkan"), "vulkan");
+		GLOBAL_DEF_RST(PropertyInfo(Variant::STRING, "rendering/rendering_device/driver.android", PROPERTY_HINT_ORDERED_LIST, "Vulkan:vulkan"), "vulkan");
+		GLOBAL_DEF_RST(PropertyInfo(Variant::STRING, "rendering/rendering_device/driver.ios", PROPERTY_HINT_ORDERED_LIST, "Metal:metal,Vulkan (using MoltenVK):vulkan"), "metal,vulkan");
+		GLOBAL_DEF_RST(PropertyInfo(Variant::STRING, "rendering/rendering_device/driver.macos", PROPERTY_HINT_ORDERED_LIST, "Metal (supported on Apple Silicon only):metal,Vulkan (using MoltenVK):vulkan"), "metal,vulkan");
 	}
 
 	{
 		// GL Compatibility driver overrides per platform.
-		GLOBAL_DEF_RST("rendering/gl_compatibility/driver", "opengl3");
-		GLOBAL_DEF_RST(PropertyInfo(Variant::STRING, "rendering/gl_compatibility/driver.windows", PROPERTY_HINT_ENUM, "opengl3,opengl3_angle"), "opengl3");
-		GLOBAL_DEF_RST(PropertyInfo(Variant::STRING, "rendering/gl_compatibility/driver.linuxbsd", PROPERTY_HINT_ENUM, "opengl3,opengl3_es"), "opengl3");
-		GLOBAL_DEF_RST(PropertyInfo(Variant::STRING, "rendering/gl_compatibility/driver.web", PROPERTY_HINT_ENUM, "opengl3"), "opengl3");
-		GLOBAL_DEF_RST(PropertyInfo(Variant::STRING, "rendering/gl_compatibility/driver.android", PROPERTY_HINT_ENUM, "opengl3"), "opengl3");
-		GLOBAL_DEF_RST(PropertyInfo(Variant::STRING, "rendering/gl_compatibility/driver.ios", PROPERTY_HINT_ENUM, "opengl3"), "opengl3");
-		GLOBAL_DEF_RST(PropertyInfo(Variant::STRING, "rendering/gl_compatibility/driver.macos", PROPERTY_HINT_ENUM, "opengl3,opengl3_angle"), "opengl3");
+		GLOBAL_DEF_RST(PropertyInfo(Variant::STRING, "rendering/gl_compatibility/driver", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "opengl3");
+		GLOBAL_DEF_RST(PropertyInfo(Variant::STRING, "rendering/gl_compatibility/driver.windows", PROPERTY_HINT_ORDERED_LIST, "OpenGL 3.3:opengl3,OpenGLES 3.0 (using ANGLE):opengl3_angle"), "opengl3,opengl3_angle");
+		GLOBAL_DEF_RST(PropertyInfo(Variant::STRING, "rendering/gl_compatibility/driver.linuxbsd", PROPERTY_HINT_ORDERED_LIST, "OpenGL 3.3:opengl3,OpenGLES 3.0:opengl3_es"), "opengl3,opengl3_es");
+		GLOBAL_DEF_RST(PropertyInfo(Variant::STRING, "rendering/gl_compatibility/driver.web", PROPERTY_HINT_ORDERED_LIST, "WebGL 2.0:opengl3"), "opengl3");
+		GLOBAL_DEF_RST(PropertyInfo(Variant::STRING, "rendering/gl_compatibility/driver.android", PROPERTY_HINT_ORDERED_LIST, "OpenGLES 3.0:opengl3"), "opengl3");
+		GLOBAL_DEF_RST(PropertyInfo(Variant::STRING, "rendering/gl_compatibility/driver.ios", PROPERTY_HINT_ORDERED_LIST, "OpenGLES 3.0:opengl3"), "opengl3");
+		GLOBAL_DEF_RST(PropertyInfo(Variant::STRING, "rendering/gl_compatibility/driver.macos", PROPERTY_HINT_ORDERED_LIST, "OpenGL 3.2:opengl3,OpenGLES 3.0 (using ANGLE):opengl3_angle"), "opengl3,opengl3_angle");
 
 		GLOBAL_DEF_RST("rendering/gl_compatibility/nvidia_disable_threaded_optimization", true);
-		GLOBAL_DEF_RST("rendering/gl_compatibility/fallback_to_angle", true);
-		GLOBAL_DEF_RST("rendering/gl_compatibility/fallback_to_native", true);
-		GLOBAL_DEF_RST("rendering/gl_compatibility/fallback_to_gles", true);
 
 		Array device_blocklist;
 
@@ -2272,7 +2265,13 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	}
 	// Default to Compatibility when using the project manager.
 	if (rendering_driver.is_empty() && rendering_method.is_empty() && project_manager) {
+#if defined(WINDOWS_ENABLED)
+		rendering_driver = "opengl3,opengl3_angle";
+#elif defined(LINUXBSD_ENABLED)
+		rendering_driver = "opengl3,opengl3_es";
+#else
 		rendering_driver = "opengl3";
+#endif
 		rendering_method = "gl_compatibility";
 		default_renderer_mobile = "gl_compatibility";
 	}
@@ -2304,104 +2303,63 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	}
 
 	if (!rendering_driver.is_empty()) {
-		// As the rendering drivers available may depend on the display driver and renderer
-		// selected, we can't do an exhaustive check here, but we can look through all
-		// the options in all the display drivers for a match.
+		rendering_driver = rendering_driver.to_lower();
 
-		bool found = false;
+		Vector<String> unique_rendering_drivers_modern;
+		Vector<String> unique_rendering_drivers_compat;
 		for (int i = 0; i < DisplayServer::get_create_function_count(); i++) {
 			Vector<String> r_drivers = DisplayServer::get_create_function_rendering_drivers(i);
 
-			for (int d = 0; d < r_drivers.size(); d++) {
-				if (rendering_driver == r_drivers[d]) {
-					found = true;
-					break;
+			for (const String &ds_driver : r_drivers) {
+				if (ds_driver == "opengl3" || ds_driver == "opengl3_angle" || ds_driver == "opengl3_es") {
+					if (!unique_rendering_drivers_modern.has(ds_driver)) {
+						unique_rendering_drivers_modern.append(ds_driver);
+					}
+				} else {
+					if (!unique_rendering_drivers_compat.has(ds_driver)) {
+						unique_rendering_drivers_compat.append(ds_driver);
+					}
 				}
 			}
 		}
 
+		Vector<String> pending_drivers = rendering_driver.split(",");
+		bool has_compat = pending_drivers.has("opengl3") || pending_drivers.has("opengl3_angle") || pending_drivers.has("opengl3_es");
+		bool has_modern = pending_drivers.has("metal") || pending_drivers.has("vulkan") || pending_drivers.has("d3d12");
+		bool found = false;
+		for (const String &cmd_driver : pending_drivers) {
+			if (unique_rendering_drivers_compat.has(cmd_driver) || unique_rendering_drivers_modern.has(cmd_driver)) {
+				found = true;
+				break;
+			}
+		}
+
 		if (!found) {
-			OS::get_singleton()->print("Unknown rendering driver '%s', aborting.\nValid options are ",
-					rendering_driver.utf8().get_data());
+			OS::get_singleton()->print("Rendering driver argument '%s' has no valid drivers, aborting. Valid options are:\n", rendering_driver.utf8().get_data());
 
-			// Deduplicate driver entries, as a rendering driver may be supported by several display servers.
-			Vector<String> unique_rendering_drivers;
-			for (int i = 0; i < DisplayServer::get_create_function_count(); i++) {
-				Vector<String> r_drivers = DisplayServer::get_create_function_rendering_drivers(i);
+			OS::get_singleton()->print("  for 'compatibility' rendering method: '%s'.\n", String("', '").join(unique_rendering_drivers_compat).utf8().get_data());
+			OS::get_singleton()->print("  for 'forward_plus' and 'mobile' rendering methods: '%s'.\n", String("', '").join(unique_rendering_drivers_modern).utf8().get_data());
 
-				for (int d = 0; d < r_drivers.size(); d++) {
-					if (!unique_rendering_drivers.has(r_drivers[d])) {
-						unique_rendering_drivers.append(r_drivers[d]);
-					}
-				}
-			}
+			goto error;
+		}
 
-			for (int i = 0; i < unique_rendering_drivers.size(); i++) {
-				if (i == unique_rendering_drivers.size() - 1) {
-					OS::get_singleton()->print(" and ");
-				} else if (i != 0) {
-					OS::get_singleton()->print(", ");
-				}
-				OS::get_singleton()->print("'%s'", unique_rendering_drivers[i].utf8().get_data());
-			}
-
-			OS::get_singleton()->print(".\n");
-
+		// Now validate whether the selected driver matches with the renderer.
+		if (has_compat && (rendering_method == "forward_plus" || rendering_method == "mobile")) {
+			OS::get_singleton()->print("Invalid rendering method/driver combination '%s' and '%s', aborting. Valid options are: '%s'.\n", rendering_method.utf8().get_data(), rendering_driver.utf8().get_data(), String("', '").join(unique_rendering_drivers_modern).utf8().get_data());
+			goto error;
+		}
+		if (has_modern && (rendering_method == "gl_compatibility")) {
+			OS::get_singleton()->print("Invalid rendering method/driver combination '%s' and '%s', aborting. Valid options are: '%s'.\n", rendering_method.utf8().get_data(), rendering_driver.utf8().get_data(), String("', '").join(unique_rendering_drivers_compat).utf8().get_data());
 			goto error;
 		}
 
 		// Set a default renderer if none selected. Try to choose one that matches the driver.
 		if (rendering_method.is_empty()) {
-			if (rendering_driver == "opengl3" || rendering_driver == "opengl3_angle" || rendering_driver == "opengl3_es") {
-				rendering_method = "gl_compatibility";
-			} else {
+			if (has_modern) {
 				rendering_method = "forward_plus";
+			} else {
+				rendering_method = "gl_compatibility";
 			}
-		}
-
-		// Now validate whether the selected driver matches with the renderer.
-		bool valid_combination = false;
-		Vector<String> available_drivers;
-		if (rendering_method == "forward_plus" || rendering_method == "mobile") {
-#ifdef VULKAN_ENABLED
-			available_drivers.push_back("vulkan");
-#endif
-#ifdef D3D12_ENABLED
-			available_drivers.push_back("d3d12");
-#endif
-#ifdef METAL_ENABLED
-			available_drivers.push_back("metal");
-#endif
-		}
-#ifdef GLES3_ENABLED
-		if (rendering_method == "gl_compatibility") {
-			available_drivers.push_back("opengl3");
-			available_drivers.push_back("opengl3_angle");
-			available_drivers.push_back("opengl3_es");
-		}
-#endif
-		if (available_drivers.is_empty()) {
-			OS::get_singleton()->print("Unknown renderer name '%s', aborting.\n", rendering_method.utf8().get_data());
-			goto error;
-		}
-
-		for (int i = 0; i < available_drivers.size(); i++) {
-			if (rendering_driver == available_drivers[i]) {
-				valid_combination = true;
-				break;
-			}
-		}
-
-		if (!valid_combination) {
-			OS::get_singleton()->print("Invalid renderer/driver combination '%s' and '%s', aborting. %s only supports the following drivers ", rendering_method.utf8().get_data(), rendering_driver.utf8().get_data(), rendering_method.utf8().get_data());
-
-			for (int d = 0; d < available_drivers.size(); d++) {
-				OS::get_singleton()->print("'%s', ", available_drivers[d].utf8().get_data());
-			}
-
-			OS::get_singleton()->print(".\n");
-
-			goto error;
 		}
 	}
 
@@ -2409,6 +2367,9 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	GLOBAL_DEF_RST_BASIC(PropertyInfo(Variant::STRING, "rendering/renderer/rendering_method", PROPERTY_HINT_ENUM, renderer_hints), default_renderer);
 	GLOBAL_DEF_RST_BASIC("rendering/renderer/rendering_method.mobile", default_renderer_mobile);
 	GLOBAL_DEF_RST_BASIC("rendering/renderer/rendering_method.web", "gl_compatibility"); // This is a bit of a hack until we have WebGPU support.
+
+	GLOBAL_DEF_RST("rendering/renderer/fallback_to_opengl3", true);
+	GLOBAL_DEF_RST("rendering/renderer/fallback_to_dummy", false);
 
 	// Default to ProjectSettings default if nothing set on the command line.
 	if (rendering_method.is_empty()) {
@@ -2423,10 +2384,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		}
 	}
 
-	// always convert to lower case for consistency in the code
-	rendering_driver = rendering_driver.to_lower();
-
-	OS::get_singleton()->set_current_rendering_driver_name(rendering_driver);
+	OS::get_singleton()->set_current_rendering_driver_name(rendering_driver.get_slice(",", 0));
 	OS::get_singleton()->set_current_rendering_method(rendering_method);
 
 #ifdef TOOLS_ENABLED
@@ -3582,10 +3540,6 @@ void Main::setup_boot_logo() {
 	}
 	RenderingServer::get_singleton()->set_default_clear_color(
 			GLOBAL_GET("rendering/environment/defaults/default_clear_color"));
-}
-
-String Main::get_rendering_driver_name() {
-	return rendering_driver;
 }
 
 // everything the main loop needs to know about frame timings
