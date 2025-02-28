@@ -35,6 +35,7 @@
 #include "betsy_bc1.h"
 
 #include "alpha_stitch.glsl.gen.h"
+#include "astc_4x4.glsl.gen.h"
 #include "bc1.glsl.gen.h"
 #include "bc4.glsl.gen.h"
 #include "bc6h.glsl.gen.h"
@@ -53,6 +54,9 @@ static const BetsyShaderType FORMAT_TO_TYPE[BETSY_FORMAT_MAX] = {
 	BETSY_SHADER_BC4_UNSIGNED,
 	BETSY_SHADER_BC6_SIGNED,
 	BETSY_SHADER_BC6_UNSIGNED,
+	BETSY_SHADER_ASTC_4X4_RGB,
+	BETSY_SHADER_ASTC_4X4_RGBA,
+	BETSY_SHADER_ASTC_4X4_NORMAL,
 };
 
 static const RD::DataFormat BETSY_TO_RD_FORMAT[BETSY_FORMAT_MAX] = {
@@ -65,6 +69,9 @@ static const RD::DataFormat BETSY_TO_RD_FORMAT[BETSY_FORMAT_MAX] = {
 	RD::DATA_FORMAT_R32G32_UINT,
 	RD::DATA_FORMAT_R32G32B32A32_UINT,
 	RD::DATA_FORMAT_R32G32B32A32_UINT,
+	RD::DATA_FORMAT_R32G32B32_UINT,
+	RD::DATA_FORMAT_R32G32B32A32_UINT,
+	RD::DATA_FORMAT_R32G32_UINT,
 };
 
 static const Image::Format BETSY_TO_IMAGE_FORMAT[BETSY_FORMAT_MAX] = {
@@ -77,6 +84,9 @@ static const Image::Format BETSY_TO_IMAGE_FORMAT[BETSY_FORMAT_MAX] = {
 	Image::FORMAT_RGTC_RG,
 	Image::FORMAT_BPTC_RGBF,
 	Image::FORMAT_BPTC_RGBFU,
+	Image::FORMAT_ASTC_4x4,
+	Image::FORMAT_ASTC_4x4,
+	Image::FORMAT_ASTC_4x4,
 };
 
 void BetsyCompressor::_init() {
@@ -220,6 +230,49 @@ void BetsyCompressor::_init() {
 		cached_shaders[BETSY_SHADER_ALPHA_STITCH].pipeline = compress_rd->compute_pipeline_create(cached_shaders[BETSY_SHADER_ALPHA_STITCH].compiled);
 		ERR_FAIL_COND(cached_shaders[BETSY_SHADER_ALPHA_STITCH].pipeline.is_null());
 	}
+
+	{
+		Ref<RDShaderFile> astc_4x4_shader;
+		astc_4x4_shader.instantiate();
+		Error err = astc_4x4_shader->parse_versions_from_text(astc_4x4_shader_glsl);
+
+		if (err != OK) {
+			astc_4x4_shader->print_errors("Betsy ASTC 4x4 shader");
+		}
+
+		// RGB
+		{
+			RID compiled = compress_rd->shader_create_from_spirv(astc_4x4_shader->get_spirv_stages("rgb"));
+			ERR_FAIL_COND(compiled.is_null());
+			cached_shaders[BETSY_SHADER_ASTC_4X4_RGB].compiled = compiled;
+
+			RID pipeline = compress_rd->compute_pipeline_create(compiled);
+			ERR_FAIL_COND(pipeline.is_null());
+			cached_shaders[BETSY_SHADER_ASTC_4X4_RGB].pipeline = pipeline;
+		}
+
+		// RGBA
+		{
+			RID compiled = compress_rd->shader_create_from_spirv(astc_4x4_shader->get_spirv_stages("rgba"));
+			ERR_FAIL_COND(compiled.is_null());
+			cached_shaders[BETSY_SHADER_ASTC_4X4_RGBA].compiled = compiled;
+
+			RID pipeline = compress_rd->compute_pipeline_create(compiled);
+			ERR_FAIL_COND(pipeline.is_null());
+			cached_shaders[BETSY_SHADER_ASTC_4X4_RGBA].pipeline = pipeline;
+		}
+
+		// Normal
+		{
+			RID compiled = compress_rd->shader_create_from_spirv(astc_4x4_shader->get_spirv_stages("normal"));
+			ERR_FAIL_COND(compiled.is_null());
+			cached_shaders[BETSY_SHADER_ASTC_4X4_NORMAL].compiled = compiled;
+
+			RID pipeline = compress_rd->compute_pipeline_create(compiled);
+			ERR_FAIL_COND(pipeline.is_null());
+			cached_shaders[BETSY_SHADER_ASTC_4X4_NORMAL].pipeline = pipeline;
+		}
+	}
 }
 
 void BetsyCompressor::init() {
@@ -357,6 +410,152 @@ static Error get_src_texture_format(Image *r_img, RD::DataFormat &r_format) {
 			return ERR_UNAVAILABLE;
 		}
 	}
+
+	return OK;
+}
+
+Error BetsyCompressor::_compress_astc(BetsyFormat p_format, Image *r_img) {
+	uint64_t start_time = OS::get_singleton()->get_ticks_msec();
+
+	// Return an error so that the compression can fall back to cpu compression
+	if (compress_rd == nullptr) {
+		return ERR_CANT_CREATE;
+	}
+
+	if (r_img->is_compressed()) {
+		return ERR_INVALID_DATA;
+	}
+
+	Error err = OK;
+
+	constexpr int BLOCK_BYTES = 16;
+	constexpr int THREAD_NUM_X = 8;
+	constexpr int THREAD_NUM_Y = 8;
+
+	// Destination format.
+	Image::Format dest_format = BETSY_TO_IMAGE_FORMAT[p_format];
+
+	BetsyShaderType shader_type = FORMAT_TO_TYPE[p_format];
+	BetsyShader shader = cached_shaders[shader_type];
+
+	// src_texture format information.
+	RD::TextureFormat src_texture_format;
+	{
+		src_texture_format.array_layers = 1;
+		src_texture_format.depth = 1;
+		src_texture_format.mipmaps = 1;
+		src_texture_format.texture_type = RD::TEXTURE_TYPE_2D;
+		src_texture_format.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT;
+	}
+
+	err = get_src_texture_format(r_img, src_texture_format.format);
+
+	if (err != OK) {
+		return err;
+	}
+
+	const int mip_count = r_img->get_mipmap_count() + 1;
+
+	// Container for the compressed data.
+	Vector<uint8_t> dst_data;
+	dst_data.resize(Image::get_image_data_size(r_img->get_width(), r_img->get_height(), dest_format, r_img->has_mipmaps()));
+	uint8_t *dst_data_ptr = dst_data.ptrw();
+
+	Vector<Vector<uint8_t>> src_images;
+	src_images.push_back(Vector<uint8_t>());
+	Vector<uint8_t> *src_image_ptr = src_images.ptrw();
+
+	// Compress each mipmap.
+	for (int i = 0; i < mip_count; i++) {
+		int64_t ofs, size;
+		int width, height;
+		r_img->get_mipmap_offset_size_and_dimensions(i, ofs, size, width, height);
+
+		int dim_size = 4; // or 6 for ASTC_6x6
+		int x_block_num = (width + dim_size - 1) / dim_size;
+		int y_block_num = (height + dim_size - 1) / dim_size;
+		int total_block_num = x_block_num * y_block_num;
+
+		int group_size = THREAD_NUM_X * THREAD_NUM_Y;
+		int group_num = (total_block_num + group_size - 1) / group_size;
+		int group_num_x = (width + dim_size - 1) / dim_size;
+		int group_num_y = (group_num + group_num_x - 1) / group_num_x;
+
+		// Set the source texture width and size.
+		src_texture_format.height = height;
+		src_texture_format.width = width;
+
+		// Create a buffer filled with the source mip layer data.
+		src_image_ptr[0].resize(size);
+		memcpy(src_image_ptr[0].ptrw(), r_img->ptr() + ofs, size);
+
+		RID src_texture = compress_rd->texture_create(src_texture_format, RD::TextureView(), src_images);
+		RID dst_storage = compress_rd->storage_buffer_create(BLOCK_BYTES * total_block_num);
+
+		{
+			Vector<RD::Uniform> uniforms;
+			{
+				{
+					RD::Uniform u;
+					u.uniform_type = RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE;
+					u.binding = 0;
+					u.append_id(src_sampler);
+					u.append_id(src_texture);
+					uniforms.push_back(u);
+				}
+				{
+					RD::Uniform u;
+					u.uniform_type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
+					u.binding = 1;
+					u.append_id(dst_storage);
+					uniforms.push_back(u);
+				}
+			}
+
+			RID uniform_set = compress_rd->uniform_set_create(uniforms, shader.compiled, 0);
+			RD::ComputeListID compute_list = compress_rd->compute_list_begin();
+
+			compress_rd->compute_list_bind_compute_pipeline(compute_list, shader.pipeline);
+			compress_rd->compute_list_bind_uniform_set(compute_list, uniform_set, 0);
+
+			ASTC4x4PushConstant push_constant;
+			push_constant.texel_height = height;
+			push_constant.texel_width = width;
+			push_constant.group_num_x = group_num_x;
+
+			compress_rd->compute_list_set_push_constant(compute_list, &push_constant, sizeof(ASTC4x4PushConstant));
+			compress_rd->compute_list_dispatch(compute_list, group_num_x, group_num_y, 1);
+
+			compress_rd->compute_list_end();
+
+			compress_rd->submit();
+			compress_rd->sync();
+		}
+
+		// Copy data from the GPU to the buffer.
+		const Vector<uint8_t> texture_data = compress_rd->buffer_get_data(dst_storage, 0, BLOCK_BYTES * total_block_num);
+		int64_t dst_ofs = Image::get_image_mipmap_offset(r_img->get_width(), r_img->get_height(), dest_format, i);
+
+		memcpy(dst_data_ptr + dst_ofs, texture_data.ptr(), texture_data.size());
+
+		// Free the source and dest texture.
+		compress_rd->free(src_texture);
+		compress_rd->free(dst_storage);
+	}
+
+	src_images.clear();
+
+	// Set the compressed data to the image.
+	r_img->set_data(r_img->get_width(), r_img->get_height(), r_img->has_mipmaps(), dest_format, dst_data);
+
+	uint64_t duration_ms = OS::get_singleton()->get_ticks_msec() - start_time;
+	print_verbose(
+			vformat("Betsy: Encoding a %dx%d image with %d mipmaps as %s took %d ms.",
+					r_img->get_width(),
+					r_img->get_height(),
+					r_img->get_mipmap_count(),
+					Image::get_format_name(dest_format),
+					duration_ms));
 
 	return OK;
 }
@@ -721,6 +920,41 @@ Error _betsy_compress_s3tc(Image *r_img, Image::UsedChannels p_channels) {
 
 		case Image::USED_CHANNELS_RG:
 			result = betsy->compress(BETSY_FORMAT_BC5_UNSIGNED, r_img);
+			break;
+
+		default:
+			break;
+	}
+
+	if (!GLOBAL_GET("rendering/textures/vram_compression/cache_gpu_compressor")) {
+		free_device();
+	}
+
+	return result;
+}
+
+Error _betsy_compress_astc(Image *r_img, Image::UsedChannels p_channels, Image::ASTCFormat p_astc_format) {
+	if (p_astc_format != Image::ASTC_FORMAT_4x4) {
+		return ERR_UNAVAILABLE;
+	}
+
+	ensure_betsy_exists();
+	Error result = ERR_UNAVAILABLE;
+
+	switch (p_channels) {
+		case Image::USED_CHANNELS_RGB:
+		case Image::USED_CHANNELS_L:
+		case Image::USED_CHANNELS_R:
+			result = betsy->compress(BETSY_FORMAT_ASTC_4X4_RGB, r_img);
+			break;
+
+		case Image::USED_CHANNELS_RGBA:
+		case Image::USED_CHANNELS_LA:
+			result = betsy->compress(BETSY_FORMAT_ASTC_4X4_RGBA, r_img);
+			break;
+
+		case Image::USED_CHANNELS_RG:
+			result = betsy->compress(BETSY_FORMAT_ASTC_4X4_NORMAL, r_img);
 			break;
 
 		default:

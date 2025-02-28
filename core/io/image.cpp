@@ -116,6 +116,7 @@ void (*Image::_image_compress_astc_func)(Image *, Image::ASTCFormat) = nullptr;
 
 Error (*Image::_image_compress_bptc_rd_func)(Image *, Image::UsedChannels) = nullptr;
 Error (*Image::_image_compress_bc_rd_func)(Image *, Image::UsedChannels) = nullptr;
+Error (*Image::_image_compress_astc_rd_func)(Image *, Image::UsedChannels, Image::ASTCFormat) = nullptr;
 
 // External VRAM decompression function pointers.
 
@@ -2715,7 +2716,16 @@ Error Image::compress_from_channels(CompressMode p_mode, UsedChannels p_channels
 					}
 				}
 			} break;
+			case COMPRESS_ASTC: {
+				if (p_astc_format == ASTC_FORMAT_4x4 && _image_compress_astc_rd_func) {
+					Error result = _image_compress_astc_rd_func(this, p_channels, p_astc_format);
 
+					// If the image was compressed successfully, we return here. If not, we fall back to the default compression scheme.
+					if (result == OK) {
+						return OK;
+					}
+				}
+			} break;
 			default: {
 			}
 		}
