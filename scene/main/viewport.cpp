@@ -4493,9 +4493,7 @@ void Viewport::set_world_3d(const Ref<World3D> &p_world_3d) {
 		return;
 	}
 
-	if (is_inside_tree()) {
-		_propagate_exit_world_3d(this);
-	}
+	_prepare_for_new_world_3d();
 
 	if (own_world_3d.is_valid() && world_3d.is_valid()) {
 		world_3d->disconnect_changed(callable_mp(this, &Viewport::_own_world_3d_changed));
@@ -4512,36 +4510,16 @@ void Viewport::set_world_3d(const Ref<World3D> &p_world_3d) {
 		}
 	}
 
-	if (is_inside_tree()) {
-		_propagate_enter_world_3d(this);
-	}
-
-	if (is_inside_tree()) {
-		RenderingServer::get_singleton()->viewport_set_scenario(viewport, find_world_3d()->get_scenario());
-	}
-
-	_update_audio_listener_3d();
+	_finish_world_3d_change();
 }
 
 void Viewport::_own_world_3d_changed() {
 	ERR_FAIL_COND(world_3d.is_null());
 	ERR_FAIL_COND(own_world_3d.is_null());
 
-	if (is_inside_tree()) {
-		_propagate_exit_world_3d(this);
-	}
-
+	_prepare_for_new_world_3d();
 	own_world_3d = world_3d->duplicate();
-
-	if (is_inside_tree()) {
-		_propagate_enter_world_3d(this);
-	}
-
-	if (is_inside_tree()) {
-		RenderingServer::get_singleton()->viewport_set_scenario(viewport, find_world_3d()->get_scenario());
-	}
-
-	_update_audio_listener_3d();
+	_finish_world_3d_change();
 }
 
 void Viewport::set_use_own_world_3d(bool p_use_own_world_3d) {
@@ -4550,9 +4528,7 @@ void Viewport::set_use_own_world_3d(bool p_use_own_world_3d) {
 		return;
 	}
 
-	if (is_inside_tree()) {
-		_propagate_exit_world_3d(this);
-	}
+	_prepare_for_new_world_3d();
 
 	if (p_use_own_world_3d) {
 		if (world_3d.is_valid()) {
@@ -4568,15 +4544,7 @@ void Viewport::set_use_own_world_3d(bool p_use_own_world_3d) {
 		}
 	}
 
-	if (is_inside_tree()) {
-		_propagate_enter_world_3d(this);
-	}
-
-	if (is_inside_tree()) {
-		RenderingServer::get_singleton()->viewport_set_scenario(viewport, find_world_3d()->get_scenario());
-	}
-
-	_update_audio_listener_3d();
+	_finish_world_3d_change();
 }
 
 bool Viewport::is_using_own_world_3d() const {
@@ -4597,6 +4565,8 @@ void Viewport::_propagate_enter_world_3d(Node *p_node) {
 			if (v) {
 				if (v->world_3d.is_valid() || v->own_world_3d.is_valid()) {
 					return;
+				} else {
+					RS::get_singleton()->viewport_set_scenario(v->viewport, find_world_3d()->get_scenario());
 				}
 			}
 		}
@@ -4620,6 +4590,8 @@ void Viewport::_propagate_exit_world_3d(Node *p_node) {
 			if (v) {
 				if (v->world_3d.is_valid() || v->own_world_3d.is_valid()) {
 					return;
+				} else {
+					RS::get_singleton()->viewport_set_scenario(v->viewport, RID());
 				}
 			}
 		}
@@ -4628,6 +4600,27 @@ void Viewport::_propagate_exit_world_3d(Node *p_node) {
 	for (int i = 0; i < p_node->get_child_count(); i++) {
 		_propagate_exit_world_3d(p_node->get_child(i));
 	}
+}
+
+void Viewport::_prepare_for_new_world_3d() {
+	if (is_inside_tree()) {
+		_propagate_exit_world_3d(this);
+	}
+
+	if (is_inside_tree()) {
+		RS::get_singleton()->viewport_set_scenario(viewport, RID());
+	}
+}
+
+void Viewport::_finish_world_3d_change() {
+	if (is_inside_tree()) {
+		_propagate_enter_world_3d(this);
+	}
+
+	if (is_inside_tree()) {
+		RS::get_singleton()->viewport_set_scenario(viewport, find_world_3d()->get_scenario());
+	}
+	_update_audio_listener_3d();
 }
 
 void Viewport::set_use_xr(bool p_use_xr) {
