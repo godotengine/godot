@@ -1484,7 +1484,7 @@ void EditorExportPlatformAndroid::_fix_manifest(const Ref<EditorExportPreset> &p
 		ofs += size;
 	}
 
-	//create new andriodmanifest binary
+	// Create new android manifest binary.
 
 	Vector<uint8_t> ret;
 	ret.resize(string_table_begins + string_table.size() * 4);
@@ -1864,15 +1864,9 @@ String EditorExportPlatformAndroid::get_export_option_warning(const EditorExport
 			}
 		} else if (p_name == "gradle_build/use_gradle_build") {
 			bool gradle_build_enabled = p_preset->get("gradle_build/use_gradle_build");
-			String enabled_plugins_names = _get_plugins_names(Ref<EditorExportPreset>(p_preset));
-			if (!enabled_plugins_names.is_empty() && !gradle_build_enabled) {
+			String enabled_deprecated_plugins_names = _get_deprecated_plugins_names(Ref<EditorExportPreset>(p_preset));
+			if (!enabled_deprecated_plugins_names.is_empty() && !gradle_build_enabled) {
 				return TTR("\"Use Gradle Build\" must be enabled to use the plugins.");
-			}
-		} else if (p_name == "xr_features/xr_mode") {
-			bool gradle_build_enabled = p_preset->get("gradle_build/use_gradle_build");
-			int xr_mode_index = p_preset->get("xr_features/xr_mode");
-			if (xr_mode_index == XR_MODE_OPENXR && !gradle_build_enabled) {
-				return TTR("OpenXR requires \"Use Gradle Build\" to be enabled");
 			}
 		} else if (p_name == "gradle_build/compress_native_libraries") {
 			bool gradle_build_enabled = p_preset->get("gradle_build/use_gradle_build");
@@ -2599,6 +2593,7 @@ bool EditorExportPlatformAndroid::has_valid_export_configuration(const Ref<Edito
 			if (!dvalid) {
 				template_err += TTR("Custom debug template not found.") + "\n";
 			}
+			has_export_templates |= dvalid;
 		} else {
 			has_export_templates |= exists_export_template("android_debug.apk", &template_err);
 		}
@@ -2608,6 +2603,7 @@ bool EditorExportPlatformAndroid::has_valid_export_configuration(const Ref<Edito
 			if (!rvalid) {
 				template_err += TTR("Custom release template not found.") + "\n";
 			}
+			has_export_templates |= rvalid;
 		} else {
 			has_export_templates |= exists_export_template("android_release.apk", &template_err);
 		}
@@ -3151,6 +3147,17 @@ String EditorExportPlatformAndroid::join_abis(const Vector<EditorExportPlatformA
 	return ret;
 }
 
+String EditorExportPlatformAndroid::_get_deprecated_plugins_names(const Ref<EditorExportPreset> &p_preset) const {
+	Vector<String> names;
+
+#ifndef DISABLE_DEPRECATED
+	PluginConfigAndroid::get_plugins_names(get_enabled_plugins(p_preset), names);
+#endif // DISABLE_DEPRECATED
+
+	String plugins_names = String("|").join(names);
+	return plugins_names;
+}
+
 String EditorExportPlatformAndroid::_get_plugins_names(const Ref<EditorExportPreset> &p_preset) const {
 	Vector<String> names;
 
@@ -3655,6 +3662,17 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 		//write
 		if (file == "AndroidManifest.xml") {
 			_fix_manifest(p_preset, data, p_give_internet);
+
+			// Allow editor export plugins to update the prebuilt manifest as needed.
+			Vector<Ref<EditorExportPlugin>> export_plugins = EditorExport::get_singleton()->get_export_plugins();
+			for (int i = 0; i < export_plugins.size(); i++) {
+				if (export_plugins[i]->supports_platform(Ref<EditorExportPlatform>(this))) {
+					PackedByteArray export_plugin_data = export_plugins[i]->update_android_prebuilt_manifest(Ref<EditorExportPlatform>(this), data);
+					if (!export_plugin_data.is_empty()) {
+						data = export_plugin_data;
+					}
+				}
+			}
 		}
 		if (file == "resources.arsc") {
 			_fix_resources(p_preset, data);
