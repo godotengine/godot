@@ -33,6 +33,37 @@
 				Adds an [Array] the size of [constant Mesh.ARRAY_MAX] and with vertices at index [constant Mesh.ARRAY_VERTEX] and indices at index [constant Mesh.ARRAY_INDEX] to the navigation mesh baking data. The array must have valid triangulated mesh data to be considered. Since [NavigationMesh] resources have no transform, all vertex positions need to be offset by the node's transform using [param xform].
 			</description>
 		</method>
+		<method name="add_projected_area_box">
+			<return type="void" />
+			<param index="0" name="aabb" type="AABB" />
+			<param index="1" name="navigation_layers" type="int" />
+			<param index="2" name="priority" type="int" />
+			<description>
+				Adds a new projected area of shape type box to the source geometry. The areas axis-aligned bounding box is defined by an [param aabb].
+			</description>
+		</method>
+		<method name="add_projected_area_cylinder">
+			<return type="void" />
+			<param index="0" name="position" type="Vector3" />
+			<param index="1" name="radius" type="float" />
+			<param index="2" name="height" type="float" />
+			<param index="3" name="navigation_layers" type="int" />
+			<param index="4" name="priority" type="int" />
+			<description>
+				Adds a new projected area of shape type cylinder to the source geometry. The cylinder is created at [param position] with [param radius] and extruded by [param height] along the y-axis.
+			</description>
+		</method>
+		<method name="add_projected_area_polygon">
+			<return type="void" />
+			<param index="0" name="vertices" type="PackedVector3Array" />
+			<param index="1" name="elevation" type="float" />
+			<param index="2" name="height" type="float" />
+			<param index="3" name="navigation_layers" type="int" />
+			<param index="4" name="priority" type="int" />
+			<description>
+				Adds a new projected area of shape type polygon to the source geometry. The [param vertices] are considered projected on a xz-axes plane, placed at the global y-axis [param elevation] and extruded by [param height].
+			</description>
+		</method>
 		<method name="add_projected_obstruction">
 			<return type="void" />
 			<param index="0" name="vertices" type="PackedVector3Array" />
@@ -57,6 +88,12 @@
 				Clears the internal data.
 			</description>
 		</method>
+		<method name="clear_projected_areas">
+			<return type="void" />
+			<description>
+				Clears all projected areas.
+			</description>
+		</method>
 		<method name="clear_projected_obstructions">
 			<return type="void" />
 			<description>
@@ -73,6 +110,21 @@
 			<return type="PackedInt32Array" />
 			<description>
 				Returns the parsed source geometry data indices array.
+			</description>
+		</method>
+		<method name="get_projected_areas" qualifiers="const">
+			<return type="Array" />
+			<description>
+				Returns the projected areas as an [Array] of dictionaries. Each [Dictionary] contains the following entries:
+				- [code]vertices[/code] - A [PackedVector3Array] that defines the outline points of the projected shape. Used by areas of type [enum NavigationServer3D.AreaShapeType3D] [constant NavigationServer3D.AREA_SHAPE_POLYGON].
+				- [code]aabb[/code] - A global [AABB] of the projected shape. Used by all area types.
+				- [code]position[/code] - A [Vector3] that defines the global position of the area shape. Used by all area types.
+				- [code]radius[/code] - A [float] that defines the radius of the projected shape. Used by areas of type [enum NavigationServer3D.AreaShapeType3D] [constant NavigationServer3D.AREA_SHAPE_CYLINDER].
+				- [code]elevation[/code] - A [float] that defines the projected shape placement on the y-axis. Used by areas of type [enum NavigationServer3D.AreaShapeType3D] [constant NavigationServer3D.AREA_SHAPE_POLYGON].
+				- [code]height[/code] - A [float] that defines how much the projected shape is extruded along the y-axis. Used by all area types.
+				- [code]navigation_layers[/code] - An [int] that defines the navigation layers bits that this area affects. Used by all area types.
+				- [code]priority[/code] - An [int] that defines the sorting order in case of overlap with higher values taking priority. Used by all area types.
+				- [code]shape_type[/code] - An [int] that defines the used shape. Maps to [enum NavigationServer3D.AreaShapeType3D].
 			</description>
 		</method>
 		<method name="get_projected_obstructions" qualifiers="const">
@@ -110,6 +162,26 @@
 			<description>
 				Sets the parsed source geometry data indices. The indices need to be matched with appropriated vertices.
 				[b]Warning:[/b] Inappropriate data can crash the baking process of the involved third-party libraries.
+			</description>
+		</method>
+		<method name="set_projected_areas">
+			<return type="void" />
+			<param index="0" name="projected_areas" type="Array" />
+			<description>
+				Sets the projected areas with an Array of Dictionaries with the following key value pairs:
+				[codeblocks]
+				[gdscript]
+				"vertices" : PackedFloat32Array
+				"aabb" : AABB
+				"position" : Vector3
+				"radius" : float
+				"elevation" : float
+				"height" : float
+				"navigation_layers" : int
+				"priority" : int
+				"shape_type" : int
+				[/gdscript]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="set_projected_obstructions">
