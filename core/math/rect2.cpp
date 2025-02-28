@@ -282,6 +282,190 @@ next4:
 	return true;
 }
 
+Rect2 Rect2::intersection_transformed(const Transform2D &p_xform, const Rect2 &p_rect) const {
+#ifdef MATH_CHECKS
+	if (unlikely(size.x < 0 || size.y < 0 || p_rect.size.x < 0 || p_rect.size.y < 0)) {
+		ERR_PRINT("Rect2 size is negative, this is not supported. Use Rect2.abs() to get a Rect2 with a positive size.");
+	}
+#endif
+
+	if ((p_xform.columns[0].y == 0.0f && p_xform.columns[1].x == 0.0f) || (p_xform.columns[0].x == 0.0f && p_xform.columns[1].y == 0.0f)) {
+		return intersection(p_xform.xform(p_rect));
+	}
+
+	Vector2 xf_points[4] = {
+		p_xform.xform(p_rect.position),
+		p_xform.xform(Vector2(p_rect.position.x + p_rect.size.x, p_rect.position.y)),
+		p_xform.xform(Vector2(p_rect.position.x + p_rect.size.x, p_rect.position.y + p_rect.size.y)),
+		p_xform.xform(Vector2(p_rect.position.x, p_rect.position.y + p_rect.size.y)),
+	};
+
+	const Point2 end = position + size;
+
+	Vector2i flags[4]; // The points are distributed in a nine-square grid.
+	Vector2i flag_changed_index; // Record the point index at which the flag changes for the first time.
+	Vector<Point2> points;
+
+	for (int idx = 0; idx < 5; idx++) {
+		if (idx < 4) {
+			const Point2 point = xf_points[idx];
+			for (int axis = 0; axis < 2; axis++) {
+				flags[idx][axis] = point[axis] < position[axis] ? -1 : (point[axis] > end[axis] ? 1 : 0);
+
+				if (idx != 0 && flag_changed_index[axis] == 0 && flags[idx][axis] != flags[0][axis]) {
+					flag_changed_index[axis] = idx;
+				}
+			}
+
+			if (flags[idx] == Vector2i()) {
+				points.push_back(point);
+			}
+			if (idx == 0) {
+				continue;
+			}
+		}
+
+		// Contains some points of p_rect.
+
+		const int index = idx % 4;
+		const int prev_idx = (index + 3) % 4;
+		const bool inside = flags[index] == Vector2i();
+		if ((flags[prev_idx] == Vector2i()) == inside) {
+			continue;
+		}
+
+		const Vector2i outer_flag = inside ? flags[prev_idx] : flags[index];
+		const Point2 outer = inside ? xf_points[prev_idx] : xf_points[index];
+		const Point2 inner = inside ? xf_points[index] : xf_points[prev_idx];
+		Point2 intersected = outer;
+
+		for (int axis = 0; axis < 2; axis++) {
+			if (outer_flag[axis] == 0) {
+				axis++;
+			}
+			intersected[axis] = CLAMP(intersected[axis], position[axis], end[axis]);
+			if (inner[axis] == intersected[axis]) {
+				break; // No extra intersection points, as the inner point is on the closest border.
+			}
+
+			const int axis_1 = (axis + 1) % 2;
+			intersected[axis_1] = outer[axis_1] + (intersected[axis] - outer[axis]) * (inner[axis_1] - outer[axis_1]) / (inner[axis] - outer[axis]);
+			if (axis == 1 || (intersected[axis_1] >= position[axis_1] && intersected[axis_1] <= end[axis_1])) {
+				points.push_back(intersected);
+				break;
+			}
+		}
+	}
+
+	if (points.size()) {
+		return Rect2(points.ptr(), points.size());
+	}
+
+	int axis = flag_changed_index.x == 0 ? 0 : (flag_changed_index.y == 0 ? 1 : -1);
+
+	if (axis != -1) {
+		if (flags[0][axis] != 0) {
+			return Rect2(); // No intersection, since all points are on one side.
+		}
+
+		// The points are located on both sides of the middle.
+
+		const int axis_1 = (axis + 1) % 2;
+		int idx = flag_changed_index[axis_1];
+
+		for (int line_count = 0; line_count < 2; line_count++) {
+			const Point2 prev = xf_points[(idx + 3) % 4];
+			const Point2 point = xf_points[idx];
+
+			Point2 intersected;
+			intersected[axis_1] = position[axis_1];
+			intersected[axis] = point[axis] + (position[axis_1] - point[axis_1]) * (prev[axis] - point[axis]) / (prev[axis_1] - point[axis_1]);
+			points.push_back(intersected);
+
+			intersected[axis_1] = end[axis_1];
+			intersected[axis] = point[axis] + (end[axis_1] - point[axis_1]) * (prev[axis] - point[axis]) / (prev[axis_1] - point[axis_1]);
+			points.push_back(intersected);
+
+			idx = flags[idx][axis_1] != flags[(idx + 1) % 4][axis_1] ? (idx + 1) % 4 : (idx + 2) % 4; // Adjacent or opposite.
+		}
+
+		return Rect2(points.ptr(), points.size());
+	}
+
+	for (int idx = MIN(flag_changed_index.x, flag_changed_index.y) - 1; idx < 4; idx++) {
+		const int next_idx = (idx + 1) % 4;
+
+		if ((flags[idx].x == flags[next_idx].x && flags[idx].x != 0) || (flags[idx].y == flags[next_idx].y && flags[idx].y != 0)) {
+			continue;
+		}
+
+		const Point2 point = xf_points[idx];
+		const Point2 next = xf_points[next_idx];
+
+		for (axis = 0; axis < 2; axis++) {
+			const int axis_1 = (axis + 1) % 2;
+			const int flag_sum = flags[idx][axis] + flags[next_idx][axis];
+
+			Point2 intersected;
+
+			switch (flag_sum) {
+				case -1:
+				case 0: {
+					intersected[axis] = position[axis];
+					intersected[axis_1] = point[axis_1] + (intersected[axis] - point[axis]) * (next[axis_1] - point[axis_1]) / (next[axis] - point[axis]);
+					if (intersected[axis_1] >= position[axis_1] && intersected[axis_1] <= end[axis_1]) {
+						points.push_back(intersected);
+					}
+					if (flag_sum == -1) {
+						break;
+					}
+					[[fallthrough]];
+				}
+				case 1: {
+					intersected[axis] = end[axis];
+					intersected[axis_1] = point[axis_1] + (intersected[axis] - point[axis]) * (next[axis_1] - point[axis_1]) / (next[axis] - point[axis]);
+					if (intersected[axis_1] >= position[axis_1] && intersected[axis_1] <= end[axis_1]) {
+						points.push_back(intersected);
+					}
+				} break;
+			}
+		}
+	}
+	if (points.size() > 2) {
+		return Rect2(points.ptr(), points.size());
+	}
+
+	// At most one edge intersects.
+
+	const Vector2 _points[4] = { position, Point2(end.x, position.y), end, Point2(position.x, end.y) };
+
+	for (int point_idx = 0; point_idx < 4; point_idx++) {
+		bool was_left = false;
+		bool inside = true;
+		for (int idx = 0; idx < 4; idx++) {
+			const int next_idx = (idx + 1) % 4;
+			Vector2 v0 = xf_points[next_idx] - xf_points[idx];
+			Vector2 v1 = _points[point_idx] - xf_points[idx];
+
+			bool is_left = v0.cross(v1) > 0;
+			if (idx > 0 && is_left != was_left) {
+				inside = false;
+				break;
+			}
+			was_left = is_left;
+		}
+		if (inside) {
+			points.push_back(_points[point_idx]);
+		}
+	}
+
+	if (points.size()) {
+		return Rect2(points.ptr(), points.size());
+	}
+
+	return Rect2();
+}
+
 Rect2::operator String() const {
 	return "[P: " + position.operator String() + ", S: " + size.operator String() + "]";
 }
