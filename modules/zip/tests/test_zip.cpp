@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  zip_packer.h                                                          */
+/*  test_zip.cpp                                                          */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,52 +28,14 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef ZIP_PACKER_H
-#define ZIP_PACKER_H
+#include "test_zip.h"
 
-#include "core/io/file_access.h"
-#include "core/object/ref_counted.h"
+namespace TestZip {
 
-#include "thirdparty/minizip/zip.h"
+void check_file_size(const String &p_path, int p_expected_size) {
+	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ);
+	CHECK(f.is_valid());
+	CHECK(f->get_length() == p_expected_size);
+}
 
-class ZIPPacker : public RefCounted {
-	GDCLASS(ZIPPacker, RefCounted);
-
-	Ref<FileAccess> fa;
-	zipFile zf = nullptr;
-	int compression_level;
-
-protected:
-	static void _bind_methods();
-
-public:
-	enum ZipAppend {
-		APPEND_CREATE = 0,
-		APPEND_CREATEAFTER = 1,
-		APPEND_ADDINZIP = 2,
-	};
-
-	enum CompressionLevel {
-		COMPRESSION_DEFAULT = 0,
-		COMPRESSION_NONE = 1,
-		COMPRESSION_BEST_SPEED = 2,
-		COMPRESSION_BEST = 3,
-	};
-
-	Error open(const String &p_path, ZipAppend p_append);
-	Error close();
-
-	void set_compression_level(CompressionLevel p_compression_level);
-
-	Error start_file(const String &p_path);
-	Error write_file(const Vector<uint8_t> &p_data);
-	Error close_file();
-
-	ZIPPacker();
-	~ZIPPacker();
-};
-
-VARIANT_ENUM_CAST(ZIPPacker::ZipAppend)
-VARIANT_ENUM_CAST(ZIPPacker::CompressionLevel)
-
-#endif // ZIP_PACKER_H
+} // namespace TestZip
