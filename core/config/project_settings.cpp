@@ -1612,6 +1612,7 @@ ProjectSettings::ProjectSettings() {
 	GLOBAL_DEF_BASIC("input_devices/pointing/android/enable_long_press_as_right_click", false);
 	GLOBAL_DEF_BASIC("input_devices/pointing/android/enable_pan_and_scale_gestures", false);
 	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "input_devices/pointing/android/rotary_input_scroll_axis", PROPERTY_HINT_ENUM, "Horizontal,Vertical"), 1);
+	GLOBAL_DEF("input_devices/pointing/android/override_volume_buttons", false);
 
 	// These properties will not show up in the dialog. If you want to exclude whole groups, use add_hidden_prefix().
 	GLOBAL_DEF_INTERNAL("application/config/features", PackedStringArray());
