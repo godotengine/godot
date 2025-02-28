@@ -337,7 +337,7 @@ void AndroidInputHandler::process_mouse_event(int p_event_action, int p_event_an
 		} break;
 
 		case AMOTION_EVENT_ACTION_MOVE: {
-			if (!mouse_event_info.valid) {
+			if (!p_source_mouse_relative && !mouse_event_info.valid) {
 				return;
 			}
 
