@@ -48,22 +48,22 @@
 
 // Internal macros to track Swappy version, do not use directly.
 #define SWAPPY_MAJOR_VERSION 2
-#define SWAPPY_MINOR_VERSION 0
+#define SWAPPY_MINOR_VERSION 2
 #define SWAPPY_BUGFIX_VERSION 0
-#define SWAPPY_PACKED_VERSION                                                  \
-    ANDROID_GAMESDK_PACKED_VERSION(SWAPPY_MAJOR_VERSION, SWAPPY_MINOR_VERSION, \
-                                   SWAPPY_BUGFIX_VERSION)
+#define SWAPPY_PACKED_VERSION                                                \
+  ANDROID_GAMESDK_PACKED_VERSION(SWAPPY_MAJOR_VERSION, SWAPPY_MINOR_VERSION, \
+                                 SWAPPY_BUGFIX_VERSION)
 
 // Internal macros to generate a symbol to track Swappy version, do not use
 // directly.
 #define SWAPPY_VERSION_CONCAT_NX(PREFIX, MAJOR, MINOR, BUGFIX, GITCOMMIT) \
-    PREFIX##_##MAJOR##_##MINOR##_##BUGFIX##_##GITCOMMIT
+  PREFIX##_##MAJOR##_##MINOR##_##BUGFIX##_##GITCOMMIT
 #define SWAPPY_VERSION_CONCAT(PREFIX, MAJOR, MINOR, BUGFIX, GITCOMMIT) \
-    SWAPPY_VERSION_CONCAT_NX(PREFIX, MAJOR, MINOR, BUGFIX, GITCOMMIT)
-#define SWAPPY_VERSION_SYMBOL                                          \
-    SWAPPY_VERSION_CONCAT(Swappy_version, SWAPPY_MAJOR_VERSION,        \
-                          SWAPPY_MINOR_VERSION, SWAPPY_BUGFIX_VERSION, \
-                          AGDK_GIT_COMMIT)
+  SWAPPY_VERSION_CONCAT_NX(PREFIX, MAJOR, MINOR, BUGFIX, GITCOMMIT)
+#define SWAPPY_VERSION_SYMBOL                                        \
+  SWAPPY_VERSION_CONCAT(Swappy_version, SWAPPY_MAJOR_VERSION,        \
+                        SWAPPY_MINOR_VERSION, SWAPPY_BUGFIX_VERSION, \
+                        AGDK_GIT_COMMIT)
 
 // Define this to 1 to enable all logging from Swappy, by default it is
 // disabled in a release build and enabled in a debug build.
@@ -83,29 +83,29 @@ typedef uint64_t SwappyThreadId;
  * Usage of this functionality is optional.
  */
 typedef struct SwappyThreadFunctions {
-    /** @brief Thread start callback.
-     *
-     * This function is called by Swappy to start thread_func on a new thread.
-     * @param user_data A value to be passed the thread function.
-     * If the thread was started, this function should set the thread_id and
-     * return 0. If the thread was not started, this function should return a
-     * non-zero value.
-     */
-    int (*start)(SwappyThreadId* thread_id, void* (*thread_func)(void*),
-                 void* user_data);
+  /** @brief Thread start callback.
+   *
+   * This function is called by Swappy to start thread_func on a new thread.
+   * @param user_data A value to be passed the thread function.
+   * If the thread was started, this function should set the thread_id and
+   * return 0. If the thread was not started, this function should return a
+   * non-zero value.
+   */
+  int (*start)(SwappyThreadId* thread_id, void* (*thread_func)(void*),
+               void* user_data);
 
-    /** @brief Thread join callback.
-     *
-     * This function is called by Swappy to join the thread with given id.
-     */
-    void (*join)(SwappyThreadId thread_id);
+  /** @brief Thread join callback.
+   *
+   * This function is called by Swappy to join the thread with given id.
+   */
+  void (*join)(SwappyThreadId thread_id);
 
-    /** @brief Thread joinable callback.
-     *
-     * This function is called by Swappy to discover whether the thread with the
-     * given id is joinable.
-     */
-    bool (*joinable)(SwappyThreadId thread_id);
+  /** @brief Thread joinable callback.
+   *
+   * This function is called by Swappy to discover whether the thread with the
+   * given id is joinable.
+   */
+  bool (*joinable)(SwappyThreadId thread_id);
 } SwappyThreadFunctions;
 
 #ifdef __cplusplus
@@ -138,46 +138,45 @@ const char* Swappy_versionString();
  * ::SwappyGL_enableStats or ::SwappyVk_enableStats.
  */
 typedef struct SwappyStats {
-    /** @brief Total frames swapped by swappy */
-    uint64_t totalFrames;
+  /** @brief Total frames swapped by swappy */
+  uint64_t totalFrames;
 
-    /** @brief Histogram of the number of screen refreshes a frame waited in the
-     * compositor queue after rendering was completed.
-     *
-     * For example:
-     *     if a frame waited 2 refresh periods in the compositor queue after
-     * rendering was done, the frame will be counted in idleFrames[2]
-     */
-    uint64_t idleFrames[MAX_FRAME_BUCKETS];
+  /** @brief Histogram of the number of screen refreshes a frame waited in the
+   * compositor queue after rendering was completed.
+   *
+   * For example:
+   *     if a frame waited 2 refresh periods in the compositor queue after
+   * rendering was done, the frame will be counted in idleFrames[2]
+   */
+  uint64_t idleFrames[MAX_FRAME_BUCKETS];
 
-    /** @brief Histogram of the number of screen refreshes passed between the
-     * requested presentation time and the actual present time.
-     *
-     * For example:
-     *     if a frame was presented 2 refresh periods after the requested
-     * timestamp swappy set, the frame will be counted in lateFrames[2]
-     */
-    uint64_t lateFrames[MAX_FRAME_BUCKETS];
+  /** @brief Histogram of the number of screen refreshes passed between the
+   * requested presentation time and the actual present time.
+   *
+   * For example:
+   *     if a frame was presented 2 refresh periods after the requested
+   * timestamp swappy set, the frame will be counted in lateFrames[2]
+   */
+  uint64_t lateFrames[MAX_FRAME_BUCKETS];
 
-    /** @brief Histogram of the number of screen refreshes passed between two
-     * consecutive frames
-     *
-     * For example:
-     *     if frame N was presented 2 refresh periods after frame N-1
-     *     frame N will be counted in offsetFromPreviousFrame[2]
-     */
-    uint64_t offsetFromPreviousFrame[MAX_FRAME_BUCKETS];
+  /** @brief Histogram of the number of screen refreshes passed between two
+   * consecutive frames
+   *
+   * For example:
+   *     if frame N was presented 2 refresh periods after frame N-1
+   *     frame N will be counted in offsetFromPreviousFrame[2]
+   */
+  uint64_t offsetFromPreviousFrame[MAX_FRAME_BUCKETS];
 
-    /** @brief Histogram of the number of screen refreshes passed between the
-     * call to Swappy_recordFrameStart and the actual present time.
-     *
-     * For example:
-     *     if a frame was presented 2 refresh periods after the call to
-     * `Swappy_recordFrameStart` the frame will be counted in latencyFrames[2]
-     */
-    uint64_t latencyFrames[MAX_FRAME_BUCKETS];
+  /** @brief Histogram of the number of screen refreshes passed between the
+   * call to Swappy_recordFrameStart and the actual present time.
+   *
+   * For example:
+   *     if a frame was presented 2 refresh periods after the call to
+   * `Swappy_recordFrameStart` the frame will be counted in latencyFrames[2]
+   */
+  uint64_t latencyFrames[MAX_FRAME_BUCKETS];
 } SwappyStats;
-
 
 #ifdef __cplusplus
 }  // extern "C"
@@ -236,43 +235,43 @@ typedef void (*SwappySwapIntervalChangedCallback)(void*);
  * Injection of these is optional.
  */
 typedef struct SwappyTracer {
-    /**
-     * Callback called before waiting to queue the frame to the composer.
-     */
-    SwappyPreWaitCallback preWait;
+  /**
+   * Callback called before waiting to queue the frame to the composer.
+   */
+  SwappyPreWaitCallback preWait;
 
-    /**
-     * Callback called after wait to queue the frame to the composer is done.
-     */
-    SwappyPostWaitCallback postWait;
+  /**
+   * Callback called after wait to queue the frame to the composer is done.
+   */
+  SwappyPostWaitCallback postWait;
 
-    /**
-     * Callback called before calling the function to queue the frame to the
-     * composer.
-     */
-    SwappyPreSwapBuffersCallback preSwapBuffers;
+  /**
+   * Callback called before calling the function to queue the frame to the
+   * composer.
+   */
+  SwappyPreSwapBuffersCallback preSwapBuffers;
 
-    /**
-     * Callback called after calling the function to queue the frame to the
-     * composer.
-     */
-    SwappyPostSwapBuffersCallback postSwapBuffers;
+  /**
+   * Callback called after calling the function to queue the frame to the
+   * composer.
+   */
+  SwappyPostSwapBuffersCallback postSwapBuffers;
 
-    /**
-     * Callback called at the start of a frame.
-     */
-    SwappyStartFrameCallback startFrame;
+  /**
+   * Callback called at the start of a frame.
+   */
+  SwappyStartFrameCallback startFrame;
 
-    /**
-     * Pointer to some arbitrary data that will be passed as the first argument
-     * of callbacks.
-     */
-    void* userData;
+  /**
+   * Pointer to some arbitrary data that will be passed as the first argument
+   * of callbacks.
+   */
+  void* userData;
 
-    /**
-     * Callback called when the swap interval was changed.
-     */
-    SwappySwapIntervalChangedCallback swapIntervalChanged;
+  /**
+   * Callback called when the swap interval was changed.
+   */
+  SwappySwapIntervalChangedCallback swapIntervalChanged;
 } SwappyTracer;
 
 /** @} */
