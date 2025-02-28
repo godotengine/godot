@@ -98,6 +98,7 @@ private:
 	int current = -1;
 	int hovered = -1;
 	int prev_hovered = -1;
+	int shift_anchor = -1;
 
 	bool shape_changed = true;
 
@@ -173,6 +174,7 @@ private:
 	void _scroll_changed(double);
 	void _shape_text(int p_idx);
 	void _mouse_exited();
+	void _shift_range_select(int p_from, int p_to);
 
 	String _atr(int p_idx, const String &p_text) const;
 
