@@ -12,7 +12,7 @@
 		<method name="are_advanced_options_enabled" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Returns [code]true[/code], is "Advanced" toggle is enabled in the export dialog.
+				Returns [code]true[/code] if "Advanced" toggle is enabled in the export dialog.
 			</description>
 		</method>
 		<method name="get_custom_features" qualifiers="const">
@@ -24,7 +24,7 @@
 		<method name="get_customized_files" qualifiers="const">
 			<return type="Dictionary" />
 			<description>
-				Returns [Dictionary] of files selected in the "Resources" tab of the export dialog. Dictionary keys are file names and values are export mode - [code]"strip[/code], [code]"keep"[/code], or [code]"remove"[/code]. See also [method get_file_export_mode].
+				Returns [Dictionary] of files selected in the "Resources" tab of the export dialog. Dictionary keys are file names and values are export mode - [code]"strip"[/code], [code]"keep"[/code], or [code]"remove"[/code]. See also [method get_file_export_mode].
 			</description>
 		</method>
 		<method name="get_customized_files_count" qualifiers="const">
