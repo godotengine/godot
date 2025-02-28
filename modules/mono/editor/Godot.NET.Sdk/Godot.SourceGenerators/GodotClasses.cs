@@ -17,5 +17,6 @@ namespace Godot.SourceGenerators
         public const string GlobalClassAttr = "Godot.GlobalClassAttribute";
         public const string ToolAttr = "Godot.ToolAttribute";
         public const string SystemFlagsAttr = "System.FlagsAttribute";
+        public const string ScriptMethodExcludeAttr = "Godot.ScriptMethodExcludeAttribute";
     }
 }
