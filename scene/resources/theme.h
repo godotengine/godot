@@ -33,7 +33,7 @@
 
 #include "core/io/resource.h"
 #include "scene/resources/font.h"
-#include "scene/resources/style_box.h"
+#include "scene/resources/stylebox.h"
 #include "scene/resources/texture.h"
 
 class Theme : public Resource {

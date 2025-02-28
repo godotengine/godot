@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  style_box_line.cpp                                                    */
+/*  stylebox_line.cpp                                                    */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "style_box_line.h"
+#include "stylebox_line.h"
 
 #include "servers/rendering_server.h"
 
