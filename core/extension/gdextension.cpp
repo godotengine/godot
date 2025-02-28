@@ -181,7 +181,7 @@ public:
 
 		List<PropertyInfo>::ConstIterator itr = arguments_info.begin();
 		for (uint32_t i = 0; i < p_method_info->argument_count; ++itr, ++i) {
-			if (itr->type != (Variant::Type)p_method_info->arguments_info[i].type) {
+			if (itr->type != (Variant::Type)p_method_info->arguments[i].type) {
 				return false;
 			}
 		}
@@ -209,7 +209,7 @@ public:
 		arguments_info.clear();
 		arguments_metadata.clear();
 		for (uint32_t i = 0; i < p_method_info->argument_count; i++) {
-			arguments_info.push_back(PropertyInfo(p_method_info->arguments_info[i]));
+			arguments_info.push_back(PropertyInfo(p_method_info->arguments[i]));
 			arguments_metadata.push_back(GodotTypeInfo::Metadata(p_method_info->arguments_metadata[i]));
 		}
 

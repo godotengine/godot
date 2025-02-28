@@ -442,19 +442,17 @@ typedef struct {
 
 	/* If `has_return_value` is false, `return_value_info` and `return_value_metadata` are ignored.
 	 *
-	 * @todo Consider dropping `has_return_value` and making the other two properties match `GDExtensionMethodInfo` and `GDExtensionClassVirtualMethod` for consistency in future version of this struct.
+	 * @todo Consider dropping `has_return_value` and making the other two properties match `GDExtensionMethodInfo` and `GDExtensionClassVirtualMethodInfo` for consistency in future version of this struct.
 	 */
 	GDExtensionBool has_return_value;
 	GDExtensionPropertyInfo *return_value_info;
 	GDExtensionClassMethodArgumentMetadata return_value_metadata;
 
-	/* Arguments: `arguments_info` and `arguments_metadata` are array of size `argument_count`.
+	/* Arguments: `arguments` and `arguments_metadata` are array of size `argument_count`.
 	 * Name and hint information for the argument can be omitted in release builds. Class name should always be present if it applies.
-	 *
-	 * @todo Consider renaming `arguments_info` to `arguments` for consistency in future version of this struct.
 	 */
 	uint32_t argument_count;
-	GDExtensionPropertyInfo *arguments_info;
+	GDExtensionPropertyInfo *arguments;
 	GDExtensionClassMethodArgumentMetadata *arguments_metadata;
 
 	/* Default arguments: `default_arguments` is an array of size `default_argument_count`. */
