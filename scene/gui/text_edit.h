@@ -539,7 +539,7 @@ private:
 	void _scroll_lines_up();
 	void _scroll_lines_down();
 
-	void _adjust_viewport_to_caret_horizontally(int p_caret = 0);
+	void _adjust_viewport_to_caret_horizontally(int p_caret = 0, bool p_maximize_selection = true);
 
 	// Minimap.
 	bool draw_minimap = false;
