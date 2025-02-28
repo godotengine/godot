@@ -464,6 +464,7 @@ private:
 	TreeItem *popup_edited_item = nullptr;
 	TreeItem *selected_item = nullptr;
 	TreeItem *edited_item = nullptr;
+	TreeItem *shift_anchor = nullptr;
 
 	TreeItem *popup_pressing_edited_item = nullptr; // Candidate.
 	int popup_pressing_edited_item_column = -1;
@@ -743,6 +744,7 @@ private:
 	void _go_right();
 	void _go_down();
 	void _go_up();
+	void _shift_select_range(TreeItem *new_item);
 
 	bool _scroll(bool p_horizontal, float p_pages);
 
