@@ -238,6 +238,18 @@ public:
 		DEPTH_DRAW_MAX
 	};
 
+	enum DepthFunction {
+		DEPTH_FUNCTION_LESS_OR_EQUAL,
+		DEPTH_FUNCTION_LESS,
+		DEPTH_FUNCTION_EQUAL,
+		DEPTH_FUNCTION_GREATER,
+		DEPTH_FUNCTION_NOT_EQUAL,
+		DEPTH_FUNCTION_GREATER_OR_EQUAL,
+		DEPTH_FUNCTION_ALWAYS,
+		DEPTH_FUNCTION_NEVER,
+		DEPTH_FUNCTION_MAX
+	};
+
 	enum CullMode {
 		CULL_BACK,
 		CULL_FRONT,
@@ -327,6 +339,7 @@ private:
 		uint64_t shading_mode : get_num_bits(SHADING_MODE_MAX - 1);
 		uint64_t blend_mode : get_num_bits(BLEND_MODE_MAX - 1);
 		uint64_t depth_draw_mode : get_num_bits(DEPTH_DRAW_MAX - 1);
+		uint64_t depth_function : get_num_bits(DEPTH_FUNCTION_MAX - 1);
 		uint64_t cull_mode : get_num_bits(CULL_MAX - 1);
 		uint64_t diffuse_mode : get_num_bits(DIFFUSE_MAX - 1);
 		uint64_t specular_mode : get_num_bits(SPECULAR_MAX - 1);
@@ -378,6 +391,7 @@ private:
 		mk.detail_uv = detail_uv;
 		mk.blend_mode = blend_mode;
 		mk.depth_draw_mode = depth_draw_mode;
+		mk.depth_function = depth_function;
 		mk.cull_mode = cull_mode;
 		mk.texture_filter = texture_filter;
 		mk.transparency = transparency;
@@ -548,6 +562,7 @@ private:
 	BlendMode blend_mode = BLEND_MODE_MIX;
 	BlendMode detail_blend_mode = BLEND_MODE_MIX;
 	DepthDrawMode depth_draw_mode = DEPTH_DRAW_OPAQUE_ONLY;
+	DepthFunction depth_function = DEPTH_FUNCTION_GREATER_OR_EQUAL;
 	CullMode cull_mode = CULL_BACK;
 	bool flags[FLAG_MAX] = {};
 	SpecularMode specular_mode = SPECULAR_SCHLICK_GGX;
@@ -682,6 +697,9 @@ public:
 	void set_depth_draw_mode(DepthDrawMode p_mode);
 	DepthDrawMode get_depth_draw_mode() const;
 
+	void set_depth_function(DepthFunction p_func);
+	DepthFunction get_depth_function() const;
+
 	void set_cull_mode(CullMode p_mode);
 	CullMode get_cull_mode() const;
 
@@ -805,6 +823,7 @@ VARIANT_ENUM_CAST(BaseMaterial3D::DetailUV)
 VARIANT_ENUM_CAST(BaseMaterial3D::Feature)
 VARIANT_ENUM_CAST(BaseMaterial3D::BlendMode)
 VARIANT_ENUM_CAST(BaseMaterial3D::DepthDrawMode)
+VARIANT_ENUM_CAST(BaseMaterial3D::DepthFunction)
 VARIANT_ENUM_CAST(BaseMaterial3D::CullMode)
 VARIANT_ENUM_CAST(BaseMaterial3D::Flags)
 VARIANT_ENUM_CAST(BaseMaterial3D::DiffuseMode)
