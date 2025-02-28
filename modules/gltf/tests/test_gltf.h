@@ -78,6 +78,7 @@ static Node *gltf_import(const String &p_file) {
 	HashMap<StringName, Variant> options(21);
 	options["nodes/root_type"] = "";
 	options["nodes/root_name"] = "";
+	options["nodes/root_script"] = Variant();
 	options["nodes/apply_root_scale"] = true;
 	options["nodes/root_scale"] = 1.0;
 	options["meshes/ensure_tangents"] = true;

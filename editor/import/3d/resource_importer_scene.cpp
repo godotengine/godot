@@ -1368,6 +1368,51 @@ Node *ResourceImporterScene::_post_fix_animations(Node *p_node, Node *p_root, co
 	return p_node;
 }
 
+Node *ResourceImporterScene::_replace_node_with_type_and_script(Node *p_node, String p_node_type, Ref<Script> p_script) {
+	p_node_type = p_node_type.get_slicec(' ', 0); // Full root_type is "ClassName (filename.gd)" for a script global class.
+	if (p_script.is_valid()) {
+		// Ensure the node type supports the script, or pick one that does.
+		String script_base_type = p_script->get_instance_base_type();
+		if (ClassDB::is_parent_class(script_base_type, "Node")) {
+			if (p_node_type.is_empty() || !ClassDB::is_parent_class(p_node_type, script_base_type)) {
+				p_node_type = script_base_type;
+			}
+		}
+	}
+	if (!p_node_type.is_empty() && ScriptServer::is_global_class(p_node_type)) {
+		// If the user specified a script class, we need to get the base node type.
+		if (p_script.is_null()) {
+			p_script = ResourceLoader::load(ScriptServer::get_global_class_path(p_node_type));
+		}
+		p_node_type = ScriptServer::get_global_class_base(p_node_type);
+	}
+	if (!p_node_type.is_empty() && p_node->get_class_name() != p_node_type) {
+		// If the user specified a Godot node type that does not match
+		// what the scene import gave us, replace the root node.
+		Node *new_base_node = Object::cast_to<Node>(ClassDB::instantiate(p_node_type));
+		if (new_base_node) {
+			List<PropertyInfo> old_properties;
+			p_node->get_property_list(&old_properties);
+			for (const PropertyInfo &prop : old_properties) {
+				if (!(prop.usage & PROPERTY_USAGE_STORAGE)) {
+					continue;
+				}
+				new_base_node->set(prop.name, p_node->get(prop.name));
+			}
+			new_base_node->set_name(p_node->get_name());
+			_copy_meta(p_node, new_base_node);
+			p_node->replace_by(new_base_node);
+			p_node->set_owner(nullptr);
+			memdelete(p_node);
+			p_node = new_base_node;
+		}
+	}
+	if (p_script.is_valid()) {
+		p_node->set_script(Variant(p_script));
+	}
+	return p_node;
+}
+
 Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, HashMap<Ref<ImporterMesh>, Vector<Ref<Shape3D>>> &collision_map, Pair<PackedVector3Array, PackedInt32Array> &r_occluder_arrays, HashSet<Ref<ImporterMesh>> &r_scanned_meshes, const Dictionary &p_node_data, const Dictionary &p_material_data, const Dictionary &p_animation_data, float p_animation_fps, float p_applied_root_scale, const String &p_source_file, const HashMap<StringName, Variant> &p_options) {
 	// children first
 	for (int i = 0; i < p_node->get_child_count(); i++) {
@@ -1842,6 +1887,10 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, HashMap<
 		}
 	}
 
+	String node_type = node_settings.get("node/node_type", "");
+	Ref<Script> node_script = node_settings.get("node/script", Ref<Script>());
+	p_node = _replace_node_with_type_and_script(p_node, node_type, node_script);
+
 	return p_node;
 }
 
@@ -2057,9 +2106,12 @@ void ResourceImporterScene::_compress_animations(AnimationPlayer *anim, int p_pa
 void ResourceImporterScene::get_internal_import_options(InternalImportCategory p_category, List<ImportOption> *r_options) const {
 	switch (p_category) {
 		case INTERNAL_IMPORT_CATEGORY_NODE: {
+			r_options->push_back(ImportOption(PropertyInfo(Variant::STRING, "node/node_type", PROPERTY_HINT_TYPE_STRING, "Node"), ""));
+			r_options->push_back(ImportOption(PropertyInfo(Variant::OBJECT, "node/script", PROPERTY_HINT_RESOURCE_TYPE, "Script"), Variant()));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "import/skip_import", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), false));
 		} break;
 		case INTERNAL_IMPORT_CATEGORY_MESH_3D_NODE: {
+			r_options->push_back(ImportOption(PropertyInfo(Variant::OBJECT, "node/script", PROPERTY_HINT_RESOURCE_TYPE, "Script"), Variant()));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "import/skip_import", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), false));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "generate/physics", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), false));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "generate/navmesh", PROPERTY_HINT_ENUM, "Disabled,Mesh + NavMesh,NavMesh Only"), 0));
@@ -2140,6 +2192,7 @@ void ResourceImporterScene::get_internal_import_options(InternalImportCategory p
 			}
 		} break;
 		case INTERNAL_IMPORT_CATEGORY_ANIMATION_NODE: {
+			r_options->push_back(ImportOption(PropertyInfo(Variant::OBJECT, "node/script", PROPERTY_HINT_RESOURCE_TYPE, "Script"), Variant()));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "import/skip_import", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), false));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "optimizer/enabled", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), true));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "optimizer/max_velocity_error", PROPERTY_HINT_RANGE, "0,1,0.01"), 0.01));
@@ -2152,6 +2205,7 @@ void ResourceImporterScene::get_internal_import_options(InternalImportCategory p
 			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "import_tracks/scale", PROPERTY_HINT_ENUM, "IfPresent,IfPresentForAll,Never"), 1));
 		} break;
 		case INTERNAL_IMPORT_CATEGORY_SKELETON_3D_NODE: {
+			r_options->push_back(ImportOption(PropertyInfo(Variant::OBJECT, "node/script", PROPERTY_HINT_RESOURCE_TYPE, "Script"), Variant()));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "import/skip_import", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), false));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "rest_pose/load_pose", PROPERTY_HINT_ENUM, "Default Pose,Use AnimationPlayer,Load External Animation", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), 0));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::OBJECT, "rest_pose/external_animation_library", PROPERTY_HINT_RESOURCE_TYPE, "Animation,AnimationLibrary", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), Variant()));
@@ -2436,6 +2490,7 @@ bool ResourceImporterScene::get_internal_option_update_view_required(InternalImp
 void ResourceImporterScene::get_import_options(const String &p_path, List<ImportOption> *r_options, int p_preset) const {
 	r_options->push_back(ImportOption(PropertyInfo(Variant::STRING, "nodes/root_type", PROPERTY_HINT_TYPE_STRING, "Node"), ""));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::STRING, "nodes/root_name"), ""));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::OBJECT, "nodes/root_script", PROPERTY_HINT_RESOURCE_TYPE, "Script"), Variant()));
 
 	List<String> script_extensions;
 	ResourceLoader::get_recognized_extensions_for_type("Script", &script_extensions);
@@ -3147,28 +3202,8 @@ Error ResourceImporterScene::import(ResourceUID::ID p_source_id, const String &p
 	_post_fix_animations(scene, scene, node_data, animation_data, fps, remove_immutable_tracks);
 
 	String root_type = p_options["nodes/root_type"];
-	if (!root_type.is_empty()) {
-		root_type = root_type.split(" ")[0]; // Full root_type is "ClassName (filename.gd)" for a script global class.
-		Ref<Script> root_script = nullptr;
-		if (ScriptServer::is_global_class(root_type)) {
-			root_script = ResourceLoader::load(ScriptServer::get_global_class_path(root_type));
-			root_type = ScriptServer::get_global_class_base(root_type);
-		}
-		if (scene->get_class_name() != root_type) {
-			// If the user specified a Godot node type that does not match
-			// what the scene import gave us, replace the root node.
-			Node *base_node = Object::cast_to<Node>(ClassDB::instantiate(root_type));
-			if (base_node) {
-				scene->replace_by(base_node);
-				scene->set_owner(nullptr);
-				memdelete(scene);
-				scene = base_node;
-			}
-		}
-		if (root_script.is_valid()) {
-			scene->set_script(Variant(root_script));
-		}
-	}
+	Ref<Script> root_script = p_options["nodes/root_script"];
+	scene = _replace_node_with_type_and_script(scene, root_type, root_script);
 
 	String root_name = p_options["nodes/root_name"];
 	if (!root_name.is_empty() && root_name != "Scene Root") {
