@@ -2561,7 +2561,7 @@ void TextEdit::_move_caret_up(bool p_select) {
 		int cur_wrap_index = get_caret_wrap_index(i);
 		if (cur_wrap_index > 0) {
 			set_caret_line(get_caret_line(i), true, false, cur_wrap_index - 1, i);
-		} else if (get_caret_line(i) == 0) {
+		} else if (get_caret_line(i) == 0 && !_is_caret_at_eol(i)) {
 			set_caret_column(0, i == 0, i);
 		} else {
 			int new_line = get_caret_line(i) - get_next_visible_line_offset_from(get_caret_line(i) - 1, -1);
@@ -2587,7 +2587,7 @@ void TextEdit::_move_caret_down(bool p_select) {
 		int cur_wrap_index = get_caret_wrap_index(i);
 		if (cur_wrap_index < get_line_wrap_count(get_caret_line(i))) {
 			set_caret_line(get_caret_line(i), i == 0, false, cur_wrap_index + 1, i);
-		} else if (get_caret_line(i) == get_last_unhidden_line()) {
+		} else if (get_caret_line(i) == get_last_unhidden_line() && !_is_caret_at_eol(i)) {
 			set_caret_column(text[get_caret_line(i)].length());
 		} else {
 			int new_line = get_caret_line(i) + get_next_visible_line_offset_from(CLAMP(get_caret_line(i) + 1, 0, text.size() - 1), 1);
@@ -2649,6 +2649,9 @@ void TextEdit::_move_caret_to_line_end(bool p_select) {
 		} else {
 			set_caret_column(row_end_col, i == 0, i);
 		}
+
+		// Setting this to flag the caret is at the end of line.
+		carets.write[i].last_fit_x = INT_MAX;
 	}
 	merge_overlapping_carets();
 }
@@ -2851,7 +2854,9 @@ void TextEdit::_move_caret_document_end(bool p_select) {
 	}
 
 	set_caret_line(get_last_unhidden_line(), true, false, -1);
-	set_caret_column(text[get_caret_line()].length());
+	if (!_is_caret_at_eol(0)) {
+		set_caret_column(text[get_caret_line()].length());
+	}
 }
 
 bool TextEdit::_clear_carets_and_selection() {
@@ -4950,7 +4955,9 @@ void TextEdit::collapse_carets(int p_from_line, int p_from_column, int p_to_line
 			if (is_caret_in) {
 				// Caret was in the collapsed area.
 				set_caret_line(collapse_line, false, true, -1, i);
-				set_caret_column(collapse_column, false, i);
+				if (!_is_caret_at_eol(i)) {
+					set_caret_column(collapse_column, false, i);
+				}
 				if (is_in_mulitcaret_edit() && get_caret_count() > 1) {
 					multicaret_edit_ignore_carets.insert(i);
 				}
@@ -4963,7 +4970,9 @@ void TextEdit::collapse_carets(int p_from_line, int p_from_column, int p_to_line
 				// Selection was completely encapsulated.
 				deselect(i);
 				set_caret_line(collapse_line, false, true, -1, i);
-				set_caret_column(collapse_column, false, i);
+				if (!_is_caret_at_eol(i)) {
+					set_caret_column(collapse_column, false, i);
+				}
 				if (is_in_mulitcaret_edit() && get_caret_count() > 1) {
 					multicaret_edit_ignore_carets.insert(i);
 				}
@@ -4971,7 +4980,9 @@ void TextEdit::collapse_carets(int p_from_line, int p_from_column, int p_to_line
 			} else if (is_caret_in) {
 				// Only caret was inside.
 				set_caret_line(collapse_line, false, true, -1, i);
-				set_caret_column(collapse_column, false, i);
+				if (!_is_caret_at_eol(i)) {
+					set_caret_column(collapse_column, false, i);
+				}
 				any_collapsed = true;
 			} else if (is_origin_in) {
 				// Only selection origin was inside.
@@ -5170,8 +5181,13 @@ void TextEdit::set_caret_line(int p_line, bool p_adjust_viewport, bool p_can_be_
 			}
 		}
 	} else {
-		// Clamp the column.
-		n_col = MIN(get_caret_column(p_caret), get_line(p_line).length());
+		// Keep the caret at the end of the line.
+		if (_is_caret_at_eol(p_caret)) {
+			n_col = get_line(p_line).length();
+		} else {
+			// Clamp the column.
+			n_col = MIN(get_caret_column(p_caret), get_line(p_line).length());
+		}
 	}
 	caret_moved = (caret_moved || get_caret_column(p_caret) != n_col);
 	carets.write[p_caret].column = n_col;
@@ -7596,7 +7612,7 @@ int TextEdit::_get_char_pos_for_line(int p_px, int p_line, int p_wrap_index) con
 	if (is_layout_rtl()) {
 		p_px = TS->shaped_text_get_size(text_rid).x - p_px + wrap_indent;
 	} else {
-		p_px -= wrap_indent;
+		p_px -= (int)wrap_indent;
 	}
 	int ofs = TS->shaped_text_hit_test_position(text_rid, p_px);
 	if (!caret_mid_grapheme_enabled) {
@@ -7744,6 +7760,10 @@ void TextEdit::_cancel_drag_and_drop_text() {
 	if (selection_drag_attempt && get_viewport()) {
 		get_viewport()->gui_cancel_drag();
 	}
+}
+
+bool TextEdit::_is_caret_at_eol(int p_caret) {
+	return carets[p_caret].last_fit_x == INT_MAX;
 }
 
 /* Selection */
