@@ -49,6 +49,22 @@ void CollisionShape2D::_update_in_shape_owner(bool p_xform_only) {
 	collision_object->shape_owner_set_one_way_collision_margin(owner_id, one_way_collision_margin);
 }
 
+void CollisionShape2D::_material_changed() {
+	if (shape.is_null()) {
+		return;
+	}
+
+	RID shape_rid = shape->get_rid();
+
+	if (physics_material.is_null()) {
+		PhysicsServer2D::get_singleton()->shape_set_friction_override(shape_rid, false);
+		PhysicsServer2D::get_singleton()->shape_set_bounce_override(shape_rid, false);
+	} else {
+		PhysicsServer2D::get_singleton()->shape_set_friction_override(shape_rid, true, physics_material->computed_friction());
+		PhysicsServer2D::get_singleton()->shape_set_bounce_override(shape_rid, true, physics_material->computed_bounce());
+	}
+}
+
 void CollisionShape2D::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_PARENTED: {
@@ -151,6 +167,8 @@ void CollisionShape2D::set_shape(const Ref<Shape2D> &p_shape) {
 
 	if (shape.is_valid()) {
 		shape->connect_changed(callable_mp(this, &CollisionShape2D::_shape_changed));
+		// Set material on the new shape
+		_material_changed();
 	}
 
 	update_configuration_warnings();
@@ -245,6 +263,18 @@ Color CollisionShape2D::get_debug_color() const {
 	return debug_color;
 }
 
+void CollisionShape2D::set_physics_material(const Ref<PhysicsMaterial> &p_material) {
+	physics_material = p_material;
+
+	physics_material->connect_changed(callable_mp(this, &CollisionShape2D::_material_changed));
+
+	_material_changed();
+}
+
+Ref<PhysicsMaterial> CollisionShape2D::get_physics_material() const {
+	return physics_material;
+}
+
 #ifdef DEBUG_ENABLED
 
 bool CollisionShape2D::_property_can_revert(const StringName &p_name) const {
@@ -283,11 +313,14 @@ void CollisionShape2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_one_way_collision_enabled"), &CollisionShape2D::is_one_way_collision_enabled);
 	ClassDB::bind_method(D_METHOD("set_one_way_collision_margin", "margin"), &CollisionShape2D::set_one_way_collision_margin);
 	ClassDB::bind_method(D_METHOD("get_one_way_collision_margin"), &CollisionShape2D::get_one_way_collision_margin);
+	ClassDB::bind_method(D_METHOD("set_physics_material", "material"), &CollisionShape2D::set_physics_material);
+	ClassDB::bind_method(D_METHOD("get_physics_material"), &CollisionShape2D::get_physics_material);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "shape", PROPERTY_HINT_RESOURCE_TYPE, "Shape2D"), "set_shape", "get_shape");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "disabled"), "set_disabled", "is_disabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "one_way_collision"), "set_one_way_collision", "is_one_way_collision_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "one_way_collision_margin", PROPERTY_HINT_RANGE, "0,128,0.1,suffix:px"), "set_one_way_collision_margin", "get_one_way_collision_margin");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "physics_material", PROPERTY_HINT_RESOURCE_TYPE, "PhysicsMaterial"), "set_physics_material", "get_physics_material");
 
 	ClassDB::bind_method(D_METHOD("set_debug_color", "color"), &CollisionShape2D::set_debug_color);
 	ClassDB::bind_method(D_METHOD("get_debug_color"), &CollisionShape2D::get_debug_color);
