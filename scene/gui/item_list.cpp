@@ -735,6 +735,11 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 	}
 
 	Ref<InputEventMouseButton> mb = p_event;
+	Ref<InputEventKey> ev_key = p_event;
+
+	if (ev_key.is_valid() && ev_key->get_keycode() == Key::SHIFT && !ev_key->is_pressed()) {
+		shift_anchor = -1;
+	}
 
 	if (defer_select_single >= 0 && mb.is_valid() && mb->get_button_index() == MouseButton::LEFT && !mb->is_pressed()) {
 		select(defer_select_single, true);
@@ -904,7 +909,14 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 				return;
 			}
 		}
-		if (p_event->is_action("ui_up", true)) {
+		// Shift Up Selection.
+		if (select_mode == SELECT_MULTI && p_event->is_action("ui_up", false) && ev_key.is_valid() && ev_key->is_shift_pressed()) {
+			int next = MAX(current - max_columns, 0);
+			_shift_range_select(current, next);
+			accept_event();
+		}
+
+		else if (p_event->is_action("ui_up", true)) {
 			if (!search_string.is_empty()) {
 				uint64_t now = OS::get_singleton()->get_ticks_msec();
 				uint64_t diff = now - search_time_msec;
@@ -942,7 +954,16 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 				}
 				accept_event();
 			}
-		} else if (p_event->is_action("ui_down", true)) {
+		}
+
+		// Shift Down Selection.
+		else if (select_mode == SELECT_MULTI && p_event->is_action("ui_down", false) && ev_key.is_valid() && ev_key->is_shift_pressed()) {
+			int next = MIN(current + max_columns, items.size() - 1);
+			_shift_range_select(current, next);
+			accept_event();
+		}
+
+		else if (p_event->is_action("ui_down", true)) {
 			if (!search_string.is_empty()) {
 				uint64_t now = OS::get_singleton()->get_ticks_msec();
 				uint64_t diff = now - search_time_msec;
@@ -1010,7 +1031,16 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 					break;
 				}
 			}
-		} else if (p_event->is_action("ui_left", true)) {
+		}
+
+		// Shift Left Selection.
+		else if (select_mode == SELECT_MULTI && p_event->is_action("ui_left", false) && ev_key.is_valid() && ev_key->is_shift_pressed()) {
+			int next = MAX(current - 1, 0);
+			_shift_range_select(current, next);
+			accept_event();
+		}
+
+		else if (p_event->is_action("ui_left", true)) {
 			search_string = ""; //any mousepress cancels
 
 			if (current % current_columns != 0) {
@@ -1030,7 +1060,16 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 				}
 				accept_event();
 			}
-		} else if (p_event->is_action("ui_right", true)) {
+		}
+
+		// Shift Right Selection.
+		else if (select_mode == SELECT_MULTI && p_event->is_action("ui_right", false) && ev_key.is_valid() && ev_key->is_shift_pressed()) {
+			int next = MIN(current + 1, items.size() - 1);
+			_shift_range_select(current, next);
+			accept_event();
+		}
+
+		else if (p_event->is_action("ui_right", true)) {
 			search_string = ""; //any mousepress cancels
 
 			if (current % current_columns != (current_columns - 1) && current + 1 < items.size()) {
@@ -1863,6 +1902,31 @@ void ItemList::_mouse_exited() {
 		queue_accessibility_update();
 		queue_redraw();
 	}
+}
+
+void ItemList::_shift_range_select(int p_from, int p_to) {
+	ERR_FAIL_INDEX(p_from, items.size());
+	ERR_FAIL_INDEX(p_to, items.size());
+
+	if (shift_anchor == -1) {
+		shift_anchor = p_from;
+	}
+
+	for (int i = 0; i < items.size(); i++) {
+		if (i >= MIN(shift_anchor, p_to) && i <= MAX(shift_anchor, p_to)) {
+			if (!is_selected(i)) {
+				select(i, false);
+				emit_signal(SNAME("multi_selected"), i, true);
+			}
+		} else if (is_selected(i)) {
+			deselect(i);
+			emit_signal(SNAME("multi_selected"), i, false);
+		}
+	}
+
+	current = p_to;
+	queue_redraw();
+	ensure_current_is_visible();
 }
 
 String ItemList::_atr(int p_idx, const String &p_text) const {
