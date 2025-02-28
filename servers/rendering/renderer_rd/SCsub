@@ -7,8 +7,11 @@ env.add_source_files(env.servers_sources, "*.cpp")
 
 SConscript("effects/SCsub")
 SConscript("environment/SCsub")
-SConscript("forward_clustered/SCsub")
-SConscript("forward_mobile/SCsub")
+if env["rendering_device"]:
+    SConscript("storage_rd/SCsub")
+    if env["forward_plus_renderer"]:
+        SConscript("forward_clustered/SCsub")
+    if env["forward_mobile_renderer"]:
+        SConscript("forward_mobile/SCsub")
 SConscript("shaders/SCsub")
 SConscript("spirv-reflect/SCsub")
-SConscript("storage_rd/SCsub")

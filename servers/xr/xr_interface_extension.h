@@ -31,6 +31,7 @@
 #ifndef XR_INTERFACE_EXTENSION_H
 #define XR_INTERFACE_EXTENSION_H
 
+#include "servers/rendering/renderer_compositor.h"
 #include "servers/xr/xr_interface.h"
 
 class XRInterfaceExtension : public XRInterface {

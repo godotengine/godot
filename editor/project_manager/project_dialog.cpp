@@ -445,7 +445,9 @@ void ProjectDialog::_reset_name() {
 }
 
 void ProjectDialog::_renderer_selected() {
-	ERR_FAIL_NULL(renderer_button_group->get_pressed_button());
+	if (!renderer_button_group->get_pressed_button()) {
+		return;
+	}
 
 	String renderer_type = renderer_button_group->get_pressed_button()->get_meta(SNAME("rendering_method"));
 
@@ -982,7 +984,7 @@ ProjectDialog::ProjectDialog() {
 	Button *rs_button = memnew(CheckBox);
 	rs_button->set_button_group(renderer_button_group);
 	rs_button->set_text(TTR("Forward+"));
-#ifndef RD_ENABLED
+#if !defined(RD_ENABLED) || !defined(FORWARD_RD_ENABLED)
 	rs_button->set_disabled(true);
 #endif
 	rs_button->set_meta(SNAME("rendering_method"), "forward_plus");
@@ -994,7 +996,7 @@ ProjectDialog::ProjectDialog() {
 	rs_button = memnew(CheckBox);
 	rs_button->set_button_group(renderer_button_group);
 	rs_button->set_text(TTR("Mobile"));
-#ifndef RD_ENABLED
+#if !defined(RD_ENABLED) || !defined(MOBILE_RD_ENABLED)
 	rs_button->set_disabled(true);
 #endif
 	rs_button->set_meta(SNAME("rendering_method"), "mobile");
