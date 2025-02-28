@@ -31,7 +31,7 @@
 #ifndef GROUP_SETTINGS_EDITOR_H
 #define GROUP_SETTINGS_EDITOR_H
 
-#include "scene/gui/dialogs.h"
+#include "scene/gui/advanced/dialogs.h"
 
 class CheckBox;
 class EditorFileSystemDirectory;

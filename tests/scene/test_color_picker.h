@@ -31,7 +31,7 @@
 #ifndef TEST_COLOR_PICKER_H
 #define TEST_COLOR_PICKER_H
 
-#include "scene/gui/color_picker.h"
+#include "scene/gui/advanced/color_picker.h"
 
 #include "tests/test_macros.h"
 

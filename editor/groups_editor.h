@@ -31,7 +31,7 @@
 #ifndef GROUPS_EDITOR_H
 #define GROUPS_EDITOR_H
 
-#include "scene/gui/dialogs.h"
+#include "scene/gui/advanced/dialogs.h"
 
 class Button;
 class CheckBox;

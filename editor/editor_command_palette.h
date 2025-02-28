@@ -32,8 +32,8 @@
 #define EDITOR_COMMAND_PALETTE_H
 
 #include "core/input/shortcut.h"
-#include "scene/gui/dialogs.h"
-#include "scene/gui/tree.h"
+#include "scene/gui/advanced/dialogs.h"
+#include "scene/gui/advanced/tree.h"
 
 class EditorCommandPalette : public ConfirmationDialog {
 	GDCLASS(EditorCommandPalette, ConfirmationDialog);

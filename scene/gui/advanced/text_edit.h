@@ -31,8 +31,8 @@
 #ifndef TEXT_EDIT_H
 #define TEXT_EDIT_H
 
+#include "popup_menu.h"
 #include "scene/gui/control.h"
-#include "scene/gui/popup_menu.h"
 #include "scene/gui/scroll_bar.h"
 #include "scene/main/timer.h"
 #include "scene/resources/syntax_highlighter.h"

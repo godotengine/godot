@@ -31,7 +31,7 @@
 #ifndef TEST_TREE_H
 #define TEST_TREE_H
 
-#include "scene/gui/tree.h"
+#include "scene/gui/advanced/tree.h"
 
 #include "tests/test_macros.h"
 

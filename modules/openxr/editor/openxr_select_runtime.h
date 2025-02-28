@@ -31,7 +31,7 @@
 #ifndef OPENXR_SELECT_RUNTIME_H
 #define OPENXR_SELECT_RUNTIME_H
 
-#include "scene/gui/option_button.h"
+#include "scene/gui/advanced/option_button.h"
 
 class OpenXRSelectRuntime : public OptionButton {
 	GDCLASS(OpenXRSelectRuntime, OptionButton);
