@@ -454,6 +454,9 @@ void OS_Android::_load_system_font_config() const {
 	Ref<XMLParser> parser;
 	parser.instantiate();
 
+	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+	String root = String(getenv("ANDROID_ROOT")).path_join("fonts");
+
 	Error err = parser->open(String(getenv("ANDROID_ROOT")).path_join("/etc/fonts.xml"));
 	if (err == OK) {
 		bool in_font_node = false;
@@ -530,20 +533,22 @@ void OS_Android::_load_system_font_config() const {
 				if (in_font_node) {
 					fi.filename = parser->get_node_data().strip_edges();
 					fi.font_name = fn;
-					if (!fb.is_empty() && fn.is_empty()) {
-						fi.font_name = fb;
-						fi.priority = 2;
+					if (da->file_exists(root.path_join(fi.filename))) {
+						if (!fb.is_empty() && fn.is_empty()) {
+							fi.font_name = fb;
+							fi.priority = 2;
+						}
+						if (fi.font_name.is_empty()) {
+							fi.font_name = "sans-serif";
+							fi.priority = 5;
+						}
+						if (fi.font_name.ends_with("-condensed")) {
+							fi.stretch = 75;
+							fi.font_name = fi.font_name.trim_suffix("-condensed");
+						}
+						fonts.push_back(fi);
+						font_names.insert(fi.font_name);
 					}
-					if (fi.font_name.is_empty()) {
-						fi.font_name = "sans-serif";
-						fi.priority = 5;
-					}
-					if (fi.font_name.ends_with("-condensed")) {
-						fi.stretch = 75;
-						fi.font_name = fi.font_name.trim_suffix("-condensed");
-					}
-					fonts.push_back(fi);
-					font_names.insert(fi.font_name);
 				}
 			}
 			if (parser->get_node_type() == XMLParser::NODE_ELEMENT_END) {
