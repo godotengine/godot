@@ -59,6 +59,7 @@ import androidx.annotation.NonNull;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Handles input related events for the {@link GodotRenderView} view.
@@ -83,7 +84,7 @@ public class GodotInputHandler implements InputManager.InputDeviceListener, Sens
 	/**
 	 * Used to decide whether mouse capture can be enabled.
 	 */
-	private int lastSeenToolType = MotionEvent.TOOL_TYPE_UNKNOWN;
+	private AtomicInteger lastSeenToolType = new AtomicInteger(MotionEvent.TOOL_TYPE_UNKNOWN);
 
 	private int rotaryInputAxis = ROTARY_INPUT_VERTICAL_AXIS;
 
@@ -149,7 +150,8 @@ public class GodotInputHandler implements InputManager.InputDeviceListener, Sens
 	}
 
 	public boolean canCapturePointer() {
-		return lastSeenToolType == MotionEvent.TOOL_TYPE_MOUSE;
+		return lastSeenToolType.get() == MotionEvent.TOOL_TYPE_MOUSE ||
+				lastSeenToolType.get() == MotionEvent.TOOL_TYPE_UNKNOWN;
 	}
 
 	public void onPointerCaptureChange(boolean hasCapture) {
@@ -210,7 +212,7 @@ public class GodotInputHandler implements InputManager.InputDeviceListener, Sens
 	}
 
 	public boolean onTouchEvent(final MotionEvent event) {
-		lastSeenToolType = getEventToolType(event);
+		lastSeenToolType.set(getEventToolType(event));
 
 		this.scaleGestureDetector.onTouchEvent(event);
 		if (this.gestureDetector.onTouchEvent(event)) {
@@ -236,7 +238,7 @@ public class GodotInputHandler implements InputManager.InputDeviceListener, Sens
 	}
 
 	public boolean onGenericMotionEvent(MotionEvent event) {
-		lastSeenToolType = getEventToolType(event);
+		lastSeenToolType.set(getEventToolType(event));
 
 		if (event.isFromSource(InputDevice.SOURCE_JOYSTICK) && event.getActionMasked() == MotionEvent.ACTION_MOVE) {
 			// Check if the device exists
