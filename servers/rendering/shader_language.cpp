@@ -1342,7 +1342,7 @@ void ShaderLanguage::_parse_used_identifier(const StringName &p_identifier, Iden
 			break;
 		case IdentifierType::IDENTIFIER_VARYING:
 			if (HAS_WARNING(ShaderWarning::UNUSED_VARYING_FLAG) && used_varyings.has(p_identifier)) {
-				if (shader->varyings[p_identifier].stage != ShaderNode::Varying::STAGE_VERTEX && shader->varyings[p_identifier].stage != ShaderNode::Varying::STAGE_FRAGMENT) {
+				if (shader->varyings[p_identifier].stage == ShaderNode::Varying::STAGE_UNKNOWN) {
 					used_varyings[p_identifier].used = true;
 				}
 			}
@@ -6510,6 +6510,27 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 						_set_error(RTR("Expected constant expression."));
 						return nullptr;
 					}
+					if (ident_type == IDENTIFIER_FUNCTION) {
+						_set_error(vformat(RTR("Can't use function as identifier: '%s'."), String(identifier)));
+						return nullptr;
+					}
+#ifdef DEBUG_ENABLED
+					if (check_warnings) {
+						StringName func_name;
+						BlockNode *b = p_block;
+
+						while (b) {
+							if (b->parent_function) {
+								func_name = b->parent_function->name;
+								break;
+							} else {
+								b = b->parent_block;
+							}
+						}
+
+						_parse_used_identifier(identifier, ident_type, func_name);
+					}
+#endif // DEBUG_ENABLED
 					if (ident_type == IDENTIFIER_VARYING) {
 						TkPos prev_pos = _get_tkpos();
 						Token next_token = _get_token();
@@ -6542,11 +6563,6 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 							}
 						}
 					}
-
-					if (ident_type == IDENTIFIER_FUNCTION) {
-						_set_error(vformat(RTR("Can't use function as identifier: '%s'."), String(identifier)));
-						return nullptr;
-					}
 #ifdef DEBUG_ENABLED
 					if (check_position_write && ident_type == IDENTIFIER_BUILTIN_VAR) {
 						if (String(identifier) == "POSITION") {
@@ -6564,7 +6580,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 							_set_tkpos(prev_pos);
 						}
 					}
-#endif
+#endif // DEBUG_ENABLED
 					if (is_const) {
 						last_type = IDENTIFIER_CONSTANT;
 					} else {
@@ -6656,23 +6672,6 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 					varname->is_local = is_local;
 					expr = varname;
 				}
-#ifdef DEBUG_ENABLED
-				if (check_warnings) {
-					StringName func_name;
-					BlockNode *b = p_block;
-
-					while (b) {
-						if (b->parent_function) {
-							func_name = b->parent_function->name;
-							break;
-						} else {
-							b = b->parent_block;
-						}
-					}
-
-					_parse_used_identifier(identifier, ident_type, func_name);
-				}
-#endif // DEBUG_ENABLED
 			}
 		} else if (tk.type == TK_OP_ADD) {
 			continue; //this one does nothing
