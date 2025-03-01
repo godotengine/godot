@@ -41,7 +41,7 @@
 
         <activity
             android:name=".GodotEditor"
-            android:configChanges="orientation|keyboardHidden|screenSize|smallestScreenSize|density|keyboard|navigation|screenLayout|uiMode"
+            android:configChanges="layoutDirection|locale|orientation|keyboardHidden|screenSize|smallestScreenSize|density|keyboard|navigation|screenLayout|uiMode"
             android:exported="true"
             android:icon="@mipmap/themed_icon"
             android:launchMode="singleTask"
@@ -59,7 +59,7 @@
         </activity>
         <activity
             android:name=".GodotGame"
-            android:configChanges="orientation|keyboardHidden|screenSize|smallestScreenSize|density|keyboard|navigation|screenLayout|uiMode"
+            android:configChanges="layoutDirection|locale|orientation|keyboardHidden|screenSize|smallestScreenSize|density|keyboard|navigation|screenLayout|uiMode"
             android:exported="false"
             android:icon="@mipmap/ic_play_window"
             android:label="@string/godot_game_activity_name"
@@ -74,7 +74,7 @@
         </activity>
         <activity
             android:name=".embed.EmbeddedGodotGame"
-            android:configChanges="orientation|keyboardHidden|screenSize|smallestScreenSize|density|keyboard|navigation|screenLayout|uiMode"
+            android:configChanges="layoutDirection|locale|orientation|keyboardHidden|screenSize|smallestScreenSize|density|keyboard|navigation|screenLayout|uiMode"
             android:exported="false"
             android:icon="@mipmap/ic_play_window"
             android:label="@string/godot_game_activity_name"
@@ -87,7 +87,7 @@
             android:screenOrientation="userLandscape" />
         <activity
             android:name=".GodotXRGame"
-            android:configChanges="orientation|keyboardHidden|screenSize|smallestScreenSize|density|keyboard|navigation|screenLayout|uiMode"
+            android:configChanges="layoutDirection|locale|orientation|keyboardHidden|screenSize|smallestScreenSize|density|keyboard|navigation|screenLayout|uiMode"
             android:process=":GodotXRGame"
             android:launchMode="singleTask"
             android:icon="@mipmap/ic_play_window"
