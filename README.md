@@ -85,6 +85,7 @@ This branch is for my personal style adjustments for Godot 4.3 C# use, in the fu
 
 ### 0. Unimportant Notes
 - ```shift + right-click``` in win file explorer is old menu immediately, neat
+- in ```powershell``` command ```cls``` clears all text from console
 
 ### 1. Personal Compiling Tutorial
 - Install VS2022; make sure Desktop C++ is selected in install
@@ -97,6 +98,8 @@ This branch is for my personal style adjustments for Godot 4.3 C# use, in the fu
     - Powershell as Admin:
         - ```scoop install gcc scons make mingw```
 - in the cloned ```godot``` folder: ```scons platform=windows``` - this compiles it for windows, first Time elapsed: 00:51:43.37
+
+
 - tried again with ```scons -j4 platform=windows``` uses 4 thread instead, second Time elapsed: 00:00:24.93, so noted it likely doesn't recompile if no changes on files
 - in ```godot\bin``` you will see the binaries; run ```godot.windows.editor.x86_64.exe``` and it will launch the editor
 - To swap to build and run in VS2022; run ```scons -j4 platform=windows vsproj=yes```, you will see a new ```godot\godot.sln``` file in the godot folder
@@ -110,7 +113,20 @@ This branch is for my personal style adjustments for Godot 4.3 C# use, in the fu
 \godot> scons platform=windows target=template_debug arch=arm64
 \godot> scons platform=windows target=template_release arch=arm64
 ```
------------------ NOTE: This needs a revamp; dbl check latest docs on web first, then in code, perhaps?
-- run ```scons -j4 p=windows tools=yes module_mono_enabled=yes mono_glue=no``` we have to build without the glue before we build with the glue; Time elapsed: 00:16:14.83
-- when it has built run ```bin\godot.windows.tools.64.mono.exe --generate-mono-glue modules/mono/glue```; it will show godot launch and list all generated connections; wait till you see ```The Godot API sources were successfully generated```; wasn't too long
-- then run ```scons -j4 p=windows target=editor tools=yes module_mono_enabled=yes``` and it should give a build to run off of! Time elapsed: 00:00:41.7
+
+- run ```scons -j4 platform=windows target=editor module_mono_enabled=yes```
+<!-- - then ```scons platform=windows target=template_debug module_mono_enabled=yes```
+- finally ```scons platform=windows target=template_release module_mono_enabled=yes``` -->
+- now run ```.\bin\godot.windows.editor.x86_64.mono.exe --headless --generate-mono-glue modules/mono/glue```
+    - You can find generated files in ```godot\modules\mono\glue```
+- finally ```python ./modules/mono/build_scripts/build_assemblies.py --godot-output-dir=./bin --godot-platform=windows```
+- first run took ages; created ```build.ps1``` and it was quick
+
+#### Notes:
+- need to review; might have broken things with ```#define TOOLS_ENABLED 1``` in ```main.h``` and below in ```SConstruct```
+```
+#if env.editor_build:
+env.Append(CPPDEFINES=["TOOLS_ENABLED"])
+```
+- ```git remote remove <name, e.g. origin>``` - to remove origin so I can make my own origin
+- ```git remote add github https://github.com/godotengine/godot.git``` - so I can pull latest off GitHub to stay up to date
