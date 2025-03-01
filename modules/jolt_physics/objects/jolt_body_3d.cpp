@@ -551,8 +551,6 @@ void JoltBody3D::set_transform(Transform3D p_transform) {
 		_shapes_changed();
 	}
 
-	p_transform.basis.orthonormalize();
-
 	if (!in_space()) {
 		jolt_settings->mPosition = to_jolt_r(p_transform.origin);
 		jolt_settings->mRotation = to_jolt(p_transform.basis);
