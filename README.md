@@ -130,3 +130,4 @@ env.Append(CPPDEFINES=["TOOLS_ENABLED"])
 ```
 - ```git remote remove <name, e.g. origin>``` - to remove origin so I can make my own origin
 - ```git remote add github https://github.com/godotengine/godot.git``` - so I can pull latest off GitHub to stay up to date
+- vulkan working correct on my machine in my fork
