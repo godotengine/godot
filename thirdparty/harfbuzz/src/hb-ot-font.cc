@@ -36,13 +36,16 @@
 #include "hb-ot-face.hh"
 #include "hb-outline.hh"
 
+#ifndef HB_NO_AAT
+#include "hb-aat-layout-trak-table.hh"
+#endif
 #include "hb-ot-cmap-table.hh"
 #include "hb-ot-glyf-table.hh"
 #include "hb-ot-cff2-table.hh"
 #include "hb-ot-cff1-table.hh"
 #include "hb-ot-hmtx-table.hh"
 #include "hb-ot-post-table.hh"
-#include "hb-ot-stat-table.hh" // Just so we compile it; unused otherwise.
+#include "hb-ot-stat-table.hh"
 #include "hb-ot-var-varc-table.hh"
 #include "hb-ot-vorg-table.hh"
 #include "OT/Color/CBDT/CBDT.hh"
@@ -73,6 +76,10 @@ struct hb_ot_font_t
 {
   const hb_ot_face_t *ot_face;
 
+#ifndef HB_NO_AAT
+  bool apply_trak;
+#endif
+
 #ifndef HB_NO_OT_FONT_CMAP_CACHE
   hb_ot_font_cmap_cache_t *cmap_cache;
 #endif
@@ -90,6 +97,15 @@ _hb_ot_font_create (hb_font_t *font)
     return nullptr;
 
   ot_font->ot_face = &font->face->table;
+
+#ifndef HB_NO_AAT
+  /* According to Ned, trak is applied by default for "modern fonts", as detected by presence of STAT table. */
+#ifndef HB_NO_STYLE
+  ot_font->apply_trak = font->face->table.STAT->has_data () && font->face->table.trak->has_data ();
+#else
+  ot_font->apply_trak = false;
+#endif
+#endif
 
 #ifndef HB_NO_OT_FONT_CMAP_CACHE
   // retry:
@@ -200,7 +216,6 @@ hb_ot_get_glyph_h_advances (hb_font_t* font, void* font_data,
 			    unsigned advance_stride,
 			    void *user_data HB_UNUSED)
 {
-
   const hb_ot_font_t *ot_font = (const hb_ot_font_t *) font_data;
   const hb_ot_face_t *ot_face = ot_font->ot_face;
   const OT::hmtx_accelerator_t &hmtx = *ot_face->hmtx;
@@ -292,6 +307,20 @@ hb_ot_get_glyph_h_advances (hb_font_t* font, void* font_data,
       first_advance = &StructAtOffsetUnaligned<hb_position_t> (first_advance, advance_stride);
     }
   }
+
+#ifndef HB_NO_AAT
+  if (ot_font->apply_trak)
+  {
+    hb_position_t tracking = font->face->table.trak->get_h_tracking (font);
+    first_advance = orig_first_advance;
+    for (unsigned int i = 0; i < count; i++)
+    {
+      *first_advance += tracking;
+      first_glyph = &StructAtOffsetUnaligned<hb_codepoint_t> (first_glyph, glyph_stride);
+      first_advance = &StructAtOffsetUnaligned<hb_position_t> (first_advance, advance_stride);
+    }
+  }
+#endif
 }
 
 #ifndef HB_NO_VERTICAL
@@ -356,6 +385,20 @@ hb_ot_get_glyph_v_advances (hb_font_t* font, void* font_data,
       first_advance = &StructAtOffsetUnaligned<hb_position_t> (first_advance, advance_stride);
     }
   }
+
+#ifndef HB_NO_AAT
+  if (ot_font->apply_trak)
+  {
+    hb_position_t tracking = font->face->table.trak->get_v_tracking (font);
+    first_advance = orig_first_advance;
+    for (unsigned int i = 0; i < count; i++)
+    {
+      *first_advance += tracking;
+      first_glyph = &StructAtOffsetUnaligned<hb_codepoint_t> (first_glyph, glyph_stride);
+      first_advance = &StructAtOffsetUnaligned<hb_position_t> (first_advance, advance_stride);
+    }
+  }
+#endif
 }
 #endif
 
@@ -568,14 +611,11 @@ hb_ot_paint_glyph (hb_font_t *font,
   if (font->face->table.sbix->paint_glyph (font, glyph, paint_funcs, paint_data)) return;
 #endif
 #endif
-#ifndef HB_NO_VAR_COMPOSITES
-  if (font->face->table.VARC->paint_glyph (font, glyph, paint_funcs, paint_data, foreground)) return;
-#endif
-  if (font->face->table.glyf->paint_glyph (font, glyph, paint_funcs, paint_data, foreground)) return;
-#ifndef HB_NO_CFF
-  if (font->face->table.cff2->paint_glyph (font, glyph, paint_funcs, paint_data, foreground)) return;
-  if (font->face->table.cff1->paint_glyph (font, glyph, paint_funcs, paint_data, foreground)) return;
-#endif
+
+  // Outline glyph
+  paint_funcs->push_clip_glyph (paint_data, glyph, font);
+  paint_funcs->color (paint_data, true, foreground);
+  paint_funcs->pop_clip (paint_data);
 }
 #endif
 
