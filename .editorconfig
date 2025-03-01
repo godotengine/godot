@@ -18,3 +18,7 @@ indent_style = space
 
 [*.svg]
 insert_final_newline = false
+
+[{*.props,*.vcxproj}]
+indent_style = space
+indent_size = 2

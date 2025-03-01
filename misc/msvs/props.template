@@ -5,6 +5,7 @@
     <NMakeReBuildCommandLine>%%REBUILD%%</NMakeReBuildCommandLine>
     <NMakeCleanCommandLine>%%CLEAN%%</NMakeCleanCommandLine>
     <NMakeOutput Condition="'$(NMakeOutput)' == ''">%%OUTPUT%%</NMakeOutput>
+    <LocalDebuggerCommand>$(NMakeOutput)</LocalDebuggerCommand>
     <NMakePreprocessorDefinitions>%%DEFINES%%;$(NMakePreprocessorDefinitions)</NMakePreprocessorDefinitions>
     <NMakeIncludeSearchPath>%%INCLUDES%%;$(NMakeIncludeSearchPath)</NMakeIncludeSearchPath>
     <NMakeForcedIncludes>$(NMakeForcedIncludes)</NMakeForcedIncludes>
