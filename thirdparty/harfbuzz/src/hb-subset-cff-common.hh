@@ -1128,7 +1128,7 @@ struct subr_subsetter_t
       if (opstr.op == OpCode_callsubr || opstr.op == OpCode_callgsubr)
         size += 3;
     }
-    if (!buff.alloc (buff.length + size, true))
+    if (!buff.alloc_exact (buff.length + size))
       return false;
 
     for (auto &opstr : str.values)

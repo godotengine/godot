@@ -32,6 +32,9 @@
 #include "hb-ot-shape.hh"
 #include "hb-aat-ltag-table.hh"
 
+/* https://developer.apple.com/documentation/coretext/1508745-ctfontcreatewithgraphicsfont */
+#define HB_CORETEXT_DEFAULT_FONT_SIZE 12.f
+
 struct hb_aat_feature_mapping_t
 {
   hb_tag_t otFeatureTag;
@@ -67,11 +70,6 @@ HB_INTERNAL void
 hb_aat_layout_position (const hb_ot_shape_plan_t *plan,
 			hb_font_t *font,
 			hb_buffer_t *buffer);
-
-HB_INTERNAL void
-hb_aat_layout_track (const hb_ot_shape_plan_t *plan,
-		     hb_font_t *font,
-		     hb_buffer_t *buffer);
 
 
 #endif /* HB_AAT_LAYOUT_HH */

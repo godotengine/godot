@@ -56,7 +56,7 @@
  *   - For each glyph, if it doesn't match the subtable digest,
  *     skip it.
  *
- * The main filter we use is a combination of three bits-pattern
+ * The main filter we use is a combination of four bits-pattern
  * filters. A bits-pattern filter checks a number of bits (5 or 6)
  * of the input number (glyph-id in this case) and checks whether
  * its pattern is amongst the patterns of any of the accepted values.
@@ -64,45 +64,60 @@
  * check is done using four bitwise operations only.
  */
 
-template <typename mask_t, unsigned int shift>
-struct hb_set_digest_bits_pattern_t
+static constexpr unsigned hb_set_digest_shifts[] = {4, 0, 6};
+
+struct hb_set_digest_t
 {
+  // No science in these. Intuition and testing only.
+  using mask_t = uint64_t;
+
+  static constexpr unsigned n = ARRAY_LENGTH_CONST (hb_set_digest_shifts);
   static constexpr unsigned mask_bytes = sizeof (mask_t);
   static constexpr unsigned mask_bits = sizeof (mask_t) * 8;
-  static constexpr unsigned num_bits = 0
-				     + (mask_bytes >= 1 ? 3 : 0)
-				     + (mask_bytes >= 2 ? 1 : 0)
-				     + (mask_bytes >= 4 ? 1 : 0)
-				     + (mask_bytes >= 8 ? 1 : 0)
-				     + (mask_bytes >= 16? 1 : 0)
-				     + 0;
+  static constexpr hb_codepoint_t mb1 = mask_bits - 1;
+  static constexpr mask_t one = 1;
+  static constexpr mask_t all = (mask_t) -1;
 
-  static_assert ((shift < sizeof (hb_codepoint_t) * 8), "");
-  static_assert ((shift + num_bits <= sizeof (hb_codepoint_t) * 8), "");
+  void init ()
+  { for (unsigned i = 0; i < n; i++) masks[i] = 0; }
 
-  void init () { mask = 0; }
+  void clear () { init (); }
 
-  static hb_set_digest_bits_pattern_t full () { hb_set_digest_bits_pattern_t d; d.mask = (mask_t) -1; return d; }
+  static hb_set_digest_t full ()
+  {
+    hb_set_digest_t d;
+    for (unsigned i = 0; i < n; i++) d.masks[i] = all;
+    return d;
+  }
 
-  void union_ (const hb_set_digest_bits_pattern_t &o) { mask |= o.mask; }
-
-  void add (hb_codepoint_t g) { mask |= mask_for (g); }
+  void union_ (const hb_set_digest_t &o)
+  { for (unsigned i = 0; i < n; i++) masks[i] |= o.masks[i]; }
 
   bool add_range (hb_codepoint_t a, hb_codepoint_t b)
   {
-    if (mask == (mask_t) -1) return false;
-    if ((b >> shift) - (a >> shift) >= mask_bits - 1)
+    bool ret;
+
+    ret = false;
+    for (unsigned i = 0; i < n; i++)
+      if (masks[i] != all)
+	ret = true;
+    if (!ret) return false;
+
+    ret = false;
+    for (unsigned i = 0; i < n; i++)
     {
-      mask = (mask_t) -1;
-      return false;
+      mask_t shift = hb_set_digest_shifts[i];
+      if ((b >> shift) - (a >> shift) >= mb1)
+	masks[i] = all;
+      else
+      {
+	mask_t ma = one << ((a >> shift) & mb1);
+	mask_t mb = one << ((b >> shift) & mb1);
+	masks[i] |= mb + (mb - ma) - (mb < ma);
+	ret = true;
+      }
     }
-    else
-    {
-      mask_t ma = mask_for (a);
-      mask_t mb = mask_for (b);
-      mask |= mb + (mb - ma) - (mb < ma);
-      return true;
-    }
+    return ret;
   }
 
   template <typename T>
@@ -125,103 +140,37 @@ struct hb_set_digest_bits_pattern_t
   template <typename T>
   bool add_sorted_array (const hb_sorted_array_t<const T>& arr) { return add_sorted_array (&arr, arr.len ()); }
 
-  bool may_have (const hb_set_digest_bits_pattern_t &o) const
-  { return mask & o.mask; }
-
-  bool may_have (hb_codepoint_t g) const
-  { return mask & mask_for (g); }
-
   bool operator [] (hb_codepoint_t g) const
   { return may_have (g); }
 
-  private:
-
-  static mask_t mask_for (hb_codepoint_t g)
-  { return ((mask_t) 1) << ((g >> shift) & (mask_bits - 1)); }
-  mask_t mask = 0;
-};
-
-template <typename head_t, typename tail_t>
-struct hb_set_digest_combiner_t
-{
-  void init ()
-  {
-    head.init ();
-    tail.init ();
-  }
-
-  static hb_set_digest_combiner_t full () { hb_set_digest_combiner_t d; d.head = head_t::full(); d.tail = tail_t::full (); return d; }
-
-  void union_ (const hb_set_digest_combiner_t &o)
-  {
-    head.union_ (o.head);
-    tail.union_(o.tail);
-  }
 
   void add (hb_codepoint_t g)
   {
-    head.add (g);
-    tail.add (g);
+    for (unsigned i = 0; i < n; i++)
+      masks[i] |= one << ((g >> hb_set_digest_shifts[i]) & mb1);
   }
 
-  bool add_range (hb_codepoint_t a, hb_codepoint_t b)
-  {
-    return (int) head.add_range (a, b) | (int) tail.add_range (a, b);
-  }
-  template <typename T>
-  void add_array (const T *array, unsigned int count, unsigned int stride=sizeof(T))
-  {
-    head.add_array (array, count, stride);
-    tail.add_array (array, count, stride);
-  }
-  template <typename T>
-  void add_array (const hb_array_t<const T>& arr) { add_array (&arr, arr.len ()); }
-  template <typename T>
-  bool add_sorted_array (const T *array, unsigned int count, unsigned int stride=sizeof(T))
-  {
-    return head.add_sorted_array (array, count, stride) &&
-	   tail.add_sorted_array (array, count, stride);
-  }
-  template <typename T>
-  bool add_sorted_array (const hb_sorted_array_t<const T>& arr) { return add_sorted_array (&arr, arr.len ()); }
-
-  bool may_have (const hb_set_digest_combiner_t &o) const
-  {
-    return head.may_have (o.head) && tail.may_have (o.tail);
-  }
-
+  HB_ALWAYS_INLINE
   bool may_have (hb_codepoint_t g) const
   {
-    return head.may_have (g) && tail.may_have (g);
+    for (unsigned i = 0; i < n; i++)
+      if (!(masks[i] & (one << ((g >> hb_set_digest_shifts[i]) & mb1))))
+	return false;
+    return true;
   }
 
-  bool operator [] (hb_codepoint_t g) const
-  { return may_have (g); }
+  bool may_intersect (const hb_set_digest_t &o) const
+  {
+    for (unsigned i = 0; i < n; i++)
+      if (!(masks[i] & o.masks[i]))
+	return false;
+    return true;
+  }
 
   private:
-  head_t head;
-  tail_t tail;
+
+  mask_t masks[n] = {};
 };
-
-
-/*
- * hb_set_digest_t
- *
- * This is a combination of digests that performs "best".
- * There is not much science to this: it's a result of intuition
- * and testing.
- */
-using hb_set_digest_t =
-  hb_set_digest_combiner_t
-  <
-    hb_set_digest_bits_pattern_t<unsigned long, 4>,
-    hb_set_digest_combiner_t
-    <
-      hb_set_digest_bits_pattern_t<unsigned long, 0>,
-      hb_set_digest_bits_pattern_t<unsigned long, 9>
-    >
-  >
-;
 
 
 #endif /* HB_SET_DIGEST_HH */

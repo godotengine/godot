@@ -625,6 +625,9 @@ hb_script_get_horizontal_direction (hb_script_t script)
     /* Unicode-14.0 additions */
     case HB_SCRIPT_OLD_UYGHUR:
 
+    /* Unicode-16.0 additions */
+    case HB_SCRIPT_GARAY:
+
       return HB_DIRECTION_RTL;
 
 

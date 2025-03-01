@@ -284,8 +284,8 @@ struct OS2
         os2_prime->usWidthClass = width_class;
     }
 
-    os2_prime->usFirstCharIndex = hb_min (0xFFFFu, c->plan->unicodes.get_min ());
-    os2_prime->usLastCharIndex  = hb_min (0xFFFFu, c->plan->unicodes.get_max ());
+    os2_prime->usFirstCharIndex = hb_min (0xFFFFu, c->plan->os2_info.min_cmap_codepoint);
+    os2_prime->usLastCharIndex  = hb_min (0xFFFFu, c->plan->os2_info.max_cmap_codepoint);
 
     if (c->plan->flags & HB_SUBSET_FLAGS_NO_PRUNE_UNICODE_RANGES)
       return_trace (true);

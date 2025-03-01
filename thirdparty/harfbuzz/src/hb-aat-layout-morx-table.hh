@@ -29,6 +29,7 @@
 
 #include "hb-open-type.hh"
 #include "hb-aat-layout-common.hh"
+#include "hb-ot-layout.hh"
 #include "hb-ot-layout-common.hh"
 #include "hb-ot-layout-gdef-table.hh"
 #include "hb-aat-map.hh"
@@ -53,35 +54,40 @@ struct RearrangementSubtable
 
   typedef void EntryData;
 
-  struct driver_context_t
+  enum Flags
   {
-    static constexpr bool in_place = true;
-    enum Flags
-    {
-      MarkFirst		= 0x8000,	/* If set, make the current glyph the first
+    MarkFirst		= 0x8000,	/* If set, make the current glyph the first
 					 * glyph to be rearranged. */
-      DontAdvance	= 0x4000,	/* If set, don't advance to the next glyph
+    DontAdvance		= 0x4000,	/* If set, don't advance to the next glyph
 					 * before going to the new state. This means
 					 * that the glyph index doesn't change, even
 					 * if the glyph at that index has changed. */
-      MarkLast		= 0x2000,	/* If set, make the current glyph the last
+    MarkLast		= 0x2000,	/* If set, make the current glyph the last
 					 * glyph to be rearranged. */
-      Reserved		= 0x1FF0,	/* These bits are reserved and should be set to 0. */
-      Verb		= 0x000F,	/* The type of rearrangement specified. */
-    };
+    Reserved		= 0x1FF0,	/* These bits are reserved and should be set to 0. */
+    Verb		= 0x000F,	/* The type of rearrangement specified. */
+  };
 
-    driver_context_t (const RearrangementSubtable *table HB_UNUSED) :
+  bool is_action_initiable (const Entry<EntryData> &entry) const
+  {
+    return (entry.flags & MarkFirst);
+  }
+  bool is_actionable (const Entry<EntryData> &entry) const
+  {
+    return (entry.flags & Verb);
+  }
+
+  struct driver_context_t
+  {
+    static constexpr bool in_place = true;
+
+    driver_context_t (const RearrangementSubtable *table_) :
 	ret (false),
+	table (table_),
 	start (0), end (0) {}
 
-    bool is_actionable (hb_buffer_t *buffer HB_UNUSED,
-			StateTableDriver<Types, EntryData> *driver HB_UNUSED,
-			const Entry<EntryData> &entry) const
-    {
-      return (entry.flags & Verb) && start < end;
-    }
     void transition (hb_buffer_t *buffer,
-		     StateTableDriver<Types, EntryData> *driver,
+		     StateTableDriver<Types, EntryData, Flags> *driver,
 		     const Entry<EntryData> &entry)
     {
       unsigned int flags = entry.flags;
@@ -158,6 +164,7 @@ struct RearrangementSubtable
 
     public:
     bool ret;
+    const RearrangementSubtable *table;
     private:
     unsigned int start;
     unsigned int end;
@@ -169,11 +176,13 @@ struct RearrangementSubtable
 
     driver_context_t dc (this);
 
-    StateTableDriver<Types, EntryData> driver (machine, c->face);
+    StateTableDriver<Types, EntryData, Flags> driver (machine, c->face);
 
-    if (driver.is_idempotent_on_all_out_of_bounds (&dc, c) &&
-	!c->buffer_digest.may_have (c->machine_glyph_set))
+    if (!c->buffer_intersects_machine ())
+    {
+      (void) c->buffer->message (c->font, "skipped chainsubtable because no glyph matches");
       return_trace (false);
+    }
 
     driver.drive (&dc, c);
 
@@ -207,39 +216,40 @@ struct ContextualSubtable
     DEFINE_SIZE_STATIC (4);
   };
 
+  enum Flags
+  {
+    SetMark		= 0x8000,	/* If set, make the current glyph the marked glyph. */
+    DontAdvance		= 0x4000,	/* If set, don't advance to the next glyph before
+					 * going to the new state. */
+    Reserved		= 0x3FFF,	/* These bits are reserved and should be set to 0. */
+  };
+
+  bool is_action_initiable (const Entry<EntryData> &entry) const
+  {
+    return (entry.flags & SetMark);
+  }
+  bool is_actionable (const Entry<EntryData> &entry) const
+  {
+    return entry.data.markIndex != 0xFFFF || entry.data.currentIndex != 0xFFFF;
+  }
+
   struct driver_context_t
   {
     static constexpr bool in_place = true;
-    enum Flags
-    {
-      SetMark		= 0x8000,	/* If set, make the current glyph the marked glyph. */
-      DontAdvance	= 0x4000,	/* If set, don't advance to the next glyph before
-					 * going to the new state. */
-      Reserved		= 0x3FFF,	/* These bits are reserved and should be set to 0. */
-    };
 
     driver_context_t (const ContextualSubtable *table_,
 			     hb_aat_apply_context_t *c_) :
 	ret (false),
 	c (c_),
+	table (table_),
 	gdef (*c->gdef_table),
 	mark_set (false),
 	has_glyph_classes (gdef.has_glyph_classes ()),
 	mark (0),
-	table (table_),
 	subs (table+table->substitutionTables) {}
 
-    bool is_actionable (hb_buffer_t *buffer,
-			StateTableDriver<Types, EntryData> *driver,
-			const Entry<EntryData> &entry) const
-    {
-      if (buffer->idx == buffer->len && !mark_set)
-	return false;
-
-      return entry.data.markIndex != 0xFFFF || entry.data.currentIndex != 0xFFFF;
-    }
     void transition (hb_buffer_t *buffer,
-		     StateTableDriver<Types, EntryData> *driver,
+		     StateTableDriver<Types, EntryData, Flags> *driver,
 		     const Entry<EntryData> &entry)
     {
       /* Looks like CoreText applies neither mark nor current substitution for
@@ -271,8 +281,9 @@ struct ContextualSubtable
       if (replacement)
       {
 	buffer->unsafe_to_break (mark, hb_min (buffer->idx + 1, buffer->len));
-	buffer->info[mark].codepoint = *replacement;
-	c->buffer_digest.add (*replacement);
+	hb_codepoint_t glyph = *replacement;
+	buffer->info[mark].codepoint = glyph;
+	c->buffer_glyph_set.add (glyph);
 	if (has_glyph_classes)
 	  _hb_glyph_info_set_glyph_props (&buffer->info[mark],
 					  gdef.get_glyph_props (*replacement));
@@ -301,8 +312,9 @@ struct ContextualSubtable
       }
       if (replacement)
       {
-	buffer->info[idx].codepoint = *replacement;
-	c->buffer_digest.add (*replacement);
+	hb_codepoint_t glyph = *replacement;
+	buffer->info[idx].codepoint = glyph;
+	c->buffer_glyph_set.add (glyph);
 	if (has_glyph_classes)
 	  _hb_glyph_info_set_glyph_props (&buffer->info[idx],
 					  gdef.get_glyph_props (*replacement));
@@ -318,13 +330,13 @@ struct ContextualSubtable
 
     public:
     bool ret;
-    private:
     hb_aat_apply_context_t *c;
+    const ContextualSubtable *table;
+    private:
     const OT::GDEF &gdef;
     bool mark_set;
     bool has_glyph_classes;
     unsigned int mark;
-    const ContextualSubtable *table;
     const UnsizedListOfOffset16To<Lookup<HBGlyphID16>, HBUINT, void, false> &subs;
   };
 
@@ -334,11 +346,13 @@ struct ContextualSubtable
 
     driver_context_t dc (this, c);
 
-    StateTableDriver<Types, EntryData> driver (machine, c->face);
+    StateTableDriver<Types, EntryData, Flags> driver (machine, c->face);
 
-    if (driver.is_idempotent_on_all_out_of_bounds (&dc, c) &&
-	!c->buffer_digest.may_have (c->machine_glyph_set))
+    if (!c->buffer_intersects_machine ())
+    {
+      (void) c->buffer->message (c->font, "skipped chainsubtable because no glyph matches");
       return_trace (false);
+    }
 
     driver.drive (&dc, c);
 
@@ -389,6 +403,16 @@ struct LigatureEntry;
 template <>
 struct LigatureEntry<true>
 {
+
+  struct EntryData
+  {
+    HBUINT16	ligActionIndex;	/* Index to the first ligActionTable entry
+				 * for processing this group, if indicated
+				 * by the flags. */
+    public:
+    DEFINE_SIZE_STATIC (2);
+  };
+
   enum Flags
   {
     SetComponent	= 0x8000,	/* Push this glyph onto the component stack for
@@ -400,14 +424,8 @@ struct LigatureEntry<true>
     Reserved		= 0x1FFF,	/* These bits are reserved and should be set to 0. */
   };
 
-  struct EntryData
-  {
-    HBUINT16	ligActionIndex;	/* Index to the first ligActionTable entry
-				 * for processing this group, if indicated
-				 * by the flags. */
-    public:
-    DEFINE_SIZE_STATIC (2);
-  };
+  static bool initiateAction (const Entry<EntryData> &entry)
+  { return entry.flags & SetComponent; }
 
   static bool performAction (const Entry<EntryData> &entry)
   { return entry.flags & PerformAction; }
@@ -418,6 +436,8 @@ struct LigatureEntry<true>
 template <>
 struct LigatureEntry<false>
 {
+  typedef void EntryData;
+
   enum Flags
   {
     SetComponent	= 0x8000,	/* Push this glyph onto the component stack for
@@ -429,7 +449,8 @@ struct LigatureEntry<false>
 					 * multiple of 4. */
   };
 
-  typedef void EntryData;
+  static bool initiateAction (const Entry<EntryData> &entry)
+  { return entry.flags & SetComponent; }
 
   static bool performAction (const Entry<EntryData> &entry)
   { return entry.flags & Offset; }
@@ -447,13 +468,23 @@ struct LigatureSubtable
   typedef LigatureEntry<Types::extended> LigatureEntryT;
   typedef typename LigatureEntryT::EntryData EntryData;
 
+  enum Flags
+  {
+    DontAdvance	= LigatureEntryT::DontAdvance,
+  };
+
+  bool is_action_initiable (const Entry<EntryData> &entry) const
+  {
+    return LigatureEntryT::initiateAction (entry);
+  }
+  bool is_actionable (const Entry<EntryData> &entry) const
+  {
+    return LigatureEntryT::performAction (entry);
+  }
+
   struct driver_context_t
   {
     static constexpr bool in_place = false;
-    enum
-    {
-      DontAdvance	= LigatureEntryT::DontAdvance,
-    };
     enum LigActionFlags
     {
       LigActionLast	= 0x80000000,	/* This is the last action in the list. This also
@@ -476,14 +507,8 @@ struct LigatureSubtable
 	ligature (table+table->ligature),
 	match_length (0) {}
 
-    bool is_actionable (hb_buffer_t *buffer HB_UNUSED,
-			StateTableDriver<Types, EntryData> *driver HB_UNUSED,
-			const Entry<EntryData> &entry) const
-    {
-      return LigatureEntryT::performAction (entry);
-    }
     void transition (hb_buffer_t *buffer,
-		     StateTableDriver<Types, EntryData> *driver,
+		     StateTableDriver<Types, EntryData, Flags> *driver,
 		     const Entry<EntryData> &entry)
     {
       DEBUG_MSG (APPLY, nullptr, "Ligature transition at %u", buffer->idx);
@@ -564,7 +589,7 @@ struct LigatureSubtable
 	    {
 	      DEBUG_MSG (APPLY, nullptr, "Skipping ligature component");
 	      if (unlikely (!buffer->move_to (match_positions[--match_length % ARRAY_LENGTH (match_positions)]))) return;
-	      buffer->cur().unicode_props() |= UPROPS_MASK_IGNORABLE;
+	      _hb_glyph_info_set_default_ignorable (&buffer->cur());
 	      if (unlikely (!buffer->replace_glyph (DELETED_GLYPH))) return;
 	    }
 
@@ -581,9 +606,9 @@ struct LigatureSubtable
 
     public:
     bool ret;
-    private:
     hb_aat_apply_context_t *c;
     const LigatureSubtable *table;
+    private:
     const UnsizedArrayOf<HBUINT32> &ligAction;
     const UnsizedArrayOf<HBUINT16> &component;
     const UnsizedArrayOf<HBGlyphID16> &ligature;
@@ -597,11 +622,13 @@ struct LigatureSubtable
 
     driver_context_t dc (this, c);
 
-    StateTableDriver<Types, EntryData> driver (machine, c->face);
+    StateTableDriver<Types, EntryData, Flags> driver (machine, c->face);
 
-    if (driver.is_idempotent_on_all_out_of_bounds (&dc, c) &&
-	!c->buffer_digest.may_have (c->machine_glyph_set))
+    if (!c->buffer_intersects_machine ())
+    {
+      (void) c->buffer->message (c->font, "skipped chainsubtable because no glyph matches");
       return_trace (false);
+    }
 
     driver.drive (&dc, c);
 
@@ -638,6 +665,12 @@ struct NoncontextualSubtable
   {
     TRACE_APPLY (this);
 
+    if (!c->buffer_intersects_machine ())
+    {
+      (void) c->buffer->message (c->font, "skipped chainsubtable because no glyph matches");
+      return_trace (false);
+    }
+
     const OT::GDEF &gdef (*c->gdef_table);
     bool has_glyph_classes = gdef.has_glyph_classes ();
 
@@ -670,8 +703,9 @@ struct NoncontextualSubtable
       const HBGlyphID16 *replacement = substitute.get_value (info[i].codepoint, num_glyphs);
       if (replacement)
       {
-	info[i].codepoint = *replacement;
-	c->buffer_digest.add (*replacement);
+	hb_codepoint_t glyph = *replacement;
+	info[i].codepoint = glyph;
+	c->buffer_glyph_set.add (glyph);
 	if (has_glyph_classes)
 	  _hb_glyph_info_set_glyph_props (&info[i],
 					  gdef.get_glyph_props (*replacement));
@@ -680,6 +714,12 @@ struct NoncontextualSubtable
     }
 
     return_trace (ret);
+  }
+
+  template <typename set_t>
+  void collect_initial_glyphs (set_t &glyphs, unsigned num_glyphs) const
+  {
+    substitute.collect_glyphs (glyphs, num_glyphs);
   }
 
   bool sanitize (hb_sanitize_context_t *c) const
@@ -715,73 +755,78 @@ struct InsertionSubtable
     DEFINE_SIZE_STATIC (4);
   };
 
+  enum Flags
+  {
+    SetMark		= 0x8000,     /* If set, mark the current glyph. */
+    DontAdvance		= 0x4000,     /* If set, don't advance to the next glyph before
+				       * going to the new state.  This does not mean
+				       * that the glyph pointed to is the same one as
+				       * before. If you've made insertions immediately
+				       * downstream of the current glyph, the next glyph
+				       * processed would in fact be the first one
+				       * inserted. */
+    CurrentIsKashidaLike= 0x2000,     /* If set, and the currentInsertList is nonzero,
+				       * then the specified glyph list will be inserted
+				       * as a kashida-like insertion, either before or
+				       * after the current glyph (depending on the state
+				       * of the currentInsertBefore flag). If clear, and
+				       * the currentInsertList is nonzero, then the
+				       * specified glyph list will be inserted as a
+				       * split-vowel-like insertion, either before or
+				       * after the current glyph (depending on the state
+				       * of the currentInsertBefore flag). */
+    MarkedIsKashidaLike= 0x1000,      /* If set, and the markedInsertList is nonzero,
+				       * then the specified glyph list will be inserted
+				       * as a kashida-like insertion, either before or
+				       * after the marked glyph (depending on the state
+				       * of the markedInsertBefore flag). If clear, and
+				       * the markedInsertList is nonzero, then the
+				       * specified glyph list will be inserted as a
+				       * split-vowel-like insertion, either before or
+				       * after the marked glyph (depending on the state
+				       * of the markedInsertBefore flag). */
+    CurrentInsertBefore= 0x0800,      /* If set, specifies that insertions are to be made
+				       * to the left of the current glyph. If clear,
+				       * they're made to the right of the current glyph. */
+    MarkedInsertBefore= 0x0400,	      /* If set, specifies that insertions are to be
+				       * made to the left of the marked glyph. If clear,
+				       * they're made to the right of the marked glyph. */
+    CurrentInsertCount= 0x3E0,	      /* This 5-bit field is treated as a count of the
+				       * number of glyphs to insert at the current
+				       * position. Since zero means no insertions, the
+				       * largest number of insertions at any given
+				       * current location is 31 glyphs. */
+    MarkedInsertCount= 0x001F,	      /* This 5-bit field is treated as a count of the
+				       * number of glyphs to insert at the marked
+				       * position. Since zero means no insertions, the
+				       * largest number of insertions at any given
+				       * marked location is 31 glyphs. */
+  };
+
+  bool is_action_initiable (const Entry<EntryData> &entry) const
+  {
+    return (entry.flags & SetMark);
+  }
+  bool is_actionable (const Entry<EntryData> &entry) const
+  {
+    return (entry.flags & (CurrentInsertCount | MarkedInsertCount)) &&
+	   (entry.data.currentInsertIndex != 0xFFFF ||entry.data.markedInsertIndex != 0xFFFF);
+  }
+
   struct driver_context_t
   {
     static constexpr bool in_place = false;
-    enum Flags
-    {
-      SetMark		= 0x8000,	/* If set, mark the current glyph. */
-      DontAdvance	= 0x4000,	/* If set, don't advance to the next glyph before
-					 * going to the new state.  This does not mean
-					 * that the glyph pointed to is the same one as
-					 * before. If you've made insertions immediately
-					 * downstream of the current glyph, the next glyph
-					 * processed would in fact be the first one
-					 * inserted. */
-      CurrentIsKashidaLike= 0x2000,	/* If set, and the currentInsertList is nonzero,
-					 * then the specified glyph list will be inserted
-					 * as a kashida-like insertion, either before or
-					 * after the current glyph (depending on the state
-					 * of the currentInsertBefore flag). If clear, and
-					 * the currentInsertList is nonzero, then the
-					 * specified glyph list will be inserted as a
-					 * split-vowel-like insertion, either before or
-					 * after the current glyph (depending on the state
-					 * of the currentInsertBefore flag). */
-      MarkedIsKashidaLike= 0x1000,	/* If set, and the markedInsertList is nonzero,
-					 * then the specified glyph list will be inserted
-					 * as a kashida-like insertion, either before or
-					 * after the marked glyph (depending on the state
-					 * of the markedInsertBefore flag). If clear, and
-					 * the markedInsertList is nonzero, then the
-					 * specified glyph list will be inserted as a
-					 * split-vowel-like insertion, either before or
-					 * after the marked glyph (depending on the state
-					 * of the markedInsertBefore flag). */
-      CurrentInsertBefore= 0x0800,	/* If set, specifies that insertions are to be made
-					 * to the left of the current glyph. If clear,
-					 * they're made to the right of the current glyph. */
-      MarkedInsertBefore= 0x0400,	/* If set, specifies that insertions are to be
-					 * made to the left of the marked glyph. If clear,
-					 * they're made to the right of the marked glyph. */
-      CurrentInsertCount= 0x3E0,	/* This 5-bit field is treated as a count of the
-					 * number of glyphs to insert at the current
-					 * position. Since zero means no insertions, the
-					 * largest number of insertions at any given
-					 * current location is 31 glyphs. */
-      MarkedInsertCount= 0x001F,	/* This 5-bit field is treated as a count of the
-					 * number of glyphs to insert at the marked
-					 * position. Since zero means no insertions, the
-					 * largest number of insertions at any given
-					 * marked location is 31 glyphs. */
-    };
 
-    driver_context_t (const InsertionSubtable *table,
+    driver_context_t (const InsertionSubtable *table_,
 		      hb_aat_apply_context_t *c_) :
 	ret (false),
 	c (c_),
+	table (table_),
 	mark (0),
 	insertionAction (table+table->insertionAction) {}
 
-    bool is_actionable (hb_buffer_t *buffer HB_UNUSED,
-			StateTableDriver<Types, EntryData> *driver HB_UNUSED,
-			const Entry<EntryData> &entry) const
-    {
-      return (entry.flags & (CurrentInsertCount | MarkedInsertCount)) &&
-	     (entry.data.currentInsertIndex != 0xFFFF ||entry.data.markedInsertIndex != 0xFFFF);
-    }
     void transition (hb_buffer_t *buffer,
-		     StateTableDriver<Types, EntryData> *driver,
+		     StateTableDriver<Types, EntryData, Flags> *driver,
 		     const Entry<EntryData> &entry)
     {
       unsigned int flags = entry.flags;
@@ -807,7 +852,7 @@ struct InsertionSubtable
 	/* TODO We ignore KashidaLike setting. */
 	if (unlikely (!buffer->replace_glyphs (0, count, glyphs))) return;
 	for (unsigned int i = 0; i < count; i++)
-	  c->buffer_digest.add (glyphs[i]);
+	  c->buffer_glyph_set.add (glyphs[i]);
 	ret = true;
 	if (buffer->idx < buffer->len && !before)
 	  buffer->skip_glyph ();
@@ -861,8 +906,9 @@ struct InsertionSubtable
 
     public:
     bool ret;
-    private:
     hb_aat_apply_context_t *c;
+    const InsertionSubtable *table;
+    private:
     unsigned int mark;
     const UnsizedArrayOf<HBGlyphID16> &insertionAction;
   };
@@ -873,11 +919,13 @@ struct InsertionSubtable
 
     driver_context_t dc (this, c);
 
-    StateTableDriver<Types, EntryData> driver (machine, c->face);
+    StateTableDriver<Types, EntryData, Flags> driver (machine, c->face);
 
-    if (driver.is_idempotent_on_all_out_of_bounds (&dc, c) &&
-	!c->buffer_digest.may_have (c->machine_glyph_set))
+    if (!c->buffer_intersects_machine ())
+    {
+      (void) c->buffer->message (c->font, "skipped chainsubtable because no glyph matches");
       return_trace (false);
+    }
 
     driver.drive (&dc, c);
 
@@ -935,24 +983,33 @@ struct hb_accelerate_subtables_context_t :
     friend struct hb_aat_layout_lookup_accelerator_t;
 
     public:
-    hb_set_digest_t digest;
+    hb_bit_set_t glyph_set;
+    mutable hb_aat_class_cache_t class_cache;
 
     template <typename T>
     auto init_ (const T &obj_, unsigned num_glyphs, hb_priority<1>) HB_AUTO_RETURN
     (
-      obj_.machine.collect_glyphs (this->digest, num_glyphs)
+      obj_.machine.collect_initial_glyphs (glyph_set, num_glyphs, obj_)
     )
 
     template <typename T>
     void init_ (const T &obj_, unsigned num_glyphs, hb_priority<0>)
     {
-      digest = digest.full ();
+      obj_.collect_initial_glyphs (glyph_set, num_glyphs);
     }
 
     template <typename T>
     void init (const T &obj_, unsigned num_glyphs)
     {
+      glyph_set.init ();
       init_ (obj_, num_glyphs, hb_prioritize);
+      class_cache.clear ();
+    }
+
+    void
+    fini ()
+    {
+      glyph_set.fini ();
     }
   };
 
@@ -999,12 +1056,21 @@ struct hb_aat_layout_chain_accelerator_t
     if (unlikely (!thiz))
       return nullptr;
 
+    thiz->count = count;
+
     hb_accelerate_subtables_context_t c_accelerate_subtables (thiz->subtables, num_glyphs);
     chain.dispatch (&c_accelerate_subtables);
 
     return thiz;
   }
 
+  void destroy ()
+  {
+    for (unsigned i = 0; i < count; i++)
+      subtables[i].fini ();
+  }
+
+  unsigned count;
   hb_accelerate_subtables_context_t::hb_applicable_t subtables[HB_VAR_ARRAY];
 };
 
@@ -1152,15 +1218,19 @@ struct Chain
     {
       bool reverse;
 
-      if (hb_none (hb_iter (c->range_flags) |
-		   hb_map ([&subtable] (const hb_aat_map_t::range_flags_t _) -> bool { return subtable->subFeatureFlags & (_.flags); })))
-	goto skip;
-      c->subtable_flags = subtable->subFeatureFlags;
-      c->machine_glyph_set = accel ? accel->subtables[i].digest : hb_set_digest_t::full ();
+      auto coverage = subtable->get_coverage ();
 
-      if (!(subtable->get_coverage() & ChainSubtable<Types>::AllDirections) &&
+      hb_mask_t subtable_flags = subtable->subFeatureFlags;
+      if (hb_none (hb_iter (c->range_flags) |
+		   hb_map ([subtable_flags] (const hb_aat_map_t::range_flags_t _) -> bool { return subtable_flags & (_.flags); })))
+	goto skip;
+      c->subtable_flags = subtable_flags;
+      c->machine_glyph_set = accel ? &accel->subtables[i].glyph_set : &Null(hb_bit_set_t);
+      c->machine_class_cache = accel ? &accel->subtables[i].class_cache : nullptr;
+
+      if (!(coverage & ChainSubtable<Types>::AllDirections) &&
 	  HB_DIRECTION_IS_VERTICAL (c->buffer->props.direction) !=
-	  bool (subtable->get_coverage() & ChainSubtable<Types>::Vertical))
+	  bool (coverage & ChainSubtable<Types>::Vertical))
 	goto skip;
 
       /* Buffer contents is always in logical direction.  Determine if
@@ -1190,9 +1260,9 @@ struct Chain
 				(the order opposite that of the characters, which
 				may be right-to-left or left-to-right).
        */
-      reverse = subtable->get_coverage () & ChainSubtable<Types>::Logical ?
-		bool (subtable->get_coverage () & ChainSubtable<Types>::Backwards) :
-		bool (subtable->get_coverage () & ChainSubtable<Types>::Backwards) !=
+      reverse = coverage & ChainSubtable<Types>::Logical ?
+		bool (coverage & ChainSubtable<Types>::Backwards) :
+		bool (coverage & ChainSubtable<Types>::Backwards) !=
 		HB_DIRECTION_IS_BACKWARD (c->buffer->props.direction);
 
       if (!c->buffer->message (c->font, "start chainsubtable %u", c->lookup_index))
@@ -1298,6 +1368,12 @@ struct mortmorx
       hb_sanitize_context_t sc;
       this->table = sc.reference_table<T> (face);
 
+      if (unlikely (this->table->is_blocklisted (this->table.get_blob (), face)))
+      {
+        hb_blob_destroy (this->table.get_blob ());
+        this->table = hb_blob_get_empty ();
+      }
+
       this->chain_count = table->get_chain_count ();
 
       this->accels = (hb_atomic_ptr_t<hb_aat_layout_chain_accelerator_t> *) hb_calloc (this->chain_count, sizeof (*accels));
@@ -1311,7 +1387,11 @@ struct mortmorx
     ~accelerator_t ()
     {
       for (unsigned int i = 0; i < this->chain_count; i++)
+      {
+	if (this->accels[i])
+	  this->accels[i]->destroy ();
 	hb_free (this->accels[i]);
+      }
       hb_free (this->accels);
       this->table.destroy ();
     }
@@ -1365,9 +1445,8 @@ struct mortmorx
 
   unsigned get_chain_count () const
   {
-	  return chainCount;
+    return chainCount;
   }
-
   void apply (hb_aat_apply_context_t *c,
 	      const hb_aat_map_t &map,
 	      const accelerator_t &accel) const
@@ -1376,10 +1455,7 @@ struct mortmorx
 
     c->buffer->unsafe_to_concat ();
 
-    if (c->buffer->len < HB_AAT_BUFFER_DIGEST_THRESHOLD)
-      c->buffer_digest = c->buffer->digest ();
-    else
-      c->buffer_digest = hb_set_digest_t::full ();
+    c->setup_buffer_glyph_set ();
 
     c->set_lookup_index (0);
     const Chain<Types> *chain = &firstChain;
@@ -1428,8 +1504,17 @@ struct mortmorx
   DEFINE_SIZE_MIN (8);
 };
 
-struct morx : mortmorx<morx, ExtendedTypes, HB_AAT_TAG_morx> {};
-struct mort : mortmorx<mort, ObsoleteTypes, HB_AAT_TAG_mort> {};
+struct morx : mortmorx<morx, ExtendedTypes, HB_AAT_TAG_morx>
+{
+  HB_INTERNAL bool is_blocklisted (hb_blob_t *blob,
+                                   hb_face_t *face) const;
+};
+
+struct mort : mortmorx<mort, ObsoleteTypes, HB_AAT_TAG_mort>
+{
+  HB_INTERNAL bool is_blocklisted (hb_blob_t *blob,
+                                   hb_face_t *face) const;
+};
 
 struct morx_accelerator_t : morx::accelerator_t {
   morx_accelerator_t (hb_face_t *face) : morx::accelerator_t (face) {}

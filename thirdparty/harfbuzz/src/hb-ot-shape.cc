@@ -46,6 +46,8 @@
 #include "hb-set.hh"
 
 #include "hb-aat-layout.hh"
+#include "hb-ot-stat-table.hh"
+
 
 static inline bool
 _hb_codepoint_is_regional_indicator (hb_codepoint_t u)
@@ -120,10 +122,6 @@ hb_ot_shape_planner_t::compile (hb_ot_shape_plan_t           &plan,
 #ifndef HB_NO_OT_KERN
   plan.kern_mask = plan.map.get_mask (kern_tag);
   plan.requested_kerning = !!plan.kern_mask;
-#endif
-#ifndef HB_NO_AAT_SHAPE
-  plan.trak_mask = plan.map.get_mask (HB_TAG ('t','r','a','k'));
-  plan.requested_tracking = !!plan.trak_mask;
 #endif
 
   bool has_gpos_kern = plan.map.get_feature_index (1, kern_tag) != HB_OT_LAYOUT_NO_FEATURE_INDEX;
@@ -207,9 +205,6 @@ hb_ot_shape_planner_t::compile (hb_ot_shape_plan_t           &plan,
      https://github.com/harfbuzz/harfbuzz/issues/2967. */
   if (plan.apply_morx)
     plan.adjust_mark_positioning_when_zeroing = false;
-
-  /* Currently we always apply trak. */
-  plan.apply_trak = plan.requested_tracking && hb_aat_layout_has_tracking (face);
 #endif
 }
 
@@ -274,11 +269,6 @@ hb_ot_shape_plan_t::position (hb_font_t   *font,
 #endif
   else if (this->apply_fallback_kern)
     _hb_ot_shape_fallback_kern (this, font, buffer);
-
-#ifndef HB_NO_AAT_SHAPE
-  if (this->apply_trak)
-    hb_aat_layout_track (this, font, buffer);
-#endif
 }
 
 
@@ -345,13 +335,6 @@ hb_ot_shape_collect_features (hb_ot_shape_planner_t *planner,
 
   /* Random! */
   map->enable_feature (HB_TAG ('r','a','n','d'), F_RANDOM, HB_OT_MAP_MAX_VALUE);
-
-#ifndef HB_NO_AAT_SHAPE
-  /* Tracking.  We enable dummy feature here just to allow disabling
-   * AAT 'trak' table using features.
-   * https://github.com/harfbuzz/harfbuzz/issues/1303 */
-  map->enable_feature (HB_TAG ('t','r','a','k'), F_HAS_FALLBACK);
-#endif
 
   map->enable_feature (HB_TAG ('H','a','r','f')); /* Considered required. */
   map->enable_feature (HB_TAG ('H','A','R','F')); /* Considered discretionary. */
@@ -1274,6 +1257,36 @@ hb_ot_shape_plan_collect_lookups (hb_shape_plan_t *shape_plan,
 				  hb_set_t        *lookup_indexes /* OUT */)
 {
   shape_plan->ot.collect_lookups (table_tag, lookup_indexes);
+}
+
+
+/**
+ * hb_ot_shape_plan_get_feature_tags:
+ * @shape_plan: A shaping plan
+ * @start_offset: The index of first feature to retrieve
+ * @tag_count: (inout): Input = the maximum number of features to return;
+ *                      Output = the actual number of features returned (may be zero)
+ * @tags: (out) (array length=tag_count): The array of enabled feature
+ *
+ * Fetches the list of OpenType feature tags enabled for a shaping plan, if possible.
+ *
+ * Return value: Total number of feature tagss.
+ *
+ * Since: 10.3.0
+ */
+unsigned int
+hb_ot_shape_plan_get_feature_tags (hb_shape_plan_t *shape_plan,
+				   unsigned int     start_offset,
+				   unsigned int    *tag_count, /* IN/OUT */
+				   hb_tag_t        *tags /* OUT */)
+{
+#ifndef HB_NO_OT_SHAPE
+  return shape_plan->ot.map.get_feature_tags (start_offset, tag_count, tags);
+#else
+  if (tag_count)
+	*tag_count = 0;
+  return 0;
+#endif
 }
 
 

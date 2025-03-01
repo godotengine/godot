@@ -48,17 +48,69 @@ struct TrackTableEntry
 
   float get_track_value () const { return track.to_float (); }
 
-  int get_value (const void *base, unsigned int index,
-		 unsigned int table_size) const
-  { return (base+valuesZ).as_array (table_size)[index]; }
+  float interpolate_at (unsigned int idx,
+			float ptem,
+			const void *base,
+			hb_array_t<const F16DOT16> size_table) const
+  {
+    const FWORD *values = (base+valuesZ).arrayZ;
+
+    float s0 = size_table[idx].to_float ();
+    float s1 = size_table[idx + 1].to_float ();
+    int v0 = values[idx];
+    int v1 = values[idx + 1];
+
+    // Deal with font bugs.
+    if (unlikely (s1 < s0))
+    { hb_swap (s0, s1); hb_swap (v0, v1); }
+    if (unlikely (ptem < s0)) return v0;
+    if (unlikely (ptem > s1)) return v1;
+    if (unlikely (s0 == s1)) return (v0 + v1) * 0.5f;
+
+    float t = (ptem - s0) / (s1 - s0);
+    return v0 + t * (v1 - v0);
+  }
+
+  float get_value (float ptem,
+		   const void *base,
+		   hb_array_t<const F16DOT16> size_table) const
+  {
+    const FWORD *values = (base+valuesZ).arrayZ;
+
+    unsigned int n_sizes = size_table.length;
+
+    /*
+     * Choose size.
+     */
+    if (!n_sizes) return 0.f;
+    if (n_sizes == 1) return values[0];
+
+    // At least two entries.
+
+    unsigned i;
+    for (i = 0; i < n_sizes; i++)
+      if (size_table[i].to_float () >= ptem)
+	break;
+
+    // Boundary conditions.
+    if (i == 0)       return values[0];
+    if (i == n_sizes) return values[n_sizes - 1];
+
+    // Exact match.
+    if (size_table[i].to_float () == ptem) return values[i];
+
+    // Interpolate.
+    return interpolate_at (i - 1, ptem, base, size_table);
+  }
 
   public:
-  bool sanitize (hb_sanitize_context_t *c, const void *base,
-		 unsigned int table_size) const
+  bool sanitize (hb_sanitize_context_t *c,
+		 const void *base,
+		 unsigned int n_sizes) const
   {
     TRACE_SANITIZE (this);
     return_trace (likely (c->check_struct (this) &&
-			  (valuesZ.sanitize (c, base, table_size))));
+			  (valuesZ.sanitize (c, base, n_sizes))));
   }
 
   protected:
@@ -76,58 +128,38 @@ struct TrackTableEntry
 
 struct TrackData
 {
-  float interpolate_at (unsigned int idx,
-			float target_size,
-			const TrackTableEntry &trackTableEntry,
-			const void *base) const
+  float get_tracking (const void *base, float ptem, float track = 0.f) const
   {
-    unsigned int sizes = nSizes;
-    hb_array_t<const F16DOT16> size_table ((base+sizeTable).arrayZ, sizes);
+    unsigned count = nTracks;
+    hb_array_t<const F16DOT16> size_table = (base+sizeTable).as_array (nSizes);
 
-    float s0 = size_table[idx].to_float ();
-    float s1 = size_table[idx + 1].to_float ();
-    float t = unlikely (s0 == s1) ? 0.f : (target_size - s0) / (s1 - s0);
-    return t * trackTableEntry.get_value (base, idx + 1, sizes) +
-	   (1.f - t) * trackTableEntry.get_value (base, idx, sizes);
-  }
+    if (!count) return 0.f;
+    if (count == 1) return trackTable[0].get_value (ptem, base, size_table);
 
-  int get_tracking (const void *base, float ptem) const
-  {
-    /*
-     * Choose track.
-     */
-    const TrackTableEntry *trackTableEntry = nullptr;
-    unsigned int count = nTracks;
-    for (unsigned int i = 0; i < count; i++)
-    {
-      /* Note: Seems like the track entries are sorted by values.  But the
-       * spec doesn't explicitly say that.  It just mentions it in the example. */
+    // At least two entries.
 
-      /* For now we only seek for track entries with zero tracking value */
+    unsigned i = 0;
+    unsigned j = count - 1;
 
-      if (trackTable[i].get_track_value () == 0.f)
-      {
-	trackTableEntry = &trackTable[i];
-	break;
-      }
-    }
-    if (!trackTableEntry) return 0;
+    // Find the two entries that track is between.
+    while (i + 1 < count && trackTable[i + 1].get_track_value () < track)
+      i++;
+    while (j > 0 && trackTable[j - 1].get_track_value () > track)
+      j--;
 
-    /*
-     * Choose size.
-     */
-    unsigned int sizes = nSizes;
-    if (!sizes) return 0;
-    if (sizes == 1) return trackTableEntry->get_value (base, 0, sizes);
+    // Exact match.
+    if (i == j) return trackTable[i].get_value (ptem, base, size_table);
 
-    hb_array_t<const F16DOT16> size_table ((base+sizeTable).arrayZ, sizes);
-    unsigned int size_index;
-    for (size_index = 0; size_index < sizes - 1; size_index++)
-      if (size_table[size_index].to_float () >= ptem)
-	break;
+    // Interpolate.
 
-    return roundf (interpolate_at (size_index ? size_index - 1 : 0, ptem,
-				   *trackTableEntry, base));
+    float t0 = trackTable[i].get_track_value ();
+    float t1 = trackTable[j].get_track_value ();
+
+    float t = (track - t0) / (t1 - t0);
+
+    float a = trackTable[i].get_value (ptem, base, size_table);
+    float b = trackTable[j].get_value (ptem, base, size_table);
+    return a + t * (b - a);
   }
 
   bool sanitize (hb_sanitize_context_t *c, const void *base) const
@@ -158,45 +190,15 @@ struct trak
 
   bool has_data () const { return version.to_int (); }
 
-  bool apply (hb_aat_apply_context_t *c) const
+  hb_position_t get_h_tracking (hb_font_t *font, float track = 0.f) const
   {
-    TRACE_APPLY (this);
-
-    hb_mask_t trak_mask = c->plan->trak_mask;
-
-    const float ptem = c->font->ptem;
-    if (unlikely (ptem <= 0.f))
-      return_trace (false);
-
-    hb_buffer_t *buffer = c->buffer;
-    if (HB_DIRECTION_IS_HORIZONTAL (buffer->props.direction))
-    {
-      const TrackData &trackData = this+horizData;
-      int tracking = trackData.get_tracking (this, ptem);
-      hb_position_t offset_to_add = c->font->em_scalef_x (tracking / 2);
-      hb_position_t advance_to_add = c->font->em_scalef_x (tracking);
-      foreach_grapheme (buffer, start, end)
-      {
-	if (!(buffer->info[start].mask & trak_mask)) continue;
-	buffer->pos[start].x_advance += advance_to_add;
-	buffer->pos[start].x_offset += offset_to_add;
-      }
-    }
-    else
-    {
-      const TrackData &trackData = this+vertData;
-      int tracking = trackData.get_tracking (this, ptem);
-      hb_position_t offset_to_add = c->font->em_scalef_y (tracking / 2);
-      hb_position_t advance_to_add = c->font->em_scalef_y (tracking);
-      foreach_grapheme (buffer, start, end)
-      {
-	if (!(buffer->info[start].mask & trak_mask)) continue;
-	buffer->pos[start].y_advance += advance_to_add;
-	buffer->pos[start].y_offset += offset_to_add;
-      }
-    }
-
-    return_trace (true);
+    float ptem = font->ptem > 0.f ? font->ptem : HB_CORETEXT_DEFAULT_FONT_SIZE;
+    return font->em_scalef_x ((this+horizData).get_tracking (this, ptem, track));
+  }
+  hb_position_t get_v_tracking (hb_font_t *font, float track = 0.f) const
+  {
+    float ptem = font->ptem > 0.f ? font->ptem : HB_CORETEXT_DEFAULT_FONT_SIZE;
+    return font->em_scalef_y ((this+vertData).get_tracking (this, ptem, track));
   }
 
   bool sanitize (hb_sanitize_context_t *c) const

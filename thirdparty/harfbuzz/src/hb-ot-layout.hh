@@ -339,6 +339,11 @@ _hb_glyph_info_is_default_ignorable (const hb_glyph_info_t *info)
 	 !_hb_glyph_info_substituted (info);
 }
 static inline void
+_hb_glyph_info_set_default_ignorable (hb_glyph_info_t *info)
+{
+  info->unicode_props() |= UPROPS_MASK_IGNORABLE;
+}
+static inline void
 _hb_glyph_info_clear_default_ignorable (hb_glyph_info_t *info)
 {
   info->unicode_props() &= ~ UPROPS_MASK_IGNORABLE;
@@ -360,7 +365,7 @@ _hb_glyph_info_set_continuation (hb_glyph_info_t *info)
   info->unicode_props() |= UPROPS_MASK_CONTINUATION;
 }
 static inline void
-_hb_glyph_info_reset_continuation (hb_glyph_info_t *info)
+_hb_glyph_info_clear_continuation (hb_glyph_info_t *info)
 {
   info->unicode_props() &= ~ UPROPS_MASK_CONTINUATION;
 }
@@ -633,8 +638,7 @@ _hb_buffer_assert_gsubgpos_vars (hb_buffer_t *buffer)
 }
 
 /* Make sure no one directly touches our props... */
-#undef unicode_props0
-#undef unicode_props1
+#undef unicode_props
 #undef lig_props
 #undef glyph_props
 
