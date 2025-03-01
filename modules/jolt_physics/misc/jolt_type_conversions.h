@@ -97,7 +97,7 @@ _FORCE_INLINE_ JPH::Vec3 to_jolt(const Vector3 &p_vec) {
 }
 
 _FORCE_INLINE_ JPH::Quat to_jolt(const Basis &p_basis) {
-	const Quaternion quat = p_basis.get_quaternion().normalized();
+	const Quaternion quat = p_basis.get_rotation_quaternion();
 	return JPH::Quat((float)quat.x, (float)quat.y, (float)quat.z, (float)quat.w);
 }
 
