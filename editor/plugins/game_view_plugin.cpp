@@ -257,7 +257,7 @@ void GameView::_show_update_window_wrapper() {
 	Point2 offset_embedded_process = embedded_process->get_global_position() - get_global_position();
 
 	// On the first startup, the global position of the embedded process control is invalid because it was
-	// never displayed. We will calculated it manually using the minimum size of the window.
+	// never displayed. We will calculate it manually using the minimum size of the window.
 	if (offset_embedded_process == Point2()) {
 		offset_embedded_process.y = wrapped_min_size.y;
 	}
@@ -812,9 +812,8 @@ void GameView::_update_arguments_for_instance(int p_idx, List<String> &r_argumen
 	_update_embed_window_size();
 	Rect2i rect = embedded_process->get_screen_embedded_window_rect();
 
-	// On the first startup, the global rect of the embedded process control is invalid because it was
-	// never displayed. We will calculated it manually.
-	if (!window_wrapper->get_window_enabled() && rect.size.y < embedded_process->get_custom_minimum_size().y) {
+	// Usually, the global rect of the embedded process control is invalid because it was hidden. We will calculate it manually.
+	if (!window_wrapper->get_window_enabled()) {
 		Size2 old_min_size = embedded_process->get_custom_minimum_size();
 		embedded_process->set_custom_minimum_size(Size2i());
 
