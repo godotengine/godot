@@ -3115,6 +3115,7 @@ void SceneTreeDock::_replace_node(Node *p_node, Node *p_by_node, bool p_keep_pro
 		// If we're dealing with a custom node type, we need to create a default instance of the custom type instead of the native type for property comparison.
 		if (oldnode->has_meta(SceneStringName(_custom_type_script))) {
 			Ref<Script> cts = PropertyUtils::get_custom_type_script(oldnode);
+			ERR_FAIL_COND_MSG(cts.is_null(), "Invalid custom type script.");
 			default_oldnode = Object::cast_to<Node>(get_editor_data()->script_class_instance(cts->get_global_name()));
 			if (default_oldnode) {
 				default_oldnode->set_name(cts->get_global_name());
