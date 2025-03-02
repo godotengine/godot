@@ -45,6 +45,7 @@ class RichTextLabel : public Control {
 
 	enum RTLDrawStep {
 		DRAW_STEP_BACKGROUND,
+		DRAW_STEP_SHADOW_OUTLINE,
 		DRAW_STEP_SHADOW,
 		DRAW_STEP_OUTLINE,
 		DRAW_STEP_TEXT,

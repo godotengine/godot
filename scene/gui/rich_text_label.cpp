@@ -1051,17 +1051,18 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 					}
 				}
 
-				Color font_color = (step == DRAW_STEP_SHADOW || step == DRAW_STEP_OUTLINE || step == DRAW_STEP_TEXT) ? _find_color(it, p_base_color) : Color();
+				Color font_color = (step == DRAW_STEP_SHADOW_OUTLINE || step == DRAW_STEP_SHADOW || step == DRAW_STEP_OUTLINE || step == DRAW_STEP_TEXT) ? _find_color(it, p_base_color) : Color();
 				int outline_size = (step == DRAW_STEP_OUTLINE) ? _find_outline_size(it, p_outline_size) : 0;
 				Color font_outline_color = (step == DRAW_STEP_OUTLINE) ? _find_outline_color(it, p_outline_color) : Color();
 				Color font_shadow_color = p_font_shadow_color;
-				bool txt_visible = false;
-				if (step == DRAW_STEP_OUTLINE) {
-					txt_visible = (font_outline_color.a != 0 && outline_size > 0);
-				} else if (step == DRAW_STEP_SHADOW) {
-					txt_visible = (font_shadow_color.a != 0);
+				bool txt_visible = (font_color.a != 0);
+				if (step == DRAW_STEP_OUTLINE && (outline_size <= 0 || font_outline_color.a == 0)) {
+					continue;
+				} else if (step == DRAW_STEP_SHADOW_OUTLINE && (font_shadow_color.a == 0 || p_shadow_outline_size <= 0)) {
+					continue;
+				} else if (step == DRAW_STEP_SHADOW && (font_shadow_color.a == 0)) {
+					continue;
 				} else if (step == DRAW_STEP_TEXT) {
-					txt_visible = (font_color.a != 0);
 					bool has_ul = _find_underline(it);
 					if (!has_ul && underline_meta) {
 						ItemMeta *meta = nullptr;
@@ -1146,7 +1147,7 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 						draw_line(st_start + Vector2(0, y_off), p_ofs + Vector2(off_step.x, off_step.y + y_off), st_color, underline_width);
 					}
 				}
-				if (step == DRAW_STEP_SHADOW || step == DRAW_STEP_OUTLINE || step == DRAW_STEP_TEXT) {
+				if (step == DRAW_STEP_SHADOW_OUTLINE || step == DRAW_STEP_SHADOW || step == DRAW_STEP_OUTLINE || step == DRAW_STEP_TEXT) {
 					ItemFade *fade = nullptr;
 					Item *fade_item = it;
 					while (fade_item) {
@@ -1209,7 +1210,7 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 								charfx->range = Vector2i(l.char_offset + glyphs[i].start, l.char_offset + glyphs[i].end);
 								charfx->relative_index = l.char_offset + glyphs[i].start - item_fx->char_ofs;
 								charfx->visibility = txt_visible;
-								charfx->outline = (step == DRAW_STEP_SHADOW) || (step == DRAW_STEP_OUTLINE);
+								charfx->outline = (step == DRAW_STEP_SHADOW_OUTLINE) || (step == DRAW_STEP_SHADOW) || (step == DRAW_STEP_OUTLINE);
 								charfx->font = frid;
 								charfx->glyph_index = gl;
 								charfx->glyph_flags = gl_fl;
@@ -1284,7 +1285,7 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 						char_reverse_xform.set_origin(-char_off);
 						Transform2D char_final_xform = char_xform * char_reverse_xform;
 						draw_set_transform_matrix(char_final_xform);
-					} else if (step == DRAW_STEP_SHADOW) {
+					} else if (step == DRAW_STEP_SHADOW_OUTLINE || step == DRAW_STEP_SHADOW) {
 						font_color = font_shadow_color * Color(1, 1, 1, font_color.a);
 
 						char_reverse_xform.set_origin(-char_off - p_shadow_ofs);
@@ -1311,12 +1312,11 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 									} else if (((glyphs[i].flags & TextServer::GRAPHEME_IS_VIRTUAL) != TextServer::GRAPHEME_IS_VIRTUAL) && ((glyphs[i].flags & TextServer::GRAPHEME_IS_EMBEDDED_OBJECT) != TextServer::GRAPHEME_IS_EMBEDDED_OBJECT)) {
 										TS->draw_hex_code_box(ci, glyphs[i].font_size, fx_offset + char_off, gl, font_color);
 									}
+								} else if (step == DRAW_STEP_SHADOW_OUTLINE && frid != RID()) {
+									TS->font_draw_glyph_outline(frid, ci, glyphs[i].font_size, p_shadow_outline_size, fx_offset + char_off + p_shadow_ofs, gl, font_color);
 								} else if (step == DRAW_STEP_SHADOW && frid != RID()) {
 									TS->font_draw_glyph(frid, ci, glyphs[i].font_size, fx_offset + char_off + p_shadow_ofs, gl, font_color);
-									if (p_shadow_outline_size > 0) {
-										TS->font_draw_glyph_outline(frid, ci, glyphs[i].font_size, p_shadow_outline_size, fx_offset + char_off + p_shadow_ofs, gl, font_color);
-									}
-								} else if (step == DRAW_STEP_OUTLINE && frid != RID() && outline_size > 0) {
+								} else if (step == DRAW_STEP_OUTLINE && frid != RID()) {
 									TS->font_draw_glyph_outline(frid, ci, glyphs[i].font_size, outline_size, fx_offset + char_off, gl, font_color);
 								}
 							}
