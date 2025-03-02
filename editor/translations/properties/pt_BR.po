@@ -904,9 +904,6 @@ msgstr "Tempo Limite de Solicitação"
 msgid "Sync Breakpoints"
 msgstr "Pontos de Quebra de Sincronismo"
 
-msgid "Default Feature Profile"
-msgstr "Perfil de funcionalidade Padrão"
-
 msgid "Label"
 msgstr "Rótulo"
 
@@ -2383,9 +2380,6 @@ msgstr "Usar Threads Múltiplas"
 msgid "Plugin Name"
 msgstr "Nome do Plugin"
 
-msgid "Use Favorites Root Selection"
-msgstr "Seleção de favoritos da raíz"
-
 msgid "Low Processor Mode"
 msgstr "Modo Processamento Baixo"
 
@@ -3063,9 +3057,6 @@ msgstr "K1"
 
 msgid "K2"
 msgstr "K2"
-
-msgid "Spawnable Scenes"
-msgstr "Geração de Cenas"
 
 msgid "Spawn Path"
 msgstr "Caminho Salvamento Spawn"

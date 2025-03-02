@@ -51,7 +51,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-02-22 19:05+0000\n"
+"PO-Revision-Date: 2025-02-27 22:41+0000\n"
 "Last-Translator: Atur <aturaseman9@gmail.com>\n"
 "Language-Team: Persian <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/fa/>\n"
@@ -60,7 +60,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 5.10.1-dev\n"
+"X-Generator: Weblate 5.10.2-rc\n"
 
 msgid "Application"
 msgstr "برنامه"
@@ -105,7 +105,7 @@ msgid "Use Custom User Dir"
 msgstr "استفاده از Custom User Dir"
 
 msgid "Custom User Dir Name"
-msgstr "نام دلخواه برای دایرکتوری کاربر"
+msgstr "نام دلخواه برای پوشه‌دان کاربر"
 
 msgid "Project Settings Override"
 msgstr "لغو تنظیمات پروژه"
@@ -120,7 +120,7 @@ msgid "Quit on Go Back"
 msgstr "خروج در بازگشت"
 
 msgid "Display"
-msgstr "نمایش"
+msgstr "نمایشگر"
 
 msgid "Window"
 msgstr "پنجره"
@@ -129,10 +129,10 @@ msgid "Size"
 msgstr "اندازه"
 
 msgid "Viewport Width"
-msgstr "طول صفحه"
+msgstr "پهنای دیدگستره (viewport)"
 
 msgid "Viewport Height"
-msgstr "عرض صفحه"
+msgstr "بلندای دیدگستره (viewport)"
 
 msgid "Mode"
 msgstr "حالت"
@@ -159,16 +159,19 @@ msgid "Transparent"
 msgstr "شفاف"
 
 msgid "Extend to Title"
-msgstr "گسترش به تایل"
+msgstr "گسترش تا عنوان"
 
 msgid "No Focus"
 msgstr "بدون تمرکز"
 
+msgid "Sharp Corners"
+msgstr "گوشه‌های تیز"
+
 msgid "Window Width Override"
-msgstr "لغو عرض پنجره"
+msgstr "بازنویسی پهنای پنجره"
 
 msgid "Window Height Override"
-msgstr "بازنویسی عرض صفحه"
+msgstr "بازنویسی بلندای پنجره"
 
 msgid "Energy Saving"
 msgstr "ذخیره انرژی"
@@ -183,10 +186,10 @@ msgid "Warnings"
 msgstr "هشدارها"
 
 msgid "Check Invalid Track Paths"
-msgstr "مسیر های نامعتبر را بررسی کنید"
+msgstr "بررسی مسیرهای نامعتبر نوار"
 
 msgid "Check Angle Interpolation Type Conflicting"
-msgstr "تعارض نوع درونیابی زاویه ( Angle Interpolation)را بررسی کنید"
+msgstr "بررسی ناسازگاری گونهٔ میانیابی زاویه"
 
 msgid "Audio"
 msgstr "صدا"
@@ -207,10 +210,10 @@ msgid "Text to Speech"
 msgstr "نوشتار به گفتار"
 
 msgid "2D Panning Strength"
-msgstr "قدرت حرکت دو بعدی"
+msgstr "قدرت سراسرنمایی دوبعدی"
 
 msgid "3D Panning Strength"
-msgstr "قدرت حرکت سه بعدی"
+msgstr "قدرت سراسرنمایی سه‌بعدی"
 
 msgid "iOS"
 msgstr "آی‌او‌اس"
@@ -219,7 +222,7 @@ msgid "Session Category"
 msgstr "دسته‌بندی نشست"
 
 msgid "Mix With Others"
-msgstr "مخلوط کردن با دیگران"
+msgstr "آمیزش با دیگران"
 
 msgid "Subwindows"
 msgstr "زیر پنجره ها"
@@ -234,19 +237,19 @@ msgid "Physics"
 msgstr "فیزیک"
 
 msgid "2D"
-msgstr "۲‌بعدی"
+msgstr "دوبعدی"
 
 msgid "Run on Separate Thread"
 msgstr "اجرا روی ریسهٔ جدا"
 
 msgid "3D"
-msgstr "۳‌بعدی"
+msgstr "سه‌بعدی"
 
 msgid "Stretch"
 msgstr "کشش"
 
 msgid "Aspect"
-msgstr "جنبه"
+msgstr "نما"
 
 msgid "Scale"
 msgstr "مقیاس"
@@ -291,7 +294,7 @@ msgid "Gzip"
 msgstr "Gzip"
 
 msgid "Crash Handler"
-msgstr "کنترل‌کننده کرش"
+msgstr "گردانندهٔ سرنگونی"
 
 msgid "Message"
 msgstr "پیام"
@@ -405,7 +408,7 @@ msgid "Max Physics Steps per Frame"
 msgstr "بیشینهٔ گام‌ فیزیکی بر فریم"
 
 msgid "Max FPS"
-msgstr "بیشترین نرخ فریم"
+msgstr "فریم بر ثانیهٔ بیشینه"
 
 msgid "Time Scale"
 msgstr "مقیاس زمانی"
@@ -506,6 +509,9 @@ msgstr "نسبت"
 msgid "Velocity"
 msgstr "سرعت"
 
+msgid "Screen Velocity"
+msgstr "سرعت صفحه"
+
 msgid "Axis"
 msgstr "محور"
 
@@ -549,7 +555,10 @@ msgid "Events"
 msgstr "رویدادها"
 
 msgid "Include Navigational"
-msgstr "دربرگرفتن رهیابانه"
+msgstr "دربرگیری ناوبری‌وار"
+
+msgid "Include Hidden"
+msgstr "دربرگیری پنهان‌شده"
 
 msgid "Big Endian"
 msgstr "اندیان بزرگ"
@@ -707,9 +716,6 @@ msgstr "انحراف آغازین"
 msgid "Request Timeout"
 msgstr "درخواست وقفه"
 
-msgid "Default Feature Profile"
-msgstr "پروفایل ویژگی پیش‌فرض"
-
 msgid "Label"
 msgstr "برچسب"
 
@@ -744,7 +750,7 @@ msgid "Distraction Free Mode"
 msgstr "حالت بدون حواس‌پرتی"
 
 msgid "Movie Maker Enabled"
-msgstr "فیلم‌ساز بکارافتاده"
+msgstr "فیلم‌ساز به‌کارافتاده"
 
 msgid "Base Type"
 msgstr "نوع پایه"
@@ -777,7 +783,7 @@ msgid "UI Layout Direction"
 msgstr "سوی چیدمان میانای کاربری"
 
 msgid "Display Scale"
-msgstr "نمایاندن مقیاس"
+msgstr "مقیاس نمایشگر"
 
 msgid "Custom Display Scale"
 msgstr "مقیاس نمایشگر سفارشی"
@@ -882,7 +888,7 @@ msgid "Display Close Button"
 msgstr "نمایش دکمه خروج"
 
 msgid "Maximum Width"
-msgstr "حداکثر طول"
+msgstr "پهنای بیشینه"
 
 msgid "Show Script Button"
 msgstr "نمایش دکمه اسکریپت"
@@ -921,7 +927,7 @@ msgid "Show Hidden Files"
 msgstr "نمایش پرونده‌های پنهان شده"
 
 msgid "Display Mode"
-msgstr "حالت نمایش"
+msgstr "حالت نمایشگر"
 
 msgid "Max Results"
 msgstr "نتایج بیشینه‌"
@@ -929,8 +935,17 @@ msgstr "نتایج بیشینه‌"
 msgid "Show Search Highlight"
 msgstr "نمایش برجسته‌های جستجو"
 
+msgid "Include Addons"
+msgstr "دربرگیری برافزاها"
+
+msgid "Default Display Mode"
+msgstr "حالت پیش‌فرض نمایشگر"
+
 msgid "Import"
 msgstr "درون‌برد"
+
+msgid "Blender"
+msgstr "درآمیزی"
 
 msgid "Blender Path"
 msgstr "مسیر بلندر"
@@ -1026,7 +1041,7 @@ msgid "Auto Indent"
 msgstr "تورفتگی خودکار"
 
 msgid "Files"
-msgstr "فایل‌ها"
+msgstr "پرونده‌ها"
 
 msgid "Restore Scripts on Load"
 msgstr "برگرداندن اسکریپت‌ها هنگام بارکردن"
@@ -1133,6 +1148,9 @@ msgstr "مفصل بدن B"
 msgid "Occluder"
 msgstr "بندآور"
 
+msgid "Reflection Probe"
+msgstr "کاوَند بازتاب"
+
 msgid "Skeleton"
 msgstr "اسکلت"
 
@@ -1192,6 +1210,15 @@ msgstr "نشاندن"
 
 msgid "Error"
 msgstr "خطا"
+
+msgid "Panning"
+msgstr "سراسرنمایی"
+
+msgid "Simple Panning"
+msgstr "سراسرنمایی ساده"
+
+msgid "2D Editor Pan Speed"
+msgstr "تندی سراسرنمایی ویراستار دوبعدی"
 
 msgid "Tiles Editor"
 msgstr "ویراستار کاشی‌ها"
@@ -1484,8 +1511,11 @@ msgstr "درون‌برد به‌عنوان استخوان‌های استخوا
 msgid "Meshes"
 msgstr "مش‌ها"
 
+msgid "Light Baking"
+msgstr "پخت نور"
+
 msgid "FPS"
-msgstr "لحظه بر ثانیه"
+msgstr "فریم بر ثانیه"
 
 msgid "Trimming"
 msgstr "در حال تراشیدن"
@@ -1615,10 +1645,10 @@ msgid "Script"
 msgstr "اسکریپت"
 
 msgid "Naming"
-msgstr "نامگذاشتن"
+msgstr "نامگذاری"
 
 msgid "Reimport Missing Imported Files"
-msgstr "وارد کردن دوباره فایل های وارد شده پیدانشده"
+msgstr "دوباره درون‌برد کردن پرونده‌های درون‌بردشدهٔ از جا افتاده"
 
 msgid "Use Multiple Threads"
 msgstr "به‌کارگیری چندین ریسه"
@@ -1650,6 +1680,9 @@ msgstr "بیشینهٔ هشدار بر ثانیه"
 msgid "Driver"
 msgstr "درایور"
 
+msgid "GL Compatibility"
+msgstr "سازگاری با جی.ال"
+
 msgid "Renderer"
 msgstr "نماپرداز"
 
@@ -1664,6 +1697,9 @@ msgstr "مجاز"
 
 msgid "Threads"
 msgstr "ریسه‌ها"
+
+msgid "Display Server"
+msgstr "سرور نمایشگر"
 
 msgid "Handheld"
 msgstr "دستی"
@@ -1689,6 +1725,9 @@ msgstr "جستجو در پسوند پرونده"
 msgid "Mouse Cursor"
 msgstr "نشانگر موس"
 
+msgid "Custom Image"
+msgstr "تصویر سفارشی"
+
 msgid "Tooltip Position Offset"
 msgstr "بازه از مبدای نهشت پندابزار"
 
@@ -1703,6 +1742,9 @@ msgstr "بکاربردن پالایه"
 
 msgid "Image"
 msgstr "عکس"
+
+msgid "Minimum Display Time"
+msgstr "کمینهٔ زمان نمایش"
 
 msgid "Dotnet"
 msgstr "دات‌نت"
@@ -1726,13 +1768,13 @@ msgid "Video"
 msgstr "ویدیو"
 
 msgid "Physics 2D"
-msgstr "فیزیک ۲‌بعدی"
+msgstr "فیزیک دوبعدی"
 
 msgid "Islands"
 msgstr "جزایر"
 
 msgid "Physics 3D"
-msgstr "فیزیک ۳‌بعدی"
+msgstr "فیزیک سه‌بعدی"
 
 msgid "Active Maps"
 msgstr "نقشه‌های فعال"
@@ -1820,6 +1862,9 @@ msgstr "سرور زبان"
 
 msgid "Use Thread"
 msgstr "به‌کارگیری ریسه"
+
+msgid "Bake FPS"
+msgstr "پخت فریم بر ثانیه"
 
 msgid "glTF"
 msgstr "‌glTF"
@@ -1935,6 +1980,12 @@ msgstr "پخت ناوبری"
 msgid "Fade Time"
 msgstr "زمان پریدگی"
 
+msgid "Jolt Physics 3D"
+msgstr "فیزیک جولت سه‌بعدی"
+
+msgid "World Node"
+msgstr "گرهٔ جهان"
+
 msgid "Region Size"
 msgstr "اندازهٔ دامنه"
 
@@ -1946,6 +1997,12 @@ msgstr "بازه از مبدای چرخه"
 
 msgid "IOD"
 msgstr "آی‌او‌دی"
+
+msgid "Display Width"
+msgstr "پهنای نمایشگر"
+
+msgid "Vulkan VRS"
+msgstr "وی.آر.اس وولکان"
 
 msgid "Visibility Update Mode"
 msgstr "حالت به‌روزرسانی پدیداری"
@@ -1960,10 +2017,22 @@ msgid "Fractal"
 msgstr "برخالی"
 
 msgid "Width"
-msgstr "عرض"
+msgstr "پهنا"
+
+msgid "In 3D Space"
+msgstr "در فضای سه‌بعدی"
 
 msgid "Seamless"
 msgstr "یک‌پارچه"
+
+msgid "Display Refresh Rate"
+msgstr "نرخ نوگردانی نمایشگر"
+
+msgid "Layer Viewport"
+msgstr "دیدگسترهٔ لایه"
+
+msgid "Aspect Ratio"
+msgstr "نسبت نما"
 
 msgid "Central Angle"
 msgstr "زاویهٔ مرکزی"
@@ -2178,6 +2247,9 @@ msgstr "پخش خودکار"
 msgid "Attenuation"
 msgstr "کاهانش"
 
+msgid "Panning Strength"
+msgstr "قدرت سراسرنمایی"
+
 msgid "Playback Type"
 msgstr "گونهٔ بازنواخت"
 
@@ -2344,7 +2416,7 @@ msgid "Energy"
 msgstr "انرژی"
 
 msgid "Blend Mode"
-msgstr "حالت درآمیختن"
+msgstr "حالت درآمیزی"
 
 msgid "Z Min"
 msgstr "کمینهٔ Z"
@@ -2397,8 +2469,14 @@ msgstr "حالت مفصل"
 msgid "Border"
 msgstr "مرز"
 
+msgid "Pathfinding"
+msgstr "مسیریابی"
+
 msgid "Navigation Layers"
 msgstr "لایه‌های ناوبری"
+
+msgid "Pathfinding Algorithm"
+msgstr "الگوریتم مسیریابی"
 
 msgid "Path Postprocessing"
 msgstr "پس‌پردازش مسیر"
@@ -2412,11 +2490,26 @@ msgstr "ساده‌سازی مسیر"
 msgid "Simplify Epsilon"
 msgstr "ساده‌سازی اپسیلون"
 
+msgid "Avoidance"
+msgstr "پرهیز"
+
+msgid "Avoidance Enabled"
+msgstr "پرهیزِ به‌کارافتاده"
+
 msgid "Max Neighbors"
 msgstr "بیشینه‌‌ی همسایگان"
 
 msgid "Max Speed"
 msgstr "تندی بیشینه"
+
+msgid "Avoidance Layers"
+msgstr "لایه‌ها پرهیز"
+
+msgid "Avoidance Mask"
+msgstr "ماسک پرهیز"
+
+msgid "Avoidance Priority"
+msgstr "اولویت پرهیز"
 
 msgid "Use Custom"
 msgstr "بکاربردن سفارشی"
@@ -2614,10 +2707,10 @@ msgid "Target Velocity"
 msgstr "سرعت هدف"
 
 msgid "Bone 2D Nodepath"
-msgstr "مسیر گرهٔ استخوان ۲‌بعدی"
+msgstr "مسیر گرهٔ استخوان دوبعدی"
 
 msgid "Bone 2D Index"
-msgstr "اندیس استخوان ۲‌بعدی"
+msgstr "اندیس استخوان دوبعدی"
 
 msgid "Auto Configure Joint"
 msgstr "پیکربندی خودکار مفصل"
@@ -2665,7 +2758,7 @@ msgid "Freeze Mode"
 msgstr "حالت یخ‌زدگی"
 
 msgid "Solver"
-msgstr "چاره‌جو"
+msgstr "حل‌کننده"
 
 msgid "Linear"
 msgstr "خطی"
@@ -2778,6 +2871,9 @@ msgstr "نام استخوان"
 
 msgid "Override Pose"
 msgstr "ژست بازنویسی"
+
+msgid "Keep Aspect"
+msgstr "نگهداری نما"
 
 msgid "Cull Mask"
 msgstr "گردآوری ماسک"
@@ -2938,6 +3034,9 @@ msgstr "از"
 msgid "Transition Type"
 msgstr "گونهٔ گذار"
 
+msgid "Use 3D Avoidance"
+msgstr "به‌کارگیری پرهیز سه‌بعدی"
+
 msgid "Quaternion"
 msgstr "کواترنیون"
 
@@ -2998,6 +3097,12 @@ msgstr "سفر"
 msgid "Max Force"
 msgstr "نیروی بیشینه"
 
+msgid "Blend Distance"
+msgstr "فاصلهٔ درآمیزی"
+
+msgid "Reflection Mask"
+msgstr "لایهٔ بازتاب"
+
 msgid "Deprecated"
 msgstr "منسوخ"
 
@@ -3015,6 +3120,9 @@ msgstr "هندسه"
 
 msgid "Custom AABB"
 msgstr "AABB سفارشی"
+
+msgid "Global Illumination"
+msgstr "روشنایی جهانی"
 
 msgid "Dynamic Range"
 msgstr "برد پویا"
@@ -3061,6 +3169,9 @@ msgstr "شمار درونداد"
 msgid "Request"
 msgstr "درخواست"
 
+msgid "Blend Amount"
+msgstr "مقدار درآمیزی"
+
 msgid "Current Index"
 msgstr "اندیس کنونی"
 
@@ -3087,6 +3198,9 @@ msgstr "پویانمایی کنونی"
 
 msgid "Playback Options"
 msgstr "گزینه‌های بازنواخت"
+
+msgid "Default Blend Time"
+msgstr "زمان درآمیزی پیش‌فرض"
 
 msgid "Animation Path"
 msgstr "مسیر پویانمایی"
@@ -3195,6 +3309,9 @@ msgstr "نمایش توری"
 
 msgid "Snapping Enabled"
 msgstr "چفت بکار افتاده"
+
+msgid "Panning Scheme"
+msgstr "طرح سراسرنمایی"
 
 msgid "Connection Lines"
 msgstr "خط‌های اتصال"
@@ -3403,8 +3520,14 @@ msgstr "زمان بازمانده"
 msgid "Shapes"
 msgstr "شکل‌ها"
 
+msgid "Geometry Width"
+msgstr "پهنای هندسه"
+
 msgid "Draw 2D Outlines"
 msgstr "کشیدن پیراخط‌های دوبعدی"
+
+msgid "Viewport"
+msgstr "دیدگستره (viewport)"
 
 msgid "Anti Aliasing"
 msgstr "نادندانگی"
@@ -3419,25 +3542,52 @@ msgid "Snap 2D Transforms to Pixel"
 msgstr "چفت ترادیسی‌های دوبعدی به پیکسل"
 
 msgid "Snap 2D Vertices to Pixel"
-msgstr "چفت رأس‌ها به پیکسل"
+msgstr "چفت رأس‌های دوبعدی به پیکسل"
+
+msgid "VRS"
+msgstr "وی.آر.اس"
+
+msgid "Lights and Shadows"
+msgstr "نورها و سایه‌ها"
 
 msgid "SDF"
 msgstr "اس‌دی‌اف"
+
+msgid "Viewport Path"
+msgstr "مسیر دیدگستره"
+
+msgid "Disable 3D"
+msgstr "ازکاراندازی سه‌بعدی"
+
+msgid "World 3D"
+msgstr "جهان سه‌بعدی"
 
 msgid "Handle Input Locally"
 msgstr "بومی رسیدگی کردن به درونداد"
 
 msgid "Use HDR 2D"
-msgstr "بکاربردن (HDR) ۲‌بعدی"
+msgstr "به‌کارگیری اچ.دی.آر دوبعدی"
 
 msgid "FSR Sharpness"
 msgstr "تیزی FSR"
 
+msgid "Canvas Items"
+msgstr "موارد بوم"
+
 msgid "Audio Listener"
 msgstr "شونده صوتی"
 
+msgid "Enable 2D"
+msgstr "به‌کاراندازی دوبعدی"
+
+msgid "Enable 3D"
+msgstr "به‌کاراندازی سه‌بعدی"
+
 msgid "Disable Input"
 msgstr "ازکاراندازی درونداد"
+
+msgid "Size 2D Override"
+msgstr "بازنویسی اندازهٔ دوبعدی"
 
 msgid "Render Target"
 msgstr "هدف نماپردازش"
@@ -3448,17 +3598,26 @@ msgstr "صفحه کنونی"
 msgid "Exclusive"
 msgstr "انحصاری"
 
+msgid "Layer Names"
+msgstr "نام لایه‌ها"
+
 msgid "2D Render"
-msgstr "نماپردازش ۲‌بعدی"
+msgstr "نماپردازش دوبعدی"
 
 msgid "3D Render"
-msgstr "نماپردازش ۳‌بعدی"
+msgstr "نماپردازش سه‌بعدی"
 
 msgid "2D Physics"
-msgstr "فیزیک ۲‌بعدی"
+msgstr "فیزیک دوبعدی"
+
+msgid "2D Navigation"
+msgstr "ناوبری دوبعدی"
 
 msgid "3D Physics"
-msgstr "فیزیک ۳‌بعدی"
+msgstr "فیزیک سه‌بعدی"
+
+msgid "3D Navigation"
+msgstr "ناوبری سه‌بعدی"
 
 msgid "Cells"
 msgstr "یاخته‌ها"
@@ -3468,6 +3627,9 @@ msgstr "A"
 
 msgid "B"
 msgstr "بایت"
+
+msgid "Bone 2D Node"
+msgstr "گرهٔ استخوان دوبعدی"
 
 msgid "Right Corner"
 msgstr "گوشهٔ راست"
@@ -3730,11 +3892,17 @@ msgstr "MSDF‌"
 msgid "Pixel Range"
 msgstr "برد پیکسل"
 
+msgid "Blend Shape Mode"
+msgstr "حالت شکل درآمیزی"
+
 msgid "Base Texture"
 msgstr "بافت پایه"
 
 msgid "Transform Format"
 msgstr "چارچوب ترادیسی"
+
+msgid "Baking AABB"
+msgstr "پخت ای.ای.بی.بی"
 
 msgid "Damping as Friction"
 msgstr "میرایی به‌عنوان اصطحکاک"
@@ -3761,7 +3929,7 @@ msgid "Process Mode"
 msgstr "حالت پردازش"
 
 msgid "Blend"
-msgstr "درآمیختن"
+msgstr "درآمیزی"
 
 msgid "Top Left"
 msgstr "چپ بالا"
@@ -3811,6 +3979,9 @@ msgstr "تابع"
 msgid "Hint"
 msgstr "راهنمایی"
 
+msgid "Mode 2D"
+msgstr "حالت دوبعدی"
+
 msgid "Font Outline Color"
 msgstr "رنگ پیراخط قلم"
 
@@ -3828,6 +3999,9 @@ msgstr "اندازهٔ پیراخط سایه"
 
 msgid "Minimum Character Width"
 msgstr "کمینهٔ پهنای نویسه"
+
+msgid "Caret Width"
+msgstr "پهنای هشتک"
 
 msgid "Clear"
 msgstr "پاک کردن"
@@ -4009,11 +4183,20 @@ msgstr "مقیاس تندی بازنواخت"
 msgid "Is Active"
 msgstr "فعال است"
 
+msgid "Movie Writer"
+msgstr "فیلم‌نویس"
+
 msgid "Metadata Flags"
 msgstr "پرچم‌های فراداده"
 
 msgid "Default Link Connection Radius"
 msgstr "شعاع پیش‌فرض پیوند اتصال"
+
+msgid "World"
+msgstr "جهان"
+
+msgid "Baking"
+msgstr "پخت"
 
 msgid "Link Connection Color"
 msgstr "رنگ پیوند اتصال"
@@ -4026,6 +4209,12 @@ msgstr "ماندگری وارونه"
 
 msgid "Canvas Instance ID"
 msgstr "شناسهٔ بوم نمونه"
+
+msgid "Default Gravity"
+msgstr "گرانش پیش‌فرض"
+
+msgid "Default Gravity Vector"
+msgstr "بردار گرانش پیش‌فرض"
 
 msgid "Default Linear Damp"
 msgstr "میرایی خطی پیش‌فرض"
@@ -4081,11 +4270,20 @@ msgstr "کامپایلر سایه‌زن"
 msgid "Shader Cache"
 msgstr "کش سایه‌زن"
 
+msgid "Reflections"
+msgstr "بازتاب‌ها"
+
+msgid "Sky Reflections"
+msgstr "بازتاب‌های آسمان"
+
 msgid "Texture Array Reflections"
 msgstr "بازتاب‌های آرایهٔ بافت"
 
+msgid "Reflection Size"
+msgstr "اندازهٔ بازتاب"
+
 msgid "Reflection Count"
-msgstr "تعداد بازتاب"
+msgstr "شمار بازتاب"
 
 msgid "Use Half Resolution"
 msgstr "استفاده از وضوح نیمه"
@@ -4103,7 +4301,7 @@ msgid "Adaptive Target"
 msgstr "هدف سازوار"
 
 msgid "HDR 2D"
-msgstr "(HDR) ۲‌بعدی"
+msgstr "اچ.دی.آر دوبعدی"
 
 msgid "Decals"
 msgstr "برگردان‌ها"
@@ -4138,8 +4336,17 @@ msgstr "دادهٔ ردیابی‌شده دارد"
 msgid "Body Flags"
 msgstr "پرچم‌های بدن"
 
+msgid "Blend Shapes"
+msgstr "شکل‌های درآمیزی"
+
 msgid "Hand Tracking Source"
 msgstr "سرچشمهٔ ردیابی دست"
+
+msgid "VRS Min Radius"
+msgstr "کمینهٔ شعاع وی.آر.اس"
+
+msgid "VRS Strength"
+msgstr "قدرت وی.آر.اس"
 
 msgid "World Origin"
 msgstr "خاستگاه جهان"

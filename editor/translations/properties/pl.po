@@ -102,7 +102,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-02-21 19:26+0000\n"
+"PO-Revision-Date: 2025-02-26 15:06+0000\n"
 "Last-Translator: Tomek <kobewi4e@gmail.com>\n"
 "Language-Team: Polish <https://hosted.weblate.org/projects/godot-engine/godot-"
 "properties/pl/>\n"
@@ -112,7 +112,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 "
 "|| n%100>=20) ? 1 : 2);\n"
-"X-Generator: Weblate 5.10.1-dev\n"
+"X-Generator: Weblate 5.10.2-dev\n"
 
 msgid "Application"
 msgstr "Aplikacja"
@@ -282,8 +282,17 @@ msgstr "Okna podrzędne"
 msgid "Embed Subwindows"
 msgstr "Osadź okna podrzędne"
 
+msgid "Frame Pacing"
+msgstr "Tempo klatek"
+
 msgid "Android"
 msgstr "Android"
+
+msgid "Enable Frame Pacing"
+msgstr "Włącz tempo klatek"
+
+msgid "Swappy Mode"
+msgstr "Tryb Swappy"
 
 msgid "Physics"
 msgstr "Fizyka"
@@ -429,6 +438,9 @@ msgstr "Maks. rozmiar (MB)"
 msgid "Texture Upload Region Size Px"
 msgstr "Rozmiar regionu przesyłania tekstur (w piks.)"
 
+msgid "Texture Download Region Size Px"
+msgstr "Rozmiar regionu pobierania tekstur (w piks.)"
+
 msgid "Pipeline Cache"
 msgstr "Pamięć podręczna Pipeline-u"
 
@@ -489,6 +501,9 @@ msgstr "Włącz długie naciśnięcie jako kliknięcie prawym przyciskiem myszy"
 msgid "Enable Pan and Scale Gestures"
 msgstr "Włącz gesty obrotu i skalowania"
 
+msgid "Rotary Input Scroll Axis"
+msgstr "Oś przewijania obrotowego wejścia"
+
 msgid "Low Processor Usage Mode"
 msgstr "Tryb niskiego wykorzystania procesora"
 
@@ -500,6 +515,9 @@ msgstr "Wygładzanie delty"
 
 msgid "Print Error Messages"
 msgstr "Wyświetlaj komunikaty o błędach"
+
+msgid "Print to stdout"
+msgstr "Wypisuj na stdout"
 
 msgid "Physics Ticks per Second"
 msgstr "Ticki Fizyki na Sekundę"
@@ -537,11 +555,17 @@ msgstr "Stare zachowanie Just Pressed"
 msgid "Sensors"
 msgstr "Sensory"
 
+msgid "Enable Accelerometer"
+msgstr "Włącz akcelerometr"
+
 msgid "Enable Gravity"
 msgstr "Zezwól na Grawitację"
 
 msgid "Enable Gyroscope"
 msgstr "Zezwól na Żyroskop"
+
+msgid "Enable Magnetometer"
+msgstr "Włącz magnetometr"
 
 msgid "Device"
 msgstr "Urządzenie"
@@ -879,9 +903,6 @@ msgstr "Przekroczono limit czasu żądania"
 msgid "Sync Breakpoints"
 msgstr "Synchronizuj punkty przerwania"
 
-msgid "Default Feature Profile"
-msgstr "Profil domyślnych funkcji"
-
 msgid "Label"
 msgstr "Etykieta"
 
@@ -911,6 +932,12 @@ msgstr "Usuwalne"
 
 msgid "Selectable"
 msgstr "Możliwe do zaznaczenia"
+
+msgid "Use Folding"
+msgstr "Użyj zawijania"
+
+msgid "Name Split Ratio"
+msgstr "Współczynnik podziału nazwy"
 
 msgid "Distraction Free Mode"
 msgstr "Tryb bez rozproszeń"
@@ -983,6 +1010,9 @@ msgstr "Pozycjonowanie subpikselowe czcionki"
 
 msgid "Font Disable Embedded Bitmaps"
 msgstr "Wyłącz wbudowane bitmapy czcionki"
+
+msgid "Font Allow MSDF"
+msgstr "Zezwól MSDF w czcionkach"
 
 msgid "Main Font"
 msgstr "Główna czcionka"
@@ -1180,6 +1210,21 @@ msgstr "Tryb wyświetlania"
 msgid "Thumbnail Size"
 msgstr "Rozmiar miniaturki"
 
+msgid "Quick Open Dialog"
+msgstr "Dialog szybkiego otwierania"
+
+msgid "Max Results"
+msgstr "Maksymalna liczba wyników"
+
+msgid "Show Search Highlight"
+msgstr "Pokaż podświetlenie szukania"
+
+msgid "Enable Fuzzy Matching"
+msgstr "Włącz dopasowanie rozmyte"
+
+msgid "Max Fuzzy Misses"
+msgstr "Maksymalna niedokładność rozmycia"
+
 msgid "Include Addons"
 msgstr "Zawrzyj Dodatki"
 
@@ -1227,6 +1272,9 @@ msgstr "Automatycznie rozwijaj do wybranego"
 
 msgid "Center Node on Reparent"
 msgstr "Wyśrodkuj element przy zmianie rodzica"
+
+msgid "Hide Filtered Out Parents"
+msgstr "Ukryj odfiltrowane węzły nadrzędne"
 
 msgid "Always Show Folders"
 msgstr "Zawsze pokazuj foldery"
@@ -1327,6 +1375,9 @@ msgstr "Rysuj spacje"
 msgid "Behavior"
 msgstr "Zachowanie"
 
+msgid "Empty Selection Clipboard"
+msgstr "Schowek pustego zaznaczenia"
+
 msgid "Navigation"
 msgstr "Nawigacja"
 
@@ -1390,8 +1441,17 @@ msgstr "Konwertuj wcięcia przy zapisie"
 msgid "Auto Reload Scripts on External Change"
 msgstr "Automatyczne przeładuj skrypty po zewnętrznych zmianach"
 
+msgid "Auto Reload and Parse Scripts on Save"
+msgstr "Automatycznie przeładuj i zanalizuj skrypty przy zapisie"
+
 msgid "Open Dominant Script on Scene Change"
 msgstr "Otwórz główny skrypt przy zmianie sceny"
+
+msgid "Documentation"
+msgstr "Dokumentacja"
+
+msgid "Enable Tooltips"
+msgstr "Włącz podpowiedzi"
 
 msgid "Script List"
 msgstr "Lista skryptów"
@@ -1407,6 +1467,9 @@ msgstr "Włącz temperaturę skryptów"
 
 msgid "Script Temperature History Size"
 msgstr "Rozmiar historii temperatury skryptów"
+
+msgid "Highlight Scene Scripts"
+msgstr "Podświetl skrypty sceny"
 
 msgid "Group Help Pages"
 msgstr "Grupuj strony pomocy"
@@ -1431,6 +1494,9 @@ msgstr "Uzupełnianie"
 
 msgid "Idle Parse Delay"
 msgstr "Opóźnienie interpretacji"
+
+msgid "Idle Parse Delay With Errors Found"
+msgstr "Opóźnienie interpretacji ze znalezionymi błędami"
 
 msgid "Auto Brace Complete"
 msgstr "Automatyczne zamykanie nawiasów"
@@ -1479,6 +1545,9 @@ msgstr "Mapa siatek"
 
 msgid "Pick Distance"
 msgstr "Dystans łapania"
+
+msgid "Palette Min Width"
+msgstr "Minimalna szerokość palety"
 
 msgid "Selection Box Color"
 msgstr "Kolor prostopadłościanu zaznaczenia"
@@ -1555,6 +1624,18 @@ msgstr "Zaznaczona kość"
 msgid "CSG"
 msgstr "CSG"
 
+msgid "GridMap Grid"
+msgstr "Siatka GridMap"
+
+msgid "Spring Bone Joint"
+msgstr "Złączenie kości sprężynowej"
+
+msgid "Spring Bone Collision"
+msgstr "Kolizja kości sprężynowej"
+
+msgid "Spring Bone Inside Collision"
+msgstr "Kolizja wewnętrzna kości sprężynowej"
+
 msgid "Gizmo Settings"
 msgstr "Ustawienia uchwytów"
 
@@ -1605,6 +1686,9 @@ msgstr "Preferencje nawigacji"
 
 msgid "Orbit Sensitivity"
 msgstr "Czułość orbity"
+
+msgid "Translation Sensitivity"
+msgstr "Czułość przesuwania"
 
 msgid "Orbit Inertia"
 msgstr "Bezwładność orbity"
@@ -1801,6 +1885,9 @@ msgstr "Maksymalne linie"
 msgid "Platforms"
 msgstr "Platformy"
 
+msgid "Linux/*BSD"
+msgstr "Linux/*BSD"
+
 msgid "Prefer Wayland"
 msgstr "Preferuj Wayland"
 
@@ -1824,6 +1911,9 @@ msgstr "Rozmiar historii klatek profilera"
 
 msgid "Profiler Frame Max Functions"
 msgstr "Maksymalna ilość funkcji klatki profilera"
+
+msgid "Profiler Target FPS"
+msgstr "Docelowy FPS profilera"
 
 msgid "Remote Scene Tree Refresh Interval"
 msgstr "Częstotliwość odświeżania zdalnej struktury scen"
@@ -2076,6 +2166,9 @@ msgstr "Płaski"
 
 msgid "Hide Slider"
 msgstr "Ukryj suwak"
+
+msgid "Editing Integer"
+msgstr "Edytowanie liczby całkowitej"
 
 msgid "Zoom"
 msgstr "Przybliż"
@@ -2659,9 +2752,6 @@ msgstr "Nazwa wtyczki"
 
 msgid "Autoload on Startup"
 msgstr "Automatyczne ładowanie podczas uruchamiania"
-
-msgid "Use Favorites Root Selection"
-msgstr "Użyj wybierania ulubionych korzeni sceny"
 
 msgid "Flush stdout on Print"
 msgstr "Wyczyść stdout podczas używania Print"
