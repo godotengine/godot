@@ -119,6 +119,7 @@ private:
 	bool dragging_valid_tab = false;
 	bool scroll_to_selected = true;
 	int tabs_rearrange_group = -1;
+	bool switch_on_drag_hover = true;
 
 	static const int CURRENT_TAB_UNINITIALIZED = -2;
 	bool initialized = false;
@@ -161,6 +162,8 @@ private:
 		Ref<StyleBox> button_hl_style;
 	} theme_cache;
 
+	Timer *hover_switch_delay = nullptr;
+
 	int get_tab_width(int p_idx) const;
 	Size2 _get_tab_icon_size(int p_idx) const;
 	void _ensure_no_over_offset();
@@ -168,6 +171,7 @@ private:
 
 	void _update_hover();
 	void _update_cache(bool p_update_hover = true);
+	void _hover_switch_timeout();
 
 	void _on_mouse_exited();
 
@@ -202,6 +206,7 @@ public:
 	bool _handle_can_drop_data(const String &p_type, const Point2 &p_point, const Variant &p_data) const;
 	void _handle_drop_data(const String &p_type, const Point2 &p_point, const Variant &p_data, const Callable &p_move_tab_callback, const Callable &p_move_tab_from_other_callback);
 	void _draw_tab_drop(RID p_canvas_item);
+	void _handle_switch_on_hover(const Variant &p_data) const;
 
 	void add_tab(const String &p_str = "", const Ref<Texture2D> &p_icon = Ref<Texture2D>());
 
@@ -286,6 +291,9 @@ public:
 
 	void set_scroll_to_selected(bool p_enabled);
 	bool get_scroll_to_selected() const;
+
+	void set_switch_on_drag_hover(bool p_enabled);
+	bool get_switch_on_drag_hover() const;
 
 	void set_select_with_rmb(bool p_enabled);
 	bool get_select_with_rmb() const;
