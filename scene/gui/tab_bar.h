@@ -116,6 +116,7 @@ private:
 	bool dragging_valid_tab = false;
 	bool scroll_to_selected = true;
 	int tabs_rearrange_group = -1;
+	bool switch_on_hover = true;
 
 	static const int CURRENT_TAB_UNINITIALIZED = -2;
 	bool initialized = false;
@@ -268,6 +269,9 @@ public:
 
 	void set_scroll_to_selected(bool p_enabled);
 	bool get_scroll_to_selected() const;
+
+	void set_switch_on_hover(bool p_enabled);
+	bool get_switch_on_hover() const;
 
 	void set_select_with_rmb(bool p_enabled);
 	bool get_select_with_rmb() const;
