@@ -48,8 +48,8 @@ msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-02-25 13:43+0000\n"
-"Last-Translator: Vojtech Krajnansky <vojtech.krajnansky@gmail.com>\n"
+"PO-Revision-Date: 2025-03-01 17:31+0000\n"
+"Last-Translator: Pythom1234 <tom.fucik@email.cz>\n"
 "Language-Team: Czech <https://hosted.weblate.org/projects/godot-engine/godot-"
 "properties/cs/>\n"
 "Language: cs\n"
@@ -57,7 +57,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=((n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2);\n"
-"X-Generator: Weblate 5.10.2-dev\n"
+"X-Generator: Weblate 5.10.3-dev\n"
 
 msgid "Application"
 msgstr "Aplikace"
@@ -848,9 +848,6 @@ msgstr "Čas na požadavek vypršel"
 msgid "Sync Breakpoints"
 msgstr "Synchronizovat breakpointy"
 
-msgid "Default Feature Profile"
-msgstr "Výchozí profil funkcí"
-
 msgid "Label"
 msgstr "Popisek"
 
@@ -1393,6 +1390,9 @@ msgstr "Automaticky aktualizovat a provést rozbor skriptů při uložení"
 
 msgid "Open Dominant Script on Scene Change"
 msgstr "Otevřít dominantní skript při změně scény"
+
+msgid "Documentation"
+msgstr "Dokumentace"
 
 msgid "Script List"
 msgstr "Seznam skriptů"
@@ -2060,9 +2060,6 @@ msgstr "Speciální barva"
 msgid "Particle Color"
 msgstr "Barva částic"
 
-msgid "Editor Settings Advanced Mode"
-msgstr "Pokročilý režim nastavení editoru"
-
 msgid "Custom Template"
 msgstr "Vlastní šablona"
 
@@ -2086,9 +2083,6 @@ msgstr "S3TC BPTC"
 
 msgid "ETC2 ASTC"
 msgstr "ETC2 ASTC"
-
-msgid "Export Template Download Directory"
-msgstr "Adresář stažených exportních šablon"
 
 msgid "Export Path"
 msgstr "Cesta pro export"
@@ -2718,9 +2712,6 @@ msgstr "Počet snímků"
 msgid "Duration"
 msgstr "Trvání"
 
-msgid "Project Settings Advanced Mode"
-msgstr "Pokročilý režim nastavení projektu"
-
 msgid "Main Run Args"
 msgstr "Argumenty hlavního běhu"
 
@@ -2762,15 +2753,6 @@ msgstr "Název zásuvného modulu"
 
 msgid "Autoload on Startup"
 msgstr "Automatické načtení při spuštění"
-
-msgid "Use Favorites Root Selection"
-msgstr "Použít kořenový výběr oblíbených"
-
-msgid "Script Setup Use Script Templates"
-msgstr "Použít šablony skriptů při přípravě skriptu"
-
-msgid "Script Setup Templates Dictionary"
-msgstr "Adresář šablon pro přípravu skriptů"
 
 msgid "Flush stdout on Print"
 msgstr "Vyprázdnit stdout při výpisu"
@@ -3846,6 +3828,9 @@ msgstr "Odstranění šumu"
 msgid "Denoiser"
 msgstr "Odstraňovač šumu"
 
+msgid "Enable TLS V 1"
+msgstr "Povolit TLS V 1"
+
 msgid "BPM"
 msgstr "Tempo (BPM)"
 
@@ -3887,9 +3872,6 @@ msgstr "Vulkan VRS"
 
 msgid "Min Radius"
 msgstr "Minimální poloměr"
-
-msgid "Spawnable Scenes"
-msgstr "Vytvořitelné scény"
 
 msgid "Spawn Path"
 msgstr "Cesta vytvoření"
@@ -4788,6 +4770,21 @@ msgstr "Lokalizovaný popis použití odebratelných svazků"
 msgid "Web"
 msgstr "Web"
 
+msgid "HTTP Host"
+msgstr "HTTP Host"
+
+msgid "HTTP Port"
+msgstr "HTTP Port"
+
+msgid "Use TLS"
+msgstr "Použít TLS"
+
+msgid "TLS Key"
+msgstr "Klíč TLS"
+
+msgid "TLS Certificate"
+msgstr "Certifikát TLS"
+
 msgid "Variant"
 msgstr "Varianta"
 
@@ -4946,6 +4943,21 @@ msgstr "Spodní"
 
 msgid "Smoothed"
 msgstr "Vyhlazený"
+
+msgid "Vertical Enabled"
+msgstr "Povolit vertikálně"
+
+msgid "Left Margin"
+msgstr "Levý okraj"
+
+msgid "Top Margin"
+msgstr "Horní okraj"
+
+msgid "Right Margin"
+msgstr "Pravý okraj"
+
+msgid "Bottom Margin"
+msgstr "Spodní okraj"
 
 msgid "Draw Screen"
 msgstr "Kreslit obrazovku"

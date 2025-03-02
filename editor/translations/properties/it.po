@@ -862,9 +862,6 @@ msgstr "Scadenza delle richieste (Timeout)"
 msgid "Sync Breakpoints"
 msgstr "Sincronizza punti di interruzione"
 
-msgid "Default Feature Profile"
-msgstr "Profilo di funzionalità predefinito"
-
 msgid "Label"
 msgstr "Etichetta"
 
@@ -3548,9 +3545,6 @@ msgstr "Vulkan VRS"
 
 msgid "Min Radius"
 msgstr "Raggio minimo"
-
-msgid "Spawnable Scenes"
-msgstr "Scene generabili"
 
 msgid "Spawn Path"
 msgstr "Percorso di generazione"

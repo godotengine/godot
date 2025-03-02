@@ -823,9 +823,6 @@ msgstr "Tempo Limite de Solicitação"
 msgid "Sync Breakpoints"
 msgstr "Pontos de Quebra de Sincronismo"
 
-msgid "Default Feature Profile"
-msgstr "Perfil de Funcionalidades padrão"
-
 msgid "Label"
 msgstr "Texto"
 
@@ -2389,9 +2386,6 @@ msgstr "Nome do Plugin"
 msgid "Autoload on Startup"
 msgstr "Autorrecarregar na Inicialização"
 
-msgid "Use Favorites Root Selection"
-msgstr "Seleção de favoritos da raíz"
-
 msgid "Low Processor Mode"
 msgstr "Modo de Baixo Uso do Processador"
 
@@ -3135,9 +3129,6 @@ msgstr "K1"
 
 msgid "K2"
 msgstr "K2"
-
-msgid "Spawnable Scenes"
-msgstr "Geração de Cenas"
 
 msgid "Spawn Path"
 msgstr "Caminho Salvamento Spawn"

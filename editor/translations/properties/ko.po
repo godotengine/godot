@@ -795,9 +795,6 @@ msgstr "요청 타임아웃"
 msgid "Sync Breakpoints"
 msgstr "중단점 동기화"
 
-msgid "Default Feature Profile"
-msgstr "기본 기능 프로필"
-
 msgid "Label"
 msgstr "레이블"
 
@@ -2376,9 +2373,6 @@ msgstr "플러그인 이름"
 msgid "Autoload on Startup"
 msgstr "시작 시 오토로드"
 
-msgid "Use Favorites Root Selection"
-msgstr "즐겨찾기 루트 선택 사용"
-
 msgid "Flush stdout on Print"
 msgstr "출력 시 stdout 플러시"
 
@@ -3083,9 +3077,6 @@ msgstr "K1"
 
 msgid "K2"
 msgstr "K2"
-
-msgid "Spawnable Scenes"
-msgstr "소환 가능한 씬"
 
 msgid "Spawn Path"
 msgstr "소환 경로"

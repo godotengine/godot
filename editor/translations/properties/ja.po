@@ -786,9 +786,6 @@ msgstr "リクエスト失敗、タイムアウト"
 msgid "Sync Breakpoints"
 msgstr "ブレークポイントの同期"
 
-msgid "Default Feature Profile"
-msgstr "デフォルト機能プロファイル"
-
 msgid "Label"
 msgstr "ラベル"
 
@@ -2276,9 +2273,6 @@ msgstr "エクスポート時にテキストリソースをバイナリに変換
 
 msgid "Plugin Name"
 msgstr "プラグイン名"
-
-msgid "Use Favorites Root Selection"
-msgstr "お気に入りのルート選択対象を使用"
 
 msgid "Flush stdout on Print"
 msgstr "Print時にstdoutをフラッシュ"

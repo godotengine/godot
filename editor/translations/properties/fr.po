@@ -908,9 +908,6 @@ msgstr "Délai de requête expiré (Timeout)"
 msgid "Sync Breakpoints"
 msgstr "Synchroniser les point d'arrêts"
 
-msgid "Default Feature Profile"
-msgstr "Profil de fonctionalités par défaut"
-
 msgid "Label"
 msgstr "Label"
 
@@ -2712,9 +2709,6 @@ msgstr "Nom du plugin"
 msgid "Autoload on Startup"
 msgstr "Chargement automatique au démarrage"
 
-msgid "Use Favorites Root Selection"
-msgstr "Utiliser la sélection racine des favoris"
-
 msgid "Flush stdout on Print"
 msgstr "Vider stdout à l'impression"
 
@@ -3626,9 +3620,6 @@ msgstr "Vulkan VRS"
 
 msgid "Min Radius"
 msgstr "Rayon minimal"
-
-msgid "Spawnable Scenes"
-msgstr "Scènes pouvant apparaitre"
 
 msgid "Spawn Path"
 msgstr "Chemin d'apparition"

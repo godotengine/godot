@@ -783,9 +783,6 @@ msgstr "Permintaan diluar Batas Waktu"
 msgid "Sync Breakpoints"
 msgstr "Sinkronisasi Breakpoint"
 
-msgid "Default Feature Profile"
-msgstr "Profil Fitur Default"
-
 msgid "Label"
 msgstr "Label"
 
@@ -2352,9 +2349,6 @@ msgstr "Nama Plugin"
 msgid "Autoload on Startup"
 msgstr "Muat Otomatis Saat Memulai"
 
-msgid "Use Favorites Root Selection"
-msgstr "Gunakan Pemilihan Root Favorit"
-
 msgid "Flush stdout on Print"
 msgstr "Flush stdout pada Print"
 
@@ -3071,9 +3065,6 @@ msgstr "K1"
 
 msgid "K2"
 msgstr "K2"
-
-msgid "Spawnable Scenes"
-msgstr "Adegan yang Dapat Dimunculkan"
 
 msgid "Spawn Path"
 msgstr "Path Spawn"

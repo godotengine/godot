@@ -101,7 +101,7 @@
 # Janosch Lion <janorico@posteo.de>, 2023.
 # aligator <johannes.hoermann@t-online.de>, 2023.
 # Benedikt Wicklein <benedikt.wicklein@gmail.com>, 2023.
-# Wuzzy <Wuzzy@disroot.org>, 2023, 2024.
+# Wuzzy <Wuzzy@disroot.org>, 2023, 2024, 2025.
 # marv1nb <marvin_baumann@outlook.com>, 2023.
 # Joshiy13 <weidanzjoshua@gmail.com>, 2023.
 # Emil Krebs <emil.krebs@typefox.io>, 2023.
@@ -116,13 +116,14 @@
 # jl <jl-friesen@gmx.de>, 2024.
 # Leona 'leo' Gottfried <s6573328@stud.uni-frankfurt.de>, 2024.
 # Deleted User <noreply+102345@weblate.org>, 2025.
+# Silikonmanns Kanal <silvan.goeth@gmail.com>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-01-09 02:15+0000\n"
-"Last-Translator: Deleted User <noreply+102345@weblate.org>\n"
+"PO-Revision-Date: 2025-02-27 11:52+0000\n"
+"Last-Translator: Silikonmanns Kanal <silvan.goeth@gmail.com>\n"
 "Language-Team: German <https://hosted.weblate.org/projects/godot-engine/godot/"
 "de/>\n"
 "Language: de\n"
@@ -130,7 +131,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.10-dev\n"
+"X-Generator: Weblate 5.10.2-dev\n"
 
 msgid "Main Thread"
 msgstr "Hauptthread"
@@ -489,6 +490,9 @@ msgstr "Verstecktes anzeigen"
 msgid "Swap Input Direction"
 msgstr "Eingaberichtung umschalten"
 
+msgid "Start Unicode Character Input"
+msgstr "Unicodezeicheneingabe starten"
+
 msgid "Invalid input %d (not passed) in expression"
 msgstr "Ungültige Eingabe %d (nicht übergeben) im Ausdruck"
 
@@ -732,6 +736,40 @@ msgstr "Animationslänge ändern"
 
 msgid "Change Animation Loop"
 msgstr "Animations-Loop ändern"
+
+msgid ""
+"Can't change loop mode on animation instanced from an imported scene.\n"
+"\n"
+"To change this animation's loop mode, navigate to the scene's Advanced Import "
+"settings and select the animation.\n"
+"You can then change the loop mode from the inspector menu."
+msgstr ""
+"Der Loop-Modus kann nicht für eine Animation geändert werden, die aus einer "
+"importierten Szene instanziiert wurde.\n"
+"\n"
+"Um den Loop-Modus der Animation zu verändern, gehe zu den Erweiterten "
+"Einstellungen der Szene und wähle die Animation aus.\n"
+"Dann kannst du den Loop-Modus im Inspektor ändern."
+
+msgid "Can't change loop mode on animation instanced from an imported resource."
+msgstr ""
+"Der Loop-Modus kann nicht für eine Animation geändert werden, die aus einer "
+"importierten Szene instanziiert wurde."
+
+msgid ""
+"Can't change loop mode on animation embedded in another scene.\n"
+"\n"
+"You must open this scene and change the animation's loop mode from there."
+msgstr ""
+"Der Loop-Modus kann nicht für eine Animation geändert werden, die in einer "
+"anderen Szene eingebettet wurde.\n"
+"\n"
+"Du musst diese Szene öffnen und dort den Loop-Modus der Animation ändern."
+
+msgid "Can't change loop mode on animation embedded in another resource."
+msgstr ""
+"Der Loop-Modus kann nicht für eine Animation geändert werden, die in einer "
+"anderen Szene eingebettet wurde."
 
 msgid "Property Track..."
 msgstr "Eigenschaften-Track..."
@@ -1132,6 +1170,12 @@ msgstr "Nur Tracks der aktuell ausgewählten Nodes anzeigen."
 msgid "Group tracks by node or display them as plain list."
 msgstr "Tracks nach Node gruppieren oder nacheinander anzeigen."
 
+msgid "Apply snapping to selected key(s)."
+msgstr "Einrasten für ausgewählte(n) Key(s) anwenden."
+
+msgid "Apply snapping to the nearest integer FPS."
+msgstr "Einrasten für die nächstliegende ganzzahlige FPS anwenden."
+
 msgid "Animation step value."
 msgstr "Animationsschrittwert."
 
@@ -1352,11 +1396,68 @@ msgstr "Alles/Nichts auswählen"
 msgid "Animation Change Keyframe Time"
 msgstr "Animations-Keyframe-Zeit ändern"
 
+msgid "Marker name is read-only in the inspector."
+msgstr "Der Markername kann im Inspektor nur gelesen werden."
+
+msgid ""
+"A marker's name can only be changed by right-clicking it in the animation "
+"editor and selecting \"Rename Marker\", in order to make sure that marker "
+"names are all unique."
+msgstr ""
+"Ein Markername kann nur geändert werden, wenn er im Animationseditor "
+"gerechtsklickt wird und dann „Marker umbenennen“ ausgewählt wird, um "
+"sicherzustellen, dass alle Markernamen einzigartig sind."
+
+msgid "Insert Marker..."
+msgstr "Marker einfügen …"
+
+msgid "Rename Marker"
+msgstr "Marker umbenennen"
+
+msgid "Delete Marker(s)"
+msgstr "Marker entfernen"
+
+msgid "Show All Marker Names"
+msgstr "Alle Markernamen anzeigen"
+
+msgid "Marker:"
+msgstr "Marker:"
+
+msgid "Animation Move Markers"
+msgstr "Animationsbewegungsmarker"
+
+msgid "Animation Delete Markers"
+msgstr "Animationslöschmarker"
+
+msgid "Marker '%s' already exists!"
+msgstr "Marker „%s“ existiert bereits!"
+
+msgid "Add Marker Key"
+msgstr "Marker-Key hinzufügen"
+
+msgid "Empty marker names are not allowed."
+msgstr "Leere Markernamen sind nicht gestattet."
+
+msgid "Insert Marker"
+msgstr "Marker einfügen"
+
+msgid "Marker Name"
+msgstr "Markername"
+
+msgid "Marker Color"
+msgstr "Markerfarbe"
+
 msgid "Close"
 msgstr "Schließen"
 
 msgid "Error!"
 msgstr "Fehler!"
+
+msgid "Change Marker Name:"
+msgstr "Markername ändern:"
+
+msgid "Edit Marker Color"
+msgstr "Markerfarbe einstellen"
 
 msgid "Add Audio Track Clip"
 msgstr "Audiotrack-Clip hinzufügen"
@@ -1444,6 +1545,13 @@ msgstr "Warnungen"
 
 msgid "Zoom factor"
 msgstr "Zoom-Faktor"
+
+msgid ""
+"%sMouse wheel, %s/%s: Finetune\n"
+"%s: Reset"
+msgstr ""
+"%sMausrad, %s/%s: Feinabstimmung\n"
+"%s: Zurücksetzen"
 
 msgid "Line and column numbers."
 msgstr "Zeilen- und Spaltennummern."
@@ -1607,6 +1715,12 @@ msgstr "%s erstellen"
 msgid "No results for \"%s\"."
 msgstr "Keine Ergebnisse für „%s“."
 
+msgid "Script path: %s"
+msgstr "Skriptpfad: %s"
+
+msgid "The script will run in the editor."
+msgstr "Das Skript wird im Editor ausgeführt."
+
 msgid "This class is marked as deprecated."
 msgstr "Diese Klasse ist als veraltet eingetragen."
 
@@ -1637,6 +1751,9 @@ msgstr "Beschreibung:"
 msgid "Remote %s:"
 msgstr "Remote %s:"
 
+msgid "Session %d"
+msgstr "Sitzung %d"
+
 msgid "Debugger"
 msgstr "Debugger"
 
@@ -1666,6 +1783,12 @@ msgstr ""
 
 msgid "Toggle Visibility"
 msgstr "Sichtbarkeit ein-/ausschalten"
+
+msgid "Expression to evaluate"
+msgstr "Auszuführender Ausdruck"
+
+msgid "Evaluate"
+msgstr "Auswerten"
 
 msgid "Clear"
 msgstr "Löschen"
@@ -1711,6 +1834,9 @@ msgstr "Stopp"
 
 msgid "Start"
 msgstr "Start"
+
+msgid "Autostart"
+msgstr "Autostart"
 
 msgid "Measure:"
 msgstr "Messung:"
@@ -1998,6 +2124,12 @@ msgstr ""
 msgid "Cannot remove:"
 msgstr "Kann nicht entfernt werden:"
 
+msgid "Files to be deleted:"
+msgstr "Zu löschende Dateien:"
+
+msgid "Dependencies of files to be deleted:"
+msgstr "Abhängigkeiten der zu löschenden Dateien:"
+
 msgid "Error loading:"
 msgstr "Fehler beim Laden:"
 
@@ -2035,14 +2167,26 @@ msgstr "Ressourcen ohne direkte Zugehörigkeit:"
 msgid "Name cannot be empty."
 msgstr "Name darf nicht leer sein."
 
+msgid "File name can't end with /."
+msgstr "Dateiname darf nicht mit „/“ enden."
+
+msgid "File name cannot be empty."
+msgstr "Dateiname darf nicht leer sein."
+
 msgid "Folder name cannot be empty."
 msgstr "Ordnername darf nicht leer sein."
+
+msgid "File name contains invalid characters."
+msgstr "Dateiname enthält ungültige Zeichen."
 
 msgid "Folder name contains invalid characters."
 msgstr "Ordnername enthält ungültige Zeichen."
 
 msgid "File name begins with a dot."
 msgstr "Dateiname beginnt mit einem Punkt."
+
+msgid "Folder name begins with a dot."
+msgstr "Ordnername beginnt mit einem Punkt."
 
 msgid "File with that name already exists."
 msgstr "Datei mit gegebenem Namen existiert bereits."
@@ -2052,6 +2196,19 @@ msgstr "Ordner mit gegebenem Namen existiert bereits."
 
 msgid "Using slashes in folder names will create subfolders recursively."
 msgstr "Schrägstriche in Ordnernamen erzeugen automatisch Unterordner."
+
+msgid ""
+"Using slashes in path will create the file in subfolder, creating new "
+"subfolders if necessary."
+msgstr ""
+"Schrägstriche im Pfad werden die Datei in einem Unterordner erstellen, wobei "
+"bei Bedarf neue Unterordner erstellt werden."
+
+msgid "File name is valid."
+msgstr "Dateiname ist gültig."
+
+msgid "Base path: %s"
+msgstr "Basispfad: %s"
 
 msgid "Folder name is valid."
 msgstr "Ordnername ist gültig."
@@ -2341,6 +2498,9 @@ msgstr "Audiobus-Layout"
 msgid "Invalid name."
 msgstr "Ungültiger Name."
 
+msgid "Must be a valid Unicode identifier."
+msgstr "Name muss ein gültiger Unicode-Bezeichner sein."
+
 msgid "Must not collide with an existing engine class name."
 msgstr "Darf nicht mit einem bestehenden Engine-Klassennamen kollidieren."
 
@@ -2611,6 +2771,12 @@ msgstr "[leer]"
 msgid "[unsaved]"
 msgstr "[ungespeichert]"
 
+msgid "Open the %s dock."
+msgstr "Das „%s“-Dock öffnen."
+
+msgid "Focus on the %s dock."
+msgstr "Fokus auf das „%s“-Dock."
+
 msgid "%s - Godot Engine"
 msgstr "%s – Godot-Engine"
 
@@ -2662,6 +2828,9 @@ msgstr "Import-Dock"
 msgid "History Dock"
 msgstr "Verlaufs-Dock"
 
+msgid "Game View"
+msgstr "Spielansicht"
+
 msgid "Allows to view and edit 3D scenes."
 msgstr "Ermöglicht das Betrachten und Bearbeiten von 3D-Szenen."
 
@@ -2697,6 +2866,10 @@ msgid "Provides an overview of the editor's and each scene's undo history."
 msgstr ""
 "Zeigt eine Übersicht über den zeitlichen Verlauf der Bearbeitungsschritte im "
 "Editor und jeder Szene."
+
+msgid "Provides tools for selecting and debugging nodes at runtime."
+msgstr ""
+"Bietet Werkzeuge zur Auswahl und zum Debugging von Nodes zur Laufzeit an."
 
 msgid "(current)"
 msgstr "(ausgewählt)"
@@ -2790,6 +2963,24 @@ msgstr "Profil(e) importieren"
 msgid "Manage Editor Feature Profiles"
 msgstr "Editor-Feature-Profile verwalten"
 
+msgid "Project initialization"
+msgstr "Projektinitialisierung"
+
+msgid "Scanning file structure..."
+msgstr "Lese Dateistrucktur …"
+
+msgid "Loading global class names..."
+msgstr "Globale Klassennamen laden …"
+
+msgid "Verifying GDExtensions..."
+msgstr "GDExtensions verifizieren …"
+
+msgid "Creating autoload scripts..."
+msgstr "Autoload-Skripte erzeugen …"
+
+msgid "Initializing plugins..."
+msgstr "Plugins initialisieren …"
+
 msgid "Some extensions need the editor to restart to take effect."
 msgstr ""
 "Bei einigen Erweiterungen muss der Editor neugestartet werden, um wirksam zu "
@@ -2804,6 +2995,15 @@ msgstr "Speichern & Neustarten"
 msgid "ScanSources"
 msgstr "Quellen scannen"
 
+msgid "Registering global classes..."
+msgstr "Globale Klassen registrieren …"
+
+msgid "Updating scripts documentation"
+msgstr "Skriptedokumentation aktualisieren"
+
+msgid "Updating Scene Groups"
+msgstr "Szenengruppen aktualisieren"
+
 msgid ""
 "There are multiple importers for different types pointing to file %s, import "
 "aborted"
@@ -2814,8 +3014,23 @@ msgstr ""
 msgid "(Re)Importing Assets"
 msgstr "Assets (erneut) importieren"
 
+msgid "Preparing files to reimport..."
+msgstr "Dateien zum Neuimport vorbereiten …"
+
+msgid "Executing pre-reimport operations..."
+msgstr "Vor-Neuimport-Operationen ausführen …"
+
 msgid "Import resources of type: %s"
 msgstr "Ressourcen des Typs: %s importieren"
+
+msgid "Finalizing Asset Import..."
+msgstr "Asset-Import fertigstellen …"
+
+msgid "Executing post-reimport operations..."
+msgstr "Nach-Neuimport-Operationen ausführen …"
+
+msgid "Copying files..."
+msgstr "Dateien kopieren …"
 
 msgid "This method supports a variable number of arguments."
 msgstr "Diese Methode akzeptiert eine variable Anzahl an Argumenten."
@@ -2996,6 +3211,11 @@ msgstr "Icons"
 msgid "Styles"
 msgstr "Stile"
 
+msgid "This theme property may be changed or removed in future versions."
+msgstr ""
+"Diese Theme-Eigenschaft könnte in zukünftigen Versionen geändert oder "
+"entfernt werden."
+
 msgid "There is currently no description for this theme property."
 msgstr "Es gibt derzeit keine Beschreibung für diese Theme-Eigenschaft."
 
@@ -3078,8 +3298,15 @@ msgstr "Editor"
 msgid "Click to copy."
 msgstr "Klicken zum Kopieren."
 
+msgid "Click to open in browser."
+msgstr "Anklicken zum Öffnen im Browser."
+
 msgid "No description available."
 msgstr "Keine Beschreibung verfügbar."
+
+msgid "This annotation may be changed or removed in future versions."
+msgstr ""
+"Diese Anmerkung könnte in zukünftigen Versionen geändert oder entfernt werden."
 
 msgid "Show in FileSystem"
 msgstr "Im Dateisystem anzeigen"
@@ -3090,11 +3317,23 @@ msgstr "Im Dateimanager öffnen"
 msgid "Class"
 msgstr "Klasse"
 
+msgid "Enumeration"
+msgstr "Enumeration"
+
 msgid "Constant"
 msgstr "Konstante"
 
+msgid "Metadata"
+msgstr "Metadaten"
+
+msgid "Setting"
+msgstr "Einstellung"
+
 msgid "Property"
 msgstr "Eigenschaft"
+
+msgid "Internal Property"
+msgstr "Interne Eigenschaft"
 
 msgid "This property can only be set in the Inspector."
 msgstr "Diese Eigenschaft kann nur im Inspektor eingestellt werden."
@@ -3111,8 +3350,36 @@ msgstr "Ereignis"
 msgid "Annotation"
 msgstr "Anmerkung"
 
+msgid "Local Constant"
+msgstr "Lokale Konstante"
+
+msgid "Local Variable"
+msgstr "Lokale Variable"
+
+msgid "This variable may be changed or removed in future versions."
+msgstr ""
+"Diese Variable könnte in zukünftigen Versionen geändert oder entfernt werden."
+
+msgid "TextFile"
+msgstr "TextDatei"
+
 msgid "File"
 msgstr "Datei"
+
+msgid "Directory"
+msgstr "Verzeichnis"
+
+msgid "Invalid UID"
+msgstr "Ungültige UID"
+
+msgid "This UID does not point to any valid Resource."
+msgstr "Diese UID zeigt nicht auf eine gültige Ressource."
+
+msgid "Invalid path"
+msgstr "Ungültiger Pfad"
+
+msgid "This path does not exist."
+msgstr "Dieser Pfad existiert nicht."
 
 msgid "%d match."
 msgstr "%d Übereinstimmung."
@@ -3171,11 +3438,26 @@ msgstr "Attribut-Typ"
 msgid "Keywords"
 msgstr "Schlüsselwörter"
 
+msgid "Matches the \"%s\" keyword."
+msgstr "Stimmt mit den „%s“-Schlüsselwort überein."
+
 msgid "This member is marked as deprecated."
 msgstr "Dieses Feld ist als veraltet eingetragen."
 
 msgid "This member is marked as experimental."
 msgstr "Dieses Feld ist als experimentell eingetragen."
+
+msgid "Unfavorite Property"
+msgstr "Eigenschaft entfavorisieren"
+
+msgid "Make this property be put back at its original place."
+msgstr "Diese Eigenschaft zurück zu ihrem ursprünglichen Ort bringen."
+
+msgid "Favorite Property"
+msgstr "Eigenschaft favorisieren"
+
+msgid "Make this property be placed at the top for all objects of this class."
+msgstr "Diese Eigenschaft nach oben für alle Objekte dieser Klasse bringen."
 
 msgid "Pin Value"
 msgstr "Wert anheften"
@@ -3187,6 +3469,9 @@ msgid "Pinning a value forces it to be saved even if it's equal to the default."
 msgstr ""
 "Einen Wert anzuheften bedeutet dass er selbst dann gespeichert wird, wenn er "
 "sich nicht vom Default unterscheidet."
+
+msgid "Unfavorite All"
+msgstr "Alle entfavorisieren"
 
 msgid "(%d change)"
 msgid_plural "(%d changes)"
@@ -3372,6 +3657,11 @@ msgstr "Nativer Shaderquelleninspektor"
 
 msgid "Unnamed Project"
 msgstr "Unbenanntes Projekt"
+
+msgid "Recovery Mode is enabled. Editor functionality has been restricted."
+msgstr ""
+"Der Wiederherstellungsmodus ist aktiviert. Die Editorfunktionalität wurde "
+"eingeschränkt."
 
 msgid ""
 "Spins when the editor window redraws.\n"
@@ -3587,6 +3877,9 @@ msgstr ""
 msgid "Save Scene As..."
 msgstr "Szene speichern als …"
 
+msgid "Pack Project as ZIP..."
+msgstr "Projekt als ZIP verpacken …"
+
 msgid "Can't undo while mouse buttons are pressed."
 msgstr "Kann nicht rückgängig gemacht werden während Maustasten gedrückt sind."
 
@@ -3670,6 +3963,9 @@ msgstr "Diese Operation kann nicht ohne eine Szene durchgeführt werden."
 
 msgid "Export Mesh Library"
 msgstr "Mesh-Bibliothek exportieren"
+
+msgid "Quick Open Color Palette..."
+msgstr "Schnell Farbpalette öffnen …"
 
 msgid "Unable to enable addon plugin at: '%s' parsing of config failed."
 msgstr ""
@@ -3756,6 +4052,56 @@ msgstr "Verlauf leeren"
 
 msgid "There is no defined scene to run."
 msgstr "Es gibt keine definierte Szene zum Abspielen."
+
+msgid "Loading editor"
+msgstr "Editor laden"
+
+msgid "Loading editor layout..."
+msgstr "Editor-Layout laden …"
+
+msgid "Loading docks..."
+msgstr "Docks laden …"
+
+msgid "Reopening scenes..."
+msgstr "Szenen neu öffnen …"
+
+msgid "Loading central editor layout..."
+msgstr "Zentrales Editor-Layout laden …"
+
+msgid "Loading plugin window layout..."
+msgstr "Pluginfensterlayout laden …"
+
+msgid "Editor layout ready."
+msgstr "Editorlayout bereit."
+
+msgid ""
+"No main scene has ever been defined. Select one?\n"
+"You can change it later in \"Project Settings\" under the 'application' "
+"category."
+msgstr ""
+"Es wurde keine Hauptszene bestimmt, soll eine ausgewählt werden?\n"
+"Dies kann später in den Projekteinstellungen unter der Kategorie „Anwendung“ "
+"geändert werden."
+
+msgid ""
+"Selected scene '%s' does not exist. Select a valid one?\n"
+"You can change it later in \"Project Settings\" under the 'application' "
+"category."
+msgstr ""
+"Die ausgewählte Szene „%s“ existiert nicht, soll eine gültige ausgewählt "
+"werden?\n"
+"Dies kann später in den Projekteinstellungen unter der Kategorie „Anwendung“ "
+"geändert werden."
+
+msgid ""
+"Selected scene '%s' is not a scene file. Select a valid one?\n"
+"You can change it later in \"Project Settings\" under the 'application' "
+"category."
+msgstr ""
+"Die ausgewählte Szene „%s“ ist keine Szenendatei, soll eine gültige "
+"ausgewählt werden?\n"
+"Dies kann später in den Projekteinstellungen unter der Kategorie „Anwendung“ "
+"geändert werden."
 
 msgid "Save Layout..."
 msgstr "Layout speichern..."
@@ -3983,6 +4329,9 @@ msgstr "Engine-Kompilierkonfigurations-Editor…"
 msgid "Upgrade Mesh Surfaces..."
 msgstr "Mesh-Oberflächen aktualisieren..."
 
+msgid "Upgrade UIDs..."
+msgstr "UIDs upgraden …"
+
 msgid "Reload Current Project"
 msgstr "Aktuelles Projekt neu laden"
 
@@ -4139,6 +4488,21 @@ msgstr "Bibliothek exportieren"
 msgid "Open & Run a Script"
 msgstr "Skript öffnen und ausführen"
 
+msgid "Files have been modified outside Godot"
+msgstr "Dateien wurden außerhalb von Godot verändert"
+
+msgid "The following files are newer on disk:"
+msgstr "Die folgenden Dateien sind neuer auf der Festplatte:"
+
+msgid "What action should be taken?"
+msgstr "Was soll getan werden?"
+
+msgid "Reload from disk"
+msgstr "Von Festplatte neu laden"
+
+msgid "Ignore external changes"
+msgstr "Externe Änderungen ignorieren"
+
 msgid "Create/Override Version Control Metadata..."
 msgstr "Metadaten der Versionsverwaltung erstellen/überschreiben..."
 
@@ -4162,6 +4526,9 @@ msgstr "3D-Editor öffnen"
 
 msgid "Open Script Editor"
 msgstr "Skripteditor öffnen"
+
+msgid "Open Game View"
+msgstr "Spielansicht öffnen"
 
 msgid "Open Asset Library"
 msgstr "Öffne Asset-Bibliothek"
@@ -4293,6 +4660,12 @@ msgstr "Neuer Wert:"
 msgid "(Nil) %s"
 msgstr "(Nil) %s"
 
+msgid "%s%s (size %d)"
+msgstr "%s%s (Größe %d)"
+
+msgid "%s (size %d)"
+msgstr "%s (Größe %d)"
+
 msgid "Size:"
 msgstr "Größe:"
 
@@ -4362,6 +4735,12 @@ msgstr "Skript erweitern..."
 msgid "New Shader..."
 msgstr "Neuer Shader..."
 
+msgid "No Remote Deploy export presets configured."
+msgstr "Keine Remote-Deploy-Exportvoreinstellungen konfiguriert."
+
+msgid "Remote Deploy"
+msgstr "Remote-Deploy"
+
 msgid ""
 "No runnable export preset found for this platform.\n"
 "Please add a runnable preset in the Export menu or define an existing preset "
@@ -4370,6 +4749,16 @@ msgstr ""
 "Kein ausführbares Exportprofil für diese Plattform gefunden.\n"
 "Bitte fügen Sie im Exportmenü ein ausführbares Profil hinzu oder definieren "
 "Sie ein bestehendes Profil als ausführbar."
+
+msgid ""
+"Warning: The CPU architecture \"%s\" is not active in your export preset.\n"
+"\n"
+msgstr ""
+"Warnung: Die CPU-Architektur „%s“ ist in deiner Exportvorgabe nicht aktiv.\n"
+"\n"
+
+msgid "Run \"Remote Deploy\" anyway?"
+msgstr "„Remote-Deploy“ trotzdem durchführen?"
 
 msgid "Project Run"
 msgstr "Projektdurchlauf"
@@ -4380,6 +4769,9 @@ msgstr "Spiellogik sollte mit der _run()-Methode beginnen."
 msgid "The current scene already has a root node."
 msgstr "Die aktuelle Szene hat bereits einen Root-Node."
 
+msgid "Advanced settings are always shown when searching."
+msgstr "Erweiterte Einstellungen werden bei der Suche immer angezeigt."
+
 msgid "Edit Built-in Action: %s"
 msgstr "Built-in-Aktion bearbeiten: %s"
 
@@ -4389,8 +4781,14 @@ msgstr "Tastenkürzel bearbeiten: %s"
 msgid "None"
 msgstr "Nichts"
 
+msgid "Primary"
+msgstr "Primär"
+
 msgid "Common"
 msgstr "Allgemein"
+
+msgid "Event %d"
+msgstr "Ereignis %d"
 
 msgid "Editor Settings"
 msgstr "Editoreinstellungen"
@@ -4594,6 +4992,9 @@ msgstr "Unbekannter Fehler"
 msgid "Export failed with error code %d."
 msgstr "Der Export ist mit Fehlercode %d fehlgeschlagen."
 
+msgid "Patch Creation"
+msgstr "Patch-Erstellung"
+
 msgid "Storing File: %s"
 msgstr "Speichere Datei: %s"
 
@@ -4602,6 +5003,29 @@ msgstr "Speichere Datei:"
 
 msgid "No export template found at the expected path:"
 msgstr "Keine Exportvorlage unter dem erwarteten Pfad gefunden:"
+
+msgid ""
+"Using user provided text server data, text display in the exported project "
+"might be broken if export template was built with different ICU version!"
+msgstr ""
+"Bei Verwendung von Textserverdaten, die von Benutzern angegeben wurden, "
+"könnte die Textanzeige im exportieren Projekt kaputt sein, falls die "
+"Exportvorlage mit einer anderen ICU-Version gebaut wurde!"
+
+msgid ""
+"Using editor embedded text server data, text display in the exported project "
+"might be broken if export template was built with different ICU version!"
+msgstr ""
+"Bei Verwendung von im Editor eingebetteten Textserverdaten könnte die "
+"Textanzeige im exportieren Projekt kaputt sein, falls die Exportvorlage mit "
+"einer anderen ICU-Version gebaut wurde!"
+
+msgid ""
+"Missing text server data, text display in the exported project might be "
+"broken!"
+msgstr ""
+"Im Falle von fehlenden Textserverdaten könnte die Textanzeige im exportierten "
+"Projekt kaputt sein!"
 
 msgid "ZIP Creation"
 msgstr "ZIP-Erstellung"
@@ -4621,6 +5045,9 @@ msgstr "Datei „%s“ konnte nicht erstellt werden."
 msgid "Failed to export project files."
 msgstr "Projektdateien konnten nicht exportiert werden."
 
+msgid "No files or changes to export."
+msgstr "Es gibt keine Dateien oder Änderungen zum Exportieren."
+
 msgid "Can't open file for writing at path \"%s\"."
 msgstr "Datei im Pfad „%s“ kann nicht zum schreiben geöffnet werden."
 
@@ -4638,6 +5065,9 @@ msgstr "Datei im Pfad „%s“kann nicht zum Lesen geöffnet werden."
 
 msgid "Save ZIP"
 msgstr "ZIP speichern"
+
+msgid "Failed to move temporary file \"%s\" to \"%s\"."
+msgstr "Fehler beim Verschieben der temporären Datei „%s“ nach „%s“."
 
 msgid "Custom debug template not found."
 msgstr "Selbst konfigurierte Debug-Exportvorlage nicht gefunden."
@@ -4670,6 +5100,12 @@ msgstr "PCK-Einbettung"
 msgid "On 32-bit exports the embedded PCK cannot be bigger than 4 GiB."
 msgstr ""
 "In 32-bit-Exporten kann das eingebettete PCK nicht größer als 4 GiB sein."
+
+msgid "GDExtension"
+msgstr "GDExtension"
+
+msgid "Failed to copy shared object \"%s\"."
+msgstr "Fehler beim Kopieren des Shared Objects „%s“."
 
 msgid "Plugin \"%s\" is not supported on \"%s\""
 msgstr "Plugin „%s“ wird auf „%s“ nicht unterstützt"
@@ -4801,6 +5237,15 @@ msgstr "Exportvorlagen fehlen. Download oder Installation aus Datei nötig."
 msgid "Export templates are missing. Install them from a file."
 msgstr "Exportvorlagen fehlen. Installieren Sie sie von einer Datei."
 
+msgid "Not available in offline mode"
+msgstr "Nicht im Offline-Modus verfügbar"
+
+msgid "Template downloading is disabled in offline mode."
+msgstr "Herunterladen von Vorlagen ist im Offline-Modus deaktiviert."
+
+msgid "No templates for development builds"
+msgstr "Keine Vorlagen für Entwicklungs-Builds"
+
 msgid "Official export templates aren't available for development builds."
 msgstr ""
 "Für Entwicklungsversionen werden keine offizielle Exportvorlagen bereit "
@@ -4913,8 +5358,14 @@ msgstr "Zu exportierende Ressourcen:"
 msgid "(Inherited)"
 msgstr "(geerbt)"
 
+msgid "Delete patch '%s' from list?"
+msgstr "Patch „%s“ aus Liste löschen?"
+
 msgid "Export With Debug"
 msgstr "Exportiere mit Debuginformationen"
+
+msgid "Export As Patch"
+msgstr "Als Patch exportieren"
 
 msgid "%s Export"
 msgstr "%s-Export"
@@ -4999,6 +5450,9 @@ msgstr ""
 "Filter, um Dateien/Ordner vom Projekt auszuschließen\n"
 "(durch Kommata getrennt, z.B.: *.json, *.txt, docs/*)"
 
+msgid "Patches"
+msgstr "Patches"
+
 msgid "Godot Project Pack"
 msgstr "Godot-Projekt-Pack"
 
@@ -5041,6 +5495,9 @@ msgstr ""
 
 msgid "Encryption Key (256-bits as hexadecimal):"
 msgstr "Schlüssel (256 bit, hexadezimal):"
+
+msgid "Initialization vector seed"
+msgstr "Initialisierungsvektorseed"
 
 msgid ""
 "Note: Encryption key needs to be stored in the binary,\n"
@@ -5163,6 +5620,9 @@ msgstr "Durchsuchen"
 msgid "Confirm Path"
 msgstr "Pfad bestätigen"
 
+msgid "Link to: %s"
+msgstr "Verknüpfung nach: %s"
+
 msgid "View items as a grid of thumbnails."
 msgstr "Einträge in Vorschaugitter anzeigen."
 
@@ -5191,6 +5651,9 @@ msgstr "Fehler beim Verschieben:"
 msgid "Error duplicating:"
 msgstr "Fehler beim Duplizieren:"
 
+msgid "Error duplicating directory:"
+msgstr "Fehler beim Duplizieren des Verzeichnisses:"
+
 msgid "Unable to update dependencies for:"
 msgstr "Kann Abhängigkeiten nicht aktualisieren:"
 
@@ -5217,6 +5680,9 @@ msgstr ""
 
 msgid "A file or folder with this name already exists."
 msgstr "Es existiert bereits eine Datei oder ein Ordner mit diesem Namen."
+
+msgid "Could not create base directory: %s"
+msgstr "Basisverzeichnis konnte nicht erstellt werden: %s"
 
 msgid ""
 "The following files or folders conflict with items in the target location "
@@ -5256,6 +5722,14 @@ msgstr "Dupliziere Ordner:"
 
 msgid "Create Folder"
 msgstr "Ordner erstellen"
+
+msgid ""
+"Do you wish to convert these files to %s? (This operation cannot be undone!)"
+msgstr ""
+"Willst du die Dateien in %s umwandeln? (Kann nicht rückgängig gemacht werden!)"
+
+msgid "Could not create folder: %s"
+msgstr "Ordner konnte nicht erstellt werden: %s"
 
 msgid "New Inherited Scene"
 msgstr "Neue geerbte Szene"
@@ -5317,11 +5791,17 @@ msgstr "Zu Favoriten hinzufügen"
 msgid "Remove from Favorites"
 msgstr "Aus Favoriten entfernen"
 
+msgid "Convert to..."
+msgstr "Umwandeln zu …"
+
 msgid "Reimport"
 msgstr "Neuimport"
 
 msgid "Open in Terminal"
 msgstr "Im Terminal öffnen"
+
+msgid "Open Folder in Terminal"
+msgstr "Ordner im Terminal öffnen"
 
 msgid "New Folder..."
 msgstr "Neuer Ordner …"
@@ -5432,6 +5912,9 @@ msgstr "Beide behalten"
 msgid "Create Script"
 msgstr "Skript erstellen"
 
+msgid "Convert"
+msgstr "Umwandeln"
+
 msgid "Find in Files"
 msgstr "In Dateien suchen"
 
@@ -5468,6 +5951,9 @@ msgstr "Alle ersetzen (kann nicht rückgängig gemacht werden)"
 
 msgid "Searching..."
 msgstr "Suchen …"
+
+msgid "Remove result"
+msgstr "Ergebnis entfernen"
 
 msgid "%d match in %d file"
 msgstr "%d Übereinstimmung in %d Datei"
@@ -5560,6 +6046,24 @@ msgstr "Neue Gruppe hinzufügen."
 msgid "Filter Groups"
 msgstr "Gruppen filtern"
 
+msgid ""
+"Scroll Left\n"
+"Hold Ctrl to scroll to the begin.\n"
+"Hold Shift to scroll one page."
+msgstr ""
+"Nach links scrollen\n"
+"Strg gedrückt halten, um zum Anfang zu scrollen.\n"
+"Shift gedrückt halten, um Seitenweise zu scrollen."
+
+msgid ""
+"Scroll Right\n"
+"Hold Ctrl to scroll to the end.\n"
+"Hold Shift to scroll one page."
+msgstr ""
+"Nach rechts scrollen\n"
+"Strg gedrückt halten, um zum Ende zu scrollen.\n"
+"Shift gedrückt halten, um seitenweise zu scrollen."
+
 msgid "Expand Bottom Panel"
 msgstr "Unteres Bedienfeld vergrößern"
 
@@ -5600,6 +6104,9 @@ msgstr ""
 
 msgid "Select This Folder"
 msgstr "Diesen Ordner auswählen"
+
+msgid "Show Package Contents"
+msgstr "Paketinhalt anzeigen"
 
 msgid "All Files"
 msgstr "Alle Dateien"
@@ -5654,6 +6161,9 @@ msgstr "Modus ein-/ausschalten"
 msgid "Focus Path"
 msgstr "Zu Pfad springen"
 
+msgid "Focus Filter"
+msgstr "Filter fokussieren"
+
 msgid "Move Favorite Up"
 msgstr "Favorit nach oben schieben"
 
@@ -5684,8 +6194,17 @@ msgstr "Verzeichnisse und Dateien:"
 msgid "Toggle the visibility of hidden files."
 msgstr "Versteckte Dateien ein-/ausblenden."
 
+msgid "Sort files"
+msgstr "Dateien sortieren"
+
+msgid "Toggle the visibility of the filter for file names."
+msgstr "Sichtbarkeit des Filters für Dateinamen umschalten."
+
 msgid "Preview:"
 msgstr "Vorschau:"
+
+msgid "Filter:"
+msgstr "Filter:"
 
 msgid "Filter"
 msgstr "Filter"
@@ -5710,6 +6229,39 @@ msgstr "Keine Unterressourcen gefunden."
 
 msgid "Open a list of sub-resources."
 msgstr "Liste der Unterressourcen öffnen."
+
+msgid "Search files..."
+msgstr "Dateien durchsuchen …"
+
+msgid "Select Resource"
+msgstr "Ressource auswählen"
+
+msgid "Select Scene"
+msgstr "Szene auswählen"
+
+msgid "Addons"
+msgstr "Add-ons"
+
+msgid "Include files from addons"
+msgstr "Dateien aus Add-ons einbinden"
+
+msgid "No files found for this type"
+msgstr "Keine Dateien für diesen Typ gefunden"
+
+msgid "Start searching to find files..."
+msgstr "Suche nach Dateien starten …"
+
+msgid "No results found"
+msgstr "Keine Ergebnisse gefunden"
+
+msgid " (recently opened)"
+msgstr " (kürzlich geöffnet)"
+
+msgid "Grid view"
+msgstr "Rasteransicht"
+
+msgid "List view"
+msgstr "Listenansicht"
 
 msgid "Play the project."
 msgstr "Projekt abspielen."
@@ -5744,8 +6296,76 @@ msgstr ""
 msgid "Could not start subprocess(es)!"
 msgstr "Subprozess(e) konnte(n) nicht gestartet werden!"
 
+msgid "Recovery Mode is enabled. Disable it to run the project."
+msgstr ""
+"Der Wiederherstellungsmodus ist aktiviert. Deaktiviere ihn, um das Projekt "
+"auszuführen."
+
+msgid ""
+"Autostart is enabled for the following profilers, which can have a "
+"performance impact:"
+msgstr ""
+"Autostart ist für die folgenden Profiler aktiviert, was eine Auswirkung auf "
+"die Performance hat:"
+
 msgid "Network Profiler"
 msgstr "Netzwerk-Profiler"
+
+msgid "Click to open the first profiler for which autostart is enabled."
+msgstr ""
+"Klicken, um den ersten Profiler, für den der Autostart aktiviert ist, zu "
+"öffnen."
+
+msgid "Recovery Mode"
+msgstr "Wiederherstellungsmodus"
+
+msgid ""
+"Godot opened the project in Recovery Mode, which is a special mode that can "
+"help recover projects that crash the engine upon initialization. The "
+"following features have been temporarily disabled:"
+msgstr ""
+"Godot hat das Projekt im Wiederherstellungsmodus geöffnet, was ein besonderer "
+"Modus ist, der dabei helfen kann, Projekte, die die Engine bei der "
+"Initialisierung zum Absturz bringen, wiederherzustellen. Die folgenden "
+"Features wurden temporär deaktiviert:"
+
+msgid "Tool scripts"
+msgstr "Toolskripte"
+
+msgid "Editor plugins"
+msgstr "Editor-Plugins"
+
+msgid "GDExtension addons"
+msgstr "GDExtension-Add-ons"
+
+msgid "Automatic scene restoring"
+msgstr "Automatische Szenenwiederherstellung"
+
+msgid ""
+"If the project cannot be opened outside of this mode, then it's very likely "
+"any of these components is preventing this project from launching. This mode "
+"is intended only for basic editing to troubleshoot such issues, and therefore "
+"it is not possible to run a project in this mode."
+msgstr ""
+"Falls das Projekt außerhalb dieses Modus nicht geöffnet werden kann, ist es "
+"sehr wahrscheinlich, dass eine dieser Komponenten dieses Projekt vom Starten "
+"abhält. Dieser Modus nur für die grundsätzliche Bearbeitung gedacht, um "
+"solche Probleme zurückzuverfolgen, und daher ist es nicht möglich, ein "
+"Projekt in diesem Modus auszuführen."
+
+msgid ""
+"To disable Recovery Mode, reload the project by pressing the Reload button "
+"next to the Recovery Mode banner, or by reopening the project normally."
+msgstr ""
+"Um den Wiederherstellungsmodus zu deaktivieren, lade das Projekt neu, indem "
+"du den Neu-laden-Button neben dem Wiederherstellungsmodusbanner anklickst, "
+"oder, indem du das Projekt normal neu öffnest."
+
+msgid "Disable recovery mode and reload the project."
+msgstr "Wiederherstellungsmodus deaktivieren und das Projekt neu laden."
+
+msgid "Recovery Mode is enabled. Click for more details."
+msgstr "Der Wiederherstellungsmodus ist aktiviert. Klicken für mehr Details."
 
 msgid "Run the project's default scene."
 msgstr "Die Default-Szene des Projekts abspielen."
@@ -5765,11 +6385,17 @@ msgstr "Laufendes Projekt stoppen."
 msgid "Stop Running Project"
 msgstr "Laufendes Projekt stoppen"
 
+msgid "Run Scene in XR Mode"
+msgstr "Szene im XR-Modus ausführen"
+
 msgid "Run the currently edited scene."
 msgstr "Zur Zeit bearbeitete Szene abspielen."
 
 msgid "Run Current Scene"
 msgstr "Aktuelle Szene abspielen"
+
+msgid "Run in XR Mode"
+msgstr "Im XR-Modus ausführen"
 
 msgid "Run a specific scene."
 msgstr "Eine bestimmte Szene abspielen."
@@ -5836,6 +6462,15 @@ msgstr ""
 "Git-Commit-Datum: %s\n"
 "Klicken zum Kopieren der Versionsinformationen."
 
+msgid ""
+"The root node of a scene is recommended to not be transformed, since "
+"instances of the scene will usually override this. Reset the transform and "
+"reload the scene to remove this warning."
+msgstr ""
+"Es wird empfohlen, den Root-Node einer Szene nicht zu transformieren, da "
+"Instanzen der Szene dies üblicherweise überschreiben. Setze die "
+"Transformation zurück und lade die Szene neu, um diese Warnung zu entfernen."
+
 msgid "Toggle Visible"
 msgstr "Sichtbarkeit ein-/ausschalten"
 
@@ -5845,6 +6480,9 @@ msgstr "Node entsperren"
 msgid "Ungroup Children"
 msgstr "Child-Nodes aus Gruppe entfernen"
 
+msgid "Revoke unique name for node \"%s\"?"
+msgstr "Eindeutigen Namen für Node „%s“ widerrufen?"
+
 msgid "Disable Scene Unique Name"
 msgstr "Szenen-eindeutigen Namen deaktivieren"
 
@@ -5853,6 +6491,16 @@ msgstr "(Verbindung von)"
 
 msgid "Node configuration warning:"
 msgstr "Node-Konfigurationswarnung:"
+
+msgid ""
+"This node can be accessed from anywhere within the scene it belongs to by "
+"using the '%s' prefix in the node path."
+msgstr ""
+"Auf diesen Node kann von jeder beliebigen Stelle der Szene, zu der er gehört, "
+"zugegriffen werden, indem der „%s“-Präfix im Node-Pfad verwendet wird."
+
+msgid "Click to disable this."
+msgstr "Klicken, um dies zu deaktivieren."
 
 msgid "Node has one connection."
 msgid_plural "Node has {num} connections."
@@ -5866,6 +6514,16 @@ msgstr[1] "Node ist in diesen Gruppen:"
 
 msgid "Click to show signals dock."
 msgstr "Hier klicken, um Signal-Dock anzuzeigen."
+
+msgid "Click to show groups dock."
+msgstr "Klicken, um Gruppendock anzuzeigen."
+
+msgid ""
+"This script can run in the editor.\n"
+"It is currently disabled due to recovery mode."
+msgstr ""
+"Dieses Skript kann im Editor ausgeführt werden.\n"
+"Es ist aufgrund des Wiederherstellungsmodus im Moment deaktiviert."
 
 msgid "This script is currently running in the editor."
 msgstr "Dieses Skript wird gerade im Editor ausgeführt."
@@ -5926,6 +6584,9 @@ msgstr "Szenenbaum (Nodes):"
 msgid "Node Configuration Warning!"
 msgstr "Node-Konfigurationswarnung!"
 
+msgid "Don't Ask Again"
+msgstr "Nicht mehr fragen"
+
 msgid "Allowed:"
 msgstr "Erlaubt:"
 
@@ -5961,7 +6622,7 @@ msgstr "Fehler beim ausführen des Post-Import Skripts:"
 
 msgid "Did you return a Node-derived object in the `_post_import()` method?"
 msgstr ""
-"Wurde ein von Node abstammendes Objekt in der ‚_post_import()‘-Methode "
+"Wurde ein von Node abstammendes Objekt in der `_post_import()`-Methode "
 "zurückgegeben?"
 
 msgid "Saving..."
@@ -5984,7 +6645,7 @@ msgid "Error opening scene"
 msgstr "Fehler beim Öffnen der Szene"
 
 msgid "Advanced Import Settings for AnimationLibrary '%s'"
-msgstr "Erweiterte Importeinstellungen für die Animation-Bibliothek ‚%s‘"
+msgstr "Erweiterte Importeinstellungen für die AnimationLibrary ‚%s‘"
 
 msgid "Advanced Import Settings for Scene '%s'"
 msgstr "Erweiterte Importeinstellungen für Szene ‚%s‘"

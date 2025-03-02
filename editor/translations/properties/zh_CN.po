@@ -898,9 +898,6 @@ msgstr "请求超时"
 msgid "Sync Breakpoints"
 msgstr "同步断点"
 
-msgid "Default Feature Profile"
-msgstr "默认功能配置"
-
 msgid "Label"
 msgstr "标签"
 
@@ -2116,9 +2113,6 @@ msgstr "特殊颜色"
 msgid "Particle Color"
 msgstr "粒子颜色"
 
-msgid "Editor Settings Advanced Mode"
-msgstr "编辑器设置高级模式"
-
 msgid "Custom Template"
 msgstr "自定义模板"
 
@@ -2142,9 +2136,6 @@ msgstr "S3TC BPTC"
 
 msgid "ETC2 ASTC"
 msgstr "ETC2 ASTC"
-
-msgid "Export Template Download Directory"
-msgstr "导出模板下载目录"
 
 msgid "Export Path"
 msgstr "导出路径"
@@ -2774,9 +2765,6 @@ msgstr "帧数"
 msgid "Duration"
 msgstr "时长"
 
-msgid "Project Settings Advanced Mode"
-msgstr "项目设置高级模式"
-
 msgid "Main Run Args"
 msgstr "主运行参数"
 
@@ -2818,15 +2806,6 @@ msgstr "插件名"
 
 msgid "Autoload on Startup"
 msgstr "启动时自动加载"
-
-msgid "Use Favorites Root Selection"
-msgstr "使用收藏根选择"
-
-msgid "Script Setup Use Script Templates"
-msgstr "使用脚本模板的脚本设定"
-
-msgid "Script Setup Templates Dictionary"
-msgstr "脚本设置模板字典"
 
 msgid "Flush stdout on Print"
 msgstr "打印时清空标准输出"
@@ -3946,9 +3925,6 @@ msgstr "Vulkan VRS"
 
 msgid "Min Radius"
 msgstr "最小半径"
-
-msgid "Spawnable Scenes"
-msgstr "可出生场景"
 
 msgid "Spawn Path"
 msgstr "出生路径"

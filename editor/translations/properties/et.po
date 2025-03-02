@@ -625,9 +625,6 @@ msgstr "Päringu Ajalõpp"
 msgid "Sync Breakpoints"
 msgstr "Sünkroniseeri Katkepunktid"
 
-msgid "Default Feature Profile"
-msgstr "Vaikimisi funktsiooniprofiil"
-
 msgid "Label"
 msgstr "Silt"
 
@@ -1851,9 +1848,6 @@ msgstr "Teisenda Tekstiressursid Binaarseks"
 
 msgid "Plugin Name"
 msgstr "Pistikprogrammi Nimi"
-
-msgid "Use Favorites Root Selection"
-msgstr "Kasutage Lemmikute Juurvalikut"
 
 msgid "Low Processor Mode"
 msgstr "Madal Protsessorirežiim"

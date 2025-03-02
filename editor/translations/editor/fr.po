@@ -184,13 +184,14 @@
 # Alexandre Demers-Roberge <rotmgiobsidian@gmail.com>, 2025.
 # aioshiro <aioshiro57@proton.me>, 2025.
 # Valentin Pecatte <v.pecatte@gmail.com>, 2025.
+# xpeuvr327 <phucbaodomi@gmail.com>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-02-25 13:43+0000\n"
-"Last-Translator: Valentin Pecatte <v.pecatte@gmail.com>\n"
+"PO-Revision-Date: 2025-03-02 03:07+0000\n"
+"Last-Translator: xpeuvr327 <phucbaodomi@gmail.com>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/godot-engine/godot/"
 "fr/>\n"
 "Language: fr\n"
@@ -198,7 +199,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 5.10.2-dev\n"
+"X-Generator: Weblate 5.10.3-dev\n"
 
 msgid "Main Thread"
 msgstr "Fil principal"
@@ -6106,8 +6107,31 @@ msgstr ""
 msgid "Could not start subprocess(es)!"
 msgstr "Impossible de démarrer le(s) sous-processus !"
 
+msgid "Recovery Mode is enabled. Disable it to run the project."
+msgstr "Le mode de récupération est activé. Désacivez le pour lancer le projet."
+
+msgid ""
+"Autostart is enabled for the following profilers, which can have a "
+"performance impact:"
+msgstr ""
+"Le démarrage automatique est activé pour les profileurs suivants, ce qui peut "
+"avoir un impact sur la performance:"
+
 msgid "Network Profiler"
 msgstr "Profileur réseau"
+
+msgid ""
+"Godot opened the project in Recovery Mode, which is a special mode that can "
+"help recover projects that crash the engine upon initialization. The "
+"following features have been temporarily disabled:"
+msgstr ""
+"Godot a ouvert le projet en Mode Récupération, qui est un mode spécial qui "
+"peut aider à récupérer des projets qui plantent le moteur lors de "
+"l'initialisation. Les fonctionnalités suivantes ont été temporairements "
+"désactivées:"
+
+msgid "Automatic scene restoring"
+msgstr "Récupération de scène automatique"
 
 msgid ""
 "If the project cannot be opened outside of this mode, then it's very likely "
@@ -6151,6 +6175,9 @@ msgstr "Arrêter le projet en cours."
 
 msgid "Stop Running Project"
 msgstr "Arrêter l'exécution du projet"
+
+msgid "Run Scene in Regular Mode"
+msgstr "Démarrer la Scène en mode normal"
 
 msgid "Run Scene in XR Mode"
 msgstr "Exécuter la scène en mode XR"
@@ -6254,6 +6281,9 @@ msgstr ""
 "Ce nœud peut être accédé de n'importe où dans la scène à laquelle il "
 "appartient en utilisant le préfixe '%s' dans le chemin de nœud."
 
+msgid "Click to disable this."
+msgstr "Cliquz pour désactiver."
+
 msgid "Node has one connection."
 msgid_plural "Node has {num} connections."
 msgstr[0] "Le nœud a une connexion."
@@ -6266,6 +6296,13 @@ msgstr[1] "Le nœud fait partie des groupes :"
 
 msgid "Click to show signals dock."
 msgstr "Cliquez pour afficher le dock des signaux."
+
+msgid ""
+"This script can run in the editor.\n"
+"It is currently disabled due to recovery mode."
+msgstr ""
+"Ce script peut s'exécuter dans l'éditeur.\n"
+"Cela a été désactivé à cause du mode de récupération."
 
 msgid "This script is currently running in the editor."
 msgstr "Ce script est en cours d'exécution dans l'éditeur."
@@ -6303,6 +6340,14 @@ msgstr "Ouvrir dans l'éditeur"
 msgid "\"%s\" is not a known filter."
 msgstr "\"%s\" n'est pas un filtre connu."
 
+msgid ""
+"Root nodes cannot be accessed as unique names in their own scene. Instantiate "
+"in another scene and set as unique name there."
+msgstr ""
+"Les nœuds racines ne peuvent pas être accédés en tant que noms uniques dans "
+"leur propre scène. Créez une instance dans une autre scène et définissez-y un "
+"nom unique."
+
 msgid "Invalid node name, the following characters are not allowed:"
 msgstr "Nom de nœud invalide, les caractères suivants ne sont pas autorisés :"
 
@@ -6323,6 +6368,9 @@ msgstr "Arbre de scène (nœuds) :"
 
 msgid "Node Configuration Warning!"
 msgstr "Avertissement de configuration de nœud !"
+
+msgid "Revoke"
+msgstr "Révoquer"
 
 msgid "Allowed:"
 msgstr "Autorisé :"
@@ -8700,6 +8748,13 @@ msgstr ""
 msgid "Edit Plugin"
 msgstr "Modifier le Plugin"
 
+msgid ""
+"Recovery mode is enabled. Enabled plugins will not run while this mode is "
+"active."
+msgstr ""
+"Le mode de récupération est activé. Les extensions ne seront pas actives tant "
+"que ce mode est actif."
+
 msgid "Installed Plugins:"
 msgstr "Extensions installées :"
 
@@ -8781,6 +8836,12 @@ msgstr "Variation"
 
 msgid "Unable to preview font"
 msgstr "Impossible de prévisualiser la police"
+
+msgid "Press play to start the game."
+msgstr "Appuyez sur jouer pour démarrer le jeu."
+
+msgid "Game embedding not available on your OS."
+msgstr "La prévisualisation du jeu n'est pas disponible sur votre OS."
 
 msgid "Change AudioStreamPlayer3D Emission Angle"
 msgstr "Changer l'angle d'émission AudioStreamPlayer3D"
