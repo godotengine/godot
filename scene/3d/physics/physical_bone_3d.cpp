@@ -752,8 +752,9 @@ void PhysicalBone3D::_get_property_list(List<PropertyInfo> *p_list) const {
 
 void PhysicalBone3D::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE:
-		case NOTIFICATION_PARENTED:
+		// We need to wait until the bone has finished being added to the tree
+		// or none of the global transform calls will work correctly.
+		case NOTIFICATION_POST_ENTER_TREE:
 			_update_simulator_path();
 			update_bone_id();
 			reset_to_rest_position();
@@ -763,6 +764,9 @@ void PhysicalBone3D::_notification(int p_what) {
 			}
 			break;
 
+		// If we're detached from the skeleton we need to
+		// clear our references to it.
+		case NOTIFICATION_UNPARENTED:
 		case NOTIFICATION_EXIT_TREE: {
 			PhysicalBoneSimulator3D *simulator = get_simulator();
 			if (simulator) {
