@@ -98,7 +98,7 @@ UIDUpgradeTool::~UIDUpgradeTool() {
 }
 
 void UIDUpgradeDialog::popup_on_demand() {
-	const String confirmation_message = TTR("As of Godot 4.4, scenes and resources use UIDs to reference scripts and shaders.\n\nNormally, this update is applied to a single scene or resource once you save it in Godot 4.4 for the first time. If you have a lot of scenes and/or resources, doing this manually may be time-consuming. This tool will update all of the project's scenes and resources at once.\n\nClick \"Restart & Upgrade\" to restart the editor and update all of the scenes and resources in this project. Depending on the project size, it may take several minutes.\n\nNote: Please make sure you have your project backed up before running the tool, to avoid the possibility of data loss. Additionally, make sure to commit all .uid files into version control (and do not add them to ignore-lists like .gitignore).");
+	const String confirmation_message = TTR("As of Godot 4.4, scenes and resources use UIDs to reference scripts and shaders. Upgrades apply on the next save of each scene/resource.\n\nTo save time, this tool can open and save each of these files. Depending on the project size, it may take several minutes.");
 	set_text(confirmation_message);
 	get_ok_button()->set_text("Restart & Upgrade");
 	popup_centered(Size2(750 * EDSCALE, 0));
@@ -120,6 +120,7 @@ void UIDUpgradeDialog::_notification(int p_what) {
 }
 
 UIDUpgradeDialog::UIDUpgradeDialog() {
+	set_title(TTR("Re-save all scenes and resources to use UIDs"));
 	set_autowrap(true);
 	get_label()->set_custom_minimum_size(Size2(750 * EDSCALE, 0));
 	learn_more_button = add_button(TTR("Learn More"), true, UID_UPGRADE_LEARN_MORE);
