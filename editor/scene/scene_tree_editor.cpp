@@ -1874,6 +1874,7 @@ Variant SceneTreeEditor::get_drag_data_fw(const Point2 &p_point, Control *p_from
 	Dictionary drag_data;
 	drag_data["type"] = "nodes";
 	drag_data["nodes"] = objs;
+	drag_data["scene_root"] = get_tree()->get_edited_scene_root();
 
 	tree->set_drop_mode_flags(Tree::DROP_MODE_INBETWEEN | Tree::DROP_MODE_ON_ITEM);
 	emit_signal(SNAME("nodes_dragged"));
@@ -1892,6 +1893,11 @@ bool SceneTreeEditor::can_drop_data_fw(const Point2 &p_point, const Variant &p_d
 
 	Dictionary d = p_data;
 	if (!d.has("type")) {
+		return false;
+	}
+
+	Object *data_root = d.get("scene_root", (Object *)nullptr);
+	if (data_root && get_tree()->get_edited_scene_root() != data_root) {
 		return false;
 	}
 
