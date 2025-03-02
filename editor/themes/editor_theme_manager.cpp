@@ -1204,6 +1204,7 @@ void EditorThemeManager::_populate_standard_styles(const Ref<EditorTheme> &p_the
 		p_theme->set_constant("outline_size", "TabContainer", 0);
 		p_theme->set_constant("h_separation", "TabBar", 4 * EDSCALE);
 		p_theme->set_constant("outline_size", "TabBar", 0);
+		p_theme->set_constant("hover_switch_wait_msec", "TabBar", (float)EDITOR_GET("interface/editor/dragging_hover_wait_seconds") * 1000);
 	}
 
 	// Separators.

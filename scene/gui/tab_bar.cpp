@@ -33,6 +33,7 @@
 #include "scene/gui/box_container.h"
 #include "scene/gui/label.h"
 #include "scene/gui/texture_rect.h"
+#include "scene/main/timer.h"
 #include "scene/main/viewport.h"
 #include "scene/theme/theme_db.h"
 
@@ -500,6 +501,13 @@ void TabBar::_notification(int p_what) {
 			if (dragging_valid_tab) {
 				dragging_valid_tab = false;
 				queue_redraw();
+			}
+			[[fallthrough]];
+		}
+
+		case NOTIFICATION_MOUSE_EXIT: {
+			if (!hover_switch_delay->is_stopped()) {
+				hover_switch_delay->stop();
 			}
 		} break;
 
@@ -1285,6 +1293,10 @@ void TabBar::_update_cache(bool p_update_hover) {
 	}
 }
 
+void TabBar::_hover_switch_timeout() {
+	set_current_tab(hover);
+}
+
 void TabBar::_on_mouse_exited() {
 	rb_hover = -1;
 	cb_hover = -1;
@@ -1424,6 +1436,10 @@ Variant TabBar::get_drag_data(const Point2 &p_point) {
 }
 
 bool TabBar::can_drop_data(const Point2 &p_point, const Variant &p_data) const {
+	if (switch_on_drag_hover) {
+		_handle_switch_on_hover(p_data);
+	}
+
 	bool drop_override = Control::can_drop_data(p_point, p_data);
 	if (drop_override) {
 		return drop_override;
@@ -1470,7 +1486,8 @@ Variant TabBar::_handle_get_drag_data(const String &p_type, const Point2 &p_poin
 	set_drag_preview(drag_preview);
 
 	Dictionary drag_data;
-	drag_data["type"] = p_type;
+	drag_data["type"] = "tab";
+	drag_data["tab_type"] = p_type;
 	drag_data["tab_index"] = tab_over;
 	drag_data["from_path"] = get_path();
 
@@ -1479,11 +1496,12 @@ Variant TabBar::_handle_get_drag_data(const String &p_type, const Point2 &p_poin
 
 bool TabBar::_handle_can_drop_data(const String &p_type, const Point2 &p_point, const Variant &p_data) const {
 	Dictionary d = p_data;
-	if (!d.has("type")) {
+	if (d.get("type", "").operator String() != "tab") {
 		return false;
 	}
 
-	if (String(d["type"]) == p_type) {
+	const String tab_type = d.get("tab_type", "");
+	if (tab_type == p_type) {
 		NodePath from_path = d["from_path"];
 		NodePath to_path = get_path();
 		if (from_path == to_path) {
@@ -1497,17 +1515,17 @@ bool TabBar::_handle_can_drop_data(const String &p_type, const Point2 &p_point, 
 			}
 		}
 	}
-
 	return false;
 }
 
 void TabBar::_handle_drop_data(const String &p_type, const Point2 &p_point, const Variant &p_data, const Callable &p_move_tab_callback, const Callable &p_move_tab_from_other_callback) {
 	Dictionary d = p_data;
-	if (!d.has("type")) {
+	if (d.get("type", "").operator String() != "tab") {
 		return;
 	}
 
-	if (String(d["type"]) == p_type) {
+	const String tab_type = d.get("tab_type", "");
+	if (tab_type == p_type) {
 		int tab_from_id = d["tab_index"];
 		int hover_now = (p_point == Vector2(Math::INF, Math::INF)) ? current : get_closest_tab_idx_to_point(p_point);
 		NodePath from_path = d["from_path"];
@@ -1562,6 +1580,22 @@ void TabBar::_handle_drop_data(const String &p_type, const Point2 &p_point, cons
 				p_move_tab_from_other_callback.call(from_tabs, tab_from_id, hover_now);
 			}
 		}
+	}
+}
+
+void TabBar::_handle_switch_on_hover(const Variant &p_data) const {
+	Dictionary d = p_data;
+	if (d.get("type", "").operator String() == "tab") {
+		// Dragging a tab shouldn't switch on hover.
+		return;
+	}
+
+	if (hover > -1 && hover != current) {
+		if (hover_switch_delay->is_stopped()) {
+			const_cast<TabBar *>(this)->hover_switch_delay->start(theme_cache.hover_switch_wait_msec * 0.001);
+		}
+	} else if (!hover_switch_delay->is_stopped()) {
+		hover_switch_delay->stop();
 	}
 }
 
@@ -1983,6 +2017,14 @@ bool TabBar::get_scroll_to_selected() const {
 	return scroll_to_selected;
 }
 
+void TabBar::set_switch_on_drag_hover(bool p_enabled) {
+	switch_on_drag_hover = p_enabled;
+}
+
+bool TabBar::get_switch_on_drag_hover() const {
+	return switch_on_drag_hover;
+}
+
 void TabBar::set_select_with_rmb(bool p_enabled) {
 	select_with_rmb = p_enabled;
 }
@@ -2055,6 +2097,8 @@ void TabBar::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_scrolling_enabled"), &TabBar::get_scrolling_enabled);
 	ClassDB::bind_method(D_METHOD("set_drag_to_rearrange_enabled", "enabled"), &TabBar::set_drag_to_rearrange_enabled);
 	ClassDB::bind_method(D_METHOD("get_drag_to_rearrange_enabled"), &TabBar::get_drag_to_rearrange_enabled);
+	ClassDB::bind_method(D_METHOD("set_switch_on_drag_hover", "enabled"), &TabBar::set_switch_on_drag_hover);
+	ClassDB::bind_method(D_METHOD("get_switch_on_drag_hover"), &TabBar::get_switch_on_drag_hover);
 	ClassDB::bind_method(D_METHOD("set_tabs_rearrange_group", "group_id"), &TabBar::set_tabs_rearrange_group);
 	ClassDB::bind_method(D_METHOD("get_tabs_rearrange_group"), &TabBar::get_tabs_rearrange_group);
 	ClassDB::bind_method(D_METHOD("set_scroll_to_selected", "enabled"), &TabBar::set_scroll_to_selected);
@@ -2082,6 +2126,7 @@ void TabBar::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_tab_width", PROPERTY_HINT_RANGE, "0,99999,1,suffix:px"), "set_max_tab_width", "get_max_tab_width");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "scrolling_enabled"), "set_scrolling_enabled", "get_scrolling_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "drag_to_rearrange_enabled"), "set_drag_to_rearrange_enabled", "get_drag_to_rearrange_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "switch_on_drag_hover"), "set_switch_on_drag_hover", "get_switch_on_drag_hover");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "tabs_rearrange_group"), "set_tabs_rearrange_group", "get_tabs_rearrange_group");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "scroll_to_selected"), "set_scroll_to_selected", "get_scroll_to_selected");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "select_with_rmb"), "set_select_with_rmb", "get_select_with_rmb");
@@ -2102,6 +2147,7 @@ void TabBar::_bind_methods() {
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, TabBar, h_separation);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, TabBar, tab_separation);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, TabBar, icon_max_width);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, TabBar, hover_switch_wait_msec);
 
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, TabBar, tab_unselected_style, "tab_unselected");
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, TabBar, tab_hovered_style, "tab_hovered");
@@ -2151,6 +2197,11 @@ TabBar::TabBar() {
 	set_size(Size2(get_size().width, get_minimum_size().height));
 	set_focus_mode(FOCUS_ALL);
 	connect(SceneStringName(mouse_exited), callable_mp(this, &TabBar::_on_mouse_exited));
+
+	hover_switch_delay = memnew(Timer);
+	hover_switch_delay->connect("timeout", callable_mp(this, &TabBar::_hover_switch_timeout));
+	hover_switch_delay->set_one_shot(true);
+	add_child(hover_switch_delay, false, INTERNAL_MODE_FRONT);
 
 	property_helper.setup_for_instance(base_property_helper, this);
 }
