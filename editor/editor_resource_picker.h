@@ -47,6 +47,8 @@ class EditorResourcePicker : public HBoxContainer {
 	String base_type;
 	Ref<Resource> edited_resource;
 
+	String directory_path;
+
 	bool editable = true;
 	bool dropping = false;
 
@@ -144,6 +146,8 @@ public:
 
 	void set_editable(bool p_editable);
 	bool is_editable() const;
+
+	void set_directory(const String &d_path);
 
 	virtual void set_create_options(Object *p_menu_node);
 	virtual bool handle_menu_selected(int p_which);

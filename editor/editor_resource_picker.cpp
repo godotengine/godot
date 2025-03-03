@@ -989,6 +989,10 @@ bool EditorResourcePicker::is_editable() const {
 	return editable;
 }
 
+void EditorResourcePicker::set_directory(const String &d_path) {
+	directory_path = d_path;
+}
+
 void EditorResourcePicker::_ensure_resource_menu() {
 	if (edit_menu) {
 		return;
