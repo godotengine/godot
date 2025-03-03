@@ -516,6 +516,8 @@ void Node::_propagate_physics_interpolated(bool p_interpolated) {
 	// Allow a call to the RenderingServer etc. in derived classes.
 	_physics_interpolated_changed();
 
+	update_configuration_warnings();
+
 	data.blocked++;
 	for (KeyValue<StringName, Node *> &K : data.children) {
 		K.value->_propagate_physics_interpolated(p_interpolated);
