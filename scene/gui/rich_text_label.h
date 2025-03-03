@@ -57,7 +57,8 @@ public:
 		LIST_NUMBERS,
 		LIST_LETTERS,
 		LIST_ROMAN,
-		LIST_DOTS
+		LIST_DOTS,
+		LIST_CUSTOM,
 	};
 
 	enum MetaUnderline {
@@ -135,6 +136,7 @@ protected:
 	void _push_font_bind_compat_79053(const Ref<Font> &p_font, int p_size);
 	void _set_table_column_expand_bind_compat_79053(int p_column, bool p_expand, int p_ratio);
 	void _push_meta_bind_compat_99481(const Variant &p_meta, MetaUnderline p_underline_mode);
+	void _push_list_bind_compat_92749(int p_level, ListType p_list, bool p_capitalize, const String &p_bullet = U"•");
 	void _push_meta_bind_compat_89024(const Variant &p_meta);
 	void _add_image_bind_compat_80410(const Ref<Texture2D> &p_image, const int p_width, const int p_height, const Color &p_color, InlineAlignment p_alignment, const Rect2 &p_region);
 	bool _remove_paragraph_bind_compat_91098(int p_paragraph);
@@ -329,9 +331,13 @@ private:
 	struct ItemList : public Item {
 		ListType list_type = LIST_DOTS;
 		bool capitalize = false;
+		bool break_at_level = false;
 		int level = 0;
+		int indent_size = -1;
 		String bullet = U"•";
 		float max_width = 0;
+		String prefix = U"";
+		String suffix = U". ";
 		ItemList() { type = ITEM_LIST; }
 	};
 
@@ -714,7 +720,7 @@ public:
 	void push_language(const String &p_language);
 	void push_paragraph(HorizontalAlignment p_alignment, Control::TextDirection p_direction = Control::TEXT_DIRECTION_INHERITED, const String &p_language = "", TextServer::StructuredTextParser p_st_parser = TextServer::STRUCTURED_TEXT_DEFAULT, BitField<TextServer::JustificationFlag> p_jst_flags = TextServer::JUSTIFICATION_WORD_BOUND | TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_SKIP_LAST_LINE | TextServer::JUSTIFICATION_DO_NOT_SKIP_SINGLE_LINE, const PackedFloat32Array &p_tab_stops = PackedFloat32Array());
 	void push_indent(int p_level);
-	void push_list(int p_level, ListType p_list, bool p_capitalize, const String &p_bullet = String::utf8("•"));
+	void push_list(int p_level, ListType p_list, bool p_capitalize, const String &p_bullet = U"•", const String &p_prefix = "", const String &p_suffix = ".", int p_indent_size = -1, bool p_break_at_level = false);
 	void push_meta(const Variant &p_meta, MetaUnderline p_underline_mode = META_UNDERLINE_ALWAYS, const String &p_tooltip = String());
 	void push_hint(const String &p_string);
 	void push_table(int p_columns, InlineAlignment p_alignment = INLINE_ALIGNMENT_TOP, int p_align_to_row = -1);

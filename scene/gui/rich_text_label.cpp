@@ -238,7 +238,7 @@ String RichTextLabel::_get_prefix(Item *p_item, const Vector<int> &p_list_index,
 			}
 			break;
 		}
-		prefix = "." + prefix;
+		prefix = p_list_items[i]->suffix + prefix;
 		if (p_list_items[i]->list_type == LIST_NUMBERS) {
 			segment = itos(p_list_index[i]);
 			if (is_localizing_numeral_system()) {
@@ -251,8 +251,18 @@ String RichTextLabel::_get_prefix(Item *p_item, const Vector<int> &p_list_index,
 		} else if (p_list_items[i]->list_type == LIST_ROMAN) {
 			segment = _roman(p_list_index[i], p_list_items[i]->capitalize);
 			segments++;
+		} else if (p_list_items[i]->list_type == LIST_CUSTOM) {
+			Vector<String> letters = p_list_items[i]->bullet.split(",");
+			segment = letters[(p_list_index[i] - 1) % letters.size()];
+			if (p_list_items[i]->capitalize) {
+				segment = segment.to_upper();
+			}
+			segments++;
 		}
-		prefix = segment + prefix;
+		prefix = p_list_items[i]->prefix + segment + prefix;
+		if (p_list_items[i]->break_at_level) {
+			break;
+		}
 	}
 	return prefix;
 }
@@ -2624,6 +2634,7 @@ int RichTextLabel::_find_margin(Item *p_item, const Ref<Font> &p_base_font, int 
 			margin += tab_size * font->get_char_size(' ', font_size).width;
 
 		} else if (item->type == ITEM_LIST) {
+			int indent_size = static_cast<ItemList *>(item)->indent_size;
 			Ref<Font> font = p_base_font;
 			int font_size = p_base_font_size;
 
@@ -2640,7 +2651,7 @@ int RichTextLabel::_find_margin(Item *p_item, const Ref<Font> &p_base_font, int 
 			if (font_size_it && font_size_it->font_size > 0) {
 				font_size = font_size_it->font_size;
 			}
-			margin += tab_size * font->get_char_size(' ', font_size).width;
+			margin += (indent_size >= 0 ? indent_size : tab_size) * font->get_char_size(' ', font_size).width;
 		}
 
 		item = item->parent;
@@ -3839,7 +3850,7 @@ void RichTextLabel::push_indent(int p_level) {
 	_add_item(item, true, true);
 }
 
-void RichTextLabel::push_list(int p_level, ListType p_list, bool p_capitalize, const String &p_bullet) {
+void RichTextLabel::push_list(int p_level, ListType p_list, bool p_capitalize, const String &p_bullet, const String &p_prefix, const String &p_suffix, int p_indent_size, bool p_break_at_level) {
 	_stop_thread();
 	MutexLock data_lock(data_mutex);
 
@@ -3853,6 +3864,10 @@ void RichTextLabel::push_list(int p_level, ListType p_list, bool p_capitalize, c
 	item->level = p_level;
 	item->capitalize = p_capitalize;
 	item->bullet = p_bullet;
+	item->break_at_level = p_break_at_level;
+	item->prefix = p_prefix;
+	item->suffix = p_suffix;
+	item->indent_size = p_indent_size;
 	_add_item(item, true, true);
 }
 
@@ -4729,38 +4744,85 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 			tag_stack.push_front(tag);
 		} else if (tag == "ul") {
 			current_frame->indent_level++;
-			push_list(current_frame->indent_level, LIST_DOTS, false);
+			push_list(current_frame->indent_level, LIST_DOTS, false, U"•", "", "", -1, true);
 			pos = brk_end + 1;
 			tag_stack.push_front(tag);
-		} else if (tag.begins_with("ul bullet=")) {
-			String bullet = _get_tag_value(tag);
+		} else if (tag.begins_with("ul ")) {
+			String bullet = U"•";
+			int indent_size = -1;
+
+			OptionMap::Iterator bullet_option = bbcode_options.find("bullet");
+			if (bullet_option) {
+				bullet = bullet_option->value;
+			}
+			OptionMap::Iterator indent_size_option = bbcode_options.find("indent_size");
+			if (indent_size_option) {
+				indent_size = indent_size_option->value.to_int();
+			}
+
 			current_frame->indent_level++;
-			push_list(current_frame->indent_level, LIST_DOTS, false, bullet);
+			push_list(current_frame->indent_level, LIST_DOTS, false, bullet, "", "", indent_size, true);
 			pos = brk_end + 1;
 			tag_stack.push_front("ul");
-		} else if ((tag == "ol") || (tag == "ol type=1")) {
+		} else if (tag == "ol") {
 			current_frame->indent_level++;
-			push_list(current_frame->indent_level, LIST_NUMBERS, false);
+			push_list(current_frame->indent_level, LIST_NUMBERS, false, "", "", ".", -1, false);
 			pos = brk_end + 1;
 			tag_stack.push_front("ol");
-		} else if (tag == "ol type=a") {
+		} else if (tag.begins_with("ol ")) {
+			String custom = "?";
+			String prefix = "";
+			String suffix = ".";
+			ListType list_type = LIST_NUMBERS;
+			bool capitalize = false;
+			bool break_at_level = false;
+			int indent_size = -1;
+
+			OptionMap::Iterator type_option = bbcode_options.find("type");
+			if (type_option) {
+				if (type_option->value == "a") {
+					list_type = LIST_LETTERS;
+				} else if (type_option->value == "A") {
+					list_type = LIST_LETTERS;
+					capitalize = true;
+				} else if (type_option->value == "i") {
+					list_type = LIST_ROMAN;
+				} else if (type_option->value == "I") {
+					list_type = LIST_ROMAN;
+					capitalize = true;
+				} else if (type_option->value == "c") {
+					list_type = LIST_CUSTOM;
+				} else if (type_option->value == "C") {
+					list_type = LIST_CUSTOM;
+					capitalize = true;
+				}
+			}
+			OptionMap::Iterator break_option = bbcode_options.find("break");
+			if (break_option) {
+				if (break_option->value == "y" || break_option->value == "yes" || break_option->value == "t" || break_option->value == "true") {
+					break_at_level = true;
+				} else {
+					break_at_level = false;
+				}
+			}
+			OptionMap::Iterator custom_option = bbcode_options.find("custom");
+			if (custom_option) {
+				custom = custom_option->value;
+			}
+			OptionMap::Iterator prefix_option = bbcode_options.find("prefix");
+			if (prefix_option) {
+				prefix = prefix_option->value;
+			}
+			OptionMap::Iterator suffix_option = bbcode_options.find("suffix");
+			if (suffix_option) {
+				suffix = suffix_option->value;
+			}
+			OptionMap::Iterator indent_size_option = bbcode_options.find("indent_size");
+			if (indent_size_option) {
+				indent_size = indent_size_option->value.to_int();
+			}
 			current_frame->indent_level++;
-			push_list(current_frame->indent_level, LIST_LETTERS, false);
-			pos = brk_end + 1;
-			tag_stack.push_front("ol");
-		} else if (tag == "ol type=A") {
-			current_frame->indent_level++;
-			push_list(current_frame->indent_level, LIST_LETTERS, true);
-			pos = brk_end + 1;
-			tag_stack.push_front("ol");
-		} else if (tag == "ol type=i") {
-			current_frame->indent_level++;
-			push_list(current_frame->indent_level, LIST_ROMAN, false);
-			pos = brk_end + 1;
-			tag_stack.push_front("ol");
-		} else if (tag == "ol type=I") {
-			current_frame->indent_level++;
-			push_list(current_frame->indent_level, LIST_ROMAN, true);
+			push_list(current_frame->indent_level, list_type, capitalize, custom, prefix, suffix, indent_size, break_at_level);
 			pos = brk_end + 1;
 			tag_stack.push_front("ol");
 		} else if (tag == "indent") {
@@ -6438,7 +6500,7 @@ void RichTextLabel::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("push_outline_color", "color"), &RichTextLabel::push_outline_color);
 	ClassDB::bind_method(D_METHOD("push_paragraph", "alignment", "base_direction", "language", "st_parser", "justification_flags", "tab_stops"), &RichTextLabel::push_paragraph, DEFVAL(TextServer::DIRECTION_AUTO), DEFVAL(""), DEFVAL(TextServer::STRUCTURED_TEXT_DEFAULT), DEFVAL(TextServer::JUSTIFICATION_WORD_BOUND | TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_SKIP_LAST_LINE | TextServer::JUSTIFICATION_DO_NOT_SKIP_SINGLE_LINE), DEFVAL(PackedFloat32Array()));
 	ClassDB::bind_method(D_METHOD("push_indent", "level"), &RichTextLabel::push_indent);
-	ClassDB::bind_method(D_METHOD("push_list", "level", "type", "capitalize", "bullet"), &RichTextLabel::push_list, DEFVAL(String::utf8("•")));
+	ClassDB::bind_method(D_METHOD("push_list", "level", "type", "capitalize", "bullet", "prefix", "suffix", "indent_size", "break_at_level"), &RichTextLabel::push_list, DEFVAL(U"•"), DEFVAL(""), DEFVAL("."), DEFVAL(-1), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("push_meta", "data", "underline_mode", "tooltip"), &RichTextLabel::push_meta, DEFVAL(META_UNDERLINE_ALWAYS), DEFVAL(String()));
 	ClassDB::bind_method(D_METHOD("push_hint", "description"), &RichTextLabel::push_hint);
 	ClassDB::bind_method(D_METHOD("push_language", "language"), &RichTextLabel::push_language);
@@ -6638,6 +6700,7 @@ void RichTextLabel::_bind_methods() {
 	BIND_ENUM_CONSTANT(LIST_LETTERS);
 	BIND_ENUM_CONSTANT(LIST_ROMAN);
 	BIND_ENUM_CONSTANT(LIST_DOTS);
+	BIND_ENUM_CONSTANT(LIST_CUSTOM);
 
 	BIND_ENUM_CONSTANT(MENU_COPY);
 	BIND_ENUM_CONSTANT(MENU_SELECT_ALL);
