@@ -111,8 +111,10 @@ struct CellData {
 	SelfList<CellData> rendering_quadrant_list_element;
 	LocalVector<LocalVector<RID>> occluders;
 
+#ifndef PHYSICS_2D_DISABLED
 	// Physics.
 	LocalVector<RID> bodies;
+#endif // PHYSICS_2D_DISABLED
 
 	// Navigation.
 	LocalVector<RID> navigation_regions;
@@ -135,7 +137,9 @@ struct CellData {
 		coords = p_other.coords;
 		cell = p_other.cell;
 		occluders = p_other.occluders;
+#ifndef PHYSICS_2D_DISABLED
 		bodies = p_other.bodies;
+#endif // PHYSICS_2D_DISABLED
 		navigation_regions = p_other.navigation_regions;
 		scene = p_other.scene;
 		runtime_tile_data_cache = p_other.runtime_tile_data_cache;
@@ -148,7 +152,9 @@ struct CellData {
 		coords = p_other.coords;
 		cell = p_other.cell;
 		occluders = p_other.occluders;
+#ifndef PHYSICS_2D_DISABLED
 		bodies = p_other.bodies;
+#endif // PHYSICS_2D_DISABLED
 		navigation_regions = p_other.navigation_regions;
 		scene = p_other.scene;
 		runtime_tile_data_cache = p_other.runtime_tile_data_cache;
@@ -344,6 +350,7 @@ private:
 	void _rendering_draw_cell_debug(const RID &p_canvas_item, const Vector2 &p_quadrant_pos, const CellData &r_cell_data);
 #endif // DEBUG_ENABLED
 
+#ifndef PHYSICS_2D_DISABLED
 	HashMap<RID, Vector2i> bodies_coords; // Mapping for RID to coords.
 	bool _physics_was_cleaned_up = false;
 	void _physics_update(bool p_force_cleanup);
@@ -353,6 +360,7 @@ private:
 #ifdef DEBUG_ENABLED
 	void _physics_draw_cell_debug(const RID &p_canvas_item, const Vector2 &p_quadrant_pos, const CellData &r_cell_data);
 #endif // DEBUG_ENABLED
+#endif // PHYSICS_2D_DISABLED
 
 	bool _navigation_was_cleaned_up = false;
 	void _navigation_update(bool p_force_cleanup);
