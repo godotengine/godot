@@ -328,6 +328,9 @@ private:
 			float uv_scale[4];
 		};
 
+		static_assert(std::is_trivially_destructible_v<InstanceData>);
+		static_assert(std::is_trivially_constructible_v<InstanceData>);
+
 		UBO ubo;
 
 		LocalVector<RID> uniform_buffers;
@@ -391,6 +394,9 @@ private:
 		uint32_t uses_forward_gi : 1;
 		uint32_t lod_index : 8;
 	};
+
+	static_assert(std::is_trivially_destructible_v<RenderElementInfo>);
+	static_assert(std::is_trivially_constructible_v<RenderElementInfo>);
 
 	template <PassMode p_pass_mode, uint32_t p_color_pass_flags = 0>
 	_FORCE_INLINE_ void _render_list_template(RenderingDevice::DrawListID p_draw_list, RenderingDevice::FramebufferFormatID p_framebuffer_Format, RenderListParameters *p_params, uint32_t p_from_element, uint32_t p_to_element);
