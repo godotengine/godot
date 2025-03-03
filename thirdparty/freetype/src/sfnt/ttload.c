@@ -5,7 +5,7 @@
  *   Load the basic TrueType tables, i.e., tables that can be either in
  *   TTF or OTF fonts (body).
  *
- * Copyright (C) 1996-2023 by
+ * Copyright (C) 1996-2024 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -1046,7 +1046,7 @@
   FT_LOCAL_DEF( void )
   tt_face_free_name( TT_Face  face )
   {
-    FT_Memory     memory = face->root.driver->root.memory;
+    FT_Memory     memory = face->root.memory;
     TT_NameTable  table  = &face->name_table;
 
 
