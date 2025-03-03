@@ -93,7 +93,9 @@ private:
 
 	static Engine *singleton;
 
+#ifndef MOVIE_WRITER_DISABLED
 	String write_movie_path;
+#endif // MOVIE_WRITER_DISABLED
 	String shader_cache_path;
 
 	static constexpr int SERVER_SYNC_FRAME_COUNT_WARNING = 5;
@@ -187,8 +189,10 @@ public:
 	Dictionary get_license_info() const;
 	String get_license_text() const;
 
+#ifndef MOVIE_WRITER_DISABLED
 	void set_write_movie_path(const String &p_path);
 	String get_write_movie_path() const;
+#endif // MOVIE_WRITER_DISABLED
 
 	String get_architecture_name() const;
 

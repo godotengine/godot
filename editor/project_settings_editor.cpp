@@ -40,7 +40,9 @@
 #include "editor/export/editor_export.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/check_button.h"
+#ifndef MOVIE_WRITER_DISABLED
 #include "servers/movie_writer/movie_writer.h"
+#endif // MOVIE_WRITER_DISABLED
 
 ProjectSettingsEditor *ProjectSettingsEditor::singleton = nullptr;
 
@@ -781,5 +783,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	import_defaults_editor->set_name(TTR("Import Defaults"));
 	tab_container->add_child(import_defaults_editor);
 
+#ifndef MOVIE_WRITER_DISABLED
 	MovieWriter::set_extensions_hint(); // ensure extensions are properly displayed.
+#endif // MOVIE_WRITER_DISABLED
 }

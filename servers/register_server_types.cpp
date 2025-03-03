@@ -59,9 +59,11 @@
 #include "debugger/servers_debugger.h"
 #include "display/native_menu.h"
 #include "display_server.h"
+#ifndef MOVIE_WRITER_DISABLED
 #include "movie_writer/movie_writer.h"
 #include "movie_writer/movie_writer_mjpeg.h"
 #include "movie_writer/movie_writer_pngwav.h"
+#endif // MOVIE_WRITER_DISABLED
 #include "rendering/renderer_rd/framebuffer_cache_rd.h"
 #include "rendering/renderer_rd/storage_rd/render_data_rd.h"
 #include "rendering/renderer_rd/storage_rd/render_scene_buffers_rd.h"
@@ -123,8 +125,10 @@ static bool has_server_feature_callback(const String &p_feature) {
 	return false;
 }
 
+#ifndef MOVIE_WRITER_DISABLED
 static MovieWriterMJPEG *writer_mjpeg = nullptr;
 static MovieWriterPNGWAV *writer_pngwav = nullptr;
+#endif // MOVIE_WRITER_DISABLED
 
 void register_server_types() {
 	OS::get_singleton()->benchmark_begin_measure("Servers", "Register Extensions");
@@ -244,7 +248,9 @@ void register_server_types() {
 
 	GDREGISTER_CLASS(CameraFeed);
 
+#ifndef MOVIE_WRITER_DISABLED
 	GDREGISTER_VIRTUAL_CLASS(MovieWriter);
+#endif // MOVIE_WRITER_DISABLED
 
 	ServersDebugger::initialize();
 
@@ -324,11 +330,13 @@ void register_server_types() {
 	GDREGISTER_CLASS(NavigationPathQueryParameters3D);
 	GDREGISTER_CLASS(NavigationPathQueryResult3D);
 
+#ifndef MOVIE_WRITER_DISABLED
 	writer_mjpeg = memnew(MovieWriterMJPEG);
 	MovieWriter::add_writer(writer_mjpeg);
 
 	writer_pngwav = memnew(MovieWriterPNGWAV);
 	MovieWriter::add_writer(writer_pngwav);
+#endif // MOVIE_WRITER_DISABLED
 
 	OS::get_singleton()->benchmark_end_measure("Servers", "Register Extensions");
 }
@@ -338,8 +346,10 @@ void unregister_server_types() {
 
 	ServersDebugger::deinitialize();
 	memdelete(shader_types);
+#ifndef MOVIE_WRITER_DISABLED
 	memdelete(writer_mjpeg);
 	memdelete(writer_pngwav);
+#endif // MOVIE_WRITER_DISABLED
 
 	OS::get_singleton()->benchmark_end_measure("Servers", "Unregister Extensions");
 }

@@ -1953,6 +1953,7 @@ void EditorThemeManager::_populate_editor_styles(const Ref<EditorTheme> &p_theme
 		style_launch_pad_recovery_mode->set_border_width_all(Math::round(2 * EDSCALE));
 		p_theme->set_stylebox("LaunchPadRecoveryMode", EditorStringName(EditorStyles), style_launch_pad_recovery_mode);
 
+#ifndef MOVIE_WRITER_DISABLED
 		p_theme->set_stylebox("MovieWriterButtonNormal", EditorStringName(EditorStyles), make_empty_stylebox(0, 0, 0, 0));
 		Ref<StyleBoxFlat> style_write_movie_button = p_config.button_style_pressed->duplicate();
 		style_write_movie_button->set_bg_color(p_config.accent_color);
@@ -1969,6 +1970,7 @@ void EditorThemeManager::_populate_editor_styles(const Ref<EditorTheme> &p_theme
 		p_theme->set_color("movie_writer_icon_pressed", EditorStringName(EditorStyles), Color(0, 0, 0, 0.84));
 		p_theme->set_color("movie_writer_icon_hover", EditorStringName(EditorStyles), Color(1, 1, 1, 0.9));
 		p_theme->set_color("movie_writer_icon_hover_pressed", EditorStringName(EditorStyles), Color(0, 0, 0, 0.84));
+#endif // MOVIE_WRITER_DISABLED
 
 		// Profiler autostart indicator panel.
 		Ref<StyleBoxFlat> style_profiler_autostart = style_launch_pad->duplicate();

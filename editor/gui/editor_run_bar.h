@@ -32,7 +32,6 @@
 #define EDITOR_RUN_BAR_H
 
 #include "editor/editor_run.h"
-#include "editor/export/editor_export.h"
 #include "scene/gui/margin_container.h"
 
 class Button;
@@ -40,6 +39,7 @@ class EditorRunNative;
 class PanelContainer;
 class HBoxContainer;
 class AcceptDialog;
+class EditorExportPreset;
 
 class EditorRunBar : public MarginContainer {
 	GDCLASS(EditorRunBar, MarginContainer);
@@ -73,8 +73,10 @@ class EditorRunBar : public MarginContainer {
 	EditorRun editor_run;
 	EditorRunNative *run_native = nullptr;
 
+#ifndef MOVIE_WRITER_DISABLED
 	PanelContainer *write_movie_panel = nullptr;
 	Button *write_movie_button = nullptr;
+#endif // MOVIE_WRITER_DISABLED
 
 	RunMode current_mode = RunMode::STOPPED;
 	String run_custom_filename;
@@ -83,7 +85,9 @@ class EditorRunBar : public MarginContainer {
 	void _reset_play_buttons();
 	void _update_play_buttons();
 
+#ifndef MOVIE_WRITER_DISABLED
 	void _write_movie_toggled(bool p_enabled);
+#endif // MOVIE_WRITER_DISABLED
 	void _quick_run_selected(const String &p_file_path, int p_id = -1);
 
 	void _play_current_pressed(int p_id = -1);
@@ -121,8 +125,10 @@ public:
 	void stop_child_process(OS::ProcessID p_pid);
 	OS::ProcessID get_current_process() const;
 
+#ifndef MOVIE_WRITER_DISABLED
 	void set_movie_maker_enabled(bool p_enabled);
 	bool is_movie_maker_enabled() const;
+#endif // MOVIE_WRITER_DISABLED
 
 	void update_profiler_autostart_indicator();
 

@@ -60,7 +60,9 @@ class OS {
 	bool _allow_layered = false;
 	bool _stdout_enabled = true;
 	bool _stderr_enabled = true;
+#ifndef MOVIE_WRITER_DISABLED
 	bool _writing_movie = false;
+#endif // MOVIE_WRITER_DISABLED
 	bool _in_editor = false;
 	bool _embedded_in_editor = false;
 

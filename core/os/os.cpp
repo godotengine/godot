@@ -442,9 +442,11 @@ bool OS::has_feature(const String &p_feature) {
 		return true;
 	}
 
+#ifndef MOVIE_WRITER_DISABLED
 	if (p_feature == "movie") {
 		return _writing_movie;
 	}
+#endif // MOVIE_WRITER_DISABLED
 
 #ifdef DEBUG_ENABLED
 	if (p_feature == "debug") {
