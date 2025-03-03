@@ -49,6 +49,7 @@
 #include "core/config/project_settings.h"
 #include "core/input/input.h"
 #include "main/main.h"
+#include "servers/rendering_server.h"
 
 #ifndef _3D_DISABLED
 #include "servers/xr_server.h"
