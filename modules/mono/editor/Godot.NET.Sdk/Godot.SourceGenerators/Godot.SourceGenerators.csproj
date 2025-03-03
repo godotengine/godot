@@ -10,7 +10,7 @@
     <Authors>Godot Engine contributors</Authors>
 
     <PackageId>Godot.SourceGenerators</PackageId>
-    <Version>4.4.0</Version>
+    <Version>4.4.1</Version>
     <PackageVersion>$(PackageVersion_Godot_SourceGenerators)</PackageVersion>
     <RepositoryUrl>https://github.com/godotengine/godot/tree/master/modules/mono/editor/Godot.NET.Sdk/Godot.SourceGenerators</RepositoryUrl>
     <PackageProjectUrl>$(RepositoryUrl)</PackageProjectUrl>
