@@ -1959,11 +1959,17 @@ void BaseMaterial3D::_check_material_rid() {
 }
 
 void BaseMaterial3D::flush_changes() {
-	MutexLock lock(material_mutex);
-
-	while (dirty_materials.first()) {
-		dirty_materials.first()->self()->_update_shader();
-		dirty_materials.first()->remove_from_list();
+	List<BaseMaterial3D *> shaders_to_update;
+	{
+		MutexLock lock(material_mutex);
+		while (dirty_materials.first()) {
+			shaders_to_update.push_back(dirty_materials.first()->self());
+			dirty_materials.first()->remove_from_list();
+		}
+	}
+	while (!shaders_to_update.is_empty()) {
+		shaders_to_update.front()->get()->_update_shader();
+		shaders_to_update.pop_front();
 	}
 }
 
