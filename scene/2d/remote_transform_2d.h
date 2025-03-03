@@ -58,19 +58,19 @@ public:
 	void set_remote_node(const NodePath &p_remote_node);
 	NodePath get_remote_node() const;
 
-	void set_use_global_coordinates(const bool p_enable);
+	void set_use_global_coordinates(bool p_enable);
 	bool get_use_global_coordinates() const;
 
-	void set_update_position(const bool p_update);
+	void set_update_position(bool p_update);
 	bool get_update_position() const;
 
-	void set_update_rotation(const bool p_update);
+	void set_update_rotation(bool p_update);
 	bool get_update_rotation() const;
 
-	void set_update_scale(const bool p_update);
+	void set_update_scale(bool p_update);
 	bool get_update_scale() const;
 
-	void set_update_skew(const bool p_update);
+	void set_update_skew(bool p_update);
 	bool get_update_skew() const;
 
 	void force_update_cache();

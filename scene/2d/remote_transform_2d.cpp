@@ -165,7 +165,7 @@ NodePath RemoteTransform2D::get_remote_node() const {
 	return remote_node;
 }
 
-void RemoteTransform2D::set_use_global_coordinates(const bool p_enable) {
+void RemoteTransform2D::set_use_global_coordinates(bool p_enable) {
 	if (use_global_coordinates == p_enable) {
 		return;
 	}
@@ -180,7 +180,7 @@ bool RemoteTransform2D::get_use_global_coordinates() const {
 	return use_global_coordinates;
 }
 
-void RemoteTransform2D::set_update_position(const bool p_update) {
+void RemoteTransform2D::set_update_position(bool p_update) {
 	if (update_remote_position == p_update) {
 		return;
 	}
@@ -192,7 +192,7 @@ bool RemoteTransform2D::get_update_position() const {
 	return update_remote_position;
 }
 
-void RemoteTransform2D::set_update_rotation(const bool p_update) {
+void RemoteTransform2D::set_update_rotation(bool p_update) {
 	if (update_remote_rotation == p_update) {
 		return;
 	}
@@ -204,7 +204,7 @@ bool RemoteTransform2D::get_update_rotation() const {
 	return update_remote_rotation;
 }
 
-void RemoteTransform2D::set_update_scale(const bool p_update) {
+void RemoteTransform2D::set_update_scale(bool p_update) {
 	if (update_remote_scale == p_update) {
 		return;
 	}
@@ -216,7 +216,7 @@ bool RemoteTransform2D::get_update_scale() const {
 	return update_remote_scale;
 }
 
-void RemoteTransform2D::set_update_skew(const bool p_update) {
+void RemoteTransform2D::set_update_skew(bool p_update) {
 	if (update_remote_skew == p_update) {
 		return;
 	}
