@@ -259,6 +259,14 @@ void BetsyCompressor::_thread_exit() {
 				compress_rd->free(cached_shaders[i].compiled);
 			}
 		}
+
+		// Free the RD (and RCD if necessary).
+		memdelete(compress_rd);
+		compress_rd = nullptr;
+		if (compress_rcd != nullptr) {
+			memdelete(compress_rcd);
+			compress_rcd = nullptr;
+		}
 	}
 }
 
@@ -267,16 +275,6 @@ void BetsyCompressor::finish() {
 	if (task_id != WorkerThreadPool::INVALID_TASK_ID) {
 		WorkerThreadPool::get_singleton()->wait_for_task_completion(task_id);
 		task_id = WorkerThreadPool::INVALID_TASK_ID;
-	}
-
-	if (compress_rd != nullptr) {
-		// Free the RD (and RCD if necessary).
-		memdelete(compress_rd);
-		compress_rd = nullptr;
-		if (compress_rcd != nullptr) {
-			memdelete(compress_rcd);
-			compress_rcd = nullptr;
-		}
 	}
 }
 
