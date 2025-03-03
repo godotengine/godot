@@ -31,7 +31,7 @@
 #ifndef EDITOR_DEBUGGER_TREE_H
 #define EDITOR_DEBUGGER_TREE_H
 
-#include "scene/gui/tree.h"
+#include "scene/gui/advanced/tree.h"
 
 class SceneDebuggerTree;
 class EditorFileDialog;

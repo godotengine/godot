@@ -43,11 +43,13 @@
 #include "scene/3d/physics/collision_object_3d.h"
 #include "scene/3d/world_environment.h"
 #endif // _3D_DISABLED
+#ifndef ADVANCED_GUI_DISABLED
+#include "scene/gui/advanced/popup_menu.h"
+#include "scene/gui/advanced/subviewport_container.h"
+#endif // ADVANCED_GUI_DISABLED
 #include "scene/gui/control.h"
 #include "scene/gui/label.h"
 #include "scene/gui/popup.h"
-#include "scene/gui/popup_menu.h"
-#include "scene/gui/subviewport_container.h"
 #include "scene/main/canvas_layer.h"
 #include "scene/main/window.h"
 #include "scene/resources/mesh.h"
@@ -725,8 +727,12 @@ void Viewport::_process_picking() {
 
 	PhysicsDirectSpaceState2D *ss2d = PhysicsServer2D::get_singleton()->space_get_direct_state(find_world_2d()->get_space());
 
+#ifndef ADVANCED_GUI_DISABLED
 	SubViewportContainer *parent_svc = Object::cast_to<SubViewportContainer>(get_parent());
 	bool parent_ignore_mouse = (parent_svc && parent_svc->get_mouse_filter() == Control::MOUSE_FILTER_IGNORE);
+#else
+	bool parent_ignore_mouse = false;
+#endif // ADVANCED_GUI_DISABLED
 	bool create_passive_hover_event = true;
 	if (gui.mouse_over || parent_ignore_mouse) {
 		// When the mouse is over a Control node, passive hovering would cause input events for Colliders, that are behind Control nodes.
@@ -1254,7 +1260,11 @@ Ref<World2D> Viewport::find_world_2d() const {
 void Viewport::_propagate_drag_notification(Node *p_node, int p_what) {
 	// Send notification to p_node and all children and descendant nodes of p_node, except to SubViewports which are not children of a SubViewportContainer.
 	p_node->notification(p_what);
+#ifndef ADVANCED_GUI_DISABLED
 	bool is_svc = Object::cast_to<SubViewportContainer>(p_node);
+#else
+	bool is_svc = false;
+#endif // ADVANCED_GUI_DISABLED
 	for (int i = 0; i < p_node->get_child_count(); i++) {
 		Node *c = p_node->get_child(i);
 		if (!is_svc && Object::cast_to<SubViewport>(c)) {
@@ -1455,11 +1465,13 @@ String Viewport::_gui_get_tooltip(Control *p_control, const Vector2 &p_pos, Cont
 	while (p_control) {
 		tooltip = p_control->get_tooltip(pos);
 
+#ifndef ADVANCED_GUI_DISABLED
 		// Temporary solution for PopupMenus.
 		PopupMenu *menu = Object::cast_to<PopupMenu>(this);
 		if (menu) {
 			tooltip = menu->get_tooltip(pos);
 		}
+#endif // ADVANCED_GUI_DISABLED
 
 		if (r_tooltip_owner) {
 			*r_tooltip_owner = p_control;
@@ -2060,7 +2072,12 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 			}
 		}
 
-		if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_CURSOR_SHAPE) && (gui.dragging || (!section_root->gui.global_dragging && !Object::cast_to<SubViewportContainer>(over)))) {
+#ifndef ADVANCED_GUI_DISABLED
+		bool is_svc = Object::cast_to<SubViewportContainer>(over);
+#else
+		bool is_svc = false;
+#endif // ADVANCED_GUI_DISABLED
+		if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_CURSOR_SHAPE) && (gui.dragging || (!section_root->gui.global_dragging && !is_svc))) {
 			// If dragging is active, then set the cursor shape only from the Viewport where dragging started.
 			// If dragging is inactive, then set the cursor shape only when not over a SubViewportContainer.
 			DisplayServer::get_singleton()->cursor_set_shape(ds_cursor_shape);
@@ -3077,7 +3094,9 @@ void Viewport::_update_mouse_over(Vector2 p_pos) {
 	// Look for Controls at mouse position.
 	Control *over = gui_find_control(p_pos);
 	get_section_root_viewport()->gui.target_control = over;
+#ifndef ADVANCED_GUI_DISABLED
 	bool notify_embedded_viewports = false;
+#endif // ADVANCED_GUI_DISABLED
 	if (over != gui.mouse_over || (!over && !gui.mouse_over_hierarchy.is_empty())) {
 		// Find the common ancestor of `gui.mouse_over` and `over`.
 		Control *common_ancestor = nullptr;
@@ -3136,10 +3155,12 @@ void Viewport::_update_mouse_over(Vector2 p_pos) {
 
 			gui.sending_mouse_enter_exit_notifications = false;
 
+#ifndef ADVANCED_GUI_DISABLED
 			notify_embedded_viewports = true;
+#endif // ADVANCED_GUI_DISABLED
 		}
 	}
-
+#ifndef ADVANCED_GUI_DISABLED
 	if (over) {
 		SubViewportContainer *c = Object::cast_to<SubViewportContainer>(over);
 		if (!c) {
@@ -3169,6 +3190,7 @@ void Viewport::_update_mouse_over(Vector2 p_pos) {
 			section_root->gui.target_control = over;
 		}
 	}
+#endif // ADVANCED_GUI_DISABLED
 }
 
 void Viewport::_mouse_leave_viewport() {
@@ -3192,6 +3214,7 @@ void Viewport::_drop_mouse_over(Control *p_until_control) {
 	}
 
 	_gui_cancel_tooltip();
+#ifndef ADVANCED_GUI_DISABLED
 	SubViewportContainer *c = Object::cast_to<SubViewportContainer>(gui.mouse_over);
 	if (c) {
 		for (int i = 0; i < c->get_child_count(); i++) {
@@ -3202,6 +3225,7 @@ void Viewport::_drop_mouse_over(Control *p_until_control) {
 			v->_mouse_leave_viewport();
 		}
 	}
+#endif // ADVANCED_GUI_DISABLED
 
 	gui.sending_mouse_enter_exit_notifications = true;
 	if (gui.mouse_over && gui.mouse_over->is_inside_tree()) {
@@ -5195,6 +5219,7 @@ void SubViewport::set_size_force(const Size2i &p_size) {
 }
 
 void SubViewport::_internal_set_size(const Size2i &p_size, bool p_force) {
+#ifndef ADVANCED_GUI_DISABLED
 	SubViewportContainer *c = Object::cast_to<SubViewportContainer>(get_parent());
 	if (!p_force && c && c->is_stretch_enabled()) {
 #ifdef DEBUG_ENABLED
@@ -5202,13 +5227,16 @@ void SubViewport::_internal_set_size(const Size2i &p_size, bool p_force) {
 #endif // DEBUG_ENABLED
 		return;
 	}
+#endif // ADVANCED_GUI_DISABLED
 
 	_set_size(p_size, _get_size_2d_override(), true);
 
+#ifndef ADVANCED_GUI_DISABLED
 	if (c) {
 		c->update_minimum_size();
 		c->queue_redraw();
 	}
+#endif // ADVANCED_GUI_DISABLED
 }
 
 Size2i SubViewport::get_size() const {
@@ -5271,13 +5299,16 @@ DisplayServer::WindowID SubViewport::get_window_id() const {
 Transform2D SubViewport::get_screen_transform_internal(bool p_absolute_position) const {
 	ERR_READ_THREAD_GUARD_V(Transform2D());
 	Transform2D container_transform;
+#ifndef ADVANCED_GUI_DISABLED
 	SubViewportContainer *c = Object::cast_to<SubViewportContainer>(get_parent());
 	if (c) {
 		if (c->is_stretch_enabled()) {
 			container_transform.scale(Vector2(c->get_stretch_shrink(), c->get_stretch_shrink()));
 		}
 		container_transform = c->get_viewport()->get_screen_transform_internal(p_absolute_position) * c->get_global_transform_with_canvas() * container_transform;
-	} else {
+	} else
+#endif // ADVANCED_GUI_DISABLED
+	{
 		WARN_PRINT_ONCE("SubViewport is not a child of a SubViewportContainer. get_screen_transform doesn't return the actual screen position.");
 	}
 	return container_transform * get_final_transform();
@@ -5288,27 +5319,38 @@ Transform2D SubViewport::get_popup_base_transform() const {
 	if (is_embedding_subwindows()) {
 		return Transform2D();
 	}
+#ifndef ADVANCED_GUI_DISABLED
 	SubViewportContainer *c = Object::cast_to<SubViewportContainer>(get_parent());
-	if (!c) {
+	if (!c)
+#endif // ADVANCED_GUI_DISABLED
+	{
 		return get_final_transform();
 	}
+#ifndef ADVANCED_GUI_DISABLED
 	Transform2D container_transform;
 	if (c->is_stretch_enabled()) {
 		container_transform.scale(Vector2(c->get_stretch_shrink(), c->get_stretch_shrink()));
 	}
 	return c->get_screen_transform() * container_transform * get_final_transform();
+#endif // ADVANCED_GUI_DISABLED
 }
 
 Viewport *SubViewport::get_section_root_viewport() const {
+#ifndef ADVANCED_GUI_DISABLED
 	if (Object::cast_to<SubViewportContainer>(get_parent()) && get_parent()->get_viewport()) {
 		return get_parent()->get_viewport()->get_section_root_viewport();
 	}
+#endif // ADVANCED_GUI_DISABLED
 	SubViewport *vp = const_cast<SubViewport *>(this);
 	return vp;
 }
 
 bool SubViewport::is_attached_in_viewport() const {
+#ifndef ADVANCED_GUI_DISABLED
 	return Object::cast_to<SubViewportContainer>(get_parent());
+#else
+	return false;
+#endif // ADVANCED_GUI_DISABLED
 }
 
 void SubViewport::_notification(int p_what) {
@@ -5317,10 +5359,12 @@ void SubViewport::_notification(int p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			RS::get_singleton()->viewport_set_active(get_viewport_rid(), true);
 
+#ifndef ADVANCED_GUI_DISABLED
 			SubViewportContainer *parent_svc = Object::cast_to<SubViewportContainer>(get_parent());
 			if (parent_svc) {
 				parent_svc->recalc_force_viewport_sizes();
 			}
+#endif // ADVANCED_GUI_DISABLED
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
@@ -5365,10 +5409,13 @@ void SubViewport::_bind_methods() {
 
 void SubViewport::_validate_property(PropertyInfo &p_property) const {
 	if (p_property.name == "size") {
+#ifndef ADVANCED_GUI_DISABLED
 		SubViewportContainer *parent_svc = Object::cast_to<SubViewportContainer>(get_parent());
 		if (parent_svc && parent_svc->is_stretch_enabled()) {
 			p_property.usage = PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_READ_ONLY;
-		} else {
+		} else
+#endif // ADVANCED_GUI_DISABLED
+		{
 			p_property.usage = PROPERTY_USAGE_DEFAULT;
 		}
 	}

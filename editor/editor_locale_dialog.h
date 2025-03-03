@@ -31,7 +31,7 @@
 #ifndef EDITOR_LOCALE_DIALOG_H
 #define EDITOR_LOCALE_DIALOG_H
 
-#include "scene/gui/dialogs.h"
+#include "scene/gui/advanced/dialogs.h"
 
 class Button;
 class HBoxContainer;

@@ -31,7 +31,7 @@
 #ifndef INPUT_EVENT_CONFIGURATION_DIALOG_H
 #define INPUT_EVENT_CONFIGURATION_DIALOG_H
 
-#include "scene/gui/dialogs.h"
+#include "scene/gui/advanced/dialogs.h"
 
 class OptionButton;
 class Tree;

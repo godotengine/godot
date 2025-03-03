@@ -31,7 +31,7 @@
 #ifndef EDITOR_SECTIONED_INSPECTOR_H
 #define EDITOR_SECTIONED_INSPECTOR_H
 
-#include "scene/gui/split_container.h"
+#include "scene/gui/advanced/split_container.h"
 
 class CheckButton;
 class EditorInspector;

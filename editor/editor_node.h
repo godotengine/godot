@@ -32,6 +32,7 @@
 #define EDITOR_NODE_H
 
 #include "core/object/script_language.h"
+#include "core/string/ustring.h"
 #include "core/templates/safe_refcount.h"
 #include "editor/editor_data.h"
 #include "editor/editor_folding.h"

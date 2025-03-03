@@ -32,10 +32,10 @@
 #define EDITOR_LOG_H
 
 #include "core/os/thread.h"
+#include "scene/gui/advanced/rich_text_label.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/line_edit.h"
-#include "scene/gui/rich_text_label.h"
 
 class UndoRedo;
 

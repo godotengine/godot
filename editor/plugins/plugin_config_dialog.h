@@ -31,11 +31,11 @@
 #ifndef PLUGIN_CONFIG_DIALOG_H
 #define PLUGIN_CONFIG_DIALOG_H
 
+#include "scene/gui/advanced/dialogs.h"
+#include "scene/gui/advanced/option_button.h"
+#include "scene/gui/advanced/text_edit.h"
 #include "scene/gui/check_box.h"
-#include "scene/gui/dialogs.h"
 #include "scene/gui/line_edit.h"
-#include "scene/gui/option_button.h"
-#include "scene/gui/text_edit.h"
 
 class ConfigFile;
 class EditorValidationPanel;
