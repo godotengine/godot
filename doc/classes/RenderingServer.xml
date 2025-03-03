@@ -1259,6 +1259,7 @@
 			<param index="0" name="enable" type="bool" />
 			<description>
 				If [param enable] is [code]true[/code], enables bicubic upscaling for glow which improves quality at the cost of performance. Equivalent to [member ProjectSettings.rendering/environment/glow/upscale_mode].
+				[b]Note:[/b] This setting is only effective when using the Forward+ or Mobile rendering methods, as Compatibility uses a different glow implementation.
 			</description>
 		</method>
 		<method name="environment_set_adjustment">
