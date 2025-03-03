@@ -326,7 +326,7 @@ for UI.
 ## freetype
 
 - Upstream: https://www.freetype.org
-- Version: 2.13.2 (920c5502cc3ddda88f6c7d85ee834ac611bb11cc, 2023)
+- Version: 2.13.3 (42608f77f20749dd6ddc9e0536788eaad70ea4b5, 2024)
 - License: FreeType License (BSD-like)
 
 Files extracted from upstream source:
