@@ -106,7 +106,6 @@ protected:
 	void _notification(int p_what);
 
 private:
-	static constexpr int SHOW_ALL_FILES_THRESHOLD = 30;
 	static constexpr int MAX_HISTORY_SIZE = 20;
 
 	Vector<FuzzySearchResult> search_results;
@@ -116,13 +115,13 @@ private:
 	Vector<QuickOpenResultCandidate> candidates;
 
 	OAHashMap<StringName, Vector<QuickOpenResultCandidate>> selected_history;
+	HashSet<String> history_set;
 
 	String query;
 	int selection_index = -1;
 	int num_visible_results = 0;
 	int max_total_results = 0;
 
-	bool showing_history = false;
 	bool never_opened = true;
 	Ref<ConfigFile> history_file;
 
@@ -148,9 +147,11 @@ private:
 	static QuickOpenDisplayMode get_adaptive_display_mode(const Vector<StringName> &p_base_types);
 
 	void _ensure_result_vector_capacity();
+	void _sort_filepaths(int p_max_results);
 	void _create_initial_results();
 	void _find_filepaths_in_folder(EditorFileSystemDirectory *p_directory, bool p_include_addons);
 
+	Vector<QuickOpenResultCandidate> *_get_history();
 	void _setup_candidate(QuickOpenResultCandidate &p_candidate, const String &p_filepath);
 	void _setup_candidate(QuickOpenResultCandidate &p_candidate, const FuzzySearchResult &p_result);
 	void _update_fuzzy_search_results();
