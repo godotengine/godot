@@ -2563,7 +2563,8 @@ bool DisplayServerX11::_window_maximize_check(WindowID p_window, const char *p_a
 		Atom *atoms = (Atom *)data;
 		Atom wm_act_max_horz;
 		Atom wm_act_max_vert;
-		if (strcmp(p_atom_name, "_NET_WM_STATE") == 0) {
+		bool checking_state = strcmp(p_atom_name, "_NET_WM_STATE") == 0;
+		if (checking_state) {
 			wm_act_max_horz = XInternAtom(x11_display, "_NET_WM_STATE_MAXIMIZED_HORZ", False);
 			wm_act_max_vert = XInternAtom(x11_display, "_NET_WM_STATE_MAXIMIZED_VERT", False);
 		} else {
@@ -2581,9 +2582,16 @@ bool DisplayServerX11::_window_maximize_check(WindowID p_window, const char *p_a
 				found_wm_act_max_vert = true;
 			}
 
-			if (found_wm_act_max_horz || found_wm_act_max_vert) {
-				retval = true;
-				break;
+			if (checking_state) {
+				if (found_wm_act_max_horz && found_wm_act_max_vert) {
+					retval = true;
+					break;
+				}
+			} else {
+				if (found_wm_act_max_horz || found_wm_act_max_vert) {
+					retval = true;
+					break;
+				}
 			}
 		}
 
