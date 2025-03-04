@@ -68,10 +68,13 @@ void ProjectListItemControl::_notification(int p_what) {
 			project_unsupported_features->set_texture(get_editor_theme_icon(SNAME("NodeWarning")));
 
 			favorite_button->set_texture_normal(get_editor_theme_icon(SNAME("Favorites")));
+
 			if (project_is_missing) {
 				explore_button->set_button_icon(get_editor_theme_icon(SNAME("FileBroken")));
+#if !defined(ANDROID_ENABLED) && !defined(WEB_ENABLED)
 			} else {
 				explore_button->set_button_icon(get_editor_theme_icon(SNAME("Load")));
+#endif
 			}
 		} break;
 
@@ -190,9 +193,6 @@ void ProjectListItemControl::set_is_favorite(bool p_favorite) {
 }
 
 void ProjectListItemControl::set_is_missing(bool p_missing) {
-	if (project_is_missing == p_missing) {
-		return;
-	}
 	project_is_missing = p_missing;
 
 	if (project_is_missing) {
@@ -201,10 +201,8 @@ void ProjectListItemControl::set_is_missing(bool p_missing) {
 		explore_button->set_button_icon(get_editor_theme_icon(SNAME("FileBroken")));
 		explore_button->set_tooltip_text(TTR("Error: Project is missing on the filesystem."));
 	} else {
-		project_icon->set_modulate(Color(1, 1, 1, 1.0));
-
-		explore_button->set_button_icon(get_editor_theme_icon(SNAME("Load")));
 #if !defined(ANDROID_ENABLED) && !defined(WEB_ENABLED)
+		explore_button->set_button_icon(get_editor_theme_icon(SNAME("Load")));
 		explore_button->set_tooltip_text(TTR("Show in File Manager"));
 #else
 		// Opening the system file manager is not supported on the Android and web editors.
