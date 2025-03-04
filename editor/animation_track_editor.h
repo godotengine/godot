@@ -446,6 +446,7 @@ class AnimationTrackEdit : public Control {
 	int track = 0;
 
 	Rect2 check_rect;
+	Rect2 icon_rect;
 	Rect2 path_rect;
 
 	Rect2 update_mode_rect;
