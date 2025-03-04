@@ -232,6 +232,9 @@ private:
 		NodePath focus_next;
 		NodePath focus_prev;
 
+		// Accept inputs from all players by default.
+		BitField<PlayerMask> player_mask = PLAYER_ALL;
+
 		ObjectID shortcut_context;
 
 		// Theming.
@@ -315,7 +318,7 @@ private:
 	// Focus.
 
 	void _window_find_focus_neighbor(const Vector2 &p_dir, Node *p_at, const Rect2 &p_rect, const Rect2 &p_clamp, real_t p_min, real_t &r_closest_dist_squared, Control **r_closest);
-	Control *_get_focus_neighbor(Side p_side, int p_count = 0);
+	Control *_get_focus_neighbor(Side p_side, int p_count = 0, PlayerId p_player_id = PlayerId::P1);
 
 	// Theming.
 
@@ -540,14 +543,15 @@ public:
 
 	void set_focus_mode(FocusMode p_focus_mode);
 	FocusMode get_focus_mode() const;
-	bool has_focus() const;
-	void grab_focus();
+	TypedArray<int> get_focused_players_id() const;
+	bool has_focus(PlayerId p_player_id = PlayerId::P1) const;
+	void grab_focus(PlayerId p_player_id = PlayerId::P1);
 	void grab_click_focus();
-	void release_focus();
+	void release_focus(PlayerId p_player_id = PlayerId::P1);
 
-	Control *find_next_valid_focus() const;
-	Control *find_prev_valid_focus() const;
-	Control *find_valid_focus_neighbor(Side p_size) const;
+	Control *find_next_valid_focus(PlayerId p_player_id = PlayerId::P1) const;
+	Control *find_prev_valid_focus(PlayerId p_player_id = PlayerId::P1) const;
+	Control *find_valid_focus_neighbor(Side p_size, PlayerId p_player_id = PlayerId::P1) const;
 
 	void set_focus_neighbor(Side p_side, const NodePath &p_neighbor);
 	NodePath get_focus_neighbor(Side p_side) const;
@@ -556,6 +560,10 @@ public:
 	NodePath get_focus_next() const;
 	void set_focus_previous(const NodePath &p_prev);
 	NodePath get_focus_previous() const;
+
+	void set_player_mask(BitField<PlayerMask> p_player_mask);
+	BitField<PlayerMask> get_player_mask() const;
+	BitField<PlayerMask> calculate_ancestral_player_mask() const;
 
 	// Rendering.
 
