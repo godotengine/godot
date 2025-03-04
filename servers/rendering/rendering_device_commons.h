@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef RENDERING_DEVICE_COMMONS_H
-#define RENDERING_DEVICE_COMMONS_H
+#pragma once
 
 #include "core/object/object.h"
 #include "core/variant/type_info.h"
@@ -1003,5 +1002,3 @@ protected:
 		BitField<ShaderStage> push_constant_stages;
 	};
 };
-
-#endif // RENDERING_DEVICE_COMMONS_H
