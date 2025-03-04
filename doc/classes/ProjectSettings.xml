@@ -375,11 +375,23 @@
 		<member name="audio/buses/default_bus_layout" type="String" setter="" getter="" default="&quot;res://default_bus_layout.tres&quot;">
 			Default [AudioBusLayout] resource file to use in the project, unless overridden by the scene.
 		</member>
-		<member name="audio/driver/driver" type="String" setter="" getter="">
+		<member name="audio/driver/driver" type="String" setter="" getter="" default="&quot;auto&quot;">
 			Specifies the audio driver to use. This setting is platform-dependent as each platform supports different audio drivers. If left empty, the default audio driver will be used.
 			The [code]Dummy[/code] audio driver disables all audio playback and recording, which is useful for non-game applications as it reduces CPU usage. It also prevents the engine from appearing as an application playing audio in the OS' audio mixer.
 			To query the value that is being used at run-time (which may be overridden by command-line arguments or headless mode), use [method AudioServer.get_driver_name].
 			[b]Note:[/b] The driver in use can be overridden at runtime via the [code]--audio-driver[/code] [url=$DOCS_URL/tutorials/editor/command_line_tutorial.html]command line argument[/url].
+		</member>
+		<member name="audio/driver/driver.android" type="String" setter="" getter="" default="&quot;auto&quot;">
+		</member>
+		<member name="audio/driver/driver.ios" type="String" setter="" getter="" default="&quot;auto&quot;">
+		</member>
+		<member name="audio/driver/driver.linuxbsd" type="String" setter="" getter="" default="&quot;auto&quot;">
+		</member>
+		<member name="audio/driver/driver.macos" type="String" setter="" getter="" default="&quot;auto&quot;">
+		</member>
+		<member name="audio/driver/driver.web" type="String" setter="" getter="" default="&quot;auto&quot;">
+		</member>
+		<member name="audio/driver/driver.windows" type="String" setter="" getter="" default="&quot;auto&quot;">
 		</member>
 		<member name="audio/driver/enable_input" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], microphone input will be allowed. This requires appropriate permissions to be set when exporting to Android or iOS.
@@ -787,22 +799,22 @@
 		<member name="debug/shapes/paths/geometry_width" type="float" setter="" getter="" default="2.0">
 			Line width of the curve path geometry, visible when "Visible Paths" is enabled in the Debug menu.
 		</member>
-		<member name="display/display_server/driver" type="String" setter="" getter="">
+		<member name="display/display_server/driver" type="String" setter="" getter="" default="&quot;default&quot;">
 			Sets the driver to be used by the display server. This property can not be edited directly, instead, set the driver using the platform-specific overrides.
 		</member>
-		<member name="display/display_server/driver.android" type="String" setter="" getter="">
+		<member name="display/display_server/driver.android" type="String" setter="" getter="" default="&quot;default&quot;">
 			Android override for [member display/display_server/driver].
 		</member>
-		<member name="display/display_server/driver.ios" type="String" setter="" getter="">
+		<member name="display/display_server/driver.ios" type="String" setter="" getter="" default="&quot;default&quot;">
 			iOS override for [member display/display_server/driver].
 		</member>
-		<member name="display/display_server/driver.linuxbsd" type="String" setter="" getter="">
+		<member name="display/display_server/driver.linuxbsd" type="String" setter="" getter="" default="&quot;default&quot;">
 			LinuxBSD override for [member display/display_server/driver].
 		</member>
-		<member name="display/display_server/driver.macos" type="String" setter="" getter="">
+		<member name="display/display_server/driver.macos" type="String" setter="" getter="" default="&quot;default&quot;">
 			MacOS override for [member display/display_server/driver].
 		</member>
-		<member name="display/display_server/driver.windows" type="String" setter="" getter="">
+		<member name="display/display_server/driver.windows" type="String" setter="" getter="" default="&quot;default&quot;">
 			Windows override for [member display/display_server/driver].
 		</member>
 		<member name="display/mouse_cursor/custom_image" type="String" setter="" getter="" default="&quot;&quot;">
@@ -1056,7 +1068,7 @@
 		<member name="gui/common/snap_controls_to_pixels" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], snaps [Control] node vertices to the nearest pixel to ensure they remain crisp even when the camera moves or zooms.
 		</member>
-		<member name="gui/common/swap_cancel_ok" type="bool" setter="" getter="">
+		<member name="gui/common/swap_cancel_ok" type="String" setter="" getter="" default="&quot;auto&quot;">
 			If [code]true[/code], swaps [b]Cancel[/b] and [b]OK[/b] buttons in dialogs on Windows to follow interface conventions. [method DisplayServer.get_swap_cancel_ok] can be used to query whether buttons are swapped at run-time.
 			[b]Note:[/b] This doesn't affect native dialogs such as the ones spawned by [method DisplayServer.dialog_show].
 		</member>
@@ -1426,12 +1438,12 @@
 			If [code]false[/code], no input will be lost.
 			[b]Note:[/b] You should in nearly all cases prefer the [code]false[/code] setting. The legacy behavior is to enable supporting old projects that rely on the old logic, without changes to script.
 		</member>
-		<member name="input_devices/pen_tablet/driver" type="String" setter="" getter="">
+		<member name="input_devices/pen_tablet/driver" type="String" setter="" getter="" default="&quot;&quot;">
 			Specifies the tablet driver to use. If left empty, the default driver will be used.
 			[b]Note:[/b] The driver in use can be overridden at runtime via the [code]--tablet-driver[/code] [url=$DOCS_URL/tutorials/editor/command_line_tutorial.html]command line argument[/url].
 			[b]Note:[/b] Use [method DisplayServer.tablet_set_current_driver] to switch tablet driver in runtime.
 		</member>
-		<member name="input_devices/pen_tablet/driver.windows" type="String" setter="" getter="">
+		<member name="input_devices/pen_tablet/driver.windows" type="String" setter="" getter="" default="&quot;&quot;">
 			Override for [member input_devices/pen_tablet/driver] on Windows. Supported values are:
 			- [code]auto[/code] (default), uses [code]wintab[/code] if Windows Ink is disabled in the Wacom Tablet Properties or system settings, [code]winink[/code] otherwise.
 			- [code]winink[/code], uses Windows native "Windows Ink" driver.
