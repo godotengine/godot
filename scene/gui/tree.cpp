@@ -2177,7 +2177,7 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 				}
 			}
 
-			if (!rtl && p_item->cells[i].buttons.size()) {
+			if (!p_item->cells[i].buttons.is_empty()) {
 				int buttons_width = 0;
 				for (int j = p_item->cells[i].buttons.size() - 1; j >= 0; j--) {
 					Ref<Texture2D> button_texture = p_item->cells[i].buttons[j].texture;
