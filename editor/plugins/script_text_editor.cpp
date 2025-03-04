@@ -1949,6 +1949,125 @@ static String _get_dropped_resource_line(const Ref<Resource> &p_resource, bool p
 	return vformat("const %s = preload(%s)", variable_name, _quote_drop_data(path));
 }
 
+static String _get_path_to_node(const Node *p_from, const Node *p_to) {
+	bool is_unique = false;
+	String path;
+	if (p_to->is_unique_name_in_owner()) {
+		path = p_to->get_name();
+		is_unique = true;
+	} else {
+		path = p_from->get_path_to(p_to);
+	}
+
+	for (const String &segment : path.split("/")) {
+		if (!segment.is_valid_ascii_identifier()) {
+			path = _quote_drop_data(path);
+			break;
+		}
+	}
+	return (is_unique ? "%" : "$") + path;
+}
+
+static String _generate_dict_key_literal(const Dictionary &p_dict, int p_index, const String &p_access_exp) {
+	Variant value = p_dict.get_key_at_index(p_index);
+	Variant::Type type = value.get_type();
+	if (type == Variant::Type::NIL) {
+		return "null";
+	} else if (type == Variant::Type::OBJECT) {
+		Ref<Resource> res = value;
+		if (res.is_valid() && !res->is_built_in()) {
+			return _get_dropped_resource_line(res, false);
+		}
+	} else if (type == Variant::Type::AABB) {
+		AABB aabb = value;
+		String position_string = "";
+		String size_string = "";
+		VariantWriter::write_to_string(aabb.position, position_string);
+		VariantWriter::write_to_string(aabb.size, size_string);
+		return vformat("AABB(%s, %s)", position_string, size_string);
+	} else if (type == Variant::Type::TRANSFORM2D) {
+		Transform2D t = value;
+		String column_0_string = "";
+		String column_1_string = "";
+		String column_2_string = "";
+		VariantWriter::write_to_string(t.columns[0], column_0_string);
+		VariantWriter::write_to_string(t.columns[1], column_1_string);
+		VariantWriter::write_to_string(t.columns[2], column_2_string);
+		return vformat("Transform2D(%s, %s, %s)", column_0_string, column_1_string, column_2_string);
+	} else if (type == Variant::Type::BASIS) {
+		Basis b = value;
+		String row_0_string = "";
+		String row_1_string = "";
+		String row_2_string = "";
+		VariantWriter::write_to_string(b.rows[0], row_0_string);
+		VariantWriter::write_to_string(b.rows[1], row_1_string);
+		VariantWriter::write_to_string(b.rows[2], row_2_string);
+		return vformat("Basis(%s, %s, %s)", row_0_string, row_1_string, row_2_string);
+	} else if (type == Variant::Type::TRANSFORM3D) {
+		Transform3D t = value;
+		String basis_string = "";
+		String origin_string = "";
+		VariantWriter::write_to_string(t.basis, basis_string);
+		VariantWriter::write_to_string(t.origin, origin_string);
+		return vformat("Transform3D(%s, %s)", basis_string, origin_string);
+	} else if (type == Variant::Type::PROJECTION) {
+		Projection p = value;
+		String column_0_string = "";
+		String column_1_string = "";
+		String column_2_string = "";
+		String column_3_string = "";
+		VariantWriter::write_to_string(p.columns[0], column_0_string);
+		VariantWriter::write_to_string(p.columns[1], column_1_string);
+		VariantWriter::write_to_string(p.columns[2], column_2_string);
+		VariantWriter::write_to_string(p.columns[3], column_3_string);
+		return vformat("Projection(%s, %s, %s, %s)", column_0_string, column_1_string, column_2_string, column_3_string);
+	} else if (type != Variant::Type::RID && type != Variant::Type::SIGNAL && type != Variant::Type::CALLABLE) {
+		String result = "";
+		VariantWriter::write_to_string(value, result);
+		return result;
+	}
+	if (p_access_exp.is_empty()) {
+		return "";
+	}
+	return vformat("%s.keys()[%d]", p_access_exp, p_index);
+}
+
+static String _generate_default_literal(const Variant::Type &p_type) {
+	if (p_type == Variant::Type::NIL || p_type == Variant::Type::OBJECT) {
+		return "null";
+	} else if (p_type == Variant::Type::DICTIONARY) {
+		return "{}";
+	} else if (p_type >= Variant::Type::ARRAY) {
+		return "[]";
+	} else if (p_type == Variant::Type::AABB) {
+		return "AABB(Vector3(0.0, 0.0, 0.0), Vector3(0.0, 0.0, 0.0))";
+	} else if (p_type == Variant::Type::TRANSFORM2D) {
+		return "Transform2D(Vector2(0.0, 0.0), Vector2(0.0, 0.0), Vector2(0.0, 0.0))";
+	} else if (p_type == Variant::Type::BASIS) {
+		return "Basis(Vector3(0.0, 0.0, 0.0), Vector3(0.0, 0.0, 0.0), Vector3(0.0, 0.0, 0.0))";
+	} else if (p_type == Variant::Type::TRANSFORM3D) {
+		return "Transform3D(Basis(Vector3(0.0, 0.0, 0.0), Vector3(0.0, 0.0, 0.0), Vector3(0.0, 0.0, 0.0)), Vector3(0.0, 0.0, 0.0))";
+	} else if (p_type == Variant::Type::PROJECTION) {
+		return "Projection(Vector4(0.0, 0.0, 0.0, 0.0), Vector4(0.0, 0.0, 0.0, 0.0), Vector4(0.0, 0.0, 0.0, 0.0), Vector4(0.0, 0.0, 0.0, 0.0))";
+	} else if (p_type == Variant::Type::RID) {
+		return "RID()";
+	} else if (p_type == Variant::Type::SIGNAL) {
+		return "Signal()";
+	} else if (p_type == Variant::Type::CALLABLE) {
+		return "Callable()";
+	} else {
+		String result = "";
+		Variant v;
+		Callable::CallError cerror;
+		Variant::construct(p_type, v, nullptr, 0, cerror);
+		if (cerror.error == Callable::CallError::CALL_OK) {
+			VariantWriter::write_to_string(v, result);
+			return result;
+		}
+	}
+	return "null";
+}
+
 void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) {
 	Dictionary d = p_data;
 
@@ -1968,7 +2087,8 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 
 	String text_to_drop;
 
-	const bool drop_modifier_pressed = Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL);
+	const bool first_modifier_pressed = Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL);
+	const bool second_modifier_pressed = Input::get_singleton()->is_key_pressed(Key::SHIFT);
 	const String &line = te->get_line(drop_at_line);
 	const bool is_empty_line = line_will_be_empty || line.is_empty() || te->get_first_non_whitespace_column(drop_at_line) == line.length();
 
@@ -1986,7 +2106,7 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 			return;
 		}
 
-		if (drop_modifier_pressed) {
+		if (first_modifier_pressed) {
 			if (resource->is_built_in()) {
 				String warning = TTR("Preloading internal resources is not supported.");
 				EditorToaster::get_singleton()->popup_str(warning, EditorToaster::SEVERITY_ERROR);
@@ -2003,7 +2123,7 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 		PackedStringArray parts;
 
 		for (const String &path : files) {
-			if (drop_modifier_pressed && ResourceLoader::exists(path)) {
+			if (first_modifier_pressed && ResourceLoader::exists(path)) {
 				Ref<Resource> resource = ResourceLoader::load(path);
 				if (resource.is_null()) {
 					// Resource exists, but failed to load. We need only path and name, so we can use a dummy Resource instead.
@@ -2037,7 +2157,7 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 
 		Array nodes = d["nodes"];
 
-		if (drop_modifier_pressed) {
+		if (first_modifier_pressed) {
 			const bool use_type = EDITOR_GET("text_editor/completion/add_type_hints");
 
 			for (int i = 0; i < nodes.size(); i++) {
@@ -2047,21 +2167,7 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 					continue;
 				}
 
-				bool is_unique = false;
-				String path;
-				if (node->is_unique_name_in_owner()) {
-					path = node->get_name();
-					is_unique = true;
-				} else {
-					path = sn->get_path_to(node);
-				}
-				for (const String &segment : path.split("/")) {
-					if (!segment.is_valid_unicode_identifier()) {
-						path = _quote_drop_data(path);
-						break;
-					}
-				}
-
+				String path = _get_path_to_node(sn, node);
 				String variable_name = String(node->get_name()).to_snake_case().validate_unicode_identifier();
 				if (use_type) {
 					StringName class_name = node->get_class_name();
@@ -2072,9 +2178,9 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 							class_name = global_node_script_name;
 						}
 					}
-					text_to_drop += vformat("@onready var %s: %s = %c%s\n", variable_name, class_name, is_unique ? '%' : '$', path);
+					text_to_drop += vformat("@onready var %s: %s = %s\n", variable_name, class_name, path);
 				} else {
-					text_to_drop += vformat("@onready var %s = %c%s\n", variable_name, is_unique ? '%' : '$', path);
+					text_to_drop += vformat("@onready var %s = %s\n", variable_name, path);
 				}
 			}
 		} else {
@@ -2089,32 +2195,142 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 					continue;
 				}
 
-				bool is_unique = false;
-				String path;
-				if (node->is_unique_name_in_owner()) {
-					path = node->get_name();
-					is_unique = true;
-				} else {
-					path = sn->get_path_to(node);
-				}
-
-				for (const String &segment : path.split("/")) {
-					if (!segment.is_valid_ascii_identifier()) {
-						path = _quote_drop_data(path);
-						break;
-					}
-				}
-				text_to_drop += (is_unique ? "%" : "$") + path;
+				text_to_drop += _get_path_to_node(sn, node);
 			}
 		}
 	}
 
 	if (type == "obj_property") {
-		bool add_literal = EDITOR_GET("text_editor/completion/add_node_path_literals");
-		text_to_drop = add_literal ? "^" : "";
-		// It is unclear whether properties may contain single or double quotes.
-		// Assume here that double-quotes may not exist. We are escaping single-quotes if necessary.
-		text_to_drop += _quote_drop_data(String(d["property"]));
+		Node *scene_root = get_tree()->get_edited_scene_root();
+		Node *root_node = Object::cast_to<Node>(d["root_object"]);
+		if ((first_modifier_pressed || second_modifier_pressed) && scene_root && root_node) {
+			Node *sn = _find_script_node(scene_root, scene_root, script);
+			if (!sn) {
+				sn = scene_root;
+			}
+
+			String access_exp = "";
+			if (sn != root_node) {
+				access_exp = _get_path_to_node(sn, root_node);
+			}
+
+			PackedStringArray access_path = PackedStringArray(d["access_path"]);
+			String property_name = String(d["property"]);
+			if (!second_modifier_pressed) {
+				access_path.append(property_name);
+			}
+
+			Variant current_value = d["root_object"];
+			for (int i = 0; i < access_path.size(); i++) {
+				String current_property = access_path[i];
+				if (current_property.begins_with("metadata/")) {
+					current_property = current_property.trim_prefix("metadata/");
+					access_exp = vformat("%s%sget_meta(&%s)", access_exp, access_exp.is_empty() ? "" : ".", _quote_drop_data(current_property));
+					current_value = Object::cast_to<Object>(current_value)->get_meta(current_property);
+				} else {
+					String prefix = "";
+					if (current_value.get_type() == Variant::Type::DICTIONARY) {
+						prefix = "keys/";
+					} else if (current_value.is_array()) {
+						prefix = "indices/";
+					}
+					if (prefix.is_empty()) {
+						bool is_property_valid;
+						current_value = current_value.get(current_property, &is_property_valid);
+						if (current_property.is_valid_ascii_identifier()) {
+							access_exp = vformat("%s%s%s", access_exp, access_exp.is_empty() ? "" : ".", current_property);
+						} else {
+							access_exp = vformat("%s%sget(&%s)", access_exp, access_exp.is_empty() ? "" : ".", _quote_drop_data(current_property));
+						}
+					} else {
+						if (!current_property.begins_with(prefix)) {
+							EditorToaster::get_singleton()->popup_str(TTR("Generating code to access a not existing dictionary key or array index is not supported."), EditorToaster::SEVERITY_ERROR);
+							return;
+						}
+						String index_string = current_property.trim_prefix(prefix);
+						int index = index_string.to_int();
+						if (current_value.get_type() == Variant::Type::DICTIONARY) {
+							index_string = _generate_dict_key_literal(Dictionary(current_value), index, access_exp);
+							current_value = Dictionary(current_value).get_value_at_index(index);
+						} else {
+							current_value = Array(current_value).get(index);
+						}
+						access_exp = vformat("%s[%s]", access_exp, index_string);
+					}
+				}
+			}
+
+			if (second_modifier_pressed) {
+				Variant::Type current_type = current_value.get_type();
+				if (property_name.begins_with("metadata/")) {
+					property_name = property_name.trim_prefix("metadata/");
+					current_value = Object::cast_to<Object>(current_value)->get_meta(property_name);
+					current_type = current_value.get_type();
+					text_to_drop = vformat("%s%sset_meta(&%s, %s)", access_exp, access_exp.is_empty() ? "" : ".", _quote_drop_data(property_name), _generate_default_literal(current_type));
+				} else {
+					String prefix = "";
+					if (current_type == Variant::Type::DICTIONARY) {
+						prefix = "keys/";
+					} else if (current_value.is_array()) {
+						prefix = "indices/";
+					}
+					if (prefix.is_empty()) {
+						bool is_property_valid;
+						current_value = current_value.get(property_name, &is_property_valid);
+						current_type = current_value.get_type();
+						if (property_name.is_valid_ascii_identifier()) {
+							text_to_drop = vformat("%s%s%s = %s", access_exp, access_exp.is_empty() ? "" : ".", property_name, _generate_default_literal(current_type));
+						} else {
+							text_to_drop = vformat("%s%sset(&%s, %s)", access_exp, access_exp.is_empty() ? "" : ".", _quote_drop_data(property_name), _generate_default_literal(current_type));
+						}
+					} else {
+						if (!property_name.begins_with(prefix)) {
+							EditorToaster::get_singleton()->popup_str(TTR("Generating code to access a not existing dictionary key or array index is not supported."), EditorToaster::SEVERITY_ERROR);
+							return;
+						}
+						String index_string = property_name.trim_prefix(prefix);
+						int index = index_string.to_int();
+						if (current_type == Variant::Type::DICTIONARY) {
+							index_string = _generate_dict_key_literal(Dictionary(current_value), index, access_exp);
+							current_value = Dictionary(current_value).get_value_at_index(index);
+						} else {
+							current_value = Array(current_value).get(index);
+						}
+						current_type = current_value.get_type();
+						text_to_drop = vformat("%s[%s] = %s", access_exp, index_string, _generate_default_literal(current_type));
+					}
+				}
+			} else {
+				text_to_drop = access_exp;
+			}
+		} else {
+			String current_property = String(d["property"]);
+			if (current_property.begins_with("metadata/")) {
+				text_to_drop = vformat("&%s", _quote_drop_data(current_property.trim_prefix("metadata/")));
+			} else {
+				Variant current_value = d["object"];
+
+				String prefix = "";
+				if (current_value.get_type() == Variant::Type::DICTIONARY) {
+					prefix = "keys/";
+				} else if (current_value.is_array()) {
+					prefix = "indices/";
+				}
+				if (prefix.is_empty()) {
+					text_to_drop = _quote_drop_data(current_property);
+				} else {
+					if (!current_property.begins_with(prefix)) {
+						EditorToaster::get_singleton()->popup_str(TTR("Generating code to access a not existing dictionary key or array index is not supported."), EditorToaster::SEVERITY_ERROR);
+						return;
+					}
+					text_to_drop = current_property.trim_prefix(prefix);
+					int index = text_to_drop.to_int();
+					if (current_value.get_type() == Variant::Type::DICTIONARY) {
+						text_to_drop = _generate_dict_key_literal(Dictionary(current_value), index, "");
+					}
+				}
+			}
+		}
 	}
 
 	if (text_to_drop.is_empty()) {
