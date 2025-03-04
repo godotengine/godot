@@ -28,6 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#ifndef VISIONOS_SIMULATOR
 #import "metal_fx.h"
 
 #import "../storage_rd/render_scene_buffers_rd.h"
@@ -127,6 +128,8 @@ MFXSpatialContext *MFXSpatialEffect::create_context(CreateParams p_params) const
 
 #pragma mark - Temporal Scaler
 
+#ifndef VISIONOS
+
 MFXTemporalContext::~MFXTemporalContext() {}
 
 MFXTemporalEffect::MFXTemporalEffect() {}
@@ -168,6 +171,7 @@ MFXTemporalContext *MFXTemporalEffect::create_context(CreateParams p_params) con
 
 	return context;
 }
+#endif
 
 void MFXTemporalEffect::process(RendererRD::MFXTemporalContext *p_ctx, RendererRD::MFXTemporalEffect::Params p_params) {
 	CallbackArgs *userdata = args_allocator.alloc(
@@ -195,13 +199,13 @@ void MFXTemporalEffect::callback(RDD *p_driver, RDD::CommandBufferID p_command_b
 	MDCommandBuffer *obj = (MDCommandBuffer *)(p_command_buffer.id);
 	obj->end();
 
+#if !defined(VISIONOS)
 	id<MTLTexture> src_texture = rid::get(p_userdata->src);
 	id<MTLTexture> depth = rid::get(p_userdata->depth);
 	id<MTLTexture> motion = rid::get(p_userdata->motion);
 	id<MTLTexture> exposure = rid::get(p_userdata->exposure);
 
 	id<MTLTexture> dst_texture = rid::get(p_userdata->dst);
-
 	__block id<MTLFXTemporalScaler> scaler = p_userdata->ctx.scaler;
 	scaler.reset = p_userdata->reset;
 	scaler.colorTexture = src_texture;
@@ -218,8 +222,9 @@ void MFXTemporalEffect::callback(RDD *p_driver, RDD::CommandBufferID p_command_b
 		// completes.
 		scaler = nil;
 	}];
-
+#endif
 	CallbackArgs::free(&p_userdata);
 
 #pragma clang diagnostic pop
 }
+#endif

@@ -28,6 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#if !defined(VISIONOS)
 #import <UIKit/UIKit.h>
 
 @class GodotView;
@@ -40,3 +41,4 @@
 @property(nonatomic, readonly, strong) GodotKeyboardInputView *keyboardView;
 
 @end
+#endif
