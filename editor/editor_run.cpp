@@ -94,6 +94,7 @@ Error EditorRun::run(const String &p_scene, const String &p_write_movie, const V
 		args.push_back("--debug-canvas-item-redraw");
 	}
 
+#ifndef MOVIE_WRITER_DISABLED
 	if (p_write_movie != "") {
 		args.push_back("--write-movie");
 		args.push_back(p_write_movie);
@@ -103,6 +104,7 @@ Error EditorRun::run(const String &p_scene, const String &p_write_movie, const V
 			args.push_back("--disable-vsync");
 		}
 	}
+#endif // MOVIE_WRITER_DISABLED
 
 	WindowPlacement window_placement = get_window_placement();
 	if (window_placement.position != Point2i(INT_MAX, INT_MAX)) {

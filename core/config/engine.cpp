@@ -385,6 +385,7 @@ void Engine::get_singletons(List<Singleton> *p_singletons) {
 	}
 }
 
+#ifndef MOVIE_WRITER_DISABLED
 String Engine::get_write_movie_path() const {
 	return write_movie_path;
 }
@@ -392,6 +393,7 @@ String Engine::get_write_movie_path() const {
 void Engine::set_write_movie_path(const String &p_path) {
 	write_movie_path = p_path;
 }
+#endif // MOVIE_WRITER_DISABLED
 
 void Engine::set_shader_cache_path(const String &p_path) {
 	shader_cache_path = p_path;

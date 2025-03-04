@@ -38,6 +38,7 @@
 #include "editor/editor_run_native.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
+#include "editor/export/editor_export_platform.h"
 #include "editor/gui/editor_bottom_panel.h"
 #include "editor/gui/editor_quick_open_dialog.h"
 #include "editor/gui/editor_toaster.h"
@@ -93,11 +94,14 @@ void EditorRunBar::_notification(int p_what) {
 			pause_button->set_button_icon(get_editor_theme_icon(SNAME("Pause")));
 			stop_button->set_button_icon(get_editor_theme_icon(SNAME("Stop")));
 
+#ifndef MOVIE_WRITER_DISABLED
 			if (is_movie_maker_enabled()) {
 				main_panel->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SNAME("LaunchPadMovieMode"), EditorStringName(EditorStyles)));
 				write_movie_panel->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SNAME("MovieWriterButtonPressed"), EditorStringName(EditorStyles)));
 			} else {
+#endif // MOVIE_WRITER_DISABLED
 				main_panel->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SNAME("LaunchPadNormal"), EditorStringName(EditorStyles)));
+#ifndef MOVIE_WRITER_DISABLED
 				write_movie_panel->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SNAME("MovieWriterButtonNormal"), EditorStringName(EditorStyles)));
 			}
 
@@ -109,6 +113,7 @@ void EditorRunBar::_notification(int p_what) {
 			write_movie_button->add_theme_color_override("icon_hover_color", get_theme_color(SNAME("movie_writer_icon_hover"), EditorStringName(EditorStyles)));
 			write_movie_button->add_theme_color_override("icon_hover_pressed_color", get_theme_color(SNAME("movie_writer_icon_hover_pressed"), EditorStringName(EditorStyles)));
 			write_movie_button->end_bulk_theme_override();
+#endif // MOVIE_WRITER_DISABLED
 		} break;
 	}
 }
@@ -157,6 +162,7 @@ void EditorRunBar::_update_play_buttons() {
 	}
 }
 
+#ifndef MOVIE_WRITER_DISABLED
 void EditorRunBar::_write_movie_toggled(bool p_enabled) {
 	if (p_enabled) {
 		add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SNAME("LaunchPadMovieMode"), EditorStringName(EditorStyles)));
@@ -166,6 +172,7 @@ void EditorRunBar::_write_movie_toggled(bool p_enabled) {
 		write_movie_panel->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SNAME("MovieWriterButtonNormal"), EditorStringName(EditorStyles)));
 	}
 }
+#endif // MOVIE_WRITER_DISABLED
 
 Vector<String> EditorRunBar::_get_xr_mode_play_args(int p_xr_mode_id) {
 	Vector<String> play_args;
@@ -220,6 +227,7 @@ void EditorRunBar::_run_scene(const String &p_scene_path, const Vector<String> &
 
 	_reset_play_buttons();
 
+#ifndef MOVIE_WRITER_DISABLED
 	String write_movie_file;
 	if (is_movie_maker_enabled()) {
 		if (current_mode == RUN_CURRENT) {
@@ -251,6 +259,7 @@ void EditorRunBar::_run_scene(const String &p_scene_path, const Vector<String> &
 			return;
 		}
 	}
+#endif // MOVIE_WRITER_DISABLED
 
 	String run_filename;
 	switch (current_mode) {
@@ -296,7 +305,13 @@ void EditorRunBar::_run_scene(const String &p_scene_path, const Vector<String> &
 	}
 
 	EditorDebuggerNode::get_singleton()->start();
-	Error error = editor_run.run(run_filename, write_movie_file, p_run_args);
+	Error error = editor_run.run(run_filename,
+#ifdef MOVIE_WRITER_DISABLED
+			"",
+#else
+			write_movie_file,
+#endif // MOVIE_WRITER_DISABLED
+			p_run_args);
 	if (error != OK) {
 		EditorDebuggerNode::get_singleton()->stop();
 		EditorNode::get_singleton()->show_accept(TTR("Could not start subprocess(es)!"), TTR("OK"));
@@ -449,6 +464,7 @@ OS::ProcessID EditorRunBar::get_current_process() const {
 	return editor_run.get_current_process();
 }
 
+#ifndef MOVIE_WRITER_DISABLED
 void EditorRunBar::set_movie_maker_enabled(bool p_enabled) {
 	write_movie_button->set_pressed(p_enabled);
 }
@@ -456,6 +472,7 @@ void EditorRunBar::set_movie_maker_enabled(bool p_enabled) {
 bool EditorRunBar::is_movie_maker_enabled() const {
 	return write_movie_button->is_pressed();
 }
+#endif // MOVIE_WRITER_DISABLED
 
 void EditorRunBar::update_profiler_autostart_indicator() {
 	bool profiler_active = EditorSettings::get_singleton()->get_project_metadata("debug_options", "autostart_profiler", false);
@@ -640,6 +657,7 @@ EditorRunBar::EditorRunBar() {
 	ED_SHORTCUT_OVERRIDE("editor/run_specific_scene", "macos", KeyModifierMask::META | KeyModifierMask::SHIFT | Key::R);
 	play_custom_scene_button->set_shortcut(ED_GET_SHORTCUT("editor/run_specific_scene"));
 
+#ifndef MOVIE_WRITER_DISABLED
 	write_movie_panel = memnew(PanelContainer);
 	main_hbox->add_child(write_movie_panel);
 
@@ -651,4 +669,5 @@ EditorRunBar::EditorRunBar() {
 	write_movie_button->set_focus_mode(Control::FOCUS_NONE);
 	write_movie_button->set_tooltip_text(TTR("Enable Movie Maker mode.\nThe project will run at stable FPS and the visual and audio output will be recorded to a video file."));
 	write_movie_button->connect(SceneStringName(toggled), callable_mp(this, &EditorRunBar::_write_movie_toggled));
+#endif // MOVIE_WRITER_DISABLED
 }

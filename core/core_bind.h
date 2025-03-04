@@ -586,8 +586,10 @@ public:
 
 	bool is_embedded_in_editor() const;
 
+#ifndef MOVIE_WRITER_DISABLED
 	// `set_write_movie_path()` is not exposed to the scripting API as changing it at run-time has no effect.
 	String get_write_movie_path() const;
+#endif // MOVIE_WRITER_DISABLED
 
 	void set_print_to_stdout(bool p_enabled);
 	bool is_printing_to_stdout() const;

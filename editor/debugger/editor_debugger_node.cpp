@@ -297,10 +297,12 @@ void EditorDebuggerNode::stop(bool p_force) {
 		server->stop();
 		EditorNode::get_log()->add_message("--- Debugging process stopped ---", EditorLog::MSG_TYPE_EDITOR);
 
+#ifndef MOVIE_WRITER_DISABLED
 		if (EditorRunBar::get_singleton()->is_movie_maker_enabled()) {
 			// Request attention in case the user was doing something else when movie recording is finished.
 			DisplayServer::get_singleton()->window_request_attention();
 		}
+#endif // MOVIE_WRITER_DISABLED
 
 		server.unref();
 	}

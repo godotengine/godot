@@ -752,7 +752,9 @@ void OS::_bind_methods() {
 	BIND_ENUM_CONSTANT(SYSTEM_DIR_DCIM);
 	BIND_ENUM_CONSTANT(SYSTEM_DIR_DOCUMENTS);
 	BIND_ENUM_CONSTANT(SYSTEM_DIR_DOWNLOADS);
+#ifndef MOVIE_WRITER_DISABLED
 	BIND_ENUM_CONSTANT(SYSTEM_DIR_MOVIES);
+#endif // MOVIE_WRITER_DISABLED
 	BIND_ENUM_CONSTANT(SYSTEM_DIR_MUSIC);
 	BIND_ENUM_CONSTANT(SYSTEM_DIR_PICTURES);
 	BIND_ENUM_CONSTANT(SYSTEM_DIR_RINGTONES);
@@ -1910,9 +1912,11 @@ bool Engine::is_embedded_in_editor() const {
 	return ::Engine::get_singleton()->is_embedded_in_editor();
 }
 
+#ifndef MOVIE_WRITER_DISABLED
 String Engine::get_write_movie_path() const {
 	return ::Engine::get_singleton()->get_write_movie_path();
 }
+#endif // MOVIE_WRITER_DISABLED
 
 void Engine::set_print_to_stdout(bool p_enabled) {
 	::Engine::get_singleton()->set_print_to_stdout(p_enabled);
@@ -1989,7 +1993,9 @@ void Engine::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_editor_hint"), &Engine::is_editor_hint);
 	ClassDB::bind_method(D_METHOD("is_embedded_in_editor"), &Engine::is_embedded_in_editor);
 
+#ifndef MOVIE_WRITER_DISABLED
 	ClassDB::bind_method(D_METHOD("get_write_movie_path"), &Engine::get_write_movie_path);
+#endif // MOVIE_WRITER_DISABLED
 
 	ClassDB::bind_method(D_METHOD("set_print_to_stdout", "enabled"), &Engine::set_print_to_stdout);
 	ClassDB::bind_method(D_METHOD("is_printing_to_stdout"), &Engine::is_printing_to_stdout);
