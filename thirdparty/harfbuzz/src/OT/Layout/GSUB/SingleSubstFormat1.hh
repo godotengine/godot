@@ -128,7 +128,7 @@ struct SingleSubstFormat1_3
     TRACE_APPLY (this);
     hb_codepoint_t glyph_id = c->buffer->cur().codepoint;
     unsigned int index = (this+coverage).get_coverage (glyph_id);
-    if (likely (index == NOT_COVERED)) return_trace (false);
+    if (index == NOT_COVERED) return_trace (false);
 
     hb_codepoint_t d = deltaGlyphID;
     hb_codepoint_t mask = get_mask ();
