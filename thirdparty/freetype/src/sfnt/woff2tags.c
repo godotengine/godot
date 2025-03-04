@@ -4,7 +4,7 @@
  *
  *   WOFF2 Font table tags (base).
  *
- * Copyright (C) 2019-2023 by
+ * Copyright (C) 2019-2024 by
  * Nikhil Ramakrishnan, David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,

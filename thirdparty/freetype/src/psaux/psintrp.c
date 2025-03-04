@@ -37,6 +37,7 @@
 
 
 #include "psft.h"
+#include <freetype/internal/ftcalc.h>
 #include <freetype/internal/ftdebug.h>
 #include <freetype/internal/services/svcfftl.h>
 
@@ -428,6 +429,8 @@
     base  = cf2_stack_count( opStack ) - numOperands;
     delta = base + numBlends;
 
+    FT_TRACE6(( " (" ));
+
     for ( i = 0; i < numBlends; i++ )
     {
       const CF2_Fixed*  weight = &blend->BV[1];
@@ -442,9 +445,13 @@
                                     cf2_stack_getReal( opStack,
                                                        delta++ ) ) );
 
+      FT_TRACE6(( "%f ", (double)sum / 65536 ));
+
       /* store blended result  */
       cf2_stack_setReal( opStack, i + base, sum );
     }
+
+    FT_TRACE6(( "blended)\n" ));
 
     /* leave only `numBlends' results on stack */
     cf2_stack_pop( opStack, numOperands - numBlends );
@@ -734,7 +741,7 @@
           FT_UInt  numBlends;
 
 
-          FT_TRACE4(( " blend\n" ));
+          FT_TRACE4(( " blend" ));
 
           if ( !font->isCFF2 )
             break;    /* clear stack & ignore */
@@ -2275,23 +2282,7 @@
 
                     arg = cf2_stack_popFixed( opStack );
                     if ( arg > 0 )
-                    {
-                      /* use a start value that doesn't make */
-                      /* the algorithm's addition overflow   */
-                      FT_Fixed  root = arg < 10 ? arg : arg >> 1;
-                      FT_Fixed  new_root;
-
-
-                      /* Babylonian method */
-                      for (;;)
-                      {
-                        new_root = ( root + FT_DivFix( arg, root ) + 1 ) >> 1;
-                        if ( new_root == root )
-                          break;
-                        root = new_root;
-                      }
-                      arg = new_root;
-                    }
+                      arg = (CF2_F16Dot16)FT_SqrtFixed( (FT_UInt32)arg );
                     else
                       arg = 0;
 
