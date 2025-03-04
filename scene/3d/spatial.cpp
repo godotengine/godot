@@ -118,7 +118,7 @@ void Spatial::_propagate_transform_changed(Spatial *p_origin) {
 #endif
 		get_tree()->xform_change_list.add(&xform_change);
 	}
-	data.dirty |= DIRTY_GLOBAL;
+	data.dirty |= DIRTY_GLOBAL | DIRTY_GLOBAL_INTERPOLATED;
 
 	data.children_lock--;
 }
@@ -166,6 +166,9 @@ void Spatial::_notification(int p_what) {
 				data.toplevel_active = true;
 			}
 
+			// Always reset FTI when entering tree.
+			data.local_transform_prev = data.local_transform;
+
 			if (data.merging_mode == MERGING_MODE_INHERIT) {
 				bool merging_allowed = true; // Root node default is for merging to be on
 				if (data.parent) {
@@ -174,13 +177,17 @@ void Spatial::_notification(int p_what) {
 				_propagate_merging_allowed(merging_allowed);
 			}
 
-			data.dirty |= DIRTY_GLOBAL; //global is always dirty upon entering a scene
+			data.dirty |= DIRTY_GLOBAL | DIRTY_GLOBAL_INTERPOLATED; //global is always dirty upon entering a scene
 			_notify_dirty();
 
 			notification(NOTIFICATION_ENTER_WORLD);
 
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
+			if (is_inside_tree()) {
+				get_tree()->get_scene_tree_fti().spatial_notify_delete(this);
+			}
+
 			notification(NOTIFICATION_EXIT_WORLD, true);
 			if (xform_change.in_list()) {
 				get_tree()->xform_change_list.remove(&xform_change);
@@ -252,6 +259,7 @@ void Spatial::_notification(int p_what) {
 			if (data.client_physics_interpolation_data) {
 				data.client_physics_interpolation_data->global_xform_prev = data.client_physics_interpolation_data->global_xform_curr;
 			}
+			data.local_transform_prev = data.local_transform;
 		} break;
 
 		default: {
@@ -281,7 +289,14 @@ void Spatial::set_global_rotation(const Vector3 &p_euler_rad) {
 	set_global_transform(transform);
 }
 
+void Spatial::_fti_notify_set_transform() {
+	if (is_inside_tree()) {
+		get_tree()->get_scene_tree_fti().spatial_notify_set_transform(*this);
+	}
+}
+
 void Spatial::set_transform(const Transform &p_transform) {
+	_fti_notify_set_transform();
 	data.local_transform = p_transform;
 	data.dirty |= DIRTY_VECTORS;
 	data.dirty &= ~DIRTY_LOCAL;
@@ -404,14 +419,19 @@ Transform Spatial::_get_global_transform_interpolated(real_t p_interpolation_fra
 }
 
 Transform Spatial::get_global_transform_interpolated() {
+#if 1
 	// Pass through if physics interpolation is switched off.
 	// This is a convenience, as it allows you to easy turn off interpolation
 	// without changing any code.
-	if (!is_physics_interpolated_and_enabled()) {
-		return get_global_transform();
+	if (data.fti_global_xform_interp_set && is_physics_interpolated_and_enabled() && !Engine::get_singleton()->is_in_physics_frame() && is_visible_in_tree()) {
+		return data.global_transform_interpolated;
 	}
 
-	// If we are in the physics frame, the interpolated global transform is meaningless.
+	return get_global_transform();
+#else
+	// OLD METHOD - deprecated since moving to SceneTreeFTI,
+	// but leaving for reference and comparison for debugging.
+
 	// However, there is an exception, we may want to use this as a means of starting off the client
 	// interpolation pump if not already started (when _is_physics_interpolated_client_side() is false).
 	if (Engine::get_singleton()->is_in_physics_frame() && _is_physics_interpolated_client_side()) {
@@ -419,6 +439,7 @@ Transform Spatial::get_global_transform_interpolated() {
 	}
 
 	return _get_global_transform_interpolated(Engine::get_singleton()->get_physics_interpolation_fraction());
+#endif
 }
 
 Transform Spatial::get_global_transform() const {
@@ -484,6 +505,7 @@ Transform Spatial::get_relative_transform(const Node *p_parent) const {
 }
 
 void Spatial::set_translation(const Vector3 &p_translation) {
+	_fti_notify_set_transform();
 	data.local_transform.origin = p_translation;
 	_change_notify("transform");
 	_propagate_transform_changed(this);
@@ -493,6 +515,7 @@ void Spatial::set_translation(const Vector3 &p_translation) {
 }
 
 void Spatial::set_rotation(const Vector3 &p_euler_rad) {
+	_fti_notify_set_transform();
 	if (data.dirty & DIRTY_VECTORS) {
 		data.scale = data.local_transform.basis.get_scale();
 		data.dirty &= ~DIRTY_VECTORS;
@@ -512,6 +535,7 @@ void Spatial::set_rotation_degrees(const Vector3 &p_euler_deg) {
 }
 
 void Spatial::set_scale(const Vector3 &p_scale) {
+	_fti_notify_set_transform();
 	if (data.dirty & DIRTY_VECTORS) {
 		data.rotation = data.local_transform.basis.get_rotation();
 		data.dirty &= ~DIRTY_VECTORS;
@@ -1061,6 +1085,11 @@ Spatial::Spatial() :
 	data.disable_scale = false;
 	data.vi_visible = true;
 	data.merging_allowed = true;
+
+	data.fti_on_frame_list = false;
+	data.fti_on_tick_list = false;
+	data.fti_global_xform_interp_set = false;
+
 	data.merging_mode = MERGING_MODE_INHERIT;
 
 	data.client_physics_interpolation_data = nullptr;
@@ -1077,4 +1106,8 @@ Spatial::Spatial() :
 
 Spatial::~Spatial() {
 	_disable_client_physics_interpolation();
+
+	if (is_inside_tree()) {
+		get_tree()->get_scene_tree_fti().spatial_notify_delete(this);
+	}
 }

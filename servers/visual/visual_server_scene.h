@@ -397,12 +397,6 @@ public:
 	virtual void set_physics_interpolation_enabled(bool p_enabled);
 
 	struct InterpolationData {
-		void notify_free_instance(RID p_rid, Instance &r_instance);
-		LocalVector<RID> instance_interpolate_update_list;
-		LocalVector<RID> instance_transform_update_lists[2];
-		LocalVector<RID> *instance_transform_update_list_curr = &instance_transform_update_lists[0];
-		LocalVector<RID> *instance_transform_update_list_prev = &instance_transform_update_lists[1];
-
 		bool interpolation_enabled = false;
 	} _interpolation_data;
 
@@ -662,8 +656,6 @@ public:
 	virtual void instance_set_layer_mask(RID p_instance, uint32_t p_mask);
 	virtual void instance_set_pivot_data(RID p_instance, float p_sorting_offset, bool p_use_aabb_center);
 	virtual void instance_set_transform(RID p_instance, const Transform &p_transform);
-	virtual void instance_set_interpolated(RID p_instance, bool p_interpolated);
-	virtual void instance_reset_physics_interpolation(RID p_instance);
 	virtual void instance_attach_object_instance_id(RID p_instance, ObjectID p_id);
 	virtual void instance_set_blend_shape_weight(RID p_instance, int p_shape, float p_weight);
 	virtual void instance_set_surface_material(RID p_instance, int p_surface, RID p_material);

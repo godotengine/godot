@@ -52,6 +52,8 @@ class Spatial : public Node {
 	GDCLASS(Spatial, Node);
 	OBJ_CATEGORY("3D");
 
+	friend class SceneTreeFTI;
+
 public:
 	enum MergingMode : unsigned int {
 		MERGING_MODE_INHERIT,
@@ -74,15 +76,27 @@ private:
 		DIRTY_NONE = 0,
 		DIRTY_VECTORS = 1,
 		DIRTY_LOCAL = 2,
-		DIRTY_GLOBAL = 4
+		DIRTY_GLOBAL = 4,
+		DIRTY_GLOBAL_INTERPOLATED = 8,
 	};
 
 	mutable SelfList<Node> xform_change;
 	SelfList<Spatial> _client_physics_interpolation_spatials_list;
 
 	struct Data {
+		// Interpolated global transform - correct on the frame only.
+		// Only used with FTI.
+		Transform global_transform_interpolated;
+
+		// Current xforms are either
+		// * Used for everything (when not using FTI)
+		// * Correct on the physics tick (when using FTI)
 		mutable Transform global_transform;
 		mutable Transform local_transform;
+
+		// Only used with FTI.
+		Transform local_transform_prev;
+
 		mutable Vector3 rotation;
 		mutable Vector3 scale;
 
@@ -108,6 +122,11 @@ private:
 		bool visible : 1;
 		bool disable_scale : 1;
 
+		// Scene tree interpolation
+		bool fti_on_frame_list : 1;
+		bool fti_on_tick_list : 1;
+		bool fti_global_xform_interp_set : 1;
+
 		bool merging_allowed : 1;
 
 		int children_lock;
@@ -132,6 +151,8 @@ private:
 
 	void _propagate_visibility_changed();
 	void _propagate_merging_allowed(bool p_merging_allowed);
+
+	void _fti_notify_set_transform();
 
 protected:
 	_FORCE_INLINE_ void set_ignore_transform_notification(bool p_ignore) { data.ignore_notification = p_ignore; }
