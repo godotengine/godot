@@ -1069,7 +1069,7 @@ void EditorAssetLibrary::_search(int p_page) {
 	args += String() + "sort=" + sort_key[sort->get_selected()];
 
 	// We use the "branch" version, i.e. major.minor, as patch releases should be compatible
-	args += "&godot_version=" + String(VERSION_BRANCH);
+	args += "&godot_version=" + String(GODOT_VERSION_BRANCH);
 
 	String support_list;
 	for (int i = 0; i < SUPPORT_MAX; i++) {
@@ -1373,7 +1373,7 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 					// This is typically because the version number changed recently
 					// and no assets compatible with the new version have been published yet.
 					_set_library_message(
-							vformat(TTR("No results compatible with %s %s for support level(s): %s.\nCheck the enabled support levels using the 'Support' button in the top-right corner."), String(VERSION_SHORT_NAME).capitalize(), String(VERSION_BRANCH), support_list));
+							vformat(TTR("No results compatible with %s %s for support level(s): %s.\nCheck the enabled support levels using the 'Support' button in the top-right corner."), String(GODOT_VERSION_SHORT_NAME).capitalize(), String(GODOT_VERSION_BRANCH), support_list));
 				}
 			} else {
 				library_message_box->hide();

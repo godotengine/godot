@@ -181,17 +181,17 @@ def version_info_builder(target, source, env):
     with methods.generated_wrapper(str(target[0])) as file:
         file.write(
             """\
-#define VERSION_SHORT_NAME "{short_name}"
-#define VERSION_NAME "{name}"
-#define VERSION_MAJOR {major}
-#define VERSION_MINOR {minor}
-#define VERSION_PATCH {patch}
-#define VERSION_STATUS "{status}"
-#define VERSION_BUILD "{build}"
-#define VERSION_MODULE_CONFIG "{module_config}"
-#define VERSION_WEBSITE "{website}"
-#define VERSION_DOCS_BRANCH "{docs_branch}"
-#define VERSION_DOCS_URL "https://docs.godotengine.org/en/" VERSION_DOCS_BRANCH
+#define GODOT_VERSION_SHORT_NAME "{short_name}"
+#define GODOT_VERSION_NAME "{name}"
+#define GODOT_VERSION_MAJOR {major}
+#define GODOT_VERSION_MINOR {minor}
+#define GODOT_VERSION_PATCH {patch}
+#define GODOT_VERSION_STATUS "{status}"
+#define GODOT_VERSION_BUILD "{build}"
+#define GODOT_VERSION_MODULE_CONFIG "{module_config}"
+#define GODOT_VERSION_WEBSITE "{website}"
+#define GODOT_VERSION_DOCS_BRANCH "{docs_branch}"
+#define GODOT_VERSION_DOCS_URL "https://docs.godotengine.org/en/" GODOT_VERSION_DOCS_BRANCH
 """.format(**source[0].read())
         )
 
@@ -210,8 +210,8 @@ def version_hash_builder(target, source, env):
             """\
 #include "core/version.h"
 
-const char *const VERSION_HASH = "{git_hash}";
-const uint64_t VERSION_TIMESTAMP = {git_timestamp};
+const char *const GODOT_VERSION_HASH = "{git_hash}";
+const uint64_t GODOT_VERSION_TIMESTAMP = {git_timestamp};
 """.format(**source[0].read())
         )
 

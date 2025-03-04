@@ -376,7 +376,7 @@ void ProjectDialog::_browse_project_path() {
 	if (mode == MODE_IMPORT) {
 		fdialog_project->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_ANY);
 		fdialog_project->clear_filters();
-		fdialog_project->add_filter("project.godot", vformat("%s %s", VERSION_NAME, TTR("Project")));
+		fdialog_project->add_filter("project.godot", vformat("%s %s", GODOT_VERSION_NAME, TTR("Project")));
 		fdialog_project->add_filter("*.zip", TTR("ZIP File"));
 	} else {
 		fdialog_project->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_DIR);

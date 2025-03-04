@@ -67,7 +67,7 @@
 #include "modules/mono/csharp_script.h"
 #endif
 
-#define CONTRIBUTE_URL vformat("%s/contributing/documentation/updating_the_class_reference.html", VERSION_DOCS_URL)
+#define CONTRIBUTE_URL vformat("%s/contributing/documentation/updating_the_class_reference.html", GODOT_VERSION_DOCS_URL)
 
 #ifdef MODULE_MONO_ENABLED
 // Sync with the types mentioned in https://docs.godotengine.org/en/stable/tutorials/scripting/c_sharp/c_sharp_differences.html
@@ -1096,7 +1096,7 @@ void EditorHelp::_update_doc() {
 		class_desc->add_newline();
 		class_desc->add_newline();
 
-		const String &csharp_differences_url = vformat("%s/tutorials/scripting/c_sharp/c_sharp_differences.html", VERSION_DOCS_URL);
+		const String &csharp_differences_url = vformat("%s/tutorials/scripting/c_sharp/c_sharp_differences.html", GODOT_VERSION_DOCS_URL);
 
 		class_desc->push_indent(1);
 		_push_normal_font();
@@ -2881,7 +2881,7 @@ void EditorHelp::_compute_doc_version_hash() {
 }
 
 String EditorHelp::get_cache_full_path() {
-	return EditorPaths::get_singleton()->get_cache_dir().path_join(vformat("editor_doc_cache-%d.%d.res", VERSION_MAJOR, VERSION_MINOR));
+	return EditorPaths::get_singleton()->get_cache_dir().path_join(vformat("editor_doc_cache-%d.%d.res", GODOT_VERSION_MAJOR, GODOT_VERSION_MINOR));
 }
 
 String EditorHelp::get_script_doc_cache_full_path() {

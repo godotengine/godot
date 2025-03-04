@@ -105,7 +105,7 @@ bool godot_icall_EditorProgress_Step(const godot_string *p_task, const godot_str
 }
 
 void godot_icall_Internal_FullExportTemplatesDir(godot_string *r_dest) {
-	String full_templates_dir = EditorPaths::get_singleton()->get_export_templates_dir().path_join(VERSION_FULL_CONFIG);
+	String full_templates_dir = EditorPaths::get_singleton()->get_export_templates_dir().path_join(GODOT_VERSION_FULL_CONFIG);
 	memnew_placement(r_dest, String(full_templates_dir));
 }
 

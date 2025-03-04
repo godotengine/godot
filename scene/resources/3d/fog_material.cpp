@@ -144,7 +144,7 @@ void FogMaterial::_update_shader() {
 
 		// Add a comment to describe the shader origin (useful when converting to ShaderMaterial).
 		RS::get_singleton()->shader_set_code(shader, R"(
-// NOTE: Shader automatically converted from )" VERSION_NAME " " VERSION_FULL_CONFIG R"('s FogMaterial.
+// NOTE: Shader automatically converted from )" GODOT_VERSION_NAME " " GODOT_VERSION_FULL_CONFIG R"('s FogMaterial.
 
 shader_type fog;
 
