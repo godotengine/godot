@@ -669,6 +669,12 @@ class AnimationTrackEditor : public VBoxContainer {
 		bool advance = false;
 	};
 
+	struct CompareAnimationTrackEdit {
+		_FORCE_INLINE_ bool operator()(const AnimationTrackEdit *a, const AnimationTrackEdit *b) const {
+			return (String)a->get_path() < (String)b->get_path();
+		}
+	};
+
 	Label *insert_confirm_text = nullptr;
 	CheckBox *insert_confirm_bezier = nullptr;
 	CheckBox *insert_confirm_reset = nullptr;
@@ -804,8 +810,11 @@ class AnimationTrackEditor : public VBoxContainer {
 	void _anim_paste_keys(float p_ofs, bool p_ofs_valid, int p_track);
 
 	void _view_group_toggle();
+	void _sort_alphabetically_toggle();
+
 	Button *view_group = nullptr;
 	Button *selected_filter = nullptr;
+	Button *alphabetic_sorting = nullptr;
 
 	void _auto_fit();
 	void _auto_fit_bezier();
@@ -943,6 +952,7 @@ public:
 	float snap_time(float p_value, bool p_relative = false);
 	float get_snap_unit();
 	bool is_grouping_tracks();
+	bool is_alphabetically_sorting();
 	PackedStringArray get_selected_section() const;
 	bool is_marker_selected(const StringName &p_marker) const;
 	bool is_marker_moving_selection() const;

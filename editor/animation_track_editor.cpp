@@ -3317,7 +3317,7 @@ bool AnimationTrackEdit::_try_select_at_ui_pos(const Point2 &p_pos, bool p_aggre
 }
 
 Variant AnimationTrackEdit::get_drag_data(const Point2 &p_point) {
-	if (!clicking_on_name) {
+	if (!clicking_on_name || get_editor()->is_alphabetically_sorting()) {
 		return Variant();
 	}
 
@@ -4850,6 +4850,7 @@ void AnimationTrackEditor::_update_tracks() {
 
 	bool use_grouping = !view_group->is_pressed();
 	bool use_filter = selected_filter->is_pressed();
+	bool use_alphabetical_sorting = alphabetic_sorting->is_pressed();
 
 	for (int i = 0; i < animation->get_track_count(); i++) {
 		AnimationTrackEdit *track_edit = nullptr;
@@ -4960,7 +4961,9 @@ void AnimationTrackEditor::_update_tracks() {
 				VBoxContainer *vb = memnew(VBoxContainer);
 				vb->add_theme_constant_override("separation", 0);
 				vb->add_child(g);
-				track_vbox->add_child(vb);
+				if (!use_alphabetical_sorting) {
+					track_vbox->add_child(vb);
+				}
 				group_sort[base_path] = vb;
 			}
 
@@ -4969,7 +4972,9 @@ void AnimationTrackEditor::_update_tracks() {
 
 		} else {
 			track_edit->set_in_group(false);
-			track_vbox->add_child(track_edit);
+			if (!use_alphabetical_sorting) {
+				track_vbox->add_child(track_edit);
+			}
 		}
 
 		track_edit->set_timeline(timeline);
@@ -4999,6 +5004,20 @@ void AnimationTrackEditor::_update_tracks() {
 		track_edit->connect("paste_request", callable_mp(this, &AnimationTrackEditor::_anim_paste_keys).bind(i), CONNECT_DEFERRED);
 		track_edit->connect("create_reset_request", callable_mp(this, &AnimationTrackEditor::_edit_menu_pressed).bind(EDIT_ADD_RESET_KEY), CONNECT_DEFERRED);
 		track_edit->connect("delete_request", callable_mp(this, &AnimationTrackEditor::_edit_menu_pressed).bind(EDIT_DELETE_SELECTION), CONNECT_DEFERRED);
+	}
+
+	if (use_alphabetical_sorting) {
+		if (use_grouping) {
+			for (RBMap<String, VBoxContainer *>::Element *E = group_sort.front(); E; E = E->next()) {
+				VBoxContainer *container = E->get();
+				track_vbox->add_child(container);
+			}
+		} else {
+			track_edits.sort_custom<CompareAnimationTrackEdit>();
+			for (int i = 0; i < track_edits.size(); i++) {
+				track_vbox->add_child(track_edits[i]);
+			}
+		}
 	}
 }
 
@@ -5155,6 +5174,7 @@ void AnimationTrackEditor::_notification(int p_what) {
 			fps_compat->set_button_icon(get_editor_theme_icon(SNAME("FPS")));
 			view_group->set_button_icon(get_editor_theme_icon(view_group->is_pressed() ? SNAME("AnimationTrackList") : SNAME("AnimationTrackGroup")));
 			selected_filter->set_button_icon(get_editor_theme_icon(SNAME("AnimationFilter")));
+			alphabetic_sorting->set_button_icon(get_editor_theme_icon(SNAME("Sort")));
 			imported_anim_warning->set_button_icon(get_editor_theme_icon(SNAME("NodeWarning")));
 			dummy_player_warning->set_button_icon(get_editor_theme_icon(SNAME("NodeWarning")));
 			inactive_player_warning->set_button_icon(get_editor_theme_icon(SNAME("NodeWarning")));
@@ -7344,12 +7364,20 @@ void AnimationTrackEditor::_view_group_toggle() {
 	bezier_edit->set_filtered(selected_filter->is_pressed());
 }
 
+void AnimationTrackEditor::_sort_alphabetically_toggle() {
+	_update_tracks();
+}
+
 bool AnimationTrackEditor::is_grouping_tracks() {
 	if (!view_group) {
 		return false;
 	}
 
 	return !view_group->is_pressed();
+}
+
+bool AnimationTrackEditor::is_alphabetically_sorting() {
+	return alphabetic_sorting->is_pressed();
 }
 
 void AnimationTrackEditor::_auto_fit() {
@@ -7652,6 +7680,14 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	selected_filter->set_tooltip_text(TTR("Only show tracks from nodes selected in tree."));
 
 	bottom_hf->add_child(selected_filter);
+
+	alphabetic_sorting = memnew(Button);
+	alphabetic_sorting->set_flat(true);
+	alphabetic_sorting->connect(SceneStringName(pressed), callable_mp(this, &AnimationTrackEditor::_sort_alphabetically_toggle));
+	alphabetic_sorting->set_toggle_mode(true);
+	alphabetic_sorting->set_tooltip_text(TTR("Sort tracks/groups alphabetically.\nIf disabled, tracks are shown in the order they are added and can be reordered using drag-and-drop."));
+
+	bottom_hf->add_child(alphabetic_sorting);
 
 	view_group = memnew(Button);
 	view_group->set_flat(true);
