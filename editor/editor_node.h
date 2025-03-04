@@ -229,11 +229,6 @@ private:
 	friend class EditorSceneTabs;
 	friend class SurfaceUpgradeTool;
 
-	enum {
-		MAX_INIT_CALLBACKS = 128,
-		MAX_BUILD_CALLBACKS = 128,
-	};
-
 	struct ExportDefer {
 		String preset;
 		String path;
@@ -420,7 +415,6 @@ private:
 
 	bool changing_scene = false;
 	bool cmdline_export_mode = false;
-	bool convert_old = false;
 	bool immediate_dialog_confirmed = false;
 	bool opening_prev = false;
 	bool restoring_scenes = false;
@@ -476,11 +470,7 @@ private:
 
 	bool unfocused_low_processor_usage_mode_enabled = true;
 
-	static EditorBuildCallback build_callbacks[MAX_BUILD_CALLBACKS];
-	static EditorPluginInitializeCallback plugin_init_callbacks[MAX_INIT_CALLBACKS];
-	static int build_callback_count;
-	static int plugin_init_callback_count;
-	static Vector<EditorNodeInitCallback> _init_callbacks;
+	inline static Vector<EditorNodeInitCallback> _init_callbacks;
 
 	String _get_system_info() const;
 
@@ -607,8 +597,6 @@ private:
 	virtual void input(const Ref<InputEvent> &p_event) override;
 	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
 
-	bool has_main_screen() const { return true; }
-
 	void _remove_edited_scene(bool p_change_tab = true);
 	void _remove_scene(int index, bool p_change_tab = true);
 	bool _find_and_save_resource(Ref<Resource> p_res, HashMap<Ref<Resource>, bool> &processed, int32_t flags);
@@ -698,7 +686,6 @@ public:
 
 	static EditorLog *get_log() { return singleton->log; }
 	static EditorData &get_editor_data() { return singleton->editor_data; }
-	static EditorFolding &get_editor_folding() { return singleton->editor_folding; }
 
 	static EditorTitleBar *get_title_bar() { return singleton->title_bar; }
 	static VSplitContainer *get_top_split() { return singleton->top_split; }
@@ -708,7 +695,6 @@ public:
 	static String adjust_scene_name_casing(const String &p_root_name);
 	static String adjust_script_name_casing(const String &p_file_name, ScriptLanguage::ScriptNameCasing p_auto_casing);
 
-	static bool has_unsaved_changes() { return singleton->unsaved_cache; }
 	static void disambiguate_filenames(const Vector<String> p_full_paths, Vector<String> &r_filenames);
 	static void add_io_error(const String &p_error);
 	static void add_io_warning(const String &p_warning);
@@ -727,7 +713,6 @@ public:
 	static void add_extension_editor_plugin(const StringName &p_class_name);
 	static void remove_extension_editor_plugin(const StringName &p_class_name);
 
-	static void add_plugin_init_callback(EditorPluginInitializeCallback p_callback);
 	static void add_init_callback(EditorNodeInitCallback p_callback) { _init_callbacks.push_back(p_callback); }
 	static void add_build_callback(EditorBuildCallback p_callback);
 
@@ -875,8 +860,6 @@ public:
 	void request_instantiate_scene(const String &p_path);
 	void request_instantiate_scenes(const Vector<String> &p_files);
 
-	void set_convert_old_scene(bool p_old) { convert_old = p_old; }
-
 	void notify_all_debug_sessions_exited();
 
 	OS::ProcessID has_child_process(OS::ProcessID p_pid) const;
@@ -899,7 +882,6 @@ public:
 	void _copy_warning(const String &p_str);
 
 	Error export_preset(const String &p_preset, const String &p_path, bool p_debug, bool p_pack_only, bool p_android_build_template, bool p_patch, const Vector<String> &p_patches);
-	bool is_project_exporting() const;
 
 	Control *get_gui_base() { return gui_base; }
 
@@ -910,8 +892,6 @@ public:
 			_save_scene(p_file);
 		}
 	}
-
-	bool is_scene_in_use(const String &p_path);
 
 	void save_editor_layout_delayed();
 	void save_default_environment();
@@ -946,7 +926,6 @@ public:
 	void unload_editor_addons();
 
 	void dim_editor(bool p_dimming);
-	bool is_editor_dimmed() const;
 
 	void edit_current() { _edit_current(); }
 
