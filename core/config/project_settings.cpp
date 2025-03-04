@@ -77,7 +77,7 @@ String ProjectSettings::get_imported_files_path() const {
 // This is used by the project manager to provide the initial_settings for config/features.
 const PackedStringArray ProjectSettings::get_required_features() {
 	PackedStringArray features;
-	features.append(VERSION_BRANCH);
+	features.append(GODOT_VERSION_BRANCH);
 #ifdef REAL_T_IS_DOUBLE
 	features.append("Double Precision");
 #endif
@@ -92,9 +92,9 @@ const PackedStringArray ProjectSettings::_get_supported_features() {
 #endif
 	// Allow pinning to a specific patch number or build type by marking
 	// them as supported. They're only used if the user adds them manually.
-	features.append(VERSION_BRANCH "." _MKSTR(VERSION_PATCH));
-	features.append(VERSION_FULL_CONFIG);
-	features.append(VERSION_FULL_BUILD);
+	features.append(GODOT_VERSION_BRANCH "." _MKSTR(GODOT_VERSION_PATCH));
+	features.append(GODOT_VERSION_FULL_CONFIG);
+	features.append(GODOT_VERSION_FULL_BUILD);
 
 #ifdef RD_ENABLED
 	features.append("Forward Plus");

@@ -2186,7 +2186,7 @@ String OS_Windows::get_temp_path() const {
 
 // Get properly capitalized engine name for system paths
 String OS_Windows::get_godot_dir_name() const {
-	return String(VERSION_SHORT_NAME).capitalize();
+	return String(GODOT_VERSION_SHORT_NAME).capitalize();
 }
 
 String OS_Windows::get_system_dir(SystemDir p_dir, bool p_shared_storage) const {

@@ -149,9 +149,9 @@ void ShaderRD::setup(const char *p_vertex_code, const char *p_fragment_code, con
 
 	StringBuilder tohash;
 	tohash.append("[GodotVersionNumber]");
-	tohash.append(VERSION_NUMBER);
+	tohash.append(GODOT_VERSION_NUMBER);
 	tohash.append("[GodotVersionHash]");
-	tohash.append(VERSION_HASH);
+	tohash.append(GODOT_VERSION_HASH);
 	tohash.append("[SpirvCacheKey]");
 	tohash.append(RenderingDevice::get_singleton()->shader_get_spirv_cache_key());
 	tohash.append("[BinaryCacheKey]");

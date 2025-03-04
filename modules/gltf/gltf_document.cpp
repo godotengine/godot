@@ -8087,8 +8087,8 @@ Error GLTFDocument::_serialize_asset_header(Ref<GLTFState> p_state) {
 	if (!p_state->copyright.is_empty()) {
 		asset["copyright"] = p_state->copyright;
 	}
-	String hash = String(VERSION_HASH);
-	asset["generator"] = String(VERSION_FULL_NAME) + String("@") + (hash.is_empty() ? String("unknown") : hash);
+	String hash = String(GODOT_VERSION_HASH);
+	asset["generator"] = String(GODOT_VERSION_FULL_NAME) + String("@") + (hash.is_empty() ? String("unknown") : hash);
 	p_state->json["asset"] = asset;
 	ERR_FAIL_COND_V(!asset.has("version"), Error::FAILED);
 	ERR_FAIL_COND_V(!p_state->json.has("asset"), Error::FAILED);
