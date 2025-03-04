@@ -32,6 +32,7 @@
 
 #include "../jolt_physics_server_3d.h"
 #include "../jolt_project_settings.h"
+#include "../misc/jolt_math_funcs.h"
 #include "../misc/jolt_type_conversions.h"
 #include "../objects/jolt_area_3d.h"
 #include "../objects/jolt_body_3d.h"
@@ -288,10 +289,9 @@ bool JoltPhysicsDirectSpaceState3D::_body_motion_cast(const JoltBody3D &p_body, 
 		const Transform3D transform_com_local = transform_local.translated_local(com_scaled);
 		Transform3D transform_com = body_transform * transform_com_local;
 
-		Vector3 scale = transform_com.basis.get_scale();
+		Vector3 scale;
+		JoltMath::decompose(transform_com, scale);
 		JOLT_ENSURE_SCALE_VALID(jolt_shape, scale, "body_test_motion was passed an invalid transform along with body '%s'. This results in invalid scaling for shape at index %d.");
-
-		transform_com.basis.orthonormalize();
 
 		real_t shape_safe_fraction = 1.0;
 		real_t shape_unsafe_fraction = 1.0;
@@ -590,10 +590,9 @@ int JoltPhysicsDirectSpaceState3D::intersect_shape(const ShapeParameters &p_para
 	Transform3D transform = p_parameters.transform;
 	JOLT_ENSURE_SCALE_NOT_ZERO(transform, "intersect_shape was passed an invalid transform.");
 
-	Vector3 scale = transform.basis.get_scale();
+	Vector3 scale;
+	JoltMath::decompose(transform, scale);
 	JOLT_ENSURE_SCALE_VALID(jolt_shape, scale, "intersect_shape was passed an invalid transform.");
-
-	transform.basis.orthonormalize();
 
 	const Vector3 com_scaled = to_godot(jolt_shape->GetCenterOfMass());
 	const Transform3D transform_com = transform.translated_local(com_scaled);
@@ -647,10 +646,9 @@ bool JoltPhysicsDirectSpaceState3D::cast_motion(const ShapeParameters &p_paramet
 	Transform3D transform = p_parameters.transform;
 	JOLT_ENSURE_SCALE_NOT_ZERO(transform, "cast_motion (maybe from ShapeCast3D?) was passed an invalid transform.");
 
-	Vector3 scale = transform.basis.get_scale();
+	Vector3 scale;
+	JoltMath::decompose(transform, scale);
 	JOLT_ENSURE_SCALE_VALID(jolt_shape, scale, "cast_motion (maybe from ShapeCast3D?) was passed an invalid transform.");
-
-	transform.basis.orthonormalize();
 
 	const Vector3 com_scaled = to_godot(jolt_shape->GetCenterOfMass());
 	Transform3D transform_com = transform.translated_local(com_scaled);
@@ -684,10 +682,9 @@ bool JoltPhysicsDirectSpaceState3D::collide_shape(const ShapeParameters &p_param
 	Transform3D transform = p_parameters.transform;
 	JOLT_ENSURE_SCALE_NOT_ZERO(transform, "collide_shape was passed an invalid transform.");
 
-	Vector3 scale = transform.basis.get_scale();
+	Vector3 scale;
+	JoltMath::decompose(transform, scale);
 	JOLT_ENSURE_SCALE_VALID(jolt_shape, scale, "collide_shape was passed an invalid transform.");
-
-	transform.basis.orthonormalize();
 
 	const Vector3 com_scaled = to_godot(jolt_shape->GetCenterOfMass());
 	const Transform3D transform_com = transform.translated_local(com_scaled);
@@ -754,10 +751,9 @@ bool JoltPhysicsDirectSpaceState3D::rest_info(const ShapeParameters &p_parameter
 	Transform3D transform = p_parameters.transform;
 	JOLT_ENSURE_SCALE_NOT_ZERO(transform, "get_rest_info (maybe from ShapeCast3D?) was passed an invalid transform.");
 
-	Vector3 scale = transform.basis.get_scale();
+	Vector3 scale;
+	JoltMath::decompose(transform, scale);
 	JOLT_ENSURE_SCALE_VALID(jolt_shape, scale, "get_rest_info (maybe from ShapeCast3D?) was passed an invalid transform.");
-
-	transform.basis.orthonormalize();
 
 	const Vector3 com_scaled = to_godot(jolt_shape->GetCenterOfMass());
 	const Transform3D transform_com = transform.translated_local(com_scaled);
@@ -890,8 +886,8 @@ bool JoltPhysicsDirectSpaceState3D::body_test_motion(const JoltBody3D &p_body, c
 	Transform3D transform = p_parameters.from;
 	JOLT_ENSURE_SCALE_NOT_ZERO(transform, vformat("body_test_motion (maybe from move_and_slide?) was passed an invalid transform along with body '%s'.", p_body.to_string()));
 
-	Vector3 scale = transform.basis.get_scale();
-	transform.basis.orthonormalize();
+	Vector3 scale;
+	JoltMath::decompose(transform, scale);
 
 	space->try_optimize();
 
