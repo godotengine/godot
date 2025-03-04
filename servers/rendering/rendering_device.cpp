@@ -3850,6 +3850,9 @@ RID RenderingDevice::render_pipeline_create(RID p_shader, FramebufferFormatID p_
 	ERR_FAIL_NULL_V(shader, RID());
 	ERR_FAIL_COND_V_MSG(shader->is_compute, RID(), "Compute shaders can't be used in render pipelines");
 
+	// Validate pre-raster shader. One of stages must be vertex shader or mesh shader (not implemented yet).
+	ERR_FAIL_COND_V_MSG(!shader->stage_bits.has_flag(RDD::PIPELINE_STAGE_VERTEX_SHADER_BIT), RID(), "Pre-raster shader (vertex shader) is not provided for pipeline creation.");
+
 	FramebufferFormat fb_format;
 	{
 		_THREAD_SAFE_METHOD_
