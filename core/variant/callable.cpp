@@ -188,7 +188,7 @@ int Callable::get_argument_count(bool *r_is_valid) const {
 	if (is_custom()) {
 		bool valid = false;
 		return custom->get_argument_count(r_is_valid ? *r_is_valid : valid);
-	} else if (!is_null()) {
+	} else if (is_valid()) {
 		return get_object()->get_method_argument_count(method, r_is_valid);
 	} else {
 		if (r_is_valid) {
