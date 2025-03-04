@@ -85,8 +85,8 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-02-12 18:36+0000\n"
-"Last-Translator: nitenook <admin@alterbaum.net>\n"
+"PO-Revision-Date: 2025-03-01 22:41+0000\n"
+"Last-Translator: ueshita <nalto32@gmail.com>\n"
 "Language-Team: Japanese <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ja/>\n"
 "Language: ja\n"
@@ -94,7 +94,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.10-dev\n"
+"X-Generator: Weblate 5.10.3-dev\n"
 
 msgid "Main Thread"
 msgstr "メインスレッド"
@@ -1359,6 +1359,15 @@ msgstr "アニメーションキーフレームの時間を変更"
 msgid "Marker name is read-only in the inspector."
 msgstr "マーカー名はインスペクターでは読み取り専用です。"
 
+msgid ""
+"A marker's name can only be changed by right-clicking it in the animation "
+"editor and selecting \"Rename Marker\", in order to make sure that marker "
+"names are all unique."
+msgstr ""
+"マーカーの名前を変更するには、アニメーションエディターでマーカーを右クリック"
+"し、\"マーカー名を変更\" を選択します。マーカー名はすべてユニークである必要が"
+"あります。"
+
 msgid "Insert Marker..."
 msgstr "マーカーを挿入…"
 
@@ -1373,6 +1382,12 @@ msgstr "すべてのマーカー名を表示"
 
 msgid "Marker:"
 msgstr "マーカー:"
+
+msgid "Animation Move Markers"
+msgstr "アニメーションマーカーの移動"
+
+msgid "Animation Delete Markers"
+msgstr "アニメーションマーカーの削除"
 
 msgid "Marker '%s' already exists!"
 msgstr "マーカー '%s' はすでに存在します！"
@@ -1403,6 +1418,12 @@ msgstr "マーカー名を変更:"
 
 msgid "Edit Marker Color"
 msgstr "マーカーの色の設定"
+
+msgid "Multi Edit Marker Color"
+msgstr "マーカーカラーのマルチ編集"
+
+msgid "Animation Change Marker Time"
+msgstr "アニメーションマーカーの時間を変更"
 
 msgid "Add Audio Track Clip"
 msgstr "オーディオトラッククリップの追加"
@@ -3380,6 +3401,15 @@ msgstr "このメンバーは実験用としてマークされています。"
 
 msgid "Unfavorite Property"
 msgstr "お気に入りを解除"
+
+msgid "Make this property be put back at its original place."
+msgstr "このプロパティを元の場所に戻します。"
+
+msgid "Favorite Property"
+msgstr "お気に入りに追加"
+
+msgid "Make this property be placed at the top for all objects of this class."
+msgstr "このプロパティをすべてのオブジェクトの一番上に配置します。"
 
 msgid "Pin Value"
 msgstr "値をピン留めする"
@@ -6436,6 +6466,12 @@ msgstr "シーンツリー(ノード):"
 msgid "Node Configuration Warning!"
 msgstr "ノードの設定に関する警告！"
 
+msgid "Revoke"
+msgstr "取り消す"
+
+msgid "Don't Ask Again"
+msgstr "次回から確認しない"
+
 msgid "Allowed:"
 msgstr "許可:"
 
@@ -6604,6 +6640,12 @@ msgstr "マテリアル"
 msgid "Selected Animation Play/Pause"
 msgstr "選択アニメーションの再生/一時停止"
 
+msgid "Selected Animation Stop"
+msgstr "選択アニメーションの停止"
+
+msgid "Toggle Animation Skeleton Visibility"
+msgstr "アニメーションスケルトンの表示の切り替え"
+
 msgid "Rotate Lights With Model"
 msgstr "モデルと共に光源を回転"
 
@@ -6615,6 +6657,9 @@ msgstr "副光源"
 
 msgid "Status"
 msgstr "ステータス"
+
+msgid "Save Extension:"
+msgstr "拡張子の保存:"
 
 msgid "Text: *.tres"
 msgstr "テキスト: *.tres"
@@ -7332,6 +7377,24 @@ msgstr "選択した子の塗り潰し"
 
 msgid "Invert"
 msgstr "反転"
+
+msgid "Start of Animation"
+msgstr "アニメーションの開始"
+
+msgid "End of Animation"
+msgstr "アニメーションの終了"
+
+msgid "Set Custom Timeline from Marker"
+msgstr "マーカーからカスタムタイムラインを設定"
+
+msgid "Select Markers"
+msgstr "マーカーの選択"
+
+msgid "Start Marker"
+msgstr "開始マーカー"
+
+msgid "End Marker"
+msgstr "終了マーカー"
 
 msgid "Library Name:"
 msgstr "ライブラリ名:"

@@ -74,7 +74,7 @@ void UIDUpgradeTool::finish_upgrade() {
 
 	int step = 0;
 	for (const String &file_path : resave_paths) {
-		Ref<Resource> res = ResourceLoader::load(file_path);
+		Ref<Resource> res = ResourceLoader::load(file_path, "", ResourceFormatLoader::CACHE_MODE_REPLACE);
 		ep.step(TTR("Attempting to re-save ") + file_path, step++);
 		if (res.is_valid()) {
 			ResourceSaver::save(res);

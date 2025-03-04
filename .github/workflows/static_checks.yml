@@ -15,6 +15,7 @@ jobs:
 
       - name: Install APT dependencies
         run: |
+          sudo apt update
           sudo apt install -y libxml2-utils
 
       - name: Install Python dependencies and general setup
