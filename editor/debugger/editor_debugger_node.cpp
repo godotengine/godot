@@ -403,8 +403,6 @@ void EditorDebuggerNode::_notification(int p_what) {
 					const Breakpoint &bp = E.key;
 					debugger->set_breakpoint(bp.source, bp.line, E.value);
 				} // Will arrive too late, how does the regular run work?
-
-				debugger->update_live_edit_root();
 			}
 		} break;
 	}
