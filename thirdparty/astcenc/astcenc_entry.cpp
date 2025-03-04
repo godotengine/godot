@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 // ----------------------------------------------------------------------------
-// Copyright 2011-2024 Arm Limited
+// Copyright 2011-2025 Arm Limited
 //
 // Licensed under the Apache License, Version 2.0 (the "License"); you may not
 // use this file except in compliance with the License. You may obtain a copy
@@ -1119,6 +1119,29 @@ astcenc_error astcenc_compress_reset(
 
 	ctxo->manage_avg.reset();
 	ctxo->manage_compress.reset();
+	return ASTCENC_SUCCESS;
+#endif
+}
+
+/* See header for documentation. */
+astcenc_error astcenc_compress_cancel(
+	astcenc_context* ctxo
+) {
+#if defined(ASTCENC_DECOMPRESS_ONLY)
+	(void)ctxo;
+	return ASTCENC_ERR_BAD_CONTEXT;
+#else
+	astcenc_contexti* ctx = &ctxo->context;
+	if (ctx->config.flags & ASTCENC_FLG_DECOMPRESS_ONLY)
+	{
+		return ASTCENC_ERR_BAD_CONTEXT;
+	}
+
+	// Cancel compression before cancelling avg. This avoids the race condition
+	// where cancelling them in the other order could see a compression worker
+	// starting to process even though some of the avg data is undefined.
+	ctxo->manage_compress.cancel();
+	ctxo->manage_avg.cancel();
 	return ASTCENC_SUCCESS;
 #endif
 }
