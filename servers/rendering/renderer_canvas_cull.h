@@ -44,20 +44,21 @@ public:
 	struct Item : public RendererCanvasRender::Item {
 		RID parent; // canvas it belongs to
 		RID self;
-		List<Item *>::Element *E;
-		int z_index;
-		bool z_relative;
-		bool sort_y;
-		Color modulate;
-		Color self_modulate;
-		bool use_parent_material;
-		int index;
-		bool children_order_dirty;
-		int ysort_children_count;
+		List<Item *>::Element *E = nullptr;
+		int z_index = 0;
+		bool z_relative = true;
+		bool sort_y = false;
+		bool use_parent_material = false;
+		bool use_linear_color = false;
+		bool children_order_dirty = true;
+		Color modulate = Color(1, 1, 1, 1);
+		Color self_modulate = Color(1, 1, 1, 1);
+		int index = 0;
+		int ysort_children_count = -1;
 		Color ysort_modulate;
 		Transform2D ysort_xform; // Relative to y-sorted subtree's root item (identity for such root). Its `origin.y` is used for sorting.
-		int ysort_index;
-		int ysort_parent_abs_z_index; // Absolute Z index of parent. Only populated and used when y-sorting.
+		int ysort_index = 0;
+		int ysort_parent_abs_z_index = 0; // Absolute Z index of parent. Only populated and used when y-sorting.
 		uint32_t visibility_layer = 0xffffffff;
 
 		Vector<Item *> child_items;
@@ -84,20 +85,6 @@ public:
 
 		Item() :
 				update_item(this) {
-			children_order_dirty = true;
-			E = nullptr;
-			z_index = 0;
-			modulate = Color(1, 1, 1, 1);
-			self_modulate = Color(1, 1, 1, 1);
-			sort_y = false;
-			use_parent_material = false;
-			z_relative = true;
-			index = 0;
-			ysort_children_count = -1;
-			ysort_xform = Transform2D();
-			ysort_index = 0;
-			ysort_parent_abs_z_index = 0;
-
 			dependency_tracker.userdata = this;
 			dependency_tracker.changed_callback = &RendererCanvasCull::_dependency_changed;
 			dependency_tracker.deleted_callback = &RendererCanvasCull::_dependency_deleted;
@@ -156,11 +143,12 @@ public:
 
 		HashSet<RendererCanvasRender::LightOccluderInstance *> occluders;
 
-		bool children_order_dirty;
+		bool children_order_dirty = true;
+		bool use_linear_color = false;
 		Vector<ChildItem> child_items;
-		Color modulate;
+		Color modulate = Color(1, 1, 1, 1);
 		RID parent;
-		float parent_scale;
+		float parent_scale = 1.0;
 
 		int find_item(Item *p_item) {
 			for (int i = 0; i < child_items.size(); i++) {
@@ -177,11 +165,8 @@ public:
 			}
 		}
 
-		Canvas() {
-			modulate = Color(1, 1, 1, 1);
-			children_order_dirty = true;
-			parent_scale = 1.0;
-		}
+		void set_use_linear_color(bool p_use_linear_color);
+		void _set_item_use_linear_color(Item *item, bool p_use_linear_color);
 	};
 
 	mutable RID_Owner<Canvas, true> canvas_owner;
