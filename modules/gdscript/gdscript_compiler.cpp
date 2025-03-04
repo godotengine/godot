@@ -37,6 +37,7 @@
 
 #include "core/config/engine.h"
 #include "core/config/project_settings.h"
+#include "core/string/string_buffer.h"
 
 #include "scene/scene_string_names.h"
 
@@ -576,6 +577,58 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 				}
 			}
 
+			return result;
+		} break;
+		case GDScriptParser::Node::FORMATTED_STRING: {
+			const GDScriptParser::FormattedStringNode *fsn = static_cast<const GDScriptParser::FormattedStringNode *>(p_expression);
+
+			StringBuffer format_template_buffer;
+			Vector<GDScriptParser::ExpressionNode *> slot_value_expressions;
+			for (const GDScriptParser::FormattedStringNode::TemplatePiece &piece : fsn->template_pieces) {
+				switch (piece.type) {
+					case GDScriptParser::FormattedStringNode::TemplatePiece::TEXT:
+						format_template_buffer.append(piece.text);
+						break;
+					case GDScriptParser::FormattedStringNode::TemplatePiece::SLOT:
+						if (piece.slot->is_constant) {
+							format_template_buffer.append(piece.slot->reduced_value.operator String());
+						} else {
+							format_template_buffer.append(String(vformat("{%d}", slot_value_expressions.size())));
+							slot_value_expressions.push_back(piece.slot);
+						}
+						break;
+				}
+			}
+			const String format_template = format_template_buffer.as_string();
+
+			if (slot_value_expressions.is_empty()) {
+				// No slots, just return the string.
+				return codegen.add_constant(Variant(format_template));
+			}
+			// Perform a function call: format_template.format(Array[slot_values]).
+			GDScriptCodeGenerator::Address result = codegen.add_temporary(_gdtype_from_datatype(fsn->get_datatype(), codegen.script, false));
+
+			GDScriptCodeGenerator::Address slot_values_array = codegen.add_temporary();
+			Vector<GDScriptCodeGenerator::Address> slot_values;
+			for (const GDScriptParser::ExpressionNode *slot_value_expression : slot_value_expressions) {
+				GDScriptCodeGenerator::Address val = _parse_expression(codegen, r_error, slot_value_expression);
+				if (r_error) {
+					return GDScriptCodeGenerator::Address();
+				}
+				slot_values.push_back(val);
+			}
+			codegen.generator->write_construct_array(slot_values_array, slot_values);
+			for (GDScriptCodeGenerator::Address &val : slot_values) {
+				if (val.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
+					codegen.generator->pop_temporary();
+				}
+			}
+
+			GDScriptCodeGenerator::Address format_template_string = codegen.add_constant(Variant(format_template));
+			Vector<GDScriptCodeGenerator::Address> format_arguments;
+			format_arguments.push_back(slot_values_array);
+			codegen.generator->write_call_builtin_type(result, format_template_string, Variant::Type::STRING, SNAME("format"), format_arguments);
+			codegen.generator->pop_temporary(); // slot_values_array
 			return result;
 		} break;
 		case GDScriptParser::Node::CAST: {

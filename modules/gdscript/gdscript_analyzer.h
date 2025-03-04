@@ -105,6 +105,7 @@ class GDScriptAnalyzer {
 	void reduce_call(GDScriptParser::CallNode *p_call, bool p_is_await = false, bool p_is_root = false);
 	void reduce_cast(GDScriptParser::CastNode *p_cast);
 	void reduce_dictionary(GDScriptParser::DictionaryNode *p_dictionary);
+	void reduce_formatted_string(GDScriptParser::FormattedStringNode *p_formatted_string);
 	void reduce_get_node(GDScriptParser::GetNodeNode *p_get_node);
 	void reduce_identifier(GDScriptParser::IdentifierNode *p_identifier, bool can_be_builtin = false);
 	void reduce_identifier_from_base(GDScriptParser::IdentifierNode *p_identifier, GDScriptParser::DataType *p_base = nullptr);
