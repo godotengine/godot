@@ -2735,6 +2735,42 @@ void EditorExportPlatformIOS::_check_for_changes_poll_thread(void *ud) {
 			}
 		}
 
+		// Enum devices (via Xcode).
+		if (ea->has_runnable_preset.is_set() && _check_xcode_install() && (FileAccess::exists("/usr/bin/xcrun") || FileAccess::exists("/bin/xcrun"))) {
+			String devices;
+			List<String> args;
+			args.push_back("devicectl");
+			args.push_back("list");
+			args.push_back("devices");
+			args.push_back("-j");
+			args.push_back("-");
+			args.push_back("-q");
+			int ec = 0;
+			Error err = OS::get_singleton()->execute("xcrun", args, &devices, &ec, true);
+			if (err == OK && ec == 0) {
+				Ref<JSON> json;
+				json.instantiate();
+				err = json->parse(devices);
+				if (err == OK) {
+					const Dictionary &data = json->get_data();
+					const Dictionary &result = data["result"];
+					const Array &devices = result["devices"];
+					for (int i = 0; i < devices.size(); i++) {
+						const Dictionary &device_info = devices[i];
+						const Dictionary &conn_props = device_info["connectionProperties"];
+						const Dictionary &dev_props = device_info["deviceProperties"];
+						if (conn_props["pairingState"] == "paired" && dev_props["developerModeStatus"] == "enabled") {
+							Device nd;
+							nd.id = device_info["identifier"];
+							nd.name = dev_props["name"].operator String() + " (devicectl, " + ((conn_props["transportType"] == "localNetwork") ? "network" : "wired") + ")";
+							nd.wifi = conn_props["transportType"] == "localNetwork";
+							ldevices.push_back(nd);
+						}
+					}
+				}
+			}
+		}
+
 		// Update device list.
 		{
 			MutexLock lock(ea->device_lock);
@@ -2922,7 +2958,7 @@ Error EditorExportPlatformIOS::run(const Ref<EditorExportPreset> &p_preset, int 
 			}
 		}
 	} else {
-		// Deploy and run on real device.
+		// Deploy and run on real device (via Xcode).
 		if (ep.step("Installing to device...", 3)) {
 			CLEANUP_AND_RETURN(ERR_SKIP);
 		} else {
