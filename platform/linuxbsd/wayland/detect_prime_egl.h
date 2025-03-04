@@ -77,9 +77,9 @@ private:
 		{ nullptr, 0 }
 	};
 
+public:
 	static void create_context(EGLenum p_platform_enum);
 
-public:
 	static int detect_prime(EGLenum p_platform_enum);
 };
 
