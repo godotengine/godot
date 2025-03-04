@@ -31,7 +31,7 @@
 #ifndef EDITOR_SETTINGS_DIALOG_H
 #define EDITOR_SETTINGS_DIALOG_H
 
-#include "scene/gui/dialogs.h"
+#include "editor/gui/editor_accept_dialog.h"
 
 class CheckButton;
 class EventListenerLineEdit;
@@ -43,8 +43,8 @@ class TextureRect;
 class Tree;
 class TreeItem;
 
-class EditorSettingsDialog : public AcceptDialog {
-	GDCLASS(EditorSettingsDialog, AcceptDialog);
+class EditorSettingsDialog : public EditorAcceptDialog {
+	GDCLASS(EditorSettingsDialog, EditorAcceptDialog);
 
 	bool updating = false;
 
