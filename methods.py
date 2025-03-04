@@ -1390,6 +1390,11 @@ def generate_vs_project(env, original_args, project_name="godot"):
         proj_template = proj_template.replace("%%DEFAULT_ITEMS%%", "\n    ".join(all_items))
         proj_template = proj_template.replace("%%PROPERTIES%%", "\n  ".join(properties))
 
+        toolset = "v143"
+        if not env.msvc:
+            toolset = "CLang"
+        proj_template = proj_template.replace("%%PlatformToolset%%", toolset)
+
         with open(f"{project_name}.vcxproj", "w", encoding="utf-8", newline="\r\n") as f:
             f.write(proj_template)
 
