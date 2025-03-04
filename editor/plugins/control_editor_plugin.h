@@ -156,6 +156,7 @@ public:
 	virtual void toggled(bool p_pressed) override;
 
 	VBoxContainer *get_popup_hbox() const { return popup_vbox; }
+	PopupPanel *get_popup_panel() const { return popup_panel; }
 
 	ControlEditorPopupButton();
 };
@@ -169,10 +170,15 @@ protected:
 	static constexpr int grid_separation = 0;
 	HashMap<int, Button *> preset_buttons;
 
+	Ref<ButtonGroup> anchor_preset_type_group;
+
 	void _add_row_button(HBoxContainer *p_row, const int p_preset, const String &p_name);
 	void _add_separator(BoxContainer *p_box, Separator *p_separator);
 
 public:
+	void set_preset_button_pressed(int p_preset);
+	void set_preset_buttons_unpressed();
+
 	ControlEditorPresetPicker() {}
 };
 
@@ -216,6 +222,7 @@ class ControlEditorToolbar : public HBoxContainer {
 	EditorSelection *editor_selection = nullptr;
 
 	ControlEditorPopupButton *anchors_button = nullptr;
+	AnchorPresetPicker *anchors_picker = nullptr;
 	ControlEditorPopupButton *containers_button = nullptr;
 	Button *anchor_mode_button = nullptr;
 
@@ -234,6 +241,7 @@ class ControlEditorToolbar : public HBoxContainer {
 	bool _is_node_locked(const Node *p_node);
 	List<Control *> _get_edited_controls();
 	void _selection_changed();
+	void _update_anchor_preset_buttons_state();
 
 protected:
 	void _notification(int p_notification);
