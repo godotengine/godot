@@ -4449,7 +4449,9 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 				in_italics = false;
 			}
 			if ((tag_stack.front()->get() == "indent") || (tag_stack.front()->get() == "ol") || (tag_stack.front()->get() == "ul")) {
-				current_frame->indent_level--;
+				if (current_frame->indent_level > 0) {
+					current_frame->indent_level--;
+				}
 			}
 
 			if (!tag_ok) {
