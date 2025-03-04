@@ -51,8 +51,8 @@ class VisualInstance : public CullInstance {
 protected:
 	void _update_visibility();
 	virtual void _refresh_portal_mode();
-	virtual void _physics_interpolated_changed();
 	void set_instance_use_identity_transform(bool p_enable);
+	virtual void fti_update_servers();
 
 	void _notification(int p_what);
 	static void _bind_methods();

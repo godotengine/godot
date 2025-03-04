@@ -45,6 +45,13 @@ void Camera::_request_camera_update() {
 	_update_camera();
 }
 
+void Camera::fti_update_servers() {
+	if (camera.is_valid()) {
+		Transform tr = _get_adjusted_camera_transform(_get_cached_global_transform_interpolated());
+		VisualServer::get_singleton()->camera_set_transform(camera, tr);
+	}
+}
+
 void Camera::_update_camera_mode() {
 	force_change = true;
 	switch (mode) {
@@ -85,12 +92,8 @@ void Camera::_update_camera() {
 	if (!is_physics_interpolated_and_enabled()) {
 		VisualServer::get_singleton()->camera_set_transform(camera, get_camera_transform());
 	} else {
-		// Ideally we shouldn't be moving a physics interpolated camera within a frame,
-		// because it will break smooth interpolation, but it may occur on e.g. level load.
-		if (!Engine::get_singleton()->is_in_physics_frame() && camera.is_valid()) {
-			_physics_interpolation_ensure_transform_calculated(true);
-			VisualServer::get_singleton()->camera_set_transform(camera, _interpolation_data.camera_xform_interpolated);
-		}
+		// Force a refresh next frame.
+		fti_notify_node_changed();
 	}
 
 	// here goes listener stuff
@@ -114,40 +117,6 @@ void Camera::_physics_interpolated_changed() {
 	_update_process_mode();
 }
 
-void Camera::_physics_interpolation_ensure_data_flipped() {
-	// The curr -> previous update can either occur
-	// on the INTERNAL_PHYSICS_PROCESS OR
-	// on NOTIFICATION_TRANSFORM_CHANGED,
-	// if NOTIFICATION_TRANSFORM_CHANGED takes place
-	// earlier than INTERNAL_PHYSICS_PROCESS on a tick.
-	// This is to ensure that the data keeps flowing, but the new data
-	// doesn't overwrite before prev has been set.
-
-	// Keep the data flowing.
-	uint64_t tick = Engine::get_singleton()->get_physics_frames();
-	if (_interpolation_data.last_update_physics_tick != tick) {
-		_interpolation_data.xform_prev = _interpolation_data.xform_curr;
-		_interpolation_data.last_update_physics_tick = tick;
-		physics_interpolation_flip_data();
-	}
-}
-
-void Camera::_physics_interpolation_ensure_transform_calculated(bool p_force) const {
-	DEV_CHECK_ONCE(!Engine::get_singleton()->is_in_physics_frame());
-
-	InterpolationData &id = _interpolation_data;
-	uint64_t frame = Engine::get_singleton()->get_frames_drawn();
-
-	if (id.last_update_frame != frame || p_force) {
-		id.last_update_frame = frame;
-
-		TransformInterpolator::interpolate_transform(id.xform_prev, id.xform_curr, id.xform_interpolated, Engine::get_singleton()->get_physics_interpolation_fraction());
-
-		Transform &tr = id.camera_xform_interpolated;
-		tr = _get_adjusted_camera_transform(id.xform_interpolated);
-	}
-}
-
 void Camera::set_desired_process_modes(bool p_process_internal, bool p_physics_process_internal) {
 	_desired_process_internal = p_process_internal;
 	_desired_physics_process_internal = p_physics_process_internal;
@@ -155,17 +124,8 @@ void Camera::set_desired_process_modes(bool p_process_internal, bool p_physics_p
 }
 
 void Camera::_update_process_mode() {
-	bool process = _desired_process_internal;
-	bool physics_process = _desired_physics_process_internal;
-
-	if (is_physics_interpolated_and_enabled()) {
-		if (is_current()) {
-			process = true;
-			physics_process = true;
-		}
-	}
-	set_process_internal(process);
-	set_physics_process_internal(physics_process);
+	set_process_internal(_desired_process_internal);
+	set_physics_process_internal(_desired_physics_process_internal);
 }
 
 void Camera::_notification(int p_what) {
@@ -182,56 +142,21 @@ void Camera::_notification(int p_what) {
 				viewport->_camera_set(this);
 			}
 		} break;
-		case NOTIFICATION_INTERNAL_PROCESS: {
-			if (is_physics_interpolated_and_enabled() && camera.is_valid()) {
-				_physics_interpolation_ensure_transform_calculated();
-
-#ifdef VISUAL_SERVER_DEBUG_PHYSICS_INTERPOLATION
-				print_line("\t\tinterpolated Camera: " + rtos(_interpolation_data.xform_interpolated.origin.x) + "\t( prev " + rtos(_interpolation_data.xform_prev.origin.x) + ", curr " + rtos(_interpolation_data.xform_curr.origin.x) + " ) on tick " + itos(Engine::get_singleton()->get_physics_frames()));
-#endif
-
-				VisualServer::get_singleton()->camera_set_transform(camera, _interpolation_data.camera_xform_interpolated);
-			}
-		} break;
-		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
-			if (is_physics_interpolated_and_enabled()) {
-				_physics_interpolation_ensure_data_flipped();
-				_interpolation_data.xform_curr = get_global_transform();
-			}
-		} break;
 		case NOTIFICATION_TRANSFORM_CHANGED: {
-			if (is_physics_interpolated_and_enabled()) {
-				_physics_interpolation_ensure_data_flipped();
-				_interpolation_data.xform_curr = get_global_transform();
 #if defined(DEBUG_ENABLED) && defined(TOOLS_ENABLED)
+			if (is_physics_interpolated_and_enabled()) {
 				if (!Engine::get_singleton()->is_in_physics_frame()) {
 					PHYSICS_INTERPOLATION_NODE_WARNING(get_instance_id(), "Interpolated Camera triggered from outside physics process");
 				}
-#endif
 			}
+#endif
 			_request_camera_update();
 			if (doppler_tracking != DOPPLER_TRACKING_DISABLED) {
 				velocity_tracker->update_position(get_global_transform().origin);
 			}
-			// Allow auto-reset when first adding to the tree, as a convenience.
-			if (_is_physics_interpolation_reset_requested() && is_inside_tree()) {
-				_notification(NOTIFICATION_RESET_PHYSICS_INTERPOLATION);
-				_set_physics_interpolation_reset_requested(false);
-			}
-
 		} break;
 		case NOTIFICATION_RESET_PHYSICS_INTERPOLATION: {
-			if (is_inside_tree()) {
-				_interpolation_data.xform_curr = get_global_transform();
-				_interpolation_data.xform_prev = _interpolation_data.xform_curr;
-				_update_process_mode();
-			}
-		} break;
-		case NOTIFICATION_PAUSED: {
-			if (is_physics_interpolated_and_enabled() && is_inside_tree() && is_visible_in_tree()) {
-				_physics_interpolation_ensure_transform_calculated(true);
-				VisualServer::get_singleton()->camera_set_transform(camera, _interpolation_data.camera_xform_interpolated);
-			}
+			_update_process_mode();
 		} break;
 		case NOTIFICATION_EXIT_WORLD: {
 			if (!get_tree()->is_node_being_edited(this)) {
@@ -274,8 +199,7 @@ Transform Camera::_get_adjusted_camera_transform(const Transform &p_xform) const
 
 Transform Camera::get_camera_transform() const {
 	if (is_physics_interpolated_and_enabled() && !Engine::get_singleton()->is_in_physics_frame()) {
-		_physics_interpolation_ensure_transform_calculated();
-		return _interpolation_data.camera_xform_interpolated;
+		return _get_adjusted_camera_transform(_get_cached_global_transform_interpolated());
 	}
 
 	return _get_adjusted_camera_transform(get_global_transform());
@@ -865,9 +789,16 @@ float ClippedCamera::get_margin() const {
 	return margin;
 }
 void ClippedCamera::set_process_mode(ProcessMode p_mode) {
-	if (is_physics_interpolated_and_enabled() && p_mode == CLIP_PROCESS_IDLE) {
-		p_mode = CLIP_PROCESS_PHYSICS;
-		WARN_PRINT_ONCE("[Physics interpolation] Forcing ClippedCamera to PROCESS_PHYSICS mode.");
+	if (is_physics_interpolated_and_enabled()) {
+		if (p_mode == CLIP_PROCESS_IDLE) {
+			p_mode = CLIP_PROCESS_PHYSICS;
+			WARN_PRINT_ONCE("[Physics interpolation] Forcing ClippedCamera to PROCESS_PHYSICS mode.");
+		}
+
+		process_mode = p_mode;
+
+		set_desired_process_modes(false, true);
+		return;
 	}
 
 	if (process_mode == p_mode) {
@@ -881,8 +812,11 @@ ClippedCamera::ProcessMode ClippedCamera::get_process_mode() const {
 	return process_mode;
 }
 
-void ClippedCamera::physics_interpolation_flip_data() {
+void ClippedCamera::fti_pump() {
 	_interpolation_data.clip_offset_prev = _interpolation_data.clip_offset_curr;
+
+	// Must call the base class.
+	Spatial::fti_pump();
 }
 
 void ClippedCamera::_physics_interpolated_changed() {
@@ -897,6 +831,11 @@ Transform ClippedCamera::_get_adjusted_camera_transform(const Transform &p_xform
 	Transform t = Camera::_get_adjusted_camera_transform(p_xform);
 	t.origin += -t.basis.get_axis(Vector3::AXIS_Z).normalized() * clip_offset;
 	return t;
+}
+
+void ClippedCamera::fti_update_servers() {
+	clip_offset = ((_interpolation_data.clip_offset_curr - _interpolation_data.clip_offset_prev) * Engine::get_singleton()->get_physics_interpolation_fraction()) + _interpolation_data.clip_offset_prev;
+	Camera::fti_update_servers();
 }
 
 void ClippedCamera::_notification(int p_what) {
@@ -964,10 +903,6 @@ void ClippedCamera::_notification(int p_what) {
 		}
 
 		_update_camera();
-	}
-
-	if (is_physics_interpolated_and_enabled() && (p_what == NOTIFICATION_INTERNAL_PROCESS)) {
-		clip_offset = ((_interpolation_data.clip_offset_curr - _interpolation_data.clip_offset_prev) * Engine::get_singleton()->get_physics_interpolation_fraction()) + _interpolation_data.clip_offset_prev;
 	}
 
 	if (p_what == NOTIFICATION_LOCAL_TRANSFORM_CHANGED) {
