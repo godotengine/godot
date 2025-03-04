@@ -261,6 +261,18 @@ struct SceneShaderData : public ShaderData {
 		DEPTH_TEST_ENABLED
 	};
 
+	enum DepthFunction {
+		DEPTH_FUNCTION_LESS_OR_EQUAL,
+		DEPTH_FUNCTION_LESS,
+		DEPTH_FUNCTION_EQUAL,
+		DEPTH_FUNCTION_GREATER,
+		DEPTH_FUNCTION_NOT_EQUAL,
+		DEPTH_FUNCTION_GREATER_OR_EQUAL,
+		DEPTH_FUNCTION_ALWAYS,
+		DEPTH_FUNCTION_NEVER,
+		DEPTH_FUNCTION_MAX
+	};
+
 	enum AlphaAntiAliasing {
 		ALPHA_ANTIALIASING_OFF,
 		ALPHA_ANTIALIASING_ALPHA_TO_COVERAGE,
@@ -285,6 +297,7 @@ struct SceneShaderData : public ShaderData {
 	DepthDraw depth_draw;
 	DepthTest depth_test;
 	RS::CullMode cull_mode;
+	DepthFunction depth_function;
 
 	bool uses_point_size;
 	bool uses_alpha;

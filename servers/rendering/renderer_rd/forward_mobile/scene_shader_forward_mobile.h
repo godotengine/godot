@@ -136,6 +136,18 @@ public:
 			DEPTH_DRAW_ALWAYS
 		};
 
+		enum DepthFunction {
+			DEPTH_FUNCTION_LESS_OR_EQUAL,
+			DEPTH_FUNCTION_LESS,
+			DEPTH_FUNCTION_EQUAL,
+			DEPTH_FUNCTION_GREATER,
+			DEPTH_FUNCTION_NOT_EQUAL,
+			DEPTH_FUNCTION_GREATER_OR_EQUAL,
+			DEPTH_FUNCTION_ALWAYS,
+			DEPTH_FUNCTION_NEVER,
+			DEPTH_FUNCTION_MAX
+		};
+
 		enum DepthTest {
 			DEPTH_TEST_DISABLED,
 			DEPTH_TEST_ENABLED
@@ -199,6 +211,7 @@ public:
 		String code;
 
 		DepthDraw depth_draw;
+		DepthFunction depth_function;
 		DepthTest depth_test;
 
 		int blend_mode = BLEND_MODE_MIX;
