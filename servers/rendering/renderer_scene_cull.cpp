@@ -106,6 +106,15 @@ void RendererSceneCull::camera_set_frustum(RID p_camera, float p_size, Vector2 p
 	camera->zfar = p_z_far;
 }
 
+void RendererSceneCull::camera_set_scale(RID p_camera, Vector2 p_scale) {
+	Camera *camera = camera_owner.get_or_null(p_camera);
+	ERR_FAIL_NULL(camera);
+	ERR_FAIL_COND(p_scale.is_zero_approx());
+	ERR_FAIL_COND(p_scale.x < 0.0 || p_scale.y < 0.0);
+	camera->scale = p_scale;
+	camera->use_scale = (p_scale != Vector2(1.0, 1.0));
+}
+
 void RendererSceneCull::camera_set_transform(RID p_camera, const Transform3D &p_transform) {
 	Camera *camera = camera_owner.get_or_null(p_camera);
 	ERR_FAIL_NULL(camera);
@@ -2654,7 +2663,10 @@ void RendererSceneCull::render_camera(const Ref<RenderSceneBuffers> &p_render_bu
 				is_frustum = true;
 			} break;
 		}
-
+		if (camera->use_scale) {
+			projection.columns[0][0] *= camera->scale.x;
+			projection.columns[1][1] *= camera->scale.y;
+		}
 		camera_data.set_camera(transform, projection, is_orthogonal, is_frustum, vaspect, jitter, taa_frame_count, camera->visible_layers);
 #ifndef XR_DISABLED
 	} else {
