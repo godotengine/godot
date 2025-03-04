@@ -50,6 +50,7 @@
 #include "editor/editor_property_name_processor.h"
 #include "editor/editor_translation.h"
 #include "editor/engine_update_label.h"
+#include "modules/regex/regex.h"
 #include "scene/gui/color_picker.h"
 #include "scene/main/node.h"
 #include "scene/main/scene_tree.h"
@@ -68,6 +69,9 @@ bool EditorSettings::_set(const StringName &p_name, const Variant &p_value) {
 	if (changed && initialized) {
 		changed_settings.insert(p_name);
 		emit_signal(SNAME("settings_changed"));
+		if (p_name == "text_editor/external/exec_path") {
+			_exec_path_changed(p_value);
+		}
 	}
 	return true;
 }
@@ -1105,6 +1109,40 @@ void EditorSettings::_load_default_visual_shader_editor_theme() {
 	_initial_set("editors/visual_editors/category_colors/vector_color", Color(0.2, 0.2, 0.5));
 	_initial_set("editors/visual_editors/category_colors/special_color", Color(0.098, 0.361, 0.294));
 	_initial_set("editors/visual_editors/category_colors/particle_color", Color(0.12, 0.358, 0.8));
+}
+
+void EditorSettings::_exec_path_changed(const String &p_path) {
+	Ref<RegEx> regex;
+	regex.instantiate();
+
+	const String editor_pattern = R"([\\/]((?:jetbrains\s*)?rider(?:\s*(eap|\d{4}\.\d+|\d{4}\.\d+\s*dev)?)?|visual\s*studio\s*code|subl(ime\s*text)?|sublime_text|(g)?vim|emacs|atom|geany|kate|code|(vs)?codium)(?:\.app|\.exe|\.bat|\.sh)?)";
+	regex->compile(editor_pattern);
+	Ref<RegExMatch> editor_match = regex->search(p_path.to_lower());
+
+	if (!editor_match.is_valid()) {
+		return;
+	}
+
+	const String editor = editor_match->get_string(1).to_lower();
+	String new_exec_flags = "{file}";
+
+	if (editor.begins_with("rider")) {
+		new_exec_flags = "{project} --line {line} {file}";
+	} else if (editor == "subl" || editor == "sublime text" || editor == "sublime_text") {
+		new_exec_flags = "{project} {file}:{line}:{column}";
+	} else if (editor == "vim" || editor == "gvim") {
+		new_exec_flags = "\"+call cursor({line}, {col})\" {file}";
+	} else if (editor == "emacs") {
+		new_exec_flags = "emacs +{line}:{col} {file}";
+	} else if (editor == "atom") {
+		new_exec_flags = "{file}:{line}";
+	} else if (editor == "geany" || editor == "kate") {
+		new_exec_flags = "{file} --line {line} --column {col}";
+	} else if (editor == "code" || editor == "visual studio code" || editor == "codium" || editor == "vscodium") {
+		new_exec_flags = "{project} --goto {file}:{line}:{col}";
+	}
+
+	set_setting("text_editor/external/exec_flags", new_exec_flags);
 }
 
 bool EditorSettings::_save_text_editor_theme(const String &p_file) {
