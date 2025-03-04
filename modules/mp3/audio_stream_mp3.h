@@ -33,7 +33,7 @@
 
 #include "servers/audio/audio_stream.h"
 
-#include <minimp3_ex.h>
+#include "thirdparty/dr_libs/dr_mp3.h"
 
 class AudioStreamMP3;
 
@@ -48,7 +48,7 @@ class AudioStreamPlaybackMP3 : public AudioStreamPlaybackResampled {
 
 	bool looping_override = false;
 	bool looping = false;
-	mp3dec_ex_t mp3d = {};
+	drmp3 mp3d = {};
 	uint32_t frames_mixed = 0;
 	bool active = false;
 	int loops = 0;
