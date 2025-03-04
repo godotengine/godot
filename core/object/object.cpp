@@ -969,6 +969,8 @@ void Object::set_script(const Variant &p_script) {
 		ERR_FAIL_COND_MSG(s->is_abstract(), vformat("Cannot set object script. Script '%s' should not be abstract.", s->get_path()));
 	}
 
+	emit_signal(CoreStringName(script_changing));
+
 	script = p_script;
 
 	if (script_instance) {
@@ -1769,6 +1771,7 @@ void Object::_bind_methods() {
 
 	ClassDB::add_virtual_method("Object", MethodInfo("free"), false);
 
+	ADD_SIGNAL(MethodInfo("script_changing"));
 	ADD_SIGNAL(MethodInfo("script_changed"));
 	ADD_SIGNAL(MethodInfo("property_list_changed"));
 
