@@ -242,10 +242,10 @@ GDExtensionInterfaceFunctionPtr gdextension_get_proc_address(const char *p_name)
 }
 
 static void gdextension_get_godot_version(GDExtensionGodotVersion *r_godot_version) {
-	r_godot_version->major = VERSION_MAJOR;
-	r_godot_version->minor = VERSION_MINOR;
-	r_godot_version->patch = VERSION_PATCH;
-	r_godot_version->string = VERSION_FULL_NAME;
+	r_godot_version->major = GODOT_VERSION_MAJOR;
+	r_godot_version->minor = GODOT_VERSION_MINOR;
+	r_godot_version->patch = GODOT_VERSION_PATCH;
+	r_godot_version->string = GODOT_VERSION_FULL_NAME;
 }
 
 // Memory Functions
