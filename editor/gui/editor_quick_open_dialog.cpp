@@ -915,9 +915,9 @@ void QuickOpenResultItem::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_DRAW: {
 			if (is_selected) {
-				draw_style_box(selected_stylebox, Rect2(Point2(), get_size()));
+				draw_stylebox(selected_stylebox, Rect2(Point2(), get_size()));
 			} else if (is_hovering) {
-				draw_style_box(hovering_stylebox, Rect2(Point2(), get_size()));
+				draw_stylebox(hovering_stylebox, Rect2(Point2(), get_size()));
 			}
 		} break;
 	}

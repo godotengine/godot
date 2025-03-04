@@ -40,7 +40,7 @@
 #include "scene/gui/separator.h"
 #include "scene/gui/split_container.h"
 #include "scene/gui/tab_container.h"
-#include "scene/resources/style_box.h"
+#include "scene/resources/stylebox.h"
 
 void EditorAbout::_notification(int p_what) {
 	switch (p_what) {

@@ -45,7 +45,7 @@
 #include "scene/gui/tree.h"
 #include "scene/main/viewport.h"
 #include "scene/main/window.h"
-#include "scene/resources/style_box_flat.h"
+#include "scene/resources/stylebox_flat.h"
 #include "scene/theme/theme_db.h"
 
 bool AnimationNodeStateMachineEditor::can_edit(const Ref<AnimationNode> &p_node) {
@@ -1234,19 +1234,19 @@ void AnimationNodeStateMachineEditor::_state_machine_draw() {
 		Ref<StyleBox> original_style = is_selected ? theme_cache.node_frame_selected : theme_cache.node_frame;
 		Ref<StyleBox> node_style = _adjust_stylebox_opacity(original_style, opacity);
 
-		state_machine_draw->draw_style_box(node_style, nr.node);
+		state_machine_draw->draw_stylebox(node_style, nr.node);
 
 		if (!is_selected && SceneStringName(Start) == name) {
 			Ref<StyleBox> start_style = _adjust_stylebox_opacity(theme_cache.node_frame_start, opacity);
-			state_machine_draw->draw_style_box(start_style, nr.node);
+			state_machine_draw->draw_stylebox(start_style, nr.node);
 		}
 		if (!is_selected && SceneStringName(End) == name) {
 			Ref<StyleBox> end_style = _adjust_stylebox_opacity(theme_cache.node_frame_end, opacity);
-			state_machine_draw->draw_style_box(end_style, nr.node);
+			state_machine_draw->draw_stylebox(end_style, nr.node);
 		}
 		if (playing && (blend_from == name || current == name || travel_path.has(name))) {
 			Ref<StyleBox> playing_style = _adjust_stylebox_opacity(theme_cache.node_frame_playing, opacity);
-			state_machine_draw->draw_style_box(playing_style, nr.node);
+			state_machine_draw->draw_stylebox(playing_style, nr.node);
 		}
 
 		offset.x += original_style->get_offset().x;

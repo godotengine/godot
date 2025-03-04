@@ -54,7 +54,7 @@ class EmbeddedProcess : public Control {
 
 	bool keep_aspect = false;
 	Size2i window_size;
-	Ref<StyleBox> focus_style_box;
+	Ref<StyleBox> focus_stylebox;
 	Point2i margin_top_left;
 	Point2i margin_bottom_right;
 	Rect2i last_global_rect;

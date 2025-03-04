@@ -153,7 +153,7 @@ void GenericTilePolygonEditor::_base_control_draw() {
 
 	// Draw the focus rectangle.
 	if (base_control->has_focus()) {
-		base_control->draw_style_box(focus_stylebox, Rect2(Vector2(), base_control->get_size()));
+		base_control->draw_stylebox(focus_stylebox, Rect2(Vector2(), base_control->get_size()));
 	}
 
 	// Draw tile-related things.

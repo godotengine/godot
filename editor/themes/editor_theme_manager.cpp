@@ -41,9 +41,9 @@
 #include "editor/themes/editor_theme.h"
 #include "scene/gui/graph_edit.h"
 #include "scene/resources/image_texture.h"
-#include "scene/resources/style_box_flat.h"
-#include "scene/resources/style_box_line.h"
-#include "scene/resources/style_box_texture.h"
+#include "scene/resources/stylebox_flat.h"
+#include "scene/resources/stylebox_line.h"
+#include "scene/resources/stylebox_texture.h"
 #include "scene/resources/texture.h"
 
 // Theme configuration.
