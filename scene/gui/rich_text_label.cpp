@@ -254,7 +254,7 @@ String RichTextLabel::_get_prefix(Item *p_item, const Vector<int> &p_list_index,
 		}
 		prefix = segment + prefix;
 	}
-	return prefix;
+	return prefix + " ";
 }
 
 void RichTextLabel::_update_line_font(ItemFrame *p_frame, int p_line, const Ref<Font> &p_base_font, int p_base_font_size) {
