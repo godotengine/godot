@@ -45,7 +45,9 @@ bool GDScriptLambdaCallable::compare_less(const CallableCustom *p_a, const Calla
 }
 
 bool GDScriptLambdaCallable::is_valid() const {
-	return CallableCustom::is_valid() && function != nullptr;
+	// Don't need to call CallableCustom::is_valid():
+	// It just verifies our script exists, which we know to be true because it is RefCounted.
+	return function != nullptr;
 }
 
 uint32_t GDScriptLambdaCallable::hash() const {
