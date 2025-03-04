@@ -3,12 +3,12 @@
 # Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.
 # This file is distributed under the same license as the Godot source code.
 # Rónán Quill <ronan085@gmail.com>, 2019, 2020.
-# Aindriú Mac Giolla Eoin <aindriu80@gmail.com>, 2024.
+# Aindriú Mac Giolla Eoin <aindriu80@gmail.com>, 2024, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
-"PO-Revision-Date: 2024-08-14 13:00+0000\n"
+"PO-Revision-Date: 2025-02-27 18:37+0000\n"
 "Last-Translator: Aindriú Mac Giolla Eoin <aindriu80@gmail.com>\n"
 "Language-Team: Irish <https://hosted.weblate.org/projects/godot-engine/godot-"
 "properties/ga/>\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=5; plural=n==1 ? 0 : n==2 ? 1 : (n>2 && n<7) ? 2 :(n>6 "
 "&& n<11) ? 3 : 4;\n"
-"X-Generator: Weblate 5.7-dev\n"
+"X-Generator: Weblate 5.10.2-rc\n"
 
 msgid "Application"
 msgstr "Iarratas"
@@ -121,6 +121,9 @@ msgstr "Leathnaigh go Teideal"
 msgid "No Focus"
 msgstr "Gan Fócas"
 
+msgid "Sharp Corners"
+msgstr "Cúinní Géar"
+
 msgid "Window Width Override"
 msgstr "Sáraigh Leithead na Fuinneoige"
 
@@ -184,8 +187,17 @@ msgstr "Fofhuinneoga"
 msgid "Embed Subwindows"
 msgstr "Leabú Subwindows"
 
+msgid "Frame Pacing"
+msgstr "Pacáil Fráma"
+
 msgid "Android"
 msgstr "Android"
+
+msgid "Enable Frame Pacing"
+msgstr "Cumasaigh Pacáil Fráma"
+
+msgid "Swappy Mode"
+msgstr "Mód Swappy"
 
 msgid "Physics"
 msgstr "Fisic"
@@ -331,6 +343,9 @@ msgstr "Uasmhéid (MB)"
 msgid "Texture Upload Region Size Px"
 msgstr "Uigeacht Uaslódáil Réigiún Méid Px"
 
+msgid "Texture Download Region Size Px"
+msgstr "Uigeacht Íoslódáil Réigiún Méid Px"
+
 msgid "Pipeline Cache"
 msgstr "Taisce píblíne"
 
@@ -406,6 +421,9 @@ msgstr "Smúdú Delta"
 msgid "Print Error Messages"
 msgstr "Priontáil Teachtaireachtaí Earráide"
 
+msgid "Print to stdout"
+msgstr "Priontáil chuig stdout"
+
 msgid "Physics Ticks per Second"
 msgstr "Ticeanna Fisice in aghaidh an tSoicind"
 
@@ -438,6 +456,21 @@ msgstr "Comhoiriúnacht"
 
 msgid "Legacy Just Pressed Behavior"
 msgstr "Oidhreacht Díreach Brúite Iompar"
+
+msgid "Sensors"
+msgstr "Braiteoirí"
+
+msgid "Enable Accelerometer"
+msgstr "Cumasaigh méadair luasghéaraithe"
+
+msgid "Enable Gravity"
+msgstr "Cumasaigh Domhantarraingt"
+
+msgid "Enable Gyroscope"
+msgstr "Cumasaigh Gíreascóip"
+
+msgid "Enable Magnetometer"
+msgstr "Cumasaigh Maighnéadiméadar"
 
 msgid "Device"
 msgstr "Gléas"
@@ -775,14 +808,17 @@ msgstr "Teorainn ama a iarraidh"
 msgid "Sync Breakpoints"
 msgstr "Sioncrónaigh Brisphointí"
 
-msgid "Default Feature Profile"
-msgstr "Próifíl Gné Réamhshocraithe"
-
 msgid "Label"
 msgstr "Lipéad"
 
 msgid "Read Only"
 msgstr "Léigh Amháin"
+
+msgid "Draw Label"
+msgstr "Tarraing Lipéad"
+
+msgid "Draw Background"
+msgstr "Tarraing Cúlra"
 
 msgid "Checkable"
 msgstr "Inseiceáilte"
@@ -801,6 +837,12 @@ msgstr "In-scriosta"
 
 msgid "Selectable"
 msgstr "Inroghnaithe"
+
+msgid "Use Folding"
+msgstr "Úsáid Fillte"
+
+msgid "Name Split Ratio"
+msgstr "Cóimheas Scoilte Ainm"
 
 msgid "Distraction Free Mode"
 msgstr "Mód Saor in Aisce Distraction"
@@ -874,6 +916,9 @@ msgstr "Suíomh Fophicteilíní Cló"
 msgid "Font Disable Embedded Bitmaps"
 msgstr "Cló Díchumasaigh Mapaí Giotán Leabaithe"
 
+msgid "Font Allow MSDF"
+msgstr "Cló Ceadaigh MSDF"
+
 msgid "Main Font"
 msgstr "Príomhchló"
 
@@ -930,6 +975,9 @@ msgstr "Dugaí"
 
 msgid "Scene Tree"
 msgstr "Crann Radhairc"
+
+msgid "Ask Before Revoking Unique Name"
+msgstr "Fiafraigh Roimh duit Ainm Uathúil a Chúlghairm"
 
 msgid "Inspector"
 msgstr "Cigire"
@@ -1066,8 +1114,26 @@ msgstr "Mód Taispeána"
 msgid "Thumbnail Size"
 msgstr "Méid na Mionsamhlacha"
 
+msgid "Quick Open Dialog"
+msgstr "Dialóg Oscailte Tapa"
+
 msgid "Max Results"
 msgstr "Torthaí Uasta"
+
+msgid "Show Search Highlight"
+msgstr "Taispeáin Aibhsiú an Chuardaigh"
+
+msgid "Enable Fuzzy Matching"
+msgstr "Cumasaigh Meaitseáil Doiléir"
+
+msgid "Max Fuzzy Misses"
+msgstr "Uas Fuzzy Misses"
+
+msgid "Include Addons"
+msgstr "Cuir Addons san áireamh"
+
+msgid "Default Display Mode"
+msgstr "Mód Taispeána Réamhshocraithe"
 
 msgid "Import"
 msgstr "Iompórtáil"
@@ -1111,11 +1177,17 @@ msgstr "Leathnaigh go hUathoibríoch go Roghnaithe"
 msgid "Center Node on Reparent"
 msgstr "Nód Ionaid ar Reparent"
 
+msgid "Hide Filtered Out Parents"
+msgstr "Folaigh Tuismitheoirí Scagtha Amach"
+
 msgid "Always Show Folders"
 msgstr "Taispeáin Fillteáin i gCónaí"
 
 msgid "TextFile Extensions"
 msgstr "Iarmhíreanna Téacschomhaid"
+
+msgid "Other File Extensions"
+msgstr "Eisínteachtaí Comhad Eile"
 
 msgid "Property Editor"
 msgstr "Eagarthóir Maoine"
@@ -1207,6 +1279,9 @@ msgstr "Tarraing Spásanna"
 msgid "Behavior"
 msgstr "Oibriú"
 
+msgid "Empty Selection Clipboard"
+msgstr "Gearrthaisce Roghnú Folamh"
+
 msgid "Navigation"
 msgstr "Nascleanúint"
 
@@ -1276,6 +1351,12 @@ msgstr "Athluchtaigh agus Parsáil Scripteanna go hUathoibríoch ar Sábháil"
 msgid "Open Dominant Script on Scene Change"
 msgstr "Oscail Script Cheannasach ar Athrú Radhairc"
 
+msgid "Documentation"
+msgstr "Doiciméadúchán"
+
+msgid "Enable Tooltips"
+msgstr "Cumasaigh Leideanna Uirlisí"
+
 msgid "Script List"
 msgstr "Liosta Scripteanna"
 
@@ -1290,6 +1371,9 @@ msgstr "Teocht na Scripte Cumasaithe"
 
 msgid "Script Temperature History Size"
 msgstr "Script Teocht Stair Méid"
+
+msgid "Highlight Scene Scripts"
+msgstr "Scripteanna Radharc Aibhsigh"
 
 msgid "Group Help Pages"
 msgstr "Leathanaigh Chabhrach Ghrúpa"
@@ -1314,6 +1398,9 @@ msgstr "Críochnú"
 
 msgid "Idle Parse Delay"
 msgstr "Moill pharsála díomhaoin"
+
+msgid "Idle Parse Delay With Errors Found"
+msgstr "Moill Parse Díomhaoin Le Earráidí Aimsithe"
 
 msgid "Auto Brace Complete"
 msgstr "Auto Brace Críochnaithe"
@@ -1441,6 +1528,18 @@ msgstr "Cnámh Roghnaithe"
 msgid "CSG"
 msgstr "CSGName"
 
+msgid "GridMap Grid"
+msgstr "Eangach GreilleLéarscáil"
+
+msgid "Spring Bone Joint"
+msgstr "Comhpháirteach Cnámh Earraigh"
+
+msgid "Spring Bone Collision"
+msgstr "Imbhualadh Cnámh an Earraigh"
+
+msgid "Spring Bone Inside Collision"
+msgstr "Imbhualadh Taobh istigh Cnámh Earraigh"
+
 msgid "Gizmo Settings"
 msgstr "Socruithe Gizmo"
 
@@ -1491,6 +1590,9 @@ msgstr "Mothú Nascleanúna"
 
 msgid "Orbit Sensitivity"
 msgstr "Íogaireacht na Fithise"
+
+msgid "Translation Sensitivity"
+msgstr "Íogaireacht Aistriúcháin"
 
 msgid "Orbit Inertia"
 msgstr "Táimhe na Fithise"
@@ -1687,6 +1789,9 @@ msgstr "Uaslínte"
 msgid "Platforms"
 msgstr "Ardáin"
 
+msgid "Linux/*BSD"
+msgstr "Linux/*BSD"
+
 msgid "Prefer Wayland"
 msgstr "Is fearr Wayland"
 
@@ -1710,6 +1815,9 @@ msgstr "Méid Stair an Fhráma Próifíleora"
 
 msgid "Profiler Frame Max Functions"
 msgstr "Feidhmeanna Max Fráma Próifíleora"
+
+msgid "Profiler Target FPS"
+msgstr "Próifíleoir Sprioc FPS"
 
 msgid "Remote Scene Tree Refresh Interval"
 msgstr "Eatramh Athnuachana Crann Radharc Cianda"
@@ -1963,6 +2071,9 @@ msgstr "Maol"
 msgid "Hide Slider"
 msgstr "Folaigh an Sleamhnán"
 
+msgid "Editing Integer"
+msgstr "Slánuimhir á Eagarthóireacht"
+
 msgid "Zoom"
 msgstr "Súmáil"
 
@@ -1996,8 +2107,17 @@ msgstr "Normalú Rianta Suímh"
 msgid "Reset All Bone Poses After Import"
 msgstr "Athshocraigh gach cnámh tar éis na hiompórtála"
 
+msgid "Retarget Method"
+msgstr "Modh Retarget"
+
 msgid "Keep Global Rest on Leftovers"
 msgstr "Coinnigh Scíth Dhomhanda ar Leftovers"
+
+msgid "Use Global Pose"
+msgstr "Úsáid Global Pose"
+
+msgid "Original Skeleton Name"
+msgstr "Ainm Cnámharlach Bunaidh"
 
 msgid "Fix Silhouette"
 msgstr "Deisigh Scáthchruth"
@@ -2028,6 +2148,15 @@ msgstr "Gin Tangents"
 
 msgid "Generate LODs"
 msgstr "Gin LODanna"
+
+msgid "Generate Shadow Mesh"
+msgstr "Gin Mogall Scáth"
+
+msgid "Generate Lightmap UV2"
+msgstr "Gin Lightmap UV2"
+
+msgid "Generate Lightmap UV2 Texel Size"
+msgstr "Gin Lightmap UV2 Méid Texel"
 
 msgid "Scale Mesh"
 msgstr "Mogalra Scála"
@@ -2230,6 +2359,9 @@ msgstr "Fréamhscála"
 msgid "Import as Skeleton Bones"
 msgstr "Iompórtáil mar chnámha cnámharlaigh"
 
+msgid "Use Node Type Suffixes"
+msgstr "Úsáid Iarmhíreanna Cineál Nód"
+
 msgid "Meshes"
 msgstr "Mogalraí"
 
@@ -2298,6 +2430,9 @@ msgstr "Leidiú"
 
 msgid "Subpixel Positioning"
 msgstr "Suíomh Subpixel"
+
+msgid "Keep Rounding Remainders"
+msgstr "Coinnigh na hIarmhíreanna Slánaithe"
 
 msgid "Oversampling"
 msgstr "Róshampláil"
@@ -2501,6 +2636,9 @@ msgstr "Idx an Ghrúpa Reatha"
 msgid "Current Bone Idx"
 msgstr "Idx Cnámh Reatha"
 
+msgid "Particles Emission Shape"
+msgstr "Cruth Astaíochta Cáithníní"
+
 msgid "ID"
 msgstr "Aitheantas"
 
@@ -2579,9 +2717,6 @@ msgstr "Ainm an Bhreiseáin"
 msgid "Autoload on Startup"
 msgstr "Uathluchtaigh ag am tosaithe"
 
-msgid "Use Favorites Root Selection"
-msgstr "Úsáid Roghnú Fréimhe Ceanán"
-
 msgid "Flush stdout on Print"
 msgstr "Stdout Flush ar Priontáil"
 
@@ -2602,6 +2737,9 @@ msgstr "Stdout briathartha"
 
 msgid "Physics Interpolation"
 msgstr "Idirshuíomh Fisice"
+
+msgid "Enable Warnings"
+msgstr "Cumasaigh Rabhaidh"
 
 msgid "Max Chars per Second"
 msgstr "Max Chars in aghaidh an tSoicind"
@@ -2636,6 +2774,9 @@ msgstr "Fallback go Vulkan"
 msgid "Fallback to D3D12"
 msgstr "Fallback go D3D12"
 
+msgid "Fallback to OpenGL 3"
+msgstr "Fill ar ais go OpenGL 3"
+
 msgid "GL Compatibility"
 msgstr "Comhoiriúnacht GL"
 
@@ -2647,6 +2788,9 @@ msgstr "Fallback go Uillinn"
 
 msgid "Fallback to Native"
 msgstr "Fallback go Dúchasach"
+
+msgid "Fallback to GLES"
+msgstr "Till ar ais go GLES"
 
 msgid "Force Angle on Devices"
 msgstr "Fórsáil Uillinn ar Ghléasanna"
@@ -2744,14 +2888,35 @@ msgstr "Foláireamh Tosaithe"
 msgid "Extensions"
 msgstr "Iarmhíreanna"
 
+msgid "Debug Utils"
+msgstr "Utils dífhabhtaithe"
+
+msgid "Debug Message Types"
+msgstr "Cineálacha Teachtaireachtaí Dífhabhtaithe"
+
 msgid "Hand Tracking"
 msgstr "Rianú Láimhe"
+
+msgid "Hand Tracking Unobstructed Data Source"
+msgstr "Rianú Láimhe Foinse Sonraí Gan Bhac"
+
+msgid "Hand Tracking Controller Data Source"
+msgstr "Foinse Sonraí Rialaitheora Rianaithe Láimhe"
 
 msgid "Hand Interaction Profile"
 msgstr "Próifíl Idirghníomhaíochta Láimhe"
 
 msgid "Eye Gaze Interaction"
 msgstr "Idirghníomhaíocht Súl"
+
+msgid "Binding Modifiers"
+msgstr "Mionathraitheoirí Ceangailteacha"
+
+msgid "Analog Threshold"
+msgstr "Tairseach Analógach"
+
+msgid "Dpad Binding"
+msgstr "Ceangal Dpad"
 
 msgid "Boot Splash"
 msgstr "Splancscáileán Tosaithe"
@@ -2801,14 +2966,14 @@ msgstr "Fritháireamh Suímh Leideanna"
 msgid "Show Image"
 msgstr "Taispeáin Íomhá"
 
-msgid "Image"
-msgstr "Íomhá"
-
 msgid "Fullsize"
 msgstr "Lánmhéid"
 
 msgid "Use Filter"
 msgstr "Úsáid scagaire"
+
+msgid "Image"
+msgstr "Íomhá"
 
 msgid "Minimum Display Time"
 msgstr "Am Taispeána Íosta"
@@ -2924,6 +3089,27 @@ msgstr "Imill Ceangailte"
 msgid "Edges Free"
 msgstr "Imill Saor in Aisce"
 
+msgid "Obstacles"
+msgstr "Constaicí"
+
+msgid "Pipeline"
+msgstr "Píblíne"
+
+msgid "Compilations Canvas"
+msgstr "Canbhás Tiomsú"
+
+msgid "Compilations Mesh"
+msgstr "Mogalra Tiomsú"
+
+msgid "Compilations Surface"
+msgstr "Dromchla Tiomsú"
+
+msgid "Compilations Draw"
+msgstr "Tiomsuithe Tarraingthe"
+
+msgid "Compilations Specialization"
+msgstr "Speisialtóireacht Tiomsú"
+
 msgid "Operation"
 msgstr "Oibríocht"
 
@@ -3005,6 +3191,9 @@ msgstr "Conair Shimpliú Uillinn"
 msgid "Path Rotation"
 msgstr "Rothlú an Chosáin"
 
+msgid "Path Rotation Accurate"
+msgstr "Rothlú Conair Cruinn"
+
 msgid "Path Local"
 msgstr "Conair Logánta"
 
@@ -3076,6 +3265,9 @@ msgstr "Uasmhéid Carn Glaonna"
 
 msgid "Exclude Addons"
 msgstr "Ná Cuir Breiseáin as an áireamh"
+
+msgid "Renamed in Godot 4 Hint"
+msgstr "Athainmníodh i Godot 4 Hint"
 
 msgid "Language Server"
 msgstr "Freastalaí Teanga"
@@ -3341,6 +3533,24 @@ msgstr "Leanaí"
 msgid "Light"
 msgstr "Solas"
 
+msgid "glTF to Godot Expression"
+msgstr "glTF a Slonn Godot"
+
+msgid "Godot to glTF Expression"
+msgstr "Godot go glTF Slonn"
+
+msgid "Node Paths"
+msgstr "Cosáin Nód"
+
+msgid "Object Model Type"
+msgstr "Cineál Múnla Oibiachta"
+
+msgid "Json Pointers"
+msgstr "Leideanna Json"
+
+msgid "Variant Type"
+msgstr "Cineál Athróg"
+
 msgid "Joints"
 msgstr "Ailt"
 
@@ -3422,6 +3632,114 @@ msgstr "Am Céimnithe"
 msgid "Stream Count"
 msgstr "Líon na Sruthanna"
 
+msgid "Jolt Physics 3D"
+msgstr "Jolt fisic 3#d"
+
+msgid "Simulation"
+msgstr "Insamhladh"
+
+msgid "Velocity Steps"
+msgstr "Céimeanna Treoluas"
+
+msgid "Position Steps"
+msgstr "Céimeanna an tSuímh"
+
+msgid "Use Enhanced Internal Edge Removal"
+msgstr "Bain úsáid as Baint Imeall Inmheánach Feabhsaithe"
+
+msgid "Areas Detect Static Bodies"
+msgstr "Limistéir a Bhrath Comhlachtaí Statach"
+
+msgid "Generate All Kinematic Contacts"
+msgstr "Gin Gach Teagmhálaí Cinematic"
+
+msgid "Penetration Slop"
+msgstr "Fána Treá"
+
+msgid "Speculative Contact Distance"
+msgstr "Fad Teagmhála Amhantrach"
+
+msgid "Baumgarte Stabilization Factor"
+msgstr "Fachtóir Cobhsaíochta Baumgarte"
+
+msgid "Soft Body Point Radius"
+msgstr "Ga Bogphointe Coirp"
+
+msgid "Bounce Velocity Threshold"
+msgstr "Tairseach Treoluas Preab"
+
+msgid "Allow Sleep"
+msgstr "Ceadaigh Codladh"
+
+msgid "Sleep Velocity Threshold"
+msgstr "Tairseach Treoluas Codlata"
+
+msgid "Sleep Time Threshold"
+msgstr "Tairseach Am Codlata"
+
+msgid "Continuous CD Movement Threshold"
+msgstr "Tairseach Gluaiseachta CD Leanúnach"
+
+msgid "Continuous CD Max Penetration"
+msgstr "Treá uasta CD leanúnach"
+
+msgid "Body Pair Contact Cache Enabled"
+msgstr "Cumasaíodh Taisce Teagmhála Péire Coirp"
+
+msgid "Body Pair Contact Cache Distance Threshold"
+msgstr "Coirp Péire Teagmhála Taisce Cian-thairseach"
+
+msgid "Body Pair Contact Cache Angle Threshold"
+msgstr "Péire Coirp Teagmháil Taisce Uillinn Tairseach"
+
+msgid "Queries"
+msgstr "Ceisteanna"
+
+msgid "Enable Ray Cast Face Index"
+msgstr "Cumasaigh Innéacs Aghaidh Ray Cast"
+
+msgid "Motion Queries"
+msgstr "Ceisteanna Tairisceana"
+
+msgid "Recovery Iterations"
+msgstr "Atriallta Aisghabhála"
+
+msgid "Recovery Amount"
+msgstr "Méid Aisghabhála"
+
+msgid "Collisions"
+msgstr "Imbhuailtí"
+
+msgid "Collision Margin Fraction"
+msgstr "Codán Corrlach Imbhuailte"
+
+msgid "Active Edge Threshold"
+msgstr "Tairseach Imeall Gníomhach"
+
+msgid "World Node"
+msgstr "Nód Domhanda"
+
+msgid "Temporary Memory Buffer Size"
+msgstr "Méid Maolán Cuimhne Sealadach"
+
+msgid "World Boundary Shape Size"
+msgstr "Méid Cruth na Teorann Domhanda"
+
+msgid "Max Linear Velocity"
+msgstr "Luas Líneach Uasta"
+
+msgid "Max Angular Velocity"
+msgstr "Uasta treoluas uilleach"
+
+msgid "Max Bodies"
+msgstr "Comhlachtaí Uas"
+
+msgid "Max Body Pairs"
+msgstr "Uas Péirí Coirp"
+
+msgid "Max Contact Constraints"
+msgstr "Srianta Teagmhála Uasta"
+
 msgid "Lightmapping"
 msgstr "Mapáil solais"
 
@@ -3449,6 +3767,9 @@ msgstr "Ghathanna Max in aghaidh an Phas"
 msgid "Region Size"
 msgstr "Méid an Réigiúin"
 
+msgid "Max Transparency Rays"
+msgstr "Ghathanna Trédhearcachta Uas"
+
 msgid "Low Quality Probe Ray Count"
 msgstr "Líon Ray Probe Cáilíochta Íseal"
 
@@ -3469,6 +3790,9 @@ msgstr "Dífuaimiú"
 
 msgid "Denoiser"
 msgstr "DenoiserName"
+
+msgid "Enable TLS V 1"
+msgstr "Cumasaigh TLS V 1"
 
 msgid "BPM"
 msgstr "BPM"
@@ -3511,9 +3835,6 @@ msgstr "Vulkan VRS"
 
 msgid "Min Radius"
 msgstr "Ga Min"
-
-msgid "Spawnable Scenes"
-msgstr "Radhairc Sceite"
 
 msgid "Spawn Path"
 msgstr "Conair Sceite"
@@ -3647,11 +3968,44 @@ msgstr "Cineál Gnímh"
 msgid "Toplevel Paths"
 msgstr "Cosáin Toplevel"
 
+msgid "Binding Path"
+msgstr "Cosán Ceangailteacha"
+
 msgid "Interaction Profile Path"
 msgstr "Conair Phróifíl Idirghníomhaíochta"
 
 msgid "Runtime Paths"
 msgstr "Cosáin Am Rith"
+
+msgid "Action Set"
+msgstr "Tacar Gníomhaíochta"
+
+msgid "Input Path"
+msgstr "Cosán Ionchuir"
+
+msgid "Threshold Released"
+msgstr "Tairseach Eisithe"
+
+msgid "Center Region"
+msgstr "Réigiún Lár"
+
+msgid "Wedge Angle"
+msgstr "Uillinn Ding"
+
+msgid "Is Sticky"
+msgstr "An bhfuil Greamaitheach"
+
+msgid "On Haptic"
+msgstr "Ar Haptic"
+
+msgid "Off Haptic"
+msgstr "As Haptic"
+
+msgid "On Threshold"
+msgstr "Ar Tairseach"
+
+msgid "Off Threshold"
+msgstr "Lasmuigh den Tairseach"
 
 msgid "Display Refresh Rate"
 msgstr "Taispeáin Ráta Athnuachana"
@@ -3661,6 +4015,12 @@ msgstr "Rindreáil Iolraitheoir Spriocmhéid"
 
 msgid "Layer Viewport"
 msgstr "Amharcphort na Sraithe"
+
+msgid "Use Android Surface"
+msgstr "Úsáid Dromchla Android"
+
+msgid "Android Surface Size"
+msgstr "Méid Dromchla Android"
 
 msgid "Sort Order"
 msgstr "Ord Sórtála"
@@ -3770,6 +4130,9 @@ msgstr "Teorainn Ama Handshake"
 msgid "Max Queued Packets"
 msgstr "Paicéid Ciúáilte Uasta"
 
+msgid "Heartbeat Interval"
+msgstr "Eatramh buille croí"
+
 msgid "Session Mode"
 msgstr "Mód Seisiúin"
 
@@ -3817,6 +4180,9 @@ msgstr "Tulra Oiriúnaitheach 432 x 432"
 
 msgid "Adaptive Background 432 X 432"
 msgstr "Cúlra oiriúnaitheach 432 x 432"
+
+msgid "Adaptive Monochrome 432 X 432"
+msgstr "Monacrómach Oiriúnaitheach 432 X 432"
 
 msgid "Gradle Build"
 msgstr "Tógáil Gradle"
@@ -3905,6 +4271,12 @@ msgstr "Gnéithe XR"
 msgid "XR Mode"
 msgstr "Mód XR"
 
+msgid "Gesture"
+msgstr "Gothaí"
+
+msgid "Swipe to Dismiss"
+msgstr "Svaidhpeáil chun é a dhífhostú"
+
 msgid "Screen"
 msgstr "Scáileán"
 
@@ -3968,8 +4340,17 @@ msgstr "Fógra 40 X 40"
 msgid "Notification 60 X 60"
 msgstr "Fógra 60 X 60"
 
+msgid "Notification 76 X 76"
+msgstr "Fógra 76 X 76"
+
+msgid "Notification 114 X 114"
+msgstr "Fógra 114 X 114"
+
 msgid "Spotlight 80 X 80"
 msgstr "Spotsolas 80 X 80"
+
+msgid "Spotlight 120 X 120"
+msgstr "Spotsolas 120X120"
 
 msgid "iPhone 120 X 120"
 msgstr "iPhone 120 X 120"
@@ -3982,6 +4363,15 @@ msgstr "iPad 167 X 167"
 
 msgid "iPad 152 X 152"
 msgstr "iPad 152 X 152"
+
+msgid "iOS 128 X 128"
+msgstr "iOS 128 X 128"
+
+msgid "iOS 192 X 192"
+msgstr "iOS 192 X 192"
+
+msgid "iOS 136 X 136"
+msgstr "iOS 136 X 136"
 
 msgid "App Store 1024 X 1024"
 msgstr "Siopa Aipeanna 1024 X 1024"
@@ -4003,6 +4393,12 @@ msgstr "Próifíl Soláthair UUID Dífhabhtaithe"
 
 msgid "Provisioning Profile UUID Release"
 msgstr "Próifíl Soláthair Scaoileadh UUID"
+
+msgid "Provisioning Profile Specifier Debug"
+msgstr "Dífhabhtaithe Sonraitheora Próifíl Soláthair"
+
+msgid "Provisioning Profile Specifier Release"
+msgstr "Eisiúint Sonróra Próifíl Soláthair"
 
 msgid "Export Method Release"
 msgstr "Scaoileadh modh easpórtála"
@@ -4037,8 +4433,17 @@ msgstr "Scrios Seanchomhaid Easpórtála gan choinníoll"
 msgid "Entitlements"
 msgstr "Teidlíochtaí"
 
+msgid "Increased Memory Limit"
+msgstr "Teorainn Mhéadaithe Cuimhne"
+
+msgid "Game Center"
+msgstr "Ionad Cluiche"
+
 msgid "Push Notifications"
 msgstr "Fógraí Brú"
+
+msgid "Additional"
+msgstr "Breise"
 
 msgid "Capabilities"
 msgstr "Cumais"
@@ -4088,6 +4493,15 @@ msgstr "Rianú Cumasaithe"
 msgid "Tracking Domains"
 msgstr "Fearainn Rianaithe"
 
+msgid "Icon 1024 X 1024"
+msgstr "Deilbhín 1024X 1024"
+
+msgid "Icon 1024 X 1024 Dark"
+msgstr "Deilbhín 1024 X 1024 Dorcha"
+
+msgid "Icon 1024 X 1024 Tinted"
+msgstr "Deilbhín 1024 X 1024 Tinted"
+
 msgid "Storyboard"
 msgstr "Clár scéalaíochta"
 
@@ -4129,6 +4543,12 @@ msgstr "Cineál Dáilte"
 
 msgid "Copyright Localized"
 msgstr "Cóipcheart Logánaithe"
+
+msgid "Min macOS Version x86 64"
+msgstr "Min macOS Leagan x86 64"
+
+msgid "Min macOS Version arm64"
+msgstr "Min macOS Leagan arm64"
 
 msgid "Export Angle"
 msgstr "Easpórtáil Uillinn"
@@ -4594,6 +5014,9 @@ msgstr "Pléascán"
 
 msgid "Randomness"
 msgstr "Randamacht"
+
+msgid "Use Fixed Seed"
+msgstr "Úsáid Síl Seasta"
 
 msgid "Lifetime Randomness"
 msgstr "Randamacht Saoil"
@@ -5373,6 +5796,9 @@ msgstr "Mód Infheictheachta Imbhuailtí"
 msgid "Navigation Visibility Mode"
 msgstr "Mód Infheictheachta Nascleanúna"
 
+msgid "Occlusion Enabled"
+msgstr "Occlusion Cumasaithe"
+
 msgid "Y Sort Origin"
 msgstr "Y Sórtáil Origin"
 
@@ -5502,6 +5928,9 @@ msgstr "Ga Fáinne"
 msgid "Ring Inner Radius"
 msgstr "Fáinne Ga Istigh"
 
+msgid "Ring Cone Angle"
+msgstr "Uillinn Cón Fáinne"
+
 msgid "Rotate Y"
 msgstr "Rothlaigh Y"
 
@@ -5574,6 +6003,9 @@ msgstr "Mód Nuashonraithe"
 
 msgid "Follow Camera Enabled"
 msgstr "Lean an Ceamara Cumasaithe"
+
+msgid "Heightfield Mask"
+msgstr "Masc Airde"
 
 msgid "Directionality"
 msgstr "Treoíocht"
@@ -5722,6 +6154,9 @@ msgstr "Teimhneacht"
 msgid "Blur"
 msgstr "Doiléirigh"
 
+msgid "Caster Mask"
+msgstr "Masc Caster"
+
 msgid "Directional Shadow"
 msgstr "Scáth Treoch"
 
@@ -5758,8 +6193,20 @@ msgstr "Spota"
 msgid "Angle Attenuation"
 msgstr "Maolú uillinne"
 
+msgid "Lightmap Textures"
+msgstr "Uigeachtaí Lightmap"
+
+msgid "Shadowmask Textures"
+msgstr "Uigeachtaí Shadowmask"
+
 msgid "Quality"
 msgstr "Cáilíocht"
+
+msgid "Supersampling"
+msgstr "Sárshampláil"
+
+msgid "Supersampling Factor"
+msgstr "Fachtóir Sárshamplála"
 
 msgid "Bounces"
 msgstr "Preabanna"
@@ -5769,6 +6216,9 @@ msgstr "Preab Fuinneamh Indíreach"
 
 msgid "Directional"
 msgstr "Treo"
+
+msgid "Shadowmask Mode"
+msgstr "Mód Shadowmask"
 
 msgid "Use Texture for Bounces"
 msgstr "Úsáid uigeacht le haghaidh preabanna"
@@ -5815,8 +6265,77 @@ msgstr "Sonraí Solais"
 msgid "Target Node"
 msgstr "Sprioc nód"
 
+msgid "Forward Axis"
+msgstr "Ais ar Aghaidh"
+
+msgid "Primary Rotation Axis"
+msgstr "Ais Rothlaithe Príomhúil"
+
+msgid "Use Secondary Rotation"
+msgstr "Úsáid Rothlú Tánaisteach"
+
+msgid "Origin Settings"
+msgstr "Socruithe Bunús"
+
 msgid "From"
 msgstr "Ó"
+
+msgid "External Node"
+msgstr "Nód Seachtrach"
+
+msgid "Time Based Interpolation"
+msgstr "Idirshuíomh Ambhunaithe"
+
+msgid "Transition Type"
+msgstr "Cineál Aistrithe"
+
+msgid "Ease Type"
+msgstr "Cineál Éasca"
+
+msgid "Angle Limitation"
+msgstr "Teorainn Uillinn"
+
+msgid "Use Angle Limitation"
+msgstr "Úsáid Teorainn Uillinn"
+
+msgid "Symmetry Limitation"
+msgstr "Teorainn Siméadrachta"
+
+msgid "Primary Limit Angle"
+msgstr "Uillinn Teorainn Phríomhúil"
+
+msgid "Primary Damp Threshold"
+msgstr "Buntairseach Taise"
+
+msgid "Primary Positive Limit Angle"
+msgstr "Uillinn Teorainn Dhearfach Bunscoile"
+
+msgid "Primary Positive Damp Threshold"
+msgstr "Príomhthairseach Taise Dearfach"
+
+msgid "Primary Negative Limit Angle"
+msgstr "Uillinn Teorainn Dhiúltach Bunscoile"
+
+msgid "Primary Negative Damp Threshold"
+msgstr "Buntairseach Taise Diúltach"
+
+msgid "Secondary Limit Angle"
+msgstr "Uillinn Teorainn Tánaisteach"
+
+msgid "Secondary Damp Threshold"
+msgstr "Tairseach Taise Tánaisteach"
+
+msgid "Secondary Positive Limit Angle"
+msgstr "Uillinn Teorainn Dearfach Tánaisteach"
+
+msgid "Secondary Positive Damp Threshold"
+msgstr "Tairseach Taise Dearfach Tánaisteach"
+
+msgid "Secondary Negative Limit Angle"
+msgstr "Uillinn Teorainn Dhiúltach Tánaisteach"
+
+msgid "Secondary Negative Damp Threshold"
+msgstr "Tairseach Taise Diúltach Tánaisteach"
 
 msgid "Surface Material Override"
 msgstr "Sáraigh Ábhar Dromchla"
@@ -5892,6 +6411,9 @@ msgstr "Ráiteoir Roghnaithe"
 
 msgid "Capture on Drag"
 msgstr "Gabháil ar Tarraing"
+
+msgid "Debug Fill"
+msgstr "Líonadh Dífhabhtaithe"
 
 msgid "Swing Span"
 msgstr "Réise Luascáin"
@@ -6142,6 +6664,9 @@ msgstr "Taisteal"
 msgid "Max Force"
 msgstr "Fórsa Uasta"
 
+msgid "Blend Distance"
+msgstr "Cumasc Fad"
+
 msgid "Origin Offset"
 msgstr "Fritháireamh Tionscnaimh"
 
@@ -6250,6 +6775,12 @@ msgstr "Tarraing Comhéifeacht"
 msgid "Position Offset"
 msgstr "Fritháireamh Suímh"
 
+msgid "Rotation Offset"
+msgstr "Fritháireamh Rothlaithe"
+
+msgid "Inside"
+msgstr "Laistigh"
+
 msgid "Track Physics Step"
 msgstr "Céim na Fisice Riain"
 
@@ -6285,6 +6816,9 @@ msgstr "Déan neamhaird de Culling Occlusion"
 
 msgid "Global Illumination"
 msgstr "Soilsiú Domhanda"
+
+msgid "Lightmap Texel Scale"
+msgstr "Scála Lightmap Texel"
 
 msgid "Lightmap Scale"
 msgstr "Scála Mapa Solais"
@@ -6324,6 +6858,9 @@ msgstr "Scála Domhanda"
 
 msgid "Play Mode"
 msgstr "Mód Seinnte"
+
+msgid "Advance on Start"
+msgstr "Chun cinn ar Tosaigh"
 
 msgid "Use Custom Timeline"
 msgstr "Úsáid Amlíne Shaincheaptha"
@@ -6366,6 +6903,9 @@ msgstr "Moill"
 
 msgid "Random Delay"
 msgstr "Moill Randamach"
+
+msgid "Explicit Elapse"
+msgstr "Éalú follasach"
 
 msgid "Xfade Time"
 msgstr "Am Xfade"
@@ -6423,6 +6963,9 @@ msgstr "Gluaisne Fréimhe"
 
 msgid "Track"
 msgstr "Amhrán"
+
+msgid "Local"
+msgstr "Áitiúil"
 
 msgid "Callback Mode"
 msgstr "Mód aisghlaoigh"
@@ -6558,6 +7101,9 @@ msgstr "Úsáid Barr ar Chlé"
 
 msgid "Symbol Lookup on Click"
 msgstr "Siombail Lookup ar Cliceáil"
+
+msgid "Symbol Tooltip on Hover"
+msgstr "Leid Uirlis Siombail ar Ainlíonn"
 
 msgid "Line Folding"
 msgstr "Líne Fillte"
@@ -6703,6 +7249,9 @@ msgstr "Logánaigh Córas Uimhriúil"
 msgid "Tooltip"
 msgstr "Leid Uirlisí"
 
+msgid "Auto Translate Mode"
+msgstr "Mód Aistrithe Uathoibríoch"
+
 msgid "Focus"
 msgstr "Fócas"
 
@@ -6763,6 +7312,9 @@ msgstr "Sáraíonn an Mód Teideal"
 msgid "Root Subfolder"
 msgstr "Fofhillteán Fréimhe"
 
+msgid "Filename Filter"
+msgstr "Scagaire Ainm Comhaid"
+
 msgid "Use Native Dialog"
 msgstr "Úsáid Dialóg Dhúchasach"
 
@@ -6792,6 +7344,9 @@ msgstr "Línte ceangail"
 
 msgid "Curvature"
 msgstr "Cuaire"
+
+msgid "Connections"
+msgstr "Naisc"
 
 msgid "Zoom Min"
 msgstr "Zúmáil Min"
@@ -6865,8 +7420,14 @@ msgstr "Ceadaigh Cuardach"
 msgid "Max Text Lines"
 msgstr "Uaslínte Téacs"
 
+msgid "Auto Width"
+msgstr "Leithead Uathoibríoch"
+
 msgid "Auto Height"
 msgstr "Airde Uathoibríoch"
+
+msgid "Wraparound Items"
+msgstr "Míreanna Timfhilleadh"
 
 msgid "Items"
 msgstr "Míreanna"
@@ -6891,6 +7452,9 @@ msgstr "Méid na nDeilbhíní Seasta"
 
 msgid "Label Settings"
 msgstr "Socruithe Lipéid"
+
+msgid "Paragraph Separator"
+msgstr "Míreanna Timfhilleadh"
 
 msgid "Ellipsis Char"
 msgstr "Éilipsis Char"
@@ -6922,11 +7486,17 @@ msgstr "Téacs an Ionadchoinneálaí"
 msgid "Max Length"
 msgstr "Fad Uasta"
 
+msgid "Keep Editing on Text Submit"
+msgstr "Coinnigh an Eagarthóireacht ar Seol Téacs"
+
 msgid "Expand to Text Length"
 msgstr "Leathnaigh go Fad an Téacs"
 
 msgid "Context Menu Enabled"
 msgstr "Roghchlár Comhthéacs Cumasaithe"
+
+msgid "Emoji Menu Enabled"
+msgstr "Roghchlár Emoji Cumasaithe"
 
 msgid "Virtual Keyboard Enabled"
 msgstr "Méarchlár Fíorúil Cumasaithe"
@@ -7138,6 +7708,9 @@ msgstr "Céim Shaincheaptha"
 msgid "Follow Focus"
 msgstr "Lean Fócas"
 
+msgid "Draw Focus Border"
+msgstr "Tarraing Teorainn Fócas"
+
 msgid "Horizontal Custom Step"
 msgstr "Céim Shaincheaptha Chothrománach"
 
@@ -7177,11 +7750,29 @@ msgstr "Fritháireamh Scoilte"
 msgid "Collapsed"
 msgstr "Tite as a chéile"
 
+msgid "Dragging Enabled"
+msgstr "Tarraingt Cumasaithe"
+
 msgid "Dragger Visibility"
 msgstr "Infheictheacht Dragger"
 
+msgid "Drag Area"
+msgstr "Ceantar Tarraing"
+
+msgid "Margin Begin"
+msgstr "Imeall Tosaigh"
+
+msgid "Margin End"
+msgstr "Deireadh Imeall"
+
+msgid "Highlight in Editor"
+msgstr "Buaicphointe san Eagarthóir"
+
 msgid "Stretch Shrink"
 msgstr "Sín Laghdaigh"
+
+msgid "Mouse Target"
+msgstr "Sprioc Luiche"
 
 msgid "Current Tab"
 msgstr "Cluaisín Reatha"
@@ -7234,6 +7825,9 @@ msgstr "Bain úsáid as cluaisíní i bhfolach le haghaidh méid min"
 msgid "Tab Focus Mode"
 msgstr "Mód Fócas Cluaisíní"
 
+msgid "Empty Selection Clipboard Enabled"
+msgstr "Gearrthaisce Roghnúcháin Folamh Cumasaithe"
+
 msgid "Wrap Mode"
 msgstr "Timfhilleadh Mód"
 
@@ -7245,6 +7839,9 @@ msgstr "Deireadh an Chomhaid Roimhe Seo"
 
 msgid "Fit Content Height"
 msgstr "Oiriúnaigh Airde an Ábhair"
+
+msgid "Fit Content Width"
+msgstr "Leithead Ábhar Fit"
 
 msgid "Draw"
 msgstr "Tarraing"
@@ -7348,6 +7945,9 @@ msgstr "Scrollaigh Cothrománach Cumasaithe"
 
 msgid "Scroll Vertical Enabled"
 msgstr "Scrollaigh Ingearach Cumasaithe"
+
+msgid "Auto Tooltip"
+msgstr "Leid Uathoibríoch"
 
 msgid "Audio Track"
 msgstr "Rian Fuaime"
@@ -7490,23 +8090,14 @@ msgstr "Uasteagmhálacha ar taispeáint"
 msgid "Draw 2D Outlines"
 msgstr "Tarraing Imlíne 2T"
 
-msgid "Anti Aliasing"
-msgstr "Frithailiasáil"
-
-msgid "MSAA 2D"
-msgstr "MSAA 2D"
-
-msgid "MSAA 3D"
-msgstr "MSAA 3D"
-
 msgid "Viewport"
 msgstr "Amharcphort"
 
 msgid "Transparent Background"
 msgstr "Cúlra Trédhearcach"
 
-msgid "HDR 2D"
-msgstr "HDR 2D"
+msgid "Anti Aliasing"
+msgstr "Frithailiasáil"
 
 msgid "Screen Space AA"
 msgstr "Spás Scáileáin AA"
@@ -7550,9 +8141,6 @@ msgstr "Scáth Suímh"
 msgid "Atlas Size"
 msgstr "Atlas Méid"
 
-msgid "Atlas 16 Bits"
-msgstr "Atlas 16 giotán"
-
 msgid "Atlas Quadrant 0 Subdiv"
 msgstr "Ceathrúchán Atláis 0 Fo-roinn"
 
@@ -7586,6 +8174,9 @@ msgstr "Am Feithimh"
 msgid "Autostart"
 msgstr "Uath- thosaithe"
 
+msgid "Ignore Time Scale"
+msgstr "Déan neamhaird de Scála Ama"
+
 msgid "Viewport Path"
 msgstr "Conair an Phoirt Amhairc"
 
@@ -7606,6 +8197,12 @@ msgstr "BG Trédhearcach"
 
 msgid "Handle Input Locally"
 msgstr "Láimhseáil Ionchur go hÁitiúil"
+
+msgid "MSAA 2D"
+msgstr "MSAA 2D"
+
+msgid "MSAA 3D"
+msgstr "MSAA 3D"
 
 msgid "Debug Draw"
 msgstr "Tarraingt Dífhabhtaithe"
@@ -7720,6 +8317,9 @@ msgstr "Preabfhuinneog"
 
 msgid "Mouse Passthrough"
 msgstr "Passthrough Luiche"
+
+msgid "Exclude From Capture"
+msgstr "Eisia Ó Gabháil"
 
 msgid "Force Native"
 msgstr "Fórsa Dúchasach"
@@ -8000,6 +8600,9 @@ msgstr "Mír"
 msgid "Mesh Transform"
 msgstr "Mogalra Trasfhoirmigh"
 
+msgid "Mesh Cast Shadow"
+msgstr "Scáth Cast Mogall"
+
 msgid "Navigation Mesh Transform"
 msgstr "Nascleanúint mogalra Trasfhoirmigh"
 
@@ -8260,6 +8863,12 @@ msgstr "Éifeachtaí Compositor"
 
 msgid "Load Path"
 msgstr "Luchtaigh Conair"
+
+msgid "Min Domain"
+msgstr "Fearann Íosta"
+
+msgid "Max Domain"
+msgstr "Fearann Uas"
 
 msgid "Bake Resolution"
 msgstr "Rún Bácála"
@@ -8530,6 +9139,9 @@ msgstr "Úsáid HDR"
 
 msgid "To"
 msgstr "Chun"
+
+msgid "Paragraph Spacing"
+msgstr "Spásáil Alt"
 
 msgid "Next Pass"
 msgstr "An Chéad Phas Eile"
@@ -8822,6 +9434,9 @@ msgstr "Ga Fáinne Astaíochta"
 msgid "Emission Ring Inner Radius"
 msgstr "Ga istigh fáinne astaíochta"
 
+msgid "Emission Ring Cone Angle"
+msgstr "Uillinn Cón Fáinne Astaíochta"
+
 msgid "Inherit Velocity Ratio"
 msgstr "Cóimheas treoluais oidhreachta"
 
@@ -8893,6 +9508,9 @@ msgstr "Méid ag deireadh"
 
 msgid "Amount at Collision"
 msgstr "Méid ag Imbhualadh"
+
+msgid "Amount at Start"
+msgstr "Méid ag Tosaigh"
 
 msgid "Keep Velocity"
 msgstr "Coinnigh treoluas"
@@ -9046,6 +9664,9 @@ msgstr "Luach Réamhshocraithe Cumasaithe"
 
 msgid "Default Value"
 msgstr "Luach Réamhshocraithe"
+
+msgid "Enum Names"
+msgstr "Ainmneacha Enum"
 
 msgid "Color Default"
 msgstr "Réamhshocrú datha"
@@ -9245,6 +9866,9 @@ msgstr "Réigiún Cód Fillte"
 msgid "Folded EOL Icon"
 msgstr "Deilbhín EOL Fillte"
 
+msgid "Completion Color BG"
+msgstr "Dath Críochnaithe BG"
+
 msgid "Completion Lines"
 msgstr "Línte Críochnaithe"
 
@@ -9308,6 +9932,96 @@ msgstr "Fritháireamh Grabber"
 msgid "Updown"
 msgstr "Suas an Dún"
 
+msgid "Up"
+msgstr "Suas"
+
+msgid "Up Hover"
+msgstr "Aoibhneas Suas"
+
+msgid "Up Pressed"
+msgstr "Suas Brúite"
+
+msgid "Up Disabled"
+msgstr "Suas faoi Mhíchumas"
+
+msgid "Down"
+msgstr "Síos"
+
+msgid "Down Hover"
+msgstr "Dún Hobhair"
+
+msgid "Down Pressed"
+msgstr "Síos Brúite"
+
+msgid "Down Disabled"
+msgstr "Síos Díchumasaithe"
+
+msgid "Up Background"
+msgstr "Cúlra Suas"
+
+msgid "Up Background Hovered"
+msgstr "Cúlra Suas Folaithe"
+
+msgid "Up Background Pressed"
+msgstr "Cúlra Suas Brúite"
+
+msgid "Up Background Disabled"
+msgstr "Cúlra Suas Díchumasaithe"
+
+msgid "Down Background"
+msgstr "Cúlra Síos"
+
+msgid "Down Background Hovered"
+msgstr "Cúlra Dúin Folaithe"
+
+msgid "Down Background Pressed"
+msgstr "Cúlra an Dúin Brúite"
+
+msgid "Down Background Disabled"
+msgstr "Cúlra an Dúin Díchumasaithe"
+
+msgid "Up Icon Modulate"
+msgstr "Modúl Icon Suas"
+
+msgid "Up Hover Icon Modulate"
+msgstr " "
+
+msgid "Up Pressed Icon Modulate"
+msgstr "Modulate Icon Brúite Suas"
+
+msgid "Up Disabled Icon Modulate"
+msgstr "Suas Modulate Icon Díchumasaithe"
+
+msgid "Down Icon Modulate"
+msgstr "Dúin Icon Modulate"
+
+msgid "Down Hover Icon Modulate"
+msgstr "Modulate Icon Down Hover"
+
+msgid "Down Pressed Icon Modulate"
+msgstr "Dúin Brúigh Icon Modulate"
+
+msgid "Down Disabled Icon Modulate"
+msgstr "Síos Díchumasaithe Deilbhín Modhnaigh"
+
+msgid "Field and Buttons Separator"
+msgstr "Réimse agus Deighilteoir Cnaipí"
+
+msgid "Up Down Buttons Separator"
+msgstr "Deighilteoir Cnaipí Suas Síos"
+
+msgid "Buttons Vertical Separation"
+msgstr "Cnaipí Scaradh Ingearach"
+
+msgid "Field and Buttons Separation"
+msgstr "Scaradh Réimse agus Cnaipí"
+
+msgid "Buttons Width"
+msgstr "Cnaipí Leithead"
+
+msgid "Set Min Buttons Width From Icons"
+msgstr "Socraigh Leithead Mionchnaipí Ó Dheilbhíní"
+
 msgid "Embedded Border"
 msgstr "Teorainn Leabaithe"
 
@@ -9350,6 +10064,12 @@ msgstr "Dún Fritháireamh V"
 msgid "Buttons Separation"
 msgstr "Scaradh Cnaipí"
 
+msgid "Load"
+msgstr "Luchtaigh"
+
+msgid "Save"
+msgstr "Sábháil"
+
 msgid "Parent Folder"
 msgstr "Máthairfhillteán"
 
@@ -9364,6 +10084,9 @@ msgstr "Athluchtaigh"
 
 msgid "Toggle Hidden"
 msgstr "Scoránaigh i bhfolach"
+
+msgid "Toggle Filename Filter"
+msgstr "Scoránaigh an Scagaire Ainm Comhaid"
 
 msgid "Folder"
 msgstr "Fillteán"
@@ -9446,6 +10169,9 @@ msgstr "Fritháireamh Phort H"
 msgid "Hovered"
 msgstr "Ag Dul Ar"
 
+msgid "Hovered Dimmed"
+msgstr "Ag faoileáil doiléir"
+
 msgid "Selected Focus"
 msgstr "Fócas Roghnaithe"
 
@@ -9454,6 +10180,9 @@ msgstr "Cúrsóir"
 
 msgid "Cursor Unfocused"
 msgstr "Cúrsóir Neamhdhírithe"
+
+msgid "Button Hover"
+msgstr "Cnaipe ag faoileáil"
 
 msgid "Title Button Normal"
 msgstr "Cnaipe Teidil Gnáth"
@@ -9496,6 +10225,9 @@ msgstr "Dath an Chnaipe Teidil"
 
 msgid "Font Hovered Color"
 msgstr "Dath ainlithe cló"
+
+msgid "Font Hovered Dimmed Color"
+msgstr "Cló Ag faoileáil Dath Tosaithe"
 
 msgid "Guide Color"
 msgstr "Dath treorach"
@@ -9578,6 +10310,15 @@ msgstr "Scrollbharra V Scaradh"
 msgid "Icon Margin"
 msgstr "Imeall Deilbhíní"
 
+msgid "Font Hovered Selected Color"
+msgstr "Cló Ag faoileáil Dath Roghnaithe"
+
+msgid "Hovered Selected"
+msgstr "Ag faoileáil Roghnaithe"
+
+msgid "Hovered Selected Focus"
+msgstr "Ag faoileáil Fócas Roghnaithe"
+
 msgid "Tab Selected"
 msgstr "Táb roghnaithe"
 
@@ -9632,6 +10373,9 @@ msgstr "Leithead an Lipéid"
 msgid "Center Slider Grabbers"
 msgstr "Grabbers Sleamhnán Ionad"
 
+msgid "Menu Option"
+msgstr "Rogha Roghchláir"
+
 msgid "Folded Arrow"
 msgstr "Saighead Fillte"
 
@@ -9667,6 +10411,9 @@ msgstr "Saighead Bharra"
 
 msgid "Picker Cursor"
 msgstr "Cúrsóir an Roghnóra"
+
+msgid "Picker Cursor BG"
+msgstr "Cúrsóir Roghnaithe BG"
 
 msgid "Color Hue"
 msgstr "Lí Datha"
@@ -9755,6 +10502,9 @@ msgstr "Tiús Grab Íosta"
 msgid "Autohide"
 msgstr "Uathíde"
 
+msgid "Split Bar Background"
+msgstr "Cúlra an Bharra Scoilte"
+
 msgid "Zoom Out"
 msgstr "Zúmáil Amach"
 
@@ -9793,6 +10543,9 @@ msgstr "Gníomhaíocht"
 
 msgid "Connection Hover Tint Color"
 msgstr "Ceangal Hover Tint Dath"
+
+msgid "Connection Hover Thickness"
+msgstr "Ceangal Hover Tiús"
 
 msgid "Connection Valid Target Tint Color"
 msgstr "Ceangal Bailí Sprioc Tint Dath"
@@ -9965,6 +10718,9 @@ msgstr "Tarraingt Ama (ms)"
 msgid "Surround"
 msgstr "Timpeall"
 
+msgid "Mix Rate Mode"
+msgstr "Mód Ráta Meascáin"
+
 msgid "Enable Input"
 msgstr "Cumasaigh Ionchur"
 
@@ -10039,6 +10795,12 @@ msgstr "Réamhshocrú"
 
 msgid "Merge Rasterizer Cell Scale"
 msgstr "Cumaisc Scála Cille Rasterizer"
+
+msgid "World"
+msgstr "Domhain"
+
+msgid "Map Use Async Iterations"
+msgstr "Léarscáil Úsáid Async Iterations"
 
 msgid "Avoidance Use Multiple Threads"
 msgstr "Seachaint Úsáid Snáitheanna Il"
@@ -10376,6 +11138,12 @@ msgstr "Iompórtáil S3TC BPTC"
 msgid "Import ETC2 ASTC"
 msgstr "Iompórtáil ASTC ETC2"
 
+msgid "Compress With GPU"
+msgstr "Comhbhrúigh Le GPU"
+
+msgid "Cache GPU Compressor"
+msgstr "Comhbhrúiteoir GPU Taisce"
+
 msgid "Lossless Compression"
 msgstr "Comhbhrú gan chailliúint"
 
@@ -10400,11 +11168,20 @@ msgstr "Úsáid Aonaid Solais Fhisiciúla"
 msgid "Soft Shadow Filter Quality"
 msgstr "Caighdeán scagaire scáth bog"
 
+msgid "Atlas 16 Bits"
+msgstr "Atlas 16 giotán"
+
 msgid "Shadow Atlas"
 msgstr "Atlas Scáth"
 
+msgid "Batching"
+msgstr "Baisceáil"
+
 msgid "Item Buffer Size"
 msgstr "Méid an mhaoláin míre"
+
+msgid "Uniform Set Cache Size"
+msgstr "Méid Taisce Socraigh Éide"
 
 msgid "Shader Compiler"
 msgstr "Tiomsaitheoir Scáthaigh"
@@ -10499,6 +11276,9 @@ msgstr "Céimnigh amach ó"
 msgid "Fadeout To"
 msgstr "Céimnigh go"
 
+msgid "HDR 2D"
+msgstr "HDR 2D"
+
 msgid "Screen Space Roughness Limiter"
 msgstr "Scáileán Spás Roughness Limiter"
 
@@ -10546,6 +11326,12 @@ msgstr "Mogalraí Primitive"
 
 msgid "Texel Size"
 msgstr "Méid Texel"
+
+msgid "Lightmap GI"
+msgstr "Solas-léarscáil GI"
+
+msgid "Use Bicubic Filter"
+msgstr "Úsáid Scagaire Bicúbach"
 
 msgid "Probe Ray Count"
 msgstr "Líon Ray Probe"
@@ -10631,8 +11417,14 @@ msgstr "VRS Min Ga"
 msgid "VRS Strength"
 msgstr "Neart VRS"
 
+msgid "VRS Render Region"
+msgstr "Réigiún Rindreála VRS"
+
 msgid "World Origin"
 msgstr "Bunús an Domhain"
+
+msgid "Camera Locked to Origin"
+msgstr "Ceamara Glasáilte go Bunús"
 
 msgid "Primary Interface"
 msgstr "Comhéadan Bunscoile"

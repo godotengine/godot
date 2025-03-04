@@ -979,6 +979,10 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	String project_path = ".";
 	bool upwards = false;
 	String debug_uri = "";
+#if defined(TOOLS_ENABLED) && defined(WINDOWS_ENABLED)
+	bool test_rd_creation = false;
+	bool test_rd_support = false;
+#endif
 	bool skip_breakpoints = false;
 	String main_pack;
 	bool quiet_stdout = false;
@@ -1667,6 +1671,12 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		} else if (arg == "--debug-stringnames") {
 			StringName::set_debug_stringnames(true);
 #endif
+#if defined(TOOLS_ENABLED) && defined(WINDOWS_ENABLED)
+		} else if (arg == "--test-rd-support") {
+			test_rd_support = true;
+		} else if (arg == "--test-rd-creation") {
+			test_rd_creation = true;
+#endif
 		} else if (arg == "--remote-debug") {
 			if (N) {
 				debug_uri = N->get();
@@ -1870,6 +1880,30 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 #endif
 	}
 
+#if defined(TOOLS_ENABLED) && defined(WINDOWS_ENABLED)
+	if (test_rd_support) {
+		// Test Rendering Device creation and exit.
+
+		OS::get_singleton()->set_crash_handler_silent();
+		if (OS::get_singleton()->_test_create_rendering_device()) {
+			exit_err = ERR_HELP;
+		} else {
+			exit_err = ERR_UNAVAILABLE;
+		}
+		goto error;
+	} else if (test_rd_creation) {
+		// Test OpenGL context and Rendering Device simultaneous creation and exit.
+
+		OS::get_singleton()->set_crash_handler_silent();
+		if (OS::get_singleton()->_test_create_rendering_device_and_gl()) {
+			exit_err = ERR_HELP;
+		} else {
+			exit_err = ERR_UNAVAILABLE;
+		}
+		goto error;
+	}
+#endif
+
 #ifdef TOOLS_ENABLED
 	if (editor) {
 		Engine::get_singleton()->set_editor_hint(true);
@@ -2030,14 +2064,20 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 	Logger::set_flush_stdout_on_print(GLOBAL_GET("application/run/flush_stdout_on_print"));
 
+	// Rendering drivers configuration.
+
+	// Always include all supported drivers as hint, as this is used by the editor host platform
+	// for project settings. For example, a Linux user should be able to configure that they want
+	// to export for D3D12 on Windows and Metal on macOS even if their host platform can't use those.
+
 	{
-		// For now everything defaults to vulkan when available. This can change in future updates.
-		GLOBAL_DEF_RST("rendering/rendering_device/driver", "auto");
-		GLOBAL_DEF_RST(PropertyInfo(Variant::STRING, "rendering/rendering_device/driver.windows", PROPERTY_HINT_ENUM, "auto,vulkan,d3d12"), "auto");
-		GLOBAL_DEF_RST(PropertyInfo(Variant::STRING, "rendering/rendering_device/driver.linuxbsd", PROPERTY_HINT_ENUM, "auto,vulkan"), "auto");
-		GLOBAL_DEF_RST(PropertyInfo(Variant::STRING, "rendering/rendering_device/driver.android", PROPERTY_HINT_ENUM, "auto,vulkan"), "auto");
-		GLOBAL_DEF_RST(PropertyInfo(Variant::STRING, "rendering/rendering_device/driver.ios", PROPERTY_HINT_ENUM, "auto,metal,vulkan"), "auto");
-		GLOBAL_DEF_RST(PropertyInfo(Variant::STRING, "rendering/rendering_device/driver.macos", PROPERTY_HINT_ENUM, "auto,metal,vulkan"), "auto");
+		// RenderingDevice driver overrides per platform.
+		GLOBAL_DEF_RST("rendering/rendering_device/driver", "vulkan");
+		GLOBAL_DEF_RST(PropertyInfo(Variant::STRING, "rendering/rendering_device/driver.windows", PROPERTY_HINT_ENUM, "vulkan,d3d12"), "vulkan");
+		GLOBAL_DEF_RST(PropertyInfo(Variant::STRING, "rendering/rendering_device/driver.linuxbsd", PROPERTY_HINT_ENUM, "vulkan"), "vulkan");
+		GLOBAL_DEF_RST(PropertyInfo(Variant::STRING, "rendering/rendering_device/driver.android", PROPERTY_HINT_ENUM, "vulkan"), "vulkan");
+		GLOBAL_DEF_RST(PropertyInfo(Variant::STRING, "rendering/rendering_device/driver.ios", PROPERTY_HINT_ENUM, "metal,vulkan"), "metal");
+		GLOBAL_DEF_RST(PropertyInfo(Variant::STRING, "rendering/rendering_device/driver.macos", PROPERTY_HINT_ENUM, "metal,vulkan"), "metal");
 
 		GLOBAL_DEF_RST("rendering/rendering_device/fallback_to_vulkan", true);
 		GLOBAL_DEF_RST("rendering/rendering_device/fallback_to_d3d12", true);
@@ -2045,13 +2085,14 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	}
 
 	{
-		GLOBAL_DEF_RST("rendering/gl_compatibility/driver", "auto");
-		GLOBAL_DEF_RST(PropertyInfo(Variant::STRING, "rendering/gl_compatibility/driver.windows", PROPERTY_HINT_ENUM, "auto,opengl3,opengl3_angle"), "auto");
-		GLOBAL_DEF_RST(PropertyInfo(Variant::STRING, "rendering/gl_compatibility/driver.linuxbsd", PROPERTY_HINT_ENUM, "auto,opengl3,opengl3_es"), "auto");
-		GLOBAL_DEF_RST(PropertyInfo(Variant::STRING, "rendering/gl_compatibility/driver.web", PROPERTY_HINT_ENUM, "auto,opengl3"), "auto");
-		GLOBAL_DEF_RST(PropertyInfo(Variant::STRING, "rendering/gl_compatibility/driver.android", PROPERTY_HINT_ENUM, "auto,opengl3"), "auto");
-		GLOBAL_DEF_RST(PropertyInfo(Variant::STRING, "rendering/gl_compatibility/driver.ios", PROPERTY_HINT_ENUM, "auto,opengl3"), "auto");
-		GLOBAL_DEF_RST(PropertyInfo(Variant::STRING, "rendering/gl_compatibility/driver.macos", PROPERTY_HINT_ENUM, "auto,opengl3,opengl3_angle"), "auto");
+		// GL Compatibility driver overrides per platform.
+		GLOBAL_DEF_RST("rendering/gl_compatibility/driver", "opengl3");
+		GLOBAL_DEF_RST(PropertyInfo(Variant::STRING, "rendering/gl_compatibility/driver.windows", PROPERTY_HINT_ENUM, "opengl3,opengl3_angle"), "opengl3");
+		GLOBAL_DEF_RST(PropertyInfo(Variant::STRING, "rendering/gl_compatibility/driver.linuxbsd", PROPERTY_HINT_ENUM, "opengl3,opengl3_es"), "opengl3");
+		GLOBAL_DEF_RST(PropertyInfo(Variant::STRING, "rendering/gl_compatibility/driver.web", PROPERTY_HINT_ENUM, "opengl3"), "opengl3");
+		GLOBAL_DEF_RST(PropertyInfo(Variant::STRING, "rendering/gl_compatibility/driver.android", PROPERTY_HINT_ENUM, "opengl3"), "opengl3");
+		GLOBAL_DEF_RST(PropertyInfo(Variant::STRING, "rendering/gl_compatibility/driver.ios", PROPERTY_HINT_ENUM, "opengl3"), "opengl3");
+		GLOBAL_DEF_RST(PropertyInfo(Variant::STRING, "rendering/gl_compatibility/driver.macos", PROPERTY_HINT_ENUM, "opengl3,opengl3_angle"), "opengl3");
 
 		GLOBAL_DEF_RST("rendering/gl_compatibility/nvidia_disable_threaded_optimization", true);
 		GLOBAL_DEF_RST("rendering/gl_compatibility/fallback_to_angle", true);
@@ -2384,30 +2425,6 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 	// always convert to lower case for consistency in the code
 	rendering_driver = rendering_driver.to_lower();
-
-	if (rendering_method == "gl_compatibility") {
-#ifdef GLES3_ENABLED
-		if (rendering_driver == "auto") {
-			rendering_driver = "opengl3";
-		}
-#endif
-	} else {
-#ifdef METAL_ENABLED
-		if (rendering_driver == "auto") {
-			rendering_driver = "metal";
-		}
-#endif
-#ifdef VULKAN_ENABLED
-		if (rendering_driver == "auto") {
-			rendering_driver = "vulkan";
-		}
-#endif
-#ifdef D3D12_ENABLED
-		if (rendering_driver == "auto") {
-			rendering_driver = "d3d12";
-		}
-#endif
-	}
 
 	OS::get_singleton()->set_current_rendering_driver_name(rendering_driver);
 	OS::get_singleton()->set_current_rendering_method(rendering_method);
@@ -4098,6 +4115,7 @@ int Main::start() {
 		if (editor) {
 			OS::get_singleton()->benchmark_begin_measure("Startup", "Editor");
 
+			sml->get_root()->set_translation_domain("godot.editor");
 			if (editor_pseudolocalization) {
 				translation_server->get_editor_domain()->set_pseudolocalization_enabled(true);
 			}
@@ -4295,6 +4313,7 @@ int Main::start() {
 			OS::get_singleton()->benchmark_begin_measure("Startup", "Project Manager");
 			Engine::get_singleton()->set_editor_hint(true);
 
+			sml->get_root()->set_translation_domain("godot.editor");
 			if (editor_pseudolocalization) {
 				translation_server->get_editor_domain()->set_pseudolocalization_enabled(true);
 			}

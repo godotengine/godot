@@ -95,9 +95,11 @@ void EmbeddedProcess::set_keep_aspect(bool p_keep_aspect) {
 	}
 }
 
-Rect2i EmbeddedProcess::_get_global_embedded_window_rect() {
-	Rect2i control_rect = get_global_rect();
-	control_rect = Rect2i(control_rect.position + margin_top_left, (control_rect.size - get_margins_size()).maxi(1));
+Rect2i EmbeddedProcess::get_adjusted_embedded_window_rect(Rect2i p_rect) {
+	Rect2i control_rect = Rect2i(p_rect.position + margin_top_left, (p_rect.size - get_margins_size()).maxi(1));
+	if (window) {
+		control_rect.position += window->get_position();
+	}
 	if (window_size != Size2i()) {
 		Rect2i desired_rect = Rect2i();
 		if (!keep_aspect && control_rect.size.x >= window_size.x && control_rect.size.y >= window_size.y) {
@@ -116,12 +118,7 @@ Rect2i EmbeddedProcess::_get_global_embedded_window_rect() {
 }
 
 Rect2i EmbeddedProcess::get_screen_embedded_window_rect() {
-	Rect2i rect = _get_global_embedded_window_rect();
-	if (window) {
-		rect.position += window->get_position();
-	}
-
-	return rect;
+	return get_adjusted_embedded_window_rect(get_global_rect());
 }
 
 int EmbeddedProcess::get_margin_size(Side p_side) const {
@@ -321,10 +318,15 @@ void EmbeddedProcess::_check_mouse_over() {
 		return;
 	}
 
-	// When there's a modal window, we don't want to grab the focus to prevent
-	// the game window to go in front of the modal window.
-	if (_get_current_modal_window()) {
-		return;
+	// Check if there's an exclusive popup, an open menu, or a tooltip.
+	// We don't want to grab focus to prevent the game window from coming to the front of the modal window
+	// or the open menu from closing when the mouse cursor moves outside the menu and over the embedded game.
+	Vector<DisplayServer::WindowID> wl = DisplayServer::get_singleton()->get_window_list();
+	for (const DisplayServer::WindowID &window_id : wl) {
+		Window *w = Window::get_from_id(window_id);
+		if (w && (w->is_exclusive() || w->get_flag(Window::FLAG_POPUP))) {
+			return;
+		}
 	}
 
 	// Force "regrabbing" the game window focus.

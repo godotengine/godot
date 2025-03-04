@@ -1498,11 +1498,11 @@ msgstr "Biểu tượng gốc Windows"
 msgid "Custom Image Hotspot"
 msgstr "Điểm phát sóng hình ảnh tùy chỉnh"
 
-msgid "Image"
-msgstr "Ảnh"
-
 msgid "Fullsize"
 msgstr "Kích thước đầy đủ"
+
+msgid "Image"
+msgstr "Ảnh"
 
 msgid "Dotnet"
 msgstr "Dotnet"
@@ -2998,15 +2998,6 @@ msgstr "Màu hình học"
 msgid "Anti Aliasing"
 msgstr "Chống răng cưa"
 
-msgid "MSAA 2D"
-msgstr "MSAA 2D"
-
-msgid "MSAA 3D"
-msgstr "MSAA 3D"
-
-msgid "HDR 2D"
-msgstr "HDR 2D"
-
 msgid "Screen Space AA"
 msgstr "Khoảng cách màn hình AA"
 
@@ -3036,6 +3027,12 @@ msgstr "Menu"
 
 msgid "Own World 3D"
 msgstr "Thế giới riêng 3D"
+
+msgid "MSAA 2D"
+msgstr "MSAA 2D"
+
+msgid "MSAA 3D"
+msgstr "MSAA 3D"
 
 msgid "Anisotropic Filtering Level"
 msgstr "Mức lọc dị hướng"
@@ -3840,6 +3837,9 @@ msgstr "Sử dụng Bộ lọc Mipmap gần nhất"
 
 msgid "Depth of Field Use Jitter"
 msgstr "Độ sâu trường ảnh sử dụng Độ rung"
+
+msgid "HDR 2D"
+msgstr "HDR 2D"
 
 msgid "Screen Space Roughness Limiter"
 msgstr "Bộ giới hạn độ nhám không gian màn hình"

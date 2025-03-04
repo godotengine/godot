@@ -786,9 +786,6 @@ msgstr "リクエスト失敗、タイムアウト"
 msgid "Sync Breakpoints"
 msgstr "ブレークポイントの同期"
 
-msgid "Default Feature Profile"
-msgstr "デフォルト機能プロファイル"
-
 msgid "Label"
 msgstr "ラベル"
 
@@ -2277,9 +2274,6 @@ msgstr "エクスポート時にテキストリソースをバイナリに変換
 msgid "Plugin Name"
 msgstr "プラグイン名"
 
-msgid "Use Favorites Root Selection"
-msgstr "お気に入りのルート選択対象を使用"
-
 msgid "Flush stdout on Print"
 msgstr "Print時にstdoutをフラッシュ"
 
@@ -2454,14 +2448,14 @@ msgstr "ツールチップ位置のオフセット"
 msgid "Show Image"
 msgstr "画像を表示"
 
-msgid "Image"
-msgstr "画像"
-
 msgid "Fullsize"
 msgstr "フルサイズ"
 
 msgid "Use Filter"
 msgstr "フィルターを使用"
+
+msgid "Image"
+msgstr "画像"
 
 msgid "Minimum Display Time"
 msgstr "最小表示時間"
@@ -3540,11 +3534,11 @@ msgstr "ノード名の命名規則"
 msgid "Shapes"
 msgstr "シェイプ"
 
-msgid "Anti Aliasing"
-msgstr "アンチエイリアス"
-
 msgid "Viewport"
 msgstr "ビューポート"
+
+msgid "Anti Aliasing"
+msgstr "アンチエイリアス"
 
 msgid "Screen Space AA"
 msgstr "スクリーンスペースAA"

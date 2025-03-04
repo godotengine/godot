@@ -884,12 +884,10 @@ void TextEdit::_notification(int p_what) {
 
 					Color line_background_color = text.get_line_background_color(minimap_line);
 
-					if (line_background_color != theme_cache.background_color) {
-						// Make non-default background colors more visible, such as error markers.
-						line_background_color.a = 1.0;
-					} else {
-						line_background_color.a *= 0.6;
-					}
+					// Make non-default background colors more visible, such as error markers.
+					// If a line background color is being applied, like in an error marker, the alpha is set to 1.0.
+					// Else, it stays zero.
+					line_background_color.a = 1.0 * (line_background_color != Color(0, 0, 0, 0));
 
 					Color current_color = editable ? theme_cache.font_color : theme_cache.font_readonly_color;
 
@@ -6081,7 +6079,7 @@ void TextEdit::adjust_viewport_to_caret(int p_caret) {
 		set_line_as_last_visible(cur_line, cur_wrap);
 	}
 
-	_adjust_viewport_to_caret_horizontally(p_caret);
+	_adjust_viewport_to_caret_horizontally(p_caret, false);
 }
 
 void TextEdit::center_viewport_to_caret(int p_caret) {
@@ -8186,7 +8184,7 @@ void TextEdit::_scroll_lines_down() {
 	merge_overlapping_carets();
 }
 
-void TextEdit::_adjust_viewport_to_caret_horizontally(int p_caret) {
+void TextEdit::_adjust_viewport_to_caret_horizontally(int p_caret, bool p_maximize_selection) {
 	if (get_line_wrapping_mode() != LineWrappingMode::LINE_WRAPPING_NONE) {
 		first_visible_col = 0;
 		h_scroll->set_value(first_visible_col);
@@ -8220,7 +8218,7 @@ void TextEdit::_adjust_viewport_to_caret_horizontally(int p_caret) {
 		int ime_end_column = get_caret_column(p_caret) + (ime_selection.y > 0 ? ime_selection.x + ime_selection.y : ime_text.length());
 		caret_end_pos = _get_column_x_offset_for_line(ime_end_column, get_caret_line(p_caret), ime_end_column);
 		prioritize_end = false;
-	} else if (has_selection(p_caret) && get_selection_from_line(p_caret) == get_selection_to_line(p_caret)) {
+	} else if (p_maximize_selection && has_selection(p_caret) && get_selection_from_line(p_caret) == get_selection_to_line(p_caret)) {
 		// Use selection if it is on one line.
 		caret_start_pos = _get_column_x_offset_for_line(get_selection_from_column(p_caret), get_caret_line(p_caret), get_selection_from_column(p_caret));
 		caret_end_pos = _get_column_x_offset_for_line(get_selection_to_column(p_caret), get_caret_line(p_caret), get_selection_to_column(p_caret));
