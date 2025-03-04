@@ -1175,7 +1175,7 @@ Files extracted from upstream source:
 ## zstd
 
 - Upstream: https://github.com/facebook/zstd
-- Version: 1.5.6 (794ea1b0afca0f020f4e57b6732332231fb23c70, 2024)
+- Version: 1.5.7 (f8745da6ff1ad1e7bab384bd1f9d742439278e99, 2025)
 - License: BSD-3-Clause
 
 Files extracted from upstream source:
