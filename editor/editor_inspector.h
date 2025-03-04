@@ -135,6 +135,8 @@ private:
 	Control *label_reference = nullptr;
 	Control *bottom_editor = nullptr;
 	PopupMenu *menu = nullptr;
+	HBoxContainer *left_container = nullptr;
+	HBoxContainer *right_container = nullptr;
 
 	HashMap<StringName, Variant> cache;
 
@@ -215,6 +217,8 @@ public:
 	void select(int p_focusable = -1);
 	void deselect();
 	bool is_selected() const;
+
+	void add_inline_control(Control *p_control, bool p_left);
 
 	void set_label_reference(Control *p_control);
 	void set_bottom_editor(Control *p_control);
