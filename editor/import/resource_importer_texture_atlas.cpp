@@ -36,6 +36,7 @@
 #include "core/io/resource_saver.h"
 #include "core/math/geometry_2d.h"
 #include "editor/editor_atlas_packer.h"
+#include "editor/editor_settings.h"
 #include "scene/resources/atlas_texture.h"
 #include "scene/resources/bit_map.h"
 #include "scene/resources/image_texture.h"
@@ -97,7 +98,11 @@ Error ResourceImporterTextureAtlas::import(ResourceUID::ID p_source_id, const St
 	//use an xpm because it's size independent, the editor images are vector and size dependent
 	//it's a simple hack
 	Ref<Image> broken = memnew(Image((const char **)atlas_import_failed_xpm));
-	ResourceSaver::save(ImageTexture::create_from_image(broken), p_save_path + ".tex");
+	int flags = 0;
+	if (EDITOR_GET("filesystem/on_save/compress_binary_resources")) {
+		flags |= ResourceSaver::FLAG_COMPRESS;
+	}
+	ResourceSaver::save(ImageTexture::create_from_image(broken), p_save_path + ".tex", flags);
 
 	return OK;
 }
@@ -398,7 +403,11 @@ Error ResourceImporterTextureAtlas::import_group_file(const String &p_group_file
 		}
 
 		String save_path = p_base_paths[E.key] + ".res";
-		ResourceSaver::save(texture, save_path);
+		int flags = 0;
+		if (EDITOR_GET("filesystem/on_save/compress_binary_resources")) {
+			flags |= ResourceSaver::FLAG_COMPRESS;
+		}
+		ResourceSaver::save(texture, save_path, flags);
 		idx++;
 	}
 
