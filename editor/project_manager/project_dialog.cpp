@@ -973,7 +973,7 @@ ProjectDialog::ProjectDialog() {
 		default_renderer_type = EditorSettings::get_singleton()->get_setting("project_manager/default_renderer");
 	}
 
-	rendering_device_supported = DisplayServer::can_create_rendering_device();
+	rendering_device_supported = DisplayServer::is_rendering_device_supported();
 
 	if (!rendering_device_supported) {
 		default_renderer_type = "gl_compatibility";

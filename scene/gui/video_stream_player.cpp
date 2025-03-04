@@ -136,6 +136,7 @@ void VideoStreamPlayer::_notification(int p_notification) {
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
+			stop();
 			AudioServer::get_singleton()->remove_mix_callback(_mix_audios, this);
 		} break;
 
@@ -158,6 +159,7 @@ void VideoStreamPlayer::_notification(int p_notification) {
 			playback->update(delta); // playback->is_playing() returns false in the last video frame
 
 			if (!playback->is_playing()) {
+				resampler.flush();
 				if (loop) {
 					play();
 					return;

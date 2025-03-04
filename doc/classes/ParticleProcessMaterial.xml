@@ -418,6 +418,7 @@
 		<signal name="emission_shape_changed">
 			<description>
 				Emitted when this material's emission shape is changed in any way. This includes changes to [member emission_shape], [member emission_shape_scale], or [member emission_sphere_radius], and any other property that affects the emission shape's offset, size, scale, or orientation.
+				[b]Note:[/b] This signal is only emitted inside the editor for performance reasons.
 			</description>
 		</signal>
 	</signals>

@@ -33,6 +33,8 @@
 
 #include "scene/3d/visual_instance_3d.h"
 
+class RandomNumberGenerator;
+
 class CPUParticles3D : public GeometryInstance3D {
 private:
 	GDCLASS(CPUParticles3D, GeometryInstance3D);
@@ -190,9 +192,12 @@ private:
 
 	Vector3 gravity = Vector3(0, -9.8, 0);
 
+	Ref<RandomNumberGenerator> rng;
+
 	void _update_internal();
 	void _particles_process(double p_delta);
 	void _update_particle_data_buffer();
+	void _set_emitting();
 
 	Mutex update_mutex;
 

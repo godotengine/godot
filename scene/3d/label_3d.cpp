@@ -392,6 +392,7 @@ void Label3D::_generate_glyph_surfaces(const Glyph &p_glyph, Vector2 &r_offset, 
 
 			RS::get_singleton()->material_set_shader(surf.material, shader_rid);
 			RS::get_singleton()->material_set_param(surf.material, "texture_albedo", tex);
+			RS::get_singleton()->material_set_param(surf.material, "albedo_texture_size", texs);
 			if (get_alpha_cut_mode() == ALPHA_CUT_DISABLED) {
 				RS::get_singleton()->material_set_render_priority(surf.material, p_priority);
 			} else {

@@ -6,6 +6,7 @@ jobs:
   static-checks:
     name: Code style, file formatting, and docs
     runs-on: ubuntu-24.04
+    timeout-minutes: 30
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -14,6 +15,7 @@ jobs:
 
       - name: Install APT dependencies
         run: |
+          sudo apt update
           sudo apt install -y libxml2-utils
 
       - name: Install Python dependencies and general setup

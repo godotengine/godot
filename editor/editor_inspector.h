@@ -606,6 +606,7 @@ class EditorInspector : public ScrollContainer {
 	void _clear_current_favorites();
 
 	void _node_removed(Node *p_node);
+	void _gui_focus_changed(Control *p_control);
 
 	HashMap<StringName, int> per_array_page;
 	void _page_change_request(int p_new_page, const StringName &p_array_prefix);

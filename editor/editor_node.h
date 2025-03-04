@@ -100,6 +100,8 @@ class ProjectSettingsEditor;
 class SceneImportSettingsDialog;
 class SurfaceUpgradeTool;
 class SurfaceUpgradeDialog;
+class UIDUpgradeTool;
+class UIDUpgradeDialog;
 
 struct EditorProgress {
 	String task;
@@ -166,6 +168,7 @@ public:
 		TOOLS_ORPHAN_RESOURCES,
 		TOOLS_BUILD_PROFILE_MANAGER,
 		TOOLS_SURFACE_UPGRADE,
+		TOOLS_UID_UPGRADE,
 		TOOLS_CUSTOM,
 
 		VCS_METADATA,
@@ -460,7 +463,14 @@ private:
 
 	SurfaceUpgradeTool *surface_upgrade_tool = nullptr;
 	SurfaceUpgradeDialog *surface_upgrade_dialog = nullptr;
+
 	bool run_surface_upgrade_tool = false;
+
+	UIDUpgradeTool *uid_upgrade_tool = nullptr;
+	UIDUpgradeDialog *uid_upgrade_dialog = nullptr;
+
+	bool run_uid_upgrade_tool = false;
+	bool should_prompt_uid_upgrade_tool = false;
 
 	bool was_window_windowed_last = false;
 
@@ -566,6 +576,8 @@ private:
 	void _scene_tab_closed(int p_tab);
 	void _cancel_close_scene_tab();
 
+	void _prepare_save_confirmation_popup();
+
 	void _inherit_request(String p_file);
 	void _instantiate_request(const Vector<String> &p_files);
 
@@ -612,6 +624,7 @@ private:
 
 	void _proceed_closing_scene_tabs();
 	bool _is_closing_editor() const;
+	void _restart_editor(bool p_goto_project_manager = false);
 
 	Dictionary _get_main_scene_state();
 	void _set_main_scene_state(Dictionary p_state, Node *p_for_scene);
@@ -648,7 +661,7 @@ private:
 	void _feature_profile_changed();
 	bool _is_class_editor_disabled_by_feature_profile(const StringName &p_class);
 
-	Ref<Texture2D> _get_class_or_script_icon(const String &p_class, const Ref<Script> &p_script, const String &p_fallback = "Object", bool p_fallback_script_to_theme = false);
+	Ref<Texture2D> _get_class_or_script_icon(const String &p_class, const String &p_script_path, const String &p_fallback = "Object", bool p_fallback_script_to_theme = false);
 
 	void _pick_main_scene_custom_action(const String &p_custom_action_name);
 
@@ -662,6 +675,8 @@ private:
 
 	void _progress_dialog_visibility_changed();
 	void _load_error_dialog_visibility_changed();
+
+	void _execute_upgrades();
 
 protected:
 	friend class FileSystemDock;
@@ -746,7 +761,6 @@ public:
 	void save_resource_in_path(const Ref<Resource> &p_resource, const String &p_path);
 	void save_resource(const Ref<Resource> &p_resource);
 	void save_resource_as(const Ref<Resource> &p_resource, const String &p_at_path = String());
-	void ensure_uid_file(const String &p_new_resource_path);
 
 	void show_about() { _menu_option_confirm(HELP_ABOUT, false); }
 

@@ -3633,8 +3633,8 @@ RID TextServerFallback::_shaped_text_substr(const RID &p_shaped, int64_t p_start
 					gl.index = 0x00ad;
 					gl.advance = font_get_glyph_advance(gl.font_rid, gl.font_size, 0x00ad).x;
 				}
-				if ((gl.flags & GRAPHEME_IS_EMBEDDED_OBJECT) == GRAPHEME_IS_EMBEDDED_OBJECT && gl.span_index >= 0 && gl.span_index < span_size) {
-					Variant key = sd->spans[gl.span_index].embedded_key;
+				if ((gl.flags & GRAPHEME_IS_EMBEDDED_OBJECT) == GRAPHEME_IS_EMBEDDED_OBJECT && gl.span_index + new_sd->first_span >= 0 && gl.span_index + new_sd->first_span < span_size) {
+					Variant key = sd->spans[gl.span_index + new_sd->first_span].embedded_key;
 					if (key != Variant()) {
 						ShapedTextDataFallback::EmbeddedObject obj = sd->objects[key];
 						if (new_sd->orientation == ORIENTATION_HORIZONTAL) {
@@ -4210,12 +4210,13 @@ void TextServerFallback::_shaped_text_overrun_trim_to_width(const RID &p_shaped_
 
 	int ell_min_characters = 6;
 	double width = sd->width;
+	double width_without_el = width;
 
 	int trim_pos = 0;
 	int ellipsis_pos = (enforce_ellipsis) ? 0 : -1;
 
-	int last_valid_cut = 0;
-	bool found = false;
+	int last_valid_cut = -1;
+	int last_valid_cut_witout_el = -1;
 
 	if (enforce_ellipsis && (width + ellipsis_width <= p_width)) {
 		trim_pos = -1;
@@ -4226,18 +4227,32 @@ void TextServerFallback::_shaped_text_overrun_trim_to_width(const RID &p_shaped_
 
 			if (sd_glyphs[i].count > 0) {
 				bool above_min_char_threshold = (i >= ell_min_characters);
-
+				if (!above_min_char_threshold && last_valid_cut_witout_el != -1) {
+					trim_pos = last_valid_cut_witout_el;
+					ellipsis_pos = -1;
+					width = width_without_el;
+					break;
+				}
+				if (!enforce_ellipsis && width <= p_width && last_valid_cut_witout_el == -1) {
+					if (cut_per_word && above_min_char_threshold) {
+						if ((sd_glyphs[i].flags & GRAPHEME_IS_BREAK_SOFT) == GRAPHEME_IS_BREAK_SOFT) {
+							last_valid_cut_witout_el = i;
+							width_without_el = width;
+						}
+					} else {
+						last_valid_cut_witout_el = i;
+						width_without_el = width;
+					}
+				}
 				if (width + (((above_min_char_threshold && add_ellipsis) || enforce_ellipsis) ? ellipsis_width : 0) <= p_width) {
 					if (cut_per_word && above_min_char_threshold) {
 						if ((sd_glyphs[i].flags & GRAPHEME_IS_BREAK_SOFT) == GRAPHEME_IS_BREAK_SOFT) {
 							last_valid_cut = i;
-							found = true;
 						}
 					} else {
 						last_valid_cut = i;
-						found = true;
 					}
-					if (found) {
+					if (last_valid_cut != -1) {
 						trim_pos = last_valid_cut;
 
 						if (add_ellipsis && (above_min_char_threshold || enforce_ellipsis) && width - ellipsis_width <= p_width) {

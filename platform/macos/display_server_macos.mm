@@ -411,12 +411,16 @@ void DisplayServerMacOS::_dispatch_input_event(const Ref<InputEvent> &p_event) {
 				}
 			}
 		} else {
-			// Send to all windows.
+			// Send to all windows. Copy all pending callbacks, since callback can erase window.
+			Vector<Callable> cbs;
 			for (KeyValue<WindowID, WindowData> &E : windows) {
 				Callable callable = E.value.input_event_callback;
 				if (callable.is_valid()) {
-					callable.call(p_event);
+					cbs.push_back(callable);
 				}
+			}
+			for (const Callable &cb : cbs) {
+				cb.call(p_event);
 			}
 		}
 		in_dispatch_input_event = false;
@@ -1264,10 +1268,14 @@ Error DisplayServerMacOS::dialog_input_text(String p_title, String p_description
 	return OK;
 }
 
-void DisplayServerMacOS::mouse_set_mode(MouseMode p_mode) {
+void DisplayServerMacOS::_mouse_update_mode() {
 	_THREAD_SAFE_METHOD_
 
-	if (p_mode == mouse_mode) {
+	MouseMode wanted_mouse_mode = mouse_mode_override_enabled
+			? mouse_mode_override
+			: mouse_mode_base;
+
+	if (wanted_mouse_mode == mouse_mode) {
 		return;
 	}
 
@@ -1277,7 +1285,7 @@ void DisplayServerMacOS::mouse_set_mode(MouseMode p_mode) {
 	}
 	WindowData &wd = windows[window_id];
 
-	bool show_cursor = (p_mode == MOUSE_MODE_VISIBLE || p_mode == MOUSE_MODE_CONFINED);
+	bool show_cursor = (wanted_mouse_mode == MOUSE_MODE_VISIBLE || wanted_mouse_mode == MOUSE_MODE_CONFINED);
 	bool previously_shown = (mouse_mode == MOUSE_MODE_VISIBLE || mouse_mode == MOUSE_MODE_CONFINED);
 
 	if (show_cursor && !previously_shown) {
@@ -1285,7 +1293,7 @@ void DisplayServerMacOS::mouse_set_mode(MouseMode p_mode) {
 		mouse_enter_window(window_id);
 	}
 
-	if (p_mode == MOUSE_MODE_CAPTURED) {
+	if (wanted_mouse_mode == MOUSE_MODE_CAPTURED) {
 		// Apple Docs state that the display parameter is not used.
 		// "This parameter is not used. By default, you may pass kCGDirectMainDisplay."
 		// https://developer.apple.com/library/mac/documentation/graphicsimaging/reference/Quartz_Services_Ref/Reference/reference.html
@@ -1299,17 +1307,17 @@ void DisplayServerMacOS::mouse_set_mode(MouseMode p_mode) {
 		NSPoint pointOnScreen = [[wd.window_view window] convertRectToScreen:pointInWindowRect].origin;
 		CGPoint lMouseWarpPos = { pointOnScreen.x, CGDisplayBounds(CGMainDisplayID()).size.height - pointOnScreen.y };
 		CGWarpMouseCursorPosition(lMouseWarpPos);
-	} else if (p_mode == MOUSE_MODE_HIDDEN) {
+	} else if (wanted_mouse_mode == MOUSE_MODE_HIDDEN) {
 		if (previously_shown) {
 			CGDisplayHideCursor(kCGDirectMainDisplay);
 		}
 		[wd.window_object setMovable:YES];
 		CGAssociateMouseAndMouseCursorPosition(true);
-	} else if (p_mode == MOUSE_MODE_CONFINED) {
+	} else if (wanted_mouse_mode == MOUSE_MODE_CONFINED) {
 		CGDisplayShowCursor(kCGDirectMainDisplay);
 		[wd.window_object setMovable:NO];
 		CGAssociateMouseAndMouseCursorPosition(false);
-	} else if (p_mode == MOUSE_MODE_CONFINED_HIDDEN) {
+	} else if (wanted_mouse_mode == MOUSE_MODE_CONFINED_HIDDEN) {
 		if (previously_shown) {
 			CGDisplayHideCursor(kCGDirectMainDisplay);
 		}
@@ -1324,15 +1332,49 @@ void DisplayServerMacOS::mouse_set_mode(MouseMode p_mode) {
 	last_warp = [[NSProcessInfo processInfo] systemUptime];
 	ignore_warp = true;
 	warp_events.clear();
-	mouse_mode = p_mode;
+	mouse_mode = wanted_mouse_mode;
 
 	if (show_cursor) {
 		cursor_update_shape();
 	}
 }
 
+void DisplayServerMacOS::mouse_set_mode(MouseMode p_mode) {
+	ERR_FAIL_INDEX(p_mode, MouseMode::MOUSE_MODE_MAX);
+	if (p_mode == mouse_mode_base) {
+		return;
+	}
+	mouse_mode_base = p_mode;
+	_mouse_update_mode();
+}
+
 DisplayServer::MouseMode DisplayServerMacOS::mouse_get_mode() const {
 	return mouse_mode;
+}
+
+void DisplayServerMacOS::mouse_set_mode_override(MouseMode p_mode) {
+	ERR_FAIL_INDEX(p_mode, MouseMode::MOUSE_MODE_MAX);
+	if (p_mode == mouse_mode_override) {
+		return;
+	}
+	mouse_mode_override = p_mode;
+	_mouse_update_mode();
+}
+
+DisplayServer::MouseMode DisplayServerMacOS::mouse_get_mode_override() const {
+	return mouse_mode_override;
+}
+
+void DisplayServerMacOS::mouse_set_mode_override_enabled(bool p_override_enabled) {
+	if (p_override_enabled == mouse_mode_override_enabled) {
+		return;
+	}
+	mouse_mode_override_enabled = p_override_enabled;
+	_mouse_update_mode();
+}
+
+bool DisplayServerMacOS::mouse_is_mode_override_enabled() const {
+	return mouse_mode_override_enabled;
 }
 
 bool DisplayServerMacOS::update_mouse_wrap(WindowData &p_wd, NSPoint &r_delta, NSPoint &r_mpos, NSTimeInterval p_timestamp) {
@@ -3747,6 +3789,17 @@ DisplayServerMacOS::DisplayServerMacOS(const String &p_rendering_driver, WindowM
 
 #if defined(RD_ENABLED)
 #if defined(VULKAN_ENABLED)
+#if defined(__x86_64__)
+	bool fallback_to_vulkan = GLOBAL_GET("rendering/rendering_device/fallback_to_vulkan");
+	if (!fallback_to_vulkan) {
+		WARN_PRINT("Metal is not supported on Intel Macs, switching to Vulkan.");
+	}
+	// Metal rendering driver not available on Intel.
+	if (rendering_driver == "metal") {
+		rendering_driver = "vulkan";
+		OS::get_singleton()->set_current_rendering_driver_name(rendering_driver);
+	}
+#endif
 	if (rendering_driver == "vulkan") {
 		rendering_context = memnew(RenderingContextDriverVulkanMacOS);
 	}

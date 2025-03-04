@@ -36,47 +36,41 @@
 
 EditorTranslationParser *EditorTranslationParser::singleton = nullptr;
 
-Error EditorTranslationParserPlugin::parse_file(const String &p_path, Vector<String> *r_ids, Vector<Vector<String>> *r_ids_ctx_plural) {
+Error EditorTranslationParserPlugin::parse_file(const String &p_path, Vector<Vector<String>> *r_translations) {
+	TypedArray<PackedStringArray> ret;
+
+	if (GDVIRTUAL_CALL(_parse_file, p_path, ret)) {
+		// Copy over entries directly.
+		for (const PackedStringArray translation : ret) {
+			r_translations->push_back(translation);
+		}
+
+		return OK;
+	}
+
+#ifndef DISABLE_DEPRECATED
 	TypedArray<String> ids;
 	TypedArray<Array> ids_ctx_plural;
 
-	if (GDVIRTUAL_CALL(_parse_file, p_path, ids, ids_ctx_plural)) {
+	if (GDVIRTUAL_CALL(_parse_file_bind_compat_99297, p_path, ids, ids_ctx_plural)) {
 		// Add user's extracted translatable messages.
 		for (int i = 0; i < ids.size(); i++) {
-			r_ids->append(ids[i]);
+			r_translations->push_back({ ids[i] });
 		}
 
 		// Add user's collected translatable messages with context or plurals.
 		for (int i = 0; i < ids_ctx_plural.size(); i++) {
 			Array arr = ids_ctx_plural[i];
-			ERR_FAIL_COND_V_MSG(arr.size() != 3, ERR_INVALID_DATA, "Array entries written into `msgids_context_plural` in `parse_file()` method should have the form [\"message\", \"context\", \"plural message\"]");
+			ERR_FAIL_COND_V_MSG(arr.size() != 3, ERR_INVALID_DATA, "Array entries written into `msgids_context_plural` in `_parse_file` method should have the form [\"message\", \"context\", \"plural message\"]");
 
-			Vector<String> id_ctx_plural;
-			id_ctx_plural.push_back(arr[0]);
-			id_ctx_plural.push_back(arr[1]);
-			id_ctx_plural.push_back(arr[2]);
-			r_ids_ctx_plural->append(id_ctx_plural);
+			r_translations->push_back({ arr[0], arr[1], arr[2] });
 		}
 		return OK;
-	} else {
-		ERR_PRINT("Custom translation parser plugin's \"func parse_file(path, extracted_strings)\" is undefined.");
-		return ERR_UNAVAILABLE;
 	}
-}
+#endif // DISABLE_DEPRECATED
 
-void EditorTranslationParserPlugin::get_comments(Vector<String> *r_ids_comment, Vector<String> *r_ids_ctx_plural_comment) {
-	TypedArray<String> ids_comment;
-	TypedArray<String> ids_ctx_plural_comment;
-
-	if (GDVIRTUAL_CALL(_get_comments, ids_comment, ids_ctx_plural_comment)) {
-		for (int i = 0; i < ids_comment.size(); i++) {
-			r_ids_comment->append(ids_comment[i]);
-		}
-
-		for (int i = 0; i < ids_ctx_plural_comment.size(); i++) {
-			r_ids_ctx_plural_comment->append(ids_ctx_plural_comment[i]);
-		}
-	}
+	ERR_PRINT("Custom translation parser plugin's \"_parse_file\" is undefined.");
+	return ERR_UNAVAILABLE;
 }
 
 void EditorTranslationParserPlugin::get_recognized_extensions(List<String> *r_extensions) const {
@@ -91,9 +85,12 @@ void EditorTranslationParserPlugin::get_recognized_extensions(List<String> *r_ex
 }
 
 void EditorTranslationParserPlugin::_bind_methods() {
-	GDVIRTUAL_BIND(_parse_file, "path", "msgids", "msgids_context_plural");
-	GDVIRTUAL_BIND(_get_comments, "msgids_comment", "msgids_context_plural_comment");
+	GDVIRTUAL_BIND(_parse_file, "path");
 	GDVIRTUAL_BIND(_get_recognized_extensions);
+
+#ifndef DISABLE_DEPRECATED
+	GDVIRTUAL_BIND_COMPAT(_parse_file_bind_compat_99297, "path", "msgids", "msgids_context_plural");
+#endif
 }
 
 /////////////////////////

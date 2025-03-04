@@ -623,7 +623,7 @@ void CanvasItemEditor::_find_canvas_items_at_pos(const Point2 &p_pos, Node *p_no
 			return;
 		}
 		xform = vp->get_popup_base_transform();
-		if (!vp->get_visible_rect().has_point(xform.xform_inv(p_pos))) {
+		if (!vp->get_visible_rect().has_point(xform.affine_inverse().xform(p_pos))) {
 			return;
 		}
 	}
@@ -726,7 +726,7 @@ void CanvasItemEditor::_find_canvas_items_in_rect(const Rect2 &p_rect, Node *p_n
 			return;
 		}
 		xform = vp->get_popup_base_transform();
-		if (!vp->get_visible_rect().intersects(xform.xform_inv(p_rect))) {
+		if (!vp->get_visible_rect().intersects(xform.affine_inverse().xform(p_rect))) {
 			return;
 		}
 	}
@@ -3659,10 +3659,12 @@ void CanvasItemEditor::_draw_selection() {
 	}
 
 	// Remove non-movable nodes.
-	for (CanvasItem *ci : selection) {
-		if (!_is_node_movable(ci)) {
-			selection.erase(ci);
+	for (List<CanvasItem *>::Element *E = selection.front(); E;) {
+		List<CanvasItem *>::Element *N = E->next();
+		if (!_is_node_movable(E->get())) {
+			selection.erase(E);
 		}
+		E = N;
 	}
 
 	if (!selection.is_empty() && transform_tool && show_transformation_gizmos) {

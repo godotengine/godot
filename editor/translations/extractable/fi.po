@@ -18,6 +18,9 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
 "X-Generator: Weblate 5.4-dev\n"
 
+msgid "All Recognized"
+msgstr "Kaikki tunnistetut"
+
 msgid ""
 "Color: #%s\n"
 "LMB: Apply color\n"
@@ -59,14 +62,14 @@ msgstr "Avaa"
 msgid "Select Current Folder"
 msgstr "Valitse nykyinen kansio"
 
+msgid "Save"
+msgstr "Tallenna"
+
 msgid "Select This Folder"
 msgstr "Valitse tämä kansio"
 
 msgid "You don't have permission to access contents of this folder."
 msgstr "Sinulla ei ole oikeuksia tämän kansio sisältöön."
-
-msgid "All Recognized"
-msgstr "Kaikki tunnistetut"
 
 msgid "Open a File"
 msgstr "Avaa tiedosto"
@@ -79,9 +82,6 @@ msgstr "Avaa Hakemisto"
 
 msgid "Open a File or Directory"
 msgstr "Avaa Tiedosto tai Hakemisto"
-
-msgid "Save"
-msgstr "Tallenna"
 
 msgid "Save a File"
 msgstr "Tallenna tiedosto"

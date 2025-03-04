@@ -711,8 +711,28 @@
 			Port used for file server when exporting project with remote file system.
 		</member>
 		<member name="filesystem/import/blender/blender_path" type="String" setter="" getter="">
-			The path to the directory containing the Blender executable used for converting the Blender 3D scene files [code].blend[/code] to glTF 2.0 format during import. Blender 3.0 or later is required.
+			The path to the Blender executable used for converting the Blender 3D scene files [code].blend[/code] to glTF 2.0 format during import. Blender 3.0 or later is required.
 			To enable this feature for your specific project, use [member ProjectSettings.filesystem/import/blender/enabled].
+			If this setting is empty, Blender's default paths will be detected and used automatically if present in this order:
+			[b]Windows:[/b]
+			[codeblock]
+			- C:\Program Files\Blender Foundation\blender.exe
+			- C:\Program Files (x86)\Blender Foundation\blender.exe
+			[/codeblock]
+			[b]macOS:[/b]
+			[codeblock]
+			- /opt/homebrew/bin/blender
+			- /opt/local/bin/blender
+			- /usr/local/bin/blender
+			- /usr/local/opt/blender
+			- /Applications/Blender.app/Contents/MacOS/Blender
+			[/codeblock]
+			[b]Linux/*BSD:[/b]
+			[codeblock]
+			- /usr/bin/blender
+			- /usr/local/bin/blender
+			- /opt/blender/bin/blender
+			[/codeblock]
 		</member>
 		<member name="filesystem/import/blender/rpc_port" type="int" setter="" getter="">
 			The port number used for Remote Procedure Call (RPC) communication with Godot's created process of the blender executable.
@@ -887,6 +907,7 @@
 			If [code]true[/code], embed modal windows such as docks inside the main editor window. When single-window mode is enabled, tooltips will also be embedded inside the main editor window, which means they can't be displayed outside of the editor window. Single-window mode can be faster as it does not need to create a separate window for every popup and tooltip, which can be a slow operation depending on the operating system and rendering method in use.
 			This is equivalent to [member ProjectSettings.display/window/subwindows/embed_subwindows] in the running project, except the setting's value is inverted.
 			[b]Note:[/b] To query whether the editor can use multiple windows in an editor plugin, use [method EditorInterface.is_multi_window_enabled] instead of querying the value of this editor setting.
+			[b]Note:[/b] If [code]true[/code], game embedding is disabled.
 		</member>
 		<member name="interface/editor/ui_layout_direction" type="int" setter="" getter="">
 			Editor UI default layout direction.
@@ -971,7 +992,7 @@
 			If [code]true[/code], display OpenType features marked as [code]hidden[/code] by the font file in the [Font] editor.
 		</member>
 		<member name="interface/multi_window/enable" type="bool" setter="" getter="">
-			If [code]true[/code], multiple window support in editor is enabled. The following panels can become dedicated windows (i.e. made floating): Docks, Script editor, and Shader editor.
+			If [code]true[/code], multiple window support in editor is enabled. The following panels can become dedicated windows (i.e. made floating): Docks, Script editor, Shader editor, and Game Workspace.
 			[b]Note:[/b] When [member interface/editor/single_window_mode] is [code]true[/code], the multi window support is always disabled.
 			[b]Note:[/b] To query whether the editor can use multiple windows in an editor plugin, use [method EditorInterface.is_multi_window_enabled] instead of querying the value of this editor setting.
 		</member>
@@ -1096,6 +1117,10 @@
 		<member name="network/tls/editor_tls_certificates" type="String" setter="" getter="">
 			The TLS certificate bundle to use for HTTP requests made within the editor (e.g. from the AssetLib tab). If left empty, the [url=https://github.com/godotengine/godot/blob/master/thirdparty/certs/ca-certificates.crt]included Mozilla certificate bundle[/url] will be used.
 		</member>
+		<member name="network/tls/enable_tls_v1.3" type="bool" setter="" getter="">
+			If [code]true[/code], enable TLSv1.3 negotiation.
+			[b]Note:[/b] Only supported when using Mbed TLS 3.0 or later (Linux distribution packages may be compiled against older system Mbed TLS packages), otherwise the maximum supported TLS version is always TLSv1.2.
+		</member>
 		<member name="project_manager/default_renderer" type="String" setter="" getter="">
 			The renderer type that will be checked off by default when creating a new project. Accepted strings are "forward_plus", "mobile" or "gl_compatibility".
 		</member>
@@ -1133,18 +1158,14 @@
 			- [b]Auto (based on screen size)[/b] (default) will automatically choose how to launch the Play window based on the device and screen metrics. Defaults to [b]Same as Editor[/b] on phones and [b]Side-by-side with Editor[/b] on tablets.
 			- [b]Same as Editor[/b] will launch the Play window in the same window as the Editor.
 			- [b]Side-by-side with Editor[/b] will launch the Play window side-by-side with the Editor window.
-			- [b]Launch in PiP mode[/b] will launch the Play window directly in picture-in-picture (PiP) mode if PiP mode is supported and enabled. When maximized, the Play window will occupy the same window as the Editor.
 			[b]Note:[/b] Only available in the Android editor.
 		</member>
-		<member name="run/window_placement/play_window_pip_mode" type="int" setter="" getter="">
-			Specifies the picture-in-picture (PiP) mode for the Play window.
-			- [b]Disabled:[/b] PiP is disabled for the Play window.
-			- [b]Enabled:[/b] If the device supports it, PiP is always enabled for the Play window. The Play window will contain a button to enter PiP mode.
-			- [b]Enabled when Play window is same as Editor[/b] (default for Android editor): If the device supports it, PiP is enabled when the Play window is the same as the Editor. The Play window will contain a button to enter PiP mode.
-			[b]Note:[/b] Only available in the Android editor.
+		<member name="run/window_placement/game_embed_mode" type="int" setter="" getter="">
+			Overrides game embedding setting for all newly opened projects. If enabled, game embedding settings are not saved.
 		</member>
 		<member name="run/window_placement/rect" type="int" setter="" getter="">
 			The window mode to use to display the project when starting the project from the editor.
+			[b]Note:[/b] Game embedding is not available for "Force Maximized" or "Force Fullscreen."
 		</member>
 		<member name="run/window_placement/rect_custom_position" type="Vector2" setter="" getter="">
 			The custom position to use when starting the project from the editor (in pixels from the top-left corner). Only effective if [member run/window_placement/rect] is set to [b]Custom Position[/b].
@@ -1211,6 +1232,9 @@
 		</member>
 		<member name="text_editor/appearance/whitespace/line_spacing" type="int" setter="" getter="">
 			The space to add between lines (in pixels). Greater line spacing can help improve readability at the cost of displaying fewer lines on screen.
+		</member>
+		<member name="text_editor/behavior/documentation/enable_tooltips" type="bool" setter="" getter="">
+			If [code]true[/code], documentation tooltips will appear when hovering over a symbol.
 		</member>
 		<member name="text_editor/behavior/files/auto_reload_and_parse_scripts_on_save" type="bool" setter="" getter="">
 			If [code]true[/code], tool scripts will be automatically soft-reloaded after they are saved.

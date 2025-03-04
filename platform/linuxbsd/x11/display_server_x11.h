@@ -297,6 +297,11 @@ class DisplayServerX11 : public DisplayServer {
 	void _flush_mouse_motion();
 
 	MouseMode mouse_mode = MOUSE_MODE_VISIBLE;
+	MouseMode mouse_mode_base = MOUSE_MODE_VISIBLE;
+	MouseMode mouse_mode_override = MOUSE_MODE_VISIBLE;
+	bool mouse_mode_override_enabled = false;
+	void _mouse_update_mode();
+
 	Point2i center;
 
 	void _handle_key_event(WindowID p_window, XKeyEvent *p_event, LocalVector<XEvent> &p_events, uint32_t &p_event_index, bool p_echo = false);
@@ -333,6 +338,7 @@ class DisplayServerX11 : public DisplayServer {
 	bool xinerama_ext_ok = true;
 	bool xshaped_ext_ok = true;
 	bool xwayland = false;
+	bool kde5_embed_workaround = false; // Workaround embedded game visibility on KDE 5 (GH-102043).
 
 	struct Property {
 		unsigned char *data;
@@ -424,6 +430,10 @@ public:
 
 	virtual void mouse_set_mode(MouseMode p_mode) override;
 	virtual MouseMode mouse_get_mode() const override;
+	virtual void mouse_set_mode_override(MouseMode p_mode) override;
+	virtual MouseMode mouse_get_mode_override() const override;
+	virtual void mouse_set_mode_override_enabled(bool p_override_enabled) override;
+	virtual bool mouse_is_mode_override_enabled() const override;
 
 	virtual void warp_mouse(const Point2i &p_position) override;
 	virtual Point2i mouse_get_position() const override;
@@ -530,6 +540,7 @@ public:
 	virtual void window_start_resize(WindowResizeEdge p_edge, WindowID p_window) override;
 
 	virtual Error embed_process(WindowID p_window, OS::ProcessID p_pid, const Rect2i &p_rect, bool p_visible, bool p_grab_focus) override;
+	virtual Error request_close_embedded_process(OS::ProcessID p_pid) override;
 	virtual Error remove_embedded_process(OS::ProcessID p_pid) override;
 	virtual OS::ProcessID get_focused_process_id() override;
 

@@ -84,12 +84,14 @@ Config::Config() {
 
 	if (RasterizerGLES3::is_gles_over_gl()) {
 		float_texture_supported = true;
+		float_texture_linear_supported = true;
 		etc2_supported = false;
 		s3tc_supported = true;
 		rgtc_supported = true; //RGTC - core since OpenGL version 3.0
 		srgb_framebuffer_supported = true;
 	} else {
 		float_texture_supported = extensions.has("GL_EXT_color_buffer_float");
+		float_texture_linear_supported = extensions.has("GL_OES_texture_float_linear");
 		etc2_supported = true;
 #if defined(ANDROID_ENABLED) || defined(IOS_ENABLED)
 		// Some Android devices report support for S3TC but we don't expect that and don't export the textures.
@@ -108,6 +110,11 @@ Config::Config() {
 	glGetIntegerv(GL_MAX_TEXTURE_SIZE, &max_texture_size);
 	glGetIntegerv(GL_MAX_VIEWPORT_DIMS, max_viewport_size);
 	glGetInteger64v(GL_MAX_UNIFORM_BLOCK_SIZE, &max_uniform_buffer_size);
+	GLint max_vertex_output;
+	glGetIntegerv(GL_MAX_VERTEX_OUTPUT_COMPONENTS, &max_vertex_output);
+	GLint max_fragment_input;
+	glGetIntegerv(GL_MAX_FRAGMENT_INPUT_COMPONENTS, &max_fragment_input);
+	max_shader_varyings = (uint32_t)MIN(max_vertex_output, max_fragment_input) / 4;
 
 	// sanity clamp buffer size to 16K..1MB
 	max_uniform_buffer_size = CLAMP(max_uniform_buffer_size, 16384, 1048576);

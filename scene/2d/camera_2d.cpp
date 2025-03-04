@@ -300,6 +300,7 @@ void Camera2D::_notification(int p_what) {
 			// Force the limits etc. to update.
 			_interpolation_data.xform_curr = get_camera_transform();
 			_interpolation_data.xform_prev = _interpolation_data.xform_curr;
+			_update_process_callback();
 		} break;
 
 		case NOTIFICATION_SUSPENDED:
@@ -315,7 +316,9 @@ void Camera2D::_notification(int p_what) {
 			}
 			if (is_physics_interpolated_and_enabled()) {
 				_ensure_update_interpolation_data();
-				_interpolation_data.xform_curr = get_camera_transform();
+				if (Engine::get_singleton()->is_in_physics_frame()) {
+					_interpolation_data.xform_curr = get_camera_transform();
+				}
 			}
 		} break;
 
@@ -388,7 +391,7 @@ void Camera2D::_notification(int p_what) {
 					inv_camera_transform.xform(Vector2(0, screen_size.height))
 				};
 
-				Transform2D inv_transform = get_global_transform().affine_inverse(); // undo global space
+				Transform2D inv_transform = get_global_transform().affine_inverse(); // Undo global space.
 
 				for (int i = 0; i < 4; i++) {
 					draw_line(inv_transform.xform(screen_endpoints[i]), inv_transform.xform(screen_endpoints[(i + 1) % 4]), area_axis_color, area_axis_width);
@@ -402,13 +405,13 @@ void Camera2D::_notification(int p_what) {
 					limit_drawing_width = 3;
 				}
 
-				Vector2 camera_origin = get_global_position();
-				Vector2 camera_scale = get_global_scale().abs();
+				Transform2D inv_transform = get_global_transform().affine_inverse();
+
 				Vector2 limit_points[4] = {
-					(Vector2(limit[SIDE_LEFT], limit[SIDE_TOP]) - camera_origin) / camera_scale,
-					(Vector2(limit[SIDE_RIGHT], limit[SIDE_TOP]) - camera_origin) / camera_scale,
-					(Vector2(limit[SIDE_RIGHT], limit[SIDE_BOTTOM]) - camera_origin) / camera_scale,
-					(Vector2(limit[SIDE_LEFT], limit[SIDE_BOTTOM]) - camera_origin) / camera_scale
+					inv_transform.xform(Vector2(limit[SIDE_LEFT], limit[SIDE_TOP])),
+					inv_transform.xform(Vector2(limit[SIDE_RIGHT], limit[SIDE_TOP])),
+					inv_transform.xform(Vector2(limit[SIDE_RIGHT], limit[SIDE_BOTTOM])),
+					inv_transform.xform(Vector2(limit[SIDE_LEFT], limit[SIDE_BOTTOM]))
 				};
 
 				for (int i = 0; i < 4; i++) {
@@ -433,7 +436,7 @@ void Camera2D::_notification(int p_what) {
 					inv_camera_transform.xform(Vector2((screen_size.width / 2) - ((screen_size.width / 2) * drag_margin[SIDE_LEFT]), (screen_size.height / 2) + ((screen_size.height / 2) * drag_margin[SIDE_BOTTOM])))
 				};
 
-				Transform2D inv_transform = get_global_transform().affine_inverse(); // undo global space
+				Transform2D inv_transform = get_global_transform().affine_inverse(); // Undo global space.
 
 				for (int i = 0; i < 4; i++) {
 					draw_line(inv_transform.xform(margin_endpoints[i]), inv_transform.xform(margin_endpoints[(i + 1) % 4]), margin_drawing_color, margin_drawing_width);

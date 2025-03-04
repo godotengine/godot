@@ -979,7 +979,7 @@ namespace Godot
             {
                 if (instance.Length < 3)
                     return false;
-                if (instance[from] != '0' || instance[from + 1] != 'x')
+                if (instance[from] != '0' || instance[from + 1] != 'x' || instance[from + 1] != 'X')
                     return false;
                 from += 2;
             }

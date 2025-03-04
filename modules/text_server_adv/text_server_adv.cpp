@@ -458,13 +458,13 @@ bool TextServerAdvanced::_load_support_data(const String &p_filename) {
 			}
 
 			err = U_ZERO_ERROR;
+			icu_data_loaded = true;
 		}
 
 		u_init(&err);
 		if (U_FAILURE(err)) {
 			ERR_FAIL_V_MSG(false, u_errorName(err));
 		}
-		icu_data_loaded = true;
 	}
 #endif
 	return true;
@@ -4773,17 +4773,24 @@ bool TextServerAdvanced::_shape_substr(ShapedTextDataAdvanced *p_new_sd, const S
 			}
 		}
 
+		Vector<Vector3i> bidi_ranges;
+		if (p_sd->bidi_override.is_empty()) {
+			bidi_ranges.push_back(Vector3i(p_sd->start, p_sd->end, DIRECTION_INHERITED));
+		} else {
+			bidi_ranges = p_sd->bidi_override;
+		}
+
 		int sd_size = p_sd->glyphs.size();
 		const Glyph *sd_glyphs = p_sd->glyphs.ptr();
-		for (int ov = 0; ov < p_sd->bidi_override.size(); ov++) {
+		for (int ov = 0; ov < bidi_ranges.size(); ov++) {
 			UErrorCode err = U_ZERO_ERROR;
 
-			if (p_sd->bidi_override[ov].x >= p_start + p_length || p_sd->bidi_override[ov].y <= p_start) {
+			if (bidi_ranges[ov].x >= p_start + p_length || bidi_ranges[ov].y <= p_start) {
 				continue;
 			}
-			int ov_start = _convert_pos_inv(p_sd, p_sd->bidi_override[ov].x);
+			int ov_start = _convert_pos_inv(p_sd, bidi_ranges[ov].x);
 			int start = MAX(0, _convert_pos_inv(p_sd, p_start) - ov_start);
-			int end = MIN(_convert_pos_inv(p_sd, p_start + p_length), _convert_pos_inv(p_sd, p_sd->bidi_override[ov].y)) - ov_start;
+			int end = MIN(_convert_pos_inv(p_sd, p_start + p_length), _convert_pos_inv(p_sd, bidi_ranges[ov].y)) - ov_start;
 
 			ERR_FAIL_COND_V_MSG((start < 0 || end - start > p_new_sd->utf16.length()), false, "Invalid BiDi override range.");
 
@@ -4797,7 +4804,7 @@ bool TextServerAdvanced::_shape_substr(ShapedTextDataAdvanced *p_new_sd, const S
 						// Line BiDi failed (string contains incompatible control characters), try full paragraph BiDi instead.
 						err = U_ZERO_ERROR;
 						const UChar *data = p_sd->utf16.get_data();
-						switch (static_cast<TextServer::Direction>(p_sd->bidi_override[ov].z)) {
+						switch (static_cast<TextServer::Direction>(bidi_ranges[ov].z)) {
 							case DIRECTION_LTR: {
 								ubidi_setPara(bidi_iter, data + start, end - start, UBIDI_LTR, nullptr, &err);
 							} break;
@@ -4860,8 +4867,8 @@ bool TextServerAdvanced::_shape_substr(ShapedTextDataAdvanced *p_new_sd, const S
 							gl.index = index;
 							gl.advance = w;
 						}
-						if ((gl.flags & GRAPHEME_IS_EMBEDDED_OBJECT) == GRAPHEME_IS_EMBEDDED_OBJECT && gl.span_index >= 0 && gl.span_index < span_size) {
-							Variant key = p_sd->spans[gl.span_index].embedded_key;
+						if ((gl.flags & GRAPHEME_IS_EMBEDDED_OBJECT) == GRAPHEME_IS_EMBEDDED_OBJECT && gl.span_index + p_new_sd->first_span >= 0 && gl.span_index + p_new_sd->first_span < span_size) {
+							Variant key = p_sd->spans[gl.span_index + p_new_sd->first_span].embedded_key;
 							if (key != Variant()) {
 								ShapedTextDataAdvanced::EmbeddedObject obj = p_sd->objects[key];
 								if (p_new_sd->orientation == ORIENTATION_HORIZONTAL) {
@@ -5301,6 +5308,9 @@ void TextServerAdvanced::_shaped_text_overrun_trim_to_width(const RID &p_shaped_
 	if (!sd->valid.is_set()) {
 		_shaped_text_shape(p_shaped_line);
 	}
+	if (!sd->line_breaks_valid) {
+		_shaped_text_update_breaks(p_shaped_line);
+	}
 
 	sd->text_trimmed = false;
 	sd->overrun_trim_data.ellipsis_glyph_buf.clear();
@@ -5405,14 +5415,15 @@ void TextServerAdvanced::_shaped_text_overrun_trim_to_width(const RID &p_shaped_
 
 	int ell_min_characters = 6;
 	double width = sd->width;
+	double width_without_el = width;
 
 	bool is_rtl = sd->para_direction == DIRECTION_RTL;
 
 	int trim_pos = (is_rtl) ? sd_size : 0;
 	int ellipsis_pos = (enforce_ellipsis) ? 0 : -1;
 
-	int last_valid_cut = 0;
-	bool found = false;
+	int last_valid_cut = -1;
+	int last_valid_cut_witout_el = -1;
 
 	int glyphs_from = (is_rtl) ? 0 : sd_size - 1;
 	int glyphs_to = (is_rtl) ? sd_size - 1 : -1;
@@ -5428,18 +5439,32 @@ void TextServerAdvanced::_shaped_text_overrun_trim_to_width(const RID &p_shaped_
 			}
 			if (sd_glyphs[i].count > 0) {
 				bool above_min_char_threshold = ((is_rtl) ? sd_size - 1 - i : i) >= ell_min_characters;
-
+				if (!above_min_char_threshold && last_valid_cut_witout_el != -1) {
+					trim_pos = last_valid_cut_witout_el;
+					ellipsis_pos = -1;
+					width = width_without_el;
+					break;
+				}
+				if (!enforce_ellipsis && width <= p_width && last_valid_cut_witout_el == -1) {
+					if (cut_per_word && above_min_char_threshold) {
+						if ((sd_glyphs[i].flags & GRAPHEME_IS_BREAK_SOFT) == GRAPHEME_IS_BREAK_SOFT) {
+							last_valid_cut_witout_el = i;
+							width_without_el = width;
+						}
+					} else {
+						last_valid_cut_witout_el = i;
+						width_without_el = width;
+					}
+				}
 				if (width + (((above_min_char_threshold && add_ellipsis) || enforce_ellipsis) ? ellipsis_width : 0) <= p_width) {
 					if (cut_per_word && above_min_char_threshold) {
 						if ((sd_glyphs[i].flags & GRAPHEME_IS_BREAK_SOFT) == GRAPHEME_IS_BREAK_SOFT) {
 							last_valid_cut = i;
-							found = true;
 						}
 					} else {
 						last_valid_cut = i;
-						found = true;
 					}
-					if (found) {
+					if (last_valid_cut != -1) {
 						trim_pos = last_valid_cut;
 
 						if (add_ellipsis && (above_min_char_threshold || enforce_ellipsis) && width - ellipsis_width <= p_width) {
@@ -6490,14 +6515,17 @@ bool TextServerAdvanced::_shaped_text_shape(const RID &p_shaped) {
 		} break;
 	}
 
+	Vector<Vector3i> bidi_ranges;
 	if (sd->bidi_override.is_empty()) {
-		sd->bidi_override.push_back(Vector3i(sd->start, sd->end, DIRECTION_INHERITED));
+		bidi_ranges.push_back(Vector3i(sd->start, sd->end, DIRECTION_INHERITED));
+	} else {
+		bidi_ranges = sd->bidi_override;
 	}
 
-	for (int ov = 0; ov < sd->bidi_override.size(); ov++) {
+	for (int ov = 0; ov < bidi_ranges.size(); ov++) {
 		// Create BiDi iterator.
-		int start = _convert_pos_inv(sd, sd->bidi_override[ov].x - sd->start);
-		int end = _convert_pos_inv(sd, sd->bidi_override[ov].y - sd->start);
+		int start = _convert_pos_inv(sd, bidi_ranges[ov].x - sd->start);
+		int end = _convert_pos_inv(sd, bidi_ranges[ov].y - sd->start);
 
 		if (start < 0 || end - start > sd->utf16.length()) {
 			continue;
@@ -6506,7 +6534,7 @@ bool TextServerAdvanced::_shaped_text_shape(const RID &p_shaped) {
 		UErrorCode err = U_ZERO_ERROR;
 		UBiDi *bidi_iter = ubidi_openSized(end - start, 0, &err);
 		if (U_SUCCESS(err)) {
-			switch (static_cast<TextServer::Direction>(sd->bidi_override[ov].z)) {
+			switch (static_cast<TextServer::Direction>(bidi_ranges[ov].z)) {
 				case DIRECTION_LTR: {
 					ubidi_setPara(bidi_iter, data + start, end - start, UBIDI_LTR, nullptr, &err);
 				} break;
@@ -6868,7 +6896,8 @@ void TextServerAdvanced::_insert_num_systems_lang() {
 		ar.lang.insert(StringName("sd_Arab_PK"));
 		ar.digits = U"٠١٢٣٤٥٦٧٨٩٫";
 		ar.percent_sign = U"٪";
-		ar.exp = U"اس";
+		ar.exp_l = U"اس";
+		ar.exp_u = U"اس";
 		num_systems.push_back(ar);
 	}
 
@@ -6899,7 +6928,8 @@ void TextServerAdvanced::_insert_num_systems_lang() {
 		pr.lang.insert(StringName("uz_Arab_AF"));
 		pr.digits = U"۰۱۲۳۴۵۶۷۸۹٫";
 		pr.percent_sign = U"٪";
-		pr.exp = U"اس";
+		pr.exp_l = U"اس";
+		pr.exp_u = U"اس";
 		num_systems.push_back(pr);
 	}
 
@@ -6917,7 +6947,8 @@ void TextServerAdvanced::_insert_num_systems_lang() {
 		bn.lang.insert(StringName("mni_Beng_IN"));
 		bn.digits = U"০১২৩৪৫৬৭৮৯.";
 		bn.percent_sign = U"%";
-		bn.exp = U"e";
+		bn.exp_l = U"e";
+		bn.exp_u = U"E";
 		num_systems.push_back(bn);
 	}
 
@@ -6933,7 +6964,8 @@ void TextServerAdvanced::_insert_num_systems_lang() {
 		mr.lang.insert(StringName("sa_IN"));
 		mr.digits = U"०१२३४५६७८९.";
 		mr.percent_sign = U"%";
-		mr.exp = U"e";
+		mr.exp_l = U"e";
+		mr.exp_u = U"E";
 		num_systems.push_back(mr);
 	}
 
@@ -6944,7 +6976,8 @@ void TextServerAdvanced::_insert_num_systems_lang() {
 		dz.lang.insert(StringName("dz_BT"));
 		dz.digits = U"༠༡༢༣༤༥༦༧༨༩.";
 		dz.percent_sign = U"%";
-		dz.exp = U"e";
+		dz.exp_l = U"e";
+		dz.exp_u = U"E";
 		num_systems.push_back(dz);
 	}
 
@@ -6957,7 +6990,8 @@ void TextServerAdvanced::_insert_num_systems_lang() {
 		sat.lang.insert(StringName("sat_Olck_IN"));
 		sat.digits = U"᱐᱑᱒᱓᱔᱕᱖᱗᱘᱙.";
 		sat.percent_sign = U"%";
-		sat.exp = U"e";
+		sat.exp_l = U"e";
+		sat.exp_u = U"E";
 		num_systems.push_back(sat);
 	}
 
@@ -6968,7 +7002,8 @@ void TextServerAdvanced::_insert_num_systems_lang() {
 		my.lang.insert(StringName("my_MM"));
 		my.digits = U"၀၁၂၃၄၅၆၇၈၉.";
 		my.percent_sign = U"%";
-		my.exp = U"e";
+		my.exp_l = U"e";
+		my.exp_u = U"E";
 		num_systems.push_back(my);
 	}
 
@@ -6980,7 +7015,8 @@ void TextServerAdvanced::_insert_num_systems_lang() {
 		ccp.lang.insert(StringName("ccp_IN"));
 		ccp.digits = U"𑄶𑄷𑄸𑄹𑄺𑄻𑄼𑄽𑄾𑄿.";
 		ccp.percent_sign = U"%";
-		ccp.exp = U"e";
+		ccp.exp_l = U"e";
+		ccp.exp_u = U"E";
 		num_systems.push_back(ccp);
 	}
 
@@ -7002,7 +7038,8 @@ void TextServerAdvanced::_insert_num_systems_lang() {
 		ff.lang.insert(StringName("ff_Adlm_SN"));
 		ff.digits = U"𞥐𞥑𞥒𞥓𞥔𞥕𞥖𞥗𞥘𞥙.";
 		ff.percent_sign = U"%";
-		ff.exp = U"e";
+		ff.exp_l = U"𞤉";
+		ff.exp_u = U"𞤉";
 		num_systems.push_back(ff);
 	}
 }
@@ -7016,8 +7053,8 @@ String TextServerAdvanced::_format_number(const String &p_string, const String &
 			if (num_systems[i].digits.is_empty()) {
 				return p_string;
 			}
-			res.replace("e", num_systems[i].exp);
-			res.replace("E", num_systems[i].exp);
+			res = res.replace("e", num_systems[i].exp_l);
+			res = res.replace("E", num_systems[i].exp_u);
 			char32_t *data = res.ptrw();
 			for (int j = 0; j < res.length(); j++) {
 				if (data[j] >= 0x30 && data[j] <= 0x39) {
@@ -7041,7 +7078,8 @@ String TextServerAdvanced::_parse_number(const String &p_string, const String &p
 			if (num_systems[i].digits.is_empty()) {
 				return p_string;
 			}
-			res.replace(num_systems[i].exp, "e");
+			res = res.replace(num_systems[i].exp_l, "e");
+			res = res.replace(num_systems[i].exp_u, "E");
 			char32_t *data = res.ptrw();
 			for (int j = 0; j < res.length(); j++) {
 				if (data[j] == num_systems[i].digits[10]) {

@@ -153,8 +153,26 @@ void FileDialog::_native_dialog_cb_with_options(bool p_ok, const Vector<String> 
 		emit_signal(SNAME("files_selected"), files);
 	} else {
 		if (mode == FILE_MODE_SAVE_FILE) {
-			if (p_filter != 0 && p_filter != filter->get_item_count() - 1) {
-				bool valid = false;
+			bool valid = false;
+
+			if (p_filter == filter->get_item_count() - 1) {
+				valid = true; // Match none.
+			} else if (filters.size() > 1 && p_filter == 0) {
+				// Match all filters.
+				for (int i = 0; i < filters.size(); i++) {
+					String flt = filters[i].get_slice(";", 0);
+					for (int j = 0; j < flt.get_slice_count(","); j++) {
+						String str = flt.get_slice(",", j).strip_edges();
+						if (f.matchn(str)) {
+							valid = true;
+							break;
+						}
+					}
+					if (valid) {
+						break;
+					}
+				}
+			} else {
 				int idx = p_filter;
 				if (filters.size() > 1) {
 					idx--;
@@ -164,7 +182,7 @@ void FileDialog::_native_dialog_cb_with_options(bool p_ok, const Vector<String> 
 					int filter_slice_count = flt.get_slice_count(",");
 					for (int j = 0; j < filter_slice_count; j++) {
 						String str = (flt.get_slice(",", j).strip_edges());
-						if (f.match(str)) {
+						if (f.matchn(str)) {
 							valid = true;
 							break;
 						}
@@ -173,8 +191,20 @@ void FileDialog::_native_dialog_cb_with_options(bool p_ok, const Vector<String> 
 					if (!valid && filter_slice_count > 0) {
 						String str = (flt.get_slice(",", 0).strip_edges());
 						f += str.substr(1, str.length() - 1);
+						file->set_text(f.get_file());
+						valid = true;
 					}
+				} else {
+					valid = true;
 				}
+			}
+
+			// Add first extension of filter if no valid extension is found.
+			if (!valid) {
+				int idx = p_filter;
+				String flt = filters[idx].get_slice(";", 0);
+				String ext = flt.get_slice(",", 0).strip_edges().get_extension();
+				f += "." + ext;
 			}
 			emit_signal(SNAME("file_selected"), f);
 		} else if ((mode == FILE_MODE_OPEN_ANY || mode == FILE_MODE_OPEN_FILE) && dir_access->file_exists(f)) {
@@ -501,9 +531,9 @@ void FileDialog::_action_pressed() {
 		bool valid = false;
 
 		if (filter->get_selected() == filter->get_item_count() - 1) {
-			valid = true; // match none
+			valid = true; // Match none.
 		} else if (filters.size() > 1 && filter->get_selected() == 0) {
-			// match all filters
+			// Match all filters.
 			for (int i = 0; i < filters.size(); i++) {
 				String flt = filters[i].get_slice(";", 0);
 				for (int j = 0; j < flt.get_slice_count(","); j++) {
@@ -637,8 +667,10 @@ void FileDialog::deselect_all() {
 				set_ok_button_text(ETR("Select Current Folder"));
 				break;
 			case FILE_MODE_OPEN_ANY:
+				set_ok_button_text(ETR("Open"));
+				break;
 			case FILE_MODE_SAVE_FILE:
-				// FIXME: Implement, or refactor to avoid duplication with set_mode
+				set_ok_button_text(ETR("Save"));
 				break;
 		}
 	}
@@ -657,8 +689,16 @@ void FileDialog::_tree_selected() {
 
 	if (!d["dir"]) {
 		file->set_text(d["name"]);
-	} else if (mode == FILE_MODE_OPEN_DIR) {
-		set_ok_button_text(ETR("Select This Folder"));
+		if (mode == FILE_MODE_SAVE_FILE) {
+			set_ok_button_text(ETR("Save"));
+		} else {
+			set_ok_button_text(ETR("Open"));
+		}
+	} else if (mode == FILE_MODE_OPEN_DIR || mode == FILE_MODE_OPEN_ANY || !dir_access->file_exists(file->get_text())) {
+		file->set_text("");
+		if (mode == FILE_MODE_OPEN_DIR || mode == FILE_MODE_OPEN_ANY) {
+			set_ok_button_text(ETR("Select This Folder"));
+		}
 	}
 
 	get_ok_button()->set_disabled(_is_open_should_be_disabled());
@@ -923,6 +963,7 @@ void FileDialog::update_file_list() {
 		// Select the first file from list if nothing is selected.
 		if (tree->get_root() && tree->get_root()->get_first_child() && tree->get_selected() == nullptr) {
 			tree->get_root()->get_first_child()->select(0);
+			_tree_selected();
 		}
 	}
 }
@@ -941,6 +982,7 @@ void FileDialog::_filename_filter_changed() {
 void FileDialog::_tree_select_first() {
 	if (tree->get_root() && tree->get_root()->get_first_child()) {
 		tree->get_root()->get_first_child()->select(0);
+		_tree_selected();
 	}
 }
 

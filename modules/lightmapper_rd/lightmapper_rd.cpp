@@ -1002,7 +1002,8 @@ LightmapperRD::BakeError LightmapperRD::_denoise(RenderingDevice *p_rd, Ref<RDSh
 	// We denoise in fixed size regions and synchronize execution to avoid GPU timeouts.
 	// We use a region with 1/4 the amount of pixels if we're denoising SH lightmaps, as
 	// all four of them are denoised in the shader in one dispatch.
-	const int max_region_size = p_bake_sh ? 512 : 1024;
+	const int user_region_size = nearest_power_of_2_templated(int(GLOBAL_GET("rendering/lightmapping/bake_performance/region_size")));
+	const int max_region_size = p_bake_sh ? user_region_size / 2 : user_region_size;
 	int x_regions = Math::division_round_up(p_atlas_size.width, max_region_size);
 	int y_regions = Math::division_round_up(p_atlas_size.height, max_region_size);
 	for (int s = 0; s < p_atlas_slices; s++) {
@@ -1649,6 +1650,10 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 		}
 	}
 
+	const int max_region_size = nearest_power_of_2_templated(int(GLOBAL_GET("rendering/lightmapping/bake_performance/region_size")));
+	const int x_regions = Math::division_round_up(atlas_size.width, max_region_size);
+	const int y_regions = Math::division_round_up(atlas_size.height, max_region_size);
+
 	// Set ray count to the quality used for direct light and bounces.
 	switch (p_quality) {
 		case BAKE_QUALITY_LOW: {
@@ -1718,18 +1723,52 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 
 		RID light_uniform_set = rd->uniform_set_create(uniforms, compute_shader_primary, 1);
 
-		RD::ComputeListID compute_list = rd->compute_list_begin();
-		rd->compute_list_bind_compute_pipeline(compute_list, compute_shader_primary_pipeline);
-		rd->compute_list_bind_uniform_set(compute_list, compute_base_uniform_set, 0);
-		rd->compute_list_bind_uniform_set(compute_list, light_uniform_set, 1);
+		int count = 0;
+		for (int s = 0; s < atlas_slices; s++) {
+			push_constant.atlas_slice = s;
 
-		for (int i = 0; i < atlas_slices; i++) {
-			push_constant.atlas_slice = i;
-			rd->compute_list_set_push_constant(compute_list, &push_constant, sizeof(PushConstant));
-			rd->compute_list_dispatch(compute_list, group_size.x, group_size.y, group_size.z);
-			//no barrier, let them run all together
+			for (int i = 0; i < x_regions; i++) {
+				for (int j = 0; j < y_regions; j++) {
+					int x = i * max_region_size;
+					int y = j * max_region_size;
+					int w = MIN((i + 1) * max_region_size, atlas_size.width) - x;
+					int h = MIN((j + 1) * max_region_size, atlas_size.height) - y;
+
+					push_constant.region_ofs[0] = x;
+					push_constant.region_ofs[1] = y;
+
+					group_size = Vector3i(Math::division_round_up(w, 8), Math::division_round_up(h, 8), 1);
+					RD::ComputeListID compute_list = rd->compute_list_begin();
+					rd->compute_list_bind_compute_pipeline(compute_list, compute_shader_primary_pipeline);
+					rd->compute_list_bind_uniform_set(compute_list, compute_base_uniform_set, 0);
+					rd->compute_list_bind_uniform_set(compute_list, light_uniform_set, 1);
+					rd->compute_list_set_push_constant(compute_list, &push_constant, sizeof(PushConstant));
+					rd->compute_list_dispatch(compute_list, group_size.x, group_size.y, group_size.z);
+					rd->compute_list_end();
+
+					rd->submit();
+					rd->sync();
+
+					count++;
+					if (p_step_function) {
+						int total = (atlas_slices * x_regions * y_regions);
+						int percent = count * 100 / total;
+						float p = float(count) / total * 0.1;
+						if (p_step_function(0.5 + p, vformat(RTR("Plot direct lighting %d%%"), percent), p_bake_userdata, false)) {
+							FREE_TEXTURES
+							FREE_BUFFERS
+							FREE_RASTER_RESOURCES
+							FREE_COMPUTE_RESOURCES
+							memdelete(rd);
+							if (rcd != nullptr) {
+								memdelete(rcd);
+							}
+							return BAKE_ERROR_USER_ABORTED;
+						}
+					}
+				}
+			}
 		}
-		rd->compute_list_end(); //done
 	}
 
 #ifdef DEBUG_TEXTURES
@@ -1802,16 +1841,8 @@ LightmapperRD::BakeError LightmapperRD::bake(BakeQuality p_quality, bool p_use_d
 		RID secondary_uniform_set;
 		secondary_uniform_set = rd->uniform_set_create(uniforms, compute_shader_secondary, 1);
 
-		int max_region_size = nearest_power_of_2_templated(int(GLOBAL_GET("rendering/lightmapping/bake_performance/region_size")));
-		int max_rays = GLOBAL_GET("rendering/lightmapping/bake_performance/max_rays_per_pass");
-
-		int x_regions = Math::division_round_up(atlas_size.width, max_region_size);
-		int y_regions = Math::division_round_up(atlas_size.height, max_region_size);
-
+		const int max_rays = GLOBAL_GET("rendering/lightmapping/bake_performance/max_rays_per_pass");
 		int ray_iterations = Math::division_round_up((int32_t)push_constant.ray_count, max_rays);
-
-		rd->submit();
-		rd->sync();
 
 		if (p_step_function) {
 			if (p_step_function(0.6, RTR("Integrate indirect lighting"), p_bake_userdata, true)) {

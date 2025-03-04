@@ -6,6 +6,7 @@ on:
 env:
   # Used for the cache key. Add version suffix to force clean build.
   GODOT_BASE_BRANCH: master
+  GODOT_CPP_BRANCH: 4.4
   SCONSFLAGS: verbose=yes warnings=extra werror=yes module_text_server_fb_enabled=yes strict_checks=yes
   DOTNET_NOLOGO: true
   DOTNET_CLI_TELEMETRY_OPTOUT: true
@@ -17,6 +18,7 @@ jobs:
     # Stay one LTS before latest to increase portability of Linux artifacts.
     runs-on: ubuntu-22.04
     name: ${{ matrix.name }}
+    timeout-minutes: 120
     strategy:
       fail-fast: false
       matrix:
@@ -32,7 +34,9 @@ jobs:
             proj-conv: true
             api-compat: true
             artifact: true
-            cache-limit: 1
+            # Validate godot-cpp compatibility on one arbitrary editor build.
+            godot-cpp: true
+            cache-limit: 2
 
           - name: Editor with doubles and GCC sanitizers (target=editor, tests=yes, dev_build=yes, scu_build=yes, precision=double, use_asan=yes, use_ubsan=yes, linker=gold)
             cache-name: linux-editor-double-sanitizers
@@ -43,8 +47,6 @@ jobs:
             build-mono: false
             tests: true
             proj-test: true
-            # Generate an API dump for godot-cpp tests.
-            api-dump: true
             # Skip 2GiB artifact speeding up action.
             artifact: false
             cache-limit: 7
@@ -73,11 +75,21 @@ jobs:
             artifact: false
             cache-limit: 5
 
-          - name: Template w/ Mono (target=template_release, tests=yes)
+          - name: Template w/ Mono, release (target=template_release, tests=yes)
             cache-name: linux-template-mono
             target: template_release
             sconsflags: module_mono_enabled=yes
             bin: ./bin/godot.linuxbsd.template_release.x86_64.mono
+            build-mono: false
+            tests: true
+            artifact: true
+            cache-limit: 1
+
+          - name: Template w/ Mono, debug (target=template_debug, tests=yes)
+            cache-name: linux-template-mono-debug
+            target: template_debug
+            sconsflags: module_mono_enabled=yes
+            bin: ./bin/godot.linuxbsd.template_debug.x86_64.mono
             build-mono: false
             tests: true
             artifact: true
@@ -104,7 +116,7 @@ jobs:
         run: |
           sudo rm -f /etc/apt/sources.list.d/microsoft-prod.list
           sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys EB8B81E14DA65431D7504EA8F63F0F2B90935439
-          sudo add-apt-repository "deb https://ppa.launchpadcontent.net/kisak/turtle/ubuntu ${{ matrix.os == 'ubuntu-20.04' && 'focal' || 'jammy' }} main"
+          sudo add-apt-repository "deb https://ppa.launchpadcontent.net/kisak/turtle/ubuntu jammy main"
           sudo apt-get install -qq mesa-vulkan-drivers
 
       # TODO: Figure out somehow how to embed this one.
@@ -157,6 +169,14 @@ jobs:
           tests: ${{ matrix.tests }}
           scons-cache-limit: ${{ matrix.cache-limit }}
 
+      - name: Compilation (godot-cpp)
+        uses: ./.github/actions/godot-cpp-build
+        if: matrix.godot-cpp
+        with:
+          bin: ${{ matrix.bin }}
+          scons-flags: target=template_debug dev_build=yes verbose=yes
+          godot-cpp-branch: ${{ env.GODOT_CPP_BRANCH }}
+
       - name: Save Godot build cache
         uses: ./.github/actions/godot-cache-save
         with:
@@ -185,12 +205,6 @@ jobs:
         if: matrix.artifact
         with:
           name: ${{ matrix.cache-name }}
-
-      - name: Dump Godot API
-        uses: ./.github/actions/godot-api-dump
-        if: matrix.api-dump
-        with:
-          bin: ${{ matrix.bin }}
 
       - name: Unit tests
         if: matrix.tests

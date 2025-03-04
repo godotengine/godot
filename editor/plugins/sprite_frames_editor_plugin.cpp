@@ -1284,6 +1284,10 @@ void SpriteFramesEditor::_animation_loop_changed() {
 	undo_redo->commit_action();
 }
 
+void SpriteFramesEditor::_animation_speed_resized() {
+	anim_speed->update_minimum_size();
+}
+
 void SpriteFramesEditor::_animation_speed_changed(double p_value) {
 	if (updating) {
 		return;
@@ -1314,6 +1318,10 @@ void SpriteFramesEditor::_frame_list_gui_input(const Ref<InputEvent> &p_event) {
 			Point2 pos = mb->get_position();
 			right_clicked_frame = frame_list->get_item_at_position(pos, true);
 			if (right_clicked_frame != -1) {
+				Ref<Texture2D> tex = frames->get_frame_texture(edited_anim, right_clicked_frame);
+				if (tex.is_null()) {
+					return;
+				}
 				if (!menu) {
 					menu = memnew(PopupMenu);
 					add_child(menu);
@@ -1970,6 +1978,8 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	anim_speed->set_step(0.01);
 	anim_speed->set_custom_arrow_step(1);
 	anim_speed->set_tooltip_text(TTR("Animation Speed"));
+	anim_speed->get_line_edit()->set_expand_to_text_length_enabled(true);
+	anim_speed->get_line_edit()->connect(SceneStringName(resized), callable_mp(this, &SpriteFramesEditor::_animation_speed_resized));
 	anim_speed->connect(SceneStringName(value_changed), callable_mp(this, &SpriteFramesEditor::_animation_speed_changed));
 	hbc_animlist->add_child(anim_speed);
 

@@ -51,6 +51,7 @@
 				Returns the acceleration in m/s² of the device's accelerometer sensor, if the device has one. Otherwise, the method returns [constant Vector3.ZERO].
 				Note this method returns an empty [Vector3] when running from the editor even when your device has an accelerometer. You must export your project to a supported device to read values from the accelerometer.
 				[b]Note:[/b] This method only works on Android and iOS. On other platforms, it always returns [constant Vector3.ZERO].
+				[b]Note:[/b] For Android, [member ProjectSettings.input_devices/sensors/enable_accelerometer] must be enabled.
 			</description>
 		</method>
 		<method name="get_action_raw_strength" qualifiers="const">
@@ -97,6 +98,7 @@
 			<description>
 				Returns the gravity in m/s² of the device's accelerometer sensor, if the device has one. Otherwise, the method returns [constant Vector3.ZERO].
 				[b]Note:[/b] This method only works on Android and iOS. On other platforms, it always returns [constant Vector3.ZERO].
+				[b]Note:[/b] For Android, [member ProjectSettings.input_devices/sensors/enable_gravity] must be enabled.
 			</description>
 		</method>
 		<method name="get_gyroscope" qualifiers="const">
@@ -104,6 +106,7 @@
 			<description>
 				Returns the rotation rate in rad/s around a device's X, Y, and Z axes of the gyroscope sensor, if the device has one. Otherwise, the method returns [constant Vector3.ZERO].
 				[b]Note:[/b] This method only works on Android and iOS. On other platforms, it always returns [constant Vector3.ZERO].
+				[b]Note:[/b] For Android, [member ProjectSettings.input_devices/sensors/enable_gyroscope] must be enabled.
 			</description>
 		</method>
 		<method name="get_joy_axis" qualifiers="const">
@@ -177,6 +180,7 @@
 			<description>
 				Returns the magnetic field strength in micro-Tesla for all axes of the device's magnetometer sensor, if the device has one. Otherwise, the method returns [constant Vector3.ZERO].
 				[b]Note:[/b] This method only works on Android and iOS. On other platforms, it always returns [constant Vector3.ZERO].
+				[b]Note:[/b] For Android, [member ProjectSettings.input_devices/sensors/enable_magnetometer] must be enabled.
 			</description>
 		</method>
 		<method name="get_mouse_button_mask" qualifiers="const">
@@ -311,7 +315,8 @@
 			<return type="void" />
 			<param index="0" name="guid" type="String" />
 			<description>
-				Removes all mappings from the internal database that match the given GUID.
+				Removes all mappings from the internal database that match the given GUID. All currently connected joypads that use this GUID will become unmapped.
+				On Android, Godot will map to an internal fallback mapping.
 			</description>
 		</method>
 		<method name="set_accelerometer">
@@ -462,6 +467,9 @@
 		</constant>
 		<constant name="MOUSE_MODE_CONFINED_HIDDEN" value="4" enum="MouseMode">
 			Confines the mouse cursor to the game window, and make it hidden.
+		</constant>
+		<constant name="MOUSE_MODE_MAX" value="5" enum="MouseMode">
+			Max value of the [enum MouseMode].
 		</constant>
 		<constant name="CURSOR_ARROW" value="0" enum="CursorShape">
 			Arrow cursor. Standard, default pointing cursor.

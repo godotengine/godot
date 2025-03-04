@@ -211,8 +211,8 @@ RID OpenXRAPIExtension::find_action(const String &p_name, const RID &p_action_se
 
 uint64_t OpenXRAPIExtension::action_get_handle(RID p_action) {
 	ERR_FAIL_NULL_V(OpenXRAPI::get_singleton(), 0);
-	XrAction action_hanlde = OpenXRAPI::get_singleton()->action_get_handle(p_action);
-	return reinterpret_cast<uint64_t>(action_hanlde);
+	XrAction action_handle = OpenXRAPI::get_singleton()->action_get_handle(p_action);
+	return (uint64_t)action_handle;
 }
 
 uint64_t OpenXRAPIExtension::get_hand_tracker(int p_hand_index) {
@@ -293,7 +293,7 @@ uint64_t OpenXRAPIExtension::openxr_swapchain_get_swapchain(uint64_t p_swapchain
 
 	OpenXRAPI::OpenXRSwapChainInfo *swapchain_info = reinterpret_cast<OpenXRAPI::OpenXRSwapChainInfo *>(p_swapchain_info);
 	XrSwapchain swapchain = swapchain_info->get_swapchain();
-	return reinterpret_cast<uint64_t>(swapchain);
+	return (uint64_t)swapchain;
 }
 
 void OpenXRAPIExtension::openxr_swapchain_acquire(uint64_t p_swapchain_info) {

@@ -173,6 +173,11 @@ protected:
 	static void _bind_methods();
 
 public:
+	struct EditedFileData {
+		String path;
+		uint64_t last_modified_time = -1;
+	} edited_file_data;
+
 	virtual void add_syntax_highlighter(Ref<EditorSyntaxHighlighter> p_highlighter) = 0;
 	virtual void set_syntax_highlighter(Ref<EditorSyntaxHighlighter> p_highlighter) = 0;
 
@@ -435,6 +440,7 @@ class ScriptEditor : public PanelContainer {
 	void _goto_script_line(Ref<RefCounted> p_script, int p_line);
 	void _set_execution(Ref<RefCounted> p_script, int p_line);
 	void _clear_execution(Ref<RefCounted> p_script);
+	String _get_debug_tooltip(const String &p_text, Node *p_se);
 	void _breaked(bool p_breaked, bool p_can_debug);
 	void _script_created(Ref<Script> p_script);
 	void _set_breakpoint(Ref<RefCounted> p_script, int p_line, bool p_enabled);

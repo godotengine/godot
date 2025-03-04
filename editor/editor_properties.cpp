@@ -321,6 +321,9 @@ void EditorPropertyTextEnum::update_property() {
 		}
 	} else {
 		option_button->select(default_option);
+		if (default_option < 0) {
+			option_button->set_text(current_value);
+		}
 	}
 }
 
@@ -699,6 +702,7 @@ void EditorPropertyEnum::update_property() {
 	Variant current = get_edited_property_value();
 	if (current.get_type() == Variant::NIL) {
 		options->select(-1);
+		options->set_text("<null>");
 		return;
 	}
 
@@ -709,6 +713,8 @@ void EditorPropertyEnum::update_property() {
 			return;
 		}
 	}
+	options->select(-1);
+	options->set_text(itos(which));
 }
 
 void EditorPropertyEnum::setup(const Vector<String> &p_options) {
@@ -1343,6 +1349,7 @@ void EditorPropertyInteger::setup(int64_t p_min, int64_t p_max, int64_t p_step, 
 EditorPropertyInteger::EditorPropertyInteger() {
 	spin = memnew(EditorSpinSlider);
 	spin->set_flat(true);
+	spin->set_editing_integer(true);
 	add_child(spin);
 	add_focusable(spin);
 	spin->connect(SceneStringName(value_changed), callable_mp(this, &EditorPropertyInteger::_value_changed));
@@ -1824,6 +1831,7 @@ void EditorPropertyRect2i::setup(int p_min, int p_max, const String &p_suffix) {
 		spin[i]->set_allow_greater(true);
 		spin[i]->set_allow_lesser(true);
 		spin[i]->set_suffix(p_suffix);
+		spin[i]->set_editing_integer(true);
 	}
 }
 
@@ -2599,16 +2607,22 @@ void EditorPropertyColor::_color_changed(const Color &p_color) {
 	get_edited_object()->set(get_edited_property(), p_color);
 }
 
+void EditorPropertyColor::_picker_created() {
+	picker->get_popup()->connect("about_to_popup", callable_mp(this, &EditorPropertyColor::_popup_opening));
+	picker->connect("popup_closed", callable_mp(this, &EditorPropertyColor::_popup_closed), CONNECT_DEFERRED);
+}
+
+void EditorPropertyColor::_popup_opening() {
+	EditorNode::get_singleton()->setup_color_picker(picker->get_picker());
+	last_color = picker->get_pick_color();
+	was_checked = !is_checkable() || is_checked();
+}
+
 void EditorPropertyColor::_popup_closed() {
 	get_edited_object()->set(get_edited_property(), was_checked ? Variant(last_color) : Variant());
 	if (!picker->get_pick_color().is_equal_approx(last_color)) {
 		emit_changed(get_edited_property(), picker->get_pick_color(), "", false);
 	}
-}
-
-void EditorPropertyColor::_picker_opening() {
-	last_color = picker->get_pick_color();
-	was_checked = !is_checkable() || is_checked();
 }
 
 void EditorPropertyColor::_notification(int p_what) {
@@ -2654,9 +2668,7 @@ EditorPropertyColor::EditorPropertyColor() {
 	add_child(picker);
 	picker->set_flat(true);
 	picker->connect("color_changed", callable_mp(this, &EditorPropertyColor::_color_changed));
-	picker->connect("popup_closed", callable_mp(this, &EditorPropertyColor::_popup_closed), CONNECT_DEFERRED);
-	picker->get_popup()->connect("about_to_popup", callable_mp(EditorNode::get_singleton(), &EditorNode::setup_color_picker).bind(picker->get_picker()));
-	picker->get_popup()->connect("about_to_popup", callable_mp(this, &EditorPropertyColor::_picker_opening));
+	picker->connect("picker_created", callable_mp(this, &EditorPropertyColor::_picker_created), CONNECT_ONE_SHOT);
 }
 
 ////////////// NODE PATH //////////////////////
@@ -3658,7 +3670,7 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 		case Variant::VECTOR2I: {
 			EditorPropertyVector2i *editor = memnew(EditorPropertyVector2i(p_wide));
 			EditorPropertyRangeHint hint = _parse_range_hint(p_hint, p_hint_text, 1, true);
-			editor->setup(hint.min, hint.max, 1, false, p_hint == PROPERTY_HINT_LINK, hint.suffix);
+			editor->setup(hint.min, hint.max, 1, false, p_hint == PROPERTY_HINT_LINK, hint.suffix, false, true);
 			return editor;
 
 		} break;
@@ -3685,7 +3697,7 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 		case Variant::VECTOR3I: {
 			EditorPropertyVector3i *editor = memnew(EditorPropertyVector3i(p_wide));
 			EditorPropertyRangeHint hint = _parse_range_hint(p_hint, p_hint_text, 1, true);
-			editor->setup(hint.min, hint.max, 1, false, p_hint == PROPERTY_HINT_LINK, hint.suffix);
+			editor->setup(hint.min, hint.max, 1, false, p_hint == PROPERTY_HINT_LINK, hint.suffix, false, true);
 			return editor;
 
 		} break;
@@ -3699,7 +3711,7 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 		case Variant::VECTOR4I: {
 			EditorPropertyVector4i *editor = memnew(EditorPropertyVector4i);
 			EditorPropertyRangeHint hint = _parse_range_hint(p_hint, p_hint_text, 1, true);
-			editor->setup(hint.min, hint.max, 1, false, p_hint == PROPERTY_HINT_LINK, hint.suffix);
+			editor->setup(hint.min, hint.max, 1, false, p_hint == PROPERTY_HINT_LINK, hint.suffix, false, true);
 			return editor;
 
 		} break;

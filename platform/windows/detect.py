@@ -155,6 +155,13 @@ def detect_build_env_arch():
     return ""
 
 
+def get_tools(env: "SConsEnvironment"):
+    if os.name != "nt" or env["use_mingw"]:
+        return ["mingw"]
+    else:
+        return ["default"]
+
+
 def get_opts():
     from SCons.Variables import BoolVariable, EnumVariable
 
@@ -325,10 +332,6 @@ def setup_mingw(env: "SConsEnvironment"):
     ):
         print_error("No valid compilers found, use MINGW_PREFIX environment variable to set MinGW path.")
         sys.exit(255)
-
-    env.Tool("mingw")
-    env.AppendUnique(CCFLAGS=env.get("ccflags", "").split())
-    env.AppendUnique(RCFLAGS=env.get("rcflags", "").split())
 
     print("Using MinGW, arch %s" % (env["arch"]))
 
@@ -729,7 +732,7 @@ def configure_mingw(env: "SConsEnvironment"):
         if env["use_static_cpp"]:
             env.Append(LINKFLAGS=["-static"])
 
-    if env["arch"] in ["x86_32", "x86_64"]:
+    if env["arch"] == "x86_32":
         env["x86_libtheora_opt_gcc"] = True
 
     env.Append(CCFLAGS=["-ffp-contract=off"])
@@ -778,6 +781,10 @@ def configure_mingw(env: "SConsEnvironment"):
         else:
             env.Append(CCFLAGS=["-flto"])
             env.Append(LINKFLAGS=["-flto"])
+        if not env["use_llvm"]:
+            # For mingw-gcc LTO, disable linker plugin and enable whole program to work around GH-102867.
+            env.Append(CCFLAGS=["-fno-use-linker-plugin", "-fwhole-program"])
+            env.Append(LINKFLAGS=["-fno-use-linker-plugin", "-fwhole-program"])
 
     if env["use_asan"]:
         env.Append(LINKFLAGS=["-Wl,--stack," + str(STACK_SIZE_SANITIZERS)])

@@ -65,8 +65,7 @@ private:
 	virtual void initialize_core() override;
 	virtual void initialize() override;
 
-	virtual void initialize_joypads() override {
-	}
+	virtual void initialize_joypads() override;
 
 	virtual void set_main_loop(MainLoop *p_main_loop) override;
 	virtual MainLoop *get_main_loop() const override;
@@ -133,6 +132,8 @@ public:
 
 	void on_enter_background();
 	void on_exit_background();
+
+	virtual Rect2 calculate_boot_screen_rect(const Size2 &p_window_size, const Size2 &p_imgrect_size) const override;
 };
 
 #endif // IOS_ENABLED

@@ -1162,8 +1162,6 @@ void ProjectManager::_titlebar_resized() {
 ProjectManager::ProjectManager(bool p_custom_res) {
 	singleton = this;
 
-	set_translation_domain("godot.editor");
-
 	// Turn off some servers we aren't going to be using in the Project Manager.
 	NavigationServer3D::get_singleton()->set_active(false);
 	PhysicsServer3D::get_singleton()->set_active(false);
@@ -1430,8 +1428,8 @@ ProjectManager::ProjectManager(bool p_custom_res) {
 				empty_list_message->set_text(vformat("[center][b]%s[/b] %s[/center]", line1, line2));
 				empty_list_placeholder->add_child(empty_list_message);
 
-				HBoxContainer *empty_list_actions = memnew(HBoxContainer);
-				empty_list_actions->set_alignment(BoxContainer::ALIGNMENT_CENTER);
+				FlowContainer *empty_list_actions = memnew(FlowContainer);
+				empty_list_actions->set_alignment(FlowContainer::ALIGNMENT_CENTER);
 				empty_list_placeholder->add_child(empty_list_actions);
 
 				empty_list_create_project = memnew(Button);

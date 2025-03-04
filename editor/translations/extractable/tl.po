@@ -18,17 +18,20 @@ msgstr ""
 "|| n % 10 == 6 || n % 10 == 9);\n"
 "X-Generator: Weblate 4.14-dev\n"
 
+msgid "All Recognized"
+msgstr "Lahat na Kilalang Ekstensyon"
+
 msgid "Open"
 msgstr "Buksan"
 
 msgid "Select Current Folder"
 msgstr "Piliin Ang Tinututukang Folder"
 
+msgid "Save"
+msgstr "I-save"
+
 msgid "Select This Folder"
 msgstr "Piliin ang Folder na Ito"
-
-msgid "All Recognized"
-msgstr "Lahat na Kilalang Ekstensyon"
 
 msgid "Open a File"
 msgstr "Buksan ang File"
@@ -41,9 +44,6 @@ msgstr "Bumukas ng Directory"
 
 msgid "Open a File or Directory"
 msgstr "Bumukas ng File o Directory"
-
-msgid "Save"
-msgstr "I-save"
 
 msgid "Save a File"
 msgstr "Magsave ng File"

@@ -126,7 +126,10 @@ int ViewportTexture::get_width() const {
 		_err_print_viewport_not_set();
 		return 0;
 	}
-	return get_size().width;
+	if (vp->is_sub_viewport()) {
+		return vp->size.width;
+	}
+	return vp->size.width * vp->get_stretch_transform().get_scale().width;
 }
 
 int ViewportTexture::get_height() const {
@@ -134,7 +137,10 @@ int ViewportTexture::get_height() const {
 		_err_print_viewport_not_set();
 		return 0;
 	}
-	return get_size().height;
+	if (vp->is_sub_viewport()) {
+		return vp->size.height;
+	}
+	return vp->size.height * vp->get_stretch_transform().get_scale().height;
 }
 
 Size2 ViewportTexture::get_size() const {
@@ -142,8 +148,11 @@ Size2 ViewportTexture::get_size() const {
 		_err_print_viewport_not_set();
 		return Size2();
 	}
-	float scale = MIN(vp->get_screen_transform().get_scale().width, vp->get_screen_transform().get_scale().height);
-	return Size2(vp->size.width * scale, vp->size.height * scale).ceil();
+	if (vp->is_sub_viewport()) {
+		return vp->size;
+	}
+	Size2 scale = vp->get_stretch_transform().get_scale();
+	return Size2(vp->size.width * scale.width, vp->size.height * scale.height).ceil();
 }
 
 RID ViewportTexture::get_rid() const {
@@ -3343,6 +3352,22 @@ void Viewport::_push_unhandled_input_internal(const Ref<InputEvent> &p_event) {
 	}
 }
 
+void Viewport::notify_mouse_entered() {
+	if (gui.mouse_in_viewport) {
+		WARN_PRINT_ED("The Viewport was previously notified that the mouse is in its area. There is no need to notify it at this time.");
+		return;
+	}
+	notification(NOTIFICATION_VP_MOUSE_ENTER);
+}
+
+void Viewport::notify_mouse_exited() {
+	if (!gui.mouse_in_viewport) {
+		WARN_PRINT_ED("The Viewport was previously notified that the mouse has left its area. There is no need to notify it at this time.");
+		return;
+	}
+	_mouse_leave_viewport();
+}
+
 void Viewport::set_physics_object_picking(bool p_enable) {
 	ERR_MAIN_THREAD_GUARD;
 	physics_object_picking = p_enable;
@@ -4790,6 +4815,8 @@ void Viewport::_bind_methods() {
 #ifndef DISABLE_DEPRECATED
 	ClassDB::bind_method(D_METHOD("push_unhandled_input", "event", "in_local_coords"), &Viewport::push_unhandled_input, DEFVAL(false));
 #endif // DISABLE_DEPRECATED
+	ClassDB::bind_method(D_METHOD("notify_mouse_entered"), &Viewport::notify_mouse_entered);
+	ClassDB::bind_method(D_METHOD("notify_mouse_exited"), &Viewport::notify_mouse_exited);
 
 	ClassDB::bind_method(D_METHOD("get_mouse_position"), &Viewport::get_mouse_position);
 	ClassDB::bind_method(D_METHOD("warp_mouse", "position"), &Viewport::warp_mouse);

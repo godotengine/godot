@@ -523,9 +523,6 @@ void register_scene_types() {
 	GDREGISTER_CLASS(AnimationNodeStateMachinePlayback);
 	GDREGISTER_VIRTUAL_CLASS(AnimationNodeExtension);
 
-	GDREGISTER_INTERNAL_CLASS(AnimationNodeStartState);
-	GDREGISTER_INTERNAL_CLASS(AnimationNodeEndState);
-
 	GDREGISTER_CLASS(AnimationNodeSync);
 	GDREGISTER_CLASS(AnimationNodeStateMachineTransition);
 	GDREGISTER_CLASS(AnimationNodeOutput);
@@ -1037,6 +1034,24 @@ void register_scene_types() {
 	GDREGISTER_CLASS(NavigationAgent2D);
 	GDREGISTER_CLASS(NavigationObstacle2D);
 	GDREGISTER_CLASS(NavigationLink2D);
+
+	OS::get_singleton()->yield(); // may take time to init
+
+	// 2D nodes that support navmesh baking need to server register their source geometry parsers.
+	MeshInstance2D::navmesh_parse_init();
+	MultiMeshInstance2D::navmesh_parse_init();
+	NavigationObstacle2D::navmesh_parse_init();
+	Polygon2D::navmesh_parse_init();
+	TileMap::navmesh_parse_init();
+	TileMapLayer::navmesh_parse_init();
+	StaticBody2D::navmesh_parse_init();
+#ifndef _3D_DISABLED
+	// 3D nodes that support navmesh baking need to server register their source geometry parsers.
+	MeshInstance3D::navmesh_parse_init();
+	MultiMeshInstance3D::navmesh_parse_init();
+	NavigationObstacle3D::navmesh_parse_init();
+	StaticBody3D::navmesh_parse_init();
+#endif
 
 	OS::get_singleton()->yield(); // may take time to init
 

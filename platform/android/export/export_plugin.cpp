@@ -55,6 +55,10 @@
 #include "modules/modules_enabled.gen.h" // For mono.
 #include "modules/svg/image_loader_svg.h"
 
+#ifdef MODULE_MONO_ENABLED
+#include "modules/mono/utils/path_utils.h"
+#endif
+
 #ifdef ANDROID_ENABLED
 #include "../os_android.h"
 #endif
@@ -852,9 +856,9 @@ bool EditorExportPlatformAndroid::_has_manage_external_storage_permission(const 
 }
 
 bool EditorExportPlatformAndroid::_uses_vulkan() {
-	String current_renderer = GLOBAL_GET("rendering/renderer/rendering_method.mobile");
-	bool uses_vulkan = (current_renderer == "forward_plus" || current_renderer == "mobile") && GLOBAL_GET("rendering/rendering_device/driver.android") == "vulkan";
-	return uses_vulkan;
+	String rendering_method = GLOBAL_GET("rendering/renderer/rendering_method.mobile");
+	String rendering_driver = GLOBAL_GET("rendering/rendering_device/driver.android");
+	return (rendering_method == "forward_plus" || rendering_method == "mobile") && rendering_driver == "vulkan";
 }
 
 void EditorExportPlatformAndroid::_notification(int p_what) {
@@ -1005,7 +1009,7 @@ void EditorExportPlatformAndroid::_write_tmp_manifest(const Ref<EditorExportPres
 
 void EditorExportPlatformAndroid::_fix_themes_xml(const Ref<EditorExportPreset> &p_preset) {
 	const String themes_xml_path = ExportTemplateManager::get_android_build_directory(p_preset).path_join("res/values/themes.xml");
-	bool enable_swipe_to_dismiss = p_preset->get("wear_os/swipe_to_dismiss");
+	bool enable_swipe_to_dismiss = p_preset->get("gesture/swipe_to_dismiss");
 
 	if (!FileAccess::exists(themes_xml_path)) {
 		print_error("res/values/themes.xml does not exist.");
@@ -1723,18 +1727,18 @@ void EditorExportPlatformAndroid::_process_launcher_icons(const String &p_file_n
 void EditorExportPlatformAndroid::load_icon_refs(const Ref<EditorExportPreset> &p_preset, Ref<Image> &icon, Ref<Image> &foreground, Ref<Image> &background, Ref<Image> &monochrome) {
 	String project_icon_path = GLOBAL_GET("application/config/icon");
 
-	icon.instantiate();
-	foreground.instantiate();
-	background.instantiate();
-	monochrome.instantiate();
+	Error err = OK;
 
 	// Regular icon: user selection -> project icon -> default.
 	String path = static_cast<String>(p_preset->get(LAUNCHER_ICON_OPTION)).strip_edges();
 	print_verbose("Loading regular icon from " + path);
-	if (path.is_empty() || ImageLoader::load_image(path, icon) != OK) {
+	if (!path.is_empty()) {
+		icon = _load_icon_or_splash_image(path, &err);
+	}
+	if (path.is_empty() || err != OK || icon.is_null() || icon->is_empty()) {
 		print_verbose("- falling back to project icon: " + project_icon_path);
 		if (!project_icon_path.is_empty()) {
-			ImageLoader::load_image(project_icon_path, icon);
+			icon = _load_icon_or_splash_image(project_icon_path, &err);
 		} else {
 			ERR_PRINT("No project icon specified. Please specify one in the Project Settings under Application -> Config -> Icon");
 		}
@@ -1743,7 +1747,10 @@ void EditorExportPlatformAndroid::load_icon_refs(const Ref<EditorExportPreset> &
 	// Adaptive foreground: user selection -> regular icon (user selection -> project icon -> default).
 	path = static_cast<String>(p_preset->get(LAUNCHER_ADAPTIVE_ICON_FOREGROUND_OPTION)).strip_edges();
 	print_verbose("Loading adaptive foreground icon from " + path);
-	if (path.is_empty() || ImageLoader::load_image(path, foreground) != OK) {
+	if (!path.is_empty()) {
+		foreground = _load_icon_or_splash_image(path, &err);
+	}
+	if (path.is_empty() || err != OK || foreground.is_null() || foreground->is_empty()) {
 		print_verbose("- falling back to using the regular icon");
 		foreground = icon;
 	}
@@ -1752,14 +1759,14 @@ void EditorExportPlatformAndroid::load_icon_refs(const Ref<EditorExportPreset> &
 	path = static_cast<String>(p_preset->get(LAUNCHER_ADAPTIVE_ICON_BACKGROUND_OPTION)).strip_edges();
 	if (!path.is_empty()) {
 		print_verbose("Loading adaptive background icon from " + path);
-		ImageLoader::load_image(path, background);
+		background = _load_icon_or_splash_image(path, &err);
 	}
 
 	// Adaptive monochrome: user selection -> default.
 	path = static_cast<String>(p_preset->get(LAUNCHER_ADAPTIVE_ICON_MONOCHROME_OPTION)).strip_edges();
 	if (!path.is_empty()) {
 		print_verbose("Loading adaptive monochrome icon from " + path);
-		ImageLoader::load_image(path, monochrome);
+		monochrome = _load_icon_or_splash_image(path, &err);
 	}
 }
 
@@ -1850,10 +1857,10 @@ String EditorExportPlatformAndroid::get_export_option_warning(const EditorExport
 			if (!is_package_name_valid(pn, &pn_err)) {
 				return TTR("Invalid package name:") + " " + pn_err;
 			}
-		} else if (p_name == "wear_os/swipe_to_dismiss") {
+		} else if (p_name == "gesture/swipe_to_dismiss") {
 			bool gradle_build_enabled = p_preset->get("gradle_build/use_gradle_build");
-			if (!bool(p_preset->get("wear_os/swipe_to_dismiss")) && !gradle_build_enabled) {
-				return TTR("\"Use Gradle Build\" must be enabled to disable \"Swipe to dismiss\".");
+			if (bool(p_preset->get("gesture/swipe_to_dismiss")) && !gradle_build_enabled) {
+				return TTR("\"Use Gradle Build\" is required to enable \"Swipe to dismiss\".");
 			}
 		} else if (p_name == "gradle_build/use_gradle_build") {
 			bool gradle_build_enabled = p_preset->get("gradle_build/use_gradle_build");
@@ -2000,7 +2007,7 @@ void EditorExportPlatformAndroid::get_export_options(List<ExportOption> *r_optio
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "xr_features/xr_mode", PROPERTY_HINT_ENUM, "Regular,OpenXR"), XR_MODE_REGULAR, false, true));
 
-	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "wear_os/swipe_to_dismiss"), true));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "gesture/swipe_to_dismiss"), false));
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "screen/immersive_mode"), true));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "screen/support_small"), true));
@@ -2039,7 +2046,7 @@ bool EditorExportPlatformAndroid::get_export_option_visibility(const EditorExpor
 			p_option == "package/exclude_from_recents" ||
 			p_option == "package/show_in_app_library" ||
 			p_option == "package/show_as_launcher_app" ||
-			p_option == "wear_os/swipe_to_dismiss" ||
+			p_option == "gesture/swipe_to_dismiss" ||
 			p_option == "apk_expansion/enable" ||
 			p_option == "apk_expansion/SALT" ||
 			p_option == "apk_expansion/public_key") {
@@ -2523,6 +2530,43 @@ bool EditorExportPlatformAndroid::has_valid_username_and_password(const Ref<Edit
 	return valid;
 }
 
+#ifdef MODULE_MONO_ENABLED
+bool _validate_dotnet_tfm(const String &required_tfm, String &r_error) {
+	String assembly_name = path::get_csharp_project_name();
+	String project_path = ProjectSettings::get_singleton()->globalize_path("res://" + assembly_name + ".csproj");
+
+	if (!FileAccess::exists(project_path)) {
+		return true;
+	}
+
+	String pipe;
+	List<String> args;
+	args.push_back("build");
+	args.push_back(project_path);
+	args.push_back("--getProperty:TargetFramework");
+
+	int exitcode;
+	Error err = OS::get_singleton()->execute("dotnet", args, &pipe, &exitcode, true);
+	if (err != OK || exitcode != 0) {
+		if (err != OK) {
+			WARN_PRINT("Failed to execute dotnet command. Error " + String(error_names[err]));
+		} else if (exitcode != 0) {
+			print_line(pipe);
+			WARN_PRINT("dotnet command exited with code " + itos(exitcode) + ". See output above for more details.");
+		}
+		r_error += vformat(TTR("Unable to determine the C# project's TFM, it may be incompatible. The export template only supports '%s'. Make sure the project targets '%s' or consider using gradle builds instead."), required_tfm, required_tfm) + "\n";
+	} else {
+		String tfm = pipe.strip_edges();
+		if (tfm != required_tfm) {
+			r_error += vformat(TTR("C# project targets '%s' but the export template only supports '%s'. Consider using gradle builds instead."), tfm, required_tfm) + "\n";
+			return false;
+		}
+	}
+
+	return true;
+}
+#endif
+
 bool EditorExportPlatformAndroid::has_valid_export_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates, bool p_debug) const {
 	String err;
 	bool valid = false;
@@ -2531,6 +2575,15 @@ bool EditorExportPlatformAndroid::has_valid_export_configuration(const Ref<Edito
 #ifdef MODULE_MONO_ENABLED
 	// Android export is still a work in progress, keep a message as a warning.
 	err += TTR("Exporting to Android when using C#/.NET is experimental.") + "\n";
+
+	if (!gradle_build_enabled) {
+		// For template exports we only support .NET 8 because the template
+		// includes .jar dependencies that may only be compatible with .NET 8.
+		if (!_validate_dotnet_tfm("net8.0", err)) {
+			r_error = err;
+			return false;
+		}
+	}
 #endif
 
 	// Look for export templates (first official, and if defined custom templates).
@@ -2840,6 +2893,13 @@ void EditorExportPlatformAndroid::get_command_line_flags(const Ref<EditorExportP
 		command_line_strings.push_back("--xr_mode_openxr");
 	} else { // XRMode.REGULAR is the default.
 		command_line_strings.push_back("--xr_mode_regular");
+
+		// Also override the 'xr/openxr/enabled' project setting.
+		// This is useful for multi-platforms projects supporting both XR and non-XR devices. The project would need
+		// to enable openxr for development, and would create multiple XR and non-XR export presets.
+		// These command line args ensure that the non-XR export presets will have openxr disabled.
+		command_line_strings.push_back("--xr-mode");
+		command_line_strings.push_back("off");
 	}
 
 	bool immersive = p_preset->get("screen/immersive_mode");
@@ -3396,6 +3456,7 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 		}
 
 		String addons_directory = ProjectSettings::get_singleton()->globalize_path("res://addons");
+		String current_renderer = GLOBAL_GET("rendering/renderer/rendering_method.mobile");
 
 		cmdline.push_back("-p"); // argument to specify the start directory.
 		cmdline.push_back(build_path); // start directory.
@@ -3413,6 +3474,7 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 		cmdline.push_back("-Pperform_signing=" + sign_flag); // argument to specify whether the build should be signed.
 		cmdline.push_back("-Pcompress_native_libraries=" + compress_native_libraries_flag); // argument to specify whether the build should compress native libraries.
 		cmdline.push_back("-Pgodot_editor_version=" + String(VERSION_FULL_CONFIG));
+		cmdline.push_back("-Pgodot_rendering_method=" + current_renderer);
 
 		// NOTE: The release keystore is not included in the verbose logging
 		// to avoid accidentally leaking sensitive information when sharing verbose logs for troubleshooting.
@@ -3522,7 +3584,7 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 			src_apk = find_export_template("android_release.apk");
 		}
 		if (src_apk.is_empty()) {
-			add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("%s export template not found: \"%s\"."), (p_debug ? "Debug" : "Release"), src_apk));
+			add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(p_debug ? TTR("Debug export template not found: \"%s\".") : TTR("Release export template not found: \"%s\"."), src_apk));
 			return ERR_FILE_NOT_FOUND;
 		}
 	}

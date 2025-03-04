@@ -547,10 +547,10 @@ void EditorDockManager::load_docks_from_config(Ref<ConfigFile> p_layout, const S
 				continue;
 			}
 			Control *dock = dock_map[name];
-			dock->call(SNAME("_load_layout_from_config"), p_layout, p_section);
 
 			if (!all_docks[dock].enabled) {
 				// Don't open disabled docks.
+				dock->call(SNAME("_load_layout_from_config"), p_layout, p_section);
 				continue;
 			}
 			bool at_bottom = false;
@@ -563,6 +563,7 @@ void EditorDockManager::load_docks_from_config(Ref<ConfigFile> p_layout, const S
 			} else if (i >= 0) {
 				_move_dock(dock, dock_slot[i], 0);
 			}
+			dock->call(SNAME("_load_layout_from_config"), p_layout, p_section);
 
 			if (closed_docks.has(name)) {
 				_move_dock(dock, closed_dock_parent);

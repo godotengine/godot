@@ -62,6 +62,7 @@ public:
 	GLint max_texture_size = 0;
 	GLint max_viewport_size[2] = { 0, 0 };
 	GLint64 max_uniform_buffer_size = 0;
+	uint32_t max_shader_varyings = 0;
 
 	int64_t max_renderable_elements = 0;
 	int64_t max_renderable_lights = 0;
@@ -72,6 +73,7 @@ public:
 	HashSet<String> extensions;
 
 	bool float_texture_supported = false;
+	bool float_texture_linear_supported = false;
 	bool s3tc_supported = false;
 	bool rgtc_supported = false;
 	bool bptc_supported = false;

@@ -417,7 +417,7 @@ void EditorPropertyArray::update_property() {
 	} else {
 		edit->set_text_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 		edit->set_button_icon(Ref<Texture2D>());
-		edit->set_text(vformat(TTR("%s (size %s)"), array_type_name, itos(size)));
+		edit->set_text(vformat(TTR("%s (size %d)"), array_type_name, size));
 	}
 
 	bool unfolded = get_edited_object()->editor_is_section_unfolded(get_edited_property());
@@ -447,6 +447,7 @@ void EditorPropertyArray::update_property() {
 			size_slider = memnew(EditorSpinSlider);
 			size_slider->set_step(1);
 			size_slider->set_max(INT32_MAX);
+			size_slider->set_editing_integer(true);
 			size_slider->set_h_size_flags(SIZE_EXPAND_FILL);
 			size_slider->set_read_only(is_read_only());
 			size_slider->connect(SceneStringName(value_changed), callable_mp(this, &EditorPropertyArray::_length_changed));
@@ -881,6 +882,7 @@ void EditorPropertyArray::_reorder_button_up() {
 		array.call("remove_at", reorder_slot.index);
 		array.call("insert", reorder_to_index, value_to_move);
 
+		slots[reorder_to_index % page_length].reorder_button->grab_focus();
 		emit_changed(get_edited_property(), array);
 	}
 
@@ -951,7 +953,11 @@ void EditorPropertyDictionary::_property_changed(const String &p_property, Varia
 	}
 
 	object->set(p_property, p_value);
-	emit_changed(get_edited_property(), object->get_dict(), p_name, p_changing);
+	bool new_item_or_key = !p_property.begins_with("indices");
+	emit_changed(get_edited_property(), object->get_dict(), p_name, p_changing || new_item_or_key);
+	if (new_item_or_key) {
+		update_property();
+	}
 }
 
 void EditorPropertyDictionary::_change_type(Object *p_button, int p_slot_index) {

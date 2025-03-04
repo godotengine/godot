@@ -23,8 +23,8 @@
 #ifndef _TVG_SW_COMMON_H_
 #define _TVG_SW_COMMON_H_
 
-#include <algorithm>
 #include "tvgCommon.h"
+#include "tvgMath.h"
 #include "tvgRender.h"
 
 #define SW_CURVE_TYPE_POINT 0
@@ -379,10 +379,13 @@ static inline uint32_t opBlendDifference(uint32_t s, uint32_t d, TVG_UNUSED uint
 
 static inline uint32_t opBlendExclusion(uint32_t s, uint32_t d, TVG_UNUSED uint8_t a)
 {
-    //A + B - 2AB
-    auto c1 = std::min(255, C1(s) + C1(d) - std::min(255, (C1(s) * C1(d)) << 1));
-    auto c2 = std::min(255, C2(s) + C2(d) - std::min(255, (C2(s) * C2(d)) << 1));
-    auto c3 = std::min(255, C3(s) + C3(d) - std::min(255, (C3(s) * C3(d)) << 1));
+    // (s + d) - (2 * s * d)
+    auto c1 = C1(s) + C1(d) - 2 * MULTIPLY(C1(s), C1(d));
+    tvg::clamp(c1, 0, 255);
+    auto c2 = C2(s) + C2(d) - 2 * MULTIPLY(C2(s), C2(d));
+    tvg::clamp(c2, 0, 255);
+    auto c3 = C3(s) + C3(d) - 2 * MULTIPLY(C3(s), C3(d));
+    tvg::clamp(c3, 0, 255);
     return JOIN(255, c1, c2, c3);
 }
 
@@ -444,10 +447,10 @@ static inline uint32_t opBlendLighten(uint32_t s, uint32_t d, TVG_UNUSED uint8_t
 static inline uint32_t opBlendColorDodge(uint32_t s, uint32_t d, TVG_UNUSED uint8_t a)
 {
     // d / (1 - s)
-    auto is = 0xffffffff - s;
-    auto c1 = (C1(is) > 0) ? (C1(d) / C1(is)) : C1(d);
-    auto c2 = (C2(is) > 0) ? (C2(d) / C2(is)) : C2(d);
-    auto c3 = (C3(is) > 0) ? (C3(d) / C3(is)) : C3(d);
+    s = 0xffffffff - s;
+    auto c1 = (C1(s) == 0) ? C1(d) : std::min(C1(d) * 255 / C1(s), 255);
+    auto c2 = (C2(s) == 0) ? C2(d) : std::min(C2(d) * 255 / C2(s), 255);
+    auto c3 = (C3(s) == 0) ? C3(d) : std::min(C3(d) * 255 / C3(s), 255);
     return JOIN(255, c1, c2, c3);
 }
 
@@ -455,14 +458,17 @@ static inline uint32_t opBlendColorBurn(uint32_t s, uint32_t d, TVG_UNUSED uint8
 {
     // 1 - (1 - d) / s
     auto id = 0xffffffff - d;
-    auto c1 = 255 - ((C1(s) > 0) ? (C1(id) / C1(s)) : C1(id));
-    auto c2 = 255 - ((C2(s) > 0) ? (C2(id) / C2(s)) : C2(id));
-    auto c3 = 255 - ((C3(s) > 0) ? (C3(id) / C3(s)) : C3(id));
+    auto c1 = (C1(s) == 0) ? C1(d) : 255 - std::min(C1(id) * 255 / C1(s), 255);
+    auto c2 = (C2(s) == 0) ? C2(d) : 255 - std::min(C2(id) * 255 / C2(s), 255);
+    auto c3 = (C3(s) == 0) ? C3(d) : 255 - std::min(C3(id) * 255 / C3(s), 255);
+
     return JOIN(255, c1, c2, c3);
 }
 
 static inline uint32_t opBlendHardLight(uint32_t s, uint32_t d, TVG_UNUSED uint8_t a)
 {
+    // if (s < sa), (2 * s * d)
+    // else (sa * da) - 2 * (da - s) * (sa - d)
     auto c1 = (C1(s) < 128) ? std::min(255, 2 * MULTIPLY(C1(s), C1(d))) : (255 - std::min(255, 2 * MULTIPLY(255 - C1(s), 255 - C1(d))));
     auto c2 = (C2(s) < 128) ? std::min(255, 2 * MULTIPLY(C2(s), C2(d))) : (255 - std::min(255, 2 * MULTIPLY(255 - C2(s), 255 - C2(d))));
     auto c3 = (C3(s) < 128) ? std::min(255, 2 * MULTIPLY(C3(s), C3(d))) : (255 - std::min(255, 2 * MULTIPLY(255 - C3(s), 255 - C3(d))));
@@ -472,9 +478,9 @@ static inline uint32_t opBlendHardLight(uint32_t s, uint32_t d, TVG_UNUSED uint8
 static inline uint32_t opBlendSoftLight(uint32_t s, uint32_t d, TVG_UNUSED uint8_t a)
 {
     //(255 - 2 * s) * (d * d) + (2 * s * b)
-    auto c1 = std::min(255, MULTIPLY(255 - std::min(255, 2 * C1(s)), MULTIPLY(C1(d), C1(d))) + 2 * MULTIPLY(C1(s), C1(d)));
-    auto c2 = std::min(255, MULTIPLY(255 - std::min(255, 2 * C2(s)), MULTIPLY(C2(d), C2(d))) + 2 * MULTIPLY(C2(s), C2(d)));
-    auto c3 = std::min(255, MULTIPLY(255 - std::min(255, 2 * C3(s)), MULTIPLY(C3(d), C3(d))) + 2 * MULTIPLY(C3(s), C3(d)));
+    auto c1 = MULTIPLY(255 - std::min(255, 2 * C1(s)), MULTIPLY(C1(d), C1(d))) + MULTIPLY(std::min(255, 2 * C1(s)), C1(d));
+    auto c2 = MULTIPLY(255 - std::min(255, 2 * C2(s)), MULTIPLY(C2(d), C2(d))) + MULTIPLY(std::min(255, 2 * C2(s)), C2(d));
+    auto c3 = MULTIPLY(255 - std::min(255, 2 * C3(s)), MULTIPLY(C3(d), C3(d))) + MULTIPLY(std::min(255, 2 * C3(s)), C3(d));
     return JOIN(255, c1, c2, c3);
 }
 
@@ -547,8 +553,8 @@ SwRle* rleRender(const SwBBox* bbox);
 void rleFree(SwRle* rle);
 void rleReset(SwRle* rle);
 void rleMerge(SwRle* rle, SwRle* clip1, SwRle* clip2);
-void rleClip(SwRle* rle, const SwRle* clip);
-void rleClip(SwRle* rle, const SwBBox* clip);
+bool rleClip(SwRle* rle, const SwRle* clip);
+bool rleClip(SwRle* rle, const SwBBox* clip);
 
 SwMpool* mpoolInit(uint32_t threads);
 bool mpoolTerm(SwMpool* mpool);
@@ -575,10 +581,19 @@ void rasterXYFlip(uint32_t* src, uint32_t* dst, int32_t stride, int32_t w, int32
 void rasterUnpremultiply(RenderSurface* surface);
 void rasterPremultiply(RenderSurface* surface);
 bool rasterConvertCS(RenderSurface* surface, ColorSpace to);
+uint32_t rasterUnpremultiply(uint32_t data);
 
 bool effectGaussianBlur(SwCompositor* cmp, SwSurface* surface, const RenderEffectGaussianBlur* params);
-bool effectGaussianBlurPrepare(RenderEffectGaussianBlur* effect);
-bool effectDropShadow(SwCompositor* cmp, SwSurface* surfaces[2], const RenderEffectDropShadow* params, uint8_t opacity, bool direct);
-bool effectDropShadowPrepare(RenderEffectDropShadow* effect);
+bool effectGaussianBlurRegion(RenderEffectGaussianBlur* effect);
+void effectGaussianBlurUpdate(RenderEffectGaussianBlur* effect, const Matrix& transform);
+bool effectDropShadow(SwCompositor* cmp, SwSurface* surfaces[2], const RenderEffectDropShadow* params, bool direct);
+bool effectDropShadowRegion(RenderEffectDropShadow* effect);
+void effectDropShadowUpdate(RenderEffectDropShadow* effect, const Matrix& transform);
+void effectFillUpdate(RenderEffectFill* effect);
+bool effectFill(SwCompositor* cmp, const RenderEffectFill* params, bool direct);
+void effectTintUpdate(RenderEffectTint* effect);
+bool effectTint(SwCompositor* cmp, const RenderEffectTint* params, bool direct);
+void effectTritoneUpdate(RenderEffectTritone* effect);
+bool effectTritone(SwCompositor* cmp, const RenderEffectTritone* params, bool direct);
 
 #endif /* _TVG_SW_COMMON_H_ */

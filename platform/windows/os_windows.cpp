@@ -62,6 +62,24 @@
 #include <wbemcli.h>
 #include <wincrypt.h>
 
+#if defined(RD_ENABLED)
+#include "servers/rendering/rendering_device.h"
+#endif
+
+#if defined(GLES3_ENABLED)
+#include "gl_manager_windows_native.h"
+#endif
+
+#if defined(VULKAN_ENABLED)
+#include "rendering_context_driver_vulkan_windows.h"
+#endif
+#if defined(D3D12_ENABLED)
+#include "drivers/d3d12/rendering_context_driver_d3d12.h"
+#endif
+#if defined(GLES3_ENABLED)
+#include "drivers/gles3/rasterizer_gles3.h"
+#endif
+
 #ifdef DEBUG_ENABLED
 #pragma pack(push, before_imagehlp, 8)
 #include <imagehlp.h>
@@ -86,11 +104,6 @@ __declspec(dllexport) void NoHotPatch() {} // Disable Nahimic code injection.
 // Missing in MinGW headers before 8.0.
 #ifndef DWRITE_FONT_WEIGHT_SEMI_LIGHT
 #define DWRITE_FONT_WEIGHT_SEMI_LIGHT (DWRITE_FONT_WEIGHT)350
-#endif
-
-#if defined(__GNUC__)
-// Workaround GCC warning from -Wcast-function-type.
-#define GetProcAddress (void *)GetProcAddress
 #endif
 
 static String fix_path(const String &p_path) {
@@ -485,8 +498,8 @@ Error OS_Windows::open_dynamic_library(const String &p_path, void *&p_library_ha
 	typedef DLL_DIRECTORY_COOKIE(WINAPI * PAddDllDirectory)(PCWSTR);
 	typedef BOOL(WINAPI * PRemoveDllDirectory)(DLL_DIRECTORY_COOKIE);
 
-	PAddDllDirectory add_dll_directory = (PAddDllDirectory)GetProcAddress(GetModuleHandle("kernel32.dll"), "AddDllDirectory");
-	PRemoveDllDirectory remove_dll_directory = (PRemoveDllDirectory)GetProcAddress(GetModuleHandle("kernel32.dll"), "RemoveDllDirectory");
+	PAddDllDirectory add_dll_directory = (PAddDllDirectory)(void *)GetProcAddress(GetModuleHandle("kernel32.dll"), "AddDllDirectory");
+	PRemoveDllDirectory remove_dll_directory = (PRemoveDllDirectory)(void *)GetProcAddress(GetModuleHandle("kernel32.dll"), "RemoveDllDirectory");
 
 	bool has_dll_directory_api = ((add_dll_directory != nullptr) && (remove_dll_directory != nullptr));
 	DLL_DIRECTORY_COOKIE cookie = nullptr;
@@ -585,7 +598,7 @@ String OS_Windows::get_distribution_name() const {
 }
 
 String OS_Windows::get_version() const {
-	RtlGetVersionPtr version_ptr = (RtlGetVersionPtr)GetProcAddress(GetModuleHandle("ntdll.dll"), "RtlGetVersion");
+	RtlGetVersionPtr version_ptr = (RtlGetVersionPtr)(void *)GetProcAddress(GetModuleHandle("ntdll.dll"), "RtlGetVersion");
 	if (version_ptr != nullptr) {
 		RTL_OSVERSIONINFOEXW fow;
 		ZeroMemory(&fow, sizeof(fow));
@@ -598,7 +611,7 @@ String OS_Windows::get_version() const {
 }
 
 String OS_Windows::get_version_alias() const {
-	RtlGetVersionPtr version_ptr = (RtlGetVersionPtr)GetProcAddress(GetModuleHandle("ntdll.dll"), "RtlGetVersion");
+	RtlGetVersionPtr version_ptr = (RtlGetVersionPtr)(void *)GetProcAddress(GetModuleHandle("ntdll.dll"), "RtlGetVersion");
 	if (version_ptr != nullptr) {
 		RTL_OSVERSIONINFOEXW fow;
 		ZeroMemory(&fow, sizeof(fow));
@@ -771,7 +784,7 @@ bool OS_Windows::get_user_prefers_integrated_gpu() const {
 		HMODULE kernel32 = GetModuleHandleW(L"kernel32.dll");
 		if (kernel32) {
 			using GetCurrentApplicationUserModelIdPtr = LONG(WINAPI *)(UINT32 * length, PWSTR id);
-			GetCurrentApplicationUserModelIdPtr GetCurrentApplicationUserModelId = (GetCurrentApplicationUserModelIdPtr)GetProcAddress(kernel32, "GetCurrentApplicationUserModelId");
+			GetCurrentApplicationUserModelIdPtr GetCurrentApplicationUserModelId = (GetCurrentApplicationUserModelIdPtr)(void *)GetProcAddress(kernel32, "GetCurrentApplicationUserModelId");
 
 			if (GetCurrentApplicationUserModelId) {
 				UINT32 length = sizeof(value_name) / sizeof(value_name[0]);
@@ -973,7 +986,7 @@ Dictionary OS_Windows::get_memory_info() const {
 	GetPerformanceInfo(&pref_info, sizeof(pref_info));
 
 	typedef void(WINAPI * PGetCurrentThreadStackLimits)(PULONG_PTR, PULONG_PTR);
-	PGetCurrentThreadStackLimits GetCurrentThreadStackLimits = (PGetCurrentThreadStackLimits)GetProcAddress(GetModuleHandleA("kernel32.dll"), "GetCurrentThreadStackLimits");
+	PGetCurrentThreadStackLimits GetCurrentThreadStackLimits = (PGetCurrentThreadStackLimits)(void *)GetProcAddress(GetModuleHandleA("kernel32.dll"), "GetCurrentThreadStackLimits");
 
 	ULONG_PTR LowLimit = 0;
 	ULONG_PTR HighLimit = 0;
@@ -2168,7 +2181,7 @@ String OS_Windows::get_temp_path() const {
 			temp_path_cache = get_config_path();
 		}
 	}
-	return temp_path_cache;
+	return temp_path_cache.replace("\\", "/").trim_suffix("/");
 }
 
 // Get properly capitalized engine name for system paths
@@ -2344,6 +2357,99 @@ void OS_Windows::add_frame_delay(bool p_can_draw) {
 		current_ticks = get_ticks_usec();
 		target_ticks = MIN(MAX(target_ticks, current_ticks - dynamic_delay), current_ticks + dynamic_delay);
 	}
+}
+
+bool OS_Windows::_test_create_rendering_device() const {
+	// Tests Rendering Device creation.
+
+	bool ok = false;
+#if defined(RD_ENABLED)
+	Error err;
+	RenderingContextDriver *rcd = nullptr;
+
+#if defined(VULKAN_ENABLED)
+	rcd = memnew(RenderingContextDriverVulkan);
+#endif
+#ifdef D3D12_ENABLED
+	if (rcd == nullptr) {
+		rcd = memnew(RenderingContextDriverD3D12);
+	}
+#endif
+	if (rcd != nullptr) {
+		err = rcd->initialize();
+		if (err == OK) {
+			RenderingDevice *rd = memnew(RenderingDevice);
+			err = rd->initialize(rcd);
+			memdelete(rd);
+			rd = nullptr;
+			if (err == OK) {
+				ok = true;
+			}
+		}
+		memdelete(rcd);
+		rcd = nullptr;
+	}
+#endif
+
+	return ok;
+}
+
+bool OS_Windows::_test_create_rendering_device_and_gl() const {
+	// Tests OpenGL context and Rendering Device simultaneous creation. This function is expected to crash on some NVIDIA drivers.
+
+	WNDCLASSEXW wc_probe;
+	memset(&wc_probe, 0, sizeof(WNDCLASSEXW));
+	wc_probe.cbSize = sizeof(WNDCLASSEXW);
+	wc_probe.style = CS_OWNDC | CS_DBLCLKS;
+	wc_probe.lpfnWndProc = (WNDPROC)::DefWindowProcW;
+	wc_probe.cbClsExtra = 0;
+	wc_probe.cbWndExtra = 0;
+	wc_probe.hInstance = GetModuleHandle(nullptr);
+	wc_probe.hIcon = LoadIcon(nullptr, IDI_WINLOGO);
+	wc_probe.hCursor = nullptr;
+	wc_probe.hbrBackground = nullptr;
+	wc_probe.lpszMenuName = nullptr;
+	wc_probe.lpszClassName = L"Engine probe window";
+
+	if (!RegisterClassExW(&wc_probe)) {
+		return false;
+	}
+
+	HWND hWnd = CreateWindowExW(WS_EX_WINDOWEDGE, L"Engine probe window", L"", WS_OVERLAPPEDWINDOW, 0, 0, 800, 600, nullptr, nullptr, GetModuleHandle(nullptr), nullptr);
+	if (!hWnd) {
+		UnregisterClassW(L"Engine probe window", GetModuleHandle(nullptr));
+		return false;
+	}
+
+	bool ok = true;
+#ifdef GLES3_ENABLED
+	GLManagerNative_Windows *test_gl_manager_native = memnew(GLManagerNative_Windows);
+	if (test_gl_manager_native->window_create(DisplayServer::MAIN_WINDOW_ID, hWnd, GetModuleHandle(nullptr), 800, 600) == OK) {
+		RasterizerGLES3::make_current(true);
+	} else {
+		ok = false;
+	}
+#endif
+
+	MSG msg = {};
+	while (PeekMessageW(&msg, nullptr, 0, 0, PM_REMOVE)) {
+		TranslateMessage(&msg);
+		DispatchMessageW(&msg);
+	}
+
+	if (ok) {
+		ok = _test_create_rendering_device();
+	}
+
+#ifdef GLES3_ENABLED
+	if (test_gl_manager_native) {
+		memdelete(test_gl_manager_native);
+	}
+#endif
+
+	DestroyWindow(hWnd);
+	UnregisterClassW(L"Engine probe window", GetModuleHandle(nullptr));
+	return ok;
 }
 
 OS_Windows::OS_Windows(HINSTANCE _hInstance) {

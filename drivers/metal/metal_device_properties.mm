@@ -99,6 +99,10 @@ void MetalDeviceProperties::init_features(id<MTLDevice> p_device) {
 		features.supports32BitMSAA = p_device.supports32BitMSAA;
 	}
 
+	if (@available(macOS 13.0, iOS 16.0, tvOS 16.0, *)) {
+		features.supports_gpu_address = true;
+	}
+
 	features.hostMemoryPageSize = sysconf(_SC_PAGESIZE);
 
 	for (SampleCount sc = SampleCount1; sc <= SampleCount64; sc <<= 1) {
@@ -299,6 +303,7 @@ void MetalDeviceProperties::init_limits(id<MTLDevice> p_device) {
 	limits.maxVertexInputAttributes = 31;
 	limits.maxVertexInputBindings = 31;
 	limits.maxVertexInputBindingStride = (2 * KIBI);
+	limits.maxShaderVaryings = 31; // Accurate on Apple4 and above. See: https://developer.apple.com/metal/Metal-Feature-Set-Tables.pdf
 
 #if TARGET_OS_IOS && !TARGET_OS_MACCATALYST
 	limits.minUniformBufferOffsetAlignment = 64;

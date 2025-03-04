@@ -93,6 +93,7 @@ struct API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0)) MetalFeatures {
 	bool needs_arg_encoders = true;
 	bool metal_fx_spatial = false; /**< If true, Metal FX spatial functions are supported. */
 	bool metal_fx_temporal = false; /**< If true, Metal FX temporal functions are supported. */
+	bool supports_gpu_address = false; /**< If true, referencing a GPU address in a shader is supported. */
 };
 
 struct MetalLimits {
@@ -123,6 +124,7 @@ struct MetalLimits {
 	uint32_t maxVertexInputBindings;
 	uint32_t maxVertexInputBindingStride;
 	uint32_t maxDrawIndexedIndexValue;
+	uint32_t maxShaderVaryings;
 
 	double temporalScalerInputContentMinScale;
 	double temporalScalerInputContentMaxScale;

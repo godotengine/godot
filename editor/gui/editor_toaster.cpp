@@ -412,7 +412,7 @@ void EditorToaster::popup_str(const String &p_message, Severity p_severity, cons
 	// Since "_popup_str" adds nodes to the tree, and since the "add_child" method is not
 	// thread-safe, it's better to defer the call to the next cycle to be thread-safe.
 	is_processing_error = true;
-	callable_mp(this, &EditorToaster::_popup_str).call_deferred(p_message, p_severity, p_tooltip);
+	MessageQueue::get_main_singleton()->push_callable(callable_mp(this, &EditorToaster::_popup_str), p_message, p_severity, p_tooltip);
 	is_processing_error = false;
 }
 

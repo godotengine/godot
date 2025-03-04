@@ -47,9 +47,6 @@ protected:
 
 	void _validate_property(PropertyInfo &p_property) const;
 	static void _bind_methods();
-#ifdef TOOLS_ENABLED
-	virtual void _notification(int p_what);
-#endif // TOOLS_ENABLED
 
 	virtual Vector3 _collide(const Transform3D &p_center, float p_bone_radius, float p_bone_length, const Vector3 &p_current) const;
 

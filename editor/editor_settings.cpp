@@ -103,14 +103,6 @@ bool EditorSettings::_set_only(const StringName &p_name, const Variant &p_value)
 
 			builtin_action_overrides[action_name].clear();
 			for (int ev_idx = 0; ev_idx < events.size(); ev_idx++) {
-#ifndef DISABLE_DEPRECATED
-				// -3 was introduced in GH-97707 as a way to prevent a clash in device IDs, but as reported in GH-99243, this leads to problems.
-				// -3 was used during dev-releases, so this conversion helps to revert such affected editor shortcuts.
-				Ref<InputEvent> x = events[ev_idx];
-				if (x.is_valid() && x->get_device() == -3) {
-					x->set_device(-1);
-				}
-#endif // DISABLE_DEPRECATED
 				im->action_add_event(action_name, events[ev_idx]);
 				builtin_action_overrides[action_name].push_back(events[ev_idx]);
 			}
@@ -719,6 +711,9 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("text_editor/behavior/files/auto_reload_and_parse_scripts_on_save", true);
 	_initial_set("text_editor/behavior/files/open_dominant_script_on_scene_change", false, true);
 
+	// Behavior: Documentation
+	_initial_set("text_editor/behavior/documentation/enable_tooltips", true, true);
+
 	// Script list
 	_initial_set("text_editor/script_list/show_members_overview", true, true);
 	_initial_set("text_editor/script_list/sort_members_outline_alphabetically", false, true);
@@ -936,15 +931,20 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("run/window_placement/rect_custom_position", Vector2());
 	EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_ENUM, "run/window_placement/screen", -5, screen_hints)
 #endif
-	// Should match the ANDROID_WINDOW_* constants in 'platform/android/java/editor/src/main/java/org/godotengine/editor/GodotEditor.kt'
-	String android_window_hints = "Auto (based on screen size):0,Same as Editor:1,Side-by-side with Editor:2,Launch in PiP mode:3";
+	// Should match the ANDROID_WINDOW_* constants in 'platform/android/java/editor/src/main/java/org/godotengine/editor/BaseGodotEditor.kt'.
+	String android_window_hints = "Auto (based on screen size):0,Same as Editor:1,Side-by-side with Editor:2";
 	EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_ENUM, "run/window_placement/android_window", 0, android_window_hints)
 
-	int default_play_window_pip_mode = 0;
+	String game_embed_mode_hints = "Disabled:-1,Use Per-Project Configuration:0,Embed Game:1,Make Game Workspace Floating:2";
 #ifdef ANDROID_ENABLED
-	default_play_window_pip_mode = 2;
+	if (OS::get_singleton()->has_feature("xr_editor")) {
+		game_embed_mode_hints = "Disabled:-1";
+	} else {
+		game_embed_mode_hints = "Disabled:-1,Auto (based on screen size):0,Enabled:1";
+	}
 #endif
-	EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_ENUM, "run/window_placement/play_window_pip_mode", default_play_window_pip_mode, "Disabled:0,Enabled:1,Enabled when Play window is same as Editor:2")
+	int default_game_embed_mode = OS::get_singleton()->has_feature("xr_editor") ? -1 : 0;
+	EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_ENUM, "run/window_placement/game_embed_mode", default_game_embed_mode, game_embed_mode_hints);
 
 	// Auto save
 	_initial_set("run/auto_save/save_before_running", true, true);
@@ -974,6 +974,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 
 	// SSL
 	EDITOR_SETTING_USAGE(Variant::STRING, PROPERTY_HINT_GLOBAL_FILE, "network/tls/editor_tls_certificates", _SYSTEM_CERTS_PATH, "*.crt,*.pem", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED);
+	EDITOR_SETTING_BASIC(Variant::BOOL, PROPERTY_HINT_NONE, "network/tls/enable_tls_v1.3", true, "")
 
 	// Debug
 	_initial_set("network/debug/remote_host", "127.0.0.1"); // Hints provided in setup_network

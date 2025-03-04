@@ -48,6 +48,7 @@ class NavRegion : public NavBase {
 
 	bool use_edge_connections = true;
 
+	bool region_dirty = true;
 	bool polygons_dirty = true;
 
 	LocalVector<gd::Polygon> navmesh_polygons;
@@ -77,10 +78,8 @@ public:
 		return map;
 	}
 
-	void set_use_edge_connections(bool p_enabled);
-	bool get_use_edge_connections() const {
-		return use_edge_connections;
-	}
+	virtual void set_use_edge_connections(bool p_enabled) override;
+	virtual bool get_use_edge_connections() const override { return use_edge_connections; }
 
 	void set_transform(Transform3D transform);
 	const Transform3D &get_transform() const {
@@ -99,6 +98,12 @@ public:
 
 	real_t get_surface_area() const { return surface_area; }
 	AABB get_bounds() const { return bounds; }
+
+	// NavBase properties.
+	virtual void set_navigation_layers(uint32_t p_navigation_layers) override;
+	virtual void set_enter_cost(real_t p_enter_cost) override;
+	virtual void set_travel_cost(real_t p_travel_cost) override;
+	virtual void set_owner_id(ObjectID p_owner_id) override;
 
 	bool sync();
 	void request_sync();

@@ -36,6 +36,10 @@
 class SpringBoneSimulator3D : public SkeletonModifier3D {
 	GDCLASS(SpringBoneSimulator3D, SkeletonModifier3D);
 
+#ifdef TOOLS_ENABLED
+	bool saving = false;
+#endif //TOOLS_ENABLED
+
 	bool joints_dirty = false;
 
 	LocalVector<ObjectID> collisions; // To process collisions for sync position with skeleton.
@@ -72,6 +76,7 @@ public:
 		Vector3 prev_tail;
 		Vector3 current_tail;
 		Vector3 forward_vector;
+		Quaternion current_rot;
 		float length = 0.0;
 	};
 
@@ -103,7 +108,6 @@ public:
 		bool extend_end_bone = false;
 		BoneDirection end_bone_direction = BONE_DIRECTION_FROM_PARENT;
 		float end_bone_length = 0.0;
-		float end_bone_tip_radius = 0.02;
 
 		CenterFrom center_from = CENTER_FROM_WORLD_ORIGIN;
 		NodePath center_node;
@@ -162,6 +166,9 @@ protected:
 	virtual void add_child_notify(Node *p_child) override;
 	virtual void move_child_notify(Node *p_child) override;
 	virtual void remove_child_notify(Node *p_child) override;
+
+	void _validate_rotation_axes(Skeleton3D *p_skeleton) const;
+	void _validate_rotation_axis(Skeleton3D *p_skeleton, int p_index, int p_joint) const;
 
 public:
 	// Setting.
@@ -264,12 +271,16 @@ public:
 
 	// Helper.
 	static Quaternion get_local_pose_rotation(Skeleton3D *p_skeleton, int p_bone, const Quaternion &p_global_pose_rotation);
-	static Quaternion get_from_to_rotation(const Vector3 &p_from, const Vector3 &p_to);
+	static Quaternion get_from_to_rotation(const Vector3 &p_from, const Vector3 &p_to, const Quaternion &p_prev_rot);
 	static Vector3 snap_position_to_plane(const Transform3D &p_rest, RotationAxis p_axis, const Vector3 &p_position);
 	static Vector3 limit_length(const Vector3 &p_origin, const Vector3 &p_destination, float p_length);
 
 	// To process manually.
 	void reset();
+
+#ifdef TOOLS_ENABLED
+	virtual bool is_processed_on_saving() const override { return true; }
+#endif
 };
 
 VARIANT_ENUM_CAST(SpringBoneSimulator3D::BoneDirection);
