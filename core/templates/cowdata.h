@@ -38,7 +38,6 @@
 #include <string.h>
 #include <initializer_list>
 #include <type_traits>
-#include <utility>
 
 template <typename T>
 class Vector;

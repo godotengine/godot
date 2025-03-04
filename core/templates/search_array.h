@@ -31,9 +31,9 @@
 #ifndef SEARCH_ARRAY_H
 #define SEARCH_ARRAY_H
 
-#include <core/templates/sort_array.h>
+#include "core/typedefs.h"
 
-template <typename T, typename Comparator = _DefaultComparator<T>>
+template <typename T, typename Comparator = Comparator<T>>
 class SearchArray {
 public:
 	Comparator compare;

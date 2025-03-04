@@ -31,11 +31,8 @@
 #ifndef SEMAPHORE_H
 #define SEMAPHORE_H
 
-#include <cstdint>
-
 #ifdef THREADS_ENABLED
 
-#include "core/error/error_list.h"
 #include "core/typedefs.h"
 #ifdef DEBUG_ENABLED
 #include "core/error/error_macros.h"
