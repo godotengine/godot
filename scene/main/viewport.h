@@ -318,6 +318,7 @@ private:
 	bool use_debanding = false;
 	float mesh_lod_threshold = 1.0;
 	bool use_occlusion_culling = false;
+	float minimum_drag_distance = 10.0;
 
 	Ref<ViewportTexture> default_texture;
 	HashSet<ViewportTexture *> viewport_textures;
@@ -650,6 +651,9 @@ public:
 	bool gui_is_dragging() const;
 	bool gui_is_drag_successful() const;
 	void gui_cancel_drag();
+
+	void set_minimum_drag_distance(float p_distance);
+	float get_minimum_drag_distance() const;
 
 	Control *gui_find_control(const Point2 &p_global);
 
