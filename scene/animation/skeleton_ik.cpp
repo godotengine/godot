@@ -276,7 +276,7 @@ void FabrikInverseKinematic::solve(Task *p_task, real_t blending_delta, bool ove
 	p_task->skeleton->set_bone_global_pose_override(p_task->chain.chain_root.bone, Transform(), 0.0, false);
 	Vector3 origin_pos = p_task->skeleton->get_bone_global_pose(p_task->chain.chain_root.bone).origin;
 
-	make_goal(p_task, p_task->skeleton->get_global_transform().affine_inverse(), blending_delta);
+	make_goal(p_task, p_task->skeleton->get_global_transform_interpolated().affine_inverse(), blending_delta);
 
 	if (p_use_magnet && p_task->chain.middle_chain_item) {
 		p_task->chain.magnet_position = p_task->chain.middle_chain_item->initial_transform.origin.linear_interpolate(p_magnet_position, blending_delta);
