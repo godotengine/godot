@@ -1471,7 +1471,7 @@ void RenderForwardMobile::_render_shadow_append(RID p_framebuffer, const PagedAr
 	_fill_render_list(RENDER_LIST_SECONDARY, &render_data, pass_mode, true);
 	uint32_t render_list_size = render_list[RENDER_LIST_SECONDARY].elements.size() - render_list_from;
 	render_list[RENDER_LIST_SECONDARY].sort_by_key_range(render_list_from, render_list_size);
-	_fill_instance_data(RENDER_LIST_SECONDARY, render_list_from, render_list_size);
+	_fill_instance_data(RENDER_LIST_SECONDARY, render_list_from, render_list_size, false);
 
 	{
 		//regular forward for now
@@ -1498,6 +1498,7 @@ void RenderForwardMobile::_render_shadow_append(RID p_framebuffer, const PagedAr
 }
 
 void RenderForwardMobile::_render_shadow_process() {
+	_update_instance_data_buffer(RENDER_LIST_SECONDARY);
 	//render shadows one after the other, so this can be done un-barriered and the driver can optimize (as well as allow us to run compute at the same time)
 
 	for (uint32_t i = 0; i < scene_state.shadow_passes.size(); i++) {
