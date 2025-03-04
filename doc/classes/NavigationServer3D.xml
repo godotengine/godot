@@ -298,6 +298,196 @@
 				Replaces the internal velocity in the collision avoidance simulation with [param velocity] for the specified [param agent]. When an agent is teleported to a new position this function should be used in the same frame. If called frequently this function can get agents stuck.
 			</description>
 		</method>
+		<method name="area_create">
+			<return type="RID" />
+			<description>
+				Creates a new area with shape type [enum NavigationServer3D.AreaShapeType3D] [constant AREA_SHAPE_NONE].
+			</description>
+		</method>
+		<method name="area_create_box">
+			<return type="RID" />
+			<param index="0" name="position" type="Vector3" />
+			<param index="1" name="size" type="Vector3" />
+			<param index="2" name="navigation_layers" type="int" />
+			<param index="3" name="priority" type="int" default="0" />
+			<description>
+				Creates a new area with shape type [enum NavigationServer3D.AreaShapeType3D] [constant AREA_SHAPE_BOX].
+			</description>
+		</method>
+		<method name="area_create_cylinder">
+			<return type="RID" />
+			<param index="0" name="position" type="Vector3" />
+			<param index="1" name="radius" type="float" />
+			<param index="2" name="height" type="float" />
+			<param index="3" name="navigation_layers" type="int" />
+			<param index="4" name="priority" type="int" default="0" />
+			<description>
+				Creates a new area with shape type [enum NavigationServer3D.AreaShapeType3D] [constant AREA_SHAPE_CYLINDER].
+			</description>
+		</method>
+		<method name="area_create_polygon">
+			<return type="RID" />
+			<param index="0" name="position" type="Vector3" />
+			<param index="1" name="vertices" type="PackedVector3Array" />
+			<param index="2" name="height" type="float" />
+			<param index="3" name="navigation_layers" type="int" />
+			<param index="4" name="priority" type="int" default="0" />
+			<description>
+				Creates a new area with shape type [enum NavigationServer3D.AreaShapeType3D] [constant AREA_SHAPE_POLYGON].
+			</description>
+		</method>
+		<method name="area_get_bounds" qualifiers="const">
+			<return type="AABB" />
+			<param index="0" name="area" type="RID" />
+			<description>
+				Returns the global axis-aligned bounding box of the area.
+			</description>
+		</method>
+		<method name="area_get_enabled" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="area" type="RID" />
+			<description>
+				Returns [code]true[/code] when the [param area] is enabled.
+			</description>
+		</method>
+		<method name="area_get_height" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="area" type="RID" />
+			<description>
+				Returns the height of the [param area].
+			</description>
+		</method>
+		<method name="area_get_map" qualifiers="const">
+			<return type="RID" />
+			<param index="0" name="area" type="RID" />
+			<description>
+				Returns the navigation map assigned to [param area].
+			</description>
+		</method>
+		<method name="area_get_navigation_layers" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="area" type="RID" />
+			<description>
+				Returns the navigation layers bitmask of the [param area].
+			</description>
+		</method>
+		<method name="area_get_owner_id" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="area" type="RID" />
+			<description>
+				Returns the [code]ObjectID[/code] of the object which manages [param area].
+			</description>
+		</method>
+		<method name="area_get_position" qualifiers="const">
+			<return type="Vector3" />
+			<param index="0" name="area" type="RID" />
+			<description>
+				Returns the global position of the [param area].
+			</description>
+		</method>
+		<method name="area_get_priority" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="area" type="RID" />
+			<description>
+				Returns the priority of the [param area].
+			</description>
+		</method>
+		<method name="area_has_point" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="area" type="RID" />
+			<param index="1" name="point" type="Vector3" />
+			<description>
+				Returns [code]true[/code] if [param point] is inside the shape of [param area].
+			</description>
+		</method>
+		<method name="area_set_enabled">
+			<return type="void" />
+			<param index="0" name="area" type="RID" />
+			<param index="1" name="enabled" type="bool" />
+			<description>
+				If [param enabled] is [code]true[/code], the specified [param area] will contribute to its current navigation map.
+			</description>
+		</method>
+		<method name="area_set_height">
+			<return type="void" />
+			<param index="0" name="area" type="RID" />
+			<param index="1" name="height" type="float" />
+			<description>
+				Sets the [param height] for the [param area].
+			</description>
+		</method>
+		<method name="area_set_map">
+			<return type="void" />
+			<param index="0" name="area" type="RID" />
+			<param index="1" name="map" type="RID" />
+			<description>
+				Sets the navigation [param map] for the [param area].
+			</description>
+		</method>
+		<method name="area_set_navigation_layers">
+			<return type="void" />
+			<param index="0" name="area" type="RID" />
+			<param index="1" name="navigation_layers" type="int" />
+			<description>
+				Sets the [param navigation_layers] for the [param area].
+			</description>
+		</method>
+		<method name="area_set_owner_id">
+			<return type="void" />
+			<param index="0" name="area" type="RID" />
+			<param index="1" name="owner_id" type="int" />
+			<description>
+				Sets the [param owner_id] for the [param area].
+			</description>
+		</method>
+		<method name="area_set_position">
+			<return type="void" />
+			<param index="0" name="area" type="RID" />
+			<param index="1" name="position" type="Vector3" />
+			<description>
+				Sets the global [param position] for the [param area].
+			</description>
+		</method>
+		<method name="area_set_priority">
+			<return type="void" />
+			<param index="0" name="area" type="RID" />
+			<param index="1" name="priority" type="int" />
+			<description>
+				Sets the [param priority] for the [param area]. In case of area overlaps only the area with the highest priority applies its properties to polygons.
+			</description>
+		</method>
+		<method name="area_set_radius">
+			<return type="void" />
+			<param index="0" name="area" type="RID" />
+			<param index="1" name="radius" type="float" />
+			<description>
+				Sets the [param radius] for the [param area]. Used by areas of type [constant AREA_SHAPE_CYLINDER].
+			</description>
+		</method>
+		<method name="area_set_shape_type">
+			<return type="void" />
+			<param index="0" name="area" type="RID" />
+			<param index="1" name="shape_type" type="int" enum="NavigationServer3D.AreaShapeType3D" />
+			<description>
+				Sets the [param shape_type] for the [param area].
+			</description>
+		</method>
+		<method name="area_set_size">
+			<return type="void" />
+			<param index="0" name="area" type="RID" />
+			<param index="1" name="size" type="Vector3" />
+			<description>
+				Sets the [param size] for the [param area]. Used by areas of type [constant AREA_SHAPE_BOX].
+			</description>
+		</method>
+		<method name="area_set_vertices">
+			<return type="void" />
+			<param index="0" name="area" type="RID" />
+			<param index="1" name="vertices" type="PackedVector3Array" />
+			<description>
+				Sets the [param vertices] for the [param area]. Used by areas of type [constant AREA_SHAPE_POLYGON].
+			</description>
+		</method>
 		<method name="bake_from_source_geometry_data">
 			<return type="void" />
 			<param index="0" name="navigation_mesh" type="NavigationMesh" />
@@ -511,6 +701,13 @@
 			<param index="0" name="map" type="RID" />
 			<description>
 				Returns all navigation agents [RID]s that are currently assigned to the requested navigation [param map].
+			</description>
+		</method>
+		<method name="map_get_areas" qualifiers="const">
+			<return type="RID[]" />
+			<param index="0" name="map" type="RID" />
+			<description>
+				Returns all navigation areas [RID]s that are currently assigned to the requested navigation [param map].
 			</description>
 		</method>
 		<method name="map_get_cell_height" qualifiers="const">
@@ -1191,6 +1388,18 @@
 		</signal>
 	</signals>
 	<constants>
+		<constant name="AREA_SHAPE_NONE" value="0" enum="AreaShapeType3D">
+			Constant for areas of type none shape.
+		</constant>
+		<constant name="AREA_SHAPE_BOX" value="1" enum="AreaShapeType3D">
+			Constant for areas of type box shape.
+		</constant>
+		<constant name="AREA_SHAPE_CYLINDER" value="2" enum="AreaShapeType3D">
+			Constant for areas of type cylinder shape.
+		</constant>
+		<constant name="AREA_SHAPE_POLYGON" value="3" enum="AreaShapeType3D">
+			Constant for areas of type polygon shape.
+		</constant>
 		<constant name="INFO_ACTIVE_MAPS" value="0" enum="ProcessInfo">
 			Constant to get the number of active navigation maps.
 		</constant>
