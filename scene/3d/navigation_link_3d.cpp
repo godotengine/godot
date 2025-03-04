@@ -262,6 +262,12 @@ void NavigationLink3D::_notification(int p_what) {
 		case NOTIFICATION_EXIT_TREE: {
 			_link_exit_navigation_map();
 		} break;
+
+#ifdef DEBUG_ENABLED
+		case NOTIFICATION_VISIBILITY_CHANGED: {
+			_update_debug_mesh();
+		} break;
+#endif // DEBUG_ENABLED
 	}
 }
 
