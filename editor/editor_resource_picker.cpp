@@ -160,6 +160,10 @@ void EditorResourcePicker::_file_selected(const String &p_path) {
 
 			any_type_matches = is_global_class ? EditorNode::get_editor_data().script_class_is_parent(res_type, base) : loaded_resource->is_class(base);
 
+			if (!any_type_matches && loaded_resource->get_script()) {
+				any_type_matches = static_cast<Ref<Script>>(loaded_resource->get_script())->has_script_type(base);
+			}
+
 			if (any_type_matches) {
 				break;
 			}
@@ -690,6 +694,13 @@ bool EditorResourcePicker::_is_drop_valid(const Dictionary &p_drag_data) const {
 		if (_is_type_valid(custom_class, allowed_types)) {
 			return true;
 		}
+		for (const StringName &E : allowed_types) {
+			if (res->get_script()) {
+				if (static_cast<Ref<Script>>(res->get_script())->has_script_type(E)) {
+					return true;
+				}
+			}
+		}
 	}
 
 	return false;
@@ -936,6 +947,15 @@ void EditorResourcePicker::set_edited_resource(Ref<Resource> p_resource) {
 		if (p_resource->get_script()) {
 			custom_class = EditorNode::get_singleton()->get_object_custom_type_name(p_resource->get_script());
 			is_custom = _is_type_valid(custom_class, allowed_types);
+		}
+
+		if (!is_custom && p_resource->get_script()) {
+			for (const StringName &E : allowed_types) {
+				is_custom = static_cast<Ref<Script>>(p_resource->get_script())->has_script_type(E);
+				if (is_custom) {
+					break;
+				}
+			}
 		}
 
 		if (!is_custom && !_is_type_valid(p_resource->get_class(), allowed_types)) {
