@@ -52,6 +52,8 @@
 #include <EGL/egl.h>
 #endif
 
+#include "servers/rendering/dummy/rasterizer_dummy.h"
+
 DisplayServerAndroid *DisplayServerAndroid::get_singleton() {
 	return static_cast<DisplayServerAndroid *>(DisplayServer::get_singleton());
 }
@@ -578,22 +580,42 @@ Vector<String> DisplayServerAndroid::get_rendering_drivers_func() {
 #ifdef VULKAN_ENABLED
 	drivers.push_back("vulkan");
 #endif
+	drivers.push_back("dummy");
 
 	return drivers;
 }
 
+String DisplayServerAndroid::get_readable_driver_name(const String &p_driver) const {
+	if (p_driver == "vulkan") {
+		return "Vulkan";
+	} else if (p_driver == "opengl3") {
+		return "OpenGLES 3.0";
+	} else if (p_driver == "dummy") {
+		return "Dummy";
+	} else {
+		return p_driver;
+	}
+}
+
 DisplayServer *DisplayServerAndroid::create_func(const String &p_rendering_driver, DisplayServer::WindowMode p_mode, DisplayServer::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, int64_t p_parent_window, Error &r_error) {
-	DisplayServer *ds = memnew(DisplayServerAndroid(p_rendering_driver, p_mode, p_vsync_mode, p_flags, p_position, p_resolution, p_screen, p_context, p_parent_window, r_error));
+	DisplayServerAndroid *ds = memnew(DisplayServerAndroid(p_rendering_driver, p_mode, p_vsync_mode, p_flags, p_position, p_resolution, p_screen, p_context, p_parent_window, r_error));
 	if (r_error != OK) {
-		if (p_rendering_driver == "vulkan") {
+		Vector<String> names;
+		for (const String &driver : ds->tested_drivers) {
+			names.push_back(ds->get_readable_driver_name(driver));
+		}
+
+		if (!ds->tested_drivers.has("opengl3")) {
 			OS::get_singleton()->alert(
-					"Your device seems not to support the required Vulkan version.\n\n"
-					"Please try exporting your game using the 'gl_compatibility' renderer.",
-					"Unable to initialize Vulkan video driver");
+					vformat("Your device seem not to support the required version of the following drivers:\n%s.\n\n"
+							"Please try exporting your game using the 'gl_compatibility' renderer.",
+							String(", ").join(names)),
+					"Unable to initialize video driver");
 		} else {
 			OS::get_singleton()->alert(
-					"Your device seems not to support the required OpenGL ES 3.0 version.",
-					"Unable to initialize OpenGL video driver");
+					vformat("Your device seem not to support the required version of the following drivers:\n%s.\n\n",
+							String(", ").join(names)),
+					"Unable to initialize video driver");
 		}
 	}
 	return ds;
@@ -657,37 +679,71 @@ DisplayServerAndroid::DisplayServerAndroid(const String &p_rendering_driver, Dis
 
 	native_menu = memnew(NativeMenu);
 
-#if defined(RD_ENABLED)
-	rendering_context = nullptr;
-	rendering_device = nullptr;
-
-#if defined(VULKAN_ENABLED)
-	if (rendering_driver == "vulkan") {
-		rendering_context = memnew(RenderingContextDriverVulkanAndroid);
+	Vector<String> driver_list;
+	for (const String &drv : p_rendering_driver.split(",")) {
+		if (!driver_list.has(drv)) {
+			driver_list.push_back(drv);
+		}
 	}
-#endif
-
-	if (rendering_context) {
-		if (rendering_context->initialize() != OK) {
-			memdelete(rendering_context);
-			rendering_context = nullptr;
-#if defined(GLES3_ENABLED)
-			bool fallback_to_opengl3 = GLOBAL_GET("rendering/rendering_device/fallback_to_opengl3");
-			if (fallback_to_opengl3 && rendering_driver != "opengl3") {
-				WARN_PRINT("Your device seem not to support Vulkan, switching to OpenGL 3.");
-				rendering_driver = "opengl3";
-				OS::get_singleton()->set_current_rendering_method("gl_compatibility");
-				OS::get_singleton()->set_current_rendering_driver_name(rendering_driver);
-			} else
-#endif
-			{
-				ERR_PRINT(vformat("Failed to initialize %s context", rendering_driver));
-				r_error = ERR_UNAVAILABLE;
-				return;
+	if (GLOBAL_GET("rendering/renderer/fallback_to_opengl3").operator bool()) {
+		for (const String &drv : GLOBAL_GET("rendering/gl_compatibility/driver").operator String().split(",")) {
+			if (!driver_list.has(drv)) {
+				driver_list.push_back(drv);
 			}
 		}
 	}
+	if (GLOBAL_GET("rendering/renderer/fallback_to_dummy").operator bool()) {
+		if (!driver_list.has("dummy")) {
+			driver_list.push_back("dummy");
+		}
+	}
 
+	bool driver_found = false;
+	for (const String &driver : driver_list) {
+		print_line(vformat("Trying to initialize \"%s\" rendering driver.", get_readable_driver_name(driver)));
+		tested_drivers.push_back(driver);
+#if defined(RD_ENABLED)
+#if defined(VULKAN_ENABLED)
+		if (driver == "vulkan") {
+			rendering_context = memnew(RenderingContextDriverVulkanAndroid);
+			if (rendering_context->initialize() == OK) {
+				rendering_driver = driver;
+				OS::get_singleton()->set_current_rendering_driver_name(rendering_driver);
+				driver_found = true;
+				break;
+			}
+			memdelete(rendering_context);
+			rendering_context = nullptr;
+		}
+#endif // VULKAN_ENABLED
+#endif // RD_ENABLED
+#if defined(GLES3_ENABLED)
+		if (driver == "opengl3") {
+			rendering_driver = driver;
+			OS::get_singleton()->set_current_rendering_method("gl_compatibility");
+			OS::get_singleton()->set_current_rendering_driver_name(rendering_driver);
+			driver_found = true;
+			break;
+		}
+#endif // GLES3_ENABLED
+		if (driver == "dummy") {
+			rendering_driver = driver;
+			OS::get_singleton()->set_current_rendering_method("gl_compatibility");
+			OS::get_singleton()->set_current_rendering_driver_name(rendering_driver);
+			driver_found = true;
+			break;
+		}
+		print_line(vformat("  \"%s\" rendering driver initialization failed.", get_readable_driver_name(driver)));
+	}
+
+	if (driver_found) {
+		print_line(vformat("  \"%s\" rendering driver initialized successfully.", get_readable_driver_name(rendering_driver)));
+	} else {
+		r_error = ERR_UNAVAILABLE;
+		ERR_FAIL_MSG("Could not initialize any of the rendering drivers.");
+	}
+
+#if defined(RD_ENABLED)
 	if (rendering_context) {
 		union {
 #ifdef VULKAN_ENABLED
@@ -733,6 +789,9 @@ DisplayServerAndroid::DisplayServerAndroid(const String &p_rendering_driver, Dis
 		RasterizerGLES3::make_current(false);
 	}
 #endif
+	if (rendering_driver == "dummy") {
+		RasterizerDummy::make_current();
+	}
 
 	Input::get_singleton()->set_event_dispatch_function(_dispatch_input_events);
 

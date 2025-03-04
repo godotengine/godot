@@ -657,7 +657,6 @@ private:
 	bool h_scroll_enabled = true;
 	bool v_scroll_enabled = true;
 
-	Size2 get_internal_min_size() const;
 	void update_scrollbars();
 
 	Rect2 search_item_rect(TreeItem *p_from, TreeItem *p_item);
@@ -798,6 +797,8 @@ public:
 	void ensure_cursor_is_visible();
 
 	Rect2 get_custom_popup_rect() const;
+	Size2 get_background_size() const;
+	Size2 get_internal_min_size() const;
 
 	int get_item_offset(TreeItem *p_item) const;
 	Rect2 get_item_rect(TreeItem *p_item, int p_column = -1, int p_button = -1) const;
