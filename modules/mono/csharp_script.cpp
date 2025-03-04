@@ -942,7 +942,7 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 			}
 		}
 
-		to_reload_state.push_back(scr);
+		to_reload_state.push_front(scr);
 	}
 
 	// Deserialize managed callables.
