@@ -1133,7 +1133,7 @@ void Window::_update_viewport_size() {
 	//update the viewport part
 
 	Size2i final_size;
-	Size2i final_size_override;
+	Size2 final_size_override;
 	Rect2i attach_to_screen_rect(Point2i(), size);
 	double font_oversampling = 1.0;
 	window_transform = Transform2D();
