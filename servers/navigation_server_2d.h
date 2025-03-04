@@ -31,8 +31,8 @@
 #ifndef NAVIGATION_SERVER_2D_H
 #define NAVIGATION_SERVER_2D_H
 
-#include "core/object/class_db.h"
 #include "core/templates/rid.h"
+#include "core/templates/rid_owner.h"
 
 #include "scene/resources/2d/navigation_mesh_source_geometry_data_2d.h"
 #include "scene/resources/2d/navigation_polygon.h"
