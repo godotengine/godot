@@ -31,6 +31,7 @@
 #include "color_picker.h"
 
 #include "core/io/image.h"
+#include "core/math/expression.h"
 #include "scene/gui/aspect_ratio_container.h"
 #include "scene/gui/color_mode.h"
 #include "scene/gui/file_dialog.h"
@@ -52,6 +53,14 @@
 #include "scene/resources/style_box_texture.h"
 #include "scene/theme/theme_db.h"
 #include "thirdparty/misc/ok_color_shader.h"
+
+static bool is_color_overbright(const Color &color) {
+	return (color.r >= 1.0 + CMP_EPSILON) || (color.g >= 1.0 + CMP_EPSILON) || (color.b >= 1.0 + CMP_EPSILON);
+}
+
+static bool color_has_valid_hex(const Color &color) {
+	return !is_color_overbright(color) && color.r >= 0 && color.g >= 0 && color.b >= 0;
+}
 
 void ColorPicker::_notification(int p_what) {
 	switch (p_what) {
@@ -137,10 +146,8 @@ void ColorPicker::_notification(int p_what) {
 
 			_reset_sliders_theme();
 
-			if (Engine::get_singleton()->is_editor_hint()) {
-				// Adjust for the width of the "Script" icon.
-				text_type->set_custom_minimum_size(Size2(28 * theme_cache.base_scale, 0));
-			}
+			// Adjust for the width of the "script" icon.
+			text_type->set_custom_minimum_size(Size2(28 * theme_cache.base_scale, 0));
 
 			_update_presets();
 			_update_recent_presets();
@@ -297,8 +304,6 @@ void ColorPicker::_update_controls() {
 	}
 	alpha_label->set_text("A");
 
-	slider_theme_modified = modes[current_mode]->apply_theme();
-
 	if (edit_alpha) {
 		alpha_value->show();
 		alpha_slider->show();
@@ -432,6 +437,28 @@ void ColorPicker::_slider_value_changed() {
 		s = color.get_s();
 		v = color.get_v();
 		last_color = color;
+	} else if (current_mode == MODE_HDR) {
+		// If any of rgb sliders exceeds 1, set the color component as is.
+		bool is_rgb_exceeds = false;
+		Color linear_color = color.srgb_to_linear();
+		for (int i = 0; i < 3; i++) {
+			if (sliders[i]->get_value() >= 1 + CMP_EPSILON) {
+				linear_color.components[i] = sliders[i]->get_value();
+				is_rgb_exceeds = true;
+			}
+		}
+		// Then recalculate intensity and keep rgb sliders within 1.
+		if (is_rgb_exceeds) {
+			float multiplier = MAX(1, MAX(MAX(linear_color.r, linear_color.g), linear_color.b));
+			sliders[0]->set_value_no_signal(linear_color.r / multiplier);
+			sliders[1]->set_value_no_signal(linear_color.g / multiplier);
+			sliders[2]->set_value_no_signal(linear_color.b / multiplier);
+			sliders[3]->set_value_no_signal(Math::log2(multiplier));
+			// The color slightly changes because of slider step.
+			color = modes[current_mode]->get_color();
+		}
+		// Set intensity spinbox prefix.
+		values[3]->set_prefix(sliders[3]->get_value() < 0 ? "" : "+");
 	}
 
 	_set_pick_color(color, false);
@@ -483,6 +510,10 @@ void ColorPicker::create_slider(GridContainer *gc, int idx) {
 	slider->connect(SceneStringName(gui_input), callable_mp(this, &ColorPicker::_slider_or_spin_input));
 
 	if (idx < SLIDER_COUNT) {
+		// Intensity slider
+		if (idx == 3) {
+			val->set_prefix("+");
+		}
 		sliders[idx] = slider;
 		values[idx] = val;
 		labels[idx] = lbl;
@@ -603,7 +634,8 @@ void ColorPicker::_reset_sliders_theme() {
 	style_box_flat->set_content_margin(SIDE_TOP, 16 * theme_cache.base_scale);
 	style_box_flat->set_bg_color(Color(0.2, 0.23, 0.31).lerp(Color(0, 0, 0, 1), 0.3).clamp());
 
-	for (int i = 0; i < SLIDER_COUNT; i++) {
+	// Skip intensity slider.
+	for (int i = 0; i < SLIDER_COUNT - 1; i++) {
 		sliders[i]->begin_bulk_theme_override();
 		sliders[i]->add_theme_icon_override("grabber", theme_cache.bar_arrow);
 		sliders[i]->add_theme_icon_override("grabber_highlight", theme_cache.bar_arrow);
@@ -624,30 +656,46 @@ void ColorPicker::_reset_sliders_theme() {
 	alpha_slider->end_bulk_theme_override();
 }
 
-void ColorPicker::_html_submitted(const String &p_html) {
-	if (updating || text_is_constructor || !c_text->is_visible()) {
+void ColorPicker::_c_text_submitted(const String &p_html) {
+	if (updating) {
 		return;
 	}
-
-	Color new_color = Color::from_string(p_html.strip_edges(), color);
-	String html_no_prefix = p_html.strip_edges().trim_prefix("#");
-	if (html_no_prefix.is_valid_hex_number(false)) {
-		// Convert invalid HTML color codes that software like Figma supports.
-		if (html_no_prefix.length() == 1) {
-			// Turn `#1` into `#111111`.
-			html_no_prefix = html_no_prefix.repeat(6);
-		} else if (html_no_prefix.length() == 2) {
-			// Turn `#12` into `#121212`.
-			html_no_prefix = html_no_prefix.repeat(3);
-		} else if (html_no_prefix.length() == 5) {
-			// Turn `#12345` into `#11223344`.
-			html_no_prefix = html_no_prefix.left(4);
-		} else if (html_no_prefix.length() == 7) {
-			// Turn `#1234567` into `#123456`.
-			html_no_prefix = html_no_prefix.left(6);
+	Color new_color = color;
+	if (text_is_constructor || !color_has_valid_hex(color)) {
+		Ref<Expression> expr;
+		expr.instantiate();
+		Error err = expr->parse(p_html);
+		if (err == OK) {
+			Variant result = expr->execute(Array(), nullptr, false, true);
+			if (result.get_type() == Variant::COLOR) {
+				new_color = result;
+			} else if (result.get_type() == Variant::STRING) {
+				new_color = Color::from_string(result, color);
+			} else if (result.get_type() == Variant::INT) {
+				new_color = Color::hex(result);
+			}
 		}
+	} else {
+		new_color = Color::from_string(p_html.strip_edges(), color);
+		String html_no_prefix = p_html.strip_edges().trim_prefix("#");
+		if (html_no_prefix.is_valid_hex_number(false)) {
+			// Convert invalid HTML color codes that software like Figma supports.
+			if (html_no_prefix.length() == 1) {
+				// Turn `#1` into `#111111`.
+				html_no_prefix = html_no_prefix.repeat(6);
+			} else if (html_no_prefix.length() == 2) {
+				// Turn `#12` into `#121212`.
+				html_no_prefix = html_no_prefix.repeat(3);
+			} else if (html_no_prefix.length() == 5) {
+				// Turn `#12345` into `#11223344`.
+				html_no_prefix = html_no_prefix.left(4);
+			} else if (html_no_prefix.length() == 7) {
+				// Turn `#1234567` into `#123456`.
+				html_no_prefix = html_no_prefix.left(6);
+			}
+		}
+		new_color = Color::from_string(html_no_prefix, new_color);
 	}
-	new_color = Color::from_string(html_no_prefix, new_color);
 
 	if (!is_editing_alpha()) {
 		new_color.a = color.a;
@@ -671,9 +719,10 @@ void ColorPicker::_update_color(bool p_update_sliders) {
 
 	if (p_update_sliders) {
 		float step = modes[current_mode]->get_slider_step();
-		float spinbox_arrow_step = modes[current_mode]->get_spinbox_arrow_step();
 		for (int i = 0; i < current_slider_count; i++) {
+			float spinbox_arrow_step = modes[current_mode]->get_spinbox_arrow_step(i);
 			sliders[i]->set_max(modes[current_mode]->get_slider_max(i));
+			sliders[i]->set_min(modes[current_mode]->get_slider_min(i));
 			sliders[i]->set_step(step);
 			sliders[i]->set_value(modes[current_mode]->get_slider_value(i));
 			values[i]->set_custom_arrow_step(spinbox_arrow_step);
@@ -768,18 +817,16 @@ void ColorPicker::_update_recent_presets() {
 void ColorPicker::_text_type_toggled() {
 	text_is_constructor = !text_is_constructor;
 	if (text_is_constructor) {
+		hex_label->set_text(ETR("Expr"));
 		text_type->set_text("");
-#ifdef TOOLS_ENABLED
-		text_type->set_button_icon(get_editor_theme_icon(SNAME("Script")));
-#endif
+		text_type->set_button_icon(theme_cache.color_script);
 
-		c_text->set_editable(false);
-		c_text->set_tooltip_text(RTR("Copy this constructor in a script."));
+		c_text->set_tooltip_text(RTR("Execute an expression as a color."));
 	} else {
+		hex_label->set_text(ETR("Hex"));
 		text_type->set_text("#");
 		text_type->set_button_icon(nullptr);
 
-		c_text->set_editable(true);
 		c_text->set_tooltip_text(ETR("Enter a hex code (\"#ff0000\") or named color (\"red\")."));
 	}
 	_update_color();
@@ -1159,10 +1206,6 @@ void ColorPicker::set_color_mode(ColorModeType p_mode) {
 		return;
 	}
 
-	if (slider_theme_modified) {
-		_reset_sliders_theme();
-	}
-
 	mode_popup->set_item_checked(current_mode, false);
 	mode_popup->set_item_checked(p_mode, true);
 
@@ -1203,22 +1246,22 @@ void ColorPicker::set_colorize_sliders(bool p_colorize_sliders) {
 	if (colorize_sliders) {
 		Ref<StyleBoxEmpty> style_box_empty(memnew(StyleBoxEmpty));
 
-		if (!slider_theme_modified) {
-			for (int i = 0; i < SLIDER_COUNT; i++) {
-				sliders[i]->add_theme_style_override("slider", style_box_empty);
-			}
+		// Skip intensity slider.
+		for (int i = 0; i < SLIDER_COUNT - 1; i++) {
+			sliders[i]->add_theme_style_override("slider", style_box_empty);
 		}
+
 		alpha_slider->add_theme_style_override("slider", style_box_empty);
 	} else {
 		Ref<StyleBoxFlat> style_box_flat(memnew(StyleBoxFlat));
 		style_box_flat->set_content_margin(SIDE_TOP, 16 * theme_cache.base_scale);
 		style_box_flat->set_bg_color(Color(0.2, 0.23, 0.31).lerp(Color(0, 0, 0, 1), 0.3).clamp());
 
-		if (!slider_theme_modified) {
-			for (int i = 0; i < SLIDER_COUNT; i++) {
-				sliders[i]->add_theme_style_override("slider", style_box_flat);
-			}
+		// Skip intensity slider.
+		for (int i = 0; i < SLIDER_COUNT - 1; i++) {
+			sliders[i]->add_theme_style_override("slider", style_box_flat);
 		}
+
 		alpha_slider->add_theme_style_override("slider", style_box_flat);
 	}
 }
@@ -1236,25 +1279,23 @@ bool ColorPicker::is_deferred_mode() const {
 }
 
 void ColorPicker::_update_text_value() {
-	bool text_visible = true;
-	if (text_is_constructor) {
+	if (text_is_constructor || !color_has_valid_hex(color)) {
 		String t = "Color(" + String::num(color.r, 3) + ", " + String::num(color.g, 3) + ", " + String::num(color.b, 3);
 		if (edit_alpha && color.a < 1) {
 			t += ", " + String::num(color.a, 3) + ")";
 		} else {
 			t += ")";
 		}
-		c_text->set_text(t);
-	}
+		text_type->set_text("");
+		text_type->set_button_icon(theme_cache.color_script);
 
-	if (color.r > 1 || color.g > 1 || color.b > 1 || color.r < 0 || color.g < 0 || color.b < 0) {
-		text_visible = false;
-	} else if (!text_is_constructor) {
+		c_text->set_text(t);
+	} else {
+		text_type->set_text("#");
+		text_type->set_button_icon(nullptr);
+
 		c_text->set_text(color.to_html(edit_alpha && color.a < 1));
 	}
-
-	text_type->set_visible(text_visible);
-	c_text->set_visible(text_visible);
 }
 
 void ColorPicker::_sample_input(const Ref<InputEvent> &p_event) {
@@ -1672,7 +1713,10 @@ void ColorPicker::_recent_preset_pressed(const bool p_pressed, ColorPresetButton
 	if (!p_pressed) {
 		return;
 	}
-	set_pick_color(p_preset->get_preset_color());
+
+	if (color != p_preset->get_preset_color()) {
+		set_pick_color(p_preset->get_preset_color());
+	}
 
 	recent_presets.move_to_back(recent_presets.find(p_preset->get_preset_color()));
 	List<Color>::Element *e = recent_preset_cache.find(p_preset->get_preset_color());
@@ -2018,7 +2062,7 @@ void ColorPicker::_html_focus_exit() {
 	}
 
 	if (is_visible_in_tree()) {
-		_html_submitted(c_text->get_text());
+		_c_text_submitted(c_text->get_text());
 	} else {
 		_update_text_value();
 	}
@@ -2134,7 +2178,7 @@ void ColorPicker::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "color"), "set_pick_color", "get_pick_color");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "edit_alpha"), "set_edit_alpha", "is_editing_alpha");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "color_mode", PROPERTY_HINT_ENUM, "RGB,HSV,RAW,OKHSL"), "set_color_mode", "get_color_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "color_mode", PROPERTY_HINT_ENUM, "RGB,HSV,HDR,OKHSL"), "set_color_mode", "get_color_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "deferred_mode"), "set_deferred_mode", "is_deferred_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "picker_shape", PROPERTY_HINT_ENUM, "HSV Rectangle,HSV Rectangle Wheel,VHS Circle,OKHSL Circle,None"), "set_picker_shape", "get_picker_shape");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "can_add_swatches"), "set_can_add_swatches", "are_swatches_enabled");
@@ -2151,7 +2195,10 @@ void ColorPicker::_bind_methods() {
 
 	BIND_ENUM_CONSTANT(MODE_RGB);
 	BIND_ENUM_CONSTANT(MODE_HSV);
+#ifndef DISABLE_DEPRECATED
 	BIND_ENUM_CONSTANT(MODE_RAW);
+#endif
+	BIND_ENUM_CONSTANT(MODE_HDR);
 	BIND_ENUM_CONSTANT(MODE_OKHSL);
 
 	BIND_ENUM_CONSTANT(SHAPE_HSV_RECTANGLE);
@@ -2186,6 +2233,8 @@ void ColorPicker::_bind_methods() {
 	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, ColorPicker, picker_cursor);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, ColorPicker, picker_cursor_bg);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, ColorPicker, color_hue);
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, ColorPicker, color_script);
 
 	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_STYLEBOX, ColorPicker, mode_button_normal, "tab_unselected", "TabContainer");
 	BIND_THEME_ITEM_EXT(Theme::DATA_TYPE_STYLEBOX, ColorPicker, mode_button_pressed, "tab_selected", "TabContainer");
@@ -2243,7 +2292,7 @@ ColorPicker::ColorPicker() {
 
 	add_mode(new ColorModeRGB(this));
 	add_mode(new ColorModeHSV(this));
-	add_mode(new ColorModeRAW(this));
+	add_mode(new ColorModeHDR(this));
 	add_mode(new ColorModeOKHSL(this));
 
 	mode_hbc = memnew(HBoxContainer);
@@ -2297,18 +2346,17 @@ ColorPicker::ColorPicker() {
 	hex_hbc = memnew(HBoxContainer);
 	hex_hbc->set_alignment(ALIGNMENT_BEGIN);
 	real_vbox->add_child(hex_hbc);
-
-	hex_hbc->add_child(memnew(Label(ETR("Hex"))));
+	hex_label = memnew(Label(ETR("Hex")));
+	hex_hbc->add_child(hex_label);
 
 	text_type = memnew(Button);
 	hex_hbc->add_child(text_type);
+	text_type->set_icon_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	text_type->set_text("#");
 	text_type->set_tooltip_text(RTR("Switch between hexadecimal and code values."));
-	if (Engine::get_singleton()->is_editor_hint()) {
-		text_type->connect(SceneStringName(pressed), callable_mp(this, &ColorPicker::_text_type_toggled));
-	} else {
+	text_type->connect(SceneStringName(pressed), callable_mp(this, &ColorPicker::_text_type_toggled));
+	if (!Engine::get_singleton()->is_editor_hint()) {
 		text_type->set_flat(true);
-		text_type->set_mouse_filter(MOUSE_FILTER_IGNORE);
 	}
 
 	c_text = memnew(LineEdit);
@@ -2317,7 +2365,7 @@ ColorPicker::ColorPicker() {
 	c_text->set_select_all_on_focus(true);
 	c_text->set_tooltip_text(ETR("Enter a hex code (\"#ff0000\") or named color (\"red\")."));
 	c_text->set_placeholder(ETR("Hex code or named color"));
-	c_text->connect(SceneStringName(text_submitted), callable_mp(this, &ColorPicker::_html_submitted));
+	c_text->connect(SceneStringName(text_submitted), callable_mp(this, &ColorPicker::_c_text_submitted));
 	c_text->connect(SceneStringName(text_changed), callable_mp(this, &ColorPicker::_text_changed));
 	c_text->connect(SceneStringName(focus_exited), callable_mp(this, &ColorPicker::_html_focus_exit));
 
@@ -2641,7 +2689,7 @@ void ColorPresetButton::_notification(int p_what) {
 			} else {
 				WARN_PRINT("Unsupported StyleBox used for ColorPresetButton. Use StyleBoxFlat or StyleBoxTexture instead.");
 			}
-			if (preset_color.r > 1 || preset_color.g > 1 || preset_color.b > 1) {
+			if (preset_color.r >= 1 + CMP_EPSILON || preset_color.g >= 1 + CMP_EPSILON || preset_color.b >= 1 + CMP_EPSILON) {
 				// Draw an indicator to denote that the color is "overbright" and can't be displayed accurately in the preview
 				draw_texture(theme_cache.overbright_indicator, Vector2(0, 0));
 			}

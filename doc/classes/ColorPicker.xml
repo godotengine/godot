@@ -111,13 +111,15 @@
 	</signals>
 	<constants>
 		<constant name="MODE_RGB" value="0" enum="ColorModeType">
-			Allows editing the color with Red/Green/Blue sliders.
+			Allows editing the color with Red/Green/Blue sliders in sRGB color space.
 		</constant>
 		<constant name="MODE_HSV" value="1" enum="ColorModeType">
 			Allows editing the color with Hue/Saturation/Value sliders.
 		</constant>
-		<constant name="MODE_RAW" value="2" enum="ColorModeType">
-			Allows the color R, G, B component values to go beyond 1.0, which can be used for certain special operations that require it (like tinting without darkening or rendering sprites in HDR).
+		<constant name="MODE_RAW" value="2" enum="ColorModeType" deprecated="This is replaced by [constant MODE_HDR].">
+		</constant>
+		<constant name="MODE_HDR" value="2" enum="ColorModeType">
+			Allows editing the color with Red/Green/Blue and Intensity sliders in linear color space, which can be used for certain special operations that require it (like tinting without darkening or rendering sprites in HDR).
 		</constant>
 		<constant name="MODE_OKHSL" value="3" enum="ColorModeType">
 			Allows editing the color with Hue/Saturation/Lightness sliders.
@@ -167,6 +169,9 @@
 		</theme_item>
 		<theme_item name="color_hue" data_type="icon" type="Texture2D">
 			Custom texture for the hue selection slider on the right.
+		</theme_item>
+		<theme_item name="color_script" data_type="icon" type="Texture2D">
+			The icon for the button that switches color text to hexadecimal.
 		</theme_item>
 		<theme_item name="expanded_arrow" data_type="icon" type="Texture2D">
 			The icon for color preset drop down menu when expanded.
