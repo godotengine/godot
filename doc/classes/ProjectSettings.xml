@@ -2619,6 +2619,7 @@
 		</member>
 		<member name="rendering/environment/glow/upscale_mode" type="int" setter="" getter="" default="1">
 			Sets how the glow effect is upscaled before being copied onto the screen. Linear is faster, but looks blocky. Bicubic is slower but looks smooth.
+			[b]Note:[/b] [member rendering/environment/glow/upscale_mode] is only effective when using the Forward+ or Mobile rendering methods, as Compatibility uses a different glow implementation.
 		</member>
 		<member name="rendering/environment/glow/upscale_mode.mobile" type="int" setter="" getter="" default="0">
 			Lower-end override for [member rendering/environment/glow/upscale_mode] on mobile devices, due to performance concerns or driver support.

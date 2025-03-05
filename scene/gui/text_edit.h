@@ -539,7 +539,7 @@ private:
 	void _scroll_lines_up();
 	void _scroll_lines_down();
 
-	void _adjust_viewport_to_caret_horizontally(int p_caret = 0);
+	void _adjust_viewport_to_caret_horizontally(int p_caret = 0, bool p_maximize_selection = true);
 
 	// Minimap.
 	bool draw_minimap = false;
@@ -694,6 +694,8 @@ protected:
 
 	void _unhide_all_lines();
 	virtual void _unhide_carets();
+
+	int _get_wrapped_indent_level(int p_line, int &r_first_wrap) const;
 
 	// Symbol lookup.
 	String lookup_symbol_word;
