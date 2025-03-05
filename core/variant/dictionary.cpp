@@ -109,10 +109,12 @@ Variant &Dictionary::operator[](const Variant &p_key) {
 		}
 		return *_p->read_only;
 	} else {
-		if (unlikely(!_p->variant_map.has(key))) {
-			VariantInternal::initialize(&_p->variant_map[key], _p->typed_value.type);
+		const uint32_t old_size = _p->variant_map.size();
+		Variant &value = _p->variant_map[key];
+		if (_p->variant_map.size() > old_size) {
+			VariantInternal::initialize(&value, _p->typed_value.type);
 		}
-		return _p->variant_map[key];
+		return value;
 	}
 }
 
