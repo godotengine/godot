@@ -1,0 +1,6 @@
+GH-103421
+---------
+Validate extension JSON: Error: Field 'classes/ProjectSettings/methods/save_custom/arguments': size changed value in new API, from 1 to 2.
+Validate extension JSON: Error: Field 'classes/ProjectSettings/methods/set_initial_value/arguments': size changed value in new API, from 2 to 3.
+
+Added argument to save_custom and set_initial_value methods of ProjectSettings to operate on initial values of project instead of initial values of the engine.
