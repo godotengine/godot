@@ -113,16 +113,23 @@ real_t SkeletonModifier3D::get_influence() const {
 	return influence;
 }
 
-void SkeletonModifier3D::process_modification() {
+void SkeletonModifier3D::process_modification(double p_delta) {
 	if (!active) {
 		return;
 	}
-	_process_modification();
+	_process_modification(p_delta);
 	emit_signal(SNAME("modification_processed"));
 }
 
-void SkeletonModifier3D::_process_modification() {
-	GDVIRTUAL_CALL(_process_modification);
+void SkeletonModifier3D::_process_modification(double p_delta) {
+	if (GDVIRTUAL_CALL(_process_modification_with_delta, p_delta)) {
+		return;
+	}
+#ifndef DISABLE_DEPRECATED
+	if (GDVIRTUAL_CALL(_process_modification)) {
+		return;
+	}
+#endif // DISABLE_DEPRECATED
 }
 
 void SkeletonModifier3D::_notification(int p_what) {
@@ -151,7 +158,10 @@ void SkeletonModifier3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "influence", PROPERTY_HINT_RANGE, "0,1,0.001"), "set_influence", "get_influence");
 
 	ADD_SIGNAL(MethodInfo("modification_processed"));
+	GDVIRTUAL_BIND(_process_modification_with_delta, "delta");
+#ifndef DISABLE_DEPRECATED
 	GDVIRTUAL_BIND(_process_modification);
+#endif
 
 	BIND_ENUM_CONSTANT(BONE_AXIS_PLUS_X);
 	BIND_ENUM_CONSTANT(BONE_AXIS_MINUS_X);

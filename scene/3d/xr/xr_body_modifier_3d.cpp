@@ -238,7 +238,7 @@ void XRBodyModifier3D::_get_joint_data() {
 	}
 }
 
-void XRBodyModifier3D::_process_modification() {
+void XRBodyModifier3D::_process_modification(double p_delta) {
 	Skeleton3D *skeleton = get_skeleton();
 	if (!skeleton) {
 		return;

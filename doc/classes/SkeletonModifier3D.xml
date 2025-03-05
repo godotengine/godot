@@ -12,11 +12,20 @@
 		<link title="Design of the Skeleton Modifier 3D">https://godotengine.org/article/design-of-the-skeleton-modifier-3d/</link>
 	</tutorials>
 	<methods>
-		<method name="_process_modification" qualifiers="virtual">
+		<method name="_process_modification" qualifiers="virtual" deprecated="Use [method _process_modification_with_delta] instead.">
 			<return type="void" />
 			<description>
 				Override this virtual method to implement a custom skeleton modifier. You should do things like get the [Skeleton3D]'s current pose and apply the pose here.
 				[method _process_modification] must not apply [member influence] to bone poses because the [Skeleton3D] automatically applies influence to all bone poses set by the modifier.
+			</description>
+		</method>
+		<method name="_process_modification_with_delta" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="delta" type="float" />
+			<description>
+				Override this virtual method to implement a custom skeleton modifier. You should do things like get the [Skeleton3D]'s current pose and apply the pose here.
+				[method _process_modification_with_delta] must not apply [member influence] to bone poses because the [Skeleton3D] automatically applies influence to all bone poses set by the modifier.
+				[param delta] is passed from parent [Skeleton3D]. See also [method Skeleton3D.advance].
 			</description>
 		</method>
 		<method name="get_skeleton" qualifiers="const">
