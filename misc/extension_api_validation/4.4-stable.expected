@@ -7,3 +7,10 @@ should instead be used to justify these changes and describe how users should wo
 Add new entries at the end of the file.
 
 ## Changes between 4.4-stable and 4.5-stable
+
+GH-103421
+---------
+Validate extension JSON: Error: Field 'classes/ProjectSettings/methods/save_custom/arguments': size changed value in new API, from 1 to 2.
+Validate extension JSON: Error: Field 'classes/ProjectSettings/methods/set_initial_value/arguments': size changed value in new API, from 2 to 3.
+
+Added optional arguments to treat values loaded from project.godot or project.binary as defaults. Compatibility methods registered.
