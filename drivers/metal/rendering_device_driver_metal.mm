@@ -2460,6 +2460,8 @@ RDD::ShaderID RenderingDeviceDriverMetal::shader_create_from_bytecode(const Vect
 	HashMap<ShaderStage, MDLibrary *> libraries;
 
 	for (ShaderStageData &shader_data : binary_data.stages) {
+		r_shader_desc.stages.push_back(shader_data.stage);
+
 		SHA256Digest key = SHA256Digest(shader_data.source.ptr(), shader_data.source.length());
 
 		if (ShaderCacheEntry **p = _shader_cache.getptr(key); p != nullptr) {
