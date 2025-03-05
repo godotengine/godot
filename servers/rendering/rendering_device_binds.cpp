@@ -32,8 +32,6 @@
 
 #include "shader_include_db.h"
 
-#include "modules/glslang/shader_compile.h"
-
 Error RDShaderFile::parse_versions_from_text(const String &p_text, const String p_defines, OpenIncludeFunction p_include_func, void *p_include_func_userdata) {
 	Vector<String> lines = p_text.split("\n");
 
@@ -189,7 +187,7 @@ Error RDShaderFile::parse_versions_from_text(const String &p_text, const String 
 				}
 				code = code.replace("VERSION_DEFINES", E.value);
 				String error;
-				Vector<uint8_t> spirv = compile_glslang_shader(RD::ShaderStage(i), code, RD::SHADER_LANGUAGE_VULKAN_VERSION_1_1, RD::SHADER_SPIRV_VERSION_1_5, &error);
+				Vector<uint8_t> spirv = RenderingDevice::get_singleton()->shader_compile_spirv_from_source(RD::ShaderStage(i), code, RenderingDevice::ShaderLanguage::SHADER_LANGUAGE_GLSL, &error);
 				bytecode->set_stage_bytecode(RD::ShaderStage(i), spirv);
 				if (!error.is_empty()) {
 					error += String() + "\n\nStage '" + stage_str[i] + "' source code: \n\n";

@@ -36,7 +36,11 @@
 
 #include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
+#include "modules/modules_enabled.gen.h"
+
+#ifdef MODULE_GLSLANG_ENABLED
 #include "modules/glslang/shader_compile.h"
+#endif
 
 #define FORCE_SEPARATE_PRESENT_QUEUE 0
 #define PRINT_FRAMEBUFFER_FORMAT 0
@@ -189,12 +193,14 @@ void RenderingDevice::_free_dependencies(RID p_id) {
 /*******************************/
 
 Vector<uint8_t> RenderingDevice::shader_compile_spirv_from_source(ShaderStage p_stage, const String &p_source_code, ShaderLanguage p_language, String *r_error, bool p_allow_cache) {
-	ShaderLanguageVersion language_version = driver->get_shader_container_format().get_shader_language_version();
-	ShaderSpirvVersion spirv_version = driver->get_shader_container_format().get_shader_spirv_version();
 	switch (p_language) {
-		case ShaderLanguage::SHADER_LANGUAGE_GLSL:
+#ifdef MODULE_GLSLANG_ENABLED
+		case ShaderLanguage::SHADER_LANGUAGE_GLSL: {
+			ShaderLanguageVersion language_version = driver->get_shader_container_format().get_shader_language_version();
+			ShaderSpirvVersion spirv_version = driver->get_shader_container_format().get_shader_spirv_version();
 			return compile_glslang_shader(p_stage, ShaderIncludeDB::parse_include_files(p_source_code), language_version, spirv_version, r_error);
-			break;
+		}
+#endif
 		default:
 			ERR_FAIL_V_MSG({}, "Shader language is not supported.");
 	}
