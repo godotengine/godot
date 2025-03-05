@@ -20,7 +20,7 @@ runs:
       id: cache-ping
       with:
         path: ${{ inputs.scons-cache }}
-        key: " " # Dummy key; we have to rely on the fallback value.
+        key: ${{ github.sha }} # Dummy key; we have to rely on the fallback value.
         restore-keys: ${{ inputs.cache-name }}|${{ github.event.repository.default_branch }}
         lookup-only: true
 
