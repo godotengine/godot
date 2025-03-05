@@ -306,6 +306,7 @@ vec4 light_compute(
 		vec2 screen_uv,
 		vec2 uv,
 		vec4 color, bool is_directional) {
+	const InstanceData draw_data = instances.data[instance_index];
 	vec4 light = vec4(0.0);
 	vec3 light_direction = vec3(0.0);
 
