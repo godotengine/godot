@@ -1671,7 +1671,7 @@ void FileDialog::set_show_filename_filter(bool p_show) {
 		filename_filter->grab_focus();
 	} else {
 		if (filename_filter->has_focus()) {
-			tree->call_deferred("grab_focus");
+			tree->call_deferred("grab_focus", PlayerId::P1);
 		}
 	}
 	show_filename_filter = p_show;
