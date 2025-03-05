@@ -69,6 +69,7 @@ protected:
 		bool internal = false;
 		Variant variant;
 		Variant initial;
+		Variant initial_project;
 		bool hide_from_editor = false;
 		bool restart_if_changed = false;
 #ifdef DEBUG_METHODS_ENABLED
@@ -126,7 +127,7 @@ protected:
 	Error _save_settings_text(const String &p_file, const RBMap<String, List<String>> &props, const CustomMap &p_custom = CustomMap(), const String &p_custom_features = String());
 	Error _save_settings_binary(const String &p_file, const RBMap<String, List<String>> &props, const CustomMap &p_custom = CustomMap(), const String &p_custom_features = String());
 
-	Error _save_custom_bnd(const String &p_file);
+	Error _save_custom_bnd(const String &p_file, bool p_merge_initial_project = false);
 
 #ifdef TOOLS_ENABLED
 	const static PackedStringArray _get_supported_features();
@@ -147,6 +148,12 @@ protected:
 protected:
 	static void _bind_methods();
 
+#ifndef DISABLE_DEPRECATED
+	void _set_initial_value_bind_compat_103421(const String &p_name, const Variant &p_value);
+	Error _save_custom_bnd_bind_compat_103421(const String &p_path = "");
+	static void _bind_compatibility_methods();
+#endif
+
 public:
 	static const int CONFIG_VERSION = 5;
 
@@ -161,7 +168,7 @@ public:
 	String localize_path(const String &p_path) const;
 	String globalize_path(const String &p_path) const;
 
-	void set_initial_value(const String &p_name, const Variant &p_value);
+	void set_initial_value(const String &p_name, const Variant &p_value, bool p_initial_project = false);
 	void set_as_basic(const String &p_name, bool p_basic);
 	void set_as_internal(const String &p_name, bool p_internal);
 	void set_restart_if_changed(const String &p_name, bool p_restart);
@@ -185,7 +192,7 @@ public:
 	Error setup(const String &p_path, const String &p_main_pack, bool p_upwards = false, bool p_ignore_override = false);
 
 	Error load_custom(const String &p_path);
-	Error save_custom(const String &p_path = "", const CustomMap &p_custom = CustomMap(), const Vector<String> &p_custom_features = Vector<String>(), bool p_merge_with_current = true);
+	Error save_custom(const String &p_path = "", const CustomMap &p_custom = CustomMap(), const Vector<String> &p_custom_features = Vector<String>(), bool p_merge_with_current = true, bool p_merge_initial_project = false);
 	Error save();
 	void set_custom_property_info(const PropertyInfo &p_info);
 	const HashMap<StringName, PropertyInfo> &get_custom_property_info() const;

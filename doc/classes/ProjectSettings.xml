@@ -171,8 +171,10 @@
 		<method name="save_custom">
 			<return type="int" enum="Error" />
 			<param index="0" name="file" type="String" />
+			<param index="1" name="compare_to_project" type="bool" default="false" />
 			<description>
 				Saves the configuration to a custom file. The file extension must be [code].godot[/code] (to save in text-based [ConfigFile] format) or [code].binary[/code] (to save in binary format). You can also save [code]override.cfg[/code] file, which is also text, but can be used in exported projects unlike other formats.
+				[b]Note:[/b] Setting the optional [param compare_to_project] parameter to [code]true[/code] will compare the currently set values against the values loaded from [code]project.godot[/code] or [code]project.binary[/code] instead of the engine's default values when determining if a value should be present in the specified file.
 			</description>
 		</method>
 		<method name="set_as_basic">
@@ -195,8 +197,10 @@
 			<return type="void" />
 			<param index="0" name="name" type="String" />
 			<param index="1" name="value" type="Variant" />
+			<param index="2" name="initial_project" type="bool" default="false" />
 			<description>
 				Sets the specified setting's initial value. This is the value the setting reverts to.
+				[b]Note:[/b] If the optional [param initial_project] parameter is [code]true[/code] the method will set the project's initial value instead of the engine's initial value. The project's initial values are loaded from [code]project.godot[/code] or [code]project.binary[/code] at startup.
 			</description>
 		</method>
 		<method name="set_order">

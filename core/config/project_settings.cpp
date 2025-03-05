@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "project_settings.h"
+#include "project_settings.compat.inc"
 
 #include "core/core_bind.h" // For Compression enum.
 #include "core/input/input_map.h"
@@ -212,11 +213,15 @@ String ProjectSettings::localize_path(const String &p_path) const {
 	}
 }
 
-void ProjectSettings::set_initial_value(const String &p_name, const Variant &p_value) {
+void ProjectSettings::set_initial_value(const String &p_name, const Variant &p_value, bool p_initial_project) {
 	ERR_FAIL_COND_MSG(!props.has(p_name), vformat("Request for nonexistent project setting: '%s'.", p_name));
 
 	// Duplicate so that if value is array or dictionary, changing the setting will not change the stored initial value.
-	props[p_name].initial = p_value.duplicate();
+	if (p_initial_project) {
+		props[p_name].initial_project = p_value.duplicate();
+	} else {
+		props[p_name].initial = p_value.duplicate();
+	}
 }
 
 void ProjectSettings::set_restart_if_changed(const String &p_name, bool p_restart) {
@@ -781,6 +786,9 @@ Error ProjectSettings::_load_settings_binary(const String &p_path) {
 		err = decode_variant(value, d.ptr(), d.size(), nullptr, true);
 		ERR_CONTINUE_MSG(err != OK, vformat("Error decoding property: '%s'.", key));
 		set(key, value);
+		if (p_path.get_file() == "project.binary") {
+			set_initial_value(key, value, true);
+		}
 	}
 
 	return OK;
@@ -830,8 +838,14 @@ Error ProjectSettings::_load_settings_text(const String &p_path) {
 			} else {
 				if (section.is_empty()) {
 					set(assign, value);
+					if (p_path.get_file() == "project.godot") {
+						set_initial_value(assign, value, true);
+					}
 				} else {
 					set(section + "/" + assign, value);
+					if (p_path.get_file() == "project.godot") {
+						set_initial_value(section + "/" + assign, value, true);
+					}
 				}
 			}
 		} else if (!next_tag.name.is_empty()) {
@@ -1023,8 +1037,8 @@ Error ProjectSettings::_save_settings_text(const String &p_file, const RBMap<Str
 	return OK;
 }
 
-Error ProjectSettings::_save_custom_bnd(const String &p_file) { // add other params as dictionary and array?
-	return save_custom(p_file);
+Error ProjectSettings::_save_custom_bnd(const String &p_file, bool p_merge_initial_project) { // add other params as dictionary and array?
+	return save_custom(p_file, CustomMap(), Vector<String>(), true, p_merge_initial_project);
 }
 
 #ifdef TOOLS_ENABLED
@@ -1045,7 +1059,7 @@ bool _csproj_exists(const String &p_root_dir) {
 }
 #endif // TOOLS_ENABLED
 
-Error ProjectSettings::save_custom(const String &p_path, const CustomMap &p_custom, const Vector<String> &p_custom_features, bool p_merge_with_current) {
+Error ProjectSettings::save_custom(const String &p_path, const CustomMap &p_custom, const Vector<String> &p_custom_features, bool p_merge_with_current, bool p_merge_initial_project) {
 	ERR_FAIL_COND_V_MSG(p_path.is_empty(), ERR_INVALID_PARAMETER, "Project settings save path cannot be empty.");
 
 #ifdef TOOLS_ENABLED
@@ -1097,7 +1111,11 @@ Error ProjectSettings::save_custom(const String &p_path, const CustomMap &p_cust
 			vc.order = v->order;
 			vc.type = v->variant.get_type();
 			vc.flags = PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_STORAGE;
-			if (v->variant == v->initial) {
+			if (p_merge_initial_project && v->initial_project != Variant()) {
+				if (v->variant == v->initial_project) {
+					continue;
+				}
+			} else if (v->variant == v->initial) {
 				continue;
 			}
 
@@ -1410,7 +1428,7 @@ void ProjectSettings::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_global_class_list"), &ProjectSettings::get_global_class_list);
 	ClassDB::bind_method(D_METHOD("set_order", "name", "position"), &ProjectSettings::set_order);
 	ClassDB::bind_method(D_METHOD("get_order", "name"), &ProjectSettings::get_order);
-	ClassDB::bind_method(D_METHOD("set_initial_value", "name", "value"), &ProjectSettings::set_initial_value);
+	ClassDB::bind_method(D_METHOD("set_initial_value", "name", "value", "initial_project"), &ProjectSettings::set_initial_value, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("set_as_basic", "name", "basic"), &ProjectSettings::set_as_basic);
 	ClassDB::bind_method(D_METHOD("set_as_internal", "name", "internal"), &ProjectSettings::set_as_internal);
 	ClassDB::bind_method(D_METHOD("add_property_info", "hint"), &ProjectSettings::_add_property_info_bind);
@@ -1421,7 +1439,7 @@ void ProjectSettings::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("save"), &ProjectSettings::save);
 	ClassDB::bind_method(D_METHOD("load_resource_pack", "pack", "replace_files", "offset"), &ProjectSettings::load_resource_pack, DEFVAL(true), DEFVAL(0));
 
-	ClassDB::bind_method(D_METHOD("save_custom", "file"), &ProjectSettings::_save_custom_bnd);
+	ClassDB::bind_method(D_METHOD("save_custom", "file", "compare_to_project"), &ProjectSettings::_save_custom_bnd, DEFVAL(false));
 
 	ADD_SIGNAL(MethodInfo("settings_changed"));
 }
