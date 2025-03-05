@@ -53,6 +53,8 @@ Dictionary OS::_execute_with_pipe_bind_compat_94434(const String &p_path, const 
 }
 
 void OS::_bind_compatibility_methods() {
+	ClassDB::bind_compatibility_method(D_METHOD("read_string_from_stdin", "buffer_size"), &OS::read_string_from_stdin);
+	ClassDB::bind_compatibility_method(D_METHOD("read_buffer_from_stdin", "buffer_size"), &OS::read_buffer_from_stdin);
 	ClassDB::bind_compatibility_method(D_METHOD("read_string_from_stdin"), &OS::_read_string_from_stdin_bind_compat_91201);
 	ClassDB::bind_compatibility_method(D_METHOD("execute_with_pipe", "path", "arguments"), &OS::_execute_with_pipe_bind_compat_94434);
 }

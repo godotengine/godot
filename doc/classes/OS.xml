@@ -720,7 +720,7 @@
 		</method>
 		<method name="read_buffer_from_stdin">
 			<return type="PackedByteArray" />
-			<param index="0" name="buffer_size" type="int" />
+			<param index="0" name="buffer_size" type="int" default="1024" />
 			<description>
 				Reads a user input as raw data from the standard input. This operation can be [i]blocking[/i], which causes the window to freeze if [method read_string_from_stdin] is called on the main thread.
 				- If standard input is console, this method will block until the program receives a line break in standard input (usually by the user pressing [kbd]Enter[/kbd]).
@@ -732,7 +732,7 @@
 		</method>
 		<method name="read_string_from_stdin">
 			<return type="String" />
-			<param index="0" name="buffer_size" type="int" />
+			<param index="0" name="buffer_size" type="int" default="1024" />
 			<description>
 				Reads a user input as a UTF-8 encoded string from the standard input. This operation can be [i]blocking[/i], which causes the window to freeze if [method read_string_from_stdin] is called on the main thread.
 				- If standard input is console, this method will block until the program receives a line break in standard input (usually by the user pressing [kbd]Enter[/kbd]).
