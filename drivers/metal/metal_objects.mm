@@ -1063,7 +1063,7 @@ void MDUniformSet::bind_uniforms_argument_buffers(MDShader *p_shader, MDCommandB
 	id<MTLRenderCommandEncoder> __unsafe_unretained enc = p_state.encoder;
 	id<MTLDevice> __unsafe_unretained device = enc.device;
 
-	BoundUniformSet &bus = bound_uniform_set(p_shader, device, p_state.resource_usage);
+	BoundUniformSet &bus = bound_uniform_set(p_shader, device, p_state.resource_usage, p_set_index);
 
 	// Set the buffer for the vertex stage.
 	{
@@ -1275,7 +1275,7 @@ void MDUniformSet::bind_uniforms_argument_buffers(MDShader *p_shader, MDCommandB
 	id<MTLComputeCommandEncoder> enc = p_state.encoder;
 	id<MTLDevice> device = enc.device;
 
-	BoundUniformSet &bus = bound_uniform_set(p_shader, device, p_state.resource_usage);
+	BoundUniformSet &bus = bound_uniform_set(p_shader, device, p_state.resource_usage, p_set_index);
 
 	uint32_t const *offset = set_info.offsets.getptr(RDD::SHADER_STAGE_COMPUTE);
 	if (offset) {
@@ -1417,14 +1417,14 @@ void MDUniformSet::bind_uniforms(MDShader *p_shader, MDCommandBuffer::ComputeSta
 	}
 }
 
-BoundUniformSet &MDUniformSet::bound_uniform_set(MDShader *p_shader, id<MTLDevice> p_device, ResourceUsageMap &p_resource_usage) {
+BoundUniformSet &MDUniformSet::bound_uniform_set(MDShader *p_shader, id<MTLDevice> p_device, ResourceUsageMap &p_resource_usage, uint32_t p_set_index) {
 	BoundUniformSet *sus = bound_uniforms.getptr(p_shader);
 	if (sus != nullptr) {
 		sus->merge_into(p_resource_usage);
 		return *sus;
 	}
 
-	UniformSet const &set = p_shader->sets[index];
+	UniformSet const &set = p_shader->sets[p_set_index];
 
 	HashMap<id<MTLResource>, StageResourceUsage> bound_resources;
 	auto add_usage = [&bound_resources](id<MTLResource> __unsafe_unretained res, RDD::ShaderStage stage, MTLResourceUsage usage) {
