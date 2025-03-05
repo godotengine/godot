@@ -8014,6 +8014,8 @@ TEST_CASE("[SceneTree][TextEdit] gutters") {
 	SIGNAL_WATCH(text_edit, "gutter_removed");
 
 	SUBCASE("[TextEdit] gutter add and remove") {
+		text_edit->set_text("test1\ntest2\ntest3\ntest4");
+
 		text_edit->add_gutter();
 		CHECK(text_edit->get_gutter_count() == 1);
 		CHECK(text_edit->get_gutter_width(0) == 24);

@@ -1,6 +1,6 @@
 extends Node
 
-var test := $A
+@onready var test := $AnimationPlayer
 
 func a():
     test.➡

@@ -4492,7 +4492,8 @@ TEST_CASE("[SceneTree][CodeEdit] symbol lookup") {
 
 		Point2 caret_pos = code_edit->get_caret_draw_pos();
 		caret_pos.x += 60;
-		SEND_GUI_MOUSE_BUTTON_EVENT(caret_pos, MouseButton::NONE, 0, Key::NONE);
+
+		SEND_GUI_MOUSE_MOTION_EVENT(caret_pos, MouseButtonMask::NONE, Key::NONE);
 		CHECK(code_edit->get_text_for_symbol_lookup() == "this is s" + String::chr(0xFFFF) + "ome text");
 
 		SIGNAL_WATCH(code_edit, "symbol_validate");
