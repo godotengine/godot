@@ -80,14 +80,17 @@ class ColorPicker : public VBoxContainer {
 	// These classes poke into theme items for their internal logic.
 	friend class ColorModeRGB;
 	friend class ColorModeHSV;
-	friend class ColorModeRAW;
+	friend class ColorModeHDR;
 	friend class ColorModeOKHSL;
 
 public:
 	enum ColorModeType {
 		MODE_RGB,
 		MODE_HSV,
-		MODE_RAW,
+#ifndef DISABLE_DEPRECATED
+		MODE_RAW = 2,
+#endif
+		MODE_HDR = 2,
 		MODE_OKHSL,
 
 		MODE_MAX
@@ -103,7 +106,7 @@ public:
 		SHAPE_MAX
 	};
 
-	static const int SLIDER_COUNT = 3;
+	static const int SLIDER_COUNT = 4;
 
 private:
 	enum class MenuOption {
@@ -127,8 +130,6 @@ private:
 	int current_slider_count = SLIDER_COUNT;
 	static const int MODE_BUTTON_COUNT = 3;
 	const float WHEEL_RADIUS = 0.42;
-
-	bool slider_theme_modified = true;
 
 	Vector<ColorMode *> modes;
 
@@ -172,6 +173,7 @@ private:
 	HBoxContainer *sample_hbc = nullptr;
 	GridContainer *slider_gc = nullptr;
 	HBoxContainer *hex_hbc = nullptr;
+	Label *hex_label = nullptr;
 	MenuButton *btn_mode = nullptr;
 	Button *mode_btns[MODE_BUTTON_COUNT];
 	Ref<ButtonGroup> mode_group = nullptr;
@@ -268,6 +270,8 @@ private:
 		Ref<Texture2D> picker_cursor_bg;
 		Ref<Texture2D> color_hue;
 
+		Ref<Texture2D> color_script;
+
 		/* Mode buttons */
 		Ref<StyleBox> mode_button_normal;
 		Ref<StyleBox> mode_button_pressed;
@@ -280,7 +284,7 @@ private:
 	PickerShapeType _get_actual_shape() const;
 	void create_slider(GridContainer *gc, int idx);
 	void _reset_sliders_theme();
-	void _html_submitted(const String &p_html);
+	void _c_text_submitted(const String &p_html);
 	void _slider_drag_started();
 	void _slider_value_changed();
 	void _slider_drag_ended();
