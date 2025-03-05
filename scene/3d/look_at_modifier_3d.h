@@ -107,7 +107,7 @@ protected:
 
 	static void _bind_methods();
 
-	virtual void _process_modification() override;
+	virtual void _process_modification(double p_delta) override;
 
 public:
 	void set_bone_name(const String &p_bone_name);
