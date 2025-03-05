@@ -70,6 +70,7 @@ private:
 
 		// TabBar overrides.
 		int icon_separation = 0;
+		int tab_separation = 0;
 		int icon_max_width = 0;
 		int outline_size = 0;
 

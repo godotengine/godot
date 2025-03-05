@@ -126,6 +126,7 @@ private:
 
 	struct ThemeCache {
 		int h_separation = 0;
+		int tab_separation = 0;
 		int icon_max_width = 0;
 
 		Ref<StyleBox> tab_unselected_style;
@@ -224,6 +225,7 @@ public:
 	Ref<Texture2D> get_tab_button_icon(int p_tab) const;
 
 	int get_tab_idx_at_point(const Point2 &p_point) const;
+	int get_closest_tab_idx_to_point(const Point2 &p_point) const;
 
 	void set_tab_alignment(AlignmentMode p_alignment);
 	AlignmentMode get_tab_alignment() const;
