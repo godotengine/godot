@@ -1727,8 +1727,8 @@ void Control::_size_changed() {
 		new_size_cache.height = minimum_size.height;
 	}
 
-	bool pos_changed = !new_pos_cache.is_equal_approx(data.pos_cache);
-	bool size_changed = !new_size_cache.is_equal_approx(data.size_cache);
+	bool pos_changed = new_pos_cache != data.pos_cache;
+	bool size_changed = new_size_cache != data.size_cache;
 
 	if (pos_changed) {
 		data.pos_cache = new_pos_cache;
