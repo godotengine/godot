@@ -6844,7 +6844,7 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 
 			if (use_prime == -1) {
 				print_verbose("Detecting GPUs, set DRI_PRIME in the environment to override GPU detection logic.");
-				use_prime = detect_prime();
+				use_prime = DetectPrimeX11::detect_prime();
 			}
 
 			if (use_prime) {
