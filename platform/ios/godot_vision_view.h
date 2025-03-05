@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  godot_view.h                                                          */
+/*  godot_vision_view.h                                                   */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,12 +28,15 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#if !defined(VISIONOS)
+#if defined(VISIONOS)
+#import <CompositorServices/CompositorServices.h>
+#import <Foundation/Foundation.h>
+#import <Metal/Metal.h>
+#import <MetalKit/MetalKit.h>
 #import <UIKit/UIKit.h>
 
-class String;
-
 @class GodotView;
+
 @protocol DisplayLayer;
 @protocol GodotViewRendererProtocol;
 
@@ -43,25 +46,28 @@ class String;
 
 @end
 
-@interface GodotView : UIView
+@interface GodotView : NSObject {
+}
 
 @property(assign, nonatomic) id<GodotViewRendererProtocol> renderer;
 @property(assign, nonatomic) id<GodotViewDelegate> delegate;
 
 @property(assign, readonly, nonatomic) BOOL isActive;
 
-@property(assign, nonatomic) BOOL useCADisplayLink;
-@property(strong, readonly, nonatomic) CALayer<DisplayLayer> *renderingLayer;
-@property(assign, readonly, nonatomic) BOOL canRender;
+@property(nonatomic, assign, assign) cp_frame_timing_t timing;
+@property(nonatomic, assign, assign) cp_frame_t frame;
+@property(nonatomic, assign, assign) cp_drawable_t drawable;
+@property(nonatomic, assign) cp_layer_renderer_t __unsafe_unretained layerRenderer;
 
-@property(assign, nonatomic) NSTimeInterval renderingInterval;
+@property(assign, readonly, nonatomic) CGRect bounds;
 
-- (CALayer<DisplayLayer> *)initializeRenderingForDriver:(NSString *)driverName;
+- (GodotView<DisplayLayer> *)initializeRenderingForDriver:(NSString *)driverName;
 - (void)stopRendering;
 - (void)startRendering;
+- (void)drawView;
+- (BOOL)setup:(cp_layer_renderer_t)renderer;
 - (CGSize)screen_get_size:(int)p_screen;
 - (CGRect)get_display_safe_area;
 
 @end
-
-#endif // !VISIONOS
+#endif

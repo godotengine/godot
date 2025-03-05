@@ -1,44 +1,76 @@
 name: 🍏 iOS Builds
 on:
-  workflow_call:
+    workflow_call:
 
 # Global Settings
 env:
-  # Used for the cache key. Add version suffix to force clean build.
-  GODOT_BASE_BRANCH: master
-  SCONSFLAGS: verbose=yes warnings=extra werror=yes debug_symbols=no module_text_server_fb_enabled=yes strict_checks=yes
+    # Used for the cache key. Add version suffix to force clean build.
+    GODOT_BASE_BRANCH: master
+    SCONSFLAGS: verbose=yes warnings=extra werror=yes debug_symbols=no module_text_server_fb_enabled=yes strict_checks=yes
 
 jobs:
-  ios-template:
-    runs-on: macos-latest
-    name: Template (target=template_release)
-    timeout-minutes: 60
+    ios-template:
+        runs-on: macos-latest
+        name: ${{ matrix.name }}
+        timeout-minutes: 60
+        strategy:
+            fail-fast: false
+            matrix:
+                include:
+                    - name: Template iOS (target=template_release)
+                      cache-name: ios-template-arm64
+                      target: template_release
+                      tests: false
+                      sconsflags:
+                      cache-limit: 1
+                    - name: Template visionOS (target=template_release)
+                      cache-name: visionos-template-arm64
+                      target: template_release
+                      tests: false
+                      sconsflags: arch=arm64 visionos=yes opengl3=no vulkan=no metal=true
+                      cache-limit: 1
+                    - name: Template visionOS Simulator (target=template_release)
+                      cache-name: visionos-template-arm64
+                      target: template_release
+                      tests: false
+                      sconsflags: arch=arm64 visionos_simulator=yes opengl3=no vulkan=no metal=true
+                      cache-limit: 1
 
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          submodules: recursive
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+              with:
+                  submodules: recursive
+            - name: Setup Xcode
+              uses: maxim-lobanov/setup-xcode@v1
+              with:
+                  xcode-version: latest
 
-      - name: Restore Godot build cache
-        uses: ./.github/actions/godot-cache-restore
-        continue-on-error: true
+            - name: Restore Godot build cache
+              uses: ./.github/actions/godot-cache-restore
+              with:
+                  cache-name: ${{ matrix.cache-name }}
+              continue-on-error: true
 
-      - name: Setup Python and SCons
-        uses: ./.github/actions/godot-deps
+            - name: Setup Python and SCons
+              uses: ./.github/actions/godot-deps
 
-      - name: Compilation (arm64)
-        uses: ./.github/actions/godot-build
-        with:
-          sconsflags: ${{ env.SCONSFLAGS }}
-          platform: ios
-          target: template_release
-          tests: false
-          scons-cache-limit: 1
+            - name: Compilation
+              uses: ./.github/actions/godot-build
+              with:
+                  sconsflags: ${{ env.SCONSFLAGS }} ${{ matrix.sconsflags }}
+                  platform: ios
+                  target: template_release
+                  tests: false
+                  scons-cache-limit: 1
 
-      - name: Save Godot build cache
-        uses: ./.github/actions/godot-cache-save
-        continue-on-error: true
+            - name: Save Godot build cache
+              uses: ./.github/actions/godot-cache-save
+              with:
+                  cache-name: ${{ matrix.cache-name }}
+              continue-on-error: true
 
-      - name: Upload artifact
-        uses: ./.github/actions/upload-artifact
+            - name: Upload artifact
+              uses: ./.github/actions/upload-artifact
+              with:
+                  name: ${{ matrix.name }}

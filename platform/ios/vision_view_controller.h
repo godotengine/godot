@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  godot_view.h                                                          */
+/*  vision_view_controller.h                                              */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,40 +28,31 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#if !defined(VISIONOS)
+#if defined(VISIONOS)
+#import <CompositorServices/CompositorServices.h>
 #import <UIKit/UIKit.h>
 
-class String;
-
 @class GodotView;
-@protocol DisplayLayer;
-@protocol GodotViewRendererProtocol;
+@class GodotNativeVideoView;
+@class GodotKeyboardInputView;
 
-@protocol GodotViewDelegate
-
-- (BOOL)godotViewFinishedSetup:(GodotView *)view;
-
+@protocol SwiftVisionController <NSObject>
+@required
+- (void)finishedLoading;
+- (void)setImmersiveSpace:(bool)immersive;
+- (void)presentViewController:(UIViewController *)viewControllerToPresent;
 @end
 
-@interface GodotView : UIView
+@interface ViewController : NSObject
 
-@property(assign, nonatomic) id<GodotViewRendererProtocol> renderer;
-@property(assign, nonatomic) id<GodotViewDelegate> delegate;
+@property(nonatomic, readonly, strong) GodotView *godotView;
+@property(nonatomic, readonly, strong) GodotKeyboardInputView *keyboardView;
+@property(nonatomic, readwrite) id<SwiftVisionController> swiftController;
 
-@property(assign, readonly, nonatomic) BOOL isActive;
-
-@property(assign, nonatomic) BOOL useCADisplayLink;
-@property(strong, readonly, nonatomic) CALayer<DisplayLayer> *renderingLayer;
-@property(assign, readonly, nonatomic) BOOL canRender;
-
-@property(assign, nonatomic) NSTimeInterval renderingInterval;
-
-- (CALayer<DisplayLayer> *)initializeRenderingForDriver:(NSString *)driverName;
-- (void)stopRendering;
-- (void)startRendering;
-- (CGSize)screen_get_size:(int)p_screen;
-- (CGRect)get_display_safe_area;
-
+- (void)loadView;
+- (void)presentViewController:(UIViewController *)viewControllerToPresent animated:(BOOL)flag completion:(void (^)(void))completion;
+- (void)viewDidAppear;
+- (void)runLoop;
+- (BOOL)setup:(cp_layer_renderer_t)renderer;
 @end
-
-#endif // !VISIONOS
+#endif
