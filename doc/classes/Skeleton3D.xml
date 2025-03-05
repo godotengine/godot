@@ -20,6 +20,14 @@
 				[b]Note:[/b] Bone names should be unique, non empty, and cannot include the [code]:[/code] and [code]/[/code] characters.
 			</description>
 		</method>
+		<method name="advance">
+			<return type="void" />
+			<param index="0" name="delta" type="float" />
+			<description>
+				Manually advance the child [SkeletonModifier3D]s by the specified time (in seconds).
+				[b]Note:[/b] The [param delta] is temporarily accumulated in the [Skeleton3D], and the deferred process uses the accumulated value to process the modification.
+			</description>
+		</method>
 		<method name="clear_bones">
 			<return type="void" />
 			<description>
@@ -419,6 +427,9 @@
 		</constant>
 		<constant name="MODIFIER_CALLBACK_MODE_PROCESS_IDLE" value="1" enum="ModifierCallbackModeProcess">
 			Set a flag to process modification during process frames (see [constant Node.NOTIFICATION_INTERNAL_PROCESS]).
+		</constant>
+		<constant name="MODIFIER_CALLBACK_MODE_PROCESS_MANUAL" value="2" enum="ModifierCallbackModeProcess">
+			Do not process modification. Use [method advance] to process the modification manually.
 		</constant>
 	</constants>
 </class>
