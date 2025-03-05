@@ -1127,6 +1127,13 @@ void ItemList::_notification(int p_what) {
 
 			draw_style_box(theme_cache.panel_style, Rect2(Point2(), size));
 
+			if (has_focus()) {
+				RenderingServer::get_singleton()->canvas_item_add_clip_ignore(get_canvas_item(), true);
+				size.x -= (scroll_bar_h->get_max() - scroll_bar_h->get_page());
+				draw_style_box(theme_cache.focus_style, Rect2(Point2(), size));
+				RenderingServer::get_singleton()->canvas_item_add_clip_ignore(get_canvas_item(), false);
+			}
+
 			Ref<StyleBox> sbsel;
 			Ref<StyleBox> cursor;
 
@@ -1464,13 +1471,6 @@ void ItemList::_notification(int p_what) {
 				}
 
 				draw_style_box(cursor, cursor_rcache);
-			}
-
-			if (has_focus()) {
-				RenderingServer::get_singleton()->canvas_item_add_clip_ignore(get_canvas_item(), true);
-				size.x -= (scroll_bar_h->get_max() - scroll_bar_h->get_page());
-				draw_style_box(theme_cache.focus_style, Rect2(Point2(), size));
-				RenderingServer::get_singleton()->canvas_item_add_clip_ignore(get_canvas_item(), false);
 			}
 		} break;
 	}
