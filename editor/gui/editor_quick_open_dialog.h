@@ -143,6 +143,7 @@ private:
 	Button *display_mode_toggle = nullptr;
 	CheckButton *include_addons_toggle = nullptr;
 	CheckButton *fuzzy_search_toggle = nullptr;
+	CheckButton *history_file_mode_toggle = nullptr;
 
 	OAHashMap<StringName, Ref<Texture2D>> file_type_icons;
 
@@ -170,6 +171,7 @@ private:
 	void _toggle_display_mode();
 	void _toggle_include_addons(bool p_pressed);
 	void _toggle_fuzzy_search(bool p_pressed);
+	void _toggle_history_file_mode(bool p_pressed);
 	void _menu_option(int p_option);
 
 	String _get_cache_file_path() const;

@@ -272,6 +272,13 @@ QuickOpenResultContainer::QuickOpenResultContainer() {
 		include_addons_toggle->connect(SceneStringName(toggled), callable_mp(this, &QuickOpenResultContainer::_toggle_include_addons));
 		bottom_bar->add_child(include_addons_toggle);
 
+		history_file_mode_toggle = memnew(CheckButton);
+		style_button(history_file_mode_toggle);
+		history_file_mode_toggle->set_text(TTR("Historical file mode"));
+		history_file_mode_toggle->set_tooltip_text(TTR("Enable the historical file mode"));
+		history_file_mode_toggle->connect(SceneStringName(toggled), callable_mp(this, &QuickOpenResultContainer::_toggle_history_file_mode));
+		bottom_bar->add_child(history_file_mode_toggle);
+
 		VSeparator *vsep = memnew(VSeparator);
 		vsep->set_v_size_flags(Control::SIZE_SHRINK_CENTER);
 		vsep->set_custom_minimum_size(Size2i(0, 14 * EDSCALE));
@@ -464,7 +471,8 @@ void QuickOpenResultContainer::update_results() {
 }
 
 void QuickOpenResultContainer::_use_default_candidates() {
-	if (filepaths.size() <= SHOW_ALL_FILES_THRESHOLD) {
+	bool history_file_mode = EDITOR_GET("filesystem/quick_open_dialog/enable_history_file_mode");
+	if (filepaths.size() <= SHOW_ALL_FILES_THRESHOLD and history_file_mode != true) {
 		candidates.resize(filepaths.size());
 		QuickOpenResultCandidate *candidates_write = candidates.ptrw();
 		for (const String &filepath : filepaths) {
@@ -656,6 +664,11 @@ void QuickOpenResultContainer::_item_input(const Ref<InputEvent> &p_ev, int p_in
 
 void QuickOpenResultContainer::_toggle_fuzzy_search(bool p_pressed) {
 	EditorSettings::get_singleton()->set("filesystem/quick_open_dialog/enable_fuzzy_matching", p_pressed);
+	update_results();
+}
+
+void QuickOpenResultContainer::_toggle_history_file_mode(bool p_pressed) {
+	EditorSettings::get_singleton()->set("filesystem/quick_open_dialog/enable_history_file_mode", p_pressed);
 	update_results();
 }
 
