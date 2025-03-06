@@ -797,12 +797,22 @@ public:
 
 	template <typename T>
 	static T *cast_to(Object *p_object) {
-		return p_object ? dynamic_cast<T *>(p_object) : nullptr;
+		// Optimize final classes with an equality check; this does not seem to be performed by the compiler automatically.
+		if constexpr (std::is_final_v<T>) {
+			return (p_object && typeid(*p_object) == typeid(T)) ? static_cast<T *>(p_object) : nullptr;
+		} else {
+			return dynamic_cast<T *>(p_object);
+		}
 	}
 
 	template <typename T>
 	static const T *cast_to(const Object *p_object) {
-		return p_object ? dynamic_cast<const T *>(p_object) : nullptr;
+		// Optimize final classes with an equality check; this does not seem to be performed by the compiler automatically.
+		if constexpr (std::is_final_v<T>) {
+			return (p_object && typeid(*p_object) == typeid(T)) ? static_cast<const T *>(p_object) : nullptr;
+		} else {
+			return dynamic_cast<const T *>(p_object);
+		}
 	}
 
 	enum {
