@@ -65,7 +65,7 @@ void EditorFolding::_set_unfolds(Object *p_object, const Vector<String> &p_unfol
 	const String *r = p_unfolds.ptr();
 	p_object->editor_clear_section_folding();
 	for (int i = 0; i < uc; i++) {
-		p_object->editor_set_section_unfold(r[i], true);
+		p_object->editor_set_section_unfold(r[i], true, true);
 	}
 }
 
