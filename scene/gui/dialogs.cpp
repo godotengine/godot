@@ -443,6 +443,8 @@ void AcceptDialog::_bind_methods() {
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, AcceptDialog, buttons_separation);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, AcceptDialog, buttons_min_width);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, AcceptDialog, buttons_min_height);
+
+	ADD_CLASS_DEPENDENCY("Button");
 }
 
 void AcceptDialog::_validate_property(PropertyInfo &p_property) const {
@@ -510,6 +512,8 @@ void ConfirmationDialog::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_cancel_button_text"), &ConfirmationDialog::get_cancel_button_text);
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "cancel_button_text"), "set_cancel_button_text", "get_cancel_button_text");
+
+	ADD_CLASS_DEPENDENCY("Button");
 }
 
 Button *ConfirmationDialog::get_cancel_button() {

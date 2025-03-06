@@ -862,6 +862,19 @@ String GDExtensionResourceLoader::get_resource_type(const String &p_path) const 
 }
 
 #ifdef TOOLS_ENABLED
+void GDExtensionResourceLoader::get_classes_used(const String &p_path, HashSet<StringName> *r_classes) {
+	Ref<GDExtension> gdext = ResourceLoader::load(p_path);
+	if (gdext.is_null()) {
+		return;
+	}
+
+	for (const StringName class_name : gdext->get_classes_used()) {
+		if (ClassDB::class_exists(class_name)) {
+			r_classes->insert(class_name);
+		}
+	}
+}
+
 bool GDExtension::has_library_changed() const {
 	return loader->has_library_changed();
 }

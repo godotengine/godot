@@ -41,13 +41,24 @@ class EditorBuildProfile : public RefCounted {
 public:
 	enum BuildOption {
 		BUILD_OPTION_3D,
-		BUILD_OPTION_PHYSICS_2D,
-		BUILD_OPTION_PHYSICS_3D,
-		BUILD_OPTION_NAVIGATION,
+		BUILD_OPTION_NAVIGATION_2D,
+		BUILD_OPTION_NAVIGATION_3D,
 		BUILD_OPTION_XR,
+		BUILD_OPTION_OPENXR,
+		BUILD_OPTION_WAYLAND,
+		BUILD_OPTION_X11,
 		BUILD_OPTION_RENDERING_DEVICE,
-		BUILD_OPTION_OPENGL,
+		BUILD_OPTION_FORWARD_RENDERER,
+		BUILD_OPTION_MOBILE_RENDERER,
 		BUILD_OPTION_VULKAN,
+		BUILD_OPTION_D3D12,
+		BUILD_OPTION_METAL,
+		BUILD_OPTION_OPENGL,
+		BUILD_OPTION_PHYSICS_2D,
+		BUILD_OPTION_PHYSICS_GODOT_2D,
+		BUILD_OPTION_PHYSICS_3D,
+		BUILD_OPTION_PHYSICS_GODOT_3D,
+		BUILD_OPTION_PHYSICS_JOLT,
 		BUILD_OPTION_TEXT_SERVER_FALLBACK,
 		BUILD_OPTION_TEXT_SERVER_ADVANCED,
 		BUILD_OPTION_DYNAMIC_FONTS,
@@ -59,6 +70,8 @@ public:
 
 	enum BuildOptionCategory {
 		BUILD_OPTION_CATEGORY_GENERAL,
+		BUILD_OPTION_CATEGORY_GRAPHICS,
+		BUILD_OPTION_CATEGORY_PHYSICS,
 		BUILD_OPTION_CATEGORY_TEXT_SERVER,
 		BUILD_OPTION_CATEGORY_MAX,
 	};
@@ -74,7 +87,11 @@ private:
 	static const char *build_option_identifiers[BUILD_OPTION_MAX];
 	static const bool build_option_disabled_by_default[BUILD_OPTION_MAX];
 	static const bool build_option_disable_values[BUILD_OPTION_MAX];
+	static const bool build_option_explicit_use[BUILD_OPTION_MAX];
 	static const BuildOptionCategory build_option_category[BUILD_OPTION_MAX];
+	static const HashMap<BuildOption, LocalVector<BuildOption>> build_option_dependencies;
+	static HashMap<BuildOption, HashMap<String, LocalVector<Variant>>> build_option_settings;
+	static const HashMap<BuildOption, LocalVector<String>> build_option_classes;
 
 	String _get_build_option_name(BuildOption p_build_option) { return get_build_option_name(p_build_option); }
 
@@ -91,6 +108,8 @@ public:
 	void set_disable_build_option(BuildOption p_build_option, bool p_disable);
 	bool is_build_option_disabled(BuildOption p_build_option) const;
 
+	void reset_build_options();
+
 	void set_force_detect_classes(const String &p_classes);
 	String get_force_detect_classes() const;
 
@@ -101,8 +120,13 @@ public:
 
 	static String get_build_option_name(BuildOption p_build_option);
 	static String get_build_option_description(BuildOption p_build_option);
+	static String get_build_option_identifier(BuildOption p_build_option);
 	static bool get_build_option_disable_value(BuildOption p_build_option);
+	static bool get_build_option_explicit_use(BuildOption p_build_option);
 	static BuildOptionCategory get_build_option_category(BuildOption p_build_option);
+	static LocalVector<BuildOption> get_build_option_dependencies(BuildOption p_build_option);
+	static HashMap<String, LocalVector<Variant>> get_build_option_settings(BuildOption p_build_option);
+	static LocalVector<String> get_build_option_classes(BuildOption p_build_option);
 
 	static String get_build_option_category_name(BuildOptionCategory p_build_option_category);
 
@@ -160,7 +184,10 @@ class EditorBuildProfileManager : public AcceptDialog {
 	void _class_list_item_selected();
 	void _class_list_item_edited();
 	void _class_list_item_collapsed(Object *p_item);
-	void _detect_classes();
+
+	bool project_scan_canceled = false;
+
+	void _detect_from_project();
 
 	void _force_detect_classes_changed(const String &p_text);
 
@@ -168,6 +195,7 @@ class EditorBuildProfileManager : public AcceptDialog {
 		uint32_t timestamp = 0;
 		String md5;
 		Vector<String> classes;
+		Vector<String> build_deps;
 	};
 
 	void _find_files(EditorFileSystemDirectory *p_dir, const HashMap<String, DetectedFile> &p_cache, HashMap<String, DetectedFile> &r_detected);

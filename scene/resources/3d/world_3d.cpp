@@ -177,18 +177,26 @@ World3D::World3D() {
 
 World3D::~World3D() {
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
+
 #ifndef PHYSICS_3D_DISABLED
 	ERR_FAIL_NULL(PhysicsServer3D::get_singleton());
 #endif // PHYSICS_3D_DISABLED
+
+#ifndef NAVIGATION_3D_DISABLED
 	ERR_FAIL_NULL(NavigationServer3D::get_singleton());
+#endif // NAVIGATION_3D_DISABLED
 
 	RenderingServer::get_singleton()->free(scenario);
+
 #ifndef PHYSICS_3D_DISABLED
 	if (space.is_valid()) {
 		PhysicsServer3D::get_singleton()->free(space);
 	}
 #endif // PHYSICS_3D_DISABLED
+
+#ifndef NAVIGATION_3D_DISABLED
 	if (navigation_map.is_valid()) {
 		NavigationServer3D::get_singleton()->free(navigation_map);
 	}
+#endif // NAVIGATION_3D_DISABLED
 }
