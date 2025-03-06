@@ -6218,6 +6218,8 @@ uint64_t RenderingDeviceDriverD3D12::limit_get(Limit p_limit) {
 			return D3D12_CS_THREAD_GROUP_MAX_Y;
 		case LIMIT_MAX_COMPUTE_WORKGROUP_SIZE_Z:
 			return D3D12_CS_THREAD_GROUP_MAX_Z;
+		case LIMIT_MAX_COMPUTE_SHARED_MEMORY_SIZE:
+			return D3D12_CS_TGSM_REGISTER_COUNT * sizeof(float);
 		case LIMIT_SUBGROUP_SIZE:
 		// Note in min/max. Shader model 6.6 supports it (see https://microsoft.github.io/DirectX-Specs/d3d/HLSL_SM_6_6_WaveSize.html),
 		// but at this time I don't know the implications on the transpilation to DXIL, etc.

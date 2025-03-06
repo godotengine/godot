@@ -419,7 +419,7 @@ private:
 	bool script_distraction_free = false;
 
 	bool changing_scene = false;
-	bool cmdline_export_mode = false;
+	bool cmdline_mode = false;
 	bool convert_old = false;
 	bool immediate_dialog_confirmed = false;
 	bool opening_prev = false;

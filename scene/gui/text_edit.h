@@ -695,6 +695,8 @@ protected:
 	void _unhide_all_lines();
 	virtual void _unhide_carets();
 
+	int _get_wrapped_indent_level(int p_line, int &r_first_wrap) const;
+
 	// Symbol lookup.
 	String lookup_symbol_word;
 	void _set_symbol_lookup_word(const String &p_symbol);

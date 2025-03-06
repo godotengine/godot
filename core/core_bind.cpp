@@ -657,8 +657,8 @@ void OS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_system_font_path_for_text", "font_name", "text", "locale", "script", "weight", "stretch", "italic"), &OS::get_system_font_path_for_text, DEFVAL(String()), DEFVAL(String()), DEFVAL(400), DEFVAL(100), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("get_executable_path"), &OS::get_executable_path);
 
-	ClassDB::bind_method(D_METHOD("read_string_from_stdin", "buffer_size"), &OS::read_string_from_stdin);
-	ClassDB::bind_method(D_METHOD("read_buffer_from_stdin", "buffer_size"), &OS::read_buffer_from_stdin);
+	ClassDB::bind_method(D_METHOD("read_string_from_stdin", "buffer_size"), &OS::read_string_from_stdin, DEFVAL(1024));
+	ClassDB::bind_method(D_METHOD("read_buffer_from_stdin", "buffer_size"), &OS::read_buffer_from_stdin, DEFVAL(1024));
 	ClassDB::bind_method(D_METHOD("get_stdin_type"), &OS::get_stdin_type);
 	ClassDB::bind_method(D_METHOD("get_stdout_type"), &OS::get_stdout_type);
 	ClassDB::bind_method(D_METHOD("get_stderr_type"), &OS::get_stderr_type);
