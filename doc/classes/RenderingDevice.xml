@@ -1871,7 +1871,35 @@
 		<constant name="DATA_FORMAT_G16_B16_R16_3PLANE_444_UNORM" value="217" enum="DataFormat">
 			16-bit-per-channel unsigned floating-point green/blue/red channel data with normalized value, plus 6 unused bits after each channel. Stored across 3 separate planes (green + blue + red). Values are in the [code][0.0, 1.0][/code] range.
 		</constant>
-		<constant name="DATA_FORMAT_MAX" value="218" enum="DataFormat">
+		<constant name="DATA_FORMAT_ASTC_4x4_SFLOAT_BLOCK" value="218" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_ASTC_5x4_SFLOAT_BLOCK" value="219" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_ASTC_5x5_SFLOAT_BLOCK" value="220" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_ASTC_6x5_SFLOAT_BLOCK" value="221" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_ASTC_6x6_SFLOAT_BLOCK" value="222" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_ASTC_8x5_SFLOAT_BLOCK" value="223" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_ASTC_8x6_SFLOAT_BLOCK" value="224" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_ASTC_8x8_SFLOAT_BLOCK" value="225" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_ASTC_10x5_SFLOAT_BLOCK" value="226" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_ASTC_10x6_SFLOAT_BLOCK" value="227" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_ASTC_10x8_SFLOAT_BLOCK" value="228" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_ASTC_10x10_SFLOAT_BLOCK" value="229" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_ASTC_12x10_SFLOAT_BLOCK" value="230" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_ASTC_12x12_SFLOAT_BLOCK" value="231" enum="DataFormat">
+		</constant>
+		<constant name="DATA_FORMAT_MAX" value="232" enum="DataFormat">
 			Represents the size of the [enum DataFormat] enum.
 		</constant>
 		<constant name="BARRIER_MASK_VERTEX" value="1" enum="BarrierMask" is_bitfield="true">

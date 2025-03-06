@@ -276,6 +276,20 @@ static const VkFormat RD_TO_VK_FORMAT[RDD::DATA_FORMAT_MAX] = {
 	VK_FORMAT_G16_B16_R16_3PLANE_422_UNORM,
 	VK_FORMAT_G16_B16R16_2PLANE_422_UNORM,
 	VK_FORMAT_G16_B16_R16_3PLANE_444_UNORM,
+	VK_FORMAT_ASTC_4x4_SFLOAT_BLOCK,
+	VK_FORMAT_ASTC_5x4_SFLOAT_BLOCK,
+	VK_FORMAT_ASTC_5x5_SFLOAT_BLOCK,
+	VK_FORMAT_ASTC_6x5_SFLOAT_BLOCK,
+	VK_FORMAT_ASTC_6x6_SFLOAT_BLOCK,
+	VK_FORMAT_ASTC_8x5_SFLOAT_BLOCK,
+	VK_FORMAT_ASTC_8x6_SFLOAT_BLOCK,
+	VK_FORMAT_ASTC_8x8_SFLOAT_BLOCK,
+	VK_FORMAT_ASTC_10x5_SFLOAT_BLOCK,
+	VK_FORMAT_ASTC_10x6_SFLOAT_BLOCK,
+	VK_FORMAT_ASTC_10x8_SFLOAT_BLOCK,
+	VK_FORMAT_ASTC_10x10_SFLOAT_BLOCK,
+	VK_FORMAT_ASTC_12x10_SFLOAT_BLOCK,
+	VK_FORMAT_ASTC_12x12_SFLOAT_BLOCK,
 };
 
 static VkImageLayout RD_TO_VK_LAYOUT[RDD::TEXTURE_LAYOUT_MAX] = {
@@ -514,6 +528,7 @@ Error RenderingDeviceDriverVulkan::_initialize_device_extensions() {
 	_register_requested_device_extension(VK_EXT_SUBGROUP_SIZE_CONTROL_EXTENSION_NAME, false);
 	_register_requested_device_extension(VK_EXT_ASTC_DECODE_MODE_EXTENSION_NAME, false);
 	_register_requested_device_extension(VK_KHR_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME, false);
+	_register_requested_device_extension(VK_EXT_TEXTURE_COMPRESSION_ASTC_HDR_EXTENSION_NAME, false);
 
 	if (Engine::get_singleton()->is_generate_spirv_debug_info_enabled()) {
 		_register_requested_device_extension(VK_KHR_SHADER_NON_SEMANTIC_INFO_EXTENSION_NAME, true);
@@ -2140,6 +2155,10 @@ void RenderingDeviceDriverVulkan::texture_unmap(TextureID p_texture) {
 }
 
 BitField<RDD::TextureUsageBits> RenderingDeviceDriverVulkan::texture_get_usages_supported_by_format(DataFormat p_format, bool p_cpu_readable) {
+	if (p_format >= DATA_FORMAT_ASTC_4x4_SFLOAT_BLOCK && p_format <= DATA_FORMAT_ASTC_12x12_SFLOAT_BLOCK && !enabled_device_extension_names.has(VK_EXT_TEXTURE_COMPRESSION_ASTC_HDR_EXTENSION_NAME)) {
+		// Formats that were introduced later with extensions must not reach vkGetPhysicalDeviceFormatProperties if the extension isn't available. This means it's not supported.
+		return 0;
+	}
 	VkFormatProperties properties = {};
 	vkGetPhysicalDeviceFormatProperties(physical_device, RD_TO_VK_FORMAT[p_format], &properties);
 
