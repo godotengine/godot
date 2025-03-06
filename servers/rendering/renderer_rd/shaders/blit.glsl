@@ -4,7 +4,7 @@
 
 #VERSION_DEFINES
 
-layout(push_constant, std140) uniform Pos {
+layout(set = 1, binding = 0, std140) uniform Pos {
 	vec4 src_rect;
 	vec4 dst_rect;
 
@@ -44,7 +44,7 @@ void main() {
 
 #VERSION_DEFINES
 
-layout(push_constant, std140) uniform Pos {
+layout(set = 1, binding = 0, std140) uniform Pos {
 	vec4 src_rect;
 	vec4 dst_rect;
 

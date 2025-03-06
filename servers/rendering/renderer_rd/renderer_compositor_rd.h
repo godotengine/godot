@@ -31,6 +31,7 @@
 #pragma once
 
 #include "core/io/image.h"
+#include "servers/rendering/push_constants_emu.h"
 #include "servers/rendering/renderer_compositor.h"
 #include "servers/rendering/renderer_rd/environment/fog.h"
 #include "servers/rendering/renderer_rd/framebuffer_cache_rd.h"
@@ -81,18 +82,19 @@ protected:
 
 		float upscale;
 		float aspect_ratio;
+
 		uint32_t layer;
 		uint32_t convert_to_srgb;
 	};
 
 	struct Blit {
-		BlitPushConstant push_constant;
 		BlitShaderRD shader;
 		RID shader_version;
 		RID pipelines[BLIT_MODE_MAX];
 		RID index_buffer;
 		RID array;
 		RID sampler;
+		PushConstantsEmu<BlitPushConstant, 1u, 2u> push_constant = { "RendererCompositorRD::blit" };
 	} blit;
 
 	HashMap<RID, RID> render_target_descriptors;

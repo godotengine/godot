@@ -135,6 +135,8 @@ class RenderingDeviceDriverMetal;
 class MDUniformSet;
 class MDShader;
 
+struct MetalBufferDynamicInfo;
+
 #pragma mark - Resource Factory
 
 struct ClearAttKey {
@@ -366,6 +368,7 @@ public:
 		BitField<DirtyFlag> dirty = DIRTY_NONE;
 
 		LocalVector<MDUniformSet *> uniform_sets;
+		uint32_t dynamic_offsets = 0;
 		// Bit mask of the uniform sets that are dirty, to prevent redundant binding.
 		uint64_t uniform_set_mask = 0;
 
@@ -499,8 +502,7 @@ public:
 
 #pragma mark - Render Commands
 
-	void render_bind_uniform_set(RDD::UniformSetID p_uniform_set, RDD::ShaderID p_shader, uint32_t p_set_index);
-	void render_bind_uniform_sets(VectorView<RDD::UniformSetID> p_uniform_sets, RDD::ShaderID p_shader, uint32_t p_first_set_index, uint32_t p_set_count);
+	void render_bind_uniform_sets(VectorView<RDD::UniformSetID> p_uniform_sets, RDD::ShaderID p_shader, uint32_t p_first_set_index, uint32_t p_set_count, uint32_t p_dynamic_offsets);
 	void render_clear_attachments(VectorView<RDD::AttachmentClear> p_attachment_clears, VectorView<Rect2i> p_rects);
 	void render_set_viewport(VectorView<Rect2i> p_viewports);
 	void render_set_scissor(VectorView<Rect2i> p_scissors);
@@ -533,8 +535,7 @@ public:
 
 #pragma mark - Compute Commands
 
-	void compute_bind_uniform_set(RDD::UniformSetID p_uniform_set, RDD::ShaderID p_shader, uint32_t p_set_index);
-	void compute_bind_uniform_sets(VectorView<RDD::UniformSetID> p_uniform_sets, RDD::ShaderID p_shader, uint32_t p_first_set_index, uint32_t p_set_count);
+	void compute_bind_uniform_sets(VectorView<RDD::UniformSetID> p_uniform_sets, RDD::ShaderID p_shader, uint32_t p_first_set_index, uint32_t p_set_count, uint32_t p_dynamic_offsets);
 	void compute_dispatch(uint32_t p_x_groups, uint32_t p_y_groups, uint32_t p_z_groups);
 	void compute_dispatch_indirect(RDD::BufferID p_indirect_buffer, uint64_t p_offset);
 
@@ -587,6 +588,7 @@ struct API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0)) UniformInfo {
 
 struct API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0)) UniformSet {
 	LocalVector<UniformInfo> uniforms;
+	LocalVector<uint32_t> dynamic_uniforms;
 	uint32_t buffer_size = 0;
 	HashMap<RDC::ShaderStage, uint32_t> offsets;
 	HashMap<RDC::ShaderStage, id<MTLArgumentEncoder>> encoders;
@@ -655,10 +657,62 @@ struct ShaderCacheEntry {
 	~ShaderCacheEntry() = default;
 };
 
+/// Godot limits the number of dynamic buffers to 8.
+///
+/// This is a minimum guarantee for Vulkan.
+constexpr uint32_t MAX_DYNAMIC_BUFFERS = 8;
+
+/// Maximum number of queued frames.
+///
+/// See setting: rendering/rendering_device/vsync/frame_queue_size
+constexpr uint32_t MAX_FRAME_COUNT = 4;
+
+class API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0)) DynamicOffsetLayout {
+	struct Data {
+		uint8_t offset : 4;
+		uint8_t count : 4;
+	};
+
+	union {
+		Data data[MAX_DYNAMIC_BUFFERS];
+		uint64_t _val = 0;
+	};
+
+public:
+	_FORCE_INLINE_ bool is_empty() const { return _val == 0; }
+
+	_FORCE_INLINE_ uint32_t get_count(uint32_t p_set_index) const {
+		return data[p_set_index].count;
+	}
+
+	_FORCE_INLINE_ uint32_t get_offset(uint32_t p_set_index) const {
+		return data[p_set_index].offset;
+	}
+
+	_FORCE_INLINE_ void set_offset_count(uint32_t p_set_index, uint8_t p_offset, uint8_t p_count) {
+		data[p_set_index].offset = p_offset;
+		data[p_set_index].count = p_count;
+	}
+
+	_FORCE_INLINE_ uint32_t get_offset_index_shift(uint32_t p_set_index, uint32_t p_dynamic_index = 0) const {
+		return (data[p_set_index].offset + p_dynamic_index) * 4u;
+	}
+};
+
+class API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0)) DynamicOffsets {
+	uint32_t data;
+
+public:
+	_FORCE_INLINE_ uint32_t get_frame_index(const DynamicOffsetLayout &p_layout) const {
+		return data;
+	}
+};
+
 class API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0)) MDShader {
 public:
 	CharString name;
 	Vector<UniformSet> sets;
+	DynamicOffsetLayout dynamic_offset_layout;
 	bool uses_argument_buffers = true;
 
 	virtual void encode_push_constant_data(VectorView<uint32_t> p_data, MDCommandBuffer *p_cb) = 0;
@@ -732,30 +786,49 @@ struct HashMapComparatorDefault<RDD::ShaderID> {
 struct BoundUniformSet {
 	id<MTLBuffer> buffer;
 	ResourceUsageMap usage_to_resources;
+	/// Size of the per-frame buffer, which is 0 when there are no dynamic uniforms.
+	uint32_t frame_size = 0;
 
 	/// Perform a 2-way merge each key of `ResourceVector` resources from this set into the
 	/// destination set.
 	///
 	/// Assumes the vectors of resources are sorted.
 	void merge_into(ResourceUsageMap &p_dst) const;
+
+	/// Returns true if this bound uniform set contains dynamic uniforms.
+	_FORCE_INLINE_ bool is_dynamic() const { return frame_size > 0; }
+
+	/// Calculate the offset in the Metal buffer for the current frame.
+	_FORCE_INLINE_ uint32_t frame_offset(uint32_t p_frame_index) const { return p_frame_index * frame_size; }
+
+	/// Calculate the offset in the buffer for the given frame index and base offset.
+	_FORCE_INLINE_ uint32_t make_offset(uint32_t p_frame_index, uint32_t p_base_offset) const {
+		return frame_offset(p_frame_index) + p_base_offset;
+	}
+
+	BoundUniformSet() = default;
+	BoundUniformSet(id<MTLBuffer> p_buffer, ResourceUsageMap &&p_usage_to_resources, uint32_t p_frame_size) :
+			buffer(p_buffer), usage_to_resources(std::move(p_usage_to_resources)), frame_size(p_frame_size) {}
 };
 
 class API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0)) MDUniformSet {
 private:
-	void bind_uniforms_argument_buffers(MDShader *p_shader, MDCommandBuffer::RenderState &p_state, uint32_t p_set_index);
-	void bind_uniforms_direct(MDShader *p_shader, MDCommandBuffer::RenderState &p_state, uint32_t p_set_index);
-	void bind_uniforms_argument_buffers(MDShader *p_shader, MDCommandBuffer::ComputeState &p_state, uint32_t p_set_index);
-	void bind_uniforms_direct(MDShader *p_shader, MDCommandBuffer::ComputeState &p_state, uint32_t p_set_index);
+	void bind_uniforms_argument_buffers(MDShader *p_shader, MDCommandBuffer::RenderState &p_state, uint32_t p_set_index, uint32_t p_dynamic_offsets, uint32_t p_frame_idx, uint32_t p_frame_count);
+	void bind_uniforms_direct(MDShader *p_shader, MDCommandBuffer::RenderState &p_state, uint32_t p_set_index, uint32_t p_dynamic_offsets);
+	void bind_uniforms_argument_buffers(MDShader *p_shader, MDCommandBuffer::ComputeState &p_state, uint32_t p_set_index, uint32_t p_dynamic_offsets, uint32_t p_frame_idx, uint32_t p_frame_count);
+	void bind_uniforms_direct(MDShader *p_shader, MDCommandBuffer::ComputeState &p_state, uint32_t p_set_index, uint32_t p_dynamic_offsets);
+
+	void update_dynamic_uniforms(MDShader *p_shader, ResourceUsageMap &p_resource_usage, uint32_t p_set_index, BoundUniformSet &p_bound_set, uint32_t p_dynamic_offsets, uint32_t p_frame_idx);
 
 public:
-	uint32_t index;
+	uint32_t index = 0;
 	LocalVector<RDD::BoundUniform> uniforms;
 	HashMap<MDShader *, BoundUniformSet> bound_uniforms;
 
-	void bind_uniforms(MDShader *p_shader, MDCommandBuffer::RenderState &p_state, uint32_t p_set_index);
-	void bind_uniforms(MDShader *p_shader, MDCommandBuffer::ComputeState &p_state, uint32_t p_set_index);
+	void bind_uniforms(MDShader *p_shader, MDCommandBuffer::RenderState &p_state, uint32_t p_set_index, uint32_t p_dynamic_offsets, uint32_t p_frame_idx, uint32_t p_frame_count);
+	void bind_uniforms(MDShader *p_shader, MDCommandBuffer::ComputeState &p_state, uint32_t p_set_index, uint32_t p_dynamic_offsets, uint32_t p_frame_idx, uint32_t p_frame_count);
 
-	BoundUniformSet &bound_uniform_set(MDShader *p_shader, id<MTLDevice> p_device, ResourceUsageMap &p_resource_usage, uint32_t p_set_index);
+	BoundUniformSet &bound_uniform_set(MDShader *p_shader, id<MTLDevice> p_device, ResourceUsageMap &p_resource_usage, uint32_t p_set_index, uint32_t p_dynamic_offsets, uint32_t p_frame_idx, uint32_t p_frame_count);
 };
 
 class API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0)) MDPipeline {

@@ -120,6 +120,7 @@ void RenderingShaderContainer::set_from_shader_reflection(const String &p_shader
 	reflection_data.specialization_constants_count = p_reflection.specialization_constants.size();
 	reflection_data.is_compute = p_reflection.is_compute;
 	reflection_data.has_multiview = p_reflection.has_multiview;
+	reflection_data.has_dynamic_buffers = p_reflection.has_dynamic_buffers;
 	reflection_data.compute_local_size[0] = p_reflection.compute_local_size[0];
 	reflection_data.compute_local_size[1] = p_reflection.compute_local_size[1];
 	reflection_data.compute_local_size[2] = p_reflection.compute_local_size[2];
@@ -174,6 +175,7 @@ RenderingDeviceCommons::ShaderReflection RenderingShaderContainer::get_shader_re
 	shader_refl.fragment_output_mask = reflection_data.fragment_output_mask;
 	shader_refl.is_compute = reflection_data.is_compute;
 	shader_refl.has_multiview = reflection_data.has_multiview;
+	shader_refl.has_dynamic_buffers = reflection_data.has_dynamic_buffers;
 	shader_refl.compute_local_size[0] = reflection_data.compute_local_size[0];
 	shader_refl.compute_local_size[1] = reflection_data.compute_local_size[1];
 	shader_refl.compute_local_size[2] = reflection_data.compute_local_size[2];

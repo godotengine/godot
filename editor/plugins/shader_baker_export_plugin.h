@@ -49,6 +49,7 @@ protected:
 		String cache_path;
 		String shader_name;
 		Vector<String> stage_sources;
+		Vector<uint64_t> dynamic_buffers;
 		int64_t variant = 0;
 	};
 

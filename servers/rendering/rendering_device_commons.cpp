@@ -30,6 +30,7 @@
 
 #include "rendering_device_commons.h"
 
+#include "servers/rendering/renderer_rd/shader_rd.h"
 #include "thirdparty/spirv-reflect/spirv_reflect.h"
 
 /*****************/
@@ -979,6 +980,8 @@ Error RenderingDeviceCommons::reflect_spirv(VectorView<ShaderStageSPIRVData> p_s
 		ShaderStage stage = p_spirv[i].shader_stage;
 		ShaderStage stage_flag = (ShaderStage)(1 << p_spirv[i].shader_stage);
 
+		const Vector<uint64_t> &dynamic_buffers = p_spirv[i].dynamic_buffers;
+
 		if (p_spirv[i].shader_stage == SHADER_STAGE_COMPUTE) {
 			r_reflection.is_compute = true;
 			ERR_FAIL_COND_V_MSG(spirv_size != 1, FAILED,
@@ -1051,11 +1054,23 @@ Error RenderingDeviceCommons::reflect_spirv(VectorView<ShaderStageSPIRVData> p_s
 							may_be_writable = true;
 						} break;
 						case SPV_REFLECT_DESCRIPTOR_TYPE_UNIFORM_BUFFER: {
-							uniform.type = UNIFORM_TYPE_UNIFORM_BUFFER;
+							const uint64_t key = ShaderRD::DynamicBuffer::encode(binding.set, binding.binding);
+							if (dynamic_buffers.has(key)) {
+								uniform.type = UNIFORM_TYPE_UNIFORM_BUFFER_DYNAMIC;
+								r_reflection.has_dynamic_buffers = true;
+							} else {
+								uniform.type = UNIFORM_TYPE_UNIFORM_BUFFER;
+							}
 							need_block_size = true;
 						} break;
 						case SPV_REFLECT_DESCRIPTOR_TYPE_STORAGE_BUFFER: {
-							uniform.type = UNIFORM_TYPE_STORAGE_BUFFER;
+							const uint64_t key = ShaderRD::DynamicBuffer::encode(binding.set, binding.binding);
+							if (dynamic_buffers.has(key)) {
+								uniform.type = UNIFORM_TYPE_STORAGE_BUFFER_DYNAMIC;
+								r_reflection.has_dynamic_buffers = true;
+							} else {
+								uniform.type = UNIFORM_TYPE_STORAGE_BUFFER;
+							}
 							need_block_size = true;
 							may_be_writable = true;
 						} break;

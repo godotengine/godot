@@ -6,7 +6,7 @@
 
 layout(location = 0) out vec2 uv_interp;
 
-layout(push_constant, std430) uniform Params {
+layout(set = 0, binding = 0, std140) uniform Params {
 	mat3 orientation;
 	vec4 projection; // only applicable if not multiview
 	vec3 position;
@@ -38,7 +38,7 @@ void main() {
 
 layout(location = 0) in vec2 uv_interp;
 
-layout(push_constant, std430) uniform Params {
+layout(set = 0, binding = 0, std140) uniform Params {
 	mat3 orientation;
 	vec4 projection; // only applicable if not multiview
 	vec3 position;

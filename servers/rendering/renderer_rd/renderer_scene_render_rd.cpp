@@ -1651,9 +1651,7 @@ RendererSceneRenderRD::~RendererSceneRenderRD() {
 	}
 #endif
 
-	if (sky.sky_scene_state.uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(sky.sky_scene_state.uniform_set)) {
-		RD::get_singleton()->free(sky.sky_scene_state.uniform_set);
-	}
+	sky.sky_scene_state.push_constant.uninit();
 
 	if (is_dynamic_gi_supported()) {
 		gi.free();

@@ -82,7 +82,33 @@ const MetalDeviceProfile *MetalDeviceProfile::get_profile(MetalDeviceProfile::Pl
 		res.features.mslVersionMinor = 2;
 	}
 
+	res.update_options();
+
 	return &profiles.insert(key, res)->value;
+}
+
+void MetalDeviceProfile::update_options() {
+	options.argument_buffers_tier = features.argument_buffers_tier;
+
+	if (OS::get_singleton()->has_environment(U"GODOT_MTL_ARGUMENT_BUFFERS_TIER")) {
+		uint64_t tier = OS::get_singleton()->get_environment(U"GODOT_MTL_ARGUMENT_BUFFERS_TIER").to_int();
+		switch (tier) {
+			case 1:
+				// All devices support tier 1 argument buffers.
+				options.argument_buffers_tier = ArgumentBuffersTier::Tier1;
+				break;
+			case 2:
+				if (features.argument_buffers_tier >= ArgumentBuffersTier::Tier2) {
+					options.argument_buffers_tier = ArgumentBuffersTier::Tier2;
+				} else {
+					WARN_PRINT("Current device does not support tier 2 argument buffers, leaving as default.");
+				}
+				break;
+			default:
+				WARN_PRINT(vformat("Invalid value for GODOT_MTL_ARGUMENT_BUFFER_TIER: %d. Falling back to device default.", tier));
+				break;
+		}
+	}
 }
 
 Error RenderingShaderContainerMetal::compile_metal_source(const char *p_source, const StageData &p_stage_data, Vector<uint8_t> &r_binary_data) {
@@ -208,12 +234,9 @@ bool RenderingShaderContainerMetal::_set_code_from_spirv(const Vector<RenderingD
 		msl_options.ios_support_base_vertex_instance = true;
 	}
 
-	bool disable_argument_buffers = false;
-	if (String v = OS::get_singleton()->get_environment(U"GODOT_DISABLE_ARGUMENT_BUFFERS"); v == U"1") {
-		disable_argument_buffers = true;
-	}
+	bool argument_buffers_allowed = get_shader_reflection().has_dynamic_buffers == false;
 
-	if (device_profile->features.argument_buffers_tier >= MetalDeviceProfile::ArgumentBuffersTier::Tier2 && !disable_argument_buffers) {
+	if (device_profile->options.argument_buffers_tier >= MetalDeviceProfile::ArgumentBuffersTier::Tier2 && argument_buffers_allowed) {
 		msl_options.argument_buffers_tier = CompilerMSL::Options::ArgumentBuffersTier::Tier2;
 		msl_options.argument_buffers = true;
 		mtl_reflection_data.set_uses_argument_buffers(true);
