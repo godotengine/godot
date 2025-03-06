@@ -940,7 +940,7 @@ Size2 Label::get_minimum_size() const {
 	const Ref<Font> &font = (settings.is_valid() && settings->get_font().is_valid()) ? settings->get_font() : theme_cache.font;
 	int font_size = settings.is_valid() ? settings->get_font_size() : theme_cache.font_size;
 
-	min_size.height = MAX(min_size.height, font->get_height(font_size) + font->get_spacing(TextServer::SPACING_TOP) + font->get_spacing(TextServer::SPACING_BOTTOM));
+	min_size.height = MAX(min_size.height, font->get_height(font_size));
 
 	Size2 min_style = theme_cache.normal_style->get_minimum_size();
 	if (autowrap_mode != TextServer::AUTOWRAP_OFF) {
