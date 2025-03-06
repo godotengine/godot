@@ -761,7 +761,8 @@ void MDCommandBuffer::render_bind_vertex_buffers(uint32_t p_binding_count, const
 
 	// Reverse the buffers, as their bindings are assigned in descending order.
 	for (uint32_t i = 0; i < p_binding_count; i += 1) {
-		render.vertex_buffers[i] = rid::get(p_buffers[p_binding_count - i - 1]);
+		const RenderingDeviceDriverMetal::BufferInfo *buf_info = (const RenderingDeviceDriverMetal::BufferInfo *)p_buffers[p_binding_count - i - 1].id;
+		render.vertex_buffers[i] = buf_info->metal_buffer;
 		render.vertex_offsets[i] = p_offsets[p_binding_count - i - 1];
 	}
 
@@ -779,7 +780,9 @@ void MDCommandBuffer::render_bind_vertex_buffers(uint32_t p_binding_count, const
 void MDCommandBuffer::render_bind_index_buffer(RDD::BufferID p_buffer, RDD::IndexBufferFormat p_format, uint64_t p_offset) {
 	DEV_ASSERT(type == MDCommandBufferStateType::Render);
 
-	render.index_buffer = rid::get(p_buffer);
+	const RenderingDeviceDriverMetal::BufferInfo *buffer = (const RenderingDeviceDriverMetal::BufferInfo *)p_buffer.id;
+
+	render.index_buffer = buffer->metal_buffer;
 	render.index_type = p_format == RDD::IndexBufferFormat::INDEX_BUFFER_FORMAT_UINT16 ? MTLIndexTypeUInt16 : MTLIndexTypeUInt32;
 	render.index_offset = p_offset;
 }
@@ -822,7 +825,7 @@ void MDCommandBuffer::render_draw_indexed_indirect(RDD::BufferID p_indirect_buff
 
 	id<MTLRenderCommandEncoder> enc = render.encoder;
 
-	id<MTLBuffer> indirect_buffer = rid::get(p_indirect_buffer);
+	const RenderingDeviceDriverMetal::BufferInfo *indirect_buffer = (const RenderingDeviceDriverMetal::BufferInfo *)p_indirect_buffer.id;
 	NSUInteger indirect_offset = p_offset;
 
 	for (uint32_t i = 0; i < p_draw_count; i++) {
@@ -830,7 +833,7 @@ void MDCommandBuffer::render_draw_indexed_indirect(RDD::BufferID p_indirect_buff
 						   indexType:render.index_type
 						 indexBuffer:render.index_buffer
 				   indexBufferOffset:0
-					  indirectBuffer:indirect_buffer
+					  indirectBuffer:indirect_buffer->metal_buffer
 				indirectBufferOffset:indirect_offset];
 		indirect_offset += p_stride;
 	}
@@ -848,12 +851,12 @@ void MDCommandBuffer::render_draw_indirect(RDD::BufferID p_indirect_buffer, uint
 
 	id<MTLRenderCommandEncoder> enc = render.encoder;
 
-	id<MTLBuffer> indirect_buffer = rid::get(p_indirect_buffer);
+	const RenderingDeviceDriverMetal::BufferInfo *indirect_buffer = (const RenderingDeviceDriverMetal::BufferInfo *)p_indirect_buffer.id;
 	NSUInteger indirect_offset = p_offset;
 
 	for (uint32_t i = 0; i < p_draw_count; i++) {
 		[enc drawPrimitives:render.pipeline->raster_state.render_primitive
-					  indirectBuffer:indirect_buffer
+					  indirectBuffer:indirect_buffer->metal_buffer
 				indirectBufferOffset:indirect_offset];
 		indirect_offset += p_stride;
 	}
@@ -984,10 +987,10 @@ void MDCommandBuffer::compute_dispatch(uint32_t p_x_groups, uint32_t p_y_groups,
 void MDCommandBuffer::compute_dispatch_indirect(RDD::BufferID p_indirect_buffer, uint64_t p_offset) {
 	DEV_ASSERT(type == MDCommandBufferStateType::Compute);
 
-	id<MTLBuffer> indirectBuffer = rid::get(p_indirect_buffer);
+	const RenderingDeviceDriverMetal::BufferInfo *indirectBuffer = (const RenderingDeviceDriverMetal::BufferInfo *)p_indirect_buffer.id;
 
 	id<MTLComputeCommandEncoder> enc = compute.encoder;
-	[enc dispatchThreadgroupsWithIndirectBuffer:indirectBuffer indirectBufferOffset:p_offset threadsPerThreadgroup:compute.pipeline->compute_state.local];
+	[enc dispatchThreadgroupsWithIndirectBuffer:indirectBuffer->metal_buffer indirectBufferOffset:p_offset threadsPerThreadgroup:compute.pipeline->compute_state.local];
 }
 
 void MDCommandBuffer::_end_compute_dispatch() {
@@ -1211,20 +1214,23 @@ void MDUniformSet::bind_uniforms_direct(MDShader *p_shader, MDCommandBuffer::Ren
 				case RDD::UNIFORM_TYPE_IMAGE_BUFFER: {
 					CRASH_NOW_MSG("not implemented: UNIFORM_TYPE_IMAGE_BUFFER");
 				} break;
-				case RDD::UNIFORM_TYPE_UNIFORM_BUFFER: {
-					id<MTLBuffer> buffer = rid::get(uniform.ids[0]);
+				case RDD::UNIFORM_TYPE_UNIFORM_BUFFER:
+				case RDD::UNIFORM_TYPE_STORAGE_BUFFER: {
+					// Note that uniform_set_create got rid of the indirection, access the MTLBuffer directly.
+					id<MTLBuffer> obj = rid::get(uniform.ids[0]);
 					if (stage == RDD::SHADER_STAGE_VERTEX) {
-						[enc setVertexBuffer:buffer offset:0 atIndex:bi->index];
+						[enc setVertexBuffer:obj offset:0 atIndex:bi->index];
 					} else {
-						[enc setFragmentBuffer:buffer offset:0 atIndex:bi->index];
+						[enc setFragmentBuffer:obj offset:0 atIndex:bi->index];
 					}
 				} break;
-				case RDD::UNIFORM_TYPE_STORAGE_BUFFER: {
-					id<MTLBuffer> buffer = rid::get(uniform.ids[0]);
+				case RDD::UNIFORM_TYPE_UNIFORM_BUFFER_DYNAMIC:
+				case RDD::UNIFORM_TYPE_STORAGE_BUFFER_DYNAMIC: {
+					const RenderingDeviceDriverMetal::BufferDynamicInfo *buf_info = (const RenderingDeviceDriverMetal::BufferDynamicInfo *)uniform.ids[0].id;
 					if (stage == RDD::SHADER_STAGE_VERTEX) {
-						[enc setVertexBuffer:buffer offset:0 atIndex:bi->index];
+						[enc setVertexBuffer:buf_info->metal_buffer offset:buf_info->frame_idx * buf_info->size_bytes atIndex:bi->index];
 					} else {
-						[enc setFragmentBuffer:buffer offset:0 atIndex:bi->index];
+						[enc setFragmentBuffer:buf_info->metal_buffer offset:buf_info->frame_idx * buf_info->size_bytes atIndex:bi->index];
 					}
 				} break;
 				case RDD::UNIFORM_TYPE_INPUT_ATTACHMENT: {
@@ -1380,13 +1386,16 @@ void MDUniformSet::bind_uniforms_direct(MDShader *p_shader, MDCommandBuffer::Com
 			case RDD::UNIFORM_TYPE_IMAGE_BUFFER: {
 				CRASH_NOW_MSG("not implemented: UNIFORM_TYPE_IMAGE_BUFFER");
 			} break;
-			case RDD::UNIFORM_TYPE_UNIFORM_BUFFER: {
-				id<MTLBuffer> buffer = rid::get(uniform.ids[0]);
-				[enc setBuffer:buffer offset:0 atIndex:bi->index];
-			} break;
+			case RDD::UNIFORM_TYPE_UNIFORM_BUFFER:
 			case RDD::UNIFORM_TYPE_STORAGE_BUFFER: {
-				id<MTLBuffer> buffer = rid::get(uniform.ids[0]);
-				[enc setBuffer:buffer offset:0 atIndex:bi->index];
+				// Note that uniform_set_create got rid of the indirection, access the MTLBuffer directly.
+				id<MTLBuffer> obj = rid::get(uniform.ids[0]);
+				[enc setBuffer:obj offset:0 atIndex:bi->index];
+			} break;
+			case RDD::UNIFORM_TYPE_UNIFORM_BUFFER_DYNAMIC:
+			case RDD::UNIFORM_TYPE_STORAGE_BUFFER_DYNAMIC: {
+				const RenderingDeviceDriverMetal::BufferDynamicInfo *buf_info = (const RenderingDeviceDriverMetal::BufferDynamicInfo *)uniform.ids[0].id;
+				[enc setBuffer:buf_info->metal_buffer offset:buf_info->frame_idx * buf_info->size_bytes atIndex:bi->index];
 			} break;
 			case RDD::UNIFORM_TYPE_INPUT_ATTACHMENT: {
 				size_t count = uniform.ids.size();
@@ -1537,16 +1546,20 @@ BoundUniformSet &MDUniformSet::bound_uniform_set(MDShader *p_shader, id<MTLDevic
 					case RDD::UNIFORM_TYPE_IMAGE_BUFFER: {
 						CRASH_NOW_MSG("not implemented: UNIFORM_TYPE_IMAGE_BUFFER");
 					} break;
-					case RDD::UNIFORM_TYPE_UNIFORM_BUFFER: {
-						id<MTLBuffer> buffer = rid::get(uniform.ids[0]);
-						[enc setBuffer:buffer offset:0 atIndex:bi->index];
-						add_usage(buffer, stage, bi->usage);
-					} break;
+					case RDD::UNIFORM_TYPE_UNIFORM_BUFFER:
 					case RDD::UNIFORM_TYPE_STORAGE_BUFFER: {
-						id<MTLBuffer> buffer = rid::get(uniform.ids[0]);
-						[enc setBuffer:buffer offset:0 atIndex:bi->index];
-						add_usage(buffer, stage, bi->usage);
+						// Note that uniform_set_create got rid of the indirection, access the MTLBuffer directly.
+						id<MTLBuffer> obj = rid::get(uniform.ids[0]);
+						[enc setBuffer:obj offset:0 atIndex:bi->index];
+						add_usage(obj, stage, bi->usage);
 					} break;
+					case RDD::UNIFORM_TYPE_UNIFORM_BUFFER_DYNAMIC:
+					case RDD::UNIFORM_TYPE_STORAGE_BUFFER_DYNAMIC: {
+						const RenderingDeviceDriverMetal::BufferDynamicInfo *buf_info = (const RenderingDeviceDriverMetal::BufferDynamicInfo *)uniform.ids[0].id;
+						[enc setBuffer:buf_info->metal_buffer offset:buf_info->frame_idx * buf_info->size_bytes atIndex:bi->index];
+						add_usage(buf_info->metal_buffer, stage, bi->usage);
+					} break;
+
 					case RDD::UNIFORM_TYPE_INPUT_ATTACHMENT: {
 						size_t count = uniform.ids.size();
 						if (count == 1) {
