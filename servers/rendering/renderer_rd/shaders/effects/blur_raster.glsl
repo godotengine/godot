@@ -31,7 +31,7 @@ layout(location = 0) in vec2 uv_interp;
 layout(set = 0, binding = 0) uniform sampler2D source_color;
 
 #ifdef GLOW_USE_AUTO_EXPOSURE
-layout(set = 1, binding = 0) uniform sampler2D source_auto_exposure;
+layout(set = 0, binding = 1) uniform sampler2D source_auto_exposure;
 #endif
 
 layout(location = 0) out vec4 frag_color;
