@@ -2817,6 +2817,15 @@ void ScriptEditor::save_all_scripts() {
 	_update_script_names();
 }
 
+void ScriptEditor::update_script_times() {
+	for (int i = 0; i < tab_container->get_tab_count(); i++) {
+		ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(tab_container->get_tab_control(i));
+		if (se) {
+			se->edited_file_data.last_modified_time = FileAccess::get_modified_time(se->edited_file_data.path);
+		}
+	}
+}
+
 void ScriptEditor::apply_scripts() const {
 	for (int i = 0; i < tab_container->get_tab_count(); i++) {
 		ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(tab_container->get_tab_control(i));

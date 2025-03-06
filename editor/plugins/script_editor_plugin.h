@@ -569,6 +569,7 @@ public:
 	PackedStringArray get_unsaved_scripts() const;
 	void save_current_script();
 	void save_all_scripts();
+	void update_script_times();
 
 	void set_window_layout(Ref<ConfigFile> p_layout);
 	void get_window_layout(Ref<ConfigFile> p_layout);
