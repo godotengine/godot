@@ -7,3 +7,9 @@ should instead be used to justify these changes and describe how users should wo
 Add new entries at the end of the file.
 
 ## Changes between 4.4-stable and 4.5-stable
+
+GH-80519
+--------
+Validate extension JSON: Error: Field 'classes/EditorPlugin/methods/add_autoload_singleton/arguments': size changed value in new API, from 2 to 3.
+
+Added optional argument. Compatibility method registered.
