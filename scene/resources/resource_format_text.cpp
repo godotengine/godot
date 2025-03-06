@@ -1223,14 +1223,9 @@ Error ResourceLoaderText::get_classes_used(HashSet<StringName> *r_classes) {
 			return error;
 		}
 
-		if (!next_tag.fields.has("type")) {
-			error = ERR_FILE_CORRUPT;
-			error_text = "Missing 'type' in external resource tag";
-			_printerr();
-			return error;
+		if (next_tag.fields.has("type")) {
+			r_classes->insert(next_tag.fields["type"]);
 		}
-
-		r_classes->insert(next_tag.fields["type"]);
 
 		while (true) {
 			String assign;
