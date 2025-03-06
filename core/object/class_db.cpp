@@ -2152,6 +2152,30 @@ bool ClassDB::is_class_runtime(const StringName &p_class) {
 	return ti->is_runtime;
 }
 
+#ifdef TOOLS_ENABLED
+void ClassDB::add_class_dependency(const StringName &p_class, const StringName &p_dependency) {
+	Locker::Lock lock(Locker::STATE_WRITE);
+
+	ERR_FAIL_COND_MSG(!classes.has(p_class), vformat("Request for nonexistent class '%s'.", p_class));
+	if (classes[p_class].dependency_list.find(p_dependency)) {
+		ERR_FAIL();
+	}
+
+	classes[p_class].dependency_list.push_back(p_dependency);
+}
+
+void ClassDB::get_class_dependencies(const StringName &p_class, List<StringName> *r_rependencies) {
+	Locker::Lock lock(Locker::STATE_READ);
+
+	ClassInfo *ti = classes.getptr(p_class);
+	ERR_FAIL_NULL_MSG(ti, vformat("Cannot get class '%s'.", String(p_class)));
+
+	for (const StringName &dep : ti->dependency_list) {
+		r_rependencies->push_back(dep);
+	}
+}
+#endif // TOOLS_ENABLED
+
 void ClassDB::add_resource_base_extension(const StringName &p_extension, const StringName &p_class) {
 	if (resource_base_extensions.has(p_extension)) {
 		return;

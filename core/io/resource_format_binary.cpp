@@ -36,6 +36,7 @@
 #include "core/io/missing_resource.h"
 #include "core/object/script_language.h"
 #include "core/version.h"
+#include "scene/resources/packed_scene.h"
 
 //#define print_bl(m_what) print_line(m_what)
 #define print_bl(m_what) (void)(m_what)
@@ -937,11 +938,10 @@ void ResourceLoaderBinary::get_classes_used(Ref<FileAccess> p_f, HashSet<StringN
 		return;
 	}
 
-	for (int i = 0; i < internal_resources.size(); i++) {
-		p_f->seek(internal_resources[i].offset);
+	for (const IntResource &res : internal_resources) {
+		p_f->seek(res.offset);
 		String t = get_unicode_string();
-		ERR_FAIL_COND(p_f->get_error() != OK);
-		if (t != String()) {
+		if (!p_f->get_error() && t != String() && ClassDB::class_exists(t)) {
 			p_classes->insert(t);
 		}
 	}
@@ -1518,6 +1518,37 @@ void ResourceFormatLoaderBinary::get_classes_used(const String &p_path, HashSet<
 	loader.local_path = ProjectSettings::get_singleton()->localize_path(p_path);
 	loader.res_path = loader.local_path;
 	loader.get_classes_used(f, r_classes);
+
+	// Fetch the nodes inside scene files.
+	if (loader.type == "PackedScene") {
+		ERR_FAIL_COND(loader.load() != OK);
+
+		Ref<SceneState> state = Ref<PackedScene>(loader.get_resource())->get_state();
+		for (int i = 0; i < state->get_node_count(); i++) {
+			const StringName node_name = state->get_node_type(i);
+			if (ClassDB::class_exists(node_name)) {
+				r_classes->insert(node_name);
+			}
+
+			// Fetch the values of properties in the node.
+			for (int j = 0; j < state->get_node_property_count(i); j++) {
+				const Variant var = state->get_node_property_value(i, j);
+				if (var.get_type() != Variant::OBJECT) {
+					continue;
+				}
+
+				const Object *obj = var.get_validated_object();
+				if (obj == nullptr) {
+					continue;
+				}
+
+				const StringName obj_name = obj->get_class_name();
+				if (ClassDB::class_exists(obj_name)) {
+					r_classes->insert(obj_name);
+				}
+			}
+		}
+	}
 }
 
 String ResourceFormatLoaderBinary::get_resource_type(const String &p_path) const {

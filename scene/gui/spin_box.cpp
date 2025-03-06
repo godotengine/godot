@@ -691,6 +691,8 @@ void SpinBox::_bind_methods() {
 
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, SpinBox, field_and_buttons_separator, "field_and_buttons_separator");
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, SpinBox, up_down_buttons_separator, "up_down_buttons_separator");
+
+	ADD_CLASS_DEPENDENCY("LineEdit");
 }
 
 SpinBox::SpinBox() {
