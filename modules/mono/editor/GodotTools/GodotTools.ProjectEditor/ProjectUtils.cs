@@ -191,6 +191,13 @@ namespace GodotTools.ProjectEditor
                 // Otherwise, it can be removed.
                 if (mainTfmVersion > minTfmVersion)
                 {
+                    var propertyTfmVersion = NuGetFramework.Parse(property.Value).Version;
+                    if (propertyTfmVersion == minTfmVersion)
+                    {
+                        // The 'TargetFramework' property already matches the minimum version.
+                        continue;
+                    }
+
                     property.Value = minTfmValue;
                 }
                 else
