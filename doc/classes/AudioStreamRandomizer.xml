@@ -69,7 +69,12 @@
 			Controls how this AudioStreamRandomizer picks which AudioStream to play next.
 		</member>
 		<member name="random_pitch" type="float" setter="set_random_pitch" getter="get_random_pitch" default="1.0">
-			The intensity of random pitch variation. A value of 1 means no variation.
+			The largest possible frequency multiplier of the random pitch variation. A value of [code]1.0[/code] means no variation.
+			[b]Note:[/b] Setting this property also sets [member random_pitch_semitones].
+		</member>
+		<member name="random_pitch_semitones" type="float" setter="set_random_pitch_semitones" getter="get_random_pitch_semitones" default="0.0">
+			The largest possible distance, in semitones, of the random pitch variation. A value of [code]0.0[/code] means no variation.
+			[b]Note:[/b] Setting this property also sets [member random_pitch].
 		</member>
 		<member name="random_volume_offset_db" type="float" setter="set_random_volume_offset_db" getter="get_random_volume_offset_db" default="0.0">
 			The intensity of random volume variation. A value of 0 means no variation.

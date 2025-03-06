@@ -568,6 +568,14 @@ float AudioStreamRandomizer::get_random_pitch() const {
 	return random_pitch_scale;
 }
 
+void AudioStreamRandomizer::set_random_pitch_semitones(float p_semitones) {
+	random_pitch_scale = powf(2, p_semitones * 0.08333333f);
+}
+
+float AudioStreamRandomizer::get_random_pitch_semitones() const {
+	return 12.0f * log2f(MAX(1.0f, random_pitch_scale));
+}
+
 void AudioStreamRandomizer::set_random_volume_offset_db(float p_volume_offset_db) {
 	if (p_volume_offset_db < 0) {
 		p_volume_offset_db = 0;
@@ -752,6 +760,9 @@ void AudioStreamRandomizer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_random_pitch", "scale"), &AudioStreamRandomizer::set_random_pitch);
 	ClassDB::bind_method(D_METHOD("get_random_pitch"), &AudioStreamRandomizer::get_random_pitch);
 
+	ClassDB::bind_method(D_METHOD("set_random_pitch_semitones", "semitones"), &AudioStreamRandomizer::set_random_pitch_semitones);
+	ClassDB::bind_method(D_METHOD("get_random_pitch_semitones"), &AudioStreamRandomizer::get_random_pitch_semitones);
+
 	ClassDB::bind_method(D_METHOD("set_random_volume_offset_db", "db_offset"), &AudioStreamRandomizer::set_random_volume_offset_db);
 	ClassDB::bind_method(D_METHOD("get_random_volume_offset_db"), &AudioStreamRandomizer::get_random_volume_offset_db);
 
@@ -759,7 +770,8 @@ void AudioStreamRandomizer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_playback_mode"), &AudioStreamRandomizer::get_playback_mode);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "playback_mode", PROPERTY_HINT_ENUM, "Random (Avoid Repeats),Random,Sequential"), "set_playback_mode", "get_playback_mode");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "random_pitch", PROPERTY_HINT_RANGE, "1,16,0.01"), "set_random_pitch", "get_random_pitch");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "random_pitch", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_random_pitch", "get_random_pitch");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "random_pitch_semitones", PROPERTY_HINT_RANGE, "0,24,0.001,or_greater,suffix:Semitones", PROPERTY_USAGE_EDITOR), "set_random_pitch_semitones", "get_random_pitch_semitones");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "random_volume_offset_db", PROPERTY_HINT_RANGE, "0,40,0.01,suffix:dB"), "set_random_volume_offset_db", "get_random_volume_offset_db");
 	ADD_ARRAY("streams", "stream_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "streams_count", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_streams_count", "get_streams_count");
