@@ -30,7 +30,7 @@ layout(local_size_x = BLOCK_SIZE, local_size_y = BLOCK_SIZE, local_size_z = 1) i
 
 layout(set = 0, binding = 0) uniform samplerCube source_cubemap;
 
-layout(rgba16f, set = 1, binding = 0) uniform restrict writeonly imageCube dest_cubemap;
+layout(rgba16f, set = 0, binding = 1) uniform restrict writeonly imageCube dest_cubemap;
 
 #include "cubemap_downsampler_inc.glsl"
 

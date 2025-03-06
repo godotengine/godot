@@ -816,7 +816,7 @@ void RenderingDeviceDriverD3D12::_resource_transitions_flush(CommandBufferInfo *
 /**** BUFFERS ****/
 /*****************/
 
-RDD::BufferID RenderingDeviceDriverD3D12::buffer_create(uint64_t p_size, BitField<BufferUsageBits> p_usage, MemoryAllocationType p_allocation_type) {
+RDD::BufferID RenderingDeviceDriverD3D12::buffer_create(uint64_t p_size, BitField<BufferUsageBits> p_usage, MemoryAllocationType p_allocation_type, uint64_t p_frames_drawn) {
 	// D3D12 debug layers complain at CBV creation time if the size is not multiple of the value per the spec
 	// but also if you give a rounded size at that point because it will extend beyond the
 	// memory of the resource. Therefore, it seems the only way is to create it with a
@@ -878,7 +878,16 @@ RDD::BufferID RenderingDeviceDriverD3D12::buffer_create(uint64_t p_size, BitFiel
 
 	// Bookkeep.
 
-	BufferInfo *buf_info = VersatileResource::allocate<BufferInfo>(resources_allocator);
+	BufferInfo *buf_info;
+	if (p_usage.has_flag(BUFFER_USAGE_DYNAMIC_PERSISTENT_BIT)) {
+		BufferDynamicInfo *dyn_buffer = VersatileResource::allocate<BufferDynamicInfo>(resources_allocator);
+		buf_info = dyn_buffer;
+#ifdef DEBUG_ENABLED
+		dyn_buffer->last_frame_mapped = p_frames_drawn - 1ul;
+#endif
+	} else {
+		buf_info = VersatileResource::allocate<BufferInfo>(resources_allocator);
+	}
 	buf_info->resource = buffer.Get();
 	buf_info->owner_info.resource = buffer;
 	buf_info->owner_info.allocation = allocation;
@@ -886,6 +895,7 @@ RDD::BufferID RenderingDeviceDriverD3D12::buffer_create(uint64_t p_size, BitFiel
 	buf_info->states_ptr = &buf_info->owner_info.states;
 	buf_info->size = p_size;
 	buf_info->flags.usable_as_uav = (resource_desc.Flags & D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS);
+	buf_info->flags.is_dynamic = p_usage.has_flag(BUFFER_USAGE_DYNAMIC_PERSISTENT_BIT);
 
 	return BufferID(buf_info);
 }
@@ -898,7 +908,11 @@ bool RenderingDeviceDriverD3D12::buffer_set_texel_format(BufferID p_buffer, Data
 
 void RenderingDeviceDriverD3D12::buffer_free(BufferID p_buffer) {
 	BufferInfo *buf_info = (BufferInfo *)p_buffer.id;
-	VersatileResource::free(resources_allocator, buf_info);
+	if (buf_info->is_dynamic()) {
+		VersatileResource::free(resources_allocator, (BufferDynamicInfo *)buf_info);
+	} else {
+		VersatileResource::free(resources_allocator, buf_info);
+	}
 }
 
 uint64_t RenderingDeviceDriverD3D12::buffer_get_allocation_size(BufferID p_buffer) {
@@ -917,6 +931,16 @@ uint8_t *RenderingDeviceDriverD3D12::buffer_map(BufferID p_buffer) {
 void RenderingDeviceDriverD3D12::buffer_unmap(BufferID p_buffer) {
 	const BufferInfo *buf_info = (const BufferInfo *)p_buffer.id;
 	buf_info->resource->Unmap(0, &VOID_RANGE);
+}
+
+uint8_t *RenderingDeviceDriverD3D12::buffer_persistent_map_advance(BufferID p_buffer, uint64_t p_frames_drawn) {
+	BufferDynamicInfo *buf_info = (BufferDynamicInfo *)p_buffer.id;
+	ERR_FAIL_COND_V_MSG(!buf_info->is_dynamic(), nullptr, "Buffer must have BUFFER_USAGE_DYNAMIC_PERSISTENT_BIT. Use buffer_map() instead.");
+#ifdef DEBUG_ENABLED
+	ERR_FAIL_COND_V_MSG(buf_info->last_frame_mapped == p_frames_drawn, nullptr, "Buffers with BUFFER_USAGE_DYNAMIC_PERSISTENT_BIT must only be mapped once per frame. Otherwise there could be race conditions with the GPU. Amalgamate all data uploading into one map(), use an extra buffer or remove the bit.");
+	buf_info->last_frame_mapped = p_frames_drawn;
+#endif
+	return nullptr; // Not implemented yet.
 }
 
 uint64_t RenderingDeviceDriverD3D12::buffer_get_device_address(BufferID p_buffer) {
@@ -3655,7 +3679,7 @@ Vector<uint8_t> RenderingDeviceDriverD3D12::shader_compile_binary_from_spirv(Vec
 	return ret;
 }
 
-RDD::ShaderID RenderingDeviceDriverD3D12::shader_create_from_bytecode(const Vector<uint8_t> &p_shader_binary, ShaderDescription &r_shader_desc, String &r_name, const Vector<ImmutableSampler> &p_immutable_samplers) {
+RDD::ShaderID RenderingDeviceDriverD3D12::shader_create_from_bytecode(const Vector<uint8_t> &p_shader_binary, ShaderDescription &r_shader_desc, String &r_name, const Vector<ImmutableSampler> &p_immutable_samplers, const Vector<uint64_t> &p_dynamic_buffers) {
 	r_shader_desc = {}; // Driver-agnostic.
 	ShaderInfo shader_info_in; // Driver-specific.
 
@@ -3714,6 +3738,15 @@ RDD::ShaderID RenderingDeviceDriverD3D12::shader_create_from_bytecode(const Vect
 			info.writable = set_ptr[j].writable;
 			info.length = set_ptr[j].length;
 			info.binding = set_ptr[j].binding;
+
+			if (info.type == UNIFORM_TYPE_UNIFORM_BUFFER || info.type == UNIFORM_TYPE_STORAGE_BUFFER) {
+				const uint64_t key = DynamicBuffer::encode(i, info.binding);
+				if (p_dynamic_buffers.find(key) >= 0) {
+					static_assert(UNIFORM_TYPE_UNIFORM_BUFFER + 1 == UNIFORM_TYPE_UNIFORM_BUFFER_DYNAMIC, "An assumption has changed!");
+					static_assert(UNIFORM_TYPE_STORAGE_BUFFER + 1 == UNIFORM_TYPE_STORAGE_BUFFER_DYNAMIC, "An assumption has changed!");
+					info.type = static_cast<UniformType>(info.type + 1u);
+				}
+			}
 
 			ShaderInfo::UniformBindingInfo binding;
 			binding.stages = set_ptr[j].dxil_stages;
@@ -3847,10 +3880,12 @@ static void _add_descriptor_count_for_uniform(RenderingDevice::UniformType p_typ
 			r_num_resources += p_binding_length;
 			r_num_samplers += p_binding_length;
 		} break;
-		case RenderingDevice::UNIFORM_TYPE_UNIFORM_BUFFER: {
+		case RenderingDevice::UNIFORM_TYPE_UNIFORM_BUFFER:
+		case RenderingDevice::UNIFORM_TYPE_UNIFORM_BUFFER_DYNAMIC: {
 			r_num_resources += 1;
 		} break;
-		case RenderingDevice::UNIFORM_TYPE_STORAGE_BUFFER: {
+		case RenderingDevice::UNIFORM_TYPE_STORAGE_BUFFER:
+		case RenderingDevice::UNIFORM_TYPE_STORAGE_BUFFER_DYNAMIC: {
 			r_num_resources += p_double_srv_uav_ambiguous ? 2 : 1;
 			r_srv_uav_ambiguity = true;
 		} break;
@@ -4009,8 +4044,17 @@ RDD::UniformSetID RenderingDeviceDriverD3D12::uniform_set_create(VectorView<Boun
 			case UNIFORM_TYPE_IMAGE_BUFFER: {
 				CRASH_NOW_MSG("Unimplemented!");
 			} break;
-			case UNIFORM_TYPE_UNIFORM_BUFFER: {
+			case UNIFORM_TYPE_UNIFORM_BUFFER:
+			case UNIFORM_TYPE_UNIFORM_BUFFER_DYNAMIC: {
 				BufferInfo *buf_info = (BufferInfo *)uniform.ids[0].id;
+
+				if (uniform.type == UNIFORM_TYPE_UNIFORM_BUFFER) {
+					ERR_FAIL_COND_V_MSG(buf_info->is_dynamic(), UniformSetID(),
+							"Sent a buffer with BUFFER_USAGE_DYNAMIC_PERSISTENT_BIT but binding (" + itos(uniform.binding) + "), set (" + itos(p_set_index) + ") is UNIFORM_TYPE_UNIFORM_BUFFER instead of UNIFORM_TYPE_UNIFORM_BUFFER_DYNAMIC.");
+				} else {
+					ERR_FAIL_COND_V_MSG(!buf_info->is_dynamic(), UniformSetID(),
+							"Sent a buffer without BUFFER_USAGE_DYNAMIC_PERSISTENT_BIT but binding (" + itos(uniform.binding) + "), set (" + itos(p_set_index) + ") is UNIFORM_TYPE_UNIFORM_BUFFER_DYNAMIC instead of UNIFORM_TYPE_UNIFORM_BUFFER.");
+				}
 
 				D3D12_CONSTANT_BUFFER_VIEW_DESC cbv_desc = {};
 				cbv_desc.BufferLocation = buf_info->resource->GetGPUVirtualAddress();
@@ -4026,8 +4070,17 @@ RDD::UniformSetID RenderingDeviceDriverD3D12::uniform_set_create(VectorView<Boun
 				ns.shader_uniform_idx_mask |= ((uint64_t)1 << i);
 				ns.states |= D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER;
 			} break;
-			case UNIFORM_TYPE_STORAGE_BUFFER: {
+			case UNIFORM_TYPE_STORAGE_BUFFER:
+			case UNIFORM_TYPE_STORAGE_BUFFER_DYNAMIC: {
 				BufferInfo *buf_info = (BufferInfo *)uniform.ids[0].id;
+
+				if (uniform.type == UNIFORM_TYPE_STORAGE_BUFFER) {
+					ERR_FAIL_COND_V_MSG(buf_info->is_dynamic(), UniformSetID(),
+							"Sent a buffer with BUFFER_USAGE_DYNAMIC_PERSISTENT_BIT but binding (" + itos(uniform.binding) + "), set (" + itos(p_set_index) + ") is UNIFORM_TYPE_STORAGE_BUFFER instead of UNIFORM_TYPE_STORAGE_BUFFER_DYNAMIC.");
+				} else {
+					ERR_FAIL_COND_V_MSG(!buf_info->is_dynamic(), UniformSetID(),
+							"Sent a buffer without BUFFER_USAGE_DYNAMIC_PERSISTENT_BIT but binding (" + itos(uniform.binding) + "), set (" + itos(p_set_index) + ") is UNIFORM_TYPE_STORAGE_BUFFER_DYNAMIC instead of UNIFORM_TYPE_STORAGE_BUFFER.");
+				}
 
 				// SRV first. [[SRV_UAV_AMBIGUITY]]
 				{

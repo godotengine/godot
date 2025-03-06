@@ -569,7 +569,9 @@ public:
 		UNIFORM_TYPE_SAMPLER_WITH_TEXTURE_BUFFER, // Buffer texture with a sampler(or TBO, samplerBuffer type).
 		UNIFORM_TYPE_IMAGE_BUFFER, // Texel buffer, (imageBuffer type), for compute mostly.
 		UNIFORM_TYPE_UNIFORM_BUFFER, // Regular uniform buffer (or UBO).
+		UNIFORM_TYPE_UNIFORM_BUFFER_DYNAMIC, // Same but created with BUFFER_USAGE_DYNAMIC_PERSISTENT_BIT.
 		UNIFORM_TYPE_STORAGE_BUFFER, // Storage buffer ("buffer" qualifier) like UBO, but supports storage, for compute mostly.
+		UNIFORM_TYPE_STORAGE_BUFFER_DYNAMIC, // Same but created with BUFFER_USAGE_DYNAMIC_PERSISTENT_BIT.
 		UNIFORM_TYPE_INPUT_ATTACHMENT, // Used for sub-pass read/write, for mobile mostly.
 		UNIFORM_TYPE_MAX
 	};

@@ -31,6 +31,7 @@
 #ifndef COPY_EFFECTS_RD_H
 #define COPY_EFFECTS_RD_H
 
+#include "servers/rendering/push_constants_emu.h"
 #include "servers/rendering/renderer_rd/pipeline_cache_rd.h"
 #include "servers/rendering/renderer_rd/shaders/effects/blur_raster.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/effects/copy.glsl.gen.h"
@@ -52,6 +53,8 @@ namespace RendererRD {
 class CopyEffects {
 private:
 	bool prefer_raster_effects;
+
+	static thread_local LocalVector<RD::Uniform> uniforms;
 
 	// Blur raster shader
 
@@ -97,10 +100,14 @@ private:
 	};
 
 	struct BlurRaster {
-		BlurRasterPushConstant push_constant;
 		BlurRasterShaderRD shader;
 		RID shader_version;
 		PipelineCacheRD pipelines[BLUR_MODE_MAX];
+		// <TF>
+		// @ShadyTF
+		// replace push constants with UBO
+		PushConstantsEmu<BlurRasterPushConstant> push_constant = { "blur_raster" };
+		// </TF>
 	} blur_raster;
 
 	// Copy shader
@@ -159,11 +166,12 @@ private:
 	};
 
 	struct Copy {
-		CopyPushConstant push_constant;
 		CopyShaderRD shader;
+
 		RID shader_version;
 		RID pipelines[COPY_MODE_MAX];
 
+		PushConstantsEmu<CopyPushConstant> push_constant = { "copy" };
 	} copy;
 
 	// Copy to FB shader
@@ -204,10 +212,15 @@ private:
 	};
 
 	struct CopyToFb {
-		CopyToFbPushConstant push_constant;
 		CopyToFbShaderRD shader;
 		RID shader_version;
 		PipelineCacheRD pipelines[COPY_TO_FB_MAX];
+
+		// <TF>
+		// @ShadyTF
+		// replace push constants with UBO
+		PushConstantsEmu<CopyToFbPushConstant> push_constant = { "copy_to_fb" };
+		// </TF>
 
 	} copy_to_fb;
 
@@ -223,6 +236,11 @@ private:
 		CubeToDpShaderRD shader;
 		RID shader_version;
 		PipelineCacheRD pipeline;
+		// <TF>
+		// @ShadyTF
+		// replace push constants with UBO
+		PushConstantsEmu<CopyToDPPushConstant> push_constant = { "cube_to_dp" };
+		// </TF>
 	} cube_to_dp;
 
 	// Cubemap effects
