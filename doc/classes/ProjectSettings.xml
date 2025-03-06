@@ -407,7 +407,7 @@
 		</member>
 		<member name="audio/driver/override_channels" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], the number of output channels will be set by [code]override_speaker_channels[/code] instead of the speaker mode of the output device.
-			Applies only to PulseAudio.
+			[b]Note:[/b] This is only implemented in the PulseAudio audio driver on Linux. Other platforms are unaffected by this project setting.
 		</member>
 		<member name="audio/driver/override_speaker_channels" type="int" setter="" getter="" default="8">
 			The number of channels to use when [code]override_channels[/code] is set to [code]true[/code].
