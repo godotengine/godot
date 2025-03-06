@@ -1654,8 +1654,11 @@ void Object::_clear_internal_resource_paths(const Variant &p_var) {
 }
 
 #ifdef TOOLS_ENABLED
-void Object::editor_set_section_unfold(const String &p_section, bool p_unfolded) {
-	set_edited(true);
+void Object::editor_set_section_unfold(const String &p_section, bool p_unfolded, bool p_initializing) {
+	if (!p_initializing) {
+		set_edited(true);
+	}
+
 	if (p_unfolded) {
 		editor_section_folding.insert(p_section);
 	} else {
