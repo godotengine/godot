@@ -2535,7 +2535,6 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 						memnew_placement(&gdfs->state.stack.write[sizeof(Variant) * i], Variant(stack[i]));
 					}
 					gdfs->state.stack_size = _stack_size;
-					gdfs->state.alloca_size = alloca_size;
 					gdfs->state.ip = ip + 2;
 					gdfs->state.line = line;
 					gdfs->state.script = _script;
