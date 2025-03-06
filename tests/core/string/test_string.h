@@ -389,6 +389,19 @@ TEST_CASE("[String] Find") {
 	MULTICHECK_STRING_INT_EQ(s, rfind, "", 15, -1);
 }
 
+TEST_CASE("[String] Find character") {
+	String s = "racecar";
+	CHECK_EQ(s.find_char('r'), 0);
+	CHECK_EQ(s.find_char('r', 1), 6);
+	CHECK_EQ(s.find_char('e'), 3);
+	CHECK_EQ(s.find_char('e', 4), -1);
+
+	CHECK_EQ(s.rfind_char('r'), 6);
+	CHECK_EQ(s.rfind_char('r', 5), 0);
+	CHECK_EQ(s.rfind_char('e'), 3);
+	CHECK_EQ(s.rfind_char('e', 2), -1);
+}
+
 TEST_CASE("[String] Find case insensitive") {
 	String s = "Pretty Whale Whale";
 	MULTICHECK_STRING_EQ(s, findn, "WHA", 7);
@@ -455,16 +468,32 @@ TEST_CASE("[String] Erasing") {
 }
 
 TEST_CASE("[String] Number to string") {
-	CHECK(String::num(0) == "0");
-	CHECK(String::num(0.0) == "0"); // No trailing zeros.
-	CHECK(String::num(-0.0) == "-0"); // Includes sign even for zero.
+	CHECK(String::num(0) == "0.0"); // The method takes double, so always add zeros.
+	CHECK(String::num(0.0) == "0.0");
+	CHECK(String::num(-0.0) == "-0.0"); // Includes sign even for zero.
 	CHECK(String::num(3.141593) == "3.141593");
 	CHECK(String::num(3.141593, 3) == "3.142");
+	CHECK(String::num(42.100023, 4) == "42.1"); // No trailing zeros.
 	CHECK(String::num_scientific(30000000) == "3e+07");
+
+	// String::num_int64 tests.
 	CHECK(String::num_int64(3141593) == "3141593");
+	CHECK(String::num_int64(-3141593) == "-3141593");
 	CHECK(String::num_int64(0xA141593, 16) == "a141593");
 	CHECK(String::num_int64(0xA141593, 16, true) == "A141593");
-	CHECK(String::num(42.100023, 4) == "42.1"); // No trailing zeros.
+	ERR_PRINT_OFF;
+	CHECK(String::num_int64(3141593, 1) == ""); // Invalid base < 2.
+	CHECK(String::num_int64(3141593, 37) == ""); // Invalid base > 36.
+	ERR_PRINT_ON;
+
+	// String::num_uint64 tests.
+	CHECK(String::num_uint64(4294967295) == "4294967295");
+	CHECK(String::num_uint64(0xF141593, 16) == "f141593");
+	CHECK(String::num_uint64(0xF141593, 16, true) == "F141593");
+	ERR_PRINT_OFF;
+	CHECK(String::num_uint64(4294967295, 1) == ""); // Invalid base < 2.
+	CHECK(String::num_uint64(4294967295, 37) == ""); // Invalid base > 36.
+	ERR_PRINT_ON;
 
 	// String::num_real tests.
 	CHECK(String::num_real(1.0) == "1.0");
@@ -476,15 +505,15 @@ TEST_CASE("[String] Number to string") {
 	CHECK(String::num_real(3.141593) == "3.141593");
 	CHECK(String::num_real(3.141) == "3.141"); // No trailing zeros.
 #ifdef REAL_T_IS_DOUBLE
-	CHECK_MESSAGE(String::num_real(123.456789) == "123.456789", "Prints the appropriate amount of digits for real_t = double.");
-	CHECK_MESSAGE(String::num_real(-123.456789) == "-123.456789", "Prints the appropriate amount of digits for real_t = double.");
-	CHECK_MESSAGE(String::num_real(Math_PI) == "3.14159265358979", "Prints the appropriate amount of digits for real_t = double.");
-	CHECK_MESSAGE(String::num_real(3.1415f) == "3.1414999961853", "Prints more digits of 32-bit float when real_t = double (ones that would be reliable for double) and no trailing zero.");
+	CHECK_MESSAGE(String::num_real(real_t(123.456789)) == "123.456789", "Prints the appropriate amount of digits for real_t = double.");
+	CHECK_MESSAGE(String::num_real(real_t(-123.456789)) == "-123.456789", "Prints the appropriate amount of digits for real_t = double.");
+	CHECK_MESSAGE(String::num_real(real_t(Math_PI)) == "3.14159265358979", "Prints the appropriate amount of digits for real_t = double.");
+	CHECK_MESSAGE(String::num_real(real_t(3.1415f)) == "3.1414999961853", "Prints more digits of 32-bit float when real_t = double (ones that would be reliable for double) and no trailing zero.");
 #else
-	CHECK_MESSAGE(String::num_real(123.456789) == "123.4568", "Prints the appropriate amount of digits for real_t = float.");
-	CHECK_MESSAGE(String::num_real(-123.456789) == "-123.4568", "Prints the appropriate amount of digits for real_t = float.");
-	CHECK_MESSAGE(String::num_real(Math_PI) == "3.141593", "Prints the appropriate amount of digits for real_t = float.");
-	CHECK_MESSAGE(String::num_real(3.1415f) == "3.1415", "Prints only reliable digits of 32-bit float when real_t = float.");
+	CHECK_MESSAGE(String::num_real(real_t(123.456789)) == "123.4568", "Prints the appropriate amount of digits for real_t = float.");
+	CHECK_MESSAGE(String::num_real(real_t(-123.456789)) == "-123.4568", "Prints the appropriate amount of digits for real_t = float.");
+	CHECK_MESSAGE(String::num_real(real_t(Math_PI)) == "3.141593", "Prints the appropriate amount of digits for real_t = float.");
+	CHECK_MESSAGE(String::num_real(real_t(3.1415f)) == "3.1415", "Prints only reliable digits of 32-bit float when real_t = float.");
 #endif // REAL_T_IS_DOUBLE
 
 	// Checks doubles with many decimal places.
@@ -493,7 +522,7 @@ TEST_CASE("[String] Number to string") {
 	CHECK(String::num(-0.0000012345432123454321) == "-0.00000123454321");
 	CHECK(String::num(-10000.0000012345432123454321) == "-10000.0000012345");
 	CHECK(String::num(0.0000000000012345432123454321) == "0.00000000000123");
-	CHECK(String::num(0.0000000000012345432123454321, 3) == "0");
+	CHECK(String::num(0.0000000000012345432123454321, 3) == "0.0");
 
 	// Note: When relevant (remainder > 0.5), the last digit gets rounded up,
 	// which can also lead to not include a trailing zero, e.g. "...89" -> "...9".
@@ -516,7 +545,10 @@ TEST_CASE("[String] String to integer") {
 		CHECK(String(nums[i]).to_int() == num[i]);
 	}
 	CHECK(String("0b1011").to_int() == 1011); // Looks like a binary number, but to_int() handles this as a base-10 number, "b" is just ignored.
+	CHECK(String("0B1011").to_int() == 1011);
+
 	CHECK(String("0x1012").to_int() == 1012); // Looks like a hexadecimal number, but to_int() handles this as a base-10 number, "x" is just ignored.
+	CHECK(String("0X1012").to_int() == 1012);
 
 	ERR_PRINT_OFF
 	CHECK(String("999999999999999999999999999999999999999999999999999999999").to_int() == INT64_MAX); // Too large, largest possible is returned.
@@ -525,10 +557,10 @@ TEST_CASE("[String] String to integer") {
 }
 
 TEST_CASE("[String] Hex to integer") {
-	static const char *nums[12] = { "0xFFAE", "22", "0", "AADDAD", "0x7FFFFFFFFFFFFFFF", "-0xf", "", "000", "000f", "0xaA", "-ff", "-" };
-	static const int64_t num[12] = { 0xFFAE, 0x22, 0, 0xAADDAD, 0x7FFFFFFFFFFFFFFF, -0xf, 0, 0, 0xf, 0xaa, -0xff, 0x0 };
+	static const char *nums[13] = { "0xFFAE", "22", "0", "AADDAD", "0x7FFFFFFFFFFFFFFF", "-0xf", "", "000", "000f", "0xaA", "-ff", "-", "0XFFAE" };
+	static const int64_t num[13] = { 0xFFAE, 0x22, 0, 0xAADDAD, 0x7FFFFFFFFFFFFFFF, -0xf, 0, 0, 0xf, 0xaa, -0xff, 0x0, 0xFFAE };
 
-	for (int i = 0; i < 12; i++) {
+	for (int i = 0; i < 13; i++) {
 		CHECK(String(nums[i]).hex_to_int() == num[i]);
 	}
 
@@ -546,10 +578,10 @@ TEST_CASE("[String] Hex to integer") {
 }
 
 TEST_CASE("[String] Bin to integer") {
-	static const char *nums[10] = { "", "0", "0b0", "0b1", "0b", "1", "0b1010", "-0b11", "-1010", "0b0111111111111111111111111111111111111111111111111111111111111111" };
-	static const int64_t num[10] = { 0, 0, 0, 1, 0, 1, 10, -3, -10, 0x7FFFFFFFFFFFFFFF };
+	static const char *nums[11] = { "", "0", "0b0", "0b1", "0b", "1", "0b1010", "-0b11", "-1010", "0b0111111111111111111111111111111111111111111111111111111111111111", "0B1010" };
+	static const int64_t num[11] = { 0, 0, 0, 1, 0, 1, 10, -3, -10, 0x7FFFFFFFFFFFFFFF, 10 };
 
-	for (int i = 0; i < 10; i++) {
+	for (int i = 0; i < 11; i++) {
 		CHECK(String(nums[i]).bin_to_int() == num[i]);
 	}
 
@@ -1238,6 +1270,12 @@ TEST_CASE("[String] is_subsequence_of") {
 	CHECK(String("Sub").is_subsequence_ofn(a));
 }
 
+TEST_CASE("[String] is_lowercase") {
+	CHECK(String("abcd1234 !@#$%^&*()_-=+,.<>/\\|[]{};':\"`~").is_lowercase());
+	CHECK(String("").is_lowercase());
+	CHECK(!String("abc_ABC").is_lowercase());
+}
+
 TEST_CASE("[String] match") {
 	CHECK(String("img1.png").match("*.png"));
 	CHECK(!String("img1.jpeg").match("*.png"));
@@ -1652,6 +1690,10 @@ TEST_CASE("[String] Path functions") {
 	for (int i = 0; i < 3; i++) {
 		CHECK(String(file_name[i]).is_valid_filename() == valid[i]);
 	}
+
+	CHECK(String("res://texture.png") == String("res://folder/../folder/../texture.png").simplify_path());
+	CHECK(String("res://texture.png") == String("res://folder/sub/../../texture.png").simplify_path());
+	CHECK(String("res://../../texture.png") == String("res://../../texture.png").simplify_path());
 }
 
 TEST_CASE("[String] hash") {
@@ -1846,15 +1888,15 @@ TEST_CASE("[String] Join") {
 }
 
 TEST_CASE("[String] Is_*") {
-	static const char *data[13] = { "-30", "100", "10.1", "10,1", "1e2", "1e-2", "1e2e3", "0xAB", "AB", "Test1", "1Test", "Test*1", "文字" };
-	static bool isnum[13] = { true, true, true, false, false, false, false, false, false, false, false, false, false };
-	static bool isint[13] = { true, true, false, false, false, false, false, false, false, false, false, false, false };
-	static bool ishex[13] = { true, true, false, false, true, false, true, false, true, false, false, false, false };
-	static bool ishex_p[13] = { false, false, false, false, false, false, false, true, false, false, false, false, false };
-	static bool isflt[13] = { true, true, true, false, true, true, false, false, false, false, false, false, false };
-	static bool isaid[13] = { false, false, false, false, false, false, false, false, true, true, false, false, false };
-	static bool isuid[13] = { false, false, false, false, false, false, false, false, true, true, false, false, true };
-	for (int i = 0; i < 12; i++) {
+	static const char *data[] = { "-30", "100", "10.1", "10,1", "1e2", "1e-2", "1e2e3", "0xAB", "AB", "Test1", "1Test", "Test*1", "文字", "1E2", "1E-2" };
+	static bool isnum[] = { true, true, true, false, false, false, false, false, false, false, false, false, false, false, false };
+	static bool isint[] = { true, true, false, false, false, false, false, false, false, false, false, false, false, false, false };
+	static bool ishex[] = { true, true, false, false, true, false, true, false, true, false, false, false, false, true, false };
+	static bool ishex_p[] = { false, false, false, false, false, false, false, true, false, false, false, false, false, false, false };
+	static bool isflt[] = { true, true, true, false, true, true, false, false, false, false, false, false, false, true, true };
+	static bool isaid[] = { false, false, false, false, false, false, false, false, true, true, false, false, false, false, false };
+	static bool isuid[] = { false, false, false, false, false, false, false, false, true, true, false, false, true, false, false };
+	for (unsigned int i = 0; i < sizeof(data) / sizeof(data[0]); i++) {
 		String s = String::utf8(data[i]);
 		CHECK(s.is_numeric() == isnum[i]);
 		CHECK(s.is_valid_int() == isint[i]);
@@ -1888,7 +1930,7 @@ TEST_CASE("[String] validate_node_name") {
 	CHECK(name_with_invalid_chars.validate_node_name() == "Name with invalid characters ____removed!");
 }
 
-TEST_CASE("[String] validate_identifier") {
+TEST_CASE("[String] validate_ascii_identifier") {
 	String empty_string;
 	CHECK(empty_string.validate_ascii_identifier() == "_");
 
@@ -1900,6 +1942,20 @@ TEST_CASE("[String] validate_identifier") {
 
 	String name_with_invalid_chars = U"Invalid characters:@*#&世界";
 	CHECK(name_with_invalid_chars.validate_ascii_identifier() == "Invalid_characters_______");
+}
+
+TEST_CASE("[String] validate_unicode_identifier") {
+	String empty_string;
+	CHECK(empty_string.validate_unicode_identifier() == "_");
+
+	String numeric_only = "12345";
+	CHECK(numeric_only.validate_unicode_identifier() == "_12345");
+
+	String name_with_spaces = "Name with spaces";
+	CHECK(name_with_spaces.validate_unicode_identifier() == "Name_with_spaces");
+
+	String name_with_invalid_chars = U"Invalid characters:@*#&世界";
+	CHECK(name_with_invalid_chars.validate_unicode_identifier() == U"Invalid_characters_____世界");
 }
 
 TEST_CASE("[String] Variant indexed get") {
@@ -1972,6 +2028,61 @@ TEST_CASE("[String] Variant ptr indexed set") {
 	setter(&s, 1, &v);
 
 	CHECK_EQ(s, String("azcd"));
+}
+
+TEST_CASE("[String][URL] Parse URL") {
+#define CHECK_URL(m_url_to_parse, m_expected_schema, m_expected_host, m_expected_port, m_expected_path, m_expected_fragment, m_expected_error) \
+	if (true) {                                                                                                                                \
+		int port;                                                                                                                              \
+		String url(m_url_to_parse), schema, host, path, fragment;                                                                              \
+                                                                                                                                               \
+		CHECK_EQ(url.parse_url(schema, host, port, path, fragment), m_expected_error);                                                         \
+		CHECK_EQ(schema, m_expected_schema);                                                                                                   \
+		CHECK_EQ(host, m_expected_host);                                                                                                       \
+		CHECK_EQ(path, m_expected_path);                                                                                                       \
+		CHECK_EQ(fragment, m_expected_fragment);                                                                                               \
+		CHECK_EQ(port, m_expected_port);                                                                                                       \
+	} else                                                                                                                                     \
+		((void)0)
+
+	// All elements.
+	CHECK_URL("https://www.example.com:8080/path/to/file.html#fragment", "https://", "www.example.com", 8080, "/path/to/file.html", "fragment", Error::OK);
+
+	// Valid URLs.
+	CHECK_URL("https://godotengine.org", "https://", "godotengine.org", 0, "", "", Error::OK);
+	CHECK_URL("https://godotengine.org/", "https://", "godotengine.org", 0, "/", "", Error::OK);
+	CHECK_URL("godotengine.org/", "", "godotengine.org", 0, "/", "", Error::OK);
+	CHECK_URL("HTTPS://godotengine.org/", "https://", "godotengine.org", 0, "/", "", Error::OK);
+	CHECK_URL("https://GODOTENGINE.ORG/", "https://", "godotengine.org", 0, "/", "", Error::OK);
+	CHECK_URL("http://godotengine.org", "http://", "godotengine.org", 0, "", "", Error::OK);
+	CHECK_URL("https://godotengine.org:8080", "https://", "godotengine.org", 8080, "", "", Error::OK);
+	CHECK_URL("https://godotengine.org/blog", "https://", "godotengine.org", 0, "/blog", "", Error::OK);
+	CHECK_URL("https://godotengine.org/blog/", "https://", "godotengine.org", 0, "/blog/", "", Error::OK);
+	CHECK_URL("https://docs.godotengine.org/en/stable", "https://", "docs.godotengine.org", 0, "/en/stable", "", Error::OK);
+	CHECK_URL("https://docs.godotengine.org/en/stable/", "https://", "docs.godotengine.org", 0, "/en/stable/", "", Error::OK);
+	CHECK_URL("https://me:secret@godotengine.org", "https://", "godotengine.org", 0, "", "", Error::OK);
+	CHECK_URL("https://[FEDC:BA98:7654:3210:FEDC:BA98:7654:3210]/ipv6", "https://", "fedc:ba98:7654:3210:fedc:ba98:7654:3210", 0, "/ipv6", "", Error::OK);
+
+	// Scheme vs Fragment.
+	CHECK_URL("google.com/#goto=http://redirect_url/", "", "google.com", 0, "/", "goto=http://redirect_url/", Error::OK);
+
+	// Invalid URLs.
+
+	// Invalid Scheme.
+	CHECK_URL("https_://godotengine.org", "", "https_", 0, "//godotengine.org", "", Error::ERR_INVALID_PARAMETER);
+
+	// Multiple ports.
+	CHECK_URL("https://godotengine.org:8080:433", "https://", "", 0, "", "", Error::ERR_INVALID_PARAMETER);
+	// Missing ] on literal IPv6.
+	CHECK_URL("https://[FEDC:BA98:7654:3210:FEDC:BA98:7654:3210/ipv6", "https://", "", 0, "/ipv6", "", Error::ERR_INVALID_PARAMETER);
+	// Missing host.
+	CHECK_URL("https:///blog", "https://", "", 0, "/blog", "", Error::ERR_INVALID_PARAMETER);
+	// Invalid ports.
+	CHECK_URL("https://godotengine.org:notaport", "https://", "godotengine.org", 0, "", "", Error::ERR_INVALID_PARAMETER);
+	CHECK_URL("https://godotengine.org:-8080", "https://", "godotengine.org", -8080, "", "", Error::ERR_INVALID_PARAMETER);
+	CHECK_URL("https://godotengine.org:88888", "https://", "godotengine.org", 88888, "", "", Error::ERR_INVALID_PARAMETER);
+
+#undef CHECK_URL
 }
 
 TEST_CASE("[Stress][String] Empty via ' == String()'") {

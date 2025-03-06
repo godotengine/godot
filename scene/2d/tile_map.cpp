@@ -32,7 +32,8 @@
 #include "tile_map.compat.inc"
 
 #include "core/io/marshalls.h"
-#include "scene/gui/control.h"
+#include "scene/resources/2d/navigation_mesh_source_geometry_data_2d.h"
+#include "servers/navigation_server_2d.h"
 
 #define TILEMAP_CALL_FOR_LAYER(layer, function, ...) \
 	if (layer < 0) {                                 \
@@ -47,6 +48,9 @@
 	};                                                            \
 	ERR_FAIL_INDEX_V(layer, (int)layers.size(), err_value);       \
 	return layers[layer]->function(__VA_ARGS__);
+
+Callable TileMap::_navmesh_source_geometry_parsing_callback;
+RID TileMap::_navmesh_source_geometry_parser;
 
 void TileMap::_tile_set_changed() {
 	update_configuration_warnings();
@@ -75,7 +79,8 @@ void TileMap::_set_tile_map_data_using_compatibility_format(int p_layer, TileMap
 	for (int i = 0; i < c; i += offset) {
 		const uint8_t *ptr = (const uint8_t *)&r[i];
 		uint8_t local[12];
-		for (int j = 0; j < ((p_format >= TileMapDataFormat::TILE_MAP_DATA_FORMAT_2) ? 12 : 8); j++) {
+		const int buffer_size = (p_format >= TILE_MAP_DATA_FORMAT_2) ? 12 : 8;
+		for (int j = 0; j < buffer_size; j++) {
 			local[j] = ptr[j];
 		}
 
@@ -89,8 +94,8 @@ void TileMap::_set_tile_map_data_using_compatibility_format(int p_layer, TileMap
 			SWAP(local[8], local[11]);
 			SWAP(local[9], local[10]);
 		}
-#endif
-		// Extracts position in TileMap.
+#endif // BIG_ENDIAN_ENABLED
+	   // Extracts position in TileMap.
 		int16_t x = decode_uint16(&local[0]);
 		int16_t y = decode_uint16(&local[2]);
 
@@ -172,7 +177,7 @@ void TileMap::_notification(int p_what) {
 			bool in_editor = false;
 #ifdef TOOLS_ENABLED
 			in_editor = Engine::get_singleton()->is_editor_hint();
-#endif
+#endif // TOOLS_ENABLED
 			if (is_inside_tree() && collision_animatable && !in_editor) {
 				// Update transform on the physics tick when in animatable mode.
 				last_valid_transform = new_transform;
@@ -188,7 +193,7 @@ void TileMap::_notification(int p_what) {
 			bool in_editor = false;
 #ifdef TOOLS_ENABLED
 			in_editor = Engine::get_singleton()->is_editor_hint();
-#endif
+#endif // TOOLS_ENABLED
 
 			if (is_inside_tree() && collision_animatable && !in_editor) {
 				// Store last valid transform.
@@ -209,7 +214,7 @@ void TileMap::force_update(int p_layer) {
 	notify_runtime_tile_data_update(p_layer);
 	update_internals();
 }
-#endif
+#endif // DISABLE_DEPRECATED
 
 void TileMap::set_rendering_quadrant_size(int p_size) {
 	ERR_FAIL_COND_MSG(p_size < 1, "TileMapQuadrant size cannot be smaller than 1.");
@@ -549,7 +554,7 @@ Ref<TileMapPattern> TileMap::get_pattern(int p_layer, TypedArray<Vector2i> p_coo
 }
 
 Vector2i TileMap::map_pattern(const Vector2i &p_position_in_tilemap, const Vector2i &p_coords_in_pattern, Ref<TileMapPattern> p_pattern) {
-	ERR_FAIL_COND_V(!tile_set.is_valid(), Vector2i());
+	ERR_FAIL_COND_V(tile_set.is_null(), Vector2i());
 	return tile_set->map_pattern(p_position_in_tilemap, p_coords_in_pattern, p_pattern);
 }
 
@@ -649,7 +654,7 @@ void TileMap::notify_runtime_tile_data_update(int p_layer) {
 	}
 }
 
-#ifdef TOOLS_ENABLED
+#ifdef DEBUG_ENABLED
 Rect2 TileMap::_edit_get_rect() const {
 	// Return the visible rect of the tilemap.
 	if (layers.is_empty()) {
@@ -667,7 +672,7 @@ Rect2 TileMap::_edit_get_rect() const {
 	const_cast<TileMap *>(this)->item_rect_changed(any_changed);
 	return rect;
 }
-#endif
+#endif // DEBUG_ENABLED
 
 bool TileMap::_set(const StringName &p_name, const Variant &p_value) {
 	int index;
@@ -726,7 +731,7 @@ bool TileMap::_get(const StringName &p_name, Variant &r_ret) const {
 		r_ret = get_rendering_quadrant_size();
 		return true;
 	}
-#endif
+#endif // DISABLE_DEPRECATED
 	else {
 		return property_helper.property_get_value(sname, r_ret);
 	}
@@ -738,22 +743,22 @@ void TileMap::_get_property_list(List<PropertyInfo> *p_list) const {
 }
 
 Vector2 TileMap::map_to_local(const Vector2i &p_pos) const {
-	ERR_FAIL_COND_V(!tile_set.is_valid(), Vector2());
+	ERR_FAIL_COND_V(tile_set.is_null(), Vector2());
 	return tile_set->map_to_local(p_pos);
 }
 
 Vector2i TileMap::local_to_map(const Vector2 &p_pos) const {
-	ERR_FAIL_COND_V(!tile_set.is_valid(), Vector2i());
+	ERR_FAIL_COND_V(tile_set.is_null(), Vector2i());
 	return tile_set->local_to_map(p_pos);
 }
 
 bool TileMap::is_existing_neighbor(TileSet::CellNeighbor p_cell_neighbor) const {
-	ERR_FAIL_COND_V(!tile_set.is_valid(), false);
+	ERR_FAIL_COND_V(tile_set.is_null(), false);
 	return tile_set->is_existing_neighbor(p_cell_neighbor);
 }
 
 Vector2i TileMap::get_neighbor_cell(const Vector2i &p_coords, TileSet::CellNeighbor p_cell_neighbor) const {
-	ERR_FAIL_COND_V(!tile_set.is_valid(), Vector2i());
+	ERR_FAIL_COND_V(tile_set.is_null(), Vector2i());
 	return tile_set->get_neighbor_cell(p_coords, p_cell_neighbor);
 }
 
@@ -819,7 +824,7 @@ void TileMap::set_texture_repeat(CanvasItem::TextureRepeat p_texture_repeat) {
 }
 
 TypedArray<Vector2i> TileMap::get_surrounding_cells(const Vector2i &p_coords) {
-	if (!tile_set.is_valid()) {
+	if (tile_set.is_null()) {
 		return TypedArray<Vector2i>();
 	}
 
@@ -1020,6 +1025,34 @@ TileMap::TileMap() {
 	}
 
 	property_helper.setup_for_instance(base_property_helper, this);
+}
+
+void TileMap::navmesh_parse_init() {
+	ERR_FAIL_NULL(NavigationServer2D::get_singleton());
+	if (!_navmesh_source_geometry_parser.is_valid()) {
+		_navmesh_source_geometry_parsing_callback = callable_mp_static(&TileMap::navmesh_parse_source_geometry);
+		_navmesh_source_geometry_parser = NavigationServer2D::get_singleton()->source_geometry_parser_create();
+		NavigationServer2D::get_singleton()->source_geometry_parser_set_callback(_navmesh_source_geometry_parser, _navmesh_source_geometry_parsing_callback);
+	}
+}
+
+void TileMap::navmesh_parse_source_geometry(const Ref<NavigationPolygon> &p_navigation_mesh, Ref<NavigationMeshSourceGeometryData2D> p_source_geometry_data, Node *p_node) {
+	TileMap *nb_tilemap = Object::cast_to<TileMap>(p_node);
+
+	if (nb_tilemap == nullptr) {
+		return;
+	}
+
+	// Special case for TileMap, so that internal layer get parsed even if p_recurse_children is false.
+	bool recurse_children = p_navigation_mesh->get_source_geometry_mode() != NavigationPolygon::SOURCE_GEOMETRY_GROUPS_EXPLICIT;
+	if (!recurse_children) {
+		for (int i = 0; i < p_node->get_child_count(); i++) {
+			TileMapLayer *tile_map_layer = Object::cast_to<TileMapLayer>(p_node->get_child(i));
+			if (tile_map_layer && tile_map_layer->get_index_in_tile_map() >= 0) {
+				tile_map_layer->navmesh_parse_source_geometry(p_navigation_mesh, p_source_geometry_data, tile_map_layer);
+			}
+		}
+	}
 }
 
 #undef TILEMAP_CALL_FOR_LAYER

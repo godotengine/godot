@@ -958,28 +958,30 @@ struct CompletionItem {
 
 	/**
 	 * A string that should be used when comparing this item
-	 * with other items. When `falsy` the label is used.
+	 * with other items. When omitted the label is used
+	 * as the filter text for this item.
 	 */
 	String sortText;
 
 	/**
 	 * A string that should be used when filtering a set of
-	 * completion items. When `falsy` the label is used.
+	 * completion items. When omitted the label is used as the
+	 * filter text for this item.
 	 */
 	String filterText;
 
 	/**
 	 * A string that should be inserted into a document when selecting
-	 * this completion. When `falsy` the label is used.
+	 * this completion. When omitted the label is used as the insert text
+	 * for this item.
 	 *
 	 * The `insertText` is subject to interpretation by the client side.
 	 * Some tools might not take the string literally. For example
-	 * VS Code when code complete is requested in this example `con<cursor position>`
-	 * and a completion item with an `insertText` of `console` is provided it
-	 * will only insert `sole`. Therefore it is recommended to use `textEdit` instead
-	 * since it avoids additional client side interpretation.
-	 *
-	 * @deprecated Use textEdit instead.
+	 * VS Code when code complete is requested in this example
+	 * `con<cursor position>` and a completion item with an `insertText` of
+	 * `console` is provided it will only insert `sole`. Therefore it is
+	 * recommended to use `textEdit` instead since it avoids additional client
+	 * side interpretation.
 	 */
 	String insertText;
 
@@ -1034,14 +1036,20 @@ struct CompletionItem {
 		dict["label"] = label;
 		dict["kind"] = kind;
 		dict["data"] = data;
-		dict["insertText"] = insertText;
+		if (!insertText.is_empty()) {
+			dict["insertText"] = insertText;
+		}
 		if (resolved) {
 			dict["detail"] = detail;
 			dict["documentation"] = documentation.to_json();
 			dict["deprecated"] = deprecated;
 			dict["preselect"] = preselect;
-			dict["sortText"] = sortText;
-			dict["filterText"] = filterText;
+			if (!sortText.is_empty()) {
+				dict["sortText"] = sortText;
+			}
+			if (!filterText.is_empty()) {
+				dict["filterText"] = filterText;
+			}
 			if (commitCharacters.size()) {
 				dict["commitCharacters"] = commitCharacters;
 			}

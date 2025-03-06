@@ -166,6 +166,7 @@ private:
 		int amount = 0;
 		double lifetime = 1.0;
 		double pre_process_time = 0.0;
+		real_t request_process_time = 0.0;
 		real_t explosiveness = 0.0;
 		real_t randomness = 0.0;
 		bool restart_request = false;
@@ -247,7 +248,8 @@ private:
 		ParticleEmissionBuffer *emission_buffer = nullptr;
 		RID emission_storage_buffer;
 
-		RID unused_storage_buffer;
+		RID unused_emission_storage_buffer;
+		RID unused_trail_storage_buffer;
 
 		HashSet<RID> collisions;
 
@@ -260,12 +262,14 @@ private:
 
 		Particles() :
 				update_list(this) {
+			random_seed = Math::rand();
 		}
 	};
 
 	void _particles_process(Particles *p_particles, double p_delta);
 	void _particles_allocate_emission_buffer(Particles *particles);
-	void _particles_ensure_unused_buffer(Particles *particles);
+	void _particles_ensure_unused_emission_buffer(Particles *particles);
+	void _particles_ensure_unused_trail_buffer(Particles *particles);
 	void _particles_free_data(Particles *particles);
 	void _particles_update_buffers(Particles *particles);
 
@@ -400,6 +404,7 @@ private:
 		RID heightfield_texture;
 		RID heightfield_fb;
 		Size2i heightfield_fb_size;
+		uint32_t heightfield_mask = (1 << 20) - 1;
 
 		RS::ParticlesCollisionHeightfieldResolution heightfield_resolution = RS::PARTICLES_COLLISION_HEIGHTFIELD_RESOLUTION_1024;
 
@@ -439,6 +444,7 @@ public:
 	virtual void particles_set_lifetime(RID p_particles, double p_lifetime) override;
 	virtual void particles_set_one_shot(RID p_particles, bool p_one_shot) override;
 	virtual void particles_set_pre_process_time(RID p_particles, double p_time) override;
+	virtual void particles_request_process_time(RID p_particles, real_t p_request_process_time) override;
 	virtual void particles_set_explosiveness_ratio(RID p_particles, real_t p_ratio) override;
 	virtual void particles_set_randomness_ratio(RID p_particles, real_t p_ratio) override;
 	virtual void particles_set_custom_aabb(RID p_particles, const AABB &p_aabb) override;
@@ -452,6 +458,7 @@ public:
 	virtual void particles_set_fractional_delta(RID p_particles, bool p_enable) override;
 	virtual void particles_set_collision_base_size(RID p_particles, real_t p_size) override;
 	virtual void particles_set_transform_align(RID p_particles, RS::ParticlesTransformAlign p_transform_align) override;
+	virtual void particles_set_seed(RID p_particles, uint32_t p_seed) override;
 
 	virtual void particles_set_trails(RID p_particles, bool p_enable, double p_length) override;
 	virtual void particles_set_trail_bind_poses(RID p_particles, const Vector<Transform3D> &p_bind_poses) override;
@@ -509,7 +516,7 @@ public:
 
 	_FORCE_INLINE_ bool particles_has_collision(RID p_particles) {
 		Particles *particles = particles_owner.get_or_null(p_particles);
-		ERR_FAIL_NULL_V(particles, 0);
+		ERR_FAIL_NULL_V(particles, false);
 
 		return particles->has_collision_cache;
 	}
@@ -575,6 +582,8 @@ public:
 	Vector3 particles_collision_get_extents(RID p_particles_collision) const;
 	virtual bool particles_collision_is_heightfield(RID p_particles_collision) const override;
 	RID particles_collision_get_heightfield_framebuffer(RID p_particles_collision) const;
+	virtual uint32_t particles_collision_get_height_field_mask(RID p_particles_collision) const override;
+	virtual void particles_collision_set_height_field_mask(RID p_particles_collision, uint32_t p_heightfield_mask) override;
 
 	Dependency *particles_collision_get_dependency(RID p_particles) const;
 

@@ -18,7 +18,8 @@
 		<method name="get_mesh_arrays" qualifiers="const">
 			<return type="Array" />
 			<description>
-				Returns mesh arrays used to constitute surface of [Mesh]. The result can be passed to [method ArrayMesh.add_surface_from_arrays] to create a new surface. For example:
+				Returns the mesh arrays used to make up the surface of this primitive mesh.
+				[b]Example:[/b] Pass the result to [method ArrayMesh.add_surface_from_arrays] to create a new surface:
 				[codeblocks]
 				[gdscript]
 				var c = CylinderMesh.new()

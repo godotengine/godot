@@ -24,7 +24,7 @@
 		<method name="_query" qualifiers="virtual const">
 			<return type="bool" />
 			<description>
-				Query support. Return false if import must not continue.
+				Query support. Return [code]false[/code] if import must not continue.
 			</description>
 		</method>
 	</methods>

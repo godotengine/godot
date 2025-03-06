@@ -288,14 +288,8 @@ String FBXDocument::_gen_unique_name(HashSet<String> &unique_names, const String
 }
 
 String FBXDocument::_sanitize_animation_name(const String &p_name) {
-	// Animations disallow the normal node invalid characters as well as  "," and "["
-	// (See animation/animation_player.cpp::add_animation)
-
-	// TODO: Consider adding invalid_characters or a validate_animation_name to animation_player to mirror Node.
 	String anim_name = p_name.validate_node_name();
-	anim_name = anim_name.replace(",", "");
-	anim_name = anim_name.replace("[", "");
-	return anim_name;
+	return AnimationLibrary::validate_library_name(anim_name);
 }
 
 String FBXDocument::_gen_unique_animation_name(Ref<FBXState> p_state, const String &p_name) {
@@ -375,21 +369,25 @@ Error FBXDocument::_parse_nodes(Ref<FBXState> p_state) {
 				// all skin clusters connected to the bone.
 				for (const ufbx_connection &child_conn : fbx_node->element.connections_src) {
 					ufbx_skin_cluster *child_cluster = ufbx_as_skin_cluster(child_conn.dst);
-					if (!child_cluster)
+					if (!child_cluster) {
 						continue;
+					}
 					ufbx_skin_deformer *child_deformer = _find_skin_deformer(child_cluster);
-					if (!child_deformer)
+					if (!child_deformer) {
 						continue;
+					}
 
 					// Found a skin cluster: Now iterate through all the skin clusters of the parent and
 					// try to find one that used by the same deformer.
 					for (const ufbx_connection &parent_conn : fbx_node->parent->element.connections_src) {
 						ufbx_skin_cluster *parent_cluster = ufbx_as_skin_cluster(parent_conn.dst);
-						if (!parent_cluster)
+						if (!parent_cluster) {
 							continue;
+						}
 						ufbx_skin_deformer *parent_deformer = _find_skin_deformer(parent_cluster);
-						if (parent_deformer != child_deformer)
+						if (parent_deformer != child_deformer) {
 							continue;
+						}
 
 						// Success: Found two skin clusters from the same deformer, now we can resolve the
 						// local bind pose from the difference between the two world-space bind poses.
@@ -1395,7 +1393,7 @@ Error FBXDocument::_parse_animations(Ref<FBXState> p_state) {
 
 		for (const ufbx_baked_node &fbx_baked_node : fbx_baked_anim->nodes) {
 			const GLTFNodeIndex node = fbx_baked_node.typed_id;
-			GLTFAnimation::Track &track = animation->get_tracks()[node];
+			GLTFAnimation::NodeTrack &track = animation->get_node_tracks()[node];
 
 			for (const ufbx_baked_vec3 &key : fbx_baked_node.translation_keys) {
 				track.position_track.times.push_back(float(key.time));
@@ -1785,8 +1783,8 @@ void FBXDocument::_import_animation(Ref<FBXState> p_state, AnimationPlayer *p_an
 
 	double anim_start_offset = p_trimming ? double(additional_animation_data["time_begin"]) : 0.0;
 
-	for (const KeyValue<int, GLTFAnimation::Track> &track_i : anim->get_tracks()) {
-		const GLTFAnimation::Track &track = track_i.value;
+	for (const KeyValue<int, GLTFAnimation::NodeTrack> &track_i : anim->get_node_tracks()) {
+		const GLTFAnimation::NodeTrack &track = track_i.value;
 		//need to find the path: for skeletons, weight tracks will affect the mesh
 		NodePath node_path;
 		//for skeletons, transform tracks always affect bones

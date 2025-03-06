@@ -33,18 +33,26 @@
 
 #include "servers/rendering/rendering_device.h"
 
-#define RD_SETGET(m_type, m_member)                                            \
-	void set_##m_member(m_type p_##m_member) { base.m_member = p_##m_member; } \
-	m_type get_##m_member() const { return base.m_member; }
+#define RD_SETGET(m_type, m_member)            \
+	void set_##m_member(m_type p_##m_member) { \
+		base.m_member = p_##m_member;          \
+	}                                          \
+	m_type get_##m_member() const {            \
+		return base.m_member;                  \
+	}
 
 #define RD_BIND(m_variant_type, m_class, m_member)                                                          \
 	ClassDB::bind_method(D_METHOD("set_" _MKSTR(m_member), "p_" _MKSTR(member)), &m_class::set_##m_member); \
 	ClassDB::bind_method(D_METHOD("get_" _MKSTR(m_member)), &m_class::get_##m_member);                      \
 	ADD_PROPERTY(PropertyInfo(m_variant_type, #m_member), "set_" _MKSTR(m_member), "get_" _MKSTR(m_member))
 
-#define RD_SETGET_SUB(m_type, m_sub, m_member)                                                 \
-	void set_##m_sub##_##m_member(m_type p_##m_member) { base.m_sub.m_member = p_##m_member; } \
-	m_type get_##m_sub##_##m_member() const { return base.m_sub.m_member; }
+#define RD_SETGET_SUB(m_type, m_sub, m_member)           \
+	void set_##m_sub##_##m_member(m_type p_##m_member) { \
+		base.m_sub.m_member = p_##m_member;              \
+	}                                                    \
+	m_type get_##m_sub##_##m_member() const {            \
+		return base.m_sub.m_member;                      \
+	}
 
 #define RD_BIND_SUB(m_variant_type, m_class, m_sub, m_member)                                                                           \
 	ClassDB::bind_method(D_METHOD("set_" _MKSTR(m_sub) "_" _MKSTR(m_member), "p_" _MKSTR(member)), &m_class::set_##m_sub##_##m_member); \
@@ -69,6 +77,8 @@ public:
 	RD_SETGET(RD::TextureType, texture_type)
 	RD_SETGET(RD::TextureSamples, samples)
 	RD_SETGET(BitField<RenderingDevice::TextureUsageBits>, usage_bits)
+	RD_SETGET(bool, is_resolve_buffer)
+	RD_SETGET(bool, is_discardable)
 
 	void add_shareable_format(RD::DataFormat p_format) { base.shareable_formats.push_back(p_format); }
 	void remove_shareable_format(RD::DataFormat p_format) { base.shareable_formats.erase(p_format); }
@@ -84,6 +94,9 @@ protected:
 		RD_BIND(Variant::INT, RDTextureFormat, texture_type);
 		RD_BIND(Variant::INT, RDTextureFormat, samples);
 		RD_BIND(Variant::INT, RDTextureFormat, usage_bits);
+		RD_BIND(Variant::BOOL, RDTextureFormat, is_resolve_buffer);
+		RD_BIND(Variant::BOOL, RDTextureFormat, is_discardable);
+
 		ClassDB::bind_method(D_METHOD("add_shareable_format", "format"), &RDTextureFormat::add_shareable_format);
 		ClassDB::bind_method(D_METHOD("remove_shareable_format", "format"), &RDTextureFormat::remove_shareable_format);
 	}
@@ -392,7 +405,7 @@ public:
 							"compute"
 						};
 
-						ERR_PRINT("Error parsing shader '" + p_file + "', version '" + String(E.key) + "', stage '" + stage_str[i] + "':\n\n" + error);
+						print_error("Error parsing shader '" + p_file + "', version '" + String(E.key) + "', stage '" + stage_str[i] + "':\n\n" + error);
 					}
 				}
 			}

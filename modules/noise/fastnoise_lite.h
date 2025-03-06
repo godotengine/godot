@@ -33,11 +33,7 @@
 
 #include "noise.h"
 
-#include "core/io/image.h"
-#include "core/object/ref_counted.h"
-#include "scene/resources/gradient.h"
-
-#include <thirdparty/noise/FastNoiseLite.h>
+#include "thirdparty/misc/FastNoiseLite.h"
 
 typedef fastnoiselite::FastNoiseLite _FastNoiseLite;
 

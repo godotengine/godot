@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "file_access.h"
+#include "file_access.compat.inc"
 
 #include "core/config/project_settings.h"
 #include "core/crypto/crypto_core.h"
@@ -37,6 +38,7 @@
 #include "core/io/file_access_pack.h"
 #include "core/io/marshalls.h"
 #include "core/os/os.h"
+#include "core/os/time.h"
 
 FileAccess::CreateFunc FileAccess::create_func[ACCESS_MAX] = {};
 
@@ -70,7 +72,7 @@ void FileAccess::_set_access_type(AccessType p_access) {
 
 Ref<FileAccess> FileAccess::create_for_path(const String &p_path) {
 	Ref<FileAccess> ret;
-	if (p_path.begins_with("res://")) {
+	if (p_path.begins_with("res://") || p_path.begins_with("uid://")) {
 		ret = create(ACCESS_RESOURCES);
 	} else if (p_path.begins_with("user://")) {
 		ret = create(ACCESS_USERDATA);
@@ -81,6 +83,79 @@ Ref<FileAccess> FileAccess::create_for_path(const String &p_path) {
 	}
 
 	return ret;
+}
+
+Ref<FileAccess> FileAccess::create_temp(int p_mode_flags, const String &p_prefix, const String &p_extension, bool p_keep, Error *r_error) {
+	const String ERROR_COMMON_PREFIX = "Error while creating temporary file";
+
+	if (!p_prefix.is_valid_filename()) {
+		*r_error = ERR_FILE_BAD_PATH;
+		ERR_FAIL_V_MSG(Ref<FileAccess>(), vformat(R"(%s: "%s" is not a valid prefix.)", ERROR_COMMON_PREFIX, p_prefix));
+	}
+
+	if (!p_extension.is_valid_filename()) {
+		*r_error = ERR_FILE_BAD_PATH;
+		ERR_FAIL_V_MSG(Ref<FileAccess>(), vformat(R"(%s: "%s" is not a valid extension.)", ERROR_COMMON_PREFIX, p_extension));
+	}
+
+	const String TEMP_DIR = OS::get_singleton()->get_temp_path();
+	String extension = p_extension.trim_prefix(".");
+
+	uint32_t suffix_i = 0;
+	String path;
+	while (true) {
+		String datetime = Time::get_singleton()->get_datetime_string_from_system().replace("-", "").replace("T", "").replace(":", "");
+		datetime += itos(Time::get_singleton()->get_ticks_usec());
+		String suffix = datetime + (suffix_i > 0 ? itos(suffix_i) : "");
+		path = TEMP_DIR.path_join((p_prefix.is_empty() ? "" : p_prefix + "-") + suffix + (extension.is_empty() ? "" : "." + extension));
+		if (!DirAccess::exists(path)) {
+			break;
+		}
+		suffix_i += 1;
+	}
+
+	Error err;
+	{
+		// Create file first with WRITE mode.
+		// Otherwise, it would fail to open with a READ mode.
+		Ref<FileAccess> ret = FileAccess::open(path, FileAccess::ModeFlags::WRITE, &err);
+		if (err != OK) {
+			*r_error = err;
+			ERR_FAIL_V_MSG(Ref<FileAccess>(), vformat(R"(%s: could not create "%s".)", ERROR_COMMON_PREFIX, path));
+		}
+		ret->flush();
+	}
+
+	// Open then the temp file with the correct mode flag.
+	Ref<FileAccess> ret = FileAccess::open(path, p_mode_flags, &err);
+	if (err != OK) {
+		*r_error = err;
+		ERR_FAIL_V_MSG(Ref<FileAccess>(), vformat(R"(%s: could not open "%s".)", ERROR_COMMON_PREFIX, path));
+	}
+	if (ret.is_valid()) {
+		ret->_is_temp_file = true;
+		ret->_temp_keep_after_use = p_keep;
+		ret->_temp_path = ret->get_path_absolute();
+	}
+
+	*r_error = OK;
+	return ret;
+}
+
+Ref<FileAccess> FileAccess::_create_temp(int p_mode_flags, const String &p_prefix, const String &p_extension, bool p_keep) {
+	return create_temp(p_mode_flags, p_prefix, p_extension, p_keep, &last_file_open_error);
+}
+
+void FileAccess::_delete_temp() {
+	if (!_is_temp_file || _temp_keep_after_use) {
+		return;
+	}
+
+	if (!FileAccess::exists(_temp_path)) {
+		return;
+	}
+
+	DirAccess::remove_absolute(_temp_path);
 }
 
 Error FileAccess::reopen(const String &p_path, int p_mode_flags) {
@@ -124,7 +199,7 @@ Ref<FileAccess> FileAccess::_open(const String &p_path, ModeFlags p_mode_flags) 
 	return fa;
 }
 
-Ref<FileAccess> FileAccess::open_encrypted(const String &p_path, ModeFlags p_mode_flags, const Vector<uint8_t> &p_key) {
+Ref<FileAccess> FileAccess::open_encrypted(const String &p_path, ModeFlags p_mode_flags, const Vector<uint8_t> &p_key, const Vector<uint8_t> &p_iv) {
 	Ref<FileAccess> fa = _open(p_path, p_mode_flags);
 	if (fa.is_null()) {
 		return fa;
@@ -132,7 +207,7 @@ Ref<FileAccess> FileAccess::open_encrypted(const String &p_path, ModeFlags p_mod
 
 	Ref<FileAccessEncrypted> fae;
 	fae.instantiate();
-	Error err = fae->open_and_parse(fa, p_key, (p_mode_flags == WRITE) ? FileAccessEncrypted::MODE_WRITE_AES256 : FileAccessEncrypted::MODE_READ);
+	Error err = fae->open_and_parse(fa, p_key, (p_mode_flags == WRITE) ? FileAccessEncrypted::MODE_WRITE_AES256 : FileAccessEncrypted::MODE_READ, true, p_iv);
 	last_file_open_error = err;
 	if (err) {
 		return Ref<FileAccess>();
@@ -182,13 +257,17 @@ FileAccess::AccessType FileAccess::get_access_type() const {
 }
 
 String FileAccess::fix_path(const String &p_path) const {
-	//helper used by file accesses that use a single filesystem
+	// Helper used by file accesses that use a single filesystem.
 
 	String r_path = p_path.replace("\\", "/");
 
 	switch (_access_type) {
 		case ACCESS_RESOURCES: {
 			if (ProjectSettings::get_singleton()) {
+				if (r_path.begins_with("uid://")) {
+					r_path = ResourceUID::uid_to_path(r_path);
+				}
+
 				if (r_path.begins_with("res://")) {
 					String resource_path = ProjectSettings::get_singleton()->get_resource_path();
 					if (!resource_path.is_empty()) {
@@ -263,6 +342,10 @@ uint64_t FileAccess::get_64() const {
 	return data;
 }
 
+float FileAccess::get_half() const {
+	return Math::half_to_float(get_16());
+}
+
 float FileAccess::get_float() const {
 	MarshallFloat m;
 	m.i = get_32();
@@ -300,7 +383,7 @@ double FileAccess::get_double() const {
 String FileAccess::get_token() const {
 	CharString token;
 
-	char32_t c = get_8();
+	uint8_t c = get_8();
 
 	while (!eof_reached()) {
 		if (c <= ' ') {
@@ -308,7 +391,7 @@ String FileAccess::get_token() const {
 				break;
 			}
 		} else {
-			token += c;
+			token += char(c);
 		}
 		c = get_8();
 	}
@@ -365,14 +448,14 @@ public:
 String FileAccess::get_line() const {
 	CharBuffer line;
 
-	char32_t c = get_8();
+	uint8_t c = get_8();
 
 	while (!eof_reached()) {
-		if (c == '\n' || c == '\0') {
+		if (c == '\n' || c == '\0' || get_error() != OK) {
 			line.push_back(0);
 			return String::utf8(line.get_data());
 		} else if (c != '\r') {
-			line.push_back(c);
+			line.push_back(char(c));
 		}
 
 		c = get_8();
@@ -459,7 +542,7 @@ Vector<uint8_t> FileAccess::get_buffer(int64_t p_length) const {
 	}
 
 	Error err = data.resize(p_length);
-	ERR_FAIL_COND_V_MSG(err != OK, data, "Can't resize data to " + itos(p_length) + " elements.");
+	ERR_FAIL_COND_V_MSG(err != OK, data, vformat("Can't resize data to %d elements.", p_length));
 
 	uint8_t *w = data.ptrw();
 	int64_t len = get_buffer(w, p_length);
@@ -482,56 +565,60 @@ String FileAccess::get_as_utf8_string(bool p_skip_cr) const {
 	w[len] = 0;
 
 	String s;
-	s.parse_utf8((const char *)w, -1, p_skip_cr);
+	s.parse_utf8((const char *)w, len, p_skip_cr);
 	return s;
 }
 
-void FileAccess::store_8(uint8_t p_dest) {
-	store_buffer(&p_dest, sizeof(uint8_t));
+bool FileAccess::store_8(uint8_t p_dest) {
+	return store_buffer(&p_dest, sizeof(uint8_t));
 }
 
-void FileAccess::store_16(uint16_t p_dest) {
+bool FileAccess::store_16(uint16_t p_dest) {
 	if (big_endian) {
 		p_dest = BSWAP16(p_dest);
 	}
 
-	store_buffer(reinterpret_cast<uint8_t *>(&p_dest), sizeof(uint16_t));
+	return store_buffer(reinterpret_cast<uint8_t *>(&p_dest), sizeof(uint16_t));
 }
 
-void FileAccess::store_32(uint32_t p_dest) {
+bool FileAccess::store_32(uint32_t p_dest) {
 	if (big_endian) {
 		p_dest = BSWAP32(p_dest);
 	}
 
-	store_buffer(reinterpret_cast<uint8_t *>(&p_dest), sizeof(uint32_t));
+	return store_buffer(reinterpret_cast<uint8_t *>(&p_dest), sizeof(uint32_t));
 }
 
-void FileAccess::store_64(uint64_t p_dest) {
+bool FileAccess::store_64(uint64_t p_dest) {
 	if (big_endian) {
 		p_dest = BSWAP64(p_dest);
 	}
 
-	store_buffer(reinterpret_cast<uint8_t *>(&p_dest), sizeof(uint64_t));
+	return store_buffer(reinterpret_cast<uint8_t *>(&p_dest), sizeof(uint64_t));
 }
 
-void FileAccess::store_real(real_t p_real) {
+bool FileAccess::store_real(real_t p_real) {
 	if constexpr (sizeof(real_t) == 4) {
-		store_float(p_real);
+		return store_float(p_real);
 	} else {
-		store_double(p_real);
+		return store_double(p_real);
 	}
 }
 
-void FileAccess::store_float(float p_dest) {
-	MarshallFloat m;
-	m.f = p_dest;
-	store_32(m.i);
+bool FileAccess::store_half(float p_dest) {
+	return store_16(Math::make_half_float(p_dest));
 }
 
-void FileAccess::store_double(double p_dest) {
+bool FileAccess::store_float(float p_dest) {
+	MarshallFloat m;
+	m.f = p_dest;
+	return store_32(m.i);
+}
+
+bool FileAccess::store_double(double p_dest) {
 	MarshallDouble m;
 	m.d = p_dest;
-	store_64(m.l);
+	return store_64(m.l);
 }
 
 uint64_t FileAccess::get_modified_time(const String &p_file) {
@@ -540,7 +627,7 @@ uint64_t FileAccess::get_modified_time(const String &p_file) {
 	}
 
 	Ref<FileAccess> fa = create_for_path(p_file);
-	ERR_FAIL_COND_V_MSG(fa.is_null(), 0, "Cannot create FileAccess for path '" + p_file + "'.");
+	ERR_FAIL_COND_V_MSG(fa.is_null(), 0, vformat("Cannot create FileAccess for path '%s'.", p_file));
 
 	uint64_t mt = fa->_get_modified_time(p_file);
 	return mt;
@@ -552,7 +639,7 @@ BitField<FileAccess::UnixPermissionFlags> FileAccess::get_unix_permissions(const
 	}
 
 	Ref<FileAccess> fa = create_for_path(p_file);
-	ERR_FAIL_COND_V_MSG(fa.is_null(), 0, "Cannot create FileAccess for path '" + p_file + "'.");
+	ERR_FAIL_COND_V_MSG(fa.is_null(), 0, vformat("Cannot create FileAccess for path '%s'.", p_file));
 
 	return fa->_get_unix_permissions(p_file);
 }
@@ -563,7 +650,7 @@ Error FileAccess::set_unix_permissions(const String &p_file, BitField<FileAccess
 	}
 
 	Ref<FileAccess> fa = create_for_path(p_file);
-	ERR_FAIL_COND_V_MSG(fa.is_null(), ERR_CANT_CREATE, "Cannot create FileAccess for path '" + p_file + "'.");
+	ERR_FAIL_COND_V_MSG(fa.is_null(), ERR_CANT_CREATE, vformat("Cannot create FileAccess for path '%s'.", p_file));
 
 	Error err = fa->_set_unix_permissions(p_file, p_permissions);
 	return err;
@@ -575,7 +662,7 @@ bool FileAccess::get_hidden_attribute(const String &p_file) {
 	}
 
 	Ref<FileAccess> fa = create_for_path(p_file);
-	ERR_FAIL_COND_V_MSG(fa.is_null(), false, "Cannot create FileAccess for path '" + p_file + "'.");
+	ERR_FAIL_COND_V_MSG(fa.is_null(), false, vformat("Cannot create FileAccess for path '%s'.", p_file));
 
 	return fa->_get_hidden_attribute(p_file);
 }
@@ -586,7 +673,7 @@ Error FileAccess::set_hidden_attribute(const String &p_file, bool p_hidden) {
 	}
 
 	Ref<FileAccess> fa = create_for_path(p_file);
-	ERR_FAIL_COND_V_MSG(fa.is_null(), ERR_CANT_CREATE, "Cannot create FileAccess for path '" + p_file + "'.");
+	ERR_FAIL_COND_V_MSG(fa.is_null(), ERR_CANT_CREATE, vformat("Cannot create FileAccess for path '%s'.", p_file));
 
 	Error err = fa->_set_hidden_attribute(p_file, p_hidden);
 	return err;
@@ -598,7 +685,7 @@ bool FileAccess::get_read_only_attribute(const String &p_file) {
 	}
 
 	Ref<FileAccess> fa = create_for_path(p_file);
-	ERR_FAIL_COND_V_MSG(fa.is_null(), false, "Cannot create FileAccess for path '" + p_file + "'.");
+	ERR_FAIL_COND_V_MSG(fa.is_null(), false, vformat("Cannot create FileAccess for path '%s'.", p_file));
 
 	return fa->_get_read_only_attribute(p_file);
 }
@@ -609,25 +696,24 @@ Error FileAccess::set_read_only_attribute(const String &p_file, bool p_ro) {
 	}
 
 	Ref<FileAccess> fa = create_for_path(p_file);
-	ERR_FAIL_COND_V_MSG(fa.is_null(), ERR_CANT_CREATE, "Cannot create FileAccess for path '" + p_file + "'.");
+	ERR_FAIL_COND_V_MSG(fa.is_null(), ERR_CANT_CREATE, vformat("Cannot create FileAccess for path '%s'.", p_file));
 
 	Error err = fa->_set_read_only_attribute(p_file, p_ro);
 	return err;
 }
 
-void FileAccess::store_string(const String &p_string) {
+bool FileAccess::store_string(const String &p_string) {
 	if (p_string.length() == 0) {
-		return;
+		return true;
 	}
 
 	CharString cs = p_string.utf8();
-	store_buffer((uint8_t *)&cs[0], cs.length());
+	return store_buffer((uint8_t *)&cs[0], cs.length());
 }
 
-void FileAccess::store_pascal_string(const String &p_string) {
+bool FileAccess::store_pascal_string(const String &p_string) {
 	CharString cs = p_string.utf8();
-	store_32(cs.length());
-	store_buffer((uint8_t *)&cs[0], cs.length());
+	return store_32(cs.length()) && store_buffer((uint8_t *)&cs[0], cs.length());
 }
 
 String FileAccess::get_pascal_string() {
@@ -638,24 +724,23 @@ String FileAccess::get_pascal_string() {
 	cs[sl] = 0;
 
 	String ret;
-	ret.parse_utf8(cs.ptr());
+	ret.parse_utf8(cs.ptr(), sl);
 	return ret;
 }
 
-void FileAccess::store_line(const String &p_line) {
-	store_string(p_line);
-	store_8('\n');
+bool FileAccess::store_line(const String &p_line) {
+	return store_string(p_line) && store_8('\n');
 }
 
-void FileAccess::store_csv_line(const Vector<String> &p_values, const String &p_delim) {
-	ERR_FAIL_COND(p_delim.length() != 1);
+bool FileAccess::store_csv_line(const Vector<String> &p_values, const String &p_delim) {
+	ERR_FAIL_COND_V(p_delim.length() != 1, false);
 
 	String line = "";
 	int size = p_values.size();
 	for (int i = 0; i < size; ++i) {
 		String value = p_values[i];
 
-		if (value.contains("\"") || value.contains(p_delim) || value.contains("\n")) {
+		if (value.contains_char('"') || value.contains(p_delim) || value.contains_char('\n')) {
 			value = "\"" + value.replace("\"", "\"\"") + "\"";
 		}
 		if (i < size - 1) {
@@ -665,30 +750,43 @@ void FileAccess::store_csv_line(const Vector<String> &p_values, const String &p_
 		line += value;
 	}
 
-	store_line(line);
+	return store_line(line);
 }
 
-void FileAccess::store_buffer(const Vector<uint8_t> &p_buffer) {
+bool FileAccess::store_buffer(const Vector<uint8_t> &p_buffer) {
 	uint64_t len = p_buffer.size();
+	if (len == 0) {
+		return true;
+	}
+
 	const uint8_t *r = p_buffer.ptr();
 
-	store_buffer(r, len);
+	return store_buffer(r, len);
 }
 
-void FileAccess::store_var(const Variant &p_var, bool p_full_objects) {
+bool FileAccess::store_buffer(const uint8_t *p_src, uint64_t p_length) {
+	ERR_FAIL_COND_V(!p_src && p_length > 0, false);
+	for (uint64_t i = 0; i < p_length; i++) {
+		if (unlikely(!store_8(p_src[i]))) {
+			return false;
+		}
+	}
+	return true;
+}
+
+bool FileAccess::store_var(const Variant &p_var, bool p_full_objects) {
 	int len;
 	Error err = encode_variant(p_var, nullptr, len, p_full_objects);
-	ERR_FAIL_COND_MSG(err != OK, "Error when trying to encode Variant.");
+	ERR_FAIL_COND_V_MSG(err != OK, false, "Error when trying to encode Variant.");
 
 	Vector<uint8_t> buff;
 	buff.resize(len);
 
 	uint8_t *w = buff.ptrw();
 	err = encode_variant(p_var, &w[0], len, p_full_objects);
-	ERR_FAIL_COND_MSG(err != OK, "Error when trying to encode Variant.");
+	ERR_FAIL_COND_V_MSG(err != OK, false, "Error when trying to encode Variant.");
 
-	store_32(len);
-	store_buffer(buff);
+	return store_32(uint32_t(len)) && store_buffer(buff);
 }
 
 Vector<uint8_t> FileAccess::get_file_as_bytes(const String &p_path, Error *r_error) {
@@ -697,7 +795,7 @@ Vector<uint8_t> FileAccess::get_file_as_bytes(const String &p_path, Error *r_err
 		if (r_error) { // if error requested, do not throw error
 			return Vector<uint8_t>();
 		}
-		ERR_FAIL_V_MSG(Vector<uint8_t>(), "Can't open file from path '" + String(p_path) + "'.");
+		ERR_FAIL_V_MSG(Vector<uint8_t>(), vformat("Can't open file from path '%s'.", String(p_path)));
 	}
 	Vector<uint8_t> data;
 	data.resize(f->get_length());
@@ -715,7 +813,7 @@ String FileAccess::get_file_as_string(const String &p_path, Error *r_error) {
 		if (r_error) {
 			return String();
 		}
-		ERR_FAIL_V_MSG(String(), "Can't get file as string from path '" + String(p_path) + "'.");
+		ERR_FAIL_V_MSG(String(), vformat("Can't get file as string from path '%s'.", String(p_path)));
 	}
 
 	String ret;
@@ -806,10 +904,11 @@ String FileAccess::get_sha256(const String &p_file) {
 
 void FileAccess::_bind_methods() {
 	ClassDB::bind_static_method("FileAccess", D_METHOD("open", "path", "flags"), &FileAccess::_open);
-	ClassDB::bind_static_method("FileAccess", D_METHOD("open_encrypted", "path", "mode_flags", "key"), &FileAccess::open_encrypted);
+	ClassDB::bind_static_method("FileAccess", D_METHOD("open_encrypted", "path", "mode_flags", "key", "iv"), &FileAccess::open_encrypted, DEFVAL(Vector<uint8_t>()));
 	ClassDB::bind_static_method("FileAccess", D_METHOD("open_encrypted_with_pass", "path", "mode_flags", "pass"), &FileAccess::open_encrypted_pass);
 	ClassDB::bind_static_method("FileAccess", D_METHOD("open_compressed", "path", "mode_flags", "compression_mode"), &FileAccess::open_compressed, DEFVAL(0));
 	ClassDB::bind_static_method("FileAccess", D_METHOD("get_open_error"), &FileAccess::get_open_error);
+	ClassDB::bind_static_method("FileAccess", D_METHOD("create_temp", "mode_flags", "prefix", "extension", "keep"), &FileAccess::_create_temp, DEFVAL(""), DEFVAL(""), DEFVAL(false));
 
 	ClassDB::bind_static_method("FileAccess", D_METHOD("get_file_as_bytes", "path"), &FileAccess::_get_file_as_bytes);
 	ClassDB::bind_static_method("FileAccess", D_METHOD("get_file_as_string", "path"), &FileAccess::_get_file_as_string);
@@ -828,6 +927,7 @@ void FileAccess::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_16"), &FileAccess::get_16);
 	ClassDB::bind_method(D_METHOD("get_32"), &FileAccess::get_32);
 	ClassDB::bind_method(D_METHOD("get_64"), &FileAccess::get_64);
+	ClassDB::bind_method(D_METHOD("get_half"), &FileAccess::get_half);
 	ClassDB::bind_method(D_METHOD("get_float"), &FileAccess::get_float);
 	ClassDB::bind_method(D_METHOD("get_double"), &FileAccess::get_double);
 	ClassDB::bind_method(D_METHOD("get_real"), &FileAccess::get_real);
@@ -846,10 +946,11 @@ void FileAccess::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("store_16", "value"), &FileAccess::store_16);
 	ClassDB::bind_method(D_METHOD("store_32", "value"), &FileAccess::store_32);
 	ClassDB::bind_method(D_METHOD("store_64", "value"), &FileAccess::store_64);
+	ClassDB::bind_method(D_METHOD("store_half", "value"), &FileAccess::store_half);
 	ClassDB::bind_method(D_METHOD("store_float", "value"), &FileAccess::store_float);
 	ClassDB::bind_method(D_METHOD("store_double", "value"), &FileAccess::store_double);
 	ClassDB::bind_method(D_METHOD("store_real", "value"), &FileAccess::store_real);
-	ClassDB::bind_method(D_METHOD("store_buffer", "buffer"), (void(FileAccess::*)(const Vector<uint8_t> &)) & FileAccess::store_buffer);
+	ClassDB::bind_method(D_METHOD("store_buffer", "buffer"), (bool(FileAccess::*)(const Vector<uint8_t> &)) & FileAccess::store_buffer);
 	ClassDB::bind_method(D_METHOD("store_line", "line"), &FileAccess::store_line);
 	ClassDB::bind_method(D_METHOD("store_csv_line", "values", "delim"), &FileAccess::store_csv_line, DEFVAL(","));
 	ClassDB::bind_method(D_METHOD("store_string", "string"), &FileAccess::store_string);
@@ -896,4 +997,8 @@ void FileAccess::_bind_methods() {
 	BIND_BITFIELD_FLAG(UNIX_SET_USER_ID);
 	BIND_BITFIELD_FLAG(UNIX_SET_GROUP_ID);
 	BIND_BITFIELD_FLAG(UNIX_RESTRICTED_DELETE);
+}
+
+FileAccess::~FileAccess() {
+	_delete_temp();
 }

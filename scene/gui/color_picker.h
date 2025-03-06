@@ -31,28 +31,25 @@
 #ifndef COLOR_PICKER_H
 #define COLOR_PICKER_H
 
-#include "scene/gui/aspect_ratio_container.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
-#include "scene/gui/control.h"
-#include "scene/gui/grid_container.h"
-#include "scene/gui/label.h"
-#include "scene/gui/line_edit.h"
-#include "scene/gui/menu_button.h"
-#include "scene/gui/option_button.h"
-#include "scene/gui/panel.h"
 #include "scene/gui/popup.h"
-#include "scene/gui/separator.h"
-#include "scene/gui/slider.h"
-#include "scene/gui/spin_box.h"
-#include "scene/gui/texture_rect.h"
-#include "scene/resources/style_box_flat.h"
 
+class AspectRatioContainer;
 class ColorMode;
-class ColorModeRGB;
-class ColorModeHSV;
-class ColorModeRAW;
-class ColorModeOKHSL;
+class ColorPickerShape;
+class FileDialog;
+class GridContainer;
+class HSlider;
+class Label;
+class LineEdit;
+class MarginContainer;
+class MenuButton;
+class OptionButton;
+class PopupMenu;
+class SpinBox;
+class StyleBoxFlat;
+class TextureRect;
 
 class ColorPresetButton : public BaseButton {
 	GDCLASS(ColorPresetButton, BaseButton);
@@ -107,14 +104,22 @@ public:
 		SHAPE_MAX
 	};
 
-	static const int SLIDER_COUNT = 4;
+	static const int SLIDER_COUNT = 3;
 
 private:
-	static Ref<Shader> wheel_shader;
-	static Ref<Shader> circle_shader;
-	static Ref<Shader> circle_ok_color_shader;
-	static List<Color> preset_cache;
-	static List<Color> recent_preset_cache;
+	enum class MenuOption {
+		MENU_SAVE,
+		MENU_SAVE_AS,
+		MENU_LOAD,
+		MENU_QUICKLOAD,
+		MENU_CLEAR,
+	};
+
+	static inline Ref<Shader> wheel_shader;
+	static inline Ref<Shader> circle_shader;
+	static inline Ref<Shader> circle_ok_color_shader;
+	static inline List<Color> preset_cache;
+	static inline List<Color> recent_preset_cache;
 
 #ifdef TOOLS_ENABLED
 	Object *editor_settings = nullptr;
@@ -122,18 +127,25 @@ private:
 
 	int current_slider_count = SLIDER_COUNT;
 	static const int MODE_BUTTON_COUNT = 3;
+	const float WHEEL_RADIUS = 0.42;
 
 	bool slider_theme_modified = true;
 
 	Vector<ColorMode *> modes;
 
 	Popup *picker_window = nullptr;
+	TextureRect *picker_texture_zoom = nullptr;
+	Panel *picker_preview = nullptr;
+	Panel *picker_preview_color = nullptr;
+	Ref<StyleBoxFlat> picker_preview_style_box;
+	Ref<StyleBoxFlat> picker_preview_style_box_color;
+
 	// Legacy color picking.
 	TextureRect *picker_texture_rect = nullptr;
-	Panel *picker_preview = nullptr;
-	Label *picker_preview_label = nullptr;
-	Ref<StyleBoxFlat> picker_preview_style_box;
 	Color picker_color;
+	FileDialog *file_dialog = nullptr;
+	MenuButton *menu_btn = nullptr;
+	PopupMenu *options_menu = nullptr;
 
 	MarginContainer *internal_margin = nullptr;
 	Control *uv_edit = nullptr;
@@ -145,10 +157,13 @@ private:
 	Control *wheel = nullptr;
 	Control *wheel_uv = nullptr;
 	TextureRect *sample = nullptr;
+	VBoxContainer *swatches_vbc = nullptr;
 	GridContainer *preset_container = nullptr;
 	HBoxContainer *recent_preset_hbc = nullptr;
 	Button *btn_add_preset = nullptr;
 	Button *btn_pick = nullptr;
+	Label *palette_name = nullptr;
+	String palette_path;
 	Button *btn_preset = nullptr;
 	Button *btn_recent_preset = nullptr;
 	PopupMenu *shape_popup = nullptr;
@@ -164,6 +179,10 @@ private:
 	ColorPresetButton *selected_recent_preset = nullptr;
 	Ref<ButtonGroup> preset_group;
 	Ref<ButtonGroup> recent_preset_group;
+#ifdef TOOLS_ENABLED
+	Callable quick_open_callback;
+	Callable palette_saved_callback;
+#endif // TOOLS_ENABLED
 
 	OptionButton *mode_option_button = nullptr;
 
@@ -192,6 +211,7 @@ private:
 
 	Color color;
 	Color old_color;
+	Color pre_picking_color;
 	bool is_picking_color = false;
 
 	bool display_old_color = false;
@@ -212,6 +232,11 @@ private:
 	float h = 0.0;
 	float s = 0.0;
 	float v = 0.0;
+
+	float ok_hsl_h = 0.0;
+	float ok_hsl_s = 0.0;
+	float ok_hsl_l = 0.0;
+
 	Color last_color;
 
 	struct ThemeCache {
@@ -226,6 +251,7 @@ private:
 
 		bool center_slider_grabbers = true;
 
+		Ref<Texture2D> menu_option;
 		Ref<Texture2D> screen_picker;
 		Ref<Texture2D> expanded_arrow;
 		Ref<Texture2D> folded_arrow;
@@ -240,8 +266,8 @@ private:
 		Ref<Texture2D> sample_revert;
 		Ref<Texture2D> overbright_indicator;
 		Ref<Texture2D> picker_cursor;
+		Ref<Texture2D> picker_cursor_bg;
 		Ref<Texture2D> color_hue;
-		Ref<Texture2D> color_okhsl_hue;
 
 		/* Mode buttons */
 		Ref<StyleBox> mode_button_normal;
@@ -278,7 +304,11 @@ private:
 	void _add_preset_pressed();
 	void _html_focus_exit();
 	void _pick_button_pressed();
+	void _target_gui_input(const Ref<InputEvent> &p_event);
 	void _pick_finished();
+	void _update_menu_items();
+	void _options_menu_cbk(int p_which);
+
 	// Legacy color picking.
 	void _pick_button_pressed_legacy();
 	void _picker_texture_input(const Ref<InputEvent> &p_event);
@@ -286,6 +316,8 @@ private:
 	inline int _get_preset_size();
 	void _add_preset_button(int p_size, const Color &p_color);
 	void _add_recent_preset_button(int p_size, const Color &p_color);
+	void _save_palette(bool p_is_save_as);
+	void _load_palette();
 
 	void _show_hide_preset(const bool &p_is_btn_pressed, Button *p_btn_preset, Container *p_preset_container);
 	void _update_drop_down_arrow(const bool &p_is_btn_pressed, Button *p_btn_preset);
@@ -305,6 +337,8 @@ protected:
 public:
 #ifdef TOOLS_ENABLED
 	void set_editor_settings(Object *p_editor_settings);
+	void set_quick_open_callback(const Callable &p_file_selected);
+	void set_palette_saved_callback(const Callable &p_palette_saved);
 #endif
 	HSlider *get_slider(int idx);
 	Vector<float> get_active_slider_values();
@@ -322,6 +356,8 @@ public:
 	Color get_pick_color() const;
 	void set_old_color(const Color &p_color);
 	Color get_old_color() const;
+	void _quick_open_palette_file_selected(const String &p_path);
+	void _palette_file_selected(const String &p_path);
 
 	void set_display_old_color(bool p_enabled);
 	bool is_displaying_old_color() const;

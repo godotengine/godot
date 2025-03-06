@@ -30,7 +30,7 @@
 
 #include "node_path.h"
 
-#include "core/string/print_string.h"
+#include "core/variant/variant.h"
 
 void NodePath::_update_hash_cache() const {
 	uint32_t h = data->absolute ? 1 : 0;
@@ -255,7 +255,7 @@ NodePath NodePath::slice(int p_begin, int p_end) const {
 	if (end < 0) {
 		end += total_count;
 	}
-	const int sub_begin = MAX(begin - name_count - 1, 0);
+	const int sub_begin = MAX(begin - name_count, 0);
 	const int sub_end = MAX(end - name_count, 0);
 
 	const Vector<StringName> names = get_names().slice(begin, end);
@@ -407,7 +407,7 @@ NodePath::NodePath(const String &p_path) {
 	bool absolute = (path[0] == '/');
 	bool last_is_slash = true;
 	int slices = 0;
-	int subpath_pos = path.find(":");
+	int subpath_pos = path.find_char(':');
 
 	if (subpath_pos != -1) {
 		int from = subpath_pos + 1;
@@ -420,7 +420,7 @@ NodePath::NodePath(const String &p_path) {
 						continue; // Allow end-of-path :
 					}
 
-					ERR_FAIL_MSG("Invalid NodePath '" + p_path + "'.");
+					ERR_FAIL_MSG(vformat("Invalid NodePath '%s'.", p_path));
 				}
 				subpath.push_back(str);
 

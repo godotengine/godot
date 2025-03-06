@@ -188,7 +188,6 @@
 *    http://www.freetype.org
 */
 
-#include <setjmp.h>
 #include <limits.h>
 #include <memory.h>
 #include "tvgSwCommon.h"
@@ -217,7 +216,7 @@ struct Cell
 
 struct RleWorker
 {
-    SwRleData* rle;
+    SwRle* rle;
 
     SwPoint cellPos;
     SwPoint cellMin;
@@ -235,14 +234,13 @@ struct RleWorker
     SwPoint pos;
 
     SwPoint bezStack[32 * 3 + 1];
+    SwPoint lineStack[32 + 1];
     int levStack[32];
 
     SwOutline* outline;
 
     int bandSize;
     int bandShoot;
-
-    jmp_buf jmpBuf;
 
     void* buffer;
     long bufferSize;
@@ -297,7 +295,7 @@ static inline SwCoord HYPOT(SwPoint pt)
 }
 
 
-static void _horizLine(RleWorker& rw, SwCoord x, SwCoord y, SwCoord area, SwCoord acount)
+static void _horizLine(RleWorker& rw, SwCoord x, SwCoord y, SwCoord area, SwCoord aCount)
 {
     x += rw.cellMin.x;
     y += rw.cellMin.y;
@@ -341,11 +339,11 @@ static void _horizLine(RleWorker& rw, SwCoord x, SwCoord y, SwCoord area, SwCoor
         if ((span->coverage == coverage) && (span->y == y) && (span->x + span->len == x)) {
             //Clip x range
             SwCoord xOver = 0;
-            if (x + acount >= rw.cellMax.x) xOver -= (x + acount - rw.cellMax.x);
+            if (x + aCount >= rw.cellMax.x) xOver -= (x + aCount - rw.cellMax.x);
             if (x < rw.cellMin.x) xOver -= (rw.cellMin.x - x);
 
-            //span->len += (acount + xOver) - 1;
-            span->len += (acount + xOver);
+            //span->len += (aCount + xOver) - 1;
+            span->len += (aCount + xOver);
             return;
         }
     }
@@ -358,23 +356,23 @@ static void _horizLine(RleWorker& rw, SwCoord x, SwCoord y, SwCoord area, SwCoor
             rle->spans = static_cast<SwSpan*>(realloc(rle->spans, rle->alloc * sizeof(SwSpan)));
         }
     }
-        
+
     //Clip x range
     SwCoord xOver = 0;
-    if (x + acount >= rw.cellMax.x) xOver -= (x + acount - rw.cellMax.x);
+    if (x + aCount >= rw.cellMax.x) xOver -= (x + aCount - rw.cellMax.x);
     if (x < rw.cellMin.x) {
         xOver -= (rw.cellMin.x - x);
         x = rw.cellMin.x;
     }
 
     //Nothing to draw
-    if (acount + xOver <= 0) return;
+    if (aCount + xOver <= 0) return;
 
     //add a span to the current list
     auto span = rle->spans + rle->size;
     span->x = x;
     span->y = y;
-    span->len = (acount + xOver);
+    span->len = (aCount + xOver);
     span->coverage = coverage;
     rle->size++;
 }
@@ -417,7 +415,7 @@ static Cell* _findCell(RleWorker& rw)
         pcell = &cell->next;
     }
 
-    if (rw.cellsCnt >= rw.maxCells) longjmp(rw.jmpBuf, 1);
+    if (rw.cellsCnt >= rw.maxCells) return nullptr;
 
     auto cell = rw.cells + rw.cellsCnt++;
     cell->x = x;
@@ -430,17 +428,22 @@ static Cell* _findCell(RleWorker& rw)
 }
 
 
-static void _recordCell(RleWorker& rw)
+static bool _recordCell(RleWorker& rw)
 {
     if (rw.area | rw.cover) {
         auto cell = _findCell(rw);
+
+        if (cell == nullptr) return false;
+
         cell->area += rw.area;
         cell->cover += rw.cover;
     }
+
+    return true;
 }
 
 
-static void _setCell(RleWorker& rw, SwPoint pos)
+static bool _setCell(RleWorker& rw, SwPoint pos)
 {
     /* Move the cell pointer to a new position.  We set the `invalid'      */
     /* flag to indicate that the cell isn't part of those we're interested */
@@ -457,22 +460,26 @@ static void _setCell(RleWorker& rw, SwPoint pos)
     pos.x -= rw.cellMin.x;
     pos.y -= rw.cellMin.y;
 
-    if (pos.x > rw.cellMax.x) pos.x = rw.cellMax.x;
+    //exceptions
+    if (pos.x < 0) pos.x = -1;
+    else if (pos.x > rw.cellMax.x) pos.x = rw.cellMax.x;
 
     //Are we moving to a different cell?
     if (pos != rw.cellPos) {
         //Record the current one if it is valid
-        if (!rw.invalid) _recordCell(rw);
+        if (!rw.invalid) {
+            if (!_recordCell(rw)) return false;
+        }
+        rw.area = rw.cover = 0;
+        rw.cellPos = pos;
     }
-
-    rw.area = 0;
-    rw.cover = 0;
-    rw.cellPos = pos;
     rw.invalid = ((unsigned)pos.y >= (unsigned)rw.cellYCnt || pos.x >= rw.cellXCnt);
+
+    return true;
 }
 
 
-static void _startCell(RleWorker& rw, SwPoint pos)
+static bool _startCell(RleWorker& rw, SwPoint pos)
 {
     if (pos.x > rw.cellMax.x) pos.x = rw.cellMax.x;
     if (pos.x < rw.cellMin.x) pos.x = rw.cellMin.x;
@@ -482,23 +489,27 @@ static void _startCell(RleWorker& rw, SwPoint pos)
     rw.cellPos = pos - rw.cellMin;
     rw.invalid = false;
 
-    _setCell(rw, pos);
+    return _setCell(rw, pos);
 }
 
 
-static void _moveTo(RleWorker& rw, const SwPoint& to)
+static bool _moveTo(RleWorker& rw, const SwPoint& to)
 {
     //record current cell, if any */
-    if (!rw.invalid) _recordCell(rw);
+    if (!rw.invalid) {
+        if (!_recordCell(rw)) return false;
+    }
 
     //start to a new position
-    _startCell(rw, TRUNC(to));
+    if (!_startCell(rw, TRUNC(to))) return false;
 
     rw.pos = to;
+
+    return true;
 }
 
 
-static void _lineTo(RleWorker& rw, const SwPoint& to)
+static bool _lineTo(RleWorker& rw, const SwPoint& to)
 {
 #define SW_UDIV(a, b) \
     static_cast<SwCoord>(((unsigned long)(a) * (unsigned long)(b)) >> \
@@ -510,105 +521,123 @@ static void _lineTo(RleWorker& rw, const SwPoint& to)
     //vertical clipping
     if ((e1.y >= rw.cellMax.y && e2.y >= rw.cellMax.y) || (e1.y < rw.cellMin.y && e2.y < rw.cellMin.y)) {
         rw.pos = to;
-        return;
+        return true;
     }
 
-    auto diff = to - rw.pos;
-    auto f1 = rw.pos - SUBPIXELS(e1);
-    SwPoint f2;
+    auto line = rw.lineStack;
+    line[0] = to;
+    line[1] = rw.pos;
 
-    //inside one cell
-    if (e1 == e2) {
-        ;
-    //any horizontal line
-    } else if (diff.y == 0) {
-        e1.x = e2.x;
-        _setCell(rw, e1);
-    } else if (diff.x == 0) {
-        //vertical line up
-        if (diff.y > 0) {
-            do {
-                f2.y = ONE_PIXEL;
-                rw.cover += (f2.y - f1.y);
-                rw.area += (f2.y - f1.y) * f1.x * 2;
-                f1.y = 0;
-                ++e1.y;
-                _setCell(rw, e1);
-            } while(e1.y != e2.y);
-        //vertical line down
-        } else {
-            do {
-                f2.y = 0;
-                rw.cover += (f2.y - f1.y);
-                rw.area += (f2.y - f1.y) * f1.x * 2;
-                f1.y = ONE_PIXEL;
-                --e1.y;
-                _setCell(rw, e1);
-            } while(e1.y != e2.y);
+    while (true) {
+        auto diff = line[0] - line[1];
+        auto L = HYPOT(diff);
+
+        if (L > SHRT_MAX) {
+            mathSplitLine(line);
+            ++line;
+            continue;
         }
-    //any other line
-    } else {
-        Area prod = diff.x * f1.y - diff.y * f1.x;
+        e1 = TRUNC(line[1]);
+        e2 = TRUNC(line[0]);
 
-        /* These macros speed up repetitive divisions by replacing them
-           with multiplications and right shifts. */
-        auto dx_r = static_cast<long>(ULONG_MAX >> PIXEL_BITS) / (diff.x);
-        auto dy_r = static_cast<long>(ULONG_MAX >> PIXEL_BITS) / (diff.y);
+        auto f1 = line[1] - SUBPIXELS(e1);
+        SwPoint f2;
 
-        /* The fundamental value `prod' determines which side and the  */
-        /* exact coordinate where the line exits current cell.  It is  */
-        /* also easily updated when moving from one cell to the next.  */
-        do {
-            auto px = diff.x * ONE_PIXEL;
-            auto py = diff.y * ONE_PIXEL;
-
-            //left
-            if (prod <= 0 && prod - px > 0) {
-                f2 = {0, SW_UDIV(-prod, -dx_r)};
-                prod -= py;
-                rw.cover += (f2.y - f1.y);
-                rw.area += (f2.y - f1.y) * (f1.x + f2.x);
-                f1 = {ONE_PIXEL, f2.y};
-                --e1.x;
-            //up
-            } else if (prod - px <= 0 && prod - px + py > 0) {
-                prod -= px;
-                f2 = {SW_UDIV(-prod, dy_r), ONE_PIXEL};
-                rw.cover += (f2.y - f1.y);
-                rw.area += (f2.y - f1.y) * (f1.x + f2.x);
-                f1 = {f2.x, 0};
-                ++e1.y;
-            //right
-            } else if (prod - px + py <= 0 && prod + py >= 0) {
-                prod += py;
-                f2 = {ONE_PIXEL, SW_UDIV(prod, dx_r)};
-                rw.cover += (f2.y - f1.y);
-                rw.area += (f2.y - f1.y) * (f1.x + f2.x);
-                f1 = {0, f2.y};
-                ++e1.x;
-            //down
+        //inside one cell
+        if (e1 == e2) {
+            ;
+        //any horizontal line
+        } else if (diff.y == 0) {
+            e1.x = e2.x;
+            if (!_setCell(rw, e1)) return false;
+        } else if (diff.x == 0) {
+            //vertical line up
+            if (diff.y > 0) {
+                do {
+                    f2.y = ONE_PIXEL;
+                    rw.cover += (f2.y - f1.y);
+                    rw.area += (f2.y - f1.y) * f1.x * 2;
+                    f1.y = 0;
+                    ++e1.y;
+                    if (!_setCell(rw, e1)) return false;
+                } while(e1.y != e2.y);
+            //vertical line down
             } else {
-                f2 = {SW_UDIV(prod, -dy_r), 0};
-                prod += px;
-                rw.cover += (f2.y - f1.y);
-                rw.area += (f2.y - f1.y) * (f1.x + f2.x);
-                f1 = {f2.x, ONE_PIXEL};
-                --e1.y;
+                do {
+                    f2.y = 0;
+                    rw.cover += (f2.y - f1.y);
+                    rw.area += (f2.y - f1.y) * f1.x * 2;
+                    f1.y = ONE_PIXEL;
+                    --e1.y;
+                    if (!_setCell(rw, e1)) return false;
+                } while(e1.y != e2.y);
             }
+        //any other line
+        } else {
+            Area prod = diff.x * f1.y - diff.y * f1.x;
 
-            _setCell(rw, e1);
+            /* These macros speed up repetitive divisions by replacing them
+               with multiplications and right shifts. */
+            auto dx_r = static_cast<long>(ULONG_MAX >> PIXEL_BITS) / (diff.x);
+            auto dy_r = static_cast<long>(ULONG_MAX >> PIXEL_BITS) / (diff.y);
 
-        } while(e1 != e2);
+            /* The fundamental value `prod' determines which side and the  */
+            /* exact coordinate where the line exits current cell.  It is  */
+            /* also easily updated when moving from one cell to the next.  */
+            do {
+                auto px = diff.x * ONE_PIXEL;
+                auto py = diff.y * ONE_PIXEL;
+
+                //left
+                if (prod <= 0 && prod - px > 0) {
+                    f2 = {0, SW_UDIV(-prod, -dx_r)};
+                    prod -= py;
+                    rw.cover += (f2.y - f1.y);
+                    rw.area += (f2.y - f1.y) * (f1.x + f2.x);
+                    f1 = {ONE_PIXEL, f2.y};
+                    --e1.x;
+                //up
+                } else if (prod - px <= 0 && prod - px + py > 0) {
+                    prod -= px;
+                    f2 = {SW_UDIV(-prod, dy_r), ONE_PIXEL};
+                    rw.cover += (f2.y - f1.y);
+                    rw.area += (f2.y - f1.y) * (f1.x + f2.x);
+                    f1 = {f2.x, 0};
+                    ++e1.y;
+                //right
+                } else if (prod - px + py <= 0 && prod + py >= 0) {
+                    prod += py;
+                    f2 = {ONE_PIXEL, SW_UDIV(prod, dx_r)};
+                    rw.cover += (f2.y - f1.y);
+                    rw.area += (f2.y - f1.y) * (f1.x + f2.x);
+                    f1 = {0, f2.y};
+                    ++e1.x;
+                //down
+                } else {
+                    f2 = {SW_UDIV(prod, -dy_r), 0};
+                    prod += px;
+                    rw.cover += (f2.y - f1.y);
+                    rw.area += (f2.y - f1.y) * (f1.x + f2.x);
+                    f1 = {f2.x, ONE_PIXEL};
+                    --e1.y;
+                }
+
+                if (!_setCell(rw, e1)) return false;
+
+            } while(e1 != e2);
+        }
+
+        f2 = {line[0].x - SUBPIXELS(e2.x), line[0].y - SUBPIXELS(e2.y)};
+        rw.cover += (f2.y - f1.y);
+        rw.area += (f2.y - f1.y) * (f1.x + f2.x);
+        rw.pos = line[0];
+
+        if (line-- == rw.lineStack) return true;
     }
-
-    f2 = {to.x - SUBPIXELS(e2.x), to.y - SUBPIXELS(e2.y)};
-    rw.cover += (f2.y - f1.y);
-    rw.area += (f2.y - f1.y) * (f1.x + f2.x);
-    rw.pos = to;
 }
 
 
-static void _cubicTo(RleWorker& rw, const SwPoint& ctrl1, const SwPoint& ctrl2, const SwPoint& to)
+static bool _cubicTo(RleWorker& rw, const SwPoint& ctrl1, const SwPoint& ctrl2, const SwPoint& to)
 {
     auto arc = rw.bezStack;
     arc[0] = to;
@@ -672,14 +701,14 @@ static void _cubicTo(RleWorker& rw, const SwPoint& ctrl1, const SwPoint& ctrl2, 
         continue;
 
     draw:
-        _lineTo(rw, arc[0]);
-        if (arc == rw.bezStack) return;
+        if (!_lineTo(rw, arc[0])) return false;
+        if (arc == rw.bezStack) return true;
         arc -= 3;
     }
 }
 
 
-static void _decomposeOutline(RleWorker& rw)
+static bool _decomposeOutline(RleWorker& rw)
 {
     auto outline = rw.outline;
     auto first = 0;  //index of first point in contour
@@ -690,48 +719,49 @@ static void _decomposeOutline(RleWorker& rw)
         auto start = UPSCALE(outline->pts[first]);
         auto pt = outline->pts.data + first;
         auto types = outline->types.data + first;
+        ++types;
 
-        _moveTo(rw, UPSCALE(outline->pts[first]));
+        if (!_moveTo(rw, UPSCALE(outline->pts[first]))) return false;
 
         while (pt < limit) {
-            ++pt;
-            ++types;
-
             //emit a single line_to
             if (types[0] == SW_CURVE_TYPE_POINT) {
-                _lineTo(rw, UPSCALE(*pt));
+                ++pt;
+                ++types;
+                if (!_lineTo(rw, UPSCALE(*pt))) return false;
             //types cubic
             } else {
-                pt += 2;
-                types += 2;
-
+                pt += 3;
+                types += 3;
                 if (pt <= limit) {
-                    _cubicTo(rw, UPSCALE(pt[-2]), UPSCALE(pt[-1]), UPSCALE(pt[0]));
-                    continue;
+                    if (!_cubicTo(rw, UPSCALE(pt[-2]), UPSCALE(pt[-1]), UPSCALE(pt[0]))) return false;
                 }
-                _cubicTo(rw, UPSCALE(pt[-2]), UPSCALE(pt[-1]), start);
-                goto close;
+                else if (pt - 1 == limit) {
+                    if (!_cubicTo(rw, UPSCALE(pt[-2]), UPSCALE(pt[-1]), start)) return false;
+                }
+                else goto close;
             }
         }
-        _lineTo(rw, start);
     close:
+        if (!_lineTo(rw, start)) return false;
        first = last + 1;
     }
+
+    return true;
 }
 
 
 static int _genRle(RleWorker& rw)
 {
-    if (setjmp(rw.jmpBuf) == 0) {
-        _decomposeOutline(rw);
-        if (!rw.invalid) _recordCell(rw);
-        return 0;
+    if (!_decomposeOutline(rw)) return -1;
+    if (!rw.invalid) {
+        if (!_recordCell(rw)) return -1;
     }
-    return -1;              //lack of cell memory
+    return 0;
 }
 
 
-static SwSpan* _intersectSpansRegion(const SwRleData *clip, const SwRleData *target, SwSpan *outSpans, uint32_t outSpansCnt)
+static SwSpan* _intersectSpansRegion(const SwRle *clip, const SwRle *target, SwSpan *outSpans, uint32_t outSpansCnt)
 {
     auto out = outSpans;
     auto spans = target->spans;
@@ -740,7 +770,7 @@ static SwSpan* _intersectSpansRegion(const SwRleData *clip, const SwRleData *tar
     auto clipEnd = clip->spans + clip->size;
 
     while (spans < end && clipSpans < clipEnd) {
-        //align y cooridnates.
+        //align y-coordinates.
         if (clipSpans->y > spans->y) {
             ++spans;
             continue;
@@ -750,7 +780,7 @@ static SwSpan* _intersectSpansRegion(const SwRleData *clip, const SwRleData *tar
             continue;
         }
 
-        //Try clipping with all clip spans which have a same y coordinate.
+        //Try clipping with all clip spans which have a same y-coordinate.
         auto temp = clipSpans;
         while(temp < clipEnd && outSpansCnt > 0 && temp->y == clipSpans->y) {
             auto sx1 = spans->x;
@@ -783,7 +813,7 @@ static SwSpan* _intersectSpansRegion(const SwRleData *clip, const SwRleData *tar
 }
 
 
-static SwSpan* _intersectSpansRect(const SwBBox *bbox, const SwRleData *targetRle, SwSpan *outSpans, uint32_t outSpansCnt)
+static SwSpan* _intersectSpansRect(const SwBBox *bbox, const SwRle *targetRle, SwSpan *outSpans, uint32_t outSpansCnt)
 {
     auto out = outSpans;
     auto spans = targetRle->spans;
@@ -822,7 +852,7 @@ static SwSpan* _intersectSpansRect(const SwBBox *bbox, const SwRleData *targetRl
 }
 
 
-void _replaceClipSpan(SwRleData *rle, SwSpan* clippedSpans, uint32_t size)
+void _replaceClipSpan(SwRle *rle, SwSpan* clippedSpans, uint32_t size)
 {
     free(rle->spans);
     rle->spans = clippedSpans;
@@ -834,7 +864,7 @@ void _replaceClipSpan(SwRleData *rle, SwSpan* clippedSpans, uint32_t size)
 /* External Class Implementation                                        */
 /************************************************************************/
 
-SwRleData* rleRender(SwRleData* rle, const SwOutline* outline, const SwBBox& renderRegion, bool antiAlias)
+SwRle* rleRender(SwRle* rle, const SwOutline* outline, const SwBBox& renderRegion, bool antiAlias)
 {
     constexpr auto RENDER_POOL_SIZE = 16384L;
     constexpr auto BAND_SIZE = 40;
@@ -862,7 +892,7 @@ SwRleData* rleRender(SwRleData* rle, const SwOutline* outline, const SwBBox& ren
     rw.bandShoot = 0;
     rw.antiAlias = antiAlias;
 
-    if (!rle) rw.rle = reinterpret_cast<SwRleData*>(calloc(1, sizeof(SwRleData)));
+    if (!rle) rw.rle = reinterpret_cast<SwRle*>(calloc(1, sizeof(SwRle)));
     else rw.rle = rle;
 
     //Generate RLE
@@ -953,12 +983,12 @@ error:
 }
 
 
-SwRleData* rleRender(const SwBBox* bbox)
+SwRle* rleRender(const SwBBox* bbox)
 {
     auto width = static_cast<uint16_t>(bbox->max.x - bbox->min.x);
     auto height = static_cast<uint16_t>(bbox->max.y - bbox->min.y);
 
-    auto rle = static_cast<SwRleData*>(malloc(sizeof(SwRleData)));
+    auto rle = static_cast<SwRle*>(malloc(sizeof(SwRle)));
     rle->spans = static_cast<SwSpan*>(malloc(sizeof(SwSpan) * height));
     rle->size = height;
     rle->alloc = height;
@@ -975,14 +1005,14 @@ SwRleData* rleRender(const SwBBox* bbox)
 }
 
 
-void rleReset(SwRleData* rle)
+void rleReset(SwRle* rle)
 {
     if (!rle) return;
     rle->size = 0;
 }
 
 
-void rleFree(SwRleData* rle)
+void rleFree(SwRle* rle)
 {
     if (!rle) return;
     if (rle->spans) free(rle->spans);
@@ -990,26 +1020,31 @@ void rleFree(SwRleData* rle)
 }
 
 
-void rleClipPath(SwRleData *rle, const SwRleData *clip)
+bool rleClip(SwRle *rle, const SwRle *clip)
 {
-    if (rle->size == 0 || clip->size == 0) return;
+    if (rle->size == 0 || clip->size == 0) return false;
     auto spanCnt = rle->size > clip->size ? rle->size : clip->size;
     auto spans = static_cast<SwSpan*>(malloc(sizeof(SwSpan) * (spanCnt)));
     auto spansEnd = _intersectSpansRegion(clip, rle, spans, spanCnt);
 
     _replaceClipSpan(rle, spans, spansEnd - spans);
 
-    TVGLOG("SW_ENGINE", "Using ClipPath!");
+    TVGLOG("SW_ENGINE", "Using Path Clipping!");
+
+    return true;
 }
 
 
-void rleClipRect(SwRleData *rle, const SwBBox* clip)
+bool rleClip(SwRle *rle, const SwBBox* clip)
 {
-    if (rle->size == 0) return;
+    if (rle->size == 0) return false;
     auto spans = static_cast<SwSpan*>(malloc(sizeof(SwSpan) * (rle->size)));
     auto spansEnd = _intersectSpansRect(clip, rle, spans, rle->size);
 
     _replaceClipSpan(rle, spans, spansEnd - spans);
 
-    TVGLOG("SW_ENGINE", "Using ClipRect!");
+    TVGLOG("SW_ENGINE", "Using Box Clipping!");
+
+    return true;
 }
+

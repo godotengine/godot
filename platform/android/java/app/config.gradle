@@ -12,7 +12,8 @@ ext.versions = [
     javaVersion        : JavaVersion.VERSION_17,
     // Also update 'platform/android/detect.py#get_ndk_version()' when this is updated.
     ndkVersion         : '23.2.8568313',
-    splashscreenVersion: '1.0.1'
+    splashscreenVersion: '1.0.1',
+    openxrVendorsVersion: '3.1.2-stable'
 
 ]
 
@@ -68,6 +69,11 @@ ext.getExportTargetSdkVersion = { ->
     } catch (NumberFormatException ignored) {
         return versions.targetSdk
     }
+}
+
+ext.getGodotRenderingMethod = { ->
+    String renderingMethod = project.hasProperty("godot_rendering_method") ? project.property("godot_rendering_method") : ""
+    return renderingMethod
 }
 
 ext.getGodotEditorVersion = { ->
@@ -222,6 +228,14 @@ ext.getExportFilename = {
         exportFilename = "godot_android"
     }
     return exportFilename
+}
+
+ext.getExportEdition = {
+    String exportEdition = project.hasProperty("export_edition") ? project.property("export_edition") : ""
+    if (exportEdition == null || exportEdition.isEmpty()) {
+        exportEdition = "standard"
+    }
+    return exportEdition
 }
 
 ext.getExportBuildType = {
@@ -399,4 +413,9 @@ ext.shouldUseLegacyPackaging = { ->
 
     // Default behavior for minSdk >= 23
     return false
+}
+
+ext.getAddonsDirectory = { ->
+    String addonsDirectory = project.hasProperty("addons_directory") ? project.property("addons_directory") : ""
+    return addonsDirectory
 }

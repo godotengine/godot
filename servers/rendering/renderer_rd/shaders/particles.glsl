@@ -168,11 +168,11 @@ layout(set = 2, binding = 1) uniform texture2D height_field_texture;
 /* SET 3: MATERIAL */
 
 #ifdef MATERIAL_UNIFORMS_USED
-layout(set = 3, binding = 0, std140) uniform MaterialUniforms{
-
+/* clang-format off */
+layout(set = 3, binding = 0, std140) uniform MaterialUniforms {
 #MATERIAL_UNIFORMS
-
 } material;
+/* clang-format on */
 #endif
 
 layout(push_constant, std430) uniform Params {
@@ -488,7 +488,7 @@ void main() {
 			}
 			amount = pow(amount, FRAME.attractors[i].attenuation);
 			dir = safe_normalize(mix(dir, FRAME.attractors[i].transform[2].xyz, FRAME.attractors[i].directionality));
-			attractor_force -= amount * dir * FRAME.attractors[i].strength;
+			attractor_force -= mass * amount * dir * FRAME.attractors[i].strength;
 		}
 
 		float particle_size = FRAME.particle_size;

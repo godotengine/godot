@@ -55,7 +55,7 @@ protected:
 	bool _get_extension_setting(const String &p_name_str, Variant &r_ret) const;
 
 public:
-	void generate_property_list(Ref<GLTFDocument> p_document);
+	void generate_property_list(Ref<GLTFDocument> p_document, Node *p_root = nullptr);
 
 	String get_copyright() const;
 	void set_copyright(const String &p_copyright);

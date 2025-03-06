@@ -33,14 +33,12 @@
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
-#include "editor/editor_undo_redo_manager.h"
 #include "editor/plugins/gizmos/gizmo_3d_helper.h"
-#include "editor/plugins/node_3d_editor_plugin.h"
 #include "scene/3d/fog_volume.h"
 
 FogVolumeGizmoPlugin::FogVolumeGizmoPlugin() {
 	helper.instantiate();
-	Color gizmo_color = EDITOR_DEF_RST("editors/3d_gizmos/gizmo_colors/fog_volume", Color(0.5, 0.7, 1));
+	Color gizmo_color = EDITOR_GET("editors/3d_gizmos/gizmo_colors/fog_volume");
 	create_material("shape_material", gizmo_color);
 	gizmo_color.a = 0.15;
 	create_material("shape_material_internal", gizmo_color);

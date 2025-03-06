@@ -36,7 +36,6 @@
 #include "editor/editor_properties.h"
 #include "scene/2d/tile_map.h"
 #include "scene/gui/box_container.h"
-#include "scene/gui/panel_container.h"
 
 class Label;
 class MenuButton;
@@ -54,7 +53,7 @@ private:
 protected:
 	Ref<TileSet> tile_set;
 	TileData *_get_tile_data(TileMapCell p_cell);
-	virtual void _tile_set_changed(){};
+	virtual void _tile_set_changed() {}
 
 	static void _bind_methods();
 
@@ -62,14 +61,14 @@ public:
 	void set_tile_set(Ref<TileSet> p_tile_set);
 
 	// Input to handle painting.
-	virtual Control *get_toolbar() { return nullptr; };
-	virtual void forward_draw_over_atlas(TileAtlasView *p_tile_atlas_view, TileSetAtlasSource *p_tile_atlas_source, CanvasItem *p_canvas_item, Transform2D p_transform){};
-	virtual void forward_draw_over_alternatives(TileAtlasView *p_tile_atlas_view, TileSetAtlasSource *p_tile_atlas_source, CanvasItem *p_canvas_item, Transform2D p_transform){};
-	virtual void forward_painting_atlas_gui_input(TileAtlasView *p_tile_atlas_view, TileSetAtlasSource *p_tile_atlas_source, const Ref<InputEvent> &p_event){};
-	virtual void forward_painting_alternatives_gui_input(TileAtlasView *p_tile_atlas_view, TileSetAtlasSource *p_tile_atlas_source, const Ref<InputEvent> &p_event){};
+	virtual Control *get_toolbar() { return nullptr; }
+	virtual void forward_draw_over_atlas(TileAtlasView *p_tile_atlas_view, TileSetAtlasSource *p_tile_atlas_source, CanvasItem *p_canvas_item, Transform2D p_transform) {}
+	virtual void forward_draw_over_alternatives(TileAtlasView *p_tile_atlas_view, TileSetAtlasSource *p_tile_atlas_source, CanvasItem *p_canvas_item, Transform2D p_transform) {}
+	virtual void forward_painting_atlas_gui_input(TileAtlasView *p_tile_atlas_view, TileSetAtlasSource *p_tile_atlas_source, const Ref<InputEvent> &p_event) {}
+	virtual void forward_painting_alternatives_gui_input(TileAtlasView *p_tile_atlas_view, TileSetAtlasSource *p_tile_atlas_source, const Ref<InputEvent> &p_event) {}
 
 	// Used to draw the tile data property value over a tile.
-	virtual void draw_over_tile(CanvasItem *p_canvas_item, Transform2D p_transform, TileMapCell p_cell, bool p_selected = false){};
+	virtual void draw_over_tile(CanvasItem *p_canvas_item, Transform2D p_transform, TileMapCell p_cell, bool p_selected = false) {}
 };
 
 class DummyObject : public Object {
@@ -238,7 +237,7 @@ protected:
 	virtual void _setup_undo_redo_action(TileSetAtlasSource *p_tile_set_atlas_source, const HashMap<TileMapCell, Variant, TileMapCell> &p_previous_values, const Variant &p_new_value);
 
 public:
-	virtual Control *get_toolbar() override { return toolbar; };
+	virtual Control *get_toolbar() override { return toolbar; }
 	virtual void forward_draw_over_atlas(TileAtlasView *p_tile_atlas_view, TileSetAtlasSource *p_tile_atlas_source, CanvasItem *p_canvas_item, Transform2D p_transform) override;
 	virtual void forward_draw_over_alternatives(TileAtlasView *p_tile_atlas_view, TileSetAtlasSource *p_tile_atlas_source, CanvasItem *p_canvas_item, Transform2D p_transform) override;
 	virtual void forward_painting_atlas_gui_input(TileAtlasView *p_tile_atlas_view, TileSetAtlasSource *p_tile_atlas_source, const Ref<InputEvent> &p_event) override;
@@ -375,7 +374,7 @@ protected:
 	void _notification(int p_what);
 
 public:
-	virtual Control *get_toolbar() override { return toolbar; };
+	virtual Control *get_toolbar() override { return toolbar; }
 	virtual void forward_draw_over_atlas(TileAtlasView *p_tile_atlas_view, TileSetAtlasSource *p_tile_atlas_source, CanvasItem *p_canvas_item, Transform2D p_transform) override;
 	virtual void forward_draw_over_alternatives(TileAtlasView *p_tile_atlas_view, TileSetAtlasSource *p_tile_atlas_source, CanvasItem *p_canvas_item, Transform2D p_transform) override;
 	virtual void forward_painting_atlas_gui_input(TileAtlasView *p_tile_atlas_view, TileSetAtlasSource *p_tile_atlas_source, const Ref<InputEvent> &p_event) override;

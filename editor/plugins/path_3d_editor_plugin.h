@@ -120,7 +120,7 @@ class Path3DEditorPlugin : public EditorPlugin {
 	Button *curve_edit_curve = nullptr;
 	Button *curve_edit_tilt = nullptr;
 	Button *curve_del = nullptr;
-	Button *curve_close = nullptr;
+	Button *curve_closed = nullptr;
 	Button *curve_clear_points = nullptr;
 	MenuButton *handle_menu = nullptr;
 
@@ -144,7 +144,7 @@ class Path3DEditorPlugin : public EditorPlugin {
 	void _update_toolbar();
 
 	void _mode_changed(int p_mode);
-	void _close_curve();
+	void _toggle_closed_curve();
 	void _handle_option_pressed(int p_option);
 	bool handle_clicked = false;
 	bool mirror_handle_angle = true;
@@ -170,7 +170,7 @@ public:
 	inline static Path3DEditorPlugin *singleton = nullptr;
 	virtual EditorPlugin::AfterGUIInput forward_3d_gui_input(Camera3D *p_camera, const Ref<InputEvent> &p_event) override;
 
-	virtual String get_name() const override { return "Path3D"; }
+	virtual String get_plugin_name() const override { return "Path3D"; }
 	bool has_main_screen() const override { return false; }
 	virtual void edit(Object *p_object) override;
 	virtual bool handles(Object *p_object) const override;

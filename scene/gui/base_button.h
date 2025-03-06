@@ -61,7 +61,7 @@ private:
 		bool hovering = false;
 		bool press_attempt = false;
 		bool pressing_inside = false;
-
+		bool pressed_down_with_focus = false;
 		bool disabled = false;
 
 	} status;
@@ -134,7 +134,7 @@ public:
 	void set_shortcut(const Ref<Shortcut> &p_shortcut);
 	Ref<Shortcut> get_shortcut() const;
 
-	virtual String get_tooltip(const Point2 &p_pos) const override;
+	virtual Control *make_custom_tooltip(const String &p_text) const override;
 
 	void set_button_group(const Ref<ButtonGroup> &p_group);
 	Ref<ButtonGroup> get_button_group() const;

@@ -3,7 +3,7 @@
  * Project : miniupnp
  * Web : http://miniupnp.free.fr/ or https://miniupnp.tuxfamily.org/
  * Author : Thomas BERNARD
- * copyright (c) 2005-2021 Thomas Bernard
+ * copyright (c) 2005-2024 Thomas Bernard
  * This software is subjet to the conditions detailed in the
  * provided LICENSE file. */
 #ifdef _WIN32
@@ -21,6 +21,9 @@ typedef unsigned long uint32_t;
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #endif /* _WIN32 */
+#ifdef DEBUG
+#include <stdio.h>
+#endif
 
 /* List of IP address blocks which are private / reserved and therefore not suitable for public external IP addresses */
 #define IP(a, b, c, d) (((a) << 24) + ((b) << 16) + ((c) << 8) + (d))
@@ -71,8 +74,12 @@ int addr_is_reserved(const char * addr_str)
 	address = ntohl(addr_n);
 
 	for (i = 0; i < sizeof(reserved)/sizeof(reserved[0]); ++i) {
-		if ((address >> reserved[i].rmask) == (reserved[i].address >> reserved[i].rmask))
+		if ((address >> reserved[i].rmask) == (reserved[i].address >> reserved[i].rmask)) {
+#ifdef DEBUG
+			printf("IP address %s is reserved\n", addr_str);
+#endif
 			return 1;
+		}
 	}
 
 	return 0;

@@ -50,7 +50,7 @@ public final class SignalInfo {
 		}
 
 		this.name = signalName;
-		this.paramTypes = paramTypes == null ? new Class<?>[ 0 ] : paramTypes;
+		this.paramTypes = paramTypes == null ? new Class<?>[0] : paramTypes;
 		this.paramTypesNames = new String[this.paramTypes.length];
 		for (int i = 0; i < this.paramTypes.length; i++) {
 			this.paramTypesNames[i] = this.paramTypes[i].getName();

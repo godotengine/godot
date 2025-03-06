@@ -114,7 +114,7 @@ void WindowWrapper::_set_window_enabled_with_rect(bool p_visible, const Rect2 p_
 	}
 
 	window->set_visible(p_visible);
-	if (!p_visible) {
+	if (!p_visible && !override_close_request) {
 		emit_signal("window_close_requested");
 	}
 	emit_signal("window_visibility_changed", p_visible);
@@ -131,9 +131,22 @@ void WindowWrapper::_set_window_rect(const Rect2 p_rect) {
 	}
 }
 
+void WindowWrapper::_window_size_changed() {
+	emit_signal(SNAME("window_size_changed"));
+}
+
+void WindowWrapper::_window_close_request() {
+	if (override_close_request) {
+		emit_signal("window_close_requested");
+	} else {
+		set_window_enabled(false);
+	}
+}
+
 void WindowWrapper::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("window_visibility_changed", PropertyInfo(Variant::BOOL, "visible")));
 	ADD_SIGNAL(MethodInfo("window_close_requested"));
+	ADD_SIGNAL(MethodInfo("window_size_changed"));
 }
 
 void WindowWrapper::_notification(int p_what) {
@@ -142,11 +155,9 @@ void WindowWrapper::_notification(int p_what) {
 	}
 	switch (p_what) {
 		case NOTIFICATION_VISIBILITY_CHANGED: {
-			if (get_window_enabled() && is_visible()) {
-				// Grab the focus when WindowWrapper.set_visible(true) is called
-				// and the window is showing.
-				window->grab_focus();
-			}
+			// Grab the focus when WindowWrapper.set_visible(true) is called
+			// and the window is showing.
+			grab_window_focus();
 		} break;
 		case NOTIFICATION_READY: {
 			set_process_shortcut_input(true);
@@ -250,6 +261,11 @@ void WindowWrapper::restore_window_from_saved_position(const Rect2 p_window_rect
 	window_rect = Rect2i(window_rect.position * screen_ratio, window_rect.size * screen_ratio);
 	window_rect.position += real_screen_rect.position;
 
+	// Make sure to restore the window if the user minimized it the last time it was displayed.
+	if (window->get_mode() == Window::MODE_MINIMIZED) {
+		window->set_mode(Window::MODE_WINDOWED);
+	}
+
 	// All good, restore the window.
 	window->set_current_screen(p_screen);
 	if (window->is_visible()) {
@@ -314,18 +330,46 @@ void WindowWrapper::set_margins_enabled(bool p_enabled) {
 	}
 }
 
+Size2 WindowWrapper::get_margins_size() {
+	if (!margins) {
+		return Size2();
+	}
+
+	return Size2(margins->get_margin_size(SIDE_LEFT) + margins->get_margin_size(SIDE_RIGHT), margins->get_margin_size(SIDE_TOP) + margins->get_margin_size(SIDE_RIGHT));
+}
+
+Size2 WindowWrapper::get_margins_top_left() {
+	if (!margins) {
+		return Size2();
+	}
+
+	return Size2(margins->get_margin_size(SIDE_LEFT), margins->get_margin_size(SIDE_TOP));
+}
+
+void WindowWrapper::grab_window_focus() {
+	if (get_window_enabled() && is_visible()) {
+		window->grab_focus();
+	}
+}
+
+void WindowWrapper::set_override_close_request(bool p_enabled) {
+	override_close_request = p_enabled;
+}
+
 WindowWrapper::WindowWrapper() {
 	if (!EditorNode::get_singleton()->is_multi_window_enabled()) {
 		return;
 	}
 
 	window = memnew(Window);
+	window_id = window->get_instance_id();
 	window->set_wrap_controls(true);
 
 	add_child(window);
 	window->hide();
 
-	window->connect("close_requested", callable_mp(this, &WindowWrapper::set_window_enabled).bind(false));
+	window->connect("close_requested", callable_mp(this, &WindowWrapper::_window_close_request));
+	window->connect("size_changed", callable_mp(this, &WindowWrapper::_window_size_changed));
 
 	ShortcutBin *capturer = memnew(ShortcutBin);
 	window->add_child(capturer);
@@ -335,6 +379,12 @@ WindowWrapper::WindowWrapper() {
 	window->add_child(window_background);
 
 	ProgressDialog::get_singleton()->add_host_window(window);
+}
+
+WindowWrapper::~WindowWrapper() {
+	if (ObjectDB::get_instance(window_id)) {
+		ProgressDialog::get_singleton()->remove_host_window(window);
+	}
 }
 
 // ScreenSelect
@@ -390,8 +440,7 @@ void ScreenSelect::_notification(int p_what) {
 			connect(SceneStringName(gui_input), callable_mp(this, &ScreenSelect::_handle_mouse_shortcut));
 		} break;
 		case NOTIFICATION_THEME_CHANGED: {
-			set_icon(get_editor_theme_icon("MakeFloating"));
-			popup_background->add_theme_style_override(SceneStringName(panel), get_theme_stylebox("PanelForeground", EditorStringName(EditorStyles)));
+			set_button_icon(get_editor_theme_icon("MakeFloating"));
 
 			const real_t popup_height = real_t(get_theme_font_size(SceneStringName(font_size))) * 2.0;
 			popup->set_min_size(Size2(0, popup_height * 3));
@@ -454,13 +503,9 @@ ScreenSelect::ScreenSelect() {
 	// Create the popup.
 	const Size2 borders = Size2(4, 4) * EDSCALE;
 
-	popup = memnew(Popup);
+	popup = memnew(PopupPanel);
 	popup->connect("popup_hide", callable_mp(static_cast<BaseButton *>(this), &ScreenSelect::set_pressed).bind(false));
 	add_child(popup);
-
-	popup_background = memnew(Panel);
-	popup_background->set_anchors_and_offsets_preset(PRESET_FULL_RECT);
-	popup->add_child(popup_background);
 
 	MarginContainer *popup_root = memnew(MarginContainer);
 	popup_root->add_theme_constant_override("margin_right", borders.width);

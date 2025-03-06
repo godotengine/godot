@@ -39,7 +39,6 @@ struct AudioFrame;
 class AudioStream;
 class AudioStreamPlayback;
 class AudioStreamPlayerInternal;
-class Camera3D;
 class VelocityTracker3D;
 
 class AudioStreamPlayer3D : public Node3D {
@@ -105,6 +104,7 @@ private:
 	float linear_attenuation = 0;
 
 	float max_distance = 0.0;
+	bool was_further_than_max_distance_last_frame = false;
 
 	Ref<VelocityTracker3D> velocity_tracker;
 
@@ -135,6 +135,9 @@ public:
 
 	void set_volume_db(float p_volume);
 	float get_volume_db() const;
+
+	void set_volume_linear(float p_volume);
+	float get_volume_linear() const;
 
 	void set_unit_size(float p_volume);
 	float get_unit_size() const;

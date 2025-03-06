@@ -634,6 +634,24 @@ TEST_CASE("[Array] Typed copying") {
 	a6.clear();
 }
 
+static bool _find_custom_callable(const Variant &p_val) {
+	return (int)p_val % 2 == 0;
+}
+
+TEST_CASE("[Array] Test find_custom") {
+	Array a1 = build_array(1, 3, 4, 5, 8, 9);
+	// Find first even number.
+	int index = a1.find_custom(callable_mp_static(_find_custom_callable));
+	CHECK_EQ(index, 2);
+}
+
+TEST_CASE("[Array] Test rfind_custom") {
+	Array a1 = build_array(1, 3, 4, 5, 8, 9);
+	// Find last even number.
+	int index = a1.rfind_custom(callable_mp_static(_find_custom_callable));
+	CHECK_EQ(index, 4);
+}
+
 } // namespace TestArray
 
 #endif // TEST_ARRAY_H

@@ -74,7 +74,7 @@ public:
 	bool is_process_in_physics();
 
 	void set_ignore_time_scale(bool p_ignore);
-	bool is_ignore_time_scale();
+	bool is_ignoring_time_scale();
 
 	void release_connections();
 
@@ -143,6 +143,7 @@ private:
 	bool debug_navigation_hint = false;
 #endif
 	bool paused = false;
+	bool suspended = false;
 
 	HashMap<StringName, Group> group_map;
 	bool _quit = false;
@@ -343,6 +344,8 @@ public:
 
 	void set_pause(bool p_enabled);
 	bool is_paused() const;
+	void set_suspend(bool p_enabled);
+	bool is_suspended() const;
 
 #ifdef DEBUG_ENABLED
 	void set_debug_collisions_hint(bool p_enabled);
@@ -408,6 +411,7 @@ public:
 
 	Ref<SceneTreeTimer> create_timer(double p_delay_sec, bool p_process_always = true, bool p_process_in_physics = false, bool p_ignore_time_scale = false);
 	Ref<Tween> create_tween();
+	void remove_tween(const Ref<Tween> &p_tween);
 	TypedArray<Tween> get_processed_tweens();
 
 	//used by Main::start, don't use otherwise

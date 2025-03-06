@@ -45,7 +45,6 @@
 #include "core/string/ustring.h"
 #include "core/templates/hash_map.h"
 #include "core/templates/list.h"
-#include "core/templates/rb_map.h"
 #include "core/templates/vector.h"
 #include "core/variant/variant.h"
 
@@ -163,6 +162,10 @@ public:
 				container_element_types.push_back(get_variant_type());
 			}
 			container_element_types.write[p_index] = DataType(p_type);
+		}
+
+		_FORCE_INLINE_ int get_container_element_type_count() const {
+			return container_element_types.size();
 		}
 
 		_FORCE_INLINE_ DataType get_container_element_type(int p_index) const {
@@ -369,6 +372,7 @@ public:
 		Vector<ExpressionNode *> arguments;
 		Vector<Variant> resolved_arguments;
 
+		/** Information of the annotation. Might be null for unknown annotations. */
 		AnnotationInfo *info = nullptr;
 		PropertyInfo export_info;
 		bool is_resolved = false;
@@ -858,6 +862,7 @@ public:
 		Vector<Variant> default_arg_values;
 #ifdef TOOLS_ENABLED
 		MemberDocData doc_data;
+		int min_local_doc_line = 0;
 #endif // TOOLS_ENABLED
 
 		bool resolved_signature = false;
@@ -1354,6 +1359,7 @@ private:
 	List<GDScriptWarning> warnings;
 	List<PendingWarning> pending_warnings;
 	HashSet<int> warning_ignored_lines[GDScriptWarning::WARNING_MAX];
+	int warning_ignore_start_lines[GDScriptWarning::WARNING_MAX];
 	HashSet<int> unsafe_lines;
 #endif
 
@@ -1502,16 +1508,18 @@ private:
 	void clear_unused_annotations();
 	bool tool_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
 	bool icon_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
+	bool static_unload_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
 	bool onready_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
 	template <PropertyHint t_hint, Variant::Type t_type>
 	bool export_annotations(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
 	bool export_storage_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
 	bool export_custom_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
+	bool export_tool_button_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
 	template <PropertyUsageFlags t_usage>
 	bool export_group_annotations(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
-	bool warning_annotations(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
+	bool warning_ignore_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
+	bool warning_ignore_region_annotations(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
 	bool rpc_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
-	bool static_unload_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class);
 	// Statements.
 	Node *parse_statement();
 	VariableNode *parse_variable(bool p_is_static);
@@ -1596,6 +1604,8 @@ public:
 
 #ifdef TOOLS_ENABLED
 	static HashMap<String, String> theme_color_names;
+
+	HashMap<int, GDScriptTokenizer::CommentData> comment_data;
 #endif // TOOLS_ENABLED
 
 	GDScriptParser();

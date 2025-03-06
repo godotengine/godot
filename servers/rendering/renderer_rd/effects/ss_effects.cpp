@@ -31,7 +31,6 @@
 #include "ss_effects.h"
 
 #include "core/config/project_settings.h"
-#include "servers/rendering/renderer_rd/renderer_compositor_rd.h"
 #include "servers/rendering/renderer_rd/storage_rd/material_storage.h"
 #include "servers/rendering/renderer_rd/storage_rd/render_scene_buffers_rd.h"
 #include "servers/rendering/renderer_rd/uniform_set_cache_rd.h"
@@ -464,7 +463,8 @@ void SSEffects::downsample_depth(Ref<RenderSceneBuffersRD> p_render_buffers, uin
 	if (use_mips) {
 		// Grab our downsample uniform set from cache, these are automatically cleaned up if the depth textures are cleared.
 		// This also ensures we can switch between left eye and right eye uniform sets without recreating the uniform twice a frame.
-		Vector<RD::Uniform> u_depths;
+		thread_local LocalVector<RD::Uniform> u_depths;
+		u_depths.clear();
 
 		// Note, use_full_mips is true if either SSAO or SSIL uses half size, but the other full size and we're using mips.
 		// That means we're filling all 5 levels.

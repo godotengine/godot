@@ -90,6 +90,20 @@ TEST_CASE("[Marshalls] Unsigned 64 bit integer decoding") {
 	CHECK(decode_uint64(arr) == 0x0f123456789abcdef);
 }
 
+TEST_CASE("[Marshalls] Floating point half precision encoding") {
+	uint8_t arr[2];
+
+	// Decimal: 0.33325195
+	// IEEE 754 half-precision binary floating-point format:
+	// sign exponent (5 bits)    fraction (10 bits)
+	//  0        01101               0101010101
+	// Hexadecimal: 0x3555
+	unsigned int actual_size = encode_half(0.33325195f, arr);
+	CHECK(actual_size == sizeof(uint16_t));
+	CHECK(arr[0] == 0x55);
+	CHECK(arr[1] == 0x35);
+}
+
 TEST_CASE("[Marshalls] Floating point single precision encoding") {
 	uint8_t arr[4];
 
@@ -126,6 +140,13 @@ TEST_CASE("[Marshalls] Floating point double precision encoding") {
 	CHECK(arr[7] == 0x3f);
 }
 
+TEST_CASE("[Marshalls] Floating point half precision decoding") {
+	uint8_t arr[] = { 0x55, 0x35 };
+
+	// See floating point half precision encoding test case for details behind expected values.
+	CHECK(decode_half(arr) == 0.33325195f);
+}
+
 TEST_CASE("[Marshalls] Floating point single precision decoding") {
 	uint8_t arr[] = { 0x00, 0x00, 0x20, 0x3e };
 
@@ -160,7 +181,7 @@ TEST_CASE("[Marshalls] NIL Variant encoding") {
 	uint8_t buffer[4];
 
 	CHECK(encode_variant(variant, buffer, r_len) == OK);
-	CHECK_MESSAGE(r_len == 4, "Length == 4 bytes for header");
+	CHECK_MESSAGE(r_len == 4, "Length == 4 bytes for header.");
 	CHECK_MESSAGE(buffer[0] == 0x00, "Variant::NIL");
 	CHECK(buffer[1] == 0x00);
 	CHECK(buffer[2] == 0x00);
@@ -174,7 +195,7 @@ TEST_CASE("[Marshalls] INT 32 bit Variant encoding") {
 	uint8_t buffer[8];
 
 	CHECK(encode_variant(variant, buffer, r_len) == OK);
-	CHECK_MESSAGE(r_len == 8, "Length == 4 bytes for header + 4 bytes for int32_t");
+	CHECK_MESSAGE(r_len == 8, "Length == 4 bytes for header + 4 bytes for `int32_t`.");
 	CHECK_MESSAGE(buffer[0] == 0x02, "Variant::INT");
 	CHECK(buffer[1] == 0x00);
 	CHECK(buffer[2] == 0x00);
@@ -192,7 +213,7 @@ TEST_CASE("[Marshalls] INT 64 bit Variant encoding") {
 	uint8_t buffer[12];
 
 	CHECK(encode_variant(variant, buffer, r_len) == OK);
-	CHECK_MESSAGE(r_len == 12, "Length == 4 bytes for header + 8 bytes for int64_t");
+	CHECK_MESSAGE(r_len == 12, "Length == 4 bytes for header + 8 bytes for `int64_t`.");
 	CHECK_MESSAGE(buffer[0] == 0x02, "Variant::INT");
 	CHECK(buffer[1] == 0x00);
 	CHECK_MESSAGE(buffer[2] == 0x01, "HEADER_DATA_FLAG_64");
@@ -214,7 +235,7 @@ TEST_CASE("[Marshalls] FLOAT single precision Variant encoding") {
 	uint8_t buffer[8];
 
 	CHECK(encode_variant(variant, buffer, r_len) == OK);
-	CHECK_MESSAGE(r_len == 8, "Length == 4 bytes for header + 4 bytes for float");
+	CHECK_MESSAGE(r_len == 8, "Length == 4 bytes for header + 4 bytes for `float`.");
 	CHECK_MESSAGE(buffer[0] == 0x03, "Variant::FLOAT");
 	CHECK(buffer[1] == 0x00);
 	CHECK(buffer[2] == 0x00);
@@ -232,7 +253,7 @@ TEST_CASE("[Marshalls] FLOAT double precision Variant encoding") {
 	uint8_t buffer[12];
 
 	CHECK(encode_variant(variant, buffer, r_len) == OK);
-	CHECK_MESSAGE(r_len == 12, "Length == 4 bytes for header + 8 bytes for double");
+	CHECK_MESSAGE(r_len == 12, "Length == 4 bytes for header + 8 bytes for `double`.");
 	CHECK_MESSAGE(buffer[0] == 0x03, "Variant::FLOAT");
 	CHECK(buffer[1] == 0x00);
 	CHECK_MESSAGE(buffer[2] == 0x01, "HEADER_DATA_FLAG_64");
@@ -335,10 +356,10 @@ TEST_CASE("[Marshalls] Typed array encoding") {
 	uint8_t buffer[24];
 
 	CHECK(encode_variant(array, buffer, r_len) == OK);
-	CHECK_MESSAGE(r_len == 24, "Length == 4 bytes for header + 4 bytes for array type + 4 bytes for array size + 12 bytes for element");
+	CHECK_MESSAGE(r_len == 24, "Length == 4 bytes for header + 4 bytes for array type + 4 bytes for array size + 12 bytes for element.");
 	CHECK_MESSAGE(buffer[0] == 0x1c, "Variant::ARRAY");
 	CHECK(buffer[1] == 0x00);
-	CHECK_MESSAGE(buffer[2] == 0x01, "HEADER_DATA_FIELD_TYPED_ARRAY_BUILTIN");
+	CHECK_MESSAGE(buffer[2] == 0x01, "CONTAINER_TYPE_KIND_BUILTIN");
 	CHECK(buffer[3] == 0x00);
 	// Check array type.
 	CHECK_MESSAGE(buffer[4] == 0x02, "Variant::INT");
@@ -370,7 +391,7 @@ TEST_CASE("[Marshalls] Typed array decoding") {
 	Variant variant;
 	int r_len;
 	uint8_t buffer[] = {
-		0x1c, 0x00, 0x01, 0x00, // Variant::ARRAY, HEADER_DATA_FIELD_TYPED_ARRAY_BUILTIN
+		0x1c, 0x00, 0x01, 0x00, // Variant::ARRAY, CONTAINER_TYPE_KIND_BUILTIN
 		0x02, 0x00, 0x00, 0x00, // Array type (Variant::INT).
 		0x01, 0x00, 0x00, 0x00, // Array size.
 		0x02, 0x00, 0x01, 0x00, // Element type (Variant::INT, HEADER_DATA_FLAG_64).
@@ -384,6 +405,89 @@ TEST_CASE("[Marshalls] Typed array decoding") {
 	CHECK(array.get_typed_builtin() == Variant::INT);
 	CHECK(array.size() == 1);
 	CHECK(array[0] == Variant(uint64_t(0x0f123456789abcdef)));
+}
+
+TEST_CASE("[Marshalls] Typed dicttionary encoding") {
+	int r_len;
+	Dictionary dictionary;
+	dictionary.set_typed(Variant::INT, StringName(), Ref<Script>(), Variant::INT, StringName(), Ref<Script>());
+	dictionary[Variant(uint64_t(0x0f123456789abcdef))] = Variant(uint64_t(0x0f123456789abcdef));
+	uint8_t buffer[40];
+
+	CHECK(encode_variant(dictionary, buffer, r_len) == OK);
+	CHECK_MESSAGE(r_len == 40, "Length == 4 bytes for header + 8 bytes for dictionary type + 4 bytes for dictionary size + 24 bytes for key-value pair.");
+	CHECK_MESSAGE(buffer[0] == 0x1b, "Variant::DICTIONARY");
+	CHECK(buffer[1] == 0x00);
+	CHECK_MESSAGE(buffer[2] == 0x05, "key: CONTAINER_TYPE_KIND_BUILTIN | value: CONTAINER_TYPE_KIND_BUILTIN");
+	CHECK(buffer[3] == 0x00);
+	// Check dictionary key type.
+	CHECK_MESSAGE(buffer[4] == 0x02, "Variant::INT");
+	CHECK(buffer[5] == 0x00);
+	CHECK(buffer[6] == 0x00);
+	CHECK(buffer[7] == 0x00);
+	// Check dictionary value type.
+	CHECK_MESSAGE(buffer[8] == 0x02, "Variant::INT");
+	CHECK(buffer[9] == 0x00);
+	CHECK(buffer[10] == 0x00);
+	CHECK(buffer[11] == 0x00);
+	// Check dictionary size.
+	CHECK(buffer[12] == 0x01);
+	CHECK(buffer[13] == 0x00);
+	CHECK(buffer[14] == 0x00);
+	CHECK(buffer[15] == 0x00);
+	// Check key type.
+	CHECK_MESSAGE(buffer[16] == 0x02, "Variant::INT");
+	CHECK(buffer[17] == 0x00);
+	CHECK_MESSAGE(buffer[18] == 0x01, "HEADER_DATA_FLAG_64");
+	CHECK(buffer[19] == 0x00);
+	// Check key value.
+	CHECK(buffer[20] == 0xef);
+	CHECK(buffer[21] == 0xcd);
+	CHECK(buffer[22] == 0xab);
+	CHECK(buffer[23] == 0x89);
+	CHECK(buffer[24] == 0x67);
+	CHECK(buffer[25] == 0x45);
+	CHECK(buffer[26] == 0x23);
+	CHECK(buffer[27] == 0xf1);
+	// Check value type.
+	CHECK_MESSAGE(buffer[28] == 0x02, "Variant::INT");
+	CHECK(buffer[29] == 0x00);
+	CHECK_MESSAGE(buffer[30] == 0x01, "HEADER_DATA_FLAG_64");
+	CHECK(buffer[31] == 0x00);
+	// Check value value.
+	CHECK(buffer[32] == 0xef);
+	CHECK(buffer[33] == 0xcd);
+	CHECK(buffer[34] == 0xab);
+	CHECK(buffer[35] == 0x89);
+	CHECK(buffer[36] == 0x67);
+	CHECK(buffer[37] == 0x45);
+	CHECK(buffer[38] == 0x23);
+	CHECK(buffer[39] == 0xf1);
+}
+
+TEST_CASE("[Marshalls] Typed dictionary decoding") {
+	Variant variant;
+	int r_len;
+	uint8_t buffer[] = {
+		0x1b, 0x00, 0x05, 0x00, // Variant::DICTIONARY, key: CONTAINER_TYPE_KIND_BUILTIN | value: CONTAINER_TYPE_KIND_BUILTIN
+		0x02, 0x00, 0x00, 0x00, // Dictionary key type (Variant::INT).
+		0x02, 0x00, 0x00, 0x00, // Dictionary value type (Variant::INT).
+		0x01, 0x00, 0x00, 0x00, // Dictionary size.
+		0x02, 0x00, 0x01, 0x00, // Key type (Variant::INT, HEADER_DATA_FLAG_64).
+		0xef, 0xcd, 0xab, 0x89, 0x67, 0x45, 0x23, 0xf1, // Key value.
+		0x02, 0x00, 0x01, 0x00, // Value type (Variant::INT, HEADER_DATA_FLAG_64).
+		0xef, 0xcd, 0xab, 0x89, 0x67, 0x45, 0x23, 0xf1, // Value value.
+	};
+
+	CHECK(decode_variant(variant, buffer, 40, &r_len) == OK);
+	CHECK(r_len == 40);
+	CHECK(variant.get_type() == Variant::DICTIONARY);
+	Dictionary dictionary = variant;
+	CHECK(dictionary.get_typed_key_builtin() == Variant::INT);
+	CHECK(dictionary.get_typed_value_builtin() == Variant::INT);
+	CHECK(dictionary.size() == 1);
+	CHECK(dictionary.has(Variant(uint64_t(0x0f123456789abcdef))));
+	CHECK(dictionary[Variant(uint64_t(0x0f123456789abcdef))] == Variant(uint64_t(0x0f123456789abcdef)));
 }
 
 } // namespace TestMarshalls

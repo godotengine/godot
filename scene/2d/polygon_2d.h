@@ -33,6 +33,9 @@
 
 #include "scene/2d/node_2d.h"
 
+class NavigationPolygon;
+class NavigationMeshSourceGeometryData2D;
+
 class Polygon2D : public Node2D {
 	GDCLASS(Polygon2D, Node2D);
 
@@ -87,11 +90,14 @@ public:
 	virtual void _edit_set_pivot(const Point2 &p_pivot) override;
 	virtual Point2 _edit_get_pivot() const override;
 	virtual bool _edit_use_pivot() const override;
+#endif // TOOLS_ENABLED
+
+#ifdef DEBUG_ENABLED
 	virtual Rect2 _edit_get_rect() const override;
 	virtual bool _edit_use_rect() const override;
 
 	virtual bool _edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const override;
-#endif
+#endif // DEBUG_ENABLED
 
 	void set_polygon(const Vector<Vector2> &p_polygon);
 	Vector<Vector2> get_polygon() const;
@@ -146,6 +152,14 @@ public:
 
 	void set_skeleton(const NodePath &p_skeleton);
 	NodePath get_skeleton() const;
+
+private:
+	static Callable _navmesh_source_geometry_parsing_callback;
+	static RID _navmesh_source_geometry_parser;
+
+public:
+	static void navmesh_parse_init();
+	static void navmesh_parse_source_geometry(const Ref<NavigationPolygon> &p_navigation_mesh, Ref<NavigationMeshSourceGeometryData2D> p_source_geometry_data, Node *p_node);
 
 	Polygon2D();
 	~Polygon2D();

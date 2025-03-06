@@ -34,11 +34,12 @@
 #include "core/io/json.h"
 #include "core/io/zip_io.h"
 #include "core/version.h"
+#include "editor/editor_file_system.h"
 #include "editor/editor_node.h"
 #include "editor/editor_paths.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
-#include "editor/export/editor_export.h"
+#include "editor/export/editor_export_preset.h"
 #include "editor/progress_dialog.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/file_dialog.h"
@@ -436,6 +437,13 @@ bool ExportTemplateManager::_install_file_selected(const String &p_file, bool p_
 		}
 
 		String file = String::utf8(fname);
+
+		// Skip the __MACOSX directory created by macOS's built-in file zipper.
+		if (file.begins_with("__MACOSX")) {
+			ret = unzGoToNextFile(pkg);
+			continue;
+		}
+
 		if (file.ends_with("version.txt")) {
 			Vector<uint8_t> uncomp_data;
 			uncomp_data.resize(info.uncompressed_size);
@@ -511,7 +519,8 @@ bool ExportTemplateManager::_install_file_selected(const String &p_file, bool p_
 
 		String file = file_path.get_file();
 
-		if (file.size() == 0) {
+		// Skip the __MACOSX directory created by macOS's built-in file zipper.
+		if (file.is_empty() || file.begins_with("__MACOSX")) {
 			ret = unzGoToNextFile(pkg);
 			continue;
 		}
@@ -876,7 +885,7 @@ Error ExportTemplateManager::install_android_template_from_file(const String &p_
 
 	ProgressDialog::get_singleton()->end_task("uncompress_src");
 	unzClose(pkg);
-
+	EditorFileSystem::get_singleton()->scan_changes();
 	return OK;
 }
 
@@ -888,7 +897,7 @@ void ExportTemplateManager::_notification(int p_what) {
 			current_missing_label->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
 			current_installed_label->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("font_disabled_color"), EditorStringName(Editor)));
 
-			mirror_options_button->set_icon(get_editor_theme_icon(SNAME("GuiTabMenuHl")));
+			mirror_options_button->set_button_icon(get_editor_theme_icon(SNAME("GuiTabMenuHl")));
 		} break;
 
 		case NOTIFICATION_VISIBILITY_CHANGED: {

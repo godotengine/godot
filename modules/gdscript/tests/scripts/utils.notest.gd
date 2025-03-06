@@ -1,6 +1,5 @@
 class_name Utils
 
-
 # `assert()` is not evaluated in non-debug builds. Do not use `assert()`
 # for anything other than testing the `assert()` itself.
 static func check(condition: Variant) -> void:
@@ -205,6 +204,9 @@ static func get_property_hint_name(hint: PropertyHint) -> String:
 			return "PROPERTY_HINT_HIDE_QUATERNION_EDIT"
 		PROPERTY_HINT_PASSWORD:
 			return "PROPERTY_HINT_PASSWORD"
+		PROPERTY_HINT_TOOL_BUTTON:
+			return "PROPERTY_HINT_TOOL_BUTTON"
+
 	printerr("Argument `hint` is invalid. Use `PROPERTY_HINT_*` constants.")
 	return "<invalid hint>"
 

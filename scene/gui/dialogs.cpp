@@ -31,9 +31,6 @@
 #include "dialogs.h"
 #include "dialogs.compat.inc"
 
-#include "core/os/keyboard.h"
-#include "core/string/print_string.h"
-#include "core/string/translation.h"
 #include "scene/gui/line_edit.h"
 #include "scene/theme/theme_db.h"
 
@@ -214,7 +211,7 @@ String AcceptDialog::get_ok_button_text() const {
 
 void AcceptDialog::register_text_enter(LineEdit *p_line_edit) {
 	ERR_FAIL_NULL(p_line_edit);
-	p_line_edit->connect("text_submitted", callable_mp(this, &AcceptDialog::_text_submitted));
+	p_line_edit->connect(SceneStringName(text_submitted), callable_mp(this, &AcceptDialog::_text_submitted));
 }
 
 void AcceptDialog::_update_child_rects() {

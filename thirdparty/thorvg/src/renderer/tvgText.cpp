@@ -37,7 +37,6 @@
 
 Text::Text() : pImpl(new Impl(this))
 {
-    Paint::pImpl->id = TVG_CLASS_ID_TEXT;
 }
 
 
@@ -61,13 +60,17 @@ Result Text::font(const char* name, float size, const char* style) noexcept
 
 Result Text::load(const std::string& path) noexcept
 {
+#ifdef THORVG_FILE_IO_SUPPORT
     bool invalid; //invalid path
     if (!LoaderMgr::loader(path, &invalid)) {
         if (invalid) return Result::InvalidArguments;
         else return Result::NonSupport;
     }
-
     return Result::Success;
+#else
+    TVGLOG("RENDERER", "FILE IO is disabled!");
+    return Result::NonSupport;
+#endif
 }
 
 
@@ -88,8 +91,13 @@ Result Text::load(const char* name, const char* data, uint32_t size, const strin
 
 Result Text::unload(const std::string& path) noexcept
 {
+#ifdef THORVG_FILE_IO_SUPPORT
     if (LoaderMgr::retrieve(path)) return Result::Success;
     return Result::InsufficientCondition;
+#else
+    TVGLOG("RENDERER", "FILE IO is disabled!");
+    return Result::NonSupport;
+#endif
 }
 
 
@@ -111,7 +119,7 @@ unique_ptr<Text> Text::gen() noexcept
 }
 
 
-uint32_t Text::identifier() noexcept
+Type Text::type() const noexcept
 {
-    return TVG_CLASS_ID_TEXT;
+    return Type::Text;
 }

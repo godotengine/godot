@@ -48,14 +48,14 @@ class EditorExportPlatformLinuxBSD : public EditorExportPlatformPC {
 		String cmd_args;
 		bool wait = false;
 
-		SSHCleanupCommand(){};
+		SSHCleanupCommand() {}
 		SSHCleanupCommand(const String &p_host, const String &p_port, const Vector<String> &p_ssh_arg, const String &p_cmd_args, bool p_wait = false) {
 			host = p_host;
 			port = p_port;
 			ssh_args = p_ssh_arg;
 			cmd_args = p_cmd_args;
 			wait = p_wait;
-		};
+		}
 	};
 
 	Ref<ImageTexture> run_icon;

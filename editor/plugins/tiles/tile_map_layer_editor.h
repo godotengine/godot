@@ -34,7 +34,6 @@
 #include "tile_atlas_view.h"
 
 #include "core/os/thread.h"
-#include "core/typedefs.h"
 #include "scene/2d/tile_map.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/check_box.h"
@@ -63,12 +62,12 @@ public:
 
 	virtual Vector<TabData> get_tabs() const {
 		return Vector<TabData>();
-	};
+	}
 
-	virtual bool forward_canvas_gui_input(const Ref<InputEvent> &p_event) { return false; };
-	virtual void forward_canvas_draw_over_viewport(Control *p_overlay){};
-	virtual void tile_set_changed(){};
-	virtual void edit(ObjectID p_tile_map_layer_id){};
+	virtual bool forward_canvas_gui_input(const Ref<InputEvent> &p_event) { return false; }
+	virtual void forward_canvas_draw_over_viewport(Control *p_overlay) {}
+	virtual void tile_set_changed() {}
+	virtual void edit(ObjectID p_tile_map_layer_id) {}
 };
 
 class TileMapLayerEditorTilesPlugin : public TileMapLayerSubEditorPlugin {

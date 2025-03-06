@@ -80,7 +80,7 @@ public:
 		int get_id() const;
 
 		void edit(Ref<TileSet> p_tile_set, Ref<TileSetAtlasSource> p_tile_set_atlas_source, int p_source_id);
-		Ref<TileSetAtlasSource> get_edited() { return tile_set_atlas_source; };
+		Ref<TileSetAtlasSource> get_edited() { return tile_set_atlas_source; }
 	};
 
 	// -- Proxy object for a tile, needed by the inspector --
@@ -91,7 +91,7 @@ public:
 		TileSetAtlasSourceEditor *tiles_set_atlas_source_editor = nullptr;
 
 		Ref<TileSetAtlasSource> tile_set_atlas_source;
-		RBSet<TileSelection> tiles = RBSet<TileSelection>();
+		RBSet<TileSelection> tiles;
 
 	protected:
 		bool _set(const StringName &p_name, const Variant &p_value);
@@ -101,10 +101,10 @@ public:
 		static void _bind_methods();
 
 	public:
-		Ref<TileSetAtlasSource> get_edited_tile_set_atlas_source() const { return tile_set_atlas_source; };
-		RBSet<TileSelection> get_edited_tiles() const { return tiles; };
+		Ref<TileSetAtlasSource> get_edited_tile_set_atlas_source() const { return tile_set_atlas_source; }
+		RBSet<TileSelection> get_edited_tiles() const { return tiles; }
 
-		// Update the proxyed object.
+		// Update the proxied object.
 		void edit(Ref<TileSetAtlasSource> p_tile_set_atlas_source, const RBSet<TileSelection> &p_tiles = RBSet<TileSelection>());
 
 		AtlasTileProxyObject(TileSetAtlasSourceEditor *p_tiles_set_atlas_source_editor) {
@@ -177,7 +177,7 @@ private:
 
 		DRAG_TYPE_MAY_POPUP_MENU,
 
-		// Warning: keep in this order.
+		// WARNING: Keep in this order.
 		DRAG_TYPE_RESIZE_TOP_LEFT,
 		DRAG_TYPE_RESIZE_TOP,
 		DRAG_TYPE_RESIZE_TOP_RIGHT,
@@ -253,6 +253,7 @@ private:
 	PopupMenu *alternative_tile_popup_menu = nullptr;
 	Control *alternative_tiles_control = nullptr;
 	Control *alternative_tiles_control_unscaled = nullptr;
+	void _tile_alternatives_create_button_pressed(const Vector2i &p_atlas_coords);
 	void _tile_alternatives_control_draw();
 	void _tile_alternatives_control_unscaled_draw();
 	void _tile_alternatives_control_mouse_exited();

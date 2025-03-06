@@ -97,12 +97,16 @@ public:
 
 	Vector<int> get_children();
 	void set_children(Vector<int> p_children);
+	void append_child_index(int p_child_index);
 
 	GLTFLightIndex get_light();
 	void set_light(GLTFLightIndex p_light);
 
 	Variant get_additional_data(const StringName &p_extension_name);
+	bool has_additional_data(const StringName &p_extension_name);
 	void set_additional_data(const StringName &p_extension_name, Variant p_additional_data);
+
+	NodePath get_scene_node_path(Ref<GLTFState> p_state, bool p_handle_skeletons = true);
 };
 
 #endif // GLTF_NODE_H

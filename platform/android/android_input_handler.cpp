@@ -130,7 +130,7 @@ void AndroidInputHandler::process_key_event(int p_physical_keycode, int p_unicod
 
 	_set_key_modifier_state(ev, keycode);
 
-	if (p_physical_keycode == AKEYCODE_BACK) {
+	if (p_physical_keycode == AKEYCODE_BACK && p_pressed) {
 		if (DisplayServerAndroid *dsa = Object::cast_to<DisplayServerAndroid>(DisplayServer::get_singleton())) {
 			dsa->send_window_event(DisplayServer::WINDOW_EVENT_GO_BACK_REQUEST, true);
 		}
@@ -337,7 +337,7 @@ void AndroidInputHandler::process_mouse_event(int p_event_action, int p_event_an
 		} break;
 
 		case AMOTION_EVENT_ACTION_MOVE: {
-			if (!mouse_event_info.valid) {
+			if (!p_source_mouse_relative && !mouse_event_info.valid) {
 				return;
 			}
 

@@ -34,9 +34,7 @@
 #ifndef _3D_DISABLED
 
 #include "core/io/resource.h"
-#include "core/object/class_db.h"
 #include "core/object/gdvirtual.gen.inc"
-#include "core/variant/native_ptr.h"
 
 class PhysicsDirectSpaceState3D;
 template <typename T>
@@ -213,9 +211,9 @@ public:
 class PhysicsServer3DRenderingServerHandler : public Object {
 	GDCLASS(PhysicsServer3DRenderingServerHandler, Object)
 protected:
-	GDVIRTUAL2(_set_vertex, int, const Vector3 &)
-	GDVIRTUAL2(_set_normal, int, const Vector3 &)
-	GDVIRTUAL1(_set_aabb, const AABB &)
+	GDVIRTUAL2_REQUIRED(_set_vertex, int, const Vector3 &)
+	GDVIRTUAL2_REQUIRED(_set_normal, int, const Vector3 &)
+	GDVIRTUAL1_REQUIRED(_set_aabb, const AABB &)
 
 	static void _bind_methods();
 
@@ -966,7 +964,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	PhysicsServer3D::MotionResult *get_result_ptr() const { return const_cast<PhysicsServer3D::MotionResult *>(&result); }
+	PhysicsServer3D::MotionResult *get_result_ptr() { return &result; }
 
 	Vector3 get_travel() const;
 	Vector3 get_remainder() const;

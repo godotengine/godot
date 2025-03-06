@@ -33,8 +33,6 @@
 
 #include "scene/3d/skeleton_modifier_3d.h"
 
-#include "scene/3d/physics/physical_bone_3d.h"
-
 class PhysicalBone3D;
 
 class PhysicalBoneSimulator3D : public SkeletonModifier3D {
@@ -73,6 +71,7 @@ protected:
 
 	void _bone_list_changed();
 	void _pose_updated();
+	void _bone_pose_updated(Skeleton3D *skeleton, int p_bone_id);
 
 	virtual void _process_modification() override;
 

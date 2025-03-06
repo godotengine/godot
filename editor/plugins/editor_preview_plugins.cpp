@@ -31,10 +31,9 @@
 #include "editor_preview_plugins.h"
 
 #include "core/config/project_settings.h"
-#include "core/io/file_access_memory.h"
+#include "core/io/image.h"
 #include "core/io/resource_loader.h"
 #include "core/object/script_language.h"
-#include "core/os/os.h"
 #include "editor/editor_paths.h"
 #include "editor/editor_settings.h"
 #include "editor/themes/editor_scale.h"
@@ -76,7 +75,7 @@ void post_process_preview(Ref<Image> p_image) {
 }
 
 bool EditorTexturePreviewPlugin::handles(const String &p_type) const {
-	return ClassDB::is_parent_class(p_type, "Texture2D");
+	return ClassDB::is_parent_class(p_type, "Texture");
 }
 
 bool EditorTexturePreviewPlugin::generate_small_preview_automatically() const {
@@ -85,23 +84,64 @@ bool EditorTexturePreviewPlugin::generate_small_preview_automatically() const {
 
 Ref<Texture2D> EditorTexturePreviewPlugin::generate(const Ref<Resource> &p_from, const Size2 &p_size, Dictionary &p_metadata) const {
 	Ref<Image> img;
-	Ref<AtlasTexture> atex = p_from;
-	if (atex.is_valid()) {
-		Ref<Texture2D> tex = atex->get_atlas();
-		if (!tex.is_valid()) {
+
+	Ref<AtlasTexture> tex_atlas = p_from;
+	Ref<Texture3D> tex_3d = p_from;
+	Ref<TextureLayered> tex_lyr = p_from;
+
+	if (tex_atlas.is_valid()) {
+		Ref<Texture2D> tex = tex_atlas->get_atlas();
+		if (tex.is_null()) {
 			return Ref<Texture2D>();
 		}
 
 		Ref<Image> atlas = tex->get_image();
-		if (!atlas.is_valid()) {
+		if (atlas.is_null()) {
 			return Ref<Texture2D>();
 		}
 
-		if (!atex->get_region().has_area()) {
+		if (atlas->is_compressed()) {
+			atlas = atlas->duplicate();
+			if (atlas->decompress() != OK) {
+				return Ref<Texture2D>();
+			}
+		}
+
+		if (!tex_atlas->get_region().has_area()) {
 			return Ref<Texture2D>();
 		}
 
-		img = atlas->get_region(atex->get_region());
+		img = atlas->get_region(tex_atlas->get_region());
+
+	} else if (tex_3d.is_valid()) {
+		if (tex_3d->get_depth() == 0) {
+			return Ref<Texture2D>();
+		}
+
+		Vector<Ref<Image>> data = tex_3d->get_data();
+		if (data.size() != tex_3d->get_depth()) {
+			return Ref<Texture2D>();
+		}
+
+		// Use the middle slice for the thumbnail.
+		const int mid_depth = (tex_3d->get_depth() - 1) / 2;
+		if (!data.is_empty() && data[mid_depth].is_valid()) {
+			img = data[mid_depth]->duplicate();
+		}
+
+	} else if (tex_lyr.is_valid()) {
+		if (tex_lyr->get_layers() == 0) {
+			return Ref<Texture2D>();
+		}
+
+		// Use the middle slice for the thumbnail.
+		const int mid_layer = (tex_lyr->get_layers() - 1) / 2;
+
+		Ref<Image> data = tex_lyr->get_layer_data(mid_layer);
+		if (data.is_valid()) {
+			img = data->duplicate();
+		}
+
 	} else {
 		Ref<Texture2D> tex = p_from;
 		if (tex.is_valid()) {
@@ -115,6 +155,7 @@ Ref<Texture2D> EditorTexturePreviewPlugin::generate(const Ref<Resource> &p_from,
 	if (img.is_null() || img->is_empty()) {
 		return Ref<Texture2D>();
 	}
+
 	p_metadata["dimensions"] = img->get_size();
 
 	img->clear_mipmaps();
@@ -313,7 +354,7 @@ Ref<Texture2D> EditorMaterialPreviewPlugin::generate(const Ref<Resource> &p_from
 		Ref<Image> img = RS::get_singleton()->texture_2d_get(viewport_texture);
 		RS::get_singleton()->mesh_surface_set_material(sphere, 0, RID());
 
-		ERR_FAIL_COND_V(!img.is_valid(), Ref<ImageTexture>());
+		ERR_FAIL_COND_V(img.is_null(), Ref<ImageTexture>());
 
 		img->convert(Image::FORMAT_RGBA8);
 		int thumbnail_size = MAX(p_size.x, p_size.y);

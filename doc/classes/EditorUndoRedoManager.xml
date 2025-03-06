@@ -87,7 +87,7 @@
 			<return type="void" />
 			<param index="0" name="execute" type="bool" default="true" />
 			<description>
-				Commit the action. If [param execute] is true (default), all "do" methods/properties are called/set when this function is called.
+				Commits the action. If [param execute] is [code]true[/code] (default), all "do" methods/properties are called/set when this function is called.
 			</description>
 		</method>
 		<method name="create_action">

@@ -91,6 +91,10 @@ EditorDebuggerNode::EditorDebuggerNode() {
 	remote_scene_tree_timeout = EDITOR_GET("debugger/remote_scene_tree_refresh_interval");
 	inspect_edited_object_timeout = EDITOR_GET("debugger/remote_inspect_refresh_interval");
 
+	if (Engine::get_singleton()->is_recovery_mode_hint()) {
+		return;
+	}
+
 	EditorRunBar::get_singleton()->get_pause_button()->connect(SceneStringName(pressed), callable_mp(this, &EditorDebuggerNode::_paused));
 }
 
@@ -105,6 +109,7 @@ ScriptEditorDebugger *EditorDebuggerNode::_add_debugger() {
 	node->connect("breakpoint_selected", callable_mp(this, &EditorDebuggerNode::_error_selected).bind(id));
 	node->connect("clear_execution", callable_mp(this, &EditorDebuggerNode::_clear_execution));
 	node->connect("breaked", callable_mp(this, &EditorDebuggerNode::_breaked).bind(id));
+	node->connect("remote_tree_select_requested", callable_mp(this, &EditorDebuggerNode::_remote_tree_select_requested).bind(id));
 	node->connect("remote_tree_updated", callable_mp(this, &EditorDebuggerNode::_remote_tree_updated).bind(id));
 	node->connect("remote_object_updated", callable_mp(this, &EditorDebuggerNode::_remote_object_updated).bind(id));
 	node->connect("remote_object_property_updated", callable_mp(this, &EditorDebuggerNode::_remote_object_property_updated).bind(id));
@@ -119,7 +124,7 @@ ScriptEditorDebugger *EditorDebuggerNode::_add_debugger() {
 
 	tabs->add_child(node);
 
-	node->set_name("Session " + itos(tabs->get_tab_count()));
+	node->set_name(vformat(TTR("Session %d"), tabs->get_tab_count()));
 	if (tabs->get_tab_count() > 1) {
 		node->clear_style();
 		tabs->set_tabs_visible(true);
@@ -159,9 +164,9 @@ void EditorDebuggerNode::_text_editor_stack_goto(const ScriptEditorDebugger *p_d
 	} else {
 		// If the script is built-in, it can be opened only if the scene is loaded in memory.
 		int i = file.find("::");
-		int j = file.rfind("(", i);
+		int j = file.rfind_char('(', i);
 		if (j > -1) { // If the script is named, the string is "name (file)", so we need to extract the path.
-			file = file.substr(j + 1, file.find(")", i) - j - 1);
+			file = file.substr(j + 1, file.find_char(')', i) - j - 1);
 		}
 		Ref<PackedScene> ps = ResourceLoader::load(file.get_slice("::", 0));
 		stack_script = ResourceLoader::load(file);
@@ -182,9 +187,9 @@ void EditorDebuggerNode::_text_editor_stack_clear(const ScriptEditorDebugger *p_
 	} else {
 		// If the script is built-in, it can be opened only if the scene is loaded in memory.
 		int i = file.find("::");
-		int j = file.rfind("(", i);
+		int j = file.rfind_char('(', i);
 		if (j > -1) { // If the script is named, the string is "name (file)", so we need to extract the path.
-			file = file.substr(j + 1, file.find(")", i) - j - 1);
+			file = file.substr(j + 1, file.find_char(')', i) - j - 1);
 		}
 		Ref<PackedScene> ps = ResourceLoader::load(file.get_slice("::", 0));
 		stack_script = ResourceLoader::load(file);
@@ -262,6 +267,10 @@ void EditorDebuggerNode::set_keep_open(bool p_keep_open) {
 }
 
 Error EditorDebuggerNode::start(const String &p_uri) {
+	if (Engine::get_singleton()->is_recovery_mode_hint()) {
+		return ERR_UNAVAILABLE;
+	}
+
 	ERR_FAIL_COND_V(!p_uri.contains("://"), ERR_INVALID_PARAMETER);
 	if (keep_open && current_uri == p_uri && server.is_valid()) {
 		return OK;
@@ -330,7 +339,7 @@ void EditorDebuggerNode::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_PROCESS: {
-			if (!server.is_valid()) {
+			if (server.is_null()) {
 				return;
 			}
 
@@ -417,18 +426,18 @@ void EditorDebuggerNode::_update_errors() {
 		if (error_count == 0 && warning_count == 0) {
 			debugger_button->set_text(TTR("Debugger"));
 			debugger_button->remove_theme_color_override(SceneStringName(font_color));
-			debugger_button->set_icon(Ref<Texture2D>());
+			debugger_button->set_button_icon(Ref<Texture2D>());
 		} else {
 			debugger_button->set_text(TTR("Debugger") + " (" + itos(error_count + warning_count) + ")");
 			if (error_count >= 1 && warning_count >= 1) {
-				debugger_button->set_icon(get_editor_theme_icon(SNAME("ErrorWarning")));
+				debugger_button->set_button_icon(get_editor_theme_icon(SNAME("ErrorWarning")));
 				// Use error color to represent the highest level of severity reported.
 				debugger_button->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
 			} else if (error_count >= 1) {
-				debugger_button->set_icon(get_editor_theme_icon(SNAME("Error")));
+				debugger_button->set_button_icon(get_editor_theme_icon(SNAME("Error")));
 				debugger_button->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
 			} else {
-				debugger_button->set_icon(get_editor_theme_icon(SNAME("Warning")));
+				debugger_button->set_button_icon(get_editor_theme_icon(SNAME("Warning")));
 				debugger_button->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
 			}
 		}
@@ -635,6 +644,13 @@ String EditorDebuggerNode::get_var_value(const String &p_var) const {
 // LiveEdit/Inspector
 void EditorDebuggerNode::request_remote_tree() {
 	get_current_debugger()->request_remote_tree();
+}
+
+void EditorDebuggerNode::_remote_tree_select_requested(ObjectID p_id, int p_debugger) {
+	if (p_debugger != tabs->get_current_tab()) {
+		return;
+	}
+	remote_scene_tree->select_node(p_id);
 }
 
 void EditorDebuggerNode::_remote_tree_updated(int p_debugger) {

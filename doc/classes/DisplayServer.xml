@@ -10,6 +10,13 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="beep" qualifiers="const">
+			<return type="void" />
+			<description>
+				Plays the beep sound from the operative system, if possible. Because it comes from the OS, the beep sound will be audible even if the application is muted. It may also be disabled for the entire OS by the user.
+				[b]Note:[/b] This method is implemented on macOS, Linux (X11/Wayland), and Windows.
+			</description>
+		</method>
 		<method name="clipboard_get" qualifiers="const">
 			<return type="String" />
 			<description>
@@ -105,7 +112,7 @@
 			<param index="3" name="callback" type="Callable" />
 			<description>
 				Shows a text input dialog which uses the operating system's native look-and-feel. [param callback] should accept a single [String] parameter which contains the text field's contents.
-				[b]Note:[/b] This method is implemented if the display server has the [constant FEATURE_NATIVE_DIALOG_INPUT] feature. Supported platforms include macOS and Windows.
+				[b]Note:[/b] This method is implemented if the display server has the [constant FEATURE_NATIVE_DIALOG_INPUT] feature. Supported platforms include macOS, Windows, and Android.
 			</description>
 		</method>
 		<method name="dialog_show">
@@ -116,7 +123,7 @@
 			<param index="3" name="callback" type="Callable" />
 			<description>
 				Shows a text dialog which uses the operating system's native look-and-feel. [param callback] should accept a single [int] parameter which corresponds to the index of the pressed button.
-				[b]Note:[/b] This method is implemented if the display server has the [constant FEATURE_NATIVE_DIALOG] feature. Supported platforms include macOS and Windows.
+				[b]Note:[/b] This method is implemented if the display server has the [constant FEATURE_NATIVE_DIALOG] feature. Supported platforms include macOS, Windows, and Android.
 			</description>
 		</method>
 		<method name="enable_for_stealing_focus">
@@ -138,12 +145,13 @@
 			<param index="6" name="callback" type="Callable" />
 			<description>
 				Displays OS native dialog for selecting files or directories in the file system.
-				Each filter string in the [param filters] array should be formatted like this: [code]*.txt,*.doc;Text Files[/code]. The description text of the filter is optional and can be omitted. See also [member FileDialog.filters].
-				Callbacks have the following arguments: [code]status: bool, selected_paths: PackedStringArray, selected_filter_index: int[/code].
-				[b]Note:[/b] This method is implemented if the display server has the [constant FEATURE_NATIVE_DIALOG_FILE] feature. Supported platforms include Linux (X11/Wayland), Windows, and macOS.
+				Each filter string in the [param filters] array should be formatted like this: [code]*.png,*.jpg,*.jpeg;Image Files;image/png,image/jpeg[/code]. The description text of the filter is optional and can be omitted. It is recommended to set both file extension and MIME type. See also [member FileDialog.filters].
+				Callbacks have the following arguments: [code]status: bool, selected_paths: PackedStringArray, selected_filter_index: int[/code]. [b]On Android,[/b] callback argument [code]selected_filter_index[/code] is always zero.
+				[b]Note:[/b] This method is implemented if the display server has the [constant FEATURE_NATIVE_DIALOG_FILE] feature. Supported platforms include Linux (X11/Wayland), Windows, macOS, and Android.
 				[b]Note:[/b] [param current_directory] might be ignored.
-				[b]Note:[/b] On Linux, [param show_hidden] is ignored.
-				[b]Note:[/b] On macOS, native file dialogs have no title.
+				[b]Note:[/b] Embedded file dialog and Windows file dialog support only file extensions, while Android, Linux, and macOS file dialogs also support MIME types.
+				[b]Note:[/b] On Android and Linux, [param show_hidden] is ignored.
+				[b]Note:[/b] On Android and macOS, native file dialogs have no title.
 				[b]Note:[/b] On macOS, sandboxed apps will save security-scoped bookmarks to retain access to the opened folders across multiple sessions. Use [method OS.get_granted_permissions] to get a list of saved bookmarks.
 			</description>
 		</method>
@@ -160,14 +168,15 @@
 			<param index="8" name="callback" type="Callable" />
 			<description>
 				Displays OS native dialog for selecting files or directories in the file system with additional user selectable options.
-				Each filter string in the [param filters] array should be formatted like this: [code]*.txt,*.doc;Text Files[/code]. The description text of the filter is optional and can be omitted. See also [member FileDialog.filters].
+				Each filter string in the [param filters] array should be formatted like this: [code]*.png,*.jpg,*.jpeg;Image Files;image/png,image/jpeg[/code]. The description text of the filter is optional and can be omitted. It is recommended to set both file extension and MIME type. See also [member FileDialog.filters].
 				[param options] is array of [Dictionary]s with the following keys:
 				- [code]"name"[/code] - option's name [String].
 				- [code]"values"[/code] - [PackedStringArray] of values. If empty, boolean option (check box) is used.
 				- [code]"default"[/code] - default selected option index ([int]) or default boolean value ([bool]).
 				Callbacks have the following arguments: [code]status: bool, selected_paths: PackedStringArray, selected_filter_index: int, selected_option: Dictionary[/code].
-				[b]Note:[/b] This method is implemented if the display server has the [constant FEATURE_NATIVE_DIALOG_FILE] feature. Supported platforms include Linux (X11/Wayland), Windows, and macOS.
+				[b]Note:[/b] This method is implemented if the display server has the [constant FEATURE_NATIVE_DIALOG_FILE_EXTRA] feature. Supported platforms include Linux (X11/Wayland), Windows, and macOS.
 				[b]Note:[/b] [param current_directory] might be ignored.
+				[b]Note:[/b] Embedded file dialog and Windows file dialog support only file extensions, while Android, Linux, and macOS file dialogs also support MIME types.
 				[b]Note:[/b] On Linux (X11), [param show_hidden] is ignored.
 				[b]Note:[/b] On macOS, native file dialogs have no title.
 				[b]Note:[/b] On macOS, sandboxed apps will save security-scoped bookmarks to retain access to the opened folders across multiple sessions. Use [method OS.get_granted_permissions] to get a list of saved bookmarks.
@@ -184,14 +193,14 @@
 			<return type="Color" />
 			<description>
 				Returns OS theme accent color. Returns [code]Color(0, 0, 0, 0)[/code], if accent color is unknown.
-				[b]Note:[/b] This method is implemented on macOS and Windows.
+				[b]Note:[/b] This method is implemented on macOS, Windows, and Android.
 			</description>
 		</method>
 		<method name="get_base_color" qualifiers="const">
 			<return type="Color" />
 			<description>
 				Returns the OS theme base color (default control background). Returns [code]Color(0, 0, 0, 0)[/code] if the base color is unknown.
-				[b]Note:[/b] This method is implemented on macOS and Windows.
+				[b]Note:[/b] This method is implemented on macOS, Windows, and Android.
 			</description>
 		</method>
 		<method name="get_display_cutouts" qualifiers="const">
@@ -205,6 +214,7 @@
 			<return type="Rect2i" />
 			<description>
 				Returns the unobscured area of the display where interactive controls should be rendered. See also [method get_display_cutouts].
+				[b]Note:[/b] Currently only implemented on Android and iOS. On other platforms, [code]screen_get_usable_rect(SCREEN_OF_MAIN_WINDOW)[/code] will be returned as a fallback. See also [method screen_get_usable_rect].
 			</description>
 		</method>
 		<method name="get_keyboard_focus_screen" qualifiers="const">
@@ -236,7 +246,7 @@
 			<return type="int" />
 			<param index="0" name="rect" type="Rect2" />
 			<description>
-				Returns index of the screen which contains specified rectangle.
+				Returns the index of the screen that overlaps the most with the given rectangle. Returns [code]-1[/code] if the rectangle doesn't overlap with any screen or has no area.
 			</description>
 		</method>
 		<method name="get_swap_cancel_ok">
@@ -893,6 +903,13 @@
 				Returns [code]true[/code] if the specified [param feature] is supported by the current [DisplayServer], [code]false[/code] otherwise.
 			</description>
 		</method>
+		<method name="has_hardware_keyboard" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if hardware keyboard is connected.
+				[b]Note:[/b] This method is implemented on Android and iOS, on other platforms this method always returns [code]true[/code].
+			</description>
+		</method>
 		<method name="help_set_search_callbacks">
 			<return type="void" />
 			<param index="0" name="search_callback" type="Callable" />
@@ -1064,6 +1081,15 @@
 				[b]Note:[/b] On macOS, this method requires "Screen Recording" permission, if permission is not granted it will return desktop wallpaper color.
 			</description>
 		</method>
+		<method name="screen_get_image_rect" qualifiers="const">
+			<return type="Image" />
+			<param index="0" name="rect" type="Rect2i" />
+			<description>
+				Returns screenshot of the screen [param rect].
+				[b]Note:[/b] This method is implemented on macOS and Windows.
+				[b]Note:[/b] On macOS, this method requires "Screen Recording" permission, if permission is not granted it will return desktop wallpaper color.
+			</description>
+		</method>
 		<method name="screen_get_max_scale" qualifiers="const">
 			<return type="float" />
 			<description>
@@ -1127,7 +1153,7 @@
 				Returns the scale factor of the specified screen by index.
 				[b]Note:[/b] On macOS, the returned value is [code]2.0[/code] for hiDPI (Retina) screens, and [code]1.0[/code] for all other cases.
 				[b]Note:[/b] On Linux (Wayland), the returned value is accurate only when [param screen] is [constant SCREEN_OF_MAIN_WINDOW]. Due to API limitations, passing a direct index will return a rounded-up integer, if the screen has a fractional scale (e.g. [code]1.25[/code] would get rounded up to [code]2.0[/code]).
-				[b]Note:[/b] This method is implemented only on macOS and Linux (Wayland).
+				[b]Note:[/b] This method is implemented on Android, iOS, Web, macOS, and Linux (Wayland).
 			</description>
 		</method>
 		<method name="screen_get_size" qualifiers="const">
@@ -1188,6 +1214,13 @@
 			<description>
 				Sets the [param callable] that should be called when system theme settings are changed. Callback method should have zero arguments.
 				[b]Note:[/b] This method is implemented on Android, iOS, macOS, Windows, and Linux (X11/Wayland).
+			</description>
+		</method>
+		<method name="show_emoji_and_symbol_picker" qualifiers="const">
+			<return type="void" />
+			<description>
+				Opens system emoji and symbol picker.
+				[b]Note:[/b] This method is implemented on macOS and Windows.
 			</description>
 		</method>
 		<method name="status_indicator_get_rect" qualifiers="const">
@@ -1676,6 +1709,7 @@
 			<param index="1" name="window_id" type="int" default="0" />
 			<description>
 				Sets window mode for the given window to [param mode]. See [enum WindowMode] for possible values and how each mode behaves.
+				[b]Note:[/b] On Android, setting it to [constant WINDOW_MODE_FULLSCREEN] or [constant WINDOW_MODE_EXCLUSIVE_FULLSCREEN] will enable immersive mode.
 				[b]Note:[/b] Setting the window to full screen forcibly sets the borderless flag to [code]true[/code], so make sure to set it back to [code]false[/code] when not wanted.
 			</description>
 		</method>
@@ -1705,7 +1739,7 @@
 				DisplayServer.WindowSetMousePassthrough(GetNode&lt;Polygon2D&gt;("Polygon2D").Polygon);
 
 				// Reset region to default.
-				DisplayServer.WindowSetMousePassthrough(new Vector2[] {});
+				DisplayServer.WindowSetMousePassthrough([]);
 				[/csharp]
 				[/codeblocks]
 				[b]Note:[/b] On Windows, the portion of a window that lies outside the region is not drawn, while on Linux (X11) and macOS it is.
@@ -1806,6 +1840,23 @@
 				[b]Warning:[/b] Advanced users only! Adding such a callback to a [Window] node will override its default implementation, which can introduce bugs.
 			</description>
 		</method>
+		<method name="window_start_drag">
+			<return type="void" />
+			<param index="0" name="window_id" type="int" default="0" />
+			<description>
+				Starts an interactive drag operation on the window with the given [param window_id], using the current mouse position. Call this method when handling a mouse button being pressed to simulate a pressed event on the window's title bar. Using this method allows the window to participate in space switching, tiling, and other system features.
+				[b]Note:[/b] This method is implemented on Linux (X11/Wayland), macOS, and Windows.
+			</description>
+		</method>
+		<method name="window_start_resize">
+			<return type="void" />
+			<param index="0" name="edge" type="int" enum="DisplayServer.WindowResizeEdge" />
+			<param index="1" name="window_id" type="int" default="0" />
+			<description>
+				Starts an interactive resize operation on the window with the given [param window_id], using the current mouse position. Call this method when handling a mouse button being pressed to simulate a pressed event on the window's edge.
+				[b]Note:[/b] This method is implemented on Linux (X11/Wayland), macOS, and Windows.
+			</description>
+		</method>
 	</methods>
 	<constants>
 		<constant name="FEATURE_GLOBAL_MENU" value="0" enum="Feature" deprecated="Use [NativeMenu] or [PopupMenu] instead.">
@@ -1881,7 +1932,25 @@
 			Display server supports spawning text input dialogs using the operating system's native look-and-feel. See [method dialog_input_text]. [b]Windows, macOS[/b]
 		</constant>
 		<constant name="FEATURE_NATIVE_DIALOG_FILE" value="25" enum="Feature">
-			Display server supports spawning dialogs for selecting files or directories using the operating system's native look-and-feel. See [method file_dialog_show] and [method file_dialog_with_options_show]. [b]Windows, macOS, Linux (X11/Wayland)[/b]
+			Display server supports spawning dialogs for selecting files or directories using the operating system's native look-and-feel. See [method file_dialog_show]. [b]Windows, macOS, Linux (X11/Wayland), Android[/b]
+		</constant>
+		<constant name="FEATURE_NATIVE_DIALOG_FILE_EXTRA" value="26" enum="Feature">
+			The display server supports all features of [constant FEATURE_NATIVE_DIALOG_FILE], with the added functionality of Options and native dialog file access to [code]res://[/code] and [code]user://[/code] paths. See [method file_dialog_show] and [method file_dialog_with_options_show]. [b]Windows, macOS, Linux (X11/Wayland)[/b]
+		</constant>
+		<constant name="FEATURE_WINDOW_DRAG" value="27" enum="Feature">
+			The display server supports initiating window drag and resize operations on demand. See [method window_start_drag] and [method window_start_resize].
+		</constant>
+		<constant name="FEATURE_SCREEN_EXCLUDE_FROM_CAPTURE" value="28" enum="Feature">
+			Display server supports [constant WINDOW_FLAG_EXCLUDE_FROM_CAPTURE] window flag.
+		</constant>
+		<constant name="FEATURE_WINDOW_EMBEDDING" value="29" enum="Feature">
+			Display server supports embedding a window from another process. [b]Windows, Linux (X11)[/b]
+		</constant>
+		<constant name="FEATURE_NATIVE_DIALOG_FILE_MIME" value="30" enum="Feature">
+			Native file selection dialog supports MIME types as filters.
+		</constant>
+		<constant name="FEATURE_EMOJI_AND_SYMBOL_PICKER" value="31" enum="Feature">
+			Display server supports system emoji and symbol picker. [b]Windows, macOS[/b]
 		</constant>
 		<constant name="MOUSE_MODE_VISIBLE" value="0" enum="MouseMode">
 			Makes the mouse cursor visible if it is hidden.
@@ -1898,6 +1967,9 @@
 		</constant>
 		<constant name="MOUSE_MODE_CONFINED_HIDDEN" value="4" enum="MouseMode">
 			Confines the mouse cursor to the game window, and make it hidden.
+		</constant>
+		<constant name="MOUSE_MODE_MAX" value="5" enum="MouseMode">
+			Max value of the [enum MouseMode].
 		</constant>
 		<constant name="SCREEN_WITH_MOUSE_FOCUS" value="-4">
 			Represents the screen containing the mouse pointer.
@@ -2051,6 +2123,7 @@
 		<constant name="WINDOW_MODE_FULLSCREEN" value="3" enum="WindowMode">
 			Full screen mode with full multi-window support.
 			Full screen window covers the entire display area of a screen and has no decorations. The display's video mode is not changed.
+			[b]On Android:[/b] This enables immersive mode.
 			[b]On Windows:[/b] Multi-window full-screen mode has a 1px border of the [member ProjectSettings.rendering/environment/defaults/default_clear_color] color.
 			[b]On macOS:[/b] A new desktop is used to display the running project.
 			[b]Note:[/b] Regardless of the platform, enabling full screen will change the window size to match the monitor's size. Therefore, make sure your project supports [url=$DOCS_URL/tutorials/rendering/multiple_resolutions.html]multiple resolutions[/url] when enabling full screen mode.
@@ -2058,9 +2131,11 @@
 		<constant name="WINDOW_MODE_EXCLUSIVE_FULLSCREEN" value="4" enum="WindowMode">
 			A single window full screen mode. This mode has less overhead, but only one window can be open on a given screen at a time (opening a child window or application switching will trigger a full screen transition).
 			Full screen window covers the entire display area of a screen and has no border or decorations. The display's video mode is not changed.
+			[b]On Android:[/b] This enables immersive mode.
 			[b]On Windows:[/b] Depending on video driver, full screen transition might cause screens to go black for a moment.
 			[b]On macOS:[/b] A new desktop is used to display the running project. Exclusive full screen mode prevents Dock and Menu from showing up when the mouse pointer is hovering the edge of the screen.
 			[b]On Linux (X11):[/b] Exclusive full screen mode bypasses compositor.
+			[b]On Linux (Wayland):[/b] Equivalent to [constant WINDOW_MODE_FULLSCREEN].
 			[b]Note:[/b] Regardless of the platform, enabling full screen will change the window size to match the monitor's size. Therefore, make sure your project supports [url=$DOCS_URL/tutorials/rendering/multiple_resolutions.html]multiple resolutions[/url] when enabling full screen mode.
 		</constant>
 		<constant name="WINDOW_FLAG_RESIZE_DISABLED" value="0" enum="WindowFlags">
@@ -2092,7 +2167,16 @@
 		<constant name="WINDOW_FLAG_MOUSE_PASSTHROUGH" value="7" enum="WindowFlags">
 			All mouse events are passed to the underlying window of the same application.
 		</constant>
-		<constant name="WINDOW_FLAG_MAX" value="8" enum="WindowFlags">
+		<constant name="WINDOW_FLAG_SHARP_CORNERS" value="8" enum="WindowFlags">
+			Window style is overridden, forcing sharp corners.
+			[b]Note:[/b] This flag is implemented only on Windows (11).
+		</constant>
+		<constant name="WINDOW_FLAG_EXCLUDE_FROM_CAPTURE" value="9" enum="WindowFlags">
+			Windows is excluded from screenshots taken by [method screen_get_image], [method screen_get_image_rect], and [method screen_get_pixel].
+			[b]Note:[/b] This flag is implemented on macOS and Windows.
+			[b]Note:[/b] Setting this flag will [b]NOT[/b] prevent other apps from capturing an image, it should not be used as a security measure.
+		</constant>
+		<constant name="WINDOW_FLAG_MAX" value="10" enum="WindowFlags">
 			Max value of the [enum WindowFlags].
 		</constant>
 		<constant name="WINDOW_EVENT_MOUSE_ENTER" value="0" enum="WindowEvent">
@@ -2122,6 +2206,33 @@
 			Sent when the window title bar decoration is changed (e.g. [constant WINDOW_FLAG_EXTEND_TO_TITLE] is set or window entered/exited full screen mode).
 			[b]Note:[/b] This flag is implemented only on macOS.
 		</constant>
+		<constant name="WINDOW_EDGE_TOP_LEFT" value="0" enum="WindowResizeEdge">
+			Top-left edge of a window.
+		</constant>
+		<constant name="WINDOW_EDGE_TOP" value="1" enum="WindowResizeEdge">
+			Top edge of a window.
+		</constant>
+		<constant name="WINDOW_EDGE_TOP_RIGHT" value="2" enum="WindowResizeEdge">
+			Top-right edge of a window.
+		</constant>
+		<constant name="WINDOW_EDGE_LEFT" value="3" enum="WindowResizeEdge">
+			Left edge of a window.
+		</constant>
+		<constant name="WINDOW_EDGE_RIGHT" value="4" enum="WindowResizeEdge">
+			Right edge of a window.
+		</constant>
+		<constant name="WINDOW_EDGE_BOTTOM_LEFT" value="5" enum="WindowResizeEdge">
+			Bottom-left edge of a window.
+		</constant>
+		<constant name="WINDOW_EDGE_BOTTOM" value="6" enum="WindowResizeEdge">
+			Bottom edge of a window.
+		</constant>
+		<constant name="WINDOW_EDGE_BOTTOM_RIGHT" value="7" enum="WindowResizeEdge">
+			Bottom-right edge of a window.
+		</constant>
+		<constant name="WINDOW_EDGE_MAX" value="8" enum="WindowResizeEdge">
+			Represents the size of the [enum WindowResizeEdge] enum.
+		</constant>
 		<constant name="VSYNC_DISABLED" value="0" enum="VSyncMode">
 			No vertical synchronization, which means the engine will display frames as fast as possible (tearing may be visible). Framerate is unlimited (regardless of [member Engine.max_fps]).
 		</constant>
@@ -2138,28 +2249,41 @@
 		<constant name="DISPLAY_HANDLE" value="0" enum="HandleType">
 			Display handle:
 			- Linux (X11): [code]X11::Display*[/code] for the display.
+			- Linux (Wayland): [code]wl_display[/code] for the display.
 			- Android: [code]EGLDisplay[/code] for the display.
 		</constant>
 		<constant name="WINDOW_HANDLE" value="1" enum="HandleType">
 			Window handle:
 			- Windows: [code]HWND[/code] for the window.
 			- Linux (X11): [code]X11::Window*[/code] for the window.
+			- Linux (Wayland): [code]wl_surface[/code] for the window.
 			- macOS: [code]NSWindow*[/code] for the window.
 			- iOS: [code]UIViewController*[/code] for the view controller.
 			- Android: [code]jObject[/code] for the activity.
 		</constant>
 		<constant name="WINDOW_VIEW" value="2" enum="HandleType">
 			Window view:
-			- Windows: [code]HDC[/code] for the window (only with the GL Compatibility renderer).
+			- Windows: [code]HDC[/code] for the window (only with the Compatibility renderer).
 			- macOS: [code]NSView*[/code] for the window main view.
 			- iOS: [code]UIView*[/code] for the window main view.
 		</constant>
 		<constant name="OPENGL_CONTEXT" value="3" enum="HandleType">
-			OpenGL context (only with the GL Compatibility renderer):
+			OpenGL context (only with the Compatibility renderer):
 			- Windows: [code]HGLRC[/code] for the window (native GL), or [code]EGLContext[/code] for the window (ANGLE).
 			- Linux (X11): [code]GLXContext*[/code] for the window.
+			- Linux (Wayland): [code]EGLContext[/code] for the window.
 			- macOS: [code]NSOpenGLContext*[/code] for the window (native GL), or [code]EGLContext[/code] for the window (ANGLE).
 			- Android: [code]EGLContext[/code] for the window.
+		</constant>
+		<constant name="EGL_DISPLAY" value="4" enum="HandleType">
+			- Windows: [code]EGLDisplay[/code] for the window (ANGLE).
+			- macOS: [code]EGLDisplay[/code] for the window (ANGLE).
+			- Linux (Wayland): [code]EGLDisplay[/code] for the window.
+		</constant>
+		<constant name="EGL_CONFIG" value="5" enum="HandleType">
+			- Windows: [code]EGLConfig[/code] for the window (ANGLE).
+			- macOS: [code]EGLConfig[/code] for the window (ANGLE).
+			- Linux (Wayland): [code]EGLConfig[/code] for the window.
 		</constant>
 		<constant name="TTS_UTTERANCE_STARTED" value="0" enum="TTSUtteranceEvent">
 			Utterance has begun to be spoken.

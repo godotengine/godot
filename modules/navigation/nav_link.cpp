@@ -37,6 +37,8 @@ void NavLink::set_map(NavMap *p_map) {
 		return;
 	}
 
+	cancel_sync_request();
+
 	if (map) {
 		map->remove_link(this);
 	}
@@ -46,6 +48,7 @@ void NavLink::set_map(NavMap *p_map) {
 
 	if (map) {
 		map->add_link(this);
+		request_sync();
 	}
 }
 
@@ -57,7 +60,9 @@ void NavLink::set_enabled(bool p_enabled) {
 
 	// TODO: This should not require a full rebuild as the link has not really changed.
 	link_dirty = true;
-};
+
+	request_sync();
+}
 
 void NavLink::set_bidirectional(bool p_bidirectional) {
 	if (bidirectional == p_bidirectional) {
@@ -65,6 +70,8 @@ void NavLink::set_bidirectional(bool p_bidirectional) {
 	}
 	bidirectional = p_bidirectional;
 	link_dirty = true;
+
+	request_sync();
 }
 
 void NavLink::set_start_position(const Vector3 p_position) {
@@ -73,6 +80,8 @@ void NavLink::set_start_position(const Vector3 p_position) {
 	}
 	start_position = p_position;
 	link_dirty = true;
+
+	request_sync();
 }
 
 void NavLink::set_end_position(const Vector3 p_position) {
@@ -81,11 +90,91 @@ void NavLink::set_end_position(const Vector3 p_position) {
 	}
 	end_position = p_position;
 	link_dirty = true;
+
+	request_sync();
 }
 
-bool NavLink::check_dirty() {
-	const bool was_dirty = link_dirty;
+void NavLink::set_navigation_layers(uint32_t p_navigation_layers) {
+	if (navigation_layers == p_navigation_layers) {
+		return;
+	}
+	navigation_layers = p_navigation_layers;
+	link_dirty = true;
 
+	request_sync();
+}
+
+void NavLink::set_enter_cost(real_t p_enter_cost) {
+	real_t new_enter_cost = MAX(p_enter_cost, 0.0);
+	if (enter_cost == new_enter_cost) {
+		return;
+	}
+	enter_cost = new_enter_cost;
+	link_dirty = true;
+
+	request_sync();
+}
+
+void NavLink::set_travel_cost(real_t p_travel_cost) {
+	real_t new_travel_cost = MAX(p_travel_cost, 0.0);
+	if (travel_cost == new_travel_cost) {
+		return;
+	}
+	travel_cost = new_travel_cost;
+	link_dirty = true;
+
+	request_sync();
+}
+
+void NavLink::set_owner_id(ObjectID p_owner_id) {
+	if (owner_id == p_owner_id) {
+		return;
+	}
+	owner_id = p_owner_id;
+	link_dirty = true;
+
+	request_sync();
+}
+
+bool NavLink::is_dirty() const {
+	return link_dirty;
+}
+
+void NavLink::sync() {
 	link_dirty = false;
-	return was_dirty;
+}
+
+void NavLink::request_sync() {
+	if (map && !sync_dirty_request_list_element.in_list()) {
+		map->add_link_sync_dirty_request(&sync_dirty_request_list_element);
+	}
+}
+
+void NavLink::cancel_sync_request() {
+	if (map && sync_dirty_request_list_element.in_list()) {
+		map->remove_link_sync_dirty_request(&sync_dirty_request_list_element);
+	}
+}
+
+NavLink::NavLink() :
+		sync_dirty_request_list_element(this) {
+	type = NavigationUtilities::PathSegmentType::PATH_SEGMENT_TYPE_LINK;
+}
+
+NavLink::~NavLink() {
+	cancel_sync_request();
+}
+
+void NavLink::get_iteration_update(NavLinkIteration &r_iteration) {
+	r_iteration.navigation_layers = get_navigation_layers();
+	r_iteration.enter_cost = get_enter_cost();
+	r_iteration.travel_cost = get_travel_cost();
+	r_iteration.owner_object_id = get_owner_id();
+	r_iteration.owner_type = get_type();
+	r_iteration.owner_rid = get_self();
+
+	r_iteration.enabled = get_enabled();
+	r_iteration.start_position = get_start_position();
+	r_iteration.end_position = get_end_position();
+	r_iteration.bidirectional = is_bidirectional();
 }

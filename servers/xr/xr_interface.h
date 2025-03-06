@@ -44,7 +44,7 @@ struct BlitToScreen;
 	The idea is that we subclass this class, implement the logic, and then instantiate a singleton of each interface
 	when Godot starts. These instances do not initialize themselves but register themselves with the AR/VR server.
 
-	If the user wants to enable AR/VR the choose the interface they want to use and initialize it.
+	If the user wants to enable AR/VR, they can choose the interface they want to use and initialize it.
 
 	Note that we may make this into a fully instantiable class for GDExtension support.
 */
@@ -137,10 +137,13 @@ public:
 	virtual RID get_color_texture(); /* obtain color output texture (if applicable) */
 	virtual RID get_depth_texture(); /* obtain depth output texture (if applicable, used for reprojection) */
 	virtual RID get_velocity_texture(); /* obtain velocity output texture (if applicable, used for spacewarp) */
-	virtual void pre_render(){};
-	virtual bool pre_draw_viewport(RID p_render_target) { return true; }; /* inform XR interface we are about to start our viewport draw process */
+	virtual RID get_velocity_depth_texture();
+	virtual Size2i get_velocity_target_size();
+	virtual Rect2i get_render_region();
+	virtual void pre_render() {}
+	virtual bool pre_draw_viewport(RID p_render_target) { return true; } /* inform XR interface we are about to start our viewport draw process */
 	virtual Vector<BlitToScreen> post_draw_viewport(RID p_render_target, const Rect2 &p_screen_rect) = 0; /* inform XR interface we finished our viewport draw process */
-	virtual void end_frame(){};
+	virtual void end_frame() {}
 
 	/** passthrough **/
 

@@ -45,7 +45,7 @@ class PropertySelector : public ConfirmationDialog {
 	Tree *search_options = nullptr;
 
 	void _text_changed(const String &p_newtext);
-	void _sbox_input(const Ref<InputEvent> &p_ie);
+	void _sbox_input(const Ref<InputEvent> &p_event);
 	void _update_search();
 	void _confirmed();
 	void _item_selected();

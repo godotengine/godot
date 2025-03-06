@@ -210,6 +210,14 @@ float AudioStreamPlayer2D::get_volume_db() const {
 	return internal->volume_db;
 }
 
+void AudioStreamPlayer2D::set_volume_linear(float p_volume) {
+	set_volume_db(Math::linear_to_db(p_volume));
+}
+
+float AudioStreamPlayer2D::get_volume_linear() const {
+	return Math::db_to_linear(get_volume_db());
+}
+
 void AudioStreamPlayer2D::set_pitch_scale(float p_pitch_scale) {
 	internal->set_pitch_scale(p_pitch_scale);
 }
@@ -253,6 +261,9 @@ bool AudioStreamPlayer2D::is_playing() const {
 }
 
 float AudioStreamPlayer2D::get_playback_position() {
+	if (setplay.get() >= 0) {
+		return setplay.get(); // play() has been called this frame, but no playback exists just yet.
+	}
 	return internal->get_playback_position();
 }
 
@@ -365,6 +376,9 @@ void AudioStreamPlayer2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_volume_db", "volume_db"), &AudioStreamPlayer2D::set_volume_db);
 	ClassDB::bind_method(D_METHOD("get_volume_db"), &AudioStreamPlayer2D::get_volume_db);
 
+	ClassDB::bind_method(D_METHOD("set_volume_linear", "volume_linear"), &AudioStreamPlayer2D::set_volume_linear);
+	ClassDB::bind_method(D_METHOD("get_volume_linear"), &AudioStreamPlayer2D::get_volume_linear);
+
 	ClassDB::bind_method(D_METHOD("set_pitch_scale", "pitch_scale"), &AudioStreamPlayer2D::set_pitch_scale);
 	ClassDB::bind_method(D_METHOD("get_pitch_scale"), &AudioStreamPlayer2D::get_pitch_scale);
 
@@ -409,8 +423,9 @@ void AudioStreamPlayer2D::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "stream", PROPERTY_HINT_RESOURCE_TYPE, "AudioStream"), "set_stream", "get_stream");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "volume_db", PROPERTY_HINT_RANGE, "-80,24,suffix:dB"), "set_volume_db", "get_volume_db");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "volume_linear", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_volume_linear", "get_volume_linear");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "pitch_scale", PROPERTY_HINT_RANGE, "0.01,4,0.01,or_greater"), "set_pitch_scale", "get_pitch_scale");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "playing", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "set_playing", "is_playing");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "playing", PROPERTY_HINT_ONESHOT, "", PROPERTY_USAGE_EDITOR), "set_playing", "is_playing");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "autoplay"), "set_autoplay", "is_autoplay_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "stream_paused", PROPERTY_HINT_NONE, ""), "set_stream_paused", "get_stream_paused");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "max_distance", PROPERTY_HINT_RANGE, "1,4096,1,or_greater,exp,suffix:px"), "set_max_distance", "get_max_distance");

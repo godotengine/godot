@@ -32,7 +32,6 @@
 #define CANVAS_ITEM_H
 
 #include "scene/main/node.h"
-#include "scene/resources/canvas_item_material.h"
 #include "scene/resources/font.h"
 
 class CanvasLayer;
@@ -116,6 +115,8 @@ private:
 	TextureRepeat texture_repeat = TEXTURE_REPEAT_PARENT_NODE;
 
 	Ref<Material> material;
+	mutable HashMap<StringName, Variant> instance_shader_parameters;
+	mutable HashMap<StringName, StringName> instance_shader_parameter_property_remap;
 
 	mutable Transform2D global_transform;
 	mutable MTFlag global_invalid;
@@ -150,8 +151,13 @@ private:
 	void _update_texture_filter_changed(bool p_propagate);
 
 	void _notify_transform_deferred();
+	const StringName *_instance_shader_parameter_get_remap(const StringName &p_name) const;
 
 protected:
+	bool _set(const StringName &p_name, const Variant &p_value);
+	bool _get(const StringName &p_name, Variant &r_ret) const;
+	void _get_property_list(List<PropertyInfo> *p_list) const;
+
 	virtual void _update_self_texture_repeat(RS::CanvasItemTextureRepeat p_texture_repeat);
 	virtual void _update_self_texture_filter(RS::CanvasItemTextureFilter p_texture_filter);
 
@@ -164,6 +170,8 @@ protected:
 
 	void item_rect_changed(bool p_size_changed = true);
 
+	void set_canvas_item_use_identity_transform(bool p_enable);
+
 	void _notification(int p_what);
 	static void _bind_methods();
 
@@ -174,7 +182,7 @@ protected:
 	void _draw_multiline_bind_compat_84523(const Vector<Point2> &p_points, const Color &p_color, real_t p_width);
 	void _draw_multiline_colors_bind_compat_84523(const Vector<Point2> &p_points, const Vector<Color> &p_colors, real_t p_width);
 	static void _bind_compatibility_methods();
-#endif
+#endif // DISABLE_DEPRECATED
 
 	void _validate_property(PropertyInfo &p_property) const;
 
@@ -193,11 +201,9 @@ public:
 		NOTIFICATION_WORLD_2D_CHANGED = 36,
 	};
 
-	/* EDITOR */
-#ifdef TOOLS_ENABLED
-	// Select the node
-	virtual bool _edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const;
+	/* EDITOR AND DEBUGGING */
 
+#ifdef TOOLS_ENABLED
 	// Save and restore a CanvasItem state
 	virtual void _edit_set_state(const Dictionary &p_state) {}
 	virtual Dictionary _edit_get_state() const { return Dictionary(); }
@@ -211,23 +217,32 @@ public:
 	virtual Size2 _edit_get_scale() const = 0;
 
 	// Used to rotate the node
-	virtual bool _edit_use_rotation() const { return false; };
+	virtual bool _edit_use_rotation() const { return false; }
 	virtual void _edit_set_rotation(real_t p_rotation) {}
-	virtual real_t _edit_get_rotation() const { return 0.0; };
+	virtual real_t _edit_get_rotation() const { return 0.0; }
 
 	// Used to resize/move the node
-	virtual bool _edit_use_rect() const { return false; }; // MAYBE REPLACE BY A _edit_get_editmode()
 	virtual void _edit_set_rect(const Rect2 &p_rect) {}
-	virtual Rect2 _edit_get_rect() const { return Rect2(0, 0, 0, 0); };
-	virtual Size2 _edit_get_minimum_size() const { return Size2(-1, -1); }; // LOOKS WEIRD
+	virtual Size2 _edit_get_minimum_size() const { return Size2(-1, -1); } // LOOKS WEIRD
 
 	// Used to set a pivot
-	virtual bool _edit_use_pivot() const { return false; };
+	virtual bool _edit_use_pivot() const { return false; }
 	virtual void _edit_set_pivot(const Point2 &p_pivot) {}
-	virtual Point2 _edit_get_pivot() const { return Point2(); };
+	virtual Point2 _edit_get_pivot() const { return Point2(); }
 
 	virtual Transform2D _edit_get_transform() const;
-#endif
+#endif // TOOLS_ENABLED
+
+#ifdef DEBUG_ENABLED
+	// Those need to be available in debug runtime, to allow for node selection.
+
+	// Select the node.
+	virtual bool _edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const;
+
+	// Used to resize/move the node.
+	virtual bool _edit_use_rect() const { return false; } // Maybe replace with _edit_get_editmode().
+	virtual Rect2 _edit_get_rect() const { return Rect2(0, 0, 0, 0); }
+#endif // DEBUG_ENABLED
 
 	void update_draw_order();
 
@@ -326,6 +341,7 @@ public:
 	virtual Transform2D get_transform() const = 0;
 
 	virtual Transform2D get_global_transform() const;
+	virtual Transform2D get_global_transform_const() const;
 	virtual Transform2D get_global_transform_with_canvas() const;
 	virtual Transform2D get_screen_transform() const;
 
@@ -347,6 +363,9 @@ public:
 
 	virtual void set_material(const Ref<Material> &p_material);
 	Ref<Material> get_material() const;
+
+	void set_instance_shader_parameter(const StringName &p_name, const Variant &p_value);
+	Variant get_instance_shader_parameter(const StringName &p_name) const;
 
 	virtual void set_use_parent_material(bool p_use_parent_material);
 	bool get_use_parent_material() const;
@@ -375,7 +394,7 @@ public:
 	TextureRepeat get_texture_repeat_in_tree() const;
 
 	// Used by control nodes to retrieve the parent's anchorable area
-	virtual Rect2 get_anchorable_rect() const { return Rect2(0, 0, 0, 0); };
+	virtual Rect2 get_anchorable_rect() const { return Rect2(0, 0, 0, 0); }
 
 	int get_canvas_layer() const;
 	CanvasLayer *get_canvas_layer_node() const;

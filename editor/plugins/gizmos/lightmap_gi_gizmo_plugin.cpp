@@ -33,18 +33,20 @@
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
-#include "editor/plugins/node_3d_editor_plugin.h"
 #include "scene/3d/lightmap_gi.h"
 
 LightmapGIGizmoPlugin::LightmapGIGizmoPlugin() {
-	Color gizmo_color = EDITOR_DEF_RST("editors/3d_gizmos/gizmo_colors/lightmap_lines", Color(0.5, 0.6, 1));
+	Color gizmo_color = EDITOR_GET("editors/3d_gizmos/gizmo_colors/lightmap_lines");
 
 	gizmo_color.a = 0.1;
 	create_material("lightmap_lines", gizmo_color);
 
 	Ref<StandardMaterial3D> mat = memnew(StandardMaterial3D);
 	mat->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
-	mat->set_cull_mode(StandardMaterial3D::CULL_DISABLED);
+	// Fade out probes when camera gets too close to them.
+	mat->set_distance_fade(StandardMaterial3D::DISTANCE_FADE_PIXEL_DITHER);
+	mat->set_distance_fade_min_distance(0.5);
+	mat->set_distance_fade_max_distance(1.5);
 	mat->set_flag(StandardMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
 	mat->set_flag(StandardMaterial3D::FLAG_SRGB_VERTEX_COLOR, false);
 	mat->set_flag(StandardMaterial3D::FLAG_DISABLE_FOG, true);

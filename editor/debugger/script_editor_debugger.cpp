@@ -37,6 +37,7 @@
 #include "core/string/ustring.h"
 #include "core/version.h"
 #include "editor/debugger/debug_adapter/debug_adapter_protocol.h"
+#include "editor/debugger/editor_expression_evaluator.h"
 #include "editor/debugger/editor_performance_profiler.h"
 #include "editor/debugger/editor_profiler.h"
 #include "editor/debugger/editor_visual_profiler.h"
@@ -60,13 +61,10 @@
 #include "scene/gui/label.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/margin_container.h"
-#include "scene/gui/rich_text_label.h"
 #include "scene/gui/separator.h"
 #include "scene/gui/split_container.h"
 #include "scene/gui/tab_container.h"
-#include "scene/gui/texture_button.h"
 #include "scene/gui/tree.h"
-#include "scene/resources/packed_scene.h"
 #include "servers/debugger/servers_debugger.h"
 #include "servers/display_server.h"
 
@@ -94,9 +92,9 @@ void ScriptEditorDebugger::debug_copy() {
 void ScriptEditorDebugger::debug_skip_breakpoints() {
 	skip_breakpoints_value = !skip_breakpoints_value;
 	if (skip_breakpoints_value) {
-		skip_breakpoints->set_icon(get_editor_theme_icon(SNAME("DebugSkipBreakpointsOn")));
+		skip_breakpoints->set_button_icon(get_editor_theme_icon(SNAME("DebugSkipBreakpointsOn")));
 	} else {
-		skip_breakpoints->set_icon(get_editor_theme_icon(SNAME("DebugSkipBreakpointsOff")));
+		skip_breakpoints->set_button_icon(get_editor_theme_icon(SNAME("DebugSkipBreakpointsOff")));
 	}
 
 	Array msg;
@@ -252,6 +250,13 @@ const SceneDebuggerTree *ScriptEditorDebugger::get_remote_tree() {
 	return scene_tree;
 }
 
+void ScriptEditorDebugger::request_remote_evaluate(const String &p_expression, int p_stack_frame) {
+	Array msg;
+	msg.push_back(p_expression);
+	msg.push_back(p_stack_frame);
+	_put_msg("evaluate", msg);
+}
+
 void ScriptEditorDebugger::update_remote_object(ObjectID p_obj_id, const String &p_prop, const Variant &p_value) {
 	Array msg;
 	msg.push_back(p_obj_id);
@@ -307,7 +312,7 @@ void ScriptEditorDebugger::_thread_debug_enter(uint64_t p_thread_id) {
 	ThreadDebugged &td = threads_debugged[p_thread_id];
 	_set_reason_text(td.error, MESSAGE_ERROR);
 	emit_signal(SNAME("breaked"), true, td.can_debug, td.error, td.has_stackdump);
-	if (!td.error.is_empty()) {
+	if (!td.error.is_empty() && EDITOR_GET("debugger/auto_switch_to_stack_trace")) {
 		tabs->set_current_tab(0);
 	}
 	inspector->clear_cache(); // Take a chance to force remote objects update.
@@ -496,7 +501,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, uint64_t p_thread
 				} break;
 			}
 			EditorNode::get_log()->add_message(output_strings[i], msg_type);
-			emit_signal(SNAME("output"), output_strings[i], msg_type);
+			emit_signal(SceneStringName(output), output_strings[i], msg_type);
 		}
 	} else if (p_msg == "performance:profile_frame") {
 		Vector<float> frame_data;
@@ -505,6 +510,10 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, uint64_t p_thread
 			frame_data.write[i] = p_data[i];
 		}
 		performance_profiler->add_profile_frame(frame_data);
+	} else if (p_msg == "visual:hardware_info") {
+		const String cpu_name = p_data[0];
+		const String gpu_name = p_data[1];
+		visual_profiler->set_hardware_info(cpu_name, gpu_name);
 	} else if (p_msg == "visual:profile_frame") {
 		ServersDebugger::VisualProfilerFrame frame;
 		frame.deserialize(p_data);
@@ -534,7 +543,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, uint64_t p_thread
 		time_vals.push_back(oe.sec);
 		time_vals.push_back(oe.msec);
 		bool e;
-		String time = String("%d:%02d:%02d:%04d").sprintf(time_vals, &e);
+		String time = String("%d:%02d:%02d:%03d").sprintf(time_vals, &e);
 
 		// Rest of the error data.
 		bool source_is_project_file = oe.source_file.begins_with("res://");
@@ -798,6 +807,10 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, uint64_t p_thread
 	} else if (p_msg == "request_quit") {
 		emit_signal(SNAME("stop_requested"));
 		_stop_and_notify();
+	} else if (p_msg == "remote_node_clicked") {
+		if (!p_data.is_empty()) {
+			emit_signal(SNAME("remote_tree_select_requested"), p_data[0]);
+		}
 	} else if (p_msg == "performance:profile_names") {
 		Vector<StringName> monitors;
 		monitors.resize(p_data.size());
@@ -811,13 +824,18 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, uint64_t p_thread
 		if (EditorFileSystem::get_singleton()) {
 			EditorFileSystem::get_singleton()->update_file(p_data[0]);
 		}
+	} else if (p_msg == "evaluation_return") {
+		expression_evaluator->add_value(p_data);
+	} else if (p_msg == "window:title") {
+		ERR_FAIL_COND(p_data.size() != 1);
+		emit_signal(SNAME("remote_window_title_changed"), p_data[0]);
 	} else {
 		int colon_index = p_msg.find_char(':');
 		ERR_FAIL_COND_MSG(colon_index < 1, "Invalid message received");
 
 		bool parsed = EditorDebuggerNode::get_singleton()->plugins_capture(this, p_msg, p_data);
 		if (!parsed) {
-			WARN_PRINT("unknown message " + p_msg);
+			WARN_PRINT("Unknown message: " + p_msg);
 		}
 	}
 }
@@ -854,19 +872,20 @@ void ScriptEditorDebugger::_notification(int p_what) {
 			error_tree->connect(SceneStringName(item_selected), callable_mp(this, &ScriptEditorDebugger::_error_selected));
 			error_tree->connect("item_activated", callable_mp(this, &ScriptEditorDebugger::_error_activated));
 			breakpoints_tree->connect("item_activated", callable_mp(this, &ScriptEditorDebugger::_breakpoint_tree_clicked));
-			[[fallthrough]];
-		}
+			connect("started", callable_mp(expression_evaluator, &EditorExpressionEvaluator::on_start));
+		} break;
+
 		case NOTIFICATION_THEME_CHANGED: {
 			tabs->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SNAME("DebuggerPanel"), EditorStringName(EditorStyles)));
 
-			skip_breakpoints->set_icon(get_editor_theme_icon(skip_breakpoints_value ? SNAME("DebugSkipBreakpointsOn") : SNAME("DebugSkipBreakpointsOff")));
-			copy->set_icon(get_editor_theme_icon(SNAME("ActionCopy")));
-			step->set_icon(get_editor_theme_icon(SNAME("DebugStep")));
-			next->set_icon(get_editor_theme_icon(SNAME("DebugNext")));
-			dobreak->set_icon(get_editor_theme_icon(SNAME("Pause")));
-			docontinue->set_icon(get_editor_theme_icon(SNAME("DebugContinue")));
-			vmem_refresh->set_icon(get_editor_theme_icon(SNAME("Reload")));
-			vmem_export->set_icon(get_editor_theme_icon(SNAME("Save")));
+			skip_breakpoints->set_button_icon(get_editor_theme_icon(skip_breakpoints_value ? SNAME("DebugSkipBreakpointsOn") : SNAME("DebugSkipBreakpointsOff")));
+			copy->set_button_icon(get_editor_theme_icon(SNAME("ActionCopy")));
+			step->set_button_icon(get_editor_theme_icon(SNAME("DebugStep")));
+			next->set_button_icon(get_editor_theme_icon(SNAME("DebugNext")));
+			dobreak->set_button_icon(get_editor_theme_icon(SNAME("Pause")));
+			docontinue->set_button_icon(get_editor_theme_icon(SNAME("DebugContinue")));
+			vmem_refresh->set_button_icon(get_editor_theme_icon(SNAME("Reload")));
+			vmem_export->set_button_icon(get_editor_theme_icon(SNAME("Save")));
 			search->set_right_icon(get_editor_theme_icon(SNAME("Search")));
 
 			reason->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
@@ -894,37 +913,42 @@ void ScriptEditorDebugger::_notification(int p_what) {
 			if (is_session_active()) {
 				peer->poll();
 
-				if (camera_override == CameraOverride::OVERRIDE_2D) {
-					Dictionary state = CanvasItemEditor::get_singleton()->get_state();
-					float zoom = state["zoom"];
-					Point2 offset = state["ofs"];
-					Transform2D transform;
+				if (camera_override == CameraOverride::OVERRIDE_EDITORS) {
+					// CanvasItem Editor
+					{
+						Dictionary state = CanvasItemEditor::get_singleton()->get_state();
+						float zoom = state["zoom"];
+						Point2 offset = state["ofs"];
+						Transform2D transform;
 
-					transform.scale_basis(Size2(zoom, zoom));
-					transform.columns[2] = -offset * zoom;
+						transform.scale_basis(Size2(zoom, zoom));
+						transform.columns[2] = -offset * zoom;
 
-					Array msg;
-					msg.push_back(transform);
-					_put_msg("scene:override_camera_2D:transform", msg);
-
-				} else if (camera_override >= CameraOverride::OVERRIDE_3D_1) {
-					int viewport_idx = camera_override - CameraOverride::OVERRIDE_3D_1;
-					Node3DEditorViewport *viewport = Node3DEditor::get_singleton()->get_editor_viewport(viewport_idx);
-					Camera3D *const cam = viewport->get_camera_3d();
-
-					Array msg;
-					msg.push_back(cam->get_camera_transform());
-					if (cam->get_projection() == Camera3D::PROJECTION_ORTHOGONAL) {
-						msg.push_back(false);
-						msg.push_back(cam->get_size());
-					} else {
-						msg.push_back(true);
-						msg.push_back(cam->get_fov());
+						Array msg;
+						msg.push_back(transform);
+						_put_msg("scene:transform_camera_2d", msg);
 					}
-					msg.push_back(cam->get_near());
-					msg.push_back(cam->get_far());
-					_put_msg("scene:override_camera_3D:transform", msg);
+
+					// Node3D Editor
+					{
+						Node3DEditorViewport *viewport = Node3DEditor::get_singleton()->get_last_used_viewport();
+						const Camera3D *cam = viewport->get_camera_3d();
+
+						Array msg;
+						msg.push_back(cam->get_camera_transform());
+						if (cam->get_projection() == Camera3D::PROJECTION_ORTHOGONAL) {
+							msg.push_back(false);
+							msg.push_back(cam->get_size());
+						} else {
+							msg.push_back(true);
+							msg.push_back(cam->get_fov());
+						}
+						msg.push_back(cam->get_near());
+						msg.push_back(cam->get_far());
+						_put_msg("scene:transform_camera_3d", msg);
+					}
 				}
+
 				if (is_breaked() && can_request_idle_draw) {
 					_put_msg("servers:draw", Array());
 					can_request_idle_draw = false;
@@ -1012,6 +1036,17 @@ void ScriptEditorDebugger::start(Ref<RemoteDebuggerPeer> p_peer) {
 	_set_reason_text(TTR("Debug session started."), MESSAGE_SUCCESS);
 	_update_buttons_state();
 	emit_signal(SNAME("started"));
+
+	Array quit_keys = DebuggerMarshalls::serialize_key_shortcut(ED_GET_SHORTCUT("editor/stop_running_project"));
+	_put_msg("scene:setup_scene", quit_keys);
+
+	if (EditorSettings::get_singleton()->get_project_metadata("debug_options", "autostart_profiler", false)) {
+		profiler->set_profiling(true);
+	}
+
+	if (EditorSettings::get_singleton()->get_project_metadata("debug_options", "autostart_visual_profiler", false)) {
+		visual_profiler->set_profiling(true);
+	}
 }
 
 void ScriptEditorDebugger::_update_buttons_state() {
@@ -1031,6 +1066,7 @@ void ScriptEditorDebugger::_update_buttons_state() {
 	for (KeyValue<uint64_t, ThreadDebugged> &I : threads_debugged) {
 		threadss.push_back(&I.value);
 	}
+	threads->set_disabled(threadss.is_empty());
 
 	threadss.sort_custom<ThreadSort>();
 	threads->clear();
@@ -1076,10 +1112,10 @@ void ScriptEditorDebugger::stop() {
 	profiler_signature.clear();
 
 	profiler->set_enabled(false, false);
-	profiler->set_pressed(false);
+	profiler->set_profiling(false);
 
 	visual_profiler->set_enabled(false);
-	visual_profiler->set_pressed(false);
+	visual_profiler->set_profiling(false);
 
 	inspector->edit(nullptr);
 	_update_buttons_state();
@@ -1140,6 +1176,12 @@ String ScriptEditorDebugger::get_var_value(const String &p_var) const {
 		return String();
 	}
 	return inspector->get_stack_variable(p_var);
+}
+
+void ScriptEditorDebugger::_resources_reimported(const PackedStringArray &p_resources) {
+	Array msg;
+	msg.push_back(p_resources);
+	_put_msg("scene:reload_cached_files", msg);
 }
 
 int ScriptEditorDebugger::_get_node_path_cache(const NodePath &p_path) {
@@ -1450,23 +1492,10 @@ CameraOverride ScriptEditorDebugger::get_camera_override() const {
 }
 
 void ScriptEditorDebugger::set_camera_override(CameraOverride p_override) {
-	if (p_override == CameraOverride::OVERRIDE_2D && camera_override != CameraOverride::OVERRIDE_2D) {
-		Array msg;
-		msg.push_back(true);
-		_put_msg("scene:override_camera_2D:set", msg);
-	} else if (p_override != CameraOverride::OVERRIDE_2D && camera_override == CameraOverride::OVERRIDE_2D) {
-		Array msg;
-		msg.push_back(false);
-		_put_msg("scene:override_camera_2D:set", msg);
-	} else if (p_override >= CameraOverride::OVERRIDE_3D_1 && camera_override < CameraOverride::OVERRIDE_3D_1) {
-		Array msg;
-		msg.push_back(true);
-		_put_msg("scene:override_camera_3D:set", msg);
-	} else if (p_override < CameraOverride::OVERRIDE_3D_1 && camera_override >= CameraOverride::OVERRIDE_3D_1) {
-		Array msg;
-		msg.push_back(false);
-		_put_msg("scene:override_camera_3D:set", msg);
-	}
+	Array msg;
+	msg.push_back(p_override != CameraOverride::OVERRIDE_NONE);
+	msg.push_back(p_override == CameraOverride::OVERRIDE_EDITORS);
+	_put_msg("scene:override_cameras", msg);
 
 	camera_override = p_override;
 }
@@ -1757,6 +1786,8 @@ void ScriptEditorDebugger::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("remote_object_updated", PropertyInfo(Variant::INT, "id")));
 	ADD_SIGNAL(MethodInfo("remote_object_property_updated", PropertyInfo(Variant::INT, "id"), PropertyInfo(Variant::STRING, "property")));
 	ADD_SIGNAL(MethodInfo("remote_tree_updated"));
+	ADD_SIGNAL(MethodInfo("remote_tree_select_requested", PropertyInfo(Variant::NODE_PATH, "path")));
+	ADD_SIGNAL(MethodInfo("remote_window_title_changed", PropertyInfo(Variant::STRING, "title")));
 	ADD_SIGNAL(MethodInfo("output", PropertyInfo(Variant::STRING, "msg"), PropertyInfo(Variant::INT, "level")));
 	ADD_SIGNAL(MethodInfo("stack_dump", PropertyInfo(Variant::ARRAY, "stack_dump")));
 	ADD_SIGNAL(MethodInfo("stack_frame_vars", PropertyInfo(Variant::INT, "num_vars")));
@@ -1802,6 +1833,7 @@ ScriptEditorDebugger::ScriptEditorDebugger() {
 	tabs->connect("tab_changed", callable_mp(this, &ScriptEditorDebugger::_tab_changed));
 
 	InspectorDock::get_inspector_singleton()->connect("object_id_selected", callable_mp(this, &ScriptEditorDebugger::_remote_object_selected));
+	EditorFileSystem::get_singleton()->connect("resources_reimported", callable_mp(this, &ScriptEditorDebugger::_resources_reimported));
 
 	{ //debugger
 		VBoxContainer *vbc = memnew(VBoxContainer);
@@ -1822,7 +1854,7 @@ ScriptEditorDebugger::ScriptEditorDebugger() {
 		hbc->add_child(memnew(VSeparator));
 
 		skip_breakpoints = memnew(Button);
-		skip_breakpoints->set_theme_type_variation("FlatButton");
+		skip_breakpoints->set_theme_type_variation(SceneStringName(FlatButton));
 		hbc->add_child(skip_breakpoints);
 		skip_breakpoints->set_tooltip_text(TTR("Skip Breakpoints"));
 		skip_breakpoints->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditorDebugger::debug_skip_breakpoints));
@@ -1830,7 +1862,7 @@ ScriptEditorDebugger::ScriptEditorDebugger() {
 		hbc->add_child(memnew(VSeparator));
 
 		copy = memnew(Button);
-		copy->set_theme_type_variation("FlatButton");
+		copy->set_theme_type_variation(SceneStringName(FlatButton));
 		hbc->add_child(copy);
 		copy->set_tooltip_text(TTR("Copy Error"));
 		copy->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditorDebugger::debug_copy));
@@ -1838,14 +1870,14 @@ ScriptEditorDebugger::ScriptEditorDebugger() {
 		hbc->add_child(memnew(VSeparator));
 
 		step = memnew(Button);
-		step->set_theme_type_variation("FlatButton");
+		step->set_theme_type_variation(SceneStringName(FlatButton));
 		hbc->add_child(step);
 		step->set_tooltip_text(TTR("Step Into"));
 		step->set_shortcut(ED_GET_SHORTCUT("debugger/step_into"));
 		step->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditorDebugger::debug_step));
 
 		next = memnew(Button);
-		next->set_theme_type_variation("FlatButton");
+		next->set_theme_type_variation(SceneStringName(FlatButton));
 		hbc->add_child(next);
 		next->set_tooltip_text(TTR("Step Over"));
 		next->set_shortcut(ED_GET_SHORTCUT("debugger/step_over"));
@@ -1854,14 +1886,14 @@ ScriptEditorDebugger::ScriptEditorDebugger() {
 		hbc->add_child(memnew(VSeparator));
 
 		dobreak = memnew(Button);
-		dobreak->set_theme_type_variation("FlatButton");
+		dobreak->set_theme_type_variation(SceneStringName(FlatButton));
 		hbc->add_child(dobreak);
 		dobreak->set_tooltip_text(TTR("Break"));
 		dobreak->set_shortcut(ED_GET_SHORTCUT("debugger/break"));
 		dobreak->connect(SceneStringName(pressed), callable_mp(this, &ScriptEditorDebugger::debug_break));
 
 		docontinue = memnew(Button);
-		docontinue->set_theme_type_variation("FlatButton");
+		docontinue->set_theme_type_variation(SceneStringName(FlatButton));
 		hbc->add_child(docontinue);
 		docontinue->set_tooltip_text(TTR("Continue"));
 		docontinue->set_shortcut(ED_GET_SHORTCUT("debugger/continue"));
@@ -1889,16 +1921,19 @@ ScriptEditorDebugger::ScriptEditorDebugger() {
 		threads->connect(SceneStringName(item_selected), callable_mp(this, &ScriptEditorDebugger::_select_thread));
 
 		stack_dump = memnew(Tree);
+		stack_dump->set_custom_minimum_size(Size2(150, 0) * EDSCALE);
 		stack_dump->set_allow_reselect(true);
 		stack_dump->set_columns(1);
 		stack_dump->set_column_titles_visible(true);
 		stack_dump->set_column_title(0, TTR("Stack Frames"));
 		stack_dump->set_hide_root(true);
 		stack_dump->set_v_size_flags(SIZE_EXPAND_FILL);
+		stack_dump->set_theme_type_variation("TreeSecondary");
 		stack_dump->connect("cell_selected", callable_mp(this, &ScriptEditorDebugger::_stack_dump_frame_selected));
 		stack_vb->add_child(stack_dump);
 
 		VBoxContainer *inspector_vbox = memnew(VBoxContainer);
+		inspector_vbox->set_custom_minimum_size(Size2(200, 0) * EDSCALE);
 		inspector_vbox->set_h_size_flags(SIZE_EXPAND_FILL);
 		sc->add_child(inspector_vbox);
 
@@ -1924,12 +1959,14 @@ ScriptEditorDebugger::ScriptEditorDebugger() {
 		inspector_vbox->add_child(inspector);
 
 		breakpoints_tree = memnew(Tree);
+		breakpoints_tree->set_custom_minimum_size(Size2(100, 0) * EDSCALE);
 		breakpoints_tree->set_h_size_flags(SIZE_EXPAND_FILL);
 		breakpoints_tree->set_column_titles_visible(true);
 		breakpoints_tree->set_column_title(0, TTR("Breakpoints"));
 		breakpoints_tree->set_allow_reselect(true);
 		breakpoints_tree->set_allow_rmb_select(true);
 		breakpoints_tree->set_hide_root(true);
+		breakpoints_tree->set_theme_type_variation("TreeSecondary");
 		breakpoints_tree->connect("item_mouse_selected", callable_mp(this, &ScriptEditorDebugger::_breakpoints_item_rmb_selected));
 		breakpoints_tree->create_item();
 
@@ -2002,6 +2039,13 @@ ScriptEditorDebugger::ScriptEditorDebugger() {
 		add_child(file_dialog);
 	}
 
+	{ // Expression evaluator
+		expression_evaluator = memnew(EditorExpressionEvaluator);
+		expression_evaluator->set_name(TTR("Evaluator"));
+		expression_evaluator->set_editor_debugger(this);
+		tabs->add_child(expression_evaluator);
+	}
+
 	{ //profiler
 		profiler = memnew(EditorProfiler);
 		profiler->set_name(TTR("Profiler"));
@@ -2036,10 +2080,10 @@ ScriptEditorDebugger::ScriptEditorDebugger() {
 		vmem_total->set_custom_minimum_size(Size2(100, 0) * EDSCALE);
 		vmem_hb->add_child(vmem_total);
 		vmem_refresh = memnew(Button);
-		vmem_refresh->set_theme_type_variation("FlatButton");
+		vmem_refresh->set_theme_type_variation(SceneStringName(FlatButton));
 		vmem_hb->add_child(vmem_refresh);
 		vmem_export = memnew(Button);
-		vmem_export->set_theme_type_variation("FlatButton");
+		vmem_export->set_theme_type_variation(SceneStringName(FlatButton));
 		vmem_export->set_tooltip_text(TTR("Export list to a CSV file"));
 		vmem_hb->add_child(vmem_export);
 		vmem_vb->add_child(vmem_hb);

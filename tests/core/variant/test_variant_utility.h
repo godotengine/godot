@@ -89,7 +89,7 @@ TEST_CASE("[VariantUtility] Type conversion") {
 
 		converted = VariantUtilityFunctions::type_convert(basis, Variant::Type::STRING);
 		CHECK(converted.get_type() == Variant::Type::STRING);
-		CHECK(converted == Variant("[X: (1.2, 0, 0), Y: (0, 3.4, 0), Z: (0, 0, 5.6)]"));
+		CHECK(converted == Variant("[X: (1.2, 0.0, 0.0), Y: (0.0, 3.4, 0.0), Z: (0.0, 0.0, 5.6)]"));
 	}
 
 	{

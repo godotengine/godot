@@ -40,10 +40,7 @@
 #include "editor/export/editor_export.h"
 #include "editor/themes/editor_scale.h"
 
-#include "modules/modules_enabled.gen.h" // For svg.
-#ifdef MODULE_SVG_ENABLED
 #include "modules/svg/image_loader_svg.h"
-#endif
 
 Error EditorExportPlatformLinuxBSD::_export_debug_script(const Ref<EditorExportPreset> &p_preset, const String &p_app_name, const String &p_pkg_name, const String &p_path) {
 	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::WRITE);
@@ -88,7 +85,7 @@ Error EditorExportPlatformLinuxBSD::export_project(const Ref<EditorExportPreset>
 
 	// Setup temp folder.
 	String path = p_path;
-	String tmp_dir_path = EditorPaths::get_singleton()->get_cache_dir().path_join(pkg_name);
+	String tmp_dir_path = EditorPaths::get_singleton()->get_temp_dir().path_join(pkg_name);
 
 	Ref<DirAccess> tmp_app_dir = DirAccess::create_for_path(tmp_dir_path);
 	if (export_as_zip) {
@@ -171,7 +168,9 @@ bool EditorExportPlatformLinuxBSD::get_export_option_visibility(const EditorExpo
 	if (!ssh && p_option != "ssh_remote_deploy/enabled" && p_option.begins_with("ssh_remote_deploy/")) {
 		return false;
 	}
-	if (p_option == "dotnet/embed_build_outputs") {
+	if (p_option == "dotnet/embed_build_outputs" ||
+			p_option == "custom_template/debug" ||
+			p_option == "custom_template/release") {
 		return advanced_options_enabled;
 	}
 	return true;
@@ -180,7 +179,7 @@ bool EditorExportPlatformLinuxBSD::get_export_option_visibility(const EditorExpo
 void EditorExportPlatformLinuxBSD::get_export_options(List<ExportOption> *r_options) const {
 	EditorExportPlatformPC::get_export_options(r_options);
 
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "binary_format/architecture", PROPERTY_HINT_ENUM, "x86_64,x86_32,arm64,arm32,rv64,ppc64,ppc32"), "x86_64"));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "binary_format/architecture", PROPERTY_HINT_ENUM, "x86_64,x86_32,arm64,arm32,rv64,ppc64,ppc32,loongarch64"), "x86_64"));
 
 	String run_script = "#!/usr/bin/env bash\n"
 						"export DISPLAY=:0\n"
@@ -282,6 +281,8 @@ String EditorExportPlatformLinuxBSD::_get_exe_arch(const String &p_path) const {
 			return "arm64";
 		case 0x00f3:
 			return "rv64";
+		case 0x0102:
+			return "loongarch64";
 		default:
 			return "unknown";
 	}
@@ -466,7 +467,7 @@ Error EditorExportPlatformLinuxBSD::run(const Ref<EditorExportPreset> &p_preset,
 
 	EditorProgress ep("run", TTR("Running..."), 5);
 
-	const String dest = EditorPaths::get_singleton()->get_cache_dir().path_join("linuxbsd");
+	const String dest = EditorPaths::get_singleton()->get_temp_dir().path_join("linuxbsd");
 	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 	if (!da->dir_exists(dest)) {
 		Error err = da->make_dir_recursive(dest);
@@ -606,7 +607,6 @@ Error EditorExportPlatformLinuxBSD::run(const Ref<EditorExportPreset> &p_preset,
 
 EditorExportPlatformLinuxBSD::EditorExportPlatformLinuxBSD() {
 	if (EditorNode::get_singleton()) {
-#ifdef MODULE_SVG_ENABLED
 		Ref<Image> img = memnew(Image);
 		const bool upsample = !Math::is_equal_approx(Math::round(EDSCALE), EDSCALE);
 
@@ -615,7 +615,6 @@ EditorExportPlatformLinuxBSD::EditorExportPlatformLinuxBSD() {
 
 		ImageLoaderSVG::create_image_from_string(img, _linuxbsd_run_icon_svg, EDSCALE, upsample, false);
 		run_icon = ImageTexture::create_from_image(img);
-#endif
 
 		Ref<Theme> theme = EditorNode::get_singleton()->get_editor_theme();
 		if (theme.is_valid()) {

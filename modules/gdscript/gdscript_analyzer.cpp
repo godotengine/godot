@@ -42,7 +42,7 @@
 #include "core/object/class_db.h"
 #include "core/object/script_language.h"
 #include "core/templates/hash_map.h"
-#include "scene/resources/packed_scene.h"
+#include "scene/main/node.h"
 
 #if defined(TOOLS_ENABLED) && !defined(DISABLE_DEPRECATED)
 #define SUGGEST_GODOT4_RENAMES
@@ -148,6 +148,15 @@ static GDScriptParser::DataType make_enum_type(const StringName &p_enum_name, co
 	return type;
 }
 
+static GDScriptParser::DataType make_class_enum_type(const StringName &p_enum_name, GDScriptParser::ClassNode *p_class, const String &p_script_path, bool p_meta = true) {
+	GDScriptParser::DataType type = make_enum_type(p_enum_name, p_class->fqcn, p_meta);
+
+	type.class_type = p_class;
+	type.script_path = p_script_path;
+
+	return type;
+}
+
 static GDScriptParser::DataType make_native_enum_type(const StringName &p_enum_name, const StringName &p_native_class, bool p_meta = true) {
 	// Find out which base class declared the enum, so the name is always the same even when coming from other contexts.
 	StringName native_base = p_native_class;
@@ -160,7 +169,9 @@ static GDScriptParser::DataType make_native_enum_type(const StringName &p_enum_n
 
 	GDScriptParser::DataType type = make_enum_type(p_enum_name, native_base, p_meta);
 	if (p_meta) {
-		type.builtin_type = Variant::NIL; // Native enum types are not Dictionaries.
+		// Native enum types are not dictionaries.
+		type.builtin_type = Variant::NIL;
+		type.is_pseudo_type = true;
 	}
 
 	List<StringName> enum_values;
@@ -173,10 +184,29 @@ static GDScriptParser::DataType make_native_enum_type(const StringName &p_enum_n
 	return type;
 }
 
+static GDScriptParser::DataType make_builtin_enum_type(const StringName &p_enum_name, Variant::Type p_type, bool p_meta = true) {
+	GDScriptParser::DataType type = make_enum_type(p_enum_name, Variant::get_type_name(p_type), p_meta);
+	if (p_meta) {
+		// Built-in enum types are not dictionaries.
+		type.builtin_type = Variant::NIL;
+		type.is_pseudo_type = true;
+	}
+
+	List<StringName> enum_values;
+	Variant::get_enumerations_for_enum(p_type, p_enum_name, &enum_values);
+
+	for (const StringName &E : enum_values) {
+		type.enum_values[E] = Variant::get_enum_value(p_type, p_enum_name, E);
+	}
+
+	return type;
+}
+
 static GDScriptParser::DataType make_global_enum_type(const StringName &p_enum_name, const StringName &p_base, bool p_meta = true) {
 	GDScriptParser::DataType type = make_enum_type(p_enum_name, p_base, p_meta);
 	if (p_meta) {
-		type.builtin_type = Variant::NIL; // Native enum types are not Dictionaries.
+		// Global enum types are not dictionaries.
+		type.builtin_type = Variant::NIL;
 		type.is_pseudo_type = true;
 	}
 
@@ -694,8 +724,8 @@ GDScriptParser::DataType GDScriptAnalyzer::resolve_datatype(GDScriptParser::Type
 		if (first == SNAME("Variant")) {
 			if (p_type->type_chain.size() == 2) {
 				// May be nested enum.
-				StringName enum_name = p_type->type_chain[1]->name;
-				StringName qualified_name = String(first) + ENUM_SEPARATOR + String(p_type->type_chain[1]->name);
+				const StringName enum_name = p_type->type_chain[1]->name;
+				const StringName qualified_name = String(first) + ENUM_SEPARATOR + String(p_type->type_chain[1]->name);
 				if (CoreConstants::is_global_enum(qualified_name)) {
 					result = make_global_enum_type(enum_name, first, true);
 					return result;
@@ -710,21 +740,34 @@ GDScriptParser::DataType GDScriptAnalyzer::resolve_datatype(GDScriptParser::Type
 			result.kind = GDScriptParser::DataType::VARIANT;
 		} else if (GDScriptParser::get_builtin_type(first) < Variant::VARIANT_MAX) {
 			// Built-in types.
-			if (p_type->type_chain.size() > 1) {
-				push_error(R"(Built-in types don't contain nested types.)", p_type->type_chain[1]);
+			const Variant::Type builtin_type = GDScriptParser::get_builtin_type(first);
+
+			if (p_type->type_chain.size() == 2) {
+				// May be nested enum.
+				const StringName enum_name = p_type->type_chain[1]->name;
+				if (Variant::has_enum(builtin_type, enum_name)) {
+					result = make_builtin_enum_type(enum_name, builtin_type, true);
+					return result;
+				} else {
+					push_error(vformat(R"(Name "%s" is not a nested type of "%s".)", enum_name, first), p_type->type_chain[1]);
+					return bad_type;
+				}
+			} else if (p_type->type_chain.size() > 2) {
+				push_error(R"(Built-in types only contain enum types, which do not have nested types.)", p_type->type_chain[2]);
 				return bad_type;
 			}
-			result.kind = GDScriptParser::DataType::BUILTIN;
-			result.builtin_type = GDScriptParser::get_builtin_type(first);
 
-			if (result.builtin_type == Variant::ARRAY) {
+			result.kind = GDScriptParser::DataType::BUILTIN;
+			result.builtin_type = builtin_type;
+
+			if (builtin_type == Variant::ARRAY) {
 				GDScriptParser::DataType container_type = type_from_metatype(resolve_datatype(p_type->get_container_type_or_null(0)));
 				if (container_type.kind != GDScriptParser::DataType::VARIANT) {
 					container_type.is_constant = false;
 					result.set_container_element_type(0, container_type);
 				}
 			}
-			if (result.builtin_type == Variant::DICTIONARY) {
+			if (builtin_type == Variant::DICTIONARY) {
 				GDScriptParser::DataType key_type = type_from_metatype(resolve_datatype(p_type->get_container_type_or_null(0)));
 				if (key_type.kind != GDScriptParser::DataType::VARIANT) {
 					key_type.is_constant = false;
@@ -749,7 +792,7 @@ GDScriptParser::DataType GDScriptAnalyzer::resolve_datatype(GDScriptParser::Type
 				String ext = path.get_extension();
 				if (ext == GDScriptLanguage::get_singleton()->get_extension()) {
 					Ref<GDScriptParserRef> ref = parser->get_depended_parser_for(path);
-					if (!ref.is_valid() || ref->raise_status(GDScriptParserRef::INHERITANCE_SOLVED) != OK) {
+					if (ref.is_null() || ref->raise_status(GDScriptParserRef::INHERITANCE_SOLVED) != OK) {
 						push_error(vformat(R"(Could not parse global class "%s" from "%s".)", first, ScriptServer::get_global_class_path(first)), p_type);
 						return bad_type;
 					}
@@ -931,8 +974,8 @@ void GDScriptAnalyzer::resolve_class_member(GDScriptParser::ClassNode *p_class, 
 	Finally finally([&]() {
 		ensure_cached_external_parser_for_class(member.get_datatype().class_type, p_class, "Trying to resolve datatype of class member", p_source);
 		GDScriptParser::DataType member_type = member.get_datatype();
-		if (member_type.has_container_element_type(0)) {
-			ensure_cached_external_parser_for_class(member_type.get_container_element_type(0).class_type, p_class, "Trying to resolve datatype of class member", p_source);
+		for (int i = 0; i < member_type.get_container_element_type_count(); ++i) {
+			ensure_cached_external_parser_for_class(member_type.get_container_element_type(i).class_type, p_class, "Trying to resolve datatype of class member", p_source);
 		}
 	});
 
@@ -1050,7 +1093,12 @@ void GDScriptAnalyzer::resolve_class_member(GDScriptParser::ClassNode *p_class, 
 							}
 						}
 						if (is_get_node) {
-							parser->push_warning(member.variable, GDScriptWarning::GET_NODE_DEFAULT_WITHOUT_ONREADY, is_using_shorthand ? "$" : "get_node()");
+							String offending_syntax = "get_node()";
+							if (is_using_shorthand) {
+								GDScriptParser::GetNodeNode *get_node_node = static_cast<GDScriptParser::GetNodeNode *>(expr);
+								offending_syntax = get_node_node->use_dollar ? "$" : "%";
+							}
+							parser->push_warning(member.variable, GDScriptWarning::GET_NODE_DEFAULT_WITHOUT_ONREADY, offending_syntax);
 						}
 					}
 				}
@@ -1101,7 +1149,7 @@ void GDScriptAnalyzer::resolve_class_member(GDScriptParser::ClassNode *p_class, 
 				check_class_member_name_conflict(p_class, member.m_enum->identifier->name, member.m_enum);
 
 				member.m_enum->set_datatype(resolving_datatype);
-				GDScriptParser::DataType enum_type = make_enum_type(member.m_enum->identifier->name, p_class->fqcn, true);
+				GDScriptParser::DataType enum_type = make_class_enum_type(member.m_enum->identifier->name, p_class, parser->script_path, true);
 
 				const GDScriptParser::EnumNode *prev_enum = current_enum;
 				current_enum = member.m_enum;
@@ -1194,7 +1242,7 @@ void GDScriptAnalyzer::resolve_class_member(GDScriptParser::ClassNode *p_class, 
 				// Also update the original references.
 				member.enum_value.parent_enum->values.set(member.enum_value.index, member.enum_value);
 
-				member.enum_value.identifier->set_datatype(make_enum_type(UNNAMED_ENUM, p_class->fqcn, false));
+				member.enum_value.identifier->set_datatype(make_class_enum_type(UNNAMED_ENUM, p_class, parser->script_path, false));
 			} break;
 			case GDScriptParser::ClassNode::Member::CLASS:
 				check_class_member_name_conflict(p_class, member.m_class->identifier->name, member.m_class);
@@ -3647,7 +3695,7 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 			String base_name = is_self && !p_call->is_super ? "self" : base_type.to_string();
 #ifdef SUGGEST_GODOT4_RENAMES
 			String rename_hint;
-			if (GLOBAL_GET(GDScriptWarning::get_settings_path_from_code(GDScriptWarning::RENAMED_IN_GODOT_4_HINT)).booleanize()) {
+			if (GLOBAL_GET("debug/gdscript/warnings/renamed_in_godot_4_hint")) {
 				const char *renamed_function_name = check_for_renamed_identifier(p_call->function_name, p_call->type);
 				if (renamed_function_name) {
 					rename_hint = " " + vformat(R"(Did you mean to use "%s"?)", String(renamed_function_name) + "()");
@@ -3807,6 +3855,12 @@ GDScriptParser::DataType GDScriptAnalyzer::make_global_class_meta_type(const Str
 }
 
 Ref<GDScriptParserRef> GDScriptAnalyzer::ensure_cached_external_parser_for_class(const GDScriptParser::ClassNode *p_class, const GDScriptParser::ClassNode *p_from_class, const char *p_context, const GDScriptParser::Node *p_source) {
+	// Delicate piece of code that intentionally doesn't use the GDScript cache or `get_depended_parser_for`.
+	// Search dependencies for the parser that owns `p_class` and make a cache entry for it.
+	// Required for how we store pointers to classes owned by other parser trees and need to call `resolve_class_member` and such on the same parser tree.
+	// Since https://github.com/godotengine/godot/pull/94871 there can technically be multiple parsers for the same script in the same parser tree.
+	// Even if unlikely, getting the wrong parser could lead to strange undefined behavior without errors.
+
 	if (p_class == nullptr) {
 		return nullptr;
 	}
@@ -3822,8 +3876,6 @@ Ref<GDScriptParserRef> GDScriptAnalyzer::ensure_cached_external_parser_for_class
 	if (p_from_class == nullptr) {
 		p_from_class = parser->head;
 	}
-
-	String script_path = p_class->get_datatype().script_path;
 
 	Ref<GDScriptParserRef> parser_ref;
 	for (const GDScriptParser::ClassNode *look_class = p_from_class; look_class != nullptr; look_class = look_class->base_type.class_type) {
@@ -3905,8 +3957,9 @@ Ref<GDScriptParserRef> GDScriptAnalyzer::find_cached_external_parser_for_class(c
 
 Ref<GDScript> GDScriptAnalyzer::get_depended_shallow_script(const String &p_path, Error &r_error) {
 	// To keep a local cache of the parser for resolving external nodes later.
-	parser->get_depended_parser_for(p_path);
-	Ref<GDScript> scr = GDScriptCache::get_shallow_script(p_path, r_error, parser->script_path);
+	const String path = ResourceUID::ensure_path(p_path);
+	parser->get_depended_parser_for(path);
+	Ref<GDScript> scr = GDScriptCache::get_shallow_script(path, r_error, parser->script_path);
 	return scr;
 }
 
@@ -3957,24 +4010,47 @@ void GDScriptAnalyzer::reduce_identifier_from_base(GDScriptParser::IdentifierNod
 
 	if (base.kind == GDScriptParser::DataType::BUILTIN) {
 		if (base.is_meta_type) {
-			bool valid = true;
-			Variant result = Variant::get_constant_value(base.builtin_type, name, &valid);
-			if (valid) {
+			bool valid = false;
+
+			if (Variant::has_constant(base.builtin_type, name)) {
+				valid = true;
+
+				const Variant constant_value = Variant::get_constant_value(base.builtin_type, name);
+
 				p_identifier->is_constant = true;
-				p_identifier->reduced_value = result;
-				p_identifier->set_datatype(type_from_variant(result, p_identifier));
-			} else if (base.is_hard_type()) {
+				p_identifier->reduced_value = constant_value;
+				p_identifier->set_datatype(type_from_variant(constant_value, p_identifier));
+			}
+
+			if (!valid) {
+				const StringName enum_name = Variant::get_enum_for_enumeration(base.builtin_type, name);
+				if (enum_name != StringName()) {
+					valid = true;
+
+					p_identifier->is_constant = true;
+					p_identifier->reduced_value = Variant::get_enum_value(base.builtin_type, enum_name, name);
+					p_identifier->set_datatype(make_builtin_enum_type(enum_name, base.builtin_type, false));
+				}
+			}
+
+			if (!valid && Variant::has_enum(base.builtin_type, name)) {
+				valid = true;
+
+				p_identifier->set_datatype(make_builtin_enum_type(name, base.builtin_type, true));
+			}
+
+			if (!valid && base.is_hard_type()) {
 #ifdef SUGGEST_GODOT4_RENAMES
 				String rename_hint;
-				if (GLOBAL_GET(GDScriptWarning::get_settings_path_from_code(GDScriptWarning::RENAMED_IN_GODOT_4_HINT)).booleanize()) {
+				if (GLOBAL_GET("debug/gdscript/warnings/renamed_in_godot_4_hint")) {
 					const char *renamed_identifier_name = check_for_renamed_identifier(name, p_identifier->type);
 					if (renamed_identifier_name) {
 						rename_hint = " " + vformat(R"(Did you mean to use "%s"?)", renamed_identifier_name);
 					}
 				}
-				push_error(vformat(R"(Cannot find constant "%s" on base "%s".%s)", name, base.to_string(), rename_hint), p_identifier);
+				push_error(vformat(R"(Cannot find member "%s" in base "%s".%s)", name, base.to_string(), rename_hint), p_identifier);
 #else
-				push_error(vformat(R"(Cannot find constant "%s" on base "%s".)", name, base.to_string()), p_identifier);
+				push_error(vformat(R"(Cannot find member "%s" in base "%s".)", name, base.to_string()), p_identifier);
 #endif // SUGGEST_GODOT4_RENAMES
 			}
 		} else {
@@ -4010,15 +4086,15 @@ void GDScriptAnalyzer::reduce_identifier_from_base(GDScriptParser::IdentifierNod
 					if (base.is_hard_type()) {
 #ifdef SUGGEST_GODOT4_RENAMES
 						String rename_hint;
-						if (GLOBAL_GET(GDScriptWarning::get_settings_path_from_code(GDScriptWarning::RENAMED_IN_GODOT_4_HINT)).booleanize()) {
+						if (GLOBAL_GET("debug/gdscript/warnings/renamed_in_godot_4_hint")) {
 							const char *renamed_identifier_name = check_for_renamed_identifier(name, p_identifier->type);
 							if (renamed_identifier_name) {
 								rename_hint = " " + vformat(R"(Did you mean to use "%s"?)", renamed_identifier_name);
 							}
 						}
-						push_error(vformat(R"(Cannot find property "%s" on base "%s".%s)", name, base.to_string(), rename_hint), p_identifier);
+						push_error(vformat(R"(Cannot find member "%s" in base "%s".%s)", name, base.to_string(), rename_hint), p_identifier);
 #else
-						push_error(vformat(R"(Cannot find property "%s" on base "%s".)", name, base.to_string()), p_identifier);
+						push_error(vformat(R"(Cannot find member "%s" in base "%s".)", name, base.to_string()), p_identifier);
 #endif // SUGGEST_GODOT4_RENAMES
 					}
 				}
@@ -4249,7 +4325,7 @@ void GDScriptAnalyzer::reduce_identifier(GDScriptParser::IdentifierNode *p_ident
 			const GDScriptParser::EnumNode::Value &element = current_enum->values[i];
 			if (element.identifier->name == p_identifier->name) {
 				StringName enum_name = current_enum->identifier ? current_enum->identifier->name : UNNAMED_ENUM;
-				GDScriptParser::DataType type = make_enum_type(enum_name, parser->current_class->fqcn, false);
+				GDScriptParser::DataType type = make_class_enum_type(enum_name, parser->current_class, parser->script_path, false);
 				if (element.parent_enum->identifier) {
 					type.enum_type = element.parent_enum->identifier->name;
 				}
@@ -4438,11 +4514,11 @@ void GDScriptAnalyzer::reduce_identifier(GDScriptParser::IdentifierNode *p_ident
 			result.builtin_type = Variant::OBJECT;
 			result.native_type = SNAME("Node");
 			if (ResourceLoader::get_resource_type(autoload.path) == "GDScript") {
-				Ref<GDScriptParserRef> singl_parser = parser->get_depended_parser_for(autoload.path);
-				if (singl_parser.is_valid()) {
-					Error err = singl_parser->raise_status(GDScriptParserRef::INHERITANCE_SOLVED);
+				Ref<GDScriptParserRef> single_parser = parser->get_depended_parser_for(autoload.path);
+				if (single_parser.is_valid()) {
+					Error err = single_parser->raise_status(GDScriptParserRef::INHERITANCE_SOLVED);
 					if (err == OK) {
-						result = type_from_metatype(singl_parser->get_parser()->head->get_datatype());
+						result = type_from_metatype(single_parser->get_parser()->head->get_datatype());
 					}
 				}
 			} else if (ResourceLoader::get_resource_type(autoload.path) == "PackedScene") {
@@ -4452,11 +4528,11 @@ void GDScriptAnalyzer::reduce_identifier(GDScriptParser::IdentifierNode *p_ident
 					if (node != nullptr) {
 						Ref<GDScript> scr = node->get_script();
 						if (scr.is_valid()) {
-							Ref<GDScriptParserRef> singl_parser = parser->get_depended_parser_for(scr->get_script_path());
-							if (singl_parser.is_valid()) {
-								Error err = singl_parser->raise_status(GDScriptParserRef::INHERITANCE_SOLVED);
+							Ref<GDScriptParserRef> single_parser = parser->get_depended_parser_for(scr->get_script_path());
+							if (single_parser.is_valid()) {
+								Error err = single_parser->raise_status(GDScriptParserRef::INHERITANCE_SOLVED);
 								if (err == OK) {
-									result = type_from_metatype(singl_parser->get_parser()->head->get_datatype());
+									result = type_from_metatype(single_parser->get_parser()->head->get_datatype());
 								}
 							}
 						}
@@ -4526,7 +4602,7 @@ void GDScriptAnalyzer::reduce_identifier(GDScriptParser::IdentifierNode *p_ident
 	// Not found.
 #ifdef SUGGEST_GODOT4_RENAMES
 	String rename_hint;
-	if (GLOBAL_GET(GDScriptWarning::get_settings_path_from_code(GDScriptWarning::RENAMED_IN_GODOT_4_HINT)).booleanize()) {
+	if (GLOBAL_GET("debug/gdscript/warnings/renamed_in_godot_4_hint")) {
 		const char *renamed_identifier_name = check_for_renamed_identifier(name, p_identifier->type);
 		if (renamed_identifier_name) {
 			rename_hint = " " + vformat(R"(Did you mean to use "%s"?)", renamed_identifier_name);
@@ -5559,7 +5635,7 @@ GDScriptParser::DataType GDScriptAnalyzer::type_from_property(const PropertyInfo
 				} else {
 					Vector<String> names = String(p_property.class_name).split(ENUM_SEPARATOR);
 					if (names.size() == 2) {
-						result = make_native_enum_type(names[1], names[0], false);
+						result = make_enum_type(names[1], names[0], false);
 						result.is_constant = false;
 					}
 				}
@@ -5796,8 +5872,6 @@ void GDScriptAnalyzer::validate_call_arg(const List<GDScriptParser::DataType> &p
 #ifdef DEBUG_ENABLED
 void GDScriptAnalyzer::is_shadowing(GDScriptParser::IdentifierNode *p_identifier, const String &p_context, const bool p_in_local_scope) {
 	const StringName &name = p_identifier->name;
-	GDScriptParser::DataType base = parser->current_class->get_datatype();
-	GDScriptParser::ClassNode *base_class = base.class_type;
 
 	{
 		List<MethodInfo> gdscript_funcs;
@@ -5825,40 +5899,56 @@ void GDScriptAnalyzer::is_shadowing(GDScriptParser::IdentifierNode *p_identifier
 		}
 	}
 
+	const GDScriptParser::DataType current_class_type = parser->current_class->get_datatype();
 	if (p_in_local_scope) {
-		while (base_class != nullptr) {
+		GDScriptParser::ClassNode *base_class = current_class_type.class_type;
+
+		if (base_class != nullptr) {
 			if (base_class->has_member(name)) {
 				parser->push_warning(p_identifier, GDScriptWarning::SHADOWED_VARIABLE, p_context, p_identifier->name, base_class->get_member(name).get_type_name(), itos(base_class->get_member(name).get_line()));
 				return;
 			}
 			base_class = base_class->base_type.class_type;
 		}
+
+		while (base_class != nullptr) {
+			if (base_class->has_member(name)) {
+				String base_class_name = base_class->get_global_name();
+				if (base_class_name.is_empty()) {
+					base_class_name = base_class->fqcn;
+				}
+
+				parser->push_warning(p_identifier, GDScriptWarning::SHADOWED_VARIABLE_BASE_CLASS, p_context, p_identifier->name, base_class->get_member(name).get_type_name(), itos(base_class->get_member(name).get_line()), base_class_name);
+				return;
+			}
+			base_class = base_class->base_type.class_type;
+		}
 	}
 
-	StringName parent = base.native_type;
-	while (parent != StringName()) {
-		ERR_FAIL_COND_MSG(!class_exists(parent), "Non-existent native base class.");
+	StringName native_base_class = current_class_type.native_type;
+	while (native_base_class != StringName()) {
+		ERR_FAIL_COND_MSG(!class_exists(native_base_class), "Non-existent native base class.");
 
-		if (ClassDB::has_method(parent, name, true)) {
-			parser->push_warning(p_identifier, GDScriptWarning::SHADOWED_VARIABLE_BASE_CLASS, p_context, p_identifier->name, "method", parent);
+		if (ClassDB::has_method(native_base_class, name, true)) {
+			parser->push_warning(p_identifier, GDScriptWarning::SHADOWED_VARIABLE_BASE_CLASS, p_context, p_identifier->name, "method", native_base_class);
 			return;
-		} else if (ClassDB::has_signal(parent, name, true)) {
-			parser->push_warning(p_identifier, GDScriptWarning::SHADOWED_VARIABLE_BASE_CLASS, p_context, p_identifier->name, "signal", parent);
+		} else if (ClassDB::has_signal(native_base_class, name, true)) {
+			parser->push_warning(p_identifier, GDScriptWarning::SHADOWED_VARIABLE_BASE_CLASS, p_context, p_identifier->name, "signal", native_base_class);
 			return;
-		} else if (ClassDB::has_property(parent, name, true)) {
-			parser->push_warning(p_identifier, GDScriptWarning::SHADOWED_VARIABLE_BASE_CLASS, p_context, p_identifier->name, "property", parent);
+		} else if (ClassDB::has_property(native_base_class, name, true)) {
+			parser->push_warning(p_identifier, GDScriptWarning::SHADOWED_VARIABLE_BASE_CLASS, p_context, p_identifier->name, "property", native_base_class);
 			return;
-		} else if (ClassDB::has_integer_constant(parent, name, true)) {
-			parser->push_warning(p_identifier, GDScriptWarning::SHADOWED_VARIABLE_BASE_CLASS, p_context, p_identifier->name, "constant", parent);
+		} else if (ClassDB::has_integer_constant(native_base_class, name, true)) {
+			parser->push_warning(p_identifier, GDScriptWarning::SHADOWED_VARIABLE_BASE_CLASS, p_context, p_identifier->name, "constant", native_base_class);
 			return;
-		} else if (ClassDB::has_enum(parent, name, true)) {
-			parser->push_warning(p_identifier, GDScriptWarning::SHADOWED_VARIABLE_BASE_CLASS, p_context, p_identifier->name, "enum", parent);
+		} else if (ClassDB::has_enum(native_base_class, name, true)) {
+			parser->push_warning(p_identifier, GDScriptWarning::SHADOWED_VARIABLE_BASE_CLASS, p_context, p_identifier->name, "enum", native_base_class);
 			return;
 		}
-		parent = ClassDB::get_parent_class(parent);
+		native_base_class = ClassDB::get_parent_class(native_base_class);
 	}
 }
-#endif
+#endif // DEBUG_ENABLED
 
 GDScriptParser::DataType GDScriptAnalyzer::get_operation_type(Variant::Operator p_operation, const GDScriptParser::DataType &p_a, bool &r_valid, const GDScriptParser::Node *p_source) {
 	// Unary version.

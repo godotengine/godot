@@ -30,6 +30,9 @@
 
 #include "plist.h"
 
+#include "core/crypto/crypto_core.h"
+#include "core/os/time.h"
+
 PList::PLNodeType PListNode::get_type() const {
 	return data_type;
 }
@@ -450,7 +453,7 @@ PList::PList() {
 PList::PList(const String &p_string) {
 	String err_str;
 	bool ok = load_string(p_string, err_str);
-	ERR_FAIL_COND_MSG(!ok, "PList: " + err_str);
+	ERR_FAIL_COND_MSG(!ok, vformat("PList: %s.", err_str));
 }
 
 uint64_t PList::read_bplist_var_size_int(Ref<FileAccess> p_file, uint8_t p_size) {
@@ -661,12 +664,12 @@ bool PList::load_string(const String &p_string, String &r_err_out) {
 	List<Ref<PListNode>> stack;
 	String key;
 	while (pos >= 0) {
-		int open_token_s = p_string.find("<", pos);
+		int open_token_s = p_string.find_char('<', pos);
 		if (open_token_s == -1) {
 			r_err_out = "Unexpected end of data. No tags found.";
 			return false;
 		}
-		int open_token_e = p_string.find(">", open_token_s);
+		int open_token_e = p_string.find_char('>', open_token_s);
 		pos = open_token_e;
 
 		String token = p_string.substr(open_token_s + 1, open_token_e - open_token_s - 1);
@@ -676,7 +679,7 @@ bool PList::load_string(const String &p_string, String &r_err_out) {
 		}
 		String value;
 		if (token[0] == '?' || token[0] == '!') { // Skip <?xml ... ?> and <!DOCTYPE ... >
-			int end_token_e = p_string.find(">", open_token_s);
+			int end_token_e = p_string.find_char('>', open_token_s);
 			pos = end_token_e;
 			continue;
 		}
@@ -708,7 +711,7 @@ bool PList::load_string(const String &p_string, String &r_err_out) {
 				stack.push_back(dict);
 			} else {
 				// Add root node.
-				if (!root.is_null()) {
+				if (root.is_valid()) {
 					r_err_out = "Root node already set.";
 					return false;
 				}
@@ -740,7 +743,7 @@ bool PList::load_string(const String &p_string, String &r_err_out) {
 				stack.push_back(arr);
 			} else {
 				// Add root node.
-				if (!root.is_null()) {
+				if (root.is_valid()) {
 					r_err_out = "Root node already set.";
 					return false;
 				}
@@ -769,7 +772,7 @@ bool PList::load_string(const String &p_string, String &r_err_out) {
 				r_err_out = vformat("Mismatched <%s> tag.", token);
 				return false;
 			}
-			int end_token_e = p_string.find(">", end_token_s);
+			int end_token_e = p_string.find_char('>', end_token_s);
 			pos = end_token_e;
 			String end_token = p_string.substr(end_token_s + 2, end_token_e - end_token_s - 2);
 			if (end_token != token) {

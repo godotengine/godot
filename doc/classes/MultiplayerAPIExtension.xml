@@ -4,14 +4,14 @@
 		Base class used for extending the [MultiplayerAPI].
 	</brief_description>
 	<description>
-		This class can be used to augment or replace the default [MultiplayerAPI] implementation via script or extensions.
-		The following example augment the default implementation ([SceneMultiplayer]) by logging every RPC being made, and every object being configured for replication.
+		This class can be used to extend or replace the default [MultiplayerAPI] implementation via script or extensions.
+		The following example extend the default implementation ([SceneMultiplayer]) by logging every RPC being made, and every object being configured for replication.
 		[codeblocks]
 		[gdscript]
 		extends MultiplayerAPIExtension
 		class_name LogMultiplayer
 
-		# We want to augment the default SceneMultiplayer.
+		# We want to extend the default SceneMultiplayer.
 		var base_multiplayer = SceneMultiplayer.new()
 
 		func _init():
@@ -49,7 +49,7 @@
 		        print("Removing node %s from the spawn list. Spawner: %s" % [object, config])
 		    return base_multiplayer.object_configuration_remove(object, config)
 
-		# These can be optional, but in our case we want to augment SceneMultiplayer, so forward everything.
+		# These can be optional, but in our case we want to extend SceneMultiplayer, so forward everything.
 		func _set_multiplayer_peer(p_peer: MultiplayerPeer):
 		    base_multiplayer.multiplayer_peer = p_peer
 
@@ -69,7 +69,7 @@
 		# autoload.gd
 		func _enter_tree():
 		    # Sets our custom multiplayer as the main one in SceneTree.
-		get_tree().set_multiplayer(LogMultiplayer.new())
+		    get_tree().set_multiplayer(LogMultiplayer.new())
 		[/gdscript]
 		[/codeblocks]
 		Native extensions can alternatively use the [method MultiplayerAPI.set_default_interface] method during initialization to configure themselves as the default implementation.

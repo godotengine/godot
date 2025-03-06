@@ -50,10 +50,25 @@ public:
 		TYPE_MAT4,
 	};
 
+	enum GLTFComponentType {
+		COMPONENT_TYPE_NONE = 0,
+		COMPONENT_TYPE_SIGNED_BYTE = 5120,
+		COMPONENT_TYPE_UNSIGNED_BYTE = 5121,
+		COMPONENT_TYPE_SIGNED_SHORT = 5122,
+		COMPONENT_TYPE_UNSIGNED_SHORT = 5123,
+		COMPONENT_TYPE_SIGNED_INT = 5124,
+		COMPONENT_TYPE_UNSIGNED_INT = 5125,
+		COMPONENT_TYPE_SINGLE_FLOAT = 5126,
+		COMPONENT_TYPE_DOUBLE_FLOAT = 5130,
+		COMPONENT_TYPE_HALF_FLOAT = 5131,
+		COMPONENT_TYPE_SIGNED_LONG = 5134,
+		COMPONENT_TYPE_UNSIGNED_LONG = 5135,
+	};
+
 private:
 	GLTFBufferViewIndex buffer_view = -1;
 	int byte_offset = 0;
-	int component_type = 0;
+	GLTFComponentType component_type = COMPONENT_TYPE_NONE;
 	bool normalized = false;
 	int count = 0;
 	GLTFAccessorType accessor_type = GLTFAccessorType::TYPE_SCALAR;
@@ -62,7 +77,7 @@ private:
 	int sparse_count = 0;
 	int sparse_indices_buffer_view = 0;
 	int sparse_indices_byte_offset = 0;
-	int sparse_indices_component_type = 0;
+	GLTFComponentType sparse_indices_component_type = COMPONENT_TYPE_NONE;
 	int sparse_values_buffer_view = 0;
 	int sparse_values_byte_offset = 0;
 
@@ -117,5 +132,6 @@ public:
 };
 
 VARIANT_ENUM_CAST(GLTFAccessor::GLTFAccessorType);
+VARIANT_ENUM_CAST(GLTFAccessor::GLTFComponentType);
 
 #endif // GLTF_ACCESSOR_H

@@ -392,9 +392,9 @@ private:
 		};
 		struct IntegratePushConstant {
 			enum {
-				SKY_MODE_DISABLED,
-				SKY_MODE_COLOR,
-				SKY_MODE_SKY,
+				SKY_FLAGS_MODE_COLOR = 0x01,
+				SKY_FLAGS_MODE_SKY = 0x02,
+				SKY_FLAGS_ORIENTATION_SIGN = 0x04,
 			};
 
 			float grid_size[3];
@@ -410,12 +410,12 @@ private:
 			int32_t image_size[2];
 
 			int32_t world_offset[3];
-			uint32_t sky_mode;
+			uint32_t sky_flags;
 
 			int32_t scroll[3];
 			float sky_energy;
 
-			float sky_color[3];
+			float sky_color_or_orientation[3];
 			float y_mult;
 
 			uint32_t store_ambient_texture;
@@ -461,13 +461,13 @@ public:
 
 		RID get_voxel_gi_buffer();
 
-		virtual void configure(RenderSceneBuffersRD *p_render_buffers) override{};
+		virtual void configure(RenderSceneBuffersRD *p_render_buffers) override {}
 		virtual void free_data() override;
 	};
 
 	/* VOXEL GI API */
 
-	bool owns_voxel_gi(RID p_rid) { return voxel_gi_owner.owns(p_rid); };
+	bool owns_voxel_gi(RID p_rid) { return voxel_gi_owner.owns(p_rid); }
 
 	virtual RID voxel_gi_allocate() override;
 	virtual void voxel_gi_free(RID p_voxel_gi) override;
@@ -524,14 +524,14 @@ public:
 		VoxelGIInstance *voxel_gi = voxel_gi_instance_owner.get_or_null(p_probe);
 		ERR_FAIL_NULL_V(voxel_gi, RID());
 		return voxel_gi->texture;
-	};
+	}
 
 	_FORCE_INLINE_ void voxel_gi_instance_set_render_index(RID p_probe, uint32_t p_index) {
 		VoxelGIInstance *voxel_gi = voxel_gi_instance_owner.get_or_null(p_probe);
 		ERR_FAIL_NULL(voxel_gi);
 
 		voxel_gi->render_index = p_index;
-	};
+	}
 
 	bool voxel_gi_instance_owns(RID p_rid) const {
 		return voxel_gi_instance_owner.owns(p_rid);
@@ -675,7 +675,7 @@ public:
 		int32_t cascade_dynamic_light_count[SDFGI::MAX_CASCADES]; //used dynamically
 		RID integrate_sky_uniform_set;
 
-		virtual void configure(RenderSceneBuffersRD *p_render_buffers) override{};
+		virtual void configure(RenderSceneBuffersRD *p_render_buffers) override {}
 		virtual void free_data() override;
 		~SDFGI();
 

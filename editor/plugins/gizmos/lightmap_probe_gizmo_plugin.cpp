@@ -33,13 +33,12 @@
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
-#include "editor/plugins/node_3d_editor_plugin.h"
 #include "scene/3d/lightmap_probe.h"
 
 LightmapProbeGizmoPlugin::LightmapProbeGizmoPlugin() {
 	create_icon_material("lightmap_probe_icon", EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("GizmoLightmapProbe"), EditorStringName(EditorIcons)));
 
-	Color gizmo_color = EDITOR_DEF_RST("editors/3d_gizmos/gizmo_colors/lightprobe_lines", Color(0.5, 0.6, 1));
+	Color gizmo_color = EDITOR_GET("editors/3d_gizmos/gizmo_colors/lightprobe_lines");
 
 	gizmo_color.a = 0.3;
 	create_material("lightprobe_lines", gizmo_color);

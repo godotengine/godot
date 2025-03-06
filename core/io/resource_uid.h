@@ -35,13 +35,15 @@
 #include "core/string/string_name.h"
 #include "core/templates/hash_map.h"
 
+class FileAccess;
+
+typedef void (*ResourceUIDScanForUIDOnStartup)();
+
 class ResourceUID : public Object {
 	GDCLASS(ResourceUID, Object)
 public:
 	typedef int64_t ID;
-	enum {
-		INVALID_ID = -1
-	};
+	constexpr const static ID INVALID_ID = -1;
 
 	static String get_cache_file();
 
@@ -63,6 +65,8 @@ protected:
 	static void _bind_methods();
 
 public:
+	inline static ResourceUIDScanForUIDOnStartup scan_for_uid_on_startup = nullptr;
+
 	String id_to_text(ID p_id) const;
 	ID text_to_id(const String &p_text) const;
 
@@ -73,9 +77,14 @@ public:
 	String get_id_path(ID p_id) const;
 	void remove_id(ID p_id);
 
+	static String uid_to_path(const String &p_uid);
+	static String path_to_uid(const String &p_path);
+	static String ensure_path(const String &p_uid_or_path);
+
 	Error load_from_cache(bool p_reset);
 	Error save_to_cache();
 	Error update_cache();
+	static String get_path_from_cache(Ref<FileAccess> &p_cache_file, const String &p_uid_string);
 
 	void clear();
 

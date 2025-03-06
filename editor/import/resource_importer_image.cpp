@@ -32,8 +32,6 @@
 
 #include "core/io/file_access.h"
 #include "core/io/image_loader.h"
-#include "core/io/resource_saver.h"
-#include "scene/resources/texture.h"
 
 String ResourceImporterImage::get_importer_name() const {
 	return "image";
@@ -70,7 +68,7 @@ String ResourceImporterImage::get_preset_name(int p_idx) const {
 void ResourceImporterImage::get_import_options(const String &p_path, List<ImportOption> *r_options, int p_preset) const {
 }
 
-Error ResourceImporterImage::import(const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
+Error ResourceImporterImage::import(ResourceUID::ID p_source_id, const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
 	Ref<FileAccess> f = FileAccess::open(p_source_file, FileAccess::READ);
 
 	ERR_FAIL_COND_V_MSG(f.is_null(), ERR_CANT_OPEN, "Cannot open file from path '" + p_source_file + "'.");

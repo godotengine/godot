@@ -41,6 +41,7 @@
 #include "editor/themes/editor_scale.h"
 #include "scene/3d/importer_mesh_instance_3d.h"
 #include "scene/animation/animation_player.h"
+#include "scene/gui/subviewport_container.h"
 #include "scene/resources/3d/importer_mesh.h"
 #include "scene/resources/surface_tool.h"
 
@@ -368,6 +369,7 @@ void SceneImportSettingsDialog::_fill_scene(Node *p_node, TreeItem *p_parent_ite
 		mesh_node->set_transform(src_mesh_node->get_transform());
 		mesh_node->set_skin(src_mesh_node->get_skin());
 		mesh_node->set_skeleton_path(src_mesh_node->get_skeleton_path());
+		mesh_node->set_visible(src_mesh_node->is_visible());
 		if (src_mesh_node->get_mesh().is_valid()) {
 			Ref<ImporterMesh> editor_mesh = src_mesh_node->get_mesh();
 			mesh_node->set_mesh(editor_mesh->get_mesh());
@@ -1019,11 +1021,11 @@ void SceneImportSettingsDialog::_play_animation() {
 	if (animation_player->has_animation(id)) {
 		if (animation_player->is_playing()) {
 			animation_player->pause();
-			animation_play_button->set_icon(get_editor_theme_icon(SNAME("MainPlay")));
+			animation_play_button->set_button_icon(get_editor_theme_icon(SNAME("MainPlay")));
 			set_process(false);
 		} else {
 			animation_player->play(id);
-			animation_play_button->set_icon(get_editor_theme_icon(SNAME("Pause")));
+			animation_play_button->set_button_icon(get_editor_theme_icon(SNAME("Pause")));
 			set_process(true);
 		}
 	}
@@ -1032,7 +1034,7 @@ void SceneImportSettingsDialog::_play_animation() {
 void SceneImportSettingsDialog::_stop_current_animation() {
 	animation_pingpong = false;
 	animation_player->stop();
-	animation_play_button->set_icon(get_editor_theme_icon(SNAME("MainPlay")));
+	animation_play_button->set_button_icon(get_editor_theme_icon(SNAME("MainPlay")));
 	animation_slider->set_value_no_signal(0.0);
 	set_process(false);
 }
@@ -1044,7 +1046,7 @@ void SceneImportSettingsDialog::_reset_animation(const String &p_animation_name)
 		if (animation_player != nullptr && animation_player->is_playing()) {
 			animation_player->stop();
 		}
-		animation_play_button->set_icon(get_editor_theme_icon(SNAME("MainPlay")));
+		animation_play_button->set_button_icon(get_editor_theme_icon(SNAME("MainPlay")));
 
 		_reset_bone_transforms();
 		set_process(false);
@@ -1066,7 +1068,7 @@ void SceneImportSettingsDialog::_reset_animation(const String &p_animation_name)
 			animation_player->play(p_animation_name);
 		} else {
 			animation_player->stop(true);
-			animation_play_button->set_icon(get_editor_theme_icon(SNAME("MainPlay")));
+			animation_play_button->set_button_icon(get_editor_theme_icon(SNAME("MainPlay")));
 			animation_player->set_assigned_animation(p_animation_name);
 			animation_player->seek(0.0, true);
 			animation_slider->set_value_no_signal(0.0);
@@ -1081,7 +1083,7 @@ void SceneImportSettingsDialog::_animation_slider_value_changed(double p_value) 
 	}
 	if (animation_player->is_playing()) {
 		animation_player->stop();
-		animation_play_button->set_icon(get_editor_theme_icon(SNAME("MainPlay")));
+		animation_play_button->set_button_icon(get_editor_theme_icon(SNAME("MainPlay")));
 		set_process(false);
 	}
 	animation_player->seek(p_value * animation_map[selected_id].animation->get_length(), true);
@@ -1097,7 +1099,7 @@ void SceneImportSettingsDialog::_animation_finished(const StringName &p_name) {
 
 	switch (loop_mode) {
 		case Animation::LOOP_NONE: {
-			animation_play_button->set_icon(get_editor_theme_icon(SNAME("MainPlay")));
+			animation_play_button->set_button_icon(get_editor_theme_icon(SNAME("MainPlay")));
 			animation_slider->set_value_no_signal(1.0);
 			set_process(false);
 		} break;
@@ -1223,6 +1225,20 @@ void SceneImportSettingsDialog::_viewport_input(const Ref<InputEvent> &p_input) 
 		}
 		_update_camera();
 	}
+	Ref<InputEventMagnifyGesture> mg = p_input;
+	if (mg.is_valid()) {
+		real_t mg_factor = mg->get_factor();
+		if (mg_factor == 0.0) {
+			mg_factor = 1.0;
+		}
+		(*zoom) /= mg_factor;
+		if ((*zoom) < 0.1) {
+			(*zoom) = 0.1;
+		} else if ((*zoom) > 10.0) {
+			(*zoom) = 10.0;
+		}
+		_update_camera();
+	}
 }
 
 void SceneImportSettingsDialog::_re_import() {
@@ -1313,22 +1329,22 @@ void SceneImportSettingsDialog::_notification(int p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			action_menu->begin_bulk_theme_override();
 			action_menu->add_theme_style_override(CoreStringName(normal), get_theme_stylebox(CoreStringName(normal), "Button"));
-			action_menu->add_theme_style_override("hover", get_theme_stylebox("hover", "Button"));
+			action_menu->add_theme_style_override(SceneStringName(hover), get_theme_stylebox(SceneStringName(hover), "Button"));
 			action_menu->add_theme_style_override(SceneStringName(pressed), get_theme_stylebox(SceneStringName(pressed), "Button"));
 			action_menu->end_bulk_theme_override();
 
 			if (animation_player != nullptr && animation_player->is_playing()) {
-				animation_play_button->set_icon(get_editor_theme_icon(SNAME("Pause")));
+				animation_play_button->set_button_icon(get_editor_theme_icon(SNAME("Pause")));
 			} else {
-				animation_play_button->set_icon(get_editor_theme_icon(SNAME("MainPlay")));
+				animation_play_button->set_button_icon(get_editor_theme_icon(SNAME("MainPlay")));
 			}
-			animation_stop_button->set_icon(get_editor_theme_icon(SNAME("Stop")));
+			animation_stop_button->set_button_icon(get_editor_theme_icon(SNAME("Stop")));
 
-			light_1_switch->set_icon(theme_cache.light_1_icon);
-			light_2_switch->set_icon(theme_cache.light_2_icon);
-			light_rotate_switch->set_icon(theme_cache.rotate_icon);
+			light_1_switch->set_button_icon(theme_cache.light_1_icon);
+			light_2_switch->set_button_icon(theme_cache.light_2_icon);
+			light_rotate_switch->set_button_icon(theme_cache.rotate_icon);
 
-			animation_toggle_skeleton_visibility->set_icon(get_editor_theme_icon(SNAME("Skeleton3D")));
+			animation_toggle_skeleton_visibility->set_button_icon(get_editor_theme_icon(SNAME("SkeletonPreview")));
 		} break;
 
 		case NOTIFICATION_PROCESS: {
@@ -1701,7 +1717,7 @@ SceneImportSettingsDialog::SceneImportSettingsDialog() {
 	animation_hbox->add_child(animation_play_button);
 	animation_play_button->set_flat(true);
 	animation_play_button->set_focus_mode(Control::FOCUS_NONE);
-	animation_play_button->set_shortcut(ED_SHORTCUT("scene_import_settings/play_selected_animation", TTR("Selected Animation Play/Pause"), Key::SPACE));
+	animation_play_button->set_shortcut(ED_SHORTCUT("scene_import_settings/play_selected_animation", TTRC("Selected Animation Play/Pause"), Key::SPACE));
 	animation_play_button->connect(SceneStringName(pressed), callable_mp(this, &SceneImportSettingsDialog::_play_animation));
 
 	animation_stop_button = memnew(Button);
@@ -1724,7 +1740,7 @@ SceneImportSettingsDialog::SceneImportSettingsDialog() {
 	animation_toggle_skeleton_visibility = memnew(Button);
 	animation_hbox->add_child(animation_toggle_skeleton_visibility);
 	animation_toggle_skeleton_visibility->set_toggle_mode(true);
-	animation_toggle_skeleton_visibility->set_flat(true);
+	animation_toggle_skeleton_visibility->set_theme_type_variation("FlatButton");
 	animation_toggle_skeleton_visibility->set_focus_mode(Control::FOCUS_NONE);
 	animation_toggle_skeleton_visibility->set_tooltip_text(TTR("Toggle Animation Skeleton Visibility"));
 

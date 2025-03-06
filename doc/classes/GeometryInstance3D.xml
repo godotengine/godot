@@ -25,7 +25,7 @@
 				Set the value of a shader uniform for this instance only ([url=$DOCS_URL/tutorials/shaders/shader_reference/shading_language.html#per-instance-uniforms]per-instance uniform[/url]). See also [method ShaderMaterial.set_shader_parameter] to assign a uniform on all instances using the same [ShaderMaterial].
 				[b]Note:[/b] For a shader uniform to be assignable on a per-instance basis, it [i]must[/i] be defined with [code]instance uniform ...[/code] rather than [code]uniform ...[/code] in the shader code.
 				[b]Note:[/b] [param name] is case-sensitive and must match the name of the uniform in the code exactly (not the capitalized name in the inspector).
-				[b]Note:[/b] Per-instance shader uniforms are currently only available in 3D, so there is no 2D equivalent of this method.
+				[b]Note:[/b] Per-instance shader uniforms are only available in Spatial and CanvasItem shaders, but not for Fog, Sky, or Particles shaders.
 			</description>
 		</method>
 	</methods>
@@ -39,8 +39,12 @@
 		<member name="extra_cull_margin" type="float" setter="set_extra_cull_margin" getter="get_extra_cull_margin" default="0.0">
 			The extra distance added to the GeometryInstance3D's bounding box ([AABB]) to increase its cull box.
 		</member>
-		<member name="gi_lightmap_scale" type="int" setter="set_lightmap_scale" getter="get_lightmap_scale" enum="GeometryInstance3D.LightmapScale" default="0">
+		<member name="gi_lightmap_scale" type="int" setter="set_lightmap_scale" getter="get_lightmap_scale" enum="GeometryInstance3D.LightmapScale" default="0" deprecated="Use [member gi_lightmap_texel_scale] instead.">
+			The texel density to use for lightmapping in [LightmapGI].
+		</member>
+		<member name="gi_lightmap_texel_scale" type="float" setter="set_lightmap_texel_scale" getter="get_lightmap_texel_scale" default="1.0">
 			The texel density to use for lightmapping in [LightmapGI]. Greater scale values provide higher resolution in the lightmap, which can result in sharper shadows for lights that have both direct and indirect light baked. However, greater scale values will also increase the space taken by the mesh in the lightmap texture, which increases the memory, storage, and bake time requirements. When using a single mesh at different scales, consider adjusting this value to keep the lightmap texel density consistent across meshes.
+			For example, doubling [member gi_lightmap_texel_scale] doubles the lightmap texture resolution for this object [i]on each axis[/i], so it will [i]quadruple[/i] the texel count.
 		</member>
 		<member name="gi_mode" type="int" setter="set_gi_mode" getter="get_gi_mode" enum="GeometryInstance3D.GIMode" default="1" keywords="global_illumination_mode, light_bake_mode">
 			The global illumination mode to use for the whole geometry. To avoid inconsistent results, use a mode that matches the purpose of the mesh during gameplay (static/dynamic).
@@ -111,19 +115,19 @@
 		<constant name="GI_MODE_DYNAMIC" value="2" enum="GIMode">
 			Dynamic global illumination mode. Use for dynamic objects that contribute to global illumination. This GI mode is only effective when using [VoxelGI], but it has a higher performance impact than [constant GI_MODE_STATIC]. When using other GI methods, this will act the same as [constant GI_MODE_DISABLED]. When using [LightmapGI], the object will receive indirect lighting using lightmap probes instead of using the baked lightmap texture.
 		</constant>
-		<constant name="LIGHTMAP_SCALE_1X" value="0" enum="LightmapScale">
+		<constant name="LIGHTMAP_SCALE_1X" value="0" enum="LightmapScale" deprecated="Use [member gi_lightmap_texel_scale] instead.">
 			The standard texel density for lightmapping with [LightmapGI].
 		</constant>
-		<constant name="LIGHTMAP_SCALE_2X" value="1" enum="LightmapScale">
+		<constant name="LIGHTMAP_SCALE_2X" value="1" enum="LightmapScale" deprecated="Use [member gi_lightmap_texel_scale] instead.">
 			Multiplies texel density by 2× for lightmapping with [LightmapGI]. To ensure consistency in texel density, use this when scaling a mesh by a factor between 1.5 and 3.0.
 		</constant>
-		<constant name="LIGHTMAP_SCALE_4X" value="2" enum="LightmapScale">
+		<constant name="LIGHTMAP_SCALE_4X" value="2" enum="LightmapScale" deprecated="Use [member gi_lightmap_texel_scale] instead.">
 			Multiplies texel density by 4× for lightmapping with [LightmapGI]. To ensure consistency in texel density, use this when scaling a mesh by a factor between 3.0 and 6.0.
 		</constant>
-		<constant name="LIGHTMAP_SCALE_8X" value="3" enum="LightmapScale">
+		<constant name="LIGHTMAP_SCALE_8X" value="3" enum="LightmapScale" deprecated="Use [member gi_lightmap_texel_scale] instead.">
 			Multiplies texel density by 8× for lightmapping with [LightmapGI]. To ensure consistency in texel density, use this when scaling a mesh by a factor greater than 6.0.
 		</constant>
-		<constant name="LIGHTMAP_SCALE_MAX" value="4" enum="LightmapScale">
+		<constant name="LIGHTMAP_SCALE_MAX" value="4" enum="LightmapScale" deprecated="Use [member gi_lightmap_texel_scale] instead.">
 			Represents the size of the [enum LightmapScale] enum.
 		</constant>
 		<constant name="VISIBILITY_RANGE_FADE_DISABLED" value="0" enum="VisibilityRangeFadeMode">

@@ -30,9 +30,12 @@
 
 #ifndef DISABLE_DEPRECATED
 
-void TranslationServer::_bind_compatibility_methods() {
-	ClassDB::bind_compatibility_method(D_METHOD("translate", "message", "context"), &TranslationServer::translate, DEFVAL(""));
-	ClassDB::bind_compatibility_method(D_METHOD("translate_plural", "message", "plural_message", "n", "context"), &TranslationServer::translate_plural, DEFVAL(""));
+String TranslationServer::_standardize_locale_bind_compat_98972(const String &p_locale) const {
+	return standardize_locale(p_locale, false);
 }
 
-#endif
+void TranslationServer::_bind_compatibility_methods() {
+	ClassDB::bind_compatibility_method(D_METHOD("standardize_locale", "locale"), &TranslationServer::_standardize_locale_bind_compat_98972);
+}
+
+#endif // DISABLE_DEPRECATED

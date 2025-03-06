@@ -35,8 +35,9 @@
 #include "core/templates/hash_map.h"
 #include "core/templates/hashfuncs.h"
 #include "core/templates/local_vector.h"
+#include "servers/navigation/navigation_utilities.h"
 
-class NavBase;
+struct NavBaseIteration;
 
 namespace gd {
 struct Polygon;
@@ -94,7 +95,7 @@ struct Edge {
 	};
 
 	/// Connections from this edge to other polygons.
-	Vector<Connection> connections;
+	LocalVector<Connection> connections;
 };
 
 struct Polygon {
@@ -102,7 +103,7 @@ struct Polygon {
 	uint32_t id = UINT32_MAX;
 
 	/// Navigation region or link that contains this polygon.
-	const NavBase *owner = nullptr;
+	const NavBaseIteration *owner = nullptr;
 
 	/// The points of this `Polygon`
 	LocalVector<Point> points;
@@ -144,6 +145,15 @@ struct NavigationPoly {
 
 	bool operator!=(const NavigationPoly &p_other) const {
 		return !(*this == p_other);
+	}
+
+	void reset() {
+		poly = nullptr;
+		traversable_poly_index = UINT32_MAX;
+		back_navigation_poly_id = -1;
+		back_navigation_edge = -1;
+		traveled_distance = FLT_MAX;
+		distance_to_destination = 0.0;
 	}
 };
 
@@ -191,6 +201,7 @@ class Heap {
 	Indexer _indexer;
 
 public:
+	static constexpr uint32_t INVALID_INDEX = UINT32_MAX;
 	void reserve(uint32_t p_size) {
 		_buffer.reserve(p_size);
 	}
@@ -212,7 +223,7 @@ public:
 	T pop() {
 		ERR_FAIL_COND_V_MSG(_buffer.is_empty(), T(), "Can't pop an empty heap.");
 		T value = _buffer[0];
-		_indexer(value, UINT32_MAX);
+		_indexer(value, INVALID_INDEX);
 		if (_buffer.size() > 1) {
 			_buffer[0] = _buffer[_buffer.size() - 1];
 			_indexer(_buffer[0], 0);
@@ -236,7 +247,7 @@ public:
 
 	void clear() {
 		for (const T &value : _buffer) {
-			_indexer(value, UINT32_MAX);
+			_indexer(value, INVALID_INDEX);
 		}
 		_buffer.clear();
 	}
@@ -298,6 +309,36 @@ private:
 		}
 	}
 };
+
+struct EdgeConnectionPair {
+	gd::Edge::Connection connections[2];
+	int size = 0;
+};
+
+struct PerformanceData {
+	int pm_region_count = 0;
+	int pm_agent_count = 0;
+	int pm_link_count = 0;
+	int pm_polygon_count = 0;
+	int pm_edge_count = 0;
+	int pm_edge_merge_count = 0;
+	int pm_edge_connection_count = 0;
+	int pm_edge_free_count = 0;
+	int pm_obstacle_count = 0;
+
+	void reset() {
+		pm_region_count = 0;
+		pm_agent_count = 0;
+		pm_link_count = 0;
+		pm_polygon_count = 0;
+		pm_edge_count = 0;
+		pm_edge_merge_count = 0;
+		pm_edge_connection_count = 0;
+		pm_edge_free_count = 0;
+		pm_obstacle_count = 0;
+	}
+};
+
 } // namespace gd
 
 #endif // NAV_UTILS_H

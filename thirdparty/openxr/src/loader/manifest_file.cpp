@@ -75,11 +75,12 @@ static inline bool StringEndsWith(const std::string &value, const std::string &e
 }
 
 // If the file found is a manifest file name, add it to the out_files manifest list.
-static void AddIfJson(const std::string &full_file, std::vector<std::string> &manifest_files) {
+static bool AddIfJson(const std::string &full_file, std::vector<std::string> &manifest_files) {
     if (full_file.empty() || !StringEndsWith(full_file, ".json")) {
-        return;
+        return false;
     }
     manifest_files.push_back(full_file);
+    return true;
 }
 
 // Check the current path for any manifest files.  If the provided search_path is a directory, look for
@@ -381,7 +382,6 @@ static void ReadRuntimeDataFilesInRegistry(const std::string &runtime_registry_l
     if (ERROR_SUCCESS != open_value) {
         LoaderLogger::LogWarningMessage("",
                                         "ReadRuntimeDataFilesInRegistry - failed to open registry key " + full_registry_location);
-
         return;
     }
 
@@ -391,7 +391,23 @@ static void ReadRuntimeDataFilesInRegistry(const std::string &runtime_registry_l
         LoaderLogger::LogWarningMessage(
             "", "ReadRuntimeDataFilesInRegistry - failed to read registry value " + default_runtime_value_name);
     } else {
-        AddFilesInPath(wide_to_utf8(value_w), false, manifest_files);
+        // Not using AddFilesInPath here (as only api_layer manifest paths allow multiple
+        // separated paths)
+        // Small time-of-check vs time-of-use issue here but it mainly only affects the error message.
+        // It does not introduce a security defect.
+        std::string activeRuntimePath = wide_to_utf8(value_w);
+        if (FileSysUtilsIsRegularFile(activeRuntimePath)) {
+            // If the file exists, try to add it
+            std::string absolute_path;
+            FileSysUtilsGetAbsolutePath(activeRuntimePath, absolute_path);
+            if (!AddIfJson(absolute_path, manifest_files)) {
+                LoaderLogger::LogErrorMessage(
+                    "", "ReadRuntimeDataFilesInRegistry - registry runtime path is not json " + activeRuntimePath);
+            }
+        } else {
+            LoaderLogger::LogErrorMessage(
+                "", "ReadRuntimeDataFilesInRegistry - registry runtime path does not exist " + activeRuntimePath);
+        }
     }
 
     RegCloseKey(hkey);
@@ -757,8 +773,7 @@ void ApiLayerManifestFile::AddManifestFilesAndroid(const std::string &openxr_com
         }
         std::istringstream json_stream(std::string{buf, length});
 
-        CreateIfValid(ManifestFileType::MANIFEST_TYPE_EXPLICIT_API_LAYER, filename, json_stream,
-                      &ApiLayerManifestFile::LocateLibraryInAssets, manifest_files);
+        CreateIfValid(type, filename, json_stream, &ApiLayerManifestFile::LocateLibraryInAssets, manifest_files);
     }
 }
 #endif  // defined(XR_USE_PLATFORM_ANDROID) && defined(XR_KHR_LOADER_INIT_SUPPORT)

@@ -139,7 +139,7 @@ void Sprite2DEditor::_menu_option(int p_option) {
 
 void Sprite2DEditor::_popup_debug_uv_dialog() {
 	String error_message;
-	if (node->get_owner() != get_tree()->get_edited_scene_root()) {
+	if (node->get_owner() != get_tree()->get_edited_scene_root() && node != get_tree()->get_edited_scene_root()) {
 		error_message = TTR("Can't convert a sprite from a foreign scene.");
 	}
 	Ref<Texture2D> texture = node->get_texture();
@@ -450,7 +450,7 @@ void Sprite2DEditor::_add_as_sibling_or_child(Node *p_own_node, Node *p_new_node
 }
 
 void Sprite2DEditor::_debug_uv_input(const Ref<InputEvent> &p_input) {
-	if (panner->gui_input(p_input)) {
+	if (panner->gui_input(p_input, debug_uv->get_global_rect())) {
 		accept_event();
 	}
 }
@@ -459,7 +459,7 @@ void Sprite2DEditor::_debug_uv_draw() {
 	debug_uv->draw_set_transform(-draw_offset * draw_zoom, 0, Vector2(draw_zoom, draw_zoom));
 
 	Ref<Texture2D> tex = node->get_texture();
-	ERR_FAIL_COND(!tex.is_valid());
+	ERR_FAIL_COND(tex.is_null());
 
 	debug_uv->draw_texture(tex, Point2());
 
@@ -480,7 +480,7 @@ void Sprite2DEditor::_debug_uv_draw() {
 
 void Sprite2DEditor::_center_view() {
 	Ref<Texture2D> tex = node->get_texture();
-	ERR_FAIL_COND(!tex.is_valid());
+	ERR_FAIL_COND(tex.is_null());
 	Vector2 zoom_factor = (debug_uv->get_size() - Vector2(1, 1) * 50 * EDSCALE) / tex->get_size();
 	zoom_widget->set_zoom(MIN(zoom_factor.x, zoom_factor.y));
 	// Recalculate scroll limits.
@@ -517,7 +517,7 @@ void Sprite2DEditor::_update_zoom_and_pan(bool p_zoom_at_center) {
 	}
 
 	Ref<Texture2D> tex = node->get_texture();
-	ERR_FAIL_COND(!tex.is_valid());
+	ERR_FAIL_COND(tex.is_null());
 
 	Point2 min_corner;
 	Point2 max_corner = tex->get_size();
@@ -556,11 +556,17 @@ void Sprite2DEditor::_notification(int p_what) {
 			[[fallthrough]];
 		}
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
+			if (!EditorSettings::get_singleton()->check_changed_settings_in_group("editors/panning")) {
+				break;
+			}
+			[[fallthrough]];
+		}
+		case NOTIFICATION_ENTER_TREE: {
 			panner->setup((ViewPanner::ControlScheme)EDITOR_GET("editors/panning/sub_editors_panning_scheme").operator int(), ED_GET_SHORTCUT("canvas_item_editor/pan_view"), bool(EDITOR_GET("editors/panning/simple_panning")));
+			panner->setup_warped_panning(debug_uv_dialog, EDITOR_GET("editors/panning/warped_mouse_panning"));
 		} break;
-		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
-			options->set_icon(get_editor_theme_icon(SNAME("Sprite2D")));
+			options->set_button_icon(get_editor_theme_icon(SNAME("Sprite2D")));
 
 			options->get_popup()->set_item_icon(MENU_OPTION_CONVERT_TO_MESH_2D, get_editor_theme_icon(SNAME("MeshInstance2D")));
 			options->get_popup()->set_item_icon(MENU_OPTION_CONVERT_TO_POLYGON_2D, get_editor_theme_icon(SNAME("Polygon2D")));
@@ -593,12 +599,12 @@ Sprite2DEditor::Sprite2DEditor() {
 	add_child(err_dialog);
 
 	debug_uv_dialog = memnew(ConfirmationDialog);
+	debug_uv_dialog->set_size(Size2(960, 540) * EDSCALE);
 	VBoxContainer *vb = memnew(VBoxContainer);
 	debug_uv_dialog->add_child(vb);
 	debug_uv = memnew(Panel);
 	debug_uv->connect(SceneStringName(gui_input), callable_mp(this, &Sprite2DEditor::_debug_uv_input));
 	debug_uv->connect(SceneStringName(draw), callable_mp(this, &Sprite2DEditor::_debug_uv_draw));
-	debug_uv->set_custom_minimum_size(Size2(800, 500) * EDSCALE);
 	debug_uv->set_clip_contents(true);
 	vb->add_margin_child(TTR("Preview:"), debug_uv, true);
 
@@ -673,7 +679,7 @@ void Sprite2DEditorPlugin::make_visible(bool p_visible) {
 
 Sprite2DEditorPlugin::Sprite2DEditorPlugin() {
 	sprite_editor = memnew(Sprite2DEditor);
-	EditorNode::get_singleton()->get_main_screen_control()->add_child(sprite_editor);
+	EditorNode::get_singleton()->get_gui_base()->add_child(sprite_editor);
 	make_visible(false);
 
 	//sprite_editor->options->hide();

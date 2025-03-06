@@ -37,6 +37,7 @@
 #include "core/debugger/script_debugger.h"
 #include "core/input/input.h"
 #include "core/io/resource_loader.h"
+#include "core/math/expression.h"
 #include "core/object/script_language.h"
 #include "core/os/os.h"
 #include "servers/display_server.h"
@@ -78,7 +79,7 @@ public:
 		for (int i = 0; i < custom_monitor_names.size(); i++) {
 			Variant monitor_value = performance->call("get_custom_monitor", custom_monitor_names[i]);
 			if (!monitor_value.is_num()) {
-				ERR_PRINT("Value of custom monitor '" + String(custom_monitor_names[i]) + "' is not a number");
+				ERR_PRINT(vformat("Value of custom monitor '%s' is not a number.", String(custom_monitor_names[i])));
 				arr[i + max] = Variant();
 			} else {
 				arr[i + max] = monitor_value;
@@ -337,7 +338,7 @@ void RemoteDebugger::_send_stack_vars(List<String> &p_names, List<Variant> &p_va
 }
 
 Error RemoteDebugger::_try_capture(const String &p_msg, const Array &p_data, bool &r_captured) {
-	const int idx = p_msg.find(":");
+	const int idx = p_msg.find_char(':');
 	r_captured = false;
 	if (idx < 0) { // No prefix, unknown message.
 		return OK;
@@ -529,11 +530,46 @@ void RemoteDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 			} else if (command == "set_skip_breakpoints") {
 				ERR_FAIL_COND(data.is_empty());
 				script_debugger->set_skip_breakpoints(data[0]);
+			} else if (command == "evaluate") {
+				String expression_str = data[0];
+				int frame = data[1];
+
+				ScriptInstance *breaked_instance = script_debugger->get_break_language()->debug_get_stack_level_instance(frame);
+				if (!breaked_instance) {
+					break;
+				}
+
+				List<String> locals;
+				List<Variant> local_vals;
+
+				script_debugger->get_break_language()->debug_get_stack_level_locals(frame, &locals, &local_vals);
+				ERR_FAIL_COND(locals.size() != local_vals.size());
+
+				PackedStringArray locals_vector;
+				for (const String &S : locals) {
+					locals_vector.append(S);
+				}
+
+				Array local_vals_array;
+				for (const Variant &V : local_vals) {
+					local_vals_array.append(V);
+				}
+
+				Expression expression;
+				expression.parse(expression_str, locals_vector);
+				const Variant return_val = expression.execute(local_vals_array, breaked_instance->get_owner());
+
+				DebuggerMarshalls::ScriptStackVariable stvar;
+				stvar.name = expression_str;
+				stvar.value = return_val;
+				stvar.type = 3;
+
+				send_message("evaluation_return", stvar.serialize());
 			} else {
 				bool captured = false;
 				ERR_CONTINUE(_try_capture(command, data, captured) != OK);
 				if (!captured) {
-					WARN_PRINT("Unknown message received from debugger: " + command);
+					WARN_PRINT(vformat("Unknown message received from debugger: %s.", command));
 				}
 			}
 		} else {
@@ -574,7 +610,7 @@ void RemoteDebugger::poll_events(bool p_is_idle) {
 		ERR_CONTINUE(arr[1].get_type() != Variant::ARRAY);
 
 		const String cmd = arr[0];
-		const int idx = cmd.find(":");
+		const int idx = cmd.find_char(':');
 		bool parsed = false;
 		if (idx < 0) { // Not prefix, use scripts capture.
 			capture_parse("core", cmd, arr[1], parsed);

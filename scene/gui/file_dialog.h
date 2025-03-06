@@ -40,6 +40,7 @@
 #include "scene/property_list_helper.h"
 
 class GridContainer;
+class PopupMenu;
 
 class FileDialog : public ConfirmationDialog {
 	GDCLASS(FileDialog, ConfirmationDialog);
@@ -57,6 +58,12 @@ public:
 		FILE_MODE_OPEN_DIR,
 		FILE_MODE_OPEN_ANY,
 		FILE_MODE_SAVE_FILE
+	};
+
+	enum ItemMenu {
+		ITEM_MENU_COPY_PATH,
+		ITEM_MENU_SHOW_IN_EXPLORER,
+		ITEM_MENU_SHOW_BUNDLE_CONTENT,
 	};
 
 	typedef Ref<Texture2D> (*GetIconFunc)(const String &);
@@ -80,6 +87,8 @@ private:
 	HBoxContainer *shortcuts_container = nullptr;
 	OptionButton *drives = nullptr;
 	Tree *tree = nullptr;
+	HBoxContainer *filename_filter_box = nullptr;
+	LineEdit *filename_filter = nullptr;
 	HBoxContainer *file_box = nullptr;
 	LineEdit *file = nullptr;
 	OptionButton *filter = nullptr;
@@ -87,6 +96,7 @@ private:
 	AcceptDialog *exterr = nullptr;
 	Ref<DirAccess> dir_access;
 	ConfirmationDialog *confirm_save = nullptr;
+	PopupMenu *item_menu = nullptr;
 
 	Label *message = nullptr;
 
@@ -96,8 +106,12 @@ private:
 
 	Button *refresh = nullptr;
 	Button *show_hidden = nullptr;
+	Button *show_filename_filter_button = nullptr;
 
 	Vector<String> filters;
+	Vector<String> processed_filters;
+	String file_name_filter;
+	bool show_filename_filter = false;
 
 	Vector<String> local_history;
 	int local_history_pos = 0;
@@ -119,6 +133,7 @@ private:
 		Ref<Texture2D> back_folder;
 		Ref<Texture2D> reload;
 		Ref<Texture2D> toggle_hidden;
+		Ref<Texture2D> toggle_filename_filter;
 		Ref<Texture2D> folder;
 		Ref<Texture2D> file;
 		Ref<Texture2D> create_folder;
@@ -145,11 +160,18 @@ private:
 	Vector<Option> options;
 	Dictionary selected_options;
 	bool options_dirty = false;
+	String full_dir;
 
 	void update_dir();
 	void update_file_name();
 	void update_file_list();
+	void update_filename_filter();
+	void update_filename_filter_gui();
 	void update_filters();
+
+	void _item_menu_id_pressed(int p_option);
+	void _empty_clicked(const Vector2 &p_pos, MouseButton p_button);
+	void _rmb_select(const Vector2 &p_pos, MouseButton p_button = MouseButton::RIGHT);
 
 	void _focus_file_text();
 
@@ -164,6 +186,9 @@ private:
 	void _save_confirm_pressed();
 	void _cancel_pressed();
 	void _filter_selected(int);
+	void _filename_filter_changed();
+	void _filename_filter_selected();
+	void _tree_select_first();
 	void _make_dir();
 	void _make_dir_confirm();
 	void _go_up();
@@ -177,8 +202,10 @@ private:
 
 	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
 
+	bool _can_use_native_popup();
 	void _native_popup();
-	void _native_dialog_cb(bool p_ok, const Vector<String> &p_files, int p_filter, const Dictionary &p_selected_options);
+	void _native_dialog_cb(bool p_ok, const Vector<String> &p_files, int p_filter);
+	void _native_dialog_cb_with_options(bool p_ok, const Vector<String> &p_files, int p_filter, const Dictionary &p_selected_options);
 
 	bool _is_open_should_be_disabled();
 
@@ -208,6 +235,9 @@ public:
 	void add_filter(const String &p_filter, const String &p_description = "");
 	void set_filters(const Vector<String> &p_filters);
 	Vector<String> get_filters() const;
+	void clear_filename_filter();
+	void set_filename_filter(const String &p_filename_filter);
+	String get_filename_filter() const;
 
 	void set_enable_multiple_selection(bool p_enable);
 	Vector<String> get_selected_files() const;
@@ -253,6 +283,8 @@ public:
 
 	void set_show_hidden_files(bool p_show);
 	bool is_showing_hidden_files() const;
+	void set_show_filename_filter(bool p_show);
+	bool get_show_filename_filter() const;
 
 	static void set_default_show_hidden_files(bool p_show);
 

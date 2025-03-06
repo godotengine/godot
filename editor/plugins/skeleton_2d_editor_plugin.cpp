@@ -34,7 +34,6 @@
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/plugins/canvas_item_editor_plugin.h"
-#include "scene/2d/mesh_instance_2d.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/menu_button.h"
 
@@ -96,7 +95,7 @@ Skeleton2DEditor::Skeleton2DEditor() {
 	CanvasItemEditor::get_singleton()->add_control_to_menu_panel(options);
 
 	options->set_text(TTR("Skeleton2D"));
-	options->set_icon(EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("Skeleton2D"), EditorStringName(EditorIcons)));
+	options->set_button_icon(EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("Skeleton2D"), EditorStringName(EditorIcons)));
 
 	options->get_popup()->add_item(TTR("Reset to Rest Pose"), MENU_OPTION_SET_REST);
 	options->get_popup()->add_separator();
@@ -129,7 +128,7 @@ void Skeleton2DEditorPlugin::make_visible(bool p_visible) {
 
 Skeleton2DEditorPlugin::Skeleton2DEditorPlugin() {
 	sprite_editor = memnew(Skeleton2DEditor);
-	EditorNode::get_singleton()->get_main_screen_control()->add_child(sprite_editor);
+	EditorNode::get_singleton()->get_gui_base()->add_child(sprite_editor);
 	make_visible(false);
 
 	//sprite_editor->options->hide();

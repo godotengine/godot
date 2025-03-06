@@ -5,7 +5,7 @@
 	</brief_description>
 	<description>
 		Imported scenes can be automatically modified right after import by setting their [b]Custom Script[/b] Import property to a [code]tool[/code] script that inherits from this class.
-		The [method _post_import] callback receives the imported scene's root node and returns the modified version of the scene. Usage example:
+		The [method _post_import] callback receives the imported scene's root node and returns the modified version of the scene:
 		[codeblocks]
 		[gdscript]
 		@tool # Needed so it runs in editor.

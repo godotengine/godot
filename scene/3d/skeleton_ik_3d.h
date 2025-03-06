@@ -131,7 +131,7 @@ class SkeletonIK3D : public SkeletonModifier3D {
 	real_t min_distance = 0.01;
 	int max_iterations = 10;
 
-	Variant target_node_override_ref = Variant();
+	Variant target_node_override_ref;
 	FabrikInverseKinematic::Task *task = nullptr;
 
 #ifndef DISABLE_DEPRECATED

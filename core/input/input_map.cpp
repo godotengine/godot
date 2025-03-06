@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "input_map.h"
+#include "input_map.compat.inc"
 
 #include "core/config/project_settings.h"
 #include "core/input/input.h"
@@ -43,7 +44,7 @@ int InputMap::ALL_DEVICES = -1;
 void InputMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("has_action", "action"), &InputMap::has_action);
 	ClassDB::bind_method(D_METHOD("get_actions"), &InputMap::_get_actions);
-	ClassDB::bind_method(D_METHOD("add_action", "action", "deadzone"), &InputMap::add_action, DEFVAL(0.5f));
+	ClassDB::bind_method(D_METHOD("add_action", "action", "deadzone"), &InputMap::add_action, DEFVAL(DEFAULT_DEADZONE));
 	ClassDB::bind_method(D_METHOD("erase_action", "action"), &InputMap::erase_action);
 
 	ClassDB::bind_method(D_METHOD("action_set_deadzone", "action", "deadzone"), &InputMap::action_set_deadzone);
@@ -105,7 +106,7 @@ void InputMap::get_argument_options(const StringName &p_function, int p_idx, Lis
 				continue;
 			}
 
-			String name = pi.name.substr(pi.name.find("/") + 1, pi.name.length());
+			String name = pi.name.substr(pi.name.find_char('/') + 1, pi.name.length());
 			r_options->push_back(name.quote());
 		}
 	}
@@ -115,7 +116,7 @@ void InputMap::get_argument_options(const StringName &p_function, int p_idx, Lis
 #endif
 
 void InputMap::add_action(const StringName &p_action, float p_deadzone) {
-	ERR_FAIL_COND_MSG(input_map.has(p_action), "InputMap already has action \"" + String(p_action) + "\".");
+	ERR_FAIL_COND_MSG(input_map.has(p_action), vformat("InputMap already has action \"%s\".", String(p_action)));
 	input_map[p_action] = Action();
 	static int last_id = 1;
 	input_map[p_action].id = last_id;
@@ -157,7 +158,7 @@ List<StringName> InputMap::get_actions() const {
 }
 
 List<Ref<InputEvent>>::Element *InputMap::_find_event(Action &p_action, const Ref<InputEvent> &p_event, bool p_exact_match, bool *r_pressed, float *r_strength, float *r_raw_strength, int *r_event_index) const {
-	ERR_FAIL_COND_V(!p_event.is_valid(), nullptr);
+	ERR_FAIL_COND_V(p_event.is_null(), nullptr);
 
 	int i = 0;
 	for (List<Ref<InputEvent>>::Element *E = p_action.inputs.front(); E; E = E->next()) {
@@ -253,8 +254,8 @@ bool InputMap::event_is_action(const Ref<InputEvent> &p_event, const StringName 
 
 int InputMap::event_get_index(const Ref<InputEvent> &p_event, const StringName &p_action, bool p_exact_match) const {
 	int index = -1;
-	event_get_action_status(p_event, p_action, p_exact_match, nullptr, nullptr, nullptr, &index);
-	return index;
+	bool valid = event_get_action_status(p_event, p_action, p_exact_match, nullptr, nullptr, nullptr, &index);
+	return valid ? index : -1;
 }
 
 bool InputMap::event_get_action_status(const Ref<InputEvent> &p_event, const StringName &p_action, bool p_exact_match, bool *r_pressed, float *r_strength, float *r_raw_strength, int *r_event_index) const {
@@ -303,10 +304,10 @@ void InputMap::load_from_project_settings() {
 			continue;
 		}
 
-		String name = pi.name.substr(pi.name.find("/") + 1, pi.name.length());
+		String name = pi.name.substr(pi.name.find_char('/') + 1, pi.name.length());
 
 		Dictionary action = GLOBAL_GET(pi.name);
-		float deadzone = action.has("deadzone") ? (float)action["deadzone"] : 0.5f;
+		float deadzone = action.has("deadzone") ? (float)action["deadzone"] : DEFAULT_DEADZONE;
 		Array events = action["events"];
 
 		add_action(name, deadzone);
@@ -400,6 +401,7 @@ static const _BuiltinActionDisplayName _builtin_action_display_names[] = {
     { "ui_filedialog_refresh",                         TTRC("Refresh") },
     { "ui_filedialog_show_hidden",                     TTRC("Show Hidden") },
     { "ui_swap_input_direction ",                      TTRC("Swap Input Direction") },
+    { "ui_unicode_start",                              TTRC("Start Unicode Character Input") },
     { "",                                              ""}
 	/* clang-format on */
 };
@@ -517,12 +519,15 @@ const HashMap<String, List<Ref<InputEvent>>> &InputMap::get_builtins() {
 	default_builtin_cache.insert("ui_text_completion_query", inputs);
 
 	inputs = List<Ref<InputEvent>>();
-	inputs.push_back(InputEventKey::create_reference(Key::ENTER));
-	inputs.push_back(InputEventKey::create_reference(Key::KP_ENTER));
+	inputs.push_back(InputEventKey::create_reference(KeyModifierMask::SHIFT | Key::TAB));
+	inputs.push_back(InputEventKey::create_reference(KeyModifierMask::SHIFT | Key::ENTER));
+	inputs.push_back(InputEventKey::create_reference(KeyModifierMask::SHIFT | Key::KP_ENTER));
 	default_builtin_cache.insert("ui_text_completion_accept", inputs);
 
 	inputs = List<Ref<InputEvent>>();
 	inputs.push_back(InputEventKey::create_reference(Key::TAB));
+	inputs.push_back(InputEventKey::create_reference(Key::ENTER));
+	inputs.push_back(InputEventKey::create_reference(Key::KP_ENTER));
 	default_builtin_cache.insert("ui_text_completion_replace", inputs);
 
 	// Newlines
@@ -532,7 +537,6 @@ const HashMap<String, List<Ref<InputEvent>>> &InputMap::get_builtins() {
 	default_builtin_cache.insert("ui_text_newline", inputs);
 
 	inputs = List<Ref<InputEvent>>();
-
 	inputs.push_back(InputEventKey::create_reference(Key::ENTER | KeyModifierMask::CMD_OR_CTRL));
 	inputs.push_back(InputEventKey::create_reference(Key::KP_ENTER | KeyModifierMask::CMD_OR_CTRL));
 	default_builtin_cache.insert("ui_text_newline_blank", inputs);
@@ -753,6 +757,10 @@ const HashMap<String, List<Ref<InputEvent>>> &InputMap::get_builtins() {
 	inputs.push_back(InputEventKey::create_reference(Key::ENTER));
 	inputs.push_back(InputEventKey::create_reference(Key::KP_ENTER));
 	default_builtin_cache.insert("ui_text_submit", inputs);
+
+	inputs = List<Ref<InputEvent>>();
+	inputs.push_back(InputEventKey::create_reference(Key::U | KeyModifierMask::CTRL | KeyModifierMask::SHIFT));
+	default_builtin_cache.insert("ui_unicode_start", inputs);
 
 	// ///// UI Graph Shortcuts /////
 

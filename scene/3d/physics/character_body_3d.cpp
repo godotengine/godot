@@ -60,8 +60,13 @@ bool CharacterBody3D::move_and_slide() {
 
 			// We need to check the platform_rid object still exists before accessing.
 			// A valid RID is no guarantee that the object has not been deleted.
-			if (ObjectDB::get_instance(platform_object_id)) {
-				//this approach makes sure there is less delay between the actual body velocity and the one we saved
+
+			// We can only perform the ObjectDB lifetime check on Object derived objects.
+			// Note that physics also creates RIDs for non-Object derived objects, these cannot
+			// be lifetime checked through ObjectDB, and therefore there is a still a vulnerability
+			// to dangling RIDs (access after free) in this scenario.
+			if (platform_object_id.is_null() || ObjectDB::get_instance(platform_object_id)) {
+				// This approach makes sure there is less delay between the actual body velocity and the one we saved.
 				bs = PhysicsServer3D::get_singleton()->body_get_direct_state(platform_rid);
 			}
 
@@ -464,14 +469,14 @@ void CharacterBody3D::apply_floor_snap() {
 		_set_collision_direction(result, result_state, CollisionState(true, false, false));
 
 		if (result_state.floor) {
-			if (floor_stop_on_slope) {
-				// move and collide may stray the object a bit because of pre un-stucking,
-				// so only ensure that motion happens on floor direction in this case.
-				if (result.travel.length() > margin) {
-					result.travel = up_direction * up_direction.dot(result.travel);
-				} else {
-					result.travel = Vector3();
-				}
+			// Ensure that we only move the body along the up axis, because
+			// move_and_collide may stray the object a bit when getting it unstuck.
+			// Canceling this motion should not affect move_and_slide, as previous
+			// calls to move_and_collide already took care of freeing the body.
+			if (result.travel.length() > margin) {
+				result.travel = up_direction * up_direction.dot(result.travel);
+			} else {
+				result.travel = Vector3();
 			}
 
 			parameters.from.origin += result.travel;

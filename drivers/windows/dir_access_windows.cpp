@@ -230,7 +230,7 @@ String DirAccessWindows::get_current_dir(bool p_include_drive) const {
 		return cdir;
 	} else {
 		if (_get_root_string().is_empty()) {
-			int pos = cdir.find(":");
+			int pos = cdir.find_char(':');
 			if (pos != -1) {
 				return cdir.substr(pos + 1);
 			}
@@ -282,7 +282,7 @@ Error DirAccessWindows::rename(String p_path, String p_new_path) {
 		uint64_t id = OS::get_singleton()->get_ticks_usec();
 		while (true) {
 			tmpfile_utf16 = (path + itos(id++) + ".tmp").utf16();
-			HANDLE handle = CreateFileW((LPCWSTR)tmpfile_utf16.get_data(), GENERIC_WRITE, 0, NULL, CREATE_NEW, FILE_ATTRIBUTE_NORMAL, 0);
+			HANDLE handle = CreateFileW((LPCWSTR)tmpfile_utf16.get_data(), GENERIC_WRITE, 0, nullptr, CREATE_NEW, FILE_ATTRIBUTE_NORMAL, nullptr);
 			if (handle != INVALID_HANDLE_VALUE) {
 				CloseHandle(handle);
 				break;
@@ -344,7 +344,7 @@ String DirAccessWindows::get_filesystem_type() const {
 		return "Network Share";
 	}
 
-	int unit_end = path.find(":");
+	int unit_end = path.find_char(':');
 	ERR_FAIL_COND_V(unit_end == -1, String());
 	String unit = path.substr(0, unit_end + 1) + "\\";
 

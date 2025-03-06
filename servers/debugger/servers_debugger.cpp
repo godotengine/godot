@@ -33,7 +33,7 @@
 #include "core/config/project_settings.h"
 #include "core/debugger/engine_debugger.h"
 #include "core/debugger/engine_profiler.h"
-#include "core/io/marshalls.h"
+#include "core/object/script_language.h"
 #include "servers/display_server.h"
 
 #define CHECK_SIZE(arr, expected, what) ERR_FAIL_COND_V_MSG((uint32_t)arr.size() < (uint32_t)(expected), false, String("Malformed ") + what + " message from script debugger, message too short. Expected size: " + itos(expected) + ", actual size: " + itos(arr.size()))
@@ -370,6 +370,12 @@ class ServersDebugger::VisualProfiler : public EngineProfiler {
 public:
 	void toggle(bool p_enable, const Array &p_opts) {
 		RS::get_singleton()->set_frame_profiling_enabled(p_enable);
+
+		// Send hardware information from the remote device so that it's accurate for remote debugging.
+		Array hardware_info;
+		hardware_info.push_back(OS::get_singleton()->get_processor_name());
+		hardware_info.push_back(RenderingServer::get_singleton()->get_video_adapter_name());
+		EngineDebugger::get_singleton()->send_message("visual:hardware_info", hardware_info);
 	}
 
 	void add(const Array &p_data) {}

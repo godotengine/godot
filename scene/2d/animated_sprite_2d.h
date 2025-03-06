@@ -41,7 +41,7 @@ class AnimatedSprite2D : public Node2D {
 	String autoplay;
 
 	bool playing = false;
-	StringName animation = "default";
+	StringName animation = SceneStringName(default_);
 	int frame = 0;
 	float speed_scale = 1.0;
 	float custom_speed_scale = 1.0;
@@ -66,7 +66,7 @@ class AnimatedSprite2D : public Node2D {
 protected:
 #ifndef DISABLE_DEPRECATED
 	bool _set(const StringName &p_name, const Variant &p_value);
-#endif
+#endif // DISABLE_DEPRECATED
 	static void _bind_methods();
 	void _notification(int p_what);
 	void _validate_property(PropertyInfo &p_property) const;
@@ -79,9 +79,12 @@ public:
 	virtual void _edit_set_pivot(const Point2 &p_pivot) override;
 	virtual Point2 _edit_get_pivot() const override;
 	virtual bool _edit_use_pivot() const override;
+#endif // TOOLS_ENABLED
+
+#ifdef DEBUG_ENABLED
 	virtual Rect2 _edit_get_rect() const override;
 	virtual bool _edit_use_rect() const override;
-#endif
+#endif // DEBUG_ENABLED
 
 	virtual Rect2 get_anchorable_rect() const override;
 
@@ -129,7 +132,7 @@ public:
 
 #ifdef TOOLS_ENABLED
 	virtual void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const override;
-#endif
+#endif // TOOLS_ENABLED
 
 	AnimatedSprite2D();
 };

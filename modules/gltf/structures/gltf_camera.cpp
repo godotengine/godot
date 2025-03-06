@@ -30,6 +30,7 @@
 
 #include "gltf_camera.h"
 
+#include "gltf_object_model_property.h"
 #include "scene/3d/camera_3d.h"
 
 void GLTFCamera::_bind_methods() {
@@ -55,6 +56,21 @@ void GLTFCamera::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "size_mag"), "set_size_mag", "get_size_mag");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "depth_far"), "set_depth_far", "get_depth_far");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "depth_near"), "set_depth_near", "get_depth_near");
+}
+
+void GLTFCamera::set_fov_conversion_expressions(Ref<GLTFObjectModelProperty> &r_obj_model_prop) {
+	// Expression to convert glTF yfov in radians to Godot fov in degrees.
+	Ref<Expression> gltf_to_godot_expr;
+	gltf_to_godot_expr.instantiate();
+	PackedStringArray gltf_to_godot_args = { "yfov_rad" };
+	gltf_to_godot_expr->parse("rad_to_deg(yfov_rad)", gltf_to_godot_args);
+	r_obj_model_prop->set_gltf_to_godot_expression(gltf_to_godot_expr);
+	// Expression to convert Godot fov in degrees to glTF yfov in radians.
+	Ref<Expression> godot_to_gltf_expr;
+	godot_to_gltf_expr.instantiate();
+	PackedStringArray godot_to_gltf_args = { "fov_deg" };
+	godot_to_gltf_expr->parse("deg_to_rad(fov_deg)", godot_to_gltf_args);
+	r_obj_model_prop->set_godot_to_gltf_expression(godot_to_gltf_expr);
 }
 
 Ref<GLTFCamera> GLTFCamera::from_node(const Camera3D *p_camera) {

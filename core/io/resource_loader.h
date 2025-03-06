@@ -34,8 +34,11 @@
 #include "core/io/resource.h"
 #include "core/object/gdvirtual.gen.inc"
 #include "core/object/worker_thread_pool.h"
-#include "core/os/semaphore.h"
 #include "core/os/thread.h"
+
+namespace core_bind {
+class ResourceLoader;
+}
 
 class ConditionVariable;
 
@@ -81,6 +84,7 @@ public:
 	virtual String get_resource_type(const String &p_path) const;
 	virtual String get_resource_script_class(const String &p_path) const;
 	virtual ResourceUID::ID get_resource_uid(const String &p_path) const;
+	virtual bool has_custom_uid_support() const;
 	virtual void get_dependencies(const String &p_path, List<String> *p_dependencies, bool p_add_types = false);
 	virtual Error rename_dependencies(const String &p_path, const HashMap<String, String> &p_map);
 	virtual bool is_import_valid(const String &p_path) const { return true; }
@@ -101,6 +105,7 @@ typedef void (*ResourceLoadedCallback)(Ref<Resource> p_resource, const String &p
 
 class ResourceLoader {
 	friend class LoadToken;
+	friend class core_bind::ResourceLoader;
 
 	enum {
 		MAX_LOADERS = 64
@@ -217,12 +222,14 @@ private:
 
 	static bool _ensure_load_progress();
 
+	static String _validate_local_path(const String &p_path);
+
 public:
 	static Error load_threaded_request(const String &p_path, const String &p_type_hint = "", bool p_use_sub_threads = false, ResourceFormatLoader::CacheMode p_cache_mode = ResourceFormatLoader::CACHE_MODE_REUSE);
 	static ThreadLoadStatus load_threaded_get_status(const String &p_path, float *r_progress = nullptr);
 	static Ref<Resource> load_threaded_get(const String &p_path, Error *r_error = nullptr);
 
-	static bool is_within_load() { return load_nesting > 0; };
+	static bool is_within_load() { return load_nesting > 0; }
 
 	static void resource_changed_connect(Resource *p_source, const Callable &p_callable, uint32_t p_flags);
 	static void resource_changed_disconnect(Resource *p_source, const Callable &p_callable);
@@ -238,6 +245,8 @@ public:
 	static String get_resource_type(const String &p_path);
 	static String get_resource_script_class(const String &p_path);
 	static ResourceUID::ID get_resource_uid(const String &p_path);
+	static bool has_custom_uid_support(const String &p_path);
+	static bool should_create_uid_file(const String &p_path);
 	static void get_dependencies(const String &p_path, List<String> *p_dependencies, bool p_add_types = false);
 	static Error rename_dependencies(const String &p_path, const HashMap<String, String> &p_map);
 	static bool is_import_valid(const String &p_path);
@@ -301,6 +310,8 @@ public:
 	static Ref<Resource> get_resource_ref_override(const String &p_path);
 
 	static bool is_cleaning_tasks();
+
+	static Vector<String> list_directory(const String &p_directory);
 
 	static void initialize();
 	static void finalize();

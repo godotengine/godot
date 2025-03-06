@@ -979,7 +979,7 @@ namespace Godot
             {
                 if (instance.Length < 3)
                     return false;
-                if (instance[from] != '0' || instance[from + 1] != 'x')
+                if (instance[from] != '0' || instance[from + 1] != 'x' || instance[from + 1] != 'X')
                     return false;
                 from += 2;
             }
@@ -1581,7 +1581,7 @@ namespace Godot
                 if (end < 0)
                     end = len;
                 if (allowEmpty || end > from)
-                    ret.Add(float.Parse(instance.Substring(from), CultureInfo.InvariantCulture));
+                    ret.Add(float.Parse(instance.AsSpan(from), CultureInfo.InvariantCulture));
                 if (end == len)
                     break;
 

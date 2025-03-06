@@ -27,6 +27,7 @@
 			<description>
 				Return [code]true[/code] if this plugin will customize scenes based on the platform and features used.
 				When enabled, [method _get_customization_configuration_hash] and [method _customize_scene] will be called and must be implemented.
+				[b]Note:[/b] [method _customize_scene] will only be called for scenes that have been modified since the last export.
 			</description>
 		</method>
 		<method name="_customize_resource" qualifiers="virtual">
@@ -34,9 +35,16 @@
 			<param index="0" name="resource" type="Resource" />
 			<param index="1" name="path" type="String" />
 			<description>
-				Customize a resource. If changes are made to it, return the same or a new resource. Otherwise, return [code]null[/code].
-				The [i]path[/i] argument is only used when customizing an actual file, otherwise this means that this resource is part of another one and it will be empty.
+				Customize a resource. If changes are made to it, return the same or a new resource. Otherwise, return [code]null[/code]. When a new resource is returned, [param resource] will be replaced by a copy of the new resource.
+				The [param path] argument is only used when customizing an actual file, otherwise this means that this resource is part of another one and it will be empty.
 				Implementing this method is required if [method _begin_customize_resources] returns [code]true[/code].
+				[b]Note:[/b] When customizing any of the following types and returning another resource, the other resource should not be skipped using [method skip] in [method _export_file]:
+				- [AtlasTexture]
+				- [CompressedCubemap]
+				- [CompressedCubemapArray]
+				- [CompressedTexture2D]
+				- [CompressedTexture2DArray]
+				- [CompressedTexture3D]
 			</description>
 		</method>
 		<method name="_customize_scene" qualifiers="virtual">
@@ -157,6 +165,15 @@
 			<param index="1" name="debug" type="bool" />
 			<description>
 				Return a [PackedStringArray] of additional features this preset, for the given [param platform], should have.
+			</description>
+		</method>
+		<method name="_get_export_option_visibility" qualifiers="virtual const">
+			<return type="bool" />
+			<param index="0" name="platform" type="EditorExportPlatform" />
+			<param index="1" name="option" type="String" />
+			<description>
+				[b]Optional.[/b]
+				Validates [param option] and returns the visibility for the specified [param platform]. The default implementation returns [code]true[/code] for all options.
 			</description>
 		</method>
 		<method name="_get_export_option_warning" qualifiers="virtual const">

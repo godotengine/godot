@@ -90,7 +90,7 @@ public:
 	}
 
 	_FORCE_INLINE_ Variant::Type get_argument_type(int p_argument) const {
-		ERR_FAIL_COND_V(p_argument < -1 || p_argument > argument_count, Variant::NIL);
+		ERR_FAIL_COND_V(p_argument < -1 || p_argument >= argument_count, Variant::NIL);
 		return argument_types[p_argument + 1];
 	}
 
@@ -109,7 +109,7 @@ public:
 	_FORCE_INLINE_ StringName get_instance_class() const { return instance_class; }
 	_FORCE_INLINE_ void set_instance_class(const StringName &p_class) { instance_class = p_class; }
 
-	_FORCE_INLINE_ int get_argument_count() const { return argument_count; };
+	_FORCE_INLINE_ int get_argument_count() const { return argument_count; }
 
 #ifdef TOOLS_ENABLED
 	virtual bool is_valid() const { return true; }

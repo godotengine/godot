@@ -1,0 +1,5 @@
+<Project>
+  <PropertyGroup>
+    <UseMonoRuntime Condition=" '$(UseMonoRuntime)' == '' and '$(PublishAot)' != 'true' ">true</UseMonoRuntime>
+  </PropertyGroup>
+</Project>

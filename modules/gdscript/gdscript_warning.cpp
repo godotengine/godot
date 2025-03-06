@@ -61,10 +61,13 @@ String GDScriptWarning::get_message() const {
 			return vformat(R"(The signal "%s" is declared but never explicitly used in the class.)", symbols[0]);
 		case SHADOWED_VARIABLE:
 			CHECK_SYMBOLS(4);
-			return vformat(R"(The local %s "%s" is shadowing an already-declared %s at line %s.)", symbols[0], symbols[1], symbols[2], symbols[3]);
+			return vformat(R"(The local %s "%s" is shadowing an already-declared %s at line %s in the current class.)", symbols[0], symbols[1], symbols[2], symbols[3]);
 		case SHADOWED_VARIABLE_BASE_CLASS:
 			CHECK_SYMBOLS(4);
-			return vformat(R"(The local %s "%s" is shadowing an already-declared %s at the base class "%s".)", symbols[0], symbols[1], symbols[2], symbols[3]);
+			if (symbols.size() > 4) {
+				return vformat(R"(The local %s "%s" is shadowing an already-declared %s at line %s in the base class "%s".)", symbols[0], symbols[1], symbols[2], symbols[3], symbols[4]);
+			}
+			return vformat(R"(The local %s "%s" is shadowing an already-declared %s in the base class "%s".)", symbols[0], symbols[1], symbols[2], symbols[3]);
 		case SHADOWED_GLOBAL_IDENTIFIER:
 			CHECK_SYMBOLS(3);
 			return vformat(R"(The %s "%s" has the same name as a %s.)", symbols[0], symbols[1], symbols[2]);
@@ -136,8 +139,6 @@ String GDScriptWarning::get_message() const {
 		case DEPRECATED_KEYWORD:
 			CHECK_SYMBOLS(2);
 			return vformat(R"(The "%s" keyword is deprecated and will be removed in a future release, please replace its uses by "%s".)", symbols[0], symbols[1]);
-		case RENAMED_IN_GODOT_4_HINT:
-			break; // Renamed identifier hint is taken care of by the GDScriptAnalyzer. No message needed here.
 		case CONFUSABLE_IDENTIFIER:
 			CHECK_SYMBOLS(1);
 			return vformat(R"(The identifier "%s" has misleading characters and might be confused with something else.)", symbols[0]);
@@ -182,10 +183,6 @@ int GDScriptWarning::get_default_value(Code p_code) {
 }
 
 PropertyInfo GDScriptWarning::get_property_info(Code p_code) {
-	// Making this a separate function in case a warning needs different PropertyInfo in the future.
-	if (p_code == Code::RENAMED_IN_GODOT_4_HINT) {
-		return PropertyInfo(Variant::BOOL, get_settings_path_from_code(p_code));
-	}
 	return PropertyInfo(Variant::INT, get_settings_path_from_code(p_code), PROPERTY_HINT_ENUM, "Ignore,Warn,Error");
 }
 
@@ -233,7 +230,6 @@ String GDScriptWarning::get_name_from_code(Code p_code) {
 		"ENUM_VARIABLE_WITHOUT_DEFAULT",
 		"EMPTY_FILE",
 		"DEPRECATED_KEYWORD",
-		"RENAMED_IN_GODOT_4_HINT",
 		"CONFUSABLE_IDENTIFIER",
 		"CONFUSABLE_LOCAL_DECLARATION",
 		"CONFUSABLE_LOCAL_USAGE",

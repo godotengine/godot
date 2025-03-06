@@ -36,7 +36,6 @@
 #include "core/config/project_settings.h"
 #include "core/string/ustring.h"
 #include "core/templates/hash_set.h"
-#include "core/templates/vector.h"
 
 #include "platform_gl.h"
 
@@ -45,6 +44,7 @@ typedef void (*PFNGLFRAMEBUFFERTEXTUREMULTIVIEWOVRPROC)(GLenum, GLenum, GLuint, 
 typedef void (*PFNGLTEXSTORAGE3DMULTISAMPLEPROC)(GLenum, GLsizei, GLenum, GLsizei, GLsizei, GLsizei, GLboolean);
 typedef void (*PFNGLFRAMEBUFFERTEXTURE2DMULTISAMPLEEXTPROC)(GLenum, GLenum, GLenum, GLuint, GLint, GLsizei);
 typedef void (*PFNGLFRAMEBUFFERTEXTUREMULTISAMPLEMULTIVIEWOVRPROC)(GLenum, GLenum, GLuint, GLint, GLsizei, GLint, GLsizei);
+typedef void (*PFNEGLIMAGETARGETTEXTURE2DOESPROC)(GLenum, void *);
 #endif
 
 namespace GLES3 {
@@ -62,6 +62,7 @@ public:
 	GLint max_texture_size = 0;
 	GLint max_viewport_size[2] = { 0, 0 };
 	GLint64 max_uniform_buffer_size = 0;
+	uint32_t max_shader_varyings = 0;
 
 	int64_t max_renderable_elements = 0;
 	int64_t max_renderable_lights = 0;
@@ -72,6 +73,7 @@ public:
 	HashSet<String> extensions;
 
 	bool float_texture_supported = false;
+	bool float_texture_linear_supported = false;
 	bool s3tc_supported = false;
 	bool rgtc_supported = false;
 	bool bptc_supported = false;
@@ -79,6 +81,7 @@ public:
 	bool astc_supported = false;
 	bool astc_hdr_supported = false;
 	bool astc_layered_supported = false;
+	bool srgb_framebuffer_supported = false;
 
 	bool force_vertex_shading = false;
 
@@ -91,22 +94,27 @@ public:
 	bool rt_msaa_supported = false;
 	bool rt_msaa_multiview_supported = false;
 	bool multiview_supported = false;
+	bool external_texture_supported = false;
 
-	// Adreno 3XX compatibility
-	bool disable_particles_workaround = false; // set to 'true' to disable 'GPUParticles'
+	// Adreno 3XX compatibility.
+	bool disable_particles_workaround = false; // Set to 'true' to disable 'GPUParticles'.
 	bool flip_xy_workaround = false;
 
-	// PowerVR GE 8320 workaround
+	// PowerVR GE 8320 workaround.
 	bool disable_transform_feedback_shader_cache = false;
+
+	// ANGLE shader workaround.
+	bool polyfill_half2float = true;
 
 #ifdef ANDROID_ENABLED
 	PFNGLFRAMEBUFFERTEXTUREMULTIVIEWOVRPROC eglFramebufferTextureMultiviewOVR = nullptr;
 	PFNGLTEXSTORAGE3DMULTISAMPLEPROC eglTexStorage3DMultisample = nullptr;
 	PFNGLFRAMEBUFFERTEXTURE2DMULTISAMPLEEXTPROC eglFramebufferTexture2DMultisampleEXT = nullptr;
 	PFNGLFRAMEBUFFERTEXTUREMULTISAMPLEMULTIVIEWOVRPROC eglFramebufferTextureMultisampleMultiviewOVR = nullptr;
+	PFNEGLIMAGETARGETTEXTURE2DOESPROC eglEGLImageTargetTexture2DOES = nullptr;
 #endif
 
-	static Config *get_singleton() { return singleton; };
+	static Config *get_singleton() { return singleton; }
 
 	Config();
 	~Config();

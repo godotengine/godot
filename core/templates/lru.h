@@ -35,9 +35,21 @@
 #include "hash_map.h"
 #include "list.h"
 
-template <typename TKey, typename TData, typename Hasher = HashMapHasherDefault, typename Comparator = HashMapComparatorDefault<TKey>>
+#if defined(__GNUC__) && !defined(__clang__)
+#define ADDRESS_DIAGNOSTIC_WARNING_DISABLE \
+	_Pragma("GCC diagnostic push");        \
+	_Pragma("GCC diagnostic ignored \"-Waddress\"");
+
+#define ADDRESS_DIAGNOSTIC_POP \
+	_Pragma("GCC diagnostic pop");
+#else
+#define ADDRESS_DIAGNOSTIC_WARNING_DISABLE
+#define ADDRESS_DIAGNOSTIC_POP
+#endif
+
+template <typename TKey, typename TData, typename Hasher = HashMapHasherDefault, typename Comparator = HashMapComparatorDefault<TKey>, void (*BeforeEvict)(TKey &, TData &) = nullptr>
 class LRUCache {
-private:
+public:
 	struct Pair {
 		TKey key;
 		TData data;
@@ -51,16 +63,22 @@ private:
 
 	typedef typename List<Pair>::Element *Element;
 
+private:
 	List<Pair> _list;
 	HashMap<TKey, Element, Hasher, Comparator> _map;
 	size_t capacity;
 
 public:
-	const TData *insert(const TKey &p_key, const TData &p_value) {
+	const Pair *insert(const TKey &p_key, const TData &p_value) {
 		Element *e = _map.getptr(p_key);
 		Element n = _list.push_front(Pair(p_key, p_value));
 
 		if (e) {
+			ADDRESS_DIAGNOSTIC_WARNING_DISABLE;
+			if constexpr (BeforeEvict != nullptr) {
+				BeforeEvict((*e)->get().key, (*e)->get().data);
+			}
+			ADDRESS_DIAGNOSTIC_POP;
 			_list.erase(*e);
 			_map.erase(p_key);
 		}
@@ -68,11 +86,16 @@ public:
 
 		while (_map.size() > capacity) {
 			Element d = _list.back();
+			ADDRESS_DIAGNOSTIC_WARNING_DISABLE
+			if constexpr (BeforeEvict != nullptr) {
+				BeforeEvict(d->get().key, d->get().data);
+			}
+			ADDRESS_DIAGNOSTIC_POP
 			_map.erase(d->get().key);
 			_list.pop_back();
 		}
 
-		return &n->get().data;
+		return &n->get();
 	}
 
 	void clear() {
@@ -84,12 +107,23 @@ public:
 		return _map.getptr(p_key);
 	}
 
+	bool erase(const TKey &p_key) {
+		Element *e = _map.getptr(p_key);
+		if (!e) {
+			return false;
+		}
+		_list.move_to_front(*e);
+		_map.erase(p_key);
+		_list.pop_front();
+		return true;
+	}
+
 	const TData &get(const TKey &p_key) {
 		Element *e = _map.getptr(p_key);
 		CRASH_COND(!e);
 		_list.move_to_front(*e);
 		return (*e)->get().data;
-	};
+	}
 
 	const TData *getptr(const TKey &p_key) {
 		Element *e = _map.getptr(p_key);
@@ -109,6 +143,11 @@ public:
 			capacity = p_capacity;
 			while (_map.size() > capacity) {
 				Element d = _list.back();
+				ADDRESS_DIAGNOSTIC_WARNING_DISABLE;
+				if constexpr (BeforeEvict != nullptr) {
+					BeforeEvict(d->get().key, d->get().data);
+				}
+				ADDRESS_DIAGNOSTIC_POP;
 				_map.erase(d->get().key);
 				_list.pop_back();
 			}
@@ -123,5 +162,8 @@ public:
 		capacity = p_capacity;
 	}
 };
+
+#undef ADDRESS_DIAGNOSTIC_WARNING_DISABLE
+#undef ADDRESS_DIAGNOSTIC_POP
 
 #endif // LRU_H

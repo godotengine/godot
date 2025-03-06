@@ -40,18 +40,15 @@
 
 #include <audioclient.h>
 #include <mmdeviceapi.h>
-#include <wrl/client.h>
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
-
-using Microsoft::WRL::ComPtr;
 
 class AudioDriverWASAPI : public AudioDriver {
 	class AudioDeviceWASAPI {
 	public:
-		ComPtr<IAudioClient> audio_client = nullptr;
-		ComPtr<IAudioRenderClient> render_client = nullptr; // Output
-		ComPtr<IAudioCaptureClient> capture_client = nullptr; // Input
+		IAudioClient *audio_client = nullptr;
+		IAudioRenderClient *render_client = nullptr; // Output
+		IAudioCaptureClient *capture_client = nullptr; // Input
 		SafeFlag active;
 
 		WORD format_tag = 0;

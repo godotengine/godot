@@ -43,6 +43,7 @@
 #include <type_traits>
 
 #define DEFVAL(m_defval) (m_defval)
+#define DEFVAL_ARRAY DEFVAL(ClassDB::default_array_arg)
 
 #ifdef DEBUG_METHODS_ENABLED
 
@@ -126,6 +127,7 @@ public:
 		HashMap<StringName, List<StringName>> linked_properties;
 #endif
 		HashMap<StringName, PropertySetGet> property_setget;
+		HashMap<StringName, Vector<uint32_t>> virtual_methods_compat;
 
 		StringName inherits;
 		StringName name;
@@ -180,6 +182,9 @@ public:
 		uint64_t struct_size; // local size of struct, for comparison
 	};
 	static HashMap<StringName, NativeStruct> native_structs;
+
+	static Array default_array_arg;
+	static bool is_default_array_arg(const Array &p_array);
 
 private:
 	// Non-locking variants of get_parent_class and is_parent_class.
@@ -448,8 +453,10 @@ public:
 	static Vector<uint32_t> get_method_compatibility_hashes(const StringName &p_class, const StringName &p_name);
 
 	static void add_virtual_method(const StringName &p_class, const MethodInfo &p_method, bool p_virtual = true, const Vector<String> &p_arg_names = Vector<String>(), bool p_object_core = false);
+	static void add_virtual_compatibility_method(const StringName &p_class, const MethodInfo &p_method, bool p_virtual = true, const Vector<String> &p_arg_names = Vector<String>(), bool p_object_core = false);
 	static void get_virtual_methods(const StringName &p_class, List<MethodInfo> *p_methods, bool p_no_inheritance = false);
 	static void add_extension_class_virtual_method(const StringName &p_class, const GDExtensionClassVirtualMethodInfo *p_method_info);
+	static Vector<uint32_t> get_virtual_method_compatibility_hashes(const StringName &p_class, const StringName &p_name);
 
 	static void bind_integer_constant(const StringName &p_class, const StringName &p_enum, const StringName &p_name, int64_t p_constant, bool p_is_bitfield = false);
 	static void get_integer_constant_list(const StringName &p_class, List<String> *p_constants, bool p_no_inheritance = false);

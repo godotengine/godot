@@ -31,10 +31,7 @@
 #ifndef COLLADA_H
 #define COLLADA_H
 
-#include "core/config/project_settings.h"
 #include "core/io/xml_parser.h"
-#include "core/templates/rb_map.h"
-#include "scene/resources/material.h"
 
 class Collada {
 public:
@@ -359,7 +356,7 @@ public:
 			for (int i = 0; i < children.size(); i++) {
 				memdelete(children[i]);
 			}
-		};
+		}
 	};
 
 	struct NodeSkeleton : public Node {

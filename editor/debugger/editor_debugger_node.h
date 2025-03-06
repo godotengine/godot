@@ -51,11 +51,8 @@ class EditorDebuggerNode : public MarginContainer {
 public:
 	enum CameraOverride {
 		OVERRIDE_NONE,
-		OVERRIDE_2D,
-		OVERRIDE_3D_1, // 3D Viewport 1
-		OVERRIDE_3D_2, // 3D Viewport 2
-		OVERRIDE_3D_3, // 3D Viewport 3
-		OVERRIDE_3D_4 // 3D Viewport 4
+		OVERRIDE_INGAME,
+		OVERRIDE_EDITORS,
 	};
 
 private:
@@ -132,6 +129,7 @@ protected:
 	void _debugger_stopped(int p_id);
 	void _debugger_wants_stop(int p_id);
 	void _debugger_changed(int p_tab);
+	void _remote_tree_select_requested(ObjectID p_id, int p_debugger);
 	void _remote_tree_updated(int p_debugger);
 	void _remote_tree_button_pressed(Object *p_item, int p_column, int p_id, MouseButton p_button);
 	void _remote_object_updated(ObjectID p_id, int p_debugger);

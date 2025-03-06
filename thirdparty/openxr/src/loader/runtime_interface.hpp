@@ -24,7 +24,7 @@ class Value;
 }
 
 class RuntimeManifestFile;
-struct XrGeneratedDispatchTable;
+struct XrGeneratedDispatchTableCore;
 
 class RuntimeInterface {
    public:
@@ -37,8 +37,8 @@ class RuntimeInterface {
     static XrResult GetInstanceProcAddr(XrInstance instance, const char* name, PFN_xrVoidFunction* function);
 
     // Get the direct dispatch table to this runtime, without API layers or loader terminators.
-    static const XrGeneratedDispatchTable* GetDispatchTable(XrInstance instance);
-    static const XrGeneratedDispatchTable* GetDebugUtilsMessengerDispatchTable(XrDebugUtilsMessengerEXT messenger);
+    static const XrGeneratedDispatchTableCore* GetDispatchTable(XrInstance instance);
+    static const XrGeneratedDispatchTableCore* GetDebugUtilsMessengerDispatchTable(XrDebugUtilsMessengerEXT messenger);
 
     void GetInstanceExtensionProperties(std::vector<XrExtensionProperties>& extension_properties);
     bool SupportsExtension(const std::string& extension_name);
@@ -66,7 +66,7 @@ class RuntimeInterface {
 
     LoaderPlatformLibraryHandle _runtime_library;
     PFN_xrGetInstanceProcAddr _get_instance_proc_addr;
-    std::unordered_map<XrInstance, std::unique_ptr<XrGeneratedDispatchTable>> _dispatch_table_map;
+    std::unordered_map<XrInstance, std::unique_ptr<XrGeneratedDispatchTableCore>> _dispatch_table_map;
     std::mutex _dispatch_table_mutex;
     std::unordered_map<XrDebugUtilsMessengerEXT, XrInstance> _messenger_to_instance_map;
     std::mutex _messenger_to_instance_mutex;

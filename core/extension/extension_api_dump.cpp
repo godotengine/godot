@@ -32,7 +32,7 @@
 
 #include "core/config/engine.h"
 #include "core/core_constants.h"
-#include "core/extension/gdextension_compat_hashes.h"
+#include "core/extension/gdextension_special_compat_hashes.h"
 #include "core/io/file_access.h"
 #include "core/io/json.h"
 #include "core/templates/pair.h"
@@ -88,7 +88,7 @@ static String get_property_info_type_name(const PropertyInfo &p_info) {
 }
 
 static String get_type_meta_name(const GodotTypeInfo::Metadata metadata) {
-	static const char *argmeta[11] = { "none", "int8", "int16", "int32", "int64", "uint8", "uint16", "uint32", "uint64", "float", "double" };
+	static const char *argmeta[13] = { "none", "int8", "int16", "int32", "int64", "uint8", "uint16", "uint32", "uint64", "float", "double", "char16", "char32" };
 	return argmeta[metadata];
 }
 
@@ -1017,9 +1017,22 @@ Dictionary GDExtensionAPIDump::generate_extension_api(bool p_include_docs) {
 						d2["name"] = String(method_name);
 						d2["is_const"] = (F.flags & METHOD_FLAG_CONST) ? true : false;
 						d2["is_static"] = (F.flags & METHOD_FLAG_STATIC) ? true : false;
+						d2["is_required"] = (F.flags & METHOD_FLAG_VIRTUAL_REQUIRED) ? true : false;
 						d2["is_vararg"] = false;
 						d2["is_virtual"] = true;
-						// virtual functions have no hash since no MethodBind is involved
+						d2["hash"] = mi.get_compatibility_hash();
+
+						Vector<uint32_t> compat_hashes = ClassDB::get_virtual_method_compatibility_hashes(class_name, method_name);
+						Array compatibility;
+						if (compat_hashes.size()) {
+							for (int i = 0; i < compat_hashes.size(); i++) {
+								compatibility.push_back(compat_hashes[i]);
+							}
+						}
+						if (compatibility.size() > 0) {
+							d2["hash_compatibility"] = compatibility;
+						}
+
 						bool has_return = mi.return_val.type != Variant::NIL || (mi.return_val.usage & PROPERTY_USAGE_NIL_IS_VARIANT);
 						if (has_return) {
 							PropertyInfo pinfo = mi.return_val;
@@ -1093,7 +1106,7 @@ Dictionary GDExtensionAPIDump::generate_extension_api(bool p_include_docs) {
 						}
 
 #ifndef DISABLE_DEPRECATED
-						GDExtensionCompatHashes::get_legacy_hashes(class_name, method_name, compatibility);
+						GDExtensionSpecialCompatHashes::get_legacy_hashes(class_name, method_name, compatibility);
 #endif
 
 						if (compatibility.size() > 0) {
@@ -1204,7 +1217,7 @@ Dictionary GDExtensionAPIDump::generate_extension_api(bool p_include_docs) {
 					if (F.name.begins_with("_")) {
 						continue; //hidden property
 					}
-					if (F.name.contains("/")) {
+					if (F.name.contains_char('/')) {
 						// Ignore properties with '/' (slash) in the name. These are only meant for use in the inspector.
 						continue;
 					}
@@ -1362,7 +1375,7 @@ static bool compare_dict_array(const Dictionary &p_old_api, const Dictionary &p_
 		return true; // May just not have this array and its still good. Probably added recently.
 	}
 	bool failed = false;
-	ERR_FAIL_COND_V_MSG(!p_new_api.has(p_base_array), false, "New API lacks base array: " + p_base_array);
+	ERR_FAIL_COND_V_MSG(!p_new_api.has(p_base_array), false, vformat("New API lacks base array: %s", p_base_array));
 	Array new_api = p_new_api[p_base_array];
 	HashMap<String, Dictionary> new_api_assoc;
 
@@ -1370,6 +1383,9 @@ static bool compare_dict_array(const Dictionary &p_old_api, const Dictionary &p_
 		Dictionary elem = var;
 		ERR_FAIL_COND_V_MSG(!elem.has(p_name_field), false, vformat("Validate extension JSON: Element of base_array '%s' is missing field '%s'. This is a bug.", base_array, p_name_field));
 		String name = elem[p_name_field];
+		if (name.is_valid_float()) {
+			name = name.trim_suffix(".0"); // Make "integers" stringified as integers.
+		}
 		if (p_compare_operators && elem.has("right_type")) {
 			name += " " + String(elem["right_type"]);
 		}
@@ -1385,6 +1401,9 @@ static bool compare_dict_array(const Dictionary &p_old_api, const Dictionary &p_
 			continue;
 		}
 		String name = old_elem[p_name_field];
+		if (name.is_valid_float()) {
+			name = name.trim_suffix(".0"); // Make "integers" stringified as integers.
+		}
 		if (p_compare_operators && old_elem.has("right_type")) {
 			name += " " + String(old_elem["right_type"]);
 		}
@@ -1466,8 +1485,8 @@ static bool compare_dict_array(const Dictionary &p_old_api, const Dictionary &p_
 
 		if (p_compare_hashes) {
 			if (!old_elem.has("hash")) {
-				if (old_elem.has("is_virtual") && bool(old_elem["is_virtual"]) && !new_elem.has("hash")) {
-					continue; // No hash for virtual methods, go on.
+				if (old_elem.has("is_virtual") && bool(old_elem["is_virtual"]) && !old_elem.has("hash")) {
+					continue; // Virtual methods didn't use to have hashes, so skip check if it's missing in the old file.
 				}
 
 				failed = true;
@@ -1514,7 +1533,7 @@ static bool compare_sub_dict_array(HashSet<String> &r_removed_classes_registered
 		return true; // May just not have this array and its still good. Probably added recently or optional.
 	}
 	bool failed = false;
-	ERR_FAIL_COND_V_MSG(!p_new_api.has(p_outer), false, "New API lacks base array: " + p_outer);
+	ERR_FAIL_COND_V_MSG(!p_new_api.has(p_outer), false, vformat("New API lacks base array: %s", p_outer));
 	Array new_api = p_new_api[p_outer];
 	HashMap<String, Dictionary> new_api_assoc;
 

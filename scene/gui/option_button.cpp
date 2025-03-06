@@ -30,8 +30,6 @@
 
 #include "option_button.h"
 
-#include "core/os/keyboard.h"
-#include "core/string/print_string.h"
 #include "scene/theme/theme_db.h"
 
 static const int NONE_SELECTED = -1;
@@ -178,7 +176,7 @@ bool OptionButton::_set(const StringName &p_name, const Variant &p_value) {
 }
 
 void OptionButton::_focused(int p_which) {
-	emit_signal(SNAME("item_focused"), p_which);
+	emit_signal(SNAME("item_focused"), popup->get_item_index(p_which));
 }
 
 void OptionButton::_selected(int p_which) {
@@ -225,7 +223,7 @@ void OptionButton::set_item_icon(int p_idx, const Ref<Texture2D> &p_icon) {
 	popup->set_item_icon(p_idx, p_icon);
 
 	if (current == p_idx) {
-		set_icon(p_icon);
+		set_button_icon(p_icon);
 	}
 	_queue_update_size_cache();
 }
@@ -381,7 +379,7 @@ void OptionButton::_select(int p_which, bool p_emit) {
 
 		current = NONE_SELECTED;
 		set_text("");
-		set_icon(nullptr);
+		set_button_icon(nullptr);
 	} else {
 		ERR_FAIL_INDEX(p_which, popup->get_item_count());
 
@@ -391,7 +389,7 @@ void OptionButton::_select(int p_which, bool p_emit) {
 
 		current = p_which;
 		set_text(popup->get_item_text(current));
-		set_icon(popup->get_item_icon(current));
+		set_button_icon(popup->get_item_icon(current));
 	}
 
 	if (is_inside_tree() && p_emit) {
@@ -470,12 +468,6 @@ void OptionButton::show_popup() {
 		return;
 	}
 
-	Rect2 rect = get_screen_rect();
-	rect.position.y += rect.size.height;
-	rect.size.height = 0;
-	popup->set_position(rect.position);
-	popup->set_size(rect.size);
-
 	// If not triggered by the mouse, start the popup with the checked item (or the first enabled one) focused.
 	if (current != NONE_SELECTED && !popup->is_item_disabled(current)) {
 		if (!_was_pressed_by_mouse()) {
@@ -497,7 +489,10 @@ void OptionButton::show_popup() {
 		}
 	}
 
-	popup->popup();
+	Rect2 rect = get_screen_rect();
+	rect.position.y += rect.size.height;
+	rect.size.height = 0;
+	popup->popup(rect);
 }
 
 void OptionButton::_validate_property(PropertyInfo &p_property) const {
@@ -583,6 +578,14 @@ void OptionButton::_bind_methods() {
 void OptionButton::set_disable_shortcuts(bool p_disabled) {
 	disable_shortcuts = p_disabled;
 }
+
+#ifdef TOOLS_ENABLED
+PackedStringArray OptionButton::get_configuration_warnings() const {
+	PackedStringArray warnings = Button::get_configuration_warnings();
+	warnings.append_array(popup->get_configuration_warnings());
+	return warnings;
+}
+#endif
 
 OptionButton::OptionButton(const String &p_text) :
 		Button(p_text) {

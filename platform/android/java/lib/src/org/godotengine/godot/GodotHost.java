@@ -92,7 +92,7 @@ public interface GodotHost {
 	 * @return the id of the new instance. See {@code onGodotForceQuit}
 	 */
 	default int onNewGodotInstanceRequested(String[] args) {
-		return 0;
+		return -1;
 	}
 
 	/**
@@ -145,4 +145,9 @@ public interface GodotHost {
 	default boolean supportsFeature(String featureTag) {
 		return false;
 	}
+
+	/**
+	 * Invoked on the render thread when an editor workspace has been selected.
+	 */
+	default void onEditorWorkspaceSelected(String workspace) {}
 }

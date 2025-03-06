@@ -183,18 +183,13 @@ void EditorCommandPalette::_notification(int p_what) {
 	}
 }
 
-void EditorCommandPalette::_sbox_input(const Ref<InputEvent> &p_ie) {
-	Ref<InputEventKey> k = p_ie;
-	if (k.is_valid()) {
-		switch (k->get_keycode()) {
-			case Key::UP:
-			case Key::DOWN:
-			case Key::PAGEUP:
-			case Key::PAGEDOWN: {
-				search_options->gui_input(k);
-			} break;
-			default:
-				break;
+void EditorCommandPalette::_sbox_input(const Ref<InputEvent> &p_event) {
+	// Redirect navigational key events to the tree.
+	Ref<InputEventKey> key = p_event;
+	if (key.is_valid()) {
+		if (key->is_action("ui_up", true) || key->is_action("ui_down", true) || key->is_action("ui_page_up") || key->is_action("ui_page_down")) {
+			search_options->gui_input(key);
+			command_search_box->accept_event();
 		}
 	}
 }
@@ -212,6 +207,7 @@ void EditorCommandPalette::open_popup() {
 	if (was_showed) {
 		popup(prev_rect);
 	} else {
+		_update_command_search(String());
 		popup_centered_clamped(Size2(600, 440) * EDSCALE, 0.8f);
 	}
 

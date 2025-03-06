@@ -34,6 +34,7 @@
 #include "editor/editor_log.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
+#include "editor/gui/editor_scene_tabs.h"
 #include "editor/gui/editor_toaster.h"
 #include "editor/themes/editor_scale.h"
 #include "servers/rendering_server.h"
@@ -105,7 +106,7 @@ void SurfaceUpgradeTool::prepare_upgrade() {
 	EditorSettings::get_singleton()->set_project_metadata("surface_upgrade_tool", "resave_paths", resave_paths);
 
 	// Delay to avoid deadlocks, since this dialog can be triggered by loading a scene.
-	callable_mp(EditorNode::get_singleton(), &EditorNode::restart_editor).call_deferred();
+	callable_mp(EditorNode::get_singleton(), &EditorNode::restart_editor).call_deferred(false);
 }
 
 // Ensure that the warnings and popups are skipped.
@@ -118,7 +119,7 @@ void SurfaceUpgradeTool::begin_upgrade() {
 }
 
 void SurfaceUpgradeTool::finish_upgrade() {
-	EditorNode::get_singleton()->trigger_menu_option(EditorNode::FILE_CLOSE_ALL, true);
+	EditorNode::get_singleton()->trigger_menu_option(EditorSceneTabs::SCENE_CLOSE_ALL, true);
 
 	// Update all meshes here.
 	Vector<String> resave_paths = EditorSettings::get_singleton()->get_project_metadata("surface_upgrade_tool", "resave_paths", Vector<String>());

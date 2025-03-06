@@ -142,6 +142,8 @@ class EditorPropertyPath : public EditorProperty {
 	LineEdit *path = nullptr;
 	Button *path_edit = nullptr;
 
+	String _get_path_text();
+
 	void _path_selected(const String &p_path);
 	void _path_pressed();
 	void _path_focus_exited();
@@ -591,8 +593,9 @@ class EditorPropertyColor : public EditorProperty {
 	GDCLASS(EditorPropertyColor, EditorProperty);
 	ColorPickerButton *picker = nullptr;
 	void _color_changed(const Color &p_color);
+	void _picker_created();
+	void _popup_opening();
 	void _popup_closed();
-	void _picker_opening();
 
 	Color last_color;
 	bool live_changes_enabled = true;
@@ -628,7 +631,7 @@ class EditorPropertyNodePath : public EditorProperty {
 	bool editing_node = false;
 
 	Vector<StringName> valid_types;
-	void _node_selected(const NodePath &p_path);
+	void _node_selected(const NodePath &p_path, bool p_absolute = true);
 	void _node_assign();
 	Node *get_base_node();
 	void _update_menu();
@@ -671,6 +674,7 @@ class EditorPropertyResource : public EditorProperty {
 	bool use_sub_inspector = false;
 	EditorInspector *sub_inspector = nullptr;
 	bool opened_editor = false;
+	bool use_filter = false;
 
 	void _resource_selected(const Ref<Resource> &p_resource, bool p_inspect);
 	void _resource_changed(const Ref<Resource> &p_resource);
@@ -683,10 +687,12 @@ class EditorPropertyResource : public EditorProperty {
 
 	void _open_editor_pressed();
 	void _update_preferred_shader();
+	bool _should_stop_editing() const;
 
 protected:
 	virtual void _set_read_only(bool p_read_only) override;
 	void _notification(int p_what);
+	static void _bind_methods();
 
 public:
 	virtual void update_property() override;
@@ -697,6 +703,7 @@ public:
 	void expand_revertable() override;
 
 	void set_use_sub_inspector(bool p_enable);
+	void set_use_filter(bool p_use);
 	void fold_resource();
 
 	virtual bool is_colored(ColorationMode p_mode) override;

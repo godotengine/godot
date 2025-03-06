@@ -33,7 +33,6 @@
 
 #include "core/object/object_id.h"
 #include "core/string/string_name.h"
-#include "core/templates/list.h"
 
 class Object;
 class Variant;
@@ -111,8 +110,9 @@ public:
 	CallableCustom *get_custom() const;
 	int get_argument_count(bool *r_is_valid = nullptr) const;
 	int get_bound_arguments_count() const;
-	void get_bound_arguments_ref(Vector<Variant> &r_arguments, int &r_argcount) const; // Internal engine use, the exposed one is below.
+	void get_bound_arguments_ref(Vector<Variant> &r_arguments) const; // Internal engine use, the exposed one is below.
 	Array get_bound_arguments() const;
+	int get_unbound_arguments_count() const;
 
 	uint32_t hash() const;
 
@@ -158,7 +158,8 @@ public:
 	virtual const Callable *get_base_comparator() const;
 	virtual int get_argument_count(bool &r_is_valid) const;
 	virtual int get_bound_arguments_count() const;
-	virtual void get_bound_arguments(Vector<Variant> &r_arguments, int &r_argcount) const;
+	virtual void get_bound_arguments(Vector<Variant> &r_arguments) const;
+	virtual int get_unbound_arguments_count() const;
 
 	CallableCustom();
 	virtual ~CallableCustom() {}
@@ -192,6 +193,7 @@ public:
 	Error connect(const Callable &p_callable, uint32_t p_flags = 0);
 	void disconnect(const Callable &p_callable);
 	bool is_connected(const Callable &p_callable) const;
+	bool has_connections() const;
 
 	Array get_connections() const;
 	Signal(const Object *p_object, const StringName &p_name);

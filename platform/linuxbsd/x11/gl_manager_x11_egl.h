@@ -52,8 +52,8 @@ private:
 public:
 	void window_resize(DisplayServer::WindowID p_window_id, int p_width, int p_height) {}
 
-	GLManagerEGL_X11(){};
-	~GLManagerEGL_X11(){};
+	GLManagerEGL_X11() {}
+	~GLManagerEGL_X11() {}
 };
 
 #endif // X11_ENABLED && GLES3_ENABLED

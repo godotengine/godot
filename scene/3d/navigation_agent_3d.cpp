@@ -144,7 +144,7 @@ void NavigationAgent3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "path_max_distance", PROPERTY_HINT_RANGE, "0.01,100,0.1,or_greater,suffix:m"), "set_path_max_distance", "get_path_max_distance");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "navigation_layers", PROPERTY_HINT_LAYERS_3D_NAVIGATION), "set_navigation_layers", "get_navigation_layers");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "pathfinding_algorithm", PROPERTY_HINT_ENUM, "AStar"), "set_pathfinding_algorithm", "get_pathfinding_algorithm");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "path_postprocessing", PROPERTY_HINT_ENUM, "Corridorfunnel,Edgecentered"), "set_path_postprocessing", "get_path_postprocessing");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "path_postprocessing", PROPERTY_HINT_ENUM, "Corridorfunnel,Edgecentered,None"), "set_path_postprocessing", "get_path_postprocessing");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "path_metadata_flags", PROPERTY_HINT_FLAGS, "Include Types,Include RIDs,Include Owners"), "set_path_metadata_flags", "get_path_metadata_flags");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "simplify_path"), "set_simplify_path", "get_simplify_path");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "simplify_epsilon", PROPERTY_HINT_RANGE, "0.0,10.0,0.001,or_greater,suffix:m"), "set_simplify_epsilon", "get_simplify_epsilon");
@@ -272,11 +272,19 @@ void NavigationAgent3D::_notification(int p_what) {
 #endif // DEBUG_ENABLED
 		} break;
 
+		case NOTIFICATION_SUSPENDED:
 		case NOTIFICATION_PAUSED: {
 			if (agent_parent) {
 				NavigationServer3D::get_singleton()->agent_set_paused(get_rid(), !agent_parent->can_process());
 			}
 		} break;
+
+		case NOTIFICATION_UNSUSPENDED: {
+			if (get_tree()->is_paused()) {
+				break;
+			}
+			[[fallthrough]];
+		}
 
 		case NOTIFICATION_UNPAUSED: {
 			if (agent_parent) {
@@ -1073,8 +1081,8 @@ void NavigationAgent3D::_update_debug_path() {
 		debug_path_instance = RenderingServer::get_singleton()->instance_create();
 	}
 
-	if (!debug_path_mesh.is_valid()) {
-		debug_path_mesh = Ref<ArrayMesh>(memnew(ArrayMesh));
+	if (debug_path_mesh.is_null()) {
+		debug_path_mesh.instantiate();
 	}
 
 	debug_path_mesh->clear_surfaces();
@@ -1108,7 +1116,7 @@ void NavigationAgent3D::_update_debug_path() {
 
 	Ref<StandardMaterial3D> debug_agent_path_line_material = NavigationServer3D::get_singleton()->get_debug_navigation_agent_path_line_material();
 	if (debug_use_custom) {
-		if (!debug_agent_path_line_custom_material.is_valid()) {
+		if (debug_agent_path_line_custom_material.is_null()) {
 			debug_agent_path_line_custom_material = debug_agent_path_line_material->duplicate();
 		}
 		debug_agent_path_line_custom_material->set_albedo(debug_path_custom_color);
@@ -1132,7 +1140,7 @@ void NavigationAgent3D::_update_debug_path() {
 
 		Ref<StandardMaterial3D> debug_agent_path_point_material = NavigationServer3D::get_singleton()->get_debug_navigation_agent_path_point_material();
 		if (debug_use_custom) {
-			if (!debug_agent_path_point_custom_material.is_valid()) {
+			if (debug_agent_path_point_custom_material.is_null()) {
 				debug_agent_path_point_custom_material = debug_agent_path_point_material->duplicate();
 			}
 			debug_agent_path_point_custom_material->set_albedo(debug_path_custom_color);

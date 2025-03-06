@@ -37,18 +37,18 @@
 #include "core/variant/variant.h"
 
 #ifndef LINE_NUMBER_TO_INDEX
-#define LINE_NUMBER_TO_INDEX(p_line) ((p_line)-1)
+#define LINE_NUMBER_TO_INDEX(p_line) ((p_line) - 1)
 #endif
 #ifndef COLUMN_NUMBER_TO_INDEX
-#define COLUMN_NUMBER_TO_INDEX(p_column) ((p_column)-1)
+#define COLUMN_NUMBER_TO_INDEX(p_column) ((p_column) - 1)
 #endif
 
-#ifndef SYMBOL_SEPERATOR
-#define SYMBOL_SEPERATOR "::"
+#ifndef SYMBOL_SEPARATOR
+#define SYMBOL_SEPARATOR "::"
 #endif
 
 #ifndef JOIN_SYMBOLS
-#define JOIN_SYMBOLS(p_path, name) ((p_path) + SYMBOL_SEPERATOR + (name))
+#define JOIN_SYMBOLS(p_path, name) ((p_path) + SYMBOL_SEPARATOR + (name))
 #endif
 
 typedef HashMap<String, const lsp::DocumentSymbol *> ClassMembers;

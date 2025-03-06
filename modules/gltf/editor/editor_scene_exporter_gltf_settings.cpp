@@ -34,7 +34,7 @@ const uint32_t PROP_EDITOR_SCRIPT_VAR = PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_S
 
 bool EditorSceneExporterGLTFSettings::_set(const StringName &p_name, const Variant &p_value) {
 	String name_str = String(p_name);
-	if (name_str.contains("/")) {
+	if (name_str.contains_char('/')) {
 		return _set_extension_setting(name_str, p_value);
 	}
 	if (p_name == StringName("image_format")) {
@@ -55,7 +55,7 @@ bool EditorSceneExporterGLTFSettings::_set(const StringName &p_name, const Varia
 
 bool EditorSceneExporterGLTFSettings::_get(const StringName &p_name, Variant &r_ret) const {
 	String name_str = String(p_name);
-	if (name_str.contains("/")) {
+	if (name_str.contains_char('/')) {
 		return _get_extension_setting(name_str, r_ret);
 	}
 	if (p_name == StringName("image_format")) {
@@ -129,7 +129,7 @@ String get_friendly_config_prefix(Ref<GLTFDocumentExtension> p_extension) {
 }
 
 // Run this before popping up the export settings, because the extensions may have changed.
-void EditorSceneExporterGLTFSettings::generate_property_list(Ref<GLTFDocument> p_document) {
+void EditorSceneExporterGLTFSettings::generate_property_list(Ref<GLTFDocument> p_document, Node *p_root) {
 	_property_list.clear();
 	_document = p_document;
 	String image_format_hint_string = "None,PNG,JPEG";

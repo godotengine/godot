@@ -39,6 +39,11 @@
 #include "drivers/vulkan/rendering_context_driver_vulkan.h"
 #endif // VULKAN_ENABLED
 
+#ifdef METAL_ENABLED
+#define XR_USE_GRAPHICS_API_METAL
+#include "drivers/metal/rendering_context_driver_metal.h"
+#endif // METAL_ENABLED
+
 #if defined(GLES3_ENABLED) && !defined(MACOS_ENABLED)
 #ifdef ANDROID_ENABLED
 #define XR_USE_GRAPHICS_API_OPENGL_ES
@@ -49,6 +54,13 @@
 #else
 #define XR_USE_GRAPHICS_API_OPENGL
 #endif // ANDROID_ENABLED
+#if defined(LINUXBSD_ENABLED) && defined(EGL_ENABLED)
+#ifdef GLAD_ENABLED
+#include "thirdparty/glad/glad/egl.h"
+#else
+#include <EGL/egl.h>
+#endif // GLAD_ENABLED
+#endif // defined(LINUXBSD_ENABLED) && defined(EGL_ENABLED)
 #ifdef X11_ENABLED
 #define GL_GLEXT_PROTOTYPES 1
 #define GL3_PROTOTYPES 1

@@ -45,13 +45,15 @@
 
 #import <sys/utsname.h>
 
+#import <GameController/GameController.h>
+
 static const float kDisplayServerIOSAcceleration = 1.f;
 
 DisplayServerIOS *DisplayServerIOS::get_singleton() {
 	return (DisplayServerIOS *)DisplayServer::get_singleton();
 }
 
-DisplayServerIOS::DisplayServerIOS(const String &p_rendering_driver, WindowMode p_mode, DisplayServer::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, Error &r_error) {
+DisplayServerIOS::DisplayServerIOS(const String &p_rendering_driver, WindowMode p_mode, DisplayServer::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, int64_t p_parent_window, Error &r_error) {
 	KeyMappingIOS::initialize();
 
 	rendering_driver = p_rendering_driver;
@@ -107,13 +109,26 @@ DisplayServerIOS::DisplayServerIOS(const String &p_rendering_driver, WindowMode 
 #endif
 	if (rendering_context) {
 		if (rendering_context->initialize() != OK) {
-			ERR_PRINT(vformat("Failed to initialize %s context", rendering_driver));
 			memdelete(rendering_context);
 			rendering_context = nullptr;
-			r_error = ERR_UNAVAILABLE;
-			return;
+#if defined(GLES3_ENABLED)
+			bool fallback_to_opengl3 = GLOBAL_GET("rendering/rendering_device/fallback_to_opengl3");
+			if (fallback_to_opengl3 && rendering_driver != "opengl3") {
+				WARN_PRINT("Your device seem not to support MoltenVK or Metal, switching to OpenGL 3.");
+				rendering_driver = "opengl3";
+				OS::get_singleton()->set_current_rendering_method("gl_compatibility");
+				OS::get_singleton()->set_current_rendering_driver_name(rendering_driver);
+			} else
+#endif
+			{
+				ERR_PRINT(vformat("Failed to initialize %s context", rendering_driver));
+				r_error = ERR_UNAVAILABLE;
+				return;
+			}
 		}
+	}
 
+	if (rendering_context) {
 		if (rendering_context->window_create(MAIN_WINDOW_ID, &wpd) != OK) {
 			ERR_PRINT(vformat("Failed to create %s window.", rendering_driver));
 			memdelete(rendering_context);
@@ -181,8 +196,8 @@ DisplayServerIOS::~DisplayServerIOS() {
 #endif
 }
 
-DisplayServer *DisplayServerIOS::create_func(const String &p_rendering_driver, WindowMode p_mode, DisplayServer::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, Error &r_error) {
-	return memnew(DisplayServerIOS(p_rendering_driver, p_mode, p_vsync_mode, p_flags, p_position, p_resolution, p_screen, p_context, r_error));
+DisplayServer *DisplayServerIOS::create_func(const String &p_rendering_driver, WindowMode p_mode, DisplayServer::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, int64_t p_parent_window, Error &r_error) {
+	return memnew(DisplayServerIOS(p_rendering_driver, p_mode, p_vsync_mode, p_flags, p_position, p_resolution, p_screen, p_context, p_parent_window, r_error));
 }
 
 Vector<String> DisplayServerIOS::get_rendering_drivers_func() {
@@ -355,6 +370,8 @@ bool DisplayServerIOS::has_feature(Feature p_feature) const {
 		// case FEATURE_NATIVE_DIALOG:
 		// case FEATURE_NATIVE_DIALOG_INPUT:
 		// case FEATURE_NATIVE_DIALOG_FILE:
+		// case FEATURE_NATIVE_DIALOG_FILE_EXTRA:
+		// case FEATURE_NATIVE_DIALOG_FILE_MIME:
 		// case FEATURE_NATIVE_ICON:
 		// case FEATURE_WINDOW_TRANSPARENCY:
 		case FEATURE_CLIPBOARD:
@@ -746,6 +763,14 @@ void DisplayServerIOS::virtual_keyboard_set_height(int height) {
 
 int DisplayServerIOS::virtual_keyboard_get_height() const {
 	return virtual_keyboard_height;
+}
+
+bool DisplayServerIOS::has_hardware_keyboard() const {
+	if (@available(iOS 14.0, *)) {
+		return [GCKeyboard coalescedKeyboard];
+	} else {
+		return false;
+	}
 }
 
 void DisplayServerIOS::clipboard_set(const String &p_text) {

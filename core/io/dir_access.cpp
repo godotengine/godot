@@ -32,8 +32,8 @@
 
 #include "core/config/project_settings.h"
 #include "core/io/file_access.h"
-#include "core/os/memory.h"
 #include "core/os/os.h"
+#include "core/os/time.h"
 #include "core/templates/local_vector.h"
 
 thread_local Error DirAccess::last_dir_open_error = OK;
@@ -155,9 +155,9 @@ Error DirAccess::make_dir_recursive(const String &p_dir) {
 	} else if (full_dir.begins_with("user://")) {
 		base = "user://";
 	} else if (full_dir.is_network_share_path()) {
-		int pos = full_dir.find("/", 2);
+		int pos = full_dir.find_char('/', 2);
 		ERR_FAIL_COND_V(pos < 0, ERR_INVALID_PARAMETER);
-		pos = full_dir.find("/", pos + 1);
+		pos = full_dir.find_char('/', pos + 1);
 		ERR_FAIL_COND_V(pos < 0, ERR_INVALID_PARAMETER);
 		base = full_dir.substr(0, pos + 1);
 	} else if (full_dir.begins_with("/")) {
@@ -177,7 +177,7 @@ Error DirAccess::make_dir_recursive(const String &p_dir) {
 		curpath = curpath.path_join(subdirs[i]);
 		Error err = make_dir(curpath);
 		if (err != OK && err != ERR_ALREADY_EXISTS) {
-			ERR_FAIL_V_MSG(err, "Could not create directory: " + curpath);
+			ERR_FAIL_V_MSG(err, vformat("Could not create directory: '%s'.", curpath));
 		}
 	}
 
@@ -239,7 +239,7 @@ Ref<DirAccess> DirAccess::create_for_path(const String &p_path) {
 
 Ref<DirAccess> DirAccess::open(const String &p_path, Error *r_error) {
 	Ref<DirAccess> da = create_for_path(p_path);
-	ERR_FAIL_COND_V_MSG(da.is_null(), nullptr, "Cannot create DirAccess for path '" + p_path + "'.");
+	ERR_FAIL_COND_V_MSG(da.is_null(), nullptr, vformat("Cannot create DirAccess for path '%s'.", p_path));
 	Error err = da->change_dir(p_path);
 	if (r_error) {
 		*r_error = err;
@@ -323,6 +323,80 @@ Ref<DirAccess> DirAccess::create(AccessType p_access) {
 	return da;
 }
 
+Ref<DirAccess> DirAccess::create_temp(const String &p_prefix, bool p_keep, Error *r_error) {
+	const String ERROR_COMMON_PREFIX = "Error while creating temporary directory";
+
+	if (!p_prefix.is_valid_filename()) {
+		*r_error = ERR_FILE_BAD_PATH;
+		ERR_FAIL_V_MSG(Ref<FileAccess>(), vformat(R"(%s: "%s" is not a valid prefix.)", ERROR_COMMON_PREFIX, p_prefix));
+	}
+
+	Ref<DirAccess> dir_access = DirAccess::open(OS::get_singleton()->get_temp_path());
+
+	uint32_t suffix_i = 0;
+	String path;
+	while (true) {
+		String datetime = Time::get_singleton()->get_datetime_string_from_system().replace("-", "").replace("T", "").replace(":", "");
+		datetime += itos(Time::get_singleton()->get_ticks_usec());
+		String suffix = datetime + (suffix_i > 0 ? itos(suffix_i) : "");
+		path = (p_prefix.is_empty() ? "" : p_prefix + "-") + suffix;
+		if (!path.is_valid_filename()) {
+			*r_error = ERR_FILE_BAD_PATH;
+			return Ref<DirAccess>();
+		}
+		if (!DirAccess::exists(path)) {
+			break;
+		}
+		suffix_i += 1;
+	}
+
+	Error err = dir_access->make_dir(path);
+	if (err != OK) {
+		*r_error = err;
+		ERR_FAIL_V_MSG(Ref<FileAccess>(), vformat(R"(%s: "%s" couldn't create directory "%s".)", ERROR_COMMON_PREFIX, path));
+	}
+	err = dir_access->change_dir(path);
+	if (err != OK) {
+		*r_error = err;
+		return Ref<DirAccess>();
+	}
+
+	dir_access->_is_temp = true;
+	dir_access->_temp_keep_after_free = p_keep;
+	dir_access->_temp_path = dir_access->get_current_dir();
+
+	*r_error = OK;
+	return dir_access;
+}
+
+Ref<DirAccess> DirAccess::_create_temp(const String &p_prefix, bool p_keep) {
+	return create_temp(p_prefix, p_keep, &last_dir_open_error);
+}
+
+void DirAccess::_delete_temp() {
+	if (!_is_temp || _temp_keep_after_free) {
+		return;
+	}
+
+	if (!DirAccess::exists(_temp_path)) {
+		return;
+	}
+
+	Error err;
+	{
+		Ref<DirAccess> dir_access = DirAccess::open(_temp_path, &err);
+		if (err != OK) {
+			return;
+		}
+		err = dir_access->erase_contents_recursive();
+		if (err != OK) {
+			return;
+		}
+	}
+
+	DirAccess::remove_absolute(_temp_path);
+}
+
 Error DirAccess::get_open_error() {
 	return last_dir_open_error;
 }
@@ -345,10 +419,10 @@ Error DirAccess::copy(const String &p_from, const String &p_to, int p_chmod_flag
 	Error err;
 	{
 		Ref<FileAccess> fsrc = FileAccess::open(p_from, FileAccess::READ, &err);
-		ERR_FAIL_COND_V_MSG(err != OK, err, "Failed to open " + p_from);
+		ERR_FAIL_COND_V_MSG(err != OK, err, vformat("Failed to open '%s'.", p_from));
 
 		Ref<FileAccess> fdst = FileAccess::open(p_to, FileAccess::WRITE, &err);
-		ERR_FAIL_COND_V_MSG(err != OK, err, "Failed to open " + p_to);
+		ERR_FAIL_COND_V_MSG(err != OK, err, vformat("Failed to open '%s'.", p_to));
 
 		const size_t copy_buffer_limit = 65536; // 64 KB
 
@@ -444,11 +518,11 @@ Error DirAccess::_copy_dir(Ref<DirAccess> &p_target_da, const String &p_to, int 
 		String target_dir = p_to + rel_path;
 		if (!p_target_da->dir_exists(target_dir)) {
 			Error err = p_target_da->make_dir(target_dir);
-			ERR_FAIL_COND_V_MSG(err != OK, err, "Cannot create directory '" + target_dir + "'.");
+			ERR_FAIL_COND_V_MSG(err != OK, err, vformat("Cannot create directory '%s'.", target_dir));
 		}
 
 		Error err = change_dir(rel_path);
-		ERR_FAIL_COND_V_MSG(err != OK, err, "Cannot change current directory to '" + rel_path + "'.");
+		ERR_FAIL_COND_V_MSG(err != OK, err, vformat("Cannot change current directory to '%s'.", rel_path));
 
 		err = _copy_dir(p_target_da, p_to + rel_path + "/", p_chmod_flags, p_copy_links);
 		if (err) {
@@ -466,11 +540,11 @@ Error DirAccess::copy_dir(const String &p_from, String p_to, int p_chmod_flags, 
 	ERR_FAIL_COND_V_MSG(!dir_exists(p_from), ERR_FILE_NOT_FOUND, "Source directory doesn't exist.");
 
 	Ref<DirAccess> target_da = DirAccess::create_for_path(p_to);
-	ERR_FAIL_COND_V_MSG(target_da.is_null(), ERR_CANT_CREATE, "Cannot create DirAccess for path '" + p_to + "'.");
+	ERR_FAIL_COND_V_MSG(target_da.is_null(), ERR_CANT_CREATE, vformat("Cannot create DirAccess for path '%s'.", p_to));
 
 	if (!target_da->dir_exists(p_to)) {
 		Error err = target_da->make_dir_recursive(p_to);
-		ERR_FAIL_COND_V_MSG(err != OK, err, "Cannot create directory '" + p_to + "'.");
+		ERR_FAIL_COND_V_MSG(err != OK, err, vformat("Cannot create directory '%s'.", p_to));
 	}
 
 	if (!p_to.ends_with("/")) {
@@ -555,8 +629,9 @@ bool DirAccess::is_case_sensitive(const String &p_path) const {
 void DirAccess::_bind_methods() {
 	ClassDB::bind_static_method("DirAccess", D_METHOD("open", "path"), &DirAccess::_open);
 	ClassDB::bind_static_method("DirAccess", D_METHOD("get_open_error"), &DirAccess::get_open_error);
+	ClassDB::bind_static_method("DirAccess", D_METHOD("create_temp", "prefix", "keep"), &DirAccess::_create_temp, DEFVAL(""), DEFVAL(false));
 
-	ClassDB::bind_method(D_METHOD("list_dir_begin"), &DirAccess::list_dir_begin, DEFVAL(false), DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("list_dir_begin"), &DirAccess::list_dir_begin);
 	ClassDB::bind_method(D_METHOD("get_next"), &DirAccess::_get_next);
 	ClassDB::bind_method(D_METHOD("current_is_dir"), &DirAccess::current_is_dir);
 	ClassDB::bind_method(D_METHOD("list_dir_end"), &DirAccess::list_dir_end);
@@ -588,6 +663,8 @@ void DirAccess::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("read_link", "path"), &DirAccess::read_link);
 	ClassDB::bind_method(D_METHOD("create_link", "source", "target"), &DirAccess::create_link);
 
+	ClassDB::bind_method(D_METHOD("is_bundle", "path"), &DirAccess::is_bundle);
+
 	ClassDB::bind_method(D_METHOD("set_include_navigational", "enable"), &DirAccess::set_include_navigational);
 	ClassDB::bind_method(D_METHOD("get_include_navigational"), &DirAccess::get_include_navigational);
 	ClassDB::bind_method(D_METHOD("set_include_hidden", "enable"), &DirAccess::set_include_hidden);
@@ -597,4 +674,8 @@ void DirAccess::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "include_navigational"), "set_include_navigational", "get_include_navigational");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "include_hidden"), "set_include_hidden", "get_include_hidden");
+}
+
+DirAccess::~DirAccess() {
+	_delete_temp();
 }

@@ -30,10 +30,7 @@
 
 #include "rendering_server_default.h"
 
-#include "core/config/project_settings.h"
-#include "core/io/marshalls.h"
 #include "core/os/os.h"
-#include "core/templates/sort_array.h"
 #include "renderer_canvas_cull.h"
 #include "renderer_scene_cull.h"
 #include "rendering_server_globals.h"
@@ -77,6 +74,7 @@ void RenderingServerDefault::_draw(bool p_swap_buffers, double frame_step) {
 
 	RENDER_TIMESTAMP("Prepare Render Frame");
 	RSG::scene->update(); //update scenes stuff before updating instances
+	RSG::canvas->update();
 
 	frame_setup_time = double(OS::get_singleton()->get_ticks_usec() - time_usec) / 1000.0;
 
@@ -150,12 +148,10 @@ void RenderingServerDefault::_draw(bool p_swap_buffers, double frame_step) {
 
 			double time = frame_profile[i + 1].gpu_msec - frame_profile[i].gpu_msec;
 
-			if (name[0] != '<' && name[0] != '>') {
-				if (print_gpu_profile_task_time.has(name)) {
-					print_gpu_profile_task_time[name] += time;
-				} else {
-					print_gpu_profile_task_time[name] = time;
-				}
+			if (print_gpu_profile_task_time.has(name)) {
+				print_gpu_profile_task_time[name] += time;
+			} else {
+				print_gpu_profile_task_time[name] = time;
 			}
 		}
 
@@ -283,6 +279,16 @@ uint64_t RenderingServerDefault::get_rendering_info(RenderingInfo p_info) {
 		return RSG::viewport->get_total_primitives_drawn();
 	} else if (p_info == RENDERING_INFO_TOTAL_DRAW_CALLS_IN_FRAME) {
 		return RSG::viewport->get_total_draw_calls_used();
+	} else if (p_info == RENDERING_INFO_PIPELINE_COMPILATIONS_CANVAS) {
+		return RSG::canvas_render->get_pipeline_compilations(PIPELINE_SOURCE_CANVAS);
+	} else if (p_info == RENDERING_INFO_PIPELINE_COMPILATIONS_MESH) {
+		return RSG::canvas_render->get_pipeline_compilations(PIPELINE_SOURCE_MESH) + RSG::scene->get_pipeline_compilations(PIPELINE_SOURCE_MESH);
+	} else if (p_info == RENDERING_INFO_PIPELINE_COMPILATIONS_SURFACE) {
+		return RSG::scene->get_pipeline_compilations(PIPELINE_SOURCE_SURFACE);
+	} else if (p_info == RENDERING_INFO_PIPELINE_COMPILATIONS_DRAW) {
+		return RSG::canvas_render->get_pipeline_compilations(PIPELINE_SOURCE_DRAW) + RSG::scene->get_pipeline_compilations(PIPELINE_SOURCE_DRAW);
+	} else if (p_info == RENDERING_INFO_PIPELINE_COMPILATIONS_SPECIALIZATION) {
+		return RSG::canvas_render->get_pipeline_compilations(PIPELINE_SOURCE_SPECIALIZATION) + RSG::scene->get_pipeline_compilations(PIPELINE_SOURCE_SPECIALIZATION);
 	}
 	return RSG::utilities->get_rendering_info(p_info);
 }
@@ -362,6 +368,8 @@ Size2i RenderingServerDefault::get_maximum_viewport_size() const {
 void RenderingServerDefault::_assign_mt_ids(WorkerThreadPool::TaskID p_pump_task_id) {
 	server_thread = Thread::get_caller_id();
 	server_task_id = p_pump_task_id;
+	// This is needed because the main RD is created on the main thread.
+	RenderingDevice::get_singleton()->make_current();
 }
 
 void RenderingServerDefault::_thread_exit() {
@@ -396,15 +404,15 @@ void RenderingServerDefault::sync() {
 	}
 }
 
-void RenderingServerDefault::draw(bool p_swap_buffers, double frame_step) {
+void RenderingServerDefault::draw(bool p_present, double frame_step) {
 	ERR_FAIL_COND_MSG(!Thread::is_main_thread(), "Manually triggering the draw function from the RenderingServer can only be done on the main thread. Call this function from the main thread or use call_deferred().");
 	// Needs to be done before changes is reset to 0, to not force the editor to redraw.
 	RS::get_singleton()->emit_signal(SNAME("frame_pre_draw"));
 	changes = 0;
 	if (create_thread) {
-		command_queue.push(this, &RenderingServerDefault::_draw, p_swap_buffers, frame_step);
+		command_queue.push(this, &RenderingServerDefault::_draw, p_present, frame_step);
 	} else {
-		_draw(p_swap_buffers, frame_step);
+		_draw(p_present, frame_step);
 	}
 }
 

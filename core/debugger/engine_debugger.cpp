@@ -46,12 +46,12 @@ HashMap<String, EngineDebugger::CreatePeerFunc> EngineDebugger::protocols;
 void (*EngineDebugger::allow_focus_steal_fn)();
 
 void EngineDebugger::register_profiler(const StringName &p_name, const Profiler &p_func) {
-	ERR_FAIL_COND_MSG(profilers.has(p_name), "Profiler already registered: " + p_name);
+	ERR_FAIL_COND_MSG(profilers.has(p_name), vformat("Profiler already registered: '%s'.", p_name));
 	profilers.insert(p_name, p_func);
 }
 
 void EngineDebugger::unregister_profiler(const StringName &p_name) {
-	ERR_FAIL_COND_MSG(!profilers.has(p_name), "Profiler not registered: " + p_name);
+	ERR_FAIL_COND_MSG(!profilers.has(p_name), vformat("Profiler not registered: '%s'.", p_name));
 	Profiler &p = profilers[p_name];
 	if (p.active && p.toggle) {
 		p.toggle(p.data, false, Array());
@@ -61,22 +61,22 @@ void EngineDebugger::unregister_profiler(const StringName &p_name) {
 }
 
 void EngineDebugger::register_message_capture(const StringName &p_name, Capture p_func) {
-	ERR_FAIL_COND_MSG(captures.has(p_name), "Capture already registered: " + p_name);
+	ERR_FAIL_COND_MSG(captures.has(p_name), vformat("Capture already registered: '%s'.", p_name));
 	captures.insert(p_name, p_func);
 }
 
 void EngineDebugger::unregister_message_capture(const StringName &p_name) {
-	ERR_FAIL_COND_MSG(!captures.has(p_name), "Capture not registered: " + p_name);
+	ERR_FAIL_COND_MSG(!captures.has(p_name), vformat("Capture not registered: '%s'.", p_name));
 	captures.erase(p_name);
 }
 
 void EngineDebugger::register_uri_handler(const String &p_protocol, CreatePeerFunc p_func) {
-	ERR_FAIL_COND_MSG(protocols.has(p_protocol), "Protocol handler already registered: " + p_protocol);
+	ERR_FAIL_COND_MSG(protocols.has(p_protocol), vformat("Protocol handler already registered: '%s'.", p_protocol));
 	protocols.insert(p_protocol, p_func);
 }
 
 void EngineDebugger::profiler_enable(const StringName &p_name, bool p_enabled, const Array &p_opts) {
-	ERR_FAIL_COND_MSG(!profilers.has(p_name), "Can't change profiler state, no profiler: " + p_name);
+	ERR_FAIL_COND_MSG(!profilers.has(p_name), vformat("Can't change profiler state, no profiler: '%s'.", p_name));
 	Profiler &p = profilers[p_name];
 	if (p.toggle) {
 		p.toggle(p.data, p_enabled, p_opts);
@@ -85,7 +85,7 @@ void EngineDebugger::profiler_enable(const StringName &p_name, bool p_enabled, c
 }
 
 void EngineDebugger::profiler_add_frame_data(const StringName &p_name, const Array &p_data) {
-	ERR_FAIL_COND_MSG(!profilers.has(p_name), "Can't add frame data, no profiler: " + p_name);
+	ERR_FAIL_COND_MSG(!profilers.has(p_name), vformat("Can't add frame data, no profiler: '%s'.", p_name));
 	Profiler &p = profilers[p_name];
 	if (p.add) {
 		p.add(p.data, p_data);
@@ -106,7 +106,7 @@ bool EngineDebugger::has_capture(const StringName &p_name) {
 
 Error EngineDebugger::capture_parse(const StringName &p_name, const String &p_msg, const Array &p_args, bool &r_captured) {
 	r_captured = false;
-	ERR_FAIL_COND_V_MSG(!captures.has(p_name), ERR_UNCONFIGURED, "Capture not registered: " + p_name);
+	ERR_FAIL_COND_V_MSG(!captures.has(p_name), ERR_UNCONFIGURED, vformat("Capture not registered: '%s'.", p_name));
 	const Capture &cap = captures[p_name];
 	return cap.capture(cap.data, p_msg, p_args, r_captured);
 }
@@ -163,8 +163,8 @@ void EngineDebugger::initialize(const String &p_uri, bool p_skip_breakpoints, co
 
 	for (int i = 0; i < p_breakpoints.size(); i++) {
 		const String &bp = p_breakpoints[i];
-		int sp = bp.rfind(":");
-		ERR_CONTINUE_MSG(sp == -1, "Invalid breakpoint: '" + bp + "', expected file:line format.");
+		int sp = bp.rfind_char(':');
+		ERR_CONTINUE_MSG(sp == -1, vformat("Invalid breakpoint: '%s', expected file:line format.", bp));
 
 		singleton_script_debugger->insert_breakpoint(bp.substr(sp + 1, bp.length()).to_int(), bp.substr(0, sp));
 	}

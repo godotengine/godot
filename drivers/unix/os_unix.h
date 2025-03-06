@@ -58,7 +58,11 @@ public:
 
 	virtual Vector<String> get_video_adapter_driver_info() const override;
 
-	virtual String get_stdin_string() override;
+	virtual String get_stdin_string(int64_t p_buffer_size = 1024) override;
+	virtual PackedByteArray get_stdin_buffer(int64_t p_buffer_size = 1024) override;
+	virtual StdHandleType get_stdin_type() const override;
+	virtual StdHandleType get_stdout_type() const override;
+	virtual StdHandleType get_stderr_type() const override;
 
 	virtual Error get_entropy(uint8_t *r_buffer, int p_bytes) override;
 
@@ -71,6 +75,8 @@ public:
 	virtual String get_name() const override;
 	virtual String get_distribution_name() const override;
 	virtual String get_version() const override;
+
+	virtual String get_temp_path() const override;
 
 	virtual DateTime get_datetime(bool p_utc) const override;
 	virtual TimeZoneInfo get_time_zone_info() const override;
@@ -100,7 +106,7 @@ public:
 	virtual void initialize_debugging() override;
 
 	virtual String get_executable_path() const override;
-	virtual String get_user_data_dir() const override;
+	virtual String get_user_data_dir(const String &p_user_dir) const override;
 };
 
 class UnixTerminalLogger : public StdLogger {

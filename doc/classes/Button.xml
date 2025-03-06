@@ -5,13 +5,13 @@
 	</brief_description>
 	<description>
 		[Button] is the standard themed button. It can contain text and an icon, and it will display them according to the current [Theme].
-		[b]Example of creating a button and assigning an action when pressed by code:[/b]
+		[b]Example:[/b] Create a button and connect a method that will be called when the button is pressed:
 		[codeblocks]
 		[gdscript]
 		func _ready():
 		    var button = Button.new()
 		    button.text = "Click me"
-		    button.pressed.connect(self._button_pressed)
+		    button.pressed.connect(_button_pressed)
 		    add_child(button)
 
 		func _button_pressed():
@@ -33,7 +33,7 @@
 		[/csharp]
 		[/codeblocks]
 		See also [BaseButton] which contains common properties and methods associated with this node.
-		[b]Note:[/b] Buttons do not interpret touch input and therefore don't support multitouch, since mouse emulation can only press one button at a given time. Use [TouchScreenButton] for buttons that trigger gameplay movement or actions.
+		[b]Note:[/b] Buttons do not detect touch input and therefore don't support multitouch, since mouse emulation can only press one button at a given time. Use [TouchScreenButton] for buttons that trigger gameplay movement or actions.
 	</description>
 	<tutorials>
 		<link title="2D Dodge The Creeps Demo">https://godotengine.org/asset-library/asset/2712</link>
@@ -47,7 +47,7 @@
 			If set to something other than [constant TextServer.AUTOWRAP_OFF], the text gets wrapped inside the node's bounding rectangle.
 		</member>
 		<member name="clip_text" type="bool" setter="set_clip_text" getter="get_clip_text" default="false">
-			When this property is enabled, text that is too large to fit the button is clipped, when disabled the Button will always be wide enough to hold the text.
+			If [code]true[/code], text that is too large to fit the button is clipped horizontally. If [code]false[/code], the button will always be wide enough to hold the text. The text is not vertically clipped, and the button's height is not affected by this property.
 		</member>
 		<member name="expand_icon" type="bool" setter="set_expand_icon" getter="is_expand_icon" default="false">
 			When enabled, the button's icon will expand/shrink to fit the button's size while keeping its aspect. See also [theme_item icon_max_width].
@@ -126,6 +126,9 @@
 		</theme_item>
 		<theme_item name="icon_max_width" data_type="constant" type="int" default="0">
 			The maximum allowed width of the [Button]'s icon. This limit is applied on top of the default size of the icon, or its expanded size if [member expand_icon] is [code]true[/code]. The height is adjusted according to the icon's ratio. If the button has additional icons (e.g. [CheckBox]), they will also be limited.
+		</theme_item>
+		<theme_item name="line_spacing" data_type="constant" type="int" default="0">
+			Additional vertical spacing between lines (in pixels), spacing is added to line descent. This value can be negative.
 		</theme_item>
 		<theme_item name="outline_size" data_type="constant" type="int" default="0">
 			The size of the text outline.
