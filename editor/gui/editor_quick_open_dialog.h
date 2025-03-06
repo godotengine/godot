@@ -107,7 +107,6 @@ protected:
 	void _notification(int p_what);
 
 private:
-	static constexpr int SHOW_ALL_FILES_THRESHOLD = 30;
 	static constexpr int MAX_HISTORY_SIZE = 20;
 
 	Vector<FuzzySearchResult> search_results;

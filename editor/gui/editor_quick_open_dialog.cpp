@@ -464,7 +464,8 @@ void QuickOpenResultContainer::update_results() {
 }
 
 void QuickOpenResultContainer::_use_default_candidates() {
-	if (filepaths.size() <= SHOW_ALL_FILES_THRESHOLD) {
+	int show_all_files_threshold = EDITOR_GET("filesystem/quick_open_dialog/show_all_files_threshold");
+	if (filepaths.size() <= show_all_files_threshold) {
 		candidates.resize(filepaths.size());
 		QuickOpenResultCandidate *candidates_write = candidates.ptrw();
 		for (const String &filepath : filepaths) {
