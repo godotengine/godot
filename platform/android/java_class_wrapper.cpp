@@ -108,18 +108,21 @@ bool JavaClass::_call_method(JavaObject *p_instance, const StringName &p_method,
 					}
 				} break;
 				case ARG_TYPE_CLASS: {
-					if (p_args[i]->get_type() != Variant::OBJECT && p_args[i]->get_type() != Variant::NIL) {
+					String cn = E.param_sigs[i].operator String();
+					if (cn.begins_with("L") && cn.ends_with(";")) {
+						cn = cn.substr(1, cn.length() - 2);
+					}
+					if (cn == "org/godotengine/godot/Dictionary") {
+						if (p_args[i]->get_type() != Variant::DICTIONARY) {
+							arg_expected = Variant::DICTIONARY;
+						}
+					} else if (p_args[i]->get_type() != Variant::OBJECT && p_args[i]->get_type() != Variant::NIL) {
 						arg_expected = Variant::OBJECT;
 					} else {
 						Ref<RefCounted> ref = *p_args[i];
 						if (ref.is_valid()) {
 							if (Object::cast_to<JavaObject>(ref.ptr())) {
 								Ref<JavaObject> jo = ref;
-								//could be faster
-								String cn = E.param_sigs[i].operator String();
-								if (cn.begins_with("L") && cn.ends_with(";")) {
-									cn = cn.substr(1, cn.length() - 2);
-								}
 								jclass c = env->FindClass(cn.utf8().get_data());
 								if (!c || !env->IsInstanceOf(jo->instance, c)) {
 									arg_expected = Variant::OBJECT;
@@ -397,13 +400,16 @@ bool JavaClass::_call_method(JavaObject *p_instance, const StringName &p_method,
 				to_free.push_back(jcallable);
 			} break;
 			case ARG_TYPE_CLASS: {
-				Ref<JavaObject> jo = *p_args[i];
-				if (jo.is_valid()) {
-					argv[i].l = jo->instance;
+				if (p_args[i]->get_type() == Variant::DICTIONARY) {
+					argv[i].l = _variant_to_jvalue(env, Variant::DICTIONARY, p_args[i]).obj;
 				} else {
-					argv[i].l = nullptr; //I hope this works
+					Ref<JavaObject> jo = *p_args[i];
+					if (jo.is_valid()) {
+						argv[i].l = jo->instance;
+					} else {
+						argv[i].l = nullptr; //I hope this works
+					}
 				}
-
 			} break;
 			case ARG_ARRAY_BIT | ARG_TYPE_BOOLEAN: {
 				Array arr = *p_args[i];
@@ -1071,8 +1077,13 @@ bool JavaClass::_convert_object_to_variant(JNIEnv *env, jobject obj, Variant &va
 			env->DeleteLocalRef(java_class);
 
 			if (java_class_wrapped.is_valid()) {
-				Ref<JavaObject> ret = Ref<JavaObject>(memnew(JavaObject(java_class_wrapped, obj)));
-				var = ret;
+				String cn = java_class_wrapped->get_java_class_name();
+				if (cn == "org/godotengine/godot/Dictionary" || cn == "java.util.HashMap") {
+					var = _jobject_to_variant(env, obj);
+				} else {
+					Ref<JavaObject> ret = Ref<JavaObject>(memnew(JavaObject(java_class_wrapped, obj)));
+					var = ret;
+				}
 				return true;
 			}
 
@@ -1430,8 +1441,13 @@ bool JavaClass::_convert_object_to_variant(JNIEnv *env, jobject obj, Variant &va
 					env->DeleteLocalRef(java_class);
 
 					if (java_class_wrapped.is_valid()) {
-						Ref<JavaObject> java_obj_wrapped = Ref<JavaObject>(memnew(JavaObject(java_class_wrapped, obj)));
-						ret[i] = java_obj_wrapped;
+						String cn = java_class_wrapped->get_java_class_name();
+						if (cn == "org/godotengine/godot/Dictionary" || cn == "java.util.HashMap") {
+							ret[i] = _jobject_to_variant(env, obj);
+						} else {
+							Ref<JavaObject> java_obj_wrapped = Ref<JavaObject>(memnew(JavaObject(java_class_wrapped, obj)));
+							ret[i] = java_obj_wrapped;
+						}
 					}
 				}
 				env->DeleteLocalRef(obj);
