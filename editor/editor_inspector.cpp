@@ -1888,6 +1888,15 @@ void EditorInspectorSection::gui_input(const Ref<InputEvent> &p_event) {
 	} else if (mb.is_valid() && !mb->is_pressed()) {
 		queue_redraw();
 	}
+
+	Ref<InputEventMouseMotion> mm = p_event;
+	if (mm.is_valid()) {
+		int header_height = _get_header_height();
+		Vector2 previous = mm->get_position() - mm->get_relative();
+		if ((mm->get_position().y >= header_height) != (previous.y >= header_height)) {
+			queue_redraw();
+		}
+	}
 }
 
 String EditorInspectorSection::get_section() const {
