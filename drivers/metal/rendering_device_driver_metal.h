@@ -58,6 +58,8 @@ class API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0)) RenderingDeviceDriverMet
 	RenderingContextDriver::Device context_device;
 	id<MTLDevice> device = nil;
 
+	uint32_t frame_count = 1;
+
 	MetalDeviceProperties *device_properties = nullptr;
 	MetalDeviceProfile device_profile;
 	RenderingShaderContainerFormatMetal *shader_container_format = nullptr;
@@ -101,12 +103,32 @@ public:
 #pragma mark - Buffers
 
 public:
-	virtual BufferID buffer_create(uint64_t p_size, BitField<BufferUsageBits> p_usage, MemoryAllocationType p_allocation_type) override final;
+	struct BufferInfo {
+		id<MTLBuffer> metal_buffer;
+
+		// If dynamic buffer, then its range is [0; RenderingDeviceDriverMetal::frame_count)
+		// else it's UINT32_MAX.
+		uint32_t frame_idx = UINT32_MAX;
+
+		bool is_dynamic() const { return frame_idx != UINT32_MAX; }
+	};
+
+	struct BufferDynamicInfo : BufferInfo {
+		uint64_t size_bytes; // Contains the real buffer size / frame_count.
+#ifdef DEBUG_ENABLED
+		// For tracking that a persistent buffer isn't mapped twice in the same frame.
+		uint64_t last_frame_mapped = 0;
+#endif
+	};
+
+	virtual BufferID buffer_create(uint64_t p_size, BitField<BufferUsageBits> p_usage, MemoryAllocationType p_allocation_type, uint64_t p_frames_drawn) override final;
 	virtual bool buffer_set_texel_format(BufferID p_buffer, DataFormat p_format) override final;
 	virtual void buffer_free(BufferID p_buffer) override final;
 	virtual uint64_t buffer_get_allocation_size(BufferID p_buffer) override final;
 	virtual uint8_t *buffer_map(BufferID p_buffer) override final;
 	virtual void buffer_unmap(BufferID p_buffer) override final;
+	virtual uint8_t *buffer_persistent_map_advance(BufferID p_buffer, uint64_t p_frames_drawn) override final;
+	virtual void buffer_flush(BufferID p_buffer) override final;
 	virtual uint64_t buffer_get_device_address(BufferID p_buffer) override final;
 
 #pragma mark - Texture

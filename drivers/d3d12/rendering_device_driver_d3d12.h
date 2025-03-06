@@ -242,16 +242,29 @@ private:
 		uint64_t size = 0;
 		struct {
 			bool usable_as_uav : 1;
+			bool is_dynamic : 1; // Only used for tracking (e.g. Vulkan needs these checks).
 		} flags = {};
+
+		bool is_dynamic() const { return flags.is_dynamic; }
+	};
+
+	struct BufferDynamicInfo : BufferInfo {
+		uint32_t frame_idx = UINT32_MAX;
+		uint8_t *persistent_ptr = nullptr;
+#ifdef DEBUG_ENABLED
+		// For tracking that a persistent buffer isn't mapped twice in the same frame.
+		uint64_t last_frame_mapped = 0;
+#endif
 	};
 
 public:
-	virtual BufferID buffer_create(uint64_t p_size, BitField<BufferUsageBits> p_usage, MemoryAllocationType p_allocation_type) override final;
+	virtual BufferID buffer_create(uint64_t p_size, BitField<BufferUsageBits> p_usage, MemoryAllocationType p_allocation_type, uint64_t p_frames_drawn) override final;
 	virtual bool buffer_set_texel_format(BufferID p_buffer, DataFormat p_format) override final;
 	virtual void buffer_free(BufferID p_buffer) override final;
 	virtual uint64_t buffer_get_allocation_size(BufferID p_buffer) override final;
 	virtual uint8_t *buffer_map(BufferID p_buffer) override final;
 	virtual void buffer_unmap(BufferID p_buffer) override final;
+	virtual uint8_t *buffer_persistent_map_advance(BufferID p_buffer, uint64_t p_frames_drawn) override final;
 	virtual uint64_t buffer_get_device_address(BufferID p_buffer) override final;
 
 	/*****************/
@@ -623,6 +636,7 @@ private:
 
 		struct RecentBind {
 			uint64_t segment_serial = 0;
+			uint32_t dynamic_state_mask = 0;
 			uint32_t root_signature_crc = 0;
 			struct {
 				TightLocalVector<RootDescriptorTable> resources;
@@ -630,6 +644,8 @@ private:
 			} root_tables;
 			int uses = 0;
 		} recent_binds[4]; // A better amount may be empirically found.
+
+		TightLocalVector<BufferDynamicInfo const *, uint32_t> dynamic_buffers;
 
 #ifdef DEV_ENABLED
 		// Filthy, but useful for dev.
@@ -639,6 +655,8 @@ private:
 		};
 		TightLocalVector<ResourceDescInfo> resources_desc_info;
 #endif
+
+		uint32_t calculate_dynamic_state_mask() const;
 	};
 
 public:
