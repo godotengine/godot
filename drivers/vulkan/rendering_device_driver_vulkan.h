@@ -150,6 +150,14 @@ class RenderingDeviceDriverVulkan : public RenderingDeviceDriver {
 #endif
 	DeviceFunctions device_functions;
 
+	struct PendingFlushes {
+		LocalVector<VmaAllocation> allocations;
+		LocalVector<VkDeviceSize> offsets;
+		LocalVector<VkDeviceSize> sizes;
+	};
+
+	PendingFlushes pending_flushes;
+
 	void _register_requested_device_extension(const CharString &p_extension_name, bool p_required);
 	Error _initialize_device_extensions();
 	Error _check_device_features();
@@ -196,14 +204,29 @@ public:
 		} allocation;
 		uint64_t size = 0;
 		VkBufferView vk_view = VK_NULL_HANDLE; // For texel buffers.
+		// If dynamic buffer, then its range is [0; RenderingDeviceDriverVulkan::frame_count)
+		// else it's UINT32_MAX.
+		uint32_t frame_idx = UINT32_MAX;
+
+		bool is_dynamic() const { return frame_idx != UINT32_MAX; }
 	};
 
-	virtual BufferID buffer_create(uint64_t p_size, BitField<BufferUsageBits> p_usage, MemoryAllocationType p_allocation_type) override final;
+	struct BufferDynamicInfo : BufferInfo {
+		uint8_t *persistent_ptr = nullptr;
+#ifdef DEBUG_ENABLED
+		// For tracking that a persistent buffer isn't mapped twice in the same frame.
+		uint64_t last_frame_mapped = 0;
+#endif
+	};
+
+	virtual BufferID buffer_create(uint64_t p_size, BitField<BufferUsageBits> p_usage, MemoryAllocationType p_allocation_type, uint64_t p_frames_drawn) override final;
 	virtual bool buffer_set_texel_format(BufferID p_buffer, DataFormat p_format) override final;
 	virtual void buffer_free(BufferID p_buffer) override final;
 	virtual uint64_t buffer_get_allocation_size(BufferID p_buffer) override final;
 	virtual uint8_t *buffer_map(BufferID p_buffer) override final;
 	virtual void buffer_unmap(BufferID p_buffer) override final;
+	virtual uint8_t *buffer_persistent_map_advance(BufferID p_buffer, uint64_t p_frames_drawn) override final;
+	virtual void buffer_flush(BufferID p_buffer) override final;
 	virtual uint64_t buffer_get_device_address(BufferID p_buffer) override final;
 
 	/*****************/
@@ -448,7 +471,7 @@ private:
 public:
 	virtual String shader_get_binary_cache_key() override final;
 	virtual Vector<uint8_t> shader_compile_binary_from_spirv(VectorView<ShaderStageSPIRVData> p_spirv, const String &p_shader_name) override final;
-	virtual ShaderID shader_create_from_bytecode(const Vector<uint8_t> &p_shader_binary, ShaderDescription &r_shader_desc, String &r_name, const Vector<ImmutableSampler> &p_immutable_samplers) override final;
+	virtual ShaderID shader_create_from_bytecode(const Vector<uint8_t> &p_shader_binary, ShaderDescription &r_shader_desc, String &r_name, const Vector<ImmutableSampler> &p_immutable_samplers, const Vector<uint64_t> &p_dynamic_buffers) override final;
 	virtual void shader_free(ShaderID p_shader) override final;
 
 	virtual void shader_destroy_modules(ShaderID p_shader) override final;
@@ -500,6 +523,7 @@ private:
 		VkDescriptorPool vk_descriptor_pool = VK_NULL_HANDLE;
 		VkDescriptorPool vk_linear_descriptor_pool = VK_NULL_HANDLE;
 		DescriptorSetPools::Iterator pool_sets_it;
+		TightLocalVector<BufferInfo const *, uint32_t, true> dynamic_buffers;
 	};
 
 public:

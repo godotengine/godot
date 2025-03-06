@@ -570,8 +570,21 @@ public:
 		UNIFORM_TYPE_UNIFORM_BUFFER, // Regular uniform buffer (or UBO).
 		UNIFORM_TYPE_STORAGE_BUFFER, // Storage buffer ("buffer" qualifier) like UBO, but supports storage, for compute mostly.
 		UNIFORM_TYPE_INPUT_ATTACHMENT, // Used for sub-pass read/write, for mobile mostly.
+		UNIFORM_TYPE_UNIFORM_BUFFER_DYNAMIC, // Same as UNIFORM but created with BUFFER_USAGE_DYNAMIC_PERSISTENT_BIT.
+		UNIFORM_TYPE_STORAGE_BUFFER_DYNAMIC, // Same as STORAGE but created with BUFFER_USAGE_DYNAMIC_PERSISTENT_BIT.
 		UNIFORM_TYPE_MAX
 	};
+
+	static UniformType uniform_type_to_dynamic(UniformType ut) {
+		switch (ut) {
+			case UNIFORM_TYPE_UNIFORM_BUFFER:
+				return UNIFORM_TYPE_UNIFORM_BUFFER_DYNAMIC;
+			case UNIFORM_TYPE_STORAGE_BUFFER:
+				return UNIFORM_TYPE_STORAGE_BUFFER_DYNAMIC;
+			default:
+				return ut;
+		}
+	}
 
 	/******************/
 	/**** PIPELINE ****/

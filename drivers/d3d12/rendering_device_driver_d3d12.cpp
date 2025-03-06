@@ -104,6 +104,8 @@ static const D3D12_RANGE VOID_RANGE = {};
 static const uint32_t ROOT_CONSTANT_REGISTER = GODOT_NIR_DESCRIPTOR_SET_MULTIPLIER * (RDD::MAX_UNIFORM_SETS + 1);
 static const uint32_t RUNTIME_DATA_REGISTER = GODOT_NIR_DESCRIPTOR_SET_MULTIPLIER * (RDD::MAX_UNIFORM_SETS + 2);
 
+static const uint32_t MAX_DYNAMIC_BUFFERS = 8u; // Minimum guaranteed by Vulkan.
+
 /*****************/
 /**** GENERIC ****/
 /*****************/
@@ -816,12 +818,22 @@ void RenderingDeviceDriverD3D12::_resource_transitions_flush(CommandBufferInfo *
 /**** BUFFERS ****/
 /*****************/
 
-RDD::BufferID RenderingDeviceDriverD3D12::buffer_create(uint64_t p_size, BitField<BufferUsageBits> p_usage, MemoryAllocationType p_allocation_type) {
-	// D3D12 debug layers complain at CBV creation time if the size is not multiple of the value per the spec
-	// but also if you give a rounded size at that point because it will extend beyond the
-	// memory of the resource. Therefore, it seems the only way is to create it with a
-	// rounded size.
-	CD3DX12_RESOURCE_DESC1 resource_desc = CD3DX12_RESOURCE_DESC1::Buffer(STEPIFY(p_size, D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT));
+RDD::BufferID RenderingDeviceDriverD3D12::buffer_create(uint64_t p_size, BitField<BufferUsageBits> p_usage, MemoryAllocationType p_allocation_type, uint64_t p_frames_drawn) {
+	uint32_t alignment = D3D12_RAW_UAV_SRV_BYTE_ALIGNMENT; // 16 bytes is reasonable.
+	if (p_usage.has_flag(BUFFER_USAGE_UNIFORM_BIT)) {
+		// 256 bytes is absurd. Only use it when required.
+		alignment = D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT;
+	}
+
+	// We don't have VMA like in Vulkan, that takes care of the details. We must align the size.
+	p_size = STEPIFY(p_size, alignment);
+
+	const size_t original_size = p_size;
+	if (p_usage.has_flag(BUFFER_USAGE_DYNAMIC_PERSISTENT_BIT)) {
+		p_size = p_size * frames.size();
+	}
+
+	CD3DX12_RESOURCE_DESC1 resource_desc = CD3DX12_RESOURCE_DESC1::Buffer(p_size);
 	if (p_usage.has_flag(RDD::BUFFER_USAGE_STORAGE_BIT)) {
 		resource_desc.Flags |= D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
 	} else {
@@ -848,6 +860,12 @@ RDD::BufferID RenderingDeviceDriverD3D12::buffer_create(uint64_t p_size, BitFiel
 		} break;
 		case MEMORY_ALLOCATION_TYPE_GPU: {
 			// Use default parameters.
+			if (p_usage.has_flag(BUFFER_USAGE_DYNAMIC_PERSISTENT_BIT)) {
+				allocation_desc.HeapType = D3D12_HEAP_TYPE_UPLOAD /*D3D12_HEAP_TYPE_GPU_UPLOAD*/;
+
+				// We can't use STORAGE for write access, just for read.
+				resource_desc.Flags = resource_desc.Flags & ~D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
+			}
 		} break;
 	}
 
@@ -878,14 +896,30 @@ RDD::BufferID RenderingDeviceDriverD3D12::buffer_create(uint64_t p_size, BitFiel
 
 	// Bookkeep.
 
-	BufferInfo *buf_info = VersatileResource::allocate<BufferInfo>(resources_allocator);
+	BufferInfo *buf_info;
+	if (p_usage.has_flag(BUFFER_USAGE_DYNAMIC_PERSISTENT_BIT)) {
+		void *persistent_ptr = nullptr;
+		res = buffer->Map(0, &VOID_RANGE, &persistent_ptr);
+		ERR_FAIL_COND_V_MSG(!SUCCEEDED(res), BufferID(), "Map failed with error " + vformat("0x%08ux", (uint64_t)res) + ".");
+
+		BufferDynamicInfo *dyn_buffer = VersatileResource::allocate<BufferDynamicInfo>(resources_allocator);
+		buf_info = dyn_buffer;
+#ifdef DEBUG_ENABLED
+		dyn_buffer->last_frame_mapped = p_frames_drawn - 1ul;
+#endif
+		dyn_buffer->frame_idx = 0u;
+		dyn_buffer->persistent_ptr = (uint8_t *)persistent_ptr;
+	} else {
+		buf_info = VersatileResource::allocate<BufferInfo>(resources_allocator);
+	}
 	buf_info->resource = buffer.Get();
 	buf_info->owner_info.resource = buffer;
 	buf_info->owner_info.allocation = allocation;
 	buf_info->owner_info.states.subresource_states.push_back(initial_state);
 	buf_info->states_ptr = &buf_info->owner_info.states;
-	buf_info->size = p_size;
+	buf_info->size = original_size;
 	buf_info->flags.usable_as_uav = (resource_desc.Flags & D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS);
+	buf_info->flags.is_dynamic = p_usage.has_flag(BUFFER_USAGE_DYNAMIC_PERSISTENT_BIT);
 
 	return BufferID(buf_info);
 }
@@ -898,7 +932,12 @@ bool RenderingDeviceDriverD3D12::buffer_set_texel_format(BufferID p_buffer, Data
 
 void RenderingDeviceDriverD3D12::buffer_free(BufferID p_buffer) {
 	BufferInfo *buf_info = (BufferInfo *)p_buffer.id;
-	VersatileResource::free(resources_allocator, buf_info);
+	if (buf_info->is_dynamic()) {
+		buf_info->resource->Unmap(0, &VOID_RANGE);
+		VersatileResource::free(resources_allocator, (BufferDynamicInfo *)buf_info);
+	} else {
+		VersatileResource::free(resources_allocator, buf_info);
+	}
 }
 
 uint64_t RenderingDeviceDriverD3D12::buffer_get_allocation_size(BufferID p_buffer) {
@@ -917,6 +956,17 @@ uint8_t *RenderingDeviceDriverD3D12::buffer_map(BufferID p_buffer) {
 void RenderingDeviceDriverD3D12::buffer_unmap(BufferID p_buffer) {
 	const BufferInfo *buf_info = (const BufferInfo *)p_buffer.id;
 	buf_info->resource->Unmap(0, &VOID_RANGE);
+}
+
+uint8_t *RenderingDeviceDriverD3D12::buffer_persistent_map_advance(BufferID p_buffer, uint64_t p_frames_drawn) {
+	BufferDynamicInfo *buf_info = (BufferDynamicInfo *)p_buffer.id;
+	ERR_FAIL_COND_V_MSG(!buf_info->is_dynamic(), nullptr, "Buffer must have BUFFER_USAGE_DYNAMIC_PERSISTENT_BIT. Use buffer_map() instead.");
+#ifdef DEBUG_ENABLED
+	ERR_FAIL_COND_V_MSG(buf_info->last_frame_mapped == p_frames_drawn, nullptr, "Buffers with BUFFER_USAGE_DYNAMIC_PERSISTENT_BIT must only be mapped once per frame. Otherwise there could be race conditions with the GPU. Amalgamate all data uploading into one map(), use an extra buffer or remove the bit.");
+	buf_info->last_frame_mapped = p_frames_drawn;
+#endif
+	buf_info->frame_idx = (buf_info->frame_idx + 1u) % frames.size();
+	return buf_info->persistent_ptr + buf_info->frame_idx * buf_info->size;
 }
 
 uint64_t RenderingDeviceDriverD3D12::buffer_get_device_address(BufferID p_buffer) {
@@ -3655,7 +3705,7 @@ Vector<uint8_t> RenderingDeviceDriverD3D12::shader_compile_binary_from_spirv(Vec
 	return ret;
 }
 
-RDD::ShaderID RenderingDeviceDriverD3D12::shader_create_from_bytecode(const Vector<uint8_t> &p_shader_binary, ShaderDescription &r_shader_desc, String &r_name, const Vector<ImmutableSampler> &p_immutable_samplers) {
+RDD::ShaderID RenderingDeviceDriverD3D12::shader_create_from_bytecode(const Vector<uint8_t> &p_shader_binary, ShaderDescription &r_shader_desc, String &r_name, const Vector<ImmutableSampler> &p_immutable_samplers, const Vector<uint64_t> &p_dynamic_buffers) {
 	r_shader_desc = {}; // Driver-agnostic.
 	ShaderInfo shader_info_in; // Driver-specific.
 
@@ -3714,6 +3764,13 @@ RDD::ShaderID RenderingDeviceDriverD3D12::shader_create_from_bytecode(const Vect
 			info.writable = set_ptr[j].writable;
 			info.length = set_ptr[j].length;
 			info.binding = set_ptr[j].binding;
+
+			if (info.type == UNIFORM_TYPE_UNIFORM_BUFFER || info.type == UNIFORM_TYPE_STORAGE_BUFFER) {
+				const uint64_t key = DynamicBuffer::encode(i, info.binding);
+				if (p_dynamic_buffers.find(key) >= 0) {
+					info.type = uniform_type_to_dynamic(info.type);
+				}
+			}
 
 			ShaderInfo::UniformBindingInfo binding;
 			binding.stages = set_ptr[j].dxil_stages;
@@ -3830,7 +3887,7 @@ void RenderingDeviceDriverD3D12::shader_destroy_modules(ShaderID p_shader) {
 /**** UNIFORM SET ****/
 /*********************/
 
-static void _add_descriptor_count_for_uniform(RenderingDevice::UniformType p_type, uint32_t p_binding_length, bool p_double_srv_uav_ambiguous, uint32_t &r_num_resources, uint32_t &r_num_samplers, bool &r_srv_uav_ambiguity) {
+static void _add_descriptor_count_for_uniform(RenderingDevice::UniformType p_type, uint32_t p_binding_length, bool p_double_srv_uav_ambiguous, uint32_t &r_num_resources, uint32_t &r_num_samplers, bool &r_srv_uav_ambiguity, uint32_t p_frame_count) {
 	r_srv_uav_ambiguity = false;
 
 	// Some resource types can be SRV or UAV, depending on what NIR-DXIL decided for a specific shader variant.
@@ -3850,9 +3907,17 @@ static void _add_descriptor_count_for_uniform(RenderingDevice::UniformType p_typ
 		case RenderingDevice::UNIFORM_TYPE_UNIFORM_BUFFER: {
 			r_num_resources += 1;
 		} break;
+		case RenderingDevice::UNIFORM_TYPE_UNIFORM_BUFFER_DYNAMIC: {
+			r_num_resources += p_frame_count;
+		} break;
 		case RenderingDevice::UNIFORM_TYPE_STORAGE_BUFFER: {
 			r_num_resources += p_double_srv_uav_ambiguous ? 2 : 1;
 			r_srv_uav_ambiguity = true;
+		} break;
+		case RenderingDevice::UNIFORM_TYPE_STORAGE_BUFFER_DYNAMIC: {
+			// Dynamic storage buffers can only be SRV (we can't guarantee they get placed in
+			// D3D12_HEAP_TYPE_GPU_UPLOAD heap and D3D12_HEAP_TYPE_GPU doesn't support UAV).
+			r_num_resources += p_frame_count;
 		} break;
 		case RenderingDevice::UNIFORM_TYPE_IMAGE: {
 			r_num_resources += p_binding_length * (p_double_srv_uav_ambiguous ? 2 : 1);
@@ -3870,6 +3935,11 @@ RDD::UniformSetID RenderingDeviceDriverD3D12::uniform_set_create(VectorView<Boun
 	// Pre-bookkeep.
 	UniformSetInfo *uniform_set_info = VersatileResource::allocate<UniformSetInfo>(resources_allocator);
 
+	// We first gather dynamic arrays in a local array because TightLocalVector's
+	// growth is not efficient when the number of elements is unknown.
+	BufferDynamicInfo const *dynamic_buffers[MAX_DYNAMIC_BUFFERS];
+	uint32_t num_dynamic_buffers = 0u;
+
 	// Do a first pass to count resources and samplers.
 	uint32_t num_resource_descs = 0;
 	uint32_t num_sampler_descs = 0;
@@ -3886,7 +3956,7 @@ RDD::UniformSetID RenderingDeviceDriverD3D12::uniform_set_create(VectorView<Boun
 		if (uniform.type == UNIFORM_TYPE_SAMPLER_WITH_TEXTURE || uniform.type == UNIFORM_TYPE_SAMPLER_WITH_TEXTURE_BUFFER) {
 			binding_length /= 2;
 		}
-		_add_descriptor_count_for_uniform(uniform.type, binding_length, true, num_resource_descs, num_sampler_descs, srv_uav_ambiguity);
+		_add_descriptor_count_for_uniform(uniform.type, binding_length, true, num_resource_descs, num_sampler_descs, srv_uav_ambiguity, frames.size());
 	}
 #ifdef DEV_ENABLED
 	uniform_set_info->resources_desc_info.reserve(num_resource_descs);
@@ -4009,64 +4079,94 @@ RDD::UniformSetID RenderingDeviceDriverD3D12::uniform_set_create(VectorView<Boun
 			case UNIFORM_TYPE_IMAGE_BUFFER: {
 				CRASH_NOW_MSG("Unimplemented!");
 			} break;
-			case UNIFORM_TYPE_UNIFORM_BUFFER: {
+			case UNIFORM_TYPE_UNIFORM_BUFFER:
+			case UNIFORM_TYPE_UNIFORM_BUFFER_DYNAMIC: {
 				BufferInfo *buf_info = (BufferInfo *)uniform.ids[0].id;
+
+				if (uniform.type == UNIFORM_TYPE_UNIFORM_BUFFER) {
+					ERR_FAIL_COND_V_MSG(buf_info->is_dynamic(), UniformSetID(),
+							"Sent a buffer with BUFFER_USAGE_DYNAMIC_PERSISTENT_BIT but binding (" + itos(uniform.binding) + "), set (" + itos(p_set_index) + ") is UNIFORM_TYPE_UNIFORM_BUFFER instead of UNIFORM_TYPE_UNIFORM_BUFFER_DYNAMIC.");
+				} else {
+					ERR_FAIL_COND_V_MSG(!buf_info->is_dynamic(), UniformSetID(),
+							"Sent a buffer without BUFFER_USAGE_DYNAMIC_PERSISTENT_BIT but binding (" + itos(uniform.binding) + "), set (" + itos(p_set_index) + ") is UNIFORM_TYPE_UNIFORM_BUFFER_DYNAMIC instead of UNIFORM_TYPE_UNIFORM_BUFFER.");
+					ERR_FAIL_COND_V_MSG(num_dynamic_buffers >= MAX_DYNAMIC_BUFFERS, UniformSetID(),
+							"Uniform set exceeded the limit of dynamic/persistent buffers. (" + itos(MAX_DYNAMIC_BUFFERS) + ").");
+
+					dynamic_buffers[num_dynamic_buffers++] = (const BufferDynamicInfo *)buf_info;
+				}
 
 				D3D12_CONSTANT_BUFFER_VIEW_DESC cbv_desc = {};
 				cbv_desc.BufferLocation = buf_info->resource->GetGPUVirtualAddress();
-				cbv_desc.SizeInBytes = STEPIFY(buf_info->size, 256);
-				device->CreateConstantBufferView(&cbv_desc, desc_heap_walkers.resources.get_curr_cpu_handle());
-				desc_heap_walkers.resources.advance();
+				cbv_desc.SizeInBytes = STEPIFY(buf_info->size, D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT);
+
+				const uint32_t subregion_count = uniform.type == UNIFORM_TYPE_UNIFORM_BUFFER_DYNAMIC ? frames.size() : 1u;
+				for (uint32_t j = 0u; j < subregion_count; ++j) {
+					device->CreateConstantBufferView(&cbv_desc, desc_heap_walkers.resources.get_curr_cpu_handle());
+					desc_heap_walkers.resources.advance();
 #ifdef DEV_ENABLED
-				uniform_set_info->resources_desc_info.push_back({ D3D12_DESCRIPTOR_RANGE_TYPE_CBV, {} });
+					uniform_set_info->resources_desc_info.push_back({ D3D12_DESCRIPTOR_RANGE_TYPE_CBV, {} });
 #endif
+					cbv_desc.BufferLocation += cbv_desc.SizeInBytes;
+				}
 
 				NeededState &ns = resource_states[buf_info];
 				ns.is_buffer = true;
 				ns.shader_uniform_idx_mask |= ((uint64_t)1 << i);
 				ns.states |= D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER;
 			} break;
-			case UNIFORM_TYPE_STORAGE_BUFFER: {
+			case UNIFORM_TYPE_STORAGE_BUFFER:
+			case UNIFORM_TYPE_STORAGE_BUFFER_DYNAMIC: {
 				BufferInfo *buf_info = (BufferInfo *)uniform.ids[0].id;
 
-				// SRV first. [[SRV_UAV_AMBIGUITY]]
-				{
-					D3D12_SHADER_RESOURCE_VIEW_DESC srv_desc = {};
-					srv_desc.Format = DXGI_FORMAT_R32_TYPELESS;
-					srv_desc.ViewDimension = D3D12_SRV_DIMENSION_BUFFER;
-					srv_desc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-					srv_desc.Buffer.FirstElement = 0;
-					srv_desc.Buffer.NumElements = (buf_info->size + 3) / 4;
-					srv_desc.Buffer.StructureByteStride = 0;
-					srv_desc.Buffer.Flags = D3D12_BUFFER_SRV_FLAG_RAW;
+				if (uniform.type == UNIFORM_TYPE_STORAGE_BUFFER) {
+					ERR_FAIL_COND_V_MSG(buf_info->is_dynamic(), UniformSetID(),
+							"Sent a buffer with BUFFER_USAGE_DYNAMIC_PERSISTENT_BIT but binding (" + itos(uniform.binding) + "), set (" + itos(p_set_index) + ") is UNIFORM_TYPE_STORAGE_BUFFER instead of UNIFORM_TYPE_STORAGE_BUFFER_DYNAMIC.");
+				} else {
+					ERR_FAIL_COND_V_MSG(!buf_info->is_dynamic(), UniformSetID(),
+							"Sent a buffer without BUFFER_USAGE_DYNAMIC_PERSISTENT_BIT but binding (" + itos(uniform.binding) + "), set (" + itos(p_set_index) + ") is UNIFORM_TYPE_STORAGE_BUFFER_DYNAMIC instead of UNIFORM_TYPE_STORAGE_BUFFER.");
+					ERR_FAIL_COND_V_MSG(num_dynamic_buffers >= MAX_DYNAMIC_BUFFERS, UniformSetID(),
+							"Uniform set exceeded the limit of dynamic/persistent buffers. (" + itos(MAX_DYNAMIC_BUFFERS) + ").");
+
+					dynamic_buffers[num_dynamic_buffers++] = (const BufferDynamicInfo *)buf_info;
+				}
+
+				D3D12_SHADER_RESOURCE_VIEW_DESC srv_desc = {};
+				srv_desc.Format = DXGI_FORMAT_R32_TYPELESS;
+				srv_desc.ViewDimension = D3D12_SRV_DIMENSION_BUFFER;
+				srv_desc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+				srv_desc.Buffer.FirstElement = 0;
+				srv_desc.Buffer.NumElements = (buf_info->size + 3u) / 4u;
+				srv_desc.Buffer.StructureByteStride = 0;
+				srv_desc.Buffer.Flags = D3D12_BUFFER_SRV_FLAG_RAW;
+
+				D3D12_UNORDERED_ACCESS_VIEW_DESC uav_desc = {};
+				uav_desc.Format = DXGI_FORMAT_R32_TYPELESS;
+				uav_desc.ViewDimension = D3D12_UAV_DIMENSION_BUFFER;
+				uav_desc.Buffer.FirstElement = 0;
+				uav_desc.Buffer.NumElements = (buf_info->size + 3u) / 4u;
+				uav_desc.Buffer.StructureByteStride = 0;
+				uav_desc.Buffer.CounterOffsetInBytes = 0;
+				uav_desc.Buffer.Flags = D3D12_BUFFER_UAV_FLAG_RAW;
+
+				const uint32_t subregion_count = uniform.type == UNIFORM_TYPE_STORAGE_BUFFER_DYNAMIC ? frames.size() : 1u;
+				for (uint32_t j = 0u; j < subregion_count; ++j) {
+					// SRV first. [[SRV_UAV_AMBIGUITY]]
 					device->CreateShaderResourceView(buf_info->resource, &srv_desc, desc_heap_walkers.resources.get_curr_cpu_handle());
 #ifdef DEV_ENABLED
 					uniform_set_info->resources_desc_info.push_back({ D3D12_DESCRIPTOR_RANGE_TYPE_SRV, srv_desc.ViewDimension });
 #endif
 					desc_heap_walkers.resources.advance();
-				}
+					srv_desc.Buffer.FirstElement += srv_desc.Buffer.NumElements;
 
-				// UAV then. [[SRV_UAV_AMBIGUITY]]
-				{
+					// UAV then. [[SRV_UAV_AMBIGUITY]]
 					if (buf_info->flags.usable_as_uav) {
-						D3D12_UNORDERED_ACCESS_VIEW_DESC uav_desc = {};
-						uav_desc.Format = DXGI_FORMAT_R32_TYPELESS;
-						uav_desc.ViewDimension = D3D12_UAV_DIMENSION_BUFFER;
-						uav_desc.Buffer.FirstElement = 0;
-						uav_desc.Buffer.NumElements = (buf_info->size + 3) / 4;
-						uav_desc.Buffer.StructureByteStride = 0;
-						uav_desc.Buffer.CounterOffsetInBytes = 0;
-						uav_desc.Buffer.Flags = D3D12_BUFFER_UAV_FLAG_RAW;
 						device->CreateUnorderedAccessView(buf_info->resource, nullptr, &uav_desc, desc_heap_walkers.resources.get_curr_cpu_handle());
 #ifdef DEV_ENABLED
 						uniform_set_info->resources_desc_info.push_back({ D3D12_DESCRIPTOR_RANGE_TYPE_UAV, {} });
 #endif
-					} else {
-						// If can't transition to UAV, leave this one empty since it won't be
-						// used, and trying to create an UAV view would trigger a validation error.
+						uav_desc.Buffer.FirstElement += uav_desc.Buffer.NumElements;
+						desc_heap_walkers.resources.advance();
 					}
-
-					desc_heap_walkers.resources.advance();
 				}
 
 				NeededState &ns = resource_states[buf_info];
@@ -4093,6 +4193,11 @@ RDD::UniformSetID RenderingDeviceDriverD3D12::uniform_set_create(VectorView<Boun
 				DEV_ASSERT(false);
 			}
 		}
+	}
+
+	uniform_set_info->dynamic_buffers.resize(num_dynamic_buffers);
+	for (size_t i = 0u; i < num_dynamic_buffers; ++i) {
+		uniform_set_info->dynamic_buffers[i] = dynamic_buffers[i];
 	}
 
 	DEV_ASSERT(desc_heap_walkers.resources.is_at_eof());
@@ -4295,8 +4400,21 @@ void RenderingDeviceDriverD3D12::_command_check_descriptor_sets(CommandBufferID 
 	}
 }
 
+uint32_t RenderingDeviceDriverD3D12::UniformSetInfo::calculate_dynamic_state_mask() const {
+	uint32_t mask = 0u;
+	uint32_t shift = 0u;
+	for (const BufferDynamicInfo *dynamic_buffer : dynamic_buffers) {
+		DEV_ASSERT(dynamic_buffer->frame_idx < 16u);
+		mask |= dynamic_buffer->frame_idx << shift;
+		shift += 4u;
+	}
+	return mask;
+}
+
 void RenderingDeviceDriverD3D12::_command_bind_uniform_set(CommandBufferID p_cmd_buffer, UniformSetID p_uniform_set, ShaderID p_shader, uint32_t p_set_index, bool p_for_compute) {
 	_command_check_descriptor_sets(p_cmd_buffer);
+
+	uint32_t curr_dynamic_buffer = 0u;
 
 	UniformSetInfo *uniform_set_info = (UniformSetInfo *)p_uniform_set.id;
 	const ShaderInfo *shader_info_in = (const ShaderInfo *)p_shader.id;
@@ -4306,12 +4424,15 @@ void RenderingDeviceDriverD3D12::_command_bind_uniform_set(CommandBufferID p_cmd
 	using SetRootDescriptorTableFn = void (STDMETHODCALLTYPE ID3D12GraphicsCommandList::*)(UINT, D3D12_GPU_DESCRIPTOR_HANDLE);
 	SetRootDescriptorTableFn set_root_desc_table_fn = p_for_compute ? &ID3D12GraphicsCommandList::SetComputeRootDescriptorTable : &ID3D12GraphicsCommandList1::SetGraphicsRootDescriptorTable;
 
+	const uint32_t dynamic_state_mask = uniform_set_info->calculate_dynamic_state_mask();
+
 	// If this set's descriptors have already been set for the current execution and a compatible root signature, reuse!
 	uint32_t root_sig_crc = p_for_compute ? cmd_buf_info->compute_root_signature_crc : cmd_buf_info->graphics_root_signature_crc;
 	UniformSetInfo::RecentBind *last_bind = nullptr;
 	for (int i = 0; i < (int)ARRAY_SIZE(uniform_set_info->recent_binds); i++) {
 		if (uniform_set_info->recent_binds[i].segment_serial == frames[frame_idx].segment_serial) {
-			if (uniform_set_info->recent_binds[i].root_signature_crc == root_sig_crc) {
+			if (uniform_set_info->recent_binds[i].root_signature_crc == root_sig_crc &&
+					uniform_set_info->recent_binds[i].dynamic_state_mask == dynamic_state_mask) {
 				for (const RootDescriptorTable &table : uniform_set_info->recent_binds[i].root_tables.resources) {
 					(cmd_buf_info->cmd_list.Get()->*set_root_desc_table_fn)(table.root_param_idx, table.start_gpu_handle);
 				}
@@ -4350,10 +4471,11 @@ void RenderingDeviceDriverD3D12::_command_bind_uniform_set(CommandBufferID p_cmd
 	set_heap_walkers.resources = uniform_set_info->desc_heaps.resources.make_walker();
 	set_heap_walkers.samplers = uniform_set_info->desc_heaps.samplers.make_walker();
 
+	const uint32_t binding_count = shader_set.bindings.size();
 #ifdef DEV_ENABLED
 	// Whether we have stages where the uniform is actually used should match
 	// whether we have any root signature locations for it.
-	for (uint32_t i = 0; i < shader_set.bindings.size(); i++) {
+	for (uint32_t i = 0; i < binding_count; i++) {
 		bool has_rs_locations = false;
 		if (shader_set.bindings[i].root_sig_locations.resource.root_param_idx != UINT32_MAX ||
 				shader_set.bindings[i].root_sig_locations.sampler.root_param_idx != UINT32_MAX) {
@@ -4377,21 +4499,25 @@ void RenderingDeviceDriverD3D12::_command_bind_uniform_set(CommandBufferID p_cmd
 		RootDescriptorTable *resources = nullptr;
 		RootDescriptorTable *samplers = nullptr;
 	} tables;
-	for (uint32_t i = 0; i < shader_set.bindings.size(); i++) {
+	for (uint32_t i = 0; i < binding_count; i++) {
 		const ShaderInfo::UniformBindingInfo &binding = shader_set.bindings[i];
 
 		uint32_t num_resource_descs = 0;
 		uint32_t num_sampler_descs = 0;
 		bool srv_uav_ambiguity = false;
-		_add_descriptor_count_for_uniform(binding.type, binding.length, false, num_resource_descs, num_sampler_descs, srv_uav_ambiguity);
+		const uint32_t frame_count_for_binding = 1u; // _add_descriptor_count_for_uniform wants frames.size() so we can create N entries.
+													 // However we are binding now, and we must bind only one (not N of them), so set 1u.
+		_add_descriptor_count_for_uniform(binding.type, binding.length, false, num_resource_descs, num_sampler_descs, srv_uav_ambiguity, frame_count_for_binding);
+
+		uint32_t dynamic_resources_to_skip = 0u;
 
 		bool resource_used = false;
-		if (shader_set.bindings[i].stages) {
+		if (binding.stages) {
 			{
-				const ShaderInfo::UniformBindingInfo::RootSignatureLocation &rs_loc_resource = shader_set.bindings[i].root_sig_locations.resource;
+				const ShaderInfo::UniformBindingInfo::RootSignatureLocation &rs_loc_resource = binding.root_sig_locations.resource;
 				if (rs_loc_resource.root_param_idx != UINT32_MAX) { // Location used?
 					DEV_ASSERT(num_resource_descs);
-					DEV_ASSERT(!(srv_uav_ambiguity && (shader_set.bindings[i].res_class != RES_CLASS_SRV && shader_set.bindings[i].res_class != RES_CLASS_UAV))); // [[SRV_UAV_AMBIGUITY]]
+					DEV_ASSERT(!(srv_uav_ambiguity && (binding.res_class != RES_CLASS_SRV && binding.res_class != RES_CLASS_UAV))); // [[SRV_UAV_AMBIGUITY]]
 
 					bool must_flush_table = tables.resources && rs_loc_resource.root_param_idx != tables.resources->root_param_idx;
 					if (must_flush_table) {
@@ -4420,8 +4546,16 @@ void RenderingDeviceDriverD3D12::_command_bind_uniform_set(CommandBufferID p_cmd
 						tables.resources->start_gpu_handle = frame_heap_walkers.resources->get_curr_gpu_handle();
 					}
 
+					// For dynamic buffers, jump to the last written offset.
+					if (binding.type == UNIFORM_TYPE_UNIFORM_BUFFER_DYNAMIC || binding.type == UNIFORM_TYPE_STORAGE_BUFFER_DYNAMIC) {
+						const BufferDynamicInfo *dyn_buffer = uniform_set_info->dynamic_buffers[curr_dynamic_buffer];
+						set_heap_walkers.resources.advance(num_resource_descs * dyn_buffer->frame_idx);
+						dynamic_resources_to_skip = num_resource_descs * (frames.size() - dyn_buffer->frame_idx - 1u);
+						++curr_dynamic_buffer;
+					}
+
 					// If there is ambiguity and it didn't clarify as SRVs, skip them, which come first. [[SRV_UAV_AMBIGUITY]]
-					if (srv_uav_ambiguity && shader_set.bindings[i].res_class != RES_CLASS_SRV) {
+					if (srv_uav_ambiguity && binding.res_class != RES_CLASS_SRV) {
 						set_heap_walkers.resources.advance(num_resource_descs);
 					}
 
@@ -4434,7 +4568,7 @@ void RenderingDeviceDriverD3D12::_command_bind_uniform_set(CommandBufferID p_cmd
 					frame_heap_walkers.resources->advance(num_resource_descs);
 
 					// If there is ambiguity and it didn't clarify as UAVs, skip them, which come later. [[SRV_UAV_AMBIGUITY]]
-					if (srv_uav_ambiguity && shader_set.bindings[i].res_class != RES_CLASS_UAV) {
+					if (srv_uav_ambiguity && binding.res_class != RES_CLASS_UAV) {
 						set_heap_walkers.resources.advance(num_resource_descs);
 					}
 
@@ -4443,7 +4577,7 @@ void RenderingDeviceDriverD3D12::_command_bind_uniform_set(CommandBufferID p_cmd
 			}
 
 			{
-				const ShaderInfo::UniformBindingInfo::RootSignatureLocation &rs_loc_sampler = shader_set.bindings[i].root_sig_locations.sampler;
+				const ShaderInfo::UniformBindingInfo::RootSignatureLocation &rs_loc_sampler = binding.root_sig_locations.sampler;
 				if (rs_loc_sampler.root_param_idx != UINT32_MAX) { // Location used?
 					DEV_ASSERT(num_sampler_descs);
 					DEV_ASSERT(!srv_uav_ambiguity); // [[SRV_UAV_AMBIGUITY]]
@@ -4490,7 +4624,7 @@ void RenderingDeviceDriverD3D12::_command_bind_uniform_set(CommandBufferID p_cmd
 		// the shader variant a given set is created upon may not need all of them due to DXC optimizations.
 		// Therefore, at this point we have to advance through the descriptor set descriptor's heap unconditionally.
 
-		set_heap_walkers.resources.advance(num_resource_descs);
+		set_heap_walkers.resources.advance(num_resource_descs + dynamic_resources_to_skip);
 		if (srv_uav_ambiguity) {
 			DEV_ASSERT(num_resource_descs);
 			if (!resource_used) {
@@ -4519,6 +4653,7 @@ void RenderingDeviceDriverD3D12::_command_bind_uniform_set(CommandBufferID p_cmd
 
 	last_bind->root_signature_crc = root_sig_crc;
 	last_bind->segment_serial = frames[frame_idx].segment_serial;
+	last_bind->dynamic_state_mask = dynamic_state_mask;
 }
 
 /******************/
