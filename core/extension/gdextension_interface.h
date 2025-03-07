@@ -790,15 +790,38 @@ typedef struct {
 	const char *string;
 } GDExtensionGodotVersion;
 
+typedef struct {
+	uint32_t major;
+	uint32_t minor;
+	uint32_t patch;
+	uint32_t hex; // Full version encoded as hexadecimal with one byte (2 hex digits) per number (e.g. for "3.1.12" it would be 0x03010C)
+	const char *status; // (e.g. "stable", "beta", "rc1", "rc2")
+	const char *build; // (e.g. "custom_build")
+	const char *hash; // Full Git commit hash.
+	uint64_t timestamp; // Git commit date UNIX timestamp in seconds, or 0 if unavailable.
+	const char *string; // (e.g. "Godot v3.1.4.stable.official.mono")
+} GDExtensionGodotVersion2;
+
 /**
  * @name get_godot_version
  * @since 4.1
+ * @deprecated in Godot 4.5. Use `get_godot_version2` instead.
  *
  * Gets the Godot version that the GDExtension was loaded into.
  *
  * @param r_godot_version A pointer to the structure to write the version information into.
  */
 typedef void (*GDExtensionInterfaceGetGodotVersion)(GDExtensionGodotVersion *r_godot_version);
+
+/**
+ * @name get_godot_version2
+ * @since 4.5
+ *
+ * Gets the Godot version that the GDExtension was loaded into.
+ *
+ * @param r_godot_version A pointer to the structure to write the version information into.
+ */
+typedef void (*GDExtensionInterfaceGetGodotVersion2)(GDExtensionGodotVersion2 *r_godot_version);
 
 /* INTERFACE: Memory */
 
