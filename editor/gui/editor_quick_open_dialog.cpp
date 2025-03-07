@@ -337,8 +337,10 @@ void QuickOpenResultContainer::init(const Vector<StringName> &p_base_types) {
 
 	const bool fuzzy_matching = EDITOR_GET("filesystem/quick_open_dialog/enable_fuzzy_matching");
 	const bool include_addons = EDITOR_GET("filesystem/quick_open_dialog/include_addons");
+	const bool history_file_mode = EDITOR_GET("filesystem/quick_open_dialog/enable_history_file_mode");
 	fuzzy_search_toggle->set_pressed_no_signal(fuzzy_matching);
 	include_addons_toggle->set_pressed_no_signal(include_addons);
+	history_file_mode_toggle->set_pressed_no_signal(history_file_mode);
 	never_opened = false;
 
 	const bool enable_highlights = EDITOR_GET("filesystem/quick_open_dialog/show_search_highlight");
@@ -472,7 +474,7 @@ void QuickOpenResultContainer::update_results() {
 
 void QuickOpenResultContainer::_use_default_candidates() {
 	bool history_file_mode = EDITOR_GET("filesystem/quick_open_dialog/enable_history_file_mode");
-	if (filepaths.size() <= SHOW_ALL_FILES_THRESHOLD and history_file_mode != true) {
+	if (filepaths.size() <= SHOW_ALL_FILES_THRESHOLD && !history_file_mode) {
 		candidates.resize(filepaths.size());
 		QuickOpenResultCandidate *candidates_write = candidates.ptrw();
 		for (const String &filepath : filepaths) {
