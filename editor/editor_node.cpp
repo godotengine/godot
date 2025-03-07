@@ -2070,26 +2070,27 @@ void EditorNode::restart_editor(bool p_goto_project_manager) {
 }
 
 void EditorNode::_save_all_scenes() {
-	bool all_saved = true;
+	scenes_to_save_as.clear(); // In case saving was canceled before.
 	for (int i = 0; i < editor_data.get_edited_scene_count(); i++) {
 		Node *scene = editor_data.get_edited_scene_root(i);
 		if (scene) {
-			if (!scene->get_scene_file_path().is_empty() && DirAccess::exists(scene->get_scene_file_path().get_base_dir())) {
+			const String &path = scene->get_scene_file_path();
+			if (!path.is_empty() && DirAccess::exists(path.get_base_dir())) {
 				if (i != editor_data.get_edited_scene()) {
-					_save_scene(scene->get_scene_file_path(), i);
+					_save_scene(path, i);
 				} else {
-					_save_scene_with_preview(scene->get_scene_file_path());
+					_save_scene_with_preview(path);
 				}
-			} else if (!scene->get_scene_file_path().is_empty()) {
-				all_saved = false;
+			} else {
+				scenes_to_save_as.push_back(i);
 			}
 		}
 	}
-
-	if (!all_saved) {
-		show_warning(TTR("Could not save one or more scenes!"), TTR("Save All Scenes"));
-	}
 	save_default_environment();
+
+	if (!scenes_to_save_as.is_empty()) {
+		_proceed_save_asing_scene_tabs();
+	}
 }
 
 void EditorNode::_mark_unsaved_scenes() {
@@ -2134,8 +2135,9 @@ void EditorNode::_dialog_action(String p_file) {
 		case FILE_CLOSE:
 		case SCENE_TAB_CLOSE:
 		case FILE_SAVE_SCENE:
+		case FILE_MULTI_SAVE_AS_SCENE:
 		case FILE_SAVE_AS_SCENE: {
-			int scene_idx = (current_menu_option == FILE_SAVE_SCENE || current_menu_option == FILE_SAVE_AS_SCENE) ? -1 : tab_closing_idx;
+			int scene_idx = (current_menu_option == FILE_SAVE_SCENE || current_menu_option == FILE_SAVE_AS_SCENE || current_menu_option == FILE_MULTI_SAVE_AS_SCENE) ? -1 : tab_closing_idx;
 
 			if (file->get_file_mode() == EditorFileDialog::FILE_MODE_SAVE_FILE) {
 				bool same_open_scene = false;
@@ -2161,6 +2163,10 @@ void EditorNode::_dialog_action(String p_file) {
 					// Update the path of the edited scene to ensure later do/undo action history matches.
 					editor_data.set_scene_path(editor_data.get_edited_scene(), p_file);
 				}
+			}
+
+			if (current_menu_option == FILE_MULTI_SAVE_AS_SCENE) {
+				_proceed_save_asing_scene_tabs();
 			}
 
 		} break;
@@ -2819,8 +2825,9 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 			}
 			[[fallthrough]];
 		}
+		case FILE_MULTI_SAVE_AS_SCENE:
 		case FILE_SAVE_AS_SCENE: {
-			int scene_idx = (p_option == FILE_SAVE_SCENE || p_option == FILE_SAVE_AS_SCENE) ? -1 : tab_closing_idx;
+			int scene_idx = (p_option == FILE_SAVE_SCENE || p_option == FILE_SAVE_AS_SCENE || p_option == FILE_MULTI_SAVE_AS_SCENE) ? -1 : tab_closing_idx;
 
 			Node *scene = editor_data.get_edited_scene_root(scene_idx);
 
@@ -5645,6 +5652,16 @@ void EditorNode::_proceed_closing_scene_tabs() {
 	ERR_FAIL_COND(tab_idx < 0);
 
 	_scene_tab_closed(tab_idx);
+}
+
+void EditorNode::_proceed_save_asing_scene_tabs() {
+	if (scenes_to_save_as.is_empty()) {
+		return;
+	}
+	int scene_idx = scenes_to_save_as.front()->get();
+	scenes_to_save_as.pop_front();
+	_set_current_scene(scene_idx);
+	_menu_option_confirm(FILE_MULTI_SAVE_AS_SCENE, false);
 }
 
 bool EditorNode::_is_closing_editor() const {
