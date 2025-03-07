@@ -58,6 +58,7 @@
 #include "scene/gui/box_container.h"
 #include "scene/gui/control.h"
 #include "scene/main/window.h"
+#include "scene/resources/image_texture.h"
 #include "scene/resources/theme.h"
 
 EditorInterface *EditorInterface::singleton = nullptr;
@@ -728,6 +729,7 @@ String EditorInterface::get_playing_scene() const {
 	return EditorRunBar::get_singleton()->get_playing_scene();
 }
 
+#ifndef MOVIE_WRITER_DISABLED
 void EditorInterface::set_movie_maker_enabled(bool p_enabled) {
 	EditorRunBar::get_singleton()->set_movie_maker_enabled(p_enabled);
 }
@@ -735,6 +737,7 @@ void EditorInterface::set_movie_maker_enabled(bool p_enabled) {
 bool EditorInterface::is_movie_maker_enabled() const {
 	return EditorRunBar::get_singleton()->is_movie_maker_enabled();
 }
+#endif // MOVIE_WRITER_DISABLED
 
 #ifdef TOOLS_ENABLED
 void EditorInterface::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
@@ -847,10 +850,12 @@ void EditorInterface::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_playing_scene"), &EditorInterface::is_playing_scene);
 	ClassDB::bind_method(D_METHOD("get_playing_scene"), &EditorInterface::get_playing_scene);
 
+#ifndef MOVIE_WRITER_DISABLED
 	ClassDB::bind_method(D_METHOD("set_movie_maker_enabled", "enabled"), &EditorInterface::set_movie_maker_enabled);
 	ClassDB::bind_method(D_METHOD("is_movie_maker_enabled"), &EditorInterface::is_movie_maker_enabled);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "movie_maker_enabled"), "set_movie_maker_enabled", "is_movie_maker_enabled");
+#endif // MOVIE_WRITER_DISABLED
 }
 
 void EditorInterface::create() {
