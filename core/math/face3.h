@@ -236,3 +236,6 @@ bool Face3::intersects_aabb2(const AABB &p_aabb) const {
 	}
 	return true;
 }
+
+template <>
+struct is_zero_constructible<Face3> : std::true_type {};

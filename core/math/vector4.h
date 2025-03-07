@@ -302,3 +302,6 @@ _FORCE_INLINE_ Vector4 operator*(int32_t p_scalar, const Vector4 &p_vec) {
 _FORCE_INLINE_ Vector4 operator*(int64_t p_scalar, const Vector4 &p_vec) {
 	return p_vec * p_scalar;
 }
+
+template <>
+struct is_zero_constructible<Vector4> : std::true_type {};

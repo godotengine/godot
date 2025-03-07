@@ -495,3 +495,6 @@ AABB AABB::quantized(real_t p_unit) const {
 	ret.quantize(p_unit);
 	return ret;
 }
+
+template <>
+struct is_zero_constructible<AABB> : std::true_type {};
