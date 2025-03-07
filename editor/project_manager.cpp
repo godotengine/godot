@@ -677,7 +677,7 @@ void ProjectManager::_rename_project() {
 }
 
 void ProjectManager::_erase_project() {
-	const HashSet<String> &selected_list = project_list->get_selected_project_keys();
+	const Vector<ProjectList::Item> &selected_list = project_list->get_selected_projects();
 
 	if (selected_list.size() == 0) {
 		return;
@@ -685,18 +685,17 @@ void ProjectManager::_erase_project() {
 
 	String confirm_message;
 	if (selected_list.size() >= 2) {
-		confirm_message = vformat(TTR("Remove %d projects from the list?"), selected_list.size());
+		confirm_message = vformat(TTR("Remove %d projects from the list?") + "\n" + TTR("Project files and user data won't be removed from disk."), selected_list.size());
 	} else {
-		confirm_message = TTR("Remove this project from the list?");
+		confirm_message = vformat(TTR("Remove project \"%s\" from the list?") + "\n" + TTR("Project files and user data won't be removed from disk."), selected_list[0].project_name);
 	}
 
 	erase_ask_label->set_text(confirm_message);
-	//delete_project_contents->set_pressed(false);
 	erase_ask->popup_centered();
 }
 
 void ProjectManager::_erase_missing_projects() {
-	erase_missing_ask->set_text(TTR("Remove all missing projects from the list?\nThe project folders' contents won't be modified."));
+	erase_missing_ask->set_text(TTR("Remove all missing projects from the list?") + "\n" + TTR("Project files and user data won't be removed from disk."));
 	erase_missing_ask->popup_centered();
 }
 
