@@ -421,6 +421,9 @@ bool Utilities::has_os_feature(const String &p_feature) const {
 	if (p_feature == "etc2") {
 		return config->etc2_supported;
 	}
+	if (p_feature == "astc_hdr") {
+		return config->astc_hdr_supported;
+	}
 
 	return false;
 }
