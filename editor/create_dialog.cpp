@@ -189,11 +189,16 @@ bool CreateDialog::_should_hide_type(const StringName &p_type) const {
 			int i = script_path.find_char('/', 13); // 13 is length of "res://addons/".
 			while (i > -1) {
 				const String plugin_path = script_path.substr(0, i).path_join("plugin.cfg");
-				if (FileAccess::exists(plugin_path)) {
-					return !EditorNode::get_singleton()->is_addon_plugin_enabled(plugin_path);
+				if (FileAccess::exists(plugin_path) && !EditorNode::get_singleton()->is_addon_plugin_enabled(plugin_path)) {
+					return true;
 				}
 				i = script_path.find_char('/', i + 1);
 			}
+		}
+
+		Ref<Script> scr = EditorNode::get_editor_data().script_class_load_script(p_type);
+		if (scr.is_valid() && !scr->is_attachable()) {
+			return true; // Hide unattachable scripts.
 		}
 	}
 
