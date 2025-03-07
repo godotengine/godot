@@ -364,4 +364,7 @@ void Vector4i::zero() {
 	x = y = z = w = 0;
 }
 
+template <>
+struct is_zero_constructible<Vector4i> : std::true_type {};
+
 #endif // VECTOR4I_H

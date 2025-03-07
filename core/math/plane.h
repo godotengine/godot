@@ -133,4 +133,7 @@ bool Plane::operator!=(const Plane &p_plane) const {
 	return normal != p_plane.normal || d != p_plane.d;
 }
 
+template <>
+struct is_zero_constructible<Plane> : std::true_type {};
+
 #endif // PLANE_H

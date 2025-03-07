@@ -336,4 +336,7 @@ void Vector3i::zero() {
 	x = y = z = 0;
 }
 
+template <>
+struct is_zero_constructible<Vector3i> : std::true_type {};
+
 #endif // VECTOR3I_H
