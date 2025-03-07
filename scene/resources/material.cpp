@@ -2429,7 +2429,7 @@ Material3D::Material3D(bool p_orm) :
 		flags[i] = false;
 	}
 
-	force_vertex_shading = GLOBAL_GET("rendering/quality/shading/force_vertex_shading");
+	force_vertex_shading = GLOBAL_GET_CACHED(bool, "rendering/quality/shading/force_vertex_shading");
 
 	diffuse_mode = DIFFUSE_BURLEY;
 	specular_mode = SPECULAR_SCHLICK_GGX;

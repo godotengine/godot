@@ -66,6 +66,10 @@ class ProjectSettings : public Object {
 
 	int _dirty_this_frame = 2;
 
+	// Starting version from 1 ensures that all callers can reset their tested version to 0,
+	// and will always detect the initial project settings as a "change".
+	uint32_t _version = 1;
+
 public:
 	typedef Map<String, Variant> CustomMap;
 	static const String PROJECT_DATA_DIR_NAME_SUFFIX;
@@ -201,6 +205,10 @@ public:
 	// There is therefore the potential for a change to be missed. Persisting the counter
 	// for two frames avoids this, at the cost of a frame delay.
 	bool has_changes() const { return _dirty_this_frame == 1; }
+
+	// Testing a version allows fast cached GET_GLOBAL macros.
+	uint32_t get_version() const { return _version; }
+
 	void update();
 
 	ProjectSettings();
@@ -217,5 +225,23 @@ Variant _GLOBAL_DEF_ALIAS(const String &p_var, const String &p_old_name, const V
 #define GLOBAL_DEF_ALIAS(m_var, m_old_name, m_value) _GLOBAL_DEF_ALIAS(m_var, m_old_name, m_value)
 #define GLOBAL_DEF_ALIAS_RST(m_var, m_old_name, m_value) _GLOBAL_DEF(m_var, m_old_name, m_value, true)
 #define GLOBAL_GET(m_var) ProjectSettings::get_singleton()->get(m_var)
+
+/////////////////////////////////////////////////////////////////////////////////////////
+// Cached versions of GLOBAL_GET.
+// Cached but uses a typed variable for storage, this can be more efficient.
+#define GLOBAL_GET_CACHED(m_type, m_setting_name) ([](const char *p_name) -> m_type {\
+static_assert(std::is_trivially_destructible<m_type>::value, "GLOBAL_GET_CACHED must use a trivial type that allows static lifetime.");\
+static m_type local_var;\
+static uint32_t local_version = 0;\
+static Mutex local_mutex;\
+uint32_t new_version = ProjectSettings::get_singleton()->get_version();\
+if (local_version != new_version) {\
+	MutexLock lock(local_mutex);\
+	local_version = new_version;\
+	local_var = ProjectSettings::get_singleton()->get(p_name);\
+	return local_var;\
+}\
+MutexLock lock(local_mutex);\
+return local_var; })(m_setting_name)
 
 #endif // PROJECT_SETTINGS_H
