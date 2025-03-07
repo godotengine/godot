@@ -1433,7 +1433,7 @@ void AnimationPlayerEditor::_prepare_onion_layers_2() {
 	// Render every past/future step with the capture shader.
 
 	VS::get_singleton()->canvas_item_set_material(onion.capture.canvas_item, onion.capture.material->get_rid());
-	onion.capture.material->set_shader_param("bkg_color", GLOBAL_GET("rendering/environment/default_clear_color"));
+	onion.capture.material->set_shader_param("bkg_color", GLOBAL_GET_CACHED(Color, "rendering/environment/default_clear_color"));
 	onion.capture.material->set_shader_param("differences_only", onion.differences_only);
 	onion.capture.material->set_shader_param("present", onion.differences_only ? VS::get_singleton()->viewport_get_texture(present_rid) : RID());
 

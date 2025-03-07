@@ -145,7 +145,7 @@ void _physics_interpolation_warning(const char *p_function, const char *p_file, 
 		warn_count = warn_max;
 		warn_timeout = time_now + warn_timeout_seconds;
 
-		if (GLOBAL_GET("debug/settings/physics_interpolation/enable_warnings")) {
+		if (GLOBAL_GET_CACHED(bool, "debug/settings/physics_interpolation/enable_warnings")) {
 			// UINT64_MAX means unused.
 			if (p_id == UINT64_MAX) {
 				_err_print_error(p_function, p_file, p_line, "[Physics interpolation] " + String(p_warn_string) + " (possibly benign).", ERR_HANDLER_WARNING);

@@ -184,12 +184,12 @@ void MeshInstance::_resolve_skeleton_path() {
 
 bool MeshInstance::_is_global_software_skinning_enabled() {
 	// Check if forced in project settings.
-	if (GLOBAL_GET("rendering/quality/skinning/force_software_skinning")) {
+	if (GLOBAL_GET_CACHED(bool, "rendering/quality/skinning/force_software_skinning")) {
 		return true;
 	}
 
 	// Check if enabled in project settings.
-	if (!GLOBAL_GET("rendering/quality/skinning/software_skinning_fallback")) {
+	if (!GLOBAL_GET_CACHED(bool, "rendering/quality/skinning/software_skinning_fallback")) {
 		return false;
 	}
 

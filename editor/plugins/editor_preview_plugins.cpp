@@ -867,7 +867,7 @@ Ref<Texture> EditorFontPreviewPlugin::generate_from_path(const String &p_path, c
 
 	Ref<Font> font = sampled_font;
 
-	const Color c = GLOBAL_GET("rendering/environment/default_clear_color");
+	const Color c = GLOBAL_GET_CACHED(Color, "rendering/environment/default_clear_color");
 	const float fg = c.get_luminance() < 0.5 ? 1.0 : 0.0;
 	font->draw(canvas_item, pos, sampled_text, Color(fg, fg, fg));
 
