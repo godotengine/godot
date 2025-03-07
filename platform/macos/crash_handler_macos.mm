@@ -49,6 +49,7 @@
 #include <execinfo.h>
 #include <signal.h>
 #include <stdlib.h>
+#include <unistd.h>
 
 #include <mach-o/dyld.h>
 #include <mach-o/getsect.h>
@@ -100,9 +101,13 @@ static void handle_crash(int sig) {
 		OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_CRASH);
 	}
 
-	// Dump the backtrace to stderr with a message to the user
+	// Dump the backtrace to stderr with a message to the user.
 	print_error("\n================================================================");
-	print_error(vformat("%s: Program crashed with signal %d", __FUNCTION__, sig));
+	if (isatty(fileno(stderr))) {
+		print_error(vformat("\x1b[1;91m%s: Program crashed with signal %d.\x1b[0m", __FUNCTION__, sig));
+	} else {
+		print_error(vformat("%s: Program crashed with signal %d.", __FUNCTION__, sig));
+	}
 
 	// Print the engine version just before, so that people are reminded to include the version in backtrace reports.
 	if (String(VERSION_HASH).is_empty()) {
@@ -169,7 +174,13 @@ static void handle_crash(int sig) {
 				}
 			}
 
-			print_error(vformat("[%d] %s", (int64_t)i, output));
+			if (isatty(fileno(stderr))) {
+				// Print colors using ANSI escape codes for easier visual grepping.
+				print_error(vformat("\x1b[94m[%d] \x1b[96m%s\x1b[0m", uint64_t(i), output.utf8().ptr()));
+			} else {
+				// Not a TTY (could be writing to a file). Don't use ANSI escape codes.
+				print_error(vformat("[%d] %s", uint64_t(i), output.utf8().ptr()));
+			}
 		}
 
 		free(strings);
