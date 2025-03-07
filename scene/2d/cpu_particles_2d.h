@@ -186,6 +186,7 @@ private:
 	void _update_internal();
 	void _particles_process(double p_delta);
 	void _update_particle_data_buffer();
+	void _set_emitting();
 
 	Mutex update_mutex;
 

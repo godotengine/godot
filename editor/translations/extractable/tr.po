@@ -18,6 +18,9 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
 "X-Generator: Weblate 5.5-dev\n"
 
+msgid "All Recognized"
+msgstr "Hepsi Tanındı"
+
 msgid "New Code Region"
 msgstr "Yeni Kod Bölgesi"
 
@@ -76,14 +79,14 @@ msgstr "Aç"
 msgid "Select Current Folder"
 msgstr "Açık Olan Klasörü Seç"
 
+msgid "Save"
+msgstr "Kaydet"
+
 msgid "Select This Folder"
 msgstr "Bu Klasörü Seç"
 
 msgid "You don't have permission to access contents of this folder."
 msgstr "Bu klasörün içeriğine erişim izniniz yok."
-
-msgid "All Recognized"
-msgstr "Hepsi Tanındı"
 
 msgid "All Files"
 msgstr "Tüm Dosyalar"
@@ -99,9 +102,6 @@ msgstr "Bir Klasör Aç"
 
 msgid "Open a File or Directory"
 msgstr "Bir Dosya ya da Klasör Aç"
-
-msgid "Save"
-msgstr "Kaydet"
 
 msgid "Save a File"
 msgstr "Bir Dosya Kaydet"

@@ -32,6 +32,7 @@
 
 #include "../joints/jolt_joint_3d.h"
 #include "../jolt_project_settings.h"
+#include "../misc/jolt_math_funcs.h"
 #include "../misc/jolt_type_conversions.h"
 #include "../shapes/jolt_shape_3d.h"
 #include "../spaces/jolt_broad_phase_layer.h"
@@ -543,15 +544,14 @@ JoltBody3D::~JoltBody3D() {
 void JoltBody3D::set_transform(Transform3D p_transform) {
 	JOLT_ENSURE_SCALE_NOT_ZERO(p_transform, vformat("An invalid transform was passed to physics body '%s'.", to_string()));
 
-	const Vector3 new_scale = p_transform.basis.get_scale();
+	Vector3 new_scale;
+	JoltMath::decompose(p_transform, new_scale);
 
 	// Ideally we would do an exact comparison here, but due to floating-point precision this would be invalidated very often.
 	if (!scale.is_equal_approx(new_scale)) {
 		scale = new_scale;
 		_shapes_changed();
 	}
-
-	p_transform.basis.orthonormalize();
 
 	if (!in_space()) {
 		jolt_settings->mPosition = to_jolt_r(p_transform.origin);

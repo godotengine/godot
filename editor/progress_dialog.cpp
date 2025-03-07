@@ -166,7 +166,8 @@ void ProgressDialog::_popup() {
 
 	center_panel->set_custom_minimum_size(ms);
 
-	Window *current_window = get_last_exclusive_window();
+	Window *current_window = SceneTree::get_singleton()->get_root()->get_last_exclusive_window();
+	ERR_FAIL_NULL(current_window);
 	reparent(current_window);
 
 	// Ensures that events are properly released before the dialog blocks input.

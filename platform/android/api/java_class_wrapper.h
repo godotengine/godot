@@ -271,6 +271,8 @@ class JavaClassWrapper : public Object {
 	bool _get_type_sig(JNIEnv *env, jobject obj, uint32_t &sig, String &strsig);
 #endif
 
+	Ref<JavaObject> exception;
+
 	Ref<JavaClass> _wrap(const String &p_class, bool p_allow_private_methods_access);
 
 	static JavaClassWrapper *singleton;
@@ -283,6 +285,10 @@ public:
 
 	Ref<JavaClass> wrap(const String &p_class) {
 		return _wrap(p_class, false);
+	}
+
+	Ref<JavaObject> get_exception() {
+		return exception;
 	}
 
 #ifdef ANDROID_ENABLED

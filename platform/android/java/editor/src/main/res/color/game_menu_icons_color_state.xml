@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+	<item android:color="@color/game_menu_icon_activated_color" android:state_activated="true" />
+	<item android:color="@color/game_menu_icon_activated_color" android:state_selected="true" />
+	<item android:color="@color/game_menu_icon_activated_color" android:state_pressed="true" />
+	<item android:color="@color/game_menu_icon_activated_color" android:state_checked="true" />
+	<item android:color="@color/game_menu_icon_disabled_color" android:state_enabled="false" />
+	<item android:color="@color/game_menu_icon_default_color" />
+</selector>

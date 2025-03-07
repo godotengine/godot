@@ -7,7 +7,7 @@ import re
 import subprocess
 import sys
 from collections import OrderedDict
-from io import StringIO, TextIOWrapper
+from io import StringIO, TextIOBase
 from pathlib import Path
 from typing import Generator, List, Optional, Union, cast
 
@@ -768,9 +768,10 @@ def show_progress(env):
 
             # Progress reporting is not available in non-TTY environments since it
             # messes with the output (for example, when writing to a file).
-            self.display = cast(bool, self.max and env["progress"] and sys.stdout.isatty())
+            self.display = cast(bool, env["progress"] and sys.stdout.isatty())
             if self.display and not self.max:
                 print_info("Performing initial build, progress percentage unavailable!")
+                self.display = False
 
         def __call__(self, node, *args, **kw):
             self.count += 1
@@ -853,9 +854,6 @@ def clean_cache(cache_path: str, cache_limit: int, verbose: bool) -> None:
 
 
 def prepare_cache(env) -> None:
-    if env.GetOption("clean"):
-        return
-
     cache_path = ""
     if env["cache_path"]:
         cache_path = cast(str, env["cache_path"])
@@ -907,21 +905,19 @@ def prepare_timer():
     def print_elapsed_time(time_at_start: float):
         time_elapsed = time.time() - time_at_start
         time_formatted = time.strftime("%H:%M:%S", time.gmtime(time_elapsed))
-        time_centiseconds = round((time_elapsed % 1) * 100)
-        print_info(f"Time elapsed: {time_formatted}.{time_centiseconds}")
+        time_centiseconds = (time_elapsed % 1) * 100
+        print_info(f"Time elapsed: {time_formatted}.{time_centiseconds:02.0f}")
 
     atexit.register(print_elapsed_time, time.time())
 
 
 def dump(env):
-    # Dumps latest build information for debugging purposes and external tools.
-    from json import dump
+    """
+    Dumps latest build information for debugging purposes and external tools.
+    """
 
-    def non_serializable(obj):
-        return "<<non-serializable: %s>>" % (type(obj).__qualname__)
-
-    with open(".scons_env.json", "w", encoding="utf-8", newline="\n") as f:
-        dump(env.Dictionary(), f, indent=4, default=non_serializable)
+    with open(".scons_env.json", "w", encoding="utf-8", newline="\n") as file:
+        file.write(env.Dump(format="json"))
 
 
 # Custom Visual Studio project generation logic that supports any platform that has a msvs.py
@@ -1201,7 +1197,7 @@ def generate_vs_project(env, original_args, project_name="godot"):
         vsconf = ""
         for a in vs_configuration["arches"]:
             if arch == a["architecture"]:
-                vsconf = f'{target}|{a["platform"]}'
+                vsconf = f"{target}|{a['platform']}"
                 break
 
         condition = "'$(GodotConfiguration)|$(GodotPlatform)'=='" + vsconf + "'"
@@ -1217,7 +1213,7 @@ def generate_vs_project(env, original_args, project_name="godot"):
             properties.append(
                 "<ActiveProjectItemList_%s>;%s;</ActiveProjectItemList_%s>" % (x, ";".join(itemlist[x]), x)
             )
-        output = f'bin\\godot{env["PROGSUFFIX"]}'
+        output = f"bin\\godot{env['PROGSUFFIX']}"
 
         with open("misc/msvs/props.template", "r", encoding="utf-8") as file:
             props_template = file.read()
@@ -1453,7 +1449,7 @@ def generated_wrapper(
     guard: Optional[bool] = None,
     prefix: str = "",
     suffix: str = "",
-) -> Generator[TextIOWrapper, None, None]:
+) -> Generator[TextIOBase, None, None]:
     """
     Wrapper class to automatically handle copyright headers and header guards
     for generated scripts. Meant to be invoked via `with` statement similar to
@@ -1475,8 +1471,7 @@ def generated_wrapper(
         if isinstance(path, list):
             if len(path) > 1:
                 print_warning(
-                    "Attempting to use generated wrapper with multiple targets; "
-                    f"will only use first entry: {path[0]}"
+                    f"Attempting to use generated wrapper with multiple targets; will only use first entry: {path[0]}"
                 )
             path = path[0]
         if not hasattr(path, "get_abspath"):

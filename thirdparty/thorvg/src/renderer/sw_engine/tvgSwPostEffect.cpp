@@ -32,39 +32,27 @@ struct SwGaussianBlur
     static constexpr int MAX_LEVEL = 3;
     int level;
     int kernel[MAX_LEVEL];
+    int extends;
 };
 
 
-static void _gaussianExtendRegion(RenderRegion& region, int extra, int8_t direction)
+static inline int _gaussianEdgeWrap(int end, int idx)
 {
-    //bbox region expansion for feathering
-    if (direction != 2) {
-        region.x = -extra;
-        region.w = extra * 2;
-    }
-    if (direction != 1) {
-        region.y = -extra;
-        region.h = extra * 2;
-    }
+    auto r = idx % (end + 1);
+    return (r < 0) ? (end + 1) + r : r;
 }
 
 
-static int _gaussianEdgeWrap(int end, int idx)
-{
-    auto r = idx % end;
-    return (r < 0) ? end + r : r;
-}
-
-
-static int _gaussianEdgeExtend(int end, int idx)
+static inline int _gaussianEdgeExtend(int end, int idx)
 {
     if (idx < 0) return 0;
-    else if (idx >= end) return end - 1;
+    else if (idx > end) return end;
     return idx;
 }
 
 
-static int _gaussianRemap(int end, int idx, int border)
+template<int border>
+static inline int _gaussianRemap(int end, int idx)
 {
     if (border == 1) return _gaussianEdgeWrap(end, idx);
     return _gaussianEdgeExtend(end, idx);
@@ -72,7 +60,8 @@ static int _gaussianRemap(int end, int idx, int border)
 
 
 //TODO: SIMD OPTIMIZATION?
-static void _gaussianFilter(uint8_t* dst, uint8_t* src, int32_t stride, int32_t w, int32_t h, const SwBBox& bbox, int32_t dimension, int border, bool flipped)
+template<int border = 0>
+static void _gaussianFilter(uint8_t* dst, uint8_t* src, int32_t stride, int32_t w, int32_t h, const SwBBox& bbox, int32_t dimension, bool flipped)
 {
     if (flipped) {
         src += (bbox.min.x * stride + bbox.min.y) << 2;
@@ -83,6 +72,7 @@ static void _gaussianFilter(uint8_t* dst, uint8_t* src, int32_t stride, int32_t 
     }
 
     auto iarr = 1.0f / (dimension + dimension + 1);
+    auto end = w - 1;
 
     #pragma omp parallel for
     for (int y = 0; y < h; ++y) {
@@ -94,7 +84,7 @@ static void _gaussianFilter(uint8_t* dst, uint8_t* src, int32_t stride, int32_t 
 
         //initial accumulation
         for (int x = l; x < r; ++x) {
-            auto id = (_gaussianRemap(w, x, border) + p) * 4;
+            auto id = (_gaussianRemap<border>(end, x) + p) * 4;
             acc[0] += src[id++];
             acc[1] += src[id++];
             acc[2] += src[id++];
@@ -102,16 +92,17 @@ static void _gaussianFilter(uint8_t* dst, uint8_t* src, int32_t stride, int32_t 
         }
         //perform filtering
         for (int x = 0; x < w; ++x, ++r, ++l) {
-            auto rid = (_gaussianRemap(w, r, border) + p) * 4;
-            auto lid = (_gaussianRemap(w, l, border) + p) * 4;
+            auto rid = (_gaussianRemap<border>(end, r) + p) * 4;
+            auto lid = (_gaussianRemap<border>(end, l) + p) * 4;
             acc[0] += src[rid++] - src[lid++];
             acc[1] += src[rid++] - src[lid++];
             acc[2] += src[rid++] - src[lid++];
             acc[3] += src[rid] - src[lid];
-            dst[i++] = static_cast<uint8_t>(acc[0] * iarr + 0.5f);
-            dst[i++] = static_cast<uint8_t>(acc[1] * iarr + 0.5f);
-            dst[i++] = static_cast<uint8_t>(acc[2] * iarr + 0.5f);
-            dst[i++] = static_cast<uint8_t>(acc[3] * iarr + 0.5f);
+            //ignored rounding for the performance. It should be originally: acc[idx] * iarr + 0.5f
+            dst[i++] = static_cast<uint8_t>(acc[0] * iarr);
+            dst[i++] = static_cast<uint8_t>(acc[1] * iarr);
+            dst[i++] = static_cast<uint8_t>(acc[2] * iarr);
+            dst[i++] = static_cast<uint8_t>(acc[3] * iarr);
         }
     }
 }
@@ -142,24 +133,41 @@ static int _gaussianInit(SwGaussianBlur* data, float sigma, int quality)
 }
 
 
-bool effectGaussianBlurPrepare(RenderEffectGaussianBlur* params)
+bool effectGaussianBlurRegion(RenderEffectGaussianBlur* params)
 {
-    auto rd = (SwGaussianBlur*)malloc(sizeof(SwGaussianBlur));
+    //bbox region expansion for feathering
+    auto& region = params->extend;
+    auto extra = static_cast<SwGaussianBlur*>(params->rd)->extends;
 
-    auto extends = _gaussianInit(rd, params->sigma * params->sigma, params->quality);
-
-    //invalid
-    if (extends == 0) {
-        free(rd);
-        return false;
+    if (params->direction != 2) {
+        region.x = -extra;
+        region.w = extra * 2;
+    }
+    if (params->direction != 1) {
+        region.y = -extra;
+        region.h = extra * 2;
     }
 
-    _gaussianExtendRegion(params->extend, extends, params->direction);
-
-    params->rd = rd;
-    params->valid = true;
-
     return true;
+}
+
+
+void effectGaussianBlurUpdate(RenderEffectGaussianBlur* params, const Matrix& transform)
+{
+    if (!params->rd) params->rd = (SwGaussianBlur*)malloc(sizeof(SwGaussianBlur));
+    auto rd = static_cast<SwGaussianBlur*>(params->rd);
+
+    //compute box kernel sizes
+    auto scale = sqrt(transform.e11 * transform.e11 + transform.e12 * transform.e12);
+    rd->extends = _gaussianInit(rd, std::pow(params->sigma * scale, 2), params->quality);
+
+    //invalid
+    if (rd->extends == 0) {
+        params->valid = false;
+        return;
+    }
+
+    params->valid = true;
 }
 
 
@@ -184,7 +192,7 @@ bool effectGaussianBlur(SwCompositor* cmp, SwSurface* surface, const RenderEffec
     //horizontal
     if (params->direction != 2) {
         for (int i = 0; i < data->level; ++i) {
-            _gaussianFilter(reinterpret_cast<uint8_t*>(back), reinterpret_cast<uint8_t*>(front), stride, w, h, bbox, data->kernel[i], params->border, false);
+            _gaussianFilter(reinterpret_cast<uint8_t*>(back), reinterpret_cast<uint8_t*>(front), stride, w, h, bbox, data->kernel[i], false);
             std::swap(front, back);
             swapped = !swapped;
         }
@@ -196,7 +204,7 @@ bool effectGaussianBlur(SwCompositor* cmp, SwSurface* surface, const RenderEffec
         std::swap(front, back);
 
         for (int i = 0; i < data->level; ++i) {
-            _gaussianFilter(reinterpret_cast<uint8_t*>(back), reinterpret_cast<uint8_t*>(front), stride, h, w, bbox, data->kernel[i], params->border, true);
+            _gaussianFilter(reinterpret_cast<uint8_t*>(back), reinterpret_cast<uint8_t*>(front), stride, h, w, bbox, data->kernel[i], true);
             std::swap(front, back);
             swapped = !swapped;
         }
@@ -231,6 +239,7 @@ static void _dropShadowFilter(uint32_t* dst, uint32_t* src, int stride, int w, i
         dst += (bbox.min.y * stride + bbox.min.x);
     }
     auto iarr = 1.0f / (dimension + dimension + 1);
+    auto end = w - 1;
 
     #pragma omp parallel for
     for (int y = 0; y < h; ++y) {
@@ -242,15 +251,16 @@ static void _dropShadowFilter(uint32_t* dst, uint32_t* src, int stride, int w, i
 
         //initial accumulation
         for (int x = l; x < r; ++x) {
-            auto id = _gaussianEdgeExtend(w, x) + p;
+            auto id = _gaussianEdgeExtend(end, x) + p;
             acc += A(src[id]);
         }
         //perform filtering
         for (int x = 0; x < w; ++x, ++r, ++l) {
-            auto rid = _gaussianEdgeExtend(w, r) + p;
-            auto lid = _gaussianEdgeExtend(w, l) + p;
+            auto rid = _gaussianEdgeExtend(end, r) + p;
+            auto lid = _gaussianEdgeExtend(end, l) + p;
             acc += A(src[rid]) - A(src[lid]);
-            dst[i++] = ALPHA_BLEND(color, static_cast<uint8_t>(acc * iarr + 0.5f));
+            //ignored rounding for the performance. It should be originally: acc * iarr
+            dst[i++] = ALPHA_BLEND(color, static_cast<uint8_t>(acc * iarr));
         }
     }
 }
@@ -281,9 +291,13 @@ static void _dropShadowShift(uint32_t* dst, uint32_t* src, int stride, SwBBox& r
 }
 
 
-static void _dropShadowExtendRegion(RenderRegion& region, int extra, SwPoint& offset)
+bool effectDropShadowRegion(RenderEffectDropShadow* params)
 {
     //bbox region expansion for feathering
+    auto& region = params->extend;
+    auto& offset = static_cast<SwDropShadow*>(params->rd)->offset;
+    auto extra = static_cast<SwDropShadow*>(params->rd)->extends;
+
     region.x = -extra;
     region.w = extra * 2;
     region.y = -extra;
@@ -293,20 +307,24 @@ static void _dropShadowExtendRegion(RenderRegion& region, int extra, SwPoint& of
     region.y = std::min(region.y + (int32_t)offset.y, region.y);
     region.w += abs(offset.x);
     region.h += abs(offset.y);
+
+    return true;
 }
 
 
-bool effectDropShadowPrepare(RenderEffectDropShadow* params)
+void effectDropShadowUpdate(RenderEffectDropShadow* params, const Matrix& transform)
 {
-    auto rd = (SwDropShadow*)malloc(sizeof(SwDropShadow));
+    if (!params->rd) params->rd = (SwDropShadow*)malloc(sizeof(SwDropShadow));
+    auto rd = static_cast<SwDropShadow*>(params->rd);
 
     //compute box kernel sizes
-    auto extends = _gaussianInit(rd, params->sigma * params->sigma, params->quality);
+    auto scale = sqrt(transform.e11 * transform.e11 + transform.e12 * transform.e12);
+    rd->extends = _gaussianInit(rd, std::pow(params->sigma * scale, 2), params->quality);
 
     //invalid
-    if (extends == 0 || params->color[3] == 0) {
-        free(rd);
-        return false;
+    if (rd->extends == 0 || params->color[3] == 0) {
+        params->valid = false;
+        return;
     }
 
     //offset
@@ -317,13 +335,7 @@ bool effectDropShadowPrepare(RenderEffectDropShadow* params)
         rd->offset = {0, 0};
     }
 
-    //bbox region expansion for feathering
-    _dropShadowExtendRegion(params->extend, extends, rd->offset);
-
-    params->rd = rd;
     params->valid = true;
-
-    return true;
 }
 
 
@@ -405,10 +417,9 @@ bool effectDropShadow(SwCompositor* cmp, SwSurface* surface[2], const RenderEffe
 /* Fill Implementation                                                  */
 /************************************************************************/
 
-bool effectFillPrepare(RenderEffectFill* params)
+void effectFillUpdate(RenderEffectFill* params)
 {
     params->valid = true;
-    return true;
 }
 
 
@@ -456,10 +467,9 @@ bool effectFill(SwCompositor* cmp, const RenderEffectFill* params, bool direct)
 /* Tint Implementation                                                  */
 /************************************************************************/
 
-bool effectTintPrepare(RenderEffectTint* params)
+void effectTintUpdate(RenderEffectTint* params)
 {
     params->valid = true;
-    return true;
 }
 
 
@@ -529,10 +539,10 @@ static uint32_t _trintone(uint32_t s, uint32_t m, uint32_t h, int l)
     }
 }
 
-bool effectTritonePrepare(RenderEffectTritone* params)
+
+void effectTritoneUpdate(RenderEffectTritone* params)
 {
     params->valid = true;
-    return true;
 }
 
 

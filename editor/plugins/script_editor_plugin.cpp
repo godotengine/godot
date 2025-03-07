@@ -497,6 +497,24 @@ ScriptEditor *ScriptEditor::script_editor = nullptr;
 
 /*** SCRIPT EDITOR ******/
 
+String ScriptEditor::_get_debug_tooltip(const String &p_text, Node *p_se) {
+	if (EDITOR_GET("text_editor/behavior/documentation/enable_tooltips")) {
+		return String();
+	}
+
+	// NOTE: See also `ScriptTextEditor::_show_symbol_tooltip()` for documentation tooltips enabled.
+	String debug_value = EditorDebuggerNode::get_singleton()->get_var_value(p_text);
+	if (!debug_value.is_empty()) {
+		constexpr int DISPLAY_LIMIT = 1024;
+		if (debug_value.size() > DISPLAY_LIMIT) {
+			debug_value = debug_value.left(DISPLAY_LIMIT) + "... " + TTR("(truncated)");
+		}
+		debug_value = TTR("Current value: ") + debug_value;
+	}
+
+	return debug_value;
+}
+
 void ScriptEditor::_breaked(bool p_breaked, bool p_can_debug) {
 	if (external_editor_active) {
 		return;
@@ -2626,9 +2644,12 @@ bool ScriptEditor::edit(const Ref<Resource> &p_resource, int p_line, int p_col, 
 	}
 
 	// If we delete a script within the filesystem, the original resource path
-	// is lost, so keep it as metadata to figure out the exact tab to delete.
+	// is lost, so keep it as `edited_file_data` to figure out the exact tab to delete.
 	se->edited_file_data.path = p_resource->get_path();
 	se->edited_file_data.last_modified_time = FileAccess::get_modified_time(p_resource->get_path());
+
+	se->set_tooltip_request_func(callable_mp(this, &ScriptEditor::_get_debug_tooltip));
+
 	if (se->get_edit_menu()) {
 		se->get_edit_menu()->hide();
 		menu_hb->add_child(se->get_edit_menu());
@@ -2796,6 +2817,15 @@ void ScriptEditor::save_all_scripts() {
 	_update_script_names();
 }
 
+void ScriptEditor::update_script_times() {
+	for (int i = 0; i < tab_container->get_tab_count(); i++) {
+		ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(tab_container->get_tab_control(i));
+		if (se) {
+			se->edited_file_data.last_modified_time = FileAccess::get_modified_time(se->edited_file_data.path);
+		}
+	}
+}
+
 void ScriptEditor::apply_scripts() const {
 	for (int i = 0; i < tab_container->get_tab_count(); i++) {
 		ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(tab_container->get_tab_control(i));
@@ -2822,23 +2852,26 @@ void ScriptEditor::_reload_scripts(bool p_refresh_only) {
 		Ref<Resource> edited_res = se->get_edited_resource();
 
 		if (edited_res->is_built_in()) {
-			continue; //internal script, who cares
+			continue; // Internal script, who cares.
 		}
 
-		if (!p_refresh_only) {
-			uint64_t last_date = edited_res->get_last_modified_time();
+		if (p_refresh_only) {
+			// Make sure the modified time is correct.
+			se->edited_file_data.last_modified_time = FileAccess::get_modified_time(edited_res->get_path());
+		} else {
+			uint64_t last_date = se->edited_file_data.last_modified_time;
 			uint64_t date = FileAccess::get_modified_time(edited_res->get_path());
 
 			if (last_date == date) {
 				continue;
 			}
+			se->edited_file_data.last_modified_time = date;
 
 			Ref<Script> scr = edited_res;
 			if (scr.is_valid()) {
 				Ref<Script> rel_scr = ResourceLoader::load(scr->get_path(), scr->get_class(), ResourceFormatLoader::CACHE_MODE_IGNORE);
 				ERR_CONTINUE(rel_scr.is_null());
 				scr->set_source_code(rel_scr->get_source_code());
-				scr->set_last_modified_time(rel_scr->get_last_modified_time());
 				scr->reload(true);
 
 				update_docs_from_script(scr);
@@ -2849,7 +2882,6 @@ void ScriptEditor::_reload_scripts(bool p_refresh_only) {
 				Ref<JSON> rel_json = ResourceLoader::load(json->get_path(), json->get_class(), ResourceFormatLoader::CACHE_MODE_IGNORE);
 				ERR_CONTINUE(rel_json.is_null());
 				json->parse(rel_json->get_parsed_text(), true);
-				json->set_last_modified_time(rel_json->get_last_modified_time());
 			}
 
 			Ref<TextFile> text_file = edited_res;

@@ -144,7 +144,7 @@ private:
 	TextureRect *picker_texture_rect = nullptr;
 	Color picker_color;
 	FileDialog *file_dialog = nullptr;
-	Button *menu_btn = nullptr;
+	MenuButton *menu_btn = nullptr;
 	PopupMenu *options_menu = nullptr;
 
 	MarginContainer *internal_margin = nullptr;
@@ -211,6 +211,7 @@ private:
 
 	Color color;
 	Color old_color;
+	Color pre_picking_color;
 	bool is_picking_color = false;
 
 	bool display_old_color = false;
@@ -306,7 +307,6 @@ private:
 	void _target_gui_input(const Ref<InputEvent> &p_event);
 	void _pick_finished();
 	void _update_menu_items();
-	void _update_menu();
 	void _options_menu_cbk(int p_which);
 
 	// Legacy color picking.

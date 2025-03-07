@@ -308,6 +308,8 @@ void FileAccessWindows::seek_end(int64_t p_position) {
 }
 
 uint64_t FileAccessWindows::get_position() const {
+	ERR_FAIL_NULL_V_MSG(f, 0, "File must be opened before use.");
+
 	int64_t aux_position = _ftelli64(f);
 	if (aux_position < 0) {
 		check_errors();
@@ -416,7 +418,7 @@ uint64_t FileAccessWindows::_get_modified_time(const String &p_file) {
 		file = file.substr(0, file.length() - 1);
 	}
 
-	HANDLE handle = CreateFileW((LPCWSTR)(file.utf16().get_data()), GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, nullptr);
+	HANDLE handle = CreateFileW((LPCWSTR)(file.utf16().get_data()), FILE_READ_ATTRIBUTES, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, nullptr, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, nullptr);
 
 	if (handle != INVALID_HANDLE_VALUE) {
 		FILETIME ft_create, ft_write;

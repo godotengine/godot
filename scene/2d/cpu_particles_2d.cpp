@@ -45,10 +45,22 @@ void CPUParticles2D::set_emitting(bool p_emitting) {
 		return;
 	}
 
+	if (p_emitting && !use_fixed_seed) {
+		set_seed(Math::rand());
+	}
+
 	emitting = p_emitting;
 	if (emitting) {
-		active = true;
-		set_process_internal(true);
+		_set_emitting();
+	}
+}
+
+void CPUParticles2D::_set_emitting() {
+	active = true;
+	set_process_internal(true);
+	// first update before rendering to avoid one frame delay after emitting starts
+	if (time == 0) {
+		_update_internal();
 	}
 }
 
@@ -310,7 +322,8 @@ void CPUParticles2D::restart(bool p_keep_seed) {
 		seed = Math::rand();
 	}
 
-	set_emitting(true);
+	emitting = true;
+	_set_emitting();
 }
 
 void CPUParticles2D::set_direction(Vector2 p_direction) {
@@ -597,7 +610,7 @@ void CPUParticles2D::_validate_property(PropertyInfo &p_property) const {
 	}
 
 	if (p_property.name == "seed" && !use_fixed_seed) {
-		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		p_property.usage = PROPERTY_USAGE_NONE;
 	}
 }
 
@@ -1392,6 +1405,8 @@ void CPUParticles2D::_bind_methods() {
 	BIND_ENUM_CONSTANT(DRAW_ORDER_INDEX);
 	BIND_ENUM_CONSTANT(DRAW_ORDER_LIFETIME);
 
+	ADD_PROPERTY_DEFAULT("seed", 0);
+
 	////////////////////////////////
 
 	ClassDB::bind_method(D_METHOD("set_direction", "direction"), &CPUParticles2D::set_direction);
@@ -1561,6 +1576,7 @@ CPUParticles2D::CPUParticles2D() {
 	set_emitting(true);
 	set_amount(8);
 	set_use_local_coordinates(false);
+	set_seed(Math::rand());
 
 	rng.instantiate();
 

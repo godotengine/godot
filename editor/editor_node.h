@@ -419,7 +419,7 @@ private:
 	bool script_distraction_free = false;
 
 	bool changing_scene = false;
-	bool cmdline_export_mode = false;
+	bool cmdline_mode = false;
 	bool convert_old = false;
 	bool immediate_dialog_confirmed = false;
 	bool opening_prev = false;
@@ -623,6 +623,7 @@ private:
 
 	void _proceed_closing_scene_tabs();
 	bool _is_closing_editor() const;
+	void _restart_editor(bool p_goto_project_manager = false);
 
 	Dictionary _get_main_scene_state();
 	void _set_main_scene_state(Dictionary p_state, Node *p_for_scene);
@@ -659,7 +660,7 @@ private:
 	void _feature_profile_changed();
 	bool _is_class_editor_disabled_by_feature_profile(const StringName &p_class);
 
-	Ref<Texture2D> _get_class_or_script_icon(const String &p_class, const Ref<Script> &p_script, const String &p_fallback = "Object", bool p_fallback_script_to_theme = false);
+	Ref<Texture2D> _get_class_or_script_icon(const String &p_class, const String &p_script_path, const String &p_fallback = "Object", bool p_fallback_script_to_theme = false);
 
 	void _pick_main_scene_custom_action(const String &p_custom_action_name);
 
@@ -673,6 +674,8 @@ private:
 
 	void _progress_dialog_visibility_changed();
 	void _load_error_dialog_visibility_changed();
+
+	void _execute_upgrades();
 
 protected:
 	friend class FileSystemDock;

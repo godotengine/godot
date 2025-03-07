@@ -469,7 +469,7 @@
 		</signal>
 		<signal name="frame_rect_changed">
 			<param index="0" name="frame" type="GraphFrame" />
-			<param index="1" name="new_rect" type="Vector2" />
+			<param index="1" name="new_rect" type="Rect2" />
 			<description>
 				Emitted when the [GraphFrame] [param frame] is resized to [param new_rect].
 			</description>

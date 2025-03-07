@@ -329,3 +329,11 @@ Size2i Utilities::get_maximum_viewport_size() const {
 	int max_y = device->limit_get(RenderingDevice::LIMIT_MAX_VIEWPORT_DIMENSIONS_Y);
 	return Size2i(max_x, max_y);
 }
+
+uint32_t Utilities::get_maximum_shader_varyings() const {
+	return RenderingDevice::get_singleton()->limit_get(RenderingDevice::LIMIT_MAX_SHADER_VARYINGS);
+}
+
+uint64_t Utilities::get_maximum_uniform_buffer_size() const {
+	return RenderingDevice::get_singleton()->limit_get(RenderingDevice::LIMIT_MAX_UNIFORM_BUFFER_SIZE);
+}

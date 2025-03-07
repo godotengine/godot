@@ -701,7 +701,7 @@
 		<method name="is_layout_rtl" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Returns [code]true[/code] if layout is right-to-left.
+				Returns [code]true[/code] if layout is right-to-left. See also [member layout_direction].
 			</description>
 		</method>
 		<method name="release_focus">
@@ -983,7 +983,7 @@
 			Controls the direction on the vertical axis in which the control should grow if its vertical minimum size is changed to be greater than its current size, as the control always has to be at least the minimum size.
 		</member>
 		<member name="layout_direction" type="int" setter="set_layout_direction" getter="get_layout_direction" enum="Control.LayoutDirection" default="0">
-			Controls layout direction and text writing direction. Right-to-left layouts are necessary for certain languages (e.g. Arabic and Hebrew).
+			Controls layout direction and text writing direction. Right-to-left layouts are necessary for certain languages (e.g. Arabic and Hebrew). See also [method is_layout_rtl].
 		</member>
 		<member name="localize_numeral_system" type="bool" setter="set_localize_numeral_system" getter="is_localizing_numeral_system" default="true">
 			If [code]true[/code], automatically converts code line numbers, list indices, [SpinBox] and [ProgressBar] values from the Western Arabic (0..9) to the numeral systems used in current locale.
@@ -1210,7 +1210,7 @@
 			[b]Note:[/b] This signal is only emitted on Android or iOS, or on desktop/web platforms when [member ProjectSettings.input_devices/pointing/emulate_touch_from_mouse] is enabled.
 		</constant>
 		<constant name="NOTIFICATION_LAYOUT_DIRECTION_CHANGED" value="49">
-			Sent when control layout direction is changed.
+			Sent when the control layout direction is changed from LTR or RTL or vice versa. This notification is propagated to child Control nodes as result of a change to [member layout_direction].
 		</constant>
 		<constant name="CURSOR_ARROW" value="0" enum="CursorShape">
 			Show the system's arrow mouse cursor when the user hovers the node. Use with [member mouse_default_cursor_shape].
@@ -1372,7 +1372,7 @@
 			Automatic layout direction, determined from the parent control layout direction.
 		</constant>
 		<constant name="LAYOUT_DIRECTION_APPLICATION_LOCALE" value="1" enum="LayoutDirection">
-			Automatic layout direction, determined from the current locale.
+			Automatic layout direction, determined from the current locale. Right-to-left layout direction is automatically used for languages that require it such as Arabic and Hebrew, but only if a valid translation file is loaded for the given language (unless said language is configured as a fallback in [member ProjectSettings.internationalization/locale/fallback]). For all other languages (or if no valid translation file is found by Godot), left-to-right layout direction is used. If using [TextServerFallback] ([member ProjectSettings.internationalization/rendering/text_driver]), left-to-right layout direction is always used regardless of the language. Right-to-left layout direction can also be forced using [member ProjectSettings.internationalization/rendering/force_right_to_left_layout_direction].
 		</constant>
 		<constant name="LAYOUT_DIRECTION_LTR" value="2" enum="LayoutDirection">
 			Left-to-right layout direction.
@@ -1381,7 +1381,7 @@
 			Right-to-left layout direction.
 		</constant>
 		<constant name="LAYOUT_DIRECTION_SYSTEM_LOCALE" value="4" enum="LayoutDirection">
-			Automatic layout direction, determined from the system locale.
+			Automatic layout direction, determined from the system locale. Right-to-left layout direction is automatically used for languages that require it such as Arabic and Hebrew, but only if a valid translation file is loaded for the given language.. For all other languages (or if no valid translation file is found by Godot), left-to-right layout direction is used. If using [TextServerFallback] ([member ProjectSettings.internationalization/rendering/text_driver]), left-to-right layout direction is always used regardless of the language.
 		</constant>
 		<constant name="LAYOUT_DIRECTION_MAX" value="5" enum="LayoutDirection">
 			Represents the size of the [enum LayoutDirection] enum.

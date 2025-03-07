@@ -921,12 +921,12 @@ void Node::set_physics_interpolation_mode(PhysicsInterpolationMode p_mode) {
 		} break;
 	}
 
-	// If swapping from interpolated to non-interpolated, use this as an extra means to cause a reset.
-	if (is_physics_interpolated() && !interpolate && is_inside_tree()) {
+	_propagate_physics_interpolated(interpolate);
+
+	// Auto-reset on changing interpolation mode.
+	if (is_physics_interpolated() && is_inside_tree()) {
 		propagate_notification(NOTIFICATION_RESET_PHYSICS_INTERPOLATION);
 	}
-
-	_propagate_physics_interpolated(interpolate);
 }
 
 void Node::reset_physics_interpolation() {
@@ -1378,7 +1378,10 @@ void Node::_propagate_translation_domain_dirty() {
 			child->_propagate_translation_domain_dirty();
 		}
 	}
-	notification(NOTIFICATION_TRANSLATION_CHANGED);
+
+	if (is_inside_tree() && data.auto_translate_mode != AUTO_TRANSLATE_MODE_DISABLED) {
+		notification(NOTIFICATION_TRANSLATION_CHANGED);
+	}
 }
 
 StringName Node::get_name() const {

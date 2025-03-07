@@ -105,7 +105,7 @@ if env["thorvg_enabled"] and env["freetype_enabled"]:
     env.Append(CPPDEFINES=["MODULE_SVG_ENABLED"])
 
     lib = env_tvg.Library(
-        f'tvg_builtin{env["suffix"]}{env["LIBSUFFIX"]}',
+        f"tvg_builtin{env['suffix']}{env['LIBSUFFIX']}",
         thirdparty_tvg_sources,
     )
     env.Append(LIBS=[lib])
@@ -150,7 +150,7 @@ if env["msdfgen_enabled"] and env["freetype_enabled"]:
     env.Append(CPPDEFINES=["MODULE_MSDFGEN_ENABLED"])
 
     lib = env_msdfgen.Library(
-        f'msdfgen_builtin{env["suffix"]}{env["LIBSUFFIX"]}',
+        f"msdfgen_builtin{env['suffix']}{env['LIBSUFFIX']}",
         thirdparty_msdfgen_sources,
     )
     env.Append(LIBS=[lib])
@@ -279,7 +279,7 @@ if env["freetype_enabled"]:
     env.Append(CPPDEFINES=["MODULE_FREETYPE_ENABLED"])
 
     lib = env_freetype.Library(
-        f'freetype_builtin{env["suffix"]}{env["LIBSUFFIX"]}',
+        f"freetype_builtin{env['suffix']}{env['LIBSUFFIX']}",
         thirdparty_freetype_sources,
     )
     env.Append(LIBS=[lib])
@@ -291,18 +291,18 @@ sources = Glob("../*.cpp")
 
 if env["platform"] == "macos":
     methods.write_macos_plist(
-        f'./bin/libtextserver_fallback.macos.{env["target"]}.framework',
-        f'libtextserver_fallback.macos.{env["target"]}',
+        f"./bin/libtextserver_fallback.macos.{env['target']}.framework",
+        f"libtextserver_fallback.macos.{env['target']}",
         "org.godotengine.textserver_fallback",
         "Fallback Text Server",
     )
     library = env.SharedLibrary(
-        f'./bin/libtextserver_fallback.macos.{env["target"]}.framework/libtextserver_fallback.macos.{env["target"]}',
+        f"./bin/libtextserver_fallback.macos.{env['target']}.framework/libtextserver_fallback.macos.{env['target']}",
         source=sources,
     )
 else:
     library = env.SharedLibrary(
-        f'./bin/libtextserver_fallback{env["suffix"]}{env["SHLIBSUFFIX"]}',
+        f"./bin/libtextserver_fallback{env['suffix']}{env['SHLIBSUFFIX']}",
         source=sources,
     )
 

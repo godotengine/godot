@@ -4934,6 +4934,10 @@ bool String::is_valid_hex_number(bool p_with_prefix) const {
 		from += 2;
 	}
 
+	if (from == len) {
+		return false;
+	}
+
 	for (int i = from; i < len; i++) {
 		char32_t c = operator[](i);
 		if (is_hex_digit(c)) {
@@ -4964,17 +4968,18 @@ bool String::is_valid_float() const {
 	bool numbers_found = false;
 
 	for (int i = from; i < len; i++) {
-		if (is_digit(operator[](i))) {
+		const char32_t c = operator[](i);
+		if (is_digit(c)) {
 			if (exponent_found) {
 				exponent_values_found = true;
 			} else {
 				numbers_found = true;
 			}
-		} else if (numbers_found && !exponent_found && operator[](i) == 'e') {
+		} else if (numbers_found && !exponent_found && (c == 'e' || c == 'E')) {
 			exponent_found = true;
-		} else if (!period_found && !exponent_found && operator[](i) == '.') {
+		} else if (!period_found && !exponent_found && c == '.') {
 			period_found = true;
-		} else if ((operator[](i) == '-' || operator[](i) == '+') && exponent_found && !exponent_values_found && !sign_found) {
+		} else if ((c == '-' || c == '+') && exponent_found && !exponent_values_found && !sign_found) {
 			sign_found = true;
 		} else {
 			return false; // no start with number plz

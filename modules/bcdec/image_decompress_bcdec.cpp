@@ -158,9 +158,12 @@ void image_decompress_bcdec(Image *p_image) {
 
 	// Compressed images' dimensions should be padded to the upper multiple of 4.
 	// If they aren't, they need to be realigned (the actual data is correctly padded though).
-	if (width % 4 != 0 || height % 4 != 0) {
-		int new_width = width + (4 - (width % 4));
-		int new_height = height + (4 - (height % 4));
+	const bool need_width_realign = width % 4 != 0;
+	const bool need_height_realign = height % 4 != 0;
+
+	if (need_width_realign || need_height_realign) {
+		int new_width = need_width_realign ? width + (4 - (width % 4)) : width;
+		int new_height = need_height_realign ? height + (4 - (height % 4)) : height;
 
 		print_verbose(vformat("Compressed image's dimensions are not multiples of 4 (%dx%d), aligning to (%dx%d)", width, height, new_width, new_height));
 

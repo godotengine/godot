@@ -502,18 +502,14 @@ int Viewport::_sub_window_find(Window *p_window) const {
 }
 
 void Viewport::_update_viewport_path() {
-	if (viewport_textures.is_empty()) {
+	if (!is_inside_tree()) {
 		return;
 	}
 
-	Node *scene_root = get_scene_file_path().is_empty() ? get_owner() : this;
-	if (!scene_root && is_inside_tree()) {
-		scene_root = get_tree()->get_edited_scene_root();
-	}
-	if (scene_root && (scene_root == this || scene_root->is_ancestor_of(this))) {
-		NodePath path_in_scene = scene_root->get_path_to(this);
-		for (ViewportTexture *E : viewport_textures) {
-			E->path = path_in_scene;
+	for (ViewportTexture *E : viewport_textures) {
+		Node *loc_scene = E->get_local_scene();
+		if (loc_scene) {
+			E->path = loc_scene->get_path_to(this);
 		}
 	}
 }
@@ -1002,10 +998,10 @@ void Viewport::update_canvas_items() {
 	_update_canvas_items(this);
 }
 
-bool Viewport::_set_size(const Size2i &p_size, const Size2i &p_size_2d_override, bool p_allocated) {
+bool Viewport::_set_size(const Size2i &p_size, const Size2 &p_size_2d_override, bool p_allocated) {
 	Transform2D stretch_transform_new = Transform2D();
 	if (is_size_2d_override_stretch_enabled() && p_size_2d_override.width > 0 && p_size_2d_override.height > 0) {
-		Size2 scale = Size2(p_size) / Size2(p_size_2d_override);
+		Size2 scale = Size2(p_size) / p_size_2d_override;
 		stretch_transform_new.scale(scale);
 	}
 
@@ -1074,7 +1070,7 @@ Size2i Viewport::_get_size() const {
 	return size;
 }
 
-Size2i Viewport::_get_size_2d_override() const {
+Size2 Viewport::_get_size_2d_override() const {
 	return size_2d_override;
 }
 
@@ -1092,7 +1088,7 @@ Rect2 Viewport::get_visible_rect() const {
 		r = Rect2(Point2(), size);
 	}
 
-	if (size_2d_override != Size2i()) {
+	if (size_2d_override != Size2()) {
 		r.size = size_2d_override;
 	}
 
@@ -1546,6 +1542,8 @@ void Viewport::_gui_show_tooltip() {
 	panel->set_flag(Window::FLAG_POPUP, false);
 	panel->set_flag(Window::FLAG_MOUSE_PASSTHROUGH, true);
 	panel->set_wrap_controls(true);
+	panel->set_default_canvas_item_texture_filter(get_default_canvas_item_texture_filter());
+	panel->set_default_canvas_item_texture_repeat(get_default_canvas_item_texture_repeat());
 	panel->add_child(base_tooltip);
 	panel->gui_parent = this;
 
@@ -3352,6 +3350,22 @@ void Viewport::_push_unhandled_input_internal(const Ref<InputEvent> &p_event) {
 	}
 }
 
+void Viewport::notify_mouse_entered() {
+	if (gui.mouse_in_viewport) {
+		WARN_PRINT_ED("The Viewport was previously notified that the mouse is in its area. There is no need to notify it at this time.");
+		return;
+	}
+	notification(NOTIFICATION_VP_MOUSE_ENTER);
+}
+
+void Viewport::notify_mouse_exited() {
+	if (!gui.mouse_in_viewport) {
+		WARN_PRINT_ED("The Viewport was previously notified that the mouse has left its area. There is no need to notify it at this time.");
+		return;
+	}
+	_mouse_leave_viewport();
+}
+
 void Viewport::set_physics_object_picking(bool p_enable) {
 	ERR_MAIN_THREAD_GUARD;
 	physics_object_picking = p_enable;
@@ -4799,6 +4813,8 @@ void Viewport::_bind_methods() {
 #ifndef DISABLE_DEPRECATED
 	ClassDB::bind_method(D_METHOD("push_unhandled_input", "event", "in_local_coords"), &Viewport::push_unhandled_input, DEFVAL(false));
 #endif // DISABLE_DEPRECATED
+	ClassDB::bind_method(D_METHOD("notify_mouse_entered"), &Viewport::notify_mouse_entered);
+	ClassDB::bind_method(D_METHOD("notify_mouse_exited"), &Viewport::notify_mouse_exited);
 
 	ClassDB::bind_method(D_METHOD("get_mouse_position"), &Viewport::get_mouse_position);
 	ClassDB::bind_method(D_METHOD("warp_mouse", "position"), &Viewport::warp_mouse);
@@ -5205,7 +5221,10 @@ void SubViewport::set_size_2d_override(const Size2i &p_size) {
 
 Size2i SubViewport::get_size_2d_override() const {
 	ERR_READ_THREAD_GUARD_V(Size2i());
-	return _get_size_2d_override();
+	// Rounding will cause offset issues with the
+	// exact positioning of subwindows, but changing the
+	// type of size_2d_override would break compatibility.
+	return Size2i((_get_size_2d_override() + Size2(0.5, 0.5)).floor());
 }
 
 void SubViewport::set_size_2d_override_stretch(bool p_enable) {

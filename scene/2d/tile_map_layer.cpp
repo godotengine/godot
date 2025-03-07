@@ -1413,7 +1413,7 @@ void TileMapLayer::_build_runtime_update_tile_data_for_cell(CellData &r_cell_dat
 
 						tile_map_node->GDVIRTUAL_CALL(_tile_data_runtime_update, layer_index_in_tile_map_node, r_cell_data.coords, tile_data_runtime_use);
 
-						if (p_auto_add_to_dirty_list) {
+						if (p_auto_add_to_dirty_list && !r_cell_data.dirty_list_element.in_list()) {
 							dirty.cell_list.add(&r_cell_data.dirty_list_element);
 						}
 					}
@@ -1428,7 +1428,7 @@ void TileMapLayer::_build_runtime_update_tile_data_for_cell(CellData &r_cell_dat
 
 						GDVIRTUAL_CALL(_tile_data_runtime_update, r_cell_data.coords, tile_data_runtime_use);
 
-						if (p_auto_add_to_dirty_list) {
+						if (p_auto_add_to_dirty_list && !r_cell_data.dirty_list_element.in_list()) {
 							dirty.cell_list.add(&r_cell_data.dirty_list_element);
 						}
 					}

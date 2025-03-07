@@ -48,15 +48,22 @@ void CPUParticles3D::set_emitting(bool p_emitting) {
 		return;
 	}
 
+	if (p_emitting && !use_fixed_seed) {
+		set_seed(Math::rand());
+	}
+
 	emitting = p_emitting;
 	if (emitting) {
-		active = true;
-		set_process_internal(true);
+		_set_emitting();
+	}
+}
 
-		// first update before rendering to avoid one frame delay after emitting starts
-		if (time == 0) {
-			_update_internal();
-		}
+void CPUParticles3D::_set_emitting() {
+	active = true;
+	set_process_internal(true);
+	// first update before rendering to avoid one frame delay after emitting starts
+	if (time == 0) {
+		_update_internal();
 	}
 }
 
@@ -251,7 +258,8 @@ void CPUParticles3D::restart(bool p_keep_seed) {
 		seed = Math::rand();
 	}
 
-	set_emitting(true);
+	emitting = true;
+	_set_emitting();
 }
 
 void CPUParticles3D::set_direction(Vector3 p_direction) {
@@ -612,7 +620,7 @@ void CPUParticles3D::_validate_property(PropertyInfo &p_property) const {
 	}
 
 	if (p_property.name == "seed" && !use_fixed_seed) {
-		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		p_property.usage = PROPERTY_USAGE_NONE;
 	}
 }
 
@@ -1564,6 +1572,8 @@ void CPUParticles3D::_bind_methods() {
 	BIND_ENUM_CONSTANT(DRAW_ORDER_LIFETIME);
 	BIND_ENUM_CONSTANT(DRAW_ORDER_VIEW_DEPTH);
 
+	ADD_PROPERTY_DEFAULT("seed", 0);
+
 	////////////////////////////////
 
 	ClassDB::bind_method(D_METHOD("set_direction", "direction"), &CPUParticles3D::set_direction);
@@ -1764,6 +1774,7 @@ CPUParticles3D::CPUParticles3D() {
 
 	set_emitting(true);
 	set_amount(8);
+	set_seed(Math::rand());
 
 	rng.instantiate();
 

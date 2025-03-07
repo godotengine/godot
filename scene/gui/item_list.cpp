@@ -1282,10 +1282,8 @@ void ItemList::_notification(int p_what) {
 				}
 
 				Vector2 text_ofs;
+				Size2 icon_size;
 				if (items[i].icon.is_valid()) {
-					Size2 icon_size;
-					//= _adjust_to_max_size(items[i].get_icon_size(),fixed_icon_size) * icon_scale;
-
 					if (fixed_icon_size.x > 0 && fixed_icon_size.y > 0) {
 						icon_size = fixed_icon_size * icon_scale;
 					} else {
@@ -1417,14 +1415,14 @@ void ItemList::_notification(int p_what) {
 						text_ofs += base_ofs;
 						text_ofs += items[i].rect_cache.position;
 
-						float text_w = items[i].rect_cache.size.width - (items[i].get_icon_size().x * icon_scale) - MAX(theme_cache.h_separation, 0);
+						float text_w = items[i].rect_cache.size.width - icon_size.x - MAX(theme_cache.h_separation, 0);
 						if (wraparound_items && items[i].rect_cache.size.width > width) {
 							text_w -= items[i].rect_cache.size.width - width;
 						}
 						items.write[i].text_buf->set_width(text_w);
 
 						if (rtl) {
-							text_ofs.x = size.width - items[i].rect_cache.size.width + (items[i].get_icon_size().x * icon_scale) - text_ofs.x + MAX(theme_cache.h_separation, 0);
+							text_ofs.x = size.width - items[i].rect_cache.size.width + icon_size.x - text_ofs.x + MAX(theme_cache.h_separation, 0);
 							if (wraparound_items) {
 								text_ofs.x += MAX(items[i].rect_cache.size.width - width, 0);
 							}
@@ -1438,12 +1436,12 @@ void ItemList::_notification(int p_what) {
 						}
 
 						if (fixed_column_width > 0) {
-							if (items[i].rect_cache.size.width - (items[i].get_icon_size().x * icon_scale) - MAX(theme_cache.h_separation, 0) > 0) {
+							if (items[i].rect_cache.size.width - icon_size.x - MAX(theme_cache.h_separation, 0) > 0) {
 								items[i].text_buf->draw(get_canvas_item(), text_ofs, txt_modulate);
 							}
 						} else {
 							if (wraparound_items) {
-								if (width - (items[i].get_icon_size().x * icon_scale) - MAX(theme_cache.h_separation, 0) - int(scroll_bar_h->get_value()) > 0) {
+								if (width - icon_size.x - MAX(theme_cache.h_separation, 0) - int(scroll_bar_h->get_value()) > 0) {
 									items[i].text_buf->draw(get_canvas_item(), text_ofs, txt_modulate);
 								}
 							} else {
@@ -2080,7 +2078,7 @@ void ItemList::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_text_lines", PROPERTY_HINT_RANGE, "1,10,1,or_greater"), "set_max_text_lines", "get_max_text_lines");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "auto_width"), "set_auto_width", "has_auto_width");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "auto_height"), "set_auto_height", "has_auto_height");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "text_overrun_behavior", PROPERTY_HINT_ENUM, "Trim Nothing,Trim Characters,Trim Words,Ellipsis,Word Ellipsis"), "set_text_overrun_behavior", "get_text_overrun_behavior");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "text_overrun_behavior", PROPERTY_HINT_ENUM, "Trim Nothing,Trim Characters,Trim Words,Ellipsis (6+ Characters),Word Ellipsis (6+ Characters),Ellipsis (Always),Word Ellipsis (Always)"), "set_text_overrun_behavior", "get_text_overrun_behavior");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "wraparound_items"), "set_wraparound_items", "has_wraparound_items");
 	ADD_ARRAY_COUNT("Items", "item_count", "set_item_count", "get_item_count", "item_");
 	ADD_GROUP("Columns", "");
