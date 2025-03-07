@@ -2127,6 +2127,13 @@ bool ClassDB::is_class_enabled(const StringName &p_class) {
 	return !ti->disabled;
 }
 
+void ClassDB::set_class_exposed(const StringName &p_class, bool p_enable) {
+	OBJTYPE_WLOCK;
+
+	ERR_FAIL_COND_MSG(!classes.has(p_class), vformat("Request for nonexistent class '%s'.", p_class));
+	classes[p_class].exposed = p_enable;
+}
+
 bool ClassDB::is_class_exposed(const StringName &p_class) {
 	OBJTYPE_RLOCK;
 

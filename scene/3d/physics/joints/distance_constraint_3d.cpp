@@ -104,6 +104,16 @@ void DistanceConstraint3D::_configure_joint(RID p_joint, PhysicsBody3D *p_body_a
 	}
 }
 
+PackedStringArray DistanceConstraint3D::get_configuration_warnings() const {
+	PackedStringArray warnings = Joint3D::get_configuration_warnings();
+
+	JoltPhysicsServer3D *physics_server = JoltPhysicsServer3D::get_singleton();
+	if (!physics_server) {
+		warnings.push_back(RTR("DistanceConstraint3D is only compatible with Jolt Physics. Please change your Physics Engine in Project Settings."));
+	}
+	return warnings;
+}
+
 DistanceConstraint3D::DistanceConstraint3D() {
 	params[PARAM_LIMITS_SPRING_FREQUENCY] = 0.0;
 	params[PARAM_LIMITS_SPRING_DAMPING] = 0.0;

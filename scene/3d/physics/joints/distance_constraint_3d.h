@@ -70,6 +70,8 @@ public:
 	Vector3 get_point_param(PointParam p_param) const;
 	Vector3 get_global_point(PointParam p_param) const;
 
+	PackedStringArray get_configuration_warnings() const override;
+
 	DistanceConstraint3D();
 };
 
