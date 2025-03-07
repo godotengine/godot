@@ -28,6 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#pragma once
+
 /**************************************************************************/
 /*                                                                        */
 /* Portions of this code were derived from MoltenVK.                      */
@@ -47,9 +49,6 @@
 /* implied. See the License for the specific language governing           */
 /* permissions and limitations under the License.                         */
 /**************************************************************************/
-
-#ifndef METAL_OBJECTS_H
-#define METAL_OBJECTS_H
 
 #import "metal_device_properties.h"
 #import "metal_utils.h"
@@ -975,5 +974,3 @@ auto release(RDD::ID p_id) {
 }
 
 } // namespace rid
-
-#endif // METAL_OBJECTS_H

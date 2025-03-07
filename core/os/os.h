@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef OS_H
-#define OS_H
+#pragma once
 
 #include "core/config/engine.h"
 #include "core/io/logger.h"
@@ -369,5 +368,3 @@ public:
 	OS();
 	virtual ~OS();
 };
-
-#endif // OS_H

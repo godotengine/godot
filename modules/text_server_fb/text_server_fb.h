@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TEXT_SERVER_FB_H
-#define TEXT_SERVER_FB_H
+#pragma once
 
 /*************************************************************************/
 /* Fallback Text Server provides simplified TS functionality, without    */
@@ -873,5 +872,3 @@ public:
 	TextServerFallback();
 	~TextServerFallback();
 };
-
-#endif // TEXT_SERVER_FB_H
