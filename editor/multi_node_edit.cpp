@@ -219,8 +219,29 @@ bool MultiNodeEdit::_property_get_revert(const StringName &p_name, Variant &r_pr
 	return false;
 }
 
+void MultiNodeEdit::_queue_notify_property_list_changed() {
+	if (notify_property_list_changed_pending) {
+		return;
+	}
+	notify_property_list_changed_pending = true;
+	callable_mp(this, &MultiNodeEdit::_notify_property_list_changed).call_deferred();
+}
+
+void MultiNodeEdit::_notify_property_list_changed() {
+	notify_property_list_changed_pending = false;
+	notify_property_list_changed();
+}
+
 void MultiNodeEdit::add_node(const NodePath &p_node) {
 	nodes.push_back(p_node);
+
+	Node *es = EditorNode::get_singleton()->get_edited_scene();
+	if (es) {
+		Node *node = es->get_node_or_null(p_node);
+		if (node) {
+			node->connect(CoreStringName(property_list_changed), callable_mp(this, &MultiNodeEdit::_queue_notify_property_list_changed));
+		}
+	}
 }
 
 int MultiNodeEdit::get_node_count() const {
