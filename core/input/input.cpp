@@ -1591,6 +1591,22 @@ void Input::_button_event(int p_device, JoyButton p_index, bool p_pressed) {
 	ievent->set_pressed(p_pressed);
 
 	parse_input_event(ievent);
+
+	if (p_index == JoyButton::A) {
+		Ref<InputEventJoypadButton> s_ievent;
+		s_ievent.instantiate();
+		s_ievent->set_device(p_device);
+		s_ievent->set_button_index(get_joy_scheme(p_device) == JOY_SCHEME_NINTENDO_GENERIC ? JoyButton::SEMANTIC_NO : JoyButton::SEMANTIC_YES);
+		s_ievent->set_pressed(p_pressed);
+		parse_input_event(s_ievent);
+	} else if (p_index == JoyButton::B) {
+		Ref<InputEventJoypadButton> s_ievent;
+		s_ievent.instantiate();
+		s_ievent->set_device(p_device);
+		s_ievent->set_button_index(get_joy_scheme(p_device) == JOY_SCHEME_NINTENDO_GENERIC ? JoyButton::SEMANTIC_YES : JoyButton::SEMANTIC_NO);
+		s_ievent->set_pressed(p_pressed);
+		parse_input_event(s_ievent);
+	}
 }
 
 void Input::_axis_event(int p_device, JoyAxis p_axis, float p_value) {
