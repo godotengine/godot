@@ -38,6 +38,7 @@
 #include "editor/editor_main_screen.h"
 #include "editor/editor_node.h"
 #include "editor/editor_properties.h"
+#include "editor/editor_properties_array_dict.h"
 #include "editor/editor_property_name_processor.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
@@ -1088,11 +1089,47 @@ Variant EditorProperty::get_drag_data(const Point2 &p_point) {
 		return Variant();
 	}
 
+	Variant container = Variant(object);
+	EditorPropertyArrayObject *array_object = Object::cast_to<EditorPropertyArrayObject>(object);
+	if (array_object) {
+		container = array_object->get_array();
+	}
+	EditorPropertyDictionaryObject *dict_object = Object::cast_to<EditorPropertyDictionaryObject>(object);
+	if (dict_object) {
+		container = dict_object->get_dict();
+	}
+
 	Dictionary dp;
 	dp["type"] = "obj_property";
-	dp["object"] = object;
-	dp["property"] = property;
+	dp["object"] = container;
+	dp["property"] = property_path.is_empty() ? String(property) : property_path;
 	dp["value"] = object->get(property);
+
+	PackedStringArray access_path = PackedStringArray();
+	Object *root_object = object;
+
+	Node *parent = get_parent();
+	EditorProperty *parent_property = nullptr;
+	while (parent && !parent_property) {
+		parent_property = Object::cast_to<EditorProperty>(parent);
+		parent = parent->get_parent();
+	}
+
+	while (parent_property) {
+		root_object = parent_property->get_edited_object();
+		access_path.append(parent_property->get_edited_property());
+
+		parent_property = nullptr;
+		while (parent && !parent_property) {
+			parent_property = Object::cast_to<EditorProperty>(parent);
+			parent = parent->get_parent();
+		}
+	}
+
+	access_path.reverse();
+
+	dp["access_path"] = access_path;
+	dp["root_object"] = root_object;
 
 	Label *drag_label = memnew(Label);
 	drag_label->set_text(property);
