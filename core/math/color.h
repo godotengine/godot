@@ -302,4 +302,7 @@ _FORCE_INLINE_ Color operator*(float p_scalar, const Color &p_color) {
 	return p_color * p_scalar;
 }
 
+template <>
+struct is_zero_constructible<Color> : std::true_type {};
+
 #endif // COLOR_H

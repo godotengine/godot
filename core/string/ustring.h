@@ -645,6 +645,10 @@ public:
 	explicit operator StrRange<char32_t>() const { return StrRange(get_data(), length()); }
 };
 
+// Zero-constructing String initializes _cowdata.ptr() to nullptr and thus empty.
+template <>
+struct is_zero_constructible<String> : std::true_type {};
+
 bool operator==(const char *p_chr, const String &p_str);
 bool operator==(const wchar_t *p_chr, const String &p_str);
 bool operator!=(const char *p_chr, const String &p_str);

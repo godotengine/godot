@@ -316,4 +316,11 @@ struct BuildIndexSequence<0, Is...> : IndexSequence<Is...> {};
 #define ___gd_is_defined(val) ____gd_is_defined(__GDARG_PLACEHOLDER_##val)
 #define GD_IS_DEFINED(x) ___gd_is_defined(x)
 
+// Trivially constructible types are also zero-constructible.
+template <typename T>
+struct is_zero_constructible : std::is_trivially_constructible<T> {};
+
+template <typename T>
+inline constexpr bool is_zero_constructible_v = is_zero_constructible<T>::value;
+
 #endif // TYPEDEFS_H
