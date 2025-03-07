@@ -334,3 +334,6 @@ bool Vector3i::operator>=(const Vector3i &p_v) const {
 void Vector3i::zero() {
 	x = y = z = 0;
 }
+
+template <>
+struct is_zero_constructible<Vector3i> : std::true_type {};

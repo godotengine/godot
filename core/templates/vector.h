@@ -335,3 +335,7 @@ void Vector<T>::fill(T p_elem) {
 		p[i] = p_elem;
 	}
 }
+
+// Zero-constructing Vector initializes CowData.ptr() to nullptr and thus empty.
+template <typename T>
+struct is_zero_constructible<Vector<T>> : std::true_type {};

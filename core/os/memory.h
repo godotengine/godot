@@ -34,6 +34,7 @@
 #include "core/templates/safe_refcount.h"
 
 #include <stddef.h>
+#include <cstring>
 #include <new>
 #include <type_traits>
 
@@ -193,6 +194,22 @@ T *memnew_arr_template(size_t p_elements) {
 	}
 
 	return (T *)mem;
+}
+
+// Fast alternative to a loop constructor pattern.
+template <bool p_ensure_zero = false, typename T>
+_FORCE_INLINE_ void memnew_arr_placement(T *p_start, size_t p_num) {
+	if constexpr (std::is_trivially_constructible_v<T> && !p_ensure_zero) {
+		// Don't need to do anything :)
+	} else if constexpr (is_zero_constructible_v<T>) {
+		// Can optimize with memset.
+		memset(static_cast<void *>(p_start), 0, p_num * sizeof(T));
+	} else {
+		// Need to use a for loop.
+		for (size_t i = 0; i < p_num; i++) {
+			memnew_placement(p_start + i, T);
+		}
+	}
 }
 
 /**

@@ -549,3 +549,6 @@ Vector3 Vector3::reflect(const Vector3 &p_normal) const {
 #endif
 	return 2.0f * p_normal * dot(p_normal) - *this;
 }
+
+template <>
+struct is_zero_constructible<Vector3> : std::true_type {};

@@ -168,3 +168,6 @@ _ALWAYS_INLINE_ AudioFrame operator*(int32_t p_scalar, const AudioFrame &p_frame
 _ALWAYS_INLINE_ AudioFrame operator*(int64_t p_scalar, const AudioFrame &p_frame) {
 	return AudioFrame(p_frame.left * p_scalar, p_frame.right * p_scalar);
 }
+
+template <>
+struct is_zero_constructible<AudioFrame> : std::true_type {};

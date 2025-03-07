@@ -362,3 +362,6 @@ bool Vector4i::operator>=(const Vector4i &p_v) const {
 void Vector4i::zero() {
 	x = y = z = w = 0;
 }
+
+template <>
+struct is_zero_constructible<Vector4i> : std::true_type {};

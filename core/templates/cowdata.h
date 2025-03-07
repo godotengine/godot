@@ -389,14 +389,7 @@ Error CowData<T>::resize(Size p_size) {
 		}
 
 		// construct the newly created elements
-
-		if constexpr (!std::is_trivially_constructible_v<T>) {
-			for (Size i = *_get_size(); i < p_size; i++) {
-				memnew_placement(&_ptr[i], T);
-			}
-		} else if (p_ensure_zero) {
-			memset((void *)(_ptr + current_size), 0, (p_size - current_size) * sizeof(T));
-		}
+		memnew_arr_placement<p_ensure_zero>(_ptr + current_size, p_size - current_size);
 
 		*_get_size() = p_size;
 
@@ -523,3 +516,7 @@ CowData<T>::CowData(std::initializer_list<T> p_init) {
 #if defined(__GNUC__) && !defined(__clang__)
 #pragma GCC diagnostic pop
 #endif
+
+// Zero-constructing CowData initializes _ptr to nullptr (and thus empty).
+template <typename T>
+struct is_zero_constructible<CowData<T>> : std::true_type {};

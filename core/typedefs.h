@@ -325,3 +325,21 @@ struct BuildIndexSequence<0, Is...> : IndexSequence<Is...> {};
 #define ____gd_is_defined(arg1_or_junk) __gd_take_second_arg(arg1_or_junk true, false)
 #define ___gd_is_defined(val) ____gd_is_defined(__GDARG_PLACEHOLDER_##val)
 #define GD_IS_DEFINED(x) ___gd_is_defined(x)
+
+// Whether the default value of a type is just all-0 bytes.
+// This can most commonly be exploited by using memset for these types instead of loop-construct.
+// Trivially constructible types are also zero-constructible.
+template <typename T>
+struct is_zero_constructible : std::is_trivially_constructible<T> {};
+
+template <typename T>
+struct is_zero_constructible<const T> : is_zero_constructible<T> {};
+
+template <typename T>
+struct is_zero_constructible<volatile T> : is_zero_constructible<T> {};
+
+template <typename T>
+struct is_zero_constructible<const volatile T> : is_zero_constructible<T> {};
+
+template <typename T>
+inline constexpr bool is_zero_constructible_v = is_zero_constructible<T>::value;
