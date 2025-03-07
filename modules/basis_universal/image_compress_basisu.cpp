@@ -275,6 +275,7 @@ Ref<Image> basis_universal_unpacker_ptr(const uint8_t *p_data, int p_size) {
 	bool rgtc_supported = RS::get_singleton()->has_os_feature("rgtc");
 	bool s3tc_supported = RS::get_singleton()->has_os_feature("s3tc");
 	bool etc2_supported = RS::get_singleton()->has_os_feature("etc2");
+	bool astc_hdr_supported = RS::get_singleton()->has_os_feature("astc_hdr");
 
 	bool needs_ra_rg_swap = false;
 	bool needs_rg_trim = false;
@@ -379,7 +380,7 @@ Ref<Image> basis_universal_unpacker_ptr(const uint8_t *p_data, int p_size) {
 			if (bptc_supported) {
 				basisu_format = basist::transcoder_texture_format::cTFBC6H;
 				image_format = Image::FORMAT_BPTC_RGBFU;
-			} else if (astc_supported) {
+			} else if (astc_hdr_supported) {
 				basisu_format = basist::transcoder_texture_format::cTFASTC_HDR_4x4_RGBA;
 				image_format = Image::FORMAT_ASTC_4x4_HDR;
 			} else {

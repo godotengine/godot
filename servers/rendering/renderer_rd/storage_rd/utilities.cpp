@@ -286,6 +286,10 @@ bool Utilities::has_os_feature(const String &p_feature) const {
 		return true;
 	}
 
+	if (p_feature == "astc_hdr" && RD::get_singleton()->texture_is_format_supported_for_usage(RD::DATA_FORMAT_ASTC_4x4_SFLOAT_BLOCK, RD::TEXTURE_USAGE_SAMPLING_BIT)) {
+		return true;
+	}
+
 	return false;
 }
 
