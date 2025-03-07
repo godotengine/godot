@@ -112,7 +112,6 @@ private:
 	void _dock_container_update_visibility(TabContainer *p_dock_container);
 	void _update_layout();
 
-	void _update_docks_menu();
 	void _docks_menu_option(int p_id);
 
 	void _window_close_request(WindowWrapper *p_wrapper);
@@ -132,6 +131,7 @@ private:
 public:
 	static EditorDockManager *get_singleton() { return singleton; }
 
+	void update_docks_menu();
 	void update_tab_styles();
 	void set_tab_icon_max_width(int p_max_width);
 
