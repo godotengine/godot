@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  nav_link.h                                                            */
+/*  nav_region_3d.h                                                       */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,63 +28,76 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef NAV_LINK_H
-#define NAV_LINK_H
+#ifndef NAV_REGION_3D_H
+#define NAV_REGION_3D_H
 
-#include "3d/nav_base_iteration_3d.h"
-#include "nav_base.h"
-#include "nav_utils.h"
+#include "nav_base_3d.h"
+#include "nav_utils_3d.h"
 
-struct NavLinkIteration : NavBaseIteration {
-	bool bidirectional = true;
-	Vector3 start_position;
-	Vector3 end_position;
-	LocalVector<gd::Polygon> navmesh_polygons;
+#include "core/os/rw_lock.h"
+#include "scene/resources/navigation_mesh.h"
 
-	Vector3 get_start_position() const { return start_position; }
-	Vector3 get_end_position() const { return end_position; }
-	bool is_bidirectional() const { return bidirectional; }
-};
+struct NavRegionIteration3D;
 
-#include "core/templates/self_list.h"
+class NavRegion3D : public NavBase3D {
+	RWLock region_rwlock;
 
-class NavLink : public NavBase {
-	NavMap *map = nullptr;
-	bool bidirectional = true;
-	Vector3 start_position;
-	Vector3 end_position;
+	NavMap3D *map = nullptr;
+	Transform3D transform;
 	bool enabled = true;
 
-	bool link_dirty = true;
+	bool use_edge_connections = true;
 
-	SelfList<NavLink> sync_dirty_request_list_element;
+	bool region_dirty = true;
+	bool polygons_dirty = true;
+
+	LocalVector<nav_3d::Polygon> navmesh_polygons;
+
+	real_t surface_area = 0.0;
+	AABB bounds;
+
+	RWLock navmesh_rwlock;
+	Vector<Vector3> pending_navmesh_vertices;
+	Vector<Vector<int>> pending_navmesh_polygons;
+
+	SelfList<NavRegion3D> sync_dirty_request_list_element;
 
 public:
-	NavLink();
-	~NavLink();
+	NavRegion3D();
+	~NavRegion3D();
 
-	void set_map(NavMap *p_map);
-	NavMap *get_map() const {
-		return map;
+	void scratch_polygons() {
+		polygons_dirty = true;
 	}
 
 	void set_enabled(bool p_enabled);
 	bool get_enabled() const { return enabled; }
 
-	void set_bidirectional(bool p_bidirectional);
-	bool is_bidirectional() const {
-		return bidirectional;
+	void set_map(NavMap3D *p_map);
+	NavMap3D *get_map() const {
+		return map;
 	}
 
-	void set_start_position(Vector3 p_position);
-	Vector3 get_start_position() const {
-		return start_position;
+	virtual void set_use_edge_connections(bool p_enabled) override;
+	virtual bool get_use_edge_connections() const override { return use_edge_connections; }
+
+	void set_transform(Transform3D transform);
+	const Transform3D &get_transform() const {
+		return transform;
 	}
 
-	void set_end_position(Vector3 p_position);
-	Vector3 get_end_position() const {
-		return end_position;
+	void set_navigation_mesh(Ref<NavigationMesh> p_navigation_mesh);
+
+	LocalVector<nav_3d::Polygon> const &get_polygons() const {
+		return navmesh_polygons;
 	}
+
+	Vector3 get_closest_point_to_segment(const Vector3 &p_from, const Vector3 &p_to, bool p_use_collision) const;
+	nav_3d::ClosestPointQueryResult get_closest_point_info(const Vector3 &p_point) const;
+	Vector3 get_random_point(uint32_t p_navigation_layers, bool p_uniformly) const;
+
+	real_t get_surface_area() const { return surface_area; }
+	AABB get_bounds() const { return bounds; }
 
 	// NavBase properties.
 	virtual void set_navigation_layers(uint32_t p_navigation_layers) override;
@@ -92,12 +105,14 @@ public:
 	virtual void set_travel_cost(real_t p_travel_cost) override;
 	virtual void set_owner_id(ObjectID p_owner_id) override;
 
-	bool is_dirty() const;
-	void sync();
+	bool sync();
 	void request_sync();
 	void cancel_sync_request();
 
-	void get_iteration_update(NavLinkIteration &r_iteration);
+	void get_iteration_update(NavRegionIteration3D &r_iteration);
+
+private:
+	void update_polygons();
 };
 
-#endif // NAV_LINK_H
+#endif // NAV_REGION_3D_H
