@@ -33,6 +33,7 @@
 
 #include "core/io/stream_peer_tcp.h"
 #include "core/object/ref_counted.h"
+#include "core/os/condition_variable.h"
 #include "core/os/mutex.h"
 #include "core/os/thread.h"
 #include "core/string/ustring.h"
@@ -59,6 +60,8 @@ private:
 	Ref<StreamPeerTCP> tcp_client;
 	Mutex mutex;
 	Thread thread;
+	BinaryMutex end_mutex;
+	ConditionVariable end_cv;
 	List<Array> in_queue;
 	List<Array> out_queue;
 	int out_left = 0;

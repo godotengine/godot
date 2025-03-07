@@ -65,6 +65,10 @@ int RemoteDebuggerPeerTCP::get_max_message_size() const {
 }
 
 void RemoteDebuggerPeerTCP::close() {
+	MutexLock end_lock(end_mutex);
+	while (out_queue.size() > 0) {
+		end_cv.wait(end_lock);
+	}
 	running = false;
 	if (thread.is_started()) {
 		thread.wait_to_finish();
@@ -97,6 +101,8 @@ void RemoteDebuggerPeerTCP::_write_out() {
 		uint8_t *buf = out_buf.ptrw();
 		if (out_left <= 0) {
 			if (out_queue.size() == 0) {
+				MutexLock end_lock(end_mutex);
+				end_cv.notify_all();
 				break; // Nothing left to send
 			}
 			mutex.lock();
