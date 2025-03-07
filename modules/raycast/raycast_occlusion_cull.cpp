@@ -581,7 +581,7 @@ Vector2 RaycastOcclusionCull::_jitter_half_extents(const Vector2 &p_half_extents
 	return p_half_extents + jitter;
 }
 
-void RaycastOcclusionCull::buffer_update(RID p_buffer, const Transform3D &p_cam_transform, const Projection &p_cam_projection, bool p_cam_orthogonal) {
+void RaycastOcclusionCull::buffer_update(RID p_buffer, const Transform3D &p_cam_transform, const Frustum &p_cam_frustum, bool p_cam_orthogonal) {
 	if (!buffers.has(p_buffer)) {
 		return;
 	}
@@ -595,11 +595,11 @@ void RaycastOcclusionCull::buffer_update(RID p_buffer, const Transform3D &p_cam_
 	Scenario &scenario = scenarios[buffer.scenario_rid];
 	scenario.update();
 
-	Vector2 viewport_half = p_cam_projection.get_viewport_half_extents();
+	Vector2 viewport_half = p_cam_frustum.get_viewport_half_extents();
 	Vector2 jitter_viewport_half = _jitter_half_extents(viewport_half, buffer.get_occlusion_buffer_size());
-	Vector3 near_bottom_left = Vector3(-jitter_viewport_half.x, -jitter_viewport_half.y, -p_cam_projection.get_z_near());
+	Vector3 near_bottom_left = Vector3(-jitter_viewport_half.x, -jitter_viewport_half.y, -p_cam_frustum.get_z_near());
 
-	buffer.update_camera_rays(p_cam_transform, near_bottom_left, 2 * viewport_half, p_cam_projection.get_z_far(), p_cam_orthogonal);
+	buffer.update_camera_rays(p_cam_transform, near_bottom_left, 2 * viewport_half, p_cam_frustum.get_z_far(), p_cam_orthogonal);
 
 	scenario.raycast(buffer.camera_rays, buffer.camera_ray_masks.ptr(), buffer.camera_rays_tile_count);
 	buffer.sort_rays(-p_cam_transform.basis.get_column(2), p_cam_orthogonal);

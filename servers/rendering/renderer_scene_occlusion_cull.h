@@ -31,9 +31,11 @@
 #ifndef RENDERER_SCENE_OCCLUSION_CULL_H
 #define RENDERER_SCENE_OCCLUSION_CULL_H
 
+#include "core/math/frustum.h"
 #include "core/math/projection.h"
 #include "core/templates/local_vector.h"
 #include "servers/rendering_server.h"
+#include <cmath>
 
 class RendererSceneOcclusionCull {
 protected:
@@ -73,6 +75,9 @@ public:
 			}
 
 			float min_depth = (closest_point - p_cam_position).length();
+			if (min_depth == INFINITY) { // Prevents far away objects from being permanently occluded
+				return false;
+			}
 
 			Vector2 rect_min = Vector2(FLT_MAX, FLT_MAX);
 			Vector2 rect_max = Vector2(FLT_MIN, FLT_MIN);
@@ -223,7 +228,7 @@ public:
 	}
 	virtual void buffer_set_scenario(RID p_buffer, RID p_scenario) { _print_warning(); }
 	virtual void buffer_set_size(RID p_buffer, const Vector2i &p_size) { _print_warning(); }
-	virtual void buffer_update(RID p_buffer, const Transform3D &p_cam_transform, const Projection &p_cam_projection, bool p_cam_orthogonal) {}
+	virtual void buffer_update(RID p_buffer, const Transform3D &p_cam_transform, const Frustum &p_cam_frustum, bool p_cam_orthogonal) {}
 
 	virtual RID buffer_get_debug_texture(RID p_buffer) {
 		_print_warning();
