@@ -177,7 +177,7 @@ ShaderGLES2::Version *ShaderGLES2::get_current_version() {
 	strings.push_back("#define USE_HIGHP_PRECISION\n");
 #endif
 
-	if (GLOBAL_GET("rendering/gles2/compatibility/enable_high_float.Android")) {
+	if (GLOBAL_GET_CACHED(bool, "rendering/gles2/compatibility/enable_high_float.Android")) {
 		// enable USE_HIGHP_PRECISION but safeguarded by an availability check as highp support is optional in GLES2
 		// see Section 4.5.4 of the GLSL_ES_Specification_1.00
 		strings.push_back("#ifdef GL_FRAGMENT_PRECISION_HIGH\n  #define USE_HIGHP_PRECISION\n#endif\n");

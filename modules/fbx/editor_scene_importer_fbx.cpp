@@ -58,7 +58,7 @@
 
 void EditorSceneImporterFBX::get_extensions(List<String> *r_extensions) const {
 	// register FBX as the one and only format for FBX importing
-	if (GLOBAL_GET("filesystem/import/fbx/use_fbx")) {
+	if (GLOBAL_GET_CACHED(bool, "filesystem/import/fbx/use_fbx")) {
 		r_extensions->push_back("fbx");
 	}
 }

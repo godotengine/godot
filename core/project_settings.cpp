@@ -184,6 +184,7 @@ bool ProjectSettings::_set(const StringName &p_name, const Variant &p_value) {
 	// marking the project settings as dirty allows them only to be
 	// checked when dirty.
 	_dirty_this_frame = 2;
+	_version++;
 
 	if (p_value.get_type() == Variant::NIL) {
 		props.erase(p_name);

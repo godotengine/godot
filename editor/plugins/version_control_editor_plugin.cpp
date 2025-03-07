@@ -86,7 +86,7 @@ void VersionControlEditorPlugin::_bind_methods() {
 void VersionControlEditorPlugin::_notification(int p_what) {
 	if (p_what == NOTIFICATION_READY) {
 		String installed_plugin = GLOBAL_GET("editor/version_control_plugin_name");
-		bool has_autoload_enable = GLOBAL_GET("editor/version_control_autoload_on_startup");
+		bool has_autoload_enable = GLOBAL_GET_CACHED(bool, "editor/version_control_autoload_on_startup");
 
 		if (installed_plugin != "" && has_autoload_enable) {
 			if (_load_plugin(installed_plugin)) {
