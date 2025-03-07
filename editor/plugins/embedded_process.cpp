@@ -32,7 +32,7 @@
 
 #include "editor/editor_string_names.h"
 #include "scene/main/window.h"
-#include "scene/resources/style_box_flat.h"
+#include "scene/resources/stylebox_flat.h"
 #include "scene/theme/theme_db.h"
 
 void EmbeddedProcess::_notification(int p_what) {
@@ -55,14 +55,14 @@ void EmbeddedProcess::_notification(int p_what) {
 			queue_update_embedded_process();
 		} break;
 		case NOTIFICATION_THEME_CHANGED: {
-			focus_style_box = get_theme_stylebox(SNAME("FocusViewport"), EditorStringName(EditorStyles));
-			Ref<StyleBoxFlat> focus_style_box_flat = focus_style_box;
-			if (focus_style_box_flat.is_valid()) {
-				margin_top_left = Point2i(focus_style_box_flat->get_border_width(SIDE_LEFT), focus_style_box_flat->get_border_width(SIDE_TOP));
-				margin_bottom_right = Point2i(focus_style_box_flat->get_border_width(SIDE_RIGHT), focus_style_box_flat->get_border_width(SIDE_BOTTOM));
-			} else if (focus_style_box.is_valid()) {
-				margin_top_left = Point2i(focus_style_box->get_margin(SIDE_LEFT), focus_style_box->get_margin(SIDE_TOP));
-				margin_bottom_right = Point2i(focus_style_box->get_margin(SIDE_RIGHT), focus_style_box->get_margin(SIDE_BOTTOM));
+			focus_stylebox = get_theme_stylebox(SNAME("FocusViewport"), EditorStringName(EditorStyles));
+			Ref<StyleBoxFlat> focus_stylebox_flat = focus_stylebox;
+			if (focus_stylebox_flat.is_valid()) {
+				margin_top_left = Point2i(focus_stylebox_flat->get_border_width(SIDE_LEFT), focus_stylebox_flat->get_border_width(SIDE_TOP));
+				margin_bottom_right = Point2i(focus_stylebox_flat->get_border_width(SIDE_RIGHT), focus_stylebox_flat->get_border_width(SIDE_BOTTOM));
+			} else if (focus_stylebox.is_valid()) {
+				margin_top_left = Point2i(focus_stylebox->get_margin(SIDE_LEFT), focus_stylebox->get_margin(SIDE_TOP));
+				margin_bottom_right = Point2i(focus_stylebox->get_margin(SIDE_RIGHT), focus_stylebox->get_margin(SIDE_BOTTOM));
 			} else {
 				margin_top_left = Point2i();
 				margin_bottom_right = Point2i();
@@ -271,10 +271,10 @@ void EmbeddedProcess::_timer_embedding_timeout() {
 }
 
 void EmbeddedProcess::_draw() {
-	if (focused_process_id == current_process_id && has_focus() && focus_style_box.is_valid()) {
+	if (focused_process_id == current_process_id && has_focus() && focus_stylebox.is_valid()) {
 		Size2 size = get_size();
 		Rect2 r = Rect2(Point2(), size);
-		focus_style_box->draw(get_canvas_item(), r);
+		focus_stylebox->draw(get_canvas_item(), r);
 	}
 }
 

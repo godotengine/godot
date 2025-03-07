@@ -122,7 +122,7 @@ void CodeEdit::_notification(int p_what) {
 						hint_ofs.y -= (code_hint_minsize.y + row_height) - theme_cache.line_spacing;
 					}
 
-					draw_style_box(theme_cache.code_hint_style, Rect2(hint_ofs, code_hint_minsize));
+					draw_stylebox(theme_cache.code_hint_style, Rect2(hint_ofs, code_hint_minsize));
 
 					int yofs = 0;
 					for (int i = 0; i < line_count; i++) {
@@ -196,7 +196,7 @@ void CodeEdit::_notification(int p_what) {
 						code_completion_rect.position.x = caret_pos.x - code_completion_base_width;
 					}
 
-					draw_style_box(theme_cache.code_completion_style, Rect2(code_completion_rect.position - theme_cache.code_completion_style->get_offset(), code_completion_rect.size + theme_cache.code_completion_style->get_minimum_size() + Size2(scroll_width, 0)));
+					draw_stylebox(theme_cache.code_completion_style, Rect2(code_completion_rect.position - theme_cache.code_completion_style->get_offset(), code_completion_rect.size + theme_cache.code_completion_style->get_minimum_size() + Size2(scroll_width, 0)));
 					if (theme_cache.code_completion_background_color.a > 0.01) {
 						RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(code_completion_rect.position, code_completion_rect.size + Size2(scroll_width, 0)), theme_cache.code_completion_background_color);
 					}

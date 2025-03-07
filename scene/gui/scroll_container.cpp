@@ -375,11 +375,11 @@ void ScrollContainer::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_DRAW: {
-			draw_style_box(theme_cache.panel_style, Rect2(Vector2(), get_size()));
+			draw_stylebox(theme_cache.panel_style, Rect2(Vector2(), get_size()));
 			if (draw_focus_border && (has_focus() || child_has_focus())) {
 				RID ci = get_canvas_item();
 				RenderingServer::get_singleton()->canvas_item_add_clip_ignore(ci, true);
-				draw_style_box(theme_cache.focus_style, Rect2(Point2(), get_size()));
+				draw_stylebox(theme_cache.focus_style, Rect2(Point2(), get_size()));
 				RenderingServer::get_singleton()->canvas_item_add_clip_ignore(ci, false);
 				focus_border_is_drawn = true;
 			} else {

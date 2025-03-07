@@ -48,8 +48,8 @@
 #include "scene/resources/color_palette.h"
 #include "scene/resources/gradient_texture.h"
 #include "scene/resources/image_texture.h"
-#include "scene/resources/style_box_flat.h"
-#include "scene/resources/style_box_texture.h"
+#include "scene/resources/stylebox_flat.h"
+#include "scene/resources/stylebox_texture.h"
 #include "scene/theme/theme_db.h"
 #include "thirdparty/misc/ok_color_shader.h"
 
@@ -162,8 +162,8 @@ void ColorPicker::_notification(int p_what) {
 
 			Color c = DisplayServer::get_singleton()->screen_get_pixel(ofs);
 
-			picker_preview_style_box_color->set_bg_color(c);
-			picker_preview_style_box->set_bg_color(c.get_luminance() < 0.5 ? Color(1.0f, 1.0f, 1.0f) : Color(0.0f, 0.0f, 0.0f));
+			picker_preview_stylebox_color->set_bg_color(c);
+			picker_preview_stylebox->set_bg_color(c.get_luminance() < 0.5 ? Color(1.0f, 1.0f, 1.0f) : Color(0.0f, 0.0f, 0.0f));
 
 			if (ds->has_feature(DisplayServer::FEATURE_SCREEN_EXCLUDE_FROM_CAPTURE)) {
 				Ref<Image> zoom_preview_img = ds->screen_get_image_rect(Rect2i(ofs.x - 8, ofs.y - 8, 17, 17));
@@ -599,9 +599,9 @@ ColorPicker::PickerShapeType ColorPicker::_get_actual_shape() const {
 }
 
 void ColorPicker::_reset_sliders_theme() {
-	Ref<StyleBoxFlat> style_box_flat(memnew(StyleBoxFlat));
-	style_box_flat->set_content_margin(SIDE_TOP, 16 * theme_cache.base_scale);
-	style_box_flat->set_bg_color(Color(0.2, 0.23, 0.31).lerp(Color(0, 0, 0, 1), 0.3).clamp());
+	Ref<StyleBoxFlat> stylebox_flat(memnew(StyleBoxFlat));
+	stylebox_flat->set_content_margin(SIDE_TOP, 16 * theme_cache.base_scale);
+	stylebox_flat->set_bg_color(Color(0.2, 0.23, 0.31).lerp(Color(0, 0, 0, 1), 0.3).clamp());
 
 	for (int i = 0; i < SLIDER_COUNT; i++) {
 		sliders[i]->begin_bulk_theme_override();
@@ -609,7 +609,7 @@ void ColorPicker::_reset_sliders_theme() {
 		sliders[i]->add_theme_icon_override("grabber_highlight", theme_cache.bar_arrow);
 		sliders[i]->add_theme_constant_override("grabber_offset", 8 * theme_cache.base_scale);
 		if (!colorize_sliders) {
-			sliders[i]->add_theme_style_override("slider", style_box_flat);
+			sliders[i]->add_theme_style_override("slider", stylebox_flat);
 		}
 		sliders[i]->end_bulk_theme_override();
 	}
@@ -619,7 +619,7 @@ void ColorPicker::_reset_sliders_theme() {
 	alpha_slider->add_theme_icon_override("grabber_highlight", theme_cache.bar_arrow);
 	alpha_slider->add_theme_constant_override("grabber_offset", 8 * theme_cache.base_scale);
 	if (!colorize_sliders) {
-		alpha_slider->add_theme_style_override("slider", style_box_flat);
+		alpha_slider->add_theme_style_override("slider", stylebox_flat);
 	}
 	alpha_slider->end_bulk_theme_override();
 }
@@ -1200,25 +1200,25 @@ void ColorPicker::set_colorize_sliders(bool p_colorize_sliders) {
 	mode_popup->set_item_checked(MODE_MAX + 1, colorize_sliders);
 
 	if (colorize_sliders) {
-		Ref<StyleBoxEmpty> style_box_empty(memnew(StyleBoxEmpty));
+		Ref<StyleBoxEmpty> stylebox_empty(memnew(StyleBoxEmpty));
 
 		if (!slider_theme_modified) {
 			for (int i = 0; i < SLIDER_COUNT; i++) {
-				sliders[i]->add_theme_style_override("slider", style_box_empty);
+				sliders[i]->add_theme_style_override("slider", stylebox_empty);
 			}
 		}
-		alpha_slider->add_theme_style_override("slider", style_box_empty);
+		alpha_slider->add_theme_style_override("slider", stylebox_empty);
 	} else {
-		Ref<StyleBoxFlat> style_box_flat(memnew(StyleBoxFlat));
-		style_box_flat->set_content_margin(SIDE_TOP, 16 * theme_cache.base_scale);
-		style_box_flat->set_bg_color(Color(0.2, 0.23, 0.31).lerp(Color(0, 0, 0, 1), 0.3).clamp());
+		Ref<StyleBoxFlat> stylebox_flat(memnew(StyleBoxFlat));
+		stylebox_flat->set_content_margin(SIDE_TOP, 16 * theme_cache.base_scale);
+		stylebox_flat->set_bg_color(Color(0.2, 0.23, 0.31).lerp(Color(0, 0, 0, 1), 0.3).clamp());
 
 		if (!slider_theme_modified) {
 			for (int i = 0; i < SLIDER_COUNT; i++) {
-				sliders[i]->add_theme_style_override("slider", style_box_flat);
+				sliders[i]->add_theme_style_override("slider", stylebox_flat);
 			}
 		}
-		alpha_slider->add_theme_style_override("slider", style_box_flat);
+		alpha_slider->add_theme_style_override("slider", stylebox_flat);
 	}
 }
 
@@ -1733,11 +1733,11 @@ void ColorPicker::_pick_button_pressed() {
 			picker_preview->add_child(picker_texture_zoom);
 		}
 
-		picker_preview_style_box.instantiate();
-		picker_preview->add_theme_style_override(SceneStringName(panel), picker_preview_style_box);
+		picker_preview_stylebox.instantiate();
+		picker_preview->add_theme_style_override(SceneStringName(panel), picker_preview_stylebox);
 
-		picker_preview_style_box_color.instantiate();
-		picker_preview_color->add_theme_style_override(SceneStringName(panel), picker_preview_style_box_color);
+		picker_preview_stylebox_color.instantiate();
+		picker_preview_color->add_theme_style_override(SceneStringName(panel), picker_preview_stylebox_color);
 
 		add_child(picker_window, false, INTERNAL_MODE_FRONT);
 	}
@@ -1913,11 +1913,11 @@ void ColorPicker::_pick_button_pressed_legacy() {
 		picker_texture_zoom->set_texture_filter(CanvasItem::TEXTURE_FILTER_NEAREST);
 		picker_preview->add_child(picker_texture_zoom);
 
-		picker_preview_style_box.instantiate();
-		picker_preview->add_theme_style_override(SceneStringName(panel), picker_preview_style_box);
+		picker_preview_stylebox.instantiate();
+		picker_preview->add_theme_style_override(SceneStringName(panel), picker_preview_stylebox);
 
-		picker_preview_style_box_color.instantiate();
-		picker_preview_color->add_theme_style_override(SceneStringName(panel), picker_preview_style_box_color);
+		picker_preview_stylebox_color.instantiate();
+		picker_preview_color->add_theme_style_override(SceneStringName(panel), picker_preview_stylebox_color);
 	}
 
 	Rect2i screen_rect;
@@ -2000,8 +2000,8 @@ void ColorPicker::_picker_texture_input(const Ref<InputEvent> &p_event) {
 			Vector2 scale = picker_texture_rect->get_size() / img->get_size();
 			ofs /= scale;
 			picker_color = img->get_pixel(ofs.x, ofs.y);
-			picker_preview_style_box_color->set_bg_color(picker_color);
-			picker_preview_style_box->set_bg_color(picker_color.get_luminance() < 0.5 ? Color(1.0f, 1.0f, 1.0f) : Color(0.0f, 0.0f, 0.0f));
+			picker_preview_stylebox_color->set_bg_color(picker_color);
+			picker_preview_stylebox->set_bg_color(picker_color.get_luminance() < 0.5 ? Color(1.0f, 1.0f, 1.0f) : Color(0.0f, 0.0f, 0.0f));
 
 			Ref<AtlasTexture> atlas = picker_texture_zoom->get_texture();
 			if (atlas.is_valid()) {

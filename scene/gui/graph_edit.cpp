@@ -44,7 +44,7 @@
 #include "scene/gui/scroll_bar.h"
 #include "scene/gui/spin_box.h"
 #include "scene/gui/view_panner.h"
-#include "scene/resources/style_box_flat.h"
+#include "scene/resources/stylebox_flat.h"
 #include "scene/theme/theme_db.h"
 
 constexpr int MINIMAP_OFFSET = 12;
@@ -778,7 +778,7 @@ void GraphEdit::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_DRAW: {
 			// Draw background fill.
-			draw_style_box(theme_cache.panel, Rect2(Point2(), get_size()));
+			draw_stylebox(theme_cache.panel, Rect2(Point2(), get_size()));
 
 			// Draw background grid.
 			if (show_grid) {
@@ -1572,7 +1572,7 @@ void GraphEdit::_minimap_draw() {
 
 	// Draw the minimap background.
 	Rect2 minimap_rect = Rect2(Point2(), minimap->get_size());
-	minimap->draw_style_box(minimap->theme_cache.panel, minimap_rect);
+	minimap->draw_stylebox(minimap->theme_cache.panel, minimap_rect);
 
 	Vector2 graph_offset = minimap->_get_graph_offset();
 	Vector2 minimap_offset = minimap->minimap_offset;
@@ -1600,7 +1600,7 @@ void GraphEdit::_minimap_draw() {
 			sb_minimap->set_bg_color(node_color);
 		}
 
-		minimap->draw_style_box(sb_minimap, node_rect);
+		minimap->draw_stylebox(sb_minimap, node_rect);
 	}
 
 	// Draw regular graph nodes.
@@ -1623,7 +1623,7 @@ void GraphEdit::_minimap_draw() {
 			sb_minimap->set_bg_color(node_color);
 		}
 
-		minimap->draw_style_box(sb_minimap, node_rect);
+		minimap->draw_stylebox(sb_minimap, node_rect);
 	}
 
 	// Draw node connections.
@@ -1643,7 +1643,7 @@ void GraphEdit::_minimap_draw() {
 
 	// Draw the "camera" viewport.
 	Rect2 camera_rect = minimap->get_camera_rect();
-	minimap->draw_style_box(minimap->theme_cache.camera_style, camera_rect);
+	minimap->draw_stylebox(minimap->theme_cache.camera_style, camera_rect);
 
 	// Draw the resizer control.
 	Ref<Texture2D> resizer = minimap->theme_cache.resizer;

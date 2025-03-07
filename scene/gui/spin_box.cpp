@@ -429,12 +429,12 @@ void SpinBox::_notification(int p_what) {
 			int down_icon_top = sizing_cache.second_button_top + (sizing_cache.button_down_height - down_icon->get_height()) / 2;
 
 			// Draw separators.
-			draw_style_box(theme_cache.up_down_buttons_separator, Rect2(sizing_cache.buttons_left, sizing_cache.buttons_separator_top, sizing_cache.buttons_width, sizing_cache.buttons_vertical_separation));
-			draw_style_box(theme_cache.field_and_buttons_separator, Rect2(sizing_cache.field_and_buttons_separator_left, 0, sizing_cache.field_and_buttons_separator_width, size.height));
+			draw_stylebox(theme_cache.up_down_buttons_separator, Rect2(sizing_cache.buttons_left, sizing_cache.buttons_separator_top, sizing_cache.buttons_width, sizing_cache.buttons_vertical_separation));
+			draw_stylebox(theme_cache.field_and_buttons_separator, Rect2(sizing_cache.field_and_buttons_separator_left, 0, sizing_cache.field_and_buttons_separator_width, size.height));
 
 			// Draw buttons.
-			draw_style_box(up_stylebox, Rect2(sizing_cache.buttons_left, 0, sizing_cache.buttons_width, sizing_cache.button_up_height));
-			draw_style_box(down_stylebox, Rect2(sizing_cache.buttons_left, sizing_cache.second_button_top, sizing_cache.buttons_width, sizing_cache.button_down_height));
+			draw_stylebox(up_stylebox, Rect2(sizing_cache.buttons_left, 0, sizing_cache.buttons_width, sizing_cache.button_up_height));
+			draw_stylebox(down_stylebox, Rect2(sizing_cache.buttons_left, sizing_cache.second_button_top, sizing_cache.buttons_width, sizing_cache.button_down_height));
 
 			// Draw arrows.
 			theme_cache.updown_icon->draw(ci, Point2i(updown_icon_left, updown_icon_top));

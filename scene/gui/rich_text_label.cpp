@@ -1906,11 +1906,11 @@ void RichTextLabel::_notification(int p_what) {
 			RID ci = get_canvas_item();
 			Size2 size = get_size();
 
-			draw_style_box(theme_cache.normal_style, Rect2(Point2(), size));
+			draw_stylebox(theme_cache.normal_style, Rect2(Point2(), size));
 
 			if (has_focus()) {
 				RenderingServer::get_singleton()->canvas_item_add_clip_ignore(ci, true);
-				draw_style_box(theme_cache.focus_style, Rect2(Point2(), size));
+				draw_stylebox(theme_cache.focus_style, Rect2(Point2(), size));
 				RenderingServer::get_singleton()->canvas_item_add_clip_ignore(ci, false);
 			}
 
@@ -1923,7 +1923,7 @@ void RichTextLabel::_notification(int p_what) {
 					Vector2 p_size = Vector2(size.width - (theme_cache.normal_style->get_offset().x + vscroll->get_combined_minimum_size().width) * 2, vscroll->get_combined_minimum_size().width);
 					Vector2 p_pos = Vector2(theme_cache.normal_style->get_offset().x, size.height - theme_cache.normal_style->get_offset().y - vscroll->get_combined_minimum_size().width);
 
-					draw_style_box(theme_cache.progress_bg_style, Rect2(p_pos, p_size));
+					draw_stylebox(theme_cache.progress_bg_style, Rect2(p_pos, p_size));
 
 					bool right_to_left = is_layout_rtl();
 					double r = loaded.load();
@@ -1931,9 +1931,9 @@ void RichTextLabel::_notification(int p_what) {
 					int p = round(r * (p_size.width - mp));
 					if (right_to_left) {
 						int p_remaining = round((1.0 - r) * (p_size.width - mp));
-						draw_style_box(theme_cache.progress_fg_style, Rect2(p_pos + Point2(p_remaining, 0), Size2(p + theme_cache.progress_fg_style->get_minimum_size().width, p_size.height)));
+						draw_stylebox(theme_cache.progress_fg_style, Rect2(p_pos + Point2(p_remaining, 0), Size2(p + theme_cache.progress_fg_style->get_minimum_size().width, p_size.height)));
 					} else {
-						draw_style_box(theme_cache.progress_fg_style, Rect2(p_pos, Size2(p + theme_cache.progress_fg_style->get_minimum_size().width, p_size.height)));
+						draw_stylebox(theme_cache.progress_fg_style, Rect2(p_pos, Size2(p + theme_cache.progress_fg_style->get_minimum_size().width, p_size.height)));
 					}
 				}
 			}

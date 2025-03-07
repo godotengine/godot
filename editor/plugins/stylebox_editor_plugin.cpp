@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  style_box_editor_plugin.cpp                                           */
+/*  stylebox_editor_plugin.cpp                                           */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,11 +28,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "style_box_editor_plugin.h"
+#include "stylebox_editor_plugin.h"
 
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/button.h"
-#include "scene/resources/style_box_texture.h"
+#include "scene/resources/stylebox_texture.h"
 
 bool StyleBoxPreview::grid_preview_enabled = true;
 
@@ -77,7 +77,7 @@ void StyleBoxPreview::_redraw() {
 		preview_rect.size -= drawing_rect.size - preview_rect.size;
 		preview_rect.position -= drawing_rect.position - preview_rect.position;
 
-		draw_style_box(stylebox, preview_rect);
+		draw_stylebox(stylebox, preview_rect);
 
 		Ref<StyleBoxTexture> sbt = stylebox;
 		// Draw the "grid". Use white lines, as well as subtle black lines to ensure contrast.

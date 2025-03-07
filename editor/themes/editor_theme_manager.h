@@ -32,7 +32,7 @@
 #define EDITOR_THEME_MANAGER_H
 
 #include "editor/themes/editor_theme.h"
-#include "scene/resources/style_box_flat.h"
+#include "scene/resources/stylebox_flat.h"
 
 class EditorThemeManager {
 	static int benchmark_run;

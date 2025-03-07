@@ -36,7 +36,7 @@
 #include "scene/main/node.h"
 #include "scene/main/window.h"
 #include "scene/resources/font.h"
-#include "scene/resources/style_box.h"
+#include "scene/resources/stylebox.h"
 #include "scene/resources/texture.h"
 #include "scene/theme/default_theme.h"
 #include "servers/text_server.h"

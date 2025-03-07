@@ -118,7 +118,7 @@
 #include "editor/plugins/skeleton_ik_3d_editor_plugin.h"
 #include "editor/plugins/sprite_2d_editor_plugin.h"
 #include "editor/plugins/sprite_frames_editor_plugin.h"
-#include "editor/plugins/style_box_editor_plugin.h"
+#include "editor/plugins/stylebox_editor_plugin.h"
 #include "editor/plugins/sub_viewport_preview_editor_plugin.h"
 #include "editor/plugins/texture_3d_editor_plugin.h"
 #include "editor/plugins/texture_editor_plugin.h"

@@ -327,10 +327,10 @@ void GraphNode::_notification(int p_what) {
 			Rect2 body_rect(0, titlebar_rect.size.height, body_size.width, body_size.height);
 
 			// Draw body (slots area) stylebox.
-			draw_style_box(sb_to_draw_panel, body_rect);
+			draw_stylebox(sb_to_draw_panel, body_rect);
 
 			// Draw title bar stylebox above.
-			draw_style_box(sb_to_draw_titlebar, titlebar_rect);
+			draw_stylebox(sb_to_draw_titlebar, titlebar_rect);
 
 			int width = get_size().width - sb_panel->get_minimum_size().x;
 
@@ -365,7 +365,7 @@ void GraphNode::_notification(int p_what) {
 						Rect2 child_rect = child->get_rect();
 						child_rect.position.x = sb_panel->get_margin(SIDE_LEFT);
 						child_rect.size.width = width;
-						draw_style_box(sb_slot, child_rect);
+						draw_stylebox(sb_slot, child_rect);
 					}
 
 					slot_index++;

@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  style_box.h                                                           */
+/*  stylebox.h                                                           */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef STYLE_BOX_H
-#define STYLE_BOX_H
+#ifndef STYLEBOX_H
+#define STYLEBOX_H
 
 #include "core/io/resource.h"
 #include "core/object/gdvirtual.gen.inc"
@@ -82,4 +82,4 @@ public:
 	StyleBoxEmpty() {}
 };
 
-#endif // STYLE_BOX_H
+#endif // STYLEBOX_H
