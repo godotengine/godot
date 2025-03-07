@@ -23,6 +23,108 @@ def escape_string(s):
     return result
 
 
+def make_lang_header(target, source, env):
+    dst = str(target[0])
+    with open(dst, "w", encoding="utf-8", newline="\n") as g:
+        buf = ""
+        docbegin = ""
+        docend = ""
+        for src in source:
+            src = str(src)
+            if not src.endswith(".csv"):
+                continue
+            with open(src, "r", encoding="utf-8") as f:
+                content = f.read()
+            buf += content
+
+        buf = (docbegin + buf + docend).encode("utf-8")
+        decomp_size = len(buf)
+
+        # Use maximum zlib compression level to further reduce file size
+        # (at the cost of initial build times).
+        buf = zlib.compress(buf, zlib.Z_BEST_COMPRESSION)
+
+        g.write("/* THIS FILE IS GENERATED DO NOT EDIT */\n")
+        g.write("#ifndef _LANG_NAMES_RAW_H\n")
+        g.write("#define _LANG_NAMES_RAW_H\n")
+        g.write("static const int _lang_data_compressed_size = " + str(len(buf)) + ";\n")
+        g.write("static const int _lang_data_uncompressed_size = " + str(decomp_size) + ";\n")
+        g.write("static const unsigned char _lang_data_compressed[] = {\n")
+        for i in range(len(buf)):
+            g.write("\t" + str(buf[i]) + ",\n")
+        g.write("};\n")
+
+        g.write("#endif")
+
+
+def make_cnt_header(target, source, env):
+    dst = str(target[0])
+    with open(dst, "w", encoding="utf-8", newline="\n") as g:
+        buf = ""
+        docbegin = ""
+        docend = ""
+        for src in source:
+            src = str(src)
+            if not src.endswith(".csv"):
+                continue
+            with open(src, "r", encoding="utf-8") as f:
+                content = f.read()
+            buf += content
+
+        buf = (docbegin + buf + docend).encode("utf-8")
+        decomp_size = len(buf)
+
+        # Use maximum zlib compression level to further reduce file size
+        # (at the cost of initial build times).
+        buf = zlib.compress(buf, zlib.Z_BEST_COMPRESSION)
+
+        g.write("/* THIS FILE IS GENERATED DO NOT EDIT */\n")
+        g.write("#ifndef _CNT_NAMES_RAW_H\n")
+        g.write("#define _CNT_NAMES_RAW_H\n")
+        g.write("static const int _country_data_compressed_size = " + str(len(buf)) + ";\n")
+        g.write("static const int _country_data_uncompressed_size = " + str(decomp_size) + ";\n")
+        g.write("static const unsigned char _country_data_compressed[] = {\n")
+        for i in range(len(buf)):
+            g.write("\t" + str(buf[i]) + ",\n")
+        g.write("};\n")
+
+        g.write("#endif")
+
+
+def make_scr_header(target, source, env):
+    dst = str(target[0])
+    with open(dst, "w", encoding="utf-8", newline="\n") as g:
+        buf = ""
+        docbegin = ""
+        docend = ""
+        for src in source:
+            src = str(src)
+            if not src.endswith(".csv"):
+                continue
+            with open(src, "r", encoding="utf-8") as f:
+                content = f.read()
+            buf += content
+
+        buf = (docbegin + buf + docend).encode("utf-8")
+        decomp_size = len(buf)
+
+        # Use maximum zlib compression level to further reduce file size
+        # (at the cost of initial build times).
+        buf = zlib.compress(buf, zlib.Z_BEST_COMPRESSION)
+
+        g.write("/* THIS FILE IS GENERATED DO NOT EDIT */\n")
+        g.write("#ifndef _SCR_NAMES_RAW_H\n")
+        g.write("#define _SCR_NAMES_RAW_H\n")
+        g.write("static const int _script_data_compressed_size = " + str(len(buf)) + ";\n")
+        g.write("static const int _script_data_uncompressed_size = " + str(decomp_size) + ";\n")
+        g.write("static const unsigned char _script_data_compressed[] = {\n")
+        for i in range(len(buf)):
+            g.write("\t" + str(buf[i]) + ",\n")
+        g.write("};\n")
+
+        g.write("#endif")
+
+
 def make_certs_header(target, source, env):
     src = str(source[0])
     dst = str(target[0])

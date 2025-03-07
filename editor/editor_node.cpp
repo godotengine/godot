@@ -483,6 +483,9 @@ void EditorNode::_update_from_settings() {
 
 	ResourceImporterTexture::get_singleton()->update_imports();
 
+	TranslationServer::get_singleton()->set_custom_language_codes(GLOBAL_GET("internationalization/locale/custom_language_codes"));
+	TranslationServer::get_singleton()->set_custom_country_codes(GLOBAL_GET("internationalization/locale/custom_country_codes"));
+
 #ifdef DEBUG_ENABLED
 	NavigationServer3D::get_singleton()->set_debug_navigation_edge_connection_color(GLOBAL_GET("debug/shapes/navigation/edge_connection_color"));
 	NavigationServer3D::get_singleton()->set_debug_navigation_geometry_edge_color(GLOBAL_GET("debug/shapes/navigation/geometry_edge_color"));
