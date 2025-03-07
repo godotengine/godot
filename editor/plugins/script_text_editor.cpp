@@ -1928,8 +1928,14 @@ static String _quote_drop_data(const String &str) {
 	return escaped.quote(using_single_quotes ? "'" : "\"");
 }
 
-static String _get_dropped_resource_line(const Ref<Resource> &p_resource, bool p_create_field) {
-	const String &path = p_resource->get_path();
+static String _get_dropped_resource_line(const Ref<Resource> &p_resource, bool p_create_field, bool p_allow_uid) {
+	String path = p_resource->get_path();
+	if (p_allow_uid) {
+		ResourceUID::ID id = ResourceLoader::get_resource_uid(path);
+		if (id != ResourceUID::INVALID_ID) {
+			path = ResourceUID::get_singleton()->id_to_text(id);
+		}
+	}
 	const bool is_script = ClassDB::is_parent_class(p_resource->get_class(), "Script");
 
 	if (!p_create_field) {
@@ -1938,7 +1944,7 @@ static String _get_dropped_resource_line(const Ref<Resource> &p_resource, bool p
 
 	String variable_name = p_resource->get_name();
 	if (variable_name.is_empty()) {
-		variable_name = path.get_file().get_basename();
+		variable_name = p_resource->get_path().get_file().get_basename();
 	}
 
 	if (is_script) {
@@ -1969,6 +1975,7 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 	String text_to_drop;
 
 	const bool drop_modifier_pressed = Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL);
+	const bool allow_uid = Input::get_singleton()->is_key_pressed(Key::SHIFT) != bool(EDITOR_GET("text_editor/behavior/files/drop_preload_resources_as_uid"));
 	const String &line = te->get_line(drop_at_line);
 	const bool is_empty_line = line_will_be_empty || line.is_empty() || te->get_first_non_whitespace_column(drop_at_line) == line.length();
 
@@ -1991,7 +1998,7 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 				String warning = TTR("Preloading internal resources is not supported.");
 				EditorToaster::get_singleton()->popup_str(warning, EditorToaster::SEVERITY_ERROR);
 			} else {
-				text_to_drop = _get_dropped_resource_line(resource, is_empty_line);
+				text_to_drop = _get_dropped_resource_line(resource, is_empty_line, allow_uid);
 			}
 		} else {
 			text_to_drop = _quote_drop_data(path);
@@ -2010,7 +2017,7 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 					resource.instantiate();
 					resource->set_path_cache(path);
 				}
-				parts.append(_get_dropped_resource_line(resource, is_empty_line));
+				parts.append(_get_dropped_resource_line(resource, is_empty_line, allow_uid));
 			} else {
 				parts.append(_quote_drop_data(path));
 			}
