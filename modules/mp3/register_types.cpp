@@ -40,7 +40,7 @@
 #include "core/config/engine.h"
 #endif
 
-void initialize_minimp3_module(ModuleInitializationLevel p_level) {
+void initialize_mp3_module(ModuleInitializationLevel p_level) {
 	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
 		return;
 	}
@@ -64,7 +64,7 @@ void initialize_minimp3_module(ModuleInitializationLevel p_level) {
 	GDREGISTER_CLASS(AudioStreamMP3);
 }
 
-void uninitialize_minimp3_module(ModuleInitializationLevel p_level) {
+void uninitialize_mp3_module(ModuleInitializationLevel p_level) {
 	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
 		return;
 	}

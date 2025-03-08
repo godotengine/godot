@@ -184,6 +184,18 @@ Files extracted from upstream source:
 - `LICENSE.txt`
 
 
+## dr_libs
+
+- Upstream: https://github.com/mackron/dr_libs
+- Version: git (9d43ec42b173d50ffea2e7251e58d33f8cd83b8d, 2025)
+- License: Public Domain or Unlicense or MIT
+
+Files extracted from upstream source:
+
+- `dr_mp3.h`
+- `LICENSE`
+
+
 ## embree
 
 - Upstream: https://github.com/embree/embree
@@ -665,24 +677,6 @@ Patches:
 
 - `0001-disable-exceptions.patch` (GH-85039)
 - `0002-clang-std-replacements-leak.patch` (GH-85208)
-
-
-## minimp3
-
-- Upstream: https://github.com/lieff/minimp3
-- Version: git (afb604c06bc8beb145fecd42c0ceb5bda8795144, 2021)
-- License: CC0 1.0
-
-Files extracted from upstream repository:
-
-- `minimp3.h`
-- `minimp3_ex.h`
-- `LICENSE`
-
-Patches:
-
-- `0001-msvc-arm.patch` (GH-64921)
-- `0002-msvc-warnings.patch` (GH-66545)
 
 
 ## miniupnpc
