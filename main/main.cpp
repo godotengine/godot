@@ -4904,6 +4904,12 @@ void Main::cleanup(bool p_force) {
 	ResourceSaver::remove_custom_savers();
 	PropertyListHelper::clear_base_helpers();
 
+	// Remove the lock file if the engine exits successfully. Some automated processes such as
+	// --export/--import can bypass and/or finish faster than the existing check to remove the lock file.
+	if (OS::get_singleton()->get_exit_code() == EXIT_SUCCESS) {
+		OS::get_singleton()->remove_lock_file();
+	}
+
 	// Flush before uninitializing the scene, but delete the MessageQueue as late as possible.
 	message_queue->flush();
 
