@@ -51,7 +51,7 @@ JoltDistanceConstraint3D::JoltDistanceConstraint3D(
 	rebuild();
 }
 
-double JoltDistanceConstraint3D::get_jolt_param(JoltParam p_param) const {
+double JoltDistanceConstraint3D::get_jolt_param(Param p_param) const {
 	switch (p_param) {
 		case JoltPhysicsServer3D::DISTANCE_CONSTRAINT_LIMITS_SPRING_FREQUENCY: {
 			return limit_spring_frequency;
@@ -71,7 +71,7 @@ double JoltDistanceConstraint3D::get_jolt_param(JoltParam p_param) const {
 	}
 }
 
-void JoltDistanceConstraint3D::set_jolt_param(JoltParam p_param, double p_value) {
+void JoltDistanceConstraint3D::set_jolt_param(Param p_param, double p_value) {
 	switch (p_param) {
 		case JoltPhysicsServer3D::DISTANCE_CONSTRAINT_LIMITS_SPRING_FREQUENCY: {
 			limit_spring_frequency = p_value;

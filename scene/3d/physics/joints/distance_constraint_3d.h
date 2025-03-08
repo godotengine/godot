@@ -39,10 +39,10 @@ class DistanceConstraint3D : public Joint3D {
 
 public:
 	enum Param {
-		PARAM_LIMITS_SPRING_FREQUENCY = JoltPhysicsServer3D::DISTANCE_CONSTRAINT_LIMITS_SPRING_FREQUENCY,
-		PARAM_LIMITS_SPRING_DAMPING = JoltPhysicsServer3D::DISTANCE_CONSTRAINT_LIMITS_SPRING_DAMPING,
-		PARAM_DISTANCE_MIN = JoltPhysicsServer3D::DISTANCE_CONSTRAINT_DISTANCE_MIN,
-		PARAM_DISTANCE_MAX = JoltPhysicsServer3D::DISTANCE_CONSTRAINT_DISTANCE_MAX,
+		PARAM_LIMITS_SPRING_FREQUENCY = PhysicsServer3D::DISTANCE_CONSTRAINT_LIMITS_SPRING_FREQUENCY,
+		PARAM_LIMITS_SPRING_DAMPING = PhysicsServer3D::DISTANCE_CONSTRAINT_LIMITS_SPRING_DAMPING,
+		PARAM_DISTANCE_MIN = PhysicsServer3D::DISTANCE_CONSTRAINT_DISTANCE_MIN,
+		PARAM_DISTANCE_MAX = PhysicsServer3D::DISTANCE_CONSTRAINT_DISTANCE_MAX,
 		PARAM_MAX
 	};
 
@@ -58,7 +58,6 @@ protected:
 
 	void _configure_joint(RID p_joint, PhysicsBody3D *p_body_a, PhysicsBody3D *p_body_b) override;
 	static void _bind_methods();
-	static JoltPhysicsServer3D *_get_jolt_physics_server();
 	PhysicsBody3D *_get_body_from_param(PointParam p_param) const;
 
 public:

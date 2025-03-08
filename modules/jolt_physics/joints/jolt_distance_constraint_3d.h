@@ -38,7 +38,7 @@
 #include "Jolt/Physics/Body/Body.h"
 
 class JoltDistanceConstraint3D final : public JoltJoint3D {
-	typedef JoltPhysicsServer3D::DistanceConstraintParamJolt JoltParam;
+	typedef PhysicsServer3D::DistanceConstraintParam Param;
 
 	JPH::Constraint *_build_constraint(
 			JPH::Body *p_jolt_body_a,
@@ -65,8 +65,8 @@ public:
 
 	virtual PhysicsServer3D::JointType get_type() const override { return PhysicsServer3D::JOINT_TYPE_DISTANCE_CONSTRAINT; }
 
-	double get_jolt_param(JoltParam p_param) const;
-	void set_jolt_param(JoltParam p_param, double p_value);
+	double get_jolt_param(Param p_param) const;
+	void set_jolt_param(Param p_param, double p_value);
 
 	Vector3 get_local_a() const { return local_ref_a.origin; }
 	Vector3 get_local_b() const { return local_ref_b.origin; }

@@ -1528,10 +1528,10 @@ void JoltPhysicsServer3D::joint_make_distance_constraint(
 	joint_owner.replace(p_joint, new_joint);
 }
 
-void JoltPhysicsServer3D::distance_constraint_set_jolt_param(
+void JoltPhysicsServer3D::distance_constraint_set_param(
 		RID p_joint,
-		DistanceConstraintParamJolt p_param,
-		double p_value) {
+		PhysicsServer3D::DistanceConstraintParam p_param,
+		real_t p_value) {
 	JoltJoint3D *joint = joint_owner.get_or_null(p_joint);
 	ERR_FAIL_NULL(joint);
 
