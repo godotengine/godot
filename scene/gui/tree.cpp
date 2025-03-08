@@ -2019,54 +2019,59 @@ void Tree::draw_item_rect(TreeItem::Cell &p_cell, const Rect2i &p_rect, const Co
 	Size2 ts = p_cell.text_buf->get_size();
 	bool rtl = is_layout_rtl();
 
-	int w = 0;
-	Size2i bmsize;
+	Size2i icon_size;
 	if (p_cell.icon.is_valid()) {
-		bmsize = _get_cell_icon_size(p_cell);
-		w += bmsize.width + theme_cache.h_separation;
-		if (rect.size.width > 0 && (w + ts.width) > rect.size.width) {
-			ts.width = rect.size.width - w;
-		}
+		icon_size = _get_cell_icon_size(p_cell);
 	}
-	w += ts.width;
+
+	int displayed_width = 0;
+	if (p_cell.icon.is_valid()) {
+		displayed_width += icon_size.width + theme_cache.h_separation;
+	}
+	if (displayed_width + ts.width > rect.size.width) {
+		ts.width = rect.size.width - displayed_width;
+	}
+	displayed_width += ts.width;
+
+	int empty_width = rect.size.width - displayed_width;
 
 	switch (p_cell.text_alignment) {
 		case HORIZONTAL_ALIGNMENT_FILL:
 		case HORIZONTAL_ALIGNMENT_LEFT: {
 			if (rtl) {
-				rect.position.x += MAX(0, (rect.size.width - w));
+				rect.position.x += empty_width;
 			}
 		} break;
 		case HORIZONTAL_ALIGNMENT_CENTER:
-			rect.position.x += MAX(0, (rect.size.width - w) / 2);
+			rect.position.x += empty_width / 2;
 			break;
 		case HORIZONTAL_ALIGNMENT_RIGHT:
 			if (!rtl) {
-				rect.position.x += MAX(0, (rect.size.width - w));
+				rect.position.x += empty_width;
 			}
 			break;
 	}
 
 	RID ci = get_canvas_item();
 
-	if (rtl && rect.size.width > 0) {
-		Point2 draw_pos = rect.position;
-		draw_pos.y += Math::floor((rect.size.y - p_cell.text_buf->get_size().y) * 0.5);
-		if (p_ol_size > 0 && p_ol_color.a > 0) {
-			p_cell.text_buf->draw_outline(ci, draw_pos, p_ol_size, p_ol_color);
+	if (rtl) {
+		if (ts.width > 0) {
+			Point2 draw_pos = rect.position;
+			draw_pos.y += Math::floor((rect.size.y - p_cell.text_buf->get_size().y) * 0.5);
+			if (p_ol_size > 0 && p_ol_color.a > 0) {
+				p_cell.text_buf->draw_outline(ci, draw_pos, p_ol_size, p_ol_color);
+			}
+			p_cell.text_buf->draw(ci, draw_pos, p_color);
 		}
-		p_cell.text_buf->draw(ci, draw_pos, p_color);
 		rect.position.x += ts.width + theme_cache.h_separation;
-		rect.size.x -= ts.width + theme_cache.h_separation;
 	}
 
 	if (p_cell.icon.is_valid()) {
-		p_cell.draw_icon(ci, rect.position + Size2i(0, Math::floor((real_t)(rect.size.y - bmsize.y) / 2)), bmsize, p_icon_color);
-		rect.position.x += bmsize.x + theme_cache.h_separation;
-		rect.size.x -= bmsize.x + theme_cache.h_separation;
+		p_cell.draw_icon(ci, rect.position + Size2i(0, Math::floor((real_t)(rect.size.y - icon_size.y) / 2)), icon_size, p_icon_color);
+		rect.position.x += icon_size.x + theme_cache.h_separation;
 	}
 
-	if (!rtl && rect.size.width > 0) {
+	if (!rtl && ts.width > 0) {
 		Point2 draw_pos = rect.position;
 		draw_pos.y += Math::floor((rect.size.y - p_cell.text_buf->get_size().y) * 0.5);
 		if (p_ol_size > 0 && p_ol_color.a > 0) {
