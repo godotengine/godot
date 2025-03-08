@@ -173,7 +173,6 @@ private:
 	void _setup_lightmaps(const RenderDataRD *p_render_data, const PagedArray<RID> &p_lightmaps, const Transform3D &p_cam_transform);
 
 	RID render_base_uniform_set;
-	LocalVector<RID> render_pass_uniform_sets;
 
 	/* Light map */
 
