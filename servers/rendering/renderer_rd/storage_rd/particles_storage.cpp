@@ -765,7 +765,8 @@ void ParticlesStorage::_particles_process(Particles *p_particles, double p_delta
 	MaterialStorage *material_storage = MaterialStorage::get_singleton();
 
 	if (p_particles->particles_material_uniform_set.is_null() || !RD::get_singleton()->uniform_set_is_valid(p_particles->particles_material_uniform_set)) {
-		Vector<RD::Uniform> uniforms;
+		thread_local LocalVector<RD::Uniform> uniforms;
+		uniforms.clear();
 
 		{
 			RD::Uniform u;
@@ -1071,7 +1072,8 @@ void ParticlesStorage::_particles_process(Particles *p_particles, double p_delta
 				RD::get_singleton()->free(p_particles->collision_textures_uniform_set);
 			}
 
-			Vector<RD::Uniform> uniforms;
+			thread_local LocalVector<RD::Uniform> uniforms;
+			uniforms.clear();
 
 			{
 				RD::Uniform u;

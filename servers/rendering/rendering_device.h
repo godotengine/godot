@@ -1067,8 +1067,7 @@ public:
 	 *						If you plan on keeping the return value around for more than one frame (e.g. Sets that are created once and reused forever) you MUST set it to false.
 	 * @return				Baked descriptor set.
 	 */
-	template <typename Collection>
-	RID uniform_set_create(const Collection &p_uniforms, RID p_shader, uint32_t p_shader_set, bool p_linear_pool = false);
+	RID uniform_set_create(const VectorView<Uniform> &p_uniforms, RID p_shader, uint32_t p_shader_set, bool p_linear_pool = false);
 	bool uniform_set_is_valid(RID p_uniform_set);
 	void uniform_set_set_invalidation_callback(RID p_uniform_set, InvalidationCallback p_callback, void *p_userdata);
 
