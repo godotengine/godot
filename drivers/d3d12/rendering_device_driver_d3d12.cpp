@@ -5724,7 +5724,7 @@ RDD::PipelineID RenderingDeviceDriverD3D12::render_pipeline_create(
 		VectorView<PipelineSpecializationConstant> p_specialization_constants) {
 	const ShaderInfo *shader_info_in = (const ShaderInfo *)p_shader.id;
 
-	CD3DX12_PIPELINE_STATE_STREAM pipeline_desc = {};
+	CD3DX12_PIPELINE_STATE_STREAM1 pipeline_desc = {};
 
 	const RenderPassInfo *pass_info = (const RenderPassInfo *)p_render_pass.id;
 	RenderPipelineInfo render_info;
@@ -5916,6 +5916,15 @@ RDD::PipelineID RenderingDeviceDriverD3D12::render_pipeline_create(
 	}
 
 	render_info.dyn_params.blend_constant = p_blend_state.blend_constant;
+
+	// Multiview
+	// We are using render target slices for each view.
+	const D3D12_VIEW_INSTANCE_LOCATION viewInstanceLocations[D3D12_MAX_VIEW_INSTANCE_COUNT] = { { 0, 0 }, { 0, 1 }, { 0, 2 }, { 0, 3 } };
+	if (pass_info->view_count > 1) {
+		(&pipeline_desc.ViewInstancingDesc)->ViewInstanceCount = pass_info->view_count;
+		(&pipeline_desc.ViewInstancingDesc)->Flags = D3D12_VIEW_INSTANCING_FLAG_NONE;
+		(&pipeline_desc.ViewInstancingDesc)->pViewInstanceLocations = viewInstanceLocations;
+	}
 
 	// Stages bytecodes + specialization constants.
 
