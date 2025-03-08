@@ -184,10 +184,12 @@
 	}
 
 	// Restore borderless, transparent and resizability state.
-	if (wd.borderless || wd.layered_window) {
+	if (wd.borderless) {
 		[wd.window_object setStyleMask:NSWindowStyleMaskBorderless];
+		[wd.window_object setHasShadow:NO];
 	} else {
 		[wd.window_object setStyleMask:NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable | (wd.extend_to_title ? NSWindowStyleMaskFullSizeContentView : 0) | (wd.resize_disabled ? 0 : NSWindowStyleMaskResizable)];
+		[wd.window_object setHasShadow:YES];
 	}
 	if (wd.layered_window) {
 		ds->set_window_per_pixel_transparency_enabled(true, window_id);
