@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef OS_H
-#define OS_H
+#pragma once
 
 #include "core/config/engine.h"
 #include "core/io/logger.h"
@@ -362,12 +361,10 @@ public:
 	// This is invoked by the GDExtensionManager after loading GDExtensions specified by the project.
 	virtual void load_platform_gdextensions() const {}
 
-	// Windows only. Tests OpenGL context and Rendering Device simultaneous creation. This function is expected to crash on some NVIDIA drivers.
-	virtual bool _test_create_rendering_device_and_gl() const { return true; }
-	virtual bool _test_create_rendering_device() const { return true; }
+	// Tests OpenGL context and Rendering Device simultaneous creation. This function is expected to crash on some NVIDIA drivers.
+	virtual bool _test_create_rendering_device_and_gl(const String &p_display_driver) const { return true; }
+	virtual bool _test_create_rendering_device(const String &p_display_driver) const { return true; }
 
 	OS();
 	virtual ~OS();
 };
-
-#endif // OS_H

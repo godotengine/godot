@@ -887,7 +887,6 @@ void ColorPicker::_quick_open_palette_file_selected(const String &p_path) {
 	if (!file_dialog) {
 		file_dialog = memnew(FileDialog);
 		add_child(file_dialog, false, INTERNAL_MODE_FRONT);
-		file_dialog->force_parent_owned();
 		file_dialog->connect("file_selected", callable_mp(this, &ColorPicker::_palette_file_selected));
 		file_dialog->set_access(FileDialog::ACCESS_FILESYSTEM);
 		file_dialog->set_current_dir(Engine::get_singleton()->is_editor_hint() ? "res://" : "user://");
@@ -1741,7 +1740,6 @@ void ColorPicker::_pick_button_pressed() {
 		picker_preview_color->add_theme_style_override(SceneStringName(panel), picker_preview_style_box_color);
 
 		add_child(picker_window, false, INTERNAL_MODE_FRONT);
-		picker_window->force_parent_owned();
 	}
 	set_process_internal(true);
 
@@ -1826,7 +1824,6 @@ void ColorPicker::_options_menu_cbk(int p_which) {
 	if (!file_dialog) {
 		file_dialog = memnew(FileDialog);
 		add_child(file_dialog, false, INTERNAL_MODE_FRONT);
-		file_dialog->force_parent_owned();
 		file_dialog->connect("file_selected", callable_mp(this, &ColorPicker::_palette_file_selected));
 		file_dialog->set_access(FileDialog::ACCESS_FILESYSTEM);
 		file_dialog->set_current_dir(Engine::get_singleton()->is_editor_hint() ? "res://" : "user://");
@@ -1890,7 +1887,6 @@ void ColorPicker::_pick_button_pressed_legacy() {
 		picker_window->hide();
 		picker_window->set_transient(true);
 		add_child(picker_window, false, INTERNAL_MODE_FRONT);
-		picker_window->force_parent_owned();
 
 		picker_texture_rect = memnew(TextureRect);
 		picker_texture_rect->set_anchors_preset(Control::PRESET_FULL_RECT);
@@ -2564,7 +2560,6 @@ void ColorPickerButton::_update_picker() {
 		picker->set_anchors_and_offsets_preset(PRESET_FULL_RECT);
 		popup->add_child(picker);
 		add_child(popup, false, INTERNAL_MODE_FRONT);
-		popup->force_parent_owned();
 		picker->connect("color_changed", callable_mp(this, &ColorPickerButton::_color_changed));
 		popup->connect("about_to_popup", callable_mp(this, &ColorPickerButton::_about_to_popup));
 		popup->connect("popup_hide", callable_mp(this, &ColorPickerButton::_modal_closed));

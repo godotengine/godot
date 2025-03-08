@@ -65,7 +65,15 @@ void EditorFileDialog::_native_popup() {
 	} else if (access == ACCESS_USERDATA) {
 		root = OS::get_singleton()->get_user_data_dir();
 	}
-	DisplayServer::get_singleton()->file_dialog_with_options_show(get_translated_title(), ProjectSettings::get_singleton()->globalize_path(dir->get_text()), root, file->get_text().get_file(), show_hidden_files, DisplayServer::FileDialogMode(mode), processed_filters, _get_options(), callable_mp(this, &EditorFileDialog::_native_dialog_cb));
+
+	// Attach native file dialog to first persistent parent window.
+	Window *w = (is_transient() || is_transient_to_focused()) ? get_parent_visible_window() : nullptr;
+	while (w && w->get_flag(FLAG_POPUP) && w->get_parent_visible_window()) {
+		w = w->get_parent_visible_window();
+	}
+	DisplayServer::WindowID wid = w ? w->get_window_id() : DisplayServer::INVALID_WINDOW_ID;
+
+	DisplayServer::get_singleton()->file_dialog_with_options_show(get_translated_title(), ProjectSettings::get_singleton()->globalize_path(dir->get_text()), root, file->get_text().get_file(), show_hidden_files, DisplayServer::FileDialogMode(mode), processed_filters, _get_options(), callable_mp(this, &EditorFileDialog::_native_dialog_cb), wid);
 }
 
 void EditorFileDialog::popup(const Rect2i &p_rect) {
@@ -164,7 +172,7 @@ void EditorFileDialog::_native_dialog_cb(bool p_ok, const Vector<String> &p_file
 
 					if (!valid && filter_slice_count > 0) {
 						String str = (flt.get_slice(",", 0).strip_edges());
-						f += str.substr(1, str.length() - 1);
+						f += str.substr(1);
 						file->set_text(f.get_file());
 						valid = true;
 					}
@@ -642,7 +650,7 @@ void EditorFileDialog::_action_pressed() {
 
 				if (!valid && filter_slice_count > 0) {
 					String str = (flt.get_slice(",", 0).strip_edges());
-					f += str.substr(1, str.length() - 1);
+					f += str.substr(1);
 					_request_single_thumbnail(get_current_dir().path_join(f.get_file()));
 					file->set_text(f.get_file());
 					valid = true;
@@ -1428,7 +1436,7 @@ void EditorFileDialog::set_current_path(const String &p_path) {
 		set_current_file(p_path);
 	} else {
 		String path_dir = p_path.substr(0, pos);
-		String path_file = p_path.substr(pos + 1, p_path.length());
+		String path_file = p_path.substr(pos + 1);
 		set_current_dir(path_dir);
 		set_current_file(path_file);
 	}

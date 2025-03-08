@@ -402,26 +402,26 @@ void DisplayServerX11::set_system_theme_change_callback(const Callable &p_callab
 	portal_desktop->set_system_theme_change_callback(p_callable);
 }
 
-Error DisplayServerX11::file_dialog_show(const String &p_title, const String &p_current_directory, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const Callable &p_callback) {
-	WindowID window_id = last_focused_window;
+Error DisplayServerX11::file_dialog_show(const String &p_title, const String &p_current_directory, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const Callable &p_callback, WindowID p_window_id) {
+	WindowID window_id = p_window_id;
 
-	if (!windows.has(window_id)) {
+	if (!windows.has(window_id) && !windows[window_id].is_popup) {
 		window_id = MAIN_WINDOW_ID;
 	}
 
 	String xid = vformat("x11:%x", (uint64_t)windows[window_id].x11_window);
-	return portal_desktop->file_dialog_show(last_focused_window, xid, p_title, p_current_directory, String(), p_filename, p_mode, p_filters, TypedArray<Dictionary>(), p_callback, false);
+	return portal_desktop->file_dialog_show(p_window_id, xid, p_title, p_current_directory, String(), p_filename, p_mode, p_filters, TypedArray<Dictionary>(), p_callback, false);
 }
 
-Error DisplayServerX11::file_dialog_with_options_show(const String &p_title, const String &p_current_directory, const String &p_root, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const TypedArray<Dictionary> &p_options, const Callable &p_callback) {
-	WindowID window_id = last_focused_window;
+Error DisplayServerX11::file_dialog_with_options_show(const String &p_title, const String &p_current_directory, const String &p_root, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const TypedArray<Dictionary> &p_options, const Callable &p_callback, WindowID p_window_id) {
+	WindowID window_id = p_window_id;
 
-	if (!windows.has(window_id)) {
+	if (!windows.has(window_id) && !windows[window_id].is_popup) {
 		window_id = MAIN_WINDOW_ID;
 	}
 
 	String xid = vformat("x11:%x", (uint64_t)windows[window_id].x11_window);
-	return portal_desktop->file_dialog_show(last_focused_window, xid, p_title, p_current_directory, p_root, p_filename, p_mode, p_filters, p_options, p_callback, true);
+	return portal_desktop->file_dialog_show(p_window_id, xid, p_title, p_current_directory, p_root, p_filename, p_mode, p_filters, p_options, p_callback, true);
 }
 
 #endif
@@ -2563,7 +2563,8 @@ bool DisplayServerX11::_window_maximize_check(WindowID p_window, const char *p_a
 		Atom *atoms = (Atom *)data;
 		Atom wm_act_max_horz;
 		Atom wm_act_max_vert;
-		if (strcmp(p_atom_name, "_NET_WM_STATE") == 0) {
+		bool checking_state = strcmp(p_atom_name, "_NET_WM_STATE") == 0;
+		if (checking_state) {
 			wm_act_max_horz = XInternAtom(x11_display, "_NET_WM_STATE_MAXIMIZED_HORZ", False);
 			wm_act_max_vert = XInternAtom(x11_display, "_NET_WM_STATE_MAXIMIZED_VERT", False);
 		} else {
@@ -2581,9 +2582,16 @@ bool DisplayServerX11::_window_maximize_check(WindowID p_window, const char *p_a
 				found_wm_act_max_vert = true;
 			}
 
-			if (found_wm_act_max_horz || found_wm_act_max_vert) {
-				retval = true;
-				break;
+			if (checking_state) {
+				if (found_wm_act_max_horz && found_wm_act_max_vert) {
+					retval = true;
+					break;
+				}
+			} else {
+				if (found_wm_act_max_horz || found_wm_act_max_vert) {
+					retval = true;
+					break;
+				}
 			}
 		}
 
@@ -3961,7 +3969,7 @@ Atom DisplayServerX11::_process_selection_request_target(Atom p_target, Window p
 				32,
 				PropModeReplace,
 				(unsigned char *)&data,
-				sizeof(data) / sizeof(data[0]));
+				std::size(data));
 		return p_property;
 	} else if (p_target == XInternAtom(x11_display, "SAVE_TARGETS", 0)) {
 		// Request to check if SAVE_TARGETS is supported, nothing special to do.
@@ -6844,7 +6852,7 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 
 			if (use_prime == -1) {
 				print_verbose("Detecting GPUs, set DRI_PRIME in the environment to override GPU detection logic.");
-				use_prime = detect_prime();
+				use_prime = DetectPrimeX11::detect_prime();
 			}
 
 			if (use_prime) {

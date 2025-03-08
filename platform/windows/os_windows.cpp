@@ -787,7 +787,7 @@ bool OS_Windows::get_user_prefers_integrated_gpu() const {
 			GetCurrentApplicationUserModelIdPtr GetCurrentApplicationUserModelId = (GetCurrentApplicationUserModelIdPtr)(void *)GetProcAddress(kernel32, "GetCurrentApplicationUserModelId");
 
 			if (GetCurrentApplicationUserModelId) {
-				UINT32 length = sizeof(value_name) / sizeof(value_name[0]);
+				UINT32 length = std::size(value_name);
 				LONG result = GetCurrentApplicationUserModelId(&length, value_name);
 				if (result == ERROR_SUCCESS) {
 					is_packaged = true;
@@ -2359,7 +2359,7 @@ void OS_Windows::add_frame_delay(bool p_can_draw) {
 	}
 }
 
-bool OS_Windows::_test_create_rendering_device() const {
+bool OS_Windows::_test_create_rendering_device(const String &p_display_driver) const {
 	// Tests Rendering Device creation.
 
 	bool ok = false;
@@ -2394,7 +2394,7 @@ bool OS_Windows::_test_create_rendering_device() const {
 	return ok;
 }
 
-bool OS_Windows::_test_create_rendering_device_and_gl() const {
+bool OS_Windows::_test_create_rendering_device_and_gl(const String &p_display_driver) const {
 	// Tests OpenGL context and Rendering Device simultaneous creation. This function is expected to crash on some NVIDIA drivers.
 
 	WNDCLASSEXW wc_probe;
@@ -2438,7 +2438,7 @@ bool OS_Windows::_test_create_rendering_device_and_gl() const {
 	}
 
 	if (ok) {
-		ok = _test_create_rendering_device();
+		ok = _test_create_rendering_device(p_display_driver);
 	}
 
 #ifdef GLES3_ENABLED

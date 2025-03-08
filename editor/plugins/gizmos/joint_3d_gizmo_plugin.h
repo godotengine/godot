@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef JOINT_3D_GIZMO_PLUGIN_H
-#define JOINT_3D_GIZMO_PLUGIN_H
+#pragma once
 
 #include "editor/plugins/node_3d_editor_gizmos.h"
 
@@ -105,5 +104,3 @@ public:
 	static void draw_cone(const Transform3D &p_offset, const Basis &p_base, real_t p_swing, real_t p_twist, Vector<Vector3> &r_points);
 	static void draw_cross(const Transform3D &p_offset, const Vector3 &p_origin, Vector<Vector3> &r_points);
 };
-
-#endif // JOINT_3D_GIZMO_PLUGIN_H

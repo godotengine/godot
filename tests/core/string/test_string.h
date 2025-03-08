@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TEST_STRING_H
-#define TEST_STRING_H
+#pragma once
 
 #include "core/string/ustring.h"
 
@@ -1896,7 +1895,7 @@ TEST_CASE("[String] Is_*") {
 	static bool isflt[] = { true, true, true, false, true, true, false, false, false, false, false, false, false, true, true };
 	static bool isaid[] = { false, false, false, false, false, false, false, false, true, true, false, false, false, false, false };
 	static bool isuid[] = { false, false, false, false, false, false, false, false, true, true, false, false, true, false, false };
-	for (unsigned int i = 0; i < sizeof(data) / sizeof(data[0]); i++) {
+	for (unsigned int i = 0; i < std::size(data); i++) {
 		String s = String::utf8(data[i]);
 		CHECK(s.is_numeric() == isnum[i]);
 		CHECK(s.is_valid_int() == isint[i]);
@@ -2103,5 +2102,3 @@ TEST_CASE("[Stress][String] Empty via `is_empty()`") {
 	}
 }
 } // namespace TestString
-
-#endif // TEST_STRING_H

@@ -28,6 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#pragma once
+
 /**************************************************************************/
 /*                                                                        */
 /* Portions of this code were derived from MoltenVK.                      */
@@ -47,9 +49,6 @@
 /* implied. See the License for the specific language governing           */
 /* permissions and limitations under the License.                         */
 /**************************************************************************/
-
-#ifndef METAL_OBJECTS_H
-#define METAL_OBJECTS_H
 
 #import "metal_device_properties.h"
 #import "metal_utils.h"
@@ -787,20 +786,20 @@ struct BoundUniformSet {
 
 class API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0)) MDUniformSet {
 private:
-	void bind_uniforms_argument_buffers(MDShader *p_shader, MDCommandBuffer::RenderState &p_state);
-	void bind_uniforms_direct(MDShader *p_shader, MDCommandBuffer::RenderState &p_state);
-	void bind_uniforms_argument_buffers(MDShader *p_shader, MDCommandBuffer::ComputeState &p_state);
-	void bind_uniforms_direct(MDShader *p_shader, MDCommandBuffer::ComputeState &p_state);
+	void bind_uniforms_argument_buffers(MDShader *p_shader, MDCommandBuffer::RenderState &p_state, uint32_t p_set_index);
+	void bind_uniforms_direct(MDShader *p_shader, MDCommandBuffer::RenderState &p_state, uint32_t p_set_index);
+	void bind_uniforms_argument_buffers(MDShader *p_shader, MDCommandBuffer::ComputeState &p_state, uint32_t p_set_index);
+	void bind_uniforms_direct(MDShader *p_shader, MDCommandBuffer::ComputeState &p_state, uint32_t p_set_index);
 
 public:
 	uint32_t index;
 	LocalVector<RDD::BoundUniform> uniforms;
 	HashMap<MDShader *, BoundUniformSet> bound_uniforms;
 
-	void bind_uniforms(MDShader *p_shader, MDCommandBuffer::RenderState &p_state);
-	void bind_uniforms(MDShader *p_shader, MDCommandBuffer::ComputeState &p_state);
+	void bind_uniforms(MDShader *p_shader, MDCommandBuffer::RenderState &p_state, uint32_t p_set_index);
+	void bind_uniforms(MDShader *p_shader, MDCommandBuffer::ComputeState &p_state, uint32_t p_set_index);
 
-	BoundUniformSet &bound_uniform_set(MDShader *p_shader, id<MTLDevice> p_device, ResourceUsageMap &p_resource_usage);
+	BoundUniformSet &bound_uniform_set(MDShader *p_shader, id<MTLDevice> p_device, ResourceUsageMap &p_resource_usage, uint32_t p_set_index);
 };
 
 class API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0)) MDPipeline {
@@ -975,5 +974,3 @@ auto release(RDD::ID p_id) {
 }
 
 } // namespace rid
-
-#endif // METAL_OBJECTS_H

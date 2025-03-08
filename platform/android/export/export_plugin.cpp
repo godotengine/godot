@@ -1629,7 +1629,7 @@ void EditorExportPlatformAndroid::_fix_resources(const Ref<EditorExportPreset> &
 				str = get_project_name(package_name);
 
 			} else {
-				String lang = str.substr(str.rfind_char('-') + 1, str.length()).replace("-", "_");
+				String lang = str.substr(str.rfind_char('-') + 1).replace("-", "_");
 				if (appnames.has(lang)) {
 					str = appnames[lang];
 				} else {
@@ -2065,6 +2065,9 @@ bool EditorExportPlatformAndroid::get_export_option_visibility(const EditorExpor
 		return false;
 	}
 
+	if (p_option == "dotnet/android_use_linux_bionic") {
+		return advanced_options_enabled;
+	}
 	return true;
 }
 

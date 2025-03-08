@@ -1471,7 +1471,7 @@ void RenderForwardMobile::_render_shadow_append(RID p_framebuffer, const PagedAr
 	_fill_render_list(RENDER_LIST_SECONDARY, &render_data, pass_mode, true);
 	uint32_t render_list_size = render_list[RENDER_LIST_SECONDARY].elements.size() - render_list_from;
 	render_list[RENDER_LIST_SECONDARY].sort_by_key_range(render_list_from, render_list_size);
-	_fill_instance_data(RENDER_LIST_SECONDARY, render_list_from, render_list_size);
+	_fill_instance_data(RENDER_LIST_SECONDARY, render_list_from, render_list_size, false);
 
 	{
 		//regular forward for now
@@ -1498,6 +1498,7 @@ void RenderForwardMobile::_render_shadow_append(RID p_framebuffer, const PagedAr
 }
 
 void RenderForwardMobile::_render_shadow_process() {
+	_update_instance_data_buffer(RENDER_LIST_SECONDARY);
 	//render shadows one after the other, so this can be done un-barriered and the driver can optimize (as well as allow us to run compute at the same time)
 
 	for (uint32_t i = 0; i < scene_state.shadow_passes.size(); i++) {
@@ -1904,7 +1905,7 @@ void RenderForwardMobile::_fill_instance_data(RenderListType p_render_list, uint
 
 _FORCE_INLINE_ static uint32_t _indices_to_primitives(RS::PrimitiveType p_primitive, uint32_t p_indices) {
 	static const uint32_t divisor[RS::PRIMITIVE_MAX] = { 1, 2, 1, 3, 1 };
-	static const uint32_t subtractor[RS::PRIMITIVE_MAX] = { 0, 0, 1, 0, 1 };
+	static const uint32_t subtractor[RS::PRIMITIVE_MAX] = { 0, 0, 1, 0, 2 };
 	return (p_indices - subtractor[p_primitive]) / divisor[p_primitive];
 }
 
