@@ -1947,40 +1947,41 @@ void GDScriptAnalyzer::decide_suite_type(GDScriptParser::Node *p_suite, GDScript
 }
 
 #ifdef DEBUG_ENABLED
-void GDScriptAnalyzer::check_access_private_member(GDScriptParser::IdentifierNode *p_identifier, const bool p_is_call) {
+void GDScriptAnalyzer::check_access_private_member(GDScriptParser::IdentifierNode *p_identifier, const GDScriptParser::DataType &p_datatype, const bool p_is_call) {
 	if (p_identifier == nullptr) {
 		return;
 	}
 	if (!String(p_identifier->name).begins_with("_")) {
 		return;
 	}
-	if (parser->current_class->get_datatype().kind != GDScriptParser::DataType::CLASS && parser->current_class->get_datatype().kind != GDScriptParser::DataType::SCRIPT) {
-		return;
+	if (p_datatype.kind != GDScriptParser::DataType::Kind::CLASS && p_datatype.kind != GDScriptParser::DataType::Kind::SCRIPT) {
+		return; // Accessing from self
 	}
+	/*if (parser->current_class->get_datatype().kind != GDScriptParser::DataType::CLASS && parser->current_class->get_datatype().kind != GDScriptParser::DataType::SCRIPT) {
+		return;
+	}*/
 	if (parser->current_function && parser->current_function->body && parser->current_function->body->has_local(p_identifier->name)) {
 		return;
 	}
 
-	if (parser->current_class->has_member(p_identifier->name)) {
-		if (!p_is_call) {
-			return;
-		}
-		if (ClassDB::has_method(parser->current_class->get_datatype().native_type, p_identifier->name)) {
-			// Ready to implement CALLING_NATIVE_VIRTUAL_METHOD, but here as a comment temporarily
-			//parser->push_warning(p_identifier, GDScriptWarning::CALLING_NATIVE_VIRTUAL_METHOD, p_identifier->name);
-		}
+	GDScriptParser::DataType target_resolved = type_from_metatype(p_datatype);
+	bool target_has_member = target_resolved.class_type != nullptr && !target_resolved.class_type->has_member(p_identifier->name);
+	if (!target_has_member && p_is_call && !ClassDB::has_method(target_resolved.native_type, p_identifier->name)) {
+		return; // Accessing an inexisting method
+	}
+	if (is_type_compatible(p_datatype, parser->current_class->get_datatype(), true)) {
 		return;
 	}
 
-	GDScriptParser::ClassNode *base_class = parser->current_class->base_type.class_type;
+	parser->push_warning(p_identifier, p_is_call ? GDScriptWarning::CALLING_PRIVATE_METHOD : GDScriptWarning::ACCESS_PRIVATE_MEMBER, p_identifier->name);
+
+	/*GDScriptParser::ClassNode *base_class = parser->current_class->base_type.class_type;
 	while (base_class != nullptr) {
 		if (base_class->has_member(p_identifier->name)) {
 			return;
 		}
 		base_class = base_class->base_type.class_type;
-	}
-
-	parser->push_warning(p_identifier, p_is_call ? GDScriptWarning::CALLING_PRIVATE_METHOD : GDScriptWarning::ACCESS_PRIVATE_MEMBER, p_identifier->name);
+	}*/
 }
 #endif // DEBUG_ENABLED
 
@@ -3556,7 +3557,7 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 
 #ifdef DEBUG_ENABLED
 		GDScriptParser::IdentifierNode *identifier = static_cast<GDScriptParser::IdentifierNode *>(p_call->callee);
-		check_access_private_member(identifier, true);
+		check_access_private_member(identifier, p_call->get_datatype(), true);
 #endif
 	} else if (callee_type == GDScriptParser::Node::IDENTIFIER) {
 		base_type = parser->current_class->get_datatype();
@@ -3564,7 +3565,7 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 		is_self = true;
 #ifdef DEBUG_ENABLED
 		GDScriptParser::IdentifierNode *identifier = static_cast<GDScriptParser::IdentifierNode *>(p_call->callee);
-		check_access_private_member(identifier, true);
+		check_access_private_member(identifier, p_call->get_datatype(), true);
 #endif
 	} else if (callee_type == GDScriptParser::Node::SUBSCRIPT) {
 		GDScriptParser::SubscriptNode *subscript = static_cast<GDScriptParser::SubscriptNode *>(p_call->callee);
@@ -3600,7 +3601,7 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 			is_self = subscript->base->type == GDScriptParser::Node::SELF;
 		}
 #ifdef DEBUG_ENABLED
-		check_access_private_member(subscript->attribute, true);
+		check_access_private_member(subscript->attribute, subscript->base->get_datatype(), true);
 #endif
 	} else {
 		// Invalid call. Error already sent in parser.
@@ -4525,7 +4526,7 @@ void GDScriptAnalyzer::reduce_identifier(GDScriptParser::IdentifierNode *p_ident
 		}
 
 #ifdef DEBUG_ENABLED
-		check_access_private_member(p_identifier);
+		check_access_private_member(p_identifier, p_identifier->get_datatype());
 #endif
 
 		return;
@@ -4891,7 +4892,7 @@ void GDScriptAnalyzer::reduce_subscript(GDScriptParser::SubscriptNode *p_subscri
 		}
 
 #ifdef DEBUG_ENABLED
-		check_access_private_member(p_subscript->attribute);
+		check_access_private_member(p_subscript->attribute, p_subscript->base->get_datatype());
 #endif
 	} else {
 		if (p_subscript->index == nullptr) {

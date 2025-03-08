@@ -72,7 +72,7 @@ class GDScriptAnalyzer {
 	void decide_suite_type(GDScriptParser::Node *p_suite, GDScriptParser::Node *p_statement);
 
 #ifdef DEBUG_ENABLED
-	void check_access_private_member(GDScriptParser::IdentifierNode *p_identifier, const bool p_is_call = false);
+	void check_access_private_member(GDScriptParser::IdentifierNode *p_identifier, const GDScriptParser::DataType &p_datatype, const bool p_is_call = false);
 #endif
 
 	void resolve_annotation(GDScriptParser::AnnotationNode *p_annotation);
