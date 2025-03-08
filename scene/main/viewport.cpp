@@ -1509,6 +1509,7 @@ void Viewport::_gui_show_tooltip() {
 	// This way, the custom tooltip from `ConnectionsDockTree` can create
 	// its own tooltip without conflicting with the default one, even an empty tooltip.
 	if (base_tooltip && !base_tooltip->is_visible()) {
+		memdelete(base_tooltip);
 		return;
 	}
 
