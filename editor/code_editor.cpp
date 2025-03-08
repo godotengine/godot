@@ -138,10 +138,7 @@ void FindReplaceBar::_notification(int p_what) {
 		case NOTIFICATION_READY: {
 			find_prev->set_button_icon(get_editor_theme_icon(SNAME("MoveUp")));
 			find_next->set_button_icon(get_editor_theme_icon(SNAME("MoveDown")));
-			hide_button->set_texture_normal(get_editor_theme_icon(SNAME("Close")));
-			hide_button->set_texture_hover(get_editor_theme_icon(SNAME("Close")));
-			hide_button->set_texture_pressed(get_editor_theme_icon(SNAME("Close")));
-			hide_button->set_custom_minimum_size(hide_button->get_texture_normal()->get_size());
+			hide_button->set_button_icon(get_editor_theme_icon(SNAME("Close")));
 			_update_toggle_replace_button(replace_text->is_visible_in_tree());
 		} break;
 
@@ -759,7 +756,7 @@ FindReplaceBar::FindReplaceBar() {
 	toggle_replace_button->set_focus_mode(FOCUS_NONE);
 	toggle_replace_button->connect(SceneStringName(pressed), callable_mp(this, &FindReplaceBar::_toggle_replace_pressed));
 
-	vbc_lineedit = memnew(VBoxContainer);
+	VBoxContainer *vbc_lineedit = memnew(VBoxContainer);
 	add_child(vbc_lineedit);
 	vbc_lineedit->set_alignment(BoxContainer::ALIGNMENT_CENTER);
 	vbc_lineedit->set_h_size_flags(SIZE_EXPAND_FILL);
@@ -769,18 +766,20 @@ FindReplaceBar::FindReplaceBar() {
 	add_child(vbc_option);
 
 	HBoxContainer *hbc_button_search = memnew(HBoxContainer);
-	vbc_button->add_child(hbc_button_search);
+	hbc_button_search->set_v_size_flags(SIZE_EXPAND_FILL);
 	hbc_button_search->set_alignment(BoxContainer::ALIGNMENT_END);
+	vbc_button->add_child(hbc_button_search);
 	hbc_button_replace = memnew(HBoxContainer);
-	vbc_button->add_child(hbc_button_replace);
+	hbc_button_replace->set_v_size_flags(SIZE_EXPAND_FILL);
 	hbc_button_replace->set_alignment(BoxContainer::ALIGNMENT_END);
+	vbc_button->add_child(hbc_button_replace);
 
 	HBoxContainer *hbc_option_search = memnew(HBoxContainer);
 	vbc_option->add_child(hbc_option_search);
 	hbc_option_replace = memnew(HBoxContainer);
 	vbc_option->add_child(hbc_option_replace);
 
-	// Search toolbar
+	// Search toolbar.
 	search_text = memnew(LineEdit);
 	search_text->set_keep_editing_on_text_submit(true);
 	vbc_lineedit->add_child(search_text);
@@ -824,7 +823,7 @@ FindReplaceBar::FindReplaceBar() {
 	whole_words->set_focus_mode(FOCUS_NONE);
 	whole_words->connect(SceneStringName(toggled), callable_mp(this, &FindReplaceBar::_search_options_changed));
 
-	// Replace toolbar
+	// Replace toolbar.
 	replace_text = memnew(LineEdit);
 	vbc_lineedit->add_child(replace_text);
 	replace_text->set_placeholder(TTR("Replace"));
@@ -849,13 +848,14 @@ FindReplaceBar::FindReplaceBar() {
 	selection_only->set_focus_mode(FOCUS_NONE);
 	selection_only->connect(SceneStringName(toggled), callable_mp(this, &FindReplaceBar::_search_options_changed));
 
-	hide_button = memnew(TextureButton);
-	add_child(hide_button);
+	hide_button = memnew(Button);
+	hide_button->set_flat(true);
 	hide_button->set_tooltip_text(TTR("Hide"));
 	hide_button->set_accessibility_name(TTRC("Hide"));
 	hide_button->set_focus_mode(FOCUS_NONE);
 	hide_button->connect(SceneStringName(pressed), callable_mp(this, &FindReplaceBar::_hide_bar));
 	hide_button->set_v_size_flags(SIZE_SHRINK_CENTER);
+	add_child(hide_button);
 }
 
 /*** CODE EDITOR ****/
