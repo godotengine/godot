@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef DISTANCE_CONSTRAINT_3D_H
-#define DISTANCE_CONSTRAINT_3D_H
+#pragma once
 
 #include "scene/3d/physics/joints/joint_3d.h"
 
@@ -77,5 +76,3 @@ public:
 
 VARIANT_ENUM_CAST(DistanceConstraint3D::Param);
 VARIANT_ENUM_CAST(DistanceConstraint3D::PointParam);
-
-#endif // DISTANCE_CONSTRAINT_3D_H
