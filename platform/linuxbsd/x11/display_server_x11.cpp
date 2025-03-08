@@ -405,7 +405,7 @@ void DisplayServerX11::set_system_theme_change_callback(const Callable &p_callab
 Error DisplayServerX11::file_dialog_show(const String &p_title, const String &p_current_directory, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const Callable &p_callback, WindowID p_window_id) {
 	WindowID window_id = p_window_id;
 
-	if (!windows.has(window_id) && !windows[window_id].is_popup) {
+	if (!windows.has(window_id) || windows[window_id].is_popup) {
 		window_id = MAIN_WINDOW_ID;
 	}
 
@@ -416,7 +416,7 @@ Error DisplayServerX11::file_dialog_show(const String &p_title, const String &p_
 Error DisplayServerX11::file_dialog_with_options_show(const String &p_title, const String &p_current_directory, const String &p_root, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const TypedArray<Dictionary> &p_options, const Callable &p_callback, WindowID p_window_id) {
 	WindowID window_id = p_window_id;
 
-	if (!windows.has(window_id) && !windows[window_id].is_popup) {
+	if (!windows.has(window_id) || windows[window_id].is_popup) {
 		window_id = MAIN_WINDOW_ID;
 	}
 
