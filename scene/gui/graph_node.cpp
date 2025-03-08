@@ -279,7 +279,7 @@ void GraphNode::_resort() {
 		Rect2 rect(margin, from_y_pos, final_width, height);
 		fit_child_in_rect(child, rect);
 
-		slot_y_cache.push_back(from_y_pos - sb_panel->get_margin(SIDE_TOP) + height * 0.5);
+		slot_y_cache.push_back(child->get_rect().position.y + child->get_rect().size.height * 0.5);
 
 		ofs_y = to_y_pos;
 		valid_children_idx++;
@@ -348,12 +348,12 @@ void GraphNode::_notification(int p_what) {
 
 					// Left port.
 					if (slot.enable_left) {
-						draw_port(slot_index, Point2i(port_h_offset, slot_y_cache[E.key] + sb_panel->get_margin(SIDE_TOP)), true, slot.color_left);
+						draw_port(slot_index, Point2i(port_h_offset, slot_y_cache[E.key]), true, slot.color_left);
 					}
 
 					// Right port.
 					if (slot.enable_right) {
-						draw_port(slot_index, Point2i(get_size().x - port_h_offset, slot_y_cache[E.key] + sb_panel->get_margin(SIDE_TOP)), false, slot.color_right);
+						draw_port(slot_index, Point2i(get_size().x - port_h_offset, slot_y_cache[E.key]), false, slot.color_right);
 					}
 
 					// Draw slot stylebox.
@@ -646,14 +646,9 @@ Size2 GraphNode::get_minimum_size() const {
 
 void GraphNode::_port_pos_update() {
 	int edgeofs = theme_cache.port_h_offset;
-	int separation = theme_cache.separation;
-
-	Ref<StyleBox> sb_panel = theme_cache.panel;
-	Ref<StyleBox> sb_titlebar = theme_cache.titlebar;
 
 	left_port_cache.clear();
 	right_port_cache.clear();
-	int vertical_ofs = titlebar_hbox->get_size().height + sb_titlebar->get_minimum_size().height + sb_panel->get_margin(SIDE_TOP);
 	int slot_index = 0;
 
 	for (int i = 0; i < get_child_count(false); i++) {
@@ -663,11 +658,12 @@ void GraphNode::_port_pos_update() {
 		}
 
 		Size2i size = child->get_rect().size;
+		Point2 pos = child->get_position();
 
 		if (slot_table.has(slot_index)) {
 			if (slot_table[slot_index].enable_left) {
 				PortCache port_cache;
-				port_cache.pos = Point2i(edgeofs, vertical_ofs + size.height / 2);
+				port_cache.pos = Point2i(edgeofs, pos.y + size.height / 2);
 				port_cache.type = slot_table[slot_index].type_left;
 				port_cache.color = slot_table[slot_index].color_left;
 				port_cache.slot_index = slot_index;
@@ -675,7 +671,7 @@ void GraphNode::_port_pos_update() {
 			}
 			if (slot_table[slot_index].enable_right) {
 				PortCache port_cache;
-				port_cache.pos = Point2i(get_size().width - edgeofs, vertical_ofs + size.height / 2);
+				port_cache.pos = Point2i(get_size().width - edgeofs, pos.y + size.height / 2);
 				port_cache.type = slot_table[slot_index].type_right;
 				port_cache.color = slot_table[slot_index].color_right;
 				port_cache.slot_index = slot_index;
@@ -683,8 +679,6 @@ void GraphNode::_port_pos_update() {
 			}
 		}
 
-		vertical_ofs += separation;
-		vertical_ofs += size.height;
 		slot_index++;
 	}
 
