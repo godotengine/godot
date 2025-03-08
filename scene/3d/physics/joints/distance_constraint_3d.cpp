@@ -1,5 +1,7 @@
 #include "distance_constraint_3d.h"
 
+const String MISSING_JOLT_ERR_MSG = "DistanceConstraint3D is only compatible with Jolt Physics. Please change your Physics Engine in Project Settings.";
+
 void DistanceConstraint3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_param", "param", "value"), &DistanceConstraint3D::set_param);
 	ClassDB::bind_method(D_METHOD("get_param", "param"), &DistanceConstraint3D::get_param);
@@ -27,15 +29,13 @@ void DistanceConstraint3D::_bind_methods() {
 }
 
 JoltPhysicsServer3D *DistanceConstraint3D::_get_jolt_physics_server() {
-	JoltPhysicsServer3D *physics_server = JoltPhysicsServer3D::get_singleton();
+	JoltPhysicsServer3D *jolt_physics_server = JoltPhysicsServer3D::get_singleton();
 
-	if (unlikely(physics_server == nullptr)) {
-		ERR_PRINT_ONCE(
-				"DistanceConstraint3D was unable to retrieve the Jolt-based physics server. "
-				"Make sure that you have 'Jolt Physics' set as the currently active physics engine. ");
+	if (unlikely(jolt_physics_server == nullptr)) {
+		ERR_PRINT_ONCE(MISSING_JOLT_ERR_MSG);
 	}
 
-	return physics_server;
+	return jolt_physics_server;
 }
 
 void DistanceConstraint3D::set_param(Param p_param, real_t p_value) {
@@ -81,8 +81,8 @@ PhysicsBody3D *DistanceConstraint3D::_get_body_from_param(PointParam p_param) co
 }
 
 void DistanceConstraint3D::_configure_joint(RID p_joint, PhysicsBody3D *p_body_a, PhysicsBody3D *p_body_b) {
-	JoltPhysicsServer3D *physics_server = _get_jolt_physics_server();
-	ERR_FAIL_NULL(physics_server);
+	JoltPhysicsServer3D *jolt_physics_server = _get_jolt_physics_server();
+	ERR_FAIL_NULL(jolt_physics_server);
 
 	const bool are_bodies_switched = _get_body_from_param(POINT_PARAM_A) == nullptr;
 
@@ -92,7 +92,7 @@ void DistanceConstraint3D::_configure_joint(RID p_joint, PhysicsBody3D *p_body_a
 	const Vector3 p_body_a_point = are_bodies_switched ? point_b : point_a;
 	const Vector3 p_body_b_point = are_bodies_switched ? point_a : point_b;
 
-	physics_server->joint_make_distance_constraint(
+	jolt_physics_server->joint_make_distance_constraint(
 			p_joint,
 			p_body_a->get_rid(),
 			p_body_a_point,
@@ -100,16 +100,16 @@ void DistanceConstraint3D::_configure_joint(RID p_joint, PhysicsBody3D *p_body_a
 			p_body_b != nullptr ? p_body_b_point : global_position);
 
 	for (int i = 0; i < PARAM_MAX; i++) {
-		physics_server->distance_constraint_set_jolt_param(p_joint, JoltPhysicsServer3D::DistanceConstraintParamJolt(i), params[i]);
+		jolt_physics_server->distance_constraint_set_jolt_param(p_joint, JoltPhysicsServer3D::DistanceConstraintParamJolt(i), params[i]);
 	}
 }
 
 PackedStringArray DistanceConstraint3D::get_configuration_warnings() const {
 	PackedStringArray warnings = Joint3D::get_configuration_warnings();
 
-	JoltPhysicsServer3D *physics_server = JoltPhysicsServer3D::get_singleton();
-	if (!physics_server) {
-		warnings.push_back(RTR("DistanceConstraint3D is only compatible with Jolt Physics. Please change your Physics Engine in Project Settings."));
+	JoltPhysicsServer3D *jolt_physics_server = JoltPhysicsServer3D::get_singleton();
+	if (!jolt_physics_server) {
+		warnings.push_back(RTR(MISSING_JOLT_ERR_MSG));
 	}
 	return warnings;
 }
