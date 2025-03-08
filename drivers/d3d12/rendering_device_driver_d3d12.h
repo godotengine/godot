@@ -275,6 +275,9 @@ private:
 
 		UINT mapped_subresource = UINT_MAX;
 		SelfList<TextureInfo> pending_clear{ this };
+#ifdef DEBUG_ENABLED
+		bool created_from_extension = false;
+#endif
 	};
 	SelfList<TextureInfo>::List textures_pending_clear;
 
