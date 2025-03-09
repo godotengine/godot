@@ -595,6 +595,19 @@ void CodeEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 	}
 
 	/* MISC */
+	if (is_tab_moves_focus_enabled()) {
+		if (k->is_action("ui_focus_next", true)) {
+			find_next_valid_focus()->grab_focus();
+			accept_event();
+			return;
+		}
+		if (k->is_action("ui_focus_prev", true)) {
+			find_prev_valid_focus()->grab_focus();
+			accept_event();
+			return;
+		}
+	}
+
 	if (!code_hint.is_empty() && k->is_action("ui_cancel", true)) {
 		set_code_hint("");
 		accept_event();
