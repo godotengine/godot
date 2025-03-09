@@ -1146,7 +1146,7 @@ void PopupMenu::_notification(int p_what) {
 			}
 			for (int i = 0; i < items.size(); i++) {
 				Item &item = items.write[i];
-				item.xl_text = atr(item.text);
+				item.xl_text = _atr(i, item.text);
 				item.dirty = true;
 				if (is_global) {
 					nmenu->set_item_text(global_menu, i, item.xl_text);
@@ -1731,7 +1731,7 @@ void PopupMenu::set_item_text(int p_idx, const String &p_text) {
 		return;
 	}
 	items.write[p_idx].text = p_text;
-	items.write[p_idx].xl_text = atr(p_text);
+	items.write[p_idx].xl_text = _atr(p_idx, p_text);
 	items.write[p_idx].dirty = true;
 
 	if (global_menu.is_valid()) {
@@ -1767,6 +1767,20 @@ void PopupMenu::set_item_language(int p_idx, const String &p_language) {
 		items.write[p_idx].dirty = true;
 		control->queue_redraw();
 	}
+}
+
+void PopupMenu::set_item_auto_translate_mode(int p_idx, AutoTranslateMode p_mode) {
+	if (p_idx < 0) {
+		p_idx += get_item_count();
+	}
+	ERR_FAIL_INDEX(p_idx, items.size());
+	if (items[p_idx].auto_translate_mode == p_mode) {
+		return;
+	}
+	items.write[p_idx].auto_translate_mode = p_mode;
+	items.write[p_idx].xl_text = _atr(p_idx, items[p_idx].text);
+	items.write[p_idx].dirty = true;
+	control->queue_redraw();
 }
 
 void PopupMenu::set_item_icon(int p_idx, const Ref<Texture2D> &p_icon) {
@@ -2007,6 +2021,11 @@ Control::TextDirection PopupMenu::get_item_text_direction(int p_idx) const {
 String PopupMenu::get_item_language(int p_idx) const {
 	ERR_FAIL_INDEX_V(p_idx, items.size(), "");
 	return items[p_idx].language;
+}
+
+Node::AutoTranslateMode PopupMenu::get_item_auto_translate_mode(int p_idx) const {
+	ERR_FAIL_INDEX_V(p_idx, items.size(), AUTO_TRANSLATE_MODE_INHERIT);
+	return items[p_idx].auto_translate_mode;
 }
 
 int PopupMenu::get_item_idx_from_text(const String &text) const {
@@ -2818,6 +2837,7 @@ void PopupMenu::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_item_text", "index", "text"), &PopupMenu::set_item_text);
 	ClassDB::bind_method(D_METHOD("set_item_text_direction", "index", "direction"), &PopupMenu::set_item_text_direction);
 	ClassDB::bind_method(D_METHOD("set_item_language", "index", "language"), &PopupMenu::set_item_language);
+	ClassDB::bind_method(D_METHOD("set_item_auto_translate_mode", "index", "mode"), &PopupMenu::set_item_auto_translate_mode);
 	ClassDB::bind_method(D_METHOD("set_item_icon", "index", "icon"), &PopupMenu::set_item_icon);
 	ClassDB::bind_method(D_METHOD("set_item_icon_max_width", "index", "width"), &PopupMenu::set_item_icon_max_width);
 	ClassDB::bind_method(D_METHOD("set_item_icon_modulate", "index", "modulate"), &PopupMenu::set_item_icon_modulate);
@@ -2844,6 +2864,7 @@ void PopupMenu::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_item_text", "index"), &PopupMenu::get_item_text);
 	ClassDB::bind_method(D_METHOD("get_item_text_direction", "index"), &PopupMenu::get_item_text_direction);
 	ClassDB::bind_method(D_METHOD("get_item_language", "index"), &PopupMenu::get_item_language);
+	ClassDB::bind_method(D_METHOD("get_item_auto_translate_mode", "index"), &PopupMenu::get_item_auto_translate_mode);
 	ClassDB::bind_method(D_METHOD("get_item_icon", "index"), &PopupMenu::get_item_icon);
 	ClassDB::bind_method(D_METHOD("get_item_icon_max_width", "index"), &PopupMenu::get_item_icon_max_width);
 	ClassDB::bind_method(D_METHOD("get_item_icon_modulate", "index"), &PopupMenu::get_item_icon_modulate);
@@ -2981,6 +3002,23 @@ void PopupMenu::_native_popup(const Rect2i &p_rect) {
 	float win_scale = get_parent_visible_window()->get_content_scale_factor();
 	NativeMenu::get_singleton()->set_minimum_width(global_menu, p_rect.size.x * win_scale);
 	NativeMenu::get_singleton()->popup(global_menu, popup_pos);
+}
+
+String PopupMenu::_atr(int p_idx, const String &p_text) const {
+	ERR_FAIL_INDEX_V(p_idx, items.size(), atr(p_text));
+	switch (items[p_idx].auto_translate_mode) {
+		case AUTO_TRANSLATE_MODE_INHERIT: {
+			return atr(p_text);
+		} break;
+		case AUTO_TRANSLATE_MODE_ALWAYS: {
+			return tr(p_text);
+		} break;
+		case AUTO_TRANSLATE_MODE_DISABLED: {
+			return p_text;
+		} break;
+	}
+
+	ERR_FAIL_V_MSG(atr(p_text), "Unexpected auto translate mode: " + itos(items[p_idx].auto_translate_mode));
 }
 
 void PopupMenu::popup(const Rect2i &p_bounds) {
