@@ -463,6 +463,10 @@ void ProjectManager::_run_project_confirm() {
 		args.push_back("--path");
 		args.push_back(path);
 
+		if (open_in_verbose_mode) {
+			args.push_back("--verbose");
+		}
+
 		Error err = OS::get_singleton()->create_instance(args);
 		ERR_FAIL_COND(err);
 	}
@@ -498,6 +502,10 @@ void ProjectManager::_open_selected_projects() {
 
 		if (open_in_recovery_mode) {
 			args.push_back("--recovery-mode");
+		}
+
+		if (open_in_verbose_mode) {
+			args.push_back("--verbose");
 		}
 
 		Error err = OS::get_singleton()->create_instance(args);
@@ -1025,6 +1033,19 @@ void ProjectManager::shortcut_input(const Ref<InputEvent> &p_ev) {
 	Ref<InputEventKey> k = p_ev;
 
 	if (k.is_valid()) {
+		if (k->get_keycode() == Key::ALT) {
+			if (k->is_pressed()) {
+				open_in_verbose_mode = true;
+				open_btn->set_text(TTR("Edit (Verbose)"));
+				run_btn->set_text(TTR("Run (Verbose)"));
+			} else {
+				open_in_verbose_mode = false;
+				open_btn->set_text(TTR("Edit"));
+				run_btn->set_text(TTR("Run"));
+			}
+			accept_event();
+		}
+
 		if (!k->is_pressed()) {
 			return;
 		}
