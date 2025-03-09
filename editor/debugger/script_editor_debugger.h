@@ -246,6 +246,11 @@ protected:
 	static void _bind_methods();
 
 public:
+	enum EmbedShortcutAction {
+		EMBED_SUSPEND_TOGGLE,
+		EMBED_NEXT_FRAME,
+	};
+
 	void request_remote_objects(const TypedArray<uint64_t> &p_obj_ids, bool p_update_selection = true);
 	void update_remote_object(ObjectID p_obj_id, const String &p_prop, const Variant &p_value, const String &p_field = "");
 
