@@ -812,6 +812,12 @@
 				Overridable version of [PhysicsServer2D]'s internal [code]init[/code] method.
 			</description>
 		</method>
+		<method name="_is_active" qualifiers="virtual const">
+			<return type="bool" />
+			<description>
+				Overridable version of [method PhysicsServer2D.is_active].
+			</description>
+		</method>
 		<method name="_is_flushing_queries" qualifiers="virtual const">
 			<return type="bool" />
 			<description>
