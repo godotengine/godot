@@ -30,8 +30,16 @@
 
 #include "file_access_encrypted.h"
 
-#include "core/crypto/crypto_core.h"
 #include "core/variant/variant.h"
+
+CryptoCore::RandomGenerator *FileAccessEncrypted::_fae_static_rng = nullptr;
+
+void FileAccessEncrypted::deinitialize() {
+	if (_fae_static_rng) {
+		memdelete(_fae_static_rng);
+		_fae_static_rng = nullptr;
+	}
+}
 
 Error FileAccessEncrypted::open_and_parse(Ref<FileAccess> p_base, const Vector<uint8_t> &p_key, Mode p_mode, bool p_with_magic, const Vector<uint8_t> &p_iv) {
 	ERR_FAIL_COND_V_MSG(file.is_valid(), ERR_ALREADY_IN_USE, vformat("Can't open file while another file from path '%s' is open.", file->get_path_absolute()));
@@ -48,9 +56,15 @@ Error FileAccessEncrypted::open_and_parse(Ref<FileAccess> p_base, const Vector<u
 		key = p_key;
 		if (p_iv.is_empty()) {
 			iv.resize(16);
-			CryptoCore::RandomGenerator rng;
-			ERR_FAIL_COND_V_MSG(rng.init(), FAILED, "Failed to initialize random number generator.");
-			Error err = rng.get_random_bytes(iv.ptrw(), 16);
+			if (unlikely(!_fae_static_rng)) {
+				_fae_static_rng = memnew(CryptoCore::RandomGenerator);
+				if (_fae_static_rng->init() != OK) {
+					memdelete(_fae_static_rng);
+					_fae_static_rng = nullptr;
+					ERR_FAIL_V_MSG(FAILED, "Failed to initialize random number generator.");
+				}
+			}
+			Error err = _fae_static_rng->get_random_bytes(iv.ptrw(), 16);
 			ERR_FAIL_COND_V(err != OK, err);
 		} else {
 			ERR_FAIL_COND_V(p_iv.size() != 16, ERR_INVALID_PARAMETER);
