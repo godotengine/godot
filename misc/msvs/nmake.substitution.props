@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <!-- NMake is Windows only, so we need to wrap everything useful for non-windows msbuild -->
+  <PropertyGroup>
+    <LocalDebuggerCommand Condition="'$(LocalDebuggerCommand)' == ''">$(NMakeOutput)</LocalDebuggerCommand>
+  </PropertyGroup>
+
+  <Target Name="Build">
+    <Exec Command="$(NMakeBuildCommandLine)"/>
+  </Target>
+  <Target Name="Rebuild">
+    <Exec Command="$(NMakeReBuildCommandLine)"/>
+  </Target>
+  <Target Name="Clean">
+    <Exec Command="$(NMakeCleanCommandLine)"/>
+  </Target>
+</Project>
