@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 // ----------------------------------------------------------------------------
-// Copyright 2011-2022 Arm Limited
+// Copyright 2011-2024 Arm Limited
 //
 // Licensed under the Apache License, Version 2.0 (the "License"); you may not
 // use this file except in compliance with the License. You may obtain a copy
@@ -123,21 +123,21 @@ static void compute_error_squared_rgb_single_partition(
 	vint lane_ids = vint::lane_id();
 	for (unsigned int i = 0; i < texel_count; i += ASTCENC_SIMD_WIDTH)
 	{
-		vint tix(texel_indexes + i);
+		const uint8_t* tix = texel_indexes + i;
 
 		vmask mask = lane_ids < vint(texel_count);
 		lane_ids += vint(ASTCENC_SIMD_WIDTH);
 
 		// Compute the error that arises from just ditching alpha
-		vfloat data_a = gatherf(blk.data_a, tix);
+		vfloat data_a = gatherf_byte_inds<vfloat>(blk.data_a, tix);
 		vfloat alpha_diff = data_a - default_a;
 		alpha_diff = alpha_diff * alpha_diff;
 
 		haccumulate(a_drop_errv, alpha_diff, mask);
 
-		vfloat data_r = gatherf(blk.data_r, tix);
-		vfloat data_g = gatherf(blk.data_g, tix);
-		vfloat data_b = gatherf(blk.data_b, tix);
+		vfloat data_r = gatherf_byte_inds<vfloat>(blk.data_r, tix);
+		vfloat data_g = gatherf_byte_inds<vfloat>(blk.data_g, tix);
+		vfloat data_b = gatherf_byte_inds<vfloat>(blk.data_b, tix);
 
 		// Compute uncorrelated error
 		vfloat param = data_r * uncor_bs0
@@ -1306,8 +1306,8 @@ unsigned int compute_ideal_endpoint_formats(
 		// Pick best mode from the SIMD result, using lowest matching index to ensure invariance
 		vmask lanes_min_error = vbest_ep_error == hmin(vbest_ep_error);
 		vbest_error_index = select(vint(0x7FFFFFFF), vbest_error_index, lanes_min_error);
-		vbest_error_index = hmin(vbest_error_index);
-		int best_error_index = vbest_error_index.lane<0>();
+
+		int best_error_index = hmin_s(vbest_error_index);
 
 		best_error_weights[i] = best_error_index;
 
