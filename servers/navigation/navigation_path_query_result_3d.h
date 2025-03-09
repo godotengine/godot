@@ -41,6 +41,7 @@ class NavigationPathQueryResult3D : public RefCounted {
 	Vector<int32_t> path_types;
 	TypedArray<RID> path_rids;
 	Vector<int64_t> path_owner_ids;
+	float path_length = 0.0;
 
 protected:
 	static void _bind_methods();
@@ -62,6 +63,9 @@ public:
 
 	void set_path_owner_ids(const Vector<int64_t> &p_path_owner_ids);
 	const Vector<int64_t> &get_path_owner_ids() const;
+
+	void set_path_length(float p_length);
+	float get_path_length() const;
 
 	void reset();
 
