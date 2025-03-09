@@ -58,6 +58,10 @@ static bool is_color_overbright(const Color &color) {
 	return (color.r >= 1.0 + CMP_EPSILON) || (color.g >= 1.0 + CMP_EPSILON) || (color.b >= 1.0 + CMP_EPSILON);
 }
 
+static bool color_has_valid_hex(const Color &color) {
+	return !is_color_overbright(color) && color.r >= 0 && color.g >= 0 && color.b >= 0;
+}
+
 void ColorPicker::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
@@ -719,7 +723,7 @@ void ColorPicker::_c_text_submitted(const String &p_html) {
 		return;
 	}
 	Color new_color = color;
-	if (text_is_constructor) {
+	if (text_is_constructor || !color_has_valid_hex(color)) {
 		Ref<Expression> expr;
 		expr.instantiate();
 		Error err = expr->parse(p_html);
@@ -1337,8 +1341,7 @@ bool ColorPicker::is_deferred_mode() const {
 }
 
 void ColorPicker::_update_text_value() {
-	bool is_hex_valid = !is_color_overbright(color) && color.r >= 0 && color.g >= 0 && color.b >= 0;
-	if (text_is_constructor || !is_hex_valid) {
+	if (text_is_constructor || !color_has_valid_hex(color)) {
 		String t = "Color(" + String::num(color.r, 3) + ", " + String::num(color.g, 3) + ", " + String::num(color.b, 3);
 		if (edit_alpha && color.a < 1) {
 			t += ", " + String::num(color.a, 3) + ")";
