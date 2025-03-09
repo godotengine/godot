@@ -1026,7 +1026,7 @@ class Godot private constructor(val context: Context) {
 	 */
 	@Keep
 	private fun hasFeature(feature: String): Boolean {
-		if (primaryHost?.supportsFeature(feature) ?: false) {
+		if (primaryHost?.supportsFeature(feature) == true) {
 			return true;
 		}
 

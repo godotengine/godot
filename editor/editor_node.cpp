@@ -2176,7 +2176,7 @@ void EditorNode::try_autosave() {
 		Node *scene = editor_data.get_edited_scene_root();
 
 		if (scene && !scene->get_scene_file_path().is_empty()) { // Only autosave if there is a scene and if it has a path.
-			_save_scene(scene->get_scene_file_path());
+			_save_scene(scene->get_scene_file_path(), -1, false);
 		}
 	}
 	_menu_option(SCENE_SAVE_ALL_SCENES);
