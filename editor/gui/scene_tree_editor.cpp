@@ -335,6 +335,7 @@ void SceneTreeEditor::_update_node_subtree(Node *p_node, TreeItem *p_parent, boo
 	_update_node(p_node, item, part_of_subscene);
 	I->value.dirty = false;
 	I->value.can_process = p_node->can_process();
+	I->value.scene_editor_only = p_node->get_scene_editor_only();
 
 	// Force update all our children if we are new or if we were forced to update.
 	bool force_update_children = p_force || is_new;
@@ -469,6 +470,23 @@ void SceneTreeEditor::_update_node(Node *p_node, TreeItem *p_item, bool p_part_o
 				break;
 			}
 			node = node->get_parent();
+		}
+	}
+
+	if (p_node->get_scene_editor_only()) {
+		_set_item_custom_color(p_item, Color(0.28, 0.6, 1.0));
+	} else {
+		bool editor_only = false;
+		Node *node = p_node;
+		while (node) {
+			if (node->get_scene_editor_only()) {
+				editor_only = true;
+				break;
+			}
+			node = node->get_parent();
+		}
+		if (editor_only) {
+			_set_item_custom_color(p_item, get_theme_color(SNAME("font_disabled_color"), EditorStringName(Editor)));
 		}
 	}
 
@@ -830,7 +848,7 @@ void SceneTreeEditor::_node_editor_state_changed(Node *p_node) {
 	node_cache.mark_dirty(p_node);
 	HashMap<Node *, CachedNode>::Iterator I = node_cache.get(p_node, false);
 	if (I) {
-		if (p_node->is_inside_tree() && p_node->can_process() != I->value.can_process) {
+		if (p_node->is_inside_tree() && (p_node->can_process() != I->value.can_process || p_node->get_scene_editor_only() != I->value.scene_editor_only)) {
 			// All our children also change process mode.
 			node_cache.mark_children_dirty(p_node, true);
 		}
