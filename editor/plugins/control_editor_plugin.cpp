@@ -551,7 +551,9 @@ void ControlEditorPresetPicker::_add_row_button(HBoxContainer *p_row, const int 
 	b->set_custom_minimum_size(Size2i(36, 36) * EDSCALE);
 	b->set_icon_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	b->set_tooltip_text(p_name);
-	b->set_flat(true);
+	b->set_theme_type_variation(SceneStringName(FlatButton));
+	b->set_toggle_mode(true);
+	b->set_button_group(anchor_preset_type_group);
 	p_row->add_child(b);
 	b->connect(SceneStringName(pressed), callable_mp(this, &ControlEditorPresetPicker::_preset_button_pressed).bind(p_preset));
 
@@ -562,6 +564,20 @@ void ControlEditorPresetPicker::_add_separator(BoxContainer *p_box, Separator *p
 	p_separator->add_theme_constant_override("separation", grid_separation);
 	p_separator->set_custom_minimum_size(Size2i(1, 1));
 	p_box->add_child(p_separator);
+}
+
+void ControlEditorPresetPicker::set_preset_button_pressed(int p_preset) {
+	set_preset_buttons_unpressed();
+	if (p_preset < 0) {
+		return;
+	}
+	preset_buttons[p_preset]->set_pressed_no_signal(true);
+}
+
+void ControlEditorPresetPicker::set_preset_buttons_unpressed() {
+	for (auto &K : preset_buttons) {
+		preset_buttons[K.key]->set_pressed_no_signal(false);
+	}
 }
 
 void AnchorPresetPicker::_preset_button_pressed(const int p_preset) {
@@ -610,6 +626,8 @@ AnchorPresetPicker::AnchorPresetPicker() {
 	top_row->set_alignment(BoxContainer::ALIGNMENT_CENTER);
 	top_row->add_theme_constant_override("separation", grid_separation);
 	main_vb->add_child(top_row);
+
+	anchor_preset_type_group.instantiate();
 
 	_add_row_button(top_row, PRESET_TOP_LEFT, TTR("Top Left"));
 	_add_row_button(top_row, PRESET_CENTER_TOP, TTR("Center Top"));
@@ -1046,6 +1064,23 @@ void ControlEditorToolbar::_selection_changed() {
 	}
 }
 
+void ControlEditorToolbar::_update_anchor_preset_buttons_state() {
+	List<Node *> selection = editor_selection->get_selected_node_list();
+	if (selection.size() == 1) {
+		Control *c = Object::cast_to<Control>(selection.front()->get());
+		if (c) {
+			int lm = c->_edit_get_state()["layout_mode"];
+			if (lm == LayoutMode::LAYOUT_MODE_ANCHORS || lm == LayoutMode::LAYOUT_MODE_UNCONTROLLED) {
+				anchors_picker->set_preset_button_pressed(c->_edit_get_state()["anchors_layout_preset"]);
+			} else {
+				anchors_picker->set_preset_buttons_unpressed();
+			}
+		}
+	} else {
+		anchors_picker->set_preset_buttons_unpressed();
+	}
+}
+
 void ControlEditorToolbar::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:
@@ -1061,12 +1096,13 @@ ControlEditorToolbar::ControlEditorToolbar() {
 	// Anchor and offset tools.
 	anchors_button = memnew(ControlEditorPopupButton);
 	anchors_button->set_tooltip_text(TTR("Presets for the anchor and offset values of a Control node."));
+	anchors_button->get_popup_panel()->connect("about_to_popup", callable_mp(this, &ControlEditorToolbar::_update_anchor_preset_buttons_state));
 	add_child(anchors_button);
 
 	Label *anchors_label = memnew(Label);
 	anchors_label->set_text(TTR("Anchor preset"));
 	anchors_button->get_popup_hbox()->add_child(anchors_label);
-	AnchorPresetPicker *anchors_picker = memnew(AnchorPresetPicker);
+	anchors_picker = memnew(AnchorPresetPicker);
 	anchors_picker->set_h_size_flags(SIZE_SHRINK_CENTER);
 	anchors_button->get_popup_hbox()->add_child(anchors_picker);
 	anchors_picker->connect("anchors_preset_selected", callable_mp(this, &ControlEditorToolbar::_anchors_preset_selected));
