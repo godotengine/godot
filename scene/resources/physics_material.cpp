@@ -28,6 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#if !defined(PHYSICS_2D_DISABLED) || !defined(PHYSICS_3D_DISABLED)
 #include "physics_material.h"
 
 void PhysicsMaterial::_bind_methods() {
@@ -68,3 +69,4 @@ void PhysicsMaterial::set_absorbent(bool p_val) {
 	absorbent = p_val;
 	emit_changed();
 }
+#endif // PHYSICS_2D_DISABLED || PHYSICS_2D_DISABLED

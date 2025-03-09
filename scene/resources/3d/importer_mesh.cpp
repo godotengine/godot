@@ -31,7 +31,9 @@
 #include "importer_mesh.h"
 
 #include "core/io/marshalls.h"
+#ifndef PHYSICS_3D_DISABLED
 #include "core/math/convex_hull.h"
+#endif // PHYSICS_3D_DISABLED
 #include "core/math/random_pcg.h"
 #include "scene/resources/surface_tool.h"
 
@@ -787,6 +789,7 @@ Vector<Face3> ImporterMesh::get_faces() const {
 	return faces;
 }
 
+#ifndef PHYSICS_3D_DISABLED
 Vector<Ref<Shape3D>> ImporterMesh::convex_decompose(const Ref<MeshConvexDecompositionSettings> &p_settings) const {
 	ERR_FAIL_NULL_V(Mesh::convex_decomposition_function, Vector<Ref<Shape3D>>());
 
@@ -892,6 +895,7 @@ Ref<ConcavePolygonShape3D> ImporterMesh::create_trimesh_shape() const {
 	shape->set_faces(face_points);
 	return shape;
 }
+#endif // PHYSICS_3D_DISABLED
 
 Ref<NavigationMesh> ImporterMesh::create_navigation_mesh() {
 	Vector<Face3> faces = get_faces();
