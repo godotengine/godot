@@ -161,6 +161,8 @@ class GameView : public VBoxContainer {
 
 	void _update_debugger_buttons();
 
+	void _handle_shortcut_requested(int p_embed_action);
+	void _toggle_suspend_button();
 	void _suspend_button_toggled(bool p_pressed);
 
 	void _node_type_pressed(int p_option);
