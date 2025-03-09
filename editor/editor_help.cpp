@@ -38,7 +38,7 @@
 #include "core/object/script_language.h"
 #include "core/os/keyboard.h"
 #include "core/string/string_builder.h"
-#include "core/version_generated.gen.h"
+#include "core/version.h"
 #include "editor/doc_data_compressed.gen.h"
 #include "editor/editor_main_screen.h"
 #include "editor/editor_node.h"
