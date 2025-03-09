@@ -3416,15 +3416,10 @@ void RenderingDevice::_uniform_set_update_shared(UniformSet *p_uniform_set) {
 	}
 }
 
-template RID RenderingDevice::uniform_set_create(const LocalVector<RD::Uniform> &p_uniforms, RID p_shader, uint32_t p_shader_set, bool p_linear_pool);
-
-template RID RenderingDevice::uniform_set_create(const Vector<RD::Uniform> &p_uniforms, RID p_shader, uint32_t p_shader_set, bool p_linear_pool);
-
-template <typename Collection>
-RID RenderingDevice::uniform_set_create(const Collection &p_uniforms, RID p_shader, uint32_t p_shader_set, bool p_linear_pool) {
+RID RenderingDevice::uniform_set_create(const VectorView<RD::Uniform> &p_uniforms, RID p_shader, uint32_t p_shader_set, bool p_linear_pool) {
 	_THREAD_SAFE_METHOD_
 
-	ERR_FAIL_COND_V(p_uniforms.is_empty(), RID());
+	ERR_FAIL_COND_V(p_uniforms.size() == 0, RID());
 
 	Shader *shader = shader_owner.get_or_null(p_shader);
 	ERR_FAIL_NULL_V(shader, RID());
@@ -8208,12 +8203,12 @@ RID RenderingDevice::_shader_create_from_spirv(const Ref<RDShaderSPIRV> &p_spirv
 }
 
 RID RenderingDevice::_uniform_set_create(const TypedArray<RDUniform> &p_uniforms, RID p_shader, uint32_t p_shader_set) {
-	Vector<Uniform> uniforms;
+	LocalVector<Uniform> uniforms;
 	uniforms.resize(p_uniforms.size());
 	for (int i = 0; i < p_uniforms.size(); i++) {
 		Ref<RDUniform> uniform = p_uniforms[i];
 		ERR_FAIL_COND_V(uniform.is_null(), RID());
-		uniforms.write[i] = uniform->base;
+		uniforms[i] = uniform->base;
 	}
 	return uniform_set_create(uniforms, p_shader, p_shader_set);
 }
