@@ -265,6 +265,7 @@ private:
 	struct _SelectResult {
 		CanvasItem *item = nullptr;
 		real_t z_index = 0;
+		uint32_t z_render = 0;
 		bool has_z = true;
 		_FORCE_INLINE_ bool operator<(const _SelectResult &p_rr) const {
 			return has_z && p_rr.has_z ? p_rr.z_index < z_index : p_rr.has_z;
