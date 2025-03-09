@@ -94,21 +94,37 @@ void editor_register_icons(const Ref<Theme> &p_theme, bool p_dark_theme, float p
 	// And then some icons are completely excluded from the conversion.
 
 	// Standard color conversion map.
-	HashMap<Color, Color> color_conversion_map;
+	HashMap<Color, Color> color_conversion_map_light;
+	HashMap<Color, Color> color_conversion_map_dark;
 	// Icons by default are set up for the dark theme, so if the theme is light,
 	// we apply the dark-to-light color conversion map.
-	if (!p_dark_theme) {
-		for (KeyValue<Color, Color> &E : EditorColorMap::get_color_conversion_map()) {
-			color_conversion_map[E.key] = E.value;
-		}
+	for (KeyValue<Color, Color> &E : EditorColorMap::get_color_conversion_map()) {
+		color_conversion_map_light[E.key] = E.value;
 	}
 	// These colors should be converted even if we are using a dark theme.
 	const Color error_color = p_theme->get_color(SNAME("error_color"), EditorStringName(Editor));
 	const Color success_color = p_theme->get_color(SNAME("success_color"), EditorStringName(Editor));
 	const Color warning_color = p_theme->get_color(SNAME("warning_color"), EditorStringName(Editor));
-	color_conversion_map[Color::html("#ff5f5f")] = error_color;
-	color_conversion_map[Color::html("#5fff97")] = success_color;
-	color_conversion_map[Color::html("#ffdd65")] = warning_color;
+	color_conversion_map_dark[Color::html("#ff5f5f")] = error_color;
+	color_conversion_map_dark[Color::html("#5fff97")] = success_color;
+	color_conversion_map_dark[Color::html("#ffdd65")] = warning_color;
+	color_conversion_map_light[Color::html("#ff5f5f")] = error_color;
+	color_conversion_map_light[Color::html("#5fff97")] = success_color;
+	color_conversion_map_light[Color::html("#ffdd65")] = warning_color;
+
+	HashMap<Color, Color> color_conversion_map = p_dark_theme ? color_conversion_map_dark : color_conversion_map_light;
+
+	// The names of the icons used in native menus.
+	HashSet<StringName> native_menu_icons;
+	native_menu_icons.insert("HelpSearch");
+	native_menu_icons.insert("ActionCopy");
+	native_menu_icons.insert("Heart");
+	native_menu_icons.insert("PackedScene");
+	native_menu_icons.insert("FileAccess");
+	native_menu_icons.insert("Folder");
+	native_menu_icons.insert("AnimationTrackList");
+	native_menu_icons.insert("Object");
+	native_menu_icons.insert("History");
 
 	// The names of the icons to exclude from the standard color conversion.
 	HashSet<StringName> conversion_exceptions = EditorColorMap::get_color_conversion_exceptions();
@@ -141,25 +157,38 @@ void editor_register_icons(const Ref<Theme> &p_theme, bool p_dark_theme, float p
 	// Generate icons.
 	{
 		for (int i = 0; i < editor_icons_count; i++) {
-			Ref<ImageTexture> icon;
-
 			const String &editor_icon_name = editor_icons_names[i];
-			if (accent_color_icons.has(editor_icon_name)) {
-				icon = editor_generate_icon(i, get_gizmo_handle_scale(editor_icon_name, p_gizmo_handle_scale), 1.0, accent_color_map);
-			} else {
+			if (native_menu_icons.has(editor_icon_name)) {
 				float saturation = p_icon_saturation;
 				if (saturation_exceptions.has(editor_icon_name)) {
 					saturation = 1.0;
 				}
 
-				if (conversion_exceptions.has(editor_icon_name)) {
-					icon = editor_generate_icon(i, get_gizmo_handle_scale(editor_icon_name, p_gizmo_handle_scale), saturation);
-				} else {
-					icon = editor_generate_icon(i, get_gizmo_handle_scale(editor_icon_name, p_gizmo_handle_scale), saturation, color_conversion_map);
-				}
-			}
+				Ref<ImageTexture> icon_dark = editor_generate_icon(i, get_gizmo_handle_scale(editor_icon_name, p_gizmo_handle_scale), saturation, color_conversion_map_dark);
+				Ref<ImageTexture> icon_light = editor_generate_icon(i, get_gizmo_handle_scale(editor_icon_name, p_gizmo_handle_scale), saturation, color_conversion_map_light);
 
-			p_theme->set_icon(editor_icon_name, EditorStringName(EditorIcons), icon);
+				p_theme->set_icon(editor_icon_name + "Dark", EditorStringName(EditorIcons), icon_dark);
+				p_theme->set_icon(editor_icon_name + "Light", EditorStringName(EditorIcons), icon_light);
+				p_theme->set_icon(editor_icon_name, EditorStringName(EditorIcons), p_dark_theme ? icon_dark : icon_light);
+			} else {
+				Ref<ImageTexture> icon;
+				if (accent_color_icons.has(editor_icon_name)) {
+					icon = editor_generate_icon(i, get_gizmo_handle_scale(editor_icon_name, p_gizmo_handle_scale), 1.0, accent_color_map);
+				} else {
+					float saturation = p_icon_saturation;
+					if (saturation_exceptions.has(editor_icon_name)) {
+						saturation = 1.0;
+					}
+
+					if (conversion_exceptions.has(editor_icon_name)) {
+						icon = editor_generate_icon(i, get_gizmo_handle_scale(editor_icon_name, p_gizmo_handle_scale), saturation);
+					} else {
+						icon = editor_generate_icon(i, get_gizmo_handle_scale(editor_icon_name, p_gizmo_handle_scale), saturation, color_conversion_map);
+					}
+				}
+
+				p_theme->set_icon(editor_icon_name, EditorStringName(EditorIcons), icon);
+			}
 		}
 	}
 
