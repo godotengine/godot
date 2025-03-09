@@ -1869,6 +1869,15 @@ void GDScriptAnalyzer::resolve_function_signature(GDScriptParser::FunctionNode *
 
 				push_error(vformat(R"(The function signature doesn't match the parent. Parent signature is "%s".)", parent_signature), p_function);
 			}
+
+			// Non-virtual methods cannot be overridden.
+			if (base_type.class_type != nullptr && base_type.class_type->has_function(p_function->identifier->name)) {
+				GDScriptParser::FunctionNode *parent_func = base_type.class_type->get_member(p_function->identifier->name).function;
+				if (!parent_func->is_annotated_virtual) {
+					push_error(vformat(R"*(The function "%s()" is non-virtual and cannot be overridden.)*", p_function->identifier->name), p_function);
+				}
+			}
+
 #ifdef DEBUG_ENABLED
 			if (native_base != StringName()) {
 				parser->push_warning(p_function, GDScriptWarning::NATIVE_METHOD_OVERRIDE, function_name, native_base);
