@@ -1156,15 +1156,6 @@ if env["vsproj"]:
     env["CPPPATH"] = [Dir(path) for path in env["CPPPATH"]]
     methods.generate_vs_project(env, ARGUMENTS, env["vsproj_name"])
 
-# Check for the existence of headers
-conf = Configure(env)
-if "check_c_headers" in env:
-    headers = env["check_c_headers"]
-    for header in headers:
-        if conf.CheckCHeader(header):
-            env.AppendUnique(CPPDEFINES=[headers[header]])
-conf.Finish()
-
 # Miscellaneous & post-build methods.
 if not env.GetOption("clean") and not env.GetOption("help"):
     methods.dump(env)
