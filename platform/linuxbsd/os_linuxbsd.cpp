@@ -76,7 +76,7 @@
 #include <sys/utsname.h>
 #include <unistd.h>
 
-#ifdef HAVE_MNTENT
+#if __has_include(<mntent.h>)
 #include <mntent.h>
 #endif
 
@@ -999,7 +999,7 @@ static String get_mountpoint(const String &p_path) {
 		return "";
 	}
 
-#ifdef HAVE_MNTENT
+#if __has_include(<mntent.h>)
 	dev_t dev = s.st_dev;
 	FILE *fd = setmntent("/proc/mounts", "r");
 	if (!fd) {
