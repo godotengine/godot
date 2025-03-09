@@ -39,7 +39,7 @@
 #define DEBUG_LOG_WAYLAND(...)
 #endif
 
-#ifdef VULKAN_ENABLED
+#ifdef RD_ENABLED
 #include "servers/rendering/renderer_rd/renderer_compositor_rd.h"
 #endif
 
@@ -48,6 +48,10 @@
 #include "drivers/gles3/rasterizer_gles3.h"
 #include "wayland/egl_manager_wayland.h"
 #include "wayland/egl_manager_wayland_gles.h"
+#endif
+
+#if !defined(RD_ENABLED) && !defined(GLES3_ENABLED)
+#include "servers/rendering/renderer_compositor.h"
 #endif
 
 String DisplayServerWayland::_get_app_id_from_context(Context p_context) {

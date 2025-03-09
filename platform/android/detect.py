@@ -232,8 +232,18 @@ def configure(env: "SConsEnvironment"):
     env.Append(CPPDEFINES=["ANDROID_ENABLED", "UNIX_ENABLED"])
     env.Append(LIBS=["OpenSLES", "EGL", "android", "log", "z", "dl"])
 
+    if env["rendering_device"]:
+        env.Append(CPPDEFINES=["RD_ENABLED"])
+        if env["forward_mobile_renderer"]:
+            env.Append(CPPDEFINES=["MOBILE_RD_ENABLED"])
+        if env["forward_plus_renderer"]:
+            env.Append(CPPDEFINES=["FORWARD_RD_ENABLED"])
+    if not env["rendering_device"] or not (env["forward_mobile_renderer"] and env["forward_plus_renderer"]):
+        env["vulkan"] = False
+
     if env["vulkan"]:
-        env.Append(CPPDEFINES=["VULKAN_ENABLED", "RD_ENABLED"])
+        env.Append(CPPDEFINES=["VULKAN_ENABLED"])
+
         if has_swappy:
             env.Append(CPPDEFINES=["SWAPPY_FRAME_PACING_ENABLED"])
             env.Append(LIBS=["swappy_static"])
