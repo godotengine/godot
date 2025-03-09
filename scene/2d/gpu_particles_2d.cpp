@@ -381,7 +381,7 @@ PackedStringArray GPUParticles2D::get_configuration_warnings() const {
 	return warnings;
 }
 
- PackedVector2Array GPUParticles2D::capture_positions() const {
+PackedVector2Array GPUParticles2D::capture_positions() const {
 	PackedVector3Array positions_vec3 = RS::get_singleton()->particles_get_current_positions(particles);
 	PackedVector2Array positions;
 	for (int i = 0; i < positions_vec3.size(); i++) {
