@@ -56,7 +56,7 @@
 #import "inflection_map.h"
 #import "metal_device_properties.h"
 
-#import "servers/rendering/rendering_device.h"
+#include "servers/rendering/rendering_device.h"
 
 #import <Metal/Metal.h>
 
