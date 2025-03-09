@@ -243,6 +243,9 @@ public:
 
 	void clear(GDScript::ClearData *p_clear_data = nullptr);
 
+	// Cancels all functions of the script that are are waiting to be resumed after using await.
+	void cancel_pending_functions(bool warn);
+
 	virtual bool is_valid() const override { return valid; }
 	virtual bool is_abstract() const override { return false; } // GDScript does not support abstract classes.
 
