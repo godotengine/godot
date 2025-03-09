@@ -39,8 +39,8 @@ private:
 	struct ColorRegion {
 		enum Type {
 			TYPE_NONE,
-			TYPE_STRING, // `"` and `'`, optional prefix `&`, `^`, or `r`.
-			TYPE_MULTILINE_STRING, // `"""` and `'''`, optional prefix `r`.
+			TYPE_STRING, // `"` and `'`, optional prefix `&`, `^`, or `f`/`r`/`fr`.
+			TYPE_MULTILINE_STRING, // `"""` and `'''`, optional prefix `f`/`r`/`fr`.
 			TYPE_COMMENT, // `#` and `##`.
 			TYPE_CODE_REGION, // `#region` and `#endregion`.
 		};

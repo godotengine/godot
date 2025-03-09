@@ -3189,6 +3189,39 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_grouping(ExpressionNode *p
 	return grouped;
 }
 
+// Parses a FormattedStringNode from the following token grammar:
+// FORMATTED_STRING_BEGIN
+// (STRING_LITERAL | (BRACE_OPEN EXPRESSION BRACE_CLOSE))*
+// FORMATTED_STRING_END
+GDScriptParser::ExpressionNode *GDScriptParser::parse_formatted_string(ExpressionNode *p_previous_operand, bool p_can_assign) {
+	FormattedStringNode *format_string = alloc_node<FormattedStringNode>();
+	reset_extents(format_string, p_previous_operand);
+	update_extents(format_string);
+
+	// Accumulate format strings and format args until the end of the formatted string.
+	while (!match(GDScriptTokenizer::Token::FORMATTED_STRING_END) && !is_at_end()) {
+		if (match(GDScriptTokenizer::Token::LITERAL)) {
+			format_string->add_text(previous.literal);
+			continue;
+		}
+		if (match(GDScriptTokenizer::Token::BRACE_OPEN)) {
+			ExpressionNode *arg = parse_expression(false);
+			if (arg == nullptr) {
+				push_error(R"(Expected expression in formatted string slot.)");
+			} else {
+				format_string->add_slot(arg);
+			}
+			consume(GDScriptTokenizer::Token::BRACE_CLOSE, R"(Expected closing "}" after slot expression in formatted string.)");
+			continue;
+		}
+		push_error(R"(Expected only String or Slot in formatted string.)");
+		advance();
+	}
+
+	complete_extents(format_string);
+	return format_string;
+}
+
 GDScriptParser::ExpressionNode *GDScriptParser::parse_attribute(ExpressionNode *p_previous_operand, bool p_can_assign) {
 	SubscriptNode *attribute = alloc_node<SubscriptNode>();
 	reset_extents(attribute, p_previous_operand);
@@ -4112,6 +4145,9 @@ GDScriptParser::ParseRule *GDScriptParser::get_rule(GDScriptTokenizer::Token::Ty
 		{ &GDScriptParser::parse_get_node,               	nullptr,                                        PREC_NONE }, // DOLLAR,
 		{ nullptr,                                          nullptr,                                        PREC_NONE }, // FORWARD_ARROW,
 		{ nullptr,                                          nullptr,                                        PREC_NONE }, // UNDERSCORE,
+		// FormattedString
+		{ &GDScriptParser::parse_formatted_string,          nullptr,                                        PREC_NONE }, // FORMATTED_STRING_BEGIN,
+		{ nullptr,                                          nullptr,                                        PREC_NONE }, // FORMATTED_STRING_END,
 		// Whitespace
 		{ nullptr,                                          nullptr,                                        PREC_NONE }, // NEWLINE,
 		{ nullptr,                                          nullptr,                                        PREC_NONE }, // INDENT,
@@ -5764,6 +5800,9 @@ void GDScriptParser::TreePrinter::print_expression(ExpressionNode *p_expression)
 		case Node::DICTIONARY:
 			print_dictionary(static_cast<DictionaryNode *>(p_expression));
 			break;
+		case Node::FORMATTED_STRING:
+			print_formatted_string(static_cast<FormattedStringNode *>(p_expression));
+			break;
 		case Node::GET_NODE:
 			print_get_node(static_cast<GetNodeNode *>(p_expression));
 			break;
@@ -5833,6 +5872,23 @@ void GDScriptParser::TreePrinter::print_for(ForNode *p_for) {
 	print_suite(p_for->loop);
 
 	decrease_indent();
+}
+
+void GDScriptParser::TreePrinter::print_formatted_string(FormattedStringNode *p_formatted_string) {
+	push_text("f\"");
+	for (const FormattedStringNode::TemplatePiece &piece : p_formatted_string->template_pieces) {
+		switch (piece.type) {
+			case FormattedStringNode::TemplatePiece::TEXT:
+				push_text(piece.text);
+				break;
+			case FormattedStringNode::TemplatePiece::SLOT:
+				push_text("{");
+				print_expression(piece.slot);
+				push_text("}");
+				break;
+		}
+	}
+	push_text("\"");
 }
 
 void GDScriptParser::TreePrinter::print_function(FunctionNode *p_function, const String &p_context) {
@@ -6087,6 +6143,9 @@ void GDScriptParser::TreePrinter::print_statement(Node *p_statement) {
 			break;
 		case Node::FOR:
 			print_for(static_cast<ForNode *>(p_statement));
+			break;
+		case Node::FORMATTED_STRING:
+			print_formatted_string(static_cast<FormattedStringNode *>(p_statement));
 			break;
 		case Node::WHILE:
 			print_while(static_cast<WhileNode *>(p_statement));

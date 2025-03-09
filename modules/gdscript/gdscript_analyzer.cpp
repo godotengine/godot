@@ -1606,6 +1606,7 @@ void GDScriptAnalyzer::resolve_node(GDScriptParser::Node *p_node, bool p_is_root
 		case GDScriptParser::Node::CALL:
 		case GDScriptParser::Node::CAST:
 		case GDScriptParser::Node::DICTIONARY:
+		case GDScriptParser::Node::FORMATTED_STRING:
 		case GDScriptParser::Node::GET_NODE:
 		case GDScriptParser::Node::IDENTIFIER:
 		case GDScriptParser::Node::LAMBDA:
@@ -2579,6 +2580,9 @@ void GDScriptAnalyzer::reduce_expression(GDScriptParser::ExpressionNode *p_expre
 			break;
 		case GDScriptParser::Node::DICTIONARY:
 			reduce_dictionary(static_cast<GDScriptParser::DictionaryNode *>(p_expression));
+			break;
+		case GDScriptParser::Node::FORMATTED_STRING:
+			reduce_formatted_string(static_cast<GDScriptParser::FormattedStringNode *>(p_expression));
 			break;
 		case GDScriptParser::Node::GET_NODE:
 			reduce_get_node(static_cast<GDScriptParser::GetNodeNode *>(p_expression));
@@ -3799,6 +3803,26 @@ void GDScriptAnalyzer::reduce_dictionary(GDScriptParser::DictionaryNode *p_dicti
 	dict_type.is_constant = true;
 
 	p_dictionary->set_datatype(dict_type);
+}
+
+void GDScriptAnalyzer::reduce_formatted_string(GDScriptParser::FormattedStringNode *p_formatted_string) {
+	bool is_constant = true;
+	for (const GDScriptParser::FormattedStringNode::TemplatePiece &piece : p_formatted_string->template_pieces) {
+		if (piece.type == GDScriptParser::FormattedStringNode::TemplatePiece::SLOT) {
+			reduce_expression(piece.slot);
+			if (!piece.slot->is_constant) {
+				is_constant = false;
+			}
+		}
+	}
+	// Formatted string always returns a string.
+	GDScriptParser::DataType result_type;
+	result_type.type_source = GDScriptParser::DataType::ANNOTATED_EXPLICIT;
+	result_type.kind = GDScriptParser::DataType::BUILTIN;
+	result_type.builtin_type = Variant::STRING;
+	result_type.is_constant = is_constant;
+
+	p_formatted_string->set_datatype(result_type);
 }
 
 void GDScriptAnalyzer::reduce_get_node(GDScriptParser::GetNodeNode *p_get_node) {
