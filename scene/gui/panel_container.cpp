@@ -36,12 +36,9 @@ Size2 PanelContainer::get_minimum_size() const {
 	Size2 ms;
 	for (int i = 0; i < get_child_count(); i++) {
 		Control *c = as_sortable_control(get_child(i), SortableVisibilityMode::VISIBLE);
-		if (!c) {
-			continue;
+		if (c) {
+			ms = ms.max(c->get_combined_minimum_size());
 		}
-
-		Size2 minsize = c->get_combined_minimum_size();
-		ms = ms.max(minsize);
 	}
 
 	if (theme_cache.panel_style.is_valid()) {
