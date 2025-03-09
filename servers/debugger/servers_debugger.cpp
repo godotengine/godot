@@ -454,6 +454,22 @@ void ServersDebugger::_send_resource_usage() {
 		usage.infos.push_back(info);
 	}
 
+	List<RS::MeshInfo> mesh_info;
+	RS::get_singleton()->mesh_debug_usage(&mesh_info);
+
+	for (const RS::MeshInfo &E : mesh_info) {
+		ServersDebugger::ResourceInfo info;
+		info.path = E.path;
+		// we use 64bit integers to avoid overflow, if for whatever reason, the sum is bigger than 4GB
+		uint64_t vram = E.vertex_buffer_size + E.attribute_buffer_size + E.skin_buffer_size + E.index_buffer_size + E.blend_shape_buffer_size + E.lod_index_buffers_size;
+		// but can info.vram even hold that, and why is it an int instead of an uint?
+		info.vram = vram;
+		info.id = E.mesh;
+		info.type = "Mesh";
+		info.format = itos(E.vertex_count) + " Vertices";
+		usage.infos.push_back(info);
+	}
+
 	EngineDebugger::get_singleton()->send_message("servers:memory_usage", usage.serialize());
 }
 
