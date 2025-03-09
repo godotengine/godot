@@ -43,6 +43,8 @@
 #include "core/config/project_settings.h"
 #include "core/io/file_access_pack.h"
 
+#include "servers/rendering/dummy/rasterizer_dummy.h"
+
 #import <sys/utsname.h>
 
 #import <GameController/GameController.h>
@@ -56,7 +58,7 @@ DisplayServerIOS *DisplayServerIOS::get_singleton() {
 DisplayServerIOS::DisplayServerIOS(const String &p_rendering_driver, WindowMode p_mode, DisplayServer::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, int64_t p_parent_window, Error &r_error) {
 	KeyMappingIOS::initialize();
 
-	rendering_driver = p_rendering_driver;
+	CALayer *layer = nullptr;
 
 	// Init TTS
 	bool tts_enabled = GLOBAL_GET("audio/general/text_to_speech");
@@ -65,12 +67,93 @@ DisplayServerIOS::DisplayServerIOS(const String &p_rendering_driver, WindowMode 
 	}
 	native_menu = memnew(NativeMenu);
 
+	Vector<String> driver_list;
+	for (const String &drv : p_rendering_driver.split(",")) {
+		if (!driver_list.has(drv)) {
+			driver_list.push_back(drv);
+		}
+	}
+	if (GLOBAL_GET("rendering/renderer/fallback_to_opengl3").operator bool()) {
+		for (const String &drv : GLOBAL_GET("rendering/gl_compatibility/driver").operator String().split(",")) {
+			if (!driver_list.has(drv)) {
+				driver_list.push_back(drv);
+			}
+		}
+	}
+	if (GLOBAL_GET("rendering/renderer/fallback_to_dummy").operator bool()) {
+		if (!driver_list.has("dummy")) {
+			driver_list.push_back("dummy");
+		}
+	}
+
+	bool driver_found = false;
+	for (const String &driver : driver_list) {
+		print_line(vformat("Trying to initialize \"%s\" rendering driver.", get_readable_driver_name(driver)));
+		tested_drivers.push_back(driver);
 #if defined(RD_ENABLED)
-	rendering_context = nullptr;
-	rendering_device = nullptr;
+#if defined(METAL_ENABLED)
+		if (driver == "metal") {
+			if (@available(iOS 14.0, *)) {
+				layer = [AppDelegate.viewController.godotView initializeRenderingForDriver:@"metal"];
+				rendering_context = memnew(RenderingContextDriverMetal);
+				if (rendering_context->initialize() == OK && layer) {
+					rendering_driver = driver;
+					OS::get_singleton()->set_current_rendering_driver_name(rendering_driver);
+					driver_found = true;
+					break;
+				}
+				memdelete(rendering_context);
+				rendering_context = nullptr;
+				layer = nullptr;
+			}
+		}
+#endif // METAL_ENABLED
+#if defined(VULKAN_ENABLED)
+		if (driver == "vulkan") {
+			layer = [AppDelegate.viewController.godotView initializeRenderingForDriver:@"vulkan"];
+			rendering_context = memnew(RenderingContextDriverVulkanIOS);
+			if (rendering_context->initialize() == OK && layer) {
+				rendering_driver = driver;
+				OS::get_singleton()->set_current_rendering_driver_name(rendering_driver);
+				driver_found = true;
+				break;
+			}
+			memdelete(rendering_context);
+			rendering_context = nullptr;
+			layer = nullptr;
+		}
+#endif // VULKAN_ENABLED
+#endif // RD_ENABLED
+#if defined(GLES3_ENABLED)
+		if (driver == "opengl3") {
+			layer = [AppDelegate.viewController.godotView initializeRenderingForDriver:@"opengl3"];
+			if (layer) {
+				rendering_driver = driver;
+				OS::get_singleton()->set_current_rendering_method("gl_compatibility");
+				OS::get_singleton()->set_current_rendering_driver_name(rendering_driver);
+				driver_found = true;
+				break;
+			}
+		}
+#endif // GLES3_ENABLED
+		if (driver == "dummy") {
+			rendering_driver = driver;
+			OS::get_singleton()->set_current_rendering_method("gl_compatibility");
+			OS::get_singleton()->set_current_rendering_driver_name(rendering_driver);
+			driver_found = true;
+			break;
+		}
+		print_line(vformat("  \"%s\" rendering driver initialization failed.", get_readable_driver_name(driver)));
+	}
 
-	CALayer *layer = nullptr;
+	if (driver_found) {
+		print_line(vformat("  \"%s\" rendering driver initialized successfully.", get_readable_driver_name(rendering_driver)));
+	} else {
+		r_error = ERR_UNAVAILABLE;
+		ERR_FAIL_MSG("Could not initialize any of the rendering drivers.");
+	}
 
+#if defined(RD_ENABLED)
 	union {
 #ifdef VULKAN_ENABLED
 		RenderingContextDriverVulkanIOS::WindowPlatformData vulkan;
@@ -86,47 +169,16 @@ DisplayServerIOS::DisplayServerIOS(const String &p_rendering_driver, WindowMode 
 
 #if defined(VULKAN_ENABLED)
 	if (rendering_driver == "vulkan") {
-		layer = [AppDelegate.viewController.godotView initializeRenderingForDriver:@"vulkan"];
-		if (!layer) {
-			ERR_FAIL_MSG("Failed to create iOS Vulkan rendering layer.");
-		}
 		wpd.vulkan.layer_ptr = (CAMetalLayer *const *)&layer;
-		rendering_context = memnew(RenderingContextDriverVulkanIOS);
 	}
 #endif
 #ifdef METAL_ENABLED
 	if (rendering_driver == "metal") {
 		if (@available(iOS 14.0, *)) {
-			layer = [AppDelegate.viewController.godotView initializeRenderingForDriver:@"metal"];
 			wpd.metal.layer = (CAMetalLayer *)layer;
-			rendering_context = memnew(RenderingContextDriverMetal);
-		} else {
-			OS::get_singleton()->alert("Metal is only supported on iOS 14.0 and later.");
-			r_error = ERR_UNAVAILABLE;
-			return;
 		}
 	}
 #endif
-	if (rendering_context) {
-		if (rendering_context->initialize() != OK) {
-			memdelete(rendering_context);
-			rendering_context = nullptr;
-#if defined(GLES3_ENABLED)
-			bool fallback_to_opengl3 = GLOBAL_GET("rendering/rendering_device/fallback_to_opengl3");
-			if (fallback_to_opengl3 && rendering_driver != "opengl3") {
-				WARN_PRINT("Your device seem not to support MoltenVK or Metal, switching to OpenGL 3.");
-				rendering_driver = "opengl3";
-				OS::get_singleton()->set_current_rendering_method("gl_compatibility");
-				OS::get_singleton()->set_current_rendering_driver_name(rendering_driver);
-			} else
-#endif
-			{
-				ERR_PRINT(vformat("Failed to initialize %s context", rendering_driver));
-				r_error = ERR_UNAVAILABLE;
-				return;
-			}
-		}
-	}
 
 	if (rendering_context) {
 		if (rendering_context->window_create(MAIN_WINDOW_ID, &wpd) != OK) {
@@ -157,15 +209,12 @@ DisplayServerIOS::DisplayServerIOS(const String &p_rendering_driver, WindowMode 
 
 #if defined(GLES3_ENABLED)
 	if (rendering_driver == "opengl3") {
-		CALayer *layer = [AppDelegate.viewController.godotView initializeRenderingForDriver:@"opengl3"];
-
-		if (!layer) {
-			ERR_FAIL_MSG("Failed to create iOS OpenGLES rendering layer.");
-		}
-
 		RasterizerGLES3::make_current(false);
 	}
 #endif
+	if (rendering_driver == "dummy") {
+		RasterizerDummy::make_current();
+	}
 
 	bool keep_screen_on = bool(GLOBAL_GET("display/window/energy_saving/keep_screen_on"));
 	screen_set_keep_on(keep_screen_on);
@@ -196,8 +245,44 @@ DisplayServerIOS::~DisplayServerIOS() {
 #endif
 }
 
+String DisplayServerIOS::get_readable_driver_name(const String &p_driver) const {
+	if (p_driver == "metal") {
+		return "Metal";
+	} else if (p_driver == "vulkan") {
+		return "Vulkan (MoltenVK)";
+	} else if (p_driver == "opengl3") {
+		return "OpenGLES 3.0";
+	} else if (p_driver == "opengl3_angle") {
+		return "OpenGLES 3.0 (ANGLE)";
+	} else if (p_driver == "dummy") {
+		return "Dummy";
+	} else {
+		return p_driver;
+	}
+}
+
 DisplayServer *DisplayServerIOS::create_func(const String &p_rendering_driver, WindowMode p_mode, DisplayServer::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, int64_t p_parent_window, Error &r_error) {
-	return memnew(DisplayServerIOS(p_rendering_driver, p_mode, p_vsync_mode, p_flags, p_position, p_resolution, p_screen, p_context, p_parent_window, r_error));
+	DisplayServerIOS *ds = memnew(DisplayServerIOS(p_rendering_driver, p_mode, p_vsync_mode, p_flags, p_position, p_resolution, p_screen, p_context, p_parent_window, r_error));
+	if (r_error != OK) {
+		Vector<String> names;
+		for (const String &driver : ds->tested_drivers) {
+			names.push_back(ds->get_readable_driver_name(driver));
+		}
+
+		if (!ds->tested_drivers.has("opengl3")) {
+			OS::get_singleton()->alert(
+					vformat("Your device seem not to support the required version of the following drivers:\n%s.\n\n"
+							"Please try exporting your game using the 'gl_compatibility' renderer.",
+							String(", ").join(names)),
+					"Unable to initialize video driver");
+		} else {
+			OS::get_singleton()->alert(
+					vformat("Your device seem not to support the required version of the following drivers:\n%s.\n\n",
+							String(", ").join(names)),
+					"Unable to initialize video driver");
+		}
+	}
+	return ds;
 }
 
 Vector<String> DisplayServerIOS::get_rendering_drivers_func() {
@@ -214,6 +299,7 @@ Vector<String> DisplayServerIOS::get_rendering_drivers_func() {
 #if defined(GLES3_ENABLED)
 	drivers.push_back("opengl3");
 #endif
+	drivers.push_back("dummy");
 
 	return drivers;
 }
