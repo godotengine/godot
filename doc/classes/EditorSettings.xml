@@ -1521,6 +1521,9 @@
 		<member name="text_editor/theme/highlighting/user_type_color" type="Color" setter="" getter="">
 			The script editor's color for user-defined types (using [code]class_name[/code]).
 		</member>
+		<member name="text_editor/theme/highlighting/warning_color" type="Color" setter="" getter="">
+			The script editor's background color for lines with warnings. This should be set to a translucent color so that it can display on top of other line color modifiers such as [member text_editor/theme/highlighting/current_line_color].
+		</member>
 		<member name="text_editor/theme/highlighting/word_highlighted_color" type="Color" setter="" getter="">
 			The script editor's color for words highlighted by selecting them. Only visible if [member text_editor/appearance/caret/highlight_all_occurrences] is [code]true[/code].
 		</member>
