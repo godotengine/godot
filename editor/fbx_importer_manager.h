@@ -31,7 +31,7 @@
 #pragma once
 
 #include "editor/gui/editor_file_dialog.h"
-#include "scene/gui/dialogs.h"
+#include "scene/gui/advanced/dialogs.h"
 #include "scene/gui/line_edit.h"
 
 class FBXImporterManager : public ConfirmationDialog {

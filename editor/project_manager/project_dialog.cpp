@@ -40,10 +40,10 @@
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/themes/editor_icons.h"
 #include "editor/themes/editor_scale.h"
+#include "scene/gui/advanced/option_button.h"
 #include "scene/gui/check_box.h"
 #include "scene/gui/check_button.h"
 #include "scene/gui/line_edit.h"
-#include "scene/gui/option_button.h"
 #include "scene/gui/separator.h"
 #include "scene/gui/texture_rect.h"
 

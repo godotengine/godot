@@ -30,7 +30,9 @@
 
 #include "status_indicator.h"
 
-#include "scene/gui/popup_menu.h"
+#ifndef ADVANCED_GUI_DISABLED
+#include "scene/gui/advanced/popup_menu.h"
+#endif // ADVANCED_GUI_DISABLED
 
 void StatusIndicator::_notification(int p_what) {
 	ERR_MAIN_THREAD_GUARD;
@@ -45,22 +47,26 @@ void StatusIndicator::_notification(int p_what) {
 			if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_STATUS_INDICATOR)) {
 				if (visible && iid == DisplayServer::INVALID_INDICATOR_ID) {
 					iid = DisplayServer::get_singleton()->create_status_indicator(icon, tooltip, callable_mp(this, &StatusIndicator::_callback));
+#ifndef ADVANCED_GUI_DISABLED
 					PopupMenu *pm = Object::cast_to<PopupMenu>(get_node_or_null(menu));
 					if (pm) {
 						RID menu_rid = pm->bind_global_menu();
 						DisplayServer::get_singleton()->status_indicator_set_menu(iid, menu_rid);
 					}
+#endif // ADVANCED_GUI_DISABLED
 				}
 			}
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
 			if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_STATUS_INDICATOR)) {
 				if (iid != DisplayServer::INVALID_INDICATOR_ID) {
+#ifndef ADVANCED_GUI_DISABLED
 					PopupMenu *pm = Object::cast_to<PopupMenu>(get_node_or_null(menu));
 					if (pm) {
 						pm->unbind_global_menu();
 						DisplayServer::get_singleton()->status_indicator_set_menu(iid, RID());
 					}
+#endif // ADVANCED_GUI_DISABLED
 					DisplayServer::get_singleton()->delete_status_indicator(iid);
 					iid = DisplayServer::INVALID_INDICATOR_ID;
 				}
@@ -119,6 +125,7 @@ String StatusIndicator::get_tooltip() const {
 }
 
 void StatusIndicator::set_menu(const NodePath &p_menu) {
+#ifndef ADVANCED_GUI_DISABLED
 	PopupMenu *pm = Object::cast_to<PopupMenu>(get_node_or_null(menu));
 	if (pm) {
 		pm->unbind_global_menu();
@@ -126,9 +133,11 @@ void StatusIndicator::set_menu(const NodePath &p_menu) {
 			DisplayServer::get_singleton()->status_indicator_set_menu(iid, RID());
 		}
 	}
+#endif // ADVANCED_GUI_DISABLED
 
 	menu = p_menu;
 
+#ifndef ADVANCED_GUI_DISABLED
 	pm = Object::cast_to<PopupMenu>(get_node_or_null(menu));
 	if (pm) {
 		if (iid != DisplayServer::INVALID_INDICATOR_ID) {
@@ -136,6 +145,7 @@ void StatusIndicator::set_menu(const NodePath &p_menu) {
 			DisplayServer::get_singleton()->status_indicator_set_menu(iid, menu_rid);
 		}
 	}
+#endif // ADVANCED_GUI_DISABLED
 }
 
 NodePath StatusIndicator::get_menu() const {
@@ -162,18 +172,22 @@ void StatusIndicator::set_visible(bool p_visible) {
 	if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_STATUS_INDICATOR)) {
 		if (visible && iid == DisplayServer::INVALID_INDICATOR_ID) {
 			iid = DisplayServer::get_singleton()->create_status_indicator(icon, tooltip, callable_mp(this, &StatusIndicator::_callback));
+#ifndef ADVANCED_GUI_DISABLED
 			PopupMenu *pm = Object::cast_to<PopupMenu>(get_node_or_null(menu));
 			if (pm) {
 				RID menu_rid = pm->bind_global_menu();
 				DisplayServer::get_singleton()->status_indicator_set_menu(iid, menu_rid);
 			}
+#endif // ADVANCED_GUI_DISABLED
 		}
 		if (!visible && iid != DisplayServer::INVALID_INDICATOR_ID) {
+#ifndef ADVANCED_GUI_DISABLED
 			PopupMenu *pm = Object::cast_to<PopupMenu>(get_node_or_null(menu));
 			if (pm) {
 				pm->unbind_global_menu();
 				DisplayServer::get_singleton()->status_indicator_set_menu(iid, RID());
 			}
+#endif // ADVANCED_GUI_DISABLED
 			DisplayServer::get_singleton()->delete_status_indicator(iid);
 			iid = DisplayServer::INVALID_INDICATOR_ID;
 		}

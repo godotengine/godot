@@ -30,12 +30,12 @@
 
 #pragma once
 
-#include "scene/gui/dialogs.h"
+#include "scene/gui/advanced/dialogs.h"
+#include "scene/gui/advanced/rich_text_label.h"
+#include "scene/gui/advanced/tree.h"
 #include "scene/gui/item_list.h"
-#include "scene/gui/rich_text_label.h"
 #include "scene/gui/scroll_container.h"
 #include "scene/gui/texture_rect.h"
-#include "scene/gui/tree.h"
 
 /**
  * NOTE: Do not assume the EditorNode singleton to be available in this class' methods.

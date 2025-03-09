@@ -35,10 +35,10 @@
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
 #include "editor/themes/editor_scale.h"
+#include "scene/gui/advanced/option_button.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/label.h"
-#include "scene/gui/option_button.h"
 #include "scene/gui/panel_container.h"
 
 void QuickSettingsDialog::_fetch_setting_values() {

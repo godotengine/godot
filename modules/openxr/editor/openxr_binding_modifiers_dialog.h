@@ -35,9 +35,9 @@
 #include "../editor/openxr_binding_modifier_editor.h"
 #include "editor/create_dialog.h"
 #include "editor/editor_undo_redo_manager.h"
+#include "scene/gui/advanced/dialogs.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
-#include "scene/gui/dialogs.h"
 #include "scene/gui/label.h"
 #include "scene/gui/scroll_container.h"
 
