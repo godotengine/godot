@@ -1098,6 +1098,7 @@ void ScriptEditor::_resave_scripts(const String &p_str) {
 }
 
 void ScriptEditor::_res_saved_callback(const Ref<Resource> &p_res) {
+	bool has_errors = false;
 	for (int i = 0; i < tab_container->get_tab_count(); i++) {
 		ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(tab_container->get_tab_control(i));
 		if (!se) {
@@ -1108,6 +1109,8 @@ void ScriptEditor::_res_saved_callback(const Ref<Resource> &p_res) {
 
 		if (scr == p_res) {
 			se->tag_saved_version();
+			has_errors = se->get_code_editor()->check_for_errors();
+			break;
 		}
 	}
 
@@ -1118,7 +1121,7 @@ void ScriptEditor::_res_saved_callback(const Ref<Resource> &p_res) {
 
 	_update_script_names();
 	Ref<Script> scr = p_res;
-	if (scr.is_valid()) {
+	if (!has_errors && scr.is_valid()) {
 		trigger_live_script_reload(scr->get_path());
 	}
 }
@@ -1129,6 +1132,7 @@ void ScriptEditor::_scene_saved_callback(const String &p_path) {
 }
 
 void ScriptEditor::_mark_built_in_scripts_as_saved(const String &p_parent_path) {
+	bool has_errors = false;
 	for (int i = 0; i < tab_container->get_tab_count(); i++) {
 		ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(tab_container->get_tab_control(i));
 		if (!se) {
@@ -1143,10 +1147,11 @@ void ScriptEditor::_mark_built_in_scripts_as_saved(const String &p_parent_path) 
 
 		if (edited_res->get_path().get_slice("::", 0) == p_parent_path) {
 			se->tag_saved_version();
+			has_errors = se->get_code_editor()->check_for_errors();
 		}
 
 		Ref<Script> scr = edited_res;
-		if (scr.is_valid()) {
+		if (!has_errors && scr.is_valid()) {
 			trigger_live_script_reload(scr->get_path());
 
 			if (scr->is_tool()) {
@@ -1163,14 +1168,6 @@ void ScriptEditor::trigger_live_script_reload(const String &p_script_path) {
 	if (!pending_auto_reload && auto_reload_running_scripts) {
 		callable_mp(this, &ScriptEditor::_live_auto_reload_running_scripts).call_deferred();
 		pending_auto_reload = true;
-	}
-}
-
-void ScriptEditor::trigger_live_script_reload_all() {
-	if (!pending_auto_reload && auto_reload_running_scripts) {
-		call_deferred(SNAME("_live_auto_reload_running_scripts"));
-		pending_auto_reload = true;
-		reload_all_scripts = true;
 	}
 }
 
