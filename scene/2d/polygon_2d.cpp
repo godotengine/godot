@@ -33,7 +33,7 @@
 #include "core/math/geometry_2d.h"
 #include "scene/resources/2d/navigation_mesh_source_geometry_data_2d.h"
 #include "scene/resources/2d/navigation_polygon.h"
-#include "servers/navigation_server_2d.h"
+#include "servers/navigation/navigation_server_2d.h"
 #include "skeleton_2d.h"
 
 Callable Polygon2D::_navmesh_source_geometry_parsing_callback;

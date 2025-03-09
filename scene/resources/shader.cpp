@@ -33,9 +33,9 @@
 
 #include "core/io/file_access.h"
 #include "scene/main/scene_tree.h"
+#include "servers/rendering/rendering_server.h"
 #include "servers/rendering/shader_language.h"
 #include "servers/rendering/shader_preprocessor.h"
-#include "servers/rendering_server.h"
 #include "texture.h"
 
 #ifdef TOOLS_ENABLED
