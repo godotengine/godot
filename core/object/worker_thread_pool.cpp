@@ -529,7 +529,7 @@ void WorkerThreadPool::_switch_runlevel(Runlevel p_runlevel) {
 	runlevel = p_runlevel;
 	memset(&runlevel_data, 0, sizeof(runlevel_data));
 	for (uint32_t i = 0; i < threads.size(); i++) {
-		threads[i].cond_var.notify_one();
+		threads[i].cond_var.notify_all();
 		threads[i].signaled = true;
 	}
 	control_cond_var.notify_all();
