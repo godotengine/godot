@@ -178,6 +178,7 @@ public:
 		TK_HINT_SOURCE_COLOR,
 		TK_HINT_RANGE,
 		TK_HINT_ENUM,
+		TK_HINT_FLAGS,
 		TK_HINT_INSTANCE_INDEX,
 		TK_HINT_SCREEN_TEXTURE,
 		TK_HINT_NORMAL_ROUGHNESS_TEXTURE,
@@ -660,6 +661,7 @@ public:
 				HINT_NONE,
 				HINT_RANGE,
 				HINT_ENUM,
+				HINT_FLAGS,
 				HINT_SOURCE_COLOR,
 				HINT_NORMAL,
 				HINT_ROUGHNESS_NORMAL,
@@ -698,7 +700,7 @@ public:
 			TextureFilter filter = FILTER_DEFAULT;
 			TextureRepeat repeat = REPEAT_DEFAULT;
 			float hint_range[3];
-			PackedStringArray hint_enum_names;
+			PackedStringArray hint_names;
 			int instance_index = 0;
 			String group;
 			String subgroup;
