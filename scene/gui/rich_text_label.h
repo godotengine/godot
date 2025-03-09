@@ -881,6 +881,7 @@ public:
 	Array get_effects();
 
 	void install_effect(const Variant effect);
+	void reload_effects();
 
 	virtual Size2 get_minimum_size() const override;
 
