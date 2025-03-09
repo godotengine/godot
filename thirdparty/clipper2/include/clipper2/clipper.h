@@ -1,24 +1,21 @@
 /*******************************************************************************
 * Author    :  Angus Johnson                                                   *
 * Date      :  27 April 2024                                                   *
-* Website   :  http://www.angusj.com                                           *
+* Website   :  https://www.angusj.com                                          *
 * Copyright :  Angus Johnson 2010-2024                                         *
 * Purpose   :  This module provides a simple interface to the Clipper Library  *
-* License   :  http://www.boost.org/LICENSE_1_0.txt                            *
+* License   :  https://www.boost.org/LICENSE_1_0.txt                           *
 *******************************************************************************/
 
 #ifndef CLIPPER_H
 #define CLIPPER_H
-
-#include <cstdlib>
-#include <type_traits>
-#include <vector>
 
 #include "clipper2/clipper.core.h"
 #include "clipper2/clipper.engine.h"
 #include "clipper2/clipper.offset.h"
 #include "clipper2/clipper.minkowski.h"
 #include "clipper2/clipper.rectclip.h"
+#include <type_traits>
 
 namespace Clipper2Lib {
 
@@ -272,14 +269,14 @@ namespace Clipper2Lib {
 
     inline void PolyPathToPaths64(const PolyPath64& polypath, Paths64& paths)
     {
-      paths.push_back(polypath.Polygon());
+      paths.emplace_back(polypath.Polygon());
       for (const auto& child : polypath)
         PolyPathToPaths64(*child, paths);
     }
 
     inline void PolyPathToPathsD(const PolyPathD& polypath, PathsD& paths)
     {
-      paths.push_back(polypath.Polygon());
+      paths.emplace_back(polypath.Polygon());
       for (const auto& child : polypath)
         PolyPathToPathsD(*child, paths);
     }
@@ -348,9 +345,9 @@ namespace Clipper2Lib {
       result.reserve(array_size / 2);
       for (size_t i = 0; i < array_size; i +=2)
 #ifdef USINGZ
-        result.push_back( U{ an_array[i], an_array[i + 1], 0} );
+        result.emplace_back( an_array[i], an_array[i + 1], 0 );
 #else
-        result.push_back( U{ an_array[i], an_array[i + 1]} );
+        result.emplace_back( an_array[i], an_array[i + 1] );
 #endif
     }
 
@@ -518,20 +515,20 @@ namespace Clipper2Lib {
     }
 
     prevIt = srcIt++;
-    dst.push_back(*prevIt);
+    dst.emplace_back(*prevIt);
     for (; srcIt != stop; ++srcIt)
     {
       if (!IsCollinear(*prevIt, *srcIt, *(srcIt + 1)))
       {
         prevIt = srcIt;
-        dst.push_back(*prevIt);
+        dst.emplace_back(*prevIt);
       }
     }
 
     if (is_open_path)
-      dst.push_back(*srcIt);
+      dst.emplace_back(*srcIt);
     else if (!IsCollinear(*prevIt, *stop, dst[0]))
-      dst.push_back(*stop);
+      dst.emplace_back(*stop);
     else
     {
       while (dst.size() > 2 &&
@@ -603,10 +600,10 @@ namespace Clipper2Lib {
     double dx = co, dy = si;
     Path<T> result;
     result.reserve(steps);
-    result.push_back(Point<T>(center.x + radiusX, static_cast<double>(center.y)));
+    result.emplace_back(center.x + radiusX, static_cast<double>(center.y));
     for (size_t i = 1; i < steps; ++i)
     {
-      result.push_back(Point<T>(center.x + radiusX * dx, center.y + radiusY * dy));
+      result.emplace_back(center.x + radiusX * dx, center.y + radiusY * dy);
       double x = dx * co - dy * si;
       dy = dy * co + dx * si;
       dx = x;
@@ -700,7 +697,7 @@ namespace Clipper2Lib {
     Path<T> result;
     result.reserve(len);
     for (typename Path<T>::size_type i = 0; i < len; ++i)
-      if (!flags[i]) result.push_back(path[i]);
+      if (!flags[i]) result.emplace_back(path[i]);
     return result;
   }
 
@@ -711,7 +708,7 @@ namespace Clipper2Lib {
     Paths<T> result;
     result.reserve(paths.size());
     for (const auto& path : paths)
-      result.push_back(SimplifyPath(path, epsilon, isClosedPath));
+      result.emplace_back(std::move(SimplifyPath(path, epsilon, isClosedPath)));
     return result;
   }
 
@@ -749,7 +746,7 @@ namespace Clipper2Lib {
     result.reserve(len);
     for (typename Path<T>::size_type i = 0; i < len; ++i)
       if (flags[i])
-        result.push_back(path[i]);
+        result.emplace_back(path[i]);
     return result;
   }
 
