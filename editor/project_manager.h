@@ -230,6 +230,7 @@ class ProjectManager : public Control {
 
 	String version_convert_feature;
 	bool open_in_recovery_mode = false;
+	bool open_in_verbose_mode = false;
 
 #ifndef DISABLE_DEPRECATED
 	void _minor_project_migrate();
