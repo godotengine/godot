@@ -17,8 +17,11 @@
 		<member name="dry" type="float" setter="set_dry" getter="get_dry" default="1.0">
 			Output percent of original sound. At 0, only modified sound is outputted. Value can range from 0 to 1.
 		</member>
-		<member name="hipass" type="float" setter="set_hpf" getter="get_hpf" default="0.0">
+		<member name="hipass" type="float" setter="set_hpf" getter="get_hpf" default="0.0" deprecated="Use [member hipass_hz] instead.">
 			High-pass filter passes signals with a frequency higher than a certain cutoff frequency and attenuates signals with frequencies lower than the cutoff frequency. Value can range from 0 to 1.
+		</member>
+		<member name="hipass_hz" type="float" setter="set_hpf_hz" getter="get_hpf_hz" default="0.0">
+			High-pass filter passes signals with a frequency higher than a certain cutoff frequency and attenuates signals with frequencies lower than the cutoff frequency. Value can range from 0 to 6000.
 		</member>
 		<member name="predelay_feedback" type="float" setter="set_predelay_feedback" getter="get_predelay_feedback" default="0.4">
 			Output percent of predelay. Value can range from 0 to 1.
