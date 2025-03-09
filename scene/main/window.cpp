@@ -3056,7 +3056,7 @@ void Window::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("popup_exclusive_centered_clamped", "from_node", "minsize", "fallback_ratio"), &Window::popup_exclusive_centered_clamped, DEFVAL(Size2i()), DEFVAL(0.75));
 
 	// Keep the enum values in sync with the `Mode` enum.
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "mode", PROPERTY_HINT_ENUM, "Windowed,Minimized,Maximized,Fullscreen,Exclusive Fullscreen"), "set_mode", "get_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "mode", PROPERTY_HINT_ENUM, "Windowed,Minimized,Maximized,Fullscreen,Exclusive Fullscreen,Offscreen"), "set_mode", "get_mode");
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "title"), "set_title", "get_title");
 
@@ -3129,6 +3129,7 @@ void Window::_bind_methods() {
 	BIND_ENUM_CONSTANT(MODE_MAXIMIZED);
 	BIND_ENUM_CONSTANT(MODE_FULLSCREEN);
 	BIND_ENUM_CONSTANT(MODE_EXCLUSIVE_FULLSCREEN);
+	BIND_ENUM_CONSTANT(MODE_OFFSCREEN);
 
 	BIND_ENUM_CONSTANT(FLAG_RESIZE_DISABLED);
 	BIND_ENUM_CONSTANT(FLAG_BORDERLESS);
