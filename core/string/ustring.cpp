@@ -35,11 +35,13 @@
 #include "core/math/math_funcs.h"
 #include "core/object/object.h"
 #include "core/string/print_string.h"
+#include "core/string/string_buffer.h"
 #include "core/string/string_name.h"
 #include "core/string/translation_server.h"
 #include "core/string/ucaps.h"
 #include "core/variant/variant.h"
 #include "core/version_generated.gen.h"
+#include "modules/regex/regex.h"
 
 #ifdef _MSC_VER
 #define _CRT_SECURE_NO_WARNINGS // to disable build-time warning which suggested to use strcpy_s instead strcpy
@@ -1617,7 +1619,7 @@ String String::num(double p_num, int p_decimals) {
 		if (abs_num > 10) {
 			// We want to align the digits to the above reasonable default, so we only
 			// need to subtract log10 for numbers with a positive power of ten.
-			p_decimals -= (int)floor(log10(abs_num));
+			p_decimals -= static_cast<int>(floor(log10(abs_num)));
 		}
 	}
 	if (p_decimals > MAX_DECIMALS) {
@@ -1770,11 +1772,12 @@ String String::num_real(double p_num, bool p_trailing) {
 		return num(p_num, 0);
 	}
 
-	if (p_num == (double)(int64_t)p_num) {
+	const int64_t num_as_int64 = static_cast<int64_t>(p_num);
+	if (p_num == static_cast<double>(num_as_int64)) {
 		if (p_trailing) {
-			return num_int64((int64_t)p_num) + ".0";
+			return num_int64(num_as_int64) + ".0";
 		} else {
-			return num_int64((int64_t)p_num);
+			return num_int64(num_as_int64);
 		}
 	}
 
@@ -1783,7 +1786,7 @@ String String::num_real(double p_num, bool p_trailing) {
 	// to subtract log10 for numbers with a positive power of ten magnitude.
 	const double abs_num = Math::abs(p_num);
 	if (abs_num > 10) {
-		decimals -= (int)floor(log10(abs_num));
+		decimals -= static_cast<int>(floor(log10(abs_num)));
 	}
 
 	return num(p_num, decimals);
@@ -1794,11 +1797,12 @@ String String::num_real(float p_num, bool p_trailing) {
 		return num(p_num, 0);
 	}
 
-	if (p_num == (float)(int64_t)p_num) {
+	const int64_t num_as_int64 = static_cast<int64_t>(p_num);
+	if (p_num == static_cast<float>(num_as_int64)) {
 		if (p_trailing) {
-			return num_int64((int64_t)p_num) + ".0";
+			return num_int64(num_as_int64) + ".0";
 		} else {
-			return num_int64((int64_t)p_num);
+			return num_int64(num_as_int64);
 		}
 	}
 	int decimals = 6;
@@ -1806,7 +1810,7 @@ String String::num_real(float p_num, bool p_trailing) {
 	// to subtract log10 for numbers with a positive power of ten magnitude.
 	const float abs_num = Math::abs(p_num);
 	if (abs_num > 10) {
-		decimals -= (int)floor(log10(abs_num));
+		decimals -= static_cast<int>(floor(log10(abs_num)));
 	}
 	return num(p_num, decimals);
 }
@@ -3859,6 +3863,118 @@ bool String::matchn(const String &p_wildcard) const {
 	return _wildcard_match(p_wildcard.get_data(), get_data(), false);
 }
 
+// Formats `p_value` using the format spec described by `p_format_spec_text`.
+// On formatting error, returns default string representation of `p_value`.
+String _format_value_with_spec(const Variant &p_value, const String &p_format_spec_text) {
+	if (p_format_spec_text.is_empty()) {
+		return p_value;
+	}
+	bool error = false;
+	FormatSpec format_spec = FormatSpec::parse(p_format_spec_text, &error);
+	if (error) {
+		print_error(vformat("Invalid format specifier, ignoring: %s", p_format_spec_text));
+		return p_value;
+	}
+	return format_spec.format(p_value);
+}
+
+// Is `c` a character that requires regex escaping?
+bool is_regex_char(char32_t c) {
+	switch (c) {
+		case '.':
+		case '^':
+		case '$':
+		case '*':
+		case '+':
+		case '?':
+		case '{':
+		case '}':
+		case '[':
+		case ']':
+		case '(':
+		case ')':
+		case '|':
+		case '\\':
+			return true;
+		default:
+			return false;
+	}
+}
+
+// Regex-escape a string so it will literally match that string when placed within a RegEx pattern.
+String escape_regex(const String &p_string) {
+	// Most keys won't have regex characters, so we can avoid building up a new string in that case.
+	bool has_regex_chars = false;
+	for (int i = 0; i < p_string.size(); i++) {
+		if (is_regex_char(p_string[i])) {
+			has_regex_chars = true;
+			break;
+		}
+	}
+	if (!has_regex_chars) {
+		return p_string;
+	}
+	StringBuffer ret;
+	for (int i = 0; i < p_string.size(); i++) {
+		char32_t c = p_string[i];
+		if (is_regex_char(c)) {
+			ret.append('\\');
+			ret.append(c);
+		} else {
+			ret.append(c);
+		}
+	}
+	return ret.as_string();
+}
+
+// Substitutes into `p_format_template just one value `p_val` into the key slots named by `p_key`.
+// If `p_placeholder_template` has no underscore, replace the first placeholder instance with `p_val`.
+// If `p_placeholder_template` has an underscore but is not '{_}', replace all placeholders with the key
+// used instead of '_' with `p_val`. e.g. p_key = "foo", p_placeholder_template = "$_" will replace all "$foo" with `p_val`.
+// Otherwise, we replace all slots of the form "{key[:format]}" with `p_val` formatted using the FormatSpec specified by `format`.
+// For example:
+// _format_one_key("Test for {k} and {m} and {k} and {m}.", "{_}", "m", 42) -> "Test for {k} and 42 and {k} and 42."
+// _format_one_key("Test with format {k:,}.", "{_}", "k", 1234567) -> "Test with format 1,234,567."  (see FormatSpec)
+String _format_one_key(const String &p_format_template, const String &p_placeholder_template, const String &p_key, const Variant &p_val) {
+	// We only support formatting spec with the default placeholder template "{_}".
+	if (p_placeholder_template != "{_}") {
+		if (p_placeholder_template.contains_char('_')) {
+			return p_format_template.replace(p_placeholder_template.replace("_", p_key), p_val);
+		} else {
+			// With no key in the placeholder, we just replace the next placeholder (position-based substitution).
+			return p_format_template.replace_first(p_placeholder_template, p_val);
+		}
+	}
+	/* clang-format off */
+	// Match slot of form "{key[:format]}"
+	RegEx slot_re(
+			"\\{"         // "{"
+			+ escape_regex(p_key) + // Match key
+			"(?:"         // Start of optional :format spec. Not captured.
+			  ":([^}]*)"  // ":format". Capture format as field 1.
+			")?"          // End of optional :format spec.
+			"\\}"         // "}"
+	);
+	/* clang-format on */
+	const TypedArray<RegExMatch> &matches = slot_re.search_all(p_format_template);
+	StringBuffer result;
+	int next_pos = 0; // tracks how much of the template we've processed so far.
+	// Replace each matching slot with its formatted value.
+	for (Ref<RegExMatch> match : matches) {
+		if (match->get_start(0) > next_pos) {
+			result.append(p_format_template.substr(next_pos, match->get_start(0) - next_pos));
+		}
+		next_pos = match->get_end(0);
+		const String &format_spec = match->get_string(1);
+		const String formatted_value = _format_value_with_spec(p_val, format_spec);
+		result.append(formatted_value);
+	}
+	if (next_pos < p_format_template.length()) {
+		result.append(p_format_template.substr(next_pos));
+	}
+	return result.as_string();
+}
+
 String String::format(const Variant &values, const String &placeholder) const {
 	String new_string = String(ptr());
 
@@ -3869,28 +3985,17 @@ String String::format(const Variant &values, const String &placeholder) const {
 			String i_as_str = String::num_int64(i);
 
 			if (values_arr[i].get_type() == Variant::ARRAY) { //Array in Array structure [["name","RobotGuy"],[0,"godot"],["strength",9000.91]]
-				Array value_arr = values_arr[i];
-
-				if (value_arr.size() == 2) {
-					Variant v_key = value_arr[0];
-					String key = v_key;
-
-					Variant v_val = value_arr[1];
-					String val = v_val;
-
-					new_string = new_string.replace(placeholder.replace("_", key), val);
+				Array kv_arr = values_arr[i];
+				if (kv_arr.size() == 2) {
+					String key = kv_arr[0];
+					Variant val = kv_arr[1];
+					new_string = _format_one_key(new_string, placeholder, key, val);
 				} else {
 					ERR_PRINT(String("STRING.format Inner Array size != 2 ").ascii().get_data());
 				}
 			} else { //Array structure ["RobotGuy","Logis","rookie"]
-				Variant v_val = values_arr[i];
-				String val = v_val;
-
-				if (placeholder.contains_char('_')) {
-					new_string = new_string.replace(placeholder.replace("_", i_as_str), val);
-				} else {
-					new_string = new_string.replace_first(placeholder, val);
-				}
+				Variant val = values_arr[i];
+				new_string = _format_one_key(new_string, placeholder, i_as_str, val);
 			}
 		}
 	} else if (values.get_type() == Variant::DICTIONARY) {
@@ -3899,7 +4004,7 @@ String String::format(const Variant &values, const String &placeholder) const {
 		d.get_key_list(&keys);
 
 		for (const Variant &key : keys) {
-			new_string = new_string.replace(placeholder.replace("_", key), d[key]);
+			new_string = _format_one_key(new_string, placeholder, key, d[key]);
 		}
 	} else if (values.get_type() == Variant::OBJECT) {
 		Object *obj = values.get_validated_object();
@@ -3909,7 +4014,7 @@ String String::format(const Variant &values, const String &placeholder) const {
 		obj->get_property_list(&props);
 
 		for (const PropertyInfo &E : props) {
-			new_string = new_string.replace(placeholder.replace("_", E.name), obj->get(E.name));
+			new_string = _format_one_key(new_string, placeholder, E.name, obj->get(E.name));
 		}
 	} else {
 		ERR_PRINT(String("Invalid type: use Array, Dictionary or Object.").ascii().get_data());
@@ -5731,6 +5836,10 @@ String String::sprintf(const Array &values, bool *error) const {
 					}
 
 					int size = values[value_index];
+					if (size < 0) {
+						left_justified = true;
+						size = -size;
+					}
 
 					if (in_decimals) {
 						min_decimals = size;
@@ -5992,4 +6101,566 @@ String RTRN(const String &p_text, const String &p_text_plural, int p_n, const St
 		return p_text;
 	}
 	return p_text_plural;
+}
+
+/*************************************************************************/
+/*  FormatSpec                                                           */
+/*************************************************************************/
+
+FormatSpec::FormatSpec(const FormatSpecPart &base) {
+	*this = base;
+}
+FormatSpec &FormatSpec::operator=(const FormatSpecPart &base) {
+	FormatSpecPart::operator=(base); // Copy the core fields.
+	return *this;
+}
+
+FormatSpec FormatSpec::parse(const String &p_format_spec_text, bool *r_error, String *r_error_msg) {
+	// Turn off clang-format to make regex comments easier to read.
+	/* clang-format off */
+	RegEx format_re(
+			"^"                    // must match entire string.
+			"(?:"                  // start of optional fill + align. Not captured.
+			  "(.)?"               // optional fill character. field 1.
+			  "(<|>|=|\\^)"        // alignment. field 2.
+			")?"                   // end of optional fill + align.
+			"(\\+|-| )?"           // optional sign character. field 3.
+			"(#)?"                 // optional alternate form. field 4.
+			"(0)?"                 // optional zero padding. field 5.
+			"(\\d+)?"              // optional width. field 6.
+			"(_|,|\\.)?"           // optional grouping character. field 7.
+			"(?:"                  // optional precision.
+			  "\\.(\\d+)"          // precision. e.g. ".12". field 8.
+			")?"                   // end of optional precision.
+			"(s|c|d|b|o|x|X|f|h|"  // optional type. field 9 (start).
+			  "v"                  // start of vector type. e.g. "v" or "v[+8f]"
+			  "(?:"                // start of optional vector element format.
+			    "\\["              // vector element format starts with '['
+			    "([^\\]]+)"        // format string for the vector elements (anything but ']'). field 10.
+			    "\\]"              // vector element format ends with ']'
+			  ")?"                 // end of optional vector element format.
+			")?"                   // end of optional type. field 9 (end).
+			"$"                    // must match entire string.
+	);
+	/* clang-format on */
+	const int FILL_GROUP = 1;
+	const int ALIGNMENT_GROUP = 2;
+	const int SIGN_GROUP = 3;
+	const int ALTERNATE_FORM_GROUP = 4;
+	const int ZERO_PADDING_GROUP = 5;
+	const int WIDTH_GROUP = 6;
+	const int GROUPING_GROUP = 7;
+	const int PRECISION_GROUP = 8;
+	const int TYPE_GROUP = 9;
+	const int VECTOR_ELEMENT_GROUP = 10;
+
+	const Ref<RegExMatch> match = format_re.search(p_format_spec_text);
+	if (!match.is_valid()) {
+		if (r_error) {
+			*r_error = true;
+		}
+		if (r_error_msg) {
+			*r_error_msg = vformat("Invalid FormatSpec string %s", p_format_spec_text);
+		}
+		return FormatSpec();
+	}
+	FormatSpec format_spec;
+
+	if (!match->get_string(FILL_GROUP).is_empty()) {
+		format_spec.align_pad = match->get_string(FILL_GROUP);
+	}
+	if (!match->get_string(ALIGNMENT_GROUP).is_empty()) {
+		switch (match->get_string(ALIGNMENT_GROUP)[0]) {
+			case '<':
+				format_spec.align_type = FormatSpec::ALIGN_LEFT;
+				break;
+			case '>':
+				format_spec.align_type = FormatSpec::ALIGN_RIGHT;
+				break;
+			case '=':
+				format_spec.align_type = FormatSpec::ALIGN_PAD_AFTER_SIGN;
+				break;
+			case '^':
+				format_spec.align_type = FormatSpec::ALIGN_CENTER;
+				break;
+			default:
+				DEV_ASSERT(false);
+				print_error("Internal error: Invalid alignment character, should not match regex. ignoring.");
+				break;
+		}
+	}
+	if (!match->get_string(ALTERNATE_FORM_GROUP).is_empty()) {
+		format_spec.alternate_form = true;
+	}
+	if (!match->get_string(SIGN_GROUP).is_empty()) {
+		switch (match->get_string(SIGN_GROUP)[0]) {
+			case '+':
+				format_spec.sign_type = FormatSpec::SIGN_ALWAYS;
+				break;
+			case '-':
+				format_spec.sign_type = FormatSpec::SIGN_NEGATIVE_ONLY;
+				break;
+			case ' ':
+				format_spec.sign_type = FormatSpec::SIGN_SPACE_FOR_PLUS;
+				break;
+			default:
+				DEV_ASSERT(false);
+				print_error("Internal error: Invalid sign character, should not match regex. ignoring.");
+				break;
+		}
+	}
+	if (!match->get_string(ZERO_PADDING_GROUP).is_empty() && match->get_string(ALIGNMENT_GROUP).is_empty()) {
+		// Alignment overrides zero-padding settings.
+		format_spec.align_type = FormatSpec::ALIGN_PAD_AFTER_SIGN;
+		format_spec.align_pad = "0";
+	}
+	if (!match->get_string(WIDTH_GROUP).is_empty()) {
+		format_spec.width = match->get_string(WIDTH_GROUP).to_int();
+	}
+	if (!match->get_string(GROUPING_GROUP).is_empty()) {
+		format_spec.group_separator = match->get_string(GROUPING_GROUP);
+	}
+	if (!match->get_string(PRECISION_GROUP).is_empty()) {
+		format_spec.precision = match->get_string(PRECISION_GROUP).to_int();
+	}
+	if (!match->get_string(TYPE_GROUP).is_empty()) {
+		switch (match->get_string(TYPE_GROUP)[0]) {
+			case 's':
+				format_spec.format_type = FormatSpec::FORMAT_STRING;
+				break;
+			case 'b':
+				format_spec.format_type = FormatSpec::FORMAT_BINARY;
+				break;
+			case 'c':
+				format_spec.format_type = FormatSpec::FORMAT_CHAR;
+				break;
+			case 'd':
+				format_spec.format_type = FormatSpec::FORMAT_DECIMAL;
+				break;
+			case 'o':
+				format_spec.format_type = FormatSpec::FORMAT_OCTAL;
+				break;
+			case 'x':
+				format_spec.format_type = FormatSpec::FORMAT_HEX;
+				break;
+			case 'X':
+				format_spec.format_type = FormatSpec::FORMAT_HEX_UPPER;
+				break;
+			case 'f':
+				format_spec.format_type = FormatSpec::FORMAT_FLOAT;
+				break;
+			case 'h':
+				format_spec.format_type = FormatSpec::FORMAT_FLOAT_SIG_FIG;
+				break;
+			case 'v':
+				format_spec.format_type = FormatSpec::FORMAT_VECTOR;
+				if (!match->get_string(VECTOR_ELEMENT_GROUP).is_empty()) {
+					bool error = false;
+					String error_msg;
+					// Parse just the vector element format.
+					FormatSpec element_format = parse(match->get_string(VECTOR_ELEMENT_GROUP), &error, &error_msg);
+					if (error) {
+						if (r_error) {
+							*r_error = true;
+						}
+						if (r_error_msg) {
+							*r_error_msg = error_msg;
+						}
+						return FormatSpec();
+					}
+					format_spec.vector_element_format = element_format;
+				}
+				format_spec.vector_element_format.is_vector_element = true;
+				break;
+			default:
+				DEV_ASSERT(false);
+				print_error("Internal error: Invalid type character, should not match regex. ignoring.");
+				break;
+		}
+	}
+	if (r_error) {
+		*r_error = false;
+	}
+	return format_spec;
+}
+
+// Resolve default format type based on the value type.
+FormatSpec::FormatType _get_format_type_for_value_type(FormatSpec::FormatType format_type, const Variant &p_value) {
+	if (format_type != FormatSpec::FORMAT_DEFAULT) {
+		return format_type;
+	}
+	switch (p_value.get_type()) {
+		case Variant::Type::INT:
+			return FormatSpec::FORMAT_DECIMAL;
+		case Variant::Type::FLOAT:
+			return FormatSpec::FORMAT_FLOAT;
+		case Variant::Type::VECTOR2:
+		case Variant::Type::VECTOR2I:
+		case Variant::Type::VECTOR3:
+		case Variant::Type::VECTOR3I:
+		case Variant::Type::VECTOR4:
+		case Variant::Type::VECTOR4I:
+			return FormatSpec::FORMAT_VECTOR;
+		default:
+			// For everything else we default to String.
+			return FormatSpec::FORMAT_STRING;
+	}
+}
+
+// Resolve default alignment based on the value type.
+FormatSpec::AlignType _get_align_type_for_value_type(FormatSpec::AlignType align_type, const Variant &p_value) {
+	switch (align_type) {
+		case FormatSpec::ALIGN_LEFT:
+		case FormatSpec::ALIGN_RIGHT:
+		case FormatSpec::ALIGN_CENTER:
+			return align_type;
+		case FormatSpec::ALIGN_PAD_AFTER_SIGN:
+			// This will pad any non-numeric type to the right. Numeric types are padded elsewhere.
+			return FormatSpec::ALIGN_RIGHT;
+		case FormatSpec::ALIGN_DEFAULT:
+			if (p_value.is_num()) {
+				return FormatSpec::ALIGN_RIGHT;
+			}
+			return FormatSpec::ALIGN_LEFT;
+		default:
+			// This should have covered all cases, but some compilers still expect a default handler.
+			DEV_ASSERT(false);
+			return FormatSpec::ALIGN_LEFT;
+	}
+}
+
+// Returns the positive/negative character to use for the given `sign_type`.
+String _get_sign_char(FormatSpec::SignType sign_type, bool negative) {
+	static const String SPACE(" ");
+	static const String MINUS("-");
+	static const String PLUS("+");
+	switch (sign_type) {
+		case FormatSpec::SIGN_ALWAYS:
+			return negative ? MINUS : PLUS;
+		case FormatSpec::SIGN_NEGATIVE_ONLY:
+			return negative ? MINUS : "";
+		case FormatSpec::SIGN_SPACE_FOR_PLUS:
+			return negative ? MINUS : SPACE;
+		default:
+			// This should have covered all cases, but some compilers still expect a default handler.
+			DEV_ASSERT(false);
+			return "";
+	}
+}
+
+// Return the sequence of digits `num_str` with those digits grouped by group_size from the
+// right end and separated by group_separator.
+// e.g. _group_with_separator("1234567890", ",", 3) -> "1,234,567,890"
+String _group_with_separator(const String &num_str, const String &group_separator, const int group_size) {
+	StringBuffer grouped;
+	const int num_size = num_str.size();
+	// Track how much of num_str we've copied.
+	int cur_pos = (num_size - 2) % group_size + 1; // find location of first separator.
+	if (cur_pos > 0) {
+		grouped.append(num_str.substr(0, cur_pos));
+	}
+	while (cur_pos + 1 < num_size) {
+		grouped.append(group_separator);
+		grouped.append(num_str.substr(cur_pos, group_size));
+		cur_pos += group_size;
+	}
+	return grouped.as_string();
+}
+
+String FormatSpec::format(const Variant &p_value, bool *r_error) const {
+	if (r_error) {
+		*r_error = true;
+	}
+
+	// Assemble formatted string here.
+	String formatted;
+
+	String actual_align_pad = align_pad;
+	const FormatType actual_format_type = _get_format_type_for_value_type(format_type, p_value);
+	switch (actual_format_type) {
+		case FORMAT_STRING: {
+			if (align_type == ALIGN_PAD_AFTER_SIGN) {
+				return "alignment '=' not allowed for string values";
+			}
+			if (precision >= 0) {
+				formatted = String(p_value).substr(0, precision);
+			} else {
+				formatted = p_value;
+			}
+		} break;
+		case FORMAT_CHAR: {
+			if (align_type == ALIGN_PAD_AFTER_SIGN) {
+				return "alignment '=' not allowed for character values";
+			}
+			// Convert to character.
+			if (p_value.is_num()) {
+				int value = p_value;
+				if (value < 0) {
+					return "integer is lower than minimum character value";
+				} else if (value >= 0xd800 && value <= 0xdfff) {
+					return "integer is invalid Unicode character value";
+				} else if (value > 0x10ffff) {
+					return "integer is greater than maximum character value";
+				}
+				formatted = String::chr(p_value);
+			} else if (p_value.get_type() == Variant::STRING) {
+				formatted = p_value;
+				if (formatted.length() != 1) {
+					return "'c' format requires number or single-character string";
+				}
+			} else {
+				return "'c' format requires number or single-character string";
+			}
+		} break;
+		case FORMAT_DECIMAL:
+		case FORMAT_BINARY:
+		case FORMAT_OCTAL:
+		case FORMAT_HEX:
+		case FORMAT_HEX_UPPER: {
+			if (!p_value.is_num()) {
+				return "a number is required for int format";
+			}
+			int base = 10;
+			bool capitalize = false;
+			switch (actual_format_type) {
+				case FORMAT_DECIMAL:
+					base = 10;
+					break;
+				case FORMAT_BINARY:
+					base = 2;
+					break;
+				case FORMAT_OCTAL:
+					base = 8;
+					break;
+				case FORMAT_HEX:
+					base = 16;
+					break;
+				case FORMAT_HEX_UPPER:
+					base = 16;
+					capitalize = true;
+					break;
+				default:
+					// Prevented from getting here.
+					DEV_ASSERT(false);
+					print_error("Internal error: unhandled int format type.");
+					break;
+			}
+			// Render basic number into num_str.
+			const int64_t value = p_value;
+			const bool negative = value < 0;
+			String num_str;
+			if (!negative) {
+				num_str = String::num_uint64(value, base, capitalize);
+			} else { // negative
+				if (base == 10) {
+					num_str = String::num_int64(-value, base, capitalize); // sign handled below.
+				} else {
+					// For hex/oct/binary representations we'll render the two's complement with no negative sign.
+					uint64_t uvalue = static_cast<uint64_t>(value);
+					if (base == 2 && value >= INT8_MIN) {
+						// In binary, limit negative value size to 8 bits if possible.
+						uvalue &= 0xff;
+					} else if (base == 2 && value >= INT16_MIN) {
+						// In binary, limit negative value size to 16 bits if possible.
+						uvalue &= 0xffff;
+					} else if ((base == 16 || base == 8 || base == 2) && value >= INT32_MIN) {
+						// In hex, oct, or binary, limit negative value size to 32 bits if possible.
+						uvalue &= 0xffffffff;
+					}
+					num_str = String::num_uint64(uvalue, base, capitalize);
+				}
+			}
+
+			const bool is_decimal_format_type = actual_format_type == FormatType::FORMAT_DECIMAL;
+
+			// Grouping.
+			if (!group_separator.is_empty()) {
+				const int group_size = is_decimal_format_type ? 3 : 4;
+				num_str = _group_with_separator(num_str, group_separator, group_size);
+			}
+
+			// Sign.
+			String sign_char;
+			if (is_decimal_format_type) {
+				// Only add sign for decimal numbers.
+				sign_char = _get_sign_char(sign_type, negative);
+			}
+			if (align_type == ALIGN_PAD_AFTER_SIGN) {
+				const int pad_size = width - num_str.length() - sign_char.length();
+				if (pad_size > 0) {
+					num_str = align_pad.repeat(pad_size) + num_str;
+				}
+			}
+			formatted = num_str.insert(0, sign_char);
+
+			// Alternate form prefix.
+			if (alternate_form) {
+				switch (actual_format_type) {
+					case FORMAT_BINARY:
+						formatted = "0b" + formatted;
+						break;
+					case FORMAT_OCTAL:
+						formatted = "0o" + formatted;
+						break;
+					case FORMAT_HEX:
+						formatted = "0x" + formatted;
+						break;
+					case FORMAT_HEX_UPPER:
+						formatted = "0X" + formatted;
+						break;
+					default:
+						break;
+				}
+			}
+		} break;
+		case FORMAT_FLOAT:
+		case FORMAT_FLOAT_SIG_FIG: {
+			if (!p_value.is_num()) {
+				return "a number is required for float format";
+			}
+			const double value = static_cast<double>(p_value);
+			const double abs_value = Math::abs(value);
+			const bool is_negative = signbit(value);
+			if (!Math::is_finite(value) && align_pad == "0") {
+				actual_align_pad = " "; // Don't pad nan/inf with '0'
+			}
+
+			// Should we handle precision as a significant-figure specification?
+			bool precision_is_sig_figs = actual_format_type == FORMAT_FLOAT_SIG_FIG;
+#ifndef REAL_T_IS_DOUBLE
+			// If vector's element type (real_t) is float, we need to limit the default printing precision,
+			// since our floating-point print formatters assume we have double precision values.
+			if (is_vector_element && precision == -1) {
+				precision_is_sig_figs = true; // decimals will be set to 6 sig figs below.
+			}
+#endif // REAL_T_IS_DOUBLE
+			int decimals = precision;
+			if (decimals == -1) {
+				decimals = 6;
+			}
+			if (precision_is_sig_figs && decimals > 0) {
+				// Compute how many digits should appear after the decimal point for `precision` significant figures.
+				// Where is the first significant figure, positive to the left of the decimal point, starting at 1.
+				// e.g. 1000 is 4, 0.01 is -1.
+				const int first_sig_fig_pos = static_cast<int>(floor(log10(abs_value))) + 1;
+				// If we want 6 sig figs, and our value is 1000, we want two digits right of the decimal point (6-4).
+				// If we want 6 sig figs, and our value is 0.01, we want seven digits right of the decimal point (6-(-1)).
+				decimals -= first_sig_fig_pos;
+				if (decimals < 0) {
+					// Can't remove significant figures left of the decimal point.
+					decimals = 0;
+				}
+			}
+
+			String num_str = String::num(abs_value, decimals);
+
+			// Group digits to left of possible decimal point.
+			if (!group_separator.is_empty()) {
+				Vector<String> num_parts = num_str.split(".", false, 1);
+				if (num_parts.size() > 1) {
+					num_str = _group_with_separator(num_parts[0], group_separator, /*group_size=*/3) + "." + num_parts[1];
+				} else {
+					num_str = _group_with_separator(num_str, group_separator, /*group_size=*/3);
+				}
+			}
+			String sign_char = _get_sign_char(sign_type, is_negative);
+			if (align_type == ALIGN_PAD_AFTER_SIGN) {
+				const int pad_size = width - num_str.length() - sign_char.length();
+				if (pad_size > 0) {
+					num_str = actual_align_pad.repeat(pad_size) + num_str;
+				}
+			}
+			formatted = num_str.insert(0, sign_char);
+		} break;
+		case FORMAT_VECTOR: {
+			// Vector2/3/4/2i/3i/4i
+			// Format each element as the vector_element_format specifies.
+			int count;
+			switch (p_value.get_type()) {
+				case Variant::VECTOR2:
+				case Variant::VECTOR2I: {
+					count = 2;
+				} break;
+				case Variant::VECTOR3:
+				case Variant::VECTOR3I: {
+					count = 3;
+				} break;
+				case Variant::VECTOR4:
+				case Variant::VECTOR4I: {
+					count = 4;
+				} break;
+				default: {
+					return "'v' format requires a vector type (Vector2/3/4/2i/3i/4i)";
+				}
+			}
+			FormatSpec element_format = vector_element_format;
+			if (element_format.format_type == FORMAT_DEFAULT) {
+				switch (p_value.get_type()) {
+					case Variant::VECTOR2:
+					case Variant::VECTOR3:
+					case Variant::VECTOR4: {
+						element_format.format_type = FORMAT_FLOAT;
+					} break;
+					case Variant::VECTOR2I:
+					case Variant::VECTOR3I:
+					case Variant::VECTOR4I: {
+						element_format.format_type = FORMAT_DECIMAL;
+					} break;
+					default: {
+						// Shouldn't get here -- caught above.
+						return "'v' format requires a vector type (Vector2/3/4/2i/3i/4i)";
+					}
+				}
+			}
+
+			Vector4 vec = p_value;
+			StringBuffer vector_str;
+			vector_str.append("(");
+			for (int i = 0; i < count; i++) {
+				bool error = false;
+				vector_str.append(element_format.format(vec[i], &error));
+				if (error) {
+					return "Error formatting vector element";
+				}
+				if (i < count - 1) {
+					vector_str.append(", ");
+				}
+			}
+			vector_str.append(")");
+			formatted = vector_str.as_string();
+		} break;
+		default: {
+			// Shouldn't get here.
+			DEV_ASSERT(false);
+			print_error("Internal error: unhandled format type.");
+		} break;
+	}
+
+	// General padding applies to all types.
+	switch (_get_align_type_for_value_type(align_type, p_value)) {
+		case ALIGN_LEFT:
+			formatted = formatted.rpad(width, actual_align_pad);
+			break;
+		case ALIGN_RIGHT:
+			formatted = formatted.lpad(width, actual_align_pad);
+			break;
+		case ALIGN_CENTER: {
+			const int pad_size = width - formatted.length();
+			if (pad_size > 0) {
+				const int left_pad_size = pad_size / 2;
+				const int right_pad_size = pad_size - left_pad_size;
+				formatted = actual_align_pad.repeat(left_pad_size) + formatted + actual_align_pad.repeat(right_pad_size);
+			}
+		} break;
+		case ALIGN_PAD_AFTER_SIGN:
+		case ALIGN_DEFAULT:
+			// _get_align_type_for_value_type should never return these.
+			DEV_ASSERT(false);
+			print_error(vformat("Internal error: unexpected alignment type for align_type %s, value %s.", align_type, p_value));
+			break;
+	}
+	if (r_error) {
+		*r_error = false;
+	}
+	return formatted;
 }
