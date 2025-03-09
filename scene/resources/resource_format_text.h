@@ -64,8 +64,9 @@ private:
 	};
 
 	bool is_scene = false;
-	int format_version;
 	String res_type;
+
+	int format_version = 0;
 
 	bool ignore_resource_parsing = false;
 
