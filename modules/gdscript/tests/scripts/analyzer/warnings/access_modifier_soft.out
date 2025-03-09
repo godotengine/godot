@@ -1,0 +1,3 @@
+GDTEST_OK
+~~ WARNING at line 11: (ACCESS_PRIVATE_MEMBER) Trying to access a private member "_t" from an external place, which would cause problems during runtime.
+~~ WARNING at line 12: (CALL_PRIVATE_METHOD) Trying to call a private method "_priv_method()" from an external place, which would cause problems during runtime.

@@ -1965,15 +1965,14 @@ void GDScriptAnalyzer::check_access_private_member(GDScriptParser::IdentifierNod
 	}
 
 	GDScriptParser::DataType target_resolved = type_from_metatype(p_datatype);
-	bool target_has_member = target_resolved.class_type != nullptr && !target_resolved.class_type->has_member(p_identifier->name);
-	if (!target_has_member && p_is_call && !ClassDB::has_method(target_resolved.native_type, p_identifier->name)) {
+	if (target_resolved.class_type != nullptr && !target_resolved.class_type->has_member(p_identifier->name)) {
 		return; // Accessing an inexisting method
 	}
-	if (is_type_compatible(p_datatype, parser->current_class->get_datatype(), true)) {
+	if (is_type_compatible(target_resolved, type_from_metatype(parser->current_class->get_datatype()))) {
 		return;
 	}
 
-	parser->push_warning(p_identifier, p_is_call ? GDScriptWarning::CALLING_PRIVATE_METHOD : GDScriptWarning::ACCESS_PRIVATE_MEMBER, p_identifier->name);
+	parser->push_warning(p_identifier, p_is_call ? GDScriptWarning::CALL_PRIVATE_METHOD : GDScriptWarning::ACCESS_PRIVATE_MEMBER, p_identifier->name);
 
 	/*GDScriptParser::ClassNode *base_class = parser->current_class->base_type.class_type;
 	while (base_class != nullptr) {

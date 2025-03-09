@@ -165,7 +165,7 @@ String GDScriptWarning::get_message() const {
 		case ACCESS_PRIVATE_MEMBER:
 			CHECK_SYMBOLS(1);
 			return vformat(R"(Trying to access a private member "%s" from an external place, which would cause problems during runtime.)", symbols[0]);
-		case CALLING_PRIVATE_METHOD:
+		case CALL_PRIVATE_METHOD:
 			CHECK_SYMBOLS(1);
 			return vformat(R"*(Trying to call a private method "%s()" from an external place, which would cause problems during runtime.)*", symbols[0]);
 #ifndef DISABLE_DEPRECATED
@@ -245,7 +245,7 @@ String GDScriptWarning::get_name_from_code(Code p_code) {
 		"GET_NODE_DEFAULT_WITHOUT_ONREADY",
 		"ONREADY_WITH_EXPORT",
 		"ACCESS_PRIVATE_MEMBER",
-		"CALLING_PRIVATE_METHOD",
+		"CALL_PRIVATE_METHOD",
 #ifndef DISABLE_DEPRECATED
 		"PROPERTY_USED_AS_FUNCTION",
 		"CONSTANT_USED_AS_FUNCTION",
