@@ -201,6 +201,7 @@ public:
 	void emit_particle(const Transform3D &p_transform, const Vector3 &p_velocity, const Color &p_color, const Color &p_custom, uint32_t p_emit_flags);
 
 	AABB capture_aabb() const;
+	PackedVector3Array capture_positions() const;
 	void convert_from_particles(Node *p_particles);
 
 	GPUParticles3D();
