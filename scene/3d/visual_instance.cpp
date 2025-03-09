@@ -97,7 +97,7 @@ void VisualInstance::_notification(int p_what) {
 
 		} break;
 		case NOTIFICATION_TRANSFORM_CHANGED: {
-			if (_is_vi_visible() || is_physics_interpolated_and_enabled()) {
+			if (_is_vi_visible()) {
 				if (!_is_using_identity_transform()) {
 					VisualServer::get_singleton()->instance_set_transform(instance, get_global_transform());
 
@@ -110,18 +110,6 @@ void VisualInstance::_notification(int p_what) {
 						_set_physics_interpolation_reset_requested(false);
 					}
 				}
-			}
-		} break;
-		case NOTIFICATION_RESET_PHYSICS_INTERPOLATION: {
-			if (_is_vi_visible() && is_physics_interpolated() && is_inside_tree()) {
-				// We must ensure the VisualServer transform is up to date before resetting.
-				// This is because NOTIFICATION_TRANSFORM_CHANGED is deferred,
-				// and cannot be relied to be called in order before NOTIFICATION_RESET_PHYSICS_INTERPOLATION.
-				if (!_is_using_identity_transform()) {
-					VisualServer::get_singleton()->instance_set_transform(instance, get_global_transform());
-				}
-
-				VisualServer::get_singleton()->instance_reset_physics_interpolation(instance);
 			}
 		} break;
 		case NOTIFICATION_EXIT_WORLD: {
@@ -138,10 +126,6 @@ void VisualInstance::_notification(int p_what) {
 			_update_visibility();
 		} break;
 	}
-}
-
-void VisualInstance::_physics_interpolated_changed() {
-	VisualServer::get_singleton()->instance_set_interpolated(instance, is_physics_interpolated());
 }
 
 RID VisualInstance::get_instance() const {
