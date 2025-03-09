@@ -757,9 +757,9 @@
 		</method>
 		<method name="path_join" qualifiers="const">
 			<return type="String" />
-			<param index="0" name="file" type="String" />
+			<param index="0" name="path" type="String" />
 			<description>
-				Concatenates [param file] at the end of the string as a subpath, adding [code]/[/code] if necessary.
+				Concatenates [param path] at the end of the string as a subpath, adding [code]/[/code] if necessary.
 				[b]Example:[/b] [code]"this/is".path_join("path") == "this/is/path"[/code].
 			</description>
 		</method>
