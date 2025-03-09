@@ -36,10 +36,9 @@
 #include "core/templates/rb_set.h"
 
 #include "modules/modules_enabled.gen.h" // For regex.
+
 #ifdef MODULE_REGEX_ENABLED
 #include "modules/regex/regex.h"
-#else
-class RegEx : public RefCounted {};
 #endif // MODULE_REGEX_ENABLED
 
 #if defined(MINGW_ENABLED) || defined(_MSC_VER)
