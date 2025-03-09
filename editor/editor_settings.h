@@ -122,6 +122,7 @@ private:
 	void _load_default_visual_shader_editor_theme();
 	bool _save_text_editor_theme(const String &p_file);
 	bool _is_default_text_editor_theme(const String &p_theme_name);
+	static String _guess_exec_args_for_extenal_editor(const String &p_value);
 	const String _get_project_metadata_path() const;
 #ifndef DISABLE_DEPRECATED
 	void _remove_deprecated_settings();
