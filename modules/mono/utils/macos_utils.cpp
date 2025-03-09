@@ -38,7 +38,7 @@
 #import <CoreServices/CoreServices.h>
 
 bool macos_is_app_bundle_installed(const String &p_bundle_id) {
-	CFStringRef bundle_id = CFStringCreateWithCString(nullptr, p_bundle_id.utf8(), kCFStringEncodingUTF8);
+	CFStringRef bundle_id = CFStringCreateWithCString(nullptr, p_bundle_id.utf8().get_data(), kCFStringEncodingUTF8);
 	CFArrayRef result = LSCopyApplicationURLsForBundleIdentifier(bundle_id, nullptr);
 	CFRelease(bundle_id);
 
