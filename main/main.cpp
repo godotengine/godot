@@ -4336,6 +4336,11 @@ int Main::start() {
 			Engine::get_singleton()->set_recovery_mode_hint(true);
 		}
 #endif
+
+		if (EngineDebugger::is_active()) {
+			Array a;
+			EngineDebugger::get_singleton()->send_message("scene:scene_tree_loaded", a);
+		}
 	}
 
 	if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_ICON) && !has_icon && OS::get_singleton()->get_bundle_icon_path().is_empty()) {

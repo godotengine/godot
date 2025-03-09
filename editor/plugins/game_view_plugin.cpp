@@ -32,6 +32,8 @@
 
 #include "core/config/project_settings.h"
 #include "core/debugger/debugger_marshalls.h"
+#include "core/debugger/engine_debugger.h"
+#include "core/error/error_macros.h"
 #include "core/string/translation_server.h"
 #include "editor/debugger/editor_debugger_node.h"
 #include "editor/debugger/script_editor_debugger.h"
@@ -58,28 +60,42 @@ void GameViewDebugger::_session_started(Ref<EditorDebuggerSession> p_session) {
 		return;
 	}
 
-	Array setup_data;
-	Dictionary settings;
-	settings["editors/panning/2d_editor_panning_scheme"] = EDITOR_GET("editors/panning/2d_editor_panning_scheme");
-	settings["editors/panning/simple_panning"] = EDITOR_GET("editors/panning/simple_panning");
-	settings["editors/panning/warped_mouse_panning"] = EDITOR_GET("editors/panning/warped_mouse_panning");
-	settings["editors/panning/2d_editor_pan_speed"] = EDITOR_GET("editors/panning/2d_editor_pan_speed");
-	settings["canvas_item_editor/pan_view"] = DebuggerMarshalls::serialize_key_shortcut(ED_GET_SHORTCUT("canvas_item_editor/pan_view"));
-	settings["editors/3d/freelook/freelook_base_speed"] = EDITOR_GET("editors/3d/freelook/freelook_base_speed");
-	setup_data.append(settings);
-	p_session->send_message("scene:runtime_node_select_setup", setup_data);
-
-	Array type;
-	type.append(node_type);
-	p_session->send_message("scene:runtime_node_select_set_type", type);
-	Array visible;
-	visible.append(selection_visible);
-	p_session->send_message("scene:runtime_node_select_set_visible", visible);
-	Array mode;
-	mode.append(select_mode);
-	p_session->send_message("scene:runtime_node_select_set_mode", mode);
-
 	emit_signal(SNAME("session_started"));
+}
+
+bool GameViewDebugger::has_capture(const String &p_capture) const {
+	return p_capture == "scene";
+}
+
+bool GameViewDebugger::capture(const String &p_message, const Array &p_data, int p_session) {
+	Ref<EditorDebuggerSession> session = get_session(p_session);
+	ERR_FAIL_COND_V(session.is_null(), false);
+	if (p_message == "scene:scene_tree_loaded") {
+		if (is_feature_enabled) {
+			Array setup_data;
+			Dictionary settings;
+			settings["editors/panning/2d_editor_panning_scheme"] = EDITOR_GET("editors/panning/2d_editor_panning_scheme");
+			settings["editors/panning/simple_panning"] = EDITOR_GET("editors/panning/simple_panning");
+			settings["editors/panning/warped_mouse_panning"] = EDITOR_GET("editors/panning/warped_mouse_panning");
+			settings["editors/panning/2d_editor_pan_speed"] = EDITOR_GET("editors/panning/2d_editor_pan_speed");
+			settings["canvas_item_editor/pan_view"] = DebuggerMarshalls::serialize_key_shortcut(ED_GET_SHORTCUT("canvas_item_editor/pan_view"));
+			settings["editors/3d/freelook/freelook_base_speed"] = EDITOR_GET("editors/3d/freelook/freelook_base_speed");
+			setup_data.append(settings);
+			session->send_message("scene:runtime_node_select_setup", setup_data);
+
+			Array type;
+			type.append(node_type);
+			session->send_message("scene:runtime_node_select_set_type", type);
+			Array visible;
+			visible.append(selection_visible);
+			session->send_message("scene:runtime_node_select_set_visible", visible);
+			Array mode;
+			mode.append(select_mode);
+			session->send_message("scene:runtime_node_select_set_mode", mode);
+		}
+		return true;
+	}
+	return false;
 }
 
 void GameViewDebugger::_session_stopped() {
