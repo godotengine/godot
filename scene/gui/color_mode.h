@@ -45,7 +45,6 @@ public:
 	virtual float get_spinbox_arrow_step(int idx) const { return get_slider_step(); }
 	virtual String get_slider_label(int idx) const = 0;
 	virtual float get_slider_max(int idx) const = 0;
-	virtual float get_slider_min(int idx) const { return 0; }
 	virtual bool get_allow_greater() const { return false; }
 	virtual float get_slider_value(int idx) const = 0;
 
@@ -64,7 +63,7 @@ public:
 class ColorModeHSV : public ColorMode {
 public:
 	String labels[3] = { "H", "S", "V" };
-	float slider_max[4] = { 359, 100, 100, 255 };
+	float slider_max[3] = { 359, 100, 100 };
 	float cached_hue = 0.0;
 	float cached_saturation = 0.0;
 
@@ -107,14 +106,12 @@ public:
 
 class ColorModeHDR : public ColorMode {
 public:
-	float intensity_max = 10;
-	String labels[4] = { "R", "G", "B", "I" };
-	float slider_max[5] = { 1, 1, 1, intensity_max, 1 };
+	String labels[3] = { "R", "G", "B" };
+	float slider_max[3] = { 1, 1, 1 };
 	Ref<GradientTexture2D> rgb_texture[3];
 
 	virtual String get_name() const override { return "HDR"; }
 
-	virtual int get_slider_count() const override { return 4; }
 	virtual float get_slider_step() const override { return 0.001; }
 	virtual float get_spinbox_arrow_step(int idx) const override {
 		if (idx == 3) {
@@ -124,7 +121,6 @@ public:
 	}
 	virtual String get_slider_label(int idx) const override;
 	virtual float get_slider_max(int idx) const override;
-	virtual float get_slider_min(int idx) const override;
 	virtual bool get_allow_greater() const override { return true; }
 	virtual float get_slider_value(int idx) const override;
 
@@ -139,7 +135,7 @@ public:
 class ColorModeOKHSL : public ColorMode {
 public:
 	String labels[3] = { "H", "S", "L" };
-	float slider_max[4] = { 359, 100, 100, 255 };
+	float slider_max[3] = { 359, 100, 100 };
 	float cached_hue = 0.0;
 	float cached_saturation = 0.0;
 	Ref<GradientTexture2D> hue_texture = nullptr;
