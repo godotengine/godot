@@ -36,7 +36,7 @@ class JoltBoxShape3D final : public JoltShape3D {
 	Vector3 half_extents;
 	float margin = 0.04f;
 
-	virtual JPH::ShapeRefC _build() const override;
+	virtual JPH::Ref<JPH::Shape> _build() const override;
 
 public:
 	virtual ShapeType get_type() const override { return ShapeType::SHAPE_BOX; }

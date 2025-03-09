@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  jolt_separation_ray_shape_3d.cpp                                      */
+/*  jolt_physics_material.h                                               */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,58 +28,18 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "jolt_separation_ray_shape_3d.h"
+#pragma once
 
-#include "../misc/jolt_type_conversions.h"
-#include "jolt_custom_ray_shape.h"
+#include "Jolt/Jolt.h"
 
-JPH::Ref<JPH::Shape> JoltSeparationRayShape3D::_build() const {
-	ERR_FAIL_COND_V_MSG(length <= 0.0f, nullptr, vformat("Failed to build Jolt Physics separation ray shape with %s. Its length must be greater than 0. This shape belongs to %s.", to_string(), _owners_to_string()));
+#include "Jolt/Physics/Collision/PhysicsMaterialSimple.h"
+#include "core/math/math_defs.h"
 
-	const JoltCustomRayShapeSettings shape_settings(length, slide_on_slope, material);
-	const JPH::ShapeSettings::ShapeResult shape_result = shape_settings.Create();
-	ERR_FAIL_COND_V_MSG(shape_result.HasError(), nullptr, vformat("Failed to build Jolt Physics separation ray shape with %s. It returned the following error: '%s'. This shape belongs to %s.", to_string(), to_godot(shape_result.GetError()), _owners_to_string()));
+class JoltPhysicsMaterial : public JPH::PhysicsMaterialSimple {
+public:
+	real_t friction;
+	real_t bounce;
 
-	return shape_result.Get();
-}
-
-Variant JoltSeparationRayShape3D::get_data() const {
-	Dictionary data;
-	data["length"] = length;
-	data["slide_on_slope"] = slide_on_slope;
-	return data;
-}
-
-void JoltSeparationRayShape3D::set_data(const Variant &p_data) {
-	ERR_FAIL_COND(p_data.get_type() != Variant::DICTIONARY);
-
-	const Dictionary data = p_data;
-
-	const Variant maybe_length = data.get("length", Variant());
-	ERR_FAIL_COND(maybe_length.get_type() != Variant::FLOAT);
-
-	const Variant maybe_slide_on_slope = data.get("slide_on_slope", Variant());
-	ERR_FAIL_COND(maybe_slide_on_slope.get_type() != Variant::BOOL);
-
-	const float new_length = maybe_length;
-	const bool new_slide_on_slope = maybe_slide_on_slope;
-
-	if (unlikely(new_length == length && new_slide_on_slope == slide_on_slope)) {
-		return;
-	}
-
-	length = new_length;
-	slide_on_slope = new_slide_on_slope;
-
-	destroy();
-}
-
-AABB JoltSeparationRayShape3D::get_aabb() const {
-	constexpr float size_xy = 0.1f;
-	constexpr float half_size_xy = size_xy / 2.0f;
-	return AABB(Vector3(-half_size_xy, -half_size_xy, 0.0f), Vector3(size_xy, size_xy, length));
-}
-
-String JoltSeparationRayShape3D::to_string() const {
-	return vformat("{length=%f slide_on_slope=%s}", length, slide_on_slope);
-}
+	JoltPhysicsMaterial(real_t p_friction, real_t p_bounce) :
+			friction(p_friction), bounce(p_bounce) {}
+};

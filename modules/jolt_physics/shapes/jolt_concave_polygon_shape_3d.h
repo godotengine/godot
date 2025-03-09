@@ -37,7 +37,7 @@ class JoltConcavePolygonShape3D final : public JoltShape3D {
 	PackedVector3Array faces;
 	bool back_face_collision = false;
 
-	virtual JPH::ShapeRefC _build() const override;
+	virtual JPH::Ref<JPH::Shape> _build() const override;
 
 	AABB _calculate_aabb() const;
 

@@ -34,10 +34,10 @@
 
 #include "Jolt/Physics/Collision/Shape/SphereShape.h"
 
-JPH::ShapeRefC JoltSphereShape3D::_build() const {
+JPH::Ref<JPH::Shape> JoltSphereShape3D::_build() const {
 	ERR_FAIL_COND_V_MSG(radius <= 0.0f, nullptr, vformat("Failed to build Jolt Physics sphere shape with %s. Its radius must be greater than 0. This shape belongs to %s.", to_string(), _owners_to_string()));
 
-	const JPH::SphereShapeSettings shape_settings(radius);
+	const JPH::SphereShapeSettings shape_settings(radius, material);
 	const JPH::ShapeSettings::ShapeResult shape_result = shape_settings.Create();
 	ERR_FAIL_COND_V_MSG(shape_result.HasError(), nullptr, vformat("Failed to build Jolt Physics sphere shape with %s. It returned the following error: '%s'. This shape belongs to %s.", to_string(), to_godot(shape_result.GetError()), _owners_to_string()));
 
