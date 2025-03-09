@@ -2176,6 +2176,10 @@ void RenderingDeviceDriverD3D12::command_pipeline_barrier(CommandBufferID p_cmd_
 		if (texture_info->main_texture) {
 			texture_info = texture_info->main_texture;
 		}
+		// Textures created for simultaneous access do not need explicit transitions.
+		if (texture_info->desc.Flags & D3D12_RESOURCE_FLAG_ALLOW_SIMULTANEOUS_ACCESS) {
+			continue;
+		}
 		_rd_stages_and_access_to_d3d12(p_src_stages, texture_barrier_rd.prev_layout, texture_barrier_rd.src_access, texture_barrier_d3d12.SyncBefore, texture_barrier_d3d12.AccessBefore);
 		_rd_stages_and_access_to_d3d12(p_dst_stages, texture_barrier_rd.next_layout, texture_barrier_rd.dst_access, texture_barrier_d3d12.SyncAfter, texture_barrier_d3d12.AccessAfter);
 		texture_barrier_d3d12.LayoutBefore = _rd_texture_layout_to_d3d12_barrier_layout(texture_barrier_rd.prev_layout);
@@ -2225,7 +2229,9 @@ void RenderingDeviceDriverD3D12::command_pipeline_barrier(CommandBufferID p_cmd_
 		barrier_group.pTextureBarriers = texture_barriers.ptr();
 	}
 
-	cmd_list_7->Barrier(barrier_groups_count, barrier_groups);
+	if (barrier_groups_count) {
+		cmd_list_7->Barrier(barrier_groups_count, barrier_groups);
+	}
 }
 
 /****************/
