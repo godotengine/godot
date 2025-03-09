@@ -30,10 +30,10 @@
 
 #pragma once
 
-#include "scene/gui/link_button.h"
+#include "scene/gui/button.h"
 
-class EditorVersionButton : public LinkButton {
-	GDCLASS(EditorVersionButton, LinkButton);
+class EditorVersionButton : public Button {
+	GDCLASS(EditorVersionButton, Button);
 
 public:
 	enum VersionFormat {
