@@ -39,19 +39,19 @@ ColorMode::ColorMode(ColorPicker *p_color_picker) {
 }
 
 String ColorModeRGB::get_slider_label(int idx) const {
-	ERR_FAIL_INDEX_V_MSG(idx, 3, String(), "Couldn't get slider label.");
+	ERR_FAIL_INDEX_V_MSG(idx, get_slider_count(), String(), "Couldn't get slider label.");
 	return labels[idx];
 }
 
 float ColorModeRGB::get_slider_value(int idx) const {
-	ERR_FAIL_INDEX_V_MSG(idx, 4, 0, "Couldn't get slider value.");
-	return color_picker->get_pick_color().components[idx] * 255;
+	ERR_FAIL_INDEX_V_MSG(idx, get_slider_count(), 0, "Couldn't get slider value.");
+	return color_picker->get_pick_color_normalized().components[idx] * 255;
 }
 
 Color ColorModeRGB::get_color() const {
 	Vector<float> values = color_picker->get_active_slider_values();
 	Color color;
-	for (int i = 0; i < 4; i++) {
+	for (int i = 0; i < 3; i++) {
 		color.components[i] = values[i] / 255.0;
 	}
 	return color;
@@ -66,26 +66,17 @@ void ColorModeRGB::slider_draw(int p_which) {
 	Size2 size = slider->get_size();
 	Color left_color;
 	Color right_color;
-	Color color = color_picker->get_pick_color();
+	Color color = color_picker->get_pick_color_normalized();
 	const real_t margin = 16 * color_picker->theme_cache.base_scale;
 
-	if (p_which == ColorPicker::SLIDER_COUNT) {
-		slider->draw_texture_rect(color_picker->theme_cache.sample_bg, Rect2(Point2(0, 0), Size2(size.x, margin)), true);
-
-		left_color = color;
-		left_color.a = 0;
-		right_color = color;
-		right_color.a = 1;
-	} else {
-		left_color = Color(
-				p_which == 0 ? 0 : color.r,
-				p_which == 1 ? 0 : color.g,
-				p_which == 2 ? 0 : color.b);
-		right_color = Color(
-				p_which == 0 ? 1 : color.r,
-				p_which == 1 ? 1 : color.g,
-				p_which == 2 ? 1 : color.b);
-	}
+	left_color = Color(
+			p_which == 0 ? 0 : color.r,
+			p_which == 1 ? 0 : color.g,
+			p_which == 2 ? 0 : color.b);
+	right_color = Color(
+			p_which == 0 ? 1 : color.r,
+			p_which == 1 ? 1 : color.g,
+			p_which == 2 ? 1 : color.b);
 
 	col.set(0, left_color);
 	col.set(1, right_color);
@@ -111,35 +102,33 @@ void ColorModeHSV::_value_changed() {
 }
 
 String ColorModeHSV::get_slider_label(int idx) const {
-	ERR_FAIL_INDEX_V_MSG(idx, 3, String(), "Couldn't get slider label.");
+	ERR_FAIL_INDEX_V_MSG(idx, get_slider_count(), String(), "Couldn't get slider label.");
 	return labels[idx];
 }
 
 float ColorModeHSV::get_slider_max(int idx) const {
-	ERR_FAIL_INDEX_V_MSG(idx, 4, 0, "Couldn't get slider max value.");
+	ERR_FAIL_INDEX_V_MSG(idx, get_slider_count(), 0, "Couldn't get slider max value.");
 	return slider_max[idx];
 }
 
 float ColorModeHSV::get_slider_value(int idx) const {
 	switch (idx) {
 		case 0: {
-			if (color_picker->get_pick_color().get_s() > 0) {
-				return color_picker->get_pick_color().get_h() * 360.0;
+			if (color_picker->get_pick_color_normalized().get_s() > 0) {
+				return color_picker->get_pick_color_normalized().get_h() * 360.0;
 			} else {
 				return cached_hue;
 			}
 		}
 		case 1: {
-			if (color_picker->get_pick_color().get_v() > 0) {
-				return color_picker->get_pick_color().get_s() * 100.0;
+			if (color_picker->get_pick_color_normalized().get_v() > 0) {
+				return color_picker->get_pick_color_normalized().get_s() * 100.0;
 			} else {
 				return cached_saturation;
 			}
 		}
 		case 2:
-			return color_picker->get_pick_color().get_v() * 100.0;
-		case 3:
-			return Math::round(color_picker->get_pick_color().components[3] * 255.0);
+			return color_picker->get_pick_color_normalized().get_v() * 100.0;
 		default:
 			ERR_FAIL_V_MSG(0, "Couldn't get slider value.");
 	}
@@ -148,7 +137,7 @@ float ColorModeHSV::get_slider_value(int idx) const {
 Color ColorModeHSV::get_color() const {
 	Vector<float> values = color_picker->get_active_slider_values();
 	Color color;
-	color.set_hsv(values[0] / 360.0, values[1] / 100.0, values[2] / 100.0, values[3] / 255.0);
+	color.set_hsv(values[0] / 360.0, values[1] / 100.0, values[2] / 100.0);
 	return color;
 }
 
@@ -161,17 +150,10 @@ void ColorModeHSV::slider_draw(int p_which) {
 	Size2 size = slider->get_size();
 	Color left_color;
 	Color right_color;
-	Color color = color_picker->get_pick_color();
+	Color color = color_picker->get_pick_color_normalized();
 	const real_t margin = 16 * color_picker->theme_cache.base_scale;
 
-	if (p_which == ColorPicker::SLIDER_COUNT) {
-		slider->draw_texture_rect(color_picker->theme_cache.sample_bg, Rect2(Point2(0, 0), Size2(size.x, margin)), true);
-
-		left_color = color;
-		left_color.a = 0;
-		right_color = color;
-		right_color.a = 1;
-	} else if (p_which == 0) {
+	if (p_which == 0) {
 		float v = color.get_v();
 		left_color = Color(v, v, v);
 		right_color = left_color;
@@ -204,41 +186,27 @@ void ColorModeHSV::slider_draw(int p_which) {
 }
 
 String ColorModeHDR::get_slider_label(int idx) const {
-	ERR_FAIL_INDEX_V_MSG(idx, 4, String(), "Couldn't get slider label.");
+	ERR_FAIL_INDEX_V_MSG(idx, get_slider_count(), String(), "Couldn't get slider label.");
 	return labels[idx];
 }
 
 float ColorModeHDR::get_slider_max(int idx) const {
-	ERR_FAIL_INDEX_V_MSG(idx, 5, 0, "Couldn't get slider max value.");
+	ERR_FAIL_INDEX_V_MSG(idx, get_slider_count(), 0, "Couldn't get slider max value.");
 	return slider_max[idx];
 }
 
-float ColorModeHDR::get_slider_min(int idx) const {
-	ERR_FAIL_INDEX_V_MSG(idx, 5, 0, "Couldn't get slider min value.");
-	return idx == 3 ? -intensity_max : 0;
-}
-
 float ColorModeHDR::get_slider_value(int idx) const {
-	ERR_FAIL_INDEX_V_MSG(idx, 5, 0, "Couldn't get slider value.");
-	Color color = color_picker->get_pick_color().srgb_to_linear();
-	float multiplier = MAX(1, MAX(MAX(color.r, color.g), color.b));
-	if (idx == 3) {
-		return Math::log2(multiplier);
-	} else if (idx == 4) {
-		return color.a;
-	} else {
-		return color.components[idx] / multiplier;
-	}
+	ERR_FAIL_INDEX_V_MSG(idx, get_slider_count(), 0, "Couldn't get slider value.");
+	Color color = color_picker->get_pick_color_normalized().srgb_to_linear();
+	return color.components[idx];
 }
 
 Color ColorModeHDR::get_color() const {
 	Vector<float> values = color_picker->get_active_slider_values();
 	Color color;
-	float multiplier = Math::pow(2, values[3]);
 	for (int i = 0; i < 3; i++) {
-		color.components[i] = values[i] * multiplier;
+		color.components[i] = values[i];
 	}
-	color.a = values[4];
 	return color.linear_to_srgb();
 }
 
@@ -290,6 +258,8 @@ void ColorModeHDR::slider_draw(int p_which) {
 		}
 		gradient_texture = rgb_texture[p_which];
 	}
+	gradient_texture = rgb_texture[p_which];
+
 	if (gradient_texture.is_valid()) {
 		Ref<Gradient> gradient = gradient_texture->get_gradient();
 		if (gradient.is_null()) {
@@ -326,35 +296,33 @@ void ColorModeOKHSL::_value_changed() {
 }
 
 String ColorModeOKHSL::get_slider_label(int idx) const {
-	ERR_FAIL_INDEX_V_MSG(idx, 3, String(), "Couldn't get slider label.");
+	ERR_FAIL_INDEX_V_MSG(idx, get_slider_count(), String(), "Couldn't get slider label.");
 	return labels[idx];
 }
 
 float ColorModeOKHSL::get_slider_max(int idx) const {
-	ERR_FAIL_INDEX_V_MSG(idx, 4, 0, "Couldn't get slider max value.");
+	ERR_FAIL_INDEX_V_MSG(idx, get_slider_count(), 0, "Couldn't get slider max value.");
 	return slider_max[idx];
 }
 
 float ColorModeOKHSL::get_slider_value(int idx) const {
 	switch (idx) {
 		case 0: {
-			if (color_picker->get_pick_color().get_ok_hsl_s() > 0) {
-				return color_picker->get_pick_color().get_ok_hsl_h() * 360.0;
+			if (color_picker->get_pick_color_normalized().get_ok_hsl_s() > 0) {
+				return color_picker->get_pick_color_normalized().get_ok_hsl_h() * 360.0;
 			} else {
 				return cached_hue;
 			}
 		}
 		case 1: {
-			if (color_picker->get_pick_color().get_ok_hsl_l() > 0) {
-				return color_picker->get_pick_color().get_ok_hsl_s() * 100.0;
+			if (color_picker->get_pick_color_normalized().get_ok_hsl_l() > 0) {
+				return color_picker->get_pick_color_normalized().get_ok_hsl_s() * 100.0;
 			} else {
 				return cached_saturation;
 			}
 		}
 		case 2:
-			return color_picker->get_pick_color().get_ok_hsl_l() * 100.0;
-		case 3:
-			return Math::round(color_picker->get_pick_color().components[3] * 255.0);
+			return color_picker->get_pick_color_normalized().get_ok_hsl_l() * 100.0;
 		default:
 			ERR_FAIL_V_MSG(0, "Couldn't get slider value.");
 	}
@@ -363,7 +331,7 @@ float ColorModeOKHSL::get_slider_value(int idx) const {
 Color ColorModeOKHSL::get_color() const {
 	Vector<float> values = color_picker->get_active_slider_values();
 	Color color;
-	color.set_ok_hsl(values[0] / 360.0, values[1] / 100.0, values[2] / 100.0, values[3] / 255.0);
+	color.set_ok_hsl(values[0] / 360.0, values[1] / 100.0, values[2] / 100.0);
 	return color;
 }
 
@@ -376,7 +344,7 @@ void ColorModeOKHSL::slider_draw(int p_which) {
 	Vector<Color> col;
 	Color left_color;
 	Color right_color;
-	Color color = color_picker->get_pick_color();
+	Color color = color_picker->get_pick_color_normalized();
 
 	if (p_which == 2) { // L
 		pos.resize(6);
@@ -405,14 +373,7 @@ void ColorModeOKHSL::slider_draw(int p_which) {
 		pos.resize(4);
 		col.resize(4);
 
-		if (p_which == ColorPicker::SLIDER_COUNT) {
-			slider->draw_texture_rect(color_picker->theme_cache.sample_bg, Rect2(Point2(0, 0), Size2(size.x, margin)), true);
-
-			left_color = color;
-			left_color.a = 0;
-			right_color = color;
-			right_color.a = 1;
-		} else if (p_which == 0) {
+		if (p_which == 0) {
 			float l = color.get_ok_hsl_l();
 			left_color = Color(l, l, l);
 			right_color = left_color;
