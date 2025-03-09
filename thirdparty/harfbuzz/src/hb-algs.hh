@@ -286,7 +286,7 @@ HB_FUNCOBJ (hb_bool);
 
 // Compression function for Merkle-Damgard construction.
 // This function is generated using the framework provided.
-#define mix(h) (					\
+#define fasthash_mix(h) (					\
 			(void) ((h) ^= (h) >> 23),		\
 			(void) ((h) *= 0x2127599bf4325c37ULL),	\
 			(h) ^= (h) >> 47)
@@ -310,7 +310,7 @@ static inline uint64_t fasthash64(const void *buf, size_t len, uint64_t seed)
 #pragma GCC diagnostic ignored "-Wcast-align"
 	    v  = * (const uint64_t *) (pos++);
 #pragma GCC diagnostic pop
-	    h ^= mix(v);
+	    h ^= fasthash_mix(v);
 	    h *= m;
 	  }
 	}
@@ -320,7 +320,7 @@ static inline uint64_t fasthash64(const void *buf, size_t len, uint64_t seed)
 	  while (pos != end)
 	  {
 	    v  = pos++->v;
-	    h ^= mix(v);
+	    h ^= fasthash_mix(v);
 	    h *= m;
 	  }
 	}
@@ -336,11 +336,11 @@ static inline uint64_t fasthash64(const void *buf, size_t len, uint64_t seed)
 	case 3: v ^= (uint64_t)pos2[2] << 16; HB_FALLTHROUGH;
 	case 2: v ^= (uint64_t)pos2[1] <<  8; HB_FALLTHROUGH;
 	case 1: v ^= (uint64_t)pos2[0];
-		h ^= mix(v);
+		h ^= fasthash_mix(v);
 		h *= m;
 	}
 
-	return mix(h);
+	return fasthash_mix(h);
 }
 
 static inline uint32_t fasthash32(const void *buf, size_t len, uint32_t seed)
