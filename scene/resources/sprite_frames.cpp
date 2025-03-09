@@ -100,6 +100,8 @@ void SpriteFrames::add_animation(const StringName &p_anim) {
 	ERR_FAIL_COND_MSG(animations.has(p_anim), "SpriteFrames already has animation '" + p_anim + "'.");
 
 	animations[p_anim] = Anim();
+
+	emit_changed();
 }
 
 bool SpriteFrames::has_animation(const StringName &p_anim) const {
@@ -110,10 +112,14 @@ void SpriteFrames::duplicate_animation(const StringName &p_from, const StringNam
 	ERR_FAIL_COND_MSG(!animations.has(p_from), vformat("SpriteFrames doesn't have animation '%s'.", p_from));
 	ERR_FAIL_COND_MSG(animations.has(p_to), vformat("Animation '%s' already exists.", p_to));
 	animations[p_to] = animations[p_from];
+
+	emit_changed();
 }
 
 void SpriteFrames::remove_animation(const StringName &p_anim) {
 	animations.erase(p_anim);
+
+	emit_changed();
 }
 
 void SpriteFrames::rename_animation(const StringName &p_prev, const StringName &p_next) {
@@ -123,6 +129,8 @@ void SpriteFrames::rename_animation(const StringName &p_prev, const StringName &
 	Anim anim = animations[p_prev];
 	animations.erase(p_prev);
 	animations[p_next] = anim;
+
+	emit_changed();
 }
 
 void SpriteFrames::get_animation_list(List<StringName> *r_animations) const {
@@ -145,6 +153,8 @@ void SpriteFrames::set_animation_speed(const StringName &p_anim, double p_fps) {
 	HashMap<StringName, Anim>::Iterator E = animations.find(p_anim);
 	ERR_FAIL_COND_MSG(!E, "Animation '" + String(p_anim) + "' doesn't exist.");
 	E->value.speed = p_fps;
+
+	emit_changed();
 }
 
 double SpriteFrames::get_animation_speed(const StringName &p_anim) const {
@@ -157,6 +167,8 @@ void SpriteFrames::set_animation_loop(const StringName &p_anim, bool p_loop) {
 	HashMap<StringName, Anim>::Iterator E = animations.find(p_anim);
 	ERR_FAIL_COND_MSG(!E, "Animation '" + String(p_anim) + "' doesn't exist.");
 	E->value.loop = p_loop;
+
+	emit_changed();
 }
 
 bool SpriteFrames::get_animation_loop(const StringName &p_anim) const {
