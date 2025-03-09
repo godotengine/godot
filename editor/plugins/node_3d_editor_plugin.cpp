@@ -3001,6 +3001,9 @@ void Node3DEditorViewport::_notification(int p_what) {
 				}
 
 				Transform3D t = sp->get_global_gizmo_transform();
+				if (!t.is_finite()) {
+					continue;
+				}
 				AABB new_aabb = _calculate_spatial_bounds(sp);
 
 				exist = true;
@@ -4349,29 +4352,34 @@ void Node3DEditorViewport::focus_selection() {
 
 	const List<Node *> &selection = editor_selection->get_selected_node_list();
 
-	for (Node *E : selection) {
-		Node3D *sp = Object::cast_to<Node3D>(E);
-		if (!sp) {
+	for (Node *node : selection) {
+		Node3D *node_3d = Object::cast_to<Node3D>(node);
+		if (!node_3d) {
 			continue;
 		}
 
-		Node3DEditorSelectedItem *se = editor_selection->get_node_editor_data<Node3DEditorSelectedItem>(sp);
+		Node3DEditorSelectedItem *se = editor_selection->get_node_editor_data<Node3DEditorSelectedItem>(node_3d);
 		if (!se) {
 			continue;
 		}
 
 		if (se->gizmo.is_valid()) {
 			for (const KeyValue<int, Transform3D> &GE : se->subgizmos) {
-				center += se->gizmo->get_subgizmo_transform(GE.key).origin;
-				count++;
+				const Vector3 pos = se->gizmo->get_subgizmo_transform(GE.key).origin;
+				if (pos.is_finite()) {
+					center += pos;
+					count++;
+				}
 			}
 		}
-
-		center += sp->get_global_gizmo_transform().origin;
-		count++;
+		const Vector3 pos = node_3d->get_global_gizmo_transform().origin;
+		if (pos.is_finite()) {
+			center += pos;
+			count++;
+		}
 	}
 
-	if (count != 0) {
+	if (count > 1) {
 		center /= count;
 	}
 
@@ -4481,20 +4489,23 @@ Vector3 Node3DEditorViewport::_get_instance_position(const Point2 &p_pos, Node3D
 }
 
 AABB Node3DEditorViewport::_calculate_spatial_bounds(const Node3D *p_parent, bool p_omit_top_level, const Transform3D *p_bounds_orientation) {
-	AABB bounds;
-
-	Transform3D bounds_orientation;
-	if (p_bounds_orientation) {
-		bounds_orientation = *p_bounds_orientation;
-	} else {
-		bounds_orientation = p_parent->get_global_transform();
-	}
-
 	if (!p_parent) {
 		return AABB(Vector3(-0.2, -0.2, -0.2), Vector3(0.4, 0.4, 0.4));
 	}
+	const Transform3D parent_transform = p_parent->get_global_transform();
+	if (!parent_transform.is_finite()) {
+		return AABB();
+	}
+	AABB bounds;
 
-	const Transform3D xform_to_top_level_parent_space = bounds_orientation.affine_inverse() * p_parent->get_global_transform();
+	Transform3D bounds_orientation;
+	Transform3D xform_to_top_level_parent_space;
+	if (p_bounds_orientation) {
+		bounds_orientation = *p_bounds_orientation;
+		xform_to_top_level_parent_space = bounds_orientation.affine_inverse() * parent_transform;
+	} else {
+		bounds_orientation = parent_transform;
+	}
 
 	const VisualInstance3D *visual_instance = Object::cast_to<VisualInstance3D>(p_parent);
 	if (visual_instance) {
@@ -6276,6 +6287,9 @@ void Node3DEditor::update_transform_gizmo() {
 	if (se && se->gizmo.is_valid()) {
 		for (const KeyValue<int, Transform3D> &E : se->subgizmos) {
 			Transform3D xf = se->sp->get_global_transform() * se->gizmo->get_subgizmo_transform(E.key);
+			if (!xf.is_finite()) {
+				continue;
+			}
 			gizmo_center += xf.origin;
 			if ((unsigned int)count == se->subgizmos.size() - 1 && local_gizmo_coords) {
 				gizmo_basis = xf.basis;
@@ -6300,6 +6314,9 @@ void Node3DEditor::update_transform_gizmo() {
 			}
 
 			Transform3D xf = sel_item->sp->get_global_transform();
+			if (!xf.is_finite()) {
+				continue;
+			}
 			gizmo_center += xf.origin;
 			if (count == selection.size() - 1 && local_gizmo_coords) {
 				gizmo_basis = xf.basis;
