@@ -234,6 +234,7 @@ private:
 	bool import_dock_needs_update = false;
 	TreeItem *resources_item = nullptr;
 	TreeItem *favorites_item = nullptr;
+	Control *had_focus = nullptr;
 
 	bool holding_branch = false;
 	Vector<TreeItem *> tree_items_selected_on_drag_begin;
