@@ -612,16 +612,17 @@ Error RenderingDevice::driver_callback_add(RDD::DriverCallback p_callback, void 
 }
 
 String RenderingDevice::get_perf_report() const {
+	String perf_report_text;
+	perf_report_text += " gpu:" + String::num_int64(prev_gpu_copy_count);
+	perf_report_text += " bytes:" + String::num_int64(prev_copy_bytes_count);
+
+	perf_report_text += " lazily alloc:" + String::num_int64(driver->get_lazily_memory_used());
 	return perf_report_text;
 }
 
 void RenderingDevice::update_perf_report() {
-	perf_report_text = "";
-	perf_report_text += " gpu:" + String::num_int64(gpu_copy_count);
-	perf_report_text += " bytes:" + String::num_int64(copy_bytes_count);
-
-	perf_report_text += " lazily alloc:" + String::num_int64(driver->get_lazily_memory_used());
-
+	prev_gpu_copy_count = gpu_copy_count;
+	prev_copy_bytes_count = copy_bytes_count;
 	gpu_copy_count = 0;
 	copy_bytes_count = 0;
 }

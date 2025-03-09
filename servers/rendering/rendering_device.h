@@ -202,7 +202,8 @@ private:
 	bool split_swapchain_into_its_own_cmd_buffer = true;
 	uint32_t gpu_copy_count = 0;
 	uint32_t copy_bytes_count = 0;
-	String perf_report_text;
+	uint32_t prev_gpu_copy_count = 0;
+	uint32_t prev_copy_bytes_count = 0;
 
 	RID_Owner<Buffer, true> uniform_buffer_owner;
 	RID_Owner<Buffer, true> storage_buffer_owner;
