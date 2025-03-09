@@ -312,13 +312,13 @@ void ShaderCreateDialog::_type_changed(int p_language) {
 	if (shader_type_data.use_templates) {
 		int last_template = EditorSettings::get_singleton()->get_project_metadata("shader_setup", "last_selected_template", 0);
 
-		template_menu->add_item(TTR("Default"));
-		template_menu->add_item(TTR("Empty"));
+		template_menu->add_item(TTRC("Default"));
+		template_menu->add_item(TTRC("Empty"));
 
 		template_menu->select(last_template);
 		current_template = last_template;
 	} else {
-		template_menu->add_item(TTR("N/A"));
+		template_menu->add_item(TTRC("N/A"));
 	}
 
 	EditorSettings::get_singleton()->set_project_metadata("shader_setup", "last_selected_language", type_menu->get_item_text(type_menu->get_selected()));
@@ -572,6 +572,7 @@ ShaderCreateDialog::ShaderCreateDialog() {
 	// Type.
 
 	type_menu = memnew(OptionButton);
+	type_menu->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	type_menu->set_custom_minimum_size(Size2(250, 0) * EDSCALE);
 	type_menu->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	gc->add_child(memnew(Label(TTR("Type:"))));
@@ -612,6 +613,7 @@ ShaderCreateDialog::ShaderCreateDialog() {
 	// Modes.
 
 	mode_menu = memnew(OptionButton);
+	mode_menu->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	for (const String &type_name : ShaderTypes::get_singleton()->get_types_list()) {
 		mode_menu->add_item(type_name.capitalize());
 	}
