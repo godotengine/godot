@@ -228,10 +228,42 @@ inline void set_inner_corner_radius(const Rect2 style_rect, const Rect2 inner_re
 	real_t border_right = style_rect.size.width - inner_rect.size.width - border_left;
 	real_t border_bottom = style_rect.size.height - inner_rect.size.height - border_top;
 
-	inner_corner_radius[0] = MAX(corner_radius[0] - MIN(border_top, border_left), 0); // Top left.
-	inner_corner_radius[1] = MAX(corner_radius[1] - MIN(border_top, border_right), 0); // Top right.
-	inner_corner_radius[2] = MAX(corner_radius[2] - MIN(border_bottom, border_right), 0); // Bottom right.
-	inner_corner_radius[3] = MAX(corner_radius[3] - MIN(border_bottom, border_left), 0); // Bottom left.
+	real_t edge_overflow[4] = {
+		-MIN(0, inner_rect.size.y - corner_radius[CORNER_TOP_LEFT] - corner_radius[CORNER_BOTTOM_LEFT]),
+		-MIN(0, inner_rect.size.x - corner_radius[CORNER_TOP_LEFT] - corner_radius[CORNER_TOP_RIGHT]),
+		-MIN(0, inner_rect.size.y - corner_radius[CORNER_TOP_RIGHT] - corner_radius[CORNER_BOTTOM_RIGHT]),
+		-MIN(0, inner_rect.size.x - corner_radius[CORNER_BOTTOM_LEFT] - corner_radius[CORNER_BOTTOM_RIGHT])
+	};
+
+	real_t hb_sum = border_left + border_right;
+	real_t vb_sum = border_top + border_bottom;
+
+	// Prevent divide by 0 errors.
+	real_t ratios[4] = {
+		hb_sum > 0 ? (border_left / hb_sum) : 0,
+		vb_sum > 0 ? (border_top / vb_sum) : 0,
+		hb_sum > 0 ? (border_right / hb_sum) : 0,
+		vb_sum > 0 ? (border_bottom / vb_sum) : 0
+	};
+
+	real_t corner_reduction[4] = {
+		MAX(edge_overflow[SIDE_LEFT] * ratios[SIDE_TOP], edge_overflow[SIDE_TOP] * ratios[SIDE_LEFT]),
+		MAX(edge_overflow[SIDE_TOP] * ratios[SIDE_RIGHT], edge_overflow[SIDE_RIGHT] * ratios[SIDE_TOP]),
+		MAX(edge_overflow[SIDE_RIGHT] * ratios[SIDE_BOTTOM], edge_overflow[SIDE_BOTTOM] * ratios[SIDE_RIGHT]),
+		MAX(edge_overflow[SIDE_BOTTOM] * ratios[SIDE_LEFT], edge_overflow[SIDE_LEFT] * ratios[SIDE_BOTTOM]),
+	};
+
+	real_t remainder[4] = {
+		-MIN(0, corner_radius[0] - corner_reduction[0]),
+		-MIN(0, corner_radius[1] - corner_reduction[1]),
+		-MIN(0, corner_radius[2] - corner_reduction[2]),
+		-MIN(0, corner_radius[3] - corner_reduction[3])
+	};
+
+	inner_corner_radius[0] = MAX(0, corner_radius[0] - corner_reduction[0] - remainder[3] - remainder[1]); // Top left.
+	inner_corner_radius[1] = MAX(0, corner_radius[1] - corner_reduction[1] - remainder[0] - remainder[2]); // Top right.
+	inner_corner_radius[2] = MAX(0, corner_radius[2] - corner_reduction[2] - remainder[1] - remainder[3]); // Bottom right.
+	inner_corner_radius[3] = MAX(0, corner_radius[3] - corner_reduction[3] - remainder[2] - remainder[0]); // Bottom left.
 }
 
 inline void draw_rounded_rectangle(Vector<Vector2> &verts, Vector<int> &indices, Vector<Color> &colors, const Rect2 &style_rect, const real_t corner_radius[4],
