@@ -214,6 +214,11 @@ bool DisplayServerWayland::has_feature(Feature p_feature) const {
 			return true;
 		} break;
 
+		case FEATURE_HDR: {
+			// If the compositor doesn't implement color-management-v1 don't attempt to use HDR
+			return wayland_thread.supports_hdr();
+		} break;
+
 		//case FEATURE_NATIVE_DIALOG:
 		//case FEATURE_NATIVE_DIALOG_INPUT:
 #ifdef DBUS_ENABLED
@@ -643,6 +648,40 @@ bool DisplayServerWayland::screen_is_kept_on() const {
 #endif
 }
 
+bool DisplayServerWayland::screen_is_hdr_supported(int p_screen) const {
+	// If the compositor supports HDR then assume it can transform HDR for all screens
+	return wayland_thread.supports_hdr();
+}
+
+float DisplayServerWayland::screen_get_min_luminance(int p_screen) const {
+	MutexLock mutex_lock(wayland_thread.mutex);
+
+	WaylandThread::WindowState *window = wayland_thread.window_get_window_state(MAIN_WINDOW_ID);
+	//min_lum is multiplied by 10000 before being converted to a uint32 by wayland
+	return static_cast<float>(window->preferred_profile.min_luminance) / 10000;
+}
+
+float DisplayServerWayland::screen_get_max_luminance(int p_screen) const {
+	MutexLock mutex_lock(wayland_thread.mutex);
+
+	WaylandThread::WindowState *window = wayland_thread.window_get_window_state(MAIN_WINDOW_ID);
+	return static_cast<float>(window->preferred_profile.max_luminance);
+}
+
+float DisplayServerWayland::screen_get_max_average_luminance(int p_screen) const {
+	MutexLock mutex_lock(wayland_thread.mutex);
+
+	WaylandThread::WindowState *window = wayland_thread.window_get_window_state(MAIN_WINDOW_ID);
+	return static_cast<float>(window->preferred_profile.target_max_fall);
+}
+
+float DisplayServerWayland::screen_get_sdr_white_level(int p_screen) const {
+	MutexLock mutex_lock(wayland_thread.mutex);
+
+	WaylandThread::WindowState *window = wayland_thread.window_get_window_state(MAIN_WINDOW_ID);
+	return static_cast<float>(window->preferred_profile.sdr_white);
+}
+
 Vector<DisplayServer::WindowID> DisplayServerWayland::get_window_list() const {
 	MutexLock mutex_lock(wayland_thread.mutex);
 
@@ -1040,6 +1079,138 @@ void DisplayServerWayland::window_start_resize(WindowResizeEdge p_edge, WindowID
 
 	ERR_FAIL_INDEX(int(p_edge), WINDOW_EDGE_MAX);
 	wayland_thread.window_start_resize(p_edge, p_window);
+}
+
+void DisplayServerWayland::window_set_hdr_output_enabled(const bool p_enabled, WindowID p_window) {
+#if defined(RD_ENABLED)
+	if (rendering_context) {
+		rendering_context->window_set_hdr_output_enabled(p_window, p_enabled);
+	}
+#endif
+}
+
+bool DisplayServerWayland::window_is_hdr_output_enabled(WindowID p_window) const {
+#if defined(RD_ENABLED)
+	if (rendering_context) {
+		return rendering_context->window_get_hdr_output_enabled(p_window);
+	}
+#endif
+	return false;
+}
+
+void DisplayServerWayland::window_set_hdr_output_prefer_high_precision(const bool p_enabled, WindowID p_window) {
+#if defined(RD_ENABLED)
+	if (rendering_context) {
+		return rendering_context->window_set_hdr_output_prefer_high_precision(p_window, p_enabled);
+	}
+#endif
+}
+
+bool DisplayServerWayland::window_is_hdr_output_preferring_high_precision(WindowID p_window) const {
+#if defined(RD_ENABLED)
+	if (rendering_context) {
+		return rendering_context->window_get_hdr_output_prefer_high_precision(p_window);
+	}
+#endif
+	return false;
+}
+
+void DisplayServerWayland::window_set_hdr_output_use_screen_luminance(const bool p_enabled, WindowID p_window) {
+	MutexLock mutex_lock(wayland_thread.mutex);
+
+	WaylandThread::WindowState *window = wayland_thread.window_get_window_state(p_window);
+	window->use_screen_profile = p_enabled;
+
+	//TODO: are max_cll and max_fall relevant here?
+#if defined(RD_ENABLED)
+	if (rendering_context) {
+		if (p_enabled) {
+			rendering_context->window_set_hdr_output_min_luminance(p_window, window->preferred_profile.min_luminance);
+			rendering_context->window_set_hdr_output_max_luminance(p_window, window->preferred_profile.max_luminance);
+			rendering_context->window_set_hdr_output_reference_luminance(p_window, window->preferred_profile.sdr_white);
+		} else {
+			rendering_context->window_set_hdr_output_min_luminance(p_window, window->current_profile.min_luminance);
+			rendering_context->window_set_hdr_output_max_luminance(p_window, window->current_profile.max_luminance);
+			rendering_context->window_set_hdr_output_reference_luminance(p_window, window->current_profile.sdr_white);
+		}
+	}
+#endif
+}
+
+bool DisplayServerWayland::window_is_hdr_output_using_screen_luminance(WindowID p_window) const {
+	MutexLock mutex_lock(wayland_thread.mutex);
+
+	WaylandThread::WindowState *window = wayland_thread.window_get_window_state(p_window);
+	return window->use_screen_profile;
+}
+
+void DisplayServerWayland::window_set_hdr_output_reference_luminance(const float p_reference_luminance, WindowID p_window) {
+	ERR_FAIL_COND_MSG(window_is_hdr_output_using_screen_luminance(p_window), "Cannot set luminance on a window using screen luminance");
+
+	MutexLock mutex_lock(wayland_thread.mutex);
+	WaylandThread::WindowState *window = wayland_thread.window_get_window_state(p_window);
+	window->current_profile.sdr_white = p_reference_luminance;
+
+#if defined(RD_ENABLED)
+	if (rendering_context) {
+		return rendering_context->window_set_hdr_output_reference_luminance(p_window, p_reference_luminance);
+	}
+#endif
+}
+
+float DisplayServerWayland::window_get_hdr_output_reference_luminance(WindowID p_window) const {
+#if defined(RD_ENABLED)
+	if (rendering_context) {
+		return rendering_context->window_get_hdr_output_reference_luminance(p_window);
+	}
+#endif
+	return 0.0f;
+}
+
+void DisplayServerWayland::window_set_hdr_output_min_luminance(const float p_min_luminance, WindowID p_window) {
+	ERR_FAIL_COND_MSG(window_is_hdr_output_using_screen_luminance(p_window), "Cannot set luminance on a window using screen luminance");
+
+	MutexLock mutex_lock(wayland_thread.mutex);
+	WaylandThread::WindowState *window = wayland_thread.window_get_window_state(p_window);
+	window->current_profile.min_luminance = p_min_luminance;
+
+#if defined(RD_ENABLED)
+	if (rendering_context) {
+		return rendering_context->window_set_hdr_output_min_luminance(p_window, p_min_luminance);
+	}
+#endif
+}
+
+float DisplayServerWayland::window_get_hdr_output_min_luminance(WindowID p_window) const {
+#if defined(RD_ENABLED)
+	if (rendering_context) {
+		return rendering_context->window_get_hdr_output_min_luminance(p_window);
+	}
+#endif
+	return 0.0f;
+}
+
+void DisplayServerWayland::window_set_hdr_output_max_luminance(const float p_max_luminance, WindowID p_window) {
+	ERR_FAIL_COND_MSG(window_is_hdr_output_using_screen_luminance(p_window), "Cannot set luminance on a window using screen luminance");
+
+	MutexLock mutex_lock(wayland_thread.mutex);
+	WaylandThread::WindowState *window = wayland_thread.window_get_window_state(p_window);
+	window->current_profile.max_luminance = p_max_luminance;
+
+#if defined(RD_ENABLED)
+	if (rendering_context) {
+		return rendering_context->window_set_hdr_output_max_luminance(p_window, p_max_luminance);
+	}
+#endif
+}
+
+float DisplayServerWayland::window_get_hdr_output_max_luminance(WindowID p_window) const {
+#if defined(RD_ENABLED)
+	if (rendering_context) {
+		return rendering_context->window_get_hdr_output_max_luminance(p_window);
+	}
+#endif
+	return 0.0f;
 }
 
 void DisplayServerWayland::cursor_set_shape(CursorShape p_shape) {
