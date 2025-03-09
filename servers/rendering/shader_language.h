@@ -164,6 +164,7 @@ public:
 		TK_ARG_OUT,
 		TK_ARG_INOUT,
 		TK_RENDER_MODE,
+		TK_BLEND_FACTORS,
 		TK_HINT_DEFAULT_WHITE_TEXTURE,
 		TK_HINT_DEFAULT_BLACK_TEXTURE,
 		TK_HINT_DEFAULT_TRANSPARENT_TEXTURE,
@@ -721,6 +722,7 @@ public:
 		HashMap<StringName, Struct> structs;
 		HashMap<StringName, Function> functions;
 		Vector<StringName> render_modes;
+		Vector<StringName> blend_factors;
 
 		Vector<Function> vfunctions;
 		Vector<Constant> vconstants;
@@ -797,6 +799,7 @@ public:
 		COMPLETION_NONE,
 		COMPLETION_SHADER_TYPE,
 		COMPLETION_RENDER_MODE,
+		COMPLETION_BLEND_FACTORS,
 		COMPLETION_MAIN_FUNCTION,
 		COMPLETION_IDENTIFIER,
 		COMPLETION_FUNCTION_CALL,
