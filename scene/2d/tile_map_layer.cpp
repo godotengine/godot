@@ -156,6 +156,11 @@ void TileMapLayer::_debug_update(bool p_force_cleanup) {
 	_debug_was_cleaned_up = false;
 }
 
+void TileMapLayer::_debug_full_update() {
+	_debug_update(true);
+	_debug_update(false);
+}
+
 void TileMapLayer::_debug_quadrants_update_cell(CellData &r_cell_data, SelfList<DebugQuadrant>::List &r_dirty_debug_quadrant_list) {
 	Vector2i quadrant_coords = _coords_to_debug_quadrant_coords(r_cell_data.coords);
 
@@ -3178,6 +3183,10 @@ void TileMapLayer::navmesh_parse_source_geometry(const Ref<NavigationPolygon> &p
 
 TileMapLayer::TileMapLayer() {
 	set_notify_transform(true);
+
+#ifdef DEBUG_ENABLED
+	PhysicsServer2D::get_singleton()->connect("_debug_options_changed", callable_mp(this, &TileMapLayer::_debug_full_update));
+#endif
 }
 
 TileMapLayer::~TileMapLayer() {
