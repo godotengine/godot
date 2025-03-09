@@ -194,6 +194,7 @@ AnimationNodeStateMachineTransition::AnimationNodeStateMachineTransition() {
 
 void AnimationNodeStateMachinePlayback::_set_current(AnimationNodeStateMachine *p_state_machine, const StringName &p_state) {
 	current = p_state;
+
 	if (current == StringName()) {
 		group_start_transition = Ref<AnimationNodeStateMachineTransition>();
 		group_end_transition = Ref<AnimationNodeStateMachineTransition>();
@@ -361,7 +362,7 @@ void AnimationNodeStateMachinePlayback::_clear_path_children(AnimationTree *p_tr
 			playback->path.clear();
 			playback->_clear_path_children(p_tree, anodesm.ptr(), p_test_only);
 			if (current != child_node.name) {
-				playback->_start(anodesm.ptr()); // Can restart.
+				playback->_start(anodesm.ptr(), p_test_only); // Can restart.
 			}
 		}
 	}
@@ -421,7 +422,7 @@ bool AnimationNodeStateMachinePlayback::_travel_children(AnimationTree *p_tree, 
 				playback = playback->duplicate();
 			}
 			if (!playback->is_playing()) {
-				playback->_start(anodesm.ptr());
+				playback->_start(anodesm.ptr(), p_test_only);
 			}
 			ChildStateMachineInfo child_info;
 			child_info.playback = playback;
@@ -448,7 +449,7 @@ bool AnimationNodeStateMachinePlayback::_travel_children(AnimationTree *p_tree, 
 					child_path += "/" + child_playback->get_current_node();
 				}
 				// Force restart target state machine.
-				playback->_start(anodesm.ptr());
+				playback->_start(anodesm.ptr(), p_test_only);
 			}
 			is_parent_same_state = is_current_same_state;
 
@@ -484,12 +485,16 @@ bool AnimationNodeStateMachinePlayback::_travel_children(AnimationTree *p_tree, 
 	return found_route;
 }
 
-void AnimationNodeStateMachinePlayback::_start(AnimationNodeStateMachine *p_state_machine) {
+void AnimationNodeStateMachinePlayback::_start(AnimationNodeStateMachine *p_state_machine, bool p_test_only) {
 	playing = true;
 	_set_current(p_state_machine, start_request != StringName() ? start_request : SceneStringName(Start));
 	teleport_request = true;
 	stop_request = false;
 	start_request = StringName();
+	// Only emit the started signal if currently configured for playback
+	if (!p_test_only && p_state_machine->process_state) {
+		p_state_machine->_animation_tree_notify(AnimationNodeStateMachine::ANIMATION_NODE_NOTIFICATION_STATE_MACHINE_STARTED);
+	}
 }
 
 bool AnimationNodeStateMachinePlayback::_travel(AnimationTree *p_tree, AnimationNodeStateMachine *p_state_machine, bool p_is_allow_transition_to_self, bool p_test_only) {
@@ -519,7 +524,7 @@ bool AnimationNodeStateMachinePlayback::_make_travel_path(AnimationTree *p_tree,
 	travel_request = StringName();
 
 	if (!playing) {
-		_start(p_state_machine);
+		_start(p_state_machine, p_test_only);
 	}
 
 	ERR_FAIL_COND_V(!p_state_machine->states.has(travel), false);
@@ -651,7 +656,7 @@ bool AnimationNodeStateMachinePlayback::_make_travel_path(AnimationTree *p_tree,
 					playback = playback->duplicate();
 				}
 				if (i > 0) {
-					playback->_start(anodesm.ptr());
+					playback->_start(anodesm.ptr(), p_test_only);
 				}
 				if (i >= new_path.size()) {
 					break; // Tracing has been finished, needs to break.
@@ -705,7 +710,8 @@ AnimationNode::NodeTimeInfo AnimationNodeStateMachinePlayback::_process(const St
 				path.clear();
 				_clear_path_children(tree, p_state_machine, p_test_only);
 			}
-			_start(p_state_machine);
+			playing = false;
+			_start(p_state_machine, p_test_only);
 			reset_request = true;
 		} else {
 			// Reset current state.
@@ -718,7 +724,7 @@ AnimationNode::NodeTimeInfo AnimationNodeStateMachinePlayback::_process(const St
 		start_request = StringName();
 		travel_request = StringName();
 		path.clear();
-		playing = false;
+		p_state_machine->_animation_tree_notify(AnimationNodeStateMachine::ANIMATION_NODE_NOTIFICATION_STATE_MACHINE_FINISHED);
 		return AnimationNode::NodeTimeInfo();
 	}
 
@@ -743,7 +749,7 @@ AnimationNode::NodeTimeInfo AnimationNodeStateMachinePlayback::_process(const St
 		}
 		// Teleport to start.
 		if (p_state_machine->states.has(start_request)) {
-			_start(p_state_machine);
+			_start(p_state_machine, p_test_only);
 		} else {
 			StringName node = start_request;
 			ERR_FAIL_V_MSG(AnimationNode::NodeTimeInfo(), "No such node: '" + node + "'");
@@ -883,7 +889,13 @@ AnimationNode::NodeTimeInfo AnimationNodeStateMachinePlayback::_process(const St
 	if (will_end || ((p_state_machine->get_state_machine_type() == AnimationNodeStateMachine::STATE_MACHINE_TYPE_NESTED) && !p_state_machine->has_transition_from(current))) {
 		// There is no next transition.
 		if (fading_from != StringName()) {
+			if (MAX(current_nti.get_remain(), fadeing_from_nti.get_remain()) <= 0) {
+				p_state_machine->_animation_tree_notify(AnimationNodeStateMachine::ANIMATION_NODE_NOTIFICATION_STATE_MACHINE_FINISHED);
+			}
 			return Animation::is_greater_approx(current_nti.get_remain(), fadeing_from_nti.get_remain()) ? current_nti : fadeing_from_nti;
+		}
+		if (current_nti.get_remain() <= 0) {
+			p_state_machine->_animation_tree_notify(AnimationNodeStateMachine::ANIMATION_NODE_NOTIFICATION_STATE_MACHINE_FINISHED);
 		}
 		return current_nti;
 	}
@@ -1828,6 +1840,9 @@ void AnimationNodeStateMachine::_bind_methods() {
 	BIND_ENUM_CONSTANT(STATE_MACHINE_TYPE_ROOT);
 	BIND_ENUM_CONSTANT(STATE_MACHINE_TYPE_NESTED);
 	BIND_ENUM_CONSTANT(STATE_MACHINE_TYPE_GROUPED);
+
+	BIND_CONSTANT(ANIMATION_NODE_NOTIFICATION_STATE_MACHINE_STARTED);
+	BIND_CONSTANT(ANIMATION_NODE_NOTIFICATION_STATE_MACHINE_FINISHED);
 }
 
 Vector<StringName> AnimationNodeStateMachine::get_nodes_with_transitions_from(const StringName &p_node) const {
