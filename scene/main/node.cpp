@@ -2736,6 +2736,18 @@ bool Node::get_scene_instance_load_placeholder() const {
 	return data.use_placeholder;
 }
 
+void Node::set_scene_editor_only(bool p_enable) {
+	if (p_enable) {
+		set_meta("_editor_only_", true);
+	} else {
+		remove_meta("_editor_only_");
+	}
+}
+
+bool Node::get_scene_editor_only() const {
+	return get_meta("_editor_only_", false);
+}
+
 Node *Node::_duplicate(int p_flags, HashMap<const Node *, Node *> *r_duplimap) const {
 	ERR_THREAD_GUARD_V(nullptr);
 	Node *node = nullptr;
@@ -3699,6 +3711,8 @@ void Node::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_scene_instance_load_placeholder", "load_placeholder"), &Node::set_scene_instance_load_placeholder);
 	ClassDB::bind_method(D_METHOD("get_scene_instance_load_placeholder"), &Node::get_scene_instance_load_placeholder);
+	ClassDB::bind_method(D_METHOD("set_scene_editor_only", "enable"), &Node::set_scene_editor_only);
+	ClassDB::bind_method(D_METHOD("get_scene_editor_only"), &Node::get_scene_editor_only);
 	ClassDB::bind_method(D_METHOD("set_editable_instance", "node", "is_editable"), &Node::set_editable_instance);
 	ClassDB::bind_method(D_METHOD("is_editable_instance", "node"), &Node::is_editable_instance);
 
