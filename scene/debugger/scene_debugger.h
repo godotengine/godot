@@ -241,20 +241,26 @@ private:
 	const double VIEW_3D_MAX_ZOOM = 1'000'000'000'000;
 #else
 	const float VIEW_3D_MAX_ZOOM = 10'000;
-#endif
-	const float CAMERA_ZNEAR = 0.05;
-	const float CAMERA_ZFAR = 4'000;
+#endif // REAL_T_IS_DOUBLE
 
-	const float CAMERA_BASE_FOV = 75;
 	const float CAMERA_MIN_FOV_SCALE = 0.1;
 	const float CAMERA_MAX_FOV_SCALE = 2.5;
 
-	const float FREELOOK_BASE_SPEED = 4;
-	const float RADS_PER_PIXEL = 0.004;
-
 	bool camera_first_override = true;
 	bool camera_freelook = false;
-	real_t freelook_speed = FREELOOK_BASE_SPEED;
+
+	real_t camera_fov = 0;
+	real_t camera_znear = 0;
+	real_t camera_zfar = 0;
+
+	bool invert_x_axis = false;
+	bool invert_y_axis = false;
+	bool warped_mouse_panning_3d = false;
+
+	real_t freelook_base_speed = 0;
+	real_t freelook_sensitivity = 0;
+	real_t orbit_sensitivity = 0;
+	real_t translation_sensitivity = 0;
 
 	Vector2 previous_mouse_position;
 
@@ -266,7 +272,7 @@ private:
 	RID sbox_3d_instance_xray_ofs;
 	Transform3D sbox_3d_xform;
 	AABB sbox_3d_bounds;
-#endif
+#endif // _3D_DISABLED
 
 	Point2 selection_position = Point2(INFINITY, INFINITY);
 	bool list_shortcut_pressed = false;
@@ -313,6 +319,7 @@ private:
 	void _cursor_look(Ref<InputEventWithModifiers> p_event);
 	void _cursor_pan(Ref<InputEventWithModifiers> p_event);
 	void _cursor_orbit(Ref<InputEventWithModifiers> p_event);
+	Point2 _get_warped_mouse_motion(const Ref<InputEventMouseMotion> &p_event, Rect2 p_border) const;
 	Transform3D _get_cursor_transform();
 	void _reset_camera_3d();
 #endif
