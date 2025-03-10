@@ -43,9 +43,28 @@ class Span {
 	uint64_t _len = 0;
 
 public:
+	static constexpr bool is_string = std::disjunction_v<
+		std::is_same<T, char>,
+		std::is_same<T, char16_t>,
+		std::is_same<T, char32_t>,
+		std::is_same<T, wchar_t>
+	>;
+
 	_FORCE_INLINE_ constexpr Span() = default;
 	_FORCE_INLINE_ constexpr Span(const T *p_ptr, uint64_t p_len) :
 			_ptr(p_ptr), _len(p_len) {}
+
+	// Allows creating Span directly from C arrays and string literals.
+	template <size_t N>
+	_FORCE_INLINE_ constexpr Span(const T (&p_array)[N]) :
+			_ptr(p_array), _len(N) {
+		if constexpr (is_string) {
+			// Cut off the \0 terminator implicitly added to string literals.
+			if (N > 0 && p_array[N - 1] == '\0') {
+				_len--;
+			}
+		}
+	}
 
 	_FORCE_INLINE_ constexpr uint64_t size() const { return _len; }
 	_FORCE_INLINE_ constexpr bool is_empty() const { return _len == 0; }
