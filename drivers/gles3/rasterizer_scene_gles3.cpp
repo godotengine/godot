@@ -1052,26 +1052,29 @@ Ref<Image> RasterizerSceneGLES3::sky_bake_panorama(RID p_sky, float p_energy, bo
 	glDeleteFramebuffers(1, &rad_fbo);
 	// Create a dummy texture so we can use texture_2d_get.
 	RID tex_rid = GLES3::TextureStorage::get_singleton()->texture_allocate();
-	GLES3::Texture texture;
-	texture.width = p_size.width;
-	texture.height = p_size.height;
-	texture.alloc_width = p_size.width;
-	texture.alloc_height = p_size.height;
-	texture.format = Image::FORMAT_RGBAF;
-	texture.real_format = Image::FORMAT_RGBAF;
-	texture.gl_format_cache = GL_RGBA;
-	texture.gl_type_cache = GL_FLOAT;
-	texture.type = GLES3::Texture::TYPE_2D;
-	texture.target = GL_TEXTURE_2D;
-	texture.active = true;
-	texture.tex_id = rad_tex;
-	texture.is_render_target = true;
+	{
+		GLES3::Texture texture;
+		texture.width = p_size.width;
+		texture.height = p_size.height;
+		texture.alloc_width = p_size.width;
+		texture.alloc_height = p_size.height;
+		texture.format = Image::FORMAT_RGBAF;
+		texture.real_format = Image::FORMAT_RGBAF;
+		texture.gl_format_cache = GL_RGBA;
+		texture.gl_type_cache = GL_FLOAT;
+		texture.type = GLES3::Texture::TYPE_2D;
+		texture.target = GL_TEXTURE_2D;
+		texture.active = true;
+		texture.tex_id = rad_tex;
+		texture.is_render_target = true; // HACK: Prevent TextureStorage from retaining a cached copy of the texture.
+		GLES3::TextureStorage::get_singleton()->texture_2d_initialize_from_texture(tex_rid, texture);
+	}
 
-	GLES3::TextureStorage::get_singleton()->texture_2d_initialize_from_texture(tex_rid, texture);
 	Ref<Image> img = GLES3::TextureStorage::get_singleton()->texture_2d_get(tex_rid);
 	GLES3::Utilities::get_singleton()->texture_free_data(rad_tex);
 
-	texture.is_render_target = false;
+	GLES3::Texture &texture = *GLES3::TextureStorage::get_singleton()->get_texture(tex_rid);
+	texture.is_render_target = false; // HACK: Avoid an error when freeing the texture.
 	texture.tex_id = 0;
 	GLES3::TextureStorage::get_singleton()->texture_free(tex_rid);
 
