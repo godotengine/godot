@@ -12,7 +12,7 @@ class A:
 	class B:
 		signal hello
 
-		func get_signal() -> Signal:
+		@virtual func get_signal() -> Signal:
 			return hello
 
 class C extends A.B:

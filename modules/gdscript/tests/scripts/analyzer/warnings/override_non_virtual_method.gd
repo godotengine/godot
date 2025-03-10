@@ -1,0 +1,19 @@
+class Parent:
+    func test():
+        pass
+
+class ParentSafe:
+    @virtual func test():
+        pass
+
+class Child extends Parent:
+    func test():
+        pass
+
+class ChildSafe extends ParentSafe:
+    func test():
+        pass
+
+
+func test():
+    pass

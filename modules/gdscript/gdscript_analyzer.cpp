@@ -1873,7 +1873,7 @@ void GDScriptAnalyzer::resolve_function_signature(GDScriptParser::FunctionNode *
 			if (base_type.class_type != nullptr && base_type.class_type->has_function(p_function->identifier->name)) {
 				GDScriptParser::FunctionNode *parent_func = base_type.class_type->get_member(p_function->identifier->name).function;
 				if (!parent_func->is_annotated_virtual) {
-					push_error(vformat(R"*(The function "%s()" is non-virtual and cannot be overridden.)*", p_function->identifier->name), p_function);
+					parser->push_warning(p_function, GDScriptWarning::OVERRIDE_NON_VIRTUAL_METHOD, function_name);
 				}
 			}
 
