@@ -30,6 +30,12 @@
 				To check if a [Thread] is joinable, use [method is_started].
 			</description>
 		</method>
+		<method name="is_main_thread" qualifiers="static">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the function is called from the main thread of the engine. This is the thread that runs game code by default.
+			</description>
+		</method>
 		<method name="is_started" qualifiers="const">
 			<return type="bool" />
 			<description>
@@ -58,6 +64,26 @@
 				If the method takes some arguments, you can pass them using [method Callable.bind].
 				The [param priority] of the [Thread] can be changed by passing a value from the [enum Priority] enum.
 				Returns [constant OK] on success, or [constant ERR_CANT_CREATE] on failure.
+			</description>
+		</method>
+		<method name="suspend" qualifiers="static">
+			<return type="Variant" />
+			<param index="0" name="resume_signal" type="Signal" />
+			<param index="1" name="connect_on_main_thread" type="bool" default="true" />
+			<description>
+				Suspend a thread until the signal provided in the [param resume_signal] argument is emitted. As connecting signals between threads is often discouraged (or blocked by thread guards), the [param connect_on_main_thread] is provided to perform the connection to the signal on the main thread.
+				Similarly to script 'await', if the signal provided is emitted with a single argument, then this function will return it. For multiple arguments, an array is returned.
+				As an additional note, if you intend to await on a script function instead of a signal, use the following syntax instead: [code] Thread.suspend( function().completed ) [/code].
+				This function will fail if called from the main thread.
+
+				Code example using this function with GDScript 'await'.
+				[codeblock lang=gdscript]
+				# Suspends a thread until a button is pressed.
+				if (Thread.is_main_thread()):
+				    await button.pressed
+				else:
+				    Thread.suspend( button.pressed )
+				[/codeblock]
 			</description>
 		</method>
 		<method name="wait_to_finish">
