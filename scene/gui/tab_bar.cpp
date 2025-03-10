@@ -98,6 +98,10 @@ Size2 TabBar::get_minimum_size() const {
 		if (ms.width - ofs > style->get_minimum_size().width) {
 			ms.width -= theme_cache.h_separation;
 		}
+
+		if (i < tabs.size() - 1) {
+			ms.width += theme_cache.tab_separation;
+		}
 	}
 
 	if (clip_tabs) {
@@ -430,9 +434,12 @@ void TabBar::_notification(int p_what) {
 			int limit_minus_buttons = size.width - theme_cache.increment_icon->get_width() - theme_cache.decrement_icon->get_width();
 
 			int ofs = tabs[offset].ofs_cache;
+			int tab_separation_offset = 0;
 
 			// Draw unselected tabs in the back.
 			for (int i = offset; i <= max_drawn_tab; i++) {
+				tab_separation_offset = (i - offset) * theme_cache.tab_separation;
+
 				if (tabs[i].hidden) {
 					continue;
 				}
@@ -452,7 +459,7 @@ void TabBar::_notification(int p_what) {
 						col = theme_cache.font_unselected_color;
 					}
 
-					_draw_tab(sb, col, i, rtl ? size.width - ofs - tabs[i].size_cache : ofs, false);
+					_draw_tab(sb, col, i, rtl ? (size.width - ofs - tab_separation_offset - tabs[i].size_cache) : (ofs + tab_separation_offset), false);
 				}
 
 				ofs += tabs[i].size_cache;
@@ -460,8 +467,13 @@ void TabBar::_notification(int p_what) {
 
 			// Draw selected tab in the front, but only if it's visible.
 			if (current >= offset && current <= max_drawn_tab && !tabs[current].hidden) {
+				tab_separation_offset = (current - offset) * theme_cache.tab_separation;
+				if (tab_alignment == ALIGNMENT_LEFT && (current - offset) > 1) {
+					tab_separation_offset = theme_cache.tab_separation;
+				}
+
 				Ref<StyleBox> sb = tabs[current].disabled ? theme_cache.tab_disabled_style : theme_cache.tab_selected_style;
-				float x = rtl ? size.width - tabs[current].ofs_cache - tabs[current].size_cache : tabs[current].ofs_cache;
+				float x = rtl ? (size.width - tabs[current].ofs_cache - tab_separation_offset - tabs[current].size_cache) : (tabs[current].ofs_cache + tab_separation_offset);
 
 				_draw_tab(sb, theme_cache.font_selected_color, current, x, has_focus());
 			}
@@ -499,13 +511,41 @@ void TabBar::_notification(int p_what) {
 			if (dragging_valid_tab) {
 				int x;
 
-				int tab_hover = get_hovered_tab();
-				if (tab_hover != -1) {
-					Rect2 tab_rect = get_tab_rect(tab_hover);
+				int closest_tab = get_closest_tab_idx_to_point(get_local_mouse_position());
+				if (closest_tab != -1) {
+					Rect2 tab_rect = get_tab_rect(closest_tab);
 
-					x = tab_rect.position.x;
-					if (get_local_mouse_position().x > x + tab_rect.size.width / 2) {
-						x += tab_rect.size.width;
+					// Calculate midpoint between tabs.
+					if (rtl) {
+						if (get_local_mouse_position().x > tab_rect.position.x + tab_rect.size.width / 2) {
+							if (closest_tab > 0) { // On right side of closest_tab and not first tab.
+								Rect2 next_tab_rect = get_tab_rect(closest_tab - 1);
+								x = (tab_rect.position.x + tab_rect.size.width + next_tab_rect.position.x) / 2;
+							} else { // First tab, will appear on right edge.
+								x = tab_rect.position.x + tab_rect.size.width;
+							}
+						} else {
+							if (closest_tab < max_drawn_tab) { // On left side of closest_tab and not last tab.
+								Rect2 prev_tab_rect = get_tab_rect(closest_tab + 1);
+								x = (tab_rect.position.x + prev_tab_rect.position.x + prev_tab_rect.size.width) / 2;
+							} else { // Last tab, will appear on left edge.
+								x = tab_rect.position.x;
+							}
+						}
+					} else if (get_local_mouse_position().x > tab_rect.position.x + tab_rect.size.width / 2) {
+						if (closest_tab < max_drawn_tab) { // On right side of closest_tab and not last tab.
+							Rect2 next_tab_rect = get_tab_rect(closest_tab + 1);
+							x = (tab_rect.position.x + tab_rect.size.width + next_tab_rect.position.x) / 2;
+						} else { // Last tab, will appear on right edge.
+							x = tab_rect.position.x + tab_rect.size.width;
+						}
+					} else {
+						if (closest_tab > 0) { // On left side of closest_tab and not first tab.
+							Rect2 prev_tab_rect = get_tab_rect(closest_tab - 1);
+							x = (tab_rect.position.x + prev_tab_rect.position.x + prev_tab_rect.size.width) / 2;
+						} else { // First tab, will appear on left edge.
+							x = tab_rect.position.x;
+						}
 					}
 				} else {
 					if (rtl ^ (get_local_mouse_position().x < get_tab_rect(0).position.x)) {
@@ -1053,12 +1093,17 @@ void TabBar::_update_cache(bool p_update_hover) {
 		}
 
 		w += tabs[i].size_cache;
+		if ((i - offset) > 0) {
+			w += theme_cache.tab_separation;
+		}
 
 		// Check if all tabs would fit inside the area.
 		if (clip_tabs && i > offset && (w > limit || (offset > 0 && w > limit_minus_buttons))) {
 			tabs.write[i].ofs_cache = 0;
 
 			w -= tabs[i].size_cache;
+			w -= theme_cache.tab_separation;
+
 			max_drawn_tab = i - 1;
 
 			while (w > limit_minus_buttons && max_drawn_tab > offset) {
@@ -1066,6 +1111,7 @@ void TabBar::_update_cache(bool p_update_hover) {
 
 				if (!tabs[max_drawn_tab].hidden) {
 					w -= tabs[max_drawn_tab].size_cache;
+					w -= theme_cache.tab_separation;
 				}
 
 				max_drawn_tab--;
@@ -1303,7 +1349,7 @@ void TabBar::_handle_drop_data(const String &p_type, const Point2 &p_point, cons
 
 	if (String(d["type"]) == p_type) {
 		int tab_from_id = d["tab_index"];
-		int hover_now = get_tab_idx_at_point(p_point);
+		int hover_now = get_closest_tab_idx_to_point(p_point);
 		NodePath from_path = d["from_path"];
 		NodePath to_path = get_path();
 
@@ -1396,6 +1442,24 @@ int TabBar::get_tab_idx_at_point(const Point2 &p_point) const {
 	}
 
 	return hover_now;
+}
+
+int TabBar::get_closest_tab_idx_to_point(const Point2 &p_point) const {
+	int closest_tab = get_tab_idx_at_point(p_point); // See if we're hovering over a tab first.
+
+	if (closest_tab == -1) { // Didn't find a tab, so get the closest one.
+		float closest_distance = FLT_MAX;
+		for (int i = offset; i <= max_drawn_tab; i++) {
+			Vector2 center = get_tab_rect(i).get_center();
+			float distance = center.distance_to(p_point);
+			if (distance < closest_distance) {
+				closest_distance = distance;
+				closest_tab = i;
+			}
+		}
+	}
+
+	return closest_tab;
 }
 
 void TabBar::set_tab_alignment(AlignmentMode p_alignment) {
@@ -1647,10 +1711,14 @@ void TabBar::ensure_tab_visible(int p_idx) {
 
 Rect2 TabBar::get_tab_rect(int p_tab) const {
 	ERR_FAIL_INDEX_V(p_tab, tabs.size(), Rect2());
+	int tab_separation_offset = (p_tab - offset) * theme_cache.tab_separation;
+	if (tab_alignment == ALIGNMENT_LEFT && (p_tab - offset) > 1) {
+		tab_separation_offset = theme_cache.tab_separation;
+	}
 	if (is_layout_rtl()) {
-		return Rect2(get_size().width - tabs[p_tab].ofs_cache - tabs[p_tab].size_cache, 0, tabs[p_tab].size_cache, get_size().height);
+		return Rect2(get_size().width - tabs[p_tab].ofs_cache - tab_separation_offset - tabs[p_tab].size_cache, 0, tabs[p_tab].size_cache, get_size().height);
 	} else {
-		return Rect2(tabs[p_tab].ofs_cache, 0, tabs[p_tab].size_cache, get_size().height);
+		return Rect2(tabs[p_tab].ofs_cache + tab_separation_offset, 0, tabs[p_tab].size_cache, get_size().height);
 	}
 }
 
@@ -1847,6 +1915,7 @@ void TabBar::_bind_methods() {
 	BIND_ENUM_CONSTANT(CLOSE_BUTTON_MAX);
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, TabBar, h_separation);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, TabBar, tab_separation);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, TabBar, icon_max_width);
 
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, TabBar, tab_unselected_style, "tab_unselected");

@@ -247,6 +247,7 @@ void TabContainer::_on_theme_changed() {
 	tab_bar->add_theme_font_size_override(SceneStringName(font_size), theme_cache.tab_font_size);
 
 	tab_bar->add_theme_constant_override(SNAME("h_separation"), theme_cache.icon_separation);
+	tab_bar->add_theme_constant_override(SNAME("tab_separation"), theme_cache.tab_separation);
 	tab_bar->add_theme_constant_override(SNAME("icon_max_width"), theme_cache.icon_max_width);
 	tab_bar->add_theme_constant_override(SNAME("outline_size"), theme_cache.outline_size);
 
@@ -1077,6 +1078,7 @@ void TabContainer::_bind_methods() {
 	BIND_ENUM_CONSTANT(POSITION_MAX);
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, TabContainer, side_margin);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, TabContainer, tab_separation);
 
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, TabContainer, panel_style, "panel");
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, TabContainer, tabbar_style, "tabbar_background");
