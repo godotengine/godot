@@ -1230,6 +1230,7 @@ void AudioServer::start_playback_stream(Ref<AudioStreamPlayback> p_playback, con
 	int idx = 0;
 	for (KeyValue<StringName, Vector<AudioFrame>> pair : p_bus_volumes) {
 		if (pair.value.size() < channel_count || pair.value.size() != MAX_CHANNELS_PER_BUS) {
+			delete playback_node;
 			delete new_bus_details;
 			ERR_FAIL();
 		}
@@ -1322,8 +1323,10 @@ void AudioServer::set_playback_bus_volumes_linear(Ref<AudioStreamPlayback> p_pla
 		if (idx >= MAX_BUSES_PER_PLAYBACK) {
 			break;
 		}
-		ERR_FAIL_COND(pair.value.size() < channel_count);
-		ERR_FAIL_COND(pair.value.size() != MAX_CHANNELS_PER_BUS);
+		if (pair.value.size() < channel_count || pair.value.size() != MAX_CHANNELS_PER_BUS) {
+			delete new_bus_details;
+			ERR_FAIL();
+		}
 
 		new_bus_details->bus_active[idx] = true;
 		new_bus_details->bus[idx] = pair.key;
