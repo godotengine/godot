@@ -333,6 +333,10 @@ public:
 	RID default_clip_children_material;
 	RID default_clip_children_shader;
 
+	bool debug_redraw = false;
+	Color debug_redraw_color;
+	double debug_redraw_time = 1.0;
+
 	typedef void Texture;
 
 	void canvas_begin(RID p_to_render_target, bool p_to_backbuffer, bool p_backbuffer_has_mipmaps);
@@ -373,12 +377,7 @@ public:
 
 	void set_time(double p_time);
 
-	virtual void set_debug_redraw(bool p_enabled, double p_time, const Color &p_color) override {
-		if (p_enabled) {
-			WARN_PRINT_ONCE("Debug CanvasItem Redraw is not available yet when using the Compatibility renderer.");
-		}
-	}
-
+	virtual void set_debug_redraw(bool p_enabled, double p_time, const Color &p_color) override;
 	virtual uint32_t get_pipeline_compilations(RS::PipelineSource p_source) override { return 0; }
 
 	static RasterizerCanvasGLES3 *get_singleton();
