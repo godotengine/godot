@@ -18,9 +18,9 @@ func test():
 	duper.set_direction(COUNTERCLOCKWISE)
 
 class Super:
-	func set_type(type: Variant.Type) -> void:
+	@virtual func set_type(type: Variant.Type) -> void:
 		print(type)
-	func set_direction(dir: ClockDirection) -> void:
+	@virtual func set_direction(dir: ClockDirection) -> void:
 		print(dir)
 
 class Duper extends Super:

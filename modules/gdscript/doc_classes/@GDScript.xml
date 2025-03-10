@@ -797,9 +797,24 @@
 				        print("A")
 
 				class B extends A:
-				    @func test():
+				    func test():
 				        print("B")
 				[/codeblock]
+				If a method is trying to override a non-virtual method, a warning (or an error) will be thrown.
+				[codeblock]
+				func _init():
+				    B.new().test() # Prints B, with a warning (or an error) about overriding a non-virtual method.
+
+
+				class A:
+				    func test():
+				        print("A")
+
+				class B extends A:
+				    func test():
+				        print("B")
+				[/codeblock]
+				You can ignore the warning as long as you know what you are doing.
 			</description>
 		</annotation>
 		<annotation name="@warning_ignore" qualifiers="vararg">
