@@ -62,6 +62,7 @@ private:
 	bool drag_touching = false;
 	bool drag_touching_deaccel = false;
 	bool beyond_deadzone = false;
+	bool scroll_on_drag_hover = false;
 
 	ScrollMode horizontal_scroll_mode = SCROLL_MODE_AUTO;
 	ScrollMode vertical_scroll_mode = SCROLL_MODE_AUTO;
@@ -122,6 +123,9 @@ public:
 
 	bool is_following_focus() const;
 	void set_follow_focus(bool p_follow);
+
+	bool is_scroll_on_drag_hover() const;
+	void set_scroll_on_drag_hover(bool p_scroll);
 
 	HScrollBar *get_h_scroll_bar();
 	VScrollBar *get_v_scroll_bar();

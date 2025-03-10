@@ -5001,4 +5001,5 @@ EditorInspector::EditorInspector() {
 	set_property_name_style(EditorPropertyNameProcessor::get_singleton()->get_settings_style());
 
 	set_draw_focus_border(true);
+	set_scroll_on_drag_hover(true);
 }
