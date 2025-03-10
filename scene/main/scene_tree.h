@@ -190,6 +190,7 @@ private:
 	Node *current_scene = nullptr;
 	Node *prev_scene = nullptr;
 	Node *pending_new_scene = nullptr;
+	bool possible_uninitialized_scene = false;
 
 	// Initialized lazily and destroyed eagerly to decrease RAM usage, since it contains a lot of text.
 	LicensesDialog *licenses_dialog = nullptr;
