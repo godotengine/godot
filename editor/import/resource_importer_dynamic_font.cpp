@@ -65,6 +65,29 @@ String ResourceImporterDynamicFont::get_resource_type() const {
 	return "FontFile";
 }
 
+void ResourceImporterDynamicFont::get_build_dependencies(const String &p_path, HashSet<String> *r_dependencies) {
+	bool needs_adv_txt = false;
+
+	String extension = p_path.get_extension();
+	if (extension == "ttf" || extension == "ttc" || extension == "otf" || extension == "woff" || extension == "woff2" || extension == "pfb" || extension == "pfm") {
+		needs_adv_txt = true;
+		r_dependencies->insert("module_freetype_enabled");
+	}
+	if (extension == "woff2") {
+		r_dependencies->insert("brotli");
+	}
+
+	Ref<FontFile> font = ResourceLoader::load(p_path);
+	if (font.is_valid() && font->is_multichannel_signed_distance_field()) {
+		needs_adv_txt = true;
+		r_dependencies->insert("module_msdfgen_enabled");
+	}
+
+	if (needs_adv_txt) {
+		r_dependencies->insert("module_text_server_adv_enabled");
+	}
+}
+
 bool ResourceImporterDynamicFont::get_option_visibility(const String &p_path, const String &p_option, const HashMap<StringName, Variant> &p_options) const {
 	if (p_option == "msdf_pixel_range" && !bool(p_options["multichannel_signed_distance_field"])) {
 		return false;
