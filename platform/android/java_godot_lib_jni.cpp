@@ -100,7 +100,7 @@ static void _terminate(JNIEnv *env, bool p_restart = false) {
 		memdelete(java_class_wrapper);
 	}
 	if (input_handler) {
-		delete input_handler;
+		memdelete(input_handler);
 	}
 	// Whether restarting is handled by 'Main::cleanup()'
 	bool restart_on_cleanup = false;
@@ -108,10 +108,10 @@ static void _terminate(JNIEnv *env, bool p_restart = false) {
 		restart_on_cleanup = os_android->is_restart_on_exit_set();
 		os_android->main_loop_end();
 		Main::cleanup();
-		delete os_android;
+		memdelete(os_android);
 	}
 	if (godot_io_java) {
-		delete godot_io_java;
+		memdelete(godot_io_java);
 	}
 
 	TTS_Android::terminate();
@@ -129,7 +129,7 @@ static void _terminate(JNIEnv *env, bool p_restart = false) {
 				godot_java->force_quit(env);
 			}
 		}
-		delete godot_java;
+		memdelete(godot_java);
 	}
 }
 
@@ -146,8 +146,8 @@ JNIEXPORT jboolean JNICALL Java_org_godotengine_godot_GodotLib_initialize(JNIEnv
 	env->GetJavaVM(&jvm);
 
 	// create our wrapper classes
-	godot_java = new GodotJavaWrapper(env, p_activity, p_godot_instance);
-	godot_io_java = new GodotIOJavaWrapper(env, p_godot_io);
+	godot_java = memnew(GodotJavaWrapper(env, p_activity, p_godot_instance));
+	godot_io_java = memnew(GodotIOJavaWrapper(env, p_godot_io));
 
 	init_thread_jandroid(jvm, env);
 
@@ -156,7 +156,7 @@ JNIEXPORT jboolean JNICALL Java_org_godotengine_godot_GodotLib_initialize(JNIEnv
 	FileAccessFilesystemJAndroid::setup(p_file_access_handler);
 	NetSocketAndroid::setup(p_net_utils);
 
-	os_android = new OS_Android(godot_java, godot_io_java, p_use_apk_expansion);
+	os_android = memnew(OS_Android(godot_java, godot_io_java, p_use_apk_expansion));
 
 	return true;
 }
@@ -266,7 +266,7 @@ JNIEXPORT jboolean JNICALL Java_org_godotengine_godot_GodotLib_step(JNIEnv *env,
 		// Since Godot is initialized on the UI thread, main_thread_id was set to that thread's id,
 		// but for Godot purposes, the main thread is the one running the game loop
 		Main::setup2(false); // The logo is shown in the next frame otherwise we run into rendering issues
-		input_handler = new AndroidInputHandler();
+		input_handler = memnew(AndroidInputHandler);
 		step.increment();
 		return true;
 	}

@@ -2240,10 +2240,10 @@ ColorPicker::ColorPicker() {
 	shape_popup->set_item_checked(current_shape, true);
 	shape_popup->connect(SceneStringName(id_pressed), callable_mp(this, &ColorPicker::set_picker_shape));
 
-	add_mode(new ColorModeRGB(this));
-	add_mode(new ColorModeHSV(this));
-	add_mode(new ColorModeRAW(this));
-	add_mode(new ColorModeOKHSL(this));
+	add_mode(memnew(ColorModeRGB(this)));
+	add_mode(memnew(ColorModeHSV(this)));
+	add_mode(memnew(ColorModeRAW(this)));
+	add_mode(memnew(ColorModeOKHSL(this)));
 
 	mode_hbc = memnew(HBoxContainer);
 	real_vbox->add_child(mode_hbc);
@@ -2422,7 +2422,7 @@ ColorPicker::ColorPicker() {
 
 ColorPicker::~ColorPicker() {
 	for (int i = 0; i < modes.size(); i++) {
-		delete modes[i];
+		memdelete(modes[i]);
 	}
 }
 

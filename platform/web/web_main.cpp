@@ -106,7 +106,7 @@ void main_loop_callback() {
 
 /// When calling main, it is assumed FS is setup and synced.
 extern EMSCRIPTEN_KEEPALIVE int godot_web_main(int argc, char *argv[]) {
-	os = new OS_Web();
+	os = memnew(OS_Web);
 
 #ifdef TOOLS_ENABLED
 	WebToolsEditorPlugin::initialize();
