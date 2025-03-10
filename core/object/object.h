@@ -264,22 +264,12 @@ struct MethodInfo {
 		}
 	}
 
-	void _push_params(const PropertyInfo &p_param) {
-		arguments.push_back(p_param);
-	}
-
-	template <typename... VarArgs>
-	void _push_params(const PropertyInfo &p_param, VarArgs... p_params) {
-		arguments.push_back(p_param);
-		_push_params(p_params...);
-	}
-
 	MethodInfo(const String &p_name) { name = p_name; }
 
 	template <typename... VarArgs>
 	MethodInfo(const String &p_name, VarArgs... p_params) {
 		name = p_name;
-		_push_params(p_params...);
+		(arguments.push_back(p_params), ...);
 	}
 
 	MethodInfo(Variant::Type ret) { return_val.type = ret; }
@@ -292,7 +282,7 @@ struct MethodInfo {
 	MethodInfo(Variant::Type ret, const String &p_name, VarArgs... p_params) {
 		name = p_name;
 		return_val.type = ret;
-		_push_params(p_params...);
+		(arguments.push_back(p_params), ...);
 	}
 
 	MethodInfo(const PropertyInfo &p_ret, const String &p_name) {
@@ -304,7 +294,7 @@ struct MethodInfo {
 	MethodInfo(const PropertyInfo &p_ret, const String &p_name, VarArgs... p_params) {
 		return_val = p_ret;
 		name = p_name;
-		_push_params(p_params...);
+		(arguments.push_back(p_params), ...);
 	}
 };
 
