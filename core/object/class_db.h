@@ -476,9 +476,7 @@ public:
 	static void set_class_enabled(const StringName &p_class, bool p_enable);
 	static bool is_class_enabled(const StringName &p_class);
 
-	static void set_class_exposed(const StringName &p_class, bool p_enable);
 	static bool is_class_exposed(const StringName &p_class);
-
 	static bool is_class_reloadable(const StringName &p_class);
 	static bool is_class_runtime(const StringName &p_class);
 

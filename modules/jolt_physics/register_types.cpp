@@ -44,7 +44,7 @@ PhysicsServer3D *create_jolt_physics_server() {
 #endif
 
 	JoltPhysicsServer3D *physics_server = memnew(JoltPhysicsServer3D(run_on_separate_thread));
-	::ClassDB::set_class_exposed("DistanceConstraint3D", true);
+
 	return memnew(PhysicsServer3DWrapMT(physics_server, run_on_separate_thread));
 }
 

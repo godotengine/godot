@@ -655,7 +655,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(SliderJoint3D);
 	GDREGISTER_CLASS(ConeTwistJoint3D);
 	GDREGISTER_CLASS(Generic6DOFJoint3D);
-	GDREGISTER_INTERNAL_CLASS(DistanceConstraint3D);
+	GDREGISTER_CLASS(DistanceConstraint3D);
 
 	GDREGISTER_CLASS(NavigationRegion3D);
 	GDREGISTER_CLASS(NavigationAgent3D);
