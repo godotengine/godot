@@ -59,6 +59,7 @@ protected:
 private:
 	Array find_symbols(const lsp::TextDocumentPositionParams &p_location, List<const lsp::DocumentSymbol *> &r_list);
 	lsp::TextDocumentItem load_document_item(const Variant &p_param);
+	bool is_valid_gd_file(const lsp::TextDocumentItem &p_doc);
 	void notify_client_show_symbol(const lsp::DocumentSymbol *symbol);
 
 public:
