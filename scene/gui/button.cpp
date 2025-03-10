@@ -48,6 +48,10 @@ void Button::_set_internal_margin(Side p_side, float p_value) {
 void Button::_queue_update_size_cache() {
 }
 
+String Button::_get_translated_text(const String &p_text) const {
+	return atr(p_text);
+}
+
 void Button::_update_theme_item_cache() {
 	Control::_update_theme_item_cache();
 
@@ -186,7 +190,7 @@ void Button::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_TRANSLATION_CHANGED: {
-			xl_text = atr(text);
+			xl_text = _get_translated_text(text);
 			_shape();
 
 			update_minimum_size();
@@ -598,14 +602,16 @@ TextServer::OverrunBehavior Button::get_text_overrun_behavior() const {
 }
 
 void Button::set_text(const String &p_text) {
-	if (text != p_text) {
-		text = p_text;
-		xl_text = atr(text);
-		_shape();
-
-		queue_redraw();
-		update_minimum_size();
+	const String translated_text = _get_translated_text(p_text);
+	if (text == p_text && xl_text == translated_text) {
+		return;
 	}
+	text = p_text;
+	xl_text = translated_text;
+	_shape();
+
+	queue_redraw();
+	update_minimum_size();
 }
 
 String Button::get_text() const {
