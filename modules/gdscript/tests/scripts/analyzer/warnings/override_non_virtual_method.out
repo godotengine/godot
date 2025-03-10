@@ -1,0 +1,2 @@
+GDTEST_OK
+~~ WARNING at line 10: (OVERRIDE_NON_VIRTUAL_METHOD) The method "test()" overrides a non-virtual method from the base class. This may cause unexpected and unsafe behaviors.

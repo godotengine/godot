@@ -783,6 +783,40 @@
 				[b]Note:[/b] As annotations describe their subject, the [annotation @tool] annotation must be placed before the class definition and inheritance.
 			</description>
 		</annotation>
+		<annotation name="@virtual">
+			<return type="void" />
+			<description>
+				Mark a method as a virtual method. A virtual method is a method that can be overridden by subclasses.
+				[codeblock]
+				func _init():
+				    B.new().test() # Prints B.
+
+
+				class A:
+				    @virtual func test():
+				        print("A")
+
+				class B extends A:
+				    func test():
+				        print("B")
+				[/codeblock]
+				If a method is trying to override a non-virtual method, a warning (or an error) will be thrown.
+				[codeblock]
+				func _init():
+				    B.new().test() # Prints B, with a warning (or an error) about overriding a non-virtual method.
+
+
+				class A:
+				    func test():
+				        print("A")
+
+				class B extends A:
+				    func test():
+				        print("B")
+				[/codeblock]
+				You can ignore the warning as long as you know what you are doing.
+			</description>
+		</annotation>
 		<annotation name="@warning_ignore" qualifiers="vararg">
 			<return type="void" />
 			<param index="0" name="warning" type="String" />

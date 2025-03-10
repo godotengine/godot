@@ -1,5 +1,5 @@
 class BaseClass:
-	func _get_property_list():
+	@virtual func _get_property_list():
 		return {"property" : "definition"}
 
 class SuperClassMethodsRecognized extends BaseClass:
