@@ -402,6 +402,9 @@ void EditorNode::_update_vsync_mode() {
 }
 
 void EditorNode::_update_from_settings() {
+	if (!is_inside_tree()) {
+		return;
+	}
 	_update_title();
 
 	int current_filter = GLOBAL_GET("rendering/textures/canvas_textures/default_texture_filter");
