@@ -47,6 +47,7 @@ protected:
 
 public:
 	void add_root_node(Node *p_node);
+	void remove_root_node();
 	Node *get_scene() const;
 	EditorInterface *get_editor_interface() const;
 
