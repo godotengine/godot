@@ -78,11 +78,13 @@ private:
 	uint64_t last_mix_count = -1;
 	bool force_update_panning = false;
 
-	static void _calc_output_vol(const Vector3 &source_dir, real_t tightness, Vector<AudioFrame> &output);
+	void _calc_output_vol(const Vector3 &source_dir, Vector<AudioFrame> &output);
 
 	void _calc_reverb_vol(Area3D *area, Vector3 listener_area_pos, Vector<AudioFrame> direct_path_vol, Vector<AudioFrame> &reverb_vol);
 
 	static void _listener_changed_cb(void *self) { reinterpret_cast<AudioStreamPlayer3D *>(self)->force_update_panning = true; }
+
+	void update_volumes(const Vector3 &source_dir, real_t *volumes);
 
 	void _set_playing(bool p_enable);
 	bool _is_active() const;
@@ -113,6 +115,11 @@ private:
 
 	float panning_strength = 1.0f;
 	float cached_global_panning_strength = 0.5f;
+
+	real_t tightness = 1.0f;
+
+	AudioServer::SpeakerMode cached_speaker_mode;
+	unsigned int speaker_count = 0; // only main speakers (no LFE)
 
 protected:
 	void _validate_property(PropertyInfo &p_property) const;
@@ -194,6 +201,9 @@ public:
 
 	void set_panning_strength(float p_panning_strength);
 	float get_panning_strength() const;
+
+	void set_tightness(float p_tightness);
+	float get_tightness() const;
 
 	bool has_stream_playback();
 	Ref<AudioStreamPlayback> get_stream_playback();
