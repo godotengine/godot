@@ -144,6 +144,7 @@ void register_exporter_types() {{
     SConscript("plugins/SCsub")
     SConscript("project_manager/SCsub")
     SConscript("themes/SCsub")
+    SConscript("addons/SCsub")
 
     lib = env.add_library("editor", env.editor_sources)
     env.Prepend(LIBS=[lib])

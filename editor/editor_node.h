@@ -98,6 +98,7 @@ class ProjectExportDialog;
 class ProjectSettingsEditor;
 class SceneImportSettingsDialog;
 class ProjectUpgradeTool;
+class LicenseIntegrationDialog;
 
 struct EditorProgress {
 	String task;
@@ -164,6 +165,7 @@ public:
 		TOOLS_ORPHAN_RESOURCES,
 		TOOLS_BUILD_PROFILE_MANAGER,
 		TOOLS_PROJECT_UPGRADE,
+		TOOLS_LICENSE_INTEGRATION,
 		TOOLS_CUSTOM,
 
 		VCS_METADATA,
@@ -457,6 +459,8 @@ private:
 
 	ProjectUpgradeTool *project_upgrade_tool = nullptr;
 	bool run_project_upgrade_tool = false;
+
+	LicenseIntegrationDialog *license_integration_dialog = nullptr;
 
 	bool was_window_windowed_last = false;
 
