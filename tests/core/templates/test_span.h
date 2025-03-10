@@ -55,6 +55,11 @@ TEST_CASE("[Span] Constexpr Validators") {
 	static_assert(!span_array.is_empty());
 	static_assert(span_array[0] == U'1');
 	static_assert(span_array[span_array.size() - 1] == U'5');
+
+	int idx = 0;
+	for (const char32_t &chr : span_array) {
+		CHECK_EQ(chr, span_array[idx++]);
+	}
 }
 
 } // namespace TestSpan
