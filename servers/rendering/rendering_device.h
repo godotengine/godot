@@ -1236,7 +1236,7 @@ private:
 #endif
 	uint32_t draw_list_current_subpass = 0;
 
-	Vector<RID> draw_list_bound_textures;
+	LocalVector<RID> draw_list_bound_textures;
 
 	_FORCE_INLINE_ DrawList *_get_draw_list_ptr(DrawListID p_id);
 	Error _draw_list_allocate(const Rect2i &p_viewport, uint32_t p_subpass);
@@ -1274,7 +1274,8 @@ public:
 	};
 
 	DrawListID draw_list_begin_for_screen(DisplayServer::WindowID p_screen = 0, const Color &p_clear_color = Color());
-	DrawListID draw_list_begin(RID p_framebuffer, BitField<DrawFlags> p_draw_flags = DRAW_DEFAULT_ALL, const Vector<Color> &p_clear_color_values = Vector<Color>(), float p_clear_depth_value = 1.0f, uint32_t p_clear_stencil_value = 0, const Rect2 &p_region = Rect2(), uint32_t p_breadcrumb = 0);
+	DrawListID draw_list_begin(RID p_framebuffer, BitField<DrawFlags> p_draw_flags = DRAW_DEFAULT_ALL, VectorView<Color> p_clear_color_values = VectorView<Color>(), float p_clear_depth_value = 1.0f, uint32_t p_clear_stencil_value = 0, const Rect2 &p_region = Rect2(), uint32_t p_breadcrumb = 0);
+	DrawListID _draw_list_begin_bind(RID p_framebuffer, BitField<DrawFlags> p_draw_flags = DRAW_DEFAULT_ALL, const Vector<Color> &p_clear_color_values = Vector<Color>(), float p_clear_depth_value = 1.0f, uint32_t p_clear_stencil_value = 0, const Rect2 &p_region = Rect2(), uint32_t p_breadcrumb = 0);
 
 	void draw_list_set_blend_constants(DrawListID p_list, const Color &p_color);
 	void draw_list_bind_render_pipeline(DrawListID p_list, RID p_render_pipeline);
