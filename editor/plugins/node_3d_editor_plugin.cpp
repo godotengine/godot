@@ -791,8 +791,12 @@ void Node3DEditorViewport::_select_clicked(bool p_allow_locked) {
 
 	if (p_allow_locked || (selected != nullptr && !_is_node_locked(selected))) {
 		if (clicked_wants_append) {
+			Node *active_node = editor_selection->get_selected_node_list().is_empty() ? nullptr : editor_selection->get_selected_node_list().back()->get();
 			if (editor_selection->is_selected(selected)) {
 				editor_selection->remove_node(selected);
+				if (selected != active_node) {
+					editor_selection->add_node(selected);
+				}
 			} else {
 				editor_selection->add_node(selected);
 			}
@@ -6242,7 +6246,7 @@ void Node3DEditor::update_transform_gizmo() {
 		for (const KeyValue<int, Transform3D> &E : se->subgizmos) {
 			Transform3D xf = se->sp->get_global_transform() * se->gizmo->get_subgizmo_transform(E.key);
 			gizmo_center += xf.origin;
-			if (count == 0 && local_gizmo_coords) {
+			if ((unsigned int)count == se->subgizmos.size() - 1 && local_gizmo_coords) {
 				gizmo_basis = xf.basis;
 			}
 			count++;
@@ -6266,7 +6270,7 @@ void Node3DEditor::update_transform_gizmo() {
 
 			Transform3D xf = sel_item->sp->get_global_transform();
 			gizmo_center += xf.origin;
-			if (count == 0 && local_gizmo_coords) {
+			if (count == selection.size() - 1 && local_gizmo_coords) {
 				gizmo_basis = xf.basis;
 			}
 			count++;
@@ -6275,7 +6279,7 @@ void Node3DEditor::update_transform_gizmo() {
 
 	gizmo.visible = count > 0;
 	gizmo.transform.origin = (count > 0) ? gizmo_center / count : Vector3();
-	gizmo.transform.basis = (count == 1) ? gizmo_basis : Basis();
+	gizmo.transform.basis = gizmo_basis;
 
 	for (uint32_t i = 0; i < VIEWPORTS_COUNT; i++) {
 		viewports[i]->update_transform_gizmo_view();
@@ -6367,36 +6371,59 @@ void Node3DEditor::_generate_selection_boxes() {
 	// This lets the user see where the selection is while still having a sense of depth.
 	Ref<SurfaceTool> st = memnew(SurfaceTool);
 	Ref<SurfaceTool> st_xray = memnew(SurfaceTool);
+	Ref<SurfaceTool> active_st = memnew(SurfaceTool);
+	Ref<SurfaceTool> active_st_xray = memnew(SurfaceTool);
 
 	st->begin(Mesh::PRIMITIVE_LINES);
 	st_xray->begin(Mesh::PRIMITIVE_LINES);
+	active_st->begin(Mesh::PRIMITIVE_LINES);
+	active_st_xray->begin(Mesh::PRIMITIVE_LINES);
 	for (int i = 0; i < 12; i++) {
 		Vector3 a, b;
 		aabb.get_edge(i, a, b);
 
 		st->add_vertex(a);
 		st->add_vertex(b);
+		active_st->add_vertex(a);
+		active_st->add_vertex(b);
 		st_xray->add_vertex(a);
 		st_xray->add_vertex(b);
+		active_st_xray->add_vertex(a);
+		active_st_xray->add_vertex(b);
 	}
 
-	Ref<StandardMaterial3D> mat = memnew(StandardMaterial3D);
-	mat->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
-	mat->set_flag(StandardMaterial3D::FLAG_DISABLE_FOG, true);
 	const Color selection_box_color = EDITOR_GET("editors/3d/selection_box_color");
-	mat->set_albedo(selection_box_color);
-	mat->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA);
-	st->set_material(mat);
+	const Color active_selection_box_color = EDITOR_GET("editors/3d/active_selection_box_color");
+
+	selection_box_mat->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
+	selection_box_mat->set_flag(StandardMaterial3D::FLAG_DISABLE_FOG, true);
+	selection_box_mat->set_albedo(selection_box_color);
+	selection_box_mat->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA);
+	st->set_material(selection_box_mat);
 	selection_box = st->commit();
 
-	Ref<StandardMaterial3D> mat_xray = memnew(StandardMaterial3D);
-	mat_xray->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
-	mat_xray->set_flag(StandardMaterial3D::FLAG_DISABLE_FOG, true);
-	mat_xray->set_flag(StandardMaterial3D::FLAG_DISABLE_DEPTH_TEST, true);
-	mat_xray->set_albedo(selection_box_color * Color(1, 1, 1, 0.15));
-	mat_xray->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA);
-	st_xray->set_material(mat_xray);
+	selection_box_mat_xray->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
+	selection_box_mat_xray->set_flag(StandardMaterial3D::FLAG_DISABLE_FOG, true);
+	selection_box_mat_xray->set_flag(StandardMaterial3D::FLAG_DISABLE_DEPTH_TEST, true);
+	selection_box_mat_xray->set_albedo(selection_box_color * Color(1, 1, 1, 0.15));
+	selection_box_mat_xray->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA);
+	st_xray->set_material(selection_box_mat_xray);
 	selection_box_xray = st_xray->commit();
+
+	active_selection_box_mat->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
+	active_selection_box_mat->set_flag(StandardMaterial3D::FLAG_DISABLE_FOG, true);
+	active_selection_box_mat->set_albedo(active_selection_box_color);
+	active_selection_box_mat->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA);
+	active_st->set_material(active_selection_box_mat);
+	active_selection_box = active_st->commit();
+
+	active_selection_box_mat_xray->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
+	active_selection_box_mat_xray->set_flag(StandardMaterial3D::FLAG_DISABLE_FOG, true);
+	active_selection_box_mat_xray->set_flag(StandardMaterial3D::FLAG_DISABLE_DEPTH_TEST, true);
+	active_selection_box_mat_xray->set_albedo(active_selection_box_color * Color(1, 1, 1, 0.15));
+	active_selection_box_mat_xray->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA);
+	active_st_xray->set_material(active_selection_box_mat_xray);
+	active_selection_box_xray = active_st_xray->commit();
 }
 
 Dictionary Node3DEditor::get_state() const {
@@ -7831,6 +7858,33 @@ void Node3DEditor::update_grid() {
 
 void Node3DEditor::_selection_changed() {
 	_refresh_menu_icons();
+
+	const HashMap<Node *, Object *> &selection = editor_selection->get_selection();
+
+	for (const KeyValue<Node *, Object *> &E : selection) {
+		Node3D *sp = Object::cast_to<Node3D>(E.key);
+		if (!sp) {
+			continue;
+		}
+
+		Node3DEditorSelectedItem *se = editor_selection->get_node_editor_data<Node3DEditorSelectedItem>(sp);
+		if (!se) {
+			continue;
+		}
+
+		if (sp == editor_selection->get_selected_node_list().back()->get()) {
+			RenderingServer::get_singleton()->instance_set_base(se->sbox_instance, active_selection_box->get_rid());
+			RenderingServer::get_singleton()->instance_set_base(se->sbox_instance_xray, active_selection_box_xray->get_rid());
+			RenderingServer::get_singleton()->instance_set_base(se->sbox_instance_offset, active_selection_box->get_rid());
+			RenderingServer::get_singleton()->instance_set_base(se->sbox_instance_xray_offset, active_selection_box_xray->get_rid());
+		} else {
+			RenderingServer::get_singleton()->instance_set_base(se->sbox_instance, selection_box->get_rid());
+			RenderingServer::get_singleton()->instance_set_base(se->sbox_instance_xray, selection_box_xray->get_rid());
+			RenderingServer::get_singleton()->instance_set_base(se->sbox_instance_offset, selection_box->get_rid());
+			RenderingServer::get_singleton()->instance_set_base(se->sbox_instance_xray_offset, selection_box_xray->get_rid());
+		}
+	}
+
 	if (selected && editor_selection->get_selected_node_list().size() != 1) {
 		Vector<Ref<Node3DGizmo>> gizmos = selected->get_gizmos();
 		for (int i = 0; i < gizmos.size(); i++) {
@@ -8224,8 +8278,21 @@ void Node3DEditor::_notification(int p_what) {
 		} break;
 
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
-			// Update grid color by rebuilding grid.
 			if (EditorSettings::get_singleton()->check_changed_settings_in_group("editors/3d")) {
+				const Color selection_box_color = EDITOR_GET("editors/3d/selection_box_color");
+				const Color active_selection_box_color = EDITOR_GET("editors/3d/active_selection_box_color");
+
+				if (selection_box_color != selection_box_mat->get_albedo()) {
+					selection_box_mat->set_albedo(selection_box_color);
+					selection_box_mat_xray->set_albedo(selection_box_color * Color(1, 1, 1, 0.15));
+				}
+
+				if (active_selection_box_color != active_selection_box_mat->get_albedo()) {
+					active_selection_box_mat->set_albedo(active_selection_box_color);
+					active_selection_box_mat_xray->set_albedo(active_selection_box_color * Color(1, 1, 1, 0.15));
+				}
+
+				// Update grid color by rebuilding grid.
 				_finish_grid();
 				_init_grid();
 			}
