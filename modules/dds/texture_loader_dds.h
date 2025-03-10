@@ -39,5 +39,6 @@ public:
 	virtual bool handles_type(const String &p_type) const override;
 	virtual String get_resource_type(const String &p_path) const override;
 
+	ResourceFormatDDS();
 	virtual ~ResourceFormatDDS() {}
 };

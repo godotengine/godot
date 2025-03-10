@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  register_types.cpp                                                    */
+/*  image_saver_dds.h                                                     */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,32 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "register_types.h"
+#pragma once
 
-#include "image_saver_dds.h"
-#include "texture_loader_dds.h"
+#include "core/io/image.h"
 
-static Ref<ResourceFormatDDS> resource_loader_dds;
-
-void initialize_dds_module(ModuleInitializationLevel p_level) {
-	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
-		return;
-	}
-
-	Image::save_dds_func = save_dds;
-	Image::save_dds_buffer_func = save_dds_buffer;
-
-	resource_loader_dds.instantiate();
-	ResourceLoader::add_resource_format_loader(resource_loader_dds);
-}
-
-void uninitialize_dds_module(ModuleInitializationLevel p_level) {
-	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
-		return;
-	}
-
-	ResourceLoader::remove_resource_format_loader(resource_loader_dds);
-	resource_loader_dds.unref();
-	Image::save_dds_func = nullptr;
-	Image::save_dds_buffer_func = nullptr;
-}
+Error save_dds(const String &p_path, const Ref<Image> &p_img);
+Vector<uint8_t> save_dds_buffer(const Ref<Image> &p_img);
