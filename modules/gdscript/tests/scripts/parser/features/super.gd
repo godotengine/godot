@@ -1,11 +1,11 @@
 class Say:
 	var prefix = "S"
 
-	func greet():
+	@virtual func greet():
 		prefix = "S Greeted"
 		print("hello")
 
-	func say(name):
+	@virtual func say(name):
 		print(prefix, " say something ", name)
 
 

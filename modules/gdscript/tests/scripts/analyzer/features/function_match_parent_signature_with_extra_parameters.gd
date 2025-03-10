@@ -9,7 +9,7 @@ func test():
 	Utils.check(result == 0)
 
 class Parent:
-	func my_function(par1: int) -> int:
+	@virtual func my_function(par1: int) -> int:
 		return par1
 
 class Child extends Parent:
