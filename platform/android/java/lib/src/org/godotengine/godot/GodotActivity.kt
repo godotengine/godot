@@ -75,7 +75,7 @@ abstract class GodotActivity : FragmentActivity(), GodotHost {
 	override fun onCreate(savedInstanceState: Bundle?) {
 		val params = intent.getStringArrayExtra(EXTRA_COMMAND_LINE_PARAMS)
 		Log.d(TAG, "Starting intent $intent with parameters ${params.contentToString()}")
-		updateCommandLineParams(params ?: emptyArray())
+		commandLineParams.addAll(params ?: emptyArray())
 
 		super.onCreate(savedInstanceState)
 
@@ -215,14 +215,5 @@ abstract class GodotActivity : FragmentActivity(), GodotHost {
 		return GodotFragment()
 	}
 
-	@CallSuper
-	protected open fun updateCommandLineParams(args: Array<String>) {
-		// Update the list of command line params with the new args
-		commandLineParams.clear()
-		if (args.isNotEmpty()) {
-			commandLineParams.addAll(args)
-		}
-	}
-
-	final override fun getCommandLine() = commandLineParams
+	override fun getCommandLine(): MutableList<String> = commandLineParams
 }

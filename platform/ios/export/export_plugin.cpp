@@ -198,6 +198,19 @@ static const DataCollectionInfo data_collect_purpose_info[] = {
 	{ "Other", "NSPrivacyCollectedDataTypePurposeOther" },
 };
 
+static const String export_method_string[] = {
+	"app-store",
+	"development",
+	"ad-hoc",
+	"enterprise"
+};
+static const String storyboard_image_scale_mode[] = {
+	"center",
+	"scaleAspectFit",
+	"scaleAspectFill",
+	"scaleToFill"
+};
+
 String EditorExportPlatformIOS::get_export_option_warning(const EditorExportPreset *p_preset, const StringName &p_name) const {
 	if (p_preset) {
 		if (p_name == "application/app_store_team_id") {
@@ -351,7 +364,7 @@ void EditorExportPlatformIOS::get_export_options(List<ExportOption> *r_options) 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "privacy/photolibrary_usage_description", PROPERTY_HINT_PLACEHOLDER_TEXT, "Provide a message if you need access to the photo library"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::DICTIONARY, "privacy/photolibrary_usage_description_localized", PROPERTY_HINT_LOCALIZABLE_STRING), Dictionary()));
 
-	for (uint64_t i = 0; i < sizeof(api_info) / sizeof(api_info[0]); ++i) {
+	for (uint64_t i = 0; i < std::size(api_info); ++i) {
 		String prop_name = vformat("privacy/%s_access_reasons", api_info[i].prop_name);
 		String hint;
 		for (int j = 0; j < api_info[i].prop_flag_value.size(); j++) {
@@ -368,13 +381,13 @@ void EditorExportPlatformIOS::get_export_options(List<ExportOption> *r_options) 
 
 	{
 		String hint;
-		for (uint64_t i = 0; i < sizeof(data_collect_purpose_info) / sizeof(data_collect_purpose_info[0]); ++i) {
+		for (uint64_t i = 0; i < std::size(data_collect_purpose_info); ++i) {
 			if (i != 0) {
 				hint += ",";
 			}
 			hint += vformat("%s:%d", data_collect_purpose_info[i].prop_name, (1 << i));
 		}
-		for (uint64_t i = 0; i < sizeof(data_collect_type_info) / sizeof(data_collect_type_info[0]); ++i) {
+		for (uint64_t i = 0; i < std::size(data_collect_type_info); ++i) {
 			r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, vformat("privacy/collected_data/%s/collected", data_collect_type_info[i].prop_name)), false));
 			r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, vformat("privacy/collected_data/%s/linked_to_user", data_collect_type_info[i].prop_name)), false));
 			r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, vformat("privacy/collected_data/%s/used_for_tracking", data_collect_type_info[i].prop_name)), false));
@@ -387,7 +400,7 @@ void EditorExportPlatformIOS::get_export_options(List<ExportOption> *r_options) 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "icons/icon_1024x1024_tinted", PROPERTY_HINT_FILE, "*.svg,*.png,*.webp,*.jpg,*.jpeg"), ""));
 
 	HashSet<String> used_names;
-	for (uint64_t i = 0; i < sizeof(icon_infos) / sizeof(icon_infos[0]); ++i) {
+	for (uint64_t i = 0; i < std::size(icon_infos); ++i) {
 		if (!used_names.has(icon_infos[i].preset_key)) {
 			used_names.insert(icon_infos[i].preset_key);
 			r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, String(icon_infos[i].preset_key), PROPERTY_HINT_FILE, "*.png,*.jpg,*.jpeg"), ""));
@@ -402,19 +415,28 @@ void EditorExportPlatformIOS::get_export_options(List<ExportOption> *r_options) 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::COLOR, "storyboard/custom_bg_color"), Color()));
 }
 
+HashMap<String, Variant> EditorExportPlatformIOS::get_custom_project_settings(const Ref<EditorExportPreset> &p_preset) const {
+	HashMap<String, Variant> settings;
+
+	int image_scale_mode = p_preset->get("storyboard/image_scale_mode");
+	String value;
+
+	switch (image_scale_mode) {
+		case 0: {
+			String logo_path = GLOBAL_GET("application/boot_splash/image");
+			bool is_on = GLOBAL_GET("application/boot_splash/fullsize");
+			// If custom logo is not specified, Godot does not scale default one, so we should do the same.
+			value = (is_on && logo_path.length() > 0) ? "scaleAspectFit" : "center";
+		} break;
+		default: {
+			value = storyboard_image_scale_mode[image_scale_mode - 1];
+		}
+	}
+	settings["ios/launch_screen_image_mode"] = value;
+	return settings;
+}
+
 void EditorExportPlatformIOS::_fix_config_file(const Ref<EditorExportPreset> &p_preset, Vector<uint8_t> &pfile, const IOSConfigData &p_config, bool p_debug) {
-	static const String export_method_string[] = {
-		"app-store",
-		"development",
-		"ad-hoc",
-		"enterprise"
-	};
-	static const String storyboard_image_scale_mode[] = {
-		"center",
-		"scaleAspectFit",
-		"scaleAspectFill",
-		"scaleToFill"
-	};
 	String dbg_sign_id = p_preset->get("application/code_sign_identity_debug").operator String().is_empty() ? "iPhone Developer" : p_preset->get("application/code_sign_identity_debug");
 	String rel_sign_id = p_preset->get("application/code_sign_identity_release").operator String().is_empty() ? "iPhone Distribution" : p_preset->get("application/code_sign_identity_release");
 	bool dbg_manual = !p_preset->get_or_env("application/provisioning_profile_uuid_debug", ENV_IOS_PROFILE_UUID_DEBUG).operator String().is_empty() || (dbg_sign_id != "iPhone Developer" && dbg_sign_id != "iPhone Distribution");
@@ -765,7 +787,7 @@ void EditorExportPlatformIOS::_fix_config_file(const Ref<EditorExportPreset> &p_
 			strnew += lines[i].replace("$swift_runtime_build_phase", value) + "\n";
 		} else if (lines[i].contains("$priv_collection")) {
 			bool section_opened = false;
-			for (uint64_t j = 0; j < sizeof(data_collect_type_info) / sizeof(data_collect_type_info[0]); ++j) {
+			for (uint64_t j = 0; j < std::size(data_collect_type_info); ++j) {
 				bool data_collected = p_preset->get(vformat("privacy/collected_data/%s/collected", data_collect_type_info[j].prop_name));
 				bool linked = p_preset->get(vformat("privacy/collected_data/%s/linked_to_user", data_collect_type_info[j].prop_name));
 				bool tracking = p_preset->get(vformat("privacy/collected_data/%s/used_for_tracking", data_collect_type_info[j].prop_name));
@@ -794,7 +816,7 @@ void EditorExportPlatformIOS::_fix_config_file(const Ref<EditorExportPreset> &p_
 					if (purposes != 0) {
 						strnew += "\t\t\t\t<key>NSPrivacyCollectedDataTypePurposes</key>\n";
 						strnew += "\t\t\t\t<array>\n";
-						for (uint64_t k = 0; k < sizeof(data_collect_purpose_info) / sizeof(data_collect_purpose_info[0]); ++k) {
+						for (uint64_t k = 0; k < std::size(data_collect_purpose_info); ++k) {
 							if (purposes & (1 << k)) {
 								strnew += vformat("\t\t\t\t\t<string>%s</string>\n", data_collect_purpose_info[k].type_name);
 							}
@@ -826,7 +848,7 @@ void EditorExportPlatformIOS::_fix_config_file(const Ref<EditorExportPreset> &p_
 			}
 		} else if (lines[i].contains("$priv_api_types")) {
 			strnew += "\t<array>\n";
-			for (uint64_t j = 0; j < sizeof(api_info) / sizeof(api_info[0]); ++j) {
+			for (uint64_t j = 0; j < std::size(api_info); ++j) {
 				int api_access = p_preset->get(vformat("privacy/%s_access_reasons", api_info[j].prop_name));
 				if (api_access != 0) {
 					strnew += "\t\t<dict>\n";
@@ -946,7 +968,7 @@ Error EditorExportPlatformIOS::_export_icons(const Ref<EditorExportPreset> &p_pr
 	};
 
 	bool first_icon = true;
-	for (uint64_t i = 0; i < (sizeof(icon_infos) / sizeof(icon_infos[0])); ++i) {
+	for (uint64_t i = 0; i < std::size(icon_infos); ++i) {
 		for (int color_mode = ICON_NORMAL; color_mode < ICON_MAX; color_mode++) {
 			IconInfo info = icon_infos[i];
 			int side_size = String(info.actual_size_side).to_int();
@@ -2518,7 +2540,9 @@ bool EditorExportPlatformIOS::has_valid_export_configuration(const Ref<EditorExp
 		}
 	}
 
-	if (GLOBAL_GET("rendering/rendering_device/driver.ios") == "metal") {
+	String rendering_method = GLOBAL_GET("rendering/renderer/rendering_method.mobile");
+	String rendering_driver = GLOBAL_GET("rendering/rendering_device/driver.ios");
+	if ((rendering_method == "forward_plus" || rendering_method == "mobile") && rendering_driver == "metal") {
 		float version = p_preset->get("application/min_ios_version").operator String().to_float();
 		if (version < 14.0) {
 			err += TTR("Metal renderer require iOS 14+.") + "\n";
@@ -2704,6 +2728,42 @@ void EditorExportPlatformIOS::_check_for_changes_poll_thread(void *ud) {
 							nd.name = device_info["DeviceName"].operator String() + " (ios_deploy, " + ((device_event["Interface"] == "WIFI") ? "network" : "wired") + ")";
 							nd.wifi = device_event["Interface"] == "WIFI";
 							nd.use_ios_deploy = true;
+							ldevices.push_back(nd);
+						}
+					}
+				}
+			}
+		}
+
+		// Enum devices (via Xcode).
+		if (ea->has_runnable_preset.is_set() && _check_xcode_install() && (FileAccess::exists("/usr/bin/xcrun") || FileAccess::exists("/bin/xcrun"))) {
+			String devices;
+			List<String> args;
+			args.push_back("devicectl");
+			args.push_back("list");
+			args.push_back("devices");
+			args.push_back("-j");
+			args.push_back("-");
+			args.push_back("-q");
+			int ec = 0;
+			Error err = OS::get_singleton()->execute("xcrun", args, &devices, &ec, true);
+			if (err == OK && ec == 0) {
+				Ref<JSON> json;
+				json.instantiate();
+				err = json->parse(devices);
+				if (err == OK) {
+					const Dictionary &data = json->get_data();
+					const Dictionary &result = data["result"];
+					const Array &devices = result["devices"];
+					for (int i = 0; i < devices.size(); i++) {
+						const Dictionary &device_info = devices[i];
+						const Dictionary &conn_props = device_info["connectionProperties"];
+						const Dictionary &dev_props = device_info["deviceProperties"];
+						if (conn_props["pairingState"] == "paired" && dev_props["developerModeStatus"] == "enabled") {
+							Device nd;
+							nd.id = device_info["identifier"];
+							nd.name = dev_props["name"].operator String() + " (devicectl, " + ((conn_props["transportType"] == "localNetwork") ? "network" : "wired") + ")";
+							nd.wifi = conn_props["transportType"] == "localNetwork";
 							ldevices.push_back(nd);
 						}
 					}
@@ -2898,7 +2958,7 @@ Error EditorExportPlatformIOS::run(const Ref<EditorExportPreset> &p_preset, int 
 			}
 		}
 	} else {
-		// Deploy and run on real device.
+		// Deploy and run on real device (via Xcode).
 		if (ep.step("Installing to device...", 3)) {
 			CLEANUP_AND_RETURN(ERR_SKIP);
 		} else {

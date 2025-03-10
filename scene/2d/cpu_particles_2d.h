@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef CPU_PARTICLES_2D_H
-#define CPU_PARTICLES_2D_H
+#pragma once
 
 #include "scene/2d/node_2d.h"
 
@@ -186,6 +185,7 @@ private:
 	void _update_internal();
 	void _particles_process(double p_delta);
 	void _update_particle_data_buffer();
+	void _set_emitting();
 
 	Mutex update_mutex;
 
@@ -327,5 +327,3 @@ VARIANT_ENUM_CAST(CPUParticles2D::DrawOrder)
 VARIANT_ENUM_CAST(CPUParticles2D::Parameter)
 VARIANT_ENUM_CAST(CPUParticles2D::ParticleFlags)
 VARIANT_ENUM_CAST(CPUParticles2D::EmissionShape)
-
-#endif // CPU_PARTICLES_2D_H

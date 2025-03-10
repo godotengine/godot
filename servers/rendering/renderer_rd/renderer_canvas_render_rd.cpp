@@ -370,7 +370,7 @@ static RD::RenderPrimitive _primitive_type_to_render_primitive(RS::PrimitiveType
 
 _FORCE_INLINE_ static uint32_t _indices_to_primitives(RS::PrimitiveType p_primitive, uint32_t p_indices) {
 	static const uint32_t divisor[RS::PRIMITIVE_MAX] = { 1, 2, 1, 3, 1 };
-	static const uint32_t subtractor[RS::PRIMITIVE_MAX] = { 0, 0, 1, 0, 1 };
+	static const uint32_t subtractor[RS::PRIMITIVE_MAX] = { 0, 0, 1, 0, 2 };
 	return (p_indices - subtractor[p_primitive]) / divisor[p_primitive];
 }
 
@@ -379,7 +379,8 @@ RID RendererCanvasRenderRD::_create_base_uniform_set(RID p_to_render_target, boo
 	RendererRD::MaterialStorage *material_storage = RendererRD::MaterialStorage::get_singleton();
 
 	//re create canvas state
-	Vector<RD::Uniform> uniforms;
+	thread_local LocalVector<RD::Uniform> uniforms;
+	uniforms.clear();
 
 	{
 		RD::Uniform u;
@@ -1837,7 +1838,7 @@ RendererCanvasRenderRD::RendererCanvasRenderRD() {
 		actions.base_varying_index = 5;
 
 		actions.global_buffer_array_variable = "global_shader_uniforms.data";
-		actions.instance_uniform_index_variable = "draw_data.instance_uniforms_ofs";
+		actions.instance_uniform_index_variable = "instances.data[instance_index].instance_uniforms_ofs";
 
 		shader.compiler.initialize(actions);
 	}
@@ -2913,12 +2914,13 @@ void RendererCanvasRenderRD::_record_item_commands(const Item *p_item, RenderTar
 			r_current_batch->tex_info = tex_info;
 		}
 
+		_update_transform_2d_to_mat2x3(base_transform, world);
 		InstanceData *instance_data = new_instance_data(world, lights, base_flags, r_index, uniforms_ofs, tex_info);
 
 		Rect2 src_rect;
 		Rect2 dst_rect;
 
-		dst_rect = Rect2(Vector2(), p_item->rect.size);
+		dst_rect = p_item->rect;
 		if (dst_rect.size.width < 0) {
 			dst_rect.position.x += dst_rect.size.width;
 			dst_rect.size.width *= -1;
@@ -3299,6 +3301,8 @@ void RendererCanvasRenderRD::_prepare_batch_texture_info(RID p_texture, TextureS
 
 RendererCanvasRenderRD::~RendererCanvasRenderRD() {
 	RendererRD::MaterialStorage *material_storage = RendererRD::MaterialStorage::get_singleton();
+	RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
+
 	//canvas state
 
 	material_storage->material_free(default_canvas_group_material);
@@ -3346,7 +3350,9 @@ RendererCanvasRenderRD::~RendererCanvasRenderRD() {
 		}
 	}
 
-	RendererRD::TextureStorage::get_singleton()->canvas_texture_free(default_canvas_texture);
+	// Disable the callback, as we're tearing everything down
+	texture_storage->canvas_texture_set_invalidation_callback(default_canvas_texture, nullptr, nullptr);
+	texture_storage->canvas_texture_free(default_canvas_texture);
 	//pipelines don't need freeing, they are all gone after shaders are gone
 
 	memdelete(shader.default_version_data);

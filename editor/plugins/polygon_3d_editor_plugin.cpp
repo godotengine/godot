@@ -535,12 +535,14 @@ Polygon3DEditor::Polygon3DEditor() {
 
 	button_create = memnew(Button);
 	button_create->set_theme_type_variation(SceneStringName(FlatButton));
+	button_create->set_tooltip_text(TTRC("Create Polygon"));
 	add_child(button_create);
 	button_create->connect(SceneStringName(pressed), callable_mp(this, &Polygon3DEditor::_menu_option).bind(MODE_CREATE));
 	button_create->set_toggle_mode(true);
 
 	button_edit = memnew(Button);
 	button_edit->set_theme_type_variation(SceneStringName(FlatButton));
+	button_edit->set_tooltip_text(TTRC("Edit Polygon"));
 	add_child(button_edit);
 	button_edit->connect(SceneStringName(pressed), callable_mp(this, &Polygon3DEditor::_menu_option).bind(MODE_EDIT));
 	button_edit->set_toggle_mode(true);
@@ -558,6 +560,7 @@ Polygon3DEditor::Polygon3DEditor() {
 	line_material->set_flag(StandardMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
 	line_material->set_flag(StandardMaterial3D::FLAG_SRGB_VERTEX_COLOR, true);
 	line_material->set_flag(StandardMaterial3D::FLAG_DISABLE_FOG, true);
+	line_material->set_flag(StandardMaterial3D::FLAG_DISABLE_DEPTH_TEST, true);
 	line_material->set_albedo(Color(1, 1, 1));
 
 	handle_material.instantiate();
@@ -567,6 +570,7 @@ Polygon3DEditor::Polygon3DEditor() {
 	handle_material->set_flag(StandardMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
 	handle_material->set_flag(StandardMaterial3D::FLAG_SRGB_VERTEX_COLOR, true);
 	handle_material->set_flag(StandardMaterial3D::FLAG_DISABLE_FOG, true);
+	handle_material->set_flag(StandardMaterial3D::FLAG_DISABLE_DEPTH_TEST, true);
 	Ref<Texture2D> handle = EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("Editor3DHandle"), EditorStringName(EditorIcons));
 	handle_material->set_point_size(handle->get_width());
 	handle_material->set_texture(StandardMaterial3D::TEXTURE_ALBEDO, handle);

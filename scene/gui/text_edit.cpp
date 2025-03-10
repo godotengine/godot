@@ -186,7 +186,15 @@ _FORCE_INLINE_ String TextEdit::Text::operator[](int p_line) const {
 	return text[p_line].data;
 }
 
-void TextEdit::Text::invalidate_cache(int p_line, int p_column, bool p_text_changed, const String &p_ime_text, const Array &p_bidi_override) {
+_FORCE_INLINE_ const String &TextEdit::Text::get_text_with_ime(int p_line) const {
+	if (!text[p_line].ime_data.is_empty()) {
+		return text[p_line].ime_data;
+	} else {
+		return text[p_line].data;
+	}
+}
+
+void TextEdit::Text::invalidate_cache(int p_line, bool p_text_changed) {
 	ERR_FAIL_INDEX(p_line, text.size());
 
 	if (font.is_null()) {
@@ -209,20 +217,14 @@ void TextEdit::Text::invalidate_cache(int p_line, int p_column, bool p_text_chan
 	text_line.data_buf->set_preserve_control(draw_control_chars);
 	text_line.data_buf->set_custom_punctuation(get_enabled_word_separators());
 
-	if (p_ime_text.length() > 0) {
-		if (p_text_changed) {
-			text_line.data_buf->add_string(p_ime_text, font, font_size, language);
-		}
-		if (!p_bidi_override.is_empty()) {
-			TS->shaped_text_set_bidi_override(text_line.data_buf->get_rid(), p_bidi_override);
-		}
-	} else {
-		if (p_text_changed) {
-			text_line.data_buf->add_string(text_line.data, font, font_size, language);
-		}
-		if (!text_line.bidi_override.is_empty()) {
-			TS->shaped_text_set_bidi_override(text_line.data_buf->get_rid(), text_line.bidi_override);
-		}
+	const String &text_with_ime = (!text_line.ime_data.is_empty()) ? text_line.ime_data : text_line.data;
+	const Array &bidi_override_with_ime = (!text_line.ime_data.is_empty()) ? text_line.ime_bidi_override : text_line.bidi_override;
+
+	if (p_text_changed) {
+		text_line.data_buf->add_string(text_with_ime, font, font_size, language);
+	}
+	if (!bidi_override_with_ime.is_empty()) {
+		TS->shaped_text_set_bidi_override(text_line.data_buf->get_rid(), bidi_override_with_ime);
 	}
 
 	if (!p_text_changed) {
@@ -286,7 +288,7 @@ void TextEdit::Text::invalidate_all_lines() {
 				text[i].data_buf->tab_align(tabs);
 			}
 		}
-		invalidate_cache(i, -1, false);
+		invalidate_cache(i, false);
 	}
 	tab_size_dirty = false;
 }
@@ -304,7 +306,7 @@ void TextEdit::Text::invalidate_font() {
 	}
 
 	for (int i = 0; i < text.size(); i++) {
-		invalidate_cache(i, -1, false);
+		invalidate_cache(i, false);
 	}
 	is_dirty = false;
 }
@@ -322,7 +324,7 @@ void TextEdit::Text::invalidate_all() {
 	}
 
 	for (int i = 0; i < text.size(); i++) {
-		invalidate_cache(i, -1, true);
+		invalidate_cache(i, true);
 	}
 	is_dirty = false;
 }
@@ -336,9 +338,8 @@ void TextEdit::Text::clear() {
 
 	Line line;
 	line.gutters.resize(gutter_count);
-	line.data = "";
 	text.insert(0, line);
-	invalidate_cache(0, -1, true);
+	invalidate_cache(0, true);
 }
 
 int TextEdit::Text::get_total_visible_line_count() const {
@@ -349,8 +350,18 @@ void TextEdit::Text::set(int p_line, const String &p_text, const Array &p_bidi_o
 	ERR_FAIL_INDEX(p_line, text.size());
 
 	text.write[p_line].data = p_text;
+	text.write[p_line].ime_data = String();
 	text.write[p_line].bidi_override = p_bidi_override;
-	invalidate_cache(p_line, -1, true);
+	text.write[p_line].ime_bidi_override.clear();
+	invalidate_cache(p_line, true);
+}
+
+void TextEdit::Text::set_ime(int p_line, const String &p_text, const Array &p_bidi_override) {
+	ERR_FAIL_INDEX(p_line, text.size());
+
+	text.write[p_line].ime_data = p_text;
+	text.write[p_line].ime_bidi_override = p_bidi_override;
+	invalidate_cache(p_line, true);
 }
 
 void TextEdit::Text::set_hidden(int p_line, bool p_hidden) {
@@ -405,7 +416,7 @@ void TextEdit::Text::insert(int p_at, const Vector<String> &p_text, const Vector
 		line.data = p_text[i];
 		line.bidi_override = p_bidi_override[i];
 		text.write[p_at + i] = line;
-		invalidate_cache(p_at + i, -1, true);
+		invalidate_cache(p_at + i, true);
 	}
 }
 
@@ -873,12 +884,10 @@ void TextEdit::_notification(int p_what) {
 
 					Color line_background_color = text.get_line_background_color(minimap_line);
 
-					if (line_background_color != theme_cache.background_color) {
-						// Make non-default background colors more visible, such as error markers.
-						line_background_color.a = 1.0;
-					} else {
-						line_background_color.a *= 0.6;
-					}
+					// Make non-default background colors more visible, such as error markers.
+					// If a line background color is being applied, like in an error marker, the alpha is set to 1.0.
+					// Else, it stays zero.
+					line_background_color.a = 1.0 * (line_background_color != Color(0, 0, 0, 0));
 
 					Color current_color = editable ? theme_cache.font_color : theme_cache.font_readonly_color;
 
@@ -886,6 +895,12 @@ void TextEdit::_notification(int p_what) {
 					int line_wrap_amount = get_line_wrap_count(minimap_line);
 					int last_wrap_column = 0;
 
+					int first_indent_line = 0;
+					float wrap_indent_line = 0.0;
+					if (text.is_indent_wrapped_lines()) {
+						wrap_indent_line = _get_wrapped_indent_level(minimap_line, first_indent_line);
+						wrap_indent_line = MIN(wrap_indent_line, (minimap_width / minimap_char_size.x) * 0.6);
+					}
 					for (int line_wrap_index = 0; line_wrap_index < line_wrap_amount + 1; line_wrap_index++) {
 						if (line_wrap_index != 0) {
 							i++;
@@ -895,7 +910,7 @@ void TextEdit::_notification(int p_what) {
 						}
 
 						const String &str = wrap_rows[line_wrap_index];
-						int indent_px = line_wrap_index != 0 ? get_indent_level(minimap_line) : 0;
+						int indent_px = line_wrap_index > first_indent_line ? wrap_indent_line : 0.0;
 						if (indent_px >= wrap_at_column) {
 							indent_px = 0;
 						}
@@ -1043,6 +1058,12 @@ void TextEdit::_notification(int p_what) {
 				const Vector<String> wrap_rows = draw_placeholder ? placeholder_wrapped_rows : get_line_wrapped_text(line);
 				int line_wrap_amount = draw_placeholder ? placeholder_wrapped_rows.size() - 1 : get_line_wrap_count(line);
 
+				int first_indent_line = 0;
+				float wrap_indent_line = 0.0;
+				if (text.is_indent_wrapped_lines()) {
+					wrap_indent_line = _get_wrapped_indent_level(line, first_indent_line) * theme_cache.font->get_char_size(' ', theme_cache.font_size).width;
+					wrap_indent_line = MIN(wrap_indent_line, wrap_at_column * 0.6);
+				}
 				for (int line_wrap_index = 0; line_wrap_index <= line_wrap_amount; line_wrap_index++) {
 					if (line_wrap_index != 0) {
 						i++;
@@ -1174,7 +1195,7 @@ void TextEdit::_notification(int p_what) {
 					// Draw line.
 					RID rid = ldata->get_line_rid(line_wrap_index);
 					float text_height = TS->shaped_text_get_size(rid).y;
-					float wrap_indent = (text.is_indent_wrapped_lines() && line_wrap_index > 0) ? get_indent_level(line) * theme_cache.font->get_char_size(' ', theme_cache.font_size).width : 0.0;
+					float wrap_indent = line_wrap_index > first_indent_line ? wrap_indent_line : 0.0;
 
 					if (rtl) {
 						char_margin = size.width - char_margin - (TS->shaped_text_get_size(rid).x + wrap_indent);
@@ -1622,9 +1643,15 @@ void TextEdit::_notification(int p_what) {
 
 		case MainLoop::NOTIFICATION_OS_IME_UPDATE: {
 			if (has_focus()) {
+				const String &new_ime_text = DisplayServer::get_singleton()->ime_get_text();
+				const Vector2i &new_ime_selection = DisplayServer::get_singleton()->ime_get_selection();
+				if (ime_text == new_ime_text && ime_selection == new_ime_selection) {
+					break;
+				}
+
 				bool had_ime_text = has_ime_text();
-				ime_text = DisplayServer::get_singleton()->ime_get_text();
-				ime_selection = DisplayServer::get_singleton()->ime_get_selection();
+				ime_text = new_ime_text;
+				ime_selection = new_ime_selection;
 
 				if (!had_ime_text && has_ime_text()) {
 					_cancel_drag_and_drop_text();
@@ -1663,6 +1690,7 @@ void TextEdit::_notification(int p_what) {
 			selection_drag_attempt = false;
 			drag_action = false;
 			drag_caret_force_displayed = false;
+			dragging_selection = false;
 		} break;
 
 		case NOTIFICATION_MOUSE_EXIT_SELF: {
@@ -2967,15 +2995,20 @@ void TextEdit::_update_ime_text() {
 	if (has_ime_text()) {
 		// Update text to visually include IME text.
 		for (int i = 0; i < get_caret_count(); i++) {
-			String text_with_ime = text[get_caret_line(i)].substr(0, get_caret_column(i)) + ime_text + text[get_caret_line(i)].substr(get_caret_column(i), text[get_caret_line(i)].length());
-			text.invalidate_cache(get_caret_line(i), get_caret_column(i), true, text_with_ime, structured_text_parser(st_parser, st_args, text_with_ime));
+			int l = get_caret_line(i);
+			String text_with_ime = text[l].substr(0, get_caret_column(i)) + ime_text + text[l].substr(get_caret_column(i));
+			text.set_ime(l, text_with_ime, structured_text_parser(st_parser, st_args, text_with_ime));
+			emit_signal(SNAME("lines_edited_from"), l, l);
 		}
 	} else {
 		// Reset text.
 		for (int i = 0; i < get_caret_count(); i++) {
-			text.invalidate_cache(get_caret_line(i), get_caret_column(i), true);
+			int l = get_caret_line(i);
+			text.set_ime(l, String(), Array());
+			emit_signal(SNAME("lines_edited_from"), l, l);
 		}
 	}
+	_clear_syntax_highlighting_cache();
 	queue_redraw();
 }
 
@@ -3096,6 +3129,14 @@ void TextEdit::drop_data(const Point2 &p_point, const Variant &p_data) {
 }
 
 Control::CursorShape TextEdit::get_cursor_shape(const Point2 &p_pos) const {
+	if (dragging_selection) {
+		return get_default_cursor_shape();
+	}
+
+	if (dragging_minimap) {
+		return CURSOR_ARROW;
+	}
+
 	Vector2i current_hovered_gutter = _get_hovered_gutter(p_pos);
 	if (current_hovered_gutter != Vector2i(-1, -1)) {
 		if (gutters[current_hovered_gutter.x].clickable || is_line_gutter_clickable(current_hovered_gutter.y, current_hovered_gutter.x)) {
@@ -3513,9 +3554,16 @@ void TextEdit::set_line(int p_line, const String &p_new_text) {
 
 String TextEdit::get_line(int p_line) const {
 	if (p_line < 0 || p_line >= text.size()) {
-		return "";
+		return String();
 	}
 	return text[p_line];
+}
+
+String TextEdit::get_line_with_ime(int p_line) const {
+	if (p_line < 0 || p_line >= text.size()) {
+		return String();
+	}
+	return text.get_text_with_ime(p_line);
 }
 
 int TextEdit::get_line_width(int p_line, int p_wrap_index) const {
@@ -3527,6 +3575,32 @@ int TextEdit::get_line_width(int p_line, int p_wrap_index) const {
 
 int TextEdit::get_line_height() const {
 	return MAX(text.get_line_height() + theme_cache.line_spacing, 1);
+}
+
+int TextEdit::_get_wrapped_indent_level(int p_line, int &r_first_wrap) const {
+	ERR_FAIL_INDEX_V(p_line, text.size(), 0);
+
+	const Vector<Vector2i> wr = text.get_line_wrap_ranges(p_line);
+	r_first_wrap = 0;
+
+	int tab_count = 0;
+	int whitespace_count = 0;
+	int line_length = text[p_line].size();
+	for (int i = 0; i < line_length - 1; i++) {
+		if (r_first_wrap < wr.size() && i >= wr[r_first_wrap].y) {
+			tab_count = 0;
+			whitespace_count = 0;
+			r_first_wrap++;
+		}
+		if (text[p_line][i] == '\t') {
+			tab_count++;
+		} else if (text[p_line][i] == ' ') {
+			whitespace_count++;
+		} else {
+			break;
+		}
+	}
+	return tab_count * text.get_tab_size() + whitespace_count;
 }
 
 int TextEdit::get_indent_level(int p_line) const {
@@ -4370,9 +4444,12 @@ Point2 TextEdit::get_local_mouse_pos() const {
 }
 
 String TextEdit::get_word_at_pos(const Vector2 &p_pos) const {
-	Point2i pos = get_line_column_at_pos(p_pos);
+	Point2i pos = get_line_column_at_pos(p_pos, false, false);
 	int row = pos.y;
 	int col = pos.x;
+	if (row < 0 || col < 0) {
+		return "";
+	}
 
 	String s = text[row];
 	if (s.length() == 0) {
@@ -4408,7 +4485,7 @@ String TextEdit::get_word_at_pos(const Vector2 &p_pos) const {
 	return String();
 }
 
-Point2i TextEdit::get_line_column_at_pos(const Point2i &p_pos, bool p_allow_out_of_bounds) const {
+Point2i TextEdit::get_line_column_at_pos(const Point2i &p_pos, bool p_clamp_line, bool p_clamp_column) const {
 	float rows = p_pos.y - theme_cache.style_normal->get_margin(SIDE_TOP);
 	if (!editable) {
 		rows -= theme_cache.style_readonly->get_offset().y / 2;
@@ -4435,10 +4512,10 @@ Point2i TextEdit::get_line_column_at_pos(const Point2i &p_pos, bool p_allow_out_
 
 	int visible_lines = get_visible_line_count_in_range(first_vis_line, row);
 	if (rows > visible_lines) {
-		if (!p_allow_out_of_bounds) {
-			return Point2i(-1, -1);
+		if (p_clamp_line) {
+			return Point2i(text[row].length(), row);
 		}
-		return Point2i(text[row].length(), row);
+		return Point2i(-1, -1);
 	}
 
 	int colx = p_pos.x - (theme_cache.style_normal->get_margin(SIDE_LEFT) + gutters_width + gutter_padding);
@@ -4449,12 +4526,23 @@ Point2i TextEdit::get_line_column_at_pos(const Point2i &p_pos, bool p_allow_out_
 	}
 
 	RID text_rid = text.get_line_data(row)->get_line_rid(wrap_index);
-	float wrap_indent = (text.is_indent_wrapped_lines() && wrap_index > 0) ? get_indent_level(row) * theme_cache.font->get_char_size(' ', theme_cache.font_size).width : 0.0;
+	int first_indent_line = 0;
+	float wrap_indent_line = 0.0;
+	if (text.is_indent_wrapped_lines()) {
+		wrap_indent_line = _get_wrapped_indent_level(row, first_indent_line) * theme_cache.font->get_char_size(' ', theme_cache.font_size).width;
+		wrap_indent_line = MIN(wrap_indent_line, wrap_at_column * 0.6);
+	}
+	float wrap_indent = wrap_index > first_indent_line ? wrap_indent_line : 0.0;
 	if (is_layout_rtl()) {
 		colx = TS->shaped_text_get_size(text_rid).x - colx + wrap_indent;
 	} else {
 		colx -= wrap_indent;
 	}
+
+	if (!p_clamp_column && (colx < 0 || colx > TS->shaped_text_get_size(text_rid).x)) {
+		return Point2i(-1, -1);
+	}
+
 	int col = TS->shaped_text_hit_test_position(text_rid, colx);
 	if (!caret_mid_grapheme_enabled) {
 		col = TS->shaped_text_closest_character_pos(text_rid, col);
@@ -6035,7 +6123,7 @@ void TextEdit::adjust_viewport_to_caret(int p_caret) {
 		set_line_as_last_visible(cur_line, cur_wrap);
 	}
 
-	_adjust_viewport_to_caret_horizontally(p_caret);
+	_adjust_viewport_to_caret_horizontally(p_caret, false);
 }
 
 void TextEdit::center_viewport_to_caret(int p_caret) {
@@ -6532,6 +6620,7 @@ void TextEdit::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_line", "line", "new_text"), &TextEdit::set_line);
 	ClassDB::bind_method(D_METHOD("get_line", "line"), &TextEdit::get_line);
+	ClassDB::bind_method(D_METHOD("get_line_with_ime", "line"), &TextEdit::get_line_with_ime);
 
 	ClassDB::bind_method(D_METHOD("get_line_width", "line", "wrap_index"), &TextEdit::get_line_width, DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("get_line_height"), &TextEdit::get_line_height);
@@ -6642,7 +6731,7 @@ void TextEdit::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_word_at_pos", "position"), &TextEdit::get_word_at_pos);
 
-	ClassDB::bind_method(D_METHOD("get_line_column_at_pos", "position", "allow_out_of_bounds"), &TextEdit::get_line_column_at_pos, DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("get_line_column_at_pos", "position", "clamp_line", "clamp_column"), &TextEdit::get_line_column_at_pos, DEFVAL(true), DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("get_pos_at_line_column", "line", "column"), &TextEdit::get_pos_at_line_column);
 	ClassDB::bind_method(D_METHOD("get_rect_at_line_column", "line", "column"), &TextEdit::get_rect_at_line_column);
 
@@ -7544,7 +7633,13 @@ int TextEdit::_get_char_pos_for_line(int p_px, int p_line, int p_wrap_index) con
 	p_wrap_index = MIN(p_wrap_index, text.get_line_data(p_line)->get_line_count() - 1);
 
 	RID text_rid = text.get_line_data(p_line)->get_line_rid(p_wrap_index);
-	float wrap_indent = (text.is_indent_wrapped_lines() && p_wrap_index > 0) ? get_indent_level(p_line) * theme_cache.font->get_char_size(' ', theme_cache.font_size).width : 0.0;
+	int first_indent_line = 0;
+	float wrap_indent_line = 0.0;
+	if (text.is_indent_wrapped_lines()) {
+		wrap_indent_line = _get_wrapped_indent_level(p_line, first_indent_line) * theme_cache.font->get_char_size(' ', theme_cache.font_size).width;
+		wrap_indent_line = MIN(wrap_indent_line, wrap_at_column * 0.6);
+	}
+	float wrap_indent = p_wrap_index > first_indent_line ? wrap_indent_line : 0.0;
 	if (is_layout_rtl()) {
 		p_px = TS->shaped_text_get_size(text_rid).x - p_px + wrap_indent;
 	} else {
@@ -7613,7 +7708,13 @@ int TextEdit::_get_column_x_offset_for_line(int p_char, int p_line, int p_column
 	}
 
 	RID text_rid = text.get_line_data(p_line)->get_line_rid(row);
-	float wrap_indent = (text.is_indent_wrapped_lines() && row > 0) ? get_indent_level(p_line) * theme_cache.font->get_char_size(' ', theme_cache.font_size).width : 0.0;
+	int first_indent_line = 0;
+	float wrap_indent_line = 0.0;
+	if (text.is_indent_wrapped_lines()) {
+		wrap_indent_line = _get_wrapped_indent_level(p_line, first_indent_line) * theme_cache.font->get_char_size(' ', theme_cache.font_size).width;
+		wrap_indent_line = MIN(wrap_indent_line, wrap_at_column * 0.6);
+	}
+	float wrap_indent = row > first_indent_line ? wrap_indent_line : 0.0;
 	CaretInfo ts_caret = TS->shaped_text_get_carets(text_rid, p_column);
 	if ((ts_caret.l_caret != Rect2() && (ts_caret.l_dir == TextServer::DIRECTION_AUTO || ts_caret.l_dir == (TextServer::Direction)input_direction)) || (ts_caret.t_caret == Rect2())) {
 		return ts_caret.l_caret.position.x + (is_layout_rtl() ? -wrap_indent : wrap_indent);
@@ -8138,7 +8239,7 @@ void TextEdit::_scroll_lines_down() {
 	merge_overlapping_carets();
 }
 
-void TextEdit::_adjust_viewport_to_caret_horizontally(int p_caret) {
+void TextEdit::_adjust_viewport_to_caret_horizontally(int p_caret, bool p_maximize_selection) {
 	if (get_line_wrapping_mode() != LineWrappingMode::LINE_WRAPPING_NONE) {
 		first_visible_col = 0;
 		h_scroll->set_value(first_visible_col);
@@ -8172,7 +8273,7 @@ void TextEdit::_adjust_viewport_to_caret_horizontally(int p_caret) {
 		int ime_end_column = get_caret_column(p_caret) + (ime_selection.y > 0 ? ime_selection.x + ime_selection.y : ime_text.length());
 		caret_end_pos = _get_column_x_offset_for_line(ime_end_column, get_caret_line(p_caret), ime_end_column);
 		prioritize_end = false;
-	} else if (has_selection(p_caret) && get_selection_from_line(p_caret) == get_selection_to_line(p_caret)) {
+	} else if (p_maximize_selection && has_selection(p_caret) && get_selection_from_line(p_caret) == get_selection_to_line(p_caret)) {
 		// Use selection if it is on one line.
 		caret_start_pos = _get_column_x_offset_for_line(get_selection_from_column(p_caret), get_caret_line(p_caret), get_selection_from_column(p_caret));
 		caret_end_pos = _get_column_x_offset_for_line(get_selection_to_column(p_caret), get_caret_line(p_caret), get_selection_to_column(p_caret));
@@ -8495,7 +8596,7 @@ void TextEdit::_base_insert_text(int p_line, int p_char, const String &p_text, i
 	}
 
 	/* STEP 3: Separate dest string in pre and post text. */
-	String postinsert_text = text[p_line].substr(p_char, text[p_line].size());
+	String postinsert_text = text[p_line].substr(p_char);
 
 	substrings.write[0] = text[p_line].substr(0, p_char) + substrings[0];
 	substrings.write[substrings.size() - 1] += postinsert_text;
@@ -8559,7 +8660,7 @@ void TextEdit::_base_remove_text(int p_from_line, int p_from_column, int p_to_li
 	ERR_FAIL_COND(p_to_line == p_from_line && p_to_column < p_from_column); // 'from > to'.
 
 	String pre_text = text[p_from_line].substr(0, p_from_column);
-	String post_text = text[p_to_line].substr(p_to_column, text[p_to_line].length());
+	String post_text = text[p_to_line].substr(p_to_column);
 
 	text.remove_range(p_from_line, p_to_line);
 	text.set(p_from_line, pre_text + post_text, structured_text_parser(st_parser, st_args, pre_text + post_text));

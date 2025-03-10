@@ -208,7 +208,7 @@ String ProjectSettings::localize_path(const String &p_path) const {
 		if (plocal[plocal.length() - 1] == '/') {
 			sep += 1;
 		}
-		return plocal + path.substr(sep, path.size() - sep);
+		return plocal + path.substr(sep);
 	}
 }
 
@@ -289,7 +289,7 @@ bool ProjectSettings::_set(const StringName &p_name, const Variant &p_value) {
 				remove_autoload(node_name);
 			}
 		} else if (p_name.operator String().begins_with("global_group/")) {
-			String group_name = p_name.operator String().get_slice("/", 1);
+			String group_name = p_name.operator String().get_slicec('/', 1);
 			if (global_groups.has(group_name)) {
 				remove_global_group(group_name);
 			}
@@ -340,7 +340,7 @@ bool ProjectSettings::_set(const StringName &p_name, const Variant &p_value) {
 			}
 			add_autoload(autoload);
 		} else if (p_name.operator String().begins_with("global_group/")) {
-			String group_name = p_name.operator String().get_slice("/", 1);
+			String group_name = p_name.operator String().get_slicec('/', 1);
 			add_global_group(group_name, p_value);
 		}
 	}
@@ -529,24 +529,6 @@ void ProjectSettings::_convert_to_last_version(int p_from_version) {
 				action["deadzone"] = Variant(0.5f);
 				action["events"] = array;
 				E.value.variant = action;
-			}
-		}
-	}
-	if (p_from_version == 5) {
-		// Converts the device in events from -3 to -1.
-		// -3 was introduced in GH-97707 as a way to prevent a clash in device IDs, but as reported in GH-99243, this leads to problems.
-		// -3 was used during dev-releases, so this conversion helps to revert such affected projects.
-		// This conversion doesn't affect any other projects, since -3 is not used otherwise.
-		for (KeyValue<StringName, ProjectSettings::VariantContainer> &E : props) {
-			if (String(E.key).begins_with("input/")) {
-				Dictionary action = E.value.variant;
-				Array events = action["events"];
-				for (int i = 0; i < events.size(); i++) {
-					Ref<InputEvent> ev = events[i];
-					if (ev.is_valid() && ev->get_device() == -3) {
-						ev->set_device(-1);
-					}
-				}
 			}
 		}
 	}
@@ -1147,7 +1129,7 @@ Error ProjectSettings::save_custom(const String &p_path, const CustomMap &p_cust
 			category = "";
 		} else {
 			category = category.substr(0, div);
-			name = name.substr(div + 1, name.size());
+			name = name.substr(div + 1);
 		}
 		save_props[category].push_back(name);
 	}
@@ -1457,7 +1439,7 @@ void ProjectSettings::_add_builtin_input_map() {
 			}
 
 			Dictionary action;
-			action["deadzone"] = Variant(InputMap::DEFAULT_DEADZONE);
+			action["deadzone"] = Variant(InputMap::DEFAULT_TOGGLE_DEADZONE);
 			action["events"] = events;
 
 			String action_name = "input/" + E.key;

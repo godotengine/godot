@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef IOS_EXPORT_PLUGIN_H
-#define IOS_EXPORT_PLUGIN_H
+#pragma once
 
 #include "godot_plugin_config.h"
 
@@ -201,6 +200,8 @@ public:
 		return list;
 	}
 
+	virtual HashMap<String, Variant> get_custom_project_settings(const Ref<EditorExportPreset> &p_preset) const override;
+
 	virtual Error export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, BitField<EditorExportPlatform::DebugFlags> p_flags = 0) override;
 
 	virtual bool has_valid_export_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates, bool p_debug = false) const override;
@@ -296,5 +297,3 @@ public:
 		return enabled_plugins;
 	}
 };
-
-#endif // IOS_EXPORT_PLUGIN_H

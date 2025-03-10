@@ -343,7 +343,7 @@ String ShaderEditorPlugin::get_unsaved_status(const String &p_for_scene) const {
 
 void ShaderEditorPlugin::save_external_data() {
 	for (EditedShader &edited_shader : edited_shaders) {
-		if (edited_shader.shader_editor) {
+		if (edited_shader.shader_editor && edited_shader.shader_editor->is_unsaved()) {
 			edited_shader.shader_editor->save_external_data();
 		}
 	}
@@ -833,6 +833,7 @@ ShaderEditorPlugin::ShaderEditorPlugin() {
 	left_panel->set_custom_minimum_size(Size2(100, 300) * EDSCALE);
 
 	shader_tabs = memnew(TabContainer);
+	shader_tabs->set_custom_minimum_size(Size2(460, 300) * EDSCALE);
 	shader_tabs->set_tabs_visible(false);
 	shader_tabs->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	main_split->add_child(shader_tabs);

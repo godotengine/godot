@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef SCENE_TREE_EDITOR_H
-#define SCENE_TREE_EDITOR_H
+#pragma once
 
 #include "scene/gui/check_box.h"
 #include "scene/gui/check_button.h"
@@ -90,6 +89,7 @@ class SceneTreeEditor : public Control {
 
 		HashMap<Node *, CachedNode>::Iterator add(Node *p_node, TreeItem *p_item);
 		HashMap<Node *, CachedNode>::Iterator get(Node *p_node, bool p_deleted_ok = true);
+		bool has(Node *p_node);
 		void remove(Node *p_node, bool p_recursive = false);
 		void mark_dirty(Node *p_node, bool p_parents = true);
 		void mark_children_dirty(Node *p_node, bool p_recursive = false);
@@ -292,5 +292,3 @@ public:
 	SceneTreeDialog();
 	~SceneTreeDialog();
 };
-
-#endif // SCENE_TREE_EDITOR_H

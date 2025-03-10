@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef EDITOR_HELP_H
-#define EDITOR_HELP_H
+#pragma once
 
 #include "core/os/thread.h"
 #include "editor/doc_tools.h"
@@ -57,6 +56,8 @@ class FindBar : public HBoxContainer {
 
 	int results_count = 0;
 
+	virtual void input(const Ref<InputEvent> &p_event) override;
+
 	void _hide_bar();
 
 	void _search_text_changed(const String &p_text);
@@ -67,7 +68,6 @@ class FindBar : public HBoxContainer {
 
 protected:
 	void _notification(int p_what);
-	virtual void unhandled_input(const Ref<InputEvent> &p_event) override;
 
 	bool _search(bool p_search_previous = false);
 
@@ -396,5 +396,3 @@ public:
 	virtual ~EditorHelpHighlighter();
 };
 #endif // defined(MODULE_GDSCRIPT_ENABLED) || defined(MODULE_MONO_ENABLED)
-
-#endif // EDITOR_HELP_H

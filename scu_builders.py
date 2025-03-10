@@ -326,7 +326,7 @@ def generate_scu_files(max_includes_per_scu):
     process_folder(["modules/openxr"], ["register_types"])
     process_folder(["modules/openxr/action_map"])
     process_folder(["modules/openxr/editor"])
-    process_folder(["modules/openxr/extensions"])
+    # process_folder(["modules/openxr/extensions"])  # Sensitive include order for platform code.
     process_folder(["modules/openxr/scene"])
     process_folder(["modules/godot_physics_2d"])
     process_folder(["modules/godot_physics_3d"])
@@ -343,6 +343,7 @@ def generate_scu_files(max_includes_per_scu):
     process_folder(["scene/3d"])
     process_folder(["scene/3d/physics"])
     process_folder(["scene/3d/physics/joints"])
+    process_folder(["scene/3d/xr"])
     process_folder(["scene/animation"])
     process_folder(["scene/gui"])
     process_folder(["scene/main"])

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef JOLT_PHYSICS_SERVER_3D_H
-#define JOLT_PHYSICS_SERVER_3D_H
+#pragma once
 
 #include "core/templates/rid_owner.h"
 #include "servers/physics_server_3d.h"
@@ -421,6 +420,7 @@ public:
 
 	virtual int get_process_info(PhysicsServer3D::ProcessInfo p_process_info) override;
 
+	bool is_on_separate_thread() const { return on_separate_thread; }
 	bool is_active() const { return active; }
 
 	void free_space(JoltSpace3D *p_space);
@@ -498,5 +498,3 @@ VARIANT_ENUM_CAST(JoltPhysicsServer3D::ConeTwistJointParamJolt)
 VARIANT_ENUM_CAST(JoltPhysicsServer3D::ConeTwistJointFlagJolt)
 VARIANT_ENUM_CAST(JoltPhysicsServer3D::G6DOFJointAxisParamJolt)
 VARIANT_ENUM_CAST(JoltPhysicsServer3D::G6DOFJointAxisFlagJolt)
-
-#endif // JOLT_PHYSICS_SERVER_3D_H

@@ -1138,6 +1138,7 @@ bool KeyMappingX11::is_sym_numpad(KeySym p_keysym) {
 		case XK_KP_Divide:
 		case XK_KP_Separator:
 		case XK_KP_Decimal:
+		case XK_KP_Delete:
 		case XK_KP_0:
 		case XK_KP_1:
 		case XK_KP_2:

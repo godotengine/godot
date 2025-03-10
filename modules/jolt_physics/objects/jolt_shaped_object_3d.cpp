@@ -30,6 +30,7 @@
 
 #include "jolt_shaped_object_3d.h"
 
+#include "../misc/jolt_math_funcs.h"
 #include "../misc/jolt_type_conversions.h"
 #include "../shapes/jolt_custom_double_sided_shape.h"
 #include "../shapes/jolt_shape_3d.h"
@@ -347,7 +348,10 @@ void JoltShapedObject3D::commit_shapes(bool p_optimize_compound) {
 void JoltShapedObject3D::add_shape(JoltShape3D *p_shape, Transform3D p_transform, bool p_disabled) {
 	JOLT_ENSURE_SCALE_NOT_ZERO(p_transform, vformat("An invalid transform was passed when adding shape at index %d to physics body '%s'.", shapes.size(), to_string()));
 
-	shapes.push_back(JoltShapeInstance3D(this, p_shape, p_transform.orthonormalized(), p_transform.basis.get_scale(), p_disabled));
+	Vector3 shape_scale;
+	JoltMath::decompose(p_transform, shape_scale);
+
+	shapes.push_back(JoltShapeInstance3D(this, p_shape, p_transform, shape_scale, p_disabled));
 
 	_shapes_changed();
 }
@@ -430,8 +434,8 @@ void JoltShapedObject3D::set_shape_transform(int p_index, Transform3D p_transfor
 	ERR_FAIL_INDEX(p_index, (int)shapes.size());
 	JOLT_ENSURE_SCALE_NOT_ZERO(p_transform, "Failed to correctly set transform for shape at index %d in body '%s'.");
 
-	Vector3 new_scale = p_transform.basis.get_scale();
-	p_transform.basis.orthonormalize();
+	Vector3 new_scale;
+	JoltMath::decompose(p_transform, new_scale);
 
 	JoltShapeInstance3D &shape = shapes[p_index];
 

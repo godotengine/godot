@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef EDITOR_NODE_H
-#define EDITOR_NODE_H
+#pragma once
 
 #include "core/object/script_language.h"
 #include "core/templates/safe_refcount.h"
@@ -419,7 +418,7 @@ private:
 	bool script_distraction_free = false;
 
 	bool changing_scene = false;
-	bool cmdline_export_mode = false;
+	bool cmdline_mode = false;
 	bool convert_old = false;
 	bool immediate_dialog_confirmed = false;
 	bool opening_prev = false;
@@ -615,6 +614,7 @@ private:
 	bool _find_and_save_edited_subresources(Object *obj, HashMap<Ref<Resource>, bool> &processed, int32_t flags);
 	void _save_edited_subresources(Node *scene, HashMap<Ref<Resource>, bool> &processed, int32_t flags);
 	void _mark_unsaved_scenes();
+	bool _is_scene_unsaved(int p_idx);
 
 	void _find_node_types(Node *p_node, int &count_2d, int &count_3d);
 	void _save_scene_with_preview(String p_file, int p_idx = -1);
@@ -624,6 +624,7 @@ private:
 
 	void _proceed_closing_scene_tabs();
 	bool _is_closing_editor() const;
+	void _restart_editor(bool p_goto_project_manager = false);
 
 	Dictionary _get_main_scene_state();
 	void _set_main_scene_state(Dictionary p_state, Node *p_for_scene);
@@ -674,6 +675,8 @@ private:
 
 	void _progress_dialog_visibility_changed();
 	void _load_error_dialog_visibility_changed();
+
+	void _execute_upgrades();
 
 protected:
 	friend class FileSystemDock;
@@ -1004,5 +1007,3 @@ struct EditorProgressBG {
 	}
 	~EditorProgressBG() { EditorNode::progress_end_task_bg(task); }
 };
-
-#endif // EDITOR_NODE_H

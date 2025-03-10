@@ -424,7 +424,7 @@ void SceneTreeDock::_perform_create_audio_stream_players(const Vector<String> &p
 
 void SceneTreeDock::_replace_with_branch_scene(const String &p_file, Node *base) {
 	// `move_child` + `get_index` doesn't really work for internal nodes.
-	ERR_FAIL_COND_MSG(base->get_internal_mode() != INTERNAL_MODE_DISABLED, "Trying to replace internal node, this is not supported.");
+	ERR_FAIL_COND_MSG(base->is_internal(), "Trying to replace internal node, this is not supported.");
 
 	Ref<PackedScene> sdata = ResourceLoader::load(p_file);
 	if (sdata.is_null()) {
@@ -814,7 +814,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			int highest_id = 0;
 			for (Node *E : selection) {
 				// `move_child` + `get_index` doesn't really work for internal nodes.
-				ERR_FAIL_COND_MSG(E->get_internal_mode() != INTERNAL_MODE_DISABLED, "Trying to move internal node, this is not supported.");
+				ERR_FAIL_COND_MSG(E->is_internal(), "Trying to move internal node, this is not supported.");
 				int index = E->get_index(false);
 
 				if (index > highest_id) {
@@ -993,7 +993,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			}
 
 			// `move_child` + `get_index` doesn't really work for internal nodes.
-			ERR_FAIL_COND_MSG(node->get_internal_mode() != INTERNAL_MODE_DISABLED, "Trying to set internal node as scene root, this is not supported.");
+			ERR_FAIL_COND_MSG(node->is_internal(), "Trying to set internal node as scene root, this is not supported.");
 
 			//check that from node to root, all owners are right
 
@@ -2359,7 +2359,7 @@ void SceneTreeDock::_do_reparent(Node *p_new_parent, int p_position_in_parent, V
 			return; // Attempt to reparent to itself.
 		}
 		// `move_child` + `get_index` doesn't really work for internal nodes.
-		ERR_FAIL_COND_MSG(p_nodes[ni]->get_internal_mode() != INTERNAL_MODE_DISABLED, "Trying to move internal node, this is not supported.");
+		ERR_FAIL_COND_MSG(p_nodes[ni]->is_internal(), "Trying to move internal node, this is not supported.");
 
 		if (p_nodes[ni]->get_index(false) < first_idx) {
 			nodes_before--;
@@ -2772,7 +2772,7 @@ void SceneTreeDock::_delete_confirm(bool p_cut) {
 	if (!entire_scene) {
 		for (const Node *E : remove_list) {
 			// `move_child` + `get_index` doesn't really work for internal nodes.
-			ERR_FAIL_COND_MSG(E->get_internal_mode() != INTERNAL_MODE_DISABLED, "Trying to remove internal node, this is not supported.");
+			ERR_FAIL_COND_MSG(E->is_internal(), "Trying to remove internal node, this is not supported.");
 		}
 	}
 
@@ -2862,7 +2862,7 @@ void SceneTreeDock::_update_script_button() {
 			Ref<Script> cts;
 
 			if (n->has_meta(SceneStringName(_custom_type_script))) {
-				cts = n->get_meta(SceneStringName(_custom_type_script));
+				cts = PropertyUtils::get_custom_type_script(n);
 			}
 
 			if (selection.size() == 1) {
@@ -3142,7 +3142,8 @@ void SceneTreeDock::_replace_node(Node *p_node, Node *p_by_node, bool p_keep_pro
 
 		// If we're dealing with a custom node type, we need to create a default instance of the custom type instead of the native type for property comparison.
 		if (oldnode->has_meta(SceneStringName(_custom_type_script))) {
-			Ref<Script> cts = oldnode->get_meta(SceneStringName(_custom_type_script));
+			Ref<Script> cts = PropertyUtils::get_custom_type_script(oldnode);
+			ERR_FAIL_COND_MSG(cts.is_null(), "Invalid custom type script.");
 			default_oldnode = Object::cast_to<Node>(get_editor_data()->script_class_instance(cts->get_global_name()));
 			if (default_oldnode) {
 				default_oldnode->set_name(cts->get_global_name());
@@ -3208,7 +3209,7 @@ void SceneTreeDock::_replace_node(Node *p_node, Node *p_by_node, bool p_keep_pro
 
 	List<Node *> to_erase;
 	for (int i = 0; i < oldnode->get_child_count(); i++) {
-		if (oldnode->get_child(i)->get_owner() == nullptr && oldnode->is_owned_by_parent()) {
+		if (oldnode->get_child(i)->get_owner() == nullptr && oldnode->is_internal()) {
 			to_erase.push_back(oldnode->get_child(i));
 		}
 	}
@@ -3304,7 +3305,7 @@ bool SceneTreeDock::_check_node_recursive(Variant &r_variant, Node *p_node, Node
 			bool updated = false;
 			for (int i = 0; i < a.size(); i++) {
 				Variant value = a[i];
-				if (_check_node_recursive(value, p_node, p_by_node, type_hint.get_slice(":", 1), r_warn_message)) {
+				if (_check_node_recursive(value, p_node, p_by_node, type_hint.get_slicec(':', 1), r_warn_message)) {
 					if (!updated) {
 						a = a.duplicate(); // Need to duplicate for undo-redo to work.
 						updated = true;
@@ -3646,7 +3647,7 @@ void SceneTreeDock::_script_dropped(const String &p_file, NodePath p_to) {
 	} else {
 		// Check if dropped script is compatible.
 		if (n->has_meta(SceneStringName(_custom_type_script))) {
-			Ref<Script> ct_scr = n->get_meta(SceneStringName(_custom_type_script));
+			Ref<Script> ct_scr = PropertyUtils::get_custom_type_script(n);
 			if (!scr->inherits_script(ct_scr)) {
 				String custom_type_name = ct_scr->get_global_name();
 

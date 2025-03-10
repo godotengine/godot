@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TEST_TEXT_EDIT_H
-#define TEST_TEXT_EDIT_H
+#pragma once
 
 #include "scene/gui/text_edit.h"
 
@@ -8014,6 +8013,8 @@ TEST_CASE("[SceneTree][TextEdit] gutters") {
 	SIGNAL_WATCH(text_edit, "gutter_removed");
 
 	SUBCASE("[TextEdit] gutter add and remove") {
+		text_edit->set_text("test1\ntest2\ntest3\ntest4");
+
 		text_edit->add_gutter();
 		CHECK(text_edit->get_gutter_count() == 1);
 		CHECK(text_edit->get_gutter_width(0) == 24);
@@ -8245,5 +8246,3 @@ TEST_CASE("[SceneTree][TextEdit] gutters") {
 }
 
 } // namespace TestTextEdit
-
-#endif // TEST_TEXT_EDIT_H

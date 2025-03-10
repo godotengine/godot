@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef EDITOR_TRANSLATION_PARSER_H
-#define EDITOR_TRANSLATION_PARSER_H
+#pragma once
 
 #include "core/error/error_list.h"
 #include "core/object/gdvirtual.gen.inc"
@@ -42,13 +41,15 @@ class EditorTranslationParserPlugin : public RefCounted {
 protected:
 	static void _bind_methods();
 
-	GDVIRTUAL3(_parse_file, String, TypedArray<String>, TypedArray<Array>)
-	GDVIRTUAL2(_get_comments, TypedArray<String>, TypedArray<String>)
+	GDVIRTUAL1R(TypedArray<PackedStringArray>, _parse_file, String)
 	GDVIRTUAL0RC(Vector<String>, _get_recognized_extensions)
 
+#ifndef DISABLE_DEPRECATED
+	GDVIRTUAL3_COMPAT(_parse_file_bind_compat_99297, _parse_file, String, TypedArray<String>, TypedArray<Array>)
+#endif
+
 public:
-	virtual Error parse_file(const String &p_path, Vector<String> *r_ids, Vector<Vector<String>> *r_ids_ctx_plural);
-	virtual void get_comments(Vector<String> *r_ids_comment, Vector<String> *r_ids_ctx_plural_comment);
+	virtual Error parse_file(const String &p_path, Vector<Vector<String>> *r_translations);
 	virtual void get_recognized_extensions(List<String> *r_extensions) const;
 };
 
@@ -76,5 +77,3 @@ public:
 	EditorTranslationParser();
 	~EditorTranslationParser();
 };
-
-#endif // EDITOR_TRANSLATION_PARSER_H

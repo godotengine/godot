@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef CSG_SHAPE_H
-#define CSG_SHAPE_H
+#pragma once
 
 #include "csg.h"
 
@@ -155,6 +154,8 @@ public:
 
 	void set_collision_mask_value(int p_layer_number, bool p_value);
 	bool get_collision_mask_value(int p_layer_number) const;
+
+	RID _get_root_collision_instance() const;
 
 	void set_collision_priority(real_t p_priority);
 	real_t get_collision_priority() const;
@@ -480,5 +481,3 @@ public:
 VARIANT_ENUM_CAST(CSGPolygon3D::Mode)
 VARIANT_ENUM_CAST(CSGPolygon3D::PathRotation)
 VARIANT_ENUM_CAST(CSGPolygon3D::PathIntervalType)
-
-#endif // CSG_SHAPE_H

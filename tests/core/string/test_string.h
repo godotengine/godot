@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TEST_STRING_H
-#define TEST_STRING_H
+#pragma once
 
 #include "core/string/ustring.h"
 
@@ -1888,15 +1887,15 @@ TEST_CASE("[String] Join") {
 }
 
 TEST_CASE("[String] Is_*") {
-	static const char *data[13] = { "-30", "100", "10.1", "10,1", "1e2", "1e-2", "1e2e3", "0xAB", "AB", "Test1", "1Test", "Test*1", "文字" };
-	static bool isnum[13] = { true, true, true, false, false, false, false, false, false, false, false, false, false };
-	static bool isint[13] = { true, true, false, false, false, false, false, false, false, false, false, false, false };
-	static bool ishex[13] = { true, true, false, false, true, false, true, false, true, false, false, false, false };
-	static bool ishex_p[13] = { false, false, false, false, false, false, false, true, false, false, false, false, false };
-	static bool isflt[13] = { true, true, true, false, true, true, false, false, false, false, false, false, false };
-	static bool isaid[13] = { false, false, false, false, false, false, false, false, true, true, false, false, false };
-	static bool isuid[13] = { false, false, false, false, false, false, false, false, true, true, false, false, true };
-	for (int i = 0; i < 12; i++) {
+	static const char *data[] = { "-30", "100", "10.1", "10,1", "1e2", "1e-2", "1e2e3", "0xAB", "AB", "Test1", "1Test", "Test*1", "文字", "1E2", "1E-2" };
+	static bool isnum[] = { true, true, true, false, false, false, false, false, false, false, false, false, false, false, false };
+	static bool isint[] = { true, true, false, false, false, false, false, false, false, false, false, false, false, false, false };
+	static bool ishex[] = { true, true, false, false, true, false, true, false, true, false, false, false, false, true, false };
+	static bool ishex_p[] = { false, false, false, false, false, false, false, true, false, false, false, false, false, false, false };
+	static bool isflt[] = { true, true, true, false, true, true, false, false, false, false, false, false, false, true, true };
+	static bool isaid[] = { false, false, false, false, false, false, false, false, true, true, false, false, false, false, false };
+	static bool isuid[] = { false, false, false, false, false, false, false, false, true, true, false, false, true, false, false };
+	for (unsigned int i = 0; i < std::size(data); i++) {
 		String s = String::utf8(data[i]);
 		CHECK(s.is_numeric() == isnum[i]);
 		CHECK(s.is_valid_int() == isint[i]);
@@ -2103,5 +2102,3 @@ TEST_CASE("[Stress][String] Empty via `is_empty()`") {
 	}
 }
 } // namespace TestString
-
-#endif // TEST_STRING_H

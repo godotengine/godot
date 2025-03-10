@@ -228,8 +228,8 @@ void ScriptTextEditor::_set_theme_for_script() {
 	script->get_language()->get_string_delimiters(&strings);
 	text_edit->clear_string_delimiters();
 	for (const String &string : strings) {
-		String beg = string.get_slice(" ", 0);
-		String end = string.get_slice_count(" ") > 1 ? string.get_slice(" ", 1) : String();
+		String beg = string.get_slicec(' ', 0);
+		String end = string.get_slice_count(" ") > 1 ? string.get_slicec(' ', 1) : String();
 		if (!text_edit->has_string_delimiter(beg)) {
 			text_edit->add_string_delimiter(beg, end, end.is_empty());
 		}
@@ -244,8 +244,8 @@ void ScriptTextEditor::_set_theme_for_script() {
 	List<String> comments;
 	script->get_language()->get_comment_delimiters(&comments);
 	for (const String &comment : comments) {
-		String beg = comment.get_slice(" ", 0);
-		String end = comment.get_slice_count(" ") > 1 ? comment.get_slice(" ", 1) : String();
+		String beg = comment.get_slicec(' ', 0);
+		String end = comment.get_slice_count(" ") > 1 ? comment.get_slicec(' ', 1) : String();
 		text_edit->add_comment_delimiter(beg, end, end.is_empty());
 
 		if (!end.is_empty() && !text_edit->has_auto_brace_completion_open_key(beg)) {
@@ -256,8 +256,8 @@ void ScriptTextEditor::_set_theme_for_script() {
 	List<String> doc_comments;
 	script->get_language()->get_doc_comment_delimiters(&doc_comments);
 	for (const String &doc_comment : doc_comments) {
-		String beg = doc_comment.get_slice(" ", 0);
-		String end = doc_comment.get_slice_count(" ") > 1 ? doc_comment.get_slice(" ", 1) : String();
+		String beg = doc_comment.get_slicec(' ', 0);
+		String end = doc_comment.get_slice_count(" ") > 1 ? doc_comment.get_slicec(' ', 1) : String();
 		text_edit->add_comment_delimiter(beg, end, end.is_empty());
 
 		if (!end.is_empty() && !text_edit->has_auto_brace_completion_open_key(beg)) {
@@ -1103,6 +1103,10 @@ void ScriptTextEditor::_validate_symbol(const String &p_symbol) {
 }
 
 void ScriptTextEditor::_show_symbol_tooltip(const String &p_symbol, int p_row, int p_column) {
+	if (!EDITOR_GET("text_editor/behavior/documentation/enable_tooltips").booleanize()) {
+		return;
+	}
+
 	if (p_symbol.begins_with("res://") || p_symbol.begins_with("uid://")) {
 		EditorHelpBitTooltip::show_tooltip(code_editor->get_text_editor(), "resource||" + p_symbol);
 		return;
@@ -1203,19 +1207,14 @@ void ScriptTextEditor::_show_symbol_tooltip(const String &p_symbol, int p_row, i
 		}
 	}
 
+	// NOTE: See also `ScriptEditor::_get_debug_tooltip()` for documentation tooltips disabled.
 	String debug_value = EditorDebuggerNode::get_singleton()->get_var_value(p_symbol);
 	if (!debug_value.is_empty()) {
 		constexpr int DISPLAY_LIMIT = 1024;
 		if (debug_value.size() > DISPLAY_LIMIT) {
 			debug_value = debug_value.left(DISPLAY_LIMIT) + "... " + TTR("(truncated)");
 		}
-		debug_value = debug_value.replace("[", "[lb]");
-
-		if (doc_symbol.is_empty()) {
-			debug_value = p_symbol + ": " + debug_value;
-		} else {
-			debug_value = TTR("Current value: ") + debug_value;
-		}
+		debug_value = TTR("Current value: ") + debug_value.replace("[", "[lb]");
 	}
 
 	if (!doc_symbol.is_empty() || !debug_value.is_empty()) {
@@ -1279,12 +1278,12 @@ void ScriptTextEditor::_update_connected_methods() {
 				int line = -1;
 
 				for (int j = 0; j < functions.size(); j++) {
-					String name = functions[j].get_slice(":", 0);
+					String name = functions[j].get_slicec(':', 0);
 					if (name == method) {
 						Dictionary line_meta;
 						line_meta["type"] = "connection";
 						line_meta["method"] = method;
-						line = functions[j].get_slice(":", 1).to_int() - 1;
+						line = functions[j].get_slicec(':', 1).to_int() - 1;
 						text_edit->set_line_gutter_metadata(line, connection_gutter, line_meta);
 						text_edit->set_line_gutter_icon(line, connection_gutter, get_parent_control()->get_editor_theme_icon(SNAME("Slot")));
 						text_edit->set_line_gutter_clickable(line, connection_gutter, true);
@@ -1319,7 +1318,7 @@ void ScriptTextEditor::_update_connected_methods() {
 	// Add override icons to methods.
 	methods_found.clear();
 	for (int i = 0; i < functions.size(); i++) {
-		String raw_name = functions[i].get_slice(":", 0);
+		String raw_name = functions[i].get_slicec(':', 0);
 		StringName name = StringName(raw_name);
 		if (methods_found.has(name)) {
 			continue;
@@ -1365,7 +1364,7 @@ void ScriptTextEditor::_update_connected_methods() {
 		}
 
 		if (!found_base_class.is_empty()) {
-			int line = functions[i].get_slice(":", 1).to_int() - 1;
+			int line = functions[i].get_slicec(':', 1).to_int() - 1;
 
 			Dictionary line_meta = text_edit->get_line_gutter_metadata(line, connection_gutter);
 			if (line_meta.is_empty()) {
@@ -1929,8 +1928,14 @@ static String _quote_drop_data(const String &str) {
 	return escaped.quote(using_single_quotes ? "'" : "\"");
 }
 
-static String _get_dropped_resource_line(const Ref<Resource> &p_resource, bool p_create_field) {
-	const String &path = p_resource->get_path();
+static String _get_dropped_resource_line(const Ref<Resource> &p_resource, bool p_create_field, bool p_allow_uid) {
+	String path = p_resource->get_path();
+	if (p_allow_uid) {
+		ResourceUID::ID id = ResourceLoader::get_resource_uid(path);
+		if (id != ResourceUID::INVALID_ID) {
+			path = ResourceUID::get_singleton()->id_to_text(id);
+		}
+	}
 	const bool is_script = ClassDB::is_parent_class(p_resource->get_class(), "Script");
 
 	if (!p_create_field) {
@@ -1939,7 +1944,7 @@ static String _get_dropped_resource_line(const Ref<Resource> &p_resource, bool p
 
 	String variable_name = p_resource->get_name();
 	if (variable_name.is_empty()) {
-		variable_name = path.get_file().get_basename();
+		variable_name = p_resource->get_path().get_file().get_basename();
 	}
 
 	if (is_script) {
@@ -1970,6 +1975,7 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 	String text_to_drop;
 
 	const bool drop_modifier_pressed = Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL);
+	const bool allow_uid = Input::get_singleton()->is_key_pressed(Key::SHIFT) != bool(EDITOR_GET("text_editor/behavior/files/drop_preload_resources_as_uid"));
 	const String &line = te->get_line(drop_at_line);
 	const bool is_empty_line = line_will_be_empty || line.is_empty() || te->get_first_non_whitespace_column(drop_at_line) == line.length();
 
@@ -1992,7 +1998,7 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 				String warning = TTR("Preloading internal resources is not supported.");
 				EditorToaster::get_singleton()->popup_str(warning, EditorToaster::SEVERITY_ERROR);
 			} else {
-				text_to_drop = _get_dropped_resource_line(resource, is_empty_line);
+				text_to_drop = _get_dropped_resource_line(resource, is_empty_line, allow_uid);
 			}
 		} else {
 			text_to_drop = _quote_drop_data(path);
@@ -2011,7 +2017,7 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 					resource.instantiate();
 					resource->set_path_cache(path);
 				}
-				parts.append(_get_dropped_resource_line(resource, is_empty_line));
+				parts.append(_get_dropped_resource_line(resource, is_empty_line, allow_uid));
 			} else {
 				parts.append(_quote_drop_data(path));
 			}

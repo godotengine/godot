@@ -24,7 +24,7 @@
 # Sebastian Pasich <sebastian.pasich@gmail.com>, 2017, 2019, 2020, 2022, 2023.
 # siatek papieros <sbigneu@gmail.com>, 2016.
 # Zatherz <zatherz@linux.pl>, 2017, 2020, 2021.
-# Tomek <kobewi4e@gmail.com>, 2018, 2019, 2020, 2021, 2022, 2023, 2024.
+# Tomek <kobewi4e@gmail.com>, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025.
 # Wojcieh Er Zet <wojcieh.rzepecki@gmail.com>, 2018.
 # Dariusz Siek <dariuszynski@gmail.com>, 2018, 2019, 2020, 2021.
 # Szymon Nowakowski <smnbdg13@gmail.com>, 2019.
@@ -95,8 +95,8 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-08-30 21:09+0000\n"
-"Last-Translator: Dawid Kobylewski <d.kobylewski@gmail.com>\n"
+"PO-Revision-Date: 2025-02-21 19:26+0000\n"
+"Last-Translator: Tomek <kobewi4e@gmail.com>\n"
 "Language-Team: Polish <https://hosted.weblate.org/projects/godot-engine/godot/"
 "pl/>\n"
 "Language: pl\n"
@@ -105,7 +105,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 "
 "|| n%100>=20) ? 1 : 2);\n"
-"X-Generator: Weblate 5.7.1-dev\n"
+"X-Generator: Weblate 5.10.1-dev\n"
 
 msgid "Main Thread"
 msgstr "Główny Wątek"
@@ -463,6 +463,9 @@ msgstr "Pokaż ukryte"
 msgid "Swap Input Direction"
 msgstr "Zamień kierunek wejścia"
 
+msgid "Start Unicode Character Input"
+msgstr "Zacznij wpisywanie znaków Unicode"
+
 msgid "Invalid input %d (not passed) in expression"
 msgstr "Niewłaściwe dane %d (nie przekazane) w wyrażeniu"
 
@@ -566,6 +569,30 @@ msgstr "Akcja"
 
 msgid "Deadzone"
 msgstr "Martwa strefa"
+
+msgid "Name:"
+msgstr "Nazwa:"
+
+msgid "Type:"
+msgstr "Typ:"
+
+msgid "Metadata name is valid."
+msgstr "Nazwa metadanej jest prawidłowa."
+
+msgid "Add Metadata Property for \"%s\""
+msgstr "Dodaj właściwość metadanych dla \"%s\""
+
+msgid "Metadata name can't be empty."
+msgstr "Nazwa metadanej nie może być pusta."
+
+msgid "Metadata name must be a valid identifier."
+msgstr "Nazwa metadanej musi być prawidłowym identyfikatorem."
+
+msgid "Metadata with name \"%s\" already exists."
+msgstr "Metadana o nazwie \"%s\" już istnieje."
+
+msgid "Names starting with _ are reserved for editor-only metadata."
+msgstr "Nazwy zaczynające się od _ są zarezerwowane dla metadanych edytora."
 
 msgid "Time:"
 msgstr "Czas:"
@@ -681,14 +708,36 @@ msgstr "Zmień długość animacji"
 msgid "Change Animation Loop"
 msgstr "Zmień pętle animacji"
 
-msgid "Can't change loop mode on animation instanced from imported scene."
+msgid ""
+"Can't change loop mode on animation instanced from an imported scene.\n"
+"\n"
+"To change this animation's loop mode, navigate to the scene's Advanced Import "
+"settings and select the animation.\n"
+"You can then change the loop mode from the inspector menu."
 msgstr ""
-"Nie można zmienić trybu zapętlania w animacji instancjonowanej z importowanej "
-"sceny."
+"Nie można zmienić trybu zapętlenia w animacji wczytanej z importowanej "
+"sceny.\n"
+"\n"
+"By zmienić tryb zapętlenia animacji, przejdź do Zaawansowanych Ustawień "
+"Importu sceny i wybierz animacj.e\n"
+"Możesz zmienić tryb zapętlenia z menu w inspektorze."
 
-msgid "Can't change loop mode on animation embedded in another scene."
+msgid "Can't change loop mode on animation instanced from an imported resource."
 msgstr ""
-"Nie można zmienić trybu zapętlania w animacji zagnieżdżonej w innej scenie."
+"Nie można zmienić trybu zapętlania w animacji wczytanej z importowanej sceny."
+
+msgid ""
+"Can't change loop mode on animation embedded in another scene.\n"
+"\n"
+"You must open this scene and change the animation's loop mode from there."
+msgstr ""
+"Nie można zmienić trybu zapętlania w animacji zagnieżdżonej w innej scenie.\n"
+"\n"
+"Musisz otworzyć tę scenę i zmienić tryb zapętlenia animacji stamtąd."
+
+msgid "Can't change loop mode on animation embedded in another resource."
+msgstr ""
+"Nie można zmienić trybu zapętlania w animacji zagnieżdżonej w innym zasobie."
 
 msgid "Property Track..."
 msgstr "Ścieżka właściwości..."
@@ -773,9 +822,6 @@ msgstr "Skala:"
 
 msgid "Blend Shape:"
 msgstr "Kształt mieszania:"
-
-msgid "Type:"
-msgstr "Typ:"
 
 msgid "(Invalid, expected type: %s)"
 msgstr "(Nieprawidłowy, oczekiwano typu: %s)"
@@ -1020,7 +1066,7 @@ msgid "Animation Add RESET Keys"
 msgstr "Animacja dodaj klatki kluczowe RESET"
 
 msgid "Bake Animation as Linear Keys"
-msgstr "Wypiecz animację jako liniowe klucze"
+msgstr "Wypal animację jako liniowe klucze"
 
 msgid ""
 "This animation belongs to an imported scene, so changes to imported tracks "
@@ -1087,8 +1133,14 @@ msgstr "Pokaż tylko ścieżki z węzłów zaznaczonych w drzewie."
 msgid "Group tracks by node or display them as plain list."
 msgstr "Grupuj ścieżki po węzłach lub wyświetl je jako prostą listę."
 
-msgid "Snap:"
-msgstr "Przyciąganie:"
+msgid "Apply snapping to timeline cursor."
+msgstr "Zastosuj przyciąganie do kursora linii czasu."
+
+msgid "Apply snapping to selected key(s)."
+msgstr "Zastosuj przyciąganie do wybranych kluczy."
+
+msgid "Apply snapping to the nearest integer FPS."
+msgstr "Zastosuj przyciąganie do najbliższego całkowitego FPS."
 
 msgid "Animation step value."
 msgstr "Wartość kroku animacji."
@@ -1124,7 +1176,7 @@ msgid "Set End Offset (Audio)"
 msgstr "Ustaw przesunięcie końcowe (audio)"
 
 msgid "Make Easing Selection..."
-msgstr "Dokonaj ułatwienia wyboru..."
+msgstr "Dokonaj wyboru wygładzenia..."
 
 msgid "Duplicate Selected Keys"
 msgstr "Zduplikuj wybrane klucze"
@@ -1157,7 +1209,7 @@ msgid "Apply Reset"
 msgstr "Zastosuj reset"
 
 msgid "Bake Animation..."
-msgstr "Wstępnie obliczone..."
+msgstr "Wypal animację..."
 
 msgid "Optimize Animation (no undo)..."
 msgstr "Optymalizuj animację (nie można cofnąć)..."
@@ -1290,7 +1342,7 @@ msgid "FPS:"
 msgstr "FPS:"
 
 msgid "Animation Baker"
-msgstr "Wypiekacz animacji"
+msgstr "Wypalacz animacji"
 
 msgid "3D Pos/Rot/Scl Track:"
 msgstr "Ścieżka Poz/Obr/Skl 3D:"
@@ -1309,6 +1361,75 @@ msgstr "Wybierz wszystkie/żadne"
 
 msgid "Animation Change Keyframe Time"
 msgstr "Animacja zmień czas klatki kluczowej"
+
+msgid "Marker name is read-only in the inspector."
+msgstr "Nazwa znacznika w inspektorze jest tylko do odczytu."
+
+msgid ""
+"A marker's name can only be changed by right-clicking it in the animation "
+"editor and selecting \"Rename Marker\", in order to make sure that marker "
+"names are all unique."
+msgstr ""
+"Nazwa znacznika może być zmieniona tylko przez prawy klik na niego w edytorze "
+"animacji i wybór \"Zmień nazwę znacznika\", by zapewnić, że wszystkie nazwy "
+"znaczników są unikalne."
+
+msgid "Insert Marker..."
+msgstr "Wstaw znacznik..."
+
+msgid "Rename Marker"
+msgstr "Zmień nazwę znacznika"
+
+msgid "Delete Marker(s)"
+msgstr "Usuń znacznik(i)"
+
+msgid "Show All Marker Names"
+msgstr "Pokaż wszystkie nazwy znaczników"
+
+msgid "Marker:"
+msgstr "Znacznik:"
+
+msgid "Animation Move Markers"
+msgstr "Animacja przesuń znaczniki"
+
+msgid "Animation Delete Markers"
+msgstr "Animacja usuń znaczniki"
+
+msgid "Marker '%s' already exists!"
+msgstr "Znacznik \"%s\" już istnieje!"
+
+msgid "Add Marker Key"
+msgstr "Dodaj klucz znacznika"
+
+msgid "Empty marker names are not allowed."
+msgstr "Puste nazwy znaczników są niedozwolone."
+
+msgid "Insert Marker"
+msgstr "Wstaw znacznik"
+
+msgid "Marker Name"
+msgstr "Nazwa znacznika"
+
+msgid "Marker Color"
+msgstr "Kolor znacznika"
+
+msgid "Close"
+msgstr "Zamknij"
+
+msgid "Error!"
+msgstr "Błąd!"
+
+msgid "Change Marker Name:"
+msgstr "Zmień nazwę znacznika:"
+
+msgid "Edit Marker Color"
+msgstr "Edytuj kolor znacznika"
+
+msgid "Multi Edit Marker Color"
+msgstr "Edytuj kolor wielu znaczników"
+
+msgid "Animation Change Marker Time"
+msgstr "Animacja zmień czas znacznika"
 
 msgid "Add Audio Track Clip"
 msgstr "Dodaj klip ścieżki audio"
@@ -1342,6 +1463,12 @@ msgid_plural "%d of %d matches"
 msgstr[0] "%d z %d dopasowania"
 msgstr[1] "%d z %d dopasowań"
 msgstr[2] "%d z %d dopasowań"
+
+msgid "Hide Replace"
+msgstr "Ukryj podmianę"
+
+msgid "Show Replace"
+msgstr "Pokaż podmianę"
 
 msgid "Find"
 msgstr "Znajdź"
@@ -1398,6 +1525,13 @@ msgstr "Ostrzeżenia"
 
 msgid "Zoom factor"
 msgstr "Przybliżenie"
+
+msgid ""
+"%sMouse wheel, %s/%s: Finetune\n"
+"%s: Reset"
+msgstr ""
+"%skółko myszki, %s/%s: Dostosuj\n"
+"%s: Zresetuj"
 
 msgid "Line and column numbers."
 msgstr "Numery linii i kolumn."
@@ -1496,9 +1630,6 @@ msgstr "Odłącza sygnał po pierwszej emisji."
 msgid "Cannot connect signal"
 msgstr "Nie można połączyć sygnału"
 
-msgid "Close"
-msgstr "Zamknij"
-
 msgid "Connect"
 msgstr "Połącz"
 
@@ -1562,6 +1693,12 @@ msgstr "Utwórz nowy %s"
 msgid "No results for \"%s\"."
 msgstr "Brak wyników dla \"%s\"."
 
+msgid "Script path: %s"
+msgstr "Ścieżka skryptu: %s"
+
+msgid "The script will run in the editor."
+msgstr "Ten skrypt będzie działał w edytorze."
+
 msgid "This class is marked as deprecated."
 msgstr "Ta klasa jest oznaczona jako przestarzała."
 
@@ -1592,6 +1729,9 @@ msgstr "Opis:"
 msgid "Remote %s:"
 msgstr "Zdalny %s:"
 
+msgid "Session %d"
+msgstr "Sesja %d"
+
 msgid "Debugger"
 msgstr "Debugger"
 
@@ -1603,6 +1743,9 @@ msgstr "Zapisz gałąź jako scenę"
 
 msgid "Copy Node Path"
 msgstr "Skopiuj ścieżkę węzła"
+
+msgid "Expand/Collapse Branch"
+msgstr "Rozwiń/zwiń gałąź"
 
 msgid "Instance:"
 msgstr "Instancja:"
@@ -1618,6 +1761,18 @@ msgstr ""
 
 msgid "Toggle Visibility"
 msgstr "Przełącz widoczność"
+
+msgid "Expression to evaluate"
+msgstr "Wyrażenie do wyliczenia"
+
+msgid "Clear on Run"
+msgstr "Wyczyść przy uruchomieniu"
+
+msgid "Evaluate"
+msgstr "Wylicz"
+
+msgid "Clear"
+msgstr "Wyczyść"
 
 msgid "Updating assets on target device:"
 msgstr "Aktualizowanie zasobów na urządzeniu docelowym:"
@@ -1661,8 +1816,8 @@ msgstr "Stop"
 msgid "Start"
 msgstr "Start"
 
-msgid "Clear"
-msgstr "Wyczyść"
+msgid "Autostart"
+msgstr "Autostart"
 
 msgid "Measure:"
 msgstr "Pomiar:"
@@ -1820,6 +1975,9 @@ msgstr "Rozwiń wszystko"
 msgid "Collapse All"
 msgstr "Zwiń wszystko"
 
+msgid "Evaluator"
+msgstr "Ewaluator"
+
 msgid "Profiler"
 msgstr "Profiler"
 
@@ -1948,6 +2106,12 @@ msgstr ""
 msgid "Cannot remove:"
 msgstr "Nie można usunąć:"
 
+msgid "Files to be deleted:"
+msgstr "Pliki do usunięcia:"
+
+msgid "Dependencies of files to be deleted:"
+msgstr "Zależności plików do usunięcia:"
+
 msgid "Error loading:"
 msgstr "Błąd ładowania:"
 
@@ -1981,17 +2145,29 @@ msgstr "Posiada"
 msgid "Resources Without Explicit Ownership:"
 msgstr "Zasoby bez jawnych właścicieli:"
 
+msgid "Name cannot be empty."
+msgstr "Nazwa nie może być pusta."
+
+msgid "File name can't end with /."
+msgstr "Nazwa pliku nie może kończyć się na /."
+
+msgid "File name cannot be empty."
+msgstr "Nazwa pliku nie może być pusta."
+
 msgid "Folder name cannot be empty."
 msgstr "Nazwa folderu nie może być pusta."
+
+msgid "File name contains invalid characters."
+msgstr "Nazwa pliku zawiera niedozwolone znaki."
 
 msgid "Folder name contains invalid characters."
 msgstr "Nazwa folderu zawiera niedozwolone znaki."
 
-msgid "Folder name cannot begin or end with a space."
-msgstr "Nazwa folderu nie może zaczynać się lub kończyć spacją."
+msgid "File name begins with a dot."
+msgstr "Nazwa pliku zaczyna się od kropki."
 
-msgid "Folder name cannot begin with a dot."
-msgstr "Nazwa folderu nie może zaczynać się od kropki."
+msgid "Folder name begins with a dot."
+msgstr "Nazwa folderu zaczyna się od kropki."
 
 msgid "File with that name already exists."
 msgstr "Plik o tej nazwie już istnieje."
@@ -2002,14 +2178,18 @@ msgstr "Folder o tej nazwie już istnieje."
 msgid "Using slashes in folder names will create subfolders recursively."
 msgstr "Użycie ukośników w nazwach folderów automatycznie utworzy podfoldery."
 
-msgid "Could not create folder."
-msgstr "Nie można utworzyć katalogu."
+msgid ""
+"Using slashes in path will create the file in subfolder, creating new "
+"subfolders if necessary."
+msgstr ""
+"Użycie ukośników w ścieżce utworzy plik w podfolderze, automatycznie tworząc "
+"podfoldery gdy potrzeba."
 
-msgid "Create new folder in %s:"
-msgstr "Utwórz nowy folder w %s:"
+msgid "File name is valid."
+msgstr "Nazwa pliku jest prawidłowa."
 
-msgid "Create Folder"
-msgstr "Utwórz katalog"
+msgid "Base path: %s"
+msgstr "Ścieżka bazowa: %s"
 
 msgid "Folder name is valid."
 msgstr "Nazwa folderu jest prawidłowa."
@@ -2019,16 +2199,6 @@ msgstr "Kliknij dwukrotnie, aby otworzyć w przeglądarce."
 
 msgid "Thanks from the Godot community!"
 msgstr "Podziękowania od społeczności Godota!"
-
-msgid "(unknown)"
-msgstr "(nieznana)"
-
-msgid ""
-"Git commit date: %s\n"
-"Click to copy the version number."
-msgstr ""
-"Data zatwierdzenia git: %s\n"
-"Kliknij, aby skopiować numer wersji."
 
 msgid "Godot Engine contributors"
 msgstr "Współtwórcy Godot Engine"
@@ -2262,17 +2432,11 @@ msgstr "Lokalizacja nowego układu..."
 msgid "Open Audio Bus Layout"
 msgstr "Otwórz układ magistrali audio"
 
-msgid "There is no '%s' file."
-msgstr "Nie ma pliku \"%s\"."
+msgid "Error saving file: %s"
+msgstr "Błąd zapisywania pliku: %s"
 
 msgid "Layout:"
 msgstr "Układ:"
-
-msgid "Invalid file, not an audio bus layout."
-msgstr "Plik niepoprawny, nie jest układem magistral audio."
-
-msgid "Error saving file: %s"
-msgstr "Błąd zapisywania pliku: %s"
 
 msgid "Add Bus"
 msgstr "Dodaj magistralę"
@@ -2307,11 +2471,8 @@ msgstr "Układ magistrali audio"
 msgid "Invalid name."
 msgstr "Nieprawidłowa nazwa."
 
-msgid "Cannot begin with a digit."
-msgstr "Nie może zaczynać się od cyfry."
-
-msgid "Valid characters:"
-msgstr "Prawidłowe znaki:"
+msgid "Must be a valid Unicode identifier."
+msgstr "Musi być prawidłowym identyfikatorem Unicode."
 
 msgid "Must not collide with an existing engine class name."
 msgstr "Należy unikać kolizji z istniejącą nazwą klasy silnika."
@@ -2580,6 +2741,12 @@ msgstr "[pusty]"
 msgid "[unsaved]"
 msgstr "[niezapisany]"
 
+msgid "Open the %s dock."
+msgstr "Otwórz dok %s."
+
+msgid "Focus on the %s dock."
+msgstr "Przełącz na dok %s."
+
 msgid "%s - Godot Engine"
 msgstr "%s - Silnik Godot"
 
@@ -2631,6 +2798,9 @@ msgstr "Dok importowania"
 msgid "History Dock"
 msgstr "Dok historii"
 
+msgid "Game View"
+msgstr "Widok gry"
+
 msgid "Allows to view and edit 3D scenes."
 msgstr "Pozwala wyświetlać i edytować sceny 3D."
 
@@ -2660,6 +2830,9 @@ msgstr ""
 
 msgid "Provides an overview of the editor's and each scene's undo history."
 msgstr "Zapewnia przegląd historii cofania edytora i każdej ze scen."
+
+msgid "Provides tools for selecting and debugging nodes at runtime."
+msgstr "Zapewnia narzędzia do wybierania i debugowania węzłów podczas gry."
 
 msgid "(current)"
 msgstr "(bieżący)"
@@ -2747,6 +2920,30 @@ msgstr "Importuj profil(e)"
 msgid "Manage Editor Feature Profiles"
 msgstr "Zarządzaj profilami funkcjonalności edytora"
 
+msgid "Project initialization"
+msgstr "Inicjalizacja projektu"
+
+msgid "Scanning file structure..."
+msgstr "Skanowanie struktury plików..."
+
+msgid "Loading global class names..."
+msgstr "Wczytywanie globalnych nazw klas..."
+
+msgid "Verifying GDExtensions..."
+msgstr "Weryfikowanie GDExtension..."
+
+msgid "Creating autoload scripts..."
+msgstr "Tworzenie skryptów autoładowania..."
+
+msgid "Initializing plugins..."
+msgstr "Inicjalizacja wtyczek..."
+
+msgid "Starting file scan..."
+msgstr "Uruchamianie skanu systemu plików..."
+
+msgid "Scanning actions..."
+msgstr "Akcje skanowania..."
+
 msgid "Some extensions need the editor to restart to take effect."
 msgstr "Niektóre rozszerzenia wymagają restartu edytora, by zaczęły działać."
 
@@ -2759,11 +2956,14 @@ msgstr "Zapisz i zrestartuj"
 msgid "ScanSources"
 msgstr "Przeszukaj źródła"
 
-msgid "Update Scene Groups"
-msgstr "Aktualizuj grupy scen"
+msgid "Registering global classes..."
+msgstr "Rejestrowanie globalnych klas..."
 
-msgid "Updating Scene Groups..."
-msgstr "Aktualizacja grup scen..."
+msgid "Updating scripts documentation"
+msgstr "Aktualizacja dokumentacji skryptów"
+
+msgid "Updating Scene Groups"
+msgstr "Aktualizacja grup scen"
 
 msgid ""
 "There are multiple importers for different types pointing to file %s, import "
@@ -2773,27 +2973,23 @@ msgstr "Istnieje wiele importerów różnych typów dla pliku %s, import przerwa
 msgid "(Re)Importing Assets"
 msgstr "(Ponowne) importowanie zasobów"
 
+msgid "Preparing files to reimport..."
+msgstr "Przygotowywanie plików do ponownego importu..."
+
+msgid "Executing pre-reimport operations..."
+msgstr "Wykonywanie operacji przed importem..."
+
 msgid "Import resources of type: %s"
 msgstr "Zaimportuj zasoby typu: %s"
 
-msgid "No return value."
-msgstr "Brak zwracanego typu."
+msgid "Finalizing Asset Import..."
+msgstr "Finalizowanie importu zasobów..."
 
-msgid "This value is an integer composed as a bitmask of the following flags."
-msgstr ""
-"Ta wartość jest liczbą całkowitą złożoną jako maska bitowa następujących flag."
+msgid "Executing post-reimport operations..."
+msgstr "Wykonywanie operacji po imporcie..."
 
-msgid "Deprecated"
-msgstr "Przestarzałe"
-
-msgid "Experimental"
-msgstr "Eksperymentalny"
-
-msgid "Deprecated:"
-msgstr "Przestarzałe:"
-
-msgid "Experimental:"
-msgstr "Eksperymentalny:"
+msgid "Copying files..."
+msgstr "Kopiowanie plików..."
 
 msgid "This method supports a variable number of arguments."
 msgstr "Ta metoda wspiera zmienną liczbę argumentów."
@@ -2818,6 +3014,28 @@ msgid ""
 msgstr ""
 "Ta metoda nie wymaga instancji, by zostać wywołana.\n"
 "Może być wywołana bezpośrednio na nazwie klasy."
+
+msgid "Code snippet copied to clipboard."
+msgstr "Fragment kodu skopiowany do schowka."
+
+msgid "No return value."
+msgstr "Brak zwracanego typu."
+
+msgid "This value is an integer composed as a bitmask of the following flags."
+msgstr ""
+"Ta wartość jest liczbą całkowitą złożoną jako maska bitowa następujących flag."
+
+msgid "Deprecated"
+msgstr "Przestarzałe"
+
+msgid "Experimental"
+msgstr "Eksperymentalny"
+
+msgid "Deprecated:"
+msgstr "Przestarzałe:"
+
+msgid "Experimental:"
+msgstr "Eksperymentalny:"
 
 msgid "Constructors"
 msgstr "Konstruktor"
@@ -2951,6 +3169,10 @@ msgstr "Ikony"
 msgid "Styles"
 msgstr "Style"
 
+msgid "This theme property may be changed or removed in future versions."
+msgstr ""
+"Ta właściwość motywu może zostać zmieniona lub usunięta w przyszłych wersjach."
+
 msgid "There is currently no description for this theme property."
 msgstr "Obecnie nie ma opisu tej właściwości motywu."
 
@@ -3005,14 +3227,6 @@ msgstr "(wartość)"
 msgid "This property may be changed or removed in future versions."
 msgstr "Ta właściwość może zostać zmieniona lub usunięta w przyszłych wersjach."
 
-msgid ""
-"[b]Note:[/b] The returned array is [i]copied[/i] and any changes to it will "
-"not update the original property value. See [%s] for more details."
-msgstr ""
-"[b]Uwaga:[/b] Zwrócona tablica jest [i]skopiowana[/i] i wszystkie zmiany na "
-"niej nie zaktualizują wartości oryginalnej właściwości. Zobacz [%s] po więcej "
-"szczegółów."
-
 msgid "There is currently no description for this property."
 msgstr "Obecnie nie ma opisu dla tej właściwości."
 
@@ -3023,38 +3237,100 @@ msgstr ""
 "Obecnie nie ma opisu dla tej właściwości. Pomóż nam, [color=$color]"
 "[url=$url]wysyłając go[/url][/color]!"
 
+msgid ""
+"[b]Note:[/b] The returned array is [i]copied[/i] and any changes to it will "
+"not update the original property value. See [%s] for more details."
+msgstr ""
+"[b]Uwaga:[/b] Zwrócona tablica jest [i]skopiowana[/i] i wszystkie zmiany na "
+"niej nie zaktualizują wartości oryginalnej właściwości. Zobacz [%s] po więcej "
+"szczegółów."
+
 msgid "Editor"
 msgstr "Edytor"
 
 msgid "Click to copy."
 msgstr "Kliknij, aby skopiować."
 
+msgid "Click to open in browser."
+msgstr "Kliknij, aby otworzyć w przeglądarce."
+
 msgid "No description available."
 msgstr "Brak dostępnego opisu."
 
-msgid "Metadata:"
-msgstr "Metadane:"
+msgid "This annotation may be changed or removed in future versions."
+msgstr "Ta adnotacja może zostać zmieniona lub usunięta w przyszłych wersjach."
 
-msgid "Setting:"
-msgstr "Ustawienie:"
+msgid "Show in FileSystem"
+msgstr "Pokaż w systemie plików"
 
-msgid "Property:"
-msgstr "Właściwość:"
+msgid "Open in File Manager"
+msgstr "Otwórz w menedżerze plików"
 
-msgid "Internal Property:"
-msgstr "Właściwość wewnętrzna:"
+msgid "Class"
+msgstr "Klasa"
+
+msgid "Enumeration"
+msgstr "Wyliczenie"
+
+msgid "Constant"
+msgstr "Stała"
+
+msgid "Metadata"
+msgstr "Metadane"
+
+msgid "Setting"
+msgstr "Ustawienie"
+
+msgid "Property"
+msgstr "Właściwość"
+
+msgid "Internal Property"
+msgstr "Właściwość wewnętrzna"
 
 msgid "This property can only be set in the Inspector."
 msgstr "Tę właściwość można ustawić tylko w Inspektorze."
 
-msgid "Method:"
-msgstr "Metoda:"
+msgid "Theme Property"
+msgstr "Właściwość motywu"
 
-msgid "Signal:"
-msgstr "Sygnał:"
+msgid "Method"
+msgstr "Metoda"
 
-msgid "Theme Property:"
-msgstr "Właściwość motywu:"
+msgid "Signal"
+msgstr "Sygnał"
+
+msgid "Annotation"
+msgstr "Adnotacja"
+
+msgid "Local Constant"
+msgstr "Lokalna stała"
+
+msgid "Local Variable"
+msgstr "Lokalna zmienna"
+
+msgid "This variable may be changed or removed in future versions."
+msgstr "Ta zmienna może zostać zmieniona lub usunięta w przyszłych wersjach."
+
+msgid "TextFile"
+msgstr "Plik tekstowy"
+
+msgid "File"
+msgstr "Plik"
+
+msgid "Directory"
+msgstr "Katalog"
+
+msgid "Invalid UID"
+msgstr "Niepoprawny UID"
+
+msgid "This UID does not point to any valid Resource."
+msgstr "Ten UID nie wskazuje na żaden poprawny zasób."
+
+msgid "Invalid path"
+msgstr "Niepoprawna ścieżka"
+
+msgid "This path does not exist."
+msgstr "Ta ścieżka nie istnieje."
 
 msgid "%d match."
 msgstr "%d dopasowanie."
@@ -3065,26 +3341,8 @@ msgstr "%d dopasowań."
 msgid "Constructor"
 msgstr "Konstruktor"
 
-msgid "Method"
-msgstr "Metoda"
-
 msgid "Operator"
 msgstr "Operator"
-
-msgid "Signal"
-msgstr "Sygnał"
-
-msgid "Constant"
-msgstr "Stała"
-
-msgid "Property"
-msgstr "Właściwość"
-
-msgid "Theme Property"
-msgstr "Właściwość motywu"
-
-msgid "Annotation"
-msgstr "Adnotacja"
 
 msgid "Search Help"
 msgstr "Wyszukaj w pomocy"
@@ -3128,20 +3386,31 @@ msgstr "Tylko właściwości motywu"
 msgid "Member Type"
 msgstr "Typ członka"
 
-msgid "(constructors)"
-msgstr "(konstruktory)"
-
 msgid "Keywords"
 msgstr "Słowa kluczowe"
 
-msgid "Class"
-msgstr "Klasa"
+msgid "Matches the \"%s\" keyword."
+msgstr "Pasuje do słowa kluczowego \"%s\"."
 
 msgid "This member is marked as deprecated."
 msgstr "Ten członek jest oznaczony jako przestarzały."
 
 msgid "This member is marked as experimental."
 msgstr "Ten członek jest oznaczony jako eksperymentalny."
+
+msgid "Unfavorite Property"
+msgstr "Nie lub właściwości"
+
+msgid "Make this property be put back at its original place."
+msgstr "Spraw, że ta właściwość zostanie odłożona na jej pierwotne miejsce."
+
+msgid "Favorite Property"
+msgstr "Polub właściwość"
+
+msgid "Make this property be placed at the top for all objects of this class."
+msgstr ""
+"Spraw, że ta właściwość zostanie położona na górze wszystkich obiektów tej "
+"klasy."
 
 msgid "Pin Value"
 msgstr "Przypnij wartość"
@@ -3152,6 +3421,9 @@ msgstr "Przypnij wartość [Niedostępne, ponieważ \"%s\" jest tylko dla edytor
 msgid "Pinning a value forces it to be saved even if it's equal to the default."
 msgstr ""
 "Przypięcie wartości wymusza zapisanie jej, nawet jeśli jest równa domyślniej."
+
+msgid "Unfavorite All"
+msgstr "Nie lub wszystkich"
 
 msgid "(%d change)"
 msgid_plural "(%d changes)"
@@ -3229,26 +3501,8 @@ msgstr "Odpięto %s"
 msgid "Add metadata %s"
 msgstr "Dodaj metadaną %s"
 
-msgid "Metadata name can't be empty."
-msgstr "Nazwa metadanej nie może być pusta."
-
-msgid "Metadata name must be a valid identifier."
-msgstr "Nazwa metadanej musi być prawidłowym identyfikatorem."
-
-msgid "Metadata with name \"%s\" already exists."
-msgstr "Metadana o nazwie \"%s\" już istnieje."
-
-msgid "Names starting with _ are reserved for editor-only metadata."
-msgstr "Nazwy zaczynające się od _ są zarezerwowane dla metadanych edytora."
-
-msgid "Name:"
-msgstr "Nazwa:"
-
-msgid "Metadata name is valid."
-msgstr "Nazwa metadanej jest prawidłowa."
-
-msgid "Add Metadata Property for \"%s\""
-msgstr "Dodaj właściwość metadanych dla \"%s\""
+msgid "Favorites"
+msgstr "Ulubione"
 
 msgid "Copy Value"
 msgstr "Skopiuj wartość"
@@ -3356,6 +3610,9 @@ msgstr "Inspektor źródła natywnego shadera"
 
 msgid "Unnamed Project"
 msgstr "Projekt bez nazwy"
+
+msgid "Recovery Mode is enabled. Editor functionality has been restricted."
+msgstr "Tryb awaryjny jest włączony. Funkcjonalność edytora jest ograniczona."
 
 msgid ""
 "Spins when the editor window redraws.\n"
@@ -3549,15 +3806,6 @@ msgstr "Ten obiekt jest tylko do odczytu."
 msgid "Open Base Scene"
 msgstr "Otwórz scenę bazową"
 
-msgid "Quick Open..."
-msgstr "Szybkie otwieranie..."
-
-msgid "Quick Open Scene..."
-msgstr "Szybkie otwieranie sceny..."
-
-msgid "Quick Open Script..."
-msgstr "Szybkie otwieranie skryptu..."
-
 msgid "%s no longer exists! Please specify a new save location."
 msgstr "%s już nie istnieje! Podaj nowe położenie do zapisu."
 
@@ -3578,8 +3826,8 @@ msgstr ""
 msgid "Save Scene As..."
 msgstr "Zapisz scenę jako..."
 
-msgid "Current scene not saved. Open anyway?"
-msgstr "Aktualna scena nie została zapisana. Otworzyć mimo to?"
+msgid "Pack Project as ZIP..."
+msgstr "Spakuj projekt jako ZIP..."
 
 msgid "Can't undo while mouse buttons are pressed."
 msgstr "Nie można cofnąć akcji kiedy przyciski myszy są wciśnięte."
@@ -3661,6 +3909,9 @@ msgstr "Ta operacja nie może zostać wykonana bez sceny."
 
 msgid "Export Mesh Library"
 msgstr "Eksportuj bibliotekę Meshów"
+
+msgid "Quick Open Color Palette..."
+msgstr "Szybkie otwarcie palety kolorów..."
 
 msgid "Unable to enable addon plugin at: '%s' parsing of config failed."
 msgstr ""
@@ -3744,28 +3995,49 @@ msgstr "Wyczyść listę ostatnio otwieranych scen"
 msgid "There is no defined scene to run."
 msgstr "Nie ma zdefiniowanej sceny do uruchomienia."
 
+msgid "Loading editor"
+msgstr "Wczytywanie edytora"
+
+msgid "Loading editor layout..."
+msgstr "Wczytywanie układu edytora..."
+
+msgid "Loading docks..."
+msgstr "Wczytywanie doków..."
+
+msgid "Reopening scenes..."
+msgstr "Przywracanie scen..."
+
+msgid "Loading central editor layout..."
+msgstr "Wczytywanie centralnego układu edytora..."
+
+msgid "Loading plugin window layout..."
+msgstr "Wczytywanie układu okien wtyczek..."
+
+msgid "Editor layout ready."
+msgstr "Układ edytora gotowy."
+
 msgid ""
-"No main scene has ever been defined, select one?\n"
+"No main scene has ever been defined. Select one?\n"
 "You can change it later in \"Project Settings\" under the 'application' "
 "category."
 msgstr ""
-"Nie zdefiniowano głównej sceny, chcesz jakąś wybrać?\n"
+"Nie zdefiniowano nigdy głównej sceny. Wybrać jakąś?\n"
 "Można to później zmienić w \"Ustawienia projektu\" w kategorii \"aplikacja\"."
 
 msgid ""
-"Selected scene '%s' does not exist, select a valid one?\n"
+"Selected scene '%s' does not exist. Select a valid one?\n"
 "You can change it later in \"Project Settings\" under the 'application' "
 "category."
 msgstr ""
-"Wybrana scena \"%s\" nie istnieje, wybrać poprawną? \n"
+"Wybrana scena \"%s\" nie istnieje. Wybrać poprawną? \n"
 "Można to później zmienić w \"Ustawienia projektu\" w kategorii \"aplikacja\"."
 
 msgid ""
-"Selected scene '%s' is not a scene file, select a valid one?\n"
+"Selected scene '%s' is not a scene file. Select a valid one?\n"
 "You can change it later in \"Project Settings\" under the 'application' "
 "category."
 msgstr ""
-"Wybrany plik \"%s\" nie jest sceną, wybrać poprawny?\n"
+"Wybrany plik \"%s\" nie jest sceną. Wybrać poprawny?\n"
 "Można to później zmienić w \"Ustawienia projektu\" w kategorii \"aplikacja\"."
 
 msgid "Save Layout..."
@@ -3889,9 +4161,6 @@ msgstr "Grupuj zaznaczone węzły"
 msgid "Ungroup Selected Node(s)"
 msgstr "Rozgrupuj zaznaczone węzły"
 
-msgid "Restart Emission"
-msgstr "Restartuj emisję"
-
 msgid "Pan View"
 msgstr "Przesuń widok"
 
@@ -3943,6 +4212,15 @@ msgstr "Ostatnio otwierane"
 msgid "Save Scene"
 msgstr "Zapisz scenę"
 
+msgid "Quick Open..."
+msgstr "Szybkie otwieranie..."
+
+msgid "Quick Open Scene..."
+msgstr "Szybkie otwieranie sceny..."
+
+msgid "Quick Open Script..."
+msgstr "Szybkie otwieranie skryptu..."
+
 msgid "Export As..."
 msgstr "Eksportuj jako..."
 
@@ -3990,6 +4268,9 @@ msgstr "Edytor konfiguracji kompilacji silnika..."
 
 msgid "Upgrade Mesh Surfaces..."
 msgstr "Aktualizuj powierzchnie siatek..."
+
+msgid "Upgrade UIDs..."
+msgstr "Aktualizuj UID..."
 
 msgid "Reload Current Project"
 msgstr "Wczytaj ponownie aktualny projekt"
@@ -4146,21 +4427,20 @@ msgstr "Wyeksportuj bibliotekę"
 msgid "Open & Run a Script"
 msgstr "Otwórz i Uruchom Skrypt"
 
-msgid "Files have been modified on disk"
-msgstr "Pliki zostały zmodyfikowane na dysku"
+msgid "Files have been modified outside Godot"
+msgstr "Pliki zostały zmodyfikowane poza Godotem"
 
-msgid ""
-"The following files are newer on disk.\n"
-"What action should be taken?"
-msgstr ""
-"Następujące pliki są nowsze na dysku.\n"
-"Jakie działanie powinno zostać podjęte?"
+msgid "The following files are newer on disk:"
+msgstr "Następujące pliki są nowsze na dysku:"
 
-msgid "Discard local changes and reload"
-msgstr "Odrzuć lokalne zmiany i przeładuj"
+msgid "What action should be taken?"
+msgstr "Jakie działanie powinno zostać podjęte?"
 
-msgid "Keep local changes and overwrite"
-msgstr "Zachowaj lokalne zmiany i nadpisz"
+msgid "Reload from disk"
+msgstr "Wczytaj ponownie z dysku"
+
+msgid "Ignore external changes"
+msgstr "Ignoruj zewnętrzne zmiany"
 
 msgid "Create/Override Version Control Metadata..."
 msgstr "Utwórz/nadpisz metadane kontroli wersji..."
@@ -4185,6 +4465,9 @@ msgstr "Otwórz edytor 3D"
 
 msgid "Open Script Editor"
 msgstr "Otwórz edytor skryptów"
+
+msgid "Open Game View"
+msgstr "Otwórz widok gry"
 
 msgid "Open Asset Library"
 msgstr "Otwórz Bibliotekę Zasobów"
@@ -4278,7 +4561,7 @@ msgid ""
 msgstr ""
 "Nie można utworzyć ViewportTexture w węźle Texture2D, ponieważ tekstura nie "
 "zostanie powiązana ze sceną.\n"
-" Zamiast tego użyj węzła Texture2DParametr i ustaw teksturę w zakładce "
+"Zamiast tego użyj węzła Texture2DParametr i ustaw teksturę w zakładce "
 "„Parametry modułu cieniującego”."
 
 msgid ""
@@ -4314,20 +4597,17 @@ msgstr "Nowa wartość:"
 msgid "(Nil) %s"
 msgstr "(Nic) %s"
 
-msgid "%s (size %s)"
-msgstr "%s (rozmiar %s)"
+msgid "%s%s (size %d)"
+msgstr "%s%s (rozmiar %d)"
+
+msgid "%s (size %d)"
+msgstr "%s (rozmiar %d)"
 
 msgid "Size:"
 msgstr "Rozmiar:"
 
 msgid "Remove Item"
 msgstr "Usuń element"
-
-msgid "Dictionary (Nil)"
-msgstr "Słownik (nic)"
-
-msgid "Dictionary (size %d)"
-msgstr "Słownik (rozmiar %d)"
 
 msgid "Add Key/Value Pair"
 msgstr "Dodaj parę klucz/wartość"
@@ -4373,9 +4653,6 @@ msgstr "Zrób unikalny (rekurencyjnie)"
 msgid "Save As..."
 msgstr "Zapisz jako..."
 
-msgid "Show in FileSystem"
-msgstr "Pokaż w systemie plików"
-
 msgid "Convert to %s"
 msgstr "Konwertuj do %s"
 
@@ -4394,11 +4671,11 @@ msgstr "Rozszerz skrypt..."
 msgid "New Shader..."
 msgstr "Nowy Shader..."
 
-msgid "No Remote Debug export presets configured."
-msgstr "Brak skonfigurowanych profili zdalnego debugowania."
+msgid "No Remote Deploy export presets configured."
+msgstr "Brak skonfigurowanych profili zdalnego wdrażania."
 
-msgid "Remote Debug"
-msgstr "Zdalne debugowanie"
+msgid "Remote Deploy"
+msgstr "Zdalne wdrażanie"
 
 msgid ""
 "No runnable export preset found for this platform.\n"
@@ -4410,14 +4687,26 @@ msgstr ""
 "jako uruchamialny."
 
 msgid ""
-"Warning: The CPU architecture '%s' is not active in your export preset.\n"
+"Warning: The CPU architecture \"%s\" is not active in your export preset.\n"
 "\n"
 msgstr ""
 "Uwaga: architektura CPU \"%s\" nie jest aktywna w twoim profilu eksportu.\n"
 "\n"
 
-msgid "Run 'Remote Debug' anyway?"
-msgstr "Uruchomić \"Zdalne debugowanie\" tak czy inaczej?"
+msgid "Run \"Remote Deploy\" anyway?"
+msgstr "Uruchomić \"Zdalne wdrażanie\" tak czy inaczej?"
+
+msgid "Deploy to First Device in List"
+msgstr "Wdróż na pierwsze urządzenie na liście"
+
+msgid "Deploy to Second Device in List"
+msgstr "Wdróż na drugie urządzenie na liście"
+
+msgid "Deploy to Third Device in List"
+msgstr "Wdróż na trzecie urządzenie na liście"
+
+msgid "Deploy to Fourth Device in List"
+msgstr "Wdróż na czwarte urządzenie na liście"
 
 msgid "Project Run"
 msgstr "Uruchom projekt"
@@ -4428,14 +4717,26 @@ msgstr "Wpisz swoją logikę w metodzie _run()."
 msgid "The current scene already has a root node."
 msgstr "Aktualna scena ma już węzeł główny."
 
+msgid "Advanced settings are always shown when searching."
+msgstr "Zaawansowane ustawienia są zawsze widoczne podczas wyszukiwania."
+
 msgid "Edit Built-in Action: %s"
 msgstr "Edytuj wbudowaną akcję: %s"
 
 msgid "Edit Shortcut: %s"
 msgstr "Edytuj skrót: %s"
 
+msgid "None"
+msgstr "Brak"
+
+msgid "Primary"
+msgstr "Główny"
+
 msgid "Common"
 msgstr "Pospolite"
+
+msgid "Event %d"
+msgstr "Zdarzenie %d"
 
 msgid "Editor Settings"
 msgstr "Ustawienia edytora"
@@ -4445,6 +4746,9 @@ msgstr "Ogólne"
 
 msgid "Filter Settings"
 msgstr "Filtruj ustawienia"
+
+msgid "Advanced Settings"
+msgstr "Ustawienia zaawansowane"
 
 msgid "The editor must be restarted for changes to take effect."
 msgstr "Edytor musi zostać zrestartowany, by zmiany miały efekt."
@@ -4635,6 +4939,12 @@ msgstr "Nieznany błąd"
 msgid "Export failed with error code %d."
 msgstr "Eksport nie powiódł się z powodu kodu błędu %d."
 
+msgid "Patch Creation"
+msgstr "Tworzenie łatki"
+
+msgid "Could not load patch pack with path \"%s\"."
+msgstr "Nie udało się wczytać paczki łatki ze ścieżki \"%s\"."
+
 msgid "Storing File: %s"
 msgstr "Przechowywanie pliku: %s"
 
@@ -4643,6 +4953,29 @@ msgstr "Zapisywanie pliku:"
 
 msgid "No export template found at the expected path:"
 msgstr "Nie znaleziono szablonów eksportu w oczekiwanej ścieżce:"
+
+msgid ""
+"Using user provided text server data, text display in the exported project "
+"might be broken if export template was built with different ICU version!"
+msgstr ""
+"Używanie danych serwera tekstu zapewnionych przez użytkownika, wyświetlanie "
+"tekstu w eksportowanym projekcie może być zepsute, jeśli szablon eksportu "
+"został zbudowany z inną wersją ICU!"
+
+msgid ""
+"Using editor embedded text server data, text display in the exported project "
+"might be broken if export template was built with different ICU version!"
+msgstr ""
+"Używanie danych serwera tekstu wbudowanych w edytor, wyświetlanie tekstu w "
+"eksportowanym projekcie może być zepsute, jeśli szablon eksportu został "
+"zbudowany z inną wersją ICU!"
+
+msgid ""
+"Missing text server data, text display in the exported project might be "
+"broken!"
+msgstr ""
+"Brakuje danych serwera tekstu, wyświetlanie tekstu w eksportowanym projekcie "
+"może być zepsute!"
 
 msgid "ZIP Creation"
 msgstr "Tworzenie ZIP"
@@ -4662,6 +4995,9 @@ msgstr "Nie można utworzyć pliku \"%s\"."
 msgid "Failed to export project files."
 msgstr "Eksportowanie plików projektu nie powiodło się."
 
+msgid "No files or changes to export."
+msgstr "Brak plików lub zmian do eksportu."
+
 msgid "Can't open file for writing at path \"%s\"."
 msgstr "Nie można otworzyć pliku do zapisu pod ścieżką \"%s\"."
 
@@ -4679,6 +5015,9 @@ msgstr "Nie można otworzyć pliku do odczytu ze ścieżki \"%s\"."
 
 msgid "Save ZIP"
 msgstr "Zapisz ZIP"
+
+msgid "Failed to move temporary file \"%s\" to \"%s\"."
+msgstr "Nie udało się przenieść pliku tymczasowego \"%s\" do \"%s\"."
 
 msgid "Custom debug template not found."
 msgstr "Nie znaleziono własnego szablonu debugowania."
@@ -4710,6 +5049,12 @@ msgstr "Osadzanie PCK"
 
 msgid "On 32-bit exports the embedded PCK cannot be bigger than 4 GiB."
 msgstr "W eksportach 32-bitowych dołączony PCK nie może być większy niż 4 GiB."
+
+msgid "GDExtension"
+msgstr "GDExtension"
+
+msgid "Failed to copy shared object \"%s\"."
+msgstr "Nie udało się przenieść dzielonego obiektu \"%s\"."
 
 msgid "Plugin \"%s\" is not supported on \"%s\""
 msgstr "Plugin \"%s\" nie jest obsługiwany na \"%s\""
@@ -4833,6 +5178,26 @@ msgstr "Importowanie:"
 msgid "Remove templates for the version '%s'?"
 msgstr "Usunąć szablony dla wersji \"%s\"?"
 
+msgid "Export templates are missing. Download them or install from a file."
+msgstr "Brakuje szablonów eksportu. Pobierz je lub zainstaluj z pliku."
+
+msgid "Export templates are missing. Install them from a file."
+msgstr "Brakuje szablonów eksportu. Zainstaluj je z pliku."
+
+msgid "Not available in offline mode"
+msgstr "Nie dostępne w trybie offline"
+
+msgid "Template downloading is disabled in offline mode."
+msgstr "Pobieranie szablonów jest wyłączone w trybie offline."
+
+msgid "No templates for development builds"
+msgstr "Brak szablonów dla kompilacji rozwojowych"
+
+msgid "Official export templates aren't available for development builds."
+msgstr ""
+"Oficjalne szablony eksportowe nie są dostępne dla kompilacji "
+"programistycznych."
+
 msgid "Uncompressing Android Build Sources"
 msgstr "Dekompresja źródeł budowania Androida"
 
@@ -4841,12 +5206,6 @@ msgstr "Menedżer szablonów eksportu"
 
 msgid "Current Version:"
 msgstr "Aktualna wersja:"
-
-msgid "Export templates are missing. Download them or install from a file."
-msgstr "Brakuje szablonów eksportu. Pobierz je lub zainstaluj z pliku."
-
-msgid "Export templates are missing. Install them from a file."
-msgstr "Brakuje szablonów eksportu. Zainstaluj je z pliku."
 
 msgid "Export templates are installed and ready to be used."
 msgstr "Szablony eksportu są zainstalowane i gotowe do użycia."
@@ -4866,9 +5225,6 @@ msgstr "Odinstaluj szablony dla aktualnej wersji."
 msgid "Download from:"
 msgstr "Pobierz z:"
 
-msgid "(no templates for development builds)"
-msgstr "(brak szablonów dla kompilacji rozwojowych)"
-
 msgid "Open in Web Browser"
 msgstr "Otwórz w przeglądarce"
 
@@ -4884,11 +5240,6 @@ msgid ""
 msgstr ""
 "Pobierz i zainstaluj szablony dla aktualnej wersji z najlepszego dostępnego "
 "mirroru."
-
-msgid "Official export templates aren't available for development builds."
-msgstr ""
-"Oficjalne szablony eksportowe nie są dostępne dla kompilacji "
-"programistycznych."
 
 msgid "Install from File"
 msgstr "Zainstaluj z pliku"
@@ -4953,8 +5304,14 @@ msgstr "Zasoby do eksportu:"
 msgid "(Inherited)"
 msgstr "(dziedziczone)"
 
+msgid "Delete patch '%s' from list?"
+msgstr "Usunąć łatkę \"%s\" z listy?"
+
 msgid "Export With Debug"
 msgstr "Eksport z debugowaniem"
+
+msgid "Export As Patch"
+msgstr "Eksportuj jako łatkę"
 
 msgid "%s Export"
 msgstr "Eksport %s"
@@ -5039,6 +5396,18 @@ msgstr ""
 "Filtry do wykluczenia plików/folderów z projektu\n"
 "(oddzielone przecinkami, np. *.json, *.txt, docs/*)"
 
+msgid "Patches"
+msgstr "Łatki"
+
+msgid "Base Packs:"
+msgstr "Łatki bazowe:"
+
+msgid "Godot Project Pack"
+msgstr "Paczka projektu Godota"
+
+msgid "Add Pack"
+msgstr "Dodaj łatkę"
+
 msgid "Features"
 msgstr "Funkcje"
 
@@ -5077,6 +5446,9 @@ msgstr ""
 
 msgid "Encryption Key (256-bits as hexadecimal):"
 msgstr "Klucz szyfrujący (256 bitów szesnastkowo):"
+
+msgid "Initialization vector seed"
+msgstr "Ziarno wektora inicjalizacji"
 
 msgid ""
 "Note: Encryption key needs to be stored in the binary,\n"
@@ -5134,9 +5506,6 @@ msgstr "Eksportuj wszystko..."
 
 msgid "ZIP File"
 msgstr "Plik ZIP"
-
-msgid "Godot Project Pack"
-msgstr "Paczka projektu Godota"
 
 msgid "Export templates for this platform are missing:"
 msgstr "Brakuje eksportu szablonów dla tej platformy:"
@@ -5200,8 +5569,8 @@ msgstr "Przeglądaj"
 msgid "Confirm Path"
 msgstr "Potwierdź ścieżkę"
 
-msgid "Favorites"
-msgstr "Ulubione"
+msgid "Link to: %s"
+msgstr "Dowiązanie do: %s"
 
 msgid "View items as a grid of thumbnails."
 msgstr "Wyświetl elementy jako siatkę miniatur."
@@ -5232,11 +5601,8 @@ msgstr "Błąd przenoszenia:"
 msgid "Error duplicating:"
 msgstr "Błąd duplikacji:"
 
-msgid "Failed to save resource at %s: %s"
-msgstr "Nie udało się zapisać zasobu w %s: %s"
-
-msgid "Failed to load resource at %s: %s"
-msgstr "Nie udało się wczytać zasobu z %s: %s"
+msgid "Error duplicating directory:"
+msgstr "Błąd duplikowania katalogu:"
 
 msgid "Unable to update dependencies for:"
 msgstr "Nie można zaktualizować zależności dla:"
@@ -5264,8 +5630,8 @@ msgstr ""
 msgid "A file or folder with this name already exists."
 msgstr "Plik lub katalog o tej nazwie już istnieje."
 
-msgid "Name begins with a dot."
-msgstr "Nazwa zaczyna się od kropki."
+msgid "Could not create base directory: %s"
+msgstr "Nie można utworzyć katalogu bazowego: \"%s\""
 
 msgid ""
 "The following files or folders conflict with items in the target location "
@@ -5301,6 +5667,17 @@ msgstr "Duplikowanie pliku:"
 
 msgid "Duplicating folder:"
 msgstr "Duplikowanie Folderu:"
+
+msgid "Create Folder"
+msgstr "Utwórz katalog"
+
+msgid ""
+"Do you wish to convert these files to %s? (This operation cannot be undone!)"
+msgstr ""
+"Chcesz przekonwertować te pliki na %s? (Ta operacja nie może być cofnięta!)"
+
+msgid "Could not create folder: %s"
+msgstr "Nie można utworzyć folderu: %s"
 
 msgid "New Inherited Scene"
 msgstr "Nowa scena dziedzicząca"
@@ -5362,17 +5739,17 @@ msgstr "Dodaj do ulubionych"
 msgid "Remove from Favorites"
 msgstr "Usuń z ulubionych"
 
+msgid "Convert to..."
+msgstr "Konwertuj na..."
+
 msgid "Reimport"
 msgstr "Importuj ponownie"
 
 msgid "Open in Terminal"
 msgstr "Otwórz w terminalu"
 
-msgid "Open Containing Folder in Terminal"
-msgstr "Otwórz folder zawierający w terminalu"
-
-msgid "Open in File Manager"
-msgstr "Otwórz w menedżerze plików"
+msgid "Open Folder in Terminal"
+msgstr "Otwórz folder w terminalu"
 
 msgid "New Folder..."
 msgstr "Utwórz katalog..."
@@ -5483,6 +5860,9 @@ msgstr "Zachowaj oba"
 msgid "Create Script"
 msgstr "Utwórz Skrypt"
 
+msgid "Convert"
+msgstr "Konwertuj"
+
 msgid "Find in Files"
 msgstr "Znajdź w plikach"
 
@@ -5519,6 +5899,9 @@ msgstr "Zastąp wszystkie (nie można cofnąć)"
 
 msgid "Searching..."
 msgstr "Wyszukiwanie..."
+
+msgid "Remove result"
+msgstr "Usuń wynik"
 
 msgid "%d match in %d file"
 msgstr "%d dopasowanie w %d pliku"
@@ -5611,11 +5994,25 @@ msgid "Filter Groups"
 msgstr "Filtruj grupy"
 
 msgid ""
-"Git commit date: %s\n"
-"Click to copy the version information."
+"Scroll Left\n"
+"Hold Ctrl to scroll to the begin.\n"
+"Hold Shift to scroll one page."
 msgstr ""
-"Data zatwierdzenia git: %s\n"
-"Kliknij, aby skopiować informacje o wersji."
+"Przewiń w lewo\n"
+"Przytrzymaj Ctrl, by przewinąć na początek.\n"
+"Przytrzymaj Shift, by przewinąć jedną stronę."
+
+msgid ""
+"Scroll Right\n"
+"Hold Ctrl to scroll to the end.\n"
+"Hold Shift to scroll one page."
+msgstr ""
+"Przewiń w prawo\n"
+"Przytrzymaj Ctrl, by przewinąć na koniec.\n"
+"Przytrzymaj Shift, by przewinąć jedną stronę."
+
+msgid "Pin Bottom Panel Switching"
+msgstr "Przypnij zmianę panelu dolnego"
 
 msgid "Expand Bottom Panel"
 msgstr "Rozwiń panel dolny"
@@ -5657,11 +6054,11 @@ msgstr ""
 msgid "Select This Folder"
 msgstr "Wybierz ten folder"
 
-msgid "All Recognized"
-msgstr "Wszystkie rozpoznane"
+msgid "Show Package Contents"
+msgstr "Pokaż zawartość paczki"
 
-msgid "All Files (*)"
-msgstr "Wszystkie pliki (*)"
+msgid "All Files"
+msgstr "Wszystkie pliki"
 
 msgid "Open a File"
 msgstr "Otwórz plik"
@@ -5678,8 +6075,14 @@ msgstr "Otwórz plik lub katalog"
 msgid "Save a File"
 msgstr "Zapisz plik"
 
+msgid "The path specified is invalid."
+msgstr "Podana ścieżka jest nieprawidłowa."
+
 msgid "Could not create folder. File with that name already exists."
 msgstr "Nie można utworzyć folderu. Istnieje już plik o tej nazwie."
+
+msgid "Could not create folder."
+msgstr "Nie można utworzyć katalogu."
 
 msgid "Favorited folder does not exist anymore and will be removed."
 msgstr "Ulubiony folder już nie istnieje i zostanie usunięty."
@@ -5705,6 +6108,9 @@ msgstr "Przełącz tryb"
 msgid "Focus Path"
 msgstr "Przejdź do wprowadzania ścieżki"
 
+msgid "Focus Filter"
+msgstr "Przejdź do filtru"
+
 msgid "Move Favorite Up"
 msgstr "Przesuń ulubiony w górę"
 
@@ -5726,17 +6132,29 @@ msgstr "Odśwież pliki."
 msgid "(Un)favorite current folder."
 msgstr "Dodaj/usuń aktualny folder z ulubionych."
 
-msgid "Toggle the visibility of hidden files."
-msgstr "Przełącz widoczność ukrytych plików."
-
 msgid "Create a new folder."
 msgstr "Utwórz nowy folder."
 
 msgid "Directories & Files:"
 msgstr "Katalogi i pliki:"
 
+msgid "Toggle the visibility of hidden files."
+msgstr "Przełącz widoczność ukrytych plików."
+
+msgid "Sort files"
+msgstr "Sortuj pliki"
+
+msgid "Toggle the visibility of the filter for file names."
+msgstr "Przełącz widoczność filtra dla nazw plików."
+
 msgid "Preview:"
 msgstr "Podgląd:"
+
+msgid "Filter:"
+msgstr "Filtr:"
+
+msgid "Filter"
+msgstr "Filtr"
 
 msgid "File:"
 msgstr "Plik:"
@@ -5758,6 +6176,45 @@ msgstr "Nie znaleziono podzasobów."
 msgid "Open a list of sub-resources."
 msgstr "Otwórz listę pod-zasobów."
 
+msgid "Search files..."
+msgstr "Szukaj plików..."
+
+msgid "Select Resource"
+msgstr "Wybierz zasób"
+
+msgid "Select Scene"
+msgstr "Wybierz scenę"
+
+msgid "Fuzzy Search"
+msgstr "Szukanie rozmyte"
+
+msgid "Enable fuzzy matching"
+msgstr "Włącz dopasowanie rozmyte"
+
+msgid "Addons"
+msgstr "Dodatki"
+
+msgid "Include files from addons"
+msgstr "Uwzględnij pliki z dodatków"
+
+msgid "No files found for this type"
+msgstr "Nie znaleziono plików dla tego typu"
+
+msgid "Start searching to find files..."
+msgstr "Zacznij szukać, by znaleźć pliki..."
+
+msgid "No results found"
+msgstr "Nie znaleziono wyników"
+
+msgid " (recently opened)"
+msgstr " (ostatnio otwarte)"
+
+msgid "Grid view"
+msgstr "Widok siatki"
+
+msgid "List view"
+msgstr "Widok listy"
+
 msgid "Play the project."
 msgstr "Uruchom projekt."
 
@@ -5769,9 +6226,6 @@ msgstr "Uruchom własną scenę."
 
 msgid "Reload the played scene."
 msgstr "Przeładuj odtwarzaną scenę."
-
-msgid "Quick Run Scene..."
-msgstr "Szybkie uruchomienie sceny..."
 
 msgid ""
 "Movie Maker mode is enabled, but no movie file path has been specified.\n"
@@ -5792,6 +6246,73 @@ msgstr ""
 msgid "Could not start subprocess(es)!"
 msgstr "Nie udało się uruchomić podprocesu/ów!"
 
+msgid "Recovery Mode is enabled. Disable it to run the project."
+msgstr "Tryb awaryjny jest włączony. Wyłącz go, by uruchomić projekt."
+
+msgid ""
+"Autostart is enabled for the following profilers, which can have a "
+"performance impact:"
+msgstr ""
+"Autostart jest włączony dla następujących profilerów, co może mieć wpływ na "
+"wydajność:"
+
+msgid "Network Profiler"
+msgstr "Profiler sieci"
+
+msgid "Click to open the first profiler for which autostart is enabled."
+msgstr ""
+"Kliknij, by otworzyć pierwszy profiler, dla którego jest włączony autostart."
+
+msgid "Recovery Mode"
+msgstr "Tryb awaryjny"
+
+msgid ""
+"Godot opened the project in Recovery Mode, which is a special mode that can "
+"help recover projects that crash the engine upon initialization. The "
+"following features have been temporarily disabled:"
+msgstr ""
+"Godot otworzył projekt w Trybie Awaryjnym, który jest specjalnym trybem "
+"mogącym pomóc w odzyskaniu projektów, które crashują silnik podczas "
+"inicjalizacji. Następujące funkcjonalności zostały tymczasowo wyłączone:"
+
+msgid "Tool scripts"
+msgstr "Skrypty narzędziowe"
+
+msgid "Editor plugins"
+msgstr "Wtyczki edytora"
+
+msgid "GDExtension addons"
+msgstr "Dodatki GDExtension"
+
+msgid "Automatic scene restoring"
+msgstr "Automatyczne przywracanie scen"
+
+msgid ""
+"If the project cannot be opened outside of this mode, then it's very likely "
+"any of these components is preventing this project from launching. This mode "
+"is intended only for basic editing to troubleshoot such issues, and therefore "
+"it is not possible to run a project in this mode."
+msgstr ""
+"Jeśli projekt nie może zostać otwarty poza tym trybem, bardzo prawdopodobne, "
+"że którykolwiek z tych komponentów uniemożliwia uruchomienie projektu. Ten "
+"tryb jest przeznaczony tylko do podstawowego edytowania, by zdiagnozować "
+"takie problemy, w związku z czym nie jest możliwe uruchomienie projektu w tym "
+"trybie."
+
+msgid ""
+"To disable Recovery Mode, reload the project by pressing the Reload button "
+"next to the Recovery Mode banner, or by reopening the project normally."
+msgstr ""
+"By wyłączyć Tryb Awaryjny, wczytaj ponownie projekt używając przycisku "
+"ponownego wczytania obok banera Trybu Awaryjnego lub normalnie otwierając "
+"projekt jeszcze raz."
+
+msgid "Disable recovery mode and reload the project."
+msgstr "Wyłącz tryb awaryjny i wczytaj ponownie projekt."
+
+msgid "Recovery Mode is enabled. Click for more details."
+msgstr "Tryb awaryjny jest włączony. Kliknij po więcej informacji."
+
 msgid "Run the project's default scene."
 msgstr "Uruchom domyślną scenę projektu."
 
@@ -5810,11 +6331,23 @@ msgstr "Zatrzymaj obecnie uruchomiony projekt."
 msgid "Stop Running Project"
 msgstr "Zatrzymaj uruchomiony projekt"
 
+msgid "Run Scene in Regular Mode"
+msgstr "Uruchom scenę w trybie zwykłym"
+
+msgid "Run Scene in XR Mode"
+msgstr "Uruchom scenę w trybie XR"
+
 msgid "Run the currently edited scene."
 msgstr "Uruchom obecnie edytowaną scenę."
 
 msgid "Run Current Scene"
 msgstr "Uruchom obecną scenę"
+
+msgid "Run in Regular Mode"
+msgstr "Uruchom w trybie zwykłym"
+
+msgid "Run in XR Mode"
+msgstr "Uruchom w trybie XR"
 
 msgid "Run a specific scene."
 msgstr "Uruchom konkretną scenę."
@@ -5871,6 +6404,25 @@ msgstr "Pokaż powiadomienia."
 msgid "Silence the notifications."
 msgstr "Wycisz powiadomienia."
 
+msgid "(unknown)"
+msgstr "(nieznana)"
+
+msgid ""
+"Git commit date: %s\n"
+"Click to copy the version information."
+msgstr ""
+"Data zatwierdzenia git: %s\n"
+"Kliknij, aby skopiować informacje o wersji."
+
+msgid ""
+"The root node of a scene is recommended to not be transformed, since "
+"instances of the scene will usually override this. Reset the transform and "
+"reload the scene to remove this warning."
+msgstr ""
+"Zalecane jest, by korzeń sceny nie był przekształcony, ponieważ instancje "
+"sceny zwykle to nadpiszą. Zresetuj przekształcenie i wczytaj ponownie scenę, "
+"by usunąć to ostrzeżenie."
+
 msgid "Toggle Visible"
 msgstr "Przełącz widoczność"
 
@@ -5879,6 +6431,9 @@ msgstr "Odblokuj węzeł"
 
 msgid "Ungroup Children"
 msgstr "Rozgrupuj dzieci"
+
+msgid "Revoke unique name for node \"%s\"?"
+msgstr "Unieważnić unikalną nazwę dla węzła \"%s\"?"
 
 msgid "Disable Scene Unique Name"
 msgstr "Wyłącz unikalną w scenie nazwę"
@@ -5890,13 +6445,14 @@ msgid "Node configuration warning:"
 msgstr "Ostrzeżenie konfiguracji węzła:"
 
 msgid ""
-"This node can be accessed from within anywhere in the scene by preceding it "
-"with the '%s' prefix in a node path.\n"
-"Click to disable this."
+"This node can be accessed from anywhere within the scene it belongs to by "
+"using the '%s' prefix in the node path."
 msgstr ""
-"Ten node może być dostępny z dowolnego miejsca sceny poprzez poprzedzenie go "
-"prefiksem '%s' w ścieżce node.\n"
-"Kliknij, aby to wyłączyć."
+"Dostęp do tego węzła można uzyskać z dowolnego miejsca w scenie, do której "
+"należy, poprzez użycie przedrostka \"%s\" w ścieżce węzła."
+
+msgid "Click to disable this."
+msgstr "Kliknij, aby to wyłączyć."
 
 msgid "Node has one connection."
 msgid_plural "Node has {num} connections."
@@ -5911,7 +6467,17 @@ msgstr[1] "Węzeł jest w następujących grupach:"
 msgstr[2] "Węzeł jest w następujących grupach:"
 
 msgid "Click to show signals dock."
-msgstr "Kliknij, aby wyświetlić panel sygnałów."
+msgstr "Kliknij, aby wyświetlić dok sygnałów."
+
+msgid "Click to show groups dock."
+msgstr "Kliknij, aby wyświetlić dok grup."
+
+msgid ""
+"This script can run in the editor.\n"
+"It is currently disabled due to recovery mode."
+msgstr ""
+"Ten skrypt może działać w edytorze.\n"
+"Jest aktualnie wyłączony z powodu trybu awaryjnego."
 
 msgid "This script is currently running in the editor."
 msgstr "Ten skrypt jest obecnie uruchomiony w edytorze."
@@ -5949,11 +6515,21 @@ msgstr "Otwórz w edytorze"
 msgid "\"%s\" is not a known filter."
 msgstr "\"%s\" nie jest znanym filtrem."
 
+msgid ""
+"Root nodes cannot be accessed as unique names in their own scene. Instantiate "
+"in another scene and set as unique name there."
+msgstr ""
+"Do korzenia sceny nie można uzyskać dostępu poprzez unikalną nazwę w jego "
+"własnej scenie. Utwórz instancję w innej scenie i tam ustaw unikalną nazwę."
+
 msgid "Invalid node name, the following characters are not allowed:"
 msgstr "Nieprawidłowa nazwa węzła, następujące znaki są niedozwolone:"
 
 msgid "A node with the unique name %s already exists in this scene."
 msgstr "Węzeł z unikalną nazwą %s już istnieje w tej scenie."
+
+msgid "Enable Scene Unique Name(s)"
+msgstr "Włącz unikalne w scenie nazwy"
 
 msgid "Rename Node"
 msgstr "Zmień nazwę węzła"
@@ -5966,6 +6542,19 @@ msgstr "Drzewo sceny (węzły):"
 
 msgid "Node Configuration Warning!"
 msgstr "Ostrzeżenie konfiguracji węzła!"
+
+msgid "Revoke"
+msgstr "Unieważnij"
+
+msgid "Don't Ask Again"
+msgstr "Nie pytaj ponownie"
+
+msgid ""
+"This dialog can also be enabled/disabled in the Editor Settings: Docks > "
+"Scene Tree > Ask Before Revoking Unique Name."
+msgstr ""
+"Ten dialog może być również włączony/wyłączony w ustawieniach edytora: Doki > "
+"Drzewo sceny > Pytaj przed unieważnieniem unikalnej nazwy."
 
 msgid "Allowed:"
 msgstr "Dozwolone:"
@@ -6138,6 +6727,12 @@ msgstr "Materiały"
 
 msgid "Selected Animation Play/Pause"
 msgstr "Odtwórz/zapauzuj wybraną animację"
+
+msgid "Selected Animation Stop"
+msgstr "Zatrzymaj wybraną animację"
+
+msgid "Toggle Animation Skeleton Visibility"
+msgstr "Przełącz widoczność szkieletu animacji"
 
 msgid "Rotate Lights With Model"
 msgstr "Obracaj światła z modelem"
@@ -6582,17 +7177,26 @@ msgstr "Zarządzaj właściwościami obiektu."
 msgid "This cannot be undone. Are you sure?"
 msgstr "Nie można tego cofnąć. Czy jesteś pewien?"
 
-msgid "Add %d Translations"
-msgstr "Dodaj %d tłumaczeń"
+msgid "Add %d Translation"
+msgid_plural "Add %d Translations"
+msgstr[0] "Dodaj %d tłumaczenie"
+msgstr[1] "Dodaj %d tłumaczenia"
+msgstr[2] "Dodaj %d tłumaczeń"
 
 msgid "Remove Translation"
 msgstr "Usuń tłumaczenie"
 
-msgid "Translation Resource Remap: Add %d Path(s)"
-msgstr "Przemapowanie tłumaczenia zasobu: Dodaj %d ścieżek"
+msgid "Translation Resource Remap: Add %d Path"
+msgid_plural "Translation Resource Remap: Add %d Paths"
+msgstr[0] "Przemapowanie tłumaczenia zasobu: Dodaj %d ścieżkę"
+msgstr[1] "Przemapowanie tłumaczenia zasobu: Dodaj %d ścieżki"
+msgstr[2] "Przemapowanie tłumaczenia zasobu: Dodaj %d ścieżek"
 
-msgid "Translation Resource Remap: Add %d Remap(s)"
-msgstr "Przemapowanie tłumaczenia zasobu: Dodaj %d przemapowań"
+msgid "Translation Resource Remap: Add %d Remap"
+msgid_plural "Translation Resource Remap: Add %d Remaps"
+msgstr[0] "Przemapowanie tłumaczenia zasobu: Dodaj %d przemapowanie"
+msgstr[1] "Przemapowanie tłumaczenia zasobu: Dodaj %d przemapowania"
+msgstr[2] "Przemapowanie tłumaczenia zasobu: Dodaj %d przemapowań"
 
 msgid "Change Resource Remap Language"
 msgstr "Zmień język mapowania zasobu"
@@ -6603,8 +7207,11 @@ msgstr "Usuń mapowanie zasobu"
 msgid "Remove Resource Remap Option"
 msgstr "Usuń opcję mapowania zasobu"
 
-msgid "Add %d file(s) for POT generation"
-msgstr "Dodaj %d plik(ów) do generowania POT"
+msgid "Add %d file for POT generation"
+msgid_plural "Add %d files for POT generation"
+msgstr[0] "Dodaj %d plik do generowania POT"
+msgstr[1] "Dodaj %d pliki do generowania POT"
+msgstr[2] "Dodaj %d plików do generowania POT"
 
 msgid "Remove file from POT generation"
 msgstr "Usuń plik z generowania POT"
@@ -6876,6 +7483,24 @@ msgstr "Wypełnij wybrane podrzędne elementy"
 msgid "Invert"
 msgstr "Odwróć"
 
+msgid "Start of Animation"
+msgstr "Początek animacji"
+
+msgid "End of Animation"
+msgstr "Koniec animacji"
+
+msgid "Set Custom Timeline from Marker"
+msgstr "Ustaw niestandardową linię czasu ze znacznika"
+
+msgid "Select Markers"
+msgstr "Wybierz znaczniki"
+
+msgid "Start Marker"
+msgstr "Początkowy znacznik"
+
+msgid "End Marker"
+msgstr "Końcowy znacznik"
+
 msgid "Library Name:"
 msgstr "Nazwa biblioteki:"
 
@@ -7105,20 +7730,20 @@ msgstr "Nazwa duplikowanej animacji:"
 msgid "Onion skinning requires a RESET animation."
 msgstr "Tryb warstw cebuli wymaga animacji RESET."
 
-msgid "Play selected animation backwards from current pos. (A)"
-msgstr "Odtwórz zaznaczoną animację od tyłu z aktualnej pozycji. (A)"
+msgid "Play Animation Backwards"
+msgstr "Odtwórz animację do tyłu"
 
-msgid "Play selected animation backwards from end. (Shift+A)"
-msgstr "Odtwórz zaznaczoną animację od tyłu z końca. (Shift+A)"
+msgid "Play Animation Backwards from End"
+msgstr "Odtwórz animację od końca"
 
-msgid "Pause/stop animation playback. (S)"
-msgstr "Zapauzuj/zatrzymaj odtwarzanie animacji. (S)"
+msgid "Pause/Stop Animation"
+msgstr "Zapauzuj/zatrzymaj animację"
 
-msgid "Play selected animation from start. (Shift+D)"
-msgstr "Uruchom animację od początku. (Shift+D)"
+msgid "Play Animation from Start"
+msgstr "Odtwórz animację od początku"
 
-msgid "Play selected animation from current pos. (D)"
-msgstr "Uruchom animację od aktualnej pozycji. (D)"
+msgid "Play Animation"
+msgstr "Odtwórz animację"
 
 msgid "Animation position (in seconds)."
 msgstr "Pozycja animacji (sekundy)."
@@ -7186,9 +7811,6 @@ msgstr "Dołącz uchwyty (3D)"
 msgid "Pin AnimationPlayer"
 msgstr "Przypnij AnimationPlayer"
 
-msgid "Error!"
-msgstr "Błąd!"
-
 msgid "Cross-Animation Blend Times"
 msgstr "Czasy Blendowania Pomiędzy Animacjami"
 
@@ -7197,6 +7819,12 @@ msgstr "Czasy Blendowania:"
 
 msgid "Next (Auto Queue):"
 msgstr "Następny (automatyczna kolejka):"
+
+msgid "Go to Next Keyframe"
+msgstr "Przejdź do następnej klatki kluczowej"
+
+msgid "Go to Previous Keyframe"
+msgstr "Przejdź do poprzedniej klatki kluczowej"
 
 msgid "Toggle Animation Bottom Panel"
 msgstr "Przełącz dolny panel animacji"
@@ -7612,22 +8240,6 @@ msgstr "Obrót:"
 msgid "Scaling:"
 msgstr "Skalowanie:"
 
-msgid ""
-"Project Camera Override\n"
-"Overrides the running project's camera with the editor viewport camera."
-msgstr ""
-"Przejmij kamerę gry\n"
-"Nadpisuje kamerę uruchomionego projektu kamerą z widoku edytora."
-
-msgid ""
-"Project Camera Override\n"
-"No project instance running. Run the project from the editor to use this "
-"feature."
-msgstr ""
-"Przejmij kamerę gry\n"
-"Nie ma uruchomionej instancji projektu. Uruchom projekt z edytora, aby użyć "
-"tej funkcjonalności."
-
 msgid "Lock Selected"
 msgstr "Zablokuj wybrane"
 
@@ -7705,6 +8317,9 @@ msgstr ""
 "Alt+PPM: Pokaż listę wszystkich węzłów na klikniętej pozycji, wliczając "
 "zablokowane."
 
+msgid "(Available in all modes.)"
+msgstr "(Dostępne w każdym trybie.)"
+
 msgid "RMB: Add node at position clicked."
 msgstr "PPM: Dodaj węzeł na klikniętej pozycji."
 
@@ -7723,18 +8338,18 @@ msgstr "Shift: Skaluj proporcjonalnie."
 msgid "Show list of selectable nodes at position clicked."
 msgstr "Pokaż listę wybieralnych węzłów na klikniętej pozycji."
 
-msgid "Click to change object's rotation pivot."
+msgid "Click to change object's pivot."
 msgstr "Kliknij, by zmienić oś obrotu obiektu."
 
-msgid "Shift: Set temporary rotation pivot."
+msgid "Shift: Set temporary pivot."
 msgstr "Shift: Ustaw tymczasową oś obrotu."
 
 msgid ""
-"Click this button while holding Shift to put the rotation pivot in the center "
-"of the selected nodes."
+"Click this button while holding Shift to put the temporary pivot in the "
+"center of the selected nodes."
 msgstr ""
-"Kliknij ten przycisk trzymając Shift aby umieścić oś obrotu w środku "
-"wybranych węzłów."
+"Kliknij ten przycisk trzymając Shift, aby umieścić tymczasową oś obrotu w "
+"środku wybranych węzłów."
 
 msgid "Pan Mode"
 msgstr "Tryb przemieszczania"
@@ -7856,7 +8471,7 @@ msgid "Show Origin"
 msgstr "Pokaż pozycję początkową"
 
 msgid "Show Viewport"
-msgstr "Pokaż widok"
+msgstr "Pokaż ekran"
 
 msgid "Lock"
 msgstr "Zablokuj"
@@ -8158,57 +8773,6 @@ msgstr "Wyrównanie w poziomie"
 msgid "Vertical alignment"
 msgstr "Wyrównanie w pionie"
 
-msgid "Convert to GPUParticles3D"
-msgstr "Przekonwertuj na GPUParticles3D"
-
-msgid "Load Emission Mask"
-msgstr "Wczytaj maskę emisji"
-
-msgid "Convert to GPUParticles2D"
-msgstr "Przekonwertuj na GPUParticles2D"
-
-msgid "CPUParticles2D"
-msgstr "Cząsteczki CPU 2D"
-
-msgid "Emission Mask"
-msgstr "Maska emisji"
-
-msgid "Solid Pixels"
-msgstr "Widoczne piksele"
-
-msgid "Border Pixels"
-msgstr "Brzegowe piksele"
-
-msgid "Directed Border Pixels"
-msgstr "Skierowane brzegowe piksele"
-
-msgid "Centered"
-msgstr "Wyśrodkowana"
-
-msgid "Capture Colors from Pixel"
-msgstr "Przechwyć kolory z pikseli"
-
-msgid "Generating Visibility AABB (Waiting for Particle Simulation)"
-msgstr "Generowanie AABB widoczności (czekam na symulację cząsteczek)"
-
-msgid "Generating..."
-msgstr "Generowanie..."
-
-msgid "Generate Visibility AABB"
-msgstr "Generuj AABB widoczności"
-
-msgid "CPUParticles3D"
-msgstr "Cząsteczki CPU 3D"
-
-msgid "Generate AABB"
-msgstr "Generuj AABB"
-
-msgid "Create Emission Points From Node"
-msgstr "Twórz punkty emisji z węzła"
-
-msgid "Generation Time (sec):"
-msgstr "Czas generowania (sek):"
-
 msgid "Load Curve Preset"
 msgstr "Wczytaj predefiniowaną krzywą"
 
@@ -8398,6 +8962,13 @@ msgstr ""
 msgid "Edit Plugin"
 msgstr "Edytuj wtyczkę"
 
+msgid ""
+"Recovery mode is enabled. Enabled plugins will not run while this mode is "
+"active."
+msgstr ""
+"Tryb awaryjny jest włączony. Włączone wtyczki nie będą działać kiedy ten tryb "
+"jest aktywny."
+
 msgid "Installed Plugins:"
 msgstr "Zainstalowane wtyczki:"
 
@@ -8474,11 +9045,171 @@ msgstr "Wschodnio azjatyckie szerokości"
 msgid "Numeral Alignment"
 msgstr "Wyrównanie numeryczne"
 
-msgid " - Variation"
-msgstr " - wariacja"
+msgid "Variation"
+msgstr "Wariant"
 
 msgid "Unable to preview font"
 msgstr "Nie można podejrzeć czcionki"
+
+msgid "Connection impossible to the game process."
+msgstr "Połączenie z procesem gry niemożliwe."
+
+msgid "Game starting..."
+msgstr "Startowanie gry..."
+
+msgid "Game running not embedded."
+msgstr "Gra działa nieosadzona."
+
+msgid "Press play to start the game."
+msgstr "Kliknij uruchom, by rozpocząć grę."
+
+msgid "Embedding is disabled."
+msgstr "Osadzanie jest wyłączone."
+
+msgid ""
+"Game embedding not available on Wayland.\n"
+"Wayland can be disabled in the Editor Settings (Run > Platforms > Linux/*BSD "
+"> Prefer Wayland)."
+msgstr ""
+"Osadzanie gry nie jest dostępne na Wayland.\n"
+"Wayland może być wyłączony w ustawieniach edytora (Uruchom > Platformy > "
+"Linux/*BSD > Preferuj Wayland)."
+
+msgid "Game embedding not available on your OS."
+msgstr "Osadzanie gry niedostępne w twoim systemie."
+
+msgid ""
+"Game embedding not available for the Display Server: '%s'.\n"
+"Display Server can be modified in the Project Settings (Display > Display "
+"Server > Driver)."
+msgstr ""
+"Osadzanie gry nie jest dostępne dla tego serwera wyświetlania: \"%s\".\n"
+"Serwer wyświetlania może być zmieniony w ustawieniach projektu (Wyświetlanie "
+"> Serwer wyświetlania > Sterownik)."
+
+msgid ""
+"Game embedding not available when the game starts minimized.\n"
+"Consider overriding the window mode project setting with the editor feature "
+"tag to Windowed to use game embedding while leaving the exported project "
+"intact."
+msgstr ""
+"Osadzanie gry niedostępne, gdy gra startuje zminimalizowana.\n"
+"Rozważ nadpisanie ustawienia trybu okna z tagiem funkcjonalności \"editor\" "
+"wartością Windowed, by używać osadzania gry, zostawiając wyeksportowany "
+"projekt bez zmian."
+
+msgid ""
+"Game embedding not available when the game starts maximized.\n"
+"Consider overriding the window mode project setting with the editor feature "
+"tag to Windowed to use game embedding while leaving the exported project "
+"intact."
+msgstr ""
+"Osadzanie gry niedostępne, gdy gra startuje zmaksymalizowana.\n"
+"Rozważ nadpisanie ustawienia trybu okna z tagiem funkcjonalności \"editor\" "
+"wartością Windowed, by używać osadzania gry, zostawiając wyeksportowany "
+"projekt bez zmian."
+
+msgid ""
+"Game embedding not available when the game starts in fullscreen.\n"
+"Consider overriding the window mode project setting with the editor feature "
+"tag to Windowed to use game embedding while leaving the exported project "
+"intact."
+msgstr ""
+"Osadzanie gry niedostępne, gdy gra startuje na pełnym ekranie.\n"
+"Rozważ nadpisanie ustawienia trybu okna z tagiem funkcjonalności \"editor\" "
+"wartością Windowed, by używać osadzania gry, zostawiając wyeksportowany "
+"projekt bez zmian."
+
+msgid "Game embedding not available in single window mode."
+msgstr "Osadzanie gry niedostępne w trybie jednego okna."
+
+msgid "Suspend"
+msgstr "Zawieś"
+
+msgid "Next Frame"
+msgstr "Następna klatka"
+
+msgid "Input"
+msgstr "Sterowanie"
+
+msgid "Allow game input."
+msgstr "Zezwól na sterowanie w grze."
+
+msgid ""
+"Disable game input and allow to select Node2Ds, Controls, and manipulate the "
+"2D camera."
+msgstr ""
+"Wyłącz sterowanie w grze i zezwól na wybieranie węzłów Node2D, Control oraz "
+"manipulację kamerą 2D."
+
+msgid ""
+"Disable game input and allow to select Node3Ds and manipulate the 3D camera."
+msgstr ""
+"Wyłącz sterowanie w grze i zezwól na wybieranie węzłów Node3D oraz "
+"manipulację kamerą 3D."
+
+msgid "Toggle Selection Visibility"
+msgstr "Przełącz widoczność zaznaczenia"
+
+msgid "Alt+RMB: Show list of all nodes at position clicked."
+msgstr "Alt+PPM: Pokaż listę wszystkich węzłów na klikniętej pozycji."
+
+msgid "Override the in-game camera."
+msgstr "Zastąp kamerę gry."
+
+msgid "Camera Override Options"
+msgstr "Opcje zastąpienia kamery"
+
+msgid "Reset 2D Camera"
+msgstr "Zresetuj kamerę 2D"
+
+msgid "Reset 3D Camera"
+msgstr "Zresetuj kamerę 3D"
+
+msgid "Manipulate In-Game"
+msgstr "Manipuluj w grze"
+
+msgid "Manipulate From Editors"
+msgstr "Manipuluj z edytorów"
+
+msgid ""
+"Embedded game size is based on project settings.\n"
+"The 'Keep Aspect' mode is used when the Game Workspace is smaller than the "
+"desired size."
+msgstr ""
+"Rozmiar osadzonej gry jest bazowany na ustawieniach projektu.\n"
+"Tryb \"Keep Aspect\" jest używany, gdy Przestrzeń robocza gry jest mniejsza "
+"od pożądanego rozmiaru."
+
+msgid "Keep the aspect ratio of the embedded game."
+msgstr "Zachowaj współczynnik proporcji osadzonej gry."
+
+msgid "Embedded game size stretches to fit the Game Workspace."
+msgstr ""
+"Rozmiar osadzonej gry rozciąga się, by dopasować się do Przestrzeni roboczej "
+"gry."
+
+msgid "Embedding Options"
+msgstr "Opcje osadzania"
+
+msgid "Embed Game on Next Play"
+msgstr "Osadź grę przy następnym uruchomieniu"
+
+msgid "Make Game Workspace Floating on Next Play"
+msgstr "Uczyń Przestrzeń roboczą gry pływającą przy następnym uruchomieniu"
+
+msgid "Game Workspace"
+msgstr "Przestrzeń robocza gry"
+
+msgid ""
+"No \"%s\" library found for GDExtension: \"%s\". Possible feature flags for "
+"your platform: %s"
+msgstr ""
+"Nie znaleziono biblioteki \"%s\" dla GDExtension: \"%s\". Możliwe flagi "
+"funkcjonalności dla twojej platformy: %s"
+
+msgid "Multiple \"%s\" libraries found for GDExtension: \"%s\": \"%s\"."
+msgstr "Wiele bibliotek \"%s\" znalezione dla GDExtension: \"%s\": \"%s\"."
 
 msgid "Change AudioStreamPlayer3D Emission Angle"
 msgstr "Zmień kąt emisji węzła AudioStreamPlayer3D"
@@ -8543,65 +9274,6 @@ msgstr "Zmień przesunięcie środka sondy"
 msgid "Change Notifier AABB"
 msgstr "Zmień AABB powiadamiacza"
 
-msgid "Convert to CPUParticles2D"
-msgstr "Przekonwertuj na CPUParticles2D"
-
-msgid "Generating Visibility Rect (Waiting for Particle Simulation)"
-msgstr ""
-"Generowanie prostokąta widzialności (oczekiwanie na symulację cząsteczek)"
-
-msgid "Generate Visibility Rect"
-msgstr "Wygeneruj prostokąt widoczności"
-
-msgid "Can only set point into a ParticleProcessMaterial process material"
-msgstr ""
-"Punkt można wstawić tylko w materiał przetwarzania ParticleProcessMaterial"
-
-msgid "GPUParticles2D"
-msgstr "Cząsteczki GPU 2D"
-
-msgid "The geometry's faces don't contain any area."
-msgstr "Powierzchnie geometrii nie zawierają żadnego obszaru."
-
-msgid "The geometry doesn't contain any faces."
-msgstr "Geometria nie zawiera żadnych powierzchni."
-
-msgid "\"%s\" doesn't inherit from Node3D."
-msgstr "\"%s\" nie dziedziczy po Node3D."
-
-msgid "\"%s\" doesn't contain geometry."
-msgstr "\"%s\" nie zawiera geometrii."
-
-msgid "\"%s\" doesn't contain face geometry."
-msgstr "\"%s\" nie zawiera geometrii powierzchni."
-
-msgid "Create Emitter"
-msgstr "Utwórz Emiter"
-
-msgid "Emission Points:"
-msgstr "Punkty emisji:"
-
-msgid "Surface Points"
-msgstr "Punkty powierzchni"
-
-msgid "Surface Points+Normal (Directed)"
-msgstr "Punkty powierzchni+normalna (skierowane)"
-
-msgid "Volume"
-msgstr "Głośność"
-
-msgid "Emission Source:"
-msgstr "Źródło emisji:"
-
-msgid "A processor material of type 'ParticleProcessMaterial' is required."
-msgstr "Wymagany jest materiał przetwarzający typu \"ParticleProcessMaterial\"."
-
-msgid "Convert to CPUParticles3D"
-msgstr "Przekonwertuj na CPUParticles3D"
-
-msgid "GPUParticles3D"
-msgstr "Cząsteczki GPU 3D"
-
 msgid "Low"
 msgstr "Niskie"
 
@@ -8621,15 +9293,15 @@ msgid "Video RAM size: %s MB (%s)"
 msgstr "Rozmiar Video RAM: %s MB (%s)"
 
 msgid "Bake SDF"
-msgstr "Wypiecz SDF"
+msgstr "Wypal SDF"
 
 msgid ""
 "No faces detected during GPUParticlesCollisionSDF3D bake.\n"
 "Check whether there are visible meshes matching the bake mask within its "
 "extents."
 msgstr ""
-"Nie wykryto powierzchni podczas wypiekania GPUParticlesCollisionSDF3D.\n"
-"Sprawdź, czy są widoczne siatki wewnątrz obszaru pasujące do maski wypiekania."
+"Nie wykryto powierzchni podczas wypalania GPUParticlesCollisionSDF3D.\n"
+"Sprawdź, czy są widoczne siatki wewnątrz obszaru pasujące do maski wypalania."
 
 msgid "Select path for SDF Texture"
 msgstr "Wybierz ścieżkę dla tekstury SDF"
@@ -8675,16 +9347,44 @@ msgstr ""
 "Zapisz scenę i spróbuj ponownie."
 
 msgid ""
-"No meshes to bake. Make sure they contain an UV2 channel and that the 'Bake "
-"Light' flag is on."
+"No meshes with lightmapping support to bake. Make sure they contain UV2 data "
+"and their Global Illumination property is set to Static."
 msgstr ""
-"Brak siatek do wypalenia. Upewnij się, że zawierają kanał UV2 i że flaga "
-"\"Bake Light\" jest ustawiona."
+"Brak siatek ze wsparciem dla mapy światła do wypalenia. Upewnij się, że "
+"zawierają dane UV2 i ich właściwość Globalne oświetlenie jest ustawione na "
+"Static."
 
-msgid "Failed creating lightmap images, make sure path is writable."
+msgid ""
+"To import a scene with lightmapping support, set Meshes > Light Baking to "
+"Static Lightmaps in the Import dock."
 msgstr ""
-"Błąd przy tworzeniu ligtmapy, upewnij się że ścieżka nie jest ustawiona "
-"jedynie do odczytu."
+"By zaimportować scenę ze wsparciem map światła, w doku importu ustaw Siatki > "
+"Wypalanie światła na Static Lightmaps."
+
+msgid ""
+"To enable lightmapping support on a primitive mesh, edit the PrimitiveMesh "
+"resource in the inspector and check Add UV2."
+msgstr ""
+"By włączyć wsparcie dla wypalania światła na podstawowej siatce, edytuj w "
+"inspektorze zasób PrimitiveMesh i zaznacz Dodaj UV2."
+
+msgid ""
+"To enable lightmapping support on a CSG mesh, select the root CSG node and "
+"choose CSG > Bake Mesh Instance at the top of the 3D editor viewport.\n"
+"Select the generated MeshInstance3D node and choose Mesh > Unwrap UV2 for "
+"Lightmap/AO at the top of the 3D editor viewport."
+msgstr ""
+"By włączyć wsparcie map światła w siatce CSG, zaznacz korzeń węzła CSG i "
+"wybierz CSG > Wypal instancję siatki na górze widoku edytora 3D.\n"
+"Zaznacz wygenerowany węzeł MeshInstance3D i wybierz Siatka > Rozwiń UV2 dla "
+"mapy światła/AO na górze widoku edytora 3D."
+
+msgid ""
+"Failed creating lightmap images. Make sure the lightmap destination path is "
+"writable."
+msgstr ""
+"Nie udało się utworzyć obrazków mapy światła. Upewnij się, że do docelowej "
+"ścieżki mapy światła da się pisać."
 
 msgid "No editor scene root found."
 msgstr "Nie znaleziono korzenia sceny edytora."
@@ -8702,13 +9402,13 @@ msgstr ""
 "tekstury, zalecane jest zamiast tego rozdzielenie sceny na więcej obiektów."
 
 msgid ""
-"Failed creating lightmap images. Make sure all meshes selected to bake have "
-"`lightmap_size_hint` value set high enough, and `texel_scale` value of "
-"LightmapGI is not too low."
+"Failed creating lightmap images. Make sure all meshes to bake have the "
+"Lightmap Size Hint property set high enough, and the LightmapGI's Texel Scale "
+"value is not too low."
 msgstr ""
 "Nie udało się utworzyć obrazków mapy światła. Upewnij się, że wszystkie "
-"siatki wybrane do wypiekania mają wartość \"lightmap_size_hint\" ustawioną na "
-"wystarczająco wysoką i \"texel_scale\" węzła LightmapGI nie jest za niski."
+"siatki do wypalenia mają właściwość Lightmap Size Hint ustawioną na "
+"wystarczająco wysoką i wartość Texel Scale dla węzła nie jest za niska."
 
 msgid ""
 "Failed fitting a lightmap image into an atlas. This should never happen and "
@@ -8720,11 +9420,27 @@ msgstr ""
 msgid "Bake Lightmaps"
 msgstr "Stwórz Lightmaps"
 
+msgid "Lightmap baking is not supported on this GPU (%s)."
+msgstr "Wypalanie mapy światła nie jest wspierane na tym GPU (%s)."
+
+msgid "Lightmaps cannot be baked on %s."
+msgstr "Mapy światła nie mogą być wypalane na %s."
+
+msgid ""
+"Lightmaps cannot be baked, as the `lightmapper_rd` module was disabled at "
+"compile-time."
+msgstr ""
+"Mapy światła nie mogą być wypalone, gdyż moduł \"lightmapper_rd\" został "
+"wyłączony podczas kompilacji."
+
 msgid "LightMap Bake"
 msgstr "Stwórz mapę światła"
 
 msgid "Select lightmap bake file:"
 msgstr "Wybierz plik wypalenia mapy światła:"
+
+msgid "Preview is not available for this shader mode."
+msgstr "Podgląd nie jest dostępny dla tego trybu shadera."
 
 msgid "Couldn't create a Trimesh collision shape."
 msgstr "Nie udało się utworzyć kształtu trójsiatki."
@@ -8743,9 +9459,6 @@ msgstr "Nie można utworzyć kształtu kolizji równorzędnego korzeniu sceny."
 
 msgid "Mesh is empty!"
 msgstr "Siatka jest pusta!"
-
-msgid "Create Navigation Mesh"
-msgstr "Utwórz siatkę nawigacyjną (Navigation Mesh)"
 
 msgid "Create Debug Tangents"
 msgstr "Utwórz debugowe styczne"
@@ -8798,6 +9511,9 @@ msgstr "Brak siatki do debugowania."
 msgid "Mesh has no UV in layer %d."
 msgstr "Siatka nie posiada UV na warstwie %d."
 
+msgid "Create Navigation Mesh"
+msgstr "Utwórz siatkę nawigacyjną (Navigation Mesh)"
+
 msgid "MeshInstance3D lacks a Mesh."
 msgstr "MeshInstance3D nie posiada siatki."
 
@@ -8840,7 +9556,7 @@ msgid "View UV2"
 msgstr "Widok UV2"
 
 msgid "Unwrap UV2 for Lightmap/AO"
-msgstr "Rozwiń siatkę UV2 dla Lightmapy/AO"
+msgstr "Rozwiń UV2 dla mapy światła/AO"
 
 msgid "Create Outline Mesh"
 msgstr "Utwórz siatkę zarysu"
@@ -8915,6 +9631,30 @@ msgstr ""
 
 msgid "UV Channel Debug"
 msgstr "Debug kanału UV"
+
+msgid "Create NavigationMesh"
+msgstr "Utwórz siatkę nawigacyjną (NavigationMesh)"
+
+msgid ""
+"Before converting a rendering mesh to a navigation mesh, please verify:\n"
+"\n"
+"- The mesh is two-dimensional.\n"
+"- The mesh has no surface overlap.\n"
+"- The mesh has no self-intersection.\n"
+"- The mesh surfaces have indices.\n"
+"\n"
+"If the mesh does not fulfill these requirements, the pathfinding will be "
+"broken."
+msgstr ""
+"Przed konwertowaniem siatki renderowania do siatki nawigacji, proszę "
+"zweryfikować:\n"
+"\n"
+"- Siatka jest dwuwymiarowa.\n"
+"- Siatka nie ma nachodzących się powierzchni.\n"
+"- Siatka nie ma samoprzecięcia.\n"
+"- Powierzchnie siatki mają indeksy.\n"
+"\n"
+"Jeśli siatka nie spełnia tych wymogów, szukanie ścieżek będzie popsute."
 
 msgid "Remove item %d?"
 msgstr "Usuń element %d?"
@@ -9029,29 +9769,56 @@ msgstr "Ustaw start_position"
 msgid "Set end_position"
 msgstr "Ustaw end_position"
 
-msgid "Set NavigationObstacle3D Vertices"
-msgstr "Ustaw wierzchołki NavigationObstacle3D"
+msgid "Set Obstacle Vertices"
+msgstr "Ustaw wierzchołki przeszkody"
 
-msgid "Edit Vertices"
-msgstr "Edytuj wierzchołki"
+msgid "Edit Obstacle (Flip Winding)"
+msgstr "Edytuj przeszkodę (odwróć uzwojenie)"
 
-msgid "Edit Poly"
-msgstr "Edytuj wielokąt"
+msgid "Edit Obstacle (Clear Vertices)"
+msgstr "Edytuj przeszkodę (wyczyść wierzchołki)"
 
-msgid "Edit Poly (Remove Point)"
-msgstr "Edytuj wielokąt (usuń punkty)"
+msgid "Add Vertex"
+msgstr "Dodaj wierzchołek"
+
+msgid "Edit Vertex"
+msgstr "Edytuj wierzchołek"
+
+msgid "Delete Vertex"
+msgstr "Usuń wierzchołek"
+
+msgid "Flip Winding"
+msgstr "Odwróć uzwojenie"
+
+msgid "Clear Vertices"
+msgstr "Wyczyść wierzchołki"
+
+msgid "Edit Obstacle (Add Vertex)"
+msgstr "Edytuj przeszkodę (dodaj wierzchołek)"
+
+msgid "Edit Obstacle (Move Vertex)"
+msgstr "Edytuj przeszkodę (przesuń wierzchołek)"
+
+msgid "Edit Obstacle (Remove Vertex)"
+msgstr "Edytuj przeszkodę (usuń wierzchołek)"
+
+msgid "Please Confirm..."
+msgstr "Proszę potwierdzić..."
+
+msgid "Remove all vertices?"
+msgstr "Usunąć wszystkie wierzchołki?"
 
 msgid "Create Navigation Polygon"
 msgstr "Utwórz wielokąt nawigacyjny"
 
 msgid "Bake NavigationPolygon"
-msgstr "Wypiecz NavigationPolygon"
+msgstr "Wypal NavigationPolygon"
 
 msgid ""
 "Bakes the NavigationPolygon by first parsing the scene for source geometry "
 "and then creating the navigation polygon vertices and polygons."
 msgstr ""
-"Wypieka NavigationPolygon poprzez analizowanie sceny w poszukiwaniu geometrii "
+"Wypala NavigationPolygon poprzez analizowanie sceny w poszukiwaniu geometrii "
 "źródłowej, a następnie tworzenie wielokątów i wierzchołków wielokąta "
 "nawigacji."
 
@@ -9117,8 +9884,8 @@ msgstr "Tył ortogonalnie"
 msgid "Rear Perspective"
 msgstr "Tył perspektywicznie"
 
-msgid " [auto]"
-msgstr " [auto]"
+msgid "[auto]"
+msgstr "[auto]"
 
 msgid "X-Axis Transform."
 msgstr "Transformacja osi X."
@@ -9168,6 +9935,9 @@ msgstr "Czas GPU: %s ms"
 msgid "FPS: %d"
 msgstr "FPS: %d"
 
+msgid "Translating:"
+msgstr "Przesuwanie:"
+
 msgid "Instantiating:"
 msgstr "Instancjonowanie:"
 
@@ -9207,17 +9977,11 @@ msgstr "Nie można instancjonować: %s."
 msgid "Circular dependency found at %s"
 msgstr "Cykliczna zależność znaleziona w %s"
 
-msgid "None"
-msgstr "Brak"
-
 msgid "Rotate"
 msgstr "Obróć"
 
 msgid "Translate"
 msgstr "Przesuń"
-
-msgid "Translating:"
-msgstr "Przesuwanie:"
 
 msgid "Rotating %s degrees."
 msgstr "Obracanie o %s stopni."
@@ -9327,6 +10091,9 @@ msgstr "Wyświetlaj środowisko"
 msgid "View Gizmos"
 msgstr "Pokaż uchwyty"
 
+msgid "View Transform Gizmo"
+msgstr "Pokaż uchwyt transformacji"
+
 msgid "View Grid"
 msgstr "Pokaż siatkę"
 
@@ -9350,6 +10117,24 @@ msgstr "Podgląd kinowy"
 
 msgid "Not available when using the OpenGL renderer."
 msgstr "Niedostępne podczas używania renderera OpenGL."
+
+msgid "Viewport Orbit Modifier 1"
+msgstr "Modyfikator orbity widoku 1"
+
+msgid "Viewport Orbit Modifier 2"
+msgstr "Modyfikator orbity widoku 2"
+
+msgid "Viewport Pan Modifier 1"
+msgstr "Modyfikator przesuwania widoku 1"
+
+msgid "Viewport Pan Modifier 2"
+msgstr "Modyfikator przesuwania widoku 2"
+
+msgid "Viewport Zoom Modifier 1"
+msgstr "Modyfikator przybliżenia widoku 1"
+
+msgid "Viewport Zoom Modifier 2"
+msgstr "Modyfikator przybliżenia widoku 2"
 
 msgid "Freelook Left"
 msgstr "\"Wolny widok\" w lewo"
@@ -9401,6 +10186,9 @@ msgstr "Zacznij obracanie transformacji"
 
 msgid "Begin Scale Transformation"
 msgstr "Zacznij skalowanie transformacji"
+
+msgid "Reposition Using Collisions"
+msgstr "Zmień pozycję używając kolizji"
 
 msgid "Toggle Camera Preview"
 msgstr "Przełącz podgląd kamery"
@@ -9484,6 +10272,10 @@ msgstr ""
 "Grupuje wybrany węzeł z jego węzłami potomnymi. Jeśli jakiś węzeł potomny "
 "zostanie kliknięty w widoku 2D lub 3D, ta opcja powoduje zaznaczenie węzła "
 "nadrzędnego."
+
+msgid "LMB+Drag: Measure the distance between two points in 3D space."
+msgstr ""
+"LPM+Przeciągnij: Zmierz dystans pomiędzy dwoma punktami w przestrzeni 3D."
 
 msgid "Use Local Space"
 msgstr "Użyj przestrzeni lokalnej"
@@ -9750,10 +10542,10 @@ msgid "Could not save the new occluder at the specified path:"
 msgstr "Nie udało się zapisać zasłony pod określoną ścieżką:"
 
 msgid "Bake Occluders"
-msgstr "Wypiecz zasłony"
+msgstr "Wypal zasłony"
 
 msgid "Select occluder bake file:"
-msgstr "Wybierz plik wypiekania zasłon:"
+msgstr "Wybierz plik wypalania zasłon:"
 
 msgid "Convert to Parallax2D"
 msgstr "Przekonwertuj na Parallax2D"
@@ -9766,6 +10558,121 @@ msgstr "Przytrzymaj Shift, żeby skalować wokół środka zamiast przesuwać."
 
 msgid "Toggle between minimum/maximum and base value/spread modes."
 msgstr "Przełącz pomiędzy trybami minimum/maksimum i podstawa/rozrzut."
+
+msgid "Restart Emission"
+msgstr "Restartuj emisję"
+
+msgid "Generate Visibility Rect"
+msgstr "Wygeneruj prostokąt widoczności"
+
+msgid "Load Emission Mask"
+msgstr "Wczytaj maskę emisji"
+
+msgid "Solid Pixels"
+msgstr "Widoczne piksele"
+
+msgid "Border Pixels"
+msgstr "Brzegowe piksele"
+
+msgid "Directed Border Pixels"
+msgstr "Skierowane brzegowe piksele"
+
+msgid "Emission Mask"
+msgstr "Maska emisji"
+
+msgid "Centered"
+msgstr "Wyśrodkowana"
+
+msgid "Capture Colors from Pixel"
+msgstr "Przechwyć kolory z pikseli"
+
+msgid "Generating Visibility Rect (Waiting for Particle Simulation)"
+msgstr ""
+"Generowanie prostokąta widzialności (oczekiwanie na symulację cząsteczek)"
+
+msgid "Generating..."
+msgstr "Generowanie..."
+
+msgid "Loading emission mask requires ParticleProcessMaterial."
+msgstr "Wczytywanie maski emisji wymaga ParticleProcessMaterial."
+
+msgid "GPUParticles2D"
+msgstr "Cząsteczki GPU 2D"
+
+msgid "Convert to CPUParticles2D"
+msgstr "Przekonwertuj na CPUParticles2D"
+
+msgid "Generation Time (sec):"
+msgstr "Czas generowania (sek):"
+
+msgid "CPUParticles2D"
+msgstr "Cząsteczki CPU 2D"
+
+msgid "Convert to GPUParticles2D"
+msgstr "Przekonwertuj na GPUParticles2D"
+
+msgid "Generating Visibility AABB (Waiting for Particle Simulation)"
+msgstr "Generowanie AABB widoczności (czekam na symulację cząsteczek)"
+
+msgid "Generate Visibility AABB"
+msgstr "Generuj AABB widoczności"
+
+msgid "\"%s\" doesn't inherit from Node3D."
+msgstr "\"%s\" nie dziedziczy po Node3D."
+
+msgid "\"%s\" doesn't contain geometry."
+msgstr "\"%s\" nie zawiera geometrii."
+
+msgid "\"%s\" doesn't contain face geometry."
+msgstr "\"%s\" nie zawiera geometrii powierzchni."
+
+msgid "Generate AABB"
+msgstr "Generuj AABB"
+
+msgid "Create Emission Points From Node"
+msgstr "Twórz punkty emisji z węzła"
+
+msgid "The geometry's faces don't contain any area."
+msgstr "Powierzchnie geometrii nie zawierają żadnego obszaru."
+
+msgid "The geometry doesn't contain any faces."
+msgstr "Geometria nie zawiera żadnych powierzchni."
+
+msgid "Create Emitter"
+msgstr "Utwórz Emiter"
+
+msgid "Emission Points:"
+msgstr "Punkty emisji:"
+
+msgid "Surface Points"
+msgstr "Punkty powierzchni"
+
+msgid "Surface Points+Normal (Directed)"
+msgstr "Punkty powierzchni+normalna (skierowane)"
+
+msgid "Volume"
+msgstr "Głośność"
+
+msgid "Emission Source:"
+msgstr "Źródło emisji:"
+
+msgid "A processor material of type 'ParticleProcessMaterial' is required."
+msgstr "Wymagany jest materiał przetwarzający typu \"ParticleProcessMaterial\"."
+
+msgid "Create Emission Points"
+msgstr "Utwórz punkty emisji"
+
+msgid "GPUParticles3D"
+msgstr "Cząsteczki GPU 3D"
+
+msgid "Convert to CPUParticles3D"
+msgstr "Przekonwertuj na CPUParticles3D"
+
+msgid "CPUParticles3D"
+msgstr "Cząsteczki CPU 3D"
+
+msgid "Convert to GPUParticles3D"
+msgstr "Przekonwertuj na GPUParticles3D"
 
 msgid "Remove Point from Curve"
 msgstr "Usuń punkt z krzywej"
@@ -9797,6 +10704,9 @@ msgstr "Zamknij krzywą"
 msgid "Clear Curve Points"
 msgstr "Wyczyść punkty krzywej"
 
+msgid "Create Curve in Path2D"
+msgstr "Utwórz krzywą w Path2D"
+
 msgid "Select Points"
 msgstr "Zaznacz punkty"
 
@@ -9827,9 +10737,6 @@ msgstr "Zamknij krzywą"
 msgid "Clear Points"
 msgstr "Wyczyść punkty"
 
-msgid "Please Confirm..."
-msgstr "Proszę potwierdzić..."
-
 msgid "Remove all curve points?"
 msgstr "Usunąć wszystkie punkty krzywej?"
 
@@ -9838,6 +10745,9 @@ msgstr "Odbij kąty uchwytów"
 
 msgid "Mirror Handle Lengths"
 msgstr "Odbij długość uchwytów"
+
+msgid "Create Curve"
+msgstr "Utwórz krzywą"
 
 msgid "Curve Point #"
 msgstr "Punkt Krzywej #"
@@ -9877,6 +10787,12 @@ msgstr "Zresetuj punkt kontrolny wchodzący"
 
 msgid "Reset Point Tilt"
 msgstr "Zresetuj nachylenie punktu"
+
+msgid "Toggle Open/Closed Curve"
+msgstr "Przełącz zamknięcie/otwarcie krzywej"
+
+msgid "Create Curve in Path3D"
+msgstr "Utwórz krzywą w Path3D"
 
 msgid "Shift+Click: Select multiple Points"
 msgstr "Shift+Klik: Zaznacz wiele punktów"
@@ -9978,11 +10894,11 @@ msgid "Script Name:"
 msgstr "Nazwa skryptu:"
 
 msgid ""
-"Optional. The path to the script (relative to the add-on folder). If left "
-"empty, will default to \"plugin.gd\"."
+"Optional. The name of the script file. If left empty, will default to the "
+"subfolder name."
 msgstr ""
-"Opcjonalne. ścieżka do skryptu (względem folderu dodatku). Jeśli zostawiono "
-"puste, użyje domyślnej wartości \"plugin.gd\"."
+"Opcjonalne. Nazwa pliku skryptu. Jeśli zostawiono puste, domyślnie użyje "
+"nazwy podfolderu."
 
 msgid "Activate now?"
 msgstr "Aktywować teraz?"
@@ -10002,13 +10918,6 @@ msgstr "Właściwość skeleton węzła Polygon2D nie wskazuje na węzeł Skelet
 
 msgid "Sync Bones"
 msgstr "Synchronizuj kości"
-
-msgid ""
-"No texture in this polygon.\n"
-"Set a texture to be able to edit UV."
-msgstr ""
-"Ten wielokąt nie ma tekstury.\n"
-"Ustaw teksturę, by móc edytować UV."
 
 msgid "Create UV Map"
 msgstr "Utwórz Mapę UV"
@@ -10047,20 +10956,14 @@ msgstr "Przekształć wielokąt"
 msgid "Paint Bone Weights"
 msgstr "Oznacz ciężar kości"
 
-msgid "Open Polygon 2D UV editor."
-msgstr "Otwórz Polygon 2D UV editor."
-
-msgid "Polygon 2D UV Editor"
-msgstr "Wielokąt 2D UV Edytor"
-
-msgid "UV"
-msgstr "UV"
-
 msgid "Points"
 msgstr "Punkty"
 
 msgid "Polygons"
 msgstr "Wielokąt"
+
+msgid "UV"
+msgstr "UV"
 
 msgid "Bones"
 msgstr "Kości"
@@ -10068,14 +10971,14 @@ msgstr "Kości"
 msgid "Move Points"
 msgstr "Przesuń punkty"
 
-msgid ": Rotate"
-msgstr ": Obróć"
+msgid "%s: Rotate"
+msgstr "%s: Obróć"
 
 msgid "Shift: Move All"
 msgstr "Shift: Przesuń wszystko"
 
-msgid "Shift: Scale"
-msgstr "Shift: Skaluj"
+msgid "%s + Shift: Scale"
+msgstr "%s + Shift: Skaluj"
 
 msgid "Move Polygon"
 msgstr "Przesuń Wielokąt"
@@ -10143,8 +11046,20 @@ msgstr "Krok Y siatki:"
 msgid "Sync Bones to Polygon"
 msgstr "Synchronizuj kości z wielokątem"
 
+msgid "Polygon"
+msgstr "Wielokąt"
+
+msgid "Toggle Polygon Bottom Panel"
+msgstr "Przełącz dolny panel wielokąta"
+
 msgid "Create Polygon3D"
 msgstr "Utwórz Wielokąt3D"
+
+msgid "Edit Poly"
+msgstr "Edytuj wielokąt"
+
+msgid "Edit Poly (Remove Point)"
+msgstr "Edytuj wielokąt (usuń punkty)"
 
 msgid "ERROR: Couldn't load resource!"
 msgstr "BŁĄD: Nie można wczytać zasobu!"
@@ -10178,6 +11093,12 @@ msgid ""
 msgstr ""
 "AnimationMixer nie ma prawidłowej ścieżki korzenia, więc nie można uzyskać "
 "nazw ścieżek."
+
+msgid "(truncated)"
+msgstr "(obcięty)"
+
+msgid "Current value: "
+msgstr "Aktualna wartość: "
 
 msgid "Can't open '%s'. The file could have been moved or deleted."
 msgstr "Nie można otworzyć \"%s\". Plik mógł zostać przeniesiony lub usunięty."
@@ -10291,9 +11212,6 @@ msgstr "Następny skrypt"
 msgid "Previous Script"
 msgstr "Poprzedni skrypt"
 
-msgid "File"
-msgstr "Plik"
-
 msgid "Open..."
 msgstr "Otwórz..."
 
@@ -10305,6 +11223,9 @@ msgstr "Miękkie przeładowania skryptu narzędzi"
 
 msgid "Copy Script Path"
 msgstr "Skopiuj ścieżkę skryptu"
+
+msgid "Copy Script UID"
+msgstr "Skopiuj UID skryptu"
 
 msgid "History Previous"
 msgstr "Poprzedni plik"
@@ -10345,17 +11266,15 @@ msgstr "Przejdź do poprzednio edytowanego dokumentu."
 msgid "Go to next edited document."
 msgstr "Przejdź do następnego edytowanego dokumentu."
 
-msgid "Make the script editor floating."
-msgstr "Uczyń edytor skryptów pływającym."
+msgid ""
+"Make the script editor floating.\n"
+"Right-click to open the screen selector."
+msgstr ""
+"Uczyń edytor skryptów pływającym.\n"
+"Kliknij prawym, by otworzyć wybór ekranu."
 
 msgid "Discard"
 msgstr "Odrzucić"
-
-msgid "The following files are newer on disk."
-msgstr "Następujące pliki są nowsze na dysku."
-
-msgid "What action should be taken?:"
-msgstr "Jakie działanie powinno zostać podjęte?:"
 
 msgid "Search Results"
 msgstr "Wyniki wyszukiwania"
@@ -10392,6 +11311,9 @@ msgstr "Zwykły tekst"
 
 msgid "JSON"
 msgstr "JSON"
+
+msgid "Markdown"
+msgstr "Markdown"
 
 msgid "Connections to method:"
 msgstr "Połączenia do metody:"
@@ -10440,8 +11362,8 @@ msgid "Can't drop nodes because script '%s' does not inherit Node."
 msgstr ""
 "Nie można upuścić węzłów, ponieważ skrypt \"%s\" nie dziedziczy po Node."
 
-msgid "Lookup Symbol"
-msgstr "Podejrzyj symbol"
+msgid "Emoji & Symbols"
+msgstr "Emoji i symbole"
 
 msgid "Pick Color"
 msgstr "Wybierz Kolor"
@@ -10539,6 +11461,9 @@ msgstr "Przejdź do funkcji..."
 msgid "Go to Line..."
 msgstr "Przejdź do linii..."
 
+msgid "Lookup Symbol"
+msgstr "Podejrzyj symbol"
+
 msgid "Toggle Breakpoint"
 msgstr "Przełącz punkt wstrzymania"
 
@@ -10557,9 +11482,6 @@ msgstr "Czy zapisać zmiany w następujących shaderach przed wyjściem?"
 msgid "There are unsaved changes in the following built-in shaders(s):"
 msgstr "W następujących wbudowanych shaderach są niezapisane zmiany:"
 
-msgid "Shader Editor"
-msgstr "Edytor shaderów"
-
 msgid "New Shader Include..."
 msgstr "Nowe załączenie shadera..."
 
@@ -10575,11 +11497,21 @@ msgstr "Zapisz plik"
 msgid "Open File in Inspector"
 msgstr "Otwórz plik w inspektorze"
 
+msgid "Inspect Native Shader Code..."
+msgstr "Inspekcjonuj natywny kod shadera..."
+
 msgid "Close File"
 msgstr "Zamknij plik"
 
-msgid "Make the shader editor floating."
-msgstr "Uczyń edytor shaderów pływającym."
+msgid "Shader Editor"
+msgstr "Edytor shaderów"
+
+msgid ""
+"Make the shader editor floating.\n"
+"Right-click to open the screen selector."
+msgstr ""
+"Uczyń edytor shaderów pływającym.\n"
+"Kliknij prawym, by otworzyć wybór ekranu."
 
 msgid "Toggle Shader Editor Bottom Panel"
 msgstr "Przełącz dolny panel edytora shaderów"
@@ -10621,8 +11553,23 @@ msgstr "Resetuj do pozy spoczynkowej"
 msgid "Overwrite Rest Pose"
 msgstr "Nadpisz pozę spoczynkową"
 
+msgid "Bone Metadata"
+msgstr "Metadane kości"
+
+msgid "Add Bone Metadata"
+msgstr "Dodaj metadane kości"
+
 msgid "Set Bone Transform"
 msgstr "Ustaw transformację kości"
+
+msgid "Modify metadata '%s' for bone '%s'"
+msgstr "Modyfikuj metadaną \"%s\" dla kości \"%s\""
+
+msgid "Remove metadata '%s' from bone '%s'"
+msgstr "Modyfikuj metadaną \"%s\" z kości \"%s\""
+
+msgid "Add metadata '%s' to bone '%s'"
+msgstr "Dodaj metadaną \"%s\" do kości \"%s\""
 
 msgid "Set Bone Rest"
 msgstr "Ustaw spoczynek kości"
@@ -10641,6 +11588,12 @@ msgstr "Eksportuj profil szkieletu jako..."
 
 msgid "Set Bone Parentage"
 msgstr "Ustaw rodzicielstwo kości"
+
+msgid "Revert Bone"
+msgstr "Przywróć kość"
+
+msgid "Revert"
+msgstr "Przywróć"
 
 msgid "Skeleton3D"
 msgstr "Szkielet 3D"
@@ -10814,6 +11767,21 @@ msgstr "Ten zasób nie ma żadnych animacji."
 msgid "Animation Frames:"
 msgstr "Klatki animacji:"
 
+msgid "Play selected animation backwards from current pos. (A)"
+msgstr "Odtwórz zaznaczoną animację od tyłu z aktualnej pozycji. (A)"
+
+msgid "Play selected animation backwards from end. (Shift+A)"
+msgstr "Odtwórz zaznaczoną animację od tyłu z końca. (Shift+A)"
+
+msgid "Pause/stop animation playback. (S)"
+msgstr "Zapauzuj/zatrzymaj odtwarzanie animacji. (S)"
+
+msgid "Play selected animation from start. (Shift+D)"
+msgstr "Uruchom animację od początku. (Shift+D)"
+
+msgid "Play selected animation from current pos. (D)"
+msgstr "Uruchom animację od aktualnej pozycji. (D)"
+
 msgid "Frame Duration:"
 msgstr "Długość klatki:"
 
@@ -10904,6 +11872,9 @@ msgstr "Odstęp"
 msgid "Offset"
 msgstr "Przesunięcie"
 
+msgid "Auto Slice"
+msgstr "Tnij automatycznie"
+
 msgid "Create Frames from Sprite Sheet"
 msgstr "Utwórz klatki ze Sprite Sheeta"
 
@@ -10955,9 +11926,6 @@ msgstr "Przyciągaj do pikseli"
 
 msgid "Grid Snap"
 msgstr "Przyciągaj do siatki"
-
-msgid "Auto Slice"
-msgstr "Tnij automatycznie"
 
 msgid "Step:"
 msgstr "Krok:"
@@ -11706,8 +12674,8 @@ msgstr "Maluj kafelki"
 msgid "Paste tiles"
 msgstr "Wklej kafelki"
 
-msgid "Selection"
-msgstr "Wybór"
+msgid "Selection Tool"
+msgstr "Narzędzie zaznaczenia"
 
 msgid "Shift: Draw line."
 msgstr "Shift: Rysuj linię."
@@ -11751,11 +12719,11 @@ msgid "Tiles"
 msgstr "Kafelki"
 
 msgid ""
-"This TileMap's TileSet has no source configured. Go to the TileSet bottom "
-"panel to add one."
+"This TileMap's TileSet has no Tile Source configured. Go to the TileSet "
+"bottom panel to add one."
 msgstr ""
-"TileSet tej TileMapy nie ma skonfigurowanego źródła. Przejdź do dolnego "
-"panelu TileSet, by jakieś dodać."
+"TileSet tej TileMapy nie ma skonfigurowanego źródła kafelków. Przejdź do "
+"dolnego panelu TileSet, by jakieś dodać."
 
 msgid "Sort sources"
 msgstr "Sortuj źródła"
@@ -12299,6 +13267,9 @@ msgstr "Usuń źródło"
 msgid "Add atlas source"
 msgstr "Dodaj źródło atlasowe"
 
+msgid "Tile Sources"
+msgstr "Źródła kafelków"
+
 msgid "Sort Sources"
 msgstr "Sortuj źródła"
 
@@ -12380,21 +13351,23 @@ msgstr "Właściwości kolekcji scen:"
 msgid "Tile properties:"
 msgstr "Właściwości kafelka:"
 
-msgctxt "Tool"
-msgid "Line"
-msgstr "Linia"
+msgid "Paint Tool"
+msgstr "Narzędzie malowania"
 
-msgid "Rect"
-msgstr "Prostokąt"
+msgid "Line Tool"
+msgstr "Narzędzie linii"
 
-msgid "Bucket"
-msgstr "Wiadro"
+msgid "Rect Tool"
+msgstr "Narzędzie prostokąta"
 
-msgid "Eraser"
-msgstr "Gumka"
+msgid "Bucket Tool"
+msgstr "Narzędzie wiadra"
 
-msgid "Picker"
-msgstr "Próbnik"
+msgid "Eraser Tool"
+msgstr "Narzędzie gumki"
+
+msgid "Picker Tool"
+msgstr "Narzędzie próbnika"
 
 msgid "TileMap"
 msgstr "TileMap"
@@ -12666,6 +13639,12 @@ msgstr ""
 "Podgląd 2D nie może poprawnie pokazać rezultatu uzyskanego z parametru "
 "instancji."
 
+msgid "Copy Preview Shader Parameters From Material"
+msgstr "Skopiuj parametry podglądu shadera z materiału"
+
+msgid "Paste Preview Shader Parameters To Material"
+msgstr "Wklej parametry podglądu shadera do materiału"
+
 msgid "Add Input Port"
 msgstr "Dodaj port wejściowy"
 
@@ -12783,6 +13762,9 @@ msgstr "Włącz autokurczenie"
 msgid "Enable Tint Color"
 msgstr "Włącz zabarwienie"
 
+msgid "Edit Preview Parameter: %s"
+msgstr "Edytuj parametr podglądu: %s"
+
 msgid "Duplicate VisualShader Node(s)"
 msgstr "Duplikuj węzeł(y) VisualShader"
 
@@ -12810,8 +13792,14 @@ msgstr "Niewłaściwa nazwa dla varying."
 msgid "Varying with that name is already exist."
 msgstr "Varying o tej nazwie już istnieje."
 
+msgid "Boolean type cannot be used with `%s` varying mode."
+msgstr "Typ boolowski nie może być użyty z trybem varying `%s`."
+
 msgid "Add Node(s) to Visual Shader"
 msgstr "Dodaj węzeł(y) do shadera wizualnego"
+
+msgid "Hold %s Key To Swap Connections"
+msgstr "Przytrzymaj przycisk %s by zamienić połączenia"
 
 msgid "Vertex"
 msgstr "Wierzchołki"
@@ -12846,6 +13834,9 @@ msgstr "Usuń varying"
 msgid "Show generated shader code."
 msgstr "Pokaż wygenerowany kod shadera."
 
+msgid "Toggle shader preview."
+msgstr "Przełącz podgląd shadera."
+
 msgid "Generated Shader Code"
 msgstr "Wygenerowany kod shadera"
 
@@ -12860,6 +13851,15 @@ msgstr "Wstaw nowy węzeł"
 
 msgid "Insert New Reroute"
 msgstr "Wstaw nowe przekierowanie"
+
+msgid "Filter Parameters"
+msgstr "Filtruj parametry"
+
+msgid "Copy Parameters From Material"
+msgstr "Kopiuj parametry z materiału"
+
+msgid "Paste Parameters To Material"
+msgstr "Wklej parametry do materiału"
 
 msgid "High-end node"
 msgstr "Węzeł wysokiej klasy"
@@ -12885,11 +13885,17 @@ msgstr "Funkcja odcieni szarości."
 msgid "Converts HSV vector to RGB equivalent."
 msgstr "Konwertuje wektor HSV do odpowiednika RGB."
 
+msgid "Converts color from linear to sRGB color space."
+msgstr "Konwertuje kolor z przestrzeni kolorów liniowej do sRGB."
+
 msgid "Converts RGB vector to HSV equivalent."
 msgstr "Konwertuje wektor RGB do odpowiednika HSV."
 
 msgid "Sepia function."
 msgstr "Funkcja sepii."
+
+msgid "Converts color from sRGB to linear color space."
+msgstr "Konwertuje kolor z przestrzeni kolorów sRGB do liniowej."
 
 msgid "Burn operator."
 msgstr "Operator wypalenia."
@@ -12926,6 +13932,9 @@ msgstr "Parametr koloru."
 
 msgid "(Fragment/Light mode only) Derivative function."
 msgstr "(Tylko tryb fragmentów/światła) Pochodna funkcji."
+
+msgid "Derivative function."
+msgstr "Funkcja pochodna."
 
 msgid "Returns the boolean result of the %s comparison between two parameters."
 msgstr "Zwraca wynik boolowski porównania %s pomiędzy dwoma parametrami."
@@ -13166,6 +14175,12 @@ msgstr ""
 "(Tylko tryb fragmentów/światła) (Skalar) Pochodna po \"y\" używając lokalnej "
 "zmienności."
 
+msgid "(Scalar) Derivative in 'x' using local differencing."
+msgstr "(Skalar) Pochodna po \"x\" używając lokalnej zmienności."
+
+msgid "(Scalar) Derivative in 'y' using local differencing."
+msgstr "(Skalar) Pochodna po \"y\" używając lokalnej zmienności."
+
 msgid "Base-e Exponential."
 msgstr "Eksponenta o podstawie e."
 
@@ -13214,6 +14229,9 @@ msgstr "Konwertuje wartość ze stopni na radiany."
 
 msgid "1.0 / scalar"
 msgstr "1.0 / skalar"
+
+msgid "Remaps a value from the input range to the output range."
+msgstr "Przemapowuje wartość z wejściowego zakresu na wyjściowy zakres."
 
 msgid "Finds the nearest integer to the parameter."
 msgstr "Znajduje najbliższą parametrowi liczbę całkowitą."
@@ -13264,6 +14282,9 @@ msgid ""
 msgstr ""
 "(Tylko tryb fragmentów/światła) (Skalar) Suma bezwzględnej pochodnej po \"x\" "
 "i \"y\"."
+
+msgid "(Scalar) Sum of absolute derivative in 'x' and 'y'."
+msgstr "(Skalar) Suma bezwzględnej pochodnej po \"x\" i \"y\"."
 
 msgid "Returns the tangent of the parameter."
 msgstr "Zwraca tangens parametru."
@@ -13551,9 +14572,6 @@ msgstr ""
 msgid "Returns a random value between the minimum and maximum input values."
 msgstr "Zwraca losową wartość między podanym minimum a maximum."
 
-msgid "Remaps a given input from the input range to the output range."
-msgstr "Przemapowuje podane wejście z wejściowego zakresu na wyjściowy zakres."
-
 msgid ""
 "Builds a rotation matrix from the given axis and angle, multiply the input "
 "vector by it and returns both this vector and a matrix."
@@ -13607,6 +14625,12 @@ msgid ""
 msgstr ""
 "(Tylko tryb fragmentów/światła) (Wektor) Pochodna po \"y\" używając lokalnej "
 "zmienności."
+
+msgid "(Vector) Derivative in 'x' using local differencing."
+msgstr "(Wektor) Pochodna po \"x\" używając lokalnej zmienności."
+
+msgid "(Vector) Derivative in 'y' using local differencing."
+msgstr "(Wektor) Pochodna po \"y\" używając lokalnej zmienności."
 
 msgid "Returns the distance between two points."
 msgstr "Zwraca dystans pomiędzy dwoma punktami."
@@ -13664,6 +14688,16 @@ msgstr ""
 msgid "Returns the vector that points in the direction of refraction."
 msgstr "Zwraca wektor skierowany w kierunku załamania."
 
+msgid "Remaps a vector from the input range to the output range."
+msgstr "Przemapowuje wektor z wejściowego zakresu na wyjściowy zakres."
+
+msgid ""
+"Remaps a vector from the input range to the output range. Ranges defined with "
+"scalars."
+msgstr ""
+"Przemapowuje wektor z wejściowego zakresu na wyjściowy zakres. Zakresy są "
+"zdefiniowane skalarami."
+
 msgid ""
 "SmoothStep function( vector(edge0), vector(edge1), vector(x) ).\n"
 "\n"
@@ -13715,6 +14749,9 @@ msgid ""
 msgstr ""
 "(Tylko tryb fragmentów/światła) (Wektor) Suma bezwzględnej pochodnej po \"x\" "
 "i \"y\"."
+
+msgid "(Vector) Sum of absolute derivative in 'x' and 'y'."
+msgstr "(Wektor) Suma bezwzględnej pochodnej po \"x\" i \"y\"."
 
 msgid "Adds 2D vector to 2D vector."
 msgstr "Dodaje wektor 2D do wektora 2D."
@@ -14040,6 +15077,37 @@ msgstr ""
 "Usunąć wszystkie brakujące projekty z listy?\n"
 "Zawartość folderów projektów nie zostanie zmodyfikowana."
 
+msgid ""
+"It looks like Godot crashed when opening this project the last time. If "
+"you're having problems editing this project, you can try to open it in "
+"Recovery Mode."
+msgstr ""
+"Wygląda na to, że Godot zaliczył crash podczas otwierania tego projektu "
+"ostatnim razem. Jeśli masz problem z edytowaniem tego projektu, możesz "
+"spróbować otworzyć go w Trybie awaryjnym."
+
+msgid ""
+"Recovery Mode is a special mode that may help to recover projects that crash "
+"the engine during initialization. This mode temporarily disables the "
+"following features:"
+msgstr ""
+"Tryb awaryjny jest specjalnym trybem, który może pomóc odzyskać projekty, "
+"które crashują silnik podczas inicjalizacji. Tryb ten tymczasowo wyłącza "
+"następujące funkcjonalności:"
+
+msgid ""
+"This mode is intended only for basic editing to troubleshoot such issues, and "
+"therefore it will not be possible to run the project during this mode. It is "
+"also a good idea to make a backup of your project before proceeding."
+msgstr ""
+"Ten tryb jest przeznaczony tylko do podstawowego edytowania, by zdiagnozować "
+"takie problemy, w związku z czym nie jest możliwe uruchomienie projektu w tym "
+"trybie. Jest też dobrym pomysłem zrobienie kopii zapasowej twojego projektu "
+"zanim kontynuujesz."
+
+msgid "Edit the project in Recovery Mode?"
+msgstr "Edytować ten projekt w Trybie awaryjnym?"
+
 msgid "Couldn't load project at '%s'. It may be missing or corrupted."
 msgstr ""
 "Nie udało się wczytać projektu z \"%s\". Może być brakujący lub uszkodzony."
@@ -14130,6 +15198,9 @@ msgstr ""
 msgid "Edit Project"
 msgstr "Edytuj projekt"
 
+msgid "Edit in recovery mode"
+msgstr "Edytuj w trybie awaryjnym"
+
 msgid "Rename Project"
 msgstr "Zmień nazwę projektu"
 
@@ -14154,6 +15225,12 @@ msgstr "Wybierz folder do skanowania"
 
 msgid "Remove All"
 msgstr "Usuń wszystkie"
+
+msgid "Edit normally"
+msgstr "Edytuj normalnie"
+
+msgid "Edit in Recovery Mode"
+msgstr "Edytuj w Trybie awaryjnym"
 
 msgid "Convert Full Project"
 msgstr "Przekonwertuj cały projekt"
@@ -14220,9 +15297,6 @@ msgid ""
 msgstr ""
 "Proszę wybrać plik \"project.godot\" lub zawierający go folder, albo plik \"."
 "zip\"."
-
-msgid "The path specified is invalid."
-msgstr "Podana ścieżka jest nieprawidłowa."
 
 msgid ""
 "The directory name specified contains invalid characters or trailing "
@@ -14296,8 +15370,8 @@ msgstr "Szybkie renderowanie prostych scen."
 msgid "Supports desktop, mobile + web platforms."
 msgstr "Wspiera platformy desktopowe, mobilne i webowe."
 
-msgid "Least advanced 3D graphics (currently work-in-progress)."
-msgstr "Najmniej zaawansowana grafika 3D (prace w toku)."
+msgid "Least advanced 3D graphics."
+msgstr "Najmniej zaawansowana grafika 3D."
 
 msgid "Intended for low-end/older devices."
 msgstr "Przeznaczone dla słabszych/starszych urządzeń."
@@ -14343,17 +15417,8 @@ msgstr ""
 "Nie udało się wczytać projektu z '%s' (błąd %d). Może być brakujący lub "
 "uszkodzony."
 
-msgid "Import & Edit"
-msgstr "Importuj i edytuj"
-
-msgid "Create & Edit"
-msgstr "Utwórz i edytuj"
-
 msgid "Install Project:"
 msgstr "Zainstaluj projekt:"
-
-msgid "Install & Edit"
-msgstr "Zainstaluj i edytuj"
 
 msgid "Project Name:"
 msgstr "Nazwa projektu:"
@@ -14367,6 +15432,15 @@ msgstr "Ścieżka instalacji projektu:"
 msgid "Renderer:"
 msgstr "Silnik rendereujący:"
 
+msgid ""
+"RenderingDevice-based methods not available on this GPU:\n"
+"%s\n"
+"Please use the Compatibility renderer."
+msgstr ""
+"Metody bazowane na RenderingDevice nie są dostępne na tym GPU.\n"
+"%s\n"
+"Proszę użyć renderera Kompatybilnego."
+
 msgid "The renderer can be changed later, but scenes may need to be adjusted."
 msgstr ""
 "Renderer może zostać później zmieniony, ale sceny mogą potrzebować "
@@ -14377,6 +15451,9 @@ msgstr "Metadane kontroli wersji:"
 
 msgid "Git"
 msgstr "Git"
+
+msgid "Edit Now"
+msgstr "Edytuj teraz"
 
 msgid "This project was last edited in a different Godot version: "
 msgstr "Ten projekt był ostatnio edytowany w innej wersji Godota: "
@@ -14392,8 +15469,17 @@ msgstr "Błąd: Projekt nieobecny w systemie plików."
 msgid "Last edited timestamp"
 msgstr "Sygnatura czasowa ostatniej edycji"
 
+msgid "Scanning"
+msgstr "Skanowanie"
+
+msgid "Scanning for projects..."
+msgstr "Skanowanie w poszukiwaniu projektów..."
+
 msgid "Missing Project"
 msgstr "Brakujący projekt"
+
+msgid "Missing Date"
+msgstr "Brakująca data"
 
 msgid "Restart Now"
 msgstr "Uruchom ponownie"
@@ -14452,9 +15538,6 @@ msgstr "Aktualizuj kolejność akcji wejścia"
 
 msgid "Project Settings (project.godot)"
 msgstr "Ustawienia projektu (project.godot)"
-
-msgid "Advanced Settings"
-msgstr "Ustawienia zaawansowane"
 
 msgid "Select a Setting or Type its Name"
 msgstr "Wybierz ustawienie albo wpisz jego nazwę"
@@ -14638,9 +15721,6 @@ msgstr "Nazwa sceny jest pusta."
 msgid "File name invalid."
 msgstr "Nazwa pliku nieprawidłowa."
 
-msgid "File name begins with a dot."
-msgstr "Nazwa pliku zaczyna się od kropki."
-
 msgid "File already exists."
 msgstr "Plik już istnieje."
 
@@ -14723,9 +15803,6 @@ msgstr[2] "Utwórz węzły AudioStreamPlayer"
 
 msgid "Replace with Branch Scene"
 msgstr "Podmień na gałąź sceny"
-
-msgid "Instantiate Child Scene"
-msgstr "Instancjonuj scenę"
 
 msgid "Detach Script"
 msgstr "Odłącz skrypt"
@@ -14846,9 +15923,6 @@ msgstr "Uczyń lokalnym"
 msgid "Can't toggle unique name for nodes in subscene!"
 msgstr "Nie można przełączyć unikalnej nazwy dla węzłów w podscenie!"
 
-msgid "Enable Scene Unique Name(s)"
-msgstr "Włącz unikalne w scenie nazwy"
-
 msgid "Unique names already used by another node in the scene:"
 msgstr "Unikalne nazwy są już użyte przez inne węzły w scenie:"
 
@@ -14900,8 +15974,20 @@ msgstr "Usuń węzeł(y)"
 msgid "Change type of node(s)"
 msgstr "Zmień typ węzła/ów"
 
+msgid "Reparent to New Node"
+msgstr "Zmień nadrzędny węzeł na nowy"
+
 msgid "This operation requires a single selected node."
 msgstr "Ta operacja wymaga pojedynczego wybranego węzła."
+
+msgid "Reset Position"
+msgstr "Resetuj pozycję"
+
+msgid "Reset Scale"
+msgstr "Resetuj skalę"
+
+msgid "Reset Rotation"
+msgstr "Resetuj obrót"
 
 msgid ""
 "Couldn't save new scene. Likely dependencies (instances) couldn't be "
@@ -14918,6 +16004,9 @@ msgstr "Błąd duplikowania sceny przy zapisywaniu."
 
 msgid "Instantiate Script"
 msgstr "Instancjonuj skrypt"
+
+msgid "<unknown>"
+msgstr "<nieznany>"
 
 msgid "Sub-Resources"
 msgstr "Podzasoby"
@@ -14949,6 +16038,9 @@ msgid ""
 msgstr ""
 "Gdy włączone, \"Zmień nadrzędny węzeł na nowy\" utworzy nowy węzeł pośrodku "
 "zaznaczonych węzłów, jeśli możliwe."
+
+msgid "Hide Filtered Out Parents"
+msgstr "Ukryj odfiltrowane węzły nadrzędne"
 
 msgid "All Scene Sub-Resources"
 msgstr "Wszystkie podzasoby sceny"
@@ -15016,9 +16108,6 @@ msgstr "Dodaj węzeł potomny..."
 msgid "Instantiate Child Scene..."
 msgstr "Instancjonuj scenę..."
 
-msgid "Expand/Collapse Branch"
-msgstr "Rozwiń/zwiń gałąź"
-
 msgid "Paste as Sibling"
 msgstr "Wklej jako równorzędny"
 
@@ -15065,6 +16154,9 @@ msgstr "Dołącz nowy lub istniejący skrypt do zaznaczonego węzła."
 msgid "Detach the script from the selected node."
 msgstr "Odłącz skrypt z zaznaczonego węzła."
 
+msgid "Extend the script of the selected node."
+msgstr "Rozszerz skrypt zaznaczonego węzła."
+
 msgid "Extra scene options."
 msgstr "Dodatkowe opcje sceny."
 
@@ -15097,6 +16189,9 @@ msgstr "Nazwa pliku jest pusta."
 
 msgid "Filename is invalid."
 msgstr "Nazwa pliku jest nieprawidłowa."
+
+msgid "Name begins with a dot."
+msgstr "Nazwa zaczyna się od kropki."
 
 msgid "Path is not local."
 msgstr "Ścieżka nie jest lokalna."
@@ -15243,9 +16338,6 @@ msgstr "Utwórz shader"
 msgid "Set Shader Global Variable"
 msgstr "Ustaw zmienną globalną shadera"
 
-msgid "Name cannot be empty."
-msgstr "Nazwa nie może być pusta."
-
 msgid "Name must be a valid identifier."
 msgstr "Nazwa musi być prawidłowym identyfikatorem."
 
@@ -15316,6 +16408,47 @@ msgstr ""
 msgid "Restart & Upgrade"
 msgstr "Zrestartuj i zaktualizuj"
 
+msgid "Updating Script UIDs"
+msgstr "Aktualizowanie UID skryptów"
+
+msgid ""
+"As of Godot 4.4, scenes and resources use UIDs to reference scripts and "
+"shaders.\n"
+"\n"
+"Normally, this update is applied to a single scene or resource once you save "
+"it in Godot 4.4 for the first time. If you have a lot of scenes and/or "
+"resources, doing this manually may be time-consuming. This tool will update "
+"all of the project's scenes and resources at once.\n"
+"\n"
+"Click \"Restart & Upgrade\" to restart the editor and update all of the "
+"scenes and resources in this project. Depending on the project size, it may "
+"take several minutes.\n"
+"\n"
+"Note: Please make sure you have your project backed up before running the "
+"tool, to avoid the possibility of data loss. Additionally, make sure to "
+"commit all .uid files into version control (and do not add them to ignore-"
+"lists like .gitignore)."
+msgstr ""
+"Od Godota 4.4, sceny i zasoby używają UID, żeby odwołać się do skryptów i "
+"shaderów.\n"
+"\n"
+"Normalnie ta aktualizacja jest stosowana do pojedynczej sceny lub zasobu, "
+"kiedy zapiszesz je w Godocie 4.4 za pierwszym razem. Jeśli masz dużo scen i/"
+"lub zasobów, robienie tego ręcznie może być czasochłonne. To narzędzie "
+"zaktualizuje wszystkie sceny i zasoby projektu za jednym razem.\n"
+"\n"
+"Kliknij \"Zrestartuj i zaktualizuj\", by zrestartować edytor i zaktualizować "
+"wszystkie sceny i zasoby w tym projekcie. W zależności od rozmiaru projektu "
+"może to zająć kilka minut.\n"
+"\n"
+"Uwaga: upewnij się, że twój projekt ma kopię zapasową zanim uruchomisz to "
+"narzędzie, by uniknąć możliwości utraty danych. Dodatkowo upewnij się, że "
+"zatwierdzasz wszystkie pliki .uid w kontroli wersji (i nie dodawaj ich do "
+"list ignorowania typu .gitignore)."
+
+msgid "Learn More"
+msgstr "Dowiedz się więcej"
+
 msgid "Make this panel floating in the screen %d."
 msgstr "Uczyń ten panel pływającym na ekranie %d."
 
@@ -15329,11 +16462,65 @@ msgstr ""
 msgid "Select Screen"
 msgstr "Wybierz ekran"
 
-msgid "Change Cylinder Radius"
-msgstr "Zmień promień cylindra"
+msgid ""
+"The CSGShape3D has an empty shape.\n"
+"CSGShape3D empty shapes typically occur because the mesh is not manifold.\n"
+"A manifold mesh forms a solid object without gaps, holes, or loose edges.\n"
+"Each edge must be a member of exactly two faces."
+msgstr ""
+"Węzeł CSGShape3D ma pusty kształt.\n"
+"Puste kształty CSGShape3D typowo występują, ponieważ siatka nie jest "
+"różnorodna.\n"
+"Różnorodna siatka formuje lity obiekt bez luk, dziur oraz luźnych krawędzi.\n"
+"Każda krawędź musi być członkiem dokładnie dwóch powierzchni."
 
-msgid "Change Cylinder Height"
-msgstr "Zmień wysokość cylindra"
+msgid "CSG operation returned an empty array."
+msgstr "Operacja CSG zwróciła pustą tablicę."
+
+msgid ""
+"Can not add a baked mesh as sibling for the scene root.\n"
+"Move the CSG root node below a parent node."
+msgstr ""
+"Nie można dodać wypalonej siatki jako węzła równorzędnego do korzenia sceny.\n"
+"Przenieś korzeń CSG pod węzeł nadrzędny."
+
+msgid "CSG operation returned an empty mesh."
+msgstr "Operacja CSG zwróciła pustą siatkę."
+
+msgid "Create baked CSGShape3D Mesh Instance"
+msgstr "Utwórz wypaloną instancję siatki CSGShape3D"
+
+msgid ""
+"Can not add a baked collision shape as sibling for the scene root.\n"
+"Move the CSG root node below a parent node."
+msgstr ""
+"Nie można dodać wypalonego kształtu kolizji jako równorzędnego korzeniu "
+"sceny.\n"
+"Przenieś korzeń CSG pod węzeł nadrzędny."
+
+msgid "CSG operation returned an empty shape."
+msgstr "Operacja CSG zwróciła pusty kształt."
+
+msgid "Create baked CSGShape3D Collision Shape"
+msgstr "Utwórz wypalony kształt kolizji CSGShape3D"
+
+msgid "CSG"
+msgstr "CSG"
+
+msgid "Bake Mesh Instance"
+msgstr "Wypal instancję siatki"
+
+msgid "Bake Collision Shape"
+msgstr "Wypal kształt kolizji"
+
+msgid "Change CSG Box Size"
+msgstr "Zmień rozmiar pudełka CSG"
+
+msgid "Change CSG Cylinder Radius"
+msgstr "Zmień promień cylindra CSG"
+
+msgid "Change CSG Cylinder Height"
+msgstr "Zmień wysokość cylindra CSG"
 
 msgid "Change Torus Inner Radius"
 msgstr "Zmień wewnętrzny promień torusa"
@@ -15350,27 +16537,27 @@ msgstr "Nie można zmienić rozmiaru tablicy."
 msgid "Step argument is zero!"
 msgstr "Argument kroku jest zerowy!"
 
-msgid "Not a script with an instance"
-msgstr "Nie jest skryptem z instancją"
+msgid "Not a script with an instance."
+msgstr "Nie jest skryptem z instancją."
 
-msgid "Not based on a script"
-msgstr "Nie bazowany na skrypcie"
+msgid "Not based on a script."
+msgstr "Nie bazowany na skrypcie."
 
-msgid "Not based on a resource file"
-msgstr "Nie bazowany na pliku zasobów"
+msgid "Not based on a resource file."
+msgstr "Nie bazowany na pliku zasobów."
 
-msgid "Invalid instance dictionary format (missing @path)"
-msgstr "Nieprawidłowy format słownika instancji (brakuje @path)"
+msgid "Invalid instance dictionary format (missing @path)."
+msgstr "Nieprawidłowy format słownika instancji (brakuje @path)."
 
-msgid "Invalid instance dictionary format (can't load script at @path)"
+msgid "Invalid instance dictionary format (can't load script at @path)."
 msgstr ""
-"Nieprawidłowy format słownika instancji (nie można wczytać skryptu w @path)"
+"Nieprawidłowy format słownika instancji (nie można wczytać skryptu w @path)."
 
-msgid "Invalid instance dictionary format (invalid script at @path)"
-msgstr "Nieprawidłowy format słownika instancji (nieprawidłowy skrypt w @path)"
+msgid "Invalid instance dictionary format (invalid script at @path)."
+msgstr "Nieprawidłowy format słownika instancji (nieprawidłowy skrypt w @path)."
 
-msgid "Invalid instance dictionary (invalid subclasses)"
-msgstr "Nieprawidłowy słownik instancji (nieprawidłowe podklasy)"
+msgid "Invalid instance dictionary (invalid subclasses)."
+msgstr "Nieprawidłowy słownik instancji (nieprawidłowe podklasy)."
 
 msgid "Cannot instantiate GDScript class."
 msgstr "Nie można instancjonować klasy GDScript."
@@ -15466,24 +16653,6 @@ msgstr ""
 msgid "Disabling '.blend' file import requires restarting the editor."
 msgstr "Wyłączenie importu plików \".blend\" wymaga restartu edytora."
 
-msgid "Next Plane"
-msgstr "Następna płaszczyzna"
-
-msgid "Previous Plane"
-msgstr "Poprzednia płaszczyzna"
-
-msgid "Plane:"
-msgstr "Płaszczyzna:"
-
-msgid "Next Floor"
-msgstr "Następny poziom"
-
-msgid "Previous Floor"
-msgstr "Poprzedni poziom"
-
-msgid "Floor:"
-msgstr "Poziom:"
-
 msgid "GridMap Delete Selection"
 msgstr "GridMap Usuń zaznaczenie"
 
@@ -15499,6 +16668,12 @@ msgstr "Malowanie GridMap"
 msgid "GridMap Selection"
 msgstr "Wybór GridMap"
 
+msgid "Previous Floor"
+msgstr "Poprzedni poziom"
+
+msgid "Next Floor"
+msgstr "Następny poziom"
+
 msgid "Edit X Axis"
 msgstr "Edytuj oś X"
 
@@ -15507,6 +16682,24 @@ msgstr "Edytuj oś Y"
 
 msgid "Edit Z Axis"
 msgstr "Edytuj oś Z"
+
+msgid "Keep Selection"
+msgstr "Zachowaj zaznaczenie"
+
+msgid "Clear Rotation"
+msgstr "Wyczyść obrót"
+
+msgid "GridMap Settings"
+msgstr "Ustawienia GridMap"
+
+msgid "Pick Distance:"
+msgstr "Wybierz odległość:"
+
+msgid "Selection"
+msgstr "Wybór"
+
+msgid "Erase"
+msgstr "Usuń"
 
 msgid "Cursor Rotate X"
 msgstr "Kursor Obróć X"
@@ -15517,38 +16710,14 @@ msgstr "Kursor Obróć Y"
 msgid "Cursor Rotate Z"
 msgstr "Kursor Obróć Z"
 
-msgid "Cursor Back Rotate X"
-msgstr "Kursor Obróć w tył X"
-
-msgid "Cursor Back Rotate Y"
-msgstr "Kursor Obróć w tył Y"
-
-msgid "Cursor Back Rotate Z"
-msgstr "Kursor Obróć w tył Z"
-
-msgid "Cursor Clear Rotation"
-msgstr "Kursor Wyczyść obrót"
-
-msgid "Paste Selects"
-msgstr "Wklejanie zaznacza"
-
-msgid "Cut Selection"
-msgstr "Wytnij zaznaczenie"
-
-msgid "Clear Selection"
-msgstr "Wyczyść zaznaczone"
-
-msgid "Fill Selection"
-msgstr "Wypełnij zaznaczone"
-
-msgid "Grid Map"
-msgstr "Siatka"
-
-msgid "GridMap Settings"
-msgstr "Ustawienia GridMap"
-
-msgid "Pick Distance:"
-msgstr "Wybierz odległość:"
+msgid ""
+"Change Grid Floor:\n"
+"Previous Plane (%s)\n"
+"Next Plane (%s)"
+msgstr ""
+"Zmień podłogę siatki:\n"
+"Poprzednia płaszczyzna (%s)\n"
+"Następna płaszczyzna (%s)"
 
 msgid "Filter Meshes"
 msgstr "Filtruj siatki"
@@ -15556,6 +16725,12 @@ msgstr "Filtruj siatki"
 msgid "Give a MeshLibrary resource to this GridMap to use its meshes."
 msgstr ""
 "Przypisz temu węzłowi GridMap zasób MeshLibrary, aby korzystać z jego siatek."
+
+msgid "GridMap"
+msgstr "GridMap"
+
+msgid "Toggle GridMap Bottom Panel"
+msgstr "Przełącz dolny panel GridMap"
 
 msgid "All Clips"
 msgstr "Wszystkie klipy"
@@ -15668,6 +16843,9 @@ msgstr "Wykreślanie siatki w strukturze przyspieszenia %d/%d"
 msgid "Optimizing acceleration structure"
 msgstr "Optymalizacja struktury przyspieszenia"
 
+msgid "Denoising %d%%"
+msgstr "Usuwanie szumów %d%%"
+
 msgid "Begin Bake"
 msgstr "Zacznij wypalanie"
 
@@ -15680,14 +16858,17 @@ msgstr "Odsłanianie geometrii"
 msgid "Plot direct lighting"
 msgstr "Wykreśl bezpośrednie oświetlenie"
 
+msgid "Plot direct lighting %d%%"
+msgstr "Wykreśl bezpośrednie oświetlenie %d%%"
+
 msgid "Integrate indirect lighting"
 msgstr "Integruj pośrednie oświetlenie"
 
 msgid "Integrate indirect lighting %d%%"
 msgstr "Integruj pośrednie oświetlenie %d%%"
 
-msgid "Baking lightprobes"
-msgstr "Wypiekanie sond światła"
+msgid "Baking light probes"
+msgstr "Wypalanie sond światła"
 
 msgid "Integrating light probes %d%%"
 msgstr "Integrowanie sond światła %d%%"
@@ -15711,14 +16892,14 @@ msgid ""
 "Unable to load .NET runtime, no compatible version was found.\n"
 "Attempting to create/edit a project will lead to a crash.\n"
 "\n"
-"Please install the .NET SDK 6.0 or later from https://dotnet.microsoft.com/en-"
-"us/download and restart Godot."
+"Please install the .NET SDK 8.0 or later from https://get.dot.net and restart "
+"Godot."
 msgstr ""
 "Nie można wczytać środowiska uruchomieniowego .NET, nie znaleziono "
 "kompatybilnej wersji.\n"
 "Próba utworzenia/edytowania projektu skończy się awarią.\n"
 "\n"
-"Zainstaluj .NET SDK 6.0 lub nowsze z https://dotnet.microsoft.com/en-us/"
+"Zainstaluj .NET SDK 8.0 lub nowsze z https://dotnet.microsoft.com/en-us/"
 "download i zrestartuj Godota."
 
 msgid "Failed to load .NET runtime"
@@ -15738,13 +16919,13 @@ msgid ""
 "Unable to load .NET runtime, specifically hostfxr.\n"
 "Attempting to create/edit a project will lead to a crash.\n"
 "\n"
-"Please install the .NET SDK 6.0 or later from https://dotnet.microsoft.com/en-"
-"us/download and restart Godot."
+"Please install the .NET SDK 8.0 or later from https://get.dot.net and restart "
+"Godot."
 msgstr ""
 "Nie można wczytać środowiska uruchomieniowego .NET, a dokładnie hostfxr.\n"
 "Próba utworzenia/edytowania projektu skończy się awarią.\n"
 "\n"
-"Zainstaluj .NET SDK 6.0 lub nowsze z https://dotnet.microsoft.com/en-us/"
+"Zainstaluj .NET SDK 8.0 lub nowsze z https://dotnet.microsoft.com/en-us/"
 "download i zrestartuj Godota."
 
 msgid "%d (%s)"
@@ -15775,9 +16956,6 @@ msgstr "Konfiguracja"
 
 msgid "Count"
 msgstr "Liczba"
-
-msgid "Network Profiler"
-msgstr "Profiler sieci"
 
 msgid "Replication"
 msgstr "Replikacja"
@@ -15909,13 +17087,13 @@ msgstr ""
 "innego typu."
 
 msgid "Bake NavigationMesh"
-msgstr "Wypiecz NavigationMesh"
+msgstr "Wypal NavigationMesh"
 
 msgid ""
 "Bakes the NavigationMesh by first parsing the scene for source geometry and "
 "then creating the navigation mesh vertices and polygons."
 msgstr ""
-"Wypieka NavigationMesh poprzez analizowanie sceny w poszukiwaniu geometrii "
+"Wypala NavigationMesh poprzez analizowanie sceny w poszukiwaniu geometrii "
 "źródłowej, a następnie tworzenie wielokątów i wierzchołków siatki nawigacji."
 
 msgid "Clear NavigationMesh"
@@ -16006,6 +17184,22 @@ msgstr "Dodaj akcję."
 msgid "Remove action set."
 msgstr "Usuń zestaw akcji."
 
+msgid "Remove binding modifier."
+msgstr "Usuń modyfikator wiązania."
+
+msgid "Remove binding modifier"
+msgstr "Usuń modyfikator wiązania"
+
+msgid "Add binding modifier"
+msgstr "Dodaj modyfikator wiązania"
+
+msgid "Note: modifiers will only be applied if supported on the host system."
+msgstr ""
+"Uwaga: modyfikatory będą zastosowane jedynie kiedy system hosta je wspiera."
+
+msgid "Binding modifiers for:"
+msgstr "Modyfikator wiązania dla:"
+
 msgid "OpenXR Action Map"
 msgstr "Mapa akcji OpenXR"
 
@@ -16015,11 +17209,20 @@ msgstr "Mapa dolny panel akcji OpenXR"
 msgid "Remove action from interaction profile"
 msgstr "Usuń akcję z profilu interakcji"
 
+msgid "Edit binding modifiers"
+msgstr "Edytuj modyfikatory wiązania"
+
+msgid "Note: This interaction profile requires extension %s support."
+msgstr "Uwaga: ten profil interakcji wymaga wsparcia rozszerzenia %s."
+
 msgid "Add binding"
 msgstr "Dodaj wiązanie"
 
 msgid "Remove binding"
 msgstr "Usuń wiązanie"
+
+msgid "Note: This binding path requires extension %s support."
+msgstr "Uwaga: ta ścieżka wiązania wymaga wsparcia rozszerzenia %s."
 
 msgid "Pose"
 msgstr "Poza"
@@ -16036,6 +17239,9 @@ msgstr "Wybierz akcję"
 msgid "Select an interaction profile"
 msgstr "Wybierz profil interakcji"
 
+msgid "All interaction profiles have been added to the action map."
+msgstr "Wszystkie profile interakcji zostały dodane do mapy akcji."
+
 msgid "Choose an XR runtime."
 msgstr "Wybierz środowisko uruchomieniowe XR."
 
@@ -16045,6 +17251,13 @@ msgid ""
 msgstr ""
 "Nie można użyć tego samego SubViewport z wieloma warstwami kompozycji OpenXR. "
 "Wyczyść go najpierw z bieżącej warstwy."
+
+msgid ""
+"Cannot set SubViewport on an OpenXR composition layer when using an Android "
+"surface."
+msgstr ""
+"Nie można ustawić węzła SubViewport na warstwie kompozycji OpenXR, kiedy "
+"używana jest powierzchnia Androida."
 
 msgid "OpenXR composition layers must have an XROrigin3D node as their parent."
 msgstr "Warstwy kompozycji OpenXR muszą mieć węzeł XROrigin3D jako nadrzędny."
@@ -16061,6 +17274,9 @@ msgid ""
 msgstr ""
 "Dziurkowanie nie zadziała zgodnie z oczekiwaniami kiedy kolejność sortowania "
 "nie jest mniejsza niż zero."
+
+msgid "OpenXR visibility mask must have an XRCamera3D node as their parent."
+msgstr "Maska widoczności OpenXR musi mieć węzeł XRCamera3D jako nadrzędny."
 
 msgid "Package name is missing."
 msgstr "Brakuje nazwy pakietu."
@@ -16088,6 +17304,11 @@ msgstr "Niepoprawny klucz publiczny dla ekspansji APK."
 
 msgid "Invalid package name:"
 msgstr "Niepoprawna nazwa paczki:"
+
+msgid "\"Use Gradle Build\" is required to enable \"Swipe to dismiss\"."
+msgstr ""
+"\"Użyj kompilacji Gradle\" jest wymagane, aby włączyć \"Przesuń, aby "
+"odrzucić\"."
 
 msgid "\"Use Gradle Build\" must be enabled to use the plugins."
 msgstr "Aby korzystać z wtyczek, należy włączyć opcję „Użyj kompilacji Gradle”."
@@ -16139,6 +17360,20 @@ msgstr ""
 msgid "\"Target SDK\" version must be greater or equal to \"Min SDK\" version."
 msgstr "Wersja \"Target SDK\" musi być większa lub równa wersji \"Min SDK\"."
 
+msgid "\"Use Gradle Build\" must be enabled to enable \"Show In Android Tv\"."
+msgstr ""
+"\"Użyj kompilacji Gradle\" jest wymagane, aby włączyć \"Pokaż w Android TV\"."
+
+msgid "\"Use Gradle Build\" must be enabled to enable \"Show As Launcher App\"."
+msgstr ""
+"\"Użyj kompilacji Gradle\" jest wymagane, aby włączyć \"Pokaż jako aplikację "
+"uruchamiającą\"."
+
+msgid "\"Use Gradle Build\" must be enabled to disable \"Show In App Library\"."
+msgstr ""
+"\"Użyj kompilacji Gradle\" jest wymagane, aby wyłączyć \"Pokaż w bibliotece "
+"aplikacji\"."
+
 msgid "Select device from the list"
 msgstr "Wybierz urządzenie z listy"
 
@@ -16167,11 +17402,27 @@ msgid "Error: There was a problem validating the keystore username and password"
 msgstr ""
 "Błąd: Wystąpił problem podczas sprawdzania nazwy użytkownika i hasła keystore"
 
+msgid ""
+"Unable to determine the C# project's TFM, it may be incompatible. The export "
+"template only supports '%s'. Make sure the project targets '%s' or consider "
+"using gradle builds instead."
+msgstr ""
+"Nie udało się określić TFM projektu C#, może być niekompatybilny. Szablon "
+"eksportu wspiera tylko \"%s\". Upewnij się, że projekt docelowa wersja "
+"projektu to \"%s\" lub zamiast tego użyj kompilacji gradle."
+
+msgid ""
+"C# project targets '%s' but the export template only supports '%s'. Consider "
+"using gradle builds instead."
+msgstr ""
+"Wersja docelowa projektu C# to \"%s\", ale szablon eksportu wspiera jedynie "
+"\"%s\". Zamiast tego rozważ użycie kompilacji gradle."
+
 msgid "Exporting to Android when using C#/.NET is experimental."
 msgstr "Eksportowanie na Androida z użyciem C#/.NET jest eksperymentalne."
 
-msgid "Android architecture %s not supported in C# projects."
-msgstr "Architektura Androida %s nie jest wspierana w projektach C#."
+msgid "Gradle build is not supported for the Android editor."
+msgstr "Kompilacja Gradle nie jest dostępna w edytorze na Androida."
 
 msgid "Custom Android source template not found."
 msgstr "Nie znaleziono własnego szablonu źródłowego Androida."
@@ -16271,31 +17522,37 @@ msgstr ""
 msgid "Code Signing"
 msgstr "Podpisywanie kodu"
 
+msgid "AAB signing is not supported"
+msgstr "Podpisywanie AAB nie jest wspierane"
+
+msgid "Signing debug APK..."
+msgstr "Podpisywanie debugowego APK..."
+
+msgid "Signing release APK..."
+msgstr "Podpisywanie wydaniowego APK..."
+
+msgid "Could not find keystore, unable to export."
+msgstr "Nie udało się znaleźć keystore, nie można eksportować."
+
+msgid "Unable to sign apk."
+msgstr "Nie udało się podpisać APK."
+
 msgid ""
 "All 'apksigner' tools located in Android SDK 'build-tools' directory failed "
 "to execute. Please check that you have the correct version installed for your "
-"target sdk version. The resulting %s is unsigned."
+"target sdk version. The resulting APK is unsigned."
 msgstr ""
 "Żadne z narzędzi \"apksigner\" znajdujących się w katalogu \"build-tools\" "
-"zestawu Android SDK nie zostało uruchomione. Sprawdź, czy masz zainstalowaną "
-"prawidłową wersję dla docelowej wersji zestawu SDK. Rezultat %s jest "
+"SDK Androida nie zostało uruchomione. Sprawdź, czy masz zainstalowaną "
+"prawidłową wersję dla docelowej wersji zestawu SDK. Wynikowy APK jest "
 "niepodpisany."
 
 msgid ""
 "'apksigner' could not be found. Please check that the command is available in "
-"the Android SDK build-tools directory. The resulting %s is unsigned."
+"the Android SDK build-tools directory. The resulting APK is unsigned."
 msgstr ""
 "\"apksigner\" nie został znaleziony. Sprawdź, czy komenda jest dostępna w "
-"folderze narzędzi SDK Androida. Wynikowy %s jest niepodpisany."
-
-msgid "Signing debug %s..."
-msgstr "Podpisywanie debugowego %s..."
-
-msgid "Signing release %s..."
-msgstr "Podpisywanie wydaniowego %s..."
-
-msgid "Could not find keystore, unable to export."
-msgstr "Nie udało się znaleźć keystore, nie można eksportować."
+"folderze narzędzi SDK Androida. Wynikowy APK jest niepodpisany."
 
 msgid "Could not start apksigner executable."
 msgstr "Nie można było uruchomić podprocesu apksigner."
@@ -16310,11 +17567,14 @@ msgstr ""
 "wyjście: \n"
 "%s"
 
-msgid "Verifying %s..."
-msgstr "Weryfikowanie %s..."
+msgid "Verifying APK..."
+msgstr "Weryfikowanie APK..."
 
-msgid "'apksigner' verification of %s failed."
-msgstr "Weryfikacja \"apksigner\" dla %s nieudana."
+msgid "Unable to verify signed apk."
+msgstr "Nie udało się zweryfikować podpisanego APK."
+
+msgid "'apksigner' verification of APK failed."
+msgstr "Weryfikacja \"apksigner\" dla APK nieudana."
 
 msgid "Target folder does not exist or is inaccessible: \"%s\""
 msgstr "Docelowy folder nie istnieje lub jest niedostępny: \"%s\""
@@ -16377,8 +17637,11 @@ msgstr "Przesuwam wyjście"
 msgid "Unable to copy and rename export file:"
 msgstr "Nie udało się skopiować i zmienić nazwy pliku eksportu:"
 
-msgid "Package not found: \"%s\"."
-msgstr "Nie znaleziono pakietu: \"%s\"."
+msgid "Debug export template not found: \"%s\"."
+msgstr "Nie znaleziono debugowego szablonu eksportu: \"%s\"."
+
+msgid "Release export template not found: \"%s\"."
+msgstr "Nie znaleziono wydaniowego szablonu eksportu: \"%s\"."
 
 msgid "Creating APK..."
 msgstr "Tworzenie APK..."
@@ -16486,12 +17749,6 @@ msgstr ""
 "Żądana biblioteka szablonu \"%s\" nie została znaleziona. Może jej brakować w "
 "twoim archiwum szablonu."
 
-msgid "ARM64 simulator library, generating from device library."
-msgstr "Biblioteka symulatora ARM64, generowana z biblioteki urządzenia."
-
-msgid "Unable to generate ARM64 simulator library."
-msgstr "Nie udało się wygenerować biblioteki symulatora ARM64."
-
 msgid "Could not copy a file at path \"%s\" to \"%s\"."
 msgstr "Nie udało się skopiować pliku ze ścieżki \"%s\" do \"%s\"."
 
@@ -16539,24 +17796,14 @@ msgstr "Eksportowanie na iOS z użyciem C#/.NET jest eksperymentalne."
 msgid "Invalid additional PList content: "
 msgstr "Nie prawidłowa dodatkowa zawartość PList: "
 
+msgid "Metal renderer require iOS 14+."
+msgstr "Renderer Metal wymaga iOS 14+."
+
 msgid "Identifier is missing."
 msgstr "Brakuje identyfikatora."
 
 msgid "The character '%s' is not allowed in Identifier."
 msgstr "Znak \"%s\" nie jest dozwolony w identyfikatorze."
-
-msgid "Could not start simctl executable."
-msgstr "Nie udało się uruchomić pliku wykonywalnego simctl."
-
-msgid "Installation failed, see editor log for details."
-msgstr ""
-"Instalacja nie powiodła się, zobacz dziennik (log) edytora po więcej "
-"szczegółów."
-
-msgid "Running failed, see editor log for details."
-msgstr ""
-"Uruchamianie nie powiodło się, zobacz dziennik (log) edytora po więcej "
-"szczegółów."
 
 msgid "Could not start ios-deploy executable."
 msgstr "Nie udało się uruchomić pliku wykonywalnego ios-deploy."
@@ -16569,8 +17816,18 @@ msgstr ""
 msgid "Could not start device executable."
 msgstr "Nie udało się uruchomić pliku wykonywalnego device."
 
+msgid "Installation failed, see editor log for details."
+msgstr ""
+"Instalacja nie powiodła się, zobacz dziennik (log) edytora po więcej "
+"szczegółów."
+
 msgid "Could not start devicectl executable."
 msgstr "Nie udało się uruchomić pliku wykonywalnego devicectl."
+
+msgid "Running failed, see editor log for details."
+msgstr ""
+"Uruchamianie nie powiodło się, zobacz dziennik (log) edytora po więcej "
+"szczegółów."
 
 msgid "Debug Script Export"
 msgstr "Eksportowanie skryptu debugowego"
@@ -16578,11 +17835,32 @@ msgstr "Eksportowanie skryptu debugowego"
 msgid "Could not open file \"%s\"."
 msgstr "Nie można otworzyć pliku \"%s\"."
 
+msgid ""
+"Mismatching custom export template executable architecture, found \"%s\", "
+"expected \"%s\"."
+msgstr ""
+"Niepasująca architektura własnego pliku wykonywalnego szablonu eksportu, "
+"znaleziono \"%s\", oczekiwano \"%s\"."
+
 msgid "Debug Console Export"
 msgstr "Eksportowanie konsoli debugowej"
 
 msgid "Could not create console wrapper."
 msgstr "Nie udało się utworzyć pliku konsoli."
+
+msgid ""
+"Mismatching custom debug export template executable architecture: found "
+"\"%s\", expected \"%s\"."
+msgstr ""
+"Niepasująca architektura własnego debugowego pliku wykonywalnego szablonu "
+"eksportu, znaleziono \"%s\", oczekiwano \"%s\"."
+
+msgid ""
+"Mismatching custom release export template executable architecture: found "
+"\"%s\", expected \"%s\"."
+msgstr ""
+"Niepasująca architektura własnego wydaniowego pliku wykonywalnego szablonu "
+"eksportu, znaleziono \"%s\", oczekiwano \"%s\"."
 
 msgid "Failed to open executable file \"%s\"."
 msgstr "Nie udało się otworzyć pliku wykonywalnego \"%s\"."
@@ -16628,9 +17906,6 @@ msgstr "Wgrywanie skryptów..."
 
 msgid "Starting project..."
 msgstr "Uruchamianie projektu..."
-
-msgid "All Files"
-msgstr "Wszystkie pliki"
 
 msgid "Invalid bundle identifier:"
 msgstr "Nieprawidłowy identyfikator paczki:"
@@ -16765,9 +18040,6 @@ msgstr "Nie można było uruchomić podprocesu xcrun."
 msgid "Built-in CodeSign failed with error \"%s\"."
 msgstr "Wbudowany CodeSign nie powiódł się z powodu błędu \"%s\"."
 
-msgid "Built-in CodeSign require regex module."
-msgstr "Wbudowany CodeSign wymaga modułu regex."
-
 msgid ""
 "Xrcodesign path is not set. Configure rcodesign path in the Editor Settings "
 "(Export > macOS > rcodesign)."
@@ -16846,6 +18118,14 @@ msgstr ""
 
 msgid "Could not created symlink \"%s\" -> \"%s\"."
 msgstr "Nie można utworzyć dowiązania symbolicznego \"%s\" -> \"%s\"."
+
+msgid ""
+"Unable to set Unix permissions for executable \"%s\". Use \"chmod +x\" to set "
+"it after transferring the exported .app to macOS or Linux."
+msgstr ""
+"Nie udało się ustawić Unixowych uprawnień dla pliku wykonywalnego \"%s\". "
+"Użyj \"chmod +x\", by ustawić je po przeniesieniu wyeksportowanego .app na "
+"macOS albo Linux."
 
 msgid "Could not open \"%s\"."
 msgstr "Nie można otworzyć \"%s\"."
@@ -17046,6 +18326,13 @@ msgstr "Modyfikacja zasobów"
 msgid "Icon size \"%d\" is missing."
 msgstr "Brak rozmiaru ikony \"%d\"."
 
+msgid ""
+"Mismatching custom export template executable architecture: found \"%s\", "
+"expected \"%s\"."
+msgstr ""
+"Niepasująca architektura własnego pliku wykonywalnego szablonu eksportu: "
+"znaleziono \"%s\", oczekiwano \"%s\"."
+
 msgid "Failed to rename temporary file \"%s\"."
 msgstr "Nie udało się zmienić nazwy pliku tymczasowego \"%s\"."
 
@@ -17173,17 +18460,16 @@ msgstr ""
 
 msgid ""
 "Particle trails are only available when using the Forward+ or Mobile "
-"rendering backends."
+"renderers."
 msgstr ""
-"Ścieżki cząstek są dostępne tylko w przypadku korzystania z zaplecza "
-"renderowania Forward+ lub Mobile."
+"Ścieżki cząstek są dostępne tylko w przypadku korzystania z renderera "
+"Przedni+ lub Mobilny."
 
 msgid ""
-"Particle sub-emitters are not available when using the GL Compatibility "
-"rendering backend."
+"Particle sub-emitters are not available when using the Compatibility renderer."
 msgstr ""
-"Podemitery cząstek nie są dostępne w przypadku korzystania z zaplecza "
-"renderowania Kompatybilności GL."
+"Podemitery cząstek nie są dostępne w przypadku korzystania z renderera "
+"Kompatybilnego."
 
 msgid ""
 "A texture with the shape of the light must be supplied to the \"Texture\" "
@@ -17214,6 +18500,21 @@ msgid ""
 msgstr ""
 "Pozycja początkowa NavigationLink2D powinna być inna niż pozycja końcowa, aby "
 "była użyteczna."
+
+msgid "NavigationObstacle2D does not support negative or zero scaling."
+msgstr "NavigationObstacle2D nie wspiera negatywnego lub zerowego skalowania."
+
+msgid ""
+"The agent radius can only be scaled uniformly. The largest value along the "
+"two axes of the global scale will be used to scale the radius. This value may "
+"change in unexpected ways when the node is rotated."
+msgstr ""
+"Promień agenta może być skalowany tylko równomiernie. Największa wartość "
+"wzdłuż dwóch osi globalnej skali będzie używana do skalowania promienia. Ta "
+"wartość może się zmienić w nieoczekiwany sposób kiedy węzeł jest obracany."
+
+msgid "Skew has no effect on the agent radius."
+msgstr "Skośność nie ma wpływu na promień agenta."
 
 msgid ""
 "A NavigationMesh resource must be set or created for this node to work. "
@@ -17289,12 +18590,11 @@ msgstr ""
 "Shape!"
 
 msgid ""
-"Polygon-based shapes are not meant be used nor edited directly through the "
-"CollisionShape2D node. Please use the CollisionPolygon2D node instead."
+"The CollisionShape2D node has limited editing options for polygon-based "
+"shapes. Consider using a CollisionPolygon2D node instead."
 msgstr ""
-"Kształty oparte na wielokątach nie są przystosowane, by ich używać lub "
-"edytować bezpośrednio przez węzeł CollisionShape2D. Zamiast tego użyj węzła "
-"CollisionPolygon2D."
+"Węzeł CollisionShape2D ma ograniczone opcje edycji dla kształtów opartych na "
+"wielokątach. Rozważ zamiast tego użycie węzła CollisionPolygon2D."
 
 msgid "Node A and Node B must be PhysicsBody2Ds"
 msgstr "Node A i Node B muszą być węzłami PhysicsBody2D"
@@ -17447,9 +18747,7 @@ msgstr ""
 "Animacja CPUParticles3D wymaga użycia StandardMaterial3D, którego tryb "
 "Billboard jest ustawiony na \"Particle Billboard\"."
 
-msgid ""
-"Decals are only available when using the Forward+ or Mobile rendering "
-"backends."
+msgid "Decals are only available when using the Forward+ or Mobile renderers."
 msgstr ""
 "Naklejki są dostępne tylko, gdy używany jest renderer Przedni+ lub Mobilny."
 
@@ -17482,8 +18780,8 @@ msgstr ""
 "będzie malować obiektów na żadnej warstwie.\n"
 "By to rozwiązać, włącz co najmniej jeden bit we właściwości Maska usuwania."
 
-msgid "Fog Volumes are only visible when using the Forward+ backend."
-msgstr "Obszary mgły są widoczne tylko, gdy użyty jest backend Przedni+."
+msgid "Fog Volumes are only visible when using the Forward+ renderer."
+msgstr "Obszary mgły są widoczne tylko, gdy użyty jest renderer Przedni+."
 
 msgid ""
 "Fog Volumes need volumetric fog to be enabled in the scene's Environment in "
@@ -17530,10 +18828,10 @@ msgstr ""
 
 msgid ""
 "Particle sub-emitters are only available when using the Forward+ or Mobile "
-"rendering backends."
+"renderers."
 msgstr ""
-"Podemitery cząstek są dostępne tylko w przypadku korzystania z zaplecza "
-"renderowania Forward+ lub Mobile."
+"Podemitery cząstek są dostępne tylko w przypadku korzystania z renderera "
+"Przedni+ lub Mobilny."
 
 msgid ""
 "The Bake Mask has no bits enabled, which means baking will not produce any "
@@ -17552,11 +18850,11 @@ msgid "Projector texture only works with shadows active."
 msgstr "Tekstura projektora działa tylko z aktywnymi cieniami."
 
 msgid ""
-"Projector textures are not supported when using the GL Compatibility backend "
+"Projector textures are not supported when using the Compatibility renderer "
 "yet. Support will be added in a future release."
 msgstr ""
-"Tekstury projektora nie są jeszcze obsługiwane podczas korzystania z backendu "
-"GL Compatibility. Wsparcie zostanie dodane w przyszłym wydaniu."
+"Tekstury projektora nie są jeszcze obsługiwane podczas korzystania z "
+"renderera Kompatybilnego. Wsparcie zostanie dodane w przyszłym wydaniu."
 
 msgid "A SpotLight3D with an angle wider than 90 degrees cannot cast shadows."
 msgstr "SpotLight3D o kącie szerszym niż 90 stopni nie może rzucać cieni."
@@ -17586,11 +18884,44 @@ msgid "Generating Probe Acceleration Structures"
 msgstr "Generowanie struktur przyspieszenia sond"
 
 msgid ""
-"Lightmap can only be baked from a device that supports the RD backends. "
-"Lightmap baking may fail."
+"Lightmaps can only be baked from a GPU that supports the RenderingDevice "
+"backends.\n"
+"Your GPU (%s) does not support RenderingDevice, as it does not support "
+"Vulkan, Direct3D 12, or Metal.\n"
+"Lightmap baking will not be available on this device, although rendering "
+"existing baked lightmaps will work."
 msgstr ""
-"Mapa światła może być wypieczona tylko na urządzeniu, które obsługuje "
-"backendy RD. Wypiekanie mapy światła może się nie udać."
+"Mapy światła mogą być wypalone tylko na GPU, które wspiera zaplecza "
+"RenderingDevice.\n"
+"Twoje GPU (%s) nie wspiera RenderingDevice, gdyż nie wspiera Vulkana, "
+"Direct3D 12 lub Metal.\n"
+"Wypalanie map światła nie będzie dostępne na tym urządzeniu, aczkolwiek "
+"renderowanie istniejących wypalonych map światła będzie działać."
+
+msgid ""
+"The lightmap has no baked shadowmask textures. Please rebake with the "
+"Shadowmask Mode set to anything other than None."
+msgstr ""
+"Mapa światła nie ma wypalonych tekstur maski cieni. Wypal ponownie z Trybem "
+"maski cieni ustawionym na coś innego niż None."
+
+msgid ""
+"Lightmaps cannot be baked on %s. Rendering existing baked lightmaps will "
+"still work."
+msgstr ""
+"Mapy światła nie mogą być wypalone na %s. Renderowanie istniejących "
+"wypalonych map światła nadal będzie działać."
+
+msgid ""
+"Lightmaps cannot be baked, as the `lightmapper_rd` module was disabled at "
+"compile-time. Rendering existing baked lightmaps will still work."
+msgstr ""
+"Mapy światła nie mogą być wypalone, gdyż moduł `lightmapper_rd` został "
+"wyłączony podczas kompilacji. Renderowanie istniejących wypalonych map "
+"światła nadal będzie działać."
+
+msgid "Forward axis and primary rotation axis must not be parallel."
+msgstr "Oś przodu i główna oś obrotu nie mogą być równoległe."
 
 msgid ""
 "The NavigationAgent3D can be used only under a Node3D inheriting parent node."
@@ -17602,6 +18933,24 @@ msgid ""
 msgstr ""
 "Pozycja początkowa NavigationLink3D powinna być inna niż pozycja końcowa, aby "
 "była użyteczna."
+
+msgid ""
+"NavigationObstacle3D only takes global rotation around the y-axis into "
+"account. Rotations around the x-axis or z-axis might lead to unexpected "
+"results."
+msgstr ""
+"NavigationObstacle3D bierze pod uwagę tylko globalny obrót wokół osi Y. "
+"Obroty wokół osi X i Z mogą prowadzić do niespodziewanych wyników."
+
+msgid "NavigationObstacle3D does not support negative or zero scaling."
+msgstr "NavigationObstacle3D nie wspiera negatywnego ani zerowego skalowania."
+
+msgid ""
+"The agent radius can only be scaled uniformly. The largest scale value along "
+"the three axes will be used."
+msgstr ""
+"Promień agenta może być skalowany tylko jednolicie. Będzie użyta największa "
+"wartość skali wzdłuż trzech osi."
 
 msgid ""
 "Occlusion culling is disabled in the Project Settings, which means occlusion "
@@ -17635,7 +18984,7 @@ msgstr ""
 "będzie wykonywane żadne usuwanie powierzchni używając tego "
 "OccluderInstance3D.\n"
 "By to rozwiązać, ustaw właściwość Occluder na jeden z prymitywnych typów "
-"zasłon lub wypiecz siatki sceny zaznaczając OccluderInstance3D i wciskając "
+"zasłon lub wypal siatki sceny zaznaczając OccluderInstance3D i wciskając "
 "przycisk Wypiecz zasłony na górze widoku edytora 3D."
 
 msgid ""
@@ -17647,7 +18996,7 @@ msgstr ""
 "Siatka zasłony ma mniej niż 3 wierzchołki, więc nie będzie wykonywane żadne "
 "usuwanie powierzchni używając tego OccluderInstance3D.\n"
 "By wygenerować właściwą siatkę zasłony, wybierz OccluderInstance3D i użyj "
-"przycisku Wypiecz zasłony na górze widoku edytora 3D."
+"przycisku Wypal zasłony na górze widoku edytora 3D."
 
 msgid ""
 "The polygon occluder has less than 3 vertices, so no occlusion culling will "
@@ -17821,8 +19170,19 @@ msgstr ""
 "Właściwość \"Remote Path\" musi wskazywać na poprawny węzeł Node3D lub "
 "pochodny Node3D, aby działał."
 
+msgid "There is no child Skeleton3D!"
+msgstr "Nie ma potomnego węzła Skeleton3D!"
+
+msgid "Skeleton3D node not set! SkeletonModifier3D must be child of Skeleton3D."
+msgstr ""
+"Węzeł Skeleton3D nie jest ustawiony! SkeletonModifier3D musi być węzłem "
+"potomnym Skeleton3D."
+
 msgid "This body will be ignored until you set a mesh."
 msgstr "To ciało będzie ignorowane, dopóki nie ustawisz siatki."
+
+msgid "Parent node should be a SpringBoneSimulator3D node."
+msgstr "Węzłem nadrzędnym powinien być SpringBoneSimulator3D."
 
 msgid ""
 "A SpriteFrames resource must be created or set in the \"Sprite Frames\" "
@@ -17867,30 +19227,30 @@ msgid ""
 "rendering method."
 msgstr ""
 "Przezroczystość GeometryInstance3D jest dostępna tylko w przypadku "
-"korzystania z zaplecza renderowania Forward+."
+"korzystania z metody renderowania Przedni+."
 
 msgid ""
 "GeometryInstance3D visibility range transparency fade is only available when "
 "using the Forward+ rendering method."
 msgstr ""
 "Zanik przezroczystości w widocznym zakresie GeometryInstance3D jest dostępna "
-"tylko w przypadku korzystania z zaplecza renderowania Forward+."
+"tylko w przypadku korzystania z metody renderowania Przedni+."
 
 msgid "Plotting Meshes"
 msgstr "Kreślenie siatek"
 
-msgid "Finishing Plot"
-msgstr "Kończenie kreślenia"
-
 msgid "Generating Distance Field"
 msgstr "Generowanie pola odległości"
 
+msgid "Finishing Plot"
+msgstr "Kończenie kreślenia"
+
 msgid ""
-"VoxelGI nodes are not supported when using the GL Compatibility backend yet. "
+"VoxelGI nodes are not supported when using the Compatibility renderer yet. "
 "Support will be added in a future release."
 msgstr ""
-"Węzły VoxelGI nie są jeszcze obsługiwane podczas używania backendu GL "
-"Compatibility. Wsparcie zostanie dodane w przyszłym wydaniu."
+"Węzły VoxelGI nie są jeszcze obsługiwane podczas używania renderera "
+"Kompatybilnego. Wsparcie zostanie dodane w przyszłym wydaniu."
 
 msgid ""
 "No VoxelGI data set, so this node is disabled. Bake static objects to enable "
@@ -17972,6 +19332,15 @@ msgstr ""
 msgid "Copy this constructor in a script."
 msgstr "Skopiuj ten konstruktor w skrypcie."
 
+msgid "Load Color Palette"
+msgstr "Wczytaj paletę kolorów"
+
+msgid "Save Color Palette"
+msgstr "Zapisz paletę kolorów"
+
+msgid "Quick Load"
+msgstr "Szybkie wczytywanie"
+
 msgid "Switch between hexadecimal and code values."
 msgstr "Przełącz między szesnastkowymi i kodowymi wartościami."
 
@@ -18012,6 +19381,16 @@ msgid ""
 msgstr ""
 "Aktualna czcionka nie wspiera renderowania jednego lub więcej znaków użytych "
 "w tekście tego węzła Label."
+
+msgid ""
+"The current theme style has shadows and/or rounded corners for popups, but "
+"those won't display correctly if \"display/window/per_pixel_transparency/"
+"allowed\" isn't enabled in the Project Settings, nor if it isn't supported."
+msgstr ""
+"Aktualny styl motywu ma cienie i/lub zaokrąglone rogi dla wyskakujących "
+"okienek, ale nie będą się wyświetlać poprawnie jeśli \"display/window/"
+"per_pixel_transparency/allowed\" nie jest włączone w Ustawieniach Projektu, "
+"ani kiedy nie jest wspierane."
 
 msgid "If \"Exp Edit\" is enabled, \"Min Value\" must be greater than 0."
 msgstr "Jeśli \"Exp Edit\" jest włączone, \"Min Value\" musi być większe od 0."
@@ -18181,9 +19560,6 @@ msgstr "Domyślny kolor \"%s\" jest niekompatybilny ze źródłem \"%s\"."
 msgid "Default Color"
 msgstr "Kolor domyślny"
 
-msgid "Filter"
-msgstr "Filtr"
-
 msgid "Repeat"
 msgstr "Powtórz"
 
@@ -18198,6 +19574,12 @@ msgstr "Użyj wszystkich powierzchni"
 
 msgid "Surface Index"
 msgstr "Indeks powierzchni"
+
+msgid "Division by zero error."
+msgstr "Błąd dzielenia przez zero."
+
+msgid "Modulo by zero error."
+msgstr "Błąd reszty z dzielenia przez zero."
 
 msgid ""
 "Invalid number of arguments when calling stage function '%s', which expects "
@@ -18274,25 +19656,17 @@ msgstr "Oczekiwano znaku \",\" lub \")\" po argumencie."
 msgid "Varying may not be assigned in the '%s' function."
 msgstr "Zmienna varying nie może być przypisana w funkcji \"%s\"."
 
-msgid ""
-"Varying with '%s' data type may only be assigned in the 'fragment' function."
+msgid "Varying with '%s' data type may only be assigned in the '%s' function."
 msgstr ""
 "Zmienna varying z typem danych \"%s\" może być przypisana tylko w funkcji "
-"\"fragment\"."
+"\"%s\"."
 
 msgid ""
-"Varyings which assigned in 'vertex' function may not be reassigned in "
-"'fragment' or 'light'."
+"Varyings which assigned in '%s' function may not be reassigned in '%s' or "
+"'%s'."
 msgstr ""
-"Zmienne varying przypisane w funkcji \"vertex\" nie mogą zostać ponownie "
-"przypisane we \"fragment\" lub \"light\"."
-
-msgid ""
-"Varyings which assigned in 'fragment' function may not be reassigned in "
-"'vertex' or 'light'."
-msgstr ""
-"Zmienne varying przypisane w funkcji \"fragment\" nie mogą zostać ponownie "
-"przypisane we \"vertex\" lub \"light\"."
+"Zmienne varying przypisane w funkcji \"%s\" nie mogą zostać ponownie "
+"przypisane w \"%s\" lub \"%s\"."
 
 msgid "'%s' cannot be used within the '%s' processor function."
 msgstr "\"%s\" nie może być użyte wewnątrz funkcji procesora \"%s\"."
@@ -18346,17 +19720,14 @@ msgstr "Rozmiar tablicy jest już zdefiniowany."
 msgid "Unknown array size is forbidden in that context."
 msgstr "Nieznany rozmiar tablicy jest w tym kontekście zabroniony."
 
-msgid "Array size expressions are not supported."
-msgstr "Wyrażenia rozmiaru tablicy nie są obsługiwane."
-
 msgid "Expected a positive integer constant."
 msgstr "Oczekiwano dodatniej stałej całkowitej."
 
 msgid "Invalid data type for the array."
 msgstr "Nieprawidłowy typ danych dla tablicy."
 
-msgid "Array size mismatch."
-msgstr "Niezgodność rozmiaru tablicy."
+msgid "Array size mismatch. Expected %d elements (found %d)."
+msgstr "Niezgodność rozmiaru tablicy. Oczekiwano %d elementów (znaleziono %d)."
 
 msgid "Expected array initialization."
 msgstr "Oczekiwano inicjalizacji tablicy."
@@ -18376,11 +19747,11 @@ msgstr "Oczekiwano znaku \"(\" po nazwie typu."
 msgid "No matching constructor found for: '%s'."
 msgstr "Nie znaleziono pasującego konstruktora dla: \"%s\"."
 
-msgid "Built-in function '%s' is not supported for the '%s' shader type."
-msgstr "Wbudowana funkcja \"%s\" nie jest wspierana przez typ shadera \"%s\"."
-
 msgid "Expected a function name."
 msgstr "Oczekiwano nazwy funkcji."
+
+msgid "Built-in function '%s' is not supported for the '%s' shader type."
+msgstr "Wbudowana funkcja \"%s\" nie jest wspierana przez typ shadera \"%s\"."
 
 msgid "No matching function found for: '%s'."
 msgstr "Nie znaleziono pasującej funkcji dla: \"%s\"."
@@ -18411,20 +19782,12 @@ msgstr ""
 "By kontynuować z minimalnymi zmianami kodu, dodaj \"uniform sampler2D %s : "
 "hint_%s, filter_linear_mipmap\" w okolicy góry swojego shadera."
 
-msgid "Varying with '%s' data type may only be used in the 'fragment' function."
-msgstr ""
-"Varying z typem danych \"%s\" może być użyty tylko w funkcji \"fragment\"."
+msgid "Varying with '%s' data type may only be used in the '%s' function."
+msgstr "Varying z typem danych \"%s\" może być użyty tylko w funkcji \"%s\"."
 
-msgid "Varying '%s' must be assigned in the 'fragment' function first."
+msgid "Varying '%s' must be assigned in the '%s' function first."
 msgstr ""
-"Zmienna varying \"%s\" musi najpierw zostać przypisana w funkcji \"fragment\"."
-
-msgid ""
-"Varying with integer data type must be declared with `flat` interpolation "
-"qualifier."
-msgstr ""
-"Zmienna varying z całkowitym typem danych musi być zadeklarowana z "
-"kwalifikatorem interpolacji `flat`."
+"Zmienna varying \"%s\" musi najpierw zostać przypisana w funkcji \"%s\"."
 
 msgid "Can't use function as identifier: '%s'."
 msgstr "Nie można użyć funkcji jako identyfikatora: \"%s\"."
@@ -18455,10 +19818,6 @@ msgstr "Obiekt typu \"%s\" nie może być indeksowany."
 
 msgid "Invalid base type for increment/decrement operator."
 msgstr "Nieprawidłowy typ bazowy dla operatora inkrementacji/dekrementacji."
-
-msgid "Invalid use of increment/decrement operator in a constant expression."
-msgstr ""
-"Nieprawidłowe użycie operatora inkrementacji/dekrementacji w wyrażeniu stałym."
 
 msgid "Invalid token for the operator: '%s'."
 msgstr "Nieprawidłowy token dla operatora: \"%s\"."
@@ -18513,8 +19872,8 @@ msgstr ""
 msgid "Expected a boolean expression."
 msgstr "Oczekiwano wyrażenia logicznego."
 
-msgid "Expected an integer expression."
-msgstr "Oczekiwano wyrażenia całkowitego."
+msgid "Expected an integer or unsigned integer expression."
+msgstr "Oczekiwano wyrażenia całkowitego lub całkowitego bez znaku."
 
 msgid "Cases must be defined before default case."
 msgstr "Przypadki case muszą być zdefiniowane przed przypadkiem domyślnym."
@@ -18522,14 +19881,17 @@ msgstr "Przypadki case muszą być zdefiniowane przed przypadkiem domyślnym."
 msgid "Default case must be defined only once."
 msgstr "Przypadek domyślny musi być zdefiniowany tylko raz."
 
-msgid "Duplicated case label: %d."
-msgstr "Zduplikowana etykieta case: %d."
-
 msgid "'%s' must be placed within a '%s' block."
 msgstr "\"%s\" musi być umieszczony w bloku \"%s\"."
 
+msgid "Expected an unsigned integer constant."
+msgstr "Oczekiwano stałej całkowitej bez znaku."
+
 msgid "Expected an integer constant."
 msgstr "Oczekiwano stałej całkowitej."
+
+msgid "Duplicated case label: %d."
+msgstr "Zduplikowana etykieta case: %d."
 
 msgid "Using '%s' in the '%s' processor function is incorrect."
 msgstr "Użycie \"%s\" w funkcji procesora \"%s\" jest nieprawidłowe."
@@ -18537,11 +19899,14 @@ msgstr "Użycie \"%s\" w funkcji procesora \"%s\" jest nieprawidłowe."
 msgid "Expected '%s' with an expression of type '%s'."
 msgstr "Oczekiwano \"%s\" z wyrażeniem typu \"%s\"."
 
+msgid "'%s' function cannot return a value."
+msgstr "Funkcja \"%s\" nie może zwracać wartości."
+
 msgid "Expected return with an expression of type '%s'."
 msgstr "Oczekiwano wartości zwrotnej z wyrażeniem typu \"%s\"."
 
-msgid "Use of '%s' is not allowed here."
-msgstr "Użycie \"%s\" jest tu niedozwolone."
+msgid "Use of '%s' is not supported for the '%s' shader type."
+msgstr "Użycie \"%s\" nie jest wspierane dla typu shadera \"%s\"."
 
 msgid "'%s' is not allowed outside of a loop or '%s' statement."
 msgstr "\"%s\" nie jest dozwolone poza pętlą lub deklaracją \"%s\"."
@@ -18549,8 +19914,8 @@ msgstr "\"%s\" nie jest dozwolone poza pętlą lub deklaracją \"%s\"."
 msgid "'%s' is not allowed outside of a loop."
 msgstr "\"%s\" nie jest dozwolone poza pętlą."
 
-msgid "The middle expression is expected to be a boolean operator."
-msgstr "Oczekuje się, że środkowe wyrażenie będzie operatorem logicznym."
+msgid "The middle expression is expected to have a boolean data type."
+msgstr "Środkowe wyrażenie powinno mieć boolowski typ danych."
 
 msgid "The left expression is expected to be a variable declaration."
 msgstr "Oczekuje się, że lewe wyrażenie będzie deklaracją zmiennej."
@@ -18613,9 +19978,6 @@ msgid "Uniform instances are not yet implemented for '%s' shaders."
 msgstr ""
 "Instancje uniformów nie są jeszcze zaimplementowane dla shaderów \"%s\"."
 
-msgid "Uniform instances are not supported in gl_compatibility shaders."
-msgstr "Instancje uniformów nie są obsługiwane w shaderach gl_compatibility."
-
 msgid "Varyings cannot be used in '%s' shaders."
 msgstr "Zmienne varying nie mogą być użyte w shaderach \"%s\"."
 
@@ -18673,6 +20035,15 @@ msgstr "Oczekiwano znaku \",\" po stałej całkowitej."
 msgid "Expected an integer constant after ','."
 msgstr "Oczekiwano stałej całkowitej po znaku \",\"."
 
+msgid "Enum hint is for '%s' only."
+msgstr "Podpowiedź wyliczenia dotyczy tylko \"%s\"."
+
+msgid "Expected a string constant."
+msgstr "Oczekiwano stałej tekstowej."
+
+msgid "Expected ',' or ')' after string constant."
+msgstr "Oczekiwano \",\" lub \")\" po stałej tekstowej."
+
 msgid "Can only specify '%s' once."
 msgstr "Można określić \"%s\" tylko raz."
 
@@ -18684,10 +20055,10 @@ msgstr "Dozwolone indeksy uniformów instancji muszą być w zakresie [0..%d]."
 
 msgid ""
 "'hint_normal_roughness_texture' is only available when using the Forward+ "
-"backend."
+"renderer."
 msgstr ""
-"'hint_normal_roughness_texture' jest dostępne tylko, gdy użyty jest backend "
-"Przedni+."
+"\"hint_normal_roughness_texture\" jest dostępne tylko, gdy używany jest "
+"renderer Przedni+."
 
 msgid "'hint_normal_roughness_texture' is not supported in '%s' shaders."
 msgstr "'hint_normal_roughness_texture' nie jest obsługiwany w shaderach '%s'."
@@ -18776,6 +20147,9 @@ msgstr ""
 msgid "Expected an identifier after type."
 msgstr "Oczekiwano identyfikatora po typie."
 
+msgid "'%s' qualifier cannot be used with a function return type."
+msgstr "Kwalifikator \"%s\" nie może być użyty z typem zwracanym funkcji."
+
 msgid ""
 "The '%s' qualifier cannot be used within a function parameter declared with "
 "'%s'."
@@ -18807,6 +20181,18 @@ msgstr "Oczekiwano \"{\", aby rozpocząć funkcję."
 msgid "Expected at least one '%s' statement in a non-void function."
 msgstr ""
 "Oczekiwano co najmniej jednej deklaracji '%s' w funkcji nie będącej typu void."
+
+msgid ""
+"Varying with integer data type must be declared with `%s` interpolation "
+"qualifier."
+msgstr ""
+"Zmienna varying z całkowitym typem danych musi być zadeklarowana z "
+"kwalifikatorem interpolacji `%s`."
+
+msgid "Too many varyings used in shader (%d used, maximum supported is %d)."
+msgstr ""
+"Zbyt wiele varying używanych w shaderze (używane %d, wspierane jest "
+"maksymalnie %d)."
 
 msgid "uniform buffer"
 msgstr "bufor uniformu"
@@ -18844,8 +20230,8 @@ msgstr "\"##\" nie może występować na początku rozwinięcia makra."
 msgid "'##' must not appear at end of macro expansion."
 msgstr "\"##\" nie może występować na końcu rozwinięcia makra."
 
-msgid "Unmatched elif."
-msgstr "Niedopasowany elif."
+msgid "Unmatched '%s' directive."
+msgstr "Niedopasowana dyrektywa \"%s\"."
 
 msgid "Missing condition."
 msgstr "Brakujący warunek."
@@ -18853,23 +20239,8 @@ msgstr "Brakujący warunek."
 msgid "Condition evaluation error."
 msgstr "Błąd oceny warunku."
 
-msgid "Unmatched else."
-msgstr "Niedopasowane else."
-
-msgid "Invalid else."
-msgstr "Nieprawidłowy else."
-
-msgid "Unmatched endif."
-msgstr "Niedopasowany endif."
-
-msgid "Invalid endif."
-msgstr "Nieprawidłowy endif."
-
-msgid "Invalid ifdef."
-msgstr "Nieprawidłowy ifdef."
-
-msgid "Invalid ifndef."
-msgstr "Nieprawidłowy ifndef."
+msgid "Invalid '%s' directive."
+msgstr "Nieprawidłowa dyrektywa \"%s\"."
 
 msgid "Shader include file does not exist:"
 msgstr "Plik include shadera nie istnieje:"
@@ -18890,11 +20261,8 @@ msgstr "Znaleziono cykliczne załączenie"
 msgid "Shader max include depth exceeded."
 msgstr "Przekroczona maksymalna głębokość załączenia shadera."
 
-msgid "Invalid pragma directive."
-msgstr "Nieprawidłowa dyrektywa pragma."
-
-msgid "Invalid undef."
-msgstr "Nieprawidłowy undef."
+msgid "Cannot use '%s' on built-in define."
+msgstr "Nie można użyć \"%s\" na wbudowanej definicji."
 
 msgid "Macro expansion limit exceeded."
 msgstr "Przekroczony limit rozszerzenia makra."

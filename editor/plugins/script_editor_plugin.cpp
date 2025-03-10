@@ -202,8 +202,8 @@ void EditorStandardSyntaxHighlighter::_update_cache() {
 		List<String> comments;
 		scr_lang->get_comment_delimiters(&comments);
 		for (const String &comment : comments) {
-			String beg = comment.get_slice(" ", 0);
-			String end = comment.get_slice_count(" ") > 1 ? comment.get_slice(" ", 1) : String();
+			String beg = comment.get_slicec(' ', 0);
+			String end = comment.get_slice_count(" ") > 1 ? comment.get_slicec(' ', 1) : String();
 			highlighter->add_color_region(beg, end, comment_color, end.is_empty());
 		}
 
@@ -212,8 +212,8 @@ void EditorStandardSyntaxHighlighter::_update_cache() {
 		List<String> doc_comments;
 		scr_lang->get_doc_comment_delimiters(&doc_comments);
 		for (const String &doc_comment : doc_comments) {
-			String beg = doc_comment.get_slice(" ", 0);
-			String end = doc_comment.get_slice_count(" ") > 1 ? doc_comment.get_slice(" ", 1) : String();
+			String beg = doc_comment.get_slicec(' ', 0);
+			String end = doc_comment.get_slice_count(" ") > 1 ? doc_comment.get_slicec(' ', 1) : String();
 			highlighter->add_color_region(beg, end, doc_comment_color, end.is_empty());
 		}
 
@@ -222,8 +222,8 @@ void EditorStandardSyntaxHighlighter::_update_cache() {
 		List<String> strings;
 		scr_lang->get_string_delimiters(&strings);
 		for (const String &string : strings) {
-			String beg = string.get_slice(" ", 0);
-			String end = string.get_slice_count(" ") > 1 ? string.get_slice(" ", 1) : String();
+			String beg = string.get_slicec(' ', 0);
+			String end = string.get_slice_count(" ") > 1 ? string.get_slicec(' ', 1) : String();
 			highlighter->add_color_region(beg, end, string_color, end.is_empty());
 		}
 	}
@@ -443,7 +443,7 @@ void ScriptEditorQuickOpen::_confirmed() {
 	if (!ti) {
 		return;
 	}
-	int line = ti->get_text(0).get_slice(":", 1).to_int();
+	int line = ti->get_text(0).get_slicec(':', 1).to_int();
 
 	emit_signal(SNAME("goto_line"), line - 1);
 	hide();
@@ -496,6 +496,24 @@ ScriptEditorQuickOpen::ScriptEditorQuickOpen() {
 ScriptEditor *ScriptEditor::script_editor = nullptr;
 
 /*** SCRIPT EDITOR ******/
+
+String ScriptEditor::_get_debug_tooltip(const String &p_text, Node *p_se) {
+	if (EDITOR_GET("text_editor/behavior/documentation/enable_tooltips")) {
+		return String();
+	}
+
+	// NOTE: See also `ScriptTextEditor::_show_symbol_tooltip()` for documentation tooltips enabled.
+	String debug_value = EditorDebuggerNode::get_singleton()->get_var_value(p_text);
+	if (!debug_value.is_empty()) {
+		constexpr int DISPLAY_LIMIT = 1024;
+		if (debug_value.size() > DISPLAY_LIMIT) {
+			debug_value = debug_value.left(DISPLAY_LIMIT) + "... " + TTR("(truncated)");
+		}
+		debug_value = TTR("Current value: ") + debug_value;
+	}
+
+	return debug_value;
+}
 
 void ScriptEditor::_breaked(bool p_breaked, bool p_can_debug) {
 	if (external_editor_active) {
@@ -2093,10 +2111,10 @@ void ScriptEditor::_update_members_overview() {
 
 	for (int i = 0; i < functions.size(); i++) {
 		String filter = filter_methods->get_text();
-		String name = functions[i].get_slice(":", 0);
+		String name = functions[i].get_slicec(':', 0);
 		if (filter.is_empty() || filter.is_subsequence_ofn(name)) {
 			members_overview->add_item(name);
-			members_overview->set_item_metadata(-1, functions[i].get_slice(":", 1).to_int() - 1);
+			members_overview->set_item_metadata(-1, functions[i].get_slicec(':', 1).to_int() - 1);
 		}
 	}
 
@@ -2626,9 +2644,12 @@ bool ScriptEditor::edit(const Ref<Resource> &p_resource, int p_line, int p_col, 
 	}
 
 	// If we delete a script within the filesystem, the original resource path
-	// is lost, so keep it as metadata to figure out the exact tab to delete.
+	// is lost, so keep it as `edited_file_data` to figure out the exact tab to delete.
 	se->edited_file_data.path = p_resource->get_path();
 	se->edited_file_data.last_modified_time = FileAccess::get_modified_time(p_resource->get_path());
+
+	se->set_tooltip_request_func(callable_mp(this, &ScriptEditor::_get_debug_tooltip));
+
 	if (se->get_edit_menu()) {
 		se->get_edit_menu()->hide();
 		menu_hb->add_child(se->get_edit_menu());
@@ -2796,6 +2817,15 @@ void ScriptEditor::save_all_scripts() {
 	_update_script_names();
 }
 
+void ScriptEditor::update_script_times() {
+	for (int i = 0; i < tab_container->get_tab_count(); i++) {
+		ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(tab_container->get_tab_control(i));
+		if (se) {
+			se->edited_file_data.last_modified_time = FileAccess::get_modified_time(se->edited_file_data.path);
+		}
+	}
+}
+
 void ScriptEditor::apply_scripts() const {
 	for (int i = 0; i < tab_container->get_tab_count(); i++) {
 		ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(tab_container->get_tab_control(i));
@@ -2822,10 +2852,13 @@ void ScriptEditor::_reload_scripts(bool p_refresh_only) {
 		Ref<Resource> edited_res = se->get_edited_resource();
 
 		if (edited_res->is_built_in()) {
-			continue; //internal script, who cares
+			continue; // Internal script, who cares.
 		}
 
-		if (!p_refresh_only) {
+		if (p_refresh_only) {
+			// Make sure the modified time is correct.
+			se->edited_file_data.last_modified_time = FileAccess::get_modified_time(edited_res->get_path());
+		} else {
 			uint64_t last_date = se->edited_file_data.last_modified_time;
 			uint64_t date = FileAccess::get_modified_time(edited_res->get_path());
 
@@ -3648,7 +3681,7 @@ void ScriptEditor::_help_class_open(const String &p_class) {
 }
 
 void ScriptEditor::_help_class_goto(const String &p_desc) {
-	String cname = p_desc.get_slice(":", 1);
+	String cname = p_desc.get_slicec(':', 1);
 
 	if (_help_tab_goto(cname, p_desc)) {
 		return;
@@ -3955,7 +3988,7 @@ void ScriptEditor::_on_find_in_files_result_selected(const String &fpath, int li
 
 				// Found the end of the script.
 				scr_id = line.get_slice(scr_header, 1);
-				scr_id = scr_id.get_slice("\"", 0);
+				scr_id = scr_id.get_slicec('"', 0);
 
 				scr_start_line = l + 1;
 				int scr_line_count = 0;

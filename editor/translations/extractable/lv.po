@@ -19,6 +19,9 @@ msgstr ""
 "19) ? 0 : ((n % 10 == 1 && n % 100 != 11) ? 1 : 2);\n"
 "X-Generator: Weblate 5.2\n"
 
+msgid "All Recognized"
+msgstr "Viss atpazīts"
+
 msgid "Add current color as a preset."
 msgstr "Pievienot pašreizējo krāsu kā iepriekšnoteiktu krāsu."
 
@@ -28,11 +31,11 @@ msgstr "Atvērt"
 msgid "Select Current Folder"
 msgstr "Izvēlēties pašreizējo mapi"
 
+msgid "Save"
+msgstr "Saglabāt"
+
 msgid "Select This Folder"
 msgstr "Izvēlēties Šo Mapi"
-
-msgid "All Recognized"
-msgstr "Viss atpazīts"
 
 msgid "Open a File"
 msgstr "Atvērt failu"
@@ -45,9 +48,6 @@ msgstr "Atvērt mapi"
 
 msgid "Open a File or Directory"
 msgstr "Atvērt failu vai mapi"
-
-msgid "Save"
-msgstr "Saglabāt"
 
 msgid "Save a File"
 msgstr "Saglabāt failu"

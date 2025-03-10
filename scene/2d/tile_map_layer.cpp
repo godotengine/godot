@@ -1413,7 +1413,7 @@ void TileMapLayer::_build_runtime_update_tile_data_for_cell(CellData &r_cell_dat
 
 						tile_map_node->GDVIRTUAL_CALL(_tile_data_runtime_update, layer_index_in_tile_map_node, r_cell_data.coords, tile_data_runtime_use);
 
-						if (p_auto_add_to_dirty_list) {
+						if (p_auto_add_to_dirty_list && !r_cell_data.dirty_list_element.in_list()) {
 							dirty.cell_list.add(&r_cell_data.dirty_list_element);
 						}
 					}
@@ -1428,7 +1428,7 @@ void TileMapLayer::_build_runtime_update_tile_data_for_cell(CellData &r_cell_dat
 
 						GDVIRTUAL_CALL(_tile_data_runtime_update, r_cell_data.coords, tile_data_runtime_use);
 
-						if (p_auto_add_to_dirty_list) {
+						if (p_auto_add_to_dirty_list && !r_cell_data.dirty_list_element.in_list()) {
 							dirty.cell_list.add(&r_cell_data.dirty_list_element);
 						}
 					}
@@ -1950,7 +1950,6 @@ void TileMapLayer::set_as_tile_map_internal_node(int p_index) {
 	ERR_FAIL_NULL(get_parent());
 	tile_map_node = Object::cast_to<TileMap>(get_parent());
 	set_use_parent_material(true);
-	force_parent_owned();
 	if (layer_index_in_tile_map_node != p_index) {
 		layer_index_in_tile_map_node = p_index;
 		dirty.flags[DIRTY_FLAGS_LAYER_INDEX_IN_TILE_MAP_NODE] = true;

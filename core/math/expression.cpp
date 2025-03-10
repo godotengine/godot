@@ -359,7 +359,7 @@ Error Expression::_get_token(Token &r_token) {
 								} else if (c == '.') {
 									reading = READING_DEC;
 									is_float = true;
-								} else if (c == 'e') {
+								} else if (c == 'e' || c == 'E') {
 									reading = READING_EXP;
 									is_float = true;
 								} else {
@@ -385,7 +385,7 @@ Error Expression::_get_token(Token &r_token) {
 							} break;
 							case READING_DEC: {
 								if (is_digit(c)) {
-								} else if (c == 'e') {
+								} else if (c == 'e' || c == 'E') {
 									reading = READING_EXP;
 								} else {
 									reading = READING_DONE;
