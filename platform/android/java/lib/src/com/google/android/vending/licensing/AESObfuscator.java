@@ -38,7 +38,7 @@ import javax.crypto.spec.SecretKeySpec;
 public class AESObfuscator implements Obfuscator {
     private static final String UTF8 = "UTF-8";
     private static final String KEYGEN_ALGORITHM = "PBEWITHSHAAND256BITAES-CBC-BC";
-    private static final String CIPHER_ALGORITHM = "AES/CBC/PKCS5Padding";
+    private static final String CIPHER_ALGORITHM = "AES/GCM/NoPadding";
     private static final byte[] IV =
         { 16, 74, 71, -80, 32, 101, -47, 72, 117, -14, 0, -29, 70, 65, -12, 74 };
     private static final String header = "com.google.android.vending.licensing.AESObfuscator-1|";
