@@ -3205,6 +3205,14 @@ void RenderForwardClustered::_update_render_base_uniform_set() {
 			uniforms.push_back(u);
 		}
 
+		{
+			RD::Uniform u;
+			u.binding = 16;
+			u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
+			u.append_id(dfg_lut.texture);
+			uniforms.push_back(u);
+		}
+
 		render_base_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, scene_shader.default_shader_rd, SCENE_UNIFORM_SET);
 	}
 }
@@ -4951,6 +4959,45 @@ RenderForwardClustered::RenderForwardClustered() {
 		best_fit_normal.shader.version_free(best_fit_normal.shader_version);
 	}
 
+	/* DFG LUT */
+	{
+		Vector<String> modes;
+		modes.push_back("\n");
+		dfg_lut.shader.initialize(modes);
+		dfg_lut.shader_version = dfg_lut.shader.version_create();
+		dfg_lut.pipeline = RD::get_singleton()->compute_pipeline_create(dfg_lut.shader.version_get_shader(dfg_lut.shader_version, 0));
+
+		RD::TextureFormat tformat;
+		tformat.format = RD::DATA_FORMAT_R16G16B16A16_SFLOAT;
+		tformat.width = 128;
+		tformat.height = 128;
+		tformat.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT;
+		tformat.texture_type = RD::TEXTURE_TYPE_2D;
+		dfg_lut.texture = RD::get_singleton()->texture_create(tformat, RD::TextureView());
+
+		RID shader = dfg_lut.shader.version_get_shader(dfg_lut.shader_version, 0);
+		ERR_FAIL_COND(shader.is_null());
+
+		Vector<RD::Uniform> uniforms;
+
+		{
+			RD::Uniform u;
+			u.binding = 0;
+			u.uniform_type = RD::UNIFORM_TYPE_IMAGE;
+			u.append_id(dfg_lut.texture);
+			uniforms.push_back(u);
+		}
+		RID uniform_set = RD::get_singleton()->uniform_set_create(uniforms, shader, 0);
+
+		RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin();
+		RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, dfg_lut.pipeline);
+		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, uniform_set, 0);
+		RD::get_singleton()->compute_list_dispatch_threads(compute_list, tformat.width, tformat.height, 1);
+		RD::get_singleton()->compute_list_end();
+
+		dfg_lut.shader.version_free(dfg_lut.shader_version);
+	}
+
 	_update_shader_quality_settings();
 	_update_global_pipeline_data_requirements_from_project();
 
@@ -5000,6 +5047,7 @@ RenderForwardClustered::~RenderForwardClustered() {
 	RD::get_singleton()->free(shadow_sampler);
 	RSG::light_storage->directional_shadow_atlas_set_size(0);
 	RD::get_singleton()->free(best_fit_normal.texture);
+	RD::get_singleton()->free(dfg_lut.texture);
 
 	{
 		for (const RID &rid : scene_state.uniform_buffers) {

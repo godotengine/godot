@@ -280,6 +280,8 @@ layout(set = 0, binding = 14) uniform sampler DEFAULT_SAMPLER_LINEAR_WITH_MIPMAP
 
 layout(set = 0, binding = 15) uniform texture2D best_fit_normal_texture;
 
+layout(set = 0, binding = 16) uniform texture2D dfg;
+
 /* Set 1: Render Pass (changes per render pass) */
 
 layout(set = 1, binding = 0, std140) uniform SceneDataBlock {
@@ -452,6 +454,18 @@ vec4 normal_roughness_compatibility(vec4 p_normal_roughness) {
 	}
 	roughness /= (127.0 / 255.0);
 	return vec4(normalize(p_normal_roughness.xyz * 2.0 - 1.0) * 0.5 + 0.5, roughness);
+}
+
+// https://google.github.io/filament/Filament.html#toc5.3.4.7
+// Note: The roughness value is inverted
+vec3 prefiltered_dfg(float lod, float NoV) {
+	return textureLod(sampler2D(dfg, SAMPLER_LINEAR_CLAMP), vec2(NoV, 1.0 - lod), 0.0).rgb;
+}
+
+// Compute multiscatter compensation
+// https://google.github.io/filament/Filament.html#listing_energycompensationimpl
+vec3 get_energy_compensation(vec3 f0, float env) {
+	return 1.0 + f0 * (1.0 / env - 1.0);
 }
 
 /* Set 2 Skeleton & Instancing (can change per item) */
