@@ -133,5 +133,7 @@ ParallaxBackgroundEditorPlugin::ParallaxBackgroundEditorPlugin() {
 	menu->get_popup()->add_item(TTR("Convert to Parallax2D"), MENU_CONVERT_TO_PARALLAX_2D);
 	menu->set_text(TTR("ParallaxBackground"));
 	menu->set_switch_on_hover(true);
+	menu->set_flat(false);
+	menu->set_theme_type_variation("FlatMenuButton");
 	toolbar->add_child(menu);
 }
