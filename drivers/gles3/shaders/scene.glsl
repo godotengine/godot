@@ -2291,19 +2291,21 @@ void main() {
 	frag_color.rgb += emission + ambient_light;
 #endif //!MODE_UNSHADED
 
-#ifndef FOG_DISABLED
+#if !defined(FOG_DISABLED) && !defined(POST_LIGHT_CODE_USED)
 	fog.xy = unpackHalf2x16(fog_rg);
 	fog.zw = unpackHalf2x16(fog_ba);
 
 	frag_color.rgb = mix(frag_color.rgb, fog.rgb, fog.a);
 #endif // !FOG_DISABLED
 
+#ifndef POST_LIGHT_CODE_USED
 	// Tonemap before writing as we are writing to an sRGB framebuffer
 	frag_color.rgb *= exposure;
 #ifdef APPLY_TONEMAPPING
 	frag_color.rgb = apply_tonemapping(frag_color.rgb, white);
 #endif
 	frag_color.rgb = linear_to_srgb(frag_color.rgb);
+#endif
 
 #else // !BASE_PASS
 	frag_color = vec4(0.0, 0.0, 0.0, alpha);
@@ -2559,22 +2561,51 @@ void main() {
 	diffuse_light *= 1.0 - metallic;
 	vec3 additive_light_color = diffuse_light + specular_light;
 
-#ifndef FOG_DISABLED
+#if !defined(FOG_DISABLED) && !defined(POST_LIGHT_CODE_USED)
 	fog.xy = unpackHalf2x16(fog_rg);
 	fog.zw = unpackHalf2x16(fog_ba);
 
 	additive_light_color *= (1.0 - fog.a);
 #endif // !FOG_DISABLED
 
+#ifndef POST_LIGHT_CODE_USED
 	// Tonemap before writing as we are writing to an sRGB framebuffer
 	additive_light_color *= exposure;
 #ifdef APPLY_TONEMAPPING
 	additive_light_color = apply_tonemapping(additive_light_color, white);
 #endif
 	additive_light_color = linear_to_srgb(additive_light_color);
+#endif
 
 	frag_color.rgb += additive_light_color;
+
 #endif // USE_ADDITIVE_LIGHTING
+
+#if defined(POST_LIGHT_CODE_USED)
+	vec3 out_color = frag_color.rgb;
+
+	{
+#CODE : POST_LIGHT
+	}
+
+	frag_color = vec4(out_color, alpha);
+
+#ifndef FOG_DISABLED
+	fog.xy = unpackHalf2x16(fog_rg);
+	fog.zw = unpackHalf2x16(fog_ba);
+
+	frag_color.rgb = mix(frag_color.rgb, fog.rgb, fog.a);
+#endif // !FOG_DISABLED
+
+	// Do exposure and tonemapping here
+	frag_color.rgb *= exposure;
+#ifdef APPLY_TONEMAPPING
+	frag_color.rgb = apply_tonemapping(frag_color.rgb, white);
+#endif
+	frag_color.rgb = linear_to_srgb(frag_color.rgb);
+
+#endif
+
 	frag_color.rgb *= scene_data.luminance_multiplier;
 
 #endif // !RENDER_MATERIAL
