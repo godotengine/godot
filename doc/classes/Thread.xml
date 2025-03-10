@@ -30,6 +30,12 @@
 				To check if a [Thread] is joinable, use [method is_started].
 			</description>
 		</method>
+		<method name="is_main_thread" qualifiers="static">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the function is called from the main thread of the engine. This is the thread that runs game code by default.
+			</description>
+		</method>
 		<method name="is_started" qualifiers="const">
 			<return type="bool" />
 			<description>

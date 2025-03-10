@@ -33,6 +33,7 @@
 #include "core/io/marshalls.h"
 #include "core/object/ref_counted.h"
 #include "core/os/os.h"
+#include "core/os/semaphore.h"
 #include "core/templates/oa_hash_map.h"
 #include "core/templates/rid.h"
 #include "core/templates/rid_owner.h"
@@ -1234,6 +1235,81 @@ bool VariantUtilityFunctions::is_same(const Variant &p_a, const Variant &p_b) {
 	return p_a.identity_compare(p_b);
 }
 
+class CallableCustomSuspend : public CallableCustom {
+	Semaphore *semaphore = nullptr;
+	Variant *return_value = nullptr;
+
+	// Never really going to execute since disconnection is automatic.
+	static bool _equal_func(const CallableCustom *p_a, const CallableCustom *p_b) {
+		const CallableCustomSuspend *A = static_cast<const CallableCustomSuspend *>(p_a);
+		const CallableCustomSuspend *B = static_cast<const CallableCustomSuspend *>(p_b);
+
+		return A->semaphore == B->semaphore;
+	}
+
+	// Never really going to execute since disconnection is automatic.
+	static bool _less_func(const CallableCustom *p_a, const CallableCustom *p_b) {
+		const CallableCustomSuspend *A = static_cast<const CallableCustomSuspend *>(p_a);
+		const CallableCustomSuspend *B = static_cast<const CallableCustomSuspend *>(p_b);
+
+		return A->semaphore < B->semaphore;
+	}
+
+public:
+	//for every type that inherits, these must always be the same for this type
+	virtual uint32_t hash() const override {
+		return size_t(semaphore);
+	}
+
+	virtual String get_as_text() const override {
+		return "SemaphoreCallable";
+	}
+
+	virtual CompareEqualFunc get_compare_equal_func() const override {
+		return _equal_func;
+	}
+
+	virtual CompareLessFunc get_compare_less_func() const override {
+		return _less_func;
+	}
+
+	virtual ObjectID get_object() const override {
+		return ObjectID();
+	}
+
+	virtual void call(const Variant **p_arguments, int p_argcount, Variant &r_return_value, Callable::CallError &r_call_error) const override {
+		semaphore->post();
+		if (p_argcount == 1) { // If passed one argument, will be returned.
+			if (return_value) {
+				*return_value = *p_arguments[0];
+			}
+		} else if (p_argcount > 1) {
+			r_call_error.error = Callable::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS;
+			r_call_error.argument = p_argcount;
+			r_call_error.expected = 1;
+			return;
+		}
+
+		r_call_error.error = Callable::CallError::CALL_OK;
+	}
+
+	CallableCustomSuspend(Semaphore *p_semaphore, Variant *r_return_value) {
+		semaphore = p_semaphore;
+		return_value = r_return_value;
+	}
+};
+
+Variant VariantUtilityFunctions::thread_suspend(Signal p_resume) {
+	Semaphore semaphore;
+	Variant return_value;
+
+	p_resume.connect(Callable(memnew(CallableCustomSuspend(&semaphore, &return_value))), Object::CONNECT_ONE_SHOT);
+
+	semaphore.wait();
+
+	return return_value;
+}
+
 #ifdef DEBUG_METHODS_ENABLED
 #define VCALLR *ret = p_func(VariantCasterAndValidate<P>::cast(p_args, Is, r_error)...)
 #define VCALL p_func(VariantCasterAndValidate<P>::cast(p_args, Is, r_error)...)
@@ -1855,6 +1931,8 @@ void Variant::_register_variant_utility_functions() {
 	FUNCBINDR(rid_from_int64, sarray("base"), Variant::UTILITY_FUNC_TYPE_GENERAL);
 
 	FUNCBINDR(is_same, sarray("a", "b"), Variant::UTILITY_FUNC_TYPE_GENERAL);
+
+	FUNCBINDR(thread_suspend, sarray("on_signal"), Variant::UTILITY_FUNC_TYPE_GENERAL);
 }
 
 void Variant::_unregister_variant_utility_functions() {

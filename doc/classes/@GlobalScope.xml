@@ -1390,6 +1390,13 @@
 				[/codeblock]
 			</description>
 		</method>
+		<method name="thread_suspend">
+			<return type="Variant" />
+			<param index="0" name="on_signal" type="Signal" />
+			<description>
+				Suspend the caller thread until the signal passed as argument is emitted.
+			</description>
+		</method>
 		<method name="type_convert">
 			<return type="Variant" />
 			<param index="0" name="variant" type="Variant" />
