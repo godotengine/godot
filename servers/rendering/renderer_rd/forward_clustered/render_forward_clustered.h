@@ -43,6 +43,7 @@
 #include "servers/rendering/renderer_rd/forward_clustered/scene_shader_forward_clustered.h"
 #include "servers/rendering/renderer_rd/renderer_scene_render_rd.h"
 #include "servers/rendering/renderer_rd/shaders/forward_clustered/best_fit_normal.glsl.gen.h"
+#include "servers/rendering/renderer_rd/shaders/forward_clustered/integrate_dfg.glsl.gen.h"
 
 #define RB_SCOPE_FORWARD_CLUSTERED SNAME("forward_clustered")
 
@@ -179,6 +180,13 @@ private:
 		RID pipeline;
 		RID texture;
 	} best_fit_normal;
+
+	struct IntegrateDFG {
+		IntegrateDfgShaderRD shader;
+		RID shader_version;
+		RID pipeline;
+		RID texture;
+	} dfg_lut;
 
 	enum PassMode {
 		PASS_MODE_COLOR,
