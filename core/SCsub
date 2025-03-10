@@ -134,6 +134,7 @@ if env["builtin_zstd"]:
         "compress/zstd_lazy.c",
         "compress/zstd_ldm.c",
         "compress/zstd_opt.c",
+        "compress/zstd_preSplit.c",
         "compress/zstdmt_compress.c",
         "compress/zstd_compress_literals.c",
         "compress/zstd_compress_sequences.c",
