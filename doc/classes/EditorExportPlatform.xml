@@ -74,7 +74,7 @@
 				Exports project files for the specified preset. This method can be used to implement custom export format, other than PCK and ZIP. One of the callbacks is called for each exported file.
 				[param save_cb] is called for all exported files and have the following arguments: [code]file_path: String[/code], [code]file_data: PackedByteArray[/code], [code]file_index: int[/code], [code]file_count: int[/code], [code]encryption_include_filters: PackedStringArray[/code], [code]encryption_exclude_filters: PackedStringArray[/code], [code]encryption_key: PackedByteArray[/code].
 				[param shared_cb] is called for exported native shared/static libraries and have the following arguments: [code]file_path: String[/code], [code]tags: PackedStringArray[/code], [code]target_folder: String[/code].
-				[b]Note:[/b] [code]file_index[/code] and [code]file_count[/code] are intended for progress tracking only and aren't necesserely unique and precise.
+				[b]Note:[/b] [code]file_index[/code] and [code]file_count[/code] are intended for progress tracking only and aren't necessarily unique and precise.
 			</description>
 		</method>
 		<method name="export_zip">
@@ -259,7 +259,7 @@
 			Message type for error messages that must be addressed and fail the export.
 		</constant>
 		<constant name="DEBUG_FLAG_DUMB_CLIENT" value="1" enum="DebugFlags" is_bitfield="true">
-			Flag is set if remotely debugged project is expected to use remote file system. If set, [method gen_export_flags] will add [code]--remove-fs[/code] and [code]--remote-fs-password[/code] (if password is set in the editor settings) command line arguments to the list.
+			Flag is set if remotely debugged project is expected to use remote file system. If set, [method gen_export_flags] will add [code]--remote-fs[/code] and [code]--remote-fs-password[/code] (if password is set in the editor settings) command line arguments to the list.
 		</constant>
 		<constant name="DEBUG_FLAG_REMOTE_DEBUG" value="2" enum="DebugFlags" is_bitfield="true">
 			Flag is set if remote debug is enabled. If set, [method gen_export_flags] will add [code]--remote-debug[/code] and [code]--breakpoints[/code] (if breakpoints are selected in the script editor or added by the plugin) command line arguments to the list.

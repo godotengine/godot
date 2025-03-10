@@ -1403,6 +1403,10 @@
 			Default [InputEventAction] to toggle [i]insert mode[/i] in a text field. While in insert mode, inserting new text overrides the character after the cursor, unless the next character is a new line.
 			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
 		</member>
+		<member name="input/ui_toggle_licenses_dialog" type="Dictionary" setter="" getter="">
+			Toggles the built-in dialog which displays Godot's third-party notices. This can also be toggled from a script using [member SceneTree.licenses_dialog_visible].
+			Since the default shortcut is not usable on mobile platforms, it is recommended to create a button that sets [member SceneTree.licenses_dialog_visible] to [code]true[/code] when pressed in your project's menu. See [url=$DOCS_URL/complying_with_licenses.html]Complying with licenses[/url] in the documentation for more information.
+		</member>
 		<member name="input/ui_undo" type="Dictionary" setter="" getter="">
 			Default [InputEventAction] to undo the most recent action.
 			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
@@ -2204,9 +2208,8 @@
 			The CA certificates bundle to use for TLS connections. If this is set to a non-empty value, this will [i]override[/i] Godot's default [url=https://github.com/godotengine/godot/blob/master/thirdparty/certs/ca-certificates.crt]Mozilla certificate bundle[/url]. If left empty, the default certificate bundle will be used.
 			If in doubt, leave this setting empty.
 		</member>
-		<member name="network/tls/enable_tls_v1.3" type="bool" setter="" getter="" default="false">
+		<member name="network/tls/enable_tls_v1.3" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], enable TLSv1.3 negotiation.
-			[b]Note:[/b] This is experimental, and may cause connections to fail in some cases (notably, if the remote server uses TLS handshake fragmentation).
 			[b]Note:[/b] Only supported when using Mbed TLS 3.0 or later (Linux distribution packages may be compiled against older system Mbed TLS packages), otherwise the maximum supported TLS version is always TLSv1.2.
 		</member>
 		<member name="physics/2d/default_angular_damp" type="float" setter="" getter="" default="1.0">
@@ -2620,6 +2623,7 @@
 		</member>
 		<member name="rendering/environment/glow/upscale_mode" type="int" setter="" getter="" default="1">
 			Sets how the glow effect is upscaled before being copied onto the screen. Linear is faster, but looks blocky. Bicubic is slower but looks smooth.
+			[b]Note:[/b] [member rendering/environment/glow/upscale_mode] is only effective when using the Forward+ or Mobile rendering methods, as Compatibility uses a different glow implementation.
 		</member>
 		<member name="rendering/environment/glow/upscale_mode.mobile" type="int" setter="" getter="" default="0">
 			Lower-end override for [member rendering/environment/glow/upscale_mode] on mobile devices, due to performance concerns or driver support.
@@ -2684,38 +2688,48 @@
 		<member name="rendering/environment/volumetric_fog/volume_size" type="int" setter="" getter="" default="64">
 			Base size used to determine size of froxel buffer in the camera X-axis and Y-axis. The final size is scaled by the aspect ratio of the screen, so actual values may differ from what is set. Set a larger size for more detailed fog, set a smaller size for better performance.
 		</member>
-		<member name="rendering/gl_compatibility/driver" type="String" setter="" getter="" default="&quot;auto&quot;">
-			Sets the driver to be used by the renderer when using the Compatibility renderer. This property can not be edited directly, instead, set the driver using the platform-specific overrides.
+		<member name="rendering/gl_compatibility/driver" type="String" setter="" getter="" default="&quot;opengl3&quot;">
+			Sets the driver to be used by the renderer when using the Compatibility renderer. Editing this property has no effect in the default configuration, as first-party platforms each have platform-specific overrides. Use those overrides to configure the driver for each platform.
+			This can be overridden using the [code]--rendering-driver &lt;driver&gt;[/code] command line argument.
 			Supported values are:
-			- [code]auto[/code], currently defaults to [code]opengl3[/code] on all platforms.
 			- [code]opengl3[/code], OpenGL 3.3 on desktop platforms, OpenGL ES 3.0 on mobile platforms, WebGL 2.0 on web.
-			- [code]opengl3_angle[/code], OpenGL ES 3.0 over ANGLE compatibility layer, supported on macOS (over native OpenGL) and Windows (over Direct3D 11).
+			- [code]opengl3_angle[/code], OpenGL ES 3.0 using the ANGLE compatibility layer, supported on macOS (over native OpenGL) and Windows (over Direct3D 11).
 			- [code]opengl3_es[/code], OpenGL ES 3.0 on Linux/BSD.
 			[b]Note:[/b] The availability of these options depends on whether the engine was compiled with support for them (determined by SCons options [code]opengl3[/code] and [code]angle_libs[/code]).
+			[b]Note:[/b] The actual rendering driver may be automatically changed by the engine as a result of a fallback, or a user-specified command line argument. To get the actual rendering driver that is used at runtime, use [method RenderingServer.get_current_rendering_driver_name] instead of reading this project setting's value.
 		</member>
-		<member name="rendering/gl_compatibility/driver.android" type="String" setter="" getter="" default="&quot;auto&quot;">
+		<member name="rendering/gl_compatibility/driver.android" type="String" setter="" getter="" default="&quot;opengl3&quot;">
 			Android override for [member rendering/gl_compatibility/driver].
-			The [code]auto[/code] setting is equivalent to [code]opengl3[/code] on this platform.
+			Only one option is supported:
+			- [code]opengl3[/code], OpenGL ES 3.0 from native drivers.
 		</member>
-		<member name="rendering/gl_compatibility/driver.ios" type="String" setter="" getter="" default="&quot;auto&quot;">
+		<member name="rendering/gl_compatibility/driver.ios" type="String" setter="" getter="" default="&quot;opengl3&quot;">
 			iOS override for [member rendering/gl_compatibility/driver].
-			The [code]auto[/code] setting is equivalent to [code]opengl3[/code] on this platform.
+			Only one option is supported:
+			- [code]opengl3[/code], OpenGL ES 3.0 from native drivers.
 		</member>
-		<member name="rendering/gl_compatibility/driver.linuxbsd" type="String" setter="" getter="" default="&quot;auto&quot;">
+		<member name="rendering/gl_compatibility/driver.linuxbsd" type="String" setter="" getter="" default="&quot;opengl3&quot;">
 			LinuxBSD override for [member rendering/gl_compatibility/driver].
-			The [code]auto[/code] setting is equivalent to [code]opengl3[/code] on this platform. [code]opengl3_es[/code] is available as an option, which is also used as a fallback on devices that don't support OpenGL 3.3.
+			Two options are supported:
+			- [code]opengl3[/code] (default), OpenGL 3.3 from native drivers.
+			- [code]opengl3_es[/code], OpenGL ES 3.0 from native drivers. If [member rendering/gl_compatibility/fallback_to_gles] is enabled, this is used as a fallback if OpenGL 3.3 is not supported.
 		</member>
-		<member name="rendering/gl_compatibility/driver.macos" type="String" setter="" getter="" default="&quot;auto&quot;">
+		<member name="rendering/gl_compatibility/driver.macos" type="String" setter="" getter="" default="&quot;opengl3&quot;">
 			macOS override for [member rendering/gl_compatibility/driver].
-			The [code]auto[/code] setting is equivalent to [code]opengl3[/code] on this platform. [code]opengl3_angle[/code] is available as an option if ANGLE support was compiled in.
+			Two options are supported:
+			- [code]opengl3[/code] (default), OpenGL 3.3 from native drivers. If [member rendering/gl_compatibility/fallback_to_native] is enabled, this is used as a fallback if ANGLE is configured as the preferred driver but not supported.
+			- [code]opengl3_angle[/code], OpenGL ES 3.0 using the ANGLE compatibility layer over native OpenGL drivers. If [member rendering/gl_compatibility/fallback_to_angle] is enabled, this is used as a fallback if OpenGL 3.3 is not supported.
 		</member>
-		<member name="rendering/gl_compatibility/driver.web" type="String" setter="" getter="" default="&quot;auto&quot;">
+		<member name="rendering/gl_compatibility/driver.web" type="String" setter="" getter="" default="&quot;opengl3&quot;">
 			Web override for [member rendering/gl_compatibility/driver].
-			The [code]auto[/code] setting is equivalent to [code]opengl3[/code] on this platform.
+			Only one option is supported:
+			- [code]opengl3[/code], WebGL 2.0. The underlying native API depends on the target OS, browser, and browser configuration.
 		</member>
-		<member name="rendering/gl_compatibility/driver.windows" type="String" setter="" getter="" default="&quot;auto&quot;">
+		<member name="rendering/gl_compatibility/driver.windows" type="String" setter="" getter="" default="&quot;opengl3&quot;">
 			Windows override for [member rendering/gl_compatibility/driver].
-			The [code]auto[/code] setting is equivalent to [code]opengl3[/code] on this platform. [code]opengl3_angle[/code] is available as an option if ANGLE supported was compiled in. In such case, ANGLE is used preferentially on lower end devices with known problematic native OpenGL drivers (see [member rendering/gl_compatibility/force_angle_on_devices]).
+			Two options are supported:
+			- [code]opengl3[/code] (default), OpenGL 3.3 from native drivers. If [member rendering/gl_compatibility/fallback_to_native] is enabled, this is used as a fallback if ANGLE is configured as the preferred driver but not supported.
+			- [code]opengl3_angle[/code], OpenGL ES 3.0 using the ANGLE compatibility layer over native Direct3D 11 drivers. If [member rendering/gl_compatibility/fallback_to_angle] is enabled, this is used as a fallback if OpenGL 3.3 is not supported. By default, ANGLE is used as the default driver for some devices listed in [member rendering/gl_compatibility/force_angle_on_devices].
 		</member>
 		<member name="rendering/gl_compatibility/fallback_to_angle" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], the compatibility renderer will fall back to ANGLE if native OpenGL is not supported or the device is listed in [member rendering/gl_compatibility/force_angle_on_devices].
@@ -2981,43 +2995,49 @@
 			The number of entries in the sampler descriptors heap the Direct3D 12 rendering driver uses each frame, used for most rendering operations.
 			Depending on the complexity of scenes, this value may be lowered or may need to be raised.
 		</member>
-		<member name="rendering/rendering_device/driver" type="String" setter="" getter="" default="&quot;auto&quot;">
-			Sets the driver to be used by the renderer when using a RenderingDevice-based renderer like the Forward+ or Mobile renderers. This property can't be edited directly. Instead, set the driver using the platform-specific overrides. This can be overridden using the [code]--rendering-driver &lt;driver&gt;[/code] command line argument.
+		<member name="rendering/rendering_device/driver" type="String" setter="" getter="" default="&quot;vulkan&quot;">
+			Sets the driver to be used by the renderer when using a RenderingDevice-based renderer like the Forward+ or Mobile renderers. Editing this property has no effect in the default configuration, as first-party platforms each have platform-specific overrides. Use those overrides to configure the driver for each platform.
+			This can be overridden using the [code]--rendering-driver &lt;driver&gt;[/code] command line argument.
 			Supported values are:
-			- [code]auto[/code], Metal on Apple Silicon Macs and iOS, Vulkan on other built-in platforms. On Windows, Direct3D 12 is the default if the engine was compiled without Vulkan support.
 			- [code]metal[/code], Metal (supported on Apple Silicon Macs and iOS).
 			- [code]vulkan[/code], Vulkan (supported on all desktop and mobile platforms).
 			- [code]d3d12[/code], Direct3D 12 (supported on Windows).
 			[b]Note:[/b] The availability of these options depends on whether the engine was compiled with support for them (determined by SCons options [code]vulkan[/code], [code]metal[/code], and [code]d3d12[/code]).
+			[b]Note:[/b] If a given platform has no registered drivers, it can fall back to the Compatibility renderer (OpenGL 3) if [member rendering/rendering_device/fallback_to_opengl3] is enabled. This fallback happens automatically for the Web platform regardless of that property.
 			[b]Note:[/b] The actual rendering driver may be automatically changed by the engine as a result of a fallback, or a user-specified command line argument. To get the actual rendering driver that is used at runtime, use [method RenderingServer.get_current_rendering_driver_name] instead of reading this project setting's value.
 		</member>
-		<member name="rendering/rendering_device/driver.android" type="String" setter="" getter="" default="&quot;auto&quot;">
+		<member name="rendering/rendering_device/driver.android" type="String" setter="" getter="" default="&quot;vulkan&quot;">
 			Android override for [member rendering/rendering_device/driver].
-			The [code]auto[/code] setting is equivalent to [code]vulkan[/code] on this platform.
+			Only one option is supported:
+			- [code]vulkan[/code], Vulkan from native drivers.
 			[b]Note:[/b] If Vulkan was disabled at compile time, there is no alternative RenderingDevice driver.
 		</member>
-		<member name="rendering/rendering_device/driver.ios" type="String" setter="" getter="" default="&quot;auto&quot;">
+		<member name="rendering/rendering_device/driver.ios" type="String" setter="" getter="" default="&quot;metal&quot;">
 			iOS override for [member rendering/rendering_device/driver].
-			The [code]auto[/code] setting is equivalent to [code]metal[/code] on this platform.
-			[b]Note:[/b] If Metal was disabled at compile time, the default becomes [code]vulkan[/code]. If both Metal and Vulkan were disabled at compile time, there is no alternative RenderingDevice driver.
+			Two options are supported:
+			- [code]metal[/code] (default), Metal from native drivers.
+			- [code]vulkan[/code], Vulkan over Metal via MoltenVK.
 		</member>
-		<member name="rendering/rendering_device/driver.linuxbsd" type="String" setter="" getter="" default="&quot;auto&quot;">
+		<member name="rendering/rendering_device/driver.linuxbsd" type="String" setter="" getter="" default="&quot;vulkan&quot;">
 			LinuxBSD override for [member rendering/rendering_device/driver].
-			The [code]auto[/code] setting is equivalent to [code]vulkan[/code] on this platform.
+			Only one option is supported:
+			- [code]vulkan[/code], Vulkan from native drivers.
 			[b]Note:[/b] If Vulkan was disabled at compile time, there is no alternative RenderingDevice driver.
 		</member>
-		<member name="rendering/rendering_device/driver.macos" type="String" setter="" getter="" default="&quot;auto&quot;">
+		<member name="rendering/rendering_device/driver.macos" type="String" setter="" getter="" default="&quot;metal&quot;">
 			macOS override for [member rendering/rendering_device/driver].
-			The [code]auto[/code] setting is equivalent to [code]metal[/code] on Apple Silicon Macs, and [code]vulkan[/code] (MoltenVK) on Intel Macs. Metal isn't supported on Intel Macs, so even if setting [code]metal[/code] explicitly, it will fallback to Vulkan on Intel Macs.
-			[b]Note:[/b] If Metal was disabled at compile time, the default becomes [code]vulkan[/code] for both Apple Silicon and Intel Macs. If both Metal and Vulkan were disabled at compile time, there is no alternative RenderingDevice driver.
+			Two options are supported:
+			- [code]metal[/code] (default), Metal from native drivers, only supported on Apple Silicon Macs. On Intel Macs, it will automatically fall back to [code]vulkan[/code] as Metal support is not implemented.
+			- [code]vulkan[/code], Vulkan over Metal via MoltenVK, supported on both Apple Silicon and Intel Macs.
 		</member>
-		<member name="rendering/rendering_device/driver.windows" type="String" setter="" getter="" default="&quot;auto&quot;">
+		<member name="rendering/rendering_device/driver.windows" type="String" setter="" getter="" default="&quot;vulkan&quot;">
 			Windows override for [member rendering/rendering_device/driver].
-			The [code]auto[/code] setting is equivalent to [code]vulkan[/code] on this platform.
-			[b]Note:[/b] If Vulkan was disabled at compile time, the default becomes [code]d3d12[/code]. If both Vulkan and Direct3D 12 were disabled at compile time, there is no alternative RenderingDevice driver.
+			Two options are supported:
+			- [code]vulkan[/code] (default), Vulkan from native drivers. If [member rendering/rendering_device/fallback_to_vulkan] is enabled, this is used as a fallback if Direct3D 12 is not supported.
+			- [code]d3d12[/code], Direct3D 12 from native drivers. If [member rendering/rendering_device/fallback_to_d3d12] is enabled, this is used as a fallback if Vulkan is not supported.
 		</member>
 		<member name="rendering/rendering_device/fallback_to_d3d12" type="bool" setter="" getter="" default="true">
-			If [code]true[/code], the forward renderer will fall back to Direct3D 12 if Vulkan is not supported.
+			If [code]true[/code], the forward renderer will fall back to Direct3D 12 if Vulkan is not supported. The fallback is always attempted regardless of this setting if Vulkan driver support was disabled at compile time.
 			[b]Note:[/b] This setting is implemented only on Windows.
 		</member>
 		<member name="rendering/rendering_device/fallback_to_opengl3" type="bool" setter="" getter="" default="true">
@@ -3025,7 +3045,7 @@
 			[b]Note:[/b] This setting is implemented only on Windows, Android, macOS, iOS, and Linux/X11.
 		</member>
 		<member name="rendering/rendering_device/fallback_to_vulkan" type="bool" setter="" getter="" default="true">
-			If [code]true[/code], the forward renderer will fall back to Vulkan if Direct3D 12 (on Windows) or Metal (on macOS x86_64) are not supported.
+			If [code]true[/code], the forward renderer will fall back to Vulkan if Direct3D 12 (on Windows) or Metal (on macOS x86_64) are not supported. The fallback is always attempted regardless of this setting if Direct3D 12 (Windows) or Metal (macOS) driver support was disabled at compile time.
 			[b]Note:[/b] This setting is implemented only on Windows and macOS.
 		</member>
 		<member name="rendering/rendering_device/pipeline_cache/enable" type="bool" setter="" getter="" default="true">
@@ -3195,7 +3215,7 @@
 			The ratio of [WorkerThreadPool]'s threads that will be reserved for low-priority tasks. For example, if 10 threads are available and this value is set to [code]0.3[/code], 3 of the worker threads will be reserved for low-priority tasks. The actual value won't exceed the number of CPU cores minus one, and if possible, at least one worker thread will be dedicated to low-priority tasks.
 		</member>
 		<member name="threading/worker_pool/max_threads" type="int" setter="" getter="" default="-1">
-			Maximum number of threads to be used by [WorkerThreadPool]. Value of [code]-1[/code] means no limit.
+			Maximum number of threads to be used by [WorkerThreadPool]. Value of [code]-1[/code] means [code]1[/code] on Web, or a number of [i]logical[/i] CPU cores available on other platforms (see [method OS.get_processor_count]).
 		</member>
 		<member name="xr/openxr/binding_modifiers/analog_threshold" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], enables the analog threshold binding modifier if supported by the XR runtime.

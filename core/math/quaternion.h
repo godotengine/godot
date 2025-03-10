@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef QUATERNION_H
-#define QUATERNION_H
+#pragma once
 
 #include "core/math/math_funcs.h"
 #include "core/math/vector3.h"
@@ -54,6 +53,7 @@ struct [[nodiscard]] Quaternion {
 	}
 	_FORCE_INLINE_ real_t length_squared() const;
 	bool is_equal_approx(const Quaternion &p_quaternion) const;
+	bool is_same(const Quaternion &p_quaternion) const;
 	bool is_finite() const;
 	real_t length() const;
 	void normalize();
@@ -237,5 +237,3 @@ bool Quaternion::operator!=(const Quaternion &p_quaternion) const {
 _FORCE_INLINE_ Quaternion operator*(real_t p_real, const Quaternion &p_quaternion) {
 	return p_quaternion * p_real;
 }
-
-#endif // QUATERNION_H

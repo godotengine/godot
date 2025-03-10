@@ -578,7 +578,7 @@ bool OpenXRAPI::create_instance() {
 
 	Vector<const char *> extension_ptrs;
 	for (int i = 0; i < enabled_extensions.size(); i++) {
-		print_verbose(String("OpenXR: Enabling extension ") + String(enabled_extensions[i]));
+		print_verbose(String("OpenXR: Enabling extension ") + String(enabled_extensions[i].get_data()));
 		extension_ptrs.push_back(enabled_extensions[i].get_data());
 	}
 
@@ -3641,10 +3641,10 @@ void OpenXRAPI::set_emulate_environment_blend_mode_alpha_blend(bool p_enabled) {
 }
 
 OpenXRAPI::OpenXRAlphaBlendModeSupport OpenXRAPI::is_environment_blend_mode_alpha_blend_supported() {
-	if (is_environment_blend_mode_supported(XR_ENVIRONMENT_BLEND_MODE_ALPHA_BLEND)) {
-		return OPENXR_ALPHA_BLEND_MODE_SUPPORT_REAL;
-	} else if (emulate_environment_blend_mode_alpha_blend) {
+	if (emulate_environment_blend_mode_alpha_blend) {
 		return OPENXR_ALPHA_BLEND_MODE_SUPPORT_EMULATING;
+	} else if (is_environment_blend_mode_supported(XR_ENVIRONMENT_BLEND_MODE_ALPHA_BLEND)) {
+		return OPENXR_ALPHA_BLEND_MODE_SUPPORT_REAL;
 	}
 	return OPENXR_ALPHA_BLEND_MODE_SUPPORT_NONE;
 }

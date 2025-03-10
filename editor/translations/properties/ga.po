@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
-"PO-Revision-Date: 2025-02-20 13:15+0000\n"
+"PO-Revision-Date: 2025-02-27 18:37+0000\n"
 "Last-Translator: Aindriú Mac Giolla Eoin <aindriu80@gmail.com>\n"
 "Language-Team: Irish <https://hosted.weblate.org/projects/godot-engine/godot-"
 "properties/ga/>\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=5; plural=n==1 ? 0 : n==2 ? 1 : (n>2 && n<7) ? 2 :(n>6 "
 "&& n<11) ? 3 : 4;\n"
-"X-Generator: Weblate 5.10.1-dev\n"
+"X-Generator: Weblate 5.10.2-rc\n"
 
 msgid "Application"
 msgstr "Iarratas"
@@ -808,9 +808,6 @@ msgstr "Teorainn ama a iarraidh"
 msgid "Sync Breakpoints"
 msgstr "Sioncrónaigh Brisphointí"
 
-msgid "Default Feature Profile"
-msgstr "Próifíl Gné Réamhshocraithe"
-
 msgid "Label"
 msgstr "Lipéad"
 
@@ -1129,6 +1126,9 @@ msgstr "Taispeáin Aibhsiú an Chuardaigh"
 msgid "Enable Fuzzy Matching"
 msgstr "Cumasaigh Meaitseáil Doiléir"
 
+msgid "Max Fuzzy Misses"
+msgstr "Uas Fuzzy Misses"
+
 msgid "Include Addons"
 msgstr "Cuir Addons san áireamh"
 
@@ -1350,6 +1350,12 @@ msgstr "Athluchtaigh agus Parsáil Scripteanna go hUathoibríoch ar Sábháil"
 
 msgid "Open Dominant Script on Scene Change"
 msgstr "Oscail Script Cheannasach ar Athrú Radhairc"
+
+msgid "Documentation"
+msgstr "Doiciméadúchán"
+
+msgid "Enable Tooltips"
+msgstr "Cumasaigh Leideanna Uirlisí"
 
 msgid "Script List"
 msgstr "Liosta Scripteanna"
@@ -2017,9 +2023,6 @@ msgstr "Dath Speisialta"
 msgid "Particle Color"
 msgstr "Dath na gCáithníní"
 
-msgid "Editor Settings Advanced Mode"
-msgstr "Ardsocruithe an Eagarthóra"
-
 msgid "Custom Template"
 msgstr "Teimpléad Saincheaptha"
 
@@ -2043,9 +2046,6 @@ msgstr "S3TC BPTC"
 
 msgid "ETC2 ASTC"
 msgstr "ETC2 ASTC"
-
-msgid "Export Template Download Directory"
-msgstr "Eolaire íosluchtaigh teimpléad le haghaidh onnmhairiú"
 
 msgid "Export Path"
 msgstr "Easpórtáil Conair"
@@ -2675,9 +2675,6 @@ msgstr "Líon na bhFrámaí"
 msgid "Duration"
 msgstr "Fad ama"
 
-msgid "Project Settings Advanced Mode"
-msgstr "Ard-Mhód Socruithe an Tionscadail"
-
 msgid "Main Run Args"
 msgstr "Príomh-Args Rith"
 
@@ -2719,15 +2716,6 @@ msgstr "Ainm an Bhreiseáin"
 
 msgid "Autoload on Startup"
 msgstr "Uathluchtaigh ag am tosaithe"
-
-msgid "Use Favorites Root Selection"
-msgstr "Úsáid Roghnú Fréimhe Ceanán"
-
-msgid "Script Setup Use Script Templates"
-msgstr "Socrú Script Úsáid Script Teimpléid"
-
-msgid "Script Setup Templates Dictionary"
-msgstr "Foclóir Teimpléid le haghaidh Socrú Scripteanna"
 
 msgid "Flush stdout on Print"
 msgstr "Stdout Flush ar Priontáil"
@@ -3803,6 +3791,9 @@ msgstr "Dífuaimiú"
 msgid "Denoiser"
 msgstr "DenoiserName"
 
+msgid "Enable TLS V 1"
+msgstr "Cumasaigh TLS V 1"
+
 msgid "BPM"
 msgstr "BPM"
 
@@ -3844,9 +3835,6 @@ msgstr "Vulkan VRS"
 
 msgid "Min Radius"
 msgstr "Ga Min"
-
-msgid "Spawnable Scenes"
-msgstr "Radhairc Sceite"
 
 msgid "Spawn Path"
 msgstr "Conair Sceite"
@@ -7438,6 +7426,9 @@ msgstr "Leithead Uathoibríoch"
 msgid "Auto Height"
 msgstr "Airde Uathoibríoch"
 
+msgid "Wraparound Items"
+msgstr "Míreanna Timfhilleadh"
+
 msgid "Items"
 msgstr "Míreanna"
 
@@ -7848,6 +7839,9 @@ msgstr "Deireadh an Chomhaid Roimhe Seo"
 
 msgid "Fit Content Height"
 msgstr "Oiriúnaigh Airde an Ábhair"
+
+msgid "Fit Content Width"
+msgstr "Leithead Ábhar Fit"
 
 msgid "Draw"
 msgstr "Tarraing"
@@ -9995,6 +9989,39 @@ msgstr " "
 msgid "Up Pressed Icon Modulate"
 msgstr "Modulate Icon Brúite Suas"
 
+msgid "Up Disabled Icon Modulate"
+msgstr "Suas Modulate Icon Díchumasaithe"
+
+msgid "Down Icon Modulate"
+msgstr "Dúin Icon Modulate"
+
+msgid "Down Hover Icon Modulate"
+msgstr "Modulate Icon Down Hover"
+
+msgid "Down Pressed Icon Modulate"
+msgstr "Dúin Brúigh Icon Modulate"
+
+msgid "Down Disabled Icon Modulate"
+msgstr "Síos Díchumasaithe Deilbhín Modhnaigh"
+
+msgid "Field and Buttons Separator"
+msgstr "Réimse agus Deighilteoir Cnaipí"
+
+msgid "Up Down Buttons Separator"
+msgstr "Deighilteoir Cnaipí Suas Síos"
+
+msgid "Buttons Vertical Separation"
+msgstr "Cnaipí Scaradh Ingearach"
+
+msgid "Field and Buttons Separation"
+msgstr "Scaradh Réimse agus Cnaipí"
+
+msgid "Buttons Width"
+msgstr "Cnaipí Leithead"
+
+msgid "Set Min Buttons Width From Icons"
+msgstr "Socraigh Leithead Mionchnaipí Ó Dheilbhíní"
+
 msgid "Embedded Border"
 msgstr "Teorainn Leabaithe"
 
@@ -10037,6 +10064,12 @@ msgstr "Dún Fritháireamh V"
 msgid "Buttons Separation"
 msgstr "Scaradh Cnaipí"
 
+msgid "Load"
+msgstr "Luchtaigh"
+
+msgid "Save"
+msgstr "Sábháil"
+
 msgid "Parent Folder"
 msgstr "Máthairfhillteán"
 
@@ -10051,6 +10084,9 @@ msgstr "Athluchtaigh"
 
 msgid "Toggle Hidden"
 msgstr "Scoránaigh i bhfolach"
+
+msgid "Toggle Filename Filter"
+msgstr "Scoránaigh an Scagaire Ainm Comhaid"
 
 msgid "Folder"
 msgstr "Fillteán"
@@ -10133,6 +10169,9 @@ msgstr "Fritháireamh Phort H"
 msgid "Hovered"
 msgstr "Ag Dul Ar"
 
+msgid "Hovered Dimmed"
+msgstr "Ag faoileáil doiléir"
+
 msgid "Selected Focus"
 msgstr "Fócas Roghnaithe"
 
@@ -10141,6 +10180,9 @@ msgstr "Cúrsóir"
 
 msgid "Cursor Unfocused"
 msgstr "Cúrsóir Neamhdhírithe"
+
+msgid "Button Hover"
+msgstr "Cnaipe ag faoileáil"
 
 msgid "Title Button Normal"
 msgstr "Cnaipe Teidil Gnáth"
@@ -10183,6 +10225,9 @@ msgstr "Dath an Chnaipe Teidil"
 
 msgid "Font Hovered Color"
 msgstr "Dath ainlithe cló"
+
+msgid "Font Hovered Dimmed Color"
+msgstr "Cló Ag faoileáil Dath Tosaithe"
 
 msgid "Guide Color"
 msgstr "Dath treorach"
@@ -10265,6 +10310,15 @@ msgstr "Scrollbharra V Scaradh"
 msgid "Icon Margin"
 msgstr "Imeall Deilbhíní"
 
+msgid "Font Hovered Selected Color"
+msgstr "Cló Ag faoileáil Dath Roghnaithe"
+
+msgid "Hovered Selected"
+msgstr "Ag faoileáil Roghnaithe"
+
+msgid "Hovered Selected Focus"
+msgstr "Ag faoileáil Fócas Roghnaithe"
+
 msgid "Tab Selected"
 msgstr "Táb roghnaithe"
 
@@ -10319,6 +10373,9 @@ msgstr "Leithead an Lipéid"
 msgid "Center Slider Grabbers"
 msgstr "Grabbers Sleamhnán Ionad"
 
+msgid "Menu Option"
+msgstr "Rogha Roghchláir"
+
 msgid "Folded Arrow"
 msgstr "Saighead Fillte"
 
@@ -10354,6 +10411,9 @@ msgstr "Saighead Bharra"
 
 msgid "Picker Cursor"
 msgstr "Cúrsóir an Roghnóra"
+
+msgid "Picker Cursor BG"
+msgstr "Cúrsóir Roghnaithe BG"
 
 msgid "Color Hue"
 msgstr "Lí Datha"
@@ -10442,6 +10502,9 @@ msgstr "Tiús Grab Íosta"
 msgid "Autohide"
 msgstr "Uathíde"
 
+msgid "Split Bar Background"
+msgstr "Cúlra an Bharra Scoilte"
+
 msgid "Zoom Out"
 msgstr "Zúmáil Amach"
 
@@ -10480,6 +10543,9 @@ msgstr "Gníomhaíocht"
 
 msgid "Connection Hover Tint Color"
 msgstr "Ceangal Hover Tint Dath"
+
+msgid "Connection Hover Thickness"
+msgstr "Ceangal Hover Tiús"
 
 msgid "Connection Valid Target Tint Color"
 msgstr "Ceangal Bailí Sprioc Tint Dath"
@@ -10652,6 +10718,9 @@ msgstr "Tarraingt Ama (ms)"
 msgid "Surround"
 msgstr "Timpeall"
 
+msgid "Mix Rate Mode"
+msgstr "Mód Ráta Meascáin"
+
 msgid "Enable Input"
 msgstr "Cumasaigh Ionchur"
 
@@ -10726,6 +10795,12 @@ msgstr "Réamhshocrú"
 
 msgid "Merge Rasterizer Cell Scale"
 msgstr "Cumaisc Scála Cille Rasterizer"
+
+msgid "World"
+msgstr "Domhain"
+
+msgid "Map Use Async Iterations"
+msgstr "Léarscáil Úsáid Async Iterations"
 
 msgid "Avoidance Use Multiple Threads"
 msgstr "Seachaint Úsáid Snáitheanna Il"
@@ -11063,6 +11138,12 @@ msgstr "Iompórtáil S3TC BPTC"
 msgid "Import ETC2 ASTC"
 msgstr "Iompórtáil ASTC ETC2"
 
+msgid "Compress With GPU"
+msgstr "Comhbhrúigh Le GPU"
+
+msgid "Cache GPU Compressor"
+msgstr "Comhbhrúiteoir GPU Taisce"
+
 msgid "Lossless Compression"
 msgstr "Comhbhrú gan chailliúint"
 
@@ -11093,8 +11174,14 @@ msgstr "Atlas 16 giotán"
 msgid "Shadow Atlas"
 msgstr "Atlas Scáth"
 
+msgid "Batching"
+msgstr "Baisceáil"
+
 msgid "Item Buffer Size"
 msgstr "Méid an mhaoláin míre"
+
+msgid "Uniform Set Cache Size"
+msgstr "Méid Taisce Socraigh Éide"
 
 msgid "Shader Compiler"
 msgstr "Tiomsaitheoir Scáthaigh"
@@ -11240,6 +11327,12 @@ msgstr "Mogalraí Primitive"
 msgid "Texel Size"
 msgstr "Méid Texel"
 
+msgid "Lightmap GI"
+msgstr "Solas-léarscáil GI"
+
+msgid "Use Bicubic Filter"
+msgstr "Úsáid Scagaire Bicúbach"
+
 msgid "Probe Ray Count"
 msgstr "Líon Ray Probe"
 
@@ -11324,8 +11417,14 @@ msgstr "VRS Min Ga"
 msgid "VRS Strength"
 msgstr "Neart VRS"
 
+msgid "VRS Render Region"
+msgstr "Réigiún Rindreála VRS"
+
 msgid "World Origin"
 msgstr "Bunús an Domhain"
+
+msgid "Camera Locked to Origin"
+msgstr "Ceamara Glasáilte go Bunús"
 
 msgid "Primary Interface"
 msgstr "Comhéadan Bunscoile"

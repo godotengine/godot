@@ -1733,7 +1733,7 @@ void LineEdit::_validate_caret_can_draw() {
 		draw_caret = true;
 		caret_blink_timer = 0.0;
 	}
-	caret_can_draw = editing && (window_has_focus || (menu && menu->has_focus())) && (has_focus() || caret_force_displayed);
+	caret_can_draw = (caret_force_displayed && !is_part_of_edited_scene()) || (editing && (window_has_focus || (menu && menu->has_focus())) && has_focus());
 }
 
 void LineEdit::delete_char() {
@@ -2016,7 +2016,7 @@ void LineEdit::insert_text_at_caret(String p_text) {
 		}
 	}
 	String pre = text.substr(0, caret_column);
-	String post = text.substr(caret_column, text.length() - caret_column);
+	String post = text.substr(caret_column);
 	text = pre + p_text + post;
 	_shape();
 	TextServer::Direction dir = TS->shaped_text_get_dominant_direction_in_range(text_rid, caret_column, caret_column + p_text.length());
@@ -2611,7 +2611,7 @@ void LineEdit::_shape() {
 		t = s.repeat(text.length() + ime_text.length());
 	} else {
 		if (!ime_text.is_empty()) {
-			t = text.substr(0, caret_column) + ime_text + text.substr(caret_column, text.length());
+			t = text.substr(0, caret_column) + ime_text + text.substr(caret_column);
 		} else {
 			t = text;
 		}
@@ -2707,7 +2707,6 @@ Key LineEdit::_get_menu_action_accelerator(const String &p_action) {
 void LineEdit::_generate_context_menu() {
 	menu = memnew(PopupMenu);
 	add_child(menu, false, INTERNAL_MODE_FRONT);
-	menu->force_parent_owned();
 
 	menu_dir = memnew(PopupMenu);
 	menu_dir->add_radio_check_item(ETR("Same as Layout Direction"), MENU_DIR_INHERITED);

@@ -1051,7 +1051,7 @@ void EditorThemeManager::_populate_standard_styles(const Ref<EditorTheme> &p_the
 
 			Ref<StyleBoxFlat> style_itemlist_cursor = p_config.base_style->duplicate();
 			style_itemlist_cursor->set_draw_center(false);
-			style_itemlist_cursor->set_border_width_all(p_config.border_width);
+			style_itemlist_cursor->set_border_width_all(MAX(1 * EDSCALE, p_config.border_width));
 			style_itemlist_cursor->set_border_color(p_config.highlight_color);
 
 			Ref<StyleBoxFlat> style_itemlist_hover = style_tree_selected->duplicate();

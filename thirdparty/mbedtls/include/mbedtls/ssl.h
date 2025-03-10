@@ -1724,7 +1724,16 @@ struct mbedtls_ssl_context {
     int MBEDTLS_PRIVATE(early_data_state);
 #endif
 
-    unsigned MBEDTLS_PRIVATE(badmac_seen);       /*!< records with a bad MAC received    */
+    /** Multipurpose field.
+     *
+     * - DTLS: records with a bad MAC received.
+     * - TLS: accumulated length of handshake fragments (up to \c in_hslen).
+     *
+     * This field is multipurpose in order to preserve the ABI in the
+     * Mbed TLS 3.6 LTS branch. Until 3.6.2, it was only used in DTLS
+     * and called `badmac_seen`.
+     */
+    unsigned MBEDTLS_PRIVATE(badmac_seen_or_in_hsfraglen);
 
 #if defined(MBEDTLS_X509_CRT_PARSE_C)
     /** Callback to customize X.509 certificate chain verification          */

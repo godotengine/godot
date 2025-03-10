@@ -42,7 +42,7 @@ msgstr ""
 "Project-Id-Version: Ukrainian (Godot Engine)\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-02-18 07:42+0000\n"
+"PO-Revision-Date: 2025-02-21 19:26+0000\n"
 "Last-Translator: Максим Горпиніч <maksimgorpinic2005a@gmail.com>\n"
 "Language-Team: Ukrainian <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/uk/>\n"
@@ -843,9 +843,6 @@ msgstr "Час очікування запиту минув"
 msgid "Sync Breakpoints"
 msgstr "Точки розриву синхронізації"
 
-msgid "Default Feature Profile"
-msgstr "Типовий профіль можливостей"
-
 msgid "Label"
 msgstr "Мітка"
 
@@ -1388,6 +1385,12 @@ msgstr "Автоматичне перезавантаження та аналі�
 
 msgid "Open Dominant Script on Scene Change"
 msgstr "Відкрийте домінуючий сценарій під час зміни сцени"
+
+msgid "Documentation"
+msgstr "Документація"
+
+msgid "Enable Tooltips"
+msgstr "Увімкнути підказки"
 
 msgid "Script List"
 msgstr "Список скриптів"
@@ -2055,9 +2058,6 @@ msgstr "Особливий колір"
 msgid "Particle Color"
 msgstr "Колір частинок"
 
-msgid "Editor Settings Advanced Mode"
-msgstr "Розширений режим налаштувань редактора"
-
 msgid "Custom Template"
 msgstr "Нетиповий шаблон"
 
@@ -2081,9 +2081,6 @@ msgstr "S3TC BPTC"
 
 msgid "ETC2 ASTC"
 msgstr "ETC2 ASTC"
-
-msgid "Export Template Download Directory"
-msgstr "Експортувати каталог завантажень шаблонів"
 
 msgid "Export Path"
 msgstr "Шлях експорту"
@@ -2713,9 +2710,6 @@ msgstr "Кількість кадрів"
 msgid "Duration"
 msgstr "Тривалість"
 
-msgid "Project Settings Advanced Mode"
-msgstr "Параметри проекту Розширений режим"
-
 msgid "Main Run Args"
 msgstr "Аргументи основного запуску"
 
@@ -2757,15 +2751,6 @@ msgstr "Назва додатка"
 
 msgid "Autoload on Startup"
 msgstr "Автозавантаження при запуску"
-
-msgid "Use Favorites Root Selection"
-msgstr "Кадрувати вибране"
-
-msgid "Script Setup Use Script Templates"
-msgstr "Налаштування сценарію Використовуйте шаблони сценаріїв"
-
-msgid "Script Setup Templates Dictionary"
-msgstr "Словник шаблонів налаштування сценаріїв"
 
 msgid "Flush stdout on Print"
 msgstr "Очистити stdout під час друку"
@@ -3841,6 +3826,9 @@ msgstr "Усунення шуму"
 msgid "Denoiser"
 msgstr "Деноайзер"
 
+msgid "Enable TLS V 1"
+msgstr "Увімкніть TLS V1"
+
 msgid "BPM"
 msgstr "BPM"
 
@@ -3882,9 +3870,6 @@ msgstr "Vulkan VRS"
 
 msgid "Min Radius"
 msgstr "Мінімальний радіус"
-
-msgid "Spawnable Scenes"
-msgstr "Сцени, що створюються"
 
 msgid "Spawn Path"
 msgstr "Шлях нересту"
@@ -10767,6 +10752,9 @@ msgstr "Відтягування часу (мс)"
 
 msgid "Surround"
 msgstr "Об'ємний 7.1"
+
+msgid "Mix Rate Mode"
+msgstr "Режим швидкості змішування"
 
 msgid "Enable Input"
 msgstr "Увімкнути введення"

@@ -399,6 +399,9 @@ int Voxelizer::get_bake_steps(Ref<Mesh> &p_mesh) const {
 Voxelizer::BakeResult Voxelizer::plot_mesh(const Transform3D &p_xform, Ref<Mesh> &p_mesh, const Vector<Ref<Material>> &p_materials, const Ref<Material> &p_override_material, BakeStepFunc p_bake_step_func) {
 	ERR_FAIL_COND_V_MSG(!p_xform.is_finite(), BAKE_RESULT_INVALID_PARAMETER, "Invalid mesh bake transform.");
 
+	// Precalculate for transforming vertex normals
+	Basis normal_xform = p_xform.basis.inverse().transposed();
+
 	int bake_total = get_bake_steps(p_mesh), bake_current = 0;
 
 	for (int i = 0; i < p_mesh->get_surface_count(); i++) {
@@ -463,7 +466,7 @@ Voxelizer::BakeResult Voxelizer::plot_mesh(const Transform3D &p_xform, Ref<Mesh>
 
 				if (nr) {
 					for (int k = 0; k < 3; k++) {
-						normal[k] = nr[ir[j * 3 + k]];
+						normal[k] = normal_xform.xform(nr[ir[j * 3 + k]]).normalized();
 					}
 				}
 

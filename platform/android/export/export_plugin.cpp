@@ -396,28 +396,27 @@ void EditorExportPlatformAndroid::_check_for_changes_poll_thread(void *ud) {
 							// its format is "[property]: [value]" so changed it as like build.prop
 							String p = props[j];
 							p = p.replace("]: ", "=");
-							p = p.replace("[", "");
-							p = p.replace("]", "");
+							p = p.remove_chars("[]");
 
 							if (p.begins_with("ro.product.model=")) {
-								device = p.get_slice("=", 1).strip_edges();
+								device = p.get_slicec('=', 1).strip_edges();
 							} else if (p.begins_with("ro.product.brand=")) {
-								vendor = p.get_slice("=", 1).strip_edges().capitalize();
+								vendor = p.get_slicec('=', 1).strip_edges().capitalize();
 							} else if (p.begins_with("ro.build.display.id=")) {
-								d.description += "Build: " + p.get_slice("=", 1).strip_edges() + "\n";
+								d.description += "Build: " + p.get_slicec('=', 1).strip_edges() + "\n";
 							} else if (p.begins_with("ro.build.version.release=")) {
-								d.description += "Release: " + p.get_slice("=", 1).strip_edges() + "\n";
+								d.description += "Release: " + p.get_slicec('=', 1).strip_edges() + "\n";
 							} else if (p.begins_with("ro.build.version.sdk=")) {
-								d.api_level = p.get_slice("=", 1).to_int();
+								d.api_level = p.get_slicec('=', 1).to_int();
 							} else if (p.begins_with("ro.product.cpu.abi=")) {
-								d.architecture = p.get_slice("=", 1).strip_edges();
+								d.architecture = p.get_slicec('=', 1).strip_edges();
 								d.description += "CPU: " + d.architecture + "\n";
 							} else if (p.begins_with("ro.product.manufacturer=")) {
-								d.description += "Manufacturer: " + p.get_slice("=", 1).strip_edges() + "\n";
+								d.description += "Manufacturer: " + p.get_slicec('=', 1).strip_edges() + "\n";
 							} else if (p.begins_with("ro.board.platform=")) {
-								d.description += "Chipset: " + p.get_slice("=", 1).strip_edges() + "\n";
+								d.description += "Chipset: " + p.get_slicec('=', 1).strip_edges() + "\n";
 							} else if (p.begins_with("ro.opengles.version=")) {
-								uint32_t opengl = p.get_slice("=", 1).to_int();
+								uint32_t opengl = p.get_slicec('=', 1).to_int();
 								d.description += "OpenGL: " + itos(opengl >> 16) + "." + itos((opengl >> 8) & 0xFF) + "." + itos((opengl) & 0xFF) + "\n";
 							}
 						}
@@ -856,9 +855,9 @@ bool EditorExportPlatformAndroid::_has_manage_external_storage_permission(const 
 }
 
 bool EditorExportPlatformAndroid::_uses_vulkan() {
-	String current_renderer = GLOBAL_GET("rendering/renderer/rendering_method.mobile");
-	bool uses_vulkan = (current_renderer == "forward_plus" || current_renderer == "mobile") && GLOBAL_GET("rendering/rendering_device/driver.android") == "vulkan";
-	return uses_vulkan;
+	String rendering_method = GLOBAL_GET("rendering/renderer/rendering_method.mobile");
+	String rendering_driver = GLOBAL_GET("rendering/rendering_device/driver.android");
+	return (rendering_method == "forward_plus" || rendering_method == "mobile") && rendering_driver == "vulkan";
 }
 
 void EditorExportPlatformAndroid::_notification(int p_what) {
@@ -1629,7 +1628,7 @@ void EditorExportPlatformAndroid::_fix_resources(const Ref<EditorExportPreset> &
 				str = get_project_name(package_name);
 
 			} else {
-				String lang = str.substr(str.rfind_char('-') + 1, str.length()).replace("-", "_");
+				String lang = str.substr(str.rfind_char('-') + 1).replace("-", "_");
 				if (appnames.has(lang)) {
 					str = appnames[lang];
 				} else {
@@ -2065,6 +2064,9 @@ bool EditorExportPlatformAndroid::get_export_option_visibility(const EditorExpor
 		return false;
 	}
 
+	if (p_option == "dotnet/android_use_linux_bionic") {
+		return advanced_options_enabled;
+	}
 	return true;
 }
 

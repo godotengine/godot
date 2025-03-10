@@ -91,6 +91,8 @@ static Ref<ImageTexture> generate_icon(int p_index) {
 
 	Error err = ImageLoaderSVG::create_image_from_string(img, default_theme_icons_sources[p_index], scale, upsample, HashMap<Color, Color>());
 	ERR_FAIL_COND_V_MSG(err != OK, Ref<ImageTexture>(), "Failed generating icon, unsupported or invalid SVG data in default theme.");
+
+	img->fix_alpha_edges();
 #else
 	// If the SVG module is disabled, we can't really display the UI well, but at least we won't crash.
 	// 16 pixels is used as it's the most common base size for Godot icons.
@@ -326,6 +328,9 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_constant("check_v_offset", "CheckBox", 0);
 	theme->set_constant("outline_size", "CheckBox", 0);
 
+	theme->set_color("checkbox_checked_color", "CheckBox", Color(1, 1, 1));
+	theme->set_color("checkbox_unchecked_color", "CheckBox", Color(1, 1, 1));
+
 	// CheckButton
 
 	Ref<StyleBox> cb_empty = memnew(StyleBoxEmpty);
@@ -362,6 +367,9 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_constant("h_separation", "CheckButton", Math::round(4 * scale));
 	theme->set_constant("check_v_offset", "CheckButton", 0);
 	theme->set_constant("outline_size", "CheckButton", 0);
+
+	theme->set_color("button_checked_color", "CheckButton", Color(1, 1, 1));
+	theme->set_color("button_unchecked_color", "CheckButton", Color(1, 1, 1));
 
 	// Button variations
 

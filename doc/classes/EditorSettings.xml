@@ -1117,6 +1117,10 @@
 		<member name="network/tls/editor_tls_certificates" type="String" setter="" getter="">
 			The TLS certificate bundle to use for HTTP requests made within the editor (e.g. from the AssetLib tab). If left empty, the [url=https://github.com/godotengine/godot/blob/master/thirdparty/certs/ca-certificates.crt]included Mozilla certificate bundle[/url] will be used.
 		</member>
+		<member name="network/tls/enable_tls_v1.3" type="bool" setter="" getter="">
+			If [code]true[/code], enable TLSv1.3 negotiation.
+			[b]Note:[/b] Only supported when using Mbed TLS 3.0 or later (Linux distribution packages may be compiled against older system Mbed TLS packages), otherwise the maximum supported TLS version is always TLSv1.2.
+		</member>
 		<member name="project_manager/default_renderer" type="String" setter="" getter="">
 			The renderer type that will be checked off by default when creating a new project. Accepted strings are "forward_plus", "mobile" or "gl_compatibility".
 		</member>
@@ -1243,6 +1247,10 @@
 		</member>
 		<member name="text_editor/behavior/files/convert_indent_on_save" type="bool" setter="" getter="">
 			If [code]true[/code], converts indentation to match the script editor's indentation settings when saving a script. See also [member text_editor/behavior/indent/type].
+		</member>
+		<member name="text_editor/behavior/files/drop_preload_resources_as_uid" type="bool" setter="" getter="">
+			If [code]true[/code], when dropping a [Resource] file to script editor while [kbd]Ctrl[/kbd] is held, the resource will be preloaded with a UID. If [code]false[/code], the resource will be preloaded with a path.
+			When you hold [kbd]Ctrl+Shift[/kbd], the behavior is reversed.
 		</member>
 		<member name="text_editor/behavior/files/open_dominant_script_on_scene_change" type="bool" setter="" getter="">
 			If [code]true[/code], opening a scene automatically opens the script attached to the root node, or the topmost node if the root has no script.

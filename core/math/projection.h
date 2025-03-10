@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef PROJECTION_H
-#define PROJECTION_H
+#pragma once
 
 #include "core/math/vector3.h"
 #include "core/math/vector4.h"
@@ -133,6 +132,8 @@ struct [[nodiscard]] Projection {
 
 	void flip_y();
 
+	bool is_same(const Projection &p_cam) const;
+
 	bool operator==(const Projection &p_cam) const {
 		for (uint32_t i = 0; i < 4; i++) {
 			for (uint32_t j = 0; j < 4; j++) {
@@ -164,5 +165,3 @@ Vector3 Projection::xform(const Vector3 &p_vec3) const {
 	real_t w = columns[0][3] * p_vec3.x + columns[1][3] * p_vec3.y + columns[2][3] * p_vec3.z + columns[3][3];
 	return ret / w;
 }
-
-#endif // PROJECTION_H

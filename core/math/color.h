@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef COLOR_H
-#define COLOR_H
+#pragma once
 
 #include "core/math/math_funcs.h"
 
@@ -94,6 +93,7 @@ struct [[nodiscard]] Color {
 	void operator/=(float p_scalar);
 
 	bool is_equal_approx(const Color &p_color) const;
+	bool is_same(const Color &p_color) const;
 
 	Color clamp(const Color &p_min = Color(0, 0, 0, 0), const Color &p_max = Color(1, 1, 1, 1)) const;
 	void invert();
@@ -301,5 +301,3 @@ bool Color::operator<(const Color &p_color) const {
 _FORCE_INLINE_ Color operator*(float p_scalar, const Color &p_color) {
 	return p_color * p_scalar;
 }
-
-#endif // COLOR_H

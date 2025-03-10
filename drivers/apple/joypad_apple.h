@@ -28,6 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#pragma once
+
 #include "core/input/input.h"
 
 #define Key _QKey
@@ -43,6 +45,7 @@ struct GameController {
 	RumbleContext *rumble_context API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0)) = nil;
 	NSInteger ff_effect_timestamp = 0;
 	bool force_feedback = false;
+	bool nintendo_button_layout = false;
 
 	GameController(int p_joy_id, GCController *p_controller);
 	~GameController();

@@ -106,7 +106,7 @@ void InputMap::get_argument_options(const StringName &p_function, int p_idx, Lis
 				continue;
 			}
 
-			String name = pi.name.substr(pi.name.find_char('/') + 1, pi.name.length());
+			String name = pi.name.substr(pi.name.find_char('/') + 1);
 			r_options->push_back(name.quote());
 		}
 	}
@@ -304,7 +304,7 @@ void InputMap::load_from_project_settings() {
 			continue;
 		}
 
-		String name = pi.name.substr(pi.name.find_char('/') + 1, pi.name.length());
+		String name = pi.name.substr(pi.name.find_char('/') + 1);
 
 		Dictionary action = GLOBAL_GET(pi.name);
 		float deadzone = action.has("deadzone") ? (float)action["deadzone"] : DEFAULT_DEADZONE;
@@ -402,12 +402,13 @@ static const _BuiltinActionDisplayName _builtin_action_display_names[] = {
     { "ui_filedialog_show_hidden",                     TTRC("Show Hidden") },
     { "ui_swap_input_direction ",                      TTRC("Swap Input Direction") },
     { "ui_unicode_start",                              TTRC("Start Unicode Character Input") },
+    { "ui_toggle_licenses_dialog",                     TTRC("Toggle License Notices") },
     { "",                                              ""}
 	/* clang-format on */
 };
 
 String InputMap::get_builtin_display_name(const String &p_name) const {
-	int len = sizeof(_builtin_action_display_names) / sizeof(_BuiltinActionDisplayName);
+	constexpr int len = std::size(_builtin_action_display_names);
 
 	for (int i = 0; i < len; i++) {
 		if (_builtin_action_display_names[i].name == p_name) {
@@ -788,6 +789,12 @@ const HashMap<String, List<Ref<InputEvent>>> &InputMap::get_builtins() {
 	inputs = List<Ref<InputEvent>>();
 	inputs.push_back(InputEventKey::create_reference(Key::QUOTELEFT | KeyModifierMask::CMD_OR_CTRL));
 	default_builtin_cache.insert("ui_swap_input_direction", inputs);
+
+	// ///// UI Misc Shortcuts /////
+
+	inputs = List<Ref<InputEvent>>();
+	inputs.push_back(InputEventKey::create_reference(Key::L | KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT));
+	default_builtin_cache.insert("ui_toggle_licenses_dialog", inputs);
 
 	return default_builtin_cache;
 }

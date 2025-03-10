@@ -974,9 +974,6 @@ msgstr "Время ожидания запроса"
 msgid "Sync Breakpoints"
 msgstr "Синхронизация точек останова"
 
-msgid "Default Feature Profile"
-msgstr "Профиль возможностей по умолчанию"
-
 msgid "Label"
 msgstr "Подпись"
 
@@ -2819,9 +2816,6 @@ msgstr "Имя модуля"
 msgid "Autoload on Startup"
 msgstr "Автозагрузка системы управления версиями при запуске"
 
-msgid "Use Favorites Root Selection"
-msgstr "Использовать закладки выбора корневого узла"
-
 msgid "Flush stdout on Print"
 msgstr "Сбрасывать буфер выходного потока при печати каждой строки"
 
@@ -3796,9 +3790,6 @@ msgstr "Vulkan VRS"
 
 msgid "Min Radius"
 msgstr "Мин. радиус"
-
-msgid "Spawnable Scenes"
-msgstr "Доступные для порождения сцены"
 
 msgid "Spawn Path"
 msgstr "Путь порождения"

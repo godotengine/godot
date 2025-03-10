@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  xr_body_modifier_3d.h                                                 */
+/*  display_server.compat.inc                                             */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,68 +28,19 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef XR_BODY_MODIFIER_3D_H
-#define XR_BODY_MODIFIER_3D_H
+#ifndef DISABLE_DEPRECATED
 
-#include "scene/3d/skeleton_modifier_3d.h"
-#include "servers/xr/xr_body_tracker.h"
+Error DisplayServer::_file_dialog_show_bind_compat_98194(const String &p_title, const String &p_current_directory, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const Callable &p_callback) {
+	return file_dialog_show(p_title, p_current_directory, p_filename, p_show_hidden, p_mode, p_filters, p_callback, MAIN_WINDOW_ID);
+}
 
-class Skeleton3D;
+Error DisplayServer::_file_dialog_with_options_show_bind_compat_98194(const String &p_title, const String &p_current_directory, const String &p_root, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const TypedArray<Dictionary> &p_options, const Callable &p_callback) {
+	return file_dialog_with_options_show(p_title, p_current_directory, p_root, p_filename, p_show_hidden, p_mode, p_filters, p_options, p_callback, MAIN_WINDOW_ID);
+}
 
-/**
-	The XRBodyModifier3D node drives a body skeleton using body tracking
-	data from an XRBodyTracker instance.
- */
+void DisplayServer::_bind_compatibility_methods() {
+	ClassDB::bind_compatibility_method(D_METHOD("file_dialog_show", "title", "current_directory", "filename", "show_hidden", "mode", "filters", "callback"), &DisplayServer::_file_dialog_show_bind_compat_98194);
+	ClassDB::bind_compatibility_method(D_METHOD("file_dialog_with_options_show", "title", "current_directory", "root", "filename", "show_hidden", "mode", "filters", "options", "callback"), &DisplayServer::_file_dialog_with_options_show_bind_compat_98194);
+}
 
-class XRBodyModifier3D : public SkeletonModifier3D {
-	GDCLASS(XRBodyModifier3D, SkeletonModifier3D);
-
-public:
-	enum BodyUpdate {
-		BODY_UPDATE_UPPER_BODY = 1,
-		BODY_UPDATE_LOWER_BODY = 2,
-		BODY_UPDATE_HANDS = 4,
-	};
-
-	enum BoneUpdate {
-		BONE_UPDATE_FULL,
-		BONE_UPDATE_ROTATION_ONLY,
-		BONE_UPDATE_MAX
-	};
-
-	void set_body_tracker(const StringName &p_tracker_name);
-	StringName get_body_tracker() const;
-
-	void set_body_update(BitField<BodyUpdate> p_body_update);
-	BitField<BodyUpdate> get_body_update() const;
-
-	void set_bone_update(BoneUpdate p_bone_update);
-	BoneUpdate get_bone_update() const;
-
-	void _notification(int p_what);
-
-protected:
-	static void _bind_methods();
-
-	virtual void _skeleton_changed(Skeleton3D *p_old, Skeleton3D *p_new) override;
-	virtual void _process_modification() override;
-
-private:
-	struct JointData {
-		int bone = -1;
-		int parent_joint = -1;
-	};
-
-	StringName tracker_name = "/user/body_tracker";
-	BitField<BodyUpdate> body_update = BODY_UPDATE_UPPER_BODY | BODY_UPDATE_LOWER_BODY | BODY_UPDATE_HANDS;
-	BoneUpdate bone_update = BONE_UPDATE_FULL;
-	JointData joints[XRBodyTracker::JOINT_MAX];
-
-	void _get_joint_data();
-	void _tracker_changed(const StringName &p_tracker_name, XRServer::TrackerType p_tracker_type);
-};
-
-VARIANT_BITFIELD_CAST(XRBodyModifier3D::BodyUpdate)
-VARIANT_ENUM_CAST(XRBodyModifier3D::BoneUpdate)
-
-#endif // XR_BODY_MODIFIER_3D_H
+#endif

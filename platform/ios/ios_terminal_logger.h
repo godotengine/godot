@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef IOS_TERMINAL_LOGGER_H
-#define IOS_TERMINAL_LOGGER_H
+#pragma once
 
 #ifdef IOS_ENABLED
 
@@ -41,5 +40,3 @@ public:
 };
 
 #endif // IOS_ENABLED
-
-#endif // IOS_TERMINAL_LOGGER_H

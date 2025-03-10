@@ -447,8 +447,8 @@ void EditorFileSystem::_scan_filesystem() {
 					name = cpath.path_join(name);
 
 					FileCache fc;
-					fc.type = split[1].get_slice("/", 0);
-					fc.resource_script_class = split[1].get_slice("/", 1);
+					fc.type = split[1].get_slicec('/', 0);
+					fc.resource_script_class = split[1].get_slicec('/', 1);
 					fc.uid = split[2].to_int();
 					fc.modification_time = split[3].to_int();
 					fc.import_modification_time = split[4].to_int();
@@ -1846,7 +1846,7 @@ bool EditorFileSystem::_find_file(const String &p_file, EditorFileSystemDirector
 	if (!f.begins_with("res://")) {
 		return false;
 	}
-	f = f.substr(6, f.length());
+	f = f.substr(6);
 	f = f.replace("\\", "/");
 
 	Vector<String> path = f.split("/");
@@ -1972,7 +1972,7 @@ EditorFileSystemDirectory *EditorFileSystem::get_filesystem_path(const String &p
 		return nullptr;
 	}
 
-	f = f.substr(6, f.length());
+	f = f.substr(6);
 	f = f.replace("\\", "/");
 	if (f.is_empty()) {
 		return filesystem;

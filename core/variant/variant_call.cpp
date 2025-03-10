@@ -657,22 +657,28 @@ static _FORCE_INLINE_ void vc_ptrcall(void (*method)(T *, P...), void *p_base, c
 		}                                                                                                                                                         \
 	};
 
-#define VARCALL_PACKED_GETTER(m_packed_type, m_return_type)                                       \
-	static m_return_type func_##m_packed_type##_get(m_packed_type *p_instance, int64_t p_index) { \
-		return p_instance->get(p_index);                                                          \
+#define VARCALL_ARRAY_GETTER_SETTER(m_packed_type, m_type)                                                      \
+	static m_type func_##m_packed_type##_get(m_packed_type *p_instance, int64_t p_index) {                      \
+		ERR_FAIL_INDEX_V(p_index, p_instance->size(), m_type());                                                \
+		return p_instance->get(p_index);                                                                        \
+	}                                                                                                           \
+	static void func_##m_packed_type##_set(m_packed_type *p_instance, int64_t p_index, const m_type &p_value) { \
+		ERR_FAIL_INDEX(p_index, p_instance->size());                                                            \
+		p_instance->set(p_index, p_value);                                                                      \
 	}
 
 struct _VariantCall {
-	VARCALL_PACKED_GETTER(PackedByteArray, uint8_t)
-	VARCALL_PACKED_GETTER(PackedColorArray, Color)
-	VARCALL_PACKED_GETTER(PackedFloat32Array, float)
-	VARCALL_PACKED_GETTER(PackedFloat64Array, double)
-	VARCALL_PACKED_GETTER(PackedInt32Array, int32_t)
-	VARCALL_PACKED_GETTER(PackedInt64Array, int64_t)
-	VARCALL_PACKED_GETTER(PackedStringArray, String)
-	VARCALL_PACKED_GETTER(PackedVector2Array, Vector2)
-	VARCALL_PACKED_GETTER(PackedVector3Array, Vector3)
-	VARCALL_PACKED_GETTER(PackedVector4Array, Vector4)
+	VARCALL_ARRAY_GETTER_SETTER(PackedByteArray, uint8_t)
+	VARCALL_ARRAY_GETTER_SETTER(PackedColorArray, Color)
+	VARCALL_ARRAY_GETTER_SETTER(PackedFloat32Array, float)
+	VARCALL_ARRAY_GETTER_SETTER(PackedFloat64Array, double)
+	VARCALL_ARRAY_GETTER_SETTER(PackedInt32Array, int32_t)
+	VARCALL_ARRAY_GETTER_SETTER(PackedInt64Array, int64_t)
+	VARCALL_ARRAY_GETTER_SETTER(PackedStringArray, String)
+	VARCALL_ARRAY_GETTER_SETTER(PackedVector2Array, Vector2)
+	VARCALL_ARRAY_GETTER_SETTER(PackedVector3Array, Vector3)
+	VARCALL_ARRAY_GETTER_SETTER(PackedVector4Array, Vector4)
+	VARCALL_ARRAY_GETTER_SETTER(Array, Variant)
 
 	static String func_PackedByteArray_get_string_from_ascii(PackedByteArray *p_instance) {
 		String s;
@@ -1725,6 +1731,8 @@ static void _register_variant_builtin_methods_string() {
 	bind_string_method(format, sarray("values", "placeholder"), varray("{_}"));
 	bind_string_methodv(replace, static_cast<String (String::*)(const String &, const String &) const>(&String::replace), sarray("what", "forwhat"), varray());
 	bind_string_methodv(replacen, static_cast<String (String::*)(const String &, const String &) const>(&String::replacen), sarray("what", "forwhat"), varray());
+	bind_string_method(remove_char, sarray("what"), varray());
+	bind_string_methodv(remove_chars, static_cast<String (String::*)(const String &) const>(&String::remove_chars), sarray("chars"), varray());
 	bind_string_method(repeat, sarray("count"), varray());
 	bind_string_method(reverse, sarray(), varray());
 	bind_string_method(insert, sarray("position", "what"), varray());
@@ -2354,8 +2362,8 @@ static void _register_variant_builtin_methods_array() {
 	bind_method(Array, clear, sarray(), varray());
 	bind_method(Array, hash, sarray(), varray());
 	bind_method(Array, assign, sarray("array"), varray());
-	bind_method(Array, get, sarray("index"), varray());
-	bind_method(Array, set, sarray("index", "value"), varray());
+	bind_function(Array, get, _VariantCall::func_Array_get, sarray("index"), varray());
+	bind_functionnc(Array, set, _VariantCall::func_Array_set, sarray("index", "value"), varray());
 	bind_method(Array, push_back, sarray("value"), varray());
 	bind_method(Array, push_front, sarray("value"), varray());
 	bind_method(Array, append, sarray("value"), varray());
@@ -2400,7 +2408,7 @@ static void _register_variant_builtin_methods_array() {
 	bind_method(Array, make_read_only, sarray(), varray());
 	bind_method(Array, is_read_only, sarray(), varray());
 
-	/* Packed*Array get (see VARCALL_PACKED_GETTER macro) */
+	/* Packed*Array get/set (see VARCALL_ARRAY_GETTER_SETTER macro) */
 	bind_function(PackedByteArray, get, _VariantCall::func_PackedByteArray_get, sarray("index"), varray());
 	bind_function(PackedColorArray, get, _VariantCall::func_PackedColorArray_get, sarray("index"), varray());
 	bind_function(PackedFloat32Array, get, _VariantCall::func_PackedFloat32Array_get, sarray("index"), varray());
@@ -2412,10 +2420,20 @@ static void _register_variant_builtin_methods_array() {
 	bind_function(PackedVector3Array, get, _VariantCall::func_PackedVector3Array_get, sarray("index"), varray());
 	bind_function(PackedVector4Array, get, _VariantCall::func_PackedVector4Array_get, sarray("index"), varray());
 
+	bind_functionnc(PackedByteArray, set, _VariantCall::func_PackedByteArray_set, sarray("index", "value"), varray());
+	bind_functionnc(PackedColorArray, set, _VariantCall::func_PackedColorArray_set, sarray("index", "value"), varray());
+	bind_functionnc(PackedFloat32Array, set, _VariantCall::func_PackedFloat32Array_set, sarray("index", "value"), varray());
+	bind_functionnc(PackedFloat64Array, set, _VariantCall::func_PackedFloat64Array_set, sarray("index", "value"), varray());
+	bind_functionnc(PackedInt32Array, set, _VariantCall::func_PackedInt32Array_set, sarray("index", "value"), varray());
+	bind_functionnc(PackedInt64Array, set, _VariantCall::func_PackedInt64Array_set, sarray("index", "value"), varray());
+	bind_functionnc(PackedStringArray, set, _VariantCall::func_PackedStringArray_set, sarray("index", "value"), varray());
+	bind_functionnc(PackedVector2Array, set, _VariantCall::func_PackedVector2Array_set, sarray("index", "value"), varray());
+	bind_functionnc(PackedVector3Array, set, _VariantCall::func_PackedVector3Array_set, sarray("index", "value"), varray());
+	bind_functionnc(PackedVector4Array, set, _VariantCall::func_PackedVector4Array_set, sarray("index", "value"), varray());
+
 	/* Byte Array */
 	bind_method(PackedByteArray, size, sarray(), varray());
 	bind_method(PackedByteArray, is_empty, sarray(), varray());
-	bind_method(PackedByteArray, set, sarray("index", "value"), varray());
 	bind_method(PackedByteArray, push_back, sarray("value"), varray());
 	bind_method(PackedByteArray, append, sarray("value"), varray());
 	bind_method(PackedByteArray, append_array, sarray("array"), varray());
@@ -2433,6 +2451,7 @@ static void _register_variant_builtin_methods_array() {
 	bind_method(PackedByteArray, find, sarray("value", "from"), varray(0));
 	bind_method(PackedByteArray, rfind, sarray("value", "from"), varray(-1));
 	bind_method(PackedByteArray, count, sarray("value"), varray());
+	bind_method(PackedByteArray, erase, sarray("value"), varray());
 
 	bind_function(PackedByteArray, get_string_from_ascii, _VariantCall::func_PackedByteArray_get_string_from_ascii, sarray(), varray());
 	bind_function(PackedByteArray, get_string_from_utf8, _VariantCall::func_PackedByteArray_get_string_from_utf8, sarray(), varray());
@@ -2481,7 +2500,6 @@ static void _register_variant_builtin_methods_array() {
 
 	bind_method(PackedInt32Array, size, sarray(), varray());
 	bind_method(PackedInt32Array, is_empty, sarray(), varray());
-	bind_method(PackedInt32Array, set, sarray("index", "value"), varray());
 	bind_method(PackedInt32Array, push_back, sarray("value"), varray());
 	bind_method(PackedInt32Array, append, sarray("value"), varray());
 	bind_method(PackedInt32Array, append_array, sarray("array"), varray());
@@ -2500,12 +2518,12 @@ static void _register_variant_builtin_methods_array() {
 	bind_method(PackedInt32Array, find, sarray("value", "from"), varray(0));
 	bind_method(PackedInt32Array, rfind, sarray("value", "from"), varray(-1));
 	bind_method(PackedInt32Array, count, sarray("value"), varray());
+	bind_method(PackedInt32Array, erase, sarray("value"), varray());
 
 	/* Int64 Array */
 
 	bind_method(PackedInt64Array, size, sarray(), varray());
 	bind_method(PackedInt64Array, is_empty, sarray(), varray());
-	bind_method(PackedInt64Array, set, sarray("index", "value"), varray());
 	bind_method(PackedInt64Array, push_back, sarray("value"), varray());
 	bind_method(PackedInt64Array, append, sarray("value"), varray());
 	bind_method(PackedInt64Array, append_array, sarray("array"), varray());
@@ -2524,12 +2542,12 @@ static void _register_variant_builtin_methods_array() {
 	bind_method(PackedInt64Array, find, sarray("value", "from"), varray(0));
 	bind_method(PackedInt64Array, rfind, sarray("value", "from"), varray(-1));
 	bind_method(PackedInt64Array, count, sarray("value"), varray());
+	bind_method(PackedInt64Array, erase, sarray("value"), varray());
 
 	/* Float32 Array */
 
 	bind_method(PackedFloat32Array, size, sarray(), varray());
 	bind_method(PackedFloat32Array, is_empty, sarray(), varray());
-	bind_method(PackedFloat32Array, set, sarray("index", "value"), varray());
 	bind_method(PackedFloat32Array, push_back, sarray("value"), varray());
 	bind_method(PackedFloat32Array, append, sarray("value"), varray());
 	bind_method(PackedFloat32Array, append_array, sarray("array"), varray());
@@ -2548,12 +2566,12 @@ static void _register_variant_builtin_methods_array() {
 	bind_method(PackedFloat32Array, find, sarray("value", "from"), varray(0));
 	bind_method(PackedFloat32Array, rfind, sarray("value", "from"), varray(-1));
 	bind_method(PackedFloat32Array, count, sarray("value"), varray());
+	bind_method(PackedFloat32Array, erase, sarray("value"), varray());
 
 	/* Float64 Array */
 
 	bind_method(PackedFloat64Array, size, sarray(), varray());
 	bind_method(PackedFloat64Array, is_empty, sarray(), varray());
-	bind_method(PackedFloat64Array, set, sarray("index", "value"), varray());
 	bind_method(PackedFloat64Array, push_back, sarray("value"), varray());
 	bind_method(PackedFloat64Array, append, sarray("value"), varray());
 	bind_method(PackedFloat64Array, append_array, sarray("array"), varray());
@@ -2572,12 +2590,12 @@ static void _register_variant_builtin_methods_array() {
 	bind_method(PackedFloat64Array, find, sarray("value", "from"), varray(0));
 	bind_method(PackedFloat64Array, rfind, sarray("value", "from"), varray(-1));
 	bind_method(PackedFloat64Array, count, sarray("value"), varray());
+	bind_method(PackedFloat64Array, erase, sarray("value"), varray());
 
 	/* String Array */
 
 	bind_method(PackedStringArray, size, sarray(), varray());
 	bind_method(PackedStringArray, is_empty, sarray(), varray());
-	bind_method(PackedStringArray, set, sarray("index", "value"), varray());
 	bind_method(PackedStringArray, push_back, sarray("value"), varray());
 	bind_method(PackedStringArray, append, sarray("value"), varray());
 	bind_method(PackedStringArray, append_array, sarray("array"), varray());
@@ -2596,12 +2614,12 @@ static void _register_variant_builtin_methods_array() {
 	bind_method(PackedStringArray, find, sarray("value", "from"), varray(0));
 	bind_method(PackedStringArray, rfind, sarray("value", "from"), varray(-1));
 	bind_method(PackedStringArray, count, sarray("value"), varray());
+	bind_method(PackedStringArray, erase, sarray("value"), varray());
 
 	/* Vector2 Array */
 
 	bind_method(PackedVector2Array, size, sarray(), varray());
 	bind_method(PackedVector2Array, is_empty, sarray(), varray());
-	bind_method(PackedVector2Array, set, sarray("index", "value"), varray());
 	bind_method(PackedVector2Array, push_back, sarray("value"), varray());
 	bind_method(PackedVector2Array, append, sarray("value"), varray());
 	bind_method(PackedVector2Array, append_array, sarray("array"), varray());
@@ -2620,12 +2638,12 @@ static void _register_variant_builtin_methods_array() {
 	bind_method(PackedVector2Array, find, sarray("value", "from"), varray(0));
 	bind_method(PackedVector2Array, rfind, sarray("value", "from"), varray(-1));
 	bind_method(PackedVector2Array, count, sarray("value"), varray());
+	bind_method(PackedVector2Array, erase, sarray("value"), varray());
 
 	/* Vector3 Array */
 
 	bind_method(PackedVector3Array, size, sarray(), varray());
 	bind_method(PackedVector3Array, is_empty, sarray(), varray());
-	bind_method(PackedVector3Array, set, sarray("index", "value"), varray());
 	bind_method(PackedVector3Array, push_back, sarray("value"), varray());
 	bind_method(PackedVector3Array, append, sarray("value"), varray());
 	bind_method(PackedVector3Array, append_array, sarray("array"), varray());
@@ -2644,12 +2662,12 @@ static void _register_variant_builtin_methods_array() {
 	bind_method(PackedVector3Array, find, sarray("value", "from"), varray(0));
 	bind_method(PackedVector3Array, rfind, sarray("value", "from"), varray(-1));
 	bind_method(PackedVector3Array, count, sarray("value"), varray());
+	bind_method(PackedVector3Array, erase, sarray("value"), varray());
 
 	/* Color Array */
 
 	bind_method(PackedColorArray, size, sarray(), varray());
 	bind_method(PackedColorArray, is_empty, sarray(), varray());
-	bind_method(PackedColorArray, set, sarray("index", "value"), varray());
 	bind_method(PackedColorArray, push_back, sarray("value"), varray());
 	bind_method(PackedColorArray, append, sarray("value"), varray());
 	bind_method(PackedColorArray, append_array, sarray("array"), varray());
@@ -2668,12 +2686,12 @@ static void _register_variant_builtin_methods_array() {
 	bind_method(PackedColorArray, find, sarray("value", "from"), varray(0));
 	bind_method(PackedColorArray, rfind, sarray("value", "from"), varray(-1));
 	bind_method(PackedColorArray, count, sarray("value"), varray());
+	bind_method(PackedColorArray, erase, sarray("value"), varray());
 
 	/* Vector4 Array */
 
 	bind_method(PackedVector4Array, size, sarray(), varray());
 	bind_method(PackedVector4Array, is_empty, sarray(), varray());
-	bind_method(PackedVector4Array, set, sarray("index", "value"), varray());
 	bind_method(PackedVector4Array, push_back, sarray("value"), varray());
 	bind_method(PackedVector4Array, append, sarray("value"), varray());
 	bind_method(PackedVector4Array, append_array, sarray("array"), varray());
@@ -2692,6 +2710,7 @@ static void _register_variant_builtin_methods_array() {
 	bind_method(PackedVector4Array, find, sarray("value", "from"), varray(0));
 	bind_method(PackedVector4Array, rfind, sarray("value", "from"), varray(-1));
 	bind_method(PackedVector4Array, count, sarray("value"), varray());
+	bind_method(PackedVector4Array, erase, sarray("value"), varray());
 }
 
 static void _register_variant_builtin_constants() {

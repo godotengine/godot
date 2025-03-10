@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef PLANE_H
-#define PLANE_H
+#pragma once
 
 #include "core/math/vector3.h"
 
@@ -73,6 +72,7 @@ struct [[nodiscard]] Plane {
 
 	Plane operator-() const { return Plane(-normal, -d); }
 	bool is_equal_approx(const Plane &p_plane) const;
+	bool is_same(const Plane &p_plane) const;
 	bool is_equal_approx_any_side(const Plane &p_plane) const;
 	bool is_finite() const;
 
@@ -132,5 +132,3 @@ bool Plane::operator==(const Plane &p_plane) const {
 bool Plane::operator!=(const Plane &p_plane) const {
 	return normal != p_plane.normal || d != p_plane.d;
 }
-
-#endif // PLANE_H

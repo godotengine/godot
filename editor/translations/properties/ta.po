@@ -775,9 +775,6 @@ msgstr "நேரம் முடிந்தது"
 msgid "Sync Breakpoints"
 msgstr "பிரேக் பாயிண்ட்சை ஒத்திசைக்கவும்"
 
-msgid "Default Feature Profile"
-msgstr "இயல்புநிலை அம்ச சுயவிவரம்"
-
 msgid "Label"
 msgstr "சிட்டை"
 
@@ -2579,9 +2576,6 @@ msgstr "சொருகி பெயர்"
 msgid "Autoload on Startup"
 msgstr "தொடக்கத்தில் ஆட்டோலோட்"
 
-msgid "Use Favorites Root Selection"
-msgstr "பிடித்தவை ரூட் தேர்வைப் பயன்படுத்தவும்"
-
 msgid "Flush stdout on Print"
 msgstr "அச்சில் stdout ஐ பறிக்கவும்"
 
@@ -3511,9 +3505,6 @@ msgstr "எரிமலை Vs"
 
 msgid "Min Radius"
 msgstr "குறைந்தபட்ச ஆரம்"
-
-msgid "Spawnable Scenes"
-msgstr "உருவான காட்சிகள்"
 
 msgid "Spawn Path"
 msgstr "ச்பான் பாதை"

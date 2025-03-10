@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "display_server.h"
+#include "display_server.compat.inc"
 
 #include "core/input/input.h"
 #include "scene/resources/texture.h"
@@ -704,12 +705,12 @@ Error DisplayServer::dialog_input_text(String p_title, String p_description, Str
 	return ERR_UNAVAILABLE;
 }
 
-Error DisplayServer::file_dialog_show(const String &p_title, const String &p_current_directory, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const Callable &p_callback) {
+Error DisplayServer::file_dialog_show(const String &p_title, const String &p_current_directory, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const Callable &p_callback, WindowID p_window_id) {
 	WARN_PRINT("Native dialogs not supported by this display server.");
 	return ERR_UNAVAILABLE;
 }
 
-Error DisplayServer::file_dialog_with_options_show(const String &p_title, const String &p_current_directory, const String &p_root, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const TypedArray<Dictionary> &p_options, const Callable &p_callback) {
+Error DisplayServer::file_dialog_with_options_show(const String &p_title, const String &p_current_directory, const String &p_root, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const TypedArray<Dictionary> &p_options, const Callable &p_callback, WindowID p_window_id) {
 	WARN_PRINT("Native dialogs not supported by this display server.");
 	return ERR_UNAVAILABLE;
 }
@@ -1040,8 +1041,8 @@ void DisplayServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("dialog_show", "title", "description", "buttons", "callback"), &DisplayServer::dialog_show);
 	ClassDB::bind_method(D_METHOD("dialog_input_text", "title", "description", "existing_text", "callback"), &DisplayServer::dialog_input_text);
 
-	ClassDB::bind_method(D_METHOD("file_dialog_show", "title", "current_directory", "filename", "show_hidden", "mode", "filters", "callback"), &DisplayServer::file_dialog_show);
-	ClassDB::bind_method(D_METHOD("file_dialog_with_options_show", "title", "current_directory", "root", "filename", "show_hidden", "mode", "filters", "options", "callback"), &DisplayServer::file_dialog_with_options_show);
+	ClassDB::bind_method(D_METHOD("file_dialog_show", "title", "current_directory", "filename", "show_hidden", "mode", "filters", "callback", "parent_window_id"), &DisplayServer::file_dialog_show, DEFVAL(MAIN_WINDOW_ID));
+	ClassDB::bind_method(D_METHOD("file_dialog_with_options_show", "title", "current_directory", "root", "filename", "show_hidden", "mode", "filters", "options", "callback", "parent_window_id"), &DisplayServer::file_dialog_with_options_show, DEFVAL(MAIN_WINDOW_ID));
 
 	ClassDB::bind_method(D_METHOD("beep"), &DisplayServer::beep);
 
@@ -1316,8 +1317,91 @@ void DisplayServer::_input_set_custom_mouse_cursor_func(const Ref<Resource> &p_i
 	singleton->cursor_set_custom_image(p_image, (CursorShape)p_shape, p_hotspot);
 }
 
+bool DisplayServer::is_rendering_device_supported() {
+#if defined(RD_ENABLED)
+	RenderingDevice *device = RenderingDevice::get_singleton();
+	if (device) {
+		return true;
+	}
+
+	if (supported_rendering_device == RenderingDeviceCreationStatus::SUCCESS) {
+		return true;
+	} else if (supported_rendering_device == RenderingDeviceCreationStatus::FAILURE) {
+		return false;
+	}
+
+	Error err;
+
+#if defined(WINDOWS_ENABLED) || defined(LINUXBSD_ENABLED)
+	// On some drivers combining OpenGL and RenderingDevice can result in crash, offload the check to the subprocess.
+	List<String> arguments;
+	arguments.push_back("--test-rd-support");
+	if (get_singleton()) {
+		arguments.push_back("--display-driver");
+		arguments.push_back(get_singleton()->get_name().to_lower());
+	}
+
+	String pipe;
+	int exitcode = 0;
+	err = OS::get_singleton()->execute(OS::get_singleton()->get_executable_path(), arguments, &pipe, &exitcode);
+	if (err == OK && exitcode == 0) {
+		supported_rendering_device = RenderingDeviceCreationStatus::SUCCESS;
+		return true;
+	} else {
+		supported_rendering_device = RenderingDeviceCreationStatus::FAILURE;
+	}
+#else // WINDOWS_ENABLED
+
+	RenderingContextDriver *rcd = nullptr;
+
+#if defined(VULKAN_ENABLED)
+	rcd = memnew(RenderingContextDriverVulkan);
+#endif
+#ifdef D3D12_ENABLED
+	if (rcd == nullptr) {
+		rcd = memnew(RenderingContextDriverD3D12);
+	}
+#endif
+#ifdef METAL_ENABLED
+	if (rcd == nullptr) {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunguarded-availability"
+		// Eliminate "RenderingContextDriverMetal is only available on iOS 14.0 or newer".
+		rcd = memnew(RenderingContextDriverMetal);
+#pragma clang diagnostic pop
+	}
+#endif
+
+	if (rcd != nullptr) {
+		err = rcd->initialize();
+		if (err == OK) {
+			RenderingDevice *rd = memnew(RenderingDevice);
+			err = rd->initialize(rcd);
+			memdelete(rd);
+			rd = nullptr;
+			if (err == OK) {
+				// Creating a RenderingDevice is quite slow.
+				// Cache the result for future usage, so that it's much faster on subsequent calls.
+				supported_rendering_device = RenderingDeviceCreationStatus::SUCCESS;
+				memdelete(rcd);
+				rcd = nullptr;
+				return true;
+			} else {
+				supported_rendering_device = RenderingDeviceCreationStatus::FAILURE;
+			}
+		}
+
+		memdelete(rcd);
+		rcd = nullptr;
+	}
+
+#endif // WINDOWS_ENABLED
+#endif // RD_ENABLED
+	return false;
+}
+
 bool DisplayServer::can_create_rendering_device() {
-	if (get_singleton()->get_name() == "headless") {
+	if (get_singleton() && get_singleton()->get_name() == "headless") {
 		return false;
 	}
 
@@ -1334,6 +1418,23 @@ bool DisplayServer::can_create_rendering_device() {
 	}
 
 	Error err;
+
+#ifdef WINDOWS_ENABLED
+	// On some NVIDIA drivers combining OpenGL and RenderingDevice can result in crash, offload the check to the subprocess.
+	List<String> arguments;
+	arguments.push_back("--test-rd-creation");
+
+	String pipe;
+	int exitcode = 0;
+	err = OS::get_singleton()->execute(OS::get_singleton()->get_executable_path(), arguments, &pipe, &exitcode);
+	if (err == OK && exitcode == 0) {
+		created_rendering_device = RenderingDeviceCreationStatus::SUCCESS;
+		return true;
+	} else {
+		created_rendering_device = RenderingDeviceCreationStatus::FAILURE;
+	}
+#else // WINDOWS_ENABLED
+
 	RenderingContextDriver *rcd = nullptr;
 
 #if defined(VULKAN_ENABLED)
@@ -1377,6 +1478,7 @@ bool DisplayServer::can_create_rendering_device() {
 		rcd = nullptr;
 	}
 
+#endif // WINDOWS_ENABLED
 #endif // RD_ENABLED
 	return false;
 }

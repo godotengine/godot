@@ -68,10 +68,13 @@ void ProjectListItemControl::_notification(int p_what) {
 			project_unsupported_features->set_texture(get_editor_theme_icon(SNAME("NodeWarning")));
 
 			favorite_button->set_texture_normal(get_editor_theme_icon(SNAME("Favorites")));
+
 			if (project_is_missing) {
 				explore_button->set_button_icon(get_editor_theme_icon(SNAME("FileBroken")));
+#if !defined(ANDROID_ENABLED) && !defined(WEB_ENABLED)
 			} else {
 				explore_button->set_button_icon(get_editor_theme_icon(SNAME("Load")));
+#endif
 			}
 		} break;
 
@@ -190,9 +193,6 @@ void ProjectListItemControl::set_is_favorite(bool p_favorite) {
 }
 
 void ProjectListItemControl::set_is_missing(bool p_missing) {
-	if (project_is_missing == p_missing) {
-		return;
-	}
 	project_is_missing = p_missing;
 
 	if (project_is_missing) {
@@ -201,10 +201,8 @@ void ProjectListItemControl::set_is_missing(bool p_missing) {
 		explore_button->set_button_icon(get_editor_theme_icon(SNAME("FileBroken")));
 		explore_button->set_tooltip_text(TTR("Error: Project is missing on the filesystem."));
 	} else {
-		project_icon->set_modulate(Color(1, 1, 1, 1.0));
-
-		explore_button->set_button_icon(get_editor_theme_icon(SNAME("Load")));
 #if !defined(ANDROID_ENABLED) && !defined(WEB_ENABLED)
+		explore_button->set_button_icon(get_editor_theme_icon(SNAME("Load")));
 		explore_button->set_tooltip_text(TTR("Show in File Manager"));
 #else
 		// Opening the system file manager is not supported on the Android and web editors.
@@ -446,7 +444,7 @@ void ProjectList::_migrate_config() {
 		String path = EDITOR_GET(property_key);
 		print_line("Migrating legacy project '" + path + "'.");
 
-		String favoriteKey = "favorite_projects/" + property_key.get_slice("/", 1);
+		String favoriteKey = "favorite_projects/" + property_key.get_slicec('/', 1);
 		bool favorite = EditorSettings::get_singleton()->has_setting(favoriteKey);
 		add_project(path, favorite);
 		if (favorite) {
@@ -653,7 +651,7 @@ void ProjectList::sort_projects() {
 			PackedStringArray remaining;
 			for (const String &part : search_parts) {
 				if (part.begins_with("tag:")) {
-					tags.push_back(part.get_slice(":", 1));
+					tags.push_back(part.get_slicec(':', 1));
 				} else {
 					remaining.append(part);
 				}

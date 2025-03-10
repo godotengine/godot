@@ -435,7 +435,7 @@ static String _fixstr(const String &p_what, const String &p_str) {
 		what = what.substr(0, what.length() - 1);
 	}
 
-	String end = p_what.substr(what.length(), p_what.length() - what.length());
+	String end = p_what.substr(what.length());
 
 	if (what.containsn("$" + p_str)) { // Blender and other stuff.
 		return what.replace("$" + p_str, "") + end;
@@ -2211,7 +2211,7 @@ bool ResourceImporterScene::get_internal_option_visibility(InternalImportCategor
 			}
 			if (p_option.begins_with("slice_")) {
 				int max_slice = p_options["slices/amount"];
-				int slice = p_option.get_slice("_", 1).to_int() - 1;
+				int slice = p_option.get_slicec('_', 1).to_int() - 1;
 				if (slice >= max_slice) {
 					return false;
 				}

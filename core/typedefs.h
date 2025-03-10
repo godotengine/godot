@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TYPEDEFS_H
-#define TYPEDEFS_H
+#pragma once
 
 #include <stddef.h>
 
@@ -72,6 +71,17 @@ static_assert(__cplusplus >= 201703L);
 #define _FORCE_INLINE_ inline
 #else
 #define _FORCE_INLINE_ _ALWAYS_INLINE_
+#endif
+#endif
+
+// Should never inline.
+#ifndef _NO_INLINE_
+#if defined(__GNUC__)
+#define _NO_INLINE_ __attribute__((noinline))
+#elif defined(_MSC_VER)
+#define _NO_INLINE_ __declspec(noinline)
+#else
+#define _NO_INLINE_
 #endif
 #endif
 
@@ -315,5 +325,3 @@ struct BuildIndexSequence<0, Is...> : IndexSequence<Is...> {};
 #define ____gd_is_defined(arg1_or_junk) __gd_take_second_arg(arg1_or_junk true, false)
 #define ___gd_is_defined(val) ____gd_is_defined(__GDARG_PLACEHOLDER_##val)
 #define GD_IS_DEFINED(x) ___gd_is_defined(x)
-
-#endif // TYPEDEFS_H

@@ -263,6 +263,11 @@ bld/
 !thirdparty/**/arm/
 !thirdparty/**/arm64/
 
+thirdparty/swappy-frame-pacing/arm64-v8a/abi.json
+thirdparty/swappy-frame-pacing/armeabi-v7a/abi.json
+thirdparty/swappy-frame-pacing/x86/abi.json
+thirdparty/swappy-frame-pacing/x86_64/abi.json
+
 # Visual Studio 2015/2017 cache/options directory
 .vs/
 

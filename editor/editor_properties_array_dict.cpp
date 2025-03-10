@@ -52,9 +52,9 @@ bool EditorPropertyArrayObject::_set(const StringName &p_name, const Variant &p_
 
 	int index;
 	if (name.begins_with("metadata/")) {
-		index = name.get_slice("/", 2).to_int();
+		index = name.get_slicec('/', 2).to_int();
 	} else {
-		index = name.get_slice("/", 1).to_int();
+		index = name.get_slicec('/', 1).to_int();
 	}
 
 	array.set(index, p_value);
@@ -70,9 +70,9 @@ bool EditorPropertyArrayObject::_get(const StringName &p_name, Variant &r_ret) c
 
 	int index;
 	if (name.begins_with("metadata/")) {
-		index = name.get_slice("/", 2).to_int();
+		index = name.get_slicec('/', 2).to_int();
 	} else {
-		index = name.get_slice("/", 1).to_int();
+		index = name.get_slicec('/', 1).to_int();
 	}
 
 	bool valid;
@@ -263,7 +263,7 @@ void EditorPropertyArray::_property_changed(const String &p_property, Variant p_
 		p_value = Variant(); // `EditorResourcePicker` resets to `Ref<Resource>()`. See GH-82716.
 	}
 
-	int index = p_property.get_slice("/", 1).to_int();
+	int index = p_property.get_slicec('/', 1).to_int();
 
 	Variant array = object->get_array().duplicate();
 	array.set(index, p_value);
@@ -401,7 +401,7 @@ void EditorPropertyArray::update_property() {
 	}
 
 	if (preview_value) {
-		String ctr_str = array.get_construct_string().trim_prefix(array_type_name + "(").trim_suffix(")").replace("\n", "");
+		String ctr_str = array.get_construct_string().trim_prefix(array_type_name + "(").trim_suffix(")").remove_char('\n');
 		if (array_type == Variant::ARRAY && subtype != Variant::NIL) {
 			int type_end = ctr_str.find("](");
 			if (type_end > 0) {
@@ -430,7 +430,6 @@ void EditorPropertyArray::update_property() {
 
 		if (!container) {
 			container = memnew(PanelContainer);
-			container->set_mouse_filter(MOUSE_FILTER_STOP);
 			add_child(container);
 			set_bottom_editor(container);
 
@@ -570,12 +569,10 @@ bool EditorPropertyArray::_is_drop_valid(const Dictionary &p_drag_data) const {
 	if (drop_type == "files") {
 		PackedStringArray files = drag_data["files"];
 
-		for (int i = 0; i < files.size(); i++) {
-			const String &file = files[i];
-			String ftype = EditorFileSystem::get_singleton()->get_file_type(file);
-
-			for (int j = 0; j < allowed_type.get_slice_count(","); j++) {
-				String at = allowed_type.get_slice(",", j).strip_edges();
+		for (const String &file : files) {
+			const String ftype = EditorFileSystem::get_singleton()->get_file_type(file);
+			for (String at : allowed_type.split(",")) {
+				at = at.strip_edges();
 				// Fail if one of the files is not of allowed type.
 				if (!ClassDB::is_parent_class(ftype, at)) {
 					return false;
@@ -595,8 +592,8 @@ bool EditorPropertyArray::_is_drop_valid(const Dictionary &p_drag_data) const {
 			if (subtype_hint_string == "NodePath") {
 				return true;
 			} else {
-				for (int j = 0; j < subtype_hint_string.get_slice_count(","); j++) {
-					String ast = subtype_hint_string.get_slice(",", j).strip_edges();
+				for (String ast : subtype_hint_string.split(",")) {
+					ast = ast.strip_edges();
 					allowed_subtype_array.append(ast);
 				}
 			}
@@ -645,8 +642,6 @@ bool EditorPropertyArray::can_drop_data_fw(const Point2 &p_point, const Variant 
 }
 
 void EditorPropertyArray::drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) {
-	ERR_FAIL_COND(!_is_drop_valid(p_data));
-
 	Dictionary drag_data = p_data;
 	const String drop_type = drag_data.get("type", "");
 	Variant array = object->get_array();
@@ -808,11 +803,11 @@ void EditorPropertyArray::setup(Variant::Type p_array_type, const String &p_hint
 			String subtype_string = p_hint_string.substr(0, hint_subtype_separator);
 			int slash_pos = subtype_string.find_char('/');
 			if (slash_pos >= 0) {
-				subtype_hint = PropertyHint(subtype_string.substr(slash_pos + 1, subtype_string.size() - slash_pos - 1).to_int());
+				subtype_hint = PropertyHint(subtype_string.substr(slash_pos + 1).to_int());
 				subtype_string = subtype_string.substr(0, slash_pos);
 			}
 
-			subtype_hint_string = p_hint_string.substr(hint_subtype_separator + 1, p_hint_string.size() - hint_subtype_separator - 1);
+			subtype_hint_string = p_hint_string.substr(hint_subtype_separator + 1);
 			subtype = Variant::Type(subtype_string.to_int());
 		}
 	}
@@ -1091,11 +1086,11 @@ void EditorPropertyDictionary::setup(PropertyHint p_hint, const String &p_hint_s
 			String key_subtype_string = key.substr(0, hint_key_subtype_separator);
 			int slash_pos = key_subtype_string.find_char('/');
 			if (slash_pos >= 0) {
-				key_subtype_hint = PropertyHint(key_subtype_string.substr(slash_pos + 1, key_subtype_string.size() - slash_pos - 1).to_int());
+				key_subtype_hint = PropertyHint(key_subtype_string.substr(slash_pos + 1).to_int());
 				key_subtype_string = key_subtype_string.substr(0, slash_pos);
 			}
 
-			key_subtype_hint_string = key.substr(hint_key_subtype_separator + 1, key.size() - hint_key_subtype_separator - 1);
+			key_subtype_hint_string = key.substr(hint_key_subtype_separator + 1);
 			key_subtype = Variant::Type(key_subtype_string.to_int());
 
 			Variant new_key = object->get_new_item_key();
@@ -1110,11 +1105,11 @@ void EditorPropertyDictionary::setup(PropertyHint p_hint, const String &p_hint_s
 			String value_subtype_string = value.substr(0, hint_value_subtype_separator);
 			int slash_pos = value_subtype_string.find_char('/');
 			if (slash_pos >= 0) {
-				value_subtype_hint = PropertyHint(value_subtype_string.substr(slash_pos + 1, value_subtype_string.size() - slash_pos - 1).to_int());
+				value_subtype_hint = PropertyHint(value_subtype_string.substr(slash_pos + 1).to_int());
 				value_subtype_string = value_subtype_string.substr(0, slash_pos);
 			}
 
-			value_subtype_hint_string = value.substr(hint_value_subtype_separator + 1, value.size() - hint_value_subtype_separator - 1);
+			value_subtype_hint_string = value.substr(hint_value_subtype_separator + 1);
 			value_subtype = Variant::Type(value_subtype_string.to_int());
 
 			Variant new_value = object->get_new_item_value();
@@ -1179,7 +1174,7 @@ void EditorPropertyDictionary::update_property() {
 	object->set_dict(updated_val);
 
 	if (preview_value) {
-		String ctr_str = updated_val.get_construct_string().replace("\n", "");
+		String ctr_str = updated_val.get_construct_string().remove_char('\n');
 		if (key_subtype != Variant::NIL || value_subtype != Variant::NIL) {
 			int type_end = ctr_str.find("](");
 			if (type_end > 0) {
@@ -1208,7 +1203,6 @@ void EditorPropertyDictionary::update_property() {
 
 		if (!container) {
 			container = memnew(PanelContainer);
-			container->set_mouse_filter(MOUSE_FILTER_STOP);
 			add_child(container);
 			set_bottom_editor(container);
 
@@ -1462,7 +1456,7 @@ EditorPropertyDictionary::EditorPropertyDictionary() {
 
 void EditorPropertyLocalizableString::_property_changed(const String &p_property, const Variant &p_value, const String &p_name, bool p_changing) {
 	if (p_property.begins_with("indices")) {
-		int index = p_property.get_slice("/", 1).to_int();
+		int index = p_property.get_slicec('/', 1).to_int();
 
 		Dictionary dict = object->get_dict().duplicate();
 		Variant key = dict.get_key_at_index(index);

@@ -219,7 +219,7 @@ void Input::get_argument_options(const StringName &p_function, int p_idx, List<S
 				continue;
 			}
 
-			String name = pi.name.substr(pi.name.find_char('/') + 1, pi.name.length());
+			String name = pi.name.substr(pi.name.find_char('/') + 1);
 			r_options->push_back(name.quote());
 		}
 	}
@@ -614,7 +614,7 @@ void Input::joy_connection_changed(int p_idx, bool p_connected, const String &p_
 Vector3 Input::get_gravity() const {
 	_THREAD_SAFE_METHOD_
 
-#ifdef DEBUG_ENABLED
+#if defined(DEBUG_ENABLED) && defined(ANDROID_ENABLED)
 	if (!gravity_enabled) {
 		WARN_PRINT_ONCE("`input_devices/sensors/enable_gravity` is not enabled in project settings.");
 	}
@@ -626,7 +626,7 @@ Vector3 Input::get_gravity() const {
 Vector3 Input::get_accelerometer() const {
 	_THREAD_SAFE_METHOD_
 
-#ifdef DEBUG_ENABLED
+#if defined(DEBUG_ENABLED) && defined(ANDROID_ENABLED)
 	if (!accelerometer_enabled) {
 		WARN_PRINT_ONCE("`input_devices/sensors/enable_accelerometer` is not enabled in project settings.");
 	}
@@ -638,7 +638,7 @@ Vector3 Input::get_accelerometer() const {
 Vector3 Input::get_magnetometer() const {
 	_THREAD_SAFE_METHOD_
 
-#ifdef DEBUG_ENABLED
+#if defined(DEBUG_ENABLED) && defined(ANDROID_ENABLED)
 	if (!magnetometer_enabled) {
 		WARN_PRINT_ONCE("`input_devices/sensors/enable_magnetometer` is not enabled in project settings.");
 	}
@@ -650,7 +650,7 @@ Vector3 Input::get_magnetometer() const {
 Vector3 Input::get_gyroscope() const {
 	_THREAD_SAFE_METHOD_
 
-#ifdef DEBUG_ENABLED
+#if defined(DEBUG_ENABLED) && defined(ANDROID_ENABLED)
 	if (!gyroscope_enabled) {
 		WARN_PRINT_ONCE("`input_devices/sensors/enable_gyroscope` is not enabled in project settings.");
 	}
@@ -1594,8 +1594,8 @@ void Input::parse_mapping(const String &p_mapping) {
 			continue;
 		}
 
-		String output = entry[idx].get_slice(":", 0).replace(" ", "");
-		String input = entry[idx].get_slice(":", 1).replace(" ", "");
+		String output = entry[idx].get_slicec(':', 0).remove_char(' ');
+		String input = entry[idx].get_slicec(':', 1).remove_char(' ');
 		if (output.length() < 1 || input.length() < 2) {
 			continue;
 		}
