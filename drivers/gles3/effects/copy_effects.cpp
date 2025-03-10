@@ -224,6 +224,9 @@ void CopyEffects::gaussian_blur(GLuint p_source_texture, int p_mipmap_count, con
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, p_mipmap_count - 1);
+
 	Size2i base_size = p_size;
 
 	Rect2i source_region = p_region;
@@ -241,9 +244,6 @@ void CopyEffects::gaussian_blur(GLuint p_source_texture, int p_mipmap_count, con
 		base_size.x >>= 1;
 		base_size.y >>= 1;
 
-		glBindTexture(GL_TEXTURE_2D, p_source_texture);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, i - 1);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, i - 1);
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, p_source_texture, i);
 #ifdef DEV_ENABLED
 		GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
