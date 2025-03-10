@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  nav_agent.h                                                           */
+/*  nav_agent_3d.h                                                        */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -30,7 +30,7 @@
 
 #pragma once
 
-#include "nav_rid.h"
+#include "nav_rid_3d.h"
 
 #include "core/object/class_db.h"
 #include "core/templates/self_list.h"
@@ -38,9 +38,9 @@
 #include <Agent2d.h>
 #include <Agent3d.h>
 
-class NavMap;
+class NavMap3D;
 
-class NavAgent : public NavRid {
+class NavAgent3D : public NavRid3D {
 	Vector3 position;
 	Vector3 target_position;
 	Vector3 velocity;
@@ -55,7 +55,7 @@ class NavAgent : public NavRid {
 	Vector3 safe_velocity;
 	bool clamp_speed = true; // Experimental, clamps velocity to max_speed.
 
-	NavMap *map = nullptr;
+	NavMap3D *map = nullptr;
 
 	RVO2D::Agent2D rvo_agent_2d;
 	RVO3D::Agent3D rvo_agent_3d;
@@ -73,11 +73,11 @@ class NavAgent : public NavRid {
 	uint32_t last_map_iteration_id = 0;
 	bool paused = false;
 
-	SelfList<NavAgent> sync_dirty_request_list_element;
+	SelfList<NavAgent3D> sync_dirty_request_list_element;
 
 public:
-	NavAgent();
-	~NavAgent();
+	NavAgent3D();
+	~NavAgent3D();
 
 	void set_avoidance_enabled(bool p_enabled);
 	bool is_avoidance_enabled() { return avoidance_enabled; }
@@ -85,8 +85,8 @@ public:
 	void set_use_3d_avoidance(bool p_enabled);
 	bool get_use_3d_avoidance() { return use_3d_avoidance; }
 
-	void set_map(NavMap *p_map);
-	NavMap *get_map() { return map; }
+	void set_map(NavMap3D *p_map);
+	NavMap3D *get_map() { return map; }
 
 	bool is_map_changed();
 

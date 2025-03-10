@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  nav_rid.h                                                             */
+/*  nav_rid_3d.h                                                          */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -32,7 +32,7 @@
 
 #include "core/templates/rid.h"
 
-class NavRid {
+class NavRid3D {
 	RID self;
 
 public:

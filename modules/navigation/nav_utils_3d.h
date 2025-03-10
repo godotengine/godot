@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  nav_utils.h                                                           */
+/*  nav_utils_3d.h                                                        */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -33,12 +33,12 @@
 #include "core/math/vector3.h"
 #include "core/templates/hash_map.h"
 #include "core/templates/hashfuncs.h"
-#include "core/templates/local_vector.h"
+#include "servers/navigation/nav_heap.h"
 #include "servers/navigation/navigation_utilities.h"
 
-struct NavBaseIteration;
+struct NavBaseIteration3D;
 
-namespace gd {
+namespace nav_3d {
 struct Polygon;
 
 union PointKey {
@@ -102,7 +102,7 @@ struct Polygon {
 	uint32_t id = UINT32_MAX;
 
 	/// Navigation region or link that contains this polygon.
-	const NavBaseIteration *owner = nullptr;
+	const NavBaseIteration3D *owner = nullptr;
 
 	/// The points of this `Polygon`
 	LocalVector<Point> points;
@@ -184,133 +184,8 @@ struct ClosestPointQueryResult {
 	RID owner;
 };
 
-template <typename T>
-struct NoopIndexer {
-	void operator()(const T &p_value, uint32_t p_index) {}
-};
-
-/**
- * A max-heap implementation that notifies of element index changes.
- */
-template <typename T, typename LessThan = Comparator<T>, typename Indexer = NoopIndexer<T>>
-class Heap {
-	LocalVector<T> _buffer;
-
-	LessThan _less_than;
-	Indexer _indexer;
-
-public:
-	static constexpr uint32_t INVALID_INDEX = UINT32_MAX;
-	void reserve(uint32_t p_size) {
-		_buffer.reserve(p_size);
-	}
-
-	uint32_t size() const {
-		return _buffer.size();
-	}
-
-	bool is_empty() const {
-		return _buffer.is_empty();
-	}
-
-	void push(const T &p_element) {
-		_buffer.push_back(p_element);
-		_indexer(p_element, _buffer.size() - 1);
-		_shift_up(_buffer.size() - 1);
-	}
-
-	T pop() {
-		ERR_FAIL_COND_V_MSG(_buffer.is_empty(), T(), "Can't pop an empty heap.");
-		T value = _buffer[0];
-		_indexer(value, INVALID_INDEX);
-		if (_buffer.size() > 1) {
-			_buffer[0] = _buffer[_buffer.size() - 1];
-			_indexer(_buffer[0], 0);
-			_buffer.remove_at(_buffer.size() - 1);
-			_shift_down(0);
-		} else {
-			_buffer.remove_at(_buffer.size() - 1);
-		}
-		return value;
-	}
-
-	/**
-	 * Update the position of the element in the heap if necessary.
-	 */
-	void shift(uint32_t p_index) {
-		ERR_FAIL_UNSIGNED_INDEX_MSG(p_index, _buffer.size(), "Heap element index is out of range.");
-		if (!_shift_up(p_index)) {
-			_shift_down(p_index);
-		}
-	}
-
-	void clear() {
-		for (const T &value : _buffer) {
-			_indexer(value, INVALID_INDEX);
-		}
-		_buffer.clear();
-	}
-
-	Heap() {}
-
-	Heap(const LessThan &p_less_than) :
-			_less_than(p_less_than) {}
-
-	Heap(const Indexer &p_indexer) :
-			_indexer(p_indexer) {}
-
-	Heap(const LessThan &p_less_than, const Indexer &p_indexer) :
-			_less_than(p_less_than), _indexer(p_indexer) {}
-
-private:
-	bool _shift_up(uint32_t p_index) {
-		T value = _buffer[p_index];
-		uint32_t current_index = p_index;
-		uint32_t parent_index = (current_index - 1) / 2;
-		while (current_index > 0 && _less_than(_buffer[parent_index], value)) {
-			_buffer[current_index] = _buffer[parent_index];
-			_indexer(_buffer[current_index], current_index);
-			current_index = parent_index;
-			parent_index = (current_index - 1) / 2;
-		}
-		if (current_index != p_index) {
-			_buffer[current_index] = value;
-			_indexer(value, current_index);
-			return true;
-		} else {
-			return false;
-		}
-	}
-
-	bool _shift_down(uint32_t p_index) {
-		T value = _buffer[p_index];
-		uint32_t current_index = p_index;
-		uint32_t child_index = 2 * current_index + 1;
-		while (child_index < _buffer.size()) {
-			if (child_index + 1 < _buffer.size() &&
-					_less_than(_buffer[child_index], _buffer[child_index + 1])) {
-				child_index++;
-			}
-			if (_less_than(_buffer[child_index], value)) {
-				break;
-			}
-			_buffer[current_index] = _buffer[child_index];
-			_indexer(_buffer[current_index], current_index);
-			current_index = child_index;
-			child_index = 2 * current_index + 1;
-		}
-		if (current_index != p_index) {
-			_buffer[current_index] = value;
-			_indexer(value, current_index);
-			return true;
-		} else {
-			return false;
-		}
-	}
-};
-
 struct EdgeConnectionPair {
-	gd::Edge::Connection connections[2];
+	Edge::Connection connections[2];
 	int size = 0;
 };
 
@@ -338,4 +213,4 @@ struct PerformanceData {
 	}
 };
 
-} // namespace gd
+} // namespace nav_3d
