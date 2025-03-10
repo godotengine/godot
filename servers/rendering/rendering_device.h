@@ -1173,7 +1173,7 @@ private:
 
 	struct DrawList {
 		Rect2i viewport;
-		bool viewport_set = false;
+		bool active = false;
 
 		struct SetState {
 			uint32_t pipeline_expected_format = 0;
@@ -1198,7 +1198,6 @@ private:
 
 #ifdef DEBUG_ENABLED
 		struct Validation {
-			bool active = true; // Means command buffer was not closed, so you can keep adding things.
 			// Actual render pass values.
 			uint32_t dynamic_state = 0;
 			VertexFormatID vertex_format = INVALID_ID;
@@ -1229,18 +1228,17 @@ private:
 #endif
 	};
 
-	DrawList *draw_list = nullptr;
+	DrawList draw_list;
 	uint32_t draw_list_subpass_count = 0;
 #ifdef DEBUG_ENABLED
 	FramebufferFormatID draw_list_framebuffer_format = INVALID_ID;
 #endif
 	uint32_t draw_list_current_subpass = 0;
 
-	Vector<RID> draw_list_bound_textures;
+	LocalVector<RID> draw_list_bound_textures;
 
-	_FORCE_INLINE_ DrawList *_get_draw_list_ptr(DrawListID p_id);
-	Error _draw_list_allocate(const Rect2i &p_viewport, uint32_t p_subpass);
-	void _draw_list_free(Rect2i *r_last_viewport = nullptr);
+	void _draw_list_start(const Rect2i &p_viewport);
+	void _draw_list_end(Rect2i *r_last_viewport = nullptr);
 
 public:
 	enum DrawFlags {
@@ -1274,7 +1272,8 @@ public:
 	};
 
 	DrawListID draw_list_begin_for_screen(DisplayServer::WindowID p_screen = 0, const Color &p_clear_color = Color());
-	DrawListID draw_list_begin(RID p_framebuffer, BitField<DrawFlags> p_draw_flags = DRAW_DEFAULT_ALL, const Vector<Color> &p_clear_color_values = Vector<Color>(), float p_clear_depth_value = 1.0f, uint32_t p_clear_stencil_value = 0, const Rect2 &p_region = Rect2(), uint32_t p_breadcrumb = 0);
+	DrawListID draw_list_begin(RID p_framebuffer, BitField<DrawFlags> p_draw_flags = DRAW_DEFAULT_ALL, VectorView<Color> p_clear_color_values = VectorView<Color>(), float p_clear_depth_value = 1.0f, uint32_t p_clear_stencil_value = 0, const Rect2 &p_region = Rect2(), uint32_t p_breadcrumb = 0);
+	DrawListID _draw_list_begin_bind(RID p_framebuffer, BitField<DrawFlags> p_draw_flags = DRAW_DEFAULT_ALL, const Vector<Color> &p_clear_color_values = Vector<Color>(), float p_clear_depth_value = 1.0f, uint32_t p_clear_stencil_value = 0, const Rect2 &p_region = Rect2(), uint32_t p_breadcrumb = 0);
 
 	void draw_list_set_blend_constants(DrawListID p_list, const Color &p_color);
 	void draw_list_bind_render_pipeline(DrawListID p_list, RID p_render_pipeline);
@@ -1302,6 +1301,7 @@ private:
 	/***********************/
 
 	struct ComputeList {
+		bool active = false;
 		struct SetState {
 			uint32_t pipeline_expected_format = 0;
 			uint32_t uniform_set_format = 0;
@@ -1325,7 +1325,6 @@ private:
 
 #ifdef DEBUG_ENABLED
 		struct Validation {
-			bool active = true; // Means command buffer was not closed, so you can keep adding things.
 			Vector<uint32_t> set_formats;
 			Vector<bool> set_bound;
 			Vector<RID> set_rids;
@@ -1339,7 +1338,7 @@ private:
 #endif
 	};
 
-	ComputeList *compute_list = nullptr;
+	ComputeList compute_list;
 	ComputeList::State compute_list_barrier_state;
 
 public:
