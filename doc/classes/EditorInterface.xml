@@ -156,10 +156,16 @@
 				[b]Warning:[/b] Removing and freeing this node will render a part of the editor useless and may cause a crash.
 			</description>
 		</method>
+		<method name="get_open_scene_roots" qualifiers="const">
+			<return type="Node[]" />
+			<description>
+				Returns an array with references to the root nodes of the currently opened scenes.
+			</description>
+		</method>
 		<method name="get_open_scenes" qualifiers="const">
 			<return type="PackedStringArray" />
 			<description>
-				Returns an [Array] with the file paths of the currently opened scenes.
+				Returns an array with the file paths of the currently opened scenes.
 			</description>
 		</method>
 		<method name="get_playing_scene" qualifiers="const">
