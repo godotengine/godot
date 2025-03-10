@@ -68,8 +68,11 @@ protected:
 
 	virtual void _set_active(bool p_active);
 
-	virtual void _process_modification();
-	GDVIRTUAL0(_process_modification);
+	virtual void _process_modification(double p_delta);
+	GDVIRTUAL1(_process_modification, double);
+#ifndef DISABLE_DEPRECATED
+	GDVIRTUAL0_COMPAT(_process_modification_compat_103639, _process_modification);
+#endif
 
 public:
 	virtual PackedStringArray get_configuration_warnings() const override;
@@ -83,7 +86,7 @@ public:
 
 	Skeleton3D *get_skeleton() const;
 
-	void process_modification();
+	void process_modification(double p_delta);
 
 	// Utility APIs.
 	static Vector3 get_vector_from_bone_axis(BoneAxis p_axis);

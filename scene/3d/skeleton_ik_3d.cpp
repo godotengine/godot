@@ -366,7 +366,7 @@ void SkeletonIK3D::_bind_methods() {
 #endif
 }
 
-void SkeletonIK3D::_process_modification() {
+void SkeletonIK3D::_process_modification(double p_delta) {
 	if (!internal_active) {
 		return;
 	}
@@ -485,7 +485,7 @@ bool SkeletonIK3D::is_running() {
 void SkeletonIK3D::start(bool p_one_time) {
 	if (p_one_time) {
 		internal_active = true;
-		SkeletonModifier3D::process_modification();
+		SkeletonModifier3D::process_modification(0);
 		internal_active = false;
 	} else {
 		internal_active = true;
