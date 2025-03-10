@@ -538,6 +538,8 @@ void SceneTree::set_physics_interpolation_enabled(bool p_enabled) {
 	_physics_interpolation_enabled = p_enabled;
 	VisualServer::get_singleton()->set_physics_interpolation_enabled(p_enabled);
 
+	get_scene_tree_fti().set_enabled(get_root(), p_enabled);
+
 	// Perform an auto reset on the root node for convenience for the user.
 	if (root) {
 		root->reset_physics_interpolation();
@@ -563,6 +565,7 @@ void SceneTree::iteration_prepare() {
 		// Make sure any pending transforms from the last tick / frame
 		// are flushed before pumping the interpolation prev and currents.
 		flush_transform_notifications();
+		get_scene_tree_fti().tick_update();
 		VisualServer::get_singleton()->tick();
 	}
 }
@@ -627,6 +630,9 @@ bool SceneTree::idle(float p_time) {
 	//print_line("ram: "+itos(OS::get_singleton()->get_static_memory_usage())+" sram: "+itos(OS::get_singleton()->get_dynamic_memory_usage()));
 	//print_line("node count: "+itos(get_node_count()));
 	//print_line("TEXTURE RAM: "+itos(VS::get_singleton()->get_render_info(VS::INFO_TEXTURE_MEM_USED)));
+
+	// First pass of scene tree fixed timestep interpolation.
+	get_scene_tree_fti().frame_update(get_root(), true);
 
 	root_lock++;
 
@@ -732,6 +738,9 @@ bool SceneTree::idle(float p_time) {
 	}
 
 #endif
+
+	// Second pass of scene tree fixed timestep interpolation.
+	get_scene_tree_fti().frame_update(get_root(), false);
 
 	VisualServer::get_singleton()->pre_draw(true);
 
