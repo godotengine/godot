@@ -451,19 +451,16 @@ void Control::_validate_property(PropertyInfo &p_property) const {
 		ThemeDB::get_singleton()->get_default_theme()->get_type_variation_list(get_class_name(), &names);
 
 		Control *from_control = Object::cast_to<Control>(get_theme_owner_node());
-		if (from_control)
-		{
-			if (from_control->get_theme().is_valid())
-			{
+		if (from_control) {
+			if (from_control->get_theme().is_valid()) {
 				from_control->get_theme()->get_type_variation_list(get_class_name(), &names);
 			}
 		}
-		else if (get_theme().is_valid())//this works but only if theme has been overridden
+		else if (get_theme().is_valid())//this works but only if theme has been overridden 
 		{
 			get_theme()->get_type_variation_list(get_class_name(), &names);
 		}
-		else if (ThemeDB::get_singleton()->get_project_theme().is_valid())
-		{
+		else if (ThemeDB::get_singleton()->get_project_theme().is_valid()) {
 			ThemeDB::get_singleton()->get_project_theme()->get_type_variation_list(get_class_name(), &names);
 		}
 		names.sort_custom<StringName::AlphCompare>();
