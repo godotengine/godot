@@ -161,7 +161,11 @@ Error RenderingDeviceDriver::_reflect_spirv(VectorView<ShaderStageSPIRVData> p_s
 					}
 
 					if (may_be_writable) {
-						uniform.writable = !(binding.type_description->decoration_flags & SPV_REFLECT_DECORATION_NON_WRITABLE) && !(binding.block.decoration_flags & SPV_REFLECT_DECORATION_NON_WRITABLE);
+						if (binding.descriptor_type == SPV_REFLECT_DESCRIPTOR_TYPE_STORAGE_IMAGE) {
+							uniform.writable = !(binding.decoration_flags & SPV_REFLECT_DECORATION_NON_WRITABLE);
+						} else {
+							uniform.writable = !(binding.decoration_flags & SPV_REFLECT_DECORATION_NON_WRITABLE) && !(binding.block.decoration_flags & SPV_REFLECT_DECORATION_NON_WRITABLE);
+						}
 					} else {
 						uniform.writable = false;
 					}
