@@ -6,7 +6,7 @@ def get_opts(platform):
     from SCons.Variables import BoolVariable
 
     return [
-        BoolVariable("minimp3_extra_formats", "Build minimp3 with MP1/MP2 decoding support", False),
+        BoolVariable("mp3_extra_formats", "Build mp3 module with MP1/MP2 decoding support", False),
     ]
 
 
