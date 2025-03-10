@@ -1221,7 +1221,7 @@ def generate_vs_project(env, original_args, project_name="godot"):
         toolset = "v143"
         if not env.msvc:
             toolset = "CLang"
-        props_template = props_template.replace("%%PlatformToolset%%", toolset)
+        props_template = props_template.replace("%%PLATFORM_TOOLSET%%", toolset)
 
         props_template = props_template.replace("%%VSCONF%%", vsconf)
         props_template = props_template.replace("%%CONDITION%%", condition)

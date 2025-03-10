@@ -11,7 +11,7 @@
     <NMakeAssemblySearchPath>$(NMakeAssemblySearchPath)</NMakeAssemblySearchPath>
     <NMakeForcedUsingAssemblies>$(NMakeForcedUsingAssemblies)</NMakeForcedUsingAssemblies>
     <AdditionalOptions>%%OPTIONS%% $(AdditionalOptions)</AdditionalOptions>
-    <PlatformToolset>%%PlatformToolset%%</PlatformToolset>
+    <PlatformToolset>%%PLATFORM_TOOLSET%%</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="%%CONDITION%%">
     %%PROPERTIES%%
