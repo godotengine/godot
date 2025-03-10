@@ -30,9 +30,10 @@
 
 #include "image_saver_dds.h"
 
+#include "dds.h"
+
 #include "core/io/file_access.h"
 #include "core/io/stream_peer.h"
-#include "dds.h"
 
 Error save_dds(const String &p_path, const Ref<Image> &p_img) {
 	Vector<uint8_t> buffer = save_dds_buffer(p_img);

@@ -30,9 +30,7 @@
 
 #pragma once
 
-#include "core/io/file_access_memory.h"
 #include "core/io/image.h"
-#include "core/io/image_loader.h"
 
 Error save_dds(const String &p_path, const Ref<Image> &p_img);
 Vector<uint8_t> save_dds_buffer(const Ref<Image> &p_img);
