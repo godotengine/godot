@@ -51,6 +51,8 @@ class VideoStreamPlayer : public Control {
 	RID stream_rid;
 
 	Ref<Texture2D> texture;
+	Size2 texture_size;
+	void texture_changed(const Ref<Texture2D> &p_texture);
 
 	AudioRBResampler resampler;
 	Vector<AudioFrame> mix_buffer;
