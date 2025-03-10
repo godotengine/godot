@@ -48,17 +48,22 @@ TEST_CASE("[Span] Constexpr Validators") {
 	static_assert(span_value.size() == 1);
 	static_assert(!span_value.is_empty());
 
-	constexpr static char32_t array[] = U"122345";
-	constexpr Span<char32_t> span_array(array, strlen(array));
-	static_assert(span_array.ptr() == &array[0]);
+	static constexpr int ints[] = { 0, 1, 2, 3, 4, 5 };
+	constexpr Span<int> span_array = ints;
 	static_assert(span_array.size() == 6);
 	static_assert(!span_array.is_empty());
-	static_assert(span_array[0] == U'1');
-	static_assert(span_array[span_array.size() - 1] == U'5');
+	static_assert(span_array[0] == 0);
+	static_assert(span_array[span_array.size() - 1] == 5);
+
+	constexpr Span<char32_t> span_string = U"122345";
+	static_assert(span_string.size() == 6);
+	static_assert(!span_string.is_empty());
+	static_assert(span_string[0] == U'1');
+	static_assert(span_string[span_string.size() - 1] == U'5');
 
 	int idx = 0;
-	for (const char32_t &chr : span_array) {
-		CHECK_EQ(chr, span_array[idx++]);
+	for (const char32_t &chr : span_string) {
+		CHECK_EQ(chr, span_string[idx++]);
 	}
 }
 
