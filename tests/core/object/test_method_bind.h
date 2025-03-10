@@ -55,6 +55,8 @@ public:
 	};
 
 	class ObjectSubclass : public Object {
+		GDCLASS(ObjectSubclass, Object);
+
 	public:
 		int value = 1;
 	};
