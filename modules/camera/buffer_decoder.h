@@ -31,6 +31,7 @@
 #pragma once
 
 #include "core/io/image.h"
+#include "core/math/vector4i.h"
 #include "core/templates/vector.h"
 
 class CameraFeed;
@@ -56,11 +57,10 @@ public:
 
 class AbstractYuyvBufferDecoder : public BufferDecoder {
 protected:
-	int *component_indexes = nullptr;
+	Vector4i component_indexes;
 
 public:
 	AbstractYuyvBufferDecoder(CameraFeed *p_camera_feed);
-	~AbstractYuyvBufferDecoder();
 };
 
 class SeparateYuyvBufferDecoder : public AbstractYuyvBufferDecoder {

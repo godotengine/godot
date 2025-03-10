@@ -44,7 +44,7 @@ class JoltSpace3D;
 class JoltSoftBody3D final : public JoltObject3D {
 	struct Shared {
 		LocalVector<int> mesh_to_physics;
-		JPH::Ref<JPH::SoftBodySharedSettings> settings = new JPH::SoftBodySharedSettings();
+		JPH::Ref<JPH::SoftBodySharedSettings> settings = memnew(JPH::SoftBodySharedSettings());
 		int ref_count = 1;
 	};
 
@@ -58,7 +58,7 @@ class JoltSoftBody3D final : public JoltObject3D {
 
 	RID mesh;
 
-	JPH::SoftBodyCreationSettings *jolt_settings = new JPH::SoftBodyCreationSettings();
+	JPH::SoftBodyCreationSettings *jolt_settings = memnew(JPH::SoftBodyCreationSettings());
 
 	float mass = 0.0f;
 	float pressure = 0.0f;

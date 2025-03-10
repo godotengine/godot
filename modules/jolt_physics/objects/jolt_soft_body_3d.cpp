@@ -84,7 +84,7 @@ void JoltSoftBody3D::_space_changing() {
 		const JoltReadableBody3D body = space->read_body(jolt_id);
 		ERR_FAIL_COND(body.is_invalid());
 
-		jolt_settings = new JPH::SoftBodyCreationSettings(body->GetSoftBodyCreationSettings());
+		jolt_settings = memnew(JPH::SoftBodyCreationSettings(body->GetSoftBodyCreationSettings()));
 		jolt_settings->mSettings = nullptr;
 	}
 }
@@ -124,7 +124,7 @@ void JoltSoftBody3D::_add_to_space() {
 
 	jolt_id = new_jolt_id;
 
-	delete jolt_settings;
+	memdelete(jolt_settings);
 	jolt_settings = nullptr;
 }
 
@@ -360,7 +360,7 @@ JoltSoftBody3D::JoltSoftBody3D() :
 
 JoltSoftBody3D::~JoltSoftBody3D() {
 	if (jolt_settings != nullptr) {
-		delete jolt_settings;
+		memdelete(jolt_settings);
 		jolt_settings = nullptr;
 	}
 }

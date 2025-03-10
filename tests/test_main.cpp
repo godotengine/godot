@@ -254,13 +254,13 @@ int test_main(int argc, char *argv[]) {
 
 	if (test_args.size() > 0) {
 		// Convert Godot command line arguments back to standard arguments.
-		char **doctest_args = new char *[test_args.size()];
+		char **doctest_args = (char **)memalloc(sizeof(char *) * test_args.size());
 		for (uint32_t x = 0; x < test_args.size(); x++) {
 			// Operation to convert Godot string to non wchar string.
 			CharString cs = test_args[x].utf8();
 			const char *str = cs.get_data();
 			// Allocate the string copy.
-			doctest_args[x] = new char[strlen(str) + 1];
+			doctest_args[x] = (char *)memalloc(strlen(str) + 1);
 			// Copy this into memory.
 			memcpy(doctest_args[x], str, strlen(str) + 1);
 		}
@@ -268,9 +268,9 @@ int test_main(int argc, char *argv[]) {
 		test_context.applyCommandLine(test_args.size(), doctest_args);
 
 		for (uint32_t x = 0; x < test_args.size(); x++) {
-			delete[] doctest_args[x];
+			memfree(doctest_args[x]);
 		}
-		delete[] doctest_args;
+		memfree(doctest_args);
 	}
 
 	return test_context.run();

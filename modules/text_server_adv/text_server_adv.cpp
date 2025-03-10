@@ -945,7 +945,7 @@ static int ft_line_to(const FT_Vector *to, void *user) {
 	MSContext *context = static_cast<MSContext *>(user);
 	msdfgen::Point2 endpoint = ft_point2(*to);
 	if (endpoint != context->position) {
-		context->contour->addEdge(new msdfgen::LinearSegment(context->position, endpoint));
+		context->contour->addEdge(new msdfgen::LinearSegment(context->position, endpoint)); // Note: segment deleted by MSDFGEN, use generic C++ allocator.
 		context->position = endpoint;
 	}
 	return 0;
@@ -953,14 +953,14 @@ static int ft_line_to(const FT_Vector *to, void *user) {
 
 static int ft_conic_to(const FT_Vector *control, const FT_Vector *to, void *user) {
 	MSContext *context = static_cast<MSContext *>(user);
-	context->contour->addEdge(new msdfgen::QuadraticSegment(context->position, ft_point2(*control), ft_point2(*to)));
+	context->contour->addEdge(new msdfgen::QuadraticSegment(context->position, ft_point2(*control), ft_point2(*to))); // Note: segment deleted by MSDFGEN, use generic C++ allocator.
 	context->position = ft_point2(*to);
 	return 0;
 }
 
 static int ft_cubic_to(const FT_Vector *control1, const FT_Vector *control2, const FT_Vector *to, void *user) {
 	MSContext *context = static_cast<MSContext *>(user);
-	context->contour->addEdge(new msdfgen::CubicSegment(context->position, ft_point2(*control1), ft_point2(*control2), ft_point2(*to)));
+	context->contour->addEdge(new msdfgen::CubicSegment(context->position, ft_point2(*control1), ft_point2(*control2), ft_point2(*to))); // Note: segment deleted by MSDFGEN, use generic C++ allocator.
 	context->position = ft_point2(*to);
 	return 0;
 }
