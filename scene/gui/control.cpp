@@ -449,7 +449,21 @@ void Control::_validate_property(PropertyInfo &p_property) const {
 		// Only the default theme and the project theme are used for the list of options.
 		// This is an imposed limitation to simplify the logic needed to leverage those options.
 		ThemeDB::get_singleton()->get_default_theme()->get_type_variation_list(get_class_name(), &names);
-		if (ThemeDB::get_singleton()->get_project_theme().is_valid()) {
+
+		Control *from_control = Object::cast_to<Control>(get_theme_owner_node());
+		if (from_control)
+		{
+			if (from_control->get_theme().is_valid())
+			{
+				from_control->get_theme()->get_type_variation_list(get_class_name(), &names);
+			}
+		}
+		else if (get_theme().is_valid())//this works but only if theme has been overridden
+		{
+			get_theme()->get_type_variation_list(get_class_name(), &names);
+		}
+		else if (ThemeDB::get_singleton()->get_project_theme().is_valid())
+		{
 			ThemeDB::get_singleton()->get_project_theme()->get_type_variation_list(get_class_name(), &names);
 		}
 		names.sort_custom<StringName::AlphCompare>();
