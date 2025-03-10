@@ -219,7 +219,7 @@ Vector<String> DisplayServerIOS::get_rendering_drivers_func() {
 }
 
 void DisplayServerIOS::register_ios_driver() {
-	register_create_function("iOS", create_func, get_rendering_drivers_func);
+	register_create_function("ios", create_func, get_rendering_drivers_func);
 }
 
 // MARK: Events
