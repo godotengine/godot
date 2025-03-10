@@ -374,7 +374,7 @@
 			<param index="0" name="rid" type="RID" />
 			<description>
 				Returns global menu open callback.
-				b]Note:[/b] This method is implemented only on macOS.
+				[b]Note:[/b] This method is implemented only on macOS.
 			</description>
 		</method>
 		<method name="get_size" qualifiers="const">
