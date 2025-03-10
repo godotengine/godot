@@ -86,6 +86,11 @@ private:
 		float white; //  4 - 88
 		float auto_exposure_scale; //  4 - 92
 		float luminance_multiplier; //  4 - 96
+
+		float source_min_value; //  4 - 100
+		float source_max_value; //  4 - 104
+		float dest_min_value; //  4 - 108
+		float dest_max_value; //  4 - 112
 	};
 
 	/* tonemap actually writes to a framebuffer, which is
@@ -125,6 +130,8 @@ public:
 		RS::EnvironmentToneMapper tonemap_mode = RS::ENV_TONE_MAPPER_LINEAR;
 		float exposure = 1.0;
 		float white = 1.0;
+		float min_value = 0.0;
+		float max_value = 1.0;
 
 		bool use_auto_exposure = false;
 		float auto_exposure_scale = 0.5;
