@@ -432,7 +432,7 @@ void RenderingDevice::_staging_buffer_execute_required_action(StagingBuffers &p_
 Error RenderingDevice::buffer_copy(RID p_src_buffer, RID p_dst_buffer, uint32_t p_src_offset, uint32_t p_dst_offset, uint32_t p_size) {
 	ERR_RENDER_THREAD_GUARD_V(ERR_UNAVAILABLE);
 
-	ERR_FAIL_COND_V_MSG(draw_list, ERR_INVALID_PARAMETER,
+	ERR_FAIL_COND_V_MSG(draw_list && draw_list->viewport_set == true, ERR_INVALID_PARAMETER,
 			"Copying buffers is forbidden during creation of a draw list");
 	ERR_FAIL_COND_V_MSG(compute_list, ERR_INVALID_PARAMETER,
 			"Copying buffers is forbidden during creation of a compute list");
@@ -474,8 +474,7 @@ Error RenderingDevice::buffer_update(RID p_buffer, uint32_t p_offset, uint32_t p
 	ERR_RENDER_THREAD_GUARD_V(ERR_UNAVAILABLE);
 
 	copy_bytes_count += p_size;
-
-	ERR_FAIL_COND_V_MSG(draw_list, ERR_INVALID_PARAMETER,
+	ERR_FAIL_COND_V_MSG(draw_list && draw_list->viewport_set == true, ERR_INVALID_PARAMETER,
 			"Updating buffers is forbidden during creation of a draw list");
 	ERR_FAIL_COND_V_MSG(compute_list, ERR_INVALID_PARAMETER,
 			"Updating buffers is forbidden during creation of a compute list");
@@ -561,7 +560,7 @@ Error RenderingDevice::buffer_update(RID p_buffer, uint32_t p_offset, uint32_t p
 Error RenderingDevice::driver_callback_add(RDD::DriverCallback p_callback, void *p_userdata, VectorView<CallbackResource> p_resources) {
 	ERR_RENDER_THREAD_GUARD_V(ERR_UNAVAILABLE);
 
-	ERR_FAIL_COND_V_MSG(draw_list, ERR_INVALID_PARAMETER,
+	ERR_FAIL_COND_V_MSG(draw_list && draw_list->viewport_set == true, ERR_INVALID_PARAMETER,
 			"Driver callback is forbidden during creation of a draw list");
 	ERR_FAIL_COND_V_MSG(compute_list, ERR_INVALID_PARAMETER,
 			"Driver callback is forbidden during creation of a compute list");
@@ -632,7 +631,7 @@ Error RenderingDevice::buffer_clear(RID p_buffer, uint32_t p_offset, uint32_t p_
 
 	ERR_FAIL_COND_V_MSG((p_size % 4) != 0, ERR_INVALID_PARAMETER,
 			"Size must be a multiple of four");
-	ERR_FAIL_COND_V_MSG(draw_list, ERR_INVALID_PARAMETER,
+	ERR_FAIL_COND_V_MSG(draw_list && draw_list->viewport_set == true, ERR_INVALID_PARAMETER,
 			"Updating buffers in is forbidden during creation of a draw list");
 	ERR_FAIL_COND_V_MSG(compute_list, ERR_INVALID_PARAMETER,
 			"Updating buffers is forbidden during creation of a compute list");
@@ -1542,7 +1541,7 @@ Error RenderingDevice::_texture_initialize(RID p_texture, uint32_t p_layer, cons
 Error RenderingDevice::texture_update(RID p_texture, uint32_t p_layer, const Vector<uint8_t> &p_data) {
 	ERR_RENDER_THREAD_GUARD_V(ERR_UNAVAILABLE);
 
-	ERR_FAIL_COND_V_MSG(draw_list || compute_list, ERR_INVALID_PARAMETER, "Updating textures is forbidden during creation of a draw or compute list");
+	ERR_FAIL_COND_V_MSG((draw_list && draw_list->viewport_set == true) || compute_list, ERR_INVALID_PARAMETER, "Updating textures is forbidden during creation of a draw or compute list");
 
 	Texture *texture = texture_owner.get_or_null(p_texture);
 	ERR_FAIL_NULL_V(texture, ERR_INVALID_PARAMETER);
@@ -4233,7 +4232,7 @@ Error RenderingDevice::screen_free(DisplayServer::WindowID p_screen) {
 RenderingDevice::DrawListID RenderingDevice::draw_list_begin_for_screen(DisplayServer::WindowID p_screen, const Color &p_clear_color) {
 	ERR_RENDER_THREAD_GUARD_V(INVALID_ID);
 
-	ERR_FAIL_COND_V_MSG(draw_list != nullptr, INVALID_ID, "Only one draw list can be active at the same time.");
+	ERR_FAIL_COND_V_MSG((draw_list != nullptr) && draw_list->viewport_set, INVALID_ID, "Only one draw list can be active at the same time.");
 	ERR_FAIL_COND_V_MSG(compute_list != nullptr, INVALID_ID, "Only one draw/compute list can be active at the same time.");
 
 	RenderingContextDriver::SurfaceID surface = context->surface_get_from_window(p_screen);
@@ -4263,10 +4262,15 @@ RenderingDevice::DrawListID RenderingDevice::draw_list_begin_for_screen(DisplayS
 	return int64_t(ID_TYPE_DRAW_LIST) << ID_BASE_SHIFT;
 }
 
-RenderingDevice::DrawListID RenderingDevice::draw_list_begin(RID p_framebuffer, BitField<DrawFlags> p_draw_flags, const Vector<Color> &p_clear_color_values, float p_clear_depth_value, uint32_t p_clear_stencil_value, const Rect2 &p_region, uint32_t p_breadcrumb) {
+RenderingDevice::DrawListID RenderingDevice::_draw_list_begin_bind(RID p_framebuffer, BitField<DrawFlags> p_draw_flags, const Vector<Color> &p_clear_color_values, float p_clear_depth_value, uint32_t p_clear_stencil_value, const Rect2 &p_region, uint32_t p_breadcrumb) {
+	return draw_list_begin(p_framebuffer, p_draw_flags, p_clear_color_values, p_clear_depth_value, p_clear_stencil_value, p_region, p_breadcrumb);
+}
+
+RenderingDevice::DrawListID RenderingDevice::draw_list_begin(RID p_framebuffer, BitField<DrawFlags> p_draw_flags, VectorView<Color> p_clear_color_values, float p_clear_depth_value, uint32_t p_clear_stencil_value, const Rect2 &p_region, uint32_t p_breadcrumb) {
+
 	ERR_RENDER_THREAD_GUARD_V(INVALID_ID);
 
-	ERR_FAIL_COND_V_MSG(draw_list != nullptr, INVALID_ID, "Only one draw list can be active at the same time.");
+	ERR_FAIL_COND_V_MSG((draw_list != nullptr) && draw_list->viewport_set, INVALID_ID, "Only one draw list can be active at the same time.");
 
 	Framebuffer *framebuffer = framebuffer_owner.get_or_null(p_framebuffer);
 	ERR_FAIL_NULL_V(framebuffer, INVALID_ID);
@@ -4977,6 +4981,7 @@ RenderingDevice::DrawListID RenderingDevice::draw_list_switch_to_next_pass() {
 	ERR_RENDER_THREAD_GUARD_V(INVALID_ID);
 
 	ERR_FAIL_NULL_V(draw_list, INVALID_ID);
+	ERR_FAIL_COND_V(draw_list->viewport_set == false, INVALID_FORMAT_ID);
 	ERR_FAIL_COND_V(draw_list_current_subpass >= draw_list_subpass_count - 1, INVALID_FORMAT_ID);
 
 	draw_list_current_subpass++;
@@ -4998,8 +5003,16 @@ Error RenderingDevice::draw_list_switch_to_next_pass_split(uint32_t p_splits, Dr
 #endif
 
 Error RenderingDevice::_draw_list_allocate(const Rect2i &p_viewport, uint32_t p_subpass) {
-	draw_list = memnew(DrawList);
+
+	if (draw_list == nullptr) {
+		draw_list = memnew(DrawList);
+	}
+	
 	draw_list->viewport = p_viewport;
+	draw_list->viewport_set = true;
+#ifdef DEBUG_ENABLED
+	draw_list->validation.active = true;
+#endif
 
 	return OK;
 }
@@ -5008,15 +5021,14 @@ void RenderingDevice::_draw_list_free(Rect2i *r_last_viewport) {
 	if (r_last_viewport) {
 		*r_last_viewport = draw_list->viewport;
 	}
-	// Just end the list.
-	memdelete(draw_list);
-	draw_list = nullptr;
+
+	memset(draw_list, 0, sizeof(DrawList));
 }
 
 void RenderingDevice::draw_list_end() {
 	ERR_RENDER_THREAD_GUARD();
 
-	ERR_FAIL_NULL_MSG(draw_list, "Immediate draw list is already inactive.");
+	ERR_FAIL_COND_MSG(!draw_list->viewport_set, "Immediate draw list is already inactive.");
 
 	draw_graph.add_draw_list_end();
 
@@ -6397,7 +6409,7 @@ void RenderingDevice::_begin_frame(bool p_presented) {
 }
 
 void RenderingDevice::_end_frame() {
-	if (draw_list) {
+	if (draw_list && draw_list->viewport_set == true) {
 		ERR_PRINT("Found open draw list at the end of the frame, this should never happen (further drawing will likely not work).");
 	}
 
@@ -7339,7 +7351,7 @@ void RenderingDevice::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("draw_list_begin_for_screen", "screen", "clear_color"), &RenderingDevice::draw_list_begin_for_screen, DEFVAL(DisplayServer::MAIN_WINDOW_ID), DEFVAL(Color()));
 
-	ClassDB::bind_method(D_METHOD("draw_list_begin", "framebuffer", "draw_flags", "clear_color_values", "clear_depth_value", "clear_stencil_value", "region", "breadcrumb"), &RenderingDevice::draw_list_begin, DEFVAL(DRAW_DEFAULT_ALL), DEFVAL(Vector<Color>()), DEFVAL(1.0), DEFVAL(0), DEFVAL(Rect2()), DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("draw_list_begin", "framebuffer", "draw_flags", "clear_color_values", "clear_depth_value", "clear_stencil_value", "region", "breadcrumb"), &RenderingDevice::_draw_list_begin_bind, DEFVAL(DRAW_DEFAULT_ALL), DEFVAL(Vector<Color>()), DEFVAL(1.0), DEFVAL(0), DEFVAL(Rect2()), DEFVAL(0));
 #ifndef DISABLE_DEPRECATED
 	ClassDB::bind_method(D_METHOD("draw_list_begin_split", "framebuffer", "splits", "initial_color_action", "final_color_action", "initial_depth_action", "final_depth_action", "clear_color_values", "clear_depth", "clear_stencil", "region", "storage_textures"), &RenderingDevice::_draw_list_begin_split, DEFVAL(Vector<Color>()), DEFVAL(1.0), DEFVAL(0), DEFVAL(Rect2()), DEFVAL(TypedArray<RID>()));
 #endif
