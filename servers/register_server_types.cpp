@@ -325,6 +325,7 @@ void register_server_types() {
 #endif // _3D_DISABLED
 
 	GDREGISTER_ABSTRACT_CLASS(NavigationServer3D);
+	GDREGISTER_CLASS(NavigationLayersCostMap);
 	GDREGISTER_CLASS(NavigationPathQueryParameters3D);
 	GDREGISTER_CLASS(NavigationPathQueryResult3D);
 

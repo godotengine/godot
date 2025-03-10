@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="NavigationLayersCostMap" inherits="Resource" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Mapping used in path queries to override [ProjectSettings] default costs of navigation layers.
+	</brief_description>
+	<description>
+		Mapping used in path queries to override [ProjectSettings] default costs of navigation layers.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_navigation_layer_cost" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="layer_number" type="int" />
+			<description>
+				Returns the custom cost set for navigation [param layer_number].
+			</description>
+		</method>
+		<method name="set_navigation_layer_cost">
+			<return type="void" />
+			<param index="0" name="layer_number" type="int" />
+			<param index="1" name="cost" type="float" />
+			<description>
+				Sets the custom cost for navigation [param layer_number].
+			</description>
+		</method>
+	</methods>
+</class>

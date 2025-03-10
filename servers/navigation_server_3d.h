@@ -35,6 +35,7 @@
 
 #include "scene/resources/3d/navigation_mesh_source_geometry_data_3d.h"
 #include "scene/resources/navigation_mesh.h"
+#include "servers/navigation/navigation_layers_cost_map.h"
 #include "servers/navigation/navigation_path_query_parameters_3d.h"
 #include "servers/navigation/navigation_path_query_result_3d.h"
 
@@ -56,11 +57,19 @@ class NavigationServer3D : public Object {
 	static NavigationServer3D *singleton;
 
 protected:
+	static LocalVector<float> global_navigation_layers_cost_map;
+
 	static void _bind_methods();
 
 public:
 	/// Thread safe, can be used across many threads.
 	static NavigationServer3D *get_singleton();
+
+	void _update_from_project_settings();
+
+	static void global_set_navigation_layer_cost(int p_layer_number, float p_cost);
+	static float global_get_navigation_layer_cost(int p_layer_number);
+	static const LocalVector<float> &global_get_navigation_layers_cost_map() { return global_navigation_layers_cost_map; }
 
 	virtual TypedArray<RID> get_maps() const = 0;
 
@@ -118,6 +127,7 @@ public:
 	virtual TypedArray<RID> map_get_regions(RID p_map) const = 0;
 	virtual TypedArray<RID> map_get_agents(RID p_map) const = 0;
 	virtual TypedArray<RID> map_get_obstacles(RID p_map) const = 0;
+	virtual TypedArray<RID> map_get_areas(RID p_map) const = 0;
 
 	virtual void map_force_update(RID p_map) = 0;
 	virtual uint32_t map_get_iteration_id(RID p_map) const = 0;
@@ -336,6 +346,49 @@ public:
 	virtual void obstacle_set_avoidance_layers(RID p_obstacle, uint32_t p_layers) = 0;
 	virtual uint32_t obstacle_get_avoidance_layers(RID p_obstacle) const = 0;
 
+	enum AreaShapeType3D {
+		AREA_SHAPE_NONE = 0,
+		AREA_SHAPE_BOX,
+		AREA_SHAPE_CYLINDER,
+		AREA_SHAPE_POLYGON
+	};
+
+	virtual RID area_create() = 0;
+	virtual RID area_create_box(Vector3 p_position, Vector3 p_size, uint32_t p_navigation_layers, int p_priority = 0) = 0;
+	virtual RID area_create_cylinder(Vector3 p_position, float p_radius, float p_height, uint32_t p_navigation_layers, int p_priority = 0) = 0;
+	virtual RID area_create_polygon(Vector3 p_position, const Vector<Vector3> &p_vertices, float p_height, uint32_t p_navigation_layers, int p_priority = 0) = 0;
+
+	virtual void area_set_shape_type(RID p_area, AreaShapeType3D p_shape_type) = 0;
+
+	virtual void area_set_map(RID p_area, RID p_map) = 0;
+	virtual RID area_get_map(RID p_area) const = 0;
+
+	virtual void area_set_enabled(RID p_area, bool p_enabled) = 0;
+	virtual bool area_get_enabled(RID p_area) const = 0;
+
+	virtual void area_set_position(RID p_area, Vector3 p_position) = 0;
+	virtual Vector3 area_get_position(RID p_area) const = 0;
+
+	virtual void area_set_height(RID p_area, float p_height) = 0;
+	virtual float area_get_height(RID p_area) const = 0;
+
+	virtual void area_set_navigation_layers(RID p_area, uint32_t p_navigation_layers) = 0;
+	virtual uint32_t area_get_navigation_layers(RID p_area) const = 0;
+
+	virtual void area_set_priority(RID p_area, int p_priority) = 0;
+	virtual int area_get_priority(RID p_area) const = 0;
+
+	virtual AABB area_get_bounds(RID p_area) const = 0;
+
+	virtual void area_set_size(RID p_area, Vector3 p_size) = 0;
+	virtual void area_set_radius(RID p_area, float p_radius) = 0;
+	virtual void area_set_vertices(RID p_area, const Vector<Vector3> &p_vertices) = 0;
+
+	virtual void area_set_owner_id(RID p_area, ObjectID p_owner_id) = 0;
+	virtual ObjectID area_get_owner_id(RID p_area) const = 0;
+
+	virtual bool area_has_point(RID p_area, Vector3 p_point) const = 0;
+
 	/// Destroy the `RID`
 	virtual void free(RID p_object) = 0;
 
@@ -433,6 +486,10 @@ private:
 	Color debug_navigation_avoidance_static_obstacle_pushin_edge_color = Color(1.0, 0.0, 0.0, 1.0);
 	Color debug_navigation_avoidance_static_obstacle_pushout_edge_color = Color(1.0, 1.0, 0.0, 1.0);
 
+	Color debug_area_edge_color = Color(0.8, 0.6, 0.4, 1.0);
+	Color debug_area_edge_disabled_color = Color(0.5, 0.5, 0.5, 1.0);
+	Color debug_area_edge_invalid_color = Color(1.0, 0.0, 0.0, 1.0);
+
 	bool debug_navigation_enable_edge_connections = true;
 	bool debug_navigation_enable_edge_connections_xray = true;
 	bool debug_navigation_enable_edge_lines = true;
@@ -464,6 +521,10 @@ private:
 
 	Ref<StandardMaterial3D> debug_navigation_agent_path_line_material;
 	Ref<StandardMaterial3D> debug_navigation_agent_path_point_material;
+
+	Ref<StandardMaterial3D> debug_area_edge_material;
+	Ref<StandardMaterial3D> debug_area_edge_disabled_material;
+	Ref<StandardMaterial3D> debug_area_edge_invalid_material;
 
 public:
 	void set_debug_navigation_enabled(bool p_enabled);
@@ -571,6 +632,10 @@ public:
 	Ref<StandardMaterial3D> get_debug_navigation_avoidance_static_obstacle_pushout_face_material();
 	Ref<StandardMaterial3D> get_debug_navigation_avoidance_static_obstacle_pushin_edge_material();
 	Ref<StandardMaterial3D> get_debug_navigation_avoidance_static_obstacle_pushout_edge_material();
+
+	Ref<StandardMaterial3D> get_debug_area_edge_material();
+	Ref<StandardMaterial3D> get_debug_area_edge_disabled_material();
+	Ref<StandardMaterial3D> get_debug_area_edge_invalid_material();
 #endif // DEBUG_ENABLED
 };
 
@@ -588,4 +653,5 @@ public:
 	static void finalize_server();
 };
 
+VARIANT_ENUM_CAST(NavigationServer3D::AreaShapeType3D);
 VARIANT_ENUM_CAST(NavigationServer3D::ProcessInfo);
