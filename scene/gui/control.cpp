@@ -456,7 +456,7 @@ void Control::_validate_property(PropertyInfo &p_property) const {
 				from_control->get_theme()->get_type_variation_list(get_class_name(), &names);
 			}
 		} else if (get_theme().is_valid()) {
-			 //this works but only if theme has been overridden
+			//this works but only if theme has been overridden
 			get_theme()->get_type_variation_list(get_class_name(), &names);
 		} else if (ThemeDB::get_singleton()->get_project_theme().is_valid()) {
 			ThemeDB::get_singleton()->get_project_theme()->get_type_variation_list(get_class_name(), &names);
