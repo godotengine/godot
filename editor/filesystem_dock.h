@@ -151,7 +151,6 @@ private:
 	Button *button_dock_placement = nullptr;
 
 	Button *button_toggle_display_mode = nullptr;
-	Button *button_reload = nullptr;
 	Button *button_file_list_display_mode = nullptr;
 	Button *button_hist_next = nullptr;
 	Button *button_hist_prev = nullptr;

@@ -574,8 +574,6 @@ void FileSystemDock::_notification(int p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			_update_display_mode(true);
 
-			button_reload->set_button_icon(get_editor_theme_icon(SNAME("Reload")));
-
 			StringName mode_icon = "Panels1";
 			if (display_mode == DISPLAY_MODE_VSPLIT) {
 				mode_icon = "Panels2";
@@ -4089,13 +4087,6 @@ FileSystemDock::FileSystemDock() {
 	current_path_line_edit->set_h_size_flags(SIZE_EXPAND_FILL);
 	_set_current_path_line_edit_text(current_path);
 	toolbar_hbc->add_child(current_path_line_edit);
-
-	button_reload = memnew(Button);
-	button_reload->connect(SceneStringName(pressed), callable_mp(this, &FileSystemDock::_rescan));
-	button_reload->set_focus_mode(FOCUS_NONE);
-	button_reload->set_tooltip_text(TTR("Re-Scan Filesystem"));
-	button_reload->hide();
-	toolbar_hbc->add_child(button_reload);
 
 	button_toggle_display_mode = memnew(Button);
 	button_toggle_display_mode->connect(SceneStringName(pressed), callable_mp(this, &FileSystemDock::_change_split_mode));
