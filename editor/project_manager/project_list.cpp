@@ -156,7 +156,7 @@ void ProjectListItemControl::set_unsupported_features(PackedStringArray p_featur
 					project_version_major = project_version_split[0].to_int();
 					project_version_minor = project_version_split[1].to_int();
 				}
-				if (VERSION_MAJOR != project_version_major || VERSION_MINOR <= project_version_minor) {
+				if (GODOT_VERSION_MAJOR != project_version_major || GODOT_VERSION_MINOR <= project_version_minor) {
 					// Don't show a warning if the project was last edited in a previous minor version.
 					tooltip_text += TTR("This project was last edited in a different Godot version: ") + p_features[i] + "\n";
 				}
