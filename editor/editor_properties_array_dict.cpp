@@ -33,6 +33,7 @@
 #include "core/input/input.h"
 #include "core/io/marshalls.h"
 #include "editor/editor_file_system.h"
+#include "editor/editor_node.h"
 #include "editor/editor_properties.h"
 #include "editor/editor_properties_vector.h"
 #include "editor/editor_settings.h"
@@ -459,6 +460,8 @@ void EditorPropertyArray::update_property() {
 			button_add_item = EditorInspector::create_inspector_action_button(TTR("Add Element"));
 			button_add_item->set_button_icon(get_editor_theme_icon(SNAME("Add")));
 			button_add_item->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyArray::_add_element));
+			button_add_item->connect(SceneStringName(draw), callable_mp(this, &EditorPropertyArray::_button_add_item_draw));
+			SET_DRAG_FORWARDING_CD(button_add_item, EditorPropertyArray);
 			button_add_item->set_disabled(is_read_only());
 			vbox->add_child(button_add_item);
 
@@ -550,6 +553,13 @@ void EditorPropertyArray::_button_draw() {
 	}
 }
 
+void EditorPropertyArray::_button_add_item_draw() {
+	if (dropping) {
+		Color color = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
+		button_add_item->draw_rect(Rect2(Point2(), button_add_item->get_size()), color, false);
+	}
+}
+
 bool EditorPropertyArray::_is_drop_valid(const Dictionary &p_drag_data) const {
 	if (is_read_only()) {
 		return false;
@@ -570,11 +580,18 @@ bool EditorPropertyArray::_is_drop_valid(const Dictionary &p_drag_data) const {
 		PackedStringArray files = drag_data["files"];
 
 		for (const String &file : files) {
-			const String ftype = EditorFileSystem::get_singleton()->get_file_type(file);
+			int idx_in_dir;
+			EditorFileSystemDirectory const *dir = EditorFileSystem::get_singleton()->find_file(file, &idx_in_dir);
+			if (!dir) {
+				return false;
+			}
+			StringName ftype = dir->get_file_type(idx_in_dir);
+			String script_class = dir->get_file_resource_script_class(idx_in_dir);
+
 			for (String at : allowed_type.split(",")) {
 				at = at.strip_edges();
 				// Fail if one of the files is not of allowed type.
-				if (!ClassDB::is_parent_class(ftype, at)) {
+				if (!ClassDB::is_parent_class(ftype, at) && !EditorNode::get_editor_data().script_class_is_parent(script_class, at)) {
 					return false;
 				}
 			}
@@ -582,6 +599,28 @@ bool EditorPropertyArray::_is_drop_valid(const Dictionary &p_drag_data) const {
 
 		// If no files fail, drop is valid.
 		return true;
+	}
+
+	if (drop_type == "resource") {
+		Ref<Resource> res = drag_data["resource"];
+		if (res.is_null()) {
+			return false;
+		}
+
+		String res_type = res->get_class();
+		StringName script_class;
+		if (res->get_script()) {
+			script_class = EditorNode::get_singleton()->get_object_custom_type_name(res->get_script());
+		}
+
+		for (String at : allowed_type.split(",")) {
+			at = at.strip_edges();
+			if (ClassDB::is_parent_class(res_type, at) || EditorNode::get_editor_data().script_class_is_parent(script_class, at)) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	if (drop_type == "nodes") {
@@ -606,7 +645,8 @@ bool EditorPropertyArray::_is_drop_valid(const Dictionary &p_drag_data) const {
 			ERR_FAIL_NULL_V_MSG(dropped_node, false, "Could not get the dropped node by its path.");
 
 			if (allowed_type != "NodePath") {
-				if (!ClassDB::is_parent_class(dropped_node->get_class_name(), allowed_type)) {
+				if (!ClassDB::is_parent_class(dropped_node->get_class_name(), allowed_type) &&
+						!EditorNode::get_singleton()->is_object_of_custom_type(dropped_node, allowed_type)) {
 					// Fail if one of the nodes is not of allowed type.
 					return false;
 				}
@@ -617,7 +657,8 @@ bool EditorPropertyArray::_is_drop_valid(const Dictionary &p_drag_data) const {
 				if (!allowed_subtype_array.has(dropped_node->get_class_name())) {
 					// The dropped node type was not found in the allowed subtype array, we must check if it inherits one of them.
 					for (const String &ast : allowed_subtype_array) {
-						if (ClassDB::is_parent_class(dropped_node->get_class_name(), ast)) {
+						if (ClassDB::is_parent_class(dropped_node->get_class_name(), ast) ||
+								EditorNode::get_singleton()->is_object_of_custom_type(dropped_node, ast)) {
 							is_drop_allowed = true;
 							break;
 						} else {
@@ -667,6 +708,16 @@ void EditorPropertyArray::drop_data_fw(const Point2 &p_point, const Variant &p_d
 		}
 
 		emit_changed(get_edited_property(), array);
+	}
+
+	if (drop_type == "resource") {
+		Ref<Resource> res = drag_data["resource"];
+
+		if (res.is_valid()) {
+			array.call("push_back", res);
+
+			emit_changed(get_edited_property(), array);
+		}
 	}
 
 	if (drop_type == "nodes") {
@@ -724,6 +775,9 @@ void EditorPropertyArray::_notification(int p_what) {
 				if (_is_drop_valid(get_viewport()->gui_get_drag_data())) {
 					dropping = true;
 					edit->queue_redraw();
+					if (button_add_item) {
+						button_add_item->queue_redraw();
+					}
 				}
 			}
 		} break;
@@ -732,6 +786,9 @@ void EditorPropertyArray::_notification(int p_what) {
 			if (dropping) {
 				dropping = false;
 				edit->queue_redraw();
+				if (button_add_item) {
+					button_add_item->queue_redraw();
+				}
 			}
 		} break;
 	}
