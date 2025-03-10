@@ -936,6 +936,10 @@ bool Array::is_read_only() const {
 	return _p->read_only != nullptr;
 }
 
+Span<Variant> Array::span() const {
+	return _p->array.span();
+}
+
 Array::Array(const Array &p_from) {
 	_p = nullptr;
 	_ref(p_from);
