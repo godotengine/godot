@@ -1391,6 +1391,10 @@ bool Thread::is_alive() const {
 	return running.is_set();
 }
 
+bool Thread::is_main_thread() {
+	return ::Thread::is_main_thread();
+}
+
 Variant Thread::wait_to_finish() {
 	ERR_FAIL_COND_V_MSG(!is_started(), Variant(), "Thread must have been started to wait for its completion.");
 	thread.wait_to_finish();
@@ -1413,6 +1417,7 @@ void Thread::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("wait_to_finish"), &Thread::wait_to_finish);
 
 	ClassDB::bind_static_method("Thread", D_METHOD("set_thread_safety_checks_enabled", "enabled"), &Thread::set_thread_safety_checks_enabled);
+	ClassDB::bind_static_method("Thread", D_METHOD("is_main_thread"), &Thread::is_main_thread);
 
 	BIND_ENUM_CONSTANT(PRIORITY_LOW);
 	BIND_ENUM_CONSTANT(PRIORITY_NORMAL);
