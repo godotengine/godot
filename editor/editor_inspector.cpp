@@ -1938,6 +1938,12 @@ void EditorInspectorSection::set_bg_color(const Color &p_bg_color) {
 	queue_redraw();
 }
 
+void EditorInspectorSection::reset_timer() {
+	if (dropping_for_unfold && !dropping_unfold_timer->is_stopped()) {
+		dropping_unfold_timer->start();
+	}
+}
+
 bool EditorInspectorSection::has_revertable_properties() const {
 	return !revertable_properties.is_empty();
 }
@@ -3478,6 +3484,7 @@ void EditorInspector::update_tree() {
 			if (!vbox_per_path[root_vbox].has(acc_path)) {
 				// If the section does not exists, create it.
 				EditorInspectorSection *section = memnew(EditorInspectorSection);
+				get_root_inspector()->get_v_scroll_bar()->connect(SceneStringName(value_changed), callable_mp(section, &EditorInspectorSection::reset_timer).unbind(1));
 				current_vbox->add_child(section);
 				sections.push_back(section);
 
@@ -3878,6 +3885,7 @@ void EditorInspector::update_tree() {
 				}
 
 				EditorInspectorSection *section = memnew(EditorInspectorSection);
+				get_root_inspector()->get_v_scroll_bar()->connect(SceneStringName(value_changed), callable_mp(section, &EditorInspectorSection::reset_timer).unbind(1));
 				favorites_groups_vbox->add_child(section);
 				parent_vbox = section->get_vbox();
 				section->setup("", section_name, object, sscolor, false);
@@ -3897,6 +3905,7 @@ void EditorInspector::update_tree() {
 					}
 
 					EditorInspectorSection *section = memnew(EditorInspectorSection);
+					get_root_inspector()->get_v_scroll_bar()->connect(SceneStringName(value_changed), callable_mp(section, &EditorInspectorSection::reset_timer).unbind(1));
 					vbox->add_child(section);
 					vbox = section->get_vbox();
 					section->setup("", section_name, object, sscolor, false);
@@ -5001,4 +5010,5 @@ EditorInspector::EditorInspector() {
 	set_property_name_style(EditorPropertyNameProcessor::get_singleton()->get_settings_style());
 
 	set_draw_focus_border(true);
+	set_scroll_on_drag_hover(true);
 }
