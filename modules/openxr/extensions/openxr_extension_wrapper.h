@@ -30,8 +30,10 @@
 
 #pragma once
 
+#include "core/core_bind.h"
 #include "core/error/error_macros.h"
 #include "core/math/projection.h"
+#include "core/object/object.h"
 #include "core/templates/hash_map.h"
 #include "core/templates/rid.h"
 #include "core/variant/variant.h"
@@ -42,7 +44,12 @@ class OpenXRAPI;
 class OpenXRActionMap;
 
 // `OpenXRExtensionWrapper` allows us to implement OpenXR extensions.
-class OpenXRExtensionWrapper {
+class OpenXRExtensionWrapper : public Object {
+	GDCLASS(OpenXRExtensionWrapper, Object);
+
+protected:
+	static void _bind_methods() {}
+
 public:
 	// `get_requested_extensions` should return a list of OpenXR extensions related to this extension.
 	// If the bool * is a nullptr this extension is mandatory
