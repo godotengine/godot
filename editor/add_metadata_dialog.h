@@ -49,9 +49,12 @@ private:
 	List<StringName> _existing_metas;
 
 	void _check_meta_name();
-	void _complete_init(const StringName &p_label);
+	void _update_controls(HBoxContainer *p_typed_container, Label *p_key_label, Label *p_value_label);
+	void _complete_init(const StringName &p_title);
 
 	LineEdit *add_meta_name = nullptr;
 	OptionButton *add_meta_type = nullptr;
+	OptionButton *add_meta_key_type = nullptr;
+	OptionButton *add_meta_value_type = nullptr;
 	EditorValidationPanel *validation_panel = nullptr;
 };
