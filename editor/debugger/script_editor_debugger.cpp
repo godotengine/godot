@@ -809,6 +809,10 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, uint64_t p_thread
 	} else if (p_msg == "request_quit") {
 		emit_signal(SNAME("stop_requested"));
 		_stop_and_notify();
+	} else if (p_msg == "request_embed_suspend_toggle") {
+		emit_signal(SNAME("embed_shortcut_requested"), EmbedShortcutAction::EMBED_SUSPEND_TOGGLE);
+	} else if (p_msg == "request_embed_next_frame") {
+		emit_signal(SNAME("embed_shortcut_requested"), EmbedShortcutAction::EMBED_NEXT_FRAME);
 	} else if (p_msg == "remote_node_clicked") {
 		if (!p_data.is_empty()) {
 			emit_signal(SNAME("remote_tree_select_requested"), p_data[0]);
@@ -1798,6 +1802,9 @@ void ScriptEditorDebugger::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("set_breakpoint", PropertyInfo("script"), PropertyInfo(Variant::INT, "line"), PropertyInfo(Variant::BOOL, "enabled")));
 	ADD_SIGNAL(MethodInfo("clear_breakpoints"));
 	ADD_SIGNAL(MethodInfo("errors_cleared"));
+	ADD_SIGNAL(MethodInfo("embed_shortcut_requested", PropertyInfo(Variant::INT, "embed_shortcut_action")));
+	ADD_SIGNAL(MethodInfo("embed_suspend_toggle_requested"));
+	ADD_SIGNAL(MethodInfo("embed_next_frame_requested"));
 }
 
 void ScriptEditorDebugger::add_debugger_tab(Control *p_control) {
