@@ -77,9 +77,16 @@ private:
 	}
 
 	void _wait_for_all_pipelines() {
-		MutexLock local_lock(local_mutex);
-		for (KeyValue<uint32_t, WorkerThreadPool::TaskID> key_value : compilation_tasks) {
-			WorkerThreadPool::get_singleton()->wait_for_task_completion(key_value.value);
+		Vector<WorkerThreadPool::TaskID> tasks_to_wait;
+		{
+			MutexLock local_lock(local_mutex);
+			for (KeyValue<uint32_t, WorkerThreadPool::TaskID> key_value : compilation_tasks) {
+				tasks_to_wait.append(key_value.value);
+			}
+		}
+
+		for (WorkerThreadPool::TaskID task_id : tasks_to_wait) {
+			WorkerThreadPool::get_singleton()->wait_for_task_completion(task_id);
 		}
 	}
 
@@ -137,17 +144,27 @@ public:
 	}
 
 	void wait_for_pipeline(uint32_t p_key_hash) {
-		MutexLock local_lock(local_mutex);
-		if (!compilation_set.has(p_key_hash)) {
-			// The pipeline was never submitted, we can't wait for it.
-			return;
+		bool is_need_to_wait = false;
+		WorkerThreadPool::TaskID task_id_to_wait = 0;
+
+		{
+			MutexLock local_lock(local_mutex);
+			if (!compilation_set.has(p_key_hash)) {
+				// The pipeline was never submitted, we can't wait for it.
+				return;
+			}
+
+			HashMap<uint32_t, WorkerThreadPool::TaskID>::Iterator task_it = compilation_tasks.find(p_key_hash);
+			if (task_it != compilation_tasks.end()) {
+				// Wait for and remove the compilation task if it exists.
+				is_need_to_wait = true;
+				task_id_to_wait = task_it->value;
+				compilation_tasks.remove(task_it);
+			}
 		}
 
-		HashMap<uint32_t, WorkerThreadPool::TaskID>::Iterator task_it = compilation_tasks.find(p_key_hash);
-		if (task_it != compilation_tasks.end()) {
-			// Wait for and remove the compilation task if it exists.
-			WorkerThreadPool::get_singleton()->wait_for_task_completion(task_it->value);
-			compilation_tasks.remove(task_it);
+		if (is_need_to_wait) {
+			WorkerThreadPool::get_singleton()->wait_for_task_completion(task_id_to_wait);
 		}
 	}
 
