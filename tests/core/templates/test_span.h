@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  godot_status_item.mm                                                  */
+/*  test_span.h                                                           */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,56 +28,33 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#import "godot_status_item.h"
+#pragma once
 
-#import "display_server_macos.h"
+#include "core/templates/span.h"
 
-@implementation GodotStatusItemDelegate
+#include "tests/test_macros.h"
 
-- (id)init {
-	self = [super init];
-	return self;
+namespace TestSpan {
+
+TEST_CASE("[Span] Constexpr Validators") {
+	constexpr Span<uint16_t> span_empty;
+	static_assert(span_empty.ptr() == nullptr);
+	static_assert(span_empty.size() == 0);
+	static_assert(span_empty.is_empty());
+
+	constexpr static uint16_t value = 5;
+	constexpr Span<uint16_t> span_value(&value, 1);
+	static_assert(span_value.ptr() == &value);
+	static_assert(span_value.size() == 1);
+	static_assert(!span_value.is_empty());
+
+	constexpr static char32_t array[] = U"122345";
+	constexpr Span<char32_t> span_array(array, strlen(array));
+	static_assert(span_array.ptr() == &array[0]);
+	static_assert(span_array.size() == 6);
+	static_assert(!span_array.is_empty());
+	static_assert(span_array[0] == U'1');
+	static_assert(span_array[span_array.size() - 1] == U'5');
 }
 
-- (IBAction)click:(id)sender {
-	NSEvent *current_event = [NSApp currentEvent];
-	MouseButton index = MouseButton::LEFT;
-	if (current_event) {
-		if (current_event.type == NSEventTypeLeftMouseDown) {
-			index = MouseButton::LEFT;
-		} else if (current_event.type == NSEventTypeRightMouseDown) {
-			index = MouseButton::RIGHT;
-		} else if (current_event.type == NSEventTypeOtherMouseDown) {
-			if ((int)[current_event buttonNumber] == 2) {
-				index = MouseButton::MIDDLE;
-			} else if ((int)[current_event buttonNumber] == 3) {
-				index = MouseButton::MB_XBUTTON1;
-			} else if ((int)[current_event buttonNumber] == 4) {
-				index = MouseButton::MB_XBUTTON2;
-			}
-		}
-	}
-
-	DisplayServerMacOS *ds = (DisplayServerMacOS *)DisplayServer::get_singleton();
-	if (!ds) {
-		return;
-	}
-
-	if (cb.is_valid()) {
-		Variant v_button = index;
-		Variant v_pos = ds->mouse_get_position();
-		const Variant *v_args[2] = { &v_button, &v_pos };
-		Variant ret;
-		Callable::CallError ce;
-		cb.callp((const Variant **)&v_args, 2, ret, ce);
-		if (ce.error != Callable::CallError::CALL_OK) {
-			ERR_PRINT(vformat("Failed to execute status indicator callback: %s.", Variant::get_callable_error_text(cb, v_args, 2, ce)));
-		}
-	}
-}
-
-- (void)setCallback:(const Callable &)callback {
-	cb = callback;
-}
-
-@end
+} // namespace TestSpan

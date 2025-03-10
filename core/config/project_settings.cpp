@@ -289,7 +289,7 @@ bool ProjectSettings::_set(const StringName &p_name, const Variant &p_value) {
 				remove_autoload(node_name);
 			}
 		} else if (p_name.operator String().begins_with("global_group/")) {
-			String group_name = p_name.operator String().get_slice("/", 1);
+			String group_name = p_name.operator String().get_slicec('/', 1);
 			if (global_groups.has(group_name)) {
 				remove_global_group(group_name);
 			}
@@ -340,7 +340,7 @@ bool ProjectSettings::_set(const StringName &p_name, const Variant &p_value) {
 			}
 			add_autoload(autoload);
 		} else if (p_name.operator String().begins_with("global_group/")) {
-			String group_name = p_name.operator String().get_slice("/", 1);
+			String group_name = p_name.operator String().get_slicec('/', 1);
 			add_global_group(group_name, p_value);
 		}
 	}
@@ -1141,7 +1141,7 @@ Error ProjectSettings::save_custom(const String &p_path, const CustomMap &p_cust
 			save_features += ",";
 		}
 
-		String f = p_custom_features[i].strip_edges().replace("\"", "");
+		String f = p_custom_features[i].strip_edges().remove_char('\"');
 		save_features += f;
 	}
 

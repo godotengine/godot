@@ -35,6 +35,7 @@
 #include "servers/rendering/renderer_rd/storage_rd/mesh_storage.h"
 #include "servers/rendering/renderer_rd/storage_rd/particles_storage.h"
 #include "servers/rendering/renderer_rd/storage_rd/texture_storage.h"
+#include "servers/rendering/renderer_rd/uniform_set_cache_rd.h"
 #include "servers/rendering/rendering_device.h"
 #include "servers/rendering/rendering_server_default.h"
 
@@ -404,7 +405,8 @@ RID RenderForwardMobile::_setup_render_pass_uniform_set(RenderListType p_render_
 	// default render buffer and scene state uniform set
 	// loaded into set 1
 
-	Vector<RD::Uniform> uniforms;
+	thread_local LocalVector<RD::Uniform> uniforms;
+	uniforms.clear();
 
 	{
 		RD::Uniform u;
@@ -481,9 +483,8 @@ RID RenderForwardMobile::_setup_render_pass_uniform_set(RenderListType p_render_
 
 	/* we have limited ability to keep textures like this so we're moving this to a set we change before drawing geometry and just pushing the needed texture in */
 	{
-		RD::Uniform u;
-		u.binding = 6;
-		u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
+		Vector<RID> textures;
+		textures.resize(scene_state.max_lightmaps * 2);
 
 		RID default_tex = texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_2D_ARRAY_WHITE);
 		for (uint32_t i = 0; i < scene_state.max_lightmaps * 2; i++) {
@@ -503,14 +504,14 @@ RID RenderForwardMobile::_setup_render_pass_uniform_set(RenderListType p_render_
 
 				if (texture.is_valid()) {
 					RID rd_texture = texture_storage->texture_get_rd_texture(texture);
-					u.append_id(rd_texture);
+					textures.write[i] = rd_texture;
 					continue;
 				}
 			}
 
-			u.append_id(default_tex);
+			textures.write[i] = default_tex;
 		}
-
+		RD::Uniform u(RD::UNIFORM_TYPE_TEXTURE, 6, textures);
 		uniforms.push_back(u);
 	}
 
@@ -630,15 +631,7 @@ RID RenderForwardMobile::_setup_render_pass_uniform_set(RenderListType p_render_
 
 	p_samplers.append_uniforms(uniforms, 13);
 
-	if (p_index >= (int)render_pass_uniform_sets.size()) {
-		render_pass_uniform_sets.resize(p_index + 1);
-	}
-
-	if (render_pass_uniform_sets[p_index].is_valid() && RD::get_singleton()->uniform_set_is_valid(render_pass_uniform_sets[p_index])) {
-		RD::get_singleton()->free(render_pass_uniform_sets[p_index]);
-	}
-	render_pass_uniform_sets[p_index] = RD::get_singleton()->uniform_set_create(uniforms, scene_shader.default_shader_rd, RENDER_PASS_UNIFORM_SET, true);
-	return render_pass_uniform_sets[p_index];
+	return UniformSetCacheRD::get_singleton()->get_cache_vec(scene_shader.default_shader_rd, RENDER_PASS_UNIFORM_SET, uniforms);
 }
 
 void RenderForwardMobile::_setup_lightmaps(const RenderDataRD *p_render_data, const PagedArray<RID> &p_lightmaps, const Transform3D &p_cam_transform) {
@@ -1703,16 +1696,15 @@ void RenderForwardMobile::base_uniforms_changed() {
 void RenderForwardMobile::_update_render_base_uniform_set() {
 	RendererRD::LightStorage *light_storage = RendererRD::LightStorage::get_singleton();
 
-	// We must always recreate the uniform set every frame if we're using linear pools (since we requested it on creation).
-	// This pays off as long as we often get inside the if() block (i.e. the settings end up changing often).
-	if (RD::get_singleton()->uniform_sets_have_linear_pools() || render_base_uniform_set.is_null() || !RD::get_singleton()->uniform_set_is_valid(render_base_uniform_set) || (lightmap_texture_array_version != light_storage->lightmap_array_get_version())) {
+	if (render_base_uniform_set.is_null() || !RD::get_singleton()->uniform_set_is_valid(render_base_uniform_set) || (lightmap_texture_array_version != light_storage->lightmap_array_get_version())) {
 		if (render_base_uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(render_base_uniform_set)) {
 			RD::get_singleton()->free(render_base_uniform_set);
 		}
 
 		lightmap_texture_array_version = light_storage->lightmap_array_get_version();
 
-		Vector<RD::Uniform> uniforms;
+		thread_local LocalVector<RD::Uniform> uniforms;
+		uniforms.clear();
 
 		{
 			RD::Uniform u;
@@ -1806,7 +1798,7 @@ void RenderForwardMobile::_update_render_base_uniform_set() {
 			uniforms.push_back(u);
 		}
 
-		render_base_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, scene_shader.default_shader_rd, SCENE_UNIFORM_SET, true);
+		render_base_uniform_set = UniformSetCacheRD::get_singleton()->get_cache_vec(scene_shader.default_shader_rd, SCENE_UNIFORM_SET, uniforms);
 	}
 }
 
@@ -1863,10 +1855,7 @@ void RenderForwardMobile::_fill_instance_data(RenderListType p_render_list, uint
 		instance_data.gi_offset = inst->gi_offset_cache;
 		instance_data.layer_mask = inst->layer_mask;
 		instance_data.instance_uniforms_ofs = uint32_t(inst->shader_uniforms_offset);
-		instance_data.lightmap_uv_scale[0] = inst->lightmap_uv_scale.position.x;
-		instance_data.lightmap_uv_scale[1] = inst->lightmap_uv_scale.position.y;
-		instance_data.lightmap_uv_scale[2] = inst->lightmap_uv_scale.size.x;
-		instance_data.lightmap_uv_scale[3] = inst->lightmap_uv_scale.size.y;
+		instance_data.set_lightmap_uv_scale(inst->lightmap_uv_scale);
 
 		AABB surface_aabb = AABB(Vector3(0.0, 0.0, 0.0), Vector3(1.0, 1.0, 1.0));
 		uint64_t format = RendererRD::MeshStorage::get_singleton()->mesh_surface_get_format(surface->surface);
@@ -1879,23 +1868,13 @@ void RenderForwardMobile::_fill_instance_data(RenderListType p_render_list, uint
 
 		fill_push_constant_instance_indices(&instance_data, inst);
 
-		instance_data.compressed_aabb_position[0] = surface_aabb.position.x;
-		instance_data.compressed_aabb_position[1] = surface_aabb.position.y;
-		instance_data.compressed_aabb_position[2] = surface_aabb.position.z;
-
-		instance_data.compressed_aabb_size[0] = surface_aabb.size.x;
-		instance_data.compressed_aabb_size[1] = surface_aabb.size.y;
-		instance_data.compressed_aabb_size[2] = surface_aabb.size.z;
-
-		instance_data.uv_scale[0] = uv_scale.x;
-		instance_data.uv_scale[1] = uv_scale.y;
-		instance_data.uv_scale[2] = uv_scale.z;
-		instance_data.uv_scale[3] = uv_scale.w;
+		instance_data.set_compressed_aabb(surface_aabb);
+		instance_data.set_uv_scale(uv_scale);
 
 		RenderElementInfo &element_info = rl->element_info[p_offset + i];
 
-		element_info.lod_index = surface->lod_index;
-		element_info.uses_lightmap = surface->sort.uses_lightmap;
+		// Sets lod_index and uses_lightmap at once.
+		element_info.value = uint32_t(surface->sort.sort_key1 & 0x1FF);
 	}
 
 	if (p_update_buffer) {
@@ -2027,7 +2006,7 @@ void RenderForwardMobile::_fill_render_list(RenderListType p_render_list, const 
 
 			if (p_render_data->scene_data->screen_mesh_lod_threshold > 0.0 && mesh_storage->mesh_surface_has_lod(surf->surface)) {
 				uint32_t indices = 0;
-				surf->lod_index = mesh_storage->mesh_surface_get_lod(surf->surface, inst->lod_model_scale * inst->lod_bias, lod_distance * p_render_data->scene_data->lod_distance_multiplier, p_render_data->scene_data->screen_mesh_lod_threshold, indices);
+				surf->sort.lod_index = mesh_storage->mesh_surface_get_lod(surf->surface, inst->lod_model_scale * inst->lod_bias, lod_distance * p_render_data->scene_data->lod_distance_multiplier, p_render_data->scene_data->screen_mesh_lod_threshold, indices);
 				if (p_render_data->render_info) {
 					indices = _indices_to_primitives(surf->primitive, indices);
 					if (p_render_list == RENDER_LIST_OPAQUE) { //opaque
@@ -2037,7 +2016,7 @@ void RenderForwardMobile::_fill_render_list(RenderListType p_render_list, const 
 					}
 				}
 			} else {
-				surf->lod_index = 0;
+				surf->sort.lod_index = 0;
 				if (p_render_data->render_info) {
 					uint32_t to_draw = mesh_storage->mesh_surface_get_vertices_drawn_count(surf->surface);
 					to_draw = _indices_to_primitives(surf->primitive, to_draw);
@@ -2313,7 +2292,6 @@ void RenderForwardMobile::_render_list_template(RenderingDevice::DrawListID p_dr
 				mesh_storage->mesh_surface_get_vertex_arrays_and_format(mesh_surface, input_mask, false, vertex_array_rd, vertex_format);
 			}
 
-			index_array_rd = mesh_storage->mesh_surface_get_index_array(mesh_surface, element_info.lod_index);
 			pipeline_key.vertex_format_id = vertex_format;
 
 			if (pipeline_key.ubershader) {
@@ -2641,11 +2619,9 @@ void RenderForwardMobile::_geometry_instance_add_surface_with_material(GeometryI
 	sdcache->sort.sort_key2 = 0;
 
 	sdcache->sort.surface_index = p_surface;
-	sdcache->sort.material_id_low = p_material_id & 0x0000FFFF;
-	sdcache->sort.material_id_hi = p_material_id >> 16;
+	sdcache->sort.material_id = p_material_id;
 	sdcache->sort.shader_id = p_shader_id;
 	sdcache->sort.geometry_id = p_mesh.get_local_index();
-	// sdcache->sort.uses_forward_gi = ginstance->can_sdfgi;
 	sdcache->sort.priority = p_material->priority;
 
 	uint64_t format = RendererRD::MeshStorage::get_singleton()->mesh_surface_get_format(sdcache->surface);
@@ -3270,13 +3246,6 @@ RenderForwardMobile::RenderForwardMobile() {
 
 RenderForwardMobile::~RenderForwardMobile() {
 	RSG::light_storage->directional_shadow_atlas_set_size(0);
-
-	//clear base uniform set if still valid
-	for (uint32_t i = 0; i < render_pass_uniform_sets.size(); i++) {
-		if (render_pass_uniform_sets[i].is_valid() && RD::get_singleton()->uniform_set_is_valid(render_pass_uniform_sets[i])) {
-			RD::get_singleton()->free(render_pass_uniform_sets[i]);
-		}
-	}
 
 	{
 		for (const RID &rid : scene_state.uniform_buffers) {

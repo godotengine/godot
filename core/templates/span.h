@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  godot_status_item.mm                                                  */
+/*  span.h                                                                */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,56 +28,35 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#import "godot_status_item.h"
+#pragma once
 
-#import "display_server_macos.h"
+#include "core/typedefs.h"
 
-@implementation GodotStatusItemDelegate
+// Equivalent of std::span.
+// Represents a view into a contiguous memory space.
+// DISCLAIMER: This data type does not own the underlying buffer. DO NOT STORE IT.
+//  Additionally, for the lifetime of the Span, do not resize the buffer, and do not insert or remove elements from it.
+//  Failure to respect this may lead to crashes or undefined behavior.
+template <typename T>
+class Span {
+	const T *_ptr = nullptr;
+	uint64_t _len = 0;
 
-- (id)init {
-	self = [super init];
-	return self;
-}
+public:
+	_FORCE_INLINE_ constexpr Span() = default;
+	_FORCE_INLINE_ constexpr Span(const T *p_ptr, uint64_t p_len) :
+			_ptr(p_ptr), _len(p_len) {}
 
-- (IBAction)click:(id)sender {
-	NSEvent *current_event = [NSApp currentEvent];
-	MouseButton index = MouseButton::LEFT;
-	if (current_event) {
-		if (current_event.type == NSEventTypeLeftMouseDown) {
-			index = MouseButton::LEFT;
-		} else if (current_event.type == NSEventTypeRightMouseDown) {
-			index = MouseButton::RIGHT;
-		} else if (current_event.type == NSEventTypeOtherMouseDown) {
-			if ((int)[current_event buttonNumber] == 2) {
-				index = MouseButton::MIDDLE;
-			} else if ((int)[current_event buttonNumber] == 3) {
-				index = MouseButton::MB_XBUTTON1;
-			} else if ((int)[current_event buttonNumber] == 4) {
-				index = MouseButton::MB_XBUTTON2;
-			}
-		}
+	_FORCE_INLINE_ constexpr uint64_t size() const { return _len; }
+	_FORCE_INLINE_ constexpr bool is_empty() const { return _len == 0; }
+
+	_FORCE_INLINE_ constexpr const T *ptr() const { return _ptr; }
+
+	// NOTE: Span subscripts sanity check the bounds to avoid undefined behavior.
+	//       This is slower than direct buffer access and can prevent autovectorization.
+	//       If the bounds are known, use ptr() subscript instead.
+	_FORCE_INLINE_ constexpr const T &operator[](uint64_t p_idx) const {
+		CRASH_COND(p_idx >= _len);
+		return _ptr[p_idx];
 	}
-
-	DisplayServerMacOS *ds = (DisplayServerMacOS *)DisplayServer::get_singleton();
-	if (!ds) {
-		return;
-	}
-
-	if (cb.is_valid()) {
-		Variant v_button = index;
-		Variant v_pos = ds->mouse_get_position();
-		const Variant *v_args[2] = { &v_button, &v_pos };
-		Variant ret;
-		Callable::CallError ce;
-		cb.callp((const Variant **)&v_args, 2, ret, ce);
-		if (ce.error != Callable::CallError::CALL_OK) {
-			ERR_PRINT(vformat("Failed to execute status indicator callback: %s.", Variant::get_callable_error_text(cb, v_args, 2, ce)));
-		}
-	}
-}
-
-- (void)setCallback:(const Callable &)callback {
-	cb = callback;
-}
-
-@end
+};

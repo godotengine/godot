@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "godot_open_save_delegate.h"
+#import "godot_open_save_delegate.h"
 
 @implementation GodotOpenSaveDelegate
 
@@ -124,7 +124,7 @@
 
 					NSMutableArray *type_filters = [[NSMutableArray alloc] init];
 					for (int j = 0; j < filter_slice_count; j++) {
-						String str = (flt.get_slice(",", j).strip_edges());
+						String str = (flt.get_slicec(',', j).strip_edges());
 						if (!str.is_empty()) {
 							if (@available(macOS 11, *)) {
 								UTType *ut = nullptr;
@@ -178,7 +178,7 @@
 
 				NSMutableArray *type_filters = [[NSMutableArray alloc] init];
 				for (int j = 0; j < filter_slice_count; j++) {
-					String str = (flt.get_slice(",", j).strip_edges());
+					String str = (flt.get_slicec(',', j).strip_edges());
 					if (!str.is_empty()) {
 						if (@available(macOS 11, *)) {
 							UTType *ut = nullptr;

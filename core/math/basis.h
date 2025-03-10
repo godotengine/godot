@@ -120,6 +120,7 @@ struct [[nodiscard]] Basis {
 	}
 
 	bool is_equal_approx(const Basis &p_basis) const;
+	bool is_same(const Basis &p_basis) const;
 	bool is_finite() const;
 
 	bool operator==(const Basis &p_matrix) const;

@@ -1704,8 +1704,8 @@ void EditorHelp::_update_doc() {
 
 			for (KeyValue<String, Vector<DocData::ConstantDoc>> &E : enums) {
 				String key = E.key;
-				if ((key.get_slice_count(".") > 1) && (key.get_slice(".", 0) == edited_class)) {
-					key = key.get_slice(".", 1);
+				if ((key.get_slice_count(".") > 1) && (key.get_slicec('.', 0) == edited_class)) {
+					key = key.get_slicec('.', 1);
 				}
 				if (cd.enums.has(key)) {
 					const bool is_documented = cd.enums[key].is_deprecated || cd.enums[key].is_experimental || !cd.enums[key].description.strip_edges().is_empty();
@@ -1906,7 +1906,7 @@ void EditorHelp::_update_doc() {
 				_push_code_font();
 
 				if (constant.value.begins_with("Color(") && constant.value.ends_with(")")) {
-					String stripped = constant.value.replace(" ", "").replace("Color(", "").replace(")", "");
+					String stripped = constant.value.remove_char(' ').replace("Color(", "").remove_char(')');
 					PackedFloat64Array color = stripped.split_floats(",");
 					if (color.size() >= 3) {
 						class_desc->push_color(Color(color[0], color[1], color[2]));
@@ -2334,11 +2334,11 @@ void EditorHelp::_request_help(const String &p_string) {
 }
 
 void EditorHelp::_help_callback(const String &p_topic) {
-	String what = p_topic.get_slice(":", 0);
-	String clss = p_topic.get_slice(":", 1);
+	String what = p_topic.get_slicec(':', 0);
+	String clss = p_topic.get_slicec(':', 1);
 	String name;
 	if (p_topic.get_slice_count(":") == 3) {
-		name = p_topic.get_slice(":", 2);
+		name = p_topic.get_slicec(':', 2);
 	}
 
 	_request_help(clss); // First go to class.
@@ -2439,7 +2439,7 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt, const C
 	const Color kbd_bg_color = p_owner_node->get_theme_color(SNAME("kbd_bg_color"), SNAME("EditorHelp"));
 	const Color param_bg_color = p_owner_node->get_theme_color(SNAME("param_bg_color"), SNAME("EditorHelp"));
 
-	String bbcode = p_bbcode.dedent().replace("\t", "").replace("\r", "").strip_edges();
+	String bbcode = p_bbcode.dedent().remove_chars("\t\r").strip_edges();
 
 	// Select the correct code examples.
 	switch ((int)EDITOR_GET("text_editor/help/class_reference_examples")) {

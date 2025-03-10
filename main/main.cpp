@@ -1274,8 +1274,8 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 					goto error;
 				}
 
-				int w = vm.get_slice("x", 0).to_int();
-				int h = vm.get_slice("x", 1).to_int();
+				int w = vm.get_slicec('x', 0).to_int();
+				int h = vm.get_slicec('x', 1).to_int();
 
 				if (w <= 0 || h <= 0) {
 					OS::get_singleton()->print("Invalid resolution '%s', width and height must be above 0.\n",
@@ -1317,8 +1317,8 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 					goto error;
 				}
 
-				int x = vm.get_slice(",", 0).to_int();
-				int y = vm.get_slice(",", 1).to_int();
+				int x = vm.get_slicec(',', 0).to_int();
+				int y = vm.get_slicec(',', 1).to_int();
 
 				init_custom_pos = Point2(x, y);
 				init_use_custom_pos = true;
@@ -2405,7 +2405,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		}
 	}
 
-	default_renderer = renderer_hints.get_slice(",", 0);
+	default_renderer = renderer_hints.get_slicec(',', 0);
 	GLOBAL_DEF_RST_BASIC(PropertyInfo(Variant::STRING, "rendering/renderer/rendering_method", PROPERTY_HINT_ENUM, renderer_hints), default_renderer);
 	GLOBAL_DEF_RST_BASIC("rendering/renderer/rendering_method.mobile", default_renderer_mobile);
 	GLOBAL_DEF_RST_BASIC("rendering/renderer/rendering_method.web", "gl_compatibility"); // This is a bit of a hack until we have WebGPU support.

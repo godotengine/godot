@@ -259,6 +259,10 @@ bool Color::is_equal_approx(const Color &p_color) const {
 	return Math::is_equal_approx(r, p_color.r) && Math::is_equal_approx(g, p_color.g) && Math::is_equal_approx(b, p_color.b) && Math::is_equal_approx(a, p_color.a);
 }
 
+bool Color::is_same(const Color &p_color) const {
+	return Math::is_same(r, p_color.r) && Math::is_same(g, p_color.g) && Math::is_same(b, p_color.b) && Math::is_same(a, p_color.a);
+}
+
 Color Color::clamp(const Color &p_min, const Color &p_max) const {
 	return Color(
 			CLAMP(r, p_min.r, p_max.r),
@@ -415,18 +419,14 @@ Color Color::named(const String &p_name, const Color &p_default) {
 int Color::find_named_color(const String &p_name) {
 	String name = p_name;
 	// Normalize name.
-	name = name.replace(" ", "");
-	name = name.replace("-", "");
-	name = name.replace("_", "");
-	name = name.replace("'", "");
-	name = name.replace(".", "");
+	name = name.remove_chars(" -_'.");
 	name = name.to_upper();
 
 	static HashMap<String, int> named_colors_hashmap;
 	if (unlikely(named_colors_hashmap.is_empty())) {
 		const int named_color_count = get_named_color_count();
 		for (int i = 0; i < named_color_count; i++) {
-			named_colors_hashmap[String(named_colors[i].name).replace("_", "")] = i;
+			named_colors_hashmap[String(named_colors[i].name).remove_char('_')] = i;
 		}
 	}
 
