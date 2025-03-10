@@ -3277,6 +3277,9 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 				}
 			}
 		} break;
+		case GDScriptParser::COMPLETION_DECLARATION: {
+			break;
+		}
 		case GDScriptParser::COMPLETION_INHERIT_TYPE: {
 			_list_available_types(true, completion_context, options);
 			r_forced = true;
@@ -4138,6 +4141,7 @@ static Error _lookup_symbol_from_base(const GDScriptParser::DataType &p_base, co
 		case GDScriptParser::COMPLETION_METHOD:
 		case GDScriptParser::COMPLETION_ASSIGN:
 		case GDScriptParser::COMPLETION_CALL_ARGUMENTS:
+		case GDScriptParser::COMPLETION_DECLARATION:
 		case GDScriptParser::COMPLETION_IDENTIFIER:
 		case GDScriptParser::COMPLETION_PROPERTY_METHOD:
 		case GDScriptParser::COMPLETION_SUBSCRIPT: {
