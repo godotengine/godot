@@ -50,6 +50,11 @@ public:
 		Singleton(const StringName &p_name = StringName(), Object *p_ptr = nullptr, const StringName &p_class_name = StringName());
 	};
 
+	enum RenderLatencyMode {
+		RENDER_LATENCY_PRIORITIZE_FRAMERATE,
+		RENDER_LATENCY_PRIORITIZE_LOW_LATENCY,
+	};
+
 private:
 	friend class Main;
 
@@ -63,6 +68,7 @@ private:
 	double _fps = 1;
 	int _max_fps = 0;
 	int _audio_output_latency = 0;
+	RenderLatencyMode _renderer_latency_mode;
 	double _time_scale = 1.0;
 	uint64_t _physics_frames = 0;
 	int max_physics_steps_per_frame = 8;
@@ -118,6 +124,9 @@ public:
 
 	virtual void set_audio_output_latency(int p_msec);
 	virtual int get_audio_output_latency() const;
+
+	virtual void set_render_latency_mode(RenderLatencyMode p_latency_mode);
+	virtual RenderLatencyMode get_render_latency_mode() const;
 
 	virtual double get_frames_per_second() const { return _fps; }
 
