@@ -1518,6 +1518,8 @@ void SceneTree::_flush_scene_change() {
 	pending_new_scene = nullptr;
 	// Update display for cursor instantly.
 	root->update_mouse_cursor_state();
+
+	emit_signal(SNAME("scene_changed"));
 }
 
 Error SceneTree::change_scene_to_file(const String &p_path) {
@@ -1819,6 +1821,7 @@ void SceneTree::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "licenses_dialog_visible"), "set_licenses_dialog_visible", "is_licenses_dialog_visible");
 
 	ADD_SIGNAL(MethodInfo("tree_changed"));
+	ADD_SIGNAL(MethodInfo("scene_changed"));
 	ADD_SIGNAL(MethodInfo("tree_process_mode_changed")); //editor only signal, but due to API hash it can't be removed in run-time
 	ADD_SIGNAL(MethodInfo("node_added", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_RESOURCE_TYPE, "Node")));
 	ADD_SIGNAL(MethodInfo("node_removed", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_RESOURCE_TYPE, "Node")));

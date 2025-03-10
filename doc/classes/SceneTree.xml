@@ -315,6 +315,17 @@
 				Emitted immediately before [method Node._process] is called on every node in this tree.
 			</description>
 		</signal>
+		<signal name="scene_changed">
+			<description>
+				Emitted after the new scene is added to scene tree and initialized. Can be used to reliably access [member current_scene] when changing scenes.
+				[codeblock]
+				# This code should be inside an autoload.
+				get_tree().change_scene_to_file(other_scene_path)
+				await get_tree().scene_changed
+				print(get_tree().current_scene) # Prints the new scene.
+				[/codeblock]
+			</description>
+		</signal>
 		<signal name="tree_changed">
 			<description>
 				Emitted any time the tree's hierarchy changes (nodes being moved, renamed, etc.).
