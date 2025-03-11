@@ -158,12 +158,11 @@
 #include "editor/plugins/visual_shader_editor_plugin.h"
 #include "editor/progress_dialog.h"
 #include "editor/project_settings_editor.h"
+#include "editor/project_upgrade_tool.h"
 #include "editor/register_exporters.h"
 #include "editor/scene_tree_dock.h"
-#include "editor/surface_upgrade_tool.h"
 #include "editor/themes/editor_scale.h"
 #include "editor/themes/editor_theme_manager.h"
-#include "editor/uid_upgrade_tool.h"
 #include "editor/window_wrapper.h"
 
 #include "modules/modules_enabled.gen.h" // For gdscript, mono.
@@ -653,10 +652,7 @@ void EditorNode::_notification(int p_what) {
 
 				OS::get_singleton()->benchmark_begin_measure("Editor", "First Scan");
 
-				if (run_surface_upgrade_tool || run_uid_upgrade_tool) {
-					EditorFileSystem::get_singleton()->connect("filesystem_changed", callable_mp(this, &EditorNode::_execute_upgrades), CONNECT_ONE_SHOT);
-				}
-
+				EditorFileSystem::get_singleton()->connect("filesystem_changed", callable_mp(this, &EditorNode::_execute_upgrades), CONNECT_ONE_SHOT);
 				EditorFileSystem::get_singleton()->scan();
 			}
 		} break;
@@ -739,23 +735,6 @@ void EditorNode::_notification(int p_what) {
 
 			// Save the project after opening to mark it as last modified, except in headless mode.
 			if (DisplayServer::get_singleton()->window_can_draw()) {
-				// Try to determine if this project's Godot version was less than 4.4 - if
-				// so, we'll ask the user if they want to upgrade the project.
-				PackedStringArray features = ProjectSettings::get_singleton()->get_setting("application/config/features");
-				if (!features.is_empty()) {
-					String version_str = features[0];
-					PackedStringArray version_parts = version_str.split(".", true, 1);
-					if (version_parts.size() >= 2) {
-						if (version_parts[0].is_valid_int() && version_parts[1].is_valid_int()) {
-							int major_ver = version_parts[0].to_int();
-							int minor_ver = version_parts[1].to_int();
-							if (major_ver < 4 || (major_ver == 4 && minor_ver < 4)) {
-								should_prompt_uid_upgrade_tool = true;
-							}
-						}
-					}
-				}
-
 				ProjectSettings::get_singleton()->save();
 			}
 
@@ -900,16 +879,11 @@ void EditorNode::_update_update_spinner() {
 }
 
 void EditorNode::_execute_upgrades() {
-	if (run_surface_upgrade_tool) {
-		run_surface_upgrade_tool = false;
+	if (run_project_upgrade_tool) {
+		run_project_upgrade_tool = false;
 		// Execute another scan to reimport the modified files.
-		SurfaceUpgradeTool::get_singleton()->connect("upgrade_finished", callable_mp(EditorFileSystem::get_singleton(), &EditorFileSystem::scan), CONNECT_ONE_SHOT);
-		SurfaceUpgradeTool::get_singleton()->finish_upgrade();
-	} else if (run_uid_upgrade_tool) {
-		run_uid_upgrade_tool = false;
-		// Execute another scan to reimport the modified files.
-		UIDUpgradeTool::get_singleton()->connect("upgrade_finished", callable_mp(EditorFileSystem::get_singleton(), &EditorFileSystem::scan), CONNECT_ONE_SHOT);
-		UIDUpgradeTool::get_singleton()->finish_upgrade();
+		project_upgrade_tool->connect(project_upgrade_tool->UPGRADE_FINISHED, callable_mp(EditorFileSystem::get_singleton(), &EditorFileSystem::scan), CONNECT_ONE_SHOT);
+		project_upgrade_tool->finish_upgrade();
 	}
 }
 
@@ -1206,20 +1180,10 @@ void EditorNode::_sources_changed(bool p_exist) {
 			OS::get_singleton()->benchmark_dump();
 		}
 
-		if (SurfaceUpgradeTool::get_singleton()->is_show_requested()) {
-			SurfaceUpgradeTool::get_singleton()->show_popup();
-		}
-
 		// Start preview thread now that it's safe.
 		if (!singleton->cmdline_mode) {
 			EditorResourcePreview::get_singleton()->start();
 		}
-
-		if (should_prompt_uid_upgrade_tool) {
-			should_prompt_uid_upgrade_tool = false;
-			uid_upgrade_dialog->popup_on_demand();
-		}
-
 		get_tree()->create_timer(1.0f)->connect("timeout", callable_mp(this, &EditorNode::_remove_lock_file));
 	}
 }
@@ -3353,11 +3317,8 @@ void EditorNode::_tool_menu_option(int p_idx) {
 		case TOOLS_BUILD_PROFILE_MANAGER: {
 			build_profile_manager->popup_centered_clamped(Size2(700, 800) * EDSCALE, 0.8);
 		} break;
-		case TOOLS_SURFACE_UPGRADE: {
-			surface_upgrade_dialog->popup_on_demand();
-		} break;
-		case TOOLS_UID_UPGRADE: {
-			uid_upgrade_dialog->popup_on_demand();
+		case TOOLS_PROJECT_UPGRADE: {
+			project_upgrade_tool->popup_dialog();
 		} break;
 		case TOOLS_CUSTOM: {
 			if (tool_menu->get_item_submenu(p_idx) == "") {
@@ -6967,18 +6928,11 @@ EditorNode::EditorNode() {
 
 	_update_vsync_mode();
 
-	// Warm up the surface upgrade tool as early as possible.
-	surface_upgrade_tool = memnew(SurfaceUpgradeTool);
-	run_surface_upgrade_tool = EditorSettings::get_singleton()->get_project_metadata("surface_upgrade_tool", "run_on_restart", false);
-	if (run_surface_upgrade_tool) {
-		SurfaceUpgradeTool::get_singleton()->begin_upgrade();
-	}
-
-	// Same for UID upgrade tool.
-	uid_upgrade_tool = memnew(UIDUpgradeTool);
-	run_uid_upgrade_tool = EditorSettings::get_singleton()->get_project_metadata(UIDUpgradeTool::META_UID_UPGRADE_TOOL, UIDUpgradeTool::META_RUN_ON_RESTART, false);
-	if (run_uid_upgrade_tool) {
-		UIDUpgradeTool::get_singleton()->begin_upgrade();
+	// Warm up the project upgrade tool as early as possible.
+	project_upgrade_tool = memnew(ProjectUpgradeTool);
+	run_project_upgrade_tool = EditorSettings::get_singleton()->get_project_metadata(project_upgrade_tool->META_PROJECT_UPGRADE_TOOL, project_upgrade_tool->META_RUN_ON_RESTART, false);
+	if (run_project_upgrade_tool) {
+		project_upgrade_tool->begin_upgrade();
 	}
 
 	{
@@ -7522,8 +7476,7 @@ EditorNode::EditorNode() {
 	project_menu->add_submenu_node_item(TTR("Tools"), tool_menu);
 	tool_menu->add_shortcut(ED_SHORTCUT_AND_COMMAND("editor/orphan_resource_explorer", TTRC("Orphan Resource Explorer...")), TOOLS_ORPHAN_RESOURCES);
 	tool_menu->add_shortcut(ED_SHORTCUT_AND_COMMAND("editor/engine_compilation_configuration_editor", TTRC("Engine Compilation Configuration Editor...")), TOOLS_BUILD_PROFILE_MANAGER);
-	tool_menu->add_shortcut(ED_SHORTCUT_AND_COMMAND("editor/upgrade_mesh_surfaces", TTRC("Upgrade Mesh Surfaces...")), TOOLS_SURFACE_UPGRADE);
-	tool_menu->add_shortcut(ED_SHORTCUT_AND_COMMAND("editor/upgrade_uids", TTRC("Upgrade UIDs...")), TOOLS_UID_UPGRADE);
+	tool_menu->add_shortcut(ED_SHORTCUT_AND_COMMAND("editor/upgrade_project", TTRC("Upgrade Project Files...")), TOOLS_PROJECT_UPGRADE);
 
 	project_menu->add_separator();
 	project_menu->add_shortcut(ED_SHORTCUT("editor/reload_current_project", TTRC("Reload Current Project")), PROJECT_RELOAD_CURRENT_PROJECT);
@@ -7805,12 +7758,6 @@ EditorNode::EditorNode() {
 
 	orphan_resources = memnew(OrphanResourcesDialog);
 	gui_base->add_child(orphan_resources);
-
-	surface_upgrade_dialog = memnew(SurfaceUpgradeDialog);
-	gui_base->add_child(surface_upgrade_dialog);
-
-	uid_upgrade_dialog = memnew(UIDUpgradeDialog);
-	gui_base->add_child(uid_upgrade_dialog);
 
 	confirmation = memnew(ConfirmationDialog);
 	gui_base->add_child(confirmation);
@@ -8205,8 +8152,7 @@ EditorNode::~EditorNode() {
 	memdelete(editor_plugins_force_over);
 	memdelete(editor_plugins_force_input_forwarding);
 	memdelete(progress_hb);
-	memdelete(surface_upgrade_tool);
-	memdelete(uid_upgrade_tool);
+	memdelete(project_upgrade_tool);
 	memdelete(editor_dock_manager);
 
 	EditorSettings::destroy();

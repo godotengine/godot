@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  uid_upgrade_tool.h                                                    */
+/*  project_upgrade_tool.h                                                */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -30,50 +30,33 @@
 
 #pragma once
 
-#include "scene/gui/dialogs.h"
+#include "core/object/class_db.h"
 
+class ConfirmationDialog;
 class EditorFileSystemDirectory;
 
-class UIDUpgradeTool : public Object {
-	GDCLASS(UIDUpgradeTool, Object);
+class ProjectUpgradeTool : public Object {
+	GDCLASS(ProjectUpgradeTool, Object);
 
-	inline static UIDUpgradeTool *singleton = nullptr;
+	ConfirmationDialog *upgrade_dialog = nullptr;
 
-	static constexpr const char *UPGRADE_FINISHED = "upgrade_finished";
-	static constexpr const char *META_RESAVE_PATHS = "resave_paths";
+	void _add_files(EditorFileSystemDirectory *p_dir, Vector<String> &r_reimport_paths, Vector<String> &r_resave_scenes, Vector<String> &r_resave_resources);
 
-	void _add_files(EditorFileSystemDirectory *p_dir, Vector<String> &r_resave_paths);
+	const String META_REIMPORT_PATHS = "reimport_paths";
+	const String META_RESAVE_SCENES = "resave_scenes";
+	const String META_RESAVE_RESOURCES = "resave_resources";
+
+public:
+	const String META_PROJECT_UPGRADE_TOOL = "project_upgrade_tool";
+	const String META_RUN_ON_RESTART = "run_on_restart";
+	const StringName UPGRADE_FINISHED = "upgrade_finished";
 
 protected:
 	static void _bind_methods();
 
 public:
-	static constexpr const char *META_UID_UPGRADE_TOOL = "uid_upgrade_tool";
-	static constexpr const char *META_RUN_ON_RESTART = "run_on_restart";
-
-	static UIDUpgradeTool *get_singleton() { return singleton; }
-
+	void popup_dialog();
 	void prepare_upgrade();
 	void begin_upgrade();
 	void finish_upgrade();
-
-	UIDUpgradeTool();
-	~UIDUpgradeTool();
-};
-
-class UIDUpgradeDialog : public ConfirmationDialog {
-	GDCLASS(UIDUpgradeDialog, ConfirmationDialog);
-
-	static constexpr const char *UID_UPGRADE_LEARN_MORE = "uid_upgrade_learn_more";
-
-	Button *learn_more_button = nullptr;
-
-protected:
-	void _on_custom_action(const String &p_action);
-	void _notification(int p_what);
-
-public:
-	void popup_on_demand();
-
-	UIDUpgradeDialog();
 };
