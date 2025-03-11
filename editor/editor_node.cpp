@@ -2719,6 +2719,26 @@ void EditorNode::_android_explore_build_templates() {
 	OS::get_singleton()->shell_show_in_file_manager(ProjectSettings::get_singleton()->globalize_path(export_template_manager->get_android_build_directory(android_export_preset).get_base_dir()), true);
 }
 
+static String _get_unsaved_scene_dialog_text(String p_scene_filename, uint64_t p_started_timestamp) {
+	String unsaved_message;
+
+	// Consider editor startup to be a point of saving, so that when you
+	// close and reopen the editor, you don't get an excessively long
+	// "modified X hours ago".
+	const uint64_t last_modified_seconds = Time::get_singleton()->get_unix_time_from_system() - MAX(p_started_timestamp, FileAccess::get_modified_time(p_scene_filename));
+	String last_modified_string;
+	if (last_modified_seconds < 120) {
+		last_modified_string = vformat(TTRN("%d second ago", "%d seconds ago", last_modified_seconds), last_modified_seconds);
+	} else if (last_modified_seconds < 7200) {
+		last_modified_string = vformat(TTRN("%d minute ago", "%d minutes ago", last_modified_seconds / 60), last_modified_seconds / 60);
+	} else {
+		last_modified_string = vformat(TTRN("%d hour ago", "%d hours ago", last_modified_seconds / 3600), last_modified_seconds / 3600);
+	}
+	unsaved_message = vformat(TTR("Scene \"%s\" has unsaved changes.\nLast saved: %s."), p_scene_filename, last_modified_string);
+
+	return unsaved_message;
+}
+
 void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 	if (!p_confirmed) { // FIXME: this may be a hack.
 		current_menu_option = (MenuOptions)p_option;
@@ -2952,31 +2972,25 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 				break;
 			}
 
-			String filename = scene->get_scene_file_path();
+			String scene_filename = scene->get_scene_file_path();
+			String unsaved_message;
 
-			if (filename.is_empty()) {
+			if (scene_filename.is_empty()) {
 				show_warning(TTR("Can't reload a scene that was never saved."));
 				break;
 			}
 
 			if (unsaved_cache && !p_confirmed) {
-				confirmation->set_ok_button_text(TTR("Reload Saved Scene"));
-				confirmation->set_text(
-						TTR("The current scene has unsaved changes.\nReload the saved scene anyway? This action cannot be undone."));
+				confirmation->set_ok_button_text(TTR("Save & Reload"));
+				unsaved_message = _get_unsaved_scene_dialog_text(scene_filename, started_timestamp);
+				confirmation->set_text(unsaved_message + "\n\n" + TTR("Save before reloading the scene?"));
 				confirmation->popup_centered();
 				break;
 			}
 
-			int cur_idx = editor_data.get_edited_scene();
-			_remove_edited_scene();
-			Error err = load_scene(filename);
-			if (err != OK) {
-				ERR_PRINT("Failed to load scene");
-			}
-			editor_data.move_edited_scene_to_index(cur_idx);
-			EditorUndoRedoManager::get_singleton()->clear_history(editor_data.get_current_edited_scene_history_id(), false);
-			scene_tabs->set_current_tab(cur_idx);
+			_save_scene_with_preview(scene_filename);
 
+			_discard_changes();
 		} break;
 
 		case EditorSceneTabs::SCENE_SHOW_IN_FILESYSTEM: {
@@ -3437,6 +3451,25 @@ void EditorNode::_discard_changes(const String &p_str) {
 				scene_tabs->update_scene_tabs();
 			}
 			_proceed_closing_scene_tabs();
+		} break;
+		case FILE_RELOAD_SAVED_SCENE: {
+			Node *scene = get_edited_scene();
+
+			String scene_filename = scene->get_scene_file_path();
+
+			int cur_idx = editor_data.get_edited_scene();
+
+			_remove_edited_scene();
+
+			Error err = load_scene(scene_filename);
+			if (err != OK) {
+				ERR_PRINT("Failed to load scene");
+			}
+			editor_data.move_edited_scene_to_index(cur_idx);
+			EditorUndoRedoManager::get_singleton()->clear_history(editor_data.get_current_edited_scene_history_id(), false);
+			scene_tabs->set_current_tab(cur_idx);
+
+			confirmation->hide();
 		} break;
 		case FILE_QUIT: {
 			project_run_bar->stop_playing();
@@ -5716,19 +5749,7 @@ void EditorNode::_scene_tab_closed(int p_tab) {
 		if (scene_filename.is_empty()) {
 			unsaved_message = TTR("This scene was never saved.");
 		} else {
-			// Consider editor startup to be a point of saving, so that when you
-			// close and reopen the editor, you don't get an excessively long
-			// "modified X hours ago".
-			const uint64_t last_modified_seconds = Time::get_singleton()->get_unix_time_from_system() - MAX(started_timestamp, FileAccess::get_modified_time(scene->get_scene_file_path()));
-			String last_modified_string;
-			if (last_modified_seconds < 120) {
-				last_modified_string = vformat(TTRN("%d second ago", "%d seconds ago", last_modified_seconds), last_modified_seconds);
-			} else if (last_modified_seconds < 7200) {
-				last_modified_string = vformat(TTRN("%d minute ago", "%d minutes ago", last_modified_seconds / 60), last_modified_seconds / 60);
-			} else {
-				last_modified_string = vformat(TTRN("%d hour ago", "%d hours ago", last_modified_seconds / 3600), last_modified_seconds / 3600);
-			}
-			unsaved_message = vformat(TTR("Scene \"%s\" has unsaved changes.\nLast saved: %s."), scene_filename, last_modified_string);
+			unsaved_message = _get_unsaved_scene_dialog_text(scene_filename, started_timestamp);
 		}
 	} else {
 		// Check if any plugin has unsaved changes in that scene.
@@ -7760,11 +7781,14 @@ EditorNode::EditorNode() {
 	gui_base->add_child(orphan_resources);
 
 	confirmation = memnew(ConfirmationDialog);
+	confirmation->add_button(TTRC("Don't Save"), DisplayServer::get_singleton()->get_swap_cancel_ok(), "discard");
 	gui_base->add_child(confirmation);
+	confirmation->set_min_size(Vector2(450.0 * EDSCALE, 0));
 	confirmation->connect(SceneStringName(confirmed), callable_mp(this, &EditorNode::_menu_confirm_current));
+	confirmation->connect("custom_action", callable_mp(this, &EditorNode::_discard_changes));
 
 	save_confirmation = memnew(ConfirmationDialog);
-	save_confirmation->add_button(TTR("Don't Save"), DisplayServer::get_singleton()->get_swap_cancel_ok(), "discard");
+	save_confirmation->add_button(TTRC("Don't Save"), DisplayServer::get_singleton()->get_swap_cancel_ok(), "discard");
 	gui_base->add_child(save_confirmation);
 	save_confirmation->set_min_size(Vector2(450.0 * EDSCALE, 0));
 	save_confirmation->connect(SceneStringName(confirmed), callable_mp(this, &EditorNode::_menu_confirm_current));
