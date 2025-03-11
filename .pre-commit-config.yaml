@@ -48,7 +48,7 @@ repos:
         types_or: [text]
 
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.15.0
+    rev: v1.14.1  # Latest version that supports Python 3.8
     hooks:
       - id: mypy
         files: \.py$
