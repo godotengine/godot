@@ -297,11 +297,9 @@ Error EditorBuildProfile::load_from_file(const String &p_path) {
 
 	if (data.has("disabled_build_options")) {
 		Dictionary disabled_build_options_arr = data["disabled_build_options"];
-		List<Variant> keys;
-		disabled_build_options_arr.get_key_list(&keys);
 
-		for (const Variant &K : keys) {
-			String key = K;
+		for (const KeyValue<Variant, Variant> &kv : disabled_build_options_arr) {
+			String key = kv.key;
 
 			for (int i = 0; i < BUILD_OPTION_MAX; i++) {
 				String f = build_option_identifiers[i];

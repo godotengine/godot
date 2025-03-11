@@ -322,11 +322,9 @@ void Resource::_find_sub_resources(const Variant &p_variant, HashSet<Ref<Resourc
 		} break;
 		case Variant::DICTIONARY: {
 			Dictionary d = p_variant;
-			List<Variant> keys;
-			d.get_key_list(&keys);
-			for (const Variant &k : keys) {
-				_find_sub_resources(k, p_resources_found);
-				_find_sub_resources(d[k], p_resources_found);
+			for (const KeyValue<Variant, Variant> &kv : d) {
+				_find_sub_resources(kv.key, p_resources_found);
+				_find_sub_resources(kv.value, p_resources_found);
 			}
 		} break;
 		case Variant::OBJECT: {

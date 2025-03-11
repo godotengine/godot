@@ -922,12 +922,9 @@ Variant JSON::_from_native(const Variant &p_variant, bool p_full_objects, int p_
 
 			ERR_FAIL_COND_V_MSG(p_depth > Variant::MAX_RECURSION_DEPTH, ret, "Variant is too deep. Bailing.");
 
-			List<Variant> keys;
-			dict.get_key_list(&keys);
-
-			for (const Variant &key : keys) {
-				args.push_back(_from_native(key, p_full_objects, p_depth + 1));
-				args.push_back(_from_native(dict[key], p_full_objects, p_depth + 1));
+			for (const KeyValue<Variant, Variant> &kv : dict) {
+				args.push_back(_from_native(kv.key, p_full_objects, p_depth + 1));
+				args.push_back(_from_native(kv.value, p_full_objects, p_depth + 1));
 			}
 
 			return ret;

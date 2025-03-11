@@ -336,12 +336,8 @@ void EditorData::set_editor_plugin_states(const Dictionary &p_states) {
 		return;
 	}
 
-	List<Variant> keys;
-	p_states.get_key_list(&keys);
-
-	List<Variant>::Element *E = keys.front();
-	for (; E; E = E->next()) {
-		String name = E->get();
+	for (const KeyValue<Variant, Variant> &kv : p_states) {
+		String name = kv.key;
 		int idx = -1;
 		for (int i = 0; i < editor_plugins.size(); i++) {
 			if (editor_plugins[i]->get_plugin_name() == name) {
@@ -353,7 +349,7 @@ void EditorData::set_editor_plugin_states(const Dictionary &p_states) {
 		if (idx == -1) {
 			continue;
 		}
-		editor_plugins[idx]->set_state(p_states[name]);
+		editor_plugins[idx]->set_state(kv.value);
 	}
 }
 
@@ -1071,12 +1067,10 @@ void EditorData::script_class_load_icon_paths() {
 #ifndef DISABLE_DEPRECATED
 	if (ProjectSettings::get_singleton()->has_setting("_global_script_class_icons")) {
 		Dictionary d = GLOBAL_GET("_global_script_class_icons");
-		List<Variant> keys;
-		d.get_key_list(&keys);
 
-		for (const Variant &E : keys) {
-			String name = E.operator String();
-			_script_class_icon_paths[name] = d[name];
+		for (const KeyValue<Variant, Variant> &kv : d) {
+			String name = kv.key.operator String();
+			_script_class_icon_paths[name] = kv.value;
 
 			String path = ScriptServer::get_global_class_path(name);
 			script_class_set_name(path, name);

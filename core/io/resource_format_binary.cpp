@@ -1876,12 +1876,9 @@ void ResourceFormatSaverBinaryInstance::write_variant(Ref<FileAccess> f, const V
 			Dictionary d = p_property;
 			f->store_32(uint32_t(d.size()));
 
-			List<Variant> keys;
-			d.get_key_list(&keys);
-
-			for (const Variant &E : keys) {
-				write_variant(f, E, resource_map, external_resources, string_map);
-				write_variant(f, d[E], resource_map, external_resources, string_map);
+			for (const KeyValue<Variant, Variant> &kv : d) {
+				write_variant(f, kv.key, resource_map, external_resources, string_map);
+				write_variant(f, kv.value, resource_map, external_resources, string_map);
 			}
 
 		} break;
@@ -2086,12 +2083,9 @@ void ResourceFormatSaverBinaryInstance::_find_resources(const Variant &p_variant
 			Dictionary d = p_variant;
 			_find_resources(d.get_typed_key_script());
 			_find_resources(d.get_typed_value_script());
-			List<Variant> keys;
-			d.get_key_list(&keys);
-			for (const Variant &E : keys) {
-				_find_resources(E);
-				Variant v = d[E];
-				_find_resources(v);
+			for (const KeyValue<Variant, Variant> &kv : d) {
+				_find_resources(kv.key);
+				_find_resources(kv.value);
 			}
 		} break;
 		case Variant::NODE_PATH: {

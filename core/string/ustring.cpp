@@ -4024,11 +4024,9 @@ String String::format(const Variant &values, const String &placeholder) const {
 		}
 	} else if (values.get_type() == Variant::DICTIONARY) {
 		Dictionary d = values;
-		List<Variant> keys;
-		d.get_key_list(&keys);
 
-		for (const Variant &key : keys) {
-			new_string = new_string.replace(placeholder.replace("_", key), d[key]);
+		for (const KeyValue<Variant, Variant> &kv : d) {
+			new_string = new_string.replace(placeholder.replace("_", kv.key), kv.value);
 		}
 	} else if (values.get_type() == Variant::OBJECT) {
 		Object *obj = values.get_validated_object();
