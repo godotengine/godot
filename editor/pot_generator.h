@@ -60,6 +60,5 @@ public:
 	static POTGenerator *get_singleton();
 	void generate_pot(const String &p_file);
 
-	POTGenerator();
 	~POTGenerator();
 };

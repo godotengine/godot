@@ -80,8 +80,6 @@ public:
 	virtual void get_import_options(const String &p_path, List<ResourceImporter::ImportOption> *r_options);
 	virtual Variant get_option_visibility(const String &p_path, const String &p_scene_import_type, const String &p_option, const HashMap<StringName, Variant> &p_options);
 	virtual void handle_compatibility_options(HashMap<StringName, Variant> &p_import_params) const {}
-
-	EditorSceneFormatImporter() {}
 };
 
 class EditorScenePostImport : public RefCounted {
@@ -98,7 +96,6 @@ public:
 	String get_source_file() const;
 	virtual Node *post_import(Node *p_scene);
 	virtual void init(const String &p_source_file);
-	EditorScenePostImport();
 };
 
 class EditorScenePostImportPlugin : public RefCounted {
@@ -150,8 +147,6 @@ public:
 
 	virtual void pre_process(Node *p_scene, const HashMap<StringName, Variant> &p_options);
 	virtual void post_process(Node *p_scene, const HashMap<StringName, Variant> &p_options);
-
-	EditorScenePostImportPlugin() {}
 };
 
 VARIANT_ENUM_CAST(EditorScenePostImportPlugin::InternalImportCategory)

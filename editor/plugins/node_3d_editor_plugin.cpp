@@ -9730,6 +9730,3 @@ Node3DEditorPlugin::Node3DEditorPlugin() {
 
 	spatial_editor->hide();
 }
-
-Node3DEditorPlugin::~Node3DEditorPlugin() {
-}

@@ -584,9 +584,6 @@ void EditorOBJImporter::get_extensions(List<String> *r_extensions) const {
 	r_extensions->push_back("obj");
 }
 
-EditorOBJImporter::EditorOBJImporter() {
-}
-
 ////////////////////////////////////////////////////
 
 String ResourceImporterOBJ::get_importer_name() const {
@@ -681,7 +678,4 @@ Error ResourceImporterOBJ::import(ResourceUID::ID p_source_id, const String &p_s
 	r_gen_files->push_back(save_path);
 
 	return OK;
-}
-
-ResourceImporterOBJ::ResourceImporterOBJ() {
 }

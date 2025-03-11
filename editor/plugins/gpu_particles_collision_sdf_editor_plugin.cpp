@@ -199,6 +199,3 @@ GPUParticlesCollisionSDF3DEditorPlugin::GPUParticlesCollisionSDF3DEditorPlugin()
 	GPUParticlesCollisionSDF3D::bake_step_function = bake_func_step;
 	GPUParticlesCollisionSDF3D::bake_end_function = bake_func_end;
 }
-
-GPUParticlesCollisionSDF3DEditorPlugin::~GPUParticlesCollisionSDF3DEditorPlugin() {
-}

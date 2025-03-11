@@ -348,5 +348,4 @@ public:
 	//virtual void set_state(const Dictionary& p_state);
 
 	AssetLibraryEditorPlugin();
-	~AssetLibraryEditorPlugin();
 };

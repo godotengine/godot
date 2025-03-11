@@ -59,8 +59,6 @@ void Line2DEditor::_action_set_polygon(int p_idx, const Variant &p_previous, con
 	undo_redo->add_undo_method(_node, "set_points", p_previous);
 }
 
-Line2DEditor::Line2DEditor() {}
-
 Line2DEditorPlugin::Line2DEditorPlugin() :
 		AbstractPolygon2DEditorPlugin(memnew(Line2DEditor), "Line2D") {
 }

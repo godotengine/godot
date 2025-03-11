@@ -985,9 +985,6 @@ public:
 	void remove_plugin(EditorPlugin *p_plugin);
 	void clear();
 	bool is_empty();
-
-	EditorPluginList();
-	~EditorPluginList();
 };
 
 struct EditorProgressBG {
