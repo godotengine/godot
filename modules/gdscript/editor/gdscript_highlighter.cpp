@@ -151,10 +151,12 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 							}
 						}
 						// "#region" and "#endregion" only highlighted if they're the first region on the line.
-						if (color_regions[c].type == ColorRegion::TYPE_CODE_REGION &&
-								str.strip_edges().split_spaces()[0] != "#region" &&
-								str.strip_edges().split_spaces()[0] != "#endregion") {
-							match = false;
+						if (color_regions[c].type == ColorRegion::TYPE_CODE_REGION) {
+							Vector<String> split_spaces = str.strip_edges().split_spaces();
+							if (split_spaces.size() == 0 ||
+									(split_spaces[0] != "#region" && split_spaces[0] != "#endregion")) {
+								match = false;
+							}
 						}
 						if (!match) {
 							continue;
