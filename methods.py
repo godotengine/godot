@@ -553,7 +553,7 @@ def glob_recursive(pattern, node="."):
 
 
 def precious_program(env, program, sources, **args):
-    program = env.ProgramOriginal(program, sources, **args)
+    program = env.Program(program, sources, **args)
     env.Precious(program)
     return program
 
