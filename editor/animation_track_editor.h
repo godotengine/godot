@@ -915,6 +915,7 @@ public:
 
 	Dictionary get_state() const;
 	void set_state(const Dictionary &p_state);
+	void clear();
 
 	void cleanup();
 
