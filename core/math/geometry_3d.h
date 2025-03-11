@@ -326,36 +326,36 @@ public:
 		return true;
 	}
 
-	static Vector3 get_closest_point_to_segment(const Vector3 &p_point, const Vector3 *p_segment) {
-		Vector3 p = p_point - p_segment[0];
-		Vector3 n = p_segment[1] - p_segment[0];
+	static Vector3 get_closest_point_to_segment(const Vector3 &p_point, const Vector3 &p_segment_a, const Vector3 &p_segment_b) {
+		Vector3 p = p_point - p_segment_a;
+		Vector3 n = p_segment_b - p_segment_a;
 		real_t l2 = n.length_squared();
 		if (l2 < 1e-20f) {
-			return p_segment[0]; // Both points are the same, just give any.
+			return p_segment_a; // Both points are the same, just give any.
 		}
 
 		real_t d = n.dot(p) / l2;
 
 		if (d <= 0.0f) {
-			return p_segment[0]; // Before first point.
+			return p_segment_a; // Before first point.
 		} else if (d >= 1.0f) {
-			return p_segment[1]; // After first point.
+			return p_segment_b; // After first point.
 		} else {
-			return p_segment[0] + n * d; // Inside.
+			return p_segment_a + n * d; // Inside.
 		}
 	}
 
-	static Vector3 get_closest_point_to_segment_uncapped(const Vector3 &p_point, const Vector3 *p_segment) {
-		Vector3 p = p_point - p_segment[0];
-		Vector3 n = p_segment[1] - p_segment[0];
+	static Vector3 get_closest_point_to_segment_uncapped(const Vector3 &p_point, const Vector3 &p_segment_a, const Vector3 &p_segment_b) {
+		Vector3 p = p_point - p_segment_a;
+		Vector3 n = p_segment_b - p_segment_a;
 		real_t l2 = n.length_squared();
 		if (l2 < 1e-20f) {
-			return p_segment[0]; // Both points are the same, just give any.
+			return p_segment_a; // Both points are the same, just give any.
 		}
 
 		real_t d = n.dot(p) / l2;
 
-		return p_segment[0] + n * d; // Inside.
+		return p_segment_a + n * d; // Inside.
 	}
 
 	static inline bool point_in_projected_triangle(const Vector3 &p_point, const Vector3 &p_v1, const Vector3 &p_v2, const Vector3 &p_v3) {

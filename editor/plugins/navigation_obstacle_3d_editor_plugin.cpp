@@ -466,13 +466,11 @@ EditorPlugin::AfterGUIInput NavigationObstacle3DEditorPlugin::forward_3d_gui_inp
 						Vector2 closest_edge_point;
 						real_t closest_dist = 1e10;
 						for (int i = 0; i < obstacle_vertices.size(); i++) {
-							Vector2 points[2] = {
-								p_camera->unproject_position(gt.xform(obstacle_vertices[i])),
-								p_camera->unproject_position(gt.xform(obstacle_vertices[(i + 1) % obstacle_vertices.size()]))
-							};
+							const Vector2 a = p_camera->unproject_position(gt.xform(obstacle_vertices[i]));
+							const Vector2 b = p_camera->unproject_position(gt.xform(obstacle_vertices[(i + 1) % obstacle_vertices.size()]));
 
-							Vector2 cp = Geometry2D::get_closest_point_to_segment(mouse_position, points);
-							if (cp.distance_squared_to(points[0]) < grab_threshold || cp.distance_squared_to(points[1]) < grab_threshold) {
+							Vector2 cp = Geometry2D::get_closest_point_to_segment(mouse_position, a, b);
+							if (cp.distance_squared_to(a) < grab_threshold || cp.distance_squared_to(b) < grab_threshold) {
 								continue; // Skip edge as clicked point is too close to existing vertex.
 							}
 
@@ -548,13 +546,11 @@ EditorPlugin::AfterGUIInput NavigationObstacle3DEditorPlugin::forward_3d_gui_inp
 							Vector2 closest_pos;
 							real_t closest_dist = 1e10;
 							for (int i = 0; i < obstacle_vertices.size(); i++) {
-								Vector2 points[2] = {
-									p_camera->unproject_position(gt.xform(obstacle_vertices[i])),
-									p_camera->unproject_position(gt.xform(obstacle_vertices[(i + 1) % obstacle_vertices.size()]))
-								};
+								const Vector2 a = p_camera->unproject_position(gt.xform(obstacle_vertices[i]));
+								const Vector2 b = p_camera->unproject_position(gt.xform(obstacle_vertices[(i + 1) % obstacle_vertices.size()]));
 
-								Vector2 cp = Geometry2D::get_closest_point_to_segment(mouse_position, points);
-								if (cp.distance_squared_to(points[0]) < CMP_EPSILON2 || cp.distance_squared_to(points[1]) < CMP_EPSILON2) {
+								Vector2 cp = Geometry2D::get_closest_point_to_segment(mouse_position, a, b);
+								if (cp.distance_squared_to(a) < CMP_EPSILON2 || cp.distance_squared_to(b) < CMP_EPSILON2) {
 									continue; //not valid to reuse point
 								}
 
