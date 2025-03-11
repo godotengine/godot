@@ -141,6 +141,7 @@ public:
 	static void _query_task_post_process_nopostprocessing(NavMeshPathQueryTask3D &p_query_task);
 	static void _query_task_clip_path(NavMeshPathQueryTask3D &p_query_task, const nav_3d::NavigationPoly *from_poly, const Vector3 &p_to_point, const nav_3d::NavigationPoly *p_to_poly);
 	static void _query_task_simplified_path_points(NavMeshPathQueryTask3D &p_query_task);
+	static bool _query_task_is_connection_owner_usable(const NavMeshPathQueryTask3D &p_query_task, const NavBaseIteration3D *p_owner);
 
 	static void simplify_path_segment(int p_start_inx, int p_end_inx, const LocalVector<Vector3> &p_points, real_t p_epsilon, LocalVector<uint32_t> &r_simplified_path_indices);
 	static LocalVector<uint32_t> get_simplified_path_indices(const LocalVector<Vector3> &p_path, real_t p_epsilon);
