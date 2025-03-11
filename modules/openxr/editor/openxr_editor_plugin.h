@@ -53,5 +53,4 @@ public:
 	virtual void make_visible(bool p_visible) override;
 
 	OpenXREditorPlugin();
-	~OpenXREditorPlugin();
 };

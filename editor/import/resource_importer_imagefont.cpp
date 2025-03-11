@@ -344,6 +344,3 @@ Error ResourceImporterImageFont::import(ResourceUID::ID p_source_id, const Strin
 	print_verbose("Done saving to: " + p_save_path + ".fontdata");
 	return OK;
 }
-
-ResourceImporterImageFont::ResourceImporterImageFont() {
-}

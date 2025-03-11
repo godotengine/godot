@@ -53,8 +53,6 @@ public:
 
 	void set_array(const Variant &p_array);
 	Variant get_array();
-
-	EditorPropertyArrayObject();
 };
 
 class EditorPropertyDictionaryObject : public RefCounted {
@@ -88,8 +86,6 @@ public:
 	String get_label_for_index(int p_index);
 	String get_property_name_for_index(int p_index);
 	String get_key_name_for_index(int p_index);
-
-	EditorPropertyDictionaryObject();
 };
 
 class EditorPropertyArray : public EditorProperty {

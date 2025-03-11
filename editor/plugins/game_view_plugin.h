@@ -78,8 +78,6 @@ public:
 	void reset_camera_3d_position();
 
 	virtual void setup_session(int p_session_id) override;
-
-	GameViewDebugger() {}
 };
 
 class GameView : public VBoxContainer {
@@ -246,5 +244,4 @@ public:
 #endif // ANDROID_ENABLED
 
 	GameViewPlugin();
-	~GameViewPlugin();
 };

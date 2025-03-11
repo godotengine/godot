@@ -48,9 +48,6 @@ protected:
 	virtual void _action_add_polygon(const Variant &p_polygon) override;
 	virtual void _action_remove_polygon(int p_idx) override;
 	virtual void _action_set_polygon(int p_idx, const Variant &p_previous, const Variant &p_polygon) override;
-
-public:
-	NavigationObstacle2DEditor();
 };
 
 class NavigationObstacle2DEditorPlugin : public AbstractPolygon2DEditorPlugin {

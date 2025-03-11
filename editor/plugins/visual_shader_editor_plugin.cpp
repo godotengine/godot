@@ -1491,9 +1491,6 @@ void VisualShaderGraphPlugin::disconnect_nodes(VisualShader::Type p_type, int p_
 	}
 }
 
-VisualShaderGraphPlugin::~VisualShaderGraphPlugin() {
-}
-
 /////////////////
 
 void VisualShaderEditedProperty::_bind_methods() {

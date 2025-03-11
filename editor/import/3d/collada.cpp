@@ -2379,6 +2379,3 @@ Error Collada::load(const String &p_path, int p_flags) {
 	_optimize();
 	return OK;
 }
-
-Collada::Collada() {
-}

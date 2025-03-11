@@ -5793,9 +5793,6 @@ CanvasItemEditorPlugin::CanvasItemEditorPlugin() {
 	canvas_item_editor->hide();
 }
 
-CanvasItemEditorPlugin::~CanvasItemEditorPlugin() {
-}
-
 void CanvasItemEditorViewport::_on_mouse_exit() {
 	if (!texture_node_type_selector->is_visible()) {
 		_remove_preview();

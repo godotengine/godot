@@ -427,6 +427,3 @@ ResourcePreloaderEditorPlugin::ResourcePreloaderEditorPlugin() {
 	button = EditorNode::get_bottom_panel()->add_item("ResourcePreloader", preloader_editor, ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_resource_preloader_bottom_panel", TTRC("Toggle ResourcePreloader Bottom Panel")));
 	button->hide();
 }
-
-ResourcePreloaderEditorPlugin::~ResourcePreloaderEditorPlugin() {
-}

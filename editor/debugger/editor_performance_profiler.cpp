@@ -37,8 +37,6 @@
 #include "editor/themes/editor_theme_manager.h"
 #include "main/performance.h"
 
-EditorPerformanceProfiler::Monitor::Monitor() {}
-
 EditorPerformanceProfiler::Monitor::Monitor(const String &p_name, const String &p_base, int p_frame_index, Performance::MonitorType p_type, TreeItem *p_item) {
 	type = p_type;
 	item = p_item;

@@ -340,6 +340,3 @@ PluginConfigDialog::PluginConfigDialog() {
 	subfolder_edit->connect(SceneStringName(text_changed), callable_mp(validation_panel, &EditorValidationPanel::update).unbind(1));
 	script_edit->connect(SceneStringName(text_changed), callable_mp(validation_panel, &EditorValidationPanel::update).unbind(1));
 }
-
-PluginConfigDialog::~PluginConfigDialog() {
-}

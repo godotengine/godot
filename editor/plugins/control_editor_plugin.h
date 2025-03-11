@@ -170,9 +170,6 @@ protected:
 
 	void _add_row_button(HBoxContainer *p_row, const int p_preset, const String &p_name);
 	void _add_separator(BoxContainer *p_box, Separator *p_separator);
-
-public:
-	ControlEditorPresetPicker() {}
 };
 
 class AnchorPresetPicker : public ControlEditorPresetPicker {

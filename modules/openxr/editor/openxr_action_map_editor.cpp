@@ -496,6 +496,3 @@ OpenXRActionMapEditor::OpenXRActionMapEditor() {
 	// So load our action map and if it doesn't exist, create it right away.
 	_load_action_map(GLOBAL_GET("xr/openxr/default_action_map"), true);
 }
-
-OpenXRActionMapEditor::~OpenXRActionMapEditor() {
-}

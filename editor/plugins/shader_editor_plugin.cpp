@@ -848,6 +848,3 @@ ShaderEditorPlugin::ShaderEditorPlugin() {
 	shader_create_dialog->connect("shader_created", callable_mp(this, &ShaderEditorPlugin::_shader_created));
 	shader_create_dialog->connect("shader_include_created", callable_mp(this, &ShaderEditorPlugin::_shader_include_created));
 }
-
-ShaderEditorPlugin::~ShaderEditorPlugin() {
-}

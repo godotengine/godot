@@ -48,8 +48,6 @@ protected:
 public:
 	void set_dict(const Dictionary &p_dict);
 	Dictionary get_dict();
-
-	EditorPropertyFontMetaObject() {}
 };
 
 /*************************************************************************/
@@ -72,8 +70,6 @@ public:
 
 	void set_defaults(const Dictionary &p_dict);
 	Dictionary get_defaults();
-
-	EditorPropertyFontOTObject() {}
 };
 
 /*************************************************************************/
@@ -228,8 +224,6 @@ public:
 	virtual Size2 get_minimum_size() const override;
 
 	void set_data(const Ref<Font> &p_f);
-
-	FontPreview();
 };
 
 /*************************************************************************/

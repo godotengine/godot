@@ -147,9 +147,6 @@ NavigationMeshEditor::NavigationMeshEditor() {
 	node = nullptr;
 }
 
-NavigationMeshEditor::~NavigationMeshEditor() {
-}
-
 void NavigationMeshEditorPlugin::edit(Object *p_object) {
 	navigation_mesh_editor->edit(Object::cast_to<NavigationRegion3D>(p_object));
 }
@@ -175,7 +172,4 @@ NavigationMeshEditorPlugin::NavigationMeshEditorPlugin() {
 	add_control_to_container(CONTAINER_SPATIAL_EDITOR_MENU, navigation_mesh_editor->bake_hbox);
 	navigation_mesh_editor->hide();
 	navigation_mesh_editor->bake_hbox->hide();
-}
-
-NavigationMeshEditorPlugin::~NavigationMeshEditorPlugin() {
 }

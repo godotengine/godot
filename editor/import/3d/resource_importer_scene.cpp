@@ -146,9 +146,6 @@ void EditorScenePostImport::init(const String &p_source_file) {
 	source_file = p_source_file;
 }
 
-EditorScenePostImport::EditorScenePostImport() {
-}
-
 ///////////////////////////////////////////////////////
 
 Variant EditorScenePostImportPlugin::get_option_value(const StringName &p_name) const {

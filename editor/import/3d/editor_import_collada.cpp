@@ -1855,6 +1855,3 @@ Node *EditorSceneFormatImporterCollada::import_scene(const String &p_path, uint3
 
 	return state.scene;
 }
-
-EditorSceneFormatImporterCollada::EditorSceneFormatImporterCollada() {
-}

@@ -869,6 +869,3 @@ GroupsEditor::GroupsEditor() {
 
 	ProjectSettingsEditor::get_singleton()->get_group_settings()->connect("group_changed", callable_mp(this, &GroupsEditor::_update_groups_and_tree));
 }
-
-GroupsEditor::~GroupsEditor() {
-}

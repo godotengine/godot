@@ -1271,9 +1271,6 @@ AnimationNodeBlendTreeEditor::AnimationNodeBlendTreeEditor() {
 	EditorInspector::add_inspector_plugin(animation_node_inspector_plugin);
 }
 
-AnimationNodeBlendTreeEditor::~AnimationNodeBlendTreeEditor() {
-}
-
 // EditorPluginAnimationNodeAnimation
 
 void AnimationNodeAnimationEditor::_open_set_custom_timeline_from_marker_dialog() {
@@ -1370,9 +1367,6 @@ AnimationNodeAnimationEditor::AnimationNodeAnimationEditor(Ref<AnimationNodeAnim
 	bottom_spacer->set_custom_minimum_size(Size2(0, 2) * EDSCALE);
 }
 
-AnimationNodeAnimationEditor::~AnimationNodeAnimationEditor() {
-}
-
 void AnimationNodeAnimationEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
@@ -1425,7 +1419,4 @@ AnimationNodeAnimationEditorDialog::AnimationNodeAnimationEditorDialog() {
 	grid->add_child(select_end);
 	select_end->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	select_end->set_stretch_ratio(2);
-}
-
-AnimationNodeAnimationEditorDialog::~AnimationNodeAnimationEditorDialog() {
 }

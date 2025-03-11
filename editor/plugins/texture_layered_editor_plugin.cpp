@@ -415,9 +415,6 @@ TextureLayeredEditor::TextureLayeredEditor() {
 	add_child(info);
 }
 
-TextureLayeredEditor::~TextureLayeredEditor() {
-}
-
 bool EditorInspectorPluginLayeredTexture::can_handle(Object *p_object) {
 	return Object::cast_to<TextureLayered>(p_object) != nullptr;
 }

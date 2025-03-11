@@ -294,6 +294,3 @@ void EditorFolding::unfold_scene(Node *p_scene) {
 	HashSet<Ref<Resource>> resources;
 	_do_node_unfolds(p_scene, p_scene, resources);
 }
-
-EditorFolding::EditorFolding() {
-}

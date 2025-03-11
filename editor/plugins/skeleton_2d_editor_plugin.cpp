@@ -133,6 +133,3 @@ Skeleton2DEditorPlugin::Skeleton2DEditorPlugin() {
 
 	//sprite_editor->options->hide();
 }
-
-Skeleton2DEditorPlugin::~Skeleton2DEditorPlugin() {
-}

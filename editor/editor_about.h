@@ -61,5 +61,4 @@ protected:
 
 public:
 	EditorAbout();
-	~EditorAbout();
 };

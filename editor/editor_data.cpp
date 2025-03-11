@@ -1356,9 +1356,6 @@ void EditorSelection::clear() {
 	node_list_changed = true;
 }
 
-EditorSelection::EditorSelection() {
-}
-
 EditorSelection::~EditorSelection() {
 	clear();
 }

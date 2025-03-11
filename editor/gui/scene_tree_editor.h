@@ -290,5 +290,4 @@ public:
 	LineEdit *get_filter_line_edit() { return filter; }
 
 	SceneTreeDialog();
-	~SceneTreeDialog();
 };

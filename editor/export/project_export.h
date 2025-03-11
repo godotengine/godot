@@ -221,5 +221,4 @@ public:
 	bool is_exporting() const { return exporting; }
 
 	ProjectExportDialog();
-	~ProjectExportDialog();
 };

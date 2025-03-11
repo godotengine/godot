@@ -87,8 +87,6 @@ public:
 
 	void set_node(Object *p_object);
 	void set_as_coords();
-
-	AnimationTrackEditSpriteFrame() {}
 };
 
 class AnimationTrackEditSubAnim : public AnimationTrackEdit {
@@ -145,7 +143,6 @@ public:
 	virtual void draw_key(int p_index, float p_pixels_sec, int p_x, bool p_selected, int p_clip_left, int p_clip_right) override;
 
 	void set_node(Object *p_object);
-	AnimationTrackEditTypeAnimation();
 };
 
 class AnimationTrackEditVolumeDB : public AnimationTrackEdit {

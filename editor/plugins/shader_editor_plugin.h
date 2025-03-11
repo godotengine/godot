@@ -145,5 +145,4 @@ public:
 	virtual void apply_changes() override;
 
 	ShaderEditorPlugin();
-	~ShaderEditorPlugin();
 };

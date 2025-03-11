@@ -59,7 +59,6 @@ public:
 	virtual void commit_handle(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary, const Variant &p_restore, bool p_cancel) override;
 
 	CSGShape3DGizmoPlugin();
-	~CSGShape3DGizmoPlugin();
 };
 
 class CSGShapeEditor : public Control {

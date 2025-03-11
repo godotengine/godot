@@ -75,5 +75,4 @@ public:
 	virtual void make_visible(bool p_visible) override;
 
 	Skeleton2DEditorPlugin();
-	~Skeleton2DEditorPlugin();
 };

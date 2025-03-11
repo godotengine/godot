@@ -268,5 +268,4 @@ public:
 	void update_tree();
 
 	ConnectionsDock();
-	~ConnectionsDock();
 };
