@@ -110,6 +110,7 @@ bool Path2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 						moving_screen_from = gpoint;
 						return true;
 					} else if (mode == MODE_EDIT || mode == MODE_EDIT_CURVE) {
+						control_points_in_range = 0;
 						// In/out controls can be moved in multiple modes.
 						if (dist_to_p_out < grab_threshold && i < (curve->get_point_count() - 1)) {
 							action = ACTION_MOVING_OUT;
@@ -117,13 +118,17 @@ bool Path2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 							moving_from = curve->get_point_out(i);
 							moving_screen_from = gpoint;
 							orig_in_length = curve->get_point_in(action_point).length();
-							return true;
-						} else if (dist_to_p_in < grab_threshold && i > 0) {
+							control_points_in_range += 1;
+						}
+						if (dist_to_p_in < grab_threshold && i > 0) {
 							action = ACTION_MOVING_IN;
 							action_point = i;
 							moving_from = curve->get_point_in(i);
 							moving_screen_from = gpoint;
 							orig_out_length = curve->get_point_out(action_point).length();
+							control_points_in_range += 1;
+						}
+						if (control_points_in_range > 0) {
 							return true;
 						}
 					}
@@ -298,6 +303,27 @@ bool Path2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseMotion> mm = p_event;
 
 	if (mm.is_valid()) {
+		// When both control points were in range of click,
+		// pick the point that drags the curve outwards.
+		if (control_points_in_range == 2) {
+			control_points_in_range = 0;
+			Ref<Curve2D> curve = node->get_curve();
+			Transform2D xform = canvas_item_editor->get_canvas_transform() * node->get_screen_transform();
+			Point2 relative = xform.affine_inverse().basis_xform(mm->get_relative());
+			real_t angle_in = relative.angle_to(curve->get_point_position(action_point - 1) - curve->get_point_position(action_point));
+			real_t angle_out = relative.angle_to(curve->get_point_position(action_point + 1) - curve->get_point_position(action_point));
+
+			if (Math::abs(angle_in) < Math::abs(angle_out)) {
+				action = ACTION_MOVING_IN;
+				moving_from = curve->get_point_in(action_point);
+				orig_out_length = curve->get_point_out(action_point).length();
+			} else {
+				action = ACTION_MOVING_OUT;
+				moving_from = curve->get_point_out(action_point);
+				orig_in_length = curve->get_point_in(action_point).length();
+			}
+		}
+
 		if (action == ACTION_NONE && mode == MODE_EDIT) {
 			// Handle Edge Follow
 			bool old_edge = on_edge;
