@@ -99,27 +99,39 @@ public:
 		return Math::sqrt((c1 - c2).dot(c1 - c2));
 	}
 
+#ifndef DISABLE_DEPRECATED
 	static Vector2 get_closest_point_to_segment(const Vector2 &p_point, const Vector2 *p_segment) {
-		Vector2 p = p_point - p_segment[0];
-		Vector2 n = p_segment[1] - p_segment[0];
+		return get_closest_point_to_segment(p_point, p_segment[0], p_segment[1]);
+	}
+#endif // DISABLE_DEPRECATED
+
+	static Vector2 get_closest_point_to_segment(const Vector2 &p_point, const Vector2 &p_segment_a, const Vector2 &p_segment_b) {
+		Vector2 p = p_point - p_segment_a;
+		Vector2 n = p_segment_b - p_segment_a;
 		real_t l2 = n.length_squared();
 		if (l2 < 1e-20f) {
-			return p_segment[0]; // Both points are the same, just give any.
+			return p_segment_a; // Both points are the same, just give any.
 		}
 
 		real_t d = n.dot(p) / l2;
 
 		if (d <= 0.0f) {
-			return p_segment[0]; // Before first point.
+			return p_segment_a; // Before first point.
 		} else if (d >= 1.0f) {
-			return p_segment[1]; // After first point.
+			return p_segment_b; // After first point.
 		} else {
-			return p_segment[0] + n * d; // Inside.
+			return p_segment_a + n * d; // Inside.
 		}
 	}
 
+#ifndef DISABLE_DEPRECATED
 	static real_t get_distance_to_segment(const Vector2 &p_point, const Vector2 *p_segment) {
-		return p_point.distance_to(get_closest_point_to_segment(p_point, p_segment));
+		return get_distance_to_segment(p_point, p_segment[0], p_segment[1]);
+	}
+#endif // DISABLE_DEPRECATED
+
+	static real_t get_distance_to_segment(const Vector2 &p_point, const Vector2 &p_segment_a, const Vector2 &p_segment_b) {
+		return p_point.distance_to(get_closest_point_to_segment(p_point, p_segment_a, p_segment_b));
 	}
 
 	static bool is_point_in_triangle(const Vector2 &s, const Vector2 &a, const Vector2 &b, const Vector2 &c) {
@@ -136,17 +148,23 @@ public:
 		return (cn.cross(an) > 0) == orientation;
 	}
 
+#ifndef DISABLE_DEPRECATED
 	static Vector2 get_closest_point_to_segment_uncapped(const Vector2 &p_point, const Vector2 *p_segment) {
-		Vector2 p = p_point - p_segment[0];
-		Vector2 n = p_segment[1] - p_segment[0];
+		return get_closest_point_to_segment_uncapped(p_point, p_segment[0], p_segment[1]);
+	}
+#endif // DISABLE_DEPRECATED
+
+	static Vector2 get_closest_point_to_segment_uncapped(const Vector2 &p_point, const Vector2 &p_segment_a, const Vector2 &p_segment_b) {
+		Vector2 p = p_point - p_segment_a;
+		Vector2 n = p_segment_b - p_segment_a;
 		real_t l2 = n.length_squared();
 		if (l2 < 1e-20f) {
-			return p_segment[0]; // Both points are the same, just give any.
+			return p_segment_a; // Both points are the same, just give any.
 		}
 
 		real_t d = n.dot(p) / l2;
 
-		return p_segment[0] + n * d; // Inside.
+		return p_segment_a + n * d; // Inside.
 	}
 
 // Disable False Positives in MSVC compiler; we correctly check for 0 here to prevent a division by 0.
