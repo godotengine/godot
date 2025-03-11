@@ -96,6 +96,10 @@ class Path2DEditor : public HBoxContainer {
 	Vector2 edge_point;
 	Vector2 original_mouse_pos;
 
+	// Number of control points in range of the last click.
+	// 0, 1, or 2.
+	int control_points_in_range = 0;
+
 	void _mode_selected(int p_mode);
 	void _handle_option_pressed(int p_option);
 	void _cancel_current_action();
