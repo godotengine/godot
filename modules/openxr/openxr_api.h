@@ -419,6 +419,8 @@ public:
 	OpenXRGraphicsExtensionWrapper *get_graphics_extension() const { return graphics_extension; }
 	String get_runtime_name() const { return runtime_name; }
 	String get_runtime_version() const { return runtime_version; }
+	String get_system_name() const { return system_name; }
+	uint32_t get_vendor_id() const { return vendor_id; }
 
 	// helper method to convert an XrPosef to a Transform3D
 	Transform3D transform_from_pose(const XrPosef &p_pose);
