@@ -3293,9 +3293,8 @@ RID RenderForwardClustered::_setup_render_pass_uniform_set(RenderListType p_rend
 		uniforms.push_back(u);
 	}
 	{
-		RD::Uniform u;
-		u.binding = 7;
-		u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
+		Vector<RID> textures;
+		textures.resize(scene_state.max_lightmaps * 2);
 
 		RID default_tex = texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_2D_ARRAY_WHITE);
 		for (uint32_t i = 0; i < scene_state.max_lightmaps * 2; i++) {
@@ -3315,14 +3314,14 @@ RID RenderForwardClustered::_setup_render_pass_uniform_set(RenderListType p_rend
 
 				if (texture.is_valid()) {
 					RID rd_texture = texture_storage->texture_get_rd_texture(texture);
-					u.append_id(rd_texture);
+					textures.write[i] = rd_texture;
 					continue;
 				}
 			}
 
-			u.append_id(default_tex);
+			textures.write[i] = default_tex;
 		}
-
+		RD::Uniform u(RD::UNIFORM_TYPE_TEXTURE, 7, textures);
 		uniforms.push_back(u);
 	}
 	{
