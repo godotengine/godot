@@ -222,6 +222,7 @@ static Size2i window_size = Size2i(1152, 648);
 static int init_screen = DisplayServer::SCREEN_PRIMARY;
 static bool init_fullscreen = false;
 static bool init_maximized = false;
+static bool init_offscreen = false;
 static bool init_windowed = false;
 static bool init_always_on_top = false;
 static bool init_use_custom_pos = false;
@@ -1200,6 +1201,9 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		} else if (arg == "-m" || arg == "--maximized") { // force maximized window
 			init_maximized = true;
 			window_mode = DisplayServer::WINDOW_MODE_MAXIMIZED;
+		} else if (arg == "-o" || arg == "--offscreen") { // force offscreen window
+			init_offscreen = true;
+			window_mode = DisplayServer::WINDOW_MODE_OFFSCREEN;
 		} else if (arg == "-w" || arg == "--windowed") { // force windowed window
 
 			init_windowed = true;
@@ -3014,6 +3018,7 @@ Error Main::setup2(bool p_show_boot_logo) {
 		}
 
 		// rendering_driver now held in static global String in main and initialized in setup()
+
 		Error err;
 		display_server = DisplayServer::create(display_driver_idx, rendering_driver, window_mode, window_vsync_mode, window_flags, window_position, window_size, init_screen, context, init_embed_parent_window_id, err);
 		if (err != OK || display_server == nullptr) {
@@ -3245,6 +3250,8 @@ Error Main::setup2(bool p_show_boot_logo) {
 				DisplayServer::get_singleton()->window_set_mode(DisplayServer::WINDOW_MODE_MAXIMIZED);
 			} else if (init_fullscreen) {
 				DisplayServer::get_singleton()->window_set_mode(DisplayServer::WINDOW_MODE_FULLSCREEN);
+			} else if (init_offscreen) {
+				DisplayServer::get_singleton()->window_set_mode(DisplayServer::WINDOW_MODE_OFFSCREEN);
 			}
 			if (init_always_on_top) {
 				DisplayServer::get_singleton()->window_set_flag(DisplayServer::WINDOW_FLAG_ALWAYS_ON_TOP, true);
@@ -4155,6 +4162,9 @@ int Main::start() {
 			String stretch_aspect = GLOBAL_GET("display/window/stretch/aspect");
 			Size2i stretch_size = Size2i(GLOBAL_GET("display/window/size/viewport_width"),
 					GLOBAL_GET("display/window/size/viewport_height"));
+			if (force_res && init_offscreen && stretch_mode == "viewport") {
+				stretch_size = window_size;
+			}
 			real_t stretch_scale = GLOBAL_GET("display/window/stretch/scale");
 			String stretch_scale_mode = GLOBAL_GET("display/window/stretch/scale_mode");
 
