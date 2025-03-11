@@ -30,12 +30,12 @@
 
 #pragma once
 
-#include "box_container.h"
 #include "core/io/dir_access.h"
-#include "scene/gui/dialogs.h"
+#include "scene/gui/advanced/dialogs.h"
+#include "scene/gui/advanced/option_button.h"
+#include "scene/gui/advanced/tree.h"
+#include "scene/gui/box_container.h"
 #include "scene/gui/line_edit.h"
-#include "scene/gui/option_button.h"
-#include "scene/gui/tree.h"
 #include "scene/property_list_helper.h"
 
 class GridContainer;

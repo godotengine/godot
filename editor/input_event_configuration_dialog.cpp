@@ -33,11 +33,11 @@
 #include "editor/editor_string_names.h"
 #include "editor/event_listener_line_edit.h"
 #include "editor/themes/editor_scale.h"
+#include "scene/gui/advanced/option_button.h"
+#include "scene/gui/advanced/tree.h"
 #include "scene/gui/check_box.h"
 #include "scene/gui/line_edit.h"
-#include "scene/gui/option_button.h"
 #include "scene/gui/separator.h"
-#include "scene/gui/tree.h"
 
 void InputEventConfigurationDialog::_set_event(const Ref<InputEvent> &p_event, const Ref<InputEvent> &p_original_event, bool p_update_input_list_selection) {
 	if (p_event.is_valid()) {

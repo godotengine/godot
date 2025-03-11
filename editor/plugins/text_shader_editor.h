@@ -32,8 +32,8 @@
 
 #include "editor/code_editor.h"
 #include "editor/plugins/shader/shader_editor.h"
-#include "scene/gui/menu_button.h"
-#include "scene/gui/rich_text_label.h"
+#include "scene/gui/advanced/menu_button.h"
+#include "scene/gui/advanced/rich_text_label.h"
 #include "servers/rendering/shader_warnings.h"
 
 class GDShaderSyntaxHighlighter : public CodeHighlighter {

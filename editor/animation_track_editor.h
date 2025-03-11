@@ -34,10 +34,10 @@
 #include "editor/editor_properties.h"
 #include "editor/property_selector.h"
 #include "scene/3d/node_3d.h"
+#include "scene/gui/advanced/menu_button.h"
+#include "scene/gui/advanced/tree.h"
 #include "scene/gui/control.h"
-#include "scene/gui/menu_button.h"
 #include "scene/gui/scroll_bar.h"
-#include "scene/gui/tree.h"
 #include "scene/resources/animation.h"
 
 class AnimationMarkerEdit;

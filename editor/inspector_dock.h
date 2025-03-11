@@ -33,12 +33,12 @@
 #include "editor/create_dialog.h"
 #include "editor/editor_data.h"
 #include "editor/editor_inspector.h"
+#include "scene/gui/advanced/dialogs.h"
+#include "scene/gui/advanced/menu_button.h"
+#include "scene/gui/advanced/tree.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
-#include "scene/gui/dialogs.h"
 #include "scene/gui/line_edit.h"
-#include "scene/gui/menu_button.h"
-#include "scene/gui/tree.h"
 
 class EditorFileDialog;
 class EditorObjectSelector;
