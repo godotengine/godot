@@ -34,9 +34,9 @@
 #include "core/os/os.h"
 #include "editor/debugger/editor_debugger_inspector.h"
 #include "editor/debugger/editor_debugger_node.h"
-#include "scene/gui/button.h"
 #include "scene/gui/margin_container.h"
 
+class Button;
 class Tree;
 class LineEdit;
 class TabContainer;
@@ -215,6 +215,8 @@ private:
 
 	void _expand_errors_list();
 	void _collapse_errors_list();
+
+	void _vmem_item_activated();
 
 	void _profiler_activate(bool p_enable, int p_profiler);
 	void _profiler_seeked();
