@@ -101,6 +101,9 @@ class ScriptTextEditor : public ScriptEditorBase {
 	Color folded_code_region_color = Color(1, 1, 1);
 	int previous_line = 0;
 
+	int last_moved_line = -1;
+	int last_moved_new_line = -1;
+
 	PopupPanel *color_panel = nullptr;
 	ColorPicker *color_picker = nullptr;
 	Vector2 color_position;
@@ -158,6 +161,7 @@ class ScriptTextEditor : public ScriptEditorBase {
 		HELP_CONTEXTUAL,
 		LOOKUP_SYMBOL,
 		EDIT_EMOJI_AND_SYMBOL,
+		EDIT_BREAKPOINT,
 	};
 
 	void _enable_code_editor();
@@ -166,6 +170,10 @@ protected:
 	void _update_breakpoint_list();
 	void _breakpoint_item_pressed(int p_idx);
 	void _breakpoint_toggled(int p_row);
+	void _breakpoints_moved();
+	void _breakpoint_tree_changed(const String &p_source, const int &p_line, const Dictionary &p_data);
+	void _breakpoint_set_in_tree(Ref<RefCounted> p_source, int p_line, bool p_breakpointed);
+	void _breakpoint_changed_in_tree(Ref<RefCounted> p_source, int p_line, const Dictionary &p_data);
 
 	void _on_caret_moved();
 
@@ -192,7 +200,7 @@ protected:
 
 	void _edit_option(int p_op);
 	void _edit_option_toggle_inline_comment();
-	void _make_context_menu(bool p_selection, bool p_color, bool p_foldable, bool p_open_docs, bool p_goto_definition, Vector2 p_pos);
+	void _make_context_menu(bool p_selection, bool p_color, bool p_foldable, bool p_open_docs, bool p_goto_definition, bool has_breakpoint, Vector2 p_pos);
 	void _text_edit_gui_input(const Ref<InputEvent> &ev);
 	void _color_changed(const Color &p_color);
 	void _prepare_edit_menu();
@@ -245,7 +253,7 @@ public:
 
 	virtual void reload(bool p_soft) override;
 	virtual PackedInt32Array get_breakpoints() override;
-	virtual void set_breakpoint(int p_line, bool p_enabled) override;
+	virtual void set_breakpoint(int p_line, bool p_breakpointed) override;
 	virtual void clear_breakpoints() override;
 
 	virtual void add_callback(const String &p_function, const PackedStringArray &p_args) override;
