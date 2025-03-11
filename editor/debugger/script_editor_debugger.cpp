@@ -808,7 +808,6 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, uint64_t p_thread
 		}
 	} else if (p_msg == "request_quit") {
 		emit_signal(SNAME("stop_requested"));
-		_stop_and_notify();
 	} else if (p_msg == "remote_node_clicked") {
 		if (!p_data.is_empty()) {
 			emit_signal(SNAME("remote_tree_select_requested"), p_data[0]);
