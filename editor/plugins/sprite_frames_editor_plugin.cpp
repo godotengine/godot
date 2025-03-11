@@ -1326,7 +1326,7 @@ void SpriteFramesEditor::_frame_list_gui_input(const Ref<InputEvent> &p_event) {
 					menu = memnew(PopupMenu);
 					add_child(menu);
 					menu->connect(SceneStringName(id_pressed), callable_mp(this, &SpriteFramesEditor::_menu_selected));
-					menu->add_icon_item(get_editor_theme_icon(SNAME("ShowInFileSystem")), TTRC("Show in FileSystem"));
+					menu->add_icon_item(get_editor_theme_icon(SNAME("ShowInFileSystem")), TTRC("Show in FileSystem"), MENU_SHOW_IN_FILESYSTEM);
 				}
 
 				menu->set_position(get_screen_position() + get_local_mouse_position());
@@ -1336,12 +1336,14 @@ void SpriteFramesEditor::_frame_list_gui_input(const Ref<InputEvent> &p_event) {
 	}
 }
 
-void SpriteFramesEditor::_menu_selected(int p_index) {
-	switch (p_index) {
+void SpriteFramesEditor::_menu_selected(int p_id) {
+	switch (p_id) {
 		case MENU_SHOW_IN_FILESYSTEM: {
-			String path = frames->get_frame_texture(edited_anim, right_clicked_frame)->get_path();
+			Ref<Texture2D> frame_texture = frames->get_frame_texture(edited_anim, right_clicked_frame);
+			ERR_FAIL_COND(frame_texture.is_null());
+			String path = frame_texture->get_path();
 			// Check if the file is an atlas resource, if it is find the source texture.
-			Ref<AtlasTexture> at = frames->get_frame_texture(edited_anim, right_clicked_frame);
+			Ref<AtlasTexture> at = frame_texture;
 			while (at.is_valid() && at->get_atlas().is_valid()) {
 				path = at->get_atlas()->get_path();
 				at = at->get_atlas();
