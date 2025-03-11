@@ -101,13 +101,13 @@ Vector<uint8_t> basis_universal_packer(const Ref<Image> &p_image, Image::UsedCha
 	basisu::basis_compressor_params params;
 
 	params.m_uastc = true;
-	params.m_quality_level = basisu::BASISU_QUALITY_MIN;
-	params.m_pack_uastc_flags &= ~basisu::cPackUASTCLevelMask;
-	params.m_pack_uastc_flags |= basisu::cPackUASTCLevelFastest;
+	params.m_etc1s_quality_level = basisu::BASISU_QUALITY_MIN;
+	params.m_pack_uastc_ldr_4x4_flags &= ~basisu::cPackUASTCLevelMask;
+	params.m_pack_uastc_ldr_4x4_flags |= basisu::cPackUASTCLevelFastest;
 
-	params.m_rdo_uastc = 0.0f;
-	params.m_rdo_uastc_quality_scalar = 0.0f;
-	params.m_rdo_uastc_dict_size = 1024;
+	params.m_rdo_uastc_ldr_4x4 = 0.0f;
+	params.m_rdo_uastc_ldr_4x4_quality_scalar = 0.0f;
+	params.m_rdo_uastc_ldr_4x4_dict_size = 1024;
 
 	params.m_mip_fast = true;
 	params.m_multithreading = true;
@@ -127,7 +127,7 @@ Vector<uint8_t> basis_universal_packer(const Ref<Image> &p_image, Image::UsedCha
 	if (is_hdr) {
 		decompress_format = BASIS_DECOMPRESS_HDR_RGB;
 		params.m_hdr = true;
-		params.m_uastc_hdr_options.set_quality_level(0);
+		params.m_uastc_hdr_4x4_options.set_quality_level(0);
 
 	} else {
 		switch (p_channels) {

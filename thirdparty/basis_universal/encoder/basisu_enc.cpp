@@ -21,7 +21,9 @@
 #include "jpgd.h"
 #include "pvpngreader.h"
 #include "basisu_opencl.h"
-#include "basisu_astc_hdr_enc.h"
+#include "basisu_uastc_hdr_4x4_enc.h"
+#include "basisu_astc_hdr_6x6_enc.h"
+
 #include <vector>
 
 #ifndef TINYEXR_USE_ZFP
@@ -47,9 +49,12 @@ namespace basisu
 {
 	uint64_t interval_timer::g_init_ticks, interval_timer::g_freq;
 	double interval_timer::g_timer_freq;
+
 #if BASISU_SUPPORT_SSE
 	bool g_cpu_supports_sse41;
 #endif
+
+	fast_linear_to_srgb g_fast_linear_to_srgb;
 
 	uint8_t g_hamming_dist[256] =
 	{
@@ -175,7 +180,7 @@ namespace basisu
 
 	bool g_library_initialized;
 	std::mutex g_encoder_init_mutex;
-		
+				
 	// Encoder library initialization (just call once at startup)
 	bool basisu_encoder_init(bool use_opencl, bool opencl_force_serialization)
 	{
@@ -185,7 +190,7 @@ namespace basisu
 			return true;
 
 		detect_sse41();
-
+				
 		basist::basisu_transcoder_init();
 		pack_etc1_solid_color_init();
 		//uastc_init();
@@ -201,6 +206,7 @@ namespace basisu
 
 		astc_hdr_enc_init();
 		basist::bc6h_enc_init();
+		astc_6x6_hdr::global_init();
 
 		g_library_initialized = true;
 		return true;
@@ -215,15 +221,40 @@ namespace basisu
 
 	void error_vprintf(const char* pFmt, va_list args)
 	{
-		char buf[8192];
+		const uint32_t BUF_SIZE = 256;
+		char buf[BUF_SIZE];
 
-#ifdef _WIN32		
-		vsprintf_s(buf, sizeof(buf), pFmt, args);
-#else
-		vsnprintf(buf, sizeof(buf), pFmt, args);
-#endif
+		va_list args_copy;
+		va_copy(args_copy, args);
+		int total_chars = vsnprintf(buf, sizeof(buf), pFmt, args_copy);
+		va_end(args_copy);
 
-		fprintf(stderr, "ERROR: %s", buf);
+		if (total_chars < 0)
+		{
+			assert(0);
+			return;
+		}
+
+		if (total_chars >= (int)BUF_SIZE)
+		{
+			basisu::vector<char> var_buf(total_chars + 1);
+			
+			va_copy(args_copy, args);
+			int total_chars_retry = vsnprintf(var_buf.data(), var_buf.size(), pFmt, args_copy);
+			va_end(args_copy);
+
+			if (total_chars_retry < 0)
+			{
+				assert(0);
+				return;
+			}
+
+			fprintf(stderr, "ERROR: %s", var_buf.data());
+		}
+		else
+		{
+			fprintf(stderr, "ERROR: %s", buf);
+		}
 	}
 
 	void error_printf(const char *pFmt, ...)
@@ -233,6 +264,18 @@ namespace basisu
 		error_vprintf(pFmt, args);
 		va_end(args);
 	}
+
+#if defined(_WIN32)
+	void platform_sleep(uint32_t ms)
+	{
+		Sleep(ms);
+	}
+#else
+	void platform_sleep(uint32_t ms)
+	{
+		// TODO
+	}
+#endif
 
 #if defined(_WIN32)
 	inline void query_counter(timer_ticks* pTicks)
@@ -331,6 +374,8 @@ namespace basisu
 		return ticks * g_timer_freq;
 	}
 
+	// Note this is linear<->sRGB, NOT REC709 which uses slightly different equations/transfer functions. 
+	// However the gamuts/white points of REC709 and sRGB are the same.
 	float linear_to_srgb(float l)
 	{
 		assert(l >= 0.0f && l <= 1.0f);
@@ -339,7 +384,7 @@ namespace basisu
 		else
 			return saturate(1.055f * powf(l, 1.0f / 2.4f) - .055f);
 	}
-
+		
 	float srgb_to_linear(float s)
 	{
 		assert(s >= 0.0f && s <= 1.0f);
@@ -418,7 +463,8 @@ namespace basisu
 
 		uint32_t width = 0, height = 0, num_chans = 0;
 		void* pImage = pv_png::load_png(pBuf, buf_size, 4, width, height, num_chans);
-		if (!pBuf)
+
+		if (!pImage)
 		{
 			error_printf("pv_png::load_png failed while loading image \"%s\"\n", pFilename);
 			return false;
@@ -457,6 +503,26 @@ namespace basisu
 		return true;
 	}
 
+	bool load_jpg(const uint8_t* pBuf, size_t buf_size, image& img)
+	{
+		if (buf_size > INT_MAX)
+		{
+			assert(0);
+			return false;
+		}
+
+		int width = 0, height = 0, actual_comps = 0;
+		uint8_t* pImage_data = jpgd::decompress_jpeg_image_from_memory(pBuf, (int)buf_size, &width, &height, &actual_comps, 4, jpgd::jpeg_decoder::cFlagBoxChromaFiltering);
+		if (!pImage_data)
+			return false;
+
+		img.init(pImage_data, width, height, 4);
+
+		free(pImage_data);
+
+		return true;
+	}
+
 	bool load_image(const char* pFilename, image& img)
 	{
 		std::string ext(string_get_extension(std::string(pFilename)));
@@ -478,7 +544,7 @@ namespace basisu
 		return false;
 	}
 
-	static void convert_ldr_to_hdr_image(imagef &img, const image &ldr_img, bool ldr_srgb_to_linear)
+	static void convert_ldr_to_hdr_image(imagef &img, const image &ldr_img, bool ldr_srgb_to_linear, float linear_nit_multiplier = 1.0f, float ldr_black_bias = 0.0f)
 	{
 		img.resize(ldr_img.get_width(), ldr_img.get_height());
 
@@ -491,23 +557,41 @@ namespace basisu
 				vec4F& d = img(x, y);
 				if (ldr_srgb_to_linear)
 				{
-					// TODO: Multiply by 100-200 nits?
-					d[0] = srgb_to_linear(c[0] * (1.0f / 255.0f));
-					d[1] = srgb_to_linear(c[1] * (1.0f / 255.0f));
-					d[2] = srgb_to_linear(c[2] * (1.0f / 255.0f));
+					float r = (float)c[0];
+					float g = (float)c[1];
+					float b = (float)c[2];
+
+					if (ldr_black_bias > 0.0f)
+					{
+						// ASTC HDR is noticeably weaker dealing with blocks containing some pixels with components set to 0.
+						// Add a very slight bias less than .5 to avoid this difficulity. When the HDR image is mapped to SDR sRGB and rounded back to 8-bits, this bias will still result in zero.
+						// (FWIW, in reality, a physical monitor would be unlikely to have a perfectly zero black level.)
+						// This is purely optional and on most images it doesn't matter visually.
+						if (r == 0.0f)
+							r = ldr_black_bias;
+						if (g == 0.0f)
+							g = ldr_black_bias;
+						if (b == 0.0f)
+							b = ldr_black_bias;
+					}
+
+					// Compute how much linear light would be emitted by a SDR 80-100 nit monitor.
+					d[0] = srgb_to_linear(r * (1.0f / 255.0f)) * linear_nit_multiplier;
+					d[1] = srgb_to_linear(g * (1.0f / 255.0f)) * linear_nit_multiplier;
+					d[2] = srgb_to_linear(b * (1.0f / 255.0f)) * linear_nit_multiplier;
 				}
 				else
 				{
-					d[0] = c[0] * (1.0f / 255.0f);
-					d[1] = c[1] * (1.0f / 255.0f);
-					d[2] = c[2] * (1.0f / 255.0f);
+					d[0] = c[0] * (1.0f / 255.0f) * linear_nit_multiplier;
+					d[1] = c[1] * (1.0f / 255.0f) * linear_nit_multiplier;
+					d[2] = c[2] * (1.0f / 255.0f) * linear_nit_multiplier;
 				}
 				d[3] = c[3] * (1.0f / 255.0f);
 			}
 		}
 	}
 
-	bool load_image_hdr(const void* pMem, size_t mem_size, imagef& img, uint32_t width, uint32_t height, hdr_image_type img_type, bool ldr_srgb_to_linear)
+	bool load_image_hdr(const void* pMem, size_t mem_size, imagef& img, uint32_t width, uint32_t height, hdr_image_type img_type, bool ldr_srgb_to_linear, float linear_nit_multiplier, float ldr_black_bias)
 	{
 		if ((!pMem) || (!mem_size))
 		{
@@ -571,13 +655,22 @@ namespace basisu
 
 			break;
 		}
+		case hdr_image_type::cHITJPGImage:
+		{
+			image ldr_img;
+			if (!load_jpg(static_cast<const uint8_t*>(pMem), mem_size, ldr_img))
+				return false;
+
+			convert_ldr_to_hdr_image(img, ldr_img, ldr_srgb_to_linear, linear_nit_multiplier, ldr_black_bias);
+			break;
+		}
 		case hdr_image_type::cHITPNGImage:
 		{
 			image ldr_img;
 			if (!load_png(static_cast<const uint8_t *>(pMem), mem_size, ldr_img))
 				return false;
 
-			convert_ldr_to_hdr_image(img, ldr_img, ldr_srgb_to_linear);
+			convert_ldr_to_hdr_image(img, ldr_img, ldr_srgb_to_linear, linear_nit_multiplier, ldr_black_bias);
 			break;
 		}
 		case hdr_image_type::cHITEXRImage:
@@ -605,8 +698,21 @@ namespace basisu
 
 		return true;
 	}
+
+	bool is_image_filename_hdr(const char *pFilename)
+	{
+		std::string ext(string_get_extension(std::string(pFilename)));
+
+		if (ext.length() == 0)
+			return false;
+
+		const char* pExt = ext.c_str();
+
+		return ((strcasecmp(pExt, "hdr") == 0) || (strcasecmp(pExt, "exr") == 0));
+	}
 	
-	bool load_image_hdr(const char* pFilename, imagef& img, bool ldr_srgb_to_linear)
+	// TODO: move parameters to struct, add a HDR clean flag to eliminate NaN's/Inf's
+	bool load_image_hdr(const char* pFilename, imagef& img, bool ldr_srgb_to_linear, float linear_nit_multiplier, float ldr_black_bias)
 	{
 		std::string ext(string_get_extension(std::string(pFilename)));
 
@@ -637,7 +743,7 @@ namespace basisu
 			if (!load_image(pFilename, ldr_img))
 				return false;
 
-			convert_ldr_to_hdr_image(img, ldr_img, ldr_srgb_to_linear);
+			convert_ldr_to_hdr_image(img, ldr_img, ldr_srgb_to_linear, linear_nit_multiplier, ldr_black_bias);
 		}
 
 		return true;
@@ -1002,7 +1108,7 @@ namespace basisu
 			return false;
 		}
 
-		if ((src_w == dst_w) && (src_h == dst_h))
+		if ((src_w == dst_w) && (src_h == dst_h) && (filter_scale == 1.0f))
 		{
 			dst = src;
 			return true;
@@ -1652,7 +1758,7 @@ namespace basisu
 
 		uint32_t a = max_index / num_syms, b = max_index % num_syms;
 
-		const uint32_t ofs = m_entries_picked.size();
+		const size_t ofs = m_entries_picked.size();
 
 		m_entries_picked.push_back(a);
 		m_entries_picked.push_back(b);
@@ -2002,6 +2108,34 @@ namespace basisu
 		m_psnr = m_rms ? (float)clamp<double>(log10(255.0 / m_rms) * 20.0f, 0.0f, 100.0f) : 100.0f;
 	}
 
+	void print_image_metrics(const image& a, const image& b)
+	{
+		image_metrics im;
+		im.calc(a, b, 0, 3);
+		im.print("RGB    ");
+
+		im.calc(a, b, 0, 4);
+		im.print("RGBA   ");
+
+		im.calc(a, b, 0, 1);
+		im.print("R      ");
+
+		im.calc(a, b, 1, 1);
+		im.print("G      ");
+
+		im.calc(a, b, 2, 1);
+		im.print("B      ");
+
+		im.calc(a, b, 3, 1);
+		im.print("A      ");
+
+		im.calc(a, b, 0, 0);
+		im.print("Y 709  ");
+
+		im.calc(a, b, 0, 0, true, true);
+		im.print("Y 601  ");
+	}
+
 	void fill_buffer_with_random_bytes(void *pBuf, size_t size, uint32_t seed)
 	{
 		rand r(seed);
@@ -2079,9 +2213,11 @@ namespace basisu
 	}
 
 	job_pool::job_pool(uint32_t num_threads) : 
-		m_num_active_jobs(0),
-		m_kill_flag(false)
+		m_num_active_jobs(0)
 	{
+		m_kill_flag.store(false);
+		m_num_active_workers.store(0);
+
 		assert(num_threads >= 1U);
 
 		debug_printf("job_pool::job_pool: %u total threads\n", num_threads);
@@ -2100,11 +2236,23 @@ namespace basisu
 		debug_printf("job_pool::~job_pool\n");
 		
 		// Notify all workers that they need to die right now.
-		m_kill_flag = true;
+		m_kill_flag.store(true);
 		
 		m_has_work.notify_all();
 
-		// Wait for all workers to die.
+#ifdef __EMSCRIPTEN__
+		for ( ; ; )
+		{
+			if (m_num_active_workers.load() <= 0)
+				break;
+			std::this_thread::sleep_for(std::chrono::milliseconds(50));
+		}
+		
+		// At this point all worker threads should be exiting or exited.
+		// We could call detach(), but this seems to just call join() anyway.
+#endif
+
+		// Wait for all worker threads to exit.
 		for (uint32_t i = 0; i < m_threads.size(); i++)
 			m_threads[i].join();
 	}
@@ -2157,13 +2305,26 @@ namespace basisu
 		}
 
 		// The queue is empty, now wait for all active jobs to finish up.
+#ifndef __EMSCRIPTEN__
 		m_no_more_jobs.wait(lock, [this]{ return !m_num_active_jobs; } );
+#else
+		// Avoid infinite blocking
+		for (; ; )
+		{
+			if (m_no_more_jobs.wait_for(lock, std::chrono::milliseconds(50), [this] { return !m_num_active_jobs; }))
+			{
+				break;
+			}
+		}
+#endif
 	}
 
 	void job_pool::job_thread(uint32_t index)
 	{
 		BASISU_NOTE_UNUSED(index);
 		//debug_printf("job_pool::job_thread: starting %u\n", index);
+
+		m_num_active_workers.fetch_add(1);
 		
 		while (true)
 		{
@@ -2198,6 +2359,8 @@ namespace basisu
 			if (all_done)
 				m_no_more_jobs.notify_all();
 		}
+
+		m_num_active_workers.fetch_add(-1);
 
 		//debug_printf("job_pool::job_thread: exiting\n");
 	}
@@ -3314,7 +3477,7 @@ namespace basisu
 		return true;
 	}
 
-	bool write_exr(const char* pFilename, imagef& img, uint32_t n_chans, uint32_t flags)
+	bool write_exr(const char* pFilename, const imagef& img, uint32_t n_chans, uint32_t flags)
 	{
 		assert((n_chans == 1) || (n_chans == 3) || (n_chans == 4));
 
@@ -3483,11 +3646,14 @@ namespace basisu
 	
 	// Very basic global Reinhard tone mapping, output converted to sRGB with no dithering, alpha is carried through unchanged. 
 	// Only used for debugging/development.
-	void tonemap_image_reinhard(image &ldr_img, const imagef &hdr_img, float exposure)
+	void tonemap_image_reinhard(image &ldr_img, const imagef &hdr_img, float exposure, bool add_noise, bool per_component, bool luma_scaling)
 	{
 		uint32_t width = hdr_img.get_width(), height = hdr_img.get_height();
 
 		ldr_img.resize(width, height);
+
+		rand r;
+		r.seed(128);
 				
 		for (uint32_t y = 0; y < height; y++)
 		{
@@ -3495,32 +3661,84 @@ namespace basisu
 			{
 				vec4F c(hdr_img(x, y));
 
-				for (uint32_t t = 0; t < 3; t++)
+				if (per_component)
 				{
-					if (c[t] <= 0.0f)
+					for (uint32_t t = 0; t < 3; t++)
 					{
-						c[t] = 0.0f;
+						if (c[t] <= 0.0f)
+						{
+							c[t] = 0.0f;
+						}
+						else
+						{
+							c[t] *= exposure;
+							c[t] = c[t] / (1.0f + c[t]);
+						}
 					}
-					else
+				}
+				else
+				{
+					c[0] *= exposure;
+					c[1] *= exposure;
+					c[2] *= exposure;
+
+					const float L = 0.2126f * c[0] + 0.7152f * c[1] + 0.0722f * c[2];
+
+					float Lmapped = 0.0f;
+					if (L > 0.0f)
 					{
-						c[t] *= exposure;
-						c[t] = c[t] / (1.0f + c[t]);
+						//Lmapped = L / (1.0f + L);
+						//Lmapped /= L;
+						
+						Lmapped = 1.0f / (1.0f + L);
+					}
+
+					c[0] = c[0] * Lmapped;
+					c[1] = c[1] * Lmapped;
+					c[2] = c[2] * Lmapped;
+
+					if (luma_scaling)
+					{
+						// Keeps the ratio of r/g/b intact
+						float m = maximum(c[0], c[1], c[2]);
+						if (m > 1.0f)
+						{
+							c /= m;
+						}
 					}
 				}
 
 				c.clamp(0.0f, 1.0f);
 
-				c[0] = linear_to_srgb(c[0]) * 255.0f;
-				c[1] = linear_to_srgb(c[1]) * 255.0f;
-				c[2] = linear_to_srgb(c[2]) * 255.0f;
 				c[3] = c[3] * 255.0f;
 
 				color_rgba& o = ldr_img(x, y);
-				
-				o[0] = (uint8_t)std::round(c[0]);
-				o[1] = (uint8_t)std::round(c[1]);
-				o[2] = (uint8_t)std::round(c[2]);
-				o[3] = (uint8_t)std::round(c[3]);
+
+				if (add_noise)
+				{
+					c[0] = linear_to_srgb(c[0]) * 255.0f;
+					c[1] = linear_to_srgb(c[1]) * 255.0f;
+					c[2] = linear_to_srgb(c[2]) * 255.0f;
+
+					const float NOISE_AMP = .5f;
+					c[0] += r.frand(-NOISE_AMP, NOISE_AMP);
+					c[1] += r.frand(-NOISE_AMP, NOISE_AMP);
+					c[2] += r.frand(-NOISE_AMP, NOISE_AMP);
+
+					c.clamp(0.0f, 255.0f);
+
+					o[0] = (uint8_t)fast_roundf_int(c[0]);
+					o[1] = (uint8_t)fast_roundf_int(c[1]);
+					o[2] = (uint8_t)fast_roundf_int(c[2]);
+					o[3] = (uint8_t)fast_roundf_int(c[3]);
+				}
+				else
+				{
+					o[0] = g_fast_linear_to_srgb.convert(c[0]);
+					o[1] = g_fast_linear_to_srgb.convert(c[1]);
+					o[2] = g_fast_linear_to_srgb.convert(c[2]);
+					o[3] = (uint8_t)fast_roundf_int(c[3]);
+				}
 			}
 		}
 	}
@@ -3681,5 +3899,69 @@ namespace basisu
 
 		return true;
 	}
+
+	bool tonemap_image_compressive2(image& dst_img, const imagef& hdr_test_img)
+	{
+		const uint32_t width = hdr_test_img.get_width();
+		const uint32_t height = hdr_test_img.get_height();
+
+		dst_img.resize(width, height);
+		dst_img.set_all(color_rgba(0, 0, 0, 255));
+
+		basisu::vector<basist::half_float> half_img(width * 3 * height);
+				
+		uint32_t low_h = UINT32_MAX, high_h = 0;
+
+		for (uint32_t y = 0; y < height; y++)
+		{
+			for (uint32_t x = 0; x < width; x++)
+			{
+				const vec4F& p = hdr_test_img(x, y);
+
+				for (uint32_t i = 0; i < 3; i++)
+				{
+					float f = p[i];
+
+					if (std::isnan(f) || std::isinf(f))
+						f = 0.0f;
+					else if (f < 0.0f)
+						f = 0.0f;
+					else if (f > basist::MAX_HALF_FLOAT)
+						f = basist::MAX_HALF_FLOAT;
+
+					uint32_t h = basist::float_to_half(f);
+
+					low_h = minimum(low_h, h);
+					high_h = maximum(high_h, h);
 					
+					half_img[(x + y * width) * 3 + i] = (basist::half_float)h;
+
+				} // i
+			} // x
+		} // y
+
+		if (low_h == high_h)
+			return false;
+
+		for (uint32_t y = 0; y < height; y++)
+		{
+			for (uint32_t x = 0; x < width; x++)
+			{
+				for (uint32_t i = 0; i < 3; i++)
+				{
+					basist::half_float h = half_img[(x + y * width) * 3 + i];
+					
+					float f = (float)(h - low_h) / (float)(high_h - low_h);
+
+					int iv = basisu::clamp<int>((int)std::round(f * 255.0f), 0, 255);
+
+					dst_img(x, y)[i] = (uint8_t)iv;
+
+				} // i
+			} // x
+		} // y
+
+		return true;
+	}
+							
 } // namespace basisu

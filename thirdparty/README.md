@@ -74,7 +74,7 @@ Files extracted from upstream source:
 ## basis_universal
 
 - Upstream: https://github.com/BinomialLLC/basis_universal
-- Version: 1.50.0 (051ad6d8a64bb95a79e8601c317055fd1782ad3e, 2024)
+- Version: 1.60 (323239a6a5ffa57d6570cfc403be99156e33a8b0, 2025)
 - License: Apache 2.0
 
 Files extracted from upstream source:
@@ -89,6 +89,8 @@ Patches:
 - `0002-external-jpgd.patch` (GH-88508)
 - `0003-external-tinyexr.patch` (GH-97582)
 - `0004-remove-tinydds-qoi.patch` (GH-97582)
+- `0005-windows-illegal-character.patch` (GH-103968)
+- `0006-ambiguous-calls.patch` (GH-103968)
 
 
 ## brotli
@@ -523,6 +525,7 @@ Patches:
 
 - `0001-external-basisu.patch` (GH-76572)
 - `0002-disable-astc-block-ext.patch` (GH-76572)
+- `0003-basisu-1.60.patch` (GH-103968)
 
 
 ## libogg
