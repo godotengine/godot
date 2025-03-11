@@ -1471,7 +1471,7 @@ Ref<JavaClass> JavaClassWrapper::_wrap(const String &p_class, bool p_allow_priva
 	ERR_FAIL_NULL_V(env, Ref<JavaClass>());
 
 	jclass bclass = env->FindClass(class_name_dots.replace(".", "/").utf8().get_data());
-	ERR_FAIL_NULL_V(bclass, Ref<JavaClass>());
+	ERR_FAIL_NULL_V_MSG(bclass, Ref<JavaClass>(), vformat("Java class '%s' not found.", p_class));
 
 	jobjectArray constructors = (jobjectArray)env->CallObjectMethod(bclass, Class_getDeclaredConstructors);
 	ERR_FAIL_NULL_V(constructors, Ref<JavaClass>());
