@@ -248,7 +248,7 @@ private:
 	CheckBox *preview_camera = nullptr;
 	SubViewportContainer *subviewport_container = nullptr;
 
-	MenuButton *view_menu = nullptr;
+	MenuButton *view_display_menu = nullptr;
 	PopupMenu *display_submenu = nullptr;
 
 	Control *surface = nullptr;
@@ -754,7 +754,7 @@ private:
 
 	MenuButton *transform_menu = nullptr;
 	PopupMenu *gizmos_menu = nullptr;
-	MenuButton *view_menu = nullptr;
+	MenuButton *view_layout_menu = nullptr;
 
 	AcceptDialog *accept = nullptr;
 
