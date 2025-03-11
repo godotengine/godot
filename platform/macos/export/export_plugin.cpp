@@ -436,7 +436,7 @@ static const DataCollectionInfo data_collect_type_info[] = {
 	{ "customer_support", "NSPrivacyCollectedDataTypeCustomerSupport" },
 	{ "other_user_content", "NSPrivacyCollectedDataTypeOtherUserContent" },
 	{ "browsing_history", "NSPrivacyCollectedDataTypeBrowsingHistory" },
-	{ "search_hhistory", "NSPrivacyCollectedDataTypeSearchHistory" },
+	{ "search_history", "NSPrivacyCollectedDataTypeSearchHistory" },
 	{ "user_id", "NSPrivacyCollectedDataTypeUserID" },
 	{ "device_id", "NSPrivacyCollectedDataTypeDeviceID" },
 	{ "purchase_history", "NSPrivacyCollectedDataTypePurchaseHistory" },
