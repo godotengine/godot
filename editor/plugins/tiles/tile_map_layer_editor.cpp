@@ -668,7 +668,7 @@ bool TileMapLayerEditorTilesPlugin::forward_canvas_gui_input(const Ref<InputEven
 		drag_last_mouse_pos = mpos;
 		CanvasItemEditor::get_singleton()->update_viewport();
 
-		return true;
+		return drag_type != DRAG_TYPE_NONE;
 	}
 
 	Ref<InputEventMouseButton> mb = p_event;
