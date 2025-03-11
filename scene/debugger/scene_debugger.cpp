@@ -59,6 +59,7 @@ SceneDebugger::SceneDebugger() {
 	RuntimeNodeSelect::singleton = memnew(RuntimeNodeSelect);
 
 	EngineDebugger::register_message_capture("scene", EngineDebugger::Capture(nullptr, SceneDebugger::parse_message));
+	EngineDebugger::register_message_capture("config", EngineDebugger::Capture(nullptr, SceneDebugger::_config_capture));
 #endif
 }
 
@@ -97,6 +98,28 @@ void SceneDebugger::_handle_input(const Ref<InputEvent> &p_event, const Ref<Shor
 	if (p_shortcut.is_valid() && k.is_valid() && k->is_pressed() && !k->is_echo() && p_shortcut->matches_event(k)) {
 		EngineDebugger::get_singleton()->send_message("request_quit", Array());
 	}
+}
+
+Error SceneDebugger::_config_capture(void *p_user, const String &p_msg, const Array &p_args, bool &r_captured) {
+	r_captured = false;
+
+	SceneTree *scene_tree = SceneTree::get_singleton();
+	if (!scene_tree) {
+		return ERR_UNCONFIGURED;
+	}
+	ERR_FAIL_COND_V(p_args.is_empty(), ERR_INVALID_DATA);
+
+	bool valid = true;
+	if (p_msg == "debug_collisions_hint") {
+		scene_tree->set_debug_collisions_hint(p_args[0]);
+		PhysicsServer2D::get_singleton()->emit_signal("_debug_options_changed");
+		// PhysicsServer3D::get_singleton()->emit_signal("_debug_options_changed"); // TODO
+	} else {
+		valid = false;
+	}
+
+	r_captured = valid;
+	return valid ? OK : ERR_INVALID_DATA;
 }
 
 Error SceneDebugger::parse_message(void *p_user, const String &p_msg, const Array &p_args, bool &r_captured) {
