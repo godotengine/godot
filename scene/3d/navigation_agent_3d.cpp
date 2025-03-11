@@ -758,12 +758,11 @@ void NavigationAgent3D::_update_navigation() {
 		if (navigation_path_index > 0) {
 			const Vector<Vector3> &navigation_path = navigation_result->get_path();
 
-			Vector3 segment[2];
-			segment[0] = navigation_path[navigation_path_index - 1];
-			segment[1] = navigation_path[navigation_path_index];
-			segment[0].y -= path_height_offset;
-			segment[1].y -= path_height_offset;
-			Vector3 p = Geometry3D::get_closest_point_to_segment(origin, segment);
+			Vector3 segment_a = navigation_path[navigation_path_index - 1];
+			Vector3 segment_b = navigation_path[navigation_path_index];
+			segment_a.y -= path_height_offset;
+			segment_b.y -= path_height_offset;
+			Vector3 p = Geometry3D::get_closest_point_to_segment(origin, segment_a, segment_b);
 			if (origin.distance_to(p) >= path_max_distance) {
 				// To faraway, reload path
 				reload_path = true;

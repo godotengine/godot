@@ -232,11 +232,7 @@ void AnimationNodeStateMachineEditor::_state_machine_gui_input(const Ref<InputEv
 
 		// First find closest lines using point-to-segment distance.
 		for (int i = 0; i < transition_lines.size(); i++) {
-			Vector2 s[2] = {
-				transition_lines[i].from,
-				transition_lines[i].to
-			};
-			Vector2 cpoint = Geometry2D::get_closest_point_to_segment(mb->get_position(), s);
+			Vector2 cpoint = Geometry2D::get_closest_point_to_segment(mb->get_position(), transition_lines[i].from, transition_lines[i].to);
 			float d = cpoint.distance_to(mb->get_position());
 
 			if (d > transition_lines[i].width) {
@@ -545,11 +541,7 @@ void AnimationNodeStateMachineEditor::_state_machine_gui_input(const Ref<InputEv
 			int closest = -1;
 			float closest_d = 1e20;
 			for (int i = 0; i < transition_lines.size(); i++) {
-				Vector2 s[2] = {
-					transition_lines[i].from,
-					transition_lines[i].to
-				};
-				Vector2 cpoint = Geometry2D::get_closest_point_to_segment(mm->get_position(), s);
+				Vector2 cpoint = Geometry2D::get_closest_point_to_segment(mm->get_position(), transition_lines[i].from, transition_lines[i].to);
 				float d = cpoint.distance_to(mm->get_position());
 				if (d > transition_lines[i].width) {
 					continue;

@@ -43,7 +43,7 @@ bool ConcavePolygonShape2D::_edit_is_selected_on_click(const Point2 &p_point, do
 
 	const Vector2 *r = s.ptr();
 	for (int i = 0; i < len; i += 2) {
-		Vector2 closest = Geometry2D::get_closest_point_to_segment(p_point, &r[i]);
+		Vector2 closest = Geometry2D::get_closest_point_to_segment(p_point, r[i], r[i + 1]);
 		if (p_point.distance_to(closest) < p_tolerance) {
 			return true;
 		}

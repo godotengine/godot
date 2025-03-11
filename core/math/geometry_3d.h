@@ -272,7 +272,7 @@ public:
 		return true;
 	}
 
-	static bool segment_intersects_convex(const Vector3 &p_from, const Vector3 &p_to, const Plane *p_planes, int p_plane_count, Vector3 *p_res, Vector3 *p_norm) {
+	static bool segment_intersects_convex(const Vector3 &p_from, const Vector3 &p_to, const Plane *p_planes, int p_plane_count, Vector3 *r_res, Vector3 *r_norm) {
 		real_t min = -1e20, max = 1e20;
 
 		Vector3 rel = p_to - p_from;
@@ -315,46 +315,58 @@ public:
 			return false; // No intersection.
 		}
 
-		if (p_res) {
-			*p_res = p_from + dir * min;
+		if (r_res) {
+			*r_res = p_from + dir * min;
 		}
-		if (p_norm) {
-			*p_norm = p_planes[min_index].normal;
+		if (r_norm) {
+			*r_norm = p_planes[min_index].normal;
 		}
 
 		return true;
 	}
 
+#ifndef DISABLE_DEPRECATED
 	static Vector3 get_closest_point_to_segment(const Vector3 &p_point, const Vector3 *p_segment) {
-		Vector3 p = p_point - p_segment[0];
-		Vector3 n = p_segment[1] - p_segment[0];
+		return get_closest_point_to_segment(p_point, p_segment[0], p_segment[1]);
+	}
+#endif // DISABLE_DEPRECATED
+
+	static Vector3 get_closest_point_to_segment(const Vector3 &p_point, const Vector3 &p_segment_a, const Vector3 &p_segment_b) {
+		Vector3 p = p_point - p_segment_a;
+		Vector3 n = p_segment_b - p_segment_a;
 		real_t l2 = n.length_squared();
 		if (l2 < 1e-20f) {
-			return p_segment[0]; // Both points are the same, just give any.
+			return p_segment_a; // Both points are the same, just give any.
 		}
 
 		real_t d = n.dot(p) / l2;
 
 		if (d <= 0.0f) {
-			return p_segment[0]; // Before first point.
+			return p_segment_a; // Before first point.
 		} else if (d >= 1.0f) {
-			return p_segment[1]; // After first point.
+			return p_segment_b; // After first point.
 		} else {
-			return p_segment[0] + n * d; // Inside.
+			return p_segment_a + n * d; // Inside.
 		}
 	}
 
+#ifndef DISABLE_DEPRECATED
 	static Vector3 get_closest_point_to_segment_uncapped(const Vector3 &p_point, const Vector3 *p_segment) {
-		Vector3 p = p_point - p_segment[0];
-		Vector3 n = p_segment[1] - p_segment[0];
+		return get_closest_point_to_segment_uncapped(p_point, p_segment[0], p_segment[1]);
+	}
+#endif // DISABLE_DEPRECATED
+
+	static Vector3 get_closest_point_to_segment_uncapped(const Vector3 &p_point, const Vector3 &p_segment_a, const Vector3 &p_segment_b) {
+		Vector3 p = p_point - p_segment_a;
+		Vector3 n = p_segment_b - p_segment_a;
 		real_t l2 = n.length_squared();
 		if (l2 < 1e-20f) {
-			return p_segment[0]; // Both points are the same, just give any.
+			return p_segment_a; // Both points are the same, just give any.
 		}
 
 		real_t d = n.dot(p) / l2;
 
-		return p_segment[0] + n * d; // Inside.
+		return p_segment_a + n * d; // Inside.
 	}
 
 	static inline bool point_in_projected_triangle(const Vector3 &p_point, const Vector3 &p_v1, const Vector3 &p_v2, const Vector3 &p_v3) {
@@ -381,8 +393,14 @@ public:
 		return true;
 	}
 
+#ifndef DISABLE_DEPRECATED
 	static inline bool triangle_sphere_intersection_test(const Vector3 *p_triangle, const Vector3 &p_normal, const Vector3 &p_sphere_pos, real_t p_sphere_radius, Vector3 &r_triangle_contact, Vector3 &r_sphere_contact) {
-		real_t d = p_normal.dot(p_sphere_pos) - p_normal.dot(p_triangle[0]);
+		return triangle_sphere_intersection_test(p_triangle[0], p_triangle[1], p_triangle[2], p_normal, p_sphere_pos, p_sphere_radius, r_triangle_contact, r_sphere_contact);
+	}
+#endif // DISABLE_DEPRECATED
+
+	static inline bool triangle_sphere_intersection_test(const Vector3 &p_triangle_a, const Vector3 &p_triangle_b, const Vector3 &p_triangle_c, const Vector3 &p_normal, const Vector3 &p_sphere_pos, real_t p_sphere_radius, Vector3 &r_triangle_contact, Vector3 &r_sphere_contact) {
+		real_t d = p_normal.dot(p_sphere_pos) - p_normal.dot(p_triangle_a);
 
 		if (d > p_sphere_radius || d < -p_sphere_radius) {
 			// Not touching the plane of the face, return.
@@ -393,7 +411,7 @@ public:
 
 		/** 2nd) TEST INSIDE TRIANGLE **/
 
-		if (Geometry3D::point_in_projected_triangle(contact, p_triangle[0], p_triangle[1], p_triangle[2])) {
+		if (Geometry3D::point_in_projected_triangle(contact, p_triangle_a, p_triangle_b, p_triangle_c)) {
 			r_triangle_contact = contact;
 			r_sphere_contact = p_sphere_pos - p_normal * p_sphere_radius;
 			//printf("solved inside triangle\n");
@@ -402,7 +420,7 @@ public:
 
 		/** 3rd TEST INSIDE EDGE CYLINDERS **/
 
-		const Vector3 verts[4] = { p_triangle[0], p_triangle[1], p_triangle[2], p_triangle[0] }; // for() friendly
+		const Vector3 verts[4] = { p_triangle_a, p_triangle_b, p_triangle_c, p_triangle_a }; // for() friendly
 
 		for (int i = 0; i < 3; i++) {
 			// Check edge cylinder.

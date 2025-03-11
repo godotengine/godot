@@ -146,9 +146,7 @@ Rect2 NavigationLink2D::_edit_get_rect() const {
 }
 
 bool NavigationLink2D::_edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const {
-	Point2 segment[2] = { get_start_position(), get_end_position() };
-
-	Vector2 closest_point = Geometry2D::get_closest_point_to_segment(p_point, segment);
+	Vector2 closest_point = Geometry2D::get_closest_point_to_segment(p_point, get_start_position(), get_end_position());
 	return p_point.distance_to(closest_point) < p_tolerance;
 }
 #endif // DEBUG_ENABLED

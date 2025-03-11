@@ -692,10 +692,9 @@ void NavigationAgent2D::_update_navigation() {
 		if (navigation_path_index > 0) {
 			const Vector<Vector2> &navigation_path = navigation_result->get_path();
 
-			Vector2 segment[2];
-			segment[0] = navigation_path[navigation_path_index - 1];
-			segment[1] = navigation_path[navigation_path_index];
-			Vector2 p = Geometry2D::get_closest_point_to_segment(origin, segment);
+			const Vector2 segment_a = navigation_path[navigation_path_index - 1];
+			const Vector2 segment_b = navigation_path[navigation_path_index];
+			Vector2 p = Geometry2D::get_closest_point_to_segment(origin, segment_a, segment_b);
 			if (origin.distance_to(p) >= path_max_distance) {
 				// To faraway, reload path
 				reload_path = true;

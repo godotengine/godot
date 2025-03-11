@@ -715,21 +715,20 @@ bool EditorNode3DGizmo::intersect_ray(Camera3D *p_camera, const Point2 &p_point,
 		float cpd = 1e20;
 
 		for (int i = 0; i < vc / 2; i++) {
-			Vector3 a = t.xform(vptr[i * 2 + 0]);
-			Vector3 b = t.xform(vptr[i * 2 + 1]);
-			Vector2 s[2];
-			s[0] = p_camera->unproject_position(a);
-			s[1] = p_camera->unproject_position(b);
+			const Vector3 a = t.xform(vptr[i * 2 + 0]);
+			const Vector3 b = t.xform(vptr[i * 2 + 1]);
+			const Vector2 segment_a = p_camera->unproject_position(a);
+			const Vector2 segment_b = p_camera->unproject_position(b);
 
-			Vector2 p = Geometry2D::get_closest_point_to_segment(p_point, s);
+			Vector2 p = Geometry2D::get_closest_point_to_segment(p_point, segment_a, segment_b);
 
 			float pd = p.distance_to(p_point);
 
 			if (pd < cpd) {
-				float d = s[0].distance_to(s[1]);
+				float d = segment_a.distance_to(segment_b);
 				Vector3 tcp;
 				if (d > 0) {
-					float d2 = s[0].distance_to(p) / d;
+					float d2 = segment_a.distance_to(p) / d;
 					tcp = a + (b - a) * d2;
 
 				} else {
