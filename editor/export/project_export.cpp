@@ -1870,7 +1870,7 @@ ProjectExportDialog::ProjectExportDialog() {
 	patch_delta_min_reduction->set_min(0.0);
 	patch_delta_min_reduction->set_max(100.0);
 	patch_delta_min_reduction->set_step(1.0);
-	patch_delta_min_reduction->set_suffix("%");
+	patch_delta_min_reduction->set_format("%s%%");
 	patch_delta_min_reduction->set_tooltip_text(TTRC("How much smaller, when compared to the new file, a delta-encoded patch needs to be for it to be exported.\n"
 													 "If the patch is not at least this much smaller, the new file will be exported as-is."));
 	patch_delta_min_reduction->connect(SceneStringName(value_changed), callable_mp(this, &ProjectExportDialog::_patch_delta_min_reduction_changed));

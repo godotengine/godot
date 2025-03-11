@@ -1025,7 +1025,7 @@ AnimationNodeBlendSpace1DEditor::AnimationNodeBlendSpace1DEditor() {
 	cyclic_length_value->set_max(99.0);
 	cyclic_length_value->set_step(0.001);
 	cyclic_length_value->set_allow_greater(true);
-	cyclic_length_value->set_suffix("s");
+	cyclic_length_value->set_format("%s s");
 	cyclic_length_value->set_accessibility_name(TTRC("Cyclic Length"));
 	cyclic_length_value->set_tooltip_text(TTR("Cycle length in seconds for cyclic sync. All animations are time-scaled to complete one cycle in this duration."));
 	top_hb->add_child(cyclic_length_value);
