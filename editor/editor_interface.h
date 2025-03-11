@@ -170,6 +170,7 @@ public:
 	void reload_scene_from_path(const String &scene_path);
 
 	PackedStringArray get_open_scenes() const;
+	TypedArray<Node> get_open_scene_roots() const;
 	Node *get_edited_scene_root() const;
 
 	Error save_scene();
