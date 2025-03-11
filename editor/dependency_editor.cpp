@@ -608,6 +608,12 @@ void DependencyRemoveDialog::ok_pressed() {
 		} else if (file == ResourceUID::ensure_path(GLOBAL_GET("display/mouse_cursor/custom_image"))) {
 			ProjectSettings::get_singleton()->set("display/mouse_cursor/custom_image", "");
 			project_settings_modified = true;
+		} else if (file == ResourceUID::ensure_path(GLOBAL_GET("editor/material/environment"))) {
+			ProjectSettings::get_singleton()->set("editor/material/environment", "");
+			project_settings_modified = true;
+		} else if (file == ResourceUID::ensure_path(GLOBAL_GET("editor/material/floor_material"))) {
+			ProjectSettings::get_singleton()->set("editor/material/floor_material", "");
+			project_settings_modified = true;
 		} else if (file == ResourceUID::ensure_path(GLOBAL_GET("gui/theme/custom"))) {
 			ProjectSettings::get_singleton()->set("gui/theme/custom", "");
 			project_settings_modified = true;
