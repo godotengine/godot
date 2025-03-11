@@ -589,34 +589,19 @@ void DependencyRemoveDialog::ok_pressed() {
 		}
 	}
 
+	HashMap<String, StringName> setting_path_map;
+	for (const StringName &setting : path_project_settings) {
+		const String path = ResourceUID::ensure_path(GLOBAL_GET(setting));
+		setting_path_map[path] = setting;
+	}
+
 	bool project_settings_modified = false;
 	for (const String &file : files_to_delete) {
 		// If the file we are deleting for e.g. the main scene, default environment,
 		// or audio bus layout, we must clear its definition in Project Settings.
-		if (file == ResourceUID::ensure_path(GLOBAL_GET("application/config/icon"))) {
-			ProjectSettings::get_singleton()->set("application/config/icon", "");
-			project_settings_modified = true;
-		} else if (file == ResourceUID::ensure_path(GLOBAL_GET("application/run/main_scene"))) {
-			ProjectSettings::get_singleton()->set("application/run/main_scene", "");
-			project_settings_modified = true;
-		} else if (file == ResourceUID::ensure_path(GLOBAL_GET("application/boot_splash/image"))) {
-			ProjectSettings::get_singleton()->set("application/boot_splash/image", "");
-			project_settings_modified = true;
-		} else if (file == ResourceUID::ensure_path(GLOBAL_GET("rendering/environment/defaults/default_environment"))) {
-			ProjectSettings::get_singleton()->set("rendering/environment/defaults/default_environment", "");
-			project_settings_modified = true;
-		} else if (file == ResourceUID::ensure_path(GLOBAL_GET("display/mouse_cursor/custom_image"))) {
-			ProjectSettings::get_singleton()->set("display/mouse_cursor/custom_image", "");
-			project_settings_modified = true;
-		} else if (file == ResourceUID::ensure_path(GLOBAL_GET("gui/theme/custom"))) {
-			ProjectSettings::get_singleton()->set("gui/theme/custom", "");
-			project_settings_modified = true;
-		} else if (file == ResourceUID::ensure_path(GLOBAL_GET("gui/theme/custom_font"))) {
-			ProjectSettings::get_singleton()->set("gui/theme/custom_font", "");
-			project_settings_modified = true;
-		} else if (file == ResourceUID::ensure_path(GLOBAL_GET("audio/buses/default_bus_layout"))) {
-			ProjectSettings::get_singleton()->set("audio/buses/default_bus_layout", "");
-			project_settings_modified = true;
+		const StringName *setting_name = setting_path_map.getptr(file);
+		if (setting_name) {
+			ProjectSettings::get_singleton()->set(*setting_name, "");
 		}
 
 		const String path = OS::get_singleton()->get_resource_dir() + file.replace_first("res://", "/");
@@ -716,6 +701,14 @@ DependencyRemoveDialog::DependencyRemoveDialog() {
 	owners->set_custom_minimum_size(Size2(0, 94) * EDSCALE);
 	vb_owners->add_child(owners);
 	owners->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+
+	List<PropertyInfo> property_list;
+	ProjectSettings::get_singleton()->get_property_list(&property_list);
+	for (const PropertyInfo &pi : property_list) {
+		if (pi.type == Variant::STRING && pi.hint == PROPERTY_HINT_FILE) {
+			path_project_settings.push_back(pi.name);
+		}
+	}
 }
 
 //////////////
