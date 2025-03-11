@@ -31,6 +31,7 @@
 #pragma once
 
 #include "core/string/ustring.h"
+#include "core/templates/hash_map.h"
 #include "core/templates/list.h"
 #include "core/templates/pair.h"
 #include "core/variant/array.h"
@@ -39,6 +40,8 @@ class Variant;
 
 struct ContainerType;
 struct DictionaryPrivate;
+struct StringLikeVariantComparator;
+struct VariantHasher;
 
 class Dictionary {
 	mutable DictionaryPrivate *_p;
@@ -47,6 +50,11 @@ class Dictionary {
 	void _unref() const;
 
 public:
+	using ConstIterator = HashMap<Variant, Variant, VariantHasher, StringLikeVariantComparator>::ConstIterator;
+
+	ConstIterator begin() const;
+	ConstIterator end() const;
+
 	void get_key_list(List<Variant> *p_keys) const;
 	Variant get_key_at_index(int p_index) const;
 	Variant get_value_at_index(int p_index) const;

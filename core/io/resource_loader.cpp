@@ -1339,10 +1339,8 @@ void ResourceLoader::load_translation_remaps() {
 	}
 
 	Dictionary remaps = GLOBAL_GET("internationalization/locale/translation_remaps");
-	List<Variant> keys;
-	remaps.get_key_list(&keys);
-	for (const Variant &E : keys) {
-		Array langs = remaps[E];
+	for (const KeyValue<Variant, Variant> &kv : remaps) {
+		Array langs = kv.value;
 		Vector<String> lang_remaps;
 		lang_remaps.resize(langs.size());
 		String *lang_remaps_ptrw = lang_remaps.ptrw();
@@ -1350,7 +1348,7 @@ void ResourceLoader::load_translation_remaps() {
 			*lang_remaps_ptrw++ = lang;
 		}
 
-		translation_remaps[String(E)] = lang_remaps;
+		translation_remaps[String(kv.key)] = lang_remaps;
 	}
 }
 

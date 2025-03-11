@@ -205,10 +205,8 @@ bool EditorImportPlugin::can_import_threaded() const {
 
 Error EditorImportPlugin::_append_import_external_resource(const String &p_file, const Dictionary &p_custom_options, const String &p_custom_importer, Variant p_generator_parameters) {
 	HashMap<StringName, Variant> options;
-	List<Variant> keys;
-	p_custom_options.get_key_list(&keys);
-	for (const Variant &K : keys) {
-		options.insert(K, p_custom_options[K]);
+	for (const KeyValue<Variant, Variant> &kv : p_custom_options) {
+		options.insert(kv.key, kv.value);
 	}
 	return append_import_external_resource(p_file, options, p_custom_importer, p_generator_parameters);
 }

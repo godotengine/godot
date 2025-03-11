@@ -1849,19 +1849,16 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 			}
 			r_len += 4;
 
-			List<Variant> keys;
-			dict.get_key_list(&keys);
-
-			for (const Variant &key : keys) {
+			for (const KeyValue<Variant, Variant> &kv : dict) {
 				int len;
-				Error err = encode_variant(key, buf, len, p_full_objects, p_depth + 1);
+				Error err = encode_variant(kv.key, buf, len, p_full_objects, p_depth + 1);
 				ERR_FAIL_COND_V(err, err);
 				ERR_FAIL_COND_V(len % 4, ERR_BUG);
 				r_len += len;
 				if (buf) {
 					buf += len;
 				}
-				const Variant *value = dict.getptr(key);
+				const Variant *value = dict.getptr(kv.key);
 				ERR_FAIL_NULL_V(value, ERR_BUG);
 				err = encode_variant(*value, buf, len, p_full_objects, p_depth + 1);
 				ERR_FAIL_COND_V(err, err);
