@@ -104,7 +104,7 @@ static void _generate_contacts_point_edge(const Vector3 *p_points_A, int p_point
 	ERR_FAIL_COND(p_point_count_B != 2);
 #endif
 
-	Vector3 closest_B = Geometry3D::get_closest_point_to_segment_uncapped(*p_points_A, p_points_B);
+	Vector3 closest_B = Geometry3D::get_closest_point_to_segment_uncapped(*p_points_A, p_points_B[0], p_points_B[1]);
 	p_callback->call(*p_points_A, closest_B, p_callback->normal);
 }
 
@@ -171,8 +171,8 @@ static void _generate_contacts_edge_edge(const Vector3 *p_points_A, int p_point_
 		d = 1.0;
 	}
 
-	Vector3 closest_A = p_points_A[0] + rel_A * d;
-	Vector3 closest_B = Geometry3D::get_closest_point_to_segment_uncapped(closest_A, p_points_B);
+	const Vector3 closest_A = p_points_A[0] + rel_A * d;
+	const Vector3 closest_B = Geometry3D::get_closest_point_to_segment_uncapped(closest_A, p_points_B[0], p_points_B[1]);
 	// The normal should be perpendicular to both edges.
 	Vector3 normal = rel_A.cross(rel_B);
 	real_t normal_len = normal.length();
@@ -885,13 +885,12 @@ static void _collision_sphere_capsule(const GodotShape3D *p_a, const Transform3D
 	real_t scale_B = p_transform_b.basis[0].length();
 
 	// Construct the capsule segment (ball-center to ball-center)
-	Vector3 capsule_segment[2];
 	Vector3 capsule_axis = p_transform_b.basis.get_column(1) * (capsule_B->get_height() * 0.5 - capsule_B->get_radius());
-	capsule_segment[0] = p_transform_b.origin + capsule_axis;
-	capsule_segment[1] = p_transform_b.origin - capsule_axis;
+	const Vector3 capsule_segment_a = p_transform_b.origin + capsule_axis;
+	const Vector3 capsule_segment_b = p_transform_b.origin - capsule_axis;
 
 	// Get the capsules closest segment-point to the sphere
-	Vector3 capsule_closest = Geometry3D::get_closest_point_to_segment(p_transform_a.origin, capsule_segment);
+	Vector3 capsule_closest = Geometry3D::get_closest_point_to_segment(p_transform_a.origin, capsule_segment_a, capsule_segment_b);
 
 	// Perform an analytic sphere collision between the sphere and the sphere-collider in the capsule
 	analytic_sphere_collision<withMargin>(

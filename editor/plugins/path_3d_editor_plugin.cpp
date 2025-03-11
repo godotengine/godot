@@ -620,10 +620,9 @@ EditorPlugin::AfterGUIInput Path3DEditorPlugin::forward_3d_gui_input(Camera3D *p
 						from = gt.xform(from);
 						to = gt.xform(to);
 						if (cdist > 0) {
-							Vector2 s[2];
-							s[0] = viewport->point_to_screen(from);
-							s[1] = viewport->point_to_screen(to);
-							Vector2 inters = Geometry2D::get_closest_point_to_segment(mbpos, s);
+							const Vector2 segment_a = viewport->point_to_screen(from);
+							const Vector2 segment_b = viewport->point_to_screen(to);
+							Vector2 inters = Geometry2D::get_closest_point_to_segment(mbpos, segment_a, segment_b);
 							float d = inters.distance_to(mbpos);
 
 							if (d < 10 && d < closest_d) {
