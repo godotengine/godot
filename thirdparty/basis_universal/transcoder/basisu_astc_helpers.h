@@ -15,6 +15,7 @@ namespace astc_helpers
 	const uint32_t MIN_GRID_DIM = 2; // the minimum dimension of a block's weight grid
 	const uint32_t MIN_BLOCK_DIM = 4, MAX_BLOCK_DIM = 12; // the valid block dimensions in texels
 	const uint32_t MAX_GRID_WEIGHTS = 64; // a block may have a maximum of 64 weight grid values
+	const uint32_t NUM_MODE11_ENDPOINTS = 6, NUM_MODE7_ENDPOINTS = 4;
 
 	static const uint32_t NUM_ASTC_BLOCK_SIZES = 14;
 	extern const uint8_t g_astc_block_sizes[NUM_ASTC_BLOCK_SIZES][2];
@@ -108,25 +109,30 @@ namespace astc_helpers
 		bool m_error_flag;
 		
 		bool m_solid_color_flag_ldr, m_solid_color_flag_hdr;
-		uint16_t m_solid_color[4];
 
+		uint8_t m_user_mode;					// user defined value, not used in this module
+		
 		// Rest is only valid if !m_solid_color_flag_ldr && !m_solid_color_flag_hdr
-		uint32_t m_grid_width, m_grid_height;	// weight grid dimensions, not the dimension of the block
+		uint8_t m_grid_width, m_grid_height;	// weight grid dimensions, not the dimension of the block
 		
 		bool m_dual_plane;
 
-		uint32_t m_weight_ise_range;			// 0-11
-		uint32_t m_endpoint_ise_range;			// 4-20, this is actually inferred from the size of the other config bits+weights, but this is here for checking
+		uint8_t m_weight_ise_range;				// 0-11
+		uint8_t m_endpoint_ise_range;			// 4-20, this is actually inferred from the size of the other config bits+weights, but this is here for checking
 
-		uint32_t m_color_component_selector;	// 0-3, 0=GBA R, 1=RBA G, 2=RGA B, 3=RGB A, only used in dual plane mode
+		uint8_t m_color_component_selector;	// 0-3, controls which channel uses the 2nd (odd) weights, only used in dual plane mode
 
-		uint32_t m_num_partitions;				// or the # of subsets, 1-4 (1-3 if dual plane mode)
-		uint32_t m_partition_id;				// 10-bits, must be 0 if m_num_partitions==1
+		uint8_t m_num_partitions;				// or the # of subsets, 1-4 (1-3 if dual plane mode)
+		uint16_t m_partition_id;				// 10-bits, must be 0 if m_num_partitions==1
 		
-		uint32_t m_color_endpoint_modes[MAX_PARTITIONS]; // each subset's CEM's
+		uint8_t m_color_endpoint_modes[MAX_PARTITIONS]; // each subset's CEM's
 		
-		// ISE weight grid values. In dual plane mode, the order is p0,p1,  p0,p1,  etc.
-		uint8_t m_weights[MAX_GRID_WEIGHTS];
+		union
+		{
+			// ISE weight grid values. In dual plane mode, the order is p0,p1,  p0,p1,  etc.
+			uint8_t m_weights[MAX_GRID_WEIGHTS];
+			uint16_t m_solid_color[4];
+		};
 		
 		// ISE endpoint values
 		// Endpoint order examples:
@@ -137,7 +143,7 @@ namespace astc_helpers
 		// 2 subset RGB : RL0 RH0 GL0 GH0 BL0 BH0 RL1 RH1 GL1 GH1 BL1 BH1
 		// 2 subset RGBA : RL0 RH0 GL0 GH0 BL0 BH0 AL0 AH0 RL1 RH1 GL1 GH1 BL1 BH1 AL1 AH1
 		uint8_t m_endpoints[MAX_ENDPOINTS];
-
+				
 		void clear()
 		{
 			memset(this, 0, sizeof(*this));
@@ -169,7 +175,7 @@ namespace astc_helpers
 
 	inline int get_ise_sequence_bits(int count, int range)
 	{
-		// See 18.22 Data Size Determination
+		// See 18.22 Data Size Determination - note this will be <= the # of bits actually written by encode_bise(). (It's magic.)
 		int total_bits = g_ise_range_table[range][0] * count;
 		total_bits += (g_ise_range_table[range][1] * 8 * count + 4) / 5;
 		total_bits += (g_ise_range_table[range][2] * 7 * count + 2) / 3;
@@ -182,16 +188,26 @@ namespace astc_helpers
 		return (l * (64 - w) + h * w + 32) >> 6;
 	}
 
-	void encode_bise(uint32_t* pDst, const uint8_t* pSrc_vals, uint32_t bit_pos, int num_vals, int range);
+	void encode_bise(uint32_t* pDst, const uint8_t* pSrc_vals, uint32_t bit_pos, int num_vals, int range, uint32_t *pStats = nullptr);
+
+	struct pack_stats
+	{
+		uint32_t m_header_bits;
+		uint32_t m_endpoint_bits;
+		uint32_t m_weight_bits;
+
+		inline pack_stats() { clear(); }
+		inline void clear() { memset(this, 0, sizeof(*this)); }
+	};
 
 	// Packs a logical to physical ASTC block. Note this does not validate the block's dimensions (use is_valid_block_size()), just the grid dimensions.
-	bool pack_astc_block(astc_block &phys_block, const log_astc_block& log_block, int* pExpected_endpoint_range = nullptr);
+	bool pack_astc_block(astc_block &phys_block, const log_astc_block& log_block, int* pExpected_endpoint_range = nullptr, pack_stats *pStats = nullptr);
 
 	// Pack LDR void extent (really solid color) blocks. For LDR, pass in (val | (val << 8)) for each component.
-	void pack_void_extent_ldr(astc_block& blk, uint16_t r, uint16_t g, uint16_t b, uint16_t a);
+	void pack_void_extent_ldr(astc_block& blk, uint16_t r, uint16_t g, uint16_t b, uint16_t a, pack_stats *pStats = nullptr);
 
 	// Pack HDR void extent (16-bit values are FP16/half floats - no NaN/Inf's)
-	void pack_void_extent_hdr(astc_block& blk, uint16_t rh, uint16_t gh, uint16_t bh, uint16_t ah);
+	void pack_void_extent_hdr(astc_block& blk, uint16_t rh, uint16_t gh, uint16_t bh, uint16_t ah, pack_stats* pStats = nullptr);
 
 	// These helpers are all quite slow, but are useful for table preparation.
 	
@@ -299,6 +315,24 @@ namespace astc_helpers
 
 	extern dequant_tables g_dequant_tables;
 	void init_tables(bool init_rank_tabs);
+
+	struct weighted_sample
+	{
+		uint8_t m_src_x;
+		uint8_t m_src_y;
+		uint8_t m_weights[2][2]; // [y][x], scaled by 16, round by adding 8
+	};
+
+	void compute_upsample_weights(
+		int block_width, int block_height,
+		int weight_grid_width, int weight_grid_height,
+		weighted_sample* pWeights); // there will be block_width * block_height bilinear samples
+
+	void upsample_weight_grid(
+		uint32_t bx, uint32_t by,		// destination/to dimension
+		uint32_t wx, uint32_t wy,		// source/from dimension
+		const uint8_t* pSrc_weights,	// these are dequantized [0,64] weights, NOT ISE symbols, [wy][wx]
+		uint8_t* pDst_weights);			// [by][bx]
 		
 	// Procedurally returns the texel partition/subset index given the block coordinate and config.
 	int compute_texel_partition(uint32_t seedIn, uint32_t xIn, uint32_t yIn, uint32_t zIn, int num_partitions, bool small_block);
@@ -314,6 +348,27 @@ namespace astc_helpers
 	typedef uint16_t half_float;
 	half_float float_to_half(float val, bool toward_zero);
 	float half_to_float(half_float hval);
+
+	// Notes:
+	// qlog16_to_half(half_to_qlog16(half_val_as_int)) == half_val_as_int (is lossless)
+	// However, this is not lossless in the general sense.
+	inline half_float qlog16_to_half(int k)
+	{
+		assert((k >= 0) && (k <= 0xFFFF));
+
+		int E = (k & 0xF800) >> 11;
+		int M = k & 0x7FF;
+
+		int Mt;
+		if (M < 512)
+			Mt = 3 * M;
+		else if (M >= 1536)
+			Mt = 5 * M - 2048;
+		else
+			Mt = 4 * M - 512;
+
+		return (half_float)((E << 10) + (Mt >> 3));
+	}
 
 	const int MAX_RGB9E5 = 0xff80;
 	void unpack_rgb9e5(uint32_t packed, float& r, float& g, float& b);
@@ -437,7 +492,7 @@ namespace astc_helpers
 	};
 
 	// Encodes 3 values to output, usable for any range that uses quints and bits
-	static inline void astc_encode_quints(uint32_t* pOutput, const uint8_t* pValues, uint32_t& bit_pos, int n)
+	static inline void astc_encode_quints(uint32_t* pOutput, const uint8_t* pValues, uint32_t& bit_pos, int n, uint32_t* pStats)
 	{
 		// First extract the quints and the bits from the 3 input values
 		int quints = 0, bits[3];
@@ -461,6 +516,9 @@ namespace astc_helpers
 		// Now interleave the 7 encoded quint bits with the bits to form the encoded output. See table 95-96.
 		astc_set_bits(pOutput, bit_pos, bits[0] | (astc_extract_bits(T, 0, 2) << n) | (bits[1] << (3 + n)) | (astc_extract_bits(T, 3, 4) << (3 + n * 2)) |
 			(bits[2] << (5 + n * 2)) | (astc_extract_bits(T, 5, 6) << (5 + n * 3)), 7 + n * 3);
+
+		if (pStats)
+			*pStats += n * 3 + 7;
 	}
 
 	static const uint8_t g_astc_trit_encode[243] = { 0, 1, 2, 4, 5, 6, 8, 9, 10, 16, 17, 18, 20, 21, 22, 24, 25, 26, 3, 7, 11, 19, 23, 27, 12, 13, 14, 32, 33, 34, 36, 37, 38, 40, 41, 42, 48, 49, 50, 52, 53, 54, 56, 57, 58, 35, 39,
@@ -471,7 +529,7 @@ namespace astc_helpers
 		191, 223, 124, 125, 126 };
 
 	// Encodes 5 values to output, usable for any range that uses trits and bits
-	static void astc_encode_trits(uint32_t* pOutput, const uint8_t* pValues, uint32_t& bit_pos, int n)
+	static void astc_encode_trits(uint32_t* pOutput, const uint8_t* pValues, uint32_t& bit_pos, int n, uint32_t *pStats)
 	{
 		// First extract the trits and the bits from the 5 input values
 		int trits = 0, bits[5];
@@ -494,13 +552,16 @@ namespace astc_helpers
 
 		// Now interleave the 8 encoded trit bits with the bits to form the encoded output. See table 94.
 		astc_set_bits(pOutput, bit_pos, bits[0] | (astc_extract_bits(T, 0, 1) << n) | (bits[1] << (2 + n)), n * 2 + 2);
-
+		
 		astc_set_bits(pOutput, bit_pos, astc_extract_bits(T, 2, 3) | (bits[2] << 2) | (astc_extract_bits(T, 4, 4) << (2 + n)) | (bits[3] << (3 + n)) | (astc_extract_bits(T, 5, 6) << (3 + n * 2)) |
 			(bits[4] << (5 + n * 2)) | (astc_extract_bits(T, 7, 7) << (5 + n * 3)), n * 3 + 6);
+		
+		if (pStats)
+			*pStats += n * 5 + 8;
 	}
 
 	// Packs values using ASTC's BISE to output buffer.
-	void encode_bise(uint32_t* pDst, const uint8_t* pSrc_vals, uint32_t bit_pos, int num_vals, int range)
+	void encode_bise(uint32_t* pDst, const uint8_t* pSrc_vals, uint32_t bit_pos, int num_vals, int range, uint32_t *pStats)
 	{
 		uint32_t temp[5] = { 0 };
 
@@ -533,19 +594,23 @@ namespace astc_helpers
 				for (int i = 0; i < limit; i++)
 					vals[i] = pSrc_vals[group_index * group_size + i];
 
+				// Note this always writes a group of 3 or 5 bits values, even for incomplete groups. So it can write more than needed. 
+				// get_ise_sequence_bits() returns the # of bits that must be written for proper decoding.
 				if (group_size == 5)
-					astc_encode_trits(temp, vals, bit_pos, num_bits);
+					astc_encode_trits(temp, vals, bit_pos, num_bits, pStats);
 				else
-					astc_encode_quints(temp, vals, bit_pos, num_bits);
+					astc_encode_quints(temp, vals, bit_pos, num_bits, pStats);
 			}
 		}
 		else
 		{
 			for (int i = 0; i < num_vals; i++)
 				astc_set_bits_1_to_9(temp, bit_pos, pSrc_vals[i], num_bits);
+
+			if (pStats)
+				*pStats += num_vals * num_bits;
 		}
 
-		// TODO: Could this write too many bits on incomplete blocks?
 		pDst[0] |= temp[0]; pDst[1] |= temp[1];
 		pDst[2] |= temp[2]; pDst[3] |= temp[3];
 	}
@@ -652,7 +717,7 @@ namespace astc_helpers
 		return false;
 	}
 
-	bool pack_astc_block(astc_block& phys_block, const log_astc_block& log_block, int* pExpected_endpoint_range)
+	bool pack_astc_block(astc_block& phys_block, const log_astc_block& log_block, int* pExpected_endpoint_range, pack_stats *pStats)
 	{
 		memset(&phys_block, 0, sizeof(phys_block));
 
@@ -665,12 +730,12 @@ namespace astc_helpers
 				
 		if (log_block.m_solid_color_flag_ldr)
 		{
-			pack_void_extent_ldr(phys_block, log_block.m_solid_color[0], log_block.m_solid_color[1], log_block.m_solid_color[2], log_block.m_solid_color[3]);
+			pack_void_extent_ldr(phys_block, log_block.m_solid_color[0], log_block.m_solid_color[1], log_block.m_solid_color[2], log_block.m_solid_color[3], pStats);
 			return true;
 		}
 		else if (log_block.m_solid_color_flag_hdr)
 		{
-			pack_void_extent_hdr(phys_block, log_block.m_solid_color[0], log_block.m_solid_color[1], log_block.m_solid_color[2], log_block.m_solid_color[3]);
+			pack_void_extent_hdr(phys_block, log_block.m_solid_color[0], log_block.m_solid_color[1], log_block.m_solid_color[2], log_block.m_solid_color[3], pStats);
 			return true;
 		}
 				
@@ -687,6 +752,8 @@ namespace astc_helpers
 
 		if (log_block.m_color_component_selector > 3)
 			return false;
+
+		// TODO: sanity check grid width/height vs. block's physical width/height
 				
 		uint32_t config_bits = 0;
 		if (!get_config_bits(log_block, config_bits))
@@ -694,6 +761,8 @@ namespace astc_helpers
 
 		uint32_t bit_pos = 0;
 		astc_set_bits(&phys_block.m_vals[0], bit_pos, config_bits, 11);
+		if (pStats)
+			pStats->m_header_bits += 11;
 
 		const uint32_t total_grid_weights = (log_block.m_dual_plane ? 2 : 1) * (log_block.m_grid_width * log_block.m_grid_height);
 		const uint32_t total_weight_bits = get_ise_sequence_bits(total_grid_weights, log_block.m_weight_ise_range);
@@ -705,6 +774,8 @@ namespace astc_helpers
 		uint32_t total_extra_bits = 0;
 
 		astc_set_bits(&phys_block.m_vals[0], bit_pos, log_block.m_num_partitions - 1, 2);
+		if (pStats)
+			pStats->m_header_bits += 2;
 
 		if (log_block.m_num_partitions > 1)
 		{
@@ -712,12 +783,14 @@ namespace astc_helpers
 				return false;
 
 			astc_set_bits(&phys_block.m_vals[0], bit_pos, log_block.m_partition_id, 10);
+			if (pStats)
+				pStats->m_header_bits += 10;
 
 			uint32_t highest_cem = 0, lowest_cem = UINT32_MAX;
 			for (uint32_t j = 0; j < log_block.m_num_partitions; j++)
 			{
-				highest_cem = my_max(highest_cem, log_block.m_color_endpoint_modes[j]);
-				lowest_cem = my_min(lowest_cem, log_block.m_color_endpoint_modes[j]);
+				highest_cem = my_max<uint32_t>(highest_cem, log_block.m_color_endpoint_modes[j]);
+				lowest_cem = my_min<uint32_t>(lowest_cem, log_block.m_color_endpoint_modes[j]);
 			}
 
 			if (highest_cem > 15)
@@ -752,9 +825,13 @@ namespace astc_helpers
 
 				uint32_t cem_bit_pos = 128 - total_weight_bits - total_extra_bits;
 				astc_set_bits(&phys_block.m_vals[0], cem_bit_pos, encoded_cem >> 6, total_extra_bits);
+				if (pStats)
+					pStats->m_header_bits += total_extra_bits;
 			}
 
 			astc_set_bits(&phys_block.m_vals[0], bit_pos, encoded_cem & 0x3f, 6);
+			if (pStats)
+				pStats->m_header_bits += 6;
 		}
 		else
 		{
@@ -764,6 +841,8 @@ namespace astc_helpers
 				return false;
 
 			astc_set_bits(&phys_block.m_vals[0], bit_pos, log_block.m_color_endpoint_modes[0], 4);
+			if (pStats)
+				pStats->m_header_bits += 4;
 		}
 
 		if (log_block.m_dual_plane)
@@ -775,6 +854,8 @@ namespace astc_helpers
 			
 			uint32_t ccs_bit_pos = 128 - (int)total_weight_bits - (int)total_extra_bits;
 			astc_set_bits(&phys_block.m_vals[0], ccs_bit_pos, log_block.m_color_component_selector, 2);
+			if (pStats)
+				pStats->m_header_bits += 2;
 		}
 
 		const uint32_t total_config_bits = bit_pos + total_extra_bits;
@@ -810,6 +891,12 @@ namespace astc_helpers
 			if (pExpected_endpoint_range)
 				*pExpected_endpoint_range = endpoint_ise_range;
 			return false;
+		}
+
+		if (pStats)
+		{
+			pStats->m_endpoint_bits += get_ise_sequence_bits(total_cem_vals, endpoint_ise_range);
+			pStats->m_weight_bits += get_ise_sequence_bits(total_grid_weights, log_block.m_weight_ise_range);
 		}
 
 		// Pack endpoints forwards
@@ -1210,7 +1297,7 @@ namespace astc_helpers
 		}
 	}
 
-	void pack_void_extent_ldr(astc_block &blk, uint16_t rh, uint16_t gh, uint16_t bh, uint16_t ah)
+	void pack_void_extent_ldr(astc_block &blk, uint16_t rh, uint16_t gh, uint16_t bh, uint16_t ah, pack_stats* pStats)
 	{
 		uint8_t* pDst = (uint8_t*)&blk.m_vals[0];
 		memset(pDst, 0xFF, 16);
@@ -1226,10 +1313,13 @@ namespace astc_helpers
 		pDst[13] = (uint8_t)(bh >> 8);
 		pDst[14] = (uint8_t)ah;
 		pDst[15] = (uint8_t)(ah >> 8);
+
+		if (pStats)
+			pStats->m_header_bits += 128;
 	}
 
 	// rh-ah are half-floats
-	void pack_void_extent_hdr(astc_block& blk, uint16_t rh, uint16_t gh, uint16_t bh, uint16_t ah) 
+	void pack_void_extent_hdr(astc_block& blk, uint16_t rh, uint16_t gh, uint16_t bh, uint16_t ah, pack_stats *pStats) 
 	{
 		uint8_t* pDst = (uint8_t*)&blk.m_vals[0];
 		memset(pDst, 0xFF, 16);
@@ -1244,6 +1334,9 @@ namespace astc_helpers
 		pDst[13] = (uint8_t)(bh >> 8);
 		pDst[14] = (uint8_t)ah;
 		pDst[15] = (uint8_t)(ah >> 8);
+
+		if (pStats)
+			pStats->m_header_bits += 128;
 	}
 		
 	bool is_cem_ldr(uint32_t mode)
@@ -1323,22 +1416,17 @@ namespace astc_helpers
 	dequant_tables g_dequant_tables;
 
 	void precompute_texel_partitions_4x4();
+	void precompute_texel_partitions_6x6();
 
 	void init_tables(bool init_rank_tabs)
 	{
 		g_dequant_tables.init(init_rank_tabs);
 		
 		precompute_texel_partitions_4x4();
+		precompute_texel_partitions_6x6();
 	}
-
-	struct weighted_sample
-	{
-		uint8_t m_src_x;
-		uint8_t m_src_y;
-		uint8_t m_weights[2][2]; // [y][x], scaled by 16, round by adding 8
-	};
-
-	static void compute_upsample_weights(
+		
+	void compute_upsample_weights(
 		int block_width, int block_height,
 		int weight_grid_width, int weight_grid_height,
 		weighted_sample* pWeights) // there will be block_width * block_height bilinear samples
@@ -1373,7 +1461,7 @@ namespace astc_helpers
 	}
 
 	// Should be dequantized [0,64] weights
-	static void upsample_weight_grid(
+	void upsample_weight_grid(
 		uint32_t bx, uint32_t by,		// destination/to dimension
 		uint32_t wx, uint32_t wy,		// source/from dimension
 		const uint8_t* pSrc_weights,	// these are dequantized [0,64] weights, NOT ISE symbols, [wy][wx]
@@ -1429,6 +1517,7 @@ namespace astc_helpers
 		return p;
 	}
 
+	// small_block = num_blk_pixels < 31
 	int compute_texel_partition(uint32_t seedIn, uint32_t xIn, uint32_t yIn, uint32_t zIn, int num_partitions, bool small_block)
 	{
 		assert(zIn == 0);
@@ -1495,7 +1584,11 @@ namespace astc_helpers
 			: 3;
 	}
 
-	static uint32_t g_texel_partitions_4x4[1024][2];
+	// 4x4, 2 and 3 subsets
+	static uint32_t g_texel_partitions_4x4[1024][2]; 
+	
+	// 6x6, 2 and 3 subsets (2 subsets low 4 bits, 3 subsets high 4 bits)
+	static uint8_t g_texel_partitions_6x6[1024][6 * 6];
 
 	void precompute_texel_partitions_4x4()
 	{
@@ -1518,6 +1611,24 @@ namespace astc_helpers
 		}
 	}
 
+	void precompute_texel_partitions_6x6()
+	{
+		for (uint32_t p = 0; p < 1024; p++)
+		{
+			for (uint32_t y = 0; y < 6; y++)
+			{
+				for (uint32_t x = 0; x < 6; x++)
+				{
+					const uint32_t p2 = compute_texel_partition(p, x, y, 0, 2, false);
+					const uint32_t p3 = compute_texel_partition(p, x, y, 0, 3, false);
+					
+					assert((p2 <= 1) && (p3 <= 2));
+					g_texel_partitions_6x6[p][x + y * 6] = (uint8_t)((p3 << 4) | p2);
+				}
+			}
+		}
+	}
+
 	static inline int get_precompute_texel_partitions_4x4(uint32_t seed, uint32_t x, uint32_t y, uint32_t num_partitions)
 	{
 		assert(g_texel_partitions_4x4[1][0]);
@@ -1527,6 +1638,17 @@ namespace astc_helpers
 	
 		const uint32_t shift = x * 2 + y * 8;
 		return (g_texel_partitions_4x4[seed][num_partitions - 2] >> shift) & 3;
+	}
+
+	static inline int get_precompute_texel_partitions_6x6(uint32_t seed, uint32_t x, uint32_t y, uint32_t num_partitions)
+	{
+		assert(g_texel_partitions_6x6[0][0]);
+		assert(seed < 1024);
+		assert((x <= 5) && (y <= 5));
+		assert((num_partitions >= 2) && (num_partitions <= 3));
+
+		const uint32_t shift = (num_partitions == 3) ? 4 : 0;
+		return (g_texel_partitions_6x6[seed][x + y * 6] >> shift) & 3;
 	}
 
 	void blue_contract(
@@ -2144,25 +2266,7 @@ namespace astc_helpers
 		x.u = m | (e << 23) | (s << 31);
 		return x.f;
 	}
-
-	static inline half_float qlog16_to_half(int k)
-	{
-		assert((k >= 0) && (k <= 0xFFFF));
-
-		int E = (k & 0xF800) >> 11;
-		int M = k & 0x7FF;
-
-		int Mt;
-		if (M < 512)
-			Mt = 3 * M;
-		else if (M >= 1536)
-			Mt = 5 * M - 2048;
-		else
-			Mt = 4 * M - 512;
-
-		return (half_float)((E << 10) + (Mt >> 3));
-	}
-
+		
 	// See https://registry.khronos.org/OpenGL/extensions/EXT/EXT_texture_shared_exponent.txt
 	const int RGB9E5_EXPONENT_BITS = 5, RGB9E5_MANTISSA_BITS = 9, RGB9E5_EXP_BIAS = 15, RGB9E5_MAX_VALID_BIASED_EXP = 31;
 	const int MAX_RGB9E5_EXP = (RGB9E5_MAX_VALID_BIASED_EXP - RGB9E5_EXP_BIAS);
@@ -2514,7 +2618,8 @@ namespace astc_helpers
 
 		// Decode texels
 		const bool small_block = num_blk_pixels < 31;
-		const bool use_precomputed_texel_partitions = (blk_width == 4) && (blk_height == 4) && (log_blk.m_num_partitions >= 2) && (log_blk.m_num_partitions <= 3);
+		const bool use_precomputed_texel_partitions_4x4 = (blk_width == 4) && (blk_height == 4) && (log_blk.m_num_partitions >= 2) && (log_blk.m_num_partitions <= 3);
+		const bool use_precomputed_texel_partitions_6x6 = (blk_width == 6) && (blk_height == 6) && (log_blk.m_num_partitions >= 2) && (log_blk.m_num_partitions <= 3);
 		const uint32_t ccs = log_blk.m_dual_plane ? log_blk.m_color_component_selector : UINT32_MAX;
 		
 		bool success = true;
@@ -2527,9 +2632,17 @@ namespace astc_helpers
 				for (uint32_t x = 0; x < blk_width; x++)
 				{
 					const uint32_t pixel_index = x + y * blk_width;
-					const uint32_t subset = (log_blk.m_num_partitions > 1) ? 
-						(use_precomputed_texel_partitions ? get_precompute_texel_partitions_4x4(log_blk.m_partition_id, x, y, log_blk.m_num_partitions) : compute_texel_partition(log_blk.m_partition_id, x, y, 0, log_blk.m_num_partitions, small_block))
-						: 0;
+					
+					uint32_t subset = 0;
+					if (log_blk.m_num_partitions > 1)
+					{
+						if (use_precomputed_texel_partitions_4x4)
+							subset = get_precompute_texel_partitions_4x4(log_blk.m_partition_id, x, y, log_blk.m_num_partitions);
+						else if (use_precomputed_texel_partitions_6x6)
+							subset = get_precompute_texel_partitions_6x6(log_blk.m_partition_id, x, y, log_blk.m_num_partitions);
+						else
+							subset = compute_texel_partition(log_blk.m_partition_id, x, y, 0, log_blk.m_num_partitions, small_block);
+					}
 
 					int comp[3];
 
@@ -2592,9 +2705,17 @@ namespace astc_helpers
 				for (uint32_t x = 0; x < blk_width; x++)
 				{
 					const uint32_t pixel_index = x + y * blk_width;
-					const uint32_t subset = (log_blk.m_num_partitions > 1) ?
-						(use_precomputed_texel_partitions ? get_precompute_texel_partitions_4x4(log_blk.m_partition_id, x, y, log_blk.m_num_partitions) : compute_texel_partition(log_blk.m_partition_id, x, y, 0, log_blk.m_num_partitions, small_block))
-						: 0;
+					
+					uint32_t subset = 0;
+					if (log_blk.m_num_partitions > 1)
+					{
+						if (use_precomputed_texel_partitions_4x4)
+							subset = get_precompute_texel_partitions_4x4(log_blk.m_partition_id, x, y, log_blk.m_num_partitions);
+						else if (use_precomputed_texel_partitions_6x6)
+							subset = get_precompute_texel_partitions_6x6(log_blk.m_partition_id, x, y, log_blk.m_num_partitions);
+						else
+							subset = compute_texel_partition(log_blk.m_partition_id, x, y, 0, log_blk.m_num_partitions, small_block);
+					}
 
 					for (uint32_t c = 0; c < 4; c++)
 					{
@@ -2653,9 +2774,16 @@ namespace astc_helpers
 				{
 					const uint32_t pixel_index = x + y * blk_width;
 
-					const uint32_t subset = (log_blk.m_num_partitions > 1) ?
-						(use_precomputed_texel_partitions ? get_precompute_texel_partitions_4x4(log_blk.m_partition_id, x, y, log_blk.m_num_partitions) : compute_texel_partition(log_blk.m_partition_id, x, y, 0, log_blk.m_num_partitions, small_block))
-						: 0;
+					uint32_t subset = 0;
+					if (log_blk.m_num_partitions > 1)
+					{
+						if (use_precomputed_texel_partitions_4x4)
+							subset = get_precompute_texel_partitions_4x4(log_blk.m_partition_id, x, y, log_blk.m_num_partitions);
+						else if (use_precomputed_texel_partitions_6x6)
+							subset = get_precompute_texel_partitions_6x6(log_blk.m_partition_id, x, y, log_blk.m_num_partitions);
+						else
+							subset = compute_texel_partition(log_blk.m_partition_id, x, y, 0, log_blk.m_num_partitions, small_block);
+					}
 
 					if (!is_ldr_endpoints[subset])
 					{
@@ -3235,10 +3363,10 @@ namespace astc_helpers
 		if (p < 2)
 			return false;
 		
-		log_blk.m_grid_width = W;
-		log_blk.m_grid_height = H;
+		log_blk.m_grid_width = (uint8_t)W;
+		log_blk.m_grid_height = (uint8_t)H;
 		
-		log_blk.m_weight_ise_range = (p - 2) + (P * BISE_10_LEVELS);
+		log_blk.m_weight_ise_range = (uint8_t)((p - 2) + (P * BISE_10_LEVELS));
 		assert(log_blk.m_weight_ise_range <= LAST_VALID_WEIGHT_ISE_RANGE);
 
 		log_blk.m_dual_plane = Dp;
@@ -3441,16 +3569,16 @@ namespace astc_helpers
 
 		// Right before the weight bits, there may be extra CEM bits, then the 2 CCS bits if dual plane.
 
-		log_blk.m_num_partitions = bits.get_bits(11, 2) + 1;
+		log_blk.m_num_partitions = (uint8_t)(bits.get_bits(11, 2) + 1);
 		if (log_blk.m_num_partitions == 1)
-			log_blk.m_color_endpoint_modes[0] = bits.get_bits(13, 4); // read CEM bits
+			log_blk.m_color_endpoint_modes[0] = (uint8_t)(bits.get_bits(13, 4)); // read CEM bits
 		else
 		{
 			// 2 or more partitions
 			if (log_blk.m_dual_plane && (log_blk.m_num_partitions == 4))
 				return false;
 
-			log_blk.m_partition_id = bits.get_bits(13, 10);
+			log_blk.m_partition_id = (uint16_t)bits.get_bits(13, 10);
 
 			uint32_t cem_bits = bits.get_bits(23, 6);
 
@@ -3458,7 +3586,7 @@ namespace astc_helpers
 			{
 				// All CEM's the same
 				for (uint32_t i = 0; i < log_blk.m_num_partitions; i++)
-					log_blk.m_color_endpoint_modes[i] = cem_bits >> 2;
+					log_blk.m_color_endpoint_modes[i] = (uint8_t)(cem_bits >> 2);
 			}
 			else
 			{
@@ -3511,7 +3639,7 @@ namespace astc_helpers
 
 				for (uint32_t i = 0; i < log_blk.m_num_partitions; i++)
 				{
-					log_blk.m_color_endpoint_modes[i] = first_cem_index + (c[i] * 4) + m[i];
+					log_blk.m_color_endpoint_modes[i] = (uint8_t)(first_cem_index + (c[i] * 4) + m[i]);
 					assert(log_blk.m_color_endpoint_modes[i] <= 15);
 				}
 			}
@@ -3528,7 +3656,7 @@ namespace astc_helpers
 				return false;
 
 			uint32_t ccs_bit_pos = end_of_weight_bit_ofs - total_extra_bits;
-			log_blk.m_color_component_selector = bits.get_bits(ccs_bit_pos, 2);
+			log_blk.m_color_component_selector = (uint8_t)(bits.get_bits(ccs_bit_pos, 2));
 		}
 
 		uint32_t config_bit_pos = 11 + 2; // config+num_parts
@@ -3569,7 +3697,7 @@ namespace astc_helpers
 		if (endpoint_ise_range < (int)FIRST_VALID_ENDPOINT_ISE_RANGE)
 			return false;
 
-		log_blk.m_endpoint_ise_range = endpoint_ise_range;
+		log_blk.m_endpoint_ise_range = (uint8_t)endpoint_ise_range;
 
 		// Decode endpoints forwards in block
 		decode_bise(log_blk.m_endpoint_ise_range, log_blk.m_endpoints, total_cem_vals, bits, config_bit_pos);
