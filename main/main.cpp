@@ -2786,6 +2786,7 @@ Error Main::setup2(bool p_show_boot_logo) {
 	print_header(false);
 
 #ifdef TOOLS_ENABLED
+	int tablet_driver_editor = -1;
 	if (editor || project_manager || cmdline_tool) {
 		OS::get_singleton()->benchmark_begin_measure("Startup", "Initialize Early Settings");
 
@@ -2820,6 +2821,8 @@ Error Main::setup2(bool p_show_boot_logo) {
 					bool prefer_wayland_found = false;
 					bool prefer_wayland = false;
 
+					bool tablet_found = false;
+
 					if (editor) {
 						screen_property = "interface/editor/editor_screen";
 					} else if (project_manager) {
@@ -2834,7 +2837,7 @@ Error Main::setup2(bool p_show_boot_logo) {
 						prefer_wayland_found = true;
 					}
 
-					while (!screen_found || !prefer_wayland_found) {
+					while (!screen_found || !prefer_wayland_found || !tablet_found) {
 						assign = Variant();
 						next_tag.fields.clear();
 						next_tag.name = String();
@@ -2857,6 +2860,11 @@ Error Main::setup2(bool p_show_boot_logo) {
 							if (!prefer_wayland_found && assign == "run/platforms/linuxbsd/prefer_wayland") {
 								prefer_wayland = value;
 								prefer_wayland_found = true;
+							}
+
+							if (!tablet_found && assign == "interface/editor/tablet_driver") {
+								tablet_driver_editor = value;
+								tablet_found = true;
 							}
 						}
 					}
@@ -3125,6 +3133,12 @@ Error Main::setup2(bool p_show_boot_logo) {
 
 		GLOBAL_DEF_RST_NOVAL("input_devices/pen_tablet/driver", "");
 		GLOBAL_DEF_RST_NOVAL(PropertyInfo(Variant::STRING, "input_devices/pen_tablet/driver.windows", PROPERTY_HINT_ENUM, "auto,winink,wintab,dummy"), "");
+
+#ifdef TOOLS_ENABLED
+		if (tablet_driver.is_empty() && tablet_driver_editor != -1) {
+			tablet_driver = DisplayServer::get_singleton()->tablet_get_driver_name(tablet_driver_editor);
+		}
+#endif
 
 		if (tablet_driver.is_empty()) { // specified in project.godot
 			tablet_driver = GLOBAL_GET("input_devices/pen_tablet/driver");

@@ -439,6 +439,20 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	}
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "interface/editor/editor_screen", EditorSettings::InitialScreen::INITIAL_SCREEN_AUTO, ed_screen_hints)
 
+#ifdef WINDOWS_ENABLED
+	String tablet_hints = "Use Project Settings:-1";
+	for (int i = 0; i < DisplayServer::get_singleton()->tablet_get_driver_count(); i++) {
+		String drv_name = DisplayServer::get_singleton()->tablet_get_driver_name(i);
+		if (EditorPropertyNameProcessor::get_singleton()) {
+			drv_name = EditorPropertyNameProcessor::get_singleton()->process_name(drv_name, EditorPropertyNameProcessor::STYLE_CAPITALIZED); // Note: EditorPropertyNameProcessor is not available when doctool is used, but this value is not part of docs.
+		}
+		tablet_hints += vformat(",%s:%d", drv_name, i);
+	}
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "interface/editor/tablet_driver", -1, tablet_hints);
+#else
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "interface/editor/tablet_driver", -1, "Default:-1");
+#endif
+
 	String project_manager_screen_hints = "Screen With Mouse Pointer:-4,Screen With Keyboard Focus:-3,Primary Screen:-2";
 	for (int i = 0; i < DisplayServer::get_singleton()->get_screen_count(); i++) {
 		project_manager_screen_hints += ",Screen " + itos(i + 1) + ":" + itos(i);

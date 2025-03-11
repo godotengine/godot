@@ -315,6 +315,8 @@ EditorPropertyNameProcessor::EditorPropertyNameProcessor() {
 	capitalize_string_remaps["webrtc"] = "WebRTC";
 	capitalize_string_remaps["websocket"] = "WebSocket";
 	capitalize_string_remaps["wine"] = "wine";
+	capitalize_string_remaps["wintab"] = "WinTab";
+	capitalize_string_remaps["winink"] = "Windows Ink";
 	capitalize_string_remaps["wifi"] = "Wi-Fi";
 	capitalize_string_remaps["x86"] = "x86";
 	capitalize_string_remaps["x86_32"] = "x86_32";
