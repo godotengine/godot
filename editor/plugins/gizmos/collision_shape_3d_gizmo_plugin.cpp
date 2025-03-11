@@ -58,9 +58,6 @@ CollisionShape3DGizmoPlugin::CollisionShape3DGizmoPlugin() {
 	create_handle_material("handles");
 }
 
-CollisionShape3DGizmoPlugin::~CollisionShape3DGizmoPlugin() {
-}
-
 void CollisionShape3DGizmoPlugin::create_collision_material(const String &p_name, float p_alpha) {
 	Vector<Ref<StandardMaterial3D>> mats;
 

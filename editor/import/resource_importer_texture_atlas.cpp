@@ -404,6 +404,3 @@ Error ResourceImporterTextureAtlas::import_group_file(const String &p_group_file
 
 	return OK;
 }
-
-ResourceImporterTextureAtlas::ResourceImporterTextureAtlas() {
-}

@@ -596,7 +596,4 @@ bool EditorFileSystemImportFormatSupportQueryBlend::query() {
 	return false;
 }
 
-EditorFileSystemImportFormatSupportQueryBlend::EditorFileSystemImportFormatSupportQueryBlend() {
-}
-
 #endif // TOOLS_ENABLED

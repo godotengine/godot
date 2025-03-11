@@ -52,9 +52,6 @@ GPUParticlesCollision3DGizmoPlugin::GPUParticlesCollision3DGizmoPlugin() {
 	create_handle_material("handles");
 }
 
-GPUParticlesCollision3DGizmoPlugin::~GPUParticlesCollision3DGizmoPlugin() {
-}
-
 bool GPUParticlesCollision3DGizmoPlugin::has_gizmo(Node3D *p_spatial) {
 	return (Object::cast_to<GPUParticlesCollision3D>(p_spatial) != nullptr) || (Object::cast_to<GPUParticlesAttractor3D>(p_spatial) != nullptr);
 }

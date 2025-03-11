@@ -127,5 +127,4 @@ public:
 	virtual void make_visible(bool p_visible) override;
 
 	Sprite2DEditorPlugin();
-	~Sprite2DEditorPlugin();
 };

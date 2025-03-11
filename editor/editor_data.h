@@ -324,6 +324,5 @@ public:
 	// Returns the map of selected objects and their metadata.
 	HashMap<Node *, Object *> &get_selection() { return selection; }
 
-	EditorSelection();
 	~EditorSelection();
 };

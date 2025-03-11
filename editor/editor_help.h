@@ -244,7 +244,6 @@ public:
 	static void init_gdext_pointers();
 
 	EditorHelp();
-	~EditorHelp();
 };
 
 class EditorHelpBit : public VBoxContainer {

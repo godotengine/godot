@@ -664,6 +664,3 @@ CollisionShape2DEditorPlugin::CollisionShape2DEditorPlugin() {
 	collision_shape_2d_editor = memnew(CollisionShape2DEditor);
 	EditorNode::get_singleton()->get_gui_base()->add_child(collision_shape_2d_editor);
 }
-
-CollisionShape2DEditorPlugin::~CollisionShape2DEditorPlugin() {
-}

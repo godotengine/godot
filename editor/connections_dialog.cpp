@@ -1664,6 +1664,3 @@ ConnectionsDock::ConnectionsDock() {
 
 	add_theme_constant_override("separation", 3 * EDSCALE);
 }
-
-ConnectionsDock::~ConnectionsDock() {
-}

@@ -214,6 +214,3 @@ LightmapGIEditorPlugin::LightmapGIEditorPlugin() {
 	file_dialog->connect("file_selected", callable_mp(this, &LightmapGIEditorPlugin::_bake_select_file));
 	bake->add_child(file_dialog);
 }
-
-LightmapGIEditorPlugin::~LightmapGIEditorPlugin() {
-}

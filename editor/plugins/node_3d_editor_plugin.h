@@ -1026,7 +1026,6 @@ public:
 	virtual void edited_scene_changed() override;
 
 	Node3DEditorPlugin();
-	~Node3DEditorPlugin();
 };
 
 class ViewportNavigationControl : public Control {

@@ -403,7 +403,6 @@ public:
 	void _clear_selection(bool p_update);
 
 	AnimationMarkerEdit();
-	~AnimationMarkerEdit();
 };
 
 class AnimationTrackEdit : public Control {
@@ -982,7 +981,6 @@ class AnimationTrackKeyEditEditor : public EditorProperty {
 
 public:
 	AnimationTrackKeyEditEditor(Ref<Animation> p_animation, int p_track, real_t p_key_ofs, bool p_use_fps);
-	~AnimationTrackKeyEditEditor();
 };
 
 // AnimationMarkerKeyEditEditorPlugin
@@ -1000,5 +998,4 @@ class AnimationMarkerKeyEditEditor : public EditorProperty {
 
 public:
 	AnimationMarkerKeyEditEditor(Ref<Animation> p_animation, const StringName &p_name, bool p_use_fps);
-	~AnimationMarkerKeyEditEditor();
 };

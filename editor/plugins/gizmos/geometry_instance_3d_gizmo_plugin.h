@@ -41,6 +41,4 @@ public:
 	virtual int get_priority() const override;
 
 	virtual void redraw(EditorNode3DGizmo *p_gizmo) override;
-
-	GeometryInstance3DGizmoPlugin();
 };

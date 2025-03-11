@@ -3187,9 +3187,6 @@ EditorHelp::EditorHelp() {
 	class_desc->hide();
 }
 
-EditorHelp::~EditorHelp() {
-}
-
 DocTools *EditorHelp::get_doc_data() {
 	_wait_for_thread();
 	return doc;

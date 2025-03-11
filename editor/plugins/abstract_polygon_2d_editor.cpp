@@ -783,6 +783,3 @@ AbstractPolygon2DEditorPlugin::AbstractPolygon2DEditorPlugin(AbstractPolygon2DEd
 	CanvasItemEditor::get_singleton()->add_control_to_menu_panel(polygon_editor);
 	polygon_editor->hide();
 }
-
-AbstractPolygon2DEditorPlugin::~AbstractPolygon2DEditorPlugin() {
-}

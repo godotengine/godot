@@ -63,8 +63,6 @@ public:
 	}
 
 	void update() { notify_property_list_changed(); }
-
-	EditorDebuggerRemoteObjects() {}
 };
 
 class EditorDebuggerInspector : public EditorInspector {
