@@ -180,7 +180,7 @@ hb_cairo_paint_color_glyph (hb_paint_funcs_t *pfuncs HB_UNUSED,
 
   hb_position_t x_scale, y_scale;
   hb_font_get_scale (font, &x_scale, &y_scale);
-  cairo_scale (cr, x_scale, y_scale);
+  cairo_scale (cr, x_scale, -y_scale);
 
   cairo_glyph_t cairo_glyph = { glyph, 0, 0 };
   cairo_set_scaled_font (cr, c->scaled_font);
@@ -597,7 +597,9 @@ hb_cairo_render_glyph (cairo_scaled_font_t  *scaled_font,
 
   hb_position_t x_scale, y_scale;
   hb_font_get_scale (font, &x_scale, &y_scale);
-  cairo_scale (cr, +1./x_scale, -1./y_scale);
+  cairo_scale (cr,
+	       +1. / (x_scale ? x_scale : 1),
+	       -1. / (y_scale ? y_scale : 1));
 
   hb_font_draw_glyph (font, glyph, hb_cairo_draw_get_funcs (), cr);
 
@@ -628,7 +630,9 @@ hb_cairo_render_color_glyph (cairo_scaled_font_t  *scaled_font,
   hb_color_t color = HB_COLOR (0, 0, 0, 255);
   hb_position_t x_scale, y_scale;
   hb_font_get_scale (font, &x_scale, &y_scale);
-  cairo_scale (cr, +1./x_scale, -1./y_scale);
+  cairo_scale (cr,
+	       +1. / (x_scale ? x_scale : 1),
+	       -1. / (y_scale ? y_scale : 1));
 
   hb_cairo_context_t c;
   c.scaled_font = scaled_font;
@@ -1000,6 +1004,7 @@ hb_cairo_glyphs_from_buffer (hb_buffer_t *buffer,
 	    end = start + hb_glyph[i].cluster - hb_glyph[i+1].cluster;
 	  else
 	    end = (const char *) hb_utf_offset_to_pointer<hb_utf8_t> ((const uint8_t *) start,
+								      (const uint8_t *) utf8, utf8_len,
 								      (signed) (hb_glyph[i].cluster - hb_glyph[i+1].cluster));
 	  (*clusters)[cluster].num_bytes = end - start;
 	  start = end;
@@ -1020,6 +1025,7 @@ hb_cairo_glyphs_from_buffer (hb_buffer_t *buffer,
 	    end = start + hb_glyph[i].cluster - hb_glyph[i-1].cluster;
 	  else
 	    end = (const char *) hb_utf_offset_to_pointer<hb_utf8_t> ((const uint8_t *) start,
+								      (const uint8_t *) utf8, utf8_len,
 								      (signed) (hb_glyph[i].cluster - hb_glyph[i-1].cluster));
 	  (*clusters)[cluster].num_bytes = end - start;
 	  start = end;
