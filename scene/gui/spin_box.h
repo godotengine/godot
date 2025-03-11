@@ -72,8 +72,12 @@ class SpinBox : public Range {
 	void _text_submitted(const String &p_string);
 	void _text_changed(const String &p_string);
 
+	String format;
+	bool use_default_format = false;
+#ifndef DISABLE_DEPRECATED
 	String prefix;
 	String suffix;
+#endif
 	String last_text_value;
 	double custom_arrow_step = 0.0;
 
@@ -148,8 +152,9 @@ class SpinBox : public Range {
 protected:
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 	void _value_changed(double p_value) override;
-	void _validate_property(PropertyInfo &p_property) const;
+	PackedStringArray get_configuration_warnings() const override;
 
+	void _validate_property(PropertyInfo &p_property) const;
 	void _notification(int p_what);
 	static void _bind_methods();
 
@@ -164,11 +169,16 @@ public:
 	void set_editable(bool p_enabled);
 	bool is_editable() const;
 
+	void set_format(const String &p_format);
+	String get_format() const;
+
+#ifndef DISABLE_DEPRECATED
 	void set_suffix(const String &p_suffix);
 	String get_suffix() const;
 
 	void set_prefix(const String &p_prefix);
 	String get_prefix() const;
+#endif
 
 	void set_update_on_text_changed(bool p_enabled);
 	bool get_update_on_text_changed() const;

@@ -116,7 +116,7 @@ public:
 		grid_offset_x->set_max(SPIN_BOX_GRID_RANGE);
 		grid_offset_x->set_allow_lesser(true);
 		grid_offset_x->set_allow_greater(true);
-		grid_offset_x->set_suffix("px");
+		grid_offset_x->set_format("%s px");
 		grid_offset_x->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 		grid_offset_x->set_select_all_on_focus(true);
 		grid_offset_x->set_accessibility_name(TTRC("X Offset"));
@@ -127,7 +127,7 @@ public:
 		grid_offset_y->set_max(SPIN_BOX_GRID_RANGE);
 		grid_offset_y->set_allow_lesser(true);
 		grid_offset_y->set_allow_greater(true);
-		grid_offset_y->set_suffix("px");
+		grid_offset_y->set_format("%s px");
 		grid_offset_y->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 		grid_offset_y->set_select_all_on_focus(true);
 		grid_offset_y->set_accessibility_name(TTRC("Y Offset"));
@@ -142,7 +142,7 @@ public:
 		grid_step_x->set_min(1);
 		grid_step_x->set_max(SPIN_BOX_GRID_RANGE);
 		grid_step_x->set_allow_greater(true);
-		grid_step_x->set_suffix("px");
+		grid_step_x->set_format("%s px");
 		grid_step_x->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 		grid_step_x->set_select_all_on_focus(true);
 		grid_step_x->set_accessibility_name(TTRC("X Step"));
@@ -152,7 +152,7 @@ public:
 		grid_step_y->set_min(1);
 		grid_step_y->set_max(SPIN_BOX_GRID_RANGE);
 		grid_step_y->set_allow_greater(true);
-		grid_step_y->set_suffix("px");
+		grid_step_y->set_format("%s px");
 		grid_step_y->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 		grid_step_y->set_select_all_on_focus(true);
 		grid_step_y->set_accessibility_name(TTRC("X Step"));
@@ -168,7 +168,7 @@ public:
 		primary_grid_step_x->set_step(1);
 		primary_grid_step_x->set_max(SPIN_BOX_GRID_RANGE);
 		primary_grid_step_x->set_allow_greater(true);
-		primary_grid_step_x->set_suffix("steps");
+		primary_grid_step_x->set_format("%s steps");
 		primary_grid_step_x->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 		primary_grid_step_x->set_select_all_on_focus(true);
 		primary_grid_step_x->set_accessibility_name(TTRC("X Primary Step"));
@@ -179,7 +179,7 @@ public:
 		primary_grid_step_y->set_step(1);
 		primary_grid_step_y->set_max(SPIN_BOX_GRID_RANGE);
 		primary_grid_step_y->set_allow_greater(true);
-		primary_grid_step_y->set_suffix(TTRC("steps")); // TODO: Add suffix auto-translation.
+		primary_grid_step_y->set_format(TTRC("%s steps")); // TODO: Add format auto-translation.
 		primary_grid_step_y->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 		primary_grid_step_y->set_select_all_on_focus(true);
 		primary_grid_step_y->set_accessibility_name(TTRC("Y Primary Step"));
@@ -201,7 +201,7 @@ public:
 		rotation_offset = memnew(SpinBox);
 		rotation_offset->set_min(-SPIN_BOX_ROTATION_RANGE);
 		rotation_offset->set_max(SPIN_BOX_ROTATION_RANGE);
-		rotation_offset->set_suffix(U"°");
+		rotation_offset->set_format(U"%s°");
 		rotation_offset->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 		rotation_offset->set_select_all_on_focus(true);
 		rotation_offset->set_accessibility_name(TTRC("Rotation Offset:"));
@@ -215,7 +215,7 @@ public:
 		rotation_step = memnew(SpinBox);
 		rotation_step->set_min(-SPIN_BOX_ROTATION_RANGE);
 		rotation_step->set_max(SPIN_BOX_ROTATION_RANGE);
-		rotation_step->set_suffix(U"°");
+		rotation_step->set_format(U"%s°");
 		rotation_step->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 		rotation_step->set_select_all_on_focus(true);
 		rotation_step->set_accessibility_name(TTRC("Rotation Step:"));
