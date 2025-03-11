@@ -90,6 +90,14 @@ void GameViewDebugger::_session_started(Ref<EditorDebuggerSession> p_session) {
 	mode.append(select_mode);
 	p_session->send_message("scene:runtime_node_select_set_mode", mode);
 
+	Array shortcuts;
+	Dictionary shortcut_settings;
+	shortcut_settings["editor/suspend_resume_embedded_project"] = DebuggerMarshalls::serialize_key_shortcut(ED_GET_SHORTCUT("editor/suspend_resume_embedded_project"));
+	shortcut_settings["editor/next_frame_embedded_project"] = DebuggerMarshalls::serialize_key_shortcut(ED_GET_SHORTCUT("editor/next_frame_embedded_project"));
+
+	shortcuts.append(shortcut_settings);
+	p_session->send_message("scene:setup_embedded_shortcuts", shortcuts);
+
 	emit_signal(SNAME("session_started"));
 }
 
@@ -396,6 +404,20 @@ void GameView::_update_debugger_buttons() {
 		camera_override_button->set_pressed(false);
 	}
 	next_frame_button->set_disabled(!suspend_button->is_pressed());
+}
+
+void GameView::_handle_shortcut_requested(int embed_action) {
+	if (embed_action == ScriptEditorDebugger::EMBED_SUSPEND_TOGGLE) {
+		_toggle_suspend_button();
+	} else if (embed_action == ScriptEditorDebugger::EMBED_NEXT_FRAME) {
+		debugger->next_frame();
+	}
+}
+
+void GameView::_toggle_suspend_button() {
+	const bool new_pressed = !suspend_button->is_pressed();
+	suspend_button->set_pressed(new_pressed);
+	_suspend_button_toggled(new_pressed);
 }
 
 void GameView::_suspend_button_toggled(bool p_pressed) {
@@ -772,12 +794,14 @@ void GameView::_attach_script_debugger() {
 
 	if (embedded_script_debugger) {
 		embedded_script_debugger->connect("remote_window_title_changed", callable_mp(this, &GameView::_remote_window_title_changed));
+		embedded_script_debugger->connect("embed_shortcut_requested", callable_mp(this, &GameView::_handle_shortcut_requested));
 	}
 }
 
 void GameView::_detach_script_debugger() {
 	if (embedded_script_debugger) {
 		embedded_script_debugger->disconnect("remote_window_title_changed", callable_mp(this, &GameView::_remote_window_title_changed));
+		embedded_script_debugger->disconnect("embed_shortcut_requested", callable_mp(this, &GameView::_handle_shortcut_requested));
 		embedded_script_debugger = nullptr;
 	}
 }
@@ -915,12 +939,16 @@ GameView::GameView(Ref<GameViewDebugger> p_debugger, WindowWrapper *p_wrapper) {
 	suspend_button->set_theme_type_variation(SceneStringName(FlatButton));
 	suspend_button->connect(SceneStringName(toggled), callable_mp(this, &GameView::_suspend_button_toggled));
 	suspend_button->set_tooltip_text(TTR("Suspend"));
+	ED_SHORTCUT("editor/suspend_resume_embedded_project", TTRC("Suspend/Resume Embedded Project"), Key::F9);
+	ED_SHORTCUT_OVERRIDE("editor/suspend_resume_embedded_project", "macos", KeyModifierMask::META | KeyModifierMask::SHIFT | Key::B);
+	suspend_button->set_shortcut(ED_GET_SHORTCUT("editor/suspend_resume_embedded_project"));
 
 	next_frame_button = memnew(Button);
 	main_menu_hbox->add_child(next_frame_button);
 	next_frame_button->set_theme_type_variation(SceneStringName(FlatButton));
 	next_frame_button->connect(SceneStringName(pressed), callable_mp(*debugger, &GameViewDebugger::next_frame));
 	next_frame_button->set_tooltip_text(TTR("Next Frame"));
+	next_frame_button->set_shortcut(ED_SHORTCUT("editor/next_frame_embedded_project", TTRC("Next Frame Embedded Project"), Key::F10));
 
 	main_menu_hbox->add_child(memnew(VSeparator));
 
