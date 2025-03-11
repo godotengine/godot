@@ -385,11 +385,9 @@ Vector2 AnimationNodeBlendSpace2D::get_closest_point(const Vector2 &p_point) {
 		}
 
 		for (int j = 0; j < 3; j++) {
-			Vector2 s[2] = {
-				points[j],
-				points[(j + 1) % 3]
-			};
-			Vector2 closest_point = Geometry2D::get_closest_point_to_segment(p_point, s);
+			const Vector2 segment_a = points[j];
+			const Vector2 segment_b = points[(j + 1) % 3];
+			Vector2 closest_point = Geometry2D::get_closest_point_to_segment(p_point, segment_a, segment_b);
 			if (first || closest_point.distance_to(p_point) < best_point.distance_to(p_point)) {
 				best_point = closest_point;
 				first = false;
@@ -481,22 +479,20 @@ AnimationNode::NodeTimeInfo AnimationNodeBlendSpace2D::_process(const AnimationM
 			}
 
 			for (int j = 0; j < 3; j++) {
-				Vector2 s[2] = {
-					points[j],
-					points[(j + 1) % 3]
-				};
-				Vector2 closest2 = Geometry2D::get_closest_point_to_segment(blend_pos, s);
+				const Vector2 segment_a = points[j];
+				const Vector2 segment_b = points[(j + 1) % 3];
+				Vector2 closest2 = Geometry2D::get_closest_point_to_segment(blend_pos, segment_a, segment_b);
 				if (first || closest2.distance_to(blend_pos) < best_point.distance_to(blend_pos)) {
 					best_point = closest2;
 					blend_triangle = i;
 					first = false;
-					float d = s[0].distance_to(s[1]);
+					const real_t d = segment_a.distance_to(segment_b);
 					if (d == 0.0) {
 						blend_weights[j] = 1.0;
 						blend_weights[(j + 1) % 3] = 0.0;
 						blend_weights[(j + 2) % 3] = 0.0;
 					} else {
-						float c = s[0].distance_to(closest2) / d;
+						const real_t c = segment_a.distance_to(closest2) / d;
 
 						blend_weights[j] = 1.0 - c;
 						blend_weights[(j + 1) % 3] = c;
