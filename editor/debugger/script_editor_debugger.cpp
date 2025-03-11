@@ -48,6 +48,7 @@
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
 #include "editor/gui/editor_file_dialog.h"
+#include "editor/gui/editor_run_bar.h"
 #include "editor/inspector_dock.h"
 #include "editor/plugins/canvas_item_editor_plugin.h"
 #include "editor/plugins/editor_debugger_plugin.h"
@@ -809,6 +810,13 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, uint64_t p_thread
 	} else if (p_msg == "request_quit") {
 		emit_signal(SNAME("stop_requested"));
 		_stop_and_notify();
+	} else if (p_msg == "request_pause") {
+		if (EditorRunBar::get_singleton()->get_pause_button()->is_pressed()) {
+			EditorRunBar::get_singleton()->get_pause_button()->set_pressed(false);
+		} else {
+			EditorRunBar::get_singleton()->get_pause_button()->set_pressed(true);
+		}
+		EditorRunBar::get_singleton()->get_pause_button()->emit_signal(SceneStringNames::get_singleton()->pressed);
 	} else if (p_msg == "remote_node_clicked") {
 		if (!p_data.is_empty()) {
 			emit_signal(SNAME("remote_tree_select_requested"), p_data[0]);
@@ -1041,6 +1049,8 @@ void ScriptEditorDebugger::start(Ref<RemoteDebuggerPeer> p_peer) {
 
 	Array quit_keys = DebuggerMarshalls::serialize_key_shortcut(ED_GET_SHORTCUT("editor/stop_running_project"));
 	_put_msg("scene:setup_scene", quit_keys);
+	Array pause_keys = DebuggerMarshalls::serialize_key_shortcut(ED_GET_SHORTCUT("editor/pause_running_project"));
+	_put_msg("scene:pause_scene", pause_keys);
 
 	if (EditorSettings::get_singleton()->get_project_metadata("debug_options", "autostart_profiler", false)) {
 		profiler->set_profiling(true);
