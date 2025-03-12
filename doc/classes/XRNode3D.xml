@@ -46,6 +46,7 @@
 		</method>
 	</methods>
 	<members>
+		<member name="physics_interpolation_mode" type="int" setter="set_physics_interpolation_mode" getter="get_physics_interpolation_mode" overrides="Node" enum="Node.PhysicsInterpolationMode" default="2" />
 		<member name="pose" type="StringName" setter="set_pose_name" getter="get_pose_name" default="&amp;&quot;default&quot;">
 			The name of the pose we're bound to. Which poses a tracker supports is not known during design time.
 			Godot defines number of standard pose names such as [code]aim[/code] and [code]grip[/code] but other may be configured within a given [XRInterface].
