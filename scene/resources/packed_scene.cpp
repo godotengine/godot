@@ -2092,6 +2092,8 @@ Vector<String> SceneState::_get_node_groups(int p_idx) const {
 void SceneState::_bind_methods() {
 	//unbuild API
 
+	ClassDB::bind_method(D_METHOD("get_path"), &SceneState::get_path);
+	ClassDB::bind_method(D_METHOD("get_base_scene_state"), &SceneState::get_base_scene_state);
 	ClassDB::bind_method(D_METHOD("get_node_count"), &SceneState::get_node_count);
 	ClassDB::bind_method(D_METHOD("get_node_type", "idx"), &SceneState::get_node_type);
 	ClassDB::bind_method(D_METHOD("get_node_name", "idx"), &SceneState::get_node_name);
