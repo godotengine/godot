@@ -227,9 +227,15 @@ void initialize_openxr_module(ModuleInitializationLevel p_level) {
 		}
 
 #ifdef TOOLS_ENABLED
+		// Register as "editor", not "core".
+		ClassDB::APIType prev_api = ClassDB::get_current_api();
+		ClassDB::set_current_api(ClassDB::API_EDITOR);
+
 		GDREGISTER_ABSTRACT_CLASS(OpenXRInteractionProfileEditorBase);
 		GDREGISTER_CLASS(OpenXRInteractionProfileEditor);
 		GDREGISTER_CLASS(OpenXRBindingModifierEditor);
+
+		ClassDB::set_current_api(prev_api);
 
 		EditorNode::add_init_callback(_editor_init);
 #endif
