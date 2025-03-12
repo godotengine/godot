@@ -107,7 +107,6 @@ protected:
 	void _notification(int p_what);
 
 private:
-	static constexpr int SHOW_ALL_FILES_THRESHOLD = 30;
 	static constexpr int MAX_HISTORY_SIZE = 20;
 
 	Vector<FuzzySearchResult> search_results;
@@ -124,6 +123,7 @@ private:
 	int max_total_results = 0;
 
 	bool showing_history = false;
+	bool enable_showing_history = false;
 	bool never_opened = true;
 	Ref<ConfigFile> history_file;
 
@@ -143,6 +143,7 @@ private:
 	Button *display_mode_toggle = nullptr;
 	CheckButton *include_addons_toggle = nullptr;
 	CheckButton *fuzzy_search_toggle = nullptr;
+	CheckButton *showing_history_toggle = nullptr;
 
 	OAHashMap<StringName, Ref<Texture2D>> file_type_icons;
 
@@ -170,6 +171,7 @@ private:
 	void _toggle_display_mode();
 	void _toggle_include_addons(bool p_pressed);
 	void _toggle_fuzzy_search(bool p_pressed);
+	void _toggle_showing_history_toggle(bool p_pressed);
 	void _menu_option(int p_option);
 
 	String _get_cache_file_path() const;
