@@ -158,25 +158,49 @@ void AudioStreamPlayer3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 			// or a soft distance cap with the Unit Size property (sound never reaches true zero).
 			// When Max Distance is 0.0, `r` represents the distance above which the
 			// sound can't be heard in *most* (but not all) scenarios.
-			float r;
+			float radius = player->get_unit_size() * soft_multiplier;
 			if (player->get_max_distance() > CMP_EPSILON) {
-				r = MIN(player->get_unit_size() * soft_multiplier, player->get_max_distance());
-			} else {
-				r = player->get_unit_size() * soft_multiplier;
+				radius = MIN(radius, player->get_max_distance());
 			}
+
+#define PUSH_QUARTER_XY(m_from_x, m_from_y, m_to_x, m_to_y, m_y)   \
+	points_ptrw[index++] = Vector3(m_from_x, -m_from_y - m_y, 0);  \
+	points_ptrw[index++] = Vector3(m_to_x, -m_to_y - m_y, 0);      \
+	points_ptrw[index++] = Vector3(m_from_x, m_from_y + m_y, 0);   \
+	points_ptrw[index++] = Vector3(m_to_x, m_to_y + m_y, 0);       \
+	points_ptrw[index++] = Vector3(-m_from_x, -m_from_y - m_y, 0); \
+	points_ptrw[index++] = Vector3(-m_to_x, -m_to_y - m_y, 0);     \
+	points_ptrw[index++] = Vector3(-m_from_x, m_from_y + m_y, 0);  \
+	points_ptrw[index++] = Vector3(-m_to_x, m_to_y + m_y, 0);
+
+			// Number of points in an octant. So there will be 8 * points_in_octant points in total.
+			// This corresponds to the smoothness of the circle.
+			const uint32_t points_in_octant = 15;
+			const real_t octant_angle = Math_PI / 4;
+			const real_t inc = (Math_PI / (4 * points_in_octant));
+			const real_t radius_squared = radius * radius;
+			real_t r = 0;
+
 			Vector<Vector3> points_billboard;
+			points_billboard.resize(8 * points_in_octant * 2);
+			Vector3 *points_ptrw = points_billboard.ptrw();
 
-			for (int i = 0; i < 120; i++) {
-				// Create a circle.
-				const float ra = Math::deg_to_rad((float)(i * 3));
-				const float rb = Math::deg_to_rad((float)((i + 1) * 3));
-				const Point2 a = Vector2(Math::sin(ra), Math::cos(ra)) * r;
-				const Point2 b = Vector2(Math::sin(rb), Math::cos(rb)) * r;
+			uint32_t index = 0;
+			float previous_x = radius;
+			float previous_y = 0.f;
 
-				// Draw a billboarded circle.
-				points_billboard.push_back(Vector3(a.x, a.y, 0));
-				points_billboard.push_back(Vector3(b.x, b.y, 0));
+			for (uint32_t i = 0; i < points_in_octant; i++) {
+				r += inc;
+				real_t x = Math::cos((i == points_in_octant - 1) ? octant_angle : r) * radius;
+				real_t y = Math::sqrt(radius_squared - (x * x));
+
+				PUSH_QUARTER_XY(previous_x, previous_y, x, y, 0);
+				PUSH_QUARTER_XY(previous_y, previous_x, y, x, 0);
+				previous_x = x;
+				previous_y = y;
 			}
+
+#undef PUSH_QUARTER_XY
 
 			Color color;
 			switch (player->get_attenuation_model()) {
@@ -210,44 +234,76 @@ void AudioStreamPlayer3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 		}
 
 		if (player->is_emission_angle_enabled()) {
-			const float pc = player->get_emission_angle();
-			const float ofs = -Math::cos(Math::deg_to_rad(pc));
-			const float radius = Math::sin(Math::deg_to_rad(pc));
+			const float ha = Math::deg_to_rad(player->get_emission_angle());
+			const float ofs = -Math::cos(ha);
+			const float radius = Math::sin(ha);
+
+			const uint32_t points_in_octant = 7;
+			const real_t octant_angle = Math_PI / 4;
+			const real_t inc = (Math_PI / (4 * points_in_octant));
+			const real_t radius_squared = radius * radius;
+			real_t r = 0;
 
 			Vector<Vector3> points_primary;
-			points_primary.resize(200);
+			points_primary.resize(8 * points_in_octant * 2);
+			Vector3 *points_ptrw = points_primary.ptrw();
 
-			real_t step = Math_TAU / 100.0;
-			for (int i = 0; i < 100; i++) {
-				const float a = i * step;
-				const float an = (i + 1) * step;
+			uint32_t index = 0;
+			float previous_x = radius;
+			float previous_y = 0.f;
+#define PUSH_QUARTER(m_from_x, m_from_y, m_to_x, m_to_y, m_y)  \
+	points_ptrw[index++] = Vector3(m_from_x, -m_from_y, m_y);  \
+	points_ptrw[index++] = Vector3(m_to_x, -m_to_y, m_y);      \
+	points_ptrw[index++] = Vector3(m_from_x, m_from_y, m_y);   \
+	points_ptrw[index++] = Vector3(m_to_x, m_to_y, m_y);       \
+	points_ptrw[index++] = Vector3(-m_from_x, -m_from_y, m_y); \
+	points_ptrw[index++] = Vector3(-m_to_x, -m_to_y, m_y);     \
+	points_ptrw[index++] = Vector3(-m_from_x, m_from_y, m_y);  \
+	points_ptrw[index++] = Vector3(-m_to_x, m_to_y, m_y);
 
-				const Vector3 from(Math::sin(a) * radius, Math::cos(a) * radius, ofs);
-				const Vector3 to(Math::sin(an) * radius, Math::cos(an) * radius, ofs);
+			for (uint32_t i = 0; i < points_in_octant; i++) {
+				r += inc;
+				real_t x = Math::cos((i == points_in_octant - 1) ? octant_angle : r) * radius;
+				real_t y = Math::sqrt(radius_squared - (x * x));
 
-				points_primary.write[i * 2 + 0] = from;
-				points_primary.write[i * 2 + 1] = to;
+				PUSH_QUARTER(previous_x, previous_y, x, y, ofs);
+				PUSH_QUARTER(previous_y, previous_x, y, x, ofs);
+
+				previous_x = x;
+				previous_y = y;
 			}
+#undef PUSH_QUARTER
 
 			const Ref<Material> material_primary = get_material("stream_player_3d_material_primary", p_gizmo);
 			p_gizmo->add_lines(points_primary, material_primary);
 
 			Vector<Vector3> points_secondary;
 			points_secondary.resize(16);
-
-			for (int i = 0; i < 8; i++) {
-				const float a = i * (Math_TAU / 8.0);
-				const Vector3 from(Math::sin(a) * radius, Math::cos(a) * radius, ofs);
-
-				points_secondary.write[i * 2 + 0] = from;
-				points_secondary.write[i * 2 + 1] = Vector3();
-			}
+			Vector3 *points_second_ptrw = points_secondary.ptrw();
+			uint32_t index2 = 0;
+			// Lines to the circle.
+			points_second_ptrw[index2++] = Vector3();
+			points_second_ptrw[index2++] = Vector3(radius, 0, ofs);
+			points_second_ptrw[index2++] = Vector3();
+			points_second_ptrw[index2++] = Vector3(-radius, 0, ofs);
+			points_second_ptrw[index2++] = Vector3();
+			points_second_ptrw[index2++] = Vector3(0, radius, ofs);
+			points_second_ptrw[index2++] = Vector3();
+			points_second_ptrw[index2++] = Vector3(0, -radius, ofs);
+			real_t octant_value = Math::cos(octant_angle) * radius;
+			points_second_ptrw[index2++] = Vector3();
+			points_second_ptrw[index2++] = Vector3(octant_value, octant_value, ofs);
+			points_second_ptrw[index2++] = Vector3();
+			points_second_ptrw[index2++] = Vector3(-octant_value, octant_value, ofs);
+			points_second_ptrw[index2++] = Vector3();
+			points_second_ptrw[index2++] = Vector3(-octant_value, -octant_value, ofs);
+			points_second_ptrw[index2++] = Vector3();
+			points_second_ptrw[index2++] = Vector3(octant_value, -octant_value, ofs);
 
 			const Ref<Material> material_secondary = get_material("stream_player_3d_material_secondary", p_gizmo);
 			p_gizmo->add_lines(points_secondary, material_secondary);
 
 			Vector<Vector3> handles;
-			const float ha = Math::deg_to_rad(player->get_emission_angle());
 			handles.push_back(Vector3(Math::sin(ha), 0, -Math::cos(ha)));
 			p_gizmo->add_handles(handles, get_material("handles"));
 		}
