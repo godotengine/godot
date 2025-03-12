@@ -53,7 +53,6 @@ public:
 	bool mipmaps = true;
 	bool high_quality = false;
 	Image::UsedChannels used_channels = Image::USED_CHANNELS_RGBA;
-	virtual ~LayeredTextureImport() {}
 };
 
 class ResourceImporterLayeredTexture : public ResourceImporter {

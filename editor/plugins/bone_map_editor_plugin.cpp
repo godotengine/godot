@@ -104,9 +104,6 @@ BoneMapperButton::BoneMapperButton(const StringName &p_profile_bone_name, bool p
 	selected = p_selected;
 }
 
-BoneMapperButton::~BoneMapperButton() {
-}
-
 void BoneMapperItem::create_editor() {
 	HBoxContainer *hbox = memnew(HBoxContainer);
 	add_child(hbox);
@@ -163,9 +160,6 @@ void BoneMapperItem::_bind_methods() {
 BoneMapperItem::BoneMapperItem(Ref<BoneMap> &p_bone_map, const StringName &p_profile_bone_name) {
 	bone_map = p_bone_map;
 	profile_bone_name = p_profile_bone_name;
-}
-
-BoneMapperItem::~BoneMapperItem() {
 }
 
 void BonePicker::create_editors() {
@@ -264,9 +258,6 @@ void BonePicker::_notification(int p_what) {
 
 BonePicker::BonePicker(Skeleton3D *p_skeleton) {
 	skeleton = p_skeleton;
-}
-
-BonePicker::~BonePicker() {
 }
 
 void BoneMapper::create_editor() {
@@ -1407,9 +1398,6 @@ BoneMapper::BoneMapper(Skeleton3D *p_skeleton, Ref<BoneMap> &p_bone_map) {
 	bone_map = p_bone_map;
 }
 
-BoneMapper::~BoneMapper() {
-}
-
 void BoneMapEditor::create_editors() {
 	if (!skeleton) {
 		return;
@@ -1455,9 +1443,6 @@ void BoneMapEditor::_notification(int p_what) {
 
 BoneMapEditor::BoneMapEditor(Ref<BoneMap> &p_bone_map) {
 	bone_map = p_bone_map;
-}
-
-BoneMapEditor::~BoneMapEditor() {
 }
 
 bool EditorInspectorPluginBoneMap::can_handle(Object *p_object) {

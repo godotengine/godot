@@ -8312,9 +8312,3 @@ bool EditorPluginList::is_empty() {
 void EditorPluginList::clear() {
 	plugins_list.clear();
 }
-
-EditorPluginList::EditorPluginList() {
-}
-
-EditorPluginList::~EditorPluginList() {
-}

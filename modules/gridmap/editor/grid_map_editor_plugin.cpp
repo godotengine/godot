@@ -1878,10 +1878,4 @@ int GridMapEditorPlugin::get_selected_palette_item() const {
 	}
 }
 
-GridMapEditorPlugin::GridMapEditorPlugin() {
-}
-
-GridMapEditorPlugin::~GridMapEditorPlugin() {
-}
-
 #endif // TOOLS_ENABLED

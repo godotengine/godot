@@ -64,7 +64,6 @@ protected:
 public:
 	void edit(NavigationRegion3D *p_nav_region);
 	NavigationMeshEditor();
-	~NavigationMeshEditor();
 };
 
 class NavigationMeshEditorPlugin : public EditorPlugin {
@@ -80,7 +79,6 @@ public:
 	virtual void make_visible(bool p_visible) override;
 
 	NavigationMeshEditorPlugin();
-	~NavigationMeshEditorPlugin();
 };
 
 #endif // TOOLS_ENABLED

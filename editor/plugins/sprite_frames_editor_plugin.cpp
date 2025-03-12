@@ -2536,6 +2536,3 @@ SpriteFramesEditorPlugin::SpriteFramesEditorPlugin() {
 	button = EditorNode::get_bottom_panel()->add_item(TTR("SpriteFrames"), frames_editor, ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_sprite_frames_bottom_panel", TTRC("Toggle SpriteFrames Bottom Panel")));
 	button->hide();
 }
-
-SpriteFramesEditorPlugin::~SpriteFramesEditorPlugin() {
-}

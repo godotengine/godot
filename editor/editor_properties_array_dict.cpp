@@ -93,9 +93,6 @@ Variant EditorPropertyArrayObject::get_array() {
 	return array;
 }
 
-EditorPropertyArrayObject::EditorPropertyArrayObject() {
-}
-
 ///////////////////
 
 bool EditorPropertyDictionaryObject::_set(const StringName &p_name, const Variant &p_value) {
@@ -230,9 +227,6 @@ String EditorPropertyDictionaryObject::get_label_for_index(int p_index) {
 			return dict.get_key_at_index(p_index).get_construct_string();
 			break;
 	}
-}
-
-EditorPropertyDictionaryObject::EditorPropertyDictionaryObject() {
 }
 
 ///////////////////// ARRAY ///////////////////////////

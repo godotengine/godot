@@ -169,8 +169,6 @@ public:
 
 	void set_script_owner(Node *p_owner);
 	Node *get_script_owner() const;
-
-	EditorScriptPicker();
 };
 
 class EditorShaderPicker : public EditorResourcePicker {
@@ -190,8 +188,6 @@ public:
 	void set_edited_material(ShaderMaterial *p_material);
 	ShaderMaterial *get_edited_material() const;
 	void set_preferred_mode(int p_preferred_mode);
-
-	EditorShaderPicker();
 };
 
 class EditorAudioStreamPicker : public EditorResourcePicker {

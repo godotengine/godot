@@ -67,8 +67,6 @@ public:
 	List<Dictionary> pre_drag_bones_undo_state;
 
 	Dictionary undo_state;
-
-	CanvasItemEditorSelectedItem() {}
 };
 
 class CanvasItemEditor : public VBoxContainer {
@@ -614,7 +612,6 @@ public:
 	CanvasItemEditor *get_canvas_item_editor() { return canvas_item_editor; }
 
 	CanvasItemEditorPlugin();
-	~CanvasItemEditorPlugin();
 };
 
 class CanvasItemEditorViewport : public Control {

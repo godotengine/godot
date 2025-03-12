@@ -340,5 +340,3 @@ EditorAbout::EditorAbout() {
 	tpl_ti_all->select(0);
 	_tpl_text->set_text(tpl_ti_all->get_metadata(0));
 }
-
-EditorAbout::~EditorAbout() {}

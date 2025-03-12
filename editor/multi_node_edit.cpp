@@ -295,6 +295,3 @@ void MultiNodeEdit::_bind_methods() {
 	ClassDB::bind_method("_hide_metadata_from_inspector", &MultiNodeEdit::_hide_metadata_from_inspector);
 	ClassDB::bind_method("_get_editor_name", &MultiNodeEdit::_get_editor_name);
 }
-
-MultiNodeEdit::MultiNodeEdit() {
-}

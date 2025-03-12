@@ -38,8 +38,6 @@ class EditorOBJImporter : public EditorSceneFormatImporter {
 public:
 	virtual void get_extensions(List<String> *r_extensions) const override;
 	virtual Node *import_scene(const String &p_path, uint32_t p_flags, const HashMap<StringName, Variant> &p_options, List<String> *r_missing_deps, Error *r_err = nullptr) override;
-
-	EditorOBJImporter();
 };
 
 class ResourceImporterOBJ : public ResourceImporter {
@@ -60,6 +58,4 @@ public:
 	virtual bool get_option_visibility(const String &p_path, const String &p_option, const HashMap<StringName, Variant> &p_options) const override;
 
 	virtual Error import(ResourceUID::ID p_source_id, const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files = nullptr, Variant *r_metadata = nullptr) override;
-
-	ResourceImporterOBJ();
 };
