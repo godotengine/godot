@@ -50,12 +50,12 @@
 #define JOIN_SYMBOLS(p_path, name) ((p_path) + SYMBOL_SEPARATOR + (name))
 #endif
 
-typedef HashMap<String, const lsp::DocumentSymbol *> ClassMembers;
+typedef HashMap<String, const LSP::DocumentSymbol *> ClassMembers;
 
 /**
- * Represents a Position as used by GDScript Parser. Used for conversion to and from `lsp::Position`.
+ * Represents a Position as used by GDScript Parser. Used for conversion to and from `LSP::Position`.
  *
- * Difference to `lsp::Position`:
+ * Difference to `LSP::Position`:
  * * Line & Char/column: 1-based
  * 		* LSP: both 0-based
  * * Tabs are expanded to columns using tab size (`text_editor/behavior/indent/size`).
@@ -79,8 +79,8 @@ struct GodotPosition {
 	GodotPosition(int p_line, int p_column) :
 			line(p_line), column(p_column) {}
 
-	lsp::Position to_lsp(const Vector<String> &p_lines) const;
-	static GodotPosition from_lsp(const lsp::Position p_pos, const Vector<String> &p_lines);
+	LSP::Position to_lsp(const Vector<String> &p_lines) const;
+	static GodotPosition from_lsp(const LSP::Position p_pos, const Vector<String> &p_lines);
 
 	bool operator==(const GodotPosition &p_other) const {
 		return line == p_other.line && column == p_other.column;
@@ -98,8 +98,8 @@ struct GodotRange {
 	GodotRange(GodotPosition p_start, GodotPosition p_end) :
 			start(p_start), end(p_end) {}
 
-	lsp::Range to_lsp(const Vector<String> &p_lines) const;
-	static GodotRange from_lsp(const lsp::Range &p_range, const Vector<String> &p_lines);
+	LSP::Range to_lsp(const Vector<String> &p_lines) const;
+	static GodotRange from_lsp(const LSP::Range &p_range, const Vector<String> &p_lines);
 
 	bool operator==(const GodotRange &p_other) const {
 		return start == p_other.start && end == p_other.end;
@@ -114,41 +114,41 @@ class ExtendGDScriptParser : public GDScriptParser {
 	String path;
 	Vector<String> lines;
 
-	lsp::DocumentSymbol class_symbol;
-	Vector<lsp::Diagnostic> diagnostics;
-	List<lsp::DocumentLink> document_links;
+	LSP::DocumentSymbol class_symbol;
+	Vector<LSP::Diagnostic> diagnostics;
+	List<LSP::DocumentLink> document_links;
 	ClassMembers members;
 	HashMap<String, ClassMembers> inner_classes;
 
-	lsp::Range range_of_node(const GDScriptParser::Node *p_node) const;
+	LSP::Range range_of_node(const GDScriptParser::Node *p_node) const;
 
 	void update_diagnostics();
 
 	void update_symbols();
 	void update_document_links(const String &p_code);
-	void parse_class_symbol(const GDScriptParser::ClassNode *p_class, lsp::DocumentSymbol &r_symbol);
-	void parse_function_symbol(const GDScriptParser::FunctionNode *p_func, lsp::DocumentSymbol &r_symbol);
+	void parse_class_symbol(const GDScriptParser::ClassNode *p_class, LSP::DocumentSymbol &r_symbol);
+	void parse_function_symbol(const GDScriptParser::FunctionNode *p_func, LSP::DocumentSymbol &r_symbol);
 
 	Dictionary dump_function_api(const GDScriptParser::FunctionNode *p_func) const;
 	Dictionary dump_class_api(const GDScriptParser::ClassNode *p_class) const;
 
-	const lsp::DocumentSymbol *search_symbol_defined_at_line(int p_line, const lsp::DocumentSymbol &p_parent, const String &p_symbol_name = "") const;
+	const LSP::DocumentSymbol *search_symbol_defined_at_line(int p_line, const LSP::DocumentSymbol &p_parent, const String &p_symbol_name = "") const;
 
 	Array member_completions;
 
 public:
 	_FORCE_INLINE_ const String &get_path() const { return path; }
 	_FORCE_INLINE_ const Vector<String> &get_lines() const { return lines; }
-	_FORCE_INLINE_ const lsp::DocumentSymbol &get_symbols() const { return class_symbol; }
-	_FORCE_INLINE_ const Vector<lsp::Diagnostic> &get_diagnostics() const { return diagnostics; }
+	_FORCE_INLINE_ const LSP::DocumentSymbol &get_symbols() const { return class_symbol; }
+	_FORCE_INLINE_ const Vector<LSP::Diagnostic> &get_diagnostics() const { return diagnostics; }
 	_FORCE_INLINE_ const ClassMembers &get_members() const { return members; }
 	_FORCE_INLINE_ const HashMap<String, ClassMembers> &get_inner_classes() const { return inner_classes; }
 
-	Error get_left_function_call(const lsp::Position &p_position, lsp::Position &r_func_pos, int &r_arg_index) const;
+	Error get_left_function_call(const LSP::Position &p_position, LSP::Position &r_func_pos, int &r_arg_index) const;
 
-	String get_text_for_completion(const lsp::Position &p_cursor) const;
-	String get_text_for_lookup_symbol(const lsp::Position &p_cursor, const String &p_symbol = "", bool p_func_required = false) const;
-	String get_identifier_under_position(const lsp::Position &p_position, lsp::Range &r_range) const;
+	String get_text_for_completion(const LSP::Position &p_cursor) const;
+	String get_text_for_lookup_symbol(const LSP::Position &p_cursor, const String &p_symbol = "", bool p_func_required = false) const;
+	String get_identifier_under_position(const LSP::Position &p_position, LSP::Range &r_range) const;
 	String get_uri() const;
 
 	/**
@@ -159,9 +159,9 @@ public:
 	 * -> Without `p_symbol_name`: returns `handle_arg`. Even if parameter (`arg`) is wanted.
 	 *    With `p_symbol_name`: symbol name MUST match `p_symbol_name`: returns `arg`.
 	 */
-	const lsp::DocumentSymbol *get_symbol_defined_at_line(int p_line, const String &p_symbol_name = "") const;
-	const lsp::DocumentSymbol *get_member_symbol(const String &p_name, const String &p_subclass = "") const;
-	const List<lsp::DocumentLink> &get_document_links() const;
+	const LSP::DocumentSymbol *get_symbol_defined_at_line(int p_line, const String &p_symbol_name = "") const;
+	const LSP::DocumentSymbol *get_member_symbol(const String &p_name, const String &p_subclass = "") const;
+	const List<LSP::DocumentLink> &get_document_links() const;
 
 	const Array &get_member_completions();
 	Dictionary generate_api() const;

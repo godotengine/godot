@@ -2536,7 +2536,7 @@ bool EditorExportPlatformAndroid::has_valid_username_and_password(const Ref<Edit
 
 #ifdef MODULE_MONO_ENABLED
 bool _validate_dotnet_tfm(const String &required_tfm, String &r_error) {
-	String assembly_name = path::get_csharp_project_name();
+	String assembly_name = Path::get_csharp_project_name();
 	String project_path = ProjectSettings::get_singleton()->globalize_path("res://" + assembly_name + ".csproj");
 
 	if (!FileAccess::exists(project_path)) {

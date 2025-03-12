@@ -161,7 +161,7 @@ public:
 	~GDMono();
 };
 
-namespace mono_bind {
+namespace MonoBind {
 
 class GodotSharp : public Object {
 	GDCLASS(GodotSharp, Object);
@@ -178,4 +178,4 @@ public:
 	~GodotSharp();
 };
 
-} // namespace mono_bind
+} // namespace MonoBind

@@ -34,7 +34,7 @@
 #include "core/object/class_db.h"
 #include "core/templates/list.h"
 
-namespace lsp {
+namespace LSP {
 
 typedef String DocumentUri;
 
@@ -383,7 +383,7 @@ struct Command {
 };
 
 // Use namespace instead of enumeration to follow the LSP specifications.
-// `lsp::EnumName::EnumValue` is OK but `lsp::EnumValue` is not.
+// `LSP::EnumName::EnumValue` is OK but `LSP::EnumValue` is not.
 
 namespace TextDocumentSyncKind {
 /**
@@ -860,7 +860,7 @@ struct MarkupContent {
 };
 
 // Use namespace instead of enumeration to follow the LSP specifications
-// `lsp::EnumName::EnumValue` is OK but `lsp::EnumValue` is not.
+// `LSP::EnumName::EnumValue` is OK but `LSP::EnumValue` is not.
 // And here C++ compilers are unhappy with our enumeration name like `Color`, `File`, `RefCounted` etc.
 /**
  * The kind of a completion entry.
@@ -1117,7 +1117,7 @@ struct CompletionList {
 };
 
 // Use namespace instead of enumeration to follow the LSP specifications
-// `lsp::EnumName::EnumValue` is OK but `lsp::EnumValue` is not
+// `LSP::EnumName::EnumValue` is OK but `LSP::EnumValue` is not
 // And here C++ compilers are unhappy with our enumeration name like `String`, `Array`, `Object` etc
 /**
  * A symbol kind.
@@ -1258,7 +1258,7 @@ struct DocumentSymbol {
 	}
 
 	_FORCE_INLINE_ CompletionItem make_completion_item(bool resolved = false) const {
-		lsp::CompletionItem item;
+		LSP::CompletionItem item;
 		item.label = name;
 
 		if (resolved) {
@@ -1266,33 +1266,33 @@ struct DocumentSymbol {
 		}
 
 		switch (kind) {
-			case lsp::SymbolKind::Enum:
-				item.kind = lsp::CompletionItemKind::Enum;
+			case LSP::SymbolKind::Enum:
+				item.kind = LSP::CompletionItemKind::Enum;
 				break;
-			case lsp::SymbolKind::Class:
-				item.kind = lsp::CompletionItemKind::Class;
+			case LSP::SymbolKind::Class:
+				item.kind = LSP::CompletionItemKind::Class;
 				break;
-			case lsp::SymbolKind::Property:
-				item.kind = lsp::CompletionItemKind::Property;
+			case LSP::SymbolKind::Property:
+				item.kind = LSP::CompletionItemKind::Property;
 				break;
-			case lsp::SymbolKind::Method:
-			case lsp::SymbolKind::Function:
-				item.kind = lsp::CompletionItemKind::Method;
+			case LSP::SymbolKind::Method:
+			case LSP::SymbolKind::Function:
+				item.kind = LSP::CompletionItemKind::Method;
 				break;
-			case lsp::SymbolKind::Event:
-				item.kind = lsp::CompletionItemKind::Event;
+			case LSP::SymbolKind::Event:
+				item.kind = LSP::CompletionItemKind::Event;
 				break;
-			case lsp::SymbolKind::Constant:
-				item.kind = lsp::CompletionItemKind::Constant;
+			case LSP::SymbolKind::Constant:
+				item.kind = LSP::CompletionItemKind::Constant;
 				break;
-			case lsp::SymbolKind::Variable:
-				item.kind = lsp::CompletionItemKind::Variable;
+			case LSP::SymbolKind::Variable:
+				item.kind = LSP::CompletionItemKind::Variable;
 				break;
-			case lsp::SymbolKind::File:
-				item.kind = lsp::CompletionItemKind::File;
+			case LSP::SymbolKind::File:
+				item.kind = LSP::CompletionItemKind::File;
 				break;
 			default:
-				item.kind = lsp::CompletionItemKind::Text;
+				item.kind = LSP::CompletionItemKind::Text;
 				break;
 		}
 
@@ -1952,4 +1952,4 @@ static String marked_documentation(const String &p_bbcode) {
 	}
 	return markdown;
 }
-} // namespace lsp
+} // namespace LSP

@@ -50,7 +50,7 @@ class NavRegion3D : public NavBase3D {
 	bool region_dirty = true;
 	bool polygons_dirty = true;
 
-	LocalVector<nav_3d::Polygon> navmesh_polygons;
+	LocalVector<Nav3D::Polygon> navmesh_polygons;
 
 	real_t surface_area = 0.0;
 	AABB bounds;
@@ -87,12 +87,12 @@ public:
 
 	void set_navigation_mesh(Ref<NavigationMesh> p_navigation_mesh);
 
-	LocalVector<nav_3d::Polygon> const &get_polygons() const {
+	LocalVector<Nav3D::Polygon> const &get_polygons() const {
 		return navmesh_polygons;
 	}
 
 	Vector3 get_closest_point_to_segment(const Vector3 &p_from, const Vector3 &p_to, bool p_use_collision) const;
-	nav_3d::ClosestPointQueryResult get_closest_point_info(const Vector3 &p_point) const;
+	Nav3D::ClosestPointQueryResult get_closest_point_info(const Vector3 &p_point) const;
 	Vector3 get_random_point(uint32_t p_navigation_layers, bool p_uniformly) const;
 
 	real_t get_surface_area() const { return surface_area; }
