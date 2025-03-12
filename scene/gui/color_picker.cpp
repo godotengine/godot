@@ -2664,10 +2664,10 @@ ColorPicker::ColorPicker() {
 	shape_popup->connect("about_to_popup", callable_mp(this, &ColorPicker::_block_input_on_popup_show));
 	shape_popup->connect(SNAME("popup_hide"), callable_mp(this, &ColorPicker::_enable_input_on_popup_hide));
 
-	add_mode(new ColorModeRGB(this));
-	add_mode(new ColorModeHSV(this));
-	add_mode(new ColorModeRAW(this));
-	add_mode(new ColorModeOKHSL(this));
+	add_mode(memnew(ColorModeRGB(this)));
+	add_mode(memnew(ColorModeHSV(this)));
+	add_mode(memnew(ColorModeRAW(this)));
+	add_mode(memnew(ColorModeOKHSL(this)));
 
 	mode_hbc = memnew(HBoxContainer);
 	real_vbox->add_child(mode_hbc);
@@ -2862,7 +2862,7 @@ ColorPicker::ColorPicker() {
 
 ColorPicker::~ColorPicker() {
 	for (int i = 0; i < modes.size(); i++) {
-		delete modes[i];
+		memdelete(modes[i]);
 	}
 }
 

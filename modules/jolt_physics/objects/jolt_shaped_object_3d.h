@@ -51,7 +51,7 @@ protected:
 	JPH::ShapeRefC jolt_shape;
 	JPH::ShapeRefC previous_jolt_shape;
 
-	JPH::BodyCreationSettings *jolt_settings = new JPH::BodyCreationSettings();
+	JPH::BodyCreationSettings *jolt_settings = memnew(JPH::BodyCreationSettings);
 
 	virtual JPH::EMotionType _get_motion_type() const = 0;
 

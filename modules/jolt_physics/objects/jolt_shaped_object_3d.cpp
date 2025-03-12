@@ -182,7 +182,7 @@ void JoltShapedObject3D::_space_changing() {
 		const JoltWritableBody3D body = space->write_body(jolt_id);
 		ERR_FAIL_COND(body.is_invalid());
 
-		jolt_settings = new JPH::BodyCreationSettings(body->GetBodyCreationSettings());
+		jolt_settings = memnew(JPH::BodyCreationSettings(body->GetBodyCreationSettings()));
 	}
 }
 
@@ -200,7 +200,7 @@ JoltShapedObject3D::JoltShapedObject3D(ObjectType p_object_type) :
 
 JoltShapedObject3D::~JoltShapedObject3D() {
 	if (jolt_settings != nullptr) {
-		delete jolt_settings;
+		memdelete(jolt_settings);
 		jolt_settings = nullptr;
 	}
 }
@@ -308,7 +308,7 @@ JPH::ShapeRefC JoltShapedObject3D::build_shapes(bool p_optimize_compound) {
 		if (has_custom_center_of_mass()) {
 			new_shape = JPH::EmptyShapeSettings(to_jolt(get_center_of_mass_custom())).Create().Get();
 		} else {
-			new_shape = new JPH::EmptyShape();
+			new_shape = new JPH::EmptyShape(); // Note: deleted by Jolt, use generic C++ allocator.
 		}
 	}
 
