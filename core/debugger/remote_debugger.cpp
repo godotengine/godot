@@ -623,7 +623,8 @@ void RemoteDebugger::poll_events(bool p_is_idle) {
 		}
 
 		const String msg = cmd.substr(idx + 1);
-		capture_parse(cap, msg, arr[1], parsed);
+		Error err = capture_parse(cap, msg, arr[1], parsed);
+		ERR_CONTINUE_MSG(err != OK, vformat("Command '%s' returned error : '%d'.", cmd, err));
 	}
 
 	// Reload scripts during idle poll only.

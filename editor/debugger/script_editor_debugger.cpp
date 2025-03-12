@@ -431,6 +431,11 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, uint64_t p_thread
 			EditorDebuggerRemoteObjects *objs = inspector->set_objects(p_data);
 			emit_signal(SNAME("remote_objects_updated"), objs);
 		}
+	} else if (p_msg == "scene:scene_tree_loaded") {
+		Array quit_keys = DebuggerMarshalls::serialize_key_shortcut(ED_GET_SHORTCUT("editor/stop_running_project"));
+		_put_msg("scene:setup_scene", quit_keys);
+
+		update_live_edit_root();
 	} else if (p_msg == "servers:memory_usage") {
 		vmem_tree->clear();
 		TreeItem *root = vmem_tree->create_item();
@@ -1073,9 +1078,6 @@ void ScriptEditorDebugger::start(Ref<RemoteDebuggerPeer> p_peer) {
 	_set_reason_text(TTR("Debug session started."), MESSAGE_SUCCESS);
 	_update_buttons_state();
 	emit_signal(SNAME("started"));
-
-	Array quit_keys = DebuggerMarshalls::serialize_key_shortcut(ED_GET_SHORTCUT("editor/stop_running_project"));
-	_put_msg("scene:setup_scene", quit_keys);
 
 	if (EditorSettings::get_singleton()->get_project_metadata("debug_options", "autostart_profiler", false)) {
 		profiler->set_profiling(true);
