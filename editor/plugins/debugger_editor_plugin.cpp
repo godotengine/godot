@@ -46,6 +46,7 @@ DebuggerEditorPlugin::DebuggerEditorPlugin(PopupMenu *p_debug_menu) {
 
 	ED_SHORTCUT("debugger/step_into", TTRC("Step Into"), Key::F11);
 	ED_SHORTCUT("debugger/step_over", TTRC("Step Over"), Key::F10);
+	ED_SHORTCUT("debugger/step_out", TTRC("Step Out"), KeyModifierMask::ALT | Key::F11);
 	ED_SHORTCUT("debugger/break", TTRC("Break"));
 	ED_SHORTCUT("debugger/continue", TTRC("Continue"), Key::F12);
 	ED_SHORTCUT("debugger/debug_with_external_editor", TTRC("Debug with External Editor"));
