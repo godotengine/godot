@@ -78,6 +78,7 @@ private:
 
 	void _wait_for_all_pipelines() {
 		thread_local LocalVector<WorkerThreadPool::TaskID> tasks_to_wait;
+		tasks_to_wait.clear();
 		{
 			MutexLock local_lock(local_mutex);
 			for (KeyValue<uint32_t, WorkerThreadPool::TaskID> key_value : compilation_tasks) {
