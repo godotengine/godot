@@ -386,6 +386,22 @@ RID NoiseTexture2D::get_rid() const {
 	return texture;
 }
 
+bool NoiseTexture2D::has_mipmaps() const {
+	if (image.is_valid()) {
+		return image->has_mipmaps();
+	}
+
+	return false;
+}
+
+Image::Format NoiseTexture2D::get_format() const {
+	if (image.is_valid()) {
+		return image->get_format();
+	}
+
+	return Image::FORMAT_MAX;
+}
+
 Ref<Image> NoiseTexture2D::get_image() const {
 	return image;
 }

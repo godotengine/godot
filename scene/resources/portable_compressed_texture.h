@@ -80,8 +80,6 @@ public:
 	CompressionMode get_compression_mode() const;
 	void create_from_image(const Ref<Image> &p_image, CompressionMode p_compression_mode, bool p_normal_map = false, float p_lossy_quality = 0.8);
 
-	Image::Format get_format() const;
-
 	void update(const Ref<Image> &p_image);
 	Ref<Image> get_image() const override;
 
@@ -89,6 +87,9 @@ public:
 	int get_height() const override;
 
 	virtual RID get_rid() const override;
+
+	virtual bool has_mipmaps() const override;
+	virtual Image::Format get_format() const override;
 
 	bool has_alpha() const override;
 	virtual void draw(RID p_canvas_item, const Point2 &p_pos, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false) const override;
