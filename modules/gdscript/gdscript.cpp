@@ -2848,6 +2848,10 @@ String GDScriptLanguage::get_global_class_name(const String &p_path, String *r_b
 		while (subclass) {
 			if (subclass->extends_used) {
 				if (!subclass->extends_path.is_empty()) {
+					String subpath = subclass->extends_path;
+					if (subpath.is_relative_path()) {
+						subpath = path.get_base_dir().path_join(subpath).simplify_path();
+					}
 					if (subclass->extends.is_empty()) {
 						// We only care about the referenced class_name.
 						_ALLOW_DISCARD_ get_global_class_name(subclass->extends_path, r_base_type);
@@ -2856,7 +2860,7 @@ String GDScriptLanguage::get_global_class_name(const String &p_path, String *r_b
 					} else {
 						Vector<GDScriptParser::IdentifierNode *> extend_classes = subclass->extends;
 
-						Ref<FileAccess> subfile = FileAccess::open(subclass->extends_path, FileAccess::READ);
+						Ref<FileAccess> subfile = FileAccess::open(subpath, FileAccess::READ);
 						if (subfile.is_null()) {
 							break;
 						}
@@ -2864,10 +2868,6 @@ String GDScriptLanguage::get_global_class_name(const String &p_path, String *r_b
 
 						if (subsource.is_empty()) {
 							break;
-						}
-						String subpath = subclass->extends_path;
-						if (subpath.is_relative_path()) {
-							subpath = path.get_base_dir().path_join(subpath).simplify_path();
 						}
 
 						if (OK != subparser.parse(subsource, subpath, false)) {
