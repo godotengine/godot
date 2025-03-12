@@ -2807,7 +2807,7 @@ ColorPicker::ColorPicker() {
 	swatches_vbc->add_child(palette_box);
 
 	btn_preset = memnew(Button);
-	btn_preset->set_text("Swatches");
+	btn_preset->set_text(ETR("Swatches"));
 	btn_preset->set_flat(true);
 	btn_preset->set_toggle_mode(true);
 	btn_preset->set_focus_mode(FOCUS_ALL);
