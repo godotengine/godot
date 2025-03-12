@@ -145,12 +145,22 @@ void RendererViewport::_configure_3d_render_buffers(Viewport *p_viewport) {
 				scaling_3d_mode = RS::VIEWPORT_SCALING_3D_MODE_OFF;
 			}
 
-			// Verify MetalFX upscaling support.
-			if (
-					(scaling_3d_mode == RS::VIEWPORT_SCALING_3D_MODE_METALFX_TEMPORAL && !RD::get_singleton()->has_feature(RD::SUPPORTS_METALFX_TEMPORAL)) ||
-					(scaling_3d_mode == RS::VIEWPORT_SCALING_3D_MODE_METALFX_SPATIAL && !RD::get_singleton()->has_feature(RD::SUPPORTS_METALFX_SPATIAL))) {
-				scaling_3d_mode = RS::VIEWPORT_SCALING_3D_MODE_BILINEAR;
-				WARN_PRINT_ONCE("MetalFX upscaling is not supported in the current renderer. Falling back to bilinear 3D resolution scaling.");
+			if (scaling_3d_mode == RS::VIEWPORT_SCALING_3D_MODE_METALFX_TEMPORAL && !RD::get_singleton()->has_feature(RD::SUPPORTS_METALFX_TEMPORAL)) {
+				if (RD::get_singleton()->has_feature(RD::SUPPORTS_METALFX_SPATIAL)) {
+					// Prefer MetalFX spatial if it is supported, which will be much more efficient than FSR2,
+					// as the hardware already will struggle with FSR2.
+					scaling_3d_mode = RS::VIEWPORT_SCALING_3D_MODE_METALFX_SPATIAL;
+					WARN_PRINT_ONCE("MetalFX temporal upscaling is not supported by the current renderer or hardware. Falling back to MetalFX Spatial scaling.");
+				} else {
+					scaling_3d_mode = RS::VIEWPORT_SCALING_3D_MODE_FSR2;
+					WARN_PRINT_ONCE("MetalFX upscaling is not supported by the current renderer or hardware. Falling back to FSR 2 scaling.");
+				}
+				scaling_type = RS::scaling_3d_mode_type(scaling_3d_mode);
+			}
+
+			if (scaling_3d_mode == RS::VIEWPORT_SCALING_3D_MODE_METALFX_SPATIAL && !RD::get_singleton()->has_feature(RD::SUPPORTS_METALFX_SPATIAL)) {
+				scaling_3d_mode = RS::VIEWPORT_SCALING_3D_MODE_FSR;
+				WARN_PRINT_ONCE("MetalFX spatial upscaling is not supported by the current renderer or hardware. Falling back to FSR scaling.");
 			}
 
 			RS::ViewportMSAA msaa_3d = p_viewport->msaa_3d;
@@ -160,11 +170,9 @@ void RendererViewport::_configure_3d_render_buffers(Viewport *p_viewport) {
 				double min_scale = (double)RD::get_singleton()->limit_get(RD::LIMIT_METALFX_TEMPORAL_SCALER_MIN_SCALE) / 1000'000.0;
 				double max_scale = (double)RD::get_singleton()->limit_get(RD::LIMIT_METALFX_TEMPORAL_SCALER_MAX_SCALE) / 1000'000.0;
 				if ((double)scaling_3d_scale < min_scale || (double)scaling_3d_scale > max_scale) {
-					scaling_3d_mode = RS::VIEWPORT_SCALING_3D_MODE_BILINEAR;
-					WARN_PRINT_ONCE(vformat("MetalFX temporal upscaling scale is outside limits; scale must be between %f and %f. Falling back to bilinear 3D resolution scaling.", min_scale, max_scale));
-				}
-
-				if (msaa_3d != RS::VIEWPORT_MSAA_DISABLED) {
+					scaling_3d_mode = RS::VIEWPORT_SCALING_3D_MODE_FSR2;
+					WARN_PRINT_ONCE(vformat("MetalFX temporal upscaling scale is outside limits; scale must be between %f and %f. Falling back to FSR 2 3D resolution scaling.", min_scale, max_scale));
+				} else if (msaa_3d != RS::VIEWPORT_MSAA_DISABLED) {
 					WARN_PRINT_ONCE("MetalFX temporal upscaling does not support 3D MSAA. Disabling 3D MSAA internally.");
 					msaa_3d = RS::VIEWPORT_MSAA_DISABLED;
 				}
@@ -174,7 +182,7 @@ void RendererViewport::_configure_3d_render_buffers(Viewport *p_viewport) {
 			bool use_taa = p_viewport->use_taa;
 
 			if (scaling_3d_is_not_bilinear && (scaling_3d_scale >= (1.0 + EPSILON))) {
-				// FSR is not designed for downsampling.
+				// FSR and MetalFX is not designed for downsampling.
 				// Fall back to bilinear scaling.
 				WARN_PRINT_ONCE("FSR 3D resolution scaling is not designed for downsampling. Falling back to bilinear 3D resolution scaling.");
 				scaling_3d_mode = RS::VIEWPORT_SCALING_3D_MODE_BILINEAR;
@@ -188,8 +196,8 @@ void RendererViewport::_configure_3d_render_buffers(Viewport *p_viewport) {
 			}
 
 			if (use_taa && (scaling_type == RS::VIEWPORT_SCALING_3D_TYPE_TEMPORAL)) {
-				// FSR2 can't be used with TAA.
-				// Turn it off and prefer using FSR2.
+				// Temporal upscalers can't be used with TAA.
+				// Turn it off and prefer using the temporal upscaler.
 				WARN_PRINT_ONCE("FSR 2 or MetalFX Temporal is not compatible with TAA. Disabling TAA internally.");
 				use_taa = false;
 			}
