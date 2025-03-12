@@ -35,7 +35,7 @@
 #include "core/object/worker_thread_pool.h"
 #include "core/os/thread.h"
 
-namespace core_bind {
+namespace CoreBind {
 class ResourceLoader;
 }
 
@@ -104,7 +104,7 @@ typedef void (*ResourceLoadedCallback)(Ref<Resource> p_resource, const String &p
 
 class ResourceLoader {
 	friend class LoadToken;
-	friend class core_bind::ResourceLoader;
+	friend class CoreBind::ResourceLoader;
 
 	enum {
 		MAX_LOADERS = 64

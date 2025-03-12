@@ -49,7 +49,7 @@
 #define ENV_PATH_SEP ":"
 #endif
 
-namespace path {
+namespace Path {
 
 String find_executable(const String &p_name) {
 #ifdef WINDOWS_ENABLED
@@ -62,7 +62,7 @@ String find_executable(const String &p_name) {
 	}
 
 	for (int i = 0; i < env_path.size(); i++) {
-		String p = path::join(env_path[i], p_name);
+		String p = Path::join(env_path[i], p_name);
 
 #ifdef WINDOWS_ENABLED
 		for (int j = 0; j < exts.size(); j++) {
@@ -117,7 +117,7 @@ String abspath(const String &p_path) {
 	if (p_path.is_absolute_path()) {
 		return p_path.simplify_path();
 	} else {
-		return path::join(path::cwd(), p_path).simplify_path();
+		return Path::join(Path::cwd(), p_path).simplify_path();
 	}
 }
 
@@ -186,11 +186,11 @@ String join(const String &p_a, const String &p_b) {
 }
 
 String join(const String &p_a, const String &p_b, const String &p_c) {
-	return path::join(path::join(p_a, p_b), p_c);
+	return Path::join(Path::join(p_a, p_b), p_c);
 }
 
 String join(const String &p_a, const String &p_b, const String &p_c, const String &p_d) {
-	return path::join(path::join(path::join(p_a, p_b), p_c), p_d);
+	return Path::join(Path::join(Path::join(p_a, p_b), p_c), p_d);
 }
 
 String relative_to_impl(const String &p_path, const String &p_relative_to) {
@@ -263,4 +263,4 @@ String get_csharp_project_name() {
 	return name;
 }
 
-} // namespace path
+} // namespace Path

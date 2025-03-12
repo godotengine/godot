@@ -36,7 +36,7 @@
 #include "3d/nav_mesh_queries_3d.h"
 #include "3d/nav_region_iteration_3d.h"
 
-using namespace nav_3d;
+using namespace Nav3D;
 
 void NavRegion3D::set_map(NavMap3D *p_map) {
 	if (map == p_map) {
