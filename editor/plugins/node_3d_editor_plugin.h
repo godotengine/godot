@@ -706,6 +706,11 @@ private:
 	Ref<ArrayMesh> selection_box_xray;
 	Ref<ArrayMesh> selection_box;
 
+	Ref<StandardMaterial3D> selection_box_mat = memnew(StandardMaterial3D);
+	Ref<StandardMaterial3D> selection_box_mat_xray = memnew(StandardMaterial3D);
+	Ref<StandardMaterial3D> active_selection_box_mat = memnew(StandardMaterial3D);
+	Ref<StandardMaterial3D> active_selection_box_mat_xray = memnew(StandardMaterial3D);
+
 	RID indicators;
 	RID indicators_instance;
 	RID cursor_mesh;
