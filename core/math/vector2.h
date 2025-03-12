@@ -326,3 +326,6 @@ _FORCE_INLINE_ Vector2 operator*(int64_t p_scalar, const Vector2 &p_vec) {
 
 typedef Vector2 Size2;
 typedef Vector2 Point2;
+
+template <>
+struct is_zero_constructible<Vector2> : std::true_type {};
