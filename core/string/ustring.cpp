@@ -347,29 +347,6 @@ void String::parse_utf32(const Span<char32_t> &p_cstr) {
 	*dst = 0;
 }
 
-void String::parse_utf32(const char32_t &p_char) {
-	if (p_char == 0) {
-		print_unicode_error("NUL character", true);
-		return;
-	}
-
-	resize(2);
-
-	char32_t *dst = ptrw();
-
-	if ((p_char & 0xfffff800) == 0xd800) {
-		print_unicode_error(vformat("Unpaired surrogate (%x)", (uint32_t)p_char));
-		dst[0] = _replacement_char;
-	} else if (p_char > 0x10ffff) {
-		print_unicode_error(vformat("Invalid unicode codepoint (%x)", (uint32_t)p_char));
-		dst[0] = _replacement_char;
-	} else {
-		dst[0] = p_char;
-	}
-
-	dst[1] = 0;
-}
-
 // assumes the following have already been validated:
 // p_char != nullptr
 // p_length > 0
