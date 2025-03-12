@@ -233,6 +233,25 @@ EditorPlugin *EditorMainScreen::get_plugin_by_name(const String &p_plugin_name) 
 	return main_editor_plugins[p_plugin_name];
 }
 
+bool EditorMainScreen::can_auto_switch_screens() const {
+	if (selected_plugin == nullptr) {
+		return true;
+	}
+	// Only allow auto-switching if the selected button is to the left of the Script button.
+	for (int i = 0; i < button_hb->get_child_count(); i++) {
+		Button *button = Object::cast_to<Button>(button_hb->get_child(i));
+		if (button->get_text() == "Script") {
+			// Selected button is at or after the Script button.
+			return false;
+		}
+		if (button->get_text() == selected_plugin->get_plugin_name()) {
+			// Selected button is before the Script button.
+			return true;
+		}
+	}
+	return false;
+}
+
 VBoxContainer *EditorMainScreen::get_control() const {
 	return main_screen_vbox;
 }
