@@ -1175,7 +1175,7 @@ String String::get_slicec(char32_t p_splitter, int p_slice) const {
 	}
 }
 
-Vector<String> String::split_spaces() const {
+Vector<String> String::split_spaces(int p_maxsplit) const {
 	Vector<String> ret;
 	int from = 0;
 	int i = 0;
@@ -1199,6 +1199,11 @@ Vector<String> String::split_spaces() const {
 		}
 
 		if (empty && inside) {
+			if (p_maxsplit > 0 && p_maxsplit == ret.size()) {
+				// Put rest of the string and leave cycle.
+				ret.push_back(substr(from));
+				break;
+			}
 			ret.push_back(substr(from, i - from));
 			inside = false;
 		}

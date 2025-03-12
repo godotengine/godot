@@ -730,6 +730,14 @@ TEST_CASE("[String] Splitting") {
 			CHECK(l[i] == slices[i]);
 		}
 	}
+	{
+		const String s = "Mars Jupiter Saturn Uranus";
+		const char *slices[2] = { "Mars", "Jupiter Saturn Uranus" };
+		Vector<String> l = s.split_spaces(1);
+		for (int i = 0; i < l.size(); i++) {
+			CHECK(l[i] == slices[i]);
+		}
+	}
 
 	{
 		const String s = "1.2;2.3 4.5";
