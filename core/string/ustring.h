@@ -436,7 +436,7 @@ public:
 	static String num_uint64(uint64_t p_num, int base = 10, bool capitalize_hex = false);
 	static String chr(char32_t p_char) {
 		String string;
-		string.parse_utf32(p_char);
+		string.parse_utf32(Span(&p_char, 1));
 		return string;
 	}
 	static String md5(const uint8_t *p_md5);
@@ -540,7 +540,6 @@ public:
 	static String utf16(const Span<char16_t> &p_range) { return utf16(p_range.ptr(), p_range.size()); }
 
 	void parse_utf32(const Span<char32_t> &p_cstr);
-	void parse_utf32(const char32_t &p_char);
 
 	static uint32_t hash(const char32_t *p_cstr, int p_len); /* hash the string */
 	static uint32_t hash(const char32_t *p_cstr); /* hash the string */
