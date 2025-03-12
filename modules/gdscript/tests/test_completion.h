@@ -161,6 +161,8 @@ static void test_directory(const String &p_dir) {
 				owner = scene->get_node(conf.get_value("input", "node_path", "."));
 			}
 
+			// The only requirement is for the script to be parsable, warnings and errors from the analyzer might happen and completion should still work.
+			ERR_PRINT_OFF;
 			if (owner != nullptr) {
 				// Remove the line which contains the sentinel char, to get a valid script.
 				Ref<GDScript> scr;
@@ -184,6 +186,8 @@ static void test_directory(const String &p_dir) {
 			}
 
 			GDScriptLanguage::get_singleton()->complete_code(code, res_path, owner, &options, forced, call_hint);
+			ERR_PRINT_ON;
+
 			String contains_excluded;
 			for (ScriptLanguage::CodeCompletionOption &option : options) {
 				for (const Dictionary &E : exclude) {

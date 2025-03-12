@@ -144,6 +144,12 @@ GameController::GameController(int p_joy_id, GCController *p_controller) :
 		}
 	}
 
+	if (@available(macOS 10.15, iOS 13.0, tvOS 13.0, *)) {
+		if ([controller.productCategory isEqualToString:@"Switch Pro Controller"] || [controller.productCategory isEqualToString:@"Nintendo Switch Joy-Con (L/R)"]) {
+			nintendo_button_layout = true;
+		}
+	}
+
 	int l_joy_id = joy_id;
 
 	auto BUTTON = [l_joy_id](JoyButton p_button) {
@@ -155,10 +161,18 @@ GameController::GameController(int p_joy_id, GCController *p_controller) :
 	if (controller.extendedGamepad != nil) {
 		GCExtendedGamepad *gamepad = controller.extendedGamepad;
 
-		gamepad.buttonA.pressedChangedHandler = BUTTON(JoyButton::A);
-		gamepad.buttonB.pressedChangedHandler = BUTTON(JoyButton::B);
-		gamepad.buttonX.pressedChangedHandler = BUTTON(JoyButton::X);
-		gamepad.buttonY.pressedChangedHandler = BUTTON(JoyButton::Y);
+		if (nintendo_button_layout) {
+			gamepad.buttonA.pressedChangedHandler = BUTTON(JoyButton::B);
+			gamepad.buttonB.pressedChangedHandler = BUTTON(JoyButton::A);
+			gamepad.buttonX.pressedChangedHandler = BUTTON(JoyButton::Y);
+			gamepad.buttonY.pressedChangedHandler = BUTTON(JoyButton::X);
+		} else {
+			gamepad.buttonA.pressedChangedHandler = BUTTON(JoyButton::A);
+			gamepad.buttonB.pressedChangedHandler = BUTTON(JoyButton::B);
+			gamepad.buttonX.pressedChangedHandler = BUTTON(JoyButton::X);
+			gamepad.buttonY.pressedChangedHandler = BUTTON(JoyButton::Y);
+		}
+
 		gamepad.leftShoulder.pressedChangedHandler = BUTTON(JoyButton::LEFT_SHOULDER);
 		gamepad.rightShoulder.pressedChangedHandler = BUTTON(JoyButton::RIGHT_SHOULDER);
 		gamepad.dpad.up.pressedChangedHandler = BUTTON(JoyButton::DPAD_UP);

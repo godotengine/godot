@@ -7623,12 +7623,15 @@ public:
 	}
 
 	void _item_selected(int p_item) {
-		editor->call_deferred(SNAME("_input_select_item"), input, get_item_text(p_item));
+		editor->call_deferred(SNAME("_input_select_item"), input, get_item_metadata(p_item));
 	}
 
 	void setup(VisualShaderEditor *p_editor, const Ref<VisualShaderNodeInput> &p_input) {
+		set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
+
 		editor = p_editor;
 		input = p_input;
+
 		Ref<Texture2D> type_icon[] = {
 			EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("float"), EditorStringName(EditorIcons)),
 			EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("int"), EditorStringName(EditorIcons)),
@@ -7641,13 +7644,16 @@ public:
 			EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("ImageTexture"), EditorStringName(EditorIcons)),
 		};
 
-		add_item("[None]");
+		add_item(TTR("[None]"));
+		set_item_metadata(-1, "[None]");
+
 		int to_select = -1;
 		for (int i = 0; i < input->get_input_index_count(); i++) {
 			if (input->get_input_name() == input->get_input_index_name(i)) {
 				to_select = i + 1;
 			}
 			add_icon_item(type_icon[input->get_input_index_type(i)], input->get_input_index_name(i));
+			set_item_metadata(-1, input->get_input_index_name(i));
 		}
 
 		if (to_select >= 0) {
@@ -7672,10 +7678,12 @@ public:
 	}
 
 	void _item_selected(int p_item) {
-		editor->call_deferred(SNAME("_varying_select_item"), varying, get_item_text(p_item));
+		editor->call_deferred(SNAME("_varying_select_item"), varying, get_item_metadata(p_item));
 	}
 
 	void setup(VisualShaderEditor *p_editor, const Ref<VisualShaderNodeVarying> &p_varying, VisualShader::Type p_type) {
+		set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
+
 		editor = p_editor;
 		varying = p_varying;
 
@@ -7692,7 +7700,8 @@ public:
 
 		bool is_getter = Ref<VisualShaderNodeVaryingGetter>(p_varying.ptr()).is_valid();
 
-		add_item("[None]");
+		add_item(TTR("[None]"));
+		set_item_metadata(-1, "[None]");
 
 		int to_select = -1;
 		for (int i = 0, j = 0; i < varying->get_varyings_count(); i++) {
@@ -7726,6 +7735,7 @@ public:
 				to_select = i - j + 1;
 			}
 			add_icon_item(type_icon[varying->get_varying_type_by_index(i)], varying->get_varying_name_by_index(i));
+			set_item_metadata(-1, varying->get_varying_name_by_index(i));
 		}
 
 		if (to_select >= 0) {
@@ -7752,10 +7762,12 @@ public:
 	}
 
 	void _item_selected(int p_item) {
-		editor->call_deferred(SNAME("_parameter_ref_select_item"), parameter_ref, get_item_text(p_item));
+		editor->call_deferred(SNAME("_parameter_ref_select_item"), parameter_ref, get_item_metadata(p_item));
 	}
 
 	void setup(VisualShaderEditor *p_editor, const Ref<VisualShaderNodeParameterRef> &p_parameter_ref) {
+		set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
+
 		editor = p_editor;
 		parameter_ref = p_parameter_ref;
 
@@ -7772,13 +7784,16 @@ public:
 			EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("ImageTexture"), EditorStringName(EditorIcons)),
 		};
 
-		add_item("[None]");
+		add_item(TTR("[None]"));
+		set_item_metadata(-1, "[None]");
+
 		int to_select = -1;
 		for (int i = 0; i < p_parameter_ref->get_parameters_count(); i++) {
 			if (p_parameter_ref->get_parameter_name() == p_parameter_ref->get_parameter_name_by_index(i)) {
 				to_select = i + 1;
 			}
 			add_icon_item(type_icon[p_parameter_ref->get_parameter_type_by_index(i)], p_parameter_ref->get_parameter_name_by_index(i));
+			set_item_metadata(-1, p_parameter_ref->get_parameter_name_by_index(i));
 		}
 
 		if (to_select >= 0) {
@@ -8126,6 +8141,7 @@ void EditorPropertyVisualShaderMode::set_option_button_clip(bool p_enable) {
 
 EditorPropertyVisualShaderMode::EditorPropertyVisualShaderMode() {
 	options = memnew(OptionButton);
+	options->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	options->set_clip_text(true);
 	add_child(options);
 	add_focusable(options);

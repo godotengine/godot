@@ -3506,7 +3506,7 @@ void Tree::gui_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventKey> k = p_event;
 
 	bool is_command = k.is_valid() && k->is_command_or_control_pressed();
-	if (p_event->is_action("ui_right") && p_event->is_pressed()) {
+	if (p_event->is_action(cache.rtl ? "ui_left" : "ui_right") && p_event->is_pressed()) {
 		if (!cursor_can_exit_tree) {
 			accept_event();
 		}
@@ -3524,7 +3524,7 @@ void Tree::gui_input(const Ref<InputEvent> &p_event) {
 		} else {
 			_go_down();
 		}
-	} else if (p_event->is_action("ui_left") && p_event->is_pressed()) {
+	} else if (p_event->is_action(cache.rtl ? "ui_right" : "ui_left") && p_event->is_pressed()) {
 		if (!cursor_can_exit_tree) {
 			accept_event();
 		}
@@ -4107,13 +4107,18 @@ bool Tree::edit_selected(bool p_force_edit) {
 		// "floor()" centers vertically.
 		Vector2 ofs(0, Math::floor((MAX(line_editor->get_minimum_size().height, rect.size.height - value_editor_height) - rect.size.height) / 2));
 
-		popup_rect.position = get_screen_position() + rect.position - ofs;
-		popup_rect.size = rect.size;
-
 		// Account for icon.
 		Size2 icon_size = _get_cell_icon_size(c) * popup_scale;
-		popup_rect.position.x += icon_size.x;
-		popup_rect.size.x -= icon_size.x;
+
+		popup_rect.size = rect.size;
+		popup_rect.size.x -= icon_size.x + theme_cache.h_separation;
+
+		popup_rect.position = rect.position - ofs;
+		popup_rect.position.x += icon_size.x + theme_cache.h_separation;
+		if (cache.rtl) {
+			popup_rect.position.x = get_size().width - popup_rect.position.x - popup_rect.size.x;
+		}
+		popup_rect.position += get_screen_position();
 
 		line_editor->clear();
 		line_editor->set_text(c.mode == TreeItem::CELL_MODE_STRING ? c.text : String::num(c.val, Math::range_step_decimals(c.step)));

@@ -1362,7 +1362,7 @@ void RuntimeNodeSelect::_root_window_input(const Ref<InputEvent> &p_event) {
 
 	if (camera_override) {
 		if (node_select_type == NODE_TYPE_2D) {
-			if (panner->gui_input(p_event, Rect2(Vector2(), root->get_size()))) {
+			if (panner->gui_input(p_event, Rect2(Vector2(), root->get_visible_rect().get_size()))) {
 				return;
 			}
 		} else if (node_select_type == NODE_TYPE_3D) {
@@ -1821,8 +1821,9 @@ void RuntimeNodeSelect::_find_canvas_items_at_pos(const Point2 &p_pos, Node *p_n
 }
 
 void RuntimeNodeSelect::_pan_callback(Vector2 p_scroll_vec, Ref<InputEvent> p_event) {
-	view_2d_offset.x -= p_scroll_vec.x / view_2d_zoom;
-	view_2d_offset.y -= p_scroll_vec.y / view_2d_zoom;
+	Vector2 scroll = SceneTree::get_singleton()->get_root()->get_screen_transform().affine_inverse().xform(p_scroll_vec);
+	view_2d_offset.x -= scroll.x / view_2d_zoom;
+	view_2d_offset.y -= scroll.y / view_2d_zoom;
 
 	_update_view_2d();
 }

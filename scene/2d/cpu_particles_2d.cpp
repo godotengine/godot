@@ -1194,8 +1194,6 @@ void CPUParticles2D::_notification(int p_what) {
 
 			_refresh_interpolation_state();
 
-			set_physics_process_internal(emitting && _interpolation_data.interpolated_follow);
-
 			// If we are interpolated following, then reset physics interpolation
 			// when first appearing. This won't be called by canvas item, as in the
 			// following mode, is_physics_interpolated() is actually FALSE.

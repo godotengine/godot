@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  detect_prime_x11.h                                                    */
+/*  jolt_math_funcs.h                                                     */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,36 +28,32 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef DETECT_PRIME_X11_H
-#define DETECT_PRIME_X11_H
+#ifndef JOLT_MATH_FUNCS_H
+#define JOLT_MATH_FUNCS_H
 
-#if defined(X11_ENABLED) && defined(GLES3_ENABLED)
+#include "core/math/transform_3d.h"
 
-class DetectPrimeX11 {
-private:
-	struct Vendor {
-		const char *glxvendor = nullptr;
-		int priority = 0;
-	};
-
-	static constexpr Vendor vendor_map[] = {
-		{ "Advanced Micro Devices, Inc.", 30 },
-		{ "AMD", 30 },
-		{ "NVIDIA Corporation", 30 },
-		{ "X.Org", 30 },
-		{ "Intel Open Source Technology Center", 20 },
-		{ "Intel", 20 },
-		{ "nouveau", 10 },
-		{ "Mesa Project", 0 },
-		{ nullptr, 0 }
-	};
-
+class JoltMath {
 public:
-	static void create_context();
+	// Note that `p_basis` is mutated to be right-handed orthonormal.
+	static void decompose(Basis &p_basis, Vector3 &r_scale);
 
-	static int detect_prime();
+	// Note that `p_transform` is mutated to be right-handed orthonormal.
+	static _FORCE_INLINE_ void decompose(Transform3D &p_transform, Vector3 &r_scale) {
+		decompose(p_transform.basis, r_scale);
+	}
+
+	static _FORCE_INLINE_ void decomposed(const Basis &p_basis, Basis &r_new_basis, Vector3 &r_scale) {
+		Basis new_basis = p_basis;
+		decompose(new_basis, r_scale);
+		r_new_basis = new_basis;
+	}
+
+	static _FORCE_INLINE_ void decomposed(const Transform3D &p_transform, Transform3D &r_new_transform, Vector3 &r_scale) {
+		Transform3D new_transform;
+		decompose(new_transform, r_scale);
+		r_new_transform = new_transform;
+	}
 };
 
-#endif // X11_ENABLED && GLES3_ENABLED
-
-#endif // DETECT_PRIME_X11_H
+#endif // JOLT_MATH_FUNCS_H
