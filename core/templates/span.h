@@ -59,4 +59,7 @@ public:
 		CRASH_COND(p_idx >= _len);
 		return _ptr[p_idx];
 	}
+
+	_FORCE_INLINE_ constexpr const T *begin() const { return _ptr; }
+	_FORCE_INLINE_ constexpr const T *end() const { return _ptr + _len; }
 };
