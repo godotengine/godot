@@ -28,7 +28,7 @@
 			<return type="Vector3" />
 			<param index="0" name="point" type="int" enum="DistanceConstraint3D.PointParam" />
 			<description>
-				Returns the local point on the [code]PhysicsBody3D[/code] where the constraint is attached.
+				Returns the local point on the [PhysicsBody3D] where the constraint is attached.
 			</description>
 		</method>
 		<method name="set_param">
@@ -44,7 +44,7 @@
 			<param index="0" name="point" type="int" enum="DistanceConstraint3D.PointParam" />
 			<param index="1" name="value" type="Vector3" />
 			<description>
-				Sets the local point on the [code]PhysicsBody3D[/code] where the constraint is attached.
+				Sets the local point on the [PhysicsBody3D] where the constraint is attached.
 			</description>
 		</method>
 	</methods>
@@ -56,10 +56,10 @@
 			The local point on Node B where the constraint is attached.
 		</member>
 		<member name="distance/max" type="float" setter="set_param" getter="get_param" default="inf">
-			The maximum distance between points A and B. If the distance between A and B exceeds [code]distance/max[/code] a spring will be used to move the points closer.
+			The maximum distance between points A and B. If the distance between A and B exceeds [member distance/max] a spring will be used to move the points closer.
 		</member>
 		<member name="distance/min" type="float" setter="set_param" getter="get_param" default="0.0">
-			The minimum distance between points A and B. If the distance between A and B does not exceed [code]distance/min[/code] a spring will be used to move the points further apart.
+			The minimum distance between points A and B. If the distance between A and B does not exceed [member distance/min] a spring will be used to move the points further apart.
 		</member>
 		<member name="spring/damping" type="float" setter="set_param" getter="get_param" default="0.0">
 			The damping of the spring pulling the bodies together. (0 = no damping, 1 = critical damping). Set to zero if you don't want to pull the bodies together with a spring.
