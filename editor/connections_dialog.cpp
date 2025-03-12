@@ -871,9 +871,8 @@ ConnectDialog::ConnectDialog() {
 	hbc_method->add_child(dst_method);
 	register_text_enter(dst_method);
 
-	open_method_tree = memnew(Button);
+	open_method_tree = memnew(Button(TTRC("Pick")));
 	hbc_method->add_child(open_method_tree);
-	open_method_tree->set_text("Pick");
 	open_method_tree->connect(SceneStringName(pressed), callable_mp(this, &ConnectDialog::_open_method_popup));
 
 	advanced = memnew(CheckButton(TTR("Advanced")));
