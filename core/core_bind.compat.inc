@@ -30,7 +30,7 @@
 
 #ifndef DISABLE_DEPRECATED
 
-namespace core_bind {
+namespace CoreBind {
 
 // Semaphore
 
@@ -59,6 +59,6 @@ void OS::_bind_compatibility_methods() {
 	ClassDB::bind_compatibility_method(D_METHOD("execute_with_pipe", "path", "arguments"), &OS::_execute_with_pipe_bind_compat_94434);
 }
 
-} // namespace core_bind
+} // namespace CoreBind
 
 #endif // DISABLE_DEPRECATED

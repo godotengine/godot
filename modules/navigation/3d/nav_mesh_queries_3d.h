@@ -46,8 +46,8 @@ struct NavMapIteration3D;
 class NavMeshQueries3D {
 public:
 	struct PathQuerySlot {
-		LocalVector<nav_3d::NavigationPoly> path_corridor;
-		Heap<nav_3d::NavigationPoly *, nav_3d::NavPolyTravelCostGreaterThan, nav_3d::NavPolyHeapIndexer> traversable_polys;
+		LocalVector<Nav3D::NavigationPoly> path_corridor;
+		Heap<Nav3D::NavigationPoly *, Nav3D::NavPolyTravelCostGreaterThan, Nav3D::NavPolyHeapIndexer> traversable_polys;
 		bool in_use = false;
 		uint32_t slot_index = 0;
 	};
@@ -78,8 +78,8 @@ public:
 		// Path building.
 		Vector3 begin_position;
 		Vector3 end_position;
-		const nav_3d::Polygon *begin_polygon = nullptr;
-		const nav_3d::Polygon *end_polygon = nullptr;
+		const Nav3D::Polygon *begin_polygon = nullptr;
+		const Nav3D::Polygon *end_polygon = nullptr;
 		uint32_t least_cost_id = 0;
 
 		// Map.
@@ -115,31 +115,31 @@ public:
 
 	static bool emit_callback(const Callable &p_callback);
 
-	static Vector3 polygons_get_random_point(const LocalVector<nav_3d::Polygon> &p_polygons, uint32_t p_navigation_layers, bool p_uniformly);
+	static Vector3 polygons_get_random_point(const LocalVector<Nav3D::Polygon> &p_polygons, uint32_t p_navigation_layers, bool p_uniformly);
 
-	static Vector3 polygons_get_closest_point_to_segment(const LocalVector<nav_3d::Polygon> &p_polygons, const Vector3 &p_from, const Vector3 &p_to, const bool p_use_collision);
-	static Vector3 polygons_get_closest_point(const LocalVector<nav_3d::Polygon> &p_polygons, const Vector3 &p_point);
-	static Vector3 polygons_get_closest_point_normal(const LocalVector<nav_3d::Polygon> &p_polygons, const Vector3 &p_point);
-	static nav_3d::ClosestPointQueryResult polygons_get_closest_point_info(const LocalVector<nav_3d::Polygon> &p_polygons, const Vector3 &p_point);
-	static RID polygons_get_closest_point_owner(const LocalVector<nav_3d::Polygon> &p_polygons, const Vector3 &p_point);
+	static Vector3 polygons_get_closest_point_to_segment(const LocalVector<Nav3D::Polygon> &p_polygons, const Vector3 &p_from, const Vector3 &p_to, const bool p_use_collision);
+	static Vector3 polygons_get_closest_point(const LocalVector<Nav3D::Polygon> &p_polygons, const Vector3 &p_point);
+	static Vector3 polygons_get_closest_point_normal(const LocalVector<Nav3D::Polygon> &p_polygons, const Vector3 &p_point);
+	static Nav3D::ClosestPointQueryResult polygons_get_closest_point_info(const LocalVector<Nav3D::Polygon> &p_polygons, const Vector3 &p_point);
+	static RID polygons_get_closest_point_owner(const LocalVector<Nav3D::Polygon> &p_polygons, const Vector3 &p_point);
 
 	static Vector3 map_iteration_get_closest_point_to_segment(const NavMapIteration3D &p_map_iteration, const Vector3 &p_from, const Vector3 &p_to, const bool p_use_collision);
 	static Vector3 map_iteration_get_closest_point(const NavMapIteration3D &p_map_iteration, const Vector3 &p_point);
 	static Vector3 map_iteration_get_closest_point_normal(const NavMapIteration3D &p_map_iteration, const Vector3 &p_point);
 	static RID map_iteration_get_closest_point_owner(const NavMapIteration3D &p_map_iteration, const Vector3 &p_point);
-	static nav_3d::ClosestPointQueryResult map_iteration_get_closest_point_info(const NavMapIteration3D &p_map_iteration, const Vector3 &p_point);
+	static Nav3D::ClosestPointQueryResult map_iteration_get_closest_point_info(const NavMapIteration3D &p_map_iteration, const Vector3 &p_point);
 	static Vector3 map_iteration_get_random_point(const NavMapIteration3D &p_map_iteration, uint32_t p_navigation_layers, bool p_uniformly);
 
 	static void map_query_path(NavMap3D *map, const Ref<NavigationPathQueryParameters3D> &p_query_parameters, Ref<NavigationPathQueryResult3D> p_query_result, const Callable &p_callback);
 
 	static void query_task_map_iteration_get_path(NavMeshPathQueryTask3D &p_query_task, const NavMapIteration3D &p_map_iteration);
-	static void _query_task_push_back_point_with_metadata(NavMeshPathQueryTask3D &p_query_task, const Vector3 &p_point, const nav_3d::Polygon *p_point_polygon);
+	static void _query_task_push_back_point_with_metadata(NavMeshPathQueryTask3D &p_query_task, const Vector3 &p_point, const Nav3D::Polygon *p_point_polygon);
 	static void _query_task_find_start_end_positions(NavMeshPathQueryTask3D &p_query_task, const NavMapIteration3D &p_map_iteration);
 	static void _query_task_build_path_corridor(NavMeshPathQueryTask3D &p_query_task);
 	static void _query_task_post_process_corridorfunnel(NavMeshPathQueryTask3D &p_query_task);
 	static void _query_task_post_process_edgecentered(NavMeshPathQueryTask3D &p_query_task);
 	static void _query_task_post_process_nopostprocessing(NavMeshPathQueryTask3D &p_query_task);
-	static void _query_task_clip_path(NavMeshPathQueryTask3D &p_query_task, const nav_3d::NavigationPoly *from_poly, const Vector3 &p_to_point, const nav_3d::NavigationPoly *p_to_poly);
+	static void _query_task_clip_path(NavMeshPathQueryTask3D &p_query_task, const Nav3D::NavigationPoly *from_poly, const Vector3 &p_to_point, const Nav3D::NavigationPoly *p_to_poly);
 	static void _query_task_simplified_path_points(NavMeshPathQueryTask3D &p_query_task);
 	static bool _query_task_is_connection_owner_usable(const NavMeshPathQueryTask3D &p_query_task, const NavBaseIteration3D *p_owner);
 

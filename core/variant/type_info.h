@@ -209,8 +209,8 @@ struct GetTypeInfo<T *, std::enable_if_t<std::is_base_of_v<Object, T>>> {
 	}
 };
 
-namespace godot {
-namespace details {
+namespace GodotTypeInfo {
+namespace Internal {
 inline String enum_qualified_name_to_class_info_name(const String &p_qualified_name) {
 	Vector<String> parts = p_qualified_name.split("::", false);
 	if (parts.size() <= 2) {
@@ -219,8 +219,8 @@ inline String enum_qualified_name_to_class_info_name(const String &p_qualified_n
 	// Contains namespace. We only want the class and enum names.
 	return parts[parts.size() - 2] + "." + parts[parts.size() - 1];
 }
-} // namespace details
-} // namespace godot
+} // namespace Internal
+} // namespace GodotTypeInfo
 
 #define TEMPL_MAKE_ENUM_TYPE_INFO(m_enum, m_impl)                                                                                            \
 	template <>                                                                                                                              \
@@ -229,7 +229,7 @@ inline String enum_qualified_name_to_class_info_name(const String &p_qualified_n
 		static const GodotTypeInfo::Metadata METADATA = GodotTypeInfo::METADATA_NONE;                                                        \
 		static inline PropertyInfo get_class_info() {                                                                                        \
 			return PropertyInfo(Variant::INT, String(), PROPERTY_HINT_NONE, String(), PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_CLASS_IS_ENUM, \
-					godot::details::enum_qualified_name_to_class_info_name(String(#m_enum)));                                                \
+					GodotTypeInfo::Internal::enum_qualified_name_to_class_info_name(String(#m_enum)));                                       \
 		}                                                                                                                                    \
 	};
 
@@ -278,7 +278,7 @@ struct is_zero_constructible<BitField<T>> : std::true_type {};
 		static const GodotTypeInfo::Metadata METADATA = GodotTypeInfo::METADATA_NONE;                                                            \
 		static inline PropertyInfo get_class_info() {                                                                                            \
 			return PropertyInfo(Variant::INT, String(), PROPERTY_HINT_NONE, String(), PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_CLASS_IS_BITFIELD, \
-					godot::details::enum_qualified_name_to_class_info_name(String(#m_enum)));                                                    \
+					GodotTypeInfo::Internal::enum_qualified_name_to_class_info_name(String(#m_enum)));                                           \
 		}                                                                                                                                        \
 	};                                                                                                                                           \
 	template <>                                                                                                                                  \
@@ -287,7 +287,7 @@ struct is_zero_constructible<BitField<T>> : std::true_type {};
 		static const GodotTypeInfo::Metadata METADATA = GodotTypeInfo::METADATA_NONE;                                                            \
 		static inline PropertyInfo get_class_info() {                                                                                            \
 			return PropertyInfo(Variant::INT, String(), PROPERTY_HINT_NONE, String(), PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_CLASS_IS_BITFIELD, \
-					godot::details::enum_qualified_name_to_class_info_name(String(#m_enum)));                                                    \
+					GodotTypeInfo::Internal::enum_qualified_name_to_class_info_name(String(#m_enum)));                                           \
 		}                                                                                                                                        \
 	};
 
