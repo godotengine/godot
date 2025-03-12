@@ -1034,6 +1034,7 @@ void DebugAdapterProtocol::on_debug_paused() {
 void DebugAdapterProtocol::on_debug_stopped() {
 	notify_exited();
 	notify_terminated();
+	reset_ids();
 }
 
 void DebugAdapterProtocol::on_debug_output(const String &p_message, int p_type) {
