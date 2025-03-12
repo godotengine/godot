@@ -165,6 +165,15 @@ void EditorMainScreen::select_by_name(const String &p_name) {
 	ERR_FAIL_MSG("The editor name '" + p_name + "' was not found.");
 }
 
+void EditorMainScreen::select_editor_plugin(EditorPlugin *p_editor_plugin) {
+	for (int i = 0; i < editor_table.size(); i++) {
+		if (editor_table[i] == p_editor_plugin) {
+			select(i);
+			return;
+		}
+	}
+}
+
 void EditorMainScreen::select(int p_index) {
 	if (EditorNode::get_singleton()->is_changing_scene()) {
 		return;
@@ -231,6 +240,20 @@ EditorPlugin *EditorMainScreen::get_selected_plugin() const {
 EditorPlugin *EditorMainScreen::get_plugin_by_name(const String &p_plugin_name) const {
 	ERR_FAIL_COND_V(!main_editor_plugins.has(p_plugin_name), nullptr);
 	return main_editor_plugins[p_plugin_name];
+}
+
+bool EditorMainScreen::can_auto_switch_screens() const {
+	if (selected_plugin == nullptr) {
+		return true;
+	}
+	Node *script_tab = button_hb->get_node(NodePath("Script"));
+	if (script_tab == nullptr) {
+		return true;
+	}
+	String active_tab_name = selected_plugin->get_plugin_name().validate_node_name();
+	Node *active_tab = button_hb->get_node(NodePath(active_tab_name));
+	ERR_FAIL_COND_V(active_tab == nullptr, true);
+	return active_tab->get_index() < script_tab->get_index();
 }
 
 VBoxContainer *EditorMainScreen::get_control() const {
