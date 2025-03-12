@@ -84,23 +84,22 @@ void BetsyCompressor::_init() {
 		return;
 	}
 
+#if defined(RD_ENABLED)
 	// Create local RD.
 	RenderingContextDriver *rcd = nullptr;
 	RenderingDevice *rd = RenderingServer::get_singleton()->create_local_rendering_device();
 
 	if (rd == nullptr) {
-#if defined(RD_ENABLED)
 #if defined(METAL_ENABLED)
 		rcd = memnew(RenderingContextDriverMetal);
 		rd = memnew(RenderingDevice);
-#endif
+#endif // METAL_ENABLED
 #if defined(VULKAN_ENABLED)
 		if (rcd == nullptr) {
 			rcd = memnew(RenderingContextDriverVulkan);
 			rd = memnew(RenderingDevice);
 		}
-#endif
-#endif
+#endif // VULKAN_ENABLED
 		if (rcd != nullptr && rd != nullptr) {
 			Error err = rcd->initialize();
 			if (err == OK) {
@@ -220,6 +219,7 @@ void BetsyCompressor::_init() {
 		cached_shaders[BETSY_SHADER_ALPHA_STITCH].pipeline = compress_rd->compute_pipeline_create(cached_shaders[BETSY_SHADER_ALPHA_STITCH].compiled);
 		ERR_FAIL_COND(cached_shaders[BETSY_SHADER_ALPHA_STITCH].pipeline.is_null());
 	}
+#endif // RD_ENABLED
 }
 
 void BetsyCompressor::init() {
