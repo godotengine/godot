@@ -30,10 +30,9 @@
 
 #pragma once
 
-#include "openxr_composition_layer_provider.h"
 #include "openxr_extension_wrapper.h"
 
-class OpenXRCompositionLayerDepthExtension : public OpenXRExtensionWrapper, public OpenXRCompositionLayerProvider {
+class OpenXRCompositionLayerDepthExtension : public OpenXRExtensionWrapper {
 	GDCLASS(OpenXRCompositionLayerDepthExtension, OpenXRExtensionWrapper);
 
 protected:

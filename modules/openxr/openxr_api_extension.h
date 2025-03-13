@@ -36,6 +36,7 @@
 #include "core/os/thread_safe.h"
 #include "core/variant/native_ptr.h"
 
+class OpenXRExtensionWrapper;
 class OpenXRExtensionWrapperExtension;
 
 class OpenXRAPIExtension : public RefCounted {
@@ -45,6 +46,14 @@ protected:
 	_THREAD_SAFE_CLASS_
 
 	static void _bind_methods();
+
+#ifndef DISABLE_DEPRECATED
+	static void _bind_compatibility_methods();
+	void _register_composition_layer_provider_bind_compat_104087(OpenXRExtensionWrapperExtension *p_extension);
+	void _unregister_composition_layer_provider_bind_compat_104087(OpenXRExtensionWrapperExtension *p_extension);
+	void _register_projection_views_extension_bind_compat_104087(OpenXRExtensionWrapperExtension *p_extension);
+	void _unregister_projection_views_extension_bind_compat_104087(OpenXRExtensionWrapperExtension *p_extension);
+#endif
 
 public:
 	uint64_t get_instance();
@@ -80,11 +89,11 @@ public:
 
 	uint64_t get_hand_tracker(int p_hand_index);
 
-	void register_composition_layer_provider(OpenXRExtensionWrapperExtension *p_extension);
-	void unregister_composition_layer_provider(OpenXRExtensionWrapperExtension *p_extension);
+	void register_composition_layer_provider(OpenXRExtensionWrapper *p_extension);
+	void unregister_composition_layer_provider(OpenXRExtensionWrapper *p_extension);
 
-	void register_projection_views_extension(OpenXRExtensionWrapperExtension *p_extension);
-	void unregister_projection_views_extension(OpenXRExtensionWrapperExtension *p_extension);
+	void register_projection_views_extension(OpenXRExtensionWrapper *p_extension);
+	void unregister_projection_views_extension(OpenXRExtensionWrapper *p_extension);
 
 	double get_render_state_z_near();
 	double get_render_state_z_far();
