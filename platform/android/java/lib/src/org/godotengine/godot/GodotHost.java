@@ -32,6 +32,7 @@ package org.godotengine.godot;
 
 import org.godotengine.godot.error.Error;
 import org.godotengine.godot.plugin.GodotPlugin;
+import org.godotengine.godot.variant.Callable;
 
 import android.app.Activity;
 
@@ -165,5 +166,52 @@ public interface GodotHost {
 		if (activity != null) {
 			activity.runOnUiThread(action);
 		}
+	}
+
+	/**
+	 * Connects to the Gradle Build Environment.
+	 *
+	 * @param callback The callback to call when connected
+	 * @return Whether or not connecting is possible
+	 */
+	default boolean gradleBuildEnvConnect(@NonNull Callable callback) {
+		return false;
+	}
+
+	/**
+	 * Disconnects from the Gradle Build Environment.
+	 */
+	default void gradleBuildEnvDisconnect() {
+	}
+
+	/**
+	 * Executes a command via the Gradle Build Environment.
+	 *
+	 * @param arguments      The argument for the command
+	 * @param projectPath    The working directory to use when executing the command
+	 * @param gradleBuildDir The gradle build directory within the project
+	 * @param outputCallback The callback to call for each line of output from the command
+	 * @param resultCallback The callback to call when the command is finished running
+	 * @return A positive job id, if successful; otherwise, a negative number
+	 */
+	default int gradleBuildEnvExecute(@NonNull String[] arguments, @NonNull String projectPath, @NonNull String gradleBuildDir, @NonNull Callable outputCallback, @NonNull Callable resultCallback) {
+		return -1;
+	}
+
+	/**
+	 * Cancels a command executed via the Gradle Build Environment.
+	 *
+	 * @param jobId The job id returned from gradleBuildEnvExecute()
+	 */
+	default void gradleBuildEnvCancel(int jobId) {
+	}
+
+	/**
+	 * Requests that a project be cleaned up via the Gradle Build Environment.
+	 *
+	 * @param projectPath    The working directory to use when executing the command
+	 * @param gradleBuildDir The gradle build directory within the project
+	 */
+	default void gradleBuildEnvCleanProject(@NonNull String projectPath, @NonNull String gradleBuildDir, @NonNull Callable callback) {
 	}
 }

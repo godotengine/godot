@@ -40,6 +40,7 @@
 #include "core/io/marshalls.h"
 #include "core/version.h"
 #include "drivers/png/png_driver_common.h"
+#include "editor/editor_interface.h"
 #include "editor/editor_log.h"
 #include "editor/editor_node.h"
 #include "editor/export/export_template_manager.h"
@@ -58,6 +59,7 @@
 #endif
 
 #ifdef ANDROID_ENABLED
+#include "../java_godot_wrapper.h"
 #include "../os_android.h"
 #endif
 
@@ -471,6 +473,179 @@ void EditorExportPlatformAndroid::_update_preset_status() {
 		has_runnable_preset.clear();
 	}
 	devices_changed.set();
+}
+#else
+class AndroidEditorGradleRunner : public Object {
+	GDCLASS(AndroidEditorGradleRunner, Object);
+
+	RichTextLabel *output_label = nullptr;
+	ConfirmationDialog *output_dialog = nullptr;
+
+	enum State {
+		STATE_IDLE,
+		STATE_BUILDING,
+		STATE_CLEANING,
+	};
+	State state = STATE_IDLE;
+
+	String project_path;
+	String build_path;
+	List<String> gradle_build_args;
+	List<String> gradle_copy_args;
+	int64_t job_id;
+
+	void _android_gradle_build_connect();
+	void _android_gradle_build_disconnect();
+	void _android_gradle_build_output(int p_type, const String &p_line);
+	void _android_gradle_build_build();
+	void _android_gradle_build_build_callback(int p_exit_code);
+	void _android_gradle_build_copy();
+	void _android_gradle_build_copy_callback(int p_exit_code);
+	void _android_gradle_build_clean_project(bool p_was_successful);
+	void _android_gradle_build_clean_project_callback();
+
+	void _android_gradle_build_failed(const String &p_msg = String(""));
+	void _android_gradle_build_cancel();
+
+public:
+	void run_gradle(const String &p_project_path, const String &p_build_path, const List<String> &p_gradle_build_args, const List<String> &p_gradle_copy_args) {
+		project_path = p_project_path;
+		build_path = p_build_path;
+		gradle_build_args = p_gradle_build_args;
+		gradle_copy_args = p_gradle_copy_args;
+
+		if (output_dialog == nullptr) {
+			output_label = memnew(RichTextLabel);
+			output_label->set_selection_enabled(true);
+			output_label->set_context_menu_enabled(true);
+			output_label->set_scroll_follow(true);
+
+			output_dialog = memnew(ConfirmationDialog);
+			output_dialog->set_unparent_when_invisible(true);
+			output_dialog->set_title(TTR("Building Android Project (gradle)"));
+			output_dialog->add_child(output_label);
+
+			output_dialog->connect("canceled", callable_mp(this, &AndroidEditorGradleRunner::_android_gradle_build_cancel));
+		}
+
+		output_label->clear();
+		output_dialog->get_ok_button()->set_disabled(true);
+
+		EditorInterface::get_singleton()->popup_dialog_centered_ratio(output_dialog);
+
+		state = STATE_BUILDING;
+		_android_gradle_build_connect();
+	}
+};
+
+void AndroidEditorGradleRunner::_android_gradle_build_connect() {
+	_android_gradle_build_output(0, TTR("> Connecting to Gradle Build Environment..."));
+
+	GodotJavaWrapper *godot_java = OS_Android::get_singleton()->get_godot_java();
+	if (!godot_java->gradle_build_env_connect(callable_mp(this, &AndroidEditorGradleRunner::_android_gradle_build_build))) {
+		_android_gradle_build_failed(TTR("Unable to connect to Gradle Build Environment service"));
+	}
+}
+
+void AndroidEditorGradleRunner::_android_gradle_build_disconnect() {
+	GodotJavaWrapper *godot_java = OS_Android::get_singleton()->get_godot_java();
+	godot_java->gradle_build_env_disconnect();
+}
+
+void AndroidEditorGradleRunner::_android_gradle_build_output(int p_type, const String &p_line) {
+	if (p_type == 0) {
+		print_line(p_line);
+		output_label->append_text("[color=green]" + p_line + "[/color]\n");
+	} else if (p_type == 1) {
+		print_line(p_line);
+		output_label->add_text(p_line + "\n");
+	} else {
+		print_error(p_line);
+		output_label->append_text("[color=red]" + p_line + "[/color]\n");
+	}
+}
+
+void AndroidEditorGradleRunner::_android_gradle_build_build() {
+	_android_gradle_build_output(0, TTR("> Starting Gradle build..."));
+
+	GodotJavaWrapper *godot_java = OS_Android::get_singleton()->get_godot_java();
+	job_id = godot_java->gradle_build_env_execute(gradle_build_args, project_path, build_path, callable_mp(this, &AndroidEditorGradleRunner::_android_gradle_build_output), callable_mp(this, &AndroidEditorGradleRunner::_android_gradle_build_build_callback));
+	if (job_id < 0) {
+		_android_gradle_build_failed(TTR("Failed to execute Gradle command"));
+	}
+}
+
+void AndroidEditorGradleRunner::_android_gradle_build_build_callback(int p_exit_code) {
+	job_id = -1;
+	if (p_exit_code != 0) {
+		_android_gradle_build_failed();
+		return;
+	}
+
+	_android_gradle_build_copy();
+}
+
+void AndroidEditorGradleRunner::_android_gradle_build_copy() {
+	_android_gradle_build_output(0, TTR("> Copying Gradle artifacts..."));
+
+	GodotJavaWrapper *godot_java = OS_Android::get_singleton()->get_godot_java();
+	job_id = godot_java->gradle_build_env_execute(gradle_copy_args, project_path, build_path, callable_mp(this, &AndroidEditorGradleRunner::_android_gradle_build_output), callable_mp(this, &AndroidEditorGradleRunner::_android_gradle_build_copy_callback));
+	if (job_id < 0) {
+		_android_gradle_build_failed(TTR("Failed to execute Gradle command"));
+	}
+}
+
+void AndroidEditorGradleRunner::_android_gradle_build_copy_callback(int p_exit_code) {
+	job_id = -1;
+	if (p_exit_code != 0) {
+		_android_gradle_build_failed();
+	} else {
+		_android_gradle_build_clean_project(true);
+	}
+}
+
+void AndroidEditorGradleRunner::_android_gradle_build_clean_project(bool p_was_successful) {
+	if (state != STATE_CLEANING) {
+		state = STATE_CLEANING;
+
+		if (p_was_successful) {
+			output_dialog->hide();
+		} else {
+			output_dialog->get_ok_button()->set_disabled(false);
+		}
+
+		GodotJavaWrapper *godot_java = OS_Android::get_singleton()->get_godot_java();
+		godot_java->gradle_build_env_clean_project(
+				project_path,
+				build_path,
+				callable_mp(this, &AndroidEditorGradleRunner::_android_gradle_build_clean_project_callback));
+	}
+}
+
+void AndroidEditorGradleRunner::_android_gradle_build_clean_project_callback() {
+	// Ensure we haven't switched back to STATE_BUILDING in the meantime.
+	if (state == STATE_CLEANING) {
+		_android_gradle_build_disconnect();
+		state = STATE_IDLE;
+	}
+}
+
+void AndroidEditorGradleRunner::_android_gradle_build_failed(const String &p_msg) {
+	job_id = -1;
+
+	if (p_msg != "") {
+		_android_gradle_build_output(1, p_msg);
+	}
+
+	_android_gradle_build_clean_project(false);
+}
+
+void AndroidEditorGradleRunner::_android_gradle_build_cancel() {
+	if (job_id > 0) {
+		GodotJavaWrapper *godot_java = OS_Android::get_singleton()->get_godot_java();
+		godot_java->gradle_build_env_cancel(job_id);
+		_android_gradle_build_clean_project(false);
+	}
 }
 #endif
 
@@ -2822,10 +2997,6 @@ bool EditorExportPlatformAndroid::has_valid_export_configuration(const Ref<Edito
 			err += template_err;
 		}
 	} else {
-#ifdef ANDROID_ENABLED
-		err += TTR("Gradle build is not supported for the Android editor.") + "\n";
-		valid = false;
-#else
 		// Validate the custom gradle android source template.
 		bool android_source_template_valid = false;
 		const String android_source_template = p_preset->get("gradle_build/android_source_template");
@@ -2848,7 +3019,6 @@ bool EditorExportPlatformAndroid::has_valid_export_configuration(const Ref<Edito
 		}
 
 		valid = installed_android_build_template && !r_missing_templates;
-#endif
 	}
 
 	// Validate the rest of the export configuration.
@@ -3594,6 +3764,7 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 			}
 		}
 		const String assets_directory = get_assets_directory(p_preset, export_format);
+#ifndef ANDROID_ENABLED
 		String java_sdk_path = EDITOR_GET("export/android/java_sdk_path");
 		if (java_sdk_path.is_empty()) {
 			add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), TTR("Java SDK path must be configured in Editor Settings at 'export/android/java_sdk_path'."));
@@ -3607,6 +3778,7 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 			return ERR_UNCONFIGURED;
 		}
 		print_verbose("Android sdk path: " + sdk_path);
+#endif
 
 		// TODO: should we use "package/name" or "application/config/name"?
 		String project_name = get_project_name(p_preset, p_preset->get("package/name"));
@@ -3667,14 +3839,17 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 				return err;
 			}
 		}
+
 		print_verbose("Storing command line flags...");
 		store_file_at_path(assets_directory + "/_cl_", command_line_flags);
 
+#ifndef ANDROID_ENABLED
 		print_verbose("Updating JAVA_HOME environment to " + java_sdk_path);
 		OS::get_singleton()->set_environment("JAVA_HOME", java_sdk_path);
 
 		print_verbose("Updating ANDROID_HOME environment to " + sdk_path);
 		OS::get_singleton()->set_environment("ANDROID_HOME", sdk_path);
+#endif
 		String build_command;
 
 #ifdef WINDOWS_ENABLED
@@ -3761,8 +3936,10 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 
 		String addons_directory = ProjectSettings::get_singleton()->globalize_path("res://addons");
 
+#ifndef ANDROID_ENABLED
 		cmdline.push_back("-p"); // argument to specify the start directory.
 		cmdline.push_back(build_path); // start directory.
+#endif
 		cmdline.push_back("-Paddons_directory=" + addons_directory); // path to the addon directory as it may contain jar or aar dependencies
 		cmdline.push_back("-Pexport_package_name=" + package_name); // argument to specify the package name.
 		cmdline.push_back("-Pexport_version_code=" + version_code); // argument to specify the version code.
@@ -3801,6 +3978,25 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 					add_message(EXPORT_MESSAGE_ERROR, TTR("Code Signing"), TTR("Could not find debug keystore, unable to export."));
 					return ERR_FILE_CANT_OPEN;
 				}
+#ifdef ANDROID_ENABLED
+				if (debug_keystore.begins_with("assets://")) {
+					// The Gradle build environment app can't access the Godot
+					// editor's assets, so we need to copy this to temp file.
+					Error err;
+					PackedByteArray keystore_data = FileAccess::get_file_as_bytes(debug_keystore, &err);
+					if (err == OK) {
+						String temp_dir = build_path + "/.android";
+						String temp_filename = temp_dir + "/debug.keystore";
+
+						DirAccess::make_dir_recursive_absolute(temp_dir);
+						Ref<FileAccess> temp_file = FileAccess::open(temp_filename, FileAccess::WRITE);
+						if (temp_file.is_valid()) {
+							temp_file->store_buffer(keystore_data);
+							debug_keystore = temp_filename;
+						}
+					}
+				}
+#endif
 
 				cmdline.push_back("-Pdebug_keystore_file=" + debug_keystore); // argument to specify the debug keystore file.
 				cmdline.push_back("-Pdebug_keystore_alias=" + debug_user); // argument to specify the debug keystore alias.
@@ -3824,6 +4020,7 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 			}
 		}
 
+#ifndef ANDROID_ENABLED
 		String build_project_output;
 		int result = EditorNode::get_singleton()->execute_and_show_output(TTR("Building Android Project (gradle)"), build_command, cmdline, true, false, &build_project_output);
 		if (result != 0) {
@@ -3832,13 +4029,16 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 		} else {
 			print_verbose(build_project_output);
 		}
+#endif
 
 		List<String> copy_args;
 		String copy_command = "copyAndRenameBinary";
 		copy_args.push_back(copy_command);
 
+#ifndef ANDROID_ENABLED
 		copy_args.push_back("-p"); // argument to specify the start directory.
 		copy_args.push_back(build_path); // start directory.
+#endif
 
 		copy_args.push_back("-Pexport_edition=" + edition.to_lower());
 
@@ -3857,6 +4057,14 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 		copy_args.push_back("-Pexport_path=file:" + export_path);
 		copy_args.push_back("-Pexport_filename=" + export_filename);
 
+#ifdef ANDROID_ENABLED
+		String project_path = ProjectSettings::get_singleton()->globalize_path("res://");
+		android_editor_gradle_runner->run_gradle(
+				project_path,
+				build_path.substr(project_path.length()),
+				cmdline,
+				copy_args);
+#else
 		print_verbose("Copying Android binary using gradle command: " + String("\n") + build_command + " " + join_list(copy_args, String(" ")));
 		String copy_binary_output;
 		int copy_result = EditorNode::get_singleton()->execute_and_show_output(TTR("Moving output"), build_command, copy_args, true, false, &copy_binary_output);
@@ -3868,6 +4076,7 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 		}
 
 		print_verbose("Successfully completed Android gradle build.");
+#endif
 		return OK;
 	}
 	// This is the start of the Legacy build system
@@ -4267,6 +4476,8 @@ EditorExportPlatformAndroid::EditorExportPlatformAndroid() {
 		_create_editor_debug_keystore_if_needed();
 		_update_preset_status();
 		check_for_changes_thread.start(_check_for_changes_poll_thread, this);
+#else
+		android_editor_gradle_runner = memnew(AndroidEditorGradleRunner);
 #endif
 	}
 }
@@ -4276,6 +4487,10 @@ EditorExportPlatformAndroid::~EditorExportPlatformAndroid() {
 	quit_request.set();
 	if (check_for_changes_thread.is_started()) {
 		check_for_changes_thread.wait_to_finish();
+	}
+#else
+	if (android_editor_gradle_runner) {
+		memdelete(android_editor_gradle_runner);
 	}
 #endif
 }

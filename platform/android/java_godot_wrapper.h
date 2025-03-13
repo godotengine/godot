@@ -83,6 +83,11 @@ private:
 	jmethodID _is_in_immersive_mode = nullptr;
 	jmethodID _on_editor_workspace_selected = nullptr;
 	jmethodID _get_activity = nullptr;
+	jmethodID _gradle_build_env_connect = nullptr;
+	jmethodID _gradle_build_env_disconnect = nullptr;
+	jmethodID _gradle_build_env_execute = nullptr;
+	jmethodID _gradle_build_env_cancel = nullptr;
+	jmethodID _gradle_build_env_clean_project = nullptr;
 
 public:
 	GodotJavaWrapper(JNIEnv *p_env, jobject p_godot_instance);
@@ -138,4 +143,10 @@ public:
 	bool is_in_immersive_mode();
 
 	void on_editor_workspace_selected(const String &p_workspace);
+
+	bool gradle_build_env_connect(const Callable &p_callback);
+	void gradle_build_env_disconnect();
+	int gradle_build_env_execute(const List<String> &p_arguments, const String &p_project_path, const String &p_gradle_build_directory, const Callable &p_output_callback, const Callable &p_result_callback);
+	void gradle_build_env_cancel(int p_job_id);
+	void gradle_build_env_clean_project(const String &p_project_path, const String &p_gradle_build_directory, const Callable &p_callback);
 };
