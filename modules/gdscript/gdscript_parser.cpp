@@ -4526,7 +4526,15 @@ bool GDScriptParser::export_annotations(AnnotationNode *p_annotation, Node *p_ta
 		}
 
 		if (export_type.builtin_type == Variant::DICTIONARY) {
-			variable->export_info.type = Variant::DICTIONARY;
+			is_dict = true;
+			export_type = export_type.get_container_element_type_or_variant(0);
+
+			// Infer the dictionary value type to be string with `@export_multiline` to avoid invalid values
+			DataType value_type;
+			value_type.kind = DataType::Kind::BUILTIN;
+			value_type.type_source = DataType::TypeSource::INFERRED;
+			value_type.builtin_type = Variant::STRING;
+			export_type.set_container_element_type(0, value_type);
 		} else if (is_dict) {
 			DataType value_type = export_type.get_container_element_type_or_variant(0);
 
