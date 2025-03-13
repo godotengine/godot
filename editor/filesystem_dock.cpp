@@ -1331,6 +1331,10 @@ void FileSystemDock::_fs_changed() {
 	}
 
 	set_process(false);
+	if (had_focus) {
+		had_focus->grab_focus();
+		had_focus = nullptr;
+	}
 }
 
 void FileSystemDock::_set_scanning_mode() {
@@ -2676,6 +2680,12 @@ bool FileSystemDock::_matches_all_search_tokens(const String &p_text) {
 }
 
 void FileSystemDock::_rescan() {
+	if (tree->has_focus()) {
+		had_focus = tree;
+	} else if (files->has_focus()) {
+		had_focus = files;
+	}
+
 	_set_scanning_mode();
 	EditorFileSystem::get_singleton()->scan();
 }
