@@ -53,6 +53,7 @@
 #import "metal_device_properties.h"
 #import "metal_utils.h"
 #import "pixel_formats.h"
+#import "core/templates/a_hash_map.h"
 
 #include "servers/rendering/rendering_device_driver.h"
 
@@ -606,7 +607,7 @@ struct API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0)) BindingInfo {
 
 using RDC = RenderingDeviceCommons;
 
-typedef API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0)) HashMap<RDC::ShaderStage, BindingInfo> BindingInfoMap;
+typedef API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0)) AHashMap<RDC::ShaderStage, BindingInfo> BindingInfoMap;
 
 struct API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0)) UniformInfo {
 	uint32_t binding;
