@@ -32,6 +32,7 @@ package org.godotengine.godot;
 
 import org.godotengine.godot.error.Error;
 import org.godotengine.godot.plugin.GodotPlugin;
+import org.godotengine.godot.variant.Callable;
 
 import android.app.Activity;
 
@@ -150,4 +151,17 @@ public interface GodotHost {
 	 * Invoked on the render thread when an editor workspace has been selected.
 	 */
 	default void onEditorWorkspaceSelected(String workspace) {}
+
+	/**
+	 * Invoked to execute a command via Termux.
+	 *
+	 * @param path Path to the command
+	 * @param arguments The argument for the command
+	 * @param workDir The working directory to use when executing the command
+	 * @param background Whether or not to run in the background
+	 * @return The exit code from the command
+	 */
+	default boolean termuxExecute(@NonNull String path, @NonNull String[] arguments, @NonNull String workDir, boolean background, Callable resultCallback) {
+		return false;
+	}
 }

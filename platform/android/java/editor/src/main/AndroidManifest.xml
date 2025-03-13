@@ -3,6 +3,10 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:installLocation="auto">
 
+    <queries>
+        <package android:name="com.termux" />
+    </queries>
+
     <supports-screens
         android:largeScreens="true"
         android:normalScreens="true"
@@ -26,6 +30,8 @@
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
+
+    <uses-permission android:name="com.termux.permission.RUN_COMMAND" />
 
     <application
         android:allowBackup="false"
@@ -98,6 +104,7 @@
             android:resizeableActivity="false"
             android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen">
         </activity>
+        <service android:name=".TermuxResultService" />
     </application>
 
 </manifest>
