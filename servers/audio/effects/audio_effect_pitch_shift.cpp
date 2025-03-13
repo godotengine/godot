@@ -288,6 +288,9 @@ void SMBPitchShift::smbFft(float *fftBuffer, long fftFrameSize, long sign)
 void AudioEffectPitchShiftInstance::process(const AudioFrame *p_src_frames, AudioFrame *p_dst_frames, int p_frame_count) {
 	// Avoid distortion by skipping processing if pitch_scale is 1.0.
 	if (Math::is_equal_approx(base->pitch_scale, 1.0f)) {
+		for (int i = 0; i < p_frame_count; i++) {
+			p_dst_frames[i] = p_src_frames[i];
+		}
 		return;
 	}
 
