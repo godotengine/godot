@@ -90,7 +90,7 @@ public:
 		GET_NODE_DEFAULT_WITHOUT_ONREADY, // A class variable uses `get_node()` (or the `$` notation) as its default value, but does not use the @onready annotation.
 		ONREADY_WITH_EXPORT, // The `@onready` annotation will set the value after `@export` which is likely not intended.
 		OVERRIDE_NON_VIRTUAL_METHOD, // The class method overrides a non-virtual one, which would cause potential problems.
-		OVERRIDE_WITHOUT_OVERRIDE_ANNOATION, // The class method overrides a virtual one without the `@override` annotation.
+		OVERRIDE_WITHOUT_OVERRIDE_ANNOTATION, // The class method overrides a virtual one without the `@override` annotation.
 #ifndef DISABLE_DEPRECATED
 		PROPERTY_USED_AS_FUNCTION, // Function not found, but there's a property with the same name.
 		CONSTANT_USED_AS_FUNCTION, // Function not found, but there's a constant with the same name.

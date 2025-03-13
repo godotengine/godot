@@ -1876,7 +1876,7 @@ void GDScriptAnalyzer::resolve_function_signature(GDScriptParser::FunctionNode *
 				if (!parent_func->is_annotated_virtual) {
 					parser->push_warning(p_function, GDScriptWarning::OVERRIDE_NON_VIRTUAL_METHOD, function_name);
 				} else if (!p_function->is_annotated_overriding) {
-					parser->push_warning(p_function, GDScriptWarning::OVERRIDE_WITHOUT_OVERRIDE_ANNOATION, function_name);
+					parser->push_warning(p_function, GDScriptWarning::OVERRIDE_WITHOUT_OVERRIDE_ANNOTATION, function_name);
 				}
 			}
 
