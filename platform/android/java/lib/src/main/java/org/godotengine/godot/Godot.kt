@@ -75,6 +75,7 @@ import org.godotengine.godot.utils.benchmarkFile
 import org.godotengine.godot.utils.dumpBenchmark
 import org.godotengine.godot.utils.endBenchmarkMeasure
 import org.godotengine.godot.utils.useBenchmark
+import org.godotengine.godot.variant.Callable as GodotCallable
 import org.godotengine.godot.xr.XRMode
 import java.io.File
 import java.io.FileInputStream
@@ -1304,4 +1305,64 @@ class Godot private constructor(val context: Context) {
 	private fun nativeOnEditorWorkspaceSelected(workspace: String) {
 		primaryHost?.onEditorWorkspaceSelected(workspace)
 	}
+
+	@Keep
+	private fun nativeBuildEnvConnect(callback: GodotCallable): Boolean {
+		try {
+			val buildProvider = primaryHost?.getBuildProvider()
+			return buildProvider?.buildEnvConnect(callback) ?: false
+		} catch (e: Exception) {
+			Log.e(TAG, "Unable to connect to build environment", e)
+			return false
+		}
+	}
+
+	@Keep
+	private fun nativeBuildEnvDisconnect() {
+		try {
+			val buildProvider = primaryHost?.getBuildProvider()
+			buildProvider?.buildEnvDisconnect()
+		} catch (e: Exception) {
+			Log.e(TAG, "Unable to disconnect from build environment", e)
+		}
+	}
+
+	@Keep
+	private fun nativeBuildEnvExecute(buildTool: String, arguments: Array<String>, projectPath: String, buildDir: String, outputCallback: GodotCallable, resultCallback: GodotCallable): Int {
+		try {
+			val buildProvider = primaryHost?.getBuildProvider()
+			return buildProvider?.buildEnvExecute(
+				buildTool,
+				arguments,
+				projectPath,
+				buildDir,
+				outputCallback,
+				resultCallback
+			) ?: -1
+		} catch (e: Exception) {
+			Log.e(TAG, "Unable to execute Gradle command in build environment", e);
+			return -1
+		}
+	}
+
+	@Keep
+	private fun nativeBuildEnvCancel(jobId: Int) {
+		try {
+			val buildProvider = primaryHost?.getBuildProvider()
+			buildProvider?.buildEnvCancel(jobId)
+		} catch (e: Exception) {
+			Log.e(TAG, "Unable to cancel command in build environment", e)
+		}
+	}
+
+	@Keep
+	private fun nativeBuildEnvCleanProject(projectPath: String, buildDir: String, callback: GodotCallable) {
+		try {
+			val buildProvider = primaryHost?.getBuildProvider()
+			buildProvider?.buildEnvCleanProject(projectPath, buildDir, callback)
+		} catch(e: Exception) {
+			Log.e(TAG, "Unable to clean project in build environment", e)
+		}
+	}
+
 }
