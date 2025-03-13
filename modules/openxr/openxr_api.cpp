@@ -30,7 +30,6 @@
 
 #include "openxr_api.h"
 
-#include "extensions/openxr_extension_wrapper_extension.h"
 #include "openxr_interface.h"
 #include "openxr_util.h"
 
@@ -60,6 +59,10 @@
 #include "extensions/openxr_fb_foveation_extension.h"
 #include "extensions/openxr_fb_update_swapchain_extension.h"
 #include "extensions/openxr_hand_tracking_extension.h"
+
+#ifndef DISABLE_DEPRECATED
+#include "extensions/openxr_extension_wrapper_extension.h"
+#endif // DISABLE_DEPRECATED
 
 #ifdef ANDROID_ENABLED
 #define OPENXR_LOADER_NAME "libopenxr_loader.so"
@@ -1740,11 +1743,14 @@ void OpenXRAPI::register_extension_metadata() {
 
 void OpenXRAPI::cleanup_extension_wrappers() {
 	for (OpenXRExtensionWrapper *extension_wrapper : registered_extension_wrappers) {
+#ifndef DISABLE_DEPRECATED
 		// Fix crash when the extension wrapper comes from GDExtension.
 		OpenXRExtensionWrapperExtension *gdextension_extension_wrapper = dynamic_cast<OpenXRExtensionWrapperExtension *>(extension_wrapper);
 		if (gdextension_extension_wrapper) {
 			memdelete(gdextension_extension_wrapper);
-		} else {
+		} else
+#endif
+		{
 			memdelete(extension_wrapper);
 		}
 	}
@@ -2425,11 +2431,11 @@ void OpenXRAPI::end_frame() {
 	bool projection_layer_is_first = true;
 
 	// Add composition layers from providers
-	for (OpenXRCompositionLayerProvider *provider : composition_layer_providers) {
-		for (int i = 0; i < provider->get_composition_layer_count(); i++) {
+	for (OpenXRExtensionWrapper *extension : composition_layer_providers) {
+		for (int i = 0; i < extension->get_composition_layer_count(); i++) {
 			OrderedCompositionLayer layer = {
-				provider->get_composition_layer(i),
-				provider->get_composition_layer_order(i),
+				extension->get_composition_layer(i),
+				extension->get_composition_layer_order(i),
 			};
 			if (layer.composition_layer) {
 				ordered_layers_list.push_back(layer);
@@ -2683,12 +2689,7 @@ OpenXRAPI::OpenXRAPI() {
 }
 
 OpenXRAPI::~OpenXRAPI() {
-	// cleanup our composition layer providers
-	for (OpenXRCompositionLayerProvider *provider : composition_layer_providers) {
-		memdelete(provider);
-	}
 	composition_layer_providers.clear();
-
 	supported_extensions.clear();
 	layer_properties.clear();
 
@@ -3594,12 +3595,12 @@ bool OpenXRAPI::trigger_haptic_pulse(RID p_action, RID p_tracker, float p_freque
 	return true;
 }
 
-void OpenXRAPI::register_composition_layer_provider(OpenXRCompositionLayerProvider *provider) {
-	composition_layer_providers.append(provider);
+void OpenXRAPI::register_composition_layer_provider(OpenXRExtensionWrapper *p_extension) {
+	composition_layer_providers.append(p_extension);
 }
 
-void OpenXRAPI::unregister_composition_layer_provider(OpenXRCompositionLayerProvider *provider) {
-	composition_layer_providers.erase(provider);
+void OpenXRAPI::unregister_composition_layer_provider(OpenXRExtensionWrapper *p_extension) {
+	composition_layer_providers.erase(p_extension);
 }
 
 void OpenXRAPI::register_projection_views_extension(OpenXRExtensionWrapper *p_extension) {
