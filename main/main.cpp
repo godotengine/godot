@@ -3517,6 +3517,7 @@ Error Main::setup2(bool p_show_boot_logo) {
 
 	PackedStringArray extensions;
 	extensions.push_back("gd");
+	extensions.push_back("gdt");
 	if (ClassDB::class_exists("CSharpScript")) {
 		extensions.push_back("cs");
 	}

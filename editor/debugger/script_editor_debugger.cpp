@@ -486,7 +486,10 @@ void ScriptEditorDebugger::_msg_stack_dump(uint64_t p_thread_id, const Array &p_
 		stack_dump_info.push_back(d);
 		s->set_metadata(0, d);
 
-		String line = itos(i) + " - " + String(d["file"]) + ":" + itos(d["line"]) + " - at function: " + String(d["function"]);
+		String line = itos(i) + " - " + String(d["file"]) + ":" + itos(d["line"]);
+		if (!String(d["function"]).is_empty()) {
+			line += " - at function: " + String(d["function"]);
+		}
 		s->set_text(0, line);
 
 		if (i == 0) {
@@ -639,7 +642,7 @@ void ScriptEditorDebugger::_msg_error(uint64_t p_thread_id, const Array &p_data)
 	const String source_file_extension = oe.source_file.get_extension();
 	for (int i = 0; i < ScriptServer::get_language_count(); ++i) {
 		ScriptLanguage *script_language = ScriptServer::get_language(i);
-		if (source_file_extension == script_language->get_extension()) {
+		if (script_language->get_extensions().has(source_file_extension)) {
 			source_language_name = script_language->get_name();
 			break;
 		}

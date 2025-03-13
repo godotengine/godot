@@ -107,6 +107,13 @@
 			<description>
 			</description>
 		</method>
+		<method name="_get_script_subtypes" qualifiers="virtual const">
+			<return type="PackedStringArray" />
+			<description>
+				return other script types.
+				For script with possible multiple script types, for instance interfaces or traits(in GDScript).
+			</description>
+		</method>
 		<method name="_get_source_code" qualifiers="virtual const">
 			<return type="String" />
 			<description>
@@ -128,6 +135,14 @@
 			<return type="bool" />
 			<param index="0" name="signal" type="StringName" />
 			<description>
+			</description>
+		</method>
+		<method name="_has_script_subtype" qualifiers="virtual const">
+			<return type="bool" />
+			<param index="0" name="type" type="String" />
+			<description>
+				Determines if script is of the given script type.
+				For script with possible multiple script types, for instance interfaces or traits(in GDScript).
 			</description>
 		</method>
 		<method name="_has_source_code" qualifiers="virtual const">
@@ -163,6 +178,12 @@
 			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if the script is an abstract script. An abstract script does not have a constructor and cannot be instantiated.
+			</description>
+		</method>
+		<method name="_is_attachable" qualifiers="virtual const">
+			<return type="bool" />
+			<description>
+				Determines if the script can be attached to [Object]s including [Node]s.
 			</description>
 		</method>
 		<method name="_is_placeholder_fallback_enabled" qualifiers="virtual const">

@@ -176,6 +176,30 @@ String EditorFileSystemDirectory::get_file_script_class_extends(int p_idx) const
 	return files[p_idx]->class_info.extends;
 }
 
+Vector<String> EditorFileSystemDirectory::get_file_script_subtypes(int p_idx) const {
+	if (files[p_idx]->class_info.script_subtypes_modified_time < files[p_idx]->modified_time) {
+		Ref<Script> loaded_script = ResourceLoader::load(get_file_path(p_idx), "Script");
+		if (loaded_script.is_valid()) {
+			files[p_idx]->class_info.script_subtypes = loaded_script->get_script_subtypes();
+		}
+		files[p_idx]->class_info.script_subtypes_modified_time = files[p_idx]->modified_time;
+		store_script_subtype(p_idx);
+	}
+	return files[p_idx]->class_info.script_subtypes;
+}
+
+void EditorFileSystemDirectory::store_script_subtype(int p_idx) const {
+	String cache_path = ProjectSettings::get_singleton()->get_project_data_path().path_join("script_subtype_cache.cfg");
+	Ref<ConfigFile> cf;
+	cf.instantiate();
+	cf->load(cache_path);
+	Dictionary cache;
+	cache["script_subtypes"] = files[p_idx]->class_info.script_subtypes;
+	cache["script_subtypes_modified_time"] = files[p_idx]->class_info.script_subtypes_modified_time;
+	cf->set_value("", get_file_path(p_idx), cache);
+	cf->save(cache_path);
+}
+
 String EditorFileSystemDirectory::get_file_script_class_icon_path(int p_idx) const {
 	return files[p_idx]->class_info.icon_path;
 }
@@ -357,7 +381,7 @@ void EditorFileSystem::_first_scan_process_scripts(const ScannedDirectory *p_sca
 		const String ext = scan_file.get_extension().to_lower();
 		bool is_script = false;
 		for (int i = 0; i < ScriptServer::get_language_count(); i++) {
-			if (ScriptServer::get_language(i)->get_extension() == ext) {
+			if (ScriptServer::get_language(i)->get_extensions().has(ext)) {
 				is_script = true;
 				break;
 			}
@@ -2053,6 +2077,18 @@ EditorFileSystem::ScriptClassInfo EditorFileSystem::_get_global_script_class(con
 	for (int i = 0; i < ScriptServer::get_language_count(); i++) {
 		if (ScriptServer::get_language(i)->handles_global_class_type(p_type)) {
 			info.name = ScriptServer::get_language(i)->get_global_class_name(p_path, &info.extends, &info.icon_path, &info.is_abstract, &info.is_tool);
+			String cache_path = ProjectSettings::get_singleton()->get_project_data_path().path_join("script_subtype_cache.cfg");
+			Ref<ConfigFile> cf;
+			cf.instantiate();
+			if (cf->load(cache_path) == OK) {
+				Dictionary cache = cf->get_value("", p_path, Dictionary());
+				if (cache.has("script_subtypes")) {
+					info.script_subtypes = cache["script_subtypes"];
+				}
+				if (cache.has("script_subtypes_modified_time")) {
+					info.script_subtypes_modified_time = cache["script_subtypes_modified_time"];
+				}
+			}
 			break;
 		}
 	}
@@ -2184,7 +2220,7 @@ void EditorFileSystem::_update_script_documentation() {
 
 		for (int i = 0; i < ScriptServer::get_language_count(); i++) {
 			ScriptLanguage *lang = ScriptServer::get_language(i);
-			if (lang->supports_documentation() && efd->files[index]->type == lang->get_type()) {
+			if (lang->supports_documentation() && efd->files[index]->type == lang->get_type_from_extension(path.get_extension())) {
 				bool should_reload_script = _should_reload_script(path);
 				Ref<Script> scr = ResourceLoader::load(path);
 				if (scr.is_null()) {
