@@ -34,7 +34,6 @@ jobs:
             artifact: true
             # Validate godot-cpp compatibility on one arbitrary editor build.
             godot-cpp: true
-            cache-limit: 2
 
           - name: Editor with doubles and GCC sanitizers (target=editor, tests=yes, dev_build=yes, scu_build=yes, precision=double, use_asan=yes, use_ubsan=yes, linker=gold)
             cache-name: linux-editor-double-sanitizers
@@ -47,7 +46,6 @@ jobs:
             proj-test: true
             # Skip 2GiB artifact speeding up action.
             artifact: false
-            cache-limit: 7
 
           - name: Editor with clang sanitizers (target=editor, tests=yes, dev_build=yes, use_asan=yes, use_ubsan=yes, use_llvm=yes, linker=lld)
             cache-name: linux-editor-llvm-sanitizers
@@ -60,7 +58,6 @@ jobs:
             artifact: false
             # Test our oldest supported SCons/Python versions on one arbitrary editor build.
             legacy-scons: true
-            cache-limit: 7
 
           - name: Editor with ThreadSanitizer (target=editor, tests=yes, dev_build=yes, use_tsan=yes, use_llvm=yes, linker=lld)
             cache-name: linux-editor-thread-sanitizer
@@ -71,7 +68,6 @@ jobs:
             build-mono: false
             # Skip 2GiB artifact speeding up action.
             artifact: false
-            cache-limit: 5
 
           - name: Template w/ Mono, release (target=template_release, tests=yes)
             cache-name: linux-template-mono
@@ -81,7 +77,6 @@ jobs:
             build-mono: false
             tests: true
             artifact: true
-            cache-limit: 1
 
           - name: Template w/ Mono, debug (target=template_debug, tests=yes)
             cache-name: linux-template-mono-debug
@@ -91,7 +86,6 @@ jobs:
             build-mono: false
             tests: true
             artifact: true
-            cache-limit: 1
 
           - name: Minimal template (target=template_release, tests=yes, everything disabled)
             cache-name: linux-template-minimal
@@ -100,7 +94,6 @@ jobs:
             bin: ./bin/godot.linuxbsd.template_release.x86_64
             tests: true
             artifact: true
-            cache-limit: 1
 
     steps:
       - name: Checkout
@@ -165,7 +158,6 @@ jobs:
           platform: linuxbsd
           target: ${{ matrix.target }}
           tests: ${{ matrix.tests }}
-          scons-cache-limit: ${{ matrix.cache-limit }}
 
       - name: Compilation (godot-cpp)
         uses: ./.github/actions/godot-cpp-build
