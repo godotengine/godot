@@ -195,7 +195,7 @@
 			<return type="Color" />
 			<description>
 				Returns OS theme accent color. Returns [code]Color(0, 0, 0, 0)[/code], if accent color is unknown.
-				[b]Note:[/b] This method is implemented on macOS, Windows, and Android.
+				[b]Note:[/b] This method is implemented on macOS, Windows, Android, and Linux (X11/Wayland).
 			</description>
 		</method>
 		<method name="get_base_color" qualifiers="const">
