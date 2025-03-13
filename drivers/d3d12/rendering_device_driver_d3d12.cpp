@@ -3250,6 +3250,7 @@ Vector<uint8_t> RenderingDeviceDriverD3D12::shader_compile_binary_from_spirv(Vec
 		}
 
 		// - Link NIR shaders.
+		bool can_use_multiview = D3D12Hooks::get_singleton() != nullptr;
 		for (int i = SHADER_STAGE_MAX - 1; i >= 0; i--) {
 			if (!stages_nir_shaders.has(i)) {
 				continue;
@@ -3260,6 +3261,26 @@ Vector<uint8_t> RenderingDeviceDriverD3D12::shader_compile_binary_from_spirv(Vec
 				if (stages_nir_shaders.has(j)) {
 					prev_shader = stages_nir_shaders[j];
 					break;
+				}
+			}
+			// There is a bug in the Direct3D runtime during creation of a PSO with view instancing. If a fragment
+			// shader uses front/back face detection (SV_IsFrontFace), its signature must include the pixel position
+			// builtin variable (SV_Position), otherwise an Internal Runtime error will occur.
+			if (i == SHADER_STAGE_FRAGMENT && can_use_multiview) {
+				const bool use_front_face =
+						nir_find_variable_with_location(shader, nir_var_shader_in, VARYING_SLOT_FACE) ||
+						(shader->info.inputs_read & VARYING_BIT_FACE) ||
+						nir_find_variable_with_location(shader, nir_var_system_value, SYSTEM_VALUE_FRONT_FACE) ||
+						BITSET_TEST(shader->info.system_values_read, SYSTEM_VALUE_FRONT_FACE);
+				const bool use_position =
+						nir_find_variable_with_location(shader, nir_var_shader_in, VARYING_SLOT_POS) ||
+						(shader->info.inputs_read & VARYING_BIT_POS) ||
+						nir_find_variable_with_location(shader, nir_var_system_value, SYSTEM_VALUE_FRAG_COORD) ||
+						BITSET_TEST(shader->info.system_values_read, SYSTEM_VALUE_FRAG_COORD);
+				if (use_front_face && !use_position) {
+					nir_variable *const pos = nir_variable_create(shader, nir_var_shader_in, glsl_vec4_type(), "gl_FragCoord");
+					pos->data.location = VARYING_SLOT_POS;
+					shader->info.inputs_read |= VARYING_BIT_POS;
 				}
 			}
 			if (prev_shader) {
