@@ -407,9 +407,9 @@ void EditorPropertyOTVariation::update_property() {
 
 	Dictionary supported = (fd.is_valid()) ? fd->get_supported_variation_list() : Dictionary();
 
-	for (int i = 0; i < supported.size(); i++) {
-		int name_tag = supported.get_key_at_index(i);
-		Vector3i range = supported.get_value_at_index(i);
+	for (const KeyValue<Variant, Variant> &kv : supported) {
+		const int &name_tag = kv.key;
+		const Vector3i &range = kv.value;
 		if ((dict.has(name_tag) && dict[name_tag].get_type() == Variant::NIL) || !dict.has(name_tag)) {
 			dict[name_tag] = range.z;
 		}
