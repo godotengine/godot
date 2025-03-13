@@ -216,7 +216,7 @@ bool ScriptCreateDialog::_validate_parent(const String &p_string) {
 
 	if (can_inherit_from_file && p_string.is_quoted()) {
 		String p = p_string.substr(1, p_string.length() - 2);
-		if (_validate_path(p, true) == "") {
+		if (_validate_path(p, true).is_empty()) {
 			return true;
 		}
 	}
@@ -224,8 +224,11 @@ bool ScriptCreateDialog::_validate_parent(const String &p_string) {
 	return EditorNode::get_editor_data().is_type_recognized(p_string);
 }
 
-String ScriptCreateDialog::_validate_path(const String &p_path, bool p_file_must_exist) {
+String ScriptCreateDialog::_validate_path(const String &p_path, bool p_file_must_exist, bool *r_path_valid) {
 	String p = p_path.strip_edges();
+	if (r_path_valid) {
+		*r_path_valid = false;
+	}
 
 	if (p.is_empty()) {
 		return TTR("Path is empty.");
@@ -261,6 +264,10 @@ String ScriptCreateDialog::_validate_path(const String &p_path, bool p_file_must
 		} else if (p_file_must_exist && !da->file_exists(p)) {
 			return TTR("File does not exist.");
 		}
+	}
+
+	if (r_path_valid) {
+		*r_path_valid = true;
 	}
 
 	// Check file extension.
@@ -491,10 +498,9 @@ void ScriptCreateDialog::_path_changed(const String &p_path) {
 		return;
 	}
 
-	is_path_valid = false;
 	is_new_script_created = true;
 
-	path_error = _validate_path(p_path, false);
+	path_error = _validate_path(p_path, false, &is_path_valid);
 	if (!path_error.is_empty()) {
 		validation_panel->update();
 		return;
@@ -506,8 +512,6 @@ void ScriptCreateDialog::_path_changed(const String &p_path) {
 	if (da->file_exists(p)) {
 		is_new_script_created = false;
 	}
-
-	is_path_valid = true;
 	validation_panel->update();
 }
 
