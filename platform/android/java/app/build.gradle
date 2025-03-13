@@ -278,6 +278,63 @@ task validateJavaVersion {
     }
 }
 
+task installTermuxDependencies {
+    doLast {
+        def androidHome = "/data/data/com.termux/files/home/android-sdk"
+
+        // Ensure wget and unzip are installed.
+        exec {
+            commandLine "pkg", "install", "wget", "unzip", "-y"
+        }
+
+        // Download the Android SDK command-line tools.
+        exec {
+            commandLine "wget", "https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip", "-O", "cmdline-tools.zip"
+        }
+
+        // Unzip the downloaded tools.
+        exec {
+            commandLine "unzip", "-o", "cmdline-tools.zip", "-d", "${androidHome}"
+        }
+
+        // Match the expected Android cmdline-tools directory structure.
+        exec {
+            commandLine "sh", "-c", "mkdir -p ${androidHome}/cmdline-tools/latest && cd ${androidHome}/cmdline-tools && find . -mindepth 1 -maxdepth 1 ! -name latest -exec mv {} latest/ \\;"
+        }
+
+        // Accept Android licenses.
+        exec {
+            commandLine "sh", "-c", "yes | sh ${androidHome}/cmdline-tools/latest/bin/sdkmanager --sdk_root=${androidHome} --licenses"
+        }
+
+        // Install other Android dependencies.
+        exec {
+            commandLine "sh", "${androidHome}/cmdline-tools/latest/bin/sdkmanager", "--sdk_root=${androidHome}", "platform-tools", "build-tools;34.0.0", "platforms;android-34", "ndk;23.2.8568313"
+        }
+    }
+}
+
+task updateAAPT2Jars {
+    doLast {
+        def aapt2Files = fileTree(System.getProperty('user.home') + '/.gradle')
+            .matching {
+                include '**/aapt2-*-linux.jar'
+            }
+            .files
+
+        if (aapt2Files.isEmpty()) {
+            return
+        }
+
+        aapt2Files.each { file ->
+            def execResult = exec {
+                commandLine 'jar', '-u', '-f', file.absolutePath, '-C', System.getProperty('user.home') + '/../usr/bin', 'aapt2'
+                ignoreExitValue = true
+            }
+        }
+    }
+}
+
 /*
 When they're scheduled to run, the copy*AARToAppModule tasks generate dependencies for the 'app'
 module, so we're ensuring the ':app:preBuild' task is set to run after those tasks.
