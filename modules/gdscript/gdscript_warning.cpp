@@ -165,7 +165,7 @@ String GDScriptWarning::get_message() const {
 		case OVERRIDE_NON_VIRTUAL_METHOD:
 			CHECK_SYMBOLS(1);
 			return vformat(R"*(The method "%s()" overrides a non-virtual method from the base class. This may cause unexpected and unsafe behaviors.)*", symbols[0]);
-		case OVERRIDE_WITHOUT_OVERRIDE_ANNOATION:
+		case OVERRIDE_WITHOUT_OVERRIDE_ANNOTATION:
 			CHECK_SYMBOLS(1);
 			return vformat(R"*(The method "%s()" overrides a virtual method from the base class without the "@override" annotation. Annotating the method with the annotation can better help you understand and clarify the code structure.)*", symbols[0]);
 #ifndef DISABLE_DEPRECATED
@@ -245,7 +245,7 @@ String GDScriptWarning::get_name_from_code(Code p_code) {
 		"GET_NODE_DEFAULT_WITHOUT_ONREADY",
 		"ONREADY_WITH_EXPORT",
 		"OVERRIDE_NON_VIRTUAL_METHOD",
-		"OVERRIDE_WITHOUT_OVERRIDE_ANNOATION",
+		"OVERRIDE_WITHOUT_OVERRIDE_ANNOTATION",
 #ifndef DISABLE_DEPRECATED
 		"PROPERTY_USED_AS_FUNCTION",
 		"CONSTANT_USED_AS_FUNCTION",
