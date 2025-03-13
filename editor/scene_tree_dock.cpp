@@ -88,8 +88,12 @@ static void _restore_treeitem_custom_color(TreeItem *p_item) {
 }
 
 void SceneTreeDock::_inspect_hovered_node() {
-	select_node_hovered_at_end_of_drag = true;
 	Tree *tree = scene_tree->get_scene_tree();
+	if (!tree->get_rect().has_point(tree->get_local_mouse_position())) {
+		return;
+	}
+
+	select_node_hovered_at_end_of_drag = true;
 	TreeItem *item = tree->get_item_with_metadata(node_hovered_now->get_path());
 
 	_restore_treeitem_custom_color(tree_item_inspected);
@@ -150,7 +154,14 @@ void SceneTreeDock::input(const Ref<InputEvent> &p_event) {
 		}
 	}
 
-	if (tree_clicked && get_viewport()->gui_is_dragging()) {
+	Ref<InputEventMouseMotion> mm = p_event;
+	bool tree_hovered = false;
+	if (mm.is_valid()) {
+		Tree *tree = scene_tree->get_scene_tree();
+		tree_hovered = tree->get_rect().has_point(tree->get_local_mouse_position());
+	}
+
+	if ((tree_clicked || tree_hovered) && get_viewport()->gui_is_dragging()) {
 		_handle_hover_to_inspect();
 	}
 }
@@ -4775,6 +4786,7 @@ SceneTreeDock::SceneTreeDock(Node *p_scene_root, EditorSelection *p_editor_selec
 
 	inspect_hovered_node_delay = memnew(Timer);
 	inspect_hovered_node_delay->connect("timeout", callable_mp(this, &SceneTreeDock::_inspect_hovered_node));
+	inspect_hovered_node_delay->set_wait_time(.5);
 	inspect_hovered_node_delay->set_one_shot(true);
 	add_child(inspect_hovered_node_delay);
 
