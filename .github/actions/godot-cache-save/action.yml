@@ -11,6 +11,10 @@ inputs:
 runs:
   using: composite
   steps:
+    - name: Purge files before timestamp
+      shell: sh
+      run: misc/scripts/purge_cache.py ${{ env.CACHE_TIMESTAMP }} "${{ inputs.scons-cache }}"
+
     - name: Save SCons cache directory
       uses: actions/cache/save@v4
       with:
