@@ -794,8 +794,8 @@ public:
 			if (p_dict.has("enums")) {
 				enums = p_dict["enums"];
 			}
-			for (int i = 0; i < enums.size(); i++) {
-				doc.enums[enums.get_key_at_index(i)] = EnumDoc::from_dict(enums.get_value_at_index(i));
+			for (const KeyValue<Variant, Variant> &kv : enums) {
+				doc.enums[kv.key] = EnumDoc::from_dict(kv.value);
 			}
 
 			Array properties;
