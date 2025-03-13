@@ -53,11 +53,12 @@ import androidx.core.content.edit
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.core.view.isVisible
 import androidx.window.layout.WindowMetricsCalculator
+import org.godotengine.editor.buildprovider.GradleBuildProvider
 import org.godotengine.editor.embed.EmbeddedGodotGame
 import org.godotengine.editor.embed.GameMenuFragment
 import org.godotengine.editor.utils.signApk
 import org.godotengine.editor.utils.verifyApk
-import org.godotengine.godot.BuildConfig
+import org.godotengine.godot.BuildProvider
 import org.godotengine.godot.Godot
 import org.godotengine.godot.GodotActivity
 import org.godotengine.godot.GodotLib
@@ -171,6 +172,7 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 		}
 	}
 
+	internal val gradleBuildProvider: GradleBuildProvider = GradleBuildProvider(this, this)
 	internal val editorMessageDispatcher = EditorMessageDispatcher(this)
 	private val editorLoadingIndicator: View? by lazy { findViewById(R.id.editor_loading_indicator) }
 
@@ -260,6 +262,11 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 
 		// Add the game menu bar.
 		setupGameMenuBar()
+	}
+
+	override fun onDestroy() {
+		gradleBuildProvider.buildEnvDisconnect()
+		super.onDestroy()
 	}
 
 	override fun onNewIntent(newIntent: Intent) {
@@ -968,4 +975,8 @@ abstract class BaseGodotEditor : GodotActivity(), GameMenuFragment.GameMenuListe
 	}
 
 	override fun isGameEmbeddingSupported() = !isNativeXRDevice(applicationContext)
+
+	override fun getBuildProvider(): BuildProvider? {
+		return gradleBuildProvider
+	}
 }
