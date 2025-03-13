@@ -32,7 +32,7 @@
 
 #include "core/string/ustring.h"
 #include "core/templates/hash_map.h"
-#include "core/templates/list.h"
+#include "core/templates/local_vector.h"
 #include "core/templates/pair.h"
 #include "core/variant/array.h"
 
@@ -55,7 +55,7 @@ public:
 	ConstIterator begin() const;
 	ConstIterator end() const;
 
-	void get_key_list(List<Variant> *p_keys) const;
+	LocalVector<Variant> get_key_list() const;
 	Variant get_key_at_index(int p_index) const;
 	Variant get_value_at_index(int p_index) const;
 

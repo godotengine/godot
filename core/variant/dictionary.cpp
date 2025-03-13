@@ -57,14 +57,14 @@ Dictionary::ConstIterator Dictionary::end() const {
 	return _p->variant_map.end();
 }
 
-void Dictionary::get_key_list(List<Variant> *p_keys) const {
-	if (_p->variant_map.is_empty()) {
-		return;
-	}
+LocalVector<Variant> Dictionary::get_key_list() const {
+	LocalVector<Variant> keys;
 
+	keys.reserve(_p->variant_map.size());
 	for (const KeyValue<Variant, Variant> &E : _p->variant_map) {
-		p_keys->push_back(E.key);
+		keys.push_back(E.key);
 	}
+	return keys;
 }
 
 Variant Dictionary::get_key_at_index(int p_index) const {
