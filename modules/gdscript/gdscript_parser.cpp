@@ -99,6 +99,7 @@ GDScriptParser::GDScriptParser() {
 		// Onready annotation.
 		register_annotation(MethodInfo("@onready"), AnnotationInfo::VARIABLE, &GDScriptParser::onready_annotation);
 		// Virtual annotation
+		register_annotation(MethodInfo("@override"), AnnotationInfo::FUNCTION, &GDScriptParser::override_annotation);
 		register_annotation(MethodInfo("@virtual"), AnnotationInfo::FUNCTION, &GDScriptParser::virtual_annotation);
 		// Export annotations.
 		register_annotation(MethodInfo("@export"), AnnotationInfo::VARIABLE, &GDScriptParser::export_annotations<PROPERTY_HINT_NONE, Variant::NIL>);
@@ -4296,11 +4297,25 @@ bool GDScriptParser::virtual_annotation(AnnotationNode *p_annotation, Node *p_ta
 
 	FunctionNode *method = static_cast<FunctionNode *>(p_target);
 	if (method->is_annotated_virtual) {
-		push_error(R"("@virtual" annotation can only be used once per variable.)", p_annotation);
+		push_error(R"("@virtual" annotation can only be used once per method.)", p_annotation);
 		return false;
 	}
 
 	method->is_annotated_virtual = true;
+	return true;
+}
+
+bool GDScriptParser::override_annotation(AnnotationNode *p_annotation, Node *p_target, ClassNode *p_class) {
+	ERR_FAIL_COND_V_MSG(p_target->type != Node::FUNCTION, false, R"("@override" annotation can only be applied to class methods.)");
+	ERR_FAIL_COND_V_MSG(p_target->type == Node::LAMBDA, false, R"("@override" annotation cannot be applied to lambdas.)");
+
+	FunctionNode *method = static_cast<FunctionNode *>(p_target);
+	if (method->is_annotated_overriding) {
+		push_error(R"("@override" annotation can only be used once per method.)", p_annotation);
+		return false;
+	}
+
+	method->is_annotated_overriding = true;
 	return true;
 }
 

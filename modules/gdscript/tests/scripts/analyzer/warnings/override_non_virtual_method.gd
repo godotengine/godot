@@ -14,6 +14,10 @@ class ChildSafe extends ParentSafe:
     func test():
         pass
 
+class ChildCompletelySafe extends ParentSafe:
+    @override func test():
+        pass
+
 
 func test():
     pass
