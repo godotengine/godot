@@ -125,6 +125,17 @@ void AudioStreamPlayer3D::update_volumes(const Vector3 &source_dir, real_t *volu
 	spcap->calculate(source_dir, tightness, volumes);
 }
 
+void AudioStreamPlayer3D::update_volumes2(Vector3 source_dir, real_t *volumes) {
+	source_dir.y = 0;
+	if (source_dir.z > 0) {
+		source_dir.z = -source_dir.z;
+	}
+	Vector3 left_dir = Vector3(-1, 0, 0);
+	float cosine = left_dir.dot(source_dir);
+	volumes[0] = sqrt((1. + cosine) / 2.);
+	volumes[1] = sqrt((1. - cosine) / 2.);
+}
+
 void AudioStreamPlayer3D::_calc_output_vol(const Vector3 &source_dir, Vector<AudioFrame> &output) {
 	real_t volumes[7];
 	update_volumes(source_dir, volumes);
@@ -142,16 +153,30 @@ void AudioStreamPlayer3D::_calc_output_vol(const Vector3 &source_dir, Vector<Aud
 			output.write[0].right = volumes[1]; // front-right
 			output.write[0].left = volumes[0]; // front-left
 			break;
-		case AudioServer::SPEAKER_SURROUND_31:
+		case AudioServer::SPEAKER_SURROUND_31: {
+			float rear_mult = Math::db_to_linear(rear_attenuation);
 			output.write[1].right = 1.0; // LFE - always full power
 			output.write[1].left = volumes[2]; // center
-			output.write[0].left = volumes[0] + volumes[3] / 2.; // front-left
-			output.write[0].right = volumes[1] + volumes[4] / 2.; // front-right
+			output.write[0].left = volumes[0] + volumes[3] * rear_mult; // front-left
+			output.write[0].right = volumes[1] + volumes[4] * rear_mult; // front-right
 			break;
-		case AudioServer::SPEAKER_MODE_STEREO:
-			output.write[0].left = volumes[0] + volumes[2] / Math_SQRT2 + volumes[3] / 2.; // front-left
-			output.write[0].right = volumes[1] + volumes[2] / Math_SQRT2 + volumes[4] / 2.; // front-right
+		}
+		case AudioServer::SPEAKER_MODE_STEREO: {
+			float rear_mult = Math::db_to_linear(rear_attenuation);
+			output.write[0].left = (volumes[0] + volumes[2] / Math_SQRT2 + volumes[3] * rear_mult) / Math_SQRT2; // front-left
+			output.write[0].right = (volumes[1] + volumes[2] / Math_SQRT2 + volumes[4] * rear_mult) / Math_SQRT2; // front-right
+			printf("left: %f + %f + %f = %f\n", volumes[0], volumes[2], volumes[3], output[0].left);
+			printf("right: %f + %f + %f = %f\n", volumes[1], volumes[2], volumes[4], output[0].right);
+			update_volumes2(source_dir, volumes);
+			if (equalpower_model) {
+				output.write[0].left = volumes[0];
+				output.write[0].right = volumes[1];
+			}
+			printf("left: %f\n", volumes[0]);
+			printf("right: %f\n", volumes[1]);
+			printf("-------------------------------------------------------------------\n");
 			break;
+		}
 	}
 }
 
@@ -769,6 +794,22 @@ float AudioStreamPlayer3D::get_tightness() const {
 	return tightness;
 }
 
+void AudioStreamPlayer3D::set_rear_attenuation(float p_rear_attenuation) {
+	rear_attenuation = p_rear_attenuation;
+}
+
+float AudioStreamPlayer3D::get_rear_attenuation() const {
+	return rear_attenuation;
+}
+
+void AudioStreamPlayer3D::set_equalpower_model(bool p_equalpower_model) {
+	equalpower_model = p_equalpower_model;
+}
+
+bool AudioStreamPlayer3D::get_equalpower_model() const {
+	return equalpower_model;
+}
+
 AudioServer::PlaybackType AudioStreamPlayer3D::get_playback_type() const {
 	return internal->get_playback_type();
 }
@@ -862,6 +903,12 @@ void AudioStreamPlayer3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_tightness", "tightness"), &AudioStreamPlayer3D::set_tightness);
 	ClassDB::bind_method(D_METHOD("get_tightness"), &AudioStreamPlayer3D::get_tightness);
 
+	ClassDB::bind_method(D_METHOD("set_rear_attenuation", "rear_attenuation"), &AudioStreamPlayer3D::set_rear_attenuation);
+	ClassDB::bind_method(D_METHOD("get_rear_attenuation"), &AudioStreamPlayer3D::get_rear_attenuation);
+
+	ClassDB::bind_method(D_METHOD("set_equalpower_model", "equalpower_model"), &AudioStreamPlayer3D::set_equalpower_model);
+	ClassDB::bind_method(D_METHOD("get_equalpower_model"), &AudioStreamPlayer3D::get_equalpower_model);
+
 	ClassDB::bind_method(D_METHOD("has_stream_playback"), &AudioStreamPlayer3D::has_stream_playback);
 	ClassDB::bind_method(D_METHOD("get_stream_playback"), &AudioStreamPlayer3D::get_stream_playback);
 
@@ -882,6 +929,8 @@ void AudioStreamPlayer3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_polyphony", PROPERTY_HINT_NONE, ""), "set_max_polyphony", "get_max_polyphony");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "panning_strength", PROPERTY_HINT_RANGE, "0,3,0.01,or_greater"), "set_panning_strength", "get_panning_strength");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "tightness", PROPERTY_HINT_EXP_EASING, "tightness"), "set_tightness", "get_tightness");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "rear_attenuation", PROPERTY_HINT_RANGE, "-80,0,suffix:dB"), "set_rear_attenuation", "get_rear_attenuation");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "equalpower_model", PROPERTY_HINT_NONE, ""), "set_equalpower_model", "get_equalpower_model");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "bus", PROPERTY_HINT_ENUM, ""), "set_bus", "get_bus");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "area_mask", PROPERTY_HINT_LAYERS_2D_PHYSICS), "set_area_mask", "get_area_mask");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "playback_type", PROPERTY_HINT_ENUM, "Default,Stream,Sample"), "set_playback_type", "get_playback_type");

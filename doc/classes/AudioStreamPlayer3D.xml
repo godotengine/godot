@@ -114,6 +114,12 @@
 		<member name="tightness" type="float" setter="set_tightness" getter="get_tightness" default="1.0">
 			How steeply the signal dies off relative to angle from the source.
 		</member>
+		<member name="rear_attenuation" type="float" setter="set_rear_attenuation" getter="get_rear_attenuation" default="-3.0">
+			Attenuation applied to the rear channels when downmixing to stereo or 3.1.
+		</member>
+		<member name="equalpower_model" type="bool" setter="set_equalpower_model" getter="get_equalpower_model" default="false">
+			Use equalpower model.
+		</member>
 		<member name="unit_size" type="float" setter="set_unit_size" getter="get_unit_size" default="10.0">
 			The factor for the attenuation effect. Higher values make the sound audible over a larger distance.
 		</member>

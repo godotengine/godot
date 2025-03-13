@@ -85,6 +85,7 @@ private:
 	static void _listener_changed_cb(void *self) { reinterpret_cast<AudioStreamPlayer3D *>(self)->force_update_panning = true; }
 
 	void update_volumes(const Vector3 &source_dir, real_t *volumes);
+	void update_volumes2(Vector3 source_dir, real_t *volumes);
 
 	void _set_playing(bool p_enable);
 	bool _is_active() const;
@@ -117,6 +118,8 @@ private:
 	float cached_global_panning_strength = 0.5f;
 
 	real_t tightness = 1.0f;
+	real_t rear_attenuation = -3.0;
+	bool equalpower_model = false;
 
 	AudioServer::SpeakerMode cached_speaker_mode;
 	unsigned int speaker_count = 0; // only main speakers (no LFE)
@@ -204,6 +207,12 @@ public:
 
 	void set_tightness(float p_tightness);
 	float get_tightness() const;
+
+	void set_rear_attenuation(float p_rear_attenuation);
+	float get_rear_attenuation() const;
+
+	void set_equalpower_model(bool p_equalpower_model);
+	bool get_equalpower_model() const;
 
 	bool has_stream_playback();
 	Ref<AudioStreamPlayback> get_stream_playback();
