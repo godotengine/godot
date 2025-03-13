@@ -4519,15 +4519,7 @@ bool GDScriptParser::export_annotations(AnnotationNode *p_annotation, Node *p_ta
 	} else if (p_annotation->name == SNAME("@export_multiline")) {
 		use_default_variable_type_check = false;
 
-		if (export_type.builtin_type != Variant::STRING && export_type.builtin_type != Variant::DICTIONARY) {
-			Vector<Variant::Type> expected_types = { Variant::STRING, Variant::DICTIONARY };
-			push_error(_get_annotation_error_string(p_annotation->name, expected_types, variable->get_datatype()), p_annotation);
-			return false;
-		}
-
-		if (export_type.builtin_type == Variant::DICTIONARY) {
-			variable->export_info.type = Variant::DICTIONARY;
-		} else if (is_dict) {
+		if (is_dict) {
 			DataType value_type = export_type.get_container_element_type_or_variant(0);
 
 			// Ensure that the dictionary value type is string for typed dictionaries with `@export_multiline`
@@ -4535,7 +4527,27 @@ bool GDScriptParser::export_annotations(AnnotationNode *p_annotation, Node *p_ta
 				Vector<Variant::Type> expected_types = { Variant::STRING, Variant::DICTIONARY };
 				push_error(_get_annotation_error_string(p_annotation->name, expected_types, variable->get_datatype()), p_annotation);
 				return false;
-			}
+			};
+		} else if (export_type.builtin_type != Variant::STRING && export_type.builtin_type != Variant::DICTIONARY) {
+			Vector<Variant::Type> expected_types = { Variant::STRING, Variant::DICTIONARY };
+			push_error(_get_annotation_error_string(p_annotation->name, expected_types, variable->get_datatype()), p_annotation);
+			return false;
+		}
+
+		if (export_type.builtin_type == Variant::DICTIONARY) {
+			is_dict = true;
+			export_type = export_type.get_container_element_type_or_variant(0);
+
+			// Infer the dictionary value type to be string with `@export_multiline` to avoid invalid values
+			DataType value_type;
+			value_type.kind = DataType::Kind::BUILTIN;
+			value_type.type_source = DataType::TypeSource::INFERRED;
+			value_type.builtin_type = Variant::STRING;
+			export_type.set_container_element_type(0, value_type);
+		}
+
+		if (is_dict) {
+			variable->export_info.type = export_type.builtin_type;
 		}
 	} else if (p_annotation->name == SNAME("@export")) {
 		use_default_variable_type_check = false;
