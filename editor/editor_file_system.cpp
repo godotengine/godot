@@ -176,6 +176,17 @@ String EditorFileSystemDirectory::get_file_script_class_extends(int p_idx) const
 	return files[p_idx]->class_info.extends;
 }
 
+Vector<String> EditorFileSystemDirectory::get_file_script_subtypes(int p_idx) const {
+	if (files[p_idx]->class_info.script_subtypes_modified_time < files[p_idx]->modified_time) {
+		Ref<Script> loaded_script = ResourceLoader::load(get_file_path(p_idx), "Script");
+		if (loaded_script.is_valid()) {
+			files[p_idx]->class_info.script_subtypes = loaded_script->get_script_subtypes();
+		}
+		files[p_idx]->class_info.script_subtypes_modified_time = files[p_idx]->modified_time;
+	}
+	return files[p_idx]->class_info.script_subtypes;
+}
+
 String EditorFileSystemDirectory::get_file_script_class_icon_path(int p_idx) const {
 	return files[p_idx]->class_info.icon_path;
 }
@@ -357,7 +368,7 @@ void EditorFileSystem::_first_scan_process_scripts(const ScannedDirectory *p_sca
 		const String ext = scan_file.get_extension().to_lower();
 		bool is_script = false;
 		for (int i = 0; i < ScriptServer::get_language_count(); i++) {
-			if (ScriptServer::get_language(i)->get_extension() == ext) {
+			if (ScriptServer::get_language(i)->get_extensions().has(ext)) {
 				is_script = true;
 				break;
 			}
@@ -2177,7 +2188,7 @@ void EditorFileSystem::_update_script_documentation() {
 
 		for (int i = 0; i < ScriptServer::get_language_count(); i++) {
 			ScriptLanguage *lang = ScriptServer::get_language(i);
-			if (lang->supports_documentation() && efd->files[index]->type == lang->get_type()) {
+			if (lang->supports_documentation() && efd->files[index]->type == lang->get_type_from_extension(path.get_extension())) {
 				bool should_reload_script = _should_reload_script(path);
 				Ref<Script> scr = ResourceLoader::load(path);
 				if (scr.is_null()) {
