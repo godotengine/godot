@@ -264,6 +264,14 @@ void ResourceLoader::LoadToken::clear() {
 				thread_load_tasks.erase(local_path);
 			}
 			local_path.clear(); // Mark as already cleared.
+			if (task_to_await) {
+				for (KeyValue<String, ResourceLoader::ThreadLoadTask> &E : thread_load_tasks) {
+					if (E.value.task_id == task_to_await) {
+						task_to_await = 0;
+						break; // Same task is reused by nested loads, do not wait for completion here.
+					}
+				}
+			}
 		}
 	}
 
@@ -829,6 +837,12 @@ Ref<Resource> ResourceLoader::_load_complete_inner(LoadToken &p_load_token, Erro
 
 				p_thread_load_lock.temp_relock();
 				load_task.awaited = true;
+				// Mark nested loads with the same task id as awaited.
+				for (KeyValue<String, ResourceLoader::ThreadLoadTask> &E : thread_load_tasks) {
+					if (E.value.task_id == load_task.task_id) {
+						E.value.awaited = true;
+					}
+				}
 
 				DEV_ASSERT(load_task.status == THREAD_LOAD_FAILED || load_task.status == THREAD_LOAD_LOADED);
 			} else if (load_task.need_wait) {
