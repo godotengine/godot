@@ -3702,10 +3702,8 @@ void EditorNode::replace_resources_in_object(Object *p_object, const Vector<Ref<
 			} break;
 			case Variant::DICTIONARY: {
 				Dictionary d = p_object->get(E.name);
-				List<Variant> keys;
 				bool dictionary_requires_updating = false;
-				d.get_key_list(&keys);
-				for (const Variant &F : keys) {
+				for (const Variant &F : d.get_key_list()) {
 					Variant v = d[F];
 					Ref<Resource> res = v;
 
