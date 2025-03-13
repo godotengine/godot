@@ -420,13 +420,13 @@ Files extracted from upstream source:
 ## icu4c
 
 - Upstream: https://github.com/unicode-org/icu
-- Version: 76.1 (8eca245c7484ac6cc179e3e5f7c1ea7680810f39, 2024)
+- Version: 77.1 (457157a92aa053e632cc7fcfd0e12f8a943b2d11, 2025)
 - License: Unicode
 
 Files extracted from upstream source:
 
 - The `common` folder
-- `scriptset.*`, `ucln_in.*`, `uspoof.cpp"` and `uspoof_impl.cpp` from the `i18n` folder
+- `scriptset.*`, `ucln_in.*`, `uspoof.cpp` and `uspoof_impl.*` from the `i18n` folder
 - `uspoof.h` from the `i18n/unicode` folder
 - `LICENSE`
 
