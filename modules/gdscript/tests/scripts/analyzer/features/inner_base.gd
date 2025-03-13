@@ -1,15 +1,15 @@
 extends InnerA
 
-@virtual func test():
+@override func test():
 	super.test()
 
 class InnerA extends InnerAB:
-	@virtual func test():
+	@virtual @override func test():
 		print("InnerA.test")
 		super.test()
 
 	class InnerAB extends InnerB:
-		@virtual func test():
+		@virtual @override func test():
 			print("InnerA.InnerAB.test")
 			super.test()
 
