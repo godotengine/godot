@@ -423,8 +423,27 @@ void QuickOpenResultContainer::_find_filepaths_in_folder(EditorFileSystemDirecto
 		const bool is_engine_type = script_type == StringName();
 		const StringName &actual_type = is_engine_type ? engine_type : script_type;
 
+		if (ClassDB::is_parent_class(engine_type, SNAME("Script"))) {
+			ScriptLanguage *lang = ScriptServer::get_language_for_extension(file_path.get_extension());
+			if (lang && !lang->is_script_attachable(file_path.get_extension())) {
+				continue; // Exclude scripts that can not be attached to nodes.
+			}
+		}
+
 		for (const StringName &parent_type : base_types) {
 			bool is_valid = ClassDB::is_parent_class(engine_type, parent_type) || (!is_engine_type && EditorNode::get_editor_data().script_class_is_parent(script_type, parent_type));
+
+			if (!is_valid && !is_engine_type && ClassDB::is_parent_class(engine_type, SNAME("Resource"))) {
+				String resource_script_class = p_directory->get_file_resource_script_class(i);
+				if (ScriptServer::is_global_class(resource_script_class)) {
+					String resource_script_path = ScriptServer::get_global_class_path(resource_script_class);
+					int resource_script_index;
+					EditorFileSystemDirectory *dir = EditorFileSystem::get_singleton()->find_file(resource_script_path, &resource_script_index);
+					if (dir && resource_script_index > -1) {
+						is_valid = dir->get_file_script_subtypes(resource_script_index).has(parent_type);
+					}
+				}
+			}
 
 			if (is_valid) {
 				filepaths.append(file_path);

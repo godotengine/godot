@@ -1,0 +1,2 @@
+GDTEST_ANALYZER_ERROR
+>> ERROR at line 2: "move_and_collide" function from trait "BadTrait" shadows a native method of the using class.
