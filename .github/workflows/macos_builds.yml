@@ -36,15 +36,16 @@ jobs:
         with:
           submodules: recursive
 
+      - name: Setup Python and SCons
+        uses: ./.github/actions/godot-deps
+
       - name: Restore Godot build cache
         uses: ./.github/actions/godot-cache-restore
         with:
           cache-name: ${{ matrix.cache-name }}
         continue-on-error: true
 
-      - name: Setup Python and SCons
-        uses: ./.github/actions/godot-deps
-
+        # This also gets cached.
       - name: Setup Vulkan SDK
         run: |
           sh misc/scripts/install_vulkan_sdk_macos.sh
@@ -68,6 +69,7 @@ jobs:
           scons-cache-limit: ${{ matrix.cache-limit }}
 
       - name: Save Godot build cache
+        if: always()
         uses: ./.github/actions/godot-cache-save
         with:
           cache-name: ${{ matrix.cache-name }}

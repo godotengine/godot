@@ -46,14 +46,14 @@ jobs:
         run: |
           emcc -v
 
+      - name: Setup Python and SCons
+        uses: ./.github/actions/godot-deps
+
       - name: Restore Godot build cache
         uses: ./.github/actions/godot-cache-restore
         with:
           cache-name: ${{ matrix.cache-name }}
         continue-on-error: true
-
-      - name: Setup Python and SCons
-        uses: ./.github/actions/godot-deps
 
       - name: Compilation
         uses: ./.github/actions/godot-build
@@ -65,6 +65,7 @@ jobs:
           scons-cache-limit: 0.5
 
       - name: Save Godot build cache
+        if: always()
         uses: ./.github/actions/godot-cache-save
         with:
           cache-name: ${{ matrix.cache-name }}

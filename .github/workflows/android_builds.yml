@@ -48,12 +48,6 @@ jobs:
           distribution: temurin
           java-version: 17
 
-      - name: Restore Godot build cache
-        uses: ./.github/actions/godot-cache-restore
-        with:
-          cache-name: ${{ matrix.cache-name }}
-        continue-on-error: true
-
       - name: Setup Python and SCons
         uses: ./.github/actions/godot-deps
 
@@ -68,6 +62,12 @@ jobs:
       - name: Extract pre-built Android Swappy Frame Pacing Library
         run: 7za x -y swappy/godot-swappy.7z -o${{github.workspace}}/thirdparty/swappy-frame-pacing
 
+      - name: Restore Godot build cache
+        uses: ./.github/actions/godot-cache-restore
+        with:
+          cache-name: ${{ matrix.cache-name }}
+        continue-on-error: true
+
       - name: Compilation
         uses: ./.github/actions/godot-build
         with:
@@ -78,6 +78,7 @@ jobs:
           scons-cache-limit: ${{ matrix.cache-limit }}
 
       - name: Save Godot build cache
+        if: always()
         uses: ./.github/actions/godot-cache-save
         with:
           cache-name: ${{ matrix.cache-name }}

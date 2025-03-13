@@ -128,12 +128,6 @@ jobs:
           sudo rm -rf /usr/local/lib/android
           echo "Disk usage after:" && df -h
 
-      - name: Restore Godot build cache
-        uses: ./.github/actions/godot-cache-restore
-        with:
-          cache-name: ${{ matrix.cache-name }}
-        continue-on-error: true
-
       - name: Setup Python and SCons
         if: "!matrix.legacy-scons"
         uses: ./.github/actions/godot-deps
@@ -158,6 +152,12 @@ jobs:
           # Targeting the oldest version we want to support to ensure it still builds.
           dotnet-version: 8.0.100
 
+      - name: Restore Godot build cache
+        uses: ./.github/actions/godot-cache-restore
+        with:
+          cache-name: ${{ matrix.cache-name }}
+        continue-on-error: true
+
       - name: Compilation
         uses: ./.github/actions/godot-build
         with:
@@ -176,6 +176,7 @@ jobs:
           godot-cpp-branch: ${{ env.GODOT_CPP_BRANCH }}
 
       - name: Save Godot build cache
+        if: always()
         uses: ./.github/actions/godot-cache-save
         with:
           cache-name: ${{ matrix.cache-name }}

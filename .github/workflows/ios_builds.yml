@@ -18,12 +18,12 @@ jobs:
         with:
           submodules: recursive
 
+      - name: Setup Python and SCons
+        uses: ./.github/actions/godot-deps
+
       - name: Restore Godot build cache
         uses: ./.github/actions/godot-cache-restore
         continue-on-error: true
-
-      - name: Setup Python and SCons
-        uses: ./.github/actions/godot-deps
 
       - name: Compilation (arm64)
         uses: ./.github/actions/godot-build
@@ -35,6 +35,7 @@ jobs:
           scons-cache-limit: 1
 
       - name: Save Godot build cache
+        if: always()
         uses: ./.github/actions/godot-cache-save
         continue-on-error: true
 

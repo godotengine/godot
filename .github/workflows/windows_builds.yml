@@ -62,12 +62,6 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Restore Godot build cache
-        uses: ./.github/actions/godot-cache-restore
-        with:
-          cache-name: ${{ matrix.cache-name }}
-        continue-on-error: true
-
       - name: Setup Python and SCons
         uses: ./.github/actions/godot-deps
 
@@ -85,6 +79,12 @@ jobs:
       - name: Extract pre-built ANGLE static libraries
         run: Expand-Archive -Force angle/angle.zip ${{ github.workspace }}/
 
+      - name: Restore Godot build cache
+        uses: ./.github/actions/godot-cache-restore
+        with:
+          cache-name: ${{ matrix.cache-name }}
+        continue-on-error: true
+
       - name: Compilation
         uses: ./.github/actions/godot-build
         with:
@@ -95,6 +95,7 @@ jobs:
           scons-cache-limit: ${{ matrix.cache-limit }}
 
       - name: Save Godot build cache
+        if: always()
         uses: ./.github/actions/godot-cache-save
         with:
           cache-name: ${{ matrix.cache-name }}
