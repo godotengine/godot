@@ -378,7 +378,7 @@ uint32_t ClassDB::get_api_hash(APIType p_api) {
 		return api_hashes_cache[p_api];
 	}
 
-	uint64_t hash = hash_murmur3_one_64(HashMapHasherDefault::hash(VERSION_FULL_CONFIG));
+	uint64_t hash = hash_murmur3_one_64(HashMapHasherDefault::hash(GODOT_VERSION_FULL_CONFIG));
 
 	List<StringName> class_list;
 	for (const KeyValue<StringName, ClassInfo> &E : classes) {
