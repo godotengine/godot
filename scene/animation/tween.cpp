@@ -39,18 +39,18 @@
 	ERR_FAIL_COND_V_MSG(started, nullptr, "Can't append to a Tween that has started. Use stop() first.");
 
 Tween::interpolater Tween::interpolaters[Tween::TRANS_MAX][Tween::EASE_MAX] = {
-	{ &linear::in, &linear::in, &linear::in, &linear::in }, // Linear is the same for each easing.
-	{ &sine::in, &sine::out, &sine::in_out, &sine::out_in },
-	{ &quint::in, &quint::out, &quint::in_out, &quint::out_in },
-	{ &quart::in, &quart::out, &quart::in_out, &quart::out_in },
-	{ &quad::in, &quad::out, &quad::in_out, &quad::out_in },
-	{ &expo::in, &expo::out, &expo::in_out, &expo::out_in },
-	{ &elastic::in, &elastic::out, &elastic::in_out, &elastic::out_in },
-	{ &cubic::in, &cubic::out, &cubic::in_out, &cubic::out_in },
-	{ &circ::in, &circ::out, &circ::in_out, &circ::out_in },
-	{ &bounce::in, &bounce::out, &bounce::in_out, &bounce::out_in },
-	{ &back::in, &back::out, &back::in_out, &back::out_in },
-	{ &spring::in, &spring::out, &spring::in_out, &spring::out_in },
+	{ &Linear::in, &Linear::in, &Linear::in, &Linear::in }, // Linear is the same for each easing.
+	{ &Sine::in, &Sine::out, &Sine::in_out, &Sine::out_in },
+	{ &Quint::in, &Quint::out, &Quint::in_out, &Quint::out_in },
+	{ &Quart::in, &Quart::out, &Quart::in_out, &Quart::out_in },
+	{ &Quad::in, &Quad::out, &Quad::in_out, &Quad::out_in },
+	{ &Expo::in, &Expo::out, &Expo::in_out, &Expo::out_in },
+	{ &Elastic::in, &Elastic::out, &Elastic::in_out, &Elastic::out_in },
+	{ &Cubic::in, &Cubic::out, &Cubic::in_out, &Cubic::out_in },
+	{ &Circ::in, &Circ::out, &Circ::in_out, &Circ::out_in },
+	{ &Bounce::in, &Bounce::out, &Bounce::in_out, &Bounce::out_in },
+	{ &Back::in, &Back::out, &Back::in_out, &Back::out_in },
+	{ &Spring::in, &Spring::out, &Spring::in_out, &Spring::out_in },
 };
 
 void Tweener::set_tween(const Ref<Tween> &p_tween) {

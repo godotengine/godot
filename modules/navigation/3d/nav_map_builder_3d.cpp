@@ -38,7 +38,7 @@
 #include "nav_map_iteration_3d.h"
 #include "nav_region_iteration_3d.h"
 
-using namespace nav_3d;
+using namespace Nav3D;
 
 PointKey NavMapBuilder3D::get_point_key(const Vector3 &p_pos, const Vector3 &p_cell_size) {
 	const int x = static_cast<int>(Math::floor(p_pos.x / p_cell_size.x));

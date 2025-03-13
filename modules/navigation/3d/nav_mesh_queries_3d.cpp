@@ -39,7 +39,7 @@
 #include "core/math/geometry_3d.h"
 #include "servers/navigation/navigation_utilities.h"
 
-using namespace nav_3d;
+using namespace Nav3D;
 
 #define THREE_POINTS_CROSS_PRODUCT(m_a, m_b, m_c) (((m_c) - (m_a)).cross((m_b) - (m_a)))
 
