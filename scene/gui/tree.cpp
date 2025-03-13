@@ -3012,6 +3012,9 @@ int Tree::propagate_mouse_event(const Point2i &p_pos, int x_ofs, int y_ofs, int 
 						int icount = _count_selected_items(root);
 
 						if (select_mode == SELECT_MULTI && icount > 1 && p_button != MouseButton::RIGHT) {
+							if (!already_selected) {
+								select_single_item(p_item, root, col);
+							}
 							single_select_defer = p_item;
 							single_select_defer_column = col;
 						} else {
