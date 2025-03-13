@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  Callable.kt                                                           */
+/*  GradleBuildProvider.kt                                                */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,67 +28,68 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-package org.godotengine.godot.variant
+package org.godotengine.editor.buildprovider
 
-import androidx.annotation.Keep
+import android.content.Context
+import org.godotengine.godot.BuildProvider
+import org.godotengine.godot.GodotHost
+import org.godotengine.godot.variant.Callable
 
-/**
- * Android version of a Godot built-in Callable type representing a method or a standalone function.
- */
-@Keep
-class Callable private constructor(private val nativeCallablePointer: Long) {
+internal class GradleBuildProvider(
+	val context: Context,
+	val host: GodotHost,
+) : BuildProvider {
 
-	companion object {
-		/**
-		 * Invoke method [methodName] on the Godot object specified by [godotObjectId]
-		 */
-		@JvmStatic
-		fun call(godotObjectId: Long, methodName: String, vararg methodParameters: Any): Any? {
-			return nativeCallObject(godotObjectId, methodName, methodParameters)
+	val gradleBuildEnvironmentClient = GradleBuildEnvironmentClient(context)
+
+	val godot get() = host.godot
+
+	override fun buildEnvConnect(callback: Callable): Boolean {
+		return gradleBuildEnvironmentClient.connect {
+			godot?.runOnRenderThread {
+				callback.call()
+			}
 		}
-
-		/**
-		 * Invoke method [methodName] on the Godot object specified by [godotObjectId] during idle time.
-		 */
-		@JvmStatic
-		fun callDeferred(godotObjectId: Long, methodName: String, vararg methodParameters: Any) {
-			nativeCallObjectDeferred(godotObjectId, methodName, methodParameters)
-		}
-
-		@JvmStatic
-		private external fun nativeCall(pointer: Long, params: Array<out Any>): Any?
-
-		@JvmStatic
-		private external fun nativeCallObject(godotObjectId: Long, methodName: String, params: Array<out Any>): Any?
-
-		@JvmStatic
-		private external fun nativeCallObjectDeferred(godotObjectId: Long, methodName: String, params: Array<out Any>)
-
-		@JvmStatic
-		private external fun releaseNativePointer(nativePointer: Long)
 	}
 
-	/**
-	 * Calls the method represented by this [Callable]. Arguments can be passed and should match the method's signature.
-	 */
-	fun call(vararg params: Any): Any? {
-		if (nativeCallablePointer == 0L) {
-			return null
-		}
-
-		return nativeCall(nativeCallablePointer, params)
+	override fun buildEnvDisconnect() {
+		gradleBuildEnvironmentClient.disconnect()
 	}
 
-	/**
-	 * Used to provide access to the native callable pointer to the native logic.
-	 */
-	private fun getNativePointer() = nativeCallablePointer
+	override fun buildEnvExecute(
+		buildTool: String,
+		arguments: Array<String>,
+		projectPath: String,
+		buildDir: String,
+		outputCallback: Callable,
+		resultCallback: Callable
+	): Int {
+		if (buildTool != "gradle") {
+			return -1;
+		}
+		val outputCb: (Int, String) -> Unit = { outputType, line ->
+			godot?.runOnRenderThread {
+				outputCallback.call(outputType, line)
+			}
+		}
+		val resultCb: (Int) -> Unit = { exitCode ->
+			godot?.runOnRenderThread {
+				resultCallback.call(exitCode)
+			}
+		}
+		return gradleBuildEnvironmentClient.execute(arguments, projectPath, buildDir, outputCb, resultCb)
+	}
 
-	/** Note that [finalize] is deprecated and shouldn't be used, unfortunately its replacement,
-	 * [java.lang.ref.Cleaner], is only available on Android api 33 and higher.
-	 * So we resort to using it for the time being until our min api catches up to api 33.
-	 **/
-	protected fun finalize() {
-		releaseNativePointer(nativeCallablePointer)
+	override fun buildEnvCancel(jobId: Int) {
+		gradleBuildEnvironmentClient.cancel(jobId)
+	}
+
+	override fun buildEnvCleanProject(projectPath: String, buildDir: String, callback: Callable) {
+		val cb: (Int) -> Unit = { exitCode ->
+			godot?.runOnRenderThread {
+				callback.call()
+			}
+		}
+		gradleBuildEnvironmentClient.cleanProject(projectPath, buildDir, cb)
 	}
 }

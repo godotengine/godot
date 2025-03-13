@@ -84,6 +84,11 @@ private:
 	jmethodID _set_window_color = nullptr;
 	jmethodID _on_editor_workspace_selected = nullptr;
 	jmethodID _get_activity = nullptr;
+	jmethodID _build_env_connect = nullptr;
+	jmethodID _build_env_disconnect = nullptr;
+	jmethodID _build_env_execute = nullptr;
+	jmethodID _build_env_cancel = nullptr;
+	jmethodID _build_env_clean_project = nullptr;
 
 public:
 	GodotJavaWrapper(JNIEnv *p_env, jobject p_godot_instance);
@@ -141,4 +146,10 @@ public:
 	void set_window_color(const Color &p_color);
 
 	void on_editor_workspace_selected(const String &p_workspace);
+
+	bool build_env_connect(const Callable &p_callback);
+	void build_env_disconnect();
+	int build_env_execute(const String &p_build_tool, const List<String> &p_arguments, const String &p_project_path, const String &p_gradle_build_directory, const Callable &p_output_callback, const Callable &p_result_callback);
+	void build_env_cancel(int p_job_id);
+	void build_env_clean_project(const String &p_project_path, const String &p_gradle_build_directory, const Callable &p_callback);
 };

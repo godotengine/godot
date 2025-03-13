@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  Callable.kt                                                           */
+/*  android_editor_gradle_runner.h                                        */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,67 +28,49 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-package org.godotengine.godot.variant
+#pragma once
 
-import androidx.annotation.Keep
+#ifdef ANDROID_ENABLED
 
-/**
- * Android version of a Godot built-in Callable type representing a method or a standalone function.
- */
-@Keep
-class Callable private constructor(private val nativeCallablePointer: Long) {
+#include "core/object/object.h"
 
-	companion object {
-		/**
-		 * Invoke method [methodName] on the Godot object specified by [godotObjectId]
-		 */
-		@JvmStatic
-		fun call(godotObjectId: Long, methodName: String, vararg methodParameters: Any): Any? {
-			return nativeCallObject(godotObjectId, methodName, methodParameters)
-		}
+class ConfirmationDialog;
+class RichTextLabel;
 
-		/**
-		 * Invoke method [methodName] on the Godot object specified by [godotObjectId] during idle time.
-		 */
-		@JvmStatic
-		fun callDeferred(godotObjectId: Long, methodName: String, vararg methodParameters: Any) {
-			nativeCallObjectDeferred(godotObjectId, methodName, methodParameters)
-		}
+class AndroidEditorGradleRunner : public Object {
+	GDCLASS(AndroidEditorGradleRunner, Object);
 
-		@JvmStatic
-		private external fun nativeCall(pointer: Long, params: Array<out Any>): Any?
+	RichTextLabel *output_label = nullptr;
+	ConfirmationDialog *output_dialog = nullptr;
 
-		@JvmStatic
-		private external fun nativeCallObject(godotObjectId: Long, methodName: String, params: Array<out Any>): Any?
+	enum State {
+		STATE_IDLE,
+		STATE_BUILDING,
+		STATE_CLEANING,
+	};
+	State state = STATE_IDLE;
 
-		@JvmStatic
-		private external fun nativeCallObjectDeferred(godotObjectId: Long, methodName: String, params: Array<out Any>)
+	String project_path;
+	String build_path;
+	List<String> gradle_build_args;
+	List<String> gradle_copy_args;
+	int64_t job_id;
 
-		@JvmStatic
-		private external fun releaseNativePointer(nativePointer: Long)
-	}
+	void _android_gradle_build_connect();
+	void _android_gradle_build_disconnect();
+	void _android_gradle_build_output(int p_type, const String &p_line);
+	void _android_gradle_build_build();
+	void _android_gradle_build_build_callback(int p_exit_code);
+	void _android_gradle_build_copy();
+	void _android_gradle_build_copy_callback(int p_exit_code);
+	void _android_gradle_build_clean_project(bool p_was_successful);
+	void _android_gradle_build_clean_project_callback();
 
-	/**
-	 * Calls the method represented by this [Callable]. Arguments can be passed and should match the method's signature.
-	 */
-	fun call(vararg params: Any): Any? {
-		if (nativeCallablePointer == 0L) {
-			return null
-		}
+	void _android_gradle_build_failed(const String &p_msg = String());
+	void _android_gradle_build_cancel();
 
-		return nativeCall(nativeCallablePointer, params)
-	}
+public:
+	void run_gradle(const String &p_project_path, const String &p_build_path, const List<String> &p_gradle_build_args, const List<String> &p_gradle_copy_args);
+};
 
-	/**
-	 * Used to provide access to the native callable pointer to the native logic.
-	 */
-	private fun getNativePointer() = nativeCallablePointer
-
-	/** Note that [finalize] is deprecated and shouldn't be used, unfortunately its replacement,
-	 * [java.lang.ref.Cleaner], is only available on Android api 33 and higher.
-	 * So we resort to using it for the time being until our min api catches up to api 33.
-	 **/
-	protected fun finalize() {
-		releaseNativePointer(nativeCallablePointer)
-	}
-}
+#endif // ANDROID_ENABLED

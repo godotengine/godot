@@ -166,4 +166,13 @@ public interface GodotHost {
 			activity.runOnUiThread(action);
 		}
 	}
+
+	/**
+	 * Gets the build provider, if available.
+	 *
+	 * @return the build provider, if available; otherwise, null.
+	 */
+	default @Nullable BuildProvider getBuildProvider() {
+		return null;
+	}
 }

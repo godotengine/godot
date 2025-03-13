@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  Callable.kt                                                           */
+/*  BuildProvider.java                                                    */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,67 +28,54 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-package org.godotengine.godot.variant
+package org.godotengine.godot;
 
-import androidx.annotation.Keep
+import org.godotengine.godot.variant.Callable;
+
+import androidx.annotation.NonNull;
 
 /**
- * Android version of a Godot built-in Callable type representing a method or a standalone function.
+ * Provides an environment for executing build commands.
  */
-@Keep
-class Callable private constructor(private val nativeCallablePointer: Long) {
-
-	companion object {
-		/**
-		 * Invoke method [methodName] on the Godot object specified by [godotObjectId]
-		 */
-		@JvmStatic
-		fun call(godotObjectId: Long, methodName: String, vararg methodParameters: Any): Any? {
-			return nativeCallObject(godotObjectId, methodName, methodParameters)
-		}
-
-		/**
-		 * Invoke method [methodName] on the Godot object specified by [godotObjectId] during idle time.
-		 */
-		@JvmStatic
-		fun callDeferred(godotObjectId: Long, methodName: String, vararg methodParameters: Any) {
-			nativeCallObjectDeferred(godotObjectId, methodName, methodParameters)
-		}
-
-		@JvmStatic
-		private external fun nativeCall(pointer: Long, params: Array<out Any>): Any?
-
-		@JvmStatic
-		private external fun nativeCallObject(godotObjectId: Long, methodName: String, params: Array<out Any>): Any?
-
-		@JvmStatic
-		private external fun nativeCallObjectDeferred(godotObjectId: Long, methodName: String, params: Array<out Any>)
-
-		@JvmStatic
-		private external fun releaseNativePointer(nativePointer: Long)
-	}
+public interface BuildProvider {
+	/**
+	 * Connects to the build environment.
+	 *
+	 * @param callback The callback to call when connected
+	 * @return Whether or not connecting is possible
+	 */
+	boolean buildEnvConnect(@NonNull Callable callback);
 
 	/**
-	 * Calls the method represented by this [Callable]. Arguments can be passed and should match the method's signature.
+	 * Disconnects from the build environment.
 	 */
-	fun call(vararg params: Any): Any? {
-		if (nativeCallablePointer == 0L) {
-			return null
-		}
-
-		return nativeCall(nativeCallablePointer, params)
-	}
+	void buildEnvDisconnect();
 
 	/**
-	 * Used to provide access to the native callable pointer to the native logic.
+	 * Executes a command via the build environment.
+	 *
+	 * @param buildTool      The build tool to execute (for example, "gradle")
+	 * @param arguments      The argument for the command
+	 * @param projectPath    The working directory to use when executing the command
+	 * @param buildDir       The build directory within the project
+	 * @param outputCallback The callback to call for each line of output from the command
+	 * @param resultCallback The callback to call when the command is finished running
+	 * @return A positive job id, if successful; otherwise, a negative number
 	 */
-	private fun getNativePointer() = nativeCallablePointer
+	int buildEnvExecute(String buildTool, @NonNull String[] arguments, @NonNull String projectPath, @NonNull String buildDir, @NonNull Callable outputCallback, @NonNull Callable resultCallback);
 
-	/** Note that [finalize] is deprecated and shouldn't be used, unfortunately its replacement,
-	 * [java.lang.ref.Cleaner], is only available on Android api 33 and higher.
-	 * So we resort to using it for the time being until our min api catches up to api 33.
-	 **/
-	protected fun finalize() {
-		releaseNativePointer(nativeCallablePointer)
-	}
+	/**
+	 * Cancels a command executed via the build environment.
+	 *
+	 * @param jobId The job id returned from buildEnvExecute()
+	 */
+	void buildEnvCancel(int jobId);
+
+	/**
+	 * Requests that a project be cleaned up via the build environment.
+	 *
+	 * @param projectPath The working directory to use when executing the command
+	 * @param buildDir    The build directory within the project
+	 */
+	void buildEnvCleanProject(@NonNull String projectPath, @NonNull String buildDir, @NonNull Callable callback);
 }
