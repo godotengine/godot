@@ -65,8 +65,7 @@ void ThemeDB::initialize_theme(bool force_default_theme) {
 	// Attempt to load custom project theme and font.
 
 	Ref<Font> project_font;
-	if (!force_default_theme)
-	{
+	if (!force_default_theme) {
 		if (!project_theme_path.is_empty()) {
 			Ref<Theme> theme = ResourceLoader::load(project_theme_path);
 			if (theme.is_valid()) {
