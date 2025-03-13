@@ -1118,9 +1118,8 @@ void EditorAudioBuses::_notification(int p_what) {
 				}
 			}
 
-			AudioServer::get_singleton()->set_edited(false);
-
 			if (edited) {
+				AudioServer::get_singleton()->set_edited(false);
 				save_timer->start();
 			}
 		} break;
