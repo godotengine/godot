@@ -164,34 +164,6 @@ _FORCE_INLINE_ uint64_t *_get_element_count_ptr(uint8_t *p_ptr) {
 	return (uint64_t *)(p_ptr - Memory::DATA_OFFSET + Memory::ELEMENT_OFFSET);
 }
 
-template <typename T>
-T *memnew_arr_template(size_t p_elements) {
-	if (p_elements == 0) {
-		return nullptr;
-	}
-	/** overloading operator new[] cannot be done , because it may not return the real allocated address (it may pad the 'element count' before the actual array). Because of that, it must be done by hand. This is the
-	same strategy used by std::vector, and the Vector class, so it should be safe.*/
-
-	size_t len = sizeof(T) * p_elements;
-	uint8_t *mem = (uint8_t *)Memory::alloc_static(len, true);
-	T *failptr = nullptr; //get rid of a warning
-	ERR_FAIL_NULL_V(mem, failptr);
-
-	uint64_t *_elem_count_ptr = _get_element_count_ptr(mem);
-	*(_elem_count_ptr) = p_elements;
-
-	if constexpr (!std::is_trivially_constructible_v<T>) {
-		T *elems = (T *)mem;
-
-		/* call operator new */
-		for (size_t i = 0; i < p_elements; i++) {
-			::new (&elems[i]) T;
-		}
-	}
-
-	return (T *)mem;
-}
-
 // Fast alternative to a loop constructor pattern.
 template <bool p_ensure_zero = false, typename T>
 _FORCE_INLINE_ void memnew_arr_placement(T *p_start, size_t p_num) {
@@ -208,6 +180,26 @@ _FORCE_INLINE_ void memnew_arr_placement(T *p_start, size_t p_num) {
 			memnew_placement(p_start + i, T);
 		}
 	}
+}
+
+template <typename T>
+T *memnew_arr_template(size_t p_elements) {
+	if (p_elements == 0) {
+		return nullptr;
+	}
+	/** overloading operator new[] cannot be done , because it may not return the real allocated address (it may pad the 'element count' before the actual array). Because of that, it must be done by hand. This is the
+	same strategy used by std::vector, and the Vector class, so it should be safe.*/
+
+	size_t len = sizeof(T) * p_elements;
+	uint8_t *mem = (uint8_t *)Memory::alloc_static(len, true);
+	T *failptr = nullptr; //get rid of a warning
+	ERR_FAIL_NULL_V(mem, failptr);
+
+	uint64_t *_elem_count_ptr = _get_element_count_ptr(mem);
+	*(_elem_count_ptr) = p_elements;
+	memnew_arr_placement((T *)mem, p_elements);
+
+	return (T *)mem;
 }
 
 /**
