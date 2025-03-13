@@ -44,9 +44,14 @@ class FreeDesktopPortalDesktop : public Object {
 private:
 	bool unsupported = false;
 
-	static bool try_parse_variant(DBusMessage *p_reply_message, int p_type, void *r_value);
+	enum ReadVariantType {
+		VAR_TYPE_UINT32, // u
+		VAR_TYPE_COLOR, // (ddd)
+	};
+
+	static bool try_parse_variant(DBusMessage *p_reply_message, ReadVariantType p_type, void *r_value);
 	// Read a setting from org.freekdesktop.portal.Settings
-	bool read_setting(const char *p_namespace, const char *p_key, int p_type, void *r_value);
+	bool read_setting(const char *p_namespace, const char *p_key, ReadVariantType p_type, void *r_value);
 
 	static void append_dbus_string(DBusMessageIter *p_iter, const String &p_string);
 	static void append_dbus_dict_options(DBusMessageIter *p_iter, const TypedArray<Dictionary> &p_options, HashMap<String, String> &r_ids);
@@ -108,6 +113,7 @@ public:
 	// 1: Prefer dark appearance.
 	// 2: Prefer light appearance.
 	uint32_t get_appearance_color_scheme();
+	Color get_appearance_accent_color();
 	void set_system_theme_change_callback(const Callable &p_system_theme_changed) {
 		system_theme_changed = p_system_theme_changed;
 	}

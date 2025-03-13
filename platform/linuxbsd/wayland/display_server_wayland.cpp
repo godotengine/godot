@@ -302,6 +302,10 @@ bool DisplayServerWayland::is_dark_mode() const {
 	}
 }
 
+Color DisplayServerWayland::get_accent_color() const {
+	return portal_desktop->get_appearance_accent_color();
+}
+
 void DisplayServerWayland::set_system_theme_change_callback(const Callable &p_callable) {
 	portal_desktop->set_system_theme_change_callback(p_callable);
 }
