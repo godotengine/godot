@@ -4207,6 +4207,18 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 			// after all the non-compat methods have been added. The compat methods are added in
 			// reverse so the most recently added ones take precedence over older compat methods.
 			if (imethod.is_compat) {
+				// If the method references deprecated types, mark the method as deprecated as well.
+				for (const ArgumentInterface &iarg : imethod.arguments) {
+					String arg_type_name = iarg.type.cname;
+					String doc_name = arg_type_name.begins_with("_") ? arg_type_name.substr(1) : arg_type_name;
+					const DocData::ClassDoc &class_doc = EditorHelp::get_doc_data()->class_list[doc_name];
+					if (class_doc.is_deprecated) {
+						imethod.is_deprecated = true;
+						imethod.deprecation_message = "This method overload is deprecated.";
+						break;
+					}
+				}
+
 				imethod.is_hidden = true;
 				compat_methods.push_front(imethod);
 				continue;
