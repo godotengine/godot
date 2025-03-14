@@ -40,9 +40,6 @@
 #include "scene/gui/menu_button.h"
 
 void Camera2DEditor::edit(Camera2D *p_camera) {
-	if (p_camera == selected_camera) {
-		return;
-	}
 	selected_camera = p_camera;
 }
 
