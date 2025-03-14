@@ -428,7 +428,7 @@ List<Variant> MultiplayerSynchronizer::get_delta_state(uint64_t p_cur_usec, uint
 			continue;
 		}
 
-		ERR_BREAK_MSG(i >= static_cast<int>(sizeof(uint64_t) * 8), "Cannot process more replicated properties."); 
+		ERR_BREAK_MSG(i >= static_cast<int>(sizeof(uint64_t) * 8), "Cannot process more replicated properties.");
 		out.push_back(w.value);
 		r_indexes |= 1ULL << i;
 	}
