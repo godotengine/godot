@@ -4085,7 +4085,7 @@ bool Tree::edit_selected(bool p_force_edit) {
 		return false;
 	}
 
-	float popup_scale = popup_editor->is_embedded() ? 1.0 : popup_editor->get_parent_visible_window()->get_content_scale_factor();
+	real_t popup_scale = popup_editor->is_embedded() ? 1.0 : popup_editor->get_parent_visible_window()->get_content_scale_factor();
 	Rect2 rect = _get_item_focus_rect(s);
 	rect.position *= popup_scale;
 	popup_edited_item = s;
@@ -4127,13 +4127,16 @@ bool Tree::edit_selected(bool p_force_edit) {
 		Vector2 ofs(0, Math::floor((MAX(line_editor->get_minimum_size().height, rect.size.height - value_editor_height) - rect.size.height) / 2));
 
 		// Account for icon.
-		Size2 icon_size = _get_cell_icon_size(c) * popup_scale;
+		real_t icon_ofs = 0;
+		if (c.icon.is_valid()) {
+			icon_ofs = _get_cell_icon_size(c).x * popup_scale + theme_cache.h_separation;
+		}
 
 		popup_rect.size = rect.size;
-		popup_rect.size.x -= icon_size.x + theme_cache.h_separation;
+		popup_rect.size.x -= icon_ofs;
 
 		popup_rect.position = rect.position - ofs;
-		popup_rect.position.x += icon_size.x + theme_cache.h_separation;
+		popup_rect.position.x += icon_ofs;
 		if (cache.rtl) {
 			popup_rect.position.x = get_size().width - popup_rect.position.x - popup_rect.size.x;
 		}
