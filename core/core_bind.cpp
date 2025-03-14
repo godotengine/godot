@@ -1241,6 +1241,9 @@ Vector<uint8_t> Marshalls::base64_to_raw(const String &p_str) {
 }
 
 String Marshalls::utf8_to_base64(const String &p_str) {
+	if (p_str.is_empty()) {
+		return String();
+	}
 	CharString cstr = p_str.utf8();
 	String ret = CryptoCore::b64_encode_str((unsigned char *)cstr.get_data(), cstr.length());
 	ERR_FAIL_COND_V(ret.is_empty(), ret);
