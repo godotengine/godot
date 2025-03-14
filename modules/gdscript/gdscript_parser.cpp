@@ -672,14 +672,16 @@ void GDScriptParser::parse_program() {
 		}
 	}
 
+	if (current.type == GDScriptTokenizer::Token::CLASS_NAME || current.type == GDScriptTokenizer::Token::EXTENDS) {
+		// Set range of the class to only start at extends or class_name if present.
+		reset_extents(head, current);
+	}
+
 	while (can_have_class_or_extends) {
 		// Order here doesn't matter, but there should be only one of each at most.
 		switch (current.type) {
 			case GDScriptTokenizer::Token::CLASS_NAME:
 				PUSH_PENDING_ANNOTATIONS_TO_HEAD;
-				if (head->start_line == 1) {
-					reset_extents(head, current);
-				}
 				advance();
 				if (head->identifier != nullptr) {
 					push_error(R"("class_name" can only be used once.)");
@@ -689,9 +691,6 @@ void GDScriptParser::parse_program() {
 				break;
 			case GDScriptTokenizer::Token::EXTENDS:
 				PUSH_PENDING_ANNOTATIONS_TO_HEAD;
-				if (head->start_line == 1) {
-					reset_extents(head, current);
-				}
 				advance();
 				if (head->extends_used) {
 					push_error(R"("extends" can only be used once.)");
