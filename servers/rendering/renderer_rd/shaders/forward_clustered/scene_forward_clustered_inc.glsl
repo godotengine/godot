@@ -459,7 +459,7 @@ vec4 normal_roughness_compatibility(vec4 p_normal_roughness) {
 // https://google.github.io/filament/Filament.html#toc5.3.4.7
 // Note: The roughness value is inverted
 vec3 prefiltered_dfg(float lod, float NoV) {
-    return textureLod(sampler2D(dfg, SAMPLER_LINEAR_CLAMP), vec2(NoV, 1.0 - lod), 0.0).rgb;
+	return textureLod(sampler2D(dfg, SAMPLER_LINEAR_CLAMP), vec2(NoV, 1.0 - lod), 0.0).rgb;
 }
 
 /* Set 2 Skeleton & Instancing (can change per item) */
