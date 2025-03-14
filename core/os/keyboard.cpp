@@ -387,6 +387,10 @@ String keycode_get_string(Key p_code) {
 	}
 
 	p_code &= KeyModifierMask::CODE_MASK;
+	if ((char32_t)p_code == 0) {
+		// The key was just a modifier without any code.
+		return codestr;
+	}
 
 	const _KeyCodeText *kct = &_keycodes[0];
 
