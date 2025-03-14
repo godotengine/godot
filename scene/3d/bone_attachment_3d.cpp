@@ -373,6 +373,7 @@ void BoneAttachment3D::notify_rebind_required() {
 #endif // TOOLS_ENABLED
 
 BoneAttachment3D::BoneAttachment3D() {
+	set_physics_interpolation_mode(PHYSICS_INTERPOLATION_MODE_OFF);
 }
 
 void BoneAttachment3D::_bind_methods() {

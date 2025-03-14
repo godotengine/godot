@@ -353,6 +353,7 @@ real_t VehicleWheel3D::get_rpm() const {
 }
 
 VehicleWheel3D::VehicleWheel3D() {
+	set_physics_interpolation_mode(PHYSICS_INTERPOLATION_MODE_OFF);
 }
 
 void VehicleBody3D::_update_wheel_transform(VehicleWheel3D &wheel, PhysicsDirectBodyState3D *s) {

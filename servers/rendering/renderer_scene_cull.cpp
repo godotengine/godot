@@ -941,45 +941,8 @@ void RendererSceneCull::instance_set_transform(RID p_instance, const Transform3D
 	Instance *instance = instance_owner.get_or_null(p_instance);
 	ERR_FAIL_NULL(instance);
 
-#ifdef RENDERING_SERVER_DEBUG_PHYSICS_INTERPOLATION
-	print_line("instance_set_transform " + rtos(p_transform.origin.x) + " .. tick " + itos(Engine::get_singleton()->get_physics_frames()));
-#endif
-
-	if (!_interpolation_data.interpolation_enabled || !instance->interpolated || !instance->scenario) {
-		if (instance->transform == p_transform) {
-			return; // Must be checked to avoid worst evil.
-		}
-
-#ifdef DEBUG_ENABLED
-
-		for (int i = 0; i < 4; i++) {
-			const Vector3 &v = i < 3 ? p_transform.basis.rows[i] : p_transform.origin;
-			ERR_FAIL_COND(!v.is_finite());
-		}
-
-#endif
-		instance->transform = p_transform;
-		_instance_queue_update(instance, true);
-
-#if defined(DEBUG_ENABLED) && defined(TOOLS_ENABLED)
-		if (_interpolation_data.interpolation_enabled && !instance->interpolated && Engine::get_singleton()->is_in_physics_frame()) {
-			PHYSICS_INTERPOLATION_NODE_WARNING(instance->object_id, "Non-interpolated instance triggered from physics process");
-		}
-#endif
-
-		return;
-	}
-
-	float new_checksum = TransformInterpolator::checksum_transform_3d(p_transform);
-	bool checksums_match = (instance->transform_checksum_curr == new_checksum) && (instance->transform_checksum_prev == new_checksum);
-
-	// We can't entirely reject no changes because we need the interpolation
-	// system to keep on stewing.
-
-	// Optimized check. First checks the checksums. If they pass it does the slow check at the end.
-	// Alternatively we can do this non-optimized and ignore the checksum... if no change.
-	if (checksums_match && (instance->transform_curr == p_transform) && (instance->transform_prev == p_transform)) {
-		return;
+	if (instance->transform == p_transform) {
+		return; // Must be checked to avoid worst evil.
 	}
 
 #ifdef DEBUG_ENABLED
@@ -990,71 +953,8 @@ void RendererSceneCull::instance_set_transform(RID p_instance, const Transform3D
 	}
 
 #endif
-
-	instance->transform_curr = p_transform;
-
-#ifdef RENDERING_SERVER_DEBUG_PHYSICS_INTERPOLATION
-	print_line("\tprev " + rtos(instance->transform_prev.origin.x) + ", curr " + rtos(instance->transform_curr.origin.x));
-#endif
-
-	// Keep checksums up to date.
-	instance->transform_checksum_curr = new_checksum;
-
-	if (!instance->on_interpolate_transform_list) {
-		_interpolation_data.instance_transform_update_list_curr->push_back(p_instance);
-		instance->on_interpolate_transform_list = true;
-	} else {
-		DEV_ASSERT(_interpolation_data.instance_transform_update_list_curr->size());
-	}
-
-	// If the instance is invisible, then we are simply updating the data flow, there is no need to calculate the interpolated
-	// transform or anything else.
-	// Ideally we would not even call the VisualServer::set_transform() when invisible but that would entail having logic
-	// to keep track of the previous transform on the SceneTree side. The "early out" below is less efficient but a lot cleaner codewise.
-	if (!instance->visible) {
-		return;
-	}
-
-	// Decide on the interpolation method... slerp if possible.
-	instance->interpolation_method = TransformInterpolator::find_method(instance->transform_prev.basis, instance->transform_curr.basis);
-
-	if (!instance->on_interpolate_list) {
-		_interpolation_data.instance_interpolate_update_list.push_back(p_instance);
-		instance->on_interpolate_list = true;
-	} else {
-		DEV_ASSERT(_interpolation_data.instance_interpolate_update_list.size());
-	}
-
+	instance->transform = p_transform;
 	_instance_queue_update(instance, true);
-
-#if defined(DEBUG_ENABLED) && defined(TOOLS_ENABLED)
-	if (!Engine::get_singleton()->is_in_physics_frame()) {
-		PHYSICS_INTERPOLATION_NODE_WARNING(instance->object_id, "Interpolated instance triggered from outside physics process");
-	}
-#endif
-}
-
-void RendererSceneCull::instance_set_interpolated(RID p_instance, bool p_interpolated) {
-	Instance *instance = instance_owner.get_or_null(p_instance);
-	ERR_FAIL_NULL(instance);
-	instance->interpolated = p_interpolated;
-}
-
-void RendererSceneCull::instance_reset_physics_interpolation(RID p_instance) {
-	Instance *instance = instance_owner.get_or_null(p_instance);
-	ERR_FAIL_NULL(instance);
-
-	instance->teleported = true;
-
-	if (_interpolation_data.interpolation_enabled && instance->interpolated) {
-		instance->transform_prev = instance->transform_curr;
-		instance->transform_checksum_prev = instance->transform_checksum_curr;
-
-#ifdef RENDERING_SERVER_DEBUG_PHYSICS_INTERPOLATION
-		print_line("instance_reset_physics_interpolation .. tick " + itos(Engine::get_singleton()->get_physics_frames()));
-		print_line("\tprev " + rtos(instance->transform_prev.origin.x) + ", curr " + rtos(instance->transform_curr.origin.x));
-#endif
-	}
 }
 
 void RendererSceneCull::instance_attach_object_instance_id(RID p_instance, ObjectID p_id) {
@@ -1107,23 +1007,6 @@ void RendererSceneCull::instance_set_visible(RID p_instance, bool p_visible) {
 
 	if (p_visible) {
 		if (instance->scenario != nullptr) {
-			// Special case for physics interpolation, we want to ensure the interpolated data is up to date
-			if (_interpolation_data.interpolation_enabled && instance->interpolated && !instance->on_interpolate_list) {
-				// Do all the extra work we normally do on instance_set_transform(), because this is optimized out for hidden instances.
-				// This prevents a glitch of stale interpolation transform data when unhiding before the next physics tick.
-				instance->interpolation_method = TransformInterpolator::find_method(instance->transform_prev.basis, instance->transform_curr.basis);
-				_interpolation_data.instance_interpolate_update_list.push_back(p_instance);
-				instance->on_interpolate_list = true;
-
-				// We must also place on the transform update list for a tick, so the system
-				// can auto-detect if the instance is no longer moving, and remove from the interpolate lists again.
-				// If this step is ignored, an unmoving instance could remain on the interpolate lists indefinitely
-				// (or rather until the object is deleted) and cause unnecessary updates and drawcalls.
-				if (!instance->on_interpolate_transform_list) {
-					_interpolation_data.instance_transform_update_list_curr->push_back(p_instance);
-					instance->on_interpolate_transform_list = true;
-				}
-			}
 			_instance_queue_update(instance, true, false);
 		}
 	} else if (instance->indexer_id.is_valid()) {
@@ -4278,8 +4161,6 @@ bool RendererSceneCull::free(RID p_rid) {
 
 		Instance *instance = instance_owner.get_or_null(p_rid);
 
-		_interpolation_data.notify_free_instance(p_rid, *instance);
-
 		instance_geometry_set_lightmap(p_rid, RID(), Rect2(), 0);
 		instance_set_scenario(p_rid, RID());
 		instance_set_base(p_rid, RID());
@@ -4342,101 +4223,15 @@ void RendererSceneCull::set_scene_render(RendererSceneRender *p_scene_render) {
 void RendererSceneCull::update_interpolation_tick(bool p_process) {
 	// MultiMesh: Update interpolation in storage.
 	RSG::mesh_storage->update_interpolation_tick(p_process);
-
-	// INSTANCES
-
-	// Detect any that were on the previous transform list that are no longer active;
-	// we should remove them from the interpolate list.
-
-	for (const RID &rid : *_interpolation_data.instance_transform_update_list_prev) {
-		Instance *instance = instance_owner.get_or_null(rid);
-
-		bool active = true;
-
-		// No longer active? (Either the instance deleted or no longer being transformed.)
-		if (instance && !instance->on_interpolate_transform_list) {
-			active = false;
-			instance->on_interpolate_list = false;
-
-			// Make sure the most recent transform is set...
-			instance->transform = instance->transform_curr;
-
-			// ... and that both prev and current are the same, just in case of any interpolations.
-			instance->transform_prev = instance->transform_curr;
-
-			// Make sure instances are updated one more time to ensure the AABBs are correct.
-			_instance_queue_update(instance, true);
-		}
-
-		if (!instance) {
-			active = false;
-		}
-
-		if (!active) {
-			_interpolation_data.instance_interpolate_update_list.erase(rid);
-		}
-	}
-
-	// Now for any in the transform list (being actively interpolated), keep the previous transform
-	// value up to date, ready for the next tick.
-	if (p_process) {
-		for (const RID &rid : *_interpolation_data.instance_transform_update_list_curr) {
-			Instance *instance = instance_owner.get_or_null(rid);
-			if (instance) {
-				instance->transform_prev = instance->transform_curr;
-				instance->transform_checksum_prev = instance->transform_checksum_curr;
-				instance->on_interpolate_transform_list = false;
-			}
-		}
-	}
-
-	// We maintain a mirror list for the transform updates, so we can detect when an instance
-	// is no longer being transformed, and remove it from the interpolate list.
-	SWAP(_interpolation_data.instance_transform_update_list_curr, _interpolation_data.instance_transform_update_list_prev);
-
-	// Prepare for the next iteration.
-	_interpolation_data.instance_transform_update_list_curr->clear();
 }
 
 void RendererSceneCull::update_interpolation_frame(bool p_process) {
 	// MultiMesh: Update interpolation in storage.
 	RSG::mesh_storage->update_interpolation_frame(p_process);
-
-	if (p_process) {
-		real_t f = Engine::get_singleton()->get_physics_interpolation_fraction();
-
-		for (const RID &rid : _interpolation_data.instance_interpolate_update_list) {
-			Instance *instance = instance_owner.get_or_null(rid);
-			if (instance) {
-				TransformInterpolator::interpolate_transform_3d_via_method(instance->transform_prev, instance->transform_curr, instance->transform, f, instance->interpolation_method);
-
-#ifdef RENDERING_SERVER_DEBUG_PHYSICS_INTERPOLATION
-				print_line("\t\tinterpolated: " + rtos(instance->transform.origin.x) + "\t( prev " + rtos(instance->transform_prev.origin.x) + ", curr " + rtos(instance->transform_curr.origin.x) + " ) on tick " + itos(Engine::get_singleton()->get_physics_frames()));
-#endif
-
-				// Make sure AABBs are constantly up to date through the interpolation.
-				_instance_queue_update(instance, true);
-			}
-		}
-	}
 }
 
 void RendererSceneCull::set_physics_interpolation_enabled(bool p_enabled) {
 	_interpolation_data.interpolation_enabled = p_enabled;
-}
-
-void RendererSceneCull::InterpolationData::notify_free_instance(RID p_rid, Instance &r_instance) {
-	r_instance.on_interpolate_list = false;
-	r_instance.on_interpolate_transform_list = false;
-
-	if (!interpolation_enabled) {
-		return;
-	}
-
-	// If the instance was on any of the lists, remove.
-	instance_interpolate_update_list.erase_multiple_unordered(p_rid);
-	instance_transform_update_list_curr->erase_multiple_unordered(p_rid);
-	instance_transform_update_list_prev->erase_multiple_unordered(p_rid);
 }
 
 RendererSceneCull::RendererSceneCull() {
