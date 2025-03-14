@@ -104,13 +104,15 @@
 # Cerno_b <jan.biel@arcor.de>, 2023.
 # Cerno_b <cerno.b@gmail.com>, 2023, 2024.
 # tct123 <tct1234@protonmail.com>, 2024.
+# Silikonmanns Kanal <silvan.goeth@gmail.com>, 2025.
+# Tim Nikitin <tim.nikitin@posteo.de>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-10-03 21:40+0000\n"
-"Last-Translator: Ettore Atalan <atalanttore@googlemail.com>\n"
+"PO-Revision-Date: 2025-03-10 14:33+0000\n"
+"Last-Translator: Silikonmann <silvan.goeth@gmail.com>\n"
 "Language-Team: German <https://hosted.weblate.org/projects/godot-engine/godot-"
 "properties/de/>\n"
 "Language: de\n"
@@ -118,7 +120,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.8-dev\n"
+"X-Generator: Weblate 5.10.3-dev\n"
 
 msgid "Application"
 msgstr "Anwendung"
@@ -221,6 +223,9 @@ msgstr "Bis zum Titel erweitern"
 
 msgid "No Focus"
 msgstr "Kein Fokus"
+
+msgid "Sharp Corners"
+msgstr "Scharfe Ecken"
 
 msgid "Window Width Override"
 msgstr "Fensterbreite überschreiben"
@@ -539,6 +544,18 @@ msgstr "Kompatibilität"
 
 msgid "Legacy Just Pressed Behavior"
 msgstr "Veraltetes „Gerade gedrückt“-Verhalten"
+
+msgid "Sensors"
+msgstr "Sensoren"
+
+msgid "Enable Gravity"
+msgstr "Schwerkraft aktivieren"
+
+msgid "Enable Gyroscope"
+msgstr "Gyroskop aktivieren"
+
+msgid "Enable Magnetometer"
+msgstr "Magnetometer aktivieren"
 
 msgid "Device"
 msgstr "Gerät"
@@ -882,6 +899,12 @@ msgstr "Label"
 msgid "Read Only"
 msgstr "Nur Lesezugriff"
 
+msgid "Draw Label"
+msgstr "Zeichne Label"
+
+msgid "Draw Background"
+msgstr "Zeichne Hintergrund"
+
 msgid "Checkable"
 msgstr "Auswählbar"
 
@@ -1011,6 +1034,9 @@ msgstr "Leerlaufzeit im Prozessorenergiesparmodus (μs)"
 msgid "Unfocused Low Processor Mode Sleep (µsec)"
 msgstr "Leerlaufzeit im Prozessorenergiesparmodus bei fehlendem Fokus (μs)"
 
+msgid "V-Sync Mode"
+msgstr "V-Sync-Modus"
+
 msgid "Update Continuously"
 msgstr "Fortlaufend aktualisieren"
 
@@ -1067,6 +1093,9 @@ msgstr "Theme"
 
 msgid "Icon and Font Color"
 msgstr "Icon- und Schriftfarbe"
+
+msgid "Contrast"
+msgstr "Kontrast"
 
 msgid "Draw Extra Borders"
 msgstr "Zusätzliche Ränder zeichnen"
@@ -1229,6 +1258,9 @@ msgstr "Texteditor"
 
 msgid "Line Spacing"
 msgstr "Zeilenzwischenraum"
+
+msgid "Color Theme"
+msgstr "Farbschema"
 
 msgid "Appearance"
 msgstr "Aussehen"
@@ -1734,9 +1766,6 @@ msgstr "Shader beim Laden wiederherstellen"
 msgid "Visual Editors"
 msgstr "Visuelle Editoren"
 
-msgid "Color Theme"
-msgstr "Farbschema"
-
 msgid "Minimap Opacity"
 msgstr "Deckkraft der Übersichtskarte"
 
@@ -1764,8 +1793,14 @@ msgstr "SCP"
 msgid "Window Placement"
 msgstr "Fensterpositionierung"
 
+msgid "Rect"
+msgstr "Rechteck"
+
 msgid "Rect Custom Position"
 msgstr "Eigene Position Rechteck"
+
+msgid "Screen"
+msgstr "Bildschirm"
 
 msgid "Auto Save"
 msgstr "Autospeichern"
@@ -1775,6 +1810,9 @@ msgstr "Speichern vor Wiedergabe"
 
 msgid "Output"
 msgstr "Ausgabe"
+
+msgid "Font Size"
+msgstr "Schriftgröße"
 
 msgid "Always Clear Output on Play"
 msgstr "Ausgabe immer vor Programmstart leeren"
@@ -2781,9 +2819,6 @@ msgstr "Handgerät"
 
 msgid "Orientation"
 msgstr "Ausrichtung"
-
-msgid "V-Sync Mode"
-msgstr "V-Sync-Modus"
 
 msgid "Output Latency"
 msgstr "Ausgabe-Latenz"
@@ -3997,9 +4032,6 @@ msgstr "XR-Features"
 msgid "XR Mode"
 msgstr "XR-Modus"
 
-msgid "Screen"
-msgstr "Bildschirm"
-
 msgid "Immersive Mode"
 msgstr "Immersionsmodus"
 
@@ -4587,9 +4619,6 @@ msgstr "Abspielmodus"
 
 msgid "Copy Mode"
 msgstr "Kopiermodus"
-
-msgid "Rect"
-msgstr "Rechteck"
 
 msgid "Anchor Mode"
 msgstr "Ankermodus"
@@ -5741,9 +5770,6 @@ msgstr "Übersicht ändern"
 
 msgid "Font"
 msgstr "Schriftart"
-
-msgid "Font Size"
-msgstr "Schriftgröße"
 
 msgid "Horizontal Alignment"
 msgstr "Horizontale Ausrichtung"
@@ -8559,9 +8585,6 @@ msgstr "Anpassungen"
 
 msgid "Brightness"
 msgstr "Helligkeit"
-
-msgid "Contrast"
-msgstr "Kontrast"
 
 msgid "Saturation"
 msgstr "Sättigung"

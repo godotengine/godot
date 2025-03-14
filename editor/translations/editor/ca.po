@@ -29,13 +29,15 @@
 # Luna Moreno <akaluna99@gmail.com>, 2024.
 # Lukas Tenbrink <lukas.tenbrink@gmail.com>, 2025.
 # Alvaro <alvaro.garcia-bamala@epitech.eu>, 2025.
+# Joel Joan Castillo Ramos <joeljoancastilloramos5276@gmail.com>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-02-27 18:37+0000\n"
-"Last-Translator: Alberto Blanco Celdrán <flaberto.abc@gmail.com>\n"
+"PO-Revision-Date: 2025-03-09 21:12+0000\n"
+"Last-Translator: Joel Joan Castillo Ramos <joeljoancastilloramos5276@gmail."
+"com>\n"
 "Language-Team: Catalan <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ca/>\n"
 "Language: ca\n"
@@ -43,22 +45,22 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.10.2-rc\n"
+"X-Generator: Weblate 5.10.3-dev\n"
 
 msgid "Main Thread"
 msgstr "Fil principal"
 
 msgid "Unset"
-msgstr "Desactiva"
+msgstr "Sense Establir"
 
 msgid "Physical"
 msgstr "Físic"
 
 msgid "Left Mouse Button"
-msgstr "Botó Esquerre del Ratolí"
+msgstr "Botó esquerre del ratolí"
 
 msgid "Right Mouse Button"
-msgstr "Botó Dret del Ratolí"
+msgstr "Botó dret del ratolí"
 
 msgid "Middle Mouse Button"
 msgstr "Botó Central del Ratolí"
@@ -517,8 +519,15 @@ msgstr "Tipus:"
 msgid "Metadata name can't be empty."
 msgstr "El nom de la metadada no pot estar buit."
 
+msgid "Metadata name must be a valid identifier."
+msgstr "El nom de les metadades ha de ser un identificador vàlid."
+
+msgid "Metadata with name \"%s\" already exists."
+msgstr "Ja existeixen metadades amb aquest nom \"%s\"."
+
 msgid "Names starting with _ are reserved for editor-only metadata."
-msgstr "Els noms començant amb _ estan reservats per a metadades de l'editor."
+msgstr ""
+"Els noms que començan amb _ estan reservats per a metadades de l'editor."
 
 msgid "Time:"
 msgstr "Temps:"
@@ -530,13 +539,13 @@ msgid "Update Selected Key Handles"
 msgstr "Actualitza les nanses clau seleccionades"
 
 msgid "Insert Key Here"
-msgstr "Insereix una Clau aquí"
+msgstr "Insereix una clau aquí"
 
 msgid "Duplicate Selected Key(s)"
-msgstr "Duplica les Claus seleccionades"
+msgstr "Duplica les claus seleccionades"
 
 msgid "Cut Selected Key(s)"
-msgstr "Elimina les claus seleccionades"
+msgstr "Talla les claus seleccionades"
 
 msgid "Copy Selected Key(s)"
 msgstr "Copia les Claus seleccionades"
@@ -2424,17 +2433,46 @@ msgstr ""
 "Aquest mètode no necessita una instància per ser cridat.\n"
 "Es pot cridar directament utilitzant el nom de la classe."
 
+msgid "This value is an integer composed as a bitmask of the following flags."
+msgstr ""
+"Aquest valor és un nombre enter compost com a màscara de bits dels següents "
+"senyals."
+
+msgid "Experimental"
+msgstr "Experimental"
+
+msgid "Experimental:"
+msgstr "Experimental:"
+
 msgid "Operators"
 msgstr "Operadors"
 
 msgid "Method Descriptions"
 msgstr "Descripcions dels Mètodes"
 
+msgid "This method may be changed or removed in future versions."
+msgstr "Aquest mètode es canviarà o eliminarà en futures versions."
+
+msgid "This constructor may be changed or removed in future versions."
+msgstr "Aquest constructor es canviarà o eliminarà en futures versions."
+
+msgid "There is currently no description for this method."
+msgstr "Actualment, no hi ha cap descripció per a aquest mètode."
+
+msgid "There is currently no description for this constructor."
+msgstr "Actualment, no hi ha cap descripció per a aquest constructor."
+
+msgid "There is currently no description for this operator."
+msgstr "Actualment, no hi ha cap descripció per a aquest operador."
+
 msgid "Top"
 msgstr "Dalt"
 
 msgid "Class:"
 msgstr "Classe:"
+
+msgid "This class may be changed or removed in future versions."
+msgstr "Aquesta classe es canviarà o eliminarà en futures versions."
 
 msgid "Inherits:"
 msgstr "Hereta:"
@@ -2444,6 +2482,20 @@ msgstr "Heretat per:"
 
 msgid "Description"
 msgstr "Descripció"
+
+msgid "There is currently no description for this class."
+msgstr "Actualment no hi ha cap descripció per a aquesta classe."
+
+msgid "Note:"
+msgstr "Nota:"
+
+msgid ""
+"There are notable differences when using this API with C#. See [url=%s]C# API "
+"differences to GDScript[/url] for more information."
+msgstr ""
+"Hi ha diferències notòries en usar aquesta API amb C#. Vegeu "
+"[url=%s]Diferències entre la API de C# i GDScript[/*url] per a més "
+"información."
 
 msgid "Online Tutorials"
 msgstr "Tutorials en línia"
@@ -2459,6 +2511,9 @@ msgstr "Propietats del tema"
 
 msgid "Constants"
 msgstr "Constants"
+
+msgid "There is currently no description for this theme property."
+msgstr "Actualment no hi ha cap descripció per a aquesta propietat del tema."
 
 msgid "Enumerations"
 msgstr "Enumeracions"

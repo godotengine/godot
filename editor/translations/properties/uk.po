@@ -993,6 +993,9 @@ msgstr "Низький режим сну процесора (мкс)"
 msgid "Unfocused Low Processor Mode Sleep (µsec)"
 msgstr "Несфокусований низький рівень сну в режимі процесора (мкс)"
 
+msgid "V-Sync Mode"
+msgstr "Режим верт. синхронізації"
+
 msgid "Update Continuously"
 msgstr "Оновлювати неперервно"
 
@@ -1052,6 +1055,9 @@ msgstr "Тема"
 
 msgid "Icon and Font Color"
 msgstr "Колір піктограм і шрифту"
+
+msgid "Contrast"
+msgstr "Контрастність"
 
 msgid "Draw Extra Borders"
 msgstr "Малювати додаткові рамки"
@@ -1238,6 +1244,9 @@ msgstr "Текстовий редактор"
 
 msgid "Line Spacing"
 msgstr "Інтервал між рядками"
+
+msgid "Color Theme"
+msgstr "Тема кольорів"
 
 msgid "Appearance"
 msgstr "Вигляд"
@@ -1773,9 +1782,6 @@ msgstr "Відновити шейдери під час завантаження
 msgid "Visual Editors"
 msgstr "Візуальні редактори"
 
-msgid "Color Theme"
-msgstr "Тема кольорів"
-
 msgid "Minimap Opacity"
 msgstr "Непрозорість мінікарти"
 
@@ -1803,8 +1809,14 @@ msgstr "SCP"
 msgid "Window Placement"
 msgstr "Розташування вікон"
 
+msgid "Rect"
+msgstr "Прямокутник"
+
 msgid "Rect Custom Position"
 msgstr "Нетипове розташування прямокутника"
+
+msgid "Screen"
+msgstr "Екран"
 
 msgid "Auto Save"
 msgstr "Автозбереження"
@@ -1814,6 +1826,9 @@ msgstr "Зберігати перед запуском"
 
 msgid "Output"
 msgstr "Вивід"
+
+msgid "Font Size"
+msgstr "Розмір шрифту"
 
 msgid "Always Clear Output on Play"
 msgstr "Завжди очищувати вивід при відтворенні"
@@ -1838,6 +1853,9 @@ msgstr "Вузол"
 
 msgid "Editor TLS Certificates"
 msgstr "Сертифікати TLS редактора"
+
+msgid "Enable TLS V 1"
+msgstr "Увімкніть TLS V1"
 
 msgid "Remote Host"
 msgstr "Віддалений вузол"
@@ -2866,9 +2884,6 @@ msgstr "Кишеньковий пристрій"
 msgid "Orientation"
 msgstr "Орієнтація"
 
-msgid "V-Sync Mode"
-msgstr "Режим верт. синхронізації"
-
 msgid "Output Latency"
 msgstr "Затримка виведення"
 
@@ -3826,9 +3841,6 @@ msgstr "Усунення шуму"
 msgid "Denoiser"
 msgstr "Деноайзер"
 
-msgid "Enable TLS V 1"
-msgstr "Увімкніть TLS V1"
-
 msgid "BPM"
 msgstr "BPM"
 
@@ -4311,9 +4323,6 @@ msgstr "Жест"
 
 msgid "Swipe to Dismiss"
 msgstr "Проведіть пальцем, щоб відхилити"
-
-msgid "Screen"
-msgstr "Екран"
 
 msgid "Immersive Mode"
 msgstr "Режим занурення"
@@ -4950,9 +4959,6 @@ msgstr "Тип відтворення"
 
 msgid "Copy Mode"
 msgstr "Режим копіювання"
-
-msgid "Rect"
-msgstr "Прямокутник"
 
 msgid "Anchor Mode"
 msgstr "Режим піктограм"
@@ -6116,9 +6122,6 @@ msgstr "Контурний модуль"
 
 msgid "Font"
 msgstr "Шрифт"
-
-msgid "Font Size"
-msgstr "Розмір шрифту"
 
 msgid "Horizontal Alignment"
 msgstr "Горизонтальне вирівнювання"
@@ -9117,9 +9120,6 @@ msgstr "Коригування"
 
 msgid "Brightness"
 msgstr "Яскравість"
-
-msgid "Contrast"
-msgstr "Контрастність"
 
 msgid "Saturation"
 msgstr "Насиченість"
