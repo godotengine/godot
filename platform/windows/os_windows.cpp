@@ -966,7 +966,7 @@ static void _append_to_pipe(char *p_bytes, int p_size, String *r_pipe, Mutex *p_
 		// Let's hope it's compatible with UTF-8.
 		(*r_pipe) += String::utf8(p_bytes, p_size);
 	} else {
-		(*r_pipe) += String(wchars.ptr(), total_wchars);
+		(*r_pipe) += String::utf16((char16_t *)wchars.ptr(), total_wchars);
 	}
 	if (p_pipe_mutex) {
 		p_pipe_mutex->unlock();
@@ -2234,7 +2234,7 @@ String OS_Windows::get_user_data_dir(const String &p_user_dir) const {
 String OS_Windows::get_unique_id() const {
 	HW_PROFILE_INFOA HwProfInfo;
 	ERR_FAIL_COND_V(!GetCurrentHwProfileA(&HwProfInfo), "");
-	return String((HwProfInfo.szHwProfileGuid), HW_PROFILE_GUIDLEN);
+	return String::ascii(Span((HwProfInfo.szHwProfileGuid), HW_PROFILE_GUIDLEN));
 }
 
 bool OS_Windows::_check_internal_feature_support(const String &p_feature) {
@@ -2307,7 +2307,7 @@ String OS_Windows::get_system_ca_certificates() {
 		PackedByteArray pba;
 		pba.resize(size);
 		CryptBinaryToStringA(curr->pbCertEncoded, curr->cbCertEncoded, CRYPT_STRING_BASE64HEADER | CRYPT_STRING_NOCR, (char *)pba.ptrw(), &size);
-		certs += String((char *)pba.ptr(), size);
+		certs += String::ascii(Span((char *)pba.ptr(), size));
 		curr = CertEnumCertificatesInStore(cert_store, curr);
 	}
 	CertCloseStore(cert_store, 0);
