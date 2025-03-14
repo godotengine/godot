@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TEST_STREAM_PEER_GZIP_H
-#define TEST_STREAM_PEER_GZIP_H
+#pragma once
 
 #include "core/io/stream_peer_gzip.h"
 #include "tests/test_macros.h"
@@ -171,5 +170,3 @@ TEST_CASE("[TestStreamPeerGzip] Put/Get data") {
 }
 
 } // namespace TestStreamPeerGzip
-
-#endif // TEST_STREAM_PEER_GZIP_H
