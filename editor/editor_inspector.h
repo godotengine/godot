@@ -75,6 +75,12 @@ public:
 		COLORATION_EXTERNAL,
 	};
 
+	enum InlineControlSide {
+		LEFT,
+		CENTER,
+		RIGHT
+	};
+
 private:
 	String label;
 	int text_size;
@@ -97,6 +103,7 @@ private:
 	bool draw_prop_warning = false;
 	bool keying = false;
 	bool deletable = false;
+	bool label_overlayed = false;
 
 	Rect2 right_child_rect;
 	Rect2 bottom_child_rect;
@@ -134,6 +141,9 @@ private:
 	Control *label_reference = nullptr;
 	Control *bottom_editor = nullptr;
 	PopupMenu *menu = nullptr;
+	HBoxContainer *left_container = nullptr;
+	HBoxContainer *center_container = nullptr;
+	HBoxContainer *right_container = nullptr;
 
 	HashMap<StringName, Variant> cache;
 
@@ -216,7 +226,13 @@ public:
 	void deselect();
 	bool is_selected() const;
 
+	void add_inline_control(Control *p_control, InlineControlSide p_side);
+	HBoxContainer *get_inline_container(InlineControlSide p_side);
+	void set_label_overlayed(bool p_overlay);
+	bool get_label_overlayed();
+
 	void set_label_reference(Control *p_control);
+	Control *get_label_reference();
 	void set_bottom_editor(Control *p_control);
 
 	void set_use_folding(bool p_use_folding);
