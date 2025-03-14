@@ -28,10 +28,13 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TEST_LSP_H
-#define TEST_LSP_H
+#pragma once
 
 #ifdef TOOLS_ENABLED
+
+#include "modules/modules_enabled.gen.h" // For jsonrpc.
+
+#ifdef MODULE_JSONRPC_ENABLED
 
 #include "tests/test_macros.h"
 
@@ -507,6 +510,6 @@ func f():
 
 } // namespace GDScriptTests
 
-#endif // TOOLS_ENABLED
+#endif // MODULE_JSONRPC_ENABLED
 
-#endif // TEST_LSP_H
+#endif // TOOLS_ENABLED

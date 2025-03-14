@@ -447,8 +447,8 @@ void EditorFileSystem::_scan_filesystem() {
 					name = cpath.path_join(name);
 
 					FileCache fc;
-					fc.type = split[1].get_slice("/", 0);
-					fc.resource_script_class = split[1].get_slice("/", 1);
+					fc.type = split[1].get_slicec('/', 0);
+					fc.resource_script_class = split[1].get_slicec('/', 1);
 					fc.uid = split[2].to_int();
 					fc.modification_time = split[3].to_int();
 					fc.import_modification_time = split[4].to_int();
@@ -1846,7 +1846,7 @@ bool EditorFileSystem::_find_file(const String &p_file, EditorFileSystemDirector
 	if (!f.begins_with("res://")) {
 		return false;
 	}
-	f = f.substr(6, f.length());
+	f = f.substr(6);
 	f = f.replace("\\", "/");
 
 	Vector<String> path = f.split("/");
@@ -1972,7 +1972,7 @@ EditorFileSystemDirectory *EditorFileSystem::get_filesystem_path(const String &p
 		return nullptr;
 	}
 
-	f = f.substr(6, f.length());
+	f = f.substr(6);
 	f = f.replace("\\", "/");
 	if (f.is_empty()) {
 		return filesystem;
@@ -2171,6 +2171,7 @@ void EditorFileSystem::_update_script_documentation() {
 
 		if (!efd || index < 0) {
 			// The file was removed
+			EditorHelp::remove_script_doc_by_path(path);
 			continue;
 		}
 
@@ -2188,7 +2189,7 @@ void EditorFileSystem::_update_script_documentation() {
 					scr->reload_from_file();
 				}
 				for (const DocData::ClassDoc &cd : scr->get_documentation()) {
-					EditorHelp::get_doc_data()->add_doc(cd);
+					EditorHelp::add_doc(cd);
 					if (!first_scan) {
 						// Update the documentation in the Script Editor if it is open.
 						ScriptEditor::get_singleton()->update_doc(cd.name);
@@ -2824,11 +2825,9 @@ Error EditorFileSystem::_reimport_file(const String &p_file, const HashMap<Strin
 	if (load_default && ProjectSettings::get_singleton()->has_setting("importer_defaults/" + importer->get_importer_name())) {
 		//use defaults if exist
 		Dictionary d = GLOBAL_GET("importer_defaults/" + importer->get_importer_name());
-		List<Variant> v;
-		d.get_key_list(&v);
 
-		for (const Variant &E : v) {
-			params[E] = d[E];
+		for (const KeyValue<Variant, Variant> &kv : d) {
+			params[kv.key] = kv.value;
 		}
 	}
 
@@ -3107,8 +3106,11 @@ void EditorFileSystem::_refresh_filesystem() {
 }
 
 void EditorFileSystem::_reimport_thread(uint32_t p_index, ImportThreadData *p_import_data) {
+	ResourceLoader::set_is_import_thread(true);
 	int file_idx = p_import_data->reimport_from + int(p_index);
 	_reimport_file(p_import_data->reimport_files[file_idx].path);
+	ResourceLoader::set_is_import_thread(false);
+
 	p_import_data->imported_sem->post();
 }
 

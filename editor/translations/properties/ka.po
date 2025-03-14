@@ -707,9 +707,6 @@ msgstr "მოთხოვნის მოლოდინის ვადა"
 msgid "Sync Breakpoints"
 msgstr "წყვეტის წერტილების სინქრონიზაცია"
 
-msgid "Default Feature Profile"
-msgstr "ნაგულისხმევი თვისების პროფილი"
-
 msgid "Label"
 msgstr "ჭდე"
 

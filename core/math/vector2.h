@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef VECTOR2_H
-#define VECTOR2_H
+#pragma once
 
 #include "core/error/error_macros.h"
 #include "core/math/math_funcs.h"
@@ -129,6 +128,7 @@ struct [[nodiscard]] Vector2 {
 	Vector2 reflect(const Vector2 &p_normal) const;
 
 	bool is_equal_approx(const Vector2 &p_v) const;
+	bool is_same(const Vector2 &p_v) const;
 	bool is_zero_approx() const;
 	bool is_finite() const;
 
@@ -327,4 +327,5 @@ _FORCE_INLINE_ Vector2 operator*(int64_t p_scalar, const Vector2 &p_vec) {
 typedef Vector2 Size2;
 typedef Vector2 Point2;
 
-#endif // VECTOR2_H
+template <>
+struct is_zero_constructible<Vector2> : std::true_type {};

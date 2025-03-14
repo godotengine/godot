@@ -28,13 +28,12 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef RENDERING_CONTEXT_DRIVER_METAL_H
-#define RENDERING_CONTEXT_DRIVER_METAL_H
+#pragma once
 
 #ifdef METAL_ENABLED
 
-#import "servers/rendering/rendering_context_driver.h"
-#import "servers/rendering/rendering_device_driver.h"
+#include "servers/rendering/rendering_context_driver.h"
+#include "servers/rendering/rendering_device_driver.h"
 
 #import <CoreGraphics/CGGeometry.h>
 
@@ -143,5 +142,3 @@ public:
 };
 
 #endif // METAL_ENABLED
-
-#endif // RENDERING_CONTEXT_DRIVER_METAL_H

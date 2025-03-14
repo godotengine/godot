@@ -6,6 +6,8 @@ import os
 import re
 import subprocess
 import sys
+import textwrap
+import zlib
 from collections import OrderedDict
 from io import StringIO, TextIOBase
 from pathlib import Path
@@ -16,6 +18,8 @@ from misc.utility.color import print_error, print_info, print_warning
 # Get the "Godot" folder name ahead of time
 base_folder_path = str(os.path.abspath(Path(__file__).parent)) + "/"
 base_folder_only = os.path.basename(os.path.normpath(base_folder_path))
+
+compiler_version_cache = None
 
 # Listing all the folders we have converted
 # for SCU in scu_builders.py
@@ -142,30 +146,36 @@ def get_version_info(module_version_string="", silent=False):
         if not silent:
             print_info(f"Using version status '{version_info['status']}', overriding the original '{version.status}'.")
 
+    return version_info
+
+
+def get_git_info():
+    os.chdir(base_folder_path)
+
     # Parse Git hash if we're in a Git repo.
-    githash = ""
-    gitfolder = ".git"
+    git_hash = ""
+    git_folder = ".git"
 
     if os.path.isfile(".git"):
         with open(".git", "r", encoding="utf-8") as file:
             module_folder = file.readline().strip()
         if module_folder.startswith("gitdir: "):
-            gitfolder = module_folder[8:]
+            git_folder = module_folder[8:]
 
-    if os.path.isfile(os.path.join(gitfolder, "HEAD")):
-        with open(os.path.join(gitfolder, "HEAD"), "r", encoding="utf8") as file:
+    if os.path.isfile(os.path.join(git_folder, "HEAD")):
+        with open(os.path.join(git_folder, "HEAD"), "r", encoding="utf8") as file:
             head = file.readline().strip()
         if head.startswith("ref: "):
             ref = head[5:]
             # If this directory is a Git worktree instead of a root clone.
-            parts = gitfolder.split("/")
+            parts = git_folder.split("/")
             if len(parts) > 2 and parts[-2] == "worktrees":
-                gitfolder = "/".join(parts[0:-2])
-            head = os.path.join(gitfolder, ref)
-            packedrefs = os.path.join(gitfolder, "packed-refs")
+                git_folder = "/".join(parts[0:-2])
+            head = os.path.join(git_folder, ref)
+            packedrefs = os.path.join(git_folder, "packed-refs")
             if os.path.isfile(head):
                 with open(head, "r", encoding="utf-8") as file:
-                    githash = file.readline().strip()
+                    git_hash = file.readline().strip()
             elif os.path.isfile(packedrefs):
                 # Git may pack refs into a single file. This code searches .git/packed-refs file for the current ref's hash.
                 # https://mirrors.edge.kernel.org/pub/software/scm/git/docs/git-pack-refs.html
@@ -174,26 +184,26 @@ def get_version_info(module_version_string="", silent=False):
                         continue
                     (line_hash, line_ref) = line.split(" ")
                     if ref == line_ref:
-                        githash = line_hash
+                        git_hash = line_hash
                         break
         else:
-            githash = head
-
-    version_info["git_hash"] = githash
-    # Fallback to 0 as a timestamp (will be treated as "unknown" in the engine).
-    version_info["git_timestamp"] = 0
+            git_hash = head
 
     # Get the UNIX timestamp of the build commit.
+    git_timestamp = 0
     if os.path.exists(".git"):
         try:
-            version_info["git_timestamp"] = subprocess.check_output(
-                ["git", "log", "-1", "--pretty=format:%ct", "--no-show-signature", githash]
-            ).decode("utf-8")
+            git_timestamp = subprocess.check_output(
+                ["git", "log", "-1", "--pretty=format:%ct", "--no-show-signature", git_hash], encoding="utf-8"
+            )
         except (subprocess.CalledProcessError, OSError):
             # `git` not found in PATH.
             pass
 
-    return version_info
+    return {
+        "git_hash": git_hash,
+        "git_timestamp": git_timestamp,
+    }
 
 
 def get_cmdline_bool(option, default):
@@ -553,7 +563,7 @@ def glob_recursive(pattern, node="."):
 
 
 def precious_program(env, program, sources, **args):
-    program = env.ProgramOriginal(program, sources, **args)
+    program = env.Program(program, sources, **args)
     env.Precious(program)
     return program
 
@@ -635,6 +645,11 @@ def get_compiler_version(env):
     - metadata1, metadata2: Extra information
     - date: Date of the build
     """
+
+    global compiler_version_cache
+    if compiler_version_cache is not None:
+        return compiler_version_cache
+
     import shlex
 
     ret = {
@@ -681,7 +696,7 @@ def get_compiler_version(env):
                     ret["metadata1"] = split[1]
         except (subprocess.CalledProcessError, OSError):
             print_warning("Couldn't find vswhere to determine compiler version.")
-        return ret
+        return update_compiler_version_cache(ret)
 
     # Not using -dumpversion as some GCC distros only return major, and
     # Clang used to return hardcoded 4.2.1: # https://reviews.llvm.org/D56803
@@ -691,7 +706,7 @@ def get_compiler_version(env):
         ).strip()
     except (subprocess.CalledProcessError, OSError):
         print_warning("Couldn't parse CXX environment variable to infer compiler version.")
-        return ret
+        return update_compiler_version_cache(ret)
 
     match = re.search(
         r"(?:(?<=version )|(?<=\) )|(?<=^))"
@@ -734,7 +749,13 @@ def get_compiler_version(env):
         "apple_patch3",
     ]:
         ret[key] = int(ret[key] or -1)
-    return ret
+    return update_compiler_version_cache(ret)
+
+
+def update_compiler_version_cache(value):
+    global compiler_version_cache
+    compiler_version_cache = value
+    return value
 
 
 def using_gcc(env):
@@ -768,9 +789,10 @@ def show_progress(env):
 
             # Progress reporting is not available in non-TTY environments since it
             # messes with the output (for example, when writing to a file).
-            self.display = cast(bool, self.max and env["progress"] and sys.stdout.isatty())
+            self.display = cast(bool, env["progress"] and sys.stdout.isatty())
             if self.display and not self.max:
                 print_info("Performing initial build, progress percentage unavailable!")
+                self.display = False
 
         def __call__(self, node, *args, **kw):
             self.count += 1
@@ -853,9 +875,6 @@ def clean_cache(cache_path: str, cache_limit: int, verbose: bool) -> None:
 
 
 def prepare_cache(env) -> None:
-    if env.GetOption("clean"):
-        return
-
     cache_path = ""
     if env["cache_path"]:
         cache_path = cast(str, env["cache_path"])
@@ -907,21 +926,19 @@ def prepare_timer():
     def print_elapsed_time(time_at_start: float):
         time_elapsed = time.time() - time_at_start
         time_formatted = time.strftime("%H:%M:%S", time.gmtime(time_elapsed))
-        time_centiseconds = round((time_elapsed % 1) * 100)
-        print_info(f"Time elapsed: {time_formatted}.{time_centiseconds}")
+        time_centiseconds = (time_elapsed % 1) * 100
+        print_info(f"Time elapsed: {time_formatted}.{time_centiseconds:02.0f}")
 
     atexit.register(print_elapsed_time, time.time())
 
 
 def dump(env):
-    # Dumps latest build information for debugging purposes and external tools.
-    from json import dump
+    """
+    Dumps latest build information for debugging purposes and external tools.
+    """
 
-    def non_serializable(obj):
-        return "<<non-serializable: %s>>" % (type(obj).__qualname__)
-
-    with open(".scons_env.json", "w", encoding="utf-8", newline="\n") as f:
-        dump(env.Dictionary(), f, indent=4, default=non_serializable)
+    with open(".scons_env.json", "w", encoding="utf-8", newline="\n") as file:
+        file.write(env.Dump(format="json"))
 
 
 # Custom Visual Studio project generation logic that supports any platform that has a msvs.py
@@ -1408,6 +1425,11 @@ def generate_vs_project(env, original_args, project_name="godot"):
         sys.exit()
 
 
+############################################################
+# FILE GENERATION & FORMATTING
+############################################################
+
+
 def generate_copyright_header(filename: str) -> str:
     MARGIN = 70
     TEMPLATE = """\
@@ -1441,79 +1463,85 @@ def generate_copyright_header(filename: str) -> str:
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 """
-    filename = filename.split("/")[-1].ljust(MARGIN)
-    if len(filename) > MARGIN:
+    if len(filename := os.path.basename(filename).ljust(MARGIN)) > MARGIN:
         print_warning(f'Filename "{filename}" too large for copyright header.')
     return TEMPLATE % filename
 
 
 @contextlib.contextmanager
 def generated_wrapper(
-    path,  # FIXME: type with `Union[str, Node, List[Node]]` when pytest conflicts are resolved
+    path: str,
     guard: Optional[bool] = None,
-    prefix: str = "",
-    suffix: str = "",
 ) -> Generator[TextIOBase, None, None]:
     """
     Wrapper class to automatically handle copyright headers and header guards
     for generated scripts. Meant to be invoked via `with` statement similar to
     creating a file.
 
-    - `path`: The path of the file to be created. Can be passed a raw string, an
-    isolated SCons target, or a full SCons target list. If a target list contains
-    multiple entries, produces a warning & only creates the first entry.
-    - `guard`: Optional bool to determine if a header guard should be added. If
-    unassigned, header guards are determined by the file extension.
-    - `prefix`: Custom prefix to prepend to a header guard. Produces a warning if
-    provided a value when `guard` evaluates to `False`.
-    - `suffix`: Custom suffix to append to a header guard. Produces a warning if
-    provided a value when `guard` evaluates to `False`.
+    - `path`: The path of the file to be created.
+    - `guard`: Optional bool to determine if `#pragma once` should be added. If
+    unassigned, the value is determined by file extension.
     """
 
-    # Handle unfiltered SCons target[s] passed as path.
-    if not isinstance(path, str):
-        if isinstance(path, list):
-            if len(path) > 1:
-                print_warning(
-                    f"Attempting to use generated wrapper with multiple targets; will only use first entry: {path[0]}"
-                )
-            path = path[0]
-        if not hasattr(path, "get_abspath"):
-            raise TypeError(f'Expected type "str", "Node" or "List[Node]"; was passed {type(path)}.')
-        path = path.get_abspath()
-
-    path = str(path).replace("\\", "/")
     if guard is None:
-        guard = path.endswith((".h", ".hh", ".hpp", ".inc"))
-    if not guard and (prefix or suffix):
-        print_warning(f'Trying to assign header guard prefix/suffix while `guard` is disabled: "{path}".')
-
-    header_guard = ""
-    if guard:
-        if prefix:
-            prefix += "_"
-        if suffix:
-            suffix = f"_{suffix}"
-        split = path.split("/")[-1].split(".")
-        header_guard = (f"{prefix}{split[0]}{suffix}.{'.'.join(split[1:])}".upper()
-                .replace(".", "_").replace("-", "_").replace(" ", "_").replace("__", "_"))  # fmt: skip
+        guard = path.endswith((".h", ".hh", ".hpp", ".hxx", ".inc"))
 
     with open(path, "wt", encoding="utf-8", newline="\n") as file:
         file.write(generate_copyright_header(path))
         file.write("\n/* THIS FILE IS GENERATED. EDITS WILL BE LOST. */\n\n")
 
         if guard:
-            file.write(f"#ifndef {header_guard}\n")
-            file.write(f"#define {header_guard}\n\n")
+            file.write("#pragma once\n\n")
 
         with StringIO(newline="\n") as str_io:
             yield str_io
             file.write(str_io.getvalue().strip() or "/* NO CONTENT */")
 
-        if guard:
-            file.write(f"\n\n#endif // {header_guard}")
-
         file.write("\n")
+
+
+def get_buffer(path: str) -> bytes:
+    with open(path, "rb") as file:
+        return file.read()
+
+
+def compress_buffer(buffer: bytes) -> bytes:
+    # Use maximum zlib compression level to further reduce file size
+    # (at the cost of initial build times).
+    return zlib.compress(buffer, zlib.Z_BEST_COMPRESSION)
+
+
+def format_buffer(buffer: bytes, indent: int = 0, width: int = 120, initial_indent: bool = False) -> str:
+    return textwrap.fill(
+        ", ".join(str(byte) for byte in buffer),
+        width=width,
+        initial_indent="\t" * indent if initial_indent else "",
+        subsequent_indent="\t" * indent,
+        tabsize=4,
+    )
+
+
+############################################################
+# CSTRING PARSING
+############################################################
+
+C_ESCAPABLES = [
+    ("\\", "\\\\"),
+    ("\a", "\\a"),
+    ("\b", "\\b"),
+    ("\f", "\\f"),
+    ("\n", "\\n"),
+    ("\r", "\\r"),
+    ("\t", "\\t"),
+    ("\v", "\\v"),
+    # ("'", "\\'"),  # Skip, as we're only dealing with full strings.
+    ('"', '\\"'),
+]
+C_ESCAPE_TABLE = str.maketrans(dict((x, y) for x, y in C_ESCAPABLES))
+
+
+def to_escaped_cstring(value: str) -> str:
+    return value.translate(C_ESCAPE_TABLE)
 
 
 def to_raw_cstring(value: Union[str, List[str]]) -> str:
@@ -1553,4 +1581,8 @@ def to_raw_cstring(value: Union[str, List[str]]) -> str:
 
         split += [segment]
 
-    return " ".join(f'R"<!>({x.decode()})<!>"' for x in split)
+    if len(split) == 1:
+        return f'R"<!>({split[0].decode()})<!>"'
+    else:
+        # Wrap multiple segments in parenthesis to suppress `string-concatenation` warnings on clang.
+        return "({})".format(" ".join(f'R"<!>({segment.decode()})<!>"' for segment in split))

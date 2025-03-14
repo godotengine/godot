@@ -368,6 +368,15 @@ void DocTools::remove_doc(const String &p_class_name) {
 	class_list.erase(p_class_name);
 }
 
+void DocTools::remove_script_doc_by_path(const String &p_path) {
+	for (KeyValue<String, DocData::ClassDoc> &E : class_list) {
+		if (E.value.is_script_doc && E.value.script_path == p_path) {
+			remove_doc(E.key);
+			return;
+		}
+	}
+}
+
 bool DocTools::has_doc(const String &p_class_name) {
 	if (p_class_name.is_empty()) {
 		return false;
@@ -1632,7 +1641,7 @@ Error DocTools::save_classes(const String &p_default_path, const HashMap<String,
 		}
 
 		Error err;
-		String save_file = save_path.path_join(c.name.replace("\"", "").replace("/", "--") + ".xml");
+		String save_file = save_path.path_join(c.name.remove_char('\"').replace("/", "--") + ".xml");
 		Ref<FileAccess> f = FileAccess::open(save_file, FileAccess::WRITE, &err);
 
 		ERR_CONTINUE_MSG(err != OK, "Can't write doc file: " + save_file + ".");

@@ -390,5 +390,19 @@ hb_ot_map_builder_t::compile (hb_ot_map_t                  &m,
   }
 }
 
+unsigned int hb_ot_map_t::get_feature_tags (unsigned int start_offset, unsigned int *tag_count, hb_tag_t *tags) const
+{
+  if (tag_count)
+  {
+    auto sub_features = features.as_array ().sub_array (start_offset, tag_count);
+    if (tags)
+    {
+      for (unsigned int i = 0; i < sub_features.length; i++)
+        tags[i] = sub_features[i].tag;
+    }
+  }
+
+  return features.length;
+}
 
 #endif

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef SCRIPT_EDITOR_PLUGIN_H
-#define SCRIPT_EDITOR_PLUGIN_H
+#pragma once
 
 #include "core/object/script_language.h"
 #include "editor/plugins/editor_plugin.h"
@@ -569,6 +568,7 @@ public:
 	PackedStringArray get_unsaved_scripts() const;
 	void save_current_script();
 	void save_all_scripts();
+	void update_script_times();
 
 	void set_window_layout(Ref<ConfigFile> p_layout);
 	void get_window_layout(Ref<ConfigFile> p_layout);
@@ -644,5 +644,3 @@ public:
 	ScriptEditorPlugin();
 	~ScriptEditorPlugin();
 };
-
-#endif // SCRIPT_EDITOR_PLUGIN_H

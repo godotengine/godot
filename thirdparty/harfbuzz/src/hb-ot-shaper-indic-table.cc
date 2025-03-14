@@ -48,6 +48,7 @@
 #define OT_CM I_Cat(CM)
 #define OT_Symbol I_Cat(Symbol)
 #define OT_CS I_Cat(CS)
+#define OT_SMPst I_Cat(SMPst)
 /* khmer */
 #define OT_VAbv K_Cat(VAbv)
 #define OT_VBlw K_Cat(VBlw)
@@ -94,7 +95,8 @@ static_assert (OT_VPst == M_Cat(VPst), "");
 #define _OT_R    OT_Ra           /*  14 chars; Ra */
 #define _OT_Rf   OT_Repha        /*   1 chars; Repha */
 #define _OT_Rt   OT_Robatic      /*   3 chars; Robatic */
-#define _OT_SM   OT_SM           /*  56 chars; SM */
+#define _OT_SM   OT_SM           /*  50 chars; SM */
+#define _OT_SP   OT_SMPst        /*   6 chars; SMPst */
 #define _OT_S    OT_Symbol       /*  22 chars; Symbol */
 #define _OT_V    OT_V            /* 172 chars; V */
 #define _OT_VA   OT_VAbv         /*  18 chars; VAbv */
@@ -145,7 +147,7 @@ static const uint16_t indic_table[] = {
 
   /* Latin-1 Supplement */
 
-  /* 00B0 */  _(X,X),  _(X,X),_(SM,SM),_(SM,SM),  _(X,X),  _(X,X),  _(X,X),  _(X,X),
+  /* 00B0 */  _(X,X),  _(X,X),_(SP,SM),_(SP,SM),  _(X,X),  _(X,X),  _(X,X),  _(X,X),
   /* 00B8 */  _(X,X),  _(X,X),  _(X,X),  _(X,X),  _(X,X),  _(X,X),  _(X,X),  _(X,X),
   /* 00C0 */  _(X,X),  _(X,X),  _(X,X),  _(X,X),  _(X,X),  _(X,X),  _(X,X),  _(X,X),
   /* 00C8 */  _(X,X),  _(X,X),  _(X,X),  _(X,X),  _(X,X),  _(X,X),  _(X,X),  _(X,X),
@@ -398,9 +400,9 @@ static const uint16_t indic_table[] = {
 
   /* Superscripts and Subscripts */
 
-  /* 2070 */  _(X,X),  _(X,X),  _(X,X),  _(X,X),_(SM,SM),  _(X,X),  _(X,X),  _(X,X),
+  /* 2070 */  _(X,X),  _(X,X),  _(X,X),  _(X,X),_(SP,SM),  _(X,X),  _(X,X),  _(X,X),
   /* 2078 */  _(X,X),  _(X,X),  _(X,X),  _(X,X),  _(X,X),  _(X,X),  _(X,X),  _(X,X),
-  /* 2080 */  _(X,X),  _(X,X),_(SM,SM),_(SM,SM),_(SM,SM),  _(X,X),  _(X,X),  _(X,X),
+  /* 2080 */  _(X,X),  _(X,X),_(SP,SM),_(SP,SM),_(SP,SM),  _(X,X),  _(X,X),  _(X,X),
 
 #define indic_offset_0x25f8u 1592
 
@@ -540,6 +542,7 @@ hb_indic_get_categories (hb_codepoint_t u)
 #undef _OT_Rf
 #undef _OT_Rt
 #undef _OT_SM
+#undef _OT_SP
 #undef _OT_S
 #undef _OT_V
 #undef _OT_VA

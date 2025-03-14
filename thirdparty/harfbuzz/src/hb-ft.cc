@@ -37,7 +37,11 @@
 #include "hb-draw.hh"
 #include "hb-font.hh"
 #include "hb-machinery.hh"
+#ifndef HB_NO_AAT
+#include "hb-aat-layout-trak-table.hh"
+#endif
 #include "hb-ot-os2-table.hh"
+#include "hb-ot-stat-table.hh"
 #include "hb-ot-shaper-arabic-pua.hh"
 #include "hb-paint.hh"
 
@@ -275,6 +279,33 @@ hb_ft_font_get_load_flags (hb_font_t *font)
 }
 
 /**
+ * hb_ft_font_get_ft_face: (skip)
+ * @font: #hb_font_t to work upon
+ *
+ * Fetches the FT_Face associated with the specified #hb_font_t
+ * font object.
+ *
+ * This function works with #hb_font_t objects created by
+ * hb_ft_font_create() or hb_ft_font_create_referenced().
+ *
+ * Return value: (nullable): the FT_Face found or `NULL`
+ *
+ * Since: 10.4.0
+ **/
+FT_Face
+hb_ft_font_get_ft_face (hb_font_t *font)
+{
+  if (unlikely (font->destroy != (hb_destroy_func_t) _hb_ft_font_destroy))
+    return nullptr;
+
+  const hb_ft_font_t *ft_font = (const hb_ft_font_t *) font->user_data;
+
+  return ft_font->ft_face;
+}
+
+#ifndef HB_DISABLE_DEPRECATED
+
+/**
  * hb_ft_font_get_face: (skip)
  * @font: #hb_font_t to work upon
  *
@@ -287,17 +318,15 @@ hb_ft_font_get_load_flags (hb_font_t *font)
  * Return value: (nullable): the FT_Face found or `NULL`
  *
  * Since: 0.9.2
+ * Deprecated: 10.4.0: Use hb_ft_font_get_ft_face() instead.
  **/
 FT_Face
 hb_ft_font_get_face (hb_font_t *font)
 {
-  if (unlikely (font->destroy != (hb_destroy_func_t) _hb_ft_font_destroy))
-    return nullptr;
-
-  const hb_ft_font_t *ft_font = (const hb_ft_font_t *) font->user_data;
-
-  return ft_font->ft_face;
+  return hb_ft_font_get_ft_face (font);
 }
+
+#endif
 
 /**
  * hb_ft_font_lock_face: (skip)
@@ -502,6 +531,26 @@ hb_ft_get_glyph_h_advances (hb_font_t* font, void* font_data,
       first_advance = &StructAtOffsetUnaligned<hb_position_t> (first_advance, advance_stride);
     }
   }
+
+#ifndef HB_NO_AAT
+  /* According to Ned, trak is applied by default for "modern fonts", as detected by presence of STAT table. */
+#ifndef HB_NO_STYLE
+  bool apply_trak = font->face->table.STAT->has_data () && font->face->table.trak->has_data ();
+#else
+  bool apply_trak = false;
+#endif
+  if (apply_trak)
+  {
+    hb_position_t tracking = font->face->table.trak->get_h_tracking (font);
+    first_advance = orig_first_advance;
+    for (unsigned int i = 0; i < count; i++)
+    {
+      *first_advance += tracking;
+      first_glyph = &StructAtOffsetUnaligned<hb_codepoint_t> (first_glyph, glyph_stride);
+      first_advance = &StructAtOffsetUnaligned<hb_position_t> (first_advance, advance_stride);
+    }
+  }
+#endif
 }
 
 #ifndef HB_NO_VERTICAL
@@ -538,7 +587,20 @@ hb_ft_get_glyph_v_advance (hb_font_t *font,
    * have a Y growing upward.  Hence the extra negation. */
 
   hb_position_t y_strength = font->y_scale >= 0 ? font->y_strength : -font->y_strength;
-  return ((-v + (1<<9)) >> 10) + (font->embolden_in_place ? 0 : y_strength);
+  v = ((-v + (1<<9)) >> 10) + (font->embolden_in_place ? 0 : y_strength);
+
+#ifndef HB_NO_AAT
+  /* According to Ned, trak is applied by default for "modern fonts", as detected by presence of STAT table. */
+#ifndef HB_NO_STYLE
+  bool apply_trak = font->face->table.STAT->has_data () && font->face->table.trak->has_data ();
+#else
+  bool apply_trak = false;
+#endif
+  if (apply_trak)
+    v += font->face->table.trak->get_v_tracking (font);
+#endif
+
+  return v;
 }
 #endif
 
@@ -931,11 +993,15 @@ hb_ft_paint_glyph (hb_font_t *font,
   hb_lock_t lock (ft_font->lock);
   FT_Face ft_face = ft_font->ft_face;
 
+  FT_Long load_flags = ft_font->load_flags | FT_LOAD_NO_BITMAP | FT_LOAD_COLOR;
+#if (FREETYPE_MAJOR*10000 + FREETYPE_MINOR*100 + FREETYPE_PATCH) >= 21301
+  load_flags |= FT_LOAD_NO_SVG;
+#endif
+
   /* We release the lock before calling into glyph callbacks, such that
    * eg. draw API can call back into the face.*/
 
-  if (unlikely (FT_Load_Glyph (ft_face, gid,
-			       ft_font->load_flags | FT_LOAD_COLOR)))
+  if (unlikely (FT_Load_Glyph (ft_face, gid, load_flags)))
     return;
 
   if (ft_face->glyph->format == FT_GLYPH_FORMAT_OUTLINE)
@@ -1286,7 +1352,7 @@ hb_ft_face_create_cached (FT_Face ft_face)
  *
  * If you know you have valid reasons not to use hb_ft_font_create_referenced(),
  * then it is the client program's responsibility to destroy @ft_face
- * after the #hb_font_t font object has been destroyed.
+ * only after the #hb_font_t font object has been destroyed.
  *
  * HarfBuzz will use the @destroy callback on the #hb_font_t font object
  * if it is supplied when you use this function. However, even if @destroy
@@ -1594,6 +1660,11 @@ _release_blob (void *arg)
 void
 hb_ft_font_set_funcs (hb_font_t *font)
 {
+  // In case of failure...
+  hb_font_set_funcs (font,
+		     hb_font_funcs_get_empty (),
+		     nullptr, nullptr);
+
   hb_blob_t *blob = hb_face_reference_blob (font->face);
   unsigned int blob_length;
   const char *blob_data = hb_blob_get_data (blob, &blob_length);

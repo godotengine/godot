@@ -1342,7 +1342,7 @@ void ShaderLanguage::_parse_used_identifier(const StringName &p_identifier, Iden
 			break;
 		case IdentifierType::IDENTIFIER_VARYING:
 			if (HAS_WARNING(ShaderWarning::UNUSED_VARYING_FLAG) && used_varyings.has(p_identifier)) {
-				if (shader->varyings[p_identifier].stage != ShaderNode::Varying::STAGE_VERTEX && shader->varyings[p_identifier].stage != ShaderNode::Varying::STAGE_FRAGMENT) {
+				if (shader->varyings[p_identifier].stage == ShaderNode::Varying::STAGE_UNKNOWN) {
 					used_varyings[p_identifier].used = true;
 				}
 			}
@@ -5245,7 +5245,7 @@ ShaderLanguage::DataType ShaderLanguage::get_scalar_type(DataType p_type) {
 		TYPE_VOID,
 	};
 
-	static_assert(sizeof(scalar_types) / sizeof(*scalar_types) == TYPE_MAX);
+	static_assert(std::size(scalar_types) == TYPE_MAX);
 
 	return scalar_types[p_type];
 }
@@ -5287,7 +5287,7 @@ int ShaderLanguage::get_cardinality(DataType p_type) {
 		1,
 	};
 
-	static_assert(sizeof(cardinality_table) / sizeof(*cardinality_table) == TYPE_MAX);
+	static_assert(std::size(cardinality_table) == TYPE_MAX);
 
 	return cardinality_table[p_type];
 }
@@ -6510,6 +6510,27 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 						_set_error(RTR("Expected constant expression."));
 						return nullptr;
 					}
+					if (ident_type == IDENTIFIER_FUNCTION) {
+						_set_error(vformat(RTR("Can't use function as identifier: '%s'."), String(identifier)));
+						return nullptr;
+					}
+#ifdef DEBUG_ENABLED
+					if (check_warnings) {
+						StringName func_name;
+						BlockNode *b = p_block;
+
+						while (b) {
+							if (b->parent_function) {
+								func_name = b->parent_function->name;
+								break;
+							} else {
+								b = b->parent_block;
+							}
+						}
+
+						_parse_used_identifier(identifier, ident_type, func_name);
+					}
+#endif // DEBUG_ENABLED
 					if (ident_type == IDENTIFIER_VARYING) {
 						TkPos prev_pos = _get_tkpos();
 						Token next_token = _get_token();
@@ -6542,11 +6563,6 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 							}
 						}
 					}
-
-					if (ident_type == IDENTIFIER_FUNCTION) {
-						_set_error(vformat(RTR("Can't use function as identifier: '%s'."), String(identifier)));
-						return nullptr;
-					}
 #ifdef DEBUG_ENABLED
 					if (check_position_write && ident_type == IDENTIFIER_BUILTIN_VAR) {
 						if (String(identifier) == "POSITION") {
@@ -6564,7 +6580,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 							_set_tkpos(prev_pos);
 						}
 					}
-#endif
+#endif // DEBUG_ENABLED
 					if (is_const) {
 						last_type = IDENTIFIER_CONSTANT;
 					} else {
@@ -6656,23 +6672,6 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 					varname->is_local = is_local;
 					expr = varname;
 				}
-#ifdef DEBUG_ENABLED
-				if (check_warnings) {
-					StringName func_name;
-					BlockNode *b = p_block;
-
-					while (b) {
-						if (b->parent_function) {
-							func_name = b->parent_function->name;
-							break;
-						} else {
-							b = b->parent_block;
-						}
-					}
-
-					_parse_used_identifier(identifier, ident_type, func_name);
-				}
-#endif // DEBUG_ENABLED
 			}
 		} else if (tk.type == TK_OP_ADD) {
 			continue; //this one does nothing
@@ -8460,9 +8459,11 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 
 			pos = _get_tkpos();
 			tk = _get_token();
-			TokenType prev_type;
+			bool has_default = false;
 			if (tk.type == TK_CF_CASE || tk.type == TK_CF_DEFAULT) {
-				prev_type = tk.type;
+				if (tk.type == TK_CF_DEFAULT) {
+					has_default = true;
+				}
 				_set_tkpos(pos);
 			} else {
 				_set_expected_error("case", "default");
@@ -8476,17 +8477,15 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 				}
 				pos = _get_tkpos();
 				tk = _get_token();
-				if (tk.type == TK_CF_CASE || tk.type == TK_CF_DEFAULT) {
-					if (prev_type == TK_CF_DEFAULT) {
-						if (tk.type == TK_CF_CASE) {
-							_set_error(RTR("Cases must be defined before default case."));
-							return ERR_PARSE_ERROR;
-						} else if (prev_type == TK_CF_DEFAULT) {
-							_set_error(RTR("Default case must be defined only once."));
-							return ERR_PARSE_ERROR;
-						}
+				if (tk.type == TK_CF_CASE) {
+					_set_tkpos(pos);
+					continue;
+				} else if (tk.type == TK_CF_DEFAULT) {
+					if (has_default) {
+						_set_error(RTR("Default case must be defined only once."));
+						return ERR_PARSE_ERROR;
 					}
-					prev_type = tk.type;
+					has_default = true;
 					_set_tkpos(pos);
 					continue;
 				} else {
@@ -11231,7 +11230,7 @@ Error ShaderLanguage::complete(const String &p_code, const ShaderCompileInfo &p_
 #ifdef DEBUG_ENABLED
 	// Adds context keywords.
 	if (keyword_completion_context != CF_UNSPECIFIED) {
-		int sz = sizeof(keyword_list) / sizeof(KeyWord);
+		constexpr int sz = std::size(keyword_list);
 		for (int i = 0; i < sz; i++) {
 			if (keyword_list[i].flags == CF_UNSPECIFIED) {
 				break; // Ignore hint keywords (parsed below).

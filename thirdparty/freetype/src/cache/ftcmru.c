@@ -4,7 +4,7 @@
  *
  *   FreeType MRU support (body).
  *
- * Copyright (C) 2003-2023 by
+ * Copyright (C) 2003-2024 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -238,52 +238,43 @@
   {
     FT_Error     error;
     FTC_MruNode  node   = NULL;
+    FTC_MruNode  prev   = NULL;
     FT_Memory    memory = list->memory;
 
 
-    if ( list->num_nodes >= list->max_nodes && list->max_nodes > 0 )
-    {
-      node = list->nodes->prev;
-
-      FT_ASSERT( node );
-
-      if ( list->clazz.node_reset )
-      {
-        FTC_MruNode_Up( &list->nodes, node );
-
-        error = list->clazz.node_reset( node, key, list->data );
-        if ( !error )
-          goto Exit;
-      }
-
-      FTC_MruNode_Remove( &list->nodes, node );
-      list->num_nodes--;
-
-      if ( list->clazz.node_done )
-        list->clazz.node_done( node, list->data );
-    }
-
     /* zero new node in case of node_init failure */
-    else if ( FT_ALLOC( node, list->clazz.node_size ) )
+    if ( FT_ALLOC( node, list->clazz.node_size ) )
       goto Exit;
 
     error = list->clazz.node_init( node, key, list->data );
     if ( error )
-      goto Fail;
+    {
+      prev = node;
+      node = NULL;
+
+      goto Clean;
+    }
+    else if ( list->max_nodes > 0 && list->num_nodes >= list->max_nodes )
+      prev = list->nodes->prev;
 
     FTC_MruNode_Prepend( &list->nodes, node );
     list->num_nodes++;
 
+    if ( !prev )
+      goto Exit;
+
+    FTC_MruNode_Remove( &list->nodes, prev );
+    list->num_nodes--;
+
+  Clean:
+    if ( list->clazz.node_done )
+      list->clazz.node_done( prev, list->data );
+
+    FT_FREE( prev );
+
   Exit:
     *anode = node;
     return error;
-
-  Fail:
-    if ( list->clazz.node_done )
-      list->clazz.node_done( node, list->data );
-
-    FT_FREE( node );
-    goto Exit;
   }
 
 
@@ -309,18 +300,16 @@
   FTC_MruList_Remove( FTC_MruList  list,
                       FTC_MruNode  node )
   {
+    FT_Memory  memory = list->memory;
+
+
     FTC_MruNode_Remove( &list->nodes, node );
     list->num_nodes--;
 
-    {
-      FT_Memory  memory = list->memory;
+    if ( list->clazz.node_done )
+      list->clazz.node_done( node, list->data );
 
-
-      if ( list->clazz.node_done )
-        list->clazz.node_done( node, list->data );
-
-      FT_FREE( node );
-    }
+    FT_FREE( node );
   }
 
 

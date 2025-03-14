@@ -647,8 +647,7 @@ void EditorInterface::open_scene_from_path(const String &scene_path, bool p_set_
 	if (EditorNode::get_singleton()->is_changing_scene()) {
 		return;
 	}
-
-	EditorNode::get_singleton()->open_request(scene_path, p_set_inherited);
+	EditorNode::get_singleton()->load_scene(scene_path, false, p_set_inherited);
 }
 
 void EditorInterface::reload_scene_from_path(const String &scene_path) {
@@ -667,12 +666,24 @@ PackedStringArray EditorInterface::get_open_scenes() const {
 	PackedStringArray ret;
 	Vector<EditorData::EditedScene> scenes = EditorNode::get_editor_data().get_edited_scenes();
 
-	int scns_amount = scenes.size();
-	for (int idx_scn = 0; idx_scn < scns_amount; idx_scn++) {
-		if (scenes[idx_scn].root == nullptr) {
+	for (EditorData::EditedScene &edited_scene : scenes) {
+		if (edited_scene.root == nullptr) {
 			continue;
 		}
-		ret.push_back(scenes[idx_scn].root->get_scene_file_path());
+		ret.push_back(edited_scene.root->get_scene_file_path());
+	}
+	return ret;
+}
+
+TypedArray<Node> EditorInterface::get_open_scene_roots() const {
+	TypedArray<Node> ret;
+	Vector<EditorData::EditedScene> scenes = EditorNode::get_editor_data().get_edited_scenes();
+
+	for (EditorData::EditedScene &edited_scene : scenes) {
+		if (edited_scene.root == nullptr) {
+			continue;
+		}
+		ret.push_back(edited_scene.root);
 	}
 	return ret;
 }
@@ -830,6 +841,7 @@ void EditorInterface::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("reload_scene_from_path", "scene_filepath"), &EditorInterface::reload_scene_from_path);
 
 	ClassDB::bind_method(D_METHOD("get_open_scenes"), &EditorInterface::get_open_scenes);
+	ClassDB::bind_method(D_METHOD("get_open_scene_roots"), &EditorInterface::get_open_scene_roots);
 	ClassDB::bind_method(D_METHOD("get_edited_scene_root"), &EditorInterface::get_edited_scene_root);
 
 	ClassDB::bind_method(D_METHOD("save_scene"), &EditorInterface::save_scene);

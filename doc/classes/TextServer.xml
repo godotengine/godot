@@ -1970,10 +1970,16 @@
 			Trims the text per word.
 		</constant>
 		<constant name="OVERRUN_TRIM_ELLIPSIS" value="3" enum="OverrunBehavior">
-			Trims the text per character and adds an ellipsis to indicate that parts are hidden.
+			Trims the text per character and adds an ellipsis to indicate that parts are hidden if trimmed text is 6 characters or longer.
 		</constant>
 		<constant name="OVERRUN_TRIM_WORD_ELLIPSIS" value="4" enum="OverrunBehavior">
-			Trims the text per word and adds an ellipsis to indicate that parts are hidden.
+			Trims the text per word and adds an ellipsis to indicate that parts are hidden if trimmed text is 6 characters or longer.
+		</constant>
+		<constant name="OVERRUN_TRIM_ELLIPSIS_FORCE" value="5" enum="OverrunBehavior">
+			Trims the text per character and adds an ellipsis to indicate that parts are hidden regardless of trimmed text length.
+		</constant>
+		<constant name="OVERRUN_TRIM_WORD_ELLIPSIS_FORCE" value="6" enum="OverrunBehavior">
+			Trims the text per word and adds an ellipsis to indicate that parts are hidden regardless of trimmed text length.
 		</constant>
 		<constant name="OVERRUN_NO_TRIM" value="0" enum="TextOverrunFlag" is_bitfield="true">
 			No trimming is performed.

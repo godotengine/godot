@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TRANSFORM_3D_H
-#define TRANSFORM_3D_H
+#pragma once
 
 #include "core/math/aabb.h"
 #include "core/math/basis.h"
@@ -75,6 +74,7 @@ struct [[nodiscard]] Transform3D {
 	void orthogonalize();
 	Transform3D orthogonalized() const;
 	bool is_equal_approx(const Transform3D &p_transform) const;
+	bool is_same(const Transform3D &p_transform) const;
 	bool is_finite() const;
 
 	bool operator==(const Transform3D &p_transform) const;
@@ -269,5 +269,3 @@ _FORCE_INLINE_ Plane Transform3D::xform_inv_fast(const Plane &p_plane, const Tra
 	real_t d = normal.dot(point);
 	return Plane(normal, d);
 }
-
-#endif // TRANSFORM_3D_H

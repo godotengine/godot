@@ -33,11 +33,6 @@
 #include <oleauto.h>
 #include <wbemidl.h>
 
-#if defined(__GNUC__)
-// Workaround GCC warning from -Wcast-function-type.
-#define GetProcAddress (void *)GetProcAddress
-#endif
-
 DWORD WINAPI _xinput_get_state(DWORD dwUserIndex, XINPUT_STATE *pState) {
 	return ERROR_DEVICE_NOT_CONNECTED;
 }
@@ -597,8 +592,8 @@ void JoypadWindows::load_xinput() {
 
 	// (LPCSTR)100 is the magic number to get XInputGetStateEx, which also provides the state for the guide button
 	LPCSTR get_state_func_name = legacy_xinput ? "XInputGetState" : (LPCSTR)100;
-	XInputGetState_t func = (XInputGetState_t)GetProcAddress((HMODULE)xinput_dll, get_state_func_name);
-	XInputSetState_t set_func = (XInputSetState_t)GetProcAddress((HMODULE)xinput_dll, "XInputSetState");
+	XInputGetState_t func = (XInputGetState_t)(void *)GetProcAddress((HMODULE)xinput_dll, get_state_func_name);
+	XInputSetState_t set_func = (XInputSetState_t)(void *)GetProcAddress((HMODULE)xinput_dll, "XInputSetState");
 	if (!func || !set_func) {
 		unload_xinput();
 		return;
@@ -608,7 +603,7 @@ void JoypadWindows::load_xinput() {
 
 	winmm_dll = LoadLibrary("Winmm.dll");
 	if (winmm_dll) {
-		joyGetDevCaps_t caps_func = (joyGetDevCaps_t)GetProcAddress((HMODULE)winmm_dll, "joyGetDevCapsW");
+		joyGetDevCaps_t caps_func = (joyGetDevCaps_t)(void *)GetProcAddress((HMODULE)winmm_dll, "joyGetDevCapsW");
 		if (caps_func) {
 			winmm_get_joycaps = caps_func;
 		} else {

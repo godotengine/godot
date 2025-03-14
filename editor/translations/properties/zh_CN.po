@@ -98,7 +98,7 @@ msgstr ""
 "Project-Id-Version: Chinese (Simplified) (Godot Engine)\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: 2018-01-20 12:15+0200\n"
-"PO-Revision-Date: 2025-02-10 00:46+0000\n"
+"PO-Revision-Date: 2025-02-21 19:26+0000\n"
 "Last-Translator: Haoyu Qiu <timothyqiu32@gmail.com>\n"
 "Language-Team: Chinese (Simplified Han script) <https://hosted.weblate.org/"
 "projects/godot-engine/godot-properties/zh_Hans/>\n"
@@ -107,7 +107,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.10-dev\n"
+"X-Generator: Weblate 5.10.1-dev\n"
 
 msgid "Application"
 msgstr "应用"
@@ -898,9 +898,6 @@ msgstr "请求超时"
 msgid "Sync Breakpoints"
 msgstr "同步断点"
 
-msgid "Default Feature Profile"
-msgstr "默认功能配置"
-
 msgid "Label"
 msgstr "标签"
 
@@ -1443,6 +1440,12 @@ msgstr "保存时自动重新加载并解析脚本"
 
 msgid "Open Dominant Script on Scene Change"
 msgstr "场景变化时打开主导脚本"
+
+msgid "Documentation"
+msgstr "文档"
+
+msgid "Enable Tooltips"
+msgstr "启用工具提示"
 
 msgid "Script List"
 msgstr "脚本列表"
@@ -2110,9 +2113,6 @@ msgstr "特殊颜色"
 msgid "Particle Color"
 msgstr "粒子颜色"
 
-msgid "Editor Settings Advanced Mode"
-msgstr "编辑器设置高级模式"
-
 msgid "Custom Template"
 msgstr "自定义模板"
 
@@ -2136,9 +2136,6 @@ msgstr "S3TC BPTC"
 
 msgid "ETC2 ASTC"
 msgstr "ETC2 ASTC"
-
-msgid "Export Template Download Directory"
-msgstr "导出模板下载目录"
 
 msgid "Export Path"
 msgstr "导出路径"
@@ -2768,9 +2765,6 @@ msgstr "帧数"
 msgid "Duration"
 msgstr "时长"
 
-msgid "Project Settings Advanced Mode"
-msgstr "项目设置高级模式"
-
 msgid "Main Run Args"
 msgstr "主运行参数"
 
@@ -2812,15 +2806,6 @@ msgstr "插件名"
 
 msgid "Autoload on Startup"
 msgstr "启动时自动加载"
-
-msgid "Use Favorites Root Selection"
-msgstr "使用收藏根选择"
-
-msgid "Script Setup Use Script Templates"
-msgstr "使用脚本模板的脚本设定"
-
-msgid "Script Setup Templates Dictionary"
-msgstr "脚本设置模板字典"
 
 msgid "Flush stdout on Print"
 msgstr "打印时清空标准输出"
@@ -3896,6 +3881,9 @@ msgstr "降噪"
 msgid "Denoiser"
 msgstr "降噪器"
 
+msgid "Enable TLS V 1"
+msgstr "启用 TLSv1"
+
 msgid "BPM"
 msgstr "BPM"
 
@@ -3937,9 +3925,6 @@ msgstr "Vulkan VRS"
 
 msgid "Min Radius"
 msgstr "最小半径"
-
-msgid "Spawnable Scenes"
-msgstr "可出生场景"
 
 msgid "Spawn Path"
 msgstr "出生路径"
@@ -10822,6 +10807,9 @@ msgstr "撤离时间（毫秒）"
 
 msgid "Surround"
 msgstr "环绕"
+
+msgid "Mix Rate Mode"
+msgstr "混音率模式"
 
 msgid "Enable Input"
 msgstr "启用输入"

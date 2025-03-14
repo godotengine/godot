@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef GODOT_WINDOW_DELEGATE_H
-#define GODOT_WINDOW_DELEGATE_H
+#pragma once
 
 #include "servers/display_server.h"
 
@@ -43,5 +42,3 @@
 - (void)setWindowID:(DisplayServer::WindowID)wid;
 
 @end
-
-#endif // GODOT_WINDOW_DELEGATE_H

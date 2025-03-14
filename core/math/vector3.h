@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef VECTOR3_H
-#define VECTOR3_H
+#pragma once
 
 #include "core/error/error_macros.h"
 #include "core/math/math_funcs.h"
@@ -156,6 +155,7 @@ struct [[nodiscard]] Vector3 {
 	_FORCE_INLINE_ Vector3 reflect(const Vector3 &p_normal) const;
 
 	bool is_equal_approx(const Vector3 &p_v) const;
+	bool is_same(const Vector3 &p_v) const;
 	bool is_zero_approx() const;
 	bool is_finite() const;
 
@@ -550,4 +550,5 @@ Vector3 Vector3::reflect(const Vector3 &p_normal) const {
 	return 2.0f * p_normal * dot(p_normal) - *this;
 }
 
-#endif // VECTOR3_H
+template <>
+struct is_zero_constructible<Vector3> : std::true_type {};

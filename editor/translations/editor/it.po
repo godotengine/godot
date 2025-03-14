@@ -111,13 +111,14 @@
 # ali elmoutaouakil <elmoutaouakil.ali08@gmail.com>, 2024.
 # SG <s.gallerini@users.noreply.hosted.weblate.org>, 2025.
 # BloodyBlade05 <giacomo.alfano@studenti.unipg.it>, 2025.
+# Davide Rinarelli <rinarellidavide@gmail.com>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-02-14 00:37+0000\n"
-"Last-Translator: BloodyBlade05 <giacomo.alfano@studenti.unipg.it>\n"
+"PO-Revision-Date: 2025-02-28 19:26+0000\n"
+"Last-Translator: Davide Rinarelli <rinarellidavide@gmail.com>\n"
 "Language-Team: Italian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/it/>\n"
 "Language: it\n"
@@ -125,7 +126,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.10-rc\n"
+"X-Generator: Weblate 5.10.3-dev\n"
 
 msgid "Main Thread"
 msgstr "Thread principale"
@@ -729,6 +730,20 @@ msgstr "Cambia la durata di un'animazione"
 msgid "Change Animation Loop"
 msgstr "Cambia ciclo di animazione"
 
+msgid ""
+"Can't change loop mode on animation instanced from an imported scene.\n"
+"\n"
+"To change this animation's loop mode, navigate to the scene's Advanced Import "
+"settings and select the animation.\n"
+"You can then change the loop mode from the inspector menu."
+msgstr ""
+"Non è possibile cambiare la modalità di ripetizione sulla animazione "
+"istanziata da una scena importata.\n"
+"\n"
+"Per cambiare questa modalità di ripetizione, navigare alle impostazioni di "
+"importo avanzate della scena e selezionare la animazione.\n"
+"Puoi cambiare la modalità di ripetizione dal menu ispettore."
+
 msgid "Can't change loop mode on animation instanced from an imported resource."
 msgstr ""
 "Impossibile cambiare la modalità di ripetizione di un'animazione istanziata "
@@ -1151,6 +1166,9 @@ msgstr "Mostra solo le tracce dei nodi selezionati nell'albero."
 msgid "Group tracks by node or display them as plain list."
 msgstr "Raggruppa le tracce per nodo o le visualizza in una lista semplice."
 
+msgid "Apply snapping to the nearest integer FPS."
+msgstr "Applicare lo snapping al valore FPS intero più vicino."
+
 msgid "Animation step value."
 msgstr "Valore del passo dell'animazione."
 
@@ -1371,6 +1389,22 @@ msgstr "Seleziona/Deseleziona tutto"
 msgid "Animation Change Keyframe Time"
 msgstr "Cambia il tempo di un fotogramma chiave di un'animazione"
 
+msgid ""
+"A marker's name can only be changed by right-clicking it in the animation "
+"editor and selecting \"Rename Marker\", in order to make sure that marker "
+"names are all unique."
+msgstr ""
+"Il nome di un marcatore può essere cambiato solo facendo clic con il pulsante "
+"destro del mouse nell'editor di animazione e selezionando \"Rinomina "
+"Marcatore\", al fine di assicurarsi che i nomi dei marcatori siano tutti "
+"unici."
+
+msgid "Rename Marker"
+msgstr "Rinomina Marcatore"
+
+msgid "Marker:"
+msgstr "Marcatore:"
+
 msgid "Close"
 msgstr "Chiudi"
 
@@ -1463,6 +1497,13 @@ msgstr "Avvisi"
 
 msgid "Zoom factor"
 msgstr "Fattore di ingrandimento"
+
+msgid ""
+"%sMouse wheel, %s/%s: Finetune\n"
+"%s: Reset"
+msgstr ""
+"%sRotella del mouse, %s/%s: Sintonizzare\n"
+"%s: Ripristino"
 
 msgid "Line and column numbers."
 msgstr "Numeri di riga e di colonna."
@@ -1656,6 +1697,9 @@ msgstr "Descrizione:"
 msgid "Remote %s:"
 msgstr "%s Remoto:"
 
+msgid "Session %d"
+msgstr "Sessione %d"
+
 msgid "Debugger"
 msgstr "Debugger"
 
@@ -1685,6 +1729,9 @@ msgstr ""
 
 msgid "Toggle Visibility"
 msgstr "Commuta visibilità"
+
+msgid "Expression to evaluate"
+msgstr "Espressione da valutare"
 
 msgid "Clear"
 msgstr "Rimuovi tutto"
@@ -1887,6 +1934,9 @@ msgstr "Espandi tutto"
 msgid "Collapse All"
 msgstr "Comprimi tutto"
 
+msgid "Evaluator"
+msgstr "Valutatore"
+
 msgid "Profiler"
 msgstr "Profilatore"
 
@@ -2015,6 +2065,9 @@ msgstr ""
 
 msgid "Cannot remove:"
 msgstr "Impossibile rimuovere:"
+
+msgid "Dependencies of files to be deleted:"
+msgstr "Dipendenze dei file da eliminare:"
 
 msgid "Error loading:"
 msgstr "Errore di caricamento:"
@@ -2709,6 +2762,11 @@ msgstr ""
 "Offre una panoramica della cronologia di annullamento dell'editor e di ogni "
 "scena."
 
+msgid "Provides tools for selecting and debugging nodes at runtime."
+msgstr ""
+"Fornisce strumenti per selezionare ed eseguire il debug dei nodi in fase di "
+"runtime."
+
 msgid "(current)"
 msgstr "(Attuale)"
 
@@ -2800,6 +2858,9 @@ msgstr "Importa i profili"
 msgid "Manage Editor Feature Profiles"
 msgstr "Gestisci i profili di funzionalità dell'editor"
 
+msgid "Initializing plugins..."
+msgstr "Inizializzazione dei plugin..."
+
 msgid "Some extensions need the editor to restart to take effect."
 msgstr ""
 "Alcune estensioni hanno bisogno di un riavvio dell'editor per avere effetto."
@@ -2823,8 +2884,17 @@ msgstr ""
 msgid "(Re)Importing Assets"
 msgstr "Reimportando i contenuti"
 
+msgid "Executing pre-reimport operations..."
+msgstr "Esecuzione delle operazioni pre-reimportazione..."
+
 msgid "Import resources of type: %s"
 msgstr "Importa risorse di tipo: %s"
+
+msgid "Finalizing Asset Import..."
+msgstr "Finalizzazione importazione degli Asset..."
+
+msgid "Executing post-reimport operations..."
+msgstr "Esecuzione delle operazioni post-reimportazione..."
 
 msgid "This method supports a variable number of arguments."
 msgstr "Questo metodo supporta un numero variabile di argomenti."
@@ -3173,11 +3243,21 @@ msgstr "Tipo di membro"
 msgid "Keywords"
 msgstr "Parole chiave"
 
+msgid "Matches the \"%s\" keyword."
+msgstr "Corrisponde alla parola chiave \"%s\"."
+
 msgid "This member is marked as deprecated."
 msgstr "Questo membro è segnato come deprecato."
 
 msgid "This member is marked as experimental."
 msgstr "Questo membro è segnato come sperimentale."
+
+msgid "Make this property be put back at its original place."
+msgstr "Fai tornare questa proprietà al suo posto originale."
+
+msgid "Make this property be placed at the top for all objects of this class."
+msgstr ""
+"Fai piazzare questa proprietà in cima per tutti gli oggetti di questa classe."
 
 msgid "Pin Value"
 msgstr "Fissa il valore"
@@ -3375,6 +3455,11 @@ msgstr "Ispettore delle sorgenti native degli shader"
 
 msgid "Unnamed Project"
 msgstr "Progetto senza nome"
+
+msgid "Recovery Mode is enabled. Editor functionality has been restricted."
+msgstr ""
+"La modalità di recupero è abilitata. Le funzionalità dell'editor sono state "
+"limitate."
 
 msgid ""
 "Spins when the editor window redraws.\n"
@@ -3590,6 +3675,9 @@ msgstr ""
 
 msgid "Save Scene As..."
 msgstr "Salva la scena come…"
+
+msgid "Pack Project as ZIP..."
+msgstr "Impacchetta il Progetto come ZIP..."
 
 msgid "Can't undo while mouse buttons are pressed."
 msgstr "Impossibile tornare indietro mentre i tasti del mouse sono premuti."
@@ -4377,6 +4465,18 @@ msgstr ""
 "Per favore, aggiungerne una nel menù di esportazione o impostarne una già "
 "esistente come eseguibile."
 
+msgid "Deploy to First Device in List"
+msgstr "Distribuisci al primo Dispositivo nella lista"
+
+msgid "Deploy to Second Device in List"
+msgstr "Distribuisci al secondo Dispositivo nella lista"
+
+msgid "Deploy to Third Device in List"
+msgstr "Distribuisci al terzo Dispositivo nella lista"
+
+msgid "Deploy to Fourth Device in List"
+msgstr "Distribuisci al quarto Dispositivo nella lista"
+
 msgid "Project Run"
 msgstr "Esecuzione di progetto"
 
@@ -4385,6 +4485,9 @@ msgstr "Scrivi il codice dello script nel metodo _run()."
 
 msgid "The current scene already has a root node."
 msgstr "La scena attuale ha già un nodo radice."
+
+msgid "Advanced settings are always shown when searching."
+msgstr "Le impostazioni avanzate vengono sempre mostrate durante la ricerca."
 
 msgid "Edit Built-in Action: %s"
 msgstr "Modifica l'azione integrata: %s"
@@ -5171,6 +5274,9 @@ msgstr "Sfoglia"
 msgid "Confirm Path"
 msgstr "Conferma il percorso"
 
+msgid "Link to: %s"
+msgstr "Link a: %s"
+
 msgid "View items as a grid of thumbnails."
 msgstr "Visualizza gli elementi in una griglia di miniature."
 
@@ -5265,6 +5371,12 @@ msgstr "Duplicazione di cartella:"
 
 msgid "Create Folder"
 msgstr "Crea una cartella"
+
+msgid ""
+"Do you wish to convert these files to %s? (This operation cannot be undone!)"
+msgstr ""
+"Vuoi convertire questi file in %s? (Questa operazione non può essere "
+"annullata!)"
 
 msgid "New Inherited Scene"
 msgstr "Nuova scena ereditata"
@@ -5607,6 +5719,9 @@ msgstr ""
 msgid "Select This Folder"
 msgstr "Seleziona questa cartella"
 
+msgid "Show Package Contents"
+msgstr "Mostra i contenuti del pacchetto"
+
 msgid "All Files"
 msgstr "Tutti i file"
 
@@ -5713,6 +5828,18 @@ msgstr "Nessuna sotto-risorsa trovata."
 msgid "Open a list of sub-resources."
 msgstr "Apri una lista di sotto-risorse."
 
+msgid "Addons"
+msgstr "Componenti Aggiuntivi"
+
+msgid "Include files from addons"
+msgstr "Includere i file dai Componenti Aggiuntivi"
+
+msgid "Start searching to find files..."
+msgstr "Inizia a cercare per trovare i file..."
+
+msgid "List view"
+msgstr "Visualizzazione ad elenco"
+
 msgid "Play the project."
 msgstr "Esegui il progetto."
 
@@ -5746,8 +5873,42 @@ msgstr ""
 msgid "Could not start subprocess(es)!"
 msgstr "Impossibile avviare il processo(i) secondario(i)!"
 
+msgid "Recovery Mode is enabled. Disable it to run the project."
+msgstr ""
+"La modalità di recupero è abilitata. Disattivarla per eseguire il progetto."
+
 msgid "Network Profiler"
 msgstr "Profiler di rete"
+
+msgid ""
+"Godot opened the project in Recovery Mode, which is a special mode that can "
+"help recover projects that crash the engine upon initialization. The "
+"following features have been temporarily disabled:"
+msgstr ""
+"Godot ha aperto il progetto in modalità Recupero. Questa è una modalità "
+"speciale che può aiutarti a recuperare i progetti che hanno arrestato in modo "
+"anomalo (crash) Godot dopo l'inizializzazione. Le seguenti funzionalità sono "
+"state temporaneamente disabilitate:"
+
+msgid "GDExtension addons"
+msgstr "Componenti aggiuntivi GDExtension"
+
+msgid "Automatic scene restoring"
+msgstr "Ripristino automatico della scena"
+
+msgid ""
+"To disable Recovery Mode, reload the project by pressing the Reload button "
+"next to the Recovery Mode banner, or by reopening the project normally."
+msgstr ""
+"Per disabilitare la modalità di recupero, ricaricare il progetto premendo il "
+"pulsante Ricarica accanto al banner Modalità di ripristino, o riaprendo "
+"normalmente il progetto."
+
+msgid "Disable recovery mode and reload the project."
+msgstr "Disattivare la modalità di recupero e ricaricare il progetto."
+
+msgid "Recovery Mode is enabled. Click for more details."
+msgstr "La modalità di recupero è abilitata. Clicca per maggiori informazioni."
 
 msgid "Run the project's default scene."
 msgstr "Esegui la scena predefinita del progetto."
@@ -5766,6 +5927,12 @@ msgstr "Ferma progetto in esecuzione."
 
 msgid "Stop Running Project"
 msgstr "Arresta progetto in esecuzione"
+
+msgid "Run Scene in Regular Mode"
+msgstr "Esegui la scena in Modalità Regolare"
+
+msgid "Run Scene in XR Mode"
+msgstr "Esegui la scena in Modalità XR"
 
 msgid "Run the currently edited scene."
 msgstr "Esegui la scena attualmente in fase di modifica."
@@ -5856,6 +6023,9 @@ msgstr "(Collegamento da)"
 msgid "Node configuration warning:"
 msgstr "Avviso sulla configurazione del nodo:"
 
+msgid "Click to disable this."
+msgstr "Fare click per disabilitare."
+
 msgid "Node has one connection."
 msgid_plural "Node has {num} connections."
 msgstr[0] "Il nodo ha una connessione."
@@ -5868,6 +6038,13 @@ msgstr[1] "I nodi sono nei gruppi seguenti:"
 
 msgid "Click to show signals dock."
 msgstr "Clicca per mostrare il pannello dei segnali."
+
+msgid ""
+"This script can run in the editor.\n"
+"It is currently disabled due to recovery mode."
+msgstr ""
+"Questo script può essere eseguito nell'editor.\n"
+"Attualmente è disabilitato a causa della modalità di recupero."
 
 msgid "This script is currently running in the editor."
 msgstr "Questo script è attualmente in esecuzione nell'editor."
@@ -5925,6 +6102,9 @@ msgstr "Albero di scena (nodi):"
 
 msgid "Node Configuration Warning!"
 msgstr "Avviso sulla configurazione del nodo!"
+
+msgid "Revoke"
+msgstr "Revocare"
 
 msgid "Allowed:"
 msgstr "Consentiti:"

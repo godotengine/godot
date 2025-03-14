@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TRANSFORM_2D_H
-#define TRANSFORM_2D_H
+#pragma once
 
 #include "core/math/math_funcs.h"
 #include "core/math/rect2.h"
@@ -101,6 +100,7 @@ struct [[nodiscard]] Transform2D {
 	Transform2D orthonormalized() const;
 	bool is_conformal() const;
 	bool is_equal_approx(const Transform2D &p_transform) const;
+	bool is_same(const Transform2D &p_transform) const;
 	bool is_finite() const;
 
 	Transform2D looking_at(const Vector2 &p_target) const;
@@ -249,5 +249,3 @@ Vector<Vector2> Transform2D::xform_inv(const Vector<Vector2> &p_array) const {
 	}
 	return array;
 }
-
-#endif // TRANSFORM_2D_H

@@ -534,7 +534,6 @@ hb_subset_input_pin_axis_location (hb_subset_input_t  *input,
  *
  * Note: input min value can not be bigger than input max value. If the input
  * default value is not within the new min/max range, it'll be clamped.
- * Note: currently it supports gvar and cvar tables only.
  *
  * Return value: `true` if success, `false` otherwise
  *
@@ -596,6 +595,144 @@ hb_subset_input_get_axis_range (hb_subset_input_t  *input,
   *axis_def_value = triple->middle;
   *axis_max_value = triple->maximum;
   return true;
+}
+
+/**
+ * hb_subset_axis_range_from_string:
+ * @str: a string to parse
+ * @len: length of @str, or -1 if str is NULL terminated
+ * @axis_min_value: (out): the axis min value to initialize with the parsed value
+ * @axis_max_value: (out): the axis max value to initialize with the parsed value
+ * @axis_def_value: (out): the axis default value to initialize with the parse
+ * value
+ *
+ * Parses a string into a subset axis range(min, def, max).
+ * Axis positions string is in the format of min:def:max or min:max
+ * When parsing axis positions, empty values as meaning the existing value for that part
+ * E.g: :300:500
+ * Specifies min = existing, def = 300, max = 500
+ * In the output axis_range, if a value should be set to it's default value,
+ * then it will be set to NaN
+ *
+ * Return value:
+ * `true` if @str is successfully parsed, `false` otherwise
+ *
+ * Since: 10.2.0
+ */
+HB_EXTERN hb_bool_t
+hb_subset_axis_range_from_string (const char *str, int len,
+                                  float *axis_min_value,
+                                  float *axis_max_value,
+                                  float *axis_def_value)
+{
+  if (len < 0)
+    len = strlen (str);
+
+  const char *end = str + len;
+  const char* part = strpbrk (str, ":");
+  if (!part)
+  {
+    // Single value.
+    if (strcmp (str, "drop") == 0)
+    {
+      *axis_min_value = NAN;
+      *axis_def_value = NAN;
+      *axis_max_value = NAN;
+      return true;
+    }
+
+    double v;
+    if (!hb_parse_double (&str, end, &v)) return false;
+
+    *axis_min_value = v;
+    *axis_def_value = v;
+    *axis_max_value = v;
+    return true;
+  }
+
+  float values[3];
+  int count = 0;
+  for (int i = 0; i < 3; i++) {
+    count++;
+    if (!*str || part == str)
+    {
+      values[i] = NAN;
+
+      if (part == NULL) break;
+      str = part + 1;
+      part = strpbrk (str, ":");
+      continue;
+    }
+
+    double v;
+    if (!hb_parse_double (&str, part, &v)) return false;
+    values[i] = v;
+
+    if (part == NULL) break;
+    str = part + 1;
+    part = strpbrk (str, ":");
+  }
+
+  if (count == 2)
+  {
+    *axis_min_value = values[0];
+    *axis_def_value = NAN;
+    *axis_max_value = values[1];
+    return true;
+  }
+  else if (count == 3)
+  {
+    *axis_min_value = values[0];
+    *axis_def_value = values[1];
+    *axis_max_value = values[2];
+    return true;
+  }
+  return false;
+}
+
+/**
+ * hb_subset_axis_range_to_string:
+ * @input: a #hb_subset_input_t object.
+ * @axis_tag: an axis to convert
+ * @buf: (array length=size) (out caller-allocates): output string
+ * @size: the allocated size of @buf
+ *
+ * Converts an axis range into a `NULL`-terminated string in the format
+ * understood by hb_subset_axis_range_from_string(). The client in responsible for
+ * allocating big enough size for @buf, 128 bytes is more than enough.
+ *
+ * Since: 10.2.0
+ */
+HB_EXTERN void
+hb_subset_axis_range_to_string (hb_subset_input_t *input,
+                                hb_tag_t axis_tag,
+                                char *buf, unsigned size)
+{
+  if (unlikely (!size)) return;
+  Triple* triple;
+  if (!input->axes_location.has(axis_tag, &triple)) {
+    return;
+  }
+
+  char s[128];
+  unsigned len = 0;
+
+  hb_locale_t clocale HB_UNUSED;
+  hb_locale_t oldlocale HB_UNUSED;
+  oldlocale = hb_uselocale (clocale = newlocale (LC_ALL_MASK, "C", NULL));
+  len += hb_max (0, snprintf (s, ARRAY_LENGTH (s) - len, "%g", (double) triple->minimum));
+  s[len++] = ':';
+
+  len += hb_max (0, snprintf (s + len, ARRAY_LENGTH (s) - len, "%g", (double) triple->middle));
+  s[len++] = ':';
+
+  len += hb_max (0, snprintf (s + len, ARRAY_LENGTH (s) - len, "%g", (double) triple->maximum));
+  (void) hb_uselocale (((void) freelocale (clocale), oldlocale));
+
+  assert (len < ARRAY_LENGTH (s));
+  len = hb_min (len, size - 1);
+  hb_memcpy (buf, s, len);
+  buf[len] = '\0';
 }
 #endif
 

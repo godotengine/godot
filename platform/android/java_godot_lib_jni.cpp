@@ -49,6 +49,7 @@
 #include "core/config/project_settings.h"
 #include "core/input/input.h"
 #include "main/main.h"
+#include "servers/rendering_server.h"
 
 #ifndef _3D_DISABLED
 #include "servers/xr_server.h"
@@ -272,7 +273,7 @@ JNIEXPORT jboolean JNICALL Java_org_godotengine_godot_GodotLib_step(JNIEnv *env,
 
 	if (step.get() == STEP_SHOW_LOGO) {
 		bool xr_enabled = false;
-#ifndef _3D_DISABLED
+#ifndef XR_DISABLED
 		// Unlike PCVR, there's no additional 2D screen onto which to render the boot logo,
 		// so we skip this step if xr is enabled.
 		if (XRServer::get_xr_mode() == XRServer::XRMODE_DEFAULT) {
@@ -280,7 +281,7 @@ JNIEXPORT jboolean JNICALL Java_org_godotengine_godot_GodotLib_step(JNIEnv *env,
 		} else {
 			xr_enabled = XRServer::get_xr_mode() == XRServer::XRMODE_ON;
 		}
-#endif // _3D_DISABLED
+#endif // XR_DISABLED
 		if (!xr_enabled) {
 			Main::setup_boot_logo();
 		}
@@ -472,6 +473,17 @@ JNIEXPORT jstring JNICALL Java_org_godotengine_godot_GodotLib_getGlobal(JNIEnv *
 	Variant setting_with_override = GLOBAL_GET(js);
 	String setting_value = (setting_with_override.get_type() == Variant::NIL) ? "" : setting_with_override;
 	return env->NewStringUTF(setting_value.utf8().get_data());
+}
+
+JNIEXPORT jobjectArray JNICALL Java_org_godotengine_godot_GodotLib_getRendererInfo(JNIEnv *env, jclass clazz) {
+	String rendering_driver = RenderingServer::get_singleton()->get_current_rendering_driver_name();
+	String rendering_method = RenderingServer::get_singleton()->get_current_rendering_method();
+
+	jobjectArray result = env->NewObjectArray(2, env->FindClass("java/lang/String"), nullptr);
+	env->SetObjectArrayElement(result, 0, env->NewStringUTF(rendering_driver.utf8().get_data()));
+	env->SetObjectArrayElement(result, 1, env->NewStringUTF(rendering_method.utf8().get_data()));
+
+	return result;
 }
 
 JNIEXPORT jstring JNICALL Java_org_godotengine_godot_GodotLib_getEditorSetting(JNIEnv *env, jclass clazz, jstring p_setting_key) {

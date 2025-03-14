@@ -513,6 +513,8 @@ void GodotNavigationServer2D::query_path(const Ref<NavigationPathQueryParameters
 	query_parameters->set_metadata_flags((int64_t)p_query_parameters->get_metadata_flags());
 	query_parameters->set_simplify_path(p_query_parameters->get_simplify_path());
 	query_parameters->set_simplify_epsilon(p_query_parameters->get_simplify_epsilon());
+	query_parameters->set_excluded_regions(p_query_parameters->get_excluded_regions());
+	query_parameters->set_included_regions(p_query_parameters->get_included_regions());
 
 	Ref<NavigationPathQueryResult3D> query_result;
 	query_result.instantiate();

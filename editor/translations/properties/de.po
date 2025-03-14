@@ -876,9 +876,6 @@ msgstr "Anfrage-Zeitüberschreitung"
 msgid "Sync Breakpoints"
 msgstr "Sync-Haltepunkte"
 
-msgid "Default Feature Profile"
-msgstr "Default-Feature-Profil"
-
 msgid "Label"
 msgstr "Label"
 
@@ -2680,9 +2677,6 @@ msgstr "Plugin-Name"
 msgid "Autoload on Startup"
 msgstr "Autoload beim Start"
 
-msgid "Use Favorites Root Selection"
-msgstr "Lesezeichen-Root-Auswahl verwenden"
-
 msgid "Flush stdout on Print"
 msgstr "stdout bei Print flushen"
 
@@ -3612,9 +3606,6 @@ msgstr "Vulkan VRS"
 
 msgid "Min Radius"
 msgstr "Min-Radius"
-
-msgid "Spawnable Scenes"
-msgstr "Spawnbare Szenen"
 
 msgid "Spawn Path"
 msgstr "Spawn-Pfad"

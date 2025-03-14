@@ -157,7 +157,7 @@ static const char *token_names[] = {
 };
 
 // Avoid desync.
-static_assert(sizeof(token_names) / sizeof(token_names[0]) == GDScriptTokenizer::Token::TK_MAX, "Amount of token names don't match the amount of token types.");
+static_assert(std::size(token_names) == GDScriptTokenizer::Token::TK_MAX, "Amount of token names don't match the amount of token types.");
 
 const char *GDScriptTokenizer::Token::get_name() const {
 	ERR_FAIL_INDEX_V_MSG(type, TK_MAX, "<error>", "Using token type out of the enum.");
@@ -863,7 +863,7 @@ GDScriptTokenizer::Token GDScriptTokenizerText::number() {
 
 	// Create a string with the whole number.
 	int len = _current - _start;
-	String number = String(_start, len).replace("_", "");
+	String number = String(_start, len).remove_char('_');
 
 	// Convert to the appropriate literal type.
 	if (base == 16) {
@@ -1337,7 +1337,7 @@ void GDScriptTokenizerText::check_indent() {
 }
 
 String GDScriptTokenizerText::_get_indent_char_name(char32_t ch) {
-	ERR_FAIL_COND_V(ch != ' ' && ch != '\t', String(&ch, 1).c_escape());
+	ERR_FAIL_COND_V(ch != ' ' && ch != '\t', String::chr(ch).c_escape());
 
 	return ch == ' ' ? "space" : "tab";
 }

@@ -48,6 +48,8 @@ layout(set = 1, binding = 0, std140) uniform MaterialUniforms {
 /* clang-format on */
 #endif
 
+uint instance_index;
+
 #GLOBALS
 
 #ifdef USE_ATTRIBUTES
@@ -66,9 +68,9 @@ void main() {
 #endif
 
 #ifdef USE_ATTRIBUTES
-	uint instance_index = params.base_instance_index;
+	instance_index = params.base_instance_index;
 #else
-	uint instance_index = gl_InstanceIndex + params.base_instance_index;
+	instance_index = gl_InstanceIndex + params.base_instance_index;
 	instance_index_interp = instance_index;
 #endif // USE_ATTRIBUTES
 	const InstanceData draw_data = instances.data[instance_index];
@@ -240,7 +242,7 @@ void main() {
 #include "canvas_uniforms_inc.glsl"
 
 #ifndef USE_ATTRIBUTES
-layout(location = 4) in flat uint instance_index;
+layout(location = 4) in flat uint instance_index_interp;
 #endif // USE_ATTRIBUTES
 
 layout(location = 0) in vec2 uv_interp;
@@ -287,6 +289,8 @@ vec2 sdf_to_screen_uv(vec2 p_sdf) {
 	return p_sdf * canvas_data.sdf_to_screen;
 }
 
+uint instance_index;
+
 #GLOBALS
 
 #ifdef LIGHT_CODE_USED
@@ -302,6 +306,7 @@ vec4 light_compute(
 		vec2 screen_uv,
 		vec2 uv,
 		vec4 color, bool is_directional) {
+	const InstanceData draw_data = instances.data[instance_index];
 	vec4 light = vec4(0.0);
 	vec3 light_direction = vec3(0.0);
 
@@ -461,10 +466,11 @@ void main() {
 	vec2 vertex = vertex_interp;
 
 #ifdef USE_ATTRIBUTES
-	const InstanceData draw_data = instances.data[params.base_instance_index];
+	instance_index = params.base_instance_index;
 #else
-	const InstanceData draw_data = instances.data[instance_index];
+	instance_index = instance_index_interp;
 #endif // USE_ATTRIBUTES
+	const InstanceData draw_data = instances.data[instance_index];
 
 #if !defined(USE_ATTRIBUTES) && !defined(USE_PRIMITIVE)
 

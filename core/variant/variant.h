@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef VARIANT_H
-#define VARIANT_H
+#pragma once
 
 #include "core/core_string_names.h"
 #include "core/input/input_enums.h"
@@ -998,18 +997,10 @@ Array::Iterator &Array::Iterator::operator--() {
 }
 
 const Variant &Array::ConstIterator::operator*() const {
-	if (unlikely(read_only)) {
-		*read_only = *element_ptr;
-		return *read_only;
-	}
 	return *element_ptr;
 }
 
 const Variant *Array::ConstIterator::operator->() const {
-	if (unlikely(read_only)) {
-		*read_only = *element_ptr;
-		return read_only;
-	}
 	return element_ptr;
 }
 
@@ -1023,4 +1014,6 @@ Array::ConstIterator &Array::ConstIterator::operator--() {
 	return *this;
 }
 
-#endif // VARIANT_H
+// Zero-constructing Variant results in NULL.
+template <>
+struct is_zero_constructible<Variant> : std::true_type {};

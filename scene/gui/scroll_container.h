@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef SCROLL_CONTAINER_H
-#define SCROLL_CONTAINER_H
+#pragma once
 
 #include "container.h"
 
@@ -82,6 +81,7 @@ private:
 
 	bool draw_focus_border = false;
 	bool focus_border_is_drawn = false;
+	bool child_has_focus();
 
 protected:
 	Size2 get_minimum_size() const override;
@@ -98,7 +98,6 @@ protected:
 
 public:
 	virtual void gui_input(const Ref<InputEvent> &p_gui_input) override;
-	bool child_has_focus();
 
 	void set_h_scroll(int p_pos);
 	int get_h_scroll() const;
@@ -137,5 +136,3 @@ public:
 };
 
 VARIANT_ENUM_CAST(ScrollContainer::ScrollMode);
-
-#endif // SCROLL_CONTAINER_H

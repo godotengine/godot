@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef EDITOR_INSPECTOR_H
-#define EDITOR_INSPECTOR_H
+#pragma once
 
 #include "editor/add_metadata_dialog.h"
 #include "editor_property_name_processor.h"
@@ -184,6 +183,7 @@ public:
 		ERR_FAIL_NULL_V(object, Variant());
 		return object->get(property);
 	}
+	Variant get_edited_property_display_value() const;
 	EditorInspector *get_parent_inspector() const;
 
 	void set_doc_path(const String &p_doc_path);
@@ -606,7 +606,6 @@ class EditorInspector : public ScrollContainer {
 	void _clear_current_favorites();
 
 	void _node_removed(Node *p_node);
-	void _gui_focus_changed(Control *p_control);
 
 	HashMap<StringName, int> per_array_page;
 	void _page_change_request(int p_new_page, const StringName &p_array_prefix);
@@ -706,5 +705,3 @@ public:
 
 	EditorInspector();
 };
-
-#endif // EDITOR_INSPECTOR_H

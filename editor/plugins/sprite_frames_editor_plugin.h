@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef SPRITE_FRAMES_EDITOR_PLUGIN_H
-#define SPRITE_FRAMES_EDITOR_PLUGIN_H
+#pragma once
 
 #include "editor/plugins/editor_plugin.h"
 #include "scene/gui/button.h"
@@ -228,7 +227,7 @@ class SpriteFramesEditor : public HSplitContainer {
 	void _frame_list_gui_input(const Ref<InputEvent> &p_event);
 	void _frame_list_item_selected(int p_index, bool p_selected);
 
-	void _menu_selected(int p_index);
+	void _menu_selected(int p_id);
 
 	void _zoom_in();
 	void _zoom_out();
@@ -304,5 +303,3 @@ public:
 	SpriteFramesEditorPlugin();
 	~SpriteFramesEditorPlugin();
 };
-
-#endif // SPRITE_FRAMES_EDITOR_PLUGIN_H

@@ -714,11 +714,13 @@ class Godot(private val context: Context) {
 		val longPressEnabled = java.lang.Boolean.parseBoolean(GodotLib.getGlobal("input_devices/pointing/android/enable_long_press_as_right_click"))
 		val panScaleEnabled = java.lang.Boolean.parseBoolean(GodotLib.getGlobal("input_devices/pointing/android/enable_pan_and_scale_gestures"))
 		val rotaryInputAxisValue = GodotLib.getGlobal("input_devices/pointing/android/rotary_input_scroll_axis")
+		val overrideVolumeButtons = java.lang.Boolean.parseBoolean(GodotLib.getGlobal("input_devices/pointing/android/override_volume_buttons"))
 
 		runOnUiThread {
 			renderView?.inputHandler?.apply {
 				enableLongPress(longPressEnabled)
 				enablePanningAndScalingGestures(panScaleEnabled)
+				setOverrideVolumeButtons(overrideVolumeButtons)
 				try {
 					setRotaryInputAxis(Integer.parseInt(rotaryInputAxisValue))
 				} catch (e: NumberFormatException) {
@@ -825,10 +827,11 @@ class Godot(private val context: Context) {
 	 * Returns true if `Vulkan` is used for rendering.
 	 */
 	private fun usesVulkan(): Boolean {
-		var rendererSource = "ProjectSettings"
-		var renderer = GodotLib.getGlobal("rendering/renderer/rendering_method")
+		val rendererInfo = GodotLib.getRendererInfo()
 		var renderingDeviceSource = "ProjectSettings"
-		var renderingDevice = GodotLib.getGlobal("rendering/rendering_device/driver")
+		var renderingDevice = rendererInfo[0]
+		var rendererSource = "ProjectSettings"
+		var renderer = rendererInfo[1]
 		val cmdline = getCommandLine()
 		var index = cmdline.indexOf("--rendering-method")
 		if (index > -1 && cmdline.size > index + 1) {

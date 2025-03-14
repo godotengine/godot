@@ -53,10 +53,10 @@
 #import "pixel_formats.h"
 #import "rendering_context_driver_metal.h"
 
-#import "core/io/compression.h"
-#import "core/io/marshalls.h"
-#import "core/string/ustring.h"
-#import "core/templates/hash_map.h"
+#include "core/io/compression.h"
+#include "core/io/marshalls.h"
+#include "core/string/ustring.h"
+#include "core/templates/hash_map.h"
 
 #import <Metal/MTLTexture.h>
 #import <Metal/Metal.h>
@@ -2045,6 +2045,7 @@ Vector<uint8_t> RenderingDeviceDriverMetal::shader_compile_binary_from_spirv(Vec
 
 #if TARGET_OS_IPHONE
 	msl_options.ios_use_simdgroup_functions = (*device_properties).features.simdPermute;
+	msl_options.ios_support_base_vertex_instance = true;
 #endif
 
 	bool disable_argument_buffers = false;
@@ -2459,6 +2460,8 @@ RDD::ShaderID RenderingDeviceDriverMetal::shader_create_from_bytecode(const Vect
 	HashMap<ShaderStage, MDLibrary *> libraries;
 
 	for (ShaderStageData &shader_data : binary_data.stages) {
+		r_shader_desc.stages.push_back(shader_data.stage);
+
 		SHA256Digest key = SHA256Digest(shader_data.source.ptr(), shader_data.source.length());
 
 		if (ShaderCacheEntry **p = _shader_cache.getptr(key); p != nullptr) {
@@ -3898,16 +3901,16 @@ uint64_t RenderingDeviceDriverMetal::get_lazily_memory_used() {
 uint64_t RenderingDeviceDriverMetal::limit_get(Limit p_limit) {
 	MetalDeviceProperties const &props = (*device_properties);
 	MetalLimits const &limits = props.limits;
-
+	uint64_t safe_unbounded = ((uint64_t)1 << 30);
 #if defined(DEV_ENABLED)
 #define UNKNOWN(NAME)                                                            \
 	case NAME:                                                                   \
 		WARN_PRINT_ONCE("Returning maximum value for unknown limit " #NAME "."); \
-		return (uint64_t)1 << 30;
+		return safe_unbounded;
 #else
 #define UNKNOWN(NAME) \
 	case NAME:        \
-		return (uint64_t)1 << 30
+		return safe_unbounded
 #endif
 
 	// clang-format off
@@ -3980,6 +3983,8 @@ uint64_t RenderingDeviceDriverMetal::limit_get(Limit p_limit) {
 			return limits.maxThreadsPerThreadGroup.height;
 		case LIMIT_MAX_COMPUTE_WORKGROUP_SIZE_Z:
 			return limits.maxThreadsPerThreadGroup.depth;
+		case LIMIT_MAX_COMPUTE_SHARED_MEMORY_SIZE:
+			return limits.maxThreadGroupMemoryAllocation;
 		case LIMIT_MAX_VIEWPORT_DIMENSIONS_X:
 			return limits.maxViewportDimensionX;
 		case LIMIT_MAX_VIEWPORT_DIMENSIONS_Y:
@@ -4005,8 +4010,12 @@ uint64_t RenderingDeviceDriverMetal::limit_get(Limit p_limit) {
 		UNKNOWN(LIMIT_VRS_TEXEL_HEIGHT);
 		UNKNOWN(LIMIT_VRS_MAX_FRAGMENT_WIDTH);
 		UNKNOWN(LIMIT_VRS_MAX_FRAGMENT_HEIGHT);
-		default:
-			ERR_FAIL_V(0);
+		default: {
+#ifdef DEV_ENABLED
+			WARN_PRINT("Returning maximum value for unknown limit " + itos(p_limit) + ".");
+#endif
+			return safe_unbounded;
+		}
 	}
 	// clang-format on
 	return 0;
@@ -4082,9 +4091,14 @@ RenderingDeviceDriverMetal::RenderingDeviceDriverMetal(RenderingContextDriverMet
 		context_driver(p_context_driver) {
 	DEV_ASSERT(p_context_driver != nullptr);
 
+#if TARGET_OS_OSX
 	if (String res = OS::get_singleton()->get_environment("GODOT_MTL_SHADER_LOAD_STRATEGY"); res == U"lazy") {
 		_shader_load_strategy = ShaderLoadStrategy::LAZY;
 	}
+#else
+	// Always use the lazy strategy on other OSs like iOS, tvOS, or visionOS.
+	_shader_load_strategy = ShaderLoadStrategy::LAZY;
+#endif
 }
 
 RenderingDeviceDriverMetal::~RenderingDeviceDriverMetal() {

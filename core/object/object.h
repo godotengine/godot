@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef OBJECT_H
-#define OBJECT_H
+#pragma once
 
 #include "core/extension/gdextension_interface.h"
 #include "core/object/message_queue.h"
@@ -974,7 +973,7 @@ public:
 
 #ifdef TOOLS_ENABLED
 	virtual void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const;
-	void editor_set_section_unfold(const String &p_section, bool p_unfolded);
+	void editor_set_section_unfold(const String &p_section, bool p_unfolded, bool p_initializing = false);
 	bool editor_is_section_unfolded(const String &p_section);
 	const HashSet<String> &editor_get_section_folding() const { return editor_section_folding; }
 	void editor_clear_section_folding() { editor_section_folding.clear(); }
@@ -1065,5 +1064,3 @@ public:
 	static void debug_objects(DebugFunc p_func);
 	static int get_object_count();
 };
-
-#endif // OBJECT_H

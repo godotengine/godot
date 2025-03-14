@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef RECT2I_H
-#define RECT2I_H
+#pragma once
 
 #include "core/error/error_macros.h"
 #include "core/math/vector2i.h"
@@ -238,4 +237,5 @@ struct [[nodiscard]] Rect2i {
 	}
 };
 
-#endif // RECT2I_H
+template <>
+struct is_zero_constructible<Rect2i> : std::true_type {};

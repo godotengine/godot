@@ -578,7 +578,7 @@ bool OpenXRAPI::create_instance() {
 
 	Vector<const char *> extension_ptrs;
 	for (int i = 0; i < enabled_extensions.size(); i++) {
-		print_verbose(String("OpenXR: Enabling extension ") + String(enabled_extensions[i]));
+		print_verbose(String("OpenXR: Enabling extension ") + String(enabled_extensions[i].get_data()));
 		extension_ptrs.push_back(enabled_extensions[i].get_data());
 	}
 
@@ -587,7 +587,7 @@ bool OpenXRAPI::create_instance() {
 		"Godot Engine", // applicationName, if we're running a game we'll update this down below.
 		1, // applicationVersion, we don't currently have this
 		"Godot Engine", // engineName
-		VERSION_MAJOR * 10000 + VERSION_MINOR * 100 + VERSION_PATCH, // engineVersion 4.0 -> 40000, 4.0.1 -> 40001, 4.1 -> 40100, etc.
+		GODOT_VERSION_MAJOR * 10000 + GODOT_VERSION_MINOR * 100 + GODOT_VERSION_PATCH, // engineVersion 4.0 -> 40000, 4.0.1 -> 40001, 4.1 -> 40100, etc.
 		XR_API_VERSION_1_0 // apiVersion
 	};
 
@@ -3641,10 +3641,10 @@ void OpenXRAPI::set_emulate_environment_blend_mode_alpha_blend(bool p_enabled) {
 }
 
 OpenXRAPI::OpenXRAlphaBlendModeSupport OpenXRAPI::is_environment_blend_mode_alpha_blend_supported() {
-	if (is_environment_blend_mode_supported(XR_ENVIRONMENT_BLEND_MODE_ALPHA_BLEND)) {
-		return OPENXR_ALPHA_BLEND_MODE_SUPPORT_REAL;
-	} else if (emulate_environment_blend_mode_alpha_blend) {
+	if (emulate_environment_blend_mode_alpha_blend) {
 		return OPENXR_ALPHA_BLEND_MODE_SUPPORT_EMULATING;
+	} else if (is_environment_blend_mode_supported(XR_ENVIRONMENT_BLEND_MODE_ALPHA_BLEND)) {
+		return OPENXR_ALPHA_BLEND_MODE_SUPPORT_REAL;
 	}
 	return OPENXR_ALPHA_BLEND_MODE_SUPPORT_NONE;
 }

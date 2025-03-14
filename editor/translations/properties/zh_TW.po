@@ -748,9 +748,6 @@ msgstr "要求失敗，逾時"
 msgid "Sync Breakpoints"
 msgstr "同步中斷點"
 
-msgid "Default Feature Profile"
-msgstr "預設功能設定檔"
-
 msgid "Label"
 msgstr "標籤"
 
@@ -2338,9 +2335,6 @@ msgstr "外掛名稱"
 msgid "Autoload on Startup"
 msgstr "啟動時自動載入"
 
-msgid "Use Favorites Root Selection"
-msgstr "使用我的最愛根選擇"
-
 msgid "Flush stdout on Print"
 msgstr "列印時刷新標準輸出"
 
@@ -3096,9 +3090,6 @@ msgstr "K1"
 
 msgid "K2"
 msgstr "K2"
-
-msgid "Spawnable Scenes"
-msgstr "可生成場景"
 
 msgid "Spawn Path"
 msgstr "生成路徑"

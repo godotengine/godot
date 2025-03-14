@@ -104,7 +104,7 @@ Ref<FileAccess> FileAccess::create_temp(int p_mode_flags, const String &p_prefix
 	uint32_t suffix_i = 0;
 	String path;
 	while (true) {
-		String datetime = Time::get_singleton()->get_datetime_string_from_system().replace("-", "").replace("T", "").replace(":", "");
+		String datetime = Time::get_singleton()->get_datetime_string_from_system().remove_chars("-T:");
 		datetime += itos(Time::get_singleton()->get_ticks_usec());
 		String suffix = datetime + (suffix_i > 0 ? itos(suffix_i) : "");
 		path = TEMP_DIR.path_join((p_prefix.is_empty() ? "" : p_prefix + "-") + suffix + (extension.is_empty() ? "" : "." + extension));
@@ -429,7 +429,7 @@ class CharBuffer {
 public:
 	_FORCE_INLINE_ CharBuffer() :
 			buffer(stack_buffer),
-			capacity(sizeof(stack_buffer) / sizeof(char)) {
+			capacity(std::size(stack_buffer)) {
 	}
 
 	_FORCE_INLINE_ void push_back(char c) {
@@ -629,8 +629,29 @@ uint64_t FileAccess::get_modified_time(const String &p_file) {
 	Ref<FileAccess> fa = create_for_path(p_file);
 	ERR_FAIL_COND_V_MSG(fa.is_null(), 0, vformat("Cannot create FileAccess for path '%s'.", p_file));
 
-	uint64_t mt = fa->_get_modified_time(p_file);
-	return mt;
+	return fa->_get_modified_time(p_file);
+}
+
+uint64_t FileAccess::get_access_time(const String &p_file) {
+	if (PackedData::get_singleton() && !PackedData::get_singleton()->is_disabled() && (PackedData::get_singleton()->has_path(p_file) || PackedData::get_singleton()->has_directory(p_file))) {
+		return 0;
+	}
+
+	Ref<FileAccess> fa = create_for_path(p_file);
+	ERR_FAIL_COND_V_MSG(fa.is_null(), 0, "Cannot create FileAccess for path '" + p_file + "'.");
+
+	return fa->_get_access_time(p_file);
+}
+
+int64_t FileAccess::get_size(const String &p_file) {
+	if (PackedData::get_singleton() && !PackedData::get_singleton()->is_disabled() && (PackedData::get_singleton()->has_path(p_file) || PackedData::get_singleton()->has_directory(p_file))) {
+		return PackedData::get_singleton()->get_size(p_file);
+	}
+
+	Ref<FileAccess> fa = create_for_path(p_file);
+	ERR_FAIL_COND_V_MSG(fa.is_null(), -1, "Cannot create FileAccess for path '" + p_file + "'.");
+
+	return fa->_get_size(p_file);
 }
 
 BitField<FileAccess::UnixPermissionFlags> FileAccess::get_unix_permissions(const String &p_file) {
@@ -963,6 +984,8 @@ void FileAccess::_bind_methods() {
 
 	ClassDB::bind_static_method("FileAccess", D_METHOD("file_exists", "path"), &FileAccess::exists);
 	ClassDB::bind_static_method("FileAccess", D_METHOD("get_modified_time", "file"), &FileAccess::get_modified_time);
+	ClassDB::bind_static_method("FileAccess", D_METHOD("get_access_time", "file"), &FileAccess::get_access_time);
+	ClassDB::bind_static_method("FileAccess", D_METHOD("get_size", "file"), &FileAccess::get_size);
 
 	ClassDB::bind_static_method("FileAccess", D_METHOD("get_unix_permissions", "file"), &FileAccess::get_unix_permissions);
 	ClassDB::bind_static_method("FileAccess", D_METHOD("set_unix_permissions", "file", "permissions"), &FileAccess::set_unix_permissions);

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef EDITOR_INTERFACE_H
-#define EDITOR_INTERFACE_H
+#pragma once
 
 #include "core/io/resource.h"
 #include "core/object/class_db.h"
@@ -171,6 +170,7 @@ public:
 	void reload_scene_from_path(const String &scene_path);
 
 	PackedStringArray get_open_scenes() const;
+	TypedArray<Node> get_open_scene_roots() const;
 	Node *get_edited_scene_root() const;
 
 	Error save_scene();
@@ -200,5 +200,3 @@ public:
 
 	EditorInterface();
 };
-
-#endif // EDITOR_INTERFACE_H

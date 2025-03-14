@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef RECT2_H
-#define RECT2_H
+#pragma once
 
 #include "core/error/error_macros.h"
 #include "core/math/vector2.h"
@@ -203,6 +202,7 @@ struct [[nodiscard]] Rect2 {
 	}
 
 	bool is_equal_approx(const Rect2 &p_rect) const;
+	bool is_same(const Rect2 &p_rect) const;
 	bool is_finite() const;
 
 	bool operator==(const Rect2 &p_rect) const { return position == p_rect.position && size == p_rect.size; }
@@ -372,4 +372,5 @@ struct [[nodiscard]] Rect2 {
 	}
 };
 
-#endif // RECT2_H
+template <>
+struct is_zero_constructible<Rect2> : std::true_type {};

@@ -343,7 +343,7 @@ String ShaderEditorPlugin::get_unsaved_status(const String &p_for_scene) const {
 
 void ShaderEditorPlugin::save_external_data() {
 	for (EditedShader &edited_shader : edited_shaders) {
-		if (edited_shader.shader_editor) {
+		if (edited_shader.shader_editor && edited_shader.shader_editor->is_unsaved()) {
 			edited_shader.shader_editor->save_external_data();
 		}
 	}
@@ -813,7 +813,7 @@ ShaderEditorPlugin::ShaderEditorPlugin() {
 	make_floating->connect("request_open_in_screen", callable_mp(window_wrapper, &WindowWrapper::enable_window_on_screen).bind(true));
 	if (!make_floating->is_disabled()) {
 		// Override default ScreenSelect tooltip if multi-window support is available.
-		make_floating->set_tooltip_text(TTR("Make the shader editor floating.\nRight-click to open the screen selector."));
+		make_floating->set_tooltip_text(TTR("Make the shader editor floating.") + "\n" + TTR("Right-click to open the screen selector."));
 	}
 
 	menu_hb->add_child(make_floating);

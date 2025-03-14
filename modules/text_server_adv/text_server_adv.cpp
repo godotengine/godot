@@ -1318,11 +1318,12 @@ _FORCE_INLINE_ bool TextServerAdvanced::_ensure_glyph(FontAdvanced *p_font_data,
 			} break;
 		}
 
+		FT_GlyphSlot slot = fd->face->glyph;
+		bool from_svg = (slot->format == FT_GLYPH_FORMAT_SVG); // Need to check before FT_Render_Glyph as it will change format to bitmap.
 		if (!outline) {
 			if (!p_font_data->msdf) {
-				error = FT_Render_Glyph(fd->face->glyph, aa_mode);
+				error = FT_Render_Glyph(slot, aa_mode);
 			}
-			FT_GlyphSlot slot = fd->face->glyph;
 			if (!error) {
 				if (p_font_data->msdf) {
 #ifdef MODULE_MSDFGEN_ENABLED
@@ -1363,6 +1364,7 @@ _FORCE_INLINE_ bool TextServerAdvanced::_ensure_glyph(FontAdvanced *p_font_data,
 		cleanup_stroker:
 			FT_Stroker_Done(stroker);
 		}
+		gl.from_svg = from_svg;
 		E = fd->glyph_map.insert(p_glyph, gl);
 		r_glyph = E->value;
 		return gl.found;
@@ -3312,6 +3314,10 @@ RID TextServerAdvanced::_font_get_glyph_texture_rid(const RID &p_font_rid, const
 			if (ffsd->textures[fgl.texture_idx].dirty) {
 				ShelfPackTexture &tex = ffsd->textures.write[fgl.texture_idx];
 				Ref<Image> img = tex.image;
+				if (fgl.from_svg) {
+					// Same as the "fix alpha border" process option when importing SVGs
+					img->fix_alpha_edges();
+				}
 				if (fd->mipmaps && !img->has_mipmaps()) {
 					img = tex.image->duplicate();
 					img->generate_mipmaps();
@@ -3360,6 +3366,10 @@ Size2 TextServerAdvanced::_font_get_glyph_texture_size(const RID &p_font_rid, co
 			if (ffsd->textures[fgl.texture_idx].dirty) {
 				ShelfPackTexture &tex = ffsd->textures.write[fgl.texture_idx];
 				Ref<Image> img = tex.image;
+				if (fgl.from_svg) {
+					// Same as the "fix alpha border" process option when importing SVGs
+					img->fix_alpha_edges();
+				}
 				if (fd->mipmaps && !img->has_mipmaps()) {
 					img = tex.image->duplicate();
 					img->generate_mipmaps();
@@ -3798,7 +3808,7 @@ void TextServerAdvanced::_font_draw_glyph(const RID &p_font_rid, const RID &p_ca
 		if (fgl.texture_idx != -1) {
 			Color modulate = p_color;
 #ifdef MODULE_FREETYPE_ENABLED
-			if (ffsd->face && ffsd->textures[fgl.texture_idx].image.is_valid() && (ffsd->textures[fgl.texture_idx].image->get_format() == Image::FORMAT_RGBA8) && !lcd_aa && !fd->msdf) {
+			if (!fgl.from_svg && ffsd->face && ffsd->textures[fgl.texture_idx].image.is_valid() && (ffsd->textures[fgl.texture_idx].image->get_format() == Image::FORMAT_RGBA8) && !lcd_aa && !fd->msdf) {
 				modulate.r = modulate.g = modulate.b = 1.0;
 			}
 #endif
@@ -3806,6 +3816,10 @@ void TextServerAdvanced::_font_draw_glyph(const RID &p_font_rid, const RID &p_ca
 				if (ffsd->textures[fgl.texture_idx].dirty) {
 					ShelfPackTexture &tex = ffsd->textures.write[fgl.texture_idx];
 					Ref<Image> img = tex.image;
+					if (fgl.from_svg) {
+						// Same as the "fix alpha border" process option when importing SVGs
+						img->fix_alpha_edges();
+					}
 					if (fd->mipmaps && !img->has_mipmaps()) {
 						img = tex.image->duplicate();
 						img->generate_mipmaps();
@@ -5650,8 +5664,12 @@ bool TextServerAdvanced::_shaped_text_update_breaks(const RID &p_shaped) {
 				i++;
 			}
 			int r_end = sd->spans[i].end;
-			UBreakIterator *bi = ubrk_open(UBRK_LINE, (language.is_empty()) ? TranslationServer::get_singleton()->get_tool_locale().ascii().get_data() : language.ascii().get_data(), data + _convert_pos_inv(sd, r_start), _convert_pos_inv(sd, r_end - r_start), &err);
-			if (U_FAILURE(err)) {
+			UBreakIterator *bi = sd->_get_break_iterator_for_locale(language, &err);
+			if (!U_FAILURE(err) && bi) {
+				ubrk_setText(bi, data + _convert_pos_inv(sd, r_start), _convert_pos_inv(sd, r_end - r_start), &err);
+			}
+
+			if (U_FAILURE(err) || !bi) {
 				// No data loaded - use fallback.
 				for (int j = r_start; j < r_end; j++) {
 					char32_t c = sd->text[j - sd->start];
@@ -5680,7 +5698,6 @@ bool TextServerAdvanced::_shaped_text_update_breaks(const RID &p_shaped) {
 					}
 				}
 			}
-			ubrk_close(bi);
 			i++;
 		}
 		sd->break_ops_valid = true;
@@ -6126,6 +6143,15 @@ _FORCE_INLINE_ void TextServerAdvanced::_add_featuers(const Dictionary &p_source
 			r_ftrs.push_back(feature);
 		}
 	}
+}
+
+UBreakIterator *TextServerAdvanced::ShapedTextDataAdvanced::_get_break_iterator_for_locale(const String &p_language, UErrorCode *r_err) {
+	HashMap<String, UBreakIterator *>::Iterator key_value = line_break_iterators_per_language.find(p_language);
+	if (key_value) {
+		return key_value->value;
+	}
+	UBreakIterator *brk = ubrk_open(UBRK_LINE, p_language.is_empty() ? TranslationServer::get_singleton()->get_tool_locale().ascii().get_data() : p_language.ascii().get_data(), nullptr, 0, r_err);
+	return line_break_iterators_per_language.insert(p_language, brk)->value;
 }
 
 void TextServerAdvanced::_shape_run(ShapedTextDataAdvanced *p_sd, int64_t p_start, int64_t p_end, hb_script_t p_script, hb_direction_t p_direction, TypedArray<RID> p_fonts, int64_t p_span, int64_t p_fb_index, int64_t p_prev_start, int64_t p_prev_end, RID p_prev_font) {

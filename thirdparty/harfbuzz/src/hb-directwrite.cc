@@ -29,6 +29,7 @@
 #include "hb-shaper-impl.hh"
 
 #include <dwrite_1.h>
+#include <dwrite_3.h>
 
 #include "hb-directwrite.h"
 
@@ -275,6 +276,8 @@ _hb_directwrite_shaper_font_data_create (hb_font_t *font)
 void
 _hb_directwrite_shaper_font_data_destroy (hb_directwrite_font_data_t *data)
 {
+  if (data != HB_SHAPER_DATA_SUCCEEDED)
+    ((IDWriteFont *) (const void *) data)->Release();
 }
 
 
@@ -839,7 +842,7 @@ _hb_directwrite_reference_table (hb_face_t *face HB_UNUSED, hb_tag_t tag, void *
 }
 
 static void
-_hb_directwrite_font_release (void *data)
+_hb_directwrite_face_release (void *data)
 {
   if (data)
     ((IDWriteFontFace *) data)->Release ();
@@ -847,7 +850,7 @@ _hb_directwrite_font_release (void *data)
 
 /**
  * hb_directwrite_face_create:
- * @font_face: a DirectWrite IDWriteFontFace object.
+ * @dw_face: a DirectWrite IDWriteFontFace object.
  *
  * Constructs a new face object from the specified DirectWrite IDWriteFontFace.
  *
@@ -856,13 +859,31 @@ _hb_directwrite_font_release (void *data)
  * Since: 2.4.0
  **/
 hb_face_t *
-hb_directwrite_face_create (IDWriteFontFace *font_face)
+hb_directwrite_face_create (IDWriteFontFace *dw_face)
 {
-  if (font_face)
-    font_face->AddRef ();
-  return hb_face_create_for_tables (_hb_directwrite_reference_table, font_face,
-				    _hb_directwrite_font_release);
+  if (dw_face)
+    dw_face->AddRef ();
+  return hb_face_create_for_tables (_hb_directwrite_reference_table, dw_face,
+				    _hb_directwrite_face_release);
 }
+
+/**
+* hb_directwrite_face_get_dw_font_face:
+* @face: a #hb_face_t object
+*
+* Gets the DirectWrite IDWriteFontFace associated with @face.
+*
+* Return value: DirectWrite IDWriteFontFace object corresponding to the given input
+*
+* Since: 10.4.0
+**/
+IDWriteFontFace *
+hb_directwrite_face_get_dw_font_face (hb_face_t *face)
+{
+  return face->data.directwrite->fontFace;
+}
+
+#ifndef HB_DISABLE_DEPRECATED
 
 /**
 * hb_directwrite_face_get_font_face:
@@ -873,12 +894,90 @@ hb_directwrite_face_create (IDWriteFontFace *font_face)
 * Return value: DirectWrite IDWriteFontFace object corresponding to the given input
 *
 * Since: 2.5.0
+* Deprecated: 10.4.0: Use hb_directwrite_face_get_dw_font_face() instead
 **/
 IDWriteFontFace *
 hb_directwrite_face_get_font_face (hb_face_t *face)
 {
-  return face->data.directwrite->fontFace;
+  return hb_directwrite_face_get_dw_font_face (face);
 }
 
+#endif
+
+/**
+ * hb_directwrite_font_create:
+ * @dw_font: a DirectWrite IDWriteFont object.
+ *
+ * Constructs a new font object from the specified DirectWrite IDWriteFont.
+ *
+ * Return value: #hb_font_t object corresponding to the given input
+ *
+ * Since: 10.3.0
+ **/
+hb_font_t *
+hb_directwrite_font_create (IDWriteFont *dw_font)
+{
+  IDWriteFontFace *dw_face = nullptr;
+  IDWriteFontFace5 *dw_face5 = nullptr;
+
+  if (FAILED (dw_font->CreateFontFace (&dw_face)))
+    return hb_font_get_empty ();
+
+  hb_face_t *face = hb_directwrite_face_create (dw_face);
+  hb_font_t *font = hb_font_create (face);
+  hb_face_destroy (face);
+
+  if (unlikely (hb_object_is_immutable (font)))
+    goto done;
+
+  /* Copy font variations */
+  if (SUCCEEDED (dw_face->QueryInterface (__uuidof (IDWriteFontFace5), (void**) &dw_face5)))
+  {
+    if (dw_face5->HasVariations ())
+    {
+      hb_vector_t<DWRITE_FONT_AXIS_VALUE> values;
+      uint32_t count = dw_face5->GetFontAxisValueCount ();
+      if (likely (values.resize_exact (count)) &&
+	  SUCCEEDED (dw_face5->GetFontAxisValues (values.arrayZ, count)))
+      {
+	hb_vector_t<hb_variation_t> vars;
+	if (likely (vars.resize_exact (count)))
+	{
+	  for (uint32_t i = 0; i < count; ++i)
+	  {
+	    hb_tag_t tag = values[i].axisTag;
+	    float value = values[i].value;
+	    vars[i] = {tag, value};
+	  }
+	  hb_font_set_variations (font, vars.arrayZ, vars.length);
+	}
+      }
+    }
+    dw_face5->Release ();
+  }
+
+  dw_font->AddRef ();
+  font->data.directwrite.cmpexch (nullptr, (hb_directwrite_font_data_t *) dw_font);
+
+done:
+  dw_face->Release ();
+  return font;
+}
+
+/**
+* hb_directwrite_font_get_dw_font:
+* @font: a #hb_font_t object
+*
+* Gets the DirectWrite IDWriteFont associated with @font.
+*
+* Return value: DirectWrite IDWriteFont object corresponding to the given input
+*
+* Since: 10.3.0
+**/
+IDWriteFont *
+hb_directwrite_font_get_dw_font (hb_font_t *font)
+{
+  return (IDWriteFont *) (const void *) font->data.directwrite;
+}
 
 #endif

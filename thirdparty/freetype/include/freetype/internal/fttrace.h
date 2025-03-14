@@ -4,7 +4,7 @@
  *
  *   Tracing handling (specification only).
  *
- * Copyright (C) 2002-2023 by
+ * Copyright (C) 2002-2024 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -64,6 +64,7 @@ FT_TRACE_DEF( ttbdf )     /* TrueType embedded BDF   (ttbdf.c)    */
 FT_TRACE_DEF( ttcmap )    /* charmap handler         (ttcmap.c)   */
 FT_TRACE_DEF( ttcolr )    /* glyph layer table       (ttcolr.c)   */
 FT_TRACE_DEF( ttcpal )    /* color palette table     (ttcpal.c)   */
+FT_TRACE_DEF( ttgpos )    /* GPOS handler            (ttgpos.c)   */
 FT_TRACE_DEF( ttsvg )     /* OpenType SVG table      (ttsvg.c)    */
 FT_TRACE_DEF( ttkern )    /* kerning handler         (ttkern.c)   */
 FT_TRACE_DEF( ttload )    /* basic TrueType tables   (ttload.c)   */

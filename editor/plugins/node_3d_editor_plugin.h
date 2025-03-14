@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef NODE_3D_EDITOR_PLUGIN_H
-#define NODE_3D_EDITOR_PLUGIN_H
+#pragma once
 
 #include "core/math/dynamic_bvh.h"
 #include "editor/plugins/editor_plugin.h"
@@ -249,7 +248,7 @@ private:
 	CheckBox *preview_camera = nullptr;
 	SubViewportContainer *subviewport_container = nullptr;
 
-	MenuButton *view_menu = nullptr;
+	MenuButton *view_display_menu = nullptr;
 	PopupMenu *display_submenu = nullptr;
 
 	Control *surface = nullptr;
@@ -524,7 +523,15 @@ private:
 	void register_shortcut_action(const String &p_path, const String &p_name, Key p_keycode, bool p_physical = false);
 	void shortcut_changed_callback(const Ref<Shortcut> p_shortcut, const String &p_shortcut_path);
 
+	// Supported rendering methods for advanced debug draw mode items.
+	enum SupportedRenderingMethods {
+		ALL,
+		FORWARD_PLUS,
+		FORWARD_PLUS_MOBILE,
+	};
+
 	void _set_lock_view_rotation(bool p_lock_rotation);
+	void _add_advanced_debug_draw_mode_item(PopupMenu *p_popup, const String &p_name, int p_value, SupportedRenderingMethods p_rendering_methods = SupportedRenderingMethods::ALL, const String &p_tooltip = "");
 
 protected:
 	void _notification(int p_what);
@@ -694,8 +701,16 @@ private:
 	real_t snap_rotate_value;
 	real_t snap_scale_value;
 
+	Ref<ArrayMesh> active_selection_box_xray;
+	Ref<ArrayMesh> active_selection_box;
 	Ref<ArrayMesh> selection_box_xray;
 	Ref<ArrayMesh> selection_box;
+
+	Ref<StandardMaterial3D> selection_box_mat = memnew(StandardMaterial3D);
+	Ref<StandardMaterial3D> selection_box_mat_xray = memnew(StandardMaterial3D);
+	Ref<StandardMaterial3D> active_selection_box_mat = memnew(StandardMaterial3D);
+	Ref<StandardMaterial3D> active_selection_box_mat_xray = memnew(StandardMaterial3D);
+
 	RID indicators;
 	RID indicators_instance;
 	RID cursor_mesh;
@@ -752,7 +767,7 @@ private:
 
 	MenuButton *transform_menu = nullptr;
 	PopupMenu *gizmos_menu = nullptr;
-	MenuButton *view_menu = nullptr;
+	MenuButton *view_layout_menu = nullptr;
 
 	AcceptDialog *accept = nullptr;
 
@@ -1054,5 +1069,3 @@ public:
 	void set_navigation_mode(Node3DEditorViewport::NavigationMode p_nav_mode);
 	void set_viewport(Node3DEditorViewport *p_viewport);
 };
-
-#endif // NODE_3D_EDITOR_PLUGIN_H

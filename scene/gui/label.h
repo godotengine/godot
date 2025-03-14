@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef LABEL_H
-#define LABEL_H
+#pragma once
 
 #include "scene/gui/control.h"
 #include "scene/resources/label_settings.h"
@@ -39,6 +38,7 @@ class Label : public Control {
 
 private:
 	enum LabelDrawStep {
+		DRAW_STEP_SHADOW_OUTLINE,
 		DRAW_STEP_SHADOW,
 		DRAW_STEP_OUTLINE,
 		DRAW_STEP_TEXT,
@@ -196,5 +196,3 @@ public:
 	Label(const String &p_text = String());
 	~Label();
 };
-
-#endif // LABEL_H

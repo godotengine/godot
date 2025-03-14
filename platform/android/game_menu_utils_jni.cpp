@@ -34,13 +34,20 @@
 #include "editor/editor_interface.h"
 #include "editor/editor_node.h"
 #include "editor/plugins/game_view_plugin.h"
+
+static GameViewPlugin *_get_game_view_plugin() {
+	ERR_FAIL_NULL_V(EditorNode::get_singleton(), nullptr);
+	ERR_FAIL_NULL_V(EditorNode::get_singleton()->get_editor_main_screen(), nullptr);
+	return Object::cast_to<GameViewPlugin>(EditorNode::get_singleton()->get_editor_main_screen()->get_plugin_by_name("Game"));
+}
+
 #endif
 
 extern "C" {
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_utils_GameMenuUtils_setSuspend(JNIEnv *env, jclass clazz, jboolean enabled) {
 #ifdef TOOLS_ENABLED
-	GameViewPlugin *game_view_plugin = Object::cast_to<GameViewPlugin>(EditorNode::get_singleton()->get_editor_main_screen()->get_plugin_by_name("Game"));
+	GameViewPlugin *game_view_plugin = _get_game_view_plugin();
 	if (game_view_plugin != nullptr && game_view_plugin->get_debugger().is_valid()) {
 		game_view_plugin->get_debugger()->set_suspend(enabled);
 	}
@@ -49,7 +56,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_utils_GameMenuUtils_setSuspend
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_utils_GameMenuUtils_nextFrame(JNIEnv *env, jclass clazz) {
 #ifdef TOOLS_ENABLED
-	GameViewPlugin *game_view_plugin = Object::cast_to<GameViewPlugin>(EditorNode::get_singleton()->get_editor_main_screen()->get_plugin_by_name("Game"));
+	GameViewPlugin *game_view_plugin = _get_game_view_plugin();
 	if (game_view_plugin != nullptr && game_view_plugin->get_debugger().is_valid()) {
 		game_view_plugin->get_debugger()->next_frame();
 	}
@@ -58,7 +65,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_utils_GameMenuUtils_nextFrame(
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_utils_GameMenuUtils_setNodeType(JNIEnv *env, jclass clazz, jint type) {
 #ifdef TOOLS_ENABLED
-	GameViewPlugin *game_view_plugin = Object::cast_to<GameViewPlugin>(EditorNode::get_singleton()->get_editor_main_screen()->get_plugin_by_name("Game"));
+	GameViewPlugin *game_view_plugin = _get_game_view_plugin();
 	if (game_view_plugin != nullptr && game_view_plugin->get_debugger().is_valid()) {
 		game_view_plugin->get_debugger()->set_node_type(type);
 	}
@@ -67,7 +74,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_utils_GameMenuUtils_setNodeTyp
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_utils_GameMenuUtils_setSelectMode(JNIEnv *env, jclass clazz, jint mode) {
 #ifdef TOOLS_ENABLED
-	GameViewPlugin *game_view_plugin = Object::cast_to<GameViewPlugin>(EditorNode::get_singleton()->get_editor_main_screen()->get_plugin_by_name("Game"));
+	GameViewPlugin *game_view_plugin = _get_game_view_plugin();
 	if (game_view_plugin != nullptr && game_view_plugin->get_debugger().is_valid()) {
 		game_view_plugin->get_debugger()->set_select_mode(mode);
 	}
@@ -76,7 +83,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_utils_GameMenuUtils_setSelectM
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_utils_GameMenuUtils_setSelectionVisible(JNIEnv *env, jclass clazz, jboolean visible) {
 #ifdef TOOLS_ENABLED
-	GameViewPlugin *game_view_plugin = Object::cast_to<GameViewPlugin>(EditorNode::get_singleton()->get_editor_main_screen()->get_plugin_by_name("Game"));
+	GameViewPlugin *game_view_plugin = _get_game_view_plugin();
 	if (game_view_plugin != nullptr && game_view_plugin->get_debugger().is_valid()) {
 		game_view_plugin->get_debugger()->set_selection_visible(visible);
 	}
@@ -85,7 +92,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_utils_GameMenuUtils_setSelecti
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_utils_GameMenuUtils_setCameraOverride(JNIEnv *env, jclass clazz, jboolean enabled) {
 #ifdef TOOLS_ENABLED
-	GameViewPlugin *game_view_plugin = Object::cast_to<GameViewPlugin>(EditorNode::get_singleton()->get_editor_main_screen()->get_plugin_by_name("Game"));
+	GameViewPlugin *game_view_plugin = _get_game_view_plugin();
 	if (game_view_plugin != nullptr && game_view_plugin->get_debugger().is_valid()) {
 		game_view_plugin->get_debugger()->set_camera_override(enabled);
 	}
@@ -94,7 +101,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_utils_GameMenuUtils_setCameraO
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_utils_GameMenuUtils_setCameraManipulateMode(JNIEnv *env, jclass clazz, jint mode) {
 #ifdef TOOLS_ENABLED
-	GameViewPlugin *game_view_plugin = Object::cast_to<GameViewPlugin>(EditorNode::get_singleton()->get_editor_main_screen()->get_plugin_by_name("Game"));
+	GameViewPlugin *game_view_plugin = _get_game_view_plugin();
 	if (game_view_plugin != nullptr && game_view_plugin->get_debugger().is_valid()) {
 		game_view_plugin->get_debugger()->set_camera_manipulate_mode(static_cast<EditorDebuggerNode::CameraOverride>(mode));
 	}
@@ -103,7 +110,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_utils_GameMenuUtils_setCameraM
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_utils_GameMenuUtils_resetCamera2DPosition(JNIEnv *env, jclass clazz) {
 #ifdef TOOLS_ENABLED
-	GameViewPlugin *game_view_plugin = Object::cast_to<GameViewPlugin>(EditorNode::get_singleton()->get_editor_main_screen()->get_plugin_by_name("Game"));
+	GameViewPlugin *game_view_plugin = _get_game_view_plugin();
 	if (game_view_plugin != nullptr && game_view_plugin->get_debugger().is_valid()) {
 		game_view_plugin->get_debugger()->reset_camera_2d_position();
 	}
@@ -112,7 +119,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_utils_GameMenuUtils_resetCamer
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_utils_GameMenuUtils_resetCamera3DPosition(JNIEnv *env, jclass clazz) {
 #ifdef TOOLS_ENABLED
-	GameViewPlugin *game_view_plugin = Object::cast_to<GameViewPlugin>(EditorNode::get_singleton()->get_editor_main_screen()->get_plugin_by_name("Game"));
+	GameViewPlugin *game_view_plugin = _get_game_view_plugin();
 	if (game_view_plugin != nullptr && game_view_plugin->get_debugger().is_valid()) {
 		game_view_plugin->get_debugger()->reset_camera_3d_position();
 	}
@@ -121,7 +128,9 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_utils_GameMenuUtils_resetCamer
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_utils_GameMenuUtils_playMainScene(JNIEnv *env, jclass clazz) {
 #ifdef TOOLS_ENABLED
-	EditorInterface::get_singleton()->play_main_scene();
+	if (EditorInterface::get_singleton()) {
+		EditorInterface::get_singleton()->play_main_scene();
+	}
 #endif
 }
 }

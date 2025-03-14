@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TEXT_SERVER_H
-#define TEXT_SERVER_H
+#pragma once
 
 #include "core/io/image.h"
 #include "core/object/ref_counted.h"
@@ -119,6 +118,8 @@ public:
 		OVERRUN_TRIM_WORD,
 		OVERRUN_TRIM_ELLIPSIS,
 		OVERRUN_TRIM_WORD_ELLIPSIS,
+		OVERRUN_TRIM_ELLIPSIS_FORCE,
+		OVERRUN_TRIM_WORD_ELLIPSIS_FORCE,
 	};
 
 	enum TextOverrunFlag {
@@ -668,5 +669,3 @@ VARIANT_ENUM_CAST(TextServer::FixedSizeScaleMode);
 
 GDVIRTUAL_NATIVE_PTR(Glyph);
 GDVIRTUAL_NATIVE_PTR(CaretInfo);
-
-#endif // TEXT_SERVER_H

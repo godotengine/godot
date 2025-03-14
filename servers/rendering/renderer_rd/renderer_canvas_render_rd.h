@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef RENDERER_CANVAS_RENDER_RD_H
-#define RENDERER_CANVAS_RENDER_RD_H
+#pragma once
 
 #include "core/templates/lru.h"
 #include "servers/rendering/renderer_canvas_render.h"
@@ -526,7 +525,7 @@ class RendererCanvasRenderRD : public RendererCanvasRender {
 		uint32_t flags = 0;
 	};
 
-	HashMap<TextureState, TextureInfo, HashableHasher<TextureState>> texture_info_map;
+	HashMap<TextureState, TextureInfo, HashableHasher<TextureState>, HashMapComparatorDefault<TextureState>, PagedAllocator<HashMapElement<TextureState, TextureInfo>>> texture_info_map;
 
 	// per-frame buffers
 	struct DataBuffer {
@@ -667,5 +666,3 @@ public:
 	RendererCanvasRenderRD();
 	~RendererCanvasRenderRD();
 };
-
-#endif // RENDERER_CANVAS_RENDER_RD_H

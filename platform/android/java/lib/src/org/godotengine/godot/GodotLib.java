@@ -190,6 +190,15 @@ public class GodotLib {
 	public static native String getGlobal(String p_key);
 
 	/**
+	 * Used to get info about the current rendering system.
+	 *
+	 * @return A String array with two elements:
+	 *         [0] Rendering driver name.
+	 *         [1] Rendering method.
+	 */
+	public static native String[] getRendererInfo();
+
+	/**
 	 * Used to access Godot's editor settings.
 	 * @param settingKey Setting key
 	 * @return String value of the setting

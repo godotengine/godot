@@ -91,6 +91,7 @@
 #include "physics_server_3d.h"
 #include "physics_server_3d_dummy.h"
 #include "servers/extensions/physics_server_3d_extension.h"
+#ifndef XR_DISABLED
 #include "xr/xr_body_tracker.h"
 #include "xr/xr_controller_tracker.h"
 #include "xr/xr_face_tracker.h"
@@ -99,6 +100,7 @@
 #include "xr/xr_interface_extension.h"
 #include "xr/xr_positional_tracker.h"
 #include "xr_server.h"
+#endif // XR_DISABLED
 #endif // _3D_DISABLED
 
 ShaderTypes *shader_types = nullptr;
@@ -307,6 +309,7 @@ void register_server_types() {
 
 	PhysicsServer3DManager::get_singleton()->register_server("Dummy", callable_mp_static(_create_dummy_physics_server_3d));
 
+#ifndef XR_DISABLED
 	GDREGISTER_ABSTRACT_CLASS(XRInterface);
 	GDREGISTER_CLASS(XRVRS);
 	GDREGISTER_CLASS(XRBodyTracker);
@@ -318,6 +321,7 @@ void register_server_types() {
 	GDREGISTER_CLASS(XRPositionalTracker);
 	GDREGISTER_CLASS(XRServer);
 	GDREGISTER_ABSTRACT_CLASS(XRTracker);
+#endif // XR_DISABLED
 #endif // _3D_DISABLED
 
 	GDREGISTER_ABSTRACT_CLASS(NavigationServer3D);
@@ -358,7 +362,9 @@ void register_server_singletons() {
 	Engine::get_singleton()->add_singleton(Engine::Singleton("PhysicsServer2D", PhysicsServer2D::get_singleton(), "PhysicsServer2D"));
 #ifndef _3D_DISABLED
 	Engine::get_singleton()->add_singleton(Engine::Singleton("PhysicsServer3D", PhysicsServer3D::get_singleton(), "PhysicsServer3D"));
+#ifndef XR_DISABLED
 	Engine::get_singleton()->add_singleton(Engine::Singleton("XRServer", XRServer::get_singleton(), "XRServer"));
+#endif // XR_DISABLED
 #endif // _3D_DISABLED
 
 	OS::get_singleton()->benchmark_end_measure("Servers", "Register Singletons");

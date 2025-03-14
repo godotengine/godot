@@ -286,11 +286,11 @@ static String unescape_cmdline(const String &p_str) {
 }
 
 static String get_full_version_string() {
-	String hash = String(VERSION_HASH);
+	String hash = String(GODOT_VERSION_HASH);
 	if (!hash.is_empty()) {
 		hash = "." + hash.left(9);
 	}
-	return String(VERSION_FULL_BUILD) + hash;
+	return String(GODOT_VERSION_FULL_BUILD) + hash;
 }
 
 #if defined(TOOLS_ENABLED) && defined(MODULE_GDSCRIPT_ENABLED)
@@ -393,18 +393,18 @@ void finalize_theme_db() {
 #endif
 
 void Main::print_header(bool p_rich) {
-	if (VERSION_TIMESTAMP > 0) {
+	if (GODOT_VERSION_TIMESTAMP > 0) {
 		// Version timestamp available.
 		if (p_rich) {
-			Engine::get_singleton()->print_header_rich("\u001b[38;5;39m" + String(VERSION_NAME) + "\u001b[0m v" + get_full_version_string() + " (" + Time::get_singleton()->get_datetime_string_from_unix_time(VERSION_TIMESTAMP, true) + " UTC) - \u001b[4m" + String(VERSION_WEBSITE));
+			Engine::get_singleton()->print_header_rich("\u001b[38;5;39m" + String(GODOT_VERSION_NAME) + "\u001b[0m v" + get_full_version_string() + " (" + Time::get_singleton()->get_datetime_string_from_unix_time(GODOT_VERSION_TIMESTAMP, true) + " UTC) - \u001b[4m" + String(GODOT_VERSION_WEBSITE));
 		} else {
-			Engine::get_singleton()->print_header(String(VERSION_NAME) + " v" + get_full_version_string() + " (" + Time::get_singleton()->get_datetime_string_from_unix_time(VERSION_TIMESTAMP, true) + " UTC) - " + String(VERSION_WEBSITE));
+			Engine::get_singleton()->print_header(String(GODOT_VERSION_NAME) + " v" + get_full_version_string() + " (" + Time::get_singleton()->get_datetime_string_from_unix_time(GODOT_VERSION_TIMESTAMP, true) + " UTC) - " + String(GODOT_VERSION_WEBSITE));
 		}
 	} else {
 		if (p_rich) {
-			Engine::get_singleton()->print_header_rich("\u001b[38;5;39m" + String(VERSION_NAME) + "\u001b[0m v" + get_full_version_string() + " - \u001b[4m" + String(VERSION_WEBSITE));
+			Engine::get_singleton()->print_header_rich("\u001b[38;5;39m" + String(GODOT_VERSION_NAME) + "\u001b[0m v" + get_full_version_string() + " - \u001b[4m" + String(GODOT_VERSION_WEBSITE));
 		} else {
-			Engine::get_singleton()->print_header(String(VERSION_NAME) + " v" + get_full_version_string() + " - " + String(VERSION_WEBSITE));
+			Engine::get_singleton()->print_header(String(GODOT_VERSION_NAME) + " v" + get_full_version_string() + " - " + String(GODOT_VERSION_WEBSITE));
 		}
 	}
 }
@@ -593,6 +593,7 @@ void Main::print_help(const char *p_binary) {
 	print_help_title("Debug options");
 	print_help_option("-d, --debug", "Debug (local stdout debugger).\n");
 	print_help_option("-b, --breakpoints", "Breakpoint list as source::line comma-separated pairs, no spaces (use %%20 instead).\n");
+	print_help_option("--ignore-error-breaks", "If debugger is connected, prevents sending error breakpoints.\n");
 	print_help_option("--profiling", "Enable profiling in the script debugger.\n");
 	print_help_option("--gpu-profile", "Show a GPU profile of the tasks that took the most time during frame rendering.\n");
 	print_help_option("--gpu-validation", "Enable graphics API validation layers for debugging.\n");
@@ -713,9 +714,9 @@ Error Main::test_setup() {
 
 	/** INITIALIZE SERVERS **/
 	register_server_types();
-#ifndef _3D_DISABLED
+#ifndef XR_DISABLED
 	XRServer::set_xr_mode(XRServer::XRMODE_OFF); // Skip in tests.
-#endif // _3D_DISABLED
+#endif // XR_DISABLED
 	initialize_modules(MODULE_INITIALIZATION_LEVEL_SERVERS);
 	GDExtensionManager::get_singleton()->initialize_extensions(GDExtension::INITIALIZATION_LEVEL_SERVERS);
 
@@ -979,7 +980,12 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	String project_path = ".";
 	bool upwards = false;
 	String debug_uri = "";
+#if defined(TOOLS_ENABLED) && (defined(WINDOWS_ENABLED) || defined(LINUXBSD_ENABLED))
+	bool test_rd_creation = false;
+	bool test_rd_support = false;
+#endif
 	bool skip_breakpoints = false;
+	bool ignore_error_breaks = false;
 	String main_pack;
 	bool quiet_stdout = false;
 	int separate_thread_render = -1; // Tri-state: -1 = not set, 0 = false, 1 = true.
@@ -1270,8 +1276,8 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 					goto error;
 				}
 
-				int w = vm.get_slice("x", 0).to_int();
-				int h = vm.get_slice("x", 1).to_int();
+				int w = vm.get_slicec('x', 0).to_int();
+				int h = vm.get_slicec('x', 1).to_int();
 
 				if (w <= 0 || h <= 0) {
 					OS::get_singleton()->print("Invalid resolution '%s', width and height must be above 0.\n",
@@ -1313,8 +1319,8 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 					goto error;
 				}
 
-				int x = vm.get_slice(",", 0).to_int();
-				int y = vm.get_slice(",", 1).to_int();
+				int x = vm.get_slicec(',', 0).to_int();
+				int y = vm.get_slicec(',', 1).to_int();
 
 				init_custom_pos = Point2(x, y);
 				init_use_custom_pos = true;
@@ -1667,6 +1673,12 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		} else if (arg == "--debug-stringnames") {
 			StringName::set_debug_stringnames(true);
 #endif
+#if defined(TOOLS_ENABLED) && (defined(WINDOWS_ENABLED) || defined(LINUXBSD_ENABLED))
+		} else if (arg == "--test-rd-support") {
+			test_rd_support = true;
+		} else if (arg == "--test-rd-creation") {
+			test_rd_creation = true;
+#endif
 		} else if (arg == "--remote-debug") {
 			if (N) {
 				debug_uri = N->get();
@@ -1724,7 +1736,9 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			OS::get_singleton()->disable_crash_handler();
 		} else if (arg == "--skip-breakpoints") {
 			skip_breakpoints = true;
-#ifndef _3D_DISABLED
+		} else if (I->get() == "--ignore-error-breaks") {
+			ignore_error_breaks = true;
+#ifndef XR_DISABLED
 		} else if (arg == "--xr-mode") {
 			if (N) {
 				String xr_mode = N->get().to_lower();
@@ -1743,7 +1757,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				OS::get_singleton()->print("Missing --xr-mode argument, aborting.\n");
 				goto error;
 			}
-#endif // _3D_DISABLED
+#endif // XR_DISABLED
 		} else if (arg == "--benchmark") {
 			OS::get_singleton()->set_use_benchmark(true);
 		} else if (arg == "--benchmark-file") {
@@ -1870,6 +1884,30 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 #endif
 	}
 
+#if defined(TOOLS_ENABLED) && (defined(WINDOWS_ENABLED) || defined(LINUXBSD_ENABLED))
+	if (test_rd_support) {
+		// Test Rendering Device creation and exit.
+
+		OS::get_singleton()->set_crash_handler_silent();
+		if (OS::get_singleton()->_test_create_rendering_device(display_driver)) {
+			exit_err = ERR_HELP;
+		} else {
+			exit_err = ERR_UNAVAILABLE;
+		}
+		goto error;
+	} else if (test_rd_creation) {
+		// Test OpenGL context and Rendering Device simultaneous creation and exit.
+
+		OS::get_singleton()->set_crash_handler_silent();
+		if (OS::get_singleton()->_test_create_rendering_device_and_gl(display_driver)) {
+			exit_err = ERR_HELP;
+		} else {
+			exit_err = ERR_UNAVAILABLE;
+		}
+		goto error;
+	}
+#endif
+
 #ifdef TOOLS_ENABLED
 	if (editor) {
 		Engine::get_singleton()->set_editor_hint(true);
@@ -1950,7 +1988,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "network/limits/debugger/max_errors_per_second", PROPERTY_HINT_RANGE, "1,200,1,or_greater"), 400);
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "network/limits/debugger/max_warnings_per_second", PROPERTY_HINT_RANGE, "1,200,1,or_greater"), 400);
 
-	EngineDebugger::initialize(debug_uri, skip_breakpoints, breakpoints, []() {
+	EngineDebugger::initialize(debug_uri, skip_breakpoints, ignore_error_breaks, breakpoints, []() {
 		if (editor_pid) {
 			DisplayServer::get_singleton()->enable_for_stealing_focus(editor_pid);
 		}
@@ -2030,14 +2068,20 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 	Logger::set_flush_stdout_on_print(GLOBAL_GET("application/run/flush_stdout_on_print"));
 
+	// Rendering drivers configuration.
+
+	// Always include all supported drivers as hint, as this is used by the editor host platform
+	// for project settings. For example, a Linux user should be able to configure that they want
+	// to export for D3D12 on Windows and Metal on macOS even if their host platform can't use those.
+
 	{
-		// For now everything defaults to vulkan when available. This can change in future updates.
-		GLOBAL_DEF_RST("rendering/rendering_device/driver", "auto");
-		GLOBAL_DEF_RST(PropertyInfo(Variant::STRING, "rendering/rendering_device/driver.windows", PROPERTY_HINT_ENUM, "auto,vulkan,d3d12"), "auto");
-		GLOBAL_DEF_RST(PropertyInfo(Variant::STRING, "rendering/rendering_device/driver.linuxbsd", PROPERTY_HINT_ENUM, "auto,vulkan"), "auto");
-		GLOBAL_DEF_RST(PropertyInfo(Variant::STRING, "rendering/rendering_device/driver.android", PROPERTY_HINT_ENUM, "auto,vulkan"), "auto");
-		GLOBAL_DEF_RST(PropertyInfo(Variant::STRING, "rendering/rendering_device/driver.ios", PROPERTY_HINT_ENUM, "auto,metal,vulkan"), "auto");
-		GLOBAL_DEF_RST(PropertyInfo(Variant::STRING, "rendering/rendering_device/driver.macos", PROPERTY_HINT_ENUM, "auto,metal,vulkan"), "auto");
+		// RenderingDevice driver overrides per platform.
+		GLOBAL_DEF_RST("rendering/rendering_device/driver", "vulkan");
+		GLOBAL_DEF_RST(PropertyInfo(Variant::STRING, "rendering/rendering_device/driver.windows", PROPERTY_HINT_ENUM, "vulkan,d3d12"), "vulkan");
+		GLOBAL_DEF_RST(PropertyInfo(Variant::STRING, "rendering/rendering_device/driver.linuxbsd", PROPERTY_HINT_ENUM, "vulkan"), "vulkan");
+		GLOBAL_DEF_RST(PropertyInfo(Variant::STRING, "rendering/rendering_device/driver.android", PROPERTY_HINT_ENUM, "vulkan"), "vulkan");
+		GLOBAL_DEF_RST(PropertyInfo(Variant::STRING, "rendering/rendering_device/driver.ios", PROPERTY_HINT_ENUM, "metal,vulkan"), "metal");
+		GLOBAL_DEF_RST(PropertyInfo(Variant::STRING, "rendering/rendering_device/driver.macos", PROPERTY_HINT_ENUM, "metal,vulkan"), "metal");
 
 		GLOBAL_DEF_RST("rendering/rendering_device/fallback_to_vulkan", true);
 		GLOBAL_DEF_RST("rendering/rendering_device/fallback_to_d3d12", true);
@@ -2045,13 +2089,14 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	}
 
 	{
-		GLOBAL_DEF_RST("rendering/gl_compatibility/driver", "auto");
-		GLOBAL_DEF_RST(PropertyInfo(Variant::STRING, "rendering/gl_compatibility/driver.windows", PROPERTY_HINT_ENUM, "auto,opengl3,opengl3_angle"), "auto");
-		GLOBAL_DEF_RST(PropertyInfo(Variant::STRING, "rendering/gl_compatibility/driver.linuxbsd", PROPERTY_HINT_ENUM, "auto,opengl3,opengl3_es"), "auto");
-		GLOBAL_DEF_RST(PropertyInfo(Variant::STRING, "rendering/gl_compatibility/driver.web", PROPERTY_HINT_ENUM, "auto,opengl3"), "auto");
-		GLOBAL_DEF_RST(PropertyInfo(Variant::STRING, "rendering/gl_compatibility/driver.android", PROPERTY_HINT_ENUM, "auto,opengl3"), "auto");
-		GLOBAL_DEF_RST(PropertyInfo(Variant::STRING, "rendering/gl_compatibility/driver.ios", PROPERTY_HINT_ENUM, "auto,opengl3"), "auto");
-		GLOBAL_DEF_RST(PropertyInfo(Variant::STRING, "rendering/gl_compatibility/driver.macos", PROPERTY_HINT_ENUM, "auto,opengl3,opengl3_angle"), "auto");
+		// GL Compatibility driver overrides per platform.
+		GLOBAL_DEF_RST("rendering/gl_compatibility/driver", "opengl3");
+		GLOBAL_DEF_RST(PropertyInfo(Variant::STRING, "rendering/gl_compatibility/driver.windows", PROPERTY_HINT_ENUM, "opengl3,opengl3_angle"), "opengl3");
+		GLOBAL_DEF_RST(PropertyInfo(Variant::STRING, "rendering/gl_compatibility/driver.linuxbsd", PROPERTY_HINT_ENUM, "opengl3,opengl3_es"), "opengl3");
+		GLOBAL_DEF_RST(PropertyInfo(Variant::STRING, "rendering/gl_compatibility/driver.web", PROPERTY_HINT_ENUM, "opengl3"), "opengl3");
+		GLOBAL_DEF_RST(PropertyInfo(Variant::STRING, "rendering/gl_compatibility/driver.android", PROPERTY_HINT_ENUM, "opengl3"), "opengl3");
+		GLOBAL_DEF_RST(PropertyInfo(Variant::STRING, "rendering/gl_compatibility/driver.ios", PROPERTY_HINT_ENUM, "opengl3"), "opengl3");
+		GLOBAL_DEF_RST(PropertyInfo(Variant::STRING, "rendering/gl_compatibility/driver.macos", PROPERTY_HINT_ENUM, "opengl3,opengl3_angle"), "opengl3");
 
 		GLOBAL_DEF_RST("rendering/gl_compatibility/nvidia_disable_threaded_optimization", true);
 		GLOBAL_DEF_RST("rendering/gl_compatibility/fallback_to_angle", true);
@@ -2364,7 +2409,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		}
 	}
 
-	default_renderer = renderer_hints.get_slice(",", 0);
+	default_renderer = renderer_hints.get_slicec(',', 0);
 	GLOBAL_DEF_RST_BASIC(PropertyInfo(Variant::STRING, "rendering/renderer/rendering_method", PROPERTY_HINT_ENUM, renderer_hints), default_renderer);
 	GLOBAL_DEF_RST_BASIC("rendering/renderer/rendering_method.mobile", default_renderer_mobile);
 	GLOBAL_DEF_RST_BASIC("rendering/renderer/rendering_method.web", "gl_compatibility"); // This is a bit of a hack until we have WebGPU support.
@@ -2384,30 +2429,6 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 	// always convert to lower case for consistency in the code
 	rendering_driver = rendering_driver.to_lower();
-
-	if (rendering_method == "gl_compatibility") {
-#ifdef GLES3_ENABLED
-		if (rendering_driver == "auto") {
-			rendering_driver = "opengl3";
-		}
-#endif
-	} else {
-#ifdef METAL_ENABLED
-		if (rendering_driver == "auto") {
-			rendering_driver = "metal";
-		}
-#endif
-#ifdef VULKAN_ENABLED
-		if (rendering_driver == "auto") {
-			rendering_driver = "vulkan";
-		}
-#endif
-#ifdef D3D12_ENABLED
-		if (rendering_driver == "auto") {
-			rendering_driver = "d3d12";
-		}
-#endif
-	}
 
 	OS::get_singleton()->set_current_rendering_driver_name(rendering_driver);
 	OS::get_singleton()->set_current_rendering_method(rendering_method);
@@ -2769,6 +2790,7 @@ Error Main::setup2(bool p_show_boot_logo) {
 	print_header(false);
 
 #ifdef TOOLS_ENABLED
+	int tablet_driver_editor = -1;
 	if (editor || project_manager || cmdline_tool) {
 		OS::get_singleton()->benchmark_begin_measure("Startup", "Initialize Early Settings");
 
@@ -2803,6 +2825,8 @@ Error Main::setup2(bool p_show_boot_logo) {
 					bool prefer_wayland_found = false;
 					bool prefer_wayland = false;
 
+					bool tablet_found = false;
+
 					if (editor) {
 						screen_property = "interface/editor/editor_screen";
 					} else if (project_manager) {
@@ -2817,7 +2841,7 @@ Error Main::setup2(bool p_show_boot_logo) {
 						prefer_wayland_found = true;
 					}
 
-					while (!screen_found || !prefer_wayland_found) {
+					while (!screen_found || !prefer_wayland_found || !tablet_found) {
 						assign = Variant();
 						next_tag.fields.clear();
 						next_tag.name = String();
@@ -2840,6 +2864,11 @@ Error Main::setup2(bool p_show_boot_logo) {
 							if (!prefer_wayland_found && assign == "run/platforms/linuxbsd/prefer_wayland") {
 								prefer_wayland = value;
 								prefer_wayland_found = true;
+							}
+
+							if (!tablet_found && assign == "interface/editor/tablet_driver") {
+								tablet_driver_editor = value;
+								tablet_found = true;
 							}
 						}
 					}
@@ -3109,6 +3138,12 @@ Error Main::setup2(bool p_show_boot_logo) {
 		GLOBAL_DEF_RST_NOVAL("input_devices/pen_tablet/driver", "");
 		GLOBAL_DEF_RST_NOVAL(PropertyInfo(Variant::STRING, "input_devices/pen_tablet/driver.windows", PROPERTY_HINT_ENUM, "auto,winink,wintab,dummy"), "");
 
+#ifdef TOOLS_ENABLED
+		if (tablet_driver.is_empty() && tablet_driver_editor != -1) {
+			tablet_driver = DisplayServer::get_singleton()->tablet_get_driver_name(tablet_driver_editor);
+		}
+#endif
+
 		if (tablet_driver.is_empty()) { // specified in project.godot
 			tablet_driver = GLOBAL_GET("input_devices/pen_tablet/driver");
 			if (tablet_driver.is_empty()) {
@@ -3179,7 +3214,7 @@ Error Main::setup2(bool p_show_boot_logo) {
 		OS::get_singleton()->benchmark_end_measure("Servers", "Audio");
 	}
 
-#ifndef _3D_DISABLED
+#ifndef XR_DISABLED
 	/* Initialize XR Server */
 
 	{
@@ -3189,7 +3224,7 @@ Error Main::setup2(bool p_show_boot_logo) {
 
 		OS::get_singleton()->benchmark_end_measure("Servers", "XR");
 	}
-#endif // _3D_DISABLED
+#endif // XR_DISABLED
 
 	OS::get_singleton()->benchmark_end_measure("Startup", "Servers");
 
@@ -4098,6 +4133,7 @@ int Main::start() {
 		if (editor) {
 			OS::get_singleton()->benchmark_begin_measure("Startup", "Editor");
 
+			sml->get_root()->set_translation_domain("godot.editor");
 			if (editor_pseudolocalization) {
 				translation_server->get_editor_domain()->set_pseudolocalization_enabled(true);
 			}
@@ -4218,7 +4254,7 @@ int Main::start() {
 							Ref<DirAccess> da = DirAccess::open(local_game_path.substr(0, sep));
 							if (da.is_valid()) {
 								local_game_path = da->get_current_dir().path_join(
-										local_game_path.substr(sep + 1, local_game_path.length()));
+										local_game_path.substr(sep + 1));
 							}
 						}
 					}
@@ -4295,6 +4331,7 @@ int Main::start() {
 			OS::get_singleton()->benchmark_begin_measure("Startup", "Project Manager");
 			Engine::get_singleton()->set_editor_hint(true);
 
+			sml->get_root()->set_translation_domain("godot.editor");
 			if (editor_pseudolocalization) {
 				translation_server->get_editor_domain()->set_pseudolocalization_enabled(true);
 			}
@@ -4410,9 +4447,9 @@ bool Main::iteration() {
 	bool exit = false;
 
 	// process all our active interfaces
-#ifndef _3D_DISABLED
+#ifndef XR_DISABLED
 	XRServer::get_singleton()->_process();
-#endif // _3D_DISABLED
+#endif // XR_DISABLED
 
 	NavigationServer2D::get_singleton()->sync();
 	NavigationServer3D::get_singleton()->sync();
@@ -4666,13 +4703,13 @@ void Main::cleanup(bool p_force) {
 	//clear global shader variables before scene and other graphics stuff are deinitialized.
 	rendering_server->global_shader_parameters_clear();
 
-#ifndef _3D_DISABLED
+#ifndef XR_DISABLED
 	if (xr_server) {
 		// Now that we're unregistering properly in plugins we need to keep access to xr_server for a little longer
 		// We do however unset our primary interface
 		xr_server->set_primary_interface(Ref<XRInterface>());
 	}
-#endif // _3D_DISABLED
+#endif // XR_DISABLED
 
 #ifdef TOOLS_ENABLED
 	GDExtensionManager::get_singleton()->deinitialize_extensions(GDExtension::INITIALIZATION_LEVEL_EDITOR);

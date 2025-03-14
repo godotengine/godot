@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef GAME_VIEW_PLUGIN_H
-#define GAME_VIEW_PLUGIN_H
+#pragma once
 
 #include "editor/debugger/editor_debugger_node.h"
 #include "editor/editor_main_screen.h"
@@ -213,7 +212,7 @@ class GameViewPlugin : public EditorPlugin {
 #ifndef ANDROID_ENABLED
 	GameView *game_view = nullptr;
 	WindowWrapper *window_wrapper = nullptr;
-#endif
+#endif // ANDROID_ENABLED
 
 	Ref<GameViewDebugger> debugger;
 
@@ -222,7 +221,7 @@ class GameViewPlugin : public EditorPlugin {
 	void _feature_profile_changed();
 #ifndef ANDROID_ENABLED
 	void _window_visibility_changed(bool p_visible);
-#endif
+#endif // ANDROID_ENABLED
 	void _save_last_editor(const String &p_editor);
 	void _focus_another_editor();
 	bool _is_window_wrapper_enabled() const;
@@ -244,13 +243,8 @@ public:
 
 	virtual void set_window_layout(Ref<ConfigFile> p_layout) override;
 	virtual void get_window_layout(Ref<ConfigFile> p_layout) override;
-
-	virtual void set_state(const Dictionary &p_state) override;
-	virtual Dictionary get_state() const override;
-#endif
+#endif // ANDROID_ENABLED
 
 	GameViewPlugin();
 	~GameViewPlugin();
 };
-
-#endif // GAME_VIEW_PLUGIN_H

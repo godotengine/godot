@@ -1597,7 +1597,7 @@ bool CanvasItemEditor::_gui_input_open_scene_on_double_click(const Ref<InputEven
 		if (selection.size() == 1) {
 			CanvasItem *ci = selection.front()->get();
 			if (!ci->get_scene_file_path().is_empty() && ci != EditorNode::get_singleton()->get_edited_scene()) {
-				EditorNode::get_singleton()->open_request(ci->get_scene_file_path());
+				EditorNode::get_singleton()->load_scene(ci->get_scene_file_path());
 				return true;
 			}
 		}
@@ -4882,31 +4882,30 @@ void CanvasItemEditor::_focus_selection(int p_op) {
 		if (!ci) {
 			continue;
 		}
-
-		// counting invisible items, for now
-		//if (!ci->is_visible_in_tree()) continue;
-		++count;
-
+		const Transform2D canvas_item_transform = ci->get_global_transform();
+		if (!canvas_item_transform.is_finite()) {
+			continue;
+		}
 		Rect2 item_rect;
 		if (ci->_edit_use_rect()) {
 			item_rect = ci->_edit_get_rect();
 		} else {
 			item_rect = Rect2();
 		}
-
-		Vector2 pos = ci->get_global_transform().get_origin();
-		Vector2 scale = ci->get_global_transform().get_scale();
-		real_t angle = ci->get_global_transform().get_rotation();
+		Vector2 pos = canvas_item_transform.get_origin();
+		const Vector2 scale = canvas_item_transform.get_scale();
+		const real_t angle = canvas_item_transform.get_rotation();
 		pos = ci->get_viewport()->get_popup_base_transform().xform(pos);
 
 		Transform2D t(angle, Vector2(0.f, 0.f));
 		item_rect = t.xform(item_rect);
 		Rect2 canvas_item_rect(pos + scale * item_rect.position, scale * item_rect.size);
-		if (count == 1) {
+		if (count == 0) {
 			rect = canvas_item_rect;
 		} else {
 			rect = rect.merge(canvas_item_rect);
 		}
+		count++;
 	}
 
 	if (p_op == VIEW_FRAME_TO_SELECTION && rect.size.x > CMP_EPSILON && rect.size.y > CMP_EPSILON) {

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TEST_CLASS_DB_H
-#define TEST_CLASS_DB_H
+#pragma once
 
 #include "core/core_bind.h"
 #include "core/core_constants.h"
@@ -415,6 +414,9 @@ void validate_argument(const Context &p_context, const ExposedClass &p_class, co
 #ifdef DEBUG_METHODS_ENABLED
 	TEST_COND((p_arg.name.is_empty() || p_arg.name.begins_with("_unnamed_arg")),
 			vformat("Unnamed argument in position %d of %s '%s.%s'.", p_arg.position, p_owner_type, p_class.name, p_owner_name));
+
+	TEST_FAIL_COND((p_arg.name != "@varargs@" && !p_arg.name.is_valid_ascii_identifier()),
+			vformat("Invalid argument name '%s' of %s '%s.%s'.", p_arg.name, p_owner_type, p_class.name, p_owner_name));
 #endif // DEBUG_METHODS_ENABLED
 
 	const ExposedClass *arg_class = p_context.find_exposed_class(p_arg.type);
@@ -900,5 +902,3 @@ TEST_SUITE("[ClassDB]") {
 	}
 }
 } // namespace TestClassDB
-
-#endif // TEST_CLASS_DB_H

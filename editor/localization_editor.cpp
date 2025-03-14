@@ -539,11 +539,9 @@ void LocalizationEditor::update_translations() {
 
 	if (ProjectSettings::get_singleton()->has_setting("internationalization/locale/translation_remaps")) {
 		Dictionary remaps = GLOBAL_GET("internationalization/locale/translation_remaps");
-		List<Variant> rk;
-		remaps.get_key_list(&rk);
 		Vector<String> keys;
-		for (const Variant &E : rk) {
-			keys.push_back(E);
+		for (const KeyValue<Variant, Variant> &kv : remaps) {
+			keys.push_back(kv.key);
 		}
 		keys.sort();
 
@@ -570,7 +568,7 @@ void LocalizationEditor::update_translations() {
 					const String &s2 = selected[j];
 					int qp = s2.rfind_char(':');
 					String path = s2.substr(0, qp);
-					String locale = s2.substr(qp + 1, s2.length());
+					String locale = s2.substr(qp + 1);
 
 					TreeItem *t2 = translation_remap_options->create_item(root2);
 					t2->set_editable(0, false);

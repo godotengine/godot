@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef BASIS_H
-#define BASIS_H
+#pragma once
 
 #include "core/math/quaternion.h"
 #include "core/math/vector3.h"
@@ -121,6 +120,7 @@ struct [[nodiscard]] Basis {
 	}
 
 	bool is_equal_approx(const Basis &p_basis) const;
+	bool is_same(const Basis &p_basis) const;
 	bool is_finite() const;
 
 	bool operator==(const Basis &p_matrix) const;
@@ -322,5 +322,3 @@ real_t Basis::determinant() const {
 			rows[1][0] * (rows[0][1] * rows[2][2] - rows[2][1] * rows[0][2]) +
 			rows[2][0] * (rows[0][1] * rows[1][2] - rows[1][1] * rows[0][2]);
 }
-
-#endif // BASIS_H

@@ -799,7 +799,7 @@ void MaterialStorage::MaterialData::update_uniform_buffer(const HashMap<StringNa
 
 		} else if (E.value.default_value.size()) {
 			//default value
-			_fill_std140_ubo_value(E.value.type, E.value.default_value, data, p_use_linear_color);
+			_fill_std140_ubo_value(E.value.type, E.value.default_value, data, E.value.hint == ShaderLanguage::ShaderNode::Uniform::HINT_SOURCE_COLOR && p_use_linear_color);
 			//value=E.value.default_value;
 		} else {
 			//zero because it was not provided
@@ -1705,7 +1705,7 @@ void MaterialStorage::global_shader_parameters_load_settings(bool p_load_texture
 
 	for (const PropertyInfo &E : settings) {
 		if (E.name.begins_with("shader_globals/")) {
-			StringName name = E.name.get_slice("/", 1);
+			StringName name = E.name.get_slicec('/', 1);
 			Dictionary d = GLOBAL_GET(E.name);
 
 			ERR_CONTINUE(!d.has("type"));

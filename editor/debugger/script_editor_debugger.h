@@ -28,14 +28,12 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef SCRIPT_EDITOR_DEBUGGER_H
-#define SCRIPT_EDITOR_DEBUGGER_H
+#pragma once
 
 #include "core/object/script_language.h"
 #include "core/os/os.h"
 #include "editor/debugger/editor_debugger_inspector.h"
 #include "editor/debugger/editor_debugger_node.h"
-#include "editor/debugger/editor_debugger_server.h"
 #include "scene/gui/button.h"
 #include "scene/gui/margin_container.h"
 
@@ -115,6 +113,7 @@ private:
 	int warning_count;
 
 	bool skip_breakpoints_value = false;
+	bool ignore_error_breaks_value = false;
 	Ref<Script> stack_script;
 
 	TabContainer *tabs = nullptr;
@@ -122,6 +121,7 @@ private:
 	Label *reason = nullptr;
 
 	Button *skip_breakpoints = nullptr;
+	Button *ignore_error_breaks = nullptr;
 	Button *copy = nullptr;
 	Button *step = nullptr;
 	Button *next = nullptr;
@@ -147,7 +147,7 @@ private:
 	Ref<RemoteDebuggerPeer> peer;
 
 	HashMap<NodePath, int> node_path_cache;
-	int last_path_id;
+	int last_path_id = 0;
 	HashMap<String, int> res_path_cache;
 
 	EditorProfiler *profiler = nullptr;
@@ -159,7 +159,7 @@ private:
 	bool move_to_foreground = true;
 	bool can_request_idle_draw = false;
 
-	bool live_debug;
+	bool live_debug = true;
 
 	uint64_t debugging_thread_id = Thread::UNASSIGNED_ID;
 
@@ -192,7 +192,7 @@ private:
 	void _set_reason_text(const String &p_reason, MessageType p_type);
 	void _update_buttons_state();
 	void _remote_object_selected(ObjectID p_object);
-	void _remote_object_edited(ObjectID, const String &p_prop, const Variant &p_value);
+	void _remote_objects_edited(const String &p_prop, const TypedDictionary<uint64_t, Variant> &p_values, const String &p_field);
 	void _remote_object_property_updated(ObjectID p_id, const String &p_property);
 
 	void _video_mem_request();
@@ -246,9 +246,10 @@ protected:
 	static void _bind_methods();
 
 public:
-	void request_remote_object(ObjectID p_obj_id);
-	void update_remote_object(ObjectID p_obj_id, const String &p_prop, const Variant &p_value);
-	Object *get_remote_object(ObjectID p_id);
+	void request_remote_objects(const TypedArray<uint64_t> &p_obj_ids, bool p_update_selection = true);
+	void update_remote_object(ObjectID p_obj_id, const String &p_prop, const Variant &p_value, const String &p_field = "");
+
+	void clear_inspector(bool p_send_msg = true);
 
 	// Needed by _live_edit_set, buttons state.
 	void set_editor_remote_tree(const Tree *p_tree) { editor_remote_tree = p_tree; }
@@ -262,6 +263,7 @@ public:
 	void stop();
 
 	void debug_skip_breakpoints();
+	void debug_ignore_error_breaks();
 	void debug_copy();
 
 	void debug_next();
@@ -309,7 +311,8 @@ public:
 	void reload_all_scripts();
 	void reload_scripts(const Vector<String> &p_script_paths);
 
-	bool is_skip_breakpoints();
+	bool is_skip_breakpoints() const;
+	bool is_ignore_error_breaks() const;
 
 	virtual Size2 get_minimum_size() const override;
 
@@ -324,5 +327,3 @@ public:
 	ScriptEditorDebugger();
 	~ScriptEditorDebugger();
 };
-
-#endif // SCRIPT_EDITOR_DEBUGGER_H

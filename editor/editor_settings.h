@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef EDITOR_SETTINGS_H
-#define EDITOR_SETTINGS_H
+#pragma once
 
 #include "core/input/shortcut.h"
 #include "core/io/config_file.h"
@@ -123,6 +122,7 @@ private:
 	void _load_default_visual_shader_editor_theme();
 	bool _save_text_editor_theme(const String &p_file);
 	bool _is_default_text_editor_theme(const String &p_theme_name);
+	static String _guess_exec_args_for_extenal_editor(const String &p_value);
 	const String _get_project_metadata_path() const;
 #ifndef DISABLE_DEPRECATED
 	void _remove_deprecated_settings();
@@ -227,5 +227,3 @@ Ref<Shortcut> ED_SHORTCUT_ARRAY(const String &p_path, const String &p_name, cons
 void ED_SHORTCUT_OVERRIDE(const String &p_path, const String &p_feature, Key p_keycode = Key::NONE, bool p_physical = false);
 void ED_SHORTCUT_OVERRIDE_ARRAY(const String &p_path, const String &p_feature, const PackedInt32Array &p_keycodes, bool p_physical = false);
 Ref<Shortcut> ED_GET_SHORTCUT(const String &p_path);
-
-#endif // EDITOR_SETTINGS_H

@@ -89,7 +89,17 @@ def get_flags():
     }
 
 
+def library_emitter(target, source, env):
+    # Make every source file dependent on the compiler version.
+    # This makes sure that when emscripten is updated, that the cached files
+    # aren't used and are recompiled instead.
+    env.Depends(source, env.Value(get_compiler_version(env)))
+    return target, source
+
+
 def configure(env: "SConsEnvironment"):
+    env.Append(LIBEMITTER=library_emitter)
+
     # Validate arch.
     supported_arches = ["wasm32"]
     validate_arch(env["arch"], get_name(), supported_arches)
@@ -170,9 +180,6 @@ def configure(env: "SConsEnvironment"):
 
     # Add method for creating the final zip file
     env.AddMethod(create_template_zip, "CreateTemplateZip")
-
-    # Closure compiler extern and support for ecmascript specs (const, let, etc).
-    env["ENV"]["EMCC_CLOSURE_ARGS"] = "--language_in ECMASCRIPT_2021"
 
     env["CC"] = "emcc"
     env["CXX"] = "em++"

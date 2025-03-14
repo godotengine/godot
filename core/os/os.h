@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef OS_H
-#define OS_H
+#pragma once
 
 #include "core/config/engine.h"
 #include "core/io/logger.h"
@@ -109,6 +108,7 @@ protected:
 
 	HasServerFeatureCallback has_server_feature_callback = nullptr;
 	bool _separate_thread_render = false;
+	bool _silent_crash_handler = false;
 
 	// Functions used by Main to initialize/deinitialize the OS.
 	void add_logger(Logger *p_logger);
@@ -262,6 +262,9 @@ public:
 	void set_stdout_enabled(bool p_enabled);
 	void set_stderr_enabled(bool p_enabled);
 
+	virtual void set_crash_handler_silent() { _silent_crash_handler = true; }
+	virtual bool is_crash_handler_silent() { return _silent_crash_handler; }
+
 	virtual void disable_crash_handler() {}
 	virtual bool is_disable_crash_handler() const { return false; }
 	virtual void initialize_debugging() {}
@@ -358,8 +361,10 @@ public:
 	// This is invoked by the GDExtensionManager after loading GDExtensions specified by the project.
 	virtual void load_platform_gdextensions() const {}
 
+	// Tests OpenGL context and Rendering Device simultaneous creation. This function is expected to crash on some NVIDIA drivers.
+	virtual bool _test_create_rendering_device_and_gl(const String &p_display_driver) const { return true; }
+	virtual bool _test_create_rendering_device(const String &p_display_driver) const { return true; }
+
 	OS();
 	virtual ~OS();
 };
-
-#endif // OS_H

@@ -370,7 +370,7 @@ static RD::RenderPrimitive _primitive_type_to_render_primitive(RS::PrimitiveType
 
 _FORCE_INLINE_ static uint32_t _indices_to_primitives(RS::PrimitiveType p_primitive, uint32_t p_indices) {
 	static const uint32_t divisor[RS::PRIMITIVE_MAX] = { 1, 2, 1, 3, 1 };
-	static const uint32_t subtractor[RS::PRIMITIVE_MAX] = { 0, 0, 1, 0, 1 };
+	static const uint32_t subtractor[RS::PRIMITIVE_MAX] = { 0, 0, 1, 0, 2 };
 	return (p_indices - subtractor[p_primitive]) / divisor[p_primitive];
 }
 
@@ -379,7 +379,8 @@ RID RendererCanvasRenderRD::_create_base_uniform_set(RID p_to_render_target, boo
 	RendererRD::MaterialStorage *material_storage = RendererRD::MaterialStorage::get_singleton();
 
 	//re create canvas state
-	Vector<RD::Uniform> uniforms;
+	thread_local LocalVector<RD::Uniform> uniforms;
+	uniforms.clear();
 
 	{
 		RD::Uniform u;
@@ -1021,8 +1022,7 @@ void RendererCanvasRenderRD::light_update_shadow(RID p_rid, int p_shadow_index, 
 
 	cl->shadow.z_far = p_far;
 	cl->shadow.y_offset = float(p_shadow_index * 2 + 1) / float(state.max_lights_per_render * 2);
-	Vector<Color> cc;
-	cc.push_back(Color(p_far, p_far, p_far, 1.0));
+	Color cc = Color(p_far, p_far, p_far, 1.0);
 
 	// First, do a culling pass and record what occluders need to be drawn for this light.
 	static thread_local LocalVector<OccluderPolygon *> occluders;
@@ -1075,7 +1075,7 @@ void RendererCanvasRenderRD::light_update_shadow(RID p_rid, int p_shadow_index, 
 	}
 
 	Rect2i rect(0, p_shadow_index * 2, state.shadow_texture_size, 2);
-	RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(state.shadow_fb, RD::DRAW_CLEAR_ALL, cc, 1.0f, 0, rect);
+	RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(state.shadow_fb, RD::DRAW_CLEAR_ALL, VectorView(&cc, 1), 1.0f, 0, rect);
 
 	if (state.shadow_occluder_buffer.is_valid()) {
 		RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, shadow_render.render_pipelines[SHADOW_RENDER_MODE_POSITIONAL_SHADOW]);
@@ -1837,7 +1837,7 @@ RendererCanvasRenderRD::RendererCanvasRenderRD() {
 		actions.base_varying_index = 5;
 
 		actions.global_buffer_array_variable = "global_shader_uniforms.data";
-		actions.instance_uniform_index_variable = "draw_data.instance_uniforms_ofs";
+		actions.instance_uniform_index_variable = "instances.data[instance_index].instance_uniforms_ofs";
 
 		shader.compiler.initialize(actions);
 	}
@@ -2219,7 +2219,7 @@ void RendererCanvasRenderRD::_render_batch_items(RenderTarget p_to_render_target
 	RID framebuffer;
 	RID fb_uniform_set;
 	bool clear = false;
-	Vector<Color> clear_colors;
+	Color clear_color;
 
 	if (p_to_backbuffer) {
 		framebuffer = texture_storage->render_target_get_rd_backbuffer_framebuffer(p_to_render_target.render_target);
@@ -2230,7 +2230,7 @@ void RendererCanvasRenderRD::_render_batch_items(RenderTarget p_to_render_target
 
 		if (texture_storage->render_target_is_clear_requested(p_to_render_target.render_target)) {
 			clear = true;
-			clear_colors.push_back(texture_storage->render_target_get_clear_request_color(p_to_render_target.render_target));
+			clear_color = texture_storage->render_target_get_clear_request_color(p_to_render_target.render_target);
 			texture_storage->render_target_disable_clear_request(p_to_render_target.render_target);
 		}
 		// TODO: Obtain from framebuffer format eventually when this is implemented.
@@ -2243,7 +2243,7 @@ void RendererCanvasRenderRD::_render_batch_items(RenderTarget p_to_render_target
 
 	RD::FramebufferFormatID fb_format = RD::get_singleton()->framebuffer_get_format(framebuffer);
 
-	RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(framebuffer, clear ? RD::DRAW_CLEAR_COLOR_0 : RD::DRAW_DEFAULT_ALL, clear_colors, 1.0f, 0, Rect2(), RDD::BreadcrumbMarker::UI_PASS);
+	RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(framebuffer, clear ? RD::DRAW_CLEAR_COLOR_0 : RD::DRAW_DEFAULT_ALL, clear_color, 1.0f, 0, Rect2(), RDD::BreadcrumbMarker::UI_PASS);
 
 	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, fb_uniform_set, BASE_UNIFORM_SET);
 	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, state.default_transforms_uniform_set, TRANSFORMS_UNIFORM_SET);

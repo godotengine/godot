@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef RESOURCE_LOADER_H
-#define RESOURCE_LOADER_H
+#pragma once
 
 #include "core/io/resource.h"
 #include "core/object/gdvirtual.gen.inc"
@@ -205,6 +204,7 @@ private:
 
 	static void _run_load_task(void *p_userdata);
 
+	static thread_local bool import_thread;
 	static thread_local int load_nesting;
 	static thread_local HashMap<int, HashMap<String, Ref<Resource>>> res_ref_overrides; // Outermost key is nesting level.
 	static thread_local Vector<String> load_paths_stack;
@@ -253,6 +253,8 @@ public:
 	static String get_import_group_file(const String &p_path);
 	static bool is_imported(const String &p_path);
 	static int get_import_order(const String &p_path);
+
+	static void set_is_import_thread(bool p_import_thread);
 
 	static void set_timestamp_on_load(bool p_timestamp) { timestamp_on_load = p_timestamp; }
 	static bool get_timestamp_on_load() { return timestamp_on_load; }
@@ -316,5 +318,3 @@ public:
 	static void initialize();
 	static void finalize();
 };
-
-#endif // RESOURCE_LOADER_H

@@ -28,12 +28,12 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef COWDATA_H
-#define COWDATA_H
+#pragma once
 
 #include "core/error/error_macros.h"
 #include "core/os/memory.h"
 #include "core/templates/safe_refcount.h"
+#include "core/templates/span.h"
 
 #include <string.h>
 #include <initializer_list>
@@ -249,6 +249,9 @@ public:
 		return OK;
 	}
 
+	_FORCE_INLINE_ operator Span<T>() const { return Span<T>(ptr(), size()); }
+	_FORCE_INLINE_ Span<T> span() const { return operator Span<T>(); }
+
 	Size find(const T &p_val, Size p_from = 0) const;
 	Size rfind(const T &p_val, Size p_from = -1) const;
 	Size count(const T &p_val) const;
@@ -386,14 +389,7 @@ Error CowData<T>::resize(Size p_size) {
 		}
 
 		// construct the newly created elements
-
-		if constexpr (!std::is_trivially_constructible_v<T>) {
-			for (Size i = *_get_size(); i < p_size; i++) {
-				memnew_placement(&_ptr[i], T);
-			}
-		} else if (p_ensure_zero) {
-			memset((void *)(_ptr + current_size), 0, (p_size - current_size) * sizeof(T));
-		}
+		memnew_arr_placement<p_ensure_zero>(_ptr + current_size, p_size - current_size);
 
 		*_get_size() = p_size;
 
@@ -521,4 +517,6 @@ CowData<T>::CowData(std::initializer_list<T> p_init) {
 #pragma GCC diagnostic pop
 #endif
 
-#endif // COWDATA_H
+// Zero-constructing CowData initializes _ptr to nullptr (and thus empty).
+template <typename T>
+struct is_zero_constructible<CowData<T>> : std::true_type {};

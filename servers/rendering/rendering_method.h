@@ -28,19 +28,18 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef RENDERING_METHOD_H
-#define RENDERING_METHOD_H
+#pragma once
 
 #include "servers/rendering/storage/render_scene_buffers.h"
 #include "servers/rendering_server.h"
 
-#ifdef _3D_DISABLED
+#ifdef XR_DISABLED
 // RendererSceneCull::render_camera is empty when 3D is disabled, but
 // it and RenderingMethod::render_camera have a parameter for XRInterface.
 #define XRInterface RefCounted
-#else // 3D enabled
+#else
 #include "servers/xr/xr_interface.h"
-#endif // _3D_DISABLED
+#endif // XR_DISABLED
 
 class RenderingMethod {
 public:
@@ -372,5 +371,3 @@ public:
 	RenderingMethod();
 	virtual ~RenderingMethod();
 };
-
-#endif // RENDERING_METHOD_H

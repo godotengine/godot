@@ -32,7 +32,7 @@
 
 #include "../extensions/openxr_visibility_mask_extension.h"
 #include "../openxr_interface.h"
-#include "scene/3d/xr_nodes.h"
+#include "scene/3d/xr/xr_nodes.h"
 
 void OpenXRVisibilityMask::_bind_methods() {
 }

@@ -2726,6 +2726,7 @@ void RendererSceneCull::render_camera(const Ref<RenderSceneBuffers> &p_render_bu
 		}
 
 		camera_data.set_camera(transform, projection, is_orthogonal, is_frustum, vaspect, jitter, taa_frame_count, camera->visible_layers);
+#ifndef XR_DISABLED
 	} else {
 		XRServer *xr_server = XRServer::get_singleton();
 
@@ -2763,6 +2764,7 @@ void RendererSceneCull::render_camera(const Ref<RenderSceneBuffers> &p_render_bu
 		} else {
 			// this won't be called (see fail check above) but keeping this comment to indicate we may support more then 2 views in the future...
 		}
+#endif // XR_DISABLED
 	}
 
 	RID environment = _render_get_environment(p_camera, p_scenario);

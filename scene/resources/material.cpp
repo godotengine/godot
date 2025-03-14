@@ -750,7 +750,7 @@ void BaseMaterial3D::_update_shader() {
 
 	// Add a comment to describe the shader origin (useful when converting to ShaderMaterial).
 	String code = vformat(
-			"// NOTE: Shader automatically converted from " VERSION_NAME " " VERSION_FULL_CONFIG "'s %s.\n\n",
+			"// NOTE: Shader automatically converted from " GODOT_VERSION_NAME " " GODOT_VERSION_FULL_CONFIG "'s %s.\n\n",
 			orm ? "ORMMaterial3D" : "StandardMaterial3D");
 
 	// Define shader type and render mode based on property values.

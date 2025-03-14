@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "crash_handler_macos.h"
+#import "crash_handler_macos.h"
 
 #include "core/config/project_settings.h"
 #include "core/os/os.h"
@@ -50,8 +50,8 @@
 #include <signal.h>
 #include <stdlib.h>
 
-#include <mach-o/dyld.h>
-#include <mach-o/getsect.h>
+#import <mach-o/dyld.h>
+#import <mach-o/getsect.h>
 
 static uint64_t load_address() {
 	const struct segment_command_64 *cmd = getsegbyname("__TEXT");
@@ -81,6 +81,10 @@ static void handle_crash(int sig) {
 		abort();
 	}
 
+	if (OS::get_singleton()->is_crash_handler_silent()) {
+		std::_Exit(0);
+	}
+
 	void *bt_buffer[256];
 	size_t size = backtrace(bt_buffer, 256);
 	String _execpath = OS::get_singleton()->get_executable_path();
@@ -101,10 +105,10 @@ static void handle_crash(int sig) {
 	print_error(vformat("%s: Program crashed with signal %d", __FUNCTION__, sig));
 
 	// Print the engine version just before, so that people are reminded to include the version in backtrace reports.
-	if (String(VERSION_HASH).is_empty()) {
-		print_error(vformat("Engine version: %s", VERSION_FULL_NAME));
+	if (String(GODOT_VERSION_HASH).is_empty()) {
+		print_error(vformat("Engine version: %s", GODOT_VERSION_FULL_NAME));
 	} else {
-		print_error(vformat("Engine version: %s (%s)", VERSION_FULL_NAME, VERSION_HASH));
+		print_error(vformat("Engine version: %s (%s)", GODOT_VERSION_FULL_NAME, GODOT_VERSION_HASH));
 	}
 	print_error(vformat("Dumping the backtrace. %s", msg));
 	char **strings = backtrace_symbols(bt_buffer, size);

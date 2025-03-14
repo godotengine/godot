@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef RENDERING_DEVICE_H
-#define RENDERING_DEVICE_H
+#pragma once
 
 #include "core/object/worker_thread_pool.h"
 #include "core/os/condition_variable.h"
@@ -203,7 +202,8 @@ private:
 	bool split_swapchain_into_its_own_cmd_buffer = true;
 	uint32_t gpu_copy_count = 0;
 	uint32_t copy_bytes_count = 0;
-	String perf_report_text;
+	uint32_t prev_gpu_copy_count = 0;
+	uint32_t prev_copy_bytes_count = 0;
 
 	RID_Owner<Buffer, true> uniform_buffer_owner;
 	RID_Owner<Buffer, true> storage_buffer_owner;
@@ -1068,8 +1068,7 @@ public:
 	 *						If you plan on keeping the return value around for more than one frame (e.g. Sets that are created once and reused forever) you MUST set it to false.
 	 * @return				Baked descriptor set.
 	 */
-	template <typename Collection>
-	RID uniform_set_create(const Collection &p_uniforms, RID p_shader, uint32_t p_shader_set, bool p_linear_pool = false);
+	RID uniform_set_create(const VectorView<Uniform> &p_uniforms, RID p_shader, uint32_t p_shader_set, bool p_linear_pool = false);
 	bool uniform_set_is_valid(RID p_uniform_set);
 	void uniform_set_set_invalidation_callback(RID p_uniform_set, InvalidationCallback p_callback, void *p_userdata);
 
@@ -1174,7 +1173,7 @@ private:
 
 	struct DrawList {
 		Rect2i viewport;
-		bool viewport_set = false;
+		bool active = false;
 
 		struct SetState {
 			uint32_t pipeline_expected_format = 0;
@@ -1199,7 +1198,6 @@ private:
 
 #ifdef DEBUG_ENABLED
 		struct Validation {
-			bool active = true; // Means command buffer was not closed, so you can keep adding things.
 			// Actual render pass values.
 			uint32_t dynamic_state = 0;
 			VertexFormatID vertex_format = INVALID_ID;
@@ -1230,18 +1228,17 @@ private:
 #endif
 	};
 
-	DrawList *draw_list = nullptr;
+	DrawList draw_list;
 	uint32_t draw_list_subpass_count = 0;
 #ifdef DEBUG_ENABLED
 	FramebufferFormatID draw_list_framebuffer_format = INVALID_ID;
 #endif
 	uint32_t draw_list_current_subpass = 0;
 
-	Vector<RID> draw_list_bound_textures;
+	LocalVector<RID> draw_list_bound_textures;
 
-	_FORCE_INLINE_ DrawList *_get_draw_list_ptr(DrawListID p_id);
-	Error _draw_list_allocate(const Rect2i &p_viewport, uint32_t p_subpass);
-	void _draw_list_free(Rect2i *r_last_viewport = nullptr);
+	void _draw_list_start(const Rect2i &p_viewport);
+	void _draw_list_end(Rect2i *r_last_viewport = nullptr);
 
 public:
 	enum DrawFlags {
@@ -1275,7 +1272,8 @@ public:
 	};
 
 	DrawListID draw_list_begin_for_screen(DisplayServer::WindowID p_screen = 0, const Color &p_clear_color = Color());
-	DrawListID draw_list_begin(RID p_framebuffer, BitField<DrawFlags> p_draw_flags = DRAW_DEFAULT_ALL, const Vector<Color> &p_clear_color_values = Vector<Color>(), float p_clear_depth_value = 1.0f, uint32_t p_clear_stencil_value = 0, const Rect2 &p_region = Rect2(), uint32_t p_breadcrumb = 0);
+	DrawListID draw_list_begin(RID p_framebuffer, BitField<DrawFlags> p_draw_flags = DRAW_DEFAULT_ALL, VectorView<Color> p_clear_color_values = VectorView<Color>(), float p_clear_depth_value = 1.0f, uint32_t p_clear_stencil_value = 0, const Rect2 &p_region = Rect2(), uint32_t p_breadcrumb = 0);
+	DrawListID _draw_list_begin_bind(RID p_framebuffer, BitField<DrawFlags> p_draw_flags = DRAW_DEFAULT_ALL, const Vector<Color> &p_clear_color_values = Vector<Color>(), float p_clear_depth_value = 1.0f, uint32_t p_clear_stencil_value = 0, const Rect2 &p_region = Rect2(), uint32_t p_breadcrumb = 0);
 
 	void draw_list_set_blend_constants(DrawListID p_list, const Color &p_color);
 	void draw_list_bind_render_pipeline(DrawListID p_list, RID p_render_pipeline);
@@ -1303,6 +1301,7 @@ private:
 	/***********************/
 
 	struct ComputeList {
+		bool active = false;
 		struct SetState {
 			uint32_t pipeline_expected_format = 0;
 			uint32_t uniform_set_format = 0;
@@ -1326,7 +1325,6 @@ private:
 
 #ifdef DEBUG_ENABLED
 		struct Validation {
-			bool active = true; // Means command buffer was not closed, so you can keep adding things.
 			Vector<uint32_t> set_formats;
 			Vector<bool> set_bound;
 			Vector<RID> set_rids;
@@ -1340,7 +1338,7 @@ private:
 #endif
 	};
 
-	ComputeList *compute_list = nullptr;
+	ComputeList compute_list;
 	ComputeList::State compute_list_barrier_state;
 
 public:
@@ -1713,5 +1711,3 @@ VARIANT_ENUM_CAST(RenderingDevice::FinalAction)
 #endif
 
 typedef RenderingDevice RD;
-
-#endif // RENDERING_DEVICE_H

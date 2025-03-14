@@ -107,7 +107,7 @@ Files extracted from upstream source:
 ## clipper2
 
 - Upstream: https://github.com/AngusJohnson/Clipper2
-- Version: 1.4.0 (736ddb0b53d97fd5f65dd3d9bbf8a0993eaf387c, 2024)
+- Version: 1.5.2 (6901921c4be75126d1de60bfd24bd86a61319fd0, 2025)
 - License: BSL 1.0
 
 Files extracted from upstream source:
@@ -118,7 +118,7 @@ Files extracted from upstream source:
 Patches:
 
 - `0001-disable-exceptions.patch` (GH-80796)
-- `0002-llvm-disable-int1280-math.patch` (GH-95964)
+- `0002-llvm-disable-int128-math.patch` (GH-95964)
 
 
 ## cvtt
@@ -326,7 +326,7 @@ for UI.
 ## freetype
 
 - Upstream: https://www.freetype.org
-- Version: 2.13.2 (920c5502cc3ddda88f6c7d85ee834ac611bb11cc, 2023)
+- Version: 2.13.3 (42608f77f20749dd6ddc9e0536788eaad70ea4b5, 2024)
 - License: FreeType License (BSD-like)
 
 Files extracted from upstream source:
@@ -406,7 +406,7 @@ Files extracted from upstream source:
 ## harfbuzz
 
 - Upstream: https://github.com/harfbuzz/harfbuzz
-- Version: 10.1.0 (9ef44a2d67ac870c1f7f671f6dc98d08a2579865, 2024)
+- Version: 10.4.0 (3ef8709829a5884517ad91a97b32b9435b2f20d1, 2025)
 - License: MIT
 
 Files extracted from upstream source:
@@ -627,6 +627,7 @@ File extracted from upstream release tarball:
 Patches:
 
 - `0001-msvc-2019-psa-redeclaration.patch` (GH-90535)
+- `0002-pr-9981-defragment-incoming-tls-handshake-messages.patch` (GH-103247)
 
 
 ## meshoptimizer
@@ -975,7 +976,7 @@ Patches:
 ## ufbx
 
 - Upstream: https://github.com/ufbx/ufbx
-- Version: 0.15.0 (24eea6f40929fe0f679b7950def378edb003afdb, 2024)
+- Version: 0.17.1 (6ca5309972f03625e6990f3084ff4c1cc55a09b6, 2025)
 - License: MIT
 
 Files extracted from upstream source:
