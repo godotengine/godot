@@ -1641,7 +1641,11 @@ void RuntimeNodeSelect::_physics_frame() {
 				// Allow forcing box selection when an item was clicked.
 				selection_drag_state = SELECTION_DRAG_MOVE;
 			} else if (items.is_empty()) {
+#ifdef _3D_DISABLED
+				if (!selected_ci_nodes.is_empty()) {
+#else
 				if (!selected_ci_nodes.is_empty() || !selected_3d_nodes.is_empty()) {
+#endif // _3D_DISABLED
 					EngineDebugger::get_singleton()->send_message("remote_nothing_clicked", Array());
 					_clear_selection();
 				}
@@ -1710,7 +1714,10 @@ void RuntimeNodeSelect::_send_ids(const Vector<Node *> &p_picked_nodes, bool p_i
 		return;
 	}
 
-	const int limit = max_selection - (selected_ci_nodes.size() + selected_3d_nodes.size());
+	int limit = max_selection - selected_ci_nodes.size();
+#ifndef _3D_DISABLED
+	limit -= selected_3d_nodes.size();
+#endif // _3D_DISABLED
 	if (limit <= 0) {
 		return;
 	}
@@ -1848,9 +1855,15 @@ void RuntimeNodeSelect::_set_selected_nodes(const Vector<Node *> &p_nodes) {
 		}
 	}
 
+#ifdef _3D_DISABLED
+	if (!changed && nodes_ci.size() == selected_ci_nodes.size()) {
+		return;
+	}
+#else
 	if (!changed && nodes_ci.size() == selected_ci_nodes.size() && nodes_3d.size() == selected_3d_nodes.size()) {
 		return;
 	}
+#endif // _3D_DISABLED
 
 	_clear_selection();
 	selected_ci_nodes = nodes_ci;
