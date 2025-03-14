@@ -187,8 +187,7 @@ void ShaderRD::_initialize_version(Version *p_version) {
 
 	p_version->variants.resize_zeroed(variant_defines.size());
 	p_version->variant_data.resize(variant_defines.size());
-	p_version->group_compilation_tasks.resize(group_enabled.size());
-	p_version->group_compilation_tasks.fill(0);
+	p_version->group_compilation_tasks.resize_zeroed(group_enabled.size());
 }
 
 void ShaderRD::_clear_version(Version *p_version) {
