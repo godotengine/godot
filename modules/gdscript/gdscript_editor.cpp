@@ -3463,6 +3463,7 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 	bool is_function = false;
 
 	switch (completion_context.type) {
+		case GDScriptParser::COMPLETION_DECLARATION:
 		case GDScriptParser::COMPLETION_NONE:
 			break;
 		case GDScriptParser::COMPLETION_ANNOTATION: {
@@ -4411,6 +4412,7 @@ static Error _lookup_symbol_from_base(const GDScriptParser::DataType &p_base, co
 		case GDScriptParser::COMPLETION_METHOD:
 		case GDScriptParser::COMPLETION_ASSIGN:
 		case GDScriptParser::COMPLETION_CALL_ARGUMENTS:
+		case GDScriptParser::COMPLETION_DECLARATION:
 		case GDScriptParser::COMPLETION_IDENTIFIER:
 		case GDScriptParser::COMPLETION_PROPERTY_METHOD:
 		case GDScriptParser::COMPLETION_SUBSCRIPT: {
@@ -4608,6 +4610,13 @@ static Error _lookup_symbol_from_base(const GDScriptParser::DataType &p_base, co
 			if (_lookup_symbol_from_base(base_type, p_symbol, r_result) == OK) {
 				return OK;
 			}
+
+			// Not a virtual method in base_type, lookup for a method in current type.
+			base_type = context.current_class->get_datatype();
+
+			if (_lookup_symbol_from_base(base_type, p_symbol, r_result) == OK) {
+				return OK;
+			}
 		} break;
 		case GDScriptParser::COMPLETION_PROPERTY_DECLARATION_OR_TYPE:
 		case GDScriptParser::COMPLETION_TYPE_NAME_OR_VOID:
@@ -4626,6 +4635,25 @@ static Error _lookup_symbol_from_base(const GDScriptParser::DataType &p_base, co
 				r_result.class_member = annotation_symbol;
 				return OK;
 			}
+		} break;
+		case GDScriptParser::COMPLETION_INHERIT_TYPE: {
+			GDScriptParser::DataType base_type = context.current_class->get_datatype();
+
+			if (_lookup_symbol_from_base(base_type, p_symbol, r_result) == OK) {
+				return OK;
+			}
+
+			const String scr_path = ScriptServer::get_global_class_path(p_symbol);
+			const Ref<Script> scr = ResourceLoader::load(scr_path);
+			if (scr.is_null()) {
+				return ERR_BUG;
+			}
+			r_result.type = ScriptLanguage::LOOKUP_RESULT_CLASS;
+			r_result.class_name = scr->get_doc_class_name();
+			r_result.script = scr;
+			r_result.script_path = scr_path;
+			r_result.location = 0;
+			return OK;
 		} break;
 		default: {
 		}
