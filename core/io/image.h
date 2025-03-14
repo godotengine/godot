@@ -241,6 +241,7 @@ private:
 	int width = 0;
 	int height = 0;
 	bool mipmaps = false;
+	float desired_atc;
 
 	void _copy_internals_from(const Image &p_image);
 
@@ -264,7 +265,7 @@ private:
 
 	Error _load_from_buffer(const Vector<uint8_t> &p_array, ImageMemLoadFunc p_loader);
 
-	_FORCE_INLINE_ void _generate_mipmap_from_format(Image::Format p_format, const uint8_t *p_src, uint8_t *p_dst, uint32_t p_width, uint32_t p_height, bool p_renormalize = false);
+	_FORCE_INLINE_ void _generate_mipmap_from_format(Image::Format p_format, const uint8_t *p_src, uint8_t *p_dst, uint32_t p_width, uint32_t p_height, bool p_renormalize = false, bool p_preserve_alpha_test_coverage = false);
 
 	static void average_4_uint8(uint8_t &p_out, const uint8_t &p_a, const uint8_t &p_b, const uint8_t &p_c, const uint8_t &p_d);
 	static void average_4_float(float &p_out, const float &p_a, const float &p_b, const float &p_c, const float &p_d);
@@ -312,12 +313,16 @@ public:
 	void flip_y();
 
 	// Generate a mipmap chain of an image (creates an image 1/4 the size, with averaging of 4->1).
-	Error generate_mipmaps(bool p_renormalize = false);
+	Error generate_mipmaps(bool p_renormalize = false, bool p_preserve_alpha_test_coverage = false, float alpha_test_threshold = 0.5);
 
 	Error generate_mipmap_roughness(RoughnessChannel p_roughness_channel, const Ref<Image> &p_normal_map);
 
 	void clear_mipmaps();
 	void normalize();
+
+	float alpha_test_coverage(uint8_t *p_dst, uint32_t p_width, uint32_t p_height, float alphaRef, float alphaScale) const;
+	void scale_alpha_to_coverage(uint8_t *p_dst, uint32_t p_width, uint32_t p_height, float desiredCoverage, float alphaRef);
+	void scale_mipmap_alpha_bias(uint8_t *p_dst, uint32_t p_width, uint32_t p_height, float scale, float bias);
 
 	// Creates new internal image data of a given size and format. Current image will be lost.
 	void initialize_data(int p_width, int p_height, bool p_use_mipmaps, Format p_format);

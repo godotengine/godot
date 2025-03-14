@@ -1827,7 +1827,7 @@ static void _generate_po2_mipmap(const Component *p_src, Component *p_dst, uint3
 	}
 }
 
-void Image::_generate_mipmap_from_format(Image::Format p_format, const uint8_t *p_src, uint8_t *p_dst, uint32_t p_width, uint32_t p_height, bool p_renormalize) {
+void Image::_generate_mipmap_from_format(Image::Format p_format, const uint8_t *p_src, uint8_t *p_dst, uint32_t p_width, uint32_t p_height, bool p_renormalize, bool p_preserve_alpha_test_coverage) {
 	const float *src_float = reinterpret_cast<const float *>(p_src);
 	float *dst_float = reinterpret_cast<float *>(p_dst);
 
@@ -1962,7 +1962,82 @@ void Image::normalize() {
 	}
 }
 
-Error Image::generate_mipmaps(bool p_renormalize) {
+float Image::alpha_test_coverage(uint8_t *p_dst, uint32_t p_width, uint32_t p_height, float alphaRef, float alphaScale) const {
+	int right_step = (p_width == 1) ? 0 : 1;
+	int down_step = (p_height == 1) ? 0 : p_width;
+
+	float coverage = 0.0f;
+
+	const uint32_t n = 4;
+
+	for (uint32_t y = 0; y < p_height - 1; y++) {
+		for (uint32_t x = 0; x < p_width - 1; x++) {
+			uint32_t i = y * p_width + x;
+
+			float alpha00 = _get_color_at_ofs(p_dst, i).a * alphaScale;
+			float alpha10 = _get_color_at_ofs(p_dst, i + right_step).a * alphaScale;
+			float alpha01 = _get_color_at_ofs(p_dst, i + down_step).a * alphaScale;
+			float alpha11 = _get_color_at_ofs(p_dst, i + right_step + down_step).a * alphaScale;
+
+			float texel_coverage = 0.0f;
+			for (uint32_t sy = 0; sy < n; sy++) {
+				float fy = (sy + 0.5f) / n;
+				for (uint32_t sx = 0; sx < n; sx++) {
+					float fx = (sx + 0.5f) / n;
+					float alpha = alpha00 * (1 - fx) * (1 - fy) + alpha10 * fx * (1 - fy) + alpha01 * (1 - fx) * fy + alpha11 * fx * fy;
+					if (alpha > alphaRef) {
+						texel_coverage += 1.0f;
+					}
+				}
+			}
+			coverage += texel_coverage / (n * n);
+		}
+	}
+	return coverage / float((p_width - 1) * (p_height - 1));
+}
+
+void Image::scale_alpha_to_coverage(uint8_t *p_dst, uint32_t p_width, uint32_t p_height, float desiredCoverage, float alphaRef) {
+	float minAlphaScale = 0.0f;
+	float maxAlphaScale = 4.0f;
+	float alphaScale = 1.0f;
+	float bestAlphaScale = 1.0f;
+	float bestError = 999999.9f;
+
+	// Determine desired scale using a binary search. Hardcoded to 10 steps max.
+	for (int i = 0; i < 10; i++) {
+		float currentCoverage = alpha_test_coverage(p_dst, p_width, p_height, alphaRef, alphaScale);
+
+		float error = fabsf(currentCoverage - desiredCoverage);
+		if (error < bestError) {
+			bestError = error;
+			bestAlphaScale = alphaScale;
+		}
+
+		if (currentCoverage < desiredCoverage) {
+			minAlphaScale = alphaScale;
+		} else if (currentCoverage > desiredCoverage) {
+			maxAlphaScale = alphaScale;
+		} else {
+			break;
+		}
+
+		alphaScale = (minAlphaScale + maxAlphaScale) * 0.5f;
+	}
+
+	// Scale alpha channel.
+	scale_mipmap_alpha_bias(p_dst, p_width, p_height, bestAlphaScale, 0.0f);
+}
+
+void Image::scale_mipmap_alpha_bias(uint8_t *p_dst, uint32_t p_width, uint32_t p_height, float scale, float bias) {
+	for (uint32_t i = 0; i < p_width * p_height; i++) {
+		Color c = _get_color_at_ofs(p_dst, i);
+		c.a = CLAMP(c.a * scale + bias, 0.0f, 1.0f);
+		// how do I clamp this?
+		_set_color_at_ofs(p_dst, i, c);
+	}
+}
+
+Error Image::generate_mipmaps(bool p_renormalize, bool p_preserve_alpha_test_coverage, float alpha_test_threshold) {
 	ERR_FAIL_COND_V_MSG(!_can_modify(format), ERR_UNAVAILABLE, "Cannot generate mipmaps in compressed or custom image formats.");
 	ERR_FAIL_COND_V_MSG(format == FORMAT_RGBA4444, ERR_UNAVAILABLE, "Cannot generate mipmaps from RGBA4444 format.");
 	ERR_FAIL_COND_V_MSG(width == 0 || height == 0, ERR_UNCONFIGURED, "Cannot generate mipmaps with width or height equal to 0.");
@@ -1977,12 +2052,20 @@ Error Image::generate_mipmaps(bool p_renormalize) {
 	int prev_h = height;
 	int prev_w = width;
 
+	if (p_preserve_alpha_test_coverage) {
+		desired_atc = alpha_test_coverage(wp, width, height, alpha_test_threshold, 1.0);
+	}
+
 	for (int i = 1; i <= gen_mipmap_count; i++) {
 		int64_t ofs;
 		int w, h;
 		_get_mipmap_offset_and_size(i, ofs, w, h);
 
-		_generate_mipmap_from_format(format, wp + prev_ofs, wp + ofs, prev_w, prev_h, p_renormalize);
+		_generate_mipmap_from_format(format, wp + prev_ofs, wp + ofs, prev_w, prev_h, p_renormalize, p_preserve_alpha_test_coverage);
+
+		if (p_preserve_alpha_test_coverage) {
+			scale_alpha_to_coverage(wp + ofs, w, h, desired_atc, alpha_test_threshold);
+		}
 
 		prev_ofs = ofs;
 		prev_w = w;
