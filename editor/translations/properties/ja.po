@@ -903,6 +903,9 @@ msgstr "省エネモードスリープ時間 (マイクロ秒)"
 msgid "Unfocused Low Processor Mode Sleep (µsec)"
 msgstr "非フォーカス時の省エネモードスリープ時間 (マイクロ秒)"
 
+msgid "V-Sync Mode"
+msgstr "垂直同期モード"
+
 msgid "Update Continuously"
 msgstr "継続的に更新"
 
@@ -953,6 +956,9 @@ msgstr "テーマ"
 
 msgid "Icon and Font Color"
 msgstr "アイコンとフォントのカラー"
+
+msgid "Contrast"
+msgstr "コントラスト"
 
 msgid "Draw Extra Borders"
 msgstr "エクストラボーダーを描画"
@@ -1103,6 +1109,9 @@ msgstr "テキストエディター"
 
 msgid "Line Spacing"
 msgstr "行間隔"
+
+msgid "Color Theme"
+msgstr "カラーテーマ"
 
 msgid "Appearance"
 msgstr "外観"
@@ -1536,9 +1545,6 @@ msgstr "シェーダーエディター"
 msgid "Visual Editors"
 msgstr "ビジュアルエディター"
 
-msgid "Color Theme"
-msgstr "カラーテーマ"
-
 msgid "Minimap Opacity"
 msgstr "ミニマップの不透明度"
 
@@ -1554,8 +1560,14 @@ msgstr "SCP"
 msgid "Window Placement"
 msgstr "ウィンドウの配置"
 
+msgid "Rect"
+msgstr "四角形"
+
 msgid "Rect Custom Position"
 msgstr "矩形のカスタム位置"
+
+msgid "Screen"
+msgstr "画面"
 
 msgid "Auto Save"
 msgstr "自動保存"
@@ -1565,6 +1577,9 @@ msgstr "実行前に保存"
 
 msgid "Output"
 msgstr "出力"
+
+msgid "Font Size"
+msgstr "フォントサイズ"
 
 msgid "HTTP Proxy"
 msgstr "HTTPプロキシ"
@@ -2370,9 +2385,6 @@ msgstr "ポータブル"
 msgid "Orientation"
 msgstr "方向"
 
-msgid "V-Sync Mode"
-msgstr "垂直同期モード"
-
 msgid "Output Latency"
 msgstr "出力レイテンシー"
 
@@ -2913,9 +2925,6 @@ msgstr "署名付き"
 msgid "XR Mode"
 msgstr "XRモード"
 
-msgid "Screen"
-msgstr "画面"
-
 msgid "Command Line"
 msgstr "コマンドライン"
 
@@ -3080,9 +3089,6 @@ msgstr "エリアマスク"
 
 msgid "Copy Mode"
 msgstr "コピーモード"
-
-msgid "Rect"
-msgstr "四角形"
 
 msgid "Anchor Mode"
 msgstr "アンカーモード"
@@ -3335,9 +3341,6 @@ msgstr "フラグ"
 
 msgid "Text"
 msgstr "テキスト"
-
-msgid "Font Size"
-msgstr "フォントサイズ"
 
 msgid "Uppercase"
 msgstr "大文字"
@@ -3683,9 +3686,6 @@ msgstr "ブルーム"
 
 msgid "Fog"
 msgstr "フォグ"
-
-msgid "Contrast"
-msgstr "コントラスト"
 
 msgid "Color Correction"
 msgstr "色補正"

@@ -25,13 +25,14 @@
 # Emil Hakala <emil.hakala44@gmail.com>, 2024.
 # Ricky Tigg <ricky.tigg@gmail.com>, 2025.
 # V Lo <vil.lokasaari@gmail.com>, 2025.
+# voeron <olsio@hotmail.com>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-02-24 06:34+0000\n"
-"Last-Translator: V Lo <vil.lokasaari@gmail.com>\n"
+"PO-Revision-Date: 2025-03-03 21:49+0000\n"
+"Last-Translator: voeron <olsio@hotmail.com>\n"
 "Language-Team: Finnish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fi/>\n"
 "Language: fi\n"
@@ -39,7 +40,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.10.1-dev\n"
+"X-Generator: Weblate 5.10.3-dev\n"
 
 msgid "Main Thread"
 msgstr "Pääsäie"
@@ -466,6 +467,9 @@ msgstr "Palauta toimenpide"
 msgid "Add Event"
 msgstr "Lisää tapahtuma"
 
+msgid "Remove Action"
+msgstr "Poista Toiminto"
+
 msgid "Cannot Remove Action"
 msgstr "Ei voida poistaa toimenpidettä"
 
@@ -481,14 +485,17 @@ msgstr "Suodata nimellä"
 msgid "Clear All"
 msgstr "Tyhjennä kaikki"
 
+msgid "Clear all search filters."
+msgstr "Tyhjennä kaikki hakukriteerit."
+
 msgid "Add New Action"
-msgstr "Lisää uusi toimenpide"
+msgstr "Lisää uusi toiminto"
 
 msgid "Add"
 msgstr "Lisää"
 
 msgid "Show Built-in Actions"
-msgstr "Näytä sisäänrakennetut toimenpiteet"
+msgstr "Näytä valmiit toiminnot"
 
 msgid "Action"
 msgstr "Toiminto"
@@ -503,7 +510,7 @@ msgid "Type:"
 msgstr "Tyyppi:"
 
 msgid "Metadata name is valid."
-msgstr "Metadatan nimi on kelvollinen."
+msgstr "Metadatan nimi on validi."
 
 msgid "Add Metadata Property for \"%s\""
 msgstr "Lisää Metadata Ominaisuus \"%s\""
@@ -512,7 +519,7 @@ msgid "Metadata name can't be empty."
 msgstr "Metadatan nimi ei voi olla tyhjä."
 
 msgid "Metadata name must be a valid identifier."
-msgstr "Metadatan nimen täytyy olla kelvollinen tunniste."
+msgstr "Metadatan nimen täytyy olla validi tunniste."
 
 msgid "Metadata with name \"%s\" already exists."
 msgstr "Metadata nimellä \"%s\" on jo olemassa."
@@ -548,10 +555,10 @@ msgid "Delete Selected Key(s)"
 msgstr "Poista valitut avaimet"
 
 msgid "Make Handles Free"
-msgstr "Vapauta Käsittelijät"
+msgstr "Vapauta Kahvat"
 
 msgid "Make Handles Linear"
-msgstr "Muuta Käsittelijät Lineaarisiksi"
+msgstr "Muuta Kahvat Lineaarisiksi"
 
 msgid "Make Handles Balanced"
 msgstr "Muuta Käsittelijät Tasapainotetuiksi"
@@ -573,6 +580,12 @@ msgstr "Siirrä Bezier-pisteitä"
 
 msgid "Animation Duplicate Keys"
 msgstr "Animaatio: Monista avaimet"
+
+msgid "Animation Cut Keys"
+msgstr "Animaatio: Leikkaa avaimet"
+
+msgid "Animation Paste Keys"
+msgstr "Animaatio: Liitä avaimet"
 
 msgid "Animation Delete Keys"
 msgstr "Animaatio: Poista avaimet"

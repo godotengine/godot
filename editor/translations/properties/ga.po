@@ -958,6 +958,9 @@ msgstr "Codladh Mód Próiseálaí Íseal (μsec)"
 msgid "Unfocused Low Processor Mode Sleep (µsec)"
 msgstr "Codladh Mód Próiseálaí Íseal Neamhdhírithe (μsec)"
 
+msgid "V-Sync Mode"
+msgstr "Mód V- Sync"
+
 msgid "Update Continuously"
 msgstr "Nuashonraigh go leanúnach"
 
@@ -1017,6 +1020,9 @@ msgstr "Téama"
 
 msgid "Icon and Font Color"
 msgstr "Deilbhín agus Dath an Chló"
+
+msgid "Contrast"
+msgstr "Codarsnacht"
 
 msgid "Draw Extra Borders"
 msgstr "Tarraing Teorainneacha Breise"
@@ -1203,6 +1209,9 @@ msgstr "Eagarthóir Téacs"
 
 msgid "Line Spacing"
 msgstr "Spásáil Líne"
+
+msgid "Color Theme"
+msgstr "Téama Datha"
 
 msgid "Appearance"
 msgstr "Dealramh"
@@ -1738,9 +1747,6 @@ msgstr "Athchóirigh Shaders ar Luchtaigh"
 msgid "Visual Editors"
 msgstr "Eagarthóirí Amhairc"
 
-msgid "Color Theme"
-msgstr "Téama Datha"
-
 msgid "Minimap Opacity"
 msgstr "Teimhneacht Minimap"
 
@@ -1768,8 +1774,14 @@ msgstr "SCPName"
 msgid "Window Placement"
 msgstr "Socrúchán Fuinneoige"
 
+msgid "Rect"
+msgstr "RectName"
+
 msgid "Rect Custom Position"
 msgstr "Suíomh Saincheaptha Rect"
+
+msgid "Screen"
+msgstr "Scáileán"
 
 msgid "Auto Save"
 msgstr "Sábháil Go hUathoibríoch"
@@ -1779,6 +1791,9 @@ msgstr "Sábháil Roimh Rith"
 
 msgid "Output"
 msgstr "Aschur"
+
+msgid "Font Size"
+msgstr "Clómhéid"
 
 msgid "Always Clear Output on Play"
 msgstr "Glan aschur i gcónaí ar an súgradh"
@@ -1803,6 +1818,9 @@ msgstr "Óstríomhaire"
 
 msgid "Editor TLS Certificates"
 msgstr "Teastais TLS Eagarthóra"
+
+msgid "Enable TLS V 1"
+msgstr "Cumasaigh TLS V 1"
 
 msgid "Remote Host"
 msgstr "Cianóstach"
@@ -2831,9 +2849,6 @@ msgstr "Ríomhaire Boise"
 msgid "Orientation"
 msgstr "Treoshuíomh"
 
-msgid "V-Sync Mode"
-msgstr "Mód V- Sync"
-
 msgid "Output Latency"
 msgstr "Latency Aschuir"
 
@@ -3791,9 +3806,6 @@ msgstr "Dífuaimiú"
 msgid "Denoiser"
 msgstr "DenoiserName"
 
-msgid "Enable TLS V 1"
-msgstr "Cumasaigh TLS V 1"
-
 msgid "BPM"
 msgstr "BPM"
 
@@ -4276,9 +4288,6 @@ msgstr "Gothaí"
 
 msgid "Swipe to Dismiss"
 msgstr "Svaidhpeáil chun é a dhífhostú"
-
-msgid "Screen"
-msgstr "Scáileán"
 
 msgid "Immersive Mode"
 msgstr "Mód tumtha"
@@ -4915,9 +4924,6 @@ msgstr "Cineál Athsheinm"
 
 msgid "Copy Mode"
 msgstr "Mód Cóipeála"
-
-msgid "Rect"
-msgstr "RectName"
 
 msgid "Anchor Mode"
 msgstr "Mód Ancaire"
@@ -6081,9 +6087,6 @@ msgstr "Mionathrú Imlíneach"
 
 msgid "Font"
 msgstr "Cló"
-
-msgid "Font Size"
-msgstr "Clómhéid"
 
 msgid "Horizontal Alignment"
 msgstr "Ailíniú Cothrománach"
@@ -9082,9 +9085,6 @@ msgstr "Coigeartuithe"
 
 msgid "Brightness"
 msgstr "Gile"
-
-msgid "Contrast"
-msgstr "Codarsnacht"
 
 msgid "Saturation"
 msgstr "Sáithiú"

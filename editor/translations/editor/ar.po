@@ -1616,6 +1616,9 @@ msgstr "فك إشارة الوسائط:"
 msgid "Receiver Method:"
 msgstr "الدالة المُتلقية:"
 
+msgid "Pick"
+msgstr "اختار"
+
 msgid "Advanced"
 msgstr "الإعدادات المتقدمة"
 
@@ -5092,6 +5095,9 @@ msgstr "تثبيت من ملف"
 msgid "Install templates from a local file."
 msgstr "تثبيت القوالب من ملف محلي."
 
+msgid "Go Online"
+msgstr "الاتصال بالشبكة"
+
 msgid "Cancel the download of the templates."
 msgstr "إلغاء تحميل القوالب."
 
@@ -7621,9 +7627,6 @@ msgid ""
 "The Asset Library requires an online connection and involves sending data "
 "over the internet."
 msgstr "مكتبة الأصول والملحقات تتطلب اتصال بالشبكة."
-
-msgid "Go Online"
-msgstr "الاتصال بالشبكة"
 
 msgid "Failed to get repository configuration."
 msgstr "فشل تحصيل تهيئة المستودع."
@@ -14149,9 +14152,6 @@ msgstr "تأصيل"
 
 msgid "Pick Root Node Type"
 msgstr "اختر نوع العقدة الجذرية"
-
-msgid "Pick"
-msgstr "اختار"
 
 msgid "Scene name is empty."
 msgstr "اسم المشهد فارغ."

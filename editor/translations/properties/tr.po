@@ -101,7 +101,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-03-01 20:22+0000\n"
+"PO-Revision-Date: 2025-03-04 23:47+0000\n"
 "Last-Translator: ulk <ulk.info@gmail.com>\n"
 "Language-Team: Turkish <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/tr/>\n"
@@ -1051,6 +1051,9 @@ msgstr "Düşük İşlemci Kipi Uyku (µsec)"
 msgid "Unfocused Low Processor Mode Sleep (µsec)"
 msgstr "Odaklanılmamış Düşük İşlemci Kipi Uyku (µsec)"
 
+msgid "V-Sync Mode"
+msgstr "Dikey-Eşleme Kipi"
+
 msgid "Update Continuously"
 msgstr "Sürekli Güncelle"
 
@@ -1110,6 +1113,9 @@ msgstr "Tema"
 
 msgid "Icon and Font Color"
 msgstr "Simge ve Yazı Tipi Rengi"
+
+msgid "Contrast"
+msgstr "Karşıtlık"
 
 msgid "Draw Extra Borders"
 msgstr "Fazladan Kenarlar Çiz"
@@ -1268,7 +1274,7 @@ msgid "Auto Expand to Selected"
 msgstr "Seçilene Otomatik Genişlet"
 
 msgid "Center Node on Reparent"
-msgstr "Üst-öğe değişiminde Düğümü Merkeze Ortala"
+msgstr "Üst-öge Değişiminde Düğümü Merkeze Ortala"
 
 msgid "Hide Filtered Out Parents"
 msgstr "Filtrelenmiş Üst Öğeleri Gizle"
@@ -1296,6 +1302,9 @@ msgstr "Metin Düzenleyici"
 
 msgid "Line Spacing"
 msgstr "Satır Aralığı"
+
+msgid "Color Theme"
+msgstr "Renk Teması"
 
 msgid "Appearance"
 msgstr "Dış görünüş"
@@ -1831,9 +1840,6 @@ msgstr "Açılışta Gölgelendiricileri Geri Yükle"
 msgid "Visual Editors"
 msgstr "Görsel Düzenleyiciler"
 
-msgid "Color Theme"
-msgstr "Renk Teması"
-
 msgid "Minimap Opacity"
 msgstr "Mini Harita Şeffaflığı"
 
@@ -1861,8 +1867,14 @@ msgstr "SCP"
 msgid "Window Placement"
 msgstr "Pencere Yerleşimi"
 
+msgid "Rect"
+msgstr "Dikdörtgen"
+
 msgid "Rect Custom Position"
 msgstr "Dikdörtgen Özel Konumu"
+
+msgid "Screen"
+msgstr "Ekran"
 
 msgid "Auto Save"
 msgstr "Otomatik Kaydet"
@@ -1872,6 +1884,9 @@ msgstr "Çalıştırmadan Önce Kaydet"
 
 msgid "Output"
 msgstr "Çıktı"
+
+msgid "Font Size"
+msgstr "Yazı Tipi Boyutu"
 
 msgid "Always Clear Output on Play"
 msgstr "Oynatıldığında Çıktıyı Her Zaman Temizle"
@@ -1896,6 +1911,9 @@ msgstr "Ana Bilgisayar"
 
 msgid "Editor TLS Certificates"
 msgstr "Düzenleyici TLS Sertifikası"
+
+msgid "Enable TLS V 1"
+msgstr "TLS V 1'i etkinleştir"
 
 msgid "Remote Host"
 msgstr "Uzak Ana Bilgisayar"
@@ -2924,9 +2942,6 @@ msgstr "Elde-taşınır"
 msgid "Orientation"
 msgstr "Yönelim"
 
-msgid "V-Sync Mode"
-msgstr "Dikey-Eşleme Kipi"
-
 msgid "Output Latency"
 msgstr "Çıkış Gecikmesi"
 
@@ -3621,7 +3636,7 @@ msgid "Skin"
 msgstr "Deri, Cilt, Kaplama"
 
 msgid "Children"
-msgstr "Alt-öğeler"
+msgstr "Alt-ögeler"
 
 msgid "Light"
 msgstr "Işık"
@@ -3883,9 +3898,6 @@ msgstr "Gürültü Giderme"
 
 msgid "Denoiser"
 msgstr "Gürültü Giderici"
-
-msgid "Enable TLS V 1"
-msgstr "TLS V 1'i etkinleştir"
 
 msgid "BPM"
 msgstr "Dakika Başına Vuruş (BPM)"
@@ -4369,9 +4381,6 @@ msgstr "Parmak Hareketleri"
 
 msgid "Swipe to Dismiss"
 msgstr "Kapatmak için Kaydır"
-
-msgid "Screen"
-msgstr "Ekran"
 
 msgid "Immersive Mode"
 msgstr "Yoğun Etkili Kip"
@@ -5008,9 +5017,6 @@ msgstr "Oynatma Türü"
 
 msgid "Copy Mode"
 msgstr "Kopyalama Kipi"
-
-msgid "Rect"
-msgstr "Dikdörtgen"
 
 msgid "Anchor Mode"
 msgstr "Çapa Kipi"
@@ -6175,9 +6181,6 @@ msgstr "Anahat Ton Değişimi"
 msgid "Font"
 msgstr "Yazı Tipi"
 
-msgid "Font Size"
-msgstr "Yazı Tipi Boyutu"
-
 msgid "Horizontal Alignment"
 msgstr "Yatay Hizalama"
 
@@ -6845,7 +6848,7 @@ msgid "Spatial Attachment Path"
 msgstr "Uzaysal Eklenti Yolu"
 
 msgid "Parent Collision Ignore"
-msgstr "Üst-öğe Çarpışmayı Yoksay"
+msgstr "Üst-öge Çarpışmayı Yoksay"
 
 msgid "Simulation Precision"
 msgstr "Benzetim Hassasiyeti"
@@ -6996,6 +6999,9 @@ msgstr "Gecikme"
 
 msgid "Random Delay"
 msgstr "Rastgele Gecikme"
+
+msgid "Explicit Elapse"
+msgstr "Serbest Zaman Atlama"
 
 msgid "Xfade Time"
 msgstr "X-Solma Süresi"
@@ -8055,10 +8061,10 @@ msgid "Self Modulate"
 msgstr "Kendine Ton Değiştirme"
 
 msgid "Show Behind Parent"
-msgstr "Üst-öğenin Arkasında Göster"
+msgstr "Üst-ögenin Arkasında Göster"
 
 msgid "Clip Children"
-msgstr "Alt-öğeleri Kes"
+msgstr "Alt-ögeleri Kes"
 
 msgid "Light Mask"
 msgstr "Işık Maskesi"
@@ -8079,7 +8085,7 @@ msgid "Y Sort Enabled"
 msgstr "Y Sıralama Etkin"
 
 msgid "Use Parent Material"
-msgstr "Üst-öğe Malzemesini Kullan"
+msgstr "Üst-öge Malzemesini Kullan"
 
 msgid "Diffuse"
 msgstr "Karışma"
@@ -9172,9 +9178,6 @@ msgstr "Ayarlamalar"
 
 msgid "Brightness"
 msgstr "Aydınlık"
-
-msgid "Contrast"
-msgstr "Karşıtlık"
 
 msgid "Saturation"
 msgstr "Doygunluk"

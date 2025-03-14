@@ -93,7 +93,7 @@
 # Jakob <js2k2@gmx.de>, 2023.
 # DafabHoid <github@dafabhoid.de>, 2023.
 # Jummit <jummit@web.de>, 2023.
-# Ettore Atalan <atalanttore@googlemail.com>, 2023, 2024.
+# Ettore Atalan <atalanttore@googlemail.com>, 2023, 2024, 2025.
 # Luke Pucknat <lukesollichstun@gmail.com>, 2023.
 # Haoyu Qiu <timothyqiu32@gmail.com>, 2023.
 # Jan Werder <jan@werder.space>, 2023.
@@ -117,13 +117,15 @@
 # Leona 'leo' Gottfried <s6573328@stud.uni-frankfurt.de>, 2024.
 # Deleted User <noreply+102345@weblate.org>, 2025.
 # Silikonmanns Kanal <silvan.goeth@gmail.com>, 2025.
+# I_had_a_bad_idea <emmert_raphael@web.de>, 2025.
+# Robert Kossessa <weblate@kosro.de>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-02-27 11:52+0000\n"
-"Last-Translator: Silikonmanns Kanal <silvan.goeth@gmail.com>\n"
+"PO-Revision-Date: 2025-03-11 15:47+0000\n"
+"Last-Translator: Wuzzy <Wuzzy@disroot.org>\n"
 "Language-Team: German <https://hosted.weblate.org/projects/godot-engine/godot/"
 "de/>\n"
 "Language: de\n"
@@ -131,7 +133,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.10.2-dev\n"
+"X-Generator: Weblate 5.10.3-dev\n"
 
 msgid "Main Thread"
 msgstr "Hauptthread"
@@ -1170,6 +1172,9 @@ msgstr "Nur Tracks der aktuell ausgewählten Nodes anzeigen."
 msgid "Group tracks by node or display them as plain list."
 msgstr "Tracks nach Node gruppieren oder nacheinander anzeigen."
 
+msgid "Apply snapping to timeline cursor."
+msgstr "Einrasten für Zeitleistencursor anwenden."
+
 msgid "Apply snapping to selected key(s)."
 msgstr "Einrasten für ausgewählte(n) Key(s) anwenden."
 
@@ -1459,6 +1464,12 @@ msgstr "Markername ändern:"
 msgid "Edit Marker Color"
 msgstr "Markerfarbe einstellen"
 
+msgid "Multi Edit Marker Color"
+msgstr "Farbe des Mehrfachbearbeitungsmarkers"
+
+msgid "Animation Change Marker Time"
+msgstr "Animationsänderungsmarkerzeit"
+
 msgid "Add Audio Track Clip"
 msgstr "Audiotrack-Clip hinzufügen"
 
@@ -1489,6 +1500,12 @@ msgid "%d of %d match"
 msgid_plural "%d of %d matches"
 msgstr[0] "%d von %d Übereinstimmung"
 msgstr[1] "%d von %d Übereinstimmungen"
+
+msgid "Hide Replace"
+msgstr "Ersetzung ausblenden"
+
+msgid "Show Replace"
+msgstr "Ersetzung anzeigen"
 
 msgid "Find"
 msgstr "Suchen"
@@ -1630,6 +1647,9 @@ msgstr "Signalargumente lösen:"
 
 msgid "Receiver Method:"
 msgstr "Empfängermethode:"
+
+msgid "Pick"
+msgstr "Auswählen"
 
 msgid "Advanced"
 msgstr "Erweitert"
@@ -1786,6 +1806,9 @@ msgstr "Sichtbarkeit ein-/ausschalten"
 
 msgid "Expression to evaluate"
 msgstr "Auszuführender Ausdruck"
+
+msgid "Clear on Run"
+msgstr "Beim Ausführen leeren"
 
 msgid "Evaluate"
 msgstr "Auswerten"
@@ -5301,6 +5324,9 @@ msgstr "Aus Datei installieren"
 msgid "Install templates from a local file."
 msgstr "Exportvorlagen aus lokaler Datei installieren."
 
+msgid "Go Online"
+msgstr "Online gehen"
+
 msgid "Cancel the download of the templates."
 msgstr "Herunterladen der Exportvorlagen abbrechen."
 
@@ -6584,8 +6610,18 @@ msgstr "Szenenbaum (Nodes):"
 msgid "Node Configuration Warning!"
 msgstr "Node-Konfigurationswarnung!"
 
+msgid "Revoke"
+msgstr "Widerrufen"
+
 msgid "Don't Ask Again"
 msgstr "Nicht mehr fragen"
+
+msgid ""
+"This dialog can also be enabled/disabled in the Editor Settings: Docks > "
+"Scene Tree > Ask Before Revoking Unique Name."
+msgstr ""
+"Dieser Dialog kann auch in den Editor Einstellungen de-/aktiviert werden: "
+"Docks > Szenenbaum > Vor dem Wiederrufen eindeutiger Namen fragen."
 
 msgid "Allowed:"
 msgstr "Erlaubt:"
@@ -6763,6 +6799,9 @@ msgstr "Materialien"
 
 msgid "Selected Animation Play/Pause"
 msgstr "Ausgewählte Animation abspielen/pausieren"
+
+msgid "Toggle Animation Skeleton Visibility"
+msgstr "Unteres Animation-Panel ein-/ausblenden"
 
 msgid "Rotate Lights With Model"
 msgstr "Lichter mit Modell rotieren"
@@ -8040,9 +8079,6 @@ msgstr ""
 "Die Asset-Bibliothek erfordert eine Online-Verbindung und überträgt Daten "
 "über das Internet."
 
-msgid "Go Online"
-msgstr "Online gehen"
-
 msgid "Failed to get repository configuration."
 msgstr "Repository-Konfiguration konnte nicht abgerufen werden."
 
@@ -8928,6 +8964,13 @@ msgstr ""
 msgid "Edit Plugin"
 msgstr "Plugin bearbeiten"
 
+msgid ""
+"Recovery mode is enabled. Enabled plugins will not run while this mode is "
+"active."
+msgstr ""
+"Der Wiederherstellungsmodus ist aktiviert. Aktivierte Plugins werden nicht "
+"ausgeführt werden während dieser Modus aktiv ist."
+
 msgid "Installed Plugins:"
 msgstr "Installierte Plugins:"
 
@@ -9006,6 +9049,128 @@ msgstr "Zahlen-Ausrichtung"
 
 msgid "Unable to preview font"
 msgstr "Vorschau für Schriftart nicht verfügbar"
+
+msgid "Game running not embedded."
+msgstr "Spielausführung nicht eingebettet."
+
+msgid "Press play to start the game."
+msgstr "Klicke auf Play um das Spiel zu starten."
+
+msgid "Embedding is disabled."
+msgstr "Einbettung ist deaktiviert."
+
+msgid ""
+"Game embedding not available on Wayland.\n"
+"Wayland can be disabled in the Editor Settings (Run > Platforms > Linux/*BSD "
+"> Prefer Wayland)."
+msgstr ""
+"Das Einbetten des Spiels ist unter Wayland nicht verfügbar.\n"
+"Wayland kann in den Editor-Einstellungen, unter Ausführen > Plattformen > "
+"Linux/*BSD > Wayland bevorzugen, deaktiviert werden."
+
+msgid "Game embedding not available on your OS."
+msgstr "Spieleinbettung nicht auf diesem Betriebssystem verfügbar."
+
+msgid ""
+"Game embedding not available for the Display Server: '%s'.\n"
+"Display Server can be modified in the Project Settings (Display > Display "
+"Server > Driver)."
+msgstr ""
+"Das Einbetten des Spiels ist für den Display-Server „%s“ nicht verfügbar.\n"
+"Der Display-Server kann in den Projekteinstellungen, unter Anzeige > Display-"
+"Server > Treiber, geändert werden."
+
+msgid ""
+"Game embedding not available when the game starts minimized.\n"
+"Consider overriding the window mode project setting with the editor feature "
+"tag to Windowed to use game embedding while leaving the exported project "
+"intact."
+msgstr ""
+"Das Einbetten des Spiels ist nicht verfügbar, wenn das Spiel minimiert "
+"startet.\n"
+"Erwäge, die Projekteinstellung für den Fenstermodus mit dem Editor-Feature-"
+"Tag auf „Windowed“ zu setzen, um das Einbetten des Spiels zu ermöglichen, "
+"während das exportierte Projekt unverändert bleibt."
+
+msgid ""
+"Game embedding not available when the game starts maximized.\n"
+"Consider overriding the window mode project setting with the editor feature "
+"tag to Windowed to use game embedding while leaving the exported project "
+"intact."
+msgstr ""
+"Das Einbetten des Spiels ist nicht verfügbar, wenn das Spiel maximiert "
+"startet.\n"
+"Erwäge, die Projekteinstellung für den Fenstermodus mit dem Editor-Feature-"
+"Tag auf „Windowed“ zu setzen, um das Einbetten des Spiels zu ermöglichen, "
+"während das exportierte Projekt unverändert bleibt."
+
+msgid ""
+"Game embedding not available when the game starts in fullscreen.\n"
+"Consider overriding the window mode project setting with the editor feature "
+"tag to Windowed to use game embedding while leaving the exported project "
+"intact."
+msgstr ""
+"Das Einbetten des Spiels ist nicht verfügbar, wenn das Spiel im Vollbild "
+"startet.\n"
+"Erwäge, die Projekteinstellung für den Fenstermodus mit dem Editor-Feature-"
+"Tag auf „Windowed“ zu setzen, um das Einbetten des Spiels zu ermöglichen, "
+"während das exportierte Projekt unverändert bleibt."
+
+msgid "Game embedding not available in single window mode."
+msgstr "Spieleinbettung ist nicht im Einzelfenster-Modus verfügbar."
+
+msgid "Suspend"
+msgstr "Unterbrechen"
+
+msgid "Allow game input."
+msgstr "Spieleingabe erlauben."
+
+msgid ""
+"Disable game input and allow to select Node2Ds, Controls, and manipulate the "
+"2D camera."
+msgstr ""
+"Spieleingabe deaktivieren und erlauben Node2Ds und Controls auszuwählen und "
+"die 2D-Kamera manipulieren."
+
+msgid ""
+"Disable game input and allow to select Node3Ds and manipulate the 3D camera."
+msgstr ""
+"Spieleingabe deaktivieren und Node3Ds auswählen und die 3D-Kamera "
+"manipulieren."
+
+msgid "Manipulate In-Game"
+msgstr "Im Spiel manipulieren"
+
+msgid "Manipulate From Editors"
+msgstr "Aus Editoren manipulieren"
+
+msgid ""
+"Embedded game size is based on project settings.\n"
+"The 'Keep Aspect' mode is used when the Game Workspace is smaller than the "
+"desired size."
+msgstr ""
+"Die Größe des eingebetteten Spiels basiert auf den Projekteinstellungen.\n"
+"Der Modus „Seitenverhältnis beibehalten“ wird verwendet, wenn der "
+"Spielarbeitsbereich kleiner als die gewünschte Größe ist."
+
+msgid "Keep the aspect ratio of the embedded game."
+msgstr "Seitenverhältnis des eingebetteten Spiels beibehalten."
+
+msgid "Embed Game on Next Play"
+msgstr "Spiel beim nächsten Start einbetten"
+
+msgid "Make Game Workspace Floating on Next Play"
+msgstr "Spielarbeitsbereich beim nächsten Start als schwebend festlegen"
+
+msgid ""
+"No \"%s\" library found for GDExtension: \"%s\". Possible feature flags for "
+"your platform: %s"
+msgstr ""
+"Keine „%s“-Bibliothek für GDExtension „%s“ gefunden. Mögliche Feature-Flags "
+"für deine Plattform: %s"
+
+msgid "Multiple \"%s\" libraries found for GDExtension: \"%s\": \"%s\"."
+msgstr "Mehrere „%s“ Bibliotheken für GDExtension „%s“ gefunden: „%s“."
 
 msgid "Change AudioStreamPlayer3D Emission Angle"
 msgstr "Emissionswinkel für AudioStreamPlayer3D ändern"
@@ -9144,6 +9309,29 @@ msgstr ""
 "Ein Speicherpfad für Lightmap-Bilder kann nicht bestimmt werden.\n"
 "Ein Speichern der Szene sollte dieses Problem beheben."
 
+msgid ""
+"No meshes with lightmapping support to bake. Make sure they contain UV2 data "
+"and their Global Illumination property is set to Static."
+msgstr ""
+"Keine Meshes mit Lightmapping-Unterstützung zum Backen gefunden. Stelle "
+"sicher, dass sie UV2-Daten enthalten und ihre Global Illumination-Eigenschaft "
+"auf „Statisch“ gesetzt ist."
+
+msgid ""
+"To import a scene with lightmapping support, set Meshes > Light Baking to "
+"Static Lightmaps in the Import dock."
+msgstr ""
+"Um eine Szene mit Lightmapping-Unterstützung zu importieren, setze im Import-"
+"Dock: Meshes > Light Baking auf „Statische Lightmaps“."
+
+msgid ""
+"To enable lightmapping support on a primitive mesh, edit the PrimitiveMesh "
+"resource in the inspector and check Add UV2."
+msgstr ""
+"Um Lightmapping-Unterstützung für ein primitives Mesh zu aktivieren, "
+"bearbeite die PrimitiveMesh-Ressource im Inspektor und aktiviere „UV2 "
+"hinzufügen“."
+
 msgid "No editor scene root found."
 msgstr "Keinen Root-Node in Editorszene gefunden."
 
@@ -9168,6 +9356,13 @@ msgstr ""
 
 msgid "Bake Lightmaps"
 msgstr "Lightmaps backen"
+
+msgid ""
+"Lightmaps cannot be baked, as the `lightmapper_rd` module was disabled at "
+"compile-time."
+msgstr ""
+"Lightmaps können nicht gebacken werden, da das Modul `lightmapper_rd` zur "
+"Kompilierzeit deaktiviert wurde."
 
 msgid "LightMap Bake"
 msgstr "LightMap backen"
@@ -9369,6 +9564,28 @@ msgstr ""
 msgid "UV Channel Debug"
 msgstr "UV-Channel-Debug"
 
+msgid ""
+"Before converting a rendering mesh to a navigation mesh, please verify:\n"
+"\n"
+"- The mesh is two-dimensional.\n"
+"- The mesh has no surface overlap.\n"
+"- The mesh has no self-intersection.\n"
+"- The mesh surfaces have indices.\n"
+"\n"
+"If the mesh does not fulfill these requirements, the pathfinding will be "
+"broken."
+msgstr ""
+"Vor dem Konvertieren eines Rendering-Mesh zu einem Navigation-Mesh , "
+"verifiziere bitte:\n"
+"\n"
+"-Das Mesh ist zweidimensional.\n"
+"-Das Mesh hat keine überlappenden Flächen.\n"
+"-Das Mesh schneidet sich nicht selbst.\n"
+"-Die Mesh-Flächen besitzen Indeces.\n"
+"\n"
+"Falls das Mesh diese Vorraussetzungen nicht erfüllt, wird das Pathfinding "
+"defekt sein."
+
 msgid "Remove item %d?"
 msgstr "Element %d entfernen?"
 
@@ -9481,6 +9698,18 @@ msgstr "start_position festlegen"
 
 msgid "Set end_position"
 msgstr "end_position festlegen"
+
+msgid "Edit Obstacle (Flip Winding)"
+msgstr "Hindernis bearbeiten (Wicklung invetieren)"
+
+msgid "Add Vertex"
+msgstr "Vertex hinzufügen"
+
+msgid "Edit Obstacle (Add Vertex)"
+msgstr "Hindernis bearbeiten (Vertex hinzufügen)"
+
+msgid "Edit Obstacle (Move Vertex)"
+msgstr "Hindernis bearbeiten (Vertex bewegen)"
 
 msgid "Please Confirm..."
 msgstr "Bitte bestätigen …"
@@ -9837,6 +10066,9 @@ msgstr "Rotations-Transformation starten"
 
 msgid "Begin Scale Transformation"
 msgstr "Skalierungs-Transformation starten"
+
+msgid "Reposition Using Collisions"
+msgstr "Neupositionierung mithilfe von Kollisionen"
 
 msgid "Toggle Camera Preview"
 msgstr "Kameravorschau ein-/ausschalten"
@@ -10241,6 +10473,9 @@ msgstr "Generiere Sichtbarkeits-Rechteck (Warte auf Partikelsimulation)"
 
 msgid "Generating..."
 msgstr "Wird generiert ..."
+
+msgid "Loading emission mask requires ParticleProcessMaterial."
+msgstr "Das Laden der Emissionenmaske benötigt ParticleProcessMaterial."
 
 msgid "GPUParticles2D"
 msgstr "CPU-Partikel-2D"
@@ -10712,6 +10947,9 @@ msgstr ""
 "AnimationMixer hat keinen gültigen Root-Node-Pfad, also können Track-Namen "
 "nicht abgerufen werden."
 
+msgid "(truncated)"
+msgstr "(abgeschnitten)"
+
 msgid "Can't open '%s'. The file could have been moved or deleted."
 msgstr ""
 "Datei ‚%s‘ kann nicht geöffnet werden. Die Datei könnte verschoben oder "
@@ -10919,6 +11157,9 @@ msgstr "Normaler Text"
 msgid "JSON"
 msgstr "JSON"
 
+msgid "Markdown"
+msgstr "Markdown"
+
 msgid "Connections to method:"
 msgstr "Verbindungen mit Methode:"
 
@@ -10966,6 +11207,9 @@ msgid "Can't drop nodes because script '%s' does not inherit Node."
 msgstr ""
 "Nodes können hier nicht fallen gelassen werden da Skript ‚%s‘ nicht von Node "
 "erbt."
+
+msgid "Emoji & Symbols"
+msgstr "Emojis & Symbole"
 
 msgid "Pick Color"
 msgstr "Farbe auswählen"
@@ -11150,6 +11394,9 @@ msgstr "Standardpose überschreiben"
 
 msgid "Set Bone Transform"
 msgstr "Knochentransformation festlegen"
+
+msgid "Modify metadata '%s' for bone '%s'"
+msgstr "Metadaten „%s“ für Knochen „%s“ ändern"
 
 msgid "Set Bone Rest"
 msgstr "Standardpose für Knochen festlegen"
@@ -13207,6 +13454,12 @@ msgstr ""
 "Das Ergebnis des Instanzparameters kann nicht richtig von der 2D-Vorschau "
 "dargestellt werden."
 
+msgid "Copy Preview Shader Parameters From Material"
+msgstr "Vorschau-Shader-Parameter aus Material kopieren"
+
+msgid "Paste Preview Shader Parameters To Material"
+msgstr "Vorschau-Shader-Parameter in Material einfügen"
+
 msgid "Add Input Port"
 msgstr "Eingangs-Port hinzufügen"
 
@@ -13354,6 +13607,9 @@ msgstr "Eine Varying mit dem Namen existiert bereits."
 msgid "Add Node(s) to Visual Shader"
 msgstr "Node(s) zum Visual Shader hinzufügen"
 
+msgid "Hold %s Key To Swap Connections"
+msgstr "Halte die %s Taste gedrückt, um Verbindungen zu wechseln"
+
 msgid "Vertex"
 msgstr "Vertex"
 
@@ -13402,6 +13658,9 @@ msgstr "Neuen Node einfügen"
 msgid "Insert New Reroute"
 msgstr "Neue Umleitung einfügen"
 
+msgid "Copy Parameters From Material"
+msgstr "Parameter aus Material kopieren"
+
 msgid "High-end node"
 msgstr "Hochleistungs-Node"
 
@@ -13426,11 +13685,17 @@ msgstr "Graustufenfunktion."
 msgid "Converts HSV vector to RGB equivalent."
 msgstr "Wandelt HSV-Vektor in RGB-Gegenwert um."
 
+msgid "Converts color from linear to sRGB color space."
+msgstr "Konvertiert Farben vom linearen in den sRGB-Farbraum."
+
 msgid "Converts RGB vector to HSV equivalent."
 msgstr "Wandelt RGB-Vektor in HSV-Gegenwert um."
 
 msgid "Sepia function."
 msgstr "Sepiafunktion."
+
+msgid "Converts color from sRGB to linear color space."
+msgstr "Konvertiert Farben von sRGB in den linearen Farbraum."
 
 msgid "Burn operator."
 msgstr "Brenn-Operator."
@@ -14597,6 +14862,27 @@ msgstr ""
 "Alle fehlenden Projekte aus der Liste entfernen?\n"
 "Inhalte des Projektordners werden nicht geändert."
 
+msgid ""
+"It looks like Godot crashed when opening this project the last time. If "
+"you're having problems editing this project, you can try to open it in "
+"Recovery Mode."
+msgstr ""
+"Es sieht so aus, als wäre Godot beim letzten Öffnen dieses Projekts "
+"abgestürzt. Wenn Sie Probleme haben, dieses Projekt zu bearbeiten, können Sie "
+"versuchen, es im Wiederherstellungsmodus zu öffnen."
+
+msgid ""
+"Recovery Mode is a special mode that may help to recover projects that crash "
+"the engine during initialization. This mode temporarily disables the "
+"following features:"
+msgstr ""
+"Recovery-Modus ist ein spezieller Modus, der helfen kann, Projekte zu "
+"wiederherstellen, bei denen die Engine während der Initialisierung abstürzt. "
+"Dieser Modus deaktiviert vorübergehend die folgenden Eigenschaften:"
+
+msgid "Edit the project in Recovery Mode?"
+msgstr "Das Projekt im Wiederherstellungsmodus bearbeiten?"
+
 msgid "Couldn't load project at '%s'. It may be missing or corrupted."
 msgstr ""
 "Das Projekt '%s' konnte nicht geladen werden. Es könnte fehlen oder "
@@ -14713,6 +14999,9 @@ msgstr "Wähle zu durchsuchenden Ordner"
 
 msgid "Remove All"
 msgstr "Alles entfernen"
+
+msgid "Edit in Recovery Mode"
+msgstr "Bearbeiten im Wiederherstellungsmodus"
 
 msgid "Convert Full Project"
 msgstr "Gesamtes Projekt konvertieren"
@@ -14916,6 +15205,15 @@ msgstr "Projektinstallationspfad:"
 
 msgid "Renderer:"
 msgstr "Renderer:"
+
+msgid ""
+"RenderingDevice-based methods not available on this GPU:\n"
+"%s\n"
+"Please use the Compatibility renderer."
+msgstr ""
+"Auf dieser GPU sind keine RenderingDevice-basierten Methoden verfügbar:\n"
+"%s\n"
+"Bitte verwenden Sie den Kompatibilitäts-Renderer."
 
 msgid "The renderer can be changed later, but scenes may need to be adjusted."
 msgstr ""
@@ -15182,9 +15480,6 @@ msgstr "Feature-Tags"
 
 msgid "Pick Root Node Type"
 msgstr "Typ des Root-Nodes auswählen"
-
-msgid "Pick"
-msgstr "Auswählen"
 
 msgid "Scene name is empty."
 msgstr "Szenenname ist leer."
@@ -15872,6 +16167,9 @@ msgstr ""
 msgid "Restart & Upgrade"
 msgstr "Neustart & Aktualisieren"
 
+msgid "Learn More"
+msgstr "Mehr erfahren"
+
 msgid "Make this panel floating in the screen %d."
 msgstr "Dieses Panel schwebend machen auf Bildschirm %d."
 
@@ -15884,6 +16182,31 @@ msgstr ""
 
 msgid "Select Screen"
 msgstr "Bildschirm auswählen"
+
+msgid ""
+"The CSGShape3D has an empty shape.\n"
+"CSGShape3D empty shapes typically occur because the mesh is not manifold.\n"
+"A manifold mesh forms a solid object without gaps, holes, or loose edges.\n"
+"Each edge must be a member of exactly two faces."
+msgstr ""
+"CSGShape3D hat eine leere Form.\n"
+"Leere CSGShape3D-Formen treten normalerweise auf, weil das Mesh nicht "
+"mannigfaltig ist.\n"
+"Ein mannigfaltiges Mesh bildet ein festes Objekt ohne Lücken, Löcher oder "
+"lose Kanten.\n"
+"Jede Kante muss ein Element von genau zwei Flächen sein."
+
+msgid "CSG operation returned an empty array."
+msgstr "Der CSG-Vorgang hat ein leeres Array zurückgegeben."
+
+msgid "CSG operation returned an empty mesh."
+msgstr "CSG-Vorgang hat ein leeres Mesh zurückgegeben."
+
+msgid "CSG operation returned an empty shape."
+msgstr "CSG-Vorgang hat eine leere Form zurückgegeben."
+
+msgid "CSG"
+msgstr "CSG"
 
 msgid "Change Torus Inner Radius"
 msgstr "Inneren Torusradius ändern"
@@ -16471,6 +16794,11 @@ msgstr "Aktion hinzufügen."
 msgid "Remove action set."
 msgstr "Aktionsset entfernen."
 
+msgid "Note: modifiers will only be applied if supported on the host system."
+msgstr ""
+"Notiz: Modifikatoren werden nur angewandt, wenn sie auf dem Host-System "
+"unterstützt sind."
+
 msgid "OpenXR Action Map"
 msgstr "OpenXR-Aktionszuweisung"
 
@@ -16500,6 +16828,9 @@ msgstr "Eine Aktion auswählen"
 
 msgid "Select an interaction profile"
 msgstr "Interaktionsprofil auswählen"
+
+msgid "All interaction profiles have been added to the action map."
+msgstr "Alle Interaktionsprofile wurden zur Aktionszuweisung hinzugefügt."
 
 msgid "Choose an XR runtime."
 msgstr "XR-Runtime wählen."
@@ -16977,6 +17308,9 @@ msgstr "Exportieren nach iOS bei Verwendung von C#/.NET ist noch experimentell."
 
 msgid "Invalid additional PList content: "
 msgstr "Ungültiger zusätzlicher PList-Inhalt: "
+
+msgid "Metal renderer require iOS 14+."
+msgstr "Der Metallrenderer benötigt iOS 14+"
 
 msgid "Identifier is missing."
 msgstr "Bezeichner fehlt."
@@ -17626,6 +17960,11 @@ msgstr ""
 "Die Startposition eines NavigationLink2D sollte sich von seiner Endposition "
 "unterscheiden, um nützlich zu sein."
 
+msgid "NavigationObstacle2D does not support negative or zero scaling."
+msgstr ""
+"NavigationObstacle2D unterstützt weder eine negative Skalierung noch eine von "
+"null."
+
 msgid ""
 "A NavigationMesh resource must be set or created for this node to work. "
 "Please set a property or draw a polygon."
@@ -17977,6 +18316,23 @@ msgid "Generating Probe Acceleration Structures"
 msgstr "Generiere Probe-Beschleunigungsstrukturen"
 
 msgid ""
+"The lightmap has no baked shadowmask textures. Please rebake with the "
+"Shadowmask Mode set to anything other than None."
+msgstr ""
+"Die Lightmap enthält keine gebackenen Schattenmasken-Texturen. Bitte backe "
+"sie erneut mit einem anderen Schattenmasken-Modus als „Nichts“."
+
+msgid ""
+"Lightmaps cannot be baked on %s. Rendering existing baked lightmaps will "
+"still work."
+msgstr ""
+"Lightmaps können nicht auf %s gebacken werden. Das Rendern vorhandener "
+"gebackener Lightmaps funktioniert weiterhin."
+
+msgid "Forward axis and primary rotation axis must not be parallel."
+msgstr "Vorwärtsachse und primäre Rotationsachse dürfen nicht parallel sein."
+
+msgid ""
 "The NavigationAgent3D can be used only under a Node3D inheriting parent node."
 msgstr ""
 "NavigationAgent3D kann nur unter einem von Node3D erbenden übergeordneten "
@@ -17988,6 +18344,14 @@ msgid ""
 msgstr ""
 "Die Startposition von NavigationLink3D sollte sich von der Endposition "
 "unterscheiden, um einen Effekt zu haben."
+
+msgid ""
+"NavigationObstacle3D only takes global rotation around the y-axis into "
+"account. Rotations around the x-axis or z-axis might lead to unexpected "
+"results."
+msgstr ""
+"NavigationObstacle3D berücksichtigt nur die globale Rotation um die Y-Achse. "
+"Rotationen um die X- oder Z-Achse können zu unerwarteten Ergebnissen führen."
 
 msgid ""
 "Occlusion culling is disabled in the Project Settings, which means occlusion "
@@ -18595,6 +18959,9 @@ msgstr "Alle Oberflächen nutzen"
 msgid "Surface Index"
 msgstr "Oberflächenindex"
 
+msgid "Division by zero error."
+msgstr "Fehler beim Teilen durch Null."
+
 msgid ""
 "Invalid number of arguments when calling stage function '%s', which expects "
 "%d arguments."
@@ -18726,6 +19093,10 @@ msgstr "Positive Integer-Konstante erwartet."
 
 msgid "Invalid data type for the array."
 msgstr "Ungültiger Datentyp für das Array."
+
+msgid "Array size mismatch. Expected %d elements (found %d)."
+msgstr ""
+"Array-Größenabweichung. Erwartet wurden %d Elemente (gefunden wurden %d)."
 
 msgid "Expected array initialization."
 msgstr "Array-Initialisierung erwartet."
@@ -18886,6 +19257,9 @@ msgstr ""
 msgid "Expected '%s' with an expression of type '%s'."
 msgstr "‚%s‘ mit einem Ausdruck des Typs ‚%s‘ erwartet."
 
+msgid "'%s' function cannot return a value."
+msgstr "Die Funktion „%s“ kann keinen Wert zurückgeben."
+
 msgid "Expected return with an expression of type '%s'."
 msgstr "Rückgabe eines Ausdrucks des Typs ‚%s‘ erwartet."
 
@@ -19014,6 +19388,9 @@ msgstr "„,“ nach Integer-Konstante erwartet."
 
 msgid "Expected an integer constant after ','."
 msgstr "Integer-Konstante nach „,“ erwartet."
+
+msgid "Expected a string constant."
+msgstr "String-Konstante erwartet."
 
 msgid "Can only specify '%s' once."
 msgstr "‚%s‘ kann nur einmal aufgeführt werden."
@@ -19200,6 +19577,9 @@ msgstr "Zyklisches Include erkannt"
 
 msgid "Shader max include depth exceeded."
 msgstr "Maximale Include-Tiefe des Shaders wurde überschritten."
+
+msgid "Cannot use '%s' on built-in define."
+msgstr "„%s“ kann nicht für eine eingebaute Definition verwendet werden."
 
 msgid "Macro expansion limit exceeded."
 msgstr "Makroausweitungsgrenze überschritten."

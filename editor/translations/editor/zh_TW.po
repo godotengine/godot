@@ -1450,6 +1450,9 @@ msgstr "解除綁定訊號參數:"
 msgid "Receiver Method:"
 msgstr "接收器方法："
 
+msgid "Pick"
+msgstr "選取"
+
 msgid "Advanced"
 msgstr "進階"
 
@@ -4626,6 +4629,9 @@ msgstr "自檔案安裝"
 msgid "Install templates from a local file."
 msgstr "自本地檔案安裝樣板。"
 
+msgid "Go Online"
+msgstr "線上說明文件"
+
 msgid "Cancel the download of the templates."
 msgstr "取消下載樣板。"
 
@@ -7014,9 +7020,6 @@ msgid ""
 "The Asset Library requires an online connection and involves sending data "
 "over the internet."
 msgstr "素材庫需要網路連線，並涉及透過網際網路傳送資料。"
-
-msgid "Go Online"
-msgstr "線上說明文件"
 
 msgid "Failed to get repository configuration."
 msgstr "無法取得儲存庫配置。"
@@ -13764,9 +13767,6 @@ msgstr "功能標籤"
 
 msgid "Pick Root Node Type"
 msgstr "選取根節點型別"
-
-msgid "Pick"
-msgstr "選取"
 
 msgid "Scene name is empty."
 msgstr "場景名稱為空。"

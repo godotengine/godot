@@ -125,7 +125,7 @@
 # Hugo cartier <hugo.toticartier@gmail.com>, 2023.
 # Rémy Lapointe <remy-lapointe@hotmail.ca>, 2023.
 # "Dimitri A." <dimitripilot3@gmail.com>, 2023.
-# Donovan Cartier <donovan.cartier0@gmail.com>, 2023.
+# Donovan Cartier <donovan.cartier0@gmail.com>, 2023, 2025.
 # Rémi Verschelde <remi@godotengine.org>, 2023, 2024.
 # Nifou <nifou@mailfence.com>, 2023.
 # Antonia Carrier <carrier.antonia@gmail.com>, 2023.
@@ -185,13 +185,14 @@
 # aioshiro <aioshiro57@proton.me>, 2025.
 # Valentin Pecatte <v.pecatte@gmail.com>, 2025.
 # xpeuvr327 <phucbaodomi@gmail.com>, 2025.
+# Alastair L <alockepublic+weblate@proton.me>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-03-02 03:07+0000\n"
-"Last-Translator: xpeuvr327 <phucbaodomi@gmail.com>\n"
+"PO-Revision-Date: 2025-03-10 12:20+0000\n"
+"Last-Translator: Alastair L <alockepublic+weblate@proton.me>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/godot-engine/godot/"
 "fr/>\n"
 "Language: fr\n"
@@ -1680,6 +1681,9 @@ msgstr "Délier les Arguments du Signal :"
 
 msgid "Receiver Method:"
 msgstr "Méthode du récepteur :"
+
+msgid "Pick"
+msgstr "Choisir"
 
 msgid "Advanced"
 msgstr "Options avancées"
@@ -5180,6 +5184,9 @@ msgstr "Installer depuis un fichier"
 msgid "Install templates from a local file."
 msgstr "Installer des modèles d'exportation depuis un fichier local."
 
+msgid "Go Online"
+msgstr "Passer en mode en ligne"
+
 msgid "Cancel the download of the templates."
 msgstr "Annuler le téléchargement des modèles d'exportation."
 
@@ -6115,7 +6122,7 @@ msgid ""
 "performance impact:"
 msgstr ""
 "Le démarrage automatique est activé pour les profileurs suivants, ce qui peut "
-"avoir un impact sur la performance:"
+"avoir un impact sur la performance :"
 
 msgid "Network Profiler"
 msgstr "Profileur réseau"
@@ -6128,7 +6135,7 @@ msgstr ""
 "Godot a ouvert le projet en Mode Récupération, qui est un mode spécial qui "
 "peut aider à récupérer des projets qui plantent le moteur lors de "
 "l'initialisation. Les fonctionnalités suivantes ont été temporairements "
-"désactivées:"
+"désactivées :"
 
 msgid "Automatic scene restoring"
 msgstr "Récupération de scène automatique"
@@ -6253,6 +6260,16 @@ msgstr ""
 "Date de la validation Git : %s\n"
 "Cliquez pour copier les informations de version."
 
+msgid ""
+"The root node of a scene is recommended to not be transformed, since "
+"instances of the scene will usually override this. Reset the transform and "
+"reload the scene to remove this warning."
+msgstr ""
+"Il n'est pas recommandé de changer la transformation d'un nœud racine d'une "
+"scène, car généralement les instances de la scène la remplaceront. "
+"Réinitialisez la transformation et rechargez la scène pour retirer cet "
+"avertissement."
+
 msgid "Toggle Visible"
 msgstr "Rendre visible"
 
@@ -6371,6 +6388,14 @@ msgstr "Avertissement de configuration de nœud !"
 
 msgid "Revoke"
 msgstr "Révoquer"
+
+msgid ""
+"This dialog can also be enabled/disabled in the Editor Settings: Docks > "
+"Scene Tree > Ask Before Revoking Unique Name."
+msgstr ""
+"Cette boîte de dialogue peut aussi être activée/désactivée dans les "
+"Paramètres de l'éditeur : Docks > Arborescence de scène > Ask Before Revoking "
+"Unique Name."
 
 msgid "Allowed:"
 msgstr "Autorisé :"
@@ -7861,9 +7886,6 @@ msgstr ""
 "La Bibliothèque d'Assets nécessite une connexion internet et implique l'envoi "
 "de données par Internet."
 
-msgid "Go Online"
-msgstr "Passer en mode en ligne"
-
 msgid "Failed to get repository configuration."
 msgstr "Échec de récupération de la configuration du répertoire."
 
@@ -8837,11 +8859,142 @@ msgstr "Variation"
 msgid "Unable to preview font"
 msgstr "Impossible de prévisualiser la police"
 
+msgid "Game starting..."
+msgstr "Lancement du jeu en cours..."
+
+msgid "Game running not embedded."
+msgstr "Le jeu est lancé en mode non intégré."
+
 msgid "Press play to start the game."
 msgstr "Appuyez sur jouer pour démarrer le jeu."
 
+msgid "Embedding is disabled."
+msgstr "L'intégration du jeu est désactivée."
+
+msgid ""
+"Game embedding not available on Wayland.\n"
+"Wayland can be disabled in the Editor Settings (Run > Platforms > Linux/*BSD "
+"> Prefer Wayland)."
+msgstr ""
+"Le jeu en mode intégré n'est pas disponible sur Wayland.\n"
+"Wayland peut être désactivé dans les Paramètres de l'éditeur (Exécuter > "
+"Plateformes > Linux/*BSD > Préférer Wayland)."
+
 msgid "Game embedding not available on your OS."
 msgstr "La prévisualisation du jeu n'est pas disponible sur votre OS."
+
+msgid ""
+"Game embedding not available for the Display Server: '%s'.\n"
+"Display Server can be modified in the Project Settings (Display > Display "
+"Server > Driver)."
+msgstr ""
+"Le jeu en mode intégré n'est pas disponible pour ce serveur d'affichage : "
+"'%s'.\n"
+"Le serveur d'affichage peut être modifié dans les Paramètres du projet "
+"(Affichage > Affichage serveur > Pilote)."
+
+msgid ""
+"Game embedding not available when the game starts minimized.\n"
+"Consider overriding the window mode project setting with the editor feature "
+"tag to Windowed to use game embedding while leaving the exported project "
+"intact."
+msgstr ""
+"Le jeu en mode intégré n'est pas disponible quand le jeu démarre en fenêtre "
+"minimisée.\n"
+"Envisagez de surcharger le mode de fenêtre du projet avec la valeur Windowed "
+"en utilisant le tag de fonctionnalité \"editor\" afin d'utiliser le jeu en "
+"mode intégré tout en laissant intact le projet exporté."
+
+msgid ""
+"Game embedding not available when the game starts maximized.\n"
+"Consider overriding the window mode project setting with the editor feature "
+"tag to Windowed to use game embedding while leaving the exported project "
+"intact."
+msgstr ""
+"Le jeu en mode intégré n'est pas disponible quand le jeu démarre en fenêtre "
+"maximisée.\n"
+"Envisagez de surcharger le mode de fenêtre du projet avec la valeur Windowed "
+"en utilisant le tag de fonctionnalité \"editor\" afin d'utiliser le jeu en "
+"mode intégré tout en laissant intact le projet exporté."
+
+msgid ""
+"Game embedding not available when the game starts in fullscreen.\n"
+"Consider overriding the window mode project setting with the editor feature "
+"tag to Windowed to use game embedding while leaving the exported project "
+"intact."
+msgstr ""
+"Le jeu en mode intégré n'est pas disponible quand le jeu démarre en plein "
+"écran.\n"
+"Envisagez de surcharger le mode de fenêtre du projet avec la valeur Windowed "
+"en utilisant le tag de fonctionnalité \"editor\" afin d'utiliser le jeu en "
+"mode intégré tout en laissant intact le projet exporté."
+
+msgid "Game embedding not available in single window mode."
+msgstr ""
+"Le jeu en mode intégré n'est pas disponible avec le mode fenêtre unique."
+
+msgid "Suspend"
+msgstr "Suspendre"
+
+msgid "Allow game input."
+msgstr "Autoriser les entrées du jeu."
+
+msgid ""
+"Disable game input and allow to select Node2Ds, Controls, and manipulate the "
+"2D camera."
+msgstr ""
+"Désactiver les entrées du jeu et permettre de sélectionner les Node2Ds et les "
+"Controls, ainsi que de manipuler la caméra 2D."
+
+msgid ""
+"Disable game input and allow to select Node3Ds and manipulate the 3D camera."
+msgstr ""
+"Désactiver les entrées du jeu et permettre de sélectionner les Node3Ds ainsi "
+"que de manipuler la caméra 3D."
+
+msgid "Toggle Selection Visibility"
+msgstr "Basculer la visibilité de la sélection"
+
+msgid "Camera Override Options"
+msgstr "Options de surcharge de la caméra"
+
+msgid "Reset 2D Camera"
+msgstr "Réinitialiser la caméra 2D"
+
+msgid "Reset 3D Camera"
+msgstr "Réinitialiser la caméra 3D"
+
+msgid "Manipulate In-Game"
+msgstr "Manipuler en jeu"
+
+msgid "Manipulate From Editors"
+msgstr "Manipuler depuis les éditeurs"
+
+msgid ""
+"Embedded game size is based on project settings.\n"
+"The 'Keep Aspect' mode is used when the Game Workspace is smaller than the "
+"desired size."
+msgstr ""
+"La taille du jeu en mode intégré est basée sur les paramètres du projet.\n"
+"Le mode \"Conserver les proportions\" est utilisé quand l'espace de travail "
+"du jeu est plus petit que la taille désirée."
+
+msgid "Keep the aspect ratio of the embedded game."
+msgstr "Conserver les proportions du jeu en mode intégré."
+
+msgid "Embedded game size stretches to fit the Game Workspace."
+msgstr ""
+"La taille du jeu en mode intégré s'étire pour s'adapter à l'espace de travail "
+"du jeu."
+
+msgid "Embedding Options"
+msgstr "Options du mode intégré"
+
+msgid "Embed Game on Next Play"
+msgstr "Intégrer le jeu lors du prochain lancement"
+
+msgid "Make Game Workspace Floating on Next Play"
+msgstr "Rendre l'espace de travail du jeu flottant lors du prochain lancement"
 
 msgid "Change AudioStreamPlayer3D Emission Angle"
 msgstr "Changer l'angle d'émission AudioStreamPlayer3D"
@@ -14482,6 +14635,24 @@ msgstr ""
 "Supprimer tous les projets manquants de la liste ?\n"
 "Le contenu des dossiers du projet ne sera pas modifié."
 
+msgid ""
+"It looks like Godot crashed when opening this project the last time. If "
+"you're having problems editing this project, you can try to open it in "
+"Recovery Mode."
+msgstr ""
+"On dirait que Godot a planté durant la dernière ouverture du projet. Si vous "
+"avez des problèmes pour éditer ce projet, vous pouvez essayer de l'ouvrir en "
+"mode Récupération."
+
+msgid ""
+"Recovery Mode is a special mode that may help to recover projects that crash "
+"the engine during initialization. This mode temporarily disables the "
+"following features:"
+msgstr ""
+"Le mode Récupération est un mode spécial qui peut aider à récupérer des "
+"projets qui plantent le moteur durant l'initialisation. Ce mode désactive "
+"temporairement les fonctionnalités suivantes :"
+
 msgid "Couldn't load project at '%s'. It may be missing or corrupted."
 msgstr ""
 "N'a pas pu charger le projet à \"%s\". Il peut être manquant ou corrompu."
@@ -14554,8 +14725,8 @@ msgid ""
 "Asset Library!"
 msgstr ""
 "Commencez par en créer un nouveau,\n"
-"en important un qui existe, ou en téléchargeant un modèle de projet depuis la "
-"bibliothèque d'actifs !"
+"en importer un qui existe, ou en téléchargeant un modèle de projet depuis la "
+"bibliothèque d'assets !"
 
 msgid "Create New Project"
 msgstr "Créer un nouveau projet"
@@ -15066,9 +15237,6 @@ msgstr "Balises de fonctionnalités"
 
 msgid "Pick Root Node Type"
 msgstr "Choisir le type de nœud racine"
-
-msgid "Pick"
-msgstr "Choisir"
 
 msgid "Scene name is empty."
 msgstr "Le nom de la scène est vide."
@@ -15760,41 +15928,8 @@ msgstr ""
 msgid "Restart & Upgrade"
 msgstr "Redémarrer et mettre à jour"
 
-msgid ""
-"As of Godot 4.4, scenes and resources use UIDs to reference scripts and "
-"shaders.\n"
-"\n"
-"Normally, this update is applied to a single scene or resource once you save "
-"it in Godot 4.4 for the first time. If you have a lot of scenes and/or "
-"resources, doing this manually may be time-consuming. This tool will update "
-"all of the project's scenes and resources at once.\n"
-"\n"
-"Click \"Restart & Upgrade\" to restart the editor and update all of the "
-"scenes and resources in this project. Depending on the project size, it may "
-"take several minutes.\n"
-"\n"
-"Note: Please make sure you have your project backed up before running the "
-"tool, to avoid the possibility of data loss. Additionally, make sure to "
-"commit all .uid files into version control (and do not add them to ignore-"
-"lists like .gitignore)."
-msgstr ""
-"Avec la version 4.4 de Godot, les scènes et les ressources utilisent des UIDs "
-"pour référencer les scripts et les shaders.\n"
-"\n"
-"Normalement, cette mise à jour est appliquée à une scène ou à une ressource "
-"une fois sauvegardée avec Godot 4.4 pour la première fois. Si vous avez "
-"beaucoup de scènes et/ou de ressources, faire cela manuellement peut être "
-"chronophage. Cet outil va mettre à jour chaque scène et ressource du projet.\n"
-"\n"
-"Cliquez sur « Redémarrer et mettre à jour » pour redémarrer l'éditeur et "
-"mettre à jour toutes les scènes et ressources de ce projet. Cela peut prendre "
-"plusieurs minutes en fonction de la taille de votre projet.\n"
-"\n"
-"Note : Veuillez vous assurer qu'une copie de votre projet est sauvegardée "
-"avant de lancer cet outil, pour éviter la possibilité de perte de données. De "
-"plus, veuillez commit tous les fichiers .uid dans les logiciels de gestion de "
-"versions (et ne les ajoutez pas dans les listes pour ignorer les fichiers "
-"comme .gitignore)."
+msgid "Learn More"
+msgstr "En savoir plus"
 
 msgid "Make this panel floating in the screen %d."
 msgstr "Rendre ce panneau flottant sur l'écran %d."
@@ -15808,6 +15943,19 @@ msgstr ""
 
 msgid "Select Screen"
 msgstr "Sélectionner un écran"
+
+msgid ""
+"The CSGShape3D has an empty shape.\n"
+"CSGShape3D empty shapes typically occur because the mesh is not manifold.\n"
+"A manifold mesh forms a solid object without gaps, holes, or loose edges.\n"
+"Each edge must be a member of exactly two faces."
+msgstr ""
+"Le CSGShape3D a une forme vide.\n"
+"Les formes vides de CSGShape3D se produisent généralement parce que le "
+"maillage n'est pas manifold.\n"
+"Un maillage manifold forme un objet solide sans écarts, trous ou arrêtes "
+"isolées.\n"
+"Chaque arrête doit être un membre d'exactement deux faces."
 
 msgid "Change Torus Inner Radius"
 msgstr "Changer le rayon intérieur de la tour"

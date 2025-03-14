@@ -1065,6 +1065,9 @@ msgstr "Modo de Reposo con Procesador en Bajo Consumo (µseg)"
 msgid "Unfocused Low Processor Mode Sleep (µsec)"
 msgstr "Modo de Reposo con Procesador en Bajo Consumo no Enfocado (µseg)"
 
+msgid "V-Sync Mode"
+msgstr "Modo V-Sync"
+
 msgid "Update Continuously"
 msgstr "Actualizar Continuamente"
 
@@ -1124,6 +1127,9 @@ msgstr "Theme"
 
 msgid "Icon and Font Color"
 msgstr "Color de Fuente e Ícono"
+
+msgid "Contrast"
+msgstr "Contraste"
 
 msgid "Draw Extra Borders"
 msgstr "Dibujar Bordes extras"
@@ -1310,6 +1316,9 @@ msgstr "Editor de Textos"
 
 msgid "Line Spacing"
 msgstr "Espaciado de Línea"
+
+msgid "Color Theme"
+msgstr "Tema de Color"
 
 msgid "Appearance"
 msgstr "Apariencia"
@@ -1845,9 +1854,6 @@ msgstr "Restaurar Shaders al Cargar"
 msgid "Visual Editors"
 msgstr "Editores Visuales"
 
-msgid "Color Theme"
-msgstr "Tema de Color"
-
 msgid "Minimap Opacity"
 msgstr "Opacidad del Minimapa"
 
@@ -1875,8 +1881,14 @@ msgstr "SCP"
 msgid "Window Placement"
 msgstr "Ubicación de la Ventana"
 
+msgid "Rect"
+msgstr "Rect"
+
 msgid "Rect Custom Position"
 msgstr "Posición Personalizada del Rect"
+
+msgid "Screen"
+msgstr "Pantalla"
 
 msgid "Auto Save"
 msgstr "Guardado Automático"
@@ -1886,6 +1898,9 @@ msgstr "Guardar Antes de Ejecutar"
 
 msgid "Output"
 msgstr "Salida"
+
+msgid "Font Size"
+msgstr "Tamaño de Fuente"
 
 msgid "Always Clear Output on Play"
 msgstr "Siempre Limpiar la Salida en la Reproducción"
@@ -2928,9 +2943,6 @@ msgstr "Manipulador"
 
 msgid "Orientation"
 msgstr "Orientación"
-
-msgid "V-Sync Mode"
-msgstr "Modo V-Sync"
 
 msgid "Output Latency"
 msgstr "Latencia de Salida"
@@ -4210,9 +4222,6 @@ msgstr "Modo XR"
 msgid "Swipe to Dismiss"
 msgstr "Deslizar para Descartar"
 
-msgid "Screen"
-msgstr "Pantalla"
-
 msgid "Immersive Mode"
 msgstr "Modo Inmersivo"
 
@@ -4803,9 +4812,6 @@ msgstr "Tipo de Reproducción"
 
 msgid "Copy Mode"
 msgstr "Modo de Copia"
-
-msgid "Rect"
-msgstr "Rect"
 
 msgid "Anchor Mode"
 msgstr "Modo de Anclaje"
@@ -5957,9 +5963,6 @@ msgstr "Modular Contorno"
 
 msgid "Font"
 msgstr "Fuente"
-
-msgid "Font Size"
-msgstr "Tamaño de Fuente"
 
 msgid "Horizontal Alignment"
 msgstr "Alineación Horizontal"
@@ -8817,9 +8820,6 @@ msgstr "Ajustes"
 
 msgid "Brightness"
 msgstr "Luminosidad"
-
-msgid "Contrast"
-msgstr "Contraste"
 
 msgid "Saturation"
 msgstr "Saturación"

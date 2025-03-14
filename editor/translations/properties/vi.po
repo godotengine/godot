@@ -682,6 +682,9 @@ msgstr "Chỉnh sửa Kiểu Vector ngang"
 msgid "Theme"
 msgstr "Tông màu"
 
+msgid "Contrast"
+msgstr "Tương phản"
+
 msgid "Draw Extra Borders"
 msgstr "Vẽ Đường viền Bổ sung"
 
@@ -1077,6 +1080,9 @@ msgstr "SSH"
 
 msgid "Window Placement"
 msgstr "Vị trí cửa sổ"
+
+msgid "Screen"
+msgstr "Màn hình"
 
 msgid "Auto Save"
 msgstr "Tự động lưu"
@@ -1938,9 +1944,6 @@ msgstr "Hiển thị trong Android TV"
 
 msgid "Show as Launcher App"
 msgstr "Hiển thị dưới dạng ứng dụng Launcher"
-
-msgid "Screen"
-msgstr "Màn hình"
 
 msgid "Allow"
 msgstr "Cho phép"
@@ -3306,9 +3309,6 @@ msgstr "Độ dị hướng"
 
 msgid "Adjustments"
 msgstr "Điều chỉnh"
-
-msgid "Contrast"
-msgstr "Tương phản"
 
 msgid "Features"
 msgstr "Tính năng"
