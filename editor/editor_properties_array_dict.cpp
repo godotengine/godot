@@ -588,7 +588,7 @@ bool EditorPropertyArray::_is_drop_valid(const Dictionary &p_drag_data) const {
 			StringName ftype = dir->get_file_type(idx_in_dir);
 			String script_class = dir->get_file_resource_script_class(idx_in_dir);
 
-			for (String at : allowed_type.split(",")) {
+			for (String at : allowed_type.split(",", false)) {
 				at = at.strip_edges();
 				// Fail if one of the files is not of allowed type.
 				if (!ClassDB::is_parent_class(ftype, at) && !EditorNode::get_editor_data().script_class_is_parent(script_class, at)) {
@@ -613,7 +613,7 @@ bool EditorPropertyArray::_is_drop_valid(const Dictionary &p_drag_data) const {
 			script_class = EditorNode::get_singleton()->get_object_custom_type_name(res->get_script());
 		}
 
-		for (String at : allowed_type.split(",")) {
+		for (String at : allowed_type.split(",", false)) {
 			at = at.strip_edges();
 			if (ClassDB::is_parent_class(res_type, at) || EditorNode::get_editor_data().script_class_is_parent(script_class, at)) {
 				return true;
@@ -631,7 +631,7 @@ bool EditorPropertyArray::_is_drop_valid(const Dictionary &p_drag_data) const {
 			if (subtype_hint_string == "NodePath") {
 				return true;
 			} else {
-				for (String ast : subtype_hint_string.split(",")) {
+				for (String ast : subtype_hint_string.split(",", false)) {
 					ast = ast.strip_edges();
 					allowed_subtype_array.append(ast);
 				}
