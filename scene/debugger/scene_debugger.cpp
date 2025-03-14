@@ -36,12 +36,16 @@
 #include "core/math/math_fieldwise.h"
 #include "core/object/script_language.h"
 #include "core/templates/local_vector.h"
+#ifndef PHYSICS_2D_DISABLED
 #include "scene/2d/physics/collision_object_2d.h"
 #include "scene/2d/physics/collision_polygon_2d.h"
 #include "scene/2d/physics/collision_shape_2d.h"
+#endif // PHYSICS_2D_DISABLED
 #ifndef _3D_DISABLED
+#ifndef PHYSICS_3D_DISABLED
 #include "scene/3d/physics/collision_object_3d.h"
 #include "scene/3d/physics/collision_shape_3d.h"
+#endif // PHYSICS_3D_DISABLED
 #include "scene/3d/visual_instance_3d.h"
 #include "scene/resources/3d/convex_polygon_shape_3d.h"
 #include "scene/resources/surface_tool.h"
