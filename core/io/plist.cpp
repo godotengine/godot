@@ -631,7 +631,7 @@ bool PList::load_file(const String &p_filename) {
 	unsigned char magic[8];
 	fb->get_buffer(magic, 8);
 
-	if (String((const char *)magic, 8) == "bplist00") {
+	if (String::ascii(Span((const char *)magic, 8)) == "bplist00") {
 		fb->seek_end(-26);
 		trailer.offset_size = fb->get_8();
 		trailer.ref_size = fb->get_8();

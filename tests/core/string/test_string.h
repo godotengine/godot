@@ -59,7 +59,7 @@ TEST_CASE("[String] Assign from Latin-1 char string (copycon)") {
 	const String &t1(s);
 	CHECK(u32scmp(t1.get_data(), U"Sheep") == 0);
 
-	String t2 = String("Sheep", 3);
+	String t2 = String::latin1(Span("Sheep", 3));
 	CHECK(u32scmp(t2.get_data(), U"She") == 0);
 }
 
