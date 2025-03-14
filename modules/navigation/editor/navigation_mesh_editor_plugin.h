@@ -30,8 +30,6 @@
 
 #pragma once
 
-#ifdef TOOLS_ENABLED
-
 #include "editor/plugins/editor_plugin.h"
 
 class AcceptDialog;
@@ -82,5 +80,3 @@ public:
 	NavigationMeshEditorPlugin();
 	~NavigationMeshEditorPlugin();
 };
-
-#endif // TOOLS_ENABLED

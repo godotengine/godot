@@ -30,8 +30,6 @@
 
 #pragma once
 
-#ifdef TOOLS_ENABLED
-
 #include "../grid_map.h"
 
 #include "editor/plugins/editor_plugin.h"
@@ -298,5 +296,3 @@ public:
 	GridMapEditorPlugin();
 	~GridMapEditorPlugin();
 };
-
-#endif // TOOLS_ENABLED

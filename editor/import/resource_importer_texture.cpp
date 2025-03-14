@@ -83,9 +83,7 @@ void ResourceImporterTexture::_texture_reimport_normal(const Ref<CompressedTextu
 }
 
 inline void ResourceImporterTexture::_print_callback_message(const String &p_message) {
-#ifdef TOOLS_ENABLED
 	EditorToaster::get_singleton()->popup_str(p_message);
-#endif
 	print_line(p_message);
 }
 

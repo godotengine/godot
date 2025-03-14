@@ -30,8 +30,6 @@
 
 #include "editor_import_blend_runner.h"
 
-#ifdef TOOLS_ENABLED
-
 #include "core/io/http_client.h"
 #include "editor/editor_file_system.h"
 #include "editor/editor_node.h"
@@ -392,5 +390,3 @@ EditorImportBlendRunner::EditorImportBlendRunner() {
 
 	EditorFileSystem::get_singleton()->connect("resources_reimported", callable_mp(this, &EditorImportBlendRunner::_resources_reimported));
 }
-
-#endif // TOOLS_ENABLED

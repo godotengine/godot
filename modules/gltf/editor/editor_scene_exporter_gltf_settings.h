@@ -30,8 +30,6 @@
 
 #pragma once
 
-#ifdef TOOLS_ENABLED
-
 #include "../gltf_document.h"
 
 class EditorSceneExporterGLTFSettings : public RefCounted {
@@ -62,5 +60,3 @@ public:
 	double get_bake_fps() const;
 	void set_bake_fps(const double p_bake_fps);
 };
-
-#endif // TOOLS_ENABLED
