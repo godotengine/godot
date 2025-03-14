@@ -75,6 +75,10 @@
 		<member name="audio_bus_override" type="bool" setter="set_audio_bus_override" getter="is_overriding_audio_bus" default="false">
 			If [code]true[/code], the area's audio bus overrides the default audio bus.
 		</member>
+		<member name="audio_sends" type="Dictionary" setter="set_audio_sends" getter="get_audio_sends" default="{}">
+			The names of the area's audio sends.
+			[b]Note:[/b] Has no effect when using the [code]sample[/code] playback type.
+		</member>
 		<member name="gravity" type="float" setter="set_gravity" getter="get_gravity" default="980.0">
 			The area's gravity intensity (in pixels per second squared). This value multiplies the gravity direction. This is useful to alter the force of gravity without altering its direction.
 		</member>
