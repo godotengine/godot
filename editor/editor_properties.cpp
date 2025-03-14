@@ -2732,6 +2732,13 @@ void EditorPropertyNodePath::_node_assign() {
 	scene_tree->popup_scenetree_dialog(n, get_base_node());
 }
 
+void EditorPropertyNodePath::_assign_draw() {
+	if (dropping) {
+		Color color = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
+		assign->draw_rect(Rect2(Point2(), assign->get_size()), color, false);
+	}
+}
+
 void EditorPropertyNodePath::_update_menu() {
 	const NodePath &np = _get_node_path();
 
@@ -2909,6 +2916,20 @@ void EditorPropertyNodePath::_notification(int p_what) {
 			menu->get_popup()->set_item_icon(ACTION_EDIT, get_editor_theme_icon(SNAME("Edit")));
 			menu->get_popup()->set_item_icon(ACTION_SELECT, get_editor_theme_icon(SNAME("ExternalLink")));
 		} break;
+
+		case NOTIFICATION_DRAG_BEGIN: {
+			if (!is_read_only() && is_drop_valid(get_viewport()->gui_get_drag_data())) {
+				dropping = true;
+				assign->queue_redraw();
+			}
+		} break;
+
+		case NOTIFICATION_DRAG_END: {
+			if (dropping) {
+				dropping = false;
+				assign->queue_redraw();
+			}
+		} break;
 	}
 }
 
@@ -2949,6 +2970,7 @@ EditorPropertyNodePath::EditorPropertyNodePath() {
 	assign->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	assign->set_expand_icon(true);
 	assign->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyNodePath::_node_assign));
+	assign->connect(SceneStringName(draw), callable_mp(this, &EditorPropertyNodePath::_assign_draw));
 	SET_DRAG_FORWARDING_CD(assign, EditorPropertyNodePath);
 	hbc->add_child(assign);
 
