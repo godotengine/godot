@@ -68,19 +68,11 @@ void godot_icall_GodotSharpDirs_MonoUserDir(godot_string *r_dest) {
 }
 
 void godot_icall_GodotSharpDirs_BuildLogsDirs(godot_string *r_dest) {
-#ifdef TOOLS_ENABLED
 	memnew_placement(r_dest, String(GodotSharpDirs::get_build_logs_dir()));
-#else
-	return nullptr;
-#endif
 }
 
 void godot_icall_GodotSharpDirs_DataEditorToolsDir(godot_string *r_dest) {
-#ifdef TOOLS_ENABLED
 	memnew_placement(r_dest, String(GodotSharpDirs::get_data_editor_tools_dir()));
-#else
-	return nullptr;
-#endif
 }
 
 void godot_icall_GodotSharpDirs_CSharpProjectName(godot_string *r_dest) {

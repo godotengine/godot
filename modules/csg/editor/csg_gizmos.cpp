@@ -30,8 +30,6 @@
 
 #include "csg_gizmos.h"
 
-#ifdef TOOLS_ENABLED
-
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_undo_redo_manager.h"
@@ -508,5 +506,3 @@ EditorPluginCSG::EditorPluginCSG() {
 	csg_shape_editor = memnew(CSGShapeEditor);
 	EditorNode::get_singleton()->get_gui_base()->add_child(csg_shape_editor);
 }
-
-#endif // TOOLS_ENABLED

@@ -30,8 +30,6 @@
 
 #pragma once
 
-#ifdef TOOLS_ENABLED
-
 #include "../csg_shape.h"
 
 #include "editor/plugins/editor_plugin.h"
@@ -103,5 +101,3 @@ public:
 
 	EditorPluginCSG();
 };
-
-#endif // TOOLS_ENABLED

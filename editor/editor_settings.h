@@ -204,9 +204,7 @@ public:
 
 	void notify_changes();
 
-#ifdef TOOLS_ENABLED
 	virtual void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const override;
-#endif
 
 	EditorSettings();
 };
