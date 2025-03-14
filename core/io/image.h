@@ -280,6 +280,7 @@ protected:
 	Error _compress_from_channels_bind_compat_115003(CompressMode p_mode, UsedChannels p_channels, ASTCFormat p_format);
 	Vector<uint8_t> _save_exr_to_buffer_bind_compat_117800(bool p_grayscale = false) const;
 	Error _save_exr_bind_compat_117800(const String &p_path, bool p_grayscale = false) const;
+	Error _generate_mipmaps_bind_compat_104289(bool p_renormalize);
 
 	static void _bind_compatibility_methods();
 #endif
@@ -313,6 +314,10 @@ private:
 	Error _load_from_buffer(const Vector<uint8_t> &p_array, ImageMemLoadFunc p_loader);
 
 	_FORCE_INLINE_ void _generate_mipmap_from_format(Image::Format p_format, const uint8_t *p_src, uint8_t *p_dst, uint32_t p_width, uint32_t p_height, bool p_renormalize = false);
+
+	float _alpha_test_coverage(const uint8_t *p_dst, uint32_t p_width, uint32_t p_height, float p_alpha_ref, float p_alpha_scale) const;
+	void _scale_alpha_to_coverage(uint8_t *p_dst, uint32_t p_width, uint32_t p_height, float p_desired_coverage, float p_alpha_ref);
+	void _scale_mipmap_alpha_bias(uint8_t *p_dst, uint32_t p_width, uint32_t p_height, float p_scale, float p_bias);
 
 	static void average_4_uint8(uint8_t &p_out, const uint8_t &p_a, const uint8_t &p_b, const uint8_t &p_c, const uint8_t &p_d);
 	static void average_4_float(float &p_out, const float &p_a, const float &p_b, const float &p_c, const float &p_d);
@@ -364,7 +369,7 @@ public:
 	void flip_y();
 
 	// Generate a mipmap chain of an image (creates an image 1/4 the size, with averaging of 4->1).
-	Error generate_mipmaps(bool p_renormalize = false);
+	Error generate_mipmaps(bool p_renormalize = false, bool p_preserve_alpha_test_coverage = false, float p_alpha_test_threshold = 0.5);
 
 	Error generate_mipmap_roughness(RoughnessChannel p_roughness_channel, const Ref<Image> &p_normal_map);
 
