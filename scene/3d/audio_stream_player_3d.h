@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "core/variant/typed_dictionary.h"
 #include "scene/3d/node_3d.h"
 #include "servers/audio_server.h"
 
@@ -71,6 +72,8 @@ private:
 	SafeNumeric<float> setplay{ -1.0 };
 	Ref<AudioStreamPlayback> setplayback;
 
+	Vector<AudioFrame> volume_vector;
+
 	AttenuationModel attenuation_model = ATTENUATION_INVERSE_DISTANCE;
 	float unit_size = 10.0;
 	float max_db = 3.0;
@@ -91,11 +94,11 @@ private:
 
 	void _set_playing(bool p_enable);
 	bool _is_active() const;
-	StringName _get_actual_bus();
+	TypedDictionary<StringName, float> _get_actual_buses();
 #ifndef PHYSICS_3D_DISABLED
 	Area3D *_get_overriding_area();
 #endif // PHYSICS_3D_DISABLED
-	Vector<AudioFrame> _update_panning();
+	void _update_panning();
 
 	uint32_t area_mask = 1;
 
@@ -110,7 +113,6 @@ private:
 	float linear_attenuation = 0;
 
 	float max_distance = 0.0;
-	bool was_further_than_max_distance_last_frame = false;
 
 	Ref<VelocityTracker3D> velocity_tracker;
 
@@ -162,6 +164,9 @@ public:
 
 	void set_bus(const StringName &p_bus);
 	StringName get_bus() const;
+
+	void set_sends(const TypedDictionary<StringName, float> &p_sends);
+	TypedDictionary<StringName, float> get_sends() const;
 
 	void set_max_polyphony(int p_max_polyphony);
 	int get_max_polyphony() const;
