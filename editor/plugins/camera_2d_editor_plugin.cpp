@@ -40,39 +40,157 @@
 #include "scene/gui/menu_button.h"
 
 void Camera2DEditor::edit(Camera2D *p_camera) {
-	if (p_camera == selected_camera) {
+if (p_camera == selected_camera) {
 		return;
 	}
+	const Callable update_overlays = callable_mp(plugin, &EditorPlugin::update_overlays);
+
+	if (selected_camera) {
+		selected_camera->disconnect(SceneStringName(draw), update_overlays);
+	}
 	selected_camera = p_camera;
+
+	if (selected_camera) {
+		selected_camera->connect(SceneStringName(draw), update_overlays);
+	}
+	plugin->update_overlays();
+}
+
+bool Camera2DEditor::forward_canvas_gui_input(const Ref<InputEvent> &p_event) {
+	if (!selected_camera || !selected_camera->is_limit_enabled()) {
+		return false;
+	}
+
+	Ref<InputEventMouseButton> mb = p_event;
+	if (mb.is_valid()) {
+		if (mb->get_button_index() == MouseButton::LEFT) {
+			if (mb->is_pressed()) {
+				const Rect2 limit_rect = selected_camera->get_limit_rect();
+				const Vector2 pos = CanvasItemEditor::get_singleton()->get_canvas_transform().affine_inverse().xform(mb->get_position());
+				drag_revert = limit_rect;
+
+				if (pos.y > limit_rect.position.y && pos.y < limit_rect.get_end().y) {
+					if (Math::abs(pos.x - limit_rect.position.x) < 8) {
+						drag_type = Drag::LEFT;
+						return true;
+					} else if (Math::abs(pos.x - limit_rect.get_end().x) < 8) {
+						drag_type = Drag::RIGHT;
+						return true;
+					}
+				} else if (pos.x > limit_rect.position.x && pos.x < limit_rect.get_end().x) {
+					if (Math::abs(pos.y - limit_rect.position.y) < 8) {
+						drag_type = Drag::TOP;
+						return true;
+					} else if (Math::abs(pos.y - limit_rect.get_end().y) < 8) {
+						drag_type = Drag::BOTTOM;
+						return true;
+					}
+				}
+
+				if (limit_rect.has_point(pos)) {
+					drag_type = Drag::CENTER;
+					center_drag_point = pos - limit_rect.position;
+					plugin->update_overlays();
+					return true;
+				}
+			} else if (drag_type != Drag::NONE) {
+				EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
+				ur->create_action(TTR("Edit Camera2D Limits"));
+				ur->add_do_method(selected_camera, "_set_limit_rect", selected_camera->get_limit_rect());
+				ur->add_do_method(this, "_update_overlays_if_needed", selected_camera);
+				ur->add_undo_method(selected_camera, "_set_limit_rect", drag_revert);
+				ur->add_undo_method(this, "_update_overlays_if_needed", selected_camera);
+				ur->commit_action(false);
+
+				drag_type = Drag::NONE;
+				return true;
+			}
+		} else if (drag_type != Drag::NONE && mb->get_button_index() == MouseButton::RIGHT && mb->is_pressed()) {
+			selected_camera->set_limit_rect(drag_revert);
+			drag_type = Drag::NONE;
+			plugin->update_overlays();
+			return true;
+		}
+		return false;
+	}
+
+	if (drag_type == Drag::NONE) {
+		return false;
+	}
+
+	Ref<InputEventMouseMotion> mm = p_event;
+	if (mm.is_valid()) {
+		Vector2 pos = CanvasItemEditor::get_singleton()->get_canvas_transform().affine_inverse().xform(mm->get_position());
+		pos = CanvasItemEditor::get_singleton()->snap_point(pos);
+
+		switch (drag_type) {
+			case Drag::LEFT: {
+				selected_camera->set_limit(SIDE_LEFT, MIN(selected_camera->get_limit(SIDE_RIGHT), pos.x));
+				plugin->update_overlays();
+			} break;
+
+			case Drag::RIGHT: {
+				selected_camera->set_limit(SIDE_RIGHT, MAX(selected_camera->get_limit(SIDE_LEFT), pos.x));
+				plugin->update_overlays();
+			} break;
+
+			case Drag::TOP: {
+				selected_camera->set_limit(SIDE_TOP, MIN(selected_camera->get_limit(SIDE_BOTTOM), pos.y));
+				plugin->update_overlays();
+			} break;
+
+			case Drag::BOTTOM: {
+				selected_camera->set_limit(SIDE_BOTTOM, MAX(selected_camera->get_limit(SIDE_TOP), pos.y));
+				plugin->update_overlays();
+			} break;
+
+			case Drag::CENTER: {
+				Rect2 target_rect = selected_camera->get_limit_rect();
+				target_rect.position = pos - center_drag_point;
+				selected_camera->set_limit_rect(target_rect);
+				plugin->update_overlays();
+			} break;
+		}
+		return true;
+	}
+
+	return false;
+}
+
+void Camera2DEditor::forward_canvas_draw_over_viewport(Control *p_overlay) {
+	if (!selected_camera || !selected_camera->is_limit_enabled()) {
+		return;
+	}
+	Rect2 limit_rect = selected_camera->get_limit_rect();
+	limit_rect = CanvasItemEditor::get_singleton()->get_canvas_transform().xform(limit_rect);
+	p_overlay->draw_rect(limit_rect, Color(1, 1, 0.25, 0.63), false, 3);
 }
 
 void Camera2DEditor::_menu_option(int p_option) {
 	switch (p_option) {
 		case MENU_SNAP_LIMITS_TO_VIEWPORT: {
 			EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
-			Rect2 prev_rect = selected_camera->get_limit_rect();
-			ur->create_action(TTR("Snap the Limits to the Viewport"), UndoRedo::MERGE_DISABLE, selected_camera);
-			ur->add_do_method(this, "_snap_limits_to_viewport");
-			ur->add_do_reference(selected_camera);
-			ur->add_undo_method(this, "_undo_snap_limits_to_viewport", prev_rect);
+			ur->create_action(TTR("Snap Camera2D Limits to the Viewport"), UndoRedo::MERGE_DISABLE, selected_camera);
+			ur->add_do_method(this, "_snap_limits_to_viewport", selected_camera);
+			ur->add_undo_method(selected_camera, "_set_limit_rect", selected_camera->get_limit_rect());
+			ur->add_undo_method(this, "_update_overlays_if_needed", selected_camera);
 			ur->commit_action();
 		} break;
 	}
 }
 
-void Camera2DEditor::_snap_limits_to_viewport() {
-	selected_camera->set_limit(SIDE_LEFT, 0);
-	selected_camera->set_limit(SIDE_TOP, 0);
-	selected_camera->set_limit(SIDE_RIGHT, GLOBAL_GET("display/window/size/viewport_width"));
-	selected_camera->set_limit(SIDE_BOTTOM, GLOBAL_GET("display/window/size/viewport_height"));
+void Camera2DEditor::_snap_limits_to_viewport(Camera2D *p_camera) {
+	p_camera->set_limit(SIDE_LEFT, 0);
+	p_camera->set_limit(SIDE_TOP, 0);
+	p_camera->set_limit(SIDE_RIGHT, GLOBAL_GET("display/window/size/viewport_width"));
+	p_camera->set_limit(SIDE_BOTTOM, GLOBAL_GET("display/window/size/viewport_height"));
+	_update_overlays_if_needed(p_camera);
 }
 
-void Camera2DEditor::_undo_snap_limits_to_viewport(const Rect2 &p_prev_rect) {
-	Point2 end = p_prev_rect.get_end();
-	selected_camera->set_limit(SIDE_LEFT, p_prev_rect.position.x);
-	selected_camera->set_limit(SIDE_TOP, p_prev_rect.position.y);
-	selected_camera->set_limit(SIDE_RIGHT, end.x);
-	selected_camera->set_limit(SIDE_BOTTOM, end.y);
+void Camera2DEditor::_update_overlays_if_needed(Camera2D *p_camera) {
+	if (p_camera == selected_camera) {
+		plugin->update_overlays();
+	}
 }
 
 void Camera2DEditor::_notification(int p_what) {
@@ -84,56 +202,24 @@ void Camera2DEditor::_notification(int p_what) {
 }
 
 void Camera2DEditor::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("_snap_limits_to_viewport"), &Camera2DEditor::_snap_limits_to_viewport);
-	ClassDB::bind_method(D_METHOD("_undo_snap_limits_to_viewport", "prev_rect"), &Camera2DEditor::_undo_snap_limits_to_viewport);
+	ClassDB::bind_method(D_METHOD("_snap_limits_to_viewport", "camera"), &Camera2DEditor::_snap_limits_to_viewport);
+	ClassDB::bind_method(D_METHOD("_update_overlays_if_needed", "camera"), &Camera2DEditor::_update_overlays_if_needed);
 }
 
-Camera2DEditor::Camera2DEditor() {
+Camera2DEditor::Camera2DEditor(EditorPlugin *p_plugin) {
+	plugin = p_plugin;
+
 	options = memnew(MenuButton);
-
-	CanvasItemEditor::get_singleton()->add_control_to_menu_panel(options);
-
 	options->set_text(TTRC("Camera2D"));
-
 	options->get_popup()->add_item(TTRC("Snap the Limits to the Viewport"), MENU_SNAP_LIMITS_TO_VIEWPORT);
 	options->set_switch_on_hover(true);
-
+	options->hide();
+	CanvasItemEditor::get_singleton()->add_control_to_menu_panel(options);
 	options->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &Camera2DEditor::_menu_option));
-
-	add_user_signal(MethodInfo("_editor_theme_changed"));
-}
-
-void Camera2DEditorPlugin::_update_approach_text_visibility() {
-	if (camera_2d_editor->selected_camera == nullptr) {
-		return;
-	}
-	approach_to_move_rect->set_visible(camera_2d_editor->selected_camera->is_limit_enabled());
-}
-
-void Camera2DEditorPlugin::_editor_theme_changed() {
-	approach_to_move_rect->remove_theme_color_override(SceneStringName(font_color));
-	approach_to_move_rect->add_theme_color_override(SceneStringName(font_color), Color(0.6f, 0.6f, 0.6f, 1));
-	approach_to_move_rect->add_theme_color_override("font_shadow_color", Color(0.2f, 0.2f, 0.2f, 1));
-	approach_to_move_rect->add_theme_constant_override("shadow_outline_size", 1 * EDSCALE);
-	approach_to_move_rect->add_theme_constant_override("line_spacing", 0);
 }
 
 void Camera2DEditorPlugin::edit(Object *p_object) {
-	Callable update_text = callable_mp(this, &Camera2DEditorPlugin::_update_approach_text_visibility);
-	StringName update_signal = SNAME("_camera_limit_enabled_updated");
-
-	Camera2D *prev_cam = camera_2d_editor->selected_camera;
-	if (prev_cam != nullptr && prev_cam->is_connected(update_signal, update_text)) {
-		prev_cam->disconnect(update_signal, update_text);
-	}
-	Camera2D *cam = Object::cast_to<Camera2D>(p_object);
-	if (cam != nullptr) {
-		camera_2d_editor->edit(cam);
-		_update_approach_text_visibility();
-		if (!cam->is_connected(update_signal, update_text)) {
-			cam->connect(update_signal, update_text);
-		}
-	}
+	camera_2d_editor->edit(Object::cast_to<Camera2D>(p_object));
 }
 
 bool Camera2DEditorPlugin::handles(Object *p_object) const {
@@ -143,24 +229,12 @@ bool Camera2DEditorPlugin::handles(Object *p_object) const {
 void Camera2DEditorPlugin::make_visible(bool p_visible) {
 	if (p_visible) {
 		camera_2d_editor->options->show();
-		approach_to_move_rect->show();
 	} else {
 		camera_2d_editor->options->hide();
-		approach_to_move_rect->hide();
 	}
 }
 
 Camera2DEditorPlugin::Camera2DEditorPlugin() {
-	camera_2d_editor = memnew(Camera2DEditor);
+	camera_2d_editor = memnew(Camera2DEditor(this));
 	EditorNode::get_singleton()->get_gui_base()->add_child(camera_2d_editor);
-	camera_2d_editor->connect(SNAME("_editor_theme_changed"), callable_mp(this, &Camera2DEditorPlugin::_editor_theme_changed));
-
-	approach_to_move_rect = memnew(Label);
-	approach_to_move_rect->set_focus_mode(Control::FOCUS_ACCESSIBILITY);
-	approach_to_move_rect->set_text(TTRC("In Move Mode: \nHold Ctrl + left mouse button to move the limit rectangle.\nHold left mouse button to move the camera only."));
-	approach_to_move_rect->hide();
-	_editor_theme_changed();
-	CanvasItemEditor::get_singleton()->get_controls_container()->add_child(approach_to_move_rect);
-
-	make_visible(false);
 }

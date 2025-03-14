@@ -34,58 +34,6 @@
 #include "core/input/input.h"
 #include "scene/main/viewport.h"
 
-#ifdef TOOLS_ENABLED
-Dictionary Camera2D::_edit_get_state() const {
-	Dictionary state = Node2D::_edit_get_state();
-	state["limit_rect"] = get_limit_rect();
-	return state;
-}
-
-void Camera2D::_edit_set_state(const Dictionary &p_state) {
-	if (p_state.has("limit_rect")) {
-		_set_limit_rect(p_state["limit_rect"]);
-	}
-	Node2D::_edit_set_state(p_state);
-}
-
-void Camera2D::_edit_set_position(const Point2 &p_position) {
-	if (_is_dragging_limit_rect()) {
-		Rect2 rect = get_limit_rect();
-		rect.position = p_position;
-		_set_limit_rect(rect);
-	} else {
-		Node2D::_edit_set_position(p_position);
-	}
-}
-
-Point2 Camera2D::_edit_get_position() const {
-	return _is_dragging_limit_rect() ? get_limit_rect().position : Node2D::_edit_get_position();
-}
-
-void Camera2D::_edit_set_rect(const Rect2 &p_rect) {
-	ERR_FAIL_COND(limit_enabled && !_edit_use_rect());
-	Rect2 rect = p_rect;
-	Vector2 scl = get_global_scale().abs();
-	rect.size *= scl;
-	rect.position = (rect.position + get_global_position()) * scl;
-	_set_limit_rect(rect);
-}
-#endif // TOOLS_ENABLED
-
-#ifdef DEBUG_ENABLED
-Rect2 Camera2D::_edit_get_rect() const {
-	Rect2 rect = get_limit_rect();
-	Vector2 scl = get_global_scale().abs();
-	rect.size /= scl;
-	rect.position = (rect.position - get_global_position()) / scl;
-	return rect;
-}
-
-bool Camera2D::_edit_use_rect() const {
-	return limit_enabled;
-}
-#endif // DEBUG_ENABLED
-
 void Camera2D::_update_scroll() {
 	if (!is_inside_tree() || !viewport) {
 		return;
@@ -120,10 +68,6 @@ void Camera2D::_update_scroll() {
 }
 
 #ifdef TOOLS_ENABLED
-bool Camera2D::_is_dragging_limit_rect() const {
-	return _edit_use_rect() && Input::get_singleton()->is_key_pressed(Key::CTRL);
-}
-
 void Camera2D::_project_settings_changed() {
 	if (screen_drawing_enabled) {
 		queue_redraw();
@@ -470,18 +414,9 @@ void Camera2D::_notification(int p_what) {
 					limit_drawing_width = 3;
 				}
 
-				Transform2D inv_transform = get_global_transform().affine_inverse();
-
-				Vector2 limit_points[4] = {
-					inv_transform.xform(Vector2(limit[SIDE_LEFT], limit[SIDE_TOP])),
-					inv_transform.xform(Vector2(limit[SIDE_RIGHT], limit[SIDE_TOP])),
-					inv_transform.xform(Vector2(limit[SIDE_RIGHT], limit[SIDE_BOTTOM])),
-					inv_transform.xform(Vector2(limit[SIDE_LEFT], limit[SIDE_BOTTOM]))
-				};
-
-				for (int i = 0; i < 4; i++) {
-					draw_line(limit_points[i], limit_points[(i + 1) % 4], Color(1, 1, 0.25, 0.63), limit_drawing_width);
-				}
+				draw_set_transform_matrix(get_global_transform().affine_inverse());
+				draw_rect(get_limit_rect(), Color(1, 1, 0.25, 0.63), false, limit_drawing_width);
+				draw_set_transform_matrix(Transform2D());
 			}
 
 			if (margin_drawing_enabled) {
@@ -564,9 +499,6 @@ void Camera2D::set_limit_enabled(bool p_limit_enabled) {
 	}
 	limit_enabled = p_limit_enabled;
 	_update_scroll();
-#ifdef TOOLS_ENABLED
-	emit_signal("_camera_limit_enabled_updated"); // Used for Camera2DEditorPlugin.
-#endif
 }
 
 bool Camera2D::is_limit_enabled() const {
@@ -632,8 +564,8 @@ void Camera2D::_make_current(Object *p_which) {
 	}
 }
 
-void Camera2D::_set_limit_rect(const Rect2 &p_limit_rect) {
-	Point2 limit_rect_end = p_limit_rect.get_end();
+void Camera2D::set_limit_rect(const Rect2 &p_limit_rect) {
+	const Point2 limit_rect_end = p_limit_rect.get_end();
 	set_limit(SIDE_LEFT, p_limit_rect.position.x);
 	set_limit(SIDE_TOP, p_limit_rect.position.y);
 	set_limit(SIDE_RIGHT, limit_rect_end.x);
@@ -964,6 +896,7 @@ void Camera2D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_limit", "margin", "limit"), &Camera2D::set_limit);
 	ClassDB::bind_method(D_METHOD("get_limit", "margin"), &Camera2D::get_limit);
+	ClassDB::bind_method(D_METHOD("_set_limit_rect", "rect"), &Camera2D::set_limit_rect);
 
 	ClassDB::bind_method(D_METHOD("set_limit_smoothing_enabled", "limit_smoothing_enabled"), &Camera2D::set_limit_smoothing_enabled);
 	ClassDB::bind_method(D_METHOD("is_limit_smoothing_enabled"), &Camera2D::is_limit_smoothing_enabled);
@@ -1066,8 +999,4 @@ void Camera2D::_bind_methods() {
 Camera2D::Camera2D() {
 	set_notify_transform(true);
 	set_hide_clip_children(true);
-
-#ifdef TOOLS_ENABLED
-	add_user_signal(MethodInfo("_camera_limit_enabled_updated")); // Camera2DEditorPlugin listens to this.
-#endif
 }

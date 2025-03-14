@@ -90,7 +90,6 @@ protected:
 	void _update_scroll();
 
 #ifdef TOOLS_ENABLED
-	bool _is_dragging_limit_rect() const;
 	void _project_settings_changed();
 #endif
 
@@ -98,8 +97,6 @@ protected:
 	void _reset_just_exited() { just_exited_tree = false; }
 
 	void _update_process_internal_for_smoothing();
-
-	void _set_limit_rect(const Rect2 &p_limit_rect);
 
 	bool screen_drawing_enabled = true;
 	bool limit_drawing_enabled = false;
@@ -124,22 +121,7 @@ protected:
 	static void _bind_methods();
 
 public:
-#ifdef TOOLS_ENABLED
-	virtual Dictionary _edit_get_state() const override;
-	virtual void _edit_set_state(const Dictionary &p_state) override;
-
-	virtual void _edit_set_position(const Point2 &p_position) override;
-	virtual Point2 _edit_get_position() const override;
-
-	virtual void _edit_set_rect(const Rect2 &p_rect) override;
-	virtual Size2 _edit_get_minimum_size() const override { return Size2(); }
-#endif // TOOLS_ENABLED
-
-#ifdef DEBUG_ENABLED
-	virtual Rect2 _edit_get_rect() const override;
-	virtual bool _edit_use_rect() const override;
-#endif // DEBUG_ENABLED
-
+	void set_limit_rect(const Rect2 &p_limit_rect);
 	Rect2 get_limit_rect() const;
 
 	void set_offset(const Vector2 &p_offset);
