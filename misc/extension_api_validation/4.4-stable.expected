@@ -24,3 +24,11 @@ Validate extension JSON: Error: Field 'classes/OpenXRAPIExtension/methods/regist
 Validate extension JSON: Error: Field 'classes/OpenXRAPIExtension/methods/unregister_projection_views_extension/arguments/0': type changed value in new API, from "OpenXRExtensionWrapperExtension" to "OpenXRExtensionWrapper".
 
 Switched from `OpenXRExtensionWrapperExtension` to parent `OpenXRExtensionWrapper`. Compatibility methods registered.
+
+
+GH-104269
+---------
+Validate extension JSON: API was removed: classes/RenderingServer/methods/instance_set_interpolated
+Validate extension JSON: API was removed: classes/RenderingServer/methods/instance_reset_physics_interpolation
+
+Functionality moved out of server.
