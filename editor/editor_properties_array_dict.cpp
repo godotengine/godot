@@ -720,11 +720,9 @@ void EditorPropertyArray::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_DRAG_BEGIN: {
-			if (is_visible_in_tree()) {
-				if (_is_drop_valid(get_viewport()->gui_get_drag_data())) {
-					dropping = true;
-					edit->queue_redraw();
-				}
+			if (is_visible_in_tree() && _is_drop_valid(get_viewport()->gui_get_drag_data())) {
+				dropping = true;
+				edit->queue_redraw();
 			}
 		} break;
 
