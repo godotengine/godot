@@ -34,7 +34,7 @@
 #include "core/io/file_access.h"
 
 class FileAccessCompressed : public FileAccess {
-	Compression::Mode cmode = Compression::MODE_ZSTD;
+	Compression::Mode cmode = Compression::MODE_FASTLZ;
 	bool writing = false;
 	uint64_t write_pos = 0;
 	uint8_t *write_ptr = nullptr;
@@ -65,7 +65,7 @@ class FileAccessCompressed : public FileAccess {
 	void _close();
 
 public:
-	void configure(const String &p_magic, Compression::Mode p_mode = Compression::MODE_ZSTD, uint32_t p_block_size = 4096);
+	void configure(const String &p_magic, Compression::Mode p_mode = Compression::MODE_FASTLZ, uint32_t p_block_size = 4096);
 
 	Error open_after_magic(Ref<FileAccess> p_base);
 
