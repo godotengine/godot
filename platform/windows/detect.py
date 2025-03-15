@@ -278,7 +278,7 @@ def configure_msvc(env: "SConsEnvironment"):
         from tempfile import mkstemp
 
         # Ensure we have a location to write captured output to, in case of false positives.
-        capture_path = methods.base_folder_path + "platform/windows/msvc_capture.log"
+        capture_path = methods.base_folder / "platform" / "windows" / "msvc_capture.log"
         with open(capture_path, "wt", encoding="utf-8"):
             pass
 
