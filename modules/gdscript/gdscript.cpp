@@ -2919,7 +2919,7 @@ String GDScriptLanguage::get_global_class_name(const String &p_path, String *r_b
 		*r_is_tool = parser.is_tool();
 	}
 	if (r_is_hidden) {
-		*r_is_hidden = false;
+		*r_is_hidden = parser.is_hidden();
 	}
 	return c->identifier != nullptr ? String(c->identifier->name) : String();
 }
