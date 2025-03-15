@@ -114,8 +114,12 @@ void AudioEffectReverb::set_wet(float p_wet) {
 	wet = p_wet;
 }
 
+void AudioEffectReverb::set_hpf_hz(float p_hpf_hz) {
+	hpf = p_hpf_hz;
+}
+
 void AudioEffectReverb::set_hpf(float p_hpf) {
-	hpf = p_hpf;
+	hpf = p_hpf * 6000;
 }
 
 float AudioEffectReverb::get_predelay_msec() const {
@@ -146,8 +150,12 @@ float AudioEffectReverb::get_wet() const {
 	return wet;
 }
 
-float AudioEffectReverb::get_hpf() const {
+float AudioEffectReverb::get_hpf_hz() const {
 	return hpf;
+}
+
+float AudioEffectReverb::get_hpf() const {
+	return hpf / 6000;
 }
 
 void AudioEffectReverb::_bind_methods() {
@@ -172,8 +180,13 @@ void AudioEffectReverb::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_wet", "amount"), &AudioEffectReverb::set_wet);
 	ClassDB::bind_method(D_METHOD("get_wet"), &AudioEffectReverb::get_wet);
 
+	ClassDB::bind_method(D_METHOD("set_hpf_hz", "amount"), &AudioEffectReverb::set_hpf_hz);
+	ClassDB::bind_method(D_METHOD("get_hpf_hz"), &AudioEffectReverb::get_hpf_hz);
+
+#ifndef DISABLE_DEPRECATED
 	ClassDB::bind_method(D_METHOD("set_hpf", "amount"), &AudioEffectReverb::set_hpf);
 	ClassDB::bind_method(D_METHOD("get_hpf"), &AudioEffectReverb::get_hpf);
+#endif // DISABLE_DEPRECATED
 
 	ADD_GROUP("Predelay", "predelay_");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "predelay_msec", PROPERTY_HINT_RANGE, "20,500,1,suffix:ms"), "set_predelay_msec", "get_predelay_msec");
@@ -182,7 +195,10 @@ void AudioEffectReverb::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "room_size", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_room_size", "get_room_size");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "damping", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_damping", "get_damping");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "spread", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_spread", "get_spread");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "hipass", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_hpf", "get_hpf");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "hipass_hz", PROPERTY_HINT_RANGE, "0,6000,1,suffix:Hz"), "set_hpf_hz", "get_hpf_hz");
+#ifndef DISABLE_DEPRECATED
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "hipass", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_hpf", "get_hpf");
+#endif // DISABLE_DEPRECATED
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "dry", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_dry", "get_dry");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "wet", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_wet", "get_wet");
 }
