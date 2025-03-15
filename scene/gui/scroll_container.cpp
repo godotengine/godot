@@ -387,6 +387,16 @@ void ScrollContainer::_notification(int p_what) {
 			}
 		} break;
 
+		case NOTIFICATION_DRAG_BEGIN: {
+			if (scroll_on_drag_hover && is_visible_in_tree()) {
+				set_physics_process_internal(true);
+			}
+		} break;
+
+		case NOTIFICATION_DRAG_END: {
+			set_physics_process_internal(false);
+		} break;
+
 		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
 			if (drag_touching) {
 				if (drag_touching_deaccel) {
@@ -451,6 +461,33 @@ void ScrollContainer::_notification(int p_what) {
 					}
 
 					time_since_motion += get_physics_process_delta_time();
+				}
+			}
+
+			if (scroll_on_drag_hover && get_viewport()->gui_is_dragging()) {
+				Point2 mouse_position = get_viewport()->get_mouse_position() - get_global_position();
+				int scroll_border = 20;
+				int scroll_speed = 12;
+				Transform2D xform = get_transform();
+				if (Rect2(Point2(), xform.get_scale() * get_size()).grow(scroll_border).has_point(mouse_position)) {
+					Point2 point;
+
+					if ((ABS(mouse_position.x) < ABS(mouse_position.x - get_size().width)) && (ABS(mouse_position.x) < scroll_border)) {
+						point.x = mouse_position.x - scroll_border;
+					} else if (ABS(mouse_position.x - get_size().width) < scroll_border) {
+						point.x = mouse_position.x - (get_size().width - scroll_border);
+					}
+
+					if ((ABS(mouse_position.y) < ABS(mouse_position.y - get_size().height)) && (ABS(mouse_position.y) < scroll_border)) {
+						point.y = mouse_position.y - scroll_border;
+					} else if (ABS(mouse_position.y - get_size().height) < scroll_border) {
+						point.y = mouse_position.y - (get_size().height - scroll_border);
+					}
+
+					point *= scroll_speed * get_process_delta_time();
+					point += Point2(get_h_scroll(), get_v_scroll());
+					h_scroll->set_value(point.x);
+					v_scroll->set_value(point.y);
 				}
 			}
 		} break;
@@ -582,6 +619,14 @@ PackedStringArray ScrollContainer::get_configuration_warnings() const {
 	}
 
 	return warnings;
+}
+
+bool ScrollContainer::is_scroll_on_drag_hover() const {
+	return scroll_on_drag_hover;
+}
+
+void ScrollContainer::set_scroll_on_drag_hover(bool p_scroll) {
+	scroll_on_drag_hover = p_scroll;
 }
 
 HScrollBar *ScrollContainer::get_h_scroll_bar() {
