@@ -54,6 +54,7 @@ class PopupMenu : public Popup {
 
 		String language;
 		Control::TextDirection text_direction = Control::TEXT_DIRECTION_AUTO;
+		AutoTranslateMode auto_translate_mode = AUTO_TRANSLATE_MODE_INHERIT;
 
 		bool checked = false;
 		enum {
@@ -215,6 +216,7 @@ class PopupMenu : public Popup {
 	void _set_item_checkable_type(int p_index, int p_checkable_type);
 	int _get_item_checkable_type(int p_index) const;
 	void _native_popup(const Rect2i &p_rect);
+	String _atr(int p_idx, const String &p_text) const;
 
 protected:
 	virtual Rect2i _popup_adjust_rect() const override;
@@ -279,6 +281,7 @@ public:
 
 	void set_item_text_direction(int p_idx, Control::TextDirection p_text_direction);
 	void set_item_language(int p_idx, const String &p_language);
+	void set_item_auto_translate_mode(int p_idx, AutoTranslateMode p_mode);
 	void set_item_icon(int p_idx, const Ref<Texture2D> &p_icon);
 	void set_item_icon_max_width(int p_idx, int p_width);
 	void set_item_icon_modulate(int p_idx, const Color &p_modulate);
@@ -306,6 +309,7 @@ public:
 	String get_item_xl_text(int p_idx) const;
 	Control::TextDirection get_item_text_direction(int p_idx) const;
 	String get_item_language(int p_idx) const;
+	AutoTranslateMode get_item_auto_translate_mode(int p_idx) const;
 	int get_item_idx_from_text(const String &text) const;
 	Ref<Texture2D> get_item_icon(int p_idx) const;
 	int get_item_icon_max_width(int p_idx) const;
