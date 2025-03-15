@@ -1,13 +1,24 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="LightmapProbe" inherits="Node3D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Represents a single manually placed probe for dynamic object lighting with [LightmapGI].
+		Represents a group of manually placed probes for dynamic object lighting with [LightmapGI].
 	</brief_description>
 	<description>
-		[LightmapProbe] represents the position of a single manually placed probe for dynamic object lighting with [LightmapGI]. Lightmap probes affect the lighting of [GeometryInstance3D]-derived nodes that have their [member GeometryInstance3D.gi_mode] set to [constant GeometryInstance3D.GI_MODE_DYNAMIC].
+		[LightmapProbe] represents the position of a group of manually placed probes for dynamic object lighting with [LightmapGI]. Lightmap probes affect the lighting of [GeometryInstance3D]-derived nodes that have their [member GeometryInstance3D.gi_mode] set to [constant GeometryInstance3D.GI_MODE_DYNAMIC].
 		Typically, [LightmapGI] probes are placed automatically by setting [member LightmapGI.generate_probes_subdiv] to a value other than [constant LightmapGI.GENERATE_PROBES_DISABLED]. By creating [LightmapProbe] nodes before baking lightmaps, you can add more probes in specific areas for greater detail, or disable automatic generation and rely only on manually placed probes instead.
 		[b]Note:[/b] [LightmapProbe] nodes that are placed after baking lightmaps are ignored by dynamic objects. You must bake lightmaps again after creating or modifying [LightmapProbe]s for the probes to be effective.
 	</description>
 	<tutorials>
 	</tutorials>
+	<members>
+		<member name="cell_size" type="Vector3" setter="set_cell_size" getter="get_cell_size" default="Vector3(2, 2, 2)">
+			The distance between probes in meters. Lower values result in more detailed dynamic object indirect light, at the cost of longer bake times and larger file sizes. Very low cell sizes may cause the lightmapper to crash, especially if the [member size] is also high.
+			The number of cells on a dimension is determined by the formula [code]floor(size / cell_size)[/code].
+			[b]Note:[/b] The actual cell size may increase slightly to ensure that probes are evenly distributed within the area defined by [member size], even if [member cell_size] is not a divisor of [member size].
+			[b]Note:[/b] If [member cell_size] is greater than [member size] on a given dimension, only a single probe is generated on that dimension and it will be centered. With the default [member cell_size] and [member size], only a single probe is placed.
+		</member>
+		<member name="size" type="Vector3" setter="set_size" getter="get_size" default="Vector3(1, 1, 1)">
+			The area in which probes should be placed.
+		</member>
+	</members>
 </class>
