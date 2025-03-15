@@ -368,6 +368,7 @@ private:
 	Transform2D original_transform;
 
 	Point2 box_selecting_to;
+	CursorShape cursor_shape_override = CURSOR_ARROW;
 
 	Ref<StyleBoxTexture> select_sb;
 	Ref<Texture2D> select_handle;
@@ -584,6 +585,7 @@ public:
 	void focus_selection();
 	void center_at(const Point2 &p_pos);
 
+	void set_cursor_shape_override(CursorShape p_shape = CURSOR_ARROW);
 	virtual CursorShape get_cursor_shape(const Point2 &p_pos) const override;
 
 	ThemePreviewMode get_theme_preview() const { return theme_preview; }

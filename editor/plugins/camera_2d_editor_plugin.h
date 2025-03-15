@@ -52,7 +52,10 @@ class Camera2DEditor : public Control {
 		RIGHT,
 		BOTTOM,
 		CENTER,
-	} drag_type;
+	};
+	Drag drag_type = Drag::NONE;
+	Drag hover_type = Drag::NONE;
+
 	Rect2 drag_revert;
 	Vector2 center_drag_point;
 
@@ -64,6 +67,7 @@ class Camera2DEditor : public Control {
 	void _menu_option(int p_option);
 	void _snap_limits_to_viewport(Camera2D *p_camera);
 	void _update_overlays_if_needed(Camera2D *p_camera);
+	void _update_hover(const Vector2 &p_mouse_pos);
 
 protected:
 	static void _bind_methods();

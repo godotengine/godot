@@ -40,13 +40,19 @@
 #include "scene/gui/menu_button.h"
 
 void Camera2DEditor::edit(Camera2D *p_camera) {
-if (p_camera == selected_camera) {
+	if (p_camera == selected_camera) {
 		return;
 	}
 	const Callable update_overlays = callable_mp(plugin, &EditorPlugin::update_overlays);
 
 	if (selected_camera) {
 		selected_camera->disconnect(SceneStringName(draw), update_overlays);
+		if (drag_type != Drag::NONE) {
+			selected_camera->set_limit_rect(drag_revert);
+		}
+		drag_type = Drag::NONE;
+		hover_type = Drag::NONE;
+		CanvasItemEditor::get_singleton()->set_cursor_shape_override(CURSOR_ARROW);
 	}
 	selected_camera = p_camera;
 
@@ -65,32 +71,13 @@ bool Camera2DEditor::forward_canvas_gui_input(const Ref<InputEvent> &p_event) {
 	if (mb.is_valid()) {
 		if (mb->get_button_index() == MouseButton::LEFT) {
 			if (mb->is_pressed()) {
-				const Rect2 limit_rect = selected_camera->get_limit_rect();
-				const Vector2 pos = CanvasItemEditor::get_singleton()->get_canvas_transform().affine_inverse().xform(mb->get_position());
-				drag_revert = limit_rect;
+				if (hover_type != Drag::NONE) {
+					Vector2 pos = CanvasItemEditor::get_singleton()->get_canvas_transform().affine_inverse().xform(mb->get_position());
+					const Rect2 limit_rect = selected_camera->get_limit_rect();
 
-				if (pos.y > limit_rect.position.y && pos.y < limit_rect.get_end().y) {
-					if (Math::abs(pos.x - limit_rect.position.x) < 8) {
-						drag_type = Drag::LEFT;
-						return true;
-					} else if (Math::abs(pos.x - limit_rect.get_end().x) < 8) {
-						drag_type = Drag::RIGHT;
-						return true;
-					}
-				} else if (pos.x > limit_rect.position.x && pos.x < limit_rect.get_end().x) {
-					if (Math::abs(pos.y - limit_rect.position.y) < 8) {
-						drag_type = Drag::TOP;
-						return true;
-					} else if (Math::abs(pos.y - limit_rect.get_end().y) < 8) {
-						drag_type = Drag::BOTTOM;
-						return true;
-					}
-				}
-
-				if (limit_rect.has_point(pos)) {
-					drag_type = Drag::CENTER;
+					drag_type = hover_type;
+					drag_revert = selected_camera->get_limit_rect();
 					center_drag_point = pos - limit_rect.position;
-					plugin->update_overlays();
 					return true;
 				}
 			} else if (drag_type != Drag::NONE) {
@@ -109,18 +96,21 @@ bool Camera2DEditor::forward_canvas_gui_input(const Ref<InputEvent> &p_event) {
 			selected_camera->set_limit_rect(drag_revert);
 			drag_type = Drag::NONE;
 			plugin->update_overlays();
+			_update_hover(mb->get_position());
 			return true;
 		}
 		return false;
 	}
 
-	if (drag_type == Drag::NONE) {
-		return false;
-	}
-
 	Ref<InputEventMouseMotion> mm = p_event;
 	if (mm.is_valid()) {
-		Vector2 pos = CanvasItemEditor::get_singleton()->get_canvas_transform().affine_inverse().xform(mm->get_position());
+		Vector2 pos = mm->get_position();
+		if (drag_type == Drag::NONE) {
+			_update_hover(pos);
+			return false;
+		}
+
+		pos = CanvasItemEditor::get_singleton()->get_canvas_transform().affine_inverse().xform(pos);
 		pos = CanvasItemEditor::get_singleton()->snap_point(pos);
 
 		switch (drag_type) {
@@ -149,6 +139,9 @@ bool Camera2DEditor::forward_canvas_gui_input(const Ref<InputEvent> &p_event) {
 				target_rect.position = pos - center_drag_point;
 				selected_camera->set_limit_rect(target_rect);
 				plugin->update_overlays();
+			} break;
+
+			case Drag::NONE: {
 			} break;
 		}
 		return true;
@@ -190,6 +183,55 @@ void Camera2DEditor::_snap_limits_to_viewport(Camera2D *p_camera) {
 void Camera2DEditor::_update_overlays_if_needed(Camera2D *p_camera) {
 	if (p_camera == selected_camera) {
 		plugin->update_overlays();
+	}
+}
+
+void Camera2DEditor::_update_hover(const Vector2 &p_mouse_pos) {
+	if (CanvasItemEditor::get_singleton()->get_current_tool() != CanvasItemEditor::TOOL_SELECT) {
+		hover_type = Drag::NONE;
+		CanvasItemEditor::get_singleton()->set_cursor_shape_override();
+		return;
+	}
+
+	const Rect2 limit_rect = CanvasItemEditor::get_singleton()->get_canvas_transform().xform(selected_camera->get_limit_rect());
+	const float drag_tolerance = 8.0;
+
+	hover_type = Drag::NONE;
+	if (p_mouse_pos.y > limit_rect.position.y && p_mouse_pos.y < limit_rect.get_end().y) {
+		if (Math::abs(p_mouse_pos.x - limit_rect.position.x) < drag_tolerance) {
+			hover_type = Drag::LEFT;
+		} else if (Math::abs(p_mouse_pos.x - limit_rect.get_end().x) < drag_tolerance) {
+			hover_type = Drag::RIGHT;
+		}
+	} else if (p_mouse_pos.x > limit_rect.position.x && p_mouse_pos.x < limit_rect.get_end().x) {
+		if (Math::abs(p_mouse_pos.y - limit_rect.position.y) < drag_tolerance) {
+			hover_type = Drag::TOP;
+		} else if (Math::abs(p_mouse_pos.y - limit_rect.get_end().y) < drag_tolerance) {
+			hover_type = Drag::BOTTOM;
+		}
+	}
+
+	/* Temporarily disabled, because it needs more changes.
+	if (hover_type == Drag::NONE && limit_rect.has_point(p_mouse_pos)) {
+		hover_type = Drag::CENTER;
+	}
+	*/
+
+	switch (hover_type) {
+		case Drag::NONE: {
+			CanvasItemEditor::get_singleton()->set_cursor_shape_override();
+		} break;
+		case Drag::LEFT:
+		case Drag::RIGHT: {
+			CanvasItemEditor::get_singleton()->set_cursor_shape_override(CURSOR_HSIZE);
+		} break;
+		case Drag::TOP:
+		case Drag::BOTTOM: {
+			CanvasItemEditor::get_singleton()->set_cursor_shape_override(CURSOR_VSIZE);
+		} break;
+		case Drag::CENTER: {
+			CanvasItemEditor::get_singleton()->set_cursor_shape_override(CURSOR_MOVE);
+		} break;
 	}
 }
 
