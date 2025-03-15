@@ -769,9 +769,7 @@ void SceneTree::_main_window_focus_in() {
 void SceneTree::_notification(int p_notification) {
 	switch (p_notification) {
 		case NOTIFICATION_TRANSLATION_CHANGED: {
-			if (!Engine::get_singleton()->is_editor_hint()) {
-				get_root()->propagate_notification(p_notification);
-			}
+			get_root()->propagate_notification(p_notification);
 		} break;
 
 		case NOTIFICATION_OS_MEMORY_WARNING:
