@@ -42,6 +42,14 @@
 				Removes all surfaces and blend shapes from this [ImporterMesh].
 			</description>
 		</method>
+		<method name="create_shadow_mesh">
+			<return type="void" />
+			<description>
+				Generates a mesh containing only the [constant Mesh.ARRAY_VERTEX] and [constant Mesh.ARRAY_INDEX] arrays added via [method add_surface].
+				If the [ImporterMesh] contains blend shapes or a surface with [constant Mesh.ARRAY_BONES] or [constant Mesh.ARRAY_WEIGHTS], no shadow mesh is generated.
+				The generated shadow mesh can be retrieved using [method get_shadow_mesh] or as [member ArrayMesh.shadow_mesh] on the object returned by [method get_mesh].
+			</description>
+		</method>
 		<method name="generate_lods">
 			<return type="void" />
 			<param index="0" name="normal_merge_angle" type="float" />
@@ -87,6 +95,12 @@
 				Returns the mesh data represented by this [ImporterMesh] as a usable [ArrayMesh].
 				This method caches the returned mesh, and subsequent calls will return the cached data until [method clear] is called.
 				If not yet cached and [param base_mesh] is provided, [param base_mesh] will be used and mutated.
+			</description>
+		</method>
+		<method name="get_shadow_mesh" qualifiers="const">
+			<return type="ImporterMesh" />
+			<description>
+				Returns the generated shadow mesh, if any. See [method create_shadow_mesh].
 			</description>
 		</method>
 		<method name="get_surface_arrays" qualifiers="const">
