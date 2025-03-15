@@ -65,6 +65,7 @@ class Slider : public Range {
 
 		bool center_grabber = false;
 		int grabber_offset = 0;
+		int tick_offset = 0;
 	} theme_cache;
 
 protected:

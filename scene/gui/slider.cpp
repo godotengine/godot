@@ -302,7 +302,7 @@ void Slider::_notification(int p_what) {
 							continue;
 						}
 						int ofs = (i * areasize / (ticks - 1)) + grabber_offset - grabber_shift;
-						tick->draw(ci, Point2i((size.width - widget_width) / 2, ofs));
+						tick->draw(ci, Point2i((size.width - tick->get_width()) / 2 + theme_cache.tick_offset, ofs));
 					}
 				}
 				grabber->draw(ci, Point2i(size.width / 2 - grabber->get_width() / 2 + theme_cache.grabber_offset, size.height - ratio * areasize - grabber->get_height() + grabber_shift));
@@ -327,7 +327,7 @@ void Slider::_notification(int p_what) {
 							continue;
 						}
 						int ofs = (i * areasize / (ticks - 1)) + grabber_offset + grabber_shift;
-						tick->draw(ci, Point2i(ofs, (size.height - widget_height) / 2));
+						tick->draw(ci, Point2i(ofs, (size.height - tick->get_height()) / 2 + theme_cache.tick_offset));
 					}
 				}
 				grabber->draw(ci, Point2i((rtl ? 1 - ratio : ratio) * areasize + grabber_shift, size.height / 2 - grabber->get_height() / 2 + theme_cache.grabber_offset));
@@ -423,6 +423,7 @@ void Slider::_bind_methods() {
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Slider, center_grabber);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Slider, grabber_offset);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, Slider, tick_offset);
 }
 
 Slider::Slider(Orientation p_orientation) {
