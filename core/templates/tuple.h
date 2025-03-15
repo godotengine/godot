@@ -85,6 +85,10 @@ struct Tuple<T, Rest...> : Tuple<Rest...> {
 			value(std::forward<F>(f)) {}
 };
 
+// Tuple is zero-constructible if and only if all constrained types are zero-constructible.
+template <typename... Types>
+struct is_zero_constructible<Tuple<Types...>> : std::conjunction<is_zero_constructible<Types>...> {};
+
 template <size_t I, typename Tuple>
 struct TupleGet;
 

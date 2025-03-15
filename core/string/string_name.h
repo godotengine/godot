@@ -219,6 +219,10 @@ public:
 #endif
 };
 
+// Zero-constructing StringName initializes _data to nullptr (and thus empty).
+template <>
+struct is_zero_constructible<StringName> : std::true_type {};
+
 bool operator==(const String &p_name, const StringName &p_string_name);
 bool operator!=(const String &p_name, const StringName &p_string_name);
 bool operator==(const char *p_name, const StringName &p_string_name);
