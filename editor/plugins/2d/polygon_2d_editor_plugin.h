@@ -30,7 +30,7 @@
 
 #pragma once
 
-#include "editor/plugins/abstract_polygon_2d_editor.h"
+#include "editor/plugins/2d/abstract_polygon_2d_editor.h"
 #include "scene/2d/polygon_2d.h"
 
 class AcceptDialog;
