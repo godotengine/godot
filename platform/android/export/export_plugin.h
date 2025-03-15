@@ -34,6 +34,8 @@
 #include "godot_plugin_config.h"
 #endif // DISABLE_DEPRECATED
 
+#include "gradle_export_util.h"
+
 #include "core/io/image.h"
 #include "core/io/zip_io.h"
 #include "core/os/os.h"
@@ -73,6 +75,12 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 	struct APKExportData {
 		zipFile apk;
 		EditorProgress *ep = nullptr;
+	};
+
+	struct FeatureInfo {
+		String name;
+		bool required;
+		String version;
 	};
 
 #ifndef DISABLE_DEPRECATED
@@ -151,7 +159,7 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 
 	bool _has_manage_external_storage_permission(const Vector<String> &p_permissions);
 
-	void _get_permissions(const Ref<EditorExportPreset> &p_preset, bool p_give_internet, Vector<String> &r_permissions);
+	void _get_manifest_info(const Ref<EditorExportPreset> &p_preset, bool p_give_internet, Vector<String> &r_permissions, Vector<FeatureInfo> &r_features, Vector<MetadataInfo> &r_metadata);
 
 	void _write_tmp_manifest(const Ref<EditorExportPreset> &p_preset, bool p_give_internet, bool p_debug);
 
@@ -234,6 +242,8 @@ public:
 	static bool has_valid_username_and_password(const Ref<EditorExportPreset> &p_preset, String &r_error);
 
 	virtual List<String> get_binary_extensions(const Ref<EditorExportPreset> &p_preset) const override;
+
+	String _get_deprecated_plugins_names(const Ref<EditorExportPreset> &p_preset) const;
 
 	String _get_plugins_names(const Ref<EditorExportPreset> &p_preset) const;
 
