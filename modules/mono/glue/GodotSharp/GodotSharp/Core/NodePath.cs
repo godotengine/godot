@@ -51,7 +51,6 @@ namespace Godot
         private WeakReference<IDisposable>? _weakReferenceToSelf;
 
         private static readonly ICache<string, NodePath> _nodePathCache = new ConcurrentLruBuilder<string, NodePath>()
-            .WithCapacity(1_000)
             .WithExpireAfterAccess(TimeSpan.FromSeconds(30))
             .Build();
 

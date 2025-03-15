@@ -22,7 +22,6 @@ namespace Godot
         private WeakReference<IDisposable>? _weakReferenceToSelf;
 
         private static readonly ICache<string, StringName> _stringNameCache = new ConcurrentLruBuilder<string, StringName>()
-            .WithCapacity(1_000)
             .WithExpireAfterAccess(TimeSpan.FromSeconds(30))
             .Build();
 
