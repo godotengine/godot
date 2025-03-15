@@ -122,8 +122,8 @@ protected:
 	void _validate_property(PropertyInfo &p_property) const;
 
 public:
-	void set_limit_rect(const Rect2 &p_limit_rect);
-	Rect2 get_limit_rect() const;
+	void set_limit_rect(const Rect2i &p_limit_rect);
+	Rect2i get_limit_rect() const;
 
 	void set_offset(const Vector2 &p_offset);
 	Vector2 get_offset() const;
