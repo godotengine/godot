@@ -109,7 +109,6 @@ private:
 	static void mikktSetTSpaceDefault(const SMikkTSpaceContext *pContext, const float fvTangent[], const float fvBiTangent[], const float fMagS, const float fMagT,
 			const tbool bIsOrientationPreserving, const int iFace, const int iVert);
 
-	void _update_shape();
 	void _update_collision_faces();
 	bool _is_debug_collision_shape_visible();
 	void _update_debug_collision_shape();
@@ -132,6 +131,7 @@ protected:
 
 public:
 	Array get_meshes() const;
+	void update_shape();
 
 	void set_operation(Operation p_operation);
 	Operation get_operation() const;
