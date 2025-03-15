@@ -32,6 +32,7 @@
 
 #include "core/io/stream_peer_tcp.h"
 #include "core/object/ref_counted.h"
+#include "core/os/condition_variable.h"
 #include "core/os/mutex.h"
 #include "core/os/thread.h"
 #include "core/string/ustring.h"
@@ -56,8 +57,9 @@ public:
 class RemoteDebuggerPeerTCP : public RemoteDebuggerPeer {
 private:
 	Ref<StreamPeerTCP> tcp_client;
-	Mutex mutex;
+	BinaryMutex mutex;
 	Thread thread;
+	ConditionVariable close_cv;
 	List<Array> in_queue;
 	List<Array> out_queue;
 	int out_left = 0;
