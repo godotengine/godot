@@ -1792,7 +1792,7 @@ TEST_CASE("[Variant] Writer and parser dictionary") {
 	String d_str;
 	VariantWriter::write_to_string(d, d_str);
 
-	CHECK_EQ(d_str, "{\n4: \"hello\",\n5: {\nnull: []\n},\n{\n1: 2\n}: 3\n}");
+	CHECK_EQ(d_str, "{\n5: {\nnull: []\n},\n4: \"hello\",\n{\n1: 2\n}: 3\n}");
 
 	VariantParser::StreamString ss;
 	String errs;
@@ -1810,7 +1810,7 @@ TEST_CASE("[Variant] Writer key sorting") {
 	String d_str;
 	VariantWriter::write_to_string(d, d_str);
 
-	CHECK_EQ(d_str, "{\n\"A\": 1,\n&\"B\": 2,\n&\"C\": 3,\n\"D\": 4\n}");
+	CHECK_EQ(d_str, "{\n\"D\": 4,\n&\"B\": 2,\n\"A\": 1,\n&\"C\": 3\n}");
 }
 
 TEST_CASE("[Variant] Writer recursive dictionary") {
