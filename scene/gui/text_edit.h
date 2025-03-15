@@ -320,6 +320,7 @@ private:
 	bool emoji_menu_enabled = true;
 	bool shortcut_keys_enabled = true;
 	bool virtual_keyboard_enabled = true;
+	DisplayServer::VirtualKeyboardType virtual_keyboard_type = DisplayServer::KEYBOARD_TYPE_MULTILINE;
 	bool middle_mouse_paste_enabled = true;
 	bool empty_selection_clipboard_enabled = true;
 
@@ -780,6 +781,9 @@ public:
 
 	void set_virtual_keyboard_enabled(bool p_enabled);
 	bool is_virtual_keyboard_enabled() const;
+
+	void set_virtual_keyboard_type(DisplayServer::VirtualKeyboardType p_type);
+	DisplayServer::VirtualKeyboardType get_virtual_keyboard_type() const;
 
 	void set_middle_mouse_paste_enabled(bool p_enabled);
 	bool is_middle_mouse_paste_enabled() const;

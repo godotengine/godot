@@ -2467,11 +2467,11 @@ bool LineEdit::is_virtual_keyboard_enabled() const {
 	return virtual_keyboard_enabled;
 }
 
-void LineEdit::set_virtual_keyboard_type(VirtualKeyboardType p_type) {
+void LineEdit::set_virtual_keyboard_type(DisplayServer::VirtualKeyboardType p_type) {
 	virtual_keyboard_type = p_type;
 }
 
-LineEdit::VirtualKeyboardType LineEdit::get_virtual_keyboard_type() const {
+DisplayServer::VirtualKeyboardType LineEdit::get_virtual_keyboard_type() const {
 	return virtual_keyboard_type;
 }
 
@@ -2954,15 +2954,6 @@ void LineEdit::_bind_methods() {
 	BIND_ENUM_CONSTANT(MENU_INSERT_SHY);
 	BIND_ENUM_CONSTANT(MENU_EMOJI_AND_SYMBOL);
 	BIND_ENUM_CONSTANT(MENU_MAX);
-
-	BIND_ENUM_CONSTANT(KEYBOARD_TYPE_DEFAULT);
-	BIND_ENUM_CONSTANT(KEYBOARD_TYPE_MULTILINE);
-	BIND_ENUM_CONSTANT(KEYBOARD_TYPE_NUMBER);
-	BIND_ENUM_CONSTANT(KEYBOARD_TYPE_NUMBER_DECIMAL);
-	BIND_ENUM_CONSTANT(KEYBOARD_TYPE_PHONE);
-	BIND_ENUM_CONSTANT(KEYBOARD_TYPE_EMAIL_ADDRESS);
-	BIND_ENUM_CONSTANT(KEYBOARD_TYPE_PASSWORD);
-	BIND_ENUM_CONSTANT(KEYBOARD_TYPE_URL);
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "text"), "set_text", "get_text");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "placeholder_text"), "set_placeholder", "get_placeholder");
