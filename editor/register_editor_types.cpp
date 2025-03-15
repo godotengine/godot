@@ -139,28 +139,28 @@ void register_editor_types() {
 
 	EditorStringNames::create();
 
-	GDREGISTER_CLASS(EditorPaths);
-	GDREGISTER_CLASS(EditorPlugin);
-	GDREGISTER_CLASS(EditorTranslationParserPlugin);
-	GDREGISTER_CLASS(EditorImportPlugin);
-	GDREGISTER_CLASS(EditorScript);
-	GDREGISTER_CLASS(EditorSelection);
-	GDREGISTER_CLASS(EditorFileDialog);
-	GDREGISTER_CLASS(EditorSettings);
+	GDREGISTER_HIDDEN_CLASS(EditorPaths);
+	GDREGISTER_HIDDEN_CLASS(EditorPlugin);
+	GDREGISTER_HIDDEN_CLASS(EditorTranslationParserPlugin);
+	GDREGISTER_HIDDEN_CLASS(EditorImportPlugin);
+	GDREGISTER_HIDDEN_CLASS(EditorScript);
+	GDREGISTER_HIDDEN_CLASS(EditorSelection);
+	GDREGISTER_HIDDEN_CLASS(EditorFileDialog);
+	GDREGISTER_HIDDEN_CLASS(EditorSettings);
 	GDREGISTER_ABSTRACT_CLASS(EditorToaster);
-	GDREGISTER_CLASS(EditorNode3DGizmo);
-	GDREGISTER_CLASS(EditorNode3DGizmoPlugin);
+	GDREGISTER_HIDDEN_CLASS(EditorNode3DGizmo);
+	GDREGISTER_HIDDEN_CLASS(EditorNode3DGizmoPlugin);
 	GDREGISTER_ABSTRACT_CLASS(EditorResourcePreview);
-	GDREGISTER_CLASS(EditorResourcePreviewGenerator);
-	GDREGISTER_CLASS(EditorResourceTooltipPlugin);
+	GDREGISTER_HIDDEN_CLASS(EditorResourcePreviewGenerator);
+	GDREGISTER_HIDDEN_CLASS(EditorResourceTooltipPlugin);
 	GDREGISTER_ABSTRACT_CLASS(EditorFileSystem);
-	GDREGISTER_CLASS(EditorFileSystemDirectory);
-	GDREGISTER_CLASS(EditorVCSInterface);
+	GDREGISTER_HIDDEN_CLASS(EditorFileSystemDirectory);
+	GDREGISTER_HIDDEN_CLASS(EditorVCSInterface);
 	GDREGISTER_ABSTRACT_CLASS(ScriptEditor);
 	GDREGISTER_ABSTRACT_CLASS(ScriptEditorBase);
-	GDREGISTER_CLASS(EditorSyntaxHighlighter);
+	GDREGISTER_HIDDEN_CLASS(EditorSyntaxHighlighter);
 	GDREGISTER_ABSTRACT_CLASS(EditorInterface);
-	GDREGISTER_CLASS(EditorExportPlugin);
+	GDREGISTER_HIDDEN_CLASS(EditorExportPlugin);
 	GDREGISTER_ABSTRACT_CLASS(EditorExportPlatform);
 	GDREGISTER_ABSTRACT_CLASS(EditorExportPlatformPC);
 	GDREGISTER_CLASS(EditorExportPlatformExtension);
@@ -168,26 +168,26 @@ void register_editor_types() {
 
 	register_exporter_types();
 
-	GDREGISTER_CLASS(EditorResourceConversionPlugin);
-	GDREGISTER_CLASS(EditorSceneFormatImporter);
-	GDREGISTER_CLASS(EditorScenePostImportPlugin);
-	GDREGISTER_CLASS(EditorInspector);
-	GDREGISTER_CLASS(EditorInspectorPlugin);
-	GDREGISTER_CLASS(EditorProperty);
+	GDREGISTER_HIDDEN_CLASS(EditorResourceConversionPlugin);
+	GDREGISTER_HIDDEN_CLASS(EditorSceneFormatImporter);
+	GDREGISTER_HIDDEN_CLASS(EditorScenePostImportPlugin);
+	GDREGISTER_HIDDEN_CLASS(EditorInspector);
+	GDREGISTER_HIDDEN_CLASS(EditorInspectorPlugin);
+	GDREGISTER_HIDDEN_CLASS(EditorProperty);
 	GDREGISTER_CLASS(ScriptCreateDialog);
-	GDREGISTER_CLASS(EditorFeatureProfile);
-	GDREGISTER_CLASS(EditorSpinSlider);
-	GDREGISTER_CLASS(EditorResourcePicker);
-	GDREGISTER_CLASS(EditorScriptPicker);
+	GDREGISTER_HIDDEN_CLASS(EditorFeatureProfile);
+	GDREGISTER_HIDDEN_CLASS(EditorSpinSlider);
+	GDREGISTER_HIDDEN_CLASS(EditorResourcePicker);
+	GDREGISTER_HIDDEN_CLASS(EditorScriptPicker);
 	GDREGISTER_ABSTRACT_CLASS(EditorUndoRedoManager);
 	GDREGISTER_CLASS(EditorContextMenuPlugin);
 
 	GDREGISTER_ABSTRACT_CLASS(FileSystemDock);
 	GDREGISTER_VIRTUAL_CLASS(EditorFileSystemImportFormatSupportQuery);
 
-	GDREGISTER_CLASS(EditorScenePostImport);
-	GDREGISTER_CLASS(EditorCommandPalette);
-	GDREGISTER_CLASS(EditorDebuggerPlugin);
+	GDREGISTER_HIDDEN_CLASS(EditorScenePostImport);
+	GDREGISTER_HIDDEN_CLASS(EditorCommandPalette);
+	GDREGISTER_HIDDEN_CLASS(EditorDebuggerPlugin);
 	GDREGISTER_ABSTRACT_CLASS(EditorDebuggerSession);
 
 	// Required to document import options in the class reference.

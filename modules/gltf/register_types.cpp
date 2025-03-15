@@ -135,12 +135,12 @@ void initialize_gltf_module(ModuleInitializationLevel p_level) {
 
 #ifdef TOOLS_ENABLED
 	if (p_level == MODULE_INITIALIZATION_LEVEL_EDITOR) {
-		GDREGISTER_CLASS(EditorSceneFormatImporterGLTF);
+		GDREGISTER_HIDDEN_CLASS(EditorSceneFormatImporterGLTF);
 		EditorPlugins::add_by_type<SceneExporterGLTFPlugin>();
 
 		// Project settings defined here so doctool finds them.
 		GLOBAL_DEF_RST_BASIC("filesystem/import/blender/enabled", true);
-		GDREGISTER_CLASS(EditorSceneFormatImporterBlend);
+		GDREGISTER_HIDDEN_CLASS(EditorSceneFormatImporterBlend);
 		// Can't (a priori) run external app on these platforms.
 		GLOBAL_DEF_RST("filesystem/import/blender/enabled.android", false);
 		GLOBAL_DEF_RST("filesystem/import/blender/enabled.web", false);
