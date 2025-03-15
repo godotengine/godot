@@ -204,6 +204,10 @@ void PortableCompressedTexture2D::create_from_image(const Ref<Image> &p_image, C
 	_set_data(buffer);
 }
 
+bool PortableCompressedTexture2D::has_mipmaps() const {
+	return mipmaps;
+}
+
 Image::Format PortableCompressedTexture2D::get_format() const {
 	return format;
 }

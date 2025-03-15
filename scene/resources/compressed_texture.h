@@ -65,6 +65,7 @@ private:
 	Image::Format format = Image::FORMAT_L8;
 	int w = 0;
 	int h = 0;
+	bool mipmaps = false;
 	mutable Ref<BitMap> alpha_cache;
 
 	Error _load_data(const String &p_path, int &r_width, int &r_height, Ref<Image> &image, bool &r_request_3d, bool &r_request_normal, bool &r_request_roughness, int &mipmap_limit, int p_size_limit = 0);
@@ -88,13 +89,15 @@ public:
 	static TextureFormatRoughnessRequestCallback request_roughness_callback;
 	static TextureFormatRequestCallback request_normal_callback;
 
-	Image::Format get_format() const;
 	Error load(const String &p_path);
 	String get_load_path() const;
 
 	int get_width() const override;
 	int get_height() const override;
 	virtual RID get_rid() const override;
+
+	virtual bool has_mipmaps() const override;
+	virtual Image::Format get_format() const;
 
 	virtual void set_path(const String &p_path, bool p_take_over) override;
 

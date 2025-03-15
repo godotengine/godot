@@ -60,6 +60,18 @@ bool Texture2D::has_alpha() const {
 	return ret;
 }
 
+Image::Format Texture2D::get_format() const {
+	Image::Format ret = Image::FORMAT_MAX;
+	GDVIRTUAL_CALL(_get_format, ret);
+	return ret;
+}
+
+bool Texture2D::has_mipmaps() const {
+	bool ret = false;
+	GDVIRTUAL_CALL(_has_mipmaps, ret);
+	return ret;
+}
+
 void Texture2D::draw(RID p_canvas_item, const Point2 &p_pos, const Color &p_modulate, bool p_transpose) const {
 	if (GDVIRTUAL_CALL(_draw, p_canvas_item, p_pos, p_modulate, p_transpose)) {
 		return;
@@ -99,6 +111,8 @@ void Texture2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_height"), &Texture2D::get_height);
 	ClassDB::bind_method(D_METHOD("get_size"), &Texture2D::get_size);
 	ClassDB::bind_method(D_METHOD("has_alpha"), &Texture2D::has_alpha);
+	ClassDB::bind_method(D_METHOD("has_mipmaps"), &Texture2D::has_mipmaps);
+	ClassDB::bind_method(D_METHOD("get_format"), &Texture2D::get_format);
 	ClassDB::bind_method(D_METHOD("draw", "canvas_item", "position", "modulate", "transpose"), &Texture2D::draw, DEFVAL(Color(1, 1, 1)), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("draw_rect", "canvas_item", "rect", "tile", "modulate", "transpose"), &Texture2D::draw_rect, DEFVAL(Color(1, 1, 1)), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("draw_rect_region", "canvas_item", "rect", "src_rect", "modulate", "transpose", "clip_uv"), &Texture2D::draw_rect_region, DEFVAL(Color(1, 1, 1)), DEFVAL(false), DEFVAL(true));
@@ -111,6 +125,8 @@ void Texture2D::_bind_methods() {
 	GDVIRTUAL_BIND(_get_height);
 	GDVIRTUAL_BIND(_is_pixel_opaque, "x", "y");
 	GDVIRTUAL_BIND(_has_alpha);
+	GDVIRTUAL_BIND(_has_mipmaps);
+	GDVIRTUAL_BIND(_get_format);
 
 	GDVIRTUAL_BIND(_draw, "to_canvas_item", "pos", "modulate", "transpose")
 	GDVIRTUAL_BIND(_draw_rect, "to_canvas_item", "rect", "tile", "modulate", "transpose")

@@ -55,6 +55,8 @@ protected:
 	GDVIRTUAL0RC_REQUIRED(int, _get_height)
 	GDVIRTUAL2RC(bool, _is_pixel_opaque, int, int)
 	GDVIRTUAL0RC(bool, _has_alpha)
+	GDVIRTUAL0RC(bool, _has_mipmaps)
+	GDVIRTUAL0RC(Image::Format, _get_format)
 
 	GDVIRTUAL4C(_draw, RID, Point2, Color, bool)
 	GDVIRTUAL5C(_draw_rect, RID, Rect2, bool, Color, bool)
@@ -65,8 +67,10 @@ public:
 	virtual int get_height() const;
 	virtual Size2 get_size() const;
 
-	virtual bool is_pixel_opaque(int p_x, int p_y) const;
+	virtual Image::Format get_format() const;
+	virtual bool has_mipmaps() const;
 
+	virtual bool is_pixel_opaque(int p_x, int p_y) const;
 	virtual bool has_alpha() const;
 
 	virtual void draw(RID p_canvas_item, const Point2 &p_pos, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false) const;
