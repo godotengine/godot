@@ -70,7 +70,7 @@
 				Returns the number of times an element is in the array.
 			</description>
 		</method>
-		<method name="duplicate">
+		<method name="duplicate" qualifiers="const">
 			<return type="PackedInt64Array" />
 			<description>
 				Creates a copy of the array, and returns it.
