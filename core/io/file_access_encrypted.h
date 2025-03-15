@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "core/crypto/crypto_core.h"
 #include "core/io/file_access.h"
 
 #define ENCRYPTED_HEADER_MAGIC 0x43454447
@@ -55,6 +56,8 @@ private:
 	bool use_magic = true;
 
 	void _close();
+
+	static CryptoCore::RandomGenerator *_fae_static_rng;
 
 public:
 	Error open_and_parse(Ref<FileAccess> p_base, const Vector<uint8_t> &p_key, Mode p_mode, bool p_with_magic = true, const Vector<uint8_t> &p_iv = Vector<uint8_t>());
@@ -97,6 +100,8 @@ public:
 	virtual Error _set_read_only_attribute(const String &p_file, bool p_ro) override;
 
 	virtual void close() override;
+
+	static void deinitialize();
 
 	FileAccessEncrypted() {}
 	~FileAccessEncrypted();
