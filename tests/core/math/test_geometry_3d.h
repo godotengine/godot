@@ -129,8 +129,9 @@ TEST_CASE("[Geometry3D] Compute Convex Mesh Points") {
 }
 
 TEST_CASE("[Geometry3D] Get Closest Point To Segment") {
-	Vector3 segment[2] = { Vector3(1, 1, 1), Vector3(5, 5, 5) };
-	Vector3 output = Geometry3D::get_closest_point_to_segment(Vector3(2, 1, 4), segment);
+	const Vector3 a = Vector3(1, 1, 1);
+	const Vector3 b = Vector3(5, 5, 5);
+	Vector3 output = Geometry3D::get_closest_point_to_segment(Vector3(2, 1, 4), a, b);
 	CHECK(output.is_equal_approx(Vector3(2.33333, 2.33333, 2.33333)));
 }
 
