@@ -51,7 +51,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-02-27 22:41+0000\n"
+"PO-Revision-Date: 2025-03-03 19:08+0000\n"
 "Last-Translator: Atur <aturaseman9@gmail.com>\n"
 "Language-Team: Persian <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/fa/>\n"
@@ -60,7 +60,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 5.10.2-rc\n"
+"X-Generator: Weblate 5.10.3-dev\n"
 
 msgid "Application"
 msgstr "برنامه"
@@ -831,7 +831,7 @@ msgid "Show Scene Tree Root Selection"
 msgstr "نمایش برگزیدگان ریشهٔ درخت صحنه"
 
 msgid "Docks"
-msgstr "داک‌ها"
+msgstr "لنگرگاه‌ها"
 
 msgid "Scene Tree"
 msgstr "درخت صحنه"
@@ -862,6 +862,9 @@ msgstr "زمینه"
 
 msgid "Icon and Font Color"
 msgstr "رنگ آیکن و قلم"
+
+msgid "Contrast"
+msgstr "تضاد"
 
 msgid "Icon Saturation"
 msgstr "اشباع آیکون"
@@ -982,6 +985,9 @@ msgstr "ویراستار متن"
 
 msgid "Line Spacing"
 msgstr "فاصله خطوط"
+
+msgid "Color Theme"
+msgstr "رنگ زمینه"
 
 msgid "Appearance"
 msgstr "ظاهر"
@@ -1250,9 +1256,6 @@ msgstr "برگرداندن سایه‌زن‌ها هنگام بارکردن"
 msgid "Visual Editors"
 msgstr "ویراشگر‌های بصری"
 
-msgid "Color Theme"
-msgstr "رنگ زمینه"
-
 msgid "Grid Pattern"
 msgstr "الگوی توری"
 
@@ -1268,6 +1271,12 @@ msgstr "اس‌اس‌اچ"
 msgid "Window Placement"
 msgstr "قرار دادن پنجره"
 
+msgid "Rect"
+msgstr "مستطیل"
+
+msgid "Screen"
+msgstr "صفحه"
+
 msgid "Auto Save"
 msgstr "ذخیره خودکار"
 
@@ -1276,6 +1285,9 @@ msgstr "ذخیره پیش از اجرا"
 
 msgid "Output"
 msgstr "برونداد"
+
+msgid "Font Size"
+msgstr "اندازهٔ قلم"
 
 msgid "Always Clear Output on Play"
 msgstr "همیشه هنگام پخش برونداد را پاک کن"
@@ -1294,6 +1306,9 @@ msgstr "میزبان"
 
 msgid "Editor TLS Certificates"
 msgstr "گواهی‌های تی.ال.اس ویراستار"
+
+msgid "Enable TLS V 1"
+msgstr "به‌کاراندازی تی.ال.اس نسخهٔ ۱"
 
 msgid "Debugger"
 msgstr "اشکال‌زدا"
@@ -1405,6 +1420,9 @@ msgstr "ازکاراندازی هشدار بازنویسی"
 
 msgid "Bone Renamer"
 msgstr "بازنامگذار استخوان"
+
+msgid "Rename Bones"
+msgstr "بازنامگذاری استخوان‌ها"
 
 msgid "Unique Node"
 msgstr "گرهٔ یکتا"
@@ -1989,9 +2007,6 @@ msgstr "گرهٔ جهان"
 msgid "Region Size"
 msgstr "اندازهٔ دامنه"
 
-msgid "Enable TLS V 1"
-msgstr "به‌کاراندازی تی.ال.اس نسخهٔ ۱"
-
 msgid "Loop Offset"
 msgstr "بازه از مبدای چرخه"
 
@@ -2084,9 +2099,6 @@ msgstr "نام یکتا"
 
 msgid "Graphics"
 msgstr "گرافیک"
-
-msgid "Screen"
-msgstr "صفحه"
 
 msgid "Support Small"
 msgstr "پشتیبانی کوچک"
@@ -2250,14 +2262,14 @@ msgstr "کاهانش"
 msgid "Panning Strength"
 msgstr "قدرت سراسرنمایی"
 
+msgid "Bus"
+msgstr "گذرگاه"
+
 msgid "Playback Type"
 msgstr "گونهٔ بازنواخت"
 
 msgid "Copy Mode"
 msgstr "حالت کپی"
-
-msgid "Rect"
-msgstr "مستطیل"
 
 msgid "Anchor Mode"
 msgstr "حالت لنگر"
@@ -2968,9 +2980,6 @@ msgstr "نوشتار"
 msgid "Font"
 msgstr "قلم"
 
-msgid "Font Size"
-msgstr "اندازهٔ قلم"
-
 msgid "Horizontal Alignment"
 msgstr "تراز افقی"
 
@@ -3106,6 +3115,9 @@ msgstr "لایهٔ بازتاب"
 msgid "Deprecated"
 msgstr "منسوخ"
 
+msgid "Root Bone"
+msgstr "استخوان ریشه"
+
 msgid "Target"
 msgstr "هدف"
 
@@ -3186,6 +3198,9 @@ msgstr "ریشهٔ گره"
 
 msgid "Track"
 msgstr "نوار"
+
+msgid "Callback Mode"
+msgstr "حالت بازخوانی"
 
 msgid "Method"
 msgstr "روش"
@@ -3575,7 +3590,7 @@ msgid "Canvas Items"
 msgstr "موارد بوم"
 
 msgid "Audio Listener"
-msgstr "شونده صوتی"
+msgstr "شنونده صوت"
 
 msgid "Enable 2D"
 msgstr "به‌کاراندازی دوبعدی"
@@ -3819,9 +3834,6 @@ msgstr "مه گنجایشی"
 
 msgid "Brightness"
 msgstr "روشنایی"
-
-msgid "Contrast"
-msgstr "تضاد"
 
 msgid "Saturation"
 msgstr "سیری"

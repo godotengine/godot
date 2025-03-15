@@ -897,11 +897,9 @@ def prepare_cache(env) -> None:
     # Convert GiB to bytes; treat negative numbers as 0 (unlimited).
     cache_limit = max(0, int(cache_limit * 1024 * 1024 * 1024))
     if env["verbose"]:
-        print(
-            "Current cache limit is {} (used: {})".format(
-                convert_size(cache_limit) if cache_limit else "∞",
-                convert_size(get_size(cache_path)),
-            )
+        print_info(
+            f"Current cache size is {convert_size(get_size(cache_path))}"
+            + (f" (limit: {convert_size(cache_limit)})" if cache_limit else "")
         )
 
     atexit.register(clean_cache, cache_path, cache_limit, env["verbose"])

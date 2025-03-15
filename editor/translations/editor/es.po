@@ -133,7 +133,7 @@
 # Victor Ortega <vitotankian@gmail.com>, 2024.
 # Augusto Hernández <agumano@outlook.es>, 2024.
 # jose luis barbosa cepeda <barbosa02058@gmail.com>, 2024.
-# Alejandro Moctezuma <moctezumaalejandro25@gmail.com>, 2024.
+# Alejandro Moctezuma <moctezumaalejandro25@gmail.com>, 2024, 2025.
 # trubiso <crishipohola@gmail.com>, 2024.
 # Luis Roel <luisroelsoftwarede@gmail.com>, 2024.
 # leonardo garcia hernandez <leoxdnpc2@gmail.com>, 2024.
@@ -145,13 +145,14 @@
 # José Andrés Urdaneta <urdaneta7834@gmail.com>, 2025.
 # andres valenzuela pacheco <andresmauricio6777@gmail.com>, 2025.
 # Marco Antonio Silva Mendoza <n00028146@upn.pe>, 2025.
+# Lucas García da Rosa <gdarlucas@gmail.com>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-02-27 06:54+0000\n"
-"Last-Translator: Javier <xavier.ocampos@gmail.com>\n"
+"PO-Revision-Date: 2025-03-05 16:13+0000\n"
+"Last-Translator: Alejandro Moctezuma <moctezumaalejandro25@gmail.com>\n"
 "Language-Team: Spanish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/es/>\n"
 "Language: es\n"
@@ -159,7 +160,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.10.2-dev\n"
+"X-Generator: Weblate 5.10.3-dev\n"
 
 msgid "Main Thread"
 msgstr "Hilo Principal"
@@ -1670,6 +1671,9 @@ msgstr "Desvincular Argumentos de Señal:"
 
 msgid "Receiver Method:"
 msgstr "Método Receptor:"
+
+msgid "Pick"
+msgstr "Seleccionar"
 
 msgid "Advanced"
 msgstr "Avanzado"
@@ -5361,6 +5365,9 @@ msgstr "Instalar desde un archivo"
 msgid "Install templates from a local file."
 msgstr "Instalar plantillas desde un archivo local."
 
+msgid "Go Online"
+msgstr "Ir a Internet"
+
 msgid "Cancel the download of the templates."
 msgstr "Cancele la descarga de las plantillas."
 
@@ -8199,9 +8206,6 @@ msgid ""
 msgstr ""
 "Nota: La Librería de Assets requiere de una conexión en línea e implica "
 "enviar datos a través de Internet."
-
-msgid "Go Online"
-msgstr "Ir a Internet"
 
 msgid "Failed to get repository configuration."
 msgstr "Error al obtener la configuración del repositorio."
@@ -11052,7 +11056,7 @@ msgid ""
 "Note that a plugin may use several languages at once by adding more scripts "
 "to the plugin."
 msgstr ""
-"Requerido. El lenguaje scripting que se utilizará para el script.\n"
+"Requerido. El lenguaje de scripting que se utilizará para el script.\n"
 "Tenga en cuenta que un plugin puede utilizar varios lenguajes a la vez "
 "agregando más scripts al plugin."
 
@@ -15923,9 +15927,6 @@ msgstr "Etiquetas de Características"
 msgid "Pick Root Node Type"
 msgstr "Seleccionar Tipo de Nodo Raíz"
 
-msgid "Pick"
-msgstr "Seleccionar"
-
 msgid "Scene name is empty."
 msgstr "El nombre de la escena está vacío."
 
@@ -16624,41 +16625,6 @@ msgstr "Reiniciar y Actualizar"
 
 msgid "Updating Script UIDs"
 msgstr "Actualizando UIDs de Script"
-
-msgid ""
-"As of Godot 4.4, scenes and resources use UIDs to reference scripts and "
-"shaders.\n"
-"\n"
-"Normally, this update is applied to a single scene or resource once you save "
-"it in Godot 4.4 for the first time. If you have a lot of scenes and/or "
-"resources, doing this manually may be time-consuming. This tool will update "
-"all of the project's scenes and resources at once.\n"
-"\n"
-"Click \"Restart & Upgrade\" to restart the editor and update all of the "
-"scenes and resources in this project. Depending on the project size, it may "
-"take several minutes.\n"
-"\n"
-"Note: Please make sure you have your project backed up before running the "
-"tool, to avoid the possibility of data loss. Additionally, make sure to "
-"commit all .uid files into version control (and do not add them to ignore-"
-"lists like .gitignore)."
-msgstr ""
-"A partir de Godot 4.4, las escenas y recursos usan UIDs para referenciar "
-"scripts y shaders.\n"
-"\n"
-"Normalmente, esta actualización se aplica a una sola escena o recurso la "
-"primera vez que lo guardas en Godot 4.4. Si tienes muchas escenas y/o "
-"recursos, hacerlo manualmente puede llevar mucho tiempo. Esta herramienta "
-"actualizará todas las escenas y recursos del proyecto a la vez.\n"
-"\n"
-"Haz clic en \"Restart & Upgrade\" para reiniciar el editor y actualizar todas "
-"las escenas y recursos de este proyecto. Dependiendo del tamaño del proyecto, "
-"puede tardar varios minutos.\n"
-"\n"
-"Nota: Por favor, asegúrate de tener una copia de seguridad de tu proyecto "
-"antes de ejecutar la herramienta, para evitar la posibilidad de pérdida de "
-"datos. Además, asegúrate de confirmar todos los archivos .uid en el control "
-"de versiones (y no los añadas a listas de ignorados como .gitignore)."
 
 msgid "Learn More"
 msgstr "Más Información"
@@ -18609,9 +18575,9 @@ msgid ""
 "Settings (Export > Windows > rcedit), or disable \"Application > Modify "
 "Resources\" in the export preset."
 msgstr ""
-"No se pudo iniciar el ejecutable rcedit. Configura la ruta de rcedit en la "
-"Configuración del Editor (Exportar > Windows > rcedit), o desactiva "
-"\"Aplicación > Modificar Recursos\" en el ajuste de exportación."
+"No se pudo iniciar el ejecutable rcedit. Configure la ruta de rcedit en la "
+"Configuración del Editor (Exportar > Windows > rcedit), o desactive "
+"\"Aplicación > Modificar Recursos\" en los ajustes de exportación."
 
 msgid "rcedit failed to modify executable: %s."
 msgstr "rcedit falló al modificar el ejecutable: %s."
@@ -20061,14 +20027,14 @@ msgstr ""
 "Para continuar con cambios mínimos en el código añade 'uniform sampler2D %s: "
 "hint_%s, filter_linear_mipmap;' cerca de la parte superior de tu shader."
 
+msgid "Can't use function as identifier: '%s'."
+msgstr "No se puede utilizar la función como identificador: '%s'."
+
 msgid "Varying with '%s' data type may only be used in the '%s' function."
 msgstr "El varying con tipo de dato '%s' solo puede usarse en la función '%s'."
 
 msgid "Varying '%s' must be assigned in the '%s' function first."
 msgstr "El varying '%s' debe asignarse primero en la función '%s'."
-
-msgid "Can't use function as identifier: '%s'."
-msgstr "No se puede utilizar la función como identificador: '%s'."
 
 msgid "Only integer expressions are allowed for indexing."
 msgstr "Sólo se permiten expresiones enteras para la indexación."

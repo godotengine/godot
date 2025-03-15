@@ -4914,7 +4914,7 @@ uint32_t RenderingDevice::draw_list_get_current_pass() {
 RenderingDevice::DrawListID RenderingDevice::draw_list_switch_to_next_pass() {
 	ERR_RENDER_THREAD_GUARD_V(INVALID_ID);
 
-	ERR_FAIL_COND_V(draw_list.active, INVALID_FORMAT_ID);
+	ERR_FAIL_COND_V(!draw_list.active, INVALID_FORMAT_ID);
 	ERR_FAIL_COND_V(draw_list_current_subpass >= draw_list_subpass_count - 1, INVALID_FORMAT_ID);
 
 	draw_list_current_subpass++;

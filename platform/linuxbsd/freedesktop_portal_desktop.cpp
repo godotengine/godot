@@ -53,7 +53,7 @@
 #define BUS_INTERFACE_SETTINGS "org.freedesktop.portal.Settings"
 #define BUS_INTERFACE_FILE_CHOOSER "org.freedesktop.portal.FileChooser"
 
-bool FreeDesktopPortalDesktop::try_parse_variant(DBusMessage *p_reply_message, int p_type, void *r_value) {
+bool FreeDesktopPortalDesktop::try_parse_variant(DBusMessage *p_reply_message, ReadVariantType p_type, void *r_value) {
 	DBusMessageIter iter[3];
 
 	dbus_message_iter_init(p_reply_message, &iter[0]);
@@ -67,15 +67,44 @@ bool FreeDesktopPortalDesktop::try_parse_variant(DBusMessage *p_reply_message, i
 	}
 
 	dbus_message_iter_recurse(&iter[1], &iter[2]);
-	if (dbus_message_iter_get_arg_type(&iter[2]) != p_type) {
-		return false;
+	if (p_type == VAR_TYPE_COLOR) {
+		if (dbus_message_iter_get_arg_type(&iter[2]) != DBUS_TYPE_STRUCT) {
+			return false;
+		}
+		DBusMessageIter struct_iter;
+		dbus_message_iter_recurse(&iter[2], &struct_iter);
+		int idx = 0;
+		while (dbus_message_iter_get_arg_type(&struct_iter) == DBUS_TYPE_DOUBLE) {
+			double value = 0.0;
+			dbus_message_iter_get_basic(&struct_iter, &value);
+			if (value < 0.0 || value > 1.0) {
+				return false;
+			}
+			if (idx == 0) {
+				static_cast<Color *>(r_value)->r = value;
+			} else if (idx == 1) {
+				static_cast<Color *>(r_value)->g = value;
+			} else if (idx == 2) {
+				static_cast<Color *>(r_value)->b = value;
+			}
+			idx++;
+			if (!dbus_message_iter_next(&struct_iter)) {
+				break;
+			}
+		}
+		if (idx != 3) {
+			return false;
+		}
+	} else if (p_type == VAR_TYPE_UINT32) {
+		if (dbus_message_iter_get_arg_type(&iter[2]) != DBUS_TYPE_UINT32) {
+			return false;
+		}
+		dbus_message_iter_get_basic(&iter[2], r_value);
 	}
-
-	dbus_message_iter_get_basic(&iter[2], r_value);
 	return true;
 }
 
-bool FreeDesktopPortalDesktop::read_setting(const char *p_namespace, const char *p_key, int p_type, void *r_value) {
+bool FreeDesktopPortalDesktop::read_setting(const char *p_namespace, const char *p_key, ReadVariantType p_type, void *r_value) {
 	if (unsupported) {
 		return false;
 	}
@@ -127,8 +156,24 @@ uint32_t FreeDesktopPortalDesktop::get_appearance_color_scheme() {
 	}
 
 	uint32_t value = 0;
-	read_setting("org.freedesktop.appearance", "color-scheme", DBUS_TYPE_UINT32, &value);
-	return value;
+	if (read_setting("org.freedesktop.appearance", "color-scheme", VAR_TYPE_UINT32, &value)) {
+		return value;
+	} else {
+		return 0;
+	}
+}
+
+Color FreeDesktopPortalDesktop::get_appearance_accent_color() {
+	if (unsupported) {
+		return Color(0, 0, 0, 0);
+	}
+
+	Color value;
+	if (read_setting("org.freedesktop.appearance", "accent-color", VAR_TYPE_COLOR, &value)) {
+		return value;
+	} else {
+		return Color(0, 0, 0, 0);
+	}
 }
 
 static const char *cs_empty = "";
@@ -639,7 +684,7 @@ void FreeDesktopPortalDesktop::_thread_monitor(void *p_ud) {
 						dbus_message_iter_get_basic(&iter, &value);
 						String key = String::utf8(value);
 
-						if (name_space == "org.freedesktop.appearance" && key == "color-scheme") {
+						if (name_space == "org.freedesktop.appearance" && (key == "color-scheme" || key == "accent-color")) {
 							callable_mp(portal, &FreeDesktopPortalDesktop::_system_theme_changed_callback).call_deferred();
 						}
 					}

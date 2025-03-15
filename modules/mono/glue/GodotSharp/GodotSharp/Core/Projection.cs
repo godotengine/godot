@@ -846,6 +846,33 @@ namespace Godot
         }
 
         /// <summary>
+        /// Constructs a projection from 16 scalars.
+        /// </summary>
+        /// <param name="xx">The X column vector's X component, accessed via <c>p.X.X</c> or <c>[0][0]</c>.</param>
+        /// <param name="xy">The X column vector's Y component, accessed via <c>p.X.Y</c> or <c>[0][1]</c>.</param>
+        /// <param name="xz">The X column vector's Z component, accessed via <c>p.X.Z</c> or <c>[0][2]</c>.</param>
+        /// <param name="xw">The X column vector's W component, accessed via <c>p.X.W</c> or <c>[0][3]</c>.</param>
+        /// <param name="yx">The Y column vector's X component, accessed via <c>p.Y.X</c> or <c>[1][0]</c>.</param>
+        /// <param name="yy">The Y column vector's Y component, accessed via <c>p.Y.Y</c> or <c>[1][1]</c>.</param>
+        /// <param name="yz">The Y column vector's Z component, accessed via <c>p.Y.Z</c> or <c>[1][2]</c>.</param>
+        /// <param name="yw">The Y column vector's W component, accessed via <c>p.Y.W</c> or <c>[1][3]</c>.</param>
+        /// <param name="zx">The Z column vector's X component, accessed via <c>p.Z.X</c> or <c>[2][0]</c>.</param>
+        /// <param name="zy">The Z column vector's Y component, accessed via <c>p.Z.Y</c> or <c>[2][1]</c>.</param>
+        /// <param name="zz">The Z column vector's Z component, accessed via <c>p.Z.Z</c> or <c>[2][2]</c>.</param>
+        /// <param name="zw">The Z column vector's W component, accessed via <c>p.Z.W</c> or <c>[2][3]</c>.</param>
+        /// <param name="wx">The W column vector's X component, accessed via <c>p.W.X</c> or <c>[3][0]</c>.</param>
+        /// <param name="wy">The W column vector's Y component, accessed via <c>p.W.Y</c> or <c>[3][1]</c>.</param>
+        /// <param name="wz">The W column vector's Z component, accessed via <c>p.W.Z</c> or <c>[3][2]</c>.</param>
+        /// <param name="ww">The W column vector's W component, accessed via <c>p.W.W</c> or <c>[3][3]</c>.</param>
+        public Projection(real_t xx, real_t xy, real_t xz, real_t xw, real_t yx, real_t yy, real_t yz, real_t yw, real_t zx, real_t zy, real_t zz, real_t zw, real_t wx, real_t wy, real_t wz, real_t ww)
+        {
+            X = new Vector4(xx, xy, xz, xw);
+            Y = new Vector4(yx, yy, yz, yw);
+            Z = new Vector4(zx, zy, zz, zw);
+            W = new Vector4(wx, wy, wz, ww);
+        }
+
+        /// <summary>
         /// Constructs a new <see cref="Projection"/> from a <see cref="Transform3D"/>.
         /// </summary>
         /// <param name="transform">The <see cref="Transform3D"/>.</param>

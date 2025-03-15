@@ -3799,6 +3799,8 @@ bool BindingsGenerator::_arg_default_value_is_assignable_to_type(const Variant &
 		case Variant::VECTOR2:
 		case Variant::RECT2:
 		case Variant::VECTOR3:
+		case Variant::VECTOR4:
+		case Variant::PROJECTION:
 		case Variant::RID:
 		case Variant::PACKED_BYTE_ARRAY:
 		case Variant::PACKED_INT32_ARRAY:
@@ -3828,7 +3830,10 @@ bool BindingsGenerator::_arg_default_value_is_assignable_to_type(const Variant &
 		case Variant::VECTOR3I:
 			return p_arg_type.name == name_cache.type_Vector3 ||
 					p_arg_type.name == Variant::get_type_name(p_val.get_type());
-		default:
+		case Variant::VECTOR4I:
+			return p_arg_type.name == name_cache.type_Vector4 ||
+					p_arg_type.name == Variant::get_type_name(p_val.get_type());
+		case Variant::VARIANT_MAX:
 			CRASH_NOW_MSG("Unexpected Variant type: " + itos(p_val.get_type()));
 			break;
 	}
@@ -4111,9 +4116,8 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 				imethod.return_type.cname = _get_type_name_from_meta(return_info.type, m ? m->get_argument_meta(-1) : (GodotTypeInfo::Metadata)method_info.return_val_metadata);
 			}
 
-			int idx = 0;
-			for (List<PropertyInfo>::ConstIterator itr = method_info.arguments.begin(); itr != method_info.arguments.end(); ++itr, ++idx) {
-				const PropertyInfo &arginfo = *itr;
+			for (int64_t idx = 0; idx < method_info.arguments.size(); ++idx) {
+				const PropertyInfo &arginfo = method_info.arguments[idx];
 
 				String orig_arg_name = arginfo.name;
 
@@ -4243,9 +4247,8 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 			isignal.name = method_info.name;
 			isignal.cname = method_info.name;
 
-			int idx = 0;
-			for (List<PropertyInfo>::ConstIterator itr = method_info.arguments.begin(); itr != method_info.arguments.end(); ++itr, ++idx) {
-				const PropertyInfo &arginfo = *itr;
+			for (int64_t idx = 0; idx < method_info.arguments.size(); ++idx) {
+				const PropertyInfo &arginfo = method_info.arguments[idx];
 
 				String orig_arg_name = arginfo.name;
 
@@ -4697,7 +4700,7 @@ bool BindingsGenerator::_arg_default_value_from_variant(const Variant &p_val, Ar
 					"Parameter of type '" + String(r_iarg.type.cname) + "' can only have null/zero as the default value.");
 			r_iarg.default_argument = "default";
 			break;
-		default:
+		case Variant::VARIANT_MAX:
 			ERR_FAIL_V_MSG(false, "Unexpected Variant type: " + itos(p_val.get_type()));
 			break;
 	}

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TOUCH_ACTIONS_PANEL_H
-#define TOUCH_ACTIONS_PANEL_H
+#pragma once
 
 #include "scene/gui/panel_container.h"
 
@@ -67,5 +66,3 @@ private:
 public:
 	TouchActionsPanel();
 };
-
-#endif // TOUCH_ACTIONS_PANEL_H

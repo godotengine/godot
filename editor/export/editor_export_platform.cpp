@@ -1642,8 +1642,7 @@ Error EditorExportPlatform::_remove_pack_file(void *p_userdata, const String &p_
 		pd->f->store_8(0);
 	}
 
-	sd.md5.resize(16);
-	sd.md5.fill(0);
+	sd.md5.resize_zeroed(16);
 
 	pd->file_ofs.push_back(sd);
 

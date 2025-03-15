@@ -984,6 +984,13 @@ Projection::Projection(const Vector4 &p_x, const Vector4 &p_y, const Vector4 &p_
 	columns[3] = p_w;
 }
 
+Projection::Projection(real_t p_xx, real_t p_xy, real_t p_xz, real_t p_xw, real_t p_yx, real_t p_yy, real_t p_yz, real_t p_yw, real_t p_zx, real_t p_zy, real_t p_zz, real_t p_zw, real_t p_wx, real_t p_wy, real_t p_wz, real_t p_ww) {
+	columns[0] = Vector4(p_xx, p_xy, p_xz, p_xw);
+	columns[1] = Vector4(p_yx, p_yy, p_yz, p_yw);
+	columns[2] = Vector4(p_zx, p_zy, p_zz, p_zw);
+	columns[3] = Vector4(p_wx, p_wy, p_wz, p_ww);
+}
+
 Projection::Projection(const Transform3D &p_transform) {
 	const Transform3D &tr = p_transform;
 	real_t *m = &columns[0][0];

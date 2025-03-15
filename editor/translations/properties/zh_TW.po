@@ -868,6 +868,9 @@ msgstr "在 Toast 通知中顯示內部錯誤"
 msgid "Show Update Spinner"
 msgstr "顯示更新旋轉圖"
 
+msgid "V-Sync Mode"
+msgstr "垂直同步模式"
+
 msgid "Update Continuously"
 msgstr "持續更新"
 
@@ -921,6 +924,9 @@ msgstr "主題"
 
 msgid "Icon and Font Color"
 msgstr "圖示及字體顏色"
+
+msgid "Contrast"
+msgstr "對比度"
 
 msgid "Draw Extra Borders"
 msgstr "繪製額外邊框"
@@ -1062,6 +1068,9 @@ msgstr "文字編輯器"
 
 msgid "Line Spacing"
 msgstr "行間距"
+
+msgid "Color Theme"
+msgstr "顏色主題"
 
 msgid "Appearance"
 msgstr "外觀"
@@ -1528,9 +1537,6 @@ msgstr "載入時恢復著色器"
 msgid "Visual Editors"
 msgstr "視覺化編輯器"
 
-msgid "Color Theme"
-msgstr "顏色主題"
-
 msgid "Minimap Opacity"
 msgstr "迷你地圖不透明度"
 
@@ -1555,8 +1561,14 @@ msgstr "SCP"
 msgid "Window Placement"
 msgstr "視窗擺放"
 
+msgid "Rect"
+msgstr "矩形"
+
 msgid "Rect Custom Position"
 msgstr "矩形自定義位置"
+
+msgid "Screen"
+msgstr "螢幕"
 
 msgid "Auto Save"
 msgstr "自動保存"
@@ -1566,6 +1578,9 @@ msgstr "執行前儲存"
 
 msgid "Output"
 msgstr "輸出"
+
+msgid "Font Size"
+msgstr "字體大小"
 
 msgid "Always Clear Output on Play"
 msgstr "執行時永遠清除輸出"
@@ -2418,9 +2433,6 @@ msgstr "掌上型"
 
 msgid "Orientation"
 msgstr "朝向"
-
-msgid "V-Sync Mode"
-msgstr "垂直同步模式"
 
 msgid "Output Latency"
 msgstr "輸出延遲"
@@ -3427,9 +3439,6 @@ msgstr "XR 功能"
 msgid "XR Mode"
 msgstr "XR 模式"
 
-msgid "Screen"
-msgstr "螢幕"
-
 msgid "Immersive Mode"
 msgstr "沉浸模式"
 
@@ -3981,9 +3990,6 @@ msgstr "區域遮罩"
 
 msgid "Copy Mode"
 msgstr "複製模式"
-
-msgid "Rect"
-msgstr "矩形"
 
 msgid "Anchor Mode"
 msgstr "錨點模式"
@@ -5073,9 +5079,6 @@ msgstr "輪廓調變"
 
 msgid "Font"
 msgstr "字體"
-
-msgid "Font Size"
-msgstr "字體大小"
 
 msgid "Horizontal Alignment"
 msgstr "水平對齊"
@@ -7710,9 +7713,6 @@ msgstr "調整"
 
 msgid "Brightness"
 msgstr "亮度"
-
-msgid "Contrast"
-msgstr "對比度"
 
 msgid "Saturation"
 msgstr "飽和度"

@@ -525,6 +525,12 @@
 				Adds a [code skip-lint][u][/code] tag to the tag stack.
 			</description>
 		</method>
+		<method name="reload_effects">
+			<return type="void" />
+			<description>
+				Reloads custom effects. Useful when [member custom_effects] is modified manually.
+			</description>
+		</method>
 		<method name="remove_paragraph">
 			<return type="bool" />
 			<param index="0" name="paragraph" type="int" />

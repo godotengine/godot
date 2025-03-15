@@ -20,7 +20,6 @@ jobs:
             target: editor
             tests: true
             bin: ./bin/godot.macos.editor.universal
-            cache-limit: 1
 
           - name: Template (target=template_release, tests=yes)
             cache-name: macos-template
@@ -28,7 +27,6 @@ jobs:
             tests: true
             sconsflags: debug_symbols=no
             bin: ./bin/godot.macos.template_release.universal
-            cache-limit: 1
 
     steps:
       - name: Checkout
@@ -56,7 +54,6 @@ jobs:
           platform: macos
           target: ${{ matrix.target }}
           tests: ${{ matrix.tests }}
-          scons-cache-limit: 0 # Only cap on second run to avoid purging unnecessarily
 
       - name: Compilation (arm64)
         uses: ./.github/actions/godot-build
@@ -65,7 +62,6 @@ jobs:
           platform: macos
           target: ${{ matrix.target }}
           tests: ${{ matrix.tests }}
-          scons-cache-limit: ${{ matrix.cache-limit }}
 
       - name: Save Godot build cache
         uses: ./.github/actions/godot-cache-save

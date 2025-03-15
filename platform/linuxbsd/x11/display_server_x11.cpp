@@ -398,6 +398,10 @@ bool DisplayServerX11::is_dark_mode() const {
 	}
 }
 
+Color DisplayServerX11::get_accent_color() const {
+	return portal_desktop->get_appearance_accent_color();
+}
+
 void DisplayServerX11::set_system_theme_change_callback(const Callable &p_callable) {
 	portal_desktop->set_system_theme_change_callback(p_callable);
 }
