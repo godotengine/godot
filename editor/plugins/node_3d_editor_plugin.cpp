@@ -44,6 +44,7 @@
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/gui/editor_run_bar.h"
 #include "editor/gui/editor_spin_slider.h"
+#include "editor/gui/editor_toaster.h"
 #include "editor/plugins/animation_player_editor_plugin.h"
 #include "editor/plugins/gizmos/audio_listener_3d_gizmo_plugin.h"
 #include "editor/plugins/gizmos/audio_stream_player_3d_gizmo_plugin.h"
@@ -2471,7 +2472,11 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 					begin_transform(TRANSFORM_SCALE, true);
 				}
 			}
-			if (ED_IS_SHORTCUT("spatial_editor/collision_reposition", p_event) && editor_selection->get_selected_node_list().size() == 1 && !collision_reposition) {
+			if (ED_IS_SHORTCUT("spatial_editor/collision_reposition", p_event) && editor_selection->get_selected_node_list().size() > 0 && !collision_reposition) {
+				if (editor_selection->get_selected_node_list().size() > 1) {
+					EditorToaster::get_singleton()->popup_str(TTR("Repositioning multiple objects is currently not supported."), EditorToaster::SEVERITY_WARNING);
+					return;
+				}
 				if (_edit.mode == TRANSFORM_NONE || _edit.instant) {
 					if (_edit.mode == TRANSFORM_NONE) {
 						_compute_edit(_edit.mouse_pos);
