@@ -28,11 +28,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TILE_MAP_LAYER_H
-#define TILE_MAP_LAYER_H
+#pragma once
 
 #include "scene/resources/2d/tile_set.h"
 
+class NavigationMeshSourceGeometryData2D;
 class TileSetAtlasSource;
 class TileMap;
 
@@ -512,10 +512,16 @@ public:
 	void set_navigation_visibility_mode(DebugVisibilityMode p_show_navigation);
 	DebugVisibilityMode get_navigation_visibility_mode() const;
 
+private:
+	static Callable _navmesh_source_geometry_parsing_callback;
+	static RID _navmesh_source_geometry_parser;
+
+public:
+	static void navmesh_parse_init();
+	static void navmesh_parse_source_geometry(const Ref<NavigationPolygon> &p_navigation_mesh, Ref<NavigationMeshSourceGeometryData2D> p_source_geometry_data, Node *p_node);
+
 	TileMapLayer();
 	~TileMapLayer();
 };
 
 VARIANT_ENUM_CAST(TileMapLayer::DebugVisibilityMode);
-
-#endif // TILE_MAP_LAYER_H

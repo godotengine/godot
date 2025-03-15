@@ -243,9 +243,8 @@ static bool _can_use_validate_call(const MethodBind *p_method, const Vector<GDSc
 	}
 	MethodInfo info;
 	ClassDB::get_method_info(p_method->get_instance_class(), p_method->get_name(), &info);
-	int i = 0;
-	for (List<PropertyInfo>::ConstIterator itr = info.arguments.begin(); itr != info.arguments.end(); ++itr, ++i) {
-		if (!_is_exact_type(*itr, p_arguments[i].type)) {
+	for (int64_t i = 0; i < info.arguments.size(); ++i) {
+		if (!_is_exact_type(info.arguments[i], p_arguments[i].type)) {
 			return false;
 		}
 	}
@@ -2278,7 +2277,7 @@ GDScriptFunction *GDScriptCompiler::_parse_function(Error &r_error, GDScript *p_
 		return_type = _gdtype_from_datatype(p_func->get_datatype(), p_script);
 	} else {
 		if (p_for_ready) {
-			func_name = SceneStringName(_ready);
+			func_name = "@implicit_ready";
 		} else {
 			func_name = "@implicit_new";
 		}
@@ -2363,7 +2362,7 @@ GDScriptFunction *GDScriptCompiler::_parse_function(Error &r_error, GDScript *p_
 			}
 
 			if (field->onready != is_implicit_ready) {
-				// Only initialize in @implicit_ready.
+				// Only initialize in `@implicit_ready()`.
 				continue;
 			}
 
@@ -2972,7 +2971,7 @@ Error GDScriptCompiler::_compile_class(GDScript *p_script, const GDScriptParser:
 	}
 
 	{
-		// Create an implicit constructor in any case.
+		// Create `@implicit_new()` special function in any case.
 		Error err = OK;
 		_parse_function(err, p_script, p_class, nullptr);
 		if (err) {
@@ -2981,7 +2980,7 @@ Error GDScriptCompiler::_compile_class(GDScript *p_script, const GDScriptParser:
 	}
 
 	if (p_class->onready_used) {
-		// Create an implicit_ready constructor.
+		// Create `@implicit_ready()` special function.
 		Error err = OK;
 		_parse_function(err, p_script, p_class, nullptr, true);
 		if (err) {

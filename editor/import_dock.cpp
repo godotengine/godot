@@ -297,13 +297,11 @@ void ImportDock::set_edit_multiple_paths(const Vector<String> &p_paths) {
 		if (value_frequency.has(E.option.name)) {
 			Dictionary d = value_frequency[E.option.name];
 			int freq = 0;
-			List<Variant> v;
-			d.get_key_list(&v);
 			Variant value;
-			for (const Variant &F : v) {
-				int f = d[F];
+			for (const KeyValue<Variant, Variant> &kv : d) {
+				int f = kv.value;
 				if (f > freq) {
-					value = F;
+					value = kv.key;
 				}
 			}
 
@@ -456,16 +454,14 @@ void ImportDock::_preset_selected(int p_idx) {
 			ERR_FAIL_COND(!ProjectSettings::get_singleton()->has_setting(setting_name));
 
 			Dictionary import_settings = GLOBAL_GET(setting_name);
-			List<Variant> keys;
-			import_settings.get_key_list(&keys);
 
 			if (params->checking) {
 				params->checked.clear();
 			}
-			for (const Variant &E : keys) {
-				params->values[E] = import_settings[E];
+			for (const KeyValue<Variant, Variant> &kv : import_settings) {
+				params->values[kv.key] = kv.value;
 				if (params->checking) {
-					params->checked.insert(E);
+					params->checked.insert(kv.key);
 				}
 			}
 			params->update();
@@ -665,7 +661,7 @@ void ImportDock::_reimport() {
 
 			//handle group file
 			Ref<ResourceImporter> importer = ResourceFormatImporter::get_singleton()->get_importer_by_name(importer_name);
-			ERR_CONTINUE(!importer.is_valid());
+			ERR_CONTINUE(importer.is_null());
 			String group_file_property = importer->get_option_group_file();
 			if (!group_file_property.is_empty()) {
 				//can import from a group (as in, atlas)

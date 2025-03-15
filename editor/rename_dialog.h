@@ -28,11 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef RENAME_DIALOG_H
-#define RENAME_DIALOG_H
-
-#include "modules/modules_enabled.gen.h" // For regex.
-#ifdef MODULE_REGEX_ENABLED
+#pragma once
 
 #include "editor/gui/scene_tree_editor.h"
 #include "scene/gui/dialogs.h"
@@ -113,7 +109,3 @@ public:
 
 	RenameDialog(SceneTreeEditor *p_scene_tree_editor);
 };
-
-#endif // MODULE_REGEX_ENABLED
-
-#endif // RENAME_DIALOG_H

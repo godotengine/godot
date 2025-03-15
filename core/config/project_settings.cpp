@@ -39,7 +39,6 @@
 #include "core/io/marshalls.h"
 #include "core/io/resource_uid.h"
 #include "core/object/script_language.h"
-#include "core/os/keyboard.h"
 #include "core/templates/rb_set.h"
 #include "core/variant/typed_array.h"
 #include "core/variant/variant_parser.h"
@@ -78,7 +77,7 @@ String ProjectSettings::get_imported_files_path() const {
 // This is used by the project manager to provide the initial_settings for config/features.
 const PackedStringArray ProjectSettings::get_required_features() {
 	PackedStringArray features;
-	features.append(VERSION_BRANCH);
+	features.append(GODOT_VERSION_BRANCH);
 #ifdef REAL_T_IS_DOUBLE
 	features.append("Double Precision");
 #endif
@@ -93,9 +92,9 @@ const PackedStringArray ProjectSettings::_get_supported_features() {
 #endif
 	// Allow pinning to a specific patch number or build type by marking
 	// them as supported. They're only used if the user adds them manually.
-	features.append(VERSION_BRANCH "." _MKSTR(VERSION_PATCH));
-	features.append(VERSION_FULL_CONFIG);
-	features.append(VERSION_FULL_BUILD);
+	features.append(GODOT_VERSION_BRANCH "." _MKSTR(GODOT_VERSION_PATCH));
+	features.append(GODOT_VERSION_FULL_CONFIG);
+	features.append(GODOT_VERSION_FULL_BUILD);
 
 #ifdef RD_ENABLED
 	features.append("Forward Plus");
@@ -209,7 +208,7 @@ String ProjectSettings::localize_path(const String &p_path) const {
 		if (plocal[plocal.length() - 1] == '/') {
 			sep += 1;
 		}
-		return plocal + path.substr(sep, path.size() - sep);
+		return plocal + path.substr(sep);
 	}
 }
 
@@ -290,7 +289,7 @@ bool ProjectSettings::_set(const StringName &p_name, const Variant &p_value) {
 				remove_autoload(node_name);
 			}
 		} else if (p_name.operator String().begins_with("global_group/")) {
-			String group_name = p_name.operator String().get_slice("/", 1);
+			String group_name = p_name.operator String().get_slicec('/', 1);
 			if (global_groups.has(group_name)) {
 				remove_global_group(group_name);
 			}
@@ -341,7 +340,7 @@ bool ProjectSettings::_set(const StringName &p_name, const Variant &p_value) {
 			}
 			add_autoload(autoload);
 		} else if (p_name.operator String().begins_with("global_group/")) {
-			String group_name = p_name.operator String().get_slice("/", 1);
+			String group_name = p_name.operator String().get_slicec('/', 1);
 			add_global_group(group_name, p_value);
 		}
 	}
@@ -473,13 +472,30 @@ void ProjectSettings::_emit_changed() {
 	emit_signal("settings_changed");
 }
 
-bool ProjectSettings::_load_resource_pack(const String &p_pack, bool p_replace_files, int p_offset) {
+bool ProjectSettings::load_resource_pack(const String &p_pack, bool p_replace_files, int p_offset) {
+	return ProjectSettings::_load_resource_pack(p_pack, p_replace_files, p_offset, false);
+}
+
+bool ProjectSettings::_load_resource_pack(const String &p_pack, bool p_replace_files, int p_offset, bool p_main_pack) {
 	if (PackedData::get_singleton()->is_disabled()) {
 		return false;
 	}
 
-	bool ok = PackedData::get_singleton()->add_pack(p_pack, p_replace_files, p_offset) == OK;
+	if (p_pack == "res://") {
+		// Loading the resource directory as a pack source is reserved for internal use only.
+		return false;
+	}
 
+	if (!p_main_pack && !using_datapack && !OS::get_singleton()->get_resource_dir().is_empty()) {
+		// Add the project's resource file system to PackedData so directory access keeps working when
+		// the game is running without a main pack, like in the editor or on Android.
+		PackedData::get_singleton()->add_pack_source(memnew(PackedSourceDirectory));
+		PackedData::get_singleton()->add_pack("res://", false, 0);
+		DirAccess::make_default<DirAccessPack>(DirAccess::ACCESS_RESOURCES);
+		using_datapack = true;
+	}
+
+	bool ok = PackedData::get_singleton()->add_pack(p_pack, p_replace_files, p_offset) == OK;
 	if (!ok) {
 		return false;
 	}
@@ -492,9 +508,11 @@ bool ProjectSettings::_load_resource_pack(const String &p_pack, bool p_replace_f
 		ResourceUID::get_singleton()->load_from_cache(false);
 	}
 
-	//if data.pck is found, all directory access will be from here
-	DirAccess::make_default<DirAccessPack>(DirAccess::ACCESS_RESOURCES);
-	using_datapack = true;
+	// If the data pack was found, all directory access will be from here.
+	if (!using_datapack) {
+		DirAccess::make_default<DirAccessPack>(DirAccess::ACCESS_RESOURCES);
+		using_datapack = true;
+	}
 
 	return true;
 }
@@ -511,24 +529,6 @@ void ProjectSettings::_convert_to_last_version(int p_from_version) {
 				action["deadzone"] = Variant(0.5f);
 				action["events"] = array;
 				E.value.variant = action;
-			}
-		}
-	}
-	if (p_from_version == 5) {
-		// Converts the device in events from -3 to -1.
-		// -3 was introduced in GH-97707 as a way to prevent a clash in device IDs, but as reported in GH-99243, this leads to problems.
-		// -3 was used during dev-releases, so this conversion helps to revert such affected projects.
-		// This conversion doesn't affect any other projects, since -3 is not used otherwise.
-		for (KeyValue<StringName, ProjectSettings::VariantContainer> &E : props) {
-			if (String(E.key).begins_with("input/")) {
-				Dictionary action = E.value.variant;
-				Array events = action["events"];
-				for (int i = 0; i < events.size(); i++) {
-					Ref<InputEvent> ev = events[i];
-					if (ev.is_valid() && ev->get_device() == -3) {
-						ev->set_device(-1);
-					}
-				}
 			}
 		}
 	}
@@ -573,7 +573,7 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 	// Attempt with a user-defined main pack first
 
 	if (!p_main_pack.is_empty()) {
-		bool ok = _load_resource_pack(p_main_pack);
+		bool ok = _load_resource_pack(p_main_pack, false, 0, true);
 		ERR_FAIL_COND_V_MSG(!ok, ERR_CANT_OPEN, vformat("Cannot open resource pack '%s'.", p_main_pack));
 
 		Error err = _load_settings_text_or_binary("res://project.godot", "res://project.binary");
@@ -592,7 +592,7 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 		// and if so, we attempt loading it at the end.
 
 		// Attempt with PCK bundled into executable.
-		bool found = _load_resource_pack(exec_path);
+		bool found = _load_resource_pack(exec_path, false, 0, true);
 
 		// Attempt with exec_name.pck.
 		// (This is the usual case when distributing a Godot game.)
@@ -608,20 +608,20 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 #ifdef MACOS_ENABLED
 		if (!found) {
 			// Attempt to load PCK from macOS .app bundle resources.
-			found = _load_resource_pack(OS::get_singleton()->get_bundle_resource_dir().path_join(exec_basename + ".pck")) || _load_resource_pack(OS::get_singleton()->get_bundle_resource_dir().path_join(exec_filename + ".pck"));
+			found = _load_resource_pack(OS::get_singleton()->get_bundle_resource_dir().path_join(exec_basename + ".pck"), false, 0, true) || _load_resource_pack(OS::get_singleton()->get_bundle_resource_dir().path_join(exec_filename + ".pck"), false, 0, true);
 		}
 #endif
 
 		if (!found) {
 			// Try to load data pack at the location of the executable.
 			// As mentioned above, we have two potential names to attempt.
-			found = _load_resource_pack(exec_dir.path_join(exec_basename + ".pck")) || _load_resource_pack(exec_dir.path_join(exec_filename + ".pck"));
+			found = _load_resource_pack(exec_dir.path_join(exec_basename + ".pck"), false, 0, true) || _load_resource_pack(exec_dir.path_join(exec_filename + ".pck"), false, 0, true);
 		}
 
 		if (!found) {
 			// If we couldn't find them next to the executable, we attempt
 			// the current working directory. Same story, two tests.
-			found = _load_resource_pack(exec_basename + ".pck") || _load_resource_pack(exec_filename + ".pck");
+			found = _load_resource_pack(exec_basename + ".pck", false, 0, true) || _load_resource_pack(exec_filename + ".pck", false, 0, true);
 		}
 
 		// If we opened our package, try and load our project.
@@ -648,6 +648,28 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 		}
 		return err;
 	}
+
+#ifdef MACOS_ENABLED
+	// Attempt to load project file from macOS .app bundle resources.
+	resource_path = OS::get_singleton()->get_bundle_resource_dir();
+	if (!resource_path.is_empty()) {
+		if (resource_path[resource_path.length() - 1] == '/') {
+			resource_path = resource_path.substr(0, resource_path.length() - 1); // Chop end.
+		}
+		Ref<DirAccess> d = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+		ERR_FAIL_COND_V_MSG(d.is_null(), ERR_CANT_CREATE, vformat("Cannot create DirAccess for path '%s'.", resource_path));
+		d->change_dir(resource_path);
+
+		Error err;
+
+		err = _load_settings_text_or_binary(resource_path.path_join("project.godot"), resource_path.path_join("project.binary"));
+		if (err == OK && !p_ignore_override) {
+			// Optional, we don't mind if it fails.
+			_load_settings_text(resource_path.path_join("override.cfg"));
+			return err;
+		}
+	}
+#endif
 
 	// Nothing was found, try to find a project file in provided path (`p_path`)
 	// or, if requested (`p_upwards`) in parent directories.
@@ -898,7 +920,7 @@ Error ProjectSettings::_save_settings_binary(const String &p_file, const RBMap<S
 
 	if (!p_custom_features.is_empty()) {
 		// Store how many properties are saved, add one for custom features, which must always go first.
-		file->store_32(count + 1);
+		file->store_32(uint32_t(count + 1));
 		String key = CoreStringName(_custom_features);
 		file->store_pascal_string(key);
 
@@ -911,12 +933,12 @@ Error ProjectSettings::_save_settings_binary(const String &p_file, const RBMap<S
 
 		err = encode_variant(p_custom_features, buff.ptrw(), len, false);
 		ERR_FAIL_COND_V(err != OK, err);
-		file->store_32(len);
+		file->store_32(uint32_t(len));
 		file->store_buffer(buff.ptr(), buff.size());
 
 	} else {
 		// Store how many properties are saved.
-		file->store_32(count);
+		file->store_32(uint32_t(count));
 	}
 
 	for (const KeyValue<String, List<String>> &E : p_props) {
@@ -943,7 +965,7 @@ Error ProjectSettings::_save_settings_binary(const String &p_file, const RBMap<S
 
 			err = encode_variant(value, buff.ptrw(), len, true);
 			ERR_FAIL_COND_V_MSG(err != OK, ERR_INVALID_DATA, "Error when trying to encode Variant.");
-			file->store_32(len);
+			file->store_32(uint32_t(len));
 			file->store_buffer(buff.ptr(), buff.size());
 		}
 	}
@@ -1107,7 +1129,7 @@ Error ProjectSettings::save_custom(const String &p_path, const CustomMap &p_cust
 			category = "";
 		} else {
 			category = category.substr(0, div);
-			name = name.substr(div + 1, name.size());
+			name = name.substr(div + 1);
 		}
 		save_props[category].push_back(name);
 	}
@@ -1119,7 +1141,7 @@ Error ProjectSettings::save_custom(const String &p_path, const CustomMap &p_cust
 			save_features += ",";
 		}
 
-		String f = p_custom_features[i].strip_edges().replace("\"", "");
+		String f = p_custom_features[i].strip_edges().remove_char('\"');
 		save_features += f;
 	}
 
@@ -1223,10 +1245,10 @@ void ProjectSettings::refresh_global_class_list() {
 	Array script_classes = get_global_class_list();
 	for (int i = 0; i < script_classes.size(); i++) {
 		Dictionary c = script_classes[i];
-		if (!c.has("class") || !c.has("language") || !c.has("path") || !c.has("base")) {
+		if (!c.has("class") || !c.has("language") || !c.has("path") || !c.has("base") || !c.has("is_abstract") || !c.has("is_tool")) {
 			continue;
 		}
-		ScriptServer::add_global_class(c["class"], c["base"], c["language"], c["path"]);
+		ScriptServer::add_global_class(c["class"], c["base"], c["language"], c["path"], c["is_abstract"], c["is_tool"]);
 	}
 }
 
@@ -1397,7 +1419,7 @@ void ProjectSettings::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("localize_path", "path"), &ProjectSettings::localize_path);
 	ClassDB::bind_method(D_METHOD("globalize_path", "path"), &ProjectSettings::globalize_path);
 	ClassDB::bind_method(D_METHOD("save"), &ProjectSettings::save);
-	ClassDB::bind_method(D_METHOD("load_resource_pack", "pack", "replace_files", "offset"), &ProjectSettings::_load_resource_pack, DEFVAL(true), DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("load_resource_pack", "pack", "replace_files", "offset"), &ProjectSettings::load_resource_pack, DEFVAL(true), DEFVAL(0));
 
 	ClassDB::bind_method(D_METHOD("save_custom", "file"), &ProjectSettings::_save_custom_bnd);
 
@@ -1417,7 +1439,7 @@ void ProjectSettings::_add_builtin_input_map() {
 			}
 
 			Dictionary action;
-			action["deadzone"] = Variant(InputMap::DEFAULT_DEADZONE);
+			action["deadzone"] = Variant(InputMap::DEFAULT_TOGGLE_DEADZONE);
 			action["events"] = events;
 
 			String action_name = "input/" + E.key;
@@ -1579,7 +1601,7 @@ ProjectSettings::ProjectSettings() {
 	// installed by the scripts provided in the repository
 	// (check `misc/scripts/install_d3d12_sdk_windows.py`).
 	// For example, if the script installs 1.613.3, the default value must be 613.
-	GLOBAL_DEF_RST(PropertyInfo(Variant::INT, "rendering/rendering_device/d3d12/agility_sdk_version"), 613);
+	GLOBAL_DEF_RST(PropertyInfo(Variant::INT, "rendering/rendering_device/d3d12/agility_sdk_version", PROPERTY_HINT_RANGE, "0,10000,1,or_greater,hide_slider"), 613);
 
 	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "rendering/textures/canvas_textures/default_texture_filter", PROPERTY_HINT_ENUM, "Nearest,Linear,Linear Mipmap,Nearest Mipmap"), 1);
 	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "rendering/textures/canvas_textures/default_texture_repeat", PROPERTY_HINT_ENUM, "Disable,Enable,Mirror"), 0);
@@ -1590,6 +1612,7 @@ ProjectSettings::ProjectSettings() {
 	GLOBAL_DEF_BASIC("input_devices/pointing/android/enable_long_press_as_right_click", false);
 	GLOBAL_DEF_BASIC("input_devices/pointing/android/enable_pan_and_scale_gestures", false);
 	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "input_devices/pointing/android/rotary_input_scroll_axis", PROPERTY_HINT_ENUM, "Horizontal,Vertical"), 1);
+	GLOBAL_DEF("input_devices/pointing/android/override_volume_buttons", false);
 
 	// These properties will not show up in the dialog. If you want to exclude whole groups, use add_hidden_prefix().
 	GLOBAL_DEF_INTERNAL("application/config/features", PackedStringArray());

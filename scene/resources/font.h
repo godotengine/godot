@@ -28,12 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef FONT_H
-#define FONT_H
+#pragma once
 
 #include "core/io/resource.h"
 #include "core/templates/lru.h"
-#include "core/templates/rb_map.h"
 #include "scene/resources/texture.h"
 #include "servers/text_server.h"
 
@@ -472,7 +470,7 @@ class SystemFont : public Font {
 	mutable Ref<Font> theme_font;
 
 	Ref<FontFile> base_font;
-	Vector<int> face_indeces;
+	Vector<int> face_indices;
 	int ftr_weight = 0;
 	int ftr_stretch = 0;
 	int ftr_italic = 0;
@@ -560,5 +558,3 @@ public:
 	SystemFont();
 	~SystemFont();
 };
-
-#endif // FONT_H

@@ -32,9 +32,9 @@
 
 #include "container.h"
 #include "core/config/project_settings.h"
-#include "core/math/geometry_2d.h"
 #include "core/os/os.h"
 #include "core/string/translation_server.h"
+#include "scene/gui/scroll_container.h"
 #include "scene/main/canvas_layer.h"
 #include "scene/main/window.h"
 #include "scene/theme/theme_db.h"
@@ -2054,7 +2054,7 @@ static Control *_next_control(Control *p_from) {
 		return nullptr; // Can't go above.
 	}
 
-	Control *parent = Object::cast_to<Control>(p_from->get_parent());
+	Control *parent = p_from->get_parent_control();
 
 	if (!parent) {
 		return nullptr;
@@ -2077,21 +2077,21 @@ static Control *_next_control(Control *p_from) {
 
 Control *Control::find_next_valid_focus() const {
 	ERR_READ_THREAD_GUARD_V(nullptr);
+
+	// If the focus property is manually overwritten, attempt to use it.
+	if (!data.focus_next.is_empty()) {
+		Node *n = get_node_or_null(data.focus_next);
+		ERR_FAIL_NULL_V_MSG(n, nullptr, "Next focus node path is invalid: '" + data.focus_next + "'.");
+		Control *c = Object::cast_to<Control>(n);
+		ERR_FAIL_NULL_V_MSG(c, nullptr, "Next focus node is not a control: '" + n->get_name() + "'.");
+		if (c->is_visible_in_tree() && c->data.focus_mode != FOCUS_NONE) {
+			return c;
+		}
+	}
+
 	Control *from = const_cast<Control *>(this);
 
 	while (true) {
-		// If the focus property is manually overwritten, attempt to use it.
-
-		if (!data.focus_next.is_empty()) {
-			Node *n = get_node_or_null(data.focus_next);
-			ERR_FAIL_NULL_V_MSG(n, nullptr, "Next focus node path is invalid: '" + data.focus_next + "'.");
-			Control *c = Object::cast_to<Control>(n);
-			ERR_FAIL_NULL_V_MSG(c, nullptr, "Next focus node is not a control: '" + n->get_name() + "'.");
-			if (c->is_visible() && c->get_focus_mode() != FOCUS_NONE) {
-				return c;
-			}
-		}
-
 		// Find next child.
 
 		Control *next_child = nullptr;
@@ -2110,83 +2110,77 @@ Control *Control::find_next_valid_focus() const {
 			next_child = _next_control(from);
 			if (!next_child) { // Nothing else. Go up and find either window or subwindow.
 				next_child = const_cast<Control *>(this);
-				while (next_child && !next_child->is_set_as_top_level()) {
-					next_child = cast_to<Control>(next_child->get_parent());
-				}
 
-				if (!next_child) {
-					next_child = const_cast<Control *>(this);
-					while (next_child) {
-						if (next_child->data.RI) {
-							break;
-						}
-						next_child = next_child->get_parent_control();
+				while (next_child) {
+					if (next_child->is_set_as_top_level()) {
+						break;
 					}
+
+					if (next_child->data.RI) {
+						break;
+					}
+					next_child = next_child->data.parent_control;
 				}
 			}
 		}
 
-		if (next_child == from || next_child == this) { // No next control.
-			return (get_focus_mode() == FOCUS_ALL) ? next_child : nullptr;
-		}
-		if (next_child) {
-			if (next_child->get_focus_mode() == FOCUS_ALL) {
-				return next_child;
-			}
-			from = next_child;
-		} else {
+		if (!next_child) {
 			break;
 		}
+
+		if (next_child->data.focus_mode == FOCUS_ALL) {
+			return next_child;
+		}
+
+		if (next_child == from || next_child == this) {
+			return nullptr; // Stuck in a loop with no next control.
+		}
+
+		from = next_child; // Try to find the next control with focus mode FOCUS_ALL.
 	}
 
 	return nullptr;
 }
 
 static Control *_prev_control(Control *p_from) {
-	Control *child = nullptr;
 	for (int i = p_from->get_child_count() - 1; i >= 0; i--) {
 		Control *c = Object::cast_to<Control>(p_from->get_child(i));
 		if (!c || !c->is_visible_in_tree() || c->is_set_as_top_level()) {
 			continue;
 		}
 
-		child = c;
-		break;
+		// Find the last child as prev, try the same in the last child.
+		return _prev_control(c);
 	}
 
-	if (!child) {
-		return p_from;
-	}
-
-	// No prev in parent, try the same in parent.
-	return _prev_control(child);
+	return p_from; // Not found in the children, return itself.
 }
 
 Control *Control::find_prev_valid_focus() const {
 	ERR_READ_THREAD_GUARD_V(nullptr);
+
+	// If the focus property is manually overwritten, attempt to use it.
+	if (!data.focus_prev.is_empty()) {
+		Node *n = get_node_or_null(data.focus_prev);
+		ERR_FAIL_NULL_V_MSG(n, nullptr, "Previous focus node path is invalid: '" + data.focus_prev + "'.");
+		Control *c = Object::cast_to<Control>(n);
+		ERR_FAIL_NULL_V_MSG(c, nullptr, "Previous focus node is not a control: '" + n->get_name() + "'.");
+		if (c->is_visible_in_tree() && c->data.focus_mode != FOCUS_NONE) {
+			return c;
+		}
+	}
+
 	Control *from = const_cast<Control *>(this);
 
 	while (true) {
-		// If the focus property is manually overwritten, attempt to use it.
-
-		if (!data.focus_prev.is_empty()) {
-			Node *n = get_node_or_null(data.focus_prev);
-			ERR_FAIL_NULL_V_MSG(n, nullptr, "Previous focus node path is invalid: '" + data.focus_prev + "'.");
-			Control *c = Object::cast_to<Control>(n);
-			ERR_FAIL_NULL_V_MSG(c, nullptr, "Previous focus node is not a control: '" + n->get_name() + "'.");
-			if (c->is_visible() && c->get_focus_mode() != FOCUS_NONE) {
-				return c;
-			}
-		}
-
 		// Find prev child.
 
 		Control *prev_child = nullptr;
 
-		if (from->is_set_as_top_level() || !Object::cast_to<Control>(from->get_parent())) {
+		if (from->is_set_as_top_level() || !from->data.parent_control) {
 			// Find last of the children.
 
-			prev_child = _prev_control(from);
+			prev_child = _prev_control(from); // Wrap start here.
 
 		} else {
 			for (int i = (from->get_index() - 1); i >= 0; i--) {
@@ -2201,21 +2195,21 @@ Control *Control::find_prev_valid_focus() const {
 			}
 
 			if (!prev_child) {
-				prev_child = Object::cast_to<Control>(from->get_parent());
+				prev_child = from->data.parent_control;
 			} else {
 				prev_child = _prev_control(prev_child);
 			}
 		}
 
-		if (prev_child == from || prev_child == this) { // No prev control.
-			return (get_focus_mode() == FOCUS_ALL) ? prev_child : nullptr;
-		}
-
-		if (prev_child->get_focus_mode() == FOCUS_ALL) {
+		if (prev_child->data.focus_mode == FOCUS_ALL) {
 			return prev_child;
 		}
 
-		from = prev_child;
+		if (prev_child == from || prev_child == this) {
+			return nullptr; // Stuck in a loop with no prev control.
+		}
+
+		from = prev_child; // Try to find the prev control with focus mode FOCUS_ALL.
 	}
 
 	return nullptr;
@@ -2266,14 +2260,7 @@ Control *Control::_get_focus_neighbor(Side p_side, int p_count) {
 		ERR_FAIL_NULL_V_MSG(n, nullptr, "Neighbor focus node path is invalid: '" + data.focus_neighbor[p_side] + "'.");
 		Control *c = Object::cast_to<Control>(n);
 		ERR_FAIL_NULL_V_MSG(c, nullptr, "Neighbor focus node is not a control: '" + n->get_name() + "'.");
-		bool valid = true;
-		if (!c->is_visible()) {
-			valid = false;
-		}
-		if (c->get_focus_mode() == FOCUS_NONE) {
-			valid = false;
-		}
-		if (valid) {
+		if (c->is_visible_in_tree() && c->data.focus_mode != FOCUS_NONE) {
 			return c;
 		}
 
@@ -2281,17 +2268,8 @@ Control *Control::_get_focus_neighbor(Side p_side, int p_count) {
 		return c;
 	}
 
-	real_t dist = 1e7;
+	real_t square_of_dist = 1e14;
 	Control *result = nullptr;
-
-	Point2 points[4];
-
-	Transform2D xform = get_global_transform();
-
-	points[0] = xform.xform(Point2());
-	points[1] = xform.xform(Point2(get_size().x, 0));
-	points[2] = xform.xform(get_size());
-	points[3] = xform.xform(Point2(0, get_size().y));
 
 	const Vector2 dir[4] = {
 		Vector2(-1, 0),
@@ -2302,18 +2280,73 @@ Control *Control::_get_focus_neighbor(Side p_side, int p_count) {
 
 	Vector2 vdir = dir[p_side];
 
-	real_t maxd = -1e7;
+	Rect2 r = get_global_rect();
+	real_t begin_d = vdir.dot(r.get_position());
+	real_t end_d = vdir.dot(r.get_end());
+	real_t maxd = MAX(begin_d, end_d);
 
-	for (int i = 0; i < 4; i++) {
-		real_t d = vdir.dot(points[i]);
-		if (d > maxd) {
-			maxd = d;
-		}
-	}
+	Rect2 clamp = Rect2(-1e7, -1e7, 2e7, 2e7);
+	Rect2 result_rect;
 
 	Node *base = this;
 
 	while (base) {
+		ScrollContainer *sc = Object::cast_to<ScrollContainer>(base);
+
+		if (sc) {
+			Rect2 sc_r = sc->get_global_rect();
+			bool follow_focus = sc->is_following_focus();
+
+			if (result && !follow_focus && !sc_r.intersects(result_rect)) {
+				result = nullptr; // Skip invisible control.
+			}
+
+			if (result == nullptr) {
+				real_t sc_begin_d = vdir.dot(sc_r.get_position());
+				real_t sc_end_d = vdir.dot(sc_r.get_end());
+				real_t sc_maxd = sc_begin_d;
+				real_t sc_mind = sc_end_d;
+				if (sc_begin_d < sc_end_d) {
+					sc_maxd = sc_end_d;
+					sc_mind = sc_begin_d;
+				}
+
+				if (!follow_focus && maxd < sc_mind) {
+					// Reposition to find visible control.
+					maxd = sc_mind;
+					r.set_position(r.get_position() + (sc_mind - maxd) * vdir);
+				}
+
+				if (follow_focus || sc_maxd > maxd) {
+					_window_find_focus_neighbor(vdir, base, r, clamp, maxd, square_of_dist, &result);
+				}
+
+				if (result == nullptr) {
+					// Reposition to search upwards.
+					maxd = sc_maxd;
+					r.set_position(r.get_position() + (sc_maxd - maxd) * vdir);
+				} else {
+					result_rect = result->get_global_rect();
+					if (follow_focus) {
+						real_t r_begin_d = vdir.dot(result_rect.get_position());
+						real_t r_end_d = vdir.dot(result_rect.get_end());
+						real_t r_maxd = r_begin_d;
+						real_t r_mind = r_end_d;
+						if (r_begin_d < r_end_d) {
+							r_maxd = r_end_d;
+							r_mind = r_begin_d;
+						}
+
+						if (r_maxd > sc_maxd) {
+							result_rect.set_position(result_rect.get_position() + (sc_maxd - r_maxd) * vdir);
+						} else if (r_mind < sc_mind) {
+							result_rect.set_position(result_rect.get_position() + (sc_mind - r_mind) * vdir);
+						}
+					}
+				}
+			}
+		}
+
 		Control *c = Object::cast_to<Control>(base);
 		if (c) {
 			if (c->data.RI) {
@@ -2323,11 +2356,15 @@ Control *Control::_get_focus_neighbor(Side p_side, int p_count) {
 		base = base->get_parent();
 	}
 
+	if (result) {
+		return result;
+	}
+
 	if (!base) {
 		return nullptr;
 	}
 
-	_window_find_focus_neighbor(vdir, base, points, maxd, dist, &result);
+	_window_find_focus_neighbor(vdir, base, r, clamp, maxd, square_of_dist, &result);
 
 	return result;
 }
@@ -2336,72 +2373,79 @@ Control *Control::find_valid_focus_neighbor(Side p_side) const {
 	return const_cast<Control *>(this)->_get_focus_neighbor(p_side);
 }
 
-void Control::_window_find_focus_neighbor(const Vector2 &p_dir, Node *p_at, const Point2 *p_points, real_t p_min, real_t &r_closest_dist, Control **r_closest) {
+void Control::_window_find_focus_neighbor(const Vector2 &p_dir, Node *p_at, const Rect2 &p_rect, const Rect2 &p_clamp, real_t p_min, real_t &r_closest_dist_squared, Control **r_closest) {
 	if (Object::cast_to<Viewport>(p_at)) {
-		return; //bye
+		return; // Bye.
 	}
 
 	Control *c = Object::cast_to<Control>(p_at);
+	Container *container = Object::cast_to<Container>(p_at);
+	bool in_container = container ? container->is_ancestor_of(this) : false;
 
-	if (c && c != this && c->get_focus_mode() == FOCUS_ALL && c->is_visible_in_tree()) {
-		Point2 points[4];
+	if (c && c != this && c->get_focus_mode() == FOCUS_ALL && !in_container && p_clamp.intersects(c->get_global_rect())) {
+		Rect2 r_c = c->get_global_rect();
+		r_c = r_c.intersection(p_clamp);
+		real_t begin_d = p_dir.dot(r_c.get_position());
+		real_t end_d = p_dir.dot(r_c.get_end());
+		real_t max = MAX(begin_d, end_d);
 
-		Transform2D xform = c->get_global_transform();
+		// Use max to allow navigation to overlapping controls (for ScrollContainer case).
+		if (max > (p_min + CMP_EPSILON)) {
+			// Calculate the shortest distance. (No shear transform)
+			// Flip along axis(es) so that C falls in the first quadrant of c (as origin) for easy calculation.
+			// The same transformation would put the direction vector in the positive direction (+x or +y).
+			//       |           -------------
+			//       |           |     |     |
+			//       |           |-----C-----|
+			//   ----|---a       |     |     |
+			//   |   |   |       b------------
+			//  -|---c---|----------------------->
+			//   |   |   |
+			//   ----|----
+			// cC = ca + ab + bC
+			// The shortest distance is the vector ab's length or its positive projection length.
 
-		points[0] = xform.xform(Point2());
-		points[1] = xform.xform(Point2(c->get_size().x, 0));
-		points[2] = xform.xform(c->get_size());
-		points[3] = xform.xform(Point2(0, c->get_size().y));
+			Vector2 cC_origin = r_c.get_center() - p_rect.get_center();
+			Vector2 cC = cC_origin.abs(); // Converted to fall in the first quadrant of c.
 
-		// Tie-breaking aims to address situations where a potential focus neighbor's bounding rect
-		// is right next to the currently focused control (e.g. in BoxContainer with
-		// separation overridden to 0). This needs specific handling so that the correct
-		// focus neighbor is selected.
+			Vector2 ab = cC - 0.5 * r_c.get_size() - 0.5 * p_rect.get_size();
 
-		// Calculate centers of the potential neighbor, currently focused, and closest controls.
-		Point2 center = xform.xform(0.5 * c->get_size());
-		// We only have the points, not an actual reference.
-		Point2 p_center = 0.25 * (p_points[0] + p_points[1] + p_points[2] + p_points[3]);
-		Point2 closest_center;
-		bool should_tiebreak = false;
-		if (*r_closest != nullptr) {
-			should_tiebreak = true;
-			Control *closest = *r_closest;
-			Transform2D closest_xform = closest->get_global_transform();
-			closest_center = closest_xform.xform(0.5 * closest->get_size());
-		}
+			real_t min_d_squared = 0.0;
+			if (ab.x > 0.0) {
+				min_d_squared += ab.x * ab.x;
+			}
+			if (ab.y > 0.0) {
+				min_d_squared += ab.y * ab.y;
+			}
 
-		real_t min = 1e7;
+			if (min_d_squared < r_closest_dist_squared || *r_closest == nullptr) {
+				r_closest_dist_squared = min_d_squared;
+				*r_closest = c;
+			} else if (min_d_squared == r_closest_dist_squared) {
+				// Tie-breaking aims to address situations where a potential focus neighbor's bounding rect
+				// is right next to the currently focused control (e.g. in BoxContainer with
+				// separation overridden to 0). This needs specific handling so that the correct
+				// focus neighbor is selected.
 
-		for (int i = 0; i < 4; i++) {
-			real_t d = p_dir.dot(points[i]);
-			if (d < min) {
-				min = d;
+				Point2 p_center = p_rect.get_center();
+				Control *closest = *r_closest;
+				Point2 closest_center = closest->get_global_rect().get_center();
+
+				// Tie-break in favor of the control most aligned with p_dir.
+				if (Math::abs(p_dir.cross(cC_origin)) < Math::abs(p_dir.cross(closest_center - p_center))) {
+					*r_closest = c;
+				}
 			}
 		}
+	}
 
-		if (min > (p_min - CMP_EPSILON)) {
-			for (int i = 0; i < 4; i++) {
-				Vector2 la = p_points[i];
-				Vector2 lb = p_points[(i + 1) % 4];
-
-				for (int j = 0; j < 4; j++) {
-					Vector2 fa = points[j];
-					Vector2 fb = points[(j + 1) % 4];
-
-					Vector2 pa, pb;
-					real_t d = Geometry2D::get_closest_points_between_segments(la, lb, fa, fb, pa, pb);
-					if (d < r_closest_dist) {
-						r_closest_dist = d;
-						*r_closest = c;
-					} else if (should_tiebreak && d == r_closest_dist) {
-						// Tie-break in favor of the control most aligned with p_dir.
-						if (p_dir.dot((center - p_center).normalized()) > p_dir.dot((closest_center - p_center).normalized())) {
-							r_closest_dist = d;
-							*r_closest = c;
-						}
-					}
-				}
+	ScrollContainer *sc = Object::cast_to<ScrollContainer>(c);
+	Rect2 intersection = p_clamp;
+	if (sc) {
+		if (!sc->is_following_focus() || !in_container) {
+			intersection = p_clamp.intersection(sc->get_global_rect());
+			if (!intersection.has_area()) {
+				return;
 			}
 		}
 	}
@@ -2409,10 +2453,18 @@ void Control::_window_find_focus_neighbor(const Vector2 &p_dir, Node *p_at, cons
 	for (int i = 0; i < p_at->get_child_count(); i++) {
 		Node *child = p_at->get_child(i);
 		Control *childc = Object::cast_to<Control>(child);
-		if (childc && childc->data.RI) {
-			continue; //subwindow, ignore
+		if (childc) {
+			if (childc->data.RI) {
+				continue; // Subwindow, ignore.
+			}
+			if (!childc->is_visible_in_tree()) {
+				continue; // Skip invisible node trees.
+			}
+			if (Object::cast_to<ScrollContainer>(childc) && childc->is_ancestor_of(this)) {
+				continue; // Already searched in it, skip it.
+			}
 		}
-		_window_find_focus_neighbor(p_dir, p_at->get_child(i), p_points, p_min, r_closest_dist, r_closest);
+		_window_find_focus_neighbor(p_dir, child, p_rect, intersection, p_min, r_closest_dist_squared, r_closest);
 	}
 }
 
@@ -2743,6 +2795,44 @@ Variant Control::get_theme_item(Theme::DataType p_data_type, const StringName &p
 	return Variant();
 }
 
+Variant Control::get_used_theme_item(const String &p_full_name, const StringName &p_theme_type) const {
+	if (p_full_name.begins_with("theme_override_icons/")) {
+		String name = p_full_name.substr(strlen("theme_override_icons/"));
+		if (has_theme_icon(name)) { // Exclude cached and default ones.
+			return get_theme_icon(name);
+		}
+	} else if (p_full_name.begins_with("theme_override_styles/")) {
+		String name = p_full_name.substr(strlen("theme_override_styles/"));
+		if (has_theme_stylebox(name)) {
+			return get_theme_stylebox(name);
+		}
+	} else if (p_full_name.begins_with("theme_override_fonts/")) {
+		String name = p_full_name.substr(strlen("theme_override_fonts/"));
+		if (has_theme_font(name)) {
+			return get_theme_font(name);
+		}
+	} else if (p_full_name.begins_with("theme_override_font_sizes/")) {
+		String name = p_full_name.substr(strlen("theme_override_font_sizes/"));
+		if (has_theme_font_size(name)) {
+			return get_theme_font_size(name);
+		}
+	} else if (p_full_name.begins_with("theme_override_colors/")) {
+		String name = p_full_name.substr(strlen("theme_override_colors/"));
+		if (has_theme_color(name)) {
+			return get_theme_color(name);
+		}
+	} else if (p_full_name.begins_with("theme_override_constants/")) {
+		String name = p_full_name.substr(strlen("theme_override_constants/"));
+		if (has_theme_constant(name)) {
+			return get_theme_constant(name);
+		}
+	} else {
+		ERR_FAIL_V_MSG(Variant(), vformat("The property %s is not a theme item.", p_full_name));
+	}
+
+	return Variant();
+}
+
 #ifdef TOOLS_ENABLED
 Ref<Texture2D> Control::get_editor_theme_icon(const StringName &p_name) const {
 	return get_theme_icon(p_name, SNAME("EditorIcons"));
@@ -2855,7 +2945,7 @@ bool Control::has_theme_constant(const StringName &p_name, const StringName &p_t
 
 void Control::add_theme_icon_override(const StringName &p_name, const Ref<Texture2D> &p_icon) {
 	ERR_MAIN_THREAD_GUARD;
-	ERR_FAIL_COND(!p_icon.is_valid());
+	ERR_FAIL_COND(p_icon.is_null());
 
 	if (data.theme_icon_override.has(p_name)) {
 		data.theme_icon_override[p_name]->disconnect_changed(callable_mp(this, &Control::_notify_theme_override_changed));
@@ -2868,7 +2958,7 @@ void Control::add_theme_icon_override(const StringName &p_name, const Ref<Textur
 
 void Control::add_theme_style_override(const StringName &p_name, const Ref<StyleBox> &p_style) {
 	ERR_MAIN_THREAD_GUARD;
-	ERR_FAIL_COND(!p_style.is_valid());
+	ERR_FAIL_COND(p_style.is_null());
 
 	if (data.theme_style_override.has(p_name)) {
 		data.theme_style_override[p_name]->disconnect_changed(callable_mp(this, &Control::_notify_theme_override_changed));
@@ -2881,7 +2971,7 @@ void Control::add_theme_style_override(const StringName &p_name, const Ref<Style
 
 void Control::add_theme_font_override(const StringName &p_name, const Ref<Font> &p_font) {
 	ERR_MAIN_THREAD_GUARD;
-	ERR_FAIL_COND(!p_font.is_valid());
+	ERR_FAIL_COND(p_font.is_null());
 
 	if (data.theme_font_override.has(p_name)) {
 		data.theme_font_override[p_name]->disconnect_changed(callable_mp(this, &Control::_notify_theme_override_changed));

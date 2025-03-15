@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef BASE_BUTTON_H
-#define BASE_BUTTON_H
+#pragma once
 
 #include "core/input/shortcut.h"
 #include "scene/gui/control.h"
@@ -61,7 +60,7 @@ private:
 		bool hovering = false;
 		bool press_attempt = false;
 		bool pressing_inside = false;
-
+		bool pressed_down_with_focus = false;
 		bool disabled = false;
 
 	} status;
@@ -165,5 +164,3 @@ public:
 	bool is_allow_unpress();
 	ButtonGroup();
 };
-
-#endif // BASE_BUTTON_H

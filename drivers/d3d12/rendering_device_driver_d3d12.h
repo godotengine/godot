@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef RENDERING_DEVICE_DRIVER_D3D12_H
-#define RENDERING_DEVICE_DRIVER_D3D12_H
+#pragma once
 
 #include "core/templates/hash_map.h"
 #include "core/templates/paged_allocator.h"
@@ -284,6 +283,7 @@ public:
 	virtual uint64_t buffer_get_allocation_size(BufferID p_buffer) override final;
 	virtual uint8_t *buffer_map(BufferID p_buffer) override final;
 	virtual void buffer_unmap(BufferID p_buffer) override final;
+	virtual uint64_t buffer_get_device_address(BufferID p_buffer) override final;
 
 	/*****************/
 	/**** TEXTURE ****/
@@ -430,6 +430,9 @@ private:
 	struct CommandPoolInfo {
 		CommandQueueFamilyID queue_family;
 		CommandBufferType buffer_type = COMMAND_BUFFER_TYPE_PRIMARY;
+		// Since there are no command pools in D3D12, we need to track the command buffers created by this pool
+		// so that we can free them when the pool is freed.
+		SelfList<CommandBufferInfo>::List command_buffers;
 	};
 
 public:
@@ -458,6 +461,9 @@ private:
 	// Leveraging knowledge of actual usage and D3D12 specifics (namely, command lists from the same allocator
 	// can't be freely begun and ended), an allocator per list works better.
 	struct CommandBufferInfo {
+		// Store a self list reference to be used by the command pool.
+		SelfList<CommandBufferInfo> command_buffer_info_elem{ this };
+
 		ComPtr<ID3D12CommandAllocator> cmd_allocator;
 		ComPtr<ID3D12GraphicsCommandList> cmd_list;
 
@@ -1029,5 +1035,3 @@ public:
 	RenderingDeviceDriverD3D12(RenderingContextDriverD3D12 *p_context_driver);
 	virtual ~RenderingDeviceDriverD3D12();
 };
-
-#endif // RENDERING_DEVICE_DRIVER_D3D12_H

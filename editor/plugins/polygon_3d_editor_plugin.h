@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef POLYGON_3D_EDITOR_PLUGIN_H
-#define POLYGON_3D_EDITOR_PLUGIN_H
+#pragma once
 
 #include "editor/plugins/editor_plugin.h"
 #include "scene/3d/mesh_instance_3d.h"
@@ -104,7 +103,7 @@ class Polygon3DEditorPlugin : public EditorPlugin {
 public:
 	virtual EditorPlugin::AfterGUIInput forward_3d_gui_input(Camera3D *p_camera, const Ref<InputEvent> &p_event) override { return polygon_editor->forward_3d_gui_input(p_camera, p_event); }
 
-	virtual String get_name() const override { return "Polygon3DEditor"; }
+	virtual String get_plugin_name() const override { return "Polygon3DEditor"; }
 	bool has_main_screen() const override { return false; }
 	virtual void edit(Object *p_object) override;
 	virtual bool handles(Object *p_object) const override;
@@ -113,5 +112,3 @@ public:
 	Polygon3DEditorPlugin();
 	~Polygon3DEditorPlugin();
 };
-
-#endif // POLYGON_3D_EDITOR_PLUGIN_H

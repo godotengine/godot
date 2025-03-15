@@ -63,77 +63,58 @@ constexpr double DEFAULT_SOLVER_ITERATIONS = 8;
 } // namespace
 
 void JoltSpace3D::_pre_step(float p_step) {
-	body_accessor.acquire_all();
+	while (needs_optimization_list.first()) {
+		JoltShapedObject3D *object = needs_optimization_list.first()->self();
+		needs_optimization_list.remove(needs_optimization_list.first());
+		object->commit_shapes(true);
+	}
 
 	contact_listener->pre_step();
 
-	const int body_count = body_accessor.get_count();
+	const JPH::BodyLockInterface &lock_iface = get_lock_iface();
+	const JPH::BodyID *active_rigid_bodies = physics_system->GetActiveBodiesUnsafe(JPH::EBodyType::RigidBody);
+	const JPH::uint32 active_rigid_body_count = physics_system->GetNumActiveBodies(JPH::EBodyType::RigidBody);
 
-	for (int i = 0; i < body_count; ++i) {
-		if (JPH::Body *jolt_body = body_accessor.try_get(i)) {
-			if (jolt_body->IsSoftBody()) {
-				continue;
-			}
-
-			JoltShapedObject3D *object = reinterpret_cast<JoltShapedObject3D *>(jolt_body->GetUserData());
-
-			object->pre_step(p_step, *jolt_body);
-
-			if (object->reports_contacts()) {
-				contact_listener->listen_for(object);
-			}
-		}
+	for (JPH::uint32 i = 0; i < active_rigid_body_count; i++) {
+		JPH::Body *jolt_body = lock_iface.TryGetBody(active_rigid_bodies[i]);
+		JoltObject3D *object = reinterpret_cast<JoltObject3D *>(jolt_body->GetUserData());
+		object->pre_step(p_step, *jolt_body);
 	}
-
-	body_accessor.release();
 }
 
 void JoltSpace3D::_post_step(float p_step) {
-	body_accessor.acquire_all();
-
 	contact_listener->post_step();
 
-	const int body_count = body_accessor.get_count();
-
-	for (int i = 0; i < body_count; ++i) {
-		if (JPH::Body *jolt_body = body_accessor.try_get(i)) {
-			if (jolt_body->IsSoftBody()) {
-				continue;
-			}
-
-			JoltObject3D *object = reinterpret_cast<JoltObject3D *>(jolt_body->GetUserData());
-
-			object->post_step(p_step, *jolt_body);
-		}
+	while (shapes_changed_list.first()) {
+		JoltShapedObject3D *object = shapes_changed_list.first()->self();
+		shapes_changed_list.remove(shapes_changed_list.first());
+		object->clear_previous_shape();
 	}
-
-	body_accessor.release();
 }
 
 JoltSpace3D::JoltSpace3D(JPH::JobSystem *p_job_system) :
-		body_accessor(this),
 		job_system(p_job_system),
 		temp_allocator(new JoltTempAllocator()),
 		layers(new JoltLayers()),
 		contact_listener(new JoltContactListener3D(this)),
 		physics_system(new JPH::PhysicsSystem()) {
-	physics_system->Init((JPH::uint)JoltProjectSettings::get_max_bodies(), 0, (JPH::uint)JoltProjectSettings::get_max_pairs(), (JPH::uint)JoltProjectSettings::get_max_contact_constraints(), *layers, *layers, *layers);
+	physics_system->Init((JPH::uint)JoltProjectSettings::max_bodies, 0, (JPH::uint)JoltProjectSettings::max_body_pairs, (JPH::uint)JoltProjectSettings::max_contact_constraints, *layers, *layers, *layers);
 
 	JPH::PhysicsSettings settings;
-	settings.mBaumgarte = JoltProjectSettings::get_baumgarte_stabilization_factor();
-	settings.mSpeculativeContactDistance = JoltProjectSettings::get_speculative_contact_distance();
-	settings.mPenetrationSlop = JoltProjectSettings::get_penetration_slop();
-	settings.mLinearCastThreshold = JoltProjectSettings::get_ccd_movement_threshold();
-	settings.mLinearCastMaxPenetration = JoltProjectSettings::get_ccd_max_penetration();
-	settings.mBodyPairCacheMaxDeltaPositionSq = JoltProjectSettings::get_body_pair_cache_distance_sq();
-	settings.mBodyPairCacheCosMaxDeltaRotationDiv2 = JoltProjectSettings::get_body_pair_cache_angle_cos_div2();
-	settings.mNumVelocitySteps = (JPH::uint)JoltProjectSettings::get_simulation_velocity_steps();
-	settings.mNumPositionSteps = (JPH::uint)JoltProjectSettings::get_simulation_position_steps();
-	settings.mMinVelocityForRestitution = JoltProjectSettings::get_bounce_velocity_threshold();
-	settings.mTimeBeforeSleep = JoltProjectSettings::get_sleep_time_threshold();
-	settings.mPointVelocitySleepThreshold = JoltProjectSettings::get_sleep_velocity_threshold();
-	settings.mUseBodyPairContactCache = JoltProjectSettings::is_body_pair_contact_cache_enabled();
-	settings.mAllowSleeping = JoltProjectSettings::is_sleep_allowed();
+	settings.mBaumgarte = JoltProjectSettings::baumgarte_stabilization_factor;
+	settings.mSpeculativeContactDistance = JoltProjectSettings::speculative_contact_distance;
+	settings.mPenetrationSlop = JoltProjectSettings::penetration_slop;
+	settings.mLinearCastThreshold = JoltProjectSettings::ccd_movement_threshold;
+	settings.mLinearCastMaxPenetration = JoltProjectSettings::ccd_max_penetration;
+	settings.mBodyPairCacheMaxDeltaPositionSq = JoltProjectSettings::body_pair_cache_distance_sq;
+	settings.mBodyPairCacheCosMaxDeltaRotationDiv2 = JoltProjectSettings::body_pair_cache_angle_cos_div2;
+	settings.mNumVelocitySteps = (JPH::uint)JoltProjectSettings::simulation_velocity_steps;
+	settings.mNumPositionSteps = (JPH::uint)JoltProjectSettings::simulation_position_steps;
+	settings.mMinVelocityForRestitution = JoltProjectSettings::bounce_velocity_threshold;
+	settings.mTimeBeforeSleep = JoltProjectSettings::sleep_time_threshold;
+	settings.mPointVelocitySleepThreshold = JoltProjectSettings::sleep_velocity_threshold;
+	settings.mUseBodyPairContactCache = JoltProjectSettings::body_pair_contact_cache_enabled;
+	settings.mAllowSleeping = JoltProjectSettings::sleep_allowed;
 
 	physics_system->SetPhysicsSettings(settings);
 	physics_system->SetGravity(JPH::Vec3::sZero());
@@ -188,64 +169,41 @@ void JoltSpace3D::step(float p_step) {
 		WARN_PRINT_ONCE(vformat("Jolt Physics manifold cache exceeded capacity and contacts were ignored. "
 								"Consider increasing maximum number of contact constraints in project settings. "
 								"Maximum number of contact constraints is currently set to %d.",
-				JoltProjectSettings::get_max_contact_constraints()));
+				JoltProjectSettings::max_contact_constraints));
 	}
 
 	if ((update_error & JPH::EPhysicsUpdateError::BodyPairCacheFull) != JPH::EPhysicsUpdateError::None) {
 		WARN_PRINT_ONCE(vformat("Jolt Physics body pair cache exceeded capacity and contacts were ignored. "
 								"Consider increasing maximum number of body pairs in project settings. "
 								"Maximum number of body pairs is currently set to %d.",
-				JoltProjectSettings::get_max_pairs()));
+				JoltProjectSettings::max_body_pairs));
 	}
 
 	if ((update_error & JPH::EPhysicsUpdateError::ContactConstraintsFull) != JPH::EPhysicsUpdateError::None) {
 		WARN_PRINT_ONCE(vformat("Jolt Physics contact constraint buffer exceeded capacity and contacts were ignored. "
 								"Consider increasing maximum number of contact constraints in project settings. "
 								"Maximum number of contact constraints is currently set to %d.",
-				JoltProjectSettings::get_max_contact_constraints()));
+				JoltProjectSettings::max_contact_constraints));
 	}
 
 	_post_step(p_step);
 
 	bodies_added_since_optimizing = 0;
-	has_stepped = true;
 	stepping = false;
 }
 
 void JoltSpace3D::call_queries() {
-	if (!has_stepped) {
-		// We need to skip the first invocation of this method, because there will be pending notifications that need to
-		// be flushed first, which can cause weird conflicts with things like `_integrate_forces`. This happens to also
-		// emulate the behavior of Godot Physics, where (active) collision objects must register to have `call_queries`
-		// invoked, which they don't do until the physics step, which happens after this.
-		//
-		// TODO: This would be better solved by just doing what Godot Physics does with `GodotSpace*D::active_list`.
-		return;
+	while (body_call_queries_list.first()) {
+		JoltBody3D *body = body_call_queries_list.first()->self();
+		body_call_queries_list.remove(body_call_queries_list.first());
+		body->call_queries();
 	}
 
-	body_accessor.acquire_all();
-
-	const int body_count = body_accessor.get_count();
-
-	for (int i = 0; i < body_count; ++i) {
-		if (JPH::Body *jolt_body = body_accessor.try_get(i)) {
-			if (!jolt_body->IsSensor() && !jolt_body->IsSoftBody()) {
-				JoltBody3D *body = reinterpret_cast<JoltBody3D *>(jolt_body->GetUserData());
-				body->call_queries(*jolt_body);
-			}
-		}
+	while (area_call_queries_list.first()) {
+		JoltArea3D *body = area_call_queries_list.first()->self();
+		area_call_queries_list.remove(area_call_queries_list.first());
+		body->call_queries();
 	}
-
-	for (int i = 0; i < body_count; ++i) {
-		if (JPH::Body *jolt_body = body_accessor.try_get(i)) {
-			if (jolt_body->IsSensor()) {
-				JoltArea3D *area = reinterpret_cast<JoltArea3D *>(jolt_body->GetUserData());
-				area->call_queries(*jolt_body);
-			}
-		}
-	}
-
-	body_accessor.release();
 }
 
 double JoltSpace3D::get_param(PhysicsServer3D::SpaceParameter p_param) const {
@@ -269,7 +227,7 @@ double JoltSpace3D::get_param(PhysicsServer3D::SpaceParameter p_param) const {
 			return DEFAULT_SLEEP_THRESHOLD_ANGULAR;
 		}
 		case PhysicsServer3D::SPACE_PARAM_BODY_TIME_TO_SLEEP: {
-			return JoltProjectSettings::get_sleep_time_threshold();
+			return JoltProjectSettings::sleep_time_threshold;
 		}
 		case PhysicsServer3D::SPACE_PARAM_SOLVER_ITERATIONS: {
 			return DEFAULT_SOLVER_ITERATIONS;
@@ -395,7 +353,7 @@ JPH::BodyID JoltSpace3D::add_rigid_body(const JoltObject3D &p_object, const JPH:
 		ERR_PRINT_ONCE(vformat("Failed to create underlying Jolt Physics body for '%s'. "
 							   "Consider increasing maximum number of bodies in project settings. "
 							   "Maximum number of bodies is currently set to %d.",
-				p_object.to_string(), JoltProjectSettings::get_max_bodies()));
+				p_object.to_string(), JoltProjectSettings::max_bodies));
 
 		return JPH::BodyID();
 	}
@@ -412,7 +370,7 @@ JPH::BodyID JoltSpace3D::add_soft_body(const JoltObject3D &p_object, const JPH::
 		ERR_PRINT_ONCE(vformat("Failed to create underlying Jolt Physics body for '%s'. "
 							   "Consider increasing maximum number of bodies in project settings. "
 							   "Maximum number of bodies is currently set to %d.",
-				p_object.to_string(), JoltProjectSettings::get_max_bodies()));
+				p_object.to_string(), JoltProjectSettings::max_bodies));
 
 		return JPH::BodyID();
 	}
@@ -443,6 +401,54 @@ void JoltSpace3D::try_optimize() {
 	physics_system->OptimizeBroadPhase();
 
 	bodies_added_since_optimizing = 0;
+}
+
+void JoltSpace3D::enqueue_call_queries(SelfList<JoltBody3D> *p_body) {
+	if (!p_body->in_list()) {
+		body_call_queries_list.add(p_body);
+	}
+}
+
+void JoltSpace3D::enqueue_call_queries(SelfList<JoltArea3D> *p_area) {
+	if (!p_area->in_list()) {
+		area_call_queries_list.add(p_area);
+	}
+}
+
+void JoltSpace3D::dequeue_call_queries(SelfList<JoltBody3D> *p_body) {
+	if (p_body->in_list()) {
+		body_call_queries_list.remove(p_body);
+	}
+}
+
+void JoltSpace3D::dequeue_call_queries(SelfList<JoltArea3D> *p_area) {
+	if (p_area->in_list()) {
+		area_call_queries_list.remove(p_area);
+	}
+}
+
+void JoltSpace3D::enqueue_shapes_changed(SelfList<JoltShapedObject3D> *p_object) {
+	if (!p_object->in_list()) {
+		shapes_changed_list.add(p_object);
+	}
+}
+
+void JoltSpace3D::dequeue_shapes_changed(SelfList<JoltShapedObject3D> *p_object) {
+	if (p_object->in_list()) {
+		shapes_changed_list.remove(p_object);
+	}
+}
+
+void JoltSpace3D::enqueue_needs_optimization(SelfList<JoltShapedObject3D> *p_object) {
+	if (!p_object->in_list()) {
+		needs_optimization_list.add(p_object);
+	}
+}
+
+void JoltSpace3D::dequeue_needs_optimization(SelfList<JoltShapedObject3D> *p_object) {
+	if (p_object->in_list()) {
+		needs_optimization_list.remove(p_object);
+	}
 }
 
 void JoltSpace3D::add_joint(JPH::Constraint *p_jolt_ref) {

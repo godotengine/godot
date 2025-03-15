@@ -336,7 +336,7 @@ Ref<DirAccess> DirAccess::create_temp(const String &p_prefix, bool p_keep, Error
 	uint32_t suffix_i = 0;
 	String path;
 	while (true) {
-		String datetime = Time::get_singleton()->get_datetime_string_from_system().replace("-", "").replace("T", "").replace(":", "");
+		String datetime = Time::get_singleton()->get_datetime_string_from_system().remove_chars("-T:");
 		datetime += itos(Time::get_singleton()->get_ticks_usec());
 		String suffix = datetime + (suffix_i > 0 ? itos(suffix_i) : "");
 		path = (p_prefix.is_empty() ? "" : p_prefix + "-") + suffix;
@@ -631,7 +631,7 @@ void DirAccess::_bind_methods() {
 	ClassDB::bind_static_method("DirAccess", D_METHOD("get_open_error"), &DirAccess::get_open_error);
 	ClassDB::bind_static_method("DirAccess", D_METHOD("create_temp", "prefix", "keep"), &DirAccess::_create_temp, DEFVAL(""), DEFVAL(false));
 
-	ClassDB::bind_method(D_METHOD("list_dir_begin"), &DirAccess::list_dir_begin, DEFVAL(false), DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("list_dir_begin"), &DirAccess::list_dir_begin);
 	ClassDB::bind_method(D_METHOD("get_next"), &DirAccess::_get_next);
 	ClassDB::bind_method(D_METHOD("current_is_dir"), &DirAccess::current_is_dir);
 	ClassDB::bind_method(D_METHOD("list_dir_end"), &DirAccess::list_dir_end);

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef MESH_H
-#define MESH_H
+#pragma once
 
 #include "core/io/resource.h"
 #include "core/math/face3.h"
@@ -362,6 +361,7 @@ public:
 
 	int get_surface_count() const override;
 
+	void surface_remove(int p_surface);
 	void clear_surfaces();
 
 	void surface_set_custom_aabb(int p_idx, const AABB &p_aabb); //only recognized by driver
@@ -438,5 +438,3 @@ public:
 	PlaceholderMesh();
 	~PlaceholderMesh();
 };
-
-#endif // MESH_H

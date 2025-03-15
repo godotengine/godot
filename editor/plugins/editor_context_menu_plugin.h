@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef EDITOR_CONTEXT_MENU_PLUGIN_H
-#define EDITOR_CONTEXT_MENU_PLUGIN_H
+#pragma once
 
 #include "core/object/gdvirtual.gen.inc"
 #include "core/object/ref_counted.h"
@@ -52,6 +51,9 @@ public:
 		CONTEXT_SLOT_FILESYSTEM,
 		CONTEXT_SLOT_SCRIPT_EDITOR,
 		CONTEXT_SLOT_FILESYSTEM_CREATE,
+		CONTEXT_SLOT_SCRIPT_EDITOR_CODE,
+		CONTEXT_SLOT_SCENE_TABS,
+		CONTEXT_SLOT_2D_EDITOR,
 	};
 	inline static constexpr int BASE_ID = 2000;
 
@@ -100,6 +102,7 @@ public:
 	void add_plugin(ContextMenuSlot p_slot, const Ref<EditorContextMenuPlugin> &p_plugin);
 	void remove_plugin(const Ref<EditorContextMenuPlugin> &p_plugin);
 
+	bool has_plugins_for_slot(ContextMenuSlot p_slot);
 	void add_options_from_plugins(PopupMenu *p_popup, ContextMenuSlot p_slot, const Vector<String> &p_paths);
 	Callable match_custom_shortcut(ContextMenuSlot p_slot, const Ref<InputEvent> &p_event);
 	bool activate_custom_option(ContextMenuSlot p_slot, int p_option, const Variant &p_arg);
@@ -109,5 +112,3 @@ public:
 	static void create();
 	static void cleanup();
 };
-
-#endif // EDITOR_CONTEXT_MENU_PLUGIN_H

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef GDSCRIPT_EXTEND_PARSER_H
-#define GDSCRIPT_EXTEND_PARSER_H
+#pragma once
 
 #include "../gdscript_parser.h"
 #include "godot_lsp.h"
@@ -43,12 +42,12 @@
 #define COLUMN_NUMBER_TO_INDEX(p_column) ((p_column) - 1)
 #endif
 
-#ifndef SYMBOL_SEPERATOR
-#define SYMBOL_SEPERATOR "::"
+#ifndef SYMBOL_SEPARATOR
+#define SYMBOL_SEPARATOR "::"
 #endif
 
 #ifndef JOIN_SYMBOLS
-#define JOIN_SYMBOLS(p_path, name) ((p_path) + SYMBOL_SEPERATOR + (name))
+#define JOIN_SYMBOLS(p_path, name) ((p_path) + SYMBOL_SEPARATOR + (name))
 #endif
 
 typedef HashMap<String, const lsp::DocumentSymbol *> ClassMembers;
@@ -169,5 +168,3 @@ public:
 
 	Error parse(const String &p_code, const String &p_path);
 };
-
-#endif // GDSCRIPT_EXTEND_PARSER_H

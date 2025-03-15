@@ -28,13 +28,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TILE_MAP_LAYER_EDITOR_H
-#define TILE_MAP_LAYER_EDITOR_H
+#pragma once
 
 #include "tile_atlas_view.h"
 
 #include "core/os/thread.h"
-#include "core/typedefs.h"
 #include "scene/2d/tile_map.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/check_box.h"
@@ -423,5 +421,3 @@ public:
 	// Static functions.
 	static Vector<Vector2i> get_line(const TileMapLayer *p_tile_map_layer, Vector2i p_from_cell, Vector2i p_to_cell);
 };
-
-#endif // TILE_MAP_LAYER_EDITOR_H

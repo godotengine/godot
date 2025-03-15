@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TEST_PLANE_H
-#define TEST_PLANE_H
+#pragma once
 
 #include "core/math/plane.h"
 
@@ -96,7 +95,7 @@ TEST_CASE("[Plane] Plane-point operations") {
 
 	CHECK_MESSAGE(
 			y_facing_plane.get_any_perpendicular_normal().is_equal_approx(Vector3(1, 0, 0)),
-			"get_any_perpindicular_normal() should return the expected result.");
+			"get_any_perpendicular_normal() should return the expected result.");
 
 	// TODO distance_to()
 }
@@ -191,5 +190,3 @@ TEST_CASE("[Plane] Finite number checks") {
 }
 
 } // namespace TestPlane
-
-#endif // TEST_PLANE_H

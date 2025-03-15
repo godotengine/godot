@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef OS_H
-#define OS_H
+#pragma once
 
 #include "core/config/engine.h"
 #include "core/io/logger.h"
@@ -39,7 +38,6 @@
 #include "core/templates/list.h"
 #include "core/templates/vector.h"
 
-#include <stdarg.h>
 #include <stdlib.h>
 
 class OS {
@@ -63,15 +61,13 @@ class OS {
 	bool _stderr_enabled = true;
 	bool _writing_movie = false;
 	bool _in_editor = false;
+	bool _embedded_in_editor = false;
 
 	CompositeLogger *_logger = nullptr;
 
 	bool restart_on_exit = false;
 	List<String> restart_commandline;
 
-	// for the user interface we keep a record of the current display driver
-	// so we can retrieve the rendering drivers available
-	int _display_driver_id = -1;
 	String _current_rendering_driver_name;
 	String _current_rendering_method;
 	bool _is_gles_over_gl = false;
@@ -112,14 +108,13 @@ protected:
 
 	HasServerFeatureCallback has_server_feature_callback = nullptr;
 	bool _separate_thread_render = false;
+	bool _silent_crash_handler = false;
 
 	// Functions used by Main to initialize/deinitialize the OS.
 	void add_logger(Logger *p_logger);
 
 	virtual void initialize() = 0;
 	virtual void initialize_joypads() = 0;
-
-	void set_display_driver_id(int p_display_driver_id) { _display_driver_id = p_display_driver_id; }
 
 	virtual void set_main_loop(MainLoop *p_main_loop) = 0;
 	virtual void delete_main_loop() = 0;
@@ -144,8 +139,6 @@ public:
 	String get_current_rendering_method() const { return _current_rendering_method; }
 	bool get_gles_over_gl() const { return _is_gles_over_gl; }
 
-	int get_display_driver_id() const { return _display_driver_id; }
-
 	virtual Vector<String> get_video_adapter_driver_info() const = 0;
 	virtual bool get_user_prefers_integrated_gpu() const { return false; }
 
@@ -167,6 +160,8 @@ public:
 	virtual PackedStringArray get_connected_midi_inputs();
 	virtual void open_midi_inputs();
 	virtual void close_midi_inputs();
+
+	virtual Rect2 calculate_boot_screen_rect(const Size2 &p_window_size, const Size2 &p_imgrect_size) const;
 
 	virtual void alert(const String &p_alert, const String &p_title = "ALERT!");
 
@@ -216,6 +211,7 @@ public:
 	virtual String get_identifier() const;
 	virtual String get_distribution_name() const = 0;
 	virtual String get_version() const = 0;
+	virtual String get_version_alias() const { return get_version(); }
 	virtual List<String> get_cmdline_args() const { return _cmdline; }
 	virtual List<String> get_cmdline_user_args() const { return _user_args; }
 	virtual List<String> get_cmdline_platform_args() const { return List<String>(); }
@@ -266,6 +262,9 @@ public:
 	void set_stdout_enabled(bool p_enabled);
 	void set_stderr_enabled(bool p_enabled);
 
+	virtual void set_crash_handler_silent() { _silent_crash_handler = true; }
+	virtual bool is_crash_handler_silent() { return _silent_crash_handler; }
+
 	virtual void disable_crash_handler() {}
 	virtual bool is_disable_crash_handler() const { return false; }
 	virtual void initialize_debugging() {}
@@ -291,6 +290,7 @@ public:
 	virtual String get_bundle_resource_dir() const;
 	virtual String get_bundle_icon_path() const;
 
+	virtual String get_user_data_dir(const String &p_user_dir) const;
 	virtual String get_user_data_dir() const;
 	virtual String get_resource_dir() const;
 
@@ -308,6 +308,9 @@ public:
 	virtual String get_system_dir(SystemDir p_dir, bool p_shared_storage = true) const;
 
 	virtual Error move_to_trash(const String &p_path) { return FAILED; }
+
+	void create_lock_file();
+	void remove_lock_file();
 
 	virtual int get_exit_code() const;
 	// `set_exit_code` should only be used from `SceneTree` (or from a similar
@@ -358,8 +361,10 @@ public:
 	// This is invoked by the GDExtensionManager after loading GDExtensions specified by the project.
 	virtual void load_platform_gdextensions() const {}
 
+	// Tests OpenGL context and Rendering Device simultaneous creation. This function is expected to crash on some NVIDIA drivers.
+	virtual bool _test_create_rendering_device_and_gl(const String &p_display_driver) const { return true; }
+	virtual bool _test_create_rendering_device(const String &p_display_driver) const { return true; }
+
 	OS();
 	virtual ~OS();
 };
-
-#endif // OS_H

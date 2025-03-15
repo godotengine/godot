@@ -32,7 +32,6 @@
 
 #include "container_type_validate.h"
 #include "core/math/math_funcs.h"
-#include "core/object/class_db.h"
 #include "core/object/script_language.h"
 #include "core/templates/hashfuncs.h"
 #include "core/templates/search_array.h"
@@ -89,11 +88,11 @@ Array::Iterator Array::end() {
 }
 
 Array::ConstIterator Array::begin() const {
-	return ConstIterator(_p->array.ptr(), _p->read_only);
+	return ConstIterator(_p->array.ptr());
 }
 
 Array::ConstIterator Array::end() const {
-	return ConstIterator(_p->array.ptr() + _p->array.size(), _p->read_only);
+	return ConstIterator(_p->array.ptr() + _p->array.size());
 }
 
 Variant &Array::operator[](int p_idx) {
@@ -105,10 +104,6 @@ Variant &Array::operator[](int p_idx) {
 }
 
 const Variant &Array::operator[](int p_idx) const {
-	if (unlikely(_p->read_only)) {
-		*_p->read_only = _p->array[p_idx];
-		return *_p->read_only;
-	}
 	return _p->array[p_idx];
 }
 

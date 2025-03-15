@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef THORVG_SVG_IN_OT_H
-#define THORVG_SVG_IN_OT_H
+#pragma once
 
 #ifdef GDEXTENSION
 // Headers for building as GDExtension plug-in.
@@ -68,9 +67,22 @@ struct GL_State {
 	tvg::Matrix m;
 };
 
+struct TVG_NodeCache {
+	uint64_t document_offset;
+	uint64_t body_offset;
+};
+
+struct TVG_DocumentCache {
+	String xml_body;
+	double embox_x;
+	double embox_y;
+	HashMap<int64_t, Vector<TVG_NodeCache>> node_caches;
+};
+
 struct TVG_State {
 	Mutex mutex;
 	HashMap<uint32_t, GL_State> glyph_map;
+	HashMap<FT_Byte *, TVG_DocumentCache> document_map;
 };
 
 FT_Error tvg_svg_in_ot_init(FT_Pointer *p_state);
@@ -82,5 +94,3 @@ SVG_RendererHooks *get_tvg_svg_in_ot_hooks();
 
 #endif // MODULE_FREETYPE_ENABLED
 #endif // MODULE_SVG_ENABLED
-
-#endif // THORVG_SVG_IN_OT_H

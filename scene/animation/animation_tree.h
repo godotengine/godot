@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef ANIMATION_TREE_H
-#define ANIMATION_TREE_H
+#pragma once
 
 #include "animation_mixer.h"
 #include "scene/resources/animation.h"
@@ -59,7 +58,7 @@ public:
 	};
 
 	bool closable = false;
-	Vector<Input> inputs;
+	LocalVector<Input> inputs;
 	AHashMap<NodePath, bool> filter;
 	bool filter_enabled = false;
 
@@ -105,7 +104,7 @@ public:
 	public:
 		AnimationNode *parent = nullptr;
 		Vector<StringName> connections;
-		Vector<real_t> track_weights;
+		LocalVector<real_t> track_weights;
 
 		const StringName get_base_path() const {
 			return base_path;
@@ -306,8 +305,8 @@ private:
 		uint64_t last_pass = 0;
 		real_t activity = 0.0;
 	};
-	mutable HashMap<StringName, Vector<Activity>> input_activity_map;
-	mutable HashMap<StringName, Vector<Activity> *> input_activity_map_get;
+	mutable HashMap<StringName, LocalVector<Activity>> input_activity_map;
+	mutable HashMap<StringName, LocalVector<Activity> *> input_activity_map_get;
 
 	NodePath animation_player;
 
@@ -362,5 +361,3 @@ public:
 #ifndef DISABLE_DEPRECATED
 VARIANT_ENUM_CAST(AnimationTree::AnimationProcessCallback);
 #endif // DISABLE_DEPRECATED
-
-#endif // ANIMATION_TREE_H

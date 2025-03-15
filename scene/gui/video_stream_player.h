@@ -28,13 +28,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef VIDEO_STREAM_PLAYER_H
-#define VIDEO_STREAM_PLAYER_H
+#pragma once
 
 #include "scene/gui/control.h"
 #include "scene/resources/video_stream.h"
 #include "servers/audio/audio_rb_resampler.h"
-#include "servers/audio_server.h"
 
 class VideoStreamPlayer : public Control {
 	GDCLASS(VideoStreamPlayer, Control);
@@ -127,5 +125,3 @@ public:
 	VideoStreamPlayer();
 	~VideoStreamPlayer();
 };
-
-#endif // VIDEO_STREAM_PLAYER_H

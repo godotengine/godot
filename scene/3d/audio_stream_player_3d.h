@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef AUDIO_STREAM_PLAYER_3D_H
-#define AUDIO_STREAM_PLAYER_3D_H
+#pragma once
 
 #include "scene/3d/node_3d.h"
 #include "servers/audio_server.h"
@@ -39,7 +38,6 @@ struct AudioFrame;
 class AudioStream;
 class AudioStreamPlayback;
 class AudioStreamPlayerInternal;
-class Camera3D;
 class VelocityTracker3D;
 
 class AudioStreamPlayer3D : public Node3D {
@@ -137,6 +135,9 @@ public:
 	void set_volume_db(float p_volume);
 	float get_volume_db() const;
 
+	void set_volume_linear(float p_volume);
+	float get_volume_linear() const;
+
 	void set_unit_size(float p_volume);
 	float get_unit_size() const;
 
@@ -206,5 +207,3 @@ public:
 
 VARIANT_ENUM_CAST(AudioStreamPlayer3D::AttenuationModel)
 VARIANT_ENUM_CAST(AudioStreamPlayer3D::DopplerTracking)
-
-#endif // AUDIO_STREAM_PLAYER_3D_H

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TEST_TEXT_SERVER_H
-#define TEST_TEXT_SERVER_H
+#pragma once
 
 #ifdef TOOLS_ENABLED
 
@@ -461,7 +460,7 @@ TEST_SUITE("[TextServer]") {
 					ts->free_rid(ctx);
 				}
 
-				if (ts->has_feature(TextServer::FEATURE_BREAK_ITERATORS)) {
+				if (ts->has_feature(TextServer::FEATURE_BREAK_ITERATORS)) { // Line breaking opportunities.
 					String test = U"เป็นภาษาราชการและภาษา";
 					RID ctx = ts->create_shaped_text();
 					CHECK_FALSE_MESSAGE(ctx == RID(), "Creating text buffer failed.");
@@ -489,7 +488,7 @@ TEST_SUITE("[TextServer]") {
 					ts->free_rid(ctx);
 				}
 
-				if (ts->has_feature(TextServer::FEATURE_BREAK_ITERATORS)) {
+				if (ts->has_feature(TextServer::FEATURE_BREAK_ITERATORS)) { // Break line.
 					struct TestCase {
 						String text;
 						PackedInt32Array breaks;
@@ -504,15 +503,48 @@ TEST_SUITE("[TextServer]") {
 						{ U"الحمدا لحمدا لحمـــد", { 0, 13, 13, 20 } },
 						{ U"         الحمد test", { 0, 15, 15, 19 } },
 						{ U"الحمـد الرياضي العربي", { 0, 7, 7, 15, 15, 21 } },
+						{ U"test \rtest", { 0, 6, 6, 10 } },
+						{ U"test\r test", { 0, 5, 5, 10 } },
+						{ U"test\r test \r test", { 0, 5, 5, 12, 12, 17 } },
+					};
+					for (size_t j = 0; j < std::size(cases); j++) {
+						RID ctx = ts->create_shaped_text();
+						CHECK_FALSE_MESSAGE(ctx == RID(), "Creating text buffer failed.");
+						bool ok = ts->shaped_text_add_string(ctx, cases[j].text, font, 16);
+						CHECK_FALSE_MESSAGE(!ok, "Adding text to the buffer failed.");
+
+						PackedInt32Array breaks = ts->shaped_text_get_line_breaks(ctx, 90.0);
+						CHECK_FALSE_MESSAGE(breaks != cases[j].breaks, "Invalid break points.");
+
+						breaks = ts->shaped_text_get_line_breaks_adv(ctx, { 90.0 }, 0, false);
+						CHECK_FALSE_MESSAGE(breaks != cases[j].breaks, "Invalid break points.");
+
+						ts->free_rid(ctx);
+					}
+				}
+
+				if (ts->has_feature(TextServer::FEATURE_BREAK_ITERATORS)) { // Break line and trim spaces.
+					struct TestCase {
+						String text;
+						PackedInt32Array breaks;
+					};
+					TestCase cases[] = {
+						{ U"test \rtest", { 0, 4, 6, 10 } },
+						{ U"test\r test", { 0, 4, 6, 10 } },
+						{ U"test\r test \r test", { 0, 4, 6, 10, 13, 17 } },
 					};
 					for (size_t j = 0; j < sizeof(cases) / sizeof(TestCase); j++) {
 						RID ctx = ts->create_shaped_text();
 						CHECK_FALSE_MESSAGE(ctx == RID(), "Creating text buffer failed.");
 						bool ok = ts->shaped_text_add_string(ctx, cases[j].text, font, 16);
 						CHECK_FALSE_MESSAGE(!ok, "Adding text to the buffer failed.");
-						PackedInt32Array breaks = ts->shaped_text_get_line_breaks(ctx, 90.0);
 
+						PackedInt32Array breaks = ts->shaped_text_get_line_breaks(ctx, 90.0, 0, TextServer::BREAK_MANDATORY | TextServer::BREAK_WORD_BOUND | TextServer::BREAK_TRIM_EDGE_SPACES);
 						CHECK_FALSE_MESSAGE(breaks != cases[j].breaks, "Invalid break points.");
+
+						breaks = ts->shaped_text_get_line_breaks_adv(ctx, { 90.0 }, 0, false, TextServer::BREAK_MANDATORY | TextServer::BREAK_WORD_BOUND | TextServer::BREAK_TRIM_EDGE_SPACES);
+						CHECK_FALSE_MESSAGE(breaks != cases[j].breaks, "Invalid break points.");
+
 						ts->free_rid(ctx);
 					}
 				}
@@ -558,6 +590,19 @@ TEST_SUITE("[TextServer]") {
 
 					CHECK_FALSE_MESSAGE(brks[2] != 5, "Invalid line break position.");
 					CHECK_FALSE_MESSAGE(brks[3] != 10, "Invalid line break position.");
+
+					CHECK_FALSE_MESSAGE(brks[4] != 10, "Invalid line break position.");
+					CHECK_FALSE_MESSAGE(brks[5] != 14, "Invalid line break position.");
+				}
+
+				brks = ts->shaped_text_get_line_breaks(ctx, 35.0, 0, TextServer::BREAK_WORD_BOUND | TextServer::BREAK_MANDATORY | TextServer::BREAK_TRIM_EDGE_SPACES);
+				CHECK_FALSE_MESSAGE(brks.size() != 6, "Invalid line breaks number.");
+				if (brks.size() == 6) {
+					CHECK_FALSE_MESSAGE(brks[0] != 0, "Invalid line break position.");
+					CHECK_FALSE_MESSAGE(brks[1] != 4, "Invalid line break position.");
+
+					CHECK_FALSE_MESSAGE(brks[2] != 5, "Invalid line break position.");
+					CHECK_FALSE_MESSAGE(brks[3] != 9, "Invalid line break position.");
 
 					CHECK_FALSE_MESSAGE(brks[4] != 10, "Invalid line break position.");
 					CHECK_FALSE_MESSAGE(brks[5] != 14, "Invalid line break position.");
@@ -782,12 +827,12 @@ TEST_SUITE("[TextServer]") {
 		SUBCASE("[TextServer] Word break") {
 			for (int i = 0; i < TextServerManager::get_singleton()->get_interface_count(); i++) {
 				Ref<TextServer> ts = TextServerManager::get_singleton()->get_interface(i);
+				CHECK_FALSE_MESSAGE(ts.is_null(), "Invalid TS interface.");
 
 				if (!ts->has_feature(TextServer::FEATURE_SIMPLE_LAYOUT)) {
 					continue;
 				}
 
-				CHECK_FALSE_MESSAGE(ts.is_null(), "Invalid TS interface.");
 				{
 					String text1 = U"linguistically similar and effectively form";
 					//                           14^     22^ 26^         38^
@@ -885,10 +930,49 @@ TEST_SUITE("[TextServer]") {
 				}
 			}
 		}
+
+		SUBCASE("[TextServer] Buffer invalidation") {
+			for (int i = 0; i < TextServerManager::get_singleton()->get_interface_count(); i++) {
+				Ref<TextServer> ts = TextServerManager::get_singleton()->get_interface(i);
+				CHECK_FALSE_MESSAGE(ts.is_null(), "Invalid TS interface.");
+
+				if (!ts->has_feature(TextServer::FEATURE_SIMPLE_LAYOUT)) {
+					continue;
+				}
+
+				RID font1 = ts->create_font();
+				ts->font_set_data_ptr(font1, _font_NotoSans_Regular, _font_NotoSans_Regular_size);
+
+				Array font;
+				font.push_back(font1);
+
+				RID ctx = ts->create_shaped_text();
+				CHECK_FALSE_MESSAGE(ctx == RID(), "Creating text buffer failed.");
+				bool ok = ts->shaped_text_add_string(ctx, "T", font, 16);
+				CHECK_FALSE_MESSAGE(!ok, "Adding text to the buffer failed.");
+				int gl_size = ts->shaped_text_get_glyph_count(ctx);
+				CHECK_MESSAGE(gl_size == 1, "Shaping failed, invalid glyph count");
+
+				ok = ts->shaped_text_add_object(ctx, "key", Size2(20, 20), INLINE_ALIGNMENT_CENTER, 1, 0.0);
+				CHECK_FALSE_MESSAGE(!ok, "Adding text to the buffer failed.");
+				gl_size = ts->shaped_text_get_glyph_count(ctx);
+				CHECK_MESSAGE(gl_size == 2, "Shaping failed, invalid glyph count");
+
+				ok = ts->shaped_text_add_string(ctx, "B", font, 16);
+				CHECK_FALSE_MESSAGE(!ok, "Adding text to the buffer failed.");
+				gl_size = ts->shaped_text_get_glyph_count(ctx);
+				CHECK_MESSAGE(gl_size == 3, "Shaping failed, invalid glyph count");
+
+				ts->free_rid(ctx);
+
+				for (int j = 0; j < font.size(); j++) {
+					ts->free_rid(font[j]);
+				}
+				font.clear();
+			}
+		}
 	}
 }
 }; // namespace TestTextServer
 
 #endif // TOOLS_ENABLED
-
-#endif // TEST_TEXT_SERVER_H

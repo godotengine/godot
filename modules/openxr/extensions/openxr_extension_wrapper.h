@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef OPENXR_EXTENSION_WRAPPER_H
-#define OPENXR_EXTENSION_WRAPPER_H
+#pragma once
 
 #include "core/error/error_macros.h"
 #include "core/math/projection.h"
@@ -57,7 +56,7 @@ public:
 	// You should return the pointer to the last struct you define as your result.
 	// If you are not adding any structs, just return `p_next_pointer`.
 	// See existing extensions for examples of this implementation.
-	virtual void *set_system_properties_and_get_next_pointer(void *p_next_pointer) { return p_next_pointer; } // Add additional data structures when we interogate OpenXRS system abilities.
+	virtual void *set_system_properties_and_get_next_pointer(void *p_next_pointer) { return p_next_pointer; } // Add additional data structures when we interrogate OpenXRS system abilities.
 	virtual void *set_instance_create_info_and_get_next_pointer(void *p_next_pointer) { return p_next_pointer; } // Add additional data structures when we create our OpenXR instance.
 	virtual void *set_session_create_and_get_next_pointer(void *p_next_pointer) { return p_next_pointer; } // Add additional data structures when we create our OpenXR session.
 	virtual void *set_swapchain_create_info_and_get_next_pointer(void *p_next_pointer) { return p_next_pointer; } // Add additional data structures when creating OpenXR swap chains.
@@ -125,5 +124,3 @@ public:
 	virtual bool create_projection_fov(const XrFovf p_fov, double p_z_near, double p_z_far, Projection &r_camera_matrix) = 0; // `create_projection_fov` creates a proper projection matrix based on asymmetric FOV data provided by OpenXR.
 	virtual RID get_texture(void *p_swapchain_graphics_data, int p_image_index) = 0; // `get_texture` returns a Godot texture RID for the current active texture in our swapchain.
 };
-
-#endif // OPENXR_EXTENSION_WRAPPER_H

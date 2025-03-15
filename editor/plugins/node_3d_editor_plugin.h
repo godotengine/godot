@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef NODE_3D_EDITOR_PLUGIN_H
-#define NODE_3D_EDITOR_PLUGIN_H
+#pragma once
 
 #include "core/math/dynamic_bvh.h"
 #include "editor/plugins/editor_plugin.h"
@@ -85,6 +84,7 @@ class ViewportRotationControl : public Control {
 	Vector2i orbiting_mouse_start;
 	int orbiting_index = -1;
 	int focused_axis = -2;
+	bool gizmo_activated = false;
 
 	const float AXIS_CIRCLE_RADIUS = 8.0f * EDSCALE;
 
@@ -95,7 +95,6 @@ protected:
 	void _draw_axis(const Axis2D &p_axis);
 	void _get_sorted_axis(Vector<Axis2D> &r_axis);
 	void _update_focus();
-	void _on_mouse_exited();
 	void _process_click(int p_index, Vector2 p_position, bool p_pressed);
 	void _process_drag(Ref<InputEventWithModifiers> p_event, int p_index, Vector2 p_position, Vector2 p_relative_position);
 
@@ -249,7 +248,7 @@ private:
 	CheckBox *preview_camera = nullptr;
 	SubViewportContainer *subviewport_container = nullptr;
 
-	MenuButton *view_menu = nullptr;
+	MenuButton *view_display_menu = nullptr;
 	PopupMenu *display_submenu = nullptr;
 
 	Control *surface = nullptr;
@@ -413,6 +412,7 @@ private:
 	// so one cursor is the real cursor, while the other can be an interpolated version.
 	Cursor cursor; // Immediate cursor
 	Cursor camera_cursor; // That one may be interpolated (don't modify this one except for smoothing purposes)
+	Cursor previous_cursor; // Storing previous cursor state for canceling purposes
 
 	void scale_fov(real_t p_fov_offset);
 	void reset_fov();
@@ -523,7 +523,15 @@ private:
 	void register_shortcut_action(const String &p_path, const String &p_name, Key p_keycode, bool p_physical = false);
 	void shortcut_changed_callback(const Ref<Shortcut> p_shortcut, const String &p_shortcut_path);
 
+	// Supported rendering methods for advanced debug draw mode items.
+	enum SupportedRenderingMethods {
+		ALL,
+		FORWARD_PLUS,
+		FORWARD_PLUS_MOBILE,
+	};
+
 	void _set_lock_view_rotation(bool p_lock_rotation);
+	void _add_advanced_debug_draw_mode_item(PopupMenu *p_popup, const String &p_name, int p_value, SupportedRenderingMethods p_rendering_methods = SupportedRenderingMethods::ALL, const String &p_tooltip = "");
 
 protected:
 	void _notification(int p_what);
@@ -693,8 +701,16 @@ private:
 	real_t snap_rotate_value;
 	real_t snap_scale_value;
 
+	Ref<ArrayMesh> active_selection_box_xray;
+	Ref<ArrayMesh> active_selection_box;
 	Ref<ArrayMesh> selection_box_xray;
 	Ref<ArrayMesh> selection_box;
+
+	Ref<StandardMaterial3D> selection_box_mat = memnew(StandardMaterial3D);
+	Ref<StandardMaterial3D> selection_box_mat_xray = memnew(StandardMaterial3D);
+	Ref<StandardMaterial3D> active_selection_box_mat = memnew(StandardMaterial3D);
+	Ref<StandardMaterial3D> active_selection_box_mat_xray = memnew(StandardMaterial3D);
+
 	RID indicators;
 	RID indicators_instance;
 	RID cursor_mesh;
@@ -751,7 +767,7 @@ private:
 
 	MenuButton *transform_menu = nullptr;
 	PopupMenu *gizmos_menu = nullptr;
-	MenuButton *view_menu = nullptr;
+	MenuButton *view_layout_menu = nullptr;
 
 	AcceptDialog *accept = nullptr;
 
@@ -1013,7 +1029,7 @@ class Node3DEditorPlugin : public EditorPlugin {
 
 public:
 	Node3DEditor *get_spatial_editor() { return spatial_editor; }
-	virtual String get_name() const override { return "3D"; }
+	virtual String get_plugin_name() const override { return "3D"; }
 	bool has_main_screen() const override { return true; }
 	virtual void make_visible(bool p_visible) override;
 	virtual void edit(Object *p_object) override;
@@ -1045,8 +1061,6 @@ protected:
 	void _notification(int p_what);
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 	void _draw();
-	void _on_mouse_entered();
-	void _on_mouse_exited();
 	void _process_click(int p_index, Vector2 p_position, bool p_pressed);
 	void _process_drag(int p_index, Vector2 p_position, Vector2 p_relative_position);
 	void _update_navigation();
@@ -1055,5 +1069,3 @@ public:
 	void set_navigation_mode(Node3DEditorViewport::NavigationMode p_nav_mode);
 	void set_viewport(Node3DEditorViewport *p_viewport);
 };
-
-#endif // NODE_3D_EDITOR_PLUGIN_H

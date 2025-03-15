@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef WINDOW_H
-#define WINDOW_H
+#pragma once
 
 #include "scene/main/viewport.h"
 #include "scene/resources/theme.h"
@@ -120,7 +119,7 @@ private:
 	String title;
 	String tr_title;
 	mutable int current_screen = 0;
-	mutable Vector2i position;
+	mutable Point2i position;
 	mutable Size2i size = Size2i(DEFAULT_WINDOW_SIZE, DEFAULT_WINDOW_SIZE);
 	mutable Size2i min_size;
 	mutable Size2i max_size;
@@ -401,6 +400,9 @@ public:
 	void grab_focus();
 	bool has_focus() const;
 
+	void start_drag();
+	void start_resize(DisplayServer::WindowResizeEdge p_edge);
+
 	Rect2i get_usable_parent_rect() const;
 
 	// Internationalization.
@@ -498,5 +500,3 @@ VARIANT_ENUM_CAST(Window::ContentScaleAspect);
 VARIANT_ENUM_CAST(Window::ContentScaleStretch);
 VARIANT_ENUM_CAST(Window::LayoutDirection);
 VARIANT_ENUM_CAST(Window::WindowInitialPosition);
-
-#endif // WINDOW_H

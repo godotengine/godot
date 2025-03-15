@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TEST_QUATERNION_H
-#define TEST_QUATERNION_H
+#pragma once
 
 #include "core/math/math_defs.h"
 #include "core/math/math_funcs.h"
@@ -233,6 +232,39 @@ TEST_CASE("[Quaternion] Construct Basis Axes") {
 	CHECK(q[1] == doctest::Approx(-0.4245716));
 	CHECK(q[2] == doctest::Approx(0.206033));
 	CHECK(q[3] == doctest::Approx(0.8582598));
+}
+
+TEST_CASE("[Quaternion] Construct Shortest Arc For 180 Degree Arc") {
+	Vector3 up(0, 1, 0);
+	Vector3 down(0, -1, 0);
+	Vector3 left(-1, 0, 0);
+	Vector3 right(1, 0, 0);
+	Vector3 forward(0, 0, -1);
+	Vector3 back(0, 0, 1);
+
+	// When we have a 180 degree rotation quaternion which was defined as
+	// A to B, logically when we transform A we expect to get B.
+	Quaternion left_to_right(left, right);
+	Quaternion right_to_left(right, left);
+	CHECK(left_to_right.xform(left).is_equal_approx(right));
+	CHECK(Quaternion(right, left).xform(right).is_equal_approx(left));
+	CHECK(Quaternion(up, down).xform(up).is_equal_approx(down));
+	CHECK(Quaternion(down, up).xform(down).is_equal_approx(up));
+	CHECK(Quaternion(forward, back).xform(forward).is_equal_approx(back));
+	CHECK(Quaternion(back, forward).xform(back).is_equal_approx(forward));
+
+	// With (arbitrary) opposite vectors that are not axis-aligned as parameters.
+	Vector3 diagonal_up = Vector3(1.2, 2.3, 4.5).normalized();
+	Vector3 diagonal_down = -diagonal_up;
+	Quaternion q1(diagonal_up, diagonal_down);
+	CHECK(q1.xform(diagonal_down).is_equal_approx(diagonal_up));
+	CHECK(q1.xform(diagonal_up).is_equal_approx(diagonal_down));
+
+	// For the consistency of the rotation direction, they should be symmetrical to the plane.
+	CHECK(left_to_right.is_equal_approx(right_to_left.inverse()));
+
+	// If vectors are same, no rotation.
+	CHECK(Quaternion(diagonal_up, diagonal_up).is_equal_approx(Quaternion()));
 }
 
 TEST_CASE("[Quaternion] Get Euler Orders") {
@@ -459,5 +491,3 @@ TEST_CASE("[Quaternion] Finite number checks") {
 }
 
 } // namespace TestQuaternion
-
-#endif // TEST_QUATERNION_H

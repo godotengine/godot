@@ -38,7 +38,6 @@
 #include "editor/filesystem_dock.h"
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/project_settings_editor.h"
-#include "editor/themes/editor_scale.h"
 #include "scene/main/window.h"
 #include "scene/resources/packed_scene.h"
 
@@ -188,7 +187,7 @@ void EditorAutoloadSettings::_autoload_edited() {
 
 	if (column == 0) {
 		String name = ti->get_text(0);
-		String old_name = selected_autoload.get_slice("/", 1);
+		String old_name = selected_autoload.get_slicec('/', 1);
 
 		if (name == old_name) {
 			return;
@@ -243,7 +242,7 @@ void EditorAutoloadSettings::_autoload_edited() {
 		String scr_path = GLOBAL_GET(base);
 
 		if (scr_path.begins_with("*")) {
-			scr_path = scr_path.substr(1, scr_path.length());
+			scr_path = scr_path.substr(1);
 		}
 
 		// Singleton autoloads are represented with a leading "*" in their path.
@@ -350,11 +349,7 @@ void EditorAutoloadSettings::_autoload_activated() {
 }
 
 void EditorAutoloadSettings::_autoload_open(const String &fpath) {
-	if (ResourceLoader::get_resource_type(fpath) == "PackedScene") {
-		EditorNode::get_singleton()->open_request(fpath);
-	} else {
-		EditorNode::get_singleton()->load_resource(fpath);
-	}
+	EditorNode::get_singleton()->load_scene_or_resource(fpath);
 	ProjectSettingsEditor::get_singleton()->hide();
 }
 
@@ -396,7 +391,7 @@ Node *EditorAutoloadSettings::_create_autoload(const String &p_path) {
 		scn.instantiate();
 		scn->set_path(p_path);
 		scn->reload_from_file();
-		ERR_FAIL_COND_V_MSG(!scn.is_valid(), nullptr, vformat("Failed to create an autoload, can't load from path: %s.", p_path));
+		ERR_FAIL_COND_V_MSG(scn.is_null(), nullptr, vformat("Failed to create an autoload, can't load from path: %s.", p_path));
 
 		if (scn.is_valid()) {
 			n = scn->instantiate();
@@ -484,7 +479,7 @@ void EditorAutoloadSettings::update_autoload() {
 			continue;
 		}
 
-		String name = pi.name.get_slice("/", 1);
+		String name = pi.name.get_slicec('/', 1);
 		String scr_path = GLOBAL_GET(pi.name);
 
 		if (name.is_empty()) {
@@ -495,7 +490,7 @@ void EditorAutoloadSettings::update_autoload() {
 		info.is_singleton = scr_path.begins_with("*");
 
 		if (info.is_singleton) {
-			scr_path = scr_path.substr(1, scr_path.length());
+			scr_path = scr_path.substr(1);
 		}
 
 		info.name = name;
@@ -716,6 +711,15 @@ void EditorAutoloadSettings::drop_data_fw(const Point2 &p_point, const Variant &
 	Dictionary drop_data = p_data;
 	PackedStringArray autoloads = drop_data["autoloads"];
 
+	// Store the initial order of the autoloads for comparison.
+	Vector<int> initial_orders;
+	initial_orders.resize(autoload_cache.size());
+	int idx = 0;
+	for (const AutoloadInfo &F : autoload_cache) {
+		initial_orders.write[idx++] = F.order;
+	}
+
+	// Perform the drag-and-drop operation.
 	Vector<int> orders;
 	orders.resize(autoload_cache.size());
 
@@ -735,10 +739,14 @@ void EditorAutoloadSettings::drop_data_fw(const Point2 &p_point, const Variant &
 		}
 	}
 
-	int i = 0;
-
+	idx = 0;
 	for (const AutoloadInfo &F : autoload_cache) {
-		orders.write[i++] = F.order;
+		orders.write[idx++] = F.order;
+	}
+
+	// If the order didn't change, we shouldn't create undo/redo actions.
+	if (orders == initial_orders) {
+		return;
 	}
 
 	orders.sort();
@@ -747,10 +755,9 @@ void EditorAutoloadSettings::drop_data_fw(const Point2 &p_point, const Variant &
 
 	undo_redo->create_action(TTR("Rearrange Autoloads"));
 
-	i = 0;
-
+	idx = 0;
 	for (const AutoloadInfo &F : autoload_cache) {
-		undo_redo->add_do_method(ProjectSettings::get_singleton(), "set_order", "autoload/" + F.name, orders[i++]);
+		undo_redo->add_do_method(ProjectSettings::get_singleton(), "set_order", "autoload/" + F.name, orders[idx++]);
 		undo_redo->add_undo_method(ProjectSettings::get_singleton(), "set_order", "autoload/" + F.name, F.order);
 	}
 
@@ -851,7 +858,7 @@ EditorAutoloadSettings::EditorAutoloadSettings() {
 			continue;
 		}
 
-		String name = pi.name.get_slice("/", 1);
+		String name = pi.name.get_slicec('/', 1);
 		String scr_path = GLOBAL_GET(pi.name);
 
 		if (name.is_empty()) {
@@ -862,7 +869,7 @@ EditorAutoloadSettings::EditorAutoloadSettings() {
 		info.is_singleton = scr_path.begins_with("*");
 
 		if (info.is_singleton) {
-			scr_path = scr_path.substr(1, scr_path.length());
+			scr_path = scr_path.substr(1);
 		}
 
 		info.name = name;

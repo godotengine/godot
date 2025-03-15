@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef CANVAS_ITEM_EDITOR_PLUGIN_H
-#define CANVAS_ITEM_EDITOR_PLUGIN_H
+#pragma once
 
 #include "editor/plugins/editor_plugin.h"
 #include "scene/gui/box_container.h"
@@ -380,7 +379,6 @@ private:
 	Ref<Shortcut> divide_grid_step_shortcut;
 
 	Ref<ViewPanner> panner;
-	bool warped_panning = true;
 	void _pan_callback(Vector2 p_scroll_vec, Ref<InputEvent> p_event);
 	void _zoom_callback(float p_zoom_factor, Vector2 p_origin, Ref<InputEvent> p_event);
 
@@ -604,7 +602,7 @@ protected:
 	void _notification(int p_what);
 
 public:
-	virtual String get_name() const override { return "2D"; }
+	virtual String get_plugin_name() const override { return "2D"; }
 	bool has_main_screen() const override { return true; }
 	virtual void edit(Object *p_object) override;
 	virtual bool handles(Object *p_object) const override;
@@ -666,5 +664,3 @@ public:
 	CanvasItemEditorViewport(CanvasItemEditor *p_canvas_item_editor);
 	~CanvasItemEditorViewport();
 };
-
-#endif // CANVAS_ITEM_EDITOR_PLUGIN_H

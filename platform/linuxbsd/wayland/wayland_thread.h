@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef WAYLAND_THREAD_H
-#define WAYLAND_THREAD_H
+#pragma once
 
 #ifdef WAYLAND_ENABLED
 
@@ -78,7 +77,7 @@
 #ifdef SOWRAP_ENABLED
 #include "dynwrappers/libdecor-so_wrap.h"
 #else
-#include <libdecor-0/libdecor.h>
+#include <libdecor.h>
 #endif // SOWRAP_ENABLED
 #endif // LIBDECOR_ENABLED
 
@@ -427,6 +426,8 @@ public:
 
 		const char *keymap_buffer = nullptr;
 		uint32_t keymap_buffer_size = 0;
+
+		HashMap<xkb_keycode_t, Key> pressed_keycodes;
 
 		xkb_layout_index_t current_layout_index = 0;
 
@@ -903,7 +904,8 @@ private:
 	static Vector<uint8_t> _wp_primary_selection_offer_read(struct wl_display *wl_display, const char *p_mime, struct zwp_primary_selection_offer_v1 *wp_primary_selection_offer);
 
 	static void _seat_state_set_current(WaylandThread::SeatState &p_ss);
-	static bool _seat_state_configure_key_event(WaylandThread::SeatState &p_seat, Ref<InputEventKey> p_event, xkb_keycode_t p_keycode, bool p_pressed);
+	static Ref<InputEventKey> _seat_state_get_key_event(SeatState *p_ss, xkb_keycode_t p_keycode, bool p_pressed);
+	static Ref<InputEventKey> _seat_state_get_unstuck_key_event(SeatState *p_ss, xkb_keycode_t p_keycode, bool p_pressed, Key p_key);
 
 	static void _wayland_state_update_cursor();
 
@@ -955,6 +957,8 @@ public:
 
 	struct wl_surface *window_get_wl_surface(DisplayServer::WindowID p_window_id) const;
 
+	void window_start_resize(DisplayServer::WindowResizeEdge p_edge, DisplayServer::WindowID p_window);
+
 	void window_set_max_size(DisplayServer::WindowID p_window_id, const Size2i &p_size);
 	void window_set_min_size(DisplayServer::WindowID p_window_id, const Size2i &p_size);
 
@@ -970,6 +974,8 @@ public:
 
 	// Optional - requires xdg_activation_v1
 	void window_request_attention(DisplayServer::WindowID p_window_id);
+
+	void window_start_drag(DisplayServer::WindowID p_window_id);
 
 	// Optional - require idle_inhibit_unstable_v1
 	void window_set_idle_inhibition(DisplayServer::WindowID p_window_id, bool p_enable);
@@ -1027,5 +1033,3 @@ public:
 };
 
 #endif // WAYLAND_ENABLED
-
-#endif // WAYLAND_THREAD_H

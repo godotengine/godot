@@ -28,17 +28,13 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef FILE_ACCESS_ZIP_H
-#define FILE_ACCESS_ZIP_H
+#pragma once
 
 #ifdef MINIZIP_ENABLED
 
 #include "core/io/file_access_pack.h"
-#include "core/templates/rb_map.h"
 
 #include "thirdparty/minizip/unzip.h"
-
-#include <stdlib.h>
 
 class ZipArchive : public PackSource {
 public:
@@ -105,7 +101,9 @@ public:
 
 	virtual bool file_exists(const String &p_name) override; ///< return true if a file exists
 
-	virtual uint64_t _get_modified_time(const String &p_file) override { return 0; } // todo
+	virtual uint64_t _get_modified_time(const String &p_file) override { return 0; }
+	virtual uint64_t _get_access_time(const String &p_file) override { return 0; }
+	virtual int64_t _get_size(const String &p_file) override { return -1; }
 	virtual BitField<FileAccess::UnixPermissionFlags> _get_unix_permissions(const String &p_file) override { return 0; }
 	virtual Error _set_unix_permissions(const String &p_file, BitField<FileAccess::UnixPermissionFlags> p_permissions) override { return FAILED; }
 
@@ -121,5 +119,3 @@ public:
 };
 
 #endif // MINIZIP_ENABLED
-
-#endif // FILE_ACCESS_ZIP_H

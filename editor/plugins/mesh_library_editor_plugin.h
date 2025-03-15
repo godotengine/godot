@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef MESH_LIBRARY_EDITOR_PLUGIN_H
-#define MESH_LIBRARY_EDITOR_PLUGIN_H
+#pragma once
 
 #include "editor/plugins/editor_plugin.h"
 #include "scene/resources/3d/mesh_library.h"
@@ -83,7 +82,7 @@ class MeshLibraryEditorPlugin : public EditorPlugin {
 	MeshLibraryEditor *mesh_library_editor = nullptr;
 
 public:
-	virtual String get_name() const override { return "MeshLibrary"; }
+	virtual String get_plugin_name() const override { return "MeshLibrary"; }
 	bool has_main_screen() const override { return false; }
 	virtual void edit(Object *p_node) override;
 	virtual bool handles(Object *p_node) const override;
@@ -91,5 +90,3 @@ public:
 
 	MeshLibraryEditorPlugin();
 };
-
-#endif // MESH_LIBRARY_EDITOR_PLUGIN_H

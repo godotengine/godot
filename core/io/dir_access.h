@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef DIR_ACCESS_H
-#define DIR_ACCESS_H
+#pragma once
 
 #include "core/object/ref_counted.h"
 #include "core/string/ustring.h"
@@ -40,7 +39,7 @@ class DirAccess : public RefCounted {
 	GDCLASS(DirAccess, RefCounted);
 
 public:
-	enum AccessType {
+	enum AccessType : int32_t {
 		ACCESS_RESOURCES,
 		ACCESS_USERDATA,
 		ACCESS_FILESYSTEM,
@@ -174,5 +173,3 @@ public:
 	DirAccess() {}
 	virtual ~DirAccess();
 };
-
-#endif // DIR_ACCESS_H

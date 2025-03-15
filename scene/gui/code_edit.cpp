@@ -31,13 +31,27 @@
 #include "code_edit.h"
 #include "code_edit.compat.inc"
 
+#include "core/config/project_settings.h"
 #include "core/os/keyboard.h"
 #include "core/string/string_builder.h"
 #include "core/string/ustring.h"
 #include "scene/theme/theme_db.h"
 
+void CodeEdit::_apply_project_settings() {
+	symbol_tooltip_timer->set_wait_time(GLOBAL_GET("gui/timers/tooltip_delay_sec"));
+}
+
 void CodeEdit::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_READY: {
+			_apply_project_settings();
+#ifdef TOOLS_ENABLED
+			if (Engine::get_singleton()->is_editor_hint()) {
+				ProjectSettings::get_singleton()->connect("settings_changed", callable_mp(this, &CodeEdit::_apply_project_settings));
+			}
+#endif // TOOLS_ENABLED
+		} break;
+
 		case NOTIFICATION_THEME_CHANGED: {
 			set_gutter_width(main_gutter, get_line_height());
 			_update_line_number_gutter_width();
@@ -64,10 +78,10 @@ void CodeEdit::_notification(int p_what) {
 			if (line_length_guideline_columns.size() > 0) {
 				const int xmargin_beg = theme_cache.style_normal->get_margin(SIDE_LEFT) + get_total_gutter_width();
 				const int xmargin_end = size.width - theme_cache.style_normal->get_margin(SIDE_RIGHT) - (is_drawing_minimap() ? get_minimap_width() : 0);
-				const float char_size = theme_cache.font->get_char_size('0', theme_cache.font_size).width;
 
 				for (int i = 0; i < line_length_guideline_columns.size(); i++) {
-					const int xoffset = xmargin_beg + char_size * (int)line_length_guideline_columns[i] - get_h_scroll();
+					const int column_pos = theme_cache.font->get_string_size(String("0").repeat((int)line_length_guideline_columns[i]), HORIZONTAL_ALIGNMENT_LEFT, -1, theme_cache.font_size).x;
+					const int xoffset = xmargin_beg + column_pos - get_h_scroll();
 					if (xoffset > xmargin_beg && xoffset < xmargin_end) {
 						Color guideline_color = (i == 0) ? theme_cache.line_length_guideline_color : theme_cache.line_length_guideline_color * Color(1, 1, 1, 0.5);
 						if (rtl) {
@@ -123,7 +137,7 @@ void CodeEdit::_notification(int p_what) {
 
 						Point2 round_ofs = hint_ofs + theme_cache.code_hint_style->get_offset() + Vector2(0, theme_cache.font->get_ascent(theme_cache.font_size) + font_height * i + yofs);
 						round_ofs = round_ofs.round();
-						draw_string(theme_cache.font, round_ofs, line.replace(String::chr(0xFFFF), ""), HORIZONTAL_ALIGNMENT_LEFT, -1, theme_cache.font_size, theme_cache.code_hint_color);
+						draw_string(theme_cache.font, round_ofs, line.remove_char(0xFFFF), HORIZONTAL_ALIGNMENT_LEFT, -1, theme_cache.font_size, theme_cache.code_hint_color);
 						if (end > 0) {
 							// Draw an underline for the currently edited function parameter.
 							const Vector2 b = hint_ofs + theme_cache.code_hint_style->get_offset() + Vector2(begin, font_height + font_height * i + yofs);
@@ -261,7 +275,7 @@ void CodeEdit::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_MOUSE_EXIT: {
-			queue_redraw();
+			symbol_tooltip_timer->stop();
 		} break;
 	}
 }
@@ -406,7 +420,7 @@ void CodeEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 						mpos.x = get_size().x - mpos.x;
 					}
 
-					Point2i pos = get_line_column_at_pos(mpos, false);
+					Point2i pos = get_line_column_at_pos(mpos, false, false);
 					int line = pos.y;
 					int col = pos.x;
 
@@ -428,14 +442,20 @@ void CodeEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 
 		if (symbol_lookup_on_click_enabled) {
 			if (mm->is_command_or_control_pressed() && mm->get_button_mask().is_empty()) {
-				symbol_lookup_pos = get_line_column_at_pos(mpos);
+				symbol_lookup_pos = get_line_column_at_pos(mpos, false, false);
 				symbol_lookup_new_word = get_word_at_pos(mpos);
 				if (symbol_lookup_new_word != symbol_lookup_word) {
 					emit_signal(SNAME("symbol_validate"), symbol_lookup_new_word);
 				}
-			} else if (!mm->is_command_or_control_pressed() || (!mm->get_button_mask().is_empty() && symbol_lookup_pos != get_line_column_at_pos(mpos))) {
+			} else if (!mm->is_command_or_control_pressed() || (!mm->get_button_mask().is_empty() && symbol_lookup_pos != get_line_column_at_pos(mpos, false, false))) {
 				set_symbol_lookup_word_as_valid(false);
 			}
+		}
+
+		if (symbol_tooltip_on_hover_enabled) {
+			symbol_tooltip_pos = get_line_column_at_pos(mpos, false, false);
+			symbol_tooltip_word = get_word_at_pos(mpos);
+			symbol_tooltip_timer->start();
 		}
 
 		bool scroll_hovered = code_completion_scroll_rect.has_point(mpos);
@@ -465,10 +485,10 @@ void CodeEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 	}
 
 	bool update_code_completion = false;
-	if (!k.is_valid()) {
+	if (k.is_null()) {
 		// MouseMotion events should not be handled by TextEdit logic if we're
 		// currently clicking and dragging from the code completion panel.
-		if (!mm.is_valid() || !is_code_completion_drag_started) {
+		if (mm.is_null() || !is_code_completion_drag_started) {
 			TextEdit::gui_input(p_gui_input);
 		}
 		return;
@@ -638,6 +658,10 @@ void CodeEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 Control::CursorShape CodeEdit::get_cursor_shape(const Point2 &p_pos) const {
 	if (!symbol_lookup_word.is_empty()) {
 		return CURSOR_POINTING_HAND;
+	}
+
+	if (is_dragging_cursor()) {
+		return TextEdit::get_cursor_shape(p_pos);
 	}
 
 	if ((code_completion_active && code_completion_rect.has_point(p_pos)) || (!is_editable() && (!is_selecting_enabled() || get_line_count() == 0))) {
@@ -1848,7 +1872,8 @@ bool CodeEdit::is_line_code_region_start(int p_line) const {
 	if (is_in_string(p_line) != -1) {
 		return false;
 	}
-	return get_line(p_line).strip_edges().begins_with(code_region_start_string);
+	Vector<String> split = get_line(p_line).strip_edges().split_spaces(1);
+	return split.size() > 0 && split[0] == code_region_start_string;
 }
 
 bool CodeEdit::is_line_code_region_end(int p_line) const {
@@ -1859,7 +1884,8 @@ bool CodeEdit::is_line_code_region_end(int p_line) const {
 	if (is_in_string(p_line) != -1) {
 		return false;
 	}
-	return get_line(p_line).strip_edges().begins_with(code_region_end_string);
+	Vector<String> split = get_line(p_line).strip_edges().split_spaces(1);
+	return split.size() > 0 && split[0] == code_region_end_string;
 }
 
 /* Delimiters */
@@ -2088,7 +2114,7 @@ String CodeEdit::get_text_for_code_completion() const {
 			completion_text += line.substr(0, get_caret_column());
 			/* Not unicode, represents the caret. */
 			completion_text += String::chr(0xFFFF);
-			completion_text += line.substr(get_caret_column(), line.size());
+			completion_text += line.substr(get_caret_column());
 		} else {
 			completion_text += line;
 		}
@@ -2367,7 +2393,7 @@ bool CodeEdit::is_symbol_lookup_on_click_enabled() const {
 
 String CodeEdit::get_text_for_symbol_lookup() const {
 	Point2i mp = get_local_mouse_pos();
-	Point2i pos = get_line_column_at_pos(mp, false);
+	Point2i pos = get_line_column_at_pos(mp, false, false);
 	int line = pos.y;
 	int col = pos.x;
 
@@ -2387,7 +2413,7 @@ String CodeEdit::get_text_with_cursor_char(int p_line, int p_column) const {
 			result += line_text.substr(0, p_column);
 			/* Not unicode, represents the cursor. */
 			result += String::chr(0xFFFF);
-			result += line_text.substr(p_column, line_text.size());
+			result += line_text.substr(p_column);
 		} else {
 			result += line_text;
 		}
@@ -2405,6 +2431,26 @@ void CodeEdit::set_symbol_lookup_word_as_valid(bool p_valid) {
 	symbol_lookup_new_word = "";
 	if (lookup_symbol_word != symbol_lookup_word) {
 		_set_symbol_lookup_word(symbol_lookup_word);
+	}
+}
+
+/* Symbol tooltip */
+void CodeEdit::set_symbol_tooltip_on_hover_enabled(bool p_enabled) {
+	symbol_tooltip_on_hover_enabled = p_enabled;
+	if (!p_enabled) {
+		symbol_tooltip_timer->stop();
+	}
+}
+
+bool CodeEdit::is_symbol_tooltip_on_hover_enabled() const {
+	return symbol_tooltip_on_hover_enabled;
+}
+
+void CodeEdit::_on_symbol_tooltip_timer_timeout() {
+	const int line = symbol_tooltip_pos.y;
+	const int column = symbol_tooltip_pos.x;
+	if (line >= 0 && column >= 0 && !symbol_tooltip_word.is_empty() && !has_selection() && !Input::get_singleton()->is_anything_pressed()) {
+		emit_signal(SNAME("symbol_hovered"), symbol_tooltip_word, line, column);
 	}
 }
 
@@ -2771,6 +2817,10 @@ void CodeEdit::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_symbol_lookup_word_as_valid", "valid"), &CodeEdit::set_symbol_lookup_word_as_valid);
 
+	/* Symbol tooltip */
+	ClassDB::bind_method(D_METHOD("set_symbol_tooltip_on_hover_enabled", "enable"), &CodeEdit::set_symbol_tooltip_on_hover_enabled);
+	ClassDB::bind_method(D_METHOD("is_symbol_tooltip_on_hover_enabled"), &CodeEdit::is_symbol_tooltip_on_hover_enabled);
+
 	/* Text manipulation */
 	ClassDB::bind_method(D_METHOD("move_lines_up"), &CodeEdit::move_lines_up);
 	ClassDB::bind_method(D_METHOD("move_lines_down"), &CodeEdit::move_lines_down);
@@ -2780,6 +2830,7 @@ void CodeEdit::_bind_methods() {
 
 	/* Inspector */
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "symbol_lookup_on_click"), "set_symbol_lookup_on_click_enabled", "is_symbol_lookup_on_click_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "symbol_tooltip_on_hover"), "set_symbol_tooltip_on_hover_enabled", "is_symbol_tooltip_on_hover_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "line_folding"), "set_line_folding_enabled", "is_line_folding_enabled");
 
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_INT32_ARRAY, "line_length_guidelines"), "set_line_length_guidelines", "get_line_length_guidelines");
@@ -2825,6 +2876,9 @@ void CodeEdit::_bind_methods() {
 	/* Symbol lookup */
 	ADD_SIGNAL(MethodInfo("symbol_lookup", PropertyInfo(Variant::STRING, "symbol"), PropertyInfo(Variant::INT, "line"), PropertyInfo(Variant::INT, "column")));
 	ADD_SIGNAL(MethodInfo("symbol_validate", PropertyInfo(Variant::STRING, "symbol")));
+
+	/* Symbol tooltip */
+	ADD_SIGNAL(MethodInfo("symbol_hovered", PropertyInfo(Variant::STRING, "symbol"), PropertyInfo(Variant::INT, "line"), PropertyInfo(Variant::INT, "column")));
 
 	/* Theme items */
 	/* Gutters */
@@ -3296,8 +3350,8 @@ void CodeEdit::_set_delimiters(const TypedArray<String> &p_delimiters, Delimiter
 			continue;
 		}
 
-		const String start_key = key.get_slice(" ", 0);
-		const String end_key = key.get_slice_count(" ") > 1 ? key.get_slice(" ", 1) : String();
+		const String start_key = key.get_slicec(' ', 0);
+		const String end_key = key.get_slice_count(" ") > 1 ? key.get_slicec(' ', 1) : String();
 
 		_add_delimiter(start_key, end_key, end_key.is_empty(), p_type);
 	}
@@ -3748,6 +3802,13 @@ CodeEdit::CodeEdit() {
 	set_gutter_type(gutter_idx, GUTTER_TYPE_CUSTOM);
 	set_gutter_custom_draw(gutter_idx, callable_mp(this, &CodeEdit::_fold_gutter_draw_callback));
 	gutter_idx++;
+
+	/* Symbol tooltip */
+	symbol_tooltip_timer = memnew(Timer);
+	symbol_tooltip_timer->set_wait_time(0.5); // See `_apply_project_settings()`.
+	symbol_tooltip_timer->set_one_shot(true);
+	symbol_tooltip_timer->connect("timeout", callable_mp(this, &CodeEdit::_on_symbol_tooltip_timer_timeout));
+	add_child(symbol_tooltip_timer, false, INTERNAL_MODE_FRONT);
 
 	connect("lines_edited_from", callable_mp(this, &CodeEdit::_lines_edited_from));
 	connect("text_set", callable_mp(this, &CodeEdit::_text_set));

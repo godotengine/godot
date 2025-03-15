@@ -43,6 +43,7 @@
 #include "editor/themes/editor_scale.h"
 #include "editor/window_wrapper.h"
 #include "scene/gui/item_list.h"
+#include "scene/gui/tab_container.h"
 #include "scene/gui/texture_rect.h"
 
 Ref<Resource> ShaderEditorPlugin::_get_current_shader() {
@@ -342,7 +343,7 @@ String ShaderEditorPlugin::get_unsaved_status(const String &p_for_scene) const {
 
 void ShaderEditorPlugin::save_external_data() {
 	for (EditedShader &edited_shader : edited_shaders) {
-		if (edited_shader.shader_editor) {
+		if (edited_shader.shader_editor && edited_shader.shader_editor->is_unsaved()) {
 			edited_shader.shader_editor->save_external_data();
 		}
 	}
@@ -381,16 +382,16 @@ void ShaderEditorPlugin::_shader_list_clicked(int p_item, Vector2 p_local_mouse_
 
 void ShaderEditorPlugin::_setup_popup_menu(PopupMenuType p_type, PopupMenu *p_menu) {
 	if (p_type == FILE) {
-		p_menu->add_shortcut(ED_SHORTCUT("shader_editor/new", TTR("New Shader..."), KeyModifierMask::CMD_OR_CTRL | Key::N), FILE_NEW);
-		p_menu->add_shortcut(ED_SHORTCUT("shader_editor/new_include", TTR("New Shader Include..."), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::N), FILE_NEW_INCLUDE);
+		p_menu->add_shortcut(ED_SHORTCUT("shader_editor/new", TTRC("New Shader..."), KeyModifierMask::CMD_OR_CTRL | Key::N), FILE_NEW);
+		p_menu->add_shortcut(ED_SHORTCUT("shader_editor/new_include", TTRC("New Shader Include..."), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::N), FILE_NEW_INCLUDE);
 		p_menu->add_separator();
-		p_menu->add_shortcut(ED_SHORTCUT("shader_editor/open", TTR("Load Shader File..."), KeyModifierMask::CMD_OR_CTRL | Key::O), FILE_OPEN);
-		p_menu->add_shortcut(ED_SHORTCUT("shader_editor/open_include", TTR("Load Shader Include File..."), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::O), FILE_OPEN_INCLUDE);
+		p_menu->add_shortcut(ED_SHORTCUT("shader_editor/open", TTRC("Load Shader File..."), KeyModifierMask::CMD_OR_CTRL | Key::O), FILE_OPEN);
+		p_menu->add_shortcut(ED_SHORTCUT("shader_editor/open_include", TTRC("Load Shader Include File..."), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::O), FILE_OPEN_INCLUDE);
 	}
 
 	if (p_type == FILE || p_type == CONTEXT_VALID_ITEM) {
-		p_menu->add_shortcut(ED_SHORTCUT("shader_editor/save", TTR("Save File"), KeyModifierMask::ALT | KeyModifierMask::CMD_OR_CTRL | Key::S), FILE_SAVE);
-		p_menu->add_shortcut(ED_SHORTCUT("shader_editor/save_as", TTR("Save File As...")), FILE_SAVE_AS);
+		p_menu->add_shortcut(ED_SHORTCUT("shader_editor/save", TTRC("Save File"), KeyModifierMask::ALT | KeyModifierMask::CMD_OR_CTRL | Key::S), FILE_SAVE);
+		p_menu->add_shortcut(ED_SHORTCUT("shader_editor/save_as", TTRC("Save File As...")), FILE_SAVE_AS);
 	}
 
 	if (p_type == FILE) {
@@ -398,9 +399,9 @@ void ShaderEditorPlugin::_setup_popup_menu(PopupMenuType p_type, PopupMenu *p_me
 		p_menu->add_item(TTR("Open File in Inspector"), FILE_INSPECT);
 		p_menu->add_item(TTR("Inspect Native Shader Code..."), FILE_INSPECT_NATIVE_SHADER_CODE);
 		p_menu->add_separator();
-		p_menu->add_shortcut(ED_SHORTCUT("shader_editor/close_file", TTR("Close File"), KeyModifierMask::CMD_OR_CTRL | Key::W), FILE_CLOSE);
+		p_menu->add_shortcut(ED_SHORTCUT("shader_editor/close_file", TTRC("Close File"), KeyModifierMask::CMD_OR_CTRL | Key::W), FILE_CLOSE);
 	} else {
-		p_menu->add_shortcut(ED_SHORTCUT("shader_editor/close_file", TTR("Close File"), KeyModifierMask::CMD_OR_CTRL | Key::W), FILE_CLOSE);
+		p_menu->add_shortcut(ED_SHORTCUT("shader_editor/close_file", TTRC("Close File"), KeyModifierMask::CMD_OR_CTRL | Key::W), FILE_CLOSE);
 		p_menu->add_item(TTR("Close All"), CLOSE_ALL);
 		p_menu->add_item(TTR("Close Other Tabs"), CLOSE_OTHER_TABS);
 		if (p_type == CONTEXT_VALID_ITEM) {
@@ -614,7 +615,7 @@ Variant ShaderEditorPlugin::get_drag_data_fw(const Point2 &p_point, Control *p_f
 	String preview_name = shader_list->get_item_text(idx);
 	Ref<Texture2D> preview_icon = shader_list->get_item_icon(idx);
 
-	if (!preview_icon.is_null()) {
+	if (preview_icon.is_valid()) {
 		TextureRect *tf = memnew(TextureRect);
 		tf->set_texture(preview_icon);
 		tf->set_stretch_mode(TextureRect::STRETCH_KEEP_CENTERED);
@@ -783,7 +784,7 @@ ShaderEditorPlugin::ShaderEditorPlugin() {
 
 	main_split = memnew(HSplitContainer);
 	main_split->set_split_offset(200 * EDSCALE);
-	Ref<Shortcut> make_floating_shortcut = ED_SHORTCUT_AND_COMMAND("shader_editor/make_floating", TTR("Make Floating"));
+	Ref<Shortcut> make_floating_shortcut = ED_SHORTCUT_AND_COMMAND("shader_editor/make_floating", TTRC("Make Floating"));
 	window_wrapper->set_wrapped_control(main_split, make_floating_shortcut);
 
 	left_panel = memnew(VBoxContainer);
@@ -812,7 +813,7 @@ ShaderEditorPlugin::ShaderEditorPlugin() {
 	make_floating->connect("request_open_in_screen", callable_mp(window_wrapper, &WindowWrapper::enable_window_on_screen).bind(true));
 	if (!make_floating->is_disabled()) {
 		// Override default ScreenSelect tooltip if multi-window support is available.
-		make_floating->set_tooltip_text(TTR("Make the shader editor floating.\nRight-click to open the screen selector."));
+		make_floating->set_tooltip_text(TTR("Make the shader editor floating.") + "\n" + TTR("Right-click to open the screen selector."));
 	}
 
 	menu_hb->add_child(make_floating);
@@ -832,6 +833,7 @@ ShaderEditorPlugin::ShaderEditorPlugin() {
 	left_panel->set_custom_minimum_size(Size2(100, 300) * EDSCALE);
 
 	shader_tabs = memnew(TabContainer);
+	shader_tabs->set_custom_minimum_size(Size2(460, 300) * EDSCALE);
 	shader_tabs->set_tabs_visible(false);
 	shader_tabs->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	main_split->add_child(shader_tabs);
@@ -839,7 +841,7 @@ ShaderEditorPlugin::ShaderEditorPlugin() {
 	empty.instantiate();
 	shader_tabs->add_theme_style_override(SceneStringName(panel), empty);
 
-	button = EditorNode::get_bottom_panel()->add_item(TTR("Shader Editor"), window_wrapper, ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_shader_editor_bottom_panel", TTR("Toggle Shader Editor Bottom Panel"), KeyModifierMask::ALT | Key::S));
+	button = EditorNode::get_bottom_panel()->add_item(TTR("Shader Editor"), window_wrapper, ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_shader_editor_bottom_panel", TTRC("Toggle Shader Editor Bottom Panel"), KeyModifierMask::ALT | Key::S));
 
 	shader_create_dialog = memnew(ShaderCreateDialog);
 	main_split->add_child(shader_create_dialog);

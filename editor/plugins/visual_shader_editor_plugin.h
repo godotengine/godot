@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef VISUAL_SHADER_EDITOR_PLUGIN_H
-#define VISUAL_SHADER_EDITOR_PLUGIN_H
+#pragma once
 
 #include "editor/editor_properties.h"
 #include "editor/plugins/editor_plugin.h"
@@ -595,6 +594,9 @@ class VisualShaderEditor : public ShaderEditor {
 	void _member_cancel();
 
 	void _varying_create();
+	void _varying_validate();
+	void _varying_type_changed(int p_index);
+	void _varying_mode_changed(int p_index);
 	void _varying_name_changed(const String &p_name);
 	void _varying_deleted();
 	void _varying_selected();
@@ -717,5 +719,3 @@ public:
 	virtual bool handles(const Ref<Resource> &p_resource) const override;
 	virtual Ref<Resource> convert(const Ref<Resource> &p_resource) const override;
 };
-
-#endif // VISUAL_SHADER_EDITOR_PLUGIN_H

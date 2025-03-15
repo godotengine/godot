@@ -51,7 +51,8 @@ struct hb_ot_shape_plan_key_t
 
   bool equal (const hb_ot_shape_plan_key_t *other)
   {
-    return 0 == hb_memcmp (this, other, sizeof (*this));
+    return variations_index[0] == other->variations_index[0] &&
+	   variations_index[1] == other->variations_index[1];
   }
 };
 
@@ -79,21 +80,11 @@ struct hb_ot_shape_plan_t
 #else
   static constexpr hb_mask_t kern_mask = 0;
 #endif
-#ifndef HB_NO_AAT_SHAPE
-  hb_mask_t trak_mask;
-#else
-  static constexpr hb_mask_t trak_mask = 0;
-#endif
 
 #ifndef HB_NO_OT_KERN
   bool requested_kerning : 1;
 #else
   static constexpr bool requested_kerning = false;
-#endif
-#ifndef HB_NO_AAT_SHAPE
-  bool requested_tracking : 1;
-#else
-  static constexpr bool requested_tracking = false;
 #endif
 #ifndef HB_NO_OT_SHAPE_FRACTIONS
   bool has_frac : 1;
@@ -117,11 +108,9 @@ struct hb_ot_shape_plan_t
 #ifndef HB_NO_AAT_SHAPE
   bool apply_kerx : 1;
   bool apply_morx : 1;
-  bool apply_trak : 1;
 #else
   static constexpr bool apply_kerx = false;
   static constexpr bool apply_morx = false;
-  static constexpr bool apply_trak = false;
 #endif
 
   void collect_lookups (hb_tag_t table_tag, hb_set_t *lookups) const

@@ -1,5 +1,18 @@
 // Functions related to lighting
 
+#extension GL_EXT_control_flow_attributes : require
+
+// This annotation macro must be placed before any loops that rely on specialization constants as their upper bound.
+// Drivers may choose to unroll these loops based on the possible range of the value that can be deduced from the
+// spec constant, which can lead to their code generation taking a much longer time than desired.
+#ifdef UBERSHADER
+// Prefer to not unroll loops on the ubershader to reduce code size as much as possible.
+#define SPEC_CONSTANT_LOOP_ANNOTATION [[dont_unroll]]
+#else
+// Don't make an explicit hint on specialized shaders.
+#define SPEC_CONSTANT_LOOP_ANNOTATION
+#endif
+
 float D_GGX(float cos_theta_m, float alpha) {
 	float a = cos_theta_m * alpha;
 	float k = alpha / (1.0 - cos_theta_m * cos_theta_m + a * a);
@@ -120,7 +133,7 @@ void light_compute(vec3 N, vec3 L, vec3 V, float A, vec3 light_color, bool is_di
 #endif
 
 	// We skip checking on attenuation on directional lights to avoid a branch that is not as beneficial for directional lights as the other ones.
-	const float EPSILON = 1e-3f;
+	const float EPSILON = 1e-6f;
 	if (is_directional || attenuation > EPSILON) {
 		float cNdotL = max(NdotL, 0.0);
 #if defined(DIFFUSE_BURLEY) || defined(SPECULAR_SCHLICK_GGX) || defined(LIGHT_CLEARCOAT_USED)
@@ -257,6 +270,7 @@ float sample_directional_pcf_shadow(texture2D shadow, vec2 shadow_pixel_size, ve
 
 	float avg = 0.0;
 
+	SPEC_CONSTANT_LOOP_ANNOTATION
 	for (uint i = 0; i < sc_directional_soft_shadow_samples(); i++) {
 		avg += textureProj(sampler2DShadow(shadow, shadow_sampler), vec4(pos + shadow_pixel_size * (disk_rotation * scene_data_block.data.directional_soft_shadow_kernel[i].xy), depth, 1.0));
 	}
@@ -283,6 +297,7 @@ float sample_pcf_shadow(texture2D shadow, vec2 shadow_pixel_size, vec3 coord, fl
 
 	float avg = 0.0;
 
+	SPEC_CONSTANT_LOOP_ANNOTATION
 	for (uint i = 0; i < sc_soft_shadow_samples(); i++) {
 		avg += textureProj(sampler2DShadow(shadow, shadow_sampler), vec4(pos + shadow_pixel_size * (disk_rotation * scene_data_block.data.soft_shadow_kernel[i].xy), depth, 1.0));
 	}
@@ -309,15 +324,16 @@ float sample_omni_pcf_shadow(texture2D shadow, float blur_scale, vec2 coord, vec
 	float avg = 0.0;
 	vec2 offset_scale = blur_scale * 2.0 * scene_data_block.data.shadow_atlas_pixel_size / uv_rect.zw;
 
+	SPEC_CONSTANT_LOOP_ANNOTATION
 	for (uint i = 0; i < sc_soft_shadow_samples(); i++) {
 		vec2 offset = offset_scale * (disk_rotation * scene_data_block.data.soft_shadow_kernel[i].xy);
 		vec2 sample_coord = coord + offset;
 
-		float sample_coord_length_sqaured = dot(sample_coord, sample_coord);
-		bool do_flip = sample_coord_length_sqaured > 1.0;
+		float sample_coord_length_squared = dot(sample_coord, sample_coord);
+		bool do_flip = sample_coord_length_squared > 1.0;
 
 		if (do_flip) {
-			float len = sqrt(sample_coord_length_sqaured);
+			float len = sqrt(sample_coord_length_squared);
 			sample_coord = sample_coord * (2.0 / len - 1.0);
 		}
 
@@ -346,6 +362,7 @@ float sample_directional_soft_shadow(texture2D shadow, vec3 pssm_coord, vec2 tex
 		disk_rotation = mat2(vec2(cr, -sr), vec2(sr, cr));
 	}
 
+	SPEC_CONSTANT_LOOP_ANNOTATION
 	for (uint i = 0; i < sc_directional_penumbra_shadow_samples(); i++) {
 		vec2 suv = pssm_coord.xy + (disk_rotation * scene_data_block.data.directional_penumbra_shadow_kernel[i].xy) * tex_scale;
 		float d = textureLod(sampler2D(shadow, SAMPLER_LINEAR_CLAMP), suv, 0.0).r;
@@ -362,6 +379,8 @@ float sample_directional_soft_shadow(texture2D shadow, vec3 pssm_coord, vec2 tex
 		tex_scale *= penumbra;
 
 		float s = 0.0;
+
+		SPEC_CONSTANT_LOOP_ANNOTATION
 		for (uint i = 0; i < sc_directional_penumbra_shadow_samples(); i++) {
 			vec2 suv = pssm_coord.xy + (disk_rotation * scene_data_block.data.directional_penumbra_shadow_kernel[i].xy) * tex_scale;
 			s += textureProj(sampler2DShadow(shadow, shadow_sampler), vec4(suv, pssm_coord.z, 1.0));
@@ -405,7 +424,7 @@ void light_process_omni(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 v
 		vec3 binormal, vec3 tangent, float anisotropy,
 #endif
 		inout vec3 diffuse_light, inout vec3 specular_light) {
-	const float EPSILON = 1e-3f;
+	const float EPSILON = 1e-6f;
 
 	// Omni light attenuation.
 	vec3 light_rel_vec = omni_lights.data[idx].position - vertex;
@@ -465,6 +484,7 @@ void light_process_omni(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 v
 			tangent *= omni_lights.data[idx].soft_shadow_size * omni_lights.data[idx].soft_shadow_scale;
 			bitangent *= omni_lights.data[idx].soft_shadow_size * omni_lights.data[idx].soft_shadow_scale;
 
+			SPEC_CONSTANT_LOOP_ANNOTATION
 			for (uint i = 0; i < sc_penumbra_shadow_samples(); i++) {
 				vec2 disk = disk_rotation * scene_data_block.data.penumbra_shadow_kernel[i].xy;
 
@@ -501,6 +521,8 @@ void light_process_omni(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 v
 				z_norm += omni_lights.data[idx].inv_radius * omni_lights.data[idx].shadow_bias;
 
 				shadow = 0.0;
+
+				SPEC_CONSTANT_LOOP_ANNOTATION
 				for (uint i = 0; i < sc_penumbra_shadow_samples(); i++) {
 					vec2 disk = disk_rotation * scene_data_block.data.penumbra_shadow_kernel[i].xy;
 					vec3 pos = local_vert + tangent * disk.x + bitangent * disk.y;
@@ -700,7 +722,7 @@ void light_process_spot(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 v
 #endif
 		inout vec3 diffuse_light,
 		inout vec3 specular_light) {
-	const float EPSILON = 1e-3f;
+	const float EPSILON = 1e-6f;
 
 	// Spot light attenuation.
 	vec3 light_rel_vec = spot_lights.data[idx].position - vertex;
@@ -733,7 +755,7 @@ void light_process_spot(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 v
 		vec4 v = vec4(vertex + normal_bias, 1.0);
 
 		vec4 splane = (spot_lights.data[idx].shadow_matrix * v);
-		splane.z += spot_lights.data[idx].shadow_bias / (light_length * spot_lights.data[idx].inv_radius);
+		splane.z += spot_lights.data[idx].shadow_bias;
 		splane /= splane.w;
 
 		if (sc_use_light_soft_shadows() && spot_lights.data[idx].soft_shadow_size > 0.0) {
@@ -757,6 +779,8 @@ void light_process_spot(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 v
 
 			float uv_size = spot_lights.data[idx].soft_shadow_size * z_norm * spot_lights.data[idx].soft_shadow_scale;
 			vec2 clamp_max = spot_lights.data[idx].atlas_rect.xy + spot_lights.data[idx].atlas_rect.zw;
+
+			SPEC_CONSTANT_LOOP_ANNOTATION
 			for (uint i = 0; i < sc_penumbra_shadow_samples(); i++) {
 				vec2 suv = shadow_uv + (disk_rotation * scene_data_block.data.penumbra_shadow_kernel[i].xy) * uv_size;
 				suv = clamp(suv, spot_lights.data[idx].atlas_rect.xy, clamp_max);
@@ -774,6 +798,8 @@ void light_process_spot(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 v
 				uv_size *= penumbra;
 
 				shadow = 0.0;
+
+				SPEC_CONSTANT_LOOP_ANNOTATION
 				for (uint i = 0; i < sc_penumbra_shadow_samples(); i++) {
 					vec2 suv = shadow_uv + (disk_rotation * scene_data_block.data.penumbra_shadow_kernel[i].xy) * uv_size;
 					suv = clamp(suv, spot_lights.data[idx].atlas_rect.xy, clamp_max);
@@ -885,7 +911,7 @@ void reflection_process(uint ref_index, vec3 vertex, vec3 ref_vec, vec3 normal, 
 		blend = pow(blend_axes.x * blend_axes.y * blend_axes.z, 2.0);
 	}
 
-	if (reflections.data[ref_index].intensity > 0.0) { // compute reflection
+	if (reflections.data[ref_index].intensity > 0.0 && reflection_accum.a < 1.0) { // compute reflection
 
 		vec3 local_ref_vec = (reflections.data[ref_index].local_matrix * vec4(ref_vec, 0.0)).xyz;
 
@@ -903,18 +929,20 @@ void reflection_process(uint ref_index, vec3 vertex, vec3 ref_vec, vec3 normal, 
 		}
 
 		vec4 reflection;
+		float reflection_blend = max(0.0, blend - reflection_accum.a);
 
 		reflection.rgb = textureLod(samplerCubeArray(reflection_atlas, DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), vec4(local_ref_vec, reflections.data[ref_index].index), sqrt(roughness) * MAX_ROUGHNESS_LOD).rgb * sc_luminance_multiplier();
 		reflection.rgb *= reflections.data[ref_index].exposure_normalization;
-		if (reflections.data[ref_index].exterior) {
-			reflection.rgb = mix(specular_light, reflection.rgb, blend);
-		}
+		reflection.a = reflection_blend;
 
-		reflection.rgb *= reflections.data[ref_index].intensity; //intensity
-		reflection.a = blend;
+		reflection.rgb *= reflections.data[ref_index].intensity;
 		reflection.rgb *= reflection.a;
 
 		reflection_accum += reflection;
+	}
+
+	if (ambient_accum.a >= 1.0) {
+		return;
 	}
 
 	switch (reflections.data[ref_index].ambient_mode) {
@@ -922,28 +950,22 @@ void reflection_process(uint ref_index, vec3 vertex, vec3 ref_vec, vec3 normal, 
 			//do nothing
 		} break;
 		case REFLECTION_AMBIENT_ENVIRONMENT: {
-			//do nothing
 			vec3 local_amb_vec = (reflections.data[ref_index].local_matrix * vec4(normal, 0.0)).xyz;
-
 			vec4 ambient_out;
+			float ambient_blend = max(0.0, blend - ambient_accum.a);
 
 			ambient_out.rgb = textureLod(samplerCubeArray(reflection_atlas, DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), vec4(local_amb_vec, reflections.data[ref_index].index), MAX_ROUGHNESS_LOD).rgb;
 			ambient_out.rgb *= reflections.data[ref_index].exposure_normalization;
-			ambient_out.a = blend;
-			if (reflections.data[ref_index].exterior) {
-				ambient_out.rgb = mix(ambient_light, ambient_out.rgb, blend);
-			}
-
+			ambient_out.a = ambient_blend;
 			ambient_out.rgb *= ambient_out.a;
 			ambient_accum += ambient_out;
 		} break;
 		case REFLECTION_AMBIENT_COLOR: {
 			vec4 ambient_out;
-			ambient_out.a = blend;
+			float ambient_blend = max(0.0, blend - ambient_accum.a);
+
 			ambient_out.rgb = reflections.data[ref_index].ambient;
-			if (reflections.data[ref_index].exterior) {
-				ambient_out.rgb = mix(ambient_light, ambient_out.rgb, blend);
-			}
+			ambient_out.a = ambient_blend;
 			ambient_out.rgb *= ambient_out.a;
 			ambient_accum += ambient_out;
 		} break;

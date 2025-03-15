@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef SKELETON_3D_H
-#define SKELETON_3D_H
+#pragma once
 
 #include "core/templates/a_hash_map.h"
 #include "scene/3d/node_3d.h"
@@ -38,7 +37,6 @@
 typedef int BoneId;
 
 class Skeleton3D;
-class SkeletonModifier3D;
 
 class SkinReference : public RefCounted {
 	GDCLASS(SkinReference, RefCounted)
@@ -66,6 +64,10 @@ public:
 
 class Skeleton3D : public Node3D {
 	GDCLASS(Skeleton3D, Node3D);
+
+#ifdef TOOLS_ENABLED
+	bool saving = false;
+#endif //TOOLS_ENABLED
 
 #ifndef DISABLE_DEPRECATED
 	bool animate_physical_bones = true;
@@ -184,7 +186,6 @@ private:
 	void _process_modifiers();
 	void _process_changed();
 	void _make_modifiers_dirty();
-	mutable LocalVector<BonePoseBackup> bones_backup;
 
 	// Global bone pose calculation.
 	mutable LocalVector<int> nested_set_offset_to_bone_index; // Map from Bone::nested_set_offset to bone index.
@@ -314,5 +315,3 @@ public:
 };
 
 VARIANT_ENUM_CAST(Skeleton3D::ModifierCallbackModeProcess);
-
-#endif // SKELETON_3D_H

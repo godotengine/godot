@@ -29,7 +29,7 @@
 /**************************************************************************/
 
 #include "http_request.h"
-#include "core/io/compression.h"
+
 #include "scene/main/timer.h"
 
 Error HTTPRequest::_request() {
@@ -241,7 +241,7 @@ bool HTTPRequest::_handle_response(bool *ret_value) {
 
 		for (const String &E : rheaders) {
 			if (E.containsn("Location: ")) {
-				new_request = E.substr(9, E.length()).strip_edges();
+				new_request = E.substr(9).strip_edges();
 			}
 		}
 

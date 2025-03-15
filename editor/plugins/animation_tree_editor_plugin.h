@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef ANIMATION_TREE_EDITOR_PLUGIN_H
-#define ANIMATION_TREE_EDITOR_PLUGIN_H
+#pragma once
 
 #include "editor/plugins/editor_plugin.h"
 #include "scene/animation/animation_tree.h"
@@ -100,7 +99,7 @@ class AnimationTreeEditorPlugin : public EditorPlugin {
 	Button *button = nullptr;
 
 public:
-	virtual String get_name() const override { return "AnimationTree"; }
+	virtual String get_plugin_name() const override { return "AnimationTree"; }
 	bool has_main_screen() const override { return false; }
 	virtual void edit(Object *p_object) override;
 	virtual bool handles(Object *p_object) const override;
@@ -109,5 +108,3 @@ public:
 	AnimationTreeEditorPlugin();
 	~AnimationTreeEditorPlugin();
 };
-
-#endif // ANIMATION_TREE_EDITOR_PLUGIN_H

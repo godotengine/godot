@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TEST_EXPRESSION_H
-#define TEST_EXPRESSION_H
+#pragma once
 
 #include "core/math/expression.h"
 
@@ -182,6 +181,9 @@ TEST_CASE("[Expression] Scientific notation") {
 			expression.parse("2.e5") == OK,
 			"The expression should parse successfully.");
 	CHECK_MESSAGE(
+			expression.parse("2.E5") == OK,
+			"The expression should parse successfully.");
+	CHECK_MESSAGE(
 			double(expression.execute()) == doctest::Approx(200'000),
 			"The expression should return the expected result.");
 
@@ -212,6 +214,15 @@ TEST_CASE("[Expression] Underscored numeric literals") {
 			"The expression should parse successfully.");
 	CHECK_MESSAGE(
 			expression.parse("0xff_99_00") == OK,
+			"The expression should parse successfully.");
+	CHECK_MESSAGE(
+			expression.parse("0Xff_99_00") == OK,
+			"The expression should parse successfully.");
+	CHECK_MESSAGE(
+			expression.parse("0b10_11_00") == OK,
+			"The expression should parse successfully.");
+	CHECK_MESSAGE(
+			expression.parse("0B10_11_00") == OK,
 			"The expression should parse successfully.");
 }
 
@@ -493,5 +504,3 @@ TEST_CASE("[Expression] Unusual expressions") {
 	//		"`(-9223372036854775807 - 1) / -1` should return the expected result.");
 }
 } // namespace TestExpression
-
-#endif // TEST_EXPRESSION_H

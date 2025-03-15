@@ -202,6 +202,7 @@ EditorPropertyNameProcessor::EditorPropertyNameProcessor() {
 	capitalize_string_remaps["gles2"] = "GLES2";
 	capitalize_string_remaps["gles3"] = "GLES3";
 	capitalize_string_remaps["gltf"] = "glTF";
+	capitalize_string_remaps["gridmap"] = "GridMap";
 	capitalize_string_remaps["gpu"] = "GPU";
 	capitalize_string_remaps["gui"] = "GUI";
 	capitalize_string_remaps["guid"] = "GUID";
@@ -299,6 +300,7 @@ EditorPropertyNameProcessor::EditorPropertyNameProcessor() {
 	capitalize_string_remaps["us"] = U"(µs)"; // Unit.
 	capitalize_string_remaps["usb"] = "USB";
 	capitalize_string_remaps["usec"] = U"(µsec)"; // Unit.
+	capitalize_string_remaps["uid"] = "UID";
 	capitalize_string_remaps["uuid"] = "UUID";
 	capitalize_string_remaps["uv"] = "UV";
 	capitalize_string_remaps["uv1"] = "UV1";
@@ -313,6 +315,8 @@ EditorPropertyNameProcessor::EditorPropertyNameProcessor() {
 	capitalize_string_remaps["webrtc"] = "WebRTC";
 	capitalize_string_remaps["websocket"] = "WebSocket";
 	capitalize_string_remaps["wine"] = "wine";
+	capitalize_string_remaps["wintab"] = "WinTab";
+	capitalize_string_remaps["winink"] = "Windows Ink";
 	capitalize_string_remaps["wifi"] = "Wi-Fi";
 	capitalize_string_remaps["x86"] = "x86";
 	capitalize_string_remaps["x86_32"] = "x86_32";

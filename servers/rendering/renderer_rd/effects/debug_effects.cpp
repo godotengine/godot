@@ -29,7 +29,6 @@
 /**************************************************************************/
 
 #include "debug_effects.h"
-#include "servers/rendering/renderer_rd/renderer_compositor_rd.h"
 #include "servers/rendering/renderer_rd/storage_rd/light_storage.h"
 #include "servers/rendering/renderer_rd/storage_rd/material_storage.h"
 #include "servers/rendering/renderer_rd/uniform_set_cache_rd.h"
@@ -67,7 +66,7 @@ DebugEffects::DebugEffects() {
 void DebugEffects::_create_frustum_arrays() {
 	if (frustum.vertex_buffer.is_null()) {
 		// Create vertex buffer, but don't put data in it yet
-		frustum.vertex_buffer = RD::get_singleton()->vertex_buffer_create(8 * sizeof(float) * 3, Vector<uint8_t>(), false);
+		frustum.vertex_buffer = RD::get_singleton()->vertex_buffer_create(8 * sizeof(float) * 3, Vector<uint8_t>());
 
 		Vector<RD::VertexAttribute> attributes;
 		Vector<RID> buffers;

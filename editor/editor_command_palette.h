@@ -28,11 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef EDITOR_COMMAND_PALETTE_H
-#define EDITOR_COMMAND_PALETTE_H
+#pragma once
 
 #include "core/input/shortcut.h"
-#include "core/os/thread_safe.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/tree.h"
 
@@ -104,5 +102,3 @@ public:
 
 Ref<Shortcut> ED_SHORTCUT_AND_COMMAND(const String &p_path, const String &p_name, Key p_keycode = Key::NONE, String p_command = "");
 Ref<Shortcut> ED_SHORTCUT_ARRAY_AND_COMMAND(const String &p_path, const String &p_name, const PackedInt32Array &p_keycodes, String p_command = "");
-
-#endif // EDITOR_COMMAND_PALETTE_H

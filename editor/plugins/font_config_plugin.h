@@ -28,10 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef FONT_CONFIG_PLUGIN_H
-#define FONT_CONFIG_PLUGIN_H
+#pragma once
 
-#include "core/io/marshalls.h"
 #include "editor/editor_properties.h"
 #include "editor/editor_properties_array_dict.h"
 #include "editor/plugins/editor_plugin.h"
@@ -280,7 +278,5 @@ class FontEditorPlugin : public EditorPlugin {
 public:
 	FontEditorPlugin();
 
-	virtual String get_name() const override { return "Font"; }
+	virtual String get_plugin_name() const override { return "Font"; }
 };
-
-#endif // FONT_CONFIG_PLUGIN_H

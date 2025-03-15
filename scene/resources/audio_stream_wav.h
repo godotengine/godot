@@ -28,10 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef AUDIO_STREAM_WAV_H
-#define AUDIO_STREAM_WAV_H
+#pragma once
 
 #include "servers/audio/audio_stream.h"
+
 #include "thirdparty/misc/qoa.h"
 
 class AudioStreamWAV;
@@ -141,8 +141,8 @@ protected:
 	static void _bind_methods();
 
 public:
+	static Ref<AudioStreamWAV> load_from_buffer(const Vector<uint8_t> &p_stream_data, const Dictionary &p_options);
 	static Ref<AudioStreamWAV> load_from_file(const String &p_path, const Dictionary &p_options);
-	static Ref<AudioStreamWAV> load_from_buffer(const Vector<uint8_t> &p_file_data, const Dictionary &p_options);
 
 	void set_format(Format p_format);
 	Format get_format() const;
@@ -304,5 +304,3 @@ public:
 
 VARIANT_ENUM_CAST(AudioStreamWAV::Format)
 VARIANT_ENUM_CAST(AudioStreamWAV::LoopMode)
-
-#endif // AUDIO_STREAM_WAV_H

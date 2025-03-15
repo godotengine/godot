@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef NAVIGATION_MESH_EDITOR_PLUGIN_H
-#define NAVIGATION_MESH_EDITOR_PLUGIN_H
+#pragma once
 
 #ifdef TOOLS_ENABLED
 
@@ -74,7 +73,7 @@ class NavigationMeshEditorPlugin : public EditorPlugin {
 	NavigationMeshEditor *navigation_mesh_editor = nullptr;
 
 public:
-	virtual String get_name() const override { return "NavigationMesh"; }
+	virtual String get_plugin_name() const override { return "NavigationMesh"; }
 	bool has_main_screen() const override { return false; }
 	virtual void edit(Object *p_object) override;
 	virtual bool handles(Object *p_object) const override;
@@ -85,5 +84,3 @@ public:
 };
 
 #endif // TOOLS_ENABLED
-
-#endif // NAVIGATION_MESH_EDITOR_PLUGIN_H

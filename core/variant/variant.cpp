@@ -32,10 +32,8 @@
 
 #include "core/debugger/engine_debugger.h"
 #include "core/io/json.h"
-#include "core/io/marshalls.h"
 #include "core/io/resource.h"
 #include "core/math/math_funcs.h"
-#include "core/string/print_string.h"
 #include "core/variant/variant_parser.h"
 
 PagedAllocator<Variant::Pools::BucketSmall, true> Variant::Pools::_bucket_small;
@@ -1488,147 +1486,35 @@ void Variant::_clear_internal() {
 }
 
 Variant::operator int64_t() const {
-	switch (type) {
-		case NIL:
-			return 0;
-		case BOOL:
-			return _data._bool ? 1 : 0;
-		case INT:
-			return _data._int;
-		case FLOAT:
-			return _data._float;
-		case STRING:
-			return operator String().to_int();
-		default: {
-			return 0;
-		}
-	}
+	return _to_int<int64_t>();
 }
 
 Variant::operator int32_t() const {
-	switch (type) {
-		case NIL:
-			return 0;
-		case BOOL:
-			return _data._bool ? 1 : 0;
-		case INT:
-			return _data._int;
-		case FLOAT:
-			return _data._float;
-		case STRING:
-			return operator String().to_int();
-		default: {
-			return 0;
-		}
-	}
+	return _to_int<int32_t>();
 }
 
 Variant::operator int16_t() const {
-	switch (type) {
-		case NIL:
-			return 0;
-		case BOOL:
-			return _data._bool ? 1 : 0;
-		case INT:
-			return _data._int;
-		case FLOAT:
-			return _data._float;
-		case STRING:
-			return operator String().to_int();
-		default: {
-			return 0;
-		}
-	}
+	return _to_int<int16_t>();
 }
 
 Variant::operator int8_t() const {
-	switch (type) {
-		case NIL:
-			return 0;
-		case BOOL:
-			return _data._bool ? 1 : 0;
-		case INT:
-			return _data._int;
-		case FLOAT:
-			return _data._float;
-		case STRING:
-			return operator String().to_int();
-		default: {
-			return 0;
-		}
-	}
+	return _to_int<int8_t>();
 }
 
 Variant::operator uint64_t() const {
-	switch (type) {
-		case NIL:
-			return 0;
-		case BOOL:
-			return _data._bool ? 1 : 0;
-		case INT:
-			return _data._int;
-		case FLOAT:
-			return _data._float;
-		case STRING:
-			return operator String().to_int();
-		default: {
-			return 0;
-		}
-	}
+	return _to_int<uint64_t>();
 }
 
 Variant::operator uint32_t() const {
-	switch (type) {
-		case NIL:
-			return 0;
-		case BOOL:
-			return _data._bool ? 1 : 0;
-		case INT:
-			return _data._int;
-		case FLOAT:
-			return _data._float;
-		case STRING:
-			return operator String().to_int();
-		default: {
-			return 0;
-		}
-	}
+	return _to_int<uint32_t>();
 }
 
 Variant::operator uint16_t() const {
-	switch (type) {
-		case NIL:
-			return 0;
-		case BOOL:
-			return _data._bool ? 1 : 0;
-		case INT:
-			return _data._int;
-		case FLOAT:
-			return _data._float;
-		case STRING:
-			return operator String().to_int();
-		default: {
-			return 0;
-		}
-	}
+	return _to_int<uint16_t>();
 }
 
 Variant::operator uint8_t() const {
-	switch (type) {
-		case NIL:
-			return 0;
-		case BOOL:
-			return _data._bool ? 1 : 0;
-		case INT:
-			return _data._int;
-		case FLOAT:
-			return _data._float;
-		case STRING:
-			return operator String().to_int();
-		default: {
-			return 0;
-		}
-	}
+	return _to_int<uint8_t>();
 }
 
 Variant::operator ObjectID() const {
@@ -1646,39 +1532,11 @@ Variant::operator char32_t() const {
 }
 
 Variant::operator float() const {
-	switch (type) {
-		case NIL:
-			return 0;
-		case BOOL:
-			return _data._bool ? 1.0 : 0.0;
-		case INT:
-			return (float)_data._int;
-		case FLOAT:
-			return _data._float;
-		case STRING:
-			return operator String().to_float();
-		default: {
-			return 0;
-		}
-	}
+	return _to_float<float>();
 }
 
 Variant::operator double() const {
-	switch (type) {
-		case NIL:
-			return 0;
-		case BOOL:
-			return _data._bool ? 1.0 : 0.0;
-		case INT:
-			return (double)_data._int;
-		case FLOAT:
-			return _data._float;
-		case STRING:
-			return operator String().to_float();
-		default: {
-			return 0;
-		}
-	}
+	return _to_float<double>();
 }
 
 Variant::operator StringName() const {
@@ -1796,15 +1654,13 @@ String Variant::stringify(int recursion_count) const {
 			// Add leading and trailing space to Dictionary printing. This distinguishes it
 			// from array printing on fonts that have similar-looking {} and [] characters.
 			String str("{ ");
-			List<Variant> keys;
-			d.get_key_list(&keys);
 
 			Vector<_VariantStrPair> pairs;
 
-			for (List<Variant>::Element *E = keys.front(); E; E = E->next()) {
+			for (const KeyValue<Variant, Variant> &kv : d) {
 				_VariantStrPair sp;
-				sp.key = stringify_variant_clean(E->get(), recursion_count);
-				sp.value = stringify_variant_clean(d[E->get()], recursion_count);
+				sp.key = stringify_variant_clean(kv.key, recursion_count);
+				sp.value = stringify_variant_clean(kv.value, recursion_count);
 
 				pairs.push_back(sp);
 			}
@@ -2484,22 +2340,22 @@ Variant::Variant(int8_t p_int8) :
 
 Variant::Variant(uint64_t p_uint64) :
 		type(INT) {
-	_data._int = p_uint64;
+	_data._int = int64_t(p_uint64);
 }
 
 Variant::Variant(uint32_t p_uint32) :
 		type(INT) {
-	_data._int = p_uint32;
+	_data._int = int64_t(p_uint32);
 }
 
 Variant::Variant(uint16_t p_uint16) :
 		type(INT) {
-	_data._int = p_uint16;
+	_data._int = int64_t(p_uint16);
 }
 
 Variant::Variant(uint8_t p_uint8) :
 		type(INT) {
-	_data._int = p_uint8;
+	_data._int = int64_t(p_uint8);
 }
 
 Variant::Variant(float p_float) :
@@ -2514,72 +2370,85 @@ Variant::Variant(double p_double) :
 
 Variant::Variant(const ObjectID &p_id) :
 		type(INT) {
-	_data._int = p_id;
+	_data._int = int64_t(p_id);
 }
 
 Variant::Variant(const StringName &p_string) :
 		type(STRING_NAME) {
 	memnew_placement(_data._mem, StringName(p_string));
+	static_assert(sizeof(StringName) <= sizeof(_data._mem));
 }
 
 Variant::Variant(const String &p_string) :
 		type(STRING) {
 	memnew_placement(_data._mem, String(p_string));
+	static_assert(sizeof(String) <= sizeof(_data._mem));
 }
 
 Variant::Variant(const char *const p_cstring) :
 		type(STRING) {
 	memnew_placement(_data._mem, String((const char *)p_cstring));
+	static_assert(sizeof(String) <= sizeof(_data._mem));
 }
 
 Variant::Variant(const char32_t *p_wstring) :
 		type(STRING) {
 	memnew_placement(_data._mem, String(p_wstring));
+	static_assert(sizeof(String) <= sizeof(_data._mem));
 }
 
 Variant::Variant(const Vector3 &p_vector3) :
 		type(VECTOR3) {
 	memnew_placement(_data._mem, Vector3(p_vector3));
+	static_assert(sizeof(Vector3) <= sizeof(_data._mem));
 }
 
 Variant::Variant(const Vector3i &p_vector3i) :
 		type(VECTOR3I) {
 	memnew_placement(_data._mem, Vector3i(p_vector3i));
+	static_assert(sizeof(Vector3i) <= sizeof(_data._mem));
 }
 
 Variant::Variant(const Vector4 &p_vector4) :
 		type(VECTOR4) {
 	memnew_placement(_data._mem, Vector4(p_vector4));
+	static_assert(sizeof(Vector4) <= sizeof(_data._mem));
 }
 
 Variant::Variant(const Vector4i &p_vector4i) :
 		type(VECTOR4I) {
 	memnew_placement(_data._mem, Vector4i(p_vector4i));
+	static_assert(sizeof(Vector4i) <= sizeof(_data._mem));
 }
 
 Variant::Variant(const Vector2 &p_vector2) :
 		type(VECTOR2) {
 	memnew_placement(_data._mem, Vector2(p_vector2));
+	static_assert(sizeof(Vector2) <= sizeof(_data._mem));
 }
 
 Variant::Variant(const Vector2i &p_vector2i) :
 		type(VECTOR2I) {
 	memnew_placement(_data._mem, Vector2i(p_vector2i));
+	static_assert(sizeof(Vector2i) <= sizeof(_data._mem));
 }
 
 Variant::Variant(const Rect2 &p_rect2) :
 		type(RECT2) {
 	memnew_placement(_data._mem, Rect2(p_rect2));
+	static_assert(sizeof(Rect2) <= sizeof(_data._mem));
 }
 
 Variant::Variant(const Rect2i &p_rect2i) :
 		type(RECT2I) {
 	memnew_placement(_data._mem, Rect2i(p_rect2i));
+	static_assert(sizeof(Rect2i) <= sizeof(_data._mem));
 }
 
 Variant::Variant(const Plane &p_plane) :
 		type(PLANE) {
 	memnew_placement(_data._mem, Plane(p_plane));
+	static_assert(sizeof(Plane) <= sizeof(_data._mem));
 }
 
 Variant::Variant(const ::AABB &p_aabb) :
@@ -2597,6 +2466,7 @@ Variant::Variant(const Basis &p_matrix) :
 Variant::Variant(const Quaternion &p_quaternion) :
 		type(QUATERNION) {
 	memnew_placement(_data._mem, Quaternion(p_quaternion));
+	static_assert(sizeof(Quaternion) <= sizeof(_data._mem));
 }
 
 Variant::Variant(const Transform3D &p_transform) :
@@ -2620,16 +2490,19 @@ Variant::Variant(const Transform2D &p_transform) :
 Variant::Variant(const Color &p_color) :
 		type(COLOR) {
 	memnew_placement(_data._mem, Color(p_color));
+	static_assert(sizeof(Color) <= sizeof(_data._mem));
 }
 
 Variant::Variant(const NodePath &p_node_path) :
 		type(NODE_PATH) {
 	memnew_placement(_data._mem, NodePath(p_node_path));
+	static_assert(sizeof(NodePath) <= sizeof(_data._mem));
 }
 
 Variant::Variant(const ::RID &p_rid) :
 		type(RID) {
 	memnew_placement(_data._mem, ::RID(p_rid));
+	static_assert(sizeof(::RID) <= sizeof(_data._mem));
 }
 
 Variant::Variant(const Object *p_object) :
@@ -2641,21 +2514,25 @@ Variant::Variant(const Object *p_object) :
 Variant::Variant(const Callable &p_callable) :
 		type(CALLABLE) {
 	memnew_placement(_data._mem, Callable(p_callable));
+	static_assert(sizeof(Callable) <= sizeof(_data._mem));
 }
 
 Variant::Variant(const Signal &p_callable) :
 		type(SIGNAL) {
 	memnew_placement(_data._mem, Signal(p_callable));
+	static_assert(sizeof(Signal) <= sizeof(_data._mem));
 }
 
 Variant::Variant(const Dictionary &p_dictionary) :
 		type(DICTIONARY) {
 	memnew_placement(_data._mem, Dictionary(p_dictionary));
+	static_assert(sizeof(Dictionary) <= sizeof(_data._mem));
 }
 
 Variant::Variant(const Array &p_array) :
 		type(ARRAY) {
 	memnew_placement(_data._mem, Array(p_array));
+	static_assert(sizeof(Array) <= sizeof(_data._mem));
 }
 
 Variant::Variant(const PackedByteArray &p_byte_array) :
@@ -3260,32 +3137,20 @@ uint32_t Variant::recursive_hash(int recursion_count) const {
 #define hash_compare_scalar(p_lhs, p_rhs) \
 	(hash_compare_scalar_base(p_lhs, p_rhs, true))
 
-#define hash_compare_vector2(p_lhs, p_rhs)        \
-	(hash_compare_scalar((p_lhs).x, (p_rhs).x) && \
-			hash_compare_scalar((p_lhs).y, (p_rhs).y))
+#define hash_compare_vector2(p_lhs, p_rhs) \
+	(p_lhs).is_same(p_rhs)
 
-#define hash_compare_vector3(p_lhs, p_rhs)               \
-	(hash_compare_scalar((p_lhs).x, (p_rhs).x) &&        \
-			hash_compare_scalar((p_lhs).y, (p_rhs).y) && \
-			hash_compare_scalar((p_lhs).z, (p_rhs).z))
+#define hash_compare_vector3(p_lhs, p_rhs) \
+	(p_lhs).is_same(p_rhs)
 
-#define hash_compare_vector4(p_lhs, p_rhs)               \
-	(hash_compare_scalar((p_lhs).x, (p_rhs).x) &&        \
-			hash_compare_scalar((p_lhs).y, (p_rhs).y) && \
-			hash_compare_scalar((p_lhs).z, (p_rhs).z) && \
-			hash_compare_scalar((p_lhs).w, (p_rhs).w))
+#define hash_compare_vector4(p_lhs, p_rhs) \
+	(p_lhs).is_same(p_rhs)
 
-#define hash_compare_quaternion(p_lhs, p_rhs)            \
-	(hash_compare_scalar((p_lhs).x, (p_rhs).x) &&        \
-			hash_compare_scalar((p_lhs).y, (p_rhs).y) && \
-			hash_compare_scalar((p_lhs).z, (p_rhs).z) && \
-			hash_compare_scalar((p_lhs).w, (p_rhs).w))
+#define hash_compare_quaternion(p_lhs, p_rhs) \
+	(p_lhs).is_same(p_rhs)
 
-#define hash_compare_color(p_lhs, p_rhs)                 \
-	(hash_compare_scalar((p_lhs).r, (p_rhs).r) &&        \
-			hash_compare_scalar((p_lhs).g, (p_rhs).g) && \
-			hash_compare_scalar((p_lhs).b, (p_rhs).b) && \
-			hash_compare_scalar((p_lhs).a, (p_rhs).a))
+#define hash_compare_color(p_lhs, p_rhs) \
+	(p_lhs).is_same(p_rhs)
 
 #define hash_compare_packed_array(p_lhs, p_rhs, p_type, p_compare_func) \
 	const Vector<p_type> &l = PackedArrayRef<p_type>::get_array(p_lhs); \
@@ -3356,13 +3221,7 @@ bool Variant::hash_compare(const Variant &p_variant, int recursion_count, bool s
 			Transform2D *l = _data._transform2d;
 			Transform2D *r = p_variant._data._transform2d;
 
-			for (int i = 0; i < 3; i++) {
-				if (!hash_compare_vector2(l->columns[i], r->columns[i])) {
-					return false;
-				}
-			}
-
-			return true;
+			return l->is_same(*r);
 		} break;
 
 		case VECTOR3: {
@@ -3394,17 +3253,14 @@ bool Variant::hash_compare(const Variant &p_variant, int recursion_count, bool s
 			const Plane *l = reinterpret_cast<const Plane *>(_data._mem);
 			const Plane *r = reinterpret_cast<const Plane *>(p_variant._data._mem);
 
-			return hash_compare_vector3(l->normal, r->normal) &&
-					hash_compare_scalar(l->d, r->d);
+			return l->is_same(*r);
 		} break;
 
 		case AABB: {
 			const ::AABB *l = _data._aabb;
 			const ::AABB *r = p_variant._data._aabb;
 
-			return hash_compare_vector3(l->position, r->position) &&
-					hash_compare_vector3(l->size, r->size);
-
+			return l->is_same(*r);
 		} break;
 
 		case QUATERNION: {
@@ -3418,38 +3274,20 @@ bool Variant::hash_compare(const Variant &p_variant, int recursion_count, bool s
 			const Basis *l = _data._basis;
 			const Basis *r = p_variant._data._basis;
 
-			for (int i = 0; i < 3; i++) {
-				if (!hash_compare_vector3(l->rows[i], r->rows[i])) {
-					return false;
-				}
-			}
-
-			return true;
+			return l->is_same(*r);
 		} break;
 
 		case TRANSFORM3D: {
 			const Transform3D *l = _data._transform3d;
 			const Transform3D *r = p_variant._data._transform3d;
 
-			for (int i = 0; i < 3; i++) {
-				if (!hash_compare_vector3(l->basis.rows[i], r->basis.rows[i])) {
-					return false;
-				}
-			}
-
-			return hash_compare_vector3(l->origin, r->origin);
+			return l->is_same(*r);
 		} break;
 		case PROJECTION: {
 			const Projection *l = _data._projection;
 			const Projection *r = p_variant._data._projection;
 
-			for (int i = 0; i < 4; i++) {
-				if (!hash_compare_vector4(l->columns[i], r->columns[i])) {
-					return false;
-				}
-			}
-
-			return true;
+			return l->is_same(*r);
 		} break;
 
 		case COLOR: {

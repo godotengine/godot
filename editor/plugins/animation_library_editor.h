@@ -28,12 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef ANIMATION_LIBRARY_EDITOR_H
-#define ANIMATION_LIBRARY_EDITOR_H
+#pragma once
 
 #include "core/io/config_file.h"
 #include "core/templates/vector.h"
-#include "editor/animation_track_editor.h"
 #include "editor/plugins/editor_plugin.h"
 #include "scene/animation/animation_mixer.h"
 #include "scene/gui/dialogs.h"
@@ -129,5 +127,3 @@ public:
 	void update_tree();
 	AnimationLibraryEditor();
 };
-
-#endif // ANIMATION_LIBRARY_EDITOR_H

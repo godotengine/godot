@@ -30,6 +30,8 @@
 
 #include "physical_bone_simulator_3d.h"
 
+#include "scene/3d/physics/physical_bone_3d.h"
+
 void PhysicalBoneSimulator3D::_skeleton_changed(Skeleton3D *p_old, Skeleton3D *p_new) {
 	if (p_old) {
 		if (p_old->is_connected(SNAME("bone_list_changed"), callable_mp(this, &PhysicalBoneSimulator3D::_bone_list_changed))) {
@@ -71,9 +73,14 @@ void PhysicalBoneSimulator3D::_pose_updated() {
 	if (!skeleton || simulating) {
 		return;
 	}
-	ERR_FAIL_COND(skeleton->get_bone_count() != bones.size());
-	for (int i = 0; i < skeleton->get_bone_count(); i++) {
-		_bone_pose_updated(skeleton, i);
+	// If this triggers that means that we likely haven't rebuilt the bone list yet.
+	if (skeleton->get_bone_count() != bones.size()) {
+		// NOTE: this is re-entrant and will call _pose_updated again.
+		_bone_list_changed();
+	} else {
+		for (int i = 0; i < skeleton->get_bone_count(); i++) {
+			_bone_pose_updated(skeleton, i);
+		}
 	}
 }
 

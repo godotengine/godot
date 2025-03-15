@@ -33,7 +33,6 @@
 #include "core/input/input_event.h"
 #include "core/object/class_db.h"
 #include "core/os/keyboard.h"
-#include "core/templates/hash_set.h"
 #include "core/variant/variant.h"
 
 struct _CoreConstant {
@@ -724,6 +723,7 @@ void register_global_constants() {
 	BIND_CORE_BITFIELD_FLAG(METHOD_FLAG_VARARG);
 	BIND_CORE_BITFIELD_FLAG(METHOD_FLAG_STATIC);
 	BIND_CORE_BITFIELD_FLAG(METHOD_FLAG_OBJECT_CORE);
+	BIND_CORE_BITFIELD_FLAG(METHOD_FLAG_VIRTUAL_REQUIRED);
 	BIND_CORE_BITFIELD_FLAG(METHOD_FLAGS_DEFAULT);
 
 	BIND_CORE_ENUM_CONSTANT_CUSTOM("TYPE_NIL", Variant::NIL);

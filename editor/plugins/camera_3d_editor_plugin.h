@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef CAMERA_3D_EDITOR_PLUGIN_H
-#define CAMERA_3D_EDITOR_PLUGIN_H
+#pragma once
 
 #include "editor/plugins/editor_plugin.h"
 #include "editor/plugins/texture_editor_plugin.h"
@@ -78,7 +77,7 @@ class Camera3DEditorPlugin : public EditorPlugin {
 	GDCLASS(Camera3DEditorPlugin, EditorPlugin);
 
 public:
-	virtual String get_name() const override { return "Camera3D"; }
+	virtual String get_plugin_name() const override { return "Camera3D"; }
 	bool has_main_screen() const override { return false; }
 	virtual void edit(Object *p_object) override;
 	virtual bool handles(Object *p_object) const override;
@@ -87,5 +86,3 @@ public:
 	Camera3DEditorPlugin();
 	~Camera3DEditorPlugin();
 };
-
-#endif // CAMERA_3D_EDITOR_PLUGIN_H

@@ -28,18 +28,13 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef EDITOR_LOG_H
-#define EDITOR_LOG_H
+#pragma once
 
 #include "core/os/thread.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
-#include "scene/gui/label.h"
 #include "scene/gui/line_edit.h"
-#include "scene/gui/panel_container.h"
 #include "scene/gui/rich_text_label.h"
-#include "scene/gui/texture_button.h"
-#include "scene/gui/texture_rect.h"
 
 class UndoRedo;
 
@@ -195,5 +190,3 @@ public:
 };
 
 VARIANT_ENUM_CAST(EditorLog::MessageType);
-
-#endif // EDITOR_LOG_H

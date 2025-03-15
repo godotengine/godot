@@ -4,18 +4,13 @@ on:
 
 # Global Settings
 env:
-  # Used for the cache key. Add version suffix to force clean build.
-  GODOT_BASE_BRANCH: master
   SCONSFLAGS: verbose=yes warnings=extra werror=yes module_text_server_fb_enabled=yes strict_checks=yes
-
-concurrency:
-  group: ci-${{ github.actor }}-${{ github.head_ref || github.run_number }}-${{ github.ref }}-macos
-  cancel-in-progress: true
 
 jobs:
   build-macos:
     runs-on: macos-latest
     name: ${{ matrix.name }}
+    timeout-minutes: 120
     strategy:
       fail-fast: false
       matrix:
@@ -25,7 +20,6 @@ jobs:
             target: editor
             tests: true
             bin: ./bin/godot.macos.editor.universal
-            cache-limit: 1
 
           - name: Template (target=template_release, tests=yes)
             cache-name: macos-template
@@ -33,7 +27,6 @@ jobs:
             tests: true
             sconsflags: debug_symbols=no
             bin: ./bin/godot.macos.template_release.universal
-            cache-limit: 1
 
     steps:
       - name: Checkout
@@ -61,7 +54,6 @@ jobs:
           platform: macos
           target: ${{ matrix.target }}
           tests: ${{ matrix.tests }}
-          scons-cache-limit: 0 # Only cap on second run to avoid purging unnecessarily
 
       - name: Compilation (arm64)
         uses: ./.github/actions/godot-build
@@ -70,7 +62,6 @@ jobs:
           platform: macos
           target: ${{ matrix.target }}
           tests: ${{ matrix.tests }}
-          scons-cache-limit: ${{ matrix.cache-limit }}
 
       - name: Save Godot build cache
         uses: ./.github/actions/godot-cache-save

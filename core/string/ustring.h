@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef USTRING_GODOT_H
-#define USTRING_GODOT_H
+#pragma once
 
 // Note: _GODOT suffix added to header guard to avoid conflict with ICU header.
 
@@ -38,8 +37,6 @@
 #include "core/templates/vector.h"
 #include "core/typedefs.h"
 #include "core/variant/array.h"
-
-#include <utility>
 
 /*************************************************************************/
 /*  Utility Functions                                                    */
@@ -101,30 +98,6 @@ constexpr size_t _strlen_clipped(const char32_t *p_str, int p_clip_to_len) {
 }
 
 /*************************************************************************/
-/*  StrRange                                                             */
-/*************************************************************************/
-
-template <typename Element>
-struct StrRange {
-	const Element *c_str;
-	size_t len;
-
-	explicit StrRange(const std::nullptr_t p_cstring) :
-			c_str(nullptr), len(0) {}
-
-	explicit StrRange(const Element *p_cstring, const size_t p_len) :
-			c_str(p_cstring), len(p_len) {}
-
-	template <size_t len>
-	explicit StrRange(const Element (&p_cstring)[len]) :
-			c_str(p_cstring), len(strlen(p_cstring)) {}
-
-	static StrRange from_c_str(const Element *p_cstring) {
-		return StrRange(p_cstring, p_cstring ? strlen(p_cstring) : 0);
-	}
-};
-
-/*************************************************************************/
 /*  CharProxy                                                            */
 /*************************************************************************/
 
@@ -180,6 +153,10 @@ public:
 	_FORCE_INLINE_ char16_t *ptrw() { return _cowdata.ptrw(); }
 	_FORCE_INLINE_ const char16_t *ptr() const { return _cowdata.ptr(); }
 	_FORCE_INLINE_ int size() const { return _cowdata.size(); }
+
+	_FORCE_INLINE_ operator Span<char16_t>() const { return Span(ptr(), length()); }
+	_FORCE_INLINE_ Span<char16_t> span() const { return Span(ptr(), length()); }
+
 	Error resize(int p_size) { return _cowdata.resize(p_size); }
 
 	_FORCE_INLINE_ char16_t get(int p_index) const { return _cowdata.get(p_index); }
@@ -206,8 +183,6 @@ public:
 	Char16String &operator+=(char16_t p_char);
 	int length() const { return size() ? size() - 1 : 0; }
 	const char16_t *get_data() const;
-	operator const char16_t *() const { return get_data(); }
-	explicit operator StrRange<char16_t>() const { return StrRange(get_data(), length()); }
 
 protected:
 	void copy_from(const char16_t *p_cstr);
@@ -225,6 +200,10 @@ public:
 	_FORCE_INLINE_ char *ptrw() { return _cowdata.ptrw(); }
 	_FORCE_INLINE_ const char *ptr() const { return _cowdata.ptr(); }
 	_FORCE_INLINE_ int size() const { return _cowdata.size(); }
+
+	_FORCE_INLINE_ operator Span<char>() const { return Span(ptr(), length()); }
+	_FORCE_INLINE_ Span<char> span() const { return Span(ptr(), length()); }
+
 	Error resize(int p_size) { return _cowdata.resize(p_size); }
 
 	_FORCE_INLINE_ char get(int p_index) const { return _cowdata.get(p_index); }
@@ -252,8 +231,6 @@ public:
 	CharString &operator+=(char p_char);
 	int length() const { return size() ? size() - 1 : 0; }
 	const char *get_data() const;
-	operator const char *() const { return get_data(); }
-	explicit operator StrRange<char>() const { return StrRange(get_data(), length()); }
 
 protected:
 	void copy_from(const char *p_cstr);
@@ -269,51 +246,48 @@ class String {
 	static const char32_t _replacement_char;
 
 	// Known-length copy.
-	void copy_from(const StrRange<char> &p_cstr);
-	void copy_from(const StrRange<char32_t> &p_cstr);
-	void copy_from(const char32_t &p_char);
 	void copy_from_unchecked(const char32_t *p_char, int p_length);
 
 	// NULL-terminated c string copy - automatically parse the string to find the length.
-	void copy_from(const char *p_cstr) {
-		copy_from(StrRange<char>::from_c_str(p_cstr));
+	void parse_latin1(const char *p_cstr) {
+		parse_latin1(Span(p_cstr, p_cstr ? strlen(p_cstr) : 0));
 	}
-	void copy_from(const char *p_cstr, int p_clip_to) {
-		copy_from(StrRange(p_cstr, p_cstr ? _strlen_clipped(p_cstr, p_clip_to) : 0));
+	void parse_latin1(const char *p_cstr, int p_clip_to) {
+		parse_latin1(Span(p_cstr, p_cstr ? _strlen_clipped(p_cstr, p_clip_to) : 0));
 	}
-	void copy_from(const char32_t *p_cstr) {
-		copy_from(StrRange<char32_t>::from_c_str(p_cstr));
+	void parse_utf32(const char32_t *p_cstr) {
+		parse_utf32(Span(p_cstr, p_cstr ? strlen(p_cstr) : 0));
 	}
-	void copy_from(const char32_t *p_cstr, int p_clip_to) {
-		copy_from(StrRange(p_cstr, p_cstr ? _strlen_clipped(p_cstr, p_clip_to) : 0));
+	void parse_utf32(const char32_t *p_cstr, int p_clip_to) {
+		parse_utf32(Span(p_cstr, p_cstr ? _strlen_clipped(p_cstr, p_clip_to) : 0));
 	}
 
 	// wchar_t copy_from depends on the platform.
-	void copy_from(const StrRange<wchar_t> &p_cstr) {
+	void parse_wstring(const Span<wchar_t> &p_cstr) {
 #ifdef WINDOWS_ENABLED
 		// wchar_t is 16-bit, parse as UTF-16
-		parse_utf16((const char16_t *)p_cstr.c_str, p_cstr.len);
+		parse_utf16((const char16_t *)p_cstr.ptr(), p_cstr.size());
 #else
 		// wchar_t is 32-bit, copy directly
-		copy_from((StrRange<char32_t> &)p_cstr);
+		parse_utf32((Span<char32_t> &)p_cstr);
 #endif
 	}
-	void copy_from(const wchar_t *p_cstr) {
+	void parse_wstring(const wchar_t *p_cstr) {
 #ifdef WINDOWS_ENABLED
 		// wchar_t is 16-bit, parse as UTF-16
 		parse_utf16((const char16_t *)p_cstr);
 #else
 		// wchar_t is 32-bit, copy directly
-		copy_from((const char32_t *)p_cstr);
+		parse_utf32((const char32_t *)p_cstr);
 #endif
 	}
-	void copy_from(const wchar_t *p_cstr, int p_clip_to) {
+	void parse_wstring(const wchar_t *p_cstr, int p_clip_to) {
 #ifdef WINDOWS_ENABLED
 		// wchar_t is 16-bit, parse as UTF-16
 		parse_utf16((const char16_t *)p_cstr, p_clip_to);
 #else
 		// wchar_t is 32-bit, copy directly
-		copy_from((const char32_t *)p_cstr, p_clip_to);
+		parse_utf32((const char32_t *)p_cstr, p_clip_to);
 #endif
 	}
 
@@ -329,6 +303,10 @@ public:
 
 	_FORCE_INLINE_ char32_t *ptrw() { return _cowdata.ptrw(); }
 	_FORCE_INLINE_ const char32_t *ptr() const { return _cowdata.ptr(); }
+	_FORCE_INLINE_ int size() const { return _cowdata.size(); }
+
+	_FORCE_INLINE_ operator Span<char32_t>() const { return Span(ptr(), length()); }
+	_FORCE_INLINE_ Span<char32_t> span() const { return Span(ptr(), length()); }
 
 	void remove_at(int p_index) { _cowdata.remove_at(p_index); }
 
@@ -336,7 +314,6 @@ public:
 
 	_FORCE_INLINE_ char32_t get(int p_index) const { return _cowdata.get(p_index); }
 	_FORCE_INLINE_ void set(int p_index, const char32_t &p_elem) { _cowdata.set(p_index, p_elem); }
-	_FORCE_INLINE_ int size() const { return _cowdata.size(); }
 	Error resize(int p_size) { return _cowdata.resize(p_size); }
 
 	_FORCE_INLINE_ const char32_t &operator[](int p_index) const {
@@ -364,7 +341,7 @@ public:
 	bool operator==(const char *p_str) const;
 	bool operator==(const wchar_t *p_str) const;
 	bool operator==(const char32_t *p_str) const;
-	bool operator==(const StrRange<char32_t> &p_str_range) const;
+	bool operator==(const Span<char32_t> &p_str_range) const;
 
 	bool operator!=(const char *p_str) const;
 	bool operator!=(const wchar_t *p_str) const;
@@ -437,6 +414,9 @@ public:
 	String reverse() const;
 	String insert(int p_at_pos, const String &p_string) const;
 	String erase(int p_pos, int p_chars = 1) const;
+	String remove_char(char32_t p_what) const;
+	String remove_chars(const String &p_chars) const;
+	String remove_chars(const char *p_chars) const;
 	String pad_decimals(int p_digits) const;
 	String pad_zeros(int p_digits) const;
 	String trim_prefix(const String &p_prefix) const;
@@ -454,7 +434,11 @@ public:
 	static String num_real(float p_num, bool p_trailing = true);
 	static String num_int64(int64_t p_num, int base = 10, bool capitalize_hex = false);
 	static String num_uint64(uint64_t p_num, int base = 10, bool capitalize_hex = false);
-	static String chr(char32_t p_char);
+	static String chr(char32_t p_char) {
+		String string;
+		string.parse_utf32(Span(&p_char, 1));
+		return string;
+	}
 	static String md5(const uint8_t *p_md5);
 	static String hex_encode_buffer(const uint8_t *p_buffer, int p_len);
 	Vector<uint8_t> hex_decode() const;
@@ -491,7 +475,7 @@ public:
 	Vector<String> split(const char *p_splitter = "", bool p_allow_empty = true, int p_maxsplit = 0) const;
 	Vector<String> rsplit(const String &p_splitter = "", bool p_allow_empty = true, int p_maxsplit = 0) const;
 	Vector<String> rsplit(const char *p_splitter = "", bool p_allow_empty = true, int p_maxsplit = 0) const;
-	Vector<String> split_spaces() const;
+	Vector<String> split_spaces(int p_maxsplit = 0) const;
 	Vector<double> split_floats(const String &p_splitter, bool p_allow_empty = true) const;
 	Vector<float> split_floats_mk(const Vector<String> &p_splitters, bool p_allow_empty = true) const;
 	Vector<int> split_ints(const String &p_splitter, bool p_allow_empty = true) const;
@@ -523,13 +507,39 @@ public:
 	char32_t unicode_at(int p_idx) const;
 
 	CharString ascii(bool p_allow_extended = false) const;
+	// Parse an ascii string.
+	// If any character is > 127, an error will be logged, and 0xfffd will be inserted.
+	Error parse_ascii(const Span<char> &p_range);
+	static String ascii(const Span<char> &p_range) {
+		String s;
+		s.parse_ascii(p_range);
+		return s;
+	}
+	CharString latin1() const { return ascii(true); }
+	void parse_latin1(const Span<char> &p_cstr);
+	static String latin1(const Span<char> &p_string) {
+		String string;
+		string.parse_latin1(p_string);
+		return string;
+	}
+
 	CharString utf8() const;
 	Error parse_utf8(const char *p_utf8, int p_len = -1, bool p_skip_cr = false);
+	Error parse_utf8(const Span<char> &p_range, bool p_skip_cr = false) {
+		return parse_utf8(p_range.ptr(), p_range.size(), p_skip_cr);
+	}
 	static String utf8(const char *p_utf8, int p_len = -1);
+	static String utf8(const Span<char> &p_range) { return utf8(p_range.ptr(), p_range.size()); }
 
 	Char16String utf16() const;
 	Error parse_utf16(const char16_t *p_utf16, int p_len = -1, bool p_default_little_endian = true);
+	Error parse_utf16(const Span<char16_t> p_range, bool p_skip_cr = false) {
+		return parse_utf16(p_range.ptr(), p_range.size(), p_skip_cr);
+	}
 	static String utf16(const char16_t *p_utf16, int p_len = -1);
+	static String utf16(const Span<char16_t> &p_range) { return utf16(p_range.ptr(), p_range.size()); }
+
+	void parse_utf32(const Span<char32_t> &p_cstr);
 
 	static uint32_t hash(const char32_t *p_cstr, int p_len); /* hash the string */
 	static uint32_t hash(const char32_t *p_cstr); /* hash the string */
@@ -615,37 +625,39 @@ public:
 
 	// Constructors for NULL terminated C strings.
 	String(const char *p_cstr) {
-		copy_from(p_cstr);
+		parse_latin1(p_cstr);
 	}
 	String(const wchar_t *p_cstr) {
-		copy_from(p_cstr);
+		parse_wstring(p_cstr);
 	}
 	String(const char32_t *p_cstr) {
-		copy_from(p_cstr);
+		parse_utf32(p_cstr);
 	}
 	String(const char *p_cstr, int p_clip_to_len) {
-		copy_from(p_cstr, p_clip_to_len);
+		parse_latin1(p_cstr, p_clip_to_len);
 	}
 	String(const wchar_t *p_cstr, int p_clip_to_len) {
-		copy_from(p_cstr, p_clip_to_len);
+		parse_wstring(p_cstr, p_clip_to_len);
 	}
 	String(const char32_t *p_cstr, int p_clip_to_len) {
-		copy_from(p_cstr, p_clip_to_len);
+		parse_utf32(p_cstr, p_clip_to_len);
 	}
 
 	// Copy assignment for NULL terminated C strings.
 	void operator=(const char *p_cstr) {
-		copy_from(p_cstr);
+		parse_latin1(p_cstr);
 	}
 	void operator=(const wchar_t *p_cstr) {
-		copy_from(p_cstr);
+		parse_wstring(p_cstr);
 	}
 	void operator=(const char32_t *p_cstr) {
-		copy_from(p_cstr);
+		parse_utf32(p_cstr);
 	}
-
-	explicit operator StrRange<char32_t>() const { return StrRange(get_data(), length()); }
 };
+
+// Zero-constructing String initializes _cowdata.ptr() to nullptr and thus empty.
+template <>
+struct is_zero_constructible<String> : std::true_type {};
 
 bool operator==(const char *p_chr, const String &p_str);
 bool operator==(const wchar_t *p_chr, const String &p_str);
@@ -794,5 +806,3 @@ _FORCE_INLINE_ Vector<String> sarray(P... p_args) {
 	sarray_add_str(arr, p_args...);
 	return arr;
 }
-
-#endif // USTRING_GODOT_H

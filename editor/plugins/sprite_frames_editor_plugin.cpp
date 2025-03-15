@@ -30,7 +30,6 @@
 
 #include "sprite_frames_editor_plugin.h"
 
-#include "core/config/project_settings.h"
 #include "core/io/resource_loader.h"
 #include "core/os/keyboard.h"
 #include "editor/editor_command_palette.h"
@@ -39,10 +38,13 @@
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
+#include "editor/filesystem_dock.h"
 #include "editor/gui/editor_bottom_panel.h"
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/scene_tree_dock.h"
 #include "editor/themes/editor_scale.h"
+#include "scene/2d/animated_sprite_2d.h"
+#include "scene/3d/sprite_3d.h"
 #include "scene/gui/center_container.h"
 #include "scene/gui/flow_container.h"
 #include "scene/gui/margin_container.h"
@@ -1282,6 +1284,10 @@ void SpriteFramesEditor::_animation_loop_changed() {
 	undo_redo->commit_action();
 }
 
+void SpriteFramesEditor::_animation_speed_resized() {
+	anim_speed->update_minimum_size();
+}
+
 void SpriteFramesEditor::_animation_speed_changed(double p_value) {
 	if (updating) {
 		return;
@@ -1308,7 +1314,42 @@ void SpriteFramesEditor::_frame_list_gui_input(const Ref<InputEvent> &p_event) {
 			_zoom_out();
 			// Don't scroll down after zooming out.
 			accept_event();
+		} else if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MouseButton::RIGHT) {
+			Point2 pos = mb->get_position();
+			right_clicked_frame = frame_list->get_item_at_position(pos, true);
+			if (right_clicked_frame != -1) {
+				Ref<Texture2D> tex = frames->get_frame_texture(edited_anim, right_clicked_frame);
+				if (tex.is_null()) {
+					return;
+				}
+				if (!menu) {
+					menu = memnew(PopupMenu);
+					add_child(menu);
+					menu->connect(SceneStringName(id_pressed), callable_mp(this, &SpriteFramesEditor::_menu_selected));
+					menu->add_icon_item(get_editor_theme_icon(SNAME("ShowInFileSystem")), TTRC("Show in FileSystem"), MENU_SHOW_IN_FILESYSTEM);
+				}
+
+				menu->set_position(get_screen_position() + get_local_mouse_position());
+				menu->popup();
+			}
 		}
+	}
+}
+
+void SpriteFramesEditor::_menu_selected(int p_id) {
+	switch (p_id) {
+		case MENU_SHOW_IN_FILESYSTEM: {
+			Ref<Texture2D> frame_texture = frames->get_frame_texture(edited_anim, right_clicked_frame);
+			ERR_FAIL_COND(frame_texture.is_null());
+			String path = frame_texture->get_path();
+			// Check if the file is an atlas resource, if it is find the source texture.
+			Ref<AtlasTexture> at = frame_texture;
+			while (at.is_valid() && at->get_atlas().is_valid()) {
+				path = at->get_atlas()->get_path();
+				at = at->get_atlas();
+			}
+			FileSystemDock::get_singleton()->navigate_to_path(path);
+		} break;
 	}
 }
 
@@ -1903,7 +1944,7 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	add_anim->connect(SceneStringName(pressed), callable_mp(this, &SpriteFramesEditor::_animation_add));
 
 	duplicate_anim = memnew(Button);
-	duplicate_anim->set_flat(true);
+	duplicate_anim->set_theme_type_variation(SceneStringName(FlatButton));
 	hbc_animlist->add_child(duplicate_anim);
 	duplicate_anim->connect(SceneStringName(pressed), callable_mp(this, &SpriteFramesEditor::_animation_duplicate));
 
@@ -1939,6 +1980,8 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	anim_speed->set_step(0.01);
 	anim_speed->set_custom_arrow_step(1);
 	anim_speed->set_tooltip_text(TTR("Animation Speed"));
+	anim_speed->get_line_edit()->set_expand_to_text_length_enabled(true);
+	anim_speed->get_line_edit()->connect(SceneStringName(resized), callable_mp(this, &SpriteFramesEditor::_animation_speed_resized));
 	anim_speed->connect(SceneStringName(value_changed), callable_mp(this, &SpriteFramesEditor::_animation_speed_changed));
 	hbc_animlist->add_child(anim_speed);
 
@@ -1960,11 +2003,11 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	animations->set_allow_reselect(true);
 
 	add_anim->set_shortcut_context(animations);
-	add_anim->set_shortcut(ED_SHORTCUT("sprite_frames/new_animation", TTR("Add Animation"), KeyModifierMask::CMD_OR_CTRL | Key::N));
+	add_anim->set_shortcut(ED_SHORTCUT("sprite_frames/new_animation", TTRC("Add Animation"), KeyModifierMask::CMD_OR_CTRL | Key::N));
 	duplicate_anim->set_shortcut_context(animations);
-	duplicate_anim->set_shortcut(ED_SHORTCUT("sprite_frames/duplicate_animation", TTR("Duplicate Animation"), KeyModifierMask::CMD_OR_CTRL | Key::D));
+	duplicate_anim->set_shortcut(ED_SHORTCUT("sprite_frames/duplicate_animation", TTRC("Duplicate Animation"), KeyModifierMask::CMD_OR_CTRL | Key::D));
 	delete_anim->set_shortcut_context(animations);
-	delete_anim->set_shortcut(ED_SHORTCUT("sprite_frames/delete_animation", TTR("Delete Animation"), Key::KEY_DELETE));
+	delete_anim->set_shortcut(ED_SHORTCUT("sprite_frames/delete_animation", TTRC("Delete Animation"), Key::KEY_DELETE));
 
 	missing_anim_label = memnew(Label);
 	missing_anim_label->set_text(TTR("This resource does not have any animations."));
@@ -2102,19 +2145,19 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	zoom_out = memnew(Button);
 	zoom_out->connect(SceneStringName(pressed), callable_mp(this, &SpriteFramesEditor::_zoom_out));
 	zoom_out->set_flat(true);
-	zoom_out->set_tooltip_text(TTR("Zoom Out"));
+	zoom_out->set_tooltip_text(TTRC("Zoom Out"));
 	hbc_zoom->add_child(zoom_out);
 
 	zoom_reset = memnew(Button);
 	zoom_reset->connect(SceneStringName(pressed), callable_mp(this, &SpriteFramesEditor::_zoom_reset));
 	zoom_reset->set_flat(true);
-	zoom_reset->set_tooltip_text(TTR("Zoom Reset"));
+	zoom_reset->set_tooltip_text(TTRC("Zoom Reset"));
 	hbc_zoom->add_child(zoom_reset);
 
 	zoom_in = memnew(Button);
 	zoom_in->connect(SceneStringName(pressed), callable_mp(this, &SpriteFramesEditor::_zoom_in));
 	zoom_in->set_flat(true);
-	zoom_in->set_tooltip_text(TTR("Zoom In"));
+	zoom_in->set_tooltip_text(TTRC("Zoom In"));
 	hbc_zoom->add_child(zoom_in);
 
 	file = memnew(EditorFileDialog);
@@ -2129,7 +2172,6 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	frame_list->set_select_mode(ItemList::SELECT_MULTI);
 
 	frame_list->set_max_columns(0);
-	frame_list->set_icon_mode(ItemList::ICON_MODE_TOP);
 	frame_list->set_max_text_lines(2);
 	SET_DRAG_FORWARDING_GCD(frame_list, SpriteFramesEditor);
 	frame_list->connect(SceneStringName(gui_input), callable_mp(this, &SpriteFramesEditor::_frame_list_gui_input));
@@ -2152,29 +2194,29 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	move_down->connect(SceneStringName(pressed), callable_mp(this, &SpriteFramesEditor::_down_pressed));
 
 	load->set_shortcut_context(frame_list);
-	load->set_shortcut(ED_SHORTCUT("sprite_frames/load_from_file", TTR("Add frame from file"), KeyModifierMask::CMD_OR_CTRL | Key::O));
+	load->set_shortcut(ED_SHORTCUT("sprite_frames/load_from_file", TTRC("Add frame from file"), KeyModifierMask::CMD_OR_CTRL | Key::O));
 	load_sheet->set_shortcut_context(frame_list);
-	load_sheet->set_shortcut(ED_SHORTCUT("sprite_frames/load_from_sheet", TTR("Add frames from sprite sheet"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::O));
+	load_sheet->set_shortcut(ED_SHORTCUT("sprite_frames/load_from_sheet", TTRC("Add frames from sprite sheet"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::O));
 	delete_frame->set_shortcut_context(frame_list);
-	delete_frame->set_shortcut(ED_SHORTCUT("sprite_frames/delete", TTR("Delete Frame"), Key::KEY_DELETE));
+	delete_frame->set_shortcut(ED_SHORTCUT("sprite_frames/delete", TTRC("Delete Frame"), Key::KEY_DELETE));
 	copy->set_shortcut_context(frame_list);
-	copy->set_shortcut(ED_SHORTCUT("sprite_frames/copy", TTR("Copy Frame(s)"), KeyModifierMask::CMD_OR_CTRL | Key::C));
+	copy->set_shortcut(ED_SHORTCUT("sprite_frames/copy", TTRC("Copy Frame(s)"), KeyModifierMask::CMD_OR_CTRL | Key::C));
 	paste->set_shortcut_context(frame_list);
-	paste->set_shortcut(ED_SHORTCUT("sprite_frames/paste", TTR("Paste Frame(s)"), KeyModifierMask::CMD_OR_CTRL | Key::V));
+	paste->set_shortcut(ED_SHORTCUT("sprite_frames/paste", TTRC("Paste Frame(s)"), KeyModifierMask::CMD_OR_CTRL | Key::V));
 	empty_before->set_shortcut_context(frame_list);
-	empty_before->set_shortcut(ED_SHORTCUT("sprite_frames/empty_before", TTR("Insert Empty (Before Selected)"), KeyModifierMask::ALT | Key::LEFT));
+	empty_before->set_shortcut(ED_SHORTCUT("sprite_frames/empty_before", TTRC("Insert Empty (Before Selected)"), KeyModifierMask::ALT | Key::LEFT));
 	empty_after->set_shortcut_context(frame_list);
-	empty_after->set_shortcut(ED_SHORTCUT("sprite_frames/empty_after", TTR("Insert Empty (After Selected)"), KeyModifierMask::ALT | Key::RIGHT));
+	empty_after->set_shortcut(ED_SHORTCUT("sprite_frames/empty_after", TTRC("Insert Empty (After Selected)"), KeyModifierMask::ALT | Key::RIGHT));
 	move_up->set_shortcut_context(frame_list);
-	move_up->set_shortcut(ED_SHORTCUT("sprite_frames/move_left", TTR("Move Frame Left"), KeyModifierMask::CMD_OR_CTRL | Key::LEFT));
+	move_up->set_shortcut(ED_SHORTCUT("sprite_frames/move_left", TTRC("Move Frame Left"), KeyModifierMask::CMD_OR_CTRL | Key::LEFT));
 	move_down->set_shortcut_context(frame_list);
-	move_down->set_shortcut(ED_SHORTCUT("sprite_frames/move_right", TTR("Move Frame Right"), KeyModifierMask::CMD_OR_CTRL | Key::RIGHT));
+	move_down->set_shortcut(ED_SHORTCUT("sprite_frames/move_right", TTRC("Move Frame Right"), KeyModifierMask::CMD_OR_CTRL | Key::RIGHT));
 
 	zoom_out->set_shortcut_context(frame_list);
-	zoom_out->set_shortcut(ED_SHORTCUT_ARRAY("sprite_frames/zoom_out", TTR("Zoom Out"),
+	zoom_out->set_shortcut(ED_SHORTCUT_ARRAY("sprite_frames/zoom_out", TTRC("Zoom Out"),
 			{ int32_t(KeyModifierMask::CMD_OR_CTRL | Key::MINUS), int32_t(KeyModifierMask::CMD_OR_CTRL | Key::KP_SUBTRACT) }));
 	zoom_in->set_shortcut_context(frame_list);
-	zoom_in->set_shortcut(ED_SHORTCUT_ARRAY("sprite_frames/zoom_in", TTR("Zoom In"),
+	zoom_in->set_shortcut(ED_SHORTCUT_ARRAY("sprite_frames/zoom_in", TTRC("Zoom In"),
 			{ int32_t(KeyModifierMask::CMD_OR_CTRL | Key::EQUAL), int32_t(KeyModifierMask::CMD_OR_CTRL | Key::KP_ADD) }));
 
 	loading_scene = false;
@@ -2491,7 +2533,7 @@ void SpriteFramesEditorPlugin::make_visible(bool p_visible) {
 SpriteFramesEditorPlugin::SpriteFramesEditorPlugin() {
 	frames_editor = memnew(SpriteFramesEditor);
 	frames_editor->set_custom_minimum_size(Size2(0, 300) * EDSCALE);
-	button = EditorNode::get_bottom_panel()->add_item(TTR("SpriteFrames"), frames_editor, ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_sprite_frames_bottom_panel", TTR("Toggle SpriteFrames Bottom Panel")));
+	button = EditorNode::get_bottom_panel()->add_item(TTR("SpriteFrames"), frames_editor, ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_sprite_frames_bottom_panel", TTRC("Toggle SpriteFrames Bottom Panel")));
 	button->hide();
 }
 

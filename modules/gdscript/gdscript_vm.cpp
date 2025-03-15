@@ -387,7 +387,7 @@ void (*type_init_function_table[])(Variant *) = {
 		&&OPCODE_LINE,                                   \
 		&&OPCODE_END                                     \
 	};                                                   \
-	static_assert((sizeof(switch_table_ops) / sizeof(switch_table_ops[0]) == (OPCODE_END + 1)), "Opcodes in jump table aren't the same as opcodes in enum.");
+	static_assert(std::size(switch_table_ops) == (OPCODE_END + 1), "Opcodes in jump table aren't the same as opcodes in enum.");
 
 #define OPCODE(m_op) \
 	m_op:
@@ -510,12 +510,6 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 	Variant *stack = nullptr;
 	Variant **instruction_args = nullptr;
 	int defarg = 0;
-
-#ifdef DEBUG_ENABLED
-
-	//GDScriptLanguage::get_singleton()->calls++;
-
-#endif
 
 	uint32_t alloca_size = 0;
 	GDScript *script;

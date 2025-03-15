@@ -28,13 +28,12 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef RENDERING_CONTEXT_DRIVER_METAL_H
-#define RENDERING_CONTEXT_DRIVER_METAL_H
+#pragma once
 
 #ifdef METAL_ENABLED
 
-#import "servers/rendering/rendering_context_driver.h"
-#import "servers/rendering/rendering_device_driver.h"
+#include "servers/rendering/rendering_context_driver.h"
+#include "servers/rendering/rendering_device_driver.h"
 
 #import <CoreGraphics/CGGeometry.h>
 
@@ -56,7 +55,7 @@ class MDCommandBuffer;
 class PixelFormats;
 class MDResourceCache;
 
-class API_AVAILABLE(macos(11.0), ios(14.0)) RenderingContextDriverMetal : public RenderingContextDriver {
+class API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0)) RenderingContextDriverMetal : public RenderingContextDriver {
 protected:
 #ifdef __OBJC__
 	id<MTLDevice> metal_device = nullptr;
@@ -94,7 +93,7 @@ public:
 #endif
 	};
 
-	class API_AVAILABLE(macos(11.0), ios(14.0)) Surface {
+	class API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0)) Surface {
 	protected:
 #ifdef __OBJC__
 		id<MTLDevice> device;
@@ -143,5 +142,3 @@ public:
 };
 
 #endif // METAL_ENABLED
-
-#endif // RENDERING_CONTEXT_DRIVER_METAL_H

@@ -28,14 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef VRS_RD_H
-#define VRS_RD_H
+#pragma once
 
 #include "servers/rendering/renderer_rd/pipeline_cache_rd.h"
 #include "servers/rendering/renderer_rd/shaders/effects/vrs.glsl.gen.h"
-#include "servers/rendering/renderer_scene_render.h"
-
-#include "servers/rendering_server.h"
 
 namespace RendererRD {
 
@@ -72,5 +68,3 @@ public:
 };
 
 } // namespace RendererRD
-
-#endif // VRS_RD_H

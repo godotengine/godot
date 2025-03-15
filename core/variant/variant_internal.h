@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef VARIANT_INTERNAL_H
-#define VARIANT_INTERNAL_H
+#pragma once
 
 #include "variant.h"
 
@@ -831,11 +830,15 @@ struct VariantInternalAccessor<bool> {
 	static _FORCE_INLINE_ void set(Variant *v, bool p_value) { *VariantInternal::get_bool(v) = p_value; }
 };
 
-#define VARIANT_ACCESSOR_NUMBER(m_type)                                                                        \
-	template <>                                                                                                \
-	struct VariantInternalAccessor<m_type> {                                                                   \
-		static _FORCE_INLINE_ m_type get(const Variant *v) { return (m_type) * VariantInternal::get_int(v); }  \
-		static _FORCE_INLINE_ void set(Variant *v, m_type p_value) { *VariantInternal::get_int(v) = p_value; } \
+#define VARIANT_ACCESSOR_NUMBER(m_type)                              \
+	template <>                                                      \
+	struct VariantInternalAccessor<m_type> {                         \
+		static _FORCE_INLINE_ m_type get(const Variant *v) {         \
+			return (m_type) * VariantInternal::get_int(v);           \
+		}                                                            \
+		static _FORCE_INLINE_ void set(Variant *v, m_type p_value) { \
+			*VariantInternal::get_int(v) = p_value;                  \
+		}                                                            \
 	};
 
 VARIANT_ACCESSOR_NUMBER(int8_t)
@@ -1130,10 +1133,12 @@ struct VariantInitializer<bool> {
 	static _FORCE_INLINE_ void init(Variant *v) { VariantInternal::init_generic<bool>(v); }
 };
 
-#define INITIALIZER_INT(m_type)                                                                    \
-	template <>                                                                                    \
-	struct VariantInitializer<m_type> {                                                            \
-		static _FORCE_INLINE_ void init(Variant *v) { VariantInternal::init_generic<int64_t>(v); } \
+#define INITIALIZER_INT(m_type)                        \
+	template <>                                        \
+	struct VariantInitializer<m_type> {                \
+		static _FORCE_INLINE_ void init(Variant *v) {  \
+			VariantInternal::init_generic<int64_t>(v); \
+		}                                              \
 	};
 
 INITIALIZER_INT(uint8_t)
@@ -1584,5 +1589,3 @@ struct VariantTypeConstructor {
 		memnew_placement(r_value, T(*reinterpret_cast<Variant *>(p_variant)));
 	}
 };
-
-#endif // VARIANT_INTERNAL_H

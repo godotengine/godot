@@ -10,6 +10,19 @@
     <DefineConstants Condition=" '$(GodotFloat64)' == 'true' ">GODOT_REAL_T_IS_DOUBLE;$(DefineConstants)</DefineConstants>
   </PropertyGroup>
 
+  <!--
+  We are defining ExportDebug and Debug in Sdk.targets to ensure that the user cannot
+  override the DefineConstants property in their csproj file and break the editor functionality.
+  -->
+  <PropertyGroup>
+    <!-- ExportDebug also defines DEBUG like Debug does. -->
+    <DefineConstants Condition=" '$(Configuration)' == 'ExportDebug' ">$(DefineConstants);DEBUG</DefineConstants>
+    <!-- Debug defines TOOLS to differentiate between Debug and ExportDebug configurations. -->
+    <DefineConstants Condition=" '$(Configuration)' == 'Debug' ">$(DefineConstants);TOOLS</DefineConstants>
+
+    <DefineConstants>$(GodotDefineConstants);$(DefineConstants)</DefineConstants>
+  </PropertyGroup>
+
   <!-- C# source generators -->
   <ItemGroup Condition=" '$(DisableImplicitGodotGeneratorReferences)' != 'true' ">
     <PackageReference Include="Godot.SourceGenerators" Version="$(PackageVersion_Godot_SourceGenerators)" />

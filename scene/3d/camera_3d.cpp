@@ -33,7 +33,6 @@
 #include "core/math/projection.h"
 #include "core/math/transform_interpolator.h"
 #include "scene/main/viewport.h"
-#include "servers/rendering/rendering_server_constants.h"
 
 void Camera3D::_update_audio_listener_state() {
 }
@@ -231,6 +230,7 @@ void Camera3D::_notification(int p_what) {
 			if (is_inside_tree()) {
 				_interpolation_data.xform_curr = get_global_transform();
 				_interpolation_data.xform_prev = _interpolation_data.xform_curr;
+				_update_process_mode();
 			}
 		} break;
 

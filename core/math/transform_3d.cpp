@@ -30,7 +30,6 @@
 
 #include "transform_3d.h"
 
-#include "core/math/math_funcs.h"
 #include "core/string/ustring.h"
 
 void Transform3D::affine_invert() {
@@ -172,6 +171,10 @@ Transform3D Transform3D::orthogonalized() const {
 
 bool Transform3D::is_equal_approx(const Transform3D &p_transform) const {
 	return basis.is_equal_approx(p_transform.basis) && origin.is_equal_approx(p_transform.origin);
+}
+
+bool Transform3D::is_same(const Transform3D &p_transform) const {
+	return basis.is_same(p_transform.basis) && origin.is_same(p_transform.origin);
 }
 
 bool Transform3D::is_finite() const {

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef RASTERIZER_DUMMY_H
-#define RASTERIZER_DUMMY_H
+#pragma once
 
 #include "core/templates/rid_owner.h"
 #include "core/templates/self_list.h"
@@ -88,6 +87,7 @@ public:
 
 	void blit_render_targets_to_screen(int p_screen, const BlitToScreen *p_render_targets, int p_amount) override {}
 
+	bool is_opengl() override { return false; }
 	void gl_end_frame(bool p_swap_buffers) override {}
 
 	void end_frame(bool p_present) override {
@@ -115,5 +115,3 @@ public:
 	RasterizerDummy() {}
 	~RasterizerDummy() {}
 };
-
-#endif // RASTERIZER_DUMMY_H

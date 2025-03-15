@@ -36,7 +36,6 @@
 #include "servers/rendering/shader_types.h"
 #include "visual_shader_nodes.h"
 #include "visual_shader_particle_nodes.h"
-#include "visual_shader_sdf_nodes.h"
 
 String make_unique_id(VisualShader::Type p_type, int p_id, const String &p_name) {
 	static const char *typepf[VisualShader::TYPE_MAX] = { "vtx", "frg", "lgt", "start", "process", "collide", "start_custom", "process_custom", "sky", "fog" };
@@ -1486,7 +1485,7 @@ bool VisualShader::is_text_shader() const {
 
 String VisualShader::generate_preview_shader(Type p_type, int p_node, int p_port, Vector<DefaultTextureParam> &default_tex_params) const {
 	Ref<VisualShaderNode> node = get_node(p_type, p_node);
-	ERR_FAIL_COND_V(!node.is_valid(), String());
+	ERR_FAIL_COND_V(node.is_null(), String());
 	ERR_FAIL_COND_V(p_port < 0 || p_port >= node->get_expanded_output_port_count(), String());
 	ERR_FAIL_COND_V(node->get_output_port_type(p_port) == VisualShaderNode::PORT_TYPE_TRANSFORM, String());
 
@@ -1585,7 +1584,7 @@ String VisualShader::validate_port_name(const String &p_port_name, VisualShaderN
 	}
 
 	while (port_name.length() && !is_ascii_alphabet_char(port_name[0])) {
-		port_name = port_name.substr(1, port_name.length() - 1);
+		port_name = port_name.substr(1);
 	}
 
 	if (!port_name.is_empty()) {
@@ -1630,7 +1629,7 @@ String VisualShader::validate_port_name(const String &p_port_name, VisualShaderN
 String VisualShader::validate_parameter_name(const String &p_name, const Ref<VisualShaderNodeParameter> &p_parameter) const {
 	String param_name = p_name; //validate name first
 	while (param_name.length() && !is_ascii_alphabet_char(param_name[0])) {
-		param_name = param_name.substr(1, param_name.length() - 1);
+		param_name = param_name.substr(1);
 	}
 	if (!param_name.is_empty()) {
 		String valid_name;
@@ -1997,7 +1996,7 @@ Error VisualShader::_write_node(Type type, StringBuilder *p_global_code, StringB
 
 	if (!skip_global) {
 		Ref<VisualShaderNodeParameter> parameter = vsnode;
-		if (!parameter.is_valid() || !parameter->is_global_code_generated()) {
+		if (parameter.is_null() || !parameter->is_global_code_generated()) {
 			if (p_global_code) {
 				*p_global_code += vsnode->generate_global(get_mode(), type, p_node);
 			}
@@ -2797,7 +2796,7 @@ void VisualShader::_update_shader() const {
 
 		if (varying_setters.has(i)) {
 			for (int &E : varying_setters[i]) {
-				err = _write_node(Type(i), &global_code, nullptr, nullptr, func_code, default_tex_params, input_connections, output_connections, E, processed, false, classes);
+				err = _write_node(Type(i), &global_code, &global_code_per_node, nullptr, func_code, default_tex_params, input_connections, output_connections, E, processed, false, classes);
 				ERR_FAIL_COND(err != OK);
 			}
 		}

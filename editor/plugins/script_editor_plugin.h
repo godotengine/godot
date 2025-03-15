@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef SCRIPT_EDITOR_PLUGIN_H
-#define SCRIPT_EDITOR_PLUGIN_H
+#pragma once
 
 #include "core/object/script_language.h"
 #include "editor/plugins/editor_plugin.h"
@@ -173,6 +172,11 @@ protected:
 	static void _bind_methods();
 
 public:
+	struct EditedFileData {
+		String path;
+		uint64_t last_modified_time = -1;
+	} edited_file_data;
+
 	virtual void add_syntax_highlighter(Ref<EditorSyntaxHighlighter> p_highlighter) = 0;
 	virtual void set_syntax_highlighter(Ref<EditorSyntaxHighlighter> p_highlighter) = 0;
 
@@ -253,6 +257,7 @@ class ScriptEditor : public PanelContainer {
 		TOGGLE_SCRIPTS_PANEL,
 		SHOW_IN_FILE_SYSTEM,
 		FILE_COPY_PATH,
+		FILE_COPY_UID,
 		FILE_TOOL_RELOAD_SOFT,
 		SEARCH_IN_FILES,
 		REPLACE_IN_FILES,
@@ -378,8 +383,6 @@ class ScriptEditor : public PanelContainer {
 
 	bool restoring_layout;
 
-	String _get_debug_tooltip(const String &p_text, Node *_se);
-
 	void _resave_scripts(const String &p_str);
 
 	bool _test_script_times_on_disk(Ref<Resource> p_for_script = Ref<Resource>());
@@ -401,6 +404,7 @@ class ScriptEditor : public PanelContainer {
 	void _queue_close_tabs();
 
 	void _copy_script_path();
+	void _copy_script_uid();
 
 	void _ask_close_current_unsaved_tab(ScriptEditorBase *current);
 
@@ -435,9 +439,10 @@ class ScriptEditor : public PanelContainer {
 	void _goto_script_line(Ref<RefCounted> p_script, int p_line);
 	void _set_execution(Ref<RefCounted> p_script, int p_line);
 	void _clear_execution(Ref<RefCounted> p_script);
+	String _get_debug_tooltip(const String &p_text, Node *p_se);
 	void _breaked(bool p_breaked, bool p_can_debug);
 	void _script_created(Ref<Script> p_script);
-	void _set_breakpoint(Ref<RefCounted> p_scrpt, int p_line, bool p_enabled);
+	void _set_breakpoint(Ref<RefCounted> p_script, int p_line, bool p_enabled);
 	void _clear_breakpoints();
 	Array _get_cached_breakpoints_for_script(const String &p_path) const;
 
@@ -563,6 +568,7 @@ public:
 	PackedStringArray get_unsaved_scripts() const;
 	void save_current_script();
 	void save_all_scripts();
+	void update_script_times();
 
 	void set_window_layout(Ref<ConfigFile> p_layout);
 	void get_window_layout(Ref<ConfigFile> p_layout);
@@ -617,7 +623,7 @@ protected:
 	void _notification(int p_what);
 
 public:
-	virtual String get_name() const override { return "Script"; }
+	virtual String get_plugin_name() const override { return "Script"; }
 	bool has_main_screen() const override { return true; }
 	virtual void edit(Object *p_object) override;
 	virtual bool handles(Object *p_object) const override;
@@ -638,5 +644,3 @@ public:
 	ScriptEditorPlugin();
 	~ScriptEditorPlugin();
 };
-
-#endif // SCRIPT_EDITOR_PLUGIN_H

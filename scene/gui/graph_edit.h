@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef GRAPH_EDIT_H
-#define GRAPH_EDIT_H
+#pragma once
 
 #include "scene/gui/box_container.h"
 #include "scene/gui/graph_frame.h"
@@ -120,6 +119,7 @@ public:
 		int from_port = 0;
 		int to_port = 0;
 		float activity = 0.0;
+		bool keep_alive = true;
 
 	private:
 		struct Cache {
@@ -149,11 +149,11 @@ public:
 private:
 	struct ConnectionType {
 		union {
+			uint64_t key = 0;
 			struct {
 				uint32_t type_a;
 				uint32_t type_b;
 			};
-			uint64_t key = 0;
 		};
 
 		static uint32_t hash(const ConnectionType &p_conn) {
@@ -238,7 +238,7 @@ private:
 	bool updating = false;
 	bool awaiting_scroll_offset_update = false;
 
-	List<Ref<Connection>> connections;
+	Vector<Ref<Connection>> connections;
 	HashMap<StringName, List<Ref<Connection>>> connection_map;
 	Ref<Connection> hovered_connection;
 
@@ -274,6 +274,7 @@ private:
 
 		Color activity_color;
 		Color connection_hover_tint_color;
+		int connection_hover_thickness;
 		Color connection_valid_target_tint_color;
 		Color connection_rim_color;
 
@@ -339,9 +340,11 @@ private:
 
 	bool is_in_port_hotzone(const Vector2 &p_pos, const Vector2 &p_mouse_pos, const Vector2i &p_port_size, bool p_left);
 
+	void set_connections(const TypedArray<Dictionary> &p_connections);
 	TypedArray<Dictionary> _get_connection_list() const;
 	Dictionary _get_closest_connection_at_point(const Vector2 &p_point, float p_max_distance = 4.0) const;
 	TypedArray<Dictionary> _get_connections_intersecting_with_rect(const Rect2 &p_rect) const;
+	TypedArray<Dictionary> _get_connection_list_from_node(const StringName &p_node) const;
 
 	Rect2 _compute_shrinked_frame_rect(const GraphFrame *p_frame);
 	void _set_drag_frame_attached_nodes(GraphFrame *p_frame, bool p_drag);
@@ -362,6 +365,7 @@ private:
 	bool _is_arrange_nodes_button_hidden_bind_compat_81582() const;
 	void _set_arrange_nodes_button_hidden_bind_compat_81582(bool p_enable);
 	PackedVector2Array _get_connection_line_bind_compat_86158(const Vector2 &p_from, const Vector2 &p_to);
+	Error _connect_node_bind_compat_97449(const StringName &p_from, int p_from_port, const StringName &p_to, int p_to_port);
 #endif
 
 protected:
@@ -397,14 +401,14 @@ public:
 	void _update_graph_frame(GraphFrame *p_frame);
 
 	// Connection related methods.
-	Error connect_node(const StringName &p_from, int p_from_port, const StringName &p_to, int p_to_port);
+	Error connect_node(const StringName &p_from, int p_from_port, const StringName &p_to, int p_to_port, bool keep_alive = false);
 	bool is_node_connected(const StringName &p_from, int p_from_port, const StringName &p_to, int p_to_port);
 	int get_connection_count(const StringName &p_node, int p_port);
 	void disconnect_node(const StringName &p_from, int p_from_port, const StringName &p_to, int p_to_port);
-	void clear_connections();
 
 	void force_connection_drag_end();
-	const List<Ref<Connection>> &get_connection_list() const;
+	const Vector<Ref<Connection>> &get_connections() const;
+	void clear_connections();
 	virtual PackedVector2Array get_connection_line(const Vector2 &p_from, const Vector2 &p_to) const;
 	Ref<Connection> get_closest_connection_at_point(const Vector2 &p_point, float p_max_distance = 4.0) const;
 	List<Ref<Connection>> get_connections_intersecting_with_rect(const Rect2 &p_rect) const;
@@ -504,6 +508,7 @@ public:
 	HBoxContainer *get_menu_hbox();
 	Ref<ViewPanner> get_panner();
 	void set_warped_panning(bool p_warped);
+	void update_warped_panning();
 
 	void arrange_nodes();
 
@@ -512,5 +517,3 @@ public:
 
 VARIANT_ENUM_CAST(GraphEdit::PanningScheme);
 VARIANT_ENUM_CAST(GraphEdit::GridPattern);
-
-#endif // GRAPH_EDIT_H

@@ -38,7 +38,6 @@
 #include "core/os/os.h"
 #include "core/string/print_string.h"
 #include "core/string/translation_server.h"
-#include "core/templates/local_vector.h"
 #include "core/variant/typed_array.h"
 
 #ifdef DEBUG_ENABLED
@@ -116,10 +115,19 @@ TypedArray<Dictionary> convert_property_list(const List<PropertyInfo> *p_list) {
 	return va;
 }
 
+TypedArray<Dictionary> convert_property_list(const Vector<PropertyInfo> &p_vector) {
+	TypedArray<Dictionary> va;
+	for (const PropertyInfo &E : p_vector) {
+		va.push_back(Dictionary(E));
+	}
+
+	return va;
+}
+
 MethodInfo::operator Dictionary() const {
 	Dictionary d;
 	d["name"] = name;
-	d["args"] = convert_property_list(&arguments);
+	d["args"] = convert_property_list(arguments);
 	Array da;
 	for (int i = 0; i < default_arguments.size(); i++) {
 		da.push_back(default_arguments[i]);
@@ -164,6 +172,37 @@ MethodInfo MethodInfo::from_dict(const Dictionary &p_dict) {
 	}
 
 	return mi;
+}
+
+uint32_t MethodInfo::get_compatibility_hash() const {
+	bool has_return = (return_val.type != Variant::NIL) || (return_val.usage & PROPERTY_USAGE_NIL_IS_VARIANT);
+
+	uint32_t hash = hash_murmur3_one_32(has_return);
+	hash = hash_murmur3_one_32(arguments.size(), hash);
+
+	if (has_return) {
+		hash = hash_murmur3_one_32(return_val.type, hash);
+		if (return_val.class_name != StringName()) {
+			hash = hash_murmur3_one_32(return_val.class_name.hash(), hash);
+		}
+	}
+
+	for (const PropertyInfo &arg : arguments) {
+		hash = hash_murmur3_one_32(arg.type, hash);
+		if (arg.class_name != StringName()) {
+			hash = hash_murmur3_one_32(arg.class_name.hash(), hash);
+		}
+	}
+
+	hash = hash_murmur3_one_32(default_arguments.size(), hash);
+	for (const Variant &v : default_arguments) {
+		hash = hash_murmur3_one_32(v.hash(), hash);
+	}
+
+	hash = hash_murmur3_one_32(flags & METHOD_FLAG_CONST ? 1 : 0, hash);
+	hash = hash_murmur3_one_32(flags & METHOD_FLAG_VARARG ? 1 : 0, hash);
+
+	return hash_fmix32(hash);
 }
 
 Object::Connection::operator Variant() const {
@@ -521,7 +560,13 @@ void Object::get_property_list(List<PropertyInfo> *p_list, bool p_reversed) cons
 		PropertyInfo pi = PropertyInfo(K.value.get_type(), "metadata/" + K.key.operator String());
 		if (K.value.get_type() == Variant::OBJECT) {
 			pi.hint = PROPERTY_HINT_RESOURCE_TYPE;
-			pi.hint_string = "Resource";
+			Object *obj = K.value;
+			if (Object::cast_to<Script>(obj)) {
+				pi.hint_string = "Script";
+				pi.usage |= PROPERTY_USAGE_NEVER_DUPLICATE;
+			} else {
+				pi.hint_string = "Resource";
+			}
 		}
 		p_list->push_back(pi);
 	}
@@ -940,7 +985,7 @@ void Object::set_script(const Variant &p_script) {
 		script_instance = nullptr;
 	}
 
-	if (!s.is_null()) {
+	if (s.is_valid()) {
 		if (s->can_instantiate()) {
 			OBJ_DEBUG_LOCK
 			script_instance = s->instance_create(this);
@@ -1579,7 +1624,7 @@ void Object::_clear_internal_resource_paths(const Variant &p_var) {
 	switch (p_var.get_type()) {
 		case Variant::OBJECT: {
 			Ref<Resource> r = p_var;
-			if (!r.is_valid()) {
+			if (r.is_null()) {
 				return;
 			}
 
@@ -1604,12 +1649,10 @@ void Object::_clear_internal_resource_paths(const Variant &p_var) {
 		} break;
 		case Variant::DICTIONARY: {
 			Dictionary d = p_var;
-			List<Variant> keys;
-			d.get_key_list(&keys);
 
-			for (const Variant &E : keys) {
-				_clear_internal_resource_paths(E);
-				_clear_internal_resource_paths(d[E]);
+			for (const KeyValue<Variant, Variant> &kv : d) {
+				_clear_internal_resource_paths(kv.key);
+				_clear_internal_resource_paths(kv.value);
 			}
 		} break;
 		default: {
@@ -1618,8 +1661,11 @@ void Object::_clear_internal_resource_paths(const Variant &p_var) {
 }
 
 #ifdef TOOLS_ENABLED
-void Object::editor_set_section_unfold(const String &p_section, bool p_unfolded) {
-	set_edited(true);
+void Object::editor_set_section_unfold(const String &p_section, bool p_unfolded, bool p_initializing) {
+	if (!p_initializing) {
+		set_edited(true);
+	}
+
 	if (p_unfolded) {
 		editor_section_folding.insert(p_section);
 	} else {

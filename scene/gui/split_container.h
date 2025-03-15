@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef SPLIT_CONTAINER_H
-#define SPLIT_CONTAINER_H
+#pragma once
 
 #include "scene/gui/container.h"
 
@@ -92,7 +91,7 @@ private:
 	void _compute_split_offset(bool p_clamp);
 	int _get_separation() const;
 	void _resort();
-	Control *_get_sortable_child(int p_idx, SortableVisbilityMode p_visibility_mode = SortableVisbilityMode::VISIBLE_IN_TREE) const;
+	Control *_get_sortable_child(int p_idx, SortableVisibilityMode p_visibility_mode = SortableVisibilityMode::VISIBLE_IN_TREE) const;
 
 protected:
 	bool is_fixed = false;
@@ -157,5 +156,3 @@ public:
 	VSplitContainer() :
 			SplitContainer(true) { is_fixed = true; }
 };
-
-#endif // SPLIT_CONTAINER_H

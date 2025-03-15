@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TEST_JSON_H
-#define TEST_JSON_H
+#pragma once
 
 #include "core/io/json.h"
 
@@ -166,8 +165,8 @@ TEST_CASE("[JSON] Parsing escape sequences") {
 	SUBCASE("Basic valid escape sequences") {
 		for (int i = 0; i < valid_escapes.size(); i++) {
 			String valid_escape = valid_escapes[i];
-			String valid_escape_string = valid_escape.get_slice(";", 0);
-			String valid_escape_value = valid_escape.get_slice(";", 1);
+			String valid_escape_string = valid_escape.get_slicec(';', 0);
+			String valid_escape_value = valid_escape.get_slicec(';', 1);
 
 			String json_string = "\"\\";
 			json_string += valid_escape_string;
@@ -205,7 +204,7 @@ TEST_CASE("[JSON] Parsing escape sequences") {
 			bool skip = false;
 			for (int j = 0; j < valid_escapes.size(); j++) {
 				String valid_escape = valid_escapes[j];
-				String valid_escape_string = valid_escape.get_slice(";", 0);
+				String valid_escape_string = valid_escape.get_slicec(';', 0);
 				if (valid_escape_string[0] == i) {
 					skip = true;
 					break;
@@ -232,6 +231,89 @@ TEST_CASE("[JSON] Parsing escape sequences") {
 		ERR_PRINT_ON
 	}
 }
-} // namespace TestJSON
 
-#endif // TEST_JSON_H
+TEST_CASE("[JSON] Serialization") {
+	JSON json;
+
+	struct FpTestCase {
+		double number;
+		String json;
+	};
+
+	struct IntTestCase {
+		int64_t number;
+		String json;
+	};
+
+	struct UIntTestCase {
+		uint64_t number;
+		String json;
+	};
+
+	static FpTestCase fp_tests_default_precision[] = {
+		{ 0.0, "0.0" },
+		{ 1000.1234567890123456789, "1000.12345678901" },
+		{ -1000.1234567890123456789, "-1000.12345678901" },
+		{ DBL_MAX, "179769313486231570814527423731704356798070567525844996598917476803157260780028538760589558632766878171540458953514382464234321326889464182768467546703537516986049910576551282076245490090389328944075868508455133942304583236903222948165808559332123348274797826204144723168738177180919299881250404026184124858368.0" },
+		{ DBL_MAX - 1, "179769313486231570814527423731704356798070567525844996598917476803157260780028538760589558632766878171540458953514382464234321326889464182768467546703537516986049910576551282076245490090389328944075868508455133942304583236903222948165808559332123348274797826204144723168738177180919299881250404026184124858368.0" },
+		{ pow(2, 53), "9007199254740992.0" },
+		{ -pow(2, 53), "-9007199254740992.0" },
+		{ 0.00000000000000011, "0.00000000000000011" },
+		{ -0.00000000000000011, "-0.00000000000000011" },
+		{ 1.0 / 3.0, "0.333333333333333" },
+		{ 0.9999999999999999, "1.0" },
+		{ 1.0000000000000001, "1.0" },
+	};
+
+	static FpTestCase fp_tests_full_precision[] = {
+		{ 0.0, "0.0" },
+		{ 1000.1234567890123456789, "1000.12345678901238" },
+		{ -1000.1234567890123456789, "-1000.12345678901238" },
+		{ DBL_MAX, "179769313486231570814527423731704356798070567525844996598917476803157260780028538760589558632766878171540458953514382464234321326889464182768467546703537516986049910576551282076245490090389328944075868508455133942304583236903222948165808559332123348274797826204144723168738177180919299881250404026184124858368.0" },
+		{ DBL_MAX - 1, "179769313486231570814527423731704356798070567525844996598917476803157260780028538760589558632766878171540458953514382464234321326889464182768467546703537516986049910576551282076245490090389328944075868508455133942304583236903222948165808559332123348274797826204144723168738177180919299881250404026184124858368.0" },
+		{ pow(2, 53), "9007199254740992.0" },
+		{ -pow(2, 53), "-9007199254740992.0" },
+		{ 0.00000000000000011, "0.00000000000000011" },
+		{ -0.00000000000000011, "-0.00000000000000011" },
+		{ 1.0 / 3.0, "0.333333333333333315" },
+		{ 0.9999999999999999, "0.999999999999999889" },
+		{ 1.0000000000000001, "1.0" },
+	};
+
+	static IntTestCase int_tests[] = {
+		{ 0, "0" },
+		{ INT64_MAX, "9223372036854775807" },
+		{ INT64_MIN, "-9223372036854775808" },
+	};
+
+	SUBCASE("Floating point default precision") {
+		for (FpTestCase &test : fp_tests_default_precision) {
+			String json_value = json.stringify(test.number, "", true, false);
+
+			CHECK_MESSAGE(
+					json_value == test.json,
+					vformat("Serializing `%.20d` to JSON should return the expected value.", test.number));
+		}
+	}
+
+	SUBCASE("Floating point full precision") {
+		for (FpTestCase &test : fp_tests_full_precision) {
+			String json_value = json.stringify(test.number, "", true, true);
+
+			CHECK_MESSAGE(
+					json_value == test.json,
+					vformat("Serializing `%20f` to JSON should return the expected value.", test.number));
+		}
+	}
+
+	SUBCASE("Signed integer") {
+		for (IntTestCase &test : int_tests) {
+			String json_value = json.stringify(test.number, "", true, true);
+
+			CHECK_MESSAGE(
+					json_value == test.json,
+					vformat("Serializing `%d` to JSON should return the expected value.", test.number));
+		}
+	}
+}
+} // namespace TestJSON

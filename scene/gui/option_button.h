@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef OPTION_BUTTON_H
-#define OPTION_BUTTON_H
+#pragma once
 
 #include "scene/gui/button.h"
 #include "scene/gui/popup_menu.h"
@@ -143,8 +142,10 @@ public:
 
 	void set_disable_shortcuts(bool p_disabled);
 
+#ifdef TOOLS_ENABLED
+	PackedStringArray get_configuration_warnings() const override;
+#endif
+
 	OptionButton(const String &p_text = String());
 	~OptionButton();
 };
-
-#endif // OPTION_BUTTON_H

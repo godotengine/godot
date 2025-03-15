@@ -6,7 +6,6 @@
 #version 450
 
 #include "CrossPlatformSettings_piece_all.glsl"
-#include "UavCrossPlatform_piece_all.glsl"
 
 layout(local_size_x = 8, //
 		local_size_y = 8, //

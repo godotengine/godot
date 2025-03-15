@@ -34,8 +34,44 @@
 #include "core/io/json.h"
 #endif // DEV_ENABLED
 #include "core/math/geometry_2d.h"
+#include "scene/resources/3d/navigation_mesh_source_geometry_data_3d.h"
+#include "scene/resources/navigation_mesh.h"
+#include "servers/navigation_server_3d.h"
 
 #include <manifold/manifold.h>
+
+Callable CSGShape3D::_navmesh_source_geometry_parsing_callback;
+RID CSGShape3D::_navmesh_source_geometry_parser;
+
+void CSGShape3D::navmesh_parse_init() {
+	ERR_FAIL_NULL(NavigationServer3D::get_singleton());
+	if (!_navmesh_source_geometry_parser.is_valid()) {
+		_navmesh_source_geometry_parsing_callback = callable_mp_static(&CSGShape3D::navmesh_parse_source_geometry);
+		_navmesh_source_geometry_parser = NavigationServer3D::get_singleton()->source_geometry_parser_create();
+		NavigationServer3D::get_singleton()->source_geometry_parser_set_callback(_navmesh_source_geometry_parser, _navmesh_source_geometry_parsing_callback);
+	}
+}
+
+void CSGShape3D::navmesh_parse_source_geometry(const Ref<NavigationMesh> &p_navigation_mesh, Ref<NavigationMeshSourceGeometryData3D> p_source_geometry_data, Node *p_node) {
+	CSGShape3D *csgshape3d = Object::cast_to<CSGShape3D>(p_node);
+
+	if (csgshape3d == nullptr) {
+		return;
+	}
+
+	NavigationMesh::ParsedGeometryType parsed_geometry_type = p_navigation_mesh->get_parsed_geometry_type();
+	uint32_t parsed_collision_mask = p_navigation_mesh->get_collision_mask();
+
+	if (parsed_geometry_type == NavigationMesh::PARSED_GEOMETRY_MESH_INSTANCES || (parsed_geometry_type == NavigationMesh::PARSED_GEOMETRY_STATIC_COLLIDERS && csgshape3d->is_using_collision() && (csgshape3d->get_collision_layer() & parsed_collision_mask)) || parsed_geometry_type == NavigationMesh::PARSED_GEOMETRY_BOTH) {
+		Array meshes = csgshape3d->get_meshes();
+		if (!meshes.is_empty()) {
+			Ref<Mesh> mesh = meshes[1];
+			if (mesh.is_valid()) {
+				p_source_geometry_data->add_mesh(mesh, csgshape3d->get_global_transform());
+			}
+		}
+	}
+}
 
 void CSGShape3D::set_use_collision(bool p_enable) {
 	if (use_collision == p_enable) {
@@ -128,6 +164,16 @@ bool CSGShape3D::get_collision_mask_value(int p_layer_number) const {
 	ERR_FAIL_COND_V_MSG(p_layer_number < 1, false, "Collision layer number must be between 1 and 32 inclusive.");
 	ERR_FAIL_COND_V_MSG(p_layer_number > 32, false, "Collision layer number must be between 1 and 32 inclusive.");
 	return get_collision_mask() & (1 << (p_layer_number - 1));
+}
+
+RID CSGShape3D::_get_root_collision_instance() const {
+	if (root_collision_instance.is_valid()) {
+		return root_collision_instance;
+	} else if (parent_shape) {
+		return parent_shape->_get_root_collision_instance();
+	}
+
+	return RID();
 }
 
 void CSGShape3D::set_collision_priority(real_t p_priority) {
@@ -235,38 +281,6 @@ static void _unpack_manifold(
 	}
 
 	r_mesh_merge->_regen_face_aabbs();
-}
-
-// Errors matching `thirdparty/manifold/include/manifold/manifold.h`.
-static String manifold_error_to_string(const manifold::Manifold::Error &p_error) {
-	switch (p_error) {
-		case manifold::Manifold::Error::NoError:
-			return "No Error";
-		case manifold::Manifold::Error::NonFiniteVertex:
-			return "Non Finite Vertex";
-		case manifold::Manifold::Error::NotManifold:
-			return "Not Manifold";
-		case manifold::Manifold::Error::VertexOutOfBounds:
-			return "Vertex Out Of Bounds";
-		case manifold::Manifold::Error::PropertiesWrongLength:
-			return "Properties Wrong Length";
-		case manifold::Manifold::Error::MissingPositionProperties:
-			return "Missing Position Properties";
-		case manifold::Manifold::Error::MergeVectorsDifferentLengths:
-			return "Merge Vectors Different Lengths";
-		case manifold::Manifold::Error::MergeIndexOutOfBounds:
-			return "Merge Index Out Of Bounds";
-		case manifold::Manifold::Error::TransformWrongLength:
-			return "Transform Wrong Length";
-		case manifold::Manifold::Error::RunIndexWrongLength:
-			return "Run Index Wrong Length";
-		case manifold::Manifold::Error::FaceIDWrongLength:
-			return "Face ID Wrong Length";
-		case manifold::Manifold::Error::InvalidConstruction:
-			return "Invalid Construction";
-		default:
-			return "Unknown Error";
-	}
 }
 
 #ifdef DEV_ENABLED
@@ -400,16 +414,6 @@ static void _pack_manifold(
 	print_verbose(_export_meshgl_as_json(mesh));
 #endif // DEV_ENABLED
 	r_manifold = manifold::Manifold(mesh);
-	manifold::Manifold::Error error = r_manifold.Status();
-	if (error == manifold::Manifold::Error::NoError) {
-		return;
-	}
-	if (p_csg_shape->get_owner()) {
-		NodePath path = p_csg_shape->get_owner()->get_path_to(p_csg_shape, true);
-		print_error(vformat("CSGShape3D manifold creation from mesh failed at %s: %s.", path, manifold_error_to_string(error)));
-	} else {
-		print_error(vformat("CSGShape3D manifold creation from mesh failed at .: %s.", manifold_error_to_string(error)));
-	}
 }
 
 struct ManifoldOperation {
@@ -488,6 +492,7 @@ CSGBrush *CSGShape3D::_get_brush() {
 	node_aabb = aabb;
 	brush = n;
 	dirty = false;
+	update_configuration_warnings();
 	return brush;
 }
 
@@ -766,7 +771,7 @@ bool CSGShape3D::_is_debug_collision_shape_visible() {
 }
 
 void CSGShape3D::_update_debug_collision_shape() {
-	if (!use_collision || !is_root_shape() || !root_collision_shape.is_valid() || !_is_debug_collision_shape_visible()) {
+	if (!use_collision || !is_root_shape() || root_collision_shape.is_null() || !_is_debug_collision_shape_visible()) {
 		return;
 	}
 
@@ -943,6 +948,26 @@ Array CSGShape3D::get_meshes() const {
 	return Array();
 }
 
+PackedStringArray CSGShape3D::get_configuration_warnings() const {
+	PackedStringArray warnings = Node::get_configuration_warnings();
+	const CSGShape3D *current_shape = this;
+	while (current_shape) {
+		if (!current_shape->brush || current_shape->brush->faces.is_empty()) {
+			warnings.push_back(RTR("The CSGShape3D has an empty shape.\nCSGShape3D empty shapes typically occur because the mesh is not manifold.\nA manifold mesh forms a solid object without gaps, holes, or loose edges.\nEach edge must be a member of exactly two faces."));
+			break;
+		}
+		current_shape = current_shape->parent_shape;
+	}
+	return warnings;
+}
+
+Ref<TriangleMesh> CSGShape3D::generate_triangle_mesh() const {
+	if (root_mesh.is_valid()) {
+		return root_mesh->generate_triangle_mesh();
+	}
+	return Ref<TriangleMesh>();
+}
+
 void CSGShape3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_update_shape"), &CSGShape3D::_update_shape);
 	ClassDB::bind_method(D_METHOD("is_root_shape"), &CSGShape3D::is_root_shape);
@@ -966,6 +991,8 @@ void CSGShape3D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_collision_mask_value", "layer_number", "value"), &CSGShape3D::set_collision_mask_value);
 	ClassDB::bind_method(D_METHOD("get_collision_mask_value", "layer_number"), &CSGShape3D::get_collision_mask_value);
+
+	ClassDB::bind_method(D_METHOD("_get_root_collision_instance"), &CSGShape3D::_get_root_collision_instance);
 
 	ClassDB::bind_method(D_METHOD("set_collision_layer_value", "layer_number", "value"), &CSGShape3D::set_collision_layer_value);
 	ClassDB::bind_method(D_METHOD("get_collision_layer_value", "layer_number"), &CSGShape3D::get_collision_layer_value);
@@ -1065,7 +1092,7 @@ CSGPrimitive3D::CSGPrimitive3D() {
 /////////////////////
 
 CSGBrush *CSGMesh3D::_build_brush() {
-	if (!mesh.is_valid()) {
+	if (mesh.is_null()) {
 		return memnew(CSGBrush);
 	}
 
@@ -1236,7 +1263,8 @@ void CSGMesh3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_material", "material"), &CSGMesh3D::set_material);
 	ClassDB::bind_method(D_METHOD("get_material"), &CSGMesh3D::get_material);
 
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "mesh", PROPERTY_HINT_RESOURCE_TYPE, "Mesh"), "set_mesh", "get_mesh");
+	// Hide PrimitiveMeshes that are always non-manifold and therefore can't be used as CSG meshes.
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "mesh", PROPERTY_HINT_RESOURCE_TYPE, "Mesh,-PlaneMesh,-PointMesh,-QuadMesh,-RibbonTrailMesh"), "set_mesh", "get_mesh");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "material", PROPERTY_HINT_RESOURCE_TYPE, "BaseMaterial3D,ShaderMaterial"), "set_material", "get_material");
 }
 
@@ -2218,24 +2246,35 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 				base_xform = path->get_global_transform();
 			}
 
-			Vector3 current_point = curve->sample_baked(0);
-			Vector3 next_point = curve->sample_baked(extrusion_step);
+			Vector3 current_point;
 			Vector3 current_up = Vector3(0, 1, 0);
-			Vector3 direction = next_point - current_point;
-
-			if (path_joined) {
-				Vector3 last_point = curve->sample_baked(curve->get_baked_length());
-				direction = next_point - last_point;
-			}
+			Vector3 direction;
 
 			switch (path_rotation) {
 				case PATH_ROTATION_POLYGON:
+					current_point = curve->sample_baked(0);
 					direction = Vector3(0, 0, -1);
 					break;
 				case PATH_ROTATION_PATH:
-					break;
 				case PATH_ROTATION_PATH_FOLLOW:
-					current_up = curve->sample_baked_up_vector(0, true);
+					if (!path_rotation_accurate) {
+						current_point = curve->sample_baked(0);
+						Vector3 next_point = curve->sample_baked(extrusion_step);
+						direction = next_point - current_point;
+
+						if (path_joined) {
+							Vector3 last_point = curve->sample_baked(curve->get_baked_length());
+							direction = next_point - last_point;
+						}
+					} else {
+						Transform3D current_sample_xform = curve->sample_baked_with_rotation(0);
+						current_point = current_sample_xform.get_origin();
+						direction = current_sample_xform.get_basis().xform(Vector3(0, 0, -1));
+					}
+
+					if (path_rotation == PATH_ROTATION_PATH_FOLLOW) {
+						current_up = curve->sample_baked_up_vector(0, true);
+					}
 					break;
 			}
 
@@ -2282,37 +2321,35 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 					current_xform.translate_local(Vector3(0, 0, -depth));
 				} break;
 				case MODE_SPIN: {
-					current_xform.rotate(Vector3(0, 1, 0), spin_step);
+					if (end_count == 0 && x0 == extrusions - 1) {
+						current_xform = base_xform;
+					} else {
+						current_xform.rotate(Vector3(0, 1, 0), spin_step);
+					}
 				} break;
 				case MODE_PATH: {
 					double previous_offset = x0 * extrusion_step;
 					double current_offset = (x0 + 1) * extrusion_step;
-					double next_offset = (x0 + 2) * extrusion_step;
-					if (x0 == extrusions - 1) {
-						if (path_joined) {
-							current_offset = 0;
-							next_offset = extrusion_step;
-						} else {
-							next_offset = current_offset;
-						}
+					if (path_joined && x0 == extrusions - 1) {
+						current_offset = 0;
 					}
 
 					Vector3 previous_point = curve->sample_baked(previous_offset);
-					Vector3 current_point = curve->sample_baked(current_offset);
-					Vector3 next_point = curve->sample_baked(next_offset);
+					Transform3D current_sample_xform = curve->sample_baked_with_rotation(current_offset);
+					Vector3 current_point = current_sample_xform.get_origin();
 					Vector3 current_up = Vector3(0, 1, 0);
-					Vector3 direction = next_point - previous_point;
-					Vector3 current_dir = (current_point - previous_point).normalized();
+					Vector3 current_extrusion_dir = (current_point - previous_point).normalized();
+					Vector3 direction;
 
 					// If the angles are similar, remove the previous face and replace it with this one.
-					if (path_simplify_angle > 0.0 && x0 > 0 && previous_simplify_dir.dot(current_dir) > angle_simplify_dot) {
+					if (path_simplify_angle > 0.0 && x0 > 0 && previous_simplify_dir.dot(current_extrusion_dir) > angle_simplify_dot) {
 						faces_combined += 1;
 						previous_xform = previous_previous_xform;
 						face -= extrusion_face_count;
 						faces_removed += extrusion_face_count;
 					} else {
 						faces_combined = 0;
-						previous_simplify_dir = current_dir;
+						previous_simplify_dir = current_extrusion_dir;
 					}
 
 					switch (path_rotation) {
@@ -2320,9 +2357,21 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 							direction = Vector3(0, 0, -1);
 							break;
 						case PATH_ROTATION_PATH:
-							break;
 						case PATH_ROTATION_PATH_FOLLOW:
-							current_up = curve->sample_baked_up_vector(current_offset, true);
+							if (!path_rotation_accurate) {
+								double next_offset = (x0 + 2) * extrusion_step;
+								if (x0 == extrusions - 1) {
+									next_offset = path_joined ? extrusion_step : current_offset;
+								}
+								Vector3 next_point = curve->sample_baked(next_offset);
+								direction = next_point - previous_point;
+							} else {
+								direction = current_sample_xform.get_basis().xform(Vector3(0, 0, -1));
+							}
+
+							if (path_rotation == PATH_ROTATION_PATH_FOLLOW) {
+								current_up = curve->sample_baked_up_vector(current_offset, true);
+							}
 							break;
 					}
 
@@ -2492,6 +2541,9 @@ void CSGPolygon3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_path_rotation", "path_rotation"), &CSGPolygon3D::set_path_rotation);
 	ClassDB::bind_method(D_METHOD("get_path_rotation"), &CSGPolygon3D::get_path_rotation);
 
+	ClassDB::bind_method(D_METHOD("set_path_rotation_accurate", "enable"), &CSGPolygon3D::set_path_rotation_accurate);
+	ClassDB::bind_method(D_METHOD("get_path_rotation_accurate"), &CSGPolygon3D::get_path_rotation_accurate);
+
 	ClassDB::bind_method(D_METHOD("set_path_local", "enable"), &CSGPolygon3D::set_path_local);
 	ClassDB::bind_method(D_METHOD("is_path_local"), &CSGPolygon3D::is_path_local);
 
@@ -2523,6 +2575,7 @@ void CSGPolygon3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "path_interval", PROPERTY_HINT_RANGE, "0.01,1.0,0.01,exp,or_greater"), "set_path_interval", "get_path_interval");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "path_simplify_angle", PROPERTY_HINT_RANGE, "0.0,180.0,0.1"), "set_path_simplify_angle", "get_path_simplify_angle");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "path_rotation", PROPERTY_HINT_ENUM, "Polygon,Path,PathFollow"), "set_path_rotation", "get_path_rotation");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "path_rotation_accurate"), "set_path_rotation_accurate", "get_path_rotation_accurate");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "path_local"), "set_path_local", "is_path_local");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "path_continuous_u"), "set_path_continuous_u", "is_path_continuous_u");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "path_u_distance", PROPERTY_HINT_RANGE, "0.0,10.0,0.01,or_greater,suffix:m"), "set_path_u_distance", "get_path_u_distance");
@@ -2665,6 +2718,16 @@ CSGPolygon3D::PathRotation CSGPolygon3D::get_path_rotation() const {
 	return path_rotation;
 }
 
+void CSGPolygon3D::set_path_rotation_accurate(bool p_enabled) {
+	path_rotation_accurate = p_enabled;
+	_make_dirty();
+	update_gizmos();
+}
+
+bool CSGPolygon3D::get_path_rotation_accurate() const {
+	return path_rotation_accurate;
+}
+
 void CSGPolygon3D::set_path_local(bool p_enable) {
 	path_local = p_enable;
 	_make_dirty();
@@ -2726,6 +2789,7 @@ CSGPolygon3D::CSGPolygon3D() {
 	path_interval = 1.0;
 	path_simplify_angle = 0.0;
 	path_rotation = PATH_ROTATION_PATH_FOLLOW;
+	path_rotation_accurate = false;
 	path_local = false;
 	path_continuous_u = true;
 	path_u_distance = 1.0;

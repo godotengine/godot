@@ -32,6 +32,7 @@
 
 #include "../joints/jolt_joint_3d.h"
 #include "../jolt_project_settings.h"
+#include "../misc/jolt_math_funcs.h"
 #include "../misc/jolt_type_conversions.h"
 #include "../shapes/jolt_shape_3d.h"
 #include "../spaces/jolt_broad_phase_layer.h"
@@ -114,7 +115,7 @@ JPH::EMotionType JoltBody3D::_get_motion_type() const {
 }
 
 void JoltBody3D::_add_to_space() {
-	jolt_shape = build_shape();
+	jolt_shape = build_shapes(true);
 
 	JPH::CollisionGroup::GroupID group_id = 0;
 	JPH::CollisionGroup::SubGroupID sub_group_id = 0;
@@ -128,12 +129,13 @@ void JoltBody3D::_add_to_space() {
 	jolt_settings->mAllowDynamicOrKinematic = true;
 	jolt_settings->mCollideKinematicVsNonDynamic = reports_all_kinematic_contacts();
 	jolt_settings->mUseManifoldReduction = !reports_contacts();
+	jolt_settings->mAllowSleeping = is_sleep_actually_allowed();
 	jolt_settings->mLinearDamping = 0.0f;
 	jolt_settings->mAngularDamping = 0.0f;
-	jolt_settings->mMaxLinearVelocity = JoltProjectSettings::get_max_linear_velocity();
-	jolt_settings->mMaxAngularVelocity = JoltProjectSettings::get_max_angular_velocity();
+	jolt_settings->mMaxLinearVelocity = JoltProjectSettings::max_linear_velocity;
+	jolt_settings->mMaxAngularVelocity = JoltProjectSettings::max_angular_velocity;
 
-	if (JoltProjectSettings::use_enhanced_internal_edge_removal_for_bodies()) {
+	if (JoltProjectSettings::use_enhanced_internal_edge_removal_for_bodies) {
 		jolt_settings->mEnhancedInternalEdgeRemoval = true;
 	}
 
@@ -153,11 +155,19 @@ void JoltBody3D::_add_to_space() {
 	jolt_settings = nullptr;
 }
 
-void JoltBody3D::_integrate_forces(float p_step, JPH::Body &p_jolt_body) {
-	if (!p_jolt_body.IsActive()) {
-		return;
+void JoltBody3D::_enqueue_call_queries() {
+	if (space != nullptr) {
+		space->enqueue_call_queries(&call_queries_element);
 	}
+}
 
+void JoltBody3D::_dequeue_call_queries() {
+	if (space != nullptr) {
+		space->dequeue_call_queries(&call_queries_element);
+	}
+}
+
+void JoltBody3D::_integrate_forces(float p_step, JPH::Body &p_jolt_body) {
 	_update_gravity(p_jolt_body);
 
 	if (!custom_integrator) {
@@ -182,8 +192,6 @@ void JoltBody3D::_integrate_forces(float p_step, JPH::Body &p_jolt_body) {
 		p_jolt_body.AddForce(to_jolt(constant_force));
 		p_jolt_body.AddTorque(to_jolt(constant_torque));
 	}
-
-	sync_state = true;
 }
 
 void JoltBody3D::_move_kinematic(float p_step, JPH::Body &p_jolt_body) {
@@ -201,28 +209,6 @@ void JoltBody3D::_move_kinematic(float p_step, JPH::Body &p_jolt_body) {
 	}
 
 	p_jolt_body.MoveKinematic(new_position, new_rotation, p_step);
-
-	sync_state = true;
-}
-
-void JoltBody3D::_pre_step_static(float p_step, JPH::Body &p_jolt_body) {
-	// Nothing to do.
-}
-
-void JoltBody3D::_pre_step_rigid(float p_step, JPH::Body &p_jolt_body) {
-	_integrate_forces(p_step, p_jolt_body);
-}
-
-void JoltBody3D::_pre_step_kinematic(float p_step, JPH::Body &p_jolt_body) {
-	_update_gravity(p_jolt_body);
-
-	_move_kinematic(p_step, p_jolt_body);
-
-	if (reports_contacts()) {
-		// This seems to emulate the behavior of Godot Physics, where kinematic bodies are set as active (and thereby
-		// have their state synchronized on every step) only if its max reported contacts is non-zero.
-		sync_state = true;
-	}
 }
 
 JPH::EAllowedDOFs JoltBody3D::_calculate_allowed_dofs() const {
@@ -428,6 +414,20 @@ void JoltBody3D::_update_possible_kinematic_contacts() {
 	}
 }
 
+void JoltBody3D::_update_sleep_allowed() {
+	const bool value = is_sleep_actually_allowed();
+
+	if (!in_space()) {
+		jolt_settings->mAllowSleeping = value;
+		return;
+	}
+
+	const JoltWritableBody3D body = space->write_body(jolt_id);
+	ERR_FAIL_COND(body.is_invalid());
+
+	body->SetAllowSleeping(value);
+}
+
 void JoltBody3D::_destroy_joint_constraints() {
 	for (JoltJoint3D *joint : joints) {
 		joint->destroy();
@@ -460,11 +460,12 @@ void JoltBody3D::_mode_changed() {
 	_update_object_layer();
 	_update_kinematic_transform();
 	_update_mass_properties();
+	_update_sleep_allowed();
 	wake_up();
 }
 
-void JoltBody3D::_shapes_built() {
-	JoltShapedObject3D::_shapes_built();
+void JoltBody3D::_shapes_committed() {
+	JoltShapedObject3D::_shapes_committed();
 
 	_update_mass_properties();
 	_update_joint_constraints();
@@ -478,6 +479,7 @@ void JoltBody3D::_space_changing() {
 
 	_destroy_joint_constraints();
 	_exit_all_areas();
+	_dequeue_call_queries();
 }
 
 void JoltBody3D::_space_changed() {
@@ -486,9 +488,8 @@ void JoltBody3D::_space_changed() {
 	_update_kinematic_transform();
 	_update_group_filter();
 	_update_joint_constraints();
+	_update_sleep_allowed();
 	_areas_changed();
-
-	sync_state = false;
 }
 
 void JoltBody3D::_areas_changed() {
@@ -519,11 +520,18 @@ void JoltBody3D::_axis_lock_changed() {
 
 void JoltBody3D::_contact_reporting_changed() {
 	_update_possible_kinematic_contacts();
+	_update_sleep_allowed();
+	wake_up();
+}
+
+void JoltBody3D::_sleep_allowed_changed() {
+	_update_sleep_allowed();
 	wake_up();
 }
 
 JoltBody3D::JoltBody3D() :
-		JoltShapedObject3D(OBJECT_TYPE_BODY) {
+		JoltShapedObject3D(OBJECT_TYPE_BODY),
+		call_queries_element(this) {
 }
 
 JoltBody3D::~JoltBody3D() {
@@ -536,15 +544,14 @@ JoltBody3D::~JoltBody3D() {
 void JoltBody3D::set_transform(Transform3D p_transform) {
 	JOLT_ENSURE_SCALE_NOT_ZERO(p_transform, vformat("An invalid transform was passed to physics body '%s'.", to_string()));
 
-	const Vector3 new_scale = p_transform.basis.get_scale();
+	Vector3 new_scale;
+	JoltMath::decompose(p_transform, new_scale);
 
 	// Ideally we would do an exact comparison here, but due to floating-point precision this would be invalidated very often.
 	if (!scale.is_equal_approx(new_scale)) {
 		scale = new_scale;
 		_shapes_changed();
 	}
-
-	p_transform.basis.orthonormalize();
 
 	if (!in_space()) {
 		jolt_settings->mPosition = to_jolt_r(p_transform.origin);
@@ -573,7 +580,7 @@ Variant JoltBody3D::get_state(PhysicsServer3D::BodyState p_state) const {
 			return is_sleeping();
 		}
 		case PhysicsServer3D::BODY_STATE_CAN_SLEEP: {
-			return can_sleep();
+			return is_sleep_allowed();
 		}
 		default: {
 			ERR_FAIL_V_MSG(Variant(), vformat("Unhandled body state: '%d'. This should not happen. Please report this.", p_state));
@@ -596,7 +603,7 @@ void JoltBody3D::set_state(PhysicsServer3D::BodyState p_state, const Variant &p_
 			set_is_sleeping(p_value);
 		} break;
 		case PhysicsServer3D::BODY_STATE_CAN_SLEEP: {
-			set_can_sleep(p_value);
+			set_is_sleep_allowed(p_value);
 		} break;
 		default: {
 			ERR_FAIL_MSG(vformat("Unhandled body state: '%d'. This should not happen. Please report this.", p_state));
@@ -712,6 +719,10 @@ bool JoltBody3D::is_sleeping() const {
 	return !body->IsActive();
 }
 
+bool JoltBody3D::is_sleep_actually_allowed() const {
+	return sleep_allowed && !(is_kinematic() && reports_contacts());
+}
+
 void JoltBody3D::set_is_sleeping(bool p_enabled) {
 	if (!in_space()) {
 		sleep_initially = p_enabled;
@@ -727,27 +738,14 @@ void JoltBody3D::set_is_sleeping(bool p_enabled) {
 	}
 }
 
-bool JoltBody3D::can_sleep() const {
-	if (!in_space()) {
-		return jolt_settings->mAllowSleeping;
-	}
-
-	const JoltReadableBody3D body = space->read_body(jolt_id);
-	ERR_FAIL_COND_V(body.is_invalid(), false);
-
-	return body->GetAllowSleeping();
-}
-
-void JoltBody3D::set_can_sleep(bool p_enabled) {
-	if (!in_space()) {
-		jolt_settings->mAllowSleeping = p_enabled;
+void JoltBody3D::set_is_sleep_allowed(bool p_enabled) {
+	if (sleep_allowed == p_enabled) {
 		return;
 	}
 
-	const JoltWritableBody3D body = space->write_body(jolt_id);
-	ERR_FAIL_COND(body.is_invalid());
+	sleep_allowed = p_enabled;
 
-	body->SetAllowSleeping(p_enabled);
+	_sleep_allowed_changed();
 }
 
 Basis JoltBody3D::get_principal_inertia_axes() const {
@@ -908,7 +906,7 @@ void JoltBody3D::set_max_contacts_reported(int p_count) {
 }
 
 bool JoltBody3D::reports_all_kinematic_contacts() const {
-	return reports_contacts() && JoltProjectSettings::should_generate_all_kinematic_contacts();
+	return reports_contacts() && JoltProjectSettings::generate_all_kinematic_contacts;
 }
 
 void JoltBody3D::add_contact(const JoltBody3D *p_collider, float p_depth, int p_shape_index, int p_collider_shape_index, const Vector3 &p_normal, const Vector3 &p_position, const Vector3 &p_collider_position, const Vector3 &p_velocity, const Vector3 &p_collider_velocity, const Vector3 &p_impulse) {
@@ -1187,11 +1185,7 @@ void JoltBody3D::remove_joint(JoltJoint3D *p_joint) {
 	_joints_changed();
 }
 
-void JoltBody3D::call_queries(JPH::Body &p_jolt_body) {
-	if (!sync_state) {
-		return;
-	}
-
+void JoltBody3D::call_queries() {
 	if (custom_integration_callback.is_valid()) {
 		const Variant direct_state_variant = get_direct_state();
 		const Variant *args[2] = { &direct_state_variant, &custom_integration_userdata };
@@ -1218,8 +1212,6 @@ void JoltBody3D::call_queries(JPH::Body &p_jolt_body) {
 			ERR_PRINT_ONCE(vformat("Failed to call state synchronization callback for '%s'. It returned the following error: '%s'.", to_string(), Variant::get_callable_error_text(state_sync_callback, args, 1, ce)));
 		}
 	}
-
-	sync_state = false;
 }
 
 void JoltBody3D::pre_step(float p_step, JPH::Body &p_jolt_body) {
@@ -1227,15 +1219,20 @@ void JoltBody3D::pre_step(float p_step, JPH::Body &p_jolt_body) {
 
 	switch (mode) {
 		case PhysicsServer3D::BODY_MODE_STATIC: {
-			_pre_step_static(p_step, p_jolt_body);
+			// Will never happen.
 		} break;
 		case PhysicsServer3D::BODY_MODE_RIGID:
 		case PhysicsServer3D::BODY_MODE_RIGID_LINEAR: {
-			_pre_step_rigid(p_step, p_jolt_body);
+			_integrate_forces(p_step, p_jolt_body);
 		} break;
 		case PhysicsServer3D::BODY_MODE_KINEMATIC: {
-			_pre_step_kinematic(p_step, p_jolt_body);
+			_update_gravity(p_jolt_body);
+			_move_kinematic(p_step, p_jolt_body);
 		} break;
+	}
+
+	if (_should_call_queries()) {
+		_enqueue_call_queries();
 	}
 
 	contact_count = 0;
@@ -1400,6 +1397,26 @@ void JoltBody3D::set_angular_damp(float p_damp) {
 	}
 
 	angular_damp = p_damp;
+
+	_update_damp();
+}
+
+void JoltBody3D::set_linear_damp_mode(DampMode p_mode) {
+	if (p_mode == linear_damp_mode) {
+		return;
+	}
+
+	linear_damp_mode = p_mode;
+
+	_update_damp();
+}
+
+void JoltBody3D::set_angular_damp_mode(DampMode p_mode) {
+	if (p_mode == angular_damp_mode) {
+		return;
+	}
+
+	angular_damp_mode = p_mode;
 
 	_update_damp();
 }

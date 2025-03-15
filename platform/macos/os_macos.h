@@ -28,20 +28,19 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef OS_MACOS_H
-#define OS_MACOS_H
+#pragma once
 
 #include "crash_handler_macos.h"
-#import "joypad_macos.h"
 
 #include "core/input/input.h"
+#import "drivers/apple/joypad_apple.h"
 #import "drivers/coreaudio/audio_driver_coreaudio.h"
 #import "drivers/coremidi/midi_driver_coremidi.h"
 #include "drivers/unix/os_unix.h"
 #include "servers/audio_server.h"
 
 class OS_MacOS : public OS_Unix {
-	JoypadMacOS *joypad_macos = nullptr;
+	JoypadApple *joypad_apple = nullptr;
 
 #ifdef COREAUDIO_ENABLED
 	AudioDriverCoreAudio audio_driver;
@@ -82,6 +81,7 @@ public:
 	virtual String get_name() const override;
 	virtual String get_distribution_name() const override;
 	virtual String get_version() const override;
+	virtual String get_version_alias() const override;
 
 	virtual void alert(const String &p_alert, const String &p_title = "ALERT!") override;
 
@@ -136,5 +136,3 @@ public:
 	OS_MacOS();
 	~OS_MacOS();
 };
-
-#endif // OS_MACOS_H

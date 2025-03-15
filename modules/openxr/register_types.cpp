@@ -63,6 +63,7 @@
 #include "extensions/openxr_ml2_controller_extension.h"
 #include "extensions/openxr_mxink_extension.h"
 #include "extensions/openxr_palm_pose_extension.h"
+#include "extensions/openxr_performance_settings_extension.h"
 #include "extensions/openxr_pico_controller_extension.h"
 #include "extensions/openxr_valve_analog_threshold_extension.h"
 #include "extensions/openxr_visibility_mask_extension.h"
@@ -139,6 +140,7 @@ void initialize_openxr_module(ModuleInitializationLevel p_level) {
 			OpenXRAPI::register_extension_wrapper(memnew(OpenXRHandInteractionExtension));
 			OpenXRAPI::register_extension_wrapper(memnew(OpenXRMxInkExtension));
 			OpenXRAPI::register_extension_wrapper(memnew(OpenXRVisibilityMaskExtension));
+			OpenXRAPI::register_extension_wrapper(memnew(OpenXRPerformanceSettingsExtension));
 
 			// register gated extensions
 			if (int(GLOBAL_GET("xr/openxr/extensions/debug_utils")) > 0) {
@@ -223,15 +225,17 @@ void initialize_openxr_module(ModuleInitializationLevel p_level) {
 				openxr_interface->initialize();
 			}
 		}
+	}
 
 #ifdef TOOLS_ENABLED
+	if (p_level == MODULE_INITIALIZATION_LEVEL_EDITOR) {
 		GDREGISTER_ABSTRACT_CLASS(OpenXRInteractionProfileEditorBase);
 		GDREGISTER_CLASS(OpenXRInteractionProfileEditor);
 		GDREGISTER_CLASS(OpenXRBindingModifierEditor);
 
 		EditorNode::add_init_callback(_editor_init);
-#endif
 	}
+#endif
 }
 
 void uninitialize_openxr_module(ModuleInitializationLevel p_level) {

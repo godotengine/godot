@@ -32,8 +32,6 @@
 #include "font.compat.inc"
 
 #include "core/io/image_loader.h"
-#include "core/io/resource_loader.h"
-#include "core/string/translation.h"
 #include "core/templates/hash_map.h"
 #include "core/templates/hashfuncs.h"
 #include "scene/resources/image_texture.h"
@@ -212,9 +210,10 @@ real_t Font::get_height(int p_font_size) const {
 	if (dirty_rids) {
 		_update_rids();
 	}
+
 	real_t ret = 0.f;
 	for (int i = 0; i < rids.size(); i++) {
-		ret = MAX(ret, TS->font_get_ascent(rids[i], p_font_size) + TS->font_get_descent(rids[i], p_font_size));
+		ret = MAX(ret, TS->font_get_ascent(rids.get(i), p_font_size) + TS->font_get_descent(rids.get(i), p_font_size));
 	}
 	return ret + get_spacing(TextServer::SPACING_BOTTOM) + get_spacing(TextServer::SPACING_TOP);
 }
@@ -225,7 +224,7 @@ real_t Font::get_ascent(int p_font_size) const {
 	}
 	real_t ret = 0.f;
 	for (int i = 0; i < rids.size(); i++) {
-		ret = MAX(ret, TS->font_get_ascent(rids[i], p_font_size));
+		ret = MAX(ret, TS->font_get_ascent(rids.get(i), p_font_size));
 	}
 	return ret + get_spacing(TextServer::SPACING_TOP);
 }
@@ -236,7 +235,7 @@ real_t Font::get_descent(int p_font_size) const {
 	}
 	real_t ret = 0.f;
 	for (int i = 0; i < rids.size(); i++) {
-		ret = MAX(ret, TS->font_get_descent(rids[i], p_font_size));
+		ret = MAX(ret, TS->font_get_descent(rids.get(i), p_font_size));
 	}
 	return ret + get_spacing(TextServer::SPACING_BOTTOM);
 }
@@ -247,7 +246,7 @@ real_t Font::get_underline_position(int p_font_size) const {
 	}
 	real_t ret = 0.f;
 	for (int i = 0; i < rids.size(); i++) {
-		ret = MAX(ret, TS->font_get_underline_position(rids[i], p_font_size));
+		ret = MAX(ret, TS->font_get_underline_position(rids.get(i), p_font_size));
 	}
 	return ret + get_spacing(TextServer::SPACING_TOP);
 }
@@ -258,7 +257,7 @@ real_t Font::get_underline_thickness(int p_font_size) const {
 	}
 	real_t ret = 0.f;
 	for (int i = 0; i < rids.size(); i++) {
-		ret = MAX(ret, TS->font_get_underline_thickness(rids[i], p_font_size));
+		ret = MAX(ret, TS->font_get_underline_thickness(rids.get(i), p_font_size));
 	}
 	return ret;
 }
@@ -478,9 +477,9 @@ Size2 Font::get_char_size(char32_t p_char, int p_font_size) const {
 		_update_rids();
 	}
 	for (int i = 0; i < rids.size(); i++) {
-		if (TS->font_has_char(rids[i], p_char)) {
-			int32_t glyph = TS->font_get_glyph_index(rids[i], p_font_size, p_char, 0);
-			return Size2(TS->font_get_glyph_advance(rids[i], p_font_size, glyph).x, get_height(p_font_size));
+		if (TS->font_has_char(rids.get(i), p_char)) {
+			int32_t glyph = TS->font_get_glyph_index(rids.get(i), p_font_size, p_char, 0);
+			return Size2(TS->font_get_glyph_advance(rids.get(i), p_font_size, glyph).x, get_height(p_font_size));
 		}
 	}
 	return Size2();
@@ -491,10 +490,10 @@ real_t Font::draw_char(RID p_canvas_item, const Point2 &p_pos, char32_t p_char, 
 		_update_rids();
 	}
 	for (int i = 0; i < rids.size(); i++) {
-		if (TS->font_has_char(rids[i], p_char)) {
-			int32_t glyph = TS->font_get_glyph_index(rids[i], p_font_size, p_char, 0);
-			TS->font_draw_glyph(rids[i], p_canvas_item, p_font_size, p_pos, glyph, p_modulate);
-			return TS->font_get_glyph_advance(rids[i], p_font_size, glyph).x;
+		if (TS->font_has_char(rids.get(i), p_char)) {
+			int32_t glyph = TS->font_get_glyph_index(rids.get(i), p_font_size, p_char, 0);
+			TS->font_draw_glyph(rids.get(i), p_canvas_item, p_font_size, p_pos, glyph, p_modulate);
+			return TS->font_get_glyph_advance(rids.get(i), p_font_size, glyph).x;
 		}
 	}
 	return 0.f;
@@ -505,10 +504,10 @@ real_t Font::draw_char_outline(RID p_canvas_item, const Point2 &p_pos, char32_t 
 		_update_rids();
 	}
 	for (int i = 0; i < rids.size(); i++) {
-		if (TS->font_has_char(rids[i], p_char)) {
-			int32_t glyph = TS->font_get_glyph_index(rids[i], p_font_size, p_char, 0);
-			TS->font_draw_glyph_outline(rids[i], p_canvas_item, p_font_size, p_size, p_pos, glyph, p_modulate);
-			return TS->font_get_glyph_advance(rids[i], p_font_size, glyph).x;
+		if (TS->font_has_char(rids.get(i), p_char)) {
+			int32_t glyph = TS->font_get_glyph_index(rids.get(i), p_font_size, p_char, 0);
+			TS->font_draw_glyph_outline(rids.get(i), p_canvas_item, p_font_size, p_size, p_pos, glyph, p_modulate);
+			return TS->font_get_glyph_advance(rids.get(i), p_font_size, glyph).x;
 		}
 	}
 	return 0.f;
@@ -520,7 +519,7 @@ bool Font::has_char(char32_t p_char) const {
 		_update_rids();
 	}
 	for (int i = 0; i < rids.size(); i++) {
-		if (TS->font_has_char(rids[i], p_char)) {
+		if (TS->font_has_char(rids.get(i), p_char)) {
 			return true;
 		}
 	}
@@ -533,7 +532,7 @@ String Font::get_supported_chars() const {
 	}
 	String chars;
 	for (int i = 0; i < rids.size(); i++) {
-		String data_chars = TS->font_get_supported_chars(rids[i]);
+		String data_chars = TS->font_get_supported_chars(rids.get(i));
 		for (int j = 0; j < data_chars.length(); j++) {
 			if (chars.find_char(data_chars[j]) == -1) {
 				chars += data_chars[j];
@@ -1100,7 +1099,7 @@ bool FontFile::_set(const StringName &p_name, const Variant &p_value) {
 		Array textures = p_value;
 		for (int i = 0; i < textures.size(); i++) {
 			Ref<ImageTexture> tex = textures[i];
-			ERR_CONTINUE(!tex.is_valid());
+			ERR_CONTINUE(tex.is_null());
 			set_texture_image(0, Vector2i(16, 0), i, tex->get_image());
 		}
 	} else if (tokens.size() == 1 && tokens[0] == "chars") {
@@ -3175,7 +3174,7 @@ void SystemFont::_update_base_font() {
 		base_font.unref();
 	}
 
-	face_indeces.clear();
+	face_indices.clear();
 	ftr_weight = 0;
 	ftr_stretch = 0;
 	ftr_italic = 0;
@@ -3213,17 +3212,17 @@ void SystemFont::_update_base_font() {
 				score += 30;
 			}
 			if (score > best_score) {
-				face_indeces.clear();
+				face_indices.clear();
 			}
 			if (score >= best_score) {
 				best_score = score;
-				face_indeces.push_back(i);
+				face_indices.push_back(i);
 			}
 		}
-		if (face_indeces.is_empty()) {
-			face_indeces.push_back(0);
+		if (face_indices.is_empty()) {
+			face_indices.push_back(0);
 		}
-		file->set_face_index(0, face_indeces[0]);
+		file->set_face_index(0, face_indices[0]);
 
 		// If it's a variable font, apply weight, stretch and italic coordinates to match requested style.
 		if (best_score != 150) {
@@ -3277,7 +3276,7 @@ void SystemFont::reset_state() {
 	}
 
 	names.clear();
-	face_indeces.clear();
+	face_indices.clear();
 	ftr_weight = 0;
 	ftr_stretch = 0;
 	ftr_italic = 0;
@@ -3581,9 +3580,9 @@ RID SystemFont::find_variation(const Dictionary &p_variation_coordinates, int p_
 			var[TS->name_to_tag("italic")] = ftr_italic;
 		}
 
-		if (!face_indeces.is_empty()) {
-			int face_index = CLAMP(p_face_index, 0, face_indeces.size() - 1);
-			return f->find_variation(var, face_indeces[face_index], p_strength, p_transform, p_spacing_top, p_spacing_bottom, p_spacing_space, p_spacing_glyph, p_baseline_offset);
+		if (!face_indices.is_empty()) {
+			int face_index = CLAMP(p_face_index, 0, face_indices.size() - 1);
+			return f->find_variation(var, face_indices[face_index], p_strength, p_transform, p_spacing_top, p_spacing_bottom, p_spacing_space, p_spacing_glyph, p_baseline_offset);
 		} else {
 			return f->find_variation(var, 0, p_strength, p_transform, p_spacing_top, p_spacing_bottom, p_spacing_space, p_spacing_glyph, p_baseline_offset);
 		}
@@ -3594,7 +3593,7 @@ RID SystemFont::find_variation(const Dictionary &p_variation_coordinates, int p_
 RID SystemFont::_get_rid() const {
 	Ref<Font> f = _get_base_font_or_default();
 	if (f.is_valid()) {
-		if (!face_indeces.is_empty()) {
+		if (!face_indices.is_empty()) {
 			Dictionary var;
 			if (ftr_weight > 0) {
 				var[TS->name_to_tag("weight")] = ftr_weight;
@@ -3605,7 +3604,7 @@ RID SystemFont::_get_rid() const {
 			if (ftr_italic > 0) {
 				var[TS->name_to_tag("italic")] = ftr_italic;
 			}
-			return f->find_variation(var, face_indeces[0]);
+			return f->find_variation(var, face_indices[0]);
 		} else {
 			return f->_get_rid();
 		}
@@ -3614,7 +3613,7 @@ RID SystemFont::_get_rid() const {
 }
 
 int64_t SystemFont::get_face_count() const {
-	return face_indeces.size();
+	return face_indices.size();
 }
 
 SystemFont::SystemFont() {

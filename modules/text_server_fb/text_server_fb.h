@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TEXT_SERVER_FB_H
-#define TEXT_SERVER_FB_H
+#pragma once
 
 /*************************************************************************/
 /* Fallback Text Server provides simplified TS functionality, without    */
@@ -219,6 +218,7 @@ class TextServerFallback : public TextServerExtension {
 		Rect2 rect;
 		Rect2 uv_rect;
 		Vector2 advance;
+		bool from_svg = false;
 	};
 
 	struct FontForSizeFallback {
@@ -341,7 +341,7 @@ class TextServerFallback : public TextServerExtension {
 	}
 
 	_FORCE_INLINE_ int _font_get_weight_by_name(const String &p_sty_name) const {
-		String sty_name = p_sty_name.replace(" ", "").replace("-", "");
+		String sty_name = p_sty_name.remove_chars(" -");
 		if (sty_name.contains("thin") || sty_name.contains("hairline")) {
 			return 100;
 		} else if (sty_name.contains("extralight") || sty_name.contains("ultralight")) {
@@ -368,7 +368,7 @@ class TextServerFallback : public TextServerExtension {
 		return 400;
 	}
 	_FORCE_INLINE_ int _font_get_stretch_by_name(const String &p_sty_name) const {
-		String sty_name = p_sty_name.replace(" ", "").replace("-", "");
+		String sty_name = p_sty_name.remove_chars(" -");
 		if (sty_name.contains("ultracondensed")) {
 			return 50;
 		} else if (sty_name.contains("extracondensed")) {
@@ -427,6 +427,8 @@ class TextServerFallback : public TextServerExtension {
 			Variant meta;
 		};
 		Vector<Span> spans;
+		int first_span = 0; // First span in the parent ShapedTextData.
+		int last_span = 0;
 
 		struct EmbeddedObject {
 			int start = -1;
@@ -817,6 +819,7 @@ public:
 
 	MODBIND1RC(int64_t, shaped_get_span_count, const RID &);
 	MODBIND2RC(Variant, shaped_get_span_meta, const RID &, int64_t);
+	MODBIND2RC(Variant, shaped_get_span_embedded_object, const RID &, int64_t);
 	MODBIND5(shaped_set_span_update_font, const RID &, int64_t, const TypedArray<RID> &, int64_t, const Dictionary &);
 
 	MODBIND3RC(RID, shaped_text_substr, const RID &, int64_t, int64_t);
@@ -869,5 +872,3 @@ public:
 	TextServerFallback();
 	~TextServerFallback();
 };
-
-#endif // TEXT_SERVER_FB_H

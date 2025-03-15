@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef VECTOR3I_H
-#define VECTOR3I_H
+#pragma once
 
 #include "core/error/error_macros.h"
 #include "core/math/math_funcs.h"
@@ -336,4 +335,5 @@ void Vector3i::zero() {
 	x = y = z = 0;
 }
 
-#endif // VECTOR3I_H
+template <>
+struct is_zero_constructible<Vector3i> : std::true_type {};

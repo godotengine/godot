@@ -35,8 +35,6 @@
 #include "core/os/os.h"
 #include "core/version.h"
 
-#include <stdio.h>
-
 Error PackedData::add_pack(const String &p_path, bool p_replace_files, uint64_t p_offset) {
 	for (int i = 0; i < sources.size(); i++) {
 		if (sources[i]->try_open_pack(p_path, p_replace_files, p_offset)) {
@@ -266,7 +264,7 @@ bool PackedSourcePCK::try_open_pack(const String &p_path, bool p_replace_files, 
 	f->get_32(); // patch number, not used for validation.
 
 	ERR_FAIL_COND_V_MSG(version != PACK_FORMAT_VERSION, false, vformat("Pack version unsupported: %d.", version));
-	ERR_FAIL_COND_V_MSG(ver_major > VERSION_MAJOR || (ver_major == VERSION_MAJOR && ver_minor > VERSION_MINOR), false, vformat("Pack created with a newer version of the engine: %d.%d.", ver_major, ver_minor));
+	ERR_FAIL_COND_V_MSG(ver_major > GODOT_VERSION_MAJOR || (ver_major == GODOT_VERSION_MAJOR && ver_minor > GODOT_VERSION_MINOR), false, vformat("Pack created with a newer version of the engine: %d.%d.", ver_major, ver_minor));
 
 	uint32_t pack_flags = f->get_32();
 	uint64_t file_base = f->get_64();
@@ -329,6 +327,44 @@ bool PackedSourcePCK::try_open_pack(const String &p_path, bool p_replace_files, 
 
 Ref<FileAccess> PackedSourcePCK::get_file(const String &p_path, PackedData::PackedFile *p_file) {
 	return memnew(FileAccessPack(p_path, *p_file));
+}
+
+//////////////////////////////////////////////////////////////////
+
+bool PackedSourceDirectory::try_open_pack(const String &p_path, bool p_replace_files, uint64_t p_offset) {
+	// Load with offset feature only supported for PCK files.
+	ERR_FAIL_COND_V_MSG(p_offset != 0, false, "Invalid PCK data. Note that loading files with a non-zero offset isn't supported with directories.");
+
+	if (p_path != "res://") {
+		return false;
+	}
+	add_directory(p_path, p_replace_files);
+	return true;
+}
+
+Ref<FileAccess> PackedSourceDirectory::get_file(const String &p_path, PackedData::PackedFile *p_file) {
+	Ref<FileAccess> ret = FileAccess::create_for_path(p_path);
+	ret->reopen(p_path, FileAccess::READ);
+	return ret;
+}
+
+void PackedSourceDirectory::add_directory(const String &p_path, bool p_replace_files) {
+	Ref<DirAccess> da = DirAccess::open(p_path);
+	if (da.is_null()) {
+		return;
+	}
+	da->set_include_hidden(true);
+
+	for (const String &file_name : da->get_files()) {
+		String file_path = p_path.path_join(file_name);
+		uint8_t md5[16] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+		PackedData::get_singleton()->add_path(p_path, file_path, 0, 0, md5, this, p_replace_files, false);
+	}
+
+	for (const String &sub_dir_name : da->get_directories()) {
+		String sub_dir_path = p_path.path_join(sub_dir_name);
+		add_directory(sub_dir_path, p_replace_files);
+	}
 }
 
 //////////////////////////////////////////////////////////////////

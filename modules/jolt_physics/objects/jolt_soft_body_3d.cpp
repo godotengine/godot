@@ -115,7 +115,7 @@ void JoltSoftBody3D::_add_to_space() {
 	jolt_settings->mUserData = reinterpret_cast<JPH::uint64>(this);
 	jolt_settings->mObjectLayer = _get_object_layer();
 	jolt_settings->mCollisionGroup = JPH::CollisionGroup(nullptr, group_id, sub_group_id);
-	jolt_settings->mMaxLinearVelocity = JoltProjectSettings::get_max_linear_velocity();
+	jolt_settings->mMaxLinearVelocity = JoltProjectSettings::max_linear_velocity;
 
 	const JPH::BodyID new_jolt_id = space->add_soft_body(*this, *jolt_settings);
 	if (new_jolt_id.IsInvalid()) {
@@ -148,7 +148,7 @@ bool JoltSoftBody3D::_ref_shared_data() {
 		LocalVector<int> &mesh_to_physics = iter_shared_data->value.mesh_to_physics;
 
 		JPH::SoftBodySharedSettings &settings = *iter_shared_data->value.settings;
-		settings.mVertexRadius = JoltProjectSettings::get_soft_body_point_radius();
+		settings.mVertexRadius = JoltProjectSettings::soft_body_point_radius;
 
 		JPH::Array<JPH::SoftBodySharedSettings::Vertex> &physics_vertices = settings.mVertices;
 		JPH::Array<JPH::SoftBodySharedSettings::Face> &physics_faces = settings.mFaces;
@@ -438,7 +438,7 @@ void JoltSoftBody3D::set_is_sleeping(bool p_enabled) {
 	}
 }
 
-bool JoltSoftBody3D::can_sleep() const {
+bool JoltSoftBody3D::is_sleep_allowed() const {
 	if (!in_space()) {
 		return true;
 	}
@@ -449,7 +449,7 @@ bool JoltSoftBody3D::can_sleep() const {
 	return body->GetAllowSleeping();
 }
 
-void JoltSoftBody3D::set_can_sleep(bool p_enabled) {
+void JoltSoftBody3D::set_is_sleep_allowed(bool p_enabled) {
 	if (!in_space()) {
 		return;
 	}
@@ -532,7 +532,7 @@ Variant JoltSoftBody3D::get_state(PhysicsServer3D::BodyState p_state) const {
 			return is_sleeping();
 		}
 		case PhysicsServer3D::BODY_STATE_CAN_SLEEP: {
-			return can_sleep();
+			return is_sleep_allowed();
 		}
 		default: {
 			ERR_FAIL_V_MSG(Variant(), vformat("Unhandled body state: '%d'. This should not happen. Please report this.", p_state));
@@ -555,7 +555,7 @@ void JoltSoftBody3D::set_state(PhysicsServer3D::BodyState p_state, const Variant
 			set_is_sleeping(p_value);
 		} break;
 		case PhysicsServer3D::BODY_STATE_CAN_SLEEP: {
-			set_can_sleep(p_value);
+			set_is_sleep_allowed(p_value);
 		} break;
 		default: {
 			ERR_FAIL_MSG(vformat("Unhandled body state: '%d'. This should not happen. Please report this.", p_state));
@@ -726,9 +726,4 @@ bool JoltSoftBody3D::is_vertex_pinned(int p_index) const {
 	const int physics_index = shared->mesh_to_physics[p_index];
 
 	return pinned_vertices.has(physics_index);
-}
-
-String JoltSoftBody3D::to_string() const {
-	Object *instance = get_instance();
-	return instance != nullptr ? instance->to_string() : "<unknown>";
 }

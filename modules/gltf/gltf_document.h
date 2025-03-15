@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef GLTF_DOCUMENT_H
-#define GLTF_DOCUMENT_H
+#pragma once
 
 #include "extensions/gltf_document_extension.h"
 #include "extensions/gltf_spec_gloss.h"
@@ -39,13 +38,8 @@
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/3d/multimesh_instance_3d.h"
 
-#include "modules/modules_enabled.gen.h" // For csg, gridmap.
-#ifdef MODULE_CSG_ENABLED
-#include "modules/csg/csg_shape.h"
-#endif // MODULE_CSG_ENABLED
-#ifdef MODULE_GRIDMAP_ENABLED
-#include "modules/gridmap/grid_map.h"
-#endif // MODULE_GRIDMAP_ENABLED
+class CSGShape3D;
+class GridMap;
 
 class GLTFDocument : public Resource {
 	GDCLASS(GLTFDocument, Resource);
@@ -103,7 +97,7 @@ public:
 	static String _gen_unique_name_static(HashSet<String> &r_unique_names, const String &p_name);
 
 private:
-	void _build_parent_hierachy(Ref<GLTFState> p_state);
+	void _build_parent_hierarchy(Ref<GLTFState> p_state);
 	double _filter_number(double p_float);
 	void _round_min_max_components(Vector<double> &r_type_min, Vector<double> &r_type_max);
 	String _get_component_type_name(const GLTFAccessor::GLTFComponentType p_component_type);
@@ -190,7 +184,7 @@ private:
 	Error _serialize_images(Ref<GLTFState> p_state);
 	Error _serialize_lights(Ref<GLTFState> p_state);
 	Ref<Image> _parse_image_bytes_into_image(Ref<GLTFState> p_state, const Vector<uint8_t> &p_bytes, const String &p_mime_type, int p_index, String &r_file_extension);
-	void _parse_image_save_image(Ref<GLTFState> p_state, const Vector<uint8_t> &p_bytes, const String &p_file_extension, int p_index, Ref<Image> p_image);
+	void _parse_image_save_image(Ref<GLTFState> p_state, const Vector<uint8_t> &p_bytes, const String &p_resource_uri, const String &p_file_extension, int p_index, Ref<Image> p_image);
 	Error _parse_images(Ref<GLTFState> p_state, const String &p_base_path);
 	Error _parse_textures(Ref<GLTFState> p_state);
 	Error _parse_texture_samplers(Ref<GLTFState> p_state);
@@ -340,20 +334,16 @@ public:
 			const GLTFNodeIndex p_gltf_current,
 			const GLTFNodeIndex p_gltf_root);
 
-#ifdef MODULE_CSG_ENABLED
 	void _convert_csg_shape_to_gltf(CSGShape3D *p_current, GLTFNodeIndex p_gltf_parent, Ref<GLTFNode> p_gltf_node, Ref<GLTFState> p_state);
-#endif // MODULE_CSG_ENABLED
 
 	void _check_visibility(Node *p_node, bool &r_retflag);
 	void _convert_camera_to_gltf(Camera3D *p_camera, Ref<GLTFState> p_state,
 			Ref<GLTFNode> p_gltf_node);
-#ifdef MODULE_GRIDMAP_ENABLED
 	void _convert_grid_map_to_gltf(
 			GridMap *p_grid_map,
 			GLTFNodeIndex p_parent_node_index,
 			GLTFNodeIndex p_root_node_index,
 			Ref<GLTFNode> p_gltf_node, Ref<GLTFState> p_state);
-#endif // MODULE_GRIDMAP_ENABLED
 	void _convert_multi_mesh_instance_to_gltf(
 			MultiMeshInstance3D *p_multi_mesh_instance,
 			GLTFNodeIndex p_parent_node_index,
@@ -388,5 +378,3 @@ public:
 };
 
 VARIANT_ENUM_CAST(GLTFDocument::RootNodeMode);
-
-#endif // GLTF_DOCUMENT_H

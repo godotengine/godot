@@ -42,7 +42,7 @@
 #include "core/object/class_db.h"
 #include "core/object/script_language.h"
 #include "core/templates/hash_map.h"
-#include "scene/resources/packed_scene.h"
+#include "scene/main/node.h"
 
 #if defined(TOOLS_ENABLED) && !defined(DISABLE_DEPRECATED)
 #define SUGGEST_GODOT4_RENAMES
@@ -792,7 +792,7 @@ GDScriptParser::DataType GDScriptAnalyzer::resolve_datatype(GDScriptParser::Type
 				String ext = path.get_extension();
 				if (ext == GDScriptLanguage::get_singleton()->get_extension()) {
 					Ref<GDScriptParserRef> ref = parser->get_depended_parser_for(path);
-					if (!ref.is_valid() || ref->raise_status(GDScriptParserRef::INHERITANCE_SOLVED) != OK) {
+					if (ref.is_null() || ref->raise_status(GDScriptParserRef::INHERITANCE_SOLVED) != OK) {
 						push_error(vformat(R"(Could not parse global class "%s" from "%s".)", first, ScriptServer::get_global_class_path(first)), p_type);
 						return bad_type;
 					}
@@ -1093,7 +1093,12 @@ void GDScriptAnalyzer::resolve_class_member(GDScriptParser::ClassNode *p_class, 
 							}
 						}
 						if (is_get_node) {
-							parser->push_warning(member.variable, GDScriptWarning::GET_NODE_DEFAULT_WITHOUT_ONREADY, is_using_shorthand ? "$" : "get_node()");
+							String offending_syntax = "get_node()";
+							if (is_using_shorthand) {
+								GDScriptParser::GetNodeNode *get_node_node = static_cast<GDScriptParser::GetNodeNode *>(expr);
+								offending_syntax = get_node_node->use_dollar ? "$" : "%";
+							}
+							parser->push_warning(member.variable, GDScriptWarning::GET_NODE_DEFAULT_WITHOUT_ONREADY, offending_syntax);
 						}
 					}
 				}
@@ -1635,13 +1640,12 @@ void GDScriptAnalyzer::resolve_annotation(GDScriptParser::AnnotationNode *p_anno
 
 	const MethodInfo &annotation_info = parser->valid_annotations[p_annotation->name].info;
 
-	const List<PropertyInfo>::Element *E = annotation_info.arguments.front();
-	for (int i = 0; i < p_annotation->arguments.size(); i++) {
+	for (int64_t i = 0, j = 0; i < p_annotation->arguments.size(); i++) {
 		GDScriptParser::ExpressionNode *argument = p_annotation->arguments[i];
-		const PropertyInfo &argument_info = E->get();
+		const PropertyInfo &argument_info = annotation_info.arguments[j];
 
-		if (E->next() != nullptr) {
-			E = E->next();
+		if (j + 1 < annotation_info.arguments.size()) {
+			++j;
 		}
 
 		reduce_expression(argument);
@@ -3318,28 +3322,24 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 
 					bool types_match = true;
 
-					{
-						List<PropertyInfo>::ConstIterator arg_itr = info.arguments.begin();
-						for (int i = 0; i < p_call->arguments.size(); ++arg_itr, ++i) {
-							GDScriptParser::DataType par_type = type_from_property(*arg_itr, true);
-							GDScriptParser::DataType arg_type = p_call->arguments[i]->get_datatype();
-							if (!is_type_compatible(par_type, arg_type, true)) {
-								types_match = false;
-								break;
+					for (int64_t i = 0; i < p_call->arguments.size(); ++i) {
+						GDScriptParser::DataType par_type = type_from_property(info.arguments[i], true);
+						GDScriptParser::DataType arg_type = p_call->arguments[i]->get_datatype();
+						if (!is_type_compatible(par_type, arg_type, true)) {
+							types_match = false;
+							break;
 #ifdef DEBUG_ENABLED
-							} else {
-								if (par_type.builtin_type == Variant::INT && arg_type.builtin_type == Variant::FLOAT && builtin_type != Variant::INT) {
-									parser->push_warning(p_call, GDScriptWarning::NARROWING_CONVERSION, function_name);
-								}
-#endif
+						} else {
+							if (par_type.builtin_type == Variant::INT && arg_type.builtin_type == Variant::FLOAT && builtin_type != Variant::INT) {
+								parser->push_warning(p_call, GDScriptWarning::NARROWING_CONVERSION, function_name);
 							}
+#endif
 						}
 					}
 
 					if (types_match) {
-						List<PropertyInfo>::ConstIterator arg_itr = info.arguments.begin();
-						for (int i = 0; i < p_call->arguments.size(); ++arg_itr, ++i) {
-							GDScriptParser::DataType par_type = type_from_property(*arg_itr, true);
+						for (int64_t i = 0; i < p_call->arguments.size(); ++i) {
+							GDScriptParser::DataType par_type = type_from_property(info.arguments[i], true);
 							if (p_call->arguments[i]->is_constant) {
 								update_const_expression_builtin_type(p_call->arguments[i], par_type, "pass");
 							}
@@ -3690,7 +3690,7 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 			String base_name = is_self && !p_call->is_super ? "self" : base_type.to_string();
 #ifdef SUGGEST_GODOT4_RENAMES
 			String rename_hint;
-			if (GLOBAL_GET(GDScriptWarning::get_settings_path_from_code(GDScriptWarning::RENAMED_IN_GODOT_4_HINT)).booleanize()) {
+			if (GLOBAL_GET("debug/gdscript/warnings/renamed_in_godot_4_hint")) {
 				const char *renamed_function_name = check_for_renamed_identifier(p_call->function_name, p_call->type);
 				if (renamed_function_name) {
 					rename_hint = " " + vformat(R"(Did you mean to use "%s"?)", String(renamed_function_name) + "()");
@@ -3952,8 +3952,9 @@ Ref<GDScriptParserRef> GDScriptAnalyzer::find_cached_external_parser_for_class(c
 
 Ref<GDScript> GDScriptAnalyzer::get_depended_shallow_script(const String &p_path, Error &r_error) {
 	// To keep a local cache of the parser for resolving external nodes later.
-	parser->get_depended_parser_for(p_path);
-	Ref<GDScript> scr = GDScriptCache::get_shallow_script(p_path, r_error, parser->script_path);
+	const String path = ResourceUID::ensure_path(p_path);
+	parser->get_depended_parser_for(path);
+	Ref<GDScript> scr = GDScriptCache::get_shallow_script(path, r_error, parser->script_path);
 	return scr;
 }
 
@@ -4036,7 +4037,7 @@ void GDScriptAnalyzer::reduce_identifier_from_base(GDScriptParser::IdentifierNod
 			if (!valid && base.is_hard_type()) {
 #ifdef SUGGEST_GODOT4_RENAMES
 				String rename_hint;
-				if (GLOBAL_GET(GDScriptWarning::get_settings_path_from_code(GDScriptWarning::RENAMED_IN_GODOT_4_HINT)).booleanize()) {
+				if (GLOBAL_GET("debug/gdscript/warnings/renamed_in_godot_4_hint")) {
 					const char *renamed_identifier_name = check_for_renamed_identifier(name, p_identifier->type);
 					if (renamed_identifier_name) {
 						rename_hint = " " + vformat(R"(Did you mean to use "%s"?)", renamed_identifier_name);
@@ -4080,7 +4081,7 @@ void GDScriptAnalyzer::reduce_identifier_from_base(GDScriptParser::IdentifierNod
 					if (base.is_hard_type()) {
 #ifdef SUGGEST_GODOT4_RENAMES
 						String rename_hint;
-						if (GLOBAL_GET(GDScriptWarning::get_settings_path_from_code(GDScriptWarning::RENAMED_IN_GODOT_4_HINT)).booleanize()) {
+						if (GLOBAL_GET("debug/gdscript/warnings/renamed_in_godot_4_hint")) {
 							const char *renamed_identifier_name = check_for_renamed_identifier(name, p_identifier->type);
 							if (renamed_identifier_name) {
 								rename_hint = " " + vformat(R"(Did you mean to use "%s"?)", renamed_identifier_name);
@@ -4508,11 +4509,11 @@ void GDScriptAnalyzer::reduce_identifier(GDScriptParser::IdentifierNode *p_ident
 			result.builtin_type = Variant::OBJECT;
 			result.native_type = SNAME("Node");
 			if (ResourceLoader::get_resource_type(autoload.path) == "GDScript") {
-				Ref<GDScriptParserRef> singl_parser = parser->get_depended_parser_for(autoload.path);
-				if (singl_parser.is_valid()) {
-					Error err = singl_parser->raise_status(GDScriptParserRef::INHERITANCE_SOLVED);
+				Ref<GDScriptParserRef> single_parser = parser->get_depended_parser_for(autoload.path);
+				if (single_parser.is_valid()) {
+					Error err = single_parser->raise_status(GDScriptParserRef::INHERITANCE_SOLVED);
 					if (err == OK) {
-						result = type_from_metatype(singl_parser->get_parser()->head->get_datatype());
+						result = type_from_metatype(single_parser->get_parser()->head->get_datatype());
 					}
 				}
 			} else if (ResourceLoader::get_resource_type(autoload.path) == "PackedScene") {
@@ -4522,11 +4523,11 @@ void GDScriptAnalyzer::reduce_identifier(GDScriptParser::IdentifierNode *p_ident
 					if (node != nullptr) {
 						Ref<GDScript> scr = node->get_script();
 						if (scr.is_valid()) {
-							Ref<GDScriptParserRef> singl_parser = parser->get_depended_parser_for(scr->get_script_path());
-							if (singl_parser.is_valid()) {
-								Error err = singl_parser->raise_status(GDScriptParserRef::INHERITANCE_SOLVED);
+							Ref<GDScriptParserRef> single_parser = parser->get_depended_parser_for(scr->get_script_path());
+							if (single_parser.is_valid()) {
+								Error err = single_parser->raise_status(GDScriptParserRef::INHERITANCE_SOLVED);
 								if (err == OK) {
-									result = type_from_metatype(singl_parser->get_parser()->head->get_datatype());
+									result = type_from_metatype(single_parser->get_parser()->head->get_datatype());
 								}
 							}
 						}
@@ -4596,7 +4597,7 @@ void GDScriptAnalyzer::reduce_identifier(GDScriptParser::IdentifierNode *p_ident
 	// Not found.
 #ifdef SUGGEST_GODOT4_RENAMES
 	String rename_hint;
-	if (GLOBAL_GET(GDScriptWarning::get_settings_path_from_code(GDScriptWarning::RENAMED_IN_GODOT_4_HINT)).booleanize()) {
+	if (GLOBAL_GET("debug/gdscript/warnings/renamed_in_godot_4_hint")) {
 		const char *renamed_identifier_name = check_for_renamed_identifier(name, p_identifier->type);
 		if (renamed_identifier_name) {
 			rename_hint = " " + vformat(R"(Did you mean to use "%s"?)", renamed_identifier_name);
@@ -5568,7 +5569,7 @@ GDScriptParser::DataType GDScriptAnalyzer::type_from_property(const PropertyInfo
 			result.set_container_element_type(0, elem_type);
 		} else if (p_property.type == Variant::DICTIONARY && p_property.hint == PROPERTY_HINT_DICTIONARY_TYPE) {
 			// Check element type.
-			StringName key_elem_type_name = p_property.hint_string.get_slice(";", 0);
+			StringName key_elem_type_name = p_property.hint_string.get_slicec(';', 0);
 			GDScriptParser::DataType key_elem_type;
 			key_elem_type.type_source = GDScriptParser::DataType::ANNOTATED_EXPLICIT;
 
@@ -5593,7 +5594,7 @@ GDScriptParser::DataType GDScriptAnalyzer::type_from_property(const PropertyInfo
 			}
 			key_elem_type.is_constant = false;
 
-			StringName value_elem_type_name = p_property.hint_string.get_slice(";", 1);
+			StringName value_elem_type_name = p_property.hint_string.get_slicec(';', 1);
 			GDScriptParser::DataType value_elem_type;
 			value_elem_type.type_source = GDScriptParser::DataType::ANNOTATED_EXPLICIT;
 

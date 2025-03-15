@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef PROJECT_LIST_H
-#define PROJECT_LIST_H
+#pragma once
 
 #include "core/io/config_file.h"
 #include "scene/gui/box_container.h"
@@ -116,6 +115,7 @@ public:
 		bool favorite = false;
 		bool grayed = false;
 		bool missing = false;
+		bool recovery_mode = false;
 		int version = 0;
 
 		ProjectListItemControl *control = nullptr;
@@ -134,6 +134,7 @@ public:
 				bool p_favorite,
 				bool p_grayed,
 				bool p_missing,
+				bool p_recovery_mode,
 				int p_version) {
 			project_name = p_name;
 			description = p_description;
@@ -147,6 +148,7 @@ public:
 			favorite = p_favorite;
 			grayed = p_grayed;
 			missing = p_missing;
+			recovery_mode = p_recovery_mode;
 			version = p_version;
 
 			control = nullptr;
@@ -283,5 +285,3 @@ public:
 
 	ProjectList();
 };
-
-#endif // PROJECT_LIST_H

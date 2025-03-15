@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef RESOURCE_H
-#define RESOURCE_H
+#pragma once
 
 #include "core/io/resource_uid.h"
 #include "core/object/class_db.h"
@@ -40,11 +39,15 @@
 
 class Node;
 
-#define RES_BASE_EXTENSION(m_ext)                                                                                   \
-public:                                                                                                             \
-	static void register_custom_data_to_otdb() { ClassDB::add_resource_base_extension(m_ext, get_class_static()); } \
-	virtual String get_base_extension() const override { return m_ext; }                                            \
-                                                                                                                    \
+#define RES_BASE_EXTENSION(m_ext)                                        \
+public:                                                                  \
+	static void register_custom_data_to_otdb() {                         \
+		ClassDB::add_resource_base_extension(m_ext, get_class_static()); \
+	}                                                                    \
+	virtual String get_base_extension() const override {                 \
+		return m_ext;                                                    \
+	}                                                                    \
+                                                                         \
 private:
 
 class Resource : public RefCounted {
@@ -68,6 +71,12 @@ private:
 	String import_path;
 #endif
 
+	enum EmitChangedState {
+		EMIT_CHANGED_UNBLOCKED,
+		EMIT_CHANGED_BLOCKED,
+		EMIT_CHANGED_BLOCKED_PENDING_EMIT,
+	};
+	EmitChangedState emit_changed_state = EMIT_CHANGED_UNBLOCKED;
 	bool local_to_scene = false;
 	friend class SceneState;
 	Node *local_scene = nullptr;
@@ -80,6 +89,9 @@ private:
 protected:
 	virtual void _resource_path_changed();
 	static void _bind_methods();
+
+	void _block_emit_changed();
+	void _unblock_emit_changed();
 
 	void _set_path(const String &p_path);
 	void _take_over_path(const String &p_path);
@@ -175,5 +187,3 @@ public:
 	static void get_cached_resources(List<Ref<Resource>> *p_resources);
 	static int get_cached_resource_count();
 };
-
-#endif // RESOURCE_H

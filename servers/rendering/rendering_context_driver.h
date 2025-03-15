@@ -28,10 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef RENDERING_CONTEXT_DRIVER_H
-#define RENDERING_CONTEXT_DRIVER_H
+#pragma once
 
-#include "core/object/object.h"
 #include "servers/display_server.h"
 
 class RenderingDeviceDriver;
@@ -121,5 +119,3 @@ public:
 	virtual uint64_t get_device_memory_by_object_type(uint32_t p_type) const;
 	virtual uint64_t get_device_allocs_by_object_type(uint32_t p_type) const;
 };
-
-#endif // RENDERING_CONTEXT_DRIVER_H

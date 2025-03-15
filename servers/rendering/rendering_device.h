@@ -28,15 +28,12 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef RENDERING_DEVICE_H
-#define RENDERING_DEVICE_H
+#pragma once
 
-#include "core/object/class_db.h"
 #include "core/object/worker_thread_pool.h"
 #include "core/os/condition_variable.h"
 #include "core/os/thread_safe.h"
 #include "core/templates/local_vector.h"
-#include "core/templates/oa_hash_map.h"
 #include "core/templates/rid_owner.h"
 #include "core/variant/typed_array.h"
 #include "servers/display_server.h"
@@ -205,7 +202,8 @@ private:
 	bool split_swapchain_into_its_own_cmd_buffer = true;
 	uint32_t gpu_copy_count = 0;
 	uint32_t copy_bytes_count = 0;
-	String perf_report_text;
+	uint32_t prev_gpu_copy_count = 0;
+	uint32_t prev_copy_bytes_count = 0;
 
 	RID_Owner<Buffer, true> uniform_buffer_owner;
 	RID_Owner<Buffer, true> storage_buffer_owner;
@@ -224,6 +222,48 @@ public:
 	Error buffer_clear(RID p_buffer, uint32_t p_offset, uint32_t p_size);
 	Vector<uint8_t> buffer_get_data(RID p_buffer, uint32_t p_offset = 0, uint32_t p_size = 0); // This causes stall, only use to retrieve large buffers for saving.
 	Error buffer_get_data_async(RID p_buffer, const Callable &p_callback, uint32_t p_offset = 0, uint32_t p_size = 0);
+	uint64_t buffer_get_device_address(RID p_buffer);
+
+private:
+	/******************/
+	/**** CALLBACK ****/
+	/******************/
+
+public:
+	enum CallbackResourceType {
+		CALLBACK_RESOURCE_TYPE_TEXTURE,
+		CALLBACK_RESOURCE_TYPE_BUFFER,
+	};
+
+	enum CallbackResourceUsage {
+		CALLBACK_RESOURCE_USAGE_NONE,
+		CALLBACK_RESOURCE_USAGE_COPY_FROM,
+		CALLBACK_RESOURCE_USAGE_COPY_TO,
+		CALLBACK_RESOURCE_USAGE_RESOLVE_FROM,
+		CALLBACK_RESOURCE_USAGE_RESOLVE_TO,
+		CALLBACK_RESOURCE_USAGE_UNIFORM_BUFFER_READ,
+		CALLBACK_RESOURCE_USAGE_INDIRECT_BUFFER_READ,
+		CALLBACK_RESOURCE_USAGE_TEXTURE_BUFFER_READ,
+		CALLBACK_RESOURCE_USAGE_TEXTURE_BUFFER_READ_WRITE,
+		CALLBACK_RESOURCE_USAGE_STORAGE_BUFFER_READ,
+		CALLBACK_RESOURCE_USAGE_STORAGE_BUFFER_READ_WRITE,
+		CALLBACK_RESOURCE_USAGE_VERTEX_BUFFER_READ,
+		CALLBACK_RESOURCE_USAGE_INDEX_BUFFER_READ,
+		CALLBACK_RESOURCE_USAGE_TEXTURE_SAMPLE,
+		CALLBACK_RESOURCE_USAGE_STORAGE_IMAGE_READ,
+		CALLBACK_RESOURCE_USAGE_STORAGE_IMAGE_READ_WRITE,
+		CALLBACK_RESOURCE_USAGE_ATTACHMENT_COLOR_READ_WRITE,
+		CALLBACK_RESOURCE_USAGE_ATTACHMENT_DEPTH_STENCIL_READ_WRITE,
+		CALLBACK_RESOURCE_USAGE_MAX
+	};
+
+	struct CallbackResource {
+		RID rid;
+		CallbackResourceType type = CALLBACK_RESOURCE_TYPE_TEXTURE;
+		CallbackResourceUsage usage = CALLBACK_RESOURCE_USAGE_NONE;
+	};
+
+	Error driver_callback_add(RDD::DriverCallback p_callback, void *p_userdata, VectorView<CallbackResource> p_resources);
 
 	/*****************/
 	/**** TEXTURE ****/
@@ -714,13 +754,22 @@ private:
 	RID_Owner<IndexArray, true> index_array_owner;
 
 public:
-	RID vertex_buffer_create(uint32_t p_size_bytes, const Vector<uint8_t> &p_data = Vector<uint8_t>(), bool p_use_as_storage = false);
+	enum BufferCreationBits {
+		BUFFER_CREATION_DEVICE_ADDRESS_BIT = (1 << 0),
+		BUFFER_CREATION_AS_STORAGE_BIT = (1 << 1),
+	};
+
+	enum StorageBufferUsage {
+		STORAGE_BUFFER_USAGE_DISPATCH_INDIRECT = (1 << 0),
+	};
+
+	RID vertex_buffer_create(uint32_t p_size_bytes, const Vector<uint8_t> &p_data = Vector<uint8_t>(), BitField<BufferCreationBits> p_creation_bits = 0);
 
 	// This ID is warranted to be unique for the same formats, does not need to be freed
 	VertexFormatID vertex_format_create(const Vector<VertexAttribute> &p_vertex_descriptions);
 	RID vertex_array_create(uint32_t p_vertex_count, VertexFormatID p_vertex_format, const Vector<RID> &p_src_buffers, const Vector<uint64_t> &p_offsets = Vector<uint64_t>());
 
-	RID index_buffer_create(uint32_t p_size_indices, IndexBufferFormat p_format, const Vector<uint8_t> &p_data = Vector<uint8_t>(), bool p_use_restart_indices = false);
+	RID index_buffer_create(uint32_t p_size_indices, IndexBufferFormat p_format, const Vector<uint8_t> &p_data = Vector<uint8_t>(), bool p_use_restart_indices = false, BitField<BufferCreationBits> p_creation_bits = 0);
 	RID index_array_create(RID p_index_buffer, uint32_t p_index_offset, uint32_t p_index_count);
 
 	/****************/
@@ -854,9 +903,15 @@ private:
 	DrawListID _draw_list_begin_bind_compat_90993(RID p_framebuffer, InitialAction p_initial_color_action, FinalAction p_final_color_action, InitialAction p_initial_depth_action, FinalAction p_final_depth_action, const Vector<Color> &p_clear_color_values, float p_clear_depth, uint32_t p_clear_stencil, const Rect2 &p_region);
 
 	DrawListID _draw_list_begin_bind_compat_98670(RID p_framebuffer, InitialAction p_initial_color_action, FinalAction p_final_color_action, InitialAction p_initial_depth_action, FinalAction p_final_depth_action, const Vector<Color> &p_clear_color_values, float p_clear_depth, uint32_t p_clear_stencil, const Rect2 &p_region, uint32_t p_breadcrumb);
+
+	RID _uniform_buffer_create_bind_compat_101561(uint32_t p_size_bytes, const Vector<uint8_t> &p_data);
+	RID _vertex_buffer_create_bind_compat_101561(uint32_t p_size_bytes, const Vector<uint8_t> &p_data, bool p_use_as_storage);
+	RID _index_buffer_create_bind_compat_101561(uint32_t p_size_indices, IndexBufferFormat p_format, const Vector<uint8_t> &p_data, bool p_use_restart_indices);
+	RID _storage_buffer_create_bind_compat_101561(uint32_t p_size, const Vector<uint8_t> &p_data, BitField<StorageBufferUsage> p_usage);
 #endif
 
 public:
+	RenderingDeviceDriver *get_device_driver() const { return driver; }
 	RenderingContextDriver *get_context_driver() const { return context; }
 
 	const RDD::Capabilities &get_device_capabilities() const { return driver->get_capabilities(); }
@@ -885,16 +940,12 @@ public:
 	/******************/
 	String get_perf_report() const;
 
-	enum StorageBufferUsage {
-		STORAGE_BUFFER_USAGE_DISPATCH_INDIRECT = 1,
-	};
-
 	/*****************/
 	/**** BUFFERS ****/
 	/*****************/
 
-	RID uniform_buffer_create(uint32_t p_size_bytes, const Vector<uint8_t> &p_data = Vector<uint8_t>());
-	RID storage_buffer_create(uint32_t p_size, const Vector<uint8_t> &p_data = Vector<uint8_t>(), BitField<StorageBufferUsage> p_usage = 0);
+	RID uniform_buffer_create(uint32_t p_size_bytes, const Vector<uint8_t> &p_data = Vector<uint8_t>(), BitField<BufferCreationBits> p_creation_bits = 0);
+	RID storage_buffer_create(uint32_t p_size, const Vector<uint8_t> &p_data = Vector<uint8_t>(), BitField<StorageBufferUsage> p_usage = 0, BitField<BufferCreationBits> p_creation_bits = 0);
 
 	RID texture_buffer_create(uint32_t p_size_elements, DataFormat p_format, const Vector<uint8_t> &p_data = Vector<uint8_t>());
 
@@ -1017,8 +1068,7 @@ public:
 	 *						If you plan on keeping the return value around for more than one frame (e.g. Sets that are created once and reused forever) you MUST set it to false.
 	 * @return				Baked descriptor set.
 	 */
-	template <typename Collection>
-	RID uniform_set_create(const Collection &p_uniforms, RID p_shader, uint32_t p_shader_set, bool p_linear_pool = false);
+	RID uniform_set_create(const VectorView<Uniform> &p_uniforms, RID p_shader, uint32_t p_shader_set, bool p_linear_pool = false);
 	bool uniform_set_is_valid(RID p_uniform_set);
 	void uniform_set_set_invalidation_callback(RID p_uniform_set, InvalidationCallback p_callback, void *p_userdata);
 
@@ -1123,7 +1173,7 @@ private:
 
 	struct DrawList {
 		Rect2i viewport;
-		bool viewport_set = false;
+		bool active = false;
 
 		struct SetState {
 			uint32_t pipeline_expected_format = 0;
@@ -1148,7 +1198,6 @@ private:
 
 #ifdef DEBUG_ENABLED
 		struct Validation {
-			bool active = true; // Means command buffer was not closed, so you can keep adding things.
 			// Actual render pass values.
 			uint32_t dynamic_state = 0;
 			VertexFormatID vertex_format = INVALID_ID;
@@ -1179,18 +1228,17 @@ private:
 #endif
 	};
 
-	DrawList *draw_list = nullptr;
+	DrawList draw_list;
 	uint32_t draw_list_subpass_count = 0;
 #ifdef DEBUG_ENABLED
 	FramebufferFormatID draw_list_framebuffer_format = INVALID_ID;
 #endif
 	uint32_t draw_list_current_subpass = 0;
 
-	Vector<RID> draw_list_bound_textures;
+	LocalVector<RID> draw_list_bound_textures;
 
-	_FORCE_INLINE_ DrawList *_get_draw_list_ptr(DrawListID p_id);
-	Error _draw_list_allocate(const Rect2i &p_viewport, uint32_t p_subpass);
-	void _draw_list_free(Rect2i *r_last_viewport = nullptr);
+	void _draw_list_start(const Rect2i &p_viewport);
+	void _draw_list_end(Rect2i *r_last_viewport = nullptr);
 
 public:
 	enum DrawFlags {
@@ -1224,7 +1272,8 @@ public:
 	};
 
 	DrawListID draw_list_begin_for_screen(DisplayServer::WindowID p_screen = 0, const Color &p_clear_color = Color());
-	DrawListID draw_list_begin(RID p_framebuffer, BitField<DrawFlags> p_draw_flags = DRAW_DEFAULT_ALL, const Vector<Color> &p_clear_color_values = Vector<Color>(), float p_clear_depth_value = 1.0f, uint32_t p_clear_stencil_value = 0, const Rect2 &p_region = Rect2(), uint32_t p_breadcrumb = 0);
+	DrawListID draw_list_begin(RID p_framebuffer, BitField<DrawFlags> p_draw_flags = DRAW_DEFAULT_ALL, VectorView<Color> p_clear_color_values = VectorView<Color>(), float p_clear_depth_value = 1.0f, uint32_t p_clear_stencil_value = 0, const Rect2 &p_region = Rect2(), uint32_t p_breadcrumb = 0);
+	DrawListID _draw_list_begin_bind(RID p_framebuffer, BitField<DrawFlags> p_draw_flags = DRAW_DEFAULT_ALL, const Vector<Color> &p_clear_color_values = Vector<Color>(), float p_clear_depth_value = 1.0f, uint32_t p_clear_stencil_value = 0, const Rect2 &p_region = Rect2(), uint32_t p_breadcrumb = 0);
 
 	void draw_list_set_blend_constants(DrawListID p_list, const Color &p_color);
 	void draw_list_bind_render_pipeline(DrawListID p_list, RID p_render_pipeline);
@@ -1252,6 +1301,7 @@ private:
 	/***********************/
 
 	struct ComputeList {
+		bool active = false;
 		struct SetState {
 			uint32_t pipeline_expected_format = 0;
 			uint32_t uniform_set_format = 0;
@@ -1275,7 +1325,6 @@ private:
 
 #ifdef DEBUG_ENABLED
 		struct Validation {
-			bool active = true; // Means command buffer was not closed, so you can keep adding things.
 			Vector<uint32_t> set_formats;
 			Vector<bool> set_bound;
 			Vector<RID> set_rids;
@@ -1289,7 +1338,7 @@ private:
 #endif
 	};
 
-	ComputeList *compute_list = nullptr;
+	ComputeList compute_list;
 	ComputeList::State compute_list_barrier_state;
 
 public:
@@ -1638,6 +1687,7 @@ VARIANT_ENUM_CAST(RenderingDevice::SamplerBorderColor)
 VARIANT_ENUM_CAST(RenderingDevice::VertexFrequency)
 VARIANT_ENUM_CAST(RenderingDevice::IndexBufferFormat)
 VARIANT_BITFIELD_CAST(RenderingDevice::StorageBufferUsage)
+VARIANT_BITFIELD_CAST(RenderingDevice::BufferCreationBits)
 VARIANT_ENUM_CAST(RenderingDevice::UniformType)
 VARIANT_ENUM_CAST(RenderingDevice::RenderPrimitive)
 VARIANT_ENUM_CAST(RenderingDevice::PolygonCullMode)
@@ -1661,5 +1711,3 @@ VARIANT_ENUM_CAST(RenderingDevice::FinalAction)
 #endif
 
 typedef RenderingDevice RD;
-
-#endif // RENDERING_DEVICE_H

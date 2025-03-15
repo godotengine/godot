@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef RESOURCE_IMPORTER_OBJ_H
-#define RESOURCE_IMPORTER_OBJ_H
+#pragma once
 
 #include "resource_importer_scene.h"
 
@@ -37,7 +36,6 @@ class EditorOBJImporter : public EditorSceneFormatImporter {
 	GDCLASS(EditorOBJImporter, EditorSceneFormatImporter);
 
 public:
-	virtual uint32_t get_import_flags() const override;
 	virtual void get_extensions(List<String> *r_extensions) const override;
 	virtual Node *import_scene(const String &p_path, uint32_t p_flags, const HashMap<StringName, Variant> &p_options, List<String> *r_missing_deps, Error *r_err = nullptr) override;
 
@@ -65,5 +63,3 @@ public:
 
 	ResourceImporterOBJ();
 };
-
-#endif // RESOURCE_IMPORTER_OBJ_H

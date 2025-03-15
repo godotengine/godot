@@ -31,9 +31,7 @@
 #include "skeleton_3d.h"
 #include "skeleton_3d.compat.inc"
 
-#include "core/variant/type_info.h"
 #include "scene/3d/skeleton_modifier_3d.h"
-#include "scene/resources/surface_tool.h"
 #ifndef DISABLE_DEPRECATED
 #include "scene/3d/physical_bone_simulator_3d.h"
 #endif // _DISABLE_DEPRECATED
@@ -272,8 +270,6 @@ void Skeleton3D::_update_process_order() const {
 		}
 	}
 
-	bones_backup.resize(bones.size());
-
 	concatenated_bone_names = StringName();
 
 	_update_bones_nested_set();
@@ -329,6 +325,14 @@ void Skeleton3D::_notification(int p_what) {
 			update_flags = UPDATE_FLAG_POSE;
 			_notification(NOTIFICATION_UPDATE_SKELETON);
 		} break;
+#ifdef TOOLS_ENABLED
+		case NOTIFICATION_EDITOR_PRE_SAVE: {
+			saving = true;
+		} break;
+		case NOTIFICATION_EDITOR_POST_SAVE: {
+			saving = false;
+		} break;
+#endif // TOOLS_ENABLED
 		case NOTIFICATION_UPDATE_SKELETON: {
 			// Update bone transforms to apply unprocessed poses.
 			force_update_all_dirty_bones();
@@ -341,11 +345,14 @@ void Skeleton3D::_notification(int p_what) {
 			thread_local LocalVector<bool> bone_global_pose_dirty_backup;
 
 			// Process modifiers.
+
+			thread_local LocalVector<BonePoseBackup> bones_backup;
 			_find_modifiers();
 			if (!modifiers.is_empty()) {
+				bones_backup.resize(bones.size());
 				// Store unmodified bone poses.
 				for (uint32_t i = 0; i < bones.size(); i++) {
-					bones_backup[i].save(bones[i]);
+					bones_backup[i].save(bonesptr[i]);
 				}
 				// Store dirty flags for global bone poses.
 				bone_global_pose_dirty_backup = bone_global_pose_dirty;
@@ -831,6 +838,13 @@ bool Skeleton3D::is_show_rest_only() const {
 void Skeleton3D::clear_bones() {
 	bones.clear();
 	name_to_bone_index.clear();
+
+	// All these structures contain references to now invalid bone indices.
+	skin_bindings.clear();
+	bone_global_pose_dirty.clear();
+	parentless_bones.clear();
+	nested_set_offset_to_bone_index.clear();
+
 	process_order_dirty = true;
 	version++;
 	_make_dirty();
@@ -935,6 +949,13 @@ void Skeleton3D::_make_dirty() {
 
 void Skeleton3D::_update_deferred(UpdateFlag p_update_flag) {
 	if (is_inside_tree()) {
+#ifdef TOOLS_ENABLED
+		if (saving) {
+			update_flags |= p_update_flag;
+			_notification(NOTIFICATION_UPDATE_SKELETON);
+			return;
+		}
+#endif //TOOLS_ENABLED
 		if (update_flags == UPDATE_FLAG_NONE && !updating) {
 			notify_deferred_thread_group(NOTIFICATION_UPDATE_SKELETON); // It must never be called more than once in a single frame.
 		}
@@ -1077,6 +1098,8 @@ void Skeleton3D::_force_update_bone_children_transforms(int p_bone_idx) const {
 	const int bone_size = bones.size();
 	ERR_FAIL_INDEX(p_bone_idx, bone_size);
 
+	_update_process_order();
+
 	Bone *bonesptr = bones.ptr();
 
 	// Loop through nested set.
@@ -1160,6 +1183,11 @@ void Skeleton3D::_process_modifiers() {
 		if (!mod) {
 			continue;
 		}
+#ifdef TOOLS_ENABLED
+		if (saving && !mod->is_processed_on_saving()) {
+			continue;
+		}
+#endif //TOOLS_ENABLED
 		real_t influence = mod->get_influence();
 		if (influence < 1.0) {
 			LocalVector<Transform3D> old_poses;

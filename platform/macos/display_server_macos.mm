@@ -28,19 +28,19 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "display_server_macos.h"
+#import "display_server_macos.h"
 
-#include "godot_button_view.h"
-#include "godot_content_view.h"
-#include "godot_menu_delegate.h"
-#include "godot_menu_item.h"
-#include "godot_open_save_delegate.h"
-#include "godot_status_item.h"
-#include "godot_window.h"
-#include "godot_window_delegate.h"
-#include "key_mapping_macos.h"
-#include "os_macos.h"
-#include "tts_macos.h"
+#import "godot_button_view.h"
+#import "godot_content_view.h"
+#import "godot_menu_delegate.h"
+#import "godot_menu_item.h"
+#import "godot_open_save_delegate.h"
+#import "godot_status_item.h"
+#import "godot_window.h"
+#import "godot_window_delegate.h"
+#import "key_mapping_macos.h"
+#import "os_macos.h"
+#import "tts_macos.h"
 
 #include "core/config/project_settings.h"
 #include "core/io/marshalls.h"
@@ -411,12 +411,16 @@ void DisplayServerMacOS::_dispatch_input_event(const Ref<InputEvent> &p_event) {
 				}
 			}
 		} else {
-			// Send to all windows.
+			// Send to all windows. Copy all pending callbacks, since callback can erase window.
+			Vector<Callable> cbs;
 			for (KeyValue<WindowID, WindowData> &E : windows) {
 				Callable callable = E.value.input_event_callback;
 				if (callable.is_valid()) {
-					callable.call(p_event);
+					cbs.push_back(callable);
 				}
+			}
+			for (const Callable &cb : cbs) {
+				cb.call(p_event);
 			}
 		}
 		in_dispatch_input_event = false;
@@ -733,6 +737,10 @@ void DisplayServerMacOS::window_destroy(WindowID p_window) {
 	}
 #endif
 	windows.erase(p_window);
+
+	if (last_focused_window == p_window) {
+		last_focused_window = INVALID_WINDOW_ID;
+	}
 	update_presentation_mode();
 }
 
@@ -770,6 +778,7 @@ bool DisplayServerMacOS::has_feature(Feature p_feature) const {
 		case FEATURE_NATIVE_DIALOG_INPUT:
 		case FEATURE_NATIVE_DIALOG_FILE:
 		case FEATURE_NATIVE_DIALOG_FILE_EXTRA:
+		case FEATURE_NATIVE_DIALOG_FILE_MIME:
 		case FEATURE_IME:
 		case FEATURE_WINDOW_TRANSPARENCY:
 		case FEATURE_HIDPI:
@@ -783,6 +792,8 @@ bool DisplayServerMacOS::has_feature(Feature p_feature) const {
 		case FEATURE_STATUS_INDICATOR:
 		case FEATURE_NATIVE_HELP:
 		case FEATURE_WINDOW_DRAG:
+		case FEATURE_SCREEN_EXCLUDE_FROM_CAPTURE:
+		case FEATURE_EMOJI_AND_SYMBOL_PICKER:
 			return true;
 		default: {
 		}
@@ -892,7 +903,7 @@ Color DisplayServerMacOS::get_base_color() const {
 		__block NSColor *color = nullptr;
 		if (@available(macOS 11.0, *)) {
 			[NSApp.effectiveAppearance performAsCurrentDrawingAppearance:^{
-				color = [[NSColor controlColor] colorUsingColorSpace:[NSColorSpace genericRGBColorSpace]];
+				color = [[NSColor windowBackgroundColor] colorUsingColorSpace:[NSColorSpace genericRGBColorSpace]];
 			}];
 		} else {
 			NSAppearance *saved_appearance = [NSAppearance currentAppearance];
@@ -968,21 +979,25 @@ Error DisplayServerMacOS::dialog_show(String p_title, String p_description, Vect
 	return OK;
 }
 
-Error DisplayServerMacOS::file_dialog_show(const String &p_title, const String &p_current_directory, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const Callable &p_callback) {
-	return _file_dialog_with_options_show(p_title, p_current_directory, String(), p_filename, p_show_hidden, p_mode, p_filters, TypedArray<Dictionary>(), p_callback, false);
+Error DisplayServerMacOS::file_dialog_show(const String &p_title, const String &p_current_directory, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const Callable &p_callback, WindowID p_window_id) {
+	return _file_dialog_with_options_show(p_title, p_current_directory, String(), p_filename, p_show_hidden, p_mode, p_filters, TypedArray<Dictionary>(), p_callback, false, p_window_id);
 }
 
-Error DisplayServerMacOS::file_dialog_with_options_show(const String &p_title, const String &p_current_directory, const String &p_root, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const TypedArray<Dictionary> &p_options, const Callable &p_callback) {
-	return _file_dialog_with_options_show(p_title, p_current_directory, p_root, p_filename, p_show_hidden, p_mode, p_filters, p_options, p_callback, true);
+Error DisplayServerMacOS::file_dialog_with_options_show(const String &p_title, const String &p_current_directory, const String &p_root, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const TypedArray<Dictionary> &p_options, const Callable &p_callback, WindowID p_window_id) {
+	return _file_dialog_with_options_show(p_title, p_current_directory, p_root, p_filename, p_show_hidden, p_mode, p_filters, p_options, p_callback, true, p_window_id);
 }
 
-Error DisplayServerMacOS::_file_dialog_with_options_show(const String &p_title, const String &p_current_directory, const String &p_root, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const TypedArray<Dictionary> &p_options, const Callable &p_callback, bool p_options_in_cb) {
+Error DisplayServerMacOS::_file_dialog_with_options_show(const String &p_title, const String &p_current_directory, const String &p_root, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const TypedArray<Dictionary> &p_options, const Callable &p_callback, bool p_options_in_cb, WindowID p_window_id) {
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_INDEX_V(int(p_mode), FILE_DIALOG_MODE_SAVE_MAX, FAILED);
 
 	NSString *url = [NSString stringWithUTF8String:p_current_directory.utf8().get_data()];
-	WindowID prev_focus = last_focused_window;
+
+	NSWindow *nswindow = nullptr;
+	if (windows.has(p_window_id) && !windows[p_window_id].is_popup) {
+		nswindow = windows[p_window_id].window_object;
+	}
 
 	GodotOpenSaveDelegate *panel_delegate = [[GodotOpenSaveDelegate alloc] init];
 	if (p_root.length() > 0) {
@@ -1004,98 +1019,102 @@ Error DisplayServerMacOS::_file_dialog_with_options_show(const String &p_title, 
 			[panel setNameFieldStringValue:fileurl];
 		}
 
-		[panel beginSheetModalForWindow:[[NSApplication sharedApplication] mainWindow]
-					  completionHandler:^(NSInteger ret) {
-						  if (ret == NSModalResponseOK) {
-							  // Save bookmark for folder.
-							  if (OS::get_singleton()->is_sandboxed()) {
-								  NSArray *bookmarks = [[NSUserDefaults standardUserDefaults] arrayForKey:@"sec_bookmarks"];
-								  bool skip = false;
-								  for (id bookmark in bookmarks) {
-									  NSError *error = nil;
-									  BOOL isStale = NO;
-									  NSURL *exurl = [NSURL URLByResolvingBookmarkData:bookmark options:NSURLBookmarkResolutionWithSecurityScope relativeToURL:nil bookmarkDataIsStale:&isStale error:&error];
-									  if (!error && !isStale && ([[exurl path] compare:[[panel directoryURL] path]] == NSOrderedSame)) {
-										  skip = true;
-										  break;
-									  }
-								  }
-								  if (!skip) {
-									  NSError *error = nil;
-									  NSData *bookmark = [[panel directoryURL] bookmarkDataWithOptions:NSURLBookmarkCreationWithSecurityScope includingResourceValuesForKeys:nil relativeToURL:nil error:&error];
-									  if (!error) {
-										  NSArray *new_bookmarks = [bookmarks arrayByAddingObject:bookmark];
-										  [[NSUserDefaults standardUserDefaults] setObject:new_bookmarks forKey:@"sec_bookmarks"];
-									  }
-								  }
-							  }
-							  // Callback.
-							  Vector<String> files;
-							  String url;
-							  url.parse_utf8([[[panel URL] path] UTF8String]);
-							  files.push_back(url);
-							  if (callback.is_valid()) {
-								  if (p_options_in_cb) {
-									  Variant v_result = true;
-									  Variant v_files = files;
-									  Variant v_index = [panel_delegate getIndex];
-									  Variant v_opt = [panel_delegate getSelection];
-									  Variant ret;
-									  Callable::CallError ce;
-									  const Variant *args[4] = { &v_result, &v_files, &v_index, &v_opt };
+		void (^completion_handler)(NSInteger ret) = ^(NSInteger ret) {
+			if (ret == NSModalResponseOK) {
+				// Save bookmark for folder.
+				if (OS::get_singleton()->is_sandboxed()) {
+					NSArray *bookmarks = [[NSUserDefaults standardUserDefaults] arrayForKey:@"sec_bookmarks"];
+					bool skip = false;
+					for (id bookmark in bookmarks) {
+						NSError *error = nil;
+						BOOL isStale = NO;
+						NSURL *exurl = [NSURL URLByResolvingBookmarkData:bookmark options:NSURLBookmarkResolutionWithSecurityScope relativeToURL:nil bookmarkDataIsStale:&isStale error:&error];
+						if (!error && !isStale && ([[exurl path] compare:[[panel directoryURL] path]] == NSOrderedSame)) {
+							skip = true;
+							break;
+						}
+					}
+					if (!skip) {
+						NSError *error = nil;
+						NSData *bookmark = [[panel directoryURL] bookmarkDataWithOptions:NSURLBookmarkCreationWithSecurityScope includingResourceValuesForKeys:nil relativeToURL:nil error:&error];
+						if (!error) {
+							NSArray *new_bookmarks = [bookmarks arrayByAddingObject:bookmark];
+							[[NSUserDefaults standardUserDefaults] setObject:new_bookmarks forKey:@"sec_bookmarks"];
+						}
+					}
+				}
+				// Callback.
+				Vector<String> files;
+				String url;
+				url.parse_utf8([[[panel URL] path] UTF8String]);
+				files.push_back(url);
+				if (callback.is_valid()) {
+					if (p_options_in_cb) {
+						Variant v_result = true;
+						Variant v_files = files;
+						Variant v_index = [panel_delegate getIndex];
+						Variant v_opt = [panel_delegate getSelection];
+						Variant ret;
+						Callable::CallError ce;
+						const Variant *args[4] = { &v_result, &v_files, &v_index, &v_opt };
 
-									  callback.callp(args, 4, ret, ce);
-									  if (ce.error != Callable::CallError::CALL_OK) {
-										  ERR_PRINT(vformat("Failed to execute file dialog callback: %s.", Variant::get_callable_error_text(callback, args, 4, ce)));
-									  }
-								  } else {
-									  Variant v_result = true;
-									  Variant v_files = files;
-									  Variant v_index = [panel_delegate getIndex];
-									  Variant ret;
-									  Callable::CallError ce;
-									  const Variant *args[3] = { &v_result, &v_files, &v_index };
+						callback.callp(args, 4, ret, ce);
+						if (ce.error != Callable::CallError::CALL_OK) {
+							ERR_PRINT(vformat("Failed to execute file dialog callback: %s.", Variant::get_callable_error_text(callback, args, 4, ce)));
+						}
+					} else {
+						Variant v_result = true;
+						Variant v_files = files;
+						Variant v_index = [panel_delegate getIndex];
+						Variant ret;
+						Callable::CallError ce;
+						const Variant *args[3] = { &v_result, &v_files, &v_index };
 
-									  callback.callp(args, 3, ret, ce);
-									  if (ce.error != Callable::CallError::CALL_OK) {
-										  ERR_PRINT(vformat("Failed to execute file dialog callback: %s.", Variant::get_callable_error_text(callback, args, 3, ce)));
-									  }
-								  }
-							  }
-						  } else {
-							  if (callback.is_valid()) {
-								  if (p_options_in_cb) {
-									  Variant v_result = false;
-									  Variant v_files = Vector<String>();
-									  Variant v_index = [panel_delegate getIndex];
-									  Variant v_opt = [panel_delegate getSelection];
-									  Variant ret;
-									  Callable::CallError ce;
-									  const Variant *args[4] = { &v_result, &v_files, &v_index, &v_opt };
+						callback.callp(args, 3, ret, ce);
+						if (ce.error != Callable::CallError::CALL_OK) {
+							ERR_PRINT(vformat("Failed to execute file dialog callback: %s.", Variant::get_callable_error_text(callback, args, 3, ce)));
+						}
+					}
+				}
+			} else {
+				if (callback.is_valid()) {
+					if (p_options_in_cb) {
+						Variant v_result = false;
+						Variant v_files = Vector<String>();
+						Variant v_index = [panel_delegate getIndex];
+						Variant v_opt = [panel_delegate getSelection];
+						Variant ret;
+						Callable::CallError ce;
+						const Variant *args[4] = { &v_result, &v_files, &v_index, &v_opt };
 
-									  callback.callp(args, 4, ret, ce);
-									  if (ce.error != Callable::CallError::CALL_OK) {
-										  ERR_PRINT(vformat("Failed to execute file dialog callback: %s.", Variant::get_callable_error_text(callback, args, 4, ce)));
-									  }
-								  } else {
-									  Variant v_result = false;
-									  Variant v_files = Vector<String>();
-									  Variant v_index = [panel_delegate getIndex];
-									  Variant ret;
-									  Callable::CallError ce;
-									  const Variant *args[3] = { &v_result, &v_files, &v_index };
+						callback.callp(args, 4, ret, ce);
+						if (ce.error != Callable::CallError::CALL_OK) {
+							ERR_PRINT(vformat("Failed to execute file dialog callback: %s.", Variant::get_callable_error_text(callback, args, 4, ce)));
+						}
+					} else {
+						Variant v_result = false;
+						Variant v_files = Vector<String>();
+						Variant v_index = [panel_delegate getIndex];
+						Variant ret;
+						Callable::CallError ce;
+						const Variant *args[3] = { &v_result, &v_files, &v_index };
 
-									  callback.callp(args, 3, ret, ce);
-									  if (ce.error != Callable::CallError::CALL_OK) {
-										  ERR_PRINT(vformat("Failed to execute file dialog callback: %s.", Variant::get_callable_error_text(callback, args, 3, ce)));
-									  }
-								  }
-							  }
-						  }
-						  if (prev_focus != INVALID_WINDOW_ID) {
-							  callable_mp(DisplayServer::get_singleton(), &DisplayServer::window_move_to_foreground).call_deferred(prev_focus);
-						  }
-					  }];
+						callback.callp(args, 3, ret, ce);
+						if (ce.error != Callable::CallError::CALL_OK) {
+							ERR_PRINT(vformat("Failed to execute file dialog callback: %s.", Variant::get_callable_error_text(callback, args, 3, ce)));
+						}
+					}
+				}
+			}
+			if (p_window_id != INVALID_WINDOW_ID) {
+				callable_mp(DisplayServer::get_singleton(), &DisplayServer::window_move_to_foreground).call_deferred(p_window_id);
+			}
+		};
+		if (nswindow) {
+			[panel beginSheetModalForWindow:nswindow completionHandler:completion_handler];
+		} else {
+			[panel beginWithCompletionHandler:completion_handler];
+		}
 	} else {
 		NSOpenPanel *panel = [NSOpenPanel openPanel];
 
@@ -1114,104 +1133,108 @@ Error DisplayServerMacOS::_file_dialog_with_options_show(const String &p_title, 
 		}
 		[panel setAllowsMultipleSelection:(p_mode == FILE_DIALOG_MODE_OPEN_FILES)];
 
-		[panel beginSheetModalForWindow:[[NSApplication sharedApplication] mainWindow]
-					  completionHandler:^(NSInteger ret) {
-						  if (ret == NSModalResponseOK) {
-							  // Save bookmark for folder.
-							  NSArray *urls = [(NSOpenPanel *)panel URLs];
-							  if (OS::get_singleton()->is_sandboxed()) {
-								  NSArray *bookmarks = [[NSUserDefaults standardUserDefaults] arrayForKey:@"sec_bookmarks"];
-								  NSMutableArray *new_bookmarks = [bookmarks mutableCopy];
-								  for (NSUInteger i = 0; i != [urls count]; ++i) {
-									  bool skip = false;
-									  for (id bookmark in bookmarks) {
-										  NSError *error = nil;
-										  BOOL isStale = NO;
-										  NSURL *exurl = [NSURL URLByResolvingBookmarkData:bookmark options:NSURLBookmarkResolutionWithSecurityScope relativeToURL:nil bookmarkDataIsStale:&isStale error:&error];
-										  if (!error && !isStale && ([[exurl path] compare:[[urls objectAtIndex:i] path]] == NSOrderedSame)) {
-											  skip = true;
-											  break;
-										  }
-									  }
-									  if (!skip) {
-										  NSError *error = nil;
-										  NSData *bookmark = [[urls objectAtIndex:i] bookmarkDataWithOptions:NSURLBookmarkCreationWithSecurityScope includingResourceValuesForKeys:nil relativeToURL:nil error:&error];
-										  if (!error) {
-											  [new_bookmarks addObject:bookmark];
-										  }
-									  }
-								  }
-								  [[NSUserDefaults standardUserDefaults] setObject:new_bookmarks forKey:@"sec_bookmarks"];
-							  }
-							  // Callback.
-							  Vector<String> files;
-							  for (NSUInteger i = 0; i != [urls count]; ++i) {
-								  String url;
-								  url.parse_utf8([[[urls objectAtIndex:i] path] UTF8String]);
-								  files.push_back(url);
-							  }
-							  if (callback.is_valid()) {
-								  if (p_options_in_cb) {
-									  Variant v_result = true;
-									  Variant v_files = files;
-									  Variant v_index = [panel_delegate getIndex];
-									  Variant v_opt = [panel_delegate getSelection];
-									  Variant ret;
-									  Callable::CallError ce;
-									  const Variant *args[4] = { &v_result, &v_files, &v_index, &v_opt };
+		void (^completion_handler)(NSInteger ret) = ^(NSInteger ret) {
+			if (ret == NSModalResponseOK) {
+				// Save bookmark for folder.
+				NSArray *urls = [(NSOpenPanel *)panel URLs];
+				if (OS::get_singleton()->is_sandboxed()) {
+					NSArray *bookmarks = [[NSUserDefaults standardUserDefaults] arrayForKey:@"sec_bookmarks"];
+					NSMutableArray *new_bookmarks = [bookmarks mutableCopy];
+					for (NSUInteger i = 0; i != [urls count]; ++i) {
+						bool skip = false;
+						for (id bookmark in bookmarks) {
+							NSError *error = nil;
+							BOOL isStale = NO;
+							NSURL *exurl = [NSURL URLByResolvingBookmarkData:bookmark options:NSURLBookmarkResolutionWithSecurityScope relativeToURL:nil bookmarkDataIsStale:&isStale error:&error];
+							if (!error && !isStale && ([[exurl path] compare:[[urls objectAtIndex:i] path]] == NSOrderedSame)) {
+								skip = true;
+								break;
+							}
+						}
+						if (!skip) {
+							NSError *error = nil;
+							NSData *bookmark = [[urls objectAtIndex:i] bookmarkDataWithOptions:NSURLBookmarkCreationWithSecurityScope includingResourceValuesForKeys:nil relativeToURL:nil error:&error];
+							if (!error) {
+								[new_bookmarks addObject:bookmark];
+							}
+						}
+					}
+					[[NSUserDefaults standardUserDefaults] setObject:new_bookmarks forKey:@"sec_bookmarks"];
+				}
+				// Callback.
+				Vector<String> files;
+				for (NSUInteger i = 0; i != [urls count]; ++i) {
+					String url;
+					url.parse_utf8([[[urls objectAtIndex:i] path] UTF8String]);
+					files.push_back(url);
+				}
+				if (callback.is_valid()) {
+					if (p_options_in_cb) {
+						Variant v_result = true;
+						Variant v_files = files;
+						Variant v_index = [panel_delegate getIndex];
+						Variant v_opt = [panel_delegate getSelection];
+						Variant ret;
+						Callable::CallError ce;
+						const Variant *args[4] = { &v_result, &v_files, &v_index, &v_opt };
 
-									  callback.callp(args, 4, ret, ce);
-									  if (ce.error != Callable::CallError::CALL_OK) {
-										  ERR_PRINT(vformat("Failed to execute file dialog callback: %s.", Variant::get_callable_error_text(callback, args, 4, ce)));
-									  }
-								  } else {
-									  Variant v_result = true;
-									  Variant v_files = files;
-									  Variant v_index = [panel_delegate getIndex];
-									  Variant ret;
-									  Callable::CallError ce;
-									  const Variant *args[3] = { &v_result, &v_files, &v_index };
+						callback.callp(args, 4, ret, ce);
+						if (ce.error != Callable::CallError::CALL_OK) {
+							ERR_PRINT(vformat("Failed to execute file dialog callback: %s.", Variant::get_callable_error_text(callback, args, 4, ce)));
+						}
+					} else {
+						Variant v_result = true;
+						Variant v_files = files;
+						Variant v_index = [panel_delegate getIndex];
+						Variant ret;
+						Callable::CallError ce;
+						const Variant *args[3] = { &v_result, &v_files, &v_index };
 
-									  callback.callp(args, 3, ret, ce);
-									  if (ce.error != Callable::CallError::CALL_OK) {
-										  ERR_PRINT(vformat("Failed to execute file dialog callback: %s.", Variant::get_callable_error_text(callback, args, 3, ce)));
-									  }
-								  }
-							  }
-						  } else {
-							  if (callback.is_valid()) {
-								  if (p_options_in_cb) {
-									  Variant v_result = false;
-									  Variant v_files = Vector<String>();
-									  Variant v_index = [panel_delegate getIndex];
-									  Variant v_opt = [panel_delegate getSelection];
-									  Variant ret;
-									  Callable::CallError ce;
-									  const Variant *args[4] = { &v_result, &v_files, &v_index, &v_opt };
+						callback.callp(args, 3, ret, ce);
+						if (ce.error != Callable::CallError::CALL_OK) {
+							ERR_PRINT(vformat("Failed to execute file dialog callback: %s.", Variant::get_callable_error_text(callback, args, 3, ce)));
+						}
+					}
+				}
+			} else {
+				if (callback.is_valid()) {
+					if (p_options_in_cb) {
+						Variant v_result = false;
+						Variant v_files = Vector<String>();
+						Variant v_index = [panel_delegate getIndex];
+						Variant v_opt = [panel_delegate getSelection];
+						Variant ret;
+						Callable::CallError ce;
+						const Variant *args[4] = { &v_result, &v_files, &v_index, &v_opt };
 
-									  callback.callp(args, 4, ret, ce);
-									  if (ce.error != Callable::CallError::CALL_OK) {
-										  ERR_PRINT(vformat("Failed to execute file dialog callback: %s.", Variant::get_callable_error_text(callback, args, 4, ce)));
-									  }
-								  } else {
-									  Variant v_result = false;
-									  Variant v_files = Vector<String>();
-									  Variant v_index = [panel_delegate getIndex];
-									  Variant ret;
-									  Callable::CallError ce;
-									  const Variant *args[3] = { &v_result, &v_files, &v_index };
+						callback.callp(args, 4, ret, ce);
+						if (ce.error != Callable::CallError::CALL_OK) {
+							ERR_PRINT(vformat("Failed to execute file dialog callback: %s.", Variant::get_callable_error_text(callback, args, 4, ce)));
+						}
+					} else {
+						Variant v_result = false;
+						Variant v_files = Vector<String>();
+						Variant v_index = [panel_delegate getIndex];
+						Variant ret;
+						Callable::CallError ce;
+						const Variant *args[3] = { &v_result, &v_files, &v_index };
 
-									  callback.callp(args, 3, ret, ce);
-									  if (ce.error != Callable::CallError::CALL_OK) {
-										  ERR_PRINT(vformat("Failed to execute file dialog callback: %s.", Variant::get_callable_error_text(callback, args, 3, ce)));
-									  }
-								  }
-							  }
-						  }
-						  if (prev_focus != INVALID_WINDOW_ID) {
-							  callable_mp(DisplayServer::get_singleton(), &DisplayServer::window_move_to_foreground).call_deferred(prev_focus);
-						  }
-					  }];
+						callback.callp(args, 3, ret, ce);
+						if (ce.error != Callable::CallError::CALL_OK) {
+							ERR_PRINT(vformat("Failed to execute file dialog callback: %s.", Variant::get_callable_error_text(callback, args, 3, ce)));
+						}
+					}
+				}
+			}
+			if (p_window_id != INVALID_WINDOW_ID) {
+				callable_mp(DisplayServer::get_singleton(), &DisplayServer::window_move_to_foreground).call_deferred(p_window_id);
+			}
+		};
+		if (nswindow) {
+			[panel beginSheetModalForWindow:nswindow completionHandler:completion_handler];
+		} else {
+			[panel beginWithCompletionHandler:completion_handler];
+		}
 	}
 
 	return OK;
@@ -1257,10 +1280,14 @@ Error DisplayServerMacOS::dialog_input_text(String p_title, String p_description
 	return OK;
 }
 
-void DisplayServerMacOS::mouse_set_mode(MouseMode p_mode) {
+void DisplayServerMacOS::_mouse_update_mode() {
 	_THREAD_SAFE_METHOD_
 
-	if (p_mode == mouse_mode) {
+	MouseMode wanted_mouse_mode = mouse_mode_override_enabled
+			? mouse_mode_override
+			: mouse_mode_base;
+
+	if (wanted_mouse_mode == mouse_mode) {
 		return;
 	}
 
@@ -1270,7 +1297,7 @@ void DisplayServerMacOS::mouse_set_mode(MouseMode p_mode) {
 	}
 	WindowData &wd = windows[window_id];
 
-	bool show_cursor = (p_mode == MOUSE_MODE_VISIBLE || p_mode == MOUSE_MODE_CONFINED);
+	bool show_cursor = (wanted_mouse_mode == MOUSE_MODE_VISIBLE || wanted_mouse_mode == MOUSE_MODE_CONFINED);
 	bool previously_shown = (mouse_mode == MOUSE_MODE_VISIBLE || mouse_mode == MOUSE_MODE_CONFINED);
 
 	if (show_cursor && !previously_shown) {
@@ -1278,7 +1305,7 @@ void DisplayServerMacOS::mouse_set_mode(MouseMode p_mode) {
 		mouse_enter_window(window_id);
 	}
 
-	if (p_mode == MOUSE_MODE_CAPTURED) {
+	if (wanted_mouse_mode == MOUSE_MODE_CAPTURED) {
 		// Apple Docs state that the display parameter is not used.
 		// "This parameter is not used. By default, you may pass kCGDirectMainDisplay."
 		// https://developer.apple.com/library/mac/documentation/graphicsimaging/reference/Quartz_Services_Ref/Reference/reference.html
@@ -1292,17 +1319,17 @@ void DisplayServerMacOS::mouse_set_mode(MouseMode p_mode) {
 		NSPoint pointOnScreen = [[wd.window_view window] convertRectToScreen:pointInWindowRect].origin;
 		CGPoint lMouseWarpPos = { pointOnScreen.x, CGDisplayBounds(CGMainDisplayID()).size.height - pointOnScreen.y };
 		CGWarpMouseCursorPosition(lMouseWarpPos);
-	} else if (p_mode == MOUSE_MODE_HIDDEN) {
+	} else if (wanted_mouse_mode == MOUSE_MODE_HIDDEN) {
 		if (previously_shown) {
 			CGDisplayHideCursor(kCGDirectMainDisplay);
 		}
 		[wd.window_object setMovable:YES];
 		CGAssociateMouseAndMouseCursorPosition(true);
-	} else if (p_mode == MOUSE_MODE_CONFINED) {
+	} else if (wanted_mouse_mode == MOUSE_MODE_CONFINED) {
 		CGDisplayShowCursor(kCGDirectMainDisplay);
 		[wd.window_object setMovable:NO];
 		CGAssociateMouseAndMouseCursorPosition(false);
-	} else if (p_mode == MOUSE_MODE_CONFINED_HIDDEN) {
+	} else if (wanted_mouse_mode == MOUSE_MODE_CONFINED_HIDDEN) {
 		if (previously_shown) {
 			CGDisplayHideCursor(kCGDirectMainDisplay);
 		}
@@ -1317,15 +1344,49 @@ void DisplayServerMacOS::mouse_set_mode(MouseMode p_mode) {
 	last_warp = [[NSProcessInfo processInfo] systemUptime];
 	ignore_warp = true;
 	warp_events.clear();
-	mouse_mode = p_mode;
+	mouse_mode = wanted_mouse_mode;
 
 	if (show_cursor) {
 		cursor_update_shape();
 	}
 }
 
+void DisplayServerMacOS::mouse_set_mode(MouseMode p_mode) {
+	ERR_FAIL_INDEX(p_mode, MouseMode::MOUSE_MODE_MAX);
+	if (p_mode == mouse_mode_base) {
+		return;
+	}
+	mouse_mode_base = p_mode;
+	_mouse_update_mode();
+}
+
 DisplayServer::MouseMode DisplayServerMacOS::mouse_get_mode() const {
 	return mouse_mode;
+}
+
+void DisplayServerMacOS::mouse_set_mode_override(MouseMode p_mode) {
+	ERR_FAIL_INDEX(p_mode, MouseMode::MOUSE_MODE_MAX);
+	if (p_mode == mouse_mode_override) {
+		return;
+	}
+	mouse_mode_override = p_mode;
+	_mouse_update_mode();
+}
+
+DisplayServer::MouseMode DisplayServerMacOS::mouse_get_mode_override() const {
+	return mouse_mode_override;
+}
+
+void DisplayServerMacOS::mouse_set_mode_override_enabled(bool p_override_enabled) {
+	if (p_override_enabled == mouse_mode_override_enabled) {
+		return;
+	}
+	mouse_mode_override_enabled = p_override_enabled;
+	_mouse_update_mode();
+}
+
+bool DisplayServerMacOS::mouse_is_mode_override_enabled() const {
+	return mouse_mode_override_enabled;
 }
 
 bool DisplayServerMacOS::update_mouse_wrap(WindowData &p_wd, NSPoint &r_delta, NSPoint &r_mpos, NSTimeInterval p_timestamp) {
@@ -2435,6 +2496,16 @@ void DisplayServerMacOS::window_start_drag(WindowID p_window) {
 	[wd.window_object performWindowDragWithEvent:event];
 }
 
+void DisplayServerMacOS::window_start_resize(WindowResizeEdge p_edge, WindowID p_window) {
+	_THREAD_SAFE_METHOD_
+
+	ERR_FAIL_INDEX(int(p_edge), WINDOW_EDGE_MAX);
+	ERR_FAIL_COND(!windows.has(p_window));
+	WindowData &wd = windows[p_window];
+
+	wd.edge = p_edge;
+}
+
 void DisplayServerMacOS::window_set_window_buttons_offset(const Vector2i &p_offset, WindowID p_window) {
 	_THREAD_SAFE_METHOD_
 
@@ -3118,6 +3189,10 @@ Key DisplayServerMacOS::keyboard_get_label_from_physical(Key p_keycode) const {
 	return (Key)(KeyMappingMacOS::remap_key(macos_keycode, 0, true) | modifiers);
 }
 
+void DisplayServerMacOS::show_emoji_and_symbol_picker() const {
+	[[NSApplication sharedApplication] orderFrontCharacterPalette:nil];
+}
+
 void DisplayServerMacOS::process_events() {
 	ERR_FAIL_COND(!Thread::is_main_thread());
 
@@ -3399,8 +3474,8 @@ bool DisplayServerMacOS::is_window_transparency_available() const {
 	return OS::get_singleton()->is_layered_allowed();
 }
 
-DisplayServer *DisplayServerMacOS::create_func(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, Error &r_error) {
-	DisplayServer *ds = memnew(DisplayServerMacOS(p_rendering_driver, p_mode, p_vsync_mode, p_flags, p_position, p_resolution, p_screen, p_context, r_error));
+DisplayServer *DisplayServerMacOS::create_func(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, int64_t p_parent_window, Error &r_error) {
+	DisplayServer *ds = memnew(DisplayServerMacOS(p_rendering_driver, p_mode, p_vsync_mode, p_flags, p_position, p_resolution, p_screen, p_context, p_parent_window, r_error));
 	if (r_error != OK) {
 		if (p_rendering_driver == "vulkan") {
 			String executable_command;
@@ -3594,7 +3669,7 @@ bool DisplayServerMacOS::mouse_process_popups(bool p_close) {
 	return closed;
 }
 
-DisplayServerMacOS::DisplayServerMacOS(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, Error &r_error) {
+DisplayServerMacOS::DisplayServerMacOS(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, int64_t p_parent_window, Error &r_error) {
 	KeyMappingMacOS::initialize();
 
 	Input::get_singleton()->set_event_dispatch_function(_dispatch_input_events);
@@ -3726,6 +3801,17 @@ DisplayServerMacOS::DisplayServerMacOS(const String &p_rendering_driver, WindowM
 
 #if defined(RD_ENABLED)
 #if defined(VULKAN_ENABLED)
+#if defined(__x86_64__)
+	bool fallback_to_vulkan = GLOBAL_GET("rendering/rendering_device/fallback_to_vulkan");
+	if (!fallback_to_vulkan) {
+		WARN_PRINT("Metal is not supported on Intel Macs, switching to Vulkan.");
+	}
+	// Metal rendering driver not available on Intel.
+	if (rendering_driver == "metal") {
+		rendering_driver = "vulkan";
+		OS::get_singleton()->set_current_rendering_driver_name(rendering_driver);
+	}
+#endif
 	if (rendering_driver == "vulkan") {
 		rendering_context = memnew(RenderingContextDriverVulkanMacOS);
 	}

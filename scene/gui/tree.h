@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TREE_H
-#define TREE_H
+#pragma once
 
 #include "scene/gui/control.h"
 #include "scene/gui/line_edit.h"
@@ -277,6 +276,7 @@ public:
 	void set_icon_max_width(int p_column, int p_max);
 	int get_icon_max_width(int p_column) const;
 
+	void clear_buttons();
 	void add_button(int p_column, const Ref<Texture2D> &p_button, int p_id = -1, bool p_disabled = false, const String &p_tooltip = "");
 	int get_button_count(int p_column) const;
 	String get_button_tooltip_text(int p_column, int p_index) const;
@@ -497,7 +497,7 @@ private:
 
 	VBoxContainer *popup_editor_vb = nullptr;
 
-	bool popup_edit_commited = true;
+	bool popup_edit_committed = true;
 	Popup *popup_editor = nullptr;
 	LineEdit *line_editor = nullptr;
 	TextEdit *text_editor = nullptr;
@@ -550,6 +550,8 @@ private:
 
 		Ref<StyleBox> hovered;
 		Ref<StyleBox> hovered_dimmed;
+		Ref<StyleBox> hovered_selected;
+		Ref<StyleBox> hovered_selected_focus;
 		Ref<StyleBox> selected;
 		Ref<StyleBox> selected_focus;
 		Ref<StyleBox> cursor;
@@ -580,6 +582,7 @@ private:
 		Color font_color;
 		Color font_hovered_color;
 		Color font_hovered_dimmed_color;
+		Color font_hovered_selected_color;
 		Color font_selected_color;
 		Color font_disabled_color;
 		Color guide_color;
@@ -668,10 +671,19 @@ private:
 
 	TreeItem *_search_item_text(TreeItem *p_at, const String &p_find, int *r_col, bool p_selectable, bool p_backwards = false);
 
-	TreeItem *_find_item_at_pos(TreeItem *p_item, const Point2 &p_pos, int &r_column, int &h, int &section) const;
-	int _get_item_h_offset(TreeItem *p_item) const;
+	TreeItem *_find_item_at_pos(TreeItem *p_item, const Point2 &p_pos, int &r_column, int &r_height, int &r_section) const;
 
-	void _find_button_at_pos(const Point2 &p_pos, TreeItem *&r_item, int &r_column, int &r_index) const;
+	void _find_button_at_pos(const Point2 &p_pos, TreeItem *&r_item, int &r_column, int &r_index, int &r_section) const;
+
+	struct FindColumnButtonResult {
+		int column_index = -1;
+		int button_index = -1;
+		int column_width = -1;
+		int column_offset = -1;
+		int pos_x = -1;
+	};
+
+	FindColumnButtonResult _find_column_and_button_at_pos(int p_x, const TreeItem *p_item, int p_x_ofs, int p_x_limit) const;
 
 	/*	float drag_speed;
 	float drag_accum;
@@ -715,6 +727,7 @@ private:
 
 	Rect2 _get_scrollbar_layout_rect() const;
 	Rect2 _get_content_rect() const; // Considering the background stylebox and scrollbars.
+	Rect2 _get_item_focus_rect(const TreeItem *p_item) const;
 
 protected:
 	virtual void _update_theme_item_cache() override;
@@ -843,5 +856,3 @@ public:
 
 VARIANT_ENUM_CAST(Tree::SelectMode);
 VARIANT_ENUM_CAST(Tree::DropModeFlags);
-
-#endif // TREE_H

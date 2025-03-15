@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef SHADER_LANGUAGE_H
-#define SHADER_LANGUAGE_H
+#pragma once
 
 #include "core/object/script_language.h"
 #include "core/string/string_name.h"
@@ -631,6 +630,28 @@ public:
 			int array_size = 0;
 			TkPos tkpos;
 
+			uint32_t get_size() const {
+				uint32_t size = 1;
+				if (array_size > 0) {
+					size = (uint32_t)array_size;
+				}
+
+				switch (type) {
+					case TYPE_MAT2:
+						size *= 2;
+						break;
+					case TYPE_MAT3:
+						size *= 3;
+						break;
+					case TYPE_MAT4:
+						size *= 4;
+						break;
+					default:
+						break;
+				}
+				return size;
+			}
+
 			Varying() {}
 		};
 
@@ -824,6 +845,7 @@ public:
 	static bool is_float_type(DataType p_type);
 	static bool is_sampler_type(DataType p_type);
 	static Variant constant_value_to_variant(const Vector<Scalar> &p_value, DataType p_type, int p_array_size, ShaderLanguage::ShaderNode::Uniform::Hint p_hint = ShaderLanguage::ShaderNode::Uniform::HINT_NONE);
+	static Variant get_default_datatype_value(DataType p_type, int p_array_size, ShaderLanguage::ShaderNode::Uniform::Hint p_hint);
 	static PropertyInfo uniform_to_property_info(const ShaderNode::Uniform &p_uniform);
 	static uint32_t get_datatype_size(DataType p_type);
 	static uint32_t get_datatype_component_count(DataType p_type);
@@ -1021,6 +1043,7 @@ private:
 	String current_uniform_subgroup_name;
 
 	VaryingFunctionNames varying_function_names;
+	uint32_t base_varying_index = 0;
 
 	TkPos _get_tkpos() {
 		TkPos tkp;
@@ -1216,6 +1239,7 @@ public:
 		HashSet<String> shader_types;
 		GlobalShaderUniformGetTypeFunc global_shader_uniform_type_func = nullptr;
 		bool is_include = false;
+		uint32_t base_varying_index = 0;
 	};
 
 	Error compile(const String &p_code, const ShaderCompileInfo &p_info);
@@ -1232,5 +1256,3 @@ public:
 	ShaderLanguage();
 	~ShaderLanguage();
 };
-
-#endif // SHADER_LANGUAGE_H

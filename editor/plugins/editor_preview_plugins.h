@@ -28,10 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef EDITOR_PREVIEW_PLUGINS_H
-#define EDITOR_PREVIEW_PLUGINS_H
+#pragma once
 
-#include "core/templates/safe_refcount.h"
 #include "editor/editor_resource_preview.h"
 
 class ScriptLanguage;
@@ -184,5 +182,3 @@ public:
 
 	EditorGradientPreviewPlugin();
 };
-
-#endif // EDITOR_PREVIEW_PLUGINS_H

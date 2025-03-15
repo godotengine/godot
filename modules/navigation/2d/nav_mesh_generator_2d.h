@@ -28,14 +28,14 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef NAV_MESH_GENERATOR_2D_H
-#define NAV_MESH_GENERATOR_2D_H
+#pragma once
 
 #ifdef CLIPPER2_ENABLED
 
 #include "core/object/class_db.h"
 #include "core/object/worker_thread_pool.h"
 #include "core/templates/rid_owner.h"
+#include "servers/navigation_server_2d.h"
 
 class Node;
 class NavigationPolygon;
@@ -47,12 +47,7 @@ class NavMeshGenerator2D : public Object {
 	static Mutex baking_navmesh_mutex;
 	static Mutex generator_task_mutex;
 
-	static RWLock generator_rid_rwlock;
-	struct NavMeshGeometryParser2D {
-		RID self;
-		Callable callback;
-	};
-	static RID_Owner<NavMeshGeometryParser2D> generator_parser_owner;
+	static RWLock generator_parsers_rwlock;
 	static LocalVector<NavMeshGeometryParser2D *> generator_parsers;
 
 	static bool use_threads;
@@ -85,13 +80,6 @@ class NavMeshGenerator2D : public Object {
 	static void generator_parse_source_geometry_data(Ref<NavigationPolygon> p_navigation_mesh, Ref<NavigationMeshSourceGeometryData2D> p_source_geometry_data, Node *p_root_node);
 	static void generator_bake_from_source_geometry_data(Ref<NavigationPolygon> p_navigation_mesh, Ref<NavigationMeshSourceGeometryData2D> p_source_geometry_data);
 
-	static void generator_parse_meshinstance2d_node(const Ref<NavigationPolygon> &p_navigation_mesh, Ref<NavigationMeshSourceGeometryData2D> p_source_geometry_data, Node *p_node);
-	static void generator_parse_multimeshinstance2d_node(const Ref<NavigationPolygon> &p_navigation_mesh, Ref<NavigationMeshSourceGeometryData2D> p_source_geometry_data, Node *p_node);
-	static void generator_parse_polygon2d_node(const Ref<NavigationPolygon> &p_navigation_mesh, Ref<NavigationMeshSourceGeometryData2D> p_source_geometry_data, Node *p_node);
-	static void generator_parse_staticbody2d_node(const Ref<NavigationPolygon> &p_navigation_mesh, Ref<NavigationMeshSourceGeometryData2D> p_source_geometry_data, Node *p_node);
-	static void generator_parse_tile_map_layer_node(const Ref<NavigationPolygon> &p_navigation_mesh, Ref<NavigationMeshSourceGeometryData2D> p_source_geometry_data, Node *p_node);
-	static void generator_parse_navigationobstacle_node(const Ref<NavigationPolygon> &p_navigation_mesh, Ref<NavigationMeshSourceGeometryData2D> p_source_geometry_data, Node *p_node);
-
 	static bool generator_emit_callback(const Callable &p_callback);
 
 public:
@@ -101,21 +89,15 @@ public:
 	static void cleanup();
 	static void finish();
 
+	static void set_generator_parsers(LocalVector<NavMeshGeometryParser2D *> p_parsers);
+
 	static void parse_source_geometry_data(Ref<NavigationPolygon> p_navigation_mesh, Ref<NavigationMeshSourceGeometryData2D> p_source_geometry_data, Node *p_root_node, const Callable &p_callback = Callable());
 	static void bake_from_source_geometry_data(Ref<NavigationPolygon> p_navigation_mesh, Ref<NavigationMeshSourceGeometryData2D> p_source_geometry_data, const Callable &p_callback = Callable());
 	static void bake_from_source_geometry_data_async(Ref<NavigationPolygon> p_navigation_mesh, Ref<NavigationMeshSourceGeometryData2D> p_source_geometry_data, const Callable &p_callback = Callable());
 	static bool is_baking(Ref<NavigationPolygon> p_navigation_polygon);
-
-	static RID source_geometry_parser_create();
-	static void source_geometry_parser_set_callback(RID p_parser, const Callable &p_callback);
-
-	static bool owns(RID p_object);
-	static void free(RID p_object);
 
 	NavMeshGenerator2D();
 	~NavMeshGenerator2D();
 };
 
 #endif // CLIPPER2_ENABLED
-
-#endif // NAV_MESH_GENERATOR_2D_H

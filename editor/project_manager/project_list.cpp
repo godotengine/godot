@@ -68,10 +68,13 @@ void ProjectListItemControl::_notification(int p_what) {
 			project_unsupported_features->set_texture(get_editor_theme_icon(SNAME("NodeWarning")));
 
 			favorite_button->set_texture_normal(get_editor_theme_icon(SNAME("Favorites")));
+
 			if (project_is_missing) {
 				explore_button->set_button_icon(get_editor_theme_icon(SNAME("FileBroken")));
+#if !defined(ANDROID_ENABLED) && !defined(WEB_ENABLED)
 			} else {
 				explore_button->set_button_icon(get_editor_theme_icon(SNAME("Load")));
+#endif
 			}
 		} break;
 
@@ -153,7 +156,7 @@ void ProjectListItemControl::set_unsupported_features(PackedStringArray p_featur
 					project_version_major = project_version_split[0].to_int();
 					project_version_minor = project_version_split[1].to_int();
 				}
-				if (VERSION_MAJOR != project_version_major || VERSION_MINOR <= project_version_minor) {
+				if (GODOT_VERSION_MAJOR != project_version_major || GODOT_VERSION_MINOR <= project_version_minor) {
 					// Don't show a warning if the project was last edited in a previous minor version.
 					tooltip_text += TTR("This project was last edited in a different Godot version: ") + p_features[i] + "\n";
 				}
@@ -190,9 +193,6 @@ void ProjectListItemControl::set_is_favorite(bool p_favorite) {
 }
 
 void ProjectListItemControl::set_is_missing(bool p_missing) {
-	if (project_is_missing == p_missing) {
-		return;
-	}
 	project_is_missing = p_missing;
 
 	if (project_is_missing) {
@@ -201,10 +201,8 @@ void ProjectListItemControl::set_is_missing(bool p_missing) {
 		explore_button->set_button_icon(get_editor_theme_icon(SNAME("FileBroken")));
 		explore_button->set_tooltip_text(TTR("Error: Project is missing on the filesystem."));
 	} else {
-		project_icon->set_modulate(Color(1, 1, 1, 1.0));
-
-		explore_button->set_button_icon(get_editor_theme_icon(SNAME("Load")));
 #if !defined(ANDROID_ENABLED) && !defined(WEB_ENABLED)
+		explore_button->set_button_icon(get_editor_theme_icon(SNAME("Load")));
 		explore_button->set_tooltip_text(TTR("Show in File Manager"));
 #else
 		// Opening the system file manager is not supported on the Android and web editors.
@@ -446,7 +444,7 @@ void ProjectList::_migrate_config() {
 		String path = EDITOR_GET(property_key);
 		print_line("Migrating legacy project '" + path + "'.");
 
-		String favoriteKey = "favorite_projects/" + property_key.get_slice("/", 1);
+		String favoriteKey = "favorite_projects/" + property_key.get_slicec('/', 1);
 		bool favorite = EditorSettings::get_singleton()->has_setting(favoriteKey);
 		add_project(path, favorite);
 		if (favorite) {
@@ -468,14 +466,16 @@ ProjectList::Item ProjectList::load_project_data(const String &p_path, bool p_fa
 	String conf = p_path.path_join("project.godot");
 	bool grayed = false;
 	bool missing = false;
+	bool recovery_mode = false;
 
 	Ref<ConfigFile> cf = memnew(ConfigFile);
 	Error cf_err = cf->load(conf);
 
 	int config_version = 0;
+	String cf_project_name;
 	String project_name = TTR("Unnamed Project");
 	if (cf_err == OK) {
-		String cf_project_name = cf->get_value("application", "config/name", "");
+		cf_project_name = cf->get_value("application", "config/name", "");
 		if (!cf_project_name.is_empty()) {
 			project_name = cf_project_name.xml_unescape();
 		}
@@ -489,8 +489,22 @@ ProjectList::Item ProjectList::load_project_data(const String &p_path, bool p_fa
 
 	const String description = cf->get_value("application", "config/description", "");
 	const PackedStringArray tags = cf->get_value("application", "config/tags", PackedStringArray());
-	const String icon = cf->get_value("application", "config/icon", "");
 	const String main_scene = cf->get_value("application", "run/main_scene", "");
+
+	String icon = cf->get_value("application", "config/icon", "");
+	if (icon.begins_with("uid://")) {
+		Error err;
+		Ref<FileAccess> file = FileAccess::open(p_path.path_join(".godot/uid_cache.bin"), FileAccess::READ, &err);
+		if (err == OK) {
+			icon = ResourceUID::get_path_from_cache(file, icon);
+			if (icon.is_empty()) {
+				WARN_PRINT(vformat("Could not load icon from UID for project at path \"%s\". Make sure UID cache exists.", p_path));
+			}
+		} else {
+			// Cache does not exist yet, so ignore and fallback to default icon.
+			icon = "";
+		}
+	}
 
 	PackedStringArray project_features = cf->get_value("application", "config/features", PackedStringArray());
 	PackedStringArray unsupported_features = ProjectSettings::get_unsupported_features(project_features);
@@ -537,7 +551,29 @@ ProjectList::Item ProjectList::load_project_data(const String &p_path, bool p_fa
 		ProjectManager::get_singleton()->add_new_tag(tag);
 	}
 
-	return Item(project_name, description, project_version, tags, p_path, icon, main_scene, unsupported_features, last_edited, p_favorite, grayed, missing, config_version);
+	// We can't use OS::get_user_dir() because it attempts to load paths from the current loaded project through ProjectSettings,
+	// while here we're parsing project files externally. Therefore, we have to replicate its behavior.
+	String user_dir;
+	if (!cf_project_name.is_empty()) {
+		String appname = OS::get_singleton()->get_safe_dir_name(cf_project_name);
+		bool use_custom_dir = cf->get_value("application", "config/use_custom_user_dir", false);
+		if (use_custom_dir) {
+			String custom_dir = OS::get_singleton()->get_safe_dir_name(cf->get_value("application", "config/custom_user_dir_name", ""), true);
+			if (custom_dir.is_empty()) {
+				custom_dir = appname;
+			}
+			user_dir = custom_dir;
+		} else {
+			user_dir = OS::get_singleton()->get_godot_dir_name().path_join("app_userdata").path_join(appname);
+		}
+	} else {
+		user_dir = OS::get_singleton()->get_godot_dir_name().path_join("app_userdata").path_join("[unnamed project]");
+	}
+
+	String recovery_mode_lock_file = OS::get_singleton()->get_user_data_dir(user_dir).path_join(".recovery_mode_lock");
+	recovery_mode = FileAccess::exists(recovery_mode_lock_file);
+
+	return Item(project_name, description, project_version, tags, p_path, icon, main_scene, unsupported_features, last_edited, p_favorite, grayed, missing, recovery_mode, config_version);
 }
 
 void ProjectList::_update_icons_async() {
@@ -615,7 +651,7 @@ void ProjectList::sort_projects() {
 			PackedStringArray remaining;
 			for (const String &part : search_parts) {
 				if (part.begins_with("tag:")) {
-					tags.push_back(part.get_slice(":", 1));
+					tags.push_back(part.get_slicec(':', 1));
 				} else {
 					remaining.append(part);
 				}

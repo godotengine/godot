@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef MATERIAL_STORAGE_RD_H
-#define MATERIAL_STORAGE_RD_H
+#pragma once
 
 #include "texture_storage.h"
 
@@ -364,7 +363,7 @@ public:
 
 	/* Samplers */
 
-	Samplers samplers_rd_allocate(float p_mipmap_bias = 0.0f) const;
+	Samplers samplers_rd_allocate(float p_mipmap_bias = 0.0f, RS::ViewportAnisotropicFiltering anisotropic_filtering_level = RS::ViewportAnisotropicFiltering::VIEWPORT_ANISOTROPY_4X) const;
 	void samplers_rd_free(Samplers &p_samplers) const;
 
 	_FORCE_INLINE_ RID sampler_rd_get_default(RS::CanvasItemTextureFilter p_filter, RS::CanvasItemTextureRepeat p_repeat) {
@@ -444,6 +443,7 @@ public:
 
 	virtual bool material_is_animated(RID p_material) override;
 	virtual bool material_casts_shadows(RID p_material) override;
+	virtual RS::CullMode material_get_cull_mode(RID p_material) const override;
 
 	virtual void material_get_instance_shader_parameters(RID p_material, List<InstanceShaderParam> *r_parameters) override;
 
@@ -468,5 +468,3 @@ public:
 };
 
 } // namespace RendererRD
-
-#endif // MATERIAL_STORAGE_RD_H

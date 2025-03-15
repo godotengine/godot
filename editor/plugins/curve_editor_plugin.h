@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef CURVE_EDITOR_PLUGIN_H
-#define CURVE_EDITOR_PLUGIN_H
+#pragma once
 
 #include "editor/editor_inspector.h"
 #include "editor/editor_resource_preview.h"
@@ -188,7 +187,7 @@ class CurveEditorPlugin : public EditorPlugin {
 public:
 	CurveEditorPlugin();
 
-	virtual String get_name() const override { return "Curve"; }
+	virtual String get_plugin_name() const override { return "Curve"; }
 };
 
 class CurvePreviewGenerator : public EditorResourcePreviewGenerator {
@@ -198,5 +197,3 @@ public:
 	virtual bool handles(const String &p_type) const override;
 	virtual Ref<Texture2D> generate(const Ref<Resource> &p_from, const Size2 &p_size, Dictionary &p_metadata) const override;
 };
-
-#endif // CURVE_EDITOR_PLUGIN_H

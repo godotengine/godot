@@ -44,6 +44,7 @@
 #include "editor/gui/editor_bottom_panel.h"
 #include "editor/plugins/script_editor_plugin.h"
 #include "editor/themes/editor_scale.h"
+#include "scene/gui/flow_container.h"
 #include "scene/gui/separator.h"
 
 #define CHECK_PLUGIN_INITIALIZED() \
@@ -547,7 +548,7 @@ void VersionControlEditorPlugin::_cell_button_pressed(Object *p_item, int p_colu
 
 		file_path = "res://" + file_path;
 		if (ResourceLoader::get_resource_type(file_path) == "PackedScene") {
-			EditorNode::get_singleton()->open_request(file_path);
+			EditorNode::get_singleton()->load_scene(file_path);
 		} else if (file_path.ends_with(".gd")) {
 			EditorNode::get_singleton()->load_resource(file_path);
 			ScriptEditor::get_singleton()->reload_scripts();
@@ -909,7 +910,7 @@ void VersionControlEditorPlugin::fetch_available_vcs_plugin_names() {
 void VersionControlEditorPlugin::register_editor() {
 	EditorDockManager::get_singleton()->add_dock(version_commit_dock, "", EditorDockManager::DOCK_SLOT_RIGHT_UL);
 
-	version_control_dock_button = EditorNode::get_bottom_panel()->add_item(TTR("Version Control"), version_control_dock, ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_version_control_bottom_panel", TTR("Toggle Version Control Bottom Panel")));
+	version_control_dock_button = EditorNode::get_bottom_panel()->add_item(TTR("Version Control"), version_control_dock, ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_version_control_bottom_panel", TTRC("Toggle Version Control Bottom Panel")));
 
 	_set_vcs_ui_state(true);
 }
@@ -1255,7 +1256,7 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	commit_message->connect(SceneStringName(gui_input), callable_mp(this, &VersionControlEditorPlugin::_commit_message_gui_input));
 	commit_area->add_child(commit_message);
 
-	ED_SHORTCUT("version_control/commit", TTR("Commit"), KeyModifierMask::CMD_OR_CTRL | Key::ENTER);
+	ED_SHORTCUT("version_control/commit", TTRC("Commit"), KeyModifierMask::CMD_OR_CTRL | Key::ENTER);
 
 	commit_button = memnew(Button);
 	commit_button->set_text(TTR("Commit Changes"));
@@ -1300,7 +1301,7 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 
 	version_commit_dock->add_child(memnew(HSeparator));
 
-	HBoxContainer *menu_bar = memnew(HBoxContainer);
+	HFlowContainer *menu_bar = memnew(HFlowContainer);
 	menu_bar->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	menu_bar->set_v_size_flags(Control::SIZE_FILL);
 	version_commit_dock->add_child(menu_bar);
@@ -1308,6 +1309,7 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	branch_select = memnew(OptionButton);
 	branch_select->set_tooltip_text(TTR("Branches"));
 	branch_select->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	branch_select->set_clip_text(true);
 	branch_select->connect(SceneStringName(item_selected), callable_mp(this, &VersionControlEditorPlugin::_branch_item_selected));
 	branch_select->connect(SceneStringName(pressed), callable_mp(this, &VersionControlEditorPlugin::_refresh_branch_list));
 	menu_bar->add_child(branch_select);
@@ -1353,6 +1355,7 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	remote_select = memnew(OptionButton);
 	remote_select->set_tooltip_text(TTR("Remotes"));
 	remote_select->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	remote_select->set_clip_text(true);
 	remote_select->connect(SceneStringName(item_selected), callable_mp(this, &VersionControlEditorPlugin::_remote_selected));
 	remote_select->connect(SceneStringName(pressed), callable_mp(this, &VersionControlEditorPlugin::_refresh_remote_list));
 	menu_bar->add_child(remote_select);

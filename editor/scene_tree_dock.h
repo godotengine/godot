@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef SCENE_TREE_DOCK_H
-#define SCENE_TREE_DOCK_H
+#pragma once
 
 #include "editor/gui/scene_tree_editor.h"
 #include "editor/script_create_dialog.h"
@@ -40,14 +39,10 @@ class CheckBox;
 class EditorData;
 class EditorSelection;
 class MenuButton;
+class RenameDialog;
 class ReparentDialog;
 class ShaderCreateDialog;
 class TextureRect;
-
-#include "modules/modules_enabled.gen.h" // For regex.
-#ifdef MODULE_REGEX_ENABLED
-class RenameDialog;
-#endif // MODULE_REGEX_ENABLED
 
 class SceneTreeDock : public VBoxContainer {
 	GDCLASS(SceneTreeDock, VBoxContainer);
@@ -61,9 +56,7 @@ class SceneTreeDock : public VBoxContainer {
 		TOOL_PASTE,
 		TOOL_PASTE_AS_SIBLING,
 		TOOL_RENAME,
-#ifdef MODULE_REGEX_ENABLED
 		TOOL_BATCH_RENAME,
-#endif // MODULE_REGEX_ENABLED
 		TOOL_REPLACE,
 		TOOL_EXTEND_SCRIPT,
 		TOOL_ATTACH_SCRIPT,
@@ -94,7 +87,7 @@ class SceneTreeDock : public VBoxContainer {
 		TOOL_CREATE_USER_INTERFACE,
 		TOOL_CREATE_FAVORITE,
 		TOOL_CENTER_PARENT,
-
+		TOOL_HIDE_FILTERED_OUT_PARENTS,
 	};
 
 	enum {
@@ -107,9 +100,7 @@ class SceneTreeDock : public VBoxContainer {
 
 	int current_option = 0;
 	CreateDialog *create_dialog = nullptr;
-#ifdef MODULE_REGEX_ENABLED
 	RenameDialog *rename_dialog = nullptr;
-#endif // MODULE_REGEX_ENABLED
 
 	Button *button_add = nullptr;
 	Button *button_instance = nullptr;
@@ -302,6 +293,7 @@ class SceneTreeDock : public VBoxContainer {
 	static void _update_configuration_warning();
 
 	bool _update_node_path(Node *p_root_node, NodePath &r_node_path, HashMap<Node *, NodePath> *p_renames) const;
+	void _check_object_properties_recursive(Node *p_root_node, Object *p_obj, HashMap<Node *, NodePath> *p_renames, bool p_inside_resource = false) const;
 	bool _check_node_path_recursive(Node *p_root_node, Variant &r_variant, HashMap<Node *, NodePath> *p_renames, bool p_inside_resource = false) const;
 	bool _check_node_recursive(Variant &r_variant, Node *p_node, Node *p_by_node, const String type_hint, String &r_warn_message);
 	void _replace_node(Node *p_node, Node *p_by_node, bool p_keep_properties = true, bool p_remove_old = true);
@@ -362,5 +354,3 @@ public:
 	SceneTreeDock(Node *p_scene_root, EditorSelection *p_editor_selection, EditorData &p_editor_data);
 	~SceneTreeDock();
 };
-
-#endif // SCENE_TREE_DOCK_H

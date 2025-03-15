@@ -28,16 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TEXTURE_H
-#define TEXTURE_H
+#pragma once
 
-#include "core/io/file_access.h"
 #include "core/io/resource.h"
-#include "core/io/resource_loader.h"
 #include "core/math/rect2.h"
-#include "core/os/mutex.h"
-#include "core/os/rw_lock.h"
-#include "core/os/thread_safe.h"
 #include "scene/resources/curve.h"
 #include "scene/resources/gradient.h"
 #include "servers/camera_server.h"
@@ -143,5 +137,3 @@ public:
 	virtual Vector<Ref<Image>> get_data() const;
 	virtual Ref<Resource> create_placeholder() const;
 };
-
-#endif // TEXTURE_H

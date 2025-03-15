@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef OS_WINDOWS_H
-#define OS_WINDOWS_H
+#pragma once
 
 #include "crash_handler_windows.h"
 #include "key_mapping_windows.h"
@@ -178,6 +177,7 @@ public:
 	virtual String get_name() const override;
 	virtual String get_distribution_name() const override;
 	virtual String get_version() const override;
+	virtual String get_version_alias() const override;
 
 	virtual Vector<String> get_video_adapter_driver_info() const override;
 	virtual bool get_user_prefers_integrated_gpu() const override;
@@ -230,7 +230,7 @@ public:
 	virtual String get_godot_dir_name() const override;
 
 	virtual String get_system_dir(SystemDir p_dir, bool p_shared_storage = true) const override;
-	virtual String get_user_data_dir() const override;
+	virtual String get_user_data_dir(const String &p_user_dir) const override;
 
 	virtual String get_unique_id() const override;
 
@@ -251,9 +251,10 @@ public:
 
 	void set_main_window(HWND p_main_window) { main_window = p_main_window; }
 
+	virtual bool _test_create_rendering_device_and_gl(const String &p_display_driver) const override;
+	virtual bool _test_create_rendering_device(const String &p_display_driver) const override;
+
 	HINSTANCE get_hinstance() { return hInstance; }
 	OS_Windows(HINSTANCE _hInstance);
 	~OS_Windows();
 };
-
-#endif // OS_WINDOWS_H

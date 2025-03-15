@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TYPE_INFO_H
-#define TYPE_INFO_H
+#pragma once
 
 #include "core/typedefs.h"
 
@@ -319,10 +318,12 @@ struct ZeroInitializer<T *> {
 	static void initialize(T *&value) { value = nullptr; }
 };
 
-#define ZERO_INITIALIZER_NUMBER(m_type)                      \
-	template <>                                              \
-	struct ZeroInitializer<m_type> {                         \
-		static void initialize(m_type &value) { value = 0; } \
+#define ZERO_INITIALIZER_NUMBER(m_type)         \
+	template <>                                 \
+	struct ZeroInitializer<m_type> {            \
+		static void initialize(m_type &value) { \
+			value = 0;                          \
+		}                                       \
 	};
 
 ZERO_INITIALIZER_NUMBER(uint8_t)
@@ -337,5 +338,3 @@ ZERO_INITIALIZER_NUMBER(char16_t)
 ZERO_INITIALIZER_NUMBER(char32_t)
 ZERO_INITIALIZER_NUMBER(float)
 ZERO_INITIALIZER_NUMBER(double)
-
-#endif // TYPE_INFO_H

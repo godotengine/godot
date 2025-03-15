@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef LABEL_3D_H
-#define LABEL_3D_H
+#pragma once
 
 #include "scene/3d/visual_instance_3d.h"
 #include "scene/resources/font.h"
@@ -253,7 +252,7 @@ public:
 	StandardMaterial3D::TextureFilter get_texture_filter() const;
 
 	virtual AABB get_aabb() const override;
-	Ref<TriangleMesh> generate_triangle_mesh() const;
+	virtual Ref<TriangleMesh> generate_triangle_mesh() const override;
 
 	Label3D();
 	~Label3D();
@@ -261,5 +260,3 @@ public:
 
 VARIANT_ENUM_CAST(Label3D::DrawFlags);
 VARIANT_ENUM_CAST(Label3D::AlphaCutMode);
-
-#endif // LABEL_3D_H

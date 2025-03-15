@@ -28,11 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef PHYSICS_MATERIAL_H
-#define PHYSICS_MATERIAL_H
+#pragma once
 
 #include "core/io/resource.h"
-#include "servers/physics_server_3d.h"
 
 class PhysicsMaterial : public Resource {
 	GDCLASS(PhysicsMaterial, Resource);
@@ -70,5 +68,3 @@ public:
 
 	PhysicsMaterial() {}
 };
-
-#endif // PHYSICS_MATERIAL_H

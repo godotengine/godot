@@ -114,6 +114,7 @@
 #include "scene/resources/bone_map.h"
 #include "scene/resources/camera_attributes.h"
 #include "scene/resources/camera_texture.h"
+#include "scene/resources/canvas_item_material.h"
 #include "scene/resources/color_palette.h"
 #include "scene/resources/compositor.h"
 #include "scene/resources/compressed_texture.h"
@@ -146,7 +147,6 @@
 #include "scene/resources/style_box_texture.h"
 #include "scene/resources/surface_tool.h"
 #include "scene/resources/syntax_highlighter.h"
-#include "scene/resources/text_file.h"
 #include "scene/resources/text_line.h"
 #include "scene/resources/text_paragraph.h"
 #include "scene/resources/texture.h"
@@ -284,14 +284,21 @@
 #include "scene/3d/skeleton_ik_3d.h"
 #include "scene/3d/skeleton_modifier_3d.h"
 #include "scene/3d/soft_body_3d.h"
+#include "scene/3d/spring_bone_collision_3d.h"
+#include "scene/3d/spring_bone_collision_capsule_3d.h"
+#include "scene/3d/spring_bone_collision_plane_3d.h"
+#include "scene/3d/spring_bone_collision_sphere_3d.h"
+#include "scene/3d/spring_bone_simulator_3d.h"
 #include "scene/3d/sprite_3d.h"
 #include "scene/3d/visible_on_screen_notifier_3d.h"
 #include "scene/3d/voxel_gi.h"
 #include "scene/3d/world_environment.h"
-#include "scene/3d/xr_body_modifier_3d.h"
-#include "scene/3d/xr_face_modifier_3d.h"
-#include "scene/3d/xr_hand_modifier_3d.h"
-#include "scene/3d/xr_nodes.h"
+#ifndef XR_DISABLED
+#include "scene/3d/xr/xr_body_modifier_3d.h"
+#include "scene/3d/xr/xr_face_modifier_3d.h"
+#include "scene/3d/xr/xr_hand_modifier_3d.h"
+#include "scene/3d/xr/xr_nodes.h"
+#endif // XR_DISABLED
 #include "scene/animation/root_motion_view.h"
 #include "scene/resources/3d/box_shape_3d.h"
 #include "scene/resources/3d/capsule_shape_3d.h"
@@ -504,6 +511,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(IntervalTweener);
 	GDREGISTER_CLASS(CallbackTweener);
 	GDREGISTER_CLASS(MethodTweener);
+	GDREGISTER_CLASS(SubtweenTweener);
 
 	GDREGISTER_ABSTRACT_CLASS(AnimationMixer);
 	GDREGISTER_CLASS(AnimationPlayer);
@@ -516,9 +524,6 @@ void register_scene_types() {
 	GDREGISTER_CLASS(AnimationNodeStateMachine);
 	GDREGISTER_CLASS(AnimationNodeStateMachinePlayback);
 	GDREGISTER_VIRTUAL_CLASS(AnimationNodeExtension);
-
-	GDREGISTER_INTERNAL_CLASS(AnimationNodeStartState);
-	GDREGISTER_INTERNAL_CLASS(AnimationNodeEndState);
 
 	GDREGISTER_CLASS(AnimationNodeSync);
 	GDREGISTER_CLASS(AnimationNodeStateMachineTransition);
@@ -552,6 +557,7 @@ void register_scene_types() {
 	GDREGISTER_VIRTUAL_CLASS(GeometryInstance3D);
 	GDREGISTER_CLASS(Camera3D);
 	GDREGISTER_CLASS(AudioListener3D);
+#ifndef XR_DISABLED
 	GDREGISTER_CLASS(XRCamera3D);
 	GDREGISTER_CLASS(XRNode3D);
 	GDREGISTER_CLASS(XRController3D);
@@ -560,6 +566,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(XRBodyModifier3D);
 	GDREGISTER_CLASS(XRHandModifier3D);
 	GDREGISTER_CLASS(XRFaceModifier3D);
+#endif // XR_DISABLED
 	GDREGISTER_CLASS(MeshInstance3D);
 	GDREGISTER_CLASS(OccluderInstance3D);
 	GDREGISTER_ABSTRACT_CLASS(Occluder3D);
@@ -599,6 +606,11 @@ void register_scene_types() {
 	GDREGISTER_CLASS(RootMotionView);
 	GDREGISTER_VIRTUAL_CLASS(SkeletonModifier3D);
 	GDREGISTER_CLASS(RetargetModifier3D);
+	GDREGISTER_CLASS(SpringBoneSimulator3D);
+	GDREGISTER_VIRTUAL_CLASS(SpringBoneCollision3D);
+	GDREGISTER_CLASS(SpringBoneCollisionSphere3D);
+	GDREGISTER_CLASS(SpringBoneCollisionCapsule3D);
+	GDREGISTER_CLASS(SpringBoneCollisionPlane3D);
 
 	OS::get_singleton()->yield(); // may take time to init
 
@@ -1026,6 +1038,24 @@ void register_scene_types() {
 	GDREGISTER_CLASS(NavigationAgent2D);
 	GDREGISTER_CLASS(NavigationObstacle2D);
 	GDREGISTER_CLASS(NavigationLink2D);
+
+	OS::get_singleton()->yield(); // may take time to init
+
+	// 2D nodes that support navmesh baking need to server register their source geometry parsers.
+	MeshInstance2D::navmesh_parse_init();
+	MultiMeshInstance2D::navmesh_parse_init();
+	NavigationObstacle2D::navmesh_parse_init();
+	Polygon2D::navmesh_parse_init();
+	TileMap::navmesh_parse_init();
+	TileMapLayer::navmesh_parse_init();
+	StaticBody2D::navmesh_parse_init();
+#ifndef _3D_DISABLED
+	// 3D nodes that support navmesh baking need to server register their source geometry parsers.
+	MeshInstance3D::navmesh_parse_init();
+	MultiMeshInstance3D::navmesh_parse_init();
+	NavigationObstacle3D::navmesh_parse_init();
+	StaticBody3D::navmesh_parse_init();
+#endif
 
 	OS::get_singleton()->yield(); // may take time to init
 

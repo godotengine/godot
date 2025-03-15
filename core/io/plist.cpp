@@ -30,6 +30,9 @@
 
 #include "plist.h"
 
+#include "core/crypto/crypto_core.h"
+#include "core/os/time.h"
+
 PList::PLNodeType PListNode::get_type() const {
 	return data_type;
 }
@@ -380,14 +383,16 @@ void PListNode::store_text(String &p_stream, uint8_t p_indent) const {
 			p_stream += String("\t").repeat(p_indent);
 			p_stream += "<data>\n";
 			p_stream += String("\t").repeat(p_indent);
-			p_stream += data_string + "\n";
+			// Data should be Base64 (i.e. ASCII only).
+			p_stream += String::ascii(data_string) + "\n";
 			p_stream += String("\t").repeat(p_indent);
 			p_stream += "</data>\n";
 		} break;
 		case PList::PLNodeType::PL_NODE_TYPE_DATE: {
 			p_stream += String("\t").repeat(p_indent);
 			p_stream += "<date>";
-			p_stream += data_string;
+			// Data should be ISO 8601 (i.e. ASCII only).
+			p_stream += String::ascii(data_string);
 			p_stream += "</date>\n";
 		} break;
 		case PList::PLNodeType::PL_NODE_TYPE_STRING: {
@@ -708,7 +713,7 @@ bool PList::load_string(const String &p_string, String &r_err_out) {
 				stack.push_back(dict);
 			} else {
 				// Add root node.
-				if (!root.is_null()) {
+				if (root.is_valid()) {
 					r_err_out = "Root node already set.";
 					return false;
 				}
@@ -740,7 +745,7 @@ bool PList::load_string(const String &p_string, String &r_err_out) {
 				stack.push_back(arr);
 			} else {
 				// Add root node.
-				if (!root.is_null()) {
+				if (root.is_valid()) {
 					r_err_out = "Root node already set.";
 					return false;
 				}

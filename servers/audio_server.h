@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef AUDIO_SERVER_H
-#define AUDIO_SERVER_H
+#pragma once
 
 #include "core/math/audio_frame.h"
 #include "core/object/class_db.h"
@@ -384,6 +383,9 @@ public:
 	void set_bus_volume_db(int p_bus, float p_volume_db);
 	float get_bus_volume_db(int p_bus) const;
 
+	void set_bus_volume_linear(int p_bus, float p_volume_linear);
+	float get_bus_volume_linear(int p_bus) const;
+
 	void set_bus_send(int p_bus, const StringName &p_send);
 	StringName get_bus_send(int p_bus) const;
 
@@ -545,5 +547,3 @@ public:
 };
 
 typedef AudioServer AS;
-
-#endif // AUDIO_SERVER_H

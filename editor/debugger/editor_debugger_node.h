@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef EDITOR_DEBUGGER_NODE_H
-#define EDITOR_DEBUGGER_NODE_H
+#pragma once
 
 #include "core/object/script_language.h"
 #include "editor/debugger/editor_debugger_server.h"
@@ -39,7 +38,7 @@ class Button;
 class DebugAdapterParser;
 class EditorDebuggerPlugin;
 class EditorDebuggerTree;
-class EditorDebuggerRemoteObject;
+class EditorDebuggerRemoteObjects;
 class MenuButton;
 class ScriptEditorDebugger;
 class TabContainer;
@@ -103,9 +102,12 @@ private:
 	int last_error_count = 0;
 	int last_warning_count = 0;
 
+	bool inspect_edited_object_wait = false;
 	float inspect_edited_object_timeout = 0;
 	EditorDebuggerTree *remote_scene_tree = nullptr;
+	bool remote_scene_tree_wait = false;
 	float remote_scene_tree_timeout = 0.0;
+	bool remote_scene_tree_clear_msg = true;
 	bool auto_switch_remote_scene_tree = false;
 	bool debug_with_external_editor = false;
 	bool keep_open = false;
@@ -117,7 +119,6 @@ private:
 	HashSet<Ref<EditorDebuggerPlugin>> debugger_plugins;
 
 	ScriptEditorDebugger *_add_debugger();
-	EditorDebuggerRemoteObject *get_inspected_remote_object();
 	void _update_errors();
 
 	friend class DebuggerEditorPlugin;
@@ -129,12 +130,15 @@ protected:
 	void _debugger_stopped(int p_id);
 	void _debugger_wants_stop(int p_id);
 	void _debugger_changed(int p_tab);
-	void _remote_tree_select_requested(ObjectID p_id, int p_debugger);
+	void _debug_data(const String &p_msg, const Array &p_data, int p_debugger);
+	void _remote_tree_select_requested(const TypedArray<int64_t> &p_ids, int p_debugger);
+	void _remote_tree_clear_selection_requested(int p_debugger);
 	void _remote_tree_updated(int p_debugger);
 	void _remote_tree_button_pressed(Object *p_item, int p_column, int p_id, MouseButton p_button);
-	void _remote_object_updated(ObjectID p_id, int p_debugger);
+	void _remote_objects_updated(EditorDebuggerRemoteObjects *p_objs, int p_debugger);
 	void _remote_object_property_updated(ObjectID p_id, const String &p_property, int p_debugger);
-	void _remote_object_requested(ObjectID p_id, int p_debugger);
+	void _remote_objects_requested(const TypedArray<uint64_t> &p_ids, int p_debugger);
+	void _remote_selection_cleared(int p_debugger);
 	void _save_node_requested(ObjectID p_id, const String &p_file, int p_debugger);
 
 	void _breakpoint_set_in_tree(Ref<RefCounted> p_script, int p_line, bool p_enabled, int p_debugger);
@@ -184,6 +188,7 @@ public:
 	bool get_debug_with_external_editor() { return debug_with_external_editor; }
 
 	bool is_skip_breakpoints() const;
+	bool is_ignore_error_breaks() const;
 	void set_breakpoint(const String &p_path, int p_line, bool p_enabled);
 	void set_breakpoints(const String &p_path, const Array &p_lines);
 	void reload_all_scripts();
@@ -191,6 +196,10 @@ public:
 
 	// Remote inspector/edit.
 	void request_remote_tree();
+	void set_remote_selection(const TypedArray<int64_t> &p_ids);
+	void clear_remote_tree_selection();
+	void stop_waiting_inspection();
+	bool match_remote_selection(const TypedArray<uint64_t> &p_ids) const;
 	static void _methods_changed(void *p_ud, Object *p_base, const StringName &p_name, const Variant **p_args, int p_argcount);
 	static void _properties_changed(void *p_ud, Object *p_base, const StringName &p_property, const Variant &p_value);
 
@@ -218,5 +227,3 @@ public:
 	void add_debugger_plugin(const Ref<EditorDebuggerPlugin> &p_plugin);
 	void remove_debugger_plugin(const Ref<EditorDebuggerPlugin> &p_plugin);
 };
-
-#endif // EDITOR_DEBUGGER_NODE_H

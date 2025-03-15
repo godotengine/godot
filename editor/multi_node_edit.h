@@ -28,10 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef MULTI_NODE_EDIT_H
-#define MULTI_NODE_EDIT_H
+#pragma once
 
-#include "scene/main/node.h"
+#include "core/object/ref_counted.h"
 
 class MultiNodeEdit : public RefCounted {
 	GDCLASS(MultiNodeEdit, RefCounted);
@@ -82,5 +81,3 @@ public:
 	}
 	MultiNodeEdit();
 };
-
-#endif // MULTI_NODE_EDIT_H

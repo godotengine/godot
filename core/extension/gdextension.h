@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef GDEXTENSION_H
-#define GDEXTENSION_H
+#pragma once
 
 #include "core/extension/gdextension_interface.h"
 #include "core/extension/gdextension_loader.h"
@@ -72,6 +71,8 @@ class GDExtension : public Resource {
 		GDExtensionClassFreePropertyList free_property_list_func = nullptr;
 		GDExtensionClassCreateInstance create_instance_func = nullptr;
 		GDExtensionClassGetRID get_rid_func = nullptr;
+		GDExtensionClassGetVirtual get_virtual_func = nullptr;
+		GDExtensionClassGetVirtualCallData get_virtual_call_data_func = nullptr;
 #endif // DISABLE_DEPRECATED
 	};
 
@@ -224,5 +225,3 @@ public:
 };
 
 #endif // TOOLS_ENABLED
-
-#endif // GDEXTENSION_H

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef RENDERER_SCENE_CULL_H
-#define RENDERER_SCENE_CULL_H
+#pragma once
 
 #include "core/math/dynamic_bvh.h"
 #include "core/math/transform_interpolator.h"
@@ -40,15 +39,12 @@
 #include "core/templates/pass_func.h"
 #include "core/templates/rid_owner.h"
 #include "core/templates/self_list.h"
+#include "servers/rendering/instance_uniforms.h"
 #include "servers/rendering/renderer_scene_occlusion_cull.h"
 #include "servers/rendering/renderer_scene_render.h"
 #include "servers/rendering/rendering_method.h"
 #include "servers/rendering/rendering_server_globals.h"
 #include "servers/rendering/storage/utilities.h"
-
-#ifndef _3D_DISABLED
-#include "servers/xr/xr_interface.h"
-#endif // _3D_DISABLED
 
 class RenderingLightCuller;
 
@@ -460,16 +456,7 @@ public:
 		AABB transformed_aabb;
 		AABB prev_transformed_aabb;
 
-		struct InstanceShaderParameter {
-			int32_t index = -1;
-			Variant value;
-			Variant default_value;
-			PropertyInfo info;
-		};
-
-		HashMap<StringName, InstanceShaderParameter> instance_shader_uniforms;
-		bool instance_allocated_shader_uniforms = false;
-		int32_t instance_allocated_shader_uniforms_offset = -1;
+		InstanceUniforms instance_uniforms;
 
 		//
 
@@ -1095,8 +1082,6 @@ public:
 	virtual void instance_geometry_set_lightmap(RID p_instance, RID p_lightmap, const Rect2 &p_lightmap_uv_scale, int p_slice_index);
 	virtual void instance_geometry_set_lod_bias(RID p_instance, float p_lod_bias);
 
-	void _update_instance_shader_uniforms_from_material(HashMap<StringName, Instance::InstanceShaderParameter> &isparams, const HashMap<StringName, Instance::InstanceShaderParameter> &existing_isparams, RID p_material) const;
-
 	virtual void instance_geometry_set_shader_parameter(RID p_instance, const StringName &p_parameter, const Variant &p_value);
 	virtual void instance_geometry_get_shader_parameter_list(RID p_instance, List<PropertyInfo> *p_parameters) const;
 	virtual Variant instance_geometry_get_shader_parameter(RID p_instance, const StringName &p_parameter) const;
@@ -1113,7 +1098,7 @@ public:
 
 	void _light_instance_setup_directional_shadow(int p_shadow_index, Instance *p_instance, const Transform3D p_cam_transform, const Projection &p_cam_projection, bool p_cam_orthogonal, bool p_cam_vaspect);
 
-	_FORCE_INLINE_ bool _light_instance_update_shadow(Instance *p_instance, const Transform3D p_cam_transform, const Projection &p_cam_projection, bool p_cam_orthogonal, bool p_cam_vaspect, RID p_shadow_atlas, Scenario *p_scenario, float p_scren_mesh_lod_threshold, uint32_t p_visible_layers = 0xFFFFFF);
+	_FORCE_INLINE_ bool _light_instance_update_shadow(Instance *p_instance, const Transform3D p_cam_transform, const Projection &p_cam_projection, bool p_cam_orthogonal, bool p_cam_vaspect, RID p_shadow_atlas, Scenario *p_scenario, float p_screen_mesh_lod_threshold, uint32_t p_visible_layers = 0xFFFFFF);
 
 	RID _render_get_environment(RID p_camera, RID p_scenario);
 	RID _render_get_compositor(RID p_camera, RID p_scenario);
@@ -1454,5 +1439,3 @@ public:
 	RendererSceneCull();
 	virtual ~RendererSceneCull();
 };
-
-#endif // RENDERER_SCENE_CULL_H

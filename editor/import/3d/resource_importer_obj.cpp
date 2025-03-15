@@ -33,15 +33,10 @@
 #include "core/io/file_access.h"
 #include "core/io/resource_saver.h"
 #include "scene/3d/importer_mesh_instance_3d.h"
-#include "scene/3d/mesh_instance_3d.h"
 #include "scene/3d/node_3d.h"
 #include "scene/resources/3d/importer_mesh.h"
 #include "scene/resources/mesh.h"
 #include "scene/resources/surface_tool.h"
-
-uint32_t EditorOBJImporter::get_import_flags() const {
-	return IMPORT_SCENE;
-}
 
 static Error _parse_material_library(const String &p_path, HashMap<String, Ref<StandardMaterial3D>> &material_map, List<String> *r_missing_deps) {
 	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ);
@@ -370,7 +365,7 @@ static Error _parse_obj(const String &p_path, List<Ref<ImporterMesh>> &r_meshes,
 				face[1] = face[2];
 			}
 		} else if (l.begins_with("s ")) { //smoothing
-			String what = l.substr(2, l.length()).strip_edges();
+			String what = l.substr(2).strip_edges();
 			bool do_smooth;
 			if (what == "off") {
 				do_smooth = false;
@@ -481,7 +476,7 @@ static Error _parse_obj(const String &p_path, List<Ref<ImporterMesh>> &r_meshes,
 			}
 
 			if (l.begins_with("o ")) {
-				name = l.substr(2, l.length()).strip_edges();
+				name = l.substr(2).strip_edges();
 			}
 
 			if (l.begins_with("usemtl ")) {
@@ -489,7 +484,7 @@ static Error _parse_obj(const String &p_path, List<Ref<ImporterMesh>> &r_meshes,
 			}
 
 			if (l.begins_with("g ")) {
-				current_group = l.substr(2, l.length()).strip_edges();
+				current_group = l.substr(2).strip_edges();
 			}
 
 		} else if (l.begins_with("mtllib ")) { //parse material

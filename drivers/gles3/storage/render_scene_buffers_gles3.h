@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef RENDER_SCENE_BUFFERS_GLES3_H
-#define RENDER_SCENE_BUFFERS_GLES3_H
+#pragma once
 
 #ifdef GLES3_ENABLED
 
@@ -103,6 +102,7 @@ public:
 	virtual void configure(const RenderSceneBuffersConfiguration *p_config) override;
 	void configure_for_probe(Size2i p_size);
 
+	virtual void set_anisotropic_filtering_level(RS::ViewportAnisotropicFiltering p_anisotropic_filtering_level) override {}
 	virtual void set_fsr_sharpness(float p_fsr_sharpness) override {}
 	virtual void set_texture_mipmap_bias(float p_texture_mipmap_bias) override {}
 	virtual void set_use_debanding(bool p_use_debanding) override {}
@@ -163,5 +163,3 @@ public:
 };
 
 #endif // GLES3_ENABLED
-
-#endif // RENDER_SCENE_BUFFERS_GLES3_H

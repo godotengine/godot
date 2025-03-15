@@ -647,11 +647,9 @@ namespace embree
 #if defined(__EMSCRIPTEN__)
 #include <emscripten.h>
 
-// -- GODOT start --
 extern "C" {
 extern int godot_js_os_hw_concurrency_get();
 }
-// -- GODOT end --
 #endif
 
 namespace embree
@@ -665,9 +663,24 @@ namespace embree
     nThreads = sysconf(_SC_NPROCESSORS_ONLN); // does not work in Linux LXC container
     assert(nThreads);
 #elif defined(__EMSCRIPTEN__)
-    // -- GODOT start --
     nThreads = godot_js_os_hw_concurrency_get();
-    // -- GODOT end --
+#if 0
+    // WebAssembly supports pthreads, but not pthread_getaffinity_np. Get the number of logical
+    // threads from the browser or Node.js using JavaScript.
+    nThreads = MAIN_THREAD_EM_ASM_INT({
+        const isBrowser = typeof window !== 'undefined';
+        const isNode = typeof process !== 'undefined' && process.versions != null &&
+            process.versions.node != null;
+        if (isBrowser) {
+            // Return 1 if the browser does not expose hardwareConcurrency.
+            return window.navigator.hardwareConcurrency || 1;
+        } else if (isNode) {
+            return require('os').cpus().length;
+        } else {
+            return 1;
+        }
+    });
+#endif
 #else
     cpu_set_t set;
     if (pthread_getaffinity_np(pthread_self(), sizeof(set), &set) == 0)

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef EDITOR_DOCK_MANAGER_H
-#define EDITOR_DOCK_MANAGER_H
+#pragma once
 
 #include "scene/gui/popup.h"
 #include "scene/gui/split_container.h"
@@ -143,7 +142,7 @@ public:
 	PopupMenu *get_docks_menu();
 
 	void save_docks_to_config(Ref<ConfigFile> p_layout, const String &p_section) const;
-	void load_docks_from_config(Ref<ConfigFile> p_layout, const String &p_section);
+	void load_docks_from_config(Ref<ConfigFile> p_layout, const String &p_section, bool p_first_load = false);
 
 	void set_dock_enabled(Control *p_dock, bool p_enabled);
 	void close_dock(Control *p_dock);
@@ -207,5 +206,3 @@ public:
 
 	DockContextPopup();
 };
-
-#endif // EDITOR_DOCK_MANAGER_H

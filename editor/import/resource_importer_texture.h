@@ -28,13 +28,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef RESOURCE_IMPORTER_TEXTURE_H
-#define RESOURCE_IMPORTER_TEXTURE_H
+#pragma once
 
 #include "core/io/file_access.h"
 #include "core/io/image.h"
 #include "core/io/resource_importer.h"
-#include "scene/resources/texture.h"
 #include "servers/rendering_server.h"
 
 class CompressedTexture2D;
@@ -116,5 +114,3 @@ public:
 	ResourceImporterTexture(bool p_singleton = false);
 	~ResourceImporterTexture();
 };
-
-#endif // RESOURCE_IMPORTER_TEXTURE_H

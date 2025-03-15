@@ -52,6 +52,9 @@ void CameraLinux::_update_devices() {
 
 			for (int i = feeds.size() - 1; i >= 0; i--) {
 				Ref<CameraFeedLinux> feed = (Ref<CameraFeedLinux>)feeds[i];
+				if (feed.is_null()) {
+					continue;
+				}
 				String device_name = feed->get_device_name();
 				if (!_is_active(device_name)) {
 					remove_feed(feed);
@@ -84,6 +87,9 @@ void CameraLinux::_update_devices() {
 bool CameraLinux::_has_device(const String &p_device_name) {
 	for (int i = 0; i < feeds.size(); i++) {
 		Ref<CameraFeedLinux> feed = (Ref<CameraFeedLinux>)feeds[i];
+		if (feed.is_null()) {
+			continue;
+		}
 		if (feed->get_device_name() == p_device_name) {
 			return true;
 		}
@@ -107,7 +113,7 @@ void CameraLinux::_add_device(const String &p_device_name) {
 int CameraLinux::_open_device(const String &p_device_name) {
 	struct stat s;
 
-	if (stat(p_device_name.ascii(), &s) == -1) {
+	if (stat(p_device_name.ascii().get_data(), &s) == -1) {
 		return -1;
 	}
 
@@ -115,7 +121,7 @@ int CameraLinux::_open_device(const String &p_device_name) {
 		return -1;
 	}
 
-	return open(p_device_name.ascii(), O_RDWR | O_NONBLOCK, 0);
+	return open(p_device_name.ascii().get_data(), O_RDWR | O_NONBLOCK, 0);
 }
 
 // TODO any cheaper/cleaner way to check if file descriptor is invalid?

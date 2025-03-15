@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef CLASS_DB_H
-#define CLASS_DB_H
+#pragma once
 
 #include "core/object/method_bind.h"
 #include "core/object/object.h"
@@ -127,6 +126,7 @@ public:
 		HashMap<StringName, List<StringName>> linked_properties;
 #endif
 		HashMap<StringName, PropertySetGet> property_setget;
+		HashMap<StringName, Vector<uint32_t>> virtual_methods_compat;
 
 		StringName inherits;
 		StringName name;
@@ -452,8 +452,10 @@ public:
 	static Vector<uint32_t> get_method_compatibility_hashes(const StringName &p_class, const StringName &p_name);
 
 	static void add_virtual_method(const StringName &p_class, const MethodInfo &p_method, bool p_virtual = true, const Vector<String> &p_arg_names = Vector<String>(), bool p_object_core = false);
+	static void add_virtual_compatibility_method(const StringName &p_class, const MethodInfo &p_method, bool p_virtual = true, const Vector<String> &p_arg_names = Vector<String>(), bool p_object_core = false);
 	static void get_virtual_methods(const StringName &p_class, List<MethodInfo> *p_methods, bool p_no_inheritance = false);
 	static void add_extension_class_virtual_method(const StringName &p_class, const GDExtensionClassVirtualMethodInfo *p_method_info);
+	static Vector<uint32_t> get_virtual_method_compatibility_hashes(const StringName &p_class, const StringName &p_name);
 
 	static void bind_integer_constant(const StringName &p_class, const StringName &p_enum, const StringName &p_name, int64_t p_constant, bool p_is_bitfield = false);
 	static void get_integer_constant_list(const StringName &p_class, List<String> *p_constants, bool p_no_inheritance = false);
@@ -562,5 +564,3 @@ _FORCE_INLINE_ Vector<Error> errarray(P... p_args) {
 #define GDREGISTER_NATIVE_STRUCT(m_class, m_code) ClassDB::register_native_struct(#m_class, m_code, sizeof(m_class))
 
 #include "core/disabled_classes.gen.h"
-
-#endif // CLASS_DB_H

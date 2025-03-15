@@ -32,7 +32,6 @@
 
 #ifdef GLES3_ENABLED
 
-#include "core/io/compression.h"
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
 
@@ -74,7 +73,7 @@ void ShaderGLES3::_add_stage(const char *p_code, StageType p_stage_type) {
 		} else if (l.begins_with("#CODE")) {
 			chunk.type = StageTemplate::Chunk::TYPE_CODE;
 			push_chunk = true;
-			chunk.code = l.replace_first("#CODE", String()).replace(":", "").strip_edges().to_upper();
+			chunk.code = l.replace_first("#CODE", String()).remove_char(':').strip_edges().to_upper();
 		} else {
 			text += l + "\n";
 		}

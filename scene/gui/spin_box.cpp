@@ -40,7 +40,7 @@ Size2 SpinBox::get_minimum_size() const {
 	return ms;
 }
 
-void SpinBox::_update_text(bool p_keep_line_edit) {
+void SpinBox::_update_text(bool p_only_update_if_value_changed) {
 	double step = get_step();
 	if (use_custom_arrow_step && custom_arrow_step != 0.0) {
 		step = custom_arrow_step;
@@ -49,6 +49,11 @@ void SpinBox::_update_text(bool p_keep_line_edit) {
 	if (is_localizing_numeral_system()) {
 		value = TS->format_number(value);
 	}
+
+	if (p_only_update_if_value_changed && value == last_text_value) {
+		return;
+	}
+	last_text_value = value;
 
 	if (!line_edit->is_editing()) {
 		if (!prefix.is_empty()) {
@@ -59,20 +64,38 @@ void SpinBox::_update_text(bool p_keep_line_edit) {
 		}
 	}
 
-	if (p_keep_line_edit && value == last_updated_text && value != line_edit->get_text()) {
-		return;
+	if (!accepted && update_on_text_changed && !line_edit->get_text().replace(",", ".").contains_char('.')) {
+		value = String::num(get_value(), 0);
 	}
 
 	line_edit->set_text_with_selection(value);
-	last_updated_text = value;
 }
 
 void SpinBox::_text_submitted(const String &p_string) {
+	if (p_string.is_empty()) {
+		return;
+	}
+
+	String text = p_string;
+
+	if (update_on_text_changed) {
+		// Convert commas ',' to dots '.' for French/German etc. keyboard layouts.
+		text = p_string.replace(",", ".");
+
+		if (!text.begins_with(".") && p_string.ends_with(".")) {
+			return;
+		}
+
+		if (text.begins_with(".")) {
+			line_edit->set_text("0.");
+			line_edit->set_caret_column(line_edit->get_text().length());
+			return;
+		}
+	}
+
 	Ref<Expression> expr;
 	expr.instantiate();
 
-	// Convert commas ',' to dots '.' for French/German etc. keyboard layouts.
-	String text = p_string.replace(",", ".");
 	text = text.replace(";", ",");
 	text = TS->parse_number(text);
 	// Ignore the prefix and suffix in the expression.
@@ -103,12 +126,17 @@ void SpinBox::_text_submitted(const String &p_string) {
 }
 
 void SpinBox::_text_changed(const String &p_string) {
+	accepted = false;
 	int cursor_pos = line_edit->get_caret_column();
 
 	_text_submitted(p_string);
 
+	String text = p_string.replace(",", ".");
+
 	// Line edit 'set_text' method resets the cursor position so we need to undo that.
-	line_edit->set_caret_column(cursor_pos);
+	if (update_on_text_changed && !text.begins_with(".")) {
+		line_edit->set_caret_column(cursor_pos);
+	}
 }
 
 LineEdit *SpinBox::get_line_edit() {
@@ -116,6 +144,9 @@ LineEdit *SpinBox::get_line_edit() {
 }
 
 void SpinBox::_line_edit_input(const Ref<InputEvent> &p_event) {
+	if (drag.enabled) {
+		line_edit->accept_event();
+	}
 }
 
 void SpinBox::_range_click_timeout() {
@@ -185,6 +216,7 @@ void SpinBox::gui_input(const Ref<InputEvent> &p_event) {
 	if (mb.is_valid() && mb->is_pressed()) {
 		switch (mb->get_button_index()) {
 			case MouseButton::LEFT: {
+				accepted = true;
 				line_edit->grab_focus();
 
 				if (mouse_on_up_button || mouse_on_down_button) {
@@ -284,14 +316,15 @@ void SpinBox::_line_edit_editing_toggled(bool p_toggled_on) {
 			line_edit->select_all();
 		}
 	} else {
-		// Discontinue because the focus_exit was caused by canceling.
-		if (Input::get_singleton()->is_action_pressed("ui_cancel")) {
-			_update_text();
-			return;
-		}
+		accepted = true;
 
-		line_edit->deselect();
-		_text_submitted(line_edit->get_text());
+		if (Input::get_singleton()->is_action_pressed("ui_cancel") || line_edit->get_text().is_empty()) {
+			_update_text(); // Revert text if editing was canceled.
+		} else {
+			line_edit->set_text(line_edit->get_text().trim_suffix(".").trim_suffix(","));
+			_update_text(true); // Update text in case value was changed this frame (e.g. on `focus_exited`).
+			_text_submitted(line_edit->get_text());
+		}
 	}
 }
 
@@ -618,6 +651,7 @@ void SpinBox::_bind_methods() {
 
 SpinBox::SpinBox() {
 	line_edit = memnew(LineEdit);
+	line_edit->set_emoji_menu_enabled(false);
 	add_child(line_edit, false, INTERNAL_MODE_FRONT);
 
 	line_edit->set_theme_type_variation("SpinBoxInnerLineEdit");

@@ -102,10 +102,6 @@ static bool _get_blender_version(const String &p_path, int &r_major, int &r_mino
 	return true;
 }
 
-uint32_t EditorSceneFormatImporterBlend::get_import_flags() const {
-	return ImportFlags::IMPORT_SCENE | ImportFlags::IMPORT_ANIMATION;
-}
-
 void EditorSceneFormatImporterBlend::get_extensions(List<String> *r_extensions) const {
 	r_extensions->push_back("blend");
 }
@@ -574,7 +570,6 @@ bool EditorFileSystemImportFormatSupportQueryBlend::query() {
 	confirmed = false;
 
 	while (true) {
-		OS::get_singleton()->delay_usec(1);
 		DisplayServer::get_singleton()->process_events();
 		Main::iteration();
 		if (!configure_blender_dialog->is_visible() || confirmed) {

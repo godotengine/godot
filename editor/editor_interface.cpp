@@ -55,7 +55,6 @@
 #include "plugins/editor_preview_plugins.h"
 #include "scene/3d/light_3d.h"
 #include "scene/3d/mesh_instance_3d.h"
-#include "scene/3d/world_environment.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/control.h"
 #include "scene/main/window.h"
@@ -170,7 +169,7 @@ Vector<Ref<Texture2D>> EditorInterface::make_mesh_previews(const Vector<Ref<Mesh
 
 	for (int i = 0; i < p_meshes.size(); i++) {
 		const Ref<Mesh> &mesh = p_meshes[i];
-		if (!mesh.is_valid()) {
+		if (mesh.is_null()) {
 			textures.push_back(Ref<Texture2D>());
 			continue;
 		}
@@ -211,7 +210,7 @@ Vector<Ref<Texture2D>> EditorInterface::make_mesh_previews(const Vector<Ref<Mesh
 		Main::iteration();
 		Main::iteration();
 		Ref<Image> img = RS::get_singleton()->texture_2d_get(viewport_texture);
-		ERR_CONTINUE(!img.is_valid() || img->is_empty());
+		ERR_CONTINUE(img.is_null() || img->is_empty());
 		Ref<ImageTexture> it = ImageTexture::create_from_image(img);
 
 		RS::get_singleton()->free(inst);
@@ -513,7 +512,7 @@ void EditorInterface::popup_quick_open(const Callable &p_callback, const TypedAr
 	quick_open->popup_dialog(base_types, callable_mp(this, &EditorInterface::_quick_open).bind(p_callback));
 }
 
-void EditorInterface::popup_create_dialog(const Callable &p_callback, const StringName &p_base_type, const String &p_current_type, const String &p_dialog_title, const TypedArray<StringName> &p_custom_type_blocklist, const Dictionary &p_custom_suffix) {
+void EditorInterface::popup_create_dialog(const Callable &p_callback, const StringName &p_base_type, const String &p_current_type, const String &p_dialog_title, const TypedArray<StringName> &p_custom_type_blocklist) {
 	if (!create_dialog) {
 		create_dialog = memnew(CreateDialog);
 		get_base_control()->add_child(create_dialog);
@@ -524,18 +523,6 @@ void EditorInterface::popup_create_dialog(const Callable &p_callback, const Stri
 		blocklist.insert(E);
 	}
 	create_dialog->set_type_blocklist(blocklist);
-
-	HashMap<StringName, String> suffix_map;
-	List<Variant> keys;
-	p_custom_suffix.get_key_list(&keys);
-	for (Variant &k : keys) {
-		const StringName key = k;
-		if (key.is_empty()) {
-			continue;
-		}
-		suffix_map.insert(key, p_custom_suffix[key]);
-	}
-	create_dialog->set_type_suffixes(suffix_map);
 
 	String safe_base_type = p_base_type;
 	if (p_base_type.is_empty() || (!ClassDB::class_exists(p_base_type) && !ScriptServer::is_global_class(p_base_type))) {
@@ -660,8 +647,7 @@ void EditorInterface::open_scene_from_path(const String &scene_path, bool p_set_
 	if (EditorNode::get_singleton()->is_changing_scene()) {
 		return;
 	}
-
-	EditorNode::get_singleton()->open_request(scene_path, p_set_inherited);
+	EditorNode::get_singleton()->load_scene(scene_path, false, p_set_inherited);
 }
 
 void EditorInterface::reload_scene_from_path(const String &scene_path) {
@@ -680,12 +666,24 @@ PackedStringArray EditorInterface::get_open_scenes() const {
 	PackedStringArray ret;
 	Vector<EditorData::EditedScene> scenes = EditorNode::get_editor_data().get_edited_scenes();
 
-	int scns_amount = scenes.size();
-	for (int idx_scn = 0; idx_scn < scns_amount; idx_scn++) {
-		if (scenes[idx_scn].root == nullptr) {
+	for (EditorData::EditedScene &edited_scene : scenes) {
+		if (edited_scene.root == nullptr) {
 			continue;
 		}
-		ret.push_back(scenes[idx_scn].root->get_scene_file_path());
+		ret.push_back(edited_scene.root->get_scene_file_path());
+	}
+	return ret;
+}
+
+TypedArray<Node> EditorInterface::get_open_scene_roots() const {
+	TypedArray<Node> ret;
+	Vector<EditorData::EditedScene> scenes = EditorNode::get_editor_data().get_edited_scenes();
+
+	for (EditorData::EditedScene &edited_scene : scenes) {
+		if (edited_scene.root == nullptr) {
+			continue;
+		}
+		ret.push_back(edited_scene.root);
 	}
 	return ret;
 }
@@ -820,7 +818,7 @@ void EditorInterface::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("popup_property_selector", "object", "callback", "type_filter", "current_value"), &EditorInterface::popup_property_selector, DEFVAL(PackedInt32Array()), DEFVAL(String()));
 	ClassDB::bind_method(D_METHOD("popup_method_selector", "object", "callback", "current_value"), &EditorInterface::popup_method_selector, DEFVAL(String()));
 	ClassDB::bind_method(D_METHOD("popup_quick_open", "callback", "base_types"), &EditorInterface::popup_quick_open, DEFVAL(TypedArray<StringName>()));
-	ClassDB::bind_method(D_METHOD("popup_create_dialog", "callback", "base_type", "current_type", "dialog_title", "type_blocklist", "type_suffixes"), &EditorInterface::popup_create_dialog, DEFVAL(""), DEFVAL(""), DEFVAL(""), DEFVAL(TypedArray<StringName>()), DEFVAL(Dictionary()));
+	ClassDB::bind_method(D_METHOD("popup_create_dialog", "callback", "base_type", "current_type", "dialog_title", "type_blocklist"), &EditorInterface::popup_create_dialog, DEFVAL(""), DEFVAL(""), DEFVAL(""), DEFVAL(TypedArray<StringName>()));
 
 	// Editor docks.
 
@@ -843,6 +841,7 @@ void EditorInterface::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("reload_scene_from_path", "scene_filepath"), &EditorInterface::reload_scene_from_path);
 
 	ClassDB::bind_method(D_METHOD("get_open_scenes"), &EditorInterface::get_open_scenes);
+	ClassDB::bind_method(D_METHOD("get_open_scene_roots"), &EditorInterface::get_open_scene_roots);
 	ClassDB::bind_method(D_METHOD("get_edited_scene_root"), &EditorInterface::get_edited_scene_root);
 
 	ClassDB::bind_method(D_METHOD("save_scene"), &EditorInterface::save_scene);

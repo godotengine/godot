@@ -31,7 +31,6 @@
 #include "os.h"
 
 #include "core/config/project_settings.h"
-#include "core/input/input.h"
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
 #include "core/io/json.h"
@@ -215,12 +214,29 @@ String OS::get_locale() const {
 // Non-virtual helper to extract the 2 or 3-letter language code from
 // `get_locale()` in a way that's consistent for all platforms.
 String OS::get_locale_language() const {
-	return get_locale().left(3).replace("_", "");
+	return get_locale().left(3).remove_char('_');
 }
 
 // Embedded PCK offset.
 uint64_t OS::get_embedded_pck_offset() const {
 	return 0;
+}
+
+// Default boot screen rect scale mode is "Keep Aspect Centered"
+Rect2 OS::calculate_boot_screen_rect(const Size2 &p_window_size, const Size2 &p_imgrect_size) const {
+	Rect2 screenrect;
+	if (p_window_size.width > p_window_size.height) {
+		// Scale horizontally.
+		screenrect.size.y = p_window_size.height;
+		screenrect.size.x = p_imgrect_size.x * p_window_size.height / p_imgrect_size.y;
+		screenrect.position.x = (p_window_size.width - screenrect.size.x) / 2;
+	} else {
+		// Scale vertically.
+		screenrect.size.x = p_window_size.width;
+		screenrect.size.y = p_imgrect_size.y * p_window_size.width / p_imgrect_size.x;
+		screenrect.position.y = (p_window_size.height - screenrect.size.y) / 2;
+	}
+	return screenrect;
 }
 
 // Helper function to ensure that a dir name/path will be valid on the OS
@@ -258,7 +274,7 @@ String OS::get_safe_dir_name(const String &p_dir_name, bool p_allow_paths) const
 // Get properly capitalized engine name for system paths
 String OS::get_godot_dir_name() const {
 	// Default to lowercase, so only override when different case is needed
-	return String(VERSION_SHORT_NAME).to_lower();
+	return String(GODOT_VERSION_SHORT_NAME).to_lower();
 }
 
 // OS equivalent of XDG_DATA_HOME
@@ -291,8 +307,26 @@ String OS::get_bundle_icon_path() const {
 }
 
 // OS specific path for user://
-String OS::get_user_data_dir() const {
+String OS::get_user_data_dir(const String &p_user_dir) const {
 	return ".";
+}
+
+String OS::get_user_data_dir() const {
+	String appname = get_safe_dir_name(GLOBAL_GET("application/config/name"));
+	if (!appname.is_empty()) {
+		bool use_custom_dir = GLOBAL_GET("application/config/use_custom_user_dir");
+		if (use_custom_dir) {
+			String custom_dir = get_safe_dir_name(GLOBAL_GET("application/config/custom_user_dir_name"), true);
+			if (custom_dir.is_empty()) {
+				custom_dir = appname;
+			}
+			return get_user_data_dir(custom_dir);
+		} else {
+			return get_user_data_dir(get_godot_dir_name().path_join("app_userdata").path_join(appname));
+		}
+	} else {
+		return get_user_data_dir(get_godot_dir_name().path_join("app_userdata").path_join("[unnamed project]"));
+	}
 }
 
 // Absolute path to res://
@@ -303,6 +337,23 @@ String OS::get_resource_dir() const {
 // Access system-specific dirs like Documents, Downloads, etc.
 String OS::get_system_dir(SystemDir p_dir, bool p_shared_storage) const {
 	return ".";
+}
+
+void OS::create_lock_file() {
+	if (Engine::get_singleton()->is_recovery_mode_hint()) {
+		return;
+	}
+
+	String lock_file_path = get_user_data_dir().path_join(".recovery_mode_lock");
+	Ref<FileAccess> lock_file = FileAccess::open(lock_file_path, FileAccess::WRITE);
+	if (lock_file.is_valid()) {
+		lock_file->close();
+	}
+}
+
+void OS::remove_lock_file() {
+	String lock_file_path = get_user_data_dir().path_join(".recovery_mode_lock");
+	DirAccess::remove_absolute(lock_file_path);
 }
 
 Error OS::shell_open(const String &p_uri) {
@@ -409,6 +460,8 @@ bool OS::has_feature(const String &p_feature) {
 		return _in_editor;
 	} else if (p_feature == "editor_runtime") {
 		return !_in_editor;
+	} else if (p_feature == "embedded_in_editor") {
+		return _embedded_in_editor;
 	}
 #else
 	if (p_feature == "template") {

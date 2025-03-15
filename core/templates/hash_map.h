@@ -28,14 +28,13 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef HASH_MAP_H
-#define HASH_MAP_H
+#pragma once
 
-#include "core/math/math_funcs.h"
 #include "core/os/memory.h"
 #include "core/templates/hashfuncs.h"
-#include "core/templates/paged_allocator.h"
 #include "core/templates/pair.h"
+
+#include <initializer_list>
 
 /**
  * A HashMap implementation that uses open addressing with Robin Hood hashing.
@@ -640,6 +639,13 @@ public:
 		capacity_index = MIN_CAPACITY_INDEX;
 	}
 
+	HashMap(std::initializer_list<KeyValue<TKey, TValue>> p_init) {
+		reserve(p_init.size());
+		for (const KeyValue<TKey, TValue> &E : p_init) {
+			insert(E.key, E.value);
+		}
+	}
+
 	uint32_t debug_get_hash(uint32_t p_index) {
 		if (num_elements == 0) {
 			return 0;
@@ -664,5 +670,3 @@ public:
 		}
 	}
 };
-
-#endif // HASH_MAP_H

@@ -28,19 +28,18 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef A_HASH_MAP_H
-#define A_HASH_MAP_H
+#pragma once
 
 #include "core/templates/hash_map.h"
 
 struct HashMapData {
 	union {
+		uint64_t data;
 		struct
 		{
 			uint32_t hash;
 			uint32_t hash_to_key;
 		};
-		uint64_t data;
 	};
 };
 
@@ -703,6 +702,13 @@ public:
 			capacity(INITIAL_CAPACITY - 1) {
 	}
 
+	AHashMap(std::initializer_list<KeyValue<TKey, TValue>> p_init) {
+		reserve(p_init.size());
+		for (const KeyValue<TKey, TValue> &E : p_init) {
+			insert(E.key, E.value);
+		}
+	}
+
 	void reset() {
 		if (elements != nullptr) {
 			if constexpr (!(std::is_trivially_destructible_v<TKey> && std::is_trivially_destructible_v<TValue>)) {
@@ -729,5 +735,3 @@ extern template class AHashMap<String, int>;
 extern template class AHashMap<StringName, StringName>;
 extern template class AHashMap<StringName, Variant>;
 extern template class AHashMap<StringName, int>;
-
-#endif // A_HASH_MAP_H

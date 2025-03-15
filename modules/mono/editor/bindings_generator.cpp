@@ -172,8 +172,7 @@ static String fix_doc_description(const String &p_bbcode) {
 	// This seems to be the correct way to do this. It's the same EditorHelp does.
 
 	return p_bbcode.dedent()
-			.replace("\t", "")
-			.replace("\r", "")
+			.remove_chars("\t\r")
 			.strip_edges();
 }
 
@@ -218,7 +217,7 @@ String BindingsGenerator::bbcode_to_text(const String &p_bbcode, const TypeInter
 		int brk_end = bbcode.find_char(']', brk_pos + 1);
 
 		if (brk_end == -1) {
-			String text = bbcode.substr(brk_pos, bbcode.length() - brk_pos);
+			String text = bbcode.substr(brk_pos);
 			if (code_tag || tag_stack.size() > 0) {
 				output.append("'" + text + "'");
 			}
@@ -229,7 +228,7 @@ String BindingsGenerator::bbcode_to_text(const String &p_bbcode, const TypeInter
 		String tag = bbcode.substr(brk_pos + 1, brk_end - brk_pos - 1);
 
 		if (tag.begins_with("/")) {
-			bool tag_ok = tag_stack.size() && tag_stack.front()->get() == tag.substr(1, tag.length());
+			bool tag_ok = tag_stack.size() && tag_stack.front()->get() == tag.substr(1);
 
 			if (!tag_ok) {
 				output.append("]");
@@ -246,7 +245,7 @@ String BindingsGenerator::bbcode_to_text(const String &p_bbcode, const TypeInter
 		} else if (tag.begins_with("method ") || tag.begins_with("constructor ") || tag.begins_with("operator ") || tag.begins_with("member ") || tag.begins_with("signal ") || tag.begins_with("enum ") || tag.begins_with("constant ") || tag.begins_with("theme_item ") || tag.begins_with("param ")) {
 			const int tag_end = tag.find_char(' ');
 			const String link_tag = tag.substr(0, tag_end);
-			const String link_target = tag.substr(tag_end + 1, tag.length()).lstrip(" ");
+			const String link_target = tag.substr(tag_end + 1).lstrip(" ");
 
 			const Vector<String> link_target_parts = link_target.split(".");
 
@@ -401,7 +400,7 @@ String BindingsGenerator::bbcode_to_text(const String &p_bbcode, const TypeInter
 			pos = brk_end + 1;
 			tag_stack.push_front(tag);
 		} else if (tag.begins_with("url=")) {
-			String url = tag.substr(4, tag.length());
+			String url = tag.substr(4);
 			// Not supported. Just append the url.
 			output.append(url);
 
@@ -497,7 +496,7 @@ String BindingsGenerator::bbcode_to_xml(const String &p_bbcode, const TypeInterf
 
 		if (brk_end == -1) {
 			if (!line_del) {
-				String text = bbcode.substr(brk_pos, bbcode.length() - brk_pos);
+				String text = bbcode.substr(brk_pos);
 				if (code_tag || tag_stack.size() > 0) {
 					xml_output.append(text.xml_escape());
 				} else {
@@ -522,7 +521,7 @@ String BindingsGenerator::bbcode_to_xml(const String &p_bbcode, const TypeInterf
 		String tag = bbcode.substr(brk_pos + 1, brk_end - brk_pos - 1);
 
 		if (tag.begins_with("/")) {
-			bool tag_ok = tag_stack.size() && tag_stack.front()->get() == tag.substr(1, tag.length());
+			bool tag_ok = tag_stack.size() && tag_stack.front()->get() == tag.substr(1);
 
 			if (!tag_ok) {
 				if (!line_del) {
@@ -558,7 +557,7 @@ String BindingsGenerator::bbcode_to_xml(const String &p_bbcode, const TypeInterf
 		} else if (tag.begins_with("method ") || tag.begins_with("constructor ") || tag.begins_with("operator ") || tag.begins_with("member ") || tag.begins_with("signal ") || tag.begins_with("enum ") || tag.begins_with("constant ") || tag.begins_with("theme_item ") || tag.begins_with("param ")) {
 			const int tag_end = tag.find_char(' ');
 			const String link_tag = tag.substr(0, tag_end);
-			const String link_target = tag.substr(tag_end + 1, tag.length()).lstrip(" ");
+			const String link_target = tag.substr(tag_end + 1).lstrip(" ");
 
 			const Vector<String> link_target_parts = link_target.split(".");
 
@@ -763,7 +762,7 @@ String BindingsGenerator::bbcode_to_xml(const String &p_bbcode, const TypeInterf
 			pos = brk_end + 1;
 			tag_stack.push_front(tag);
 		} else if (tag.begins_with("url=")) {
-			String url = tag.substr(4, tag.length());
+			String url = tag.substr(4);
 			xml_output.append("<a href=\"");
 			xml_output.append(url);
 			xml_output.append("\">");
@@ -3011,7 +3010,7 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 			}
 
 			// Apparently the name attribute must not include the @
-			String param_tag_name = iarg.name.begins_with("@") ? iarg.name.substr(1, iarg.name.length()) : iarg.name;
+			String param_tag_name = iarg.name.begins_with("@") ? iarg.name.substr(1) : iarg.name;
 			// Escape < and > in the attribute default value
 			String param_def_arg = def_arg.replacen("<", "&lt;").replacen(">", "&gt;");
 
@@ -3216,13 +3215,12 @@ Error BindingsGenerator::_generate_cs_signal(const BindingsGenerator::TypeInterf
 			p_output.append(" class.\n");
 			p_output.append(INDENT1 "/// </summary>");
 
+			// Generate delegate
 			if (p_isignal.is_deprecated) {
 				p_output.append(MEMBER_BEGIN "[Obsolete(\"");
 				p_output.append(bbcode_to_text(p_isignal.deprecation_message, &p_itype));
 				p_output.append("\")]");
 			}
-
-			// Generate delegate
 			p_output.append(MEMBER_BEGIN "public delegate void ");
 			p_output.append(delegate_name);
 			p_output.append("(");
@@ -3230,6 +3228,11 @@ Error BindingsGenerator::_generate_cs_signal(const BindingsGenerator::TypeInterf
 			p_output.append(");\n");
 
 			// Generate Callable trampoline for the delegate
+			if (p_isignal.is_deprecated) {
+				p_output.append(MEMBER_BEGIN "[Obsolete(\"");
+				p_output.append(bbcode_to_text(p_isignal.deprecation_message, &p_itype));
+				p_output.append("\")]");
+			}
 			p_output << MEMBER_BEGIN "private static void " << p_isignal.proxy_name << "Trampoline"
 					 << "(object delegateObj, NativeVariantPtrArgs args, out godot_variant ret)\n"
 					 << INDENT1 "{\n"
@@ -3279,17 +3282,16 @@ Error BindingsGenerator::_generate_cs_signal(const BindingsGenerator::TypeInterf
 			}
 		}
 
-		if (p_isignal.is_deprecated) {
-			p_output.append(MEMBER_BEGIN "[Obsolete(\"");
-			p_output.append(bbcode_to_text(p_isignal.deprecation_message, &p_itype));
-			p_output.append("\")]");
-		}
-
 		// TODO:
 		// Could we assume the StringName instance of signal name will never be freed (it's stored in ClassDB) before the managed world is unloaded?
 		// If so, we could store the pointer we get from `data_unique_pointer()` instead of allocating StringName here.
 
 		// Generate event
+		if (p_isignal.is_deprecated) {
+			p_output.append(MEMBER_BEGIN "[Obsolete(\"");
+			p_output.append(bbcode_to_text(p_isignal.deprecation_message, &p_itype));
+			p_output.append("\")]");
+		}
 		p_output.append(MEMBER_BEGIN "public ");
 
 		if (p_itype.is_singleton) {
@@ -3339,6 +3341,11 @@ Error BindingsGenerator::_generate_cs_signal(const BindingsGenerator::TypeInterf
 
 		// Generate EmitSignal{EventName} method to raise the event.
 		if (!p_itype.is_singleton) {
+			if (p_isignal.is_deprecated) {
+				p_output.append(MEMBER_BEGIN "[Obsolete(\"");
+				p_output.append(bbcode_to_text(p_isignal.deprecation_message, &p_itype));
+				p_output.append("\")]");
+			}
 			p_output.append(MEMBER_BEGIN "protected void ");
 			p_output << "EmitSignal" << p_isignal.proxy_name;
 			if (is_parameterless) {
@@ -3360,7 +3367,9 @@ Error BindingsGenerator::_generate_cs_signal(const BindingsGenerator::TypeInterf
 						cs_emitsignal_params << ", ";
 					}
 
-					p_output << arg_type->cs_type << " " << iarg.name;
+					String arg_cs_type = arg_type->cs_type + _get_generic_type_parameters(*arg_type, iarg.type.generic_type_parameters);
+
+					p_output << arg_cs_type << " " << iarg.name;
 
 					if (arg_type->is_enum) {
 						cs_emitsignal_params << "(long)";
@@ -3790,6 +3799,8 @@ bool BindingsGenerator::_arg_default_value_is_assignable_to_type(const Variant &
 		case Variant::VECTOR2:
 		case Variant::RECT2:
 		case Variant::VECTOR3:
+		case Variant::VECTOR4:
+		case Variant::PROJECTION:
 		case Variant::RID:
 		case Variant::PACKED_BYTE_ARRAY:
 		case Variant::PACKED_INT32_ARRAY:
@@ -3819,7 +3830,10 @@ bool BindingsGenerator::_arg_default_value_is_assignable_to_type(const Variant &
 		case Variant::VECTOR3I:
 			return p_arg_type.name == name_cache.type_Vector3 ||
 					p_arg_type.name == Variant::get_type_name(p_val.get_type());
-		default:
+		case Variant::VECTOR4I:
+			return p_arg_type.name == name_cache.type_Vector4 ||
+					p_arg_type.name == Variant::get_type_name(p_val.get_type());
+		case Variant::VARIANT_MAX:
 			CRASH_NOW_MSG("Unexpected Variant type: " + itos(p_val.get_type()));
 			break;
 	}
@@ -4102,9 +4116,8 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 				imethod.return_type.cname = _get_type_name_from_meta(return_info.type, m ? m->get_argument_meta(-1) : (GodotTypeInfo::Metadata)method_info.return_val_metadata);
 			}
 
-			int idx = 0;
-			for (List<PropertyInfo>::ConstIterator itr = method_info.arguments.begin(); itr != method_info.arguments.end(); ++itr, ++idx) {
-				const PropertyInfo &arginfo = *itr;
+			for (int64_t idx = 0; idx < method_info.arguments.size(); ++idx) {
+				const PropertyInfo &arginfo = method_info.arguments[idx];
 
 				String orig_arg_name = arginfo.name;
 
@@ -4234,9 +4247,8 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 			isignal.name = method_info.name;
 			isignal.cname = method_info.name;
 
-			int idx = 0;
-			for (List<PropertyInfo>::ConstIterator itr = method_info.arguments.begin(); itr != method_info.arguments.end(); ++itr, ++idx) {
-				const PropertyInfo &arginfo = *itr;
+			for (int64_t idx = 0; idx < method_info.arguments.size(); ++idx) {
+				const PropertyInfo &arginfo = method_info.arguments[idx];
 
 				String orig_arg_name = arginfo.name;
 
@@ -4688,7 +4700,7 @@ bool BindingsGenerator::_arg_default_value_from_variant(const Variant &p_val, Ar
 					"Parameter of type '" + String(r_iarg.type.cname) + "' can only have null/zero as the default value.");
 			r_iarg.default_argument = "default";
 			break;
-		default:
+		case Variant::VARIANT_MAX:
 			ERR_FAIL_V_MSG(false, "Unexpected Variant type: " + itos(p_val.get_type()));
 			break;
 	}

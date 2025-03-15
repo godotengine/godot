@@ -272,10 +272,10 @@
 				See also the [url=$DOCS_URL/tutorials/scripting/gdscript/gdscript_format_string.html]GDScript format string[/url] tutorial.
 				[b]Note:[/b] Each replacement is done sequentially for each element of [param values], [b]not[/b] all at once. This means that if any element is inserted and it contains another placeholder, it may be changed by the next replacement. While this can be very useful, it often causes unexpected results. If not necessary, make sure [param values]'s elements do not contain placeholders.
 				[codeblock]
-				print("{0} {1}".format(["{1}", "x"]))           # Prints "x x".
-				print("{0} {1}".format(["x", "{0}"]))           # Prints "x {0}".
-				print("{a} {b}".format({"a": "{b}", "b": "c"})) # Prints "c c".
-				print("{a} {b}".format({"b": "c", "a": "{b}"})) # Prints "{b} c".
+				print("{0} {1}".format(["{1}", "x"]))           # Prints "x x"
+				print("{0} {1}".format(["x", "{0}"]))           # Prints "x {0}"
+				print("{a} {b}".format({"a": "{b}", "b": "c"})) # Prints "c c"
+				print("{a} {b}".format({"b": "c", "a": "{b}"})) # Prints "{b} c"
 				[/codeblock]
 				[b]Note:[/b] In C#, it's recommended to [url=https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/tokens/interpolated]interpolate strings with "$"[/url], instead.
 			</description>
@@ -571,7 +571,7 @@
 				print("---".join(fruits)) # Prints "Apple---Orange---Pear---Kiwi"
 				[/gdscript]
 				[csharp]
-				var fruits = new string[] {"Apple", "Orange", "Pear", "Kiwi"};
+				string[] fruits = ["Apple", "Orange", "Pear", "Kiwi"];
 
 				// In C#, this method is static.
 				GD.Print(string.Join(", ", fruits));  // Prints "Apple, Orange, Pear, Kiwi"
@@ -761,6 +761,20 @@
 			<description>
 				Concatenates [param file] at the end of the string as a subpath, adding [code]/[/code] if necessary.
 				[b]Example:[/b] [code]"this/is".path_join("path") == "this/is/path"[/code].
+			</description>
+		</method>
+		<method name="remove_char" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="what" type="int" />
+			<description>
+				Removes all occurrences of the Unicode character with code [param what]. Faster version of [method replace] when the key is only one character long and the replacement is [code]""[/code].
+			</description>
+		</method>
+		<method name="remove_chars" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="chars" type="String" />
+			<description>
+				Removes any occurrence of the characters in [param chars]. See also [method remove_char].
 			</description>
 		</method>
 		<method name="repeat" qualifiers="const">

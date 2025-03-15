@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef RICH_TEXT_LABEL_H
-#define RICH_TEXT_LABEL_H
+#pragma once
 
 #include "core/object/worker_thread_pool.h"
 #include "core/templates/rid_owner.h"
@@ -45,6 +44,7 @@ class RichTextLabel : public Control {
 
 	enum RTLDrawStep {
 		DRAW_STEP_BACKGROUND,
+		DRAW_STEP_SHADOW_OUTLINE,
 		DRAW_STEP_SHADOW,
 		DRAW_STEP_OUTLINE,
 		DRAW_STEP_TEXT,
@@ -132,10 +132,13 @@ protected:
 	static void _bind_methods();
 
 #ifndef DISABLE_DEPRECATED
+	void _push_font_bind_compat_79053(const Ref<Font> &p_font, int p_size);
+	void _set_table_column_expand_bind_compat_79053(int p_column, bool p_expand, int p_ratio);
 	void _push_meta_bind_compat_99481(const Variant &p_meta, MetaUnderline p_underline_mode);
 	void _push_meta_bind_compat_89024(const Variant &p_meta);
 	void _add_image_bind_compat_80410(const Ref<Texture2D> &p_image, const int p_width, const int p_height, const Color &p_color, InlineAlignment p_alignment, const Rect2 &p_region);
 	bool _remove_paragraph_bind_compat_91098(int p_paragraph);
+	void _set_table_column_expand_bind_compat_101482(int p_column, bool p_expand, int p_ratio);
 	static void _bind_compatibility_methods();
 #endif
 
@@ -339,6 +342,7 @@ private:
 	struct ItemTable : public Item {
 		struct Column {
 			bool expand = false;
+			bool shrink = true;
 			int expand_ratio = 0;
 			int min_width = 0;
 			int max_width = 0;
@@ -413,6 +417,7 @@ private:
 		float saturation = 0.8f;
 		float value = 0.8f;
 		float frequency = 1.0f;
+		float speed = 1.0f;
 
 		ItemRainbow() { type = ITEM_RAINBOW; }
 	};
@@ -533,12 +538,14 @@ private:
 		Item *to_item = nullptr;
 		int to_char = 0;
 
+		bool double_click = false; // Selecting whole words?
 		bool active = false; // anything selected? i.e. from, to, etc. valid?
 		bool enabled = false; // allow selections?
 		bool drag_attempt = false;
 	};
 
 	Selection selection;
+	Callable selection_modifier;
 	bool deselect_on_focus_loss_enabled = true;
 	bool drag_and_drop_selection_enabled = true;
 
@@ -715,13 +722,13 @@ public:
 	void push_shake(int p_strength, float p_rate, bool p_connected);
 	void push_wave(float p_frequency, float p_amplitude, bool p_connected);
 	void push_tornado(float p_frequency, float p_radius, bool p_connected);
-	void push_rainbow(float p_saturation, float p_value, float p_frequency);
+	void push_rainbow(float p_saturation, float p_value, float p_frequency, float p_speed);
 	void push_pulse(const Color &p_color, float p_frequency, float p_ease);
 	void push_bgcolor(const Color &p_color);
 	void push_fgcolor(const Color &p_color);
 	void push_customfx(Ref<RichTextEffect> p_custom_effect, Dictionary p_environment);
 	void push_context();
-	void set_table_column_expand(int p_column, bool p_expand, int p_ratio = 1);
+	void set_table_column_expand(int p_column, bool p_expand, int p_ratio = 1, bool p_shrink = true);
 	void set_cell_row_background_color(const Color &p_odd_row_bg, const Color &p_even_row_bg);
 	void set_cell_border_color(const Color &p_color);
 	void set_cell_size_override(const Size2 &p_min_size, const Size2 &p_max_size);
@@ -771,6 +778,7 @@ public:
 
 	void scroll_to_line(int p_line);
 	int get_line_count() const;
+	Vector2i get_line_range(int p_line);
 	int get_visible_line_count() const;
 
 	int get_content_height() const;
@@ -787,9 +795,14 @@ public:
 	bool is_selection_enabled() const;
 	int get_selection_from() const;
 	int get_selection_to() const;
+	float get_selection_line_offset() const;
 	String get_selected_text() const;
 	void select_all();
 	void selection_copy();
+
+	_FORCE_INLINE_ void set_selection_modifier(const Callable &p_modifier) {
+		selection_modifier = p_modifier;
+	}
 
 	void set_deselect_on_focus_loss_enabled(const bool p_enabled);
 	bool is_deselect_on_focus_loss_enabled() const;
@@ -802,6 +815,7 @@ public:
 	int get_pending_paragraphs() const;
 	bool is_finished() const;
 	bool is_updating() const;
+	void wait_until_finished();
 
 	void set_threaded(bool p_threaded);
 	bool is_threaded() const;
@@ -867,6 +881,7 @@ public:
 	Array get_effects();
 
 	void install_effect(const Variant effect);
+	void reload_effects();
 
 	virtual Size2 get_minimum_size() const override;
 
@@ -878,5 +893,3 @@ VARIANT_ENUM_CAST(RichTextLabel::ListType);
 VARIANT_ENUM_CAST(RichTextLabel::MenuItems);
 VARIANT_ENUM_CAST(RichTextLabel::MetaUnderline);
 VARIANT_BITFIELD_CAST(RichTextLabel::ImageUpdateMask);
-
-#endif // RICH_TEXT_LABEL_H

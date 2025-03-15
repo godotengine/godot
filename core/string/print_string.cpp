@@ -33,8 +33,6 @@
 #include "core/core_globals.h"
 #include "core/os/os.h"
 
-#include <stdio.h>
-
 static PrintHandlerList *print_handler_list = nullptr;
 
 void add_print_handler(PrintHandlerList *p_handler) {
@@ -112,7 +110,7 @@ void __print_line_rich(const String &p_string) {
 		int brk_end = p_string.find_char(']', brk_pos + 1);
 
 		if (brk_end == -1) {
-			txt += p_string.substr(brk_pos, p_string.length() - brk_pos);
+			txt += p_string.substr(brk_pos);
 			output += txt;
 			break;
 		}

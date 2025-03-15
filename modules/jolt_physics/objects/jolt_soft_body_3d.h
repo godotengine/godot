@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef JOLT_SOFT_BODY_3D_H
-#define JOLT_SOFT_BODY_3D_H
+#pragma once
 
 #include "jolt_object_3d.h"
 
@@ -124,8 +123,8 @@ public:
 	bool is_sleeping() const;
 	void set_is_sleeping(bool p_enabled);
 
-	bool can_sleep() const;
-	void set_can_sleep(bool p_enabled);
+	bool is_sleep_allowed() const;
+	void set_is_sleep_allowed(bool p_enabled);
 
 	void put_to_sleep() { set_is_sleeping(true); }
 	void wake_up() { set_is_sleeping(false); }
@@ -167,8 +166,4 @@ public:
 	void unpin_all_vertices();
 
 	bool is_vertex_pinned(int p_index) const;
-
-	String to_string() const;
 };
-
-#endif // JOLT_SOFT_BODY_3D_H

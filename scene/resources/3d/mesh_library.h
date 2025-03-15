@@ -28,13 +28,12 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef MESH_LIBRARY_H
-#define MESH_LIBRARY_H
+#pragma once
 
 #include "core/io/resource.h"
 #include "core/templates/rb_map.h"
-#include "scene/3d/navigation_region_3d.h"
 #include "scene/resources/mesh.h"
+#include "scene/resources/navigation_mesh.h"
 #include "servers/rendering_server.h"
 #include "shape_3d.h"
 
@@ -106,5 +105,3 @@ public:
 	MeshLibrary();
 	~MeshLibrary();
 };
-
-#endif // MESH_LIBRARY_H

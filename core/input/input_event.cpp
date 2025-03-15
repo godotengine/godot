@@ -1104,7 +1104,7 @@ JoyAxis InputEventJoypadMotion::get_axis() const {
 
 void InputEventJoypadMotion::set_axis_value(float p_value) {
 	axis_value = p_value;
-	pressed = Math::abs(axis_value) >= InputMap::DEFAULT_DEADZONE;
+	pressed = Math::abs(axis_value) >= InputMap::DEFAULT_TOGGLE_DEADZONE;
 	emit_changed();
 }
 

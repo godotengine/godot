@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef OS_UNIX_H
-#define OS_UNIX_H
+#pragma once
 
 #ifdef UNIX_ENABLED
 
@@ -106,7 +105,7 @@ public:
 	virtual void initialize_debugging() override;
 
 	virtual String get_executable_path() const override;
-	virtual String get_user_data_dir() const override;
+	virtual String get_user_data_dir(const String &p_user_dir) const override;
 };
 
 class UnixTerminalLogger : public StdLogger {
@@ -116,5 +115,3 @@ public:
 };
 
 #endif // UNIX_ENABLED
-
-#endif // OS_UNIX_H
