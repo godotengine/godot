@@ -678,7 +678,7 @@ OccluderInstance3D::BakeError OccluderInstance3D::bake_scene(Node *p_from_node, 
 
 	occ->set_arrays(vertices, indices);
 
-	Error err = ResourceSaver::save(occ, p_occluder_path);
+	Error err = ResourceSaver::save(occ, p_occluder_path, ResourceSaver::FLAG_COMPRESS);
 
 	if (err != OK) {
 		return BAKE_ERROR_CANT_SAVE;
