@@ -564,16 +564,16 @@ void Camera2D::_make_current(Object *p_which) {
 	}
 }
 
-void Camera2D::set_limit_rect(const Rect2 &p_limit_rect) {
-	const Point2 limit_rect_end = p_limit_rect.get_end();
+void Camera2D::set_limit_rect(const Rect2i &p_limit_rect) {
+	const Point2i limit_rect_end = p_limit_rect.get_end();
 	set_limit(SIDE_LEFT, p_limit_rect.position.x);
 	set_limit(SIDE_TOP, p_limit_rect.position.y);
 	set_limit(SIDE_RIGHT, limit_rect_end.x);
 	set_limit(SIDE_BOTTOM, limit_rect_end.y);
 }
 
-Rect2 Camera2D::get_limit_rect() const {
-	return Rect2(limit[SIDE_LEFT], limit[SIDE_TOP], limit[SIDE_RIGHT] - limit[SIDE_LEFT], limit[SIDE_BOTTOM] - limit[SIDE_TOP]);
+Rect2i Camera2D::get_limit_rect() const {
+	return Rect2i(limit[SIDE_LEFT], limit[SIDE_TOP], limit[SIDE_RIGHT] - limit[SIDE_LEFT], limit[SIDE_BOTTOM] - limit[SIDE_TOP]);
 }
 
 void Camera2D::make_current() {
