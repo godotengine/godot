@@ -3761,11 +3761,11 @@ CodeEdit::CodeEdit() {
 	auto_indent_prefixes.insert('(');
 
 	/* Auto brace completion */
-	add_auto_brace_completion_pair("(", ")");
 	add_auto_brace_completion_pair("{", "}");
 	add_auto_brace_completion_pair("[", "]");
-	add_auto_brace_completion_pair("\"", "\"");
+	add_auto_brace_completion_pair("(", ")");
 	add_auto_brace_completion_pair("\'", "\'");
+	add_auto_brace_completion_pair("\"", "\"");
 
 	/* Delimiter tracking */
 	add_string_delimiter("\"", "\"", false);
