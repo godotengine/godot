@@ -530,6 +530,17 @@
 				[/codeblock]
 			</description>
 		</annotation>
+		<annotation name="@export_flags_player_mask">
+			<return type="void" />
+			<description>
+				Export an integer property as a bit flag field for player mask layers. The widget in the Inspector dock will use the layer names defined in [member ProjectSettings.layer_names/player_mask/layer_1].
+				See also [constant PROPERTY_HINT_LAYERS_PLAYER_MASK].
+				[codeblock]
+				@export_flags_player_mask var player_mask_layers: int
+				@export_flags_player_mask var player_mask_layers_array: Array[int]
+				[/codeblock]
+			</description>
+		</annotation>
 		<annotation name="@export_global_dir">
 			<return type="void" />
 			<description>

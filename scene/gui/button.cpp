@@ -226,7 +226,15 @@ void Button::_notification(int p_what) {
 				style->draw(ci, Rect2(Point2(), size));
 			}
 
-			if (has_focus()) {
+			bool has_any_focus = false;
+			for (int i = 0; i < PLAYERS_MAX; i++) {
+				if (has_focus((PlayerId)i)) {
+					has_any_focus = true;
+					break;
+				}
+			}
+
+			if (has_any_focus) {
 				theme_cache.focus->draw(ci, Rect2(Point2(), size));
 			}
 
