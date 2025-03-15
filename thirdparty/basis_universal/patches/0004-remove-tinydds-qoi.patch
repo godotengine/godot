@@ -1,8 +1,8 @@
 diff --git a/thirdparty/basis_universal/encoder/basisu_enc.cpp b/thirdparty/basis_universal/encoder/basisu_enc.cpp
-index 2bf486a028..fff98e8301 100644
+index 4d885cba16..6c2cf0260e 100644
 --- a/thirdparty/basis_universal/encoder/basisu_enc.cpp
 +++ b/thirdparty/basis_universal/encoder/basisu_enc.cpp
-@@ -37,9 +37,6 @@
+@@ -39,9 +39,6 @@
  #endif
  #include "basisu_miniz.h"
  
@@ -12,7 +12,7 @@ index 2bf486a028..fff98e8301 100644
  #if defined(_WIN32)
  // For QueryPerformanceCounter/QueryPerformanceFrequency
  #define WIN32_LEAN_AND_MEAN
-@@ -408,16 +405,7 @@ namespace basisu
+@@ -453,16 +450,7 @@ namespace basisu
  
  	bool load_qoi(const char* pFilename, image& img)
  	{
@@ -31,7 +31,7 @@ index 2bf486a028..fff98e8301 100644
  
  	bool load_png(const uint8_t *pBuf, size_t buf_size, image &img, const char *pFilename)
 diff --git a/thirdparty/basis_universal/encoder/basisu_gpu_texture.cpp b/thirdparty/basis_universal/encoder/basisu_gpu_texture.cpp
-index 000869a533..648cfb47ae 100644
+index 339218fcf2..028ac3f314 100644
 --- a/thirdparty/basis_universal/encoder/basisu_gpu_texture.cpp
 +++ b/thirdparty/basis_universal/encoder/basisu_gpu_texture.cpp
 @@ -19,9 +19,6 @@
@@ -41,10 +41,10 @@ index 000869a533..648cfb47ae 100644
 -#define TINYDDS_IMPLEMENTATION
 -#include "3rdparty/tinydds.h"
 -
+ #define BASISU_USE_GOOGLE_ASTC_DECODER (1)
+ 
  namespace basisu
- {
- 	//------------------------------------------------------------------------------------------------
-@@ -1980,207 +1977,7 @@ namespace basisu
+@@ -2049,207 +2046,7 @@ namespace basisu
  	// and cubemap, cubemap mipmapped, and cubemap array mipmapped.
  	bool write_dds_file(uint8_vec &dds_data, const basisu::vector<gpu_image_vec>& gpu_images, bool cubemap_flag, bool use_srgb_format)
  	{
@@ -63,11 +63,11 @@ index 000869a533..648cfb47ae 100644
 -				assert(0);
 -				return false;
 -			}
--			slices = gpu_images.size() / 6;
+-			slices = gpu_images.size_u32() / 6;
 -		}
 -		else
 -		{
--			slices = gpu_images.size();
+-			slices = gpu_images.size_u32();
 -		}
 -
 -		uint32_t width = 0, height = 0, total_levels = 0;
@@ -185,7 +185,7 @@ index 000869a533..648cfb47ae 100644
 -		assert(total_levels < 32);
 -		for (uint32_t i = 0; i < total_levels; i++)
 -		{
--			mipmap_sizes[i] = mipmaps[i].size_in_bytes();
+-			mipmap_sizes[i] = mipmaps[i].size_in_bytes_u32();
 -			mipmap_ptrs[i] = mipmaps[i].get_ptr();
 -		}
 -
@@ -253,7 +253,7 @@ index 000869a533..648cfb47ae 100644
  	}
  
  	bool write_dds_file(const char* pFilename, const basisu::vector<gpu_image_vec>& gpu_images, bool cubemap_flag, bool use_srgb_format)
-@@ -2201,188 +1998,6 @@ namespace basisu
+@@ -2270,188 +2067,6 @@ namespace basisu
  		
  	bool read_uncompressed_dds_file(const char* pFilename, basisu::vector<image> &ldr_mips,	basisu::vector<imagef>& hdr_mips)
  	{
