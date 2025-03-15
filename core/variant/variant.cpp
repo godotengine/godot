@@ -1094,9 +1094,7 @@ void Variant::ObjData::ref(const ObjData &p_from) {
 	if (id.is_ref_counted()) {
 		RefCounted *reference = static_cast<RefCounted *>(obj);
 		// Assuming reference is not null because id.is_ref_counted() was true.
-		if (!reference->reference()) {
-			*this = ObjData();
-		}
+		reference->reference();
 	}
 
 	cleanup_ref.unref();
@@ -1114,9 +1112,7 @@ void Variant::ObjData::ref_pointer(Object *p_object) {
 		*this = ObjData{ p_object->get_instance_id(), p_object };
 		if (p_object->is_ref_counted()) {
 			RefCounted *reference = static_cast<RefCounted *>(p_object);
-			if (!reference->init_ref()) {
-				*this = ObjData();
-			}
+			reference->reference();
 		}
 	} else {
 		*this = ObjData();
