@@ -30,7 +30,6 @@
 
 #pragma once
 
-#include "core/math/math_funcs.h"
 #include "hash_map.h"
 #include "list.h"
 

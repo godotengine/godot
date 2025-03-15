@@ -31,7 +31,7 @@
 #include "text_shader_editor.h"
 
 #include "core/config/project_settings.h"
-#include "core/version_generated.gen.h"
+#include "core/version.h"
 #include "editor/editor_file_system.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"

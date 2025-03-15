@@ -39,18 +39,13 @@
 		break;                                                        \
 	}
 
-template <typename T>
-struct _DefaultComparator {
-	_FORCE_INLINE_ bool operator()(const T &a, const T &b) const { return (a < b); }
-};
-
 #ifdef DEBUG_ENABLED
 #define SORT_ARRAY_VALIDATE_ENABLED true
 #else
 #define SORT_ARRAY_VALIDATE_ENABLED false
 #endif
 
-template <typename T, typename Comparator = _DefaultComparator<T>, bool Validate = SORT_ARRAY_VALIDATE_ENABLED>
+template <typename T, typename Comparator = Comparator<T>, bool Validate = SORT_ARRAY_VALIDATE_ENABLED>
 class SortArray {
 	enum {
 		INTROSORT_THRESHOLD = 16

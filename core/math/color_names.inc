@@ -36,6 +36,8 @@
 // the old way leaked memory
 // this is not used as often as for more performance to make sense
 
+#include "core/math/color.h"
+
 struct NamedColor {
 	const char *name;
 	Color color;

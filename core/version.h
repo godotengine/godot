@@ -30,7 +30,7 @@
 
 #pragma once
 
-#include "core/version_generated.gen.h"
+#include "core/version_generated.gen.h" // IWYU pragma: export
 
 #include <stdint.h>
 
