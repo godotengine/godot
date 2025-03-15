@@ -67,6 +67,7 @@ private:
 
 	bool centered = true;
 	Point2 offset;
+	Vector2 alignment;
 
 	bool hflip = false;
 	bool vflip = false;
@@ -102,6 +103,7 @@ protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 	virtual void _draw() = 0;
+	void _validate_property(PropertyInfo &p_property) const;
 	void draw_texture_rect(Ref<Texture2D> p_texture, Rect2 p_dst_rect, Rect2 p_src_rect);
 	_FORCE_INLINE_ void set_aabb(const AABB &p_aabb) { aabb = p_aabb; }
 	_FORCE_INLINE_ RID &get_mesh() { return mesh; }
@@ -124,6 +126,9 @@ public:
 
 	void set_offset(const Point2 &p_offset);
 	Point2 get_offset() const;
+
+	void set_alignment(const Vector2 &p_alignment);
+	Vector2 get_alignment() const;
 
 	void set_flip_h(bool p_flip);
 	bool is_flipped_h() const;

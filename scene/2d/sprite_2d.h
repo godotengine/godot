@@ -42,6 +42,7 @@ class Sprite2D : public Node2D {
 
 	bool centered = true;
 	Point2 offset;
+	Vector2 alignment;
 
 	bool hflip = false;
 	bool vflip = false;
@@ -92,6 +93,9 @@ public:
 
 	void set_offset(const Point2 &p_offset);
 	Point2 get_offset() const;
+
+	void set_alignment(const Vector2 &p_alignment);
+	Vector2 get_alignment() const;
 
 	void set_flip_h(bool p_flip);
 	bool is_flipped_h() const;

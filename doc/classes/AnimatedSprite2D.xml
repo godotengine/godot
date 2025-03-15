@@ -74,6 +74,12 @@
 		</method>
 	</methods>
 	<members>
+		<member name="alignment" type="Vector2" setter="set_alignment" getter="get_alignment" default="Vector2(0, 0)">
+			The texture's drawing offset relative to the texture size.
+			For example, setting this to [code]Vector2(0.5, -0.5)[/code] would align the sprite's bottom-left corner with its pivot position (assuming [member centered] is [code]true[/code]).
+			[b]Note:[/b] For games with a pixel art aesthetic, textures may appear deformed when [code]alignment.x[/code] or [code]alignment.y[/code] is not a whole number. This is caused by their position being between pixels. To prevent this, use only whole numbers with this property, or consider enabling [member ProjectSettings.rendering/2d/snap/snap_2d_vertices_to_pixel] and [member ProjectSettings.rendering/2d/snap/snap_2d_transforms_to_pixel].
+			See also [member offset].
+		</member>
 		<member name="animation" type="StringName" setter="set_animation" getter="get_animation" default="&amp;&quot;default&quot;">
 			The current animation from the [member sprite_frames] resource. If this value is changed, the [member frame] counter and the [member frame_progress] are reset.
 		</member>
@@ -97,7 +103,8 @@
 			The progress value between [code]0.0[/code] and [code]1.0[/code] until the current frame transitions to the next frame. If the animation is playing backwards, the value transitions from [code]1.0[/code] to [code]0.0[/code].
 		</member>
 		<member name="offset" type="Vector2" setter="set_offset" getter="get_offset" default="Vector2(0, 0)">
-			The texture's drawing offset.
+			The texture's drawing offset in pixels.
+			See also [member alignment].
 		</member>
 		<member name="speed_scale" type="float" setter="set_speed_scale" getter="get_speed_scale" default="1.0">
 			The speed scaling ratio. For example, if this value is [code]1[/code], then the animation plays at normal speed. If it's [code]0.5[/code], then it plays at half speed. If it's [code]2[/code], then it plays at double speed.
