@@ -32,6 +32,8 @@
 
 #include "core/config/project_settings.h"
 #include "core/debugger/debugger_marshalls.h"
+#include "core/debugger/engine_debugger.h"
+#include "core/error/error_macros.h"
 #include "core/string/translation_server.h"
 #include "editor/debugger/editor_debugger_node.h"
 #include "editor/debugger/script_editor_debugger.h"
@@ -56,47 +58,60 @@ void GameViewDebugger::_session_started(Ref<EditorDebuggerSession> p_session) {
 	if (!is_feature_enabled) {
 		return;
 	}
+	emit_signal(SNAME("session_started"));
+}
 
-	Dictionary settings;
-	settings["debugger/max_node_selection"] = EDITOR_GET("debugger/max_node_selection");
-	settings["editors/panning/2d_editor_panning_scheme"] = EDITOR_GET("editors/panning/2d_editor_panning_scheme");
-	settings["editors/panning/simple_panning"] = EDITOR_GET("editors/panning/simple_panning");
-	settings["editors/panning/warped_mouse_panning"] = EDITOR_GET("editors/panning/warped_mouse_panning");
-	settings["editors/panning/2d_editor_pan_speed"] = EDITOR_GET("editors/panning/2d_editor_pan_speed");
-	settings["editors/polygon_editor/point_grab_radius"] = EDITOR_GET("editors/polygon_editor/point_grab_radius");
-	settings["canvas_item_editor/pan_view"] = DebuggerMarshalls::serialize_key_shortcut(ED_GET_SHORTCUT("canvas_item_editor/pan_view"));
-	settings["box_selection_fill_color"] = EditorNode::get_singleton()->get_editor_theme()->get_color(SNAME("box_selection_fill_color"), EditorStringName(Editor));
-	settings["box_selection_stroke_color"] = EditorNode::get_singleton()->get_editor_theme()->get_color(SNAME("box_selection_stroke_color"), EditorStringName(Editor));
+bool GameViewDebugger::has_capture(const String &p_capture) const {
+	return p_capture == "scene";
+}
+
+bool GameViewDebugger::capture(const String &p_message, const Array &p_data, int p_session) {
+	Ref<EditorDebuggerSession> session = get_session(p_session);
+	ERR_FAIL_COND_V(session.is_null(), false);
+	if (p_message == "scene:scene_tree_loaded") {
+		if (is_feature_enabled) {
+			Dictionary settings;
+			settings["debugger/max_node_selection"] = EDITOR_GET("debugger/max_node_selection");
+			settings["editors/panning/2d_editor_panning_scheme"] = EDITOR_GET("editors/panning/2d_editor_panning_scheme");
+			settings["editors/panning/simple_panning"] = EDITOR_GET("editors/panning/simple_panning");
+			settings["editors/panning/warped_mouse_panning"] = EDITOR_GET("editors/panning/warped_mouse_panning");
+			settings["editors/panning/2d_editor_pan_speed"] = EDITOR_GET("editors/panning/2d_editor_pan_speed");
+			settings["editors/polygon_editor/point_grab_radius"] = EDITOR_GET("editors/polygon_editor/point_grab_radius");
+			settings["canvas_item_editor/pan_view"] = DebuggerMarshalls::serialize_key_shortcut(ED_GET_SHORTCUT("canvas_item_editor/pan_view"));
+			settings["box_selection_fill_color"] = EditorNode::get_singleton()->get_editor_theme()->get_color(SNAME("box_selection_fill_color"), EditorStringName(Editor));
+			settings["box_selection_stroke_color"] = EditorNode::get_singleton()->get_editor_theme()->get_color(SNAME("box_selection_stroke_color"), EditorStringName(Editor));
 #ifndef _3D_DISABLED
-	settings["editors/3d/default_fov"] = EDITOR_GET("editors/3d/default_fov");
-	settings["editors/3d/default_z_near"] = EDITOR_GET("editors/3d/default_z_near");
-	settings["editors/3d/default_z_far"] = EDITOR_GET("editors/3d/default_z_far");
-	settings["editors/3d/navigation/invert_x_axis"] = EDITOR_GET("editors/3d/navigation/invert_x_axis");
-	settings["editors/3d/navigation/invert_y_axis"] = EDITOR_GET("editors/3d/navigation/invert_y_axis");
-	settings["editors/3d/navigation/warped_mouse_panning"] = EDITOR_GET("editors/3d/navigation/warped_mouse_panning");
-	settings["editors/3d/freelook/freelook_base_speed"] = EDITOR_GET("editors/3d/freelook/freelook_base_speed");
-	settings["editors/3d/freelook/freelook_sensitivity"] = EDITOR_GET("editors/3d/freelook/freelook_sensitivity");
-	settings["editors/3d/navigation_feel/orbit_sensitivity"] = EDITOR_GET("editors/3d/navigation_feel/orbit_sensitivity");
-	settings["editors/3d/navigation_feel/translation_sensitivity"] = EDITOR_GET("editors/3d/navigation_feel/translation_sensitivity");
-	settings["editors/3d/selection_box_color"] = EDITOR_GET("editors/3d/selection_box_color");
-	settings["editors/3d/freelook/freelook_base_speed"] = EDITOR_GET("editors/3d/freelook/freelook_base_speed");
+			settings["editors/3d/default_fov"] = EDITOR_GET("editors/3d/default_fov");
+			settings["editors/3d/default_z_near"] = EDITOR_GET("editors/3d/default_z_near");
+			settings["editors/3d/default_z_far"] = EDITOR_GET("editors/3d/default_z_far");
+			settings["editors/3d/navigation/invert_x_axis"] = EDITOR_GET("editors/3d/navigation/invert_x_axis");
+			settings["editors/3d/navigation/invert_y_axis"] = EDITOR_GET("editors/3d/navigation/invert_y_axis");
+			settings["editors/3d/navigation/warped_mouse_panning"] = EDITOR_GET("editors/3d/navigation/warped_mouse_panning");
+			settings["editors/3d/freelook/freelook_base_speed"] = EDITOR_GET("editors/3d/freelook/freelook_base_speed");
+			settings["editors/3d/freelook/freelook_sensitivity"] = EDITOR_GET("editors/3d/freelook/freelook_sensitivity");
+			settings["editors/3d/navigation_feel/orbit_sensitivity"] = EDITOR_GET("editors/3d/navigation_feel/orbit_sensitivity");
+			settings["editors/3d/navigation_feel/translation_sensitivity"] = EDITOR_GET("editors/3d/navigation_feel/translation_sensitivity");
+			settings["editors/3d/selection_box_color"] = EDITOR_GET("editors/3d/selection_box_color");
+			settings["editors/3d/freelook/freelook_base_speed"] = EDITOR_GET("editors/3d/freelook/freelook_base_speed");
 #endif // _3D_DISABLED
 
-	Array setup_data;
-	setup_data.append(settings);
-	p_session->send_message("scene:runtime_node_select_setup", setup_data);
+			Array setup_data;
+			setup_data.append(settings);
+			session->send_message("scene:runtime_node_select_setup", setup_data);
 
-	Array type;
-	type.append(node_type);
-	p_session->send_message("scene:runtime_node_select_set_type", type);
-	Array visible;
-	visible.append(selection_visible);
-	p_session->send_message("scene:runtime_node_select_set_visible", visible);
-	Array mode;
-	mode.append(select_mode);
-	p_session->send_message("scene:runtime_node_select_set_mode", mode);
-
-	emit_signal(SNAME("session_started"));
+			Array type;
+			type.append(node_type);
+			session->send_message("scene:runtime_node_select_set_type", type);
+			Array visible;
+			visible.append(selection_visible);
+			session->send_message("scene:runtime_node_select_set_visible", visible);
+			Array mode;
+			mode.append(select_mode);
+			session->send_message("scene:runtime_node_select_set_mode", mode);
+		}
+		return true;
+	}
+	return false;
 }
 
 void GameViewDebugger::_session_stopped() {
