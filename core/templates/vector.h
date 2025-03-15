@@ -105,9 +105,9 @@ public:
 	_FORCE_INLINE_ const T &operator[](Size p_index) const { return _cowdata.get(p_index); }
 	// Must take a copy instead of a reference (see GH-31736).
 	Error insert(Size p_pos, T p_val) { return _cowdata.insert(p_pos, p_val); }
-	Size find(const T &p_val, Size p_from = 0) const { return _cowdata.find(p_val, p_from); }
-	Size rfind(const T &p_val, Size p_from = -1) const { return _cowdata.rfind(p_val, p_from); }
-	Size count(const T &p_val) const { return _cowdata.count(p_val); }
+	Size find(const T &p_val, Size p_from = 0) const { return span().find(p_val, p_from); }
+	Size rfind(const T &p_val, Size p_from = -1) const { return span().rfind(p_val, p_from); }
+	Size count(const T &p_val) const { return span().count(p_val); }
 
 	// Must take a copy instead of a reference (see GH-31736).
 	void append_array(Vector<T> p_other);
