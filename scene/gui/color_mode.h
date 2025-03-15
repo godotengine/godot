@@ -53,7 +53,6 @@ public:
 	virtual void _value_changed() {}
 
 	virtual void slider_draw(int p_which) = 0;
-	virtual bool apply_theme() const { return false; }
 
 	ColorMode(ColorPicker *p_color_picker);
 	virtual ~ColorMode() {}
@@ -62,7 +61,7 @@ public:
 class ColorModeHSV : public ColorMode {
 public:
 	String labels[3] = { "H", "S", "V" };
-	float slider_max[4] = { 359, 100, 100, 255 };
+	float slider_max[3] = { 359, 100, 100 };
 	float cached_hue = 0.0;
 	float cached_saturation = 0.0;
 
@@ -103,12 +102,13 @@ public:
 			ColorMode(p_color_picker) {}
 };
 
-class ColorModeRAW : public ColorMode {
+class ColorModeHDR : public ColorMode {
 public:
 	String labels[3] = { "R", "G", "B" };
-	float slider_max[4] = { 100, 100, 100, 1 };
+	float slider_max[3] = { 1, 1, 1 };
+	Ref<GradientTexture2D> rgb_texture[3];
 
-	virtual String get_name() const override { return "RAW"; }
+	virtual String get_name() const override { return "HDR"; }
 
 	virtual float get_slider_step() const override { return 0.001; }
 	virtual float get_spinbox_arrow_step() const override { return 0.01; }
@@ -120,16 +120,15 @@ public:
 	virtual Color get_color() const override;
 
 	virtual void slider_draw(int p_which) override;
-	virtual bool apply_theme() const override;
 
-	ColorModeRAW(ColorPicker *p_color_picker) :
+	ColorModeHDR(ColorPicker *p_color_picker) :
 			ColorMode(p_color_picker) {}
 };
 
 class ColorModeOKHSL : public ColorMode {
 public:
 	String labels[3] = { "H", "S", "L" };
-	float slider_max[4] = { 359, 100, 100, 255 };
+	float slider_max[3] = { 359, 100, 100 };
 	float cached_hue = 0.0;
 	float cached_saturation = 0.0;
 	Ref<GradientTexture2D> hue_texture = nullptr;
