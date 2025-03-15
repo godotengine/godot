@@ -1688,9 +1688,9 @@ void CodeTextEditor::set_error_count(int p_error_count) {
 	error_button->set_text(itos(p_error_count));
 	error_button->set_visible(p_error_count > 0);
 	if (p_error_count > 0) {
-		_set_show_errors_panel(false);
 		idle->set_wait_time(idle_time_with_errors); // Parsing should happen sooner.
 	} else {
+		_set_show_errors_panel(false);
 		idle->set_wait_time(idle_time);
 	}
 }
