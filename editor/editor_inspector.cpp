@@ -3152,13 +3152,14 @@ void EditorInspector::update_tree() {
 	Color sscolor = get_theme_color(SNAME("prop_subsection"), EditorStringName(Editor));
 	bool sub_inspectors_enabled = EDITOR_GET("interface/inspector/open_resources_in_current_inspector");
 
-	// Get the lists of editors to add the beginning.
-	for (Ref<EditorInspectorPlugin> &ped : valid_plugins) {
-		ped->parse_begin(object);
-		_parse_added_editors(begin_vbox, nullptr, ped);
-	}
-	if (begin_vbox->get_child_count()) {
+	if (!valid_plugins.is_empty()) {
 		begin_vbox->show();
+
+		// Get the lists of editors to add the beginning.
+		for (Ref<EditorInspectorPlugin> &ped : valid_plugins) {
+			ped->parse_begin(object);
+			_parse_added_editors(begin_vbox, nullptr, ped);
+		}
 	}
 
 	StringName doc_name;
