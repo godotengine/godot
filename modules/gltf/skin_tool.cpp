@@ -403,11 +403,19 @@ Error SkinTool::_determine_skeletons(
 		Vector<SkinNodeIndex> non_joints;
 		for (int i = 0; i < skeleton_nodes.size(); ++i) {
 			const SkinNodeIndex node_i = skeleton_nodes[i];
-
-			if (nodes[node_i]->joint) {
+			Ref<GLTFNode> node = nodes[node_i];
+			if (node->joint) {
 				skeleton->joints.push_back(node_i);
-			} else {
-				non_joints.push_back(node_i);
+				// If a joint node has non-joint parents, we need to make them joints as well.
+				// They will go in `non_joints` and passed to `_reparent_non_joint_skeleton_subtrees`.
+				while (node->parent >= 0) {
+					const GLTFNodeIndex index = node->parent;
+					node = nodes[index];
+					if (node->joint || !skeleton_nodes.has(index)) {
+						break;
+					}
+					non_joints.push_back(index);
+				}
 			}
 		}
 

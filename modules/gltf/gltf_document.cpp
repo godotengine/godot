@@ -6228,8 +6228,12 @@ void GLTFDocument::_generate_scene_node(Ref<GLTFState> p_state, const GLTFNodeIn
 
 		p_scene_parent->add_child(bone_attachment, true);
 
-		// Find the correct bone_idx so we can properly serialize it.
-		bone_attachment->set_bone_idx(active_skeleton->find_bone(gltf_node->get_name()));
+		// If the node has a bone in the skeleton, attach to that bone.
+		// Otherwise, `_generate_bone_attachment` attaches to the parent.
+		const int bone_index = active_skeleton->find_bone(gltf_node->get_name());
+		if (bone_index != -1) {
+			bone_attachment->set_bone_idx(bone_index);
+		}
 
 		bone_attachment->set_owner(p_scene_root);
 
