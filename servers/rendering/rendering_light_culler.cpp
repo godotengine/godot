@@ -470,7 +470,7 @@ bool RenderingLightCuller::_add_light_camera_planes(LightCullPlanes &r_cull_plan
 	return true;
 }
 
-bool RenderingLightCuller::prepare_camera(const Transform3D &p_cam_transform, const Projection &p_cam_matrix) {
+bool RenderingLightCuller::prepare_camera(const Transform3D &p_cam_transform, const Frustum &p_cam_frustum) {
 	data.debug_count++;
 	if (data.debug_count >= 120) {
 		data.debug_count = 0;
@@ -495,7 +495,7 @@ bool RenderingLightCuller::prepare_camera(const Transform3D &p_cam_transform, co
 	}
 
 	// Get the camera frustum planes in world space.
-	data.frustum_planes = p_cam_matrix.get_projection_planes(p_cam_transform);
+	data.frustum_planes = p_cam_frustum.get_projection_planes(p_cam_transform);
 	DEV_CHECK_ONCE(data.frustum_planes.size() == 6);
 
 	data.regular_cull_planes.num_cull_planes = 0;
