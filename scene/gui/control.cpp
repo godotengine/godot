@@ -1729,6 +1729,9 @@ void Control::_size_changed() {
 
 	bool pos_changed = new_pos_cache != data.pos_cache;
 	bool size_changed = new_size_cache != data.size_cache;
+	// Below helps in getting rid of floating point errors for signaling resized.
+	bool approx_pos_changed = !new_pos_cache.is_equal_approx(data.pos_cache);
+	bool approx_size_changed = !new_size_cache.is_equal_approx(data.size_cache);
 
 	if (pos_changed) {
 		data.pos_cache = new_pos_cache;
@@ -1738,13 +1741,13 @@ void Control::_size_changed() {
 	}
 
 	if (is_inside_tree()) {
-		if (pos_changed || size_changed) {
+		if (approx_pos_changed || approx_size_changed) {
 			// Ensure global transform is marked as dirty before `NOTIFICATION_RESIZED` / `item_rect_changed` signal
 			// so an up to date global transform could be obtained when handling these.
 			_notify_transform();
 
-			item_rect_changed(size_changed);
-			if (size_changed) {
+			item_rect_changed(approx_size_changed);
+			if (approx_size_changed) {
 				notification(NOTIFICATION_RESIZED);
 			}
 		}
