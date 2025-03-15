@@ -2425,11 +2425,11 @@ void OpenXRAPI::end_frame() {
 	bool projection_layer_is_first = true;
 
 	// Add composition layers from providers
-	for (OpenXRCompositionLayerProvider *provider : composition_layer_providers) {
-		for (int i = 0; i < provider->get_composition_layer_count(); i++) {
+	for (OpenXRExtensionWrapper *extension : composition_layer_providers) {
+		for (int i = 0; i < extension->get_composition_layer_count(); i++) {
 			OrderedCompositionLayer layer = {
-				provider->get_composition_layer(i),
-				provider->get_composition_layer_order(i),
+				extension->get_composition_layer(i),
+				extension->get_composition_layer_order(i),
 			};
 			if (layer.composition_layer) {
 				ordered_layers_list.push_back(layer);
@@ -2683,12 +2683,7 @@ OpenXRAPI::OpenXRAPI() {
 }
 
 OpenXRAPI::~OpenXRAPI() {
-	// cleanup our composition layer providers
-	for (OpenXRCompositionLayerProvider *provider : composition_layer_providers) {
-		memdelete(provider);
-	}
 	composition_layer_providers.clear();
-
 	supported_extensions.clear();
 	layer_properties.clear();
 
@@ -3596,12 +3591,12 @@ bool OpenXRAPI::trigger_haptic_pulse(RID p_action, RID p_tracker, float p_freque
 	return true;
 }
 
-void OpenXRAPI::register_composition_layer_provider(OpenXRCompositionLayerProvider *provider) {
-	composition_layer_providers.append(provider);
+void OpenXRAPI::register_composition_layer_provider(OpenXRExtensionWrapper *p_extension) {
+	composition_layer_providers.append(p_extension);
 }
 
-void OpenXRAPI::unregister_composition_layer_provider(OpenXRCompositionLayerProvider *provider) {
-	composition_layer_providers.erase(provider);
+void OpenXRAPI::unregister_composition_layer_provider(OpenXRExtensionWrapper *p_extension) {
+	composition_layer_providers.erase(p_extension);
 }
 
 void OpenXRAPI::register_projection_views_extension(OpenXRExtensionWrapper *p_extension) {
