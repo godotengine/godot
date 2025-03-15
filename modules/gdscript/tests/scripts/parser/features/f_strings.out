@@ -1,0 +1,37 @@
+GDTEST_OK
+non-formatted string {not a slot}
+without slot
+
+with double quote ' delimiters
+with single quote " delimiters
+with bool literal true slot
+with int literal 4 slot
+with float literal 1.234 slot
+with enum literal 3 slot
+with string literal foo slot
+with bool variable true
+with int variable 5 slot
+with float variable 5.234 slot
+with enum variable 3 slot
+with string variable foo slot
+with bool expression false
+with int expression 31 slot
+with float expression 9.7 slot
+with double quote string double quote expression foobar slot
+with single quote string single quote expression foobar slot
+with double quote string single quote expression foobar slot
+with single quote string double quote expression foobar slot
+with int function 10 slot
+with 3 multiple 3.3 slots
+with slot 3 with whitespace inside
+with {escaped} and not escaped 5 slots
+raw with {escaped} and not escaped 5 slots
+non-formatted string doesn't honor {{escaped}} braces
+with nested formatted 5 string 12 slots
+raw with raw \t chars and 5 slots
+multiline with newlines
+and 5 slots
+with newlines and comments within a slot
+raw and multiline with raw \t chars, carriage-returns
+and 5 slots, using alternate quote char
+Handle slot with embedded braces 2
