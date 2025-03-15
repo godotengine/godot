@@ -1219,6 +1219,14 @@ bool GodotNavigationServer3D::is_baking_navigation_mesh(Ref<NavigationMesh> p_na
 	return NavMeshGenerator3D::get_singleton()->is_baking(p_navigation_mesh);
 }
 
+String GodotNavigationServer3D::get_baking_navigation_mesh_state_msg(Ref<NavigationMesh> p_navigation_mesh) const {
+#ifdef _3D_DISABLED
+	return "";
+#else
+	return NavMeshGenerator3D::get_singleton()->get_baking_state_msg(p_navigation_mesh);
+#endif // _3D_DISABLED
+}
+
 COMMAND_1(free, RID, p_object) {
 	if (map_owner.owns(p_object)) {
 		NavMap3D *map = map_owner.get_or_null(p_object);
