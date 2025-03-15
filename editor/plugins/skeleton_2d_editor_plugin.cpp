@@ -96,6 +96,8 @@ Skeleton2DEditor::Skeleton2DEditor() {
 
 	options->set_text(TTR("Skeleton2D"));
 	options->set_button_icon(EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("Skeleton2D"), EditorStringName(EditorIcons)));
+	options->set_flat(false);
+	options->set_theme_type_variation("FlatMenuButton");
 
 	options->get_popup()->add_item(TTR("Reset to Rest Pose"), MENU_OPTION_SET_REST);
 	options->get_popup()->add_separator();
