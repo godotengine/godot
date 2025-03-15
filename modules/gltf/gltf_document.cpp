@@ -5926,7 +5926,7 @@ void GLTFDocument::_convert_csg_shape_to_gltf(CSGShape3D *p_current, GLTFNodeInd
 	ERR_FAIL_MSG("csg module is disabled.");
 #else
 	CSGShape3D *csg = p_current;
-	csg->call("_update_shape");
+	csg->update_shape();
 	Array meshes = csg->get_meshes();
 	if (meshes.size() != 2) {
 		return;
