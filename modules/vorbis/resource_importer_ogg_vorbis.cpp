@@ -34,6 +34,7 @@
 #include "core/io/resource_saver.h"
 
 #ifdef TOOLS_ENABLED
+#include "editor/editor_settings.h"
 #include "editor/import/audio_stream_import_settings.h"
 #endif
 
@@ -111,7 +112,13 @@ Error ResourceImporterOggVorbis::import(ResourceUID::ID p_source_id, const Strin
 	ogg_vorbis_stream->set_beat_count(beat_count);
 	ogg_vorbis_stream->set_bar_beats(bar_beats);
 
-	return ResourceSaver::save(ogg_vorbis_stream, p_save_path + ".oggvorbisstr");
+	int flags = ResourceSaver::FLAG_COMPRESS;
+#ifdef TOOLS_ENABLED
+	if (!EDITOR_GET("filesystem/on_save/compress_binary_resources")) {
+		flags &= ~ResourceSaver::FLAG_COMPRESS;
+	}
+#endif
+	return ResourceSaver::save(ogg_vorbis_stream, p_save_path + ".oggvorbisstr", flags);
 }
 
 #ifndef DISABLE_DEPRECATED

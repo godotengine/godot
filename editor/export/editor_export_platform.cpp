@@ -881,7 +881,7 @@ String EditorExportPlatform::_export_customize(const String &p_path, LocalVector
 			Ref<PackedScene> s;
 			s.instantiate();
 			s->pack(node);
-			Error err = ResourceSaver::save(s, save_path);
+			Error err = ResourceSaver::save(s, save_path, ResourceSaver::FLAG_COMPRESS);
 			ERR_FAIL_COND_V_MSG(err != OK, p_path, "Unable to save export scene file to: " + save_path);
 		}
 
@@ -913,7 +913,7 @@ String EditorExportPlatform::_export_customize(const String &p_path, LocalVector
 			String base_file = p_path.get_file().get_basename() + ".res"; // use RES for saving (binary)
 			save_path = export_base_path.path_join("export-" + p_path.md5_text() + "-" + base_file);
 
-			Error err = ResourceSaver::save(res, save_path);
+			Error err = ResourceSaver::save(res, save_path, ResourceSaver::FLAG_COMPRESS);
 			ERR_FAIL_COND_V_MSG(err != OK, p_path, "Unable to save export resource file to: " + save_path);
 		}
 	}
