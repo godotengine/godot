@@ -975,6 +975,8 @@ Vector<String> DisplayServerWeb::get_rendering_drivers_func() {
 #ifdef GLES3_ENABLED
 	drivers.push_back("opengl3");
 #endif
+	drivers.push_back("dummy");
+
 	return drivers;
 }
 
@@ -1079,8 +1081,32 @@ void DisplayServerWeb::_dispatch_input_event(const Ref<InputEvent> &p_event) {
 	}
 }
 
+String DisplayServerWeb::get_readable_driver_name(const String &p_driver) const {
+	if (p_driver == "opengl3") {
+		return "WebGL 2.0";
+	} else if (p_driver == "dummy") {
+		return "Dummy";
+	} else {
+		return p_driver;
+	}
+}
+
 DisplayServer *DisplayServerWeb::create_func(const String &p_rendering_driver, WindowMode p_window_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Point2i *p_position, const Size2i &p_resolution, int p_screen, Context p_context, int64_t p_parent_window, Error &r_error) {
-	return memnew(DisplayServerWeb(p_rendering_driver, p_window_mode, p_vsync_mode, p_flags, p_position, p_resolution, p_screen, p_context, p_parent_window, r_error));
+	DisplayServerWeb *ds = memnew(DisplayServerWeb(p_rendering_driver, p_window_mode, p_vsync_mode, p_flags, p_position, p_resolution, p_screen, p_context, p_parent_window, r_error));
+	if (r_error != OK) {
+		Vector<String> names;
+		for (const String &driver : ds->tested_drivers) {
+			names.push_back(ds->get_readable_driver_name(driver));
+		}
+
+		OS::get_singleton()->alert(
+				vformat("Your browser seem not to support the required version of the following drivers:\n%s.\n\n"
+						"If possible, consider updating your browser version and video card drivers.\n"
+						"If you have recently updated your video card drivers, try rebooting.",
+						String(", ").join(names)),
+				"Unable to initialize video driver");
+	}
+	return ds;
 }
 
 DisplayServerWeb::DisplayServerWeb(const String &p_rendering_driver, WindowMode p_window_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Point2i *p_position, const Size2i &p_resolution, int p_screen, Context p_context, int64_t p_parent_window, Error &r_error) {
@@ -1101,35 +1127,77 @@ DisplayServerWeb::DisplayServerWeb(const String &p_rendering_driver, WindowMode 
 	// Expose method for requesting quit.
 	godot_js_os_request_quit_cb(request_quit_callback);
 
-#ifdef GLES3_ENABLED
-	bool webgl2_inited = false;
-	if (godot_js_display_has_webgl(2)) {
-		EmscriptenWebGLContextAttributes attributes;
-		emscripten_webgl_init_context_attributes(&attributes);
-		attributes.alpha = OS::get_singleton()->is_layered_allowed();
-		attributes.antialias = false;
-		attributes.majorVersion = 2;
-		attributes.explicitSwapControl = true;
-
-		webgl_ctx = emscripten_webgl_create_context(canvas_id, &attributes);
-		webgl2_inited = webgl_ctx && emscripten_webgl_make_context_current(webgl_ctx) == EMSCRIPTEN_RESULT_SUCCESS;
-	}
-	if (webgl2_inited) {
-		if (!emscripten_webgl_enable_extension(webgl_ctx, "OVR_multiview2")) {
-			print_verbose("Failed to enable WebXR extension.");
+	Vector<String> driver_list;
+	for (const String &drv : p_rendering_driver.split(",")) {
+		if (!driver_list.has(drv)) {
+			driver_list.push_back(drv);
 		}
-		RasterizerGLES3::make_current(false);
+	}
+	if (GLOBAL_GET("rendering/renderer/fallback_to_opengl3").operator bool()) {
+		for (const String &drv : GLOBAL_GET("rendering/gl_compatibility/driver").operator String().split(",")) {
+			if (!driver_list.has(drv)) {
+				driver_list.push_back(drv);
+			}
+		}
+	}
+	if (GLOBAL_GET("rendering/renderer/fallback_to_dummy").operator bool()) {
+		if (!driver_list.has("dummy")) {
+			driver_list.push_back("dummy");
+		}
+	}
 
+	bool driver_found = false;
+	for (const String &driver : driver_list) {
+		print_line(vformat("Trying to initialize \"%s\" rendering driver.", get_readable_driver_name(driver)));
+		tested_drivers.push_back(driver);
+#if defined(GLES3_ENABLED)
+		if (driver == "opengl3") {
+			bool webgl2_inited = false;
+			if (godot_js_display_has_webgl(2)) {
+				EmscriptenWebGLContextAttributes attributes;
+				emscripten_webgl_init_context_attributes(&attributes);
+				attributes.alpha = OS::get_singleton()->is_layered_allowed();
+				attributes.antialias = false;
+				attributes.majorVersion = 2;
+				attributes.explicitSwapControl = true;
+
+				webgl_ctx = emscripten_webgl_create_context(canvas_id, &attributes);
+				webgl2_inited = webgl_ctx && emscripten_webgl_make_context_current(webgl_ctx) == EMSCRIPTEN_RESULT_SUCCESS;
+			}
+			if (webgl2_inited) {
+				rendering_driver = driver;
+				OS::get_singleton()->set_current_rendering_method("gl_compatibility");
+				OS::get_singleton()->set_current_rendering_driver_name(rendering_driver);
+				driver_found = true;
+				break;
+			}
+		}
+#endif // GLES3_ENABLED
+		if (driver == "dummy") {
+			rendering_driver = driver;
+			OS::get_singleton()->set_current_rendering_method("gl_compatibility");
+			OS::get_singleton()->set_current_rendering_driver_name(rendering_driver);
+			driver_found = true;
+			break;
+		}
+		print_line(vformat("  \"%s\" rendering driver initialization failed.", get_readable_driver_name(driver)));
+	}
+
+	if (driver_found) {
+		print_line(vformat("  \"%s\" rendering driver initialized successfully.", get_readable_driver_name(rendering_driver)));
 	} else {
-		OS::get_singleton()->alert(
-				"Your browser seems not to support WebGL 2.\n\n"
-				"If possible, consider updating your browser version and video card drivers.",
-				"Unable to initialize WebGL 2 video driver");
+		r_error = ERR_UNAVAILABLE;
+		ERR_FAIL_MSG("Could not initialize any of the rendering drivers.");
+	}
+
+#ifdef GLES3_ENABLED
+	if (rendering_driver == "opengl3") {
+		RasterizerGLES3::make_current(false);
+	}
+#endif
+	if (rendering_driver == "dummy") {
 		RasterizerDummy::make_current();
 	}
-#else
-	RasterizerDummy::make_current();
-#endif
 
 	// JS Input interface (js/libs/library_godot_input.js)
 	godot_js_input_mouse_button_cb(&DisplayServerWeb::mouse_button_callback);
