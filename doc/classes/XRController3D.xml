@@ -17,14 +17,14 @@
 			<return type="float" />
 			<param index="0" name="name" type="StringName" />
 			<description>
-				Returns a numeric value for the input with the given [param name]. This is used for triggers and grip sensors.
+				Returns a numeric value for the input with the given [param name] in the current action set. This is used for triggers and grip sensors.
 			</description>
 		</method>
 		<method name="get_input" qualifiers="const">
 			<return type="Variant" />
 			<param index="0" name="name" type="StringName" />
 			<description>
-				Returns a [Variant] for the input with the given [param name]. This works for any input type, the variant will be typed according to the actions configuration.
+				Returns a [Variant] for the input with the given [param name] in the current action set. This works for any input type, the variant will be typed according to the actions configuration.
 			</description>
 		</method>
 		<method name="get_tracker_hand" qualifiers="const">
@@ -37,14 +37,14 @@
 			<return type="Vector2" />
 			<param index="0" name="name" type="StringName" />
 			<description>
-				Returns a [Vector2] for the input with the given [param name]. This is used for thumbsticks and thumbpads found on many controllers.
+				Returns a [Vector2] for the input with the given [param name] in the current action set. This is used for thumbsticks and thumbpads found on many controllers.
 			</description>
 		</method>
 		<method name="is_button_pressed" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="name" type="StringName" />
 			<description>
-				Returns [code]true[/code] if the button with the given [param name] is pressed.
+				Returns [code]true[/code] if the button with the given [param name] is pressed. The [param name] corresponds to an action in the current action set.
 			</description>
 		</method>
 	</methods>
