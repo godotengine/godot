@@ -47,7 +47,6 @@ public:
 private:
 	struct Package {
 		String filename;
-		unzFile zfile = nullptr;
 	};
 	Vector<Package> packages;
 
