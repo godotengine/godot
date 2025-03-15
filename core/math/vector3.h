@@ -315,10 +315,10 @@ real_t Vector3::angle_to(const Vector3 &p_to) const {
 }
 
 real_t Vector3::signed_angle_to(const Vector3 &p_to, const Vector3 &p_axis) const {
-	Vector3 cross_to = cross(p_to);
-	real_t unsigned_angle = Math::atan2(cross_to.length(), dot(p_to));
-	real_t sign = cross_to.dot(p_axis);
-	return (sign < 0) ? -unsigned_angle : unsigned_angle;
+	Vector3 axis_norm = p_axis.normalized();
+	Vector3 vy = p_axis.cross(*this);
+	Vector3 vx = vy.cross(axis_norm);
+	return Math::atan2(p_to.dot(vy), p_to.dot(vx));
 }
 
 Vector3 Vector3::direction_to(const Vector3 &p_to) const {

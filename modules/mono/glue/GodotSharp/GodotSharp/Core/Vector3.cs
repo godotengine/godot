@@ -683,10 +683,10 @@ namespace Godot
         /// <returns>The signed angle between the two vectors, in radians.</returns>
         public readonly real_t SignedAngleTo(Vector3 to, Vector3 axis)
         {
-            Vector3 crossTo = Cross(to);
-            real_t unsignedAngle = Mathf.Atan2(crossTo.Length(), Dot(to));
-            real_t sign = crossTo.Dot(axis);
-            return (sign < 0) ? -unsignedAngle : unsignedAngle;
+            var axisNorm = axis.Normalized();
+            var vY = axis.Cross(this);
+            var vX = vY.Cross(axisNorm);
+            return Mathf.Atan2(to.Dot(vY), to.Dot(vX));
         }
 
         /// <summary>
