@@ -63,3 +63,7 @@ public:
 	_FORCE_INLINE_ constexpr const T *begin() const { return _ptr; }
 	_FORCE_INLINE_ constexpr const T *end() const { return _ptr + _len; }
 };
+
+// Zero-constructing Span initializes _ptr and _len to 0 (and thus empty).
+template <typename T>
+struct is_zero_constructible<Span<T>> : std::true_type {};

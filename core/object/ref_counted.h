@@ -276,3 +276,7 @@ struct VariantInternalAccessor<const Ref<T> &> {
 	static _FORCE_INLINE_ Ref<T> get(const Variant *v) { return Ref<T>(*VariantInternal::get_object(v)); }
 	static _FORCE_INLINE_ void set(Variant *v, const Ref<T> &p_ref) { VariantInternal::object_assign(v, p_ref); }
 };
+
+// Zero-constructing Ref initializes reference to nullptr (and thus empty).
+template <typename T>
+struct is_zero_constructible<Ref<T>> : std::true_type {};
