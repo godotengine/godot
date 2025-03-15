@@ -5575,6 +5575,24 @@ bool EditorNode::ensure_main_scene(bool p_from_native) {
 		return false;
 	}
 
+	if (!EditorNode::validate_custom_directory()) {
+		current_menu_option = -1;
+		return false;
+	}
+
+	return true;
+}
+
+bool EditorNode::validate_custom_directory() {
+	String data_dir = OS::get_singleton()->get_user_data_dir();
+	bool use_custom_dir = GLOBAL_GET("application/config/use_custom_user_dir");
+	if (use_custom_dir) {
+		if (!DirAccess::exists(data_dir)) {
+			open_project_settings->set_text(vformat(TTR("User data dir '%s' is not valid. Change to a valid one?"), data_dir));
+			open_project_settings->popup_centered();
+			return false;
+		}
+	}
 	return true;
 }
 
@@ -8108,6 +8126,11 @@ EditorNode::EditorNode() {
 	pick_main_scene->connect(SceneStringName(confirmed), callable_mp(this, &EditorNode::_menu_option).bind(SETTINGS_PICK_MAIN_SCENE));
 	select_current_scene_button = pick_main_scene->add_button(TTR("Select Current"), true, "select_current");
 	pick_main_scene->connect("custom_action", callable_mp(this, &EditorNode::_pick_main_scene_custom_action));
+
+	open_project_settings = memnew(ConfirmationDialog);
+	gui_base->add_child(open_project_settings);
+	open_project_settings->set_ok_button_text(TTR("Open Project Settings"));
+	open_project_settings->connect(SceneStringName(confirmed), callable_mp(this, &EditorNode::_menu_option).bind(PROJECT_OPEN_SETTINGS));
 
 	for (int i = 0; i < _init_callbacks.size(); i++) {
 		_init_callbacks[i]();
