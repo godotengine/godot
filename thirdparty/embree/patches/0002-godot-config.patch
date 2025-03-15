@@ -1,0 +1,102 @@
+diff --git a/thirdparty/embree/include/embree4/rtcore_config.h b/thirdparty/embree/include/embree4/rtcore_config.h
+index 8abd6954c3..cb3a8678a7 100644
+--- a/thirdparty/embree/include/embree4/rtcore_config.h
++++ b/thirdparty/embree/include/embree4/rtcore_config.h
+@@ -4,7 +4,7 @@
+ #pragma once
+ 
+ #if !defined(EMBREE_SYCL_SUPPORT)
+-#cmakedefine EMBREE_SYCL_SUPPORT
++// #cmakedefine EMBREE_SYCL_SUPPORT
+ #endif
+ 
+ #define RTC_VERSION_MAJOR 4
+@@ -13,28 +13,28 @@
+ #define RTC_VERSION 40301
+ #define RTC_VERSION_STRING "4.3.1"
+ 
+-#define RTC_MAX_INSTANCE_LEVEL_COUNT @EMBREE_MAX_INSTANCE_LEVEL_COUNT@
++#define RTC_MAX_INSTANCE_LEVEL_COUNT 1
+ 
+-#cmakedefine EMBREE_GEOMETRY_INSTANCE_ARRAY
++// #cmakedefine EMBREE_GEOMETRY_INSTANCE_ARRAY
+ #if defined(EMBREE_GEOMETRY_INSTANCE_ARRAY)
+   #define RTC_GEOMETRY_INSTANCE_ARRAY
+ #endif
+ 
+-#cmakedefine01 EMBREE_SYCL_GEOMETRY_CALLBACK
++// #cmakedefine01 EMBREE_SYCL_GEOMETRY_CALLBACK
+ 
+-#cmakedefine01 EMBREE_MIN_WIDTH
++#define EMBREE_MIN_WIDTH 0
+ #define RTC_MIN_WIDTH EMBREE_MIN_WIDTH
+ 
+ #if !defined(EMBREE_STATIC_LIB)
+-#cmakedefine EMBREE_STATIC_LIB
++#define EMBREE_STATIC_LIB
+ #endif
+-#cmakedefine EMBREE_API_NAMESPACE
++// #cmakedefine EMBREE_API_NAMESPACE
+ 
+ #if defined(EMBREE_API_NAMESPACE)
+-#  define RTC_NAMESPACE @EMBREE_API_NAMESPACE@
+-#  define RTC_NAMESPACE_BEGIN namespace @EMBREE_API_NAMESPACE@ {
++#  define RTC_NAMESPACE
++#  define RTC_NAMESPACE_BEGIN namespace {
+ #  define RTC_NAMESPACE_END }
+-#  define RTC_NAMESPACE_USE using namespace @EMBREE_API_NAMESPACE@;
++#  define RTC_NAMESPACE_USE using namespace;
+ #  define RTC_API_EXTERN_C
+ #  undef EMBREE_API_NAMESPACE
+ #else
+diff --git a/thirdparty/embree/kernels/config.h b/thirdparty/embree/kernels/config.h
+index 1669c4af72..5979b543c9 100644
+--- a/thirdparty/embree/kernels/config.h
++++ b/thirdparty/embree/kernels/config.h
+@@ -3,27 +3,27 @@
+ 
+ #include "../include/embree4/rtcore_config.h"
+ 
+-#cmakedefine EMBREE_RAY_MASK
+-#cmakedefine EMBREE_STAT_COUNTERS
+-#cmakedefine EMBREE_BACKFACE_CULLING
+-#cmakedefine EMBREE_BACKFACE_CULLING_CURVES
+-#cmakedefine EMBREE_BACKFACE_CULLING_SPHERES
+-#cmakedefine EMBREE_FILTER_FUNCTION
+-#cmakedefine EMBREE_IGNORE_INVALID_RAYS
+-#cmakedefine EMBREE_GEOMETRY_TRIANGLE
+-#cmakedefine EMBREE_GEOMETRY_QUAD
+-#cmakedefine EMBREE_GEOMETRY_CURVE
+-#cmakedefine EMBREE_GEOMETRY_SUBDIVISION
+-#cmakedefine EMBREE_GEOMETRY_USER
+-#cmakedefine EMBREE_GEOMETRY_INSTANCE
++// #cmakedefine EMBREE_RAY_MASK
++// #cmakedefine EMBREE_STAT_COUNTERS
++// #cmakedefine EMBREE_BACKFACE_CULLING
++// #cmakedefine EMBREE_BACKFACE_CULLING_CURVES
++// #cmakedefine EMBREE_BACKFACE_CULLING_SPHERES
++#define EMBREE_FILTER_FUNCTION
++// #cmakedefine EMBREE_IGNORE_INVALID_RAYS
++#define EMBREE_GEOMETRY_TRIANGLE
++// #cmakedefine EMBREE_GEOMETRY_QUAD
++// #cmakedefine EMBREE_GEOMETRY_CURVE
++// #cmakedefine EMBREE_GEOMETRY_SUBDIVISION
++// #cmakedefine EMBREE_GEOMETRY_USER
++// #cmakedefine EMBREE_GEOMETRY_INSTANCE
+ // EMBREE_GEOMETRY_INSTANCE_ARRAY is defined in rtcore_config.h
+-#cmakedefine EMBREE_GEOMETRY_GRID
+-#cmakedefine EMBREE_GEOMETRY_POINT
+-#cmakedefine EMBREE_RAY_PACKETS
+-#cmakedefine EMBREE_COMPACT_POLYS
++// #cmakedefine EMBREE_GEOMETRY_GRID
++// #cmakedefine EMBREE_GEOMETRY_POINT
++#define EMBREE_RAY_PACKETS
++// #cmakedefine EMBREE_COMPACT_POLYS
+ 
+-#define EMBREE_CURVE_SELF_INTERSECTION_AVOIDANCE_FACTOR @EMBREE_CURVE_SELF_INTERSECTION_AVOIDANCE_FACTOR@
+-#cmakedefine EMBREE_DISC_POINT_SELF_INTERSECTION_AVOIDANCE
++#define EMBREE_CURVE_SELF_INTERSECTION_AVOIDANCE_FACTOR 2.0
++#define EMBREE_DISC_POINT_SELF_INTERSECTION_AVOIDANCE
+ 
+ #if defined(EMBREE_GEOMETRY_TRIANGLE)
+   #define IF_ENABLED_TRIS(x) x

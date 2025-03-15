@@ -18,12 +18,8 @@ msgstr ""
 "Plural-Forms: nplurals=1; plural=0;\n"
 "X-Generator: Weblate 5.3-rc\n"
 
-msgid "Example: %s"
-msgstr "ตัวอย่าง: %s"
-
-msgid "%d item"
-msgid_plural "%d items"
-msgstr[0] "%d หน่วย"
+msgid "All Recognized"
+msgstr "ทุกนามสุกลที่รู้จัก"
 
 msgid "Add current color as a preset."
 msgstr "เพิ่มสีปัจจุบันเป็นพรีเซ็ต"
@@ -34,11 +30,11 @@ msgstr "เปิด"
 msgid "Select Current Folder"
 msgstr "เลือกโฟลเดอร์ปัจจุบัน"
 
+msgid "Save"
+msgstr "บันทึก"
+
 msgid "Select This Folder"
 msgstr "เลือกโฟลเดอร์นี้"
-
-msgid "All Recognized"
-msgstr "ทุกนามสุกลที่รู้จัก"
 
 msgid "Open a File"
 msgstr "เปิดไฟล์"
@@ -51,9 +47,6 @@ msgstr "เปิดโฟลเดอร์"
 
 msgid "Open a File or Directory"
 msgstr "เปิดไฟล์หรือโฟลเดอร์"
-
-msgid "Save"
-msgstr "บันทึก"
 
 msgid "Save a File"
 msgstr "บันทึกไฟล์"

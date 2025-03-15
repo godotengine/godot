@@ -33,9 +33,10 @@
 /////////////////////////////////////////////////////////////////////////////
 // CameraData
 
-void RendererSceneRender::CameraData::set_camera(const Transform3D p_transform, const Projection p_projection, bool p_is_orthogonal, bool p_vaspect, const Vector2 &p_taa_jitter, const uint32_t p_visible_layers) {
+void RendererSceneRender::CameraData::set_camera(const Transform3D p_transform, const Projection p_projection, bool p_is_orthogonal, bool p_is_frustum, bool p_vaspect, const Vector2 &p_taa_jitter, float p_taa_frame_count, const uint32_t p_visible_layers) {
 	view_count = 1;
 	is_orthogonal = p_is_orthogonal;
+	is_frustum = p_is_frustum;
 	vaspect = p_vaspect;
 
 	main_transform = p_transform;
@@ -45,14 +46,16 @@ void RendererSceneRender::CameraData::set_camera(const Transform3D p_transform, 
 	view_offset[0] = Transform3D();
 	view_projection[0] = p_projection;
 	taa_jitter = p_taa_jitter;
+	taa_frame_count = p_taa_frame_count;
 }
 
-void RendererSceneRender::CameraData::set_multiview_camera(uint32_t p_view_count, const Transform3D *p_transforms, const Projection *p_projections, bool p_is_orthogonal, bool p_vaspect) {
+void RendererSceneRender::CameraData::set_multiview_camera(uint32_t p_view_count, const Transform3D *p_transforms, const Projection *p_projections, bool p_is_orthogonal, bool p_is_frustum, bool p_vaspect) {
 	ERR_FAIL_COND_MSG(p_view_count != 2, "Incorrect view count for stereoscopic view");
 
 	visible_layers = 0xFFFFFFFF;
 	view_count = p_view_count;
 	is_orthogonal = p_is_orthogonal;
+	is_frustum = p_is_frustum;
 	vaspect = p_vaspect;
 	Vector<Plane> planes[2];
 
@@ -171,7 +174,7 @@ void RendererSceneRender::CameraData::set_multiview_camera(uint32_t p_view_count
 	Vector3 local_min_vec = main_transform_inv.xform(min_vec);
 	Vector3 local_max_vec = main_transform_inv.xform(max_vec);
 
-	// 15. get x and y from these to obtain left, top, right bottom for the frustum. Get the distance from near plane to camera origin to obtain near, and the distance from the far plane to the camer origin to obtain far.
+	// 15. get x and y from these to obtain left, top, right bottom for the frustum. Get the distance from near plane to camera origin to obtain near, and the distance from the far plane to the camera origin to obtain far.
 	float z_near = -near_plane.distance_to(main_transform.origin);
 	float z_far = -far_plane.distance_to(main_transform.origin);
 
@@ -346,6 +349,14 @@ float RendererSceneRender::environment_get_ambient_sky_contribution(RID p_env) c
 
 RS::EnvironmentReflectionSource RendererSceneRender::environment_get_reflection_source(RID p_env) const {
 	return environment_storage.environment_get_reflection_source(p_env);
+}
+
+void RendererSceneRender::environment_set_camera_feed_id(RID p_env, int p_camera_feed_id) {
+	environment_storage.environment_set_camera_feed_id(p_env, p_camera_feed_id);
+}
+
+int RendererSceneRender::environment_get_camera_feed_id(RID p_env) const {
+	return environment_storage.environment_get_camera_feed_id(p_env);
 }
 
 // Tonemap

@@ -45,6 +45,7 @@
 #include "core/os/os.h"
 #include "editor/editor_help.h"
 #include "editor/editor_node.h"
+
 #include "modules/gdscript/gdscript_analyzer.h"
 #include "modules/regex/regex.h"
 
@@ -227,7 +228,7 @@ Vector<InlineTestData> read_tests(const String &p_path) {
 		if (InlineTestData::try_parse(lines, i, d)) {
 			if (!d.name.is_empty()) {
 				// Safety check: names must be unique.
-				if (names.find(d.name) != -1) {
+				if (names.has(d.name)) {
 					FAIL(vformat("Duplicated name '%s' in '%s'. Names must be unique!", d.name, p_path));
 				}
 				names.append(d.name);
@@ -375,6 +376,18 @@ func f():
 			gd.to_lsp(lines);
 		}
 
+		SUBCASE("special case: zero column for root class") {
+			GodotPosition gd(1, 0);
+			lsp::Position expected = lsp_pos(0, 0);
+			lsp::Position actual = gd.to_lsp(lines);
+			CHECK_EQ(actual, expected);
+		}
+		SUBCASE("special case: zero line and column for root class") {
+			GodotPosition gd(0, 0);
+			lsp::Position expected = lsp_pos(0, 0);
+			lsp::Position actual = gd.to_lsp(lines);
+			CHECK_EQ(actual, expected);
+		}
 		SUBCASE("special case: negative line for root class") {
 			GodotPosition gd(-1, 0);
 			lsp::Position expected = lsp_pos(0, 0);
@@ -466,6 +479,25 @@ func f():
 			String uri = workspace->get_file_uri(path);
 			Vector<InlineTestData> all_test_data = read_tests(path);
 			test_resolve_symbols(uri, all_test_data, all_test_data);
+		}
+
+		memdelete(proto);
+		finish_language();
+	}
+	TEST_CASE("[workspace][document_symbol]") {
+		GDScriptLanguageProtocol *proto = initialize(root);
+		REQUIRE(proto);
+
+		SUBCASE("selectionRange of root class must be inside range") {
+			String path = "res://lsp/first_line_comment.gd";
+			assert_no_errors_in(path);
+			GDScriptLanguageProtocol::get_singleton()->get_workspace()->parse_local_script(path);
+			ExtendGDScriptParser *parser = GDScriptLanguageProtocol::get_singleton()->get_workspace()->parse_results[path];
+			REQUIRE(parser);
+			lsp::DocumentSymbol cls = parser->get_symbols();
+
+			REQUIRE(((cls.range.start.line == cls.selectionRange.start.line && cls.range.start.character <= cls.selectionRange.start.character) || (cls.range.start.line < cls.selectionRange.start.line)));
+			REQUIRE(((cls.range.end.line == cls.selectionRange.end.line && cls.range.end.character >= cls.selectionRange.end.character) || (cls.range.end.line > cls.selectionRange.end.line)));
 		}
 
 		memdelete(proto);

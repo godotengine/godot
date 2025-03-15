@@ -31,6 +31,7 @@
 #include "primitive_meshes.h"
 
 #include "core/config/project_settings.h"
+#include "core/math/math_funcs.h"
 #include "scene/resources/theme.h"
 #include "scene/theme/theme_db.h"
 #include "servers/rendering_server.h"
@@ -129,7 +130,7 @@ void PrimitiveMesh::_update() const {
 	const_cast<PrimitiveMesh *>(this)->emit_changed();
 }
 
-void PrimitiveMesh::_request_update() {
+void PrimitiveMesh::request_update() {
 	if (pending_request) {
 		return;
 	}
@@ -249,6 +250,8 @@ void PrimitiveMesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_uv2_padding", "uv2_padding"), &PrimitiveMesh::set_uv2_padding);
 	ClassDB::bind_method(D_METHOD("get_uv2_padding"), &PrimitiveMesh::get_uv2_padding);
 
+	ClassDB::bind_method(D_METHOD("request_update"), &PrimitiveMesh::request_update);
+
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "material", PROPERTY_HINT_RESOURCE_TYPE, "BaseMaterial3D,ShaderMaterial"), "set_material", "get_material");
 	ADD_PROPERTY(PropertyInfo(Variant::AABB, "custom_aabb", PROPERTY_HINT_NONE, "suffix:m"), "set_custom_aabb", "get_custom_aabb");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flip_faces"), "set_flip_faces", "get_flip_faces");
@@ -259,6 +262,9 @@ void PrimitiveMesh::_bind_methods() {
 }
 
 void PrimitiveMesh::set_material(const Ref<Material> &p_material) {
+	if (p_material == material) {
+		return;
+	}
 	material = p_material;
 	if (!pending_request) {
 		// just apply it, else it'll happen when _update is called.
@@ -277,6 +283,9 @@ Array PrimitiveMesh::get_mesh_arrays() const {
 }
 
 void PrimitiveMesh::set_custom_aabb(const AABB &p_custom) {
+	if (p_custom.is_equal_approx(custom_aabb)) {
+		return;
+	}
 	custom_aabb = p_custom;
 	RS::get_singleton()->mesh_set_custom_aabb(mesh, custom_aabb);
 	emit_changed();
@@ -287,8 +296,11 @@ AABB PrimitiveMesh::get_custom_aabb() const {
 }
 
 void PrimitiveMesh::set_flip_faces(bool p_enable) {
+	if (p_enable == flip_faces) {
+		return;
+	}
 	flip_faces = p_enable;
-	_request_update();
+	request_update();
 }
 
 bool PrimitiveMesh::get_flip_faces() const {
@@ -296,15 +308,21 @@ bool PrimitiveMesh::get_flip_faces() const {
 }
 
 void PrimitiveMesh::set_add_uv2(bool p_enable) {
+	if (p_enable == add_uv2) {
+		return;
+	}
 	add_uv2 = p_enable;
 	_update_lightmap_size();
-	_request_update();
+	request_update();
 }
 
 void PrimitiveMesh::set_uv2_padding(float p_padding) {
+	if (Math::is_equal_approx(p_padding, uv2_padding)) {
+		return;
+	}
 	uv2_padding = p_padding;
 	_update_lightmap_size();
-	_request_update();
+	request_update();
 }
 
 Vector2 PrimitiveMesh::get_uv2_scale(Vector2 p_margin_scale) const {
@@ -322,22 +340,43 @@ Vector2 PrimitiveMesh::get_uv2_scale(Vector2 p_margin_scale) const {
 }
 
 float PrimitiveMesh::get_lightmap_texel_size() const {
-	float texel_size = GLOBAL_GET("rendering/lightmapping/primitive_meshes/texel_size");
-
-	if (texel_size <= 0.0) {
-		texel_size = 0.2;
-	}
-
 	return texel_size;
 }
 
+void PrimitiveMesh::_on_settings_changed() {
+	float new_texel_size = float(GLOBAL_GET("rendering/lightmapping/primitive_meshes/texel_size"));
+	if (new_texel_size <= 0.0) {
+		new_texel_size = 0.2;
+	}
+	if (texel_size == new_texel_size) {
+		return;
+	}
+
+	texel_size = new_texel_size;
+	_update_lightmap_size();
+	request_update();
+}
+
 PrimitiveMesh::PrimitiveMesh() {
+	ERR_FAIL_NULL(RenderingServer::get_singleton());
 	mesh = RenderingServer::get_singleton()->mesh_create();
+
+	ERR_FAIL_NULL(ProjectSettings::get_singleton());
+	texel_size = float(GLOBAL_GET("rendering/lightmapping/primitive_meshes/texel_size"));
+	if (texel_size <= 0.0) {
+		texel_size = 0.2;
+	}
+	ProjectSettings *project_settings = ProjectSettings::get_singleton();
+	project_settings->connect("settings_changed", callable_mp(this, &PrimitiveMesh::_on_settings_changed));
 }
 
 PrimitiveMesh::~PrimitiveMesh() {
 	ERR_FAIL_NULL(RenderingServer::get_singleton());
 	RenderingServer::get_singleton()->free(mesh);
+
+	ERR_FAIL_NULL(ProjectSettings::get_singleton());
+	ProjectSettings *project_settings = ProjectSettings::get_singleton();
+	project_settings->disconnect("settings_changed", callable_mp(this, &PrimitiveMesh::_on_settings_changed));
 }
 
 /**
@@ -348,7 +387,6 @@ void CapsuleMesh::_update_lightmap_size() {
 	if (get_add_uv2()) {
 		// size must have changed, update lightmap size hint
 		Size2i _lightmap_size_hint;
-		float texel_size = get_lightmap_texel_size();
 		float padding = get_uv2_padding();
 
 		float radial_length = radius * Math_PI * 0.5; // circumference of 90 degree bend
@@ -363,7 +401,6 @@ void CapsuleMesh::_update_lightmap_size() {
 
 void CapsuleMesh::_create_mesh_array(Array &p_arr) const {
 	bool _add_uv2 = get_add_uv2();
-	float texel_size = get_lightmap_texel_size();
 	float _uv2_padding = get_uv2_padding() * texel_size;
 
 	create_mesh_array(p_arr, radius, height, radial_segments, rings, _add_uv2, _uv2_padding);
@@ -406,19 +443,29 @@ void CapsuleMesh::create_mesh_array(Array &p_arr, const float radius, const floa
 		v = j;
 
 		v /= (rings + 1);
-		w = sin(0.5 * Math_PI * v);
-		y = radius * cos(0.5 * Math_PI * v);
+		if (j == (rings + 1)) {
+			w = 1.0;
+			y = 0.0;
+		} else {
+			w = Math::sin(0.5 * Math_PI * v);
+			y = Math::cos(0.5 * Math_PI * v);
+		}
 
 		for (i = 0; i <= radial_segments; i++) {
 			u = i;
 			u /= radial_segments;
 
-			x = -sin(u * Math_TAU);
-			z = cos(u * Math_TAU);
+			if (i == radial_segments) {
+				x = 0.0;
+				z = 1.0;
+			} else {
+				x = -Math::sin(u * Math_TAU);
+				z = Math::cos(u * Math_TAU);
+			}
 
-			Vector3 p = Vector3(x * radius * w, y, -z * radius * w);
-			points.push_back(p + Vector3(0.0, 0.5 * height - radius, 0.0));
-			normals.push_back(p.normalized());
+			Vector3 p = Vector3(x * w, y, -z * w);
+			points.push_back(p * radius + Vector3(0.0, 0.5 * height - radius, 0.0));
+			normals.push_back(p);
 			ADD_TANGENT(-z, 0.0, -x, 1.0)
 			uvs.push_back(Vector2(u, v * onethird));
 			if (p_add_uv2) {
@@ -455,8 +502,13 @@ void CapsuleMesh::create_mesh_array(Array &p_arr, const float radius, const floa
 			u = i;
 			u /= radial_segments;
 
-			x = -sin(u * Math_TAU);
-			z = cos(u * Math_TAU);
+			if (i == radial_segments) {
+				x = 0.0;
+				z = 1.0;
+			} else {
+				x = -Math::sin(u * Math_TAU);
+				z = Math::cos(u * Math_TAU);
+			}
 
 			Vector3 p = Vector3(x * radius, y, -z * radius);
 			points.push_back(p);
@@ -490,24 +542,33 @@ void CapsuleMesh::create_mesh_array(Array &p_arr, const float radius, const floa
 		v = j;
 
 		v /= (rings + 1);
-		v += 1.0;
-		w = sin(0.5 * Math_PI * v);
-		y = radius * cos(0.5 * Math_PI * v);
+		if (j == (rings + 1)) {
+			w = 0.0;
+			y = -1.0;
+		} else {
+			w = Math::cos(0.5 * Math_PI * v);
+			y = -Math::sin(0.5 * Math_PI * v);
+		}
 
 		for (i = 0; i <= radial_segments; i++) {
 			u = i;
 			u /= radial_segments;
 
-			x = -sin(u * Math_TAU);
-			z = cos(u * Math_TAU);
+			if (i == radial_segments) {
+				x = 0.0;
+				z = 1.0;
+			} else {
+				x = -Math::sin(u * Math_TAU);
+				z = Math::cos(u * Math_TAU);
+			}
 
-			Vector3 p = Vector3(x * radius * w, y, -z * radius * w);
-			points.push_back(p + Vector3(0.0, -0.5 * height + radius, 0.0));
-			normals.push_back(p.normalized());
+			Vector3 p = Vector3(x * w, y, -z * w);
+			points.push_back(p * radius + Vector3(0.0, -0.5 * height + radius, 0.0));
+			normals.push_back(p);
 			ADD_TANGENT(-z, 0.0, -x, 1.0)
-			uvs.push_back(Vector2(u, twothirds + ((v - 1.0) * onethird)));
+			uvs.push_back(Vector2(u, twothirds + v * onethird));
 			if (p_add_uv2) {
-				uv2s.push_back(Vector2(u * radial_h, radial_v + height_v + ((v - 1.0) * radial_v)));
+				uv2s.push_back(Vector2(u * radial_h, radial_v + height_v + v * radial_v));
 			}
 			point++;
 
@@ -557,12 +618,16 @@ void CapsuleMesh::_bind_methods() {
 }
 
 void CapsuleMesh::set_radius(const float p_radius) {
+	if (Math::is_equal_approx(radius, p_radius)) {
+		return;
+	}
+
 	radius = p_radius;
 	if (radius > height * 0.5) {
 		height = radius * 2.0;
 	}
 	_update_lightmap_size();
-	_request_update();
+	request_update();
 }
 
 float CapsuleMesh::get_radius() const {
@@ -570,12 +635,16 @@ float CapsuleMesh::get_radius() const {
 }
 
 void CapsuleMesh::set_height(const float p_height) {
+	if (Math::is_equal_approx(height, p_height)) {
+		return;
+	}
+
 	height = p_height;
 	if (radius > height * 0.5) {
 		radius = height * 0.5;
 	}
 	_update_lightmap_size();
-	_request_update();
+	request_update();
 }
 
 float CapsuleMesh::get_height() const {
@@ -583,8 +652,12 @@ float CapsuleMesh::get_height() const {
 }
 
 void CapsuleMesh::set_radial_segments(const int p_segments) {
+	if (radial_segments == p_segments) {
+		return;
+	}
+
 	radial_segments = p_segments > 4 ? p_segments : 4;
-	_request_update();
+	request_update();
 }
 
 int CapsuleMesh::get_radial_segments() const {
@@ -592,9 +665,13 @@ int CapsuleMesh::get_radial_segments() const {
 }
 
 void CapsuleMesh::set_rings(const int p_rings) {
+	if (rings == p_rings) {
+		return;
+	}
+
 	ERR_FAIL_COND(p_rings < 0);
 	rings = p_rings;
-	_request_update();
+	request_update();
 }
 
 int CapsuleMesh::get_rings() const {
@@ -611,7 +688,6 @@ void BoxMesh::_update_lightmap_size() {
 	if (get_add_uv2()) {
 		// size must have changed, update lightmap size hint
 		Size2i _lightmap_size_hint;
-		float texel_size = get_lightmap_texel_size();
 		float padding = get_uv2_padding();
 
 		float width = (size.x + size.z) / texel_size;
@@ -630,7 +706,6 @@ void BoxMesh::_create_mesh_array(Array &p_arr) const {
 	// With 3 faces along the width and 2 along the height of the texture we need to adjust our scale
 	// accordingly.
 	bool _add_uv2 = get_add_uv2();
-	float texel_size = get_lightmap_texel_size();
 	float _uv2_padding = get_uv2_padding() * texel_size;
 
 	BoxMesh::create_mesh_array(p_arr, size, subdivide_w, subdivide_h, subdivide_d, _add_uv2, _uv2_padding);
@@ -889,9 +964,13 @@ void BoxMesh::_bind_methods() {
 }
 
 void BoxMesh::set_size(const Vector3 &p_size) {
+	if (p_size.is_equal_approx(size)) {
+		return;
+	}
+
 	size = p_size;
 	_update_lightmap_size();
-	_request_update();
+	request_update();
 }
 
 Vector3 BoxMesh::get_size() const {
@@ -899,8 +978,12 @@ Vector3 BoxMesh::get_size() const {
 }
 
 void BoxMesh::set_subdivide_width(const int p_divisions) {
+	if (p_divisions == subdivide_w) {
+		return;
+	}
+
 	subdivide_w = p_divisions > 0 ? p_divisions : 0;
-	_request_update();
+	request_update();
 }
 
 int BoxMesh::get_subdivide_width() const {
@@ -908,8 +991,12 @@ int BoxMesh::get_subdivide_width() const {
 }
 
 void BoxMesh::set_subdivide_height(const int p_divisions) {
+	if (p_divisions == subdivide_h) {
+		return;
+	}
+
 	subdivide_h = p_divisions > 0 ? p_divisions : 0;
-	_request_update();
+	request_update();
 }
 
 int BoxMesh::get_subdivide_height() const {
@@ -917,8 +1004,12 @@ int BoxMesh::get_subdivide_height() const {
 }
 
 void BoxMesh::set_subdivide_depth(const int p_divisions) {
+	if (p_divisions == subdivide_d) {
+		return;
+	}
+
 	subdivide_d = p_divisions > 0 ? p_divisions : 0;
-	_request_update();
+	request_update();
 }
 
 int BoxMesh::get_subdivide_depth() const {
@@ -935,7 +1026,6 @@ void CylinderMesh::_update_lightmap_size() {
 	if (get_add_uv2()) {
 		// size must have changed, update lightmap size hint
 		Size2i _lightmap_size_hint;
-		float texel_size = get_lightmap_texel_size();
 		float padding = get_uv2_padding();
 
 		float top_circumference = top_radius * Math_PI * 2.0;
@@ -955,7 +1045,6 @@ void CylinderMesh::_update_lightmap_size() {
 
 void CylinderMesh::_create_mesh_array(Array &p_arr) const {
 	bool _add_uv2 = get_add_uv2();
-	float texel_size = get_lightmap_texel_size();
 	float _uv2_padding = get_uv2_padding() * texel_size;
 
 	create_mesh_array(p_arr, top_radius, bottom_radius, height, radial_segments, rings, cap_top, cap_bottom, _add_uv2, _uv2_padding);
@@ -972,11 +1061,11 @@ void CylinderMesh::create_mesh_array(Array &p_arr, float top_radius, float botto
 	float height_v = height / vertical_length;
 	float padding_v = p_uv2_padding / vertical_length;
 
-	float horizonal_length = MAX(MAX(2.0 * (top_radius + bottom_radius + p_uv2_padding), top_circumference + p_uv2_padding), bottom_circumference + p_uv2_padding);
-	float center_h = 0.5 * (horizonal_length - p_uv2_padding) / horizonal_length;
-	float top_h = top_circumference / horizonal_length;
-	float bottom_h = bottom_circumference / horizonal_length;
-	float padding_h = p_uv2_padding / horizonal_length;
+	float horizontal_length = MAX(MAX(2.0 * (top_radius + bottom_radius + p_uv2_padding), top_circumference + p_uv2_padding), bottom_circumference + p_uv2_padding);
+	float center_h = 0.5 * (horizontal_length - p_uv2_padding) / horizontal_length;
+	float top_h = top_circumference / horizontal_length;
+	float bottom_h = bottom_circumference / horizontal_length;
+	float padding_h = p_uv2_padding / horizontal_length;
 
 	Vector<Vector3> points;
 	Vector<Vector3> normals;
@@ -1009,8 +1098,13 @@ void CylinderMesh::create_mesh_array(Array &p_arr, float top_radius, float botto
 			u = i;
 			u /= radial_segments;
 
-			x = sin(u * Math_TAU);
-			z = cos(u * Math_TAU);
+			if (i == radial_segments) {
+				x = 0.0;
+				z = 1.0;
+			} else {
+				x = Math::sin(u * Math_TAU);
+				z = Math::cos(u * Math_TAU);
+			}
 
 			Vector3 p = Vector3(x * radius, y, z * radius);
 			points.push_back(p);
@@ -1038,9 +1132,9 @@ void CylinderMesh::create_mesh_array(Array &p_arr, float top_radius, float botto
 	}
 
 	// Adjust for bottom section, only used if we calculate UV2s.
-	top_h = top_radius / horizonal_length;
+	top_h = top_radius / horizontal_length;
 	float top_v = top_radius / vertical_length;
-	bottom_h = bottom_radius / horizonal_length;
+	bottom_h = bottom_radius / horizontal_length;
 	float bottom_v = bottom_radius / vertical_length;
 
 	// Add top.
@@ -1061,8 +1155,13 @@ void CylinderMesh::create_mesh_array(Array &p_arr, float top_radius, float botto
 			float r = i;
 			r /= radial_segments;
 
-			x = sin(r * Math_TAU);
-			z = cos(r * Math_TAU);
+			if (i == radial_segments) {
+				x = 0.0;
+				z = 1.0;
+			} else {
+				x = Math::sin(r * Math_TAU);
+				z = Math::cos(r * Math_TAU);
+			}
 
 			u = ((x + 1.0) * 0.25);
 			v = 0.5 + ((z + 1.0) * 0.25);
@@ -1103,8 +1202,13 @@ void CylinderMesh::create_mesh_array(Array &p_arr, float top_radius, float botto
 			float r = i;
 			r /= radial_segments;
 
-			x = sin(r * Math_TAU);
-			z = cos(r * Math_TAU);
+			if (i == radial_segments) {
+				x = 0.0;
+				z = 1.0;
+			} else {
+				x = Math::sin(r * Math_TAU);
+				z = Math::cos(r * Math_TAU);
+			}
 
 			u = 0.5 + ((x + 1.0) * 0.25);
 			v = 1.0 - ((z + 1.0) * 0.25);
@@ -1166,9 +1270,13 @@ void CylinderMesh::_bind_methods() {
 }
 
 void CylinderMesh::set_top_radius(const float p_radius) {
+	if (Math::is_equal_approx(p_radius, top_radius)) {
+		return;
+	}
+
 	top_radius = p_radius;
 	_update_lightmap_size();
-	_request_update();
+	request_update();
 }
 
 float CylinderMesh::get_top_radius() const {
@@ -1176,9 +1284,13 @@ float CylinderMesh::get_top_radius() const {
 }
 
 void CylinderMesh::set_bottom_radius(const float p_radius) {
+	if (Math::is_equal_approx(p_radius, bottom_radius)) {
+		return;
+	}
+
 	bottom_radius = p_radius;
 	_update_lightmap_size();
-	_request_update();
+	request_update();
 }
 
 float CylinderMesh::get_bottom_radius() const {
@@ -1186,9 +1298,13 @@ float CylinderMesh::get_bottom_radius() const {
 }
 
 void CylinderMesh::set_height(const float p_height) {
+	if (Math::is_equal_approx(p_height, height)) {
+		return;
+	}
+
 	height = p_height;
 	_update_lightmap_size();
-	_request_update();
+	request_update();
 }
 
 float CylinderMesh::get_height() const {
@@ -1196,8 +1312,12 @@ float CylinderMesh::get_height() const {
 }
 
 void CylinderMesh::set_radial_segments(const int p_segments) {
+	if (p_segments == radial_segments) {
+		return;
+	}
+
 	radial_segments = p_segments > 4 ? p_segments : 4;
-	_request_update();
+	request_update();
 }
 
 int CylinderMesh::get_radial_segments() const {
@@ -1205,9 +1325,13 @@ int CylinderMesh::get_radial_segments() const {
 }
 
 void CylinderMesh::set_rings(const int p_rings) {
+	if (p_rings == rings) {
+		return;
+	}
+
 	ERR_FAIL_COND(p_rings < 0);
 	rings = p_rings;
-	_request_update();
+	request_update();
 }
 
 int CylinderMesh::get_rings() const {
@@ -1215,8 +1339,12 @@ int CylinderMesh::get_rings() const {
 }
 
 void CylinderMesh::set_cap_top(bool p_cap_top) {
+	if (p_cap_top == cap_top) {
+		return;
+	}
+
 	cap_top = p_cap_top;
-	_request_update();
+	request_update();
 }
 
 bool CylinderMesh::is_cap_top() const {
@@ -1224,8 +1352,12 @@ bool CylinderMesh::is_cap_top() const {
 }
 
 void CylinderMesh::set_cap_bottom(bool p_cap_bottom) {
+	if (p_cap_bottom == cap_bottom) {
+		return;
+	}
+
 	cap_bottom = p_cap_bottom;
-	_request_update();
+	request_update();
 }
 
 bool CylinderMesh::is_cap_bottom() const {
@@ -1242,7 +1374,6 @@ void PlaneMesh::_update_lightmap_size() {
 	if (get_add_uv2()) {
 		// size must have changed, update lightmap size hint
 		Size2i _lightmap_size_hint;
-		float texel_size = get_lightmap_texel_size();
 		float padding = get_uv2_padding();
 
 		_lightmap_size_hint.x = MAX(1.0, (size.x / texel_size) + padding);
@@ -1359,9 +1490,12 @@ void PlaneMesh::_bind_methods() {
 }
 
 void PlaneMesh::set_size(const Size2 &p_size) {
+	if (p_size == size) {
+		return;
+	}
 	size = p_size;
 	_update_lightmap_size();
-	_request_update();
+	request_update();
 }
 
 Size2 PlaneMesh::get_size() const {
@@ -1369,8 +1503,11 @@ Size2 PlaneMesh::get_size() const {
 }
 
 void PlaneMesh::set_subdivide_width(const int p_divisions) {
+	if (p_divisions == subdivide_w || (subdivide_w == 0 && p_divisions < 0)) {
+		return;
+	}
 	subdivide_w = p_divisions > 0 ? p_divisions : 0;
-	_request_update();
+	request_update();
 }
 
 int PlaneMesh::get_subdivide_width() const {
@@ -1378,8 +1515,11 @@ int PlaneMesh::get_subdivide_width() const {
 }
 
 void PlaneMesh::set_subdivide_depth(const int p_divisions) {
+	if (p_divisions == subdivide_d || (subdivide_d == 0 && p_divisions < 0)) {
+		return;
+	}
 	subdivide_d = p_divisions > 0 ? p_divisions : 0;
-	_request_update();
+	request_update();
 }
 
 int PlaneMesh::get_subdivide_depth() const {
@@ -1387,8 +1527,11 @@ int PlaneMesh::get_subdivide_depth() const {
 }
 
 void PlaneMesh::set_center_offset(const Vector3 p_offset) {
+	if (p_offset.is_equal_approx(center_offset)) {
+		return;
+	}
 	center_offset = p_offset;
-	_request_update();
+	request_update();
 }
 
 Vector3 PlaneMesh::get_center_offset() const {
@@ -1396,8 +1539,11 @@ Vector3 PlaneMesh::get_center_offset() const {
 }
 
 void PlaneMesh::set_orientation(const Orientation p_orientation) {
+	if (p_orientation == orientation) {
+		return;
+	}
 	orientation = p_orientation;
-	_request_update();
+	request_update();
 }
 
 PlaneMesh::Orientation PlaneMesh::get_orientation() const {
@@ -1414,7 +1560,6 @@ void PrismMesh::_update_lightmap_size() {
 	if (get_add_uv2()) {
 		// size must have changed, update lightmap size hint
 		Size2i _lightmap_size_hint;
-		float texel_size = get_lightmap_texel_size();
 		float padding = get_uv2_padding();
 
 		// left_to_right does not effect the surface area of the prism so we ignore that.
@@ -1438,7 +1583,6 @@ void PrismMesh::_create_mesh_array(Array &p_arr) const {
 
 	// Only used if we calculate UV2
 	bool _add_uv2 = get_add_uv2();
-	float texel_size = get_lightmap_texel_size();
 	float _uv2_padding = get_uv2_padding() * texel_size;
 
 	float horizontal_total = size.x + size.z + 2.0 * _uv2_padding;
@@ -1705,8 +1849,11 @@ void PrismMesh::_bind_methods() {
 }
 
 void PrismMesh::set_left_to_right(const float p_left_to_right) {
+	if (Math::is_equal_approx(p_left_to_right, left_to_right)) {
+		return;
+	}
 	left_to_right = p_left_to_right;
-	_request_update();
+	request_update();
 }
 
 float PrismMesh::get_left_to_right() const {
@@ -1714,9 +1861,12 @@ float PrismMesh::get_left_to_right() const {
 }
 
 void PrismMesh::set_size(const Vector3 &p_size) {
+	if (p_size.is_equal_approx(size)) {
+		return;
+	}
 	size = p_size;
 	_update_lightmap_size();
-	_request_update();
+	request_update();
 }
 
 Vector3 PrismMesh::get_size() const {
@@ -1724,8 +1874,11 @@ Vector3 PrismMesh::get_size() const {
 }
 
 void PrismMesh::set_subdivide_width(const int p_divisions) {
+	if (p_divisions == subdivide_w || (p_divisions < 0 && subdivide_w == 0)) {
+		return;
+	}
 	subdivide_w = p_divisions > 0 ? p_divisions : 0;
-	_request_update();
+	request_update();
 }
 
 int PrismMesh::get_subdivide_width() const {
@@ -1733,8 +1886,11 @@ int PrismMesh::get_subdivide_width() const {
 }
 
 void PrismMesh::set_subdivide_height(const int p_divisions) {
+	if (p_divisions == subdivide_h || (p_divisions < 0 && subdivide_h == 0)) {
+		return;
+	}
 	subdivide_h = p_divisions > 0 ? p_divisions : 0;
-	_request_update();
+	request_update();
 }
 
 int PrismMesh::get_subdivide_height() const {
@@ -1742,8 +1898,11 @@ int PrismMesh::get_subdivide_height() const {
 }
 
 void PrismMesh::set_subdivide_depth(const int p_divisions) {
+	if (p_divisions == subdivide_d || (p_divisions < 0 && subdivide_d == 0)) {
+		return;
+	}
 	subdivide_d = p_divisions > 0 ? p_divisions : 0;
-	_request_update();
+	request_update();
 }
 
 int PrismMesh::get_subdivide_depth() const {
@@ -1760,7 +1919,6 @@ void SphereMesh::_update_lightmap_size() {
 	if (get_add_uv2()) {
 		// size must have changed, update lightmap size hint
 		Size2i _lightmap_size_hint;
-		float texel_size = get_lightmap_texel_size();
 		float padding = get_uv2_padding();
 
 		float _width = radius * Math_TAU;
@@ -1774,7 +1932,6 @@ void SphereMesh::_update_lightmap_size() {
 
 void SphereMesh::_create_mesh_array(Array &p_arr) const {
 	bool _add_uv2 = get_add_uv2();
-	float texel_size = get_lightmap_texel_size();
 	float _uv2_padding = get_uv2_padding() * texel_size;
 
 	create_mesh_array(p_arr, radius, height, radial_segments, rings, is_hemisphere, _add_uv2, _uv2_padding);
@@ -1784,14 +1941,14 @@ void SphereMesh::create_mesh_array(Array &p_arr, float radius, float height, int
 	int i, j, prevrow, thisrow, point;
 	float x, y, z;
 
-	float scale = height * (is_hemisphere ? 1.0 : 0.5);
+	float scale = height / radius * (is_hemisphere ? 1.0 : 0.5);
 
 	// Only used if we calculate UV2
 	float circumference = radius * Math_TAU;
 	float horizontal_length = circumference + p_uv2_padding;
 	float center_h = 0.5 * circumference / horizontal_length;
 
-	float height_v = scale * Math_PI / ((scale * Math_PI) + p_uv2_padding);
+	float height_v = scale * Math_PI / ((scale * Math_PI) + p_uv2_padding / radius);
 
 	// set our bounding box
 
@@ -1816,23 +1973,33 @@ void SphereMesh::create_mesh_array(Array &p_arr, float radius, float height, int
 		float w;
 
 		v /= (rings + 1);
-		w = sin(Math_PI * v);
-		y = scale * cos(Math_PI * v);
+		if (j == (rings + 1)) {
+			w = 0.0;
+			y = -1.0;
+		} else {
+			w = Math::sin(Math_PI * v);
+			y = Math::cos(Math_PI * v);
+		}
 
 		for (i = 0; i <= radial_segments; i++) {
 			float u = i;
 			u /= radial_segments;
 
-			x = sin(u * Math_TAU);
-			z = cos(u * Math_TAU);
+			if (i == radial_segments) {
+				x = 0.0;
+				z = 1.0;
+			} else {
+				x = Math::sin(u * Math_TAU);
+				z = Math::cos(u * Math_TAU);
+			}
 
 			if (is_hemisphere && y < 0.0) {
 				points.push_back(Vector3(x * radius * w, 0.0, z * radius * w));
 				normals.push_back(Vector3(0.0, -1.0, 0.0));
 			} else {
-				Vector3 p = Vector3(x * radius * w, y, z * radius * w);
-				points.push_back(p);
-				Vector3 normal = Vector3(x * w * scale, radius * (y / scale), z * w * scale);
+				Vector3 p = Vector3(x * w, y * scale, z * w);
+				points.push_back(p * radius);
+				Vector3 normal = Vector3(x * w * scale, y, z * w * scale);
 				normals.push_back(normal.normalized());
 			}
 			ADD_TANGENT(z, 0.0, -x, 1.0)
@@ -1890,9 +2057,12 @@ void SphereMesh::_bind_methods() {
 }
 
 void SphereMesh::set_radius(const float p_radius) {
+	if (Math::is_equal_approx(p_radius, radius)) {
+		return;
+	}
 	radius = p_radius;
 	_update_lightmap_size();
-	_request_update();
+	request_update();
 }
 
 float SphereMesh::get_radius() const {
@@ -1900,9 +2070,12 @@ float SphereMesh::get_radius() const {
 }
 
 void SphereMesh::set_height(const float p_height) {
+	if (Math::is_equal_approx(height, p_height)) {
+		return;
+	}
 	height = p_height;
 	_update_lightmap_size();
-	_request_update();
+	request_update();
 }
 
 float SphereMesh::get_height() const {
@@ -1910,8 +2083,11 @@ float SphereMesh::get_height() const {
 }
 
 void SphereMesh::set_radial_segments(const int p_radial_segments) {
+	if (p_radial_segments == radial_segments || (radial_segments == 4 && p_radial_segments < 4)) {
+		return;
+	}
 	radial_segments = p_radial_segments > 4 ? p_radial_segments : 4;
-	_request_update();
+	request_update();
 }
 
 int SphereMesh::get_radial_segments() const {
@@ -1919,9 +2095,12 @@ int SphereMesh::get_radial_segments() const {
 }
 
 void SphereMesh::set_rings(const int p_rings) {
+	if (p_rings == rings) {
+		return;
+	}
 	ERR_FAIL_COND(p_rings < 1);
 	rings = p_rings;
-	_request_update();
+	request_update();
 }
 
 int SphereMesh::get_rings() const {
@@ -1929,9 +2108,12 @@ int SphereMesh::get_rings() const {
 }
 
 void SphereMesh::set_is_hemisphere(const bool p_is_hemisphere) {
+	if (p_is_hemisphere == is_hemisphere) {
+		return;
+	}
 	is_hemisphere = p_is_hemisphere;
 	_update_lightmap_size();
-	_request_update();
+	request_update();
 }
 
 bool SphereMesh::get_is_hemisphere() const {
@@ -1948,7 +2130,6 @@ void TorusMesh::_update_lightmap_size() {
 	if (get_add_uv2()) {
 		// size must have changed, update lightmap size hint
 		Size2i _lightmap_size_hint;
-		float texel_size = get_lightmap_texel_size();
 		float padding = get_uv2_padding();
 
 		float min_radius = inner_radius;
@@ -1998,7 +2179,6 @@ void TorusMesh::_create_mesh_array(Array &p_arr) const {
 
 	// Only used if we calculate UV2
 	bool _add_uv2 = get_add_uv2();
-	float texel_size = get_lightmap_texel_size();
 	float _uv2_padding = get_uv2_padding() * texel_size;
 
 	float horizontal_total = max_radius * Math_TAU + _uv2_padding;
@@ -2013,13 +2193,13 @@ void TorusMesh::_create_mesh_array(Array &p_arr) const {
 		float inci = float(i) / rings;
 		float angi = inci * Math_TAU;
 
-		Vector2 normali = Vector2(-Math::sin(angi), -Math::cos(angi));
+		Vector2 normali = (i == rings) ? Vector2(0.0, -1.0) : Vector2(-Math::sin(angi), -Math::cos(angi));
 
 		for (int j = 0; j <= ring_segments; j++) {
 			float incj = float(j) / ring_segments;
 			float angj = incj * Math_TAU;
 
-			Vector2 normalj = Vector2(-Math::cos(angj), Math::sin(angj));
+			Vector2 normalj = (j == ring_segments) ? Vector2(-1.0, 0.0) : Vector2(-Math::cos(angj), Math::sin(angj));
 			Vector2 normalk = normalj * radius + Vector2(min_radius + radius, 0);
 
 			float offset_h = 0.5 * (1.0 - normalj.x) * delta_h;
@@ -2028,7 +2208,7 @@ void TorusMesh::_create_mesh_array(Array &p_arr) const {
 
 			points.push_back(Vector3(normali.x * normalk.x, normalk.y, normali.y * normalk.x));
 			normals.push_back(Vector3(normali.x * normalj.x, normalj.y, normali.y * normalj.x));
-			ADD_TANGENT(-Math::cos(angi), 0.0, Math::sin(angi), 1.0);
+			ADD_TANGENT(normali.y, 0.0, -normali.x, 1.0);
 			uvs.push_back(Vector2(inci, incj));
 			if (_add_uv2) {
 				uv2s.push_back(Vector2(offset_h + inci * adj_h, incj * height_v));
@@ -2076,8 +2256,11 @@ void TorusMesh::_bind_methods() {
 }
 
 void TorusMesh::set_inner_radius(const float p_inner_radius) {
+	if (Math::is_equal_approx(p_inner_radius, inner_radius)) {
+		return;
+	}
 	inner_radius = p_inner_radius;
-	_request_update();
+	request_update();
 }
 
 float TorusMesh::get_inner_radius() const {
@@ -2085,8 +2268,11 @@ float TorusMesh::get_inner_radius() const {
 }
 
 void TorusMesh::set_outer_radius(const float p_outer_radius) {
+	if (Math::is_equal_approx(p_outer_radius, outer_radius)) {
+		return;
+	}
 	outer_radius = p_outer_radius;
-	_request_update();
+	request_update();
 }
 
 float TorusMesh::get_outer_radius() const {
@@ -2094,9 +2280,12 @@ float TorusMesh::get_outer_radius() const {
 }
 
 void TorusMesh::set_rings(const int p_rings) {
+	if (p_rings == rings) {
+		return;
+	}
 	ERR_FAIL_COND(p_rings < 3);
 	rings = p_rings;
-	_request_update();
+	request_update();
 }
 
 int TorusMesh::get_rings() const {
@@ -2104,9 +2293,12 @@ int TorusMesh::get_rings() const {
 }
 
 void TorusMesh::set_ring_segments(const int p_ring_segments) {
+	if (p_ring_segments == ring_segments) {
+		return;
+	}
 	ERR_FAIL_COND(p_ring_segments < 3);
 	ring_segments = p_ring_segments;
-	_request_update();
+	request_update();
 }
 
 int TorusMesh::get_ring_segments() const {
@@ -2133,51 +2325,69 @@ PointMesh::PointMesh() {
 // TUBE TRAIL
 
 void TubeTrailMesh::set_radius(const float p_radius) {
+	if (Math::is_equal_approx(p_radius, radius)) {
+		return;
+	}
 	radius = p_radius;
-	_request_update();
+	request_update();
 }
 float TubeTrailMesh::get_radius() const {
 	return radius;
 }
 
 void TubeTrailMesh::set_radial_steps(const int p_radial_steps) {
+	if (p_radial_steps == radial_steps) {
+		return;
+	}
 	ERR_FAIL_COND(p_radial_steps < 3 || p_radial_steps > 128);
 	radial_steps = p_radial_steps;
-	_request_update();
+	request_update();
 }
 int TubeTrailMesh::get_radial_steps() const {
 	return radial_steps;
 }
 
 void TubeTrailMesh::set_sections(const int p_sections) {
+	if (p_sections == sections) {
+		return;
+	}
 	ERR_FAIL_COND(p_sections < 2 || p_sections > 128);
 	sections = p_sections;
-	_request_update();
+	request_update();
 }
 int TubeTrailMesh::get_sections() const {
 	return sections;
 }
 
 void TubeTrailMesh::set_section_length(float p_section_length) {
+	if (p_section_length == section_length) {
+		return;
+	}
 	section_length = p_section_length;
-	_request_update();
+	request_update();
 }
 float TubeTrailMesh::get_section_length() const {
 	return section_length;
 }
 
 void TubeTrailMesh::set_section_rings(const int p_section_rings) {
+	if (p_section_rings == section_rings) {
+		return;
+	}
 	ERR_FAIL_COND(p_section_rings < 1 || p_section_rings > 1024);
 	section_rings = p_section_rings;
-	_request_update();
+	request_update();
 }
 int TubeTrailMesh::get_section_rings() const {
 	return section_rings;
 }
 
 void TubeTrailMesh::set_cap_top(bool p_cap_top) {
+	if (p_cap_top == cap_top) {
+		return;
+	}
 	cap_top = p_cap_top;
-	_request_update();
+	request_update();
 }
 
 bool TubeTrailMesh::is_cap_top() const {
@@ -2185,8 +2395,11 @@ bool TubeTrailMesh::is_cap_top() const {
 }
 
 void TubeTrailMesh::set_cap_bottom(bool p_cap_bottom) {
+	if (p_cap_bottom == cap_bottom) {
+		return;
+	}
 	cap_bottom = p_cap_bottom;
-	_request_update();
+	request_update();
 }
 
 bool TubeTrailMesh::is_cap_bottom() const {
@@ -2204,14 +2417,14 @@ void TubeTrailMesh::set_curve(const Ref<Curve> &p_curve) {
 	if (curve.is_valid()) {
 		curve->connect_changed(callable_mp(this, &TubeTrailMesh::_curve_changed));
 	}
-	_request_update();
+	request_update();
 }
 Ref<Curve> TubeTrailMesh::get_curve() const {
 	return curve;
 }
 
 void TubeTrailMesh::_curve_changed() {
-	_request_update();
+	request_update();
 }
 int TubeTrailMesh::get_builtin_bind_pose_count() const {
 	return sections + 1;
@@ -2270,8 +2483,12 @@ void TubeTrailMesh::_create_mesh_array(Array &p_arr) const {
 			if (curve.is_valid() && curve->get_point_count() > 0) {
 				r *= curve->sample_baked(v);
 			}
-			float x = sin(u * Math_TAU);
-			float z = cos(u * Math_TAU);
+			float x = 0.0;
+			float z = 1.0;
+			if (i < radial_steps) {
+				x = Math::sin(u * Math_TAU);
+				z = Math::cos(u * Math_TAU);
+			}
 
 			Vector3 p = Vector3(x * r, y, z * r);
 			points.push_back(p);
@@ -2339,8 +2556,12 @@ void TubeTrailMesh::_create_mesh_array(Array &p_arr) const {
 				float r = i;
 				r /= radial_steps;
 
-				float x = sin(r * Math_TAU);
-				float z = cos(r * Math_TAU);
+				float x = 0.0;
+				float z = 1.0;
+				if (i < radial_steps) {
+					x = Math::sin(r * Math_TAU);
+					z = Math::cos(r * Math_TAU);
+				}
 
 				float u = ((x + 1.0) * 0.25);
 				float v = 0.5 + ((z + 1.0) * 0.25);
@@ -2404,8 +2625,12 @@ void TubeTrailMesh::_create_mesh_array(Array &p_arr) const {
 				float r = i;
 				r /= radial_steps;
 
-				float x = sin(r * Math_TAU);
-				float z = cos(r * Math_TAU);
+				float x = 0.0;
+				float z = 1.0;
+				if (i < radial_steps) {
+					x = Math::sin(r * Math_TAU);
+					z = Math::cos(r * Math_TAU);
+				}
 
 				float u = 0.5 + ((x + 1.0) * 0.25);
 				float v = 1.0 - ((z + 1.0) * 0.25);
@@ -2491,42 +2716,57 @@ TubeTrailMesh::TubeTrailMesh() {
 // RIBBON TRAIL
 
 void RibbonTrailMesh::set_shape(Shape p_shape) {
+	if (p_shape == shape) {
+		return;
+	}
 	shape = p_shape;
-	_request_update();
+	request_update();
 }
 RibbonTrailMesh::Shape RibbonTrailMesh::get_shape() const {
 	return shape;
 }
 
 void RibbonTrailMesh::set_size(const float p_size) {
+	if (Math::is_equal_approx(p_size, size)) {
+		return;
+	}
 	size = p_size;
-	_request_update();
+	request_update();
 }
 float RibbonTrailMesh::get_size() const {
 	return size;
 }
 
 void RibbonTrailMesh::set_sections(const int p_sections) {
+	if (p_sections == sections) {
+		return;
+	}
 	ERR_FAIL_COND(p_sections < 2 || p_sections > 128);
 	sections = p_sections;
-	_request_update();
+	request_update();
 }
 int RibbonTrailMesh::get_sections() const {
 	return sections;
 }
 
 void RibbonTrailMesh::set_section_length(float p_section_length) {
+	if (p_section_length == section_length) {
+		return;
+	}
 	section_length = p_section_length;
-	_request_update();
+	request_update();
 }
 float RibbonTrailMesh::get_section_length() const {
 	return section_length;
 }
 
 void RibbonTrailMesh::set_section_segments(const int p_section_segments) {
+	if (p_section_segments == section_segments) {
+		return;
+	}
 	ERR_FAIL_COND(p_section_segments < 1 || p_section_segments > 1024);
 	section_segments = p_section_segments;
-	_request_update();
+	request_update();
 }
 int RibbonTrailMesh::get_section_segments() const {
 	return section_segments;
@@ -2543,14 +2783,14 @@ void RibbonTrailMesh::set_curve(const Ref<Curve> &p_curve) {
 	if (curve.is_valid()) {
 		curve->connect_changed(callable_mp(this, &RibbonTrailMesh::_curve_changed));
 	}
-	_request_update();
+	request_update();
 }
 Ref<Curve> RibbonTrailMesh::get_curve() const {
 	return curve;
 }
 
 void RibbonTrailMesh::_curve_changed() {
-	_request_update();
+	request_update();
 }
 int RibbonTrailMesh::get_builtin_bind_pose_count() const {
 	return sections + 1;
@@ -2843,10 +3083,8 @@ void TextMesh::_generate_glyph_mesh_data(const GlyphMeshKey &p_key, const Glyph 
 		for (int j = 0; j < gl_data.contours[i].size(); j++) {
 			int next = (j + 1 == gl_data.contours[i].size()) ? 0 : (j + 1);
 
-			gl_data.min_p.x = MIN(gl_data.min_p.x, gl_data.contours[i][j].point.x);
-			gl_data.min_p.y = MIN(gl_data.min_p.y, gl_data.contours[i][j].point.y);
-			gl_data.max_p.x = MAX(gl_data.max_p.x, gl_data.contours[i][j].point.x);
-			gl_data.max_p.y = MAX(gl_data.max_p.y, gl_data.contours[i][j].point.y);
+			gl_data.min_p = gl_data.min_p.min(gl_data.contours[i][j].point);
+			gl_data.max_p = gl_data.max_p.max(gl_data.contours[i][j].point);
 			length += (gl_data.contours[i][next].point - gl_data.contours[i][j].point).length();
 
 			inp.GetPoint(j) = gl_data.contours[i][j].point;
@@ -3340,8 +3578,6 @@ void TextMesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_uppercase", "enable"), &TextMesh::set_uppercase);
 	ClassDB::bind_method(D_METHOD("is_uppercase"), &TextMesh::is_uppercase);
 
-	ClassDB::bind_method(D_METHOD("_request_update"), &TextMesh::_request_update);
-
 	ADD_GROUP("Text", "");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "text", PROPERTY_HINT_MULTILINE_TEXT, ""), "set_text", "get_text");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "font", PROPERTY_HINT_RESOURCE_TYPE, "Font"), "set_font", "get_font");
@@ -3376,7 +3612,7 @@ void TextMesh::_notification(int p_what) {
 			}
 			xl_text = new_text;
 			dirty_text = true;
-			_request_update();
+			request_update();
 		} break;
 	}
 }
@@ -3402,7 +3638,7 @@ void TextMesh::set_horizontal_alignment(HorizontalAlignment p_alignment) {
 			dirty_lines = true;
 		}
 		horizontal_alignment = p_alignment;
-		_request_update();
+		request_update();
 	}
 }
 
@@ -3414,7 +3650,7 @@ void TextMesh::set_vertical_alignment(VerticalAlignment p_alignment) {
 	ERR_FAIL_INDEX((int)p_alignment, 4);
 	if (vertical_alignment != p_alignment) {
 		vertical_alignment = p_alignment;
-		_request_update();
+		request_update();
 	}
 }
 
@@ -3427,7 +3663,7 @@ void TextMesh::set_text(const String &p_string) {
 		text = p_string;
 		xl_text = tr(text);
 		dirty_text = true;
-		_request_update();
+		request_update();
 	}
 }
 
@@ -3438,7 +3674,7 @@ String TextMesh::get_text() const {
 void TextMesh::_font_changed() {
 	dirty_font = true;
 	dirty_cache = true;
-	call_deferred(SNAME("_request_update"));
+	callable_mp(static_cast<PrimitiveMesh *>(this), &PrimitiveMesh::request_update).call_deferred();
 }
 
 void TextMesh::set_font(const Ref<Font> &p_font) {
@@ -3454,7 +3690,7 @@ void TextMesh::set_font(const Ref<Font> &p_font) {
 		if (font_override.is_valid()) {
 			font_override->connect_changed(font_changed);
 		}
-		_request_update();
+		request_update();
 	}
 }
 
@@ -3463,16 +3699,23 @@ Ref<Font> TextMesh::get_font() const {
 }
 
 Ref<Font> TextMesh::_get_font_or_default() const {
+	// Similar code taken from `FontVariation::_get_base_font_or_default`.
+
 	if (font_override.is_valid()) {
 		return font_override;
 	}
 
 	StringName theme_name = "font";
-	List<StringName> theme_types;
-	ThemeDB::get_singleton()->get_native_type_dependencies(get_class_name(), &theme_types);
+	Vector<StringName> theme_types;
+	ThemeDB::get_singleton()->get_native_type_dependencies(get_class_name(), theme_types);
 
 	ThemeContext *global_context = ThemeDB::get_singleton()->get_default_theme_context();
-	for (const Ref<Theme> &theme : global_context->get_themes()) {
+	Vector<Ref<Theme>> themes = global_context->get_themes();
+	if (Engine::get_singleton()->is_editor_hint()) {
+		themes.insert(0, ThemeDB::get_singleton()->get_project_theme());
+	}
+
+	for (const Ref<Theme> &theme : themes) {
 		if (theme.is_null()) {
 			continue;
 		}
@@ -3492,7 +3735,7 @@ void TextMesh::set_font_size(int p_size) {
 		font_size = CLAMP(p_size, 1, 127);
 		dirty_font = true;
 		dirty_cache = true;
-		_request_update();
+		request_update();
 	}
 }
 
@@ -3503,7 +3746,7 @@ int TextMesh::get_font_size() const {
 void TextMesh::set_line_spacing(float p_line_spacing) {
 	if (line_spacing != p_line_spacing) {
 		line_spacing = p_line_spacing;
-		_request_update();
+		request_update();
 	}
 }
 
@@ -3515,7 +3758,7 @@ void TextMesh::set_autowrap_mode(TextServer::AutowrapMode p_mode) {
 	if (autowrap_mode != p_mode) {
 		autowrap_mode = p_mode;
 		dirty_lines = true;
-		_request_update();
+		request_update();
 	}
 }
 
@@ -3527,7 +3770,7 @@ void TextMesh::set_justification_flags(BitField<TextServer::JustificationFlag> p
 	if (jst_flags != p_flags) {
 		jst_flags = p_flags;
 		dirty_lines = true;
-		_request_update();
+		request_update();
 	}
 }
 
@@ -3538,7 +3781,7 @@ BitField<TextServer::JustificationFlag> TextMesh::get_justification_flags() cons
 void TextMesh::set_depth(real_t p_depth) {
 	if (depth != p_depth) {
 		depth = MAX(p_depth, 0.0);
-		_request_update();
+		request_update();
 	}
 }
 
@@ -3550,7 +3793,7 @@ void TextMesh::set_width(real_t p_width) {
 	if (width != p_width) {
 		width = p_width;
 		dirty_lines = true;
-		_request_update();
+		request_update();
 	}
 }
 
@@ -3562,7 +3805,7 @@ void TextMesh::set_pixel_size(real_t p_amount) {
 	if (pixel_size != p_amount) {
 		pixel_size = CLAMP(p_amount, 0.0001, 128.0);
 		dirty_cache = true;
-		_request_update();
+		request_update();
 	}
 }
 
@@ -3573,7 +3816,7 @@ real_t TextMesh::get_pixel_size() const {
 void TextMesh::set_offset(const Point2 &p_offset) {
 	if (lbl_offset != p_offset) {
 		lbl_offset = p_offset;
-		_request_update();
+		request_update();
 	}
 }
 
@@ -3585,7 +3828,7 @@ void TextMesh::set_curve_step(real_t p_step) {
 	if (curve_step != p_step) {
 		curve_step = CLAMP(p_step, 0.1, 10.0);
 		dirty_cache = true;
-		_request_update();
+		request_update();
 	}
 }
 
@@ -3598,7 +3841,7 @@ void TextMesh::set_text_direction(TextServer::Direction p_text_direction) {
 	if (text_direction != p_text_direction) {
 		text_direction = p_text_direction;
 		dirty_text = true;
-		_request_update();
+		request_update();
 	}
 }
 
@@ -3610,7 +3853,7 @@ void TextMesh::set_language(const String &p_language) {
 	if (language != p_language) {
 		language = p_language;
 		dirty_text = true;
-		_request_update();
+		request_update();
 	}
 }
 
@@ -3622,7 +3865,7 @@ void TextMesh::set_structured_text_bidi_override(TextServer::StructuredTextParse
 	if (st_parser != p_parser) {
 		st_parser = p_parser;
 		dirty_text = true;
-		_request_update();
+		request_update();
 	}
 }
 
@@ -3634,7 +3877,7 @@ void TextMesh::set_structured_text_bidi_override_options(Array p_args) {
 	if (st_args != p_args) {
 		st_args = p_args;
 		dirty_text = true;
-		_request_update();
+		request_update();
 	}
 }
 
@@ -3646,7 +3889,7 @@ void TextMesh::set_uppercase(bool p_uppercase) {
 	if (uppercase != p_uppercase) {
 		uppercase = p_uppercase;
 		dirty_text = true;
-		_request_update();
+		request_update();
 	}
 }
 

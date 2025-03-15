@@ -1,7 +1,6 @@
-
 /* pngset.c - storage of image information into info struct
  *
- * Copyright (c) 2018-2023 Cosmin Truta
+ * Copyright (c) 2018-2025 Cosmin Truta
  * Copyright (c) 1998-2018 Glenn Randers-Pehrson
  * Copyright (c) 1996-1997 Andreas Dilger
  * Copyright (c) 1995-1996 Guy Eric Schalnat, Group 42, Inc.
@@ -133,6 +132,32 @@ png_set_cHRM_XYZ(png_const_structrp png_ptr, png_inforp info_ptr, double red_X,
 #  endif /* FLOATING_POINT */
 
 #endif /* cHRM */
+
+#ifdef PNG_cICP_SUPPORTED
+void PNGAPI
+png_set_cICP(png_const_structrp png_ptr, png_inforp info_ptr,
+             png_byte colour_primaries, png_byte transfer_function,
+             png_byte matrix_coefficients, png_byte video_full_range_flag)
+{
+   png_debug1(1, "in %s storage function", "cICP");
+
+   if (png_ptr == NULL || info_ptr == NULL)
+      return;
+
+   info_ptr->cicp_colour_primaries = colour_primaries;
+   info_ptr->cicp_transfer_function = transfer_function;
+   info_ptr->cicp_matrix_coefficients = matrix_coefficients;
+   info_ptr->cicp_video_full_range_flag = video_full_range_flag;
+
+   if (info_ptr->cicp_matrix_coefficients != 0)
+   {
+      png_warning(png_ptr, "Invalid cICP matrix coefficients");
+      return;
+   }
+
+   info_ptr->valid |= PNG_INFO_cICP;
+}
+#endif /* cICP */
 
 #ifdef PNG_eXIf_SUPPORTED
 void PNGAPI
@@ -763,11 +788,11 @@ png_set_text_2(png_const_structrp png_ptr, png_inforp info_ptr,
 {
    int i;
 
-   png_debug1(1, "in %lx storage function", png_ptr == NULL ? 0xabadca11U :
-      (unsigned long)png_ptr->chunk_name);
+   png_debug1(1, "in text storage function, chunk typeid = 0x%lx",
+      png_ptr == NULL ? 0xabadca11UL : (unsigned long)png_ptr->chunk_name);
 
    if (png_ptr == NULL || info_ptr == NULL || num_text <= 0 || text_ptr == NULL)
-      return(0);
+      return 0;
 
    /* Make sure we have enough space in the "text" array in info_struct
     * to hold all of the incoming text_ptr objects.  This compare can't overflow
@@ -947,7 +972,7 @@ png_set_text_2(png_const_structrp png_ptr, png_inforp info_ptr,
       png_debug1(3, "transferred text chunk %d", info_ptr->num_text);
    }
 
-   return(0);
+   return 0;
 }
 #endif
 
@@ -1062,6 +1087,8 @@ png_set_sPLT(png_const_structrp png_ptr,
  */
 {
    png_sPLT_tp np;
+
+   png_debug1(1, "in %s storage function", "sPLT");
 
    if (png_ptr == NULL || info_ptr == NULL || nentries <= 0 || entries == NULL)
       return;
@@ -1393,6 +1420,7 @@ png_set_keep_unknown_chunks(png_structrp png_ptr, int keep,
       static const png_byte chunks_to_ignore[] = {
          98,  75,  71,  68, '\0',  /* bKGD */
          99,  72,  82,  77, '\0',  /* cHRM */
+         99,  73,  67,  80, '\0',  /* cICP */
         101,  88,  73, 102, '\0',  /* eXIf */
         103,  65,  77,  65, '\0',  /* gAMA */
         104,  73,  83,  84, '\0',  /* hIST */
@@ -1537,7 +1565,7 @@ void PNGAPI
 png_set_rows(png_const_structrp png_ptr, png_inforp info_ptr,
     png_bytepp row_pointers)
 {
-   png_debug1(1, "in %s storage function", "rows");
+   png_debug(1, "in png_set_rows");
 
    if (png_ptr == NULL || info_ptr == NULL)
       return;
@@ -1556,6 +1584,8 @@ png_set_rows(png_const_structrp png_ptr, png_inforp info_ptr,
 void PNGAPI
 png_set_compression_buffer_size(png_structrp png_ptr, size_t size)
 {
+   png_debug(1, "in png_set_compression_buffer_size");
+
    if (png_ptr == NULL)
       return;
 
@@ -1627,6 +1657,8 @@ void PNGAPI
 png_set_user_limits(png_structrp png_ptr, png_uint_32 user_width_max,
     png_uint_32 user_height_max)
 {
+   png_debug(1, "in png_set_user_limits");
+
    /* Images with dimensions larger than these limits will be
     * rejected by png_set_IHDR().  To accept any PNG datastream
     * regardless of dimensions, set both limits to 0x7fffffff.
@@ -1642,6 +1674,8 @@ png_set_user_limits(png_structrp png_ptr, png_uint_32 user_width_max,
 void PNGAPI
 png_set_chunk_cache_max(png_structrp png_ptr, png_uint_32 user_chunk_cache_max)
 {
+   png_debug(1, "in png_set_chunk_cache_max");
+
    if (png_ptr != NULL)
       png_ptr->user_chunk_cache_max = user_chunk_cache_max;
 }
@@ -1651,6 +1685,8 @@ void PNGAPI
 png_set_chunk_malloc_max(png_structrp png_ptr,
     png_alloc_size_t user_chunk_malloc_max)
 {
+   png_debug(1, "in png_set_chunk_malloc_max");
+
    if (png_ptr != NULL)
       png_ptr->user_chunk_malloc_max = user_chunk_malloc_max;
 }

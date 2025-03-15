@@ -30,7 +30,6 @@
 
 #include "ray_cast_3d.h"
 
-#include "scene/3d/mesh_instance_3d.h"
 #include "scene/3d/physics/collision_object_3d.h"
 
 void RayCast3D::set_target_position(const Vector3 &p_point) {
@@ -204,8 +203,10 @@ void RayCast3D::_notification(int p_what) {
 
 			bool prev_collision_state = collided;
 			_update_raycast_state();
-			if (prev_collision_state != collided && get_tree()->is_debugging_collisions_hint()) {
-				_update_debug_shape_material(true);
+			if (get_tree()->is_debugging_collisions_hint()) {
+				if (prev_collision_state != collided) {
+					_update_debug_shape_material(true);
+				}
 				if (is_inside_tree() && debug_instance.is_valid()) {
 					RenderingServer::get_singleton()->instance_set_transform(debug_instance, get_global_transform());
 				}
@@ -462,12 +463,12 @@ void RayCast3D::_create_debug_shape() {
 	}
 
 	if (debug_mesh.is_null()) {
-		debug_mesh = Ref<ArrayMesh>(memnew(ArrayMesh));
+		debug_mesh.instantiate();
 	}
 }
 
 void RayCast3D::_update_debug_shape_material(bool p_check_collision) {
-	if (!debug_material.is_valid()) {
+	if (debug_material.is_null()) {
 		Ref<StandardMaterial3D> material = memnew(StandardMaterial3D);
 		debug_material = material;
 

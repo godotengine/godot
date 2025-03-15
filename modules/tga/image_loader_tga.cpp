@@ -32,8 +32,7 @@
 
 #include "core/error/error_macros.h"
 #include "core/io/file_access_memory.h"
-#include "core/os/os.h"
-#include "core/string/print_string.h"
+#include "core/io/image.h"
 
 Error ImageLoaderTGA::decode_tga_rle(const uint8_t *p_compressed_buffer, size_t p_pixel_size, uint8_t *p_uncompressed_buffer, size_t p_output_size, size_t p_input_size) {
 	Error error;

@@ -6,6 +6,7 @@
 	<description>
 		An array specifically designed to hold bytes. Packs data tightly, so it saves memory for large array sizes.
 		[PackedByteArray] also provides methods to encode/decode various types to/from bytes. The way values are encoded is an implementation detail and shouldn't be relied upon when interacting with external apps.
+		[b]Note:[/b] Packed arrays are always passed by reference. To get a copy of an array that can be modified independently of the original array, use [method duplicate]. This is [i]not[/i] the case for built-in properties and methods. The returned packed array of these are a copies, and changing it will [i]not[/i] affect the original value. To update a built-in property you need to modify the returned array, and then assign it to the property again.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -306,6 +307,13 @@
 				Searches the array for a value and returns its index or [code]-1[/code] if not found. Optionally, the initial search index can be passed.
 			</description>
 		</method>
+		<method name="get" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns the byte at the given [param index] in the array. This is the same as using the [code][][/code] operator ([code]array[index][/code]).
+			</description>
+		</method>
 		<method name="get_string_from_ascii" qualifiers="const">
 			<return type="String" />
 			<description>
@@ -358,11 +366,11 @@
 				[codeblocks]
 				[gdscript]
 				var array = PackedByteArray([11, 46, 255])
-				print(array.hex_encode()) # Prints: 0b2eff
+				print(array.hex_encode()) # Prints "0b2eff"
 				[/gdscript]
 				[csharp]
-				var array = new byte[] {11, 46, 255};
-				GD.Print(array.HexEncode()); // Prints: 0b2eff
+				byte[] array = [11, 46, 255];
+				GD.Print(array.HexEncode()); // Prints "0b2eff"
 				[/csharp]
 				[/codeblocks]
 			</description>

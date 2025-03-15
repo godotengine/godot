@@ -67,7 +67,7 @@ public:
 		_3d_space_switch->set_toggle_mode(true);
 		_3d_space_switch->set_offset(SIDE_LEFT, PADDING_3D_SPACE_SWITCH);
 		_3d_space_switch->set_offset(SIDE_TOP, PADDING_3D_SPACE_SWITCH);
-		_3d_space_switch->connect("pressed", callable_mp(this, &NoisePreview::_on_3d_button_pressed));
+		_3d_space_switch->connect(SceneStringName(pressed), callable_mp(this, &NoisePreview::_on_3d_button_pressed));
 		add_child(_3d_space_switch);
 	}
 
@@ -139,7 +139,7 @@ public:
 
 /////////////////////////////////////////////////////////////////////////////////
 
-String NoiseEditorPlugin::get_name() const {
+String NoiseEditorPlugin::get_plugin_name() const {
 	return Noise::get_class_static();
 }
 

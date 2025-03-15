@@ -40,6 +40,8 @@
 #include "core/templates/local_vector.h"
 #include "core/templates/rid.h"
 #include "core/templates/rid_owner.h"
+#include "servers/navigation/navigation_path_query_parameters_3d.h"
+#include "servers/navigation/navigation_path_query_result_3d.h"
 #include "servers/navigation_server_3d.h"
 
 /// The commands are functions executed during the `sync` phase.
@@ -95,6 +97,7 @@ class GodotNavigationServer3D : public NavigationServer3D {
 	int pm_edge_merge_count = 0;
 	int pm_edge_connection_count = 0;
 	int pm_edge_free_count = 0;
+	int pm_obstacle_count = 0;
 
 public:
 	GodotNavigationServer3D();
@@ -129,7 +132,7 @@ public:
 	COMMAND_2(map_set_link_connection_radius, RID, p_map, real_t, p_connection_radius);
 	virtual real_t map_get_link_connection_radius(RID p_map) const override;
 
-	virtual Vector<Vector3> map_get_path(RID p_map, Vector3 p_origin, Vector3 p_destination, bool p_optimize, uint32_t p_navigation_layers = 1) const override;
+	virtual Vector<Vector3> map_get_path(RID p_map, Vector3 p_origin, Vector3 p_destination, bool p_optimize, uint32_t p_navigation_layers = 1) override;
 
 	virtual Vector3 map_get_closest_point_to_segment(RID p_map, const Vector3 &p_from, const Vector3 &p_to, const bool p_use_collision = false) const override;
 	virtual Vector3 map_get_closest_point(RID p_map, const Vector3 &p_point) const override;
@@ -143,6 +146,9 @@ public:
 
 	virtual void map_force_update(RID p_map) override;
 	virtual uint32_t map_get_iteration_id(RID p_map) const override;
+
+	COMMAND_2(map_set_use_async_iterations, RID, p_map, bool, p_enabled);
+	virtual bool map_get_use_async_iterations(RID p_map) const override;
 
 	virtual Vector3 map_get_random_point(RID p_map, uint32_t p_navigation_layers, bool p_uniformly) const override;
 
@@ -177,7 +183,11 @@ public:
 	virtual int region_get_connections_count(RID p_region) const override;
 	virtual Vector3 region_get_connection_pathway_start(RID p_region, int p_connection_id) const override;
 	virtual Vector3 region_get_connection_pathway_end(RID p_region, int p_connection_id) const override;
+	virtual Vector3 region_get_closest_point_to_segment(RID p_region, const Vector3 &p_from, const Vector3 &p_to, bool p_use_collision = false) const override;
+	virtual Vector3 region_get_closest_point(RID p_region, const Vector3 &p_point) const override;
+	virtual Vector3 region_get_closest_point_normal(RID p_region, const Vector3 &p_point) const override;
 	virtual Vector3 region_get_random_point(RID p_region, uint32_t p_navigation_layers, bool p_uniformly) const override;
+	virtual AABB region_get_bounds(RID p_region) const override;
 
 	virtual RID link_create() override;
 	COMMAND_2(link_set_map, RID, p_link, RID, p_map);
@@ -264,6 +274,12 @@ public:
 	virtual void bake_from_source_geometry_data_async(const Ref<NavigationMesh> &p_navigation_mesh, const Ref<NavigationMeshSourceGeometryData3D> &p_source_geometry_data, const Callable &p_callback = Callable()) override;
 	virtual bool is_baking_navigation_mesh(Ref<NavigationMesh> p_navigation_mesh) const override;
 
+	virtual RID source_geometry_parser_create() override;
+	virtual void source_geometry_parser_set_callback(RID p_parser, const Callable &p_callback) override;
+
+	virtual Vector<Vector3> simplify_path(const Vector<Vector3> &p_path, real_t p_epsilon) override;
+
+public:
 	COMMAND_1(free, RID, p_object);
 
 	virtual void set_active(bool p_active) override;
@@ -274,7 +290,7 @@ public:
 	virtual void sync() override;
 	virtual void finish() override;
 
-	virtual NavigationUtilities::PathQueryResult _query_path(const NavigationUtilities::PathQueryParameters &p_parameters) const override;
+	virtual void query_path(const Ref<NavigationPathQueryParameters3D> &p_query_parameters, Ref<NavigationPathQueryResult3D> p_query_result, const Callable &p_callback = Callable()) override;
 
 	int get_process_info(ProcessInfo p_info) const override;
 

@@ -79,13 +79,14 @@
 # Aya Ichrak <ayaichrack@gmail.com>, 2023.
 # Jugy <hellowo038@gmail.com>, 2023.
 # Emad Alhaddad <emad142240@gmail.com>, 2023.
+# cat lover <mongo@users.noreply.hosted.weblate.org>, 2024.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-02-21 09:02+0000\n"
-"Last-Translator: بسام العوفي <co-able@hotmail.com>\n"
+"PO-Revision-Date: 2024-07-15 21:54+0000\n"
+"Last-Translator: cat lover <mongo@users.noreply.hosted.weblate.org>\n"
 "Language-Team: Arabic <https://hosted.weblate.org/projects/godot-engine/godot-"
 "properties/ar/>\n"
 "Language: ar\n"
@@ -94,7 +95,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=6; plural=n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && "
 "n%100<=10 ? 3 : n%100>=11 ? 4 : 5;\n"
-"X-Generator: Weblate 5.5-dev\n"
+"X-Generator: Weblate 5.7-dev\n"
 
 msgid "Application"
 msgstr "التطبيق"
@@ -240,15 +241,6 @@ msgstr "فئة الجلسة"
 msgid "Mix With Others"
 msgstr "ختلط مع الآخرين"
 
-msgid "Editor"
-msgstr "المحرّر"
-
-msgid "Script"
-msgstr "سكربت"
-
-msgid "Search in File Extensions"
-msgstr "البحث في امتدادات الملف"
-
 msgid "Subwindows"
 msgstr "النوافذ الفرعية"
 
@@ -357,6 +349,9 @@ msgstr "حجم منطقة تحميل النسيج Px"
 msgid "Pipeline Cache"
 msgstr "ذاكرة التخزين المؤقت لخط الأنابيب"
 
+msgid "Enable"
+msgstr "تفعيل"
+
 msgid "Save Chunk Size (MB)"
 msgstr "حفظ جزء من القطعة (ميجابايت)"
 
@@ -407,6 +402,12 @@ msgstr "وضع الفأرة"
 
 msgid "Use Accumulated Input"
 msgstr "استخدم المدخلات المتراكمة"
+
+msgid "Emulate Mouse From Touch"
+msgstr "محاكاة الفأرة من لوحة المفاتيح"
+
+msgid "Emulate Touch From Mouse"
+msgstr "محاكاة لوحة المفاتيح من الفأرة"
 
 msgid "Input Devices"
 msgstr "أجهزة الإدخال"
@@ -666,9 +667,6 @@ msgstr "التدوير"
 msgid "Value"
 msgstr "قيمة"
 
-msgid "Args"
-msgstr "المعاملات (Args)"
-
 msgid "Type"
 msgstr "النوع"
 
@@ -711,6 +709,12 @@ msgstr "وضع خالي من الإلهاء"
 msgid "Movie Maker Enabled"
 msgstr "تم تمكين صانع الأفلام"
 
+msgid "Theme"
+msgstr "الموضوع"
+
+msgid "Line Spacing"
+msgstr "تباعد الأسطر"
+
 msgid "Base Type"
 msgstr "النوع الأساسي"
 
@@ -722,6 +726,9 @@ msgstr "أظهر الوضع"
 
 msgid "Interface"
 msgstr "واجهة المستخدم"
+
+msgid "Editor"
+msgstr "المحرّر"
 
 msgid "Editor Language"
 msgstr "لغة المحرر"
@@ -740,9 +747,6 @@ msgstr "شاشة المحرر"
 
 msgid "Project Manager Screen"
 msgstr "شاشة مدير المشروع"
-
-msgid "Enable Pseudolocalization"
-msgstr "تمكين التعريب الزائف"
 
 msgid "Use Embedded Menu"
 msgstr "استعمال القائمة المُضمّنة"
@@ -816,9 +820,6 @@ msgstr "وضع منتقي الألوان الافتراضي"
 msgid "Default Color Picker Shape"
 msgstr "شكل منتقي الألوان الافتراضي"
 
-msgid "Theme"
-msgstr "الموضوع"
-
 msgid "Preset"
 msgstr "المعد مسبقا"
 
@@ -866,9 +867,6 @@ msgstr "استعادة المشاهد عند التحميل"
 
 msgid "Multi Window"
 msgstr "نافذة متعددة"
-
-msgid "Enable"
-msgstr "تفعيل"
 
 msgid "Restore Windows on Load"
 msgstr "استعادة ويندوز عند التحميل"
@@ -948,6 +946,9 @@ msgstr "تمييز السطر الحالي"
 msgid "Highlight All Occurrences"
 msgstr "قم بتمييز جميع التكرارات"
 
+msgid "Guidelines"
+msgstr "إرشادات"
+
 msgid "Show Line Length Guidelines"
 msgstr "إظهار إرشادات طول السطر"
 
@@ -995,9 +996,6 @@ msgstr "رسم فراغات زر التاب"
 
 msgid "Draw Spaces"
 msgstr "رسم فراغات زر السبايس"
-
-msgid "Line Spacing"
-msgstr "تباعد الأسطر"
 
 msgid "Behavior"
 msgstr "سلوك"
@@ -1118,9 +1116,6 @@ msgstr "تم إنشاء مثيل له"
 
 msgid "Joint"
 msgstr "مشترك"
-
-msgid "Shape"
-msgstr "شكل"
 
 msgid "Primary Grid Steps"
 msgstr "خطوات الشبكة الاساسية"
@@ -1245,6 +1240,9 @@ msgstr "المخرجات"
 msgid "Font Size"
 msgstr "حجم الخط"
 
+msgid "Linuxbsd"
+msgstr "Linuxbsd"
+
 msgid "HTTP Proxy"
 msgstr "وكيل (Proxy) HTTP"
 
@@ -1259,6 +1257,9 @@ msgstr "مُنقح الأخطاء"
 
 msgid "Profiler Frame History Size"
 msgstr "حجم تاريخ إطار المحلل"
+
+msgid "Input"
+msgstr "إدخال"
 
 msgid "Project Manager"
 msgstr "مدير المشروع"
@@ -1422,6 +1423,18 @@ msgstr "قناع"
 msgid "Layers"
 msgstr "طبقات"
 
+msgid "Visibility Range Begin"
+msgstr "بداية نطاق الرؤية"
+
+msgid "Visibility Range Begin Margin"
+msgstr "بداية هامش نطاق الرؤية"
+
+msgid "Visibility Range End"
+msgstr "نهاية نطاق الرؤية"
+
+msgid "Visibility Range End Margin"
+msgstr "نهاية هامش نطاق الرؤية"
+
 msgid "Decomposition"
 msgstr "تقسيم"
 
@@ -1430,6 +1443,12 @@ msgstr "إعدادات متقدمة"
 
 msgid "Precision"
 msgstr "دقة"
+
+msgid "Symmetry Planes Clipping Bias"
+msgstr "انحياز قص مستويات التماثل"
+
+msgid "Revolution Axes Clipping Bias"
+msgstr "تحيز قص محاور التقدم"
 
 msgid "Resolution"
 msgstr "الدقة"
@@ -1500,6 +1519,9 @@ msgstr "ضغط"
 msgid "Language"
 msgstr "اللغة"
 
+msgid "Embolden"
+msgstr "تغميق"
+
 msgid "Transform"
 msgstr "التَحَوّل"
 
@@ -1559,6 +1581,9 @@ msgstr "المعالجة"
 
 msgid "Fix Alpha Border"
 msgstr "إصلاح حدود ألفا"
+
+msgid "HDR as sRGB"
+msgstr "HDR بهيئة RGB"
 
 msgid "Size Limit"
 msgstr "الحد الأقصى للحجم"
@@ -1638,6 +1663,9 @@ msgstr "مسار المفتاح الخاص لSSH"
 msgid "Main Run Args"
 msgstr "معاملات المشهد الرئيس"
 
+msgid "Script"
+msgstr "سكربت"
+
 msgid "Templates Search Path"
 msgstr "مسار البحث عن القوالب"
 
@@ -1671,12 +1699,6 @@ msgstr "إخراج"
 msgid "XR"
 msgstr "XR"
 
-msgid "In Editor"
-msgstr "داخل المحرر"
-
-msgid "Fullsize"
-msgstr "الحجم الكامل"
-
 msgid "Icon"
 msgstr "الأيقونة"
 
@@ -1686,8 +1708,20 @@ msgstr "يشير"
 msgid "Android"
 msgstr "أندرويد"
 
+msgid "Search in File Extensions"
+msgstr "البحث في امتدادات الملف"
+
+msgid "Fullsize"
+msgstr "الحجم الكامل"
+
 msgid "Project"
 msgstr "المشروع"
+
+msgid "Time"
+msgstr "الوقت"
+
+msgid "Polygons"
+msgstr "المُضلعات"
 
 msgid "Operation"
 msgstr "عملية"
@@ -1962,11 +1996,11 @@ msgstr "فوق"
 msgid "Right"
 msgstr "يميناً"
 
-msgid "Time"
-msgstr "الوقت"
-
 msgid "One Shot"
 msgstr "محاولة واحدة"
+
+msgid "Shape"
+msgstr "شكل"
 
 msgid "Sphere Radius"
 msgstr "قطر الجسم الكروى"
@@ -1995,9 +2029,6 @@ msgstr "النهاية"
 msgid "Point"
 msgstr "نقطة"
 
-msgid "Input"
-msgstr "إدخال"
-
 msgid "Disabled"
 msgstr "معطّل"
 
@@ -2007,14 +2038,14 @@ msgstr "خطي"
 msgid "UV"
 msgstr "ال UV"
 
-msgid "Polygons"
-msgstr "المُضلعات"
-
 msgid "Update"
 msgstr "تحديث"
 
 msgid "Editor Settings"
 msgstr "إعدادات المُحرر"
+
+msgid "Y Sort Origin"
+msgstr "فرز مركز ص"
 
 msgid "Bitmask"
 msgstr "قناع-البِت"
@@ -2214,9 +2245,6 @@ msgstr "المصفوفة المنقولة Transpose"
 msgid "Texture Origin"
 msgstr "أصل الملمس"
 
-msgid "Y Sort Origin"
-msgstr "فرز مركز ص"
-
 msgid "Miscellaneous"
 msgstr "متنوع"
 
@@ -2396,6 +2424,3 @@ msgstr "مركز العالم"
 
 msgid "Primary Interface"
 msgstr "الواجهة الأساسية"
-
-msgid "Property"
-msgstr "خاصية"

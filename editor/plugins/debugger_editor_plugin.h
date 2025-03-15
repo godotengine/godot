@@ -31,7 +31,7 @@
 #ifndef DEBUGGER_EDITOR_PLUGIN_H
 #define DEBUGGER_EDITOR_PLUGIN_H
 
-#include "editor/editor_plugin.h"
+#include "editor/plugins/editor_plugin.h"
 
 class EditorFileServer;
 class MenuButton;
@@ -60,12 +60,14 @@ private:
 		RUN_MULTIPLE_INSTANCES,
 	};
 
+	bool initializing = true;
+
 	void _update_debug_options();
 	void _notification(int p_what);
 	void _menu_option(int p_option);
 
 public:
-	virtual String get_name() const override { return "Debugger"; }
+	virtual String get_plugin_name() const override { return "Debugger"; }
 	bool has_main_screen() const override { return false; }
 
 	DebuggerEditorPlugin(PopupMenu *p_menu);

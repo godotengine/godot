@@ -1071,11 +1071,14 @@ enet_protocol_handle_incoming_commands (ENetHost * host, ENetEvent * event)
 
     if (host -> checksum != NULL)
     {
-        enet_uint32 * checksum = (enet_uint32 *) & host -> receivedData [headerSize - sizeof (enet_uint32)],
-                    desiredChecksum = * checksum;
+        enet_uint32 * checksum = (enet_uint32 *) & host -> receivedData [headerSize - sizeof (enet_uint32)];
+        enet_uint32 desiredChecksum, newChecksum;
         ENetBuffer buffer;
+        /* Checksum may be an unaligned pointer, use memcpy to avoid undefined behaviour. */
+        memcpy (& desiredChecksum, checksum, sizeof (enet_uint32));
 
-        * checksum = peer != NULL ? peer -> connectID : 0;
+        newChecksum = peer != NULL ? peer -> connectID : 0;
+        memcpy (checksum, & newChecksum, sizeof (enet_uint32));
 
         buffer.data = host -> receivedData;
         buffer.dataLength = host -> receivedDataLength;
@@ -1703,9 +1706,12 @@ enet_protocol_send_outgoing_commands (ENetHost * host, ENetEvent * event, int ch
         if (host -> checksum != NULL)
         {
             enet_uint32 * checksum = (enet_uint32 *) & headerData [host -> buffers -> dataLength];
-            * checksum = currentPeer -> outgoingPeerID < ENET_PROTOCOL_MAXIMUM_PEER_ID ? currentPeer -> connectID : 0;
+            enet_uint32 newChecksum = currentPeer -> outgoingPeerID < ENET_PROTOCOL_MAXIMUM_PEER_ID ? currentPeer -> connectID : 0;
+            /* Checksum may be unaligned, use memcpy to avoid undefined behaviour. */
+            memcpy(checksum, & newChecksum, sizeof (enet_uint32));
             host -> buffers -> dataLength += sizeof (enet_uint32);
-            * checksum = host -> checksum (host -> buffers, host -> bufferCount);
+            newChecksum = host -> checksum (host -> buffers, host -> bufferCount);
+            memcpy(checksum, & newChecksum, sizeof (enet_uint32));
         }
 
         if (shouldCompress > 0)

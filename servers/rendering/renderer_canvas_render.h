@@ -51,9 +51,12 @@ public:
 	};
 
 	struct Light {
-		bool enabled;
+		bool enabled : 1;
+		bool on_interpolate_transform_list : 1;
+		bool interpolated : 1;
 		Color color;
-		Transform2D xform;
+		Transform2D xform_curr;
+		Transform2D xform_prev;
 		float height;
 		float energy;
 		float scale;
@@ -97,6 +100,8 @@ public:
 		Light() {
 			version = 0;
 			enabled = true;
+			on_interpolate_transform_list = false;
+			interpolated = true;
 			color = Color(1, 1, 1);
 			shadow_color = Color(0, 0, 0, 0);
 			height = 0;
@@ -124,8 +129,6 @@ public:
 	};
 
 	//easier wrap to avoid mistakes
-
-	struct Item;
 
 	typedef uint64_t PolygonID;
 	virtual PolygonID request_polygon(const Vector<int> &p_indices, const Vector<Point2> &p_points, const Vector<Color> &p_colors, const Vector<Point2> &p_uvs = Vector<Point2>(), const Vector<int> &p_bones = Vector<int>(), const Vector<float> &p_weights = Vector<float>()) = 0;
@@ -307,11 +310,18 @@ public:
 			Rect2 rect;
 		};
 
-		Transform2D xform;
-		bool clip;
-		bool visible;
-		bool behind;
-		bool update_when_visible;
+		// For interpolation we store the current local xform,
+		// and the previous xform from the previous tick.
+		Transform2D xform_curr;
+		Transform2D xform_prev;
+
+		bool clip : 1;
+		bool visible : 1;
+		bool behind : 1;
+		bool update_when_visible : 1;
+		bool on_interpolate_transform_list : 1;
+		bool interpolated : 1;
+		bool use_identity_transform : 1;
 
 		struct CanvasGroup {
 			RS::CanvasGroupMode mode;
@@ -331,6 +341,8 @@ public:
 		mutable Rect2 rect;
 		RID material;
 		RID skeleton;
+
+		int32_t instance_allocated_shader_uniforms_offset = -1;
 
 		Item *next = nullptr;
 
@@ -353,6 +365,7 @@ public:
 		bool repeat_source;
 		Point2 repeat_size;
 		int repeat_times = 1;
+		Item *repeat_source_item = nullptr;
 
 		Rect2 global_rect_cache;
 
@@ -366,7 +379,7 @@ public:
 		mutable double debug_redraw_time = 0;
 #endif
 
-		template <class T>
+		template <typename T>
 		T *alloc_command() {
 			T *command = nullptr;
 			if (commands == nullptr) {
@@ -472,6 +485,9 @@ public:
 			texture_filter = RS::CANVAS_ITEM_TEXTURE_FILTER_DEFAULT;
 			texture_repeat = RS::CANVAS_ITEM_TEXTURE_REPEAT_DEFAULT;
 			repeat_source = false;
+			on_interpolate_transform_list = false;
+			interpolated = true;
+			use_identity_transform = false;
 		}
 		virtual ~Item() {
 			clear();
@@ -487,12 +503,15 @@ public:
 	virtual void canvas_render_items(RID p_to_render_target, Item *p_item_list, const Color &p_modulate, Light *p_light_list, Light *p_directional_list, const Transform2D &p_canvas_transform, RS::CanvasItemTextureFilter p_default_filter, RS::CanvasItemTextureRepeat p_default_repeat, bool p_snap_2d_vertices_to_pixel, bool &r_sdf_used, RenderingMethod::RenderInfo *r_render_info = nullptr) = 0;
 
 	struct LightOccluderInstance {
-		bool enabled;
+		bool enabled : 1;
+		bool on_interpolate_transform_list : 1;
+		bool interpolated : 1;
 		RID canvas;
 		RID polygon;
 		RID occluder;
 		Rect2 aabb_cache;
-		Transform2D xform;
+		Transform2D xform_curr;
+		Transform2D xform_prev;
 		Transform2D xform_cache;
 		int light_mask;
 		bool sdf_collision;
@@ -502,6 +521,8 @@ public:
 
 		LightOccluderInstance() {
 			enabled = true;
+			on_interpolate_transform_list = false;
+			interpolated = false;
 			sdf_collision = false;
 			next = nullptr;
 			light_mask = 1;
@@ -512,7 +533,7 @@ public:
 	virtual RID light_create() = 0;
 	virtual void light_set_texture(RID p_rid, RID p_texture) = 0;
 	virtual void light_set_use_shadow(RID p_rid, bool p_enable) = 0;
-	virtual void light_update_shadow(RID p_rid, int p_shadow_index, const Transform2D &p_light_xform, int p_light_mask, float p_near, float p_far, LightOccluderInstance *p_occluders) = 0;
+	virtual void light_update_shadow(RID p_rid, int p_shadow_index, const Transform2D &p_light_xform, int p_light_mask, float p_near, float p_far, LightOccluderInstance *p_occluders, const Rect2 &p_light_rect) = 0;
 	virtual void light_update_directional_shadow(RID p_rid, int p_shadow_index, const Transform2D &p_light_xform, int p_light_mask, float p_cull_distance, const Rect2 &p_clip_rect, LightOccluderInstance *p_occluders) = 0;
 
 	virtual void render_sdf(RID p_render_target, LightOccluderInstance *p_occluders) = 0;
@@ -526,9 +547,15 @@ public:
 	virtual void update() = 0;
 
 	virtual void set_debug_redraw(bool p_enabled, double p_time, const Color &p_color) = 0;
+	virtual uint32_t get_pipeline_compilations(RS::PipelineSource p_source) = 0;
 
-	RendererCanvasRender() { singleton = this; }
-	virtual ~RendererCanvasRender() {}
+	RendererCanvasRender() {
+		ERR_FAIL_COND_MSG(singleton != nullptr, "A RendererCanvasRender singleton already exists.");
+		singleton = this;
+	}
+	virtual ~RendererCanvasRender() {
+		singleton = nullptr;
+	}
 };
 
 #endif // RENDERER_CANVAS_RENDER_H

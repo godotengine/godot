@@ -36,8 +36,6 @@
 #include "scene/resources/2d/concave_polygon_shape_2d.h"
 #include "scene/resources/2d/convex_polygon_shape_2d.h"
 
-#include "thirdparty/misc/polypartition.h"
-
 void CollisionPolygon2D::_build_polygon() {
 	collision_object->shape_owner_clear_shapes(owner_id);
 
@@ -132,20 +130,19 @@ void CollisionPolygon2D::_notification(int p_what) {
 			}
 
 			if (polygon.size() > 2) {
-#define DEBUG_DECOMPOSE
-#if defined(TOOLS_ENABLED) && defined(DEBUG_DECOMPOSE)
-				Vector<Vector<Vector2>> decomp = _decompose_in_convex();
+#ifdef TOOLS_ENABLED
+				if (build_mode == BUILD_SOLIDS) {
+					Vector<Vector<Vector2>> decomp = _decompose_in_convex();
 
-				Color c(0.4, 0.9, 0.1);
-				for (int i = 0; i < decomp.size(); i++) {
-					c.set_hsv(Math::fmod(c.get_h() + 0.738, 1), c.get_s(), c.get_v(), 0.5);
-					draw_colored_polygon(decomp[i], c);
+					Color c(0.4, 0.9, 0.1);
+					for (int i = 0; i < decomp.size(); i++) {
+						c.set_hsv(Math::fmod(c.get_h() + 0.738, 1), c.get_s(), c.get_v(), 0.5);
+						draw_colored_polygon(decomp[i], c);
+					}
 				}
-#else
-				draw_colored_polygon(polygon, get_tree()->get_debug_collisions_color());
 #endif
 
-				const Color stroke_color = Color(0.9, 0.2, 0.0);
+				const Color stroke_color = get_tree()->get_debug_collisions_color();
 				draw_polyline(polygon, stroke_color);
 				// Draw the last segment.
 				draw_line(polygon[polygon.size() - 1], polygon[0], stroke_color);
@@ -218,7 +215,7 @@ CollisionPolygon2D::BuildMode CollisionPolygon2D::get_build_mode() const {
 	return build_mode;
 }
 
-#ifdef TOOLS_ENABLED
+#ifdef DEBUG_ENABLED
 Rect2 CollisionPolygon2D::_edit_get_rect() const {
 	return aabb;
 }
@@ -233,7 +230,7 @@ bool CollisionPolygon2D::_edit_is_selected_on_click(const Point2 &p_point, doubl
 #endif
 
 PackedStringArray CollisionPolygon2D::get_configuration_warnings() const {
-	PackedStringArray warnings = Node::get_configuration_warnings();
+	PackedStringArray warnings = Node2D::get_configuration_warnings();
 
 	if (!Object::cast_to<CollisionObject2D>(get_parent())) {
 		warnings.push_back(RTR("CollisionPolygon2D only serves to provide a collision shape to a CollisionObject2D derived node. Please only use it as a child of Area2D, StaticBody2D, RigidBody2D, CharacterBody2D, etc. to give them a shape."));

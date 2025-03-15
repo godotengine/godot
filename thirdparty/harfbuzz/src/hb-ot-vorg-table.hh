@@ -117,6 +117,7 @@ struct VORG
   {
     TRACE_SANITIZE (this);
     return_trace (c->check_struct (this) &&
+		  hb_barrier () &&
 		  version.major == 1 &&
 		  vertYOrigins.sanitize (c));
   }

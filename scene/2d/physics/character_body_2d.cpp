@@ -352,14 +352,14 @@ void CharacterBody2D::_apply_floor_snap(bool p_wall_as_floor) {
 			floor_normal = result.collision_normal;
 			_set_platform_data(result);
 
-			if (floor_stop_on_slope) {
-				// move and collide may stray the object a bit because of pre un-stucking,
-				// so only ensure that motion happens on floor direction in this case.
-				if (result.travel.length() > margin) {
-					result.travel = up_direction * up_direction.dot(result.travel);
-				} else {
-					result.travel = Vector2();
-				}
+			// Ensure that we only move the body along the up axis, because
+			// move_and_collide may stray the object a bit when getting it unstuck.
+			// Canceling this motion should not affect move_and_slide, as previous
+			// calls to move_and_collide already took care of freeing the body.
+			if (result.travel.length() > margin) {
+				result.travel = up_direction * up_direction.dot(result.travel);
+			} else {
+				result.travel = Vector2();
 			}
 
 			parameters.from.columns[2] += result.travel;
@@ -501,7 +501,7 @@ Ref<KinematicCollision2D> CharacterBody2D::_get_slide_collision(int p_bounce) {
 	// Create a new instance when the cached reference is invalid or still in use in script.
 	if (slide_colliders[p_bounce].is_null() || slide_colliders[p_bounce]->get_reference_count() > 1) {
 		slide_colliders.write[p_bounce].instantiate();
-		slide_colliders.write[p_bounce]->owner = this;
+		slide_colliders.write[p_bounce]->owner_id = get_instance_id();
 	}
 
 	slide_colliders.write[p_bounce]->result = motion_results[p_bounce];
@@ -744,12 +744,4 @@ void CharacterBody2D::_bind_methods() {
 
 CharacterBody2D::CharacterBody2D() :
 		PhysicsBody2D(PhysicsServer2D::BODY_MODE_KINEMATIC) {
-}
-
-CharacterBody2D::~CharacterBody2D() {
-	for (int i = 0; i < slide_colliders.size(); i++) {
-		if (slide_colliders[i].is_valid()) {
-			slide_colliders.write[i]->owner = nullptr;
-		}
-	}
 }

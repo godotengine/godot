@@ -115,7 +115,7 @@ bool EditorExportPlatformPC::has_valid_project_configuration(const Ref<EditorExp
 	return true;
 }
 
-Error EditorExportPlatformPC::export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags) {
+Error EditorExportPlatformPC::export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, BitField<EditorExportPlatform::DebugFlags> p_flags) {
 	ExportNotifier notifier(*this, p_preset, p_debug, p_path, p_flags);
 
 	Error err = prepare_template(p_preset, p_debug, p_path, p_flags);
@@ -129,7 +129,7 @@ Error EditorExportPlatformPC::export_project(const Ref<EditorExportPreset> &p_pr
 	return err;
 }
 
-Error EditorExportPlatformPC::prepare_template(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags) {
+Error EditorExportPlatformPC::prepare_template(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, BitField<EditorExportPlatform::DebugFlags> p_flags) {
 	if (!DirAccess::exists(p_path.get_base_dir())) {
 		add_message(EXPORT_MESSAGE_ERROR, TTR("Prepare Template"), TTR("The given export path doesn't exist."));
 		return ERR_FILE_BAD_PATH;
@@ -151,15 +151,28 @@ Error EditorExportPlatformPC::prepare_template(const Ref<EditorExportPreset> &p_
 		return ERR_FILE_NOT_FOUND;
 	}
 
-	String wrapper_template_path = template_path.get_basename() + "_console.exe";
+	// Matching the extensions in platform/windows/console_wrapper_windows.cpp
+	static const char *const wrapper_extensions[] = {
+		".console.exe",
+		"_console.exe",
+		" console.exe",
+		"console.exe",
+		nullptr,
+	};
 	int con_wrapper_mode = p_preset->get("debug/export_console_wrapper");
 	bool copy_wrapper = (con_wrapper_mode == 1 && p_debug) || (con_wrapper_mode == 2);
 
 	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 	da->make_dir_recursive(p_path.get_base_dir());
 	Error err = da->copy(template_path, p_path, get_chmod_flags());
-	if (err == OK && copy_wrapper && FileAccess::exists(wrapper_template_path)) {
-		err = da->copy(wrapper_template_path, p_path.get_basename() + ".console.exe", get_chmod_flags());
+	if (err == OK && copy_wrapper) {
+		for (int i = 0; wrapper_extensions[i]; ++i) {
+			const String wrapper_path = template_path.get_basename() + wrapper_extensions[i];
+			if (FileAccess::exists(wrapper_path)) {
+				err = da->copy(wrapper_path, p_path.get_basename() + ".console.exe", get_chmod_flags());
+				break;
+			}
+		}
 	}
 	if (err != OK) {
 		add_message(EXPORT_MESSAGE_ERROR, TTR("Prepare Template"), TTR("Failed to copy export template."));
@@ -169,7 +182,7 @@ Error EditorExportPlatformPC::prepare_template(const Ref<EditorExportPreset> &p_
 	return err;
 }
 
-Error EditorExportPlatformPC::export_project_data(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags) {
+Error EditorExportPlatformPC::export_project_data(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, BitField<EditorExportPlatform::DebugFlags> p_flags) {
 	String pck_path;
 	if (p_preset->get("binary_format/embed_pck")) {
 		pck_path = p_path;
@@ -181,7 +194,7 @@ Error EditorExportPlatformPC::export_project_data(const Ref<EditorExportPreset> 
 
 	int64_t embedded_pos;
 	int64_t embedded_size;
-	Error err = save_pack(p_preset, p_debug, pck_path, &so_files, p_preset->get("binary_format/embed_pck"), &embedded_pos, &embedded_size);
+	Error err = save_pack(p_preset, p_debug, pck_path, &so_files, nullptr, nullptr, p_preset->get("binary_format/embed_pck"), &embedded_pos, &embedded_size);
 	if (err == OK && p_preset->get("binary_format/embed_pck")) {
 		if (embedded_size >= 0x100000000 && String(p_preset->get("binary_format/architecture")).contains("32")) {
 			add_message(EXPORT_MESSAGE_ERROR, TTR("PCK Embedding"), TTR("On 32-bit exports the embedded PCK cannot be bigger than 4 GiB."));
@@ -209,9 +222,15 @@ Error EditorExportPlatformPC::export_project_data(const Ref<EditorExportPreset> 
 				err = da->make_dir_recursive(target_path);
 				if (err == OK) {
 					err = da->copy_dir(src_path, target_path, -1, true);
+					if (err != OK) {
+						add_message(EXPORT_MESSAGE_ERROR, TTR("GDExtension"), vformat(TTR("Failed to copy shared object \"%s\"."), src_path));
+					}
 				}
 			} else {
 				err = da->copy(src_path, target_path);
+				if (err != OK) {
+					add_message(EXPORT_MESSAGE_ERROR, TTR("GDExtension"), vformat(TTR("Failed to copy shared object \"%s\"."), src_path));
+				}
 				if (err == OK) {
 					err = sign_shared_object(p_preset, p_debug, target_path);
 				}

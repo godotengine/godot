@@ -30,7 +30,6 @@
 
 #include "camera_3d_gizmo_plugin.h"
 
-#include "core/config/project_settings.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
@@ -39,29 +38,11 @@
 #include "scene/3d/camera_3d.h"
 
 Camera3DGizmoPlugin::Camera3DGizmoPlugin() {
-	Color gizmo_color = EDITOR_DEF_RST("editors/3d_gizmos/gizmo_colors/camera", Color(0.8, 0.4, 0.8));
+	Color gizmo_color = EDITOR_GET("editors/3d_gizmos/gizmo_colors/camera");
 
 	create_material("camera_material", gizmo_color);
 	create_icon_material("camera_icon", EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("GizmoCamera3D"), EditorStringName(EditorIcons)));
 	create_handle_material("handles");
-}
-
-Size2i Camera3DGizmoPlugin::_get_viewport_size(Camera3D *p_camera) {
-	Viewport *viewport = p_camera->get_viewport();
-
-	Window *window = Object::cast_to<Window>(viewport);
-	if (window) {
-		return window->get_size();
-	}
-
-	SubViewport *sub_viewport = Object::cast_to<SubViewport>(viewport);
-	ERR_FAIL_NULL_V(sub_viewport, Size2i());
-
-	if (sub_viewport == EditorNode::get_singleton()->get_scene_root()) {
-		return Size2(GLOBAL_GET("display/window/size/viewport_width"), GLOBAL_GET("display/window/size/viewport_height"));
-	}
-
-	return sub_viewport->get_size();
 }
 
 bool Camera3DGizmoPlugin::has_gizmo(Node3D *p_spatial) {
@@ -112,9 +93,12 @@ void Camera3DGizmoPlugin::set_handle(const EditorNode3DGizmo *p_gizmo, int p_id,
 		float a = _find_closest_angle_to_half_pi_arc(s[0], s[1], 1.0, gt2);
 		camera->set("fov", CLAMP(a * 2.0, 1, 179));
 	} else {
+		Camera3D::KeepAspect aspect = camera->get_keep_aspect_mode();
+		Vector3 camera_far = aspect == Camera3D::KeepAspect::KEEP_WIDTH ? Vector3(4096, 0, -1) : Vector3(0, 4096, -1);
+
 		Vector3 ra, rb;
-		Geometry3D::get_closest_points_between_segments(Vector3(0, 0, -1), Vector3(4096, 0, -1), s[0], s[1], ra, rb);
-		float d = ra.x * 2;
+		Geometry3D::get_closest_points_between_segments(Vector3(0, 0, -1), camera_far, s[0], s[1], ra, rb);
+		float d = aspect == Camera3D::KeepAspect::KEEP_WIDTH ? ra.x * 2 : ra.y * 2;
 		if (Node3DEditor::get_singleton()->is_snap_enabled()) {
 			d = Math::snapped(d, Node3DEditor::get_singleton()->get_translate_snap());
 		}
@@ -163,7 +147,7 @@ void Camera3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 	Ref<Material> material = get_material("camera_material", p_gizmo);
 	Ref<Material> icon = get_material("camera_icon", p_gizmo);
 
-	const Size2i viewport_size = _get_viewport_size(camera);
+	const Size2i viewport_size = Node3DEditor::get_camera_viewport_size(camera);
 	const real_t viewport_aspect = viewport_size.x > 0 && viewport_size.y > 0 ? viewport_size.aspect() : 1.0;
 	const Size2 size_factor = viewport_aspect > 1.0 ? Size2(1.0, 1.0 / viewport_aspect) : Size2(viewport_aspect, 1.0);
 
@@ -213,25 +197,33 @@ void Camera3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 		} break;
 
 		case Camera3D::PROJECTION_ORTHOGONAL: {
-			float size = camera->get_size();
+			Camera3D::KeepAspect aspect = camera->get_keep_aspect_mode();
 
-			float hsize = size * 0.5;
-			Vector3 right(hsize * size_factor.x, 0, 0);
-			Vector3 up(0, hsize * size_factor.y, 0);
+			float size = camera->get_size();
+			float keep_size = size * 0.5;
+
+			Vector3 right, up;
 			Vector3 back(0, 0, -1.0);
 			Vector3 front(0, 0, 0);
+
+			if (aspect == Camera3D::KeepAspect::KEEP_WIDTH) {
+				right = Vector3(keep_size, 0, 0);
+				up = Vector3(0, keep_size / viewport_aspect, 0);
+				handles.push_back(right + back);
+			} else {
+				right = Vector3(keep_size * viewport_aspect, 0, 0);
+				up = Vector3(0, keep_size, 0);
+				handles.push_back(up + back);
+			}
 
 			ADD_QUAD(-up - right, -up + right, up + right, up - right);
 			ADD_QUAD(-up - right + back, -up + right + back, up + right + back, up - right + back);
 			ADD_QUAD(up + right, up + right + back, up - right + back, up - right);
 			ADD_QUAD(-up + right, -up + right + back, -up - right + back, -up - right);
 
-			handles.push_back(right + back);
-
-			right.x = MIN(right.x, hsize * 0.25);
-			Vector3 tup(0, up.y + hsize / 2, back.z);
+			right.x = MIN(right.x, keep_size * 0.25);
+			Vector3 tup(0, up.y + keep_size / 2, back.z);
 			ADD_TRIANGLE(tup, right + up + back, -right + up + back);
-
 		} break;
 
 		case Camera3D::PROJECTION_FRUSTUM: {

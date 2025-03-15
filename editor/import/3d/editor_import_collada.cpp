@@ -30,20 +30,17 @@
 
 #include "editor_import_collada.h"
 
-#include "core/os/os.h"
-#include "editor/editor_node.h"
+#include "core/config/project_settings.h"
 #include "editor/import/3d/collada.h"
 #include "scene/3d/camera_3d.h"
 #include "scene/3d/importer_mesh_instance_3d.h"
 #include "scene/3d/light_3d.h"
-#include "scene/3d/mesh_instance_3d.h"
 #include "scene/3d/node_3d.h"
 #include "scene/3d/path_3d.h"
 #include "scene/3d/skeleton_3d.h"
 #include "scene/animation/animation_player.h"
 #include "scene/resources/3d/importer_mesh.h"
 #include "scene/resources/animation.h"
-#include "scene/resources/packed_scene.h"
 #include "scene/resources/surface_tool.h"
 
 struct ColladaImport {
@@ -996,7 +993,16 @@ Error ColladaImport::_create_mesh_surfaces(bool p_optimize, Ref<ImporterMesh> &p
 				surftool->generate_tangents();
 			}
 
-			if (p_mesh->get_blend_shape_count() != 0 || p_skin_controller) {
+			// Disable compression if all z equals 0 (the mesh is 2D).
+			bool is_mesh_2d = true;
+			for (int k = 0; k < vertex_array.size(); k++) {
+				if (!Math::is_zero_approx(vertex_array[k].vertex.z)) {
+					is_mesh_2d = false;
+					break;
+				}
+			};
+
+			if (p_mesh->get_blend_shape_count() != 0 || p_skin_controller || is_mesh_2d) {
 				// Can't compress if attributes missing or if using vertex weights.
 				mesh_flags &= ~RS::ARRAY_FLAG_COMPRESS_ATTRIBUTES;
 			}
@@ -1254,7 +1260,7 @@ Error ColladaImport::_create_resources(Collada::Node *p_node, bool p_use_compres
 					//bleh, must ignore invalid
 
 					ERR_FAIL_COND_V(!collada.state.mesh_data_map.has(meshid), ERR_INVALID_DATA);
-					mesh = Ref<ImporterMesh>(memnew(ImporterMesh));
+					mesh.instantiate();
 					const Collada::MeshData &meshdata = collada.state.mesh_data_map[meshid];
 					String name = meshdata.name;
 					if (name.is_empty()) {
@@ -1281,7 +1287,7 @@ Error ColladaImport::_create_resources(Collada::Node *p_node, bool p_use_compres
 				}
 			}
 
-			if (!mesh.is_null()) {
+			if (mesh.is_valid()) {
 				mi->set_mesh(mesh);
 				if (!use_mesh_builtin_materials) {
 					const Collada::MeshData &meshdata = collada.state.mesh_data_map[meshid];
@@ -1547,6 +1553,7 @@ void ColladaImport::create_animation(int p_clip, bool p_import_value_tracks) {
 	}
 
 	animation->set_length(anim_length);
+	animation->set_step(snapshot_interval);
 
 	bool tracks_found = false;
 
@@ -1788,10 +1795,6 @@ void ColladaImport::create_animation(int p_clip, bool p_import_value_tracks) {
 /*********************************************************************************/
 /*************************************** SCENE ***********************************/
 /*********************************************************************************/
-
-uint32_t EditorSceneFormatImporterCollada::get_import_flags() const {
-	return IMPORT_SCENE | IMPORT_ANIMATION;
-}
 
 void EditorSceneFormatImporterCollada::get_extensions(List<String> *r_extensions) const {
 	r_extensions->push_back("dae");

@@ -30,10 +30,6 @@
 
 #include "enet_multiplayer_peer.h"
 
-#include "core/io/ip.h"
-#include "core/io/marshalls.h"
-#include "core/os/os.h"
-
 void ENetMultiplayerPeer::set_target_peer(int p_peer) {
 	target_peer = p_peer;
 }
@@ -124,9 +120,9 @@ Error ENetMultiplayerPeer::add_mesh_peer(int p_id, Ref<ENetConnection> p_host) {
 	ERR_FAIL_COND_V_MSG(active_mode != MODE_MESH, ERR_UNCONFIGURED, "The multiplayer instance is not configured as a mesh. Call 'create_mesh' first.");
 	List<Ref<ENetPacketPeer>> host_peers;
 	p_host->get_peers(host_peers);
-	ERR_FAIL_COND_V_MSG(host_peers.size() != 1 || host_peers[0]->get_state() != ENetPacketPeer::STATE_CONNECTED, ERR_INVALID_PARAMETER, "The provided host must have exactly one peer in the connected state.");
+	ERR_FAIL_COND_V_MSG(host_peers.size() != 1 || host_peers.front()->get()->get_state() != ENetPacketPeer::STATE_CONNECTED, ERR_INVALID_PARAMETER, "The provided host must have exactly one peer in the connected state.");
 	hosts[p_id] = p_host;
-	peers[p_id] = host_peers[0];
+	peers[p_id] = host_peers.front()->get();
 	emit_signal(SNAME("peer_connected"), p_id);
 	return OK;
 }
@@ -305,6 +301,7 @@ void ENetMultiplayerPeer::close() {
 	}
 	for (KeyValue<int, Ref<ENetConnection>> &E : hosts) {
 		E.value->flush();
+		E.value->destroy();
 	}
 
 	active_mode = MODE_NONE;

@@ -35,7 +35,8 @@
 
 #include "core/object/class_db.h"
 #include "core/object/worker_thread_pool.h"
-#include "modules/modules_enabled.gen.h" // For csg, gridmap.
+#include "core/templates/rid_owner.h"
+#include "servers/navigation_server_3d.h"
 
 class Node;
 class NavigationMesh;
@@ -46,6 +47,9 @@ class NavMeshGenerator3D : public Object {
 
 	static Mutex baking_navmesh_mutex;
 	static Mutex generator_task_mutex;
+
+	static RWLock generator_parsers_rwlock;
+	static LocalVector<NavMeshGeometryParser3D *> generator_parsers;
 
 	static bool use_threads;
 	static bool baking_use_multiple_threads;
@@ -77,16 +81,6 @@ class NavMeshGenerator3D : public Object {
 	static void generator_parse_source_geometry_data(const Ref<NavigationMesh> &p_navigation_mesh, Ref<NavigationMeshSourceGeometryData3D> p_source_geometry_data, Node *p_root_node);
 	static void generator_bake_from_source_geometry_data(Ref<NavigationMesh> p_navigation_mesh, const Ref<NavigationMeshSourceGeometryData3D> &p_source_geometry_data);
 
-	static void generator_parse_meshinstance3d_node(const Ref<NavigationMesh> &p_navigation_mesh, Ref<NavigationMeshSourceGeometryData3D> p_source_geometry_data, Node *p_node);
-	static void generator_parse_multimeshinstance3d_node(const Ref<NavigationMesh> &p_navigation_mesh, Ref<NavigationMeshSourceGeometryData3D> p_source_geometry_data, Node *p_node);
-	static void generator_parse_staticbody3d_node(const Ref<NavigationMesh> &p_navigation_mesh, Ref<NavigationMeshSourceGeometryData3D> p_source_geometry_data, Node *p_node);
-#ifdef MODULE_CSG_ENABLED
-	static void generator_parse_csgshape3d_node(const Ref<NavigationMesh> &p_navigation_mesh, Ref<NavigationMeshSourceGeometryData3D> p_source_geometry_data, Node *p_node);
-#endif // MODULE_CSG_ENABLED
-#ifdef MODULE_GRIDMAP_ENABLED
-	static void generator_parse_gridmap_node(const Ref<NavigationMesh> &p_navigation_mesh, Ref<NavigationMeshSourceGeometryData3D> p_source_geometry_data, Node *p_node);
-#endif // MODULE_GRIDMAP_ENABLED
-
 	static bool generator_emit_callback(const Callable &p_callback);
 
 public:
@@ -95,6 +89,8 @@ public:
 	static void sync();
 	static void cleanup();
 	static void finish();
+
+	static void set_generator_parsers(LocalVector<NavMeshGeometryParser3D *> p_parsers);
 
 	static void parse_source_geometry_data(Ref<NavigationMesh> p_navigation_mesh, Ref<NavigationMeshSourceGeometryData3D> p_source_geometry_data, Node *p_root_node, const Callable &p_callback = Callable());
 	static void bake_from_source_geometry_data(Ref<NavigationMesh> p_navigation_mesh, Ref<NavigationMeshSourceGeometryData3D> p_source_geometry_data, const Callable &p_callback = Callable());

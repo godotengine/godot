@@ -31,14 +31,12 @@
 #ifndef VERSION_CONTROL_EDITOR_PLUGIN_H
 #define VERSION_CONTROL_EDITOR_PLUGIN_H
 
-#include "editor/editor_plugin.h"
 #include "editor/editor_vcs_interface.h"
+#include "editor/plugins/editor_plugin.h"
 #include "scene/gui/check_button.h"
-#include "scene/gui/container.h"
 #include "scene/gui/file_dialog.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/rich_text_label.h"
-#include "scene/gui/tab_container.h"
 #include "scene/gui/text_edit.h"
 #include "scene/gui/tree.h"
 

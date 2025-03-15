@@ -45,6 +45,7 @@ class EditorSceneFormatImporterBlend : public EditorSceneFormatImporter {
 
 	int blender_major_version = -1;
 	int blender_minor_version = -1;
+	String last_tested_blender_path;
 
 public:
 	enum {
@@ -66,14 +67,13 @@ public:
 		BLEND_MODIFIERS_ALL
 	};
 
-	virtual uint32_t get_import_flags() const override;
 	virtual void get_extensions(List<String> *r_extensions) const override;
 	virtual Node *import_scene(const String &p_path, uint32_t p_flags,
 			const HashMap<StringName, Variant> &p_options,
 			List<String> *r_missing_deps, Error *r_err = nullptr) override;
 	virtual void get_import_options(const String &p_path,
 			List<ResourceImporter::ImportOption> *r_options) override;
-	virtual Variant get_option_visibility(const String &p_path, bool p_for_animation, const String &p_option,
+	virtual Variant get_option_visibility(const String &p_path, const String &p_scene_import_type, const String &p_option,
 			const HashMap<StringName, Variant> &p_options) override;
 };
 
@@ -101,6 +101,8 @@ class EditorFileSystemImportFormatSupportQueryBlend : public EditorFileSystemImp
 
 	void _select_install(String p_path);
 	void _browse_install();
+
+	void _update_icons();
 
 public:
 	virtual bool is_active() const override;

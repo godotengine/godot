@@ -259,12 +259,14 @@ Error RenderingDeviceDriver::_reflect_spirv(VectorView<ShaderStageSPIRVData> p_s
 							}
 						}
 
-						if (existing > 0) {
+						if (existing >= 0) {
 							r_reflection.specialization_constants.write[existing].stages.set_flag(stage_flag);
 						} else {
 							r_reflection.specialization_constants.push_back(sconst);
 						}
 					}
+
+					r_reflection.specialization_constants.sort();
 				}
 			}
 
@@ -370,6 +372,12 @@ uint64_t RenderingDeviceDriver::api_trait_get(ApiTrait p_trait) {
 			return 1;
 		case API_TRAIT_SECONDARY_VIEWPORT_SCISSOR:
 			return 1;
+		case API_TRAIT_CLEARS_WITH_COPY_ENGINE:
+			return true;
+		case API_TRAIT_USE_GENERAL_IN_COPY_QUEUES:
+			return false;
+		case API_TRAIT_BUFFERS_REQUIRE_TRANSITIONS:
+			return false;
 		default:
 			ERR_FAIL_V(0);
 	}

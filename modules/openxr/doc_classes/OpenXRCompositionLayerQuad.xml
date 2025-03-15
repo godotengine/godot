@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="OpenXRCompositionLayerQuad" inherits="OpenXRCompositionLayer" experimental="" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		An OpenXR composition layer that is rendered as a quad.
+	</brief_description>
+	<description>
+		An OpenXR composition layer that allows rendering a [SubViewport] on a quad.
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="quad_size" type="Vector2" setter="set_quad_size" getter="get_quad_size" default="Vector2(1, 1)">
+			The dimensions of the quad.
+		</member>
+	</members>
+</class>

@@ -46,9 +46,9 @@
  *
  */
 
-template <class TKey,
-		class Hasher = HashMapHasherDefault,
-		class Comparator = HashMapComparatorDefault<TKey>>
+template <typename TKey,
+		typename Hasher = HashMapHasherDefault,
+		typename Comparator = HashMapComparatorDefault<TKey>>
 class HashSet {
 public:
 	static constexpr uint32_t MIN_CAPACITY_INDEX = 2; // Use a prime.
@@ -443,6 +443,13 @@ public:
 	}
 	HashSet() {
 		capacity_index = MIN_CAPACITY_INDEX;
+	}
+
+	HashSet(std::initializer_list<TKey> p_init) {
+		reserve(p_init.size());
+		for (const TKey &E : p_init) {
+			insert(E);
+		}
 	}
 
 	void reset() {

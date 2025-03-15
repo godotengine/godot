@@ -174,9 +174,9 @@ vec3 reconstruct_position(ivec2 screen_pos) {
 
 		pos.z = pos.z * 2.0 - 1.0;
 		if (params.orthogonal) {
-			pos.z = ((pos.z + (params.z_far + params.z_near) / (params.z_far - params.z_near)) * (params.z_far - params.z_near)) / 2.0;
+			pos.z = -(pos.z * (params.z_far - params.z_near) - (params.z_far + params.z_near)) / 2.0;
 		} else {
-			pos.z = 2.0 * params.z_near * params.z_far / (params.z_far + params.z_near - pos.z * (params.z_far - params.z_near));
+			pos.z = 2.0 * params.z_near * params.z_far / (params.z_far + params.z_near + pos.z * (params.z_far - params.z_near));
 		}
 		pos.z = -pos.z;
 

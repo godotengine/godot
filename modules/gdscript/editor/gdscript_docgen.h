@@ -49,6 +49,8 @@ class GDScriptDocGen {
 
 public:
 	static void generate_docs(GDScript *p_script, const GDP::ClassNode *p_class);
+	static void doctype_from_gdtype(const GDType &p_gdtype, String &r_type, String &r_enum, bool p_is_return = false);
+	static String docvalue_from_expression(const GDP::ExpressionNode *p_expression);
 };
 
 #endif // GDSCRIPT_DOCGEN_H

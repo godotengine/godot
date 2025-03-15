@@ -36,7 +36,7 @@ namespace embree
 
         __forceinline SubGridQuadMIntersector1Pluecker(const Ray& ray, const void* ptr) {}
 
-        __forceinline void intersect(RayHit& ray, IntersectContext* context,
+        __forceinline void intersect(RayHit& ray, RayQueryContext* context,
                                      const Vec3vf<M>& v0, const Vec3vf<M>& v1, const Vec3vf<M>& v2, const Vec3vf<M>& v3,
                                      const GridMesh::Grid &g, const SubGrid& subgrid) const
         {
@@ -63,7 +63,7 @@ namespace embree
           }
         }
       
-        __forceinline bool occluded(Ray& ray, IntersectContext* context,
+        __forceinline bool occluded(Ray& ray, RayQueryContext* context,
                                     const Vec3vf<M>& v0, const Vec3vf<M>& v1, const Vec3vf<M>& v2, const Vec3vf<M>& v3,
                                     const GridMesh::Grid &g, const SubGrid& subgrid) const
         {
@@ -134,14 +134,14 @@ namespace embree
         return false;
       }
       
-      __forceinline bool intersect(RayHit& ray, IntersectContext* context,
+      __forceinline bool intersect(RayHit& ray, RayQueryContext* context,
                                    const Vec3vf4& v0, const Vec3vf4& v1, const Vec3vf4& v2, const Vec3vf4& v3, 
                                    const GridMesh::Grid &g, const SubGrid& subgrid) const
       {
           return intersect(ray,v0,v1,v2,v3,g,subgrid,Intersect1EpilogMU<8,filter>(ray,context,subgrid.geomID(),subgrid.primID()));
       }
       
-      __forceinline bool occluded(Ray& ray, IntersectContext* context,
+      __forceinline bool occluded(Ray& ray, RayQueryContext* context,
                                   const Vec3vf4& v0, const Vec3vf4& v1, const Vec3vf4& v2, const Vec3vf4& v3, 
                                   const GridMesh::Grid &g, const SubGrid& subgrid) const
       {
@@ -255,7 +255,7 @@ namespace embree
       __forceinline SubGridQuadMIntersectorKPluecker(const vbool<K>& valid, const RayK<K>& ray)
         : SubGridQuadMIntersectorKPlueckerBase<M,K,filter>(valid,ray) {}
 
-      __forceinline void intersect1(RayHitK<K>& ray, size_t k, IntersectContext* context,
+      __forceinline void intersect1(RayHitK<K>& ray, size_t k, RayQueryContext* context,
                                     const Vec3vf<M>& v0, const Vec3vf<M>& v1, const Vec3vf<M>& v2, const Vec3vf<M>& v3, const GridMesh::Grid &g, const SubGrid &subgrid) const
       {
 	UVIdentity<M> mapUV;
@@ -280,7 +280,7 @@ namespace embree
           }
       }
       
-      __forceinline bool occluded1(RayK<K>& ray, size_t k, IntersectContext* context,
+      __forceinline bool occluded1(RayK<K>& ray, size_t k, RayQueryContext* context,
                                    const Vec3vf<M>& v0, const Vec3vf<M>& v1, const Vec3vf<M>& v2, const Vec3vf<M>& v3, const GridMesh::Grid &g, const SubGrid &subgrid) const
       {
 	UVIdentity<M> mapUV;
@@ -348,13 +348,13 @@ namespace embree
         return false;
       }
       
-      __forceinline bool intersect1(RayHitK<K>& ray, size_t k, IntersectContext* context,
+      __forceinline bool intersect1(RayHitK<K>& ray, size_t k, RayQueryContext* context,
                                     const Vec3vf4& v0, const Vec3vf4& v1, const Vec3vf4& v2, const Vec3vf4& v3, const GridMesh::Grid &g, const SubGrid &subgrid) const
       {
         return intersect1(ray,k,v0,v1,v2,v3,g,subgrid,Intersect1KEpilogMU<8,K,filter>(ray,k,context,subgrid.geomID(),subgrid.primID()));
       }
       
-      __forceinline bool occluded1(RayK<K>& ray, size_t k, IntersectContext* context,
+      __forceinline bool occluded1(RayK<K>& ray, size_t k, RayQueryContext* context,
                                    const Vec3vf4& v0, const Vec3vf4& v1, const Vec3vf4& v2, const Vec3vf4& v3, const GridMesh::Grid &g, const SubGrid &subgrid) const
       {
         return intersect1(ray,k,v0,v1,v2,v3,g,subgrid,Occluded1KEpilogMU<8,K,filter>(ray,k,context,subgrid.geomID(),subgrid.primID()));

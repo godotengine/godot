@@ -6,3 +6,4 @@ var test: A = $A
 
 func a():
     test.➡
+    pass

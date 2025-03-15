@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="XRTracker" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A tracked object.
+	</brief_description>
+	<description>
+		This object is the base of all XR trackers.
+	</description>
+	<tutorials>
+		<link title="XR documentation index">$DOCS_URL/tutorials/xr/index.html</link>
+	</tutorials>
+	<members>
+		<member name="description" type="String" setter="set_tracker_desc" getter="get_tracker_desc" default="&quot;&quot;">
+			The description of this tracker.
+		</member>
+		<member name="name" type="StringName" setter="set_tracker_name" getter="get_tracker_name" default="&amp;&quot;Unknown&quot;">
+			The unique name of this tracker. The trackers that are available differ between various XR runtimes and can often be configured by the user. Godot maintains a number of reserved names that it expects the [XRInterface] to implement if applicable:
+			- [code]head[/code] identifies the [XRPositionalTracker] of the players head
+			- [code]left_hand[/code] identifies the [XRControllerTracker] in the players left hand
+			- [code]right_hand[/code] identifies the [XRControllerTracker] in the players right hand
+			- [code]/user/hand_tracker/left[/code] identifies the [XRHandTracker] for the players left hand
+			- [code]/user/hand_tracker/right[/code] identifies the [XRHandTracker] for the players right hand
+			- [code]/user/body_tracker[/code] identifies the [XRBodyTracker] for the players body
+			- [code]/user/face_tracker[/code] identifies the [XRFaceTracker] for the players face
+		</member>
+		<member name="type" type="int" setter="set_tracker_type" getter="get_tracker_type" enum="XRServer.TrackerType" default="128">
+			The type of tracker.
+		</member>
+	</members>
+</class>

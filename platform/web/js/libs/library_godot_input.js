@@ -38,34 +38,57 @@ const GodotIME = {
 	$GodotIME: {
 		ime: null,
 		active: false,
+		focusTimerIntervalId: -1,
 
 		getModifiers: function (evt) {
 			return (evt.shiftKey + 0) + ((evt.altKey + 0) << 1) + ((evt.ctrlKey + 0) << 2) + ((evt.metaKey + 0) << 3);
 		},
 
 		ime_active: function (active) {
-			function focus_timer() {
-				GodotIME.active = true;
+			function clearFocusTimerInterval() {
+				clearInterval(GodotIME.focusTimerIntervalId);
+				GodotIME.focusTimerIntervalId = -1;
+			}
+
+			function focusTimer() {
+				if (GodotIME.ime == null) {
+					clearFocusTimerInterval();
+					return;
+				}
 				GodotIME.ime.focus();
 			}
 
-			if (GodotIME.ime) {
-				if (active) {
-					GodotIME.ime.style.display = 'block';
-					setInterval(focus_timer, 100);
-				} else {
-					GodotIME.ime.style.display = 'none';
-					GodotConfig.canvas.focus();
-					GodotIME.active = false;
-				}
+			if (GodotIME.focusTimerIntervalId > -1) {
+				clearFocusTimerInterval();
+			}
+
+			if (GodotIME.ime == null) {
+				return;
+			}
+
+			GodotIME.active = active;
+			if (active) {
+				GodotIME.ime.style.display = 'block';
+				GodotIME.focusTimerIntervalId = setInterval(focusTimer, 100);
+			} else {
+				GodotIME.ime.style.display = 'none';
+				GodotConfig.canvas.focus();
 			}
 		},
 
 		ime_position: function (x, y) {
-			if (GodotIME.ime) {
-				GodotIME.ime.style.left = `${x}px`;
-				GodotIME.ime.style.top = `${y}px`;
+			if (GodotIME.ime == null) {
+				return;
 			}
+			const canvas = GodotConfig.canvas;
+			const rect = canvas.getBoundingClientRect();
+			const rw = canvas.width / rect.width;
+			const rh = canvas.height / rect.height;
+			const clx = (x / rw) + rect.x;
+			const cly = (y / rh) + rect.y;
+
+			GodotIME.ime.style.left = `${clx}px`;
+			GodotIME.ime.style.top = `${cly}px`;
 		},
 
 		init: function (ime_cb, key_cb, code, key) {
@@ -77,20 +100,27 @@ const GodotIME = {
 				evt.preventDefault();
 			}
 			function ime_event_cb(event) {
-				if (GodotIME.ime) {
-					if (event.type === 'compositionstart') {
-						ime_cb(0, null);
-						GodotIME.ime.innerHTML = '';
-					} else if (event.type === 'compositionupdate') {
-						const ptr = GodotRuntime.allocString(event.data);
-						ime_cb(1, ptr);
-						GodotRuntime.free(ptr);
-					} else if (event.type === 'compositionend') {
-						const ptr = GodotRuntime.allocString(event.data);
-						ime_cb(2, ptr);
-						GodotRuntime.free(ptr);
-						GodotIME.ime.innerHTML = '';
-					}
+				if (GodotIME.ime == null) {
+					return;
+				}
+				switch (event.type) {
+				case 'compositionstart':
+					ime_cb(0, null);
+					GodotIME.ime.innerHTML = '';
+					break;
+				case 'compositionupdate': {
+					const ptr = GodotRuntime.allocString(event.data);
+					ime_cb(1, ptr);
+					GodotRuntime.free(ptr);
+				} break;
+				case 'compositionend': {
+					const ptr = GodotRuntime.allocString(event.data);
+					ime_cb(2, ptr);
+					GodotRuntime.free(ptr);
+					GodotIME.ime.innerHTML = '';
+				} break;
+				default:
+					// Do nothing.
 				}
 			}
 
@@ -99,10 +129,13 @@ const GodotIME = {
 			ime.style.background = 'none';
 			ime.style.opacity = 0.0;
 			ime.style.position = 'fixed';
+			ime.style.textAlign = 'left';
+			ime.style.fontSize = '1px';
 			ime.style.left = '0px';
 			ime.style.top = '0px';
-			ime.style.width = '2px';
-			ime.style.height = '2px';
+			ime.style.width = '100%';
+			ime.style.height = '40px';
+			ime.style.pointerEvents = 'none';
 			ime.style.display = 'none';
 			ime.contentEditable = 'true';
 
@@ -123,10 +156,15 @@ const GodotIME = {
 		},
 
 		clear: function () {
-			if (GodotIME.ime) {
-				GodotIME.ime.remove();
-				GodotIME.ime = null;
+			if (GodotIME.ime == null) {
+				return;
 			}
+			if (GodotIME.focusTimerIntervalId > -1) {
+				clearInterval(GodotIME.focusTimerIntervalId);
+				GodotIME.focusTimerIntervalId = -1;
+			}
+			GodotIME.ime.remove();
+			GodotIME.ime = null;
 		},
 	},
 };

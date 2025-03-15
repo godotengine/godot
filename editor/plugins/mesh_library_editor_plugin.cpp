@@ -40,10 +40,8 @@
 #include "main/main.h"
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/3d/navigation_region_3d.h"
-#include "scene/3d/physics/physics_body_3d.h"
 #include "scene/3d/physics/static_body_3d.h"
 #include "scene/gui/menu_button.h"
-#include "scene/main/window.h"
 #include "scene/resources/packed_scene.h"
 
 void MeshLibraryEditor::edit(const Ref<MeshLibrary> &p_mesh_library) {
@@ -156,6 +154,25 @@ void MeshLibraryEditor::_import_scene_parse_node(Ref<MeshLibrary> p_library, Has
 	}
 	p_library->set_item_mesh(item_id, item_mesh);
 
+	GeometryInstance3D::ShadowCastingSetting gi3d_cast_shadows_setting = mesh_instance_node->get_cast_shadows_setting();
+	switch (gi3d_cast_shadows_setting) {
+		case GeometryInstance3D::ShadowCastingSetting::SHADOW_CASTING_SETTING_OFF: {
+			p_library->set_item_mesh_cast_shadow(item_id, RS::ShadowCastingSetting::SHADOW_CASTING_SETTING_OFF);
+		} break;
+		case GeometryInstance3D::ShadowCastingSetting::SHADOW_CASTING_SETTING_ON: {
+			p_library->set_item_mesh_cast_shadow(item_id, RS::ShadowCastingSetting::SHADOW_CASTING_SETTING_ON);
+		} break;
+		case GeometryInstance3D::ShadowCastingSetting::SHADOW_CASTING_SETTING_DOUBLE_SIDED: {
+			p_library->set_item_mesh_cast_shadow(item_id, RS::ShadowCastingSetting::SHADOW_CASTING_SETTING_DOUBLE_SIDED);
+		} break;
+		case GeometryInstance3D::ShadowCastingSetting::SHADOW_CASTING_SETTING_SHADOWS_ONLY: {
+			p_library->set_item_mesh_cast_shadow(item_id, RS::ShadowCastingSetting::SHADOW_CASTING_SETTING_SHADOWS_ONLY);
+		} break;
+		default: {
+			p_library->set_item_mesh_cast_shadow(item_id, RS::ShadowCastingSetting::SHADOW_CASTING_SETTING_ON);
+		} break;
+	}
+
 	Transform3D item_mesh_transform;
 	if (p_apply_xforms) {
 		item_mesh_transform = mesh_instance_node->get_transform();
@@ -181,7 +198,7 @@ void MeshLibraryEditor::_import_scene_parse_node(Ref<MeshLibrary> p_library, Has
 			shape_transform *= static_body_node->get_transform() * static_body_node->shape_owner_get_transform(E);
 			for (int k = 0; k < static_body_node->shape_owner_get_shape_count(E); k++) {
 				Ref<Shape3D> collision_shape = static_body_node->shape_owner_get_shape(E, k);
-				if (!collision_shape.is_valid()) {
+				if (collision_shape.is_null()) {
 					continue;
 				}
 				MeshLibrary::ShapeData shape_data;
@@ -199,7 +216,7 @@ void MeshLibraryEditor::_import_scene_parse_node(Ref<MeshLibrary> p_library, Has
 			continue;
 		}
 		Ref<NavigationMesh> navigation_mesh = navigation_region_node->get_navigation_mesh();
-		if (!navigation_mesh.is_null()) {
+		if (navigation_mesh.is_valid()) {
 			Transform3D navigation_mesh_transform = navigation_region_node->get_transform();
 			p_library->set_item_navigation_mesh(item_id, navigation_mesh);
 			p_library->set_item_navigation_mesh_transform(item_id, navigation_mesh_transform);
@@ -242,9 +259,6 @@ void MeshLibraryEditor::_menu_cbk(int p_option) {
 	}
 }
 
-void MeshLibraryEditor::_bind_methods() {
-}
-
 MeshLibraryEditor::MeshLibraryEditor() {
 	file = memnew(EditorFileDialog);
 	file->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
@@ -253,8 +267,8 @@ MeshLibraryEditor::MeshLibraryEditor() {
 	ResourceLoader::get_recognized_extensions_for_type("PackedScene", &extensions);
 	file->clear_filters();
 	file->set_title(TTR("Import Scene"));
-	for (int i = 0; i < extensions.size(); i++) {
-		file->add_filter("*." + extensions[i], extensions[i].to_upper());
+	for (const String &extension : extensions) {
+		file->add_filter("*." + extension, extension.to_upper());
 	}
 	add_child(file);
 	file->connect("file_selected", callable_mp(this, &MeshLibraryEditor::_import_scene_cbk));
@@ -263,7 +277,7 @@ MeshLibraryEditor::MeshLibraryEditor() {
 	Node3DEditor::get_singleton()->add_control_to_menu_panel(menu);
 	menu->set_position(Point2(1, 1));
 	menu->set_text(TTR("MeshLibrary"));
-	menu->set_icon(EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("MeshLibrary"), EditorStringName(EditorIcons)));
+	menu->set_button_icon(EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("MeshLibrary"), EditorStringName(EditorIcons)));
 	menu->get_popup()->add_item(TTR("Add Item"), MENU_OPTION_ADD_ITEM);
 	menu->get_popup()->add_item(TTR("Remove Selected Item"), MENU_OPTION_REMOVE_ITEM);
 	menu->get_popup()->add_separator();
@@ -271,17 +285,17 @@ MeshLibraryEditor::MeshLibraryEditor() {
 	menu->get_popup()->add_item(TTR("Import from Scene (Apply Transforms)"), MENU_OPTION_IMPORT_FROM_SCENE_APPLY_XFORMS);
 	menu->get_popup()->add_item(TTR("Update from Scene"), MENU_OPTION_UPDATE_FROM_SCENE);
 	menu->get_popup()->set_item_disabled(menu->get_popup()->get_item_index(MENU_OPTION_UPDATE_FROM_SCENE), true);
-	menu->get_popup()->connect("id_pressed", callable_mp(this, &MeshLibraryEditor::_menu_cbk));
+	menu->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &MeshLibraryEditor::_menu_cbk));
 	menu->hide();
 
 	cd_remove = memnew(ConfirmationDialog);
 	add_child(cd_remove);
-	cd_remove->get_ok_button()->connect("pressed", callable_mp(this, &MeshLibraryEditor::_menu_remove_confirm));
+	cd_remove->get_ok_button()->connect(SceneStringName(pressed), callable_mp(this, &MeshLibraryEditor::_menu_remove_confirm));
 	cd_update = memnew(ConfirmationDialog);
 	add_child(cd_update);
 	cd_update->set_ok_button_text(TTR("Apply without Transforms"));
-	cd_update->get_ok_button()->connect("pressed", callable_mp(this, &MeshLibraryEditor::_menu_update_confirm).bind(false));
-	cd_update->add_button(TTR("Apply with Transforms"))->connect("pressed", callable_mp(this, &MeshLibraryEditor::_menu_update_confirm).bind(true));
+	cd_update->get_ok_button()->connect(SceneStringName(pressed), callable_mp(this, &MeshLibraryEditor::_menu_update_confirm).bind(false));
+	cd_update->add_button(TTR("Apply with Transforms"))->connect(SceneStringName(pressed), callable_mp(this, &MeshLibraryEditor::_menu_update_confirm).bind(true));
 }
 
 void MeshLibraryEditorPlugin::edit(Object *p_node) {
@@ -311,7 +325,7 @@ void MeshLibraryEditorPlugin::make_visible(bool p_visible) {
 MeshLibraryEditorPlugin::MeshLibraryEditorPlugin() {
 	mesh_library_editor = memnew(MeshLibraryEditor);
 
-	EditorNode::get_singleton()->get_main_screen_control()->add_child(mesh_library_editor);
+	EditorNode::get_singleton()->get_gui_base()->add_child(mesh_library_editor);
 	mesh_library_editor->set_anchors_and_offsets_preset(Control::PRESET_TOP_WIDE);
 	mesh_library_editor->set_end(Point2(0, 22));
 	mesh_library_editor->hide();

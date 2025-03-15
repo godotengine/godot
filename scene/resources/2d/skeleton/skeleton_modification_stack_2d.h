@@ -31,8 +31,7 @@
 #ifndef SKELETON_MODIFICATION_STACK_2D_H
 #define SKELETON_MODIFICATION_STACK_2D_H
 
-#include "scene/2d/skeleton_2d.h"
-#include "scene/resources/2d/skeleton/skeleton_modification_2d.h"
+#include "core/io/resource.h"
 
 ///////////////////////////////////////
 // SkeletonModificationStack2D
@@ -64,7 +63,7 @@ public:
 		execution_mode_physics_process
 	};
 
-	Vector<Ref<SkeletonModification2D>> modifications = Vector<Ref<SkeletonModification2D>>();
+	Vector<Ref<SkeletonModification2D>> modifications;
 
 	void setup();
 	void execute(float p_delta, int p_execution_mode);

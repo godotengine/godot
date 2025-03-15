@@ -63,7 +63,7 @@
 
 		    public override string[] _GetRecognizedExtensions()
 		    {
-		        return new string[] { "special", "spec" };
+		        return ["special", "spec"];
 		    }
 
 		    public override string _GetSaveExtension()
@@ -88,28 +88,28 @@
 
 		    public override Godot.Collections.Array&lt;Godot.Collections.Dictionary&gt; _GetImportOptions(string path, int presetIndex)
 		    {
-		        return new Godot.Collections.Array&lt;Godot.Collections.Dictionary&gt;
-		        {
+		        return
+		        [
 		            new Godot.Collections.Dictionary
 		            {
 		                { "name", "myOption" },
 		                { "default_value", false },
-		            }
-		        };
+		            },
+		        ];
 		    }
 
-		    public override int _Import(string sourceFile, string savePath, Godot.Collections.Dictionary options, Godot.Collections.Array&lt;string&gt; platformVariants, Godot.Collections.Array&lt;string&gt; genFiles)
+		    public override Error _Import(string sourceFile, string savePath, Godot.Collections.Dictionary options, Godot.Collections.Array&lt;string&gt; platformVariants, Godot.Collections.Array&lt;string&gt; genFiles)
 		    {
 		        using var file = FileAccess.Open(sourceFile, FileAccess.ModeFlags.Read);
 		        if (file.GetError() != Error.Ok)
 		        {
-		            return (int)Error.Failed;
+		            return Error.Failed;
 		        }
 
 		        var mesh = new ArrayMesh();
 		        // Fill the Mesh with data read in "file", left as an exercise to the reader.
 		        string filename = $"{savePath}.{_GetSaveExtension()}";
-		        return (int)ResourceSaver.Save(mesh, filename);
+		        return ResourceSaver.Save(mesh, filename);
 		    }
 		}
 		[/csharp]
@@ -124,7 +124,14 @@
 			<return type="bool" />
 			<description>
 				Tells whether this importer can be run in parallel on threads, or, on the contrary, it's only safe for the editor to call it from the main thread, for one file at a time.
-				If this method is not overridden, it will return [code]true[/code] by default (i.e., safe for parallel importing).
+				If this method is not overridden, it will return [code]false[/code] by default.
+				If this importer's implementation is thread-safe and can be run in parallel, override this with [code]true[/code] to optimize for concurrency.
+			</description>
+		</method>
+		<method name="_get_format_version" qualifiers="virtual const">
+			<return type="int" />
+			<description>
+				Gets the format version of this importer. Increment this version when making incompatible changes to the format of the imported resources.
 			</description>
 		</method>
 		<method name="_get_import_options" qualifiers="virtual const">
@@ -153,7 +160,7 @@
 			<param index="1" name="option_name" type="StringName" />
 			<param index="2" name="options" type="Dictionary" />
 			<description>
-				This method can be overridden to hide specific import options if conditions are met. This is mainly useful for hiding options that depend on others if one of them is disabled. For example:
+				This method can be overridden to hide specific import options if conditions are met. This is mainly useful for hiding options that depend on others if one of them is disabled.
 				[codeblocks]
 				[gdscript]
 				func _get_option_visibility(option, options):
@@ -241,7 +248,7 @@
 			<param index="2" name="custom_importer" type="String" default="&quot;&quot;" />
 			<param index="3" name="generator_parameters" type="Variant" default="null" />
 			<description>
-				This function can only be called during the [method _import] callback and it allows manually importing resources from it. This is useful when the imported file generates external resources that require importing (as example, images). Custom parameters for the ".import" file can be passed via the [param custom_options]. Additionally, in cases where multiple importers can handle a file, the [param custom_importer] ca be specified to force a specific one. This function performs a resource import and returns immediately with a success or error code. [param generator_parameters] defines optional extra metadata which will be stored as [code skip-lint]generator_parameters[/code] in the [code]remap[/code] section of the [code].import[/code] file, for example to store a md5 hash of the source data.
+				This function can only be called during the [method _import] callback and it allows manually importing resources from it. This is useful when the imported file generates external resources that require importing (as example, images). Custom parameters for the ".import" file can be passed via the [param custom_options]. Additionally, in cases where multiple importers can handle a file, the [param custom_importer] can be specified to force a specific one. This function performs a resource import and returns immediately with a success or error code. [param generator_parameters] defines optional extra metadata which will be stored as [code skip-lint]generator_parameters[/code] in the [code]remap[/code] section of the [code].import[/code] file, for example to store a md5 hash of the source data.
 			</description>
 		</method>
 	</methods>

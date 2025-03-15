@@ -58,7 +58,7 @@ extern "C" {
 // For ArrayPrivate and DictionaryPrivate
 static_assert(sizeof(SafeRefCount) == sizeof(uint32_t));
 
-typedef Object *(*godotsharp_class_creation_func)();
+typedef Object *(*godotsharp_class_creation_func)(bool);
 
 bool godotsharp_dotnet_module_is_initialized() {
 	return GDMono::get_singleton()->is_initialized();
@@ -239,7 +239,7 @@ GCHandleIntPtr godotsharp_internal_unmanaged_get_instance_binding_managed(Object
 	CRASH_COND(!p_unmanaged);
 #endif
 
-	void *data = CSharpLanguage::get_instance_binding(p_unmanaged);
+	void *data = CSharpLanguage::get_instance_binding_with_setup(p_unmanaged);
 	ERR_FAIL_NULL_V(data, { nullptr });
 	CSharpScriptBinding &script_binding = ((RBMap<Object *, CSharpScriptBinding>::Element *)data)->value();
 	ERR_FAIL_COND_V(!script_binding.inited, { nullptr });
@@ -252,7 +252,7 @@ GCHandleIntPtr godotsharp_internal_unmanaged_instance_binding_create_managed(Obj
 	CRASH_COND(!p_unmanaged);
 #endif
 
-	void *data = CSharpLanguage::get_instance_binding(p_unmanaged);
+	void *data = CSharpLanguage::get_instance_binding_with_setup(p_unmanaged);
 	ERR_FAIL_NULL_V(data, { nullptr });
 	CSharpScriptBinding &script_binding = ((RBMap<Object *, CSharpScriptBinding>::Element *)data)->value();
 	ERR_FAIL_COND_V(!script_binding.inited, { nullptr });
@@ -315,13 +315,13 @@ void godotsharp_internal_new_csharp_script(Ref<CSharpScript> *r_dest) {
 	memnew_placement(r_dest, Ref<CSharpScript>(memnew(CSharpScript)));
 }
 
-void godotsharp_internal_editor_file_system_update_file(const String *p_script_path) {
+void godotsharp_internal_editor_file_system_update_files(const PackedStringArray &p_script_paths) {
 #ifdef TOOLS_ENABLED
 	// If the EditorFileSystem singleton is available, update the file;
 	// otherwise, the file will be updated when the singleton becomes available.
 	EditorFileSystem *efs = EditorFileSystem::get_singleton();
 	if (efs) {
-		efs->update_file(*p_script_path);
+		efs->update_files(p_script_paths);
 	}
 #else
 	// EditorFileSystem is only available when running in the Godot editor.
@@ -461,6 +461,16 @@ godot_packed_array godotsharp_packed_vector3_array_new_mem_copy(const Vector3 *p
 	return ret;
 }
 
+godot_packed_array godotsharp_packed_vector4_array_new_mem_copy(const Vector4 *p_src, int32_t p_length) {
+	godot_packed_array ret;
+	memnew_placement(&ret, PackedVector4Array);
+	PackedVector4Array *array = reinterpret_cast<PackedVector4Array *>(&ret);
+	array->resize(p_length);
+	Vector4 *dst = array->ptrw();
+	memcpy(dst, p_src, p_length * sizeof(Vector4));
+	return ret;
+}
+
 godot_packed_array godotsharp_packed_color_array_new_mem_copy(const Color *p_src, int32_t p_length) {
 	godot_packed_array ret;
 	memnew_placement(&ret, PackedColorArray);
@@ -547,6 +557,18 @@ godot_color godotsharp_color_from_ok_hsl(float p_h, float p_s, float p_l, float 
 	Color *dest = (Color *)&ret;
 	memnew_placement(dest, Color(Color::from_ok_hsl(p_h, p_s, p_l, p_alpha)));
 	return ret;
+}
+
+float godotsharp_color_get_ok_hsl_h(const Color *p_self) {
+	return p_self->get_ok_hsl_h();
+}
+
+float godotsharp_color_get_ok_hsl_s(const Color *p_self) {
+	return p_self->get_ok_hsl_s();
+}
+
+float godotsharp_color_get_ok_hsl_l(const Color *p_self) {
+	return p_self->get_ok_hsl_l();
 }
 
 // GDNative functions
@@ -644,6 +666,10 @@ void godotsharp_variant_new_packed_vector2_array(godot_variant *r_dest, const Pa
 
 void godotsharp_variant_new_packed_vector3_array(godot_variant *r_dest, const PackedVector3Array *p_pv3a) {
 	memnew_placement(r_dest, Variant(*p_pv3a));
+}
+
+void godotsharp_variant_new_packed_vector4_array(godot_variant *r_dest, const PackedVector4Array *p_pv4a) {
+	memnew_placement(r_dest, Variant(*p_pv4a));
 }
 
 void godotsharp_variant_new_packed_color_array(godot_variant *r_dest, const PackedColorArray *p_pca) {
@@ -886,6 +912,13 @@ godot_packed_array godotsharp_variant_as_packed_vector3_array(const Variant *p_s
 	return raw_dest;
 }
 
+godot_packed_array godotsharp_variant_as_packed_vector4_array(const Variant *p_self) {
+	godot_packed_array raw_dest;
+	PackedVector4Array *dest = (PackedVector4Array *)&raw_dest;
+	memnew_placement(dest, PackedVector4Array(p_self->operator PackedVector4Array()));
+	return raw_dest;
+}
+
 godot_packed_array godotsharp_variant_as_packed_color_array(const Variant *p_self) {
 	godot_packed_array raw_dest;
 	PackedColorArray *dest = (PackedColorArray *)&raw_dest;
@@ -972,6 +1005,10 @@ void godotsharp_packed_vector2_array_destroy(PackedVector2Array *p_self) {
 
 void godotsharp_packed_vector3_array_destroy(PackedVector3Array *p_self) {
 	p_self->~PackedVector3Array();
+}
+
+void godotsharp_packed_vector4_array_destroy(PackedVector4Array *p_self) {
+	p_self->~PackedVector4Array();
 }
 
 void godotsharp_packed_color_array_destroy(PackedColorArray *p_self) {
@@ -1071,6 +1108,20 @@ int32_t godotsharp_array_last_index_of(const Array *p_self, const Variant *p_ite
 
 void godotsharp_array_make_read_only(Array *p_self) {
 	p_self->make_read_only();
+}
+
+void godotsharp_array_set_typed(Array *p_self, uint32_t p_elem_type, const StringName *p_elem_class_name, const Ref<CSharpScript> *p_elem_script) {
+	Variant elem_script_variant;
+	StringName elem_class_name = *p_elem_class_name;
+	if (p_elem_script && p_elem_script->is_valid()) {
+		elem_script_variant = Variant(p_elem_script->ptr());
+		elem_class_name = p_elem_script->ptr()->get_instance_base_type();
+	}
+	p_self->set_typed(p_elem_type, elem_class_name, p_elem_script->ptr());
+}
+
+bool godotsharp_array_is_typed(const Array *p_self) {
+	return p_self->is_typed();
 }
 
 void godotsharp_array_max(const Array *p_self, Variant *r_value) {
@@ -1182,6 +1233,54 @@ void godotsharp_dictionary_make_read_only(Dictionary *p_self) {
 	p_self->make_read_only();
 }
 
+void godotsharp_dictionary_set_typed(Dictionary *p_self, uint32_t p_key_type, const StringName *p_key_class_name, const Ref<CSharpScript> *p_key_script, uint32_t p_value_type, const StringName *p_value_class_name, const Ref<CSharpScript> *p_value_script) {
+	Variant key_script_variant;
+	StringName key_class_name = *p_key_class_name;
+	if (p_key_script && p_key_script->is_valid()) {
+		key_script_variant = Variant(p_key_script->ptr());
+		key_class_name = p_key_script->ptr()->get_instance_base_type();
+	}
+	Variant value_script_variant;
+	StringName value_class_name = *p_value_class_name;
+	if (p_value_script && p_value_script->is_valid()) {
+		value_script_variant = Variant(p_value_script->ptr());
+		value_class_name = p_value_script->ptr()->get_instance_base_type();
+	}
+	p_self->set_typed(p_key_type, key_class_name, p_key_script->ptr(), p_value_type, value_class_name, p_value_script->ptr());
+}
+
+bool godotsharp_dictionary_is_typed_key(const Dictionary *p_self) {
+	return p_self->is_typed_key();
+}
+
+bool godotsharp_dictionary_is_typed_value(const Dictionary *p_self) {
+	return p_self->is_typed_value();
+}
+
+uint32_t godotsharp_dictionary_get_typed_key_builtin(const Dictionary *p_self) {
+	return p_self->get_typed_key_builtin();
+}
+
+uint32_t godotsharp_dictionary_get_typed_value_builtin(const Dictionary *p_self) {
+	return p_self->get_typed_value_builtin();
+}
+
+void godotsharp_dictionary_get_typed_key_class_name(const Dictionary *p_self, StringName *r_dest) {
+	memnew_placement(r_dest, StringName(p_self->get_typed_key_class_name()));
+}
+
+void godotsharp_dictionary_get_typed_value_class_name(const Dictionary *p_self, StringName *r_dest) {
+	memnew_placement(r_dest, StringName(p_self->get_typed_value_class_name()));
+}
+
+void godotsharp_dictionary_get_typed_key_script(const Dictionary *p_self, Variant *r_dest) {
+	memnew_placement(r_dest, Variant(p_self->get_typed_key_script()));
+}
+
+void godotsharp_dictionary_get_typed_value_script(const Dictionary *p_self, Variant *r_dest) {
+	memnew_placement(r_dest, Variant(p_self->get_typed_value_script()));
+}
+
 void godotsharp_dictionary_to_string(const Dictionary *p_self, String *r_str) {
 	*r_str = Variant(*p_self).operator String();
 }
@@ -1286,7 +1385,7 @@ void godotsharp_weakref(Object *p_ptr, Ref<RefCounted> *r_weak_ref) {
 
 	if (rc) {
 		Ref<RefCounted> r = rc;
-		if (!r.is_valid()) {
+		if (r.is_null()) {
 			return;
 		}
 
@@ -1425,7 +1524,7 @@ static const void *unmanaged_callbacks[]{
 	(void *)godotsharp_engine_get_singleton,
 	(void *)godotsharp_stack_info_vector_resize,
 	(void *)godotsharp_stack_info_vector_destroy,
-	(void *)godotsharp_internal_editor_file_system_update_file,
+	(void *)godotsharp_internal_editor_file_system_update_files,
 	(void *)godotsharp_internal_script_debugger_send_error,
 	(void *)godotsharp_internal_script_debugger_is_active,
 	(void *)godotsharp_internal_object_get_associated_gchandle,
@@ -1456,6 +1555,7 @@ static const void *unmanaged_callbacks[]{
 	(void *)godotsharp_packed_float64_array_new_mem_copy,
 	(void *)godotsharp_packed_vector2_array_new_mem_copy,
 	(void *)godotsharp_packed_vector3_array_new_mem_copy,
+	(void *)godotsharp_packed_vector4_array_new_mem_copy,
 	(void *)godotsharp_packed_color_array_new_mem_copy,
 	(void *)godotsharp_packed_string_array_add,
 	(void *)godotsharp_callable_new_with_delegate,
@@ -1463,6 +1563,9 @@ static const void *unmanaged_callbacks[]{
 	(void *)godotsharp_callable_call,
 	(void *)godotsharp_callable_call_deferred,
 	(void *)godotsharp_color_from_ok_hsl,
+	(void *)godotsharp_color_get_ok_hsl_h,
+	(void *)godotsharp_color_get_ok_hsl_s,
+	(void *)godotsharp_color_get_ok_hsl_l,
 	(void *)godotsharp_method_bind_ptrcall,
 	(void *)godotsharp_method_bind_call,
 	(void *)godotsharp_variant_new_string_name,
@@ -1484,6 +1587,7 @@ static const void *unmanaged_callbacks[]{
 	(void *)godotsharp_variant_new_packed_string_array,
 	(void *)godotsharp_variant_new_packed_vector2_array,
 	(void *)godotsharp_variant_new_packed_vector3_array,
+	(void *)godotsharp_variant_new_packed_vector4_array,
 	(void *)godotsharp_variant_new_packed_color_array,
 	(void *)godotsharp_variant_as_bool,
 	(void *)godotsharp_variant_as_int,
@@ -1520,6 +1624,7 @@ static const void *unmanaged_callbacks[]{
 	(void *)godotsharp_variant_as_packed_string_array,
 	(void *)godotsharp_variant_as_packed_vector2_array,
 	(void *)godotsharp_variant_as_packed_vector3_array,
+	(void *)godotsharp_variant_as_packed_vector4_array,
 	(void *)godotsharp_variant_as_packed_color_array,
 	(void *)godotsharp_variant_equals,
 	(void *)godotsharp_string_new_with_utf16_chars,
@@ -1538,6 +1643,7 @@ static const void *unmanaged_callbacks[]{
 	(void *)godotsharp_packed_string_array_destroy,
 	(void *)godotsharp_packed_vector2_array_destroy,
 	(void *)godotsharp_packed_vector3_array_destroy,
+	(void *)godotsharp_packed_vector4_array_destroy,
 	(void *)godotsharp_packed_color_array_destroy,
 	(void *)godotsharp_variant_destroy,
 	(void *)godotsharp_string_destroy,
@@ -1556,6 +1662,8 @@ static const void *unmanaged_callbacks[]{
 	(void *)godotsharp_array_insert,
 	(void *)godotsharp_array_last_index_of,
 	(void *)godotsharp_array_make_read_only,
+	(void *)godotsharp_array_set_typed,
+	(void *)godotsharp_array_is_typed,
 	(void *)godotsharp_array_max,
 	(void *)godotsharp_array_min,
 	(void *)godotsharp_array_pick_random,
@@ -1581,6 +1689,15 @@ static const void *unmanaged_callbacks[]{
 	(void *)godotsharp_dictionary_recursive_equal,
 	(void *)godotsharp_dictionary_remove_key,
 	(void *)godotsharp_dictionary_make_read_only,
+	(void *)godotsharp_dictionary_set_typed,
+	(void *)godotsharp_dictionary_is_typed_key,
+	(void *)godotsharp_dictionary_is_typed_value,
+	(void *)godotsharp_dictionary_get_typed_key_builtin,
+	(void *)godotsharp_dictionary_get_typed_value_builtin,
+	(void *)godotsharp_dictionary_get_typed_key_class_name,
+	(void *)godotsharp_dictionary_get_typed_value_class_name,
+	(void *)godotsharp_dictionary_get_typed_key_script,
+	(void *)godotsharp_dictionary_get_typed_value_script,
 	(void *)godotsharp_dictionary_to_string,
 	(void *)godotsharp_string_simplify_path,
 	(void *)godotsharp_string_to_camel_case,

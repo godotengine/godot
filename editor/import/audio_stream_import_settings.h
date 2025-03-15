@@ -31,7 +31,7 @@
 #ifndef AUDIO_STREAM_IMPORT_SETTINGS_H
 #define AUDIO_STREAM_IMPORT_SETTINGS_H
 
-#include "editor/editor_plugin.h"
+#include "editor/plugins/editor_plugin.h"
 #include "scene/audio/audio_stream_player.h"
 #include "scene/gui/color_rect.h"
 #include "scene/gui/dialogs.h"

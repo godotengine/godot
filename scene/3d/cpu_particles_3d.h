@@ -33,6 +33,8 @@
 
 #include "scene/3d/visual_instance_3d.h"
 
+class RandomNumberGenerator;
+
 class CPUParticles3D : public GeometryInstance3D {
 private:
 	GDCLASS(CPUParticles3D, GeometryInstance3D);
@@ -134,6 +136,7 @@ private:
 
 	double lifetime = 1.0;
 	double pre_process_time = 0.0;
+	double _requested_process_time = 0.0;
 	real_t explosiveness_ratio = 0.0;
 	real_t randomness_ratio = 0.0;
 	double lifetime_randomness = 0.0;
@@ -142,6 +145,8 @@ private:
 	bool local_coords = false;
 	int fixed_fps = 0;
 	bool fractional_delta = true;
+	uint32_t seed = 0;
+	bool use_fixed_seed = false;
 
 	Transform3D inv_emission_transform;
 
@@ -178,6 +183,7 @@ private:
 	real_t emission_ring_height = 0.0;
 	real_t emission_ring_radius = 0.0;
 	real_t emission_ring_inner_radius = 0.0;
+	real_t emission_ring_cone_angle = 0.0;
 
 	Ref<Curve> scale_curve_x;
 	Ref<Curve> scale_curve_y;
@@ -186,9 +192,12 @@ private:
 
 	Vector3 gravity = Vector3(0, -9.8, 0);
 
+	Ref<RandomNumberGenerator> rng;
+
 	void _update_internal();
 	void _particles_process(double p_delta);
 	void _update_particle_data_buffer();
+	void _set_emitting();
 
 	Mutex update_mutex;
 
@@ -200,6 +209,11 @@ protected:
 	static void _bind_methods();
 	void _notification(int p_what);
 	void _validate_property(PropertyInfo &p_property) const;
+
+#ifndef DISABLE_DEPRECATED
+	void _restart_bind_compat_92089();
+	static void _bind_compatibility_methods();
+#endif
 
 public:
 	AABB get_aabb() const override;
@@ -239,6 +253,14 @@ public:
 
 	void set_mesh(const Ref<Mesh> &p_mesh);
 	Ref<Mesh> get_mesh() const;
+
+	void set_use_fixed_seed(bool p_use_fixed_seed = false);
+	bool get_use_fixed_seed() const;
+
+	void set_seed(uint32_t p_seed);
+	uint32_t get_seed() const;
+
+	void request_particles_process(real_t p_requested_process_time);
 
 	///////////////////
 
@@ -282,6 +304,7 @@ public:
 	void set_emission_ring_height(real_t p_height);
 	void set_emission_ring_radius(real_t p_radius);
 	void set_emission_ring_inner_radius(real_t p_radius);
+	void set_emission_ring_cone_angle(real_t p_angle);
 	void set_scale_curve_x(Ref<Curve> p_scale_curve);
 	void set_scale_curve_y(Ref<Curve> p_scale_curve);
 	void set_scale_curve_z(Ref<Curve> p_scale_curve);
@@ -297,6 +320,7 @@ public:
 	real_t get_emission_ring_height() const;
 	real_t get_emission_ring_radius() const;
 	real_t get_emission_ring_inner_radius() const;
+	real_t get_emission_ring_cone_angle() const;
 	Ref<Curve> get_scale_curve_x() const;
 	Ref<Curve> get_scale_curve_y() const;
 	Ref<Curve> get_scale_curve_z() const;
@@ -307,7 +331,7 @@ public:
 
 	PackedStringArray get_configuration_warnings() const override;
 
-	void restart();
+	void restart(bool p_keep_seed = false);
 
 	void convert_from_particles(Node *p_particles);
 

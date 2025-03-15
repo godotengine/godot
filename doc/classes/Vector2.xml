@@ -14,7 +14,7 @@
 		<link title="Vector math">$DOCS_URL/tutorials/math/vector_math.html</link>
 		<link title="Advanced vector math">$DOCS_URL/tutorials/math/vectors_advanced.html</link>
 		<link title="3Blue1Brown Essence of Linear Algebra">https://www.youtube.com/playlist?list=PLZHQObOWTQDPD3MizzM2xVFitgF8hE_ab</link>
-		<link title="Matrix Transform Demo">https://godotengine.org/asset-library/asset/584</link>
+		<link title="Matrix Transform Demo">https://godotengine.org/asset-library/asset/2787</link>
 		<link title="All 2D Demos">https://github.com/godotengine/godot-demo-projects/tree/master/2d</link>
 	</tutorials>
 	<constructors>
@@ -67,7 +67,7 @@
 			<return type="float" />
 			<param index="0" name="to" type="Vector2" />
 			<description>
-				Returns the angle to the given vector, in radians.
+				Returns the signed angle to the given vector, in radians.
 				[url=https://raw.githubusercontent.com/godotengine/godot-docs/master/img/vector2_angle_to.png]Illustration of the returned angle.[/url]
 			</description>
 		</method>
@@ -110,7 +110,8 @@
 			<return type="Vector2" />
 			<param index="0" name="n" type="Vector2" />
 			<description>
-				Returns a new vector "bounced off" from a plane defined by the given normal.
+				Returns the vector "bounced off" from a line defined by the given normal [param n] perpendicular to the line.
+				[b]Note:[/b] [method bounce] performs the operation that most engines and frameworks call [code skip-lint]reflect()[/code].
 			</description>
 		</method>
 		<method name="ceil" qualifiers="const">
@@ -127,12 +128,20 @@
 				Returns a new vector with all components clamped between the components of [param min] and [param max], by running [method @GlobalScope.clamp] on each component.
 			</description>
 		</method>
+		<method name="clampf" qualifiers="const">
+			<return type="Vector2" />
+			<param index="0" name="min" type="float" />
+			<param index="1" name="max" type="float" />
+			<description>
+				Returns a new vector with all components clamped between [param min] and [param max], by running [method @GlobalScope.clamp] on each component.
+			</description>
+		</method>
 		<method name="cross" qualifiers="const">
 			<return type="float" />
 			<param index="0" name="with" type="Vector2" />
 			<description>
 				Returns the 2D analog of the cross product for this vector and [param with].
-				This is the signed area of the parallelogram formed by the two vectors. If the second vector is clockwise from the first vector, then the cross product is the positive area. If counter-clockwise, the cross product is the negative area.
+				This is the signed area of the parallelogram formed by the two vectors. If the second vector is clockwise from the first vector, then the cross product is the positive area. If counter-clockwise, the cross product is the negative area. If the two vectors are parallel this returns zero, making it useful for testing if two vectors are parallel.
 				[b]Note:[/b] Cross product is not defined in 2D mathematically. This method embeds the 2D vectors in the XY plane of 3D space and uses their cross product's Z component as the analog.
 			</description>
 		</method>
@@ -187,7 +196,7 @@
 			<param index="0" name="with" type="Vector2" />
 			<description>
 				Returns the dot product of this vector and [param with]. This can be used to compare the angle between two vectors. For example, this can be used to determine whether an enemy is facing the player.
-				The dot product will be [code]0[/code] for a straight angle (90 degrees), greater than 0 for angles narrower than 90 degrees and lower than 0 for angles wider than 90 degrees.
+				The dot product will be [code]0[/code] for a right angle (90 degrees), greater than 0 for angles narrower than 90 degrees and lower than 0 for angles wider than 90 degrees.
 				When using unit (normalized) vectors, the result will always be between [code]-1.0[/code] (180 degree angle) when the vectors are facing opposite directions, and [code]1.0[/code] (0 degree angle) when the vectors are aligned.
 				[b]Note:[/b] [code]a.dot(b)[/code] is equivalent to [code]b.dot(a)[/code].
 			</description>
@@ -204,9 +213,9 @@
 			<description>
 				Creates a unit [Vector2] rotated to the given [param angle] in radians. This is equivalent to doing [code]Vector2(cos(angle), sin(angle))[/code] or [code]Vector2.RIGHT.rotated(angle)[/code].
 				[codeblock]
-				print(Vector2.from_angle(0)) # Prints (1, 0).
-				print(Vector2(1, 0).angle()) # Prints 0, which is the angle used above.
-				print(Vector2.from_angle(PI / 2)) # Prints (0, 1).
+				print(Vector2.from_angle(0)) # Prints (1.0, 0.0)
+				print(Vector2(1, 0).angle()) # Prints 0.0, which is the angle used above.
+				print(Vector2.from_angle(PI / 2)) # Prints (0.0, 1.0)
 				[/codeblock]
 			</description>
 		</method>
@@ -261,7 +270,14 @@
 			<return type="Vector2" />
 			<param index="0" name="length" type="float" default="1.0" />
 			<description>
-				Returns the vector with a maximum length by limiting its length to [param length].
+				Returns the vector with a maximum length by limiting its length to [param length]. If the vector is non-finite, the result is undefined.
+			</description>
+		</method>
+		<method name="max" qualifiers="const">
+			<return type="Vector2" />
+			<param index="0" name="with" type="Vector2" />
+			<description>
+				Returns the component-wise maximum of this and [param with], equivalent to [code]Vector2(maxf(x, with.x), maxf(y, with.y))[/code].
 			</description>
 		</method>
 		<method name="max_axis_index" qualifiers="const">
@@ -270,10 +286,31 @@
 				Returns the axis of the vector's highest value. See [code]AXIS_*[/code] constants. If all components are equal, this method returns [constant AXIS_X].
 			</description>
 		</method>
+		<method name="maxf" qualifiers="const">
+			<return type="Vector2" />
+			<param index="0" name="with" type="float" />
+			<description>
+				Returns the component-wise maximum of this and [param with], equivalent to [code]Vector2(maxf(x, with), maxf(y, with))[/code].
+			</description>
+		</method>
+		<method name="min" qualifiers="const">
+			<return type="Vector2" />
+			<param index="0" name="with" type="Vector2" />
+			<description>
+				Returns the component-wise minimum of this and [param with], equivalent to [code]Vector2(minf(x, with.x), minf(y, with.y))[/code].
+			</description>
+		</method>
 		<method name="min_axis_index" qualifiers="const">
 			<return type="int" />
 			<description>
 				Returns the axis of the vector's lowest value. See [code]AXIS_*[/code] constants. If all components are equal, this method returns [constant AXIS_Y].
+			</description>
+		</method>
+		<method name="minf" qualifiers="const">
+			<return type="Vector2" />
+			<param index="0" name="with" type="float" />
+			<description>
+				Returns the component-wise minimum of this and [param with], equivalent to [code]Vector2(minf(x, with), minf(y, with))[/code].
 			</description>
 		</method>
 		<method name="move_toward" qualifiers="const">
@@ -287,7 +324,7 @@
 		<method name="normalized" qualifiers="const">
 			<return type="Vector2" />
 			<description>
-				Returns the result of scaling the vector to unit length. Equivalent to [code]v / v.length()[/code]. See also [method is_normalized].
+				Returns the result of scaling the vector to unit length. Equivalent to [code]v / v.length()[/code]. Returns [code](0, 0)[/code] if [code]v.length() == 0[/code]. See also [method is_normalized].
 				[b]Note:[/b] This function may return incorrect values if the input vector length is near zero.
 			</description>
 		</method>
@@ -321,9 +358,10 @@
 		</method>
 		<method name="reflect" qualifiers="const">
 			<return type="Vector2" />
-			<param index="0" name="n" type="Vector2" />
+			<param index="0" name="line" type="Vector2" />
 			<description>
-				Returns the result of reflecting the vector from a line defined by the given direction vector [param n].
+				Returns the result of reflecting the vector from a line defined by the given direction vector [param line].
+				[b]Note:[/b] [method reflect] differs from what other engines and frameworks call [code skip-lint]reflect()[/code]. In other engines, [code skip-lint]reflect()[/code] takes a normal direction which is a direction perpendicular to the line. In Godot, you specify the direction of the line directly. See also [method bounce] which does what most engines call [code skip-lint]reflect()[/code].
 			</description>
 		</method>
 		<method name="rotated" qualifiers="const">
@@ -369,6 +407,13 @@
 				Returns a new vector with each component snapped to the nearest multiple of the corresponding component in [param step]. This can also be used to round the components to an arbitrary number of decimals.
 			</description>
 		</method>
+		<method name="snappedf" qualifiers="const">
+			<return type="Vector2" />
+			<param index="0" name="step" type="float" />
+			<description>
+				Returns a new vector with each component snapped to the nearest multiple of [param step]. This can also be used to round the components to an arbitrary number of decimals.
+			</description>
+		</method>
 	</methods>
 	<members>
 		<member name="x" type="float" setter="" getter="" default="0.0">
@@ -379,10 +424,10 @@
 		</member>
 	</members>
 	<constants>
-		<constant name="AXIS_X" value="0">
+		<constant name="AXIS_X" value="0" enum="Axis">
 			Enumerated value for the X axis. Returned by [method max_axis_index] and [method min_axis_index].
 		</constant>
-		<constant name="AXIS_Y" value="1">
+		<constant name="AXIS_Y" value="1" enum="Axis">
 			Enumerated value for the Y axis. Returned by [method max_axis_index] and [method min_axis_index].
 		</constant>
 		<constant name="ZERO" value="Vector2(0, 0)">
@@ -432,7 +477,7 @@
 			<description>
 				Multiplies each component of the [Vector2] by the components of the given [Vector2].
 				[codeblock]
-				print(Vector2(10, 20) * Vector2(3, 4)) # Prints "(30, 80)"
+				print(Vector2(10, 20) * Vector2(3, 4)) # Prints (30.0, 80.0)
 				[/codeblock]
 			</description>
 		</operator>
@@ -456,7 +501,7 @@
 			<description>
 				Adds each component of the [Vector2] by the components of the given [Vector2].
 				[codeblock]
-				print(Vector2(10, 20) + Vector2(3, 4)) # Prints "(13, 24)"
+				print(Vector2(10, 20) + Vector2(3, 4)) # Prints (13.0, 24.0)
 				[/codeblock]
 			</description>
 		</operator>
@@ -466,7 +511,7 @@
 			<description>
 				Subtracts each component of the [Vector2] by the components of the given [Vector2].
 				[codeblock]
-				print(Vector2(10, 20) - Vector2(3, 4)) # Prints "(7, 16)"
+				print(Vector2(10, 20) - Vector2(3, 4)) # Prints (7.0, 16.0)
 				[/codeblock]
 			</description>
 		</operator>
@@ -476,7 +521,7 @@
 			<description>
 				Divides each component of the [Vector2] by the components of the given [Vector2].
 				[codeblock]
-				print(Vector2(10, 20) / Vector2(2, 5)) # Prints "(5, 4)"
+				print(Vector2(10, 20) / Vector2(2, 5)) # Prints (5.0, 4.0)
 				[/codeblock]
 			</description>
 		</operator>

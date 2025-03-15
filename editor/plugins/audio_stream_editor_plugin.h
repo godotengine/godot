@@ -32,7 +32,7 @@
 #define AUDIO_STREAM_EDITOR_PLUGIN_H
 
 #include "editor/editor_inspector.h"
-#include "editor/editor_plugin.h"
+#include "editor/plugins/editor_plugin.h"
 #include "scene/audio/audio_stream_player.h"
 #include "scene/gui/button.h"
 #include "scene/gui/color_rect.h"

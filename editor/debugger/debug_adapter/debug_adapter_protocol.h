@@ -31,12 +31,13 @@
 #ifndef DEBUG_ADAPTER_PROTOCOL_H
 #define DEBUG_ADAPTER_PROTOCOL_H
 
-#include "core/io/stream_peer.h"
+#include "core/debugger/debugger_marshalls.h"
 #include "core/io/stream_peer_tcp.h"
 #include "core/io/tcp_server.h"
 
 #include "debug_adapter_parser.h"
 #include "debug_adapter_types.h"
+#include "scene/debugger/scene_debugger.h"
 
 #define DAP_MAX_BUFFER_SIZE 4194304 // 4MB
 #define DAP_MAX_CLIENTS 8
@@ -75,6 +76,8 @@ class DebugAdapterProtocol : public Object {
 
 	friend class DebugAdapterParser;
 
+	using DAPVarID = int;
+
 private:
 	static DebugAdapterProtocol *singleton;
 	DebugAdapterParser *parser = nullptr;
@@ -86,7 +89,7 @@ private:
 	void on_client_disconnected(const Ref<DAPeer> &p_peer);
 	void on_debug_paused();
 	void on_debug_stopped();
-	void on_debug_output(const String &p_message);
+	void on_debug_output(const String &p_message, int p_type);
 	void on_debug_breaked(const bool &p_reallydid, const bool &p_can_debug, const String &p_reason, const bool &p_has_stackdump);
 	void on_debug_breakpoint_toggled(const String &p_path, const int &p_line, const bool &p_enabled);
 	void on_debug_stack_dump(const Array &p_stack_dump);
@@ -99,6 +102,13 @@ private:
 	void reset_stack_info();
 
 	int parse_variant(const Variant &p_var);
+	void parse_object(SceneDebuggerObject &p_obj);
+	const Variant parse_object_variable(const SceneDebuggerObject::SceneDebuggerProperty &p_property);
+	void parse_evaluation(DebuggerMarshalls::ScriptStackVariable &p_var);
+
+	ObjectID search_object_id(DAPVarID p_var_id);
+	bool request_remote_object(const ObjectID &p_object_id);
+	bool request_remote_evaluate(const String &p_eval, int p_stack_frame);
 
 	bool _initialized = false;
 	bool _processing_breakpoint = false;
@@ -106,7 +116,7 @@ private:
 	bool _processing_stackdump = false;
 	int _remaining_vars = 0;
 	int _current_frame = 0;
-	uint64_t _request_timeout = 1000;
+	uint64_t _request_timeout = 5000;
 	bool _sync_breakpoints = false;
 
 	String _current_request;
@@ -114,10 +124,16 @@ private:
 
 	int breakpoint_id = 0;
 	int stackframe_id = 0;
-	int variable_id = 0;
+	DAPVarID variable_id = 0;
 	List<DAP::Breakpoint> breakpoint_list;
 	HashMap<DAP::StackFrame, List<int>, DAP::StackFrame> stackframe_list;
-	HashMap<int, Array> variable_list;
+	HashMap<DAPVarID, Array> variable_list;
+
+	HashMap<ObjectID, DAPVarID> object_list;
+	HashSet<ObjectID> object_pending_set;
+
+	HashMap<String, DAP::Variable> eval_list;
+	HashSet<String> eval_pending_list;
 
 public:
 	friend class DebugAdapterServer;
@@ -139,7 +155,7 @@ public:
 	void notify_stopped_breakpoint(const int &p_id);
 	void notify_stopped_step();
 	void notify_continued();
-	void notify_output(const String &p_message);
+	void notify_output(const String &p_message, RemoteDebugger::MessageType p_type);
 	void notify_custom_data(const String &p_msg, const Array &p_data);
 	void notify_breakpoint(const DAP::Breakpoint &p_breakpoint, const bool &p_enabled);
 

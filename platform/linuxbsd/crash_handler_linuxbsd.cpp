@@ -36,8 +36,8 @@
 #include "core/version.h"
 #include "main/main.h"
 
-#ifdef DEBUG_ENABLED
-#define CRASH_HANDLER_ENABLED 1
+#ifndef DEBUG_ENABLED
+#undef CRASH_HANDLER_ENABLED
 #endif
 
 #ifdef CRASH_HANDLER_ENABLED
@@ -55,6 +55,10 @@ static void handle_crash(int sig) {
 
 	if (OS::get_singleton() == nullptr) {
 		abort();
+	}
+
+	if (OS::get_singleton()->is_crash_handler_silent()) {
+		std::_Exit(0);
 	}
 
 	void *bt_buffer[256];

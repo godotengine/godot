@@ -30,13 +30,12 @@
 
 #include "light_occluder_2d_editor_plugin.h"
 
-#include "editor/editor_node.h"
 #include "editor/editor_undo_redo_manager.h"
 
 Ref<OccluderPolygon2D> LightOccluder2DEditor::_ensure_occluder() const {
 	Ref<OccluderPolygon2D> occluder = node->get_occluder_polygon();
-	if (!occluder.is_valid()) {
-		occluder = Ref<OccluderPolygon2D>(memnew(OccluderPolygon2D));
+	if (occluder.is_null()) {
+		occluder.instantiate();
 		node->set_occluder_polygon(occluder);
 	}
 	return occluder;

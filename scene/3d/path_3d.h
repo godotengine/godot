@@ -90,7 +90,6 @@ protected:
 	void _validate_property(PropertyInfo &p_property) const;
 
 	void _notification(int p_what);
-	void _update_transform();
 
 	static void _bind_methods();
 
@@ -124,7 +123,7 @@ public:
 
 	PackedStringArray get_configuration_warnings() const override;
 
-	void update_transform(bool p_immediate = false);
+	void update_transform();
 
 	static Transform3D correct_posture(Transform3D p_transform, PathFollow3D::RotationMode p_rotation_mode);
 

@@ -81,6 +81,10 @@ static void handle_crash(int sig) {
 		abort();
 	}
 
+	if (OS::get_singleton()->is_crash_handler_silent()) {
+		std::_Exit(0);
+	}
+
 	void *bt_buffer[256];
 	size_t size = backtrace(bt_buffer, 256);
 	String _execpath = OS::get_singleton()->get_executable_path();
@@ -149,6 +153,7 @@ static void handle_crash(int sig) {
 				args.push_back("-arch");
 				args.push_back("arm64");
 #endif
+				args.push_back("--fullPath");
 				args.push_back("-l");
 				snprintf(str, 1024, "%p", load_addr);
 				args.push_back(str);

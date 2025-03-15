@@ -35,6 +35,7 @@
 #include "scene/gui/box_container.h"
 #include "scene/gui/scroll_container.h"
 
+class AcceptDialog;
 class Button;
 class Label;
 class ProjectList;
@@ -51,6 +52,8 @@ class ProjectListItemControl : public HBoxContainer {
 	TextureRect *project_icon = nullptr;
 	Label *project_title = nullptr;
 	Label *project_path = nullptr;
+	Label *last_edited_info = nullptr;
+	Label *project_version = nullptr;
 	TextureRect *project_unsupported_features = nullptr;
 	HBoxContainer *tag_container = nullptr;
 
@@ -71,6 +74,8 @@ public:
 	void set_project_path(const String &p_path);
 	void set_tags(const PackedStringArray &p_tags, ProjectList *p_parent_list);
 	void set_project_icon(const Ref<Texture2D> &p_icon);
+	void set_last_edited_info(const String &p_info);
+	void set_project_version(const String &p_version);
 	void set_unsupported_features(PackedStringArray p_features);
 
 	bool should_load_project_icon() const;
@@ -100,6 +105,7 @@ public:
 	struct Item {
 		String project_name;
 		String description;
+		String project_version;
 		PackedStringArray tags;
 		String tag_sort_string;
 		String path;
@@ -110,6 +116,7 @@ public:
 		bool favorite = false;
 		bool grayed = false;
 		bool missing = false;
+		bool recovery_mode = false;
 		int version = 0;
 
 		ProjectListItemControl *control = nullptr;
@@ -118,6 +125,7 @@ public:
 
 		Item(const String &p_name,
 				const String &p_description,
+				const String &p_project_version,
 				const PackedStringArray &p_tags,
 				const String &p_path,
 				const String &p_icon,
@@ -127,9 +135,11 @@ public:
 				bool p_favorite,
 				bool p_grayed,
 				bool p_missing,
+				bool p_recovery_mode,
 				int p_version) {
 			project_name = p_name;
 			description = p_description;
+			project_version = p_project_version;
 			tags = p_tags;
 			path = p_path;
 			icon = p_icon;
@@ -139,6 +149,7 @@ public:
 			favorite = p_favorite;
 			grayed = p_grayed;
 			missing = p_missing;
+			recovery_mode = p_recovery_mode;
 			version = p_version;
 
 			control = nullptr;
@@ -169,6 +180,20 @@ private:
 
 	VBoxContainer *project_list_vbox = nullptr;
 
+	// Projects scan.
+
+	struct ScanData {
+		Thread *thread = nullptr;
+		PackedStringArray paths_to_scan;
+		List<String> found_projects;
+		SafeFlag scan_in_progress;
+	};
+	ScanData *scan_data = nullptr;
+	AcceptDialog *scan_progress = nullptr;
+
+	static void _scan_thread(void *p_scan_data);
+	void _scan_finished();
+
 	// Initialization & loading.
 
 	void _migrate_config();
@@ -179,7 +204,7 @@ private:
 
 	// Project list updates.
 
-	void _scan_folder_recursive(const String &p_path, List<String> *r_projects);
+	static void _scan_folder_recursive(const String &p_path, List<String> *r_projects, const SafeFlag &p_scan_active);
 
 	// Project list items.
 
@@ -220,6 +245,7 @@ public:
 
 	// Project list updates.
 
+	void load_project_list();
 	void update_project_list();
 	void sort_projects();
 	int get_project_count() const;

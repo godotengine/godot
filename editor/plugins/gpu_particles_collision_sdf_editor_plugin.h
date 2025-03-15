@@ -31,7 +31,7 @@
 #ifndef GPU_PARTICLES_COLLISION_SDF_EDITOR_PLUGIN_H
 #define GPU_PARTICLES_COLLISION_SDF_EDITOR_PLUGIN_H
 
-#include "editor/editor_plugin.h"
+#include "editor/plugins/editor_plugin.h"
 #include "scene/3d/gpu_particles_collision_3d.h"
 #include "scene/resources/material.h"
 
@@ -58,11 +58,10 @@ class GPUParticlesCollisionSDF3DEditorPlugin : public EditorPlugin {
 	void _sdf_save_path_and_bake(const String &p_path);
 
 protected:
-	static void _bind_methods();
 	void _notification(int p_what);
 
 public:
-	virtual String get_name() const override { return "GPUParticlesCollisionSDF3D"; }
+	virtual String get_plugin_name() const override { return "GPUParticlesCollisionSDF3D"; }
 	bool has_main_screen() const override { return false; }
 	virtual void edit(Object *p_object) override;
 	virtual bool handles(Object *p_object) const override;

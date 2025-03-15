@@ -36,6 +36,7 @@
 #define _INFOSINK_INCLUDED_
 
 #include "../Include/Common.h"
+//#include <filesystem>
 #include <cmath>
 
 namespace glslang {
@@ -67,7 +68,7 @@ enum TOutputStream {
 //
 class TInfoSinkBase {
 public:
-    TInfoSinkBase() : outputStream(4) {}
+    TInfoSinkBase() : outputStream(4), shaderFileName(nullptr) {}
     void erase() { sink.erase(); }
     TInfoSinkBase& operator<<(const TPersistString& t) { append(t); return *this; }
     TInfoSinkBase& operator<<(char c)                  { append(1, c); return *this; }
@@ -94,11 +95,22 @@ public:
         default:                   append("UNKNOWN ERROR: ");   break;
         }
     }
-    void location(const TSourceLoc& loc) {
+    void location(const TSourceLoc& loc, bool absolute = false) {
         const int maxSize = 24;
         char locText[maxSize];
         snprintf(locText, maxSize, ":%d", loc.line);
-        append(loc.getStringNameOrNum(false).c_str());
+
+        if(loc.getFilename() == nullptr && shaderFileName != nullptr && absolute) {
+            //append(std::filesystem::absolute(shaderFileName).string());
+        } else {
+            std::string location = loc.getStringNameOrNum(false);
+            //if (absolute) {
+            //    append(std::filesystem::absolute(location).string());
+            //} else {
+                append(location);
+            //}
+        }
+
         append(locText);
         append(": ");
     }
@@ -119,6 +131,11 @@ public:
         outputStream = output;
     }
 
+    void setShaderFileName(const char* file = nullptr)
+    {
+        shaderFileName = file;
+    }
+
 protected:
     void append(const char* s);
 
@@ -131,6 +148,7 @@ protected:
     void appendToStream(const char* s);
     TPersistString sink;
     int outputStream;
+    const char* shaderFileName;
 };
 
 } // end namespace glslang

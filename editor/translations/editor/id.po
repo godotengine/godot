@@ -41,7 +41,7 @@
 # Primananda Kurnia <primakurnia71@gmail.com>, 2022.
 # FellowMustard <rachmawanng33@gmail.com>, 2022.
 # Muhammad Zainal Abidin <eviepk12@gmail.com>, 2022.
-# adfriz <aditiyaafrizal2@gmail.com>, 2023.
+# adfriz <aditiyaafrizal2@gmail.com>, 2023, 2024.
 # Taufiq Rahman <pxpiksy@gmail.com>, 2023.
 # Muhammad Azri Fatihah Susanto <muhammad.azri.f.s@gmail.com>, 2023.
 # ammar sajili <sjlammar@gmail.com>, 2023.
@@ -49,21 +49,29 @@
 # EngageIndo <engageindo@gmail.com>, 2023.
 # Septian Kurniawan <septgsk@outlook.com>, 2023.
 # Septian Ganendra Savero Kurniawan <septgsk@outlook.com>, 2023.
-# Septian Ganendra Savero Kurniawan <mail@init.id>, 2023.
+# Septian Ganendra Savero Kurniawan <mail@init.id>, 2023, 2024.
 # GID <ghavind12345@gmail.com>, 2023.
 # Luqman Firmansyah <luqm4n.firm4n@gmail.com>, 2023.
 # Bayu Satiyo <itsyuukunz@gmail.com>, 2023.
-# Avirur Rahman <avirahmandev@gmail.com>, 2023.
+# Avirur Rahman <avirahmandev@gmail.com>, 2023, 2024.
 # Nazan <121859424+nazhard@users.noreply.github.com>, 2023.
 # ekaknl22 <2200018407@webmail.uad.ac.id>, 2023.
 # Stephen Gunawan Susilo <gunawanstephen@yahoo.com>, 2024.
+# the2cguy <the2cguy@proton.me>, 2024.
+# RYP <rizkysaputrapakpahan@gmail.com>, 2024.
+# Hajir Asyafi <hajirasyafi@gmail.com>, 2024.
+# Azizkhasyi 11 <azizkhasyi11@gmail.com>, 2024.
+# "@andiDermawan" <andidermawan2004@gmail.com>, 2024.
+# Bintang AP <prep77070@gmail.com>, 2024.
+# "Achmad Izzuddin (Adin)" <achmadizzuddin999@gmail.com>, 2024.
+# meghundul <meghundul@gmail.com>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-01-09 13:37+0000\n"
-"Last-Translator: Stephen Gunawan Susilo <gunawanstephen@yahoo.com>\n"
+"PO-Revision-Date: 2025-01-23 17:31+0000\n"
+"Last-Translator: meghundul <meghundul@gmail.com>\n"
 "Language-Team: Indonesian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/id/>\n"
 "Language: id\n"
@@ -71,13 +79,13 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.4-dev\n"
+"X-Generator: Weblate 5.10-dev\n"
 
 msgid "Main Thread"
 msgstr "Utas Utama"
 
 msgid "Unset"
-msgstr "Batal disetel"
+msgstr "Belum disetel"
 
 msgid "Physical"
 msgstr "Fisik"
@@ -89,7 +97,7 @@ msgid "Right Mouse Button"
 msgstr "Tombol kanan Mouse"
 
 msgid "Middle Mouse Button"
-msgstr "Tombol Tengah mouse"
+msgstr "Tombol Tengah Mouse"
 
 msgid "Mouse Wheel Up"
 msgstr "Gulir Mouse ke atas"
@@ -230,7 +238,7 @@ msgid "touched"
 msgstr "disentuh"
 
 msgid "released"
-msgstr "dilepas"
+msgstr "dirilis"
 
 msgid "Screen %s at (%s) with %s touch points"
 msgstr "Layar %s pada (%s) dengan titik sentuh %s"
@@ -399,6 +407,9 @@ msgstr "Pilih Kata di Bawah Caret"
 msgid "Add Selection for Next Occurrence"
 msgstr "Tambahkan Pilihan untuk Kejadian Berikutnya"
 
+msgid "Skip Selection for Next Occurrence"
+msgstr "Lewati Pilihan untuk Kejadian Berikutnya"
+
 msgid "Clear Carets and Selection"
 msgstr "Hapus Caret dan Seleksi"
 
@@ -475,13 +486,6 @@ msgstr "PiB"
 msgid "EiB"
 msgstr "EiB"
 
-msgid "Example: %s"
-msgstr "Contoh: %s"
-
-msgid "%d item"
-msgid_plural "%d items"
-msgstr[0] "%d item"
-
 msgid ""
 "Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or "
 "'\"'"
@@ -493,7 +497,7 @@ msgid "An action with the name '%s' already exists."
 msgstr "Sudah ada aksi dengan nama '%s'."
 
 msgid "Cannot Revert - Action is same as initial"
-msgstr "Tidak Dapat Dikembalikan - Tindakan sama seperti awal"
+msgstr "Tidak Bisa Mengembalikan - Aksi sama dengan nilai awal"
 
 msgid "Revert Action"
 msgstr "Kembalikan Tindakan"
@@ -502,19 +506,25 @@ msgid "Add Event"
 msgstr "Tambah Event"
 
 msgid "Remove Action"
-msgstr "Hapus Tindakan"
+msgstr "Hapus Aksi"
 
 msgid "Cannot Remove Action"
 msgstr "Tidak Dapat Menghapus Tindakan"
 
 msgid "Edit Event"
-msgstr "Edit Event"
+msgstr "Sunting Acara"
 
 msgid "Remove Event"
 msgstr "Menghapus Event"
 
+msgid "Filter by Name"
+msgstr "Filter Nama"
+
 msgid "Clear All"
 msgstr "Hapus Semua"
+
+msgid "Clear all search filters."
+msgstr "Hapus semua filter pencarian."
 
 msgid "Add New Action"
 msgstr "Tambahkan Tindakan Baru"
@@ -531,6 +541,30 @@ msgstr "Aksi"
 msgid "Deadzone"
 msgstr "Deadzone"
 
+msgid "Name:"
+msgstr "Nama:"
+
+msgid "Type:"
+msgstr "Jenis:"
+
+msgid "Metadata name is valid."
+msgstr "Nama metadata valid."
+
+msgid "Add Metadata Property for \"%s\""
+msgstr "Menambahkan Properti Metadata untuk \"%s\""
+
+msgid "Metadata name can't be empty."
+msgstr "Nama metadata tidak boleh kosong."
+
+msgid "Metadata name must be a valid identifier."
+msgstr "Nama metadata harus berupa pengenal yang valid."
+
+msgid "Metadata with name \"%s\" already exists."
+msgstr "Metadata dengan nama \"%s\" sudah ada."
+
+msgid "Names starting with _ are reserved for editor-only metadata."
+msgstr "Nama yang dimulai dengan _ dicadangkan untuk metadata khusus editor."
+
 msgid "Time:"
 msgstr "Waktu:"
 
@@ -544,7 +578,16 @@ msgid "Insert Key Here"
 msgstr "Sisipkan Key Disini"
 
 msgid "Duplicate Selected Key(s)"
-msgstr "Duplikat Key Terpilih"
+msgstr "Duplikat Kunci Terpilih"
+
+msgid "Cut Selected Key(s)"
+msgstr "Potong Kunci Terpilih"
+
+msgid "Copy Selected Key(s)"
+msgstr "Salin Kunci Yang Dipilih"
+
+msgid "Paste Key(s)"
+msgstr "Tempel Kunci"
 
 msgid "Delete Selected Key(s)"
 msgstr "Hapus Kunci Terpilih"
@@ -575,6 +618,9 @@ msgstr "Pindah Titik-titik Bezier"
 
 msgid "Animation Duplicate Keys"
 msgstr "Kunci Duplikat Animasi"
+
+msgid "Animation Paste Keys"
+msgstr "Tempel Kunci Animasi"
 
 msgid "Animation Delete Keys"
 msgstr "Kunci Hapus Animasi"
@@ -630,14 +676,32 @@ msgstr "Ubah Panjang Animasi"
 msgid "Change Animation Loop"
 msgstr "Ubah Perulangan Animasi"
 
-msgid "Can't change loop mode on animation instanced from imported scene."
-msgstr ""
-"Tidak dapat mengubah mode loop pada animasi yang dibuat dari adegan yang "
-"diimpor."
+msgid "Property Track..."
+msgstr "Trek Properti..."
 
-msgid "Can't change loop mode on animation embedded in another scene."
-msgstr ""
-"Tidak dapat mengubah mode loop pada animasi yang disematkan di adegan lain."
+msgid "3D Position Track..."
+msgstr "Trek Posisi 3D..."
+
+msgid "3D Rotation Track..."
+msgstr "Trek Rotasi 3D..."
+
+msgid "3D Scale Track..."
+msgstr "Trek Skala 3D..."
+
+msgid "Blend Shape Track..."
+msgstr "Trek Paduan Bentuk..."
+
+msgid "Call Method Track..."
+msgstr "Trek Pemanggil Metode..."
+
+msgid "Bezier Curve Track..."
+msgstr "Trek Lengkungan Bezier..."
+
+msgid "Audio Playback Track..."
+msgstr "Trek Pemutar Suara..."
+
+msgid "Animation Playback Track..."
+msgstr "Trek Pemutar Animasi..."
 
 msgid "Animation length (frames)"
 msgstr "Panjang Animasi (frame)"
@@ -695,9 +759,6 @@ msgstr "Skala:"
 
 msgid "Blend Shape:"
 msgstr "Bentuk Campuran:"
-
-msgid "Type:"
-msgstr "Jenis:"
 
 msgid "(Invalid, expected type: %s)"
 msgstr "(Tidak valid, tipe yang diharapkan: %s)"
@@ -771,8 +832,17 @@ msgstr "Interpolasi perulangan clamp"
 msgid "Wrap Loop Interp"
 msgstr "Interpolasi perulangan warp"
 
+msgid "Insert Key..."
+msgstr "Masukkan Kunci..."
+
 msgid "Duplicate Key(s)"
 msgstr "Duplikat Key"
+
+msgid "Cut Key(s)"
+msgstr "Potong Kunci"
+
+msgid "Copy Key(s)"
+msgstr "Salin Kunci"
 
 msgid "Add RESET Value(s)"
 msgstr "Tambahkan Nilai RESET"
@@ -802,14 +872,14 @@ msgstr ""
 msgid "Remove Anim Track"
 msgstr "Hapus Trek Anim"
 
-msgid "Hold Shift when clicking the key icon to skip this dialog."
-msgstr "Tahan Shift saat mengklik ikon kunci untuk melewati dialog ini."
-
 msgid "Create new track for %s and insert key?"
 msgstr "Buat track baru untuk %s dan sisipkan kunci?"
 
 msgid "Create %d new tracks and insert keys?"
 msgstr "Membuat %d track baru dan menyisipkan kunci?"
+
+msgid "Hold Shift when clicking the key icon to skip this dialog."
+msgstr "Tahan Shift saat mengklik ikon kunci untuk melewati dialog ini."
 
 msgid "Create"
 msgstr "Buat"
@@ -871,17 +941,8 @@ msgstr "Tidak bisa menambahkan key karena path pada track tidak sah."
 msgid "Track is not of type Node3D, can't insert key"
 msgstr "Trek bukan tipe Node3D, tidak dapat memasukkan kunci"
 
-msgid "Add Position Key"
-msgstr "Tambahkan Kunci Posisi"
-
-msgid "Add Rotation Key"
-msgstr "Tambahkan Kunci Rotasi"
-
-msgid "Add Scale Key"
-msgstr "Tambahkan Kunci Skala"
-
-msgid "Add Track Key"
-msgstr "Tambah Kunci Track"
+msgid "Track is not of type MeshInstance3D, can't insert key"
+msgstr "Trek bukan tipe MeshInstance3D, tidak dapat memasukkan kunci"
 
 msgid "Track path is invalid, so can't add a method key."
 msgstr ""
@@ -925,6 +986,9 @@ msgstr "Tempel Trek-trek"
 
 msgid "Animation Scale Keys"
 msgstr "Kunci Skala Animasi"
+
+msgid "Animation Set End Offset"
+msgstr "Tetapkan Offset Akhir Animasi"
 
 msgid "Make Easing Keys"
 msgstr "Buat Kunci Pelonggaran"
@@ -1000,9 +1064,6 @@ msgstr "Hanya tampilkan track dari node terpilih dalam tree."
 msgid "Group tracks by node or display them as plain list."
 msgstr "Susun track berdasarkan node atau tampilkan sebagai daftar biasa."
 
-msgid "Snap:"
-msgstr "Tangkapan:"
-
 msgid "Animation step value."
 msgstr "Nilai langkah animasi."
 
@@ -1012,17 +1073,56 @@ msgstr "Detik"
 msgid "FPS"
 msgstr "FPS"
 
+msgid "Fit to panel"
+msgstr "Mengepaskan ke Panel"
+
 msgid "Edit"
 msgstr "Sunting"
 
 msgid "Animation properties."
 msgstr "Properti animasi."
 
+msgid "Copy Tracks..."
+msgstr "Salin Trek-trek..."
+
+msgid "Scale Selection..."
+msgstr "Seleksi Skala..."
+
+msgid "Scale From Cursor..."
+msgstr "Skala dari Kursor..."
+
+msgid "Set Start Offset (Audio)"
+msgstr "Atur Offset Awal (Audio)"
+
+msgid "Set End Offset (Audio)"
+msgstr "Atur Offset Akhir (Audio)"
+
+msgid "Make Easing Selection..."
+msgstr "Lakukan Seleksi Easing..."
+
+msgid "Duplicate Selected Keys"
+msgstr "Duplikat Kunci Terpilih"
+
+msgid "Cut Selected Keys"
+msgstr "Potong Kunci Yang Terpilih"
+
+msgid "Copy Selected Keys"
+msgstr "Salin Kunci Yang Terpilih"
+
+msgid "Paste Keys"
+msgstr "Tempelkan Kunci"
+
+msgid "Move First Selected Key to Cursor"
+msgstr "Pindahkan Key Pertama Yang Terpilih ke Kursor"
+
+msgid "Move Last Selected Key to Cursor"
+msgstr "Pindahkan Key Terakhir Yang Terpilih ke Kursor"
+
 msgid "Delete Selection"
 msgstr "Hapus Pilihan"
 
 msgid "Go to Next Step"
-msgstr "Pergi ke Langkah Berikutnya"
+msgstr "Pergi ke Langkah Selanjutnya"
 
 msgid "Go to Previous Step"
 msgstr "Pergi ke Langkah Sebelumnya"
@@ -1030,11 +1130,20 @@ msgstr "Pergi ke Langkah Sebelumnya"
 msgid "Apply Reset"
 msgstr "Terapkan Reset"
 
+msgid "Bake Animation..."
+msgstr "Kemas Animasi..."
+
+msgid "Optimize Animation (no undo)..."
+msgstr "Optimalkan Animasi (tanpa undo)..."
+
+msgid "Clean-Up Animation (no undo)..."
+msgstr "Bersihkan Animasi (tanpa undo)..."
+
 msgid "Pick a node to animate:"
-msgstr "Pilih node yang ingin dianimasikan:"
+msgstr "Pilih sebuah node yang ingin dianimasikan:"
 
 msgid "Use Bezier Curves"
-msgstr "Gunakan Lengkungan Bezier"
+msgstr "Gunakan Bezier Curves"
 
 msgid "Create RESET Track(s)"
 msgstr "Buat RESET Track"
@@ -1054,6 +1163,12 @@ msgstr "Kesalahan Presisi Maksimum:"
 msgid "Optimize"
 msgstr "Optimalkan"
 
+msgid "Trim keys placed in negative time"
+msgstr "Pangkas kunci di waktu negatif"
+
+msgid "Trim keys placed exceed the animation length"
+msgstr "Pangkas kunci yang melebihi panjang animasi"
+
 msgid "Remove invalid keys"
 msgstr "Hapus Tombol-tombol yang tidak valid"
 
@@ -1064,7 +1179,7 @@ msgid "Clean-up all animations"
 msgstr "Bersihkan semua animasi"
 
 msgid "Clean-Up Animation(s) (NO UNDO!)"
-msgstr "Bersihkan Animasi (Tidak Dapat Dikembalikan!)"
+msgstr "Bersihkan Animasi (TANPA UNDO!)"
 
 msgid "Clean-Up"
 msgstr "Bersihkan"
@@ -1169,6 +1284,12 @@ msgstr "Pilih Semua/Tidak Pilih Semua"
 msgid "Animation Change Keyframe Time"
 msgstr "Animasi Ubah Waktu Keyframe"
 
+msgid "Close"
+msgstr "Tutup"
+
+msgid "Error!"
+msgstr "Kesalahan!"
+
 msgid "Add Audio Track Clip"
 msgstr "Tambah Clip Trek Audio"
 
@@ -1213,9 +1334,12 @@ msgstr "Ganti Semua"
 msgid "Selection Only"
 msgstr "Hanya yang Dipilih"
 
+msgid "Hide"
+msgstr "Sembunyikan"
+
 msgctxt "Indentation"
 msgid "Spaces"
-msgstr "Sepasi"
+msgstr "Spasi"
 
 msgctxt "Indentation"
 msgid "Tabs"
@@ -1333,9 +1457,6 @@ msgstr "Memutuskan sinyal setelah pemicuan pertama."
 msgid "Cannot connect signal"
 msgstr "Tidak dapat menghubungkan sinyal"
 
-msgid "Close"
-msgstr "Tutup"
-
 msgid "Connect"
 msgstr "Menghubungkan"
 
@@ -1382,7 +1503,7 @@ msgid "Copy Name"
 msgstr "Salin Nama"
 
 msgid "Edit..."
-msgstr "Edit..."
+msgstr "Sunting..."
 
 msgid "Go to Method"
 msgstr "Menuju Ke Metode"
@@ -1404,9 +1525,6 @@ msgstr "Kelas ini ditandai sebagai usang."
 
 msgid "This class is marked as experimental."
 msgstr "Kelas ini ditandai sebagai eksperimental."
-
-msgid "No description available for %s."
-msgstr "Tidak ada deskripsi tersedia untuk %s."
 
 msgid "Favorites:"
 msgstr "Favorit:"
@@ -1456,6 +1574,9 @@ msgstr ""
 msgid "Toggle Visibility"
 msgstr "Alihkan Visibilitas"
 
+msgid "Clear"
+msgstr "Bersihkan"
+
 msgid "Updating assets on target device:"
 msgstr "Memperbarui aset di perangkat target:"
 
@@ -1498,9 +1619,6 @@ msgstr "Hentikan"
 msgid "Start"
 msgstr "Mulai"
 
-msgid "Clear"
-msgstr "Bersihkan"
-
 msgid "Measure:"
 msgstr "Ukuran:"
 
@@ -1536,6 +1654,9 @@ msgstr ""
 "Sendiri: Hanya menghitung waktu terpakai oleh fungsi tersendiri, tidak "
 "termasuk fungsi yang dipanggil.\n"
 "Gunakan ini untuk menemukan fungsi individual untuk optimalisasi."
+
+msgid "Display internal functions"
+msgstr "Menampilkan fungsi internal"
 
 msgid "Frame #:"
 msgstr "Bingkai #:"
@@ -1655,7 +1776,7 @@ msgid "Collapse All"
 msgstr "Lipat Semua"
 
 msgid "Profiler"
-msgstr "Profiler"
+msgstr "Pembuat profil"
 
 msgid "Visual Profiler"
 msgstr "Profiler Visual"
@@ -1820,12 +1941,6 @@ msgstr "Nama folder tidak boleh kosong."
 msgid "Folder name contains invalid characters."
 msgstr "Nama folder berisi karakter yang tidak valid."
 
-msgid "Folder name cannot begin or end with a space."
-msgstr "Nama folder tidak boleh dimulai atau di akhiri dengan spasi."
-
-msgid "Folder name cannot begin with a dot."
-msgstr "Nama folder tidak boleh dimulai atau di akhiri dengan titik."
-
 msgid "File with that name already exists."
 msgstr "File dengan nama itu sudah ada."
 
@@ -1837,17 +1952,11 @@ msgstr ""
 "Menggunakan garis miring pada nama folder akan membuat subfolder secara "
 "rekursif."
 
-msgid "Could not create folder."
-msgstr "Tidak dapat membuat folder."
-
-msgid "Create new folder in %s:"
-msgstr "Buat berkas baru di %s:"
-
-msgid "Create Folder"
-msgstr "Buat berkas"
-
 msgid "Folder name is valid."
 msgstr "Nama berkas sudah valid."
+
+msgid "Double-click to open in browser."
+msgstr "Klik dua kali untuk membuka di browser."
 
 msgid "Thanks from the Godot community!"
 msgstr "Terimakasih dari komunitas Godot!"
@@ -1950,7 +2059,7 @@ msgid "(and %s more files)"
 msgstr "(dan %s berkas lebih banyak)"
 
 msgid "Asset \"%s\" installed successfully!"
-msgstr "Aset \"%s\" sukses terpasang!"
+msgstr "Aset \"%s\" berhasil di install!"
 
 msgid "Success!"
 msgstr "Sukses!"
@@ -2077,17 +2186,11 @@ msgstr "Lokasi untuk Layout Baru..."
 msgid "Open Audio Bus Layout"
 msgstr "Buka Layout Suara Bus"
 
-msgid "There is no '%s' file."
-msgstr "Tidak ada berkas '%s'."
+msgid "Error saving file: %s"
+msgstr "Error menyimpan berkas: %s"
 
 msgid "Layout:"
 msgstr "Tata letak:"
-
-msgid "Invalid file, not an audio bus layout."
-msgstr "Berkas salah, tidak layout suara bus."
-
-msgid "Error saving file: %s"
-msgstr "Error menyimpan berkas: %s"
 
 msgid "Add Bus"
 msgstr "Tambahkan Bus"
@@ -2119,29 +2222,8 @@ msgstr "Buat Layout Bus Baru."
 msgid "Audio Bus Layout"
 msgstr "Tata Letak Bus Audio"
 
-msgid "Invalid name."
-msgstr "Nama tidak sah."
-
-msgid "Cannot begin with a digit."
-msgstr "Tidak dapat dimulai dengan angka."
-
-msgid "Valid characters:"
-msgstr "Karakter sah:"
-
-msgid "Must not collide with an existing engine class name."
-msgstr "Tidak boleh sama dengan nama kelas engine yang sudah ada."
-
-msgid "Must not collide with an existing global script class name."
-msgstr "Tidak boleh bertabrakan dengan nama kelas skrip global yang sudah ada."
-
-msgid "Must not collide with an existing built-in type name."
-msgstr "Tidak boleh sama dengan nama tipe bawaan yang ada."
-
-msgid "Must not collide with an existing global constant name."
-msgstr "Tidak boleh sama dengan nama konstanta global yang ada."
-
 msgid "Keyword cannot be used as an Autoload name."
-msgstr "Keyword tidak dapat dijadikan sebagai nama autoload."
+msgstr "Kata kunci tidak dapat digunakan sebagai nama Muat Otomatis."
 
 msgid "Autoload '%s' already exists!"
 msgstr "Autoload '%s' telah ada!"
@@ -2179,9 +2261,6 @@ msgstr "Tambahkan Autoload"
 
 msgid "Path:"
 msgstr "Jalur:"
-
-msgid "Set path or press \"%s\" to create a script."
-msgstr "Tetapkan jalur atau tekan \"%s\" untuk membuat skrip."
 
 msgid "Node Name:"
 msgstr "Nama Node:"
@@ -2306,8 +2385,14 @@ msgstr "Fitur Umum:"
 msgid "Text Rendering and Font Options:"
 msgstr "Opsi Perenderan Teks dan Jenis Huruf:"
 
+msgid "Reset the edited profile?"
+msgstr "Setel ulang profil yang telah diedit?"
+
 msgid "File saving failed."
 msgstr "Penyimpanan file gagal."
+
+msgid "Create a new profile?"
+msgstr "Buat profil baru?"
 
 msgid "Nodes and Classes:"
 msgstr "Node dan Kelas:"
@@ -2336,23 +2421,14 @@ msgstr "Deteksi dari Proyek"
 msgid "Actions:"
 msgstr "Aksi:"
 
-msgid "Configure Engine Build Profile:"
-msgstr "Konfigurasi Mesin Build Profil:"
-
 msgid "Please Confirm:"
 msgstr "Mohon konfirmasi:"
-
-msgid "Engine Build Profile"
-msgstr "Mesin Build Profil"
 
 msgid "Load Profile"
 msgstr "Muat Profil"
 
 msgid "Export Profile"
 msgstr "Ekspor Profil"
-
-msgid "Edit Build Configuration Profile"
-msgstr "Edit Konfigurasi Build Profil"
 
 msgid ""
 "Failed to execute command \"%s\":\n"
@@ -2535,10 +2611,6 @@ msgstr "Impor Profil"
 msgid "Manage Editor Feature Profiles"
 msgstr "Kelola Editor Profil Fitur"
 
-msgid "Some extensions need the editor to restart to take effect."
-msgstr ""
-"Beberapa ekstensi memerlukan editor untuk memulai ulang agar dapat diterapkan."
-
 msgid "Restart"
 msgstr "Mulai Ulang"
 
@@ -2560,20 +2632,6 @@ msgstr "Mengimpor ulang Aset"
 
 msgid "Import resources of type: %s"
 msgstr "Mengimpor sumber daya dengan tipe: %s"
-
-msgid "No return value."
-msgstr "Tidak ada nilai pengembalian."
-
-msgid "This value is an integer composed as a bitmask of the following flags."
-msgstr ""
-"Nilai ini adalah bilangan bulat yang disusun sebagai bitmask dari flag "
-"berikut."
-
-msgid "Deprecated"
-msgstr "Usang"
-
-msgid "Experimental"
-msgstr "Eksperimental"
 
 msgid "This method supports a variable number of arguments."
 msgstr "Metode ini mendukung jumlah argumen yang bervariasi."
@@ -2598,6 +2656,20 @@ msgid ""
 msgstr ""
 "Metode ini tidak membutuhkan instance untuk dipanggil.\n"
 "Metode ini dapat dipanggil secara langsung menggunakan nama kelas."
+
+msgid "No return value."
+msgstr "Tidak ada nilai pengembalian."
+
+msgid "This value is an integer composed as a bitmask of the following flags."
+msgstr ""
+"Nilai ini adalah bilangan bulat yang disusun sebagai bitmask dari flag "
+"berikut."
+
+msgid "Deprecated"
+msgstr "Usang"
+
+msgid "Experimental"
+msgstr "Eksperimental"
 
 msgid "Constructors"
 msgstr "Konstruktor"
@@ -2751,32 +2823,23 @@ msgstr ""
 "Untuk saat ini tidak ada deskripsi properti ini. Tolong bantu kita "
 "dengan[color=$color][url=$url]kontribusi[/url][/color]!"
 
-msgid "Metadata:"
-msgstr "Metadata:"
+msgid "Editor"
+msgstr "Editor"
 
-msgid "Property:"
-msgstr "Properti:"
-
-msgid "Method:"
-msgstr "Fungsi:"
-
-msgid "Signal:"
-msgstr "Sinyal:"
+msgid "Click to copy."
+msgstr "Klik untuk menyalin."
 
 msgid "No description available."
 msgstr "Tidak ada deskripsi yang tersedia."
 
-msgid "%d match."
-msgstr "Ditemukan %d kecocokan."
+msgid "Show in FileSystem"
+msgstr "Tampilkan dalam FileSystem"
 
-msgid "%d matches."
-msgstr "Ditemukan %d kecocokan."
+msgid "Open in File Manager"
+msgstr "Tampilkan di Pengelola Berkas"
 
-msgid "Method"
-msgstr "Fungsi"
-
-msgid "Signal"
-msgstr "Sinyal"
+msgid "Class"
+msgstr "Kelas"
 
 msgid "Constant"
 msgstr "Konstan"
@@ -2787,8 +2850,20 @@ msgstr "Properti"
 msgid "Theme Property"
 msgstr "Properti Tema"
 
+msgid "Method"
+msgstr "Fungsi"
+
+msgid "Signal"
+msgstr "Sinyal"
+
 msgid "Annotation"
 msgstr "Anotasi"
+
+msgid "File"
+msgstr "File"
+
+msgid "%d matches."
+msgstr "Ditemukan %d kecocokan."
 
 msgid "Search Help"
 msgstr "Mencari Bantuan"
@@ -2832,11 +2907,8 @@ msgstr "Hanya Properti Tema"
 msgid "Member Type"
 msgstr "Tipe Anggota"
 
-msgid "(constructors)"
-msgstr "(konstruktor)"
-
-msgid "Class"
-msgstr "Kelas"
+msgid "Keywords"
+msgstr "Kata kunci"
 
 msgid "This member is marked as deprecated."
 msgstr "Anggota ini ditandai sebagai tidak digunakan lagi."
@@ -2916,35 +2988,14 @@ msgstr "Setel %s"
 msgid "Remove metadata %s"
 msgstr "Hapus metadata %s"
 
-msgid "Pinned %s"
-msgstr "%s disematkan"
-
 msgid "Unpinned %s"
 msgstr "Lepas sematan %s"
 
 msgid "Add metadata %s"
 msgstr "Tambahkan metadata %s"
 
-msgid "Metadata name can't be empty."
-msgstr "Nama metadata tidak boleh kosong."
-
-msgid "Metadata name must be a valid identifier."
-msgstr "Nama metadata harus berupa pengenal yang valid."
-
-msgid "Metadata with name \"%s\" already exists."
-msgstr "Metadata dengan nama \"%s\" sudah ada."
-
-msgid "Names starting with _ are reserved for editor-only metadata."
-msgstr "Nama yang dimulai dengan _ dicadangkan untuk metadata khusus editor."
-
-msgid "Name:"
-msgstr "Nama:"
-
-msgid "Metadata name is valid."
-msgstr "Nama metadata valid."
-
-msgid "Add Metadata Property for \"%s\""
-msgstr "Menambahkan Properti Metadata untuk \"%s\""
+msgid "Favorites"
+msgstr "Favorit"
 
 msgid "Copy Value"
 msgstr "Salin Nilai"
@@ -3064,14 +3115,8 @@ msgstr ""
 msgid "Spins when the editor window redraws."
 msgstr "Putar ketika jendela editor digambar ulang."
 
-msgid "Imported resources can't be saved."
-msgstr "Resource yang diimpor tidak dapat disimpan."
-
 msgid "OK"
 msgstr "Oke"
-
-msgid "Error saving resource!"
-msgstr "Error saat menyimpan resource!"
 
 msgid ""
 "This resource can't be saved because it does not belong to the edited scene. "
@@ -3090,30 +3135,6 @@ msgstr ""
 msgid "Save Resource As..."
 msgstr "Simpan Resource Sebagai..."
 
-msgid "Can't open file for writing:"
-msgstr "Tidak dapat membuka file untuk menulis:"
-
-msgid "Requested file format unknown:"
-msgstr "Format file yang diminta tidak diketahui:"
-
-msgid "Error while saving."
-msgstr "Error saat menyimpan."
-
-msgid "Can't open file '%s'. The file could have been moved or deleted."
-msgstr "Gagal membuka '%s'. Berkas telah dipindah atau dihapus."
-
-msgid "Error while parsing file '%s'."
-msgstr "Kesalahan saat mem-parsing file '%s'."
-
-msgid "Scene file '%s' appears to be invalid/corrupt."
-msgstr "File adegan '%s' tampaknya tidak valid/rusak."
-
-msgid "Missing file '%s' or one of its dependencies."
-msgstr "File '%s' hilang atau salah satu dependensinya."
-
-msgid "Error while loading file '%s'."
-msgstr "Kesalahan saat memuat file '%s'."
-
 msgid "Saving Scene"
 msgstr "Menyimpan Adegan"
 
@@ -3123,29 +3144,8 @@ msgstr "Menganalisis"
 msgid "Creating Thumbnail"
 msgstr "Membuat Thumbnail"
 
-msgid "This operation can't be done without a tree root."
-msgstr "Operasi ini tidak dapat diselesaikan tanpa root pohon."
-
-msgid ""
-"This scene can't be saved because there is a cyclic instance inclusion.\n"
-"Please resolve it and then attempt to save again."
-msgstr ""
-"Adegan ini tidak bisa disimpan karena ada inklusi penginstansian yang "
-"siklik.\n"
-"Mohon perbaiki dan coba simpan lagi."
-
-msgid ""
-"Couldn't save scene. Likely dependencies (instances or inheritance) couldn't "
-"be satisfied."
-msgstr ""
-"Tidak dapat menyimpan skena Dependensi (instance atau turunannya) mungkin "
-"tidak terpenuhi."
-
 msgid "Save scene before running..."
 msgstr "Simpan adegan sebelum menjalankan..."
-
-msgid "Could not save one or more scenes!"
-msgstr "Tidak dapat menyimpan satu atau beberapa adegan!"
 
 msgid "Save All Scenes"
 msgstr "Simpan Semua Adegan"
@@ -3153,11 +3153,11 @@ msgstr "Simpan Semua Adegan"
 msgid "Can't overwrite scene that is still open!"
 msgstr "Tidak bisa menimpa adegan yang masih terbuka!"
 
-msgid "Can't load MeshLibrary for merging!"
-msgstr "Tidak dapat memuat MeshLibrary untuk menggabungkan!"
+msgid "Merge With Existing"
+msgstr "Gabung dengan yang Ada"
 
-msgid "Error saving MeshLibrary!"
-msgstr "Terjadi kesalahan saat menyimpan MeshLibrary!"
+msgid "Apply MeshInstance Transforms"
+msgstr "Aplikasi Transformasi MeshInstance"
 
 msgid ""
 "An error occurred while trying to save the editor layout.\n"
@@ -3219,33 +3219,11 @@ msgstr ""
 "Silakan baca dokumentasi yang relevan dengan mengimpor adegan untuk lebih "
 "memahami alur kerja ini."
 
-msgid "Changes may be lost!"
-msgstr "Perubahan mungkin hilang!"
-
 msgid "This object is read-only."
 msgstr "Objek ini hanya dapat dibaca."
 
 msgid "Open Base Scene"
 msgstr "Buka Adegan Dasar"
-
-msgid "Quick Open..."
-msgstr "Buka Cepat..."
-
-msgid "Quick Open Scene..."
-msgstr "Buka Cepat Adegan..."
-
-msgid "Quick Open Script..."
-msgstr "Buka Cepat Skrip..."
-
-msgid "%s no longer exists! Please specify a new save location."
-msgstr "%s sudah tidak tersedia! Harap tentukan lokasi penyimpanan baru."
-
-msgid ""
-"The current scene has no root node, but %d modified external resource(s) were "
-"saved anyway."
-msgstr ""
-"Adegan saat ini tidak memiliki node root, tetapi %d resource eksternal yang "
-"diubah tetap disimpan."
 
 msgid ""
 "A root node is required to save the scene. You can add a root node using the "
@@ -3256,9 +3234,6 @@ msgstr ""
 
 msgid "Save Scene As..."
 msgstr "Simpan Adegan Sebagai..."
-
-msgid "Current scene not saved. Open anyway?"
-msgstr "Adegan saat ini belum disimpan. Buka saja?"
 
 msgid "Can't undo while mouse buttons are pressed."
 msgstr "Tidak bisa membatalkan ketika tombol mouse ditekan."
@@ -3318,24 +3293,11 @@ msgstr "Simpan sumber daya yang dimodifikasi sebelum ditutup?"
 msgid "Save changes to the following scene(s) before reloading?"
 msgstr "Menyimpan perubahan pada adegan berikut sebelum memuat ulang?"
 
-msgid "Save changes to the following scene(s) before quitting?"
-msgstr "Simpan perubahan adegan saat ini sebelum keluar?"
-
 msgid "Save changes to the following scene(s) before opening Project Manager?"
 msgstr "Simpan perubahan adegan saat ini sebelum membuka Manajer Proyek?"
 
-msgid ""
-"This option is deprecated. Situations where refresh must be forced are now "
-"considered a bug. Please report."
-msgstr ""
-"Opsi ini sudah usang. Situasi dimana penyegaran harus dipaksa dianggar "
-"sebagai bug. Tolong laporkan."
-
 msgid "Pick a Main Scene"
 msgstr "Pilih Adegan Utama"
-
-msgid "This operation can't be done without a scene."
-msgstr "Operasi ini tidak dapat diselesaikan tanpa adegan."
 
 msgid "Export Mesh Library"
 msgstr "Ekspor Pustaka Mesh"
@@ -3368,48 +3330,18 @@ msgstr ""
 "Adegan '%s' terimpor otomatis, jadi tidak dapat dimodifikasi.\n"
 "Untuk melakukan perubahan, adegan warisan baru dapat dibuat."
 
-msgid ""
-"Error loading scene, it must be inside the project path. Use 'Import' to open "
-"the scene, then save it inside the project path."
-msgstr ""
-"Gagal memuat adegan, harus dalam lokasi proyek. Gunakan 'Impor\" untuk "
-"membuka adegan tersebut, kemudian simpan di dalam lokasi proyek."
-
 msgid "Scene '%s' has broken dependencies:"
 msgstr "Adegan '%s' memiliki dependensi yang rusak:"
 
+msgid ""
+"Multi-window support is not available because the current platform doesn't "
+"support multiple windows."
+msgstr ""
+"Dukungan multi-jendela tidak tersedia karena platform saat ini tidak "
+"mendukung banyak jendela."
+
 msgid "Clear Recent Scenes"
 msgstr "Bersihkan Adegan baru-baru ini"
-
-msgid "There is no defined scene to run."
-msgstr "Tidak ada adegan yang didefinisikan untuk dijalankan."
-
-msgid ""
-"No main scene has ever been defined, select one?\n"
-"You can change it later in \"Project Settings\" under the 'application' "
-"category."
-msgstr ""
-"Tidak ada adegan utama yang pernah didefinisikan, pilih satu?\n"
-"Anda dapat mengubahnya nanti di \"Pengaturan Proyek\" di bawah kategori "
-"'aplikasi'."
-
-msgid ""
-"Selected scene '%s' does not exist, select a valid one?\n"
-"You can change it later in \"Project Settings\" under the 'application' "
-"category."
-msgstr ""
-"Adegan '%s' tidak ada, pilih yang valid?\n"
-"Anda dapat mengubahnya nanti di \"Pengaturan Proyek\" di bawah kategori "
-"'aplikasi'."
-
-msgid ""
-"Selected scene '%s' is not a scene file, select a valid one?\n"
-"You can change it later in \"Project Settings\" under the 'application' "
-"category."
-msgstr ""
-"Adegan yang dipilih '%s' bukanlah berkas adegan, pilih yang valid?\n"
-"Anda dapat menggantinya nanti di \"Pengaturan Proyek\" di bawah kategori "
-"'aplikasi'."
 
 msgid "Default"
 msgstr "Bawaan"
@@ -3463,6 +3395,24 @@ msgstr ""
 "Tidak dapat menulis ke file '%s', file sedang digunakan, terkunci atau tidak "
 "memiliki izin."
 
+msgid "Preparing scenes for reload"
+msgstr "Menyiapkan scene untuk memuat ulang"
+
+msgid ""
+"Changing the renderer requires restarting the editor.\n"
+"\n"
+"Choosing Save & Restart will change the rendering method to:\n"
+"- Desktop platforms: %s\n"
+"- Mobile platforms: %s\n"
+"- Web platform: gl_compatibility"
+msgstr ""
+"Untuk mengganti renderer, dibutuhkan untuk me-restart editor\n"
+"\n"
+"Memilih Save & Restart akan mengganti metode rendering menjadi:\n"
+"- Platform Desktop: %s\n"
+"- Platform Mobile: %s\n"
+"- Platform Web: gl_compatibility"
+
 msgid "Forward+"
 msgstr "Forward+"
 
@@ -3471,6 +3421,18 @@ msgstr "Mobile"
 
 msgid "Compatibility"
 msgstr "Kecocokan"
+
+msgid "Lock Selected Node(s)"
+msgstr "Mengunci Node yang Dipilih"
+
+msgid "Unlock Selected Node(s)"
+msgstr "Buka Kunci Node Terpilih"
+
+msgid "Group Selected Node(s)"
+msgstr "Kelompokkan Node yang Dipilih"
+
+msgid "Ungroup Selected Node(s)"
+msgstr "Pisahkan Node yang Dipilih dari Grup"
 
 msgid "Pan View"
 msgstr "Geser Tampilan"
@@ -3520,6 +3482,15 @@ msgstr "Buka baru-baru ini"
 msgid "Save Scene"
 msgstr "Simpan Adegan"
 
+msgid "Quick Open..."
+msgstr "Buka Cepat..."
+
+msgid "Quick Open Scene..."
+msgstr "Buka Cepat Adegan..."
+
+msgid "Quick Open Script..."
+msgstr "Buka Cepat Skrip..."
+
 msgid "Export As..."
 msgstr "Ekspor Sebagai..."
 
@@ -3538,26 +3509,17 @@ msgstr "Pengaturan Editor..."
 msgid "Project"
 msgstr "Proyek"
 
-msgid "Project Settings..."
-msgstr "Pengaturan Proyek…"
-
 msgid "Project Settings"
 msgstr "Pengaturan Proyek"
 
 msgid "Version Control"
 msgstr "Kontrol Versi"
 
-msgid "Export..."
-msgstr "Ekspor…"
-
 msgid "Install Android Build Template..."
 msgstr "Pasang Templat Build Android..."
 
 msgid "Open User Data Folder"
 msgstr "Buka Folder Data Pengguna"
-
-msgid "Customize Engine Build Configuration..."
-msgstr "Sesuaikan Konfigurasi Engine Build..."
 
 msgid "Tools"
 msgstr "Alat-alat"
@@ -3574,9 +3536,6 @@ msgstr "Muat Ulang Project Saat Ini"
 msgid "Quit to Project List"
 msgstr "Keluar ke daftar proyek"
 
-msgid "Editor"
-msgstr "Editor"
-
 msgid "Command Palette..."
 msgstr "Palet Perintah..."
 
@@ -3585,9 +3544,6 @@ msgstr "Tata Letak Editor"
 
 msgid "Take Screenshot"
 msgstr "Ambil Tangkapan Layar"
-
-msgid "Screenshots are stored in the Editor Data/Settings Folder."
-msgstr "Tangkapan layar disimpan dalam folder Data/Pengaturan Editor."
 
 msgid "Toggle Fullscreen"
 msgstr "Mode Layar Penuh"
@@ -3616,8 +3572,8 @@ msgstr "Bantuan"
 msgid "Online Documentation"
 msgstr "Dokumentasi Online"
 
-msgid "Questions & Answers"
-msgstr "Pertanyaan & Jawaban"
+msgid "Forum"
+msgstr "Forum"
 
 msgid "Community"
 msgstr "Komunitas"
@@ -3640,6 +3596,21 @@ msgstr "Kirim Tanggapan Dokumentasi"
 msgid "Support Godot Development"
 msgstr "Dukung pengembangan Godot"
 
+msgid ""
+"Choose a rendering method.\n"
+"\n"
+"Notes:\n"
+"- On mobile platforms, the Mobile rendering method is used if Forward+ is "
+"selected here.\n"
+"- On the web platform, the Compatibility rendering method is always used."
+msgstr ""
+"Pilih metode rendering\n"
+"\n"
+"Catatan:\n"
+"- Di platform mobile, metode Mobile rendering akan digunakan jika Forward+ "
+"dipilih.\n"
+"- Di platform web, metode Compatibility rendering akan selalu digunakan."
+
 msgid "Update Continuously"
 msgstr "Perbarui Terus-menerus"
 
@@ -3649,9 +3620,6 @@ msgstr "Perbarui Saat Berubah"
 msgid "Hide Update Spinner"
 msgstr "Sembunyikan Spinner Pembaruan"
 
-msgid "FileSystem"
-msgstr "Berkas Sistem"
-
 msgid "Inspector"
 msgstr "Inspektur"
 
@@ -3660,9 +3628,6 @@ msgstr "Node"
 
 msgid "History"
 msgstr "Riwayat"
-
-msgid "Output"
-msgstr "Luaran"
 
 msgid "Don't Save"
 msgstr "Jangan Simpan"
@@ -3691,27 +3656,8 @@ msgstr "Paket Templat"
 msgid "Export Library"
 msgstr "Ekspor Pustaka"
 
-msgid "Merge With Existing"
-msgstr "Gabung dengan yang Ada"
-
-msgid "Apply MeshInstance Transforms"
-msgstr "Aplikasi Transformasi MeshInstance"
-
 msgid "Open & Run a Script"
 msgstr "Buka & Jalankan Skrip"
-
-msgid ""
-"The following files are newer on disk.\n"
-"What action should be taken?"
-msgstr ""
-"Berkas berikut lebih baru dalam disk.\n"
-"Aksi apa yang ingin diambil?"
-
-msgid "Reload"
-msgstr "Muat Ulang"
-
-msgid "Resave"
-msgstr "Simpan Ulang"
 
 msgid "Version Control Settings..."
 msgstr "Pengaturan Kontrol Versi..."
@@ -3749,26 +3695,11 @@ msgstr "Oke"
 msgid "Warning!"
 msgstr "Peringatan!"
 
-msgid "On"
-msgstr "Nyala"
-
-msgid "Edit Plugin"
-msgstr "Sunting Plug-in"
-
-msgid "Installed Plugins:"
-msgstr "Plugins Terpasang:"
-
-msgid "Create New Plugin"
-msgstr "Buat Plugin Baru"
-
-msgid "Version"
-msgstr "Versi"
-
-msgid "Author"
-msgstr "Pencipta"
-
 msgid "Edit Text:"
 msgstr "Sunting Teks:"
+
+msgid "On"
+msgstr "Nyala"
 
 msgid "Renaming layer %d:"
 msgstr "Mengganti nama layer %d:"
@@ -3817,6 +3748,9 @@ msgstr ""
 "ditentukan secara unik, tetapi hasil dari Quaternion->Euler dapat berupa "
 "banyak nilai."
 
+msgid "Temporary Euler"
+msgstr "Euler Sementara"
+
 msgid "Assign..."
 msgstr "Terapkan.."
 
@@ -3831,6 +3765,17 @@ msgstr "RID tidak valid"
 
 msgid "Recursion detected, unable to assign resource to property."
 msgstr "Rekursi terdeteksi, tidak dapat menetapkan sumber daya ke properti."
+
+msgid ""
+"Can't create a ViewportTexture in a Texture2D node because the texture will "
+"not be bound to a scene.\n"
+"Use a Texture2DParameter node instead and set the texture in the \"Shader "
+"Parameters\" tab."
+msgstr ""
+"Tidak dapat membuat ViewportTexture didalam node Texture2D karena texture "
+"tidak akan terkait pada adegan.\n"
+"Sebaiknya gunakan node Texture2DParameter dan atur texture di tab \"Shader "
+"Parameters\"."
 
 msgid ""
 "Can't create a ViewportTexture on resources saved as a file.\n"
@@ -3857,29 +3802,20 @@ msgstr "Pilih Viewport"
 msgid "Selected node is not a Viewport!"
 msgstr "Node yang terpilih bukanlah Viewport!"
 
+msgid "New Key:"
+msgstr "Key Baru:"
+
+msgid "New Value:"
+msgstr "Nilai Baru:"
+
 msgid "(Nil) %s"
 msgstr "(Nihil) %s"
-
-msgid "%s (size %s)"
-msgstr "%s (ukuran %s)"
 
 msgid "Size:"
 msgstr "Ukuran:"
 
 msgid "Remove Item"
 msgstr "Hapus item"
-
-msgid "Dictionary (Nil)"
-msgstr "Kamus (Nihil)"
-
-msgid "Dictionary (size %d)"
-msgstr "Kamus (ukuran %d)"
-
-msgid "New Key:"
-msgstr "Key Baru:"
-
-msgid "New Value:"
-msgstr "Nilai Baru:"
 
 msgid "Add Key/Value Pair"
 msgstr "Tambahkan pasangan Key/Value"
@@ -3903,6 +3839,11 @@ msgstr ""
 "Resource yang terpilih (%s) tidak sesuai dengan tipe apapun yang diharapkan "
 "untuk properti ini (%s)."
 
+msgid "Opens a quick menu to select from a list of allowed Resource files."
+msgstr ""
+"Membuka menu cepat untuk memilih dari daftar file sumber daya yang boleh "
+"digunakan."
+
 msgid "Load..."
 msgstr "Muat..."
 
@@ -3918,9 +3859,6 @@ msgstr "Jadikan Unik (Rekursif)"
 msgid "Save As..."
 msgstr "Simpan Sebagai..."
 
-msgid "Show in FileSystem"
-msgstr "Tampilkan dalam FileSystem"
-
 msgid "Convert to %s"
 msgstr "Konversi ke %s"
 
@@ -3932,12 +3870,6 @@ msgstr "%s baru"
 
 msgid "New Script..."
 msgstr "Skrip Baru..."
-
-msgid "No Remote Debug export presets configured."
-msgstr "Tidak ada preset ekspor Debug remote yang dikonfigurasi."
-
-msgid "Remote Debug"
-msgstr "Debug Remote"
 
 msgid ""
 "No runnable export preset found for this platform.\n"
@@ -3953,20 +3885,17 @@ msgstr "Jalankan Proyek"
 msgid "Write your logic in the _run() method."
 msgstr "Tulis logika di dalam fungsi _run()."
 
-msgid "There is an edited scene already."
-msgstr "Sudah ada skena yang disunting."
-
-msgid "Undo: %s"
-msgstr "Urungkan: %s"
-
-msgid "Redo: %s"
-msgstr "Ulangi: %s"
+msgid "The current scene already has a root node."
+msgstr "Scene ini sudah mempunyai root node."
 
 msgid "Edit Built-in Action: %s"
 msgstr "Edit Tindakan Bawaan:%s"
 
 msgid "Edit Shortcut: %s"
 msgstr "Edit Pintasan:%s"
+
+msgid "None"
+msgstr "Tidak ada"
 
 msgid "Common"
 msgstr "Umum"
@@ -3980,6 +3909,9 @@ msgstr "Umum"
 msgid "Filter Settings"
 msgstr "Pengaturan Filter"
 
+msgid "Advanced Settings"
+msgstr "Setelan Lanjutan"
+
 msgid "The editor must be restarted for changes to take effect."
 msgstr "Editor harus dimulai ulang untuk menerapkan perubahan."
 
@@ -3988,6 +3920,9 @@ msgstr "Tombol Pintasan"
 
 msgid "Binding"
 msgstr "Mengikat"
+
+msgid "Failed to check for updates. Response code: %d."
+msgstr "Gagal memeriksa pembaruan. Kode respons: %d."
 
 msgid "Left Stick Left, Joystick 0 Left"
 msgstr "AnalogKiri Kiri, Joystick 0 Kiri"
@@ -4064,6 +3999,33 @@ msgstr "Semua Perangkat"
 msgid "Device"
 msgstr "Perangkat"
 
+msgid "Failed to get Info.plist hash."
+msgstr "Gagal untuk mendapatkan info.plist hash."
+
+msgid "Invalid Info.plist, no bundle id."
+msgstr "Tidak valid Info.plist, tidak ada id bundle."
+
+msgid "Invalid Info.plist, can't load."
+msgstr "Info.plist tidak valid, tidak bisa memuat."
+
+msgid "Failed to create \"%s\" subfolder."
+msgstr "Tidak dapat membuat sub folder \"%s\"."
+
+msgid "Failed to extract thin binary."
+msgstr "Gagal untuk ekstrak biner tipis."
+
+msgid "Invalid binary format."
+msgstr "Format biner tidak valid."
+
+msgid "Failed to create _CodeSignature subfolder."
+msgstr "Gagal membuat subfolder _CodeSignature."
+
+msgid "Failed to create fat binary."
+msgstr "Gagal membuat biner tebal."
+
+msgid "Unknown object type."
+msgstr "Jenis objek tidak diketahui."
+
 msgid "Project export for platform:"
 msgstr "Proyek ekspor untuk platform:"
 
@@ -4076,26 +4038,20 @@ msgstr "Sukses."
 msgid "Failed."
 msgstr "Gagal."
 
+msgid "Export failed with error code %d."
+msgstr "Ekspor gagal dengan kode error %d."
+
 msgid "Storing File: %s"
 msgstr "Menyimpan File: %s"
 
 msgid "Storing File:"
 msgstr "Menyimpan File:"
 
-msgid "No export template found at the expected path:"
-msgstr "Templat ekspor tidak ditemukan di tempat yg diharapkan:"
-
-msgid "ZIP Creation"
-msgstr "Pembuatan ZIP"
-
 msgid "Could not open file to read from path \"%s\"."
 msgstr "Tidak dapat membuka file untuk dibaca dari path \"%s\"."
 
 msgid "Packing"
 msgstr "Mengemas"
-
-msgid "Save PCK"
-msgstr "Simpan PCK"
 
 msgid "Cannot create file \"%s\"."
 msgstr "Tidak dapat membuat file \"%s\"."
@@ -4118,17 +4074,18 @@ msgstr "Tidak dapat membuka file terenkripsi untuk menulis."
 msgid "Can't open file to read from path \"%s\"."
 msgstr "Tidak dapat membuka file untuk dibaca dari path \"%s\"."
 
-msgid "Save ZIP"
-msgstr "Simpan ZIP"
-
 msgid "Custom debug template not found."
 msgstr "Templat awakutu kustom tidak ditemukan."
 
 msgid "Custom release template not found."
 msgstr "Templat rilis kustom tidak ditemukan."
 
-msgid "Prepare Template"
-msgstr "Siapkan Template"
+msgid ""
+"A texture format must be selected to export the project. Please select at "
+"least one texture format."
+msgstr ""
+"Format tekstur setidaknya harus dipilih untuk mengekspor proyek. Silahkan "
+"pilih salah satu format tekstur."
 
 msgid "The given export path doesn't exist."
 msgstr "Lokasi ekspor yang diberikan tidak ada."
@@ -4138,9 +4095,6 @@ msgstr "File template tidak ditemukan: \"%s\"."
 
 msgid "Failed to copy export template."
 msgstr "Gagal menyalin template ekspor."
-
-msgid "PCK Embedding"
-msgstr "Penyematan PCK"
 
 msgid "On 32-bit exports the embedded PCK cannot be bigger than 4 GiB."
 msgstr "Pada ekspor 32-bit PCK yang ditanamkan tidak boleh lebih dari 4GiB."
@@ -4218,35 +4172,11 @@ msgstr ""
 "Tautan unduh tidak ditemukan untuk versi ini. Unduhan langsung hanya tersedia "
 "untuk versi rilis resmi."
 
-msgid "Disconnected"
-msgstr "Terputus"
-
-msgid "Resolving"
-msgstr "Menyelesaikan"
-
-msgid "Can't Resolve"
-msgstr "Tidak Bisa Menyelesaikan"
-
 msgid "Connecting..."
 msgstr "Menyambungkan..."
 
-msgid "Can't Connect"
-msgstr "Tidak dapat terhubung"
-
-msgid "Connected"
-msgstr "Terhubung"
-
 msgid "Requesting..."
 msgstr "Melakukan permintaan..."
-
-msgid "Downloading"
-msgstr "Mengunduh"
-
-msgid "Connection Error"
-msgstr "Gangguan Koneksi"
-
-msgid "TLS Handshake Error"
-msgstr "Kesalahan Jabat Tangan TLS"
 
 msgid "Can't open the export templates file."
 msgstr "Tidak dapat membuka file template ekspor."
@@ -4269,6 +4199,12 @@ msgstr "Mengimpor:"
 msgid "Remove templates for the version '%s'?"
 msgstr "Hapus template untuk versi '%s'?"
 
+msgid "Export templates are missing. Download them or install from a file."
+msgstr "Template ekspor tidak ada. Download atau instal dari file."
+
+msgid "Official export templates aren't available for development builds."
+msgstr "Templat ekspor resmi tidak tersedia untuk build pengembangan."
+
 msgid "Uncompressing Android Build Sources"
 msgstr "Mengekstrak Kode Sumber Build Android"
 
@@ -4277,9 +4213,6 @@ msgstr "Manajer Templat Ekspor"
 
 msgid "Current Version:"
 msgstr "Versi sekarang:"
-
-msgid "Export templates are missing. Download them or install from a file."
-msgstr "Template ekspor tidak ada. Download atau instal dari file."
 
 msgid "Export templates are installed and ready to be used."
 msgstr "Template ekspor sudah terinstal dan siap digunakan."
@@ -4312,9 +4245,6 @@ msgid ""
 "Download and install templates for the current version from the best possible "
 "mirror."
 msgstr "Unduh dan pasang template untuk versi saat ini dari mirror terbaik."
-
-msgid "Official export templates aren't available for development builds."
-msgstr "Templat ekspor resmi tidak tersedia untuk build pengembangan."
 
 msgid "Install from File"
 msgstr "Padang dari File"
@@ -4367,6 +4297,9 @@ msgstr "Resource yang akan diekspor:"
 msgid "(Inherited)"
 msgstr "(Mewarising)"
 
+msgid "Export With Debug"
+msgstr "Ekspor dengan Awakutu"
+
 msgid "%s Export"
 msgstr "Ekspor %s"
 
@@ -4395,6 +4328,9 @@ msgstr ""
 
 msgid "Advanced Options"
 msgstr "Opsi Lanjutan"
+
+msgid "If checked, the advanced options will be shown."
+msgstr "Jika dicentang, pilihan lanjutan akan ditampilkan."
 
 msgid "Export Path"
 msgstr "Lokasi Ekspor"
@@ -4450,6 +4386,9 @@ msgstr ""
 "Filter untuk mengecualikan berkas/folder dari proyek\n"
 "(pisahkan dengan koma, contoh: *.json, *.txt, docs/*)"
 
+msgid "Godot Project Pack"
+msgstr "Paket Proyek Godot"
+
 msgid "Features"
 msgstr "Fitur-fitur"
 
@@ -4499,11 +4438,34 @@ msgstr ""
 msgid "More Info..."
 msgstr "Info lebih lanjut..."
 
+msgid "Text (easier debugging)"
+msgstr "Teks (debugging/penyelesaian masalah lebih mudah)"
+
+msgid "Binary tokens (faster loading)"
+msgstr "Token biner (memuat lebih cepat)"
+
+msgid "Compressed binary tokens (smaller files)"
+msgstr "Token biner terkompresi (file lebih kecil)"
+
 msgid "Export PCK/ZIP..."
 msgstr "Ekspor PCK/ZIP..."
 
+msgid ""
+"Export the project resources as a PCK or ZIP package. This is not a playable "
+"build, only the project data without a Godot executable."
+msgstr ""
+"Ekspor sumber daya proyek sebagai PCK atau ZIP. Ini bukan merupakan bangunan/"
+"build yang dapat dimainkan, hanya data proyek tanpa aplikasi Godot."
+
 msgid "Export Project..."
 msgstr "Ekspor Proyek..."
+
+msgid ""
+"Export the project as a playable build (Godot executable and project data) "
+"for the selected preset."
+msgstr ""
+"Ekspor proyek sebagai build yang dapat dimainkan (aplikasi Godot dan data "
+"proyek) untuk prasetel yang dipilih."
 
 msgid "Export All"
 msgstr "Ekspor Semua"
@@ -4517,9 +4479,6 @@ msgstr "Ekspor Semua..."
 msgid "ZIP File"
 msgstr "Berkas ZIP"
 
-msgid "Godot Project Pack"
-msgstr "Paket Proyek Godot"
-
 msgid "Export templates for this platform are missing:"
 msgstr "Tidak ada templat ekspor untuk platform ini:"
 
@@ -4528,9 +4487,6 @@ msgstr "Ekspor Proyek"
 
 msgid "Manage Export Templates"
 msgstr "Mengatur Templat Ekspor"
-
-msgid "Export With Debug"
-msgstr "Ekspor dengan Awakutu"
 
 msgid "Path to FBX2glTF executable is empty."
 msgstr "Path ke eksekusi FBX2glTF kosong."
@@ -4556,9 +4512,6 @@ msgstr "Telusur"
 
 msgid "Confirm Path"
 msgstr "Konfirmasi Path"
-
-msgid "Favorites"
-msgstr "Favorit"
 
 msgid "View items as a grid of thumbnails."
 msgstr "Tampilkan item sebagai grid thumbnail."
@@ -4588,12 +4541,6 @@ msgstr "Error saat memindahkan:"
 
 msgid "Error duplicating:"
 msgstr "Error saat menggandakan berkas:"
-
-msgid "Failed to save resource at %s: %s"
-msgstr "Gagal menyimpan sumber daya pada %s: %s"
-
-msgid "Failed to load resource at %s: %s"
-msgstr "Gagal memuat sumber daya pada %s: %s"
 
 msgid ""
 "This filename begins with a dot rendering the file invisible to the editor.\n"
@@ -4635,6 +4582,9 @@ msgstr "Menggandakan berkas:"
 
 msgid "Duplicating folder:"
 msgstr "Menggandakan folder:"
+
+msgid "Create Folder"
+msgstr "Buat berkas"
 
 msgid "New Inherited Scene"
 msgstr "Skena Warisan Baru"
@@ -4690,9 +4640,6 @@ msgstr "Hapus dari Favorit"
 msgid "Reimport"
 msgstr "Impor ulang"
 
-msgid "Open in File Manager"
-msgstr "Tampilkan di Pengelola Berkas"
-
 msgid "New Folder..."
 msgstr "Buat Direktori..."
 
@@ -4740,6 +4687,24 @@ msgstr "Ubah Nama..."
 
 msgid "Open in External Program"
 msgstr "Buka di Program Eksternal"
+
+msgid "Yellow"
+msgstr "Kuning"
+
+msgid "Green"
+msgstr "Hijau"
+
+msgid "Blue"
+msgstr "Biru"
+
+msgid "Purple"
+msgstr "Ungu"
+
+msgid "Pink"
+msgstr "Merah Muda"
+
+msgid "Gray"
+msgstr "Abu-abu"
 
 msgid "Go to previous selected folder/file."
 msgstr "Buka folder/file yang dipilih sebelumnya."
@@ -4854,12 +4819,6 @@ msgstr ""
 msgid "Select This Folder"
 msgstr "Pilih Folder Ini"
 
-msgid "All Recognized"
-msgstr "Semua diakui"
-
-msgid "All Files (*)"
-msgstr "Semua File-file (*)"
-
 msgid "Open a File"
 msgstr "Buka sebuah File"
 
@@ -4877,6 +4836,9 @@ msgstr "Simpan sebuah File"
 
 msgid "Could not create folder. File with that name already exists."
 msgstr "Tidak dapat membuat folder. File dengan nama tersebut sudah ada."
+
+msgid "Could not create folder."
+msgstr "Tidak dapat membuat folder."
 
 msgid "Favorited folder does not exist anymore and will be removed."
 msgstr "Folder favorit tidak ada lagi dan akan dihapus."
@@ -4923,14 +4885,17 @@ msgstr "Segarkan berkas."
 msgid "(Un)favorite current folder."
 msgstr "Hapus favorit direktori saat ini."
 
-msgid "Toggle the visibility of hidden files."
-msgstr "Beralih visibilitas berkas yang tersembunyi."
-
 msgid "Directories & Files:"
 msgstr "Direktori-direktori & File-file:"
 
+msgid "Toggle the visibility of hidden files."
+msgstr "Beralih visibilitas berkas yang tersembunyi."
+
 msgid "Preview:"
 msgstr "Pratinjau:"
+
+msgid "Filter"
+msgstr "Filter"
 
 msgid "File:"
 msgstr "File:"
@@ -4964,29 +4929,8 @@ msgstr "Memainkan adegan khusus."
 msgid "Reload the played scene."
 msgstr "Muat ulang adegan yang dimainkan."
 
-msgid "Quick Run Scene..."
-msgstr "Jalankan Cepat Skena..."
-
-msgid ""
-"Movie Maker mode is enabled, but no movie file path has been specified.\n"
-"A default movie file path can be specified in the project settings under the "
-"Editor > Movie Writer category.\n"
-"Alternatively, for running single scenes, a `movie_file` string metadata can "
-"be added to the root node,\n"
-"specifying the path to a movie file that will be used when recording that "
-"scene."
-msgstr ""
-"Mode Movie Maker diaktifkan, tetapi tidak ada path file movie yang "
-"ditentukan.\n"
-"Path file movie default dapat ditentukan dalam pengaturan proyek di bawah "
-"kategori Editor > Movie Writer.\n"
-"Atau, untuk menjalankan adegan tunggal, metadata string `movie_file` dapat "
-"ditambahkan ke node root,\n"
-"menentukan path ke file movie yang akan digunakan saat merekam adegan "
-"tersebut."
-
-msgid "Could not start subprocess(es)!"
-msgstr "Tidak dapat memulai subproses!"
+msgid "Network Profiler"
+msgstr "Network Profiler(Debug jaringan)"
 
 msgid "Run the project's default scene."
 msgstr "Jalankan adegan default proyek."
@@ -5067,6 +5011,9 @@ msgstr "Tampilkan notifikasi."
 msgid "Silence the notifications."
 msgstr "Matikan notifikasi."
 
+msgid "(unknown)"
+msgstr "(tidak diketahui)"
+
 msgid "Toggle Visible"
 msgstr "Jungkitkan Keterlihatan"
 
@@ -5081,15 +5028,6 @@ msgstr "(Menghubungkan dari)"
 
 msgid "Node configuration warning:"
 msgstr "Peringatan pengaturan node:"
-
-msgid ""
-"This node can be accessed from within anywhere in the scene by preceding it "
-"with the '%s' prefix in a node path.\n"
-"Click to disable this."
-msgstr ""
-"Node ini dapat diakses dari dalam scene mana saja dengan mendahuluinya dengan "
-"awalan '%s' dalam asal node.\n"
-"Klik untuk menonaktifkannya."
 
 msgid "Node has one connection."
 msgid_plural "Node has {num} connections."
@@ -5141,14 +5079,14 @@ msgstr "\"%s\" bukanlah filter yang dikenal."
 msgid "Invalid node name, the following characters are not allowed:"
 msgstr "Nama node tidak valid, karakter berikut tidak diperbolehkan:"
 
-msgid "Another node already uses this unique name in the scene."
-msgstr "Node lain sudah menggunakan nama unik ini di dalam scene."
-
 msgid "Scene Tree (Nodes):"
 msgstr "Pohon Skena (Node):"
 
 msgid "Node Configuration Warning!"
 msgstr "Peringatan Konfigurasi Node!"
+
+msgid "Allowed:"
+msgstr "Diizinkan:"
 
 msgid "Select a Node"
 msgstr "Pilih Node"
@@ -5539,9 +5477,6 @@ msgstr "3D"
 msgid "Importer:"
 msgstr "Importir:"
 
-msgid "Keep File (No Import)"
-msgstr "Simpan Berkas (Tanpa Impor)"
-
 msgid "%d Files"
 msgstr "%d Berkas"
 
@@ -5649,15 +5584,6 @@ msgstr "Perluas Non-Default"
 msgid "Property Name Style"
 msgstr "Gaya Nama Properti"
 
-msgid "Raw"
-msgstr "Raw (%)"
-
-msgid "Capitalized"
-msgstr "Dikapitalisasi"
-
-msgid "Localized"
-msgstr "Dilokalisasi"
-
 msgid "Localization not available for current language."
 msgstr "Lokalisasi tidak tersedia untuk bahasa saat ini."
 
@@ -5712,17 +5638,8 @@ msgstr "Atur properti objek."
 msgid "This cannot be undone. Are you sure?"
 msgstr "Hal ini tidak dapat dibatalkan. Apa kau yakin?"
 
-msgid "Add %d Translations"
-msgstr "Tambahkan %d Terjemahan"
-
 msgid "Remove Translation"
 msgstr "Hapus Terjemahan"
-
-msgid "Translation Resource Remap: Add %d Path(s)"
-msgstr "Remap Sumber Daya Terjemahan: Tambahkan %d Path"
-
-msgid "Translation Resource Remap: Add %d Remap(s)"
-msgstr "Remap Sumber Daya Penerjemahan: Tambahkan %d Remap"
 
 msgid "Change Resource Remap Language"
 msgstr "Ubah Bahasa Resource Remap"
@@ -5732,9 +5649,6 @@ msgstr "Hapus Resource Remap"
 
 msgid "Remove Resource Remap Option"
 msgstr "Hapus Opsi Resource Remap"
-
-msgid "Add %d file(s) for POT generation"
-msgstr "Tambahkan file %d untuk pembuatan POT"
 
 msgid "Remove file from POT generation"
 msgstr "Hapus file dari pembuatan POT"
@@ -5783,45 +5697,6 @@ msgstr "Kelompok"
 
 msgid "Select a single node to edit its signals and groups."
 msgstr "Pilih sebuah node untuk menyunting sinyal dan grup."
-
-msgid "Plugin name cannot be blank."
-msgstr "Nama plugin tidak boleh kosong."
-
-msgid "Script extension must match chosen language extension (.%s)."
-msgstr "Ekstensi skrip harus sesuai dengan ekstensi bahasa yang dipilih (.%s)."
-
-msgid "Subfolder name is not a valid folder name."
-msgstr "Nama subfolder bukan nama folder yang valid."
-
-msgid "Subfolder cannot be one which already exists."
-msgstr "Subfolder tidak boleh merupakan subfolder yang sudah ada."
-
-msgid "Edit a Plugin"
-msgstr "Sunting Plugin"
-
-msgid "Create a Plugin"
-msgstr "Buat Plugin"
-
-msgid "Update"
-msgstr "Perbarui"
-
-msgid "Plugin Name:"
-msgstr "Nama Plugin:"
-
-msgid "Subfolder:"
-msgstr "Subdirektori:"
-
-msgid "Author:"
-msgstr "Pembuat:"
-
-msgid "Version:"
-msgstr "Versi:"
-
-msgid "Script Name:"
-msgstr "Nama Skrip:"
-
-msgid "Activate now?"
-msgstr "Aktifkan sekarang?"
 
 msgid "Create Polygon"
 msgstr "Buat Poligon"
@@ -6197,21 +6072,6 @@ msgstr "[Global] (buat)"
 msgid "Duplicated Animation Name:"
 msgstr "Nama Animasi Duplikat:"
 
-msgid "Play selected animation backwards from current pos. (A)"
-msgstr "Mainkan mundur animasi terpilih dari lokasi sekarang. (A)"
-
-msgid "Play selected animation backwards from end. (Shift+A)"
-msgstr "Mainkan mundur animasi terpilih dari akhir. (Shift+A)"
-
-msgid "Pause/stop animation playback. (S)"
-msgstr "Menjeda/menghentikan pemutaran animasi. (S)"
-
-msgid "Play selected animation from start. (Shift+D)"
-msgstr "Mainkan animasi terpilih dari awal. (Shift+D)"
-
-msgid "Play selected animation from current pos. (D)"
-msgstr "Mainkan animasi terpilih dari posisi sekarang. (D)"
-
 msgid "Animation position (in seconds)."
 msgstr "Posisi Animasi (dalam detik)."
 
@@ -6274,9 +6134,6 @@ msgstr "Sertakan Gizmo (3D)"
 
 msgid "Pin AnimationPlayer"
 msgstr "Sematkan AnimationPlayer"
-
-msgid "Error!"
-msgstr "Kesalahan!"
 
 msgid "Cross-Animation Blend Times"
 msgstr "Waktu Berbaur Animasi-silang"
@@ -6358,8 +6215,11 @@ msgstr "Hapus Semua"
 msgid "Root"
 msgstr "Root"
 
-msgid "AnimationTree"
-msgstr "AnimationTree(Daftar animasi)"
+msgid "Author"
+msgstr "Pencipta"
+
+msgid "Version:"
+msgstr "Versi:"
 
 msgid "Contents:"
 msgstr "Konten:"
@@ -6418,9 +6278,6 @@ msgstr "Gagal:"
 msgid "Bad download hash, assuming file has been tampered with."
 msgstr "Hash unduhan buruk, berkas mungkin telah diubah."
 
-msgid "Expected:"
-msgstr "Yang Diharapkan:"
-
 msgid "Got:"
 msgstr "Yang Didapat:"
 
@@ -6475,9 +6332,6 @@ msgstr "Lisensi (A-Z)"
 msgid "License (Z-A)"
 msgstr "Lisensi (Z-A)"
 
-msgid "Official"
-msgstr "Resmi"
-
 msgid "Testing"
 msgstr "Menguji"
 
@@ -6499,9 +6353,6 @@ msgstr "Berikutnya"
 msgctxt "Pagination"
 msgid "Last"
 msgstr "Terakhir"
-
-msgid "Failed to get repository configuration."
-msgstr "Gagal mendapatkan konfigurasi repositori."
 
 msgid "All"
 msgstr "Semua"
@@ -6547,9 +6398,6 @@ msgstr "Berkas Aset ZIP"
 
 msgid "Audio Preview Play/Pause"
 msgstr "Putar/Jeda Pratinjau Audio"
-
-msgid "Bone Picker:"
-msgstr "Bone Picker:"
 
 msgid "Clear mappings in current group."
 msgstr "Hapus pemetaan di grup saat ini."
@@ -6665,22 +6513,6 @@ msgstr "Memutar:"
 msgid "Scaling:"
 msgstr "Penskalaan:"
 
-msgid ""
-"Project Camera Override\n"
-"Overrides the running project's camera with the editor viewport camera."
-msgstr ""
-"Timpa Kamera Proyek\n"
-"Menimpa kamera proyek yang dijalankan dengan kamera viewport editor."
-
-msgid ""
-"Project Camera Override\n"
-"No project instance running. Run the project from the editor to use this "
-"feature."
-msgstr ""
-"Timpa Kamera Proyek\n"
-"Tidak ada instance proyek yang berjalan. Jalankan proyek dari editor untuk "
-"menggunakan fitur ini."
-
 msgid "Lock Selected"
 msgstr "Kunci yang Dipilih"
 
@@ -6741,17 +6573,11 @@ msgstr "Tampilan Tengah"
 msgid "Select Mode"
 msgstr "Mode Seleksi"
 
-msgid "Drag: Rotate selected node around pivot."
-msgstr "Seret: Putar node terpilih sekitar pivot."
-
 msgid "Alt+Drag: Move selected node."
-msgstr "Alt+Seret: Pindahkan node terpilih."
+msgstr "Alt+Drag: Memindahkan node yang dipilih."
 
 msgid "Alt+Drag: Scale selected node."
-msgstr "Alt+Seret: Menskala simpul yang dipilih."
-
-msgid "V: Set selected node's pivot position."
-msgstr "V: Atur posisi pivot node terpilih."
+msgstr "Alt+Drag: Menskalakan node yang dipilih."
 
 msgid "Alt+RMB: Show list of all nodes at position clicked, including locked."
 msgstr ""
@@ -6775,9 +6601,6 @@ msgstr "Shift: Skala proporsional."
 
 msgid "Show list of selectable nodes at position clicked."
 msgstr "Tampilkan daftar node yang dapat dipilih pada posisi yang diklik."
-
-msgid "Click to change object's rotation pivot."
-msgstr "Klik untuk mengubah pivot perputaran objek."
 
 msgid "Pan Mode"
 msgstr "Mode Geser Pandangan"
@@ -6845,20 +6668,8 @@ msgstr "Atur Snap..."
 msgid "Lock selected node, preventing selection and movement."
 msgstr "Mengunci simpul yang dipilih, mencegah pemilihan dan pergerakan."
 
-msgid "Lock Selected Node(s)"
-msgstr "Mengunci Node yang Dipilih"
-
 msgid "Unlock selected node, allowing selection and movement."
 msgstr "Buka kunci node yang dipilih, memungkinkan pemilihan dan pergerakan."
-
-msgid "Unlock Selected Node(s)"
-msgstr "Buka Kunci Node Terpilih"
-
-msgid "Group Selected Node(s)"
-msgstr "Kelompokkan Node yang Dipilih"
-
-msgid "Ungroup Selected Node(s)"
-msgstr "Pisahkan Node yang Dipilih dari Grup"
 
 msgid "Skeleton Options"
 msgstr "Opsi Pertulangan"
@@ -6877,9 +6688,6 @@ msgstr "Tampilkan"
 
 msgid "Show When Snapping"
 msgstr "Tampilkan Saat Menjepret"
-
-msgid "Hide"
-msgstr "Sembunyikan"
 
 msgid "Toggle Grid"
 msgstr "Alihkan Kisi"
@@ -6965,22 +6773,18 @@ msgstr "Bagi langkah kisi demi 2"
 msgid "Adding %s..."
 msgstr "Menambahkan %s..."
 
-msgid "Hold Shift when dropping to add as sibling of selected node."
-msgstr ""
-"Tahan Shift saat menjatuhkan untuk menambahkan sebagai saudara dari node yang "
-"dipilih."
-
-msgid "Cannot instantiate multiple nodes without root."
-msgstr "Tidak dapat menginstansiasi beberapa node tanpa root."
-
 msgid "Create Node"
 msgstr "Buat Node"
 
-msgid "Error instantiating scene from %s"
-msgstr "Kesalahan menginstansiasi adegan dari %s"
-
 msgid "Change Default Type"
 msgstr "Ubah Tipe Baku"
+
+msgid ""
+"All selected CanvasItems are either invisible or locked in some way and can't "
+"be transformed."
+msgstr ""
+"Semua CanvasItem yang dipilih tidak terlihat atau terkunci dalam beberapa "
+"cara dan tidak dapat diubah."
 
 msgid "Set Target Position"
 msgstr "Tetapkan Posisi Target"
@@ -7095,9 +6899,6 @@ msgstr ""
 msgid "Some parents of the selected nodes do not support the Expand flag."
 msgstr "Beberapa induk dari node yang dipilih tidak mendukung bendera Perluas."
 
-msgid "Align with Expand"
-msgstr "Sejajarkan dengan Perluas"
-
 msgid "Change Anchors, Offsets, Grow Direction"
 msgstr "Ubah Jangkar, Offset, Arah Tumbuh"
 
@@ -7137,45 +6938,6 @@ msgstr "Penjajaran horizontal"
 
 msgid "Vertical alignment"
 msgstr "Penjajaran vertikal"
-
-msgid "Load Emission Mask"
-msgstr "Muat Masker Emisi"
-
-msgid "CPUParticles2D"
-msgstr "CPUParticles2D"
-
-msgid "Generated Point Count:"
-msgstr "Jumlah Titik yang Dihasilkan:"
-
-msgid "Emission Mask"
-msgstr "Masker Emisi"
-
-msgid "Solid Pixels"
-msgstr "Piksel Solid"
-
-msgid "Border Pixels"
-msgstr "Piksel Pembatas"
-
-msgid "Directed Border Pixels"
-msgstr "Piksel Pembatas yang Diarahkan"
-
-msgid "Generating Visibility AABB (Waiting for Particle Simulation)"
-msgstr "Menghasilkan Visibilitas AABB (Menunggu Simulasi Partikel)"
-
-msgid "Generate Visibility AABB"
-msgstr "Buat Penampakan AABB"
-
-msgid "CPUParticles3D"
-msgstr "CPUParticles3D"
-
-msgid "Generate AABB"
-msgstr "Buat AABB"
-
-msgid "Create Emission Points From Node"
-msgstr "Buat Titik Emisi dari Node"
-
-msgid "Generation Time (sec):"
-msgstr "Waktu Pembuatan (detik):"
 
 msgid "Load Curve Preset"
 msgstr "Muat Preset Kurva"
@@ -7278,21 +7040,17 @@ msgstr ""
 msgid "Visible Navigation"
 msgstr "Navigasi Terlihat"
 
-msgid ""
-"When this option is enabled, navigation meshes and polygons will be visible "
-"in the running project."
-msgstr ""
-"Navigasi dan poligon akan terlihat saat game berjalan jika opsi ini aktif."
-
 msgid "Visible Avoidance"
 msgstr "Penghindaran Terlihat"
 
 msgid ""
-"When this option is enabled, avoidance objects shapes, radius and velocities "
-"will be visible in the running project."
+"When this option is enabled, redraw requests of 2D objects will become "
+"visible (as a short flash) in the running project.\n"
+"This is useful to troubleshoot low processor mode."
 msgstr ""
-"Ketika opsi ini diaktifkan, bentuk, radius, dan kecepatan objek penghindaran "
-"akan terlihat dalam proyek yang sedang berjalan."
+"Ketika opsi ini diaktifkan, sumber daya kurva yang digunakan oleh node path "
+"akan terlihat pada proyek yang sedang berjalan.\n"
+"Ini berguna untuk memecahkan masalah pada mode prosesor rendah."
 
 msgid "Synchronize Scene Changes"
 msgstr "Sinkronkan Perubahan Skena"
@@ -7332,6 +7090,31 @@ msgstr ""
 "Ketika opsi ini diaktifkan, server debug editor akan tetap terbuka dan "
 "mendengarkan sesi baru yang dimulai di luar editor itu sendiri."
 
+msgid ""
+"Name: %s\n"
+"Path: %s\n"
+"Main Script: %s\n"
+"\n"
+"%s"
+msgstr ""
+"Nama: %s\n"
+"Path: %s\n"
+"Skrip Utama: %s\n"
+"\n"
+"%s"
+
+msgid "Edit Plugin"
+msgstr "Sunting Plug-in"
+
+msgid "Installed Plugins:"
+msgstr "Plugins Terpasang:"
+
+msgid "Create New Plugin"
+msgstr "Buat Plugin Baru"
+
+msgid "Version"
+msgstr "Versi"
+
 msgid "Size: %s"
 msgstr "Ukuran:%s"
 
@@ -7363,8 +7146,8 @@ msgstr "Fitur (%d dari %d set)"
 msgid "Add Feature"
 msgstr "Tambahkan Fitur"
 
-msgid " - Variation"
-msgstr " - Variasi"
+msgid "East Asian Language"
+msgstr "Bahasa Asia Timur"
 
 msgid "Unable to preview font"
 msgstr "Tidak dapat melihat pratinjau font"
@@ -7402,20 +7185,11 @@ msgstr "Ubah Panjang Bentuk Sinar Pemisahan"
 msgid "Change Decal Size"
 msgstr "Perubahan Ukuran Decal"
 
-msgid "Change Fog Volume Size"
-msgstr "Ubah Ukuran Volume Kabut"
-
-msgid "Change Particles AABB"
-msgstr "Ubah Partikel AABB"
-
 msgid "Change Radius"
 msgstr "Ubah Radius"
 
 msgid "Change Light Radius"
 msgstr "Ganti Radius Lampu"
-
-msgid "Start Location"
-msgstr "Lokasi Mulai"
 
 msgid "End Location"
 msgstr "Lokasi Akhir"
@@ -7431,67 +7205,6 @@ msgstr "Ubah Ukuran Probe"
 
 msgid "Change Notifier AABB"
 msgstr "Ubah AABB Notifier"
-
-msgid "Convert to CPUParticles2D"
-msgstr "Konversikan menjadi CPUParticles2D"
-
-msgid "Generating Visibility Rect (Waiting for Particle Simulation)"
-msgstr "Menghasilkan Visibility Kotak (Menunggu Simulasi Partikel)"
-
-msgid "Generate Visibility Rect"
-msgstr "Buatkan Kotak Penampakan"
-
-msgid "Can only set point into a ParticleProcessMaterial process material"
-msgstr ""
-"Hanya dapat mengatur titik ke dalam material proses ParticleProcessMaterial"
-
-msgid "Clear Emission Mask"
-msgstr "Hapus Masker Emisi"
-
-msgid "GPUParticles2D"
-msgstr "GPUPartikel2D"
-
-msgid "The geometry's faces don't contain any area."
-msgstr "Bidang geometri tidak mengandung area apapun."
-
-msgid "The geometry doesn't contain any faces."
-msgstr "Geometri tidak mengandung bidang apapun."
-
-msgid "\"%s\" doesn't inherit from Node3D."
-msgstr "\"%s\" tidak diwariskan dari Node3D."
-
-msgid "\"%s\" doesn't contain geometry."
-msgstr "\"%s\" tidak mengandung geometri."
-
-msgid "\"%s\" doesn't contain face geometry."
-msgstr "\"%s\" tidak mengandung geometri bidang."
-
-msgid "Create Emitter"
-msgstr "Buat Pengemisi"
-
-msgid "Emission Points:"
-msgstr "Titik Emisi:"
-
-msgid "Surface Points"
-msgstr "Titik Permukaan"
-
-msgid "Surface Points+Normal (Directed)"
-msgstr "Titik+Normal Permukaan (Diarahkan)"
-
-msgid "Volume"
-msgstr "Volume"
-
-msgid "Emission Source:"
-msgstr "Sumber Emisi:"
-
-msgid "A processor material of type 'ParticleProcessMaterial' is required."
-msgstr "Pemroses material atau jenis 'ParticleProcessMaterial' dibutuhkan."
-
-msgid "Convert to CPUParticles3D"
-msgstr "Konversikan menjadi CPUParticles3D"
-
-msgid "GPUParticles3D"
-msgstr "GPUParticles3D"
 
 msgid "Low"
 msgstr "Rendah"
@@ -7548,16 +7261,6 @@ msgstr ""
 "Tidak dapat menentukan lokasi penyimpanan untuk gambar lightmap.\n"
 "Simpan skena Anda dan coba lagi."
 
-msgid ""
-"No meshes to bake. Make sure they contain an UV2 channel and that the 'Bake "
-"Light' flag is on."
-msgstr ""
-"Tidak ada mesh untuk bake. Pastikan mereka memiliki saluran UV2 dan bendera "
-"'Cahaya Bake' menyala."
-
-msgid "Failed creating lightmap images, make sure path is writable."
-msgstr "Gagal membuat gambar lightmap, pastikan path dapat ditulis."
-
 msgid "No editor scene root found."
 msgstr "Tidak ditemukan root adegan editor."
 
@@ -7573,44 +7276,14 @@ msgstr "Bake LightMap"
 msgid "Select lightmap bake file:"
 msgstr "Pilih berkas lightmap bake:"
 
-msgid "Mesh is empty!"
-msgstr "Mesh kosong!"
-
 msgid "Couldn't create a Trimesh collision shape."
 msgstr "Tidak dapat membuat bentuk collision Trimesh."
-
-msgid "Create Static Trimesh Body"
-msgstr "Buat Badan Trimesh Statis"
-
-msgid "This doesn't work on scene root!"
-msgstr "Ini tidak bekerja di skena akar!"
-
-msgid "Create Trimesh Static Shape"
-msgstr "Buat Bentuk Trimesh Statis"
-
-msgid "Can't create a single convex collision shape for the scene root."
-msgstr "Tidak dapat membuat convex collision shape tunggal untuk skena root."
-
-msgid "Couldn't create a single convex collision shape."
-msgstr "Tidak dapat membuat convex collision shape tunggal."
-
-msgid "Create Simplified Convex Shape"
-msgstr "Buat Bentuk Cembung yang Disederhanakan"
-
-msgid "Create Single Convex Shape"
-msgstr "Buat Bentuk Cembung"
-
-msgid "Can't create multiple convex collision shapes for the scene root."
-msgstr "Tidak dapat membuat beberapa convex collision shape untuk skena root."
 
 msgid "Couldn't create any collision shapes."
 msgstr "Tidak dapat membuat bentuk collision."
 
-msgid "Create Multiple Convex Shapes"
-msgstr "Buat Beberapa Bentuk Cembung"
-
-msgid "Create Navigation Mesh"
-msgstr "Buat Mesh Navigasi"
+msgid "Mesh is empty!"
+msgstr "Mesh kosong!"
 
 msgid "Create Debug Tangents"
 msgstr "Membuat Garis Singgung Debug"
@@ -7642,6 +7315,9 @@ msgstr "Buka UV2"
 msgid "Contained Mesh is not of type ArrayMesh."
 msgstr "Mesh yang terkandung bukan bertipe ArrayMesh."
 
+msgid "Only triangles are supported for lightmap unwrap."
+msgstr "Hanya segitiga yang didukung untuk membuka bungkus lightmap."
+
 msgid "UV Unwrap failed, mesh may not be manifold?"
 msgstr "UV Unwrap gagal, mesh mungkin tidak bermacam-macam?"
 
@@ -7650,6 +7326,9 @@ msgstr "Tidak ada mesh untuk diawakutu."
 
 msgid "Mesh has no UV in layer %d."
 msgstr "Mesh tidak memiliki UV di layer %d."
+
+msgid "Create Navigation Mesh"
+msgstr "Buat Mesh Navigasi"
 
 msgid "MeshInstance3D lacks a Mesh."
 msgstr "MeshInstance3D tidak memiliki Mesh."
@@ -7668,65 +7347,6 @@ msgstr "Buat Garis Tepi"
 
 msgid "Mesh"
 msgstr "Jala"
-
-msgid "Create Trimesh Static Body"
-msgstr "Buat Tubuh Statis Trimesh"
-
-msgid ""
-"Creates a StaticBody3D and assigns a polygon-based collision shape to it "
-"automatically.\n"
-"This is the most accurate (but slowest) option for collision detection."
-msgstr ""
-"Membuat StaticBody3D dan menetapkan bentuk tumbukan berbasis poligon secara "
-"otomatis.\n"
-"Ini adalah opsi yang paling akurat (tetapi paling lambat) untuk pendeteksian "
-"tumbukan."
-
-msgid "Create Trimesh Collision Sibling"
-msgstr "Buat Trimesh Collision Sibling"
-
-msgid ""
-"Creates a polygon-based collision shape.\n"
-"This is the most accurate (but slowest) option for collision detection."
-msgstr ""
-"Buat collision shape berbasis poligon.\n"
-"Opsi ini merupakan yang paling akurat (tapi paling lambat) untuk deteksi "
-"collision."
-
-msgid "Create Single Convex Collision Sibling"
-msgstr "Buat Saudara Tunggal Convex Collision"
-
-msgid ""
-"Creates a single convex collision shape.\n"
-"This is the fastest (but least accurate) option for collision detection."
-msgstr ""
-"Buat convex collision shape tunggal.\n"
-"Opsi ini merupakan yang paling cepat (tapi paling tidak akurat) untuk deteksi "
-"collision."
-
-msgid "Create Simplified Convex Collision Sibling"
-msgstr "Buat saudara Convex Collision yang dipermudah"
-
-msgid ""
-"Creates a simplified convex collision shape.\n"
-"This is similar to single collision shape, but can result in a simpler "
-"geometry in some cases, at the cost of accuracy."
-msgstr ""
-"Buat bentuk convex collision dipermudah.\n"
-"Ini serupa dengan bentuk collision tunggal, namun dapat menghasilkan geometri "
-"mudah dalam beberapa kasus, dengan biaya pada akurasi."
-
-msgid "Create Multiple Convex Collision Siblings"
-msgstr "Buat Beberapa Saudara Convex Collision"
-
-msgid ""
-"Creates a polygon-based collision shape.\n"
-"This is a performance middle-ground between a single convex collision and a "
-"polygon-based collision."
-msgstr ""
-"Buat bentuk collision berbasis poligon.\n"
-"Ini adalah opsi tengah performa antara convex collision tunggal dan collision "
-"berbasis poligon."
 
 msgid "Create Outline Mesh..."
 msgstr "Buat Garis Mesh..."
@@ -7756,6 +7376,40 @@ msgstr "Buat Garis Mesh"
 
 msgid "Outline Size:"
 msgstr "Ukuran Garis Tepi:"
+
+msgid ""
+"Creates a polygon-based collision shape.\n"
+"This is the most accurate (but slowest) option for collision detection."
+msgstr ""
+"Buat collision shape berbasis poligon.\n"
+"Opsi ini merupakan yang paling akurat (tapi paling lambat) untuk deteksi "
+"collision."
+
+msgid ""
+"Creates a single convex collision shape.\n"
+"This is the fastest (but least accurate) option for collision detection."
+msgstr ""
+"Buat convex collision shape tunggal.\n"
+"Opsi ini merupakan yang paling cepat (tapi paling tidak akurat) untuk deteksi "
+"collision."
+
+msgid ""
+"Creates a simplified convex collision shape.\n"
+"This is similar to single collision shape, but can result in a simpler "
+"geometry in some cases, at the cost of accuracy."
+msgstr ""
+"Buat bentuk convex collision dipermudah.\n"
+"Ini serupa dengan bentuk collision tunggal, namun dapat menghasilkan geometri "
+"mudah dalam beberapa kasus, dengan biaya pada akurasi."
+
+msgid ""
+"Creates a polygon-based collision shape.\n"
+"This is a performance middle-ground between a single convex collision and a "
+"polygon-based collision."
+msgstr ""
+"Buat bentuk collision berbasis poligon.\n"
+"Ini adalah opsi tengah performa antara convex collision tunggal dan collision "
+"berbasis poligon."
 
 msgid "UV Channel Debug"
 msgstr "Awakutu Kanal UV"
@@ -7875,17 +7529,8 @@ msgstr "Atur start_position"
 msgid "Set end_position"
 msgstr "Atur end_position"
 
-msgid "Set NavigationObstacle3D Vertices"
-msgstr "Atur Simpul NavigationObstacle3D"
-
-msgid "Edit Vertices"
-msgstr "Edit Simpul"
-
-msgid "Edit Poly"
-msgstr "Sunting Poligon"
-
-msgid "Edit Poly (Remove Point)"
-msgstr "Sunting Bidang (Hapus Titik)"
+msgid "Please Confirm..."
+msgstr "Mohon konfirmasi..."
 
 msgid "Create Navigation Polygon"
 msgstr "Buat Poligon Navigasi"
@@ -7938,9 +7583,6 @@ msgstr "Ortogonal Belakang"
 msgid "Rear Perspective"
 msgstr "Perspektif Belakang"
 
-msgid " [auto]"
-msgstr " [auto]"
-
 msgid "X-Axis Transform."
 msgstr "Transformasi Sumbu X."
 
@@ -7989,6 +7631,9 @@ msgstr "Waktu GPU: %s mdtk"
 msgid "FPS: %d"
 msgstr "FPS: %d"
 
+msgid "Translating:"
+msgstr "Menerjemahkan:"
+
 msgid "Top View."
 msgstr "Tampilan Atas."
 
@@ -8019,17 +7664,14 @@ msgstr "Atur Permukaan %d Timpa Material"
 msgid "Set Material Override"
 msgstr "Atur Penggantian Material"
 
-msgid "None"
-msgstr "Tidak ada"
+msgid "Circular dependency found at %s"
+msgstr "Ditemukan dependensi melingkar pada %s"
 
 msgid "Rotate"
 msgstr "Putar"
 
 msgid "Translate"
 msgstr "Translasi"
-
-msgid "Translating:"
-msgstr "Menerjemahkan:"
 
 msgid "Rotating %s degrees."
 msgstr "Memutar %s derajat."
@@ -8268,6 +7910,13 @@ msgstr ""
 "WorldEnvironment.\n"
 "Pratinjau dinonaktifkan."
 
+msgid ""
+"Groups the selected node with its children. This selects the parent when any "
+"child node is clicked in 2D and 3D view."
+msgstr ""
+"Kelompok kan node yang dipilih dengan turunannya. Ini akan memilih induk nya "
+"ketika simpul anaknya diklik dalam tampilan 2D dan 3D."
+
 msgid "Use Local Space"
 msgstr "Gunakan Ruang Lokal"
 
@@ -8400,6 +8049,13 @@ msgstr "Kancing Skala (%):"
 msgid "Viewport Settings"
 msgstr "Pengaturan Penampil"
 
+msgid ""
+"FOV is defined as a vertical value, as the editor camera always uses the Keep "
+"Height aspect mode."
+msgstr ""
+"FOV di definiskan sebagai nilai vertikal, karena kamera editor selalu "
+"menggunakan mode aspek \"Ketinggian Tetap\"."
+
 msgid "View Z-Near:"
 msgstr "Tampilan Z-Terdekat:"
 
@@ -8527,6 +8183,96 @@ msgstr "Bake Oklusi"
 msgid "Select occluder bake file:"
 msgstr "Pilih berkas bake okluder:"
 
+msgid "Generate Visibility Rect"
+msgstr "Buatkan Kotak Penampakan"
+
+msgid "Load Emission Mask"
+msgstr "Muat Masker Emisi"
+
+msgid "Solid Pixels"
+msgstr "Piksel Solid"
+
+msgid "Border Pixels"
+msgstr "Piksel Pembatas"
+
+msgid "Directed Border Pixels"
+msgstr "Piksel Pembatas yang Diarahkan"
+
+msgid "Emission Mask"
+msgstr "Masker Emisi"
+
+msgid "Generating Visibility Rect (Waiting for Particle Simulation)"
+msgstr "Menghasilkan Visibility Kotak (Menunggu Simulasi Partikel)"
+
+msgid "GPUParticles2D"
+msgstr "GPUPartikel2D"
+
+msgid "Convert to CPUParticles2D"
+msgstr "Konversikan menjadi CPUParticles2D"
+
+msgid "Generation Time (sec):"
+msgstr "Waktu Pembuatan (detik):"
+
+msgid "CPUParticles2D"
+msgstr "CPUParticles2D"
+
+msgid "Generating Visibility AABB (Waiting for Particle Simulation)"
+msgstr "Menghasilkan Visibilitas AABB (Menunggu Simulasi Partikel)"
+
+msgid "Generate Visibility AABB"
+msgstr "Buat Penampakan AABB"
+
+msgid "\"%s\" doesn't inherit from Node3D."
+msgstr "\"%s\" tidak diwariskan dari Node3D."
+
+msgid "\"%s\" doesn't contain geometry."
+msgstr "\"%s\" tidak mengandung geometri."
+
+msgid "\"%s\" doesn't contain face geometry."
+msgstr "\"%s\" tidak mengandung geometri bidang."
+
+msgid "Generate AABB"
+msgstr "Buat AABB"
+
+msgid "Create Emission Points From Node"
+msgstr "Buat Titik Emisi dari Node"
+
+msgid "The geometry's faces don't contain any area."
+msgstr "Bidang geometri tidak mengandung area apapun."
+
+msgid "The geometry doesn't contain any faces."
+msgstr "Geometri tidak mengandung bidang apapun."
+
+msgid "Create Emitter"
+msgstr "Buat Pengemisi"
+
+msgid "Emission Points:"
+msgstr "Titik Emisi:"
+
+msgid "Surface Points"
+msgstr "Titik Permukaan"
+
+msgid "Surface Points+Normal (Directed)"
+msgstr "Titik+Normal Permukaan (Diarahkan)"
+
+msgid "Volume"
+msgstr "Volume"
+
+msgid "Emission Source:"
+msgstr "Sumber Emisi:"
+
+msgid "A processor material of type 'ParticleProcessMaterial' is required."
+msgstr "Pemroses material atau jenis 'ParticleProcessMaterial' dibutuhkan."
+
+msgid "GPUParticles3D"
+msgstr "GPUParticles3D"
+
+msgid "Convert to CPUParticles3D"
+msgstr "Konversikan menjadi CPUParticles3D"
+
+msgid "CPUParticles3D"
+msgstr "CPUParticles3D"
+
 msgid "Remove Point from Curve"
 msgstr "Hapus Titik dari Kurva"
 
@@ -8536,14 +8282,14 @@ msgstr "Hapus Kontrol-Luar dari Kurva"
 msgid "Remove In-Control from Curve"
 msgstr "Hapus Kontrol-Dalam dari Kurva"
 
+msgid "Move Point in Curve"
+msgstr "Geser Titik dalam Kurva"
+
 msgid "Add Point to Curve"
 msgstr "Tambah Titik ke Kurva"
 
 msgid "Split Curve"
 msgstr "Pisahkan Kurva"
-
-msgid "Move Point in Curve"
-msgstr "Geser Titik dalam Kurva"
 
 msgid "Move In-Control in Curve"
 msgstr "Geser Kontrol-Dalam dalam Kurva"
@@ -8551,35 +8297,17 @@ msgstr "Geser Kontrol-Dalam dalam Kurva"
 msgid "Move Out-Control in Curve"
 msgstr "Geser Kontrol-Luar dalam Kurva"
 
-msgid "Select Points"
-msgstr "Pilih Titik"
-
-msgid "Shift+Drag: Select Control Points"
-msgstr "Shift+Seret: Pilih Titik Kontrol"
-
-msgid "Click: Add Point"
-msgstr "Klik: Tambah Titik"
-
-msgid "Left Click: Split Segment (in curve)"
-msgstr "Klik Kiri: Pisahkan Segmen (dalam Kurva)"
-
 msgid "Right Click: Delete Point"
 msgstr "Klik Kanan: Hapus Titik"
 
 msgid "Select Control Points (Shift+Drag)"
 msgstr "Pilih Titik Kontrol (Shift+Seret)"
 
-msgid "Add Point (in empty space)"
-msgstr "Tambah Titik (dalam ruang kosong)"
-
 msgid "Delete Point"
 msgstr "Hapus Titik"
 
 msgid "Close Curve"
 msgstr "Tutup Kurva"
-
-msgid "Please Confirm..."
-msgstr "Mohon konfirmasi..."
 
 msgid "Mirror Handle Angles"
 msgstr "Cermin Pengatur Sudut"
@@ -8589,6 +8317,9 @@ msgstr "Cermin Pengatur Panjang"
 
 msgid "Curve Point #"
 msgstr "Titik Kurva #"
+
+msgid "Set Curve Point Position"
+msgstr "Atur Posisi Titik Kurva"
 
 msgid "Set Curve Out Position"
 msgstr "Atur Posisi Kurva Luar"
@@ -8605,11 +8336,50 @@ msgstr "Hapus Titik Tapak"
 msgid "Split Segment (in curve)"
 msgstr "Pisahkan Segmen (dalam kurva)"
 
-msgid "Set Curve Point Position"
-msgstr "Atur Posisi Titik Kurva"
-
 msgid "Move Joint"
 msgstr "Geser Persendian"
+
+msgid "Plugin name cannot be blank."
+msgstr "Nama plugin tidak boleh kosong."
+
+msgid "Subfolder name is not a valid folder name."
+msgstr "Nama subfolder bukan nama folder yang valid."
+
+msgid "Subfolder cannot be one which already exists."
+msgstr "Subfolder tidak boleh merupakan subfolder yang sudah ada."
+
+msgid "Script extension must match chosen language extension (.%s)."
+msgstr "Ekstensi skrip harus sesuai dengan ekstensi bahasa yang dipilih (.%s)."
+
+msgid "Edit a Plugin"
+msgstr "Sunting Plugin"
+
+msgid "Create a Plugin"
+msgstr "Buat Plugin"
+
+msgid "Plugin Name:"
+msgstr "Nama Plugin:"
+
+msgid "Subfolder:"
+msgstr "Subdirektori:"
+
+msgid "Author:"
+msgstr "Pembuat:"
+
+msgid ""
+"Required. The scripting language to use for the script.\n"
+"Note that a plugin may use several languages at once by adding more scripts "
+"to the plugin."
+msgstr ""
+"Dibutuhkan. Bahasa skrip yang akan digunakan oleh skrip.\n"
+"Catatan: plugin dapat digunakan dalam beberapa bahasa bersamaan dengan "
+"menambahkan lebih banyak skrip ke dalam plugin."
+
+msgid "Script Name:"
+msgstr "Nama Skrip:"
+
+msgid "Activate now?"
+msgstr "Aktifkan sekarang?"
 
 msgid ""
 "The skeleton property of the Polygon2D does not point to a Skeleton2D node"
@@ -8617,13 +8387,6 @@ msgstr "Properti pertulangan dari Polygon2D tidak mengarah ke node Skeleton2D"
 
 msgid "Sync Bones"
 msgstr "Sinkronkan Pertulangan"
-
-msgid ""
-"No texture in this polygon.\n"
-"Set a texture to be able to edit UV."
-msgstr ""
-"Tidak ada tekstur dalam poligon ini.\n"
-"Atur tekstur supaya bisa menyunting UV-nya."
 
 msgid "Create UV Map"
 msgstr "Buat Peta UV"
@@ -8662,29 +8425,17 @@ msgstr "Transformasikan Poligon"
 msgid "Paint Bone Weights"
 msgstr "Gambar Pembobotan Tulang"
 
-msgid "Open Polygon 2D UV editor."
-msgstr "Buka Editor UV Poligon 2D."
-
-msgid "Polygon 2D UV Editor"
-msgstr "Editor UV Poligon 2D"
-
-msgid "UV"
-msgstr "UV"
-
 msgid "Points"
 msgstr "Titik"
 
 msgid "Polygons"
 msgstr "Poligon"
 
+msgid "UV"
+msgstr "UV"
+
 msgid "Bones"
 msgstr "Tulang"
-
-msgid "Move Points"
-msgstr "Geser Titik"
-
-msgid "Shift: Move All"
-msgstr "Shift: Geser Semua"
 
 msgid "Move Polygon"
 msgstr "Geser Poligon"
@@ -8755,6 +8506,12 @@ msgstr "Sinkronkan Tulang ke Poligon"
 msgid "Create Polygon3D"
 msgstr "Buat Polygon3D"
 
+msgid "Edit Poly"
+msgstr "Sunting Poligon"
+
+msgid "Edit Poly (Remove Point)"
+msgstr "Sunting Bidang (Hapus Titik)"
+
 msgid "ERROR: Couldn't load resource!"
 msgstr "KESALAHAN: Tidak dapat memuat resource!"
 
@@ -8776,8 +8533,8 @@ msgstr "Tempel Resource"
 msgid "Load Resource"
 msgstr "Muat Resource"
 
-msgid "Clear Recent Files"
-msgstr "Bersihkan Berkas Akhir-akhir ini"
+msgid "Toggle ResourcePreloader Bottom Panel"
+msgstr "Mengaktifkan Panel Bawah ResourcePreloader"
 
 msgid "Can't open '%s'. The file could have been moved or deleted."
 msgstr "Gagal membuka '%s'. Berkas telah dipindah atau dihapus."
@@ -8785,20 +8542,8 @@ msgstr "Gagal membuka '%s'. Berkas telah dipindah atau dihapus."
 msgid "Close and save changes?"
 msgstr "Tutup dan simpan perubahan?"
 
-msgid "Error writing TextFile:"
-msgstr "Error saat menulis TextFile:"
-
-msgid "Error saving file!"
-msgstr "Error saat menyimpan berkas!"
-
-msgid "Error while saving theme."
-msgstr "Error saat menyimpan tema."
-
 msgid "Error Saving"
 msgstr "Error Menyimpan"
-
-msgid "Error importing theme."
-msgstr "Error saat mengimpor tema."
 
 msgid "Error Importing"
 msgstr "Error saat mengimpor"
@@ -8809,9 +8554,6 @@ msgstr "Berkas Teks Baru..."
 msgid "Open File"
 msgstr "Buka Berkas"
 
-msgid "Could not load file at:"
-msgstr "Tidak dapat memuat berkas di:"
-
 msgid "Save File As..."
 msgstr "Simpan Berkas Sebagai..."
 
@@ -8821,17 +8563,39 @@ msgstr "Tidak dapat memperoleh skrip untuk dimuat ulang."
 msgid "Reload only takes effect on tool scripts."
 msgstr "Muat ulang hanya berlaku pada skrip alat."
 
+msgid "Cannot run the edited file because it's not a script."
+msgstr "Tidak bisa menjalankan file yang sedang diedit karena itu bukan skrip."
+
+msgid "Cannot run the script because it contains errors, check the output log."
+msgstr "Tidak bisa menjalankan skrip karena mengandung error, periksa log."
+
+msgid "Cannot run the script because it doesn't extend EditorScript."
+msgstr "Tidak bisa menjalankan skrip karena memperluaskan EditorScript."
+
+msgid ""
+"Cannot run the script because it's not a tool script (add the @tool "
+"annotation at the top)."
+msgstr ""
+"Tidak bisa menjalankan skrip karena itu bukan skrip tool (tambahkan @tool "
+"anotasi di bagian atas)."
+
+msgid "Cannot run the script because it's not a tool script."
+msgstr "Tidak bisa menjalankan skrip karena itu bukan sebuah alat skrip."
+
 msgid "Import Theme"
 msgstr "Impor Tema"
-
-msgid "Error while saving theme"
-msgstr "Gagal saat menyimpan tema"
 
 msgid "Error saving"
 msgstr "Gagal menyimpan"
 
 msgid "Save Theme As..."
 msgstr "Simpan Tema sebagai..."
+
+msgid "Online Docs"
+msgstr "Online Dokumentasi"
+
+msgid "Open Godot online documentation."
+msgstr "Buka dokumentasi daring Godot."
 
 msgid "Unsaved file."
 msgstr "File tidak disimpan."
@@ -8860,14 +8624,8 @@ msgstr "Skrip Berikutnya"
 msgid "Previous Script"
 msgstr "Skrip Sebelumnya"
 
-msgid "File"
-msgstr "File"
-
 msgid "Open..."
 msgstr "Buka..."
-
-msgid "Reopen Closed Script"
-msgstr "Buka kembali Skrip yang Ditutup"
 
 msgid "Save All"
 msgstr "Simpan Semua"
@@ -8908,12 +8666,6 @@ msgstr "Menjalankan"
 msgid "Search"
 msgstr "Cari"
 
-msgid "Online Docs"
-msgstr "Online Dokumentasi"
-
-msgid "Open Godot online documentation."
-msgstr "Buka dokumentasi daring Godot."
-
 msgid "Search the reference documentation."
 msgstr "Cari dokumentasi referensi."
 
@@ -8923,24 +8675,26 @@ msgstr "Ke dokumen yang disunting sebelumnya."
 msgid "Go to next edited document."
 msgstr "Pergi ke dokumen yang disunting selanjutnya."
 
-msgid "Make the script editor floating."
-msgstr "Buat editor skrip mengambang."
-
 msgid "Discard"
 msgstr "Abaikan"
 
-msgid ""
-"The following files are newer on disk.\n"
-"What action should be taken?:"
-msgstr ""
-"Berkas berikut lebih baru dalam diska.\n"
-"Aksi apa yang ingin diambil?:"
+msgid "There are unsaved changes in the following built-in script(s):"
+msgstr "Ada perubahan yang belum disimpan dalam skrip bawaan berikut ini:"
 
-msgid "Search Results"
-msgstr "Hasil Pencarian"
+msgid "Reopen Closed Script"
+msgstr "Buka kembali Skrip yang Ditutup"
 
 msgid "Clear Recent Scripts"
 msgstr "Bersihkan Skrip baru-baru ini"
+
+msgid "Uppercase"
+msgstr "Huruf Besar"
+
+msgid "Lowercase"
+msgstr "Huruf Kecil"
+
+msgid "Capitalize"
+msgstr "Kapitalisasi"
 
 msgid "Standard"
 msgstr "Standar"
@@ -8972,32 +8726,28 @@ msgstr ""
 msgid "[Ignore]"
 msgstr "[abaikan]"
 
-msgid "Line"
-msgstr "Baris"
-
 msgid "Go to Function"
 msgstr "Pergi ke Fungsi"
+
+msgid ""
+"The resource does not have a valid path because it has not been saved.\n"
+"Please save the scene or resource that contains this resource and try again."
+msgstr ""
+"Sumber daya tersebut tidak mempunyai path yang valid karena belum disimpan.\n"
+"Mohon untuk menyimpan adegan atau sumber daya yang berisi sumber daya ini dan "
+"coba lagi."
 
 msgid "Can't drop nodes without an open scene."
 msgstr "Tidak dapat menempatkan node tanpa skena yang terbuka."
 
-msgid "Lookup Symbol"
-msgstr "Simbol Pencarian"
-
 msgid "Pick Color"
 msgstr "Pilih Warna"
 
+msgid "Line"
+msgstr "Baris"
+
 msgid "Folding"
 msgstr "Melipat"
-
-msgid "Uppercase"
-msgstr "Huruf Besar"
-
-msgid "Lowercase"
-msgstr "Huruf Kecil"
-
-msgid "Capitalize"
-msgstr "Kapitalisasi"
 
 msgid "Convert Case"
 msgstr "Konversikan Pengkapitalan"
@@ -9077,6 +8827,9 @@ msgstr "Pergi ke Fungsi..."
 msgid "Go to Line..."
 msgstr "Pergi ke Baris..."
 
+msgid "Lookup Symbol"
+msgstr "Simbol Pencarian"
+
 msgid "Toggle Breakpoint"
 msgstr "Beralih Breakpoint"
 
@@ -9089,9 +8842,6 @@ msgstr "Pergi ke Langkah Jeda Berikutnya"
 msgid "Go to Previous Breakpoint"
 msgstr "Pergi ke Langkah Jeda Sebelumnya"
 
-msgid "Shader Editor"
-msgstr "Editor Shader"
-
 msgid "Save File"
 msgstr "Simpan File"
 
@@ -9101,8 +8851,8 @@ msgstr "Buka File di Inspektur"
 msgid "Close File"
 msgstr "Tutup File"
 
-msgid "Make the shader editor floating."
-msgstr "Buat editor shader mengambang."
+msgid "Shader Editor"
+msgstr "Editor Shader"
 
 msgid "No valid shader stages found."
 msgstr "Tidak ditemukan tahap shader yang valid."
@@ -9116,9 +8866,6 @@ msgid ""
 msgstr ""
 "Struktur file untuk '%s' mengandung kesalahan yang tidak dapat dipulihkan:\n"
 "\n"
-
-msgid "ShaderFile"
-msgstr "FileShader"
 
 msgid "This skeleton has no bones, create some children Bone2D nodes."
 msgstr "Kerangka ini tidak memiliki tulang, buatlah beberapa anak node Bone2D."
@@ -9187,12 +8934,6 @@ msgid ""
 msgstr ""
 "Mode Edit\n"
 "Menampilkan tombol pada sambungan."
-
-msgid "Insert key of bone poses already exist track."
-msgstr "Sisipkan kunci pose tulang yang sudah ada di trek."
-
-msgid "Insert key of all bone poses."
-msgstr "Sisipkan kunci dari semua pose tulang."
 
 msgid "Insert Key (All Bones)"
 msgstr "Sisipkan Kunci (Semua Tulang)"
@@ -9320,6 +9061,21 @@ msgstr "Sumber ini tidak memiliki animasi apa pun."
 msgid "Animation Frames:"
 msgstr "Frame Animasi:"
 
+msgid "Play selected animation backwards from current pos. (A)"
+msgstr "Mainkan mundur animasi terpilih dari lokasi sekarang. (A)"
+
+msgid "Play selected animation backwards from end. (Shift+A)"
+msgstr "Mainkan mundur animasi terpilih dari akhir. (Shift+A)"
+
+msgid "Pause/stop animation playback. (S)"
+msgstr "Menjeda/menghentikan pemutaran animasi. (S)"
+
+msgid "Play selected animation from start. (Shift+D)"
+msgstr "Mainkan animasi terpilih dari awal. (Shift+D)"
+
+msgid "Play selected animation from current pos. (D)"
+msgstr "Mainkan animasi terpilih dari posisi sekarang. (D)"
+
 msgid "Frame Duration:"
 msgstr "Durasi Bingkai:"
 
@@ -9407,11 +9163,11 @@ msgstr "Pemisahan"
 msgid "Offset"
 msgstr "Pengimbangan"
 
+msgid "Auto Slice"
+msgstr "Iris Otomatis"
+
 msgid "Create Frames from Sprite Sheet"
 msgstr "Buat Frame dari Sprite Sheet"
-
-msgid "SpriteFrames"
-msgstr "SpriteFrame"
 
 msgid "Warnings should be fixed to prevent errors."
 msgstr "Peringatan harus diperbaiki untuk mencegah kesalahan."
@@ -9423,6 +9179,12 @@ msgstr ""
 "Shader ini telah dimodifikasi pada penyimpanan.\n"
 "Tindakan apa yang harus diambil?"
 
+msgid "Reload"
+msgstr "Muat Ulang"
+
+msgid "Resave"
+msgstr "Simpan Ulang"
+
 msgid "%s Mipmaps"
 msgstr "%s Mipmap"
 
@@ -9430,7 +9192,7 @@ msgid "Memory: %s"
 msgstr "Memori: %s"
 
 msgid "No Mipmaps"
-msgstr "Tidak Ada Mipmaps"
+msgstr "Tidak ada Mipmap"
 
 msgid "Set Region Rect"
 msgstr "Atur Kotak Region"
@@ -9449,9 +9211,6 @@ msgstr "Pengancingan Piksel"
 
 msgid "Grid Snap"
 msgstr "Pengancingan Kisi"
-
-msgid "Auto Slice"
-msgstr "Iris Otomatis"
 
 msgid "Step:"
 msgstr "Langkah:"
@@ -9882,6 +9641,13 @@ msgstr ""
 " Koordinat Atlas: %s\n"
 " Alternatif: 0"
 
+msgid ""
+"The selected atlas source has no valid texture. Assign a texture in the "
+"TileSet bottom tab."
+msgstr ""
+"Sumber atlas yang dipilih tidak mempunyai tekstur yang valid. Terapkan "
+"tekstur di tab TileSet bagian bawah."
+
 msgid "Edit points tool"
 msgstr "Edit point tool"
 
@@ -9903,6 +9669,9 @@ msgstr "Tidak ada lahan"
 msgid "No terrain"
 msgstr "Tidak ada lahan"
 
+msgid "Can't rotate patterns when using non-square tile grid."
+msgstr "Tidak dapat memutar pola ketika menggunakan ubin non-bujur sangkar."
+
 msgid "No Texture Atlas Source (ID: %d)"
 msgstr "Sumber Atlas Tanpa Tekstur (ID: %d)"
 
@@ -9918,6 +9687,13 @@ msgstr "Indeks:%d"
 msgid "Tile with Invalid Scene"
 msgstr "Petak dengan Adegan tidak valid"
 
+msgid ""
+"The selected scene collection source has no scenes. Add scenes in the TileSet "
+"bottom tab."
+msgstr ""
+"Sumber koleksi adegan yang dipilih tidak memiliki adegan. Tambahkan adegan di "
+"tab TileSet bagian bawah."
+
 msgid "Delete tiles"
 msgstr "Hapus Petak"
 
@@ -9930,14 +9706,11 @@ msgstr "Ubah seleksi"
 msgid "Move tiles"
 msgstr "Geser Petak"
 
-msgid "Shift: Draw line."
-msgstr "Shift: Menggambar garis."
+msgid "Alternatively hold %s with other tools to pick tile."
+msgstr "Atau tahan %s dengan alat lain untuk memilih ubin."
 
-msgid "Bucket"
-msgstr "Keranjang"
-
-msgid "Eraser"
-msgstr "Penghapus"
+msgid "Alternatively use RMB to erase tiles."
+msgstr "Atau tahan RMB untuk menghapus ubin."
 
 msgid "Tiles"
 msgstr "Petak"
@@ -10046,12 +9819,6 @@ msgstr ""
 
 msgid "Add new patterns in the TileMap editing mode."
 msgstr "Tambah pola baru di Mode Sunting TileMap."
-
-msgid "TileMap"
-msgstr "TileMap"
-
-msgid "TileSet"
-msgstr "TileSet"
 
 msgid "Error"
 msgstr "Error"
@@ -10242,9 +10009,6 @@ msgstr "Atur Port Masukan Baku"
 
 msgid "Add Node to Visual Shader"
 msgstr "Tambah Node ke Visual Shader"
-
-msgid "Node(s) Moved"
-msgstr "Node Dipindahkan"
 
 msgid "Visual Shader Input Type Changed"
 msgstr "Tipe Input Visual Shader Berubah"
@@ -10844,14 +10608,8 @@ msgstr "Pilih Berkas untuk Dipindai"
 msgid "Remove All"
 msgstr "Hapus semua"
 
-msgid "Also delete project contents (no undo!)"
-msgstr "Hapus juga konten proyek (tidak dapat dibatalkan!)"
-
-msgid "The path specified doesn't exist."
-msgstr "Lokasi yang ditentukan tidak ada."
-
-msgid "Error opening package file (it's not in ZIP format)."
-msgstr "Error saat membuka berkas paket (tidak dalam format ZIP)."
+msgid "It would be a good idea to name your project."
+msgstr "Sebaiknya berikan nama untuk proyek Anda."
 
 msgid ""
 "Invalid \".zip\" project file; it doesn't contain a \"project.godot\" file."
@@ -10859,26 +10617,11 @@ msgstr ""
 "Berkas proyek \".zip\" tidak valid; tidak terdapat berkas \"project.godot\" "
 "di dalamnya."
 
+msgid "The path specified doesn't exist."
+msgstr "Lokasi yang ditentukan tidak ada."
+
 msgid "New Game Project"
 msgstr "Proyek Baru Permainan"
-
-msgid "Imported Project"
-msgstr "Proyek yang Diimpor"
-
-msgid "Please choose a \"project.godot\" or \".zip\" file."
-msgstr "Silakan pilih berkas \"project.godot\" atau \".zip\"."
-
-msgid "Couldn't create folder."
-msgstr "Tidak dapat membuat folder."
-
-msgid "There is already a folder in this path with the specified name."
-msgstr "Sudah ada direktori di lokasi ini dengan nama yang diberikan."
-
-msgid "It would be a good idea to name your project."
-msgstr "Sebaiknya berikan nama untuk proyek Anda."
-
-msgid "Invalid project path (changed anything?)."
-msgstr "Lokasi proyek tidak valid (mengubah sesuatu?)."
 
 msgid "Couldn't create project.godot in project path."
 msgstr "Tidak dapat membuat project.godot dalam lokasi proyek."
@@ -10889,20 +10632,8 @@ msgstr "Gagal saat membuka paket, tidak dalam bentuk zip."
 msgid "The following files failed extraction from package:"
 msgstr "Berkas berikut gagal diekstrak dari paket:"
 
-msgid "Package installed successfully!"
-msgstr "Paket Sukses Terpasang!"
-
-msgid "Import & Edit"
-msgstr "Impor & Ubah"
-
-msgid "Create & Edit"
-msgstr "Buat & Ubah"
-
 msgid "Install Project:"
 msgstr "Pasang Proyek:"
-
-msgid "Install & Edit"
-msgstr "Pasang & Ubah"
 
 msgid "Project Name:"
 msgstr "Nama Projek:"
@@ -10945,9 +10676,6 @@ msgstr "Hapus Aksi Input"
 
 msgid "Project Settings (project.godot)"
 msgstr "Pengaturan Proyek (project.godot)"
-
-msgid "Advanced Settings"
-msgstr "Setelan Lanjutan"
 
 msgid "Select a Setting or Type its Name"
 msgstr "Pilih Pengaturan atau Ketik Namanya"
@@ -11065,6 +10793,9 @@ msgstr "Antarmuka Pengguna"
 msgid "Error loading scene from %s"
 msgstr "Error saat memuat skena dari %s"
 
+msgid "Error instantiating scene from %s"
+msgstr "Kesalahan menginstansiasi adegan dari %s"
+
 msgid "Replace with Branch Scene"
 msgstr "Ganti dengan Skena Cabang"
 
@@ -11090,9 +10821,6 @@ msgstr "Skena yang diinstansi tidak dapat dijadikan root"
 
 msgid "Make node as Root"
 msgstr "Jadikan node sebagai Dasar"
-
-msgid "Delete %d nodes and any children?"
-msgstr "Hapus %d node dan semua anaknya?"
 
 msgid "Delete %d nodes?"
 msgstr "Hapus %d node?"
@@ -11170,9 +10898,6 @@ msgstr ""
 
 msgid "Attach Script"
 msgstr "Lampirkan Skrip"
-
-msgid "Cut Node(s)"
-msgstr "Potong Node"
 
 msgid "Remove Node(s)"
 msgstr "Hapus Node"
@@ -11345,62 +11070,11 @@ msgstr "Basis lokasinya tidak valid."
 msgid "Wrong extension chosen."
 msgstr "Ekstensi salah dipilih."
 
-msgid "Change Cylinder Radius"
-msgstr "Ubah Radius Silinder"
-
-msgid "Change Cylinder Height"
-msgstr "Ubah Tinggi Silinder"
-
 msgid "Change Torus Inner Radius"
 msgstr "Ubah Torus Radius Dalam"
 
 msgid "Change Torus Outer Radius"
 msgstr "Ubah Torus Radius Luar"
-
-msgid "Invalid type argument to convert(), use TYPE_* constants."
-msgstr "Tipe argumen tidak valid untuk convert(), gunakan konstanta TYPE_*."
-
-msgid "Step argument is zero!"
-msgstr "Argumen step adalah nol!"
-
-msgid "Not a script with an instance"
-msgstr "Bukan skrip dengan contoh"
-
-msgid "Not based on a script"
-msgstr "Tidak berbasis pada skrip"
-
-msgid "Not based on a resource file"
-msgstr "Tidak berbasis pada resource file"
-
-msgid "Invalid instance dictionary format (missing @path)"
-msgstr "Format kamus acuan tidak sah (@path hilang)"
-
-msgid "Invalid instance dictionary format (can't load script at @path)"
-msgstr "Format kamus acuan tidak sah (tidak dapat memuat script pada @path)"
-
-msgid "Invalid instance dictionary format (invalid script at @path)"
-msgstr "Format kamus acuan tidak sah (skrip tidak sah pada @path)"
-
-msgid "Invalid instance dictionary (invalid subclasses)"
-msgstr "Kamus acuan tidak sah (sub kelas tidak sah)"
-
-msgid "Next Plane"
-msgstr "Dataran Selanjutnya"
-
-msgid "Previous Plane"
-msgstr "Dataran Sebelumnya"
-
-msgid "Plane:"
-msgstr "Dataran:"
-
-msgid "Next Floor"
-msgstr "Lantai Selanjutnya"
-
-msgid "Previous Floor"
-msgstr "Lantai Sebelumnya"
-
-msgid "Floor:"
-msgstr "Lantai:"
 
 msgid "GridMap Delete Selection"
 msgstr "Hapus Seleksi GridMap"
@@ -11414,6 +11088,12 @@ msgstr "Rekat(Paste) Seleksi GridMap"
 msgid "GridMap Paint"
 msgstr "Cat GridMap"
 
+msgid "Previous Floor"
+msgstr "Lantai Sebelumnya"
+
+msgid "Next Floor"
+msgstr "Lantai Selanjutnya"
+
 msgid "Edit X Axis"
 msgstr "Sunting Sumbu X"
 
@@ -11423,6 +11103,12 @@ msgstr "Sunting Sumbu Y"
 msgid "Edit Z Axis"
 msgstr "Sunting Sumbu Z"
 
+msgid "GridMap Settings"
+msgstr "Pengaturan GridMap"
+
+msgid "Pick Distance:"
+msgstr "Pilih Jarak:"
+
 msgid "Cursor Rotate X"
 msgstr "Kursor Rotasi X"
 
@@ -11431,39 +11117,6 @@ msgstr "Kursor Rotasi Y"
 
 msgid "Cursor Rotate Z"
 msgstr "Kursor Rotasi Z"
-
-msgid "Cursor Back Rotate X"
-msgstr "Kursor Rotasi Balik X"
-
-msgid "Cursor Back Rotate Y"
-msgstr "Kursor Rotasi Balik Y"
-
-msgid "Cursor Back Rotate Z"
-msgstr "Kursor Rotasi Balik Z"
-
-msgid "Cursor Clear Rotation"
-msgstr "Kursor Bersihkan Rotasi"
-
-msgid "Paste Selects"
-msgstr "Rekatkan Pilihan"
-
-msgid "Cut Selection"
-msgstr "Potong Pilihan"
-
-msgid "Clear Selection"
-msgstr "Bersihkan Seleksi"
-
-msgid "Fill Selection"
-msgstr "Isi Pilihan"
-
-msgid "Grid Map"
-msgstr "Peta Kisi Kisi-kisi"
-
-msgid "GridMap Settings"
-msgstr "Pengaturan GridMap"
-
-msgid "Pick Distance:"
-msgstr "Pilih Jarak:"
 
 msgid "Give a MeshLibrary resource to this GridMap to use its meshes."
 msgstr "Berikan resource MeshLibrary ke GridMap ini untuk menggunakan mesh-nya."
@@ -11492,9 +11145,6 @@ msgstr "Konfigurasi"
 msgid "Count"
 msgstr "Jumlah"
 
-msgid "Network Profiler"
-msgstr "Network Profiler(Debug jaringan)"
-
 msgid "A NavigationMesh resource must be set or created for this node to work."
 msgstr ""
 "Sebuah resource NavigationMesh harus diatur atau diciptakan supaya node ini "
@@ -11502,24 +11152,6 @@ msgstr ""
 
 msgid "Pose"
 msgstr "Pose"
-
-msgid "Package name is missing."
-msgstr "Nama paket tidak ada."
-
-msgid "Package segments must be of non-zero length."
-msgstr "Segmen paket panjangnya harus tidak boleh nol."
-
-msgid "The character '%s' is not allowed in Android application package names."
-msgstr "Karakter '%s' tidak diizinkan dalam penamaan paket aplikasi Android."
-
-msgid "A digit cannot be the first character in a package segment."
-msgstr "Digit tidak boleh diletakkan sebagai karakter awal di segmen paket."
-
-msgid "The character '%s' cannot be the first character in a package segment."
-msgstr "Karakter '%s' tidak bisa dijadikan karakter awal dalam segmen paket."
-
-msgid "The package must have at least one '.' separator."
-msgstr "Package setidaknya harus memiliki sebuah pemisah '.'."
 
 msgid "Invalid public key for APK expansion."
 msgstr "Kunci Publik untuk ekspansi APK tidak valid."
@@ -11588,15 +11220,6 @@ msgstr "Direktori 'build-tools' tidak ditemukan!"
 msgid "Unable to find Android SDK build-tools' apksigner command."
 msgstr "Tidak dapat menemukan apksigner dalam Android SDK build-tools."
 
-msgid "Code Signing"
-msgstr "Penandatanganan Kode"
-
-msgid "Signing debug %s..."
-msgstr "Menandatangani debug %s..."
-
-msgid "Signing release %s..."
-msgstr "Menandatangani rilis %s..."
-
 msgid "Could not find keystore, unable to export."
 msgstr "Tidak dapat menemukan keystore, tidak bisa ekspor."
 
@@ -11612,9 +11235,6 @@ msgid ""
 msgstr ""
 "keluaran:\n"
 "%s"
-
-msgid "Verifying %s..."
-msgstr "Memverifikasi %s..."
 
 msgid "Invalid filename! Android App Bundle requires the *.aab extension."
 msgstr "Nama berkas tak valid! Android App Bundle memerlukan ekstensi *.aab ."
@@ -11645,24 +11265,6 @@ msgstr "Tidak dapat menemukan contoh APK untuk ekspor: \"%s\""
 
 msgid "Invalid Identifier:"
 msgstr "Identifier tidak valid:"
-
-msgid "Xcode Build"
-msgstr "Membangun Xcode"
-
-msgid "Identifier is missing."
-msgstr "Kurang identifier."
-
-msgid "The character '%s' is not allowed in Identifier."
-msgstr "Karakter '%s' tidak diizinkan dalam Identifier."
-
-msgid "Failed to create \"%s\" subfolder."
-msgstr "Tidak dapat membuat sub folder \"%s\"."
-
-msgid "Invalid binary format."
-msgstr "Format biner tidak valid."
-
-msgid "Unknown object type."
-msgstr "Jenis objek tidak diketahui."
 
 msgid "Invalid bundle identifier:"
 msgstr "Identifier bundel tidak valid:"
@@ -11719,11 +11321,11 @@ msgstr ""
 "Peringatan: Notarisasi dinonaktifkan. Proyek yang diekspor akan diblokir oleh "
 "Gatekeeper jika diunduh dari sumber yang tidak dikenal."
 
-msgid "Stop HTTP Server"
-msgstr "Hentikan Server HTTP"
-
 msgid "Run in Browser"
 msgstr "Jalankan di Peramban"
+
+msgid "Stop HTTP Server"
+msgstr "Hentikan Server HTTP"
 
 msgid "Run exported HTML in the system's default browser."
 msgstr "Jalankan HTML yang diekspor dalam peramban baku sistem."
@@ -11810,14 +11412,6 @@ msgstr ""
 "Sebuah shape harus disediakan untuk CollisionShape2D supaya berfungsi. Mohon "
 "ciptakan resource shape untuknya!"
 
-msgid ""
-"Polygon-based shapes are not meant be used nor edited directly through the "
-"CollisionShape2D node. Please use the CollisionPolygon2D node instead."
-msgstr ""
-"Bentuk Polygon-based tidak dimaksudkan untuk digunakan atau diedit langsung "
-"melalui node CollisionShape2D. Gunakan node CollisionPolygon2D sebagai "
-"gantinya."
-
 msgid "Node A and Node B must be PhysicsBody2Ds"
 msgstr "Node A dan Node B harus berupa PhysicsBody2D"
 
@@ -11886,13 +11480,6 @@ msgstr ""
 msgid "This body will be ignored until you set a mesh."
 msgstr "Body ini akan diabaikan hingga Anda mengatur mesh-nya."
 
-msgid ""
-"A SpriteFrames resource must be created or set in the \"Frames\" property in "
-"order for AnimatedSprite3D to display frames."
-msgstr ""
-"Sebuah resource SpriteFrames harus diciptakan atau diatur di dalam properti "
-"'Frames' agar AnimatedSprite3D menampilkan frame-frame."
-
 msgid "Plotting Meshes"
 msgstr "Memetakan Mesh"
 
@@ -11931,9 +11518,6 @@ msgstr ""
 "ke \"Abaikan/Ignore\". Untuk mengatasinya, setel Filter Tetikus ke \"Stop\" "
 "atau \"Pass\"."
 
-msgid "Alert!"
-msgstr "Peringatan!"
-
 msgid "If \"Exp Edit\" is enabled, \"Min Value\" must be greater than 0."
 msgstr ""
 "Jika \"Exp Edit\" diaktifkan, \"Nilai Minimal\" seharusnya lebih besar dari 0."
@@ -11970,9 +11554,6 @@ msgstr "Sumber tidak sah untuk shader."
 msgid "Default Color"
 msgstr "Warna Bawaan"
 
-msgid "Filter"
-msgstr "Filter"
-
 msgid "Repeat"
 msgstr "Ulang"
 
@@ -11985,23 +11566,33 @@ msgstr "Gunakan Semua Permukaan"
 msgid "Surface Index"
 msgstr "Indeks Permukaan"
 
-msgid "Varying may not be assigned in the '%s' function."
-msgstr "Memvariasikan mungkin tidak ditetapkan dalam fungsi '%s'."
-
-msgid "Assignment to function."
-msgstr "Penugasan ke fungsi."
-
-msgid "Assignment to uniform."
-msgstr "Pemberian nilai untuk uniform."
-
 msgid "Constants cannot be modified."
 msgstr "Konstanta tidak dapat dimodifikasi."
 
 msgid "Invalid argument name."
 msgstr "Nama argumen tidak valid."
 
-msgid "Invalid undef."
-msgstr "Tidak valid."
+msgid "Shader include file does not exist:"
+msgstr "File shader tidak ada."
+
+msgid ""
+"Shader include load failed. Does the shader include exist? Is there a cyclic "
+"dependency?"
+msgstr ""
+"Memuat shader gagal. Apakah menyematkan shader ada? Apakah ada ketergantungan "
+"siklus?"
+
+msgid "Shader include resource type is wrong."
+msgstr "Jenis shader termasuk sumber salah."
+
+msgid "Cyclic include found"
+msgstr "Siklus muat ditemukan"
+
+msgid "Shader max include depth exceeded."
+msgstr "Maksimum shader termasuk kedalaman terlampaui."
+
+msgid "Macro expansion limit exceeded."
+msgstr "Ekspansi macro melebihi batas."
 
 msgid "Invalid macro argument list."
 msgstr "Daftar Argumen Macro Tidak Valid."

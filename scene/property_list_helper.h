@@ -42,16 +42,30 @@ class PropertyListHelper {
 		MethodBind *getter = nullptr;
 	};
 
+	static Vector<PropertyListHelper *> base_helpers;
+
 	String prefix;
+	MethodBind *array_length_getter = nullptr;
 	HashMap<String, Property> property_list;
 	Object *object = nullptr;
 
 	const Property *_get_property(const String &p_property, int *r_index) const;
 	void _call_setter(const MethodBind *p_setter, int p_index, const Variant &p_value) const;
-	Variant _call_getter(const MethodBind *p_getter, int p_index) const;
+	Variant _call_getter(const Property *p_property, int p_index) const;
+	int _call_array_length_getter() const;
 
 public:
+	static void clear_base_helpers();
+	static void register_base_helper(PropertyListHelper *p_helper);
+
 	void set_prefix(const String &p_prefix);
+	template <typename G>
+	void set_array_length_getter(G p_array_length_getter) {
+		array_length_getter = create_method_bind(p_array_length_getter);
+	}
+
+	// Register property without setter/getter. Only use when you don't need PropertyListHelper for _set/_get logic.
+	void register_property(const PropertyInfo &p_info, const Variant &p_default);
 
 	template <typename S, typename G>
 	void register_property(const PropertyInfo &p_info, const Variant &p_default, S p_setter, G p_getter) {
@@ -64,15 +78,17 @@ public:
 		property_list[p_info.name] = property;
 	}
 
+	bool is_initialized() const;
 	void setup_for_instance(const PropertyListHelper &p_base, Object *p_object);
+	bool is_property_valid(const String &p_property, int *r_index = nullptr) const;
 
-	void get_property_list(List<PropertyInfo> *p_list, int p_count) const;
+	void get_property_list(List<PropertyInfo> *p_list) const;
 	bool property_get_value(const String &p_property, Variant &r_ret) const;
 	bool property_set_value(const String &p_property, const Variant &p_value) const;
 	bool property_can_revert(const String &p_property) const;
 	bool property_get_revert(const String &p_property, Variant &r_value) const;
 
-	~PropertyListHelper();
+	void clear();
 };
 
 #endif // PROPERTY_LIST_HELPER_H

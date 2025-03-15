@@ -33,7 +33,7 @@
 
 #include "core/templates/ring_buffer.h"
 
-template <class T>
+template <typename T>
 class PacketBuffer {
 private:
 	typedef struct {
@@ -102,6 +102,14 @@ public:
 
 	int packets_left() const {
 		return _queued;
+	}
+
+	int payload_space_left() const {
+		return _payload.space_left();
+	}
+
+	int packets_space_left() const {
+		return _packets.size() - _queued;
 	}
 
 	void clear() {

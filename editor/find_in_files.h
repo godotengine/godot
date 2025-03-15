@@ -159,6 +159,7 @@ class FindInFilesPanel : public Control {
 public:
 	static const char *SIGNAL_RESULT_SELECTED;
 	static const char *SIGNAL_FILES_MODIFIED;
+	static const char *SIGNAL_CLOSE_BUTTON_CLICKED;
 
 	FindInFilesPanel();
 
@@ -176,10 +177,12 @@ protected:
 	void _notification(int p_what);
 
 private:
+	void _on_button_clicked(TreeItem *p_item, int p_column, int p_id, int p_mouse_button_index);
 	void _on_result_found(const String &fpath, int line_number, int begin, int end, String text);
 	void _on_finished();
 	void _on_refresh_button_clicked();
 	void _on_cancel_button_clicked();
+	void _on_close_button_clicked();
 	void _on_result_selected();
 	void _on_item_edited();
 	void _on_replace_text_changed(const String &text);
@@ -194,6 +197,7 @@ private:
 
 	void apply_replaces_in_file(const String &fpath, const Vector<Result> &locations, const String &new_text);
 	void update_replace_buttons();
+	void update_matches_text();
 	String get_replace_text();
 
 	void draw_result_text(Object *item_obj, Rect2 rect);
@@ -207,6 +211,7 @@ private:
 	Label *_status_label = nullptr;
 	Button *_refresh_button = nullptr;
 	Button *_cancel_button = nullptr;
+	Button *_close_button = nullptr;
 	ProgressBar *_progress_bar = nullptr;
 	HashMap<String, TreeItem *> _file_items;
 	HashMap<TreeItem *, Result> _result_items;

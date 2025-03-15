@@ -34,16 +34,6 @@
 #include "core/io/xml_parser.h"
 #include "core/variant/variant.h"
 
-struct ScriptMemberInfo {
-	PropertyInfo propinfo;
-	String doc_string;
-	StringName setter;
-	StringName getter;
-
-	bool has_default_value = false;
-	Variant default_value;
-};
-
 class DocData {
 public:
 	struct ArgumentDoc {
@@ -276,6 +266,7 @@ public:
 		String name;
 		String value;
 		bool is_value_valid = false;
+		String type;
 		String enumeration;
 		bool is_bitfield = false;
 		String description;
@@ -300,6 +291,10 @@ public:
 
 			if (p_dict.has("is_value_valid")) {
 				doc.is_value_valid = p_dict["is_value_valid"];
+			}
+
+			if (p_dict.has("type")) {
+				doc.type = p_dict["type"];
 			}
 
 			if (p_dict.has("enumeration")) {
@@ -351,6 +346,8 @@ public:
 			}
 
 			dict["is_value_valid"] = p_doc.is_value_valid;
+
+			dict["type"] = p_doc.type;
 
 			if (!p_doc.enumeration.is_empty()) {
 				dict["enumeration"] = p_doc.enumeration;
@@ -522,6 +519,10 @@ public:
 		String type;
 		String data_type;
 		String description;
+		bool is_deprecated = false;
+		String deprecated_message;
+		bool is_experimental = false;
+		String experimental_message;
 		String default_value;
 		String keywords;
 		bool operator<(const ThemeItemDoc &p_theme_item) const {
@@ -548,6 +549,16 @@ public:
 
 			if (p_dict.has("description")) {
 				doc.description = p_dict["description"];
+			}
+
+			if (p_dict.has("deprecated")) {
+				doc.is_deprecated = true;
+				doc.deprecated_message = p_dict["deprecated"];
+			}
+
+			if (p_dict.has("experimental")) {
+				doc.is_experimental = true;
+				doc.experimental_message = p_dict["experimental"];
 			}
 
 			if (p_dict.has("default_value")) {
@@ -577,6 +588,14 @@ public:
 
 			if (!p_doc.description.is_empty()) {
 				dict["description"] = p_doc.description;
+			}
+
+			if (p_doc.is_deprecated) {
+				dict["deprecated"] = p_doc.deprecated_message;
+			}
+
+			if (p_doc.is_experimental) {
+				dict["experimental"] = p_doc.experimental_message;
 			}
 
 			if (!p_doc.default_value.is_empty()) {
@@ -959,10 +978,7 @@ public:
 
 	static void return_doc_from_retinfo(DocData::MethodDoc &p_method, const PropertyInfo &p_retinfo);
 	static void argument_doc_from_arginfo(DocData::ArgumentDoc &p_argument, const PropertyInfo &p_arginfo);
-	static void property_doc_from_scriptmemberinfo(DocData::PropertyDoc &p_property, const ScriptMemberInfo &p_memberinfo);
 	static void method_doc_from_methodinfo(DocData::MethodDoc &p_method, const MethodInfo &p_methodinfo, const String &p_desc);
-	static void constant_doc_from_variant(DocData::ConstantDoc &p_const, const StringName &p_name, const Variant &p_value, const String &p_desc);
-	static void signal_doc_from_methodinfo(DocData::MethodDoc &p_signal, const MethodInfo &p_methodinfo, const String &p_desc);
 };
 
 #endif // DOC_DATA_H

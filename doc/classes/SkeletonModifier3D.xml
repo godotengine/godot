@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="SkeletonModifier3D" inherits="Node3D" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A node that may modify Skeleton3D's bone.
+	</brief_description>
+	<description>
+		[SkeletonModifier3D] retrieves a target [Skeleton3D] by having a [Skeleton3D] parent.
+		If there is [AnimationMixer], modification always performs after playback process of the [AnimationMixer].
+		This node should be used to implement custom IK solvers, constraints, or skeleton physics.
+	</description>
+	<tutorials>
+		<link title="Design of the Skeleton Modifier 3D">https://godotengine.org/article/design-of-the-skeleton-modifier-3d/</link>
+	</tutorials>
+	<methods>
+		<method name="_process_modification" qualifiers="virtual">
+			<return type="void" />
+			<description>
+				Override this virtual method to implement a custom skeleton modifier. You should do things like get the [Skeleton3D]'s current pose and apply the pose here.
+				[method _process_modification] must not apply [member influence] to bone poses because the [Skeleton3D] automatically applies influence to all bone poses set by the modifier.
+			</description>
+		</method>
+		<method name="get_skeleton" qualifiers="const">
+			<return type="Skeleton3D" />
+			<description>
+				Get parent [Skeleton3D] node if found.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="active" type="bool" setter="set_active" getter="is_active" default="true">
+			If [code]true[/code], the [SkeletonModifier3D] will be processing.
+		</member>
+		<member name="influence" type="float" setter="set_influence" getter="get_influence" default="1.0">
+			Sets the influence of the modification.
+			[b]Note:[/b] This value is used by [Skeleton3D] to blend, so the [SkeletonModifier3D] should always apply only 100% of the result without interpolation.
+		</member>
+	</members>
+	<signals>
+		<signal name="modification_processed">
+			<description>
+				Notifies when the modification have been finished.
+				[b]Note:[/b] If you want to get the modified bone pose by the modifier, you must use [method Skeleton3D.get_bone_pose] or [method Skeleton3D.get_bone_global_pose] at the moment this signal is fired.
+			</description>
+		</signal>
+	</signals>
+	<constants>
+		<constant name="BONE_AXIS_PLUS_X" value="0" enum="BoneAxis">
+			Enumerated value for the +X axis.
+		</constant>
+		<constant name="BONE_AXIS_MINUS_X" value="1" enum="BoneAxis">
+			Enumerated value for the -X axis.
+		</constant>
+		<constant name="BONE_AXIS_PLUS_Y" value="2" enum="BoneAxis">
+			Enumerated value for the +Y axis.
+		</constant>
+		<constant name="BONE_AXIS_MINUS_Y" value="3" enum="BoneAxis">
+			Enumerated value for the -Y axis.
+		</constant>
+		<constant name="BONE_AXIS_PLUS_Z" value="4" enum="BoneAxis">
+			Enumerated value for the +Z axis.
+		</constant>
+		<constant name="BONE_AXIS_MINUS_Z" value="5" enum="BoneAxis">
+			Enumerated value for the -Z axis.
+		</constant>
+	</constants>
+</class>

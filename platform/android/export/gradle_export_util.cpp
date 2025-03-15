@@ -88,6 +88,8 @@ int _get_app_category_value(int category_index) {
 			return 7;
 		case APP_CATEGORY_SOCIAL:
 			return 4;
+		case APP_CATEGORY_UNDEFINED:
+			return -1;
 		case APP_CATEGORY_VIDEO:
 			return 2;
 		case APP_CATEGORY_GAME:
@@ -167,10 +169,11 @@ Error store_string_at_path(const String &p_path, const String &p_data) {
 // It is used by the export_project_files method to save all the asset files into the gradle project.
 // It's functionality mirrors that of the method save_apk_file.
 // This method will be called ONLY when gradle build is enabled.
-Error rename_and_store_file_in_gradle_project(void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total, const Vector<String> &p_enc_in_filters, const Vector<String> &p_enc_ex_filters, const Vector<uint8_t> &p_key) {
+Error rename_and_store_file_in_gradle_project(void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total, const Vector<String> &p_enc_in_filters, const Vector<String> &p_enc_ex_filters, const Vector<uint8_t> &p_key, uint64_t p_seed) {
 	CustomExportData *export_data = static_cast<CustomExportData *>(p_userdata);
-	String dst_path = p_path.replace_first("res://", export_data->assets_directory + "/");
-	print_verbose("Saving project files from " + p_path + " into " + dst_path);
+	const String path = ResourceUID::ensure_path(p_path);
+	const String dst_path = path.replace_first("res://", export_data->assets_directory + "/");
+	print_verbose("Saving project files from " + path + " into " + dst_path);
 	Error err = store_file_at_path(dst_path, p_data);
 	return err;
 }
@@ -194,7 +197,7 @@ String _android_xml_escape(const String &p_string) {
 Error _create_project_name_strings_files(const Ref<EditorExportPreset> &p_preset, const String &project_name, const String &p_gradle_build_dir) {
 	print_verbose("Creating strings resources for supported locales for project " + project_name);
 	// Stores the string into the default values directory.
-	String processed_default_xml_string = vformat(godot_project_name_xml_string, _android_xml_escape(project_name));
+	String processed_default_xml_string = vformat(GODOT_PROJECT_NAME_XML_STRING, _android_xml_escape(project_name));
 	store_string_at_path(p_gradle_build_dir.path_join("res/values/godot_project_name_string.xml"), processed_default_xml_string);
 
 	// Searches the Gradle project res/ directory to find all supported locales
@@ -220,7 +223,7 @@ Error _create_project_name_strings_files(const Ref<EditorExportPreset> &p_preset
 		String locale_directory = p_gradle_build_dir.path_join("res/" + file + "/godot_project_name_string.xml");
 		if (appnames.has(locale)) {
 			String locale_project_name = appnames[locale];
-			String processed_xml_string = vformat(godot_project_name_xml_string, _android_xml_escape(locale_project_name));
+			String processed_xml_string = vformat(GODOT_PROJECT_NAME_XML_STRING, _android_xml_escape(locale_project_name));
 			print_verbose("Storing project name for locale " + locale + " under " + locale_directory);
 			store_string_at_path(locale_directory, processed_xml_string);
 		} else {
@@ -257,7 +260,7 @@ String _get_screen_sizes_tag(const Ref<EditorExportPreset> &p_preset) {
 String _get_activity_tag(const Ref<EditorExportPlatform> &p_export_platform, const Ref<EditorExportPreset> &p_preset, bool p_debug) {
 	String orientation = _get_android_orientation_label(DisplayServer::ScreenOrientation(int(GLOBAL_GET("display/window/handheld/orientation"))));
 	String manifest_activity_text = vformat(
-			"        <activity android:name=\"com.godot.game.GodotApp\" "
+			"        <activity android:name=\".GodotApp\" "
 			"tools:replace=\"android:screenOrientation,android:excludeFromRecents,android:resizeableActivity\" "
 			"tools:node=\"mergeOnlyAttributes\" "
 			"android:excludeFromRecents=\"%s\" "
@@ -311,17 +314,21 @@ String _get_application_tag(const Ref<EditorExportPlatform> &p_export_platform, 
 			"    <application android:label=\"@string/godot_project_name_string\"\n"
 			"        android:allowBackup=\"%s\"\n"
 			"        android:icon=\"@mipmap/icon\"\n"
-			"        android:appCategory=\"%s\"\n"
 			"        android:isGame=\"%s\"\n"
 			"        android:hasFragileUserData=\"%s\"\n"
-			"        android:requestLegacyExternalStorage=\"%s\"\n"
-			"        tools:replace=\"android:allowBackup,android:appCategory,android:isGame,android:hasFragileUserData,android:requestLegacyExternalStorage\"\n"
-			"        tools:ignore=\"GoogleAppIndexingWarning\">\n\n",
+			"        android:requestLegacyExternalStorage=\"%s\"\n",
 			bool_to_string(p_preset->get("user_data_backup/allow")),
-			_get_app_category_label(app_category_index),
 			bool_to_string(is_game),
 			bool_to_string(p_preset->get("package/retain_data_on_uninstall")),
 			bool_to_string(p_has_read_write_storage_permission));
+	if (app_category_index != APP_CATEGORY_UNDEFINED) {
+		manifest_application_text += vformat("        android:appCategory=\"%s\"\n", _get_app_category_label(app_category_index));
+		manifest_application_text += "        tools:replace=\"android:allowBackup,android:appCategory,android:isGame,android:hasFragileUserData,android:requestLegacyExternalStorage\"\n";
+	} else {
+		manifest_application_text += "        tools:remove=\"android:appCategory\"\n";
+		manifest_application_text += "        tools:replace=\"android:allowBackup,android:isGame,android:hasFragileUserData,android:requestLegacyExternalStorage\"\n";
+	}
+	manifest_application_text += "        tools:ignore=\"GoogleAppIndexingWarning\">\n\n";
 
 	Vector<Ref<EditorExportPlugin>> export_plugins = EditorExport::get_singleton()->get_export_plugins();
 	for (int i = 0; i < export_plugins.size(); i++) {

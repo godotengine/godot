@@ -31,10 +31,6 @@
 #include "skeleton_modification_2d.h"
 #include "scene/2d/skeleton_2d.h"
 
-#include "scene/2d/physics/collision_object_2d.h"
-#include "scene/2d/physics/collision_shape_2d.h"
-#include "scene/2d/physics/physical_bone_2d.h"
-
 #ifdef TOOLS_ENABLED
 #include "editor/editor_settings.h"
 #endif // TOOLS_ENABLED
@@ -231,6 +227,11 @@ void SkeletonModification2D::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "enabled"), "set_enabled", "get_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "execution_mode", PROPERTY_HINT_ENUM, "process,physics_process"), "set_execution_mode", "get_execution_mode");
+}
+
+void SkeletonModification2D::reset_state() {
+	stack = nullptr;
+	is_setup = false;
 }
 
 SkeletonModification2D::SkeletonModification2D() {

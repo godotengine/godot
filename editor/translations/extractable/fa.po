@@ -18,13 +18,8 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
 "X-Generator: Weblate 5.4\n"
 
-msgid "Example: %s"
-msgstr "مثال: %s"
-
-msgid "%d item"
-msgid_plural "%d items"
-msgstr[0] "%d مورد"
-msgstr[1] "%d مورد"
+msgid "All Recognized"
+msgstr "همه ی موارد شناخته شده اند"
 
 msgid "Network"
 msgstr "شبکه"
@@ -35,11 +30,11 @@ msgstr "باز کن"
 msgid "Select Current Folder"
 msgstr "انتخاب پوشه کنونی"
 
+msgid "Save"
+msgstr "ذخیره"
+
 msgid "Select This Folder"
 msgstr "برگزیدن این پوشه"
-
-msgid "All Recognized"
-msgstr "همه ی موارد شناخته شده اند"
 
 msgid "Open a File"
 msgstr "یک پرونده را باز کن"
@@ -52,9 +47,6 @@ msgstr "یک دیکشنری را باز کن"
 
 msgid "Open a File or Directory"
 msgstr "یک پرونده یا پوشه را باز کن"
-
-msgid "Save"
-msgstr "ذخیره"
 
 msgid "Save a File"
 msgstr "یک پرونده را ذخیره کن"

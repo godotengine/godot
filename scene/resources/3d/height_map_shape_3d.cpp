@@ -30,6 +30,8 @@
 
 #include "height_map_shape_3d.h"
 
+#include "core/io/image.h"
+#include "scene/resources/mesh.h"
 #include "servers/physics_server_3d.h"
 
 Vector<Vector3> HeightMapShape3D::get_debug_mesh_lines() const {
@@ -79,6 +81,60 @@ Vector<Vector3> HeightMapShape3D::get_debug_mesh_lines() const {
 	}
 
 	return points;
+}
+
+Ref<ArrayMesh> HeightMapShape3D::get_debug_arraymesh_faces(const Color &p_modulate) const {
+	Vector<Vector3> verts;
+	Vector<Color> colors;
+	Vector<int> indices;
+
+	// This will be slow for large maps...
+
+	if ((map_width != 0) && (map_depth != 0)) {
+		Vector2 size = Vector2(map_width - 1, map_depth - 1) * -0.5;
+		const real_t *r = map_data.ptr();
+
+		for (int d = 0; d <= map_depth - 2; d++) {
+			const int this_row_offset = map_width * d;
+			const int next_row_offset = this_row_offset + map_width;
+
+			for (int w = 0; w <= map_width - 2; w++) {
+				const float height_tl = r[next_row_offset + w];
+				const float height_bl = r[this_row_offset + w];
+				const float height_br = r[this_row_offset + w + 1];
+				const float height_tr = r[next_row_offset + w + 1];
+
+				const int index_offset = verts.size();
+
+				verts.push_back(Vector3(size.x + w, height_tl, size.y + d + 1));
+				verts.push_back(Vector3(size.x + w, height_bl, size.y + d));
+				verts.push_back(Vector3(size.x + w + 1, height_br, size.y + d));
+				verts.push_back(Vector3(size.x + w + 1, height_tr, size.y + d + 1));
+
+				colors.push_back(p_modulate);
+				colors.push_back(p_modulate);
+				colors.push_back(p_modulate);
+				colors.push_back(p_modulate);
+
+				indices.push_back(index_offset);
+				indices.push_back(index_offset + 1);
+				indices.push_back(index_offset + 2);
+				indices.push_back(index_offset);
+				indices.push_back(index_offset + 2);
+				indices.push_back(index_offset + 3);
+			}
+		}
+	}
+
+	Ref<ArrayMesh> mesh = memnew(ArrayMesh);
+	Array a;
+	a.resize(Mesh::ARRAY_MAX);
+	a[RS::ARRAY_VERTEX] = verts;
+	a[RS::ARRAY_COLOR] = colors;
+	a[RS::ARRAY_INDEX] = indices;
+	mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, a);
+
+	return mesh;
 }
 
 real_t HeightMapShape3D::get_enclosing_radius() const {
@@ -187,6 +243,104 @@ real_t HeightMapShape3D::get_max_height() const {
 	return max_height;
 }
 
+void HeightMapShape3D::update_map_data_from_image(const Ref<Image> &p_image, real_t p_height_min, real_t p_height_max) {
+	ERR_FAIL_COND_MSG(p_image.is_null(), "Heightmap update image requires a valid Image reference.");
+	ERR_FAIL_COND_MSG(p_image->get_format() != Image::FORMAT_RF && p_image->get_format() != Image::FORMAT_RH && p_image->get_format() != Image::FORMAT_R8, "Heightmap update image requires Image in format FORMAT_RF (32 bit), FORMAT_RH (16 bit), or FORMAT_R8 (8 bit).");
+	ERR_FAIL_COND_MSG(p_image->get_width() < 2, "Heightmap update image requires a minimum Image width of 2.");
+	ERR_FAIL_COND_MSG(p_image->get_height() < 2, "Heightmap update image requires a minimum Image height of 2.");
+	ERR_FAIL_COND_MSG(p_height_min > p_height_max, "Heightmap update image requires height_max to be greater than height_min.");
+
+	map_width = p_image->get_width();
+	map_depth = p_image->get_height();
+	map_data.resize(map_width * map_depth);
+
+	real_t new_min_height = FLT_MAX;
+	real_t new_max_height = -FLT_MAX;
+
+	float remap_height_min = float(p_height_min);
+	float remap_height_max = float(p_height_max);
+
+	real_t *map_data_ptrw = map_data.ptrw();
+
+	switch (p_image->get_format()) {
+		case Image::FORMAT_RF: {
+			const float *image_data_ptr = (float *)p_image->get_data().ptr();
+
+			for (int i = 0; i < map_data.size(); i++) {
+				float pixel_value = image_data_ptr[i];
+
+				DEV_ASSERT(pixel_value >= 0.0 && pixel_value <= 1.0);
+
+				real_t height_value = Math::remap(pixel_value, 0.0f, 1.0f, remap_height_min, remap_height_max);
+
+				if (height_value < new_min_height) {
+					new_min_height = height_value;
+				}
+				if (height_value > new_max_height) {
+					new_max_height = height_value;
+				}
+
+				map_data_ptrw[i] = height_value;
+			}
+
+		} break;
+
+		case Image::FORMAT_RH: {
+			const uint16_t *image_data_ptr = (uint16_t *)p_image->get_data().ptr();
+
+			for (int i = 0; i < map_data.size(); i++) {
+				float pixel_value = Math::half_to_float(image_data_ptr[i]);
+
+				DEV_ASSERT(pixel_value >= 0.0 && pixel_value <= 1.0);
+
+				real_t height_value = Math::remap(pixel_value, 0.0f, 1.0f, remap_height_min, remap_height_max);
+
+				if (height_value < new_min_height) {
+					new_min_height = height_value;
+				}
+				if (height_value > new_max_height) {
+					new_max_height = height_value;
+				}
+
+				map_data_ptrw[i] = height_value;
+			}
+
+		} break;
+
+		case Image::FORMAT_R8: {
+			const uint8_t *image_data_ptr = (uint8_t *)p_image->get_data().ptr();
+
+			for (int i = 0; i < map_data.size(); i++) {
+				float pixel_value = float(image_data_ptr[i] / 255.0);
+
+				DEV_ASSERT(pixel_value >= 0.0 && pixel_value <= 1.0);
+
+				real_t height_value = Math::remap(pixel_value, 0.0f, 1.0f, remap_height_min, remap_height_max);
+
+				if (height_value < new_min_height) {
+					new_min_height = height_value;
+				}
+				if (height_value > new_max_height) {
+					new_max_height = height_value;
+				}
+
+				map_data_ptrw[i] = height_value;
+			}
+
+		} break;
+
+		default: {
+			return;
+		}
+	}
+
+	min_height = new_min_height;
+	max_height = new_max_height;
+
+	_update_shape();
+	emit_changed();
+}
+
 void HeightMapShape3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_map_width", "width"), &HeightMapShape3D::set_map_width);
 	ClassDB::bind_method(D_METHOD("get_map_width"), &HeightMapShape3D::get_map_width);
@@ -197,8 +351,10 @@ void HeightMapShape3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_min_height"), &HeightMapShape3D::get_min_height);
 	ClassDB::bind_method(D_METHOD("get_max_height"), &HeightMapShape3D::get_max_height);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "map_width", PROPERTY_HINT_RANGE, "0.001,100,0.001,or_greater"), "set_map_width", "get_map_width");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "map_depth", PROPERTY_HINT_RANGE, "0.001,100,0.001,or_greater"), "set_map_depth", "get_map_depth");
+	ClassDB::bind_method(D_METHOD("update_map_data_from_image", "image", "height_min", "height_max"), &HeightMapShape3D::update_map_data_from_image);
+
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "map_width", PROPERTY_HINT_RANGE, "1,100,1,or_greater"), "set_map_width", "get_map_width");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "map_depth", PROPERTY_HINT_RANGE, "1,100,1,or_greater"), "set_map_depth", "get_map_depth");
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_FLOAT32_ARRAY, "map_data"), "set_map_data", "get_map_data");
 }
 

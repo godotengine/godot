@@ -31,13 +31,14 @@
 #include "editor_resource_picker.h"
 
 #include "editor/audio_stream_preview.h"
+#include "editor/editor_help.h"
 #include "editor/editor_node.h"
-#include "editor/editor_quick_open.h"
 #include "editor/editor_resource_preview.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
 #include "editor/filesystem_dock.h"
 #include "editor/gui/editor_file_dialog.h"
+#include "editor/gui/editor_quick_open_dialog.h"
 #include "editor/plugins/editor_resource_conversion_plugin.h"
 #include "editor/plugins/script_editor_plugin.h"
 #include "editor/scene_tree_dock.h"
@@ -60,11 +61,11 @@ void EditorResourcePicker::_update_resource() {
 		assign_button->set_custom_minimum_size(assign_button_min_size);
 
 		if (edited_resource == Ref<Resource>()) {
-			assign_button->set_icon(Ref<Texture2D>());
+			assign_button->set_button_icon(Ref<Texture2D>());
 			assign_button->set_text(TTR("<empty>"));
 			assign_button->set_tooltip_text("");
 		} else {
-			assign_button->set_icon(EditorNode::get_singleton()->get_object_icon(edited_resource.operator->(), SNAME("Object")));
+			assign_button->set_button_icon(EditorNode::get_singleton()->get_object_icon(edited_resource.operator->(), SNAME("Object")));
 
 			if (!edited_resource->get_name().is_empty()) {
 				assign_button->set_text(edited_resource->get_name());
@@ -86,11 +87,11 @@ void EditorResourcePicker::_update_resource() {
 		assign_button->set_tooltip_text(resource_path + TTR("Type:") + " " + edited_resource->get_class());
 	}
 
-	assign_button->set_disabled(!editable && !edited_resource.is_valid());
+	assign_button->set_disabled(!editable && edited_resource.is_null());
 }
 
 void EditorResourcePicker::_update_resource_preview(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview, ObjectID p_obj) {
-	if (!edited_resource.is_valid() || edited_resource->get_instance_id() != p_obj) {
+	if (edited_resource.is_null() || edited_resource->get_instance_id() != p_obj) {
 		return;
 	}
 
@@ -102,7 +103,7 @@ void EditorResourcePicker::_update_resource_preview(const String &p_path, const 
 		}
 
 		if (p_preview.is_valid()) {
-			preview_rect->set_offset(SIDE_LEFT, assign_button->get_icon()->get_width() + assign_button->get_theme_stylebox(SNAME("normal"))->get_content_margin(SIDE_LEFT) + get_theme_constant(SNAME("h_separation"), SNAME("Button")));
+			preview_rect->set_offset(SIDE_LEFT, assign_button->get_button_icon()->get_width() + assign_button->get_theme_stylebox(CoreStringName(normal))->get_content_margin(SIDE_LEFT) + get_theme_constant(SNAME("h_separation"), SNAME("Button")));
 
 			// Resource-specific stretching.
 			if (Ref<GradientTexture1D>(edited_resource).is_valid() || Ref<Gradient>(edited_resource).is_valid()) {
@@ -112,7 +113,7 @@ void EditorResourcePicker::_update_resource_preview(const String &p_path, const 
 				preview_rect->set_stretch_mode(TextureRect::STRETCH_KEEP_ASPECT_CENTERED);
 				int thumbnail_size = EDITOR_GET("filesystem/file_dialog/thumbnail_size");
 				thumbnail_size *= EDSCALE;
-				assign_button->set_custom_minimum_size(Size2(MAX(1, assign_button_min_size.x), MAX(thumbnail_size, assign_button_min_size.y)));
+				assign_button->set_custom_minimum_size(assign_button_min_size.max(Size2(1, thumbnail_size)));
 			}
 
 			preview_rect->set_texture(p_preview);
@@ -129,6 +130,11 @@ void EditorResourcePicker::_resource_selected() {
 	}
 
 	emit_signal(SNAME("resource_selected"), edited_resource, false);
+}
+
+void EditorResourcePicker::_resource_changed() {
+	emit_signal(SNAME("resource_changed"), edited_resource);
+	_update_resource();
 }
 
 void EditorResourcePicker::_file_selected(const String &p_path) {
@@ -166,12 +172,14 @@ void EditorResourcePicker::_file_selected(const String &p_path) {
 	}
 
 	edited_resource = loaded_resource;
-	emit_signal(SNAME("resource_changed"), edited_resource);
-	_update_resource();
+	_resource_changed();
 }
 
-void EditorResourcePicker::_file_quick_selected() {
-	_file_selected(quick_open->get_selected());
+void EditorResourcePicker::_resource_saved(Object *p_resource) {
+	if (edited_resource.is_valid() && p_resource == edited_resource.ptr()) {
+		emit_signal(SNAME("resource_changed"), edited_resource);
+		_update_resource();
+	}
 }
 
 void EditorResourcePicker::_update_menu() {
@@ -216,7 +224,9 @@ void EditorResourcePicker::_update_menu_items() {
 		}
 
 		if (is_editable()) {
-			edit_menu->add_icon_item(get_editor_theme_icon(SNAME("Clear")), TTR("Clear"), OBJ_MENU_CLEAR);
+			if (!_is_custom_type_script()) {
+				edit_menu->add_icon_item(get_editor_theme_icon(SNAME("Clear")), TTR("Clear"), OBJ_MENU_CLEAR);
+			}
 			edit_menu->add_icon_item(get_editor_theme_icon(SNAME("Duplicate")), TTR("Make Unique"), OBJ_MENU_MAKE_UNIQUE);
 
 			// Check whether the resource has subresources.
@@ -278,20 +288,22 @@ void EditorResourcePicker::_update_menu_items() {
 
 	// Add options to convert existing resource to another type of resource.
 	if (is_editable() && edited_resource.is_valid()) {
-		Vector<Ref<EditorResourceConversionPlugin>> conversions = EditorNode::get_singleton()->find_resource_conversion_plugin(edited_resource);
-		if (conversions.size()) {
+		Vector<Ref<EditorResourceConversionPlugin>> conversions = EditorNode::get_singleton()->find_resource_conversion_plugin_for_resource(edited_resource);
+		if (!conversions.is_empty()) {
 			edit_menu->add_separator();
 		}
-		for (int i = 0; i < conversions.size(); i++) {
-			String what = conversions[i]->converts_to();
+		int relative_id = 0;
+		for (const Ref<EditorResourceConversionPlugin> &conversion : conversions) {
+			String what = conversion->converts_to();
 			Ref<Texture2D> icon;
 			if (has_theme_icon(what, EditorStringName(EditorIcons))) {
 				icon = get_editor_theme_icon(what);
 			} else {
-				icon = get_theme_icon(what, SNAME("Resource"));
+				icon = get_editor_theme_icon(SNAME("Object"));
 			}
 
-			edit_menu->add_icon_item(icon, vformat(TTR("Convert to %s"), what), CONVERT_BASE_ID + i);
+			edit_menu->add_icon_item(icon, vformat(TTR("Convert to %s"), what), CONVERT_BASE_ID + relative_id);
+			relative_id++;
 		}
 	}
 }
@@ -329,14 +341,14 @@ void EditorResourcePicker::_edit_menu_cbk(int p_which) {
 		} break;
 
 		case OBJ_MENU_QUICKLOAD: {
-			if (!quick_open) {
-				quick_open = memnew(EditorQuickOpen);
-				add_child(quick_open);
-				quick_open->connect("quick_open", callable_mp(this, &EditorResourcePicker::_file_quick_selected));
+			const Vector<String> &base_types_string = base_type.split(",");
+
+			Vector<StringName> base_types;
+			for (const String &type : base_types_string) {
+				base_types.push_back(type);
 			}
 
-			quick_open->popup_dialog(base_type);
-			quick_open->set_title(TTR("Resource"));
+			EditorNode::get_singleton()->get_quick_open_dialog()->popup_dialog(base_types, callable_mp(this, &EditorResourcePicker::_file_selected));
 		} break;
 
 		case OBJ_MENU_INSPECT: {
@@ -347,8 +359,7 @@ void EditorResourcePicker::_edit_menu_cbk(int p_which) {
 
 		case OBJ_MENU_CLEAR: {
 			edited_resource = Ref<Resource>();
-			emit_signal(SNAME("resource_changed"), edited_resource);
-			_update_resource();
+			_resource_changed();
 		} break;
 
 		case OBJ_MENU_MAKE_UNIQUE: {
@@ -360,8 +371,7 @@ void EditorResourcePicker::_edit_menu_cbk(int p_which) {
 			ERR_FAIL_COND(unique_resource.is_null()); // duplicate() may fail.
 
 			edited_resource = unique_resource;
-			emit_signal(SNAME("resource_changed"), edited_resource);
-			_update_resource();
+			_resource_changed();
 		} break;
 
 		case OBJ_MENU_MAKE_UNIQUE_RECURSIVE: {
@@ -373,7 +383,7 @@ void EditorResourcePicker::_edit_menu_cbk(int p_which) {
 				duplicate_resources_dialog = memnew(ConfirmationDialog);
 				add_child(duplicate_resources_dialog);
 				duplicate_resources_dialog->set_title(TTR("Make Unique (Recursive)"));
-				duplicate_resources_dialog->connect("confirmed", callable_mp(this, &EditorResourcePicker::_duplicate_selected_resources));
+				duplicate_resources_dialog->connect(SceneStringName(confirmed), callable_mp(this, &EditorResourcePicker::_duplicate_selected_resources));
 
 				VBoxContainer *vb = memnew(VBoxContainer);
 				duplicate_resources_dialog->add_child(vb);
@@ -382,6 +392,7 @@ void EditorResourcePicker::_edit_menu_cbk(int p_which) {
 				vb->add_child(label);
 
 				duplicate_resources_tree = memnew(Tree);
+				duplicate_resources_tree->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 				vb->add_child(duplicate_resources_tree);
 				duplicate_resources_tree->set_columns(2);
 				duplicate_resources_tree->set_v_size_flags(SIZE_EXPAND_FILL);
@@ -406,6 +417,10 @@ void EditorResourcePicker::_edit_menu_cbk(int p_which) {
 			if (edited_resource.is_null()) {
 				return;
 			}
+			Callable resource_saved = callable_mp(this, &EditorResourcePicker::_resource_saved);
+			if (!EditorNode::get_singleton()->is_connected("resource_saved", resource_saved)) {
+				EditorNode::get_singleton()->connect("resource_saved", resource_saved);
+			}
 			EditorNode::get_singleton()->save_resource_as(edited_resource);
 		} break;
 
@@ -421,9 +436,7 @@ void EditorResourcePicker::_edit_menu_cbk(int p_which) {
 				_edit_menu_cbk(OBJ_MENU_MAKE_UNIQUE);
 				return;
 			}
-
-			emit_signal(SNAME("resource_changed"), edited_resource);
-			_update_resource();
+			_resource_changed();
 		} break;
 
 		case OBJ_MENU_SHOW_IN_FILE_SYSTEM: {
@@ -438,12 +451,11 @@ void EditorResourcePicker::_edit_menu_cbk(int p_which) {
 
 			if (p_which >= CONVERT_BASE_ID) {
 				int to_type = p_which - CONVERT_BASE_ID;
-				Vector<Ref<EditorResourceConversionPlugin>> conversions = EditorNode::get_singleton()->find_resource_conversion_plugin(edited_resource);
+				Vector<Ref<EditorResourceConversionPlugin>> conversions = EditorNode::get_singleton()->find_resource_conversion_plugin_for_resource(edited_resource);
 				ERR_FAIL_INDEX(to_type, conversions.size());
 
 				edited_resource = conversions[to_type]->convert(edited_resource);
-				emit_signal(SNAME("resource_changed"), edited_resource);
-				_update_resource();
+				_resource_changed();
 				break;
 			}
 
@@ -470,8 +482,7 @@ void EditorResourcePicker::_edit_menu_cbk(int p_which) {
 			// Prevent freeing of the object until the end of the update of the resource (GH-88286).
 			Ref<Resource> old_edited_resource = edited_resource;
 			edited_resource = Ref<Resource>(resp);
-			emit_signal(SNAME("resource_changed"), edited_resource);
-			_update_resource();
+			_resource_changed();
 		} break;
 	}
 }
@@ -487,8 +498,8 @@ void EditorResourcePicker::set_create_options(Object *p_menu_node) {
 	if (!base_type.is_empty()) {
 		int idx = 0;
 
-		HashSet<StringName> allowed_types;
-		_get_allowed_types(false, &allowed_types);
+		_ensure_allowed_types();
+		HashSet<StringName> allowed_types = allowed_types_without_convert;
 
 		for (const StringName &E : allowed_types) {
 			const String &t = E;
@@ -502,6 +513,11 @@ void EditorResourcePicker::set_create_options(Object *p_menu_node) {
 			Ref<Texture2D> icon = EditorNode::get_singleton()->get_class_icon(t, "Object");
 			int id = TYPE_BASE_ID + idx;
 			edit_menu->add_icon_item(icon, vformat(TTR("New %s"), t), id);
+
+			HashMap<String, DocData::ClassDoc>::Iterator class_doc = EditorHelp::get_doc_data()->class_list.find(t);
+			if (class_doc) {
+				edit_menu->set_item_tooltip(-1, DTR(class_doc->value.brief_description));
+			}
 
 			idx++;
 		}
@@ -562,9 +578,9 @@ String EditorResourcePicker::_get_resource_type(const Ref<Resource> &p_resource)
 	return res_type;
 }
 
-static void _add_allowed_type(const StringName &p_type, HashSet<StringName> *p_vector) {
-	if (p_vector->has(p_type)) {
-		// Already added
+static void _add_allowed_type(const StringName &p_type, List<StringName> *p_vector) {
+	if (p_vector->find(p_type)) {
+		// Already added.
 		return;
 	}
 
@@ -572,7 +588,7 @@ static void _add_allowed_type(const StringName &p_type, HashSet<StringName> *p_v
 		// Engine class,
 
 		if (!ClassDB::is_virtual(p_type)) {
-			p_vector->insert(p_type);
+			p_vector->push_back(p_type);
 		}
 
 		List<StringName> inheriters;
@@ -582,7 +598,7 @@ static void _add_allowed_type(const StringName &p_type, HashSet<StringName> *p_v
 		}
 	} else {
 		// Script class.
-		p_vector->insert(p_type);
+		p_vector->push_back(p_type);
 	}
 
 	List<StringName> inheriters;
@@ -592,28 +608,51 @@ static void _add_allowed_type(const StringName &p_type, HashSet<StringName> *p_v
 	}
 }
 
-void EditorResourcePicker::_get_allowed_types(bool p_with_convert, HashSet<StringName> *p_vector) const {
+void EditorResourcePicker::_ensure_allowed_types() const {
+	if (!allowed_types_without_convert.is_empty()) {
+		return;
+	}
+
+	List<StringName> final_allowed;
+
 	Vector<String> allowed_types = base_type.split(",");
 	int size = allowed_types.size();
 
+	for (const String &S : allowed_types) {
+		const String base = S.strip_edges();
+		if (base.begins_with("-")) {
+			final_allowed.erase(base.right(-1));
+			continue;
+		}
+		_add_allowed_type(base, &final_allowed);
+	}
+
+	for (const StringName &SN : final_allowed) {
+		allowed_types_without_convert.insert(SN);
+	}
+
+	allowed_types_with_convert = HashSet<StringName>(allowed_types_without_convert);
+
 	for (int i = 0; i < size; i++) {
-		String base = allowed_types[i].strip_edges();
-
-		_add_allowed_type(base, p_vector);
-
-		if (p_with_convert) {
-			if (base == "BaseMaterial3D") {
-				p_vector->insert("Texture2D");
-			} else if (base == "ShaderMaterial") {
-				p_vector->insert("Shader");
-			} else if (base == "Texture2D") {
-				p_vector->insert("Image");
-			}
+		const String base = allowed_types[i].strip_edges();
+		if (base == "BaseMaterial3D") {
+			allowed_types_with_convert.insert("Texture2D");
+		} else if (ClassDB::is_parent_class("ShaderMaterial", base)) {
+			allowed_types_with_convert.insert("Shader");
+		} else if (ClassDB::is_parent_class("ImageTexture", base)) {
+			allowed_types_with_convert.insert("Image");
 		}
 	}
 }
 
 bool EditorResourcePicker::_is_drop_valid(const Dictionary &p_drag_data) const {
+	{
+		const ObjectID source_picker = p_drag_data.get("source_picker", ObjectID());
+		if (source_picker == get_instance_id()) {
+			return false;
+		}
+	}
+
 	if (base_type.is_empty()) {
 		return true;
 	}
@@ -637,8 +676,8 @@ bool EditorResourcePicker::_is_drop_valid(const Dictionary &p_drag_data) const {
 		}
 	}
 
-	HashSet<StringName> allowed_types;
-	_get_allowed_types(true, &allowed_types);
+	_ensure_allowed_types();
+	HashSet<StringName> allowed_types = allowed_types_with_convert;
 
 	if (res.is_valid()) {
 		String res_type = _get_resource_type(res);
@@ -667,9 +706,21 @@ bool EditorResourcePicker::_is_type_valid(const String &p_type_name, const HashS
 	return false;
 }
 
+bool EditorResourcePicker::_is_custom_type_script() const {
+	Ref<Script> resource_as_script = edited_resource;
+
+	if (resource_as_script.is_valid() && resource_owner && resource_owner->has_meta(SceneStringName(_custom_type_script))) {
+		return true;
+	}
+
+	return false;
+}
+
 Variant EditorResourcePicker::get_drag_data_fw(const Point2 &p_point, Control *p_from) {
 	if (edited_resource.is_valid()) {
-		return EditorNode::get_singleton()->drag_resource(edited_resource, p_from);
+		Dictionary drag_data = EditorNode::get_singleton()->drag_resource(edited_resource, p_from);
+		drag_data["source_picker"] = get_instance_id();
+		return drag_data;
 	}
 
 	return Variant();
@@ -694,7 +745,7 @@ void EditorResourcePicker::drop_data_fw(const Point2 &p_point, const Variant &p_
 		dropped_resource = drag_data["resource"];
 	}
 
-	if (!dropped_resource.is_valid() && drag_data.has("type") && String(drag_data["type"]) == "files") {
+	if (dropped_resource.is_null() && drag_data.has("type") && String(drag_data["type"]) == "files") {
 		Vector<String> files = drag_data["files"];
 
 		if (files.size() == 1) {
@@ -703,8 +754,8 @@ void EditorResourcePicker::drop_data_fw(const Point2 &p_point, const Variant &p_
 	}
 
 	if (dropped_resource.is_valid()) {
-		HashSet<StringName> allowed_types;
-		_get_allowed_types(false, &allowed_types);
+		_ensure_allowed_types();
+		HashSet<StringName> allowed_types = allowed_types_without_convert;
 
 		String res_type = _get_resource_type(dropped_resource);
 
@@ -716,7 +767,7 @@ void EditorResourcePicker::drop_data_fw(const Point2 &p_point, const Variant &p_
 				if (at == "BaseMaterial3D" && Ref<Texture2D>(dropped_resource).is_valid()) {
 					// Use existing resource if possible and only replace its data.
 					Ref<StandardMaterial3D> mat = edited_resource;
-					if (!mat.is_valid()) {
+					if (mat.is_null()) {
 						mat.instantiate();
 					}
 					mat->set_texture(StandardMaterial3D::TextureParam::TEXTURE_ALBEDO, dropped_resource);
@@ -726,7 +777,7 @@ void EditorResourcePicker::drop_data_fw(const Point2 &p_point, const Variant &p_
 
 				if (at == "ShaderMaterial" && Ref<Shader>(dropped_resource).is_valid()) {
 					Ref<ShaderMaterial> mat = edited_resource;
-					if (!mat.is_valid()) {
+					if (mat.is_null()) {
 						mat.instantiate();
 					}
 					mat->set_shader(dropped_resource);
@@ -736,7 +787,7 @@ void EditorResourcePicker::drop_data_fw(const Point2 &p_point, const Variant &p_
 
 				if (at == "ImageTexture" && Ref<Image>(dropped_resource).is_valid()) {
 					Ref<ImageTexture> texture = edited_resource;
-					if (!texture.is_valid()) {
+					if (texture.is_null()) {
 						texture.instantiate();
 					}
 					texture->set_image(dropped_resource);
@@ -747,8 +798,7 @@ void EditorResourcePicker::drop_data_fw(const Point2 &p_point, const Variant &p_
 		}
 
 		edited_resource = dropped_resource;
-		emit_signal(SNAME("resource_changed"), edited_resource);
-		_update_resource();
+		_resource_changed();
 	}
 }
 
@@ -791,11 +841,11 @@ void EditorResourcePicker::_notification(int p_what) {
 				edit_menu->add_theme_constant_override("icon_max_width", icon_width);
 			}
 
-			edit_button->set_icon(get_theme_icon(SNAME("select_arrow"), SNAME("Tree")));
+			edit_button->set_button_icon(get_theme_icon(SNAME("select_arrow"), SNAME("Tree")));
 		} break;
 
 		case NOTIFICATION_DRAW: {
-			draw_style_box(get_theme_stylebox(SNAME("panel"), SNAME("Tree")), Rect2(Point2(), get_size()));
+			draw_style_box(get_theme_stylebox(SceneStringName(panel), SNAME("Tree")), Rect2(Point2(), get_size()));
 		} break;
 
 		case NOTIFICATION_DRAG_BEGIN: {
@@ -809,6 +859,13 @@ void EditorResourcePicker::_notification(int p_what) {
 			if (dropping) {
 				dropping = false;
 				assign_button->queue_redraw();
+			}
+		} break;
+
+		case NOTIFICATION_EXIT_TREE: {
+			Callable resource_saved = callable_mp(this, &EditorResourcePicker::_resource_saved);
+			if (EditorNode::get_singleton()->is_connected("resource_saved", resource_saved)) {
+				EditorNode::get_singleton()->disconnect("resource_saved", resource_saved);
 			}
 		} break;
 	}
@@ -825,8 +882,8 @@ void EditorResourcePicker::set_base_type(const String &p_base_type) {
 	// There is a possibility that the new base type is conflicting with the existing value.
 	// Keep the value, but warn the user that there is a potential mistake.
 	if (!base_type.is_empty() && edited_resource.is_valid()) {
-		HashSet<StringName> allowed_types;
-		_get_allowed_types(true, &allowed_types);
+		_ensure_allowed_types();
+		HashSet<StringName> allowed_types = allowed_types_with_convert;
 
 		StringName custom_class;
 		bool is_custom = false;
@@ -847,8 +904,8 @@ String EditorResourcePicker::get_base_type() const {
 }
 
 Vector<String> EditorResourcePicker::get_allowed_types() const {
-	HashSet<StringName> allowed_types;
-	_get_allowed_types(false, &allowed_types);
+	_ensure_allowed_types();
+	HashSet<StringName> allowed_types = allowed_types_without_convert;
 
 	Vector<String> types;
 	types.resize(allowed_types.size());
@@ -864,15 +921,15 @@ Vector<String> EditorResourcePicker::get_allowed_types() const {
 }
 
 void EditorResourcePicker::set_edited_resource(Ref<Resource> p_resource) {
-	if (!p_resource.is_valid()) {
+	if (p_resource.is_null()) {
 		edited_resource = Ref<Resource>();
 		_update_resource();
 		return;
 	}
 
 	if (!base_type.is_empty()) {
-		HashSet<StringName> allowed_types;
-		_get_allowed_types(true, &allowed_types);
+		_ensure_allowed_types();
+		HashSet<StringName> allowed_types = allowed_types_with_convert;
 
 		StringName custom_class;
 		bool is_custom = false;
@@ -886,7 +943,10 @@ void EditorResourcePicker::set_edited_resource(Ref<Resource> p_resource) {
 			ERR_FAIL_MSG(vformat("Failed to set a resource of the type '%s' because this EditorResourcePicker only accepts '%s' and its derivatives.", class_str, base_type));
 		}
 	}
+	set_edited_resource_no_check(p_resource);
+}
 
+void EditorResourcePicker::set_edited_resource_no_check(Ref<Resource> p_resource) {
 	edited_resource = p_resource;
 	_update_resource();
 }
@@ -911,9 +971,17 @@ void EditorResourcePicker::set_toggle_pressed(bool p_pressed) {
 	assign_button->set_pressed(p_pressed);
 }
 
+bool EditorResourcePicker::is_toggle_pressed() const {
+	return assign_button->is_pressed();
+}
+
+void EditorResourcePicker::set_resource_owner(Object *p_object) {
+	resource_owner = p_object;
+}
+
 void EditorResourcePicker::set_editable(bool p_editable) {
 	editable = p_editable;
-	assign_button->set_disabled(!editable && !edited_resource.is_valid());
+	assign_button->set_disabled(!editable && edited_resource.is_null());
 	edit_button->set_visible(editable);
 }
 
@@ -928,7 +996,7 @@ void EditorResourcePicker::_ensure_resource_menu() {
 	edit_menu = memnew(PopupMenu);
 	edit_menu->add_theme_constant_override("icon_max_width", get_theme_constant(SNAME("class_icon_size"), EditorStringName(Editor)));
 	add_child(edit_menu);
-	edit_menu->connect("id_pressed", callable_mp(this, &EditorResourcePicker::_edit_menu_cbk));
+	edit_menu->connect(SceneStringName(id_pressed), callable_mp(this, &EditorResourcePicker::_edit_menu_cbk));
 	edit_menu->connect("popup_hide", callable_mp((BaseButton *)edit_button, &BaseButton::set_pressed).bind(false));
 }
 
@@ -1005,8 +1073,7 @@ void EditorResourcePicker::_duplicate_selected_resources() {
 
 		if (meta.size() == 1) { // Root.
 			edited_resource = unique_resource;
-			emit_signal(SNAME("resource_changed"), edited_resource);
-			_update_resource();
+			_resource_changed();
 		} else {
 			Array parent_meta = item->get_parent()->get_metadata(0);
 			Ref<Resource> parent = parent_meta[0];
@@ -1024,9 +1091,9 @@ EditorResourcePicker::EditorResourcePicker(bool p_hide_assign_button_controls) {
 	assign_button->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	SET_DRAG_FORWARDING_GCD(assign_button, EditorResourcePicker);
 	add_child(assign_button);
-	assign_button->connect("pressed", callable_mp(this, &EditorResourcePicker::_resource_selected));
-	assign_button->connect("draw", callable_mp(this, &EditorResourcePicker::_button_draw));
-	assign_button->connect("gui_input", callable_mp(this, &EditorResourcePicker::_button_input));
+	assign_button->connect(SceneStringName(pressed), callable_mp(this, &EditorResourcePicker::_resource_selected));
+	assign_button->connect(SceneStringName(draw), callable_mp(this, &EditorResourcePicker::_button_draw));
+	assign_button->connect(SceneStringName(gui_input), callable_mp(this, &EditorResourcePicker::_button_input));
 
 	if (!p_hide_assign_button_controls) {
 		preview_rect = memnew(TextureRect);
@@ -1040,11 +1107,12 @@ EditorResourcePicker::EditorResourcePicker(bool p_hide_assign_button_controls) {
 	}
 
 	edit_button = memnew(Button);
-	edit_button->set_flat(true);
+	edit_button->set_flat(false);
 	edit_button->set_toggle_mode(true);
-	edit_button->connect("pressed", callable_mp(this, &EditorResourcePicker::_update_menu));
+	edit_button->set_action_mode(BaseButton::ACTION_MODE_BUTTON_PRESS);
+	edit_button->connect(SceneStringName(pressed), callable_mp(this, &EditorResourcePicker::_update_menu));
 	add_child(edit_button);
-	edit_button->connect("gui_input", callable_mp(this, &EditorResourcePicker::_button_input));
+	edit_button->connect(SceneStringName(gui_input), callable_mp(this, &EditorResourcePicker::_button_input));
 
 	add_theme_constant_override("separation", 0);
 }
@@ -1057,7 +1125,10 @@ void EditorScriptPicker::set_create_options(Object *p_menu_node) {
 		return;
 	}
 
-	menu_node->add_icon_item(get_editor_theme_icon(SNAME("ScriptCreate")), TTR("New Script..."), OBJ_MENU_NEW_SCRIPT);
+	if (!(script_owner && script_owner->has_meta(SceneStringName(_custom_type_script)))) {
+		menu_node->add_icon_item(get_editor_theme_icon(SNAME("ScriptCreate")), TTR("New Script..."), OBJ_MENU_NEW_SCRIPT);
+	}
+
 	if (script_owner) {
 		Ref<Script> scr = script_owner->get_script();
 		if (scr.is_valid()) {
@@ -1212,8 +1283,8 @@ void EditorAudioStreamPicker::_notification(int p_what) {
 void EditorAudioStreamPicker::_update_resource() {
 	EditorResourcePicker::_update_resource();
 
-	Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Label"));
-	int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
+	Ref<Font> font = get_theme_font(SceneStringName(font), SNAME("Label"));
+	int font_size = get_theme_font_size(SceneStringName(font_size), SNAME("Label"));
 	Ref<AudioStream> audio_stream = get_edited_resource();
 	if (audio_stream.is_valid() && audio_stream->get_length() > 0.0) {
 		set_assign_button_min_size(Size2(1, font->get_height(font_size) * 3));
@@ -1226,24 +1297,22 @@ void EditorAudioStreamPicker::_update_resource() {
 
 void EditorAudioStreamPicker::_preview_draw() {
 	Ref<AudioStream> audio_stream = get_edited_resource();
-	if (!audio_stream.is_valid()) {
+	if (audio_stream.is_null()) {
 		get_assign_button()->set_text(TTR("<empty>"));
 		return;
 	}
 
-	int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
+	int font_size = get_theme_font_size(SceneStringName(font_size), SNAME("Label"));
 
 	get_assign_button()->set_text("");
 
 	Size2i size = stream_preview_rect->get_size();
-	Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Label"));
+	Ref<Font> font = get_theme_font(SceneStringName(font), SNAME("Label"));
 
 	Rect2 rect(Point2(), size);
 
 	if (audio_stream->get_length() > 0 && size.width > 0) {
 		rect.size.height *= 0.5;
-
-		stream_preview_rect->draw_rect(rect, Color(0, 0, 0, 1));
 
 		Ref<AudioStreamPreview> preview = AudioStreamPreviewGenerator::get_singleton()->generate_preview(audio_stream);
 		float preview_len = preview->get_length();
@@ -1300,8 +1369,8 @@ void EditorAudioStreamPicker::_preview_draw() {
 		text = audio_stream->get_class().replace_first("AudioStream", "");
 	}
 
-	stream_preview_rect->draw_texture(icon, Point2i(EDSCALE * 2, rect.position.y + (rect.size.height - icon->get_height()) / 2), icon_modulate);
-	stream_preview_rect->draw_string(font, Point2i(EDSCALE * 2 + icon->get_width(), rect.position.y + font->get_ascent(font_size) + (rect.size.height - font->get_height(font_size)) / 2), text, HORIZONTAL_ALIGNMENT_CENTER, size.width - 4 * EDSCALE - icon->get_width());
+	stream_preview_rect->draw_texture(icon, Point2i(EDSCALE * 4, rect.position.y + (rect.size.height - icon->get_height()) / 2), icon_modulate);
+	stream_preview_rect->draw_string(font, Point2i(EDSCALE * 4 + icon->get_width(), rect.position.y + font->get_ascent(font_size) + (rect.size.height - font->get_height(font_size)) / 2), text, HORIZONTAL_ALIGNMENT_CENTER, size.width - 4 * EDSCALE - icon->get_width(), font_size, get_theme_color(SceneStringName(font_color), EditorStringName(Editor)));
 }
 
 EditorAudioStreamPicker::EditorAudioStreamPicker() :
@@ -1313,7 +1382,7 @@ EditorAudioStreamPicker::EditorAudioStreamPicker() :
 	stream_preview_rect->set_offset(SIDE_BOTTOM, -1);
 	stream_preview_rect->set_offset(SIDE_RIGHT, -1);
 	stream_preview_rect->set_mouse_filter(MOUSE_FILTER_IGNORE);
-	stream_preview_rect->connect("draw", callable_mp(this, &EditorAudioStreamPicker::_preview_draw));
+	stream_preview_rect->connect(SceneStringName(draw), callable_mp(this, &EditorAudioStreamPicker::_preview_draw));
 
 	get_assign_button()->add_child(stream_preview_rect);
 	get_assign_button()->move_child(stream_preview_rect, 0);

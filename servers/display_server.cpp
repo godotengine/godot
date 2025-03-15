@@ -31,9 +31,19 @@
 #include "display_server.h"
 
 #include "core/input/input.h"
-#include "scene/resources/atlas_texture.h"
 #include "scene/resources/texture.h"
 #include "servers/display_server_headless.h"
+
+#if defined(VULKAN_ENABLED)
+#include "drivers/vulkan/rendering_context_driver_vulkan.h"
+#undef CursorShape
+#endif
+#if defined(D3D12_ENABLED)
+#include "drivers/d3d12/rendering_context_driver_d3d12.h"
+#endif
+#if defined(METAL_ENABLED)
+#include "drivers/metal/rendering_context_driver_metal.h"
+#endif
 
 DisplayServer *DisplayServer::singleton = nullptr;
 
@@ -52,230 +62,351 @@ void DisplayServer::help_set_search_callbacks(const Callable &p_search_callback,
 	WARN_PRINT("Native help is not supported by this display server.");
 }
 
+#ifndef DISABLE_DEPRECATED
+
+RID DisplayServer::_get_rid_from_name(NativeMenu *p_nmenu, const String &p_menu_root) const {
+	if (p_menu_root == "_main") {
+		return p_nmenu->get_system_menu(NativeMenu::MAIN_MENU_ID);
+	} else if (p_menu_root == "_apple") {
+		return p_nmenu->get_system_menu(NativeMenu::APPLICATION_MENU_ID);
+	} else if (p_menu_root == "_dock") {
+		return p_nmenu->get_system_menu(NativeMenu::DOCK_MENU_ID);
+	} else if (p_menu_root == "_help") {
+		return p_nmenu->get_system_menu(NativeMenu::HELP_MENU_ID);
+	} else if (p_menu_root == "_window") {
+		return p_nmenu->get_system_menu(NativeMenu::WINDOW_MENU_ID);
+	} else if (menu_names.has(p_menu_root)) {
+		return menu_names[p_menu_root];
+	}
+
+	RID rid = p_nmenu->create_menu();
+	menu_names[p_menu_root] = rid;
+	return rid;
+}
+
 int DisplayServer::global_menu_add_item(const String &p_menu_root, const String &p_label, const Callable &p_callback, const Callable &p_key_callback, const Variant &p_tag, Key p_accel, int p_index) {
-	WARN_PRINT("Global menus not supported by this display server.");
-	return -1;
+	NativeMenu *nmenu = NativeMenu::get_singleton();
+	ERR_FAIL_NULL_V(nmenu, -1);
+	return nmenu->add_item(_get_rid_from_name(nmenu, p_menu_root), p_label, p_callback, p_key_callback, p_tag, p_accel, p_index);
 }
 
 int DisplayServer::global_menu_add_check_item(const String &p_menu_root, const String &p_label, const Callable &p_callback, const Callable &p_key_callback, const Variant &p_tag, Key p_accel, int p_index) {
-	WARN_PRINT("Global menus not supported by this display server.");
-	return -1;
+	NativeMenu *nmenu = NativeMenu::get_singleton();
+	ERR_FAIL_NULL_V(nmenu, -1);
+	return nmenu->add_check_item(_get_rid_from_name(nmenu, p_menu_root), p_label, p_callback, p_key_callback, p_tag, p_accel, p_index);
 }
 
 int DisplayServer::global_menu_add_icon_item(const String &p_menu_root, const Ref<Texture2D> &p_icon, const String &p_label, const Callable &p_callback, const Callable &p_key_callback, const Variant &p_tag, Key p_accel, int p_index) {
-	WARN_PRINT("Global menus not supported by this display server.");
-	return -1;
+	NativeMenu *nmenu = NativeMenu::get_singleton();
+	ERR_FAIL_NULL_V(nmenu, -1);
+	return nmenu->add_icon_item(_get_rid_from_name(nmenu, p_menu_root), p_icon, p_label, p_callback, p_key_callback, p_tag, p_accel, p_index);
 }
 
 int DisplayServer::global_menu_add_icon_check_item(const String &p_menu_root, const Ref<Texture2D> &p_icon, const String &p_label, const Callable &p_callback, const Callable &p_key_callback, const Variant &p_tag, Key p_accel, int p_index) {
-	WARN_PRINT("Global menus not supported by this display server.");
-	return -1;
+	NativeMenu *nmenu = NativeMenu::get_singleton();
+	ERR_FAIL_NULL_V(nmenu, -1);
+	return nmenu->add_icon_check_item(_get_rid_from_name(nmenu, p_menu_root), p_icon, p_label, p_callback, p_key_callback, p_tag, p_accel, p_index);
 }
 
 int DisplayServer::global_menu_add_radio_check_item(const String &p_menu_root, const String &p_label, const Callable &p_callback, const Callable &p_key_callback, const Variant &p_tag, Key p_accel, int p_index) {
-	WARN_PRINT("Global menus not supported by this display server.");
-	return -1;
+	NativeMenu *nmenu = NativeMenu::get_singleton();
+	ERR_FAIL_NULL_V(nmenu, -1);
+	return nmenu->add_radio_check_item(_get_rid_from_name(nmenu, p_menu_root), p_label, p_callback, p_key_callback, p_tag, p_accel, p_index);
 }
 
 int DisplayServer::global_menu_add_icon_radio_check_item(const String &p_menu_root, const Ref<Texture2D> &p_icon, const String &p_label, const Callable &p_callback, const Callable &p_key_callback, const Variant &p_tag, Key p_accel, int p_index) {
-	WARN_PRINT("Global menus not supported by this display server.");
-	return -1;
+	NativeMenu *nmenu = NativeMenu::get_singleton();
+	ERR_FAIL_NULL_V(nmenu, -1);
+	return nmenu->add_icon_radio_check_item(_get_rid_from_name(nmenu, p_menu_root), p_icon, p_label, p_callback, p_key_callback, p_tag, p_accel, p_index);
 }
 
 int DisplayServer::global_menu_add_multistate_item(const String &p_menu_root, const String &p_label, int p_max_states, int p_default_state, const Callable &p_callback, const Callable &p_key_callback, const Variant &p_tag, Key p_accel, int p_index) {
-	WARN_PRINT("Global menus not supported by this display server.");
-	return -1;
+	NativeMenu *nmenu = NativeMenu::get_singleton();
+	ERR_FAIL_NULL_V(nmenu, -1);
+	return nmenu->add_multistate_item(_get_rid_from_name(nmenu, p_menu_root), p_label, p_max_states, p_default_state, p_callback, p_key_callback, p_tag, p_accel, p_index);
 }
 
-void DisplayServer::global_menu_set_popup_callbacks(const String &p_menu_root, const Callable &p_open_callbacs, const Callable &p_close_callback) {
-	WARN_PRINT("Global menus not supported by this display server.");
+void DisplayServer::global_menu_set_popup_callbacks(const String &p_menu_root, const Callable &p_open_callback, const Callable &p_close_callback) {
+	NativeMenu *nmenu = NativeMenu::get_singleton();
+	ERR_FAIL_NULL(nmenu);
+	nmenu->set_popup_open_callback(_get_rid_from_name(nmenu, p_menu_root), p_open_callback);
+	nmenu->set_popup_open_callback(_get_rid_from_name(nmenu, p_menu_root), p_close_callback);
 }
 
 int DisplayServer::global_menu_add_submenu_item(const String &p_menu_root, const String &p_label, const String &p_submenu, int p_index) {
-	WARN_PRINT("Global menus not supported by this display server.");
-	return -1;
+	NativeMenu *nmenu = NativeMenu::get_singleton();
+	ERR_FAIL_NULL_V(nmenu, -1);
+	return nmenu->add_submenu_item(_get_rid_from_name(nmenu, p_menu_root), p_label, _get_rid_from_name(nmenu, p_submenu), Variant(), p_index);
 }
 
 int DisplayServer::global_menu_add_separator(const String &p_menu_root, int p_index) {
-	WARN_PRINT("Global menus not supported by this display server.");
-	return -1;
+	NativeMenu *nmenu = NativeMenu::get_singleton();
+	ERR_FAIL_NULL_V(nmenu, -1);
+	return nmenu->add_separator(_get_rid_from_name(nmenu, p_menu_root), p_index);
 }
 
 int DisplayServer::global_menu_get_item_index_from_text(const String &p_menu_root, const String &p_text) const {
-	WARN_PRINT("Global menus not supported by this display server.");
-	return -1;
+	NativeMenu *nmenu = NativeMenu::get_singleton();
+	ERR_FAIL_NULL_V(nmenu, -1);
+	return nmenu->find_item_index_with_text(_get_rid_from_name(nmenu, p_menu_root), p_text);
 }
 
 int DisplayServer::global_menu_get_item_index_from_tag(const String &p_menu_root, const Variant &p_tag) const {
-	WARN_PRINT("Global menus not supported by this display server.");
-	return -1;
+	NativeMenu *nmenu = NativeMenu::get_singleton();
+	ERR_FAIL_NULL_V(nmenu, -1);
+	return nmenu->find_item_index_with_tag(_get_rid_from_name(nmenu, p_menu_root), p_tag);
 }
 
 void DisplayServer::global_menu_set_item_callback(const String &p_menu_root, int p_idx, const Callable &p_callback) {
-	WARN_PRINT("Global menus not supported by this display server.");
+	NativeMenu *nmenu = NativeMenu::get_singleton();
+	ERR_FAIL_NULL(nmenu);
+	nmenu->set_item_callback(_get_rid_from_name(nmenu, p_menu_root), p_idx, p_callback);
 }
 
 void DisplayServer::global_menu_set_item_hover_callbacks(const String &p_menu_root, int p_idx, const Callable &p_callback) {
-	WARN_PRINT("Global menus not supported by this display server.");
+	NativeMenu *nmenu = NativeMenu::get_singleton();
+	ERR_FAIL_NULL(nmenu);
+	nmenu->set_item_hover_callbacks(_get_rid_from_name(nmenu, p_menu_root), p_idx, p_callback);
 }
 
 void DisplayServer::global_menu_set_item_key_callback(const String &p_menu_root, int p_idx, const Callable &p_key_callback) {
-	WARN_PRINT("Global menus not supported by this display server.");
+	NativeMenu *nmenu = NativeMenu::get_singleton();
+	ERR_FAIL_NULL(nmenu);
+	nmenu->set_item_key_callback(_get_rid_from_name(nmenu, p_menu_root), p_idx, p_key_callback);
 }
 
 bool DisplayServer::global_menu_is_item_checked(const String &p_menu_root, int p_idx) const {
-	WARN_PRINT("Global menus not supported by this display server.");
-	return false;
+	NativeMenu *nmenu = NativeMenu::get_singleton();
+	ERR_FAIL_NULL_V(nmenu, false);
+	return nmenu->is_item_checked(_get_rid_from_name(nmenu, p_menu_root), p_idx);
 }
 
 bool DisplayServer::global_menu_is_item_checkable(const String &p_menu_root, int p_idx) const {
-	WARN_PRINT("Global menus not supported by this display server.");
-	return false;
+	NativeMenu *nmenu = NativeMenu::get_singleton();
+	ERR_FAIL_NULL_V(nmenu, false);
+	return nmenu->is_item_checkable(_get_rid_from_name(nmenu, p_menu_root), p_idx);
 }
 
 bool DisplayServer::global_menu_is_item_radio_checkable(const String &p_menu_root, int p_idx) const {
-	WARN_PRINT("Global menus not supported by this display server.");
-	return false;
+	NativeMenu *nmenu = NativeMenu::get_singleton();
+	ERR_FAIL_NULL_V(nmenu, false);
+	return nmenu->is_item_radio_checkable(_get_rid_from_name(nmenu, p_menu_root), p_idx);
 }
 
 Callable DisplayServer::global_menu_get_item_callback(const String &p_menu_root, int p_idx) const {
-	WARN_PRINT("Global menus not supported by this display server.");
-	return Callable();
+	NativeMenu *nmenu = NativeMenu::get_singleton();
+	ERR_FAIL_NULL_V(nmenu, Callable());
+	return nmenu->get_item_callback(_get_rid_from_name(nmenu, p_menu_root), p_idx);
 }
 
 Callable DisplayServer::global_menu_get_item_key_callback(const String &p_menu_root, int p_idx) const {
-	WARN_PRINT("Global menus not supported by this display server.");
-	return Callable();
+	NativeMenu *nmenu = NativeMenu::get_singleton();
+	ERR_FAIL_NULL_V(nmenu, Callable());
+	return nmenu->get_item_key_callback(_get_rid_from_name(nmenu, p_menu_root), p_idx);
 }
 
 Variant DisplayServer::global_menu_get_item_tag(const String &p_menu_root, int p_idx) const {
-	WARN_PRINT("Global menus not supported by this display server.");
-	return Variant();
+	NativeMenu *nmenu = NativeMenu::get_singleton();
+	ERR_FAIL_NULL_V(nmenu, Variant());
+	return nmenu->get_item_tag(_get_rid_from_name(nmenu, p_menu_root), p_idx);
 }
 
 String DisplayServer::global_menu_get_item_text(const String &p_menu_root, int p_idx) const {
-	WARN_PRINT("Global menus not supported by this display server.");
-	return String();
+	NativeMenu *nmenu = NativeMenu::get_singleton();
+	ERR_FAIL_NULL_V(nmenu, String());
+	return nmenu->get_item_text(_get_rid_from_name(nmenu, p_menu_root), p_idx);
 }
 
 String DisplayServer::global_menu_get_item_submenu(const String &p_menu_root, int p_idx) const {
-	WARN_PRINT("Global menus not supported by this display server.");
+	NativeMenu *nmenu = NativeMenu::get_singleton();
+	ERR_FAIL_NULL_V(nmenu, String());
+	RID rid = nmenu->get_item_submenu(_get_rid_from_name(nmenu, p_menu_root), p_idx);
+	if (!nmenu->is_system_menu(rid)) {
+		for (HashMap<String, RID>::Iterator E = menu_names.begin(); E; ++E) {
+			if (E->value == rid) {
+				return E->key;
+			}
+		}
+	}
 	return String();
 }
 
 Key DisplayServer::global_menu_get_item_accelerator(const String &p_menu_root, int p_idx) const {
-	WARN_PRINT("Global menus not supported by this display server.");
-	return Key::NONE;
+	NativeMenu *nmenu = NativeMenu::get_singleton();
+	ERR_FAIL_NULL_V(nmenu, Key::NONE);
+	return nmenu->get_item_accelerator(_get_rid_from_name(nmenu, p_menu_root), p_idx);
 }
 
 bool DisplayServer::global_menu_is_item_disabled(const String &p_menu_root, int p_idx) const {
-	WARN_PRINT("Global menus not supported by this display server.");
-	return false;
+	NativeMenu *nmenu = NativeMenu::get_singleton();
+	ERR_FAIL_NULL_V(nmenu, false);
+	return nmenu->is_item_disabled(_get_rid_from_name(nmenu, p_menu_root), p_idx);
 }
 
 bool DisplayServer::global_menu_is_item_hidden(const String &p_menu_root, int p_idx) const {
-	WARN_PRINT("Global menus not supported by this display server.");
-	return false;
+	NativeMenu *nmenu = NativeMenu::get_singleton();
+	ERR_FAIL_NULL_V(nmenu, false);
+	return nmenu->is_item_hidden(_get_rid_from_name(nmenu, p_menu_root), p_idx);
 }
 
 String DisplayServer::global_menu_get_item_tooltip(const String &p_menu_root, int p_idx) const {
-	WARN_PRINT("Global menus not supported by this display server.");
-	return String();
+	NativeMenu *nmenu = NativeMenu::get_singleton();
+	ERR_FAIL_NULL_V(nmenu, String());
+	return nmenu->get_item_tooltip(_get_rid_from_name(nmenu, p_menu_root), p_idx);
 }
 
 int DisplayServer::global_menu_get_item_state(const String &p_menu_root, int p_idx) const {
-	WARN_PRINT("Global menus not supported by this display server.");
-	return -1;
+	NativeMenu *nmenu = NativeMenu::get_singleton();
+	ERR_FAIL_NULL_V(nmenu, -1);
+	return nmenu->get_item_state(_get_rid_from_name(nmenu, p_menu_root), p_idx);
 }
 
 int DisplayServer::global_menu_get_item_max_states(const String &p_menu_root, int p_idx) const {
-	WARN_PRINT("Global menus not supported by this display server.");
-	return -1;
+	NativeMenu *nmenu = NativeMenu::get_singleton();
+	ERR_FAIL_NULL_V(nmenu, -1);
+	return nmenu->get_item_max_states(_get_rid_from_name(nmenu, p_menu_root), p_idx);
 }
 
 Ref<Texture2D> DisplayServer::global_menu_get_item_icon(const String &p_menu_root, int p_idx) const {
-	WARN_PRINT("Global menus not supported by this display server.");
-	return Ref<Texture2D>();
+	NativeMenu *nmenu = NativeMenu::get_singleton();
+	ERR_FAIL_NULL_V(nmenu, Ref<Texture2D>());
+	return nmenu->get_item_icon(_get_rid_from_name(nmenu, p_menu_root), p_idx);
 }
 
 int DisplayServer::global_menu_get_item_indentation_level(const String &p_menu_root, int p_idx) const {
-	WARN_PRINT("Global menus not supported by this display server.");
-	return 0;
+	NativeMenu *nmenu = NativeMenu::get_singleton();
+	ERR_FAIL_NULL_V(nmenu, 0);
+	return nmenu->get_item_indentation_level(_get_rid_from_name(nmenu, p_menu_root), p_idx);
 }
 
 void DisplayServer::global_menu_set_item_checked(const String &p_menu_root, int p_idx, bool p_checked) {
-	WARN_PRINT("Global menus not supported by this display server.");
+	NativeMenu *nmenu = NativeMenu::get_singleton();
+	ERR_FAIL_NULL(nmenu);
+	nmenu->set_item_checked(_get_rid_from_name(nmenu, p_menu_root), p_idx, p_checked);
 }
 
 void DisplayServer::global_menu_set_item_checkable(const String &p_menu_root, int p_idx, bool p_checkable) {
-	WARN_PRINT("Global menus not supported by this display server.");
+	NativeMenu *nmenu = NativeMenu::get_singleton();
+	ERR_FAIL_NULL(nmenu);
+	nmenu->set_item_checkable(_get_rid_from_name(nmenu, p_menu_root), p_idx, p_checkable);
 }
 
 void DisplayServer::global_menu_set_item_radio_checkable(const String &p_menu_root, int p_idx, bool p_checkable) {
-	WARN_PRINT("Global menus not supported by this display server.");
+	NativeMenu *nmenu = NativeMenu::get_singleton();
+	ERR_FAIL_NULL(nmenu);
+	nmenu->set_item_radio_checkable(_get_rid_from_name(nmenu, p_menu_root), p_idx, p_checkable);
 }
 
 void DisplayServer::global_menu_set_item_tag(const String &p_menu_root, int p_idx, const Variant &p_tag) {
-	WARN_PRINT("Global menus not supported by this display server.");
+	NativeMenu *nmenu = NativeMenu::get_singleton();
+	ERR_FAIL_NULL(nmenu);
+	nmenu->set_item_tag(_get_rid_from_name(nmenu, p_menu_root), p_idx, p_tag);
 }
 
 void DisplayServer::global_menu_set_item_text(const String &p_menu_root, int p_idx, const String &p_text) {
-	WARN_PRINT("Global menus not supported by this display server.");
+	NativeMenu *nmenu = NativeMenu::get_singleton();
+	ERR_FAIL_NULL(nmenu);
+	nmenu->set_item_text(_get_rid_from_name(nmenu, p_menu_root), p_idx, p_text);
 }
 
 void DisplayServer::global_menu_set_item_submenu(const String &p_menu_root, int p_idx, const String &p_submenu) {
-	WARN_PRINT("Global menus not supported by this display server.");
+	NativeMenu *nmenu = NativeMenu::get_singleton();
+	ERR_FAIL_NULL(nmenu);
+	nmenu->set_item_submenu(_get_rid_from_name(nmenu, p_menu_root), p_idx, _get_rid_from_name(nmenu, p_submenu));
 }
 
 void DisplayServer::global_menu_set_item_accelerator(const String &p_menu_root, int p_idx, Key p_keycode) {
-	WARN_PRINT("Global menus not supported by this display server.");
+	NativeMenu *nmenu = NativeMenu::get_singleton();
+	ERR_FAIL_NULL(nmenu);
+	nmenu->set_item_accelerator(_get_rid_from_name(nmenu, p_menu_root), p_idx, p_keycode);
 }
 
 void DisplayServer::global_menu_set_item_disabled(const String &p_menu_root, int p_idx, bool p_disabled) {
-	WARN_PRINT("Global menus not supported by this display server.");
+	NativeMenu *nmenu = NativeMenu::get_singleton();
+	ERR_FAIL_NULL(nmenu);
+	nmenu->set_item_disabled(_get_rid_from_name(nmenu, p_menu_root), p_idx, p_disabled);
 }
 
 void DisplayServer::global_menu_set_item_hidden(const String &p_menu_root, int p_idx, bool p_hidden) {
-	WARN_PRINT("Global menus not supported by this display server.");
+	NativeMenu *nmenu = NativeMenu::get_singleton();
+	ERR_FAIL_NULL(nmenu);
+	nmenu->set_item_hidden(_get_rid_from_name(nmenu, p_menu_root), p_idx, p_hidden);
 }
 
 void DisplayServer::global_menu_set_item_tooltip(const String &p_menu_root, int p_idx, const String &p_tooltip) {
-	WARN_PRINT("Global menus not supported by this display server.");
+	NativeMenu *nmenu = NativeMenu::get_singleton();
+	ERR_FAIL_NULL(nmenu);
+	nmenu->set_item_tooltip(_get_rid_from_name(nmenu, p_menu_root), p_idx, p_tooltip);
 }
 
 void DisplayServer::global_menu_set_item_state(const String &p_menu_root, int p_idx, int p_state) {
-	WARN_PRINT("Global menus not supported by this display server.");
+	NativeMenu *nmenu = NativeMenu::get_singleton();
+	ERR_FAIL_NULL(nmenu);
+	nmenu->set_item_state(_get_rid_from_name(nmenu, p_menu_root), p_idx, p_state);
 }
 
 void DisplayServer::global_menu_set_item_max_states(const String &p_menu_root, int p_idx, int p_max_states) {
-	WARN_PRINT("Global menus not supported by this display server.");
+	NativeMenu *nmenu = NativeMenu::get_singleton();
+	ERR_FAIL_NULL(nmenu);
+	nmenu->set_item_max_states(_get_rid_from_name(nmenu, p_menu_root), p_idx, p_max_states);
 }
 
 void DisplayServer::global_menu_set_item_icon(const String &p_menu_root, int p_idx, const Ref<Texture2D> &p_icon) {
-	WARN_PRINT("Global menus not supported by this display server.");
+	NativeMenu *nmenu = NativeMenu::get_singleton();
+	ERR_FAIL_NULL(nmenu);
+	nmenu->set_item_icon(_get_rid_from_name(nmenu, p_menu_root), p_idx, p_icon);
 }
 
 void DisplayServer::global_menu_set_item_indentation_level(const String &p_menu_root, int p_idx, int p_level) {
-	WARN_PRINT("Global menus not supported by this display server.");
+	NativeMenu *nmenu = NativeMenu::get_singleton();
+	ERR_FAIL_NULL(nmenu);
+	nmenu->set_item_indentation_level(_get_rid_from_name(nmenu, p_menu_root), p_idx, p_level);
 }
 
 int DisplayServer::global_menu_get_item_count(const String &p_menu_root) const {
-	WARN_PRINT("Global menus not supported by this display server.");
-	return 0;
+	NativeMenu *nmenu = NativeMenu::get_singleton();
+	ERR_FAIL_NULL_V(nmenu, 0);
+	return nmenu->get_item_count(_get_rid_from_name(nmenu, p_menu_root));
 }
 
 void DisplayServer::global_menu_remove_item(const String &p_menu_root, int p_idx) {
-	WARN_PRINT("Global menus not supported by this display server.");
+	NativeMenu *nmenu = NativeMenu::get_singleton();
+	ERR_FAIL_NULL(nmenu);
+	nmenu->remove_item(_get_rid_from_name(nmenu, p_menu_root), p_idx);
 }
 
 void DisplayServer::global_menu_clear(const String &p_menu_root) {
-	WARN_PRINT("Global menus not supported by this display server.");
+	NativeMenu *nmenu = NativeMenu::get_singleton();
+	ERR_FAIL_NULL(nmenu);
+	RID rid = _get_rid_from_name(nmenu, p_menu_root);
+	nmenu->clear(rid);
+	if (!nmenu->is_system_menu(rid)) {
+		nmenu->free_menu(rid);
+		menu_names.erase(p_menu_root);
+	}
 }
 
 Dictionary DisplayServer::global_menu_get_system_menu_roots() const {
-	WARN_PRINT("Global menus not supported by this display server.");
-	return Dictionary();
+	NativeMenu *nmenu = NativeMenu::get_singleton();
+	ERR_FAIL_NULL_V(nmenu, Dictionary());
+
+	Dictionary out;
+	if (nmenu->has_system_menu(NativeMenu::DOCK_MENU_ID)) {
+		out["_dock"] = "@Dock";
+	}
+	if (nmenu->has_system_menu(NativeMenu::APPLICATION_MENU_ID)) {
+		out["_apple"] = "@Apple";
+	}
+	if (nmenu->has_system_menu(NativeMenu::WINDOW_MENU_ID)) {
+		out["_window"] = "Window";
+	}
+	if (nmenu->has_system_menu(NativeMenu::HELP_MENU_ID)) {
+		out["_help"] = "Help";
+	}
+	return out;
 }
+
+#endif
 
 bool DisplayServer::tts_is_speaking() const {
 	WARN_PRINT("TTS is not supported by this display server.");
@@ -370,6 +501,22 @@ DisplayServer::MouseMode DisplayServer::mouse_get_mode() const {
 	return MOUSE_MODE_VISIBLE;
 }
 
+void DisplayServer::mouse_set_mode_override(MouseMode p_mode) {
+	WARN_PRINT("Mouse is not supported by this display server.");
+}
+
+DisplayServer::MouseMode DisplayServer::mouse_get_mode_override() const {
+	return MOUSE_MODE_VISIBLE;
+}
+
+void DisplayServer::mouse_set_mode_override_enabled(bool p_override_enabled) {
+	WARN_PRINT("Mouse is not supported by this display server.");
+}
+
+bool DisplayServer::mouse_is_mode_override_enabled() const {
+	return false;
+}
+
 void DisplayServer::warp_mouse(const Point2i &p_position) {
 }
 
@@ -419,7 +566,7 @@ DisplayServer::ScreenOrientation DisplayServer::screen_get_orientation(int p_scr
 
 float DisplayServer::screen_get_scale(int p_screen) const {
 	return 1.0f;
-};
+}
 
 bool DisplayServer::is_touchscreen_available() const {
 	return Input::get_singleton() && Input::get_singleton()->is_emulating_touch_from_mouse();
@@ -450,7 +597,7 @@ int DisplayServer::get_screen_from_rect(const Rect2 &p_rect) const {
 	return pos_screen;
 }
 
-DisplayServer::WindowID DisplayServer::create_sub_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect) {
+DisplayServer::WindowID DisplayServer::create_sub_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect, bool p_exclusive, WindowID p_transient_parent) {
 	ERR_FAIL_V_MSG(INVALID_WINDOW_ID, "Sub-windows not supported by this display server.");
 }
 
@@ -487,7 +634,7 @@ Point2i DisplayServer::ime_get_selection() const {
 }
 
 String DisplayServer::ime_get_text() const {
-	ERR_FAIL_V_MSG(String(), "IME or NOTIFICATION_WM_IME_UPDATEnot supported by this display server.");
+	ERR_FAIL_V_MSG(String(), "IME or NOTIFICATION_WM_IME_UPDATE not supported by this display server.");
 }
 
 void DisplayServer::virtual_keyboard_show(const String &p_existing_text, const Rect2 &p_screen_rect, VirtualKeyboardType p_type, int p_max_length, int p_cursor_start, int p_cursor_end) {
@@ -500,7 +647,12 @@ void DisplayServer::virtual_keyboard_hide() {
 
 // returns height of the currently shown keyboard (0 if keyboard is hidden)
 int DisplayServer::virtual_keyboard_get_height() const {
-	ERR_FAIL_V_MSG(0, "Virtual keyboard not supported by this display server.");
+	WARN_PRINT("Virtual keyboard not supported by this display server.");
+	return 0;
+}
+
+bool DisplayServer::has_hardware_keyboard() const {
+	return true;
 }
 
 void DisplayServer::cursor_set_shape(CursorShape p_shape) {
@@ -522,24 +674,47 @@ bool DisplayServer::get_swap_cancel_ok() {
 void DisplayServer::enable_for_stealing_focus(OS::ProcessID pid) {
 }
 
+Error DisplayServer::embed_process(WindowID p_window, OS::ProcessID p_pid, const Rect2i &p_rect, bool p_visible, bool p_grab_focus) {
+	WARN_PRINT("Embedded process not supported by this display server.");
+	return ERR_UNAVAILABLE;
+}
+
+Error DisplayServer::request_close_embedded_process(OS::ProcessID p_pid) {
+	WARN_PRINT("Embedded process not supported by this display server.");
+	return ERR_UNAVAILABLE;
+}
+
+Error DisplayServer::remove_embedded_process(OS::ProcessID p_pid) {
+	WARN_PRINT("Embedded process not supported by this display server.");
+	return ERR_UNAVAILABLE;
+}
+
+OS::ProcessID DisplayServer::get_focused_process_id() {
+	WARN_PRINT("Embedded process not supported by this display server.");
+	return 0;
+}
+
 Error DisplayServer::dialog_show(String p_title, String p_description, Vector<String> p_buttons, const Callable &p_callback) {
 	WARN_PRINT("Native dialogs not supported by this display server.");
-	return OK;
+	return ERR_UNAVAILABLE;
 }
 
 Error DisplayServer::dialog_input_text(String p_title, String p_description, String p_partial, const Callable &p_callback) {
 	WARN_PRINT("Native dialogs not supported by this display server.");
-	return OK;
+	return ERR_UNAVAILABLE;
 }
 
 Error DisplayServer::file_dialog_show(const String &p_title, const String &p_current_directory, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const Callable &p_callback) {
 	WARN_PRINT("Native dialogs not supported by this display server.");
-	return OK;
+	return ERR_UNAVAILABLE;
 }
 
 Error DisplayServer::file_dialog_with_options_show(const String &p_title, const String &p_current_directory, const String &p_root, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const TypedArray<Dictionary> &p_options, const Callable &p_callback) {
 	WARN_PRINT("Native dialogs not supported by this display server.");
-	return OK;
+	return ERR_UNAVAILABLE;
+}
+
+void DisplayServer::beep() const {
 }
 
 int DisplayServer::keyboard_get_layout_count() const {
@@ -569,14 +744,13 @@ Key DisplayServer::keyboard_get_label_from_physical(Key p_keycode) const {
 	ERR_FAIL_V_MSG(p_keycode, "Not supported by this display server.");
 }
 
+void DisplayServer::show_emoji_and_symbol_picker() const {
+}
+
 void DisplayServer::force_process_and_drop_events() {
 }
 
 void DisplayServer::release_rendering_thread() {
-	WARN_PRINT("Rendering thread not supported by this display server.");
-}
-
-void DisplayServer::make_rendering_thread() {
 	WARN_PRINT("Rendering thread not supported by this display server.");
 }
 
@@ -592,12 +766,12 @@ void DisplayServer::set_icon(const Ref<Image> &p_icon) {
 	WARN_PRINT("Icon not supported by this display server.");
 }
 
-DisplayServer::IndicatorID DisplayServer::create_status_indicator(const Ref<Image> &p_icon, const String &p_tooltip, const Callable &p_callback) {
+DisplayServer::IndicatorID DisplayServer::create_status_indicator(const Ref<Texture2D> &p_icon, const String &p_tooltip, const Callable &p_callback) {
 	WARN_PRINT("Status indicator not supported by this display server.");
 	return INVALID_INDICATOR_ID;
 }
 
-void DisplayServer::status_indicator_set_icon(IndicatorID p_id, const Ref<Image> &p_icon) {
+void DisplayServer::status_indicator_set_icon(IndicatorID p_id, const Ref<Texture2D> &p_icon) {
 	WARN_PRINT("Status indicator not supported by this display server.");
 }
 
@@ -605,8 +779,17 @@ void DisplayServer::status_indicator_set_tooltip(IndicatorID p_id, const String 
 	WARN_PRINT("Status indicator not supported by this display server.");
 }
 
+void DisplayServer::status_indicator_set_menu(IndicatorID p_id, const RID &p_menu_rid) {
+	WARN_PRINT("Status indicator not supported by this display server.");
+}
+
 void DisplayServer::status_indicator_set_callback(IndicatorID p_id, const Callable &p_callback) {
 	WARN_PRINT("Status indicator not supported by this display server.");
+}
+
+Rect2 DisplayServer::status_indicator_get_rect(IndicatorID p_id) const {
+	WARN_PRINT("Status indicator not supported by this display server.");
+	return Rect2();
 }
 
 void DisplayServer::delete_status_indicator(IndicatorID p_id) {
@@ -634,12 +817,24 @@ DisplayServer::WindowID DisplayServer::get_focused_window() const {
 void DisplayServer::set_context(Context p_context) {
 }
 
+void DisplayServer::register_additional_output(Object *p_object) {
+	ObjectID id = p_object->get_instance_id();
+	if (!additional_outputs.has(id)) {
+		additional_outputs.push_back(id);
+	}
+}
+
+void DisplayServer::unregister_additional_output(Object *p_object) {
+	additional_outputs.erase(p_object->get_instance_id());
+}
+
 void DisplayServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("has_feature", "feature"), &DisplayServer::has_feature);
 	ClassDB::bind_method(D_METHOD("get_name"), &DisplayServer::get_name);
 
 	ClassDB::bind_method(D_METHOD("help_set_search_callbacks", "search_callback", "action_callback"), &DisplayServer::help_set_search_callbacks);
 
+#ifndef DISABLE_DEPRECATED
 	ClassDB::bind_method(D_METHOD("global_menu_set_popup_callbacks", "menu_root", "open_callback", "close_callback"), &DisplayServer::global_menu_set_popup_callbacks);
 	ClassDB::bind_method(D_METHOD("global_menu_add_submenu_item", "menu_root", "label", "submenu", "index"), &DisplayServer::global_menu_add_submenu_item, DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("global_menu_add_item", "menu_root", "label", "callback", "key_callback", "tag", "accelerator", "index"), &DisplayServer::global_menu_add_item, DEFVAL(Callable()), DEFVAL(Callable()), DEFVAL(Variant()), DEFVAL(Key::NONE), DEFVAL(-1));
@@ -695,6 +890,7 @@ void DisplayServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("global_menu_clear", "menu_root"), &DisplayServer::global_menu_clear);
 
 	ClassDB::bind_method(D_METHOD("global_menu_get_system_menu_roots"), &DisplayServer::global_menu_get_system_menu_roots);
+#endif
 
 	ClassDB::bind_method(D_METHOD("tts_is_speaking"), &DisplayServer::tts_is_speaking);
 	ClassDB::bind_method(D_METHOD("tts_is_paused"), &DisplayServer::tts_is_paused);
@@ -742,11 +938,12 @@ void DisplayServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("screen_get_usable_rect", "screen"), &DisplayServer::screen_get_usable_rect, DEFVAL(SCREEN_OF_MAIN_WINDOW));
 	ClassDB::bind_method(D_METHOD("screen_get_dpi", "screen"), &DisplayServer::screen_get_dpi, DEFVAL(SCREEN_OF_MAIN_WINDOW));
 	ClassDB::bind_method(D_METHOD("screen_get_scale", "screen"), &DisplayServer::screen_get_scale, DEFVAL(SCREEN_OF_MAIN_WINDOW));
-	ClassDB::bind_method(D_METHOD("is_touchscreen_available"), &DisplayServer::is_touchscreen_available, DEFVAL(SCREEN_OF_MAIN_WINDOW));
+	ClassDB::bind_method(D_METHOD("is_touchscreen_available"), &DisplayServer::is_touchscreen_available);
 	ClassDB::bind_method(D_METHOD("screen_get_max_scale"), &DisplayServer::screen_get_max_scale);
 	ClassDB::bind_method(D_METHOD("screen_get_refresh_rate", "screen"), &DisplayServer::screen_get_refresh_rate, DEFVAL(SCREEN_OF_MAIN_WINDOW));
 	ClassDB::bind_method(D_METHOD("screen_get_pixel", "position"), &DisplayServer::screen_get_pixel);
 	ClassDB::bind_method(D_METHOD("screen_get_image", "screen"), &DisplayServer::screen_get_image, DEFVAL(SCREEN_OF_MAIN_WINDOW));
+	ClassDB::bind_method(D_METHOD("screen_get_image_rect", "rect"), &DisplayServer::screen_get_image_rect);
 
 	ClassDB::bind_method(D_METHOD("screen_set_orientation", "orientation", "screen"), &DisplayServer::screen_set_orientation, DEFVAL(SCREEN_OF_MAIN_WINDOW));
 	ClassDB::bind_method(D_METHOD("screen_get_orientation", "screen"), &DisplayServer::screen_get_orientation, DEFVAL(SCREEN_OF_MAIN_WINDOW));
@@ -819,6 +1016,9 @@ void DisplayServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("window_maximize_on_title_dbl_click"), &DisplayServer::window_maximize_on_title_dbl_click);
 	ClassDB::bind_method(D_METHOD("window_minimize_on_title_dbl_click"), &DisplayServer::window_minimize_on_title_dbl_click);
 
+	ClassDB::bind_method(D_METHOD("window_start_drag", "window_id"), &DisplayServer::window_start_drag, DEFVAL(MAIN_WINDOW_ID));
+	ClassDB::bind_method(D_METHOD("window_start_resize", "edge", "window_id"), &DisplayServer::window_start_resize, DEFVAL(MAIN_WINDOW_ID));
+
 	ClassDB::bind_method(D_METHOD("ime_get_selection"), &DisplayServer::ime_get_selection);
 	ClassDB::bind_method(D_METHOD("ime_get_text"), &DisplayServer::ime_get_text);
 
@@ -826,6 +1026,8 @@ void DisplayServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("virtual_keyboard_hide"), &DisplayServer::virtual_keyboard_hide);
 
 	ClassDB::bind_method(D_METHOD("virtual_keyboard_get_height"), &DisplayServer::virtual_keyboard_get_height);
+
+	ClassDB::bind_method(D_METHOD("has_hardware_keyboard"), &DisplayServer::has_hardware_keyboard);
 
 	ClassDB::bind_method(D_METHOD("cursor_set_shape", "shape"), &DisplayServer::cursor_set_shape);
 	ClassDB::bind_method(D_METHOD("cursor_get_shape"), &DisplayServer::cursor_get_shape);
@@ -841,6 +1043,8 @@ void DisplayServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("file_dialog_show", "title", "current_directory", "filename", "show_hidden", "mode", "filters", "callback"), &DisplayServer::file_dialog_show);
 	ClassDB::bind_method(D_METHOD("file_dialog_with_options_show", "title", "current_directory", "root", "filename", "show_hidden", "mode", "filters", "options", "callback"), &DisplayServer::file_dialog_with_options_show);
 
+	ClassDB::bind_method(D_METHOD("beep"), &DisplayServer::beep);
+
 	ClassDB::bind_method(D_METHOD("keyboard_get_layout_count"), &DisplayServer::keyboard_get_layout_count);
 	ClassDB::bind_method(D_METHOD("keyboard_get_current_layout"), &DisplayServer::keyboard_get_current_layout);
 	ClassDB::bind_method(D_METHOD("keyboard_set_current_layout", "index"), &DisplayServer::keyboard_set_current_layout);
@@ -848,6 +1052,8 @@ void DisplayServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("keyboard_get_layout_name", "index"), &DisplayServer::keyboard_get_layout_name);
 	ClassDB::bind_method(D_METHOD("keyboard_get_keycode_from_physical", "keycode"), &DisplayServer::keyboard_get_keycode_from_physical);
 	ClassDB::bind_method(D_METHOD("keyboard_get_label_from_physical", "keycode"), &DisplayServer::keyboard_get_label_from_physical);
+
+	ClassDB::bind_method(D_METHOD("show_emoji_and_symbol_picker"), &DisplayServer::show_emoji_and_symbol_picker);
 
 	ClassDB::bind_method(D_METHOD("process_events"), &DisplayServer::process_events);
 	ClassDB::bind_method(D_METHOD("force_process_and_drop_events"), &DisplayServer::force_process_and_drop_events);
@@ -858,7 +1064,9 @@ void DisplayServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("create_status_indicator", "icon", "tooltip", "callback"), &DisplayServer::create_status_indicator);
 	ClassDB::bind_method(D_METHOD("status_indicator_set_icon", "id", "icon"), &DisplayServer::status_indicator_set_icon);
 	ClassDB::bind_method(D_METHOD("status_indicator_set_tooltip", "id", "tooltip"), &DisplayServer::status_indicator_set_tooltip);
+	ClassDB::bind_method(D_METHOD("status_indicator_set_menu", "id", "menu_rid"), &DisplayServer::status_indicator_set_menu);
 	ClassDB::bind_method(D_METHOD("status_indicator_set_callback", "id", "callback"), &DisplayServer::status_indicator_set_callback);
+	ClassDB::bind_method(D_METHOD("status_indicator_get_rect", "id"), &DisplayServer::status_indicator_get_rect);
 	ClassDB::bind_method(D_METHOD("delete_status_indicator", "id"), &DisplayServer::delete_status_indicator);
 
 	ClassDB::bind_method(D_METHOD("tablet_get_driver_count"), &DisplayServer::tablet_get_driver_count);
@@ -866,7 +1074,15 @@ void DisplayServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("tablet_get_current_driver"), &DisplayServer::tablet_get_current_driver);
 	ClassDB::bind_method(D_METHOD("tablet_set_current_driver", "name"), &DisplayServer::tablet_set_current_driver);
 
+	ClassDB::bind_method(D_METHOD("is_window_transparency_available"), &DisplayServer::is_window_transparency_available);
+
+	ClassDB::bind_method(D_METHOD("register_additional_output", "object"), &DisplayServer::register_additional_output);
+	ClassDB::bind_method(D_METHOD("unregister_additional_output", "object"), &DisplayServer::unregister_additional_output);
+	ClassDB::bind_method(D_METHOD("has_additional_outputs"), &DisplayServer::has_additional_outputs);
+
+#ifndef DISABLE_DEPRECATED
 	BIND_ENUM_CONSTANT(FEATURE_GLOBAL_MENU);
+#endif
 	BIND_ENUM_CONSTANT(FEATURE_SUBWINDOWS);
 	BIND_ENUM_CONSTANT(FEATURE_TOUCHSCREEN);
 	BIND_ENUM_CONSTANT(FEATURE_MOUSE);
@@ -889,12 +1105,21 @@ void DisplayServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(FEATURE_SCREEN_CAPTURE);
 	BIND_ENUM_CONSTANT(FEATURE_STATUS_INDICATOR);
 	BIND_ENUM_CONSTANT(FEATURE_NATIVE_HELP);
+	BIND_ENUM_CONSTANT(FEATURE_NATIVE_DIALOG_INPUT);
+	BIND_ENUM_CONSTANT(FEATURE_NATIVE_DIALOG_FILE);
+	BIND_ENUM_CONSTANT(FEATURE_NATIVE_DIALOG_FILE_EXTRA);
+	BIND_ENUM_CONSTANT(FEATURE_WINDOW_DRAG);
+	BIND_ENUM_CONSTANT(FEATURE_SCREEN_EXCLUDE_FROM_CAPTURE);
+	BIND_ENUM_CONSTANT(FEATURE_WINDOW_EMBEDDING);
+	BIND_ENUM_CONSTANT(FEATURE_NATIVE_DIALOG_FILE_MIME);
+	BIND_ENUM_CONSTANT(FEATURE_EMOJI_AND_SYMBOL_PICKER);
 
 	BIND_ENUM_CONSTANT(MOUSE_MODE_VISIBLE);
 	BIND_ENUM_CONSTANT(MOUSE_MODE_HIDDEN);
 	BIND_ENUM_CONSTANT(MOUSE_MODE_CAPTURED);
 	BIND_ENUM_CONSTANT(MOUSE_MODE_CONFINED);
 	BIND_ENUM_CONSTANT(MOUSE_MODE_CONFINED_HIDDEN);
+	BIND_ENUM_CONSTANT(MOUSE_MODE_MAX);
 
 	BIND_CONSTANT(SCREEN_WITH_MOUSE_FOCUS);
 	BIND_CONSTANT(SCREEN_WITH_KEYBOARD_FOCUS);
@@ -961,6 +1186,8 @@ void DisplayServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(WINDOW_FLAG_POPUP);
 	BIND_ENUM_CONSTANT(WINDOW_FLAG_EXTEND_TO_TITLE);
 	BIND_ENUM_CONSTANT(WINDOW_FLAG_MOUSE_PASSTHROUGH);
+	BIND_ENUM_CONSTANT(WINDOW_FLAG_SHARP_CORNERS);
+	BIND_ENUM_CONSTANT(WINDOW_FLAG_EXCLUDE_FROM_CAPTURE);
 	BIND_ENUM_CONSTANT(WINDOW_FLAG_MAX);
 
 	BIND_ENUM_CONSTANT(WINDOW_EVENT_MOUSE_ENTER);
@@ -972,6 +1199,16 @@ void DisplayServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(WINDOW_EVENT_DPI_CHANGE);
 	BIND_ENUM_CONSTANT(WINDOW_EVENT_TITLEBAR_CHANGE);
 
+	BIND_ENUM_CONSTANT(WINDOW_EDGE_TOP_LEFT);
+	BIND_ENUM_CONSTANT(WINDOW_EDGE_TOP);
+	BIND_ENUM_CONSTANT(WINDOW_EDGE_TOP_RIGHT);
+	BIND_ENUM_CONSTANT(WINDOW_EDGE_LEFT);
+	BIND_ENUM_CONSTANT(WINDOW_EDGE_RIGHT);
+	BIND_ENUM_CONSTANT(WINDOW_EDGE_BOTTOM_LEFT);
+	BIND_ENUM_CONSTANT(WINDOW_EDGE_BOTTOM);
+	BIND_ENUM_CONSTANT(WINDOW_EDGE_BOTTOM_RIGHT);
+	BIND_ENUM_CONSTANT(WINDOW_EDGE_MAX);
+
 	BIND_ENUM_CONSTANT(VSYNC_DISABLED);
 	BIND_ENUM_CONSTANT(VSYNC_ENABLED);
 	BIND_ENUM_CONSTANT(VSYNC_ADAPTIVE);
@@ -981,6 +1218,8 @@ void DisplayServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(WINDOW_HANDLE);
 	BIND_ENUM_CONSTANT(WINDOW_VIEW);
 	BIND_ENUM_CONSTANT(OPENGL_CONTEXT);
+	BIND_ENUM_CONSTANT(EGL_DISPLAY);
+	BIND_ENUM_CONSTANT(EGL_CONFIG);
 
 	BIND_ENUM_CONSTANT(TTS_UTTERANCE_STARTED);
 	BIND_ENUM_CONSTANT(TTS_UTTERANCE_ENDED);
@@ -988,35 +1227,22 @@ void DisplayServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(TTS_UTTERANCE_BOUNDARY);
 }
 
-Ref<Image> DisplayServer::_get_cursor_image_from_resource(const Ref<Resource> &p_cursor, const Vector2 &p_hotspot, Rect2 &r_atlas_rect) {
+Ref<Image> DisplayServer::_get_cursor_image_from_resource(const Ref<Resource> &p_cursor, const Vector2 &p_hotspot) {
 	Ref<Image> image;
 	ERR_FAIL_COND_V_MSG(p_hotspot.x < 0 || p_hotspot.y < 0, image, "Hotspot outside cursor image.");
 
-	Size2 texture_size;
-
 	Ref<Texture2D> texture = p_cursor;
 	if (texture.is_valid()) {
-		Ref<AtlasTexture> atlas_texture = p_cursor;
-
-		if (atlas_texture.is_valid()) {
-			texture = atlas_texture->get_atlas();
-			r_atlas_rect.size = texture->get_size();
-			r_atlas_rect.position = atlas_texture->get_region().position;
-			texture_size = atlas_texture->get_region().size;
-		} else {
-			texture_size = texture->get_size();
-		}
 		image = texture->get_image();
 	} else {
 		image = p_cursor;
-		ERR_FAIL_COND_V(image.is_null(), image);
-		texture_size = image->get_size();
 	}
-
-	ERR_FAIL_COND_V_MSG(p_hotspot.x > texture_size.width || p_hotspot.y > texture_size.height, image, "Hotspot outside cursor image.");
-	ERR_FAIL_COND_V_MSG(texture_size.width > 256 || texture_size.height > 256, image, "Cursor image too big. Max supported size is 256x256.");
-
 	ERR_FAIL_COND_V(image.is_null(), image);
+
+	Size2 image_size = image->get_size();
+	ERR_FAIL_COND_V_MSG(p_hotspot.x > image_size.width || p_hotspot.y > image_size.height, image, "Hotspot outside cursor image.");
+	ERR_FAIL_COND_V_MSG(image_size.width > 256 || image_size.height > 256, image, "Cursor image too big. Max supported size is 256x256.");
+
 	if (image->is_compressed()) {
 		image = image->duplicate(true);
 		Error err = image->decompress();
@@ -1049,9 +1275,9 @@ Vector<String> DisplayServer::get_create_function_rendering_drivers(int p_index)
 	return server_create_functions[p_index].get_rendering_drivers_function();
 }
 
-DisplayServer *DisplayServer::create(int p_index, const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Error &r_error) {
+DisplayServer *DisplayServer::create(int p_index, const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, int64_t p_parent_window, Error &r_error) {
 	ERR_FAIL_INDEX_V(p_index, server_create_count, nullptr);
-	return server_create_functions[p_index].create_function(p_rendering_driver, p_mode, p_vsync_mode, p_flags, p_position, p_resolution, p_screen, r_error);
+	return server_create_functions[p_index].create_function(p_rendering_driver, p_mode, p_vsync_mode, p_flags, p_position, p_resolution, p_screen, p_context, p_parent_window, r_error);
 }
 
 void DisplayServer::_input_set_mouse_mode(Input::MouseMode p_mode) {
@@ -1062,6 +1288,22 @@ Input::MouseMode DisplayServer::_input_get_mouse_mode() {
 	return Input::MouseMode(singleton->mouse_get_mode());
 }
 
+void DisplayServer::_input_set_mouse_mode_override(Input::MouseMode p_mode) {
+	singleton->mouse_set_mode_override(MouseMode(p_mode));
+}
+
+Input::MouseMode DisplayServer::_input_get_mouse_mode_override() {
+	return Input::MouseMode(singleton->mouse_get_mode_override());
+}
+
+void DisplayServer::_input_set_mouse_mode_override_enabled(bool p_enabled) {
+	singleton->mouse_set_mode_override_enabled(p_enabled);
+}
+
+bool DisplayServer::_input_is_mouse_mode_override_enabled() {
+	return singleton->mouse_is_mode_override_enabled();
+}
+
 void DisplayServer::_input_warp(const Vector2 &p_to_pos) {
 	singleton->warp_mouse(p_to_pos);
 }
@@ -1070,14 +1312,184 @@ Input::CursorShape DisplayServer::_input_get_current_cursor_shape() {
 	return (Input::CursorShape)singleton->cursor_get_shape();
 }
 
-void DisplayServer::_input_set_custom_mouse_cursor_func(const Ref<Resource> &p_image, Input::CursorShape p_shape, const Vector2 &p_hostspot) {
-	singleton->cursor_set_custom_image(p_image, (CursorShape)p_shape, p_hostspot);
+void DisplayServer::_input_set_custom_mouse_cursor_func(const Ref<Resource> &p_image, Input::CursorShape p_shape, const Vector2 &p_hotspot) {
+	singleton->cursor_set_custom_image(p_image, (CursorShape)p_shape, p_hotspot);
+}
+
+bool DisplayServer::is_rendering_device_supported() {
+#if defined(RD_ENABLED)
+	RenderingDevice *device = RenderingDevice::get_singleton();
+	if (device) {
+		return true;
+	}
+
+	if (supported_rendering_device == RenderingDeviceCreationStatus::SUCCESS) {
+		return true;
+	} else if (supported_rendering_device == RenderingDeviceCreationStatus::FAILURE) {
+		return false;
+	}
+
+	Error err;
+
+#if defined(WINDOWS_ENABLED) || defined(LINUXBSD_ENABLED)
+	// On some drivers combining OpenGL and RenderingDevice can result in crash, offload the check to the subprocess.
+	List<String> arguments;
+	arguments.push_back("--test-rd-support");
+	if (get_singleton()) {
+		arguments.push_back("--display-driver");
+		arguments.push_back(get_singleton()->get_name().to_lower());
+	}
+
+	String pipe;
+	int exitcode = 0;
+	err = OS::get_singleton()->execute(OS::get_singleton()->get_executable_path(), arguments, &pipe, &exitcode);
+	if (err == OK && exitcode == 0) {
+		supported_rendering_device = RenderingDeviceCreationStatus::SUCCESS;
+		return true;
+	} else {
+		supported_rendering_device = RenderingDeviceCreationStatus::FAILURE;
+	}
+#else // WINDOWS_ENABLED
+
+	RenderingContextDriver *rcd = nullptr;
+
+#if defined(VULKAN_ENABLED)
+	rcd = memnew(RenderingContextDriverVulkan);
+#endif
+#ifdef D3D12_ENABLED
+	if (rcd == nullptr) {
+		rcd = memnew(RenderingContextDriverD3D12);
+	}
+#endif
+#ifdef METAL_ENABLED
+	if (rcd == nullptr) {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunguarded-availability"
+		// Eliminate "RenderingContextDriverMetal is only available on iOS 14.0 or newer".
+		rcd = memnew(RenderingContextDriverMetal);
+#pragma clang diagnostic pop
+	}
+#endif
+
+	if (rcd != nullptr) {
+		err = rcd->initialize();
+		if (err == OK) {
+			RenderingDevice *rd = memnew(RenderingDevice);
+			err = rd->initialize(rcd);
+			memdelete(rd);
+			rd = nullptr;
+			if (err == OK) {
+				// Creating a RenderingDevice is quite slow.
+				// Cache the result for future usage, so that it's much faster on subsequent calls.
+				supported_rendering_device = RenderingDeviceCreationStatus::SUCCESS;
+				memdelete(rcd);
+				rcd = nullptr;
+				return true;
+			} else {
+				supported_rendering_device = RenderingDeviceCreationStatus::FAILURE;
+			}
+		}
+
+		memdelete(rcd);
+		rcd = nullptr;
+	}
+
+#endif // WINDOWS_ENABLED
+#endif // RD_ENABLED
+	return false;
+}
+
+bool DisplayServer::can_create_rendering_device() {
+	if (get_singleton() && get_singleton()->get_name() == "headless") {
+		return false;
+	}
+
+#if defined(RD_ENABLED)
+	RenderingDevice *device = RenderingDevice::get_singleton();
+	if (device) {
+		return true;
+	}
+
+	if (created_rendering_device == RenderingDeviceCreationStatus::SUCCESS) {
+		return true;
+	} else if (created_rendering_device == RenderingDeviceCreationStatus::FAILURE) {
+		return false;
+	}
+
+	Error err;
+
+#ifdef WINDOWS_ENABLED
+	// On some NVIDIA drivers combining OpenGL and RenderingDevice can result in crash, offload the check to the subprocess.
+	List<String> arguments;
+	arguments.push_back("--test-rd-creation");
+
+	String pipe;
+	int exitcode = 0;
+	err = OS::get_singleton()->execute(OS::get_singleton()->get_executable_path(), arguments, &pipe, &exitcode);
+	if (err == OK && exitcode == 0) {
+		created_rendering_device = RenderingDeviceCreationStatus::SUCCESS;
+		return true;
+	} else {
+		created_rendering_device = RenderingDeviceCreationStatus::FAILURE;
+	}
+#else // WINDOWS_ENABLED
+
+	RenderingContextDriver *rcd = nullptr;
+
+#if defined(VULKAN_ENABLED)
+	rcd = memnew(RenderingContextDriverVulkan);
+#endif
+#ifdef D3D12_ENABLED
+	if (rcd == nullptr) {
+		rcd = memnew(RenderingContextDriverD3D12);
+	}
+#endif
+#ifdef METAL_ENABLED
+	if (rcd == nullptr) {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunguarded-availability"
+		// Eliminate "RenderingContextDriverMetal is only available on iOS 14.0 or newer".
+		rcd = memnew(RenderingContextDriverMetal);
+#pragma clang diagnostic pop
+	}
+#endif
+
+	if (rcd != nullptr) {
+		err = rcd->initialize();
+		if (err == OK) {
+			RenderingDevice *rd = memnew(RenderingDevice);
+			err = rd->initialize(rcd);
+			memdelete(rd);
+			rd = nullptr;
+			if (err == OK) {
+				// Creating a RenderingDevice is quite slow.
+				// Cache the result for future usage, so that it's much faster on subsequent calls.
+				created_rendering_device = RenderingDeviceCreationStatus::SUCCESS;
+				memdelete(rcd);
+				rcd = nullptr;
+				return true;
+			} else {
+				created_rendering_device = RenderingDeviceCreationStatus::FAILURE;
+			}
+		}
+
+		memdelete(rcd);
+		rcd = nullptr;
+	}
+
+#endif // WINDOWS_ENABLED
+#endif // RD_ENABLED
+	return false;
 }
 
 DisplayServer::DisplayServer() {
 	singleton = this;
 	Input::set_mouse_mode_func = _input_set_mouse_mode;
 	Input::get_mouse_mode_func = _input_get_mouse_mode;
+	Input::set_mouse_mode_override_func = _input_set_mouse_mode_override;
+	Input::get_mouse_mode_override_func = _input_get_mouse_mode_override;
+	Input::set_mouse_mode_override_enabled_func = _input_set_mouse_mode_override_enabled;
+	Input::is_mouse_mode_override_enabled_func = _input_is_mouse_mode_override_enabled;
 	Input::warp_mouse_func = _input_warp;
 	Input::get_current_cursor_shape_func = _input_get_current_cursor_shape;
 	Input::set_custom_mouse_cursor_func = _input_set_custom_mouse_cursor_func;

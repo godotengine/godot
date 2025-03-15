@@ -1,4 +1,5 @@
 extends Node
 
 func a():
-    %AnimationPlayer.➡
+    $UniqueAnimationPlayer.➡
+    pass

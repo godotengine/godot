@@ -112,7 +112,8 @@
 			<return type="void" />
 			<param index="0" name="object" type="Object" />
 			<description>
-				Register a reference for "do" that will be erased if the "do" history is lost. This is useful mostly for new nodes created for the "do" call. Do not use for resources.
+				Register a reference to an object that will be erased if the "do" history is deleted. This is useful for objects added by the "do" action and removed by the "undo" action.
+				When the "do" history is deleted, if the object is a [RefCounted], it will be unreferenced. Otherwise, it will be freed. Do not use for resources.
 				[codeblock]
 				var node = Node2D.new()
 				undo_redo.create_action("Add node")
@@ -143,7 +144,8 @@
 			<return type="void" />
 			<param index="0" name="object" type="Object" />
 			<description>
-				Register a reference for "undo" that will be erased if the "undo" history is lost. This is useful mostly for nodes removed with the "do" call (not the "undo" call!).
+				Register a reference to an object that will be erased if the "undo" history is deleted. This is useful for objects added by the "undo" action and removed by the "do" action.
+				When the "undo" history is deleted, if the object is a [RefCounted], it will be unreferenced. Otherwise, it will be freed. Do not use for resources.
 				[codeblock]
 				var node = $Node2D
 				undo_redo.create_action("Remove node")
@@ -272,10 +274,10 @@
 			Makes "do"/"undo" operations stay in separate actions.
 		</constant>
 		<constant name="MERGE_ENDS" value="1" enum="MergeMode">
-			Makes so that the action's "undo" operations are from the first action created and the "do" operations are from the last subsequent action with the same name.
+			Merges this action with the previous one if they have the same name. Keeps only the first action's "undo" operations and the last action's "do" operations. Useful for sequential changes to a single value.
 		</constant>
 		<constant name="MERGE_ALL" value="2" enum="MergeMode">
-			Makes subsequent actions with the same name be merged into one.
+			Merges this action with the previous one if they have the same name.
 		</constant>
 	</constants>
 </class>

@@ -136,9 +136,9 @@ TEST_CASE("[Geometry3D] Get Closest Point To Segment") {
 }
 
 TEST_CASE("[Geometry3D] Plane and Box Overlap") {
-	CHECK(Geometry3D::planeBoxOverlap(Vector3(3, 4, 2), 5, Vector3(5, 5, 5)) == true);
-	CHECK(Geometry3D::planeBoxOverlap(Vector3(0, 1, 0), -10, Vector3(5, 5, 5)) == false);
-	CHECK(Geometry3D::planeBoxOverlap(Vector3(1, 0, 0), -6, Vector3(5, 5, 5)) == false);
+	CHECK(Geometry3D::planeBoxOverlap(Vector3(3, 4, 2), 5.0f, Vector3(5, 5, 5)) == true);
+	CHECK(Geometry3D::planeBoxOverlap(Vector3(0, 1, 0), -10.0f, Vector3(5, 5, 5)) == false);
+	CHECK(Geometry3D::planeBoxOverlap(Vector3(1, 0, 0), -6.0f, Vector3(5, 5, 5)) == false);
 }
 
 TEST_CASE("[Geometry3D] Is Point in Projected Triangle") {

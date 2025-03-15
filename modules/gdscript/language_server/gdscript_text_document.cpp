@@ -34,7 +34,6 @@
 #include "gdscript_extend_parser.h"
 #include "gdscript_language_protocol.h"
 
-#include "core/os/os.h"
 #include "editor/editor_settings.h"
 #include "editor/plugins/script_text_editor.h"
 #include "servers/display_server.h"
@@ -112,10 +111,19 @@ void GDScriptTextDocument::didSave(const Variant &p_param) {
 		}
 
 		scr->update_exports();
-		ScriptEditor::get_singleton()->reload_scripts(true);
-		ScriptEditor::get_singleton()->update_docs_from_script(scr);
-		ScriptEditor::get_singleton()->trigger_live_script_reload(scr->get_path());
+
+		if (!Thread::is_main_thread()) {
+			callable_mp(this, &GDScriptTextDocument::reload_script).call_deferred(scr);
+		} else {
+			reload_script(scr);
+		}
 	}
+}
+
+void GDScriptTextDocument::reload_script(Ref<GDScript> p_to_reload_script) {
+	ScriptEditor::get_singleton()->reload_scripts(true);
+	ScriptEditor::get_singleton()->update_docs_from_script(p_to_reload_script);
+	ScriptEditor::get_singleton()->trigger_live_script_reload(p_to_reload_script->get_path());
 }
 
 lsp::TextDocumentItem GDScriptTextDocument::load_document_item(const Variant &p_param) {
@@ -229,19 +237,6 @@ Array GDScriptTextDocument::completion(const Dictionary &p_params) {
 			arr[i] = item.to_json();
 			i++;
 		}
-	} else if (GDScriptLanguageProtocol::get_singleton()->is_smart_resolve_enabled()) {
-		arr = native_member_completions.duplicate();
-
-		for (KeyValue<String, ExtendGDScriptParser *> &E : GDScriptLanguageProtocol::get_singleton()->get_workspace()->scripts) {
-			ExtendGDScriptParser *scr = E.value;
-			const Array &items = scr->get_member_completions();
-
-			const int start_size = arr.size();
-			arr.resize(start_size + items.size());
-			for (int i = start_size; i < arr.size(); i++) {
-				arr[i] = items[i - start_size];
-			}
-		}
 	}
 	return arr;
 }
@@ -309,10 +304,10 @@ Dictionary GDScriptTextDocument::resolve(const Dictionary &p_params) {
 		params.load(p_params["data"]);
 		symbol = GDScriptLanguageProtocol::get_singleton()->get_workspace()->resolve_symbol(params, item.label, item.kind == lsp::CompletionItemKind::Method || item.kind == lsp::CompletionItemKind::Function);
 
-	} else if (data.get_type() == Variant::STRING) {
+	} else if (data.is_string()) {
 		String query = data;
 
-		Vector<String> param_symbols = query.split(SYMBOL_SEPERATOR, false);
+		Vector<String> param_symbols = query.split(SYMBOL_SEPARATOR, false);
 
 		if (param_symbols.size() >= 2) {
 			StringName class_name = param_symbols[0];
@@ -485,12 +480,10 @@ GDScriptTextDocument::GDScriptTextDocument() {
 void GDScriptTextDocument::sync_script_content(const String &p_path, const String &p_content) {
 	String path = GDScriptLanguageProtocol::get_singleton()->get_workspace()->get_file_path(p_path);
 	GDScriptLanguageProtocol::get_singleton()->get_workspace()->parse_script(path, p_content);
-
-	EditorFileSystem::get_singleton()->update_file(path);
 }
 
 void GDScriptTextDocument::show_native_symbol_in_editor(const String &p_symbol_id) {
-	ScriptEditor::get_singleton()->call_deferred(SNAME("_help_class_goto"), p_symbol_id);
+	callable_mp(ScriptEditor::get_singleton(), &ScriptEditor::goto_help).call_deferred(p_symbol_id);
 
 	DisplayServer::get_singleton()->window_move_to_foreground();
 }

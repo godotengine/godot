@@ -32,10 +32,6 @@
 #define PROJECT_SETTINGS_H
 
 #include "core/object/class_db.h"
-#include "core/os/thread_safe.h"
-#include "core/templates/hash_map.h"
-#include "core/templates/local_vector.h"
-#include "core/templates/rb_set.h"
 
 template <typename T>
 class TypedArray;
@@ -51,10 +47,8 @@ public:
 	typedef HashMap<String, Variant> CustomMap;
 	static const String PROJECT_DATA_DIR_NAME_SUFFIX;
 
-	enum {
-		// Properties that are not for built in values begin from this value, so builtin ones are displayed first.
-		NO_BUILTIN_ORDER_BASE = 1 << 16
-	};
+	// Properties that are not for built in values begin from this value, so builtin ones are displayed first.
+	constexpr static const int32_t NO_BUILTIN_ORDER_BASE = 1 << 16;
 
 #ifdef TOOLS_ENABLED
 	const static PackedStringArray get_required_features();
@@ -141,7 +135,8 @@ protected:
 
 	void _convert_to_last_version(int p_from_version);
 
-	bool _load_resource_pack(const String &p_pack, bool p_replace_files = true, int p_offset = 0);
+	bool load_resource_pack(const String &p_pack, bool p_replace_files, int p_offset);
+	bool _load_resource_pack(const String &p_pack, bool p_replace_files = true, int p_offset = 0, bool p_main_pack = false);
 
 	void _add_property_info_bind(const Dictionary &p_info);
 
@@ -158,6 +153,7 @@ public:
 	void set_setting(const String &p_setting, const Variant &p_value);
 	Variant get_setting(const String &p_setting, const Variant &p_default_value = Variant()) const;
 	TypedArray<Dictionary> get_global_class_list();
+	void refresh_global_class_list();
 	void store_global_class_list(const Array &p_classes);
 	String get_global_class_list_path() const;
 
@@ -227,6 +223,7 @@ public:
 #endif
 
 	ProjectSettings();
+	ProjectSettings(const String &p_path);
 	~ProjectSettings();
 };
 

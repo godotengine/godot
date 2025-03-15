@@ -30,7 +30,6 @@
 
 #include "shape_2d.h"
 
-#include "core/config/engine.h"
 #include "core/config/project_settings.h"
 #include "servers/physics_server_2d.h"
 
@@ -111,11 +110,6 @@ void Shape2D::_bind_methods() {
 }
 
 bool Shape2D::is_collision_outline_enabled() {
-#ifdef TOOLS_ENABLED
-	if (Engine::get_singleton()->is_editor_hint()) {
-		return true;
-	}
-#endif
 	return GLOBAL_GET("debug/shapes/collision/draw_2d_outlines");
 }
 

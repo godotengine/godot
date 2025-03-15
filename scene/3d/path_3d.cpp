@@ -88,11 +88,11 @@ void Path3D::_update_debug_mesh() {
 		return;
 	}
 
-	if (!debug_mesh.is_valid()) {
-		debug_mesh = Ref<ArrayMesh>(memnew(ArrayMesh));
+	if (debug_mesh.is_null()) {
+		debug_mesh.instantiate();
 	}
 
-	if (!(curve.is_valid())) {
+	if (curve.is_null()) {
 		RS::get_singleton()->instance_set_visible(debug_instance, false);
 		return;
 	}
@@ -131,16 +131,19 @@ void Path3D::_update_debug_mesh() {
 		// Path3D as a ribbon.
 		ribbon_ptr[i] = p1;
 
-		// Fish Bone.
-		const Vector3 p_left = p1 + (side + forward - up * 0.3) * 0.06;
-		const Vector3 p_right = p1 + (-side + forward - up * 0.3) * 0.06;
+		if (i % 4 == 0) {
+			// Draw fish bone every 4 points to reduce visual noise and performance impact
+			// (compared to drawing it for every point).
+			const Vector3 p_left = p1 + (side + forward - up * 0.3) * 0.06;
+			const Vector3 p_right = p1 + (-side + forward - up * 0.3) * 0.06;
 
-		const int bone_idx = i * 4;
+			const int bone_idx = i * 4;
 
-		bones_ptr[bone_idx] = p1;
-		bones_ptr[bone_idx + 1] = p_left;
-		bones_ptr[bone_idx + 2] = p1;
-		bones_ptr[bone_idx + 3] = p_right;
+			bones_ptr[bone_idx] = p1;
+			bones_ptr[bone_idx + 1] = p_left;
+			bones_ptr[bone_idx + 2] = p1;
+			bones_ptr[bone_idx + 3] = p_right;
+		}
 	}
 
 	Array ribbon_array;
@@ -216,30 +219,13 @@ void Path3D::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("curve_changed"));
 }
 
-// Update transform, in deferred mode by default to avoid superfluity.
-void PathFollow3D::update_transform(bool p_immediate) {
-	transform_dirty = true;
-
-	if (p_immediate) {
-		_update_transform();
-	} else {
-		callable_mp(this, &PathFollow3D::_update_transform).call_deferred();
-	}
-}
-
-// Update transform immediately .
-void PathFollow3D::_update_transform() {
-	if (!transform_dirty) {
-		return;
-	}
-	transform_dirty = false;
-
+void PathFollow3D::update_transform() {
 	if (!path) {
 		return;
 	}
 
 	Ref<Curve3D> c = path->get_curve();
-	if (!c.is_valid()) {
+	if (c.is_null()) {
 		return;
 	}
 
@@ -286,9 +272,7 @@ void PathFollow3D::_notification(int p_what) {
 			Node *parent = get_parent();
 			if (parent) {
 				path = Object::cast_to<Path3D>(parent);
-				if (path) {
-					update_transform();
-				}
+				update_transform();
 			}
 		} break;
 
@@ -318,7 +302,7 @@ void PathFollow3D::_validate_property(PropertyInfo &p_property) const {
 }
 
 PackedStringArray PathFollow3D::get_configuration_warnings() const {
-	PackedStringArray warnings = Node::get_configuration_warnings();
+	PackedStringArray warnings = Node3D::get_configuration_warnings();
 
 	if (is_visible_in_tree() && is_inside_tree()) {
 		if (!Object::cast_to<Path3D>(get_parent())) {
@@ -414,6 +398,9 @@ void PathFollow3D::_bind_methods() {
 
 void PathFollow3D::set_progress(real_t p_progress) {
 	ERR_FAIL_COND(!isfinite(p_progress));
+	if (progress == p_progress) {
+		return;
+	}
 	progress = p_progress;
 
 	if (path) {
@@ -435,10 +422,11 @@ void PathFollow3D::set_progress(real_t p_progress) {
 }
 
 void PathFollow3D::set_h_offset(real_t p_h_offset) {
-	h_offset = p_h_offset;
-	if (path) {
-		update_transform();
+	if (h_offset == p_h_offset) {
+		return;
 	}
+	h_offset = p_h_offset;
+	update_transform();
 }
 
 real_t PathFollow3D::get_h_offset() const {
@@ -446,10 +434,11 @@ real_t PathFollow3D::get_h_offset() const {
 }
 
 void PathFollow3D::set_v_offset(real_t p_v_offset) {
-	v_offset = p_v_offset;
-	if (path) {
-		update_transform();
+	if (v_offset == p_v_offset) {
+		return;
 	}
+	v_offset = p_v_offset;
+	update_transform();
 }
 
 real_t PathFollow3D::get_v_offset() const {
@@ -461,9 +450,10 @@ real_t PathFollow3D::get_progress() const {
 }
 
 void PathFollow3D::set_progress_ratio(real_t p_ratio) {
-	if (path && path->get_curve().is_valid() && path->get_curve()->get_baked_length()) {
-		set_progress(p_ratio * path->get_curve()->get_baked_length());
-	}
+	ERR_FAIL_NULL_MSG(path, "Can only set progress ratio on a PathFollow3D that is the child of a Path3D which is itself part of the scene tree.");
+	ERR_FAIL_COND_MSG(path->get_curve().is_null(), "Can't set progress ratio on a PathFollow3D that does not have a Curve.");
+	ERR_FAIL_COND_MSG(!path->get_curve()->get_baked_length(), "Can't set progress ratio on a PathFollow3D that has a 0 length curve.");
+	set_progress(p_ratio * path->get_curve()->get_baked_length());
 }
 
 real_t PathFollow3D::get_progress_ratio() const {
@@ -475,6 +465,9 @@ real_t PathFollow3D::get_progress_ratio() const {
 }
 
 void PathFollow3D::set_rotation_mode(RotationMode p_rotation_mode) {
+	if (rotation_mode == p_rotation_mode) {
+		return;
+	}
 	rotation_mode = p_rotation_mode;
 
 	update_configuration_warnings();
@@ -486,6 +479,9 @@ PathFollow3D::RotationMode PathFollow3D::get_rotation_mode() const {
 }
 
 void PathFollow3D::set_use_model_front(bool p_use_model_front) {
+	if (use_model_front == p_use_model_front) {
+		return;
+	}
 	use_model_front = p_use_model_front;
 	update_transform();
 }
@@ -495,6 +491,9 @@ bool PathFollow3D::is_using_model_front() const {
 }
 
 void PathFollow3D::set_loop(bool p_loop) {
+	if (loop == p_loop) {
+		return;
+	}
 	loop = p_loop;
 	update_transform();
 }
@@ -504,6 +503,9 @@ bool PathFollow3D::has_loop() const {
 }
 
 void PathFollow3D::set_tilt_enabled(bool p_enabled) {
+	if (tilt_enabled == p_enabled) {
+		return;
+	}
 	tilt_enabled = p_enabled;
 	update_transform();
 }

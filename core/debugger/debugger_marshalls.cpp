@@ -38,10 +38,10 @@
 Array DebuggerMarshalls::ScriptStackDump::serialize() {
 	Array arr;
 	arr.push_back(frames.size() * 3);
-	for (int i = 0; i < frames.size(); i++) {
-		arr.push_back(frames[i].file);
-		arr.push_back(frames[i].line);
-		arr.push_back(frames[i].func);
+	for (const ScriptLanguage::StackInfo &frame : frames) {
+		arr.push_back(frame.file);
+		arr.push_back(frame.line);
+		arr.push_back(frame.func);
 	}
 	return arr;
 }
@@ -146,4 +146,38 @@ bool DebuggerMarshalls::OutputError::deserialize(const Array &p_arr) {
 	}
 	CHECK_END(p_arr, idx, "OutputError");
 	return true;
+}
+
+Array DebuggerMarshalls::serialize_key_shortcut(const Ref<Shortcut> &p_shortcut) {
+	ERR_FAIL_COND_V(p_shortcut.is_null(), Array());
+	Array keys;
+	for (const Ref<InputEvent> ev : p_shortcut->get_events()) {
+		const Ref<InputEventKey> kev = ev;
+		ERR_CONTINUE(kev.is_null());
+		if (kev->get_physical_keycode() != Key::NONE) {
+			keys.push_back(true);
+			keys.push_back(kev->get_physical_keycode_with_modifiers());
+		} else {
+			keys.push_back(false);
+			keys.push_back(kev->get_keycode_with_modifiers());
+		}
+	}
+	return keys;
+}
+
+Ref<Shortcut> DebuggerMarshalls::deserialize_key_shortcut(const Array &p_keys) {
+	Array key_events;
+	ERR_FAIL_COND_V(p_keys.size() % 2 != 0, Ref<Shortcut>());
+	for (int i = 0; i < p_keys.size(); i += 2) {
+		ERR_CONTINUE(p_keys[i].get_type() != Variant::BOOL);
+		ERR_CONTINUE(p_keys[i + 1].get_type() != Variant::INT);
+		key_events.push_back(InputEventKey::create_reference((Key)p_keys[i + 1].operator int(), p_keys[i].operator bool()));
+	}
+	if (key_events.is_empty()) {
+		return Ref<Shortcut>();
+	}
+	Ref<Shortcut> shortcut;
+	shortcut.instantiate();
+	shortcut->set_events(key_events);
+	return shortcut;
 }

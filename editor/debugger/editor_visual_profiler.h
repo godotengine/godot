@@ -98,6 +98,9 @@ private:
 
 	float graph_limit = 1000.0f / 60;
 
+	String cpu_name;
+	String gpu_name;
+
 	bool seeking = false;
 
 	Timer *frame_delay = nullptr;
@@ -109,6 +112,7 @@ private:
 
 	void _activate_pressed();
 	void _clear_pressed();
+	void _autostart_toggled(bool p_toggled_on);
 
 	String _get_time_as_text(float p_time);
 
@@ -135,9 +139,10 @@ protected:
 	static void _bind_methods();
 
 public:
+	void set_hardware_info(const String &p_cpu_name, const String &p_gpu_name);
 	void add_frame_metric(const Metric &p_metric);
 	void set_enabled(bool p_enable);
-	void set_pressed(bool p_pressed);
+	void set_profiling(bool p_profiling);
 	bool is_profiling();
 	bool is_seeking() { return seeking; }
 	void disable_seeking();

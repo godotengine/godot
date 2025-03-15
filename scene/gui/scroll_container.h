@@ -44,6 +44,7 @@ public:
 		SCROLL_MODE_AUTO,
 		SCROLL_MODE_SHOW_ALWAYS,
 		SCROLL_MODE_SHOW_NEVER,
+		SCROLL_MODE_RESERVE,
 	};
 
 private:
@@ -71,9 +72,16 @@ private:
 
 	struct ThemeCache {
 		Ref<StyleBox> panel_style;
+		Ref<StyleBox> focus_style;
 	} theme_cache;
 
 	void _cancel_drag();
+
+	bool _is_h_scroll_visible() const;
+	bool _is_v_scroll_visible() const;
+
+	bool draw_focus_border = false;
+	bool focus_border_is_drawn = false;
 
 protected:
 	Size2 get_minimum_size() const override;
@@ -90,6 +98,7 @@ protected:
 
 public:
 	virtual void gui_input(const Ref<InputEvent> &p_gui_input) override;
+	bool child_has_focus();
 
 	void set_h_scroll(int p_pos);
 	int get_h_scroll() const;
@@ -120,6 +129,9 @@ public:
 	void ensure_control_visible(Control *p_control);
 
 	PackedStringArray get_configuration_warnings() const override;
+
+	void set_draw_focus_border(bool p_draw);
+	bool get_draw_focus_border();
 
 	ScrollContainer();
 };

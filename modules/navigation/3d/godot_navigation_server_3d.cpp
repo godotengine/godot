@@ -30,11 +30,12 @@
 
 #include "godot_navigation_server_3d.h"
 
+#include "core/os/mutex.h"
+#include "scene/main/node.h"
+
 #ifndef _3D_DISABLED
 #include "nav_mesh_generator_3d.h"
 #endif // _3D_DISABLED
-
-#include "core/os/mutex.h"
 
 using namespace NavigationUtilities;
 
@@ -135,7 +136,7 @@ bool GodotNavigationServer3D::map_is_active(RID p_map) const {
 	NavMap *map = map_owner.get_or_null(p_map);
 	ERR_FAIL_NULL_V(map, false);
 
-	return active_maps.find(map) >= 0;
+	return active_maps.has(map);
 }
 
 COMMAND_2(map_set_up, RID, p_map, Vector3, p_up) {
@@ -236,11 +237,29 @@ real_t GodotNavigationServer3D::map_get_link_connection_radius(RID p_map) const 
 	return map->get_link_connection_radius();
 }
 
-Vector<Vector3> GodotNavigationServer3D::map_get_path(RID p_map, Vector3 p_origin, Vector3 p_destination, bool p_optimize, uint32_t p_navigation_layers) const {
+Vector<Vector3> GodotNavigationServer3D::map_get_path(RID p_map, Vector3 p_origin, Vector3 p_destination, bool p_optimize, uint32_t p_navigation_layers) {
 	const NavMap *map = map_owner.get_or_null(p_map);
 	ERR_FAIL_NULL_V(map, Vector<Vector3>());
 
-	return map->get_path(p_origin, p_destination, p_optimize, p_navigation_layers, nullptr, nullptr, nullptr);
+	Ref<NavigationPathQueryParameters3D> query_parameters;
+	query_parameters.instantiate();
+
+	query_parameters->set_map(p_map);
+	query_parameters->set_start_position(p_origin);
+	query_parameters->set_target_position(p_destination);
+	query_parameters->set_navigation_layers(p_navigation_layers);
+	query_parameters->set_pathfinding_algorithm(NavigationPathQueryParameters3D::PathfindingAlgorithm::PATHFINDING_ALGORITHM_ASTAR);
+	query_parameters->set_path_postprocessing(NavigationPathQueryParameters3D::PathPostProcessing::PATH_POSTPROCESSING_CORRIDORFUNNEL);
+	if (!p_optimize) {
+		query_parameters->set_path_postprocessing(NavigationPathQueryParameters3D::PATH_POSTPROCESSING_EDGECENTERED);
+	}
+
+	Ref<NavigationPathQueryResult3D> query_result;
+	query_result.instantiate();
+
+	query_path(query_parameters, query_result);
+
+	return query_result->get_path();
 }
 
 Vector3 GodotNavigationServer3D::map_get_closest_point_to_segment(RID p_map, const Vector3 &p_from, const Vector3 &p_to, const bool p_use_collision) const {
@@ -343,6 +362,19 @@ RID GodotNavigationServer3D::agent_get_map(RID p_agent) const {
 		return agent->get_map()->get_self();
 	}
 	return RID();
+}
+
+COMMAND_2(map_set_use_async_iterations, RID, p_map, bool, p_enabled) {
+	NavMap *map = map_owner.get_or_null(p_map);
+	ERR_FAIL_NULL(map);
+	map->set_use_async_iterations(p_enabled);
+}
+
+bool GodotNavigationServer3D::map_get_use_async_iterations(RID p_map) const {
+	const NavMap *map = map_owner.get_or_null(p_map);
+	ERR_FAIL_NULL_V(map, false);
+
+	return map->get_use_async_iterations();
 }
 
 Vector3 GodotNavigationServer3D::map_get_random_point(RID p_map, uint32_t p_navigation_layers, bool p_uniformly) const {
@@ -485,7 +517,7 @@ COMMAND_2(region_set_navigation_mesh, RID, p_region, Ref<NavigationMesh>, p_navi
 	NavRegion *region = region_owner.get_or_null(p_region);
 	ERR_FAIL_NULL(region);
 
-	region->set_mesh(p_navigation_mesh);
+	region->set_navigation_mesh(p_navigation_mesh);
 }
 
 #ifndef DISABLE_DEPRECATED
@@ -508,22 +540,52 @@ void GodotNavigationServer3D::region_bake_navigation_mesh(Ref<NavigationMesh> p_
 int GodotNavigationServer3D::region_get_connections_count(RID p_region) const {
 	NavRegion *region = region_owner.get_or_null(p_region);
 	ERR_FAIL_NULL_V(region, 0);
-
-	return region->get_connections_count();
+	NavMap *map = region->get_map();
+	if (map) {
+		return map->get_region_connections_count(region);
+	}
+	return 0;
 }
 
 Vector3 GodotNavigationServer3D::region_get_connection_pathway_start(RID p_region, int p_connection_id) const {
 	NavRegion *region = region_owner.get_or_null(p_region);
 	ERR_FAIL_NULL_V(region, Vector3());
-
-	return region->get_connection_pathway_start(p_connection_id);
+	NavMap *map = region->get_map();
+	if (map) {
+		return map->get_region_connection_pathway_start(region, p_connection_id);
+	}
+	return Vector3();
 }
 
 Vector3 GodotNavigationServer3D::region_get_connection_pathway_end(RID p_region, int p_connection_id) const {
 	NavRegion *region = region_owner.get_or_null(p_region);
 	ERR_FAIL_NULL_V(region, Vector3());
+	NavMap *map = region->get_map();
+	if (map) {
+		return map->get_region_connection_pathway_end(region, p_connection_id);
+	}
+	return Vector3();
+}
 
-	return region->get_connection_pathway_end(p_connection_id);
+Vector3 GodotNavigationServer3D::region_get_closest_point_to_segment(RID p_region, const Vector3 &p_from, const Vector3 &p_to, bool p_use_collision) const {
+	const NavRegion *region = region_owner.get_or_null(p_region);
+	ERR_FAIL_NULL_V(region, Vector3());
+
+	return region->get_closest_point_to_segment(p_from, p_to, p_use_collision);
+}
+
+Vector3 GodotNavigationServer3D::region_get_closest_point(RID p_region, const Vector3 &p_point) const {
+	const NavRegion *region = region_owner.get_or_null(p_region);
+	ERR_FAIL_NULL_V(region, Vector3());
+
+	return region->get_closest_point_info(p_point).point;
+}
+
+Vector3 GodotNavigationServer3D::region_get_closest_point_normal(RID p_region, const Vector3 &p_point) const {
+	const NavRegion *region = region_owner.get_or_null(p_region);
+	ERR_FAIL_NULL_V(region, Vector3());
+
+	return region->get_closest_point_info(p_point).normal;
 }
 
 Vector3 GodotNavigationServer3D::region_get_random_point(RID p_region, uint32_t p_navigation_layers, bool p_uniformly) const {
@@ -531,6 +593,13 @@ Vector3 GodotNavigationServer3D::region_get_random_point(RID p_region, uint32_t 
 	ERR_FAIL_NULL_V(region, Vector3());
 
 	return region->get_random_point(p_navigation_layers, p_uniformly);
+}
+
+AABB GodotNavigationServer3D::region_get_bounds(RID p_region) const {
+	const NavRegion *region = region_owner.get_or_null(p_region);
+	ERR_FAIL_NULL_V(region, AABB());
+
+	return region->get_bounds();
 }
 
 RID GodotNavigationServer3D::link_create() {
@@ -1101,7 +1170,7 @@ uint32_t GodotNavigationServer3D::obstacle_get_avoidance_layers(RID p_obstacle) 
 void GodotNavigationServer3D::parse_source_geometry_data(const Ref<NavigationMesh> &p_navigation_mesh, const Ref<NavigationMeshSourceGeometryData3D> &p_source_geometry_data, Node *p_root_node, const Callable &p_callback) {
 #ifndef _3D_DISABLED
 	ERR_FAIL_COND_MSG(!Thread::is_main_thread(), "The SceneTree can only be parsed on the main thread. Call this function from the main thread or use call_deferred().");
-	ERR_FAIL_COND_MSG(!p_navigation_mesh.is_valid(), "Invalid navigation mesh.");
+	ERR_FAIL_COND_MSG(p_navigation_mesh.is_null(), "Invalid navigation mesh.");
 	ERR_FAIL_NULL_MSG(p_root_node, "No parsing root node specified.");
 	ERR_FAIL_COND_MSG(!p_root_node->is_inside_tree(), "The root node needs to be inside the SceneTree.");
 
@@ -1112,8 +1181,8 @@ void GodotNavigationServer3D::parse_source_geometry_data(const Ref<NavigationMes
 
 void GodotNavigationServer3D::bake_from_source_geometry_data(const Ref<NavigationMesh> &p_navigation_mesh, const Ref<NavigationMeshSourceGeometryData3D> &p_source_geometry_data, const Callable &p_callback) {
 #ifndef _3D_DISABLED
-	ERR_FAIL_COND_MSG(!p_navigation_mesh.is_valid(), "Invalid navigation mesh.");
-	ERR_FAIL_COND_MSG(!p_source_geometry_data.is_valid(), "Invalid NavigationMeshSourceGeometryData3D.");
+	ERR_FAIL_COND_MSG(p_navigation_mesh.is_null(), "Invalid navigation mesh.");
+	ERR_FAIL_COND_MSG(p_source_geometry_data.is_null(), "Invalid NavigationMeshSourceGeometryData3D.");
 
 	ERR_FAIL_NULL(NavMeshGenerator3D::get_singleton());
 	NavMeshGenerator3D::get_singleton()->bake_from_source_geometry_data(p_navigation_mesh, p_source_geometry_data, p_callback);
@@ -1122,8 +1191,8 @@ void GodotNavigationServer3D::bake_from_source_geometry_data(const Ref<Navigatio
 
 void GodotNavigationServer3D::bake_from_source_geometry_data_async(const Ref<NavigationMesh> &p_navigation_mesh, const Ref<NavigationMeshSourceGeometryData3D> &p_source_geometry_data, const Callable &p_callback) {
 #ifndef _3D_DISABLED
-	ERR_FAIL_COND_MSG(!p_navigation_mesh.is_valid(), "Invalid navigation mesh.");
-	ERR_FAIL_COND_MSG(!p_source_geometry_data.is_valid(), "Invalid NavigationMeshSourceGeometryData3D.");
+	ERR_FAIL_COND_MSG(p_navigation_mesh.is_null(), "Invalid navigation mesh.");
+	ERR_FAIL_COND_MSG(p_source_geometry_data.is_null(), "Invalid NavigationMeshSourceGeometryData3D.");
 
 	ERR_FAIL_NULL(NavMeshGenerator3D::get_singleton());
 	NavMeshGenerator3D::get_singleton()->bake_from_source_geometry_data_async(p_navigation_mesh, p_source_geometry_data, p_callback);
@@ -1200,6 +1269,18 @@ COMMAND_1(free, RID, p_object) {
 
 	} else if (obstacle_owner.owns(p_object)) {
 		internal_free_obstacle(p_object);
+
+	} else if (geometry_parser_owner.owns(p_object)) {
+		RWLockWrite write_lock(geometry_parser_rwlock);
+
+		NavMeshGeometryParser3D *parser = geometry_parser_owner.get_or_null(p_object);
+		ERR_FAIL_NULL(parser);
+
+		generator_parsers.erase(parser);
+#ifndef _3D_DISABLED
+		NavMeshGenerator3D::get_singleton()->set_generator_parsers(generator_parsers);
+#endif
+		geometry_parser_owner.free(parser->self);
 
 	} else {
 		ERR_PRINT("Attempted to free a NavigationServer RID that did not exist (or was already freed).");
@@ -1292,6 +1373,7 @@ void GodotNavigationServer3D::process(real_t p_delta_time) {
 	int _new_pm_edge_merge_count = 0;
 	int _new_pm_edge_connection_count = 0;
 	int _new_pm_edge_free_count = 0;
+	int _new_pm_obstacle_count = 0;
 
 	// In c++ we can't be sure that this is performed in the main thread
 	// even with mutable functions.
@@ -1309,6 +1391,7 @@ void GodotNavigationServer3D::process(real_t p_delta_time) {
 		_new_pm_edge_merge_count += active_maps[i]->get_pm_edge_merge_count();
 		_new_pm_edge_connection_count += active_maps[i]->get_pm_edge_connection_count();
 		_new_pm_edge_free_count += active_maps[i]->get_pm_edge_free_count();
+		_new_pm_obstacle_count += active_maps[i]->get_pm_obstacle_count();
 
 		// Emit a signal if a map changed.
 		const uint32_t new_map_iteration_id = active_maps[i]->get_iteration_id();
@@ -1326,11 +1409,14 @@ void GodotNavigationServer3D::process(real_t p_delta_time) {
 	pm_edge_merge_count = _new_pm_edge_merge_count;
 	pm_edge_connection_count = _new_pm_edge_connection_count;
 	pm_edge_free_count = _new_pm_edge_free_count;
+	pm_obstacle_count = _new_pm_obstacle_count;
 }
 
 void GodotNavigationServer3D::init() {
 #ifndef _3D_DISABLED
 	navmesh_generator_3d = memnew(NavMeshGenerator3D);
+	RWLockRead read_lock(geometry_parser_rwlock);
+	navmesh_generator_3d->set_generator_parsers(generator_parsers);
 #endif // _3D_DISABLED
 }
 
@@ -1345,44 +1431,71 @@ void GodotNavigationServer3D::finish() {
 #endif // _3D_DISABLED
 }
 
-PathQueryResult GodotNavigationServer3D::_query_path(const PathQueryParameters &p_parameters) const {
-	PathQueryResult r_query_result;
+void GodotNavigationServer3D::query_path(const Ref<NavigationPathQueryParameters3D> &p_query_parameters, Ref<NavigationPathQueryResult3D> p_query_result, const Callable &p_callback) {
+	ERR_FAIL_COND(p_query_parameters.is_null());
+	ERR_FAIL_COND(p_query_result.is_null());
 
-	const NavMap *map = map_owner.get_or_null(p_parameters.map);
-	ERR_FAIL_NULL_V(map, r_query_result);
+	NavMap *map = map_owner.get_or_null(p_query_parameters->get_map());
+	ERR_FAIL_NULL(map);
 
-	// run the pathfinding
+	NavMeshQueries3D::map_query_path(map, p_query_parameters, p_query_result, p_callback);
+}
 
-	if (p_parameters.pathfinding_algorithm == PathfindingAlgorithm::PATHFINDING_ALGORITHM_ASTAR) {
-		// while postprocessing is still part of map.get_path() need to check and route it here for the correct "optimize" post-processing
-		if (p_parameters.path_postprocessing == PathPostProcessing::PATH_POSTPROCESSING_CORRIDORFUNNEL) {
-			r_query_result.path = map->get_path(
-					p_parameters.start_position,
-					p_parameters.target_position,
-					true,
-					p_parameters.navigation_layers,
-					p_parameters.metadata_flags.has_flag(PathMetadataFlags::PATH_INCLUDE_TYPES) ? &r_query_result.path_types : nullptr,
-					p_parameters.metadata_flags.has_flag(PathMetadataFlags::PATH_INCLUDE_RIDS) ? &r_query_result.path_rids : nullptr,
-					p_parameters.metadata_flags.has_flag(PathMetadataFlags::PATH_INCLUDE_OWNERS) ? &r_query_result.path_owner_ids : nullptr);
-		} else if (p_parameters.path_postprocessing == PathPostProcessing::PATH_POSTPROCESSING_EDGECENTERED) {
-			r_query_result.path = map->get_path(
-					p_parameters.start_position,
-					p_parameters.target_position,
-					false,
-					p_parameters.navigation_layers,
-					p_parameters.metadata_flags.has_flag(PathMetadataFlags::PATH_INCLUDE_TYPES) ? &r_query_result.path_types : nullptr,
-					p_parameters.metadata_flags.has_flag(PathMetadataFlags::PATH_INCLUDE_RIDS) ? &r_query_result.path_rids : nullptr,
-					p_parameters.metadata_flags.has_flag(PathMetadataFlags::PATH_INCLUDE_OWNERS) ? &r_query_result.path_owner_ids : nullptr);
-		}
-	} else {
-		return r_query_result;
+RID GodotNavigationServer3D::source_geometry_parser_create() {
+	RWLockWrite write_lock(geometry_parser_rwlock);
+
+	RID rid = geometry_parser_owner.make_rid();
+
+	NavMeshGeometryParser3D *parser = geometry_parser_owner.get_or_null(rid);
+	parser->self = rid;
+
+	generator_parsers.push_back(parser);
+#ifndef _3D_DISABLED
+	NavMeshGenerator3D::get_singleton()->set_generator_parsers(generator_parsers);
+#endif
+	return rid;
+}
+
+void GodotNavigationServer3D::source_geometry_parser_set_callback(RID p_parser, const Callable &p_callback) {
+	RWLockWrite write_lock(geometry_parser_rwlock);
+
+	NavMeshGeometryParser3D *parser = geometry_parser_owner.get_or_null(p_parser);
+	ERR_FAIL_NULL(parser);
+
+	parser->callback = p_callback;
+}
+
+Vector<Vector3> GodotNavigationServer3D::simplify_path(const Vector<Vector3> &p_path, real_t p_epsilon) {
+	if (p_path.size() <= 2) {
+		return p_path;
 	}
 
-	// add path postprocessing
+	p_epsilon = MAX(0.0, p_epsilon);
 
-	// add path stats
+	LocalVector<Vector3> source_path;
+	{
+		source_path.resize(p_path.size());
+		const Vector3 *r = p_path.ptr();
+		for (uint32_t i = 0; i < p_path.size(); i++) {
+			source_path[i] = r[i];
+		}
+	}
 
-	return r_query_result;
+	LocalVector<uint32_t> simplified_path_indices = NavMeshQueries3D::get_simplified_path_indices(source_path, p_epsilon);
+
+	uint32_t index_count = simplified_path_indices.size();
+
+	Vector<Vector3> simplified_path;
+	{
+		simplified_path.resize(index_count);
+		Vector3 *w = simplified_path.ptrw();
+		const Vector3 *r = source_path.ptr();
+		for (uint32_t i = 0; i < index_count; i++) {
+			w[i] = r[simplified_path_indices[i]];
+		}
+	}
+
+	return simplified_path;
 }
 
 int GodotNavigationServer3D::get_process_info(ProcessInfo p_info) const {
@@ -1413,6 +1526,9 @@ int GodotNavigationServer3D::get_process_info(ProcessInfo p_info) const {
 		} break;
 		case INFO_EDGE_FREE_COUNT: {
 			return pm_edge_free_count;
+		} break;
+		case INFO_OBSTACLE_COUNT: {
+			return pm_obstacle_count;
 		} break;
 	}
 

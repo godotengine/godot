@@ -94,6 +94,10 @@ static uint32_t setChannelFlags(uint32_t channel, enum VkSuffix suffix)
             channel |= KHR_DF_SAMPLE_DATATYPE_LINEAR;
         }
         break;
+    case s_S10_5:
+        channel |=
+            KHR_DF_SAMPLE_DATATYPE_SIGNED;
+        break;
     }
     return channel;
 }
@@ -109,7 +113,6 @@ static void writeSample(uint32_t *DFD, int sampleNo, int channel,
         float f;
     } lower, upper;
     uint32_t *sample = DFD + 1 + KHR_DF_WORD_SAMPLESTART + sampleNo * KHR_DF_WORD_SAMPLEWORDS;
-    if (channel == 3) channel = KHR_DF_CHANNEL_RGBSDA_ALPHA;
 
     if (channel == 3) channel = KHR_DF_CHANNEL_RGBSDA_ALPHA;
     channel = setChannelFlags(channel, suffix);
@@ -159,6 +162,10 @@ static void writeSample(uint32_t *DFD, int sampleNo, int channel,
         upper.f = 1.0f;
         lower.f = 0.0f;
         break;
+    case s_S10_5:
+        assert(bits == 16 && "Format with this suffix must be 16 bits per channel.");
+        upper.i = 32;
+        lower.i = ~upper.i + 1; // -32
     }
     sample[KHR_DF_SAMPLEWORD_SAMPLELOWER] = lower.i;
     sample[KHR_DF_SAMPLEWORD_SAMPLEUPPER] = upper.i;
@@ -230,8 +237,9 @@ uint32_t *createDFDUnpacked(int bigEndian, int numChannels, int bytes,
  * @param bits[] An array of length numChannels.
  *               Each entry is the number of bits composing the channel, in
  *               order starting at bit 0 of the packed type.
- * @param paddings[] An array of length numChannels.
- *                   Each entry is the number of padding bits after each channel.
+ * @param shiftBits[] An array of length numChannels.
+ *                    Each entry is the number of bits each channel is shifted
+ *                    and thus padded with insignificant bits.
  * @param channels[] An array of length numChannels.
  *                   Each entry enumerates the channel type: 0 = red, 1 = green,
  *                   2 = blue, 15 = alpha, in order starting at bit 0 of the
@@ -243,9 +251,9 @@ uint32_t *createDFDUnpacked(int bigEndian, int numChannels, int bytes,
  * @return A data format descriptor in malloc'd data. The caller is responsible
  *         for freeing the descriptor.
  **/
-uint32_t *createDFDPackedPadded(int bigEndian, int numChannels,
-                                int bits[], int paddings[], int channels[],
-                                enum VkSuffix suffix)
+uint32_t *createDFDPackedShifted(int bigEndian, int numChannels,
+                                 int bits[], int shiftBits[], int channels[],
+                                 enum VkSuffix suffix)
 {
     uint32_t *DFD = 0;
     if (numChannels == 6) {
@@ -291,17 +299,18 @@ uint32_t *createDFDPackedPadded(int bigEndian, int numChannels,
         int sampleCounter;
         for (channelCounter = 0; channelCounter < numChannels; ++channelCounter) {
             beChannelStart[channelCounter] = totalBits;
-            totalBits += bits[channelCounter] + paddings[channelCounter];
+            totalBits += shiftBits[channelCounter] + bits[channelCounter];
         }
         BEMask = (totalBits - 1) & 0x18;
         for (channelCounter = 0; channelCounter < numChannels; ++channelCounter) {
+            bitOffset += shiftBits[channelCounter];
             bitChannel[bitOffset ^ BEMask] = channelCounter;
             if (((bitOffset + bits[channelCounter] - 1) & ~7) != (bitOffset & ~7)) {
                 /* Continuation sample */
                 bitChannel[((bitOffset + bits[channelCounter] - 1) & ~7) ^ BEMask] = channelCounter;
                 numSamples++;
             }
-            bitOffset += bits[channelCounter] + paddings[channelCounter];
+            bitOffset += bits[channelCounter];
         }
         DFD = writeHeader(numSamples, totalBits >> 3, suffix, i_COLOR);
 
@@ -343,16 +352,17 @@ uint32_t *createDFDPackedPadded(int bigEndian, int numChannels,
         int totalBits = 0;
         int bitOffset = 0;
         for (sampleCounter = 0; sampleCounter < numChannels; ++sampleCounter) {
-            totalBits += bits[sampleCounter] + paddings[sampleCounter];
+            totalBits += shiftBits[sampleCounter] + bits[sampleCounter];
         }
 
         /* One sample per channel */
         DFD = writeHeader(numChannels, totalBits >> 3, suffix, i_COLOR);
         for (sampleCounter = 0; sampleCounter < numChannels; ++sampleCounter) {
+            bitOffset += shiftBits[sampleCounter];
             writeSample(DFD, sampleCounter, channels[sampleCounter],
                         bits[sampleCounter], bitOffset,
                         1, 1, suffix);
-            bitOffset += bits[sampleCounter] + paddings[sampleCounter];
+            bitOffset += bits[sampleCounter];
         }
     }
     return DFD;
@@ -383,12 +393,12 @@ uint32_t *createDFDPacked(int bigEndian, int numChannels,
                           int bits[], int channels[],
                           enum VkSuffix suffix) {
     assert(numChannels <= 6);
-    int paddings[] = {0, 0, 0, 0, 0, 0};
-    return createDFDPackedPadded(bigEndian, numChannels, bits, paddings, channels, suffix);
+    int shiftBits[] = {0, 0, 0, 0, 0, 0};
+    return createDFDPackedShifted(bigEndian, numChannels, bits, shiftBits, channels, suffix);
 }
 
 uint32_t *createDFD422(int bigEndian, int numSamples,
-                       int bits[], int paddings[], int channels[],
+                       int bits[], int shiftBits[], int channels[],
                        int position_xs[], int position_ys[],
                        enum VkSuffix suffix) {
     assert(!bigEndian); (void) bigEndian;
@@ -396,7 +406,7 @@ uint32_t *createDFD422(int bigEndian, int numSamples,
 
     int totalBits = 0;
     for (int i = 0; i < numSamples; ++i)
-        totalBits += bits[i] + paddings[i];
+        totalBits += shiftBits[i] + bits[i];
     assert(totalBits % 8 == 0);
 
     uint32_t BDFDSize = sizeof(uint32_t) * (KHR_DF_WORD_SAMPLESTART + numSamples * KHR_DF_WORD_SAMPLEWORDS);
@@ -428,6 +438,7 @@ uint32_t *createDFD422(int bigEndian, int numSamples,
 
     int bitOffset = 0;
     for (int i = 0; i < numSamples; ++i) {
+        bitOffset += shiftBits[i];
         KHR_DFDSETSVAL(BDFD, i, BITOFFSET, bitOffset);
         KHR_DFDSETSVAL(BDFD, i, BITLENGTH, bits[i] - 1);
         KHR_DFDSETSVAL(BDFD, i, CHANNELID, channels[i]);
@@ -438,7 +449,7 @@ uint32_t *createDFD422(int bigEndian, int numSamples,
         KHR_DFDSETSVAL(BDFD, i, SAMPLEPOSITION3, 0);
         KHR_DFDSETSVAL(BDFD, i, SAMPLELOWER, 0);
         KHR_DFDSETSVAL(BDFD, i, SAMPLEUPPER, (1u << bits[i]) - 1u);
-        bitOffset += bits[i] + paddings[i];
+        bitOffset += bits[i];
     }
 
     return DFD;

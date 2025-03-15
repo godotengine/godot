@@ -35,7 +35,7 @@ namespace embree
       typedef GridSOA Primitive;
       typedef SubdivPatch1Precalculations<GridSOAIntersector1::Precalculations> Precalculations;
 
-      static __forceinline bool processLazyNode(Precalculations& pre, IntersectContext* context, const Primitive* prim, size_t& lazy_node)
+      static __forceinline bool processLazyNode(Precalculations& pre, RayQueryContext* context, const Primitive* prim, size_t& lazy_node)
       {
         lazy_node = prim->root(0);
         pre.grid = (Primitive*)prim;
@@ -44,27 +44,27 @@ namespace embree
 
       /*! Intersect a ray with the primitive. */
       template<int N, bool robust>
-        static __forceinline void intersect(const Accel::Intersectors* This, Precalculations& pre, RayHit& ray, IntersectContext* context, const Primitive* prim, size_t ty, const TravRay<N,robust> &tray, size_t& lazy_node) 
+        static __forceinline void intersect(const Accel::Intersectors* This, Precalculations& pre, RayHit& ray, RayQueryContext* context, const Primitive* prim, size_t ty, const TravRay<N,robust> &tray, size_t& lazy_node) 
       {
         if (likely(ty == 0)) GridSOAIntersector1::intersect(pre,ray,context,prim,lazy_node);
         else                 processLazyNode(pre,context,prim,lazy_node);
       }
 
       template<int N, bool robust>
-      static __forceinline void intersect(const Accel::Intersectors* This, Precalculations& pre, RayHit& ray, IntersectContext* context, size_t ty0, const Primitive* prim, size_t ty, const TravRay<N,robust> &tray, size_t& lazy_node) {
+      static __forceinline void intersect(const Accel::Intersectors* This, Precalculations& pre, RayHit& ray, RayQueryContext* context, size_t ty0, const Primitive* prim, size_t ty, const TravRay<N,robust> &tray, size_t& lazy_node) {
         intersect(This,pre,ray,context,prim,ty,tray,lazy_node);
       }
       
       /*! Test if the ray is occluded by the primitive */
       template<int N, bool robust>
-      static __forceinline bool occluded(const Accel::Intersectors* This, Precalculations& pre, Ray& ray, IntersectContext* context, const Primitive* prim, size_t ty, const TravRay<N,robust> &tray, size_t& lazy_node)
+      static __forceinline bool occluded(const Accel::Intersectors* This, Precalculations& pre, Ray& ray, RayQueryContext* context, const Primitive* prim, size_t ty, const TravRay<N,robust> &tray, size_t& lazy_node)
       {
         if (likely(ty == 0)) return GridSOAIntersector1::occluded(pre,ray,context,prim,lazy_node);
         else                 return processLazyNode(pre,context,prim,lazy_node);
       }
 
       template<int N, bool robust>
-      static __forceinline bool occluded(const Accel::Intersectors* This, Precalculations& pre, Ray& ray, IntersectContext* context, size_t ty0, const Primitive* prim, size_t ty, const TravRay<N,robust> &tray, size_t& lazy_node) {
+      static __forceinline bool occluded(const Accel::Intersectors* This, Precalculations& pre, Ray& ray, RayQueryContext* context, size_t ty0, const Primitive* prim, size_t ty, const TravRay<N,robust> &tray, size_t& lazy_node) {
         return occluded(This,pre,ray,context,prim,ty,tray,lazy_node);
       }
       
@@ -88,7 +88,7 @@ namespace embree
       typedef SubdivPatch1 Primitive;
       typedef GridSOAMBIntersector1::Precalculations Precalculations;
       
-      static __forceinline bool processLazyNode(Precalculations& pre, Ray& ray, IntersectContext* context, const Primitive* prim_i, size_t& lazy_node)
+      static __forceinline bool processLazyNode(Precalculations& pre, Ray& ray, RayQueryContext* context, const Primitive* prim_i, size_t& lazy_node)
       {
         Primitive* prim = (Primitive*) prim_i;
         GridSOA* grid = nullptr;
@@ -101,27 +101,27 @@ namespace embree
 
       /*! Intersect a ray with the primitive. */
       template<int N, bool robust>
-      static __forceinline void intersect(const Accel::Intersectors* This, Precalculations& pre, RayHit& ray, IntersectContext* context, const Primitive* prim, size_t ty, const TravRay<N,robust> &tray, size_t& lazy_node) 
+      static __forceinline void intersect(const Accel::Intersectors* This, Precalculations& pre, RayHit& ray, RayQueryContext* context, const Primitive* prim, size_t ty, const TravRay<N,robust> &tray, size_t& lazy_node) 
       {
         if (likely(ty == 0)) GridSOAMBIntersector1::intersect(pre,ray,context,prim,lazy_node);
         else                 processLazyNode(pre,ray,context,prim,lazy_node);
       }
 
       template<int N, bool robust>
-      static __forceinline void intersect(const Accel::Intersectors* This, Precalculations& pre, RayHit& ray, IntersectContext* context, size_t ty0, const Primitive* prim, size_t ty, const TravRay<N,robust> &tray, size_t& lazy_node) {
+      static __forceinline void intersect(const Accel::Intersectors* This, Precalculations& pre, RayHit& ray, RayQueryContext* context, size_t ty0, const Primitive* prim, size_t ty, const TravRay<N,robust> &tray, size_t& lazy_node) {
         intersect(This,pre,ray,context,prim,ty,tray,lazy_node);
       }
       
       /*! Test if the ray is occluded by the primitive */
       template<int N, bool robust>
-      static __forceinline bool occluded(const Accel::Intersectors* This, Precalculations& pre, Ray& ray, IntersectContext* context, const Primitive* prim, size_t ty, const TravRay<N,robust> &tray, size_t& lazy_node)
+      static __forceinline bool occluded(const Accel::Intersectors* This, Precalculations& pre, Ray& ray, RayQueryContext* context, const Primitive* prim, size_t ty, const TravRay<N,robust> &tray, size_t& lazy_node)
       {
         if (likely(ty == 0)) return GridSOAMBIntersector1::occluded(pre,ray,context,prim,lazy_node);
         else                 return processLazyNode(pre,ray,context,prim,lazy_node);
       }
 
       template<int N, bool robust>
-      static __forceinline bool occluded(const Accel::Intersectors* This, Precalculations& pre, Ray& ray, IntersectContext* context, size_t ty0, const Primitive* prim, size_t ty, const TravRay<N,robust> &tray, size_t& lazy_node) {
+      static __forceinline bool occluded(const Accel::Intersectors* This, Precalculations& pre, Ray& ray, RayQueryContext* context, size_t ty0, const Primitive* prim, size_t ty, const TravRay<N,robust> &tray, size_t& lazy_node) {
         return occluded(This,pre,ray,context,prim,ty,tray,lazy_node);
       }
       
@@ -145,7 +145,7 @@ namespace embree
       typedef GridSOA Primitive;
       typedef SubdivPatch1PrecalculationsK<K,typename GridSOAIntersectorK<K>::Precalculations> Precalculations;
       
-      static __forceinline bool processLazyNode(Precalculations& pre, IntersectContext* context, const Primitive* prim, size_t& lazy_node)
+      static __forceinline bool processLazyNode(Precalculations& pre, RayQueryContext* context, const Primitive* prim, size_t& lazy_node)
       {
         lazy_node = prim->root(0);
         pre.grid = (Primitive*)prim;
@@ -153,28 +153,28 @@ namespace embree
       }
       
       template<bool robust>        
-      static __forceinline void intersect(const vbool<K>& valid, const Accel::Intersectors* This, Precalculations& pre, RayHitK<K>& ray, IntersectContext* context, const Primitive* prim, size_t ty, const TravRayK<K, robust> &tray, size_t& lazy_node)
+      static __forceinline void intersect(const vbool<K>& valid, const Accel::Intersectors* This, Precalculations& pre, RayHitK<K>& ray, RayQueryContext* context, const Primitive* prim, size_t ty, const TravRayK<K, robust> &tray, size_t& lazy_node)
       {
         if (likely(ty == 0)) GridSOAIntersectorK<K>::intersect(valid,pre,ray,context,prim,lazy_node);
         else                 processLazyNode(pre,context,prim,lazy_node);
       }
       
       template<bool robust>        
-      static __forceinline vbool<K> occluded(const vbool<K>& valid, const Accel::Intersectors* This, Precalculations& pre, RayK<K>& ray, IntersectContext* context, const Primitive* prim, size_t ty, const TravRayK<K, robust> &tray, size_t& lazy_node)
+      static __forceinline vbool<K> occluded(const vbool<K>& valid, const Accel::Intersectors* This, Precalculations& pre, RayK<K>& ray, RayQueryContext* context, const Primitive* prim, size_t ty, const TravRayK<K, robust> &tray, size_t& lazy_node)
       {
         if (likely(ty == 0)) return GridSOAIntersectorK<K>::occluded(valid,pre,ray,context,prim,lazy_node);
         else                 return processLazyNode(pre,context,prim,lazy_node);
       }
       
       template<int N, bool robust>              
-        static __forceinline void intersect(const Accel::Intersectors* This, Precalculations& pre, RayHitK<K>& ray, size_t k, IntersectContext* context, const Primitive* prim, size_t ty, const TravRay<N,robust> &tray, size_t& lazy_node)
+        static __forceinline void intersect(const Accel::Intersectors* This, Precalculations& pre, RayHitK<K>& ray, size_t k, RayQueryContext* context, const Primitive* prim, size_t ty, const TravRay<N,robust> &tray, size_t& lazy_node)
       {
         if (likely(ty == 0)) GridSOAIntersectorK<K>::intersect(pre,ray,k,context,prim,lazy_node);
         else                 processLazyNode(pre,context,prim,lazy_node);
       }
       
       template<int N, bool robust>              
-      static __forceinline bool occluded(const Accel::Intersectors* This, Precalculations& pre, RayK<K>& ray, size_t k, IntersectContext* context, const Primitive* prim, size_t ty, const TravRay<N,robust> &tray, size_t& lazy_node)
+      static __forceinline bool occluded(const Accel::Intersectors* This, Precalculations& pre, RayK<K>& ray, size_t k, RayQueryContext* context, const Primitive* prim, size_t ty, const TravRay<N,robust> &tray, size_t& lazy_node)
       {
         if (likely(ty == 0)) return GridSOAIntersectorK<K>::occluded(pre,ray,k,context,prim,lazy_node);
         else                 return processLazyNode(pre,context,prim,lazy_node);
@@ -192,7 +192,7 @@ namespace embree
       //typedef GridSOAMBIntersectorK<K>::Precalculations Precalculations;
       typedef SubdivPatch1PrecalculationsK<K,typename GridSOAMBIntersectorK<K>::Precalculations> Precalculations;
       
-      static __forceinline bool processLazyNode(Precalculations& pre, IntersectContext* context, const Primitive* prim_i, size_t& lazy_node)
+      static __forceinline bool processLazyNode(Precalculations& pre, RayQueryContext* context, const Primitive* prim_i, size_t& lazy_node)
       {
         Primitive* prim = (Primitive*) prim_i;
         GridSOA* grid = (GridSOA*) prim->root_ref.get();
@@ -202,28 +202,28 @@ namespace embree
       }
 
       template<bool robust>
-      static __forceinline void intersect(const vbool<K>& valid, const Accel::Intersectors* This, Precalculations& pre, RayHitK<K>& ray, IntersectContext* context, const Primitive* prim, size_t ty, const TravRayK<K, robust> &tray, size_t& lazy_node)
+      static __forceinline void intersect(const vbool<K>& valid, const Accel::Intersectors* This, Precalculations& pre, RayHitK<K>& ray, RayQueryContext* context, const Primitive* prim, size_t ty, const TravRayK<K, robust> &tray, size_t& lazy_node)
       {
         if (likely(ty == 0)) GridSOAMBIntersectorK<K>::intersect(valid,pre,ray,context,prim,lazy_node);
         else                 processLazyNode(pre,context,prim,lazy_node);
       }
 
       template<bool robust>
-      static __forceinline vbool<K> occluded(const vbool<K>& valid, const Accel::Intersectors* This, Precalculations& pre, RayK<K>& ray, IntersectContext* context, const Primitive* prim, size_t ty, const TravRayK<K, robust> &tray, size_t& lazy_node)
+      static __forceinline vbool<K> occluded(const vbool<K>& valid, const Accel::Intersectors* This, Precalculations& pre, RayK<K>& ray, RayQueryContext* context, const Primitive* prim, size_t ty, const TravRayK<K, robust> &tray, size_t& lazy_node)
       {
         if (likely(ty == 0)) return GridSOAMBIntersectorK<K>::occluded(valid,pre,ray,context,prim,lazy_node);
         else                 return processLazyNode(pre,context,prim,lazy_node);
       }
       
       template<int N, bool robust>      
-      static __forceinline void intersect(const Accel::Intersectors* This, Precalculations& pre, RayHitK<K>& ray, size_t k, IntersectContext* context, const Primitive* prim, size_t ty, const TravRay<N,robust> &tray, size_t& lazy_node)
+      static __forceinline void intersect(const Accel::Intersectors* This, Precalculations& pre, RayHitK<K>& ray, size_t k, RayQueryContext* context, const Primitive* prim, size_t ty, const TravRay<N,robust> &tray, size_t& lazy_node)
       {
         if (likely(ty == 0)) GridSOAMBIntersectorK<K>::intersect(pre,ray,k,context,prim,lazy_node);
         else                 processLazyNode(pre,context,prim,lazy_node);
       }
       
       template<int N, bool robust>      
-      static __forceinline bool occluded(const Accel::Intersectors* This, Precalculations& pre, RayK<K>& ray, size_t k, IntersectContext* context, const Primitive* prim, size_t ty, const TravRay<N,robust> &tray, size_t& lazy_node)
+      static __forceinline bool occluded(const Accel::Intersectors* This, Precalculations& pre, RayK<K>& ray, size_t k, RayQueryContext* context, const Primitive* prim, size_t ty, const TravRay<N,robust> &tray, size_t& lazy_node)
       {
         if (likely(ty == 0)) return GridSOAMBIntersectorK<K>::occluded(pre,ray,k,context,prim,lazy_node);
         else                 return processLazyNode(pre,context,prim,lazy_node);

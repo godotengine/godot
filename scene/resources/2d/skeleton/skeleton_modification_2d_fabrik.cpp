@@ -31,10 +31,6 @@
 #include "skeleton_modification_2d_fabrik.h"
 #include "scene/2d/skeleton_2d.h"
 
-#ifdef TOOLS_ENABLED
-#include "editor/editor_settings.h"
-#endif // TOOLS_ENABLED
-
 bool SkeletonModification2DFABRIK::_set(const StringName &p_path, const Variant &p_value) {
 	String path = p_path;
 
@@ -289,13 +285,21 @@ void SkeletonModification2DFABRIK::_setup_modification(SkeletonModificationStack
 
 	if (stack != nullptr) {
 		is_setup = true;
+
+		if (stack->skeleton) {
+			for (int i = 0; i < fabrik_data_chain.size(); i++) {
+				fabrik_joint_update_bone2d_cache(i);
+			}
+		}
 		update_target_cache();
 	}
 }
 
 void SkeletonModification2DFABRIK::update_target_cache() {
 	if (!is_setup || !stack) {
-		ERR_PRINT_ONCE("Cannot update target cache: modification is not properly setup!");
+		if (is_setup) {
+			ERR_PRINT_ONCE("Cannot update target cache: modification is not properly setup!");
+		}
 		return;
 	}
 
@@ -317,7 +321,9 @@ void SkeletonModification2DFABRIK::update_target_cache() {
 void SkeletonModification2DFABRIK::fabrik_joint_update_bone2d_cache(int p_joint_idx) {
 	ERR_FAIL_INDEX_MSG(p_joint_idx, fabrik_data_chain.size(), "Cannot update bone2d cache: joint index out of range!");
 	if (!is_setup || !stack) {
-		ERR_PRINT_ONCE("Cannot update FABRIK Bone2D cache: modification is not properly setup!");
+		if (is_setup) {
+			ERR_PRINT_ONCE("Cannot update FABRIK Bone2D cache: modification is not properly setup!");
+		}
 		return;
 	}
 
@@ -389,7 +395,6 @@ void SkeletonModification2DFABRIK::set_fabrik_joint_bone_index(int p_joint_idx, 
 			fabrik_data_chain.write[p_joint_idx].bone_idx = p_bone_idx;
 		}
 	} else {
-		WARN_PRINT("Cannot verify the FABRIK joint " + itos(p_joint_idx) + " bone index for this modification...");
 		fabrik_data_chain.write[p_joint_idx].bone_idx = p_bone_idx;
 	}
 

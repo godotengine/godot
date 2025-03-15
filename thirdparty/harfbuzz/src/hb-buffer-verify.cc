@@ -149,7 +149,7 @@ buffer_verify_unsafe_to_break (hb_buffer_t  *buffer,
     }
     assert (text_start < text_end);
 
-    if (0)
+    if (false)
       printf("start %u end %u text start %u end %u\n", start, end, text_start, text_end);
 
     hb_buffer_clear_contents (fragment);
@@ -288,7 +288,7 @@ buffer_verify_unsafe_to_concat (hb_buffer_t        *buffer,
       }
       assert (text_start < text_end);
 
-      if (0)
+      if (false)
 	printf("start %u end %u text start %u end %u\n", start, end, text_start, text_end);
 
 #if 0
@@ -412,7 +412,7 @@ hb_buffer_t::verify (hb_buffer_t        *text_buffer,
 				   &len,
 				   HB_BUFFER_SERIALIZE_FORMAT_TEXT,
 				   HB_BUFFER_SERIALIZE_FLAG_NO_CLUSTERS);
-      buffer_verify_error (this, font, BUFFER_VERIFY_ERROR "text was: %s.", bytes.arrayZ);
+      buffer_verify_error (this, font, BUFFER_VERIFY_ERROR "text was: %s.", bytes.arrayZ ? bytes.arrayZ : "");
     }
 #endif
   }

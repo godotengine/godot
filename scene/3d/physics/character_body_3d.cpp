@@ -60,8 +60,13 @@ bool CharacterBody3D::move_and_slide() {
 
 			// We need to check the platform_rid object still exists before accessing.
 			// A valid RID is no guarantee that the object has not been deleted.
-			if (ObjectDB::get_instance(platform_object_id)) {
-				//this approach makes sure there is less delay between the actual body velocity and the one we saved
+
+			// We can only perform the ObjectDB lifetime check on Object derived objects.
+			// Note that physics also creates RIDs for non-Object derived objects, these cannot
+			// be lifetime checked through ObjectDB, and therefore there is a still a vulnerability
+			// to dangling RIDs (access after free) in this scenario.
+			if (platform_object_id.is_null() || ObjectDB::get_instance(platform_object_id)) {
+				// This approach makes sure there is less delay between the actual body velocity and the one we saved.
 				bs = PhysicsServer3D::get_singleton()->body_get_direct_state(platform_rid);
 			}
 
@@ -232,7 +237,7 @@ void CharacterBody3D::_move_and_slide_grounded(double p_delta, bool p_was_on_flo
 							} else {
 								// Travel is too high to be safely canceled, we take it into account.
 								result.travel = result.travel.slide(up_direction);
-								motion = motion.normalized() * result.travel.length();
+								motion = result.remainder;
 							}
 							set_global_transform(gt);
 							// Determines if you are on the ground, and limits the possibility of climbing on the walls because of the approximations.
@@ -464,14 +469,14 @@ void CharacterBody3D::apply_floor_snap() {
 		_set_collision_direction(result, result_state, CollisionState(true, false, false));
 
 		if (result_state.floor) {
-			if (floor_stop_on_slope) {
-				// move and collide may stray the object a bit because of pre un-stucking,
-				// so only ensure that motion happens on floor direction in this case.
-				if (result.travel.length() > margin) {
-					result.travel = up_direction * up_direction.dot(result.travel);
-				} else {
-					result.travel = Vector3();
-				}
+			// Ensure that we only move the body along the up axis, because
+			// move_and_collide may stray the object a bit when getting it unstuck.
+			// Canceling this motion should not affect move_and_slide, as previous
+			// calls to move_and_collide already took care of freeing the body.
+			if (result.travel.length() > margin) {
+				result.travel = up_direction * up_direction.dot(result.travel);
+			} else {
+				result.travel = Vector3();
 			}
 
 			parameters.from.origin += result.travel;
@@ -704,7 +709,7 @@ Ref<KinematicCollision3D> CharacterBody3D::_get_slide_collision(int p_bounce) {
 	// Create a new instance when the cached reference is invalid or still in use in script.
 	if (slide_colliders[p_bounce].is_null() || slide_colliders[p_bounce]->get_reference_count() > 1) {
 		slide_colliders.write[p_bounce].instantiate();
-		slide_colliders.write[p_bounce]->owner = this;
+		slide_colliders.write[p_bounce]->owner_id = get_instance_id();
 	}
 
 	slide_colliders.write[p_bounce]->result = motion_results[p_bounce];
@@ -935,12 +940,4 @@ void CharacterBody3D::_validate_property(PropertyInfo &p_property) const {
 
 CharacterBody3D::CharacterBody3D() :
 		PhysicsBody3D(PhysicsServer3D::BODY_MODE_KINEMATIC) {
-}
-
-CharacterBody3D::~CharacterBody3D() {
-	for (int i = 0; i < slide_colliders.size(); i++) {
-		if (slide_colliders[i].is_valid()) {
-			slide_colliders.write[i]->owner = nullptr;
-		}
-	}
 }

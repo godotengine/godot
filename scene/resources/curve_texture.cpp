@@ -30,8 +30,6 @@
 
 #include "curve_texture.h"
 
-#include "core/core_string_names.h"
-
 void CurveTexture::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_width", "width"), &CurveTexture::set_width);
 

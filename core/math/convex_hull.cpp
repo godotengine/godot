@@ -61,11 +61,8 @@ subject to the following restrictions:
 #include "core/error/error_macros.h"
 #include "core/math/aabb.h"
 #include "core/math/math_defs.h"
-#include "core/os/memory.h"
 #include "core/templates/oa_hash_map.h"
 #include "core/templates/paged_allocator.h"
-
-#include <string.h>
 
 //#define DEBUG_CONVEX_HULL
 //#define SHOW_ITERATIONS
@@ -77,15 +74,17 @@ subject to the following restrictions:
 
 #ifdef DEBUG_ENABLED
 #define CHULL_ASSERT(m_cond)                                     \
-	do {                                                         \
+	if constexpr (true) {                                        \
 		if (unlikely(!(m_cond))) {                               \
 			ERR_PRINT("Assertion \"" _STR(m_cond) "\" failed."); \
 		}                                                        \
-	} while (0)
+	} else                                                       \
+		((void)0)
 #else
 #define CHULL_ASSERT(m_cond) \
-	do {                     \
-	} while (0)
+	if constexpr (true) {    \
+	} else                   \
+		((void)0)
 #endif
 
 #if defined(DEBUG_CONVEX_HULL) || defined(SHOW_ITERATIONS)
@@ -202,7 +201,7 @@ public:
 		static Int128 mul(uint64_t a, uint64_t b);
 
 		Int128 operator-() const {
-			return Int128((uint64_t) - (int64_t)low, ~high + (low == 0));
+			return Int128(uint64_t(-int64_t(low)), ~high + (low == 0));
 		}
 
 		Int128 operator+(const Int128 &b) const {
@@ -2150,10 +2149,11 @@ static int32_t get_vertex_copy(ConvexHullInternal::Vertex *p_vertex, LocalVector
 }
 
 real_t ConvexHullComputer::compute(const Vector3 *p_coords, int32_t p_count, real_t p_shrink, real_t p_shrink_clamp) {
+	vertices.clear();
+	edges.clear();
+	faces.clear();
+
 	if (p_count <= 0) {
-		vertices.clear();
-		edges.clear();
-		faces.clear();
 		return 0;
 	}
 
@@ -2162,15 +2162,8 @@ real_t ConvexHullComputer::compute(const Vector3 *p_coords, int32_t p_count, rea
 
 	real_t shift = 0;
 	if ((p_shrink > 0) && ((shift = hull.shrink(p_shrink, p_shrink_clamp)) < 0)) {
-		vertices.clear();
-		edges.clear();
-		faces.clear();
 		return shift;
 	}
-
-	vertices.clear();
-	edges.clear();
-	faces.clear();
 
 	LocalVector<ConvexHullInternal::Vertex *> old_vertices;
 	get_vertex_copy(hull.vertex_list, old_vertices);

@@ -35,15 +35,13 @@
 
 Size2 ProgressBar::get_minimum_size() const {
 	Size2 minimum_size = theme_cache.background_style->get_minimum_size();
-	minimum_size.height = MAX(minimum_size.height, theme_cache.fill_style->get_minimum_size().height);
-	minimum_size.width = MAX(minimum_size.width, theme_cache.fill_style->get_minimum_size().width);
+	minimum_size = minimum_size.max(theme_cache.fill_style->get_minimum_size());
 	if (show_percentage) {
 		String txt = "100%";
 		TextLine tl = TextLine(txt, theme_cache.font, theme_cache.font_size);
 		minimum_size.height = MAX(minimum_size.height, theme_cache.background_style->get_minimum_size().height + tl.get_size().y);
 	} else { // this is needed, else the progressbar will collapse
-		minimum_size.width = MAX(minimum_size.width, 1);
-		minimum_size.height = MAX(minimum_size.height, 1);
+		minimum_size = minimum_size.maxf(1);
 	}
 	return minimum_size;
 }
@@ -63,7 +61,7 @@ void ProgressBar::_notification(int p_what) {
 				Size2 size = get_size();
 				real_t fill_size = MIN(size.width, size.height) * 2;
 
-				if (Engine::get_singleton()->is_editor_hint() && !editor_preview_indeterminate) {
+				if (is_part_of_edited_scene() && !editor_preview_indeterminate) {
 					// Center the filled bar when we're not previewing the animation.
 					_inderminate_fill_progress = (MAX(size.width, size.height) / 2) + (fill_size / 2);
 				}
@@ -219,7 +217,7 @@ void ProgressBar::set_indeterminate(bool p_indeterminate) {
 	indeterminate = p_indeterminate;
 	_inderminate_fill_progress = 0;
 
-	bool should_process = !Engine::get_singleton()->is_editor_hint() || editor_preview_indeterminate;
+	bool should_process = !is_part_of_edited_scene() || editor_preview_indeterminate;
 	set_process_internal(indeterminate && should_process);
 
 	notify_property_list_changed();
@@ -237,7 +235,7 @@ void ProgressBar::set_editor_preview_indeterminate(bool p_preview_indeterminate)
 	}
 	editor_preview_indeterminate = p_preview_indeterminate;
 
-	if (Engine::get_singleton()->is_editor_hint()) {
+	if (is_part_of_edited_scene()) {
 		_inderminate_fill_progress = 0;
 		set_process_internal(indeterminate && editor_preview_indeterminate);
 		queue_redraw();

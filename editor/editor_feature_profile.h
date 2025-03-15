@@ -31,12 +31,10 @@
 #ifndef EDITOR_FEATURE_PROFILE_H
 #define EDITOR_FEATURE_PROFILE_H
 
-#include "core/io/file_access.h"
 #include "core/object/ref_counted.h"
 #include "editor/editor_help.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/option_button.h"
-#include "scene/gui/separator.h"
 #include "scene/gui/split_container.h"
 #include "scene/gui/tree.h"
 
@@ -55,6 +53,7 @@ public:
 		FEATURE_FILESYSTEM_DOCK,
 		FEATURE_IMPORT_DOCK,
 		FEATURE_HISTORY_DOCK,
+		FEATURE_GAME,
 		FEATURE_MAX
 	};
 
@@ -142,11 +141,13 @@ class EditorFeatureProfileManager : public AcceptDialog {
 
 	void _profile_action(int p_action);
 	void _profile_selected(int p_what);
+	void _hide_requested();
 
 	String current_profile;
 	void _update_profile_list(const String &p_select_profile = String());
 	void _update_selected_profile();
-	void _fill_classes_from(TreeItem *p_parent, const String &p_class, const String &p_selected);
+	void _update_profile_tree_from(TreeItem *p_edited);
+	void _fill_classes_from(TreeItem *p_parent, const String &p_class, const String &p_selected, int p_class_insert_index = -1);
 
 	Ref<EditorFeatureProfile> current;
 	Ref<EditorFeatureProfile> edited;

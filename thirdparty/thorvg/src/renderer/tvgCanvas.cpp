@@ -81,6 +81,12 @@ Result Canvas::update(Paint* paint) noexcept
 }
 
 
+Result Canvas::viewport(int32_t x, int32_t y, int32_t w, int32_t h) noexcept
+{
+    return pImpl->viewport(x, y, w, h);
+}
+
+
 Result Canvas::sync() noexcept
 {
     return pImpl->sync();

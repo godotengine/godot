@@ -1,2 +1,2 @@
 GDTEST_OK
-{ "hello": { "world": { "is": "beautiful" } } }
+{ "hello": { &"world": { "is": "beautiful" } } }

@@ -235,6 +235,7 @@ static FfxErrorCode create_resource_rd(FfxFsr2Interface *p_backend_interface, co
 	texture_format.height = res_desc.height;
 	texture_format.depth = res_desc.depth;
 	texture_format.mipmaps = res_desc.mipCount;
+	texture_format.is_discardable = true;
 
 	RID texture = rd->texture_create(texture_format, RD::TextureView(), initial_data);
 	ERR_FAIL_COND_V(texture.is_null(), FFX_ERROR_BACKEND_API_ERROR);
@@ -393,7 +394,9 @@ static FfxErrorCode execute_gpu_job_compute_rd(FSR2Context::Scratch &p_scratch, 
 	FSR2Effect::Pipeline &backend_pipeline = *reinterpret_cast<FSR2Effect::Pipeline *>(p_job.pipeline.pipeline);
 	ERR_FAIL_COND_V(backend_pipeline.pipeline_rid.is_null(), FFX_ERROR_INVALID_ARGUMENT);
 
-	Vector<RD::Uniform> compute_uniforms;
+	thread_local LocalVector<RD::Uniform> compute_uniforms;
+	compute_uniforms.clear();
+
 	for (uint32_t i = 0; i < p_job.pipeline.srvCount; i++) {
 		RID texture_rid = p_scratch.resources.rids[p_job.srvs[i].internalIndex];
 		RD::Uniform texture_uniform(RD::UNIFORM_TYPE_TEXTURE, p_job.pipeline.srvResourceBindings[i].slotIndex, texture_rid);
@@ -527,6 +530,7 @@ FSR2Effect::FSR2Effect() {
 			"\n#define FFX_GLSL 1\n"
 			"\n#define FFX_FSR2_OPTION_LOW_RESOLUTION_MOTION_VECTORS 1\n"
 			"\n#define FFX_FSR2_OPTION_HDR_COLOR_INPUT 1\n"
+			"\n#define FFX_FSR2_OPTION_INVERTED_DEPTH 1\n"
 			"\n#define FFX_FSR2_OPTION_GODOT_REACTIVE_MASK_CLAMP 1\n"
 			"\n#define FFX_FSR2_OPTION_GODOT_DERIVE_INVALID_MOTION_VECTORS 1\n";
 
@@ -799,16 +803,13 @@ FSR2Effect::~FSR2Effect() {
 	RD::get_singleton()->free(device.linear_clamp_sampler);
 
 	for (uint32_t i = 0; i < FFX_FSR2_PASS_COUNT; i++) {
-		if (device.passes[i].pipeline.pipeline_rid.is_valid()) {
-			RD::get_singleton()->free(device.passes[i].pipeline.pipeline_rid);
-		}
 		device.passes[i].shader->version_free(device.passes[i].shader_version);
 	}
 }
 
 FSR2Context *FSR2Effect::create_context(Size2i p_internal_size, Size2i p_target_size) {
 	FSR2Context *context = memnew(RendererRD::FSR2Context);
-	context->fsr_desc.flags = FFX_FSR2_ENABLE_HIGH_DYNAMIC_RANGE;
+	context->fsr_desc.flags = FFX_FSR2_ENABLE_HIGH_DYNAMIC_RANGE | FFX_FSR2_ENABLE_DEPTH_INVERTED;
 	context->fsr_desc.maxRenderSize.width = p_internal_size.x;
 	context->fsr_desc.maxRenderSize.height = p_internal_size.y;
 	context->fsr_desc.displaySize.width = p_target_size.x;

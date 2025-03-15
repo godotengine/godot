@@ -71,6 +71,7 @@ class EditorSpinSlider : public Range {
 
 	bool hide_slider = false;
 	bool flat = false;
+	bool editing_integer = false;
 
 	void _grab_start();
 	void _grab_end();
@@ -86,6 +87,11 @@ class EditorSpinSlider : public Range {
 	void _update_value_input_stylebox();
 	void _ensure_input_popup();
 	void _draw_spin_slider();
+
+	struct ThemeCache {
+		Ref<Texture2D> updown_icon;
+		Ref<Texture2D> updown_disabled_icon;
+	} theme_cache;
 
 protected:
 	void _notification(int p_what);
@@ -107,6 +113,9 @@ public:
 
 	void set_hide_slider(bool p_hide);
 	bool is_hiding_slider() const;
+
+	void set_editing_integer(bool p_editing_integer);
+	bool is_editing_integer() const;
 
 	void set_read_only(bool p_enable);
 	bool is_read_only() const;

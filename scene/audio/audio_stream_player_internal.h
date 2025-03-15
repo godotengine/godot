@@ -33,14 +33,17 @@
 
 #include "core/object/ref_counted.h"
 #include "core/templates/safe_refcount.h"
+#include "servers/audio_server.h"
 
 class AudioStream;
 class AudioStreamPlayback;
+class AudioSamplePlayback;
 class Node;
 
 class AudioStreamPlayerInternal : public Object {
 	GDCLASS(AudioStreamPlayerInternal, Object);
 
+private:
 	struct ParameterData {
 		StringName path;
 		Variant value;
@@ -50,12 +53,18 @@ class AudioStreamPlayerInternal : public Object {
 
 	Node *node = nullptr;
 	Callable play_callable;
+	Callable stop_callable;
 	bool physical = false;
+	AudioServer::PlaybackType playback_type = AudioServer::PlaybackType::PLAYBACK_TYPE_DEFAULT;
 
 	HashMap<StringName, ParameterData> playback_parameters;
 
 	void _set_process(bool p_enabled);
 	void _update_stream_parameters();
+
+	_FORCE_INLINE_ bool _is_sample() {
+		return (AudioServer::get_singleton()->get_default_playback_type() == AudioServer::PlaybackType::PLAYBACK_TYPE_SAMPLE && get_playback_type() == AudioServer::PlaybackType::PLAYBACK_TYPE_DEFAULT) || get_playback_type() == AudioServer::PlaybackType::PLAYBACK_TYPE_SAMPLE;
+	}
 
 public:
 	Vector<Ref<AudioStreamPlayback>> stream_playbacks;
@@ -86,7 +95,7 @@ public:
 
 	Ref<AudioStreamPlayback> play_basic();
 	void seek(float p_seconds);
-	void stop();
+	void stop_basic();
 	bool is_playing() const;
 	float get_playback_position();
 
@@ -99,7 +108,10 @@ public:
 	bool has_stream_playback();
 	Ref<AudioStreamPlayback> get_stream_playback();
 
-	AudioStreamPlayerInternal(Node *p_node, const Callable &p_play_callable, bool p_physical);
+	void set_playback_type(AudioServer::PlaybackType p_playback_type);
+	AudioServer::PlaybackType get_playback_type() const;
+
+	AudioStreamPlayerInternal(Node *p_node, const Callable &p_play_callable, const Callable &p_stop_callable, bool p_physical);
 };
 
 #endif // AUDIO_STREAM_PLAYER_INTERNAL_H
