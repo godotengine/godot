@@ -394,6 +394,9 @@ private:                                                                        
 public:                                                                                                                                     \
 	typedef m_class self_type;                                                                                                              \
 	static constexpr bool _class_is_enabled = !bool(GD_IS_DEFINED(ClassDB_Disable_##m_class)) && m_inherits::_class_is_enabled;             \
+	virtual bool derives_from(const std::type_info &p_type_info) const override {                                                           \
+		return typeid(m_class) == p_type_info || m_inherits::derives_from(p_type_info);                                                     \
+	}                                                                                                                                       \
 	virtual String get_class() const override {                                                                                             \
 		if (_get_extension()) {                                                                                                             \
 			return _get_extension()->class_name.operator String();                                                                          \
@@ -775,6 +778,12 @@ public: // Should be protected, but bug in clang++.
 public:
 	static constexpr bool _class_is_enabled = true;
 
+	virtual bool derives_from(const std::type_info &p_type_info) const {
+		// This could just be false because nobody would reasonably ask if an Object subclass derives from Object,
+		// but it would be wrong if somebody actually does ask. It's not too slow to check anyway.
+		return typeid(Object) == p_type_info;
+	}
+
 	void notify_property_list_changed();
 
 	static void *get_class_ptr_static() {
@@ -787,12 +796,14 @@ public:
 
 	template <typename T>
 	static T *cast_to(Object *p_object) {
-		return p_object ? dynamic_cast<T *>(p_object) : nullptr;
+		// This is like dynamic_cast, but faster.
+		// The reason is that we can assume no virtual and multiple inheritance.
+		return p_object && p_object->derives_from(typeid(T)) ? static_cast<T *>(p_object) : nullptr;
 	}
 
 	template <typename T>
 	static const T *cast_to(const Object *p_object) {
-		return p_object ? dynamic_cast<const T *>(p_object) : nullptr;
+		return p_object && p_object->derives_from(typeid(T)) ? static_cast<const T *>(p_object) : nullptr;
 	}
 
 	enum {
