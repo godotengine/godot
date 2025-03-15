@@ -142,6 +142,36 @@ mat4 dual_quaternion_to_matrix(vec4 Qn, vec4 Qd)
 	return M;
 }
 
+mat4 removeScaleFromNonOrthogonal(mat4 transform) {
+    bool isTransposed = false; // Adjust this if you suspect transpose
+
+    // Extract axes and translation based on storage format
+    vec3 x = isTransposed ? transform[0].xyz : vec3(transform[0][0], transform[1][0], transform[2][0]);
+    vec3 y = isTransposed ? transform[1].xyz : vec3(transform[0][1], transform[1][1], transform[2][1]);
+    vec3 z = isTransposed ? transform[2].xyz : vec3(transform[0][2], transform[1][2], transform[2][2]);
+
+    // Perform Gram-Schmidt orthogonalization
+    x = normalize(x);                            // Normalize the X-axis
+    y = normalize(y - dot(y, x) * x);            // Orthogonalize Y-axis
+    z = normalize(z - dot(z, x) * x - dot(z, y) * y); // Orthogonalize Z-axis
+
+    // Reconstruct the 4x4 matrix
+    mat4 result = mat4(1.0);
+
+    if (isTransposed) {
+        result[0] = vec4(x, 0.0);
+        result[1] = vec4(y, 0.0);
+        result[2] = vec4(z, 0.0);
+        result[3] = transform[3]; // Keep translation
+    } else {
+        result[0] = vec4(x.x, y.x, z.x, 0.0);
+        result[1] = vec4(x.y, y.y, z.y, 0.0);
+        result[2] = vec4(x.z, y.z, z.z, 0.0);
+        result[3] = transform[3]; // Keep translation
+    }
+
+    return result;
+}
 
 mat3 adjointTransposeMatrix(mat3 M) {
 	mat3 atM;
@@ -334,42 +364,30 @@ void main() {
 
 		mat4 mquat = dual_quaternion_to_matrix(blend_q0, blend_q1);
 
-		/*  ===========
-		// TODO scale doesnt work with quaternion
 		mat3 blendS = mat3(
 			vec3(length(mlin[0].xyz), 0, 0),
 			vec3(0, length(mlin[1].xyz), 0),
 			vec3(0, 0, length(mlin[2].xyz))
 		);
-
-		vec3 pass1_vertex = vertex * blendS;
-		mat3 blendSrotAT = adjointTransposeMatrix(blendS);
-		vec3 pass1_normal = normalize(blendSrotAT * normal);
-		vec4 pass1_tangent = normalize(vec4(blendSrotAT * tangent.xyz, 0.0));
-		=========== */
 
 		vec3 vertex_lin = (vec4(vertex, 1.0) * mlin).xyz;
 		vec3 normal_lin = normalize(vec4(normal, 0.0) * mlin).xyz;
 		vec3 tangent_lin = normalize(vec4(tangent.xyz, 0.0) * mlin).xyz;
 
-		vertex = (mquat * vec4(vertex, 1.0)).xyz;
-		normal = normalize(mquat * vec4(normal, 0.0)).xyz;
-		tangent.xyz = normalize(mquat * vec4(tangent.xyz, 0.0)).xyz;
+		vec3 vertex_quat_pass1 = blendS * vertex;
+		vec3 normal_quat_pass1 = blendS * normal;
+		vec3 tangent_quat_pass1 = blendS * tangent.xyz;
 
-		float lin_blend = 0.0; // adjust to blend between linear and DQ
+		vertex = (mquat * vec4(vertex_quat_pass1, 1.0)).xyz;
+		normal = normalize(mquat * vec4(normal_quat_pass1, 0.0)).xyz;
+		tangent.xyz = normalize(mquat * vec4(tangent_quat_pass1, 0.0)).xyz;
+
+		float lin_blend = 1.0; // adjust to blend between linear and DQ
 		float quat_blend = 1.0 - lin_blend;
 
 		vertex = vertex * quat_blend + vertex_lin * lin_blend;
 		normal = normal * quat_blend + normal_lin * lin_blend;
 		tangent.xyz = tangent.xyz * quat_blend + tangent_lin * lin_blend;
-
-		mat3 blendS = mat3(
-			vec3(length(mlin[0].xyz), 0, 0),
-			vec3(0, length(mlin[1].xyz), 0),
-			vec3(0, 0, length(mlin[2].xyz))
-		);
-		vertex *= blendS;
-
 	}
 
 	uint dst_offset = index * params.vertex_stride;

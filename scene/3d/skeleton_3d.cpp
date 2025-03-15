@@ -296,12 +296,12 @@ void Skeleton3D::_update_process_order() {
 }
 
 
-Quaternion get_shortest_arc(const Quaternion &q_current, const Quaternion &q_prev) {
+Quaternion get_shortest_arc(const Quaternion &to, const Quaternion &from) {
 	// Avoid the quaternion taking the longest path for this versions's new rotation vs the last
-	if(q_current.dot(q_prev) < 0.0) {
-		return q_current*-1.0;
+	if(to.dot(from) < 0.0) {
+		return to*-1.0;
 	}
-	return q_current;
+	return to;
 }
 
 
@@ -388,7 +388,7 @@ void Skeleton3D::_notification(int p_what) {
 					//bones[p_bone].global_rest;
 					Transform3D bind_pose = skin->get_bind_pose(i);
 					Transform3D Mj = bonesptr[bone_index].pose_global * bind_pose;
-					Transform3D Mj2 = bonesptr[bone_index].global_rest * bind_pose;
+					Transform3D rest_global_transform = bonesptr[bone_index].global_rest * bind_pose;
 					Vector3 t = Mj.origin;
 					Quaternion prev_q0, prev_q1;
 					//Basis dq = rs->skeleton_bone_get_dq_transform(skeleton, i);
@@ -396,10 +396,48 @@ void Skeleton3D::_notification(int p_what) {
 					// This works to keep quaternions stable, basing it off the shortest path between the
 					// previous frame's linear transformation and the new one
 					Quaternion q0 = get_shortest_arc( 
-						Mj.basis.scaled(Mj.basis.get_scale_local().inverse()).get_rotation_quaternion(),
-						Mj2.basis.scaled(Mj2.basis.get_scale_local().inverse()).get_rotation_quaternion()
+						Mj.basis.orthonormalized().get_rotation_quaternion(),
+						rest_global_transform.basis.get_rotation_quaternion()
 					);
 					Quaternion q1 = quat_trans_2UDQ(q0, t);
+
+					//remove scale???
+					// Extract the axes (columns of the Basis)
+					Vector3 x = Mj.basis.get_column(0); // X-axis
+					Vector3 y = Mj.basis.get_column(1); // Y-axis
+					Vector3 z = Mj.basis.get_column(2); // Z-axis
+
+					// Compute the scale factors (length of each axis)
+					real_t scale_x = x.length();
+					real_t scale_y = y.length();
+					real_t scale_z = z.length();
+
+					// Define a small epsilon to avoid divide-by-zero or instability
+					const real_t EPSILON = 1e-6;
+
+					// Handle near-zero scale gracefully
+					scale_x = (scale_x < EPSILON) ? EPSILON : scale_x;
+					scale_y = (scale_y < EPSILON) ? EPSILON : scale_y;
+					scale_z = (scale_z < EPSILON) ? EPSILON : scale_z;
+
+					// Determine the sign of the scales
+					real_t sign_x = (x.dot(Vector3(1, 0, 0)) < 0.0) ? -1.0 : 1.0;
+					real_t sign_y = (y.dot(Vector3(0, 1, 0)) < 0.0) ? -1.0 : 1.0;
+					real_t sign_z = (z.dot(Vector3(0, 0, 1)) < 0.0) ? -1.0 : 1.0;
+
+					// Normalize the axes while preserving their signs
+					x = (x / scale_x) * sign_x;
+					y = (y / scale_y) * sign_y;
+					z = (z / scale_z) * sign_z;
+
+					// Check determinant to ensure a proper rotation matrix
+					if (Mj.basis.determinant() < 0.0) {
+						// Flip one axis (typically Z-axis) to correct orientation
+						z = -z;
+					}
+
+					// Reconstruct the orthogonal Basis without scale
+					Mj.basis = Basis(x, y, z);
 
 					rs->skeleton_bone_set_transform(skeleton, i, Mj);
 					rs->skeleton_bone_set_dq_transform(skeleton, i, q0, q1, Vector3(1, 1, 1));
