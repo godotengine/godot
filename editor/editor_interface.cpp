@@ -747,7 +747,6 @@ bool EditorInterface::is_movie_maker_enabled() const {
 	return EditorRunBar::get_singleton()->is_movie_maker_enabled();
 }
 
-#ifdef TOOLS_ENABLED
 void EditorInterface::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
 	const String pf = p_function;
 	if (p_idx == 0) {
@@ -763,7 +762,6 @@ void EditorInterface::get_argument_options(const StringName &p_function, int p_i
 	}
 	Object::get_argument_options(p_function, p_idx, r_options);
 }
-#endif
 
 // Base.
 

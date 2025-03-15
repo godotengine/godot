@@ -30,8 +30,6 @@
 
 #pragma once
 
-#ifdef TOOLS_ENABLED
-
 #include "core/io/http_client.h"
 #include "core/os/os.h"
 #include "scene/main/node.h"
@@ -65,5 +63,3 @@ public:
 
 	EditorImportBlendRunner();
 };
-
-#endif // TOOLS_ENABLED

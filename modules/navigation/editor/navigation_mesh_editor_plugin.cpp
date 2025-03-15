@@ -30,8 +30,6 @@
 
 #include "navigation_mesh_editor_plugin.h"
 
-#ifdef TOOLS_ENABLED
-
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "scene/3d/navigation_region_3d.h"
@@ -181,5 +179,3 @@ NavigationMeshEditorPlugin::NavigationMeshEditorPlugin() {
 
 NavigationMeshEditorPlugin::~NavigationMeshEditorPlugin() {
 }
-
-#endif // TOOLS_ENABLED
