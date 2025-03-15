@@ -330,6 +330,7 @@ public:
 	bool operator==(const String &p_str) const;
 	bool operator!=(const String &p_str) const;
 	String operator+(const String &p_str) const;
+	String operator+(const char *p_char) const;
 	String operator+(char32_t p_char) const;
 
 	String &operator+=(const String &);
