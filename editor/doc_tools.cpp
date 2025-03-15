@@ -1199,25 +1199,21 @@ static Error _parse_methods(Ref<XMLParser> &parser, Vector<DocData::MethodDoc> &
 							}
 
 							method.arguments.push_back(argument);
-
 						} else if (name == "description") {
 							parser->read();
 							if (parser->get_node_type() == XMLParser::NODE_TEXT) {
-								method.description = parser->get_node_data();
+								method.description = _translate_doc_string(parser->get_node_data());
 							}
 						}
-
 					} else if (parser->get_node_type() == XMLParser::NODE_ELEMENT_END && parser->get_node_name() == element) {
 						break;
 					}
 				}
 
 				methods.push_back(method);
-
 			} else {
 				ERR_FAIL_V_MSG(ERR_FILE_CORRUPT, "Invalid tag in doc file: " + parser->get_node_name() + ", expected " + element + ".");
 			}
-
 		} else if (parser->get_node_type() == XMLParser::NODE_ELEMENT_END && parser->get_node_name() == section) {
 			break;
 		}
@@ -1336,13 +1332,12 @@ Error DocTools::_load(Ref<XMLParser> parser) {
 				if (name2 == "brief_description") {
 					parser->read();
 					if (parser->get_node_type() == XMLParser::NODE_TEXT) {
-						c.brief_description = parser->get_node_data();
+						c.brief_description = _translate_doc_string(parser->get_node_data());
 					}
-
 				} else if (name2 == "description") {
 					parser->read();
 					if (parser->get_node_type() == XMLParser::NODE_TEXT) {
-						c.description = parser->get_node_data();
+						c.description = _translate_doc_string(parser->get_node_data());
 					}
 				} else if (name2 == "tutorials") {
 					while (parser->read() == OK) {
@@ -1427,19 +1422,17 @@ Error DocTools::_load(Ref<XMLParser> parser) {
 								if (!parser->is_empty()) {
 									parser->read();
 									if (parser->get_node_type() == XMLParser::NODE_TEXT) {
-										prop2.description = parser->get_node_data();
+										prop2.description = _translate_doc_string(parser->get_node_data());
 									}
 								}
 								c.properties.push_back(prop2);
 							} else {
 								ERR_FAIL_V_MSG(ERR_FILE_CORRUPT, "Invalid tag in doc file: " + name3 + ".");
 							}
-
 						} else if (parser->get_node_type() == XMLParser::NODE_ELEMENT_END && parser->get_node_name() == "members") {
 							break; // End of <members>.
 						}
 					}
-
 				} else if (name2 == "theme_items") {
 					while (parser->read() == OK) {
 						if (parser->get_node_type() == XMLParser::NODE_ELEMENT) {
@@ -1468,19 +1461,17 @@ Error DocTools::_load(Ref<XMLParser> parser) {
 								if (!parser->is_empty()) {
 									parser->read();
 									if (parser->get_node_type() == XMLParser::NODE_TEXT) {
-										prop2.description = parser->get_node_data();
+										prop2.description = _translate_doc_string(parser->get_node_data());
 									}
 								}
 								c.theme_properties.push_back(prop2);
 							} else {
 								ERR_FAIL_V_MSG(ERR_FILE_CORRUPT, "Invalid tag in doc file: " + name3 + ".");
 							}
-
 						} else if (parser->get_node_type() == XMLParser::NODE_ELEMENT_END && parser->get_node_name() == "theme_items") {
 							break; // End of <theme_items>.
 						}
 					}
-
 				} else if (name2 == "constants") {
 					while (parser->read() == OK) {
 						if (parser->get_node_type() == XMLParser::NODE_ELEMENT) {
@@ -1521,23 +1512,20 @@ Error DocTools::_load(Ref<XMLParser> parser) {
 								if (!parser->is_empty()) {
 									parser->read();
 									if (parser->get_node_type() == XMLParser::NODE_TEXT) {
-										constant2.description = parser->get_node_data();
+										constant2.description = _translate_doc_string(parser->get_node_data());
 									}
 								}
 								c.constants.push_back(constant2);
 							} else {
 								ERR_FAIL_V_MSG(ERR_FILE_CORRUPT, "Invalid tag in doc file: " + name3 + ".");
 							}
-
 						} else if (parser->get_node_type() == XMLParser::NODE_ELEMENT_END && parser->get_node_name() == "constants") {
 							break; // End of <constants>.
 						}
 					}
-
 				} else {
 					ERR_FAIL_V_MSG(ERR_FILE_CORRUPT, "Invalid tag in doc file: " + name2 + ".");
 				}
-
 			} else if (parser->get_node_type() == XMLParser::NODE_ELEMENT_END && parser->get_node_name() == "class") {
 				break; // End of <class>.
 			}
