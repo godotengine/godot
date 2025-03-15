@@ -35,7 +35,7 @@
 #include "scene/gui/control.h"
 #include "scene/resources/2d/navigation_mesh_source_geometry_data_2d.h"
 #include "scene/resources/world_2d.h"
-#include "servers/navigation_server_2d.h"
+#include "servers/navigation/navigation_server_2d.h"
 
 Callable TileMapLayer::_navmesh_source_geometry_parsing_callback;
 RID TileMapLayer::_navmesh_source_geometry_parser;
