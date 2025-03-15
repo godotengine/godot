@@ -196,11 +196,18 @@ void AnimationNodeBlendTreeEditor::update_graph() {
 			}
 			String base_path = AnimationTreeEditor::get_singleton()->get_base_path() + String(E) + "/" + F.name;
 			EditorProperty *prop = EditorInspector::instantiate_property_editor(tree, F.type, base_path, F.hint, F.hint_string, F.usage);
+			Vector<String> path = F.name.split("/");
+			float ratio = 0.0f;
 			if (prop) {
 				prop->set_read_only(read_only || (F.usage & PROPERTY_USAGE_READ_ONLY));
 				prop->set_object_and_property(tree, base_path);
+				if (path.size() >= 2 && path[0] == "conditions") {
+					prop->set_draw_label(true);
+					prop->set_label(path[1]);
+					ratio = 0.9;
+				}
+				prop->set_name_split_ratio(ratio);
 				prop->update_property();
-				prop->set_name_split_ratio(0);
 				prop->connect("property_changed", callable_mp(this, &AnimationNodeBlendTreeEditor::_property_changed));
 
 				if (F.hint == PROPERTY_HINT_RESOURCE_TYPE) {
