@@ -2479,6 +2479,12 @@
 		<constant name="PIPELINE_SPECIALIZATION_CONSTANT_TYPE_FLOAT" value="2" enum="PipelineSpecializationConstantType">
 			Floating-point specialization constant.
 		</constant>
+		<constant name="SUPPORTS_METALFX_SPATIAL" value="3" enum="Features">
+			Support for MetalFX spatial upscaling.
+		</constant>
+		<constant name="SUPPORTS_METALFX_TEMPORAL" value="4" enum="Features">
+			Support for MetalFX temporal upscaling.
+		</constant>
 		<constant name="SUPPORTS_BUFFER_DEVICE_ADDRESS" value="6" enum="Features">
 			Features support for buffer device address extension.
 		</constant>
