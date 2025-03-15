@@ -357,7 +357,9 @@ void Skeleton3D::_notification(int p_what) {
 				// Store dirty flags for global bone poses.
 				bone_global_pose_dirty_backup = bone_global_pose_dirty;
 
-				_process_modifiers();
+				if (update_flags & UPDATE_FLAG_MODIFIER) {
+					_process_modifiers();
+				}
 			}
 
 			// Abort if pose is not changed.
@@ -438,13 +440,20 @@ void Skeleton3D::_notification(int p_what) {
 			updating = false;
 			update_flags = UPDATE_FLAG_NONE;
 		} break;
-		case NOTIFICATION_INTERNAL_PROCESS:
-		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
-			_find_modifiers();
-			if (!modifiers.is_empty()) {
-				_update_deferred(UPDATE_FLAG_MODIFIER);
-			}
+		case NOTIFICATION_INTERNAL_PROCESS: {
+			advance(get_process_delta_time());
 		} break;
+		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
+			advance(get_physics_process_delta_time());
+		} break;
+	}
+}
+
+void Skeleton3D::advance(double p_delta) {
+	_find_modifiers();
+	if (!modifiers.is_empty()) {
+		update_delta += p_delta; // Accumulate delta for manual advance as it needs to process in deferred update.
+		_update_deferred(UPDATE_FLAG_MODIFIER);
 	}
 }
 
@@ -467,6 +476,9 @@ void Skeleton3D::_process_changed() {
 	} else if (modifier_callback_mode_process == MODIFIER_CALLBACK_MODE_PROCESS_PHYSICS) {
 		set_process_internal(false);
 		set_physics_process_internal(true);
+	} else {
+		set_process_internal(false);
+		set_physics_process_internal(false);
 	}
 }
 
@@ -1194,7 +1206,7 @@ void Skeleton3D::_process_modifiers() {
 			for (int i = 0; i < get_bone_count(); i++) {
 				old_poses.push_back(get_bone_pose(i));
 			}
-			mod->process_modification();
+			mod->process_modification(update_delta);
 			LocalVector<Transform3D> new_poses;
 			for (int i = 0; i < get_bone_count(); i++) {
 				new_poses.push_back(get_bone_pose(i));
@@ -1206,10 +1218,11 @@ void Skeleton3D::_process_modifiers() {
 				set_bone_pose(i, old_poses[i].interpolate_with(new_poses[i], influence));
 			}
 		} else {
-			mod->process_modification();
+			mod->process_modification(update_delta);
 		}
 		force_update_all_dirty_bones();
 	}
+	update_delta = 0; // Reset accumulated delta.
 }
 
 void Skeleton3D::add_child_notify(Node *p_child) {
@@ -1297,11 +1310,13 @@ void Skeleton3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_modifier_callback_mode_process", "mode"), &Skeleton3D::set_modifier_callback_mode_process);
 	ClassDB::bind_method(D_METHOD("get_modifier_callback_mode_process"), &Skeleton3D::get_modifier_callback_mode_process);
 
+	ClassDB::bind_method(D_METHOD("advance", "delta"), &Skeleton3D::advance);
+
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "motion_scale", PROPERTY_HINT_RANGE, "0.001,10,0.001,or_greater"), "set_motion_scale", "get_motion_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "show_rest_only"), "set_show_rest_only", "is_show_rest_only");
 
 	ADD_GROUP("Modifier", "modifier_");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "modifier_callback_mode_process", PROPERTY_HINT_ENUM, "Physics,Idle"), "set_modifier_callback_mode_process", "get_modifier_callback_mode_process");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "modifier_callback_mode_process", PROPERTY_HINT_ENUM, "Physics,Idle,Manual"), "set_modifier_callback_mode_process", "get_modifier_callback_mode_process");
 
 	ADD_SIGNAL(MethodInfo("rest_updated"));
 	ADD_SIGNAL(MethodInfo("pose_updated"));
@@ -1313,6 +1328,7 @@ void Skeleton3D::_bind_methods() {
 	BIND_CONSTANT(NOTIFICATION_UPDATE_SKELETON);
 	BIND_ENUM_CONSTANT(MODIFIER_CALLBACK_MODE_PROCESS_PHYSICS);
 	BIND_ENUM_CONSTANT(MODIFIER_CALLBACK_MODE_PROCESS_IDLE);
+	BIND_ENUM_CONSTANT(MODIFIER_CALLBACK_MODE_PROCESS_MANUAL);
 
 #ifndef DISABLE_DEPRECATED
 	ClassDB::bind_method(D_METHOD("clear_bones_global_pose_override"), &Skeleton3D::clear_bones_global_pose_override);
