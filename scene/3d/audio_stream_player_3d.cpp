@@ -60,6 +60,8 @@ public:
 			w[speaker_num].direction = speaker_directions[speaker_num];
 			w[speaker_num].squared_gain = 0.0;
 			w[speaker_num].effective_number_of_speakers = 0.0;
+		}
+		for (unsigned int speaker_num = 0; speaker_num < speaker_count; speaker_num++) {
 			for (unsigned int other_speaker_num = 0; other_speaker_num < speaker_count; other_speaker_num++) {
 				w[speaker_num].effective_number_of_speakers += 0.5 * (1.0 + w[speaker_num].direction.dot(w[other_speaker_num].direction));
 			}
