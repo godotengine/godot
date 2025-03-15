@@ -6215,31 +6215,6 @@ void GLTFDocument::_generate_scene_node(Ref<GLTFState> p_state, const GLTFNodeIn
 	}
 
 	Node3D *current_node = nullptr;
-
-	// Is our parent a skeleton
-	Skeleton3D *active_skeleton = Object::cast_to<Skeleton3D>(p_scene_parent);
-
-	const bool non_bone_parented_to_skeleton = active_skeleton;
-
-	// skinned meshes must not be placed in a bone attachment.
-	if (non_bone_parented_to_skeleton && gltf_node->skin < 0) {
-		// Bone Attachment - Parent Case
-		BoneAttachment3D *bone_attachment = _generate_bone_attachment(p_state, active_skeleton, p_node_index, gltf_node->parent);
-
-		p_scene_parent->add_child(bone_attachment, true);
-
-		// Find the correct bone_idx so we can properly serialize it.
-		bone_attachment->set_bone_idx(active_skeleton->find_bone(gltf_node->get_name()));
-
-		bone_attachment->set_owner(p_scene_root);
-
-		// There is no gltf_node that represent this, so just directly create a unique name
-		bone_attachment->set_name(gltf_node->get_name());
-
-		// We change the scene_parent to our bone attachment now. We do not set current_node because we want to make the node
-		// and attach it to the bone_attachment
-		p_scene_parent = bone_attachment;
-	}
 	// Check if any GLTFDocumentExtension classes want to generate a node for us.
 	for (Ref<GLTFDocumentExtension> ext : document_extensions) {
 		ERR_CONTINUE(ext.is_null());
@@ -6248,7 +6223,7 @@ void GLTFDocument::_generate_scene_node(Ref<GLTFState> p_state, const GLTFNodeIn
 			break;
 		}
 	}
-	// If none of our GLTFDocumentExtension classes generated us a node, we generate one.
+	// If none of our GLTFDocumentExtension classes generated us a node, try using built-in glTF types.
 	if (!current_node) {
 		if (gltf_node->skin >= 0 && gltf_node->mesh >= 0 && !gltf_node->children.is_empty()) {
 			// glTF specifies that skinned meshes should ignore their node transforms,
@@ -6266,13 +6241,42 @@ void GLTFDocument::_generate_scene_node(Ref<GLTFState> p_state, const GLTFNodeIn
 			current_node = _generate_camera(p_state, p_node_index);
 		} else if (gltf_node->light >= 0) {
 			current_node = _generate_light(p_state, p_node_index);
-		} else {
-			current_node = _generate_spatial(p_state, p_node_index);
 		}
 	}
-	String gltf_node_name = gltf_node->get_name();
-	if (!gltf_node_name.is_empty()) {
-		current_node->set_name(gltf_node_name);
+	if (current_node) {
+		// Set the name of the Godot node to the name of the glTF node.
+		String gltf_node_name = gltf_node->get_name();
+		if (!gltf_node_name.is_empty()) {
+			current_node->set_name(gltf_node_name);
+		}
+	}
+	// If the parent Godot node is a skeleton, this means the parent glTF node is a joint.
+	// This means that the parent glTF node gets imported as a Godot bone so we need a BoneAttachment3D.
+	Skeleton3D *active_skeleton = Object::cast_to<Skeleton3D>(p_scene_parent);
+	const bool non_bone_parented_to_skeleton = active_skeleton;
+	// Skinned meshes must not be placed in a bone attachment.
+	if (non_bone_parented_to_skeleton && gltf_node->skin < 0) {
+		// Bone Attachment - Parent Case
+		BoneAttachment3D *bone_attachment = _generate_bone_attachment(p_state, active_skeleton, p_node_index, gltf_node->parent);
+		// If the node has a bone in the skeleton, attach to that bone.
+		// Otherwise, `_generate_bone_attachment` attaches to the parent.
+		const int bone_index = active_skeleton->find_bone(gltf_node->get_name());
+		if (bone_index != -1) {
+			bone_attachment->set_bone_idx(bone_index);
+		}
+		// Use the bone attachment as the generated node, but add any existing node as a child if not already present.
+		if (current_node) {
+			bone_attachment->set_name(_gen_unique_name(p_state, gltf_node->get_name() + "_Bone"));
+			bone_attachment->add_child(current_node, true);
+		}
+		current_node = bone_attachment;
+	} else if (current_node == nullptr) {
+		current_node = _generate_spatial(p_state, p_node_index);
+		// Set the name of the Godot node to the name of the glTF node.
+		String gltf_node_name = gltf_node->get_name();
+		if (!gltf_node_name.is_empty()) {
+			current_node->set_name(gltf_node_name);
+		}
 	}
 	// Note: p_scene_parent and p_scene_root must either both be null or both be valid.
 	if (p_scene_root == nullptr) {
