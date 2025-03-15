@@ -388,7 +388,7 @@ static inline Error _get_gl_uncompressed_format(const Ref<Image> &p_image, Image
 		case Image::FORMAT_RGB565: {
 			r_gl_internal_format = GL_RGB565;
 			r_gl_format = GL_RGB;
-			r_gl_type = GL_UNSIGNED_SHORT_5_6_5;
+			r_gl_type = GL_UNSIGNED_SHORT_5_6_5_REV;
 		} break;
 		case Image::FORMAT_RF: {
 			if (config->float_texture_linear_supported) {
