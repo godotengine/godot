@@ -71,3 +71,6 @@ public:
 
 	_ALWAYS_INLINE_ RID() {}
 };
+
+template <>
+struct is_zero_constructible<RID> : std::true_type {};

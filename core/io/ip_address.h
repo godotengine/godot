@@ -94,3 +94,7 @@ public:
 	IPAddress(uint32_t p_a, uint32_t p_b, uint32_t p_c, uint32_t p_d, bool is_v6 = false);
 	IPAddress() { clear(); }
 };
+
+// Zero-constructing IPAddress initializes field, valid, and wildcard to 0 (and thus empty).
+template <>
+struct is_zero_constructible<IPAddress> : std::true_type {};

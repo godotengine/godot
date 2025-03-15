@@ -113,3 +113,7 @@ constexpr uint64_t Span<T>::count(const T &p_val) const {
 	}
 	return amount;
 }
+
+// Zero-constructing Span initializes _ptr and _len to 0 (and thus empty).
+template <typename T>
+struct is_zero_constructible<Span<T>> : std::true_type {};
