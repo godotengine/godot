@@ -2082,7 +2082,7 @@ void Tree::update_item_cell(TreeItem *p_item, int p_col) const {
 	}
 	p_item->cells.write[p_col].text_buf->add_string(valtext, font, font_size, p_item->cells[p_col].language);
 
-	BitField<TextServer::LineBreakFlag> break_flags = TextServer::BREAK_MANDATORY | TextServer::BREAK_TRIM_EDGE_SPACES;
+	BitField<TextServer::LineBreakFlag> break_flags = TextServer::BREAK_MANDATORY | TextServer::BREAK_TRIM_START_EDGE_SPACES | TextServer::BREAK_TRIM_END_EDGE_SPACES;
 	switch (p_item->cells.write[p_col].autowrap_mode) {
 		case TextServer::AUTOWRAP_OFF:
 			break;
