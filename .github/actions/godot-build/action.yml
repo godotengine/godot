@@ -28,7 +28,7 @@ runs:
       env:
         SCONSFLAGS: ${{ inputs.sconsflags }}
       run: |
-        echo "Building with flags:" platform=${{ inputs.platform }} target=${{ inputs.target }} tests=${{ inputs.tests }} ${{ env.SCONSFLAGS }} "cache_path=${{ inputs.scons-cache }}"
+        echo "Building with flags:" platform=${{ inputs.platform }} target=${{ inputs.target }} tests=${{ inputs.tests }} ${{ env.SCONSFLAGS }} "cache_path=${{ inputs.scons-cache }}" redirect_build_objects=no
 
         if [ "${{ inputs.target }}" != "editor" ]; then
           # Ensure we don't include editor code in export template builds.
@@ -42,5 +42,5 @@ runs:
           export BUILD_NAME="gh"
         fi
 
-        scons platform=${{ inputs.platform }} target=${{ inputs.target }} tests=${{ inputs.tests }} ${{ env.SCONSFLAGS }} "cache_path=${{ inputs.scons-cache }}"
+        scons platform=${{ inputs.platform }} target=${{ inputs.target }} tests=${{ inputs.tests }} ${{ env.SCONSFLAGS }} "cache_path=${{ inputs.scons-cache }}" redirect_build_objects=no
         ls -l bin/
