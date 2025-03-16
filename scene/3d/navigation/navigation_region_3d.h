@@ -106,7 +106,7 @@ public:
 	/// Bakes the navigation mesh; once done, automatically
 	/// sets the new navigation mesh and emits a signal
 	void bake_navigation_mesh(bool p_on_thread);
-	void _bake_finished(Ref<NavigationMesh> p_navigation_mesh);
+	void _bake_finished();
 	bool is_baking() const;
 
 	PackedStringArray get_configuration_warnings() const override;
