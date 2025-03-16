@@ -162,11 +162,25 @@ bool CameraLinux::_can_query_format(int p_file_descriptor, int p_type) {
 	return ioctl(p_file_descriptor, VIDIOC_G_FMT, &format) != -1;
 }
 
-CameraLinux::CameraLinux() {
-	camera_thread.start(CameraLinux::camera_thread_func, this);
+inline void CameraLinux::set_monitoring_feeds(bool p_monitoring_feeds) {
+	if (p_monitoring_feeds == monitoring_feeds) {
+		return;
+	}
+
+	CameraServer::set_monitoring_feeds(p_monitoring_feeds);
+	if (p_monitoring_feeds) {
+		camera_thread.start(CameraLinux::camera_thread_func, this);
+	} else {
+		exit_flag.set();
+		if (camera_thread.is_started()) {
+			camera_thread.wait_to_finish();
+		}
+	}
 }
 
 CameraLinux::~CameraLinux() {
 	exit_flag.set();
-	camera_thread.wait_to_finish();
+	if (camera_thread.is_started()) {
+		camera_thread.wait_to_finish();
+	}
 }
