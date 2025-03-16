@@ -1,4 +1,4 @@
-# https://docs.github.com/en/actions/writing-workflows/choosing-what-your-workflow-does/caching-dependencies-to-speed-up-workflows#force-deleting-cache-entries
+# https://github.com/actions/cache/blob/main/tips-and-workarounds.md#force-deletion-of-caches-overriding-default-cache-eviction-policy
 name: 🧹 Cache Cleanup
 on:
   pull_request:
@@ -9,6 +9,10 @@ jobs:
   cleanup:
     name: Cleanup PR caches
     runs-on: ubuntu-latest
+    permissions:
+      # `actions:write` permission is required to delete caches
+      actions: write
+      contents: read
     steps:
       - name: Cleanup
         env:
