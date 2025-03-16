@@ -86,20 +86,6 @@ struct png_info_def
     * and initialize the appropriate fields below.
     */
 
-#if defined(PNG_COLORSPACE_SUPPORTED) || defined(PNG_GAMMA_SUPPORTED)
-   /* png_colorspace only contains 'flags' if neither GAMMA or COLORSPACE are
-    * defined.  When COLORSPACE is switched on all the colorspace-defining
-    * chunks should be enabled, when GAMMA is switched on all the gamma-defining
-    * chunks should be enabled.  If this is not done it becomes possible to read
-    * inconsistent PNG files and assign a probably incorrect interpretation to
-    * the information.  (In other words, by carefully choosing which chunks to
-    * recognize the system configuration can select an interpretation for PNG
-    * files containing ambiguous data and this will result in inconsistent
-    * behavior between different libpng builds!)
-    */
-   png_colorspace colorspace;
-#endif
-
 #ifdef PNG_cICP_SUPPORTED
    /* cICP chunk data */
    png_byte cicp_colour_primaries;
@@ -113,6 +99,24 @@ struct png_info_def
    png_charp iccp_name;     /* profile name */
    png_bytep iccp_profile;  /* International Color Consortium profile data */
    png_uint_32 iccp_proflen;  /* ICC profile data length */
+#endif
+
+#ifdef PNG_cLLI_SUPPORTED
+   png_uint_32 maxCLL;  /* cd/m2 (nits) * 10,000 */
+   png_uint_32 maxFALL;
+#endif
+
+#ifdef PNG_mDCV_SUPPORTED
+   png_uint_16 mastering_red_x;  /* CIE (xy) x * 50,000 */
+   png_uint_16 mastering_red_y;
+   png_uint_16 mastering_green_x;
+   png_uint_16 mastering_green_y;
+   png_uint_16 mastering_blue_x;
+   png_uint_16 mastering_blue_y;
+   png_uint_16 mastering_white_x;
+   png_uint_16 mastering_white_y;
+   png_uint_32 mastering_maxDL; /* cd/m2 (nits) * 10,000 */
+   png_uint_32 mastering_minDL;
 #endif
 
 #ifdef PNG_TEXT_SUPPORTED
@@ -193,11 +197,8 @@ defined(PNG_READ_BACKGROUND_SUPPORTED)
 #endif
 
 #ifdef PNG_eXIf_SUPPORTED
-   int num_exif;  /* Added at libpng-1.6.31 */
+   png_uint_32 num_exif;  /* Added at libpng-1.6.31 */
    png_bytep exif;
-# ifdef PNG_READ_eXIf_SUPPORTED
-   png_bytep eXIf_buf;  /* Added at libpng-1.6.32 */
-# endif
 #endif
 
 #ifdef PNG_hIST_SUPPORTED
@@ -270,5 +271,16 @@ defined(PNG_READ_BACKGROUND_SUPPORTED)
    png_bytepp row_pointers;        /* the image bits */
 #endif
 
+#ifdef PNG_cHRM_SUPPORTED
+   png_xy cHRM;
+#endif
+
+#ifdef PNG_gAMA_SUPPORTED
+   png_fixed_point gamma;
+#endif
+
+#ifdef PNG_sRGB_SUPPORTED
+   int rendering_intent;
+#endif
 };
 #endif /* PNGINFO_H */

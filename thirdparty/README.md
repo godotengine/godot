@@ -530,14 +530,13 @@ Files extracted from upstream source:
 ## libpng
 
 - Upstream: http://libpng.org/pub/png/libpng.html
-- Version: 1.6.45 (51f5bd68b9b806d2c92b4318164d28b49357da31, 2024)
+- Version: 1.6.47 (872555f4ba910252783af1507f9e7fe1653be252, 2025)
 - License: libpng/zlib
 
 Files extracted from upstream source:
 
-- All `.c` and `.h` files of the main directory, apart from `example.c` and
-  `pngtest.c`
-- `arm/` (minus `filter_neon.S`), `intel/`, `loongarch/`, and `powerpc/` (minus `.editorconfig`) folders
+- All `.c` and `.h` files of the main directory, apart from `example.c` and `pngtest.c`
+- `arm/`, `intel/`, `loongarch/`, and `powerpc/` folders, except `arm/filter_neon.S` and `.editorconfig` files
 - `scripts/pnglibconf.h.prebuilt` as `pnglibconf.h`
 - `LICENSE`
 
