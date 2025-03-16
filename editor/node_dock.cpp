@@ -54,7 +54,15 @@ void NodeDock::_save_layout_to_config(Ref<ConfigFile> p_layout, const String &p_
 
 void NodeDock::_load_layout_from_config(Ref<ConfigFile> p_layout, const String &p_section) {
 	const int current_tab = p_layout->get_value(p_section, "dock_node_current_tab", 0);
-	if (current_tab == 0) {
+	if (select_a_node->is_visible()) {
+		if (current_tab == 0) {
+			groups_button->set_pressed_no_signal(false);
+			connections_button->set_pressed_no_signal(true);
+		} else if (current_tab == 1) {
+			groups_button->set_pressed_no_signal(true);
+			connections_button->set_pressed_no_signal(false);
+		}
+	} else if (current_tab == 0) {
 		show_connections();
 	} else if (current_tab == 1) {
 		show_groups();
