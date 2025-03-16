@@ -66,19 +66,18 @@ bool Path2D::_edit_is_selected_on_click(const Point2 &p_point, double p_toleranc
 	}
 
 	for (int i = 0; i < curve->get_point_count(); i++) {
-		Vector2 s[2];
-		s[0] = curve->get_point_position(i);
+		Vector2 segment_a = curve->get_point_position(i);
 
 		for (int j = 1; j <= 8; j++) {
 			real_t frac = j / 8.0;
-			s[1] = curve->sample(i, frac);
+			const Vector2 segment_b = curve->sample(i, frac);
 
-			Vector2 p = Geometry2D::get_closest_point_to_segment(p_point, s);
+			Vector2 p = Geometry2D::get_closest_point_to_segment(p_point, segment_a, segment_b);
 			if (p.distance_to(p_point) <= p_tolerance) {
 				return true;
 			}
 
-			s[0] = s[1];
+			segment_a = segment_b;
 		}
 	}
 
