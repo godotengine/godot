@@ -1138,14 +1138,19 @@ void ColorPicker::add_preset(const Color &p_color) {
 	List<Color>::Element *e = presets.find(p_color);
 	if (e) {
 		presets.move_to_back(e);
-		preset_cache.move_to_back(preset_cache.find(p_color));
 
 		preset_container->move_child(preset_group->get_pressed_button(), preset_container->get_child_count() - 1);
 	} else {
 		presets.push_back(p_color);
-		preset_cache.push_back(p_color);
 
 		_add_preset_button(_get_preset_size(), p_color);
+	}
+
+	List<Color>::Element *cache_e = preset_cache.find(p_color);
+	if (cache_e) {
+		preset_cache.move_to_back(cache_e);
+	} else {
+		preset_cache.push_back(p_color);
 	}
 
 	if (!palette_name->get_text().is_empty()) {
