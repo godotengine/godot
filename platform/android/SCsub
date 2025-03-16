@@ -44,7 +44,8 @@ env_thirdparty.disable_warnings()
 thirdparty_obj = env_thirdparty.SharedObject("#thirdparty/misc/ifaddrs-android.cc")
 android_objects.append(thirdparty_obj)
 
-lib = env_android.add_shared_library("libgodot", android_objects)
+# FIXME: Hardcoded to bin to ensure the directory exists if not redirecting build objects.
+lib = env_android.add_shared_library("#bin/libgodot", android_objects, redirect_build_objects=False)
 
 # Needed to force rebuilding the platform files when the thirdparty code is updated.
 env.Depends(lib, thirdparty_obj)
