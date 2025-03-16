@@ -34,8 +34,8 @@
 #include "core/math/rect2.h"
 #include "scene/resources/curve.h"
 #include "scene/resources/gradient.h"
-#include "servers/camera_server.h"
-#include "servers/rendering_server.h"
+#include "servers/camera/camera_server.h"
+#include "servers/rendering/rendering_server.h"
 
 class Texture : public Resource {
 	GDCLASS(Texture, Resource);

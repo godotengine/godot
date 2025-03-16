@@ -32,9 +32,9 @@
 
 #include "core/config/project_settings.h"
 #include "scene/2d/visible_on_screen_notifier_2d.h"
-#include "servers/navigation_server_2d.h"
-#include "servers/physics_server_2d.h"
-#include "servers/rendering_server.h"
+#include "servers/navigation/navigation_server_2d.h"
+#include "servers/physics_2d/physics_server_2d.h"
+#include "servers/rendering/rendering_server.h"
 
 RID World2D::get_canvas() const {
 	return canvas;

@@ -34,7 +34,7 @@
 #include "core/string/char_utils.h"
 
 #ifdef DEBUG_ENABLED
-#include "servers/text_server.h"
+#include "servers/text/text_server.h"
 #endif
 
 #ifdef TOOLS_ENABLED

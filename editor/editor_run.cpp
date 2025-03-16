@@ -36,7 +36,7 @@
 #include "editor/editor_settings.h"
 #include "editor/run_instances_dialog.h"
 #include "main/main.h"
-#include "servers/display_server.h"
+#include "servers/display/display_server.h"
 
 EditorRun::Status EditorRun::get_status() const {
 	return status;

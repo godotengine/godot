@@ -30,8 +30,6 @@
 
 #pragma once
 
-#ifndef _3D_DISABLED
-
 #include "core/io/resource.h"
 #include "core/object/gdvirtual.gen.inc"
 
@@ -1053,5 +1051,3 @@ VARIANT_ENUM_CAST(PhysicsServer3D::G6DOFJointAxisParam);
 VARIANT_ENUM_CAST(PhysicsServer3D::G6DOFJointAxisFlag);
 VARIANT_ENUM_CAST(PhysicsServer3D::AreaBodyStatus);
 VARIANT_ENUM_CAST(PhysicsServer3D::ProcessInfo);
-
-#endif // _3D_DISABLED
