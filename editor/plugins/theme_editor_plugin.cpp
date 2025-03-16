@@ -3792,9 +3792,10 @@ ThemeEditor::ThemeEditor() {
 	main_hs->set_v_size_flags(SIZE_EXPAND_FILL);
 	add_child(main_hs);
 
+	main_hs->set_split_offset(520 * EDSCALE);
+
 	VBoxContainer *preview_tabs_vb = memnew(VBoxContainer);
 	preview_tabs_vb->set_h_size_flags(SIZE_EXPAND_FILL);
-	preview_tabs_vb->set_custom_minimum_size(Size2(520, 0) * EDSCALE);
 	preview_tabs_vb->add_theme_constant_override("separation", 2 * EDSCALE);
 	main_hs->add_child(preview_tabs_vb);
 	HBoxContainer *preview_tabbar_hb = memnew(HBoxContainer);
