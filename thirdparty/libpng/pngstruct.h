@@ -69,13 +69,7 @@ typedef struct png_compression_buffer
 
 /* Colorspace support; structures used in png_struct, png_info and in internal
  * functions to hold and communicate information about the color space.
- *
- * PNG_COLORSPACE_SUPPORTED is only required if the application will perform
- * colorspace corrections, otherwise all the colorspace information can be
- * skipped and the size of libpng can be reduced (significantly) by compiling
- * out the colorspace support.
  */
-#ifdef PNG_COLORSPACE_SUPPORTED
 /* The chromaticities of the red, green and blue colorants and the chromaticity
  * of the corresponding white point (i.e. of rgb(1.0,1.0,1.0)).
  */
@@ -96,48 +90,36 @@ typedef struct png_XYZ
    png_fixed_point green_X, green_Y, green_Z;
    png_fixed_point blue_X, blue_Y, blue_Z;
 } png_XYZ;
-#endif /* COLORSPACE */
 
-#if defined(PNG_COLORSPACE_SUPPORTED) || defined(PNG_GAMMA_SUPPORTED)
-/* A colorspace is all the above plus, potentially, profile information;
- * however at present libpng does not use the profile internally so it is only
- * stored in the png_info struct (if iCCP is supported.)  The rendering intent
- * is retained here and is checked.
- *
- * The file gamma encoding information is also stored here and gamma correction
- * is done by libpng, whereas color correction must currently be done by the
- * application.
+/* Chunk index values as an enum, PNG_INDEX_unknown is also a count of the
+ * number of chunks.
  */
-typedef struct png_colorspace
+#define PNG_CHUNK(cHNK, i) PNG_INDEX_ ## cHNK = (i),
+typedef enum
 {
-#ifdef PNG_GAMMA_SUPPORTED
-   png_fixed_point gamma;        /* File gamma */
-#endif
+   PNG_KNOWN_CHUNKS
+   PNG_INDEX_unknown
+} png_index;
+#undef PNG_CHUNK
 
-#ifdef PNG_COLORSPACE_SUPPORTED
-   png_xy      end_points_xy;    /* End points as chromaticities */
-   png_XYZ     end_points_XYZ;   /* End points as CIE XYZ colorant values */
-   png_uint_16 rendering_intent; /* Rendering intent of a profile */
-#endif
+/* Chunk flag values.  These are (png_uint_32 values) with exactly one bit set
+ * and can be combined into a flag set with bitwise 'or'.
+ *
+ * TODO: C23: convert these macros to C23 inlines (which are static).
+ */
+#define png_chunk_flag_from_index(i) (0x80000000U >> (31 - (i)))
+   /* The flag coresponding to the given png_index enum value.  This is defined
+    * for png_unknown as well (until it reaches the value 32) but this should
+    * not be relied on.
+    */
 
-   /* Flags are always defined to simplify the code. */
-   png_uint_16 flags;            /* As defined below */
-} png_colorspace, * PNG_RESTRICT png_colorspacerp;
+#define png_file_has_chunk(png_ptr, i)\
+   (((png_ptr)->chunks & png_chunk_flag_from_index(i)) != 0)
+   /* The chunk has been recorded in png_struct */
 
-typedef const png_colorspace * PNG_RESTRICT png_const_colorspacerp;
-
-/* General flags for the 'flags' field */
-#define PNG_COLORSPACE_HAVE_GAMMA           0x0001
-#define PNG_COLORSPACE_HAVE_ENDPOINTS       0x0002
-#define PNG_COLORSPACE_HAVE_INTENT          0x0004
-#define PNG_COLORSPACE_FROM_gAMA            0x0008
-#define PNG_COLORSPACE_FROM_cHRM            0x0010
-#define PNG_COLORSPACE_FROM_sRGB            0x0020
-#define PNG_COLORSPACE_ENDPOINTS_MATCH_sRGB 0x0040
-#define PNG_COLORSPACE_MATCHES_sRGB         0x0080 /* exact match on profile */
-#define PNG_COLORSPACE_INVALID              0x8000
-#define PNG_COLORSPACE_CANCEL(flags)        (0xffff ^ (flags))
-#endif /* COLORSPACE || GAMMA */
+#define png_file_add_chunk(pnt_ptr, i)\
+   ((void)((png_ptr)->chunks |= png_chunk_flag_from_index(i)))
+   /* Record the chunk in the png_struct */
 
 struct png_struct_def
 {
@@ -208,6 +190,11 @@ struct png_struct_def
    int zlib_set_mem_level;
    int zlib_set_strategy;
 #endif
+
+   png_uint_32 chunks; /* PNG_CF_ for every chunk read or (NYI) written */
+#  define png_has_chunk(png_ptr, cHNK)\
+      png_file_has_chunk(png_ptr, PNG_INDEX_ ## cHNK)
+      /* Convenience accessor - use this to check for a known chunk by name */
 
    png_uint_32 width;         /* width of image in pixels */
    png_uint_32 height;        /* height of image in pixels */
@@ -285,9 +272,16 @@ struct png_struct_def
    png_uint_32 flush_rows;    /* number of rows written since last flush */
 #endif
 
+#ifdef PNG_READ_RGB_TO_GRAY_SUPPORTED
+   png_xy          chromaticities; /* From mDVC, cICP, [iCCP], sRGB or cHRM */
+#endif
+
 #ifdef PNG_READ_GAMMA_SUPPORTED
    int gamma_shift;      /* number of "insignificant" bits in 16-bit gamma */
-   png_fixed_point screen_gamma; /* screen gamma value (display_exponent) */
+   png_fixed_point screen_gamma; /* screen gamma value (display exponent) */
+   png_fixed_point file_gamma;   /* file gamma value (encoding exponent) */
+   png_fixed_point chunk_gamma;  /* from cICP, iCCP, sRGB or gAMA */
+   png_fixed_point default_gamma;/* from png_set_alpha_mode */
 
    png_bytep gamma_table;     /* gamma table for 8-bit depth files */
    png_uint_16pp gamma_16_table; /* gamma table for 16-bit depth files */
@@ -299,7 +293,7 @@ struct png_struct_def
    png_uint_16pp gamma_16_from_1; /* converts from 1.0 to screen */
    png_uint_16pp gamma_16_to_1; /* converts from file to 1.0 */
 #endif /* READ_BACKGROUND || READ_ALPHA_MODE || RGB_TO_GRAY */
-#endif
+#endif /* READ_GAMMA */
 
 #if defined(PNG_READ_GAMMA_SUPPORTED) || defined(PNG_sBIT_SUPPORTED)
    png_color_8 sig_bit;       /* significant bits in each available channel */
@@ -349,8 +343,8 @@ struct png_struct_def
 /* To do: remove this from libpng-1.7 */
 #ifdef PNG_TIME_RFC1123_SUPPORTED
    char time_buffer[29]; /* String to hold RFC 1123 time text */
-#endif
-#endif
+#endif /* TIME_RFC1123 */
+#endif /* LIBPNG_VER < 10700 */
 
 /* New members added in libpng-1.0.6 */
 
@@ -360,8 +354,8 @@ struct png_struct_def
    png_voidp user_chunk_ptr;
 #ifdef PNG_READ_USER_CHUNKS_SUPPORTED
    png_user_chunk_ptr read_user_chunk_fn; /* user read chunk handler */
-#endif
-#endif
+#endif /* READ_USER_CHUNKS */
+#endif /* USER_CHUNKS */
 
 #ifdef PNG_SET_UNKNOWN_CHUNKS_SUPPORTED
    int          unknown_default; /* As PNG_HANDLE_* */
@@ -468,11 +462,5 @@ struct png_struct_def
 /* New member added in libpng-1.5.7 */
    void (*read_filter[PNG_FILTER_VALUE_LAST-1])(png_row_infop row_info,
       png_bytep row, png_const_bytep prev_row);
-
-#ifdef PNG_READ_SUPPORTED
-#if defined(PNG_COLORSPACE_SUPPORTED) || defined(PNG_GAMMA_SUPPORTED)
-   png_colorspace   colorspace;
-#endif
-#endif
 };
 #endif /* PNGSTRUCT_H */
