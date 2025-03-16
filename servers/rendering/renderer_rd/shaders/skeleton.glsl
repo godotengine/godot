@@ -374,15 +374,16 @@ void main() {
 		vec3 normal_lin = normalize(vec4(normal, 0.0) * mlin).xyz;
 		vec3 tangent_lin = normalize(vec4(tangent.xyz, 0.0) * mlin).xyz;
 
-		vec3 vertex_quat_pass1 = blendS * vertex;
-		vec3 normal_quat_pass1 = blendS * normal;
-		vec3 tangent_quat_pass1 = blendS * tangent.xyz;
+		// TODO scale this properly
+		vec3 vertex_quat_pass1 = vertex;
+		vec3 normal_quat_pass1 = normal;
+		vec3 tangent_quat_pass1 = tangent.xyz;
 
 		vertex = (mquat * vec4(vertex_quat_pass1, 1.0)).xyz;
 		normal = normalize(mquat * vec4(normal_quat_pass1, 0.0)).xyz;
 		tangent.xyz = normalize(mquat * vec4(tangent_quat_pass1, 0.0)).xyz;
 
-		float lin_blend = 1.0; // adjust to blend between linear and DQ
+		float lin_blend = 0.0; // adjust to blend between linear and DQ
 		float quat_blend = 1.0 - lin_blend;
 
 		vertex = vertex * quat_blend + vertex_lin * lin_blend;

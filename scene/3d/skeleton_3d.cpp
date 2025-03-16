@@ -484,27 +484,32 @@ void Skeleton3D::_notification(int p_what) {
 				for (uint32_t i = 0; i < bind_count; i++) {
 					uint32_t bone_index = E->skin_bone_indices_ptrs[i];
 					ERR_CONTINUE(bone_index >= (uint32_t)len);
-					//bones[p_bone].global_rest;
 					Transform3D bind_pose = skin->get_bind_pose(i);
-					Transform3D Mj = bonesptr[bone_index].global_pose * bind_pose;
+					Transform3D pose_global_transform = bonesptr[bone_index].global_pose * bind_pose;
 					Transform3D rest_global_transform = bonesptr[bone_index].global_rest * bind_pose;
-					Vector3 t = Mj.origin;
-					Quaternion prev_q0, prev_q1;
-					//Basis dq = rs->skeleton_bone_get_dq_transform(skeleton, i);
 
-					// This works to keep quaternions stable, basing it off the shortest path between the
-					// previous frame's linear transformation and the new one
-					Quaternion q0 = get_shortest_arc( 
-						Mj.basis.orthonormalized().get_rotation_quaternion(),
-						rest_global_transform.basis.get_rotation_quaternion()
-					);
-					Quaternion q1 = quat_trans_2UDQ(q0, t);
+					// Convert the global rotation to a quaternion
+					Vector3 scale = pose_global_transform.basis.get_scale_global();
+					Quaternion q0 = pose_global_transform.basis.scaled(scale.inverse()).get_rotation_quaternion(); 
+
+					// Ensure continuity with the previous quaternion
+					if (rest_global_transform.basis.get_rotation_quaternion().dot(q0) < 0) {
+						q0 = -q0;  // Flip the quaternion to ensure continuity
+					}
+
+					// **Normalize the quaternion to prevent drift**
+					q0.normalize();
+
+					Quaternion q1 = quat_trans_2UDQ(q0, pose_global_transform.origin);
+
+					// Send the dual quaternion to the shader
+					rs->skeleton_bone_set_dq_transform(skeleton, i, q0, q1, scale);
 
 					//remove scale???
 					// Extract the axes (columns of the Basis)
-					Vector3 x = Mj.basis.get_column(0); // X-axis
-					Vector3 y = Mj.basis.get_column(1); // Y-axis
-					Vector3 z = Mj.basis.get_column(2); // Z-axis
+					Vector3 x = pose_global_transform.basis.get_column(0); // X-axis
+					Vector3 y = pose_global_transform.basis.get_column(1); // Y-axis
+					Vector3 z = pose_global_transform.basis.get_column(2); // Z-axis
 
 					// Compute the scale factors (length of each axis)
 					real_t scale_x = x.length();
@@ -530,16 +535,16 @@ void Skeleton3D::_notification(int p_what) {
 					z = (z / scale_z) * sign_z;
 
 					// Check determinant to ensure a proper rotation matrix
-					if (Mj.basis.determinant() < 0.0) {
+					if (pose_global_transform.basis.determinant() < 0.0) {
 						// Flip one axis (typically Z-axis) to correct orientation
 						z = -z;
 					}
 
 					// Reconstruct the orthogonal Basis without scale
-					Mj.basis = Basis(x, y, z);
+					pose_global_transform.basis = Basis(x, y, z);
 
-					rs->skeleton_bone_set_transform(skeleton, i, Mj);
-					rs->skeleton_bone_set_dq_transform(skeleton, i, q0, q1, Vector3(1, 1, 1));
+					rs->skeleton_bone_set_transform(skeleton, i, pose_global_transform);
+					// rs->skeleton_bone_set_dq_transform(skeleton, i, q0, q1, Vector3(1, 1, 1));
 					//rs->skeleton_bone_set_transform(skeleton, i, bonesptr[bone_index].global_pose * skin->get_bind_pose(i));
 				}
 			}
