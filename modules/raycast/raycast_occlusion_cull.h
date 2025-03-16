@@ -161,7 +161,7 @@ private:
 	bool _jitter_enabled = false;
 
 	void _init_embree();
-	Vector2 _jitter_half_extents(const Vector2 &p_half_extents, const Size2i &p_viewport_size);
+	Vector2 _get_jitter(const Rect2 &p_viewport_rect, const Size2i &p_buffer_size);
 
 public:
 	virtual bool is_occluder(RID p_rid) override;
