@@ -5798,7 +5798,16 @@ void GLTFDocument::_assign_node_names(Ref<GLTFState> p_state) {
 	}
 }
 
-BoneAttachment3D *GLTFDocument::_generate_bone_attachment(Ref<GLTFState> p_state, Skeleton3D *p_skeleton, const GLTFNodeIndex p_node_index, const GLTFNodeIndex p_bone_index) {
+BoneAttachment3D *GLTFDocument::_generate_bone_attachment(Skeleton3D *p_godot_skeleton, const Ref<GLTFNode> &p_bone_node) {
+	BoneAttachment3D *bone_attachment = memnew(BoneAttachment3D);
+	print_verbose("glTF: Creating bone attachment for: " + p_bone_node->get_name());
+	bone_attachment->set_name(p_bone_node->get_name());
+	p_godot_skeleton->add_child(bone_attachment, true);
+	bone_attachment->set_bone_name(p_bone_node->get_name());
+	return bone_attachment;
+}
+
+BoneAttachment3D *GLTFDocument::_generate_bone_attachment_compat_4pt4(Ref<GLTFState> p_state, Skeleton3D *p_skeleton, const GLTFNodeIndex p_node_index, const GLTFNodeIndex p_bone_index) {
 	Ref<GLTFNode> gltf_node = p_state->nodes[p_node_index];
 	Ref<GLTFNode> bone_node = p_state->nodes[p_bone_index];
 	BoneAttachment3D *bone_attachment = memnew(BoneAttachment3D);
@@ -6271,11 +6280,210 @@ void GLTFDocument::_convert_mesh_instance_to_gltf(MeshInstance3D *p_scene_parent
 	}
 }
 
+void _set_node_tree_owner(Node *p_current_node, Node *&p_scene_root) {
+	// Note: p_scene_parent and p_scene_root must either both be null or both be valid.
+	if (p_scene_root == nullptr) {
+		// If the root node argument is null, this is the root node.
+		p_scene_root = p_current_node;
+		// If multiple nodes were generated under the root node, ensure they have the owner set.
+		if (unlikely(p_current_node->get_child_count() > 0)) {
+			Array args;
+			args.append(p_scene_root);
+			for (int i = 0; i < p_current_node->get_child_count(); i++) {
+				Node *child = p_current_node->get_child(i);
+				child->propagate_call(StringName("set_owner"), args);
+			}
+		}
+	} else {
+		// Add the node we generated and set the owner to the scene root.
+		Array args;
+		args.append(p_scene_root);
+		p_current_node->propagate_call(StringName("set_owner"), args);
+	}
+}
+
+bool GLTFDocument::_does_skinned_mesh_require_placeholder_node(Ref<GLTFState> p_state, Ref<GLTFNode> p_gltf_node) {
+	if (p_gltf_node->skin < 0) {
+		return false; // Not a skinned mesh.
+	}
+	// Check for child nodes that aren't joints/bones.
+	for (int i = 0; i < p_gltf_node->children.size(); ++i) {
+		Ref<GLTFNode> child = p_state->nodes[p_gltf_node->children[i]];
+		if (!child->joint) {
+			return true;
+		}
+		// Edge case: If a child's skeleton is not yet in the tree, then we must add it as a child of this node.
+		// While the Skeleton3D node isn't a glTF node, it's still a case where we need a placeholder.
+		// This is required to handle this issue: https://github.com/godotengine/godot/issues/67773
+		const GLTFSkeletonIndex skel_index = child->skeleton;
+		ERR_FAIL_INDEX_V(skel_index, p_state->skeletons.size(), false);
+		if (p_state->skeletons[skel_index]->godot_skeleton->get_parent() == nullptr) {
+			return true;
+		}
+	}
+	return false;
+}
+
 void GLTFDocument::_generate_scene_node(Ref<GLTFState> p_state, const GLTFNodeIndex p_node_index, Node *p_scene_parent, Node *p_scene_root) {
+	Ref<GLTFNode> gltf_node = p_state->nodes[p_node_index];
+	Node3D *current_node = nullptr;
+	// Check if any GLTFDocumentExtension classes want to generate a node for us.
+	for (Ref<GLTFDocumentExtension> ext : document_extensions) {
+		ERR_CONTINUE(ext.is_null());
+		current_node = ext->generate_scene_node(p_state, gltf_node, p_scene_parent);
+		if (current_node) {
+			break;
+		}
+	}
+	// If none of our GLTFDocumentExtension classes generated us a node, try using built-in glTF types.
+	if (!current_node) {
+		if (gltf_node->mesh >= 0) {
+			current_node = _generate_mesh_instance(p_state, p_node_index);
+			// glTF specifies that skinned meshes should ignore their node transforms,
+			// only being controlled by the skeleton, so Godot will reparent a skinned
+			// mesh to its skeleton. However, we still need to ensure any child nodes
+			// keep their place in the tree, so if there are any child nodes, the skinned
+			// mesh must not be the base node, so generate an empty spatial base.
+			if (_does_skinned_mesh_require_placeholder_node(p_state, gltf_node)) {
+				Node3D *placeholder;
+				// We need a placeholder, but maybe the Skeleton3D *is* the placeholder?
+				const GLTFSkeletonIndex skel_index = gltf_node->skeleton;
+				if (skel_index >= 0 && skel_index < p_state->skeletons.size() && p_state->skeletons[skel_index]->godot_skeleton->get_parent() == nullptr) {
+					placeholder = p_state->skeletons[skel_index]->godot_skeleton;
+				} else {
+					placeholder = _generate_spatial(p_state, p_node_index);
+				}
+				current_node->set_name(gltf_node->get_name());
+				placeholder->add_child(current_node, true);
+				current_node = placeholder;
+			}
+		} else if (gltf_node->camera >= 0) {
+			current_node = _generate_camera(p_state, p_node_index);
+		} else if (gltf_node->light >= 0) {
+			current_node = _generate_light(p_state, p_node_index);
+		}
+	}
+	// The only case where current_node is a Skeleton3D is when it is the placeholder for a skinned mesh.
+	// In that case, we don't set the name or possibly generate a bone attachment. But usually, we do.
+	// It is also possible that user code generates a Skeleton3D node, and this code also works for that case.
+	if (likely(!Object::cast_to<Skeleton3D>(current_node))) {
+		if (current_node) {
+			// Set the name of the Godot node to the name of the glTF node.
+			String gltf_node_name = gltf_node->get_name();
+			if (!gltf_node_name.is_empty()) {
+				current_node->set_name(gltf_node_name);
+			}
+		}
+		// Skeleton stuff: If this node is in a skeleton, we need to attach it to a bone attachment pointing to its bone.
+		if (gltf_node->skeleton >= 0) {
+			_generate_skeleton_bone_node(p_state, p_node_index, current_node, p_scene_parent, p_scene_root);
+			return;
+		}
+	}
+	// Skeleton stuff: If the parent node is in a skeleton, we need to attach this node to a bone attachment pointing to the parent's bone.
+	if (Object::cast_to<Skeleton3D>(p_scene_parent)) {
+		Skeleton3D *parent_skeleton = Object::cast_to<Skeleton3D>(p_scene_parent);
+		_attach_node_to_skeleton(p_state, p_node_index, current_node, parent_skeleton, p_scene_root);
+		return;
+	}
+	// Not a skeleton bone, so definitely some kind of node that goes in the Godot scene tree.
+	if (current_node == nullptr) {
+		current_node = _generate_spatial(p_state, p_node_index);
+		// Set the name of the Godot node to the name of the glTF node.
+		String gltf_node_name = gltf_node->get_name();
+		if (!gltf_node_name.is_empty()) {
+			current_node->set_name(gltf_node_name);
+		}
+	}
+	if (p_scene_parent) {
+		p_scene_parent->add_child(current_node, true);
+	}
+	// Set the owner of the nodes to the scene root.
+	// Note: p_scene_parent and p_scene_root must either both be null or both be valid.
+	_set_node_tree_owner(current_node, p_scene_root);
+	current_node->set_transform(gltf_node->transform);
+	current_node->merge_meta_from(*gltf_node);
+	p_state->scene_nodes.insert(p_node_index, current_node);
+	for (int i = 0; i < gltf_node->children.size(); ++i) {
+		_generate_scene_node(p_state, gltf_node->children[i], current_node, p_scene_root);
+	}
+}
+
+void GLTFDocument::_generate_skeleton_bone_node(Ref<GLTFState> p_state, const GLTFNodeIndex p_node_index, Node3D *p_current_node, Node *p_scene_parent, Node *p_scene_root) {
+	Ref<GLTFNode> gltf_node = p_state->nodes[p_node_index];
+	// Grab the current skeleton, and ensure it's added to the tree.
+	Skeleton3D *godot_skeleton = p_state->skeletons[gltf_node->skeleton]->godot_skeleton;
+	if (godot_skeleton->get_parent() == nullptr) {
+		if (p_scene_root) {
+			if (Object::cast_to<Skeleton3D>(p_scene_parent)) {
+				Skeleton3D *parent_skeleton = Object::cast_to<Skeleton3D>(p_scene_parent);
+				// Explicitly specifying the bone of the parent glTF node is required to
+				// handle the edge case where a skeleton is a child of another skeleton.
+				_attach_node_to_skeleton(p_state, p_node_index, godot_skeleton, parent_skeleton, p_scene_root, gltf_node->parent);
+			} else {
+				p_scene_parent->add_child(godot_skeleton, true);
+				godot_skeleton->set_owner(p_scene_root);
+			}
+		} else {
+			p_scene_root = godot_skeleton;
+		}
+	}
+	_attach_node_to_skeleton(p_state, p_node_index, p_current_node, godot_skeleton, p_scene_root);
+}
+
+void GLTFDocument::_attach_node_to_skeleton(Ref<GLTFState> p_state, const GLTFNodeIndex p_node_index, Node3D *p_current_node, Skeleton3D *p_godot_skeleton, Node *p_scene_root, GLTFNodeIndex p_bone_node_index) {
+	ERR_FAIL_NULL(p_godot_skeleton->get_parent());
+	Ref<GLTFNode> gltf_node = p_state->nodes[p_node_index];
+	if (Object::cast_to<ImporterMeshInstance3D>(p_current_node) && gltf_node->skin >= 0) {
+		// Skinned meshes should be attached directly to the skeleton without a BoneAttachment3D.
+		ERR_FAIL_COND_MSG(p_current_node->get_child_count() > 0, "Skinned mesh nodes passed to this function should not have children (a placeholder should be inserted by `_generate_scene_node`).");
+		p_godot_skeleton->add_child(p_current_node, true);
+	} else if (p_current_node || !gltf_node->joint) {
+		// If we have a node in need of attaching, we need a BoneAttachment3D.
+		// This happens when a node in Blender has Relations -> Parent set to a bone.
+		GLTFNodeIndex attachment_node_index = likely(p_bone_node_index == -1) ? (gltf_node->joint ? p_node_index : gltf_node->parent) : p_bone_node_index;
+		ERR_FAIL_COND(!p_state->scene_nodes.has(attachment_node_index));
+		Node *attachment_godot_node = p_state->scene_nodes[attachment_node_index];
+		// If the parent is a Skeleton3D, we need to make a BoneAttachment3D.
+		if (Object::cast_to<Skeleton3D>(attachment_godot_node)) {
+			Ref<GLTFNode> attachment_gltf_node = p_state->nodes[attachment_node_index];
+			BoneAttachment3D *bone_attachment = _generate_bone_attachment(p_godot_skeleton, attachment_gltf_node);
+			bone_attachment->set_owner(p_scene_root);
+			bone_attachment->merge_meta_from(*p_state->nodes[attachment_node_index]);
+			p_state->scene_nodes.insert(attachment_node_index, bone_attachment);
+			attachment_godot_node = bone_attachment;
+		}
+		// By this point, `attachment_godot_node` is either a BoneAttachment3D or part of a BoneAttachment3D subtree.
+		// If the node is a plain non-joint, we should generate a Godot node for it.
+		if (p_current_node == nullptr) {
+			DEV_ASSERT(!gltf_node->joint);
+			p_current_node = _generate_spatial(p_state, p_node_index);
+		}
+		if (!gltf_node->joint) {
+			p_current_node->set_transform(gltf_node->transform);
+		}
+		p_current_node->set_name(gltf_node->get_name());
+		attachment_godot_node->add_child(p_current_node, true);
+	} else {
+		// If this glTF is a plain joint, this glTF node only becomes a Godot bone.
+		// We refer to the skeleton itself as this glTF node's corresponding Godot node.
+		// This may be overridden later if the joint has a non-joint as a child in need of an attachment.
+		p_current_node = p_godot_skeleton;
+	}
+	_set_node_tree_owner(p_current_node, p_scene_root);
+	p_current_node->merge_meta_from(*gltf_node);
+	p_state->scene_nodes.insert(p_node_index, p_current_node);
+	for (int i = 0; i < gltf_node->children.size(); ++i) {
+		_generate_scene_node(p_state, gltf_node->children[i], p_current_node, p_scene_root);
+	}
+}
+
+// Deprecated code used when naming_version is 0 or 1 (Godot 4.0 to 4.4).
+void GLTFDocument::_generate_scene_node_compat_4pt4(Ref<GLTFState> p_state, const GLTFNodeIndex p_node_index, Node *p_scene_parent, Node *p_scene_root) {
 	Ref<GLTFNode> gltf_node = p_state->nodes[p_node_index];
 
 	if (gltf_node->skeleton >= 0) {
-		_generate_skeleton_bone_node(p_state, p_node_index, p_scene_parent, p_scene_root);
+		_generate_skeleton_bone_node_compat_4pt4(p_state, p_node_index, p_scene_parent, p_scene_root);
 		return;
 	}
 
@@ -6289,7 +6497,7 @@ void GLTFDocument::_generate_scene_node(Ref<GLTFState> p_state, const GLTFNodeIn
 	// skinned meshes must not be placed in a bone attachment.
 	if (non_bone_parented_to_skeleton && gltf_node->skin < 0) {
 		// Bone Attachment - Parent Case
-		BoneAttachment3D *bone_attachment = _generate_bone_attachment(p_state, active_skeleton, p_node_index, gltf_node->parent);
+		BoneAttachment3D *bone_attachment = _generate_bone_attachment_compat_4pt4(p_state, active_skeleton, p_node_index, gltf_node->parent);
 
 		p_scene_parent->add_child(bone_attachment, true);
 
@@ -6366,11 +6574,12 @@ void GLTFDocument::_generate_scene_node(Ref<GLTFState> p_state, const GLTFNodeIn
 
 	p_state->scene_nodes.insert(p_node_index, current_node);
 	for (int i = 0; i < gltf_node->children.size(); ++i) {
-		_generate_scene_node(p_state, gltf_node->children[i], current_node, p_scene_root);
+		_generate_scene_node_compat_4pt4(p_state, gltf_node->children[i], current_node, p_scene_root);
 	}
 }
 
-void GLTFDocument::_generate_skeleton_bone_node(Ref<GLTFState> p_state, const GLTFNodeIndex p_node_index, Node *p_scene_parent, Node *p_scene_root) {
+// Deprecated code used when naming_version is 0 or 1 (Godot 4.0 to 4.4).
+void GLTFDocument::_generate_skeleton_bone_node_compat_4pt4(Ref<GLTFState> p_state, const GLTFNodeIndex p_node_index, Node *p_scene_parent, Node *p_scene_root) {
 	Ref<GLTFNode> gltf_node = p_state->nodes[p_node_index];
 
 	Node3D *current_node = nullptr;
@@ -6385,7 +6594,7 @@ void GLTFDocument::_generate_skeleton_bone_node(Ref<GLTFState> p_state, const GL
 		if (active_skeleton) {
 			// Should no longer be possible.
 			ERR_PRINT(vformat("glTF: Generating scene detected direct parented Skeletons at node %d", p_node_index));
-			BoneAttachment3D *bone_attachment = _generate_bone_attachment(p_state, active_skeleton, p_node_index, gltf_node->parent);
+			BoneAttachment3D *bone_attachment = _generate_bone_attachment_compat_4pt4(p_state, active_skeleton, p_node_index, gltf_node->parent);
 			p_scene_parent->add_child(bone_attachment, true);
 			bone_attachment->set_owner(p_scene_root);
 			// There is no gltf_node that represent this, so just directly create a unique name
@@ -6416,7 +6625,7 @@ void GLTFDocument::_generate_skeleton_bone_node(Ref<GLTFState> p_state, const GL
 		// skinned meshes must not be placed in a bone attachment.
 		if (!is_skinned_mesh) {
 			// Bone Attachment - Same Node Case
-			BoneAttachment3D *bone_attachment = _generate_bone_attachment(p_state, active_skeleton, p_node_index, p_node_index);
+			BoneAttachment3D *bone_attachment = _generate_bone_attachment_compat_4pt4(p_state, active_skeleton, p_node_index, p_node_index);
 
 			p_scene_parent->add_child(bone_attachment, true);
 
@@ -6466,7 +6675,7 @@ void GLTFDocument::_generate_skeleton_bone_node(Ref<GLTFState> p_state, const GL
 	p_state->scene_nodes.insert(p_node_index, current_node);
 
 	for (int i = 0; i < gltf_node->children.size(); ++i) {
-		_generate_scene_node(p_state, gltf_node->children[i], active_skeleton, p_scene_root);
+		_generate_scene_node_compat_4pt4(p_state, gltf_node->children[i], active_skeleton, p_scene_root);
 	}
 }
 
@@ -7495,6 +7704,7 @@ void GLTFDocument::_process_mesh_instances(Ref<GLTFState> p_state, Node *p_scene
 				mi = Object::cast_to<ImporterMeshInstance3D>(si_element->value);
 				ERR_CONTINUE_MSG(mi == nullptr, vformat("Unable to cast node %d of type %s to ImporterMeshInstance3D", node_i, si_element->value->get_class_name()));
 			}
+			ERR_CONTINUE_MSG(mi->get_child_count() > 0, "The glTF importer must generate skinned mesh instances as leaf nodes without any children to allow them to be repositioned in the tree without affecting other nodes.");
 
 			const GLTFSkeletonIndex skel_i = p_state->skins.write[node->skin]->skeleton;
 			Ref<GLTFSkeleton> gltf_skeleton = p_state->skeletons.write[skel_i];
@@ -8425,7 +8635,11 @@ Node *GLTFDocument::_generate_scene_node_tree(Ref<GLTFState> p_state) {
 	// Generate the node tree.
 	Node *single_root;
 	if (p_state->extensions_used.has("GODOT_single_root")) {
-		_generate_scene_node(p_state, 0, nullptr, nullptr);
+		if (_naming_version < 2) {
+			_generate_scene_node_compat_4pt4(p_state, 0, nullptr, nullptr);
+		} else {
+			_generate_scene_node(p_state, 0, nullptr, nullptr);
+		}
 		single_root = p_state->scene_nodes[0];
 		if (single_root && single_root->get_owner() && single_root->get_owner() != single_root) {
 			single_root = single_root->get_owner();
@@ -8433,7 +8647,11 @@ Node *GLTFDocument::_generate_scene_node_tree(Ref<GLTFState> p_state) {
 	} else {
 		single_root = memnew(Node3D);
 		for (int32_t root_i = 0; root_i < p_state->root_nodes.size(); root_i++) {
-			_generate_scene_node(p_state, p_state->root_nodes[root_i], single_root, single_root);
+			if (_naming_version < 2) {
+				_generate_scene_node_compat_4pt4(p_state, p_state->root_nodes[root_i], single_root, single_root);
+			} else {
+				_generate_scene_node(p_state, p_state->root_nodes[root_i], single_root, single_root);
+			}
 		}
 	}
 	// Assign the scene name and single root name to each other
@@ -8525,7 +8743,11 @@ Error GLTFDocument::_parse_gltf_state(Ref<GLTFState> p_state, const String &p_se
 	ERR_FAIL_COND_V(err != OK, ERR_PARSE_ERROR);
 
 	/* DETERMINE SKELETONS */
-	err = SkinTool::_determine_skeletons(p_state->skins, p_state->nodes, p_state->skeletons, p_state->get_import_as_skeleton_bones() ? p_state->root_nodes : Vector<GLTFNodeIndex>());
+	if (p_state->get_import_as_skeleton_bones()) {
+		err = SkinTool::_determine_skeletons(p_state->skins, p_state->nodes, p_state->skeletons, p_state->root_nodes, true);
+	} else {
+		err = SkinTool::_determine_skeletons(p_state->skins, p_state->nodes, p_state->skeletons, Vector<GLTFNodeIndex>(), _naming_version < 2);
+	}
 	ERR_FAIL_COND_V(err != OK, ERR_PARSE_ERROR);
 
 	/* ASSIGN SCENE NODE NAMES */
