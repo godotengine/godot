@@ -36,6 +36,7 @@ if basisu_encoder:
         "basisu_resample_filters.cpp",
         "basisu_ssim.cpp",
         "basisu_uastc_enc.cpp",
+        "jpgd.cpp",
         "pvpngreader.cpp",
     ]
     encoder_sources = [thirdparty_dir + "encoder/" + file for file in encoder_sources]
@@ -49,7 +50,6 @@ else:
     env_basisu.Prepend(CPPPATH=[thirdparty_dir])
 
 if basisu_encoder:
-    env_basisu.Prepend(CPPPATH=["#thirdparty/jpeg-compressor"])
     env_basisu.Prepend(CPPPATH=["#thirdparty/tinyexr"])
 
 if env["builtin_zstd"]:
