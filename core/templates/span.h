@@ -64,37 +64,24 @@ public:
 	_FORCE_INLINE_ constexpr const T *end() const { return _ptr + _len; }
 
 	// Algorithms.
-	constexpr int64_t find(const T &p_val, int64_t p_from = 0) const;
-	constexpr int64_t rfind(const T &p_val, int64_t p_from = 0) const;
+	constexpr int64_t find(const T &p_val, uint64_t p_from = 0) const;
+	constexpr int64_t rfind(const T &p_val, uint64_t p_from) const;
+	_FORCE_INLINE_ constexpr int64_t rfind(const T &p_val) const { return rfind(p_val, size() - 1); }
 	constexpr uint64_t count(const T &p_val) const;
 };
 
 template <typename T>
-constexpr int64_t Span<T>::find(const T &p_val, int64_t p_from) const {
-	if (p_from < 0 || size() == 0) {
-		return -1;
-	}
-
+constexpr int64_t Span<T>::find(const T &p_val, uint64_t p_from) const {
 	for (uint64_t i = p_from; i < size(); i++) {
 		if (ptr()[i] == p_val) {
 			return i;
 		}
 	}
-
 	return -1;
 }
 
 template <typename T>
-constexpr int64_t Span<T>::rfind(const T &p_val, int64_t p_from) const {
-	const int64_t s = size();
-
-	if (p_from < 0) {
-		p_from = s + p_from;
-	}
-	if (p_from < 0 || p_from >= s) {
-		p_from = s - 1;
-	}
-
+constexpr int64_t Span<T>::rfind(const T &p_val, uint64_t p_from) const {
 	for (int64_t i = p_from; i >= 0; i--) {
 		if (ptr()[i] == p_val) {
 			return i;

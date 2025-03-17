@@ -3347,6 +3347,12 @@ int String::find(const char *p_str, int p_from) const {
 }
 
 int String::find_char(char32_t p_char, int p_from) const {
+	if (p_from < 0) {
+		p_from = length() + p_from;
+	}
+	if (p_from < 0 || p_from >= length()) {
+		return -1;
+	}
 	return span().find(p_char, p_from);
 }
 
@@ -3584,6 +3590,12 @@ int String::rfind(const char *p_str, int p_from) const {
 }
 
 int String::rfind_char(char32_t p_char, int p_from) const {
+	if (p_from < 0) {
+		p_from = length() + p_from;
+	}
+	if (p_from < 0 || p_from >= length()) {
+		return -1;
+	}
 	return span().rfind(p_char, p_from);
 }
 
