@@ -30,7 +30,7 @@
 
 #include "bindings_generator.h"
 
-#if defined(DEBUG_METHODS_ENABLED) && defined(TOOLS_ENABLED)
+#ifdef DEBUG_METHODS_ENABLED
 
 #include "../godotsharp_defs.h"
 #include "../utils/naming_utils.h"
