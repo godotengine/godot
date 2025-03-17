@@ -47,6 +47,7 @@ class RenderingContextDriverMetal;
 
 class API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0)) RenderingDeviceDriverMetal : public RenderingDeviceDriver {
 	friend struct ShaderCacheEntry;
+	friend class MDCommandBuffer;
 
 	template <typename T>
 	using Result = std::variant<T, Error>;
@@ -58,6 +59,10 @@ class API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0)) RenderingDeviceDriverMet
 	id<MTLDevice> device = nil;
 
 	uint32_t frame_count = 1;
+	/// frame_index is a cyclic counter derived from the current frame number modulo frame_count,
+	/// cycling through values from 0 to frame_count - 1
+	uint32_t frame_index = 0;
+	uint32_t frames_drawn = 0;
 
 	uint32_t version_major = 2;
 	uint32_t version_minor = 0;

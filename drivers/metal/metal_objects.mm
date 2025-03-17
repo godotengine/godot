@@ -483,7 +483,7 @@ void MDCommandBuffer::_render_bind_uniform_sets() {
 		if (set == nullptr || index >= (uint32_t)shader->sets.size()) {
 			continue;
 		}
-		set->bind_uniforms(shader, render, index);
+		set->bind_uniforms(shader, render, index, device_driver->frame_index, device_driver->frame_count);
 	}
 }
 
@@ -960,7 +960,7 @@ void MDCommandBuffer::compute_bind_uniform_set(RDD::UniformSetID p_uniform_set, 
 
 	MDShader *shader = (MDShader *)(p_shader.id);
 	MDUniformSet *set = (MDUniformSet *)(p_uniform_set.id);
-	set->bind_uniforms(shader, compute, p_set_index);
+	set->bind_uniforms(shader, compute, p_set_index, device_driver->frame_index, device_driver->frame_count);
 }
 
 void MDCommandBuffer::compute_bind_uniform_sets(VectorView<RDD::UniformSetID> p_uniform_sets, RDD::ShaderID p_shader, uint32_t p_first_set_index, uint32_t p_set_count) {
@@ -971,7 +971,7 @@ void MDCommandBuffer::compute_bind_uniform_sets(VectorView<RDD::UniformSetID> p_
 	// TODO(sgc): Bind multiple buffers using [encoder setBuffers:offsets:withRange:]
 	for (size_t i = 0u; i < p_set_count; ++i) {
 		MDUniformSet *set = (MDUniformSet *)(p_uniform_sets[i].id);
-		set->bind_uniforms(shader, compute, p_first_set_index + i);
+		set->bind_uniforms(shader, compute, p_first_set_index + i, device_driver->frame_index, device_driver->frame_count);
 	}
 }
 
@@ -1057,7 +1057,7 @@ void MDRenderShader::encode_push_constant_data(VectorView<uint32_t> p_data, MDCo
 	}
 }
 
-void MDUniformSet::bind_uniforms_argument_buffers(MDShader *p_shader, MDCommandBuffer::RenderState &p_state, uint32_t p_set_index) {
+void MDUniformSet::bind_uniforms_argument_buffers(MDShader *p_shader, MDCommandBuffer::RenderState &p_state, uint32_t p_set_index, uint32_t p_frame_idx, uint32_t p_frame_count) {
 	DEV_ASSERT(p_shader->uses_argument_buffers);
 	DEV_ASSERT(p_state.encoder != nil);
 
@@ -1066,20 +1066,20 @@ void MDUniformSet::bind_uniforms_argument_buffers(MDShader *p_shader, MDCommandB
 	id<MTLRenderCommandEncoder> __unsafe_unretained enc = p_state.encoder;
 	id<MTLDevice> __unsafe_unretained device = enc.device;
 
-	BoundUniformSet &bus = bound_uniform_set(p_shader, device, p_state.resource_usage, p_set_index);
+	BoundUniformSet &bus = bound_uniform_set(p_shader, device, p_state.resource_usage, p_set_index, p_frame_idx, p_frame_count);
 
 	// Set the buffer for the vertex stage.
 	{
 		uint32_t const *offset = set_info.offsets.getptr(RDD::SHADER_STAGE_VERTEX);
 		if (offset) {
-			[enc setVertexBuffer:bus.buffer offset:*offset atIndex:p_set_index];
+			[enc setVertexBuffer:bus.buffer offset:bus.make_offset(p_frame_idx, *offset) atIndex:p_set_index];
 		}
 	}
 	// Set the buffer for the fragment stage.
 	{
 		uint32_t const *offset = set_info.offsets.getptr(RDD::SHADER_STAGE_FRAGMENT);
 		if (offset) {
-			[enc setFragmentBuffer:bus.buffer offset:*offset atIndex:p_set_index];
+			[enc setFragmentBuffer:bus.buffer offset:bus.make_offset(p_frame_idx, *offset) atIndex:p_set_index];
 		}
 	}
 }
@@ -1264,15 +1264,15 @@ void MDUniformSet::bind_uniforms_direct(MDShader *p_shader, MDCommandBuffer::Ren
 	}
 }
 
-void MDUniformSet::bind_uniforms(MDShader *p_shader, MDCommandBuffer::RenderState &p_state, uint32_t p_set_index) {
+void MDUniformSet::bind_uniforms(MDShader *p_shader, MDCommandBuffer::RenderState &p_state, uint32_t p_set_index, uint32_t p_frame_idx, uint32_t p_frame_count) {
 	if (p_shader->uses_argument_buffers) {
-		bind_uniforms_argument_buffers(p_shader, p_state, p_set_index);
+		bind_uniforms_argument_buffers(p_shader, p_state, p_set_index, p_frame_idx, p_frame_count);
 	} else {
 		bind_uniforms_direct(p_shader, p_state, p_set_index);
 	}
 }
 
-void MDUniformSet::bind_uniforms_argument_buffers(MDShader *p_shader, MDCommandBuffer::ComputeState &p_state, uint32_t p_set_index) {
+void MDUniformSet::bind_uniforms_argument_buffers(MDShader *p_shader, MDCommandBuffer::ComputeState &p_state, uint32_t p_set_index, uint32_t p_frame_idx, uint32_t p_frame_count) {
 	DEV_ASSERT(p_shader->uses_argument_buffers);
 	DEV_ASSERT(p_state.encoder != nil);
 
@@ -1281,11 +1281,11 @@ void MDUniformSet::bind_uniforms_argument_buffers(MDShader *p_shader, MDCommandB
 	id<MTLComputeCommandEncoder> enc = p_state.encoder;
 	id<MTLDevice> device = enc.device;
 
-	BoundUniformSet &bus = bound_uniform_set(p_shader, device, p_state.resource_usage, p_set_index);
+	BoundUniformSet &bus = bound_uniform_set(p_shader, device, p_state.resource_usage, p_set_index, p_frame_idx, p_frame_count);
 
 	uint32_t const *offset = set_info.offsets.getptr(RDD::SHADER_STAGE_COMPUTE);
 	if (offset) {
-		[enc setBuffer:bus.buffer offset:*offset atIndex:p_set_index];
+		[enc setBuffer:bus.buffer offset:bus.make_offset(p_frame_idx, *offset) atIndex:p_set_index];
 	}
 }
 
@@ -1418,19 +1418,23 @@ void MDUniformSet::bind_uniforms_direct(MDShader *p_shader, MDCommandBuffer::Com
 	}
 }
 
-void MDUniformSet::bind_uniforms(MDShader *p_shader, MDCommandBuffer::ComputeState &p_state, uint32_t p_set_index) {
+void MDUniformSet::bind_uniforms(MDShader *p_shader, MDCommandBuffer::ComputeState &p_state, uint32_t p_set_index, uint32_t p_frame_idx, uint32_t p_frame_count) {
 	if (p_shader->uses_argument_buffers) {
-		bind_uniforms_argument_buffers(p_shader, p_state, p_set_index);
+		bind_uniforms_argument_buffers(p_shader, p_state, p_set_index, p_frame_idx, p_frame_count);
 	} else {
 		bind_uniforms_direct(p_shader, p_state, p_set_index);
 	}
 }
 
-BoundUniformSet &MDUniformSet::bound_uniform_set(MDShader *p_shader, id<MTLDevice> p_device, ResourceUsageMap &p_resource_usage, uint32_t p_set_index) {
+BoundUniformSet &MDUniformSet::bound_uniform_set(MDShader *p_shader, id<MTLDevice> p_device, ResourceUsageMap &p_resource_usage, uint32_t p_set_index, uint32_t p_frame_idx, uint32_t p_frame_count) {
 	BoundUniformSet *sus = bound_uniforms.getptr(p_shader);
 	if (sus != nullptr) {
-		sus->merge_into(p_resource_usage);
-		return *sus;
+		BoundUniformSet &bs = *sus;
+		if (bs.is_dynamic()) {
+			update_dynamic_uniforms(p_shader, p_resource_usage, p_set_index, bs, p_frame_idx);
+		}
+		bs.merge_into(p_resource_usage);
+		return bs;
 	}
 
 	UniformSet const &set = p_shader->sets[p_set_index];
@@ -1445,9 +1449,18 @@ BoundUniformSet &MDUniformSet::bound_uniform_set(MDShader *p_shader, id<MTLDevic
 		}
 	};
 	id<MTLBuffer> enc_buffer = nil;
+	uint32_t frame_size = set.buffer_size;
+	uint32_t buffer_size = frame_size;
+	if (!set.dynamic_uniforms.is_empty()) {
+		// We need to store a copy of the argument buffer for each frame that could be in flight, just
+		// like the dynamic buffer's themselves.
+		buffer_size *= p_frame_count;
+	} else {
+		frame_size = 0;
+	}
 	if (set.buffer_size > 0) {
-		MTLResourceOptions options = MTLResourceStorageModeShared | MTLResourceHazardTrackingModeTracked;
-		enc_buffer = [p_device newBufferWithLength:set.buffer_size options:options];
+		MTLResourceOptions options = MTLResourceHazardTrackingModeUntracked | MTLResourceStorageModeShared;
+		enc_buffer = [p_device newBufferWithLength:buffer_size options:options];
 		for (KeyValue<RDC::ShaderStage, id<MTLArgumentEncoder>> const &kv : set.encoders) {
 			RDD::ShaderStage const stage = kv.key;
 			ShaderStageUsage const stage_usage = ShaderStageUsage(1 << stage);
@@ -1556,7 +1569,6 @@ BoundUniformSet &MDUniformSet::bound_uniform_set(MDShader *p_shader, id<MTLDevic
 					case RDD::UNIFORM_TYPE_UNIFORM_BUFFER_DYNAMIC:
 					case RDD::UNIFORM_TYPE_STORAGE_BUFFER_DYNAMIC: {
 						const RenderingDeviceDriverMetal::BufferDynamicInfo *buf_info = (const RenderingDeviceDriverMetal::BufferDynamicInfo *)uniform.ids[0].id;
-						[enc setBuffer:buf_info->metal_buffer offset:buf_info->frame_idx * buf_info->size_bytes atIndex:bi->index];
 						add_usage(buf_info->metal_buffer, stage, bi->usage);
 					} break;
 
@@ -1582,6 +1594,16 @@ BoundUniformSet &MDUniformSet::bound_uniform_set(MDShader *p_shader, id<MTLDevic
 				}
 			}
 		}
+
+		// Duplicate the argument buffer data for each frame, if needed.
+		// The dynamic uniforms will be updated each frame.
+		if (frame_size > 0) {
+			void *ptr = enc_buffer.contents;
+			for (uint32_t i = 1; i < p_frame_count; i++) {
+				void *dst = (void *)((uintptr_t)ptr + i * frame_size);
+				memcpy(dst, ptr, frame_size);
+			}
+		}
 	}
 
 	SearchArray<__unsafe_unretained id<MTLResource>> search;
@@ -1597,10 +1619,54 @@ BoundUniformSet &MDUniformSet::bound_uniform_set(MDShader *p_shader, id<MTLDevic
 		}
 	}
 
-	BoundUniformSet bs = { .buffer = enc_buffer, .usage_to_resources = usage_to_resources };
-	bound_uniforms.insert(p_shader, bs);
+	BoundUniformSet &bs = bound_uniforms.insert(p_shader, BoundUniformSet(enc_buffer, std::move(usage_to_resources), frame_size))->value;
+	if (bs.is_dynamic()) {
+		update_dynamic_uniforms(p_shader, p_resource_usage, p_set_index, bs, p_frame_idx);
+	}
 	bs.merge_into(p_resource_usage);
-	return bound_uniforms.get(p_shader);
+	return bs;
+}
+
+void MDUniformSet::update_dynamic_uniforms(MDShader *p_shader, ResourceUsageMap &p_resource_usage, uint32_t p_set_index, BoundUniformSet &p_bound_set, uint32_t p_frame_idx) {
+	// This shouldn't be called if the set doesn't have dynamic uniforms.
+	DEV_ASSERT(p_bound_set.is_dynamic());
+
+	UniformSet const &set = p_shader->sets[p_set_index];
+	DEV_ASSERT(!set.dynamic_uniforms.is_empty()); // Programming error if this is empty.
+
+	for (KeyValue<RDC::ShaderStage, id<MTLArgumentEncoder>> const &kv : set.encoders) {
+		RDD::ShaderStage const stage = kv.key;
+		ShaderStageUsage const stage_usage = ShaderStageUsage(1 << stage);
+		id<MTLArgumentEncoder> const __unsafe_unretained enc = kv.value;
+
+		[enc setArgumentBuffer:p_bound_set.buffer offset:p_bound_set.make_offset(p_frame_idx, set.offsets[stage])];
+
+		for (uint32_t i : set.dynamic_uniforms) {
+			RDD::BoundUniform const &uniform = uniforms[i];
+			const UniformInfo &ui = set.uniforms[i];
+
+			const BindingInfo *bi = ui.bindings.getptr(stage);
+			if (bi == nullptr) {
+				// No binding for this stage.
+				continue;
+			}
+
+			if ((ui.active_stages & stage_usage) == None) {
+				// Not active for this state, so don't bind anything.
+				continue;
+			}
+
+			switch (uniform.type) {
+				case RDD::UNIFORM_TYPE_UNIFORM_BUFFER_DYNAMIC:
+				case RDD::UNIFORM_TYPE_STORAGE_BUFFER_DYNAMIC: {
+					const RenderingDeviceDriverMetal::BufferDynamicInfo *buf_info = (const RenderingDeviceDriverMetal::BufferDynamicInfo *)uniform.ids[0].id;
+					[enc setBuffer:buf_info->metal_buffer offset:buf_info->frame_idx * buf_info->size_bytes atIndex:bi->index];
+				} break;
+				default:
+					break;
+			}
+		}
+	}
 }
 
 MTLFmtCaps MDSubpass::getRequiredFmtCapsForAttachmentAt(uint32_t p_index) const {

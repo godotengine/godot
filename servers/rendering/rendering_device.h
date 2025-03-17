@@ -1062,7 +1062,7 @@ public:
 	};
 
 	typedef Uniform PipelineImmutableSampler;
-	RID shader_create_from_bytecode_with_samplers(const Vector<uint8_t> &p_shader_binary, RID p_placeholder = RID(), const Vector<PipelineImmutableSampler> &p_immutable_samplers = Vector<PipelineImmutableSampler>(), const Vector<uint64_t> &p_dynamic_buffers = LocalVector<uint64_t>());
+	RID shader_create_from_bytecode_with_samplers(const Vector<uint8_t> &p_shader_binary, RID p_placeholder = RID(), const Vector<PipelineImmutableSampler> &p_immutable_samplers = Vector<PipelineImmutableSampler>(), const Vector<uint64_t> &p_dynamic_buffers = Vector<uint64_t>());
 
 private:
 	static const uint32_t MAX_UNIFORM_SETS = 16;
