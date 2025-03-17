@@ -2108,7 +2108,6 @@ void Object::clear_internal_extension() {
 	// Clear the virtual methods.
 	while (virtual_method_list) {
 		(*virtual_method_list->method) = nullptr;
-		(*virtual_method_list->initialized) = false;
 		virtual_method_list = virtual_method_list->next;
 	}
 }
