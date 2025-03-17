@@ -638,8 +638,6 @@ class EditorInspector : public ScrollContainer {
 	void _set_property_favorited(const String &p_path, bool p_favorited);
 	void _clear_current_favorites();
 
-	void _update_theme();
-
 	void _node_removed(Node *p_node);
 
 	HashMap<StringName, int> per_array_page;
