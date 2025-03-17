@@ -483,6 +483,10 @@ public:
 	Variant instantiate(const StringName &p_class) const;
 
 	APIType class_get_api_type(const StringName &p_class) const;
+	Error class_override_api_type(const StringName &p_class, APIType p_api) const;
+	APIType get_current_api() const;
+	void set_current_api(APIType p_api) const;
+
 	bool class_has_signal(const StringName &p_class, const StringName &p_signal) const;
 	Dictionary class_get_signal(const StringName &p_class, const StringName &p_signal) const;
 	TypedArray<Dictionary> class_get_signal_list(const StringName &p_class, bool p_no_inheritance = false) const;

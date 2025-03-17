@@ -309,6 +309,7 @@ public:
 	static void set_object_extension_instance(Object *p_object, const StringName &p_class, GDExtensionClassInstancePtr p_instance);
 
 	static APIType get_api_type(const StringName &p_class);
+	static Error override_api_type(const StringName &p_class, APIType p_api);
 
 	static uint32_t get_api_hash(APIType p_api);
 
