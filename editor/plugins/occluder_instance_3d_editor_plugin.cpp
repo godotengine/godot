@@ -119,6 +119,3 @@ OccluderInstance3DEditorPlugin::OccluderInstance3DEditorPlugin() {
 	file_dialog->connect("file_selected", callable_mp(this, &OccluderInstance3DEditorPlugin::_bake_select_file));
 	bake->add_child(file_dialog);
 }
-
-OccluderInstance3DEditorPlugin::~OccluderInstance3DEditorPlugin() {
-}

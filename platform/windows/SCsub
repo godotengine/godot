@@ -8,6 +8,8 @@ from pathlib import Path
 
 import platform_windows_builders
 
+from methods import redirect_emitter
+
 sources = []
 
 common_win = [
@@ -49,6 +51,7 @@ def arrange_program_clean(prog):
         Clean(prog, extra_files_to_clean)
 
 
+env["BUILDERS"]["RES"].emitter = redirect_emitter
 res_file = "godot_res.rc"
 res_target = "godot_res" + env["OBJSUFFIX"]
 res_obj = env.RES(res_target, res_file)
@@ -124,7 +127,7 @@ if env["d3d12"]:
             Copy("$TARGET", "$SOURCE"),
         )
 
-if not os.getenv("VCINSTALLDIR"):
+if not env.msvc:
     if env["debug_symbols"]:
         env.AddPostAction(prog, env.Run(platform_windows_builders.make_debug_mingw))
         if env["windows_subsystem"] == "gui":

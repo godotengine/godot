@@ -42,6 +42,13 @@
 				Clears all the items in the [OptionButton].
 			</description>
 		</method>
+		<method name="get_item_auto_translate_mode" qualifiers="const">
+			<return type="int" enum="Node.AutoTranslateMode" />
+			<param index="0" name="idx" type="int" />
+			<description>
+				Returns the auto translate mode of the item at index [param idx].
+			</description>
+		</method>
 		<method name="get_item_icon" qualifiers="const">
 			<return type="Texture2D" />
 			<param index="0" name="idx" type="int" />
@@ -151,6 +158,15 @@
 			<param index="0" name="disabled" type="bool" />
 			<description>
 				If [code]true[/code], shortcuts are disabled and cannot be used to trigger the button.
+			</description>
+		</method>
+		<method name="set_item_auto_translate_mode">
+			<return type="void" />
+			<param index="0" name="idx" type="int" />
+			<param index="1" name="mode" type="int" enum="Node.AutoTranslateMode" />
+			<description>
+				Sets the auto translate mode of the item at index [param idx].
+				Items use [constant Node.AUTO_TRANSLATE_MODE_INHERIT] by default, which uses the same auto translate mode as the [OptionButton] itself.
 			</description>
 		</method>
 		<method name="set_item_disabled">

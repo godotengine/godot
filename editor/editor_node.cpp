@@ -177,8 +177,8 @@ EditorNode *EditorNode::singleton = nullptr;
 
 static const String EDITOR_NODE_CONFIG_SECTION = "EditorNode";
 
-static const String REMOVE_ANDROID_BUILD_TEMPLATE_MESSAGE = "The Android build template is already installed in this project and it won't be overwritten.\nRemove the \"%s\" directory manually before attempting this operation again.";
-static const String INSTALL_ANDROID_BUILD_TEMPLATE_MESSAGE = "This will set up your project for gradle Android builds by installing the source template to \"%s\".\nNote that in order to make gradle builds instead of using pre-built APKs, the \"Use Gradle Build\" option should be enabled in the Android export preset.";
+static const String REMOVE_ANDROID_BUILD_TEMPLATE_MESSAGE = TTRC("The Android build template is already installed in this project and it won't be overwritten.\nRemove the \"%s\" directory manually before attempting this operation again.");
+static const String INSTALL_ANDROID_BUILD_TEMPLATE_MESSAGE = TTRC("This will set up your project for gradle Android builds by installing the source template to \"%s\".\nNote that in order to make gradle builds instead of using pre-built APKs, the \"Use Gradle Build\" option should be enabled in the Android export preset.");
 
 bool EditorProgress::step(const String &p_state, int p_step, bool p_force_refresh) {
 	if (!force_background && Thread::is_main_thread()) {
@@ -3007,15 +3007,18 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 				break;
 			}
 
-			if (unsaved_cache && !p_confirmed) {
-				confirmation->set_ok_button_text(TTR("Save & Reload"));
-				unsaved_message = _get_unsaved_scene_dialog_text(scene_filename, started_timestamp);
-				confirmation->set_text(unsaved_message + "\n\n" + TTR("Save before reloading the scene?"));
-				confirmation->popup_centered();
-				break;
+			if (unsaved_cache) {
+				if (!p_confirmed) {
+					confirmation->set_ok_button_text(TTRC("Save & Reload"));
+					unsaved_message = _get_unsaved_scene_dialog_text(scene_filename, started_timestamp);
+					confirmation->set_text(unsaved_message + "\n\n" + TTR("Save before reloading the scene?"));
+					confirmation->popup_centered();
+					confirmation_button->grab_focus();
+					break;
+				} else {
+					_save_scene_with_preview(scene_filename);
+				}
 			}
-
-			_save_scene_with_preview(scene_filename);
 
 			_discard_changes();
 		} break;
@@ -4688,6 +4691,7 @@ void EditorNode::_update_recent_scenes() {
 
 	recent_scenes->add_separator();
 	recent_scenes->add_shortcut(ED_SHORTCUT("editor/clear_recent", TTRC("Clear Recent Scenes")));
+	recent_scenes->set_item_auto_translate_mode(-1, AUTO_TRANSLATE_MODE_ALWAYS);
 	recent_scenes->reset_size();
 }
 
@@ -5639,6 +5643,7 @@ void EditorNode::_update_layouts_menu() {
 		}
 
 		editor_layouts->add_item(layout);
+		editor_layouts->set_item_auto_translate_mode(-1, AUTO_TRANSLATE_MODE_DISABLED);
 	}
 }
 
@@ -7448,6 +7453,7 @@ EditorNode::EditorNode() {
 	file_menu->add_shortcut(ED_SHORTCUT_AND_COMMAND("editor/reopen_closed_scene", TTRC("Reopen Closed Scene"), KeyModifierMask::CMD_OR_CTRL + KeyModifierMask::SHIFT + Key::T), FILE_OPEN_PREV);
 
 	recent_scenes = memnew(PopupMenu);
+	recent_scenes->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	file_menu->add_submenu_node_item(TTR("Open Recent"), recent_scenes, FILE_OPEN_RECENT);
 	recent_scenes->connect(SceneStringName(id_pressed), callable_mp(this, &EditorNode::_open_recent_scene));
 
@@ -7576,7 +7582,6 @@ EditorNode::EditorNode() {
 	settings_menu->add_submenu_node_item(TTR("Editor Docks"), editor_dock_manager->get_docks_menu());
 
 	editor_layouts = memnew(PopupMenu);
-	editor_layouts->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	settings_menu->add_submenu_node_item(TTR("Editor Layout"), editor_layouts);
 	editor_layouts->connect(SceneStringName(id_pressed), callable_mp(this, &EditorNode::_layout_menu_option));
 	settings_menu->add_separator();
@@ -7807,7 +7812,7 @@ EditorNode::EditorNode() {
 	gui_base->add_child(orphan_resources);
 
 	confirmation = memnew(ConfirmationDialog);
-	confirmation->add_button(TTRC("Don't Save"), DisplayServer::get_singleton()->get_swap_cancel_ok(), "discard");
+	confirmation_button = confirmation->add_button(TTRC("Don't Save"), DisplayServer::get_singleton()->get_swap_cancel_ok(), "discard");
 	gui_base->add_child(confirmation);
 	confirmation->set_min_size(Vector2(450.0 * EDSCALE, 0));
 	confirmation->connect(SceneStringName(confirmed), callable_mp(this, &EditorNode::_menu_confirm_current));
@@ -8311,10 +8316,4 @@ bool EditorPluginList::is_empty() {
 
 void EditorPluginList::clear() {
 	plugins_list.clear();
-}
-
-EditorPluginList::EditorPluginList() {
-}
-
-EditorPluginList::~EditorPluginList() {
 }

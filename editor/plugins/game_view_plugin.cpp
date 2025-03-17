@@ -1180,6 +1180,3 @@ GameViewPlugin::GameViewPlugin() {
 
 	EditorFeatureProfileManager::get_singleton()->connect("current_feature_profile_changed", callable_mp(this, &GameViewPlugin::_feature_profile_changed));
 }
-
-GameViewPlugin::~GameViewPlugin() {
-}

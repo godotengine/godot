@@ -389,8 +389,6 @@ public:
 
 		return E->value.cache;
 	}
-
-	virtual ~EditorScriptCodeCompletionCache() {}
 };
 
 void ScriptEditorQuickOpen::popup_dialog(const Vector<String> &p_functions, bool p_dontclear) {
@@ -824,7 +822,8 @@ void ScriptEditor::_update_recent_scripts() {
 
 	recent_scripts->add_separator();
 	recent_scripts->add_shortcut(ED_GET_SHORTCUT("script_editor/clear_recent"));
-	recent_scripts->set_item_disabled(recent_scripts->get_item_id(recent_scripts->get_item_count() - 1), rc.is_empty());
+	recent_scripts->set_item_auto_translate_mode(-1, AUTO_TRANSLATE_MODE_ALWAYS);
+	recent_scripts->set_item_disabled(-1, rc.is_empty());
 
 	recent_scripts->reset_size();
 }
@@ -4278,6 +4277,7 @@ ScriptEditor::ScriptEditor(WindowWrapper *p_wrapper) {
 	file_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_editor/reopen_closed_script"), FILE_REOPEN_CLOSED);
 
 	recent_scripts = memnew(PopupMenu);
+	recent_scripts->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	file_menu->get_popup()->add_submenu_node_item(TTR("Open Recent"), recent_scripts, FILE_OPEN_RECENT);
 	recent_scripts->connect(SceneStringName(id_pressed), callable_mp(this, &ScriptEditor::_open_recent_script));
 
@@ -4708,7 +4708,4 @@ ScriptEditorPlugin::ScriptEditorPlugin() {
 	window_wrapper->connect("window_visibility_changed", callable_mp(this, &ScriptEditorPlugin::_window_visibility_changed));
 
 	ScriptServer::set_reload_scripts_on_save(EDITOR_GET("text_editor/behavior/files/auto_reload_and_parse_scripts_on_save"));
-}
-
-ScriptEditorPlugin::~ScriptEditorPlugin() {
 }

@@ -2341,9 +2341,6 @@ SceneTreeDialog::SceneTreeDialog() {
 	tree->connect("node_selected", callable_mp(this, &SceneTreeDialog::_selected_changed));
 }
 
-SceneTreeDialog::~SceneTreeDialog() {
-}
-
 /******** CACHE *********/
 
 HashMap<Node *, SceneTreeEditor::CachedNode>::Iterator SceneTreeEditor::NodeCache::add(Node *p_node, TreeItem *p_item) {

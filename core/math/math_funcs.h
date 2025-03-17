@@ -628,24 +628,11 @@ public:
 	}
 
 	static _ALWAYS_INLINE_ float absf(float g) {
-		union {
-			float f;
-			uint32_t i;
-		} u;
-
-		u.f = g;
-		u.i &= 2147483647u;
-		return u.f;
+		return ::fabsf(g);
 	}
 
 	static _ALWAYS_INLINE_ double absd(double g) {
-		union {
-			double d;
-			uint64_t i;
-		} u;
-		u.d = g;
-		u.i &= (uint64_t)9223372036854775807ll;
-		return u.d;
+		return ::fabs(g);
 	}
 
 	// This function should be as fast as possible and rounding mode should not matter.

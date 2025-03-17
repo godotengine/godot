@@ -935,23 +935,37 @@ png_safe_warning(png_structp png_nonconst_ptr, png_const_charp warning_message)
 int /* PRIVATE */
 png_safe_execute(png_imagep image, int (*function)(png_voidp), png_voidp arg)
 {
-   png_voidp saved_error_buf = image->opaque->error_buf;
+   const png_voidp saved_error_buf = image->opaque->error_buf;
    jmp_buf safe_jmpbuf;
-   int result;
 
    /* Safely execute function(arg), with png_error returning back here. */
    if (setjmp(safe_jmpbuf) == 0)
    {
+      int result;
+
       image->opaque->error_buf = safe_jmpbuf;
       result = function(arg);
       image->opaque->error_buf = saved_error_buf;
-      return result;
+
+      if (result)
+         return 1; /* success */
    }
 
-   /* On png_error, return via longjmp, pop the jmpbuf, and free the image. */
+   /* The function failed either because of a caught png_error and a regular
+    * return of false above or because of an uncaught png_error from the
+    * function itself.  Ensure that the error_buf is always set back to the
+    * value saved above:
+    */
    image->opaque->error_buf = saved_error_buf;
-   png_image_free(image);
-   return 0;
+
+   /* On the final false return, when about to return control to the caller, the
+    * image is freed (png_image_free does this check but it is duplicated here
+    * for clarity:
+    */
+   if (saved_error_buf == NULL)
+      png_image_free(image);
+
+   return 0; /* failure */
 }
 #endif /* SIMPLIFIED READ || SIMPLIFIED_WRITE */
 #endif /* READ || WRITE */

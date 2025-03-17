@@ -239,7 +239,6 @@ public:
 	virtual void edit(ObjectID p_tile_map_layer_id) override;
 
 	TileMapLayerEditorTilesPlugin();
-	~TileMapLayerEditorTilesPlugin();
 };
 
 class TileMapLayerEditorTerrainsPlugin : public TileMapLayerSubEditorPlugin {
@@ -331,7 +330,6 @@ public:
 	virtual void edit(ObjectID p_tile_map_layer_id) override;
 
 	TileMapLayerEditorTerrainsPlugin();
-	~TileMapLayerEditorTerrainsPlugin();
 };
 
 class TileMapLayerEditor : public VBoxContainer {

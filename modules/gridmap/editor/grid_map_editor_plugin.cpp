@@ -30,8 +30,6 @@
 
 #include "grid_map_editor_plugin.h"
 
-#ifdef TOOLS_ENABLED
-
 #include "core/os/keyboard.h"
 #include "editor/editor_command_palette.h"
 #include "editor/editor_main_screen.h"
@@ -1877,11 +1875,3 @@ int GridMapEditorPlugin::get_selected_palette_item() const {
 		return -1;
 	}
 }
-
-GridMapEditorPlugin::GridMapEditorPlugin() {
-}
-
-GridMapEditorPlugin::~GridMapEditorPlugin() {
-}
-
-#endif // TOOLS_ENABLED

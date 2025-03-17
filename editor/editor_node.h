@@ -352,6 +352,7 @@ private:
 	Node *_last_instantiated_scene = nullptr;
 
 	ConfirmationDialog *confirmation = nullptr;
+	Button *confirmation_button = nullptr;
 	ConfirmationDialog *save_confirmation = nullptr;
 	ConfirmationDialog *import_confirmation = nullptr;
 	ConfirmationDialog *pick_main_scene = nullptr;
@@ -984,9 +985,6 @@ public:
 	void remove_plugin(EditorPlugin *p_plugin);
 	void clear();
 	bool is_empty();
-
-	EditorPluginList();
-	~EditorPluginList();
 };
 
 struct EditorProgressBG {

@@ -95,3 +95,7 @@ public:
 	NodePath() {}
 	~NodePath();
 };
+
+// Zero-constructing NodePath initializes data to nullptr (and thus empty).
+template <>
+struct is_zero_constructible<NodePath> : std::true_type {};

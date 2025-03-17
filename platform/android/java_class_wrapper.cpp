@@ -1078,7 +1078,7 @@ bool JavaClass::_convert_object_to_variant(JNIEnv *env, jobject obj, Variant &va
 
 			if (java_class_wrapped.is_valid()) {
 				String cn = java_class_wrapped->get_java_class_name();
-				if (cn == "org/godotengine/godot/Dictionary" || cn == "java.util.HashMap") {
+				if (cn == "org.godotengine.godot.Dictionary" || cn == "java.util.HashMap") {
 					var = _jobject_to_variant(env, obj);
 				} else {
 					Ref<JavaObject> ret = Ref<JavaObject>(memnew(JavaObject(java_class_wrapped, obj)));
@@ -1442,7 +1442,7 @@ bool JavaClass::_convert_object_to_variant(JNIEnv *env, jobject obj, Variant &va
 
 					if (java_class_wrapped.is_valid()) {
 						String cn = java_class_wrapped->get_java_class_name();
-						if (cn == "org/godotengine/godot/Dictionary" || cn == "java.util.HashMap") {
+						if (cn == "org.godotengine.godot.Dictionary" || cn == "java.util.HashMap") {
 							ret[i] = _jobject_to_variant(env, obj);
 						} else {
 							Ref<JavaObject> java_obj_wrapped = Ref<JavaObject>(memnew(JavaObject(java_class_wrapped, obj)));

@@ -109,6 +109,3 @@ Error ResourceImporterBMFont::import(ResourceUID::ID p_source_id, const String &
 	print_verbose("Done saving to: " + p_save_path + ".fontdata");
 	return OK;
 }
-
-ResourceImporterBMFont::ResourceImporterBMFont() {
-}

@@ -488,7 +488,10 @@ public:
 		return points;
 	}
 
-	static Vector<Vector<Vector2>> decompose_polygon_in_convex(const Vector<Point2> &polygon);
+	static void merge_many_polygons(const Vector<Vector<Point2>> &p_polygons, Vector<Vector<Vector2>> &r_out_polygons, Vector<Vector<Vector2>> &r_out_holes);
+	static Vector<Vector<Vector2>> decompose_many_polygons_in_convex(const Vector<Vector<Point2>> &p_polygons, const Vector<Vector<Point2>> &p_holes);
+
+	static Vector<Vector<Vector2>> decompose_polygon_in_convex(const Vector<Point2> &p_polygon);
 
 	static void make_atlas(const Vector<Size2i> &p_rects, Vector<Point2i> &r_result, Size2i &r_size);
 	static Vector<Vector3i> partial_pack_rects(const Vector<Vector2i> &p_sizes, const Size2i &p_atlas_size);

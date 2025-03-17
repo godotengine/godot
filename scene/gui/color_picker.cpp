@@ -61,7 +61,10 @@ void ColorPicker::_notification(int p_what) {
 
 		case NOTIFICATION_READY: {
 			// FIXME: The embedding check is needed to fix a bug in single-window mode (GH-93718).
-			if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_SCREEN_CAPTURE) && !get_tree()->get_root()->is_embedding_subwindows()) {
+			if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_NATIVE_COLOR_PICKER)) {
+				btn_pick->set_tooltip_text(ETR("Pick a color from the screen."));
+				btn_pick->connect(SceneStringName(pressed), callable_mp(this, &ColorPicker::_pick_button_pressed_native));
+			} else if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_SCREEN_CAPTURE) && !get_tree()->get_root()->is_embedding_subwindows()) {
 				btn_pick->set_tooltip_text(ETR("Pick a color from the screen."));
 				btn_pick->connect(SceneStringName(pressed), callable_mp(this, &ColorPicker::_pick_button_pressed));
 			} else {
@@ -1138,14 +1141,19 @@ void ColorPicker::add_preset(const Color &p_color) {
 	List<Color>::Element *e = presets.find(p_color);
 	if (e) {
 		presets.move_to_back(e);
-		preset_cache.move_to_back(preset_cache.find(p_color));
 
 		preset_container->move_child(preset_group->get_pressed_button(), preset_container->get_child_count() - 1);
 	} else {
 		presets.push_back(p_color);
-		preset_cache.push_back(p_color);
 
 		_add_preset_button(_get_preset_size(), p_color);
+	}
+
+	List<Color>::Element *cache_e = preset_cache.find(p_color);
+	if (cache_e) {
+		preset_cache.move_to_back(cache_e);
+	} else {
+		preset_cache.push_back(p_color);
 	}
 
 	if (!palette_name->get_text().is_empty()) {
@@ -2091,6 +2099,26 @@ void ColorPicker::_text_changed(const String &) {
 void ColorPicker::_add_preset_pressed() {
 	add_preset(color);
 	emit_signal(SNAME("preset_added"), color);
+}
+
+void ColorPicker::_pick_button_pressed_native() {
+	if (!DisplayServer::get_singleton()->color_picker(callable_mp(this, &ColorPicker::_native_cb))) {
+		// Fallback to default/legacy picker.
+		if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_SCREEN_CAPTURE) && !get_tree()->get_root()->is_embedding_subwindows()) {
+			_pick_button_pressed();
+		} else {
+			_pick_button_pressed_legacy();
+		}
+	}
+}
+
+void ColorPicker::_native_cb(bool p_status, const Color &p_color) {
+	if (p_status) {
+		set_pick_color(p_color);
+		if (!deferred_mode_enabled) {
+			emit_signal(SNAME("color_changed"), color);
+		}
+	}
 }
 
 void ColorPicker::_pick_button_pressed() {

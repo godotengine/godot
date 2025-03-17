@@ -3367,9 +3367,6 @@ EditorHelp::EditorHelp() {
 	class_desc->hide();
 }
 
-EditorHelp::~EditorHelp() {
-}
-
 /// EditorHelpBit ///
 
 #define HANDLE_DOC(m_string) ((is_native ? DTR(m_string) : (m_string)).strip_edges())

@@ -4872,7 +4872,6 @@ void CanvasItemEditor::_set_owner_for_node_and_children(Node *p_node, Node *p_ow
 }
 
 void CanvasItemEditor::_focus_selection(int p_op) {
-	Vector2 center(0.f, 0.f);
 	Rect2 rect;
 	int count = 0;
 
@@ -5791,9 +5790,6 @@ CanvasItemEditorPlugin::CanvasItemEditorPlugin() {
 	EditorNode::get_singleton()->get_editor_main_screen()->get_control()->add_child(canvas_item_editor);
 	canvas_item_editor->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 	canvas_item_editor->hide();
-}
-
-CanvasItemEditorPlugin::~CanvasItemEditorPlugin() {
 }
 
 void CanvasItemEditorViewport::_on_mouse_exit() {

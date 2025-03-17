@@ -101,7 +101,7 @@ for name, path in env.module_list.items():
 if env["tests"]:
 
     def modules_tests_builder(target, source, env):
-        headers = sorted([os.path.relpath(src.path, methods.base_folder_path).replace("\\", "/") for src in source])
+        headers = sorted([os.path.relpath(src.path, methods.base_folder).replace("\\", "/") for src in source])
         with methods.generated_wrapper(str(target[0])) as file:
             for header in headers:
                 file.write(f'#include "{header}"\n')

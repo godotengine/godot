@@ -1329,7 +1329,7 @@ TypedArray<Node> EditorSelection::get_selected_nodes() {
 	return ret;
 }
 
-List<Node *> &EditorSelection::get_selected_node_list() {
+const List<Node *> &EditorSelection::get_selected_node_list() {
 	if (changed) {
 		update();
 	} else {
@@ -1354,9 +1354,6 @@ void EditorSelection::clear() {
 
 	changed = true;
 	node_list_changed = true;
-}
-
-EditorSelection::EditorSelection() {
 }
 
 EditorSelection::~EditorSelection() {
