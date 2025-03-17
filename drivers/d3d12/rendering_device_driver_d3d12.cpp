@@ -3506,6 +3506,31 @@ void RenderingDeviceDriverD3D12::uniform_set_free(UniformSetID p_uniform_set) {
 	VersatileResource::free(resources_allocator, uniform_set_info);
 }
 
+uint32_t RenderingDeviceDriverD3D12::uniform_sets_get_dynamic_offsets(VectorView<UniformSetID> p_uniform_sets, uint32_t p_set_count) const {
+	uint32_t mask = 0u;
+	uint32_t shift = 0u;
+#ifdef DEV_ENABLED
+	uint32_t curr_dynamic_offset = 0u;
+#endif
+
+	for (uint32_t i = 0; i < p_set_count; i++) {
+		const UniformSetInfo *usi = (const UniformSetInfo *)p_uniform_sets[i].id;
+		// At this point this assert should already have been validated.
+		DEV_ASSERT(curr_dynamic_offset + usi->dynamic_buffers.size() <= MAX_DYNAMIC_BUFFERS);
+
+		for (const BufferDynamicInfo *dynamic_buffer : usi->dynamic_buffers) {
+			DEV_ASSERT(dynamic_buffer->frame_idx < 16u);
+			mask |= dynamic_buffer->frame_idx << shift;
+			shift += 4u;
+		}
+#ifdef DEV_ENABLED
+		curr_dynamic_offset += usi->dynamic_buffers.size();
+#endif
+	}
+
+	return mask;
+}
+
 // ----- COMMANDS -----
 
 void RenderingDeviceDriverD3D12::command_uniform_set_prepare_for_use(CommandBufferID p_cmd_buffer, UniformSetID p_uniform_set, ShaderID p_shader, uint32_t p_set_index) {
@@ -3683,31 +3708,25 @@ void RenderingDeviceDriverD3D12::_command_check_descriptor_sets(CommandBufferID 
 	}
 }
 
-uint32_t RenderingDeviceDriverD3D12::UniformSetInfo::calculate_dynamic_state_mask() const {
-	uint32_t mask = 0u;
-	uint32_t shift = 0u;
-	for (const BufferDynamicInfo *dynamic_buffer : dynamic_buffers) {
-		DEV_ASSERT(dynamic_buffer->frame_idx < 16u);
-		mask |= dynamic_buffer->frame_idx << shift;
-		shift += 4u;
-	}
-	return mask;
-}
-
-void RenderingDeviceDriverD3D12::_command_bind_uniform_set(CommandBufferID p_cmd_buffer, UniformSetID p_uniform_set, ShaderID p_shader, uint32_t p_set_index, bool p_for_compute) {
+void RenderingDeviceDriverD3D12::_command_bind_uniform_set(CommandBufferID p_cmd_buffer, UniformSetID p_uniform_set, ShaderID p_shader, uint32_t p_set_index, uint32_t p_dynamic_offsets, bool p_for_compute) {
 	_command_check_descriptor_sets(p_cmd_buffer);
 
-	uint32_t curr_dynamic_buffer = 0u;
+	uint32_t shift = 0u;
 
 	UniformSetInfo *uniform_set_info = (UniformSetInfo *)p_uniform_set.id;
 	const ShaderInfo *shader_info_in = (const ShaderInfo *)p_shader.id;
 	const ShaderInfo::UniformSet &shader_set = shader_info_in->sets[p_set_index];
 	const CommandBufferInfo *cmd_buf_info = (const CommandBufferInfo *)p_cmd_buffer.id;
 
+	// The value of p_dynamic_offsets depends on all the other UniformSets bound after us
+	// (caller already filtered out bits that came before us).
+	// Turn that mask into something that is unique to us, *so that we don't create unnecessary entries in the cache*.
+	// We may not even have dynamic buffers at all in this set. In that case p_dynamic_offsets becomes 0.
+	const uint32_t used_dynamic_buffers_mask = (1u << (uniform_set_info->dynamic_buffers.size() * 4u)) - 1u;
+	p_dynamic_offsets = p_dynamic_offsets & used_dynamic_buffers_mask;
+
 	using SetRootDescriptorTableFn = void (STDMETHODCALLTYPE ID3D12GraphicsCommandList::*)(UINT, D3D12_GPU_DESCRIPTOR_HANDLE);
 	SetRootDescriptorTableFn set_root_desc_table_fn = p_for_compute ? &ID3D12GraphicsCommandList::SetComputeRootDescriptorTable : &ID3D12GraphicsCommandList1::SetGraphicsRootDescriptorTable;
-
-	const uint32_t dynamic_state_mask = uniform_set_info->calculate_dynamic_state_mask();
 
 	// If this set's descriptors have already been set for the current execution and a compatible root signature, reuse!
 	uint32_t root_sig_crc = p_for_compute ? cmd_buf_info->compute_root_signature_crc : cmd_buf_info->graphics_root_signature_crc;
@@ -3715,7 +3734,7 @@ void RenderingDeviceDriverD3D12::_command_bind_uniform_set(CommandBufferID p_cmd
 	for (int i = 0; i < (int)ARRAY_SIZE(uniform_set_info->recent_binds); i++) {
 		if (uniform_set_info->recent_binds[i].segment_serial == frames[frame_idx].segment_serial) {
 			if (uniform_set_info->recent_binds[i].root_signature_crc == root_sig_crc &&
-					uniform_set_info->recent_binds[i].dynamic_state_mask == dynamic_state_mask) {
+					uniform_set_info->recent_binds[i].dynamic_state_mask == p_dynamic_offsets) {
 				for (const RootDescriptorTable &table : uniform_set_info->recent_binds[i].root_tables.resources) {
 					(cmd_buf_info->cmd_list.Get()->*set_root_desc_table_fn)(table.root_param_idx, table.start_gpu_handle);
 				}
@@ -3831,10 +3850,10 @@ void RenderingDeviceDriverD3D12::_command_bind_uniform_set(CommandBufferID p_cmd
 
 					// For dynamic buffers, jump to the last written offset.
 					if (binding.type == UNIFORM_TYPE_UNIFORM_BUFFER_DYNAMIC || binding.type == UNIFORM_TYPE_STORAGE_BUFFER_DYNAMIC) {
-						const BufferDynamicInfo *dyn_buffer = uniform_set_info->dynamic_buffers[curr_dynamic_buffer];
-						set_heap_walkers.resources.advance(num_resource_descs * dyn_buffer->frame_idx);
-						dynamic_resources_to_skip = num_resource_descs * (frames.size() - dyn_buffer->frame_idx - 1u);
-						++curr_dynamic_buffer;
+						const uint32_t dyn_frame_idx = (p_dynamic_offsets >> shift) & 0xFu;
+						shift += 4u;
+						set_heap_walkers.resources.advance(num_resource_descs * dyn_frame_idx);
+						dynamic_resources_to_skip = num_resource_descs * (frames.size() - dyn_frame_idx - 1u);
 					}
 
 					// If there is ambiguity and it didn't clarify as SRVs, skip them, which come first. [[SRV_UAV_AMBIGUITY]]
@@ -3936,7 +3955,7 @@ void RenderingDeviceDriverD3D12::_command_bind_uniform_set(CommandBufferID p_cmd
 
 	last_bind->root_signature_crc = root_sig_crc;
 	last_bind->segment_serial = frames[frame_idx].segment_serial;
-	last_bind->dynamic_state_mask = dynamic_state_mask;
+	last_bind->dynamic_state_mask = p_dynamic_offsets;
 }
 
 /******************/
@@ -4809,14 +4828,16 @@ void RenderingDeviceDriverD3D12::command_bind_render_pipeline(CommandBufferID p_
 	cmd_buf_info->compute_pso = nullptr;
 }
 
-void RenderingDeviceDriverD3D12::command_bind_render_uniform_set(CommandBufferID p_cmd_buffer, UniformSetID p_uniform_set, ShaderID p_shader, uint32_t p_set_index) {
-	_command_bind_uniform_set(p_cmd_buffer, p_uniform_set, p_shader, p_set_index, false);
-}
-
-void RenderingDeviceDriverD3D12::command_bind_render_uniform_sets(CommandBufferID p_cmd_buffer, VectorView<UniformSetID> p_uniform_sets, ShaderID p_shader, uint32_t p_first_set_index, uint32_t p_set_count) {
+void RenderingDeviceDriverD3D12::command_bind_render_uniform_sets(CommandBufferID p_cmd_buffer, VectorView<UniformSetID> p_uniform_sets, ShaderID p_shader, uint32_t p_first_set_index, uint32_t p_set_count, uint32_t p_dynamic_offsets) {
+	uint32_t shift = 0u;
 	for (uint32_t i = 0u; i < p_set_count; ++i) {
 		// TODO: _command_bind_uniform_set() does WAAAAY too much stuff. A lot of it should be already cached in UniformSetID when uniform_set_create() was called. Binding is supposed to be a cheap operation, ideally a memcpy.
-		_command_bind_uniform_set(p_cmd_buffer, p_uniform_sets[i], p_shader, p_first_set_index + i, false);
+		_command_bind_uniform_set(p_cmd_buffer, p_uniform_sets[i], p_shader, p_first_set_index + i, p_dynamic_offsets >> shift, false);
+		const UniformSetInfo *usi = (const UniformSetInfo *)p_uniform_sets[i].id;
+		shift += usi->dynamic_buffers.size() * 4u;
+
+		// At this point this assert should already have been validated.
+		DEV_ASSERT((shift / 4u) <= MAX_DYNAMIC_BUFFERS);
 	}
 }
 
@@ -5329,14 +5350,16 @@ void RenderingDeviceDriverD3D12::command_bind_compute_pipeline(CommandBufferID p
 	cmd_buf_info->graphics_pso = nullptr;
 }
 
-void RenderingDeviceDriverD3D12::command_bind_compute_uniform_set(CommandBufferID p_cmd_buffer, UniformSetID p_uniform_set, ShaderID p_shader, uint32_t p_set_index) {
-	_command_bind_uniform_set(p_cmd_buffer, p_uniform_set, p_shader, p_set_index, true);
-}
-
-void RenderingDeviceDriverD3D12::command_bind_compute_uniform_sets(CommandBufferID p_cmd_buffer, VectorView<UniformSetID> p_uniform_sets, ShaderID p_shader, uint32_t p_first_set_index, uint32_t p_set_count) {
+void RenderingDeviceDriverD3D12::command_bind_compute_uniform_sets(CommandBufferID p_cmd_buffer, VectorView<UniformSetID> p_uniform_sets, ShaderID p_shader, uint32_t p_first_set_index, uint32_t p_set_count, uint32_t p_dynamic_offsets) {
+	uint32_t shift = 0u;
 	for (uint32_t i = 0u; i < p_set_count; ++i) {
 		// TODO: _command_bind_uniform_set() does WAAAAY too much stuff. A lot of it should be already cached in UniformSetID when uniform_set_create() was called. Binding is supposed to be a cheap operation, ideally a memcpy.
-		_command_bind_uniform_set(p_cmd_buffer, p_uniform_sets[i], p_shader, p_first_set_index + i, true);
+		_command_bind_uniform_set(p_cmd_buffer, p_uniform_sets[i], p_shader, p_first_set_index + i, p_dynamic_offsets >> shift, true);
+		const UniformSetInfo *usi = (const UniformSetInfo *)p_uniform_sets[i].id;
+		shift += usi->dynamic_buffers.size() * 4u;
+
+		// At this point this assert should already have been validated.
+		DEV_ASSERT((shift / 4u) <= MAX_DYNAMIC_BUFFERS);
 	}
 }
 

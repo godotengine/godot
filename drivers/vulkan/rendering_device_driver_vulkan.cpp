@@ -4315,6 +4315,31 @@ bool RenderingDeviceDriverVulkan::uniform_sets_have_linear_pools() const {
 	return true;
 }
 
+uint32_t RenderingDeviceDriverVulkan::uniform_sets_get_dynamic_offsets(VectorView<UniformSetID> p_uniform_sets, uint32_t p_set_count) const {
+	uint32_t mask = 0u;
+	uint32_t shift = 0u;
+#ifdef DEV_ENABLED
+	uint32_t curr_dynamic_offset = 0u;
+#endif
+
+	for (uint32_t i = 0; i < p_set_count; i++) {
+		const UniformSetInfo *usi = (const UniformSetInfo *)p_uniform_sets[i].id;
+		// At this point this assert should already have been validated.
+		DEV_ASSERT(curr_dynamic_offset + usi->dynamic_buffers.size() <= MAX_DYNAMIC_BUFFERS);
+
+		for (const BufferInfo *dynamic_buffer : usi->dynamic_buffers) {
+			DEV_ASSERT(dynamic_buffer->frame_idx < 16u);
+			mask |= dynamic_buffer->frame_idx << shift;
+			shift += 4u;
+		}
+#ifdef DEV_ENABLED
+		curr_dynamic_offset += usi->dynamic_buffers.size();
+#endif
+	}
+
+	return mask;
+}
+
 void RenderingDeviceDriverVulkan::linear_uniform_set_pools_reset(int p_linear_pool_index) {
 	if (linear_descriptor_pools_enabled) {
 		DescriptorSetPools &pools_to_reset = linear_descriptor_set_pools[p_linear_pool_index];
@@ -4910,24 +4935,7 @@ void RenderingDeviceDriverVulkan::command_bind_render_pipeline(CommandBufferID p
 	vkCmdBindPipeline(command_buffer->vk_command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, (VkPipeline)p_pipeline.id);
 }
 
-void RenderingDeviceDriverVulkan::command_bind_render_uniform_set(CommandBufferID p_cmd_buffer, UniformSetID p_uniform_set, ShaderID p_shader, uint32_t p_set_index) {
-	const CommandBufferInfo *command_buffer = (const CommandBufferInfo *)p_cmd_buffer.id;
-	const ShaderInfo *shader_info = (const ShaderInfo *)p_shader.id;
-	const UniformSetInfo *usi = (const UniformSetInfo *)p_uniform_set.id;
-
-	// At this point this assert should already have been validated.
-	DEV_ASSERT(usi->dynamic_buffers.size() <= MAX_DYNAMIC_BUFFERS);
-
-	uint32_t dynamic_offsets[MAX_DYNAMIC_BUFFERS];
-	const uint32_t dynamic_offset_count = usi->dynamic_buffers.size();
-	for (uint32_t i = 0u; i < dynamic_offset_count; ++i) {
-		dynamic_offsets[i] = uint32_t(usi->dynamic_buffers[i]->frame_idx * usi->dynamic_buffers[i]->size);
-	}
-
-	vkCmdBindDescriptorSets(command_buffer->vk_command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, shader_info->vk_pipeline_layout, p_set_index, 1, &usi->vk_descriptor_set, dynamic_offset_count, dynamic_offsets);
-}
-
-void RenderingDeviceDriverVulkan::command_bind_render_uniform_sets(CommandBufferID p_cmd_buffer, VectorView<UniformSetID> p_uniform_sets, ShaderID p_shader, uint32_t p_first_set_index, uint32_t p_set_count) {
+void RenderingDeviceDriverVulkan::command_bind_render_uniform_sets(CommandBufferID p_cmd_buffer, VectorView<UniformSetID> p_uniform_sets, ShaderID p_shader, uint32_t p_first_set_index, uint32_t p_set_count, uint32_t p_dynamic_offsets) {
 	if (p_set_count == 0) {
 		return;
 	}
@@ -4937,6 +4945,7 @@ void RenderingDeviceDriverVulkan::command_bind_render_uniform_sets(CommandBuffer
 	sets.resize(p_set_count);
 
 	uint32_t dynamic_offsets[MAX_DYNAMIC_BUFFERS];
+	uint32_t shift = 0u;
 	uint32_t curr_dynamic_offset = 0u;
 
 	for (uint32_t i = 0; i < p_set_count; i++) {
@@ -4949,7 +4958,9 @@ void RenderingDeviceDriverVulkan::command_bind_render_uniform_sets(CommandBuffer
 
 		const uint32_t dynamic_offset_count = usi->dynamic_buffers.size();
 		for (uint32_t j = 0u; j < dynamic_offset_count; ++j) {
-			dynamic_offsets[curr_dynamic_offset++] = uint32_t(usi->dynamic_buffers[j]->frame_idx * usi->dynamic_buffers[j]->size);
+			const uint32_t frame_idx = (p_dynamic_offsets >> shift) & 0xFu;
+			shift += 4u;
+			dynamic_offsets[curr_dynamic_offset++] = uint32_t(frame_idx * usi->dynamic_buffers[j]->size);
 		}
 	}
 
@@ -5379,24 +5390,7 @@ void RenderingDeviceDriverVulkan::command_bind_compute_pipeline(CommandBufferID 
 	vkCmdBindPipeline(command_buffer->vk_command_buffer, VK_PIPELINE_BIND_POINT_COMPUTE, (VkPipeline)p_pipeline.id);
 }
 
-void RenderingDeviceDriverVulkan::command_bind_compute_uniform_set(CommandBufferID p_cmd_buffer, UniformSetID p_uniform_set, ShaderID p_shader, uint32_t p_set_index) {
-	const CommandBufferInfo *command_buffer = (const CommandBufferInfo *)p_cmd_buffer.id;
-	const ShaderInfo *shader_info = (const ShaderInfo *)p_shader.id;
-	const UniformSetInfo *usi = (const UniformSetInfo *)p_uniform_set.id;
-
-	// At this point this assert should already have been validated.
-	DEV_ASSERT(usi->dynamic_buffers.size() <= MAX_DYNAMIC_BUFFERS);
-
-	uint32_t dynamic_offsets[MAX_DYNAMIC_BUFFERS];
-	const uint32_t dynamic_offset_count = usi->dynamic_buffers.size();
-	for (uint32_t i = 0u; i < dynamic_offset_count; ++i) {
-		dynamic_offsets[i] = uint32_t(usi->dynamic_buffers[i]->frame_idx * usi->dynamic_buffers[i]->size);
-	}
-
-	vkCmdBindDescriptorSets(command_buffer->vk_command_buffer, VK_PIPELINE_BIND_POINT_COMPUTE, shader_info->vk_pipeline_layout, p_set_index, 1, &usi->vk_descriptor_set, dynamic_offset_count, dynamic_offsets);
-}
-
-void RenderingDeviceDriverVulkan::command_bind_compute_uniform_sets(CommandBufferID p_cmd_buffer, VectorView<UniformSetID> p_uniform_sets, ShaderID p_shader, uint32_t p_first_set_index, uint32_t p_set_count) {
+void RenderingDeviceDriverVulkan::command_bind_compute_uniform_sets(CommandBufferID p_cmd_buffer, VectorView<UniformSetID> p_uniform_sets, ShaderID p_shader, uint32_t p_first_set_index, uint32_t p_set_count, uint32_t p_dynamic_offsets) {
 	if (p_set_count == 0) {
 		return;
 	}
@@ -5406,6 +5400,7 @@ void RenderingDeviceDriverVulkan::command_bind_compute_uniform_sets(CommandBuffe
 	sets.resize(p_set_count);
 
 	uint32_t dynamic_offsets[MAX_DYNAMIC_BUFFERS];
+	uint32_t shift = 0u;
 	uint32_t curr_dynamic_offset = 0u;
 
 	for (uint32_t i = 0; i < p_set_count; i++) {
@@ -5418,7 +5413,9 @@ void RenderingDeviceDriverVulkan::command_bind_compute_uniform_sets(CommandBuffe
 
 		const uint32_t dynamic_offset_count = usi->dynamic_buffers.size();
 		for (uint32_t j = 0u; j < dynamic_offset_count; ++j) {
-			dynamic_offsets[curr_dynamic_offset++] = uint32_t(usi->dynamic_buffers[j]->frame_idx * usi->dynamic_buffers[j]->size);
+			const uint32_t frame_idx = (p_dynamic_offsets >> shift) & 0xFu;
+			shift += 4u;
+			dynamic_offsets[curr_dynamic_offset++] = uint32_t(frame_idx * usi->dynamic_buffers[j]->size);
 		}
 	}
 
