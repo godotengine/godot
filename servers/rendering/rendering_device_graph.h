@@ -486,6 +486,7 @@ private:
 		RDD::ShaderID shader;
 		uint32_t first_set_index = 0;
 		uint32_t set_count = 0;
+		uint32_t dynamic_offsets_mask = 0u;
 
 		_FORCE_INLINE_ RDD::UniformSetID *uniform_set_ids() {
 			return reinterpret_cast<RDD::UniformSetID *>(&this[1]);
@@ -617,6 +618,7 @@ private:
 		RDD::ShaderID shader;
 		uint32_t first_set_index = 0;
 		uint32_t set_count = 0;
+		uint32_t dynamic_offsets_mask = 0u;
 
 		_FORCE_INLINE_ RDD::UniformSetID *uniform_set_ids() {
 			return reinterpret_cast<RDD::UniformSetID *>(&this[1]);
