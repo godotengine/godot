@@ -2500,6 +2500,3 @@ void EditorExportPlatform::_bind_methods() {
 	BIND_BITFIELD_FLAG(DEBUG_FLAG_VIEW_COLLISIONS);
 	BIND_BITFIELD_FLAG(DEBUG_FLAG_VIEW_NAVIGATION);
 }
-
-EditorExportPlatform::EditorExportPlatform() {
-}

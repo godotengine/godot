@@ -1322,9 +1322,6 @@ void AnimationTrackEditTypeAnimation::set_node(Object *p_object) {
 	id = p_object->get_instance_id();
 }
 
-AnimationTrackEditTypeAnimation::AnimationTrackEditTypeAnimation() {
-}
-
 /////////
 AnimationTrackEdit *AnimationTrackEditDefaultPlugin::create_value_track_edit(Object *p_object, Variant::Type p_type, const String &p_property, PropertyHint p_hint, const String &p_hint_string, int p_usage) {
 	if (p_property == "playing" && (p_object->is_class("AudioStreamPlayer") || p_object->is_class("AudioStreamPlayer2D") || p_object->is_class("AudioStreamPlayer3D"))) {

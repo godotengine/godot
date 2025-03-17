@@ -319,6 +319,3 @@ ShaderFileEditorPlugin::ShaderFileEditorPlugin() {
 	button = EditorNode::get_bottom_panel()->add_item(TTR("ShaderFile"), shader_editor, ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_shader_file_bottom_panel", TTRC("Toggle ShaderFile Bottom Panel")));
 	button->hide();
 }
-
-ShaderFileEditorPlugin::~ShaderFileEditorPlugin() {
-}

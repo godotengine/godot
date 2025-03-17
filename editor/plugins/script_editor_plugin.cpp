@@ -389,8 +389,6 @@ public:
 
 		return E->value.cache;
 	}
-
-	virtual ~EditorScriptCodeCompletionCache() {}
 };
 
 void ScriptEditorQuickOpen::popup_dialog(const Vector<String> &p_functions, bool p_dontclear) {
@@ -4710,7 +4708,4 @@ ScriptEditorPlugin::ScriptEditorPlugin() {
 	window_wrapper->connect("window_visibility_changed", callable_mp(this, &ScriptEditorPlugin::_window_visibility_changed));
 
 	ScriptServer::set_reload_scripts_on_save(EDITOR_GET("text_editor/behavior/files/auto_reload_and_parse_scripts_on_save"));
-}
-
-ScriptEditorPlugin::~ScriptEditorPlugin() {
 }

@@ -185,9 +185,6 @@ CSGShape3DGizmoPlugin::CSGShape3DGizmoPlugin() {
 	create_handle_material("handles");
 }
 
-CSGShape3DGizmoPlugin::~CSGShape3DGizmoPlugin() {
-}
-
 String CSGShape3DGizmoPlugin::get_handle_name(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary) const {
 	CSGShape3D *cs = Object::cast_to<CSGShape3D>(p_gizmo->get_node_3d());
 

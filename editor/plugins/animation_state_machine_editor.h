@@ -326,6 +326,4 @@ protected:
 
 public:
 	void add_transition(const StringName &p_from, const StringName &p_to, Ref<AnimationNodeStateMachineTransition> p_transition);
-
-	EditorAnimationMultiTransitionEdit() {}
 };

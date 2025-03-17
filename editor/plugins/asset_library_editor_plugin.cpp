@@ -1801,6 +1801,3 @@ AssetLibraryEditorPlugin::AssetLibraryEditorPlugin() {
 	addon_library->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 	addon_library->hide();
 }
-
-AssetLibraryEditorPlugin::~AssetLibraryEditorPlugin() {
-}

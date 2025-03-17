@@ -2497,9 +2497,6 @@ TileMapLayerEditorTilesPlugin::TileMapLayerEditorTilesPlugin() {
 	_update_source_display();
 }
 
-TileMapLayerEditorTilesPlugin::~TileMapLayerEditorTilesPlugin() {
-}
-
 void TileMapLayerEditorTerrainsPlugin::tile_set_changed() {
 	_update_terrains_cache();
 	_update_terrains_tree();
@@ -3628,9 +3625,6 @@ TileMapLayerEditorTerrainsPlugin::TileMapLayerEditorTerrainsPlugin() {
 	bucket_contiguous_checkbox->set_text(TTR("Contiguous"));
 	bucket_contiguous_checkbox->set_pressed(true);
 	tools_settings->add_child(bucket_contiguous_checkbox);
-}
-
-TileMapLayerEditorTerrainsPlugin::~TileMapLayerEditorTerrainsPlugin() {
 }
 
 TileMapLayer *TileMapLayerEditor::_get_edited_layer() const {

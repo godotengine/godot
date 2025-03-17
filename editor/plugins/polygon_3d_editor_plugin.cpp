@@ -611,6 +611,3 @@ Polygon3DEditorPlugin::Polygon3DEditorPlugin() {
 
 	polygon_editor->hide();
 }
-
-Polygon3DEditorPlugin::~Polygon3DEditorPlugin() {
-}

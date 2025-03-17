@@ -1875,9 +1875,3 @@ int GridMapEditorPlugin::get_selected_palette_item() const {
 		return -1;
 	}
 }
-
-GridMapEditorPlugin::GridMapEditorPlugin() {
-}
-
-GridMapEditorPlugin::~GridMapEditorPlugin() {
-}

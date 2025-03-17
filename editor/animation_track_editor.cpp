@@ -8118,9 +8118,6 @@ AnimationTrackKeyEditEditor::AnimationTrackKeyEditEditor(Ref<Animation> p_animat
 	spinner->connect("value_focus_exited", callable_mp(this, &AnimationTrackKeyEditEditor::_time_edit_exited), CONNECT_DEFERRED);
 }
 
-AnimationTrackKeyEditEditor::~AnimationTrackKeyEditEditor() {
-}
-
 void AnimationMarkerEdit::_zoom_changed() {
 	queue_redraw();
 	play_position->queue_redraw();
@@ -9109,9 +9106,6 @@ AnimationMarkerEdit::AnimationMarkerEdit() {
 	marker_rename_confirm->add_child(marker_rename_error_dialog);
 }
 
-AnimationMarkerEdit::~AnimationMarkerEdit() {
-}
-
 float AnimationMarkerKeyEdit::get_time() const {
 	return animation->get_marker_time(marker_name);
 }
@@ -9298,7 +9292,4 @@ AnimationMarkerKeyEditEditor::AnimationMarkerKeyEditEditor(Ref<Animation> p_anim
 
 	spinner->connect("ungrabbed", callable_mp(this, &AnimationMarkerKeyEditEditor::_time_edit_exited), CONNECT_DEFERRED);
 	spinner->connect("value_focus_exited", callable_mp(this, &AnimationMarkerKeyEditEditor::_time_edit_exited), CONNECT_DEFERRED);
-}
-
-AnimationMarkerKeyEditEditor::~AnimationMarkerKeyEditEditor() {
 }

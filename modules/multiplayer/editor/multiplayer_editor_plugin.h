@@ -50,8 +50,6 @@ public:
 	virtual bool has_capture(const String &p_capture) const override;
 	virtual bool capture(const String &p_message, const Array &p_data, int p_index) override;
 	virtual void setup_session(int p_session_id) override;
-
-	MultiplayerEditorDebugger() {}
 };
 
 class ReplicationEditor;
