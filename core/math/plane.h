@@ -100,7 +100,7 @@ real_t Plane::distance_to(const Vector3 &p_point) const {
 
 bool Plane::has_point(const Vector3 &p_point, real_t p_tolerance) const {
 	real_t dist = normal.dot(p_point) - d;
-	dist = ABS(dist);
+	dist = Math::abs(dist);
 	return (dist <= p_tolerance);
 }
 

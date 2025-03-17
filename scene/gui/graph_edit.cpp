@@ -1663,7 +1663,7 @@ void GraphEdit::_draw_grid() {
 			for (int i = from_pos.x; i < from_pos.x + len.x; i++) {
 				Color color;
 
-				if (ABS(i) % GRID_MINOR_STEPS_PER_MAJOR_LINE == 0) {
+				if (Math::abs(i) % GRID_MINOR_STEPS_PER_MAJOR_LINE == 0) {
 					color = theme_cache.grid_major;
 				} else {
 					color = theme_cache.grid_minor;
@@ -1676,7 +1676,7 @@ void GraphEdit::_draw_grid() {
 			for (int i = from_pos.y; i < from_pos.y + len.y; i++) {
 				Color color;
 
-				if (ABS(i) % GRID_MINOR_STEPS_PER_MAJOR_LINE == 0) {
+				if (Math::abs(i) % GRID_MINOR_STEPS_PER_MAJOR_LINE == 0) {
 					color = theme_cache.grid_major;
 				} else {
 					color = theme_cache.grid_minor;
@@ -1694,7 +1694,7 @@ void GraphEdit::_draw_grid() {
 			if (transparent_grid_minor.a != 0) {
 				for (int i = from_pos.x; i < from_pos.x + len.x; i++) {
 					for (int j = from_pos.y; j < from_pos.y + len.y; j++) {
-						if (ABS(i) % GRID_MINOR_STEPS_PER_MAJOR_DOT == 0 && ABS(j) % GRID_MINOR_STEPS_PER_MAJOR_DOT == 0) {
+						if (Math::abs(i) % GRID_MINOR_STEPS_PER_MAJOR_DOT == 0 && Math::abs(j) % GRID_MINOR_STEPS_PER_MAJOR_DOT == 0) {
 							continue;
 						}
 

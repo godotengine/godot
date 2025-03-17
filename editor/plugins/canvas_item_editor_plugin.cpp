@@ -1116,7 +1116,7 @@ bool CanvasItemEditor::_gui_input_rulers_and_guides(const Ref<InputEvent> &p_eve
 			if (m.is_valid() && m->get_position().x < RULER_WIDTH) {
 				// Check if we are hovering an existing horizontal guide
 				for (int i = 0; i < hguides.size(); i++) {
-					if (ABS(xform.xform(Point2(0, hguides[i])).y - m->get_position().y) < MIN(minimum, 8)) {
+					if (Math::abs(xform.xform(Point2(0, hguides[i])).y - m->get_position().y) < MIN(minimum, 8)) {
 						is_hovering_h_guide = true;
 						is_hovering_v_guide = false;
 						break;
@@ -1126,7 +1126,7 @@ bool CanvasItemEditor::_gui_input_rulers_and_guides(const Ref<InputEvent> &p_eve
 			} else if (m.is_valid() && m->get_position().y < RULER_WIDTH) {
 				// Check if we are hovering an existing vertical guide
 				for (int i = 0; i < vguides.size(); i++) {
-					if (ABS(xform.xform(Point2(vguides[i], 0)).x - m->get_position().x) < MIN(minimum, 8)) {
+					if (Math::abs(xform.xform(Point2(vguides[i], 0)).x - m->get_position().x) < MIN(minimum, 8)) {
 						is_hovering_v_guide = true;
 						is_hovering_h_guide = false;
 						break;
@@ -1146,7 +1146,7 @@ bool CanvasItemEditor::_gui_input_rulers_and_guides(const Ref<InputEvent> &p_eve
 					// Check if we drag an existing horizontal guide
 					dragged_guide_index = -1;
 					for (int i = 0; i < hguides.size(); i++) {
-						if (ABS(xform.xform(Point2(0, hguides[i])).y - b->get_position().y) < MIN(minimum, 8)) {
+						if (Math::abs(xform.xform(Point2(0, hguides[i])).y - b->get_position().y) < MIN(minimum, 8)) {
 							dragged_guide_index = i;
 						}
 					}
@@ -1163,7 +1163,7 @@ bool CanvasItemEditor::_gui_input_rulers_and_guides(const Ref<InputEvent> &p_eve
 					// Check if we drag an existing vertical guide
 					dragged_guide_index = -1;
 					for (int i = 0; i < vguides.size(); i++) {
-						if (ABS(xform.xform(Point2(vguides[i], 0)).x - b->get_position().x) < MIN(minimum, 8)) {
+						if (Math::abs(xform.xform(Point2(vguides[i], 0)).x - b->get_position().x) < MIN(minimum, 8)) {
 							dragged_guide_index = i;
 						}
 					}
@@ -2220,7 +2220,7 @@ bool CanvasItemEditor::_gui_input_move(const Ref<InputEvent> &p_event) {
 
 			bool single_axis = m->is_shift_pressed();
 			if (single_axis) {
-				if (ABS(new_pos.x - previous_pos.x) > ABS(new_pos.y - previous_pos.y)) {
+				if (Math::abs(new_pos.x - previous_pos.x) > Math::abs(new_pos.y - previous_pos.y)) {
 					new_pos.y = previous_pos.y;
 				} else {
 					new_pos.x = previous_pos.x;
@@ -3240,14 +3240,14 @@ void CanvasItemEditor::_draw_ruler_tool() {
 					: (end_to_begin.y < 0 ? 3.0 * Math_PI / 2.0 : Math_PI / 2.0 - vertical_angle_rad);
 			real_t arc_1_end_angle = arc_1_start_angle + vertical_angle_rad;
 			// Constrain arc to triangle height & max size.
-			real_t arc_1_radius = MIN(MIN(arc_radius_max_length_percent * ruler_length, ABS(end_to_begin.y)), arc_max_radius);
+			real_t arc_1_radius = MIN(MIN(arc_radius_max_length_percent * ruler_length, Math::abs(end_to_begin.y)), arc_max_radius);
 
 			real_t arc_2_start_angle = end_to_begin.x < 0
 					? (end_to_begin.y < 0 ? 0.0 : -horizontal_angle_rad)
 					: (end_to_begin.y < 0 ? Math_PI - horizontal_angle_rad : Math_PI);
 			real_t arc_2_end_angle = arc_2_start_angle + horizontal_angle_rad;
 			// Constrain arc to triangle width & max size.
-			real_t arc_2_radius = MIN(MIN(arc_radius_max_length_percent * ruler_length, ABS(end_to_begin.x)), arc_max_radius);
+			real_t arc_2_radius = MIN(MIN(arc_radius_max_length_percent * ruler_length, Math::abs(end_to_begin.x)), arc_max_radius);
 
 			viewport->draw_arc(begin, arc_1_radius, arc_1_start_angle, arc_1_end_angle, arc_point_count, ruler_primary_color, Math::round(EDSCALE * arc_line_width));
 			viewport->draw_arc(end, arc_2_radius, arc_2_start_angle, arc_2_end_angle, arc_point_count, ruler_primary_color, Math::round(EDSCALE * arc_line_width));
@@ -3288,13 +3288,13 @@ void CanvasItemEditor::_draw_ruler_tool() {
 			h_angle_text_pos.x = CLAMP(end.x - angle_text_width / 2, angle_text_width / 2, viewport->get_rect().size.x - angle_text_width);
 			if (begin.y < end.y) {
 				h_angle_text_pos.y = end.y + text_height * 1.5;
-				if (ABS(text_pos2.x - h_angle_text_pos.x) < text_width) {
+				if (Math::abs(text_pos2.x - h_angle_text_pos.x) < text_width) {
 					int height_multiplier = 1.5 + (int)grid_snap_active;
 					h_angle_text_pos.y = MAX(text_pos.y + height_multiplier * text_height, MAX(end.y + text_height * 1.5, text_pos2.y + height_multiplier * text_height));
 				}
 			} else {
 				h_angle_text_pos.y = end.y - text_height * 0.5;
-				if (ABS(text_pos2.x - h_angle_text_pos.x) < text_width) {
+				if (Math::abs(text_pos2.x - h_angle_text_pos.x) < text_width) {
 					int height_multiplier = 1 + (int)grid_snap_active;
 					h_angle_text_pos.y = MIN(text_pos.y - height_multiplier * text_height, MIN(end.y - text_height * 0.5, text_pos2.y - height_multiplier * text_height));
 				}
