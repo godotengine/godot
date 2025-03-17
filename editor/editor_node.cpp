@@ -4688,6 +4688,7 @@ void EditorNode::_update_recent_scenes() {
 
 	recent_scenes->add_separator();
 	recent_scenes->add_shortcut(ED_SHORTCUT("editor/clear_recent", TTRC("Clear Recent Scenes")));
+	recent_scenes->set_item_auto_translate_mode(-1, AUTO_TRANSLATE_MODE_ALWAYS);
 	recent_scenes->reset_size();
 }
 
@@ -5639,6 +5640,7 @@ void EditorNode::_update_layouts_menu() {
 		}
 
 		editor_layouts->add_item(layout);
+		editor_layouts->set_item_auto_translate_mode(-1, AUTO_TRANSLATE_MODE_DISABLED);
 	}
 }
 
@@ -7448,6 +7450,7 @@ EditorNode::EditorNode() {
 	file_menu->add_shortcut(ED_SHORTCUT_AND_COMMAND("editor/reopen_closed_scene", TTRC("Reopen Closed Scene"), KeyModifierMask::CMD_OR_CTRL + KeyModifierMask::SHIFT + Key::T), FILE_OPEN_PREV);
 
 	recent_scenes = memnew(PopupMenu);
+	recent_scenes->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	file_menu->add_submenu_node_item(TTR("Open Recent"), recent_scenes, FILE_OPEN_RECENT);
 	recent_scenes->connect(SceneStringName(id_pressed), callable_mp(this, &EditorNode::_open_recent_scene));
 
@@ -7576,7 +7579,6 @@ EditorNode::EditorNode() {
 	settings_menu->add_submenu_node_item(TTR("Editor Docks"), editor_dock_manager->get_docks_menu());
 
 	editor_layouts = memnew(PopupMenu);
-	editor_layouts->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	settings_menu->add_submenu_node_item(TTR("Editor Layout"), editor_layouts);
 	editor_layouts->connect(SceneStringName(id_pressed), callable_mp(this, &EditorNode::_layout_menu_option));
 	settings_menu->add_separator();
