@@ -784,26 +784,6 @@ bool Projection::is_same(const Projection &p_cam) const {
 	return columns[0].is_same(p_cam.columns[0]) && columns[1].is_same(p_cam.columns[1]) && columns[2].is_same(p_cam.columns[2]) && columns[3].is_same(p_cam.columns[3]);
 }
 
-Projection::Projection() {
-	set_identity();
-}
-
-Projection Projection::operator*(const Projection &p_matrix) const {
-	Projection new_matrix;
-
-	for (int j = 0; j < 4; j++) {
-		for (int i = 0; i < 4; i++) {
-			real_t ab = 0;
-			for (int k = 0; k < 4; k++) {
-				ab += columns[k][i] * p_matrix.columns[j][k];
-			}
-			new_matrix.columns[j][i] = ab;
-		}
-	}
-
-	return new_matrix;
-}
-
 void Projection::set_depth_correction(bool p_flip_y, bool p_reverse_z, bool p_remap_z) {
 	// p_remap_z is used to convert from OpenGL-style clip space (-1 - 1) to Vulkan style (0 - 1).
 	real_t *m = &columns[0][0];
@@ -977,20 +957,6 @@ Projection::operator Transform3D() const {
 	return tr;
 }
 
-Projection::Projection(const Vector4 &p_x, const Vector4 &p_y, const Vector4 &p_z, const Vector4 &p_w) {
-	columns[0] = p_x;
-	columns[1] = p_y;
-	columns[2] = p_z;
-	columns[3] = p_w;
-}
-
-Projection::Projection(real_t p_xx, real_t p_xy, real_t p_xz, real_t p_xw, real_t p_yx, real_t p_yy, real_t p_yz, real_t p_yw, real_t p_zx, real_t p_zy, real_t p_zz, real_t p_zw, real_t p_wx, real_t p_wy, real_t p_wz, real_t p_ww) {
-	columns[0] = Vector4(p_xx, p_xy, p_xz, p_xw);
-	columns[1] = Vector4(p_yx, p_yy, p_yz, p_yw);
-	columns[2] = Vector4(p_zx, p_zy, p_zz, p_zw);
-	columns[3] = Vector4(p_wx, p_wy, p_wz, p_ww);
-}
-
 Projection::Projection(const Transform3D &p_transform) {
 	const Transform3D &tr = p_transform;
 	real_t *m = &columns[0][0];
@@ -1011,7 +977,4 @@ Projection::Projection(const Transform3D &p_transform) {
 	m[13] = tr.origin.y;
 	m[14] = tr.origin.z;
 	m[15] = 1.0;
-}
-
-Projection::~Projection() {
 }
