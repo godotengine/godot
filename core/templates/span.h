@@ -113,3 +113,43 @@ constexpr uint64_t Span<T>::count(const T &p_val) const {
 	}
 	return amount;
 }
+
+template <typename LHS, typename RHS>
+bool operator==(const Span<LHS> &p_lhs, const Span<RHS> &p_rhs) {
+	if (p_lhs.size() != p_rhs.size()) {
+		return false;
+	}
+
+	if constexpr (std::is_same_v<LHS, RHS> && std::is_fundamental_v<LHS>) {
+		// Optimize trivial type comparison.
+		// is_trivially_equality_comparable would help, but it doesn't exist.
+		return memcmp(p_lhs.ptr(), p_rhs.ptr(), p_lhs.size() * sizeof(LHS)) == 0;
+	} else if constexpr (std::is_fundamental_v<LHS> && std::is_fundamental_v<RHS> && (std::is_signed_v<LHS> != std::is_signed_v<RHS>)) {
+		// Special case: Comparing a signed and an unsigned type.
+		// This is undefined behavior, so we need to cast to a common type before comparison.
+		using CommonType = std::common_type_t<LHS, RHS>;
+
+		// Normal case: Need to iterate the array manually.
+		for (size_t j = 0; j < p_lhs.size(); j++) {
+			if (static_cast<CommonType>(p_lhs.ptr()[j]) != static_cast<CommonType>(p_rhs.ptr()[j])) {
+				return false;
+			}
+		}
+
+		return true;
+	} else {
+		// Normal case: Need to iterate the array manually.
+		for (size_t j = 0; j < p_lhs.size(); j++) {
+			if (p_lhs.ptr()[j] != p_rhs.ptr()[j]) {
+				return false;
+			}
+		}
+
+		return true;
+	}
+}
+
+template <typename LHS, typename RHS>
+_FORCE_INLINE_ bool operator!=(const Span<LHS> &p_lhs, const Span<RHS> &p_rhs) {
+	return !(p_lhs == p_rhs);
+}

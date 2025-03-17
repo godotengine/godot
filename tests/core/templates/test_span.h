@@ -56,6 +56,10 @@ TEST_CASE("[Span] Constexpr Validators") {
 	static_assert(span_array[0] == U'1');
 	static_assert(span_array[span_array.size() - 1] == U'5');
 
+	CHECK_EQ(span_array, span_array); // Same identity / ptr.
+	CHECK_EQ(span_array, Span(U"1223456", 6)); // Different ptr.
+	CHECK_EQ(span_array, Span("122345", 6)); // Different type.
+
 	int idx = 0;
 	for (const char32_t &chr : span_array) {
 		CHECK_EQ(chr, span_array[idx++]);
