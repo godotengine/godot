@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="PhysicsShapeQueryParameters3D" inherits="RefCounted" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Provides parameters for [method PhysicsDirectSpaceState3D.intersect_shape].
+		Provides parameters for [PhysicsDirectSpaceState3D]'s methods.
 	</brief_description>
 	<description>
-		By changing various properties of this object, such as the shape, you can configure the parameters for [method PhysicsDirectSpaceState3D.intersect_shape].
+		By changing various properties of this object, such as the shape, you can configure the parameters for [PhysicsDirectSpaceState3D]'s methods.
 	</description>
 	<tutorials>
 	</tutorials>
