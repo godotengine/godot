@@ -365,6 +365,24 @@ String String::operator+(const String &p_str) const {
 	return res;
 }
 
+String String::operator+(const char *p_str) const {
+	String res = *this;
+	res += p_str;
+	return res;
+}
+
+String String::operator+(const wchar_t *p_str) const {
+	String res = *this;
+	res += p_str;
+	return res;
+}
+
+String String::operator+(const char32_t *p_str) const {
+	String res = *this;
+	res += p_str;
+	return res;
+}
+
 String String::operator+(char32_t p_char) const {
 	String res = *this;
 	res += p_char;
