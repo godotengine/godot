@@ -252,10 +252,6 @@ public:
 	_FORCE_INLINE_ operator Span<T>() const { return Span<T>(ptr(), size()); }
 	_FORCE_INLINE_ Span<T> span() const { return operator Span<T>(); }
 
-	Size find(const T &p_val, Size p_from = 0) const;
-	Size rfind(const T &p_val, Size p_from = -1) const;
-	Size count(const T &p_val) const;
-
 	_FORCE_INLINE_ CowData() {}
 	_FORCE_INLINE_ ~CowData() { _unref(); }
 	_FORCE_INLINE_ CowData(std::initializer_list<T> p_init);
@@ -428,54 +424,6 @@ Error CowData<T>::_realloc(Size p_alloc_size) {
 	_ptr = _data_ptr;
 
 	return OK;
-}
-
-template <typename T>
-typename CowData<T>::Size CowData<T>::find(const T &p_val, Size p_from) const {
-	Size ret = -1;
-
-	if (p_from < 0 || size() == 0) {
-		return ret;
-	}
-
-	for (Size i = p_from; i < size(); i++) {
-		if (get(i) == p_val) {
-			ret = i;
-			break;
-		}
-	}
-
-	return ret;
-}
-
-template <typename T>
-typename CowData<T>::Size CowData<T>::rfind(const T &p_val, Size p_from) const {
-	const Size s = size();
-
-	if (p_from < 0) {
-		p_from = s + p_from;
-	}
-	if (p_from < 0 || p_from >= s) {
-		p_from = s - 1;
-	}
-
-	for (Size i = p_from; i >= 0; i--) {
-		if (get(i) == p_val) {
-			return i;
-		}
-	}
-	return -1;
-}
-
-template <typename T>
-typename CowData<T>::Size CowData<T>::count(const T &p_val) const {
-	Size amount = 0;
-	for (Size i = 0; i < size(); i++) {
-		if (get(i) == p_val) {
-			amount++;
-		}
-	}
-	return amount;
 }
 
 template <typename T>

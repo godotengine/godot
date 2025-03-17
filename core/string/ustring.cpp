@@ -3329,7 +3329,7 @@ int String::find(const char *p_str, int p_from) const {
 }
 
 int String::find_char(char32_t p_char, int p_from) const {
-	return _cowdata.find(p_char, p_from);
+	return span().find(p_char, p_from);
 }
 
 int String::findmk(const Vector<String> &p_keys, int p_from, int *r_key) const {
@@ -3566,7 +3566,7 @@ int String::rfind(const char *p_str, int p_from) const {
 }
 
 int String::rfind_char(char32_t p_char, int p_from) const {
-	return _cowdata.rfind(p_char, p_from);
+	return span().rfind(p_char, p_from);
 }
 
 int String::rfindn(const String &p_str, int p_from) const {

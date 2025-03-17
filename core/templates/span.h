@@ -62,4 +62,54 @@ public:
 
 	_FORCE_INLINE_ constexpr const T *begin() const { return _ptr; }
 	_FORCE_INLINE_ constexpr const T *end() const { return _ptr + _len; }
+
+	// Algorithms.
+	constexpr int64_t find(const T &p_val, int64_t p_from = 0) const;
+	constexpr int64_t rfind(const T &p_val, int64_t p_from = 0) const;
+	constexpr uint64_t count(const T &p_val) const;
 };
+
+template <typename T>
+constexpr int64_t Span<T>::find(const T &p_val, int64_t p_from) const {
+	if (p_from < 0 || size() == 0) {
+		return -1;
+	}
+
+	for (uint64_t i = p_from; i < size(); i++) {
+		if (ptr()[i] == p_val) {
+			return i;
+		}
+	}
+
+	return -1;
+}
+
+template <typename T>
+constexpr int64_t Span<T>::rfind(const T &p_val, int64_t p_from) const {
+	const int64_t s = size();
+
+	if (p_from < 0) {
+		p_from = s + p_from;
+	}
+	if (p_from < 0 || p_from >= s) {
+		p_from = s - 1;
+	}
+
+	for (int64_t i = p_from; i >= 0; i--) {
+		if (ptr()[i] == p_val) {
+			return i;
+		}
+	}
+	return -1;
+}
+
+template <typename T>
+constexpr uint64_t Span<T>::count(const T &p_val) const {
+	uint64_t amount = 0;
+	for (uint64_t i = 0; i < size(); i++) {
+		if (ptr()[i] == p_val) {
+			amount++;
+		}
+	}
+	return amount;
+}
