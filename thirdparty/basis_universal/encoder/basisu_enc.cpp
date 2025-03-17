@@ -492,7 +492,7 @@ namespace basisu
 	bool load_jpg(const char *pFilename, image& img)
 	{
 		int width = 0, height = 0, actual_comps = 0;
-		uint8_t *pImage_data = jpgd::decompress_jpeg_image_from_file(pFilename, &width, &height, &actual_comps, 4, jpgd::jpeg_decoder::cFlagBoxChromaFiltering);
+		uint8_t *pImage_data = jpgd::decompress_jpeg_image_from_file(pFilename, &width, &height, &actual_comps, 4, jpgd::jpeg_decoder::cFlagLinearChromaFiltering);
 		if (!pImage_data)
 			return false;
 		
@@ -512,7 +512,7 @@ namespace basisu
 		}
 
 		int width = 0, height = 0, actual_comps = 0;
-		uint8_t* pImage_data = jpgd::decompress_jpeg_image_from_memory(pBuf, (int)buf_size, &width, &height, &actual_comps, 4, jpgd::jpeg_decoder::cFlagBoxChromaFiltering);
+		uint8_t* pImage_data = jpgd::decompress_jpeg_image_from_memory(pBuf, (int)buf_size, &width, &height, &actual_comps, 4, jpgd::jpeg_decoder::cFlagLinearChromaFiltering);
 		if (!pImage_data)
 			return false;
 
