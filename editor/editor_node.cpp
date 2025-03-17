@@ -1026,7 +1026,7 @@ void EditorNode::_fs_changed() {
 
 				platform->clear_messages();
 				preset->update_value_overrides();
-				Error err = platform->export_project(preset, export_defer.debug, preset->get_export_path(), 0);
+				err = platform->export_project(preset, export_defer.debug, preset->get_export_path(), 0);
 				if (err == ERR_SKIP) {
 					err = FAILED;
 					break;
