@@ -763,7 +763,6 @@ protected:
 #ifdef TOOLS_ENABLED
 	struct VirtualMethodTracker {
 		void **method;
-		bool *initialized;
 		VirtualMethodTracker *next;
 	};
 
