@@ -31,12 +31,12 @@
 #pragma once
 
 #include "core/math/dynamic_bvh.h"
+#include "editor/gui/editor_spin_slider.h"
 #include "editor/plugins/editor_plugin.h"
 #include "editor/plugins/node_3d_editor_gizmos.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
-#include "scene/gui/spin_box.h"
 #include "scene/resources/immediate_mesh.h"
 
 class AcceptDialog;
@@ -307,7 +307,6 @@ private:
 
 	Vector3 _get_camera_position() const;
 	Vector3 _get_camera_normal() const;
-	Vector3 _get_screen_to_space(const Vector3 &p_vector3);
 
 	void _select_region();
 	bool _transform_gizmo_select(const Vector2 &p_screenpos, bool p_highlight_only = false);
@@ -548,7 +547,9 @@ public:
 	bool is_freelook_active() const { return freelook_active; }
 
 	Vector3 get_ray_pos(const Vector2 &p_pos) const;
+	Vector3 get_ray_pos_local(const Vector2 &p_pos) const;
 	Vector3 get_ray(const Vector2 &p_pos) const;
+	Vector3 get_ray_local(const Vector2 &p_pos) const;
 	Point2 point_to_screen(const Vector3 &p_point);
 
 	void focus_selection();
@@ -787,9 +788,9 @@ private:
 	OptionButton *xform_type = nullptr;
 
 	VBoxContainer *settings_vbc = nullptr;
-	SpinBox *settings_fov = nullptr;
-	SpinBox *settings_znear = nullptr;
-	SpinBox *settings_zfar = nullptr;
+	EditorSpinSlider *settings_fov = nullptr;
+	EditorSpinSlider *settings_znear = nullptr;
+	EditorSpinSlider *settings_zfar = nullptr;
 
 	void _snap_changed();
 	void _snap_update();
@@ -1012,7 +1013,7 @@ public:
 	DynamicBVH::ID insert_gizmo_bvh_node(Node3D *p_node, const AABB &p_aabb);
 	void update_gizmo_bvh_node(DynamicBVH::ID p_id, const AABB &p_aabb);
 	void remove_gizmo_bvh_node(DynamicBVH::ID p_id);
-	Vector<Node3D *> gizmo_bvh_ray_query(const Vector3 &p_ray_start, const Vector3 &p_ray_end);
+	Vector<Node3D *> gizmo_bvh_ray_query(const Vector3 &p_ray_start, const Vector3 &p_ray_dir, real_t ray_length);
 	Vector<Node3D *> gizmo_bvh_frustum_query(const Vector<Plane> &p_frustum);
 
 	void edit(Node3D *p_spatial);

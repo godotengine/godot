@@ -36,6 +36,8 @@
 #include "scene/resources/compositor.h"
 #include "scene/resources/environment.h"
 
+struct Frustum;
+
 class Camera3D : public Node3D {
 	GDCLASS(Camera3D, Node3D);
 
@@ -140,6 +142,7 @@ protected:
 	static void _bind_methods();
 
 	Projection _get_camera_projection(real_t p_near) const;
+	Frustum _get_camera_frustum() const;
 
 public:
 	enum {
@@ -179,6 +182,7 @@ public:
 	virtual Vector3 project_ray_normal(const Point2 &p_pos) const;
 	virtual Vector3 project_ray_origin(const Point2 &p_pos) const;
 	virtual Vector3 project_local_ray_normal(const Point2 &p_pos) const;
+	virtual Vector3 project_local_ray_origin(const Point2 &p_pos) const;
 	virtual Point2 unproject_position(const Vector3 &p_pos) const;
 	bool is_position_behind(const Vector3 &p_pos) const;
 	virtual Vector3 project_position(const Point2 &p_point, real_t p_z_depth) const;

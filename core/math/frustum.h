@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  triangle_mesh.h                                                       */
+/*  frustum.h                                                             */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,68 +28,58 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#pragma once
+#ifndef FRUSTUM_H
+#define FRUSTUM_H
 
-#include "core/math/face3.h"
-#include "core/object/ref_counted.h"
+#include "core/math/plane.h"
 
-class TriangleMesh : public RefCounted {
-	GDCLASS(TriangleMesh, RefCounted);
+struct Transform3D;
 
-public:
-	struct Triangle {
-		Vector3 normal;
-		int indices[3];
-		int32_t surface_index;
+struct Frustum {
+	/*
+	Planes are stored in the order defined in struct Projection :
+
+	enum Projection::Planes {
+		PLANE_NEAR,
+		PLANE_FAR,
+		PLANE_LEFT,
+		PLANE_TOP,
+		PLANE_RIGHT,
+		PLANE_BOTTOM
 	};
+	*/
 
-private:
-	Vector<Triangle> triangles;
-	Vector<Vector3> vertices;
+	Plane planes[6];
 
-	struct BVH {
-		AABB aabb;
-		Vector3 center; //used for sorting
-		int left;
-		int right;
+	_FORCE_INLINE_ Plane &operator[](int p_index) { return planes[p_index]; }
+	_FORCE_INLINE_ const Plane &operator[](int p_index) const { return planes[p_index]; }
 
-		int face_index;
-	};
+	void set_perspective(real_t p_fovy_degrees, real_t p_aspect, real_t p_z_near, real_t p_z_far, bool p_flip_fov = false);
+	void set_perspective(real_t p_fovy_degrees, real_t p_aspect, real_t p_z_near, real_t p_z_far, bool p_flip_fov, int p_eye, real_t p_intraocular_dist, real_t p_convergence_dist);
+	void set_for_hmd(int p_eye, real_t p_aspect, real_t p_intraocular_dist, real_t p_display_width, real_t p_display_to_lens, real_t p_oversample, real_t p_z_near, real_t p_z_far);
+	void set_orthogonal(real_t p_left, real_t p_right, real_t p_bottom, real_t p_top, real_t p_znear, real_t p_zfar);
+	void set_orthogonal(real_t p_size, real_t p_aspect, real_t p_znear, real_t p_zfar, bool p_flip_fov = false);
+	void set_frustum(real_t p_left, real_t p_right, real_t p_bottom, real_t p_top, real_t p_near, real_t p_far);
+	void set_frustum(real_t p_size, real_t p_aspect, Vector2 p_offset, real_t p_near, real_t p_far, bool p_flip_fov = false);
 
-	struct BVHCmpX {
-		bool operator()(const BVH *p_left, const BVH *p_right) const {
-			return p_left->center.x < p_right->center.x;
-		}
-	};
+	Vector<Plane> get_projection_planes(const Transform3D &p_transform) const;
 
-	struct BVHCmpY {
-		bool operator()(const BVH *p_left, const BVH *p_right) const {
-			return p_left->center.y < p_right->center.y;
-		}
-	};
-	struct BVHCmpZ {
-		bool operator()(const BVH *p_left, const BVH *p_right) const {
-			return p_left->center.z < p_right->center.z;
-		}
-	};
+	bool is_orthogonal() const;
+	bool get_endpoints(const Transform3D &p_transform, Vector3 *p_8points) const;
+	Vector2 get_viewport_half_extents() const;
+	Vector2 get_far_plane_half_extents() const;
+	real_t get_lod_multiplier() const;
+	real_t get_fov() const;
+	real_t get_z_near() const;
+	real_t get_z_far() const;
+	real_t get_aspect() const;
 
-	int _create_bvh(BVH *p_bvh, BVH **p_bb, int p_from, int p_size, int p_depth, int &max_depth, int &max_alloc);
+	static real_t get_fovy(real_t p_fovx, real_t p_aspect) {
+		return Math::rad_to_deg(Math::atan(p_aspect * Math::tan(Math::deg_to_rad(p_fovx) * 0.5)) * 2.0);
+	}
 
-	Vector<BVH> bvh;
-	int max_depth;
-	bool valid;
-
-public:
-	bool is_valid() const;
-	bool intersect_segment(const Vector3 &p_begin, const Vector3 &p_end, Vector3 &r_point, Vector3 &r_normal, int32_t *r_surf_index = nullptr) const;
-	bool intersect_ray(const Vector3 &p_begin, const Vector3 &p_dir, Vector3 &r_point, Vector3 &r_normal, int32_t *r_surf_index = nullptr, real_t p_dist = 0.0) const;
-	bool inside_convex_shape(const Plane *p_planes, int p_plane_count, const Vector3 *p_points, int p_point_count, Vector3 p_scale = Vector3(1, 1, 1)) const;
-	Vector<Face3> get_faces() const;
-
-	const Vector<Triangle> &get_triangles() const { return triangles; }
-	const Vector<Vector3> &get_vertices() const { return vertices; }
-	void get_indices(Vector<int> *r_triangles_indices) const;
-
-	void create(const Vector<Vector3> &p_faces, const Vector<int32_t> &p_surface_indices = Vector<int32_t>());
-	TriangleMesh();
+	Frustum() = default;
+	Frustum(const Vector<Plane> &p_planes);
 };
+
+#endif // FRUSTUM_H
