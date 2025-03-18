@@ -617,6 +617,9 @@ public:
 	_FORCE_INLINE_ String(const String &p_str) { _cowdata._ref(p_str._cowdata); }
 	_FORCE_INLINE_ String(String &&p_str) :
 			_cowdata(std::move(p_str._cowdata)) {}
+#ifdef SIZE_EXTRA
+	_NO_INLINE_ ~String() {}
+#endif
 	_FORCE_INLINE_ void operator=(const String &p_str) { _cowdata._ref(p_str._cowdata); }
 	_FORCE_INLINE_ void operator=(String &&p_str) { _cowdata = std::move(p_str._cowdata); }
 
@@ -695,21 +698,13 @@ struct FileNoCaseComparator {
 };
 
 template <typename L, typename R>
-_FORCE_INLINE_ bool is_str_less(const L *l_ptr, const R *r_ptr) {
+_FORCE_INLINE_ int64_t str_compare(const L *l_ptr, const R *r_ptr) {
 	while (true) {
 		const char32_t l = *l_ptr;
 		const char32_t r = *r_ptr;
 
-		if (l == 0 && r == 0) {
-			return false;
-		} else if (l == 0) {
-			return true;
-		} else if (r == 0) {
-			return false;
-		} else if (l < r) {
-			return true;
-		} else if (l > r) {
-			return false;
+		if (l == 0 || l != r) {
+			return static_cast<int64_t>(l) - static_cast<int64_t>(r);
 		}
 
 		l_ptr++;

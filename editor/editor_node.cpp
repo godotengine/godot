@@ -402,6 +402,9 @@ void EditorNode::_update_vsync_mode() {
 }
 
 void EditorNode::_update_from_settings() {
+	if (!is_inside_tree()) {
+		return;
+	}
 	_update_title();
 
 	int current_filter = GLOBAL_GET("rendering/textures/canvas_textures/default_texture_filter");
@@ -943,12 +946,12 @@ void EditorNode::_remove_plugin_from_enabled(const String &p_name) {
 void EditorNode::_plugin_over_edit(EditorPlugin *p_plugin, Object *p_object) {
 	if (p_object) {
 		editor_plugins_over->add_plugin(p_plugin);
-		p_plugin->make_visible(true);
 		p_plugin->edit(p_object);
+		p_plugin->make_visible(true);
 	} else {
 		editor_plugins_over->remove_plugin(p_plugin);
-		p_plugin->make_visible(false);
 		p_plugin->edit(nullptr);
+		p_plugin->make_visible(false);
 	}
 }
 

@@ -1938,11 +1938,19 @@
 		<constant name="BREAK_ADAPTIVE" value="8" enum="LineBreakFlag" is_bitfield="true">
 			Should be used only in conjunction with [constant BREAK_WORD_BOUND], break the line between any unconnected graphemes, if it's impossible to break it between the words.
 		</constant>
-		<constant name="BREAK_TRIM_EDGE_SPACES" value="16" enum="LineBreakFlag" is_bitfield="true">
+		<constant name="BREAK_TRIM_EDGE_SPACES" value="16" enum="LineBreakFlag" is_bitfield="true" deprecated="Use [code]BREAK_TRIM_START_EDGE_SPACES | BREAK_TRIM_END_EDGE_SPACES[/code] instead.">
 			Remove edge spaces from the broken line segments.
 		</constant>
 		<constant name="BREAK_TRIM_INDENT" value="32" enum="LineBreakFlag" is_bitfield="true">
 			Subtract first line indentation width from all lines after the first one.
+		</constant>
+		<constant name="BREAK_TRIM_START_EDGE_SPACES" value="64" enum="LineBreakFlag" is_bitfield="true">
+			Remove spaces and line break characters from the start of broken line segments.
+			E.g, after line breaking, the second segment of the following text [code]test  \n  next[/code], is [code]next[/code] if the flag is set, and [code]  next[/code] if it is not.
+		</constant>
+		<constant name="BREAK_TRIM_END_EDGE_SPACES" value="128" enum="LineBreakFlag" is_bitfield="true">
+			Remove spaces and line break characters from the end of broken line segments.
+			E.g, after line breaking, the first segment of the following text [code]test  \n  next[/code], is [code]test[/code] if the flag is set, and [code]test  \n[/code] if it is not.
 		</constant>
 		<constant name="VC_CHARS_BEFORE_SHAPING" value="0" enum="VisibleCharactersBehavior">
 			Trims text before the shaping. e.g, increasing [member Label.visible_characters] or [member RichTextLabel.visible_characters] value is visually identical to typing the text.

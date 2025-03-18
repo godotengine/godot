@@ -266,10 +266,10 @@ static void _dropShadowFilter(uint32_t* dst, uint32_t* src, int stride, int w, i
 }
 
 
-static void _dropShadowShift(uint32_t* dst, uint32_t* src, int stride, SwBBox& region, SwPoint& offset, uint8_t opacity, bool direct)
+static void _dropShadowShift(uint32_t* dst, uint32_t* src, int dstride, int sstride, SwBBox& region, SwPoint& offset, uint8_t opacity, bool direct)
 {
-    src += (region.min.y * stride + region.min.x);
-    dst += (region.min.y * stride + region.min.x);
+    src += (region.min.y * sstride + region.min.x);
+    dst += (region.min.y * dstride + region.min.x);
 
     auto w = region.max.x - region.min.x;
     auto h = region.max.y - region.min.y;
@@ -279,14 +279,14 @@ static void _dropShadowShift(uint32_t* dst, uint32_t* src, int stride, SwBBox& r
     if (region.min.x + offset.x < 0) src -= offset.x;
     else dst += offset.x;
 
-    if (region.min.y + offset.y < 0) src -= (offset.y * stride);
-    else dst += (offset.y * stride);
+    if (region.min.y + offset.y < 0) src -= (offset.y * sstride);
+    else dst += (offset.y * dstride);
 
     for (auto y = 0; y < h; ++y) {
         if (translucent) rasterTranslucentPixel32(dst, src, w, opacity);
         else rasterPixel32(dst, src, w, opacity);
-        src += stride;
-        dst += stride;
+        src += sstride;
+        dst += dstride;
     }
 }
 
@@ -389,14 +389,14 @@ bool effectDropShadow(SwCompositor* cmp, SwSurface* surface[2], const RenderEffe
 
     //draw to the main surface directly
     if (direct) {
-        _dropShadowShift(cmp->recoverSfc->buf32, cmp->image.buf32, stride, bbox, data->offset, opacity, direct);
+        _dropShadowShift(cmp->recoverSfc->buf32, cmp->image.buf32, cmp->recoverSfc->stride, stride, bbox, data->offset, opacity, direct);
         std::swap(cmp->image.buf32, buffer[0]->buf32);
         return true;
     }
 
     //draw to the intermediate surface
     rasterClear(surface[1], bbox.min.x, bbox.min.y, w, h);
-    _dropShadowShift(buffer[1]->buf32, cmp->image.buf32, stride, bbox, data->offset, opacity, direct);
+    _dropShadowShift(buffer[1]->buf32, cmp->image.buf32, stride, stride, bbox, data->offset, opacity, direct);
     std::swap(cmp->image.buf32, buffer[1]->buf32);
 
     //compositing shadow and body
