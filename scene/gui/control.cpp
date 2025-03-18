@@ -2014,21 +2014,41 @@ Control::FocusMode Control::get_focus_mode() const {
 	return data.focus_mode;
 }
 
-bool Control::has_focus() const {
-	ERR_READ_THREAD_GUARD_V(false);
-	return is_inside_tree() && get_viewport()->_gui_control_has_focus(this);
+TypedArray<int> Control::get_focused_players_id() const {
+	ERR_READ_THREAD_GUARD_V(TypedArray<int>());
+
+	const Control *const *key_focus = get_viewport()->gui.key_focus;
+	TypedArray<int> ret;
+
+	for (int i = 0; i < PLAYERS_MAX; i++) {
+		if (key_focus[i] == this) {
+			ret.push_back(i);
+		}
+	}
+
+	return ret;
 }
 
-void Control::grab_focus() {
+bool Control::has_focus(PlayerId p_player_id) const {
+	ERR_READ_THREAD_GUARD_V(false);
+	return is_inside_tree() && get_viewport()->_gui_control_has_focus(this, p_player_id);
+}
+
+void Control::grab_focus(PlayerId p_player_id) {
 	ERR_MAIN_THREAD_GUARD;
 	ERR_FAIL_COND(!is_inside_tree());
+
+	if (!Input::is_player_id_in_mask(calculate_ancestral_player_mask(), p_player_id)) {
+		// Can't grab focus if that player is not allowed.
+		return;
+	}
 
 	if (data.focus_mode == FOCUS_NONE) {
 		WARN_PRINT("This control can't grab focus. Use set_focus_mode() to allow a control to get focus.");
 		return;
 	}
 
-	get_viewport()->_gui_control_grab_focus(this);
+	get_viewport()->_gui_control_grab_focus(this, p_player_id);
 }
 
 void Control::grab_click_focus() {
@@ -2038,18 +2058,18 @@ void Control::grab_click_focus() {
 	get_viewport()->_gui_grab_click_focus(this);
 }
 
-void Control::release_focus() {
+void Control::release_focus(PlayerId p_player_id) {
 	ERR_MAIN_THREAD_GUARD;
 	ERR_FAIL_COND(!is_inside_tree());
 
-	if (!has_focus()) {
+	if (!has_focus(p_player_id)) {
 		return;
 	}
 
-	get_viewport()->gui_release_focus();
+	get_viewport()->gui_release_focus(p_player_id);
 }
 
-static Control *_next_control(Control *p_from) {
+static Control *_next_control(Control *p_from, const PlayerId p_player_id = PlayerId::P1) {
 	if (p_from->is_set_as_top_level()) {
 		return nullptr; // Can't go above.
 	}
@@ -2064,7 +2084,8 @@ static Control *_next_control(Control *p_from) {
 	ERR_FAIL_INDEX_V(next, parent->get_child_count(), nullptr);
 	for (int i = (next + 1); i < parent->get_child_count(); i++) {
 		Control *c = Object::cast_to<Control>(parent->get_child(i));
-		if (!c || !c->is_visible_in_tree() || c->is_set_as_top_level()) {
+		bool is_player_mask_compatible = Input::is_player_id_in_mask(c->calculate_ancestral_player_mask(), p_player_id);
+		if (!c || !c->is_visible_in_tree() || c->is_set_as_top_level() || !is_player_mask_compatible) {
 			continue;
 		}
 
@@ -2072,10 +2093,10 @@ static Control *_next_control(Control *p_from) {
 	}
 
 	// No next in parent, try the same in parent.
-	return _next_control(parent);
+	return _next_control(parent, p_player_id);
 }
 
-Control *Control::find_next_valid_focus() const {
+Control *Control::find_next_valid_focus(PlayerId p_player_id) const {
 	ERR_READ_THREAD_GUARD_V(nullptr);
 
 	// If the focus property is manually overwritten, attempt to use it.
@@ -2084,7 +2105,8 @@ Control *Control::find_next_valid_focus() const {
 		ERR_FAIL_NULL_V_MSG(n, nullptr, "Next focus node path is invalid: '" + data.focus_next + "'.");
 		Control *c = Object::cast_to<Control>(n);
 		ERR_FAIL_NULL_V_MSG(c, nullptr, "Next focus node is not a control: '" + n->get_name() + "'.");
-		if (c->is_visible_in_tree() && c->data.focus_mode != FOCUS_NONE) {
+		bool is_player_id_in_mask = Input::is_player_id_in_mask(c->calculate_ancestral_player_mask(), p_player_id);
+		if (c->is_visible_in_tree() && c->data.focus_mode != FOCUS_NONE && is_player_id_in_mask) {
 			return c;
 		}
 	}
@@ -2102,12 +2124,16 @@ Control *Control::find_next_valid_focus() const {
 				continue;
 			}
 
+			if (!Input::is_player_id_in_mask(c->calculate_ancestral_player_mask(), p_player_id)) {
+				continue;
+			}
+
 			next_child = c;
 			break;
 		}
 
 		if (!next_child) {
-			next_child = _next_control(from);
+			next_child = _next_control(from, p_player_id);
 			if (!next_child) { // Nothing else. Go up and find either window or subwindow.
 				next_child = const_cast<Control *>(this);
 
@@ -2142,30 +2168,31 @@ Control *Control::find_next_valid_focus() const {
 	return nullptr;
 }
 
-static Control *_prev_control(Control *p_from) {
+static Control *_prev_control(Control *p_from, const PlayerId p_player_id = PlayerId::P1) {
 	for (int i = p_from->get_child_count() - 1; i >= 0; i--) {
 		Control *c = Object::cast_to<Control>(p_from->get_child(i));
-		if (!c || !c->is_visible_in_tree() || c->is_set_as_top_level()) {
+		bool is_player_mask_compatible = Input::is_player_id_in_mask(c->calculate_ancestral_player_mask(), p_player_id);
+		if (!c || !c->is_visible_in_tree() || c->is_set_as_top_level() || !is_player_mask_compatible) {
 			continue;
 		}
 
 		// Find the last child as prev, try the same in the last child.
-		return _prev_control(c);
+		return _prev_control(c, p_player_id);
 	}
 
 	return p_from; // Not found in the children, return itself.
 }
 
-Control *Control::find_prev_valid_focus() const {
+Control *Control::find_prev_valid_focus(PlayerId p_player_id) const {
 	ERR_READ_THREAD_GUARD_V(nullptr);
-
 	// If the focus property is manually overwritten, attempt to use it.
 	if (!data.focus_prev.is_empty()) {
 		Node *n = get_node_or_null(data.focus_prev);
 		ERR_FAIL_NULL_V_MSG(n, nullptr, "Previous focus node path is invalid: '" + data.focus_prev + "'.");
 		Control *c = Object::cast_to<Control>(n);
 		ERR_FAIL_NULL_V_MSG(c, nullptr, "Previous focus node is not a control: '" + n->get_name() + "'.");
-		if (c->is_visible_in_tree() && c->data.focus_mode != FOCUS_NONE) {
+		bool is_player_id_in_mask = Input::is_player_id_in_mask(c->calculate_ancestral_player_mask(), p_player_id);
+		if (c->is_visible_in_tree() && c->get_focus_mode() != FOCUS_NONE && is_player_id_in_mask) {
 			return c;
 		}
 	}
@@ -2180,13 +2207,17 @@ Control *Control::find_prev_valid_focus() const {
 		if (from->is_set_as_top_level() || !from->data.parent_control) {
 			// Find last of the children.
 
-			prev_child = _prev_control(from); // Wrap start here.
+			prev_child = _prev_control(from, p_player_id); // Wrap start here.
 
 		} else {
 			for (int i = (from->get_index() - 1); i >= 0; i--) {
 				Control *c = Object::cast_to<Control>(from->get_parent()->get_child(i));
 
 				if (!c || !c->is_visible_in_tree() || c->is_set_as_top_level()) {
+					continue;
+				}
+
+				if (!Input::is_player_id_in_mask(c->calculate_ancestral_player_mask(), p_player_id)) {
 					continue;
 				}
 
@@ -2197,7 +2228,7 @@ Control *Control::find_prev_valid_focus() const {
 			if (!prev_child) {
 				prev_child = from->data.parent_control;
 			} else {
-				prev_child = _prev_control(prev_child);
+				prev_child = _prev_control(prev_child, p_player_id);
 			}
 		}
 
@@ -2247,9 +2278,39 @@ NodePath Control::get_focus_previous() const {
 	return data.focus_prev;
 }
 
+void Control::set_player_mask(BitField<PlayerMask> p_player_mask) {
+	ERR_MAIN_THREAD_GUARD;
+	data.player_mask = p_player_mask;
+	queue_redraw();
+}
+
+BitField<PlayerMask> Control::get_player_mask() const {
+	ERR_READ_THREAD_GUARD_V(BitField<PlayerMask>(PLAYER_ALL));
+	if (data.initialized) {
+		return data.player_mask;
+	} else {
+		return BitField<PlayerMask>(PLAYER_ALL);
+	}
+}
+
+BitField<PlayerMask> Control::calculate_ancestral_player_mask() const {
+	// Editor doesn't need multiplayer UI features (also prevents a crash).
+	if (Engine::get_singleton()->is_editor_hint()) {
+		return BitField<PlayerMask>(PLAYER_ALL);
+	}
+
+	BitField<PlayerMask> mask = get_player_mask();
+	Control *parent = Object::cast_to<Control>(get_parent());
+	while (parent) {
+		mask = mask & parent->get_player_mask();
+		parent = Object::cast_to<Control>(parent->get_parent());
+	}
+	return mask;
+}
+
 #define MAX_NEIGHBOR_SEARCH_COUNT 512
 
-Control *Control::_get_focus_neighbor(Side p_side, int p_count) {
+Control *Control::_get_focus_neighbor(Side p_side, int p_count, PlayerId p_player_id) {
 	ERR_FAIL_INDEX_V((int)p_side, 4, nullptr);
 
 	if (p_count >= MAX_NEIGHBOR_SEARCH_COUNT) {
@@ -2260,11 +2321,12 @@ Control *Control::_get_focus_neighbor(Side p_side, int p_count) {
 		ERR_FAIL_NULL_V_MSG(n, nullptr, "Neighbor focus node path is invalid: '" + data.focus_neighbor[p_side] + "'.");
 		Control *c = Object::cast_to<Control>(n);
 		ERR_FAIL_NULL_V_MSG(c, nullptr, "Neighbor focus node is not a control: '" + n->get_name() + "'.");
-		if (c->is_visible_in_tree() && c->data.focus_mode != FOCUS_NONE) {
+		bool is_player_id_in_mask = Input::is_player_id_in_mask(c->calculate_ancestral_player_mask(), p_player_id);
+		if (c->is_visible_in_tree() && c->data.focus_mode != FOCUS_NONE && is_player_id_in_mask) {
 			return c;
 		}
 
-		c = c->_get_focus_neighbor(p_side, p_count + 1);
+		c = c->_get_focus_neighbor(p_side, p_count + 1, p_player_id);
 		return c;
 	}
 
@@ -2369,8 +2431,8 @@ Control *Control::_get_focus_neighbor(Side p_side, int p_count) {
 	return result;
 }
 
-Control *Control::find_valid_focus_neighbor(Side p_side) const {
-	return const_cast<Control *>(this)->_get_focus_neighbor(p_side);
+Control *Control::find_valid_focus_neighbor(Side p_side, PlayerId p_player_id) const {
+	return const_cast<Control *>(this)->_get_focus_neighbor(p_side, 0, p_player_id);
 }
 
 void Control::_window_find_focus_neighbor(const Vector2 &p_dir, Node *p_at, const Rect2 &p_rect, const Rect2 &p_clamp, real_t p_min, real_t &r_closest_dist_squared, Control **r_closest) {
@@ -2381,6 +2443,11 @@ void Control::_window_find_focus_neighbor(const Vector2 &p_dir, Node *p_at, cons
 	Control *c = Object::cast_to<Control>(p_at);
 	Container *container = Object::cast_to<Container>(p_at);
 	bool in_container = container ? container->is_ancestor_of(this) : false;
+
+	bool is_player_mask_compatible = c->calculate_ancestral_player_mask() & calculate_ancestral_player_mask();
+	if (c && !is_player_mask_compatible) {
+		return;
+	}
 
 	if (c && c != this && c->get_focus_mode() == FOCUS_ALL && !in_container && p_clamp.intersects(c->get_global_rect())) {
 		Rect2 r_c = c->get_global_rect();
@@ -3543,12 +3610,13 @@ void Control::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_global_rect"), &Control::get_global_rect);
 	ClassDB::bind_method(D_METHOD("set_focus_mode", "mode"), &Control::set_focus_mode);
 	ClassDB::bind_method(D_METHOD("get_focus_mode"), &Control::get_focus_mode);
-	ClassDB::bind_method(D_METHOD("has_focus"), &Control::has_focus);
-	ClassDB::bind_method(D_METHOD("grab_focus"), &Control::grab_focus);
-	ClassDB::bind_method(D_METHOD("release_focus"), &Control::release_focus);
-	ClassDB::bind_method(D_METHOD("find_prev_valid_focus"), &Control::find_prev_valid_focus);
-	ClassDB::bind_method(D_METHOD("find_next_valid_focus"), &Control::find_next_valid_focus);
-	ClassDB::bind_method(D_METHOD("find_valid_focus_neighbor", "side"), &Control::find_valid_focus_neighbor);
+	ClassDB::bind_method(D_METHOD("get_focused_players_id"), &Control::get_focused_players_id);
+	ClassDB::bind_method(D_METHOD("has_focus", "player_id"), &Control::has_focus, DEFVAL(PlayerId::P1));
+	ClassDB::bind_method(D_METHOD("grab_focus", "player"), &Control::grab_focus, DEFVAL(PlayerId::P1));
+	ClassDB::bind_method(D_METHOD("release_focus", "player"), &Control::release_focus, DEFVAL(PlayerId::P1));
+	ClassDB::bind_method(D_METHOD("find_prev_valid_focus", "player_id"), &Control::find_prev_valid_focus, DEFVAL(PlayerId::P1));
+	ClassDB::bind_method(D_METHOD("find_next_valid_focus", "player_id"), &Control::find_next_valid_focus, DEFVAL(PlayerId::P1));
+	ClassDB::bind_method(D_METHOD("find_valid_focus_neighbor", "side", "player_id"), &Control::find_valid_focus_neighbor, DEFVAL(PlayerId::P1));
 
 	ClassDB::bind_method(D_METHOD("set_h_size_flags", "flags"), &Control::set_h_size_flags);
 	ClassDB::bind_method(D_METHOD("get_h_size_flags"), &Control::get_h_size_flags);
@@ -3633,6 +3701,10 @@ void Control::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_focus_previous", "previous"), &Control::set_focus_previous);
 	ClassDB::bind_method(D_METHOD("get_focus_previous"), &Control::get_focus_previous);
+
+	ClassDB::bind_method(D_METHOD("set_player_mask", "player"), &Control::set_player_mask);
+	ClassDB::bind_method(D_METHOD("get_player_mask"), &Control::get_player_mask);
+	ClassDB::bind_method(D_METHOD("calculate_ancestral_player_mask"), &Control::calculate_ancestral_player_mask);
 
 	ClassDB::bind_method(D_METHOD("force_drag", "data", "preview"), &Control::force_drag);
 
@@ -3734,6 +3806,7 @@ void Control::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "focus_next", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Control"), "set_focus_next", "get_focus_next");
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "focus_previous", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Control"), "set_focus_previous", "get_focus_previous");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "focus_mode", PROPERTY_HINT_ENUM, "None,Click,All"), "set_focus_mode", "get_focus_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "player_mask", PROPERTY_HINT_LAYERS_PLAYER_MASK), "set_player_mask", "get_player_mask");
 
 	ADD_GROUP("Mouse", "mouse_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "mouse_filter", PROPERTY_HINT_ENUM, "Stop,Pass (Propagate Up),Ignore"), "set_mouse_filter", "get_mouse_filter");
