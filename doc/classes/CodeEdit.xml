@@ -588,7 +588,7 @@
 			Set when a validated word from [signal symbol_validate] is clicked, the [signal symbol_lookup] should be emitted.
 		</member>
 		<member name="symbol_tooltip_on_hover" type="bool" setter="set_symbol_tooltip_on_hover_enabled" getter="is_symbol_tooltip_on_hover_enabled" default="false">
-			Set when a word is hovered, the [signal symbol_hovered] should be emitted.
+			If [code]true[/code], the [signal symbol_hovered] signal is emitted when hovering over a word.
 		</member>
 		<member name="text_direction" type="int" setter="set_text_direction" getter="get_text_direction" overrides="TextEdit" enum="Control.TextDirection" default="1" />
 	</members>

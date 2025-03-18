@@ -18,7 +18,7 @@
 		<method name="get_skeleton">
 			<return type="Skeleton3D" />
 			<description>
-				Get parent or external [Skeleton3D] node if found.
+				Returns the parent or external [Skeleton3D] node if it exists, otherwise returns [code]null[/code].
 			</description>
 		</method>
 		<method name="get_use_external_skeleton" qualifiers="const">
