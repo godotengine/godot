@@ -157,6 +157,8 @@ public:
 		NOTIFICATION_EXIT_GAMEPLAY = 46,
 	};
 
+	virtual String get_configuration_warning() const;
+
 	virtual void notification_callback(int p_message_type);
 	Spatial *get_parent_spatial() const;
 
