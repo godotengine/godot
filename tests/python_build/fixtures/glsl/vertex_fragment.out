@@ -1,6 +1,3 @@
-/* WARNING, THIS FILE WAS GENERATED, DO NOT EDIT */
-#pragma once
-
 static const char vertex_fragment_shader_glsl[] = {
 R"<!>(#[versions]
 
