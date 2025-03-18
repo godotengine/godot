@@ -105,6 +105,14 @@
 				[b]Note:[/b] Vectors with [constant @GDScript.NAN] elements don't behave the same as other vectors. Therefore, the results from this method may not be accurate if NaNs are included.
 			</description>
 		</method>
+		<method name="find_sequence" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="sequence" type="PackedVector3Array" />
+			<param index="1" name="from" type="int" default="0" />
+			<description>
+				Searches the array for an occurrence of the given sequence and returns its index or [code]-1[/code] if not found. Optionally, the initial search index can be passed.
+			</description>
+		</method>
 		<method name="get" qualifiers="const">
 			<return type="Vector3" />
 			<param index="0" name="index" type="int" />
@@ -169,6 +177,14 @@
 			<description>
 				Searches the array in reverse order. Optionally, a start search index can be passed. If negative, the start index is considered relative to the end of the array.
 				[b]Note:[/b] Vectors with [constant @GDScript.NAN] elements don't behave the same as other vectors. Therefore, the results from this method may not be accurate if NaNs are included.
+			</description>
+		</method>
+		<method name="rfind_sequence" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="sequence" type="PackedVector3Array" />
+			<param index="1" name="from" type="int" default="-1" />
+			<description>
+				Searches the array in reverse-order for an occurrence of the given sequence. Optionally, a start search index can be passed. If negative, the start index is considered relative to the end of the array.
 			</description>
 		</method>
 		<method name="set">
