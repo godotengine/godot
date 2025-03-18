@@ -3363,7 +3363,7 @@ void EditorPropertyResource::update_property() {
 			sub_inspector = nullptr;
 
 			if (opened_editor) {
-				EditorNode::get_singleton()->hide_unused_editors();
+				EditorNode::get_singleton()->hide_unused_editors(this);
 				opened_editor = false;
 			}
 		}
