@@ -191,6 +191,11 @@ bool EditorSettings::_get(const StringName &p_name, Variant &r_ret) const {
 	} else if (p_name == "builtin_action_overrides") {
 		Array actions_arr;
 		for (const KeyValue<String, List<Ref<InputEvent>>> &action_override : builtin_action_overrides) {
+			const List<Ref<InputEvent>> *defaults = InputMap::get_singleton()->get_builtins().getptr(action_override.key);
+			if (!defaults) {
+				continue;
+			}
+
 			List<Ref<InputEvent>> events = action_override.value;
 
 			Dictionary action_dict;
@@ -206,8 +211,7 @@ bool EditorSettings::_get(const StringName &p_name, Variant &r_ret) const {
 			}
 
 			Array defaults_arr;
-			List<Ref<InputEvent>> defaults = InputMap::get_singleton()->get_builtins()[action_override.key];
-			for (const Ref<InputEvent> &default_input_event : defaults) {
+			for (const Ref<InputEvent> &default_input_event : *defaults) {
 				if (default_input_event.is_valid()) {
 					defaults_arr.append(default_input_event);
 				}
