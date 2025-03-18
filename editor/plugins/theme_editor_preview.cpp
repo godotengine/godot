@@ -61,7 +61,7 @@ void ThemeEditorPreview::_propagate_redraw(Control *p_at) {
 
 void ThemeEditorPreview::_refresh_interval() {
 	// In case the project settings have changed.
-	preview_bg->set_frame_color(GLOBAL_GET("rendering/environment/default_clear_color"));
+	preview_bg->set_frame_color(GLOBAL_GET_CACHED(Color, "rendering/environment/default_clear_color"));
 
 	_propagate_redraw(preview_bg);
 	_propagate_redraw(preview_content);

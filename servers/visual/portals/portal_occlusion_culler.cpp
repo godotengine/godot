@@ -248,7 +248,7 @@ void PortalOcclusionCuller::prepare_generic(PortalRenderer &p_portal_renderer, c
 	// Bodge to keep settings up to date, until the project settings PR is merged
 #ifdef TOOLS_ENABLED
 	if (Engine::get_singleton()->is_editor_hint() && ((Engine::get_singleton()->get_frames_drawn() % 16) == 0)) {
-		_max_polys = GLOBAL_GET("rendering/misc/occlusion_culling/max_active_polygons");
+		_max_polys = GLOBAL_GET_CACHED(int32_t, "rendering/misc/occlusion_culling/max_active_polygons");
 	}
 #endif
 	_num_spheres = 0;

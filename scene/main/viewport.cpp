@@ -171,14 +171,14 @@ class TooltipPanel : public PanelContainer {
 	GDCLASS(TooltipPanel, PanelContainer);
 
 public:
-	TooltipPanel(){};
+	TooltipPanel() {}
 };
 
 class TooltipLabel : public Label {
 	GDCLASS(TooltipLabel, Label);
 
 public:
-	TooltipLabel(){};
+	TooltipLabel() {}
 };
 
 /////////////////////////////////////
@@ -397,7 +397,7 @@ void Viewport::_notification(int p_what) {
 				}
 			}
 
-			if (!GLOBAL_GET("physics/common/enable_pause_aware_picking")) {
+			if (!GLOBAL_GET_CACHED(bool, "physics/common/enable_pause_aware_picking")) {
 				_process_picking(false);
 			}
 		} break;
@@ -3005,7 +3005,7 @@ void Viewport::set_disable_input(bool p_disable) {
 	if (p_disable == disable_input) {
 		return;
 	}
-	if (p_disable && GLOBAL_GET("gui/common/drop_mouse_on_gui_input_disabled")) {
+	if (p_disable && GLOBAL_GET_CACHED(bool, "gui/common/drop_mouse_on_gui_input_disabled")) {
 		_drop_mouse_focus();
 		_drop_mouse_over();
 		_gui_cancel_tooltip();
