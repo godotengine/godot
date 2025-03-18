@@ -16,12 +16,10 @@ repos:
       - id: clang-format
         files: \.(c|h|cpp|hpp|cc|hh|cxx|hxx|m|mm|inc|java)$
         types_or: [text]
-        exclude: ^tests/python_build/.*
       - id: clang-format
         name: clang-format-glsl
         files: \.glsl$
         types_or: [text]
-        exclude: ^tests/python_build/.*
         args: [-style=file:misc/utility/clang_format_glsl.yml]
 
   - repo: https://github.com/pocc/pre-commit-hooks
@@ -31,7 +29,6 @@ repos:
         files: \.(c|h|cpp|hpp|cc|hh|cxx|hxx|m|mm|inc|java|glsl)$
         args: [--fix, --quiet, --use-color]
         types_or: [text]
-        exclude: ^tests/python_build/.*
         additional_dependencies: [clang-tidy==19.1.0]
         require_serial: true
         stages: [manual] # Not automatically triggered, invoked via `pre-commit run --hook-stage manual clang-tidy`
@@ -48,7 +45,7 @@ repos:
         types_or: [text]
 
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.14.1  # Latest version that supports Python 3.8
+    rev: v1.14.1 # Latest version that supports Python 3.8
     hooks:
       - id: mypy
         files: \.py$
@@ -87,6 +84,13 @@ repos:
         args: [doc/classes, modules/*/doc_classes, platform/*/doc_classes, -c]
         pass_filenames: false
         files: ^(doc/classes|.*/doc_classes)/.*\.xml$
+
+      - id: validate-builders
+        name: validate-builders
+        language: python
+        entry: python tests/python_build/validate_builders.py
+        pass_filenames: false
+        files: ^(gles3|glsl)_builders\.py$
 
       - id: eslint
         name: eslint
