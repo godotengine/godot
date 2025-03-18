@@ -944,7 +944,7 @@ Patches:
 ## thorvg
 
 - Upstream: https://github.com/thorvg/thorvg
-- Version: 0.15.10 (bca94d244c67f573c6eddc27d783d9a6b1ef2f1b, 2025)
+- Version: 0.15.11 (61360cf6db0a05a8dd2ebdcc44d4cbbc315692ec, 2025)
 - License: MIT
 
 Files extracted from upstream source:
