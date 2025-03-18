@@ -491,6 +491,22 @@ Patches:
 - `0001-big-files-support.patch` (GH-100281)
 
 
+## libjpeg
+
+- Upstream: https://www.ijg.org/files/jpegsrc.v9f.tar.gz
+- Version: 9f
+- License: BSD-3-Clause custom (see README)
+
+Files extracted from upstream source:
+- `README`
+- `*.{c,h}` with the following removed TODO
+
+Patches:
+
+- jconfig.h TODO
+- jversion.h TODO?
+
+
 ## libktx
 
 - Upstream: https://github.com/KhronosGroup/KTX-Software

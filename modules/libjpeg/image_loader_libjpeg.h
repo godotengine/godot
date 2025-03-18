@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  register_types.cpp                                                    */
+/*  image_loader_libjpeg.h                                                */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,31 +28,13 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "register_types.h"
-#include "modules/modules_enabled.gen.h"
+#pragma once
 
-#include "image_loader_jpegd.h"
+#include "core/io/image_loader.h"
 
-static Ref<ImageLoaderJPG> image_loader_jpg;
-
-void initialize_jpg_module(ModuleInitializationLevel p_level) {
-	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
-		return;
-	}
-
-#ifndef MODULE_LIBJPEG_ENABLED
-	image_loader_jpg.instantiate();
-	ImageLoader::add_image_format_loader(image_loader_jpg);
-#endif
-}
-
-void uninitialize_jpg_module(ModuleInitializationLevel p_level) {
-	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
-		return;
-	}
-
-#ifndef MODULE_LIBJPEG_ENABLED
-	ImageLoader::remove_image_format_loader(image_loader_jpg);
-	image_loader_jpg.unref();
-#endif
-}
+class ImageLoaderLibJPEG : public ImageFormatLoader {
+public:
+	virtual Error load_image(Ref<Image> p_image, Ref<FileAccess> f, BitField<ImageFormatLoader::LoaderFlags> p_flags, float p_scale);
+	virtual void get_recognized_extensions(List<String> *p_extensions) const;
+	ImageLoaderLibJPEG();
+};

@@ -29,30 +29,25 @@
 /**************************************************************************/
 
 #include "register_types.h"
-#include "modules/modules_enabled.gen.h"
 
-#include "image_loader_jpegd.h"
+#include "image_loader_libjpeg.h"
 
-static Ref<ImageLoaderJPG> image_loader_jpg;
+static Ref<ImageLoaderLibJPEG> image_loader_libjpeg;
 
-void initialize_jpg_module(ModuleInitializationLevel p_level) {
+void initialize_libjpeg_module(ModuleInitializationLevel p_level) {
 	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
 		return;
 	}
 
-#ifndef MODULE_LIBJPEG_ENABLED
-	image_loader_jpg.instantiate();
-	ImageLoader::add_image_format_loader(image_loader_jpg);
-#endif
+	image_loader_libjpeg.instantiate();
+	ImageLoader::add_image_format_loader(image_loader_libjpeg);
 }
 
-void uninitialize_jpg_module(ModuleInitializationLevel p_level) {
+void uninitialize_libjpeg_module(ModuleInitializationLevel p_level) {
 	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
 		return;
 	}
 
-#ifndef MODULE_LIBJPEG_ENABLED
-	ImageLoader::remove_image_format_loader(image_loader_jpg);
-	image_loader_jpg.unref();
-#endif
+	ImageLoader::remove_image_format_loader(image_loader_libjpeg);
+	image_loader_libjpeg.unref();
 }

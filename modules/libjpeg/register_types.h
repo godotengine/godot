@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  register_types.cpp                                                    */
+/*  register_types.h                                                      */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,31 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "register_types.h"
-#include "modules/modules_enabled.gen.h"
+#pragma once
 
-#include "image_loader_jpegd.h"
+#include "modules/register_module_types.h"
 
-static Ref<ImageLoaderJPG> image_loader_jpg;
-
-void initialize_jpg_module(ModuleInitializationLevel p_level) {
-	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
-		return;
-	}
-
-#ifndef MODULE_LIBJPEG_ENABLED
-	image_loader_jpg.instantiate();
-	ImageLoader::add_image_format_loader(image_loader_jpg);
-#endif
-}
-
-void uninitialize_jpg_module(ModuleInitializationLevel p_level) {
-	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
-		return;
-	}
-
-#ifndef MODULE_LIBJPEG_ENABLED
-	ImageLoader::remove_image_format_loader(image_loader_jpg);
-	image_loader_jpg.unref();
-#endif
-}
+void initialize_libjpeg_module(ModuleInitializationLevel p_level);
+void uninitialize_libjpeg_module(ModuleInitializationLevel p_level);
