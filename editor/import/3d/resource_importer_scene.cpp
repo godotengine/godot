@@ -1809,7 +1809,11 @@ Ref<Animation> ResourceImporterScene::_save_animation_to_file(Ref<Animation> ani
 		}
 	}
 	anim->set_path(p_save_to_path, true); // Set path to save externally.
-	Error err = ResourceSaver::save(anim, p_save_to_path, ResourceSaver::FLAG_CHANGE_PATH);
+	int flags = ResourceSaver::FLAG_CHANGE_PATH;
+	if (EDITOR_GET("filesystem/on_save/compress_binary_resources")) {
+		flags |= ResourceSaver::FLAG_COMPRESS;
+	}
+	Error err = ResourceSaver::save(anim, p_save_to_path, flags);
 	ERR_FAIL_COND_V_MSG(err != OK, anim, "Saving of animation failed: " + p_save_to_path);
 	return anim;
 }
@@ -2588,7 +2592,11 @@ Node *ResourceImporterScene::_generate_meshes(Node *p_node, const Dictionary &p_
 					}
 					mesh = src_mesh_node->get_mesh()->get_mesh(existing);
 
-					ResourceSaver::save(mesh, save_to_file); //override
+					int flags = 0;
+					if (EDITOR_GET("filesystem/on_save/compress_binary_resources")) {
+						flags |= ResourceSaver::FLAG_COMPRESS;
+					}
+					ResourceSaver::save(mesh, save_to_file, flags); //override
 
 					mesh->set_path(save_to_file, true); //takeover existing, if needed
 
@@ -3073,7 +3081,8 @@ Error ResourceImporterScene::import(ResourceUID::ID p_source_id, const String &p
 	Vector<Vector<uint8_t>> mesh_lightmap_caches;
 
 	{
-		src_lightmap_cache = FileAccess::get_file_as_bytes(p_source_file + ".unwrap_cache", &err);
+		const uint8_t *unwrap_cache_file = FileAccess::get_file_as_bytes(p_source_file + ".unwrap_cache", &err).ptr();
+		Compression::decompress(src_lightmap_cache.ptrw(), Compression::get_max_compressed_buffer_size(src_lightmap_cache.size()), unwrap_cache_file, sizeof(unwrap_cache_file));
 		if (err != OK) {
 			src_lightmap_cache.clear();
 		}
@@ -3082,7 +3091,7 @@ Error ResourceImporterScene::import(ResourceUID::ID p_source_id, const String &p
 	scene = _generate_meshes(scene, mesh_data, gen_lods, create_shadow_meshes, LightBakeMode(light_bake_mode), lightmap_texel_size, src_lightmap_cache, mesh_lightmap_caches);
 
 	if (mesh_lightmap_caches.size()) {
-		Ref<FileAccess> f = FileAccess::open(p_source_file + ".unwrap_cache", FileAccess::WRITE);
+		Ref<FileAccess> f = FileAccess::open_compressed(p_source_file + ".unwrap_cache", FileAccess::WRITE, FileAccess::COMPRESSION_ZSTD);
 		if (f.is_valid()) {
 			f->store_32(mesh_lightmap_caches.size());
 			for (int i = 0; i < mesh_lightmap_caches.size(); i++) {
@@ -3148,7 +3157,7 @@ Error ResourceImporterScene::import(ResourceUID::ID p_source_id, const String &p
 	progress.step(TTR("Saving..."), 104);
 
 	int flags = 0;
-	if (EditorSettings::get_singleton() && EDITOR_GET("filesystem/on_save/compress_binary_resources")) {
+	if (EDITOR_GET("filesystem/on_save/compress_binary_resources")) {
 		flags |= ResourceSaver::FLAG_COMPRESS;
 	}
 

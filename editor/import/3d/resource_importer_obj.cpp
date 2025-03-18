@@ -32,6 +32,7 @@
 
 #include "core/io/file_access.h"
 #include "core/io/resource_saver.h"
+#include "editor/editor_settings.h"
 #include "scene/3d/importer_mesh_instance_3d.h"
 #include "scene/3d/node_3d.h"
 #include "scene/resources/3d/importer_mesh.h"
@@ -646,7 +647,9 @@ Error ResourceImporterOBJ::import(ResourceUID::ID p_source_id, const String &p_s
 
 	Error err;
 	{
-		src_lightmap_cache = FileAccess::get_file_as_bytes(p_source_file + ".unwrap_cache", &err);
+		const uint8_t *unwrap_cache_file = FileAccess::get_file_as_bytes(p_source_file + ".unwrap_cache", &err).ptr();
+		Compression::decompress(src_lightmap_cache.ptrw(), Compression::get_max_compressed_buffer_size(src_lightmap_cache.size()), unwrap_cache_file, sizeof(unwrap_cache_file));
+
 		if (err != OK) {
 			src_lightmap_cache.clear();
 		}
@@ -655,7 +658,7 @@ Error ResourceImporterOBJ::import(ResourceUID::ID p_source_id, const String &p_s
 	err = _parse_obj(p_source_file, meshes, true, p_options["generate_tangents"], p_options["generate_lods"], p_options["generate_shadow_mesh"], p_options["generate_lightmap_uv2"], p_options["generate_lightmap_uv2_texel_size"], src_lightmap_cache, p_options["scale_mesh"], p_options["offset_mesh"], p_options["force_disable_mesh_compression"], mesh_lightmap_caches, nullptr);
 
 	if (mesh_lightmap_caches.size()) {
-		Ref<FileAccess> f = FileAccess::open(p_source_file + ".unwrap_cache", FileAccess::WRITE);
+		Ref<FileAccess> f = FileAccess::open_compressed(p_source_file + ".unwrap_cache", FileAccess::WRITE, FileAccess::COMPRESSION_ZSTD);
 		if (f.is_valid()) {
 			f->store_32(mesh_lightmap_caches.size());
 			for (int i = 0; i < mesh_lightmap_caches.size(); i++) {
@@ -671,7 +674,11 @@ Error ResourceImporterOBJ::import(ResourceUID::ID p_source_id, const String &p_s
 
 	String save_path = p_save_path + ".mesh";
 
-	err = ResourceSaver::save(meshes.front()->get()->get_mesh(), save_path);
+	int flags = 0;
+	if (EDITOR_GET("filesystem/on_save/compress_binary_resources")) {
+		flags |= ResourceSaver::FLAG_COMPRESS;
+	}
+	err = ResourceSaver::save(meshes.front()->get()->get_mesh(), save_path, flags);
 
 	ERR_FAIL_COND_V_MSG(err != OK, err, "Cannot save Mesh to file '" + save_path + "'.");
 

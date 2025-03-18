@@ -33,6 +33,7 @@
 #include "core/io/image.h"
 #include "core/io/image_loader.h"
 #include "core/io/resource_saver.h"
+#include "editor/editor_settings.h"
 #include "scene/resources/bit_map.h"
 
 String ResourceImporterBitMap::get_importer_name() const {
@@ -103,5 +104,9 @@ Error ResourceImporterBitMap::import(ResourceUID::ID p_source_id, const String &
 		}
 	}
 
-	return ResourceSaver::save(bitmap, p_save_path + ".res");
+	int flags = 0;
+	if (EDITOR_GET("filesystem/on_save/compress_binary_resources")) {
+		flags |= ResourceSaver::FLAG_COMPRESS;
+	}
+	return ResourceSaver::save(bitmap, p_save_path + ".res", flags);
 }
