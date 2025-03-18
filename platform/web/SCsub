@@ -86,7 +86,7 @@ if env["dlink_enabled"]:
     sys_env["LINKFLAGS"].remove("-fvisibility=hidden")
 
     # The main emscripten runtime, with exported standard libraries.
-    sys = sys_env.Program(build_targets, ["web_runtime.cpp"])
+    sys = sys_env.add_program(build_targets, ["web_runtime.cpp"])
 
     # The side library, containing all Godot code.
     wasm = env.add_program("#bin/godot.side${PROGSUFFIX}.wasm", web_files)
@@ -94,7 +94,7 @@ if env["dlink_enabled"]:
 else:
     # We use IDBFS. Since Emscripten 1.39.1 it needs to be linked explicitly.
     sys_env.Append(LIBS=["idbfs.js"])
-    build = sys_env.Program(build_targets, web_files + ["web_runtime.cpp"])
+    build = sys_env.add_program(build_targets, web_files + ["web_runtime.cpp"])
 
 sys_env.Depends(build[0], sys_env["JS_LIBS"])
 sys_env.Depends(build[0], sys_env["JS_PRE"])
@@ -114,7 +114,9 @@ wrap_list = [
     build[0],
     js_engine,
 ]
-js_wrapped = env.Textfile("#bin/godot", [env.File(f) for f in wrap_list], TEXTFILESUFFIX="${PROGSUFFIX}.wrapped.js")
+js_wrapped = env.NoCache(
+    env.Textfile("#bin/godot", [env.File(f) for f in wrap_list], TEXTFILESUFFIX="${PROGSUFFIX}.wrapped.js")
+)
 
 # 0 - unwrapped js file (use wrapped one instead)
 # 1 - wasm file
