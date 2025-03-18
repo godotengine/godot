@@ -99,6 +99,18 @@ void MovieWriter::begin(const Size2i &p_movie_size, uint32_t p_fps, const String
 
 	print_line(vformat("Movie Maker mode enabled, recording movie at %d FPS...", p_fps));
 
+	// When using Display/Window/Stretch/Mode = Viewport, use the project's
+	// configured viewport size instead of the size of the window in the OS
+	Size2i actual_movie_size = p_movie_size;
+	String stretch_mode = GLOBAL_GET("display/window/stretch/mode");
+	if (stretch_mode == "viewport") {
+		actual_movie_size.width = GLOBAL_GET("display/window/size/viewport_width");
+		actual_movie_size.height = GLOBAL_GET("display/window/size/viewport_height");
+
+		print_line(vformat("Movie Maker mode using project viewport size: %dx%d",
+				actual_movie_size.width, actual_movie_size.height));
+	}
+
 	// Check for available disk space and warn the user if needed.
 	Ref<DirAccess> dir = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 	String path = p_base_path.get_basename();
@@ -125,7 +137,7 @@ void MovieWriter::begin(const Size2i &p_movie_size, uint32_t p_fps, const String
 	audio_channels = AudioDriverDummy::get_dummy_singleton()->get_channels();
 	audio_mix_buffer.resize(mix_rate * audio_channels / fps);
 
-	write_begin(p_movie_size, p_fps, p_base_path);
+	write_begin(actual_movie_size, p_fps, p_base_path);
 }
 
 void MovieWriter::_bind_methods() {
