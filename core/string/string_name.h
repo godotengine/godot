@@ -208,7 +208,13 @@ public:
 	StringName() {}
 
 	static void assign_static_unique_class_name(StringName *ptr, const char *p_name);
-	_FORCE_INLINE_ ~StringName() {
+
+#ifdef SIZE_EXTRA
+	_NO_INLINE_
+#else
+	_FORCE_INLINE_
+#endif
+	~StringName() {
 		if (likely(configured) && _data) { //only free if configured
 			unref();
 		}
