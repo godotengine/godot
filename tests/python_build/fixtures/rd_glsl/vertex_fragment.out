@@ -1,14 +1,8 @@
-/* WARNING, THIS FILE WAS GENERATED, DO NOT EDIT */
-#pragma once
-
 #include "servers/rendering/renderer_rd/shader_rd.h"
 
 class VertexFragmentShaderRD : public ShaderRD {
-
 public:
-
 	VertexFragmentShaderRD() {
-
 		static const char _vertex_code[] = {
 R"<!>(
 #version 450
@@ -38,6 +32,7 @@ void main() {
 }
 )<!>"
 		};
-		setup(_vertex_code, _fragment_code, nullptr, "VertexFragmentShaderRD");
+		static const char *_compute_code = nullptr;
+		setup(_vertex_code, _fragment_code, _compute_code, "VertexFragmentShaderRD");
 	}
 };

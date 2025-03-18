@@ -1,14 +1,10 @@
-/* WARNING, THIS FILE WAS GENERATED, DO NOT EDIT */
-#pragma once
-
 #include "servers/rendering/renderer_rd/shader_rd.h"
 
 class ComputeShaderRD : public ShaderRD {
-
 public:
-
 	ComputeShaderRD() {
-
+		static const char *_vertex_code = nullptr;
+		static const char *_fragment_code = nullptr;
 		static const char _compute_code[] = {
 R"<!>(
 #version 450
@@ -24,6 +20,6 @@ void main() {
 }
 )<!>"
 		};
-		setup(nullptr, nullptr, _compute_code, "ComputeShaderRD");
+		setup(_vertex_code, _fragment_code, _compute_code, "ComputeShaderRD");
 	}
 };
