@@ -31,6 +31,7 @@
 #pragma once
 
 #include "core/input/input.h"
+#include "core/input/input_enums.h"
 
 #define Key _QKey
 #import <GameController/GameController.h>
@@ -46,6 +47,9 @@ struct GameController {
 	NSInteger ff_effect_timestamp = 0;
 	bool force_feedback = false;
 	bool nintendo_button_layout = false;
+
+	bool axis_changed[(int)JoyAxis::MAX];
+	double axis_value[(int)JoyAxis::MAX];
 
 	GameController(int p_joy_id, GCController *p_controller);
 	~GameController();
