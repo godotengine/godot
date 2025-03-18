@@ -494,7 +494,7 @@
 				Returns the viewport's boundaries as a [Rect2].
 			</description>
 		</method>
-		<method name="get_viewport_transform" qualifiers="const">
+		<method name="get_viewport_transform" qualifiers="const" deprecated="Use [method get_canvas_transform] and [method Viewport.get_final_transform] to calculate the transform, instead.">
 			<return type="Transform2D" />
 			<description>
 				Returns the transform from the coordinate system of the canvas, this item is in, to the [Viewport]s embedders coordinate system.
