@@ -338,7 +338,7 @@
 		<method name="is_layout_rtl" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Returns [code]true[/code] if layout is right-to-left.
+				Returns [code]true[/code] if the layout is right-to-left.
 			</description>
 		</method>
 		<method name="is_maximize_allowed" qualifiers="const">
