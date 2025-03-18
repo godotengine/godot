@@ -27,6 +27,7 @@
 		</member>
 		<member name="motion" type="Vector3" setter="set_motion" getter="get_motion" default="Vector3(0, 0, 0)">
 			The motion of the shape being queried for.
+			[b]Note:[/b] Many methods ignore this property.
 		</member>
 		<member name="shape" type="Resource" setter="set_shape" getter="get_shape">
 			The [Shape3D] that will be used for collision/intersection queries. This stores the actual reference which avoids the shape to be released while being used for queries, so always prefer using this over [member shape_rid].
