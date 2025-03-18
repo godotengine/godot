@@ -112,7 +112,7 @@ if env["d3d12"]:
         # Whether these are loaded from arch-specific directory or not has to be known at build time.
         target_dir = arch_bin_dir if env["agility_sdk_multiarch"] else "#bin"
         for dll in agility_dlls:
-            env.Command(
+            env.CommandNoCache(
                 target_dir + "/" + dll,
                 env["agility_sdk_path"] + "/build/native/bin/" + agility_arch_subdir + "/" + dll,
                 Copy("$TARGET", "$SOURCE"),
@@ -121,7 +121,7 @@ if env["d3d12"]:
     # PIX
     if env["use_pix"]:
         pix_dll = "WinPixEventRuntime.dll"
-        env.Command(
+        env.CommandNoCache(
             "#bin/" + pix_dll,
             env["pix_path"] + "/bin/" + dxc_arch_subdir + "/" + pix_dll,
             Copy("$TARGET", "$SOURCE"),
