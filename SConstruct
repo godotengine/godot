@@ -930,6 +930,31 @@ suffix += env.extra_suffix
 sys.path.remove(tmppath)
 sys.modules.pop("detect")
 
+if env["disable_3d"]:
+    if env.editor_build:
+        print_error("Build option `disable_3d=yes` cannot be used for editor builds, only for export template builds.")
+        Exit(255)
+    else:
+        env.Append(CPPDEFINES=["_3D_DISABLED"])
+        env["disable_xr"] = True
+if env["disable_advanced_gui"]:
+    if env.editor_build:
+        print_error(
+            "Build option `disable_advanced_gui=yes` cannot be used for editor builds, only for export template builds."
+        )
+        Exit(255)
+    else:
+        env.Append(CPPDEFINES=["ADVANCED_GUI_DISABLED"])
+if env["disable_xr"]:
+    env.Append(CPPDEFINES=["XR_DISABLED"])
+if env["minizip"]:
+    env.Append(CPPDEFINES=["MINIZIP_ENABLED"])
+if env["brotli"]:
+    env.Append(CPPDEFINES=["BROTLI_ENABLED"])
+
+if not env["verbose"]:
+    methods.no_verbose(env)
+
 modules_enabled = OrderedDict()
 env.module_dependencies = {}
 env.module_icons_paths = []
@@ -998,31 +1023,6 @@ env["SHLIBSUFFIX"] = suffix + env["SHLIBSUFFIX"]
 
 env["OBJPREFIX"] = env["object_prefix"]
 env["SHOBJPREFIX"] = env["object_prefix"]
-
-if env["disable_3d"]:
-    if env.editor_build:
-        print_error("Build option `disable_3d=yes` cannot be used for editor builds, only for export template builds.")
-        Exit(255)
-    else:
-        env.Append(CPPDEFINES=["_3D_DISABLED"])
-        env["disable_xr"] = True
-if env["disable_advanced_gui"]:
-    if env.editor_build:
-        print_error(
-            "Build option `disable_advanced_gui=yes` cannot be used for editor builds, only for export template builds."
-        )
-        Exit(255)
-    else:
-        env.Append(CPPDEFINES=["ADVANCED_GUI_DISABLED"])
-if env["disable_xr"]:
-    env.Append(CPPDEFINES=["XR_DISABLED"])
-if env["minizip"]:
-    env.Append(CPPDEFINES=["MINIZIP_ENABLED"])
-if env["brotli"]:
-    env.Append(CPPDEFINES=["BROTLI_ENABLED"])
-
-if not env["verbose"]:
-    methods.no_verbose(env)
 
 GLSL_BUILDERS = {
     "RD_GLSL": env.Builder(
