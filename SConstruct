@@ -1019,6 +1019,8 @@ if env["brotli"]:
 
 if not env["verbose"]:
     methods.no_verbose(env)
+else:
+    print(env["ENV"])
 
 GLSL_BUILDERS = {
     "RD_GLSL": env.Builder(
