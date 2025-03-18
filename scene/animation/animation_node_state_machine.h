@@ -288,7 +288,7 @@ class AnimationNodeStateMachinePlayback : public Resource {
 	bool is_grouped = false;
 
 	void _clear_fading(AnimationNodeStateMachine *p_state_machine, const StringName p_state);
-	void _propagate_grouped_child_signal(const StringName p_child_current, String p_child_name, bool p_started);
+	void _signal_state_change(AnimationTree *p_animation_tree, StringName p_state, bool p_started);
 	void _travel_main(const StringName &p_state, bool p_reset_on_teleport = true);
 	void _start_main(const StringName &p_state, bool p_reset = true);
 	void _next_main();
@@ -313,7 +313,7 @@ class AnimationNodeStateMachinePlayback : public Resource {
 	bool _can_transition_to_next(AnimationTree *p_tree, AnimationNodeStateMachine *p_state_machine, NextInfo p_next, bool p_test_only);
 
 	void _set_current(AnimationNodeStateMachine *p_state_machine, const StringName &p_state);
-	void _set_grouped(AnimationNodeStateMachine *p_state_machine);
+	void _set_grouped(bool p_is_grouped);
 	void _set_base_path(const String &p_base_path);
 	Ref<AnimationNodeStateMachinePlayback> _get_parent_playback(AnimationTree *p_tree) const;
 	Ref<AnimationNodeStateMachine> _get_parent_state_machine(AnimationTree *p_tree) const;

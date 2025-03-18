@@ -200,11 +200,12 @@ void AnimationNodeStateMachinePlayback::_set_current(AnimationNodeStateMachine *
 		return;
 	}
 
+	AnimationTree *tree = p_state_machine->process_state ? p_state_machine->process_state->tree : nullptr;
 	Ref<AnimationNodeStateMachine> anodesm = p_state_machine->find_node_by_path(current);
 	if (anodesm.is_null()) {
 		group_start_transition = Ref<AnimationNodeStateMachineTransition>();
 		group_end_transition = Ref<AnimationNodeStateMachineTransition>();
-		emit_signal(SceneStringName(state_started), current);
+		_signal_state_change(tree, current, true);
 		return;
 	}
 
@@ -249,27 +250,12 @@ void AnimationNodeStateMachinePlayback::_set_current(AnimationNodeStateMachine *
 			ERR_PRINT_ED("There is a mismatch in the number of end transitions in and out of the Grouped AnimationNodeStateMachine on AnimationNodeStateMachine: " + base_path + current + ".");
 		}
 	} else {
-		emit_signal(SceneStringName(state_started), current);
+		_signal_state_change(tree, current, true);
 	}
 }
 
-void AnimationNodeStateMachinePlayback::_set_grouped(AnimationNodeStateMachine *p_state_machine) {
-	bool p_is_grouped = p_state_machine->state_machine_type == AnimationNodeStateMachine::STATE_MACHINE_TYPE_GROUPED;
-	if (is_grouped != p_is_grouped) {
-		is_grouped = p_is_grouped;
-		AnimationNodeStateMachinePlayback *parent_playback = *_get_parent_playback(p_state_machine->get_animation_tree());
-		Callable callable = callable_mp(parent_playback, &AnimationNodeStateMachinePlayback::_propagate_grouped_child_signal);
-
-		if (is_grouped) {
-			Vector<String> split = base_path.split("/");
-			String prefix = split[split.size() - 2] + "/";
-			connect(SceneStringName(state_started), callable.bind(prefix, true));
-			connect(SceneStringName(state_finished), callable.bind(prefix, false));
-		} else {
-			disconnect(SceneStringName(state_started), callable);
-			disconnect(SceneStringName(state_finished), callable);
-		}
-	}
+void AnimationNodeStateMachinePlayback::_set_grouped(bool p_is_grouped) {
+	is_grouped = p_is_grouped;
 }
 
 void AnimationNodeStateMachinePlayback::travel(const StringName &p_state, bool p_reset_on_teleport) {
@@ -370,21 +356,21 @@ bool _is_grouped_state_machine(const Ref<AnimationNodeStateMachine> p_node) {
 
 void AnimationNodeStateMachinePlayback::_clear_fading(AnimationNodeStateMachine *p_state_machine, const StringName p_state) {
 	if (!p_state.is_empty() && !_is_grouped_state_machine(p_state_machine->get_node(p_state))) {
-		emit_signal(SceneStringName(state_finished), p_state);
+		_signal_state_change(p_state_machine->get_animation_tree(), p_state, false);
 	}
 	fading_from = StringName();
 	fadeing_from_nti = AnimationNode::NodeTimeInfo();
 }
 
-void AnimationNodeStateMachinePlayback::_propagate_grouped_child_signal(const StringName p_child_current, String p_child_name, bool p_started) {
-	if (p_child_current == SceneStringName(Start) || p_child_current == SceneStringName(End)) {
-		return;
+void AnimationNodeStateMachinePlayback::_signal_state_change(AnimationTree *p_animation_tree, StringName p_state, bool p_started) {
+	if (is_grouped && p_state != SceneStringName(Start) && p_state != SceneStringName(End) && p_animation_tree) {
+		AnimationNodeStateMachinePlayback *parent_playback = *_get_parent_playback(p_animation_tree);
+		if (parent_playback) {
+			String prefix = base_path.substr(base_path.rfind("/", base_path.length() - 2) + 1);
+			parent_playback->_signal_state_change(p_animation_tree, prefix + p_state, p_started);
+		}
 	}
-	if (p_started) {
-		emit_signal(SceneStringName(state_started), p_child_name + p_child_current);
-	} else {
-		emit_signal(SceneStringName(state_finished), p_child_name + p_child_current);
-	}
+	emit_signal(p_started ? SceneStringName(state_started) : SceneStringName(state_finished), p_state);
 }
 
 void AnimationNodeStateMachinePlayback::_clear_path_children(AnimationTree *p_tree, AnimationNodeStateMachine *p_state_machine, bool p_test_only) {
@@ -1643,7 +1629,7 @@ AnimationNode::NodeTimeInfo AnimationNodeStateMachine::_process(const AnimationM
 	Ref<AnimationNodeStateMachinePlayback> playback_new = get_parameter(playback);
 	ERR_FAIL_COND_V(playback_new.is_null(), AnimationNode::NodeTimeInfo());
 	playback_new->_set_base_path(node_state.get_base_path());
-	playback_new->_set_grouped(this);
+	playback_new->_set_grouped(state_machine_type == STATE_MACHINE_TYPE_GROUPED);
 	if (p_test_only) {
 		playback_new = playback_new->duplicate(); // Don't process original when testing.
 	}
