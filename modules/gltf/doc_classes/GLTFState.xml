@@ -25,7 +25,7 @@
 			<param index="0" name="data" type="PackedByteArray" />
 			<param index="1" name="deduplication" type="bool" />
 			<description>
-				Appends the given byte array data to the buffers and creates a [GLTFBufferView] for it. The index of the destination [GLTFBufferView] is returned. If [param deduplication] is [code]true[/code], the buffers will first be searched for duplicate data, otherwise new bytes will always be appended.
+				Appends the given byte array [param data] to the buffers and creates a [GLTFBufferView] for it. The index of the destination [GLTFBufferView] is returned. If [param deduplication] is [code]true[/code], the buffers are first searched for duplicate data, otherwise new bytes are always appended.
 			</description>
 		</method>
 		<method name="append_gltf_node">

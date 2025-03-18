@@ -157,7 +157,7 @@
 			<description>
 				Displays OS native dialog for selecting files or directories in the file system.
 				Each filter string in the [param filters] array should be formatted like this: [code]*.png,*.jpg,*.jpeg;Image Files;image/png,image/jpeg[/code]. The description text of the filter is optional and can be omitted. It is recommended to set both file extension and MIME type. See also [member FileDialog.filters].
-				Callbacks have the following arguments: [code]status: bool, selected_paths: PackedStringArray, selected_filter_index: int[/code]. [b]On Android,[/b] callback argument [code]selected_filter_index[/code] is always zero.
+				Callbacks have the following arguments: [code]status: bool, selected_paths: PackedStringArray, selected_filter_index: int[/code]. [b]On Android,[/b] the third callback argument ([code]selected_filter_index[/code]) is always [code]0[/code].
 				[b]Note:[/b] This method is implemented if the display server has the [constant FEATURE_NATIVE_DIALOG_FILE] feature. Supported platforms include Linux (X11/Wayland), Windows, macOS, and Android.
 				[b]Note:[/b] [param current_directory] might be ignored.
 				[b]Note:[/b] Embedded file dialog and Windows file dialog support only file extensions, while Android, Linux, and macOS file dialogs also support MIME types.
@@ -918,8 +918,8 @@
 		<method name="has_hardware_keyboard" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Returns [code]true[/code] if hardware keyboard is connected.
-				[b]Note:[/b] This method is implemented on Android and iOS, on other platforms this method always returns [code]true[/code].
+				Returns [code]true[/code] if a hardware keyboard is connected.
+				[b]Note:[/b] This method is implemented on Android and iOS. On other platforms, this method always returns [code]true[/code].
 			</description>
 		</method>
 		<method name="help_set_search_callbacks">
@@ -1088,18 +1088,18 @@
 			<return type="Image" />
 			<param index="0" name="screen" type="int" default="-1" />
 			<description>
-				Returns screenshot of the [param screen].
+				Returns a screenshot of the [param screen].
 				[b]Note:[/b] This method is implemented on Linux (X11), macOS, and Windows.
-				[b]Note:[/b] On macOS, this method requires "Screen Recording" permission, if permission is not granted it will return desktop wallpaper color.
+				[b]Note:[/b] On macOS, this method requires the "Screen Recording" permission. If permission is not granted, this method returns a screenshot that will not include other application windows or OS elements not related to the application.
 			</description>
 		</method>
 		<method name="screen_get_image_rect" qualifiers="const">
 			<return type="Image" />
 			<param index="0" name="rect" type="Rect2i" />
 			<description>
-				Returns screenshot of the screen [param rect].
+				Returns a screenshot of the screen region defined by [param rect].
 				[b]Note:[/b] This method is implemented on macOS and Windows.
-				[b]Note:[/b] On macOS, this method requires "Screen Recording" permission, if permission is not granted it will return desktop wallpaper color.
+				[b]Note:[/b] On macOS, this method requires the "Screen Recording" permission. If permission is not granted, this method returns a screenshot that will not include other application windows or OS elements not related to the application.
 			</description>
 		</method>
 		<method name="screen_get_max_scale" qualifiers="const">
@@ -1907,7 +1907,7 @@
 			Display server supports windows can use per-pixel transparency to make windows behind them partially or fully visible. [b]Windows, macOS, Linux (X11/Wayland)[/b]
 		</constant>
 		<constant name="FEATURE_HIDPI" value="12" enum="Feature">
-			Display server supports querying the operating system's display scale factor. This allows for [i]reliable[/i] automatic hiDPI display detection, as opposed to guessing based on the screen resolution and reported display DPI (which can be unreliable due to broken monitor EDID). [b]Windows, Linux (Wayland), macOS[/b]
+			Display server supports querying the operating system's display scale factor. This allows automatically detecting the hiDPI display [i]reliably[/i], instead of guessing based on the screen resolution and the display's reported DPI (which might be unreliable due to broken monitor EDID). [b]Windows, Linux (Wayland), macOS[/b]
 		</constant>
 		<constant name="FEATURE_ICON" value="13" enum="Feature">
 			Display server supports changing the window icon (usually displayed in the top-left corner). [b]Windows, macOS, Linux (X11)[/b]

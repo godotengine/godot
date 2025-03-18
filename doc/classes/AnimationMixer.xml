@@ -135,7 +135,7 @@
 				    move_and_slide()
 				[/gdscript]
 				[/codeblocks]
-				If [member root_motion_local] is [code]true[/code], return the pre-multiplied translation value with the inverted rotation.
+				If [member root_motion_local] is [code]true[/code], returns the pre-multiplied translation value with the inverted rotation.
 				In this case, the code can be written as follows:
 				[codeblocks]
 				[gdscript]

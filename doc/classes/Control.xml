@@ -713,7 +713,7 @@
 		<method name="is_layout_rtl" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Returns [code]true[/code] if layout is right-to-left. See also [member layout_direction].
+				Returns [code]true[/code] if the layout is right-to-left. See also [member layout_direction].
 			</description>
 		</method>
 		<method name="release_focus">
