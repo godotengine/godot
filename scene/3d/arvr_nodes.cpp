@@ -613,7 +613,7 @@ void ARVROrigin::_notification(int p_what) {
 		}; break;
 		case NOTIFICATION_INTERNAL_PROCESS: {
 			// set our world origin to our node transform
-			arvr_server->set_world_origin(get_global_transform());
+			arvr_server->set_world_origin(get_global_transform_interpolated());
 
 			// check if we have a primary interface
 			Ref<ARVRInterface> arvr_interface = arvr_server->get_primary_interface();
