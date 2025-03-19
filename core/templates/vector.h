@@ -164,9 +164,6 @@ public:
 		}
 		
 		return span().rfind_seq(p_vector.span(), p_from); 
-			return -1;
-		}
-		return span().rfind(p_val, p_from);
 	}
 	Size count(const T &p_val) const { return span().count(p_val); }
 
