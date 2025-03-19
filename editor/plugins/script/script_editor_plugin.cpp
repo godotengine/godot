@@ -63,6 +63,7 @@
 #include "editor/plugins/editor_context_menu_plugin.h"
 #include "editor/plugins/shader/shader_editor_plugin.h"
 #include "editor/plugins/shader/text_shader_editor.h"
+#include "editor/plugins/text_editor.h"
 #include "editor/themes/editor_scale.h"
 #include "editor/themes/editor_theme_manager.h"
 #include "editor/window_wrapper.h"
@@ -73,7 +74,6 @@
 #include "scene/main/window.h"
 #include "script_text_editor.h"
 #include "servers/display_server.h"
-#include "text_editor.h"
 
 /*** SYNTAX HIGHLIGHTER ****/
 

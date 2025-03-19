@@ -42,7 +42,7 @@
 #include "editor/gui/editor_variant_type_selectors.h"
 #include "editor/gui/scene_tree_editor.h"
 #include "editor/node_dock.h"
-#include "editor/plugins/script_editor_plugin.h"
+#include "editor/plugins/script/script_editor_plugin.h"
 #include "editor/scene_tree_dock.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/button.h"

@@ -38,7 +38,7 @@
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
 #include "editor/gui/editor_bottom_panel.h"
-#include "editor/plugins/script_editor_plugin.h"
+#include "editor/plugins/script/script_editor_plugin.h"
 #include "editor/run_instances_dialog.h"
 #include "scene/gui/popup_menu.h"
 

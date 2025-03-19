@@ -40,7 +40,7 @@
 #include "editor/export/lipo.h"
 #include "editor/export/macho.h"
 #include "editor/import/resource_importer_texture_settings.h"
-#include "editor/plugins/script_editor_plugin.h"
+#include "editor/plugins/script/script_editor_plugin.h"
 #include "editor/themes/editor_scale.h"
 
 #include "modules/modules_enabled.gen.h" // For mono.

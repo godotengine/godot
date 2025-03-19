@@ -44,7 +44,7 @@
 #include "editor/inspector_dock.h"
 #include "editor/multi_node_edit.h"
 #include "editor/plugins/animation/animation_player_editor_plugin.h"
-#include "editor/plugins/script_editor_plugin.h"
+#include "editor/plugins/script/script_editor_plugin.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/animation/animation_player.h"
