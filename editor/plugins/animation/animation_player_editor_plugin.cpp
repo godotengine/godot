@@ -41,8 +41,8 @@
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/gui/editor_validation_panel.h"
 #include "editor/inspector_dock.h"
+#include "editor/plugins/3d/node_3d_editor_plugin.h" // For onion skinning.
 #include "editor/plugins/canvas_item_editor_plugin.h" // For onion skinning.
-#include "editor/plugins/node_3d_editor_plugin.h" // For onion skinning.
 #include "editor/scene_tree_dock.h"
 #include "editor/themes/editor_scale.h"
 #include "editor/themes/editor_theme_manager.h"
