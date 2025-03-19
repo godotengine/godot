@@ -30,7 +30,7 @@
 
 #pragma once
 
-#include "script_editor_plugin.h"
+#include "editor/plugins/script/script_editor_plugin.h"
 
 #include "editor/code_editor.h"
 
