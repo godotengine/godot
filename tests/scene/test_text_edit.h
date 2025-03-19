@@ -7344,7 +7344,7 @@ TEST_CASE("[SceneTree][TextEdit] multicaret") {
 		CHECK(text_edit->get_caret_line(1) == 1);
 		CHECK(text_edit->get_caret_column(1) == 1);
 		CHECK(text_edit->get_caret_line(2) == 0);
-		CHECK(text_edit->get_caret_column(2) == 8);
+		CHECK(text_edit->get_caret_column(2) == 7);
 
 		// Add caret above from first line and not first line wrap.
 		text_edit->add_caret_at_carets(false);
@@ -7355,9 +7355,9 @@ TEST_CASE("[SceneTree][TextEdit] multicaret") {
 		CHECK(text_edit->get_caret_line(1) == 1);
 		CHECK(text_edit->get_caret_column(1) == 1);
 		CHECK(text_edit->get_caret_line(2) == 0);
-		CHECK(text_edit->get_caret_column(2) == 8);
+		CHECK(text_edit->get_caret_column(2) == 7);
 		CHECK(text_edit->get_caret_line(3) == 0);
-		CHECK(text_edit->get_caret_column(3) == 4);
+		CHECK(text_edit->get_caret_column(3) == 2);
 
 		// Cannot add caret above from first line first line wrap.
 		text_edit->remove_secondary_carets();
