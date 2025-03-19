@@ -1414,8 +1414,8 @@ void CPUParticles3D::_notification(int p_what) {
 			_update_internal();
 		} break;
 
-		case NOTIFICATION_TRANSFORM_CHANGED: {
-			Transform3D global_transform = get_global_transform();
+		case NOTIFICATION_GLOBAL_TRANSFORM_CHANGED: {
+			const Transform3D global_transform = get_global_transform();
 			if (unlikely(global_transform.basis.determinant() == 0)) {
 				return;
 			}
@@ -1810,7 +1810,7 @@ void CPUParticles3D::_bind_methods() {
 }
 
 CPUParticles3D::CPUParticles3D() {
-	set_notify_transform(true);
+	set_notify_global_transform(true);
 
 	multimesh = RenderingServer::get_singleton()->multimesh_create();
 	RenderingServer::get_singleton()->multimesh_set_visible_instances(multimesh, 0);
