@@ -150,6 +150,16 @@ void Camera2DEditorPlugin::make_visible(bool p_visible) {
 	}
 }
 
+void Camera2DEditorPlugin::edited_scene_changed() {
+	Callable update_text = callable_mp(this, &Camera2DEditorPlugin::_update_approach_text_visibility);
+	StringName update_signal = SNAME("_camera_limit_enabled_updated");
+	Camera2D *prev_cam = camera_2d_editor->selected_camera;
+	if (prev_cam != nullptr && prev_cam->is_connected(update_signal, update_text)) {
+		prev_cam->disconnect(update_signal, update_text);
+		camera_2d_editor->selected_camera = nullptr;
+	}
+}
+
 Camera2DEditorPlugin::Camera2DEditorPlugin() {
 	camera_2d_editor = memnew(Camera2DEditor);
 	EditorNode::get_singleton()->get_gui_base()->add_child(camera_2d_editor);
