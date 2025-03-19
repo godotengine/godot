@@ -1901,6 +1901,8 @@ void DisplayServerMacOS::delete_sub_window(WindowID p_id) {
 
 	[wd.window_object setContentView:nil];
 	[wd.window_object close];
+
+	mouse_enter_window(get_window_at_screen_position(mouse_get_position()));
 }
 
 void DisplayServerMacOS::window_set_rect_changed_callback(const Callable &p_callable, WindowID p_window) {

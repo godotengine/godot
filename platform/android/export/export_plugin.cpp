@@ -2041,7 +2041,6 @@ bool EditorExportPlatformAndroid::get_export_option_visibility(const EditorExpor
 	if (p_option == "graphics/opengl_debug" ||
 			p_option == "command_line/extra_args" ||
 			p_option == "permissions/custom_permissions" ||
-			p_option == "gradle_build/compress_native_libraries" ||
 			p_option == "package/retain_data_on_uninstall" ||
 			p_option == "package/exclude_from_recents" ||
 			p_option == "package/show_in_app_library" ||

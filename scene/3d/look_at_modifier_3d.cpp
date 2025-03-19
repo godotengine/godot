@@ -502,10 +502,10 @@ void LookAtModifier3D::_process_modification() {
 	int parent_bone = skeleton->get_bone_parent(bone);
 	if (parent_bone < 0) {
 		bone_rest_space = skeleton->get_global_transform();
-		bone_rest_space.origin += skeleton->get_bone_rest(bone).origin;
+		bone_rest_space.translate_local(skeleton->get_bone_rest(bone).origin);
 	} else {
 		bone_rest_space = skeleton->get_global_transform() * skeleton->get_bone_global_pose(parent_bone);
-		bone_rest_space.origin += skeleton->get_bone_rest(bone).origin;
+		bone_rest_space.translate_local(skeleton->get_bone_rest(bone).origin);
 	}
 
 	// Calculate forward_vector and destination.

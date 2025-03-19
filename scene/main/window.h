@@ -103,7 +103,7 @@ public:
 		DEFAULT_WINDOW_SIZE = 100,
 	};
 
-	// Keep synced with enum hint for `initial_position` property.
+	// Keep synced with enum hint for `initial_position` property and `display/window/size/initial_position_type` project setting.
 	enum WindowInitialPosition {
 		WINDOW_INITIAL_POSITION_ABSOLUTE,
 		WINDOW_INITIAL_POSITION_CENTER_PRIMARY_SCREEN,

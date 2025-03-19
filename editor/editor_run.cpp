@@ -286,9 +286,11 @@ EditorRun::WindowPlacement EditorRun::get_window_placement() {
 			} break;
 			case 3: { // force maximized
 				placement.force_maximized = true;
+				placement.position = (screen_rect.position) + ((screen_rect.size - placement.size) / 2).floor();
 			} break;
 			case 4: { // force fullscreen
 				placement.force_fullscreen = true;
+				placement.position = (screen_rect.position) + ((screen_rect.size - placement.size) / 2).floor();
 			} break;
 		}
 	} else {
