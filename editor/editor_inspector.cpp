@@ -3941,8 +3941,9 @@ void EditorInspector::update_tree() {
 		}
 
 		// Clean up empty sections.
-		for (List<EditorInspectorSection *>::Element *I = sections.back(); I; I = I->prev()) {
+		for (List<EditorInspectorSection *>::Element *I = sections.back(); I;) {
 			EditorInspectorSection *section = I->get();
+			I = I->prev(); // Note: Advance before erasing element.
 			if (section->get_vbox()->get_child_count() == 0) {
 				sections.erase(section);
 				vbox_per_path[main_vbox].erase(section->get_section());
