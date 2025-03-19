@@ -614,12 +614,12 @@ void TextEdit::_notification(int p_what) {
 			queue_redraw();
 		} break;
 
-		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
+		case NOTIFICATION_INTERNAL_PROCESS: {
 			if (scrolling && get_v_scroll() != target_v_scroll) {
 				double target_y = target_v_scroll - get_v_scroll();
 				double dist = abs(target_y);
 				// To ensure minimap is responsive override the speed setting.
-				double vel = ((target_y / dist) * ((minimap_clicked) ? 3000 : v_scroll_speed)) * get_physics_process_delta_time();
+				double vel = ((target_y / dist) * ((minimap_clicked) ? 3000 : v_scroll_speed)) * get_process_delta_time();
 
 				// Prevent small velocities from blocking scrolling.
 				if (Math::abs(vel) < v_scroll->get_step()) {
@@ -630,14 +630,14 @@ void TextEdit::_notification(int p_what) {
 					set_v_scroll(target_v_scroll);
 					scrolling = false;
 					minimap_clicked = false;
-					set_physics_process_internal(false);
+					set_process_internal(false);
 				} else {
 					set_v_scroll(get_v_scroll() + vel);
 				}
 			} else {
 				scrolling = false;
 				minimap_clicked = false;
-				set_physics_process_internal(false);
+				set_process_internal(false);
 			}
 		} break;
 
@@ -8188,7 +8188,7 @@ void TextEdit::_scroll_up(real_t p_delta, bool p_animate) {
 			v_scroll->set_value(target_v_scroll);
 		} else {
 			scrolling = true;
-			set_physics_process_internal(true);
+			set_process_internal(true);
 		}
 	} else {
 		set_v_scroll(target_v_scroll);
@@ -8216,7 +8216,7 @@ void TextEdit::_scroll_down(real_t p_delta, bool p_animate) {
 			v_scroll->set_value(target_v_scroll);
 		} else {
 			scrolling = true;
-			set_physics_process_internal(true);
+			set_process_internal(true);
 		}
 	} else {
 		set_v_scroll(target_v_scroll);
