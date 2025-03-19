@@ -1572,7 +1572,7 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 		Vector<uint8_t> array;
 		if (GDExtension::get_extension_list_config_file() == forced_export[i]) {
 			array = _filter_extension_list_config_file(forced_export[i], paths);
-			if (array.size() == 0) {
+			if (array.is_empty()) {
 				continue;
 			}
 		} else {

@@ -521,7 +521,7 @@ void OccluderInstance3D::_bake_surface(const Transform3D &p_transform, Array p_s
 	PackedVector3Array vertices = p_surface_arrays[Mesh::ARRAY_VERTEX];
 	PackedInt32Array indices = p_surface_arrays[Mesh::ARRAY_INDEX];
 
-	if (vertices.size() == 0 || indices.size() == 0) {
+	if (vertices.is_empty() || indices.is_empty()) {
 		return;
 	}
 

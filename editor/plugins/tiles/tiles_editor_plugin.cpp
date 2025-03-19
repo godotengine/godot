@@ -74,7 +74,7 @@ void TilesEditorUtils::_thread() {
 		pattern_preview_sem.wait();
 
 		pattern_preview_mutex.lock();
-		if (pattern_preview_queue.size() == 0) {
+		if (pattern_preview_queue.is_empty()) {
 			pattern_preview_mutex.unlock();
 		} else {
 			QueueItem item = pattern_preview_queue.front()->get();

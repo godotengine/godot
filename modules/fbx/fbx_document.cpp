@@ -1080,7 +1080,7 @@ Error FBXDocument::_parse_images(Ref<FBXState> p_state, const String &p_base_pat
 			}
 			// Fallback to loading as byte array.
 			data = FileAccess::get_file_as_bytes(path);
-			if (data.size() == 0) {
+			if (data.is_empty()) {
 				WARN_PRINT(vformat("FBX: Image index '%d' couldn't be loaded from path: %s because there was no data to load. Skipping it.", texture_i, path));
 				p_state->images.push_back(Ref<Texture2D>()); // Placeholder to keep count.
 				p_state->source_images.push_back(Ref<Image>());
