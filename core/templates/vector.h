@@ -106,7 +106,7 @@ public:
 	// Must take a copy instead of a reference (see GH-31736).
 	Error insert(Size p_pos, T p_val) { return _cowdata.insert(p_pos, p_val); }
 
-  Size find(const T &p_val, Size p_from = 0) const {
+  	Size find(const T &p_val, Size p_from = 0) const {
 		if (p_from < 0) {
 			p_from = size() + p_from;
 		}
@@ -116,7 +116,7 @@ public:
 		return span().find(p_val, p_from);
 	}
   
-	Size find_seq(const T &p_val, Size p_from = 0) const {
+	Size find_seq(const Vector<T> &p_vector, Size p_from = 0) const {
 		if (p_from < 0) {
 			p_from = size() + p_from;
 		}
@@ -135,7 +135,7 @@ public:
 		return span().find_seq(p_vector.span(), p_from); 
 	}
 
-  Size rfind(const T &p_val, Size p_from = -1) const {
+  	Size rfind(const T &p_val, Size p_from = -1) const {
 		if (p_from < 0) {
 			p_from = size() + p_from;
 		}
@@ -146,7 +146,6 @@ public:
 	}
   
 	Size rfind_seq(const Vector<T> &p_vector, Size p_from = 0) const {
-
 		if (p_from < 0) {
 			p_from = size() + p_from;
 		}
