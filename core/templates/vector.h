@@ -106,9 +106,42 @@ public:
 	// Must take a copy instead of a reference (see GH-31736).
 	Error insert(Size p_pos, T p_val) { return _cowdata.insert(p_pos, p_val); }
 	Size find(const T &p_val, Size p_from = 0) const { return span().find(p_val, p_from); }
-	Size find_seq(const Vector<T> &p_vector, Size p_from = 0) const { return span().find_seq(p_vector.span(), p_from); }
+	Size find_seq(const Vector<T> &p_vector, Size p_from = 0) const { 
+		if (p_from < 0) {
+			return -1;
+		}
+		if (p_vector.size() == 0 || size() == 0 || p_vector.size() > size()) {
+			return -1; // won't find anything!
+		}
+	
+		if (p_vector.size() == 1){
+			return span().find(p_vector[0], p_from);
+		}
+
+		return span().find_seq(p_vector.span(), p_from); 
+	}
 	Size rfind(const T &p_val, Size p_from = -1) const { return span().rfind(p_val, p_from); }
-	Size rfind_seq(const Vector<T> &p_vector, Size p_from = 0) const { return span().rfind_seq(p_vector.span(), p_from); }
+	Size rfind_seq(const Vector<T> &p_vector, Size p_from = 0) const {
+		if (p_vector.size() == 0 || p_vector.size() > size()){
+			return -1;
+		}
+	
+		if (p_vector.size() == 1){
+			return span().rfind(p_vector[0], p_from);
+		}
+	
+		if (p_from < 0) {
+			p_from = size() + p_from;
+		}
+		if (p_from < 0 || p_from >= size()) {
+			p_from = size() - 1;
+		}
+		if (p_from > size() - p_vector.size()){
+			p_from = size() - p_vector.size();
+		}
+		
+		return span().rfind_seq(p_vector.span(), p_from); 
+	}
 	Size count(const T &p_val) const { return span().count(p_val); }
 
 	// Must take a copy instead of a reference (see GH-31736).
