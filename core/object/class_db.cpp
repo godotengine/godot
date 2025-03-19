@@ -298,7 +298,7 @@ void ClassDB::get_direct_inheriters_from_class(const StringName &p_class, List<S
 	OBJTYPE_RLOCK;
 
 	for (const KeyValue<StringName, ClassInfo> &E : classes) {
-		if (E.key != p_class && _get_parent_class(E.key) == p_class) {
+		if (E.value.inherits == p_class) {
 			p_classes->push_back(E.key);
 		}
 	}
