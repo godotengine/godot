@@ -54,7 +54,7 @@
 #include "editor/plugins/animation/animation_player_editor_plugin.h"
 #include "editor/plugins/canvas_item_editor_plugin.h"
 #include "editor/plugins/editor_context_menu_plugin.h"
-#include "editor/plugins/script_editor_plugin.h"
+#include "editor/plugins/script/script_editor_plugin.h"
 #include "editor/rename_dialog.h"
 #include "editor/reparent_dialog.h"
 #include "editor/shader_create_dialog.h"

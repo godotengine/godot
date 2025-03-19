@@ -41,7 +41,7 @@
 #include "editor/node_dock.h"
 #include "editor/plugins/animation/animation_player_editor_plugin.h"
 #include "editor/plugins/canvas_item_editor_plugin.h"
-#include "editor/plugins/script_editor_plugin.h"
+#include "editor/plugins/script/script_editor_plugin.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/2d/node_2d.h"
 #include "scene/gui/flow_container.h"

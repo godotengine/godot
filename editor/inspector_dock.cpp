@@ -40,7 +40,7 @@
 #include "editor/filesystem_dock.h"
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/gui/editor_object_selector.h"
-#include "editor/plugins/script_editor_plugin.h"
+#include "editor/plugins/script/script_editor_plugin.h"
 #include "editor/themes/editor_scale.h"
 
 InspectorDock *InspectorDock::singleton = nullptr;
