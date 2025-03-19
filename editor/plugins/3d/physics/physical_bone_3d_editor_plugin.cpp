@@ -32,7 +32,7 @@
 
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
-#include "editor/plugins/node_3d_editor_plugin.h"
+#include "editor/plugins/3d/node_3d_editor_plugin.h"
 #include "scene/3d/physics/physical_bone_3d.h"
 
 void PhysicalBone3DEditor::_on_toggle_button_transform_joint(bool p_is_pressed) {

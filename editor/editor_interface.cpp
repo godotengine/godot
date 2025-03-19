@@ -48,7 +48,7 @@
 #include "editor/gui/editor_toaster.h"
 #include "editor/gui/scene_tree_editor.h"
 #include "editor/inspector_dock.h"
-#include "editor/plugins/node_3d_editor_plugin.h"
+#include "editor/plugins/3d/node_3d_editor_plugin.h"
 #include "editor/property_selector.h"
 #include "editor/themes/editor_scale.h"
 #include "main/main.h"

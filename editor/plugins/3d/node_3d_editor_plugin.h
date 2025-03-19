@@ -31,8 +31,8 @@
 #pragma once
 
 #include "core/math/dynamic_bvh.h"
+#include "editor/plugins/3d/node_3d_editor_gizmos.h"
 #include "editor/plugins/editor_plugin.h"
-#include "editor/plugins/node_3d_editor_gizmos.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"

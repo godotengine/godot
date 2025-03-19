@@ -30,7 +30,7 @@
 
 #pragma once
 
-#include "editor/plugins/node_3d_editor_gizmos.h"
+#include "editor/plugins/3d/node_3d_editor_gizmos.h"
 
 class OccluderInstance3DGizmoPlugin : public EditorNode3DGizmoPlugin {
 	GDCLASS(OccluderInstance3DGizmoPlugin, EditorNode3DGizmoPlugin);
