@@ -198,7 +198,7 @@ void Camera3D::_notification(int p_what) {
 #endif
 		} break;
 
-		case NOTIFICATION_TRANSFORM_CHANGED: {
+		case NOTIFICATION_GLOBAL_TRANSFORM_CHANGED: {
 #if defined(DEBUG_ENABLED) && defined(TOOLS_ENABLED)
 			if (is_physics_interpolated_and_enabled()) {
 				if (!Engine::get_singleton()->is_in_physics_frame()) {
@@ -861,7 +861,7 @@ Camera3D::Camera3D() {
 	RenderingServer::get_singleton()->camera_set_cull_mask(camera, layers);
 	//active=false;
 	velocity_tracker.instantiate();
-	set_notify_transform(true);
+	set_notify_global_transform(true);
 	set_disable_scale(true);
 }
 

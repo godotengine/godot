@@ -205,7 +205,7 @@ void EmbeddedProcess::embed_process(OS::ProcessID p_pid) {
 	embedding_grab_focus = has_focus();
 	timer_update_embedded_process->start();
 	set_process(true);
-	set_notify_transform(true);
+	set_notify_global_transform(true);
 
 	// Attempt to embed the process, but if it has just started and the window is not ready yet,
 	// we will retry in this case.
@@ -223,7 +223,7 @@ void EmbeddedProcess::reset() {
 	timer_embedding->stop();
 	timer_update_embedded_process->stop();
 	set_process(false);
-	set_notify_transform(false);
+	set_notify_global_transform(false);
 	queue_redraw();
 }
 

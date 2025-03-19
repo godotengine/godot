@@ -231,7 +231,7 @@ void SkeletonModification2DCCDIK::_execute_ccdik_joint(int p_joint_idx, Node2D *
 	// Set the local pose override, and to make sure child bones are also updated, set the transform of the bone.
 	stack->skeleton->set_bone_local_pose_override(ccdik_data.bone_idx, operation_transform, stack->strength, true);
 	operation_bone->set_transform(operation_transform);
-	operation_bone->notification(operation_bone->NOTIFICATION_TRANSFORM_CHANGED);
+	operation_bone->notification(operation_bone->NOTIFICATION_GLOBAL_TRANSFORM_CHANGED);
 }
 
 void SkeletonModification2DCCDIK::_setup_modification(SkeletonModificationStack2D *p_stack) {

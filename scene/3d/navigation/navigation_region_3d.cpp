@@ -168,7 +168,7 @@ void NavigationRegion3D::_notification(int p_what) {
 			_region_enter_navigation_map();
 		} break;
 
-		case NOTIFICATION_TRANSFORM_CHANGED: {
+		case NOTIFICATION_GLOBAL_TRANSFORM_CHANGED: {
 			set_physics_process_internal(true);
 		} break;
 
@@ -424,7 +424,7 @@ void NavigationRegion3D::_region_update_transform() {
 }
 
 NavigationRegion3D::NavigationRegion3D() {
-	set_notify_transform(true);
+	set_notify_global_transform(true);
 
 	region = NavigationServer3D::get_singleton()->region_create();
 	NavigationServer3D::get_singleton()->region_set_owner_id(region, get_instance_id());

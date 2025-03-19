@@ -233,7 +233,7 @@ void Joint3D::_bind_methods() {
 }
 
 Joint3D::Joint3D() {
-	set_notify_transform(true);
+	set_notify_global_transform(true);
 	joint = PhysicsServer3D::get_singleton()->joint_create();
 }
 

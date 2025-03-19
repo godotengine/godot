@@ -74,9 +74,9 @@ Node3DGizmo::Node3DGizmo() {
 
 void Node3D::_notify_dirty() {
 #ifdef TOOLS_ENABLED
-	if ((!data.gizmos.is_empty() || data.notify_transform) && !data.ignore_notification && !xform_change.in_list()) {
+	if ((!data.gizmos.is_empty() || data.notify_global_transform) && !data.ignore_notification && !xform_change.in_list()) {
 #else
-	if (data.notify_transform && !data.ignore_notification && !xform_change.in_list()) {
+	if (data.notify_global_transform && !data.ignore_notification && !xform_change.in_list()) {
 
 #endif
 		get_tree()->xform_change_list.add(&xform_change);
@@ -118,9 +118,9 @@ void Node3D::_propagate_transform_changed(Node3D *p_origin) {
 	}
 
 #ifdef TOOLS_ENABLED
-	if ((!data.gizmos.is_empty() || data.notify_transform) && !data.ignore_notification && !xform_change.in_list()) {
+	if ((!data.gizmos.is_empty() || data.notify_global_transform) && !data.ignore_notification && !xform_change.in_list()) {
 #else
-	if (data.notify_transform && !data.ignore_notification && !xform_change.in_list()) {
+	if (data.notify_global_transform && !data.ignore_notification && !xform_change.in_list()) {
 #endif
 		if (likely(is_accessible_from_caller_thread())) {
 			get_tree()->xform_change_list.add(&xform_change);
@@ -272,7 +272,7 @@ void Node3D::_notification(int p_what) {
 			data.inside_world = false;
 		} break;
 
-		case NOTIFICATION_TRANSFORM_CHANGED: {
+		case NOTIFICATION_GLOBAL_TRANSFORM_CHANGED: {
 			ERR_THREAD_GUARD;
 
 #ifdef TOOLS_ENABLED
@@ -1270,14 +1270,14 @@ Vector3 Node3D::to_global(Vector3 p_local) const {
 	return get_global_transform().xform(p_local);
 }
 
-void Node3D::set_notify_transform(bool p_enabled) {
+void Node3D::set_notify_global_transform(bool p_enabled) {
 	ERR_THREAD_GUARD;
-	data.notify_transform = p_enabled;
+	data.notify_global_transform = p_enabled;
 }
 
-bool Node3D::is_transform_notification_enabled() const {
+bool Node3D::is_global_transform_notification_enabled() const {
 	ERR_READ_THREAD_GUARD_V(false);
-	return data.notify_transform;
+	return data.notify_global_transform;
 }
 
 void Node3D::set_notify_local_transform(bool p_enabled) {
@@ -1298,7 +1298,7 @@ void Node3D::force_update_transform() {
 	}
 	get_tree()->xform_change_list.remove(&xform_change);
 
-	notification(NOTIFICATION_TRANSFORM_CHANGED);
+	notification(NOTIFICATION_GLOBAL_TRANSFORM_CHANGED);
 }
 
 void Node3D::_update_visibility_parent(bool p_update_root) {
@@ -1487,8 +1487,12 @@ void Node3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_notify_local_transform", "enable"), &Node3D::set_notify_local_transform);
 	ClassDB::bind_method(D_METHOD("is_local_transform_notification_enabled"), &Node3D::is_local_transform_notification_enabled);
 
-	ClassDB::bind_method(D_METHOD("set_notify_transform", "enable"), &Node3D::set_notify_transform);
-	ClassDB::bind_method(D_METHOD("is_transform_notification_enabled"), &Node3D::is_transform_notification_enabled);
+	ClassDB::bind_method(D_METHOD("set_notify_global_transform", "enable"), &Node3D::set_notify_global_transform);
+	ClassDB::bind_method(D_METHOD("is_global_transform_notification_enabled"), &Node3D::is_global_transform_notification_enabled);
+#ifndef DISABLE_DEPRECATED
+	ClassDB::bind_method(D_METHOD("set_notify_transform", "enable"), &Node3D::set_notify_global_transform);
+	ClassDB::bind_method(D_METHOD("is_transform_notification_enabled"), &Node3D::is_global_transform_notification_enabled);
+#endif // DISABLE_DEPRECATED
 
 	ClassDB::bind_method(D_METHOD("rotate", "axis", "angle"), &Node3D::rotate);
 	ClassDB::bind_method(D_METHOD("global_rotate", "axis", "angle"), &Node3D::global_rotate);
@@ -1510,7 +1514,10 @@ void Node3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("to_local", "global_point"), &Node3D::to_local);
 	ClassDB::bind_method(D_METHOD("to_global", "local_point"), &Node3D::to_global);
 
+	BIND_CONSTANT(NOTIFICATION_GLOBAL_TRANSFORM_CHANGED);
+#ifndef DISABLE_DEPRECATED
 	BIND_CONSTANT(NOTIFICATION_TRANSFORM_CHANGED);
+#endif // DISABLE_DEPRECATED
 	BIND_CONSTANT(NOTIFICATION_ENTER_WORLD);
 	BIND_CONSTANT(NOTIFICATION_EXIT_WORLD);
 	BIND_CONSTANT(NOTIFICATION_VISIBILITY_CHANGED);
@@ -1555,7 +1562,7 @@ Node3D::Node3D() :
 
 	data.ignore_notification = false;
 	data.notify_local_transform = false;
-	data.notify_transform = false;
+	data.notify_global_transform = false;
 
 	data.visible = true;
 	data.disable_scale = false;

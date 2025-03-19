@@ -107,7 +107,7 @@ void NavigationObstacle3D::_notification(int p_what) {
 		} break;
 
 #ifdef TOOLS_ENABLED
-		case NOTIFICATION_TRANSFORM_CHANGED: {
+		case NOTIFICATION_GLOBAL_TRANSFORM_CHANGED: {
 			update_gizmos();
 		} break;
 #endif // TOOLS_ENABLED
@@ -224,7 +224,7 @@ NavigationObstacle3D::NavigationObstacle3D() {
 #endif // DEBUG_ENABLED
 
 #ifdef TOOLS_ENABLED
-	set_notify_transform(true);
+	set_notify_global_transform(true);
 #endif // TOOLS_ENABLED
 }
 

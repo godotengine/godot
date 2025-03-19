@@ -705,7 +705,7 @@ void GPUParticlesCollisionHeightField3D::_notification(int p_what) {
 			}
 		} break;
 
-		case NOTIFICATION_TRANSFORM_CHANGED: {
+		case NOTIFICATION_GLOBAL_TRANSFORM_CHANGED: {
 			RS::get_singleton()->particles_collision_height_field_update(_get_collision());
 		} break;
 	}

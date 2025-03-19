@@ -114,13 +114,13 @@ void CPUParticles2D::set_use_local_coordinates(bool p_enable) {
 	// and inform the RenderingServer to use identity mode.
 	set_canvas_item_use_identity_transform(!local_coords);
 
-	// We only need NOTIFICATION_TRANSFORM_CHANGED
+	// We only need NOTIFICATION_GLOBAL_TRANSFORM_CHANGED
 	// when following an interpolated target.
 
 #ifdef TOOLS_ENABLED
-	set_notify_transform(_interpolation_data.interpolated_follow || (Engine::get_singleton()->is_editor_hint() && !local_coords));
+	set_notify_global_transform(_interpolation_data.interpolated_follow || (Engine::get_singleton()->is_editor_hint() && !local_coords));
 #else
-	set_notify_transform(_interpolation_data.interpolated_follow);
+	set_notify_global_transform(_interpolation_data.interpolated_follow);
 #endif
 
 	queue_redraw();
@@ -1295,7 +1295,7 @@ void CPUParticles2D::_notification(int p_what) {
 			}
 		} break;
 
-		case NOTIFICATION_TRANSFORM_CHANGED: {
+		case NOTIFICATION_GLOBAL_TRANSFORM_CHANGED: {
 			if (_interpolation_data.interpolated_follow) {
 				// If the transform has been updated AFTER the physics tick, keep data flowing.
 				if (Engine::get_singleton()->is_in_physics_frame()) {
