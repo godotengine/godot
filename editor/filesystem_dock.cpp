@@ -2748,7 +2748,13 @@ void FileSystemDock::focus_on_filter() {
 }
 
 void FileSystemDock::create_directory(const String &p_path, const String &p_base_dir) {
-	Error err = EditorFileSystem::get_singleton()->make_dir_recursive(p_path.trim_prefix(p_base_dir), p_base_dir);
+	String trimmed_path = p_path;
+	if (!p_base_dir.is_empty()) {
+		// Trims off the joining '/' if the base didn't end with one. If the base did have it
+		// and there's two slashes, the empty directory is safe to trim off anyways.
+		trimmed_path = trimmed_path.trim_prefix(p_base_dir).trim_prefix("/");
+	}
+	Error err = EditorFileSystem::get_singleton()->make_dir_recursive(trimmed_path, p_base_dir);
 	if (err != OK) {
 		EditorNode::get_singleton()->show_warning(vformat(TTR("Could not create folder: %s"), error_names[err]));
 	}
