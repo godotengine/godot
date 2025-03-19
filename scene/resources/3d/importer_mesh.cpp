@@ -874,7 +874,7 @@ Ref<ConvexPolygonShape3D> ImporterMesh::create_convex_shape(bool p_clean, bool p
 
 Ref<ConcavePolygonShape3D> ImporterMesh::create_trimesh_shape() const {
 	Vector<Face3> faces = get_faces();
-	if (faces.size() == 0) {
+	if (faces.is_empty()) {
 		return Ref<ConcavePolygonShape3D>();
 	}
 
@@ -896,7 +896,7 @@ Ref<ConcavePolygonShape3D> ImporterMesh::create_trimesh_shape() const {
 
 Ref<NavigationMesh> ImporterMesh::create_navigation_mesh() {
 	Vector<Face3> faces = get_faces();
-	if (faces.size() == 0) {
+	if (faces.is_empty()) {
 		return Ref<NavigationMesh>();
 	}
 

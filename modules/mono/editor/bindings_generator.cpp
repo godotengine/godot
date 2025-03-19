@@ -3200,7 +3200,7 @@ Error BindingsGenerator::_generate_cs_signal(const BindingsGenerator::TypeInterf
 
 	// Generate signal
 	{
-		bool is_parameterless = p_isignal.arguments.size() == 0;
+		bool is_parameterless = p_isignal.arguments.is_empty();
 
 		// Delegate name is [SignalName]EventHandler
 		String delegate_name = is_parameterless ? "Action" : p_isignal.proxy_name + "EventHandler";

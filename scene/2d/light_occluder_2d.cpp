@@ -51,7 +51,7 @@ Rect2 OccluderPolygon2D::_edit_get_rect() const {
 			}
 			rect_cache_dirty = false;
 		} else {
-			if (polygon.size() == 0) {
+			if (polygon.is_empty()) {
 				item_rect = Rect2();
 			} else {
 				Vector2 d = Vector2(LINE_GRAB_WIDTH, LINE_GRAB_WIDTH);
@@ -270,7 +270,7 @@ PackedStringArray LightOccluder2D::get_configuration_warnings() const {
 		warnings.push_back(RTR("An occluder polygon must be set (or drawn) for this occluder to take effect."));
 	}
 
-	if (occluder_polygon.is_valid() && occluder_polygon->get_polygon().size() == 0) {
+	if (occluder_polygon.is_valid() && occluder_polygon->get_polygon().is_empty()) {
 		warnings.push_back(RTR("The occluder polygon for this occluder is empty. Please draw a polygon."));
 	}
 

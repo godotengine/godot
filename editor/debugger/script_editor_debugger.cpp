@@ -371,7 +371,7 @@ void ScriptEditorDebugger::_msg_debug_exit(uint64_t p_thread_id, const Array &p_
 	threads_debugged.erase(p_thread_id);
 	if (p_thread_id == debugging_thread_id) {
 		_clear_execution();
-		if (threads_debugged.size() == 0) {
+		if (threads_debugged.is_empty()) {
 			debugging_thread_id = Thread::UNASSIGNED_ID;
 		} else {
 			// Find next thread to debug.
@@ -1667,7 +1667,7 @@ void ScriptEditorDebugger::_error_selected() {
 	}
 
 	Array meta = selected->get_metadata(0);
-	if (meta.size() == 0) {
+	if (meta.is_empty()) {
 		return;
 	}
 

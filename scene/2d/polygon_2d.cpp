@@ -157,7 +157,7 @@ void Polygon2D::_notification(int p_what) {
 			Vector<float> weights;
 
 			int len = polygon.size();
-			if ((invert || polygons.size() == 0) && internal_vertices > 0) {
+			if ((invert || polygons.is_empty()) && internal_vertices > 0) {
 				//if no polygons are around, internal vertices must not be drawn, else let them be
 				len -= internal_vertices;
 			}
@@ -327,7 +327,7 @@ void Polygon2D::_notification(int p_what) {
 
 			Vector<int> index_array;
 
-			if (invert || polygons.size() == 0) {
+			if (invert || polygons.is_empty()) {
 				index_array = Geometry2D::triangulate_polygon(points);
 			} else {
 				//draw individual polygons

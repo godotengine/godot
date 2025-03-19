@@ -117,7 +117,7 @@ void FindInFiles::start() {
 		emit_signal(SceneStringName(finished));
 		return;
 	}
-	if (_extension_filter.size() == 0) {
+	if (_extension_filter.is_empty()) {
 		print_verbose("Nothing to search, filter matches no files");
 		emit_signal(SceneStringName(finished));
 		return;
@@ -183,7 +183,7 @@ void FindInFiles::_iterate() {
 			pop_back(_folders_stack);
 			_current_dir = _current_dir.get_base_dir();
 
-			if (_folders_stack.size() == 0) {
+			if (_folders_stack.is_empty()) {
 				// All folders scanned.
 				_initial_files_count = _files_to_scan.size();
 			}

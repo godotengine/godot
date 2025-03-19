@@ -96,7 +96,7 @@ void RemoteDebuggerPeerTCP::_write_out() {
 	while (tcp_client->get_status() == StreamPeerTCP::STATUS_CONNECTED && tcp_client->wait(NetSocket::POLL_TYPE_OUT) == OK) {
 		uint8_t *buf = out_buf.ptrw();
 		if (out_left <= 0) {
-			if (out_queue.size() == 0) {
+			if (out_queue.is_empty()) {
 				break; // Nothing left to send
 			}
 			mutex.lock();
