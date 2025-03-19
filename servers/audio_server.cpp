@@ -294,7 +294,11 @@ void AudioServer::_driver_process(int p_frames, int32_t *p_buffer) {
 			// The destination start for data will be the same in all cases.
 			int32_t *dest = &p_buffer[from_buf * (cs * 2) + (k * 2)];
 
+#ifdef DEBUG_ENABLED
+			if (!debug_mute && master->channels[k].active) {
+#else
 			if (master->channels[k].active) {
+#endif // DEBUG_ENABLED
 				const AudioFrame *buf = master->channels[k].buffer.ptr();
 
 				for (int j = 0; j < to_copy; j++) {
@@ -764,6 +768,16 @@ int AudioServer::thread_find_bus_index(const StringName &p_name) {
 		return 0;
 	}
 }
+
+#ifdef DEBUG_ENABLED
+void AudioServer::set_debug_mute(bool p_mute) {
+	debug_mute = p_mute;
+}
+
+bool AudioServer::get_debug_mute() const {
+	return debug_mute;
+}
+#endif // DEBUG_ENABLED
 
 void AudioServer::set_bus_count(int p_count) {
 	ERR_FAIL_COND(p_count < 1);
