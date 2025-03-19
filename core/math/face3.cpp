@@ -263,7 +263,7 @@ void Face3::get_support(const Vector3 &p_normal, const Transform3D &p_transform,
 
 		// check if edge is valid as a support
 		real_t dot = (vertex[i] - vertex[(i + 1) % 3]).normalized().dot(n);
-		dot = ABS(dot);
+		dot = Math::abs(dot);
 		if (dot < edge_support_threshold) {
 			*p_count = MIN(2, p_max);
 

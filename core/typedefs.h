@@ -65,9 +65,10 @@ static_assert(__cplusplus >= 201703L);
 #endif
 #endif
 
-// Should always inline, except in dev builds because it makes debugging harder.
+// Should always inline, except in dev builds because it makes debugging harder,
+// or `size_enabled` builds where inlining is actively avoided.
 #ifndef _FORCE_INLINE_
-#ifdef DEV_ENABLED
+#if defined(DEV_ENABLED) || defined(SIZE_EXTRA)
 #define _FORCE_INLINE_ inline
 #else
 #define _FORCE_INLINE_ _ALWAYS_INLINE_
@@ -106,17 +107,10 @@ static_assert(__cplusplus >= 201703L);
 #endif
 
 // Make room for our constexpr's below by overriding potential system-specific macros.
-#undef ABS
 #undef SIGN
 #undef MIN
 #undef MAX
 #undef CLAMP
-
-// Generic ABS function, for math uses please use Math::abs.
-template <typename T>
-constexpr T ABS(T m_v) {
-	return m_v < 0 ? -m_v : m_v;
-}
 
 template <typename T>
 constexpr const T SIGN(const T m_v) {

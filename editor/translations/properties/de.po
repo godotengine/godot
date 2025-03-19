@@ -92,7 +92,7 @@
 # Janosch Lion <janorico@posteo.de>, 2023.
 # "Dimitri A." <dimitripilot3@gmail.com>, 2023.
 # Roman Wanner <flugtauglicher@gmail.com>, 2023.
-# Ettore Atalan <atalanttore@googlemail.com>, 2023, 2024.
+# Ettore Atalan <atalanttore@googlemail.com>, 2023, 2024, 2025.
 # Lars Bollmann <lars.bollmann@tu-dortmund.de>, 2023.
 # Benedikt Wicklein <benedikt.wicklein@gmail.com>, 2023.
 # Wuzzy <Wuzzy@disroot.org>, 2023.
@@ -111,8 +111,8 @@ msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-03-10 14:33+0000\n"
-"Last-Translator: Silikonmann <silvan.goeth@gmail.com>\n"
+"PO-Revision-Date: 2025-03-16 12:59+0000\n"
+"Last-Translator: Ettore Atalan <atalanttore@googlemail.com>\n"
 "Language-Team: German <https://hosted.weblate.org/projects/godot-engine/godot-"
 "properties/de/>\n"
 "Language: de\n"
@@ -120,7 +120,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.10.3-dev\n"
+"X-Generator: Weblate 5.11-dev\n"
 
 msgid "Application"
 msgstr "Anwendung"
@@ -1034,6 +1034,9 @@ msgstr "Leerlaufzeit im Prozessorenergiesparmodus (μs)"
 msgid "Unfocused Low Processor Mode Sleep (µsec)"
 msgstr "Leerlaufzeit im Prozessorenergiesparmodus bei fehlendem Fokus (μs)"
 
+msgid "Import Resources When Unfocused"
+msgstr "Ressourcen importieren, wenn sie nicht fokussiert sind"
+
 msgid "V-Sync Mode"
 msgstr "V-Sync-Modus"
 
@@ -1321,6 +1324,9 @@ msgstr "Zeilen"
 
 msgid "Code Folding"
 msgstr "Code-Einklappen"
+
+msgid "Word Wrap"
+msgstr "Zeilenumbruch"
 
 msgid "Autowrap Mode"
 msgstr "Automatischer Umbrechungsmodus"
@@ -1823,6 +1829,9 @@ msgstr "Max Zeilen"
 msgid "Platforms"
 msgstr "Plattformen"
 
+msgid "Linux/*BSD"
+msgstr "Linux/*BSD"
+
 msgid "Prefer Wayland"
 msgstr "Wayland bevorzugen"
 
@@ -1834,6 +1843,9 @@ msgstr "Hostname"
 
 msgid "Editor TLS Certificates"
 msgstr "Editor TLS-Zertifikate"
+
+msgid "Enable TLS V 1"
+msgstr "TLS V 1 aktivieren"
 
 msgid "Remote Host"
 msgstr "Remote-Hostname"
@@ -1879,6 +1891,9 @@ msgstr "Projektmanager"
 
 msgid "Sorting Order"
 msgstr "Sortierreihenfolge"
+
+msgid "Directory Naming Convention"
+msgstr "Verzeichnis-Namenskonvention"
 
 msgid "Highlighting"
 msgstr "Hervorhebung"
@@ -3471,6 +3486,9 @@ msgstr "Child-Elemente"
 msgid "Light"
 msgstr "Licht"
 
+msgid "Object Model Type"
+msgstr "Objektmodell-Typ"
+
 msgid "Joints"
 msgstr "Gelenke"
 
@@ -3551,6 +3569,21 @@ msgstr "Fade-Zeit"
 
 msgid "Stream Count"
 msgstr "Stream-Anzahl"
+
+msgid "Use Enhanced Internal Edge Removal"
+msgstr "Erweiterte interne Kantenentfernung verwenden"
+
+msgid "Generate All Kinematic Contacts"
+msgstr "Alle kinematischen Kontakte generieren"
+
+msgid "Baumgarte Stabilization Factor"
+msgstr "Baumgarte-Stabilisierungsfaktor"
+
+msgid "Queries"
+msgstr "Abfragen"
+
+msgid "Max Body Pairs"
+msgstr "Max. Körperpaare"
 
 msgid "Lightmapping"
 msgstr "Lightmapping"
@@ -3780,6 +3813,9 @@ msgstr "Interaktionsprofilpfad"
 msgid "Runtime Paths"
 msgstr "Runtime-Pfade"
 
+msgid "Is Sticky"
+msgstr "Ist haftend"
+
 msgid "Display Refresh Rate"
 msgstr "Aktualisierungsrate anzeigen"
 
@@ -3918,6 +3954,12 @@ msgstr "Aktivierte Features"
 msgid "Visibility State"
 msgstr "Sichtbarkeitsstatus"
 
+msgid "Install Exported APK"
+msgstr "Exportierte APK installieren"
+
+msgid "Java SDK Path"
+msgstr "Java-SDK-Pfad"
+
 msgid "Force System User"
 msgstr "Systemnutzer erzwingen"
 
@@ -4031,6 +4073,9 @@ msgstr "XR-Features"
 
 msgid "XR Mode"
 msgstr "XR-Modus"
+
+msgid "Swipe to Dismiss"
+msgstr "Zum Ablehnen wischen"
 
 msgid "Immersive Mode"
 msgstr "Immersionsmodus"
@@ -4161,6 +4206,9 @@ msgstr "Alte Exportdateien bedingungslos löschen"
 msgid "Entitlements"
 msgstr "Ansprüche"
 
+msgid "Increased Memory Limit"
+msgstr "Erhöhtes Speicherlimit"
+
 msgid "Push Notifications"
 msgstr "Push-Benachrichtigungen"
 
@@ -4247,6 +4295,9 @@ msgstr "Skript ausführen"
 
 msgid "Cleanup Script"
 msgstr "Skript bereinigen"
+
+msgid "macOS"
+msgstr "macOS"
 
 msgid "Distribution Type"
 msgstr "Verteilungstyp"
@@ -5933,6 +5984,9 @@ msgstr "Lichtdaten"
 msgid "Target Node"
 msgstr "Ziel-Node"
 
+msgid "Use Secondary Rotation"
+msgstr "Sekundärdrehung verwenden"
+
 msgid "From"
 msgstr "Von"
 
@@ -6367,6 +6421,9 @@ msgstr "Zugkoeffizient"
 
 msgid "Position Offset"
 msgstr "Positionsversatz"
+
+msgid "Inside"
+msgstr "Innerhalb"
 
 msgid "Track Physics Step"
 msgstr "Physikschritt verfolgen"
@@ -9417,6 +9474,12 @@ msgstr "Greiferversatz"
 msgid "Updown"
 msgstr "Hochrunter"
 
+msgid "Up"
+msgstr "Oben"
+
+msgid "Down"
+msgstr "Unten"
+
 msgid "Embedded Border"
 msgstr "Eingebetteter Rand"
 
@@ -9473,6 +9536,9 @@ msgstr "Neu laden"
 
 msgid "Toggle Hidden"
 msgstr "Versteckte ein-/ausschalten"
+
+msgid "Toggle Filename Filter"
+msgstr "Dateinamensfilter umschalten"
 
 msgid "Folder"
 msgstr "Ordner"
@@ -10748,6 +10814,9 @@ msgstr "VRS-Stärke"
 
 msgid "World Origin"
 msgstr "Weltursprung"
+
+msgid "Camera Locked to Origin"
+msgstr "Kamera auf Ursprung fixiert"
 
 msgid "Primary Interface"
 msgstr "Primäre Schnittstelle"

@@ -59,7 +59,7 @@ TEST_CASE("[String] Assign from Latin-1 char string (copycon)") {
 	const String &t1(s);
 	CHECK(u32scmp(t1.get_data(), U"Sheep") == 0);
 
-	String t2 = String("Sheep", 3);
+	String t2 = String::latin1(Span("Sheep", 3));
 	CHECK(u32scmp(t2.get_data(), U"She") == 0);
 }
 
@@ -619,7 +619,7 @@ TEST_CASE("[String] String to float") {
 	static const double num[12] = { -12348298412.2, 0.05, 2.0002, -0.0001, 0.0, 0.0, 123.0, 0.0, 0.0, 0.007, 234.0, 3.0 };
 
 	for (int i = 0; i < 12; i++) {
-		CHECK(!(ABS(String(nums[i]).to_float() - num[i]) > 0.00001));
+		CHECK(!(Math::abs(String(nums[i]).to_float() - num[i]) > 0.00001));
 	}
 
 	// Invalid float strings should return 0.
@@ -746,14 +746,14 @@ TEST_CASE("[String] Splitting") {
 		const Vector<double> d_arr = s.split_floats(";");
 		CHECK(d_arr.size() == 2);
 		for (int i = 0; i < d_arr.size(); i++) {
-			CHECK(ABS(d_arr[i] - slices[i]) <= 0.00001);
+			CHECK(Math::abs(d_arr[i] - slices[i]) <= 0.00001);
 		}
 
 		const Vector<String> keys = { ";", " " };
 		const Vector<float> f_arr = s.split_floats_mk(keys);
 		CHECK(f_arr.size() == 3);
 		for (int i = 0; i < f_arr.size(); i++) {
-			CHECK(ABS(f_arr[i] - slices[i]) <= 0.00001);
+			CHECK(Math::abs(f_arr[i] - slices[i]) <= 0.00001);
 		}
 	}
 
@@ -764,7 +764,7 @@ TEST_CASE("[String] Splitting") {
 		const Vector<double> arr = s.split_floats(" ");
 		CHECK(arr.size() == 10);
 		for (int i = 0; i < arr.size(); i++) {
-			CHECK(ABS(arr[i] - slices[i]) <= 0.00001);
+			CHECK(Math::abs(arr[i] - slices[i]) <= 0.00001);
 		}
 
 		const Vector<String> keys = { ";", " " };

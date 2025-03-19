@@ -102,12 +102,14 @@ def create_template_zip(env, js, wasm, side):
         in_files.append("#misc/dist/html/offline-export.html")
         out_files.append(zip_dir.File("godot.offline.html"))
 
-    zip_files = env.InstallAs(out_files, in_files)
-    env.Zip(
-        "#bin/godot",
-        zip_files,
-        ZIPROOT=zip_dir,
-        ZIPSUFFIX="${PROGSUFFIX}${ZIPSUFFIX}",
+    zip_files = env.NoCache(env.InstallAs(out_files, in_files))
+    env.NoCache(
+        env.Zip(
+            "#bin/godot",
+            zip_files,
+            ZIPROOT=zip_dir,
+            ZIPSUFFIX="${PROGSUFFIX}${ZIPSUFFIX}",
+        )
     )
 
 

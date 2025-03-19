@@ -208,13 +208,13 @@ float CSGShape3D::get_snap() const {
 
 void CSGShape3D::_make_dirty(bool p_parent_removing) {
 	if ((p_parent_removing || is_root_shape()) && !dirty) {
-		callable_mp(this, &CSGShape3D::_update_shape).call_deferred(); // Must be deferred; otherwise, is_root_shape() will use the previous parent.
+		callable_mp(this, &CSGShape3D::update_shape).call_deferred(); // Must be deferred; otherwise, is_root_shape() will use the previous parent.
 	}
 
 	if (!is_root_shape()) {
 		parent_shape->_make_dirty();
 	} else if (!dirty) {
-		callable_mp(this, &CSGShape3D::_update_shape).call_deferred();
+		callable_mp(this, &CSGShape3D::update_shape).call_deferred();
 	}
 
 	dirty = true;
@@ -550,7 +550,7 @@ void CSGShape3D::mikktSetTSpaceDefault(const SMikkTSpaceContext *pContext, const
 	surface.tansw[i++] = d < 0 ? -1 : 1;
 }
 
-void CSGShape3D::_update_shape() {
+void CSGShape3D::update_shape() {
 	if (!is_root_shape()) {
 		return;
 	}
@@ -969,13 +969,13 @@ Ref<TriangleMesh> CSGShape3D::generate_triangle_mesh() const {
 }
 
 void CSGShape3D::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("_update_shape"), &CSGShape3D::_update_shape);
 	ClassDB::bind_method(D_METHOD("is_root_shape"), &CSGShape3D::is_root_shape);
 
 	ClassDB::bind_method(D_METHOD("set_operation", "operation"), &CSGShape3D::set_operation);
 	ClassDB::bind_method(D_METHOD("get_operation"), &CSGShape3D::get_operation);
 
 #ifndef DISABLE_DEPRECATED
+	ClassDB::bind_method(D_METHOD("_update_shape"), &CSGShape3D::update_shape);
 	ClassDB::bind_method(D_METHOD("set_snap", "snap"), &CSGShape3D::set_snap);
 	ClassDB::bind_method(D_METHOD("get_snap"), &CSGShape3D::get_snap);
 #endif // DISABLE_DEPRECATED

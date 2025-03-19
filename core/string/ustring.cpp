@@ -97,7 +97,7 @@ bool Char16String::operator<(const Char16String &p_right) const {
 		return p_right.length() != 0;
 	}
 
-	return is_str_less(get_data(), p_right.get_data());
+	return str_compare(get_data(), p_right.get_data()) < 0;
 }
 
 Char16String &Char16String::operator+=(char16_t p_char) {
@@ -155,7 +155,7 @@ bool CharString::operator<(const CharString &p_right) const {
 		return p_right.length() != 0;
 	}
 
-	return is_str_less(get_data(), p_right.get_data());
+	return str_compare(get_data(), p_right.get_data()) < 0;
 }
 
 bool CharString::operator==(const CharString &p_right) const {
@@ -640,7 +640,7 @@ bool String::operator<(const char *p_str) const {
 	if (is_empty()) {
 		return true;
 	}
-	return is_str_less(get_data(), p_str);
+	return str_compare(get_data(), p_str) < 0;
 }
 
 bool String::operator<(const wchar_t *p_str) const {
@@ -653,10 +653,10 @@ bool String::operator<(const wchar_t *p_str) const {
 
 #ifdef WINDOWS_ENABLED
 	// wchar_t is 16-bit
-	return is_str_less(get_data(), String::utf16((const char16_t *)p_str).get_data());
+	return str_compare(get_data(), String::utf16((const char16_t *)p_str).get_data()) < 0;
 #else
 	// wchar_t is 32-bit
-	return is_str_less(get_data(), (const char32_t *)p_str);
+	return str_compare(get_data(), (const char32_t *)p_str) < 0;
 #endif
 }
 
@@ -668,7 +668,7 @@ bool String::operator<(const char32_t *p_str) const {
 		return true;
 	}
 
-	return is_str_less(get_data(), p_str);
+	return str_compare(get_data(), p_str) < 0;
 }
 
 bool String::operator<(const String &p_str) const {
@@ -1716,7 +1716,7 @@ String String::num_int64(int64_t p_num, int base, bool capitalize_hex) {
 	c[chars] = 0;
 	n = p_num;
 	do {
-		int mod = ABS(n % base);
+		int mod = Math::abs(n % base);
 		if (mod >= 10) {
 			char a = (capitalize_hex ? 'A' : 'a');
 			c[--chars] = a + (mod - 10);
@@ -3347,6 +3347,12 @@ int String::find(const char *p_str, int p_from) const {
 }
 
 int String::find_char(char32_t p_char, int p_from) const {
+	if (p_from < 0) {
+		p_from = length() + p_from;
+	}
+	if (p_from < 0 || p_from >= length()) {
+		return -1;
+	}
 	return span().find(p_char, p_from);
 }
 
@@ -3584,6 +3590,12 @@ int String::rfind(const char *p_str, int p_from) const {
 }
 
 int String::rfind_char(char32_t p_char, int p_from) const {
+	if (p_from < 0) {
+		p_from = length() + p_from;
+	}
+	if (p_from < 0 || p_from >= length()) {
+		return -1;
+	}
 	return span().rfind(p_char, p_from);
 }
 
@@ -5581,7 +5593,7 @@ String String::sprintf(const Array &values, bool *error) const {
 					// Get basic number.
 					String str;
 					if (!as_unsigned) {
-						str = String::num_int64(ABS(value), base, capitalize);
+						str = String::num_int64(Math::abs(value), base, capitalize);
 					} else {
 						uint64_t uvalue = *((uint64_t *)&value);
 						// In unsigned hex, if the value fits in 32 bits, trim it down to that.
