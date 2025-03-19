@@ -7055,7 +7055,7 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 		}
 	}
 
-	show_window(MAIN_WINDOW_ID);
+	windows[MAIN_WINDOW_ID].initialized = true;
 
 #if defined(RD_ENABLED)
 	if (rendering_context) {
