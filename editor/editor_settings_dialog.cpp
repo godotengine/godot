@@ -43,7 +43,7 @@
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/event_listener_line_edit.h"
 #include "editor/input_event_configuration_dialog.h"
-#include "editor/plugins/node_3d_editor_plugin.h"
+#include "editor/plugins/3d/node_3d_editor_plugin.h"
 #include "editor/themes/editor_scale.h"
 #include "editor/themes/editor_theme_manager.h"
 #include "scene/gui/check_button.h"
