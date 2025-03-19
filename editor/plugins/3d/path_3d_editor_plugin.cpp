@@ -37,7 +37,7 @@
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
-#include "node_3d_editor_plugin.h"
+#include "editor/plugins/3d/node_3d_editor_plugin.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/menu_button.h"
 #include "scene/resources/curve.h"

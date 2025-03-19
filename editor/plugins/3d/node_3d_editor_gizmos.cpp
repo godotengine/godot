@@ -35,7 +35,7 @@
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
-#include "editor/plugins/node_3d_editor_plugin.h"
+#include "editor/plugins/3d/node_3d_editor_plugin.h"
 #include "scene/resources/3d/primitive_meshes.h"
 
 #define HANDLE_HALF_SIZE 9.5
