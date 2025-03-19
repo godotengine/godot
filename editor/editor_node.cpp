@@ -137,7 +137,7 @@
 #include "editor/inspector_dock.h"
 #include "editor/multi_node_edit.h"
 #include "editor/node_dock.h"
-#include "editor/plugins/animation_player_editor_plugin.h"
+#include "editor/plugins/animation/animation_player_editor_plugin.h"
 #include "editor/plugins/asset_library_editor_plugin.h"
 #include "editor/plugins/canvas_item_editor_plugin.h"
 #include "editor/plugins/debugger_editor_plugin.h"
