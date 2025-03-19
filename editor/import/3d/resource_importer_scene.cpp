@@ -2667,7 +2667,9 @@ Node *ResourceImporterScene::_generate_meshes(Node *p_node, const Dictionary &p_
 			} break;
 		}
 		mesh_node->set_meta(META_EXPOSED_IN_OWNER, src_mesh_node->has_meta(META_EXPOSED_IN_OWNER));
-		mesh_node->get_owner()->set_meta(META_CONTAINS_EXPOSED_NODES, src_mesh_node->has_meta(META_EXPOSED_IN_OWNER));
+		if (mesh_node->get_owner() != nullptr) {
+			mesh_node->get_owner()->set_meta(META_CONTAINS_EXPOSED_NODES, src_mesh_node->has_meta(META_EXPOSED_IN_OWNER));
+		}
 		mesh_node->set_layer_mask(src_mesh_node->get_layer_mask());
 		mesh_node->set_cast_shadows_setting(src_mesh_node->get_cast_shadows_setting());
 		mesh_node->set_visible(src_mesh_node->is_visible());

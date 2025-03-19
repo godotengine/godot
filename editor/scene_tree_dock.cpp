@@ -3973,7 +3973,7 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 			}
 			menu->add_icon_shortcut(get_editor_theme_icon(SNAME("SceneUniqueName")), ED_GET_SHORTCUT("scene_tree/toggle_unique_name"), TOOL_TOGGLE_SCENE_UNIQUE_NAME);
 			menu->set_item_text(menu->get_item_index(TOOL_TOGGLE_SCENE_UNIQUE_NAME), node->is_unique_name_in_owner() ? TTR("Revoke Unique Name") : TTR("Access as Unique Name"));
-		} //if all_unique
+		} // If all_unique.
 
 		if (node->get_owner() == EditorNode::get_singleton()->get_edited_scene()) {
 			menu->add_icon_shortcut(get_editor_theme_icon(SNAME("SceneExposedNode")), ED_GET_SHORTCUT("scene_tree/toggle_expose_node"), TOOL_TOGGLE_SCENE_EXPOSE_NODE);

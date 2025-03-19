@@ -232,7 +232,9 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 					ERR_FAIL_NULL_V_MSG(node, nullptr, vformat("Failed to load scene dependency: \"%s\". Make sure the required scene is valid.", sdata->get_path()));
 #ifdef TOOLS_ENABLED
 					if (p_edit_state == GEN_EDIT_STATE_MAIN || p_edit_state == GEN_EDIT_STATE_MAIN_INHERITED) {
-						node->set_meta(META_CONTAINS_EXPOSED_NODES, sdata->get_state()->exposed_nodes.size() > 0);
+						if (sdata->get_state()->exposed_nodes.size() > 0) {
+							node->set_meta(META_CONTAINS_EXPOSED_NODES, true);
+						}
 						for (const NodePath &e_path : sdata->get_state()->exposed_nodes) {
 							Node *ei = node->get_node_or_null(e_path);
 							if (ei) {
@@ -783,7 +785,7 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Has
 		is_editable_instance = true;
 	}
 
-	// Save the nodes that are chosen as exposed, so they can be restored on load
+	// Save the nodes that are chosen as exposed, so they can be restored on load.
 	if (p_node->has_meta(META_MARKED_FOR_EXPOSURE) || (p_node->has_meta(META_EXPOSED_IN_OWNER) && p_node->get_owner() == p_owner)) {
 		exposed_nodes.push_back(p_owner->get_path_to(p_node));
 	}
