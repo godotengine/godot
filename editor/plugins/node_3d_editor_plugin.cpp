@@ -44,7 +44,7 @@
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/gui/editor_run_bar.h"
 #include "editor/gui/editor_spin_slider.h"
-#include "editor/plugins/animation_player_editor_plugin.h"
+#include "editor/plugins/animation/animation_player_editor_plugin.h"
 #include "editor/plugins/gizmos/audio_listener_3d_gizmo_plugin.h"
 #include "editor/plugins/gizmos/audio_stream_player_3d_gizmo_plugin.h"
 #include "editor/plugins/gizmos/camera_3d_gizmo_plugin.h"
