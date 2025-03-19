@@ -199,7 +199,7 @@ void ProjectDialog::_validate_path() {
 	}
 
 	is_folder_empty = true;
-	if (mode == MODE_NEW || mode == MODE_INSTALL || (mode == MODE_IMPORT && target_path_input_type == InputType::INSTALL_PATH)) {
+	if (mode == MODE_NEW || mode == MODE_INSTALL || mode == MODE_BACKUP || (mode == MODE_IMPORT && target_path_input_type == InputType::INSTALL_PATH)) {
 		if (create_dir->is_pressed()) {
 			if (!d->dir_exists(target_path.get_base_dir())) {
 				_set_message(TTR("The parent directory of the path specified doesn't exist."), MESSAGE_ERROR, target_path_input_type);
@@ -247,7 +247,7 @@ void ProjectDialog::_validate_path() {
 }
 
 String ProjectDialog::_get_target_path() {
-	if (mode == MODE_NEW || mode == MODE_INSTALL) {
+	if (mode == MODE_NEW || mode == MODE_INSTALL || mode == MODE_BACKUP) {
 		return project_path->get_text();
 	} else if (mode == MODE_IMPORT) {
 		return install_path->get_text();
@@ -256,7 +256,7 @@ String ProjectDialog::_get_target_path() {
 	}
 }
 void ProjectDialog::_set_target_path(const String &p_text) {
-	if (mode == MODE_NEW || mode == MODE_INSTALL) {
+	if (mode == MODE_NEW || mode == MODE_INSTALL || mode == MODE_BACKUP) {
 		project_path->set_text(p_text);
 	} else if (mode == MODE_IMPORT) {
 		install_path->set_text(p_text);
@@ -267,7 +267,7 @@ void ProjectDialog::_set_target_path(const String &p_text) {
 
 void ProjectDialog::_update_target_auto_dir() {
 	String new_auto_dir;
-	if (mode == MODE_NEW || mode == MODE_INSTALL) {
+	if (mode == MODE_NEW || mode == MODE_INSTALL || mode == MODE_BACKUP) {
 		new_auto_dir = project_name->get_text();
 	} else if (mode == MODE_IMPORT) {
 		new_auto_dir = project_path->get_text().get_file().get_basename();
@@ -338,7 +338,7 @@ void ProjectDialog::_create_dir_toggled(bool p_pressed) {
 }
 
 void ProjectDialog::_project_name_changed() {
-	if (mode == MODE_NEW || mode == MODE_INSTALL) {
+	if (mode == MODE_NEW || mode == MODE_INSTALL || mode == MODE_BACKUP) {
 		_update_target_auto_dir();
 	}
 
@@ -365,7 +365,7 @@ void ProjectDialog::_browse_project_path() {
 	if (mode == MODE_IMPORT && install_path->is_visible_in_tree()) {
 		// Select last ZIP file.
 		fdialog_project->set_current_path(path);
-	} else if ((mode == MODE_NEW || mode == MODE_INSTALL) && create_dir->is_pressed()) {
+	} else if ((mode == MODE_NEW || mode == MODE_INSTALL || mode == MODE_BACKUP) && create_dir->is_pressed()) {
 		// Select parent directory of project path.
 		fdialog_project->set_current_dir(path.get_base_dir());
 	} else {
@@ -408,7 +408,7 @@ void ProjectDialog::_browse_install_path() {
 void ProjectDialog::_project_path_selected(const String &p_path) {
 	show_dialog(false);
 
-	if (create_dir->is_pressed() && (mode == MODE_NEW || mode == MODE_INSTALL)) {
+	if (create_dir->is_pressed() && (mode == MODE_NEW || mode == MODE_INSTALL || mode == MODE_BACKUP)) {
 		// Replace parent directory, but keep target dir name.
 		project_path->set_text(p_path.path_join(project_path->get_text().get_file()));
 	} else {
@@ -704,7 +704,20 @@ void ProjectDialog::ok_pressed() {
 		} break;
 	}
 
-	if (mode == MODE_RENAME || mode == MODE_INSTALL) {
+	if (mode == MODE_BACKUP) {
+		Ref<DirAccess> dir = DirAccess::open(original_project_path);
+		Error err = dir->copy_dir(".", path, -1, true);
+		if (err != OK) {
+			return;
+		}
+		if (err != OK) {
+			dialog_error->set_text(vformat(TTR("Couldn't backup project (error %d)."), err));
+			dialog_error->popup_centered();
+			return;
+		}
+	}
+
+	if (mode == MODE_RENAME || mode == MODE_INSTALL || mode == MODE_BACKUP) {
 		// Load project.godot as ConfigFile to set the new name.
 		ConfigFile cfg;
 		String project_godot = path.path_join("project.godot");
@@ -724,8 +737,8 @@ void ProjectDialog::ok_pressed() {
 	}
 
 	hide();
-	if (mode == MODE_NEW || mode == MODE_IMPORT || mode == MODE_INSTALL) {
-		emit_signal(SNAME("project_created"), path, edit_check_box->is_pressed());
+	if (mode == MODE_NEW || mode == MODE_IMPORT || mode == MODE_INSTALL || mode == MODE_BACKUP) {
+		emit_signal(SNAME("project_created"), path, edit_check_box->is_pressed() && mode != MODE_BACKUP);
 	} else if (mode == MODE_RENAME) {
 		emit_signal(SNAME("projects_updated"));
 	}
@@ -737,6 +750,10 @@ void ProjectDialog::set_zip_path(const String &p_path) {
 
 void ProjectDialog::set_zip_title(const String &p_title) {
 	zip_title = p_title;
+}
+
+void ProjectDialog::set_original_project_path(const String &p_path) {
+	original_project_path = p_path;
 }
 
 void ProjectDialog::set_mode(Mode p_mode) {
@@ -833,6 +850,18 @@ void ProjectDialog::show_dialog(bool p_reset_name) {
 			default_files_container->hide();
 
 			callable_mp((Control *)project_path, &Control::grab_focus).call_deferred();
+		} else if (mode == MODE_BACKUP) {
+			set_title(TTR("Backup Project"));
+			set_ok_button_text(TTR("Backup"));
+
+			name_container->show();
+			install_path_container->hide();
+			renderer_container->hide();
+			default_files_container->hide();
+			edit_check_box->hide();
+
+			callable_mp((Control *)project_name, &Control::grab_focus).call_deferred();
+			callable_mp(project_name, &LineEdit::select_all).call_deferred();
 		}
 
 		auto_dir = "";
