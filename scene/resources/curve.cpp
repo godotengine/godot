@@ -1792,7 +1792,7 @@ void Curve3D::_bake() const {
 		{
 			Vector3 forward = forward_ptr[0];
 
-			if (abs(forward.dot(Vector3(0, 1, 0))) > 1.0 - UNIT_EPSILON) {
+			if (std::abs(forward.dot(Vector3(0, 1, 0))) > 1.0 - UNIT_EPSILON) {
 				frame_prev = Basis::looking_at(forward, Vector3(1, 0, 0));
 			} else {
 				frame_prev = Basis::looking_at(forward, Vector3(0, 1, 0));
@@ -1835,7 +1835,7 @@ void Curve3D::_bake() const {
 			real_t sign = SIGN(up_end.cross(up_start).dot(forward_ptr[0]));
 			real_t full_angle = Quaternion(up_end, up_start).get_angle();
 
-			if (abs(full_angle) < CMP_EPSILON) {
+			if (std::abs(full_angle) < CMP_EPSILON) {
 				return;
 			} else {
 				const real_t *dists = baked_dist_cache.ptr();

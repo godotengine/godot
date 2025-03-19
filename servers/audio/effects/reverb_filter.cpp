@@ -33,8 +33,6 @@
 #include "core/math/audio_frame.h"
 #include "core/os/memory.h"
 
-#include <math.h>
-
 const float Reverb::comb_tunings[MAX_COMBS] = {
 	//freeverb comb tunings
 	0.025306122448979593f,
@@ -60,7 +58,7 @@ void Reverb::process(float *p_src, float *p_dst, int p_frames) {
 		p_frames = INPUT_BUFFER_MAX_SIZE;
 	}
 
-	int predelay_frames = lrint((params.predelay / 1000.0) * params.mix_rate);
+	int predelay_frames = std::rint((params.predelay / 1000.0) * params.mix_rate);
 	if (predelay_frames < 10) {
 		predelay_frames = 10;
 	}
@@ -90,7 +88,7 @@ void Reverb::process(float *p_src, float *p_dst, int p_frames) {
 	}
 
 	if (params.hpf > 0) {
-		float hpaux = expf(-Math::TAU * params.hpf * 6000 / params.mix_rate);
+		float hpaux = std::exp(-Math::TAU * params.hpf * 6000 / params.mix_rate);
 		float hp_a1 = (1.0 + hpaux) / 2.0;
 		float hp_a2 = -(1.0 + hpaux) / 2.0;
 		float hp_b1 = hpaux;
@@ -106,7 +104,7 @@ void Reverb::process(float *p_src, float *p_dst, int p_frames) {
 	for (int i = 0; i < MAX_COMBS; i++) {
 		Comb &c = comb[i];
 
-		int size_limit = c.size - lrintf((float)c.extra_spread_frames * (1.0 - params.extra_spread));
+		int size_limit = c.size - std::rint((float)c.extra_spread_frames * (1.0 - params.extra_spread));
 		for (int j = 0; j < p_frames; j++) {
 			if (c.pos >= size_limit) { //reset this now just in case
 				c.pos = 0;
@@ -127,7 +125,7 @@ void Reverb::process(float *p_src, float *p_dst, int p_frames) {
 
 	for (int i=0;i<MAX_ALLPASS;i++) {
 		AllPass &a=allpass[i];
-		ap_size_limit[i]=a.size-lrintf((float)a.extra_spread_frames*(1.0-params.extra_spread));
+		ap_size_limit[i]=a.size-std::rint((float)a.extra_spread_frames*(1.0-params.extra_spread));
 	}
 
 	for (int i=0;i<p_frames;i++) {
@@ -156,7 +154,7 @@ void Reverb::process(float *p_src, float *p_dst, int p_frames) {
 
 	for (int i = 0; i < MAX_ALLPASS; i++) {
 		AllPass &a = allpass[i];
-		int size_limit = a.size - lrintf((float)a.extra_spread_frames * (1.0 - params.extra_spread));
+		int size_limit = a.size - std::rint((float)a.extra_spread_frames * (1.0 - params.extra_spread));
 
 		for (int j = 0; j < p_frames; j++) {
 			if (a.pos >= size_limit) {
@@ -233,9 +231,9 @@ void Reverb::configure_buffers() {
 	for (int i = 0; i < MAX_COMBS; i++) {
 		Comb &c = comb[i];
 
-		c.extra_spread_frames = lrint(params.extra_spread_base * params.mix_rate);
+		c.extra_spread_frames = std::rint(params.extra_spread_base * params.mix_rate);
 
-		int len = lrint(comb_tunings[i] * params.mix_rate) + c.extra_spread_frames;
+		int len = std::rint(comb_tunings[i] * params.mix_rate) + c.extra_spread_frames;
 		if (len < 5) {
 			len = 5; //may this happen?
 		}
@@ -251,9 +249,9 @@ void Reverb::configure_buffers() {
 	for (int i = 0; i < MAX_ALLPASS; i++) {
 		AllPass &a = allpass[i];
 
-		a.extra_spread_frames = lrint(params.extra_spread_base * params.mix_rate);
+		a.extra_spread_frames = std::rint(params.extra_spread_base * params.mix_rate);
 
-		int len = lrint(allpass_tunings[i] * params.mix_rate) + a.extra_spread_frames;
+		int len = std::rint(allpass_tunings[i] * params.mix_rate) + a.extra_spread_frames;
 		if (len < 5) {
 			len = 5; //may this happen?
 		}
@@ -292,7 +290,7 @@ void Reverb::update_parameters() {
 		float auxdmp = params.damp / 2.0 + 0.5; //only half the range (0.5 .. 1.0 is enough)
 		auxdmp *= auxdmp;
 
-		c.damp = expf(-Math::TAU * auxdmp * 10000 / params.mix_rate); // 0 .. 10khz
+		c.damp = std::exp(-Math::TAU * auxdmp * 10000 / params.mix_rate); // 0 .. 10khz
 	}
 }
 
