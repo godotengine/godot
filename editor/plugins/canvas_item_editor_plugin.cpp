@@ -44,7 +44,7 @@
 #include "editor/gui/editor_zoom_widget.h"
 #include "editor/plugins/animation/animation_player_editor_plugin.h"
 #include "editor/plugins/editor_context_menu_plugin.h"
-#include "editor/plugins/script_editor_plugin.h"
+#include "editor/plugins/script/script_editor_plugin.h"
 #include "editor/scene_tree_dock.h"
 #include "editor/themes/editor_scale.h"
 #include "editor/themes/editor_theme_manager.h"

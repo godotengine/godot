@@ -116,7 +116,7 @@
 #include "editor/plugins/packed_scene_editor_plugin.h"
 #include "editor/plugins/particles_editor_plugin.h"
 #include "editor/plugins/resource_preloader_editor_plugin.h"
-#include "editor/plugins/script_editor_plugin.h"
+#include "editor/plugins/script/script_editor_plugin.h"
 #include "editor/plugins/shader/shader_editor_plugin.h"
 #include "editor/plugins/shader/shader_file_editor_plugin.h"
 #include "editor/plugins/sprite_frames_editor_plugin.h"
