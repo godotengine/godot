@@ -153,7 +153,7 @@
 #include "editor/plugins/packed_scene_translation_parser_plugin.h"
 #include "editor/plugins/particle_process_material_editor_plugin.h"
 #include "editor/plugins/plugin_config_dialog.h"
-#include "editor/plugins/script_text_editor.h"
+#include "editor/plugins/script/script_text_editor.h"
 #include "editor/plugins/shader/visual_shader_editor_plugin.h"
 #include "editor/plugins/text_editor.h"
 #include "editor/plugins/version_control_editor_plugin.h"
