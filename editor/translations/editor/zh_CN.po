@@ -108,7 +108,7 @@ msgstr ""
 "Project-Id-Version: Chinese (Simplified) (Godot Engine)\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: 2018-01-20 12:15+0200\n"
-"PO-Revision-Date: 2025-03-07 02:01+0000\n"
+"PO-Revision-Date: 2025-03-14 05:10+0000\n"
 "Last-Translator: Haoyu Qiu <timothyqiu32@gmail.com>\n"
 "Language-Team: Chinese (Simplified Han script) <https://hosted.weblate.org/"
 "projects/godot-engine/godot/zh_Hans/>\n"
@@ -117,7 +117,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.10.3-dev\n"
+"X-Generator: Weblate 5.11-dev\n"
 
 msgid "Main Thread"
 msgstr "主线程"
@@ -963,6 +963,9 @@ msgstr "AnimationPlayer 不能动画化自己，只可动画化其他 Player。"
 
 msgid "property '%s'"
 msgstr "属性“%s”"
+
+msgid "Nearest FPS: %d"
+msgstr "邻近 FPS：%d"
 
 msgid "Change Animation Step"
 msgstr "修改动画步长"
@@ -5119,6 +5122,9 @@ msgstr "从文件安装"
 
 msgid "Install templates from a local file."
 msgstr "从本地文件安装模板。"
+
+msgid "Online mode is needed to download the templates."
+msgstr "下载模板需要在线模式。"
 
 msgid "Go Online"
 msgstr "连接网络"
@@ -14327,6 +14333,9 @@ msgid ""
 "single output port."
 msgstr "任意调整连接路线，可以将多个输入端口连接到单个输出端口。"
 
+msgid "[None]"
+msgstr "[无]"
+
 msgid "Edit Visual Property: %s"
 msgstr "编辑可视属性：%s"
 
@@ -15796,6 +15805,21 @@ msgstr "重启并升级"
 
 msgid "Updating Script UIDs"
 msgstr "正在更新脚本 UID"
+
+msgid ""
+"As of Godot 4.4, scenes and resources use UIDs to reference scripts and "
+"shaders. Upgrades apply on the next save of each scene/resource.\n"
+"\n"
+"To save time, this tool can open and save each of these files. Depending on "
+"the project size, it may take several minutes."
+msgstr ""
+"截至 Godot 4.4，场景和资源使用 UID 来引用脚本和着色器。升级将在各个场景/资源下"
+"次保存时应用。\n"
+"\n"
+"为了节省时间，该工具可以打开并保存每个文件。根据项目的大小，这可能需要几分钟。"
+
+msgid "Re-save all scenes and resources to use UIDs"
+msgstr "使用 UID 重新保存所有场景和资源"
 
 msgid "Learn More"
 msgstr "了解更多"

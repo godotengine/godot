@@ -30,14 +30,14 @@
 # Lukas Tenbrink <lukas.tenbrink@gmail.com>, 2025.
 # Alvaro <alvaro.garcia-bamala@epitech.eu>, 2025.
 # Joel Joan Castillo Ramos <joeljoancastilloramos5276@gmail.com>, 2025.
+# Quim Nuss Székely <lluna.nova@gmail.com>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-03-09 21:12+0000\n"
-"Last-Translator: Joel Joan Castillo Ramos <joeljoancastilloramos5276@gmail."
-"com>\n"
+"PO-Revision-Date: 2025-03-15 15:39+0000\n"
+"Last-Translator: Quim Nuss Székely <lluna.nova@gmail.com>\n"
 "Language-Team: Catalan <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ca/>\n"
 "Language: ca\n"
@@ -45,7 +45,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.10.3-dev\n"
+"X-Generator: Weblate 5.11-dev\n"
 
 msgid "Main Thread"
 msgstr "Fil principal"
@@ -2515,8 +2515,17 @@ msgstr "Constants"
 msgid "There is currently no description for this theme property."
 msgstr "Actualment no hi ha cap descripció per a aquesta propietat del tema."
 
+msgid "This signal may be changed or removed in future versions."
+msgstr "Aquest senyal pot canviar o ser eliminat en versions futures."
+
+msgid "There is currently no description for this signal."
+msgstr "Actualment no hi ha descripció per aquest senyal."
+
 msgid "Enumerations"
 msgstr "Enumeracions"
+
+msgid "This enumeration may be changed or removed in future versions."
+msgstr "Aquesta enumeració pot canviar o suprimida en versions futures."
 
 msgid "Property Descriptions"
 msgstr "Descripcions de la Propietat"

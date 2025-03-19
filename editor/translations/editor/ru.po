@@ -209,13 +209,14 @@
 # sqwirex <nikolaev.alex.080706@mail.ru>, 2025.
 # Account Rush Royale#1 <ghhh5238unq1@gmail.com>, 2025.
 # Igor Shapilov <shatiger@yandex.ru>, 2025.
+# Deniil <danpko@ya.ru>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-03-12 03:37+0000\n"
-"Last-Translator: JekSun97 <jeksun2022@gmail.com>\n"
+"PO-Revision-Date: 2025-03-14 15:16+0000\n"
+"Last-Translator: Deniil <danpko@ya.ru>\n"
 "Language-Team: Russian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ru/>\n"
 "Language: ru\n"
@@ -224,7 +225,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
 "n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
-"X-Generator: Weblate 5.10.3-dev\n"
+"X-Generator: Weblate 5.11-dev\n"
 
 msgid "Main Thread"
 msgstr "Главный поток"
@@ -1086,6 +1087,9 @@ msgstr "AnimationPlayer не может анимировать сам себя, 
 msgid "property '%s'"
 msgstr "свойство «%s»"
 
+msgid "Nearest FPS: %d"
+msgstr "Ближайший FPS: %d"
+
 msgid "Change Animation Step"
 msgstr "Изменить шаг анимации"
 
@@ -1139,6 +1143,9 @@ msgstr "Добавить ключ дорожки для метода"
 
 msgid "Method not found in object:"
 msgstr "В объекте нет такого метода:"
+
+msgid "Animation Move Keys"
+msgstr "Анимация Перемещение Ключей"
 
 msgid "Position"
 msgstr "Позиция"
@@ -5380,6 +5387,9 @@ msgstr "Установить из файла"
 
 msgid "Install templates from a local file."
 msgstr "Установить шаблоны из локального файла."
+
+msgid "Online mode is needed to download the templates."
+msgstr "Для загрузки шаблонов необходим онлайн-режим."
 
 msgid "Go Online"
 msgstr "Войти в сеть"
@@ -10232,6 +10242,9 @@ msgstr "Окружение"
 msgid "View Gizmos"
 msgstr "Гизмо"
 
+msgid "View Transform Gizmo"
+msgstr "Просмотр преобразования гизмо"
+
 msgid "View Grid"
 msgstr "Отображать сетку"
 
@@ -15024,6 +15037,9 @@ msgstr ""
 "Свободно перенаправляет соединения, может использоваться для подключения "
 "нескольких входных портов к одному выходному порту."
 
+msgid "[None]"
+msgstr "[Никто]"
+
 msgid "Edit Visual Property: %s"
 msgstr "Редактировать визуальное свойство: %s"
 
@@ -16576,6 +16592,24 @@ msgstr "Перезапустить и обновить"
 
 msgid "Updating Script UIDs"
 msgstr "Обновление UID скрипта"
+
+msgid ""
+"As of Godot 4.4, scenes and resources use UIDs to reference scripts and "
+"shaders. Upgrades apply on the next save of each scene/resource.\n"
+"\n"
+"To save time, this tool can open and save each of these files. Depending on "
+"the project size, it may take several minutes."
+msgstr ""
+"Начиная с Godot 4.4, сцены и ресурсы используют UID для ссылки на скрипты и "
+"шейдеры. Обновления применяются при следующем сохранении каждой сцены/"
+"ресурса.\n"
+"\n"
+"Чтобы сэкономить время, этот инструмент может открывать и сохранять каждый из "
+"этих файлов. В зависимости от размера проекта это может занять несколько "
+"минут."
+
+msgid "Re-save all scenes and resources to use UIDs"
+msgstr "Пересохраните все сцены и ресурсы для использования UID"
 
 msgid "Learn More"
 msgstr "Узнать больше"

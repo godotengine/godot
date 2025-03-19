@@ -95,7 +95,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-02-21 19:26+0000\n"
+"PO-Revision-Date: 2025-03-16 22:14+0000\n"
 "Last-Translator: Tomek <kobewi4e@gmail.com>\n"
 "Language-Team: Polish <https://hosted.weblate.org/projects/godot-engine/godot/"
 "pl/>\n"
@@ -105,7 +105,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 "
 "|| n%100>=20) ? 1 : 2);\n"
-"X-Generator: Weblate 5.10.1-dev\n"
+"X-Generator: Weblate 5.11-dev\n"
 
 msgid "Main Thread"
 msgstr "Główny Wątek"
@@ -962,6 +962,9 @@ msgstr ""
 
 msgid "property '%s'"
 msgstr "właściwość \"%s\""
+
+msgid "Nearest FPS: %d"
+msgstr "Najbliższy FPS: %d"
 
 msgid "Change Animation Step"
 msgstr "Zmień krok animacji"
@@ -5249,6 +5252,9 @@ msgstr "Zainstaluj z pliku"
 
 msgid "Install templates from a local file."
 msgstr "Zainstaluj szablony z lokalnego pliku."
+
+msgid "Online mode is needed to download the templates."
+msgstr "Tryb online jest wymagany do pobrania szablonów."
 
 msgid "Go Online"
 msgstr "Przejdź do trybu online"
@@ -14861,6 +14867,9 @@ msgstr ""
 "Dowolnie przekierowuje połączenia, może być użyte do połączenia wielu portów "
 "wejściowych do jednego portu wyjścia."
 
+msgid "[None]"
+msgstr "[Brak]"
+
 msgid "Edit Visual Property: %s"
 msgstr "Edytuj właściwość wizualną: %s"
 
@@ -16410,6 +16419,23 @@ msgstr "Zrestartuj i zaktualizuj"
 
 msgid "Updating Script UIDs"
 msgstr "Aktualizowanie UID skryptów"
+
+msgid ""
+"As of Godot 4.4, scenes and resources use UIDs to reference scripts and "
+"shaders. Upgrades apply on the next save of each scene/resource.\n"
+"\n"
+"To save time, this tool can open and save each of these files. Depending on "
+"the project size, it may take several minutes."
+msgstr ""
+"W Godocie 4.4 sceny i zasoby używają UID, by odnosić się do skryptów i "
+"shaderów. Zmiany te są zastosowane przy następnym zapisaniu każdej sceny/"
+"zasobu.\n"
+"\n"
+"By oszczędzić czas, to narzędzie może otworzyć i zapisać każdy z tych plików. "
+"W zależności od rozmiaru projektu, może to zająć parę minut."
+
+msgid "Re-save all scenes and resources to use UIDs"
+msgstr "Zapisz ponownie wszystkie sceny i zasoby, by używały UID"
 
 msgid "Learn More"
 msgstr "Dowiedz się więcej"
