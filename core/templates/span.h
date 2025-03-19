@@ -84,8 +84,8 @@ constexpr int64_t Span<T>::find(const T &p_val, uint64_t p_from) const {
 }
 
 template <typename T>
-constexpr int64_t Span<T>::find_seq(const Span<T> &p_span, int64_t p_from) const {
-	for (int64_t i = p_from; i < size() - p_span.size(); i++) {
+constexpr int64_t Span<T>::find_seq(const Span<T> &p_span, uint64_t p_from) const {
+	for (uint64_t i = p_from; i < size() - p_span.size(); i++) {
 		bool found = true;
 		for (int64_t j = 0; j < p_span.size(); j++){
 			if(ptr()[i + j] != p_span.ptr()[j]){
@@ -102,7 +102,7 @@ constexpr int64_t Span<T>::find_seq(const Span<T> &p_span, int64_t p_from) const
 }
 
 template <typename T>
-constexpr int64_t Span<T>::rfind(const T &p_val, int64_t p_from) const {
+constexpr int64_t Span<T>::rfind(const T &p_val, uint64_t p_from) const {
 	for (int64_t i = p_from; i >= 0; i--) {
 		if (ptr()[i] == p_val) {
 			return i;
@@ -112,7 +112,7 @@ constexpr int64_t Span<T>::rfind(const T &p_val, int64_t p_from) const {
 }
 
 template <typename T>
-constexpr int64_t Span<T>::rfind_seq(const Span<T> &p_span, int64_t p_from) const {
+constexpr int64_t Span<T>::rfind_seq(const Span<T> &p_span, uint64_t p_from) const {
 	for (int64_t i = p_from; i >= 0; i--) {
 		bool found = true;
 		for (int64_t j = 0; j < p_span.size(); j++){
