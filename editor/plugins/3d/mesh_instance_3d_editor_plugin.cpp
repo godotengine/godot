@@ -34,7 +34,7 @@
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/multi_node_edit.h"
-#include "editor/plugins/node_3d_editor_plugin.h"
+#include "editor/plugins/3d/node_3d_editor_plugin.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/3d/navigation/navigation_region_3d.h"
 #include "scene/3d/physics/collision_shape_3d.h"
