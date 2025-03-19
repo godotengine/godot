@@ -69,7 +69,7 @@ public:
 	constexpr int64_t rfind(const T &p_val, uint64_t p_from) const;
 	_FORCE_INLINE_ constexpr int64_t rfind(const T &p_val) const { return rfind(p_val, size() - 1); }
 	constexpr int64_t rfind_seq(const Span<T> &p_span, uint64_t p_from) const;
-	_FORCE_INLINE_ constexpr int64_t rfind_seq(const Span<T> &p_span) const { return rfind_seq(p_span, size() - 1); }
+	_FORCE_INLINE_ constexpr int64_t rfind_seq(const Span<T> &p_span) const { return rfind_seq(p_span, size() - p_span.size()); }
 	constexpr uint64_t count(const T &p_val) const;
 };
 
