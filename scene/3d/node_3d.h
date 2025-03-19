@@ -132,10 +132,10 @@ private:
 
 		bool ignore_notification : 1;
 		bool notify_local_transform : 1;
-		bool notify_transform : 1;
+		bool notify_global_transform : 1;
 
-		bool notify_transform_requested : 1;
-		bool notify_transform_when_fti_off : 1;
+		bool notify_global_transform_requested : 1;
+		bool notify_global_transform_when_fti_off : 1;
 
 		bool visible : 1;
 		bool disable_scale : 1;
@@ -202,7 +202,7 @@ protected:
 	// (e.g. changing Camera zoom even if position hasn't changed).
 	void fti_notify_node_changed(bool p_transform_changed = true);
 
-	void _set_notify_transform_when_fti_off(bool p_enable);
+	void _set_notify_global_transform_when_fti_off(bool p_enable);
 	virtual void _physics_interpolated_changed() override;
 
 	// Opportunity after FTI to update the servers
@@ -231,7 +231,10 @@ protected:
 
 public:
 	enum {
-		NOTIFICATION_TRANSFORM_CHANGED = SceneTree::NOTIFICATION_TRANSFORM_CHANGED,
+		NOTIFICATION_GLOBAL_TRANSFORM_CHANGED = SceneTree::NOTIFICATION_GLOBAL_TRANSFORM_CHANGED,
+#ifndef DISABLE_DEPRECATED
+		NOTIFICATION_TRANSFORM_CHANGED = NOTIFICATION_GLOBAL_TRANSFORM_CHANGED, // Alias for old name.
+#endif // DISABLE_DEPRECATED
 		NOTIFICATION_ENTER_WORLD = 41,
 		NOTIFICATION_EXIT_WORLD = 42,
 		NOTIFICATION_VISIBILITY_CHANGED = 43,
@@ -332,8 +335,12 @@ public:
 	Vector3 to_local(Vector3 p_global) const;
 	Vector3 to_global(Vector3 p_local) const;
 
-	void set_notify_transform(bool p_enabled);
-	bool is_transform_notification_enabled() const;
+	void set_notify_global_transform(bool p_enabled);
+	bool is_global_transform_notification_enabled() const;
+#ifndef DISABLE_DEPRECATED
+	void set_notify_transform(bool p_enabled) { set_notify_global_transform(p_enabled); }
+	bool is_transform_notification_enabled() const { return is_global_transform_notification_enabled(); }
+#endif // DISABLE_DEPRECATED
 
 	void set_notify_local_transform(bool p_enabled);
 	bool is_local_transform_notification_enabled() const;
