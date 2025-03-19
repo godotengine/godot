@@ -283,7 +283,7 @@ protected:
 
 public:
 	enum {
-		NOTIFICATION_TRANSFORM_CHANGED = 2000
+		NOTIFICATION_GLOBAL_TRANSFORM_CHANGED = 2000
 	};
 
 	enum GroupCallFlags {
