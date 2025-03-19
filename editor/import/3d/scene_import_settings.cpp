@@ -37,7 +37,7 @@
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
 #include "editor/gui/editor_file_dialog.h"
-#include "editor/plugins/skeleton_3d_editor_plugin.h"
+#include "editor/plugins/3d/skeleton_3d_editor_plugin.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/3d/importer_mesh_instance_3d.h"
 #include "scene/animation/animation_player.h"
