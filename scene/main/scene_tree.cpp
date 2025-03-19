@@ -586,7 +586,7 @@ bool SceneTree::process(double p_time) {
 	MessageQueue::get_singleton()->flush(); //small little hack
 	flush_transform_notifications(); //transforms after world update, to avoid unnecessary enter/exit notifications
 
-	if (unlikely(pending_new_scene)) {
+	if (unlikely(pending_new_scene_id.is_valid())) {
 		_flush_scene_change();
 	}
 
@@ -1508,17 +1508,33 @@ Node *SceneTree::get_current_scene() const {
 }
 
 void SceneTree::_flush_scene_change() {
-	if (prev_scene) {
-		memdelete(prev_scene);
-		prev_scene = nullptr;
+	if (prev_scene_id.is_valid()) {
+		// Might have already been freed externally.
+		Node *prev_scene = Object::cast_to<Node>(ObjectDB::get_instance(prev_scene_id));
+		if (prev_scene) {
+			memdelete(prev_scene);
+		}
+		prev_scene_id = ObjectID();
 	}
-	current_scene = pending_new_scene;
-	root->add_child(pending_new_scene);
-	pending_new_scene = nullptr;
-	// Update display for cursor instantly.
-	root->update_mouse_cursor_state();
 
-	emit_signal(SNAME("scene_changed"));
+	DEV_ASSERT(pending_new_scene_id.is_valid());
+	Node *pending_new_scene = Object::cast_to<Node>(ObjectDB::get_instance(pending_new_scene_id));
+	if (pending_new_scene) {
+		// Ensure correct state before `add_child` (might enqueue subsequent scene change).
+		current_scene = pending_new_scene;
+		pending_new_scene_id = ObjectID();
+
+		root->add_child(pending_new_scene);
+		// Update display for cursor instantly.
+		root->update_mouse_cursor_state();
+
+		// Only on successful scene change.
+		emit_signal(SNAME("scene_changed"));
+	} else {
+		current_scene = nullptr;
+		pending_new_scene_id = ObjectID();
+		ERR_PRINT("Scene instance has been freed before becoming the current scene. No current scene is set.");
+	}
 }
 
 Error SceneTree::change_scene_to_file(const String &p_path) {
@@ -1538,21 +1554,23 @@ Error SceneTree::change_scene_to_packed(const Ref<PackedScene> &p_scene) {
 	ERR_FAIL_NULL_V(new_scene, ERR_CANT_CREATE);
 
 	// If called again while a change is pending.
-	if (pending_new_scene) {
-		queue_delete(pending_new_scene);
-		pending_new_scene = nullptr;
+	if (pending_new_scene_id.is_valid()) {
+		Node *pending_new_scene = Object::cast_to<Node>(ObjectDB::get_instance(pending_new_scene_id));
+		if (pending_new_scene) {
+			queue_delete(pending_new_scene);
+		}
+		pending_new_scene_id = ObjectID();
 	}
 
-	prev_scene = current_scene;
-
 	if (current_scene) {
+		prev_scene_id = current_scene->get_instance_id();
 		// Let as many side effects as possible happen or be queued now,
 		// so they are run before the scene is actually deleted.
 		root->remove_child(current_scene);
 	}
 	DEV_ASSERT(!current_scene);
 
-	pending_new_scene = new_scene;
+	pending_new_scene_id = new_scene->get_instance_id();
 	return OK;
 }
 
@@ -2009,13 +2027,19 @@ SceneTree::SceneTree() {
 }
 
 SceneTree::~SceneTree() {
-	if (prev_scene) {
-		memdelete(prev_scene);
-		prev_scene = nullptr;
+	if (prev_scene_id.is_valid()) {
+		Node *prev_scene = Object::cast_to<Node>(ObjectDB::get_instance(prev_scene_id));
+		if (prev_scene) {
+			memdelete(prev_scene);
+		}
+		prev_scene_id = ObjectID();
 	}
-	if (pending_new_scene) {
-		memdelete(pending_new_scene);
-		pending_new_scene = nullptr;
+	if (pending_new_scene_id.is_valid()) {
+		Node *pending_new_scene = Object::cast_to<Node>(ObjectDB::get_instance(pending_new_scene_id));
+		if (pending_new_scene) {
+			memdelete(pending_new_scene);
+		}
+		pending_new_scene_id = ObjectID();
 	}
 	if (root) {
 		root->_set_tree(nullptr);
