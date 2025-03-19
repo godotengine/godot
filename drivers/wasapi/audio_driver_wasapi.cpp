@@ -458,7 +458,7 @@ Error AudioDriverWASAPI::audio_device_init(AudioDeviceWASAPI *p_device, bool p_i
 		// so we need to select the closest multiple to the user-specified latency.
 		UINT32 desired_period_frames = target_latency_ms * mix_rate / 1000;
 		UINT32 period_frames = (desired_period_frames / fundamental_period_frames) * fundamental_period_frames;
-		if (ABS((int64_t)period_frames - (int64_t)desired_period_frames) > ABS((int64_t)(period_frames + fundamental_period_frames) - (int64_t)desired_period_frames)) {
+		if (Math::abs((int64_t)period_frames - (int64_t)desired_period_frames) > Math::abs((int64_t)(period_frames + fundamental_period_frames) - (int64_t)desired_period_frames)) {
 			period_frames = period_frames + fundamental_period_frames;
 		}
 		period_frames = CLAMP(period_frames, min_period_frames, max_period_frames);
