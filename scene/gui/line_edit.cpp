@@ -1202,7 +1202,8 @@ void LineEdit::_notification(int p_what) {
 					if (rect.position.x < x_ofs) {
 						rect.size.x -= (x_ofs - rect.position.x);
 						rect.position.x = x_ofs;
-					} else if (rect.position.x + rect.size.x > ofs_max) {
+					}
+					if (rect.position.x + rect.size.x > ofs_max) {
 						rect.size.x = ofs_max - rect.position.x;
 					}
 					RenderingServer::get_singleton()->canvas_item_add_rect(ci, rect, selection_color);
