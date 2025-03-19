@@ -770,7 +770,7 @@ void EditorFileDialog::_items_clear_selection(const Vector2 &p_pos, MouseButton 
 void EditorFileDialog::_push_history() {
 	local_history.resize(local_history_pos + 1);
 	String new_path = dir_access->get_current_dir();
-	if (local_history.size() == 0 || new_path != local_history[local_history_pos]) {
+	if (local_history.is_empty() || new_path != local_history[local_history_pos]) {
 		local_history.push_back(new_path);
 		local_history_pos++;
 		dir_prev->set_disabled(local_history_pos == 0);
@@ -940,7 +940,7 @@ bool EditorFileDialog::_is_open_should_be_disabled() {
 	}
 
 	Vector<int> items = item_list->get_selected_items();
-	if (items.size() == 0) {
+	if (items.is_empty()) {
 		return mode != FILE_MODE_OPEN_DIR; // In "Open folder" mode, having nothing selected picks the current folder.
 	}
 

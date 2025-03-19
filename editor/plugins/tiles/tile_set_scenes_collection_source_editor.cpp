@@ -483,7 +483,7 @@ bool TileSetScenesCollectionSourceEditor::_can_drop_data_fw(const Point2 &p_poin
 		if (String(d["type"]) == "files") {
 			Vector<String> files = d["files"];
 
-			if (files.size() == 0) {
+			if (files.is_empty()) {
 				return false;
 			}
 

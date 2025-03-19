@@ -262,7 +262,7 @@ const Dictionary EditorResourcePreview::get_preview_metadata(const String &p_pat
 void EditorResourcePreview::_iterate() {
 	preview_mutex.lock();
 
-	if (queue.size() == 0) {
+	if (queue.is_empty()) {
 		preview_mutex.unlock();
 		return;
 	}

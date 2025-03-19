@@ -71,7 +71,7 @@ NavMeshGenerator2D::~NavMeshGenerator2D() {
 }
 
 void NavMeshGenerator2D::sync() {
-	if (generator_tasks.size() == 0) {
+	if (generator_tasks.is_empty()) {
 		return;
 	}
 
