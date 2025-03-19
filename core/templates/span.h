@@ -69,7 +69,7 @@ public:
 	constexpr int64_t rfind(const T &p_val, uint64_t p_from) const;
 	_FORCE_INLINE_ constexpr int64_t rfind(const T &p_val) const { return rfind(p_val, size() - 1); }
 	constexpr int64_t rfind_seq(const Span<T> &p_span, uint64_t p_from) const;
-	_FORCE_INLINE_ constexpr int64_t rfind_seq(const Span<T> &p_span) const { return rfind_seq(p_span, size() - 1); };
+	_FORCE_INLINE_ constexpr int64_t rfind_seq(const Span<T> &p_span) const { return rfind_seq(p_span, size() - 1); }
 	constexpr uint64_t count(const T &p_val) const;
 };
 
@@ -88,7 +88,7 @@ constexpr int64_t Span<T>::find_seq(const Span<T> &p_span, uint64_t p_from) cons
 	for (uint64_t i = p_from; i < size() - p_span.size(); i++) {
 		bool found = true;
 		for (int64_t j = 0; j < p_span.size(); j++) {
-			if(ptr()[i + j] != p_span.ptr()[j]) {
+			if (ptr()[i + j] != p_span.ptr()[j]) {
 				found = false;
 				break;
 			}
@@ -116,7 +116,7 @@ constexpr int64_t Span<T>::rfind_seq(const Span<T> &p_span, uint64_t p_from) con
 	for (int64_t i = p_from; i >= 0; i--) {
 		bool found = true;
 		for (int64_t j = 0; j < p_span.size(); j++) {
-			if(ptr()[i + j] != p_span.ptr()[j]) {
+			if (ptr()[i + j] != p_span.ptr()[j]) {
 				found = false;
 				break;
 			}
