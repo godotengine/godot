@@ -2092,7 +2092,7 @@ void DisplayServerX11::_update_window_mouse_passthrough(WindowID p_window) {
 			Region region = XCreateRegion();
 			XShapeCombineRegion(x11_display, windows[p_window].x11_window, ShapeInput, 0, 0, region, ShapeSet);
 			XDestroyRegion(region);
-		} else if (region_path.size() == 0) {
+		} else if (region_path.is_empty()) {
 			XShapeCombineMask(x11_display, windows[p_window].x11_window, ShapeInput, 0, 0, None, ShapeSet);
 		} else {
 			XPoint *points = (XPoint *)memalloc(sizeof(XPoint) * region_path.size());

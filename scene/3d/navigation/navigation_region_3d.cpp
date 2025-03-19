@@ -504,7 +504,7 @@ void NavigationRegion3D::_update_debug_mesh() {
 	debug_mesh->clear_surfaces();
 
 	Vector<Vector3> vertices = navigation_mesh->get_vertices();
-	if (vertices.size() == 0) {
+	if (vertices.is_empty()) {
 		return;
 	}
 
@@ -720,7 +720,7 @@ void NavigationRegion3D::_update_debug_edge_connections_mesh() {
 		vertex_array_ptrw[vertex_array_index++] = right_end_pos;
 	}
 
-	if (vertex_array.size() == 0) {
+	if (vertex_array.is_empty()) {
 		return;
 	}
 

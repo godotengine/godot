@@ -65,7 +65,7 @@ int Curve::_add_point(Vector2 p_position, real_t p_left_tangent, real_t p_right_
 
 	int ret = -1;
 
-	if (_points.size() == 0) {
+	if (_points.is_empty()) {
 		_points.push_back(Point(p_position, p_left_tangent, p_right_tangent, p_left_mode, p_right_mode));
 		ret = 0;
 
@@ -377,7 +377,7 @@ void Curve::set_max_domain(real_t p_max) {
 }
 
 real_t Curve::sample(real_t p_offset) const {
-	if (_points.size() == 0) {
+	if (_points.is_empty()) {
 		return 0;
 	}
 	if (_points.size() == 1) {
@@ -539,8 +539,8 @@ real_t Curve::sample_baked(real_t p_offset) const {
 	}
 
 	// Special cases if the cache is too small.
-	if (_baked_cache.size() == 0) {
-		if (_points.size() == 0) {
+	if (_baked_cache.is_empty()) {
+		if (_points.is_empty()) {
 			return 0;
 		}
 		return _points[0].position.y;
@@ -569,7 +569,7 @@ real_t Curve::sample_baked(real_t p_offset) const {
 }
 
 void Curve::ensure_default_setup(real_t p_min, real_t p_max) {
-	if (_points.size() == 0 && _min_value == 0 && _max_value == 1) {
+	if (_points.is_empty() && _min_value == 0 && _max_value == 1) {
 		add_point(Vector2(0, 1));
 		add_point(Vector2(1, 1));
 		set_min_value(p_min);
@@ -910,7 +910,7 @@ void Curve2D::_bake() const {
 	baked_max_ofs = 0;
 	baked_cache_dirty = false;
 
-	if (points.size() == 0) {
+	if (points.is_empty()) {
 		baked_point_cache.clear();
 		baked_dist_cache.clear();
 		baked_forward_vector_cache.clear();
@@ -1259,7 +1259,7 @@ void Curve2D::_set_data(const Dictionary &p_data) {
 PackedVector2Array Curve2D::tessellate(int p_max_stages, real_t p_tolerance) const {
 	PackedVector2Array tess;
 
-	if (points.size() == 0) {
+	if (points.is_empty()) {
 		return tess;
 	}
 
@@ -1309,7 +1309,7 @@ PackedVector2Array Curve2D::tessellate_even_length(int p_max_stages, real_t p_le
 	PackedVector2Array tess;
 
 	Vector<RBMap<real_t, Vector2>> midpoints = _tessellate_even_length(p_max_stages, p_length);
-	if (midpoints.size() == 0) {
+	if (midpoints.is_empty()) {
 		return tess;
 	}
 
@@ -1659,7 +1659,7 @@ void Curve3D::_bake() const {
 	baked_max_ofs = 0;
 	baked_cache_dirty = false;
 
-	if (points.size() == 0) {
+	if (points.is_empty()) {
 #ifdef TOOLS_ENABLED
 		points_in_cache.clear();
 #endif
@@ -2293,7 +2293,7 @@ void Curve3D::_set_data(const Dictionary &p_data) {
 PackedVector3Array Curve3D::tessellate(int p_max_stages, real_t p_tolerance) const {
 	PackedVector3Array tess;
 
-	if (points.size() == 0) {
+	if (points.is_empty()) {
 		return tess;
 	}
 	Vector<RBMap<real_t, Vector3>> midpoints;
@@ -2356,7 +2356,7 @@ PackedVector3Array Curve3D::tessellate_even_length(int p_max_stages, real_t p_le
 	PackedVector3Array tess;
 
 	Vector<RBMap<real_t, Vector3>> midpoints = _tessellate_even_length(p_max_stages, p_length);
-	if (midpoints.size() == 0) {
+	if (midpoints.is_empty()) {
 		return tess;
 	}
 

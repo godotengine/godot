@@ -379,7 +379,7 @@ void CSGShape3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 
 	Vector<Vector3> faces = cs->get_brush_faces();
 
-	if (faces.size() == 0) {
+	if (faces.is_empty()) {
 		return;
 	}
 

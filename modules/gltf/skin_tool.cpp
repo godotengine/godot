@@ -520,7 +520,7 @@ Error SkinTool::_determine_skeleton_roots(
 
 	skeleton->roots = roots;
 
-	if (roots.size() == 0) {
+	if (roots.is_empty()) {
 		return FAILED;
 	} else if (roots.size() == 1) {
 		return OK;

@@ -475,7 +475,7 @@ void SceneDebugger::remove_from_cache(const String &p_filename, Node *p_node) {
 	HashMap<String, HashSet<Node *>>::Iterator E = edit_cache.find(p_filename);
 	if (E) {
 		E->value.erase(p_node);
-		if (E->value.size() == 0) {
+		if (E->value.is_empty()) {
 			edit_cache.remove(E);
 		}
 	}
@@ -1178,7 +1178,7 @@ void LiveEditor::_restore_node_func(ObjectID p_id, const NodePath &p_at, int p_a
 
 		EN->value.remove(FN);
 
-		if (EN->value.size() == 0) {
+		if (EN->value.is_empty()) {
 			live_edit_remove_list.remove(EN);
 		}
 

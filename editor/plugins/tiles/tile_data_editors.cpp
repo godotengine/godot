@@ -836,7 +836,7 @@ void GenericTilePolygonEditor::remove_polygon(int p_index) {
 	ERR_FAIL_INDEX(p_index, (int)polygons.size());
 	polygons.remove_at(p_index);
 
-	if (polygons.size() == 0) {
+	if (polygons.is_empty()) {
 		button_create->set_pressed(true);
 	}
 	base_control->queue_redraw();

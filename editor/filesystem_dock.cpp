@@ -3840,7 +3840,7 @@ void FileSystemDock::_update_import_dock() {
 		imports.push_back(fpath);
 	}
 
-	if (imports.size() == 0) {
+	if (imports.is_empty()) {
 		ImportDock::get_singleton()->clear();
 	} else if (imports.size() == 1) {
 		ImportDock::get_singleton()->set_edit_path(imports[0]);

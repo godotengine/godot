@@ -294,7 +294,7 @@ void Viewport::_sub_window_register(Window *p_window) {
 		ERR_FAIL_COND(gui.sub_windows[i].window == p_window);
 	}
 
-	if (gui.sub_windows.size() == 0) {
+	if (gui.sub_windows.is_empty()) {
 		subwindow_canvas = RS::get_singleton()->canvas_create();
 		RS::get_singleton()->viewport_attach_canvas(viewport, subwindow_canvas);
 		RS::get_singleton()->viewport_set_canvas_stacking(viewport, subwindow_canvas, SUBWINDOW_CANVAS_LAYER, 0);
@@ -465,7 +465,7 @@ void Viewport::_sub_window_remove(Window *p_window) {
 	RS::get_singleton()->free(sw.canvas_item);
 	gui.sub_windows.remove_at(index);
 
-	if (gui.sub_windows.size() == 0) {
+	if (gui.sub_windows.is_empty()) {
 		RS::get_singleton()->free(subwindow_canvas);
 		subwindow_canvas = RID();
 	}

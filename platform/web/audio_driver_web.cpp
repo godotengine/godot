@@ -95,7 +95,7 @@ void AudioDriverWeb::_audio_driver_process(int p_from, int p_samples) {
 }
 
 void AudioDriverWeb::_audio_driver_capture(int p_from, int p_samples) {
-	if (get_input_buffer().size() == 0) {
+	if (get_input_buffer().is_empty()) {
 		return; // Input capture stopped.
 	}
 	const int max_samples = memarr_len(input_rb);

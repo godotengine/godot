@@ -513,7 +513,7 @@ public:
 	virtual void debug_get_stack_level_locals(int p_level, List<String> *p_locals, List<Variant> *p_values, int p_max_subitems = -1, int p_max_depth = -1) override {
 		Dictionary ret;
 		GDVIRTUAL_CALL(_debug_get_stack_level_locals, p_level, p_max_subitems, p_max_depth, ret);
-		if (ret.size() == 0) {
+		if (ret.is_empty()) {
 			return;
 		}
 		if (p_locals != nullptr && ret.has("locals")) {
@@ -533,7 +533,7 @@ public:
 	virtual void debug_get_stack_level_members(int p_level, List<String> *p_members, List<Variant> *p_values, int p_max_subitems = -1, int p_max_depth = -1) override {
 		Dictionary ret;
 		GDVIRTUAL_CALL(_debug_get_stack_level_members, p_level, p_max_subitems, p_max_depth, ret);
-		if (ret.size() == 0) {
+		if (ret.is_empty()) {
 			return;
 		}
 		if (p_members != nullptr && ret.has("members")) {
@@ -560,7 +560,7 @@ public:
 	virtual void debug_get_globals(List<String> *p_globals, List<Variant> *p_values, int p_max_subitems = -1, int p_max_depth = -1) override {
 		Dictionary ret;
 		GDVIRTUAL_CALL(_debug_get_globals, p_max_subitems, p_max_depth, ret);
-		if (ret.size() == 0) {
+		if (ret.is_empty()) {
 			return;
 		}
 		if (p_globals != nullptr && ret.has("globals")) {

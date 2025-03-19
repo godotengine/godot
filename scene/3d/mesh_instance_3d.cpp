@@ -437,11 +437,11 @@ MeshInstance3D *MeshInstance3D::create_debug_tangents_node() {
 
 		Vector<Vector3> verts = arrays[Mesh::ARRAY_VERTEX];
 		Vector<Vector3> norms = arrays[Mesh::ARRAY_NORMAL];
-		if (norms.size() == 0) {
+		if (norms.is_empty()) {
 			continue;
 		}
 		Vector<float> tangents = arrays[Mesh::ARRAY_TANGENT];
-		if (tangents.size() == 0) {
+		if (tangents.is_empty()) {
 			continue;
 		}
 

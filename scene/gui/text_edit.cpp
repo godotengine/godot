@@ -4596,7 +4596,7 @@ Rect2i TextEdit::get_rect_at_line_column(int p_line, int p_column) const {
 		return Rect2i();
 	}
 
-	if (line_drawing_cache.size() == 0 || !line_drawing_cache.has(p_line)) {
+	if (line_drawing_cache.is_empty() || !line_drawing_cache.has(p_line)) {
 		// Line is not in the cache, which means it's outside of the viewing area.
 		return Rect2i(-1, -1, 0, 0);
 	}

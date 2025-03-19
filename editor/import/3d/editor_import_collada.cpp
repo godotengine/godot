@@ -706,7 +706,7 @@ Error ColladaImport::_create_mesh_surfaces(bool p_optimize, Ref<ImporterMesh> &p
 					}
 				}
 
-				if (weights.size() == 0 || total == 0) { //if nothing, add a weight to bone 0
+				if (weights.is_empty() || total == 0) { //if nothing, add a weight to bone 0
 					//no weights assigned
 					Collada::Vertex::Weight w;
 					w.bone_idx = 0;
@@ -1278,7 +1278,7 @@ Error ColladaImport::_create_resources(Collada::Node *p_node, bool p_use_compres
 					mesh_unique_names.insert(name);
 
 					mesh->set_name(name);
-					Error err = _create_mesh_surfaces(morphs.size() == 0, mesh, ng2->material_map, meshdata, apply_xform, bone_remap, skin, morph, morphs, p_use_compression, use_mesh_builtin_materials);
+					Error err = _create_mesh_surfaces(morphs.is_empty(), mesh, ng2->material_map, meshdata, apply_xform, bone_remap, skin, morph, morphs, p_use_compression, use_mesh_builtin_materials);
 					ERR_FAIL_COND_V_MSG(err, err, "Cannot create mesh surface.");
 
 					mesh_cache[meshid] = mesh;

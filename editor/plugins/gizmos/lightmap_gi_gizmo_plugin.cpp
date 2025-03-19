@@ -88,7 +88,7 @@ void LightmapGIGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 	HashSet<Vector2i> lines_found;
 
 	Vector<Vector3> points = data->get_capture_points();
-	if (points.size() == 0) {
+	if (points.is_empty()) {
 		return;
 	}
 	Vector<Color> sh = data->get_capture_sh();

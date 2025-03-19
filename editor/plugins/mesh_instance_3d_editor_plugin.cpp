@@ -394,7 +394,7 @@ void MeshInstance3DEditor::_create_uv_lines(int p_layer) {
 		Array a = mesh->surface_get_arrays(i);
 
 		Vector<Vector2> uv = a[p_layer == 0 ? Mesh::ARRAY_TEX_UV : Mesh::ARRAY_TEX_UV2];
-		if (uv.size() == 0) {
+		if (uv.is_empty()) {
 			err_dialog->set_text(vformat(TTR("Mesh has no UV in layer %d."), p_layer + 1));
 			err_dialog->popup_centered();
 			return;
@@ -440,7 +440,7 @@ void MeshInstance3DEditor::_create_uv_lines(int p_layer) {
 }
 
 void MeshInstance3DEditor::_debug_uv_draw() {
-	if (uv_lines.size() == 0) {
+	if (uv_lines.is_empty()) {
 		return;
 	}
 

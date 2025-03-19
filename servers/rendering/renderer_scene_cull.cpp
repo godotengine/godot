@@ -2121,7 +2121,7 @@ void RendererSceneCull::_update_instance_aabb(Instance *p_instance) const {
 }
 
 void RendererSceneCull::_update_instance_lightmap_captures(Instance *p_instance) const {
-	bool first_set = p_instance->lightmap_sh.size() == 0;
+	bool first_set = p_instance->lightmap_sh.is_empty();
 	p_instance->lightmap_sh.resize(9); //using SH
 	p_instance->lightmap_target_sh.resize(9); //using SH
 	Color *instance_sh = p_instance->lightmap_target_sh.ptrw();

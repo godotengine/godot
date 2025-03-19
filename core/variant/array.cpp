@@ -345,7 +345,7 @@ Variant Array::pick_random() const {
 }
 
 int Array::find(const Variant &p_value, int p_from) const {
-	if (_p->array.size() == 0) {
+	if (_p->array.is_empty()) {
 		return -1;
 	}
 	Variant value = p_value;
@@ -396,7 +396,7 @@ int Array::find_custom(const Callable &p_callable, int p_from) const {
 }
 
 int Array::rfind(const Variant &p_value, int p_from) const {
-	if (_p->array.size() == 0) {
+	if (_p->array.is_empty()) {
 		return -1;
 	}
 	Variant value = p_value;
@@ -421,7 +421,7 @@ int Array::rfind(const Variant &p_value, int p_from) const {
 }
 
 int Array::rfind_custom(const Callable &p_callable, int p_from) const {
-	if (_p->array.size() == 0) {
+	if (_p->array.is_empty()) {
 		return -1;
 	}
 
@@ -458,7 +458,7 @@ int Array::rfind_custom(const Callable &p_callable, int p_from) const {
 int Array::count(const Variant &p_value) const {
 	Variant value = p_value;
 	ERR_FAIL_COND_V(!_p->typed.validate(value, "count"), 0);
-	if (_p->array.size() == 0) {
+	if (_p->array.is_empty()) {
 		return 0;
 	}
 

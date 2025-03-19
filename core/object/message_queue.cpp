@@ -226,7 +226,7 @@ void CallQueue::_call_function(const Callable &p_callable, const Variant *p_args
 Error CallQueue::flush() {
 	LOCK_MUTEX;
 
-	if (pages.size() == 0) {
+	if (pages.is_empty()) {
 		// Never allocated
 		UNLOCK_MUTEX;
 		return OK; // Do nothing.
@@ -308,7 +308,7 @@ Error CallQueue::flush() {
 void CallQueue::clear() {
 	LOCK_MUTEX;
 
-	if (pages.size() == 0) {
+	if (pages.is_empty()) {
 		UNLOCK_MUTEX;
 		return; // Nothing to clear.
 	}

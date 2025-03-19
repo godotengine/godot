@@ -628,7 +628,7 @@ void DocTools::generate(BitField<GenerateFlags> p_flags) {
 					// Don't skip parametric setters and getters, i.e. method which require
 					// one or more parameters to define what property should be set or retrieved.
 					// E.g. CPUParticles3D::set_param(Parameter param, float value).
-					if (E.arguments.size() == 0 /* getter */ || (E.arguments.size() == 1 && E.return_val.type == Variant::NIL /* setter */)) {
+					if (E.arguments.is_empty() /* getter */ || (E.arguments.size() == 1 && E.return_val.type == Variant::NIL /* setter */)) {
 						continue;
 					}
 				}

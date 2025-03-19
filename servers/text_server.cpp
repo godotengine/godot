@@ -965,7 +965,7 @@ PackedInt32Array TextServer::shaped_text_get_line_breaks_adv(const RID &p_shaped
 	}
 
 	if (l_size > 0) {
-		if (lines.size() == 0 || (lines[lines.size() - 1] < range.y && prev_safe_break < l_size)) {
+		if (lines.is_empty() || (lines[lines.size() - 1] < range.y && prev_safe_break < l_size)) {
 			if (p_break_flags.has_flag(BREAK_TRIM_START_EDGE_SPACES)) {
 				int start_pos = (prev_safe_break < l_size) ? prev_safe_break : l_size - 1;
 				if (last_end <= l_gl[start_pos].start) {
@@ -1152,7 +1152,7 @@ PackedInt32Array TextServer::shaped_text_get_line_breaks(const RID &p_shaped, do
 	}
 
 	if (l_size > 0) {
-		if (lines.size() == 0 || (lines[lines.size() - 1] < range.y && prev_safe_break < l_size)) {
+		if (lines.is_empty() || (lines[lines.size() - 1] < range.y && prev_safe_break < l_size)) {
 			if (p_break_flags.has_flag(BREAK_TRIM_START_EDGE_SPACES)) {
 				int start_pos = (prev_safe_break < l_size) ? prev_safe_break : l_size - 1;
 				if (last_end <= l_gl[start_pos].start) {

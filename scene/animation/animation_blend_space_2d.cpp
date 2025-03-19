@@ -367,7 +367,7 @@ void AnimationNodeBlendSpace2D::_update_triangles() {
 Vector2 AnimationNodeBlendSpace2D::get_closest_point(const Vector2 &p_point) {
 	_update_triangles();
 
-	if (triangles.size() == 0) {
+	if (triangles.is_empty()) {
 		return Vector2();
 	}
 

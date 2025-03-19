@@ -110,7 +110,7 @@ void OptimizedTranslation::generate(const Ref<Translation> &p_from) {
 		const Vector<Pair<int, CharString>> &b = buckets[i];
 		HashMap<uint32_t, int> &t = table.write[i];
 
-		if (b.size() == 0) {
+		if (b.is_empty()) {
 			continue;
 		}
 
@@ -148,7 +148,7 @@ void OptimizedTranslation::generate(const Ref<Translation> &p_from) {
 
 	for (int i = 0; i < size; i++) {
 		const HashMap<uint32_t, int> &t = table[i];
-		if (t.size() == 0) {
+		if (t.is_empty()) {
 			htw[i] = 0xFFFFFFFF; //nothing
 			continue;
 		}

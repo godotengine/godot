@@ -70,7 +70,7 @@ NavMeshGenerator3D::~NavMeshGenerator3D() {
 }
 
 void NavMeshGenerator3D::sync() {
-	if (generator_tasks.size() == 0) {
+	if (generator_tasks.is_empty()) {
 		return;
 	}
 

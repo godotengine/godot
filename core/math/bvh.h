@@ -406,7 +406,7 @@ public:
 		}
 
 		Vector<Vector3> convex_points = Geometry3D::compute_convex_mesh_points(&p_convex[0], p_convex.size());
-		if (convex_points.size() == 0) {
+		if (convex_points.is_empty()) {
 			return 0;
 		}
 

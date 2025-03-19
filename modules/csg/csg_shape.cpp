@@ -1135,13 +1135,13 @@ CSGBrush *CSGMesh3D::_build_brush() {
 
 		Array arrays = mesh->surface_get_arrays(i);
 
-		if (arrays.size() == 0) {
+		if (arrays.is_empty()) {
 			_make_dirty();
 			ERR_FAIL_COND_V(arrays.is_empty(), memnew(CSGBrush));
 		}
 
 		Vector<Vector3> avertices = arrays[Mesh::ARRAY_VERTEX];
-		if (avertices.size() == 0) {
+		if (avertices.is_empty()) {
 			continue;
 		}
 
@@ -1257,7 +1257,7 @@ CSGBrush *CSGMesh3D::_build_brush() {
 		}
 	}
 
-	if (vertices.size() == 0) {
+	if (vertices.is_empty()) {
 		return memnew(CSGBrush);
 	}
 

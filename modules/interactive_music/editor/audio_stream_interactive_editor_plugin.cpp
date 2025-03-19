@@ -115,7 +115,7 @@ void AudioStreamInteractiveTransitionEditor::_update_selection() {
 	filler_clip->set_disabled(selected.is_empty());
 	hold_previous->set_disabled(selected.is_empty());
 
-	if (selected.size() == 0) {
+	if (selected.is_empty()) {
 		return;
 	}
 

@@ -484,7 +484,7 @@ public:
 			LOC_OUTSIDE = -1
 		};
 
-		if (polygon.size() == 0) {
+		if (polygon.is_empty()) {
 			return polygon;
 		}
 

@@ -6922,7 +6922,7 @@ void RenderingDevice::_save_pipeline_cache(void *p_data) {
 	Vector<uint8_t> cache_blob = self->driver->pipeline_cache_serialize();
 	self->_thread_safe_.unlock();
 
-	if (cache_blob.size() == 0) {
+	if (cache_blob.is_empty()) {
 		return;
 	}
 	print_verbose(vformat("Updated PSO cache (%.1f MiB)", cache_blob.size() / (1024.0f * 1024.0f)));

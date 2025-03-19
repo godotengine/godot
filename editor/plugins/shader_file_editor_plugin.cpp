@@ -166,7 +166,7 @@ void ShaderFileEditor::_update_options() {
 		}
 	}
 
-	if (version_list.size() == 0) {
+	if (version_list.is_empty()) {
 		for (int i = 0; i < RD::SHADER_STAGE_MAX; i++) {
 			stages[i]->set_disabled(true);
 		}

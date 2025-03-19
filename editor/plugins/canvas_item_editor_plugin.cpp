@@ -6273,7 +6273,7 @@ void CanvasItemEditorViewport::drop_data(const Point2 &p_point, const Variant &p
 	if (d.has("type") && String(d["type"]) == "files") {
 		selected_files = d["files"];
 	}
-	if (selected_files.size() == 0) {
+	if (selected_files.is_empty()) {
 		return;
 	}
 

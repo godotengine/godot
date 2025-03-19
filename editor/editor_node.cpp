@@ -3816,7 +3816,7 @@ void EditorNode::_update_addon_config() {
 		enabled_addons.push_back(E.key);
 	}
 
-	if (enabled_addons.size() == 0) {
+	if (enabled_addons.is_empty()) {
 		ProjectSettings::get_singleton()->set("editor_plugins/enabled", Variant());
 	} else {
 		enabled_addons.sort();
@@ -6342,7 +6342,7 @@ void EditorNode::preload_reimporting_with_path_in_edited_scenes(const List<Strin
 }
 
 void EditorNode::reload_instances_with_path_in_edited_scenes() {
-	if (scenes_modification_table.size() == 0) {
+	if (scenes_modification_table.is_empty()) {
 		return;
 	}
 	EditorProgress progress("reloading_scene", TTR("Scenes reloading"), editor_data.get_edited_scene_count());
