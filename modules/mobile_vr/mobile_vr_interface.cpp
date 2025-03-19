@@ -205,7 +205,7 @@ void MobileVRInterface::set_position_from_sensors() {
 			Vector3 axis = grav_adj.cross(down);
 			axis.normalize();
 
-			Basis drift_compensation(axis, acos(dot) * delta_time * 10);
+			Basis drift_compensation(axis, std::acos(dot) * delta_time * 10);
 			orientation = drift_compensation * orientation;
 		};
 	};

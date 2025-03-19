@@ -32,173 +32,99 @@
 
 #include "core/error/error_macros.h"
 #include "core/math/math_defs.h"
-#include "core/math/random_pcg.h"
 #include "core/typedefs.h"
 
-#include "thirdparty/misc/pcg.h"
-
-#include <float.h>
-#include <math.h>
+#include <cfloat>
+#include <cmath>
 
 class Math {
-	static RandomPCG default_rand;
-
 public:
-	Math() {} // useless to instance
+	Math() = delete; // useless to instance
 
-	// Not using 'RANDOM_MAX' to avoid conflict with system headers on some OSes (at least NetBSD).
-	static const uint64_t RANDOM_32BIT_MAX = 0xFFFFFFFF;
+	static _ALWAYS_INLINE_ double sin(double p_x) { return std::sin(p_x); }
+	static _ALWAYS_INLINE_ float sin(float p_x) { return std::sin(p_x); }
 
-	static _ALWAYS_INLINE_ double sin(double p_x) { return ::sin(p_x); }
-	static _ALWAYS_INLINE_ float sin(float p_x) { return ::sinf(p_x); }
+	static _ALWAYS_INLINE_ double cos(double p_x) { return std::cos(p_x); }
+	static _ALWAYS_INLINE_ float cos(float p_x) { return std::cos(p_x); }
 
-	static _ALWAYS_INLINE_ double cos(double p_x) { return ::cos(p_x); }
-	static _ALWAYS_INLINE_ float cos(float p_x) { return ::cosf(p_x); }
+	static _ALWAYS_INLINE_ double tan(double p_x) { return std::tan(p_x); }
+	static _ALWAYS_INLINE_ float tan(float p_x) { return std::tan(p_x); }
 
-	static _ALWAYS_INLINE_ double tan(double p_x) { return ::tan(p_x); }
-	static _ALWAYS_INLINE_ float tan(float p_x) { return ::tanf(p_x); }
+	static _ALWAYS_INLINE_ double sinh(double p_x) { return std::sinh(p_x); }
+	static _ALWAYS_INLINE_ float sinh(float p_x) { return std::sinh(p_x); }
 
-	static _ALWAYS_INLINE_ double sinh(double p_x) { return ::sinh(p_x); }
-	static _ALWAYS_INLINE_ float sinh(float p_x) { return ::sinhf(p_x); }
-
-	static _ALWAYS_INLINE_ float sinc(float p_x) { return p_x == 0 ? 1 : ::sin(p_x) / p_x; }
-	static _ALWAYS_INLINE_ double sinc(double p_x) { return p_x == 0 ? 1 : ::sin(p_x) / p_x; }
+	static _ALWAYS_INLINE_ float sinc(float p_x) { return p_x == 0 ? 1 : std::sin(p_x) / p_x; }
+	static _ALWAYS_INLINE_ double sinc(double p_x) { return p_x == 0 ? 1 : std::sin(p_x) / p_x; }
 
 	static _ALWAYS_INLINE_ float sincn(float p_x) { return sinc((float)Math_PI * p_x); }
 	static _ALWAYS_INLINE_ double sincn(double p_x) { return sinc(Math_PI * p_x); }
 
-	static _ALWAYS_INLINE_ double cosh(double p_x) { return ::cosh(p_x); }
-	static _ALWAYS_INLINE_ float cosh(float p_x) { return ::coshf(p_x); }
+	static _ALWAYS_INLINE_ double cosh(double p_x) { return std::cosh(p_x); }
+	static _ALWAYS_INLINE_ float cosh(float p_x) { return std::cosh(p_x); }
 
-	static _ALWAYS_INLINE_ double tanh(double p_x) { return ::tanh(p_x); }
-	static _ALWAYS_INLINE_ float tanh(float p_x) { return ::tanhf(p_x); }
-
-	// Always does clamping so always safe to use.
-	static _ALWAYS_INLINE_ double asin(double p_x) { return p_x < -1 ? (-Math_PI / 2) : (p_x > 1 ? (Math_PI / 2) : ::asin(p_x)); }
-	static _ALWAYS_INLINE_ float asin(float p_x) { return p_x < -1 ? (-Math_PI / 2) : (p_x > 1 ? (Math_PI / 2) : ::asinf(p_x)); }
+	static _ALWAYS_INLINE_ double tanh(double p_x) { return std::tanh(p_x); }
+	static _ALWAYS_INLINE_ float tanh(float p_x) { return std::tanh(p_x); }
 
 	// Always does clamping so always safe to use.
-	static _ALWAYS_INLINE_ double acos(double p_x) { return p_x < -1 ? Math_PI : (p_x > 1 ? 0 : ::acos(p_x)); }
-	static _ALWAYS_INLINE_ float acos(float p_x) { return p_x < -1 ? Math_PI : (p_x > 1 ? 0 : ::acosf(p_x)); }
-
-	static _ALWAYS_INLINE_ double atan(double p_x) { return ::atan(p_x); }
-	static _ALWAYS_INLINE_ float atan(float p_x) { return ::atanf(p_x); }
-
-	static _ALWAYS_INLINE_ double atan2(double p_y, double p_x) { return ::atan2(p_y, p_x); }
-	static _ALWAYS_INLINE_ float atan2(float p_y, float p_x) { return ::atan2f(p_y, p_x); }
-
-	static _ALWAYS_INLINE_ double asinh(double p_x) { return ::asinh(p_x); }
-	static _ALWAYS_INLINE_ float asinh(float p_x) { return ::asinhf(p_x); }
+	static _ALWAYS_INLINE_ double asin(double p_x) { return p_x < -1 ? (-Math_PI / 2) : (p_x > 1 ? (Math_PI / 2) : std::asin(p_x)); }
+	static _ALWAYS_INLINE_ float asin(float p_x) { return p_x < -1 ? (-Math_PI / 2) : (p_x > 1 ? (Math_PI / 2) : std::asin(p_x)); }
 
 	// Always does clamping so always safe to use.
-	static _ALWAYS_INLINE_ double acosh(double p_x) { return p_x < 1 ? 0 : ::acosh(p_x); }
-	static _ALWAYS_INLINE_ float acosh(float p_x) { return p_x < 1 ? 0 : ::acoshf(p_x); }
+	static _ALWAYS_INLINE_ double acos(double p_x) { return p_x < -1 ? Math_PI : (p_x > 1 ? 0 : std::acos(p_x)); }
+	static _ALWAYS_INLINE_ float acos(float p_x) { return p_x < -1 ? Math_PI : (p_x > 1 ? 0 : std::acos(p_x)); }
+
+	static _ALWAYS_INLINE_ double atan(double p_x) { return std::atan(p_x); }
+	static _ALWAYS_INLINE_ float atan(float p_x) { return std::atan(p_x); }
+
+	static _ALWAYS_INLINE_ double atan2(double p_y, double p_x) { return std::atan2(p_y, p_x); }
+	static _ALWAYS_INLINE_ float atan2(float p_y, float p_x) { return std::atan2(p_y, p_x); }
+
+	static _ALWAYS_INLINE_ double asinh(double p_x) { return std::asinh(p_x); }
+	static _ALWAYS_INLINE_ float asinh(float p_x) { return std::asinh(p_x); }
 
 	// Always does clamping so always safe to use.
-	static _ALWAYS_INLINE_ double atanh(double p_x) { return p_x <= -1 ? -INFINITY : (p_x >= 1 ? INFINITY : ::atanh(p_x)); }
-	static _ALWAYS_INLINE_ float atanh(float p_x) { return p_x <= -1 ? -INFINITY : (p_x >= 1 ? INFINITY : ::atanhf(p_x)); }
+	static _ALWAYS_INLINE_ double acosh(double p_x) { return p_x < 1 ? 0 : std::acosh(p_x); }
+	static _ALWAYS_INLINE_ float acosh(float p_x) { return p_x < 1 ? 0 : std::acosh(p_x); }
 
-	static _ALWAYS_INLINE_ double sqrt(double p_x) { return ::sqrt(p_x); }
-	static _ALWAYS_INLINE_ float sqrt(float p_x) { return ::sqrtf(p_x); }
+	// Always does clamping so always safe to use.
+	static _ALWAYS_INLINE_ double atanh(double p_x) { return p_x <= -1 ? -INFINITY : (p_x >= 1 ? INFINITY : std::atanh(p_x)); }
+	static _ALWAYS_INLINE_ float atanh(float p_x) { return p_x <= -1 ? -INFINITY : (p_x >= 1 ? INFINITY : std::atanh(p_x)); }
 
-	static _ALWAYS_INLINE_ double fmod(double p_x, double p_y) { return ::fmod(p_x, p_y); }
-	static _ALWAYS_INLINE_ float fmod(float p_x, float p_y) { return ::fmodf(p_x, p_y); }
+	static _ALWAYS_INLINE_ double sqrt(double p_x) { return std::sqrt(p_x); }
+	static _ALWAYS_INLINE_ float sqrt(float p_x) { return std::sqrt(p_x); }
 
-	static _ALWAYS_INLINE_ double modf(double p_x, double *r_y) { return ::modf(p_x, r_y); }
-	static _ALWAYS_INLINE_ float modf(float p_x, float *r_y) { return ::modff(p_x, r_y); }
+	static _ALWAYS_INLINE_ double fmod(double p_x, double p_y) { return std::fmod(p_x, p_y); }
+	static _ALWAYS_INLINE_ float fmod(float p_x, float p_y) { return std::fmod(p_x, p_y); }
 
-	static _ALWAYS_INLINE_ double floor(double p_x) { return ::floor(p_x); }
-	static _ALWAYS_INLINE_ float floor(float p_x) { return ::floorf(p_x); }
+	static _ALWAYS_INLINE_ double modf(double p_x, double *r_y) { return std::modf(p_x, r_y); }
+	static _ALWAYS_INLINE_ float modf(float p_x, float *r_y) { return std::modf(p_x, r_y); }
 
-	static _ALWAYS_INLINE_ double ceil(double p_x) { return ::ceil(p_x); }
-	static _ALWAYS_INLINE_ float ceil(float p_x) { return ::ceilf(p_x); }
+	static _ALWAYS_INLINE_ double floor(double p_x) { return std::floor(p_x); }
+	static _ALWAYS_INLINE_ float floor(float p_x) { return std::floor(p_x); }
 
-	static _ALWAYS_INLINE_ double pow(double p_x, double p_y) { return ::pow(p_x, p_y); }
-	static _ALWAYS_INLINE_ float pow(float p_x, float p_y) { return ::powf(p_x, p_y); }
+	static _ALWAYS_INLINE_ double ceil(double p_x) { return std::ceil(p_x); }
+	static _ALWAYS_INLINE_ float ceil(float p_x) { return std::ceil(p_x); }
 
-	static _ALWAYS_INLINE_ double log(double p_x) { return ::log(p_x); }
-	static _ALWAYS_INLINE_ float log(float p_x) { return ::logf(p_x); }
+	static _ALWAYS_INLINE_ double pow(double p_x, double p_y) { return std::pow(p_x, p_y); }
+	static _ALWAYS_INLINE_ float pow(float p_x, float p_y) { return std::pow(p_x, p_y); }
 
-	static _ALWAYS_INLINE_ double log1p(double p_x) { return ::log1p(p_x); }
-	static _ALWAYS_INLINE_ float log1p(float p_x) { return ::log1pf(p_x); }
+	static _ALWAYS_INLINE_ double log(double p_x) { return std::log(p_x); }
+	static _ALWAYS_INLINE_ float log(float p_x) { return std::log(p_x); }
 
-	static _ALWAYS_INLINE_ double log2(double p_x) { return ::log2(p_x); }
-	static _ALWAYS_INLINE_ float log2(float p_x) { return ::log2f(p_x); }
+	static _ALWAYS_INLINE_ double log1p(double p_x) { return std::log1p(p_x); }
+	static _ALWAYS_INLINE_ float log1p(float p_x) { return std::log1p(p_x); }
 
-	static _ALWAYS_INLINE_ double exp(double p_x) { return ::exp(p_x); }
-	static _ALWAYS_INLINE_ float exp(float p_x) { return ::expf(p_x); }
+	static _ALWAYS_INLINE_ double log2(double p_x) { return std::log2(p_x); }
+	static _ALWAYS_INLINE_ float log2(float p_x) { return std::log2(p_x); }
 
-	static _ALWAYS_INLINE_ bool is_nan(double p_val) {
-#ifdef _MSC_VER
-		return _isnan(p_val);
-#elif defined(__GNUC__) && __GNUC__ < 6
-		union {
-			uint64_t u;
-			double f;
-		} ieee754;
-		ieee754.f = p_val;
-		// (unsigned)(0x7ff0000000000001 >> 32) : 0x7ff00000
-		return ((((unsigned)(ieee754.u >> 32) & 0x7fffffff) + ((unsigned)ieee754.u != 0)) > 0x7ff00000);
-#else
-		return isnan(p_val);
-#endif
-	}
+	static _ALWAYS_INLINE_ double exp(double p_x) { return std::exp(p_x); }
+	static _ALWAYS_INLINE_ float exp(float p_x) { return std::exp(p_x); }
 
-	static _ALWAYS_INLINE_ bool is_nan(float p_val) {
-#ifdef _MSC_VER
-		return _isnan(p_val);
-#elif defined(__GNUC__) && __GNUC__ < 6
-		union {
-			uint32_t u;
-			float f;
-		} ieee754;
-		ieee754.f = p_val;
-		// -----------------------------------
-		// (single-precision floating-point)
-		// NaN : s111 1111 1xxx xxxx xxxx xxxx xxxx xxxx
-		//     : (> 0x7f800000)
-		// where,
-		//   s : sign
-		//   x : non-zero number
-		// -----------------------------------
-		return ((ieee754.u & 0x7fffffff) > 0x7f800000);
-#else
-		return isnan(p_val);
-#endif
-	}
+	static _ALWAYS_INLINE_ bool is_nan(double p_val) { return std::isnan(p_val); }
+	static _ALWAYS_INLINE_ bool is_nan(float p_val) { return std::isnan(p_val); }
 
-	static _ALWAYS_INLINE_ bool is_inf(double p_val) {
-#ifdef _MSC_VER
-		return !_finite(p_val);
-// use an inline implementation of isinf as a workaround for problematic libstdc++ versions from gcc 5.x era
-#elif defined(__GNUC__) && __GNUC__ < 6
-		union {
-			uint64_t u;
-			double f;
-		} ieee754;
-		ieee754.f = p_val;
-		return ((unsigned)(ieee754.u >> 32) & 0x7fffffff) == 0x7ff00000 &&
-				((unsigned)ieee754.u == 0);
-#else
-		return isinf(p_val);
-#endif
-	}
-
-	static _ALWAYS_INLINE_ bool is_inf(float p_val) {
-#ifdef _MSC_VER
-		return !_finite(p_val);
-// use an inline implementation of isinf as a workaround for problematic libstdc++ versions from gcc 5.x era
-#elif defined(__GNUC__) && __GNUC__ < 6
-		union {
-			uint32_t u;
-			float f;
-		} ieee754;
-		ieee754.f = p_val;
-		return (ieee754.u & 0x7fffffff) == 0x7f800000;
-#else
-		return isinf(p_val);
-#endif
-	}
+	static _ALWAYS_INLINE_ bool is_inf(double p_val) { return std::isinf(p_val); }
+	static _ALWAYS_INLINE_ bool is_inf(float p_val) { return std::isinf(p_val); }
 
 	// These methods assume (p_num + p_den) doesn't overflow.
 	static _ALWAYS_INLINE_ int32_t division_round_up(int32_t p_num, int32_t p_den) {
@@ -216,15 +142,15 @@ public:
 		return (p_num + p_den - 1) / p_den;
 	}
 
-	static _ALWAYS_INLINE_ bool is_finite(double p_val) { return isfinite(p_val); }
-	static _ALWAYS_INLINE_ bool is_finite(float p_val) { return isfinite(p_val); }
+	static _ALWAYS_INLINE_ bool is_finite(double p_val) { return std::isfinite(p_val); }
+	static _ALWAYS_INLINE_ bool is_finite(float p_val) { return std::isfinite(p_val); }
 
-	static _ALWAYS_INLINE_ double abs(double g) { return absd(g); }
-	static _ALWAYS_INLINE_ float abs(float g) { return absf(g); }
+	static _ALWAYS_INLINE_ double abs(double g) { return std::abs(g); }
+	static _ALWAYS_INLINE_ float abs(float g) { return std::abs(g); }
 	static _ALWAYS_INLINE_ int8_t abs(int8_t g) { return g > 0 ? g : -g; }
 	static _ALWAYS_INLINE_ int16_t abs(int16_t g) { return g > 0 ? g : -g; }
-	static _ALWAYS_INLINE_ int32_t abs(int32_t g) { return ::abs(g); }
-	static _ALWAYS_INLINE_ int64_t abs(int64_t g) { return ::llabs(g); }
+	static _ALWAYS_INLINE_ int32_t abs(int32_t g) { return std::abs(g); }
+	static _ALWAYS_INLINE_ int64_t abs(int64_t g) { return std::abs(g); }
 
 	static _ALWAYS_INLINE_ double fposmod(double p_x, double p_y) {
 		double value = Math::fmod(p_x, p_y);
@@ -507,8 +433,8 @@ public:
 		return Math::exp(p_db * (float)0.11512925464970228420089957273422);
 	}
 
-	static _ALWAYS_INLINE_ double round(double p_val) { return ::round(p_val); }
-	static _ALWAYS_INLINE_ float round(float p_val) { return ::roundf(p_val); }
+	static _ALWAYS_INLINE_ double round(double p_val) { return std::round(p_val); }
+	static _ALWAYS_INLINE_ float round(float p_val) { return std::round(p_val); }
 
 	static _ALWAYS_INLINE_ int64_t wrapi(int64_t value, int64_t min, int64_t max) {
 		int64_t range = max - min;
@@ -562,8 +488,8 @@ public:
 	static void randomize();
 	static uint32_t rand_from_seed(uint64_t *seed);
 	static uint32_t rand();
-	static _ALWAYS_INLINE_ double randd() { return (double)rand() / (double)Math::RANDOM_32BIT_MAX; }
-	static _ALWAYS_INLINE_ float randf() { return (float)rand() / (float)Math::RANDOM_32BIT_MAX; }
+	static _ALWAYS_INLINE_ double randd() { return (double)rand() / (double)UINT32_MAX; }
+	static _ALWAYS_INLINE_ float randf() { return (float)rand() / (float)UINT32_MAX; }
 	static double randfn(double mean, double deviation);
 
 	static double random(double from, double to);
@@ -630,18 +556,10 @@ public:
 		return (a == b) || (is_nan(a) && is_nan(b));
 	}
 
-	static _ALWAYS_INLINE_ float absf(float g) {
-		return ::fabsf(g);
-	}
-
-	static _ALWAYS_INLINE_ double absd(double g) {
-		return ::fabs(g);
-	}
-
 	// This function should be as fast as possible and rounding mode should not matter.
 	static _ALWAYS_INLINE_ int fast_ftoi(float a) {
 		// Assuming every supported compiler has `lrint()`.
-		return lrintf(a);
+		return std::lrint(a);
 	}
 
 	static _ALWAYS_INLINE_ uint32_t halfbits_to_floatbits(uint16_t h) {

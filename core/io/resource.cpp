@@ -32,6 +32,7 @@
 
 #include "core/io/resource_loader.h"
 #include "core/math/math_funcs.h"
+#include "core/math/random_pcg.h"
 #include "core/os/os.h"
 #include "scene/main/node.h" //only so casting works
 
