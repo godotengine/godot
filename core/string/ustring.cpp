@@ -3250,13 +3250,18 @@ String String::substr(int p_from, int p_chars) const {
 
 int String::find(const String &p_str, int p_from) const {
 	if (p_from < 0) {
-		return -1;
+		p_from = length() + p_from;
 	}
-	if (p_str.length() == 0 || length() == 0 || p_str.length() > length()) {
-		return -1; // won't find anything!
+	if (p_from < 0 || p_from >= length()) {
+		return -1; // Still out of bounds
 	}
 
-	if (p_str.length() == 1){
+	if (p_str.length() == 0 || length() == 0 || p_str.length() > length()) {
+		return -1; // Won't find anything!
+	}
+
+	if (p_str.length() == 1) {
+		// Optimize with single-char implementation.
 		return span().find(p_str[0], p_from);
 	}
 
@@ -3457,22 +3462,20 @@ int String::findn(const char *p_str, int p_from) const {
 }
 
 int String::rfind(const String &p_str, int p_from) const {
-	if (p_str.length() == 0 || p_str.length() > length()){
-		return -1;
-	}
-
-	if (p_str.length() == 1){
-		return span().rfind(p_str[0], p_from);
-	}
-
 	if (p_from < 0) {
 		p_from = length() + p_from;
 	}
 	if (p_from < 0 || p_from >= length()) {
-		p_from = length() - 1;
+		return -1; // Still out of bounds
 	}
-	if (p_from > length() - p_str.length()){
-		p_from = length() - p_str.length();
+
+	if (p_str.length() == 0 || length() == 0 || p_str.length() > length()) {
+		return -1; // Won't find anything!
+	}
+
+	if (p_str.length() == 1) {
+		// Optimize with single-char implementation.
+		return span().rfind(p_str[0], p_from);
 	}
 
 	return span().rfind_seq(p_str.span(), p_from);
