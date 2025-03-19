@@ -912,6 +912,8 @@ RID RenderingDevice::texture_create(const TextureFormat &p_format, const Texture
 				"Number of layers must be equal or greater than 1 for arrays and cubemaps.");
 		ERR_FAIL_COND_V_MSG((format.texture_type == TEXTURE_TYPE_CUBE_ARRAY || format.texture_type == TEXTURE_TYPE_CUBE) && (format.array_layers % 6) != 0, RID(),
 				"Cubemap and cubemap array textures must provide a layer number that is multiple of 6");
+		ERR_FAIL_COND_V_MSG(((format.texture_type == TEXTURE_TYPE_CUBE_ARRAY || format.texture_type == TEXTURE_TYPE_CUBE)) && (format.width != format.height), RID(),
+				"Cubemap and cubemap array textures must have equal width and height.");
 		ERR_FAIL_COND_V_MSG(format.array_layers > driver->limit_get(LIMIT_MAX_TEXTURE_ARRAY_LAYERS), RID(), "Number of layers exceeds device maximum.");
 	} else {
 		format.array_layers = 1;
