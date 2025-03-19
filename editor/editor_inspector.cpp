@@ -46,7 +46,7 @@
 #include "editor/gui/editor_validation_panel.h"
 #include "editor/inspector_dock.h"
 #include "editor/multi_node_edit.h"
-#include "editor/plugins/script_editor_plugin.h"
+#include "editor/plugins/script/script_editor_plugin.h"
 #include "editor/themes/editor_scale.h"
 #include "editor/themes/editor_theme_manager.h"
 #include "scene/gui/margin_container.h"

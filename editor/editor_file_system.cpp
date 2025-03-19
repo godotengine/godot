@@ -43,7 +43,7 @@
 #include "editor/editor_paths.h"
 #include "editor/editor_resource_preview.h"
 #include "editor/editor_settings.h"
-#include "editor/plugins/script_editor_plugin.h"
+#include "editor/plugins/script/script_editor_plugin.h"
 #include "editor/project_settings_editor.h"
 #include "scene/resources/packed_scene.h"
 
