@@ -442,7 +442,7 @@ void PathFollow3D::_bind_methods() {
 }
 
 void PathFollow3D::set_progress(real_t p_progress) {
-	ERR_FAIL_COND(!isfinite(p_progress));
+	ERR_FAIL_COND(!std::isfinite(p_progress));
 	if (progress == p_progress) {
 		return;
 	}
