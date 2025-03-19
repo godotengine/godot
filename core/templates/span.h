@@ -93,7 +93,7 @@ constexpr int64_t Span<T>::find_seq(const Span<T> &p_span, uint64_t p_from) cons
 				break;
 			}
 		}
-		if (found){
+		if (found) {
 			return i;
 		}
 	}
@@ -121,7 +121,7 @@ constexpr int64_t Span<T>::rfind_seq(const Span<T> &p_span, uint64_t p_from) con
 				break;
 			}
 		}
-		if (found){
+		if (found) {
 			return i;
 		}
 	}
