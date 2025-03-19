@@ -405,6 +405,15 @@ RDD::TextureID RenderingDeviceDriverMetal::texture_create_from_extension(uint64_
 RDD::TextureID RenderingDeviceDriverMetal::texture_create_shared(TextureID p_original_texture, const TextureView &p_view) {
 	id<MTLTexture> src_texture = rid::get(p_original_texture);
 
+	NSUInteger slices = src_texture.arrayLength;
+	if (src_texture.textureType == MTLTextureTypeCube) {
+		// Metal expects Cube textures to have a slice count of 6.
+		slices = 6;
+	} else if (src_texture.textureType == MTLTextureTypeCubeArray) {
+		// Metal expects Cube Array textures to have 6 slices per layer.
+		slices *= 6;
+	}
+
 #if DEV_ENABLED
 	if (src_texture.sampleCount > 1) {
 		// TODO(sgc): is it ok to create a shared texture from a multi-sample texture?
@@ -434,7 +443,7 @@ RDD::TextureID RenderingDeviceDriverMetal::texture_create_shared(TextureID p_ori
 	id<MTLTexture> obj = [src_texture newTextureViewWithPixelFormat:format
 														textureType:src_texture.textureType
 															 levels:NSMakeRange(0, src_texture.mipmapLevelCount)
-															 slices:NSMakeRange(0, src_texture.arrayLength)
+															 slices:NSMakeRange(0, slices)
 															swizzle:swizzle];
 	ERR_FAIL_NULL_V_MSG(obj, TextureID(), "Unable to create shared texture");
 	return rid::make(obj);
@@ -566,7 +575,14 @@ void RenderingDeviceDriverMetal::texture_get_copyable_layout(TextureID p_texture
 		r_layout->size = get_image_format_required_size(format, sz.width, sz.height, sz.depth, 1, &sbw, &sbh);
 		r_layout->row_pitch = r_layout->size / ((sbh / bh) * sz.depth);
 		r_layout->depth_pitch = r_layout->size / sz.depth;
-		r_layout->layer_pitch = r_layout->size / obj.arrayLength;
+
+		uint32_t array_length = obj.arrayLength;
+		if (obj.textureType == MTLTextureTypeCube) {
+			array_length = 6;
+		} else if (obj.textureType == MTLTextureTypeCubeArray) {
+			array_length *= 6;
+		}
+		r_layout->layer_pitch = r_layout->size / array_length;
 	} else {
 		CRASH_NOW_MSG("need to calculate layout for shared texture");
 	}
