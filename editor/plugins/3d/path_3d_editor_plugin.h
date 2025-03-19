@@ -30,8 +30,8 @@
 
 #pragma once
 
+#include "editor/plugins/3d/node_3d_editor_gizmos.h"
 #include "editor/plugins/editor_plugin.h"
-#include "editor/plugins/node_3d_editor_gizmos.h"
 #include "scene/3d/camera_3d.h"
 #include "scene/3d/path_3d.h"
 
