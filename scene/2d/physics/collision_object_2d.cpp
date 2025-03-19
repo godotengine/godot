@@ -78,7 +78,7 @@ void CollisionObject2D::_notification(int p_what) {
 			_update_pickable();
 		} break;
 
-		case NOTIFICATION_TRANSFORM_CHANGED: {
+		case NOTIFICATION_GLOBAL_TRANSFORM_CHANGED: {
 			if (only_update_transform_changes) {
 				return;
 			}
@@ -684,7 +684,7 @@ CollisionObject2D::CollisionObject2D(RID p_rid, bool p_area) {
 	rid = p_rid;
 	area = p_area;
 	pickable = true;
-	set_notify_transform(true);
+	set_notify_global_transform(true);
 	set_hide_clip_children(true);
 	total_subshapes = 0;
 	only_update_transform_changes = false;
@@ -701,7 +701,7 @@ CollisionObject2D::CollisionObject2D() {
 	_define_ancestry(AncestralClass::COLLISION_OBJECT_2D);
 	//owner=
 
-	set_notify_transform(true);
+	set_notify_global_transform(true);
 }
 
 CollisionObject2D::~CollisionObject2D() {
