@@ -778,7 +778,7 @@ void PhysicalBone3D::_notification(int p_what) {
 			PhysicsServer3D::get_singleton()->joint_clear(joint);
 		} break;
 
-		case NOTIFICATION_TRANSFORM_CHANGED: {
+		case NOTIFICATION_GLOBAL_TRANSFORM_CHANGED: {
 			if (Engine::get_singleton()->is_editor_hint()) {
 				update_offset();
 			}
