@@ -1303,9 +1303,9 @@ Node *ResourceImporterScene::_post_fix_animations(Node *p_node, Node *p_root, co
 				Dictionary anim_settings = p_animation_data[name];
 
 				{
-					int slices_count = anim_settings["slices/amount"];
+					int slice_count = anim_settings["slices/amount"];
 
-					for (int i = 0; i < slices_count; i++) {
+					for (int i = 0; i < slice_count; i++) {
 						String slice_name = anim_settings["slice_" + itos(i + 1) + "/name"];
 						int from_frame = anim_settings["slice_" + itos(i + 1) + "/start_frame"];
 						int end_frame = anim_settings["slice_" + itos(i + 1) + "/end_frame"];
@@ -1531,8 +1531,26 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, HashMap<
 							if (matdata.has("use_external/enabled") && bool(matdata["use_external/enabled"]) && matdata.has("use_external/path")) {
 								String path = matdata["use_external/path"];
 								Ref<Material> external_mat = ResourceLoader::load(path);
+								if (external_mat.is_null()) {
+									if (matdata.has("use_external/fallback_path")) {
+										String fallback_save_path = matdata["use_external/fallback_path"];
+										if (!fallback_save_path.is_empty()) {
+											external_mat = ResourceLoader::load(fallback_save_path);
+											if (external_mat.is_valid()) {
+												path = fallback_save_path;
+											}
+										}
+									}
+								}
 								if (external_mat.is_valid()) {
 									m->set_surface_material(i, external_mat);
+									if (!path.begins_with("uid://")) {
+										const ResourceUID::ID id = ResourceLoader::get_resource_uid(path);
+										if (id != ResourceUID::INVALID_ID) {
+											matdata["use_external/path"] = ResourceUID::get_singleton()->id_to_text(id);
+										}
+									}
+									matdata["use_external/fallback_path"] = external_mat->get_path();
 								}
 							}
 						}
@@ -1784,13 +1802,14 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, HashMap<
 }
 
 Ref<Animation> ResourceImporterScene::_save_animation_to_file(Ref<Animation> anim, bool p_save_to_file, const String &p_save_to_path, bool p_keep_custom_tracks) {
-	if (!p_save_to_file || !p_save_to_path.is_resource_file()) {
+	String res_path = ResourceUID::ensure_path(p_save_to_path);
+	if (!p_save_to_file || !res_path.is_resource_file()) {
 		return anim;
 	}
 
-	if (FileAccess::exists(p_save_to_path) && p_keep_custom_tracks) {
+	if (FileAccess::exists(res_path) && p_keep_custom_tracks) {
 		// Copy custom animation tracks from previously imported files.
-		Ref<Animation> old_anim = ResourceLoader::load(p_save_to_path, "Animation", ResourceFormatLoader::CACHE_MODE_IGNORE);
+		Ref<Animation> old_anim = ResourceLoader::load(res_path, "Animation", ResourceFormatLoader::CACHE_MODE_IGNORE);
 		if (old_anim.is_valid()) {
 			for (int i = 0; i < old_anim->get_track_count(); i++) {
 				if (!old_anim->track_is_imported(i)) {
@@ -1801,16 +1820,21 @@ Ref<Animation> ResourceImporterScene::_save_animation_to_file(Ref<Animation> ani
 		}
 	}
 
-	if (ResourceCache::has(p_save_to_path)) {
-		Ref<Animation> old_anim = ResourceCache::get_ref(p_save_to_path);
+	if (ResourceCache::has(res_path)) {
+		Ref<Animation> old_anim = ResourceCache::get_ref(res_path);
 		if (old_anim.is_valid()) {
 			old_anim->copy_from(anim);
 			anim = old_anim;
 		}
 	}
-	anim->set_path(p_save_to_path, true); // Set path to save externally.
-	Error err = ResourceSaver::save(anim, p_save_to_path, ResourceSaver::FLAG_CHANGE_PATH);
-	ERR_FAIL_COND_V_MSG(err != OK, anim, "Saving of animation failed: " + p_save_to_path);
+	anim->set_path(res_path, true); // Set path to save externally.
+	Error err = ResourceSaver::save(anim, res_path, ResourceSaver::FLAG_CHANGE_PATH);
+
+	ERR_FAIL_COND_V_MSG(err != OK, anim, "Saving of animation failed: " + res_path);
+	if (p_save_to_path.begins_with("uid://")) {
+		// slow
+		ResourceSaver::set_uid(res_path, ResourceUID::get_singleton()->text_to_id(p_save_to_path));
+	}
 	return anim;
 }
 
@@ -2041,6 +2065,7 @@ void ResourceImporterScene::get_internal_import_options(InternalImportCategory p
 		case INTERNAL_IMPORT_CATEGORY_MESH: {
 			r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "save_to_file/enabled", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), false));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::STRING, "save_to_file/path", PROPERTY_HINT_SAVE_FILE, "*.res,*.tres"), ""));
+			r_options->push_back(ImportOption(PropertyInfo(Variant::STRING, "save_to_file/fallback_path", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), ""));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "generate/shadow_meshes", PROPERTY_HINT_ENUM, "Default,Enable,Disable"), 0));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "generate/lightmap_uv", PROPERTY_HINT_ENUM, "Default,Enable,Disable"), 0));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "generate/lods", PROPERTY_HINT_ENUM, "Default,Enable,Disable"), 0));
@@ -2049,11 +2074,13 @@ void ResourceImporterScene::get_internal_import_options(InternalImportCategory p
 		case INTERNAL_IMPORT_CATEGORY_MATERIAL: {
 			r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "use_external/enabled", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), false));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::STRING, "use_external/path", PROPERTY_HINT_FILE, "*.material,*.res,*.tres"), ""));
+			r_options->push_back(ImportOption(PropertyInfo(Variant::STRING, "use_external/fallback_path", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), ""));
 		} break;
 		case INTERNAL_IMPORT_CATEGORY_ANIMATION: {
 			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "settings/loop_mode", PROPERTY_HINT_ENUM, "None,Linear,Pingpong"), 0));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "save_to_file/enabled", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), false));
-			r_options->push_back(ImportOption(PropertyInfo(Variant::STRING, "save_to_file/path", PROPERTY_HINT_SAVE_FILE, "*.res,*.tres"), ""));
+			r_options->push_back(ImportOption(PropertyInfo(Variant::STRING, "save_to_file/path", PROPERTY_HINT_SAVE_FILE, "*.res,*.anim,*.tres"), ""));
+			r_options->push_back(ImportOption(PropertyInfo(Variant::STRING, "save_to_file/fallback_path", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), ""));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "save_to_file/keep_custom_tracks"), ""));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "slices/amount", PROPERTY_HINT_RANGE, "0,256,1", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), 0));
 
@@ -2063,7 +2090,8 @@ void ResourceImporterScene::get_internal_import_options(InternalImportCategory p
 				r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "slice_" + itos(i + 1) + "/end_frame"), 0));
 				r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "slice_" + itos(i + 1) + "/loop_mode", PROPERTY_HINT_ENUM, "None,Linear,Pingpong"), 0));
 				r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "slice_" + itos(i + 1) + "/save_to_file/enabled", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), false));
-				r_options->push_back(ImportOption(PropertyInfo(Variant::STRING, "slice_" + itos(i + 1) + "/save_to_file/path", PROPERTY_HINT_SAVE_FILE, ".res,*.tres"), ""));
+				r_options->push_back(ImportOption(PropertyInfo(Variant::STRING, "slice_" + itos(i + 1) + "/save_to_file/path", PROPERTY_HINT_SAVE_FILE, "*.res,*.anim,*.tres"), ""));
+				r_options->push_back(ImportOption(PropertyInfo(Variant::STRING, "slice_" + itos(i + 1) + "/save_to_file/fallback_path", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), ""));
 				r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "slice_" + itos(i + 1) + "/save_to_file/keep_custom_tracks"), false));
 			}
 		} break;
@@ -2527,7 +2555,7 @@ Node *ResourceImporterScene::_generate_meshes(Node *p_node, const Dictionary &p_
 
 					if (bool(mesh_settings.get("save_to_file/enabled", false))) {
 						save_to_file = mesh_settings.get("save_to_file/path", String());
-						if (!save_to_file.is_resource_file()) {
+						if (!ResourceUID::ensure_path(save_to_file).is_resource_file()) {
 							save_to_file = "";
 						}
 					}
@@ -2581,16 +2609,24 @@ Node *ResourceImporterScene::_generate_meshes(Node *p_node, const Dictionary &p_
 				src_mesh_node->get_mesh()->optimize_indices();
 
 				if (!save_to_file.is_empty()) {
-					Ref<Mesh> existing = ResourceCache::get_ref(save_to_file);
+					String save_res_path = ResourceUID::ensure_path(save_to_file);
+					Ref<Mesh> existing = ResourceCache::get_ref(save_res_path);
 					if (existing.is_valid()) {
 						//if somehow an existing one is useful, create
 						existing->reset_state();
 					}
 					mesh = src_mesh_node->get_mesh()->get_mesh(existing);
 
-					ResourceSaver::save(mesh, save_to_file); //override
+					Error err = ResourceSaver::save(mesh, save_res_path); //override
+					if (err != OK) {
+						WARN_PRINT(vformat("Failed to save mesh %s to '%s'.", mesh->get_name(), save_res_path));
+					}
+					if (err == OK && save_to_file.begins_with("uid://")) {
+						// slow
+						ResourceSaver::set_uid(save_res_path, ResourceUID::get_singleton()->text_to_id(save_to_file));
+					}
 
-					mesh->set_path(save_to_file, true); //takeover existing, if needed
+					mesh->set_path(save_res_path, true); //takeover existing, if needed
 
 				} else {
 					mesh = src_mesh_node->get_mesh()->get_mesh();
@@ -2868,14 +2904,66 @@ Node *ResourceImporterScene::pre_import(const String &p_source_file, const HashM
 	return scene;
 }
 
-Error ResourceImporterScene::_check_resource_save_paths(const Dictionary &p_data) {
+static Error convert_path_to_uid(ResourceUID::ID p_source_id, const String &p_hash_str, Dictionary &p_settings, const String &p_path_key, const String &p_fallback_path_key) {
+	const String &raw_save_path = p_settings[p_path_key];
+	String save_path = ResourceUID::ensure_path(raw_save_path);
+	if (raw_save_path.begins_with("uid://")) {
+		if (save_path.is_empty() || !DirAccess::exists(save_path.get_base_dir())) {
+			if (p_settings.has(p_fallback_path_key)) {
+				String fallback_save_path = p_settings[p_fallback_path_key];
+				if (!fallback_save_path.is_empty() && DirAccess::exists(fallback_save_path.get_base_dir())) {
+					save_path = fallback_save_path;
+					ResourceUID::get_singleton()->add_id(ResourceUID::get_singleton()->text_to_id(raw_save_path), save_path);
+				}
+			}
+		} else {
+			p_settings[p_fallback_path_key] = save_path;
+		}
+	}
+	ERR_FAIL_COND_V(!save_path.is_empty() && !DirAccess::exists(save_path.get_base_dir()), ERR_FILE_BAD_PATH);
+	if (!save_path.is_empty() && !raw_save_path.begins_with("uid://")) {
+		const ResourceUID::ID id = ResourceLoader::get_resource_uid(save_path);
+		if (id != ResourceUID::INVALID_ID) {
+			p_settings[p_path_key] = ResourceUID::get_singleton()->id_to_text(id);
+		} else {
+			ResourceUID::ID save_id = hash64_murmur3_64(p_hash_str.hash64(), p_source_id) & 0x7FFFFFFFFFFFFFFF;
+			if (ResourceUID::get_singleton()->has_id(save_id)) {
+				if (save_path != ResourceUID::get_singleton()->get_id_path(save_id)) {
+					// The user has specified a path which does not match the default UID.
+					save_id = ResourceUID::get_singleton()->create_id();
+				}
+			}
+			p_settings[p_path_key] = ResourceUID::get_singleton()->id_to_text(save_id);
+			ResourceUID::get_singleton()->add_id(save_id, save_path);
+		}
+		p_settings[p_fallback_path_key] = save_path;
+	}
+	return OK;
+}
+
+Error ResourceImporterScene::_check_resource_save_paths(ResourceUID::ID p_source_id, const String &p_hash_suffix, const Dictionary &p_data) {
 	Array keys = p_data.keys();
-	for (int i = 0; i < keys.size(); i++) {
-		const Dictionary &settings = p_data[keys[i]];
+	for (int di = 0; di < keys.size(); di++) {
+		Dictionary settings = p_data[keys[di]];
 
 		if (bool(settings.get("save_to_file/enabled", false)) && settings.has("save_to_file/path")) {
-			const String save_path = ResourceUID::ensure_path(settings["save_to_file/path"]);
-			ERR_FAIL_COND_V(!save_path.is_empty() && !DirAccess::exists(save_path.get_base_dir()), ERR_FILE_BAD_PATH);
+			String to_hash = keys[di].operator String() + p_hash_suffix;
+			Error ret = convert_path_to_uid(p_source_id, to_hash, settings, "save_to_file/path", "save_to_file/fallback_path");
+			ERR_FAIL_COND_V_MSG(ret != OK, ret, vformat("Resource save path %s not valid. Ensure parent directory has been created.", settings.has("save_to_file/path")));
+		}
+
+		if (settings.has("slices/amount")) {
+			int slice_count = settings["slices/amount"];
+			for (int si = 0; si < slice_count; si++) {
+				if (bool(settings.get("slice_" + itos(si + 1) + "/save_to_file/enabled", false)) &&
+						settings.has("slice_" + itos(si + 1) + "/save_to_file/path")) {
+					String to_hash = keys[di].operator String() + p_hash_suffix + itos(si + 1);
+					Error ret = convert_path_to_uid(p_source_id, to_hash, settings,
+							"slice_" + itos(si + 1) + "/save_to_file/path",
+							"slice_" + itos(si + 1) + "/save_to_file/fallback_path");
+					ERR_FAIL_COND_V_MSG(ret != OK, ret, vformat("Slice save path %s not valid. Ensure parent directory has been created.", settings.has("save_to_file/path")));
+				}
+			}
 		}
 	}
 
@@ -2940,14 +3028,14 @@ Error ResourceImporterScene::import(ResourceUID::ID p_source_id, const String &p
 	// Check whether any of the meshes or animations have nonexistent save paths
 	// and if they do, fail the import immediately.
 	if (subresources.has("meshes")) {
-		err = _check_resource_save_paths(subresources["meshes"]);
+		err = _check_resource_save_paths(p_source_id, "m", subresources["meshes"]);
 		if (err != OK) {
 			return err;
 		}
 	}
 
 	if (subresources.has("animations")) {
-		err = _check_resource_save_paths(subresources["animations"]);
+		err = _check_resource_save_paths(p_source_id, "a", subresources["animations"]);
 		if (err != OK) {
 			return err;
 		}

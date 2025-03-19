@@ -252,14 +252,8 @@ class String {
 	void parse_latin1(const char *p_cstr) {
 		parse_latin1(Span(p_cstr, p_cstr ? strlen(p_cstr) : 0));
 	}
-	void parse_latin1(const char *p_cstr, int p_clip_to) {
-		parse_latin1(Span(p_cstr, p_cstr ? _strlen_clipped(p_cstr, p_clip_to) : 0));
-	}
 	void parse_utf32(const char32_t *p_cstr) {
 		parse_utf32(Span(p_cstr, p_cstr ? strlen(p_cstr) : 0));
-	}
-	void parse_utf32(const char32_t *p_cstr, int p_clip_to) {
-		parse_utf32(Span(p_cstr, p_cstr ? _strlen_clipped(p_cstr, p_clip_to) : 0));
 	}
 
 	// wchar_t copy_from depends on the platform.
@@ -279,15 +273,6 @@ class String {
 #else
 		// wchar_t is 32-bit, copy directly
 		parse_utf32((const char32_t *)p_cstr);
-#endif
-	}
-	void parse_wstring(const wchar_t *p_cstr, int p_clip_to) {
-#ifdef WINDOWS_ENABLED
-		// wchar_t is 16-bit, parse as UTF-16
-		parse_utf16((const char16_t *)p_cstr, p_clip_to);
-#else
-		// wchar_t is 32-bit, copy directly
-		parse_utf32((const char32_t *)p_cstr, p_clip_to);
 #endif
 	}
 
@@ -543,6 +528,11 @@ public:
 	static String utf16(const Span<char16_t> &p_range) { return utf16(p_range.ptr(), p_range.size()); }
 
 	void parse_utf32(const Span<char32_t> &p_cstr);
+	static String utf32(const Span<char32_t> &p_span) {
+		String string;
+		string.parse_utf32(p_span);
+		return string;
+	}
 
 	static uint32_t hash(const char32_t *p_cstr, int p_len); /* hash the string */
 	static uint32_t hash(const char32_t *p_cstr); /* hash the string */
@@ -617,6 +607,9 @@ public:
 	_FORCE_INLINE_ String(const String &p_str) { _cowdata._ref(p_str._cowdata); }
 	_FORCE_INLINE_ String(String &&p_str) :
 			_cowdata(std::move(p_str._cowdata)) {}
+#ifdef SIZE_EXTRA
+	_NO_INLINE_ ~String() {}
+#endif
 	_FORCE_INLINE_ void operator=(const String &p_str) { _cowdata._ref(p_str._cowdata); }
 	_FORCE_INLINE_ void operator=(String &&p_str) { _cowdata = std::move(p_str._cowdata); }
 
@@ -635,15 +628,6 @@ public:
 	}
 	String(const char32_t *p_cstr) {
 		parse_utf32(p_cstr);
-	}
-	String(const char *p_cstr, int p_clip_to_len) {
-		parse_latin1(p_cstr, p_clip_to_len);
-	}
-	String(const wchar_t *p_cstr, int p_clip_to_len) {
-		parse_wstring(p_cstr, p_clip_to_len);
-	}
-	String(const char32_t *p_cstr, int p_clip_to_len) {
-		parse_utf32(p_cstr, p_clip_to_len);
 	}
 
 	// Copy assignment for NULL terminated C strings.
@@ -695,21 +679,13 @@ struct FileNoCaseComparator {
 };
 
 template <typename L, typename R>
-_FORCE_INLINE_ bool is_str_less(const L *l_ptr, const R *r_ptr) {
+_FORCE_INLINE_ int64_t str_compare(const L *l_ptr, const R *r_ptr) {
 	while (true) {
 		const char32_t l = *l_ptr;
 		const char32_t r = *r_ptr;
 
-		if (l == 0 && r == 0) {
-			return false;
-		} else if (l == 0) {
-			return true;
-		} else if (r == 0) {
-			return false;
-		} else if (l < r) {
-			return true;
-		} else if (l > r) {
-			return false;
+		if (l == 0 || l != r) {
+			return static_cast<int64_t>(l) - static_cast<int64_t>(r);
 		}
 
 		l_ptr++;

@@ -46,9 +46,9 @@ TEST_CASE("[Math] C++ macros") {
 	// `max` is lower than `min`.
 	CHECK(CLAMP(620, 600, 50) == 50);
 
-	CHECK(ABS(-5) == 5);
-	CHECK(ABS(0) == 0);
-	CHECK(ABS(5) == 5);
+	CHECK(Math::abs(-5) == 5);
+	CHECK(Math::abs(0) == 0);
+	CHECK(Math::abs(5) == 5);
 
 	CHECK(SIGN(-5) == -1.0);
 	CHECK(SIGN(0) == 0.0);

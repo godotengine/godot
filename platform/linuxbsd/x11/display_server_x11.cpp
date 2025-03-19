@@ -2345,6 +2345,7 @@ void DisplayServerX11::window_set_position(const Point2i &p_position, WindowID p
 		return;
 	}
 
+	wd.position = p_position;
 	int x = 0;
 	int y = 0;
 	if (!window_get_flag(WINDOW_FLAG_BORDERLESS, p_window)) {
@@ -6957,7 +6958,6 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 			window_set_flag(WindowFlags(i), true, main_window);
 		}
 	}
-	show_window(main_window);
 
 #if defined(RD_ENABLED)
 	if (rendering_context) {

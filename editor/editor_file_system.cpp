@@ -3445,7 +3445,7 @@ Error EditorFileSystem::make_dir_recursive(const String &p_path, const String &p
 	ERR_FAIL_NULL_V(parent, ERR_FILE_NOT_FOUND);
 	folders_to_sort.insert(parent->get_instance_id());
 
-	const PackedStringArray folders = p_path.trim_prefix(path).trim_suffix("/").split("/");
+	const PackedStringArray folders = p_path.trim_prefix(path).split("/", false);
 	for (const String &folder : folders) {
 		const int current = parent->find_dir_index(folder);
 		if (current > -1) {

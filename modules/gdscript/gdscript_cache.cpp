@@ -485,6 +485,7 @@ void GDScriptCache::clear() {
 	parser_map_refs.clear();
 	singleton->shallow_gdscript_cache.clear();
 	singleton->full_gdscript_cache.clear();
+	singleton->static_gdscript_cache.clear();
 }
 
 GDScriptCache::GDScriptCache() {

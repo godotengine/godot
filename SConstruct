@@ -167,7 +167,7 @@ opts.Add(
         "optimize",
         "Optimization level (by default inferred from 'target' and 'dev_build')",
         "auto",
-        ("auto", "none", "custom", "debug", "speed", "speed_trace", "size"),
+        ("auto", "none", "custom", "debug", "speed", "speed_trace", "size", "size_extra"),
     )
 )
 opts.Add(BoolVariable("debug_symbols", "Build with debugging symbols", False))
@@ -725,9 +725,11 @@ if env.msvc:
         env.Append(LINKFLAGS=["/OPT:REF"])
         if env["optimize"] == "speed_trace":
             env.Append(LINKFLAGS=["/OPT:NOICF"])
-    elif env["optimize"] == "size":
+    elif env["optimize"].startswith("size"):
         env.Append(CCFLAGS=["/O1"])
         env.Append(LINKFLAGS=["/OPT:REF"])
+        if env["optimize"] == "size_extra":
+            env.Append(CPPDEFINES=["SIZE_EXTRA"])
     elif env["optimize"] == "debug" or env["optimize"] == "none":
         env.Append(CCFLAGS=["/Od"])
 else:
@@ -772,9 +774,11 @@ else:
     elif env["optimize"] == "speed_trace":
         env.Append(CCFLAGS=["-O2"])
         env.Append(LINKFLAGS=["-O2"])
-    elif env["optimize"] == "size":
+    elif env["optimize"].startswith("size"):
         env.Append(CCFLAGS=["-Os"])
         env.Append(LINKFLAGS=["-Os"])
+        if env["optimize"] == "size_extra":
+            env.Append(CPPDEFINES=["SIZE_EXTRA"])
     elif env["optimize"] == "debug":
         env.Append(CCFLAGS=["-Og"])
         env.Append(LINKFLAGS=["-Og"])
@@ -926,6 +930,31 @@ suffix += env.extra_suffix
 sys.path.remove(tmppath)
 sys.modules.pop("detect")
 
+if env["disable_3d"]:
+    if env.editor_build:
+        print_error("Build option `disable_3d=yes` cannot be used for editor builds, only for export template builds.")
+        Exit(255)
+    else:
+        env.Append(CPPDEFINES=["_3D_DISABLED"])
+        env["disable_xr"] = True
+if env["disable_advanced_gui"]:
+    if env.editor_build:
+        print_error(
+            "Build option `disable_advanced_gui=yes` cannot be used for editor builds, only for export template builds."
+        )
+        Exit(255)
+    else:
+        env.Append(CPPDEFINES=["ADVANCED_GUI_DISABLED"])
+if env["disable_xr"]:
+    env.Append(CPPDEFINES=["XR_DISABLED"])
+if env["minizip"]:
+    env.Append(CPPDEFINES=["MINIZIP_ENABLED"])
+if env["brotli"]:
+    env.Append(CPPDEFINES=["BROTLI_ENABLED"])
+
+if not env["verbose"]:
+    methods.no_verbose(env)
+
 modules_enabled = OrderedDict()
 env.module_dependencies = {}
 env.module_icons_paths = []
@@ -994,31 +1023,6 @@ env["SHLIBSUFFIX"] = suffix + env["SHLIBSUFFIX"]
 
 env["OBJPREFIX"] = env["object_prefix"]
 env["SHOBJPREFIX"] = env["object_prefix"]
-
-if env["disable_3d"]:
-    if env.editor_build:
-        print_error("Build option `disable_3d=yes` cannot be used for editor builds, only for export template builds.")
-        Exit(255)
-    else:
-        env.Append(CPPDEFINES=["_3D_DISABLED"])
-        env["disable_xr"] = True
-if env["disable_advanced_gui"]:
-    if env.editor_build:
-        print_error(
-            "Build option `disable_advanced_gui=yes` cannot be used for editor builds, only for export template builds."
-        )
-        Exit(255)
-    else:
-        env.Append(CPPDEFINES=["ADVANCED_GUI_DISABLED"])
-if env["disable_xr"]:
-    env.Append(CPPDEFINES=["XR_DISABLED"])
-if env["minizip"]:
-    env.Append(CPPDEFINES=["MINIZIP_ENABLED"])
-if env["brotli"]:
-    env.Append(CPPDEFINES=["BROTLI_ENABLED"])
-
-if not env["verbose"]:
-    methods.no_verbose(env)
 
 GLSL_BUILDERS = {
     "RD_GLSL": env.Builder(

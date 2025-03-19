@@ -341,6 +341,7 @@
 			<param index="0" name="bgcolor" type="Color" />
 			<description>
 				Adds a [code skip-lint][bgcolor][/code] tag to the tag stack.
+				[b]Note:[/b] The background color has padding applied by default, which is controlled using [theme_item text_highlight_h_padding] and [theme_item text_highlight_v_padding]. This can lead to overlapping highlights if background colors are placed on neighboring lines/columns, so consider setting those theme items to [code]0[/code] if you want to avoid this.
 			</description>
 		</method>
 		<method name="push_bold">
@@ -400,6 +401,7 @@
 			<param index="0" name="fgcolor" type="Color" />
 			<description>
 				Adds a [code skip-lint][fgcolor][/code] tag to the tag stack.
+				[b]Note:[/b] The foreground color has padding applied by default, which is controlled using [theme_item text_highlight_h_padding] and [theme_item text_highlight_v_padding]. This can lead to overlapping highlights if foreground colors are placed on neighboring lines/columns, so consider setting those theme items to [code]0[/code] if you want to avoid this.
 			</description>
 		</method>
 		<method name="push_font">
@@ -632,6 +634,9 @@
 		<member name="autowrap_mode" type="int" setter="set_autowrap_mode" getter="get_autowrap_mode" enum="TextServer.AutowrapMode" default="3">
 			If set to something other than [constant TextServer.AUTOWRAP_OFF], the text gets wrapped inside the node's bounding rectangle. To see how each mode behaves, see [enum TextServer.AutowrapMode].
 		</member>
+		<member name="autowrap_trim_flags" type="int" setter="set_autowrap_trim_flags" getter="get_autowrap_trim_flags" enum="TextServer.LineBreakFlag" is_bitfield="true" default="192">
+			Autowrap space trimming flags. See [constant TextServer.BREAK_TRIM_START_EDGE_SPACES] and [constant TextServer.BREAK_TRIM_END_EDGE_SPACES] for more info.
+		</member>
 		<member name="bbcode_enabled" type="bool" setter="set_use_bbcode" getter="is_using_bbcode" default="false">
 			If [code]true[/code], the label uses BBCode formatting.
 			[b]Note:[/b] This only affects the contents of [member text], not the tag stack.
@@ -861,10 +866,10 @@
 			The vertical separation of elements in a table.
 		</theme_item>
 		<theme_item name="text_highlight_h_padding" data_type="constant" type="int" default="3">
-			The horizontal padding around boxes drawn by the [code][fgcolor][/code] and [code][bgcolor][/code] tags. This does not affect the appearance of text selection.
+			The horizontal padding around boxes drawn by the [code][fgcolor][/code] and [code][bgcolor][/code] tags. This does not affect the appearance of text selection. To avoid any risk of neighboring highlights overlapping each other, set this to [code]0[/code] to disable padding.
 		</theme_item>
 		<theme_item name="text_highlight_v_padding" data_type="constant" type="int" default="3">
-			The vertical padding around boxes drawn by the [code][fgcolor][/code] and [code][bgcolor][/code] tags. This does not affect the appearance of text selection.
+			The vertical padding around boxes drawn by the [code][fgcolor][/code] and [code][bgcolor][/code] tags. This does not affect the appearance of text selection. To avoid any risk of neighboring highlights overlapping each other, set this to [code]0[/code] to disable padding.
 		</theme_item>
 		<theme_item name="bold_font" data_type="font" type="Font">
 			The font used for bold text.

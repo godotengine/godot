@@ -134,6 +134,11 @@ public:
 GameController::GameController(int p_joy_id, GCController *p_controller) :
 		joy_id(p_joy_id), controller(p_controller) {
 	force_feedback = NO;
+
+	for (int i = 0; i < (int)JoyAxis::MAX; i++) {
+		axis_changed[i] = false;
+		axis_value[i] = 0.0;
+	}
 	if (@available(macOS 11.0, iOS 14.0, tvOS 14.0, *)) {
 		if (controller.haptics != nil) {
 			// Create a rumble context for the controller.
@@ -181,19 +186,37 @@ GameController::GameController(int p_joy_id, GCController *p_controller) :
 		gamepad.dpad.right.pressedChangedHandler = BUTTON(JoyButton::DPAD_RIGHT);
 
 		gamepad.leftThumbstick.valueChangedHandler = ^(GCControllerDirectionPad *dpad, float xValue, float yValue) {
-			Input::get_singleton()->joy_axis(l_joy_id, JoyAxis::LEFT_X, xValue);
-			Input::get_singleton()->joy_axis(l_joy_id, JoyAxis::LEFT_Y, -yValue);
+			if (axis_value[(int)JoyAxis::LEFT_X] != xValue) {
+				axis_changed[(int)JoyAxis::LEFT_X] = true;
+				axis_value[(int)JoyAxis::LEFT_X] = xValue;
+			}
+			if (axis_value[(int)JoyAxis::LEFT_Y] != -yValue) {
+				axis_changed[(int)JoyAxis::LEFT_Y] = true;
+				axis_value[(int)JoyAxis::LEFT_Y] = -yValue;
+			}
 		};
 
 		gamepad.rightThumbstick.valueChangedHandler = ^(GCControllerDirectionPad *dpad, float xValue, float yValue) {
-			Input::get_singleton()->joy_axis(l_joy_id, JoyAxis::RIGHT_X, xValue);
-			Input::get_singleton()->joy_axis(l_joy_id, JoyAxis::RIGHT_Y, -yValue);
+			if (axis_value[(int)JoyAxis::RIGHT_X] != xValue) {
+				axis_changed[(int)JoyAxis::RIGHT_X] = true;
+				axis_value[(int)JoyAxis::RIGHT_X] = xValue;
+			}
+			if (axis_value[(int)JoyAxis::RIGHT_Y] != -yValue) {
+				axis_changed[(int)JoyAxis::RIGHT_Y] = true;
+				axis_value[(int)JoyAxis::RIGHT_Y] = -yValue;
+			}
 		};
 		gamepad.leftTrigger.valueChangedHandler = ^(GCControllerButtonInput *button, float value, BOOL pressed) {
-			Input::get_singleton()->joy_axis(l_joy_id, JoyAxis::TRIGGER_LEFT, value);
+			if (axis_value[(int)JoyAxis::TRIGGER_LEFT] != value) {
+				axis_changed[(int)JoyAxis::TRIGGER_LEFT] = true;
+				axis_value[(int)JoyAxis::TRIGGER_LEFT] = value;
+			}
 		};
 		gamepad.rightTrigger.valueChangedHandler = ^(GCControllerButtonInput *button, float value, BOOL pressed) {
-			Input::get_singleton()->joy_axis(l_joy_id, JoyAxis::TRIGGER_RIGHT, value);
+			if (axis_value[(int)JoyAxis::TRIGGER_RIGHT] != value) {
+				axis_changed[(int)JoyAxis::TRIGGER_RIGHT] = true;
+				axis_value[(int)JoyAxis::TRIGGER_RIGHT] = value;
+			}
 		};
 
 		if (@available(macOS 10.14.1, iOS 12.1, tvOS 12.1, *)) {
@@ -417,6 +440,13 @@ void JoypadApple::process_joypads() {
 		for (KeyValue<int, GameController *> &E : joypads) {
 			int id = E.key;
 			GameController &joypad = *E.value;
+
+			for (int i = 0; i < (int)JoyAxis::MAX; i++) {
+				if (joypad.axis_changed[i]) {
+					joypad.axis_changed[i] = false;
+					Input::get_singleton()->joy_axis(id, (JoyAxis)i, joypad.axis_value[i]);
+				}
+			}
 
 			if (joypad.force_feedback) {
 				Input *input = Input::get_singleton();

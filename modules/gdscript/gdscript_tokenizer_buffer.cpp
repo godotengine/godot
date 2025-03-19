@@ -182,7 +182,7 @@ Error GDScriptTokenizerBuffer::set_code_buffer(const Vector<uint8_t> &p_buffer) 
 			cs.write[j] = decode_uint32(tmp);
 		}
 
-		String s(reinterpret_cast<const char32_t *>(cs.ptr()), len);
+		String s = String::utf32(Span(reinterpret_cast<const char32_t *>(cs.ptr()), len));
 		b += len * 4;
 		total_len -= len * 4;
 		identifiers.write[i] = s;

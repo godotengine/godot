@@ -30,7 +30,6 @@
 
 #include "script_editor_debugger.h"
 
-#include "core/config/project_settings.h"
 #include "core/debugger/debugger_marshalls.h"
 #include "core/debugger/remote_debugger.h"
 #include "core/string/ustring.h"
@@ -45,6 +44,7 @@
 #include "editor/editor_property_name_processor.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
+#include "editor/filesystem_dock.h"
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/gui/editor_toaster.h"
 #include "editor/inspector_dock.h"
@@ -55,6 +55,7 @@
 #include "main/performance.h"
 #include "scene/3d/camera_3d.h"
 #include "scene/debugger/scene_debugger.h"
+#include "scene/gui/button.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/grid_container.h"
 #include "scene/gui/label.h"
@@ -1672,6 +1673,18 @@ void ScriptEditorDebugger::_collapse_errors_list() {
 	}
 }
 
+void ScriptEditorDebugger::_vmem_item_activated() {
+	TreeItem *selected = vmem_tree->get_selected();
+	if (!selected) {
+		return;
+	}
+	const String path = selected->get_text(0);
+	if (path.is_empty() || !FileAccess::exists(path)) {
+		return;
+	}
+	FileSystemDock::get_singleton()->navigate_to_path(path);
+}
+
 void ScriptEditorDebugger::_clear_errors_list() {
 	error_tree->clear();
 	error_count = 0;
@@ -2178,6 +2191,7 @@ ScriptEditorDebugger::ScriptEditorDebugger() {
 		vmem_tree->set_column_title(3, TTR("Usage"));
 		vmem_tree->set_column_custom_minimum_width(3, 80 * EDSCALE);
 		vmem_tree->set_hide_root(true);
+		vmem_tree->connect("item_activated", callable_mp(this, &ScriptEditorDebugger::_vmem_item_activated));
 
 		tabs->add_child(vmem_vb);
 	}

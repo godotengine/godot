@@ -527,11 +527,17 @@ TEST_SUITE("[TextServer]") {
 					struct TestCase {
 						String text;
 						PackedInt32Array breaks;
+						BitField<TextServer::LineBreakFlag> flags;
 					};
 					TestCase cases[] = {
-						{ U"test \rtest", { 0, 4, 6, 10 } },
-						{ U"test\r test", { 0, 4, 6, 10 } },
-						{ U"test\r test \r test", { 0, 4, 6, 10, 13, 17 } },
+						{ U"test \rtest", { 0, 4, 6, 10 }, TextServer::BREAK_MANDATORY | TextServer::BREAK_WORD_BOUND | TextServer::BREAK_TRIM_START_EDGE_SPACES | TextServer::BREAK_TRIM_END_EDGE_SPACES },
+						{ U"test \rtest", { 0, 6, 6, 10 }, TextServer::BREAK_MANDATORY | TextServer::BREAK_WORD_BOUND | TextServer::BREAK_TRIM_START_EDGE_SPACES },
+						{ U"test\r test", { 0, 4, 6, 10 }, TextServer::BREAK_MANDATORY | TextServer::BREAK_WORD_BOUND | TextServer::BREAK_TRIM_START_EDGE_SPACES | TextServer::BREAK_TRIM_END_EDGE_SPACES },
+						{ U"test\r test", { 0, 4, 5, 10 }, TextServer::BREAK_MANDATORY | TextServer::BREAK_WORD_BOUND | TextServer::BREAK_TRIM_END_EDGE_SPACES },
+						{ U"test\r test \r test", { 0, 4, 6, 10, 13, 17 }, TextServer::BREAK_MANDATORY | TextServer::BREAK_WORD_BOUND | TextServer::BREAK_TRIM_START_EDGE_SPACES | TextServer::BREAK_TRIM_END_EDGE_SPACES },
+						{ U"test\r test \r test", { 0, 5, 6, 12, 13, 17 }, TextServer::BREAK_MANDATORY | TextServer::BREAK_WORD_BOUND | TextServer::BREAK_TRIM_START_EDGE_SPACES },
+						{ U"test\r test \r test", { 0, 4, 5, 10, 12, 17 }, TextServer::BREAK_MANDATORY | TextServer::BREAK_WORD_BOUND | TextServer::BREAK_TRIM_END_EDGE_SPACES },
+						{ U"test\r test \r test", { 0, 5, 5, 12, 12, 17 }, TextServer::BREAK_MANDATORY | TextServer::BREAK_WORD_BOUND },
 					};
 					for (size_t j = 0; j < sizeof(cases) / sizeof(TestCase); j++) {
 						RID ctx = ts->create_shaped_text();
@@ -539,10 +545,10 @@ TEST_SUITE("[TextServer]") {
 						bool ok = ts->shaped_text_add_string(ctx, cases[j].text, font, 16);
 						CHECK_FALSE_MESSAGE(!ok, "Adding text to the buffer failed.");
 
-						PackedInt32Array breaks = ts->shaped_text_get_line_breaks(ctx, 90.0, 0, TextServer::BREAK_MANDATORY | TextServer::BREAK_WORD_BOUND | TextServer::BREAK_TRIM_EDGE_SPACES);
+						PackedInt32Array breaks = ts->shaped_text_get_line_breaks(ctx, 90.0, 0, cases[j].flags);
 						CHECK_FALSE_MESSAGE(breaks != cases[j].breaks, "Invalid break points.");
 
-						breaks = ts->shaped_text_get_line_breaks_adv(ctx, { 90.0 }, 0, false, TextServer::BREAK_MANDATORY | TextServer::BREAK_WORD_BOUND | TextServer::BREAK_TRIM_EDGE_SPACES);
+						breaks = ts->shaped_text_get_line_breaks_adv(ctx, { 90.0 }, 0, false, cases[j].flags);
 						CHECK_FALSE_MESSAGE(breaks != cases[j].breaks, "Invalid break points.");
 
 						ts->free_rid(ctx);
@@ -595,7 +601,7 @@ TEST_SUITE("[TextServer]") {
 					CHECK_FALSE_MESSAGE(brks[5] != 14, "Invalid line break position.");
 				}
 
-				brks = ts->shaped_text_get_line_breaks(ctx, 35.0, 0, TextServer::BREAK_WORD_BOUND | TextServer::BREAK_MANDATORY | TextServer::BREAK_TRIM_EDGE_SPACES);
+				brks = ts->shaped_text_get_line_breaks(ctx, 35.0, 0, TextServer::BREAK_WORD_BOUND | TextServer::BREAK_MANDATORY | TextServer::BREAK_TRIM_START_EDGE_SPACES | TextServer::BREAK_TRIM_END_EDGE_SPACES);
 				CHECK_FALSE_MESSAGE(brks.size() != 6, "Invalid line breaks number.");
 				if (brks.size() == 6) {
 					CHECK_FALSE_MESSAGE(brks[0] != 0, "Invalid line break position.");

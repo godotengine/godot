@@ -186,7 +186,7 @@ class Delaunay3D {
 			Plane p(p_points[p_simplex.points[i]], p_points[p_simplex.points[(i + 1) % 4]], p_points[p_simplex.points[(i + 2) % 4]]);
 			// This tolerance should not be smaller than the one used with
 			// Plane::has_point() when creating the LightmapGI probe BSP tree.
-			if (ABS(p.distance_to(p_points[p_simplex.points[(i + 3) % 4]])) < 0.001) {
+			if (Math::abs(p.distance_to(p_points[p_simplex.points[(i + 3) % 4]])) < 0.001) {
 				return true;
 			}
 		}

@@ -63,13 +63,13 @@ PackedStringArray SceneTreeEditor::_get_node_configuration_warnings(Node *p_node
 		if (node_2d) {
 			// Note: Warn for Node2D but not all CanvasItems, don't warn for Control nodes.
 			// Control nodes may have reasons to use a transformed root node like anchors.
-			if (!node_2d->get_transform().is_equal_approx(Transform2D())) {
+			if (!node_2d->get_position().is_zero_approx()) {
 				warnings.append(TTR("The root node of a scene is recommended to not be transformed, since instances of the scene will usually override this. Reset the transform and reload the scene to remove this warning."));
 			}
 		}
 		Node3D *node_3d = Object::cast_to<Node3D>(p_node);
 		if (node_3d) {
-			if (!node_3d->get_transform().is_equal_approx(Transform3D())) {
+			if (!node_3d->get_position().is_zero_approx()) {
 				warnings.append(TTR("The root node of a scene is recommended to not be transformed, since instances of the scene will usually override this. Reset the transform and reload the scene to remove this warning."));
 			}
 		}

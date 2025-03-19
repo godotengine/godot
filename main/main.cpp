@@ -228,6 +228,12 @@ static bool init_use_custom_pos = false;
 static bool init_use_custom_screen = false;
 static Vector2 init_custom_pos;
 static int64_t init_embed_parent_window_id = 0;
+#ifdef TOOLS_ENABLED
+static bool init_display_scale_found = false;
+static int init_display_scale = 0;
+static float init_custom_scale = 1.0;
+static bool init_expand_to_title = false;
+#endif
 static bool use_custom_res = true;
 static bool force_res = false;
 
@@ -2483,27 +2489,27 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		}
 		window_mode = (DisplayServer::WindowMode)(GLOBAL_GET("display/window/size/mode").operator int());
 		int initial_position_type = GLOBAL_GET("display/window/size/initial_position_type").operator int();
-		if (initial_position_type == 0) { // Absolute.
+		if (initial_position_type == Window::WINDOW_INITIAL_POSITION_ABSOLUTE) { // Absolute.
 			if (!init_use_custom_pos) {
 				init_custom_pos = GLOBAL_GET("display/window/size/initial_position").operator Vector2i();
 				init_use_custom_pos = true;
 			}
-		} else if (initial_position_type == 1) { // Center of Primary Screen.
+		} else if (initial_position_type == Window::WINDOW_INITIAL_POSITION_CENTER_PRIMARY_SCREEN || initial_position_type == Window::WINDOW_INITIAL_POSITION_CENTER_MAIN_WINDOW_SCREEN) { // Center of Primary Screen.
 			if (!init_use_custom_screen) {
 				init_screen = DisplayServer::SCREEN_PRIMARY;
 				init_use_custom_screen = true;
 			}
-		} else if (initial_position_type == 2) { // Center of Other Screen.
+		} else if (initial_position_type == Window::WINDOW_INITIAL_POSITION_CENTER_OTHER_SCREEN) { // Center of Other Screen.
 			if (!init_use_custom_screen) {
 				init_screen = GLOBAL_GET("display/window/size/initial_screen").operator int();
 				init_use_custom_screen = true;
 			}
-		} else if (initial_position_type == 3) { // Center of Screen With Mouse Pointer.
+		} else if (initial_position_type == Window::WINDOW_INITIAL_POSITION_CENTER_SCREEN_WITH_MOUSE_FOCUS) { // Center of Screen With Mouse Pointer.
 			if (!init_use_custom_screen) {
 				init_screen = DisplayServer::SCREEN_WITH_MOUSE_FOCUS;
 				init_use_custom_screen = true;
 			}
-		} else if (initial_position_type == 4) { // Center of Screen With Keyboard Focus.
+		} else if (initial_position_type == Window::WINDOW_INITIAL_POSITION_CENTER_SCREEN_WITH_KEYBOARD_FOCUS) { // Center of Screen With Keyboard Focus.
 			if (!init_use_custom_screen) {
 				init_screen = DisplayServer::SCREEN_WITH_KEYBOARD_FOCUS;
 				init_use_custom_screen = true;
@@ -2517,24 +2523,38 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	OS::get_singleton()->_allow_layered = GLOBAL_DEF_RST("display/window/per_pixel_transparency/allowed", false);
 
 #ifdef TOOLS_ENABLED
-	if (editor || project_manager) {
-		// The editor and project manager always detect and use hiDPI if needed.
-		OS::get_singleton()->_allow_hidpi = true;
-		// Disable Vulkan overlays in editor, they cause various issues.
-		OS::get_singleton()->set_environment("DISABLE_MANGOHUD", "1"); // GH-57403.
-		OS::get_singleton()->set_environment("DISABLE_RTSS_LAYER", "1"); // GH-57937.
-		OS::get_singleton()->set_environment("DISABLE_VKBASALT", "1");
-		OS::get_singleton()->set_environment("DISABLE_VK_LAYER_reshade_1", "1"); // GH-70849.
-		OS::get_singleton()->set_environment("VK_LAYER_bandicam_helper_DEBUG_1", "1"); // GH-101480.
-		OS::get_singleton()->set_environment("DISABLE_VK_LAYER_bandicam_helper_1", "1"); // GH-101480.
-	} else {
-		// Re-allow using Vulkan overlays, disabled while using the editor.
-		OS::get_singleton()->unset_environment("DISABLE_MANGOHUD");
-		OS::get_singleton()->unset_environment("DISABLE_RTSS_LAYER");
-		OS::get_singleton()->unset_environment("DISABLE_VKBASALT");
-		OS::get_singleton()->unset_environment("DISABLE_VK_LAYER_reshade_1");
-		OS::get_singleton()->unset_environment("VK_LAYER_bandicam_helper_DEBUG_1");
-		OS::get_singleton()->unset_environment("DISABLE_VK_LAYER_bandicam_helper_1");
+	{
+		// Synced with https://github.com/baldurk/renderdoc/blob/2b01465c7/renderdoc/driver/vulkan/vk_layer.cpp#L118-L165
+		LocalVector<String> layers_to_disable = {
+			"DISABLE_RTSS_LAYER", // GH-57937.
+			"DISABLE_VULKAN_OBS_CAPTURE", // GH-103800.
+			"DISABLE_VULKAN_OW_OBS_CAPTURE", // GH-104154.
+			"DISABLE_SAMPLE_LAYER", // GH-104154.
+			"DISABLE_GAMEPP_LAYER", // GH-104154.
+			"DISABLE_VK_LAYER_TENCENT_wegame_cross_overlay_1", // GH-104154.
+			"NODEVICE_SELECT", // GH-104154.
+			"VK_LAYER_bandicam_helper_DEBUG_1", // GH-101480.
+			"DISABLE_VK_LAYER_bandicam_helper_1", // GH-101480.
+			"DISABLE_VK_LAYER_reshade_1", // GH-70849.
+			"DISABLE_VK_LAYER_GPUOpen_GRS", // GH-104154.
+			"DISABLE_LAYER", // GH-104154 (fpsmon).
+			"DISABLE_MANGOHUD", // GH-57403.
+			"DISABLE_VKBASALT",
+		};
+
+		if (editor || project_manager) {
+			// The editor and project manager always detect and use hiDPI if needed.
+			OS::get_singleton()->_allow_hidpi = true;
+			// Disable Vulkan overlays in editor, they cause various issues.
+			for (const String &layer_disable : layers_to_disable) {
+				OS::get_singleton()->set_environment(layer_disable, "1");
+			}
+		} else {
+			// Re-allow using Vulkan overlays, disabled while using the editor.
+			for (const String &layer_disable : layers_to_disable) {
+				OS::get_singleton()->unset_environment(layer_disable);
+			}
+		}
 	}
 #endif
 
@@ -2860,8 +2880,14 @@ Error Main::setup2(bool p_show_boot_logo) {
 									restore_editor_window_layout = value.operator int() == EditorSettings::InitialScreen::INITIAL_SCREEN_AUTO;
 								}
 							}
-
-							if (!prefer_wayland_found && assign == "run/platforms/linuxbsd/prefer_wayland") {
+							if (assign == "interface/editor/expand_to_title") {
+								init_expand_to_title = value;
+							} else if (assign == "interface/editor/display_scale") {
+								init_display_scale = value;
+								init_display_scale_found = true;
+							} else if (assign == "interface/editor/custom_display_scale") {
+								init_custom_scale = value;
+							} else if (!prefer_wayland_found && assign == "run/platforms/linuxbsd/prefer_wayland") {
 								prefer_wayland = value;
 								prefer_wayland_found = true;
 							}
@@ -3017,6 +3043,12 @@ Error Main::setup2(bool p_show_boot_logo) {
 			window_flags = DisplayServer::WINDOW_FLAG_BORDERLESS_BIT;
 		}
 
+#ifdef TOOLS_ENABLED
+		if ((project_manager || editor) && init_expand_to_title) {
+			window_flags |= DisplayServer::WINDOW_FLAG_EXTEND_TO_TITLE_BIT;
+		}
+#endif
+
 		// rendering_driver now held in static global String in main and initialized in setup()
 		Error err;
 		display_server = DisplayServer::create(display_driver_idx, rendering_driver, window_mode, window_vsync_mode, window_flags, window_position, window_size, init_screen, context, init_embed_parent_window_id, err);
@@ -3067,6 +3099,48 @@ Error Main::setup2(bool p_show_boot_logo) {
 			}
 
 			return err;
+		}
+
+#ifdef TOOLS_ENABLED
+		if (project_manager && init_display_scale_found) {
+			float ui_scale = init_custom_scale;
+			switch (init_display_scale) {
+				case 0:
+					ui_scale = EditorSettings::get_auto_display_scale();
+					break;
+				case 1:
+					ui_scale = 0.75;
+					break;
+				case 2:
+					ui_scale = 1.0;
+					break;
+				case 3:
+					ui_scale = 1.25;
+					break;
+				case 4:
+					ui_scale = 1.5;
+					break;
+				case 5:
+					ui_scale = 1.75;
+					break;
+				case 6:
+					ui_scale = 2.0;
+					break;
+				default:
+					break;
+			}
+			if (!(force_res || use_custom_res)) {
+				display_server->window_set_size(window_size * ui_scale, DisplayServer::MAIN_WINDOW_ID);
+			}
+			if (display_server->has_feature(DisplayServer::FEATURE_SUBWINDOWS)) { // Note: add "&& !display_server->has_feature(DisplayServer::FEATURE_SELF_FITTING_WINDOWS)" when Wayland multi-window support is merged.
+				Size2 real_size = DisplayServer::get_singleton()->window_get_size();
+				Rect2i scr_rect = display_server->screen_get_usable_rect(init_screen);
+				display_server->window_set_position(scr_rect.position + (scr_rect.size - real_size) / 2, DisplayServer::MAIN_WINDOW_ID);
+			}
+		}
+#endif
+		if (display_server->has_feature(DisplayServer::FEATURE_SUBWINDOWS)) {
+			display_server->show_window(DisplayServer::MAIN_WINDOW_ID);
 		}
 
 		if (display_server->has_feature(DisplayServer::FEATURE_ORIENTATION)) {
@@ -4336,7 +4410,7 @@ int Main::start() {
 				translation_server->get_editor_domain()->set_pseudolocalization_enabled(true);
 			}
 
-			ProjectManager *pmanager = memnew(ProjectManager(force_res || use_custom_res));
+			ProjectManager *pmanager = memnew(ProjectManager);
 			ProgressDialog *progress_dialog = memnew(ProgressDialog);
 			pmanager->add_child(progress_dialog);
 
