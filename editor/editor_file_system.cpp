@@ -1934,9 +1934,16 @@ bool EditorFileSystem::_find_file(const String &p_file, EditorFileSystemDirector
 
 	int cpos = -1;
 	for (int i = 0; i < fs->files.size(); i++) {
-		if (fs->files[i]->file == file) {
-			cpos = i;
-			break;
+		if (fs_case_sensitive) {
+			if (fs->files[i]->file == file) {
+				cpos = i;
+				break;
+			}
+		} else {
+			if (fs->files[i]->file.to_lower() == file.to_lower()) {
+				cpos = i;
+				break;
+			}
 		}
 	}
 
