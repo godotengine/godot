@@ -32,7 +32,7 @@
 
 #include "core/input/input_event.h"
 #include "core/math/geometry_2d.h"
-#include "editor/editor_command_palette.h"
+#include "editor/dialogs/editor_command_palette.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_undo_redo_manager.h"

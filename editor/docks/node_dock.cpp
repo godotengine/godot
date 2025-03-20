@@ -31,7 +31,7 @@
 #include "node_dock.h"
 
 #include "core/io/config_file.h"
-#include "editor/connections_dialog.h"
+#include "editor/dialogs/connections_dialog.h"
 #include "editor/themes/editor_scale.h"
 
 void NodeDock::show_groups() {

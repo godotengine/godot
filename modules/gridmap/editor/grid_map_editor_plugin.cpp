@@ -31,7 +31,7 @@
 #include "grid_map_editor_plugin.h"
 
 #include "core/os/keyboard.h"
-#include "editor/editor_command_palette.h"
+#include "editor/dialogs/editor_command_palette.h"
 #include "editor/editor_main_screen.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"

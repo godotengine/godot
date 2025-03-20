@@ -30,8 +30,8 @@
 
 #include "input_event_editor_plugin.h"
 
+#include "editor/dialogs/input_event_configuration_dialog.h"
 #include "editor/event_listener_line_edit.h"
-#include "editor/input_event_configuration_dialog.h"
 
 void InputEventConfigContainer::_notification(int p_what) {
 	switch (p_what) {
