@@ -135,9 +135,15 @@
 
 #ifdef MODULE_GDSCRIPT_ENABLED
 #include "modules/gdscript/gdscript.h"
-#if defined(TOOLS_ENABLED) && !defined(GDSCRIPT_NO_LSP)
+#if defined(TOOLS_ENABLED)
+#include "modules/gdscript/gdscript_analyzer.h"
+#include "modules/gdscript/gdscript_cache.h"
+#include "modules/gdscript/gdscript_parser.h"
+#include "modules/gdscript/gdscript_tree_converter.h"
+#if !defined(GDSCRIPT_NO_LSP)
 #include "modules/gdscript/language_server/gdscript_language_server.h"
-#endif // TOOLS_ENABLED && !GDSCRIPT_NO_LSP
+#endif // !GDSCRIPT_NO_LSP
+#endif // TOOLS_ENABLED
 #endif // MODULE_GDSCRIPT_ENABLED
 
 /* Static members */
@@ -674,6 +680,7 @@ void Main::print_help(const char *p_binary) {
 	print_help_option("--gdextension-docs", "Rather than dumping the engine API, generate API reference from all the GDExtensions loaded in the current project (used with --doctool).\n", CLI_OPTION_AVAILABILITY_EDITOR);
 #ifdef MODULE_GDSCRIPT_ENABLED
 	print_help_option("--gdscript-docs <path>", "Rather than dumping the engine API, generate API reference from the inline documentation in the GDScript files found in <path> (used with --doctool).\n", CLI_OPTION_AVAILABILITY_EDITOR);
+	print_help_option("--script-dump-ast <path>", "Dump AST of GDScript files found in <path>.\n", CLI_OPTION_AVAILABILITY_EDITOR);
 #endif
 	print_help_option("--build-solutions", "Build the scripting solutions (e.g. for C# projects). Implies --editor and requires a valid project to edit.\n", CLI_OPTION_AVAILABILITY_EDITOR);
 	print_help_option("--dump-gdextension-interface", "Generate a GDExtension header file \"gdextension_interface.h\" in the current folder. This file is the base file required to implement a GDExtension.\n", CLI_OPTION_AVAILABILITY_EDITOR);
@@ -1585,6 +1592,27 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				OS::get_singleton()->print("Missing relative or absolute path to project for --gdscript-docs, aborting.\n");
 				goto error;
 			}
+		} else if (arg == "--script-dump-ast") {
+			// `--script-dump-ast` implies `--headless` to avoid spawning an unnecessary window.
+			audio_driver = NULL_AUDIO_DRIVER;
+			display_driver = NULL_DISPLAY_DRIVER;
+
+			// `--script-dump-ast` implies `--no-header`.
+			Engine::get_singleton()->_print_header = false;
+
+			if (N) {
+				project_path = N->get();
+
+				main_args.push_back(arg);
+				main_args.push_back(N->get());
+				N = N->next();
+
+				quit_after = 1;
+			} else {
+				OS::get_singleton()->print("Missing relative or absolute path to project for --script-dump-ast, aborting.\n");
+				goto error;
+			}
+
 #endif // MODULE_GDSCRIPT_ENABLED
 #endif // TOOLS_ENABLED
 		} else if (arg == "--path") { // set path of project to start or edit
@@ -3742,6 +3770,7 @@ int Main::start() {
 	bool export_patch = false;
 #ifdef MODULE_GDSCRIPT_ENABLED
 	String gdscript_docs_path;
+	String gdscript_ast_path;
 #endif
 #ifndef DISABLE_DEPRECATED
 	bool converting_project = false;
@@ -3816,6 +3845,8 @@ int Main::start() {
 #ifdef MODULE_GDSCRIPT_ENABLED
 			} else if (E->get() == "--gdscript-docs") {
 				gdscript_docs_path = E->next()->get();
+			} else if (E->get() == "--script-dump-ast") {
+				gdscript_ast_path = E->next()->get();
 #endif
 			} else if (E->get() == "--export-release") {
 				ERR_FAIL_COND_V_MSG(!editor && !found_project, EXIT_FAILURE, "Please provide a valid project path when exporting, aborting.");
@@ -4238,6 +4269,41 @@ int Main::start() {
 			HashMap<String, String> doc_data_classes;
 			err = docs.save_classes(doc_tool_path, doc_data_classes, false);
 			ERR_FAIL_COND_V_MSG(err != OK, EXIT_FAILURE, "Error saving GDScript docs:" + itos(err));
+
+			return EXIT_SUCCESS;
+		}
+
+		if (!gdscript_ast_path.is_empty()) {
+			Error err;
+
+			Vector<String> paths;
+			if (gdscript_ast_path.get_extension() == "gd") {
+				paths.push_back(gdscript_ast_path);
+			} else {
+				paths = get_files_with_extension(gdscript_ast_path, "gd");
+			}
+			ERR_FAIL_COND_V_MSG(paths.is_empty(), EXIT_FAILURE, "Couldn't find any GDScript files by the given path: " + gdscript_ast_path);
+
+			//for (const String &path : paths) {
+			//	Ref<GDScript> gdscript = ResourceLoader::load(path);
+			//}
+			Array asts;
+			for (const String &path : paths) {
+				Ref<GDScriptParserRef> parser_ref = GDScriptCache::get_parser(path, GDScriptParserRef::PARSED, err);
+				ERR_CONTINUE_MSG(err != OK, vformat("Failed to get_parser for %s", path));
+
+				const GDScriptParser *parser = parser_ref->get_parser();
+				ERR_CONTINUE_MSG(parser == nullptr, vformat("Parser is null for %s", path));
+
+				const GDScriptParser::ClassNode *c = parser->get_tree();
+				ERR_CONTINUE_MSG(c == nullptr, vformat("ClassNode is null for %s", path));
+
+				GDScriptTreeConverter converter;
+				Dictionary ast = converter.to_dictionary(*c);
+				ast["path"] = path.substr(gdscript_ast_path.length());
+				asts.push_back(ast);
+			}
+			print_line(JSON::stringify(asts, "\t"));
 
 			return EXIT_SUCCESS;
 		}
