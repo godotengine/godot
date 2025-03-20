@@ -33,7 +33,7 @@
 #include "animation_track_editor_plugins.h"
 #include "core/error/error_macros.h"
 #include "core/input/input.h"
-#include "editor/animation_bezier_editor.h"
+#include "editor/animation/animation_bezier_editor.h"
 #include "editor/docks/inspector_dock.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"

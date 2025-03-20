@@ -30,7 +30,7 @@
 
 #pragma once
 
-#include "editor/animation_track_editor.h"
+#include "editor/animation/animation_track_editor.h"
 #include "editor/plugins/animation/animation_library_editor.h"
 #include "editor/plugins/editor_plugin.h"
 #include "scene/animation/animation_player.h"
