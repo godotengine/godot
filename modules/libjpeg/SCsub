@@ -14,7 +14,18 @@ thirdparty_obj = []
 thirdparty_dir = "#thirdparty/libjpeg/"
 thirdparty_sources = [
     "jaricom.c",
+    "jcapimin.c",
+    "jcapistd.c",
+    "jcarith.c",
+    "jccoefct.c",
+    "jccolor.c",
+    "jcdctmgr.c",
+    "jchuff.c",
+    "jcmainct.c",
+    "jcmarker.c",
+    "jcmaster.c",
     "jcomapi.c",
+    "jcsample.c",
     "jdapimin.c",
     "jdapistd.c",
     "jdarith.c",
