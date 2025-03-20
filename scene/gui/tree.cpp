@@ -4117,7 +4117,9 @@ bool Tree::edit_selected(bool p_force_edit) {
 		return false;
 	}
 
-	real_t popup_scale = popup_editor->is_embedded() ? 1.0 : popup_editor->get_parent_visible_window()->get_content_scale_factor();
+	Size2 scale = popup_editor->get_parent_viewport()->get_popup_base_transform().get_scale() * get_global_transform_with_canvas().get_scale();
+	real_t popup_scale = MIN(scale.x, scale.y);
+
 	Rect2 rect = _get_item_focus_rect(s);
 	rect.position *= popup_scale;
 	popup_edited_item = s;
