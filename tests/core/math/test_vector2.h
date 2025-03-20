@@ -42,6 +42,10 @@ TEST_CASE("[Vector2] Constructor methods") {
 	static_assert(
 			vector_empty == vector_zero,
 			"Vector2 Constructor with no inputs should return a zero Vector2.");
+
+	CHECK_MESSAGE(
+			Vector2(0.5) == Vector2(0.5, 0.5),
+			"Vector2 Constructor with one argument should set all components to the same value.");
 }
 
 TEST_CASE("[Vector2] Angle methods") {
