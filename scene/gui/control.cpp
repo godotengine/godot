@@ -448,8 +448,7 @@ void Control::_validate_property(PropertyInfo &p_property) const {
 
 		ThemeDB::get_singleton()->get_default_theme()->get_type_variation_list(get_class_name(), &names);
 
-		//iterate to find all themes
-		//I don't want to mess with the code too much. this needs improvements.
+		// Iterate to find all themes.
 		Control *tmp_control = Object::cast_to<Control>(get_parent());
 		Window *tmp_window = Object::cast_to<Window>(get_parent());
 		while (tmp_control || tmp_window) {
