@@ -43,7 +43,6 @@
 #include "editor/editor_script.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
-#include "editor/editor_translation_parser.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/editor_vcs_interface.h"
 #include "editor/export/editor_export_platform.h"
@@ -130,6 +129,7 @@
 #include "editor/plugins/tiles/tiles_editor_plugin.h"
 #include "editor/plugins/tool_button_editor_plugin.h"
 #include "editor/register_exporters.h"
+#include "editor/translations/editor_translation_parser.h"
 
 void register_editor_types() {
 	OS::get_singleton()->benchmark_begin_measure("Editor", "Register Types");

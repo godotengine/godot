@@ -39,7 +39,6 @@
 #include "core/os/keyboard.h"
 #include "core/string/string_builder.h"
 #include "core/version.h"
-#include "editor/doc_data_compressed.gen.h"
 #include "editor/docks/filesystem_dock.h"
 #include "editor/editor_file_system.h"
 #include "editor/editor_main_screen.h"
@@ -51,6 +50,7 @@
 #include "editor/inspector/editor_property_name_processor.h"
 #include "editor/plugins/script/script_editor_plugin.h"
 #include "editor/themes/editor_scale.h"
+#include "editor/translations/doc_data_compressed.gen.h"
 #include "scene/gui/line_edit.h"
 
 #include "modules/modules_enabled.gen.h" // For gdscript, mono.
