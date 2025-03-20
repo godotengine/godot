@@ -124,6 +124,7 @@ void register_exporter_types() {{
     env.add_source_files(env.editor_sources, "*.cpp")
     env.add_source_files(env.editor_sources, gen_exporters)
 
+    SConscript("animation/SCsub")
     SConscript("debugger/SCsub")
     SConscript("dialogs/SCsub")
     SConscript("docks/SCsub")
