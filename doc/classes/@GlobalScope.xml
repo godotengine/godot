@@ -473,6 +473,12 @@
 				[/codeblock]
 			</description>
 		</method>
+		<method name="get_seed">
+			<return type="int" />
+			<description>
+				Returns the current seed in use by the random number generator, set either by calling [method randomize] or setting the seed manually with [method seed].
+			</description>
+		</method>
 		<method name="hash">
 			<return type="int" />
 			<param index="0" name="variable" type="Variant" />

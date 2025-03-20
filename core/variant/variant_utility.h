@@ -122,6 +122,7 @@ struct VariantUtilityFunctions {
 	static int64_t randi_range(int64_t from, int64_t to);
 	static double randf_range(double from, double to);
 	static void seed(int64_t s);
+	static int64_t get_seed();
 	static PackedInt64Array rand_from_seed(int64_t seed);
 	// Utility
 	static Variant weakref(const Variant &obj, Callable::CallError &r_error);
