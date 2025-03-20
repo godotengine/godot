@@ -32,11 +32,11 @@
 #include "editor_inspector.compat.inc"
 
 #include "core/os/keyboard.h"
-#include "editor/add_metadata_dialog.h"
 #include "editor/debugger/editor_debugger_inspector.h"
+#include "editor/dialogs/add_metadata_dialog.h"
+#include "editor/dialogs/editor_feature_profile.h"
 #include "editor/doc_tools.h"
 #include "editor/docks/inspector_dock.h"
-#include "editor/editor_feature_profile.h"
 #include "editor/editor_main_screen.h"
 #include "editor/editor_node.h"
 #include "editor/editor_properties.h"

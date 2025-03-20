@@ -30,7 +30,7 @@
 
 #include "editor_dir_dialog.h"
 
-#include "editor/directory_create_dialog.h"
+#include "editor/dialogs/directory_create_dialog.h"
 #include "editor/docks/filesystem_dock.h"
 #include "editor/editor_file_system.h"
 #include "editor/themes/editor_theme_manager.h"

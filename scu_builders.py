@@ -292,6 +292,7 @@ def generate_scu_files(max_includes_per_scu):
     process_folder(["editor"], ["editor_resource_preview"], 32)
     process_folder(["editor/debugger"])
     process_folder(["editor/debugger/debug_adapter"])
+    process_folder(["editor/dialogs"])
     process_folder(["editor/docks"], ["file_system_dock"])
     process_folder(["editor/export"])
     process_folder(["editor/gui"])

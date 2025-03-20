@@ -30,7 +30,7 @@
 
 #pragma once
 
-#include "editor/editor_asset_installer.h"
+#include "editor/dialogs/editor_asset_installer.h"
 #include "editor/plugins/editor_plugin.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/grid_container.h"
