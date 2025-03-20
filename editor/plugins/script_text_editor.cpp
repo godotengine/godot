@@ -1696,7 +1696,7 @@ void ScriptTextEditor::_edit_option(int p_op) {
 		} break;
 		case DEBUG_GOTO_NEXT_BREAKPOINT: {
 			PackedInt32Array bpoints = tx->get_breakpointed_lines();
-			if (bpoints.size() <= 0) {
+			if (bpoints.is_empty()) {
 				return;
 			}
 
@@ -1711,7 +1711,7 @@ void ScriptTextEditor::_edit_option(int p_op) {
 		} break;
 		case DEBUG_GOTO_PREV_BREAKPOINT: {
 			PackedInt32Array bpoints = tx->get_breakpointed_lines();
-			if (bpoints.size() <= 0) {
+			if (bpoints.is_empty()) {
 				return;
 			}
 
