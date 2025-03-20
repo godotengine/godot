@@ -549,7 +549,7 @@ void LookAtModifier3D::_process_modification() {
 			(prev_forward_vector != Vector3(0, 0, 0) && forward_vector == Vector3(0, 0, 0)) ||
 			(prev_forward_vector == Vector3(0, 0, 0) && forward_vector != Vector3(0, 0, 0))) {
 		init_transition();
-	} else if (is_flippable && signbit(prev_forward_vector[secondary_rotation_axis]) != signbit(forward_vector[secondary_rotation_axis])) {
+	} else if (is_flippable && std::signbit(prev_forward_vector[secondary_rotation_axis]) != std::signbit(forward_vector[secondary_rotation_axis])) {
 		// Flipping by angle_limitation can be detected by sign of secondary rotation axes during forward_vector is rotated more than 90 degree from forward_axis (means dot production is negative).
 		Vector3 prev_forward_vector_nrm = forward_vector.normalized();
 		Vector3 rest_forward_vector = get_vector_from_bone_axis(forward_axis);
@@ -602,7 +602,7 @@ bool LookAtModifier3D::is_intersecting_axis(const Vector3 &p_prev, const Vector3
 		return false;
 	}
 
-	return signbit(p_prev[p_flipping_axis]) != signbit(p_current[p_flipping_axis]);
+	return std::signbit(p_prev[p_flipping_axis]) != std::signbit(p_current[p_flipping_axis]);
 }
 
 Vector3 LookAtModifier3D::get_basis_vector_from_bone_axis(const Basis &p_basis, BoneAxis p_axis) {
@@ -653,7 +653,7 @@ Vector2 LookAtModifier3D::get_projection_vector(const Vector3 &p_vector, Vector3
 }
 
 float LookAtModifier3D::remap_damped(float p_from, float p_to, float p_damp_threshold, float p_value) const {
-	float sign = signbit(p_value) ? -1.0f : 1.0f;
+	float sign = std::signbit(p_value) ? -1.0f : 1.0f;
 	float abs_value = Math::abs(p_value);
 
 	if (Math::is_equal_approx(p_damp_threshold, 1.0f) || Math::is_zero_approx(p_to)) {
@@ -713,7 +713,7 @@ Transform3D LookAtModifier3D::look_at_with_axes(const Transform3D &p_rest) {
 			limit_angle = primary_limit_angle * 0.5f;
 			damp_threshold = primary_damp_threshold;
 		} else {
-			if (signbit(calculated_angle)) {
+			if (std::signbit(calculated_angle)) {
 				limit_angle = primary_negative_limit_angle;
 				damp_threshold = primary_negative_damp_threshold;
 			} else {
@@ -746,7 +746,7 @@ Transform3D LookAtModifier3D::look_at_with_axes(const Transform3D &p_rest) {
 			limit_angle = secondary_limit_angle * 0.5f;
 			damp_threshold = secondary_damp_threshold;
 		} else {
-			if (signbit(calculated_angle)) {
+			if (std::signbit(calculated_angle)) {
 				limit_angle = secondary_negative_limit_angle;
 				damp_threshold = secondary_negative_damp_threshold;
 			} else {

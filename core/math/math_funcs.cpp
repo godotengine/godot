@@ -31,8 +31,9 @@
 #include "math_funcs.h"
 
 #include "core/error/error_macros.h"
+#include "core/math/random_pcg.h"
 
-RandomPCG Math::default_rand(RandomPCG::DEFAULT_SEED, RandomPCG::DEFAULT_INC);
+static RandomPCG default_rand;
 
 uint32_t Math::rand_from_seed(uint64_t *seed) {
 	RandomPCG rng = RandomPCG(*seed, RandomPCG::DEFAULT_INC);
