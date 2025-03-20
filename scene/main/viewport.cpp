@@ -1562,20 +1562,19 @@ void Viewport::_gui_show_tooltip() {
 	if (!window) { // Not embedded.
 		window = gui.tooltip_popup->get_parent_visible_window();
 	}
-	float win_scale = window->content_scale_factor;
+	Size2 scale = get_popup_base_transform().get_scale();
+	real_t popup_scale = MIN(scale.x, scale.y);
 	Point2 tooltip_offset = GLOBAL_GET("display/mouse_cursor/tooltip_position_offset");
-	if (!gui.tooltip_popup->is_embedded()) {
-		tooltip_offset *= win_scale;
-	}
+	tooltip_offset *= popup_scale;
 	Rect2 r(gui.tooltip_pos + tooltip_offset, gui.tooltip_popup->get_contents_minimum_size());
 	Rect2i vr;
 	if (gui.tooltip_popup->is_embedded()) {
 		vr = gui.tooltip_popup->get_embedder()->get_visible_rect();
 	} else {
-		panel->content_scale_factor = win_scale;
-		r.size *= win_scale;
 		vr = window->get_usable_parent_rect();
 	}
+	panel->content_scale_factor = popup_scale;
+	r.size *= popup_scale;
 	r.size = r.size.ceil();
 	r.size = r.size.min(panel->get_max_size());
 
