@@ -85,6 +85,7 @@ if env.editor_build:
     env.add_source_files(env.editor_sources, "*.cpp")
     env.add_source_files(env.editor_sources, gen_exporters)
 
+    SConscript("animation/SCsub")
     SConscript("debugger/SCsub")
     SConscript("docks/SCsub")
     SConscript("export/SCsub")
