@@ -5532,7 +5532,7 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 
 		} else {
 			Vector<String> &expr = split_tag_block;
-			if (expr.size() < 1) {
+			if (expr.is_empty()) {
 				add_text("[");
 				pos = brk_pos + 1;
 			} else {
