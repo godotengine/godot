@@ -457,9 +457,8 @@ void Control::_validate_property(PropertyInfo &p_property) const {
 				if (tmp_control->get_theme().is_valid()) {
 					tmp_control->get_theme()->get_type_variation_list(get_class_name(), &names);
 				}
-				Control *sub_control = Object::cast_to<Control>(tmp_control->get_parent());
 				tmp_window = Object::cast_to<Window>(tmp_control->get_parent());
-				tmp_control = sub_control;
+				tmp_control = Object::cast_to<Control>(tmp_control->get_parent());
 			} else {
 				//tmp_window
 				if (tmp_window->get_theme().is_valid()) {
