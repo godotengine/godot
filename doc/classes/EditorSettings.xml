@@ -897,7 +897,7 @@
 			[b]Note:[/b] This setting affects most [EditorInspector]s in the editor UI, primarily Project Settings and Editor Settings. To control names displayed in the Inspector dock, use [member interface/inspector/default_property_name_style] instead.
 		</member>
 		<member name="interface/editor/low_processor_mode_sleep_usec" type="int" setter="" getter="">
-			The amount of sleeping between frames when the low-processor usage mode is enabled (in microseconds). Higher values will result in lower CPU/GPU usage, which can improve battery life on laptops. However, higher values will result in a less responsive editor. The default value is set to allow for maximum smoothness on monitors up to 144 Hz. See also [member interface/editor/unfocused_low_processor_mode_sleep_usec].
+			The amount of sleeping between frames in the editor (in microseconds). Higher values will result in lower CPU/GPU usage, which can improve battery life on laptops. However, higher values will result in a less responsive editor. The default value is set to allow for maximum smoothness on monitors up to 144 Hz. See also [member interface/editor/unfocused_low_processor_mode_sleep_usec].
 			[b]Note:[/b] This setting is ignored if [member interface/editor/update_continuously] is [code]true[/code], as enabling that setting disables low-processor mode.
 		</member>
 		<member name="interface/editor/main_font" type="String" setter="" getter="">
@@ -950,7 +950,7 @@
 			Editor UI default layout direction.
 		</member>
 		<member name="interface/editor/unfocused_low_processor_mode_sleep_usec" type="int" setter="" getter="">
-			When the editor window is unfocused, the amount of sleeping between frames when the low-processor usage mode is enabled (in microseconds). Higher values will result in lower CPU/GPU usage, which can improve battery life on laptops (in addition to improving the running project's performance if the editor has to redraw continuously). However, higher values will result in a less responsive editor. The default value is set to limit the editor to 20 FPS when the editor window is unfocused. See also [member interface/editor/low_processor_mode_sleep_usec].
+			When the editor window is unfocused, the amount of sleeping between frames when the low-processor usage mode is enabled (in microseconds). Higher values will result in lower CPU/GPU usage, which can improve battery life on laptops (in addition to improving the running project's performance if the editor has to redraw continuously). However, higher values will result in a less responsive editor. The default value is set to limit the editor to 10 FPS when the editor window is unfocused. See also [member interface/editor/low_processor_mode_sleep_usec].
 			[b]Note:[/b] This setting is ignored if [member interface/editor/update_continuously] is [code]true[/code], as enabling that setting disables low-processor mode.
 		</member>
 		<member name="interface/editor/update_continuously" type="bool" setter="" getter="">
