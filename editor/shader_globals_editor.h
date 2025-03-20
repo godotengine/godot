@@ -30,7 +30,7 @@
 
 #pragma once
 
-#include "editor/editor_sectioned_inspector.h"
+#include "editor/inspector/editor_sectioned_inspector.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/option_button.h"
 #include "scene/gui/tree.h"
