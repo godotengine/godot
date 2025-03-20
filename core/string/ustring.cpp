@@ -4729,9 +4729,8 @@ String String::uri_encode() const {
 			res += ord;
 		} else {
 			char p[4] = { '%', 0, 0, 0 };
-			static const char hex[16] = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F' };
-			p[1] = hex[ord >> 4];
-			p[2] = hex[ord & 0xF];
+			p[1] = hex_char_table_upper[ord >> 4];
+			p[2] = hex_char_table_upper[ord & 0xF];
 			res += p;
 		}
 	}
