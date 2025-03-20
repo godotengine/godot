@@ -36,8 +36,8 @@
 #import <Foundation/Foundation.h>
 
 @interface GodotApplicationDelegate : NSObject <NSUserInterfaceItemSearching, NSApplicationDelegate>
+- (void)activate;
 - (void)forceUnbundledWindowActivationHackStep1;
 - (void)forceUnbundledWindowActivationHackStep2;
 - (void)forceUnbundledWindowActivationHackStep3;
-- (void)handleAppleEvent:(NSAppleEventDescriptor *)event withReplyEvent:(NSAppleEventDescriptor *)replyEvent;
 @end
