@@ -28,16 +28,16 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "editor/editor_translation.h"
+#include "editor_translation.h"
 
 #include "core/io/compression.h"
 #include "core/io/file_access_memory.h"
 #include "core/io/translation_loader_po.h"
 #include "core/string/translation_server.h"
-#include "editor/doc_translations.gen.h"
-#include "editor/editor_translations.gen.h"
-#include "editor/extractable_translations.gen.h"
-#include "editor/property_translations.gen.h"
+#include "editor/translations/doc_translations.gen.h"
+#include "editor/translations/editor_translations.gen.h"
+#include "editor/translations/extractable_translations.gen.h"
+#include "editor/translations/property_translations.gen.h"
 
 Vector<String> get_editor_locales() {
 	Vector<String> locales;

@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "editor/gui/editor_translation_preview_menu.h"
+#include "editor_translation_preview_menu.h"
 
 #include "core/string/translation_server.h"
 #include "editor/editor_node.h"

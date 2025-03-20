@@ -42,7 +42,6 @@
 #include "editor/editor_script.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
-#include "editor/editor_translation_parser.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/editor_vcs_interface.h"
 #include "editor/export/editor_export_platform.h"
@@ -127,6 +126,7 @@
 #include "editor/plugins/tiles/tiles_editor_plugin.h"
 #include "editor/plugins/tool_button_editor_plugin.h"
 #include "editor/register_exporters.h"
+#include "editor/translations/editor_translation_parser.h"
 #ifndef DISABLE_DEPRECATED
 #include "editor/plugins/2d/parallax_background_editor_plugin.h"
 #include "editor/plugins/3d/skeleton_ik_3d_editor_plugin.h"

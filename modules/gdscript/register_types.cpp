@@ -54,8 +54,8 @@
 
 #ifdef TOOLS_ENABLED
 #include "editor/editor_node.h"
-#include "editor/editor_translation_parser.h"
 #include "editor/export/editor_export.h"
+#include "editor/translations/editor_translation_parser.h"
 
 #ifndef GDSCRIPT_NO_LSP
 #include "core/config/engine.h"
