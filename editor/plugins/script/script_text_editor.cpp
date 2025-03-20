@@ -35,7 +35,7 @@
 #include "core/math/expression.h"
 #include "core/os/keyboard.h"
 #include "editor/debugger/editor_debugger_node.h"
-#include "editor/editor_command_palette.h"
+#include "editor/dialogs/editor_command_palette.h"
 #include "editor/editor_help.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
