@@ -43,7 +43,7 @@ if env.editor_build:
 
     docs = sorted(docs)
     env.CommandNoCache(
-        "#editor/doc_data_compressed.gen.h",
+        "#editor/translations/doc_data_compressed.gen.h",
         docs,
         env.Run(editor_builders.make_doc_header),
     )
@@ -56,28 +56,28 @@ if env.editor_build:
 
     # Editor translations
     env.CommandNoCache(
-        "#editor/editor_translations.gen.h",
+        "#editor/translations/editor_translations.gen.h",
         Glob("#editor/translations/editor/*"),
         env.Run(editor_builders.make_translations_header),
     )
 
     # Property translations
     env.CommandNoCache(
-        "#editor/property_translations.gen.h",
+        "#editor/translations/property_translations.gen.h",
         Glob("#editor/translations/properties/*"),
         env.Run(editor_builders.make_translations_header),
     )
 
     # Documentation translations
     env.CommandNoCache(
-        "#editor/doc_translations.gen.h",
+        "#editor/translations/doc_translations.gen.h",
         Glob("#doc/translations/*"),
         env.Run(editor_builders.make_translations_header),
     )
 
     # Extractable translations
     env.CommandNoCache(
-        "#editor/extractable_translations.gen.h",
+        "#editor/translations/extractable_translations.gen.h",
         Glob("#editor/translations/extractable/*"),
         env.Run(editor_builders.make_translations_header),
     )
@@ -96,6 +96,7 @@ if env.editor_build:
     SConscript("plugins/SCsub")
     SConscript("project_manager/SCsub")
     SConscript("themes/SCsub")
+    SConscript("translations/SCsub")
 
     lib = env.add_library("editor", env.editor_sources)
     env.Prepend(LIBS=[lib])
