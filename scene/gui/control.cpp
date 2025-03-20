@@ -466,9 +466,8 @@ void Control::_validate_property(PropertyInfo &p_property) const {
 				if (tmp_window->get_theme().is_valid()) {
 					tmp_window->get_theme()->get_type_variation_list(get_class_name(), &names);
 				}
-				Window *sub_window = Object::cast_to<Window>(tmp_window->get_parent());
 				tmp_control = Object::cast_to<Control>(tmp_window->get_parent());
-				tmp_window = sub_window;
+				tmp_window = Object::cast_to<Window>(tmp_window->get_parent());
 			}
 		}
 		if (get_theme().is_valid()) {
