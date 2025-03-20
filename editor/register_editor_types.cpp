@@ -32,6 +32,7 @@
 
 #include "core/object/script_language.h"
 #include "editor/debugger/debug_adapter/debug_adapter_server.h"
+#include "editor/docks/filesystem_dock.h"
 #include "editor/editor_command_palette.h"
 #include "editor/editor_feature_profile.h"
 #include "editor/editor_file_system.h"
@@ -51,7 +52,6 @@
 #include "editor/export/editor_export_platform_extension.h"
 #include "editor/export/editor_export_platform_pc.h"
 #include "editor/export/editor_export_plugin.h"
-#include "editor/filesystem_dock.h"
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/gui/editor_spin_slider.h"
 #include "editor/gui/editor_toaster.h"
