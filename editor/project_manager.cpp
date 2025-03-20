@@ -263,7 +263,8 @@ void ProjectManager::_update_theme(bool p_skip_creation) {
 			erase_missing_btn->add_theme_constant_override("h_separation", get_theme_constant(SNAME("sidebar_button_icon_separation"), SNAME("ProjectManager")));
 
 			open_btn_container->add_theme_constant_override("separation", 0);
-			open_options_popup->set_item_icon(0, get_editor_theme_icon(SNAME("NodeWarning")));
+			open_options_popup->set_item_icon(0, get_editor_theme_icon(SNAME("Notification")));
+			open_options_popup->set_item_icon(1, get_editor_theme_icon(SNAME("NodeWarning")));
 		}
 
 		// Asset library popup.
@@ -624,6 +625,7 @@ void ProjectManager::_open_selected_projects_check_recovery_mode() {
 		return;
 	}
 
+	open_in_verbose_mode = false;
 	open_in_recovery_mode = false;
 	// Check if the project failed to load during last startup.
 	if (project.recovery_mode) {
@@ -781,7 +783,11 @@ void ProjectManager::_on_projects_updated() {
 
 void ProjectManager::_on_open_options_selected(int p_option) {
 	switch (p_option) {
-		case 0: // Edit in recovery mode.
+		case 0: // Edit in verbose mode.
+			open_in_verbose_mode = true;
+			_open_selected_projects_check_warnings();
+			break;
+		case 1: // Edit in recovery mode.
 			_open_recovery_mode_ask(true);
 			break;
 	}
@@ -1498,6 +1504,7 @@ ProjectManager::ProjectManager() {
 			open_btn_container->add_child(open_options_btn);
 
 			open_options_popup = memnew(PopupMenu);
+			open_options_popup->add_item(TTR("Edit in verbose mode"));
 			open_options_popup->add_item(TTR("Edit in recovery mode"));
 			open_options_popup->connect(SceneStringName(id_pressed), callable_mp(this, &ProjectManager::_on_open_options_selected));
 			open_options_btn->add_child(open_options_popup);
