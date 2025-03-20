@@ -87,7 +87,7 @@ template <typename T>
 constexpr int64_t Span<T>::find_seq(const Span<T> &p_span, uint64_t p_from) const {
 	for (uint64_t i = p_from; i < size() - p_span.size(); i++) {
 		bool found = true;
-		for (int64_t j = 0; j < p_span.size(); j++) {
+		for (uint64_t j = 0; j < p_span.size(); j++) {
 			if (ptr()[i + j] != p_span.ptr()[j]) {
 				found = false;
 				break;
@@ -115,7 +115,7 @@ template <typename T>
 constexpr int64_t Span<T>::rfind_seq(const Span<T> &p_span, uint64_t p_from) const {
 	for (int64_t i = p_from; i >= 0; i--) {
 		bool found = true;
-		for (int64_t j = 0; j < p_span.size(); j++) {
+		for (uint64_t j = 0; j < p_span.size(); j++) {
 			if (ptr()[i + j] != p_span.ptr()[j]) {
 				found = false;
 				break;
