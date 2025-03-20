@@ -32,8 +32,8 @@
 
 #include "core/config/project_settings.h"
 #include "core/error/error_macros.h"
-#include "editor/editor_translation.h"
-#include "editor/editor_translation_parser.h"
+#include "editor/translations/editor_translation.h"
+#include "editor/translations/editor_translation_parser.h"
 
 POTGenerator *POTGenerator::singleton = nullptr;
 
