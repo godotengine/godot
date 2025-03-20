@@ -42,7 +42,7 @@
 #include "editor/gui/editor_spin_slider.h"
 #include "editor/gui/editor_validation_panel.h"
 #include "editor/gui/scene_tree_editor.h"
-#include "editor/multi_node_edit.h"
+#include "editor/inspector/multi_node_edit.h"
 #include "editor/plugins/animation/animation_player_editor_plugin.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/3d/mesh_instance_3d.h"

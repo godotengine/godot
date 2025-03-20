@@ -297,6 +297,7 @@ def generate_scu_files(max_includes_per_scu):
     process_folder(["editor/docks"], ["file_system_dock"])
     process_folder(["editor/export"])
     process_folder(["editor/gui"])
+    process_folder(["editor/inspector"])
     process_folder(["editor/themes"])
     process_folder(["editor/project_manager"])
     process_folder(["editor/import"])

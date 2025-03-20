@@ -31,7 +31,7 @@
 #pragma once
 
 #include "editor/dialogs/editor_locale_dialog.h"
-#include "editor/editor_inspector.h"
+#include "editor/inspector/editor_inspector.h"
 
 class Button;
 class EditorSpinSlider;
