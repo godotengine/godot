@@ -44,10 +44,3 @@ public:
 
 	WebToolsEditorPlugin();
 };
-
-#else
-
-class WebToolsEditorPlugin {
-public:
-	static void initialize() {}
-};
