@@ -17,7 +17,6 @@ thirdparty_sources_common = [
     "jchuff.c",
     "jcicc.c",
     "jcinit.c",
-    "jclhuff.c",
     "jcmarker.c",
     "jcmaster.c",
     "jcomapi.c",
@@ -33,7 +32,6 @@ thirdparty_sources_common = [
     "jdhuff.c",
     "jdicc.c",
     "jdinput.c",
-    "jdlhuff.c",
     "jdmarker.c",
     "jdmaster.c",
     "jdphuff.c",
@@ -54,8 +52,6 @@ thirdparty_sources_bit_dependent = [
     "jccoefct.c",
     "jccolor.c",
     "jcdctmgr.c",
-    "jcdiffct.c",
-    "jclossls.c",
     "jcmainct.c",
     "jcprepct.c",
     "jcsample.c",
@@ -63,8 +59,6 @@ thirdparty_sources_bit_dependent = [
     "jdcolor.c",
     "jdapistd.c",
     "jddctmgr.c",
-    "jddiffct.c",
-    "jdlossls.c",
     "jdmainct.c",
     "jdmerge.c",
     "jdpostct.c",
@@ -123,7 +117,7 @@ def add_bit_depth(bit_depth: int):
 
 add_bit_depth(8)
 add_bit_depth(12)
-add_bit_depth(16)
+# add_bit_depth(16)
 
 env_thirdparty = env_jpeg_turbo.Clone()
 env_thirdparty.disable_warnings()

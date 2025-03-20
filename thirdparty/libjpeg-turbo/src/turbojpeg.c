@@ -1200,9 +1200,6 @@ bailout:
 #define BITS_IN_JSAMPLE  12
 #include "turbojpeg-mp.c"
 #undef BITS_IN_JSAMPLE
-#define BITS_IN_JSAMPLE  16
-#include "turbojpeg-mp.c"
-#undef BITS_IN_JSAMPLE
 
 /* TurboJPEG 1.2+ */
 DLLEXPORT int tjCompress2(tjhandle handle, const unsigned char *srcBuf,
