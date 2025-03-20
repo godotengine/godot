@@ -487,7 +487,7 @@ void LookAtModifier3D::_bind_methods() {
 	BIND_ENUM_CONSTANT(ORIGIN_FROM_EXTERNAL_NODE);
 }
 
-void LookAtModifier3D::_process_modification() {
+void LookAtModifier3D::_process_modification(double p_delta) {
 	if (!is_inside_tree()) {
 		return;
 	}
@@ -570,13 +570,7 @@ void LookAtModifier3D::_process_modification() {
 
 	// Do time-based interpolation.
 	if (remaining > 0) {
-		double delta = 0.0;
-		if (skeleton->get_modifier_callback_mode_process() == Skeleton3D::MODIFIER_CALLBACK_MODE_PROCESS_IDLE) {
-			delta = get_process_delta_time();
-		} else {
-			delta = get_physics_process_delta_time();
-		}
-		remaining = MAX(0, remaining - time_step * delta);
+		remaining = MAX(0, remaining - time_step * p_delta);
 		if (is_flippable) {
 			// Interpolate through the rest same as AnimationTree blending for preventing to penetrate the bone into the body.
 			Quaternion rest = skeleton->get_bone_rest(bone).basis.get_rotation_quaternion();
