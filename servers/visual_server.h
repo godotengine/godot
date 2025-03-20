@@ -39,6 +39,8 @@
 #include "core/rid.h"
 #include "core/variant.h"
 
+using FTIHandle = uint64_t;
+
 class VisualServerCallbacks;
 
 class VisualServer : public Object {
@@ -900,6 +902,12 @@ public:
 	virtual void instance_set_exterior(RID p_instance, bool p_enabled) = 0;
 
 	virtual void instance_set_extra_visibility_margin(RID p_instance, real_t p_margin) = 0;
+
+	/* FTI HELPER API */
+	virtual RID fti_instance_create() = 0;
+	virtual void fti_instance_prepare(RID p_fti_instance, RID p_linked_instance) = 0;
+	virtual void fti_instance_set_transform(RID p_fti_instance, const Transform &p_transform) = 0;
+	virtual void fti_instance_reset(RID p_fti_instance) = 0;
 
 	/* BLOB SHADOWS API */
 	virtual RID capsule_shadow_create() = 0;

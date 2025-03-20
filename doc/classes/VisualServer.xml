@@ -1108,6 +1108,53 @@
 				[/codeblock]
 			</description>
 		</method>
+		<method name="fti_instance_create">
+			<return type="RID" />
+			<description>
+				FTI ("fixed timestep interpolation") instance provides a physics interpolation wrapper for users creating instances directly on the server rather than through Nodes.
+				[codeblock]
+				# Instance creation goes here, see the docs.
+				var instance = VisualServer.instance_create()
+
+				# Create an FTI instance and link it to the regular instance.
+				var fti_instance = VisualServer.fti_instance_create()
+				VisualServer.fti_instance_prepare(fti_instance, instance)
+
+				# Use this function instead of instance_set_transform().
+				VisualServer.fti_instance_set_transform(fti_instance, xform)
+
+				# This function provides reset_physics_interpolation().
+				VisualServer.fti_instance_reset(fti_instance)
+
+				# Be sure to free any RIDs on the server after use.
+				VisualServer.free_rid(fti_instance)
+				VisualServer.free_rid(instance)
+				[/codeblock]
+			</description>
+		</method>
+		<method name="fti_instance_prepare">
+			<return type="void" />
+			<argument index="0" name="fti_instance" type="RID" />
+			<argument index="1" name="instance" type="RID" />
+			<description>
+				An FTI instance must be linked with a regular instance before use.
+			</description>
+		</method>
+		<method name="fti_instance_reset">
+			<return type="void" />
+			<argument index="0" name="fti_instance" type="RID" />
+			<description>
+				Equivalent to reset_physics_interpolation() for Nodes.
+			</description>
+		</method>
+		<method name="fti_instance_set_transform">
+			<return type="void" />
+			<argument index="0" name="fti_instance" type="RID" />
+			<argument index="1" name="transform" type="Transform" />
+			<description>
+				Equivalent to instance_set_transform(), but provides automatic physics interpolation.
+			</description>
+		</method>
 		<method name="get_render_info">
 			<return type="int" />
 			<argument index="0" name="info" type="int" enum="VisualServer.RenderInfo" />

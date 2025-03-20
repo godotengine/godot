@@ -32,6 +32,7 @@
 
 #include "core/math/transform_interpolator.h"
 #include "core/os/os.h"
+#include "servers/visual/fti_helper.h"
 #include "visual_server_globals.h"
 #include "visual_server_light_culler.h"
 #include "visual_server_raster.h"
@@ -432,6 +433,9 @@ void VisualServerScene::tick() {
 	if (_interpolation_data.interpolation_enabled) {
 		update_interpolation_tick(true);
 	}
+
+	DEV_ASSERT(_fti_helper);
+	_fti_helper->tick_update();
 }
 
 void VisualServerScene::pre_draw(bool p_will_draw) {
@@ -446,6 +450,11 @@ void VisualServerScene::pre_draw(bool p_will_draw) {
 	if (ProjectSettings::get_singleton()->has_changes()) {
 		light_culler->set_caster_culling_active(GLOBAL_GET("rendering/quality/shadows/caster_culling"));
 		light_culler->set_light_culling_active(GLOBAL_GET("rendering/quality/shadows/light_culling"));
+	}
+
+	if (p_will_draw) {
+		DEV_ASSERT(_fti_helper);
+		_fti_helper->frame_update();
 	}
 }
 
@@ -1084,6 +1093,34 @@ bool VisualServerScene::_instance_get_transformed_aabb(RID p_instance, AABB &r_a
 	r_aabb = instance->transformed_aabb;
 
 	return true;
+}
+
+RID VisualServerScene::fti_instance_create() {
+	FTIInstance *fti_hh = memnew(FTIInstance);
+	ERR_FAIL_COND_V(!fti_hh, RID());
+	RID rid = fti_instance_owner.make_rid(fti_hh);
+	return rid;
+}
+
+void VisualServerScene::fti_instance_prepare(RID p_fti_instance, RID p_linked_instance) {
+	FTIInstance *fti_hh = fti_instance_owner.getornull(p_fti_instance);
+	ERR_FAIL_NULL(fti_hh);
+	DEV_ASSERT(_fti_helper);
+	fti_hh->handle = _fti_helper->instance_create(p_linked_instance);
+}
+
+void VisualServerScene::fti_instance_set_transform(RID p_fti_instance, const Transform &p_transform) {
+	FTIInstance *fti_hh = fti_instance_owner.getornull(p_fti_instance);
+	ERR_FAIL_NULL(fti_hh);
+	DEV_ASSERT(_fti_helper);
+	_fti_helper->instance_set_transform(fti_hh->handle, p_transform);
+}
+
+void VisualServerScene::fti_instance_reset(RID p_fti_instance) {
+	FTIInstance *fti_hh = fti_instance_owner.getornull(p_fti_instance);
+	ERR_FAIL_NULL(fti_hh);
+	DEV_ASSERT(_fti_helper);
+	_fti_helper->instance_reset_physics_interpolation(fti_hh->handle);
 }
 
 RID VisualServerScene::blob_light_create() {
@@ -4525,6 +4562,15 @@ bool VisualServerScene::free(RID p_rid) {
 			_blob_shadows.delete_light(blob_light->handle);
 		}
 		memdelete(blob_light);
+	} else if (fti_instance_owner.owns(p_rid)) {
+		FTIInstance *fti_hh = fti_instance_owner.get(p_rid);
+		if (fti_hh->handle != UINT64_MAX) {
+			DEV_ASSERT(_fti_helper);
+			_fti_helper->instance_free(fti_hh->handle);
+		}
+		fti_instance_owner.free(p_rid);
+		memdelete(fti_hh);
+		return true;
 	} else {
 		return false;
 	}
@@ -4539,6 +4585,7 @@ VisualServerScene::VisualServerScene() {
 	probe_bake_thread_exit = false;
 
 	light_culler = memnew(VisualServerLightCuller);
+	_fti_helper = memnew(FTIHelper);
 
 	render_pass = 1;
 	singleton = this;
@@ -4560,5 +4607,10 @@ VisualServerScene::~VisualServerScene() {
 	if (light_culler) {
 		memdelete(light_culler);
 		light_culler = nullptr;
+	}
+
+	if (_fti_helper) {
+		memdelete(_fti_helper);
+		_fti_helper = nullptr;
 	}
 }
