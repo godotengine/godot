@@ -32,11 +32,11 @@
 
 #include "core/io/resource_saver.h"
 #include "editor/editor_node.h"
-#include "editor/editor_properties.h"
-#include "editor/editor_properties_vector.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
+#include "editor/inspector/editor_properties.h"
+#include "editor/inspector/editor_properties_vector.h"
 #include "editor/plugins/3d/node_3d_editor_plugin.h"
 #include "editor/plugins/animation/animation_player_editor_plugin.h"
 #include "editor/themes/editor_scale.h"

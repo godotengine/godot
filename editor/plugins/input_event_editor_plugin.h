@@ -31,7 +31,7 @@
 #pragma once
 
 #include "editor/action_map_editor.h"
-#include "editor/editor_inspector.h"
+#include "editor/inspector/editor_inspector.h"
 #include "editor/plugins/editor_plugin.h"
 
 class InputEventConfigContainer : public VBoxContainer {

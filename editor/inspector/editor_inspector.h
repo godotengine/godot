@@ -30,8 +30,8 @@
 
 #pragma once
 
-#include "editor/add_metadata_dialog.h"
-#include "editor_property_name_processor.h"
+#include "editor/inspector/add_metadata_dialog.h"
+#include "editor/inspector/editor_property_name_processor.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/scroll_container.h"
 
