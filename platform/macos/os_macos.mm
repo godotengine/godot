@@ -47,15 +47,32 @@
 #include <sys/sysctl.h>
 
 void OS_MacOS::pre_wait_observer_cb(CFRunLoopObserverRef p_observer, CFRunLoopActivity p_activiy, void *p_context) {
-	// Prevent main loop from sleeping and redraw window during modal popup display.
-	// Do not redraw when rendering is done from the separate thread, it will conflict with the OpenGL context updates.
+	OS_MacOS *os = static_cast<OS_MacOS *>(OS::get_singleton());
 
-	DisplayServerMacOS *ds = (DisplayServerMacOS *)DisplayServer::get_singleton();
-	if (get_singleton()->get_main_loop() && ds && !get_singleton()->is_separate_thread_rendering_enabled() && !ds->get_is_resizing()) {
-		Main::force_redraw();
-		if (!Main::is_iterating()) { // Avoid cyclic loop.
-			Main::iteration();
+	if (os->main_loop_initalized && !os->should_terminate) {
+		@autoreleasepool {
+			@try {
+				if (DisplayServer::get_singleton()) {
+					static_cast<DisplayServerMacOS *>(DisplayServer::get_singleton())->process_events(); // Get rid of pending events.
+				}
+				os->joypad_apple->process_joypads();
+
+				if (Main::iteration()) {
+					os->should_terminate = true;
+				}
+			} @catch (NSException *exception) {
+				ERR_PRINT("NSException: " + String::utf8([exception reason].UTF8String));
+			}
 		}
+	}
+
+	if (os->should_terminate) {
+		CFRunLoopRemoveObserver(CFRunLoopGetCurrent(), static_cast<OS_MacOS *>(OS::get_singleton())->pre_wait_observer, kCFRunLoopCommonModes);
+		CFRelease(os->pre_wait_observer);
+
+		// Note: use "stop" instead of "terminate" to ensure control is returned to "OS_MacOS::run".
+		[NSApp stop:nil];
+		[NSApp abortModal];
 	}
 
 	CFRunLoopWakeUp(CFRunLoopGetCurrent()); // Prevent main loop from sleeping.
@@ -822,37 +839,57 @@ OS::PreferredTextureFormat OS_MacOS::get_preferred_texture_format() const {
 	return PREFERRED_TEXTURE_FORMAT_S3TC_BPTC;
 }
 
-void OS_MacOS::run() {
-	if (!main_loop) {
-		return;
+bool OS_MacOS::run() {
+	[NSApp run];
+
+	if (main_loop && main_loop_initalized) {
+		main_loop->finalize();
 	}
-
-	@autoreleasepool {
-		main_loop->initialize();
-	}
-
-	bool quit = false;
-	while (!quit) {
-		@autoreleasepool {
-			@try {
-				if (DisplayServer::get_singleton()) {
-					DisplayServer::get_singleton()->process_events(); // Get rid of pending events.
-				}
-				joypad_apple->process_joypads();
-
-				if (Main::iteration()) {
-					quit = true;
-				}
-			} @catch (NSException *exception) {
-				ERR_PRINT("NSException: " + String::utf8([exception reason].UTF8String));
-			}
-		}
-	}
-
-	main_loop->finalize();
+	return main_loop_initalized;
 }
 
-OS_MacOS::OS_MacOS() {
+void OS_MacOS::start_main() {
+	Error err;
+	@autoreleasepool {
+		err = Main::setup(execpath, argc, argv);
+	}
+
+	if (err == OK) {
+		int ret;
+		@autoreleasepool {
+			ret = Main::start();
+		}
+		if (ret == EXIT_SUCCESS) {
+			if (main_loop) {
+				@autoreleasepool {
+					main_loop->initialize();
+				}
+				main_loop_initalized = true;
+			} else {
+				should_terminate = true;
+			}
+		} else {
+			set_exit_code(EXIT_FAILURE);
+			should_terminate = true;
+		}
+	} else {
+		if (err == ERR_HELP) { // Returned by --help and --version, so success.
+			set_exit_code(EXIT_SUCCESS);
+		} else {
+			set_exit_code(EXIT_FAILURE);
+		}
+		should_terminate = true;
+	}
+
+	pre_wait_observer = CFRunLoopObserverCreate(kCFAllocatorDefault, kCFRunLoopBeforeWaiting, true, 0, &pre_wait_observer_cb, nullptr);
+	CFRunLoopAddObserver(CFRunLoopGetCurrent(), pre_wait_observer, kCFRunLoopCommonModes);
+}
+
+OS_MacOS::OS_MacOS(const char *p_execpath, int p_argc, char **p_argv) {
+	execpath = p_execpath;
+	argc = p_argc;
+	argv = p_argv;
+
 	if (is_sandboxed()) {
 		// Load security-scoped bookmarks, request access, remove stale or invalid bookmarks.
 		NSArray *bookmarks = [[NSUserDefaults standardUserDefaults] arrayForKey:@"sec_bookmarks"];
@@ -894,35 +931,13 @@ OS_MacOS::OS_MacOS() {
 
 	NSMenu *main_menu = [[NSMenu alloc] initWithTitle:@""];
 	[NSApp setMainMenu:main_menu];
-	[NSApp finishLaunching];
 
-	id delegate = [[GodotApplicationDelegate alloc] init];
+	delegate = [[GodotApplicationDelegate alloc] init];
 	ERR_FAIL_NULL(delegate);
 	[NSApp setDelegate:delegate];
 	[NSApp registerUserInterfaceItemSearchHandler:delegate];
-
-	pre_wait_observer = CFRunLoopObserverCreate(kCFAllocatorDefault, kCFRunLoopBeforeWaiting, true, 0, &pre_wait_observer_cb, nullptr);
-	CFRunLoopAddObserver(CFRunLoopGetCurrent(), pre_wait_observer, kCFRunLoopCommonModes);
-
-	// Process application:openFile: event.
-	while (true) {
-		NSEvent *event = [NSApp
-				nextEventMatchingMask:NSEventMaskAny
-							untilDate:[NSDate distantPast]
-							   inMode:NSDefaultRunLoopMode
-							  dequeue:YES];
-
-		if (event == nil) {
-			break;
-		}
-
-		[NSApp sendEvent:event];
-	}
-
-	[NSApp activateIgnoringOtherApps:YES];
 }
 
 OS_MacOS::~OS_MacOS() {
-	CFRunLoopRemoveObserver(CFRunLoopGetCurrent(), pre_wait_observer, kCFRunLoopCommonModes);
-	CFRelease(pre_wait_observer);
+	// NOP
 }

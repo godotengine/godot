@@ -40,6 +40,14 @@
 #include "servers/audio_server.h"
 
 class OS_MacOS : public OS_Unix {
+	const char *execpath = nullptr;
+	int argc = 0;
+	char **argv = nullptr;
+
+	id delegate = nullptr;
+	bool should_terminate = false;
+	bool main_loop_initalized = false;
+
 	JoypadApple *joypad_apple = nullptr;
 
 #ifdef COREAUDIO_ENABLED
@@ -131,8 +139,11 @@ public:
 	virtual String get_system_ca_certificates() override;
 	virtual OS::PreferredTextureFormat get_preferred_texture_format() const override;
 
-	void run();
+	bool run(); // Runs macOS native event loop.
+	void start_main(); // Initializes and runs Godot main loop.
+	bool os_should_terminate() const { return should_terminate; }
+	int get_cmd_argc() const { return argc; }
 
-	OS_MacOS();
+	OS_MacOS(const char *p_execpath, int p_argc, char **p_argv);
 	~OS_MacOS();
 };
