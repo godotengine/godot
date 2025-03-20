@@ -924,7 +924,11 @@ bool OpenXRAPI::setup_play_space() {
 	XrSpace new_play_space = XR_NULL_HANDLE;
 	bool will_emulate_local_floor = false;
 
-	if (is_reference_space_supported(requested_reference_space)) {
+	if (custom_play_space != XR_NULL_HANDLE) {
+		new_play_space = custom_play_space;
+		// We use this to mark custom reference spaces.
+		new_reference_space = XR_REFERENCE_SPACE_TYPE_MAX_ENUM;
+	} else if (is_reference_space_supported(requested_reference_space)) {
 		new_reference_space = requested_reference_space;
 	} else if (requested_reference_space == XR_REFERENCE_SPACE_TYPE_LOCAL_FLOOR_EXT && is_reference_space_supported(XR_REFERENCE_SPACE_TYPE_STAGE)) {
 		print_verbose("OpenXR: LOCAL_FLOOR space isn't supported, emulating using STAGE and LOCAL spaces.");
@@ -982,21 +986,34 @@ bool OpenXRAPI::setup_play_space() {
 		new_reference_space = XR_REFERENCE_SPACE_TYPE_LOCAL;
 	}
 
-	XrReferenceSpaceCreateInfo play_space_create_info = {
-		XR_TYPE_REFERENCE_SPACE_CREATE_INFO, // type
-		nullptr, // next
-		new_reference_space, // referenceSpaceType
-		identityPose, // poseInReferenceSpace
-	};
+	if (new_play_space == XR_NULL_HANDLE) {
+		void *next_pointer = nullptr;
+		for (OpenXRExtensionWrapper *wrapper : registered_extension_wrappers) {
+			void *np = wrapper->set_reference_space_create_info_and_get_next_pointer(
+					new_reference_space, next_pointer);
+			if (np != nullptr) {
+				next_pointer = np;
+			}
+		}
 
-	XrResult result = xrCreateReferenceSpace(session, &play_space_create_info, &new_play_space);
-	if (XR_FAILED(result)) {
-		print_line("OpenXR: Failed to create play space [", get_error_string(result), "]");
-		return false;
+		XrReferenceSpaceCreateInfo play_space_create_info = {
+			XR_TYPE_REFERENCE_SPACE_CREATE_INFO, // type
+			next_pointer, // next
+			new_reference_space, // referenceSpaceType
+			identityPose, // poseInReferenceSpace
+		};
+
+		XrResult result = xrCreateReferenceSpace(session, &play_space_create_info, &new_play_space);
+		if (XR_FAILED(result)) {
+			print_line("OpenXR: Failed to create play space [", get_error_string(result), "]");
+			return false;
+		}
 	}
 
 	// If we've previously created a play space, clean it up first.
-	if (play_space != XR_NULL_HANDLE) {
+	// But if it was a custom reference space, we don't touch it - it's the job of the extension that
+	// created it to clean it up.
+	if (play_space != XR_NULL_HANDLE && reference_space != XR_REFERENCE_SPACE_TYPE_MAX_ENUM) {
 		// TODO Investigate if destroying our play space here is safe,
 		// it may still be used in the rendering thread.
 
@@ -1029,9 +1046,17 @@ bool OpenXRAPI::setup_view_space() {
 		{ 0.0, 0.0, 0.0 }
 	};
 
+	void *next_pointer = nullptr;
+	for (OpenXRExtensionWrapper *wrapper : registered_extension_wrappers) {
+		void *np = wrapper->set_reference_space_create_info_and_get_next_pointer(XR_REFERENCE_SPACE_TYPE_VIEW, next_pointer);
+		if (np != nullptr) {
+			next_pointer = np;
+		}
+	}
+
 	XrReferenceSpaceCreateInfo view_space_create_info = {
 		XR_TYPE_REFERENCE_SPACE_CREATE_INFO, // type
-		nullptr, // next
+		next_pointer, // next
 		XR_REFERENCE_SPACE_TYPE_VIEW, // referenceSpaceType
 		identityPose // poseInReferenceSpace
 	};
@@ -1081,6 +1106,17 @@ bool OpenXRAPI::reset_emulated_floor_height() {
 	};
 
 	XrSpace new_play_space;
+
+	void *next_pointer = nullptr;
+	for (OpenXRExtensionWrapper *wrapper : registered_extension_wrappers) {
+		void *np = wrapper->set_reference_space_create_info_and_get_next_pointer(
+				create_info.referenceSpaceType, next_pointer);
+		if (np != nullptr) {
+			next_pointer = np;
+		}
+	}
+	create_info.next = next_pointer;
+
 	result = xrCreateReferenceSpace(session, &create_info, &new_play_space);
 	if (XR_FAILED(result)) {
 		print_line("OpenXR: Failed to recreate emulated LOCAL_FLOOR play space with latest floor estimate [", get_error_string(result), "]");
@@ -1478,10 +1514,19 @@ void OpenXRAPI::set_view_configuration(XrViewConfigurationType p_view_configurat
 }
 
 bool OpenXRAPI::set_requested_reference_space(XrReferenceSpaceType p_requested_reference_space) {
+	if (custom_play_space != XR_NULL_HANDLE) {
+		return false;
+	}
+
 	requested_reference_space = p_requested_reference_space;
 	play_space_is_dirty = true;
 
 	return true;
+}
+
+void OpenXRAPI::set_custom_play_space(XrSpace p_custom_space) {
+	custom_play_space = p_custom_space;
+	play_space_is_dirty = true;
 }
 
 void OpenXRAPI::set_submit_depth_buffer(bool p_submit_depth_buffer) {
@@ -2111,7 +2156,15 @@ bool OpenXRAPI::process() {
 	// As the name suggests, OpenXR can pause the thread to minimize the time between
 	// retrieving tracking data and using that tracking data to render.
 	// OpenXR thus works best if rendering is performed on a separate thread.
-	XrFrameWaitInfo frame_wait_info = { XR_TYPE_FRAME_WAIT_INFO, nullptr };
+	void *frame_wait_info_next_pointer = nullptr;
+	for (OpenXRExtensionWrapper *extension : frame_info_extensions) {
+		void *np = extension->set_frame_wait_info_and_get_next_pointer(frame_wait_info_next_pointer);
+		if (np != nullptr) {
+			frame_wait_info_next_pointer = np;
+		}
+	}
+
+	XrFrameWaitInfo frame_wait_info = { XR_TYPE_FRAME_WAIT_INFO, frame_wait_info_next_pointer };
 	frame_state.predictedDisplayTime = 0;
 	frame_state.predictedDisplayPeriod = 0;
 	frame_state.shouldRender = false;
@@ -2189,6 +2242,14 @@ void OpenXRAPI::pre_render() {
 		wrapper->on_pre_render();
 	}
 
+	void *view_locate_info_next_pointer = nullptr;
+	for (OpenXRExtensionWrapper *extension : frame_info_extensions) {
+		void *np = extension->set_view_locate_info_and_get_next_pointer(view_locate_info_next_pointer);
+		if (np != nullptr) {
+			view_locate_info_next_pointer = np;
+		}
+	}
+
 	// Get our view info for the frame we're about to render, note from the OpenXR manual:
 	// "Repeatedly calling xrLocateViews with the same time may not necessarily return the same result. Instead the prediction gets increasingly accurate as the function is called closer to the given time for which a prediction is made"
 
@@ -2202,7 +2263,7 @@ void OpenXRAPI::pre_render() {
 
 	XrViewLocateInfo view_locate_info = {
 		XR_TYPE_VIEW_LOCATE_INFO, // type
-		nullptr, // next
+		view_locate_info_next_pointer, // next
 		view_configuration, // viewConfigurationType
 		render_state.predicted_display_time, // displayTime
 		render_state.play_space // space
@@ -2245,7 +2306,7 @@ void OpenXRAPI::pre_render() {
 	};
 	result = xrBeginFrame(session, &frame_begin_info);
 	if (XR_FAILED(result)) {
-		print_line("OpenXR: failed to being frame [", get_error_string(result), "]");
+		print_line("OpenXR: failed to begin frame [", get_error_string(result), "]");
 		return;
 	}
 
@@ -2476,9 +2537,17 @@ void OpenXRAPI::end_frame() {
 		layers_list.push_back(ordered_layer.composition_layer);
 	}
 
+	void *frame_end_info_next_pointer = nullptr;
+	for (OpenXRExtensionWrapper *extension : frame_info_extensions) {
+		void *np = extension->set_frame_end_info_and_get_next_pointer(frame_end_info_next_pointer);
+		if (np != nullptr) {
+			frame_end_info_next_pointer = np;
+		}
+	}
+
 	XrFrameEndInfo frame_end_info = {
 		XR_TYPE_FRAME_END_INFO, // type
-		nullptr, // next
+		frame_end_info_next_pointer, // next
 		render_state.predicted_display_time, // displayTime
 		environment_blend_mode, // environmentBlendMode
 		static_cast<uint32_t>(layers_list.size()), // layerCount
@@ -2688,6 +2757,12 @@ OpenXRAPI::~OpenXRAPI() {
 		memdelete(provider);
 	}
 	composition_layer_providers.clear();
+
+	// Cleanup our frame info providers.
+	for (OpenXRExtensionWrapper *provider : frame_info_extensions) {
+		memdelete(provider);
+	}
+	frame_info_extensions.clear();
 
 	supported_extensions.clear();
 	layer_properties.clear();
@@ -3608,6 +3683,14 @@ void OpenXRAPI::register_projection_views_extension(OpenXRExtensionWrapper *p_ex
 
 void OpenXRAPI::unregister_projection_views_extension(OpenXRExtensionWrapper *p_extension) {
 	projection_views_extensions.erase(p_extension);
+}
+
+void OpenXRAPI::register_frame_info_extension(OpenXRExtensionWrapper *p_extension) {
+	frame_info_extensions.append(p_extension);
+}
+
+void OpenXRAPI::unregister_frame_info_extension(OpenXRExtensionWrapper *p_extension) {
+	frame_info_extensions.erase(p_extension);
 }
 
 const Vector<XrEnvironmentBlendMode> OpenXRAPI::get_supported_environment_blend_modes() {
