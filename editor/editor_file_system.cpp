@@ -2016,6 +2016,10 @@ bool EditorFileSystem::_should_reload_script(const String &p_path) {
 		return false;
 	}
 
+	if (scr->get_language()->get_name() == "C#") {
+		return false;
+	}
+
 	// Scripts are reloaded via the script editor if they are currently opened.
 	if (ScriptEditor::get_singleton()->get_open_scripts().has(scr)) {
 		return false;
