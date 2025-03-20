@@ -533,7 +533,7 @@ void RemoteDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 				ERR_FAIL_COND(data.is_empty());
 				script_debugger->set_skip_breakpoints(data[0]);
 			} else if (command == "set_ignore_error_breaks") {
-				ERR_FAIL_COND(data.size() < 1);
+				ERR_FAIL_COND(data.is_empty());
 				script_debugger->set_ignore_error_breaks(data[0]);
 			} else if (command == "evaluate") {
 				String expression_str = data[0];
@@ -675,7 +675,7 @@ Error RemoteDebugger::_core_capture(const String &p_cmd, const Array &p_data, bo
 		ERR_FAIL_COND_V(p_data.is_empty(), ERR_INVALID_DATA);
 		script_debugger->set_skip_breakpoints(p_data[0]);
 	} else if (p_cmd == "set_ignore_error_breaks") {
-		ERR_FAIL_COND_V(p_data.size() < 1, ERR_INVALID_DATA);
+		ERR_FAIL_COND_V(p_data.is_empty(), ERR_INVALID_DATA);
 		script_debugger->set_ignore_error_breaks(p_data[0]);
 	} else if (p_cmd == "break") {
 		script_debugger->debug(script_debugger->get_break_language());

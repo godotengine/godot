@@ -6063,7 +6063,7 @@ bool CanvasItemEditorViewport::_create_instance(Node *p_parent, const String &p_
 }
 
 void CanvasItemEditorViewport::_perform_drop_data() {
-	ERR_FAIL_COND(selected_files.size() <= 0);
+	ERR_FAIL_COND(selected_files.is_empty());
 
 	_remove_preview();
 

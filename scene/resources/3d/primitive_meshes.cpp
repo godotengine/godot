@@ -2972,7 +2972,7 @@ void TextMesh::_generate_glyph_mesh_data(const GlyphMeshKey &p_key, const Glyph 
 	PackedInt32Array contours = d["contours"];
 	bool orientation = d["orientation"];
 
-	if (points.size() < 3 || contours.size() < 1) {
+	if (points.size() < 3 || contours.is_empty()) {
 		return; // No full contours, only glyph control points (or nothing), ignore.
 	}
 
