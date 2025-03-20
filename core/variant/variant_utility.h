@@ -72,7 +72,8 @@ struct VariantUtilityFunctions {
 	static bool is_nan(double x);
 	static bool is_inf(double x);
 	static bool is_equal_approx(double x, double y);
-	static bool is_zero_approx(double x);
+	static bool is_equal_approx_custom_epsilon(double x, double y, double tolerance);
+	static bool is_zero_approx(double x, double tolerance = CMP_EPSILON);
 	static bool is_finite(double x);
 	static double ease(float x, float curve);
 	static int step_decimals(float step);

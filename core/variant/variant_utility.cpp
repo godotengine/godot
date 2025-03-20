@@ -352,8 +352,12 @@ bool VariantUtilityFunctions::is_equal_approx(double x, double y) {
 	return Math::is_equal_approx(x, y);
 }
 
-bool VariantUtilityFunctions::is_zero_approx(double x) {
-	return Math::is_zero_approx(x);
+bool VariantUtilityFunctions::is_equal_approx_custom_epsilon(double x, double y, double tolerance) {
+	return Math::is_equal_approx(x, y, tolerance);
+}
+
+bool VariantUtilityFunctions::is_zero_approx(double x, double tolerance) {
+	return Math::is_zero_approx(x, tolerance);
 }
 
 bool VariantUtilityFunctions::is_finite(double x) {
@@ -1753,7 +1757,8 @@ void Variant::_register_variant_utility_functions() {
 	FUNCBINDR(is_inf, sarray("x"), Variant::UTILITY_FUNC_TYPE_MATH);
 
 	FUNCBINDR(is_equal_approx, sarray("a", "b"), Variant::UTILITY_FUNC_TYPE_MATH);
-	FUNCBINDR(is_zero_approx, sarray("x"), Variant::UTILITY_FUNC_TYPE_MATH);
+	FUNCBINDR(is_equal_approx_custom_epsilon, sarray("a", "b", "tolerance"), Variant::UTILITY_FUNC_TYPE_MATH);
+	FUNCBINDRD(is_zero_approx, sarray("x", "tolerance"), varray(CMP_EPSILON), Variant::UTILITY_FUNC_TYPE_MATH);
 	FUNCBINDR(is_finite, sarray("x"), Variant::UTILITY_FUNC_TYPE_MATH);
 
 	FUNCBINDR(ease, sarray("x", "curve"), Variant::UTILITY_FUNC_TYPE_MATH);
