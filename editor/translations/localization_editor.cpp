@@ -34,10 +34,10 @@
 #include "core/string/translation_server.h"
 #include "editor/docks/filesystem_dock.h"
 #include "editor/editor_settings.h"
-#include "editor/editor_translation_parser.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/gui/editor_file_dialog.h"
-#include "editor/pot_generator.h"
+#include "editor/translations/editor_translation_parser.h"
+#include "editor/translations/pot_generator.h"
 #include "scene/gui/control.h"
 #include "scene/gui/tab_container.h"
 
