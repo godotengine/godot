@@ -30,7 +30,7 @@
 
 #pragma once
 
-#include "editor/animation_track_editor.h"
+#include "editor/animation/animation_track_editor.h"
 
 class AnimationTrackEditBool : public AnimationTrackEdit {
 	GDCLASS(AnimationTrackEditBool, AnimationTrackEdit);
