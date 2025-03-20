@@ -31,8 +31,8 @@
 #pragma once
 
 #include "editor/dialogs/add_metadata_dialog.h"
-#include "editor/editor_properties.h"
 #include "editor/gui/editor_file_dialog.h"
+#include "editor/inspector/editor_properties.h"
 #include "editor/plugins/3d/node_3d_editor_plugin.h"
 #include "editor/plugins/editor_plugin.h"
 #include "scene/3d/camera_3d.h"
