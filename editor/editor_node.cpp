@@ -6457,6 +6457,18 @@ void EditorNode::reload_instances_with_path_in_edited_scenes() {
 
 			get_scene_editor_data_for_node(owner, original_node, scene_editor_data_table);
 
+			// The current node being reloaded may also be an additional node for another node
+			// that is in the process of being reloaded.
+			// Replacing the additional node with the new one prevents a crash where nodes
+			// in 'addition_list' are removed from the scene tree and queued for deletion.
+			for (InstanceModificationsEntry &im : scene_modifications->instance_list) {
+				for (AdditiveNodeEntry &additive_node_entry : im.addition_list) {
+					if (additive_node_entry.node == original_node) {
+						additive_node_entry.node = instantiated_node;
+					}
+				}
+			}
+
 			bool original_node_scene_instance_load_placeholder = original_node->get_scene_instance_load_placeholder();
 
 			// Delete all the remaining node children.
