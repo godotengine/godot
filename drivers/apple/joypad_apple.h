@@ -53,9 +53,6 @@ struct GameController {
 	static_assert(static_cast<uint32_t>(JoyAxis::MAX) < 32, "JoyAxis::MAX must be less than 32");
 	double axis_value[(int)JoyAxis::MAX];
 
-	bool axis_changed[(int)JoyAxis::MAX];
-	double axis_value[(int)JoyAxis::MAX];
-
 	GameController(int p_joy_id, GCController *p_controller);
 	~GameController();
 };
