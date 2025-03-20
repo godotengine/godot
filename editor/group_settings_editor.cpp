@@ -31,11 +31,11 @@
 #include "group_settings_editor.h"
 
 #include "core/config/project_settings.h"
+#include "editor/docks/filesystem_dock.h"
+#include "editor/docks/scene_tree_dock.h"
 #include "editor/editor_node.h"
 #include "editor/editor_undo_redo_manager.h"
-#include "editor/filesystem_dock.h"
 #include "editor/gui/editor_validation_panel.h"
-#include "editor/scene_tree_dock.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/resources/packed_scene.h"
 
