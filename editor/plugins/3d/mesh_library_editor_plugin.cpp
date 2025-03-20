@@ -30,12 +30,12 @@
 
 #include "mesh_library_editor_plugin.h"
 
+#include "editor/docks/inspector_dock.h"
 #include "editor/editor_interface.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
 #include "editor/gui/editor_file_dialog.h"
-#include "editor/inspector_dock.h"
 #include "editor/plugins/3d/node_3d_editor_plugin.h"
 #include "main/main.h"
 #include "scene/3d/mesh_instance_3d.h"
