@@ -86,6 +86,7 @@ if env.editor_build:
     env.add_source_files(env.editor_sources, gen_exporters)
 
     SConscript("debugger/SCsub")
+    SConscript("docks/SCsub")
     SConscript("export/SCsub")
     SConscript("gui/SCsub")
     SConscript("icons/SCsub")
