@@ -76,7 +76,15 @@ void ProjectSettingsEditor::popup_project_settings(bool p_clear_filter) {
 }
 
 void ProjectSettingsEditor::queue_save() {
+	settings_changed = true;
 	timer->start();
+}
+
+void ProjectSettingsEditor::_save() {
+	settings_changed = false;
+	if (ps) {
+		ps->save();
+	}
 }
 
 void ProjectSettingsEditor::set_plugins_page() {
@@ -601,6 +609,10 @@ void ProjectSettingsEditor::_notification(int p_what) {
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			if (!is_visible()) {
 				EditorSettings::get_singleton()->set_project_metadata("dialog_bounds", "project_settings", Rect2(get_position(), get_size()));
+				if (settings_changed) {
+					timer->stop();
+					_save();
+				}
 			}
 		} break;
 
@@ -653,7 +665,6 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 
 	advanced = memnew(CheckButton);
 	advanced->set_text(TTR("Advanced Settings"));
-	advanced->connect(SceneStringName(toggled), callable_mp(this, &ProjectSettingsEditor::_advanced_toggled));
 	search_bar->add_child(advanced);
 
 	custom_properties = memnew(HBoxContainer);
@@ -763,7 +774,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 
 	timer = memnew(Timer);
 	timer->set_wait_time(1.5);
-	timer->connect("timeout", callable_mp(ps, &ProjectSettings::save));
+	timer->connect("timeout", callable_mp(this, &ProjectSettingsEditor::_save));
 	timer->set_one_shot(true);
 	add_child(timer);
 
@@ -774,6 +785,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	if (use_advanced) {
 		advanced->set_pressed(true);
 	}
+	advanced->connect(SceneStringName(toggled), callable_mp(this, &ProjectSettingsEditor::_advanced_toggled));
 
 	_update_advanced(use_advanced);
 

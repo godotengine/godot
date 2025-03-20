@@ -191,6 +191,10 @@
 		<member name="debugger/auto_switch_to_stack_trace" type="bool" setter="" getter="">
 			If [code]true[/code], automatically switches to the [b]Stack Trace[/b] panel when the debugger hits a breakpoint or steps.
 		</member>
+		<member name="debugger/max_node_selection" type="int" setter="" getter="">
+			The limit of how many remote nodes can be selected at once.
+			[b]Warning:[/b] Increasing this value is not recommended, as selecting too many can make the editing and inspection of remote properties unreliable.
+		</member>
 		<member name="debugger/profile_native_calls" type="bool" setter="" getter="">
 			If [code]true[/code], enables collection of profiling data from non-GDScript Godot functions, such as engine class methods. Enabling this slows execution while profiling further.
 		</member>
@@ -287,6 +291,10 @@
 		</member>
 		<member name="editors/2d/zoom_speed_factor" type="float" setter="" getter="">
 			The factor to use when zooming in or out in the 2D editor. For example, [code]1.1[/code] will zoom in by 10% with every step. If set to [code]2.0[/code], zooming will only cycle through powers of two.
+		</member>
+		<member name="editors/3d/active_selection_box_color" type="Color" setter="" getter="">
+			The color to use for the active selection box that surrounds selected nodes in the 3D editor viewport. The color's alpha channel influences the selection box's opacity.
+			[b]Note:[/b] The term "active" indicates that this object is the primary selection used as the basis for certain operations. This is the last selected [Node3D], which can be reordered with [kbd]Shift + Left mouse button[/kbd].
 		</member>
 		<member name="editors/3d/default_fov" type="float" setter="" getter="">
 			The default camera vertical field of view to use in the 3D editor (in degrees). The camera field of view can be adjusted on a per-scene basis using the [b]View[/b] menu at the top of the 3D editor. If a scene had its camera field of view adjusted using the [b]View[/b] menu, this setting is ignored in the scene in question. This setting is also ignored while a [Camera3D] node is being previewed in the editor.
@@ -514,11 +522,21 @@
 			If [code]true[/code], display a confirmation dialog when adding a new track to an animation by pressing the "key" icon next to a property. Holding Shift will bypass the dialog.
 			If [code]false[/code], the behavior is reversed, i.e. the dialog only appears when Shift is held.
 		</member>
+		<member name="editors/animation/default_animation_step" type="float" setter="" getter="">
+			Default step used when creating a new [Animation] in the Animation bottom panel. Only affects the first animation created in the [AnimationPlayer]. By default, other newly created animations will use the step from the previous ones.
+			This value is always expressed in seconds. If you want e.g. [code]10[/code] FPS to be the default, you need to set the default step to [code]0.1[/code].
+		</member>
 		<member name="editors/animation/default_create_bezier_tracks" type="bool" setter="" getter="">
 			If [code]true[/code], create a Bezier track instead of a standard track when pressing the "key" icon next to a property. Bezier tracks provide more control over animation curves, but are more difficult to adjust quickly.
 		</member>
 		<member name="editors/animation/default_create_reset_tracks" type="bool" setter="" getter="">
 			If [code]true[/code], create a [code]RESET[/code] track when creating a new animation track. This track can be used to restore the animation to a "default" state.
+		</member>
+		<member name="editors/animation/default_fps_compatibility" type="bool" setter="" getter="">
+			Controls whether [AnimationPlayer] will apply snapping to nearest integer FPS when snapping is in Seconds mode. The option is remembered locally for a scene and this option only determines the default value when scene doesn't have local state yet.
+		</member>
+		<member name="editors/animation/default_fps_mode" type="int" setter="" getter="">
+			Default step mode for [AnimationPlayer] (seconds or FPS). The option is remembered locally for a scene and this option only determines the default value when scene doesn't have local state yet.
 		</member>
 		<member name="editors/animation/onion_layers_future_color" type="Color" setter="" getter="">
 			The modulate color to use for "future" frames displayed in the animation editor's onion skinning feature.
@@ -890,7 +908,7 @@
 			If [code]true[/code], scenes and scripts are saved when the editor loses focus. Depending on the work flow, this behavior can be less intrusive than [member text_editor/behavior/files/autosave_interval_secs] or remembering to save manually.
 		</member>
 		<member name="interface/editor/separate_distraction_mode" type="bool" setter="" getter="">
-			If [code]true[/code], the editor's Script tab will have a separate distraction mode setting from the 2D/3D/AssetLib tabs. If [code]false[/code], the distraction-free mode toggle is shared between all tabs.
+			If [code]true[/code], the editor's Script tab will have a separate distraction mode setting from the 2D/3D/Game/AssetLib tabs. If [code]false[/code], the distraction-free mode toggle is shared between all tabs.
 		</member>
 		<member name="interface/editor/show_internal_errors_in_toast_notifications" type="int" setter="" getter="">
 			If enabled, displays internal engine errors in toast notifications (toggleable by clicking the "bell" icon at the bottom of the editor). No matter the value of this setting, non-internal engine errors will always be visible in toast notifications.
@@ -908,6 +926,9 @@
 			This is equivalent to [member ProjectSettings.display/window/subwindows/embed_subwindows] in the running project, except the setting's value is inverted.
 			[b]Note:[/b] To query whether the editor can use multiple windows in an editor plugin, use [method EditorInterface.is_multi_window_enabled] instead of querying the value of this editor setting.
 			[b]Note:[/b] If [code]true[/code], game embedding is disabled.
+		</member>
+		<member name="interface/editor/tablet_driver" type="int" setter="" getter="">
+			Overrides the tablet driver used by the editor.
 		</member>
 		<member name="interface/editor/ui_layout_direction" type="int" setter="" getter="">
 			Editor UI default layout direction.
@@ -1520,6 +1541,9 @@
 		</member>
 		<member name="text_editor/theme/highlighting/user_type_color" type="Color" setter="" getter="">
 			The script editor's color for user-defined types (using [code]class_name[/code]).
+		</member>
+		<member name="text_editor/theme/highlighting/warning_color" type="Color" setter="" getter="">
+			The script editor's background color for lines with warnings. This should be set to a translucent color so that it can display on top of other line color modifiers such as [member text_editor/theme/highlighting/current_line_color].
 		</member>
 		<member name="text_editor/theme/highlighting/word_highlighted_color" type="Color" setter="" getter="">
 			The script editor's color for words highlighted by selecting them. Only visible if [member text_editor/appearance/caret/highlight_all_occurrences] is [code]true[/code].

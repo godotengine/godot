@@ -121,6 +121,7 @@ private:
 		FILE_OPEN_IN_TERMINAL,
 		FILE_COPY_PATH,
 		FILE_COPY_ABSOLUTE_PATH,
+		FILE_COPY_NAME,
 		FILE_COPY_UID,
 		FOLDER_EXPAND_ALL,
 		FOLDER_COLLAPSE_ALL,
@@ -151,7 +152,6 @@ private:
 	Button *button_dock_placement = nullptr;
 
 	Button *button_toggle_display_mode = nullptr;
-	Button *button_reload = nullptr;
 	Button *button_file_list_display_mode = nullptr;
 	Button *button_hist_next = nullptr;
 	Button *button_hist_prev = nullptr;
@@ -234,6 +234,7 @@ private:
 	bool import_dock_needs_update = false;
 	TreeItem *resources_item = nullptr;
 	TreeItem *favorites_item = nullptr;
+	Control *had_focus = nullptr;
 
 	bool holding_branch = false;
 	Vector<TreeItem *> tree_items_selected_on_drag_begin;

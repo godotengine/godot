@@ -106,16 +106,16 @@ Dictionary GDExtensionAPIDump::generate_extension_api(bool p_include_docs) {
 	{
 		//header
 		Dictionary header;
-		header["version_major"] = VERSION_MAJOR;
-		header["version_minor"] = VERSION_MINOR;
-#if VERSION_PATCH
-		header["version_patch"] = VERSION_PATCH;
+		header["version_major"] = GODOT_VERSION_MAJOR;
+		header["version_minor"] = GODOT_VERSION_MINOR;
+#if GODOT_VERSION_PATCH
+		header["version_patch"] = GODOT_VERSION_PATCH;
 #else
 		header["version_patch"] = 0;
 #endif
-		header["version_status"] = VERSION_STATUS;
-		header["version_build"] = VERSION_BUILD;
-		header["version_full_name"] = VERSION_FULL_NAME;
+		header["version_status"] = GODOT_VERSION_STATUS;
+		header["version_build"] = GODOT_VERSION_BUILD;
+		header["version_full_name"] = GODOT_VERSION_FULL_NAME;
 
 #if REAL_T_IS_DOUBLE
 		header["precision"] = "double";
@@ -1053,9 +1053,8 @@ Dictionary GDExtensionAPIDump::generate_extension_api(bool p_include_docs) {
 						}
 
 						Array arguments;
-						int i = 0;
-						for (List<PropertyInfo>::ConstIterator itr = mi.arguments.begin(); itr != mi.arguments.end(); ++itr, ++i) {
-							const PropertyInfo &pinfo = *itr;
+						for (int64_t i = 0; i < mi.arguments.size(); ++i) {
+							const PropertyInfo &pinfo = mi.arguments[i];
 							Dictionary d3;
 
 							d3["name"] = pinfo.name;
@@ -1180,11 +1179,10 @@ Dictionary GDExtensionAPIDump::generate_extension_api(bool p_include_docs) {
 
 					Array arguments;
 
-					int i = 0;
-					for (List<PropertyInfo>::ConstIterator itr = F.arguments.begin(); itr != F.arguments.end(); ++itr, ++i) {
+					for (int64_t i = 0; i < F.arguments.size(); ++i) {
 						Dictionary d3;
-						d3["name"] = itr->name;
-						d3["type"] = get_property_info_type_name(*itr);
+						d3["name"] = F.arguments[i].name;
+						d3["type"] = get_property_info_type_name(F.arguments[i]);
 						if (F.get_argument_meta(i) > 0) {
 							d3["meta"] = get_type_meta_name((GodotTypeInfo::Metadata)F.get_argument_meta(i));
 						}
@@ -1603,8 +1601,8 @@ Error GDExtensionAPIDump::validate_extension_json_file(const String &p_path) {
 		int major = header["version_major"];
 		int minor = header["version_minor"];
 
-		ERR_FAIL_COND_V_MSG(major != VERSION_MAJOR, ERR_INVALID_DATA, vformat("JSON API dump is for a different engine version (%d) than this one (%d)", major, VERSION_MAJOR));
-		ERR_FAIL_COND_V_MSG(minor > VERSION_MINOR, ERR_INVALID_DATA, vformat("JSON API dump is for a newer version of the engine: %d.%d", major, minor));
+		ERR_FAIL_COND_V_MSG(major != GODOT_VERSION_MAJOR, ERR_INVALID_DATA, vformat("JSON API dump is for a different engine version (%d) than this one (%d)", major, GODOT_VERSION_MAJOR));
+		ERR_FAIL_COND_V_MSG(minor > GODOT_VERSION_MINOR, ERR_INVALID_DATA, vformat("JSON API dump is for a newer version of the engine: %d.%d", major, minor));
 	}
 
 	bool failed = false;

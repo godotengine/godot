@@ -267,7 +267,7 @@ struct ufbx_converter { };
 // `ufbx_source_version` contains the version of the corresponding source file.
 // HINT: The version can be compared numerically to the result of `ufbx_pack_version()`,
 // for example `#if UFBX_VERSION >= ufbx_pack_version(0, 12, 0)`.
-#define UFBX_HEADER_VERSION ufbx_pack_version(0, 15, 0)
+#define UFBX_HEADER_VERSION ufbx_pack_version(0, 17, 1)
 #define UFBX_VERSION UFBX_HEADER_VERSION
 
 // -- Basic types
@@ -1354,7 +1354,7 @@ struct ufbx_mesh {
 	// The winding of the faces has been reversed.
 	bool reversed_winding;
 
-	// Normals have been generated instead of evalauted.
+	// Normals have been generated instead of evaluated.
 	// Either from missing normals (via `ufbx_load_opts.generate_missing_normals`), skinning,
 	// tessellation, or subdivision.
 	bool generated_normals;
@@ -1566,7 +1566,7 @@ struct ufbx_camera {
 	// Projection mode (perspective/orthographic).
 	ufbx_projection_mode projection_mode;
 
-	// If set to `true`, `resolution` reprensents actual pixel values, otherwise
+	// If set to `true`, `resolution` represents actual pixel values, otherwise
 	// it's only useful for its aspect ratio.
 	bool resolution_is_pixels;
 
@@ -3509,6 +3509,9 @@ typedef enum ufbx_warning_type UFBX_ENUM_REPR {
 	// HINT: You can use `ufbx_unicode_error_handling` to adjust behavior.
 	UFBX_WARNING_BAD_UNICODE,
 
+	// Invalid base64-encoded embedded content ignored.
+	UFBX_WARNING_BAD_BASE64_CONTENT,
+
 	// Non-node element connected to root.
 	UFBX_WARNING_BAD_ELEMENT_CONNECTED_TO_ROOT,
 
@@ -4085,7 +4088,8 @@ typedef struct ufbx_open_memory_opts {
 	uint32_t _end_zero;
 } ufbx_open_memory_opts;
 
-// Detailed error stack frame
+// Detailed error stack frame.
+// NOTE: You must compile `ufbx.c` with `UFBX_ENABLE_ERROR_STACK` to enable the error stack.
 typedef struct ufbx_error_frame {
 	uint32_t source_line;
 	ufbx_string function;
@@ -4183,30 +4187,48 @@ UFBX_ENUM_TYPE(ufbx_error_type, UFBX_ERROR_TYPE, UFBX_ERROR_DUPLICATE_OVERRIDE);
 // Error description with detailed stack trace
 // HINT: You can use `ufbx_format_error()` for formatting the error
 typedef struct ufbx_error {
+
+	// Type of the error, or `UFBX_ERROR_NONE` if successful.
 	ufbx_error_type type;
+
+	// Description of the error type.
 	ufbx_string description;
+
+	// Internal error stack.
+	// NOTE: You must compile `ufbx.c` with `UFBX_ENABLE_ERROR_STACK` to enable the error stack.
 	uint32_t stack_size;
 	ufbx_error_frame stack[UFBX_ERROR_STACK_MAX_DEPTH];
+
+	// Additional error information, such as missing file filename.
+	// `info` is a NULL-terminated UTF-8 string containing `info_length` bytes, excluding the trailing `'\0'`.
 	size_t info_length;
 	char info[UFBX_ERROR_INFO_LENGTH];
+
 } ufbx_error;
 
 // -- Progress callbacks
 
+// Loading progress information.
 typedef struct ufbx_progress {
 	uint64_t bytes_read;
 	uint64_t bytes_total;
 } ufbx_progress;
 
+// Progress result returned from `ufbx_progress_fn()` callback.
+// Determines whether ufbx should continue or abort the loading.
 typedef enum ufbx_progress_result UFBX_ENUM_REPR {
+
+	// Continue loading the file.
 	UFBX_PROGRESS_CONTINUE = 0x100,
+
+	// Cancel loading and fail with `UFBX_ERROR_CANCELLED`.
 	UFBX_PROGRESS_CANCEL = 0x200,
 
 	UFBX_ENUM_FORCE_WIDTH(UFBX_PROGRESS_RESULT)
 } ufbx_progress_result;
 
-// Called periodically with the current progress
-// Return `false` to cancel further processing
+// Called periodically with the current progress.
+// Return `UFBX_PROGRESS_CANCEL` to cancel further processing.
 typedef ufbx_progress_result ufbx_progress_fn(void *user, const ufbx_progress *progress);
 
 typedef struct ufbx_progress_cb {
@@ -4509,33 +4531,71 @@ typedef struct ufbx_baked_anim {
 } ufbx_baked_anim;
 
 // -- Thread API
-//
-// NOTE: This API is still experimental and may change.
-// Documentation is currently missing on purpose.
 
+// Internal thread pool handle.
+// Passed to `ufbx_thread_pool_run_task()` from an user thread to run ufbx tasks.
+// HINT: This context can store a user pointer via `ufbx_thread_pool_set_user_ptr()`.
 typedef uintptr_t ufbx_thread_pool_context;
 
+// Thread pool creation information from ufbx.
 typedef struct ufbx_thread_pool_info {
 	uint32_t max_concurrent_tasks;
 } ufbx_thread_pool_info;
 
+// Initialize the thread pool.
+// Return `true` on success.
 typedef bool ufbx_thread_pool_init_fn(void *user, ufbx_thread_pool_context ctx, const ufbx_thread_pool_info *info);
-typedef bool ufbx_thread_pool_run_fn(void *user, ufbx_thread_pool_context ctx, uint32_t group, uint32_t start_index, uint32_t count);
-typedef bool ufbx_thread_pool_wait_fn(void *user, ufbx_thread_pool_context ctx, uint32_t group, uint32_t max_index);
+
+// Run tasks `count` tasks in threads.
+// You must call `ufbx_thread_pool_run_task()` with indices `[start_index, start_index + count)`.
+// The threads are launched in batches indicated by `group`, see `UFBX_THREAD_GROUP_COUNT` for more information.
+// Ideally, you should run all the task indices in parallel within each `ufbx_thread_pool_run_fn()` call.
+typedef void ufbx_thread_pool_run_fn(void *user, ufbx_thread_pool_context ctx, uint32_t group, uint32_t start_index, uint32_t count);
+
+// Wait for previous tasks spawned in `ufbx_thread_pool_run_fn()` to finish.
+// `group` specifies the batch to wait for, `max_index` contains `start_index + count` from that group instance.
+typedef void ufbx_thread_pool_wait_fn(void *user, ufbx_thread_pool_context ctx, uint32_t group, uint32_t max_index);
+
+// Free the thread pool.
 typedef void ufbx_thread_pool_free_fn(void *user, ufbx_thread_pool_context ctx);
 
+// Thread pool interface.
+// See functions above for more information.
+//
+// Hypothetical example of calls, where `UFBX_THREAD_GROUP_COUNT=2` for simplicity:
+//
+//   run_fn(group=0, start_index=0, count=4)   -> t0 := threaded { ufbx_thread_pool_run_task(0..3) }
+//   run_fn(group=1, start_index=4, count=10)  -> t1 := threaded { ufbx_thread_pool_run_task(4..10) }
+//   wait_fn(group=0, max_index=4)             -> wait_threads(t0)
+//   run_fn(group=0, start_index=10, count=15) -> t0 := threaded { ufbx_thread_pool_run_task(10..14) }
+//   wait_fn(group=1, max_index=10)            -> wait_threads(t1)
+//   wait_fn(group=0, max_index=15)            -> wait_threads(t0)
+//
 typedef struct ufbx_thread_pool {
-	ufbx_thread_pool_init_fn *init_fn;
-	ufbx_thread_pool_run_fn *run_fn;
-	ufbx_thread_pool_wait_fn *wait_fn;
-	ufbx_thread_pool_free_fn *free_fn;
+	ufbx_thread_pool_init_fn *init_fn; // < Optional
+	ufbx_thread_pool_run_fn *run_fn;   // < Required
+	ufbx_thread_pool_wait_fn *wait_fn; // < Required
+	ufbx_thread_pool_free_fn *free_fn; // < Optional
 	void *user;
 } ufbx_thread_pool;
 
+// Thread pool options.
 typedef struct ufbx_thread_opts {
+
+	// Thread pool interface.
+	// HINT: You can use `extra/ufbx_os.h` to provide a thread pool.
 	ufbx_thread_pool pool;
+
+	// Maximum of tasks to have in-flight.
+	// Default: 2048
 	size_t num_tasks;
+
+	// Maximum amount of memory to use for batched threaded processing.
+	// Default: 32MB
+	// NOTE: The actual used memory usage might be higher, if there are individual tasks
+	// that rqeuire a high amount of memory.
 	size_t memory_limit;
+
 } ufbx_thread_opts;
 
 // -- Main API
@@ -5202,7 +5262,7 @@ ufbx_abi ufbx_string ufbx_find_string(const ufbx_props *props, const char *name,
 ufbx_abi ufbx_blob ufbx_find_blob_len(const ufbx_props *props, const char *name, size_t name_len, ufbx_blob def);
 ufbx_abi ufbx_blob ufbx_find_blob(const ufbx_props *props, const char *name, ufbx_blob def);
 
-// Find property in `props` with concatendated `parts[num_parts]`.
+// Find property in `props` with concatenated `parts[num_parts]`.
 ufbx_abi ufbx_prop *ufbx_find_prop_concat(const ufbx_props *props, const ufbx_string *parts, size_t num_parts);
 
 // Get an element connected to a property.

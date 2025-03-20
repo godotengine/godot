@@ -419,7 +419,7 @@ public:
 
 			real_t ad = axis.dot(n2);
 
-			if (ABS(ad) > p_sphere_radius) {
+			if (Math::abs(ad) > p_sphere_radius) {
 				// No chance with this edge, too far away.
 				continue;
 			}

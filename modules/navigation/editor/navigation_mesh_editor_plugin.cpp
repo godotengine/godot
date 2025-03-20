@@ -30,8 +30,6 @@
 
 #include "navigation_mesh_editor_plugin.h"
 
-#ifdef TOOLS_ENABLED
-
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "scene/3d/navigation_region_3d.h"
@@ -149,9 +147,6 @@ NavigationMeshEditor::NavigationMeshEditor() {
 	node = nullptr;
 }
 
-NavigationMeshEditor::~NavigationMeshEditor() {
-}
-
 void NavigationMeshEditorPlugin::edit(Object *p_object) {
 	navigation_mesh_editor->edit(Object::cast_to<NavigationRegion3D>(p_object));
 }
@@ -178,8 +173,3 @@ NavigationMeshEditorPlugin::NavigationMeshEditorPlugin() {
 	navigation_mesh_editor->hide();
 	navigation_mesh_editor->bake_hbox->hide();
 }
-
-NavigationMeshEditorPlugin::~NavigationMeshEditorPlugin() {
-}
-
-#endif // TOOLS_ENABLED

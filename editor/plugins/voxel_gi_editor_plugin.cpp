@@ -203,6 +203,3 @@ VoxelGIEditorPlugin::VoxelGIEditorPlugin() {
 	VoxelGI::bake_step_function = bake_func_step;
 	VoxelGI::bake_end_function = bake_func_end;
 }
-
-VoxelGIEditorPlugin::~VoxelGIEditorPlugin() {
-}

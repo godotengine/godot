@@ -91,13 +91,11 @@ void ImporterMesh::add_surface(Mesh::PrimitiveType p_primitive, const Array &p_a
 		s.blend_shape_data.push_back(bs);
 	}
 
-	List<Variant> lods;
-	p_lods.get_key_list(&lods);
-	for (const Variant &E : lods) {
-		ERR_CONTINUE(!E.is_num());
+	for (const KeyValue<Variant, Variant> &kv : p_lods) {
+		ERR_CONTINUE(!kv.key.is_num());
 		Surface::LOD lod;
-		lod.distance = E;
-		lod.indices = p_lods[E];
+		lod.distance = kv.key;
+		lod.indices = kv.value;
 		ERR_CONTINUE(lod.indices.is_empty());
 		s.lods.push_back(lod);
 	}

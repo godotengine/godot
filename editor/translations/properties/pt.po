@@ -952,6 +952,9 @@ msgstr "Mostra Ícone de Atualização"
 msgid "Unfocused Low Processor Mode Sleep (µsec)"
 msgstr "Modo de Baixo Consumo do Processador ao ficar Fora de Foco por (µsec)"
 
+msgid "V-Sync Mode"
+msgstr "Modo V-Sync"
+
 msgid "Update Continuously"
 msgstr "Atualização Contínua"
 
@@ -1002,6 +1005,9 @@ msgstr "Recursos para abrir em Novo Inspetor"
 
 msgid "Theme"
 msgstr "Tema"
+
+msgid "Contrast"
+msgstr "Contraste"
 
 msgid "Draw Extra Borders"
 msgstr "Desenhar bordas extras"
@@ -1143,6 +1149,9 @@ msgstr "Editor de Texto"
 
 msgid "Line Spacing"
 msgstr "Espaçamento de Linha"
+
+msgid "Color Theme"
+msgstr "Cor do Tema"
 
 msgid "Appearance"
 msgstr "Aparência"
@@ -1576,9 +1585,6 @@ msgstr "Restaurar Shaders ao Carregar"
 msgid "Visual Editors"
 msgstr "Editor Visual"
 
-msgid "Color Theme"
-msgstr "Cor do Tema"
-
 msgid "Minimap Opacity"
 msgstr "Opacidade do Minimapa"
 
@@ -1600,8 +1606,14 @@ msgstr "SCP"
 msgid "Window Placement"
 msgstr "Posicionamento da Janela"
 
+msgid "Rect"
+msgstr "Retângulo"
+
 msgid "Rect Custom Position"
 msgstr "Posição Personalizada do Retângulo"
+
+msgid "Screen"
+msgstr "Tela"
 
 msgid "Auto Save"
 msgstr "Salvamento Automático"
@@ -1611,6 +1623,9 @@ msgstr "Salvar Antes de Executar"
 
 msgid "Output"
 msgstr "Saída"
+
+msgid "Font Size"
+msgstr "Tamanho da Fonte"
 
 msgid "Always Clear Output on Play"
 msgstr "Sempre Limpar a Saída no modo Play"
@@ -2466,9 +2481,6 @@ msgstr "Portátil"
 
 msgid "Orientation"
 msgstr "Orientação"
-
-msgid "V-Sync Mode"
-msgstr "Modo V-Sync"
 
 msgid "Output Latency"
 msgstr "Latência de Saída"
@@ -3436,9 +3448,6 @@ msgstr "Funcionalidades XR"
 msgid "XR Mode"
 msgstr "Modo XR"
 
-msgid "Screen"
-msgstr "Tela"
-
 msgid "Immersive Mode"
 msgstr "Modo Imersivo"
 
@@ -3936,9 +3945,6 @@ msgstr "Máscara de Área"
 
 msgid "Copy Mode"
 msgstr "Mode de Cópia"
-
-msgid "Rect"
-msgstr "Retângulo"
 
 msgid "Anchor Mode"
 msgstr "Modo de Âncora"
@@ -4536,9 +4542,6 @@ msgstr "Contorno Modular"
 
 msgid "Font"
 msgstr "Fonte"
-
-msgid "Font Size"
-msgstr "Tamanho da Fonte"
 
 msgid "Horizontal Alignment"
 msgstr "Alinhamento Horizontal"
@@ -6072,9 +6075,6 @@ msgstr "Anisotrópico"
 
 msgid "Adjustments"
 msgstr "Ajustamentos"
-
-msgid "Contrast"
-msgstr "Contraste"
 
 msgid "Saturation"
 msgstr "Separação"

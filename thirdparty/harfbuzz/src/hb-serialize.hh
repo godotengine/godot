@@ -36,9 +36,7 @@
 #include "hb-map.hh"
 #include "hb-pool.hh"
 
-#ifdef HB_EXPERIMENTAL_API
-#include "hb-subset-repacker.h"
-#endif
+#include "hb-subset-serialize.h"
 
 /*
  * Serialize
@@ -75,21 +73,19 @@ struct hb_serialize_context_t
 
     object_t () = default;
 
-#ifdef HB_EXPERIMENTAL_API
-    object_t (const hb_object_t &o)
+    object_t (const hb_subset_serialize_object_t &o)
     {
       head = o.head;
       tail = o.tail;
       next = nullptr;
-      real_links.alloc (o.num_real_links, true);
+      real_links.alloc_exact (o.num_real_links);
       for (unsigned i = 0 ; i < o.num_real_links; i++)
         real_links.push (o.real_links[i]);
 
-      virtual_links.alloc (o.num_virtual_links, true);
+      virtual_links.alloc_exact (o.num_virtual_links);
       for (unsigned i = 0; i < o.num_virtual_links; i++)
         virtual_links.push (o.virtual_links[i]);
     }
-#endif
 
     bool add_virtual_link (objidx_t objidx)
     {
@@ -148,8 +144,7 @@ struct hb_serialize_context_t
 
       link_t () = default;
 
-#ifdef HB_EXPERIMENTAL_API
-      link_t (const hb_link_t &o)
+      link_t (const hb_subset_serialize_link_t &o)
       {
         width = o.width;
         is_signed = 0;
@@ -158,7 +153,6 @@ struct hb_serialize_context_t
         bias = 0;
         objidx = o.objidx;
       }
-#endif
 
       HB_INTERNAL static int cmp (const void* a, const void* b)
       {
@@ -178,7 +172,7 @@ struct hb_serialize_context_t
     auto all_links () const HB_AUTO_RETURN
         (( hb_concat (real_links, virtual_links) ));
     auto all_links_writer () HB_AUTO_RETURN
-        (( hb_concat (real_links.writer (), virtual_links.writer ()) ));           
+        (( hb_concat (real_links.writer (), virtual_links.writer ()) ));
   };
 
   struct snapshot_t
@@ -400,6 +394,7 @@ struct hb_serialize_context_t
       {
         merge_virtual_links (obj, objidx);
 	obj->fini ();
+        object_pool.release (obj);
 	return objidx;
       }
     }
@@ -463,9 +458,11 @@ struct hb_serialize_context_t
     while (packed.length > 1 &&
 	   packed.tail ()->head < tail)
     {
-      packed_map.del (packed.tail ());
-      assert (!packed.tail ()->next);
-      packed.tail ()->fini ();
+      object_t *obj = packed.tail ();
+      packed_map.del (obj);
+      assert (!obj->next);
+      obj->fini ();
+      object_pool.release (obj);
       packed.pop ();
     }
     if (packed.length > 1)

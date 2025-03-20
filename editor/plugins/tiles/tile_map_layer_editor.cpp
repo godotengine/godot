@@ -1007,7 +1007,7 @@ void TileMapLayerEditorTilesPlugin::forward_canvas_draw_over_viewport(Control *p
 		String text = tile_set->local_to_map(edited_layer->get_local_mouse_position());
 		if (drawing_rect) {
 			Vector2i size = tile_set->local_to_map(edited_layer->get_local_mouse_position()) - tile_set->local_to_map(drag_start_mouse_pos);
-			text += vformat(" %s (%dx%d)", TTR("Drawing Rect:"), ABS(size.x) + 1, ABS(size.y) + 1);
+			text += vformat(" %s (%dx%d)", TTR("Drawing Rect:"), Math::abs(size.x) + 1, Math::abs(size.y) + 1);
 		}
 
 		p_overlay->draw_string(font, msgpos + Point2(1, 1), text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, Color(0, 0, 0, 0.8));
@@ -2371,6 +2371,7 @@ TileMapLayerEditorTilesPlugin::TileMapLayerEditorTilesPlugin() {
 
 	missing_source_label = memnew(Label);
 	missing_source_label->set_text(TTR("This TileMap's TileSet has no Tile Source configured. Go to the TileSet bottom panel to add one."));
+	missing_source_label->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
 	missing_source_label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	missing_source_label->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	missing_source_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
@@ -2489,15 +2490,13 @@ TileMapLayerEditorTilesPlugin::TileMapLayerEditorTilesPlugin() {
 
 	patterns_help_label = memnew(Label);
 	patterns_help_label->set_text(TTR("Drag and drop or paste a TileMap selection here to store a pattern."));
+	patterns_help_label->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
 	patterns_help_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
-	patterns_help_label->set_anchors_and_offsets_preset(Control::PRESET_CENTER);
+	patterns_help_label->set_anchors_and_offsets_preset(Control::PRESET_HCENTER_WIDE);
 	patterns_item_list->add_child(patterns_help_label);
 
 	// Update.
 	_update_source_display();
-}
-
-TileMapLayerEditorTilesPlugin::~TileMapLayerEditorTilesPlugin() {
 }
 
 void TileMapLayerEditorTerrainsPlugin::tile_set_changed() {
@@ -3630,9 +3629,6 @@ TileMapLayerEditorTerrainsPlugin::TileMapLayerEditorTerrainsPlugin() {
 	tools_settings->add_child(bucket_contiguous_checkbox);
 }
 
-TileMapLayerEditorTerrainsPlugin::~TileMapLayerEditorTerrainsPlugin() {
-}
-
 TileMapLayer *TileMapLayerEditor::_get_edited_layer() const {
 	return Object::cast_to<TileMapLayer>(ObjectDB::get_instance(edited_tile_map_layer_id));
 }
@@ -4033,18 +4029,18 @@ Vector<Vector2i> TileMapLayerEditor::get_line(const TileMapLayer *p_tile_map_lay
 		}
 
 		Vector2i delta = p_to_cell - p_from_cell;
-		delta = Vector2i(2 * delta.x + ABS(p_to_cell.y % 2) - ABS(p_from_cell.y % 2), delta.y);
+		delta = Vector2i(2 * delta.x + Math::abs(p_to_cell.y % 2) - Math::abs(p_from_cell.y % 2), delta.y);
 		Vector2i sign = delta.sign();
 
 		Vector2i current = p_from_cell;
 		points.push_back(TileSet::transform_coords_layout(transposed ? Vector2i(current.y, current.x) : current, tile_set->get_tile_offset_axis(), TileSet::TILE_LAYOUT_STACKED, tile_set->get_tile_layout()));
 
 		int err = 0;
-		if (ABS(delta.y) < ABS(delta.x)) {
+		if (Math::abs(delta.y) < Math::abs(delta.x)) {
 			Vector2i err_step = 3 * delta.abs();
 			while (current != p_to_cell) {
 				err += err_step.y;
-				if (err > ABS(delta.x)) {
+				if (err > Math::abs(delta.x)) {
 					if (sign.x == 0) {
 						current += Vector2(sign.y, 0);
 					} else {
@@ -4113,6 +4109,7 @@ void TileMapLayerEditor::_tab_changed(int p_tab_id) {
 	// Graphical update.
 	tabs_data[tabs_bar->get_current_tab()].panel->queue_redraw();
 	CanvasItemEditor::get_singleton()->update_viewport();
+	_update_bottom_panel();
 }
 
 void TileMapLayerEditor::_layers_select_next_or_previous(bool p_next) {
@@ -4521,6 +4518,8 @@ TileMapLayerEditor::TileMapLayerEditor() {
 
 	// A label for editing errors.
 	cant_edit_label = memnew(Label);
+	cant_edit_label->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
+	cant_edit_label->set_anchors_and_offsets_preset(Control::PRESET_HCENTER_WIDE);
 	cant_edit_label->set_h_size_flags(SIZE_EXPAND_FILL);
 	cant_edit_label->set_v_size_flags(SIZE_EXPAND_FILL);
 	cant_edit_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);

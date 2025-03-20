@@ -184,16 +184,22 @@ void ScriptTextEditor::enable_editor(Control *p_shortcut_context) {
 void ScriptTextEditor::_load_theme_settings() {
 	CodeEdit *text_edit = code_editor->get_text_editor();
 
+	Color updated_warning_line_color = EDITOR_GET("text_editor/theme/highlighting/warning_color");
 	Color updated_marked_line_color = EDITOR_GET("text_editor/theme/highlighting/mark_color");
 	Color updated_safe_line_number_color = EDITOR_GET("text_editor/theme/highlighting/safe_line_number_color");
 	Color updated_folded_code_region_color = EDITOR_GET("text_editor/theme/highlighting/folded_code_region_color");
 
-	bool safe_line_number_color_updated = updated_safe_line_number_color != safe_line_number_color;
+	bool warning_line_color_updated = updated_warning_line_color != warning_line_color;
 	bool marked_line_color_updated = updated_marked_line_color != marked_line_color;
+	bool safe_line_number_color_updated = updated_safe_line_number_color != safe_line_number_color;
 	bool folded_code_region_color_updated = updated_folded_code_region_color != folded_code_region_color;
-	if (safe_line_number_color_updated || marked_line_color_updated || folded_code_region_color_updated) {
+	if (safe_line_number_color_updated || warning_line_color_updated || marked_line_color_updated || folded_code_region_color_updated) {
 		safe_line_number_color = updated_safe_line_number_color;
 		for (int i = 0; i < text_edit->get_line_count(); i++) {
+			if (warning_line_color_updated && text_edit->get_line_background_color(i) == warning_line_color) {
+				text_edit->set_line_background_color(i, updated_warning_line_color);
+			}
+
 			if (marked_line_color_updated && text_edit->get_line_background_color(i) == marked_line_color) {
 				text_edit->set_line_background_color(i, updated_marked_line_color);
 			}
@@ -206,6 +212,7 @@ void ScriptTextEditor::_load_theme_settings() {
 				text_edit->set_line_background_color(i, updated_folded_code_region_color);
 			}
 		}
+		warning_line_color = updated_warning_line_color;
 		marked_line_color = updated_marked_line_color;
 		folded_code_region_color = updated_folded_code_region_color;
 	}
@@ -567,8 +574,8 @@ void ScriptTextEditor::_validate_script() {
 		script_is_valid = true;
 	}
 	_update_connected_methods();
-	_update_warnings();
 	_update_errors();
+	_update_warnings();
 
 	emit_signal(SNAME("name_changed"));
 	emit_signal(SNAME("edited_script_changed"));
@@ -637,6 +644,17 @@ void ScriptTextEditor::_update_warnings() {
 		warnings_panel->pop(); // Cell.
 	}
 	warnings_panel->pop(); // Table.
+	if (warning_line_color.a != 0.0) {
+		CodeEdit *te = code_editor->get_text_editor();
+		for (int i = 0; i < te->get_line_count(); i++) {
+			for (const ScriptLanguage::Warning &W : warnings) {
+				if (i >= W.start_line - 1 && i < W.end_line) {
+					te->set_line_background_color(i, warning_line_color);
+					break;
+				}
+			}
+		}
+	}
 }
 
 void ScriptTextEditor::_update_errors() {
@@ -706,7 +724,7 @@ void ScriptTextEditor::_update_errors() {
 		if (errors.is_empty()) {
 			bool is_folded_code_region = te->is_line_code_region_start(i) && te->is_line_folded(i);
 			te->set_line_background_color(i, is_folded_code_region ? folded_code_region_color : Color(0, 0, 0, 0));
-		} else {
+		} else if (marked_line_color.a != 0) {
 			for (const ScriptLanguage::ScriptError &E : errors) {
 				bool error_line = i == E.line - 1;
 				te->set_line_background_color(i, error_line ? marked_line_color : Color(0, 0, 0, 0));
@@ -935,7 +953,7 @@ void ScriptTextEditor::_on_caret_moved() {
 		return;
 	}
 	int current_line = code_editor->get_text_editor()->get_caret_line();
-	if (ABS(current_line - previous_line) >= 10) {
+	if (Math::abs(current_line - previous_line) >= 10) {
 		Dictionary nav_state = get_navigation_state();
 		nav_state["row"] = previous_line;
 		nav_state["scroll_position"] = -1;
@@ -957,19 +975,7 @@ void ScriptTextEditor::_lookup_symbol(const String &p_symbol, int p_row, int p_c
 	if (ScriptServer::is_global_class(p_symbol)) {
 		EditorNode::get_singleton()->load_resource(ScriptServer::get_global_class_path(p_symbol));
 	} else if (p_symbol.is_resource_file() || p_symbol.begins_with("uid://")) {
-		String symbol = p_symbol;
-		if (symbol.begins_with("uid://")) {
-			symbol = ResourceUID::uid_to_path(symbol);
-		}
-
-		List<String> scene_extensions;
-		ResourceLoader::get_recognized_extensions_for_type("PackedScene", &scene_extensions);
-
-		if (scene_extensions.find(symbol.get_extension())) {
-			EditorNode::get_singleton()->load_scene(symbol);
-		} else {
-			EditorNode::get_singleton()->load_resource(symbol);
-		}
+		EditorNode::get_singleton()->load_scene_or_resource(p_symbol);
 	} else if (lc_error == OK) {
 		_goto_line(p_row);
 
@@ -1064,14 +1070,7 @@ void ScriptTextEditor::_lookup_symbol(const String &p_symbol, int p_row, int p_c
 		// Every symbol other than absolute path is relative path so keep this condition at last.
 		String path = _get_absolute_path(p_symbol);
 		if (FileAccess::exists(path)) {
-			List<String> scene_extensions;
-			ResourceLoader::get_recognized_extensions_for_type("PackedScene", &scene_extensions);
-
-			if (scene_extensions.find(path.get_extension())) {
-				EditorNode::get_singleton()->load_scene(path);
-			} else {
-				EditorNode::get_singleton()->load_resource(path);
-			}
+			EditorNode::get_singleton()->load_scene_or_resource(path);
 		}
 	}
 }
@@ -1806,8 +1805,8 @@ void ScriptTextEditor::_notification(int p_what) {
 				break;
 			}
 			if (is_visible_in_tree()) {
-				_update_warnings();
 				_update_errors();
+				_update_warnings();
 			}
 			[[fallthrough]];
 		case NOTIFICATION_ENTER_TREE: {

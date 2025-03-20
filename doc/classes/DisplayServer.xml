@@ -64,6 +64,16 @@
 				[b]Note:[/b] This method is only implemented on Linux (X11/Wayland).
 			</description>
 		</method>
+		<method name="color_picker">
+			<return type="bool" />
+			<param index="0" name="callback" type="Callable" />
+			<description>
+				Displays OS native color picker.
+				Callbacks have the following arguments: [code]status: bool, color: Color[/code].
+				[b]Note:[/b] This method is implemented if the display server has the [constant FEATURE_NATIVE_COLOR_PICKER] feature.
+				[b]Note:[/b] This method is only implemented on Linux (X11/Wayland).
+			</description>
+		</method>
 		<method name="create_status_indicator">
 			<return type="int" />
 			<param index="0" name="icon" type="Texture2D" />
@@ -195,7 +205,7 @@
 			<return type="Color" />
 			<description>
 				Returns OS theme accent color. Returns [code]Color(0, 0, 0, 0)[/code], if accent color is unknown.
-				[b]Note:[/b] This method is implemented on macOS, Windows, and Android.
+				[b]Note:[/b] This method is implemented on macOS, Windows, Android, and Linux (X11/Wayland).
 			</description>
 		</method>
 		<method name="get_base_color" qualifiers="const">
@@ -1954,6 +1964,9 @@
 		<constant name="FEATURE_EMOJI_AND_SYMBOL_PICKER" value="31" enum="Feature">
 			Display server supports system emoji and symbol picker. [b]Windows, macOS[/b]
 		</constant>
+		<constant name="FEATURE_NATIVE_COLOR_PICKER" value="32" enum="Feature">
+			Display server supports native color picker. [b]Linux (X11/Wayland)[/b]
+		</constant>
 		<constant name="MOUSE_MODE_VISIBLE" value="0" enum="MouseMode">
 			Makes the mouse cursor visible if it is hidden.
 		</constant>
@@ -2126,7 +2139,6 @@
 			Full screen mode with full multi-window support.
 			Full screen window covers the entire display area of a screen and has no decorations. The display's video mode is not changed.
 			[b]On Android:[/b] This enables immersive mode.
-			[b]On Windows:[/b] Multi-window full-screen mode has a 1px border of the [member ProjectSettings.rendering/environment/defaults/default_clear_color] color.
 			[b]On macOS:[/b] A new desktop is used to display the running project.
 			[b]Note:[/b] Regardless of the platform, enabling full screen will change the window size to match the monitor's size. Therefore, make sure your project supports [url=$DOCS_URL/tutorials/rendering/multiple_resolutions.html]multiple resolutions[/url] when enabling full screen mode.
 		</constant>

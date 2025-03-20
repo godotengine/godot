@@ -787,6 +787,3 @@ Path2DEditorPlugin::Path2DEditorPlugin() {
 	CanvasItemEditor::get_singleton()->add_control_to_menu_panel(path2d_editor);
 	path2d_editor->hide();
 }
-
-Path2DEditorPlugin::~Path2DEditorPlugin() {
-}

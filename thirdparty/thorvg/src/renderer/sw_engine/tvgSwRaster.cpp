@@ -1813,7 +1813,7 @@ bool rasterConvertCS(RenderSurface* surface, ColorSpace to)
 //TODO: SIMD OPTIMIZATION?
 void rasterXYFlip(uint32_t* src, uint32_t* dst, int32_t stride, int32_t w, int32_t h, const SwBBox& bbox, bool flipped)
 {
-    constexpr int BLOCK = 8;  //experimental decision
+    constexpr int32_t BLOCK = 8;  //experimental decision
 
     if (flipped) {
         src += ((bbox.min.x * stride) + bbox.min.y);
@@ -1824,16 +1824,16 @@ void rasterXYFlip(uint32_t* src, uint32_t* dst, int32_t stride, int32_t w, int32
     }
 
     #pragma omp parallel for
-    for (int x = 0; x < w; x += BLOCK) {
+    for (int32_t x = 0; x < w; x += BLOCK) {
         auto bx = std::min(w, x + BLOCK) - x;
         auto in = &src[x];
         auto out = &dst[x * stride];
-        for (int y = 0; y < h; y += BLOCK) {
+        for (int32_t y = 0; y < h; y += BLOCK) {
             auto p = &in[y * stride];
             auto q = &out[y];
             auto by = std::min(h, y + BLOCK) - y;
-            for (int xx = 0; xx < bx; ++xx) {
-                for (int yy = 0; yy < by; ++yy) {
+            for (int32_t xx = 0; xx < bx; ++xx) {
+                for (int32_t yy = 0; yy < by; ++yy) {
                     *q = *p;
                     p += stride;
                     ++q;

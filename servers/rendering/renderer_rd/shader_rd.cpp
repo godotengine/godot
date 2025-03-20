@@ -149,9 +149,9 @@ void ShaderRD::setup(const char *p_vertex_code, const char *p_fragment_code, con
 
 	StringBuilder tohash;
 	tohash.append("[GodotVersionNumber]");
-	tohash.append(VERSION_NUMBER);
+	tohash.append(GODOT_VERSION_NUMBER);
 	tohash.append("[GodotVersionHash]");
-	tohash.append(VERSION_HASH);
+	tohash.append(GODOT_VERSION_HASH);
 	tohash.append("[SpirvCacheKey]");
 	tohash.append(RenderingDevice::get_singleton()->shader_get_spirv_cache_key());
 	tohash.append("[BinaryCacheKey]");
@@ -187,8 +187,7 @@ void ShaderRD::_initialize_version(Version *p_version) {
 
 	p_version->variants.resize_zeroed(variant_defines.size());
 	p_version->variant_data.resize(variant_defines.size());
-	p_version->group_compilation_tasks.resize(group_enabled.size());
-	p_version->group_compilation_tasks.fill(0);
+	p_version->group_compilation_tasks.resize_zeroed(group_enabled.size());
 }
 
 void ShaderRD::_clear_version(Version *p_version) {

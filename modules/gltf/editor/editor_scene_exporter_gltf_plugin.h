@@ -30,8 +30,6 @@
 
 #pragma once
 
-#ifdef TOOLS_ENABLED
-
 #include "../gltf_document.h"
 #include "editor_scene_exporter_gltf_settings.h"
 
@@ -55,5 +53,3 @@ public:
 	bool has_main_screen() const override;
 	SceneExporterGLTFPlugin();
 };
-
-#endif // TOOLS_ENABLED

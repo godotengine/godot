@@ -1409,6 +1409,9 @@ msgstr "Argóintí Comhartha Unbind:"
 msgid "Receiver Method:"
 msgstr "Modh glacadóra:"
 
+msgid "Pick"
+msgstr "Pioc"
+
 msgid "Advanced"
 msgstr "Ardrang"
 
@@ -4757,6 +4760,9 @@ msgstr "Suiteáil ó Chomhad"
 msgid "Install templates from a local file."
 msgstr "Suiteáil teimpléid ó chomhad logánta."
 
+msgid "Go Online"
+msgstr "Téigh Ar Líne"
+
 msgid "Cancel the download of the templates."
 msgstr "Cealaigh íoslódáil na dteimpléad."
 
@@ -7283,9 +7289,6 @@ msgid ""
 msgstr ""
 "Teastaíonn nasc ar líne ón Leabharlann Sócmhainní agus is éard atá i gceist "
 "léi ná sonraí a sheoladh ar an idirlíon."
-
-msgid "Go Online"
-msgstr "Téigh Ar Líne"
 
 msgid "Failed to get repository configuration."
 msgstr "Theip ar chumraíocht an stóir a fháil."
@@ -14407,9 +14410,6 @@ msgstr "Clibeanna Gné"
 
 msgid "Pick Root Node Type"
 msgstr "Roghnaigh Cineál Nód Fréimhe"
-
-msgid "Pick"
-msgstr "Pioc"
 
 msgid "Scene name is empty."
 msgstr "Tá ainm an radhairc folamh."

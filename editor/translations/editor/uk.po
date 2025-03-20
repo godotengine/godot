@@ -56,12 +56,13 @@
 # ogyrec <ogyrec.off@gmail.com>, 2025.
 # Максим Горпиніч <maksimgorpinic2005a@gmail.com>, 2025.
 # Mister Ky <afanasievsergiy3524@gmail.com>, 2025.
+# Veydzher <Veydzher@users.noreply.hosted.weblate.org>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Ukrainian (Godot Engine)\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-02-21 19:26+0000\n"
+"PO-Revision-Date: 2025-03-14 14:07+0000\n"
 "Last-Translator: Максим Горпиніч <maksimgorpinic2005a@gmail.com>\n"
 "Language-Team: Ukrainian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/uk/>\n"
@@ -71,7 +72,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
 "n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
-"X-Generator: Weblate 5.10.1-dev\n"
+"X-Generator: Weblate 5.11-dev\n"
 
 msgid "Main Thread"
 msgstr "Головний потік"
@@ -537,7 +538,7 @@ msgid "Deadzone"
 msgstr "«Мертва» зона"
 
 msgid "Name:"
-msgstr "Ім'я:"
+msgstr "Назва:"
 
 msgid "Type:"
 msgstr "Тип:"
@@ -926,6 +927,9 @@ msgstr "AnimationPlayer не може анімувати себе, лише ін
 msgid "property '%s'"
 msgstr "властивість '%s'"
 
+msgid "Nearest FPS: %d"
+msgstr "Найближчий FPS: %d"
+
 msgid "Change Animation Step"
 msgstr "Змінити крок анімації"
 
@@ -1214,19 +1218,19 @@ msgid "Remove invalid keys"
 msgstr "Вилучити неприпустимі ключі"
 
 msgid "Remove unresolved and empty tracks"
-msgstr "Вилучити невизначені і порожні доріжки"
+msgstr "Вилучити невизначені й порожні доріжки"
 
 msgid "Clean-up all animations"
-msgstr "Очищення всіх анімації"
+msgstr "Підчистити всі анімації"
 
 msgid "Clean-Up Animation(s) (NO UNDO!)"
-msgstr "Очистити анімацію(ї) (НЕ СКАСУВАТИ!)"
+msgstr "Підчистити анімації (НЕ МОЖНА СКАСУВАТИ!)"
 
 msgid "Clean-Up"
-msgstr "Очищення"
+msgstr "Підчистити"
 
 msgid "Scale Ratio:"
-msgstr "Співвідношення масштабу:"
+msgstr "Коефіцієнт масштабу:"
 
 msgid "Select Transition and Easing"
 msgstr "Вибрати Перехід та Плавність"
@@ -1241,19 +1245,19 @@ msgstr "Синусоїдний"
 
 msgctxt "Transition Type"
 msgid "Quint"
-msgstr "Квінт"
+msgstr "Квінтичний"
 
 msgctxt "Transition Type"
 msgid "Quart"
-msgstr "Кварт"
+msgstr "Квартовий"
 
 msgctxt "Transition Type"
 msgid "Quad"
-msgstr "Чотири."
+msgstr "Квадратичний"
 
 msgctxt "Transition Type"
 msgid "Expo"
-msgstr "Експо"
+msgstr "Експоненційний"
 
 msgctxt "Transition Type"
 msgid "Elastic"
@@ -1265,35 +1269,35 @@ msgstr "Кубічний"
 
 msgctxt "Transition Type"
 msgid "Circ"
-msgstr "Кірк"
+msgstr "Коловий"
 
 msgctxt "Transition Type"
 msgid "Bounce"
-msgstr "Відскок"
+msgstr "Стрибковий"
 
 msgctxt "Transition Type"
 msgid "Back"
-msgstr "Назад"
+msgstr "Відкатний"
 
 msgctxt "Transition Type"
 msgid "Spring"
-msgstr "Весна"
+msgstr "Пружинний"
 
 msgctxt "Ease Type"
 msgid "In"
-msgstr "У"
+msgstr "Вхідний"
 
 msgctxt "Ease Type"
 msgid "Out"
-msgstr "З"
+msgstr "Вихідний"
 
 msgctxt "Ease Type"
 msgid "InOut"
-msgstr "Увійшов - вийшов"
+msgstr "Вхідний - Вихідний"
 
 msgctxt "Ease Type"
 msgid "OutIn"
-msgstr "Виходьте У"
+msgstr "Вихідний - Вхідний"
 
 msgid "Transition Type:"
 msgstr "Перехідний тип:"
@@ -1455,7 +1459,7 @@ msgid "Replace All"
 msgstr "Замінити всі"
 
 msgid "Selection Only"
-msgstr "Тільки виділити"
+msgstr "Лише виділення"
 
 msgid "Hide"
 msgstr "Сховати"
@@ -1472,10 +1476,10 @@ msgid "Toggle Scripts Panel"
 msgstr "Перемкнути панель скриптів"
 
 msgid "Zoom In"
-msgstr "Збільшувати"
+msgstr "Наблизити"
 
 msgid "Zoom Out"
-msgstr "Зменшення"
+msgstr "Віддалити"
 
 msgid "Reset Zoom"
 msgstr "Скинути масштаб"
@@ -1572,6 +1576,9 @@ msgstr "Відв'язати аргументи сигналу:"
 msgid "Receiver Method:"
 msgstr "Метод-отримувач:"
 
+msgid "Pick"
+msgstr "Вибирати"
+
 msgid "Advanced"
 msgstr "Додатково"
 
@@ -1597,7 +1604,7 @@ msgid "Connect"
 msgstr "З'єднати"
 
 msgid "Connect '%s' to '%s'"
-msgstr "Приєднати '%s' до %s'"
+msgstr "З'єднати '%s' до %s'"
 
 msgid "Disconnect '%s' from '%s'"
 msgstr "Від'єднати '%s' від '%s'"
@@ -1672,13 +1679,13 @@ msgid "The selected class can't be instantiated."
 msgstr "Вибраний клас не може бути створений."
 
 msgid "Favorites:"
-msgstr "Вибране:"
+msgstr "Обране:"
 
 msgid "Recent:"
-msgstr "Нещодавні:"
+msgstr "Недавні:"
 
 msgid "(Un)favorite selected item."
-msgstr "(Не)обрати вибраний елемент."
+msgstr "Додати/вилучити виділене в обране."
 
 msgid "Search:"
 msgstr "Пошук:"
@@ -1699,7 +1706,7 @@ msgid "Debugger"
 msgstr "Засіб діагностики"
 
 msgid "Debug"
-msgstr "Діагностика"
+msgstr "Налагодження"
 
 msgid "Save Branch as Scene"
 msgstr "Зберегти гілку як сцену"
@@ -2025,7 +2032,7 @@ msgid "Dependency Editor"
 msgstr "Редактор залежностей"
 
 msgid "Search Replacement Resource:"
-msgstr "Знайти замінний ресурс:"
+msgstr "Пошук ресурсу для заміни:"
 
 msgid "Open Scene"
 msgid_plural "Open Scenes"
@@ -2083,7 +2090,7 @@ msgid "Load failed due to missing dependencies:"
 msgstr "Не вдалося завантажити через нестачу залежностей:"
 
 msgid "Open Anyway"
-msgstr "Все одно відкрити"
+msgstr "Усе одно відкрити"
 
 msgid "Which action should be taken?"
 msgstr "Які дії слід вжити?"
@@ -2095,19 +2102,19 @@ msgid "Errors loading!"
 msgstr "Помилки завантаження!"
 
 msgid "Permanently delete %d item(s)? (No undo!)"
-msgstr "Остаточно вилучити %d об'єкт(и)? (Неможливо скасувати)"
+msgstr "Остаточно вилучити елементи (%d )? (Не можна скасувати!)"
 
 msgid "Show Dependencies"
 msgstr "Показати залежності"
 
 msgid "Orphan Resource Explorer"
-msgstr "Огляд підключених ресурсів"
+msgstr "Огляд загублених ресурсів"
 
 msgid "Owns"
-msgstr "Кількість"
+msgstr "Володіння"
 
 msgid "Resources Without Explicit Ownership:"
-msgstr "Ресурси без явної власності:"
+msgstr "Ресурси без явного володіння:"
 
 msgid "Name cannot be empty."
 msgstr "Назва не може бути пустою."
@@ -2164,10 +2171,10 @@ msgid "Double-click to open in browser."
 msgstr "Двічі клацніть, щоб відкрити в браузері."
 
 msgid "Thanks from the Godot community!"
-msgstr "Спасибі від спільноти Godot!"
+msgstr "Подяка від спільноти Godot!"
 
 msgid "Godot Engine contributors"
-msgstr "Автори рушія Godot"
+msgstr "Учасники розробки рушія Godot"
 
 msgid "Project Founders"
 msgstr "Засновники проєкту"
@@ -2177,7 +2184,7 @@ msgstr "Провідний розробник"
 
 msgctxt "Job Title"
 msgid "Project Manager"
-msgstr "Керування проєктами"
+msgstr "Менеджер проєктів"
 
 msgid "Developers"
 msgstr "Розробники"
@@ -2230,10 +2237,10 @@ msgstr ""
 "ліцензійної угоди."
 
 msgid "All Components"
-msgstr "Всі компоненти"
+msgstr "Усі компоненти"
 
 msgid "Components"
-msgstr "Складники"
+msgstr "Компоненти"
 
 msgid "Licenses"
 msgstr "Ліцензії"
@@ -2308,16 +2315,16 @@ msgid "Configure Asset Before Installing"
 msgstr "Налаштуйте актив перед встановленням"
 
 msgid "Install"
-msgstr "Встановити"
+msgstr "Установити"
 
 msgid "Speakers"
 msgstr "Динаміки"
 
 msgid "Add Effect"
-msgstr "Додавання ефекту"
+msgstr "Додати ефект"
 
 msgid "Rename Audio Bus"
-msgstr "Перейменування аудіо шини"
+msgstr "Перейменувати аудіо шини"
 
 msgid "Change Audio Bus Volume"
 msgstr "Змінити гучність звукової шини"
@@ -2335,7 +2342,7 @@ msgid "Select Audio Bus Send"
 msgstr "Вибір передачі аудіо шини"
 
 msgid "Add Audio Bus Effect"
-msgstr "Додавання ефекту аудіо шини"
+msgstr "Додати ефект аудіо шини"
 
 msgid "Move Bus Effect"
 msgstr "Перемістити ефект шини"
@@ -2416,7 +2423,7 @@ msgid "Load"
 msgstr "Завантажити"
 
 msgid "Load an existing Bus Layout."
-msgstr "Завантаження існуючого компонування шини."
+msgstr "Завантажити наявне компонування шини."
 
 msgid "Save As"
 msgstr "Зберегти як"
@@ -2431,7 +2438,7 @@ msgid "Load the default Bus Layout."
 msgstr "Завантажити типове компонування шини."
 
 msgid "Create a new Bus Layout."
-msgstr "Створення нового компонування шини."
+msgstr "Створити нове компонування шини."
 
 msgid "Audio Bus Layout"
 msgstr "Компонування звукової шини"
@@ -2498,7 +2505,7 @@ msgid "Set path or press \"%s\" to create a script."
 msgstr "Вкажіть шлях або натисніть «%s», щоб створити скрипт."
 
 msgid "Node Name:"
-msgstr "Ім'я Вузла:"
+msgstr "Назва вузла:"
 
 msgid "Global Variable"
 msgstr "Загальна змінна"
@@ -2930,7 +2937,7 @@ msgid "Save & Restart"
 msgstr "Зберегти і перезапустити"
 
 msgid "ScanSources"
-msgstr "Сканувати сирці"
+msgstr "Сканувати джерела"
 
 msgid "Registering global classes..."
 msgstr "Реєстрація глобальних класів..."
@@ -2949,7 +2956,7 @@ msgstr ""
 "%s, імпортування перервано"
 
 msgid "(Re)Importing Assets"
-msgstr "Імпортування ресурсів"
+msgstr "(Повторний) імпорт ресурсів"
 
 msgid "Preparing files to reimport..."
 msgstr "Підготовка файлів до повторного імпорту..."
@@ -3219,8 +3226,8 @@ msgid ""
 "There is currently no description for this property. Please help us by "
 "[color=$color][url=$url]contributing one[/url][/color]!"
 msgstr ""
-"У поточній версії немає опису цієї властивості. Будь ласка, [color=$color]"
-"[url=$url]створіть його[/url][/color]!"
+"У поточній версії немає опису цієї властивості. Будь ласка, допоможіть нам "
+"[color=$color][url=$url]створивши його[/url][/color]!"
 
 msgid ""
 "[b]Note:[/b] The returned array is [i]copied[/i] and any changes to it will "
@@ -3384,13 +3391,13 @@ msgid "This member is marked as experimental."
 msgstr "Цей член позначений як експериментальний."
 
 msgid "Unfavorite Property"
-msgstr "Внутрішня власність"
+msgstr "Вилучити властивість з обраного"
 
 msgid "Make this property be put back at its original place."
 msgstr "Повернути це майно на колишнє місце."
 
 msgid "Favorite Property"
-msgstr "Улюблене майно"
+msgstr "Додати властивість в обране"
 
 msgid "Make this property be placed at the top for all objects of this class."
 msgstr ""
@@ -3410,7 +3417,7 @@ msgstr ""
 "стандартним."
 
 msgid "Unfavorite All"
-msgstr "Видалити всі з вибраного"
+msgstr "Вилучити все з обраного"
 
 msgid "(%d change)"
 msgid_plural "(%d changes)"
@@ -3489,7 +3496,7 @@ msgid "Add metadata %s"
 msgstr "Додати метадані %s"
 
 msgid "Favorites"
-msgstr "Вибране"
+msgstr "Обране"
 
 msgid "Copy Value"
 msgstr "Копіювати значення"
@@ -3678,7 +3685,7 @@ msgid "Analyzing"
 msgstr "Аналіз"
 
 msgid "Creating Thumbnail"
-msgstr "Створюємо мініатюру"
+msgstr "Створення мініатюри"
 
 msgid "This operation can't be done without a tree root."
 msgstr "Ця операція не може бути виконана без кореня дерева."
@@ -3711,7 +3718,7 @@ msgid "Can't overwrite scene that is still open!"
 msgstr "Неможливо перезаписати сцену, яка є ще відкритою!"
 
 msgid "Merge With Existing"
-msgstr "Об'єднати з існуючим"
+msgstr "Об'єднати з наявним"
 
 msgid "Apply MeshInstance Transforms"
 msgstr "Змінити перетворення екземпляра сітки"
@@ -3739,7 +3746,7 @@ msgstr ""
 "«Вилучити компонування» для вилучення типового компонування."
 
 msgid "Layout name not found!"
-msgstr "Назву компонування не знайдено!"
+msgstr "Назву макета не знайдено!"
 
 msgid "Restored the Default layout to its base settings."
 msgstr "Відновлено початкові параметри типового компонування."
@@ -3754,10 +3761,9 @@ msgid ""
 "Please read the documentation relevant to importing scenes to better "
 "understand this workflow."
 msgstr ""
-"Цей ресурс належить до сцени, який було імпортовано, тому його не можна "
-"редагувати.\n"
-"Будь ласка, прочитайте документацію, що стосуються імпортування сцен, щоб "
-"краще зрозуміти цей робочий процес."
+"Цей ресурс належить до імпортованої сцени, тому його неможливо редагувати.\n"
+"Просимо ознайомитися з документацією щодо імпортування сцен, щоб краще "
+"зрозуміти цей процес."
 
 msgid ""
 "This resource belongs to a scene that was instantiated or inherited.\n"
@@ -3770,8 +3776,8 @@ msgid ""
 "This resource was imported, so it's not editable. Change its settings in the "
 "import panel and then re-import."
 msgstr ""
-"Цей ресурс імпортовано, тому його не можна редагувати. Змініть свої "
-"налаштування на панелі імпорту, а потім знову імпортуйте."
+"Цей ресурс було імпортовано, тому його неможливо редагувати. Змініть його "
+"налаштування на панелі імпорту, а потім повторно імпортуйте."
 
 msgid ""
 "This scene was imported, so changes to it won't be kept.\n"
@@ -3850,15 +3856,14 @@ msgid "Can't reload a scene that was never saved."
 msgstr "Неможливо перезавантажити сцену, яку ніколи не зберігали."
 
 msgid "Reload Saved Scene"
-msgstr "Перезавантаження збереженої сцени"
+msgstr "Перезавантажити збережену сцену"
 
 msgid ""
 "The current scene has unsaved changes.\n"
 "Reload the saved scene anyway? This action cannot be undone."
 msgstr ""
 "Зміни до поточної сцени не збережено.\n"
-"Перезавантажити збережену сцену попри це? Наслідки перезавантаження не можна "
-"буде скасувати."
+"Усе одно перезавантажити збережену сцену? Цю дію не можна буде скасувати."
 
 msgid "Save & Reload"
 msgstr "Зберегти і перезавантажити"
@@ -3896,21 +3901,21 @@ msgid "This operation can't be done without a scene."
 msgstr "Ця операція не обійдеться без сцени."
 
 msgid "Export Mesh Library"
-msgstr "Експортувати бібліотеку сіті"
+msgstr "Експортувати бібліотеку сітки"
 
 msgid "Quick Open Color Palette..."
 msgstr "Швидке відкриття палітри кольорів..."
 
 msgid "Unable to enable addon plugin at: '%s' parsing of config failed."
 msgstr ""
-"Не вдалося ввімкнути додаток addon: «%s» не вдалося проаналізувати "
-"налаштування."
+"Не вдалося ввімкнути плагін доповнення: «%s» не вдалося проаналізувати "
+"конфігурацію."
 
 msgid "Unable to find script field for addon plugin at: '%s'."
 msgstr "Не вдалося знайти поле скрипту для додатка тут: «%s»."
 
 msgid "Unable to load addon script from path: '%s'."
-msgstr "Неможливо завантажити доповнення скрипт зі шляху: '%s'."
+msgstr "Неможливо завантажити скрипт доповнення зі шляху: '%s'."
 
 msgid ""
 "Unable to load addon script from path: '%s'. This might be due to a code "
@@ -3936,8 +3941,8 @@ msgid ""
 "Scene '%s' was automatically imported, so it can't be modified.\n"
 "To make changes to it, a new inherited scene can be created."
 msgstr ""
-"Сцена '%s' автоматично імпортується, тому її неможливо змінити.\n"
-"Щоб внести зміни, можна створити нову успадковану сцену."
+"Сцена '%s' була імпортована автоматично, тому її неможливо змінити.\n"
+"Щоб внести до неї зміни, можна створити нову успадковану сцену."
 
 msgid ""
 "Error loading scene, it must be inside the project path. Use 'Import' to open "
@@ -4197,7 +4202,7 @@ msgid "Reopen Closed Scene"
 msgstr "Повторно відкрити закриту сцену"
 
 msgid "Open Recent"
-msgstr "Відкрити останні"
+msgstr "Відкрити недавні"
 
 msgid "Save Scene"
 msgstr "Зберегти сцену"
@@ -4284,7 +4289,7 @@ msgid "Screenshots are stored in the user data folder (\"user://\")."
 msgstr "Скріншоти зберігаються в папці даних користувача (\"user://\")."
 
 msgid "Toggle Fullscreen"
-msgstr "Перемикач повноекранного режиму"
+msgstr "На весь екран"
 
 msgid "Open Editor Data/Settings Folder"
 msgstr "Відкриття теки даних/параметрів редактора"
@@ -4417,7 +4422,7 @@ msgid "Export Library"
 msgstr "Експортувати бібліотеку"
 
 msgid "Open & Run a Script"
-msgstr "Відкрити і запустити скрипт"
+msgstr "Відкрити й запустити скрипт"
 
 msgid "Files have been modified outside Godot"
 msgstr "Файли були змінені за межами Godot"
@@ -4480,16 +4485,16 @@ msgid "Edit Text:"
 msgstr "Редагувати текст:"
 
 msgid "On"
-msgstr "Увімкнено"
+msgstr "Увімк."
 
 msgid "Renaming layer %d:"
 msgstr "Перейменування шару %d:"
 
 msgid "No name provided."
-msgstr "Ім'я не вказано."
+msgstr "Назву не вказано."
 
 msgid "Name contains invalid characters."
-msgstr "Назва містить некоректні символи."
+msgstr "Назва містить недійсні символи."
 
 msgid "Bit %d, value %d"
 msgstr "Біт %d, значення %d"
@@ -4707,7 +4712,7 @@ msgid "Project Run"
 msgstr "Запуск проєкту"
 
 msgid "Write your logic in the _run() method."
-msgstr "Напишіть свою логіку в методі _run ()."
+msgstr "Напишіть свою логіку в методі _run()."
 
 msgid "The current scene already has a root node."
 msgstr "У поточній сцені вже є кореневий вузол."
@@ -4734,7 +4739,7 @@ msgid "Event %d"
 msgstr "Елемент %d"
 
 msgid "Editor Settings"
-msgstr "Параметри редактора"
+msgstr "Налаштування редактора"
 
 msgid "General"
 msgstr "Загальне"
@@ -5200,7 +5205,7 @@ msgid "Uncompressing Android Build Sources"
 msgstr "Розпаковуємо код для збирання для Android"
 
 msgid "Export Template Manager"
-msgstr "Менеджер експорту шаблонів"
+msgstr "Менеджер шаблонів експорту"
 
 msgid "Current Version:"
 msgstr "Поточна версія:"
@@ -5244,6 +5249,12 @@ msgstr "Встановити з файла"
 
 msgid "Install templates from a local file."
 msgstr "Встановити шаблони з локального файла."
+
+msgid "Online mode is needed to download the templates."
+msgstr "Для завантаження шаблонів потрібен режим онлайн."
+
+msgid "Go Online"
+msgstr "Вийти в Інтернет"
 
 msgid "Cancel the download of the templates."
 msgstr "Скасувати отримання шаблонів."
@@ -5511,7 +5522,7 @@ msgid "Project Export"
 msgstr "Експортування проєкту"
 
 msgid "Manage Export Templates"
-msgstr "Керування шаблонами експорту"
+msgstr "Керувати шаблонами експорту"
 
 msgid "Disable FBX2glTF & Restart"
 msgstr "Вимкніть FBX2glTF і перезапустіть"
@@ -5625,7 +5636,7 @@ msgstr ""
 "більше не показуватиме файл у списку."
 
 msgid "A file or folder with this name already exists."
-msgstr "Файл або тека з таким іменем вже існує."
+msgstr "Файл або тека з такою назвою уже існує."
 
 msgid "Could not create base directory: %s"
 msgstr "Не вдалося створити базовий каталог: %s"
@@ -5732,16 +5743,16 @@ msgid "Move/Duplicate To..."
 msgstr "Перемістити/дублювати до..."
 
 msgid "Add to Favorites"
-msgstr "Додати до улюблених"
+msgstr "Додати до обраного"
 
 msgid "Remove from Favorites"
-msgstr "Вилучити з улюблених"
+msgstr "Вилучити з обраного"
 
 msgid "Convert to..."
 msgstr "Перетворити на..."
 
 msgid "Reimport"
-msgstr "Переімпортувати"
+msgstr "Повторно імпортувати"
 
 msgid "Open in Terminal"
 msgstr "Відкрийте в терміналі"
@@ -5834,7 +5845,7 @@ msgid "Go to next selected folder/file."
 msgstr "Перейти до наступної теки/файлу."
 
 msgid "Re-Scan Filesystem"
-msgstr "Пересканування файлової системи"
+msgstr "Повторно сканувати файлову систему"
 
 msgid "Change Split Mode"
 msgstr "Змінити режим розділення"
@@ -6065,10 +6076,10 @@ msgid "Open File(s)"
 msgstr "Відкрити файл(и)"
 
 msgid "Open a Directory"
-msgstr "Відкрити каталог"
+msgstr "Відкрити теку"
 
 msgid "Open a File or Directory"
-msgstr "Відкрити файл або каталог"
+msgstr "Відкрити файл або теку"
 
 msgid "Save a File"
 msgstr "Зберегти файл"
@@ -6083,22 +6094,22 @@ msgid "Could not create folder."
 msgstr "Не вдалося створити теку."
 
 msgid "Favorited folder does not exist anymore and will be removed."
-msgstr "Вибрана папка більше не існує і буде видалена."
+msgstr "Тека в обраному більше не існує і буде вилучена."
 
 msgid "Go Back"
-msgstr "Перейти назад"
+msgstr "Назад"
 
 msgid "Go Forward"
-msgstr "Перейти вперед"
+msgstr "Уперед"
 
 msgid "Go Up"
-msgstr "Вгору"
+msgstr "Угору"
 
 msgid "Toggle Hidden Files"
 msgstr "Перемкнути приховані файли"
 
 msgid "Toggle Favorite"
-msgstr "Перемкнути обране"
+msgstr "Перемкнути присутність в обраному"
 
 msgid "Toggle Mode"
 msgstr "Перемкнути режим"
@@ -6110,10 +6121,10 @@ msgid "Focus Filter"
 msgstr "Фільтр фокусування"
 
 msgid "Move Favorite Up"
-msgstr "Перемістити вибране вище"
+msgstr "Перемістити обране вгору"
 
 msgid "Move Favorite Down"
-msgstr "Перемістити вибране нижче"
+msgstr "Перемістити обране вниз"
 
 msgid "Go to previous folder."
 msgstr "Перейти до попередньої теки."
@@ -6128,13 +6139,13 @@ msgid "Refresh files."
 msgstr "Освіжити файли."
 
 msgid "(Un)favorite current folder."
-msgstr "Перемкнути стан вибраності для поточної теки."
+msgstr "Обране: додати/вилучити поточну теку."
 
 msgid "Create a new folder."
 msgstr "Створіть нову папку."
 
 msgid "Directories & Files:"
-msgstr "Каталоги та файли:"
+msgstr "Теки та файли:"
 
 msgid "Toggle the visibility of hidden files."
 msgstr "Увімкнути або вимкнути видимість прихованих файлів."
@@ -6214,10 +6225,10 @@ msgid "List view"
 msgstr "Перегляд списку"
 
 msgid "Play the project."
-msgstr "Запустити проект."
+msgstr "Запустити проєкт."
 
 msgid "Play the edited scene."
-msgstr "Відтворити поточну відредаговану сцену."
+msgstr "Запустити відредаговану сцену."
 
 msgid "Play a custom scene."
 msgstr "Відтворити вибіркову сцену."
@@ -6985,7 +6996,7 @@ msgid "%d Files"
 msgstr "%d файлів"
 
 msgid "Set as Default for '%s'"
-msgstr "Встановити як типове для '%s'"
+msgstr "Задати як типове для '%s'"
 
 msgid "Clear Default for '%s'"
 msgstr "Очистити типове для '%s'"
@@ -7129,10 +7140,10 @@ msgid "Paste Properties"
 msgstr "Вставити властивості"
 
 msgid "Make Sub-Resources Unique"
-msgstr "Зробити суб-ресурси унікальними"
+msgstr "Зробити підресурси унікальними"
 
 msgid "Create a new resource in memory and edit it."
-msgstr "Створення нового ресурсу в пам'яті і редагувати його."
+msgstr "Створити новий ресурс у пам'яті й відредагувати його."
 
 msgid "Load an existing resource from disk and edit it."
 msgstr "Завантажити наявний ресурс із диска та відредагувати його."
@@ -7159,7 +7170,7 @@ msgid "Go to next edited object in history."
 msgstr "Перейти до наступного редагованого об'єкта в історії."
 
 msgid "History of recently edited objects."
-msgstr "Історія нещодавно відредагованих об'єктів."
+msgstr "Історія недавно змінених об'єктів."
 
 msgid "Open documentation for this object."
 msgstr "Відкрити документацію для цього об'єкта."
@@ -7693,13 +7704,13 @@ msgid "Create New Animation"
 msgstr "Створити нову анімацію"
 
 msgid "New Animation Name:"
-msgstr "Нове ім'я анімації:"
+msgstr "Нова назва анімації:"
 
 msgid "Rename Animation"
 msgstr "Перейменувати анімацію"
 
 msgid "Change Animation Name:"
-msgstr "Змінити ім'я анімації:"
+msgstr "Змінити назву анімації:"
 
 msgid "Delete Animation '%s'?"
 msgstr "Видалити анімацію '%s'?"
@@ -7971,7 +7982,7 @@ msgid "Timeout."
 msgstr "Перевищено час очікування на відповідь."
 
 msgid "Failed:"
-msgstr "Не вдалося:"
+msgstr "Помилка:"
 
 msgid "Bad download hash, assuming file has been tampered with."
 msgstr "Розбіжність хеша завантаження, можливо файл був змінений."
@@ -8064,9 +8075,6 @@ msgid ""
 msgstr ""
 "Бібліотека ресурсів вимагає підключення до Інтернету і передбачає надсилання "
 "даних через Інтернет."
-
-msgid "Go Online"
-msgstr "Вийти в Інтернет"
 
 msgid "Failed to get repository configuration."
 msgstr "Не вдалося отримати конфігурацію репозиторія."
@@ -8262,7 +8270,7 @@ msgid "Create Custom Bone2D(s) from Node(s)"
 msgstr "Створити нетипові кістки2D з вузла(ів)"
 
 msgid "Cancel Transformation"
-msgstr "Скасувати Перетворення"
+msgstr "Скасувати перетворення"
 
 msgid "Zoom to 3.125%"
 msgstr "Масштаб у 3,125%"
@@ -8819,7 +8827,7 @@ msgid "Toggle Debugger Bottom Panel"
 msgstr "Перемкнути нижню панель налагоджувача"
 
 msgid "Deploy with Remote Debug"
-msgstr "Розгортання за допомогою віддаленого налагодження"
+msgstr "Запускати з віддаленим налагодженням"
 
 msgid ""
 "When this option is enabled, using one-click deploy will make the executable "
@@ -8973,13 +8981,13 @@ msgstr ""
 "режим активний."
 
 msgid "Installed Plugins:"
-msgstr "Встановлені плаґіни:"
+msgstr "Установлені доповнення:"
 
 msgid "Create New Plugin"
 msgstr "Створити новий плагін"
 
 msgid "Enabled"
-msgstr "Увімкнути"
+msgstr "Увімкнено"
 
 msgid "Version"
 msgstr "Версія"
@@ -11404,7 +11412,7 @@ msgid "Unfold All Lines"
 msgstr "Розгорнути всі рядки"
 
 msgid "Duplicate Selection"
-msgstr "Дублювати позначене"
+msgstr "Дублювати виділення"
 
 msgid "Duplicate Lines"
 msgstr "Дублювати лінії"
@@ -14854,6 +14862,9 @@ msgstr ""
 "Вільно перенаправляйте підключення, можна використовувати для підключення "
 "кількох вхідних портів до одного вихідного порту."
 
+msgid "[None]"
+msgstr "[Жодного]"
+
 msgid "Edit Visual Property: %s"
 msgstr "Редагувати візуальну властивість: %s"
 
@@ -15707,9 +15718,6 @@ msgstr "Теги функцій"
 msgid "Pick Root Node Type"
 msgstr "Вибрати тип кореневого вузла"
 
-msgid "Pick"
-msgstr "Вибирати"
-
 msgid "Scene name is empty."
 msgstr "Назва сцени порожня."
 
@@ -15932,7 +15940,7 @@ msgid "Create Root Node:"
 msgstr "Створити кореневий вузол:"
 
 msgid "Toggle the display of favorite nodes."
-msgstr "Перемикання відображення улюблених вузлів."
+msgstr "Перемкнути показ обраних вузлів."
 
 msgid "Other Node"
 msgstr "Інший вузол"
@@ -16404,48 +16412,30 @@ msgstr ""
 "до повільнішого завантаження при кожному старті цього проекта."
 
 msgid "Restart & Upgrade"
-msgstr "Перезапуск и обновление"
+msgstr "Перезапустити й оновити"
 
 msgid "Updating Script UIDs"
 msgstr "Оновлення UID сценарію"
 
 msgid ""
 "As of Godot 4.4, scenes and resources use UIDs to reference scripts and "
-"shaders.\n"
+"shaders. Upgrades apply on the next save of each scene/resource.\n"
 "\n"
-"Normally, this update is applied to a single scene or resource once you save "
-"it in Godot 4.4 for the first time. If you have a lot of scenes and/or "
-"resources, doing this manually may be time-consuming. This tool will update "
-"all of the project's scenes and resources at once.\n"
-"\n"
-"Click \"Restart & Upgrade\" to restart the editor and update all of the "
-"scenes and resources in this project. Depending on the project size, it may "
-"take several minutes.\n"
-"\n"
-"Note: Please make sure you have your project backed up before running the "
-"tool, to avoid the possibility of data loss. Additionally, make sure to "
-"commit all .uid files into version control (and do not add them to ignore-"
-"lists like .gitignore)."
+"To save time, this tool can open and save each of these files. Depending on "
+"the project size, it may take several minutes."
 msgstr ""
-"Починаючи з Godot 4.4, сцени та ресурси використовують UID для посилань на "
-"сценарії та шейдери. \n"
+"Починаючи з версії Godot 4.4, сцени та ресурси використовують UID для "
+"посилання на скрипти та шейдери. Оновлення застосовуються при наступному "
+"збереженні кожної сцени/ресурсу.\n"
 "\n"
-"Зазвичай це оновлення застосовується до однієї сцени чи ресурсу, коли ви "
-"вперше зберігаєте його в Godot 4.4. Якщо у вас багато сцен і/або ресурсів, "
-"виконання цього вручну може зайняти багато часу. Цей інструмент оновить усі "
-"сцени та ресурси проекту одночасно. \n"
-"\n"
-"Натисніть «Перезапустити та оновити», щоб перезапустити редактор і оновити "
-"всі сцени та ресурси в цьому проекті. Залежно від розміру проекту це може "
-"зайняти кілька хвилин. \n"
-"\n"
-"Примітка: перед запуском інструменту переконайтеся, що у вас є резервна копія "
-"вашого проекту, щоб уникнути можливості втрати даних. Крім того, "
-"переконайтеся, що всі файли .uid передано в контроль версій (і не додавайте "
-"їх до списків ігнорування, як .gitignore)."
+"Щоб заощадити час, цей інструмент може відкривати і зберігати кожен з цих "
+"файлів. Залежно від розміру проекту це може зайняти кілька хвилин."
+
+msgid "Re-save all scenes and resources to use UIDs"
+msgstr "Перезбережіть усі сцени та ресурси, щоб використовувати UID"
 
 msgid "Learn More"
-msgstr "Дізнайтеся більше"
+msgstr "Дізнатися більше"
 
 msgid "Make this panel floating in the screen %d."
 msgstr "Зробити цю панель плаваючою на екрані %d."
@@ -16779,11 +16769,11 @@ msgstr "Кінець кліпу"
 
 msgctxt "Transition Time Position"
 msgid "Same"
-msgstr "Те саме"
+msgstr "Та сама"
 
 msgctxt "Transition Time Position"
 msgid "Start"
-msgstr "Старт"
+msgstr "Початок"
 
 msgctxt "Transition Time Position"
 msgid "Prev"
@@ -17042,7 +17032,7 @@ msgstr "Завжди"
 
 msgctxt "Replication Mode"
 msgid "On Change"
-msgstr "На зміну"
+msgstr "При зміні"
 
 msgid ""
 "A valid NodePath must be set in the \"Spawn Path\" property in order for "
@@ -19771,14 +19761,14 @@ msgstr ""
 " Щоб продовжити з мінімальними змінами коду, додайте 'uniform sampler2D %s : "
 "hint_%s, filter_linear_mipmap;' біля верхньої частини шейдера."
 
+msgid "Can't use function as identifier: '%s'."
+msgstr "Не можна використовувати функцію як ідентифікатор: '%s'."
+
 msgid "Varying with '%s' data type may only be used in the '%s' function."
 msgstr "Варіанти типу даних \"%s\" можна використовувати лише у функції \"%s\"."
 
 msgid "Varying '%s' must be assigned in the '%s' function first."
 msgstr "Змінний '%s' має бути спочатку призначений у функції '%s'."
-
-msgid "Can't use function as identifier: '%s'."
-msgstr "Не можна використовувати функцію як ідентифікатор: '%s'."
 
 msgid "Only integer expressions are allowed for indexing."
 msgstr "До індексації допускаються лише цілі вирази."

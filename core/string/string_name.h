@@ -166,23 +166,48 @@ public:
 	static StringName search(const String &p_name);
 
 	struct AlphCompare {
-		_FORCE_INLINE_ bool operator()(const StringName &l, const StringName &r) const {
+		template <typename LT, typename RT>
+		_FORCE_INLINE_ bool operator()(const LT &l, const RT &r) const {
+			return compare(l, r);
+		}
+		_FORCE_INLINE_ static bool compare(const StringName &l, const StringName &r) {
 			const char *l_cname = l._data ? l._data->cname : "";
 			const char *r_cname = r._data ? r._data->cname : "";
 
 			if (l_cname) {
 				if (r_cname) {
-					return is_str_less(l_cname, r_cname);
+					return str_compare(l_cname, r_cname) < 0;
 				} else {
-					return is_str_less(l_cname, r._data->name.ptr());
+					return str_compare(l_cname, r._data->name.ptr()) < 0;
 				}
 			} else {
 				if (r_cname) {
-					return is_str_less(l._data->name.ptr(), r_cname);
+					return str_compare(l._data->name.ptr(), r_cname) < 0;
 				} else {
-					return is_str_less(l._data->name.ptr(), r._data->name.ptr());
+					return str_compare(l._data->name.ptr(), r._data->name.ptr()) < 0;
 				}
 			}
+		}
+		_FORCE_INLINE_ static bool compare(const String &l, const StringName &r) {
+			const char *r_cname = r._data ? r._data->cname : "";
+
+			if (r_cname) {
+				return str_compare(l.get_data(), r_cname) < 0;
+			} else {
+				return str_compare(l.get_data(), r._data->name.ptr()) < 0;
+			}
+		}
+		_FORCE_INLINE_ static bool compare(const StringName &l, const String &r) {
+			const char *l_cname = l._data ? l._data->cname : "";
+
+			if (l_cname) {
+				return str_compare(l_cname, r.get_data()) < 0;
+			} else {
+				return str_compare(l._data->name.ptr(), r.get_data()) < 0;
+			}
+		}
+		_FORCE_INLINE_ static bool compare(const String &l, const String &r) {
+			return str_compare(l.get_data(), r.get_data()) < 0;
 		}
 	};
 
@@ -208,7 +233,13 @@ public:
 	StringName() {}
 
 	static void assign_static_unique_class_name(StringName *ptr, const char *p_name);
-	_FORCE_INLINE_ ~StringName() {
+
+#ifdef SIZE_EXTRA
+	_NO_INLINE_
+#else
+	_FORCE_INLINE_
+#endif
+	~StringName() {
 		if (likely(configured) && _data) { //only free if configured
 			unref();
 		}
@@ -218,6 +249,10 @@ public:
 	static void set_debug_stringnames(bool p_enable) { debug_stringname = p_enable; }
 #endif
 };
+
+// Zero-constructing StringName initializes _data to nullptr (and thus empty).
+template <>
+struct is_zero_constructible<StringName> : std::true_type {};
 
 bool operator==(const String &p_name, const StringName &p_string_name);
 bool operator!=(const String &p_name, const StringName &p_string_name);

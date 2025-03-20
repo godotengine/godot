@@ -88,8 +88,12 @@ static void _restore_treeitem_custom_color(TreeItem *p_item) {
 }
 
 void SceneTreeDock::_inspect_hovered_node() {
-	select_node_hovered_at_end_of_drag = true;
 	Tree *tree = scene_tree->get_scene_tree();
+	if (!tree->get_rect().has_point(tree->get_local_mouse_position())) {
+		return;
+	}
+
+	select_node_hovered_at_end_of_drag = true;
 	TreeItem *item = tree->get_item_with_metadata(node_hovered_now->get_path());
 
 	_restore_treeitem_custom_color(tree_item_inspected);
@@ -150,7 +154,14 @@ void SceneTreeDock::input(const Ref<InputEvent> &p_event) {
 		}
 	}
 
-	if (tree_clicked && get_viewport()->gui_is_dragging()) {
+	Ref<InputEventMouseMotion> mm = p_event;
+	bool tree_hovered = false;
+	if (mm.is_valid()) {
+		Tree *tree = scene_tree->get_scene_tree();
+		tree_hovered = tree->get_rect().has_point(tree->get_local_mouse_position());
+	}
+
+	if ((tree_clicked || tree_hovered) && get_viewport()->gui_is_dragging()) {
 		_handle_hover_to_inspect();
 	}
 }
@@ -1381,7 +1392,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 		} break;
 		case TOOL_TOGGLE_SCENE_UNIQUE_NAME: {
 			// Enabling/disabling based on the same node based on which the checkbox in the menu is checked/unchecked.
-			List<Node *>::Element *first_selected = editor_selection->get_selected_node_list().front();
+			const List<Node *>::Element *first_selected = editor_selection->get_selected_node_list().front();
 			if (first_selected == nullptr) {
 				return;
 			}
@@ -1806,7 +1817,7 @@ void SceneTreeDock::_node_strip_signal_inheritance(Node *p_node) {
 }
 
 void SceneTreeDock::_load_request(const String &p_path) {
-	EditorNode::get_singleton()->open_request(p_path);
+	EditorNode::get_singleton()->load_scene(p_path);
 	_local_tree_selected();
 }
 
@@ -3792,7 +3803,7 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 				menu->add_icon_shortcut(get_editor_theme_icon(SNAME("ScriptCreate")), ED_GET_SHORTCUT("scene_tree/attach_script"), TOOL_ATTACH_SCRIPT);
 			}
 
-			if (existing_script.is_valid()) {
+			if (existing_script.is_valid() && !existing_script->is_built_in()) {
 				menu->add_icon_shortcut(get_editor_theme_icon(SNAME("ScriptExtend")), ED_GET_SHORTCUT("scene_tree/extend_script"), TOOL_EXTEND_SCRIPT);
 			}
 		}
@@ -4268,7 +4279,7 @@ List<Node *> SceneTreeDock::paste_nodes(bool p_paste_as_sibling) {
 			// and added to the node_clipboard_edited_scene_owned list.
 			if (d != dup && E2.key->get_owner() == nullptr) {
 				if (node_clipboard_edited_scene_owned.find(const_cast<Node *>(E2.key))) {
-					ur->add_do_method(d, "set_owner", edited_scene);
+					ur->add_do_method(d, "set_owner", owner);
 				}
 			}
 		}
@@ -4775,6 +4786,7 @@ SceneTreeDock::SceneTreeDock(Node *p_scene_root, EditorSelection *p_editor_selec
 
 	inspect_hovered_node_delay = memnew(Timer);
 	inspect_hovered_node_delay->connect("timeout", callable_mp(this, &SceneTreeDock::_inspect_hovered_node));
+	inspect_hovered_node_delay->set_wait_time(.5);
 	inspect_hovered_node_delay->set_one_shot(true);
 	add_child(inspect_hovered_node_delay);
 

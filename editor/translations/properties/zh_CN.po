@@ -98,7 +98,7 @@ msgstr ""
 "Project-Id-Version: Chinese (Simplified) (Godot Engine)\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: 2018-01-20 12:15+0200\n"
-"PO-Revision-Date: 2025-02-21 19:26+0000\n"
+"PO-Revision-Date: 2025-03-14 05:10+0000\n"
 "Last-Translator: Haoyu Qiu <timothyqiu32@gmail.com>\n"
 "Language-Team: Chinese (Simplified Han script) <https://hosted.weblate.org/"
 "projects/godot-engine/godot-properties/zh_Hans/>\n"
@@ -107,7 +107,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.10.1-dev\n"
+"X-Generator: Weblate 5.11-dev\n"
 
 msgid "Application"
 msgstr "应用"
@@ -967,6 +967,9 @@ msgstr "使用线程"
 msgid "Localize Settings"
 msgstr "设置本地化"
 
+msgid "Dock Tab Style"
+msgstr "停靠面板标签页样式"
+
 msgid "UI Layout Direction"
 msgstr "UI 布局方向"
 
@@ -982,6 +985,12 @@ msgstr "编辑器屏幕"
 msgid "Project Manager Screen"
 msgstr "项目管理器屏幕"
 
+msgid "Connection"
+msgstr "连接"
+
+msgid "Engine Version Update Mode"
+msgstr "引擎版本更新模式"
+
 msgid "Use Embedded Menu"
 msgstr "使用嵌入式菜单"
 
@@ -991,6 +1000,12 @@ msgstr "使用原生文件对话框"
 msgid "Expand to Title"
 msgstr "扩展至标题栏"
 
+msgid "Main Font Size"
+msgstr "主字体大小"
+
+msgid "Code Font Size"
+msgstr "代码字体大小"
+
 msgid "Code Font Contextual Ligatures"
 msgstr "代码字体上下文连字"
 
@@ -999,6 +1014,12 @@ msgstr "代码字体自定义 OpenType 特性"
 
 msgid "Code Font Custom Variations"
 msgstr "代码字体自定义变体"
+
+msgid "Font Antialiasing"
+msgstr "字体抗锯齿"
+
+msgid "Font Hinting"
+msgstr "字体微调"
 
 msgid "Font Subpixel Positioning"
 msgstr "字体次像素定位"
@@ -1033,6 +1054,9 @@ msgstr "使用专门鼠标按键查看历史"
 msgid "Save Each Scene on Quit"
 msgstr "退出时保存各场景"
 
+msgid "Save on Focus Loss"
+msgstr "焦点丢失时保存"
+
 msgid "Accept Dialog Cancel OK Buttons"
 msgstr "AcceptDialog 取消/确定按钮"
 
@@ -1047,6 +1071,12 @@ msgstr "低处理器模式睡眠（微秒）"
 
 msgid "Unfocused Low Processor Mode Sleep (µsec)"
 msgstr "未聚焦低处理器模式睡眠（微秒）"
+
+msgid "Import Resources When Unfocused"
+msgstr "未聚焦时导入资源"
+
+msgid "V-Sync Mode"
+msgstr "垂直同步模式"
 
 msgid "Update Continuously"
 msgstr "持续更新"
@@ -1072,8 +1102,17 @@ msgstr "唯一名称废除前询问"
 msgid "Inspector"
 msgstr "检查器"
 
+msgid "Max Array Dictionary Items per Page"
+msgstr "数组字典单页条目数"
+
 msgid "Show Low Level OpenType Features"
 msgstr "显示低阶 OpenType 特性"
+
+msgid "Float Drag Speed"
+msgstr "浮点数拖动速度"
+
+msgid "Nested Color Mode"
+msgstr "嵌套颜色模式"
 
 msgid "Delimitate All Container and Resources"
 msgstr "为所有容器和资源定界"
@@ -1102,11 +1141,38 @@ msgstr "在当前检查器中打开资源"
 msgid "Resources to Open in New Inspector"
 msgstr "在新检查器中打开的资源"
 
+msgid "Default Color Picker Mode"
+msgstr "默认取色器模式"
+
+msgid "Default Color Picker Shape"
+msgstr "默认取色器形状"
+
 msgid "Theme"
 msgstr "主题"
 
+msgid "Follow System Theme"
+msgstr "跟随系统主题"
+
+msgid "Preset"
+msgstr "预设"
+
+msgid "Spacing Preset"
+msgstr "间隙预设"
+
 msgid "Icon and Font Color"
 msgstr "图标与字体颜色"
+
+msgid "Base Color"
+msgstr "基础色"
+
+msgid "Accent Color"
+msgstr "主题色"
+
+msgid "Use System Accent Color"
+msgstr "使用系统主题色"
+
+msgid "Contrast"
+msgstr "对比度"
 
 msgid "Draw Extra Borders"
 msgstr "绘制额外边框"
@@ -1159,11 +1225,35 @@ msgstr "显示脚本按钮"
 msgid "Restore Scenes on Load"
 msgstr "加载时恢复场景"
 
+msgid "Multi Window"
+msgstr "多窗口"
+
+msgid "Restore Windows on Load"
+msgstr "加载时恢复窗口"
+
+msgid "Maximize Window"
+msgstr "最大化窗口"
+
 msgid "FileSystem"
 msgstr "文件系统"
 
 msgid "External Programs"
 msgstr "外部程序"
+
+msgid "Raster Image Editor"
+msgstr "位图编辑器"
+
+msgid "Vector Image Editor"
+msgstr "矢量图编辑器"
+
+msgid "Audio Editor"
+msgstr "音频编辑器"
+
+msgid "3D Model Editor"
+msgstr "3D 模型编辑器"
+
+msgid "Terminal Emulator"
+msgstr "终端模拟器"
 
 msgid "Terminal Emulator Flags"
 msgstr "终端模拟器参数"
@@ -1173,6 +1263,9 @@ msgstr "目录"
 
 msgid "Autoscan Project Path"
 msgstr "自动扫描项目路径"
+
+msgid "Default Project Path"
+msgstr "默认项目路径"
 
 msgid "On Save"
 msgstr "保存时"
@@ -1294,6 +1387,9 @@ msgstr "文本编辑器"
 msgid "Line Spacing"
 msgstr "行间距"
 
+msgid "Color Theme"
+msgstr "颜色主题"
+
 msgid "Appearance"
 msgstr "外观"
 
@@ -1353,6 +1449,9 @@ msgstr "行"
 
 msgid "Code Folding"
 msgstr "代码折叠"
+
+msgid "Word Wrap"
+msgstr "自动换行"
 
 msgid "Autowrap Mode"
 msgstr "自动换行模式"
@@ -1531,6 +1630,18 @@ msgstr "帮助"
 msgid "Show Help Index"
 msgstr "显示帮助索引"
 
+msgid "Help Font Size"
+msgstr "帮助字体大小"
+
+msgid "Help Source Font Size"
+msgstr "帮助源码字体大小"
+
+msgid "Help Title Font Size"
+msgstr "帮助标题字体大小"
+
+msgid "Class Reference Examples"
+msgstr "类参考示例"
+
 msgid "Sort Functions Alphabetically"
 msgstr "按字母序排列函数"
 
@@ -1542,6 +1653,15 @@ msgstr "拾取距离"
 
 msgid "Palette Min Width"
 msgstr "调色板最小宽度"
+
+msgid "Preview Size"
+msgstr "预览大小"
+
+msgid "Primary Grid Color"
+msgstr "主栅格颜色"
+
+msgid "Secondary Grid Color"
+msgstr "次栅格颜色"
 
 msgid "Selection Box Color"
 msgstr "选择框颜色"
@@ -1642,6 +1762,12 @@ msgstr "骨骼形状"
 msgid "Path 3D Tilt Disk Size"
 msgstr "Path3D 倾斜盘大小"
 
+msgid "Primary Grid Steps"
+msgstr "主栅格步长"
+
+msgid "Grid Size"
+msgstr "栅格大小"
+
 msgid "Grid Division Level Max"
 msgstr "栅格细分级别上限"
 
@@ -1660,11 +1786,35 @@ msgstr "栅格 XY 平面"
 msgid "Grid YZ Plane"
 msgstr "栅格 YZ 平面"
 
+msgid "Default FOV"
+msgstr "默认 FOV"
+
+msgid "Default Z Near"
+msgstr "默认近裁剪面"
+
+msgid "Default Z Far"
+msgstr "默认远裁剪面"
+
 msgid "Invert X Axis"
 msgstr "翻转 X 轴"
 
 msgid "Invert Y Axis"
 msgstr "翻转 Y 轴"
+
+msgid "Navigation Scheme"
+msgstr "导航方案"
+
+msgid "Orbit Mouse Button"
+msgstr "视轨鼠标按钮"
+
+msgid "Pan Mouse Button"
+msgstr "平移鼠标按钮"
+
+msgid "Zoom Mouse Button"
+msgstr "缩放鼠标按钮"
+
+msgid "Zoom Style"
+msgstr "缩放样式"
 
 msgid "Emulate Numpad"
 msgstr "模拟小键盘"
@@ -1702,11 +1852,20 @@ msgstr "显示视口导航小工具"
 msgid "Freelook"
 msgstr "自由观看"
 
+msgid "Freelook Navigation Scheme"
+msgstr "自由观看导航方案"
+
 msgid "Freelook Sensitivity"
 msgstr "自由观看灵敏度"
 
 msgid "Freelook Inertia"
 msgstr "自由观看惯性"
+
+msgid "Freelook Base Speed"
+msgstr "自由观看基础速度"
+
+msgid "Freelook Activation Modifier"
+msgstr "自由观看激活修饰键"
 
 msgid "Freelook Speed Zoom Link"
 msgstr "自由观看速度缩放关联"
@@ -1753,6 +1912,9 @@ msgstr "视口边框颜色"
 msgid "Use Integer Zoom by Default"
 msgstr "默认使用整数缩放"
 
+msgid "Zoom Speed Factor"
+msgstr "缩放速度系数"
+
 msgid "Bone Mapper"
 msgstr "骨骼映射器"
 
@@ -1773,6 +1935,15 @@ msgstr "错误"
 
 msgid "Panning"
 msgstr "平移"
+
+msgid "2D Editor Panning Scheme"
+msgstr "2D 编辑器平移方案"
+
+msgid "Sub Editors Panning Scheme"
+msgstr "子编辑器平移方案"
+
+msgid "Animation Editors Panning Scheme"
+msgstr "动画编辑器平移方案"
 
 msgid "Simple Panning"
 msgstr "简单平移"
@@ -1828,9 +1999,6 @@ msgstr "加载时恢复着色器"
 msgid "Visual Editors"
 msgstr "可视化编辑器"
 
-msgid "Color Theme"
-msgstr "颜色主题"
-
 msgid "Minimap Opacity"
 msgstr "小地图不透明度"
 
@@ -1858,8 +2026,20 @@ msgstr "SCP"
 msgid "Window Placement"
 msgstr "窗口放置"
 
+msgid "Rect"
+msgstr "矩形"
+
 msgid "Rect Custom Position"
 msgstr "矩形自定义位置"
+
+msgid "Screen"
+msgstr "屏幕"
+
+msgid "Android Window"
+msgstr "Android 窗口"
+
+msgid "Game Embed Mode"
+msgstr "游戏嵌入式模式"
 
 msgid "Auto Save"
 msgstr "自动保存"
@@ -1867,8 +2047,20 @@ msgstr "自动保存"
 msgid "Save Before Running"
 msgstr "运行前保存"
 
+msgid "Bottom Panel"
+msgstr "底部面板"
+
+msgid "Action on Play"
+msgstr "运行时动作"
+
+msgid "Action on Stop"
+msgstr "停止时动作"
+
 msgid "Output"
 msgstr "输出"
+
+msgid "Font Size"
+msgstr "字体大小"
 
 msgid "Always Clear Output on Play"
 msgstr "运行时清空输出"
@@ -1885,6 +2077,9 @@ msgstr "Linux/*BSD"
 msgid "Prefer Wayland"
 msgstr "首选 Wayland"
 
+msgid "Network Mode"
+msgstr "网络模式"
+
 msgid "HTTP Proxy"
 msgstr "HTTP 代理"
 
@@ -1894,11 +2089,20 @@ msgstr "主机"
 msgid "Editor TLS Certificates"
 msgstr "编辑器 TLS 证书"
 
+msgid "Enable TLS V 1"
+msgstr "启用 TLSv1"
+
 msgid "Remote Host"
 msgstr "远程主机"
 
 msgid "Debugger"
 msgstr "调试器"
+
+msgid "Auto Switch to Remote Scene Tree"
+msgstr "自动切换至远程场景树"
+
+msgid "Auto Switch to Stack Trace"
+msgstr "自动切换至栈追踪"
 
 msgid "Profiler Frame History Size"
 msgstr "性能分析器帧历史大小"
@@ -1914,6 +2118,9 @@ msgstr "远程场景树刷新间隔"
 
 msgid "Remote Inspect Refresh Interval"
 msgstr "远程检查器刷新间隔"
+
+msgid "Profile Native Calls"
+msgstr "分析原生调用"
 
 msgid "Version Control"
 msgstr "版本控制"
@@ -1941,6 +2148,12 @@ msgstr "项目管理器"
 
 msgid "Sorting Order"
 msgstr "排序方式"
+
+msgid "Directory Naming Convention"
+msgstr "目录命名约定"
+
+msgid "Default Renderer"
+msgstr "默认渲染器"
 
 msgid "Highlighting"
 msgstr "高亮"
@@ -2921,9 +3134,6 @@ msgstr "手持设备"
 msgid "Orientation"
 msgstr "朝向"
 
-msgid "V-Sync Mode"
-msgstr "垂直同步模式"
-
 msgid "Output Latency"
 msgstr "输出延迟"
 
@@ -3881,9 +4091,6 @@ msgstr "降噪"
 msgid "Denoiser"
 msgstr "降噪器"
 
-msgid "Enable TLS V 1"
-msgstr "启用 TLSv1"
-
 msgid "BPM"
 msgstr "BPM"
 
@@ -4244,6 +4451,24 @@ msgstr "启用特性"
 msgid "Visibility State"
 msgstr "可见状态"
 
+msgid "Debug Keystore"
+msgstr "调试密钥库"
+
+msgid "Debug Keystore User"
+msgstr "调试密钥库用户"
+
+msgid "Debug Keystore Pass"
+msgstr "调试密钥库密码"
+
+msgid "Install Exported APK"
+msgstr "安装导出的 APK"
+
+msgid "Java SDK Path"
+msgstr "Java SDK 路径"
+
+msgid "Android SDK Path"
+msgstr "Android SDK 路径"
+
 msgid "Force System User"
 msgstr "强制系统用户"
 
@@ -4366,9 +4591,6 @@ msgstr "手势"
 
 msgid "Swipe to Dismiss"
 msgstr "滑动关闭"
-
-msgid "Screen"
-msgstr "屏幕"
 
 msgid "Immersive Mode"
 msgstr "沉浸模式"
@@ -4627,6 +4849,12 @@ msgstr "运行脚本"
 
 msgid "Cleanup Script"
 msgstr "清理脚本"
+
+msgid "macOS"
+msgstr "macOS"
+
+msgid "rcodesign"
+msgstr "rcodesign"
 
 msgid "Distribution Type"
 msgstr "分发类型"
@@ -4904,6 +5132,21 @@ msgstr "图标 180×180"
 msgid "Icon 512 X 512"
 msgstr "图标 512×512"
 
+msgid "Windows"
+msgstr "Windows"
+
+msgid "rcedit"
+msgstr "rcedit"
+
+msgid "signtool"
+msgstr "signtool"
+
+msgid "osslsigncode"
+msgstr "osslsigncode"
+
+msgid "wine"
+msgstr "wine"
+
 msgid "Identity Type"
 msgstr "身份类型"
 
@@ -5005,9 +5248,6 @@ msgstr "回放类型"
 
 msgid "Copy Mode"
 msgstr "复制模式"
-
-msgid "Rect"
-msgstr "矩形"
 
 msgid "Anchor Mode"
 msgstr "锚点模式"
@@ -6171,9 +6411,6 @@ msgstr "轮廓调制"
 
 msgid "Font"
 msgstr "字体"
-
-msgid "Font Size"
-msgstr "字体大小"
 
 msgid "Horizontal Alignment"
 msgstr "水平对齐"
@@ -9172,9 +9409,6 @@ msgstr "调整"
 
 msgid "Brightness"
 msgstr "亮度"
-
-msgid "Contrast"
-msgstr "对比度"
 
 msgid "Saturation"
 msgstr "饱和度"

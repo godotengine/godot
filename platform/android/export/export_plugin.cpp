@@ -488,7 +488,7 @@ String EditorExportPlatformAndroid::get_project_name(const String &p_name) const
 	}
 
 	if (aname.is_empty()) {
-		aname = VERSION_NAME;
+		aname = GODOT_VERSION_NAME;
 	}
 
 	return aname;
@@ -2040,7 +2040,9 @@ bool EditorExportPlatformAndroid::get_export_option_visibility(const EditorExpor
 	if (p_option == "graphics/opengl_debug" ||
 			p_option == "command_line/extra_args" ||
 			p_option == "permissions/custom_permissions" ||
-			p_option == "gradle_build/compress_native_libraries" ||
+			p_option == "keystore/debug" ||
+			p_option == "keystore/debug_user" ||
+			p_option == "keystore/debug_password" ||
 			p_option == "package/retain_data_on_uninstall" ||
 			p_option == "package/exclude_from_recents" ||
 			p_option == "package/show_in_app_library" ||
@@ -3475,7 +3477,7 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 		cmdline.push_back("-Pperform_zipalign=" + zipalign_flag); // argument to specify whether the build should be zipaligned.
 		cmdline.push_back("-Pperform_signing=" + sign_flag); // argument to specify whether the build should be signed.
 		cmdline.push_back("-Pcompress_native_libraries=" + compress_native_libraries_flag); // argument to specify whether the build should compress native libraries.
-		cmdline.push_back("-Pgodot_editor_version=" + String(VERSION_FULL_CONFIG));
+		cmdline.push_back("-Pgodot_editor_version=" + String(GODOT_VERSION_FULL_CONFIG));
 		cmdline.push_back("-Pgodot_rendering_method=" + current_renderer);
 
 		// NOTE: The release keystore is not included in the verbose logging

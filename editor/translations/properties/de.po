@@ -92,7 +92,7 @@
 # Janosch Lion <janorico@posteo.de>, 2023.
 # "Dimitri A." <dimitripilot3@gmail.com>, 2023.
 # Roman Wanner <flugtauglicher@gmail.com>, 2023.
-# Ettore Atalan <atalanttore@googlemail.com>, 2023, 2024.
+# Ettore Atalan <atalanttore@googlemail.com>, 2023, 2024, 2025.
 # Lars Bollmann <lars.bollmann@tu-dortmund.de>, 2023.
 # Benedikt Wicklein <benedikt.wicklein@gmail.com>, 2023.
 # Wuzzy <Wuzzy@disroot.org>, 2023.
@@ -104,12 +104,14 @@
 # Cerno_b <jan.biel@arcor.de>, 2023.
 # Cerno_b <cerno.b@gmail.com>, 2023, 2024.
 # tct123 <tct1234@protonmail.com>, 2024.
+# Silikonmanns Kanal <silvan.goeth@gmail.com>, 2025.
+# Tim Nikitin <tim.nikitin@posteo.de>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-10-03 21:40+0000\n"
+"PO-Revision-Date: 2025-03-16 12:59+0000\n"
 "Last-Translator: Ettore Atalan <atalanttore@googlemail.com>\n"
 "Language-Team: German <https://hosted.weblate.org/projects/godot-engine/godot-"
 "properties/de/>\n"
@@ -118,7 +120,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.8-dev\n"
+"X-Generator: Weblate 5.11-dev\n"
 
 msgid "Application"
 msgstr "Anwendung"
@@ -221,6 +223,9 @@ msgstr "Bis zum Titel erweitern"
 
 msgid "No Focus"
 msgstr "Kein Fokus"
+
+msgid "Sharp Corners"
+msgstr "Scharfe Ecken"
 
 msgid "Window Width Override"
 msgstr "Fensterbreite überschreiben"
@@ -539,6 +544,18 @@ msgstr "Kompatibilität"
 
 msgid "Legacy Just Pressed Behavior"
 msgstr "Veraltetes „Gerade gedrückt“-Verhalten"
+
+msgid "Sensors"
+msgstr "Sensoren"
+
+msgid "Enable Gravity"
+msgstr "Schwerkraft aktivieren"
+
+msgid "Enable Gyroscope"
+msgstr "Gyroskop aktivieren"
+
+msgid "Enable Magnetometer"
+msgstr "Magnetometer aktivieren"
 
 msgid "Device"
 msgstr "Gerät"
@@ -882,6 +899,12 @@ msgstr "Label"
 msgid "Read Only"
 msgstr "Nur Lesezugriff"
 
+msgid "Draw Label"
+msgstr "Zeichne Label"
+
+msgid "Draw Background"
+msgstr "Zeichne Hintergrund"
+
 msgid "Checkable"
 msgstr "Auswählbar"
 
@@ -1011,6 +1034,12 @@ msgstr "Leerlaufzeit im Prozessorenergiesparmodus (μs)"
 msgid "Unfocused Low Processor Mode Sleep (µsec)"
 msgstr "Leerlaufzeit im Prozessorenergiesparmodus bei fehlendem Fokus (μs)"
 
+msgid "Import Resources When Unfocused"
+msgstr "Ressourcen importieren, wenn sie nicht fokussiert sind"
+
+msgid "V-Sync Mode"
+msgstr "V-Sync-Modus"
+
 msgid "Update Continuously"
 msgstr "Fortlaufend aktualisieren"
 
@@ -1067,6 +1096,9 @@ msgstr "Theme"
 
 msgid "Icon and Font Color"
 msgstr "Icon- und Schriftfarbe"
+
+msgid "Contrast"
+msgstr "Kontrast"
 
 msgid "Draw Extra Borders"
 msgstr "Zusätzliche Ränder zeichnen"
@@ -1230,6 +1262,9 @@ msgstr "Texteditor"
 msgid "Line Spacing"
 msgstr "Zeilenzwischenraum"
 
+msgid "Color Theme"
+msgstr "Farbschema"
+
 msgid "Appearance"
 msgstr "Aussehen"
 
@@ -1289,6 +1324,9 @@ msgstr "Zeilen"
 
 msgid "Code Folding"
 msgstr "Code-Einklappen"
+
+msgid "Word Wrap"
+msgstr "Zeilenumbruch"
 
 msgid "Autowrap Mode"
 msgstr "Automatischer Umbrechungsmodus"
@@ -1734,9 +1772,6 @@ msgstr "Shader beim Laden wiederherstellen"
 msgid "Visual Editors"
 msgstr "Visuelle Editoren"
 
-msgid "Color Theme"
-msgstr "Farbschema"
-
 msgid "Minimap Opacity"
 msgstr "Deckkraft der Übersichtskarte"
 
@@ -1764,8 +1799,14 @@ msgstr "SCP"
 msgid "Window Placement"
 msgstr "Fensterpositionierung"
 
+msgid "Rect"
+msgstr "Rechteck"
+
 msgid "Rect Custom Position"
 msgstr "Eigene Position Rechteck"
+
+msgid "Screen"
+msgstr "Bildschirm"
 
 msgid "Auto Save"
 msgstr "Autospeichern"
@@ -1776,6 +1817,9 @@ msgstr "Speichern vor Wiedergabe"
 msgid "Output"
 msgstr "Ausgabe"
 
+msgid "Font Size"
+msgstr "Schriftgröße"
+
 msgid "Always Clear Output on Play"
 msgstr "Ausgabe immer vor Programmstart leeren"
 
@@ -1784,6 +1828,9 @@ msgstr "Max Zeilen"
 
 msgid "Platforms"
 msgstr "Plattformen"
+
+msgid "Linux/*BSD"
+msgstr "Linux/*BSD"
 
 msgid "Prefer Wayland"
 msgstr "Wayland bevorzugen"
@@ -1796,6 +1843,9 @@ msgstr "Hostname"
 
 msgid "Editor TLS Certificates"
 msgstr "Editor TLS-Zertifikate"
+
+msgid "Enable TLS V 1"
+msgstr "TLS V 1 aktivieren"
 
 msgid "Remote Host"
 msgstr "Remote-Hostname"
@@ -1841,6 +1891,9 @@ msgstr "Projektmanager"
 
 msgid "Sorting Order"
 msgstr "Sortierreihenfolge"
+
+msgid "Directory Naming Convention"
+msgstr "Verzeichnis-Namenskonvention"
 
 msgid "Highlighting"
 msgstr "Hervorhebung"
@@ -2782,9 +2835,6 @@ msgstr "Handgerät"
 msgid "Orientation"
 msgstr "Ausrichtung"
 
-msgid "V-Sync Mode"
-msgstr "V-Sync-Modus"
-
 msgid "Output Latency"
 msgstr "Ausgabe-Latenz"
 
@@ -3436,6 +3486,9 @@ msgstr "Child-Elemente"
 msgid "Light"
 msgstr "Licht"
 
+msgid "Object Model Type"
+msgstr "Objektmodell-Typ"
+
 msgid "Joints"
 msgstr "Gelenke"
 
@@ -3516,6 +3569,21 @@ msgstr "Fade-Zeit"
 
 msgid "Stream Count"
 msgstr "Stream-Anzahl"
+
+msgid "Use Enhanced Internal Edge Removal"
+msgstr "Erweiterte interne Kantenentfernung verwenden"
+
+msgid "Generate All Kinematic Contacts"
+msgstr "Alle kinematischen Kontakte generieren"
+
+msgid "Baumgarte Stabilization Factor"
+msgstr "Baumgarte-Stabilisierungsfaktor"
+
+msgid "Queries"
+msgstr "Abfragen"
+
+msgid "Max Body Pairs"
+msgstr "Max. Körperpaare"
 
 msgid "Lightmapping"
 msgstr "Lightmapping"
@@ -3745,6 +3813,9 @@ msgstr "Interaktionsprofilpfad"
 msgid "Runtime Paths"
 msgstr "Runtime-Pfade"
 
+msgid "Is Sticky"
+msgstr "Ist haftend"
+
 msgid "Display Refresh Rate"
 msgstr "Aktualisierungsrate anzeigen"
 
@@ -3883,6 +3954,12 @@ msgstr "Aktivierte Features"
 msgid "Visibility State"
 msgstr "Sichtbarkeitsstatus"
 
+msgid "Install Exported APK"
+msgstr "Exportierte APK installieren"
+
+msgid "Java SDK Path"
+msgstr "Java-SDK-Pfad"
+
 msgid "Force System User"
 msgstr "Systemnutzer erzwingen"
 
@@ -3997,8 +4074,8 @@ msgstr "XR-Features"
 msgid "XR Mode"
 msgstr "XR-Modus"
 
-msgid "Screen"
-msgstr "Bildschirm"
+msgid "Swipe to Dismiss"
+msgstr "Zum Ablehnen wischen"
 
 msgid "Immersive Mode"
 msgstr "Immersionsmodus"
@@ -4129,6 +4206,9 @@ msgstr "Alte Exportdateien bedingungslos löschen"
 msgid "Entitlements"
 msgstr "Ansprüche"
 
+msgid "Increased Memory Limit"
+msgstr "Erhöhtes Speicherlimit"
+
 msgid "Push Notifications"
 msgstr "Push-Benachrichtigungen"
 
@@ -4215,6 +4295,9 @@ msgstr "Skript ausführen"
 
 msgid "Cleanup Script"
 msgstr "Skript bereinigen"
+
+msgid "macOS"
+msgstr "macOS"
 
 msgid "Distribution Type"
 msgstr "Verteilungstyp"
@@ -4587,9 +4670,6 @@ msgstr "Abspielmodus"
 
 msgid "Copy Mode"
 msgstr "Kopiermodus"
-
-msgid "Rect"
-msgstr "Rechteck"
 
 msgid "Anchor Mode"
 msgstr "Ankermodus"
@@ -5742,9 +5822,6 @@ msgstr "Übersicht ändern"
 msgid "Font"
 msgstr "Schriftart"
 
-msgid "Font Size"
-msgstr "Schriftgröße"
-
 msgid "Horizontal Alignment"
 msgstr "Horizontale Ausrichtung"
 
@@ -5906,6 +5983,9 @@ msgstr "Lichtdaten"
 
 msgid "Target Node"
 msgstr "Ziel-Node"
+
+msgid "Use Secondary Rotation"
+msgstr "Sekundärdrehung verwenden"
 
 msgid "From"
 msgstr "Von"
@@ -6341,6 +6421,9 @@ msgstr "Zugkoeffizient"
 
 msgid "Position Offset"
 msgstr "Positionsversatz"
+
+msgid "Inside"
+msgstr "Innerhalb"
 
 msgid "Track Physics Step"
 msgstr "Physikschritt verfolgen"
@@ -8560,9 +8643,6 @@ msgstr "Anpassungen"
 msgid "Brightness"
 msgstr "Helligkeit"
 
-msgid "Contrast"
-msgstr "Kontrast"
-
 msgid "Saturation"
 msgstr "Sättigung"
 
@@ -9394,6 +9474,12 @@ msgstr "Greiferversatz"
 msgid "Updown"
 msgstr "Hochrunter"
 
+msgid "Up"
+msgstr "Oben"
+
+msgid "Down"
+msgstr "Unten"
+
 msgid "Embedded Border"
 msgstr "Eingebetteter Rand"
 
@@ -9450,6 +9536,9 @@ msgstr "Neu laden"
 
 msgid "Toggle Hidden"
 msgstr "Versteckte ein-/ausschalten"
+
+msgid "Toggle Filename Filter"
+msgstr "Dateinamensfilter umschalten"
 
 msgid "Folder"
 msgstr "Ordner"
@@ -10725,6 +10814,9 @@ msgstr "VRS-Stärke"
 
 msgid "World Origin"
 msgstr "Weltursprung"
+
+msgid "Camera Locked to Origin"
+msgstr "Kamera auf Ursprung fixiert"
 
 msgid "Primary Interface"
 msgstr "Primäre Schnittstelle"

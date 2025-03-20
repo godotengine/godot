@@ -144,6 +144,4 @@ if env["debug_symbols"] and env["separate_debug_symbols"]:
     env.AddPostAction(prog, env.Run(platform_macos_builders.make_debug_macos))
 
 if env["generate_bundle"]:
-    generate_bundle_command = env.Command("generate_bundle", [], generate_bundle)
-    command = env.AlwaysBuild(generate_bundle_command)
-    env.Depends(command, [prog])
+    env.AlwaysBuild(env.CommandNoCache("generate_bundle", prog, env.Run(generate_bundle)))

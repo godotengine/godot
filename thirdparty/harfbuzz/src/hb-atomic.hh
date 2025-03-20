@@ -212,6 +212,7 @@ struct hb_atomic_ptr_t
   T *get_acquire () const { return (T *) hb_atomic_ptr_impl_get ((void **) &v); }
   bool cmpexch (const T *old, T *new_) const { return hb_atomic_ptr_impl_cmpexch ((void **) &v, (void *) old, (void *) new_); }
 
+  operator bool () const { return get_acquire () != nullptr; }
   T * operator -> () const                    { return get_acquire (); }
   template <typename C> operator C * () const { return get_acquire (); }
 

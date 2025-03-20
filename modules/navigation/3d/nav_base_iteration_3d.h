@@ -30,9 +30,11 @@
 
 #pragma once
 
+#include "../nav_utils_3d.h"
+
 #include "servers/navigation/navigation_utilities.h"
 
-struct NavBaseIteration {
+struct NavBaseIteration3D {
 	uint32_t id = UINT32_MAX;
 	bool enabled = true;
 	uint32_t navigation_layers = 1;
@@ -42,6 +44,7 @@ struct NavBaseIteration {
 	ObjectID owner_object_id;
 	RID owner_rid;
 	bool owner_use_edge_connections = false;
+	LocalVector<nav_3d::Polygon> navmesh_polygons;
 
 	bool get_enabled() const { return enabled; }
 	NavigationUtilities::PathSegmentType get_type() const { return owner_type; }
@@ -51,4 +54,5 @@ struct NavBaseIteration {
 	real_t get_enter_cost() const { return enter_cost; }
 	real_t get_travel_cost() const { return travel_cost; }
 	bool get_use_edge_connections() const { return owner_use_edge_connections; }
+	const LocalVector<nav_3d::Polygon> &get_navmesh_polygons() const { return navmesh_polygons; }
 };

@@ -1043,6 +1043,9 @@ msgstr "Mettre en veille le mode processeur faible (µsec)"
 msgid "Unfocused Low Processor Mode Sleep (µsec)"
 msgstr "Mettre en veille le mode processeur faible quand inactif (µsec)"
 
+msgid "V-Sync Mode"
+msgstr "Mode V-Sync"
+
 msgid "Update Continuously"
 msgstr "Mise à jour continue"
 
@@ -1099,6 +1102,9 @@ msgstr "Thème"
 
 msgid "Icon and Font Color"
 msgstr "Couleur de police et d'icône"
+
+msgid "Contrast"
+msgstr "Contraste"
 
 msgid "Draw Extra Borders"
 msgstr "Dessiner bordures supplémentaires"
@@ -1261,6 +1267,9 @@ msgstr "Éditeur de texte"
 
 msgid "Line Spacing"
 msgstr "Espace entre les lignes"
+
+msgid "Color Theme"
+msgstr "Thème de couleurs"
 
 msgid "Appearance"
 msgstr "Apparence"
@@ -1766,9 +1775,6 @@ msgstr "Restaurer les shaders au chargement"
 msgid "Visual Editors"
 msgstr "Éditeurs visuels"
 
-msgid "Color Theme"
-msgstr "Thème de couleurs"
-
 msgid "Minimap Opacity"
 msgstr "Opacité de la mini-carte"
 
@@ -1796,8 +1802,14 @@ msgstr "SCP"
 msgid "Window Placement"
 msgstr "Placement de la fenêtre"
 
+msgid "Rect"
+msgstr "Rectangle"
+
 msgid "Rect Custom Position"
 msgstr "Position du Rect personnalisée"
+
+msgid "Screen"
+msgstr "Écran"
 
 msgid "Auto Save"
 msgstr "Sauvegarde auto"
@@ -1807,6 +1819,9 @@ msgstr "Enregistrer Avant d’Exécuter"
 
 msgid "Output"
 msgstr "Sortie"
+
+msgid "Font Size"
+msgstr "Taille de la Police"
 
 msgid "Always Clear Output on Play"
 msgstr "Toujours nettoyer la sortie au démarrage"
@@ -2813,9 +2828,6 @@ msgstr "Portable"
 
 msgid "Orientation"
 msgstr "Orientation"
-
-msgid "V-Sync Mode"
-msgstr "Mode V-Sync"
 
 msgid "Output Latency"
 msgstr "Latence de sortie"
@@ -3999,9 +4011,6 @@ msgstr "Fonctionnalités XR"
 msgid "XR Mode"
 msgstr "Mode XR"
 
-msgid "Screen"
-msgstr "Écran"
-
 msgid "Immersive Mode"
 msgstr "Mode immersif"
 
@@ -4565,9 +4574,6 @@ msgstr "Masque de zone"
 
 msgid "Copy Mode"
 msgstr "Mode copie"
-
-msgid "Rect"
-msgstr "Rectangle"
 
 msgid "Anchor Mode"
 msgstr "Mode ancre"
@@ -5695,9 +5701,6 @@ msgstr "Moduler le contour"
 
 msgid "Font"
 msgstr "Police"
-
-msgid "Font Size"
-msgstr "Taille de la Police"
 
 msgid "Horizontal Alignment"
 msgstr "Alignement horizontal"
@@ -8378,9 +8381,6 @@ msgstr "Ajustements"
 
 msgid "Brightness"
 msgstr "Luminosité"
-
-msgid "Contrast"
-msgstr "Contraste"
 
 msgid "Saturation"
 msgstr "Saturation"

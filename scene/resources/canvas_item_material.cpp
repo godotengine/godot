@@ -78,7 +78,7 @@ void CanvasItemMaterial::_update_shader() {
 	//must create a shader!
 
 	// Add a comment to describe the shader origin (useful when converting to ShaderMaterial).
-	String code = "// NOTE: Shader automatically converted from " VERSION_NAME " " VERSION_FULL_CONFIG "'s CanvasItemMaterial.\n\n";
+	String code = "// NOTE: Shader automatically converted from " GODOT_VERSION_NAME " " GODOT_VERSION_FULL_CONFIG "'s CanvasItemMaterial.\n\n";
 
 	code += "shader_type canvas_item;\nrender_mode ";
 	switch (blend_mode) {

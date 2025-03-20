@@ -1582,6 +1582,9 @@ msgstr "시그널 인수 바인드 해제:"
 msgid "Receiver Method:"
 msgstr "받는 메서드:"
 
+msgid "Pick"
+msgstr "선택"
+
 msgid "Advanced"
 msgstr "고급"
 
@@ -4783,6 +4786,9 @@ msgstr "파일에서 설치"
 msgid "Install templates from a local file."
 msgstr "로컬 파일로부터 템플릿을 설치합니다."
 
+msgid "Go Online"
+msgstr "온라인으로"
+
 msgid "Cancel the download of the templates."
 msgstr "템플릿의 다운로드를 취소합니다."
 
@@ -7190,9 +7196,6 @@ msgid ""
 "over the internet."
 msgstr ""
 "에셋 라이브러리는 인터넷으로 데이터 전송이 가능한 온라인 연결이 필요합니다."
-
-msgid "Go Online"
-msgstr "온라인으로"
 
 msgid "Failed to get repository configuration."
 msgstr "저장소 환경 설정을 가져오는 데 실패했습니다."
@@ -13832,9 +13835,6 @@ msgstr "기능 태그"
 
 msgid "Pick Root Node Type"
 msgstr "루트 노드 타입 선택"
-
-msgid "Pick"
-msgstr "선택"
 
 msgid "Scene name is empty."
 msgstr "씬 이름이 비었습니다."

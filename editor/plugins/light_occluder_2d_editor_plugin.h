@@ -53,9 +53,6 @@ protected:
 
 	virtual bool _has_resource() const override;
 	virtual void _create_resource() override;
-
-public:
-	LightOccluder2DEditor();
 };
 
 class LightOccluder2DEditorPlugin : public AbstractPolygon2DEditorPlugin {

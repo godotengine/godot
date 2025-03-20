@@ -73,9 +73,14 @@ void PhysicalBoneSimulator3D::_pose_updated() {
 	if (!skeleton || simulating) {
 		return;
 	}
-	ERR_FAIL_COND(skeleton->get_bone_count() != bones.size());
-	for (int i = 0; i < skeleton->get_bone_count(); i++) {
-		_bone_pose_updated(skeleton, i);
+	// If this triggers that means that we likely haven't rebuilt the bone list yet.
+	if (skeleton->get_bone_count() != bones.size()) {
+		// NOTE: this is re-entrant and will call _pose_updated again.
+		_bone_list_changed();
+	} else {
+		for (int i = 0; i < skeleton->get_bone_count(); i++) {
+			_bone_pose_updated(skeleton, i);
+		}
 	}
 }
 

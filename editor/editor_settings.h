@@ -122,6 +122,7 @@ private:
 	void _load_default_visual_shader_editor_theme();
 	bool _save_text_editor_theme(const String &p_file);
 	bool _is_default_text_editor_theme(const String &p_theme_name);
+	static String _guess_exec_args_for_extenal_editor(const String &p_value);
 	const String _get_project_metadata_path() const;
 #ifndef DISABLE_DEPRECATED
 	void _remove_deprecated_settings();
@@ -190,7 +191,7 @@ public:
 
 	Vector<String> get_script_templates(const String &p_extension, const String &p_custom_path = String());
 	String get_editor_layouts_config() const;
-	float get_auto_display_scale() const;
+	static float get_auto_display_scale();
 
 	void _add_shortcut_default(const String &p_name, const Ref<Shortcut> &p_shortcut);
 	void add_shortcut(const String &p_name, const Ref<Shortcut> &p_shortcut);
@@ -203,9 +204,7 @@ public:
 
 	void notify_changes();
 
-#ifdef TOOLS_ENABLED
 	virtual void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const override;
-#endif
 
 	EditorSettings();
 };
