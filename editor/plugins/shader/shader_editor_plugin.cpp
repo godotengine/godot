@@ -30,16 +30,16 @@
 
 #include "shader_editor_plugin.h"
 
+#include "editor/dialogs/editor_command_palette.h"
+#include "editor/dialogs/shader_create_dialog.h"
 #include "editor/docks/filesystem_dock.h"
 #include "editor/docks/inspector_dock.h"
-#include "editor/editor_command_palette.h"
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/gui/editor_bottom_panel.h"
 #include "editor/plugins/shader/text_shader_editor.h"
 #include "editor/plugins/shader/visual_shader_editor_plugin.h"
-#include "editor/shader_create_dialog.h"
 #include "editor/themes/editor_scale.h"
 #include "editor/window_wrapper.h"
 #include "scene/gui/item_list.h"

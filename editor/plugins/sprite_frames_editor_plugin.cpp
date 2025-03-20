@@ -32,9 +32,9 @@
 
 #include "core/io/resource_loader.h"
 #include "core/os/keyboard.h"
+#include "editor/dialogs/editor_command_palette.h"
 #include "editor/docks/filesystem_dock.h"
 #include "editor/docks/scene_tree_dock.h"
-#include "editor/editor_command_palette.h"
 #include "editor/editor_file_system.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"

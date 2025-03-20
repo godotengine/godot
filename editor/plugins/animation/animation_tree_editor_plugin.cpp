@@ -34,7 +34,7 @@
 #include "animation_blend_space_2d_editor.h"
 #include "animation_blend_tree_editor_plugin.h"
 #include "animation_state_machine_editor.h"
-#include "editor/editor_command_palette.h"
+#include "editor/dialogs/editor_command_palette.h"
 #include "editor/editor_node.h"
 #include "editor/gui/editor_bottom_panel.h"
 #include "editor/themes/editor_scale.h"

@@ -32,6 +32,7 @@
 #include "editor_plugin.compat.inc"
 
 #include "editor/debugger/editor_debugger_node.h"
+#include "editor/dialogs/project_settings_editor.h"
 #include "editor/docks/editor_dock_manager.h"
 #include "editor/docks/inspector_dock.h"
 #include "editor/docks/scene_tree_dock.h"
@@ -52,7 +53,6 @@
 #include "editor/plugins/editor_debugger_plugin.h"
 #include "editor/plugins/editor_resource_conversion_plugin.h"
 #include "editor/plugins/script/script_editor_plugin.h"
-#include "editor/project_settings_editor.h"
 #include "scene/3d/camera_3d.h"
 #include "scene/gui/popup_menu.h"
 

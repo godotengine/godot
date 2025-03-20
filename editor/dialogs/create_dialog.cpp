@@ -31,7 +31,7 @@
 #include "create_dialog.h"
 
 #include "core/object/class_db.h"
-#include "editor/editor_feature_profile.h"
+#include "editor/dialogs/editor_feature_profile.h"
 #include "editor/editor_node.h"
 #include "editor/editor_paths.h"
 #include "editor/editor_settings.h"

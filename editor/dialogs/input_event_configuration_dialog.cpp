@@ -28,7 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "editor/input_event_configuration_dialog.h"
+#include "editor/dialogs/input_event_configuration_dialog.h"
 #include "core/input/input_map.h"
 #include "editor/editor_string_names.h"
 #include "editor/event_listener_line_edit.h"

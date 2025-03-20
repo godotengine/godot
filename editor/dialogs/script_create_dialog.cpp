@@ -33,7 +33,7 @@
 #include "core/config/project_settings.h"
 #include "core/io/file_access.h"
 #include "core/io/resource_saver.h"
-#include "editor/create_dialog.h"
+#include "editor/dialogs/create_dialog.h"
 #include "editor/editor_file_system.h"
 #include "editor/editor_node.h"
 #include "editor/editor_paths.h"

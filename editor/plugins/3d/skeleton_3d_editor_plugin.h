@@ -30,7 +30,7 @@
 
 #pragma once
 
-#include "editor/add_metadata_dialog.h"
+#include "editor/dialogs/add_metadata_dialog.h"
 #include "editor/editor_properties.h"
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/plugins/3d/node_3d_editor_plugin.h"

@@ -30,7 +30,7 @@
 
 #include "editor_help_search.h"
 
-#include "editor/editor_feature_profile.h"
+#include "editor/dialogs/editor_feature_profile.h"
 #include "editor/editor_main_screen.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"

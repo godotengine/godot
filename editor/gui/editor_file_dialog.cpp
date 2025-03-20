@@ -33,7 +33,7 @@
 #include "core/config/project_settings.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
-#include "editor/dependency_editor.h"
+#include "editor/dialogs/dependency_editor.h"
 #include "editor/docks/filesystem_dock.h"
 #include "editor/editor_file_system.h"
 #include "editor/editor_node.h"

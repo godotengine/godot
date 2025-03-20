@@ -30,7 +30,7 @@
 
 #pragma once
 
-#include "editor/create_dialog.h"
+#include "editor/dialogs/create_dialog.h"
 #include "editor/editor_data.h"
 #include "editor/editor_inspector.h"
 #include "scene/gui/box_container.h"
