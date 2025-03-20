@@ -47,9 +47,9 @@
 #include "scene/gui/menu_button.h"
 #include "scene/gui/panel_container.h"
 
-#ifndef _3D_DISABLED
+#ifndef XR_DISABLED
 #include "servers/xr_server.h"
-#endif // _3D_DISABLED
+#endif // XR_DISABLED
 
 EditorRunBar *EditorRunBar::singleton = nullptr;
 
