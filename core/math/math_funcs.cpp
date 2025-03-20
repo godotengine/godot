@@ -57,6 +57,10 @@ double Math::randfn(double mean, double deviation) {
 	return default_rand.randfn(mean, deviation);
 }
 
+int64_t Math::rand_weighted(const Vector<float> &p_weights) {
+	return default_rand.rand_weighted(p_weights);
+}
+
 int Math::step_decimals(double p_step) {
 	static const int maxn = 10;
 	static const double sd[maxn] = {

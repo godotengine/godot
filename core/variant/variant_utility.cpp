@@ -797,6 +797,10 @@ double VariantUtilityFunctions::randf_range(double from, double to) {
 	return Math::random(from, to);
 }
 
+int64_t VariantUtilityFunctions::rand_weighted(const Vector<float> &p_weights) {
+	return Math::rand_weighted(p_weights);
+}
+
 void VariantUtilityFunctions::seed(int64_t s) {
 	return Math::seed(s);
 }
@@ -1815,6 +1819,7 @@ void Variant::_register_variant_utility_functions() {
 	FUNCBINDR(randi_range, sarray("from", "to"), Variant::UTILITY_FUNC_TYPE_RANDOM);
 	FUNCBINDR(randf_range, sarray("from", "to"), Variant::UTILITY_FUNC_TYPE_RANDOM);
 	FUNCBINDR(randfn, sarray("mean", "deviation"), Variant::UTILITY_FUNC_TYPE_RANDOM);
+	FUNCBINDR(rand_weighted, sarray("weights"), Variant::UTILITY_FUNC_TYPE_RANDOM);
 	FUNCBIND(seed, sarray("base"), Variant::UTILITY_FUNC_TYPE_RANDOM);
 	FUNCBINDR(rand_from_seed, sarray("seed"), Variant::UTILITY_FUNC_TYPE_RANDOM);
 
