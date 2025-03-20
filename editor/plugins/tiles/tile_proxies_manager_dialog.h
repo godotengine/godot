@@ -30,7 +30,7 @@
 
 #pragma once
 
-#include "editor/editor_properties.h"
+#include "editor/inspector/editor_properties.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/item_list.h"
 #include "scene/resources/2d/tile_set.h"

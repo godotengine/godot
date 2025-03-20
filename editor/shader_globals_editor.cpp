@@ -31,9 +31,9 @@
 #include "shader_globals_editor.h"
 
 #include "core/config/project_settings.h"
-#include "editor/editor_inspector.h"
 #include "editor/editor_node.h"
 #include "editor/editor_undo_redo_manager.h"
+#include "editor/inspector/editor_inspector.h"
 #include "scene/gui/label.h"
 #include "scene/gui/line_edit.h"
 #include "servers/rendering/shader_language.h"

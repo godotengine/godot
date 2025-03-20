@@ -31,8 +31,8 @@
 #pragma once
 
 #include "editor/editor_data.h"
-#include "editor/editor_properties.h"
-#include "editor/property_selector.h"
+#include "editor/inspector/editor_properties.h"
+#include "editor/inspector/property_selector.h"
 #include "scene/3d/node_3d.h"
 #include "scene/gui/control.h"
 #include "scene/gui/menu_button.h"
