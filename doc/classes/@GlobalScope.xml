@@ -547,7 +547,7 @@
 				Infinity values of the same sign are considered equal.
 			</description>
 		</method>
-|		<method name="is_equal_approx_custom_epsilon" keywords="roughly">
+		<method name="is_equal_approx_custom_epsilon" keywords="roughly">
 			<return type="bool" />
 			<param index="0" name="a" type="float" />
 			<param index="1" name="b" type="float" />
