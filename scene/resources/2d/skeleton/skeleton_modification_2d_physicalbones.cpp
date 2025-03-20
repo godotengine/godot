@@ -238,7 +238,7 @@ void SkeletonModification2DPhysicalBones::_update_simulation_state() {
 	}
 	_simulation_state_dirty = false;
 
-	if (_simulation_state_dirty_names.size() <= 0) {
+	if (_simulation_state_dirty_names.is_empty()) {
 		for (int i = 0; i < physical_bone_chain.size(); i++) {
 			PhysicalBone2D *physical_bone = Object::cast_to<PhysicalBone2D>(stack->skeleton->get_node(physical_bone_chain[i].physical_bone_node));
 			if (!physical_bone) {

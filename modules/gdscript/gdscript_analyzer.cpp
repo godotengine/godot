@@ -2157,7 +2157,7 @@ void GDScriptAnalyzer::resolve_for(GDScriptParser::ForNode *p_for) {
 			GDScriptParser::IdentifierNode *callee = static_cast<GDScriptParser::IdentifierNode *>(call->callee);
 			if (callee->name == "range") {
 				list_resolved = true;
-				if (call->arguments.size() < 1) {
+				if (call->arguments.is_empty()) {
 					push_error(R"*(Invalid call for "range()" function. Expected at least 1 argument, none given.)*", call->callee);
 				} else if (call->arguments.size() > 3) {
 					push_error(vformat(R"*(Invalid call for "range()" function. Expected at most 3 arguments, %d given.)*", call->arguments.size()), call->callee);
