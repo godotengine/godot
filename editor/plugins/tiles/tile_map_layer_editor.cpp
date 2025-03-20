@@ -33,10 +33,10 @@
 #include "tiles_editor_plugin.h"
 
 #include "editor/editor_node.h"
-#include "editor/editor_resource_preview.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_undo_redo_manager.h"
-#include "editor/multi_node_edit.h"
+#include "editor/inspector/editor_resource_preview.h"
+#include "editor/inspector/multi_node_edit.h"
 #include "editor/plugins/canvas_item_editor_plugin.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/2d/tile_map.h"

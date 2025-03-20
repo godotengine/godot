@@ -30,9 +30,9 @@
 
 #include "editor_sectioned_inspector.h"
 
-#include "editor/editor_inspector.h"
-#include "editor/editor_property_name_processor.h"
 #include "editor/editor_string_names.h"
+#include "editor/inspector/editor_inspector.h"
+#include "editor/inspector/editor_property_name_processor.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/check_button.h"
 #include "scene/gui/line_edit.h"
