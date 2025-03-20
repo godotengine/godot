@@ -32,6 +32,8 @@
 
 #include "core/config/project_settings.h"
 #include "core/templates/hash_set.h"
+#include "editor/docks/node_dock.h"
+#include "editor/docks/scene_tree_dock.h"
 #include "editor/editor_help.h"
 #include "editor/editor_inspector.h"
 #include "editor/editor_main_screen.h"
@@ -40,9 +42,7 @@
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/gui/scene_tree_editor.h"
-#include "editor/node_dock.h"
 #include "editor/plugins/script/script_editor_plugin.h"
-#include "editor/scene_tree_dock.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/button.h"
 #include "scene/gui/check_box.h"
