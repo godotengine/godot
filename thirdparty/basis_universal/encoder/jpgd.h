@@ -1,6 +1,5 @@
 // jpgd.h - C++ class for JPEG decompression.
-// Richard Geldreich <richgel99@gmail.com>
-// See jpgd.cpp for license (Public Domain or Apache 2.0).
+// Public domain, Rich Geldreich <richgel99@gmail.com>
 #ifndef JPEG_DECODER_H
 #define JPEG_DECODER_H
 
@@ -119,20 +118,19 @@ namespace jpgd
 	};
 
 	typedef int16 jpgd_quant_t;
-	typedef int16 jpgd_block_coeff_t;
+	typedef int16 jpgd_block_t;
 
 	class jpeg_decoder
 	{
 	public:
 		enum
 		{
-			cFlagBoxChromaFiltering = 1,
-			cFlagDisableSIMD = 2
+			cFlagLinearChromaFiltering = 1
 		};
 
 		// Call get_error_code() after constructing to determine if the stream is valid or not. You may call the get_width(), get_height(), etc.
 		// methods after the constructor is called. You may then either destruct the object, or begin decoding the image by calling begin_decoding(), then decode() on each scanline.
-		jpeg_decoder(jpeg_decoder_stream* pStream, uint32_t flags = 0);
+		jpeg_decoder(jpeg_decoder_stream* pStream, uint32_t flags = cFlagLinearChromaFiltering);
 
 		~jpeg_decoder();
 
@@ -257,7 +255,7 @@ namespace jpgd
 
 		int m_max_mcus_per_col;
 		uint m_last_dc_val[JPGD_MAX_COMPONENTS];
-		jpgd_block_coeff_t* m_pMCU_coefficients;
+		jpgd_block_t* m_pMCU_coefficients;
 		int m_mcu_block_max_zag[JPGD_MAX_BLOCKS_PER_MCU];
 		uint8* m_pSample_buf;
 		uint8* m_pSample_buf_prev;
@@ -273,13 +271,11 @@ namespace jpgd
 		bool m_ready_flag;
 		bool m_eof_flag;
 		bool m_sample_buf_prev_valid;
-		bool m_has_sse2;
 
 		inline int check_sample_buf_ofs(int ofs) const { assert(ofs >= 0); assert(ofs < m_max_blocks_per_row * 64); return ofs; }
 		void free_all_blocks();
 		JPGD_NORETURN void stop_decoding(jpgd_status status);
 		void* alloc(size_t n, bool zero = false);
-		void* alloc_aligned(size_t nSize, uint32_t align = 16, bool zero = false);
 		void word_clear(void* p, uint16 c, uint n);
 		void prep_in_buffer();
 		void read_dht_marker();
@@ -298,7 +294,7 @@ namespace jpgd
 		void fix_in_buffer();
 		void transform_mcu(int mcu_row);
 		coeff_buf* coeff_buf_open(int block_num_x, int block_num_y, int block_len_x, int block_len_y);
-		inline jpgd_block_coeff_t* coeff_buf_getp(coeff_buf* cb, int block_x, int block_y);
+		inline jpgd_block_t* coeff_buf_getp(coeff_buf* cb, int block_x, int block_y);
 		void load_next_row();
 		void decode_next_row();
 		void make_huff_table(int index, huff_tables* pH);

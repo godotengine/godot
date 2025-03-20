@@ -21,7 +21,11 @@
 #endif
 
 /* How to obtain thread-local storage */
+#if defined(_MSC_VER)
+#define THREAD_LOCAL  __declspec(thread)
+#else
 #define THREAD_LOCAL  __thread
+#endif
 
 /* Define to the full name of this package. */
 #define PACKAGE_NAME  "libjpeg-turbo"

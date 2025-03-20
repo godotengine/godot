@@ -23,9 +23,7 @@
 // v1.04, May. 19, 2012: Code tweaks to fix VS2008 static code analysis warnings
 // v2.00, March 20, 2020: Fuzzed with zzuf and afl. Fixed several issues, converted most assert()'s to run-time checks. Added chroma upsampling. Removed freq. domain upsampling. gcc/clang warnings.
 //
-// Important:
-// #define JPGD_USE_SSE2 to 0 to completely disable SSE2 usage.
-//
+
 #include "jpgd.h"
 #include <string.h>
 #include <algorithm>
@@ -33,20 +31,6 @@
 
 #ifdef _MSC_VER
 #pragma warning (disable : 4611) // warning C4611: interaction between '_setjmp' and C++ object destruction is non-portable
-#endif
-
-#ifndef JPGD_USE_SSE2
-
-	#if defined(__GNUC__)
-		#if defined(__SSE2__)
-			#define JPGD_USE_SSE2 (1)
-		#endif
-	#elif defined(_MSC_VER)
-		#if defined(_M_X64)
-			#define JPGD_USE_SSE2 (1)
-		#endif
-	#endif
-
 #endif
 
 #define JPGD_TRUE (1)
@@ -73,10 +57,6 @@ namespace jpgd {
 	};
 
 	enum JPEG_SUBSAMPLING { JPGD_GRAYSCALE = 0, JPGD_YH1V1, JPGD_YH2V1, JPGD_YH1V2, JPGD_YH2V2 };
-
-#if JPGD_USE_SSE2
-#include "jpgd_idct.h"
-#endif
 
 #define CONST_BITS  13
 #define PASS1_BITS  2
@@ -111,7 +91,7 @@ namespace jpgd {
 	template <int NONZERO_COLS>
 	struct Row
 	{
-		static void idct(int* pTemp, const jpgd_block_coeff_t* pSrc)
+		static void idct(int* pTemp, const jpgd_block_t* pSrc)
 		{
 			// ACCESS_COL() will be optimized at compile time to either an array access, or 0. Good compilers will then optimize out muls against 0.
 #define ACCESS_COL(x) (((x) < NONZERO_COLS) ? (int)pSrc[x] : 0)
@@ -156,7 +136,7 @@ namespace jpgd {
 	template <>
 	struct Row<0>
 	{
-		static void idct(int* pTemp, const jpgd_block_coeff_t* pSrc)
+		static void idct(int* pTemp, const jpgd_block_t* pSrc)
 		{
 			(void)pTemp; 
 			(void)pSrc;
@@ -166,7 +146,7 @@ namespace jpgd {
 	template <>
 	struct Row<1>
 	{
-		static void idct(int* pTemp, const jpgd_block_coeff_t* pSrc)
+		static void idct(int* pTemp, const jpgd_block_t* pSrc)
 		{
 			const int dcval = left_shifti(pSrc[0], PASS1_BITS);
 
@@ -280,13 +260,11 @@ namespace jpgd {
 	};
 
 	// Scalar "fast pathing" IDCT.
-	static void idct(const jpgd_block_coeff_t* pSrc_ptr, uint8* pDst_ptr, int block_max_zag, bool use_simd)
+	static void idct(const jpgd_block_t* pSrc_ptr, uint8* pDst_ptr, int block_max_zag)
 	{
-		(void)use_simd;
-
 		assert(block_max_zag >= 1);
 		assert(block_max_zag <= 64);
-				
+
 		if (block_max_zag <= 1)
 		{
 			int k = ((pSrc_ptr[0] + 4) >> 3) + 128;
@@ -303,19 +281,9 @@ namespace jpgd {
 			return;
 		}
 
-#if JPGD_USE_SSE2
-		if (use_simd)
-		{
-			assert((((uintptr_t)pSrc_ptr) & 15) == 0);
-			assert((((uintptr_t)pDst_ptr) & 15) == 0);
-			idctSSEShortU8(pSrc_ptr, pDst_ptr);
-			return;
-		}
-#endif
-
 		int temp[64];
 
-		const jpgd_block_coeff_t* pSrc = pSrc_ptr;
+		const jpgd_block_t* pSrc = pSrc_ptr;
 		int* pTemp = temp;
 
 		const uint8* pRow_tab = &s_idct_row_table[(block_max_zag - 1) * 8];
@@ -642,7 +610,7 @@ namespace jpgd {
 		free_all_blocks();
 		longjmp(m_jmp_state, status);
 	}
-		
+
 	void* jpeg_decoder::alloc(size_t nSize, bool zero)
 	{
 		nSize = (JPGD_MAX(nSize, 1) + 3) & ~3;
@@ -658,7 +626,7 @@ namespace jpgd {
 		}
 		if (!rv)
 		{
-			int capacity = JPGD_MAX(32768 - 256, (nSize + 2047) & ~2047);
+			int capacity = JPGD_MAX(32768 - 256, ((int)nSize + 2047) & ~2047);
 			mem_block* b = (mem_block*)jpgd_malloc(sizeof(mem_block) + capacity);
 			if (!b)
 			{
@@ -673,14 +641,6 @@ namespace jpgd {
 		}
 		if (zero) memset(rv, 0, nSize);
 		return rv;
-	}
-
-	void* jpeg_decoder::alloc_aligned(size_t nSize, uint32_t align, bool zero)
-	{
-		assert((align >= 1U) && ((align & (align - 1U)) == 0U));
-		void *p = alloc(nSize + align - 1U, zero);
-		p = (void *)( ((uintptr_t)p + (align - 1U)) & ~((uintptr_t)(align - 1U)) );
-		return p;
 	}
 
 	void jpeg_decoder::word_clear(void* p, uint16 c, uint n)
@@ -987,15 +947,15 @@ namespace jpgd {
 	// Finds the next marker.
 	int jpeg_decoder::next_marker()
 	{
-		uint c, bytes;
+		uint c;// , bytes;
 
-		bytes = 0;
+		//bytes = 0;
 
 		do
 		{
 			do
 			{
-				bytes++;
+				//bytes++;
 				c = get_bits(8);
 			} while (c != 0xFF);
 
@@ -1191,7 +1151,7 @@ namespace jpgd {
 		m_image_x_size = m_image_y_size = 0;
 		m_pStream = pStream;
 		m_progressive_flag = JPGD_FALSE;
-				
+
 		memset(m_huff_ac, 0, sizeof(m_huff_ac));
 		memset(m_huff_num, 0, sizeof(m_huff_num));
 		memset(m_huff_val, 0, sizeof(m_huff_val));
@@ -1280,19 +1240,6 @@ namespace jpgd {
 
 		for (int i = 0; i < JPGD_MAX_BLOCKS_PER_MCU; i++)
 			m_mcu_block_max_zag[i] = 64;
-
-		m_has_sse2 = false;
-
-#if JPGD_USE_SSE2
-#ifdef _MSC_VER
-		int cpu_info[4];
-		__cpuid(cpu_info, 1);
-		const int cpu_info3 = cpu_info[3];
-		m_has_sse2 = ((cpu_info3 >> 26U) & 1U) != 0U;
-#else
-		m_has_sse2 = true;
-#endif
-#endif
 	}
 
 #define SCALEBITS 16
@@ -1335,7 +1282,7 @@ namespace jpgd {
 
 	void jpeg_decoder::transform_mcu(int mcu_row)
 	{
-		jpgd_block_coeff_t* pSrc_ptr = m_pMCU_coefficients;
+		jpgd_block_t* pSrc_ptr = m_pMCU_coefficients;
 		if (mcu_row * m_blocks_per_mcu >= m_max_blocks_per_row)
 			stop_decoding(JPGD_DECODE_ERROR);
 
@@ -1343,7 +1290,7 @@ namespace jpgd {
 
 		for (int mcu_block = 0; mcu_block < m_blocks_per_mcu; mcu_block++)
 		{
-			idct(pSrc_ptr, pDst_ptr, m_mcu_block_max_zag[mcu_block], ((m_flags & cFlagDisableSIMD) == 0) && m_has_sse2);
+			idct(pSrc_ptr, pDst_ptr, m_mcu_block_max_zag[mcu_block]);
 			pSrc_ptr += 64;
 			pDst_ptr += 64;
 		}
@@ -1354,9 +1301,9 @@ namespace jpgd {
 	void jpeg_decoder::load_next_row()
 	{
 		int i;
-		jpgd_block_coeff_t* p;
+		jpgd_block_t* p;
 		jpgd_quant_t* q;
-		int mcu_row, mcu_block, row_block = 0;
+		int mcu_row, mcu_block;// , row_block = 0;
 		int component_num, component_id;
 		int block_x_mcu[JPGD_MAX_COMPONENTS];
 
@@ -1376,10 +1323,10 @@ namespace jpgd {
 
 				p = m_pMCU_coefficients + 64 * mcu_block;
 
-				jpgd_block_coeff_t* pAC = coeff_buf_getp(m_ac_coeffs[component_id], block_x_mcu[component_id] + block_x_mcu_ofs, m_block_y_mcu[component_id] + block_y_mcu_ofs);
-				jpgd_block_coeff_t* pDC = coeff_buf_getp(m_dc_coeffs[component_id], block_x_mcu[component_id] + block_x_mcu_ofs, m_block_y_mcu[component_id] + block_y_mcu_ofs);
+				jpgd_block_t* pAC = coeff_buf_getp(m_ac_coeffs[component_id], block_x_mcu[component_id] + block_x_mcu_ofs, m_block_y_mcu[component_id] + block_y_mcu_ofs);
+				jpgd_block_t* pDC = coeff_buf_getp(m_dc_coeffs[component_id], block_x_mcu[component_id] + block_x_mcu_ofs, m_block_y_mcu[component_id] + block_y_mcu_ofs);
 				p[0] = pDC[0];
-				memcpy(&p[1], &pAC[1], 63 * sizeof(jpgd_block_coeff_t));
+				memcpy(&p[1], &pAC[1], 63 * sizeof(jpgd_block_t));
 
 				for (i = 63; i > 0; i--)
 					if (p[g_ZAG[i]])
@@ -1389,9 +1336,9 @@ namespace jpgd {
 
 				for (; i >= 0; i--)
 					if (p[g_ZAG[i]])
-						p[g_ZAG[i]] = static_cast<jpgd_block_coeff_t>(p[g_ZAG[i]] * q[i]);
+						p[g_ZAG[i]] = static_cast<jpgd_block_t>(p[g_ZAG[i]] * q[i]);
 
-				row_block++;
+				//row_block++;
 
 				if (m_comps_in_scan == 1)
 					block_x_mcu[component_id]++;
@@ -1478,14 +1425,14 @@ namespace jpgd {
 	// Decodes and dequantizes the next row of coefficients.
 	void jpeg_decoder::decode_next_row()
 	{
-		int row_block = 0;
+		//int row_block = 0;
 
 		for (int mcu_row = 0; mcu_row < m_mcus_per_row; mcu_row++)
 		{
 			if ((m_restart_interval) && (m_restarts_left == 0))
 				process_restart();
 
-			jpgd_block_coeff_t* p = m_pMCU_coefficients;
+			jpgd_block_t* p = m_pMCU_coefficients;
 			for (int mcu_block = 0; mcu_block < m_blocks_per_mcu; mcu_block++, p += 64)
 			{
 				int component_id = m_mcu_org[mcu_block];
@@ -1503,7 +1450,7 @@ namespace jpgd {
 
 				m_last_dc_val[component_id] = (s += m_last_dc_val[component_id]);
 
-				p[0] = static_cast<jpgd_block_coeff_t>(s * q[0]);
+				p[0] = static_cast<jpgd_block_t>(s * q[0]);
 
 				int prev_num_set = m_mcu_block_max_zag[mcu_block];
 
@@ -1541,7 +1488,7 @@ namespace jpgd {
 						if (k >= 64)
 							stop_decoding(JPGD_DECODE_ERROR);
 
-						p[g_ZAG[k]] = static_cast<jpgd_block_coeff_t>(dequantize_ac(s, q[k])); //s * q[k];
+						p[g_ZAG[k]] = static_cast<jpgd_block_t>(dequantize_ac(s, q[k])); //s * q[k];
 					}
 					else
 					{
@@ -1581,7 +1528,7 @@ namespace jpgd {
 
 				m_mcu_block_max_zag[mcu_block] = k;
 
-				row_block++;
+				//row_block++;
 			}
 
 			transform_mcu(mcu_row);
@@ -1669,7 +1616,7 @@ namespace jpgd {
 		int row = m_max_mcu_y_size - m_mcu_lines_left;
 		uint8* d0 = m_pScan_line_0;
 
-		const int half_image_x_size = (m_image_x_size == 1) ? 0 : (m_image_x_size >> 1) - 1;
+		const int half_image_x_size = (m_image_x_size >> 1) - 1;
 		const int row_x8 = row * 8;
 
 		for (int x = 0; x < m_image_x_size; x++)
@@ -1762,7 +1709,7 @@ namespace jpgd {
 		int y = m_image_y_size - m_total_lines_left;
 		int row = y & 15;
 
-		const int half_image_y_size = (m_image_y_size == 1) ? 0 : (m_image_y_size >> 1) - 1;
+		const int half_image_y_size = (m_image_y_size >> 1) - 1;
 
 		uint8* d0 = m_pScan_line_0;
 
@@ -1891,7 +1838,7 @@ namespace jpgd {
 		int y = m_image_y_size - m_total_lines_left;
 		int row = y & 15;
 
-		const int half_image_y_size = (m_image_y_size == 1) ? 0 : (m_image_y_size >> 1) - 1;
+		const int half_image_y_size = (m_image_y_size >> 1) - 1;
 
 		uint8* d0 = m_pScan_line_0;
 
@@ -1915,7 +1862,7 @@ namespace jpgd {
 		const int y0_base = (c_y0 & 7) * 8 + 256;
 		const int y1_base = (c_y1 & 7) * 8 + 256;
 
-		const int half_image_x_size = (m_image_x_size == 1) ? 0 : (m_image_x_size >> 1) - 1;
+		const int half_image_x_size = (m_image_x_size >> 1) - 1;
 
 		static const uint8_t s_muls[2][2][4] =
 		{
@@ -2124,10 +2071,10 @@ namespace jpgd {
 
 	int jpeg_decoder::decode_next_mcu_row()
 	{
-		if (::setjmp(m_jmp_state))
+		if (setjmp(m_jmp_state))
 			return JPGD_FAILED;
 
-		const bool chroma_y_filtering = ((m_flags & cFlagBoxChromaFiltering) == 0) && ((m_scan_type == JPGD_YH2V2) || (m_scan_type == JPGD_YH1V2));
+		const bool chroma_y_filtering = (m_flags & cFlagLinearChromaFiltering) && ((m_scan_type == JPGD_YH2V2) || (m_scan_type == JPGD_YH1V2)) && (m_image_x_size >= 2) && (m_image_y_size >= 2);
 		if (chroma_y_filtering)
 		{
 			std::swap(m_pSample_buf, m_pSample_buf_prev);
@@ -2156,7 +2103,7 @@ namespace jpgd {
 		if (m_total_lines_left == 0)
 			return JPGD_DONE;
 
-		const bool chroma_y_filtering = ((m_flags & cFlagBoxChromaFiltering) == 0) && ((m_scan_type == JPGD_YH2V2) || (m_scan_type == JPGD_YH1V2));
+		const bool chroma_y_filtering = (m_flags & cFlagLinearChromaFiltering) && ((m_scan_type == JPGD_YH2V2) || (m_scan_type == JPGD_YH1V2)) && (m_image_x_size >= 2) && (m_image_y_size >= 2);
 
 		bool get_another_mcu_row = false;
 		bool got_mcu_early = false;
@@ -2186,7 +2133,7 @@ namespace jpgd {
 		{
 		case JPGD_YH2V2:
 		{
-			if ((m_flags & cFlagBoxChromaFiltering) == 0)
+			if ((m_flags & cFlagLinearChromaFiltering) && (m_image_x_size >= 2) && (m_image_y_size >= 2))
 			{
 				if (m_num_buffered_scanlines == 1)
 				{
@@ -2215,7 +2162,7 @@ namespace jpgd {
 		}
 		case JPGD_YH2V1:
 		{
-			if ((m_flags & cFlagBoxChromaFiltering) == 0)
+			if ((m_flags & cFlagLinearChromaFiltering) && (m_image_x_size >= 2) && (m_image_y_size >= 2))
 				H2V1ConvertFiltered();
 			else
 				H2V1Convert();
@@ -2630,9 +2577,9 @@ namespace jpgd {
 		m_real_dest_bytes_per_scan_line = (m_image_x_size * m_dest_bytes_per_pixel);
 
 		// Initialize two scan line buffers.
-		m_pScan_line_0 = (uint8*)alloc_aligned(m_dest_bytes_per_scan_line, true);
+		m_pScan_line_0 = (uint8*)alloc(m_dest_bytes_per_scan_line, true);
 		if ((m_scan_type == JPGD_YH1V2) || (m_scan_type == JPGD_YH2V2))
-			m_pScan_line_1 = (uint8*)alloc_aligned(m_dest_bytes_per_scan_line, true);
+			m_pScan_line_1 = (uint8*)alloc(m_dest_bytes_per_scan_line, true);
 
 		m_max_blocks_per_row = m_max_mcus_per_row * m_max_blocks_per_mcu;
 
@@ -2641,13 +2588,13 @@ namespace jpgd {
 			stop_decoding(JPGD_DECODE_ERROR);
 
 		// Allocate the coefficient buffer, enough for one MCU
-		m_pMCU_coefficients = (jpgd_block_coeff_t *)alloc_aligned(m_max_blocks_per_mcu * 64 * sizeof(jpgd_block_coeff_t));
-				
+		m_pMCU_coefficients = (jpgd_block_t*)alloc(m_max_blocks_per_mcu * 64 * sizeof(jpgd_block_t));
+
 		for (i = 0; i < m_max_blocks_per_mcu; i++)
 			m_mcu_block_max_zag[i] = 64;
 
-		m_pSample_buf = (uint8*)alloc_aligned(m_max_blocks_per_row * 64);
-		m_pSample_buf_prev = (uint8*)alloc_aligned(m_max_blocks_per_row * 64);
+		m_pSample_buf = (uint8*)alloc(m_max_blocks_per_row * 64);
+		m_pSample_buf_prev = (uint8*)alloc(m_max_blocks_per_row * 64);
 
 		m_total_lines_left = m_image_y_size;
 
@@ -2668,17 +2615,17 @@ namespace jpgd {
 		cb->block_num_y = block_num_y;
 		cb->block_len_x = block_len_x;
 		cb->block_len_y = block_len_y;
-		cb->block_size = (block_len_x * block_len_y) * sizeof(jpgd_block_coeff_t);
+		cb->block_size = (block_len_x * block_len_y) * sizeof(jpgd_block_t);
 		cb->pData = (uint8*)alloc(cb->block_size * block_num_x * block_num_y, true);
 		return cb;
 	}
 
-	inline jpgd_block_coeff_t* jpeg_decoder::coeff_buf_getp(coeff_buf* cb, int block_x, int block_y)
+	inline jpgd_block_t* jpeg_decoder::coeff_buf_getp(coeff_buf* cb, int block_x, int block_y)
 	{
 		if ((block_x >= cb->block_num_x) || (block_y >= cb->block_num_y))
 			stop_decoding(JPGD_DECODE_ERROR);
 
-		return (jpgd_block_coeff_t*)(cb->pData + block_x * cb->block_size + block_y * (cb->block_size * cb->block_num_x));
+		return (jpgd_block_t*)(cb->pData + block_x * cb->block_size + block_y * (cb->block_size * cb->block_num_x));
 	}
 
 	// The following methods decode the various types of m_blocks encountered
@@ -2686,7 +2633,7 @@ namespace jpgd {
 	void jpeg_decoder::decode_block_dc_first(jpeg_decoder* pD, int component_id, int block_x, int block_y)
 	{
 		int s, r;
-		jpgd_block_coeff_t* p = pD->coeff_buf_getp(pD->m_dc_coeffs[component_id], block_x, block_y);
+		jpgd_block_t* p = pD->coeff_buf_getp(pD->m_dc_coeffs[component_id], block_x, block_y);
 
 		if ((s = pD->huff_decode(pD->m_pHuff_tabs[pD->m_comp_dc_tab[component_id]])) != 0)
 		{
@@ -2699,14 +2646,14 @@ namespace jpgd {
 
 		pD->m_last_dc_val[component_id] = (s += pD->m_last_dc_val[component_id]);
 
-		p[0] = static_cast<jpgd_block_coeff_t>(s << pD->m_successive_low);
+		p[0] = static_cast<jpgd_block_t>(s << pD->m_successive_low);
 	}
 
 	void jpeg_decoder::decode_block_dc_refine(jpeg_decoder* pD, int component_id, int block_x, int block_y)
 	{
 		if (pD->get_bits_no_markers(1))
 		{
-			jpgd_block_coeff_t* p = pD->coeff_buf_getp(pD->m_dc_coeffs[component_id], block_x, block_y);
+			jpgd_block_t* p = pD->coeff_buf_getp(pD->m_dc_coeffs[component_id], block_x, block_y);
 
 			p[0] |= (1 << pD->m_successive_low);
 		}
@@ -2722,7 +2669,7 @@ namespace jpgd {
 			return;
 		}
 
-		jpgd_block_coeff_t* p = pD->coeff_buf_getp(pD->m_ac_coeffs[component_id], block_x, block_y);
+		jpgd_block_t* p = pD->coeff_buf_getp(pD->m_ac_coeffs[component_id], block_x, block_y);
 
 		for (k = pD->m_spectral_start; k <= pD->m_spectral_end; k++)
 		{
@@ -2743,7 +2690,7 @@ namespace jpgd {
 				r = pD->get_bits_no_markers(s);
 				s = JPGD_HUFF_EXTEND(r, s);
 
-				p[g_ZAG[k]] = static_cast<jpgd_block_coeff_t>(s << pD->m_successive_low);
+				p[g_ZAG[k]] = static_cast<jpgd_block_t>(s << pD->m_successive_low);
 			}
 			else
 			{
@@ -2776,7 +2723,7 @@ namespace jpgd {
 		//int m1 = (-1) << pD->m_successive_low;
 		int m1 = static_cast<int>((UINT32_MAX << pD->m_successive_low));
 
-		jpgd_block_coeff_t* p = pD->coeff_buf_getp(pD->m_ac_coeffs[component_id], block_x, block_y);
+		jpgd_block_t* p = pD->coeff_buf_getp(pD->m_ac_coeffs[component_id], block_x, block_y);
 		if (pD->m_spectral_end > 63)
 			pD->stop_decoding(JPGD_DECODE_ERROR);
 
@@ -2820,7 +2767,7 @@ namespace jpgd {
 
 				do
 				{
-					jpgd_block_coeff_t* this_coef = p + g_ZAG[k & 63];
+					jpgd_block_t* this_coef = p + g_ZAG[k & 63];
 
 					if (*this_coef != 0)
 					{
@@ -2829,9 +2776,9 @@ namespace jpgd {
 							if ((*this_coef & p1) == 0)
 							{
 								if (*this_coef >= 0)
-									*this_coef = static_cast<jpgd_block_coeff_t>(*this_coef + p1);
+									*this_coef = static_cast<jpgd_block_t>(*this_coef + p1);
 								else
-									*this_coef = static_cast<jpgd_block_coeff_t>(*this_coef + m1);
+									*this_coef = static_cast<jpgd_block_t>(*this_coef + m1);
 							}
 						}
 					}
@@ -2847,7 +2794,7 @@ namespace jpgd {
 
 				if ((s) && (k < 64))
 				{
-					p[g_ZAG[k]] = static_cast<jpgd_block_coeff_t>(s);
+					p[g_ZAG[k]] = static_cast<jpgd_block_t>(s);
 				}
 			}
 		}
@@ -2856,7 +2803,7 @@ namespace jpgd {
 		{
 			for (; k <= pD->m_spectral_end; k++)
 			{
-				jpgd_block_coeff_t* this_coef = p + g_ZAG[k & 63]; // logical AND to shut up static code analysis
+				jpgd_block_t* this_coef = p + g_ZAG[k & 63]; // logical AND to shut up static code analysis
 
 				if (*this_coef != 0)
 				{
@@ -2865,9 +2812,9 @@ namespace jpgd {
 						if ((*this_coef & p1) == 0)
 						{
 							if (*this_coef >= 0)
-								*this_coef = static_cast<jpgd_block_coeff_t>(*this_coef + p1);
+								*this_coef = static_cast<jpgd_block_t>(*this_coef + p1);
 							else
-								*this_coef = static_cast<jpgd_block_coeff_t>(*this_coef + m1);
+								*this_coef = static_cast<jpgd_block_t>(*this_coef + m1);
 						}
 					}
 				}
@@ -3040,7 +2987,7 @@ namespace jpgd {
 
 	jpeg_decoder::jpeg_decoder(jpeg_decoder_stream* pStream, uint32_t flags)
 	{
-		if (::setjmp(m_jmp_state))
+		if (setjmp(m_jmp_state))
 			return;
 		decode_init(pStream, flags);
 	}
@@ -3053,7 +3000,7 @@ namespace jpgd {
 		if (m_error_code)
 			return JPGD_FAILED;
 
-		if (::setjmp(m_jmp_state))
+		if (setjmp(m_jmp_state))
 			return JPGD_FAILED;
 
 		decode_start();

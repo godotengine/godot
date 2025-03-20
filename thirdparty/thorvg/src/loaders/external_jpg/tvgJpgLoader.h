@@ -24,19 +24,12 @@
 #define _TVG_JPG_LOADER_H_
 
 #include "tvgLoader.h"
-#include "tvgTaskScheduler.h"
-#include "tvgJpgd.h"
 
-class JpgLoader : public ImageLoader, public Task
+using tjhandle = void*;
+
+//TODO: Use Task?
+class JpgLoader : public ImageLoader
 {
-private:
-    jpeg_decoder* decoder = nullptr;
-    char* data = nullptr;
-    bool freeData = false;
-
-    void clear();
-    void run(unsigned tid) override;
-
 public:
     JpgLoader();
     ~JpgLoader();
@@ -44,9 +37,14 @@ public:
     bool open(const string& path) override;
     bool open(const char* data, uint32_t size, bool copy) override;
     bool read() override;
-    bool close() override;
 
-    RenderSurface* bitmap() override;
+private:
+    void clear();
+
+    tjhandle jpegDecompressor;
+    unsigned char* data = nullptr;
+    unsigned long size = 0;
+    bool freeData = false;
 };
 
 #endif //_TVG_JPG_LOADER_H_
