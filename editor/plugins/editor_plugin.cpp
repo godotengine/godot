@@ -39,7 +39,6 @@
 #include "editor/editor_file_system.h"
 #include "editor/editor_interface.h"
 #include "editor/editor_node.h"
-#include "editor/editor_translation_parser.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/export/editor_export.h"
 #include "editor/export/editor_export_platform.h"
@@ -53,6 +52,7 @@
 #include "editor/plugins/editor_debugger_plugin.h"
 #include "editor/plugins/editor_resource_conversion_plugin.h"
 #include "editor/plugins/script/script_editor_plugin.h"
+#include "editor/translations/editor_translation_parser.h"
 #include "scene/3d/camera_3d.h"
 #include "scene/gui/popup_menu.h"
 
