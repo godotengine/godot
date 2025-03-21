@@ -2942,12 +2942,11 @@ static Error convert_path_to_uid(ResourceUID::ID p_source_id, const String &p_ha
 }
 
 Error ResourceImporterScene::_check_resource_save_paths(ResourceUID::ID p_source_id, const String &p_hash_suffix, const Dictionary &p_data) {
-	Array keys = p_data.keys();
-	for (int di = 0; di < keys.size(); di++) {
-		Dictionary settings = p_data[keys[di]];
+	for (const KeyValue<Variant, Variant> &kv : p_data) {
+		Dictionary settings = kv.value;
 
 		if (bool(settings.get("save_to_file/enabled", false)) && settings.has("save_to_file/path")) {
-			String to_hash = keys[di].operator String() + p_hash_suffix;
+			String to_hash = kv.key.operator String() + p_hash_suffix;
 			Error ret = convert_path_to_uid(p_source_id, to_hash, settings, "save_to_file/path", "save_to_file/fallback_path");
 			ERR_FAIL_COND_V_MSG(ret != OK, ret, vformat("Resource save path %s not valid. Ensure parent directory has been created.", settings.has("save_to_file/path")));
 		}
@@ -2957,7 +2956,7 @@ Error ResourceImporterScene::_check_resource_save_paths(ResourceUID::ID p_source
 			for (int si = 0; si < slice_count; si++) {
 				if (bool(settings.get("slice_" + itos(si + 1) + "/save_to_file/enabled", false)) &&
 						settings.has("slice_" + itos(si + 1) + "/save_to_file/path")) {
-					String to_hash = keys[di].operator String() + p_hash_suffix + itos(si + 1);
+					String to_hash = kv.key.operator String() + p_hash_suffix + itos(si + 1);
 					Error ret = convert_path_to_uid(p_source_id, to_hash, settings,
 							"slice_" + itos(si + 1) + "/save_to_file/path",
 							"slice_" + itos(si + 1) + "/save_to_file/fallback_path");
