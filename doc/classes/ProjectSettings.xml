@@ -51,6 +51,7 @@
 				ProjectSettings.AddPropertyInfo(propertyInfo);
 				[/csharp]
 				[/codeblocks]
+				[b]Note:[/b] Setting [code]"usage"[/code] for the property is not supported. Use [method set_as_basic], [method set_restart_if_changed], and [method set_as_internal] to modify usage flags.
 			</description>
 		</method>
 		<method name="clear">
