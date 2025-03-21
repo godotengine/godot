@@ -32,6 +32,7 @@
 
 #include "core/os/time.h"
 #include "core/version.h"
+#include "scene/gui/control.h"
 
 String _get_version_string(EditorVersionButton::VersionFormat p_format) {
 	String main;
@@ -60,9 +61,29 @@ String _get_version_string(EditorVersionButton::VersionFormat p_format) {
 void EditorVersionButton::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_POSTINITIALIZE: {
-			// This can't be done in the constructor because theme cache is not ready yet.
 			set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 			set_text(_get_version_string(format));
+		} break;
+		case NOTIFICATION_ENTER_TREE: {
+			// This can't be done in the constructor because theme cache is not ready yet.
+			add_theme_icon_override(SNAME("icon"), get_editor_theme_icon(SNAME("Direct3D12")));
+			Color icon_color;
+			if (RS::get_singleton()->get_current_rendering_method() == "forward_plus") {
+				icon_color = get_theme_color(SNAME("forward_plus_color"), SNAME("Editor"));
+			} else if (RS::get_singleton()->get_current_rendering_method() == "mobile") {
+				icon_color = get_theme_color(SNAME("mobile_color"), SNAME("Editor"));
+			} else {
+				icon_color = get_theme_color(SNAME("gl_compatibility_color"), SNAME("Editor"));
+			}
+			// Cancel out the modulation applied to the node, which is used to reduce the text's opacity
+			// in the editor bottom panel and project manager.
+			// We don't want the modulation to affect the icon, as it becomes hard to see otherwise.
+			icon_color /= get_self_modulate();
+			add_theme_color_override(SNAME("icon_normal_color"), icon_color);
+			add_theme_color_override(SNAME("icon_pressed_color"), icon_color);
+			add_theme_color_override(SNAME("icon_focus_color"), icon_color);
+			add_theme_color_override(SNAME("icon_hover_color"), icon_color);
+			add_theme_color_override(SNAME("icon_hover_pressed_color"), icon_color);
 		} break;
 	}
 }
@@ -73,7 +94,10 @@ void EditorVersionButton::pressed() {
 
 EditorVersionButton::EditorVersionButton(VersionFormat p_format) {
 	format = p_format;
-	set_underline_mode(LinkButton::UNDERLINE_MODE_ON_HOVER);
+
+	set_flat(true);
+	set_icon_alignment(HORIZONTAL_ALIGNMENT_RIGHT);
+	set_focus_mode(FOCUS_NONE);
 
 	String build_date;
 	if (GODOT_VERSION_TIMESTAMP > 0) {
@@ -81,5 +105,8 @@ EditorVersionButton::EditorVersionButton(VersionFormat p_format) {
 	} else {
 		build_date = TTR("(unknown)");
 	}
-	set_tooltip_text(vformat(TTR("Git commit date: %s\nClick to copy the version information."), build_date));
+	const String rendering_driver = RS::get_singleton()->get_current_rendering_driver_name();
+	const String rendering_method = RS::get_singleton()->get_current_rendering_method();
+
+	set_tooltip_text(vformat(TTR("Git commit date: %s\nRendering method: %s\nRendering driver: %s\nClick to copy the version information."), build_date, rendering_method, rendering_driver));
 }
