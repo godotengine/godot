@@ -126,8 +126,8 @@ void OpenXRActionSetEditor::_do_set_localized_name(const String p_new_text) {
 	action_set_localized_name->set_text(p_new_text);
 }
 
-void OpenXRActionSetEditor::_on_action_set_priority_changed(const String p_new_text) {
-	int64_t value = p_new_text.to_int();
+void OpenXRActionSetEditor::_on_action_set_priority_changed(const double p_new_value) {
+	int64_t value = p_new_value;
 
 	if (action_set->get_priority() != value) {
 		undo_redo->create_action(TTR("Change Action Sets priority"));
@@ -142,7 +142,7 @@ void OpenXRActionSetEditor::_on_action_set_priority_changed(const String p_new_t
 
 void OpenXRActionSetEditor::_do_set_priority(int64_t p_value) {
 	action_set->set_priority(p_value);
-	action_set_priority->set_text(itos(p_value));
+	action_set_priority->set_value_no_signal(p_value);
 }
 
 void OpenXRActionSetEditor::_on_add_action() {
@@ -254,10 +254,13 @@ OpenXRActionSetEditor::OpenXRActionSetEditor(Ref<OpenXRActionMap> p_action_map, 
 	action_set_localized_name->connect(SceneStringName(text_changed), callable_mp(this, &OpenXRActionSetEditor::_on_action_set_localized_name_changed));
 	action_set_hb->add_child(action_set_localized_name);
 
-	action_set_priority = memnew(TextEdit);
-	action_set_priority->set_text(itos(action_set->get_priority()));
-	action_set_priority->set_custom_minimum_size(Size2(50.0, 0.0));
-	action_set_priority->connect(SceneStringName(text_changed), callable_mp(this, &OpenXRActionSetEditor::_on_action_set_priority_changed));
+	action_set_priority = memnew(EditorSpinSlider);
+	action_set_priority->set_editing_integer(true);
+	action_set_priority->set_min(2147483647.0);
+	action_set_priority->set_min(-2147483648.0);
+	action_set_priority->set_value_no_signal(action_set->get_priority());
+	action_set_priority->set_custom_minimum_size(Size2(150.0, 0.0));
+	action_set_priority->connect(SceneStringName(value_changed), callable_mp(this, &OpenXRActionSetEditor::_on_action_set_priority_changed));
 	action_set_hb->add_child(action_set_priority);
 
 	add_action = memnew(Button);
