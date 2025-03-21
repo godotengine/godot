@@ -1343,16 +1343,16 @@ static bool compare_value(const String &p_path, const String &p_field, const Var
 	} else if (p_old_value.get_type() == Variant::DICTIONARY && p_new_value.get_type() == Variant::DICTIONARY) {
 		Dictionary old_dict = p_old_value;
 		Dictionary new_dict = p_new_value;
-		for (const Variant &key : old_dict.keys()) {
-			if (!new_dict.has(key)) {
+		for (const KeyValue<Variant, Variant> &kv : old_dict) {
+			if (!new_dict.has(kv.key)) {
 				failed = true;
-				print_error(vformat("Validate extension JSON: Error: Field '%s': %s was removed.", p_path, key));
+				print_error(vformat("Validate extension JSON: Error: Field '%s': %s was removed.", p_path, kv.key));
 				continue;
 			}
-			if (p_allow_name_change && key == "name") {
+			if (p_allow_name_change && kv.key == "name") {
 				continue;
 			}
-			if (!compare_value(path, key, old_dict[key], new_dict[key], p_allow_name_change)) {
+			if (!compare_value(path, kv.key, kv.value, new_dict[kv.key], p_allow_name_change)) {
 				failed = true;
 			}
 		}
