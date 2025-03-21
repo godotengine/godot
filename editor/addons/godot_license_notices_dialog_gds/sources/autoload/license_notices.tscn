@@ -1,0 +1,27 @@
+[gd_scene load_steps=3 format=3 uid="uid://b76tx6oepjn6y"]
+
+[ext_resource type="Script" uid="uid://cr5r360lg703e" path="res://addons/godot_license_notices_dialog/autoload/license_notices.gd" id="1_dpbdy"]
+[ext_resource type="PackedScene" uid="uid://ddohw1gkey5ys" path="res://addons/godot_license_notices_dialog/dialog/license_notices_dialog.tscn" id="2_qbk12"]
+
+[node name="LicenseNotices" type="CanvasLayer"]
+process_mode = 3
+layer = 128
+script = ExtResource("1_dpbdy")
+
+[node name="Background" type="ColorRect" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.196078)
+
+[node name="LicenseNoticesDialog" parent="Background" instance=ExtResource("2_qbk12")]
+layout_mode = 1
+anchors_preset = -1
+offset_left = 100.0
+offset_top = 40.0
+offset_right = -100.0
+offset_bottom = -40.0
+
+[connection signal="close_requested" from="Background/LicenseNoticesDialog" to="." method="_on_close"]
