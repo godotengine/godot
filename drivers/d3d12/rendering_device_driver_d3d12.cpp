@@ -1222,7 +1222,7 @@ RDD::TextureID RenderingDeviceDriverD3D12::texture_create(const TextureFormat &p
 	if ((p_format.usage_bits & TEXTURE_USAGE_STORAGE_BIT)) {
 		resource_desc.Flags |= D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
 	}
-	if ((p_format.usage_bits & TEXTURE_USAGE_VRS_ATTACHMENT_BIT)) {
+	if ((p_format.usage_bits & TEXTURE_USAGE_VRS_ATTACHMENT_BIT) && (p_format.usage_bits & TEXTURE_USAGE_VRS_FRAGMENT_SHADING_RATE_BIT)) {
 		// For VRS images we can't use the typeless format.
 		resource_desc.Format = DXGI_FORMAT_R8_UINT;
 	}
@@ -1827,8 +1827,11 @@ static D3D12_BARRIER_ACCESS _rd_texture_layout_access_mask(RDD::TextureLayout p_
 			return D3D12_BARRIER_ACCESS_RESOLVE_SOURCE;
 		case RDD::TEXTURE_LAYOUT_RESOLVE_DST_OPTIMAL:
 			return D3D12_BARRIER_ACCESS_RESOLVE_DEST;
-		case RDD::TEXTURE_LAYOUT_VRS_ATTACHMENT_OPTIMAL:
+		case RDD::TEXTURE_LAYOUT_FRAGMENT_SHADING_RATE_ATTACHMENT_OPTIMAL:
 			return D3D12_BARRIER_ACCESS_SHADING_RATE_SOURCE;
+		case RDD::TEXTURE_LAYOUT_FRAGMENT_DENSITY_MAP_ATTACHMENT_OPTIMAL:
+			DEV_ASSERT(false && "Fragment density maps are not supported in D3D12.");
+			return D3D12_BARRIER_ACCESS_NO_ACCESS;
 		default:
 			return D3D12_BARRIER_ACCESS_NO_ACCESS;
 	}
@@ -1947,7 +1950,7 @@ static void _rd_stages_to_d3d12(BitField<RDD::PipelineStageBits> p_stages, D3D12
 			r_sync |= D3D12_BARRIER_SYNC_VERTEX_SHADING;
 		}
 
-		if (p_stages.has_flag(RDD::PIPELINE_STAGE_FRAGMENT_SHADER_BIT)) {
+		if (p_stages.has_flag(RDD::PIPELINE_STAGE_FRAGMENT_SHADER_BIT) || p_stages.has_flag(RDD::PIPELINE_STAGE_FRAGMENT_SHADING_RATE_ATTACHMENT_BIT)) {
 			r_sync |= D3D12_BARRIER_SYNC_PIXEL_SHADING;
 		}
 
@@ -2042,8 +2045,11 @@ static D3D12_BARRIER_LAYOUT _rd_texture_layout_to_d3d12_barrier_layout(RDD::Text
 			return D3D12_BARRIER_LAYOUT_RESOLVE_SOURCE;
 		case RDD::TEXTURE_LAYOUT_RESOLVE_DST_OPTIMAL:
 			return D3D12_BARRIER_LAYOUT_RESOLVE_DEST;
-		case RDD::TEXTURE_LAYOUT_VRS_ATTACHMENT_OPTIMAL:
+		case RDD::TEXTURE_LAYOUT_FRAGMENT_SHADING_RATE_ATTACHMENT_OPTIMAL:
 			return D3D12_BARRIER_LAYOUT_SHADING_RATE_SOURCE;
+		case RDD::TEXTURE_LAYOUT_FRAGMENT_DENSITY_MAP_ATTACHMENT_OPTIMAL:
+			DEV_ASSERT(false && "Fragment density maps are not supported in D3D12.");
+			return D3D12_BARRIER_LAYOUT_UNDEFINED;
 		default:
 			DEV_ASSERT(false && "Unknown texture layout.");
 			return D3D12_BARRIER_LAYOUT_UNDEFINED;
@@ -2451,7 +2457,7 @@ RDD::SwapChainID RenderingDeviceDriverD3D12::swap_chain_create(RenderingContextD
 	color_ref.aspect.set_flag(RDD::TEXTURE_ASPECT_COLOR_BIT);
 	subpass.color_references.push_back(color_ref);
 
-	RenderPassID render_pass = render_pass_create(attachment, subpass, {}, 1);
+	RenderPassID render_pass = render_pass_create(attachment, subpass, {}, 1, AttachmentReference());
 	ERR_FAIL_COND_V(!render_pass, SwapChainID());
 
 	// Create the empty swap chain until it is resized.
@@ -2811,8 +2817,8 @@ RDD::FramebufferID RenderingDeviceDriverD3D12::_framebuffer_create(RenderPassID 
 
 	uint32_t vrs_index = UINT32_MAX;
 	for (const Subpass &E : pass_info->subpasses) {
-		if (E.vrs_reference.attachment != AttachmentReference::UNUSED) {
-			vrs_index = E.vrs_reference.attachment;
+		if (E.fragment_shading_rate_reference.attachment != AttachmentReference::UNUSED) {
+			vrs_index = E.fragment_shading_rate_reference.attachment;
 		}
 	}
 
@@ -4963,7 +4969,9 @@ Vector<uint8_t> RenderingDeviceDriverD3D12::pipeline_cache_serialize() {
 
 // ----- SUBPASS -----
 
-RDD::RenderPassID RenderingDeviceDriverD3D12::render_pass_create(VectorView<Attachment> p_attachments, VectorView<Subpass> p_subpasses, VectorView<SubpassDependency> p_subpass_dependencies, uint32_t p_view_count) {
+RDD::RenderPassID RenderingDeviceDriverD3D12::render_pass_create(VectorView<Attachment> p_attachments, VectorView<Subpass> p_subpasses, VectorView<SubpassDependency> p_subpass_dependencies, uint32_t p_view_count, AttachmentReference p_fragment_density_map_attachment) {
+	ERR_FAIL_COND_V_MSG(p_fragment_density_map_attachment.attachment != AttachmentReference::UNUSED, RenderPassID(), "Fragment density maps are not supported in D3D12.");
+
 	// Pre-bookkeep.
 	RenderPassInfo *pass_info = VersatileResource::allocate<RenderPassInfo>(resources_allocator);
 
@@ -5064,7 +5072,7 @@ void RenderingDeviceDriverD3D12::command_begin_render_pass(CommandBufferID p_cmd
 		}
 	}
 
-	if (fb_info->vrs_attachment && vrs_capabilities.ss_image_supported) {
+	if (fb_info->vrs_attachment && fsr_capabilities.attachment_supported) {
 		ComPtr<ID3D12GraphicsCommandList5> cmd_list_5;
 		cmd_buf_info->cmd_list->QueryInterface(cmd_list_5.GetAddressOf());
 		if (cmd_list_5) {
@@ -5184,7 +5192,7 @@ void RenderingDeviceDriverD3D12::command_end_render_pass(CommandBufferID p_cmd_b
 	const FramebufferInfo *fb_info = cmd_buf_info->render_pass_state.fb_info;
 	const RenderPassInfo *pass_info = cmd_buf_info->render_pass_state.pass_info;
 
-	if (vrs_capabilities.ss_image_supported) {
+	if (fsr_capabilities.attachment_supported) {
 		ComPtr<ID3D12GraphicsCommandList5> cmd_list_5;
 		cmd_buf_info->cmd_list->QueryInterface(cmd_list_5.GetAddressOf());
 		if (cmd_list_5) {
@@ -6244,12 +6252,6 @@ uint64_t RenderingDeviceDriverD3D12::limit_get(Limit p_limit) {
 			return subgroup_capabilities.supported_stages_flags_rd();
 		case LIMIT_SUBGROUP_OPERATIONS:
 			return subgroup_capabilities.supported_operations_flags_rd();
-		case LIMIT_VRS_TEXEL_WIDTH:
-		case LIMIT_VRS_TEXEL_HEIGHT:
-			return vrs_capabilities.ss_image_tile_size;
-		case LIMIT_VRS_MAX_FRAGMENT_WIDTH:
-		case LIMIT_VRS_MAX_FRAGMENT_HEIGHT:
-			return vrs_capabilities.ss_max_fragment_size;
 		case LIMIT_MAX_SHADER_VARYINGS:
 			return MIN(D3D12_VS_OUTPUT_REGISTER_COUNT, D3D12_PS_INPUT_REGISTER_COUNT);
 		default: {
@@ -6286,12 +6288,8 @@ uint64_t RenderingDeviceDriverD3D12::api_trait_get(ApiTrait p_trait) {
 
 bool RenderingDeviceDriverD3D12::has_feature(Features p_feature) {
 	switch (p_feature) {
-		case SUPPORTS_MULTIVIEW:
-			return multiview_capabilities.is_supported && multiview_capabilities.max_view_count > 1;
 		case SUPPORTS_FSR_HALF_FLOAT:
 			return shader_capabilities.native_16bit_ops && storage_buffer_capabilities.storage_buffer_16_bit_access_is_supported;
-		case SUPPORTS_ATTACHMENT_VRS:
-			return vrs_capabilities.ss_image_supported;
 		case SUPPORTS_FRAGMENT_SHADER_WITH_ONLY_SIDE_EFFECTS:
 			return true;
 		case SUPPORTS_BUFFER_DEVICE_ADDRESS:
@@ -6303,6 +6301,14 @@ bool RenderingDeviceDriverD3D12::has_feature(Features p_feature) {
 
 const RDD::MultiviewCapabilities &RenderingDeviceDriverD3D12::get_multiview_capabilities() {
 	return multiview_capabilities;
+}
+
+const RDD::FragmentShadingRateCapabilities &RenderingDeviceDriverD3D12::get_fragment_shading_rate_capabilities() {
+	return fsr_capabilities;
+}
+
+const RDD::FragmentDensityMapCapabilities &RenderingDeviceDriverD3D12::get_fragment_density_map_capabilities() {
+	return fdm_capabilities;
 }
 
 String RenderingDeviceDriverD3D12::get_api_name() const {
@@ -6466,12 +6472,6 @@ Error RenderingDeviceDriverD3D12::_check_capabilities() {
 	device_capabilities.version_minor = feature_level % 10;
 
 	// Assume not supported until proven otherwise.
-	vrs_capabilities.draw_call_supported = false;
-	vrs_capabilities.primitive_supported = false;
-	vrs_capabilities.primitive_in_multiviewport = false;
-	vrs_capabilities.ss_image_supported = false;
-	vrs_capabilities.ss_image_tile_size = 1;
-	vrs_capabilities.additional_rates_supported = false;
 	multiview_capabilities.is_supported = false;
 	multiview_capabilities.geometry_shader_is_supported = false;
 	multiview_capabilities.tessellation_shader_is_supported = false;
@@ -6562,14 +6562,12 @@ Error RenderingDeviceDriverD3D12::_check_capabilities() {
 	res = device->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS6, &options6, sizeof(options6));
 	if (SUCCEEDED(res)) {
 		if (options6.VariableShadingRateTier >= D3D12_VARIABLE_SHADING_RATE_TIER_1) {
-			vrs_capabilities.draw_call_supported = true;
+			fsr_capabilities.pipeline_supported = true;
 			if (options6.VariableShadingRateTier >= D3D12_VARIABLE_SHADING_RATE_TIER_2) {
-				vrs_capabilities.primitive_supported = true;
-				vrs_capabilities.primitive_in_multiviewport = options6.PerPrimitiveShadingRateSupportedWithViewportIndexing;
-				vrs_capabilities.ss_image_supported = true;
-				vrs_capabilities.ss_image_tile_size = options6.ShadingRateImageTileSize;
-				vrs_capabilities.ss_max_fragment_size = 8; // TODO figure out if this is supplied and/or needed
-				vrs_capabilities.additional_rates_supported = options6.AdditionalShadingRatesSupported;
+				fsr_capabilities.primitive_supported = true;
+				fsr_capabilities.attachment_supported = true;
+				fsr_capabilities.min_texel_size = Size2i(options6.ShadingRateImageTileSize, options6.ShadingRateImageTileSize);
+				fsr_capabilities.max_texel_size = Size2i(8, 8);
 			}
 		}
 	}
@@ -6581,19 +6579,16 @@ Error RenderingDeviceDriverD3D12::_check_capabilities() {
 		barrier_capabilities.enhanced_barriers_supported = options12.EnhancedBarriersSupported;
 	}
 
-	if (vrs_capabilities.draw_call_supported || vrs_capabilities.primitive_supported || vrs_capabilities.ss_image_supported) {
+	if (fsr_capabilities.pipeline_supported || fsr_capabilities.primitive_supported || fsr_capabilities.attachment_supported) {
 		print_verbose("- D3D12 Variable Rate Shading supported:");
-		if (vrs_capabilities.draw_call_supported) {
+		if (fsr_capabilities.pipeline_supported) {
 			print_verbose("  Draw call");
 		}
-		if (vrs_capabilities.primitive_supported) {
-			print_verbose(String("  Per-primitive (multi-viewport: ") + (vrs_capabilities.primitive_in_multiviewport ? "yes" : "no") + ")");
+		if (fsr_capabilities.primitive_supported) {
+			print_verbose("  Primitive");
 		}
-		if (vrs_capabilities.ss_image_supported) {
-			print_verbose(String("  Screen-space image (tile size: ") + itos(vrs_capabilities.ss_image_tile_size) + ")");
-		}
-		if (vrs_capabilities.additional_rates_supported) {
-			print_verbose(String("  Additional rates: ") + (vrs_capabilities.additional_rates_supported ? "yes" : "no"));
+		if (fsr_capabilities.attachment_supported) {
+			print_verbose(String("  Screen-space image (tile size: ") + itos(fsr_capabilities.min_texel_size.x) + ")");
 		}
 	} else {
 		print_verbose("- D3D12 Variable Rate Shading not supported");

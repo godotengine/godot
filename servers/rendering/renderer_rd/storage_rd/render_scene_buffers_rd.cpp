@@ -756,9 +756,9 @@ uint32_t RenderSceneBuffersRD::get_velocity_usage_bits(bool p_resolve, bool p_ms
 }
 
 RD::DataFormat RenderSceneBuffersRD::get_vrs_format() {
-	return RD::DATA_FORMAT_R8_UINT;
+	return RD::get_singleton()->vrs_get_format();
 }
 
 uint32_t RenderSceneBuffersRD::get_vrs_usage_bits() {
-	return RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_VRS_ATTACHMENT_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT;
+	return RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_VRS_ATTACHMENT_BIT;
 }
