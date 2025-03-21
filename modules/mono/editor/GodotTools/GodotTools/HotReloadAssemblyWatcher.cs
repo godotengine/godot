@@ -17,21 +17,13 @@ namespace GodotTools
             {
                 RestartTimer();
 
-                if (Internal.IsAssembliesReloadingNeeded())
-                {
-                    BuildManager.UpdateLastValidBuildDateTime();
-                    Internal.ReloadAssemblies(softReload: false);
-                }
+                GodotSharpEditor.Instance.HotReloadScripts(true);
             }
         }
 
         private void TimerTimeout()
         {
-            if (Internal.IsAssembliesReloadingNeeded())
-            {
-                BuildManager.UpdateLastValidBuildDateTime();
-                Internal.ReloadAssemblies(softReload: false);
-            }
+            GodotSharpEditor.Instance.HotReloadScripts(false);
         }
 
         [UsedImplicitly]
