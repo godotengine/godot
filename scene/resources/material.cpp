@@ -794,6 +794,35 @@ void BaseMaterial3D::_update_shader() {
 			break; // Internal value, skip.
 	}
 
+	switch (depth_function) {
+		case DEPTH_FUNCTION_LESS_OR_EQUAL:
+			code += ", depth_function_less_or_equal";
+			break;
+		case DEPTH_FUNCTION_LESS:
+			code += ", depth_function_less";
+			break;
+		case DEPTH_FUNCTION_EQUAL:
+			code += ", depth_function_equal";
+			break;
+		case DEPTH_FUNCTION_GREATER:
+			code += ", depth_function_greater";
+			break;
+		case DEPTH_FUNCTION_NOT_EQUAL:
+			code += ", depth_function_not_equal";
+			break;
+		case DEPTH_FUNCTION_GREATER_OR_EQUAL:
+			code += ", depth_function_greater_or_equal";
+			break;
+		case DEPTH_FUNCTION_ALWAYS:
+			code += ", depth_function_always";
+			break;
+		case DEPTH_FUNCTION_NEVER:
+			code += ", depth_function_never";
+			break;
+		case DEPTH_FUNCTION_MAX:
+			break; // Internal value, skip.
+	}
+
 	switch (cull_mode) {
 		case CULL_BACK:
 			code += ", cull_back";
@@ -2272,6 +2301,19 @@ BaseMaterial3D::DepthDrawMode BaseMaterial3D::get_depth_draw_mode() const {
 	return depth_draw_mode;
 }
 
+void BaseMaterial3D::set_depth_function(DepthFunction p_func) {
+	if (depth_function == p_func) {
+		return;
+	}
+
+	depth_function = p_func;
+	_queue_shader_change();
+}
+
+BaseMaterial3D::DepthFunction BaseMaterial3D::get_depth_function() const {
+	return depth_function;
+}
+
 void BaseMaterial3D::set_cull_mode(CullMode p_mode) {
 	if (cull_mode == p_mode) {
 		return;
@@ -3038,6 +3080,9 @@ void BaseMaterial3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_depth_draw_mode", "depth_draw_mode"), &BaseMaterial3D::set_depth_draw_mode);
 	ClassDB::bind_method(D_METHOD("get_depth_draw_mode"), &BaseMaterial3D::get_depth_draw_mode);
 
+	ClassDB::bind_method(D_METHOD("set_depth_function", "depth_function"), &BaseMaterial3D::set_depth_function);
+	ClassDB::bind_method(D_METHOD("get_depth_function"), &BaseMaterial3D::get_depth_function);
+
 	ClassDB::bind_method(D_METHOD("set_cull_mode", "cull_mode"), &BaseMaterial3D::set_cull_mode);
 	ClassDB::bind_method(D_METHOD("get_cull_mode"), &BaseMaterial3D::get_cull_mode);
 
@@ -3167,6 +3212,7 @@ void BaseMaterial3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "blend_mode", PROPERTY_HINT_ENUM, "Mix,Add,Subtract,Multiply,Premultiplied Alpha"), "set_blend_mode", "get_blend_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "cull_mode", PROPERTY_HINT_ENUM, "Back,Front,Disabled"), "set_cull_mode", "get_cull_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "depth_draw_mode", PROPERTY_HINT_ENUM, "Opaque Only,Always,Never"), "set_depth_draw_mode", "get_depth_draw_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "depth_function", PROPERTY_HINT_ENUM, "Less or Equal,Less,Equal,Greater,Not Equal,Greater or Equal,Always,Never"), "set_depth_function", "get_depth_function");
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "no_depth_test"), "set_flag", "get_flag", FLAG_DISABLE_DEPTH_TEST);
 
 	ADD_GROUP("Shading", "");
@@ -3402,6 +3448,15 @@ void BaseMaterial3D::_bind_methods() {
 	BIND_ENUM_CONSTANT(DEPTH_DRAW_OPAQUE_ONLY);
 	BIND_ENUM_CONSTANT(DEPTH_DRAW_ALWAYS);
 	BIND_ENUM_CONSTANT(DEPTH_DRAW_DISABLED);
+
+	BIND_ENUM_CONSTANT(DEPTH_FUNCTION_LESS_OR_EQUAL);
+	BIND_ENUM_CONSTANT(DEPTH_FUNCTION_LESS);
+	BIND_ENUM_CONSTANT(DEPTH_FUNCTION_EQUAL);
+	BIND_ENUM_CONSTANT(DEPTH_FUNCTION_GREATER);
+	BIND_ENUM_CONSTANT(DEPTH_FUNCTION_NOT_EQUAL);
+	BIND_ENUM_CONSTANT(DEPTH_FUNCTION_GREATER_OR_EQUAL);
+	BIND_ENUM_CONSTANT(DEPTH_FUNCTION_ALWAYS);
+	BIND_ENUM_CONSTANT(DEPTH_FUNCTION_NEVER);
 
 	BIND_ENUM_CONSTANT(CULL_BACK);
 	BIND_ENUM_CONSTANT(CULL_FRONT);
