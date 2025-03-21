@@ -71,7 +71,7 @@ Error jpeg_turbo_load_image_from_buffer(Image *p_image, const uint8_t *p_buffer,
 
 	if (tj3Decompress8(tj_instance, p_buffer, p_buffer_len, data.ptrw(), 0, tj_pixel_format) < 0) {
 		tj3Destroy(tj_instance);
-		return ERR_FILE_CORRUPT; // TODO could be out of memory etc...
+		return ERR_FILE_CORRUPT;
 	}
 
 	tj3Destroy(tj_instance);
@@ -107,29 +107,67 @@ static Ref<Image> _jpeg_turbo_mem_loader_func(const uint8_t *p_png, int p_size) 
 	return img;
 }
 
-static Error _jpeg_turbo_save_to_output_stream(/*jpge::output_stream *p_output_stream, */ const Ref<Image> &p_img, float p_quality) {
-	ERR_FAIL_COND_V(p_img.is_null() || p_img->is_empty(), ERR_INVALID_PARAMETER);
+static Vector<uint8_t> _jpeg_turbo_buffer_save_func(const Ref<Image> &p_img, float p_quality) {
+	Vector<uint8_t> output;
+
+	ERR_FAIL_COND_V(p_img.is_null() || p_img->is_empty(), output);
+
 	Ref<Image> image = p_img->duplicate();
 	if (image->is_compressed()) {
 		Error error = image->decompress();
-		ERR_FAIL_COND_V_MSG(error != OK, error, "Couldn't decompress image.");
+		ERR_FAIL_COND_V_MSG(error != OK, output, "Couldn't decompress image.");
 	}
+
 	if (image->get_format() != Image::FORMAT_RGB8) {
+		// TODO allow grayscale L8?
 		image = image->duplicate();
 		image->convert(Image::FORMAT_RGB8);
 	}
 
-	// TODO
+	tjhandle tj_instance = tj3Init(TJINIT_COMPRESS);
+	ERR_FAIL_COND_V_MSG(tj_instance == NULL, output, "Couldn't create tjhandle");
 
-	return FAILED;
-	//return OK;
-}
-
-static Vector<uint8_t> _jpeg_turbo_buffer_save_func(const Ref<Image> &p_img, float p_quality) {
-	Vector<uint8_t> output;
-	if (_jpeg_turbo_save_to_output_stream(/*&ob, */ p_img, p_quality) != OK) {
-		return Vector<uint8_t>();
+	if (tj3Set(tj_instance, TJPARAM_QUALITY, (int)(p_quality * 100)) < 0) {
+		tj3Destroy(tj_instance);
+		ERR_FAIL_V_MSG(output, "Couldn't set jpg quality");
 	}
+
+	if (tj3Set(tj_instance, TJPARAM_PRECISION, 8) < 0) {
+		tj3Destroy(tj_instance);
+		ERR_FAIL_V_MSG(output, "Couldn't set jpg precision");
+	}
+
+	if (tj3Set(tj_instance, TJPARAM_SUBSAMP, TJSAMP_420) < 0) {
+		tj3Destroy(tj_instance);
+		ERR_FAIL_V_MSG(output, "Couldn't set jpg subsamples");
+	}
+
+	// TODO set colorspace?
+
+	unsigned char *jpeg_buff = NULL;
+	size_t jpeg_size = 0;
+	int code = tj3Compress8(
+			tj_instance,
+			image->get_data().ptr(),
+			image->get_width(),
+			0,
+			image->get_height(),
+			TJPF_RGB,
+			&jpeg_buff,
+			&jpeg_size);
+
+	if (code < 0) {
+		tj3Destroy(tj_instance);
+		tj3Free(jpeg_buff);
+		ERR_FAIL_V_MSG(output, "Couldn't compress jpg");
+	}
+
+	output.resize(jpeg_size);
+	memcpy(output.ptrw(), jpeg_buff, jpeg_size);
+
+	tj3Destroy(tj_instance);
+	tj3Free(jpeg_buff);
+
 	return output;
 }
 
@@ -137,7 +175,12 @@ static Error _jpeg_turbo_save_func(const String &p_path, const Ref<Image> &p_img
 	Error err;
 	Ref<FileAccess> file = FileAccess::open(p_path, FileAccess::WRITE, &err);
 	ERR_FAIL_COND_V_MSG(err, err, vformat("Can't save JPG at path: '%s'.", p_path));
-	return _jpeg_turbo_save_to_output_stream(/*&ob, */ p_img, p_quality);
+
+	Vector<uint8_t> data = _jpeg_turbo_buffer_save_func(p_img, p_quality);
+	ERR_FAIL_COND_V(data.size() == 0, FAILED);
+	ERR_FAIL_COND_V_MSG(!file->store_buffer(data.ptr(), data.size()), FAILED, "Failed writing jpg to file");
+
+	return OK;
 }
 
 ImageLoaderLibJPEGTurbo::ImageLoaderLibJPEGTurbo() {
