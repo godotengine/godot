@@ -41,6 +41,11 @@ Size2 SpinBox::get_minimum_size() const {
 }
 
 void SpinBox::_update_text(bool p_only_update_if_value_changed) {
+	if (!line_edit->is_editing() && !format.is_empty()) {
+		line_edit->set_text_with_selection(vformat(format, get_value()));
+		return;
+	}
+
 	double step = get_step();
 	if (use_custom_arrow_step && custom_arrow_step != 0.0) {
 		step = custom_arrow_step;
@@ -483,6 +488,20 @@ HorizontalAlignment SpinBox::get_horizontal_alignment() const {
 	return line_edit->get_horizontal_alignment();
 }
 
+void SpinBox::set_format(const String &p_format) {
+	if (format == p_format) {
+		return;
+	}
+
+	format = p_format;
+	_update_text();
+}
+
+String SpinBox::get_format() const {
+	return format;
+}
+
+#ifndef DISABLE_DEPRECATED
 void SpinBox::set_suffix(const String &p_suffix) {
 	if (suffix == p_suffix) {
 		return;
@@ -508,6 +527,7 @@ void SpinBox::set_prefix(const String &p_prefix) {
 String SpinBox::get_prefix() const {
 	return prefix;
 }
+#endif
 
 void SpinBox::set_update_on_text_changed(bool p_enabled) {
 	if (update_on_text_changed == p_enabled) {
@@ -587,10 +607,14 @@ void SpinBox::_validate_property(PropertyInfo &p_property) const {
 void SpinBox::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_horizontal_alignment", "alignment"), &SpinBox::set_horizontal_alignment);
 	ClassDB::bind_method(D_METHOD("get_horizontal_alignment"), &SpinBox::get_horizontal_alignment);
+	ClassDB::bind_method(D_METHOD("set_format", "format"), &SpinBox::set_format);
+	ClassDB::bind_method(D_METHOD("get_format"), &SpinBox::get_format);
+#ifndef DISABLE_DEPRECATED
 	ClassDB::bind_method(D_METHOD("set_suffix", "suffix"), &SpinBox::set_suffix);
 	ClassDB::bind_method(D_METHOD("get_suffix"), &SpinBox::get_suffix);
 	ClassDB::bind_method(D_METHOD("set_prefix", "prefix"), &SpinBox::set_prefix);
 	ClassDB::bind_method(D_METHOD("get_prefix"), &SpinBox::get_prefix);
+#endif
 	ClassDB::bind_method(D_METHOD("set_editable", "enabled"), &SpinBox::set_editable);
 	ClassDB::bind_method(D_METHOD("set_custom_arrow_step", "arrow_step"), &SpinBox::set_custom_arrow_step);
 	ClassDB::bind_method(D_METHOD("get_custom_arrow_step"), &SpinBox::get_custom_arrow_step);
@@ -605,8 +629,11 @@ void SpinBox::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "alignment", PROPERTY_HINT_ENUM, "Left,Center,Right,Fill"), "set_horizontal_alignment", "get_horizontal_alignment");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "editable"), "set_editable", "is_editable");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "update_on_text_changed"), "set_update_on_text_changed", "get_update_on_text_changed");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "format"), "set_format", "get_format");
+#ifndef DISABLE_DEPRECATED
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "prefix"), "set_prefix", "get_prefix");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "suffix"), "set_suffix", "get_suffix");
+#endif
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "custom_arrow_step", PROPERTY_HINT_RANGE, "0,10000,0.0001,or_greater"), "set_custom_arrow_step", "get_custom_arrow_step");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "select_all_on_focus"), "set_select_all_on_focus", "is_select_all_on_focus");
 
