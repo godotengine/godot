@@ -37,7 +37,8 @@
 
 class CameraMacOS : public CameraServer {
 public:
-	CameraMacOS();
+	CameraMacOS() = default;
 
 	void update_feeds();
+	void set_monitoring_feeds(bool p_monitoring_feeds) override;
 };
