@@ -152,6 +152,10 @@ bool ImageTexture::has_alpha() const {
 	return (format == Image::FORMAT_LA8 || format == Image::FORMAT_RGBA8);
 }
 
+bool ImageTexture::has_mipmaps() const {
+	return mipmaps;
+}
+
 void ImageTexture::draw(RID p_canvas_item, const Point2 &p_pos, const Color &p_modulate, bool p_transpose) const {
 	if ((w | h) == 0) {
 		return;
@@ -227,7 +231,6 @@ void ImageTexture::set_path(const String &p_path, bool p_take_over) {
 
 void ImageTexture::_bind_methods() {
 	ClassDB::bind_static_method("ImageTexture", D_METHOD("create_from_image", "image"), &ImageTexture::create_from_image);
-	ClassDB::bind_method(D_METHOD("get_format"), &ImageTexture::get_format);
 
 	ClassDB::bind_method(D_METHOD("set_image", "image"), &ImageTexture::set_image);
 	ClassDB::bind_method(D_METHOD("update", "image"), &ImageTexture::update);

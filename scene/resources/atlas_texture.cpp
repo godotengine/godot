@@ -68,6 +68,22 @@ bool AtlasTexture::has_alpha() const {
 	return false;
 }
 
+bool AtlasTexture::has_mipmaps() const {
+	if (atlas.is_valid()) {
+		return atlas->has_mipmaps();
+	}
+
+	return false;
+}
+
+Image::Format AtlasTexture::get_format() const {
+	if (atlas.is_valid()) {
+		return atlas->get_format();
+	}
+
+	return Image::FORMAT_MAX;
+}
+
 void AtlasTexture::set_atlas(const Ref<Texture2D> &p_atlas) {
 	ERR_FAIL_COND(p_atlas == this);
 	if (atlas == p_atlas) {

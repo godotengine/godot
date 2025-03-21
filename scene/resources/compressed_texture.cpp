@@ -152,6 +152,7 @@ Error CompressedTexture2D::load(const String &p_path) {
 
 	w = lw;
 	h = lh;
+	mipmaps = image->has_mipmaps();
 	path_to_file = p_path;
 	format = image->get_format();
 
@@ -234,6 +235,10 @@ void CompressedTexture2D::draw_rect_region(RID p_canvas_item, const Rect2 &p_rec
 
 bool CompressedTexture2D::has_alpha() const {
 	return false;
+}
+
+bool CompressedTexture2D::has_mipmaps() const {
+	return mipmaps;
 }
 
 Ref<Image> CompressedTexture2D::get_image() const {
