@@ -595,6 +595,7 @@ class EditorPropertyColor : public EditorProperty {
 	void _picker_created();
 	void _popup_opening();
 	void _popup_closed();
+	void _popup_visibility_changed();
 
 	Color last_color;
 	bool live_changes_enabled = true;
