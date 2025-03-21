@@ -54,6 +54,7 @@ public:
 		FEATURE_OPEN_CLOSE_CALLBACK,
 		FEATURE_HOVER_CALLBACK,
 		FEATURE_KEY_CALLBACK,
+		FEATURE_COPY_CUT_PASTE_CALLBACK,
 	};
 
 	enum SystemMenus {
@@ -63,6 +64,8 @@ public:
 		WINDOW_MENU_ID,
 		HELP_MENU_ID,
 		DOCK_MENU_ID,
+		EDIT_MENU_ID,
+		FILE_MENU_ID,
 	};
 
 	virtual bool has_feature(Feature p_feature) const;
@@ -70,6 +73,10 @@ public:
 	virtual bool has_system_menu(SystemMenus p_menu_id) const;
 	virtual RID get_system_menu(SystemMenus p_menu_id) const;
 	virtual String get_system_menu_name(SystemMenus p_menu_id) const;
+
+	virtual bool get_system_menu_no_default_items(SystemMenus p_menu_id) const;
+	virtual void set_system_menu_name(SystemMenus p_menu_id, const String &p_string);
+	virtual void set_system_menu_hidden(SystemMenus p_menu_id, bool p_hidden);
 
 	virtual RID create_menu();
 	virtual bool has_menu(const RID &p_rid) const;
@@ -143,6 +150,37 @@ public:
 
 	virtual void remove_item(const RID &p_rid, int p_idx);
 	virtual void clear(const RID &p_rid);
+
+	virtual void set_can_copy(bool p_enabled);
+	virtual bool get_can_copy() const;
+	virtual void set_copy_callback(const Callable &p_callback);
+	virtual Callable get_copy_callback() const;
+
+	virtual void set_can_cut(bool p_enabled);
+	virtual bool get_can_cut() const;
+	virtual void set_cut_callback(const Callable &p_callback);
+	virtual Callable get_cut_callback() const;
+
+	virtual void set_can_paste(bool p_enabled);
+	virtual bool get_can_paste() const;
+	virtual void set_paste_callback(const Callable &p_callback);
+	virtual Callable get_paste_callback() const;
+
+	virtual void set_can_undo(bool p_enabled);
+	virtual bool get_can_undo() const;
+	virtual void set_undo_callback(const Callable &p_callback);
+	virtual Callable get_undo_callback() const;
+
+	virtual void set_undo_description(const String &p_description);
+	virtual String get_undo_description() const;
+
+	virtual void set_can_redo(bool p_enabled);
+	virtual bool get_can_redo() const;
+	virtual void set_redo_callback(const Callable &p_callback);
+	virtual Callable get_redo_callback() const;
+
+	virtual void set_redo_description(const String &p_description);
+	virtual String get_redo_description() const;
 
 	NativeMenu() {
 		singleton = this;
