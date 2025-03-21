@@ -559,16 +559,38 @@ Error GDScriptWorkspace::parse_local_script(const String &p_path) {
 }
 
 String GDScriptWorkspace::get_file_path(const String &p_uri) const {
-	String path = p_uri.uri_decode();
-	String base_uri = root_uri.uri_decode();
-	path = path.replacen(base_uri + "/", "res://");
-	return path;
+	int port;
+	String scheme, host, path, fragment;
+	p_uri.parse_url(scheme, host, port, path, fragment);
+
+	// TODO: Make the parsing RFC-3986 compliant.
+	if (scheme != "file" && scheme != "file:" && scheme != "file://") {
+		// The language server does only support the file protocol.
+		return "";
+	}
+
+	// Treat host like authority for now and ignore the port. It's an edge case for invalid file URI's anyway.
+	if (host != "" && host != "localhost") {
+		// The language server does not support nonlocal files.
+		return "";
+	}
+
+	// If query or fragment are present, the URI is not a valid file URI as per RFC-8089.
+	// We currently don't handle the query and it will be part of the path. However,
+	// this should not be a problem for a correct file URI.
+	if (fragment != "") {
+		return "";
+	}
+
+	String local_path = ProjectSettings::get_singleton()->localize_path(path.uri_decode());
+
+	return local_path;
 }
 
 String GDScriptWorkspace::get_file_uri(const String &p_path) const {
 	String uri = p_path;
-	uri = uri.replace("res://", root_uri + "/");
-	return uri;
+
+	return "file:" + ProjectSettings::get_singleton()->globalize_path(p_path).uri_encode();
 }
 
 void GDScriptWorkspace::publish_diagnostics(const String &p_path) {
