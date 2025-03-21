@@ -272,6 +272,13 @@ QuickOpenResultContainer::QuickOpenResultContainer() {
 		include_addons_toggle->connect(SceneStringName(toggled), callable_mp(this, &QuickOpenResultContainer::_toggle_include_addons));
 		bottom_bar->add_child(include_addons_toggle);
 
+		showing_history_toggle = memnew(CheckButton);
+		style_button(showing_history_toggle);
+		showing_history_toggle->set_text(TTR("Showing History"));
+		showing_history_toggle->set_tooltip_text(TTR("Enable Showing History"));
+		showing_history_toggle->connect(SceneStringName(toggled), callable_mp(this, &QuickOpenResultContainer::_toggle_showing_history_toggle));
+		bottom_bar->add_child(showing_history_toggle);
+
 		VSeparator *vsep = memnew(VSeparator);
 		vsep->set_v_size_flags(Control::SIZE_SHRINK_CENTER);
 		vsep->set_custom_minimum_size(Size2i(0, 14 * EDSCALE));
@@ -464,17 +471,19 @@ void QuickOpenResultContainer::update_results() {
 }
 
 void QuickOpenResultContainer::_use_default_candidates() {
-	if (filepaths.size() <= SHOW_ALL_FILES_THRESHOLD) {
+	if (enable_showing_history) {
+		if (base_types.size() == 1) {
+			Vector<QuickOpenResultCandidate> *history = selected_history.lookup_ptr(base_types[0]);
+			if (history) {
+				showing_history = true;
+				candidates.append_array(*history);
+			}
+		}
+	} else {
 		candidates.resize(filepaths.size());
 		QuickOpenResultCandidate *candidates_write = candidates.ptrw();
 		for (const String &filepath : filepaths) {
 			_setup_candidate(*candidates_write++, filepath);
-		}
-	} else if (base_types.size() == 1) {
-		Vector<QuickOpenResultCandidate> *history = selected_history.lookup_ptr(base_types[0]);
-		if (history) {
-			showing_history = true;
-			candidates.append_array(*history);
 		}
 	}
 }
@@ -667,6 +676,11 @@ void QuickOpenResultContainer::_toggle_include_addons(bool p_pressed) {
 	EditorSettings::get_singleton()->set("filesystem/quick_open_dialog/include_addons", p_pressed);
 	cleanup();
 	_create_initial_results();
+}
+
+void QuickOpenResultContainer::_toggle_showing_history_toggle(bool p_pressed) {
+	enable_showing_history = p_pressed;
+	update_results();
 }
 
 void QuickOpenResultContainer::_toggle_display_mode() {
