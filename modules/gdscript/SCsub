@@ -25,5 +25,5 @@ if env.editor_build:
 
 
 if env["tests"]:
+    # GDScriptTestRunner requires some injection in GDScriptLanguage.
     env_gdscript.Append(CPPDEFINES=["TESTS_ENABLED"])
-    env_gdscript.add_source_files(env.modules_sources, "./tests/*.cpp")

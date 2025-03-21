@@ -76,7 +76,17 @@ register_module_types = env.CommandNoCache(
 )
 
 
-test_headers = []
+# Handle module tests .cpp files in a dedicated env.
+if env["tests"]:
+    env_module_tests = env_modules.Clone()
+    env_module_tests.test_headers = []
+    # Copied from tests/SCsub.
+    if env["platform"] == "windows":
+        env_module_tests.Append(CPPDEFINES=[("DOCTEST_THREAD_LOCAL", "")])
+    if env["disable_exceptions"]:
+        env_module_tests.Append(CPPDEFINES=["DOCTEST_CONFIG_NO_EXCEPTIONS_BUT_WITH_ALL_ASSERTS"])
+
+
 # libmodule_<name>.a for each active module.
 for name, path in env.module_list.items():
     env.modules_sources = []
@@ -89,12 +99,16 @@ for name, path in env.module_list.items():
     env.Prepend(LIBS=[lib])
 
     if env["tests"]:
-        # Lookup potential headers in `tests` subfolder.
+        # Lookup potential headers and source files in `tests` subfolder.
         import glob
 
         module_tests = sorted(glob.glob(os.path.join(base_path, "tests", "*.h")))
+        module_tests_cpp = sorted(glob.glob(os.path.join(base_path, "tests", "*.cpp")))
         if module_tests != []:
-            test_headers += module_tests
+            env_module_tests.test_headers += module_tests
+        if module_tests_cpp != []:
+            lib = env_module_tests.add_library("module_%s_tests" % name, module_tests_cpp)
+            env.Prepend(LIBS=[lib])
 
 
 # Generate header to be included in `tests/test_main.cpp` to run module-specific tests.
@@ -106,7 +120,7 @@ if env["tests"]:
             for header in headers:
                 file.write(f'#include "{header}"\n')
 
-    env.CommandNoCache("modules_tests.gen.h", test_headers, env.Run(modules_tests_builder))
+    env.CommandNoCache("modules_tests.gen.h", env_module_tests.test_headers, env.Run(modules_tests_builder))
 
 # libmodules.a with only register_module_types.
 # Must be last so that all libmodule_<name>.a libraries are on the right side

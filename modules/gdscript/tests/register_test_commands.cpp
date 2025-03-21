@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  register_types.cpp                                                    */
+/*  register_test_commands.cpp                                            */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,62 +28,32 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "register_types.h"
+#include "test_gdscript.h"
 
-#include "crypto_mbedtls.h"
-#include "dtls_server_mbedtls.h"
-#include "packet_peer_mbed_dtls.h"
-#include "stream_peer_mbedtls.h"
+#include "tests/test_macros.h"
 
-#include "core/config/project_settings.h"
-
-#if MBEDTLS_VERSION_MAJOR >= 3
-#include <psa/crypto.h>
-#endif
-
-static bool godot_mbedtls_initialized = false;
-
-void initialize_mbedtls_module(ModuleInitializationLevel p_level) {
-	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
-		return;
-	}
-
-	GLOBAL_DEF("network/tls/enable_tls_v1.3", true);
-
-#if MBEDTLS_VERSION_MAJOR >= 3
-	int status = psa_crypto_init();
-	ERR_FAIL_COND_MSG(status != PSA_SUCCESS, "Failed to initialize psa crypto. The mbedTLS modules will not work.");
-#endif
-
-#ifdef DEBUG_ENABLED
-	if (OS::get_singleton()->is_stdout_verbose()) {
-		mbedtls_debug_set_threshold(1);
-	}
-#endif
-
-	godot_mbedtls_initialized = true;
-
-	CryptoMbedTLS::initialize_crypto();
-	StreamPeerMbedTLS::initialize_tls();
-	PacketPeerMbedDTLS::initialize_dtls();
-	DTLSServerMbedTLS::initialize();
+void test_tokenizer() {
+	GDScriptTests::test(GDScriptTests::TestType::TEST_TOKENIZER);
 }
 
-void uninitialize_mbedtls_module(ModuleInitializationLevel p_level) {
-	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
-		return;
-	}
-
-	if (!godot_mbedtls_initialized) {
-		return;
-	}
-
-#if MBEDTLS_VERSION_MAJOR >= 3
-	mbedtls_psa_crypto_free();
-#endif
-
-	DTLSServerMbedTLS::finalize();
-	PacketPeerMbedDTLS::finalize_dtls();
-	StreamPeerMbedTLS::finalize_tls();
-	CryptoMbedTLS::finalize_crypto();
+void test_tokenizer_buffer() {
+	GDScriptTests::test(GDScriptTests::TestType::TEST_TOKENIZER_BUFFER);
 }
+
+void test_parser() {
+	GDScriptTests::test(GDScriptTests::TestType::TEST_PARSER);
+}
+
+void test_compiler() {
+	GDScriptTests::test(GDScriptTests::TestType::TEST_COMPILER);
+}
+
+void test_bytecode() {
+	GDScriptTests::test(GDScriptTests::TestType::TEST_BYTECODE);
+}
+
+REGISTER_TEST_COMMAND("gdscript-tokenizer", &test_tokenizer);
+REGISTER_TEST_COMMAND("gdscript-tokenizer-buffer", &test_tokenizer_buffer);
+REGISTER_TEST_COMMAND("gdscript-parser", &test_parser);
+REGISTER_TEST_COMMAND("gdscript-compiler", &test_compiler);
+REGISTER_TEST_COMMAND("gdscript-bytecode", &test_bytecode);
