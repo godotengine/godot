@@ -2134,6 +2134,14 @@ bool ClassDB::is_class_exposed(const StringName &p_class) {
 	return ti->exposed;
 }
 
+bool ClassDB::is_class_hidden(const StringName &p_class) {
+	OBJTYPE_RLOCK;
+
+	ClassInfo *ti = classes.getptr(p_class);
+	ERR_FAIL_NULL_V_MSG(ti, false, "Cannot get class '" + String(p_class) + "'.");
+	return ti->hidden;
+}
+
 bool ClassDB::is_class_reloadable(const StringName &p_class) {
 	OBJTYPE_RLOCK;
 
