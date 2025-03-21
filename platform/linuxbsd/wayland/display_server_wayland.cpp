@@ -1208,6 +1208,10 @@ void DisplayServerWayland::try_suspend() {
 }
 
 void DisplayServerWayland::process_events() {
+	if (rendering_device) {
+		rendering_device->pre_input_hook(Engine::get_singleton()->get_max_fps());
+	}
+
 	wayland_thread.mutex.lock();
 
 	while (wayland_thread.has_message()) {

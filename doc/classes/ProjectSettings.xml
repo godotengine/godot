@@ -2978,6 +2978,12 @@
 		<member name="rendering/rendering_device/d3d12/agility_sdk_version" type="int" setter="" getter="" default="613">
 			Version code of the [url=https://devblogs.microsoft.com/directx/directx12agility/]Direct3D 12 Agility SDK[/url] to use ([code]D3D12SDKVersion[/code]). This must match the [i]minor[/i] version that is installed next to the editor binary and in the export templates directory for the current editor version. For example, if you have [code]1.613.3[/code] installed, you need to input [code]613[/code] here.
 		</member>
+		<member name="rendering/rendering_device/d3d12/amd_antilag2_enabled" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], enables [url=https://www.amd.com/en/products/software/adrenalin/radeon-software-anti-lag.html]AMD Anti-Lag 2[/url]. This allows reducing input lag by avoiding the queuing of rendered frames when possible. Compared to driver-level solutions like AMD Anti-Lag, this can further reduce input lag by being integrated in the engine. More information can be found in the [url=https://community.amd.com/t5/gaming/amd-radeon-anti-lag-2-technical-preview-now-available-in-counter/ba-p/686012]technical preview article[/url].
+			[b]Note:[/b] The reduced frame queuing can result in lower peak framerates and increased stuttering in GPU-bound scenarios, so it is recommended to also cap the game to a framerate you can steadily reach on your system in any situation using [member Engine.max_fps]. Capping the framerate also allows the input lag to be as consistent as possible (regardless of whether this setting is enabled).
+			[b]Note:[/b] Only effective on Windows when [member rendering/rendering_device/driver] is set to [code]d3d12[/code]. AMD Anti-Lag 2 is not available for Vulkan or OpenGL.
+			[b]Note:[/b] Only effective on AMD GPUs based on the RDNA architecture or later. This includes the Radeon RX 5000 series and AMD Ryzen 6000 series CPUs with Radeon graphics (or later). Certain Ryzen 7000 series CPUs are not supported as they feature AMD GCN architecture-based graphics.
+		</member>
 		<member name="rendering/rendering_device/d3d12/max_misc_descriptors_per_frame" type="int" setter="" getter="" default="512">
 			The number of entries in the miscellaneous descriptors heap the Direct3D 12 rendering driver uses each frame, used for various operations like clearing a texture.
 			Depending on the complexity of scenes, this value may be lowered or may need to be raised.
