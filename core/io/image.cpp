@@ -31,7 +31,6 @@
 #include "image.h"
 
 #include "core/config/project_settings.h"
-#include "core/error/error_list.h"
 #include "core/error/error_macros.h"
 #include "core/io/image_loader.h"
 #include "core/io/resource_loader.h"

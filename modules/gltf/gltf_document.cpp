@@ -79,7 +79,6 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <cstdint>
 
 constexpr int COMPONENT_COUNT_FOR_ACCESSOR_TYPE[7] = {
 	1, 2, 3, 4, 4, 9, 16
