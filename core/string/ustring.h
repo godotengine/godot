@@ -511,7 +511,7 @@ public:
 		return string;
 	}
 
-	CharString utf8() const;
+	CharString utf8(Vector<uint8_t> *r_ch_length_map = nullptr) const;
 	Error parse_utf8(const char *p_utf8, int p_len = -1, bool p_skip_cr = false);
 	Error parse_utf8(const Span<char> &p_range, bool p_skip_cr = false) {
 		return parse_utf8(p_range.ptr(), p_range.size(), p_skip_cr);
