@@ -8,6 +8,7 @@
 #include <Jolt/Physics/Collision/ObjectLayer.h>
 #include <Jolt/Physics/Collision/TransformedShape.h>
 #include <Jolt/Physics/EActivation.h>
+#include <Jolt/Physics/Body/AllowedDOFs.h>
 
 JPH_NAMESPACE_BEGIN
 
@@ -28,6 +29,9 @@ public:
 
 	/// Value to multiply gravity with for this character
 	float								mGravityFactor = 1.0f;
+
+	/// Allowed degrees of freedom for this character
+	EAllowedDOFs						mAllowedDOFs = EAllowedDOFs::TranslationX | EAllowedDOFs::TranslationY | EAllowedDOFs::TranslationZ;
 };
 
 /// Runtime character object.

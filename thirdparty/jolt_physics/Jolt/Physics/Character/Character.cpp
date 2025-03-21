@@ -34,7 +34,7 @@ Character::Character(const CharacterSettings *inSettings, RVec3Arg inPosition, Q
 {
 	// Construct rigid body
 	BodyCreationSettings settings(mShape, inPosition, inRotation, EMotionType::Dynamic, mLayer);
-	settings.mAllowedDOFs = EAllowedDOFs::TranslationX | EAllowedDOFs::TranslationY | EAllowedDOFs::TranslationZ;
+	settings.mAllowedDOFs = inSettings->mAllowedDOFs;
 	settings.mEnhancedInternalEdgeRemoval = inSettings->mEnhancedInternalEdgeRemoval;
 	settings.mOverrideMassProperties = EOverrideMassProperties::MassAndInertiaProvided;
 	settings.mMassPropertiesOverride.mMass = inSettings->mMass;
@@ -75,8 +75,18 @@ void Character::CheckCollision(RMat44Arg inCenterOfMassTransform, Vec3Arg inMove
 	// Create query object layer filter
 	DefaultObjectLayerFilter object_layer_filter = mSystem->GetDefaultLayerFilter(mLayer);
 
-	// Ignore my own body
-	IgnoreSingleBodyFilter body_filter(mBodyID);
+	// Ignore sensors and my own body
+	class CharacterBodyFilter : public IgnoreSingleBodyFilter
+	{
+	public:
+		using			IgnoreSingleBodyFilter::IgnoreSingleBodyFilter;
+
+		virtual bool	ShouldCollideLocked(const Body &inBody) const override
+		{
+			return !inBody.IsSensor();
+		}
+	};
+	CharacterBodyFilter body_filter(mBodyID);
 
 	// Settings for collide shape
 	CollideShapeSettings settings;
@@ -85,7 +95,7 @@ void Character::CheckCollision(RMat44Arg inCenterOfMassTransform, Vec3Arg inMove
 	settings.mActiveEdgeMovementDirection = inMovementDirection;
 	settings.mBackFaceMode = EBackFaceMode::IgnoreBackFaces;
 
-	sGetNarrowPhaseQuery(mSystem, inLockBodies).CollideShape(inShape, Vec3::sReplicate(1.0f), inCenterOfMassTransform, settings, inBaseOffset, ioCollector, broadphase_layer_filter, object_layer_filter, body_filter);
+	sGetNarrowPhaseQuery(mSystem, inLockBodies).CollideShape(inShape, Vec3::sOne(), inCenterOfMassTransform, settings, inBaseOffset, ioCollector, broadphase_layer_filter, object_layer_filter, body_filter);
 }
 
 void Character::CheckCollision(RVec3Arg inPosition, QuatArg inRotation, Vec3Arg inMovementDirection, float inMaxSeparationDistance, const Shape *inShape, RVec3Arg inBaseOffset, CollideShapeCollector &ioCollector, bool inLockBodies) const
