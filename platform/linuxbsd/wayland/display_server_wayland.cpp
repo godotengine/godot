@@ -39,6 +39,8 @@
 #define DEBUG_LOG_WAYLAND(...)
 #endif
 
+#include "servers/rendering/dummy/rasterizer_dummy.h"
+
 #ifdef VULKAN_ENABLED
 #include "servers/rendering/renderer_rd/renderer_compositor_rd.h"
 #endif
@@ -48,6 +50,10 @@
 #include "drivers/gles3/rasterizer_gles3.h"
 #include "wayland/egl_manager_wayland.h"
 #include "wayland/egl_manager_wayland_gles.h"
+#endif
+
+#ifdef ACCESSKIT_ENABLED
+#include "drivers/accesskit/accessibility_driver_accesskit.h"
 #endif
 
 #define WAYLAND_MAX_FRAME_TIME_US (1'000'000)
@@ -198,6 +204,12 @@ bool DisplayServerWayland::has_feature(Feature p_feature) const {
 #ifdef SPEECHD_ENABLED
 		case FEATURE_TEXT_TO_SPEECH: {
 			return true;
+		} break;
+#endif
+
+#ifdef ACCESSKIT_ENABLED
+		case FEATURE_ACCESSIBILITY_SCREEN_READER: {
+			return (accessibility_driver != nullptr);
 		} break;
 #endif
 
@@ -689,6 +701,16 @@ DisplayServer::WindowID DisplayServerWayland::create_sub_window(WindowMode p_mod
 	wd.flags = p_flags;
 	wd.vsync_mode = p_vsync_mode;
 
+#ifdef ACCESSKIT_ENABLED
+	if (accessibility_driver && !accessibility_driver->window_create(wd.id, nullptr)) {
+		if (OS::get_singleton()->is_stdout_verbose()) {
+			ERR_PRINT("Can't create an accessibility adapter for window, accessibility support disabled!");
+		}
+		memdelete(accessibility_driver);
+		accessibility_driver = nullptr;
+	}
+#endif
+
 	// NOTE: Remember to clear its position if this window will be a toplevel. We
 	// can only know once we show it.
 	wd.rect = p_rect;
@@ -839,6 +861,12 @@ void DisplayServerWayland::delete_sub_window(WindowID p_window_id) {
 	if (popup_menu_list.back() && popup_menu_list.back()->get() == p_window_id) {
 		popup_menu_list.pop_back();
 	}
+
+#ifdef ACCESSKIT_ENABLED
+	if (accessibility_driver) {
+		accessibility_driver->window_destroy(p_window_id);
+	}
+#endif
 
 	if (wd.visible) {
 #ifdef VULKAN_ENABLED
@@ -1284,6 +1312,22 @@ void DisplayServerWayland::window_set_ime_position(const Point2i &p_pos, Display
 	wayland_thread.window_set_ime_position(p_pos, p_window_id);
 }
 
+int DisplayServerWayland::accessibility_should_increase_contrast() const {
+#ifdef DBUS_ENABLED
+	return portal_desktop->get_high_contrast();
+#endif
+	return -1;
+}
+
+int DisplayServerWayland::accessibility_screen_reader_active() const {
+#ifdef DBUS_ENABLED
+	if (atspi_monitor->is_supported()) {
+		return atspi_monitor->is_active();
+	}
+#endif
+	return -1;
+}
+
 Point2i DisplayServerWayland::ime_get_selection() const {
 	return ime_selection;
 }
@@ -1557,14 +1601,24 @@ void DisplayServerWayland::process_events() {
 		}
 
 		Ref<WaylandThread::WindowEventMessage> winev_msg = msg;
-		if (winev_msg.is_valid()) {
+		if (winev_msg.is_valid() && windows.has(winev_msg->id)) {
 			_send_window_event(winev_msg->event, winev_msg->id);
 
 			if (winev_msg->event == WINDOW_EVENT_FOCUS_IN) {
+#ifdef ACCESSKIT_ENABLED
+				if (accessibility_driver) {
+					accessibility_driver->accessibility_set_window_focused(winev_msg->id, true);
+				}
+#endif
 				if (OS::get_singleton()->get_main_loop()) {
 					OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_APPLICATION_FOCUS_IN);
 				}
 			} else if (winev_msg->event == WINDOW_EVENT_FOCUS_OUT) {
+#ifdef ACCESSKIT_ENABLED
+				if (accessibility_driver) {
+					accessibility_driver->accessibility_set_window_focused(winev_msg->id, false);
+				}
+#endif
 				if (OS::get_singleton()->get_main_loop()) {
 					OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_APPLICATION_FOCUS_OUT);
 				}
@@ -1775,6 +1829,7 @@ Vector<String> DisplayServerWayland::get_rendering_drivers_func() {
 	drivers.push_back("opengl3");
 	drivers.push_back("opengl3_es");
 #endif
+	drivers.push_back("dummy");
 
 	return drivers;
 }
@@ -1828,10 +1883,25 @@ DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, Win
 	}
 #endif
 
+#ifdef ACCESSKIT_ENABLED
+	if (accessibility_get_mode() != DisplayServer::AccessibilityMode::ACCESSIBILITY_DISABLED) {
+		accessibility_driver = memnew(AccessibilityDriverAccessKit);
+		if (accessibility_driver->init() != OK) {
+			memdelete(accessibility_driver);
+			accessibility_driver = nullptr;
+		}
+	}
+#endif
+
 	rendering_driver = p_rendering_driver;
 
 	bool driver_found = false;
 	String executable_name = OS::get_singleton()->get_executable_path().get_file();
+
+	if (rendering_driver == "dummy") {
+		RasterizerDummy::make_current();
+		driver_found = true;
+	}
 
 #ifdef RD_ENABLED
 #ifdef VULKAN_ENABLED
@@ -2021,6 +2091,7 @@ DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, Win
 
 #ifdef DBUS_ENABLED
 	portal_desktop = memnew(FreeDesktopPortalDesktop);
+	atspi_monitor = memnew(FreeDesktopAtSPIMonitor);
 	screensaver = memnew(FreeDesktopScreenSaver);
 #endif // DBUS_ENABLED
 
@@ -2045,12 +2116,17 @@ DisplayServerWayland::~DisplayServerWayland() {
 
 		if (!window_get_flag(WINDOW_FLAG_POPUP_WM_HINT, id)) {
 			toplevels.push_back(id);
+#ifdef ACCESSKIT_ENABLED
+		} else if (accessibility_driver) {
+			accessibility_driver->window_destroy(id);
+#endif
 		}
 	}
 
 	for (WindowID &id : toplevels) {
 		delete_sub_window(id);
 	}
+	windows.clear();
 
 	wayland_thread.destroy();
 
@@ -2071,9 +2147,16 @@ DisplayServerWayland::~DisplayServerWayland() {
 	}
 #endif
 
+#ifdef ACCESSKIT_ENABLED
+	if (accessibility_driver) {
+		memdelete(accessibility_driver);
+	}
+#endif
+
 #ifdef DBUS_ENABLED
 	if (portal_desktop) {
 		memdelete(portal_desktop);
+		memdelete(atspi_monitor);
 		memdelete(screensaver);
 	}
 #endif
