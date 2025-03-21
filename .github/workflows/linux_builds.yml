@@ -115,6 +115,12 @@ jobs:
         run: |
           sudo apt-get install libwayland-bin
 
+      - name: Free disk space on runner
+        run: |
+          echo "Disk usage before:" && df -h
+          sudo rm -rf /usr/local/lib/android
+          echo "Disk usage after:" && df -h
+
       - name: Restore Godot build cache
         uses: ./.github/actions/godot-cache-restore
         with:

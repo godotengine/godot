@@ -136,6 +136,7 @@ EditorAssetLibraryItem::EditorAssetLibraryItem(bool p_clickable) {
 	add_child(hb);
 
 	icon = memnew(TextureButton);
+	icon->set_accessibility_name(TTRC("Open asset details"));
 	icon->set_custom_minimum_size(Size2(64, 64) * EDSCALE);
 	hb->add_child(icon);
 
@@ -145,11 +146,13 @@ EditorAssetLibraryItem::EditorAssetLibraryItem(bool p_clickable) {
 	vb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 
 	title = memnew(LinkButton);
+	title->set_accessibility_name(TTRC("Title"));
 	title->set_auto_translate_mode(AutoTranslateMode::AUTO_TRANSLATE_MODE_DISABLED);
 	title->set_underline_mode(LinkButton::UNDERLINE_MODE_ON_HOVER);
 	vb->add_child(title);
 
 	category = memnew(LinkButton);
+	category->set_accessibility_name(TTRC("Category"));
 	category->set_underline_mode(LinkButton::UNDERLINE_MODE_ON_HOVER);
 	vb->add_child(category);
 
@@ -159,6 +162,7 @@ EditorAssetLibraryItem::EditorAssetLibraryItem(bool p_clickable) {
 
 	author = memnew(LinkButton);
 	author->set_tooltip_text(TTR("Author"));
+	author->set_accessibility_name(TTRC("Author"));
 	author_price_hbox->add_child(author);
 
 	author_price_hbox->add_child(memnew(HSeparator));
@@ -184,6 +188,7 @@ EditorAssetLibraryItem::EditorAssetLibraryItem(bool p_clickable) {
 	price = memnew(Label);
 	price->add_theme_style_override(CoreStringName(normal), label_margin);
 	price->set_tooltip_text(TTR("License"));
+	price->set_accessibility_name(TTRC("License"));
 	price->set_mouse_filter(MOUSE_FILTER_PASS);
 
 	author_price_hbox->add_child(price);
@@ -579,6 +584,7 @@ EditorAssetLibraryItemDownload::EditorAssetLibraryItemDownload() {
 
 	dismiss_button = memnew(TextureButton);
 	dismiss_button->connect(SceneStringName(pressed), callable_mp(this, &EditorAssetLibraryItemDownload::_close));
+	dismiss_button->set_accessibility_name(TTRC("Close"));
 	title_hb->add_child(dismiss_button);
 
 	title->set_clip_text(true);

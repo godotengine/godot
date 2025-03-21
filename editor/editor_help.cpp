@@ -3358,6 +3358,7 @@ EditorHelp::EditorHelp() {
 	status_bar->set_custom_minimum_size(Size2(0, 24 * EDSCALE));
 
 	toggle_scripts_button = memnew(Button);
+	toggle_scripts_button->set_accessibility_name(TTRC("Scripts"));
 	toggle_scripts_button->set_flat(true);
 	toggle_scripts_button->connect(SceneStringName(pressed), callable_mp(this, &EditorHelp::_toggle_scripts_pressed));
 	status_bar->add_child(toggle_scripts_button);
@@ -4744,6 +4745,7 @@ EditorHelpHighlighter::~EditorHelpHighlighter() {
 
 FindBar::FindBar() {
 	search_text = memnew(LineEdit);
+	search_text->set_accessibility_name(TTRC("Search help"));
 	add_child(search_text);
 	search_text->set_keep_editing_on_text_submit(true);
 	search_text->set_custom_minimum_size(Size2(100 * EDSCALE, 0));
@@ -4756,12 +4758,14 @@ FindBar::FindBar() {
 	matches_label->hide();
 
 	find_prev = memnew(Button);
+	find_prev->set_accessibility_name(TTRC("Find Previous"));
 	find_prev->set_flat(true);
 	add_child(find_prev);
 	find_prev->set_focus_mode(FOCUS_NONE);
 	find_prev->connect(SceneStringName(pressed), callable_mp(this, &FindBar::search_prev));
 
 	find_next = memnew(Button);
+	find_next->set_accessibility_name(TTRC("Find Next"));
 	find_next->set_flat(true);
 	add_child(find_next);
 	find_next->set_focus_mode(FOCUS_NONE);
@@ -4773,6 +4777,7 @@ FindBar::FindBar() {
 
 	hide_button = memnew(TextureButton);
 	add_child(hide_button);
+	hide_button->set_accessibility_name(TTRC("Hide"));
 	hide_button->set_focus_mode(FOCUS_NONE);
 	hide_button->set_ignore_texture_size(true);
 	hide_button->set_stretch_mode(TextureButton::STRETCH_KEEP_CENTERED);

@@ -341,6 +341,7 @@ AudioStreamInteractiveTransitionEditor::AudioStreamInteractiveTransitionEditor()
 
 	transition_enabled = memnew(CheckBox);
 	transition_enabled->set_text(TTR("Enabled"));
+	transition_enabled->set_accessibility_name(TTRC("Use Transition"));
 	edit_vb->add_margin_child(TTR("Use Transition:"), transition_enabled);
 	transition_enabled->connect(SceneStringName(pressed), callable_mp(this, &AudioStreamInteractiveTransitionEditor::_edited));
 
@@ -350,6 +351,7 @@ AudioStreamInteractiveTransitionEditor::AudioStreamInteractiveTransitionEditor()
 	transition_from->add_item(TTR("Next Beat"), AudioStreamInteractive::TRANSITION_FROM_TIME_NEXT_BEAT);
 	transition_from->add_item(TTR("Next Bar"), AudioStreamInteractive::TRANSITION_FROM_TIME_NEXT_BAR);
 	transition_from->add_item(TTR("Clip End"), AudioStreamInteractive::TRANSITION_FROM_TIME_END);
+	transition_from->set_accessibility_name(TTRC("Transition From"));
 
 	transition_from->connect(SceneStringName(item_selected), callable_mp(this, &AudioStreamInteractiveTransitionEditor::_edited).unbind(1));
 
@@ -358,25 +360,30 @@ AudioStreamInteractiveTransitionEditor::AudioStreamInteractiveTransitionEditor()
 	transition_to->add_item(TTR("Same Position"), AudioStreamInteractive::TRANSITION_TO_TIME_SAME_POSITION);
 	transition_to->add_item(TTR("Clip Start"), AudioStreamInteractive::TRANSITION_TO_TIME_START);
 	transition_to->add_item(TTR("Prev Position"), AudioStreamInteractive::TRANSITION_TO_TIME_PREVIOUS_POSITION);
+	transition_to->set_accessibility_name(TTRC("Transition To"));
 	transition_to->connect(SceneStringName(item_selected), callable_mp(this, &AudioStreamInteractiveTransitionEditor::_edited).unbind(1));
 
 	fade_mode = memnew(OptionButton);
 	edit_vb->add_margin_child(TTR("Fade Mode:"), fade_mode);
 	fade_mode->connect(SceneStringName(item_selected), callable_mp(this, &AudioStreamInteractiveTransitionEditor::_edited).unbind(1));
+	fade_mode->set_accessibility_name(TTRC("Fade Mode"));
 
 	fade_beats = memnew(SpinBox);
 	edit_vb->add_margin_child(TTR("Fade Beats:"), fade_beats);
 	fade_beats->set_max(16);
 	fade_beats->set_step(0.1);
 	fade_beats->connect(SceneStringName(value_changed), callable_mp(this, &AudioStreamInteractiveTransitionEditor::_edited).unbind(1));
+	fade_beats->set_accessibility_name(TTRC("Fade Beats"));
 
 	filler_clip = memnew(OptionButton);
 	edit_vb->add_margin_child(TTR("Filler Clip:"), filler_clip);
 	filler_clip->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	filler_clip->connect(SceneStringName(item_selected), callable_mp(this, &AudioStreamInteractiveTransitionEditor::_edited).unbind(1));
+	filler_clip->set_accessibility_name(TTRC("Filler Clip"));
 
 	hold_previous = memnew(CheckBox);
 	hold_previous->set_text(TTR("Enabled"));
+	hold_previous->set_accessibility_name(TTRC("Hold Previous"));
 	hold_previous->connect(SceneStringName(pressed), callable_mp(this, &AudioStreamInteractiveTransitionEditor::_edited));
 	edit_vb->add_margin_child(TTR("Hold Previous:"), hold_previous);
 

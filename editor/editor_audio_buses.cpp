@@ -130,6 +130,14 @@ void EditorAudioBus::_notification(int p_what) {
 			set_process(true);
 		} break;
 
+		case NOTIFICATION_ACCESSIBILITY_UPDATE: {
+			RID ae = get_accessibility_element();
+			ERR_FAIL_COND(ae.is_null());
+
+			DisplayServer::get_singleton()->accessibility_update_set_role(ae, DisplayServer::AccessibilityRole::ROLE_STATIC_TEXT);
+			DisplayServer::get_singleton()->accessibility_update_set_value(ae, TTR(vformat("The %s is not accessible at this time.", "Audio bus editor")));
+		} break;
+
 		case NOTIFICATION_DRAW: {
 			if (is_master) {
 				draw_style_box(get_theme_stylebox(SNAME("disabled"), SNAME("Button")), Rect2(Vector2(), get_size()));
@@ -583,6 +591,15 @@ void EditorAudioBus::gui_input(const Ref<InputEvent> &p_event) {
 		bus_popup->reset_size();
 		bus_popup->popup();
 	}
+
+	Ref<InputEventKey> k = p_event;
+	if (k.is_valid() && k->is_pressed() && k->is_action("ui_menu", true)) {
+		bus_popup->set_position(get_screen_position());
+		bus_popup->reset_size();
+		bus_popup->popup();
+
+		accept_event();
+	}
 }
 
 void EditorAudioBus::_effects_gui_input(Ref<InputEvent> p_event) {
@@ -619,7 +636,7 @@ Variant EditorAudioBus::get_drag_data(const Point2 &p_point) {
 	p->set_modulate(Color(1, 1, 1, 0.7));
 	p->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SNAME("focus"), SNAME("Button")));
 	p->set_size(get_size());
-	p->set_position(-p_point);
+	p->set_position((p_point == Vector2(INFINITY, INFINITY)) ? Vector2() : -p_point);
 	set_drag_preview(c);
 	Dictionary d;
 	d["type"] = "move_audio_bus";
@@ -652,7 +669,7 @@ void EditorAudioBus::drop_data(const Point2 &p_point, const Variant &p_data) {
 }
 
 Variant EditorAudioBus::get_drag_data_fw(const Point2 &p_point, Control *p_from) {
-	TreeItem *item = effects->get_item_at_position(p_point);
+	TreeItem *item = (p_point == Vector2(INFINITY, INFINITY)) ? effects->get_selected() : effects->get_item_at_position(p_point);
 	if (!item) {
 		return Variant();
 	}
@@ -681,7 +698,7 @@ bool EditorAudioBus::can_drop_data_fw(const Point2 &p_point, const Variant &p_da
 		return false;
 	}
 
-	TreeItem *item = effects->get_item_at_position(p_point);
+	TreeItem *item = (p_point == Vector2(INFINITY, INFINITY)) ? effects->get_selected() : effects->get_item_at_position(p_point);
 	if (!item) {
 		return false;
 	}
@@ -694,11 +711,11 @@ bool EditorAudioBus::can_drop_data_fw(const Point2 &p_point, const Variant &p_da
 void EditorAudioBus::drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) {
 	Dictionary d = p_data;
 
-	TreeItem *item = effects->get_item_at_position(p_point);
+	TreeItem *item = (p_point == Vector2(INFINITY, INFINITY)) ? effects->get_selected() : effects->get_item_at_position(p_point);
 	if (!item) {
 		return;
 	}
-	int pos = effects->get_drop_section_at_position(p_point);
+	int pos = (p_point == Vector2(INFINITY, INFINITY)) ? effects->get_drop_section_at_position(effects->get_item_rect(item).position) : effects->get_drop_section_at_position(p_point);
 	Variant md = item->get_metadata(0);
 
 	int paste_at;
@@ -815,6 +832,7 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
 	set_v_size_flags(SIZE_EXPAND_FILL);
 
 	track_name = memnew(LineEdit);
+	track_name->set_accessibility_name(TTRC("Track Name"));
 	track_name->connect(SceneStringName(text_submitted), callable_mp(this, &EditorAudioBus::_name_changed));
 	track_name->connect(SceneStringName(focus_exited), callable_mp(this, &EditorAudioBus::_name_focus_exit));
 	vb->add_child(track_name);
@@ -825,6 +843,7 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
 	solo->set_theme_type_variation(SceneStringName(FlatButton));
 	solo->set_toggle_mode(true);
 	solo->set_tooltip_text(TTR("Solo"));
+	solo->set_accessibility_name(TTRC("Solo"));
 	solo->set_focus_mode(FOCUS_NONE);
 	solo->connect(SceneStringName(pressed), callable_mp(this, &EditorAudioBus::_solo_toggled));
 	hbc->add_child(solo);
@@ -832,6 +851,7 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
 	mute->set_theme_type_variation(SceneStringName(FlatButton));
 	mute->set_toggle_mode(true);
 	mute->set_tooltip_text(TTR("Mute"));
+	mute->set_accessibility_name(TTRC("Mute"));
 	mute->set_focus_mode(FOCUS_NONE);
 	mute->connect(SceneStringName(pressed), callable_mp(this, &EditorAudioBus::_mute_toggled));
 	hbc->add_child(mute);
@@ -839,6 +859,7 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
 	bypass->set_theme_type_variation(SceneStringName(FlatButton));
 	bypass->set_toggle_mode(true);
 	bypass->set_tooltip_text(TTR("Bypass"));
+	bypass->set_accessibility_name(TTRC("Bypass"));
 	bypass->set_focus_mode(FOCUS_NONE);
 	bypass->connect(SceneStringName(pressed), callable_mp(this, &EditorAudioBus::_bypass_toggled));
 	hbc->add_child(bypass);
@@ -886,6 +907,7 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
 	slider->set_max(1.0);
 	slider->set_step(0.0001);
 	slider->set_clip_contents(false);
+	slider->set_accessibility_name(TTRC("Volume"));
 
 	audio_value_preview_box = memnew(Panel);
 	slider->add_child(audio_value_preview_box);
@@ -922,6 +944,7 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
 		channel[i].vu_l->set_min(-80);
 		channel[i].vu_l->set_max(24);
 		channel[i].vu_l->set_step(0.1);
+		channel[i].vu_l->set_accessibility_name(vformat(TTR("Channel %d, Left VU"), i));
 
 		channel[i].vu_r = memnew(TextureProgressBar);
 		channel[i].vu_r->set_fill_mode(TextureProgressBar::FILL_BOTTOM_TO_TOP);
@@ -929,6 +952,7 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
 		channel[i].vu_r->set_min(-80);
 		channel[i].vu_r->set_max(24);
 		channel[i].vu_r->set_step(0.1);
+		channel[i].vu_r->set_accessibility_name(vformat(TTR("Channel %d, Right VU"), i));
 
 		channel[i].peak_l = 0.0f;
 		channel[i].peak_r = 0.0f;
@@ -944,6 +968,7 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
 	hb->add_child(scale);
 
 	effects = memnew(Tree);
+	effects->set_accessibility_name(TTRC("Effects"));
 	effects->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	effects->set_hide_root(true);
 	effects->set_custom_minimum_size(Size2(0, 80) * EDSCALE);
@@ -963,6 +988,7 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
 	effects->connect(SceneStringName(gui_input), callable_mp(this, &EditorAudioBus::_effects_gui_input));
 
 	send = memnew(OptionButton);
+	send->set_accessibility_name(TTRC("Send"));
 	send->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	send->set_clip_text(true);
 	send->connect(SceneStringName(item_selected), callable_mp(this, &EditorAudioBus::_send_selected));
@@ -992,6 +1018,7 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
 	bus_options->set_h_size_flags(SIZE_SHRINK_END);
 	bus_options->set_anchor(SIDE_RIGHT, 0.0);
 	bus_options->set_tooltip_text(TTR("Bus Options"));
+	bus_options->set_accessibility_name(TTRC("Bus Options"));
 	hbc->add_child(bus_options);
 
 	bus_popup = bus_options->get_popup();

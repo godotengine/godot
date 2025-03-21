@@ -874,6 +874,7 @@ ScriptCreateDialog::ScriptCreateDialog() {
 	language_menu->set_custom_minimum_size(Size2(350, 0) * EDSCALE);
 	language_menu->set_expand_icon(true);
 	language_menu->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	language_menu->set_accessibility_name(TTRC("Language"));
 	gc->add_child(memnew(Label(TTR("Language:"))));
 	gc->add_child(language_menu);
 
@@ -898,14 +899,17 @@ ScriptCreateDialog::ScriptCreateDialog() {
 	HBoxContainer *hb = memnew(HBoxContainer);
 	hb->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	parent_name = memnew(LineEdit);
+	parent_name->set_accessibility_name(TTRC("Parent Name"));
 	parent_name->connect(SceneStringName(text_changed), callable_mp(this, &ScriptCreateDialog::_parent_name_changed));
 	parent_name->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	hb->add_child(parent_name);
 	register_text_enter(parent_name);
 	parent_search_button = memnew(Button);
+	parent_search_button->set_accessibility_name(TTRC("Search Parent"));
 	parent_search_button->connect(SceneStringName(pressed), callable_mp(this, &ScriptCreateDialog::_browse_class_in_tree));
 	hb->add_child(parent_search_button);
 	parent_browse_button = memnew(Button);
+	parent_browse_button->set_accessibility_name(TTRC("Select Parent"));
 	parent_browse_button->connect(SceneStringName(pressed), callable_mp(this, &ScriptCreateDialog::_browse_path).bind(true, false));
 	hb->add_child(parent_browse_button);
 	gc->add_child(memnew(Label(TTR("Inherits:"))));
@@ -918,6 +922,7 @@ ScriptCreateDialog::ScriptCreateDialog() {
 
 	use_templates = memnew(CheckBox);
 	use_templates->set_pressed(is_using_templates);
+	use_templates->set_accessibility_name(TTRC("Use Template"));
 	use_templates->connect(SceneStringName(pressed), callable_mp(this, &ScriptCreateDialog::_use_template_pressed));
 	template_hb->add_child(use_templates);
 
@@ -925,6 +930,7 @@ ScriptCreateDialog::ScriptCreateDialog() {
 
 	template_menu = memnew(OptionButton);
 	template_menu->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
+	template_menu->set_accessibility_name(TTRC("Template"));
 	template_menu->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	template_menu->connect(SceneStringName(item_selected), callable_mp(this, &ScriptCreateDialog::_template_changed));
 	template_hb->add_child(template_menu);
@@ -935,6 +941,7 @@ ScriptCreateDialog::ScriptCreateDialog() {
 
 	built_in = memnew(CheckBox);
 	built_in->set_text(TTR("On"));
+	built_in->set_accessibility_name(TTRC("Built-in Script"));
 	built_in->connect(SceneStringName(pressed), callable_mp(this, &ScriptCreateDialog::_built_in_pressed));
 	gc->add_child(memnew(Label(TTR("Built-in Script:"))));
 	gc->add_child(built_in);
@@ -944,11 +951,13 @@ ScriptCreateDialog::ScriptCreateDialog() {
 	hb = memnew(HBoxContainer);
 	hb->connect(SceneStringName(sort_children), callable_mp(this, &ScriptCreateDialog::_path_hbox_sorted));
 	file_path = memnew(LineEdit);
+	file_path->set_accessibility_name(TTRC("File Path"));
 	file_path->connect(SceneStringName(text_changed), callable_mp(this, &ScriptCreateDialog::_path_changed));
 	file_path->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	hb->add_child(file_path);
 	register_text_enter(file_path);
 	path_button = memnew(Button);
+	path_button->set_accessibility_name(TTRC("Select File"));
 	path_button->connect(SceneStringName(pressed), callable_mp(this, &ScriptCreateDialog::_browse_path).bind(false, true));
 	hb->add_child(path_button);
 	Label *label = memnew(Label(TTR("Path:")));
@@ -961,6 +970,7 @@ ScriptCreateDialog::ScriptCreateDialog() {
 
 	built_in_name = memnew(LineEdit);
 	built_in_name->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	built_in_name->set_accessibility_name(TTRC("Name"));
 	register_text_enter(built_in_name);
 	label = memnew(Label(TTR("Name:")));
 	gc->add_child(label);

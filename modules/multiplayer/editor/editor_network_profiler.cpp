@@ -339,6 +339,7 @@ EditorNetworkProfiler::EditorNetworkProfiler() {
 	incoming_bandwidth_text->set_editable(false);
 	incoming_bandwidth_text->set_custom_minimum_size(Size2(120, 0) * EDSCALE);
 	incoming_bandwidth_text->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_RIGHT);
+	incoming_bandwidth_text->set_accessibility_name(TTRC("Incoming Bandwidth"));
 	hb->add_child(incoming_bandwidth_text);
 
 	Control *down_up_spacer = memnew(Control);
@@ -354,6 +355,7 @@ EditorNetworkProfiler::EditorNetworkProfiler() {
 	outgoing_bandwidth_text->set_editable(false);
 	outgoing_bandwidth_text->set_custom_minimum_size(Size2(120, 0) * EDSCALE);
 	outgoing_bandwidth_text->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_RIGHT);
+	outgoing_bandwidth_text->set_accessibility_name(TTRC("Outgoing Bandwidth"));
 	hb->add_child(outgoing_bandwidth_text);
 
 	// Set initial texts in the incoming/outgoing bandwidth labels
