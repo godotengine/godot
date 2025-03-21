@@ -90,7 +90,7 @@ import java.util.concurrent.atomic.AtomicReference
  * Can be hosted by [Activity], [Fragment] or [Service] android components, so long as its
  * lifecycle methods are properly invoked.
  */
-class Godot(private val context: Context) {
+class Godot(val context: Context) {
 
 	internal companion object {
 		private val TAG = Godot::class.java.simpleName
@@ -177,7 +177,7 @@ class Godot(private val context: Context) {
 	 */
 	private val godotMainLoopStarted = AtomicBoolean(false)
 
-	var io: GodotIO? = null
+	val io = GodotIO(this)
 
 	private var commandLine : MutableList<String> = ArrayList<String>()
 	private var xrMode = XRMode.REGULAR
@@ -187,7 +187,7 @@ class Godot(private val context: Context) {
 	private var useDebugOpengl = false
 	private var darkMode = false
 
-	private var containerLayout: FrameLayout? = null
+	internal var containerLayout: FrameLayout? = null
 	var renderView: GodotRenderView? = null
 
 	/**
@@ -198,13 +198,12 @@ class Godot(private val context: Context) {
 	/**
 	 * Returns true if the engine has been initialized, false otherwise.
 	 */
-	fun isInitialized() = initializationStarted && isNativeInitialized() && renderViewInitialized
+	fun isInitialized() = primaryHost != null && initializationStarted && isNativeInitialized() && renderViewInitialized
 
 	/**
 	 * Provides access to the primary host [Activity]
 	 */
 	fun getActivity() = primaryHost?.activity
-	private fun requireActivity() = getActivity() ?: throw IllegalStateException("Host activity must be non-null")
 
 	/**
 	 * Start initialization of the Godot engine.
@@ -228,17 +227,13 @@ class Godot(private val context: Context) {
 		beginBenchmarkMeasure("Startup", "Godot::onCreate")
 		try {
 			this.primaryHost = primaryHost
-			val activity = requireActivity()
-			val window = activity.window
-			window.addFlags(WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON)
 
 			Log.v(TAG, "Initializing Godot plugin registry")
 			val runtimePlugins = mutableSetOf<GodotPlugin>(AndroidRuntimePlugin(this))
 			runtimePlugins.addAll(primaryHost.getHostPlugins(this))
 			GodotPluginRegistry.initializePluginRegistry(this, runtimePlugins)
-			if (io == null) {
-				io = GodotIO(activity)
-			}
+
+			getActivity()?.window?.addFlags(WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON)
 
 			// check for apk expansion API
 			commandLine = getCommandLine()
@@ -264,7 +259,7 @@ class Godot(private val context: Context) {
 					i++
 				} else if (hasExtra && commandLine[i] == "--apk_expansion_key") {
 					mainPackKey = commandLine[i + 1]
-					val prefs = activity.getSharedPreferences(
+					val prefs = context.getSharedPreferences(
 							"app_data_keys",
 							Context.MODE_PRIVATE
 					)
@@ -294,10 +289,10 @@ class Godot(private val context: Context) {
 				// Build the full path to the app's expansion files
 				try {
 					expansionPackPath = Helpers.getSaveFilePath(context)
-					expansionPackPath += "/main." + activity.packageManager.getPackageInfo(
-							activity.packageName,
+					expansionPackPath += "/main." + context.packageManager.getPackageInfo(
+							context.packageName,
 							0
-					).versionCode + "." + activity.packageName + ".obb"
+					).versionCode + "." + context.packageName + ".obb"
 				} catch (e: java.lang.Exception) {
 					Log.e(TAG, "Unable to build full path to the app's expansion files", e)
 				}
@@ -408,12 +403,11 @@ class Godot(private val context: Context) {
 				commandLine.add("--main-pack")
 				commandLine.add(expansionPackPath)
 			}
-			val activity = requireActivity()
 			if (!nativeLayerInitializeCompleted) {
 				nativeLayerInitializeCompleted = GodotLib.initialize(
-					activity,
+					getActivity(),
 					this,
-					activity.assets,
+					context.assets,
 					io,
 					netUtils,
 					directoryAccessHandler,
@@ -451,7 +445,7 @@ class Godot(private val context: Context) {
 	 * @throws IllegalStateException if [onInitNativeLayer] has not been called
 	 */
 	@JvmOverloads
-	fun onInitRenderView(host: GodotHost, providedContainerLayout: FrameLayout = FrameLayout(host.activity)): FrameLayout? {
+	fun onInitRenderView(host: GodotHost, providedContainerLayout: FrameLayout = FrameLayout(context)): FrameLayout? {
 		if (!isNativeInitialized()) {
 			throw IllegalStateException("onInitNativeLayer() must be invoked successfully prior to initializing the render view")
 		}
@@ -460,7 +454,6 @@ class Godot(private val context: Context) {
 
 		beginBenchmarkMeasure("Startup", "Godot::onInitRenderView")
 		try {
-			val activity: Activity = host.activity
 			containerLayout = providedContainerLayout
 			containerLayout?.removeAllViews()
 			containerLayout?.layoutParams = ViewGroup.LayoutParams(
@@ -469,29 +462,29 @@ class Godot(private val context: Context) {
 			)
 
 			// GodotEditText layout
-			val editText = GodotEditText(activity)
+			val editText = GodotEditText(context)
 			editText.layoutParams =
 					ViewGroup.LayoutParams(
 							ViewGroup.LayoutParams.MATCH_PARENT,
-							activity.resources.getDimension(R.dimen.text_edit_height).toInt()
+							context.resources.getDimension(R.dimen.text_edit_height).toInt()
 					)
 			// Prevent GodotEditText from showing on splash screen on devices with Android 14 or newer.
 			editText.setBackgroundColor(Color.TRANSPARENT)
 			// ...add to FrameLayout
 			containerLayout?.addView(editText)
 			renderView = if (usesVulkan()) {
-				if (meetsVulkanRequirements(activity.packageManager)) {
-					GodotVulkanRenderView(host, this, godotInputHandler)
+				if (meetsVulkanRequirements(context.packageManager)) {
+					GodotVulkanRenderView(this, godotInputHandler)
 				} else if (canFallbackToOpenGL()) {
 					// Fallback to OpenGl.
-					GodotGLRenderView(host, this, godotInputHandler, xrMode, useDebugOpengl)
+					GodotGLRenderView(this, godotInputHandler, xrMode, useDebugOpengl)
 				} else {
-					throw IllegalStateException(activity.getString(R.string.error_missing_vulkan_requirements_message))
+					throw IllegalStateException(context.getString(R.string.error_missing_vulkan_requirements_message))
 				}
 
 			} else {
 				// Fallback to OpenGl.
-				GodotGLRenderView(host, this, godotInputHandler, xrMode, useDebugOpengl)
+				GodotGLRenderView(this, godotInputHandler, xrMode, useDebugOpengl)
 			}
 
 			if (host == primaryHost) {
@@ -509,20 +502,21 @@ class Godot(private val context: Context) {
 			}
 
 			editText.setView(renderView)
-			io?.setEdit(editText)
+			io.setEdit(editText)
 
+			val activity = host.activity
 			// Listeners for keyboard height.
-			val decorView = activity.window.decorView
+			val topView = activity?.window?.decorView ?: providedContainerLayout
 			// Report the height of virtual keyboard as it changes during the animation.
-			ViewCompat.setWindowInsetsAnimationCallback(decorView, object : WindowInsetsAnimationCompat.Callback(DISPATCH_MODE_STOP) {
+			ViewCompat.setWindowInsetsAnimationCallback(topView, object : WindowInsetsAnimationCompat.Callback(DISPATCH_MODE_STOP) {
 				var startBottom = 0
 				var endBottom = 0
 				override fun onPrepare(animation: WindowInsetsAnimationCompat) {
-					startBottom = ViewCompat.getRootWindowInsets(decorView)?.getInsets(WindowInsetsCompat.Type.ime())?.bottom ?: 0
+					startBottom = ViewCompat.getRootWindowInsets(topView)?.getInsets(WindowInsetsCompat.Type.ime())?.bottom ?: 0
 				}
 
 				override fun onStart(animation: WindowInsetsAnimationCompat, bounds: WindowInsetsAnimationCompat.BoundsCompat): WindowInsetsAnimationCompat.BoundsCompat {
-					endBottom = ViewCompat.getRootWindowInsets(decorView)?.getInsets(WindowInsetsCompat.Type.ime())?.bottom ?: 0
+					endBottom = ViewCompat.getRootWindowInsets(topView)?.getInsets(WindowInsetsCompat.Type.ime())?.bottom ?: 0
 					return bounds
 				}
 
@@ -648,16 +642,17 @@ class Godot(private val context: Context) {
 	}
 
 	fun onDestroy(primaryHost: GodotHost) {
-		Log.v(TAG, "OnDestroy: $primaryHost")
 		if (this.primaryHost != primaryHost) {
 			return
 		}
+		Log.v(TAG, "OnDestroy: $primaryHost")
 
 		for (plugin in pluginRegistry.allPlugins) {
 			plugin.onMainDestroy()
 		}
 
 		renderView?.onActivityDestroyed()
+		this.primaryHost = null
 	}
 
 	/**
@@ -776,16 +771,16 @@ class Godot(private val context: Context) {
 		@StringRes titleResId: Int,
 		okCallback: Runnable?
 	) {
-		val res: Resources = getActivity()?.resources ?: return
+		val res: Resources = context.resources ?: return
 		alert(res.getString(messageResId), res.getString(titleResId), okCallback)
 	}
 
 	@JvmOverloads
 	@Keep
 	fun alert(message: String, title: String, okCallback: Runnable? = null) {
-		val activity: Activity = getActivity() ?: return
+		val context = getActivity() ?: context
 		runOnUiThread {
-			val builder = AlertDialog.Builder(activity)
+			val builder = AlertDialog.Builder(context)
 			builder.setMessage(message).setTitle(title)
 			builder.setPositiveButton(
 				R.string.dialog_ok
@@ -814,8 +809,7 @@ class Godot(private val context: Context) {
 	 * of the UI thread.
 	 */
 	fun runOnUiThread(action: Runnable) {
-		val activity: Activity = getActivity() ?: return
-		activity.runOnUiThread(action)
+		primaryHost?.runOnHostThread(action)
 	}
 
 	/**
@@ -968,8 +962,7 @@ class Godot(private val context: Context) {
 	@JvmOverloads
 	fun destroyAndKillProcess(destroyRunnable: Runnable? = null) {
 		val host = primaryHost
-		val activity = host?.activity
-		if (host == null || activity == null) {
+		if (host == null) {
 			// Run the destroyRunnable right away as we are about to force quit.
 			destroyRunnable?.run()
 
@@ -1038,7 +1031,7 @@ class Godot(private val context: Context) {
 
 	private fun getCommandLine(): MutableList<String> {
 		val commandLine = try {
-			commandLineFileParser.parseCommandLine(requireActivity().assets.open("_cl_"))
+			commandLineFileParser.parseCommandLine(context.assets.open("_cl_"))
 		} catch (ignored: Exception) {
 			mutableListOf()
 		}
@@ -1070,7 +1063,7 @@ class Godot(private val context: Context) {
 	}
 
 	fun getGrantedPermissions(): Array<String?>? {
-		return PermissionsUtil.getGrantedPermissions(getActivity())
+		return PermissionsUtil.getGrantedPermissions(context)
 	}
 
 	/**
