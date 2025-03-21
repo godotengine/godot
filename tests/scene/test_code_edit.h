@@ -905,8 +905,7 @@ TEST_CASE("[SceneTree][CodeEdit] delimiters") {
 			CHECK(code_edit->get_string_delimiters().size() == 2);
 
 			/* Set should override existing, and test multiline */
-			TypedArray<String> delimiters;
-			delimiters.push_back("^^ ^^");
+			TypedArray<String> delimiters(Array{ "^^ ^^" });
 
 			code_edit->set_string_delimiters(delimiters);
 			CHECK_FALSE(code_edit->has_string_delimiter("\""));
@@ -971,8 +970,7 @@ TEST_CASE("[SceneTree][CodeEdit] delimiters") {
 			CHECK(code_edit->get_comment_delimiters().size() == 2);
 
 			/* Set should override existing, and test multiline. */
-			TypedArray<String> delimiters;
-			delimiters.push_back("^^ ^^");
+			TypedArray<String> delimiters(Array{ "^^ ^^" });
 
 			code_edit->set_comment_delimiters(delimiters);
 			CHECK_FALSE(code_edit->has_comment_delimiter("\""));
@@ -1770,10 +1768,7 @@ TEST_CASE("[SceneTree][CodeEdit] indent") {
 		CHECK(code_edit->is_indent_using_spaces());
 
 		/* Only the first char is registered. */
-		TypedArray<String> auto_indent_prefixes;
-		auto_indent_prefixes.push_back("::");
-		auto_indent_prefixes.push_back("s");
-		auto_indent_prefixes.push_back("1");
+		TypedArray<String> auto_indent_prefixes(Array{ "::", "s", "1" });
 		code_edit->set_auto_indent_prefixes(auto_indent_prefixes);
 
 		auto_indent_prefixes = code_edit->get_auto_indent_prefixes();
@@ -3936,11 +3931,7 @@ TEST_CASE("[SceneTree][CodeEdit] completion") {
 		CHECK(code_edit->is_code_completion_enabled());
 
 		/* Set prefixes, single char only, disallow empty. */
-		TypedArray<String> completion_prefixes;
-		completion_prefixes.push_back("");
-		completion_prefixes.push_back(".");
-		completion_prefixes.push_back(".");
-		completion_prefixes.push_back(",,");
+		TypedArray<String> completion_prefixes(Array{ "", ".", ".", ",," });
 
 		ERR_PRINT_OFF;
 		code_edit->set_code_completion_prefixes(completion_prefixes);
@@ -3959,7 +3950,7 @@ TEST_CASE("[SceneTree][CodeEdit] completion") {
 		code_edit->set_code_completion_enabled(true);
 
 		Array signal_args;
-		signal_args.push_back(Array());
+		signal_args.append(Array());
 
 		/* Force request. */
 		code_edit->request_code_completion();
@@ -3972,8 +3963,7 @@ TEST_CASE("[SceneTree][CodeEdit] completion") {
 		SIGNAL_CHECK("code_completion_requested", signal_args);
 
 		/* Insert prefix. */
-		TypedArray<String> completion_prefixes;
-		completion_prefixes.push_back(".");
+		TypedArray<String> completion_prefixes(Array{ "." });
 		code_edit->set_code_completion_prefixes(completion_prefixes);
 
 		code_edit->insert_text_at_caret(".");
