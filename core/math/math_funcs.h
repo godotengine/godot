@@ -565,6 +565,7 @@ public:
 	static _ALWAYS_INLINE_ double randd() { return (double)rand() / (double)Math::RANDOM_32BIT_MAX; }
 	static _ALWAYS_INLINE_ float randf() { return (float)rand() / (float)Math::RANDOM_32BIT_MAX; }
 	static double randfn(double mean, double deviation);
+	static int64_t rand_weighted(const Vector<float> &p_weights);
 
 	static double random(double from, double to);
 	static float random(float from, float to);

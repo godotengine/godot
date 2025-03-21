@@ -121,6 +121,7 @@ struct VariantUtilityFunctions {
 	static double randfn(double mean, double deviation);
 	static int64_t randi_range(int64_t from, int64_t to);
 	static double randf_range(double from, double to);
+	static int64_t rand_weighted(const Vector<float> &p_weights);
 	static void seed(int64_t s);
 	static PackedInt64Array rand_from_seed(int64_t seed);
 	// Utility
