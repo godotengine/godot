@@ -212,6 +212,7 @@ private:
 	Button *btn_pick = nullptr;
 	Label *palette_name = nullptr;
 	String palette_path;
+	bool presets_just_loaded = false;
 	Button *btn_preset = nullptr;
 	Button *btn_recent_preset = nullptr;
 	PopupMenu *shape_popup = nullptr;
