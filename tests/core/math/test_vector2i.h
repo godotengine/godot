@@ -42,6 +42,10 @@ TEST_CASE("[Vector2i] Constructor methods") {
 	static_assert(
 			vector_empty == vector_zero,
 			"Vector2i Constructor with no inputs should return a zero Vector2i.");
+
+	CHECK_MESSAGE(
+			Vector2i(123) == Vector2i(123, 123),
+			"Vector2i Constructor with one argument should set all components to the same value.");
 }
 
 TEST_CASE("[Vector2i] Axis methods") {
