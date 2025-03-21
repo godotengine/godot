@@ -40,8 +40,8 @@ private:
 		uint32_t field32[4];
 	};
 
-	bool valid;
-	bool wildcard;
+	bool valid = false;
+	bool wildcard = false;
 
 protected:
 	void _parse_ipv6(const String &p_string);
