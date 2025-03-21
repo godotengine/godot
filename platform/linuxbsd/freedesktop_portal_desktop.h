@@ -46,6 +46,7 @@ private:
 
 	enum ReadVariantType {
 		VAR_TYPE_UINT32, // u
+		VAR_TYPE_BOOL, // b
 		VAR_TYPE_COLOR, // (ddd)
 	};
 
@@ -134,6 +135,12 @@ public:
 	void set_system_theme_change_callback(const Callable &p_system_theme_changed) {
 		system_theme_changed = p_system_theme_changed;
 	}
+
+	// Retrieve high-contrast setting.
+	// -1: Unknown.
+	// 0: Disabled.
+	// 1: Enabled.
+	uint32_t get_high_contrast();
 
 	// org.freedesktop.portal.Screenshot methods.
 	bool color_picker(const String &p_xid, const Callable &p_callback);
