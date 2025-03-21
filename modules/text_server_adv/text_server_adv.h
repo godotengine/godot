@@ -176,6 +176,10 @@ class TextServerAdvanced : public TextServerExtension {
 	mutable USpoofChecker *sc_spoof = nullptr;
 	mutable USpoofChecker *sc_conf = nullptr;
 
+	mutable HashMap<String, UBreakIterator *> line_break_iterators_per_language;
+
+	UBreakIterator *_create_line_break_iterator_for_locale(const String &p_language, UErrorCode *r_err) const;
+
 	// Font cache data.
 
 #ifdef MODULE_FREETYPE_ENABLED
@@ -545,11 +549,6 @@ class TextServerAdvanced : public TextServerExtension {
 		bool js_ops_valid = false;
 		bool chars_valid = false;
 
-		HashMap<String, UBreakIterator *> line_break_iterators_per_language;
-
-		// Creating UBreakIterator is surprisingly costly. To improve efficiency, we cache them.
-		UBreakIterator *_get_break_iterator_for_locale(const String &p_language, UErrorCode *r_err);
-
 		~ShapedTextDataAdvanced() {
 			for (int i = 0; i < bidi_iter.size(); i++) {
 				if (bidi_iter[i]) {
@@ -561,9 +560,6 @@ class TextServerAdvanced : public TextServerExtension {
 			}
 			if (hb_buffer) {
 				hb_buffer_destroy(hb_buffer);
-			}
-			for (const KeyValue<String, UBreakIterator *> &bi : line_break_iterators_per_language) {
-				ubrk_close(bi.value);
 			}
 		}
 	};
