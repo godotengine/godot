@@ -91,7 +91,7 @@ public:
 	int get_process_exit_code(const ProcessID &p_pid) const override;
 	int get_processor_count() const override;
 	String get_unique_id() const override;
-	int get_default_thread_pool_size() const override { return 1; }
+	int get_default_thread_pool_size() const override;
 
 	String get_executable_path() const override;
 	Error shell_open(const String &p_uri) override;
