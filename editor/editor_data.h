@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef EDITOR_DATA_H
-#define EDITOR_DATA_H
+#pragma once
 
 #include "core/templates/list.h"
 #include "scene/resources/texture.h"
@@ -319,14 +318,11 @@ public:
 	TypedArray<Node> get_selected_nodes();
 	// Returns only the top level selected nodes.
 	// That is, if the selection includes some node and a child of that node, only the parent is returned.
-	List<Node *> &get_selected_node_list();
+	const List<Node *> &get_selected_node_list();
 	// Returns all the selected nodes (list version of "get_selected_nodes").
 	List<Node *> get_full_selected_node_list();
 	// Returns the map of selected objects and their metadata.
 	HashMap<Node *, Object *> &get_selection() { return selection; }
 
-	EditorSelection();
 	~EditorSelection();
 };
-
-#endif // EDITOR_DATA_H

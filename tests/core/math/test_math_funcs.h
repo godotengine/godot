@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TEST_MATH_FUNCS_H
-#define TEST_MATH_FUNCS_H
+#pragma once
 
 #include "tests/test_macros.h"
 
@@ -47,9 +46,9 @@ TEST_CASE("[Math] C++ macros") {
 	// `max` is lower than `min`.
 	CHECK(CLAMP(620, 600, 50) == 50);
 
-	CHECK(ABS(-5) == 5);
-	CHECK(ABS(0) == 0);
-	CHECK(ABS(5) == 5);
+	CHECK(Math::abs(-5) == 5);
+	CHECK(Math::abs(0) == 0);
+	CHECK(Math::abs(5) == 5);
 
 	CHECK(SIGN(-5) == -1.0);
 	CHECK(SIGN(0) == 0.0);
@@ -640,5 +639,3 @@ TEST_CASE_TEMPLATE("[Math] bezier_interpolate", T, float, double) {
 }
 
 } // namespace TestMath
-
-#endif // TEST_MATH_FUNCS_H

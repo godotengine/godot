@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TYPE_INFO_H
-#define TYPE_INFO_H
+#pragma once
 
 #include "core/typedefs.h"
 
@@ -269,6 +268,9 @@ public:
 	_FORCE_INLINE_ BitField<T> operator^(const BitField<T> &p_b) const { return BitField<T>(value ^ p_b.value); }
 };
 
+template <typename T>
+struct is_zero_constructible<BitField<T>> : std::true_type {};
+
 #define TEMPL_MAKE_BITFIELD_TYPE_INFO(m_enum, m_impl)                                                                                            \
 	template <>                                                                                                                                  \
 	struct GetTypeInfo<m_impl> {                                                                                                                 \
@@ -339,5 +341,3 @@ ZERO_INITIALIZER_NUMBER(char16_t)
 ZERO_INITIALIZER_NUMBER(char32_t)
 ZERO_INITIALIZER_NUMBER(float)
 ZERO_INITIALIZER_NUMBER(double)
-
-#endif // TYPE_INFO_H

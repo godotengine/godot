@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef SPIN_BOX_H
-#define SPIN_BOX_H
+#pragma once
 
 #include "scene/gui/line_edit.h"
 #include "scene/gui/range.h"
@@ -40,6 +39,7 @@ class SpinBox : public Range {
 
 	LineEdit *line_edit = nullptr;
 	bool update_on_text_changed = false;
+	bool accepted = true;
 
 	struct SizingCache {
 		int buttons_block_width = 0;
@@ -173,5 +173,3 @@ public:
 
 	SpinBox();
 };
-
-#endif // SPIN_BOX_H

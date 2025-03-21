@@ -176,7 +176,7 @@ void VideoStreamPlayer::_notification(int p_notification) {
 				return;
 			}
 
-			Size2 s = expand ? get_size() : texture->get_size();
+			Size2 s = expand ? get_size() : texture_size;
 			draw_texture_rect(texture, Rect2(Point2(), s), false);
 		} break;
 
@@ -212,9 +212,25 @@ void VideoStreamPlayer::_notification(int p_notification) {
 	}
 }
 
+void VideoStreamPlayer::texture_changed(const Ref<Texture2D> &p_texture) {
+	const Size2 new_texture_size = p_texture.is_valid() ? p_texture->get_size() : Size2();
+
+	if (new_texture_size == texture_size) {
+		return;
+	}
+
+	texture_size = new_texture_size;
+
+	queue_redraw();
+
+	if (!expand) {
+		update_minimum_size();
+	}
+}
+
 Size2 VideoStreamPlayer::get_minimum_size() const {
 	if (!expand && texture.is_valid()) {
-		return texture->get_size();
+		return texture_size;
 	} else {
 		return Size2();
 	}
@@ -266,9 +282,18 @@ void VideoStreamPlayer::set_stream(const Ref<VideoStream> &p_stream) {
 		stream->connect_changed(callable_mp(this, &VideoStreamPlayer::set_stream).bind(stream));
 	}
 
+	if (texture.is_valid()) {
+		texture->disconnect_changed(callable_mp(this, &VideoStreamPlayer::texture_changed));
+	}
+
 	if (playback.is_valid()) {
 		playback->set_paused(paused);
 		texture = playback->get_texture();
+
+		if (texture.is_valid()) {
+			texture_size = texture->get_size();
+			texture->connect_changed(callable_mp(this, &VideoStreamPlayer::texture_changed).bind(texture));
+		}
 
 		const int channels = playback->get_channels();
 

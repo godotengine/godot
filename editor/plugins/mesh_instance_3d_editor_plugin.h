@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef MESH_INSTANCE_3D_EDITOR_PLUGIN_H
-#define MESH_INSTANCE_3D_EDITOR_PLUGIN_H
+#pragma once
 
 #include "editor/plugins/editor_plugin.h"
 #include "scene/3d/mesh_instance_3d.h"
@@ -120,7 +119,4 @@ public:
 	virtual void make_visible(bool p_visible) override;
 
 	MeshInstance3DEditorPlugin();
-	~MeshInstance3DEditorPlugin();
 };
-
-#endif // MESH_INSTANCE_3D_EDITOR_PLUGIN_H

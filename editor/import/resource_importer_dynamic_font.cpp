@@ -271,6 +271,3 @@ Error ResourceImporterDynamicFont::import(ResourceUID::ID p_source_id, const Str
 	print_verbose("Done saving to: " + p_save_path + ".fontdata");
 	return OK;
 }
-
-ResourceImporterDynamicFont::ResourceImporterDynamicFont() {
-}

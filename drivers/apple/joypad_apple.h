@@ -28,7 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#pragma once
+
 #include "core/input/input.h"
+#include "core/input/input_enums.h"
 
 #define Key _QKey
 #import <GameController/GameController.h>
@@ -43,6 +46,10 @@ struct GameController {
 	RumbleContext *rumble_context API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0)) = nil;
 	NSInteger ff_effect_timestamp = 0;
 	bool force_feedback = false;
+	bool nintendo_button_layout = false;
+
+	bool axis_changed[(int)JoyAxis::MAX];
+	double axis_value[(int)JoyAxis::MAX];
 
 	GameController(int p_joy_id, GCController *p_controller);
 	~GameController();

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef INFLECTION_MAP_H
-#define INFLECTION_MAP_H
+#pragma once
 
 #include "core/templates/hash_map.h"
 #include "core/templates/local_vector.h"
@@ -121,5 +120,3 @@ protected:
 	HashMap<KeyType, IndexValue> _inflection_indexes;
 	IndexValue _linear_indexes[LinearCount];
 };
-
-#endif // INFLECTION_MAP_H

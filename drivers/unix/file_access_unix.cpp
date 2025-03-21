@@ -336,16 +336,19 @@ bool FileAccessUnix::file_exists(const String &p_path) {
 
 uint64_t FileAccessUnix::_get_modified_time(const String &p_file) {
 	String file = fix_path(p_file);
-	struct stat status = {};
-	int err = stat(file.utf8().get_data(), &status);
+	struct stat st = {};
+	int err = stat(file.utf8().get_data(), &st);
 
 	if (!err) {
-		uint64_t modified_time = status.st_mtime;
+		uint64_t modified_time = 0;
+		if ((st.st_mode & S_IFMT) == S_IFLNK || (st.st_mode & S_IFMT) == S_IFREG || (st.st_mode & S_IFDIR) == S_IFDIR) {
+			modified_time = st.st_mtime;
+		}
 #ifdef ANDROID_ENABLED
 		// Workaround for GH-101007
 		//FIXME: After saving, all timestamps (st_mtime, st_ctime, st_atime) are set to the same value.
 		// After exporting or after some time, only 'modified_time' resets to a past timestamp.
-		uint64_t created_time = status.st_ctime;
+		uint64_t created_time = st.st_ctime;
 		if (modified_time < created_time) {
 			modified_time = created_time;
 		}
@@ -354,6 +357,32 @@ uint64_t FileAccessUnix::_get_modified_time(const String &p_file) {
 	} else {
 		return 0;
 	}
+}
+
+uint64_t FileAccessUnix::_get_access_time(const String &p_file) {
+	String file = fix_path(p_file);
+	struct stat st = {};
+	int err = stat(file.utf8().get_data(), &st);
+
+	if (!err) {
+		if ((st.st_mode & S_IFMT) == S_IFLNK || (st.st_mode & S_IFMT) == S_IFREG || (st.st_mode & S_IFDIR) == S_IFDIR) {
+			return st.st_atime;
+		}
+	}
+	ERR_FAIL_V_MSG(0, "Failed to get access time for: " + p_file + "");
+}
+
+int64_t FileAccessUnix::_get_size(const String &p_file) {
+	String file = fix_path(p_file);
+	struct stat st = {};
+	int err = stat(file.utf8().get_data(), &st);
+
+	if (!err) {
+		if ((st.st_mode & S_IFMT) == S_IFLNK || (st.st_mode & S_IFMT) == S_IFREG) {
+			return st.st_size;
+		}
+	}
+	ERR_FAIL_V_MSG(-1, "Failed to get size for: " + p_file + "");
 }
 
 BitField<FileAccess::UnixPermissionFlags> FileAccessUnix::_get_unix_permissions(const String &p_file) {

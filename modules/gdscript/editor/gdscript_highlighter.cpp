@@ -150,6 +150,15 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 								break;
 							}
 						}
+						// "#region" and "#endregion" only highlighted if they're the first region on the line.
+						if (color_regions[c].type == ColorRegion::TYPE_CODE_REGION) {
+							Vector<String> str_stripped_split = str.strip_edges().split_spaces(1);
+							if (!str_stripped_split.is_empty() &&
+									str_stripped_split[0] != "#region" &&
+									str_stripped_split[0] != "#endregion") {
+								match = false;
+							}
+						}
 						if (!match) {
 							continue;
 						}
@@ -777,8 +786,8 @@ void GDScriptSyntaxHighlighter::_update_cache() {
 	List<String> comments;
 	gdscript->get_comment_delimiters(&comments);
 	for (const String &comment : comments) {
-		String beg = comment.get_slice(" ", 0);
-		String end = comment.get_slice_count(" ") > 1 ? comment.get_slice(" ", 1) : String();
+		String beg = comment.get_slicec(' ', 0);
+		String end = comment.get_slice_count(" ") > 1 ? comment.get_slicec(' ', 1) : String();
 		add_color_region(ColorRegion::TYPE_COMMENT, beg, end, comment_color, end.is_empty());
 	}
 
@@ -787,8 +796,8 @@ void GDScriptSyntaxHighlighter::_update_cache() {
 	List<String> doc_comments;
 	gdscript->get_doc_comment_delimiters(&doc_comments);
 	for (const String &doc_comment : doc_comments) {
-		String beg = doc_comment.get_slice(" ", 0);
-		String end = doc_comment.get_slice_count(" ") > 1 ? doc_comment.get_slice(" ", 1) : String();
+		String beg = doc_comment.get_slicec(' ', 0);
+		String end = doc_comment.get_slice_count(" ") > 1 ? doc_comment.get_slicec(' ', 1) : String();
 		add_color_region(ColorRegion::TYPE_COMMENT, beg, end, doc_comment_color, end.is_empty());
 	}
 

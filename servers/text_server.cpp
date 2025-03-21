@@ -549,8 +549,12 @@ void TextServer::_bind_methods() {
 	BIND_BITFIELD_FLAG(BREAK_WORD_BOUND);
 	BIND_BITFIELD_FLAG(BREAK_GRAPHEME_BOUND);
 	BIND_BITFIELD_FLAG(BREAK_ADAPTIVE);
+#ifndef DISABLE_DEPRECATED
 	BIND_BITFIELD_FLAG(BREAK_TRIM_EDGE_SPACES);
+#endif
 	BIND_BITFIELD_FLAG(BREAK_TRIM_INDENT);
+	BIND_BITFIELD_FLAG(BREAK_TRIM_START_EDGE_SPACES);
+	BIND_BITFIELD_FLAG(BREAK_TRIM_END_EDGE_SPACES);
 
 	/* VisibleCharactersBehavior */
 	BIND_ENUM_CONSTANT(VC_CHARS_BEFORE_SHAPING);
@@ -565,6 +569,8 @@ void TextServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(OVERRUN_TRIM_WORD);
 	BIND_ENUM_CONSTANT(OVERRUN_TRIM_ELLIPSIS);
 	BIND_ENUM_CONSTANT(OVERRUN_TRIM_WORD_ELLIPSIS);
+	BIND_ENUM_CONSTANT(OVERRUN_TRIM_ELLIPSIS_FORCE);
+	BIND_ENUM_CONSTANT(OVERRUN_TRIM_WORD_ELLIPSIS_FORCE);
 
 	/* TextOverrunFlag */
 	BIND_BITFIELD_FLAG(OVERRUN_NO_TRIM);
@@ -803,25 +809,42 @@ PackedInt32Array TextServer::shaped_text_get_line_breaks_adv(const RID &p_shaped
 	int last_safe_break = -1;
 	int word_count = 0;
 	int chunk = 0;
+	int prev_chunk = -1;
 	bool trim_next = false;
+
+#ifndef DISABLE_DEPRECATED
+	if (p_break_flags.has_flag(BREAK_TRIM_EDGE_SPACES)) {
+		p_break_flags = p_break_flags | BREAK_TRIM_START_EDGE_SPACES | BREAK_TRIM_END_EDGE_SPACES;
+	}
+#endif
 
 	int l_size = shaped_text_get_glyph_count(p_shaped);
 	const Glyph *l_gl = const_cast<TextServer *>(this)->shaped_text_sort_logical(p_shaped);
 
+	int indent_end = 0;
 	double indent = 0.0;
-	if (p_break_flags.has_flag(BREAK_TRIM_INDENT)) {
-		for (int i = 0; i < l_size; i++) {
-			if ((l_gl[i].flags & GRAPHEME_IS_TAB) == GRAPHEME_IS_TAB || (l_gl[i].flags & GRAPHEME_IS_SPACE) == GRAPHEME_IS_SPACE) {
-				indent += l_gl[i].advance * l_gl[i].repeat;
-			} else {
-				break;
-			}
-		}
-	}
 
 	for (int i = 0; i < l_size; i++) {
 		double l_width = p_width[chunk];
-		if (l_width > indent) {
+
+		if (p_break_flags.has_flag(BREAK_TRIM_INDENT) && chunk != prev_chunk) {
+			indent = 0.0;
+			for (int j = indent_end; j < l_size; j++) {
+				if ((l_gl[j].flags & GRAPHEME_IS_TAB) == GRAPHEME_IS_TAB || (l_gl[j].flags & GRAPHEME_IS_SPACE) == GRAPHEME_IS_SPACE) {
+					if (indent + l_gl[j].advance * l_gl[j].repeat > l_width) {
+						indent = 0.0;
+					}
+					indent += l_gl[j].advance * l_gl[j].repeat;
+					indent_end = l_gl[j].end;
+				} else {
+					break;
+				}
+			}
+			indent = MIN(indent, 0.6 * l_width);
+			prev_chunk = chunk;
+		}
+
+		if (l_width > indent && i > indent_end) {
 			l_width -= indent;
 		}
 		if (l_gl[i].start < p_start) {
@@ -835,13 +858,13 @@ PackedInt32Array TextServer::shaped_text_get_line_breaks_adv(const RID &p_shaped
 			}
 			if ((l_width > 0) && (width + adv > l_width) && (last_safe_break >= 0)) {
 				int cur_safe_brk = last_safe_break;
-				if (p_break_flags.has_flag(BREAK_TRIM_EDGE_SPACES)) {
+				if (p_break_flags.has_flag(BREAK_TRIM_START_EDGE_SPACES) || p_break_flags.has_flag(BREAK_TRIM_END_EDGE_SPACES)) {
 					int start_pos = prev_safe_break;
 					int end_pos = last_safe_break;
-					while (trim_next && (start_pos < end_pos) && ((l_gl[start_pos].flags & GRAPHEME_IS_SOFT_HYPHEN) != GRAPHEME_IS_SOFT_HYPHEN) && ((l_gl[start_pos].flags & GRAPHEME_IS_SPACE) == GRAPHEME_IS_SPACE || (l_gl[start_pos].flags & GRAPHEME_IS_BREAK_HARD) == GRAPHEME_IS_BREAK_HARD || (l_gl[start_pos].flags & GRAPHEME_IS_BREAK_SOFT) == GRAPHEME_IS_BREAK_SOFT)) {
+					while (p_break_flags.has_flag(BREAK_TRIM_START_EDGE_SPACES) && trim_next && (start_pos < end_pos) && ((l_gl[start_pos].flags & GRAPHEME_IS_SOFT_HYPHEN) != GRAPHEME_IS_SOFT_HYPHEN) && ((l_gl[start_pos].flags & GRAPHEME_IS_SPACE) == GRAPHEME_IS_SPACE || (l_gl[start_pos].flags & GRAPHEME_IS_BREAK_HARD) == GRAPHEME_IS_BREAK_HARD || (l_gl[start_pos].flags & GRAPHEME_IS_BREAK_SOFT) == GRAPHEME_IS_BREAK_SOFT)) {
 						start_pos += l_gl[start_pos].count;
 					}
-					while ((start_pos < end_pos) && ((l_gl[end_pos].flags & GRAPHEME_IS_SOFT_HYPHEN) != GRAPHEME_IS_SOFT_HYPHEN) && ((l_gl[end_pos].flags & GRAPHEME_IS_SPACE) == GRAPHEME_IS_SPACE || (l_gl[end_pos].flags & GRAPHEME_IS_BREAK_HARD) == GRAPHEME_IS_BREAK_HARD || (l_gl[end_pos].flags & GRAPHEME_IS_BREAK_SOFT) == GRAPHEME_IS_BREAK_SOFT)) {
+					while (p_break_flags.has_flag(BREAK_TRIM_END_EDGE_SPACES) && (start_pos < end_pos) && ((l_gl[end_pos].flags & GRAPHEME_IS_SOFT_HYPHEN) != GRAPHEME_IS_SOFT_HYPHEN) && ((l_gl[end_pos].flags & GRAPHEME_IS_SPACE) == GRAPHEME_IS_SPACE || (l_gl[end_pos].flags & GRAPHEME_IS_BREAK_HARD) == GRAPHEME_IS_BREAK_HARD || (l_gl[end_pos].flags & GRAPHEME_IS_BREAK_SOFT) == GRAPHEME_IS_BREAK_SOFT)) {
 						end_pos -= l_gl[end_pos].count;
 					}
 					if (last_end <= l_gl[start_pos].start) {
@@ -879,13 +902,13 @@ PackedInt32Array TextServer::shaped_text_get_line_breaks_adv(const RID &p_shaped
 			if (p_break_flags.has_flag(BREAK_MANDATORY)) {
 				if ((l_gl[i].flags & GRAPHEME_IS_BREAK_HARD) == GRAPHEME_IS_BREAK_HARD) {
 					int cur_safe_brk = i;
-					if (p_break_flags.has_flag(BREAK_TRIM_EDGE_SPACES)) {
+					if (p_break_flags.has_flag(BREAK_TRIM_START_EDGE_SPACES) || p_break_flags.has_flag(BREAK_TRIM_END_EDGE_SPACES)) {
 						int start_pos = prev_safe_break;
 						int end_pos = i;
-						while (trim_next && (start_pos < end_pos) && ((l_gl[start_pos].flags & GRAPHEME_IS_SPACE) == GRAPHEME_IS_SPACE || (l_gl[start_pos].flags & GRAPHEME_IS_BREAK_HARD) == GRAPHEME_IS_BREAK_HARD || (l_gl[start_pos].flags & GRAPHEME_IS_BREAK_SOFT) == GRAPHEME_IS_BREAK_SOFT)) {
+						while (p_break_flags.has_flag(BREAK_TRIM_START_EDGE_SPACES) && trim_next && (start_pos < end_pos) && ((l_gl[start_pos].flags & GRAPHEME_IS_SPACE) == GRAPHEME_IS_SPACE || (l_gl[start_pos].flags & GRAPHEME_IS_BREAK_HARD) == GRAPHEME_IS_BREAK_HARD || (l_gl[start_pos].flags & GRAPHEME_IS_BREAK_SOFT) == GRAPHEME_IS_BREAK_SOFT)) {
 							start_pos += l_gl[start_pos].count;
 						}
-						while ((start_pos < end_pos) && ((l_gl[end_pos].flags & GRAPHEME_IS_SPACE) == GRAPHEME_IS_SPACE || (l_gl[end_pos].flags & GRAPHEME_IS_BREAK_HARD) == GRAPHEME_IS_BREAK_HARD || (l_gl[end_pos].flags & GRAPHEME_IS_BREAK_SOFT) == GRAPHEME_IS_BREAK_SOFT)) {
+						while (p_break_flags.has_flag(BREAK_TRIM_END_EDGE_SPACES) && (start_pos < end_pos) && ((l_gl[end_pos].flags & GRAPHEME_IS_SPACE) == GRAPHEME_IS_SPACE || (l_gl[end_pos].flags & GRAPHEME_IS_BREAK_HARD) == GRAPHEME_IS_BREAK_HARD || (l_gl[end_pos].flags & GRAPHEME_IS_BREAK_SOFT) == GRAPHEME_IS_BREAK_SOFT)) {
 							end_pos -= l_gl[end_pos].count;
 						}
 						if (last_end <= l_gl[start_pos].start) {
@@ -940,7 +963,7 @@ PackedInt32Array TextServer::shaped_text_get_line_breaks_adv(const RID &p_shaped
 
 	if (l_size > 0) {
 		if (lines.size() == 0 || (lines[lines.size() - 1] < range.y && prev_safe_break < l_size)) {
-			if (p_break_flags.has_flag(BREAK_TRIM_EDGE_SPACES)) {
+			if (p_break_flags.has_flag(BREAK_TRIM_START_EDGE_SPACES)) {
 				int start_pos = (prev_safe_break < l_size) ? prev_safe_break : l_size - 1;
 				if (last_end <= l_gl[start_pos].start) {
 					int end_pos = l_size - 1;
@@ -978,19 +1001,31 @@ PackedInt32Array TextServer::shaped_text_get_line_breaks(const RID &p_shaped, do
 	int word_count = 0;
 	bool trim_next = false;
 
+#ifndef DISABLE_DEPRECATED
+	if (p_break_flags.has_flag(BREAK_TRIM_EDGE_SPACES)) {
+		p_break_flags = p_break_flags | BREAK_TRIM_START_EDGE_SPACES | BREAK_TRIM_END_EDGE_SPACES;
+	}
+#endif
+
 	TextServer::Orientation orientation = shaped_text_get_orientation(p_shaped);
 	int l_size = shaped_text_get_glyph_count(p_shaped);
 	const Glyph *l_gl = const_cast<TextServer *>(this)->shaped_text_sort_logical(p_shaped);
 
+	int indent_end = 0;
 	double indent = 0.0;
 	if (p_break_flags.has_flag(BREAK_TRIM_INDENT)) {
 		for (int i = 0; i < l_size; i++) {
 			if ((l_gl[i].flags & GRAPHEME_IS_TAB) == GRAPHEME_IS_TAB || (l_gl[i].flags & GRAPHEME_IS_SPACE) == GRAPHEME_IS_SPACE) {
+				if (indent + l_gl[i].advance * l_gl[i].repeat > p_width) {
+					indent = 0.0;
+				}
 				indent += l_gl[i].advance * l_gl[i].repeat;
+				indent_end = l_gl[i].end;
 			} else {
 				break;
 			}
 		}
+		indent = MIN(indent, 0.6 * p_width);
 	}
 
 	double l_width = p_width;
@@ -1006,19 +1041,19 @@ PackedInt32Array TextServer::shaped_text_get_line_breaks(const RID &p_shaped, do
 			}
 			if ((l_width > 0) && (width + adv > l_width) && (last_safe_break >= 0)) {
 				int cur_safe_brk = last_safe_break;
-				if (p_break_flags.has_flag(BREAK_TRIM_EDGE_SPACES)) {
+				if (p_break_flags.has_flag(BREAK_TRIM_START_EDGE_SPACES) || p_break_flags.has_flag(BREAK_TRIM_END_EDGE_SPACES)) {
 					int start_pos = prev_safe_break;
 					int end_pos = last_safe_break;
-					while (trim_next && (start_pos < end_pos) && ((l_gl[start_pos].flags & GRAPHEME_IS_SOFT_HYPHEN) != GRAPHEME_IS_SOFT_HYPHEN) && ((l_gl[start_pos].flags & GRAPHEME_IS_SPACE) == GRAPHEME_IS_SPACE || (l_gl[start_pos].flags & GRAPHEME_IS_BREAK_HARD) == GRAPHEME_IS_BREAK_HARD || (l_gl[start_pos].flags & GRAPHEME_IS_BREAK_SOFT) == GRAPHEME_IS_BREAK_SOFT)) {
+					while (p_break_flags.has_flag(BREAK_TRIM_START_EDGE_SPACES) && trim_next && (start_pos < end_pos) && ((l_gl[start_pos].flags & GRAPHEME_IS_SOFT_HYPHEN) != GRAPHEME_IS_SOFT_HYPHEN) && ((l_gl[start_pos].flags & GRAPHEME_IS_SPACE) == GRAPHEME_IS_SPACE || (l_gl[start_pos].flags & GRAPHEME_IS_BREAK_HARD) == GRAPHEME_IS_BREAK_HARD || (l_gl[start_pos].flags & GRAPHEME_IS_BREAK_SOFT) == GRAPHEME_IS_BREAK_SOFT)) {
 						start_pos += l_gl[start_pos].count;
 					}
-					while ((start_pos < end_pos) && ((l_gl[end_pos].flags & GRAPHEME_IS_SOFT_HYPHEN) != GRAPHEME_IS_SOFT_HYPHEN) && ((l_gl[end_pos].flags & GRAPHEME_IS_SPACE) == GRAPHEME_IS_SPACE || (l_gl[end_pos].flags & GRAPHEME_IS_BREAK_HARD) == GRAPHEME_IS_BREAK_HARD || (l_gl[end_pos].flags & GRAPHEME_IS_BREAK_SOFT) == GRAPHEME_IS_BREAK_SOFT)) {
+					while (p_break_flags.has_flag(BREAK_TRIM_END_EDGE_SPACES) && (start_pos < end_pos) && ((l_gl[end_pos].flags & GRAPHEME_IS_SOFT_HYPHEN) != GRAPHEME_IS_SOFT_HYPHEN) && ((l_gl[end_pos].flags & GRAPHEME_IS_SPACE) == GRAPHEME_IS_SPACE || (l_gl[end_pos].flags & GRAPHEME_IS_BREAK_HARD) == GRAPHEME_IS_BREAK_HARD || (l_gl[end_pos].flags & GRAPHEME_IS_BREAK_SOFT) == GRAPHEME_IS_BREAK_SOFT)) {
 						end_pos -= l_gl[end_pos].count;
 					}
 					if (last_end <= l_gl[start_pos].start) {
 						lines.push_back(l_gl[start_pos].start);
 						lines.push_back(l_gl[end_pos].end);
-						if (p_width > indent) {
+						if (p_width > indent && i > indent_end) {
 							l_width = p_width - indent;
 						}
 						cur_safe_brk = last_safe_break;
@@ -1029,7 +1064,7 @@ PackedInt32Array TextServer::shaped_text_get_line_breaks(const RID &p_shaped, do
 					if (last_end <= line_start) {
 						lines.push_back(line_start);
 						lines.push_back(l_gl[last_safe_break].end);
-						if (p_width > indent) {
+						if (p_width > indent && i > indent_end) {
 							l_width = p_width - indent;
 						}
 						last_end = l_gl[last_safe_break].end;
@@ -1049,20 +1084,20 @@ PackedInt32Array TextServer::shaped_text_get_line_breaks(const RID &p_shaped, do
 			if (p_break_flags.has_flag(BREAK_MANDATORY)) {
 				if ((l_gl[i].flags & GRAPHEME_IS_BREAK_HARD) == GRAPHEME_IS_BREAK_HARD) {
 					int cur_safe_brk = i;
-					if (p_break_flags.has_flag(BREAK_TRIM_EDGE_SPACES)) {
+					if (p_break_flags.has_flag(BREAK_TRIM_START_EDGE_SPACES) || p_break_flags.has_flag(BREAK_TRIM_END_EDGE_SPACES)) {
 						int start_pos = prev_safe_break;
 						int end_pos = i;
-						while (trim_next && (start_pos < end_pos) && ((l_gl[start_pos].flags & GRAPHEME_IS_SPACE) == GRAPHEME_IS_SPACE || (l_gl[start_pos].flags & GRAPHEME_IS_BREAK_HARD) == GRAPHEME_IS_BREAK_HARD || (l_gl[start_pos].flags & GRAPHEME_IS_BREAK_SOFT) == GRAPHEME_IS_BREAK_SOFT)) {
+						while (p_break_flags.has_flag(BREAK_TRIM_START_EDGE_SPACES) && trim_next && (start_pos < end_pos) && ((l_gl[start_pos].flags & GRAPHEME_IS_SPACE) == GRAPHEME_IS_SPACE || (l_gl[start_pos].flags & GRAPHEME_IS_BREAK_HARD) == GRAPHEME_IS_BREAK_HARD || (l_gl[start_pos].flags & GRAPHEME_IS_BREAK_SOFT) == GRAPHEME_IS_BREAK_SOFT)) {
 							start_pos += l_gl[start_pos].count;
 						}
-						while ((start_pos < end_pos) && ((l_gl[end_pos].flags & GRAPHEME_IS_SPACE) == GRAPHEME_IS_SPACE || (l_gl[end_pos].flags & GRAPHEME_IS_BREAK_HARD) == GRAPHEME_IS_BREAK_HARD || (l_gl[end_pos].flags & GRAPHEME_IS_BREAK_SOFT) == GRAPHEME_IS_BREAK_SOFT)) {
+						while (p_break_flags.has_flag(BREAK_TRIM_END_EDGE_SPACES) && (start_pos < end_pos) && ((l_gl[end_pos].flags & GRAPHEME_IS_SPACE) == GRAPHEME_IS_SPACE || (l_gl[end_pos].flags & GRAPHEME_IS_BREAK_HARD) == GRAPHEME_IS_BREAK_HARD || (l_gl[end_pos].flags & GRAPHEME_IS_BREAK_SOFT) == GRAPHEME_IS_BREAK_SOFT)) {
 							end_pos -= l_gl[end_pos].count;
 						}
 						trim_next = true;
 						if (last_end <= l_gl[start_pos].start) {
 							lines.push_back(l_gl[start_pos].start);
 							lines.push_back(l_gl[end_pos].end);
-							if (p_width > indent) {
+							if (p_width > indent && i > indent_end) {
 								l_width = p_width - indent;
 							}
 							last_end = l_gl[i].end;
@@ -1072,7 +1107,7 @@ PackedInt32Array TextServer::shaped_text_get_line_breaks(const RID &p_shaped, do
 						if (last_end <= line_start) {
 							lines.push_back(line_start);
 							lines.push_back(l_gl[i].end);
-							if (p_width > indent) {
+							if (p_width > indent && i > indent_end) {
 								l_width = p_width - indent;
 							}
 							last_end = l_gl[i].end;
@@ -1115,7 +1150,7 @@ PackedInt32Array TextServer::shaped_text_get_line_breaks(const RID &p_shaped, do
 
 	if (l_size > 0) {
 		if (lines.size() == 0 || (lines[lines.size() - 1] < range.y && prev_safe_break < l_size)) {
-			if (p_break_flags.has_flag(BREAK_TRIM_EDGE_SPACES)) {
+			if (p_break_flags.has_flag(BREAK_TRIM_START_EDGE_SPACES)) {
 				int start_pos = (prev_safe_break < l_size) ? prev_safe_break : l_size - 1;
 				if (last_end <= l_gl[start_pos].start) {
 					int end_pos = l_size - 1;

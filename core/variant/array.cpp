@@ -88,11 +88,11 @@ Array::Iterator Array::end() {
 }
 
 Array::ConstIterator Array::begin() const {
-	return ConstIterator(_p->array.ptr(), _p->read_only);
+	return ConstIterator(_p->array.ptr());
 }
 
 Array::ConstIterator Array::end() const {
-	return ConstIterator(_p->array.ptr() + _p->array.size(), _p->read_only);
+	return ConstIterator(_p->array.ptr() + _p->array.size());
 }
 
 Variant &Array::operator[](int p_idx) {
@@ -104,10 +104,6 @@ Variant &Array::operator[](int p_idx) {
 }
 
 const Variant &Array::operator[](int p_idx) const {
-	if (unlikely(_p->read_only)) {
-		*_p->read_only = _p->array[p_idx];
-		return *_p->read_only;
-	}
 	return _p->array[p_idx];
 }
 
@@ -911,6 +907,12 @@ bool Array::is_read_only() const {
 Array::Array(const Array &p_from) {
 	_p = nullptr;
 	_ref(p_from);
+}
+
+Array::Array(std::initializer_list<Variant> p_init) {
+	_p = memnew(ArrayPrivate);
+	_p->refcount.init();
+	_p->array = Vector<Variant>(p_init);
 }
 
 Array::Array() {

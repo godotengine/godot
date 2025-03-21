@@ -55,6 +55,27 @@ TextServer::AutowrapMode Label::get_autowrap_mode() const {
 	return autowrap_mode;
 }
 
+void Label::set_autowrap_trim_flags(BitField<TextServer::LineBreakFlag> p_flags) {
+	if (autowrap_flags_trim == (p_flags & TextServer::BREAK_TRIM_MASK)) {
+		return;
+	}
+
+	autowrap_flags_trim = p_flags & TextServer::BREAK_TRIM_MASK;
+	for (Paragraph &para : paragraphs) {
+		para.lines_dirty = true;
+	}
+	queue_redraw();
+	update_configuration_warnings();
+
+	if (clip || overrun_behavior != TextServer::OVERRUN_NO_TRIMMING) {
+		update_minimum_size();
+	}
+}
+
+BitField<TextServer::LineBreakFlag> Label::get_autowrap_trim_flags() const {
+	return autowrap_flags_trim;
+}
+
 void Label::set_justification_flags(BitField<TextServer::JustificationFlag> p_flags) {
 	if (jst_flags == p_flags) {
 		return;
@@ -196,7 +217,7 @@ void Label::_shape() const {
 				case TextServer::AUTOWRAP_OFF:
 					break;
 			}
-			autowrap_flags = autowrap_flags | TextServer::BREAK_TRIM_EDGE_SPACES;
+			autowrap_flags = autowrap_flags | autowrap_flags_trim;
 
 			PackedInt32Array line_breaks = TS->shaped_text_get_line_breaks(para.text_rid, width, 0, autowrap_flags);
 			for (int i = 0; i < line_breaks.size(); i = i + 2) {
@@ -236,6 +257,17 @@ void Label::_shape() const {
 		if (para.lines_dirty) {
 			BitField<TextServer::TextOverrunFlag> overrun_flags = TextServer::OVERRUN_NO_TRIM;
 			switch (overrun_behavior) {
+				case TextServer::OVERRUN_TRIM_WORD_ELLIPSIS_FORCE: {
+					overrun_flags.set_flag(TextServer::OVERRUN_TRIM);
+					overrun_flags.set_flag(TextServer::OVERRUN_TRIM_WORD_ONLY);
+					overrun_flags.set_flag(TextServer::OVERRUN_ADD_ELLIPSIS);
+					overrun_flags.set_flag(TextServer::OVERRUN_ENFORCE_ELLIPSIS);
+				} break;
+				case TextServer::OVERRUN_TRIM_ELLIPSIS_FORCE: {
+					overrun_flags.set_flag(TextServer::OVERRUN_TRIM);
+					overrun_flags.set_flag(TextServer::OVERRUN_ADD_ELLIPSIS);
+					overrun_flags.set_flag(TextServer::OVERRUN_ENFORCE_ELLIPSIS);
+				} break;
 				case TextServer::OVERRUN_TRIM_WORD_ELLIPSIS:
 					overrun_flags.set_flag(TextServer::OVERRUN_TRIM);
 					overrun_flags.set_flag(TextServer::OVERRUN_TRIM_WORD_ONLY);
@@ -392,14 +424,15 @@ inline void draw_glyph(const Glyph &p_gl, const RID &p_canvas, const Color &p_fo
 	}
 }
 
-inline void draw_glyph_shadow(const Glyph &p_gl, const RID &p_canvas, const Color &p_font_shadow_color, int p_shadow_outline_size, const Vector2 &p_ofs, const Vector2 &shadow_ofs) {
+inline void draw_glyph_shadow(const Glyph &p_gl, const RID &p_canvas, const Color &p_font_shadow_color, const Vector2 &p_ofs, const Vector2 &shadow_ofs) {
 	if (p_gl.font_rid != RID()) {
-		if (p_font_shadow_color.a > 0) {
-			TS->font_draw_glyph(p_gl.font_rid, p_canvas, p_gl.font_size, p_ofs + Vector2(p_gl.x_off, p_gl.y_off) + shadow_ofs, p_gl.index, p_font_shadow_color);
-		}
-		if (p_font_shadow_color.a > 0 && p_shadow_outline_size > 0) {
-			TS->font_draw_glyph_outline(p_gl.font_rid, p_canvas, p_gl.font_size, p_shadow_outline_size, p_ofs + Vector2(p_gl.x_off, p_gl.y_off) + shadow_ofs, p_gl.index, p_font_shadow_color);
-		}
+		TS->font_draw_glyph(p_gl.font_rid, p_canvas, p_gl.font_size, p_ofs + Vector2(p_gl.x_off, p_gl.y_off) + shadow_ofs, p_gl.index, p_font_shadow_color);
+	}
+}
+
+inline void draw_glyph_shadow_outline(const Glyph &p_gl, const RID &p_canvas, const Color &p_font_shadow_color, int p_shadow_outline_size, const Vector2 &p_ofs, const Vector2 &shadow_ofs) {
+	if (p_gl.font_rid != RID()) {
+		TS->font_draw_glyph_outline(p_gl.font_rid, p_canvas, p_gl.font_size, p_shadow_outline_size, p_ofs + Vector2(p_gl.x_off, p_gl.y_off) + shadow_ofs, p_gl.index, p_font_shadow_color);
 	}
 }
 
@@ -703,7 +736,6 @@ void Label::_notification(int p_what) {
 
 			bool has_settings = settings.is_valid();
 
-			Size2 string_size;
 			Ref<StyleBox> style = theme_cache.normal_style;
 			Ref<Font> font = (settings.is_valid() && settings->get_font().is_valid()) ? settings->get_font() : theme_cache.font;
 			int font_size = settings.is_valid() ? settings->get_font_size() : theme_cache.font_size;
@@ -768,7 +800,10 @@ void Label::_notification(int p_what) {
 
 						// Draw shadow, outline and text. Note: Do not merge this into the single loop iteration, to prevent overlaps.
 						int processed_glyphs_step = 0;
-						for (int step = DRAW_STEP_SHADOW; step < DRAW_STEP_MAX; step++) {
+						for (int step = DRAW_STEP_SHADOW_OUTLINE; step < DRAW_STEP_MAX; step++) {
+							if (step == DRAW_STEP_SHADOW_OUTLINE && (font_shadow_color.a == 0 || shadow_outline_size <= 0)) {
+								continue;
+							}
 							if (step == DRAW_STEP_SHADOW && (font_shadow_color.a == 0)) {
 								continue;
 							}
@@ -784,8 +819,10 @@ void Label::_notification(int p_what) {
 									for (int j = 0; j < ellipsis_glyphs[gl_idx].repeat; j++) {
 										bool skip = (trim_chars && ellipsis_glyphs[gl_idx].end + para.start > visible_chars) || (trim_glyphs_ltr && (processed_glyphs_step >= visible_glyphs)) || (trim_glyphs_rtl && (processed_glyphs_step < total_glyphs - visible_glyphs));
 										if (!skip) {
-											if (step == DRAW_STEP_SHADOW) {
-												draw_glyph_shadow(ellipsis_glyphs[gl_idx], ci, font_shadow_color, shadow_outline_size, offset_step, shadow_ofs);
+											if (step == DRAW_STEP_SHADOW_OUTLINE) {
+												draw_glyph_shadow_outline(ellipsis_glyphs[gl_idx], ci, font_shadow_color, shadow_outline_size, offset_step, shadow_ofs);
+											} else if (step == DRAW_STEP_SHADOW) {
+												draw_glyph_shadow(ellipsis_glyphs[gl_idx], ci, font_shadow_color, offset_step, shadow_ofs);
 											} else if (step == DRAW_STEP_OUTLINE) {
 												draw_glyph_outline(ellipsis_glyphs[gl_idx], ci, font_outline_color, outline_size, offset_step);
 											} else if (step == DRAW_STEP_TEXT) {
@@ -814,8 +851,10 @@ void Label::_notification(int p_what) {
 								for (int k = 0; k < glyphs[j].repeat; k++) {
 									bool skip = (trim_chars && glyphs[j].end + para.start > visible_chars) || (trim_glyphs_ltr && (processed_glyphs_step >= visible_glyphs)) || (trim_glyphs_rtl && (processed_glyphs_step < total_glyphs - visible_glyphs));
 									if (!skip) {
-										if (step == DRAW_STEP_SHADOW) {
-											draw_glyph_shadow(glyphs[j], ci, font_shadow_color, shadow_outline_size, offset_step, shadow_ofs);
+										if (step == DRAW_STEP_SHADOW_OUTLINE) {
+											draw_glyph_shadow_outline(glyphs[j], ci, font_shadow_color, shadow_outline_size, offset_step, shadow_ofs);
+										} else if (step == DRAW_STEP_SHADOW) {
+											draw_glyph_shadow(glyphs[j], ci, font_shadow_color, offset_step, shadow_ofs);
 										} else if (step == DRAW_STEP_OUTLINE) {
 											draw_glyph_outline(glyphs[j], ci, font_outline_color, outline_size, offset_step);
 										} else if (step == DRAW_STEP_TEXT) {
@@ -832,8 +871,10 @@ void Label::_notification(int p_what) {
 									for (int j = 0; j < ellipsis_glyphs[gl_idx].repeat; j++) {
 										bool skip = (trim_chars && ellipsis_glyphs[gl_idx].end + para.start > visible_chars) || (trim_glyphs_ltr && (processed_glyphs_step >= visible_glyphs)) || (trim_glyphs_rtl && (processed_glyphs_step < total_glyphs - visible_glyphs));
 										if (!skip) {
-											if (step == DRAW_STEP_SHADOW) {
-												draw_glyph_shadow(ellipsis_glyphs[gl_idx], ci, font_shadow_color, shadow_outline_size, offset_step, shadow_ofs);
+											if (step == DRAW_STEP_SHADOW_OUTLINE) {
+												draw_glyph_shadow_outline(ellipsis_glyphs[gl_idx], ci, font_shadow_color, shadow_outline_size, offset_step, shadow_ofs);
+											} else if (step == DRAW_STEP_SHADOW) {
+												draw_glyph_shadow(ellipsis_glyphs[gl_idx], ci, font_shadow_color, offset_step, shadow_ofs);
 											} else if (step == DRAW_STEP_OUTLINE) {
 												draw_glyph_outline(ellipsis_glyphs[gl_idx], ci, font_outline_color, outline_size, offset_step);
 											} else if (step == DRAW_STEP_TEXT) {
@@ -940,7 +981,7 @@ Size2 Label::get_minimum_size() const {
 	const Ref<Font> &font = (settings.is_valid() && settings->get_font().is_valid()) ? settings->get_font() : theme_cache.font;
 	int font_size = settings.is_valid() ? settings->get_font_size() : theme_cache.font_size;
 
-	min_size.height = MAX(min_size.height, font->get_height(font_size) + font->get_spacing(TextServer::SPACING_TOP) + font->get_spacing(TextServer::SPACING_BOTTOM));
+	min_size.height = MAX(min_size.height, font->get_height(font_size));
 
 	Size2 min_style = theme_cache.normal_style->get_minimum_size();
 	if (autowrap_mode != TextServer::AUTOWRAP_OFF) {
@@ -1342,6 +1383,8 @@ void Label::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_paragraph_separator"), &Label::get_paragraph_separator);
 	ClassDB::bind_method(D_METHOD("set_autowrap_mode", "autowrap_mode"), &Label::set_autowrap_mode);
 	ClassDB::bind_method(D_METHOD("get_autowrap_mode"), &Label::get_autowrap_mode);
+	ClassDB::bind_method(D_METHOD("set_autowrap_trim_flags", "autowrap_trim_flags"), &Label::set_autowrap_trim_flags);
+	ClassDB::bind_method(D_METHOD("get_autowrap_trim_flags"), &Label::get_autowrap_trim_flags);
 	ClassDB::bind_method(D_METHOD("set_justification_flags", "justification_flags"), &Label::set_justification_flags);
 	ClassDB::bind_method(D_METHOD("get_justification_flags"), &Label::get_justification_flags);
 	ClassDB::bind_method(D_METHOD("set_clip_text", "enable"), &Label::set_clip_text);
@@ -1380,11 +1423,12 @@ void Label::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "horizontal_alignment", PROPERTY_HINT_ENUM, "Left,Center,Right,Fill"), "set_horizontal_alignment", "get_horizontal_alignment");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "vertical_alignment", PROPERTY_HINT_ENUM, "Top,Center,Bottom,Fill"), "set_vertical_alignment", "get_vertical_alignment");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "autowrap_mode", PROPERTY_HINT_ENUM, "Off,Arbitrary,Word,Word (Smart)"), "set_autowrap_mode", "get_autowrap_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "autowrap_trim_flags", PROPERTY_HINT_FLAGS, vformat("Trim Spaces After Break:%d,Trim Spaces Before Break:%d", TextServer::BREAK_TRIM_START_EDGE_SPACES, TextServer::BREAK_TRIM_END_EDGE_SPACES)), "set_autowrap_trim_flags", "get_autowrap_trim_flags");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "justification_flags", PROPERTY_HINT_FLAGS, "Kashida Justification:1,Word Justification:2,Justify Only After Last Tab:8,Skip Last Line:32,Skip Last Line With Visible Characters:64,Do Not Skip Single Line:128"), "set_justification_flags", "get_justification_flags");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "paragraph_separator"), "set_paragraph_separator", "get_paragraph_separator");
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "clip_text"), "set_clip_text", "is_clipping_text");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "text_overrun_behavior", PROPERTY_HINT_ENUM, "Trim Nothing,Trim Characters,Trim Words,Ellipsis,Word Ellipsis"), "set_text_overrun_behavior", "get_text_overrun_behavior");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "text_overrun_behavior", PROPERTY_HINT_ENUM, "Trim Nothing,Trim Characters,Trim Words,Ellipsis (6+ Characters),Word Ellipsis (6+ Characters),Ellipsis (Always),Word Ellipsis (Always)"), "set_text_overrun_behavior", "get_text_overrun_behavior");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "ellipsis_char"), "set_ellipsis_char", "get_ellipsis_char");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "uppercase"), "set_uppercase", "is_uppercase");
 	ADD_PROPERTY(PropertyInfo(Variant::PACKED_FLOAT32_ARRAY, "tab_stops"), "set_tab_stops", "get_tab_stops");

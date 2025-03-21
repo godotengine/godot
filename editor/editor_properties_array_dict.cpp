@@ -33,6 +33,7 @@
 #include "core/input/input.h"
 #include "core/io/marshalls.h"
 #include "editor/editor_file_system.h"
+#include "editor/editor_node.h"
 #include "editor/editor_properties.h"
 #include "editor/editor_properties_vector.h"
 #include "editor/editor_settings.h"
@@ -52,9 +53,9 @@ bool EditorPropertyArrayObject::_set(const StringName &p_name, const Variant &p_
 
 	int index;
 	if (name.begins_with("metadata/")) {
-		index = name.get_slice("/", 2).to_int();
+		index = name.get_slicec('/', 2).to_int();
 	} else {
-		index = name.get_slice("/", 1).to_int();
+		index = name.get_slicec('/', 1).to_int();
 	}
 
 	array.set(index, p_value);
@@ -70,9 +71,9 @@ bool EditorPropertyArrayObject::_get(const StringName &p_name, Variant &r_ret) c
 
 	int index;
 	if (name.begins_with("metadata/")) {
-		index = name.get_slice("/", 2).to_int();
+		index = name.get_slicec('/', 2).to_int();
 	} else {
-		index = name.get_slice("/", 1).to_int();
+		index = name.get_slicec('/', 1).to_int();
 	}
 
 	bool valid;
@@ -91,9 +92,6 @@ void EditorPropertyArrayObject::set_array(const Variant &p_array) {
 
 Variant EditorPropertyArrayObject::get_array() {
 	return array;
-}
-
-EditorPropertyArrayObject::EditorPropertyArrayObject() {
 }
 
 ///////////////////
@@ -232,9 +230,6 @@ String EditorPropertyDictionaryObject::get_label_for_index(int p_index) {
 	}
 }
 
-EditorPropertyDictionaryObject::EditorPropertyDictionaryObject() {
-}
-
 ///////////////////// ARRAY ///////////////////////////
 
 void EditorPropertyArray::initialize_array(Variant &p_array) {
@@ -263,7 +258,7 @@ void EditorPropertyArray::_property_changed(const String &p_property, Variant p_
 		p_value = Variant(); // `EditorResourcePicker` resets to `Ref<Resource>()`. See GH-82716.
 	}
 
-	int index = p_property.get_slice("/", 1).to_int();
+	int index = p_property.get_slicec('/', 1).to_int();
 
 	Variant array = object->get_array().duplicate();
 	array.set(index, p_value);
@@ -401,7 +396,7 @@ void EditorPropertyArray::update_property() {
 	}
 
 	if (preview_value) {
-		String ctr_str = array.get_construct_string().trim_prefix(array_type_name + "(").trim_suffix(")").replace("\n", "");
+		String ctr_str = array.get_construct_string().trim_prefix(array_type_name + "(").trim_suffix(")").remove_char('\n');
 		if (array_type == Variant::ARRAY && subtype != Variant::NIL) {
 			int type_end = ctr_str.find("](");
 			if (type_end > 0) {
@@ -430,7 +425,6 @@ void EditorPropertyArray::update_property() {
 
 		if (!container) {
 			container = memnew(PanelContainer);
-			container->set_mouse_filter(MOUSE_FILTER_STOP);
 			add_child(container);
 			set_bottom_editor(container);
 
@@ -460,6 +454,8 @@ void EditorPropertyArray::update_property() {
 			button_add_item = EditorInspector::create_inspector_action_button(TTR("Add Element"));
 			button_add_item->set_button_icon(get_editor_theme_icon(SNAME("Add")));
 			button_add_item->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyArray::_add_element));
+			button_add_item->connect(SceneStringName(draw), callable_mp(this, &EditorPropertyArray::_button_add_item_draw));
+			SET_DRAG_FORWARDING_CD(button_add_item, EditorPropertyArray);
 			button_add_item->set_disabled(is_read_only());
 			vbox->add_child(button_add_item);
 
@@ -551,6 +547,13 @@ void EditorPropertyArray::_button_draw() {
 	}
 }
 
+void EditorPropertyArray::_button_add_item_draw() {
+	if (dropping) {
+		Color color = get_theme_color(SNAME("accent_color"), EditorStringName(Editor));
+		button_add_item->draw_rect(Rect2(Point2(), button_add_item->get_size()), color, false);
+	}
+}
+
 bool EditorPropertyArray::_is_drop_valid(const Dictionary &p_drag_data) const {
 	if (is_read_only()) {
 		return false;
@@ -570,14 +573,19 @@ bool EditorPropertyArray::_is_drop_valid(const Dictionary &p_drag_data) const {
 	if (drop_type == "files") {
 		PackedStringArray files = drag_data["files"];
 
-		for (int i = 0; i < files.size(); i++) {
-			const String &file = files[i];
-			String ftype = EditorFileSystem::get_singleton()->get_file_type(file);
+		for (const String &file : files) {
+			int idx_in_dir;
+			EditorFileSystemDirectory const *dir = EditorFileSystem::get_singleton()->find_file(file, &idx_in_dir);
+			if (!dir) {
+				return false;
+			}
+			StringName ftype = dir->get_file_type(idx_in_dir);
+			String script_class = dir->get_file_resource_script_class(idx_in_dir);
 
-			for (int j = 0; j < allowed_type.get_slice_count(","); j++) {
-				String at = allowed_type.get_slice(",", j).strip_edges();
+			for (String at : allowed_type.split(",", false)) {
+				at = at.strip_edges();
 				// Fail if one of the files is not of allowed type.
-				if (!ClassDB::is_parent_class(ftype, at)) {
+				if (!ClassDB::is_parent_class(ftype, at) && !EditorNode::get_editor_data().script_class_is_parent(script_class, at)) {
 					return false;
 				}
 			}
@@ -585,6 +593,28 @@ bool EditorPropertyArray::_is_drop_valid(const Dictionary &p_drag_data) const {
 
 		// If no files fail, drop is valid.
 		return true;
+	}
+
+	if (drop_type == "resource") {
+		Ref<Resource> res = drag_data["resource"];
+		if (res.is_null()) {
+			return false;
+		}
+
+		String res_type = res->get_class();
+		StringName script_class;
+		if (res->get_script()) {
+			script_class = EditorNode::get_singleton()->get_object_custom_type_name(res->get_script());
+		}
+
+		for (String at : allowed_type.split(",", false)) {
+			at = at.strip_edges();
+			if (ClassDB::is_parent_class(res_type, at) || EditorNode::get_editor_data().script_class_is_parent(script_class, at)) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	if (drop_type == "nodes") {
@@ -595,8 +625,8 @@ bool EditorPropertyArray::_is_drop_valid(const Dictionary &p_drag_data) const {
 			if (subtype_hint_string == "NodePath") {
 				return true;
 			} else {
-				for (int j = 0; j < subtype_hint_string.get_slice_count(","); j++) {
-					String ast = subtype_hint_string.get_slice(",", j).strip_edges();
+				for (String ast : subtype_hint_string.split(",", false)) {
+					ast = ast.strip_edges();
 					allowed_subtype_array.append(ast);
 				}
 			}
@@ -609,7 +639,8 @@ bool EditorPropertyArray::_is_drop_valid(const Dictionary &p_drag_data) const {
 			ERR_FAIL_NULL_V_MSG(dropped_node, false, "Could not get the dropped node by its path.");
 
 			if (allowed_type != "NodePath") {
-				if (!ClassDB::is_parent_class(dropped_node->get_class_name(), allowed_type)) {
+				if (!ClassDB::is_parent_class(dropped_node->get_class_name(), allowed_type) &&
+						!EditorNode::get_singleton()->is_object_of_custom_type(dropped_node, allowed_type)) {
 					// Fail if one of the nodes is not of allowed type.
 					return false;
 				}
@@ -620,7 +651,8 @@ bool EditorPropertyArray::_is_drop_valid(const Dictionary &p_drag_data) const {
 				if (!allowed_subtype_array.has(dropped_node->get_class_name())) {
 					// The dropped node type was not found in the allowed subtype array, we must check if it inherits one of them.
 					for (const String &ast : allowed_subtype_array) {
-						if (ClassDB::is_parent_class(dropped_node->get_class_name(), ast)) {
+						if (ClassDB::is_parent_class(dropped_node->get_class_name(), ast) ||
+								EditorNode::get_singleton()->is_object_of_custom_type(dropped_node, ast)) {
 							is_drop_allowed = true;
 							break;
 						} else {
@@ -645,8 +677,6 @@ bool EditorPropertyArray::can_drop_data_fw(const Point2 &p_point, const Variant 
 }
 
 void EditorPropertyArray::drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) {
-	ERR_FAIL_COND(!_is_drop_valid(p_data));
-
 	Dictionary drag_data = p_data;
 	const String drop_type = drag_data.get("type", "");
 	Variant array = object->get_array();
@@ -672,6 +702,16 @@ void EditorPropertyArray::drop_data_fw(const Point2 &p_point, const Variant &p_d
 		}
 
 		emit_changed(get_edited_property(), array);
+	}
+
+	if (drop_type == "resource") {
+		Ref<Resource> res = drag_data["resource"];
+
+		if (res.is_valid()) {
+			array.call("push_back", res);
+
+			emit_changed(get_edited_property(), array);
+		}
 	}
 
 	if (drop_type == "nodes") {
@@ -729,6 +769,9 @@ void EditorPropertyArray::_notification(int p_what) {
 				if (_is_drop_valid(get_viewport()->gui_get_drag_data())) {
 					dropping = true;
 					edit->queue_redraw();
+					if (button_add_item) {
+						button_add_item->queue_redraw();
+					}
 				}
 			}
 		} break;
@@ -737,6 +780,9 @@ void EditorPropertyArray::_notification(int p_what) {
 			if (dropping) {
 				dropping = false;
 				edit->queue_redraw();
+				if (button_add_item) {
+					button_add_item->queue_redraw();
+				}
 			}
 		} break;
 	}
@@ -808,11 +854,11 @@ void EditorPropertyArray::setup(Variant::Type p_array_type, const String &p_hint
 			String subtype_string = p_hint_string.substr(0, hint_subtype_separator);
 			int slash_pos = subtype_string.find_char('/');
 			if (slash_pos >= 0) {
-				subtype_hint = PropertyHint(subtype_string.substr(slash_pos + 1, subtype_string.size() - slash_pos - 1).to_int());
+				subtype_hint = PropertyHint(subtype_string.substr(slash_pos + 1).to_int());
 				subtype_string = subtype_string.substr(0, slash_pos);
 			}
 
-			subtype_hint_string = p_hint_string.substr(hint_subtype_separator + 1, p_hint_string.size() - hint_subtype_separator - 1);
+			subtype_hint_string = p_hint_string.substr(hint_subtype_separator + 1);
 			subtype = Variant::Type(subtype_string.to_int());
 		}
 	}
@@ -839,7 +885,7 @@ void EditorPropertyArray::_reorder_button_gui_input(const Ref<InputEvent> &p_eve
 		}
 
 		float required_y_distance = 20.0f * EDSCALE;
-		if (ABS(reorder_mouse_y_delta) > required_y_distance) {
+		if (Math::abs(reorder_mouse_y_delta) > required_y_distance) {
 			int direction = reorder_mouse_y_delta > 0.0f ? 1 : -1;
 			reorder_mouse_y_delta -= required_y_distance * direction;
 
@@ -1091,11 +1137,11 @@ void EditorPropertyDictionary::setup(PropertyHint p_hint, const String &p_hint_s
 			String key_subtype_string = key.substr(0, hint_key_subtype_separator);
 			int slash_pos = key_subtype_string.find_char('/');
 			if (slash_pos >= 0) {
-				key_subtype_hint = PropertyHint(key_subtype_string.substr(slash_pos + 1, key_subtype_string.size() - slash_pos - 1).to_int());
+				key_subtype_hint = PropertyHint(key_subtype_string.substr(slash_pos + 1).to_int());
 				key_subtype_string = key_subtype_string.substr(0, slash_pos);
 			}
 
-			key_subtype_hint_string = key.substr(hint_key_subtype_separator + 1, key.size() - hint_key_subtype_separator - 1);
+			key_subtype_hint_string = key.substr(hint_key_subtype_separator + 1);
 			key_subtype = Variant::Type(key_subtype_string.to_int());
 
 			Variant new_key = object->get_new_item_key();
@@ -1110,11 +1156,11 @@ void EditorPropertyDictionary::setup(PropertyHint p_hint, const String &p_hint_s
 			String value_subtype_string = value.substr(0, hint_value_subtype_separator);
 			int slash_pos = value_subtype_string.find_char('/');
 			if (slash_pos >= 0) {
-				value_subtype_hint = PropertyHint(value_subtype_string.substr(slash_pos + 1, value_subtype_string.size() - slash_pos - 1).to_int());
+				value_subtype_hint = PropertyHint(value_subtype_string.substr(slash_pos + 1).to_int());
 				value_subtype_string = value_subtype_string.substr(0, slash_pos);
 			}
 
-			value_subtype_hint_string = value.substr(hint_value_subtype_separator + 1, value.size() - hint_value_subtype_separator - 1);
+			value_subtype_hint_string = value.substr(hint_value_subtype_separator + 1);
 			value_subtype = Variant::Type(value_subtype_string.to_int());
 
 			Variant new_value = object->get_new_item_value();
@@ -1179,7 +1225,7 @@ void EditorPropertyDictionary::update_property() {
 	object->set_dict(updated_val);
 
 	if (preview_value) {
-		String ctr_str = updated_val.get_construct_string().replace("\n", "");
+		String ctr_str = updated_val.get_construct_string().remove_char('\n');
 		if (key_subtype != Variant::NIL || value_subtype != Variant::NIL) {
 			int type_end = ctr_str.find("](");
 			if (type_end > 0) {
@@ -1208,7 +1254,6 @@ void EditorPropertyDictionary::update_property() {
 
 		if (!container) {
 			container = memnew(PanelContainer);
-			container->set_mouse_filter(MOUSE_FILTER_STOP);
 			add_child(container);
 			set_bottom_editor(container);
 
@@ -1462,7 +1507,7 @@ EditorPropertyDictionary::EditorPropertyDictionary() {
 
 void EditorPropertyLocalizableString::_property_changed(const String &p_property, const Variant &p_value, const String &p_name, bool p_changing) {
 	if (p_property.begins_with("indices")) {
-		int index = p_property.get_slice("/", 1).to_int();
+		int index = p_property.get_slicec('/', 1).to_int();
 
 		Dictionary dict = object->get_dict().duplicate();
 		Variant key = dict.get_key_at_index(index);

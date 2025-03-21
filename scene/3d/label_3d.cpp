@@ -86,6 +86,9 @@ void Label3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_autowrap_mode", "autowrap_mode"), &Label3D::set_autowrap_mode);
 	ClassDB::bind_method(D_METHOD("get_autowrap_mode"), &Label3D::get_autowrap_mode);
 
+	ClassDB::bind_method(D_METHOD("set_autowrap_trim_flags", "autowrap_trim_flags"), &Label3D::set_autowrap_trim_flags);
+	ClassDB::bind_method(D_METHOD("get_autowrap_trim_flags"), &Label3D::get_autowrap_trim_flags);
+
 	ClassDB::bind_method(D_METHOD("set_justification_flags", "justification_flags"), &Label3D::set_justification_flags);
 	ClassDB::bind_method(D_METHOD("get_justification_flags"), &Label3D::get_justification_flags);
 
@@ -154,6 +157,7 @@ void Label3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "uppercase"), "set_uppercase", "is_uppercase");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "line_spacing", PROPERTY_HINT_NONE, "suffix:px"), "set_line_spacing", "get_line_spacing");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "autowrap_mode", PROPERTY_HINT_ENUM, "Off,Arbitrary,Word,Word (Smart)"), "set_autowrap_mode", "get_autowrap_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "autowrap_trim_flags", PROPERTY_HINT_FLAGS, vformat("Trim Spaces After Break:%d,Trim Spaces Before Break:%d", TextServer::BREAK_TRIM_START_EDGE_SPACES, TextServer::BREAK_TRIM_END_EDGE_SPACES)), "set_autowrap_trim_flags", "get_autowrap_trim_flags");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "justification_flags", PROPERTY_HINT_FLAGS, "Kashida Justification:1,Word Justification:2,Justify Only After Last Tab:8,Skip Last Line:32,Skip Last Line With Visible Characters:64,Do Not Skip Single Line:128"), "set_justification_flags", "get_justification_flags");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "width", PROPERTY_HINT_NONE, "suffix:px"), "set_width", "get_width");
 
@@ -519,7 +523,7 @@ void Label3D::_shape() {
 			case TextServer::AUTOWRAP_OFF:
 				break;
 		}
-		autowrap_flags = autowrap_flags | TextServer::BREAK_TRIM_EDGE_SPACES;
+		autowrap_flags = autowrap_flags | autowrap_flags_trim;
 
 		PackedInt32Array line_breaks = TS->shaped_text_get_line_breaks(text_rid, width, 0, autowrap_flags);
 		float max_line_w = 0.0;
@@ -889,6 +893,18 @@ void Label3D::set_autowrap_mode(TextServer::AutowrapMode p_mode) {
 
 TextServer::AutowrapMode Label3D::get_autowrap_mode() const {
 	return autowrap_mode;
+}
+
+void Label3D::set_autowrap_trim_flags(BitField<TextServer::LineBreakFlag> p_flags) {
+	if (autowrap_flags_trim != (p_flags & TextServer::BREAK_TRIM_MASK)) {
+		autowrap_flags_trim = (p_flags & TextServer::BREAK_TRIM_MASK);
+		dirty_lines = true;
+		_queue_update();
+	}
+}
+
+BitField<TextServer::LineBreakFlag> Label3D::get_autowrap_trim_flags() const {
+	return autowrap_flags_trim;
 }
 
 void Label3D::set_justification_flags(BitField<TextServer::JustificationFlag> p_flags) {

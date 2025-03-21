@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TEXT_SERVER_ADV_H
-#define TEXT_SERVER_ADV_H
+#pragma once
 
 /*************************************************************************/
 /* ICU/HarfBuzz/Graphite backed Text Server implementation with BiDi,    */
@@ -272,6 +271,7 @@ class TextServerAdvanced : public TextServerExtension {
 		Rect2 rect;
 		Rect2 uv_rect;
 		Vector2 advance;
+		bool from_svg = false;
 	};
 
 	struct FontForSizeAdvanced {
@@ -404,7 +404,7 @@ class TextServerAdvanced : public TextServerExtension {
 	_FORCE_INLINE_ Variant::Type _get_tag_type(int64_t p_tag) const;
 	_FORCE_INLINE_ bool _get_tag_hidden(int64_t p_tag) const;
 	_FORCE_INLINE_ int _font_get_weight_by_name(const String &p_sty_name) const {
-		String sty_name = p_sty_name.replace(" ", "").replace("-", "");
+		String sty_name = p_sty_name.remove_chars(" -");
 		if (sty_name.contains("thin") || sty_name.contains("hairline")) {
 			return 100;
 		} else if (sty_name.contains("extralight") || sty_name.contains("ultralight")) {
@@ -431,7 +431,7 @@ class TextServerAdvanced : public TextServerExtension {
 		return 400;
 	}
 	_FORCE_INLINE_ int _font_get_stretch_by_name(const String &p_sty_name) const {
-		String sty_name = p_sty_name.replace(" ", "").replace("-", "");
+		String sty_name = p_sty_name.remove_chars(" -");
 		if (sty_name.contains("ultracondensed")) {
 			return 50;
 		} else if (sty_name.contains("extracondensed")) {
@@ -545,6 +545,11 @@ class TextServerAdvanced : public TextServerExtension {
 		bool js_ops_valid = false;
 		bool chars_valid = false;
 
+		HashMap<String, UBreakIterator *> line_break_iterators_per_language;
+
+		// Creating UBreakIterator is surprisingly costly. To improve efficiency, we cache them.
+		UBreakIterator *_get_break_iterator_for_locale(const String &p_language, UErrorCode *r_err);
+
 		~ShapedTextDataAdvanced() {
 			for (int i = 0; i < bidi_iter.size(); i++) {
 				if (bidi_iter[i]) {
@@ -556,6 +561,9 @@ class TextServerAdvanced : public TextServerExtension {
 			}
 			if (hb_buffer) {
 				hb_buffer_destroy(hb_buffer);
+			}
+			for (const KeyValue<String, UBreakIterator *> &bi : line_break_iterators_per_language) {
+				ubrk_close(bi.value);
 			}
 		}
 	};
@@ -1025,5 +1033,3 @@ public:
 	TextServerAdvanced();
 	~TextServerAdvanced();
 };
-
-#endif // TEXT_SERVER_ADV_H

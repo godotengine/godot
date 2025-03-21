@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef OPENXR_EXTENSION_WRAPPER_EXTENSION_H
-#define OPENXR_EXTENSION_WRAPPER_EXTENSION_H
+#pragma once
 
 #include "../openxr_api_extension.h"
 #include "openxr_extension_wrapper.h"
@@ -39,8 +38,8 @@
 #include "core/variant/native_ptr.h"
 #include "core/variant/typed_array.h"
 
-class OpenXRExtensionWrapperExtension : public Object, public OpenXRExtensionWrapper, public OpenXRCompositionLayerProvider {
-	GDCLASS(OpenXRExtensionWrapperExtension, Object);
+class OpenXRExtensionWrapperExtension : public OpenXRExtensionWrapper, public OpenXRCompositionLayerProvider {
+	GDCLASS(OpenXRExtensionWrapperExtension, OpenXRExtensionWrapper);
 
 protected:
 	_THREAD_SAFE_CLASS_
@@ -145,5 +144,3 @@ public:
 	OpenXRExtensionWrapperExtension();
 	virtual ~OpenXRExtensionWrapperExtension() override;
 };
-
-#endif // OPENXR_EXTENSION_WRAPPER_EXTENSION_H

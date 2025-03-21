@@ -293,10 +293,12 @@
 #include "scene/3d/visible_on_screen_notifier_3d.h"
 #include "scene/3d/voxel_gi.h"
 #include "scene/3d/world_environment.h"
-#include "scene/3d/xr_body_modifier_3d.h"
-#include "scene/3d/xr_face_modifier_3d.h"
-#include "scene/3d/xr_hand_modifier_3d.h"
-#include "scene/3d/xr_nodes.h"
+#ifndef XR_DISABLED
+#include "scene/3d/xr/xr_body_modifier_3d.h"
+#include "scene/3d/xr/xr_face_modifier_3d.h"
+#include "scene/3d/xr/xr_hand_modifier_3d.h"
+#include "scene/3d/xr/xr_nodes.h"
+#endif // XR_DISABLED
 #include "scene/animation/root_motion_view.h"
 #include "scene/resources/3d/box_shape_3d.h"
 #include "scene/resources/3d/capsule_shape_3d.h"
@@ -555,6 +557,7 @@ void register_scene_types() {
 	GDREGISTER_VIRTUAL_CLASS(GeometryInstance3D);
 	GDREGISTER_CLASS(Camera3D);
 	GDREGISTER_CLASS(AudioListener3D);
+#ifndef XR_DISABLED
 	GDREGISTER_CLASS(XRCamera3D);
 	GDREGISTER_CLASS(XRNode3D);
 	GDREGISTER_CLASS(XRController3D);
@@ -563,6 +566,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(XRBodyModifier3D);
 	GDREGISTER_CLASS(XRHandModifier3D);
 	GDREGISTER_CLASS(XRFaceModifier3D);
+#endif // XR_DISABLED
 	GDREGISTER_CLASS(MeshInstance3D);
 	GDREGISTER_CLASS(OccluderInstance3D);
 	GDREGISTER_ABSTRACT_CLASS(Occluder3D);

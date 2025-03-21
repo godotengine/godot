@@ -393,7 +393,7 @@ Ref<ImageTexture> EditorExportPlatform::get_option_icon(int p_index) const {
 }
 
 String EditorExportPlatform::find_export_template(const String &template_file_name, String *err) const {
-	String current_version = VERSION_FULL_CONFIG;
+	String current_version = GODOT_VERSION_FULL_CONFIG;
 	String template_path = EditorPaths::get_singleton()->get_export_templates_dir().path_join(current_version).path_join(template_file_name);
 
 	if (FileAccess::exists(template_path)) {
@@ -950,7 +950,7 @@ Dictionary EditorExportPlatform::get_internal_export_files(const Ref<EditorExpor
 					export_ok = true;
 				}
 			} else {
-				String current_version = VERSION_FULL_CONFIG;
+				String current_version = GODOT_VERSION_FULL_CONFIG;
 				String template_path = EditorPaths::get_singleton()->get_export_templates_dir().path_join(current_version);
 				if (p_debug && p_preset->has("custom_template/debug") && p_preset->get("custom_template/debug") != "") {
 					template_path = p_preset->get("custom_template/debug").operator String().get_base_dir();
@@ -1404,7 +1404,7 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 
 				for (const String &F : remaps) {
 					String remap = F;
-					String feature = remap.get_slice(".", 1);
+					String feature = remap.get_slicec('.', 1);
 					if (features.has(feature)) {
 						remap_features.insert(feature);
 					}
@@ -1423,7 +1423,7 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 						Vector<uint8_t> array = FileAccess::get_file_as_bytes(remapped_path);
 						err = save_proxy.save_file(p_udata, remapped_path, array, idx, total, enc_in_filters, enc_ex_filters, key, seed);
 					} else if (remap.begins_with("path.")) {
-						String feature = remap.get_slice(".", 1);
+						String feature = remap.get_slicec('.', 1);
 
 						if (remap_features.has(feature)) {
 							String remapped_path = config->get_value("remap", remap);
@@ -1642,8 +1642,7 @@ Error EditorExportPlatform::_remove_pack_file(void *p_userdata, const String &p_
 		pd->f->store_8(0);
 	}
 
-	sd.md5.resize(16);
-	sd.md5.fill(0);
+	sd.md5.resize_zeroed(16);
 
 	pd->file_ofs.push_back(sd);
 
@@ -1946,9 +1945,9 @@ Error EditorExportPlatform::save_pack(const Ref<EditorExportPreset> &p_preset, b
 
 	f->store_32(PACK_HEADER_MAGIC);
 	f->store_32(PACK_FORMAT_VERSION);
-	f->store_32(VERSION_MAJOR);
-	f->store_32(VERSION_MINOR);
-	f->store_32(VERSION_PATCH);
+	f->store_32(GODOT_VERSION_MAJOR);
+	f->store_32(GODOT_VERSION_MINOR);
+	f->store_32(GODOT_VERSION_PATCH);
 
 	uint32_t pack_flags = 0;
 	bool enc_pck = p_preset->get_enc_pck();
@@ -2344,7 +2343,7 @@ Error EditorExportPlatform::ssh_run_on_remote(const String &p_host, const String
 		print_verbose(vformat("Exit code: %d, Output: %s", exit_code, out.replace("\r\n", "\n")));
 	}
 	if (r_out) {
-		*r_out = out.replace("\r\n", "\n").get_slice("\n", 0);
+		*r_out = out.replace("\r\n", "\n").get_slicec('\n', 0);
 	}
 	if (err != OK) {
 		return err;
@@ -2500,7 +2499,4 @@ void EditorExportPlatform::_bind_methods() {
 	BIND_BITFIELD_FLAG(DEBUG_FLAG_REMOTE_DEBUG_LOCALHOST);
 	BIND_BITFIELD_FLAG(DEBUG_FLAG_VIEW_COLLISIONS);
 	BIND_BITFIELD_FLAG(DEBUG_FLAG_VIEW_NAVIGATION);
-}
-
-EditorExportPlatform::EditorExportPlatform() {
 }

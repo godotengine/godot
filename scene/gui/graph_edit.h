@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef GRAPH_EDIT_H
-#define GRAPH_EDIT_H
+#pragma once
 
 #include "scene/gui/box_container.h"
 #include "scene/gui/graph_frame.h"
@@ -345,6 +344,7 @@ private:
 	TypedArray<Dictionary> _get_connection_list() const;
 	Dictionary _get_closest_connection_at_point(const Vector2 &p_point, float p_max_distance = 4.0) const;
 	TypedArray<Dictionary> _get_connections_intersecting_with_rect(const Rect2 &p_rect) const;
+	TypedArray<Dictionary> _get_connection_list_from_node(const StringName &p_node) const;
 
 	Rect2 _compute_shrinked_frame_rect(const GraphFrame *p_frame);
 	void _set_drag_frame_attached_nodes(GraphFrame *p_frame, bool p_drag);
@@ -517,5 +517,3 @@ public:
 
 VARIANT_ENUM_CAST(GraphEdit::PanningScheme);
 VARIANT_ENUM_CAST(GraphEdit::GridPattern);
-
-#endif // GRAPH_EDIT_H

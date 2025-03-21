@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef BVH_H
-#define BVH_H
+#pragma once
 
 // BVH
 // This class provides a wrapper around BVH tree, which contains most of the functionality
@@ -435,8 +434,6 @@ private:
 			return;
 		}
 
-		BOUNDS bb;
-
 		typename BVHTREE_CLASS::CullParams params;
 
 		params.result_count_overall = 0;
@@ -806,5 +803,3 @@ public:
 };
 
 #undef BVHTREE_CLASS
-
-#endif // BVH_H

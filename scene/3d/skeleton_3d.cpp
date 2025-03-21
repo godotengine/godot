@@ -838,6 +838,13 @@ bool Skeleton3D::is_show_rest_only() const {
 void Skeleton3D::clear_bones() {
 	bones.clear();
 	name_to_bone_index.clear();
+
+	// All these structures contain references to now invalid bone indices.
+	skin_bindings.clear();
+	bone_global_pose_dirty.clear();
+	parentless_bones.clear();
+	nested_set_offset_to_bone_index.clear();
+
 	process_order_dirty = true;
 	version++;
 	_make_dirty();
@@ -1090,6 +1097,8 @@ void Skeleton3D::force_update_bone_children_transforms(int p_bone_idx) {
 void Skeleton3D::_force_update_bone_children_transforms(int p_bone_idx) const {
 	const int bone_size = bones.size();
 	ERR_FAIL_INDEX(p_bone_idx, bone_size);
+
+	_update_process_order();
 
 	Bone *bonesptr = bones.ptr();
 

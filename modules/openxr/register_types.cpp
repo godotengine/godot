@@ -53,6 +53,7 @@
 #include "extensions/openxr_dpad_binding_extension.h"
 #include "extensions/openxr_eye_gaze_interaction.h"
 #include "extensions/openxr_fb_display_refresh_rate_extension.h"
+#include "extensions/openxr_future_extension.h"
 #include "extensions/openxr_hand_interaction_extension.h"
 #include "extensions/openxr_hand_tracking_extension.h"
 #include "extensions/openxr_htc_controller_extension.h"
@@ -63,6 +64,7 @@
 #include "extensions/openxr_ml2_controller_extension.h"
 #include "extensions/openxr_mxink_extension.h"
 #include "extensions/openxr_palm_pose_extension.h"
+#include "extensions/openxr_performance_settings_extension.h"
 #include "extensions/openxr_pico_controller_extension.h"
 #include "extensions/openxr_valve_analog_threshold_extension.h"
 #include "extensions/openxr_visibility_mask_extension.h"
@@ -110,8 +112,14 @@ static void _editor_init() {
 
 void initialize_openxr_module(ModuleInitializationLevel p_level) {
 	if (p_level == MODULE_INITIALIZATION_LEVEL_CORE) {
-		GDREGISTER_CLASS(OpenXRExtensionWrapperExtension);
+		GDREGISTER_ABSTRACT_CLASS(OpenXRExtensionWrapper);
+		GDREGISTER_VIRTUAL_CLASS(OpenXRExtensionWrapperExtension);
+		GDREGISTER_ABSTRACT_CLASS(OpenXRFutureResult); // Declared abstract, should never be instantiated by a user (Q or should this be internal?)
+		GDREGISTER_CLASS(OpenXRFutureExtension);
 		GDREGISTER_CLASS(OpenXRAPIExtension);
+
+		// Note, we're not registering all wrapper classes here, there is no point in exposing them
+		// if there isn't specific logic to expose.
 	}
 
 	if (p_level == MODULE_INITIALIZATION_LEVEL_SERVERS) {
@@ -139,6 +147,12 @@ void initialize_openxr_module(ModuleInitializationLevel p_level) {
 			OpenXRAPI::register_extension_wrapper(memnew(OpenXRHandInteractionExtension));
 			OpenXRAPI::register_extension_wrapper(memnew(OpenXRMxInkExtension));
 			OpenXRAPI::register_extension_wrapper(memnew(OpenXRVisibilityMaskExtension));
+			OpenXRAPI::register_extension_wrapper(memnew(OpenXRPerformanceSettingsExtension));
+
+			// Futures extension has to be registered as a singleton so extensions can access it.
+			OpenXRFutureExtension *future_extension = memnew(OpenXRFutureExtension);
+			OpenXRAPI::register_extension_wrapper(future_extension);
+			Engine::get_singleton()->add_singleton(Engine::Singleton("OpenXRFutureExtension", future_extension));
 
 			// register gated extensions
 			if (int(GLOBAL_GET("xr/openxr/extensions/debug_utils")) > 0) {
@@ -223,15 +237,17 @@ void initialize_openxr_module(ModuleInitializationLevel p_level) {
 				openxr_interface->initialize();
 			}
 		}
+	}
 
 #ifdef TOOLS_ENABLED
+	if (p_level == MODULE_INITIALIZATION_LEVEL_EDITOR) {
 		GDREGISTER_ABSTRACT_CLASS(OpenXRInteractionProfileEditorBase);
 		GDREGISTER_CLASS(OpenXRInteractionProfileEditor);
 		GDREGISTER_CLASS(OpenXRBindingModifierEditor);
 
 		EditorNode::add_init_callback(_editor_init);
-#endif
 	}
+#endif
 }
 
 void uninitialize_openxr_module(ModuleInitializationLevel p_level) {

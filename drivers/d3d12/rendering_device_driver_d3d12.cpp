@@ -332,6 +332,20 @@ const RenderingDeviceDriverD3D12::D3D12Format RenderingDeviceDriverD3D12::RD_TO_
 	/* DATA_FORMAT_G16_B16_R16_3PLANE_422_UNORM */ {},
 	/* DATA_FORMAT_G16_B16R16_2PLANE_422_UNORM */ {},
 	/* DATA_FORMAT_G16_B16_R16_3PLANE_444_UNORM */ {},
+	/* DATA_FORMAT_ASTC_4x4_SFLOAT_BLOCK */ {},
+	/* DATA_FORMAT_ASTC_5x4_SFLOAT_BLOCK */ {},
+	/* DATA_FORMAT_ASTC_5x5_SFLOAT_BLOCK */ {},
+	/* DATA_FORMAT_ASTC_6x5_SFLOAT_BLOCK */ {},
+	/* DATA_FORMAT_ASTC_6x6_SFLOAT_BLOCK */ {},
+	/* DATA_FORMAT_ASTC_8x5_SFLOAT_BLOCK */ {},
+	/* DATA_FORMAT_ASTC_8x6_SFLOAT_BLOCK */ {},
+	/* DATA_FORMAT_ASTC_8x8_SFLOAT_BLOCK */ {},
+	/* DATA_FORMAT_ASTC_10x5_SFLOAT_BLOCK*/ {},
+	/* DATA_FORMAT_ASTC_10x6_SFLOAT_BLOCK */ {},
+	/* DATA_FORMAT_ASTC_10x8_SFLOAT_BLOCK */ {},
+	/* DATA_FORMAT_ASTC_10x10_SFLOAT_BLOCK */ {},
+	/* DATA_FORMAT_ASTC_12x10_SFLOAT_BLOCK */ {},
+	/* DATA_FORMAT_ASTC_12x12_SFLOAT_BLOCK */ {},
 };
 
 Error RenderingDeviceDriverD3D12::DescriptorsHeap::allocate(ID3D12Device *p_device, D3D12_DESCRIPTOR_HEAP_TYPE p_type, uint32_t p_descriptor_count, bool p_for_gpu) {
@@ -3529,7 +3543,7 @@ Vector<uint8_t> RenderingDeviceDriverD3D12::shader_compile_binary_from_spirv(Vec
 		ComPtr<ID3DBlob> error_blob;
 		HRESULT res = D3DX12SerializeVersionedRootSignature(context_driver->lib_d3d12, &root_sig_desc, D3D_ROOT_SIGNATURE_VERSION_1_1, root_sig_blob.GetAddressOf(), error_blob.GetAddressOf());
 		ERR_FAIL_COND_V_MSG(!SUCCEEDED(res), Vector<uint8_t>(),
-				"Serialization of root signature failed with error " + vformat("0x%08ux", (uint64_t)res) + " and the following message:\n" + String((char *)error_blob->GetBufferPointer(), error_blob->GetBufferSize()));
+				"Serialization of root signature failed with error " + vformat("0x%08ux", (uint64_t)res) + " and the following message:\n" + String::ascii(Span((char *)error_blob->GetBufferPointer(), error_blob->GetBufferSize())));
 
 		binary_data.root_signature_crc = crc32(0, nullptr, 0);
 		binary_data.root_signature_crc = crc32(binary_data.root_signature_crc, (const Bytef *)root_sig_blob->GetBufferPointer(), root_sig_blob->GetBufferSize());
@@ -6218,6 +6232,8 @@ uint64_t RenderingDeviceDriverD3D12::limit_get(Limit p_limit) {
 			return D3D12_CS_THREAD_GROUP_MAX_Y;
 		case LIMIT_MAX_COMPUTE_WORKGROUP_SIZE_Z:
 			return D3D12_CS_THREAD_GROUP_MAX_Z;
+		case LIMIT_MAX_COMPUTE_SHARED_MEMORY_SIZE:
+			return D3D12_CS_TGSM_REGISTER_COUNT * sizeof(float);
 		case LIMIT_SUBGROUP_SIZE:
 		// Note in min/max. Shader model 6.6 supports it (see https://microsoft.github.io/DirectX-Specs/d3d/HLSL_SM_6_6_WaveSize.html),
 		// but at this time I don't know the implications on the transpilation to DXIL, etc.

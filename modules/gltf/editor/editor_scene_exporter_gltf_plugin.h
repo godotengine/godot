@@ -28,10 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef EDITOR_SCENE_EXPORTER_GLTF_PLUGIN_H
-#define EDITOR_SCENE_EXPORTER_GLTF_PLUGIN_H
-
-#ifdef TOOLS_ENABLED
+#pragma once
 
 #include "../gltf_document.h"
 #include "editor_scene_exporter_gltf_settings.h"
@@ -56,7 +53,3 @@ public:
 	bool has_main_screen() const override;
 	SceneExporterGLTFPlugin();
 };
-
-#endif // TOOLS_ENABLED
-
-#endif // EDITOR_SCENE_EXPORTER_GLTF_PLUGIN_H

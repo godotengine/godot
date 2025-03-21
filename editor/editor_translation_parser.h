@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef EDITOR_TRANSLATION_PARSER_H
-#define EDITOR_TRANSLATION_PARSER_H
+#pragma once
 
 #include "core/error/error_list.h"
 #include "core/object/gdvirtual.gen.inc"
@@ -75,8 +74,5 @@ public:
 	void remove_parser(const Ref<EditorTranslationParserPlugin> &p_parser, ParserType p_type);
 	void clean_parsers();
 
-	EditorTranslationParser();
 	~EditorTranslationParser();
 };
-
-#endif // EDITOR_TRANSLATION_PARSER_H

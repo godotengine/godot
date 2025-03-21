@@ -28,10 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef NAVIGATION_MESH_EDITOR_PLUGIN_H
-#define NAVIGATION_MESH_EDITOR_PLUGIN_H
-
-#ifdef TOOLS_ENABLED
+#pragma once
 
 #include "editor/plugins/editor_plugin.h"
 
@@ -65,7 +62,6 @@ protected:
 public:
 	void edit(NavigationRegion3D *p_nav_region);
 	NavigationMeshEditor();
-	~NavigationMeshEditor();
 };
 
 class NavigationMeshEditorPlugin : public EditorPlugin {
@@ -81,9 +77,4 @@ public:
 	virtual void make_visible(bool p_visible) override;
 
 	NavigationMeshEditorPlugin();
-	~NavigationMeshEditorPlugin();
 };
-
-#endif // TOOLS_ENABLED
-
-#endif // NAVIGATION_MESH_EDITOR_PLUGIN_H

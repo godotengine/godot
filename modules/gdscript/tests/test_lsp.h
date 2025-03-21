@@ -28,10 +28,13 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TEST_LSP_H
-#define TEST_LSP_H
+#pragma once
 
 #ifdef TOOLS_ENABLED
+
+#include "modules/modules_enabled.gen.h" // For jsonrpc.
+
+#ifdef MODULE_JSONRPC_ENABLED
 
 #include "tests/test_macros.h"
 
@@ -489,15 +492,21 @@ func f():
 		REQUIRE(proto);
 
 		SUBCASE("selectionRange of root class must be inside range") {
-			String path = "res://lsp/first_line_comment.gd";
-			assert_no_errors_in(path);
-			GDScriptLanguageProtocol::get_singleton()->get_workspace()->parse_local_script(path);
-			ExtendGDScriptParser *parser = GDScriptLanguageProtocol::get_singleton()->get_workspace()->parse_results[path];
-			REQUIRE(parser);
-			lsp::DocumentSymbol cls = parser->get_symbols();
+			LocalVector<String> paths = {
+				"res://lsp/first_line_comment.gd", // Comment on first line
+				"res://lsp/first_line_class_name.gd", // class_name (and thus selection range) before extends
+			};
 
-			REQUIRE(((cls.range.start.line == cls.selectionRange.start.line && cls.range.start.character <= cls.selectionRange.start.character) || (cls.range.start.line < cls.selectionRange.start.line)));
-			REQUIRE(((cls.range.end.line == cls.selectionRange.end.line && cls.range.end.character >= cls.selectionRange.end.character) || (cls.range.end.line > cls.selectionRange.end.line)));
+			for (const String &path : paths) {
+				assert_no_errors_in(path);
+				GDScriptLanguageProtocol::get_singleton()->get_workspace()->parse_local_script(path);
+				ExtendGDScriptParser *parser = GDScriptLanguageProtocol::get_singleton()->get_workspace()->parse_results[path];
+				REQUIRE(parser);
+				lsp::DocumentSymbol cls = parser->get_symbols();
+
+				REQUIRE(((cls.range.start.line == cls.selectionRange.start.line && cls.range.start.character <= cls.selectionRange.start.character) || (cls.range.start.line < cls.selectionRange.start.line)));
+				REQUIRE(((cls.range.end.line == cls.selectionRange.end.line && cls.range.end.character >= cls.selectionRange.end.character) || (cls.range.end.line > cls.selectionRange.end.line)));
+			}
 		}
 
 		memdelete(proto);
@@ -507,6 +516,6 @@ func f():
 
 } // namespace GDScriptTests
 
-#endif // TOOLS_ENABLED
+#endif // MODULE_JSONRPC_ENABLED
 
-#endif // TEST_LSP_H
+#endif // TOOLS_ENABLED

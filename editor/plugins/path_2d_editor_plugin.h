@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef PATH_2D_EDITOR_PLUGIN_H
-#define PATH_2D_EDITOR_PLUGIN_H
+#pragma once
 
 #include "editor/plugins/editor_plugin.h"
 #include "scene/2d/path_2d.h"
@@ -137,7 +136,4 @@ public:
 	virtual void make_visible(bool p_visible) override;
 
 	Path2DEditorPlugin();
-	~Path2DEditorPlugin();
 };
-
-#endif // PATH_2D_EDITOR_PLUGIN_H

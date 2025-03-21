@@ -68,19 +68,11 @@ void godot_icall_GodotSharpDirs_MonoUserDir(godot_string *r_dest) {
 }
 
 void godot_icall_GodotSharpDirs_BuildLogsDirs(godot_string *r_dest) {
-#ifdef TOOLS_ENABLED
 	memnew_placement(r_dest, String(GodotSharpDirs::get_build_logs_dir()));
-#else
-	return nullptr;
-#endif
 }
 
 void godot_icall_GodotSharpDirs_DataEditorToolsDir(godot_string *r_dest) {
-#ifdef TOOLS_ENABLED
 	memnew_placement(r_dest, String(GodotSharpDirs::get_data_editor_tools_dir()));
-#else
-	return nullptr;
-#endif
 }
 
 void godot_icall_GodotSharpDirs_CSharpProjectName(godot_string *r_dest) {
@@ -105,7 +97,7 @@ bool godot_icall_EditorProgress_Step(const godot_string *p_task, const godot_str
 }
 
 void godot_icall_Internal_FullExportTemplatesDir(godot_string *r_dest) {
-	String full_templates_dir = EditorPaths::get_singleton()->get_export_templates_dir().path_join(VERSION_FULL_CONFIG);
+	String full_templates_dir = EditorPaths::get_singleton()->get_export_templates_dir().path_join(GODOT_VERSION_FULL_CONFIG);
 	memnew_placement(r_dest, String(full_templates_dir));
 }
 

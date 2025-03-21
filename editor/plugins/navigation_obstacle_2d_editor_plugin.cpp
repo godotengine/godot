@@ -66,8 +66,6 @@ void NavigationObstacle2DEditor::_action_set_polygon(int p_idx, const Variant &p
 	undo_redo->add_undo_method(node, "set_vertices", node->get_vertices());
 }
 
-NavigationObstacle2DEditor::NavigationObstacle2DEditor() {}
-
 NavigationObstacle2DEditorPlugin::NavigationObstacle2DEditorPlugin() :
 		AbstractPolygon2DEditorPlugin(memnew(NavigationObstacle2DEditor), "NavigationObstacle2D") {
 }

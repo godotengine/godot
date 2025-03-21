@@ -156,7 +156,7 @@ void EditorResourcePicker::_file_selected(const String &p_path) {
 		}
 
 		for (int i = 0; i < base_type.get_slice_count(","); i++) {
-			String base = base_type.get_slice(",", i);
+			String base = base_type.get_slicec(',', i);
 
 			any_type_matches = is_global_class ? EditorNode::get_editor_data().script_class_is_parent(res_type, base) : loaded_resource->is_class(base);
 
@@ -263,7 +263,7 @@ void EditorResourcePicker::_update_menu_items() {
 			String res_type = _get_resource_type(cb);
 
 			for (int i = 0; i < base_type.get_slice_count(","); i++) {
-				String base = base_type.get_slice(",", i);
+				String base = base_type.get_slicec(',', i);
 
 				paste_valid = ClassDB::is_parent_class(res_type, base) || EditorNode::get_editor_data().script_class_is_parent(res_type, base);
 
@@ -313,7 +313,7 @@ void EditorResourcePicker::_edit_menu_cbk(int p_which) {
 		case OBJ_MENU_LOAD: {
 			List<String> extensions;
 			for (int i = 0; i < base_type.get_slice_count(","); i++) {
-				String base = base_type.get_slice(",", i);
+				String base = base_type.get_slicec(',', i);
 				ResourceLoader::get_recognized_extensions_for_type(base, &extensions);
 				if (ScriptServer::is_global_class(base)) {
 					ResourceLoader::get_recognized_extensions_for_type(ScriptServer::get_global_class_native_base(base), &extensions);
@@ -686,9 +686,11 @@ bool EditorResourcePicker::_is_drop_valid(const Dictionary &p_drag_data) const {
 			return true;
 		}
 
-		StringName custom_class = EditorNode::get_singleton()->get_object_custom_type_name(res.ptr());
-		if (_is_type_valid(custom_class, allowed_types)) {
-			return true;
+		if (res->get_script()) {
+			StringName custom_class = EditorNode::get_singleton()->get_object_custom_type_name(res->get_script());
+			if (_is_type_valid(custom_class, allowed_types)) {
+				return true;
+			}
 		}
 	}
 
@@ -1173,9 +1175,6 @@ void EditorScriptPicker::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "script_owner", PROPERTY_HINT_RESOURCE_TYPE, "Node", PROPERTY_USAGE_NONE), "set_script_owner", "get_script_owner");
 }
 
-EditorScriptPicker::EditorScriptPicker() {
-}
-
 // EditorShaderPicker
 
 void EditorShaderPicker::set_create_options(Object *p_menu_node) {
@@ -1214,9 +1213,6 @@ ShaderMaterial *EditorShaderPicker::get_edited_material() const {
 
 void EditorShaderPicker::set_preferred_mode(int p_mode) {
 	preferred_mode = p_mode;
-}
-
-EditorShaderPicker::EditorShaderPicker() {
 }
 
 //////////////
