@@ -42,6 +42,9 @@
 #include "scene/gui/tree.h"
 #include "scene/main/timer.h"
 
+static Rect2i prev_rect = Rect2i();
+static bool was_showed = false;
+
 void RunInstancesDialog::_fetch_main_args() {
 	if (!main_args_edit->has_focus()) { // Only set the text if the user is not currently editing it.
 		main_args_edit->set_text(GLOBAL_GET("editor/run/main_run_args"));
@@ -194,7 +197,11 @@ void RunInstancesDialog::_instance_tree_rmb(const Vector2 &p_pos, MouseButton p_
 }
 
 void RunInstancesDialog::popup_dialog() {
-	popup_centered(Vector2(1200, 600) * EDSCALE);
+	if (was_showed) {
+		popup(prev_rect);
+	} else {
+		popup_centered_clamped(Size2(900, 700) * EDSCALE, 0.8);
+	}
 }
 
 int RunInstancesDialog::get_instance_count() const {
@@ -289,6 +296,17 @@ void RunInstancesDialog::apply_custom_features(int p_instance_idx) {
 		}
 	}
 	OS::get_singleton()->set_environment("GODOT_EDITOR_CUSTOM_FEATURES", String(",").join(stripped_features));
+}
+
+void RunInstancesDialog::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_VISIBILITY_CHANGED: {
+			if (!is_visible()) {
+				prev_rect = Rect2i(get_position(), get_size());
+				was_showed = true;
+			}
+		} break;
+	}
 }
 
 RunInstancesDialog::RunInstancesDialog() {
