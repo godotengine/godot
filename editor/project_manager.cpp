@@ -1292,6 +1292,8 @@ ProjectManager::ProjectManager() {
 
 		title_bar_logo = memnew(Button);
 		title_bar_logo->set_flat(true);
+		title_bar_logo->set_tooltip_text(TTR("About Godot"));
+		title_bar_logo->set_accessibility_name(TTRC("About Godot"));
 		left_hbox->add_child(title_bar_logo);
 		title_bar_logo->connect(SceneStringName(pressed), callable_mp(this, &ProjectManager::_show_about));
 
@@ -1373,12 +1375,14 @@ ProjectManager::ProjectManager() {
 			hb->add_child(scan_btn);
 
 			loading_label = memnew(Label(TTR("Loading, please wait...")));
+			loading_label->set_accessibility_live(DisplayServer::AccessibilityLiveMode::LIVE_ASSERTIVE);
 			loading_label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 			loading_label->hide();
 			hb->add_child(loading_label);
 
 			search_box = memnew(LineEdit);
 			search_box->set_placeholder(TTR("Filter Projects"));
+			search_box->set_accessibility_name(TTRC("Filter Projects"));
 			search_box->set_tooltip_text(TTR("This field filters projects by name and last path component.\nTo filter projects by name and full path, the query must contain at least one `/` character."));
 			search_box->set_clear_button_enabled(true);
 			search_box->connect(SceneStringName(text_changed), callable_mp(this, &ProjectManager::_on_search_term_changed));
@@ -1386,14 +1390,16 @@ ProjectManager::ProjectManager() {
 			search_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 			hb->add_child(search_box);
 
-			Label *sort_label = memnew(Label);
+			sort_label = memnew(Label);
 			sort_label->set_text(TTR("Sort:"));
+			sort_label->set_focus_mode(Control::FOCUS_NONE);
 			hb->add_child(sort_label);
 
 			filter_option = memnew(OptionButton);
 			filter_option->set_clip_text(true);
 			filter_option->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 			filter_option->set_stretch_ratio(0.3);
+			filter_option->set_accessibility_name(TTRC("Sort"));
 			filter_option->connect(SceneStringName(item_selected), callable_mp(this, &ProjectManager::_on_order_option_changed));
 			hb->add_child(filter_option);
 
@@ -1492,6 +1498,7 @@ ProjectManager::ProjectManager() {
 			open_btn_container->add_child(memnew(VSeparator));
 
 			open_options_btn = memnew(Button);
+			open_options_btn->set_accessibility_name(TTRC("Options"));
 			open_options_btn->set_icon_alignment(HorizontalAlignment::HORIZONTAL_ALIGNMENT_CENTER);
 			open_options_btn->connect(SceneStringName(pressed), callable_mp(this, &ProjectManager::_open_options_popup));
 			open_btn_container->add_child(open_options_btn);
@@ -1519,6 +1526,7 @@ ProjectManager::ProjectManager() {
 
 			manage_tags_btn = memnew(Button);
 			manage_tags_btn->set_text(TTR("Manage Tags"));
+			manage_tags_btn->set_shortcut(ED_SHORTCUT("project_manager/project_tags", TTR("Manage Tags"), KeyModifierMask::CMD_OR_CTRL | Key::T));
 			project_list_sidebar->add_child(manage_tags_btn);
 
 			erase_btn = memnew(Button);
@@ -1712,6 +1720,7 @@ ProjectManager::ProjectManager() {
 
 		new_tag_name = memnew(LineEdit);
 		tag_vb->add_child(new_tag_name);
+		new_tag_name->set_accessibility_name(TTRC("New Tag Name"));
 		new_tag_name->connect(SceneStringName(text_changed), callable_mp(this, &ProjectManager::_set_new_tag_name));
 		new_tag_name->connect(SceneStringName(text_submitted), callable_mp(this, &ProjectManager::_create_new_tag).unbind(1));
 		create_tag_dialog->connect("about_to_popup", callable_mp(new_tag_name, &LineEdit::clear));
@@ -1721,6 +1730,7 @@ ProjectManager::ProjectManager() {
 		tag_vb->add_child(tag_error);
 
 		create_tag_btn = memnew(Button);
+		create_tag_btn->set_accessibility_name(TTRC("Create Tag"));
 		all_tags->add_child(create_tag_btn);
 		create_tag_btn->connect(SceneStringName(pressed), callable_mp((Window *)create_tag_dialog, &Window::popup_centered).bind(Vector2i(500, 0) * EDSCALE));
 	}

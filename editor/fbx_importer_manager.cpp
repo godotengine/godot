@@ -150,6 +150,7 @@ FBXImporterManager::FBXImporterManager() {
 
 	fbx_path = memnew(LineEdit);
 	fbx_path->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	fbx_path->set_accessibility_name(TTRC("Path"));
 	hb->add_child(fbx_path);
 	fbx_path_browse = memnew(Button);
 	fbx_path_browse->set_text(TTR("Browse"));

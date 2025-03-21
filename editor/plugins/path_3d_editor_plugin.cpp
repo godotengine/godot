@@ -919,6 +919,7 @@ Path3DEditorPlugin::Path3DEditorPlugin() {
 	curve_edit->set_toggle_mode(true);
 	curve_edit->set_focus_mode(Control::FOCUS_NONE);
 	curve_edit->set_tooltip_text(TTR("Select Points") + "\n" + TTR("Shift+Click: Select multiple Points") + "\n" + keycode_get_string((Key)KeyModifierMask::CMD_OR_CTRL) + TTR("Click: Add Point") + "\n" + TTR("Right Click: Delete Point"));
+	curve_edit->set_accessibility_name(TTRC("Select Points"));
 	toolbar->add_child(curve_edit);
 	curve_edit->connect(SceneStringName(pressed), callable_mp(this, &Path3DEditorPlugin::_mode_changed).bind(MODE_EDIT));
 
@@ -927,6 +928,7 @@ Path3DEditorPlugin::Path3DEditorPlugin() {
 	curve_edit_curve->set_toggle_mode(true);
 	curve_edit_curve->set_focus_mode(Control::FOCUS_NONE);
 	curve_edit_curve->set_tooltip_text(TTR("Select Control Points") + "\n" + TTR("Shift+Click: Drag out Control Points"));
+	curve_edit_curve->set_accessibility_name(TTRC("Select Control Points"));
 	toolbar->add_child(curve_edit_curve);
 	curve_edit_curve->connect(SceneStringName(pressed), callable_mp(this, &Path3DEditorPlugin::_mode_changed).bind(MODE_EDIT_CURVE));
 
@@ -935,6 +937,7 @@ Path3DEditorPlugin::Path3DEditorPlugin() {
 	curve_edit_tilt->set_toggle_mode(true);
 	curve_edit_tilt->set_focus_mode(Control::FOCUS_NONE);
 	curve_edit_tilt->set_tooltip_text(TTR("Select Tilt Handles"));
+	curve_edit_tilt->set_accessibility_name(TTRC("Select Tilt Handles"));
 	toolbar->add_child(curve_edit_tilt);
 	curve_edit_tilt->connect(SceneStringName(pressed), callable_mp(this, &Path3DEditorPlugin::_mode_changed).bind(MODE_EDIT_TILT));
 
@@ -943,6 +946,7 @@ Path3DEditorPlugin::Path3DEditorPlugin() {
 	curve_create->set_toggle_mode(true);
 	curve_create->set_focus_mode(Control::FOCUS_NONE);
 	curve_create->set_tooltip_text(TTR("Add Point (in empty space)") + "\n" + TTR("Split Segment (in curve)"));
+	curve_create->set_accessibility_name(TTRC("Add Point"));
 	toolbar->add_child(curve_create);
 	curve_create->connect(SceneStringName(pressed), callable_mp(this, &Path3DEditorPlugin::_mode_changed).bind(MODE_CREATE));
 
@@ -951,6 +955,7 @@ Path3DEditorPlugin::Path3DEditorPlugin() {
 	curve_del->set_toggle_mode(true);
 	curve_del->set_focus_mode(Control::FOCUS_NONE);
 	curve_del->set_tooltip_text(TTR("Delete Point"));
+	curve_del->set_accessibility_name(TTRC("Delete Point"));
 	toolbar->add_child(curve_del);
 	curve_del->connect(SceneStringName(pressed), callable_mp(this, &Path3DEditorPlugin::_mode_changed).bind(MODE_DELETE));
 
@@ -958,6 +963,7 @@ Path3DEditorPlugin::Path3DEditorPlugin() {
 	curve_closed->set_theme_type_variation(SceneStringName(FlatButton));
 	curve_closed->set_focus_mode(Control::FOCUS_NONE);
 	curve_closed->set_tooltip_text(TTR("Close Curve"));
+	curve_closed->set_accessibility_name(TTRC("Close Curve"));
 	toolbar->add_child(curve_closed);
 	curve_closed->connect(SceneStringName(pressed), callable_mp(this, &Path3DEditorPlugin::_toggle_closed_curve));
 
@@ -965,6 +971,7 @@ Path3DEditorPlugin::Path3DEditorPlugin() {
 	curve_clear_points->set_theme_type_variation(SceneStringName(FlatButton));
 	curve_clear_points->set_focus_mode(Control::FOCUS_NONE);
 	curve_clear_points->set_tooltip_text(TTR("Clear Points"));
+	curve_clear_points->set_accessibility_name(TTRC("Clear Points"));
 	curve_clear_points->connect(SceneStringName(pressed), callable_mp(this, &Path3DEditorPlugin::_confirm_clear_points));
 	toolbar->add_child(curve_clear_points);
 

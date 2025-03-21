@@ -921,6 +921,7 @@ ProjectDialog::ProjectDialog() {
 
 	project_path = memnew(LineEdit);
 	project_path->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	project_path->set_accessibility_name(TTRC("Project Path"));
 	project_path->set_structured_text_bidi_override(TextServer::STRUCTURED_TEXT_FILE);
 	pphb->add_child(project_path);
 
@@ -936,6 +937,7 @@ ProjectDialog::ProjectDialog() {
 
 	install_path = memnew(LineEdit);
 	install_path->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	install_path->set_accessibility_name(TTRC("Install Path"));
 	install_path->set_structured_text_bidi_override(TextServer::STRUCTURED_TEXT_FILE);
 	iphb->add_child(install_path);
 
