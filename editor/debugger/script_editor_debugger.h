@@ -190,6 +190,42 @@ private:
 	void _stack_dump_frame_selected();
 
 	void _file_selected(const String &p_file);
+
+	/// Message handler function for _parse_message.
+	typedef void (ScriptEditorDebugger::*ParseMessageFunc)(uint64_t p_thread_id, const Array &p_data);
+	static HashMap<String, ParseMessageFunc> parse_message_handlers;
+	static void _init_parse_message_handlers();
+
+	void _msg_debug_enter(uint64_t p_thread_id, const Array &p_data);
+	void _msg_debug_exit(uint64_t p_thread_id, const Array &p_data);
+	void _msg_set_pid(uint64_t p_thread_id, const Array &p_data);
+	void _msg_scene_click_ctrl(uint64_t p_thread_id, const Array &p_data);
+	void _msg_scene_scene_tree(uint64_t p_thread_id, const Array &p_data);
+	void _msg_scene_inspect_objects(uint64_t p_thread_id, const Array &p_data);
+	void _msg_servers_memory_usage(uint64_t p_thread_id, const Array &p_data);
+	void _msg_servers_drawn(uint64_t p_thread_id, const Array &p_data);
+	void _msg_stack_dump(uint64_t p_thread_id, const Array &p_data);
+	void _msg_stack_frame_vars(uint64_t p_thread_id, const Array &p_data);
+	void _msg_stack_frame_var(uint64_t p_thread_id, const Array &p_data);
+	void _msg_output(uint64_t p_thread_id, const Array &p_data);
+	void _msg_performance_profile_frame(uint64_t p_thread_id, const Array &p_data);
+	void _msg_visual_hardware_info(uint64_t p_thread_id, const Array &p_data);
+	void _msg_visual_profile_frame(uint64_t p_thread_id, const Array &p_data);
+	void _msg_error(uint64_t p_thread_id, const Array &p_data);
+	void _msg_servers_function_signature(uint64_t p_thread_id, const Array &p_data);
+	void _msg_servers_profile_common(const Array &p_data, const bool p_final);
+	void _msg_servers_profile_frame(uint64_t p_thread_id, const Array &p_data);
+	void _msg_servers_profile_total(uint64_t p_thread_id, const Array &p_data);
+	void _msg_request_quit(uint64_t p_thread_id, const Array &p_data);
+	void _msg_remote_nodes_clicked(uint64_t p_thread_id, const Array &p_data);
+	void _msg_remote_nothing_clicked(uint64_t p_thread_id, const Array &p_data);
+	void _msg_remote_selection_invalidated(uint64_t p_thread_id, const Array &p_data);
+	void _msg_show_selection_limit_warning(uint64_t p_thread_id, const Array &p_data);
+	void _msg_performance_profile_names(uint64_t p_thread_id, const Array &p_data);
+	void _msg_filesystem_update_file(uint64_t p_thread_id, const Array &p_data);
+	void _msg_evaluation_return(uint64_t p_thread_id, const Array &p_data);
+	void _msg_window_title(uint64_t p_thread_id, const Array &p_data);
+
 	void _parse_message(const String &p_msg, uint64_t p_thread_id, const Array &p_data);
 	void _set_reason_text(const String &p_reason, MessageType p_type);
 	void _update_buttons_state();
