@@ -33,6 +33,7 @@
 #include "core/config/project_settings.h"
 #include "core/input/input_map.h"
 #include "core/string/translation_server.h"
+#include "editor/docks/editor_dock_manager.h"
 #include "editor/docks/inspector_dock.h"
 #include "editor/docks/scene_tree_dock.h"
 #include "editor/editor_node.h"
@@ -2870,7 +2871,7 @@ EditorPropertyColor::EditorPropertyColor() {
 
 void EditorPropertyNodePath::_set_read_only(bool p_read_only) {
 	assign->set_disabled(p_read_only);
-	menu->set_disabled(p_read_only);
+	menu_button->set_disabled(p_read_only);
 }
 
 Variant EditorPropertyNodePath::_get_cache_value(const StringName &p_prop, bool &r_valid) const {
@@ -2934,14 +2935,36 @@ void EditorPropertyNodePath::_assign_draw() {
 	}
 }
 
-void EditorPropertyNodePath::_update_menu() {
+void EditorPropertyNodePath::_popup_menu(Vector2i p_pos) {
+	if (!menu) {
+		menu = memnew(PopupMenu);
+		menu->add_item(TTRC("Clear"), ACTION_CLEAR);
+		menu->add_item(TTRC("Copy as Text"), ACTION_COPY);
+		menu->add_item(TTRC("Edit"), ACTION_EDIT);
+		menu->add_item(TTRC("Show Node in Tree"), ACTION_SELECT);
+		menu->connect(SceneStringName(id_pressed), callable_mp(this, &EditorPropertyNodePath::_menu_option));
+		add_child(menu);
+		notification(NOTIFICATION_THEME_CHANGED);
+	}
+
 	const NodePath &np = _get_node_path();
 
-	menu->get_popup()->set_item_disabled(ACTION_CLEAR, np.is_empty());
-	menu->get_popup()->set_item_disabled(ACTION_COPY, np.is_empty());
+	menu->set_item_disabled(ACTION_CLEAR, np.is_empty());
+	menu->set_item_disabled(ACTION_COPY, np.is_empty());
 
 	Node *edited_node = Object::cast_to<Node>(get_edited_object());
-	menu->get_popup()->set_item_disabled(ACTION_SELECT, !edited_node || !edited_node->has_node(np));
+	menu->set_item_disabled(ACTION_SELECT, !edited_node || !edited_node->has_node(np));
+
+	menu->reset_size();
+
+	if (p_pos.x >= 0) {
+		menu->set_position(p_pos);
+	} else {
+		int ms = menu->get_contents_minimum_size().width;
+		Vector2 popup_pos = menu_button->get_screen_rect().get_end() - Vector2(ms, 0);
+		menu->set_position(popup_pos);
+	}
+	menu->popup();
 }
 
 void EditorPropertyNodePath::_menu_option(int p_idx) {
@@ -2977,7 +3000,7 @@ void EditorPropertyNodePath::_menu_option(int p_idx) {
 			Node *target_node = edited_node->get_node_or_null(np);
 			ERR_FAIL_NULL(target_node);
 
-			SceneTreeDock::get_singleton()->set_selected(target_node);
+			SceneTreeDock::get_singleton()->set_single_selected_no_inspect(target_node);
 		} break;
 	}
 }
@@ -3010,6 +3033,14 @@ const NodePath EditorPropertyNodePath::_get_node_path() const {
 		}
 	} else {
 		return val;
+	}
+}
+
+void EditorPropertyNodePath::_button_input(const Ref<InputEvent> &p_event) {
+	Ref<InputEventMouseButton> mb = p_event;
+
+	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MouseButton::RIGHT) {
+		_popup_menu(assign->get_screen_position() + mb->get_position());
 	}
 }
 
@@ -3109,11 +3140,14 @@ void EditorPropertyNodePath::setup(const Vector<StringName> &p_valid_types, bool
 void EditorPropertyNodePath::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
-			menu->set_button_icon(get_editor_theme_icon(SNAME("GuiTabMenuHl")));
-			menu->get_popup()->set_item_icon(ACTION_CLEAR, get_editor_theme_icon(SNAME("Clear")));
-			menu->get_popup()->set_item_icon(ACTION_COPY, get_editor_theme_icon(SNAME("ActionCopy")));
-			menu->get_popup()->set_item_icon(ACTION_EDIT, get_editor_theme_icon(SNAME("Edit")));
-			menu->get_popup()->set_item_icon(ACTION_SELECT, get_editor_theme_icon(SNAME("ExternalLink")));
+			menu_button->set_button_icon(get_editor_theme_icon(SNAME("GuiTabMenuHl")));
+			if (!menu) {
+				break;
+			}
+			menu->set_item_icon(ACTION_CLEAR, get_editor_theme_icon(SNAME("Clear")));
+			menu->set_item_icon(ACTION_COPY, get_editor_theme_icon(SNAME("ActionCopy")));
+			menu->set_item_icon(ACTION_EDIT, get_editor_theme_icon(SNAME("Edit")));
+			menu->set_item_icon(ACTION_SELECT, get_editor_theme_icon(SNAME("ExternalLink")));
 		} break;
 
 		case NOTIFICATION_DRAG_BEGIN: {
@@ -3176,19 +3210,13 @@ EditorPropertyNodePath::EditorPropertyNodePath() {
 	assign->set_expand_icon(true);
 	assign->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyNodePath::_node_assign));
 	assign->connect(SceneStringName(draw), callable_mp(this, &EditorPropertyNodePath::_assign_draw));
+	assign->connect(SceneStringName(gui_input), callable_mp(this, &EditorPropertyNodePath::_button_input));
 	SET_DRAG_FORWARDING_CD(assign, EditorPropertyNodePath);
 	hbc->add_child(assign);
 
-	menu = memnew(MenuButton);
-	menu->set_flat(true);
-	menu->connect(SNAME("about_to_popup"), callable_mp(this, &EditorPropertyNodePath::_update_menu));
-	hbc->add_child(menu);
-
-	menu->get_popup()->add_item(TTR("Clear"), ACTION_CLEAR);
-	menu->get_popup()->add_item(TTR("Copy as Text"), ACTION_COPY);
-	menu->get_popup()->add_item(TTR("Edit"), ACTION_EDIT);
-	menu->get_popup()->add_item(TTR("Show Node in Tree"), ACTION_SELECT);
-	menu->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &EditorPropertyNodePath::_menu_option));
+	menu_button = memnew(Button);
+	menu_button->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyNodePath::_popup_menu).bind(Vector2i(-1, -1)));
+	hbc->add_child(menu_button);
 
 	edit = memnew(LineEdit);
 	edit->set_accessibility_name(TTRC("Node Path"));
