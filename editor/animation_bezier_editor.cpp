@@ -743,6 +743,48 @@ Size2 AnimationBezierTrackEdit::get_minimum_size() const {
 	return Vector2(1, 1);
 }
 
+Control::CursorShape AnimationBezierTrackEdit::get_cursor_shape(const Point2 &p_pos) const {
+	// Box selecting or moving a handle
+	if (box_selecting || Math::abs(moving_handle) == 1) {
+		return get_default_cursor_shape();
+	}
+	// Hovering a handle
+	if (!read_only) {
+		for (const EditPoint &edit_point : edit_points) {
+			if (edit_point.in_rect.has_point(p_pos) || edit_point.out_rect.has_point(p_pos)) {
+				return get_default_cursor_shape();
+			}
+		}
+	}
+	// Currently box scaling
+	if (scaling_selection) {
+		if (scaling_selection_handles == Vector2i(1, 1) || scaling_selection_handles == Vector2i(-1, -1)) {
+			return CURSOR_FDIAGSIZE;
+		} else if (scaling_selection_handles == Vector2i(1, -1) || scaling_selection_handles == Vector2i(-1, 1)) {
+			return CURSOR_BDIAGSIZE;
+		} else if (abs(scaling_selection_handles.x) == 1) {
+			return CURSOR_HSIZE;
+		} else if (abs(scaling_selection_handles.y) == 1) {
+			return CURSOR_VSIZE;
+		}
+	}
+	// Hovering the scaling box
+	const Vector2i rel_pos = p_pos - selection_rect.position;
+	if (selection_handles_rect.has_point(p_pos)) {
+		if ((rel_pos.x < 0 && rel_pos.y < 0) || (rel_pos.x > selection_rect.size.width && rel_pos.y > selection_rect.size.height)) {
+			return CURSOR_FDIAGSIZE;
+		} else if ((rel_pos.x < 0 && rel_pos.y > selection_rect.size.height) || (rel_pos.x > selection_rect.size.width && rel_pos.y < 0)) {
+			return CURSOR_BDIAGSIZE;
+		} else if (rel_pos.x < 0 || rel_pos.x > selection_rect.size.width) {
+			return CURSOR_HSIZE;
+		} else if (rel_pos.y < 0 || rel_pos.y > selection_rect.size.height) {
+			return CURSOR_VSIZE;
+		}
+		return CURSOR_MOVE;
+	}
+	return get_default_cursor_shape();
+}
+
 void AnimationBezierTrackEdit::set_timeline(AnimationTimelineEdit *p_timeline) {
 	timeline = p_timeline;
 	timeline->connect("zoom_changed", callable_mp(this, &AnimationBezierTrackEdit::_zoom_changed));
