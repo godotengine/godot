@@ -74,7 +74,8 @@ public:
 		return speakers.ptr()[index].direction;
 	}
 
-	void calculate(const Vector3 &source_direction, real_t tightness, unsigned int volume_count, real_t *volumes) const {
+	void calculate(const Vector3 &source_direction, real_t tightness, real_t *volumes) const {
+		const unsigned int volume_count = get_speaker_count();
 		const Speaker *r = speakers.ptr();
 		real_t sum_squared_gains = 0.0;
 		for (unsigned int speaker_num = 0; speaker_num < (unsigned int)speakers.size(); speaker_num++) {
@@ -100,28 +101,33 @@ static const Vector3 speaker_directions[7] = {
 	Vector3(1.0, 0.0, 0.0).normalized(), // side-right
 };
 
-void AudioStreamPlayer3D::_calc_output_vol(const Vector3 &source_dir, real_t tightness, Vector<AudioFrame> &output) {
-	unsigned int speaker_count = 0; // only main speakers (no LFE)
-	switch (AudioServer::get_singleton()->get_speaker_mode()) {
-		case AudioServer::SPEAKER_MODE_STEREO:
-			speaker_count = 2;
-			break;
-		case AudioServer::SPEAKER_SURROUND_31:
-			speaker_count = 3;
-			break;
-		case AudioServer::SPEAKER_SURROUND_51:
-			speaker_count = 5;
-			break;
-		case AudioServer::SPEAKER_SURROUND_71:
-			speaker_count = 7;
-			break;
+void AudioStreamPlayer3D::update_volumes(const Vector3 &source_dir, real_t *volumes) {
+	std::unique_ptr<Spcap> spcap;
+	AudioServer::SpeakerMode speaker_mode = AudioServer::get_singleton()->get_speaker_mode();
+
+	if (spcap == nullptr || cached_speaker_mode != speaker_mode) {
+		cached_speaker_mode = speaker_mode;
+		switch (speaker_mode) {
+			case AudioServer::SPEAKER_MODE_STEREO:
+			case AudioServer::SPEAKER_SURROUND_31:
+			case AudioServer::SPEAKER_SURROUND_51:
+				speaker_count = 5;
+				break;
+			case AudioServer::SPEAKER_SURROUND_71:
+				speaker_count = 7;
+				break;
+		}
+		spcap = std::unique_ptr<Spcap>(new Spcap(speaker_count, speaker_directions));
 	}
 
-	Spcap spcap(speaker_count, speaker_directions); //TODO: should only be created/recreated once the speaker mode / speaker positions changes
-	real_t volumes[7];
-	spcap.calculate(source_dir, tightness, speaker_count, volumes);
+	spcap->calculate(source_dir, tightness, volumes);
+}
 
-	switch (AudioServer::get_singleton()->get_speaker_mode()) {
+void AudioStreamPlayer3D::_calc_output_vol(const Vector3 &source_dir, Vector<AudioFrame> &output) {
+	real_t volumes[7];
+	update_volumes(source_dir, volumes);
+
+	switch (cached_speaker_mode) {
 		case AudioServer::SPEAKER_SURROUND_71:
 			output.write[3].left = volumes[5]; // side-left
 			output.write[3].right = volumes[6]; // side-right
@@ -129,14 +135,20 @@ void AudioStreamPlayer3D::_calc_output_vol(const Vector3 &source_dir, real_t tig
 		case AudioServer::SPEAKER_SURROUND_51:
 			output.write[2].left = volumes[3]; // rear-left
 			output.write[2].right = volumes[4]; // rear-right
-			[[fallthrough]];
+			output.write[1].right = 1.0; // LFE - always full power
+			output.write[1].left = volumes[2]; // center
+			output.write[0].right = volumes[1]; // front-right
+			output.write[0].left = volumes[0]; // front-left
+			break;
 		case AudioServer::SPEAKER_SURROUND_31:
 			output.write[1].right = 1.0; // LFE - always full power
 			output.write[1].left = volumes[2]; // center
-			[[fallthrough]];
+			output.write[0].left = volumes[0] + volumes[3] / 2.; // front-left
+			output.write[0].right = volumes[1] + volumes[4] / 2.; // front-right
+			break;
 		case AudioServer::SPEAKER_MODE_STEREO:
-			output.write[0].right = volumes[1]; // front-right
-			output.write[0].left = volumes[0]; // front-left
+			output.write[0].left = volumes[0] + volumes[2] / Math_SQRT2 + volumes[3] / 2.; // front-left
+			output.write[0].right = volumes[1] + volumes[2] / Math_SQRT2 + volumes[4] / 2.; // front-right
 			break;
 	}
 }
@@ -335,9 +347,6 @@ StringName AudioStreamPlayer3D::_get_actual_bus() {
 Vector<AudioFrame> AudioStreamPlayer3D::_update_panning() {
 	Vector<AudioFrame> output_volume_vector;
 	output_volume_vector.resize(4);
-	for (AudioFrame &frame : output_volume_vector) {
-		frame = AudioFrame(0, 0);
-	}
 
 	if (!internal->active.is_set() || internal->stream.is_null()) {
 		return output_volume_vector;
@@ -435,13 +444,20 @@ Vector<AudioFrame> AudioStreamPlayer3D::_update_panning() {
 		for (Ref<AudioStreamPlayback> &playback : internal->stream_playbacks) {
 			AudioServer::get_singleton()->set_playback_highshelf_params(playback, linear_attenuation, attenuation_filter_cutoff_hz);
 		}
-		// Bake in a constant factor here to allow the project setting defaults for 2d and 3d to be normalized to 1.0.
-		float tightness = cached_global_panning_strength * 2.0f;
-		tightness *= panning_strength;
-		_calc_output_vol(local_pos.normalized(), tightness, output_volume_vector);
 
+		_calc_output_vol(local_pos.normalized(), output_volume_vector);
+
+		// Apply panning effect.
+		float panning = CLAMP(panning_strength * cached_global_panning_strength, 0., 1.) / 2.;
 		for (unsigned int k = 0; k < 4; k++) {
-			output_volume_vector.write[k] = multiplier * output_volume_vector[k];
+			AudioFrame volume(multiplier, multiplier);
+			if (k != 1) {
+				volume.left *= (0.5 + panning) * output_volume_vector[k].left + (0.5 - panning) * output_volume_vector[k].right;
+				volume.right *= (0.5 - panning) * output_volume_vector[k].left + (0.5 + panning) * output_volume_vector[k].right;
+			} else {
+				volume *= output_volume_vector[k];
+			}
+			output_volume_vector.write[k] = volume;
 		}
 
 		HashMap<StringName, Vector<AudioFrame>> bus_volumes;
@@ -743,6 +759,14 @@ float AudioStreamPlayer3D::get_panning_strength() const {
 	return panning_strength;
 }
 
+void AudioStreamPlayer3D::set_tightness(float p_tightness) {
+	tightness = p_tightness;
+}
+
+float AudioStreamPlayer3D::get_tightness() const {
+	return tightness;
+}
+
 AudioServer::PlaybackType AudioStreamPlayer3D::get_playback_type() const {
 	return internal->get_playback_type();
 }
@@ -833,6 +857,9 @@ void AudioStreamPlayer3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_panning_strength", "panning_strength"), &AudioStreamPlayer3D::set_panning_strength);
 	ClassDB::bind_method(D_METHOD("get_panning_strength"), &AudioStreamPlayer3D::get_panning_strength);
 
+	ClassDB::bind_method(D_METHOD("set_tightness", "tightness"), &AudioStreamPlayer3D::set_tightness);
+	ClassDB::bind_method(D_METHOD("get_tightness"), &AudioStreamPlayer3D::get_tightness);
+
 	ClassDB::bind_method(D_METHOD("has_stream_playback"), &AudioStreamPlayer3D::has_stream_playback);
 	ClassDB::bind_method(D_METHOD("get_stream_playback"), &AudioStreamPlayer3D::get_stream_playback);
 
@@ -852,6 +879,7 @@ void AudioStreamPlayer3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "max_distance", PROPERTY_HINT_RANGE, "0,4096,0.01,or_greater,suffix:m"), "set_max_distance", "get_max_distance");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_polyphony", PROPERTY_HINT_NONE, ""), "set_max_polyphony", "get_max_polyphony");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "panning_strength", PROPERTY_HINT_RANGE, "0,3,0.01,or_greater"), "set_panning_strength", "get_panning_strength");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "tightness", PROPERTY_HINT_EXP_EASING, "tightness"), "set_tightness", "get_tightness");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "bus", PROPERTY_HINT_ENUM, ""), "set_bus", "get_bus");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "area_mask", PROPERTY_HINT_LAYERS_2D_PHYSICS), "set_area_mask", "get_area_mask");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "playback_type", PROPERTY_HINT_ENUM, "Default,Stream,Sample"), "set_playback_type", "get_playback_type");

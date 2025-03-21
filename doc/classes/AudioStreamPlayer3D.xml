@@ -111,6 +111,9 @@
 		<member name="stream_paused" type="bool" setter="set_stream_paused" getter="get_stream_paused" default="false">
 			If [code]true[/code], the playback is paused. You can resume it by setting [member stream_paused] to [code]false[/code].
 		</member>
+		<member name="tightness" type="float" setter="set_tightness" getter="get_tightness" default="1.0">
+			How steeply the signal dies off relative to angle from the source.
+		</member>
 		<member name="unit_size" type="float" setter="set_unit_size" getter="get_unit_size" default="10.0">
 			The factor for the attenuation effect. Higher values make the sound audible over a larger distance.
 		</member>
