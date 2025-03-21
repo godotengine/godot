@@ -48,6 +48,7 @@ HashMap<String, String> TranslationServer::locale_rename_map;
 HashMap<String, String> TranslationServer::country_name_map;
 HashMap<String, String> TranslationServer::variant_map;
 HashMap<String, String> TranslationServer::country_rename_map;
+HashMap<String, String> TranslationServer::plural_rules_map;
 
 void TranslationServer::init_locale_info() {
 	// Init locale info.
@@ -114,6 +115,18 @@ void TranslationServer::init_locale_info() {
 	while (country_renames[idx][0] != nullptr) {
 		if (!String(country_renames[idx][1]).is_empty()) {
 			country_rename_map[country_renames[idx][0]] = country_renames[idx][1];
+		}
+		idx++;
+	}
+
+	// Init plural rules.
+	plural_rules_map.clear();
+	idx = 0;
+	while (plural_rules[idx][0] != nullptr) {
+		const Vector<String> rule_locs = String(plural_rules[idx][0]).split(" ");
+		const String rule = String(plural_rules[idx][1]);
+		for (const String &l : rule_locs) {
+			plural_rules_map[l] = rule;
 		}
 		idx++;
 	}
@@ -221,6 +234,26 @@ TranslationServer::Locale::Locale(const TranslationServer &p_server, const Strin
 
 String TranslationServer::standardize_locale(const String &p_locale, bool p_add_defaults) const {
 	return Locale(*this, p_locale, p_add_defaults).operator String();
+}
+
+String TranslationServer::get_plural_rules(const String &p_locale) const {
+	const String *rule = plural_rules_map.getptr(p_locale);
+	if (rule) {
+		return *rule;
+	}
+
+	Locale l = Locale(*this, p_locale, false);
+	if (!l.country.is_empty()) {
+		rule = plural_rules_map.getptr(l.language + "_" + l.country);
+		if (rule) {
+			return *rule;
+		}
+	}
+	rule = plural_rules_map.getptr(l.language);
+	if (rule) {
+		return *rule;
+	}
+	return String();
 }
 
 int TranslationServer::compare_locales(const String &p_locale_a, const String &p_locale_b) const {
@@ -632,6 +665,8 @@ void TranslationServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("clear"), &TranslationServer::clear);
 
 	ClassDB::bind_method(D_METHOD("get_loaded_locales"), &TranslationServer::get_loaded_locales);
+
+	ClassDB::bind_method(D_METHOD("get_plural_rules", "locale"), &TranslationServer::get_plural_rules);
 
 	ClassDB::bind_method(D_METHOD("is_pseudolocalization_enabled"), &TranslationServer::is_pseudolocalization_enabled);
 	ClassDB::bind_method(D_METHOD("set_pseudolocalization_enabled", "enabled"), &TranslationServer::set_pseudolocalization_enabled);
