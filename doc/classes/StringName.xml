@@ -350,12 +350,12 @@
 				[gdscript]
 				var text = "hello world"
 				var encoded = text.to_utf8_buffer().hex_encode() # outputs "68656c6c6f20776f726c64"
-				print(buf.hex_decode().get_string_from_utf8())
+				print(encoded.hex_decode().get_string_from_utf8())
 				[/gdscript]
 				[csharp]
 				var text = "hello world";
 				var encoded = text.ToUtf8Buffer().HexEncode(); // outputs "68656c6c6f20776f726c64"
-				GD.Print(buf.HexDecode().GetStringFromUtf8());
+				GD.Print(encoded.HexDecode().GetStringFromUtf8());
 				[/csharp]
 				[/codeblocks]
 			</description>
