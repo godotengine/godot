@@ -33,16 +33,18 @@
 #include "core/io/resource.h"
 #include "core/math/face3.h"
 #include "core/math/triangle_mesh.h"
-#ifndef _3D_DISABLED
+#ifndef PHYSICS_3D_DISABLED
 #include "scene/resources/3d/shape_3d.h"
-#endif // _3D_DISABLED
+#endif // PHYSICS_3D_DISABLED
 #include "scene/resources/material.h"
 #include "servers/rendering_server.h"
 
+#ifndef PHYSICS_3D_DISABLED
 class ConcavePolygonShape3D;
 class ConvexPolygonShape3D;
-class MeshConvexDecompositionSettings;
 class Shape3D;
+#endif // PHYSICS_3D_DISABLED
+class MeshConvexDecompositionSettings;
 
 class Mesh : public Resource {
 	GDCLASS(Mesh, Resource);
@@ -195,11 +197,11 @@ public:
 
 	static ConvexDecompositionFunc convex_decomposition_function;
 
-#ifndef _3D_DISABLED
+#ifndef PHYSICS_3D_DISABLED
 	Vector<Ref<Shape3D>> convex_decompose(const Ref<MeshConvexDecompositionSettings> &p_settings) const;
 	Ref<ConvexPolygonShape3D> create_convex_shape(bool p_clean = true, bool p_simplify = false) const;
 	Ref<ConcavePolygonShape3D> create_trimesh_shape() const;
-#endif // _3D_DISABLED
+#endif // PHYSICS_3D_DISABLED
 
 	virtual int get_builtin_bind_pose_count() const;
 	virtual Transform3D get_builtin_bind_pose(int p_index) const;
