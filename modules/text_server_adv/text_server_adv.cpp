@@ -5656,7 +5656,8 @@ bool TextServerAdvanced::_shaped_text_update_breaks(const RID &p_shaped) {
 				i++;
 			}
 			int r_end = sd->spans[i].end;
-			UBreakIterator *bi = sd->_get_break_iterator_for_locale(language, &err);
+			UBreakIterator *bi = _create_line_break_iterator_for_locale(language, &err);
+
 			if (!U_FAILURE(err) && bi) {
 				ubrk_setText(bi, data + _convert_pos_inv(sd, r_start), _convert_pos_inv(sd, r_end - r_start), &err);
 			}
@@ -5689,6 +5690,7 @@ bool TextServerAdvanced::_shaped_text_update_breaks(const RID &p_shaped) {
 						sd->break_inserts++;
 					}
 				}
+				ubrk_close(bi);
 			}
 			i++;
 		}
@@ -6135,13 +6137,22 @@ _FORCE_INLINE_ void TextServerAdvanced::_add_features(const Dictionary &p_source
 	}
 }
 
-UBreakIterator *TextServerAdvanced::ShapedTextDataAdvanced::_get_break_iterator_for_locale(const String &p_language, UErrorCode *r_err) {
-	HashMap<String, UBreakIterator *>::Iterator key_value = line_break_iterators_per_language.find(p_language);
+UBreakIterator *TextServerAdvanced::_create_line_break_iterator_for_locale(const String &p_language, UErrorCode *r_err) const {
+	// Creating UBreakIterator (ubrk_open) is surprisingly costly.
+	// However, cloning (ubrk_clone) is cheaper, so we keep around blueprints to accelerate creating new ones.
+
+	const String language = p_language.is_empty() ? TranslationServer::get_singleton()->get_tool_locale() : p_language;
+	_THREAD_SAFE_METHOD_
+	const HashMap<String, UBreakIterator *>::Iterator key_value = line_break_iterators_per_language.find(language);
 	if (key_value) {
-		return key_value->value;
+		return ubrk_clone(key_value->value, r_err);
 	}
-	UBreakIterator *brk = ubrk_open(UBRK_LINE, p_language.is_empty() ? TranslationServer::get_singleton()->get_tool_locale().ascii().get_data() : p_language.ascii().get_data(), nullptr, 0, r_err);
-	return line_break_iterators_per_language.insert(p_language, brk)->value;
+	UBreakIterator *bi = ubrk_open(UBRK_LINE, language.ascii().get_data(), nullptr, 0, r_err);
+	if (U_FAILURE(*r_err) || !bi) {
+		return nullptr;
+	}
+	line_break_iterators_per_language.insert(language, bi);
+	return ubrk_clone(bi, r_err);
 }
 
 void TextServerAdvanced::_shape_run(ShapedTextDataAdvanced *p_sd, int64_t p_start, int64_t p_end, hb_script_t p_script, hb_direction_t p_direction, TypedArray<RID> p_fonts, int64_t p_span, int64_t p_fb_index, int64_t p_prev_start, int64_t p_prev_end, RID p_prev_font) {
@@ -7718,6 +7729,9 @@ TextServerAdvanced::~TextServerAdvanced() {
 	if (allowed != nullptr) {
 		uset_close(allowed);
 		allowed = nullptr;
+	}
+	for (const KeyValue<String, UBreakIterator *> &bi : line_break_iterators_per_language) {
+		ubrk_close(bi.value);
 	}
 
 	std::atexit(u_cleanup);
