@@ -547,6 +547,17 @@
 				Infinity values of the same sign are considered equal.
 			</description>
 		</method>
+		<method name="is_equal_approx_custom_epsilon" keywords="roughly">
+			<return type="bool" />
+			<param index="0" name="a" type="float" />
+			<param index="1" name="b" type="float" />
+			<param index="2" name="tolerance" type="float" />
+			<description>
+				Returns [code]true[/code] if [param a] and [param b] are approximately equal to each other.
+				Here, "approximately equal" means that [param a] and [param b] are within the provided epsilon ([param tolerance]) of each other.
+				Infinity values of the same sign are considered equal.
+			</description>
+		</method>
 		<method name="is_finite">
 			<return type="bool" />
 			<param index="0" name="x" type="float" />
@@ -610,8 +621,9 @@
 		<method name="is_zero_approx">
 			<return type="bool" />
 			<param index="0" name="x" type="float" />
+			<param index="1" name="tolerance" type="float" default="1e-05" />
 			<description>
-				Returns [code]true[/code] if [param x] is zero or almost zero. The comparison is done using a tolerance calculation with a small internal epsilon.
+				Returns [code]true[/code] if [param x] is zero or almost zero. By default, uses a small internal epsilon value for tolerance in the comparison. However, a custom tolerance can be provided via [param tolerance].
 				This function is faster than using [method is_equal_approx] with one value as zero.
 			</description>
 		</method>
@@ -1038,8 +1050,8 @@
 		</method>
 		<method name="randfn">
 			<return type="float" />
-			<param index="0" name="mean" type="float" />
-			<param index="1" name="deviation" type="float" />
+			<param index="0" name="mean" type="float" default="0.0" />
+			<param index="1" name="deviation" type="float" default="1.0" />
 			<description>
 				Returns a [url=https://en.wikipedia.org/wiki/Normal_distribution]normally-distributed[/url], pseudo-random floating-point value from the specified [param mean] and a standard [param deviation]. This is also known as a Gaussian distribution.
 				[b]Note:[/b] This method uses the [url=https://en.wikipedia.org/wiki/Box%E2%80%93Muller_transform]Box-Muller transform[/url] algorithm.

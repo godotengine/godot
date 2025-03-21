@@ -72,7 +72,8 @@ struct VariantUtilityFunctions {
 	static bool is_nan(double x);
 	static bool is_inf(double x);
 	static bool is_equal_approx(double x, double y);
-	static bool is_zero_approx(double x);
+	static bool is_equal_approx_custom_epsilon(double x, double y, double tolerance);
+	static bool is_zero_approx(double x, double tolerance = CMP_EPSILON);
 	static bool is_finite(double x);
 	static double ease(float x, float curve);
 	static int step_decimals(float step);
@@ -118,7 +119,7 @@ struct VariantUtilityFunctions {
 	static void randomize();
 	static int64_t randi();
 	static double randf();
-	static double randfn(double mean, double deviation);
+	static double randfn(double mean = 0.0, double deviation = 1.0);
 	static int64_t randi_range(int64_t from, int64_t to);
 	static double randf_range(double from, double to);
 	static void seed(int64_t s);
