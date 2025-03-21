@@ -2641,7 +2641,7 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 				int parent_ofs = p_pos.x + theme_cache.item_margin;
 				Point2i root_pos = Point2i(root_ofs, children_pos.y + child_self_height / 2) - theme_cache.offset + p_draw_ofs;
 
-				if (c->get_visible_child_count() > 0) {
+				if (c->get_visible_child_count() > 0 && !(p_item->disable_folding || hide_folding)) {
 					root_pos -= Point2i(theme_cache.arrow->get_width(), 0);
 				}
 
