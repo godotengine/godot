@@ -35,9 +35,10 @@
 #include "editor/plugins/editor_plugin.h"
 
 #include "scene/3d/skeleton_3d.h"
+#include "scene/gui/advanced/dialogs.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/color_rect.h"
-#include "scene/gui/dialogs.h"
+#include "scene/gui/texture_button.h"
 #include "scene/resources/bone_map.h"
 #include "scene/resources/texture.h"
 

@@ -30,7 +30,7 @@
 
 #pragma once
 
-#include "scene/gui/option_button.h"
+#include "scene/gui/advanced/option_button.h"
 
 class OpenXRSelectRuntime : public OptionButton {
 	GDCLASS(OpenXRSelectRuntime, OptionButton);
