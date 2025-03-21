@@ -144,7 +144,6 @@ struct [[nodiscard]] Rect2i {
 	}
 
 	constexpr bool operator==(const Rect2i &p_rect) const { return position == p_rect.position && size == p_rect.size; }
-	constexpr bool operator!=(const Rect2i &p_rect) const { return position != p_rect.position || size != p_rect.size; }
 
 	Rect2i grow(int p_amount) const {
 		Rect2i g = *this;
