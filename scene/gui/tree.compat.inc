@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  color_rect.cpp                                                        */
+/*  tree.compat.inc                                                       */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,39 +28,14 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "color_rect.h"
+#ifndef DISABLE_DEPRECATED
 
-void ColorRect::set_color(const Color &p_color) {
-	if (color == p_color) {
-		return;
-	}
-	color = p_color;
-	queue_accessibility_update();
-	queue_redraw();
+void TreeItem::_add_button_bind_compat_76829(int p_column, const Ref<Texture2D> &p_button, int p_id, bool p_disabled, const String &p_tooltip) {
+	add_button(p_column, p_button, p_id, p_disabled, p_tooltip, String());
 }
 
-Color ColorRect::get_color() const {
-	return color;
+void TreeItem::_bind_compatibility_methods() {
+	ClassDB::bind_compatibility_method(D_METHOD("add_button", "column", "button", "id", "disabled", "tooltip_text"), &TreeItem::_add_button_bind_compat_76829, DEFVAL(-1), DEFVAL(false), DEFVAL(""));
 }
 
-void ColorRect::_notification(int p_what) {
-	switch (p_what) {
-		case NOTIFICATION_ACCESSIBILITY_UPDATE: {
-			RID ae = get_accessibility_element();
-			ERR_FAIL_COND(ae.is_null());
-
-			DisplayServer::get_singleton()->accessibility_update_set_color_value(ae, color);
-		} break;
-
-		case NOTIFICATION_DRAW: {
-			draw_rect(Rect2(Point2(), get_size()), color);
-		} break;
-	}
-}
-
-void ColorRect::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("set_color", "color"), &ColorRect::set_color);
-	ClassDB::bind_method(D_METHOD("get_color"), &ColorRect::get_color);
-
-	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "color"), "set_color", "get_color");
-}
+#endif // DISABLE_DEPRECATED

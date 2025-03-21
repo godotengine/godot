@@ -202,6 +202,8 @@ static int audio_driver_idx = -1;
 
 // Engine config/tools
 
+static DisplayServer::AccessibilityMode accessibility_mode = DisplayServer::AccessibilityMode::ACCESSIBILITY_AUTO;
+static bool accessibility_mode_set = false;
 static bool single_window = false;
 static bool editor = false;
 static bool project_manager = false;
@@ -616,6 +618,7 @@ void Main::print_help(const char *p_binary) {
 	print_help_option("--xr-mode <mode>", "Select XR (Extended Reality) mode [\"default\", \"off\", \"on\"].\n");
 #endif
 	print_help_option("--wid <window_id>", "Request parented to window.\n");
+	print_help_option("--accessibility <mode>", "Select accessibility mode ['auto' (when screen reader is running, default), 'always', 'disabled'].\n");
 
 	print_help_title("Debug options");
 	print_help_option("-d, --debug", "Debug (local stdout debugger).\n");
@@ -1300,6 +1303,27 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		} else if (arg == "--single-window") { // force single window
 
 			single_window = true;
+		} else if (arg == "--accessibility") {
+			if (N) {
+				String string = N->get();
+				if (string == "auto") {
+					accessibility_mode = DisplayServer::AccessibilityMode::ACCESSIBILITY_AUTO;
+					accessibility_mode_set = true;
+				} else if (string == "always") {
+					accessibility_mode = DisplayServer::AccessibilityMode::ACCESSIBILITY_ALWAYS;
+					accessibility_mode_set = true;
+				} else if (string == "disabled") {
+					accessibility_mode = DisplayServer::AccessibilityMode::ACCESSIBILITY_DISABLED;
+					accessibility_mode_set = true;
+				} else {
+					OS::get_singleton()->print("Accessibility mode argument not recognized, aborting.\n");
+					goto error;
+				}
+				N = N->next();
+			} else {
+				OS::get_singleton()->print("Missing accessibility mode argument, aborting.\n");
+				goto error;
+			}
 		} else if (arg == "-t" || arg == "--always-on-top") { // force always-on-top window
 
 			init_always_on_top = true;
@@ -2360,14 +2384,16 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		default_renderer_mobile = "gl_compatibility";
 	}
 #endif
-	if (renderer_hints.is_empty()) {
-		ERR_PRINT("No renderers available.");
+	if (!renderer_hints.is_empty()) {
+		renderer_hints += ",";
 	}
+	renderer_hints += "dummy";
 
 	if (!rendering_method.is_empty()) {
 		if (rendering_method != "forward_plus" &&
 				rendering_method != "mobile" &&
-				rendering_method != "gl_compatibility") {
+				rendering_method != "gl_compatibility" &&
+				rendering_method != "dummy") {
 			OS::get_singleton()->print("Unknown rendering method '%s', aborting.\nValid options are ",
 					rendering_method.utf8().get_data());
 
@@ -2435,7 +2461,9 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 		// Set a default renderer if none selected. Try to choose one that matches the driver.
 		if (rendering_method.is_empty()) {
-			if (rendering_driver == "opengl3" || rendering_driver == "opengl3_angle" || rendering_driver == "opengl3_es") {
+			if (rendering_driver == "dummy") {
+				rendering_method = "dummy";
+			} else if (rendering_driver == "opengl3" || rendering_driver == "opengl3_angle" || rendering_driver == "opengl3_es") {
 				rendering_method = "gl_compatibility";
 			} else {
 				rendering_method = "forward_plus";
@@ -2463,6 +2491,9 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			available_drivers.push_back("opengl3_es");
 		}
 #endif
+		if (rendering_method == "dummy") {
+			available_drivers.push_back("dummy");
+		}
 		if (available_drivers.is_empty()) {
 			OS::get_singleton()->print("Unknown renderer name '%s', aborting.\n", rendering_method.utf8().get_data());
 			goto error;
@@ -2499,7 +2530,9 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	}
 
 	if (rendering_driver.is_empty()) {
-		if (rendering_method == "gl_compatibility") {
+		if (rendering_method == "dummy") {
+			rendering_driver = "dummy";
+		} else if (rendering_method == "gl_compatibility") {
 			rendering_driver = GLOBAL_GET("rendering/gl_compatibility/driver");
 		} else {
 			rendering_driver = GLOBAL_GET("rendering/rendering_device/driver");
@@ -3100,6 +3133,11 @@ Error Main::setup2(bool p_show_boot_logo) {
 			window_flags |= DisplayServer::WINDOW_FLAG_EXTEND_TO_TITLE_BIT;
 		}
 #endif
+
+		if (!accessibility_mode_set) {
+			accessibility_mode = (DisplayServer::AccessibilityMode)GLOBAL_GET("accessibility/general/accessibility_support").operator int64_t();
+		}
+		DisplayServer::accessibility_set_mode(accessibility_mode);
 
 		// rendering_driver now held in static global String in main and initialized in setup()
 		Error err;
@@ -4797,7 +4835,12 @@ bool Main::iteration() {
 		return exit;
 	}
 
-	OS::get_singleton()->add_frame_delay(DisplayServer::get_singleton()->window_can_draw());
+	SceneTree *scene_tree = SceneTree::get_singleton();
+	bool skip_delay = scene_tree && scene_tree->is_accessibility_enabled();
+
+	if (!skip_delay) {
+		OS::get_singleton()->add_frame_delay(DisplayServer::get_singleton()->window_can_draw());
+	}
 
 #ifdef TOOLS_ENABLED
 	if (auto_build_solutions) {

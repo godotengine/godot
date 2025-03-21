@@ -156,9 +156,15 @@ private:
 	ContentScaleStretch content_scale_stretch = CONTENT_SCALE_STRETCH_FRACTIONAL;
 	real_t content_scale_factor = 1.0;
 
+	RID accessibility_title_element;
+	RID accessibility_announcement_element;
+	String announcement;
+
 	void _make_window();
 	void _clear_window();
 	void _update_from_window();
+	void _accessibility_notify_enter(Node *p_node);
+	void _accessibility_notify_exit(Node *p_node);
 
 	bool _try_parent_dialog(Node *p_from_node);
 
@@ -181,6 +187,8 @@ private:
 	void _clear_transient();
 	void _make_transient();
 	void _set_transient_exclusive_child(bool p_clear_invalid = false);
+
+	static Window *focused_window;
 
 	ThemeOwner *theme_owner = nullptr;
 	Ref<Theme> theme;
@@ -262,6 +270,10 @@ protected:
 	void _get_property_list(List<PropertyInfo> *p_list) const;
 	void _validate_property(PropertyInfo &p_property) const;
 
+	void _accessibility_action_grab_focus(const Variant &p_data) {
+		grab_focus();
+	}
+
 	virtual void add_child_notify(Node *p_child) override;
 	virtual void remove_child_notify(Node *p_child) override;
 
@@ -276,6 +288,9 @@ public:
 
 	static void set_root_layout_direction(int p_root_dir);
 	static Window *get_from_id(DisplayServer::WindowID p_window_id);
+
+	RID get_accessibility_element() const override;
+	virtual RID get_focused_accessibility_element() const override;
 
 	void set_title(const String &p_title);
 	String get_title() const;
@@ -381,6 +396,7 @@ public:
 	void child_controls_changed();
 
 	Window *get_exclusive_child() const { return exclusive_child; }
+	HashSet<Window *> get_transient_children() const { return transient_children; }
 	Window *get_parent_visible_window() const;
 	Viewport *get_parent_viewport() const;
 
@@ -407,6 +423,8 @@ public:
 	void start_resize(DisplayServer::WindowResizeEdge p_edge);
 
 	Rect2i get_usable_parent_rect() const;
+
+	void accessibility_announcement(const String &p_announcement);
 
 	// Internationalization.
 
@@ -480,8 +498,6 @@ public:
 	Ref<Font> get_theme_default_font() const;
 	int get_theme_default_font_size() const;
 
-	//
-
 	virtual Transform2D get_final_transform() const override;
 	virtual Transform2D get_screen_transform_internal(bool p_absolute_position = false) const override;
 	virtual Transform2D get_popup_base_transform() const override;
@@ -490,6 +506,7 @@ public:
 
 	Rect2i get_parent_rect() const;
 	virtual DisplayServer::WindowID get_window_id() const override;
+	static Window *get_focused_window() { return focused_window; }
 
 	virtual Size2 _get_contents_minimum_size() const;
 
