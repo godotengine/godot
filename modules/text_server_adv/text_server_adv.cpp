@@ -1419,25 +1419,17 @@ _FORCE_INLINE_ bool TextServerAdvanced::_ensure_cache_for_size(FontAdvanced *p_f
 			fargs.flags = FT_OPEN_MEMORY;
 			fargs.stream = &fd->stream;
 
-			int max_index = 0;
-			FT_Face tmp_face = nullptr;
-			error = FT_Open_Face(ft_library, &fargs, -1, &tmp_face);
-			if (tmp_face && error == 0) {
-				max_index = tmp_face->num_faces - 1;
-			}
-			if (tmp_face) {
-				FT_Done_Face(tmp_face);
-			}
-
-			error = FT_Open_Face(ft_library, &fargs, CLAMP(p_font_data->face_index, 0, max_index), &fd->face);
+			error = FT_Open_Face(ft_library, &fargs, p_font_data->face_index, &fd->face);
 			if (error) {
-				FT_Done_Face(fd->face);
-				fd->face = nullptr;
+				if (fd->face) {
+					FT_Done_Face(fd->face);
+					fd->face = nullptr;
+				}
 				memdelete(fd);
 				if (p_silent) {
 					return false;
 				} else {
-					ERR_FAIL_V_MSG(false, "FreeType: Error loading font: '" + String(FT_Error_String(error)) + "'.");
+					ERR_FAIL_V_MSG(false, "FreeType: Error loading font: '" + String(FT_Error_String(error)) + "' (face_index=" + String::num_int64(p_font_data->face_index) + ").");
 				}
 			}
 		}
