@@ -36,6 +36,7 @@ const emscriptenGlobals = {
 	'stringToUTF8': true,
 	'stringToUTF8Array': true,
 	'wasmTable': true,
+	'PThread': true
 };
 
 module.exports = [
