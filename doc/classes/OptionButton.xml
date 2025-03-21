@@ -6,8 +6,47 @@
 	<description>
 		[OptionButton] is a type of button that brings up a dropdown with selectable items when pressed. The item selected becomes the "current" item and is displayed as the button text.
 		See also [BaseButton] which contains common properties and methods associated with this node.
+		Like [PopupMenu], all [code]set_item_*[/code] methods allow negative item indices, i.e. [code]-1[/code] to access the last item, [code]-2[/code] to select the second-to-last item, and so on.
 		[b]Note:[/b] The ID values used for items are limited to 32 bits, not full 64 bits of [int]. This has a range of [code]-2^32[/code] to [code]2^32 - 1[/code], i.e. [code]-2147483648[/code] to [code]2147483647[/code].
 		[b]Note:[/b] The [member Button.text] and [member Button.icon] properties are set automatically based on the selected item. They shouldn't be changed manually.
+		[b]Example:[/b] Shuffle all existing items in an OptionButton by programmatically getting the items, clearing the list and re-adding the items in a different order:
+		[codeblock]
+		extends OptionButton
+
+		func _ready():
+		    item_selected.connect(_on_item_selected)
+
+		    # Copy current items to dictionary and shuffle their order.
+		    var items_copy = []
+		    for item_idx in item_count:
+		        items_copy.push_back({
+		            id = get_item_id(item_idx),
+		            icon = get_item_icon(item_idx),
+		            metadata = get_item_metadata(item_idx),
+		            text = get_item_text(item_idx),
+		            tooltip = get_item_tooltip(item_idx),
+		            disabled = is_item_disabled(item_idx),
+		            separator = is_item_separator(item_idx),
+		        })
+
+		    items_copy.shuffle()
+
+		    # Reset items and add new shuffled items.
+		    clear()
+		    for item in items_copy:
+		        if item.separator:
+		            add_separator(item.text)
+		        else:
+		            add_icon_item(item.icon, item.text, item.id)
+		        set_item_metadata(-1, item.metadata)
+		        set_item_tooltip(-1, item.tooltip)
+		        set_item_disabled(-1, item.disabled)
+
+		func _on_item_selected(index):
+		    # When querying the item's index after selection, get its original ID
+		    # so you know which item was actually selected regardless of order.
+		    print(get_item_id(index))
+		[/codeblock]
 	</description>
 	<tutorials>
 	</tutorials>
