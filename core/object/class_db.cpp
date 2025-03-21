@@ -370,6 +370,17 @@ ClassDB::APIType ClassDB::get_api_type(const StringName &p_class) {
 	return ti->api;
 }
 
+Error ClassDB::override_api_type(const StringName &p_class, ClassDB::APIType p_api) {
+	OBJTYPE_RLOCK;
+
+	ClassInfo *ti = classes.getptr(p_class);
+
+	ERR_FAIL_NULL_V_MSG(ti, Error::ERR_DOES_NOT_EXIST, vformat("Cannot get class '%s'.", String(p_class)));
+	ti->api = p_api;
+
+	return Error::OK;
+}
+
 uint32_t ClassDB::get_api_hash(APIType p_api) {
 #ifdef DEBUG_METHODS_ENABLED
 	OBJTYPE_WLOCK;
