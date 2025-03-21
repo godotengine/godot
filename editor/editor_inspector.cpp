@@ -1034,6 +1034,11 @@ void EditorProperty::shortcut_input(const Ref<InputEvent> &p_event) {
 
 	const Ref<InputEventKey> k = p_event;
 
+	Control *focus_owner = get_viewport()->gui_get_focus_owner();
+	if (focus_owner && Object::cast_to<Tree>(focus_owner)) {
+		return;
+	}
+
 	if (k.is_valid() && k->is_pressed()) {
 		if (ED_IS_SHORTCUT("property_editor/copy_value", p_event)) {
 			menu_option(MENU_COPY_VALUE);
