@@ -734,6 +734,23 @@ Size2 AnimationBezierTrackEdit::get_minimum_size() const {
 	return Vector2(1, 1);
 }
 
+AnimationBezierTrackEdit::CursorShape AnimationBezierTrackEdit::get_cursor_shape(const Point2 &p_pos) const {
+	const Vector2i rel_pos = p_pos - selection_rect.position;
+	if (selection_handles_rect.has_point(p_pos)) {
+		if ((rel_pos.x < 0 && rel_pos.y < 0) || (rel_pos.x > selection_rect.size.width && rel_pos.y > selection_rect.size.height)) {
+			return CURSOR_FDIAGSIZE;
+		} else if ((rel_pos.x < 0 && rel_pos.y > selection_rect.size.height) || (rel_pos.x > selection_rect.size.width && rel_pos.y < 0)) {
+			return CURSOR_BDIAGSIZE;
+		} else if (rel_pos.x < 0 || rel_pos.x > selection_rect.size.width) {
+			return CURSOR_HSIZE;
+		} else if (rel_pos.y < 0 || rel_pos.y > selection_rect.size.height) {
+			return CURSOR_VSIZE;
+		}
+		return CURSOR_MOVE;
+	}
+	return get_default_cursor_shape();
+}
+
 void AnimationBezierTrackEdit::set_timeline(AnimationTimelineEdit *p_timeline) {
 	timeline = p_timeline;
 	timeline->connect("zoom_changed", callable_mp(this, &AnimationBezierTrackEdit::_zoom_changed));
