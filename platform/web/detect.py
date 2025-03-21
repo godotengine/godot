@@ -235,12 +235,13 @@ def configure(env: "SConsEnvironment"):
     env.Append(LINKFLAGS=["-s%s=%sKB" % ("STACK_SIZE", env["stack_size"])])
 
     if env["threads"]:
+        thread_pool_size = "Math.min(8,navigator.hardwareConcurrency)"
         # Thread support (via SharedArrayBuffer).
         env.Append(CPPDEFINES=["PTHREAD_NO_RENAME"])
         env.Append(CCFLAGS=["-sUSE_PTHREADS=1"])
         env.Append(LINKFLAGS=["-sUSE_PTHREADS=1"])
         env.Append(LINKFLAGS=["-sDEFAULT_PTHREAD_STACK_SIZE=%sKB" % env["default_pthread_stack_size"]])
-        env.Append(LINKFLAGS=["-sPTHREAD_POOL_SIZE=8"])
+        env.Append(LINKFLAGS=['-sPTHREAD_POOL_SIZE="%s"' % thread_pool_size])
         env.Append(LINKFLAGS=["-sWASM_MEM_MAX=2048MB"])
         if not env["dlink_enabled"]:
             # Workaround https://github.com/emscripten-core/emscripten/issues/21844#issuecomment-2116936414.
