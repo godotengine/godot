@@ -30,6 +30,8 @@
 
 #include "java_godot_wrapper.h"
 
+#include "jni_utils.h"
+
 // JNIEnv is only valid within the thread it belongs to, in a multi threading environment
 // we can't cache it.
 // For Godot we call most access methods from our thread and we thus get a valid JNIEnv
@@ -94,6 +96,7 @@ GodotJavaWrapper::GodotJavaWrapper(JNIEnv *p_env, jobject p_activity, jobject p_
 	_enable_immersive_mode = p_env->GetMethodID(godot_class, "nativeEnableImmersiveMode", "(Z)V");
 	_is_in_immersive_mode = p_env->GetMethodID(godot_class, "isInImmersiveMode", "()Z");
 	_on_editor_workspace_selected = p_env->GetMethodID(godot_class, "nativeOnEditorWorkspaceSelected", "(Ljava/lang/String;)V");
+	_termux_execute = p_env->GetMethodID(godot_class, "nativeTermuxExecute", "(Ljava/lang/String;[Ljava/lang/String;Ljava/lang/String;ZLorg/godotengine/godot/variant/Callable;)Z");
 }
 
 GodotJavaWrapper::~GodotJavaWrapper() {
@@ -598,4 +601,32 @@ void GodotJavaWrapper::on_editor_workspace_selected(const String &p_workspace) {
 		jstring j_workspace = env->NewStringUTF(p_workspace.utf8().get_data());
 		env->CallVoidMethod(godot_instance, _on_editor_workspace_selected, j_workspace);
 	}
+}
+
+bool GodotJavaWrapper::termux_execute(const String &p_path, const Vector<String> &p_arguments, const String p_work_dir, bool p_background, const Callable &p_result_callback) {
+	if (_termux_execute) {
+		JNIEnv *env = get_jni_env();
+
+		jstring j_path = env->NewStringUTF(p_path.utf8().get_data());
+		jobjectArray j_args = env->NewObjectArray(p_arguments.size(), env->FindClass("java/lang/String"), nullptr);
+		for (int i = 0; i < p_arguments.size(); i++) {
+			jstring j_arg = env->NewStringUTF(p_arguments[i].utf8().get_data());
+			env->SetObjectArrayElement(j_args, i, j_arg);
+			env->DeleteLocalRef(j_arg);
+		}
+		jstring j_work_dir = env->NewStringUTF(p_work_dir.utf8().get_data());
+		jboolean j_background = p_background;
+		jobject j_result_callback = callable_to_jcallable(env, p_result_callback);
+
+		jboolean result = env->CallBooleanMethod(godot_instance, _termux_execute, j_path, j_args, j_work_dir, j_background, j_result_callback);
+
+		env->DeleteLocalRef(j_path);
+		env->DeleteLocalRef(j_args);
+		env->DeleteLocalRef(j_work_dir);
+		env->DeleteLocalRef(j_result_callback);
+
+		return result;
+	}
+
+	return false;
 }
