@@ -370,7 +370,8 @@ static bool generate_class_index_recursive(const String &p_dir) {
 			String source_file = current_dir.path_join(next);
 			bool is_abstract = false;
 			bool is_tool = false;
-			String class_name = GDScriptLanguage::get_singleton()->get_global_class_name(source_file, &base_type, nullptr, &is_abstract, &is_tool);
+			bool is_hidden = false;
+			String class_name = GDScriptLanguage::get_singleton()->get_global_class_name(source_file, &base_type, nullptr, &is_abstract, &is_tool, &is_hidden);
 			if (class_name.is_empty()) {
 				next = dir->get_next();
 				continue;
@@ -378,7 +379,7 @@ static bool generate_class_index_recursive(const String &p_dir) {
 			ERR_FAIL_COND_V_MSG(ScriptServer::is_global_class(class_name), false,
 					"Class name '" + class_name + "' from " + source_file + " is already used in " + ScriptServer::get_global_class_path(class_name));
 
-			ScriptServer::add_global_class(class_name, base_type, gdscript_name, source_file, is_abstract, is_tool);
+			ScriptServer::add_global_class(class_name, base_type, gdscript_name, source_file, is_abstract, is_tool, is_hidden);
 		}
 
 		next = dir->get_next();
