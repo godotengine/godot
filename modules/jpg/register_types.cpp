@@ -34,7 +34,7 @@
 
 static Ref<ImageLoaderLibJPEGTurbo> image_loader_libjpeg_turbo;
 
-void initialize_libjpeg_turbo_module(ModuleInitializationLevel p_level) {
+void initialize_jpg_module(ModuleInitializationLevel p_level) {
 	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
 		return;
 	}
@@ -43,7 +43,7 @@ void initialize_libjpeg_turbo_module(ModuleInitializationLevel p_level) {
 	ImageLoader::add_image_format_loader(image_loader_libjpeg_turbo);
 }
 
-void uninitialize_libjpeg_turbo_module(ModuleInitializationLevel p_level) {
+void uninitialize_jpg_module(ModuleInitializationLevel p_level) {
 	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
 		return;
 	}

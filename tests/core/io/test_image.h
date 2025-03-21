@@ -122,7 +122,7 @@ TEST_CASE("[Image] Saving and loading") {
 			"The BMP image should load successfully.");
 #endif // MODULE_BMP_ENABLED
 
-#ifdef MODULE_LIBJPEG_TURBO_ENABLED // TODO switch back to JPG module name
+#ifdef MODULE_JPG_ENABLED
 	// Load JPG
 	Ref<Image> image_jpg = memnew(Image());
 	Ref<FileAccess> f_jpg = FileAccess::open(TestUtils::get_data_path("images/icon.jpg"), FileAccess::READ, &err);

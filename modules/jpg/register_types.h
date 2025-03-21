@@ -32,5 +32,5 @@
 
 #include "modules/register_module_types.h"
 
-void initialize_libjpeg_turbo_module(ModuleInitializationLevel p_level);
-void uninitialize_libjpeg_turbo_module(ModuleInitializationLevel p_level);
+void initialize_jpg_module(ModuleInitializationLevel p_level);
+void uninitialize_jpg_module(ModuleInitializationLevel p_level);
