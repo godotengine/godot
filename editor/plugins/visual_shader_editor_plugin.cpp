@@ -1212,6 +1212,7 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id, bool
 		if (valid_right) {
 			if (expanded_port_counter == 0 && vsnode->is_output_port_expandable(i)) {
 				TextureButton *expand = memnew(TextureButton);
+				expand->set_accessibility_name(TTRC("Expand output port"));
 				expand->set_toggle_mode(true);
 				expand->set_texture_normal(editor->get_editor_theme_icon(SNAME("GuiTreeArrowRight")));
 				expand->set_texture_pressed(editor->get_editor_theme_icon(SNAME("GuiTreeArrowDown")));
@@ -1222,6 +1223,7 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id, bool
 			}
 			if (vsnode->has_output_port_preview(i) && port_right != VisualShaderNode::PORT_TYPE_TRANSFORM && port_right != VisualShaderNode::PORT_TYPE_SAMPLER) {
 				TextureButton *preview = memnew(TextureButton);
+				preview->set_accessibility_name(TTRC("Select preview port"));
 				preview->set_toggle_mode(true);
 				preview->set_texture_normal(editor->get_editor_theme_icon(SNAME("GuiVisibilityHidden")));
 				preview->set_texture_pressed(editor->get_editor_theme_icon(SNAME("GuiVisibilityVisible")));
@@ -6121,6 +6123,10 @@ void VisualShaderEditor::_connection_menu_id_pressed(int p_idx) {
 }
 
 Variant VisualShaderEditor::get_drag_data_fw(const Point2 &p_point, Control *p_from) {
+	if (p_point == Vector2(INFINITY, INFINITY)) {
+		return Variant();
+	}
+
 	if (p_from == members) {
 		TreeItem *it = members->get_item_at_position(p_point);
 		if (!it) {
@@ -6146,6 +6152,10 @@ Variant VisualShaderEditor::get_drag_data_fw(const Point2 &p_point, Control *p_f
 }
 
 bool VisualShaderEditor::can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const {
+	if (p_point == Vector2(INFINITY, INFINITY)) {
+		return false;
+	}
+
 	if (p_from == graph) {
 		Dictionary d = p_data;
 
@@ -6161,6 +6171,10 @@ bool VisualShaderEditor::can_drop_data_fw(const Point2 &p_point, const Variant &
 }
 
 void VisualShaderEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) {
+	if (p_point == Vector2(INFINITY, INFINITY)) {
+		return;
+	}
+
 	if (p_from == graph) {
 		Dictionary d = p_data;
 
@@ -6746,6 +6760,7 @@ VisualShaderEditor::VisualShaderEditor() {
 	preview_tools = memnew(MenuButton);
 	filter_hbox->add_child(preview_tools);
 	preview_tools->set_tooltip_text(TTR("Options"));
+	preview_tools->set_accessibility_name(TTRC("Options"));
 	preview_tools->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &VisualShaderEditor::_preview_tools_menu_option));
 	preview_tools->get_popup()->add_item(TTR("Copy Parameters From Material"), COPY_PARAMS_FROM_MATERIAL);
 	preview_tools->get_popup()->add_item(TTR("Paste Parameters To Material"), PASTE_PARAMS_TO_MATERIAL);
@@ -6795,10 +6810,12 @@ VisualShaderEditor::VisualShaderEditor() {
 	node_filter->connect(SceneStringName(gui_input), callable_mp(this, &VisualShaderEditor::_sbox_input));
 	node_filter->set_h_size_flags(SIZE_EXPAND_FILL);
 	node_filter->set_placeholder(TTR("Search"));
+	node_filter->set_accessibility_name(TTRC("Search"));
 
 	tools = memnew(MenuButton);
 	filter_hb->add_child(tools);
 	tools->set_tooltip_text(TTR("Options"));
+	tools->set_accessibility_name(TTRC("Options"));
 	tools->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &VisualShaderEditor::_tools_menu_option));
 	tools->get_popup()->add_item(TTR("Expand All"), EXPAND_ALL);
 	tools->get_popup()->add_item(TTR("Collapse All"), COLLAPSE_ALL);
@@ -6874,6 +6891,7 @@ VisualShaderEditor::VisualShaderEditor() {
 		varying_type->add_item("Vector4");
 		varying_type->add_item("Boolean");
 		varying_type->add_item("Transform");
+		varying_type->set_accessibility_name(TTRC("Varying Type"));
 		varying_type->connect(SceneStringName(item_selected), callable_mp(this, &VisualShaderEditor::_varying_type_changed));
 
 		varying_name = memnew(LineEdit);
@@ -6887,6 +6905,7 @@ VisualShaderEditor::VisualShaderEditor() {
 		hb->add_child(varying_mode);
 		varying_mode->add_item("Vertex -> [Fragment, Light]");
 		varying_mode->add_item("Fragment -> Light");
+		varying_mode->set_accessibility_name(TTRC("Varying Mode"));
 		varying_mode->connect(SceneStringName(item_selected), callable_mp(this, &VisualShaderEditor::_varying_mode_changed));
 
 		varying_error_label = memnew(Label);
