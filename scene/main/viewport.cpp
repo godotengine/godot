@@ -1748,7 +1748,7 @@ Control *Viewport::_gui_find_control_at_pos(CanvasItem *p_node, const Point2 &p_
 		return nullptr;
 	}
 
-	Control *drag_preview = _gui_get_drag_preview();
+	Control *drag_preview = gui_get_drag_preview();
 	if (!drag_preview || (c != drag_preview && !drag_preview->is_ancestor_of(c))) {
 		return c;
 	}
@@ -1925,7 +1925,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 								gui.dragging = true;
 								break;
 							} else {
-								Control *drag_preview = _gui_get_drag_preview();
+								Control *drag_preview = gui_get_drag_preview();
 								if (drag_preview) {
 									ERR_PRINT("Don't set a drag preview and return null data. Preview was deleted and drag request ignored.");
 									memdelete(drag_preview);
@@ -2046,7 +2046,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 		if (gui.dragging) {
 			// Handle drag & drop. This happens in the viewport where dragging started.
 
-			Control *drag_preview = _gui_get_drag_preview();
+			Control *drag_preview = gui_get_drag_preview();
 			if (drag_preview) {
 				Vector2 pos = drag_preview->get_canvas_transform().affine_inverse().xform(mpos);
 				drag_preview->set_position(pos);
@@ -2255,7 +2255,7 @@ void Viewport::_perform_drop(Control *p_control) {
 		gui.drag_successful = false;
 	}
 
-	Control *drag_preview = _gui_get_drag_preview();
+	Control *drag_preview = gui_get_drag_preview();
 	if (drag_preview) {
 		memdelete(drag_preview);
 		gui.drag_preview_id = ObjectID();
@@ -2303,17 +2303,17 @@ void Viewport::_gui_force_drag(Control *p_base, const Variant &p_data, Control *
 	gui.mouse_focus_mask.clear();
 
 	if (p_control) {
-		_gui_set_drag_preview(p_base, p_control);
+		gui_set_drag_preview(p_base, p_control);
 	}
 	Viewport::_propagate_drag_notification(section_root, NOTIFICATION_DRAG_BEGIN);
 }
 
-void Viewport::_gui_set_drag_preview(Control *p_base, Control *p_control) {
+void Viewport::gui_set_drag_preview(Control *p_base, Control *p_control) {
 	ERR_FAIL_NULL(p_control);
 	ERR_FAIL_COND(p_control->is_inside_tree());
 	ERR_FAIL_COND(p_control->get_parent() != nullptr);
 
-	Control *drag_preview = _gui_get_drag_preview();
+	Control *drag_preview = gui_get_drag_preview();
 	if (drag_preview) {
 		memdelete(drag_preview);
 	}
@@ -2325,7 +2325,7 @@ void Viewport::_gui_set_drag_preview(Control *p_base, Control *p_control) {
 	gui.drag_preview_id = p_control->get_instance_id();
 }
 
-Control *Viewport::_gui_get_drag_preview() {
+Control *Viewport::gui_get_drag_preview() {
 	if (gui.drag_preview_id.is_null()) {
 		return nullptr;
 	} else {
