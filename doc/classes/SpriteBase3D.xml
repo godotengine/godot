@@ -38,6 +38,11 @@
 		</method>
 	</methods>
 	<members>
+		<member name="alignment" type="Vector2" setter="set_alignment" getter="get_alignment" default="Vector2(0, 0)">
+			The texture's drawing offset relative to the texture size.
+			For example, setting this to [code]Vector2(0.5, 0.5)[/code] would align the sprite's bottom-left corner with its pivot position (assuming [member centered] is [code]true[/code]).
+			See also [member offset].
+		</member>
 		<member name="alpha_antialiasing_edge" type="float" setter="set_alpha_antialiasing_edge" getter="get_alpha_antialiasing_edge" default="0.0">
 			Threshold at which antialiasing will be applied on the alpha channel.
 		</member>
@@ -84,7 +89,8 @@
 			If [code]true[/code], depth testing is disabled and the object will be drawn in render order.
 		</member>
 		<member name="offset" type="Vector2" setter="set_offset" getter="get_offset" default="Vector2(0, 0)">
-			The texture's drawing offset.
+			The texture's drawing offset in pixels.
+			See also [member alignment].
 		</member>
 		<member name="pixel_size" type="float" setter="set_pixel_size" getter="get_pixel_size" default="0.01">
 			The size of one pixel's width on the sprite to scale it in 3D.
