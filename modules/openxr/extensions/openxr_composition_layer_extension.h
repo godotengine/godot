@@ -30,7 +30,6 @@
 
 #pragma once
 
-#include "openxr_composition_layer_provider.h"
 #include "openxr_extension_wrapper.h"
 
 #include "../openxr_api.h"
@@ -49,7 +48,7 @@ class OpenXRViewportCompositionLayerProvider;
 // This extension provides access to composition layers for displaying 2D content through the XR compositor.
 
 // OpenXRCompositionLayerExtension enables the extensions related to this functionality
-class OpenXRCompositionLayerExtension : public OpenXRExtensionWrapper, public OpenXRCompositionLayerProvider {
+class OpenXRCompositionLayerExtension : public OpenXRExtensionWrapper {
 	GDCLASS(OpenXRCompositionLayerExtension, OpenXRExtensionWrapper);
 
 protected:
