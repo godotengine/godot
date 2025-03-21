@@ -18,7 +18,8 @@ public:
 	/// Read a string of bytes from the binary stream
 	virtual void		ReadBytes(void *outData, size_t inNumBytes) = 0;
 
-	/// Returns true when an attempt has been made to read past the end of the file
+	/// Returns true when an attempt has been made to read past the end of the file.
+	/// Note that this follows the convention of std::basic_ios::eof which only returns true when an attempt is made to read past the end, not when the read pointer is at the end.
 	virtual bool		IsEOF() const = 0;
 
 	/// Returns true if there was an IO failure
