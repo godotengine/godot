@@ -652,6 +652,7 @@ void SpinBox::_bind_methods() {
 SpinBox::SpinBox() {
 	line_edit = memnew(LineEdit);
 	line_edit->set_emoji_menu_enabled(false);
+	line_edit->set_virtual_keyboard_type(DisplayServer::KEYBOARD_TYPE_NUMBER_DECIMAL);
 	add_child(line_edit, false, INTERNAL_MODE_FRONT);
 
 	line_edit->set_theme_type_variation("SpinBoxInnerLineEdit");
