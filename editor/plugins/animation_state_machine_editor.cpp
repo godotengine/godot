@@ -1822,6 +1822,7 @@ AnimationNodeStateMachineEditor::AnimationNodeStateMachineEditor() {
 	tool_select->set_button_group(bg);
 	tool_select->set_pressed(true);
 	tool_select->set_tooltip_text(TTR("Select and move nodes.\nRMB: Add node at position clicked.\nShift+LMB+Drag: Connects the selected node with another node or creates a new node if you select an area without nodes."));
+	tool_select->set_accessibility_name(TTR("Edit Nodes"));
 	tool_select->connect(SceneStringName(pressed), callable_mp(this, &AnimationNodeStateMachineEditor::_update_mode), CONNECT_DEFERRED);
 
 	tool_create = memnew(Button);
@@ -1830,6 +1831,7 @@ AnimationNodeStateMachineEditor::AnimationNodeStateMachineEditor() {
 	tool_create->set_toggle_mode(true);
 	tool_create->set_button_group(bg);
 	tool_create->set_tooltip_text(TTR("Create new nodes."));
+	tool_create->set_accessibility_name(TTR("Create Nodes"));
 	tool_create->connect(SceneStringName(pressed), callable_mp(this, &AnimationNodeStateMachineEditor::_update_mode), CONNECT_DEFERRED);
 
 	tool_connect = memnew(Button);
@@ -1838,6 +1840,7 @@ AnimationNodeStateMachineEditor::AnimationNodeStateMachineEditor() {
 	tool_connect->set_toggle_mode(true);
 	tool_connect->set_button_group(bg);
 	tool_connect->set_tooltip_text(TTR("Connect nodes."));
+	tool_connect->set_accessibility_name(TTR("Connect Nodes"));
 	tool_connect->connect(SceneStringName(pressed), callable_mp(this, &AnimationNodeStateMachineEditor::_update_mode), CONNECT_DEFERRED);
 
 	// Context-sensitive selection tools:
@@ -1850,6 +1853,7 @@ AnimationNodeStateMachineEditor::AnimationNodeStateMachineEditor() {
 	tool_erase->set_tooltip_text(TTR("Remove selected node or transition."));
 	tool_erase->connect(SceneStringName(pressed), callable_mp(this, &AnimationNodeStateMachineEditor::_erase_selected).bind(false));
 	tool_erase->set_disabled(true);
+	tool_erase->set_accessibility_name(TTR("Erase"));
 	selection_tools_hb->add_child(tool_erase);
 
 	transition_tools_hb = memnew(HBoxContainer);
@@ -1865,6 +1869,7 @@ AnimationNodeStateMachineEditor::AnimationNodeStateMachineEditor() {
 	auto_advance->set_tooltip_text(TTR("New Transitions Should Auto Advance"));
 	auto_advance->set_toggle_mode(true);
 	auto_advance->set_pressed(true);
+	auto_advance->set_accessibility_name(TTR("Transitions Auto Advance"));
 	transition_tools_hb->add_child(auto_advance);
 
 	//
