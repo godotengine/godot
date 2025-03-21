@@ -201,119 +201,155 @@ uint32 HeightFieldShapeSettings::CalculateBitsPerSampleForError(float inMaxError
 
 void HeightFieldShape::CalculateActiveEdges(uint inX, uint inY, uint inSizeX, uint inSizeY, const float *inHeights, uint inHeightsStartX, uint inHeightsStartY, intptr_t inHeightsStride, float inHeightsScale, float inActiveEdgeCosThresholdAngle, TempAllocator &inAllocator)
 {
+	// Limit the block size so we don't allocate more than 64K memory from the temp allocator
+	uint block_size_x = min(inSizeX, 44u);
+	uint block_size_y = min(inSizeY, 44u);
+
 	// Allocate temporary buffer for normals
-	uint normals_size = 2 * inSizeX * inSizeY * sizeof(Vec3);
+	uint normals_size = 2 * (block_size_x + 1) * (block_size_y + 1) * sizeof(Vec3);
 	Vec3 *normals = (Vec3 *)inAllocator.Allocate(normals_size);
 	JPH_SCOPE_EXIT([&inAllocator, normals, normals_size]{ inAllocator.Free(normals, normals_size); });
 
-	// Calculate triangle normals and make normals zero for triangles that are missing
-	Vec3 *out_normal = normals;
-	for (uint y = 0; y < inSizeY; ++y)
-		for (uint x = 0; x < inSizeX; ++x)
+	// Update the edges in blocks
+	for (uint block_y = 0; block_y < inSizeY; block_y += block_size_y)
+		for (uint block_x = 0; block_x < inSizeX; block_x += block_size_x)
 		{
-			// Get height on diagonal
-			const float *height_samples = inHeights + (inY - inHeightsStartY + y) * inHeightsStride + (inX - inHeightsStartX + x);
-			float x1y1_h = height_samples[0];
-			float x2y2_h = height_samples[inHeightsStride + 1];
-			if (x1y1_h != cNoCollisionValue && x2y2_h != cNoCollisionValue)
-			{
-				// Calculate normal for lower left triangle (e.g. T1A)
-				float x1y2_h = height_samples[inHeightsStride];
-				if (x1y2_h != cNoCollisionValue)
-				{
-					Vec3 x2y2_minus_x1y2(mScale.GetX(), inHeightsScale * (x2y2_h - x1y2_h), 0);
-					Vec3 x1y1_minus_x1y2(0, inHeightsScale * (x1y1_h - x1y2_h), -mScale.GetZ());
-					out_normal[0] = x2y2_minus_x1y2.Cross(x1y1_minus_x1y2).Normalized();
-				}
-				else
-					out_normal[0] = Vec3::sZero();
+			// Calculate the bottom right corner of the block
+			uint block_x_end = min(block_x + block_size_x, inSizeX);
+			uint block_y_end = min(block_y + block_size_y, inSizeY);
 
-				// Calculate normal for upper right triangle (e.g. T1B)
-				float x2y1_h = height_samples[1];
-				if (x2y1_h != cNoCollisionValue)
-				{
-					Vec3 x1y1_minus_x2y1(-mScale.GetX(), inHeightsScale * (x1y1_h - x2y1_h), 0);
-					Vec3 x2y2_minus_x2y1(0, inHeightsScale * (x2y2_h - x2y1_h), mScale.GetZ());
-					out_normal[1] = x1y1_minus_x2y1.Cross(x2y2_minus_x2y1).Normalized();
-				}
-				else
-					out_normal[1] = Vec3::sZero();
+			// If we're not at the first block in x, we need one extra column of normals to the left
+			uint normals_x_start, normals_x_skip;
+			if (block_x > 0)
+			{
+				normals_x_start = block_x - 1;
+				normals_x_skip = 2; // We need to skip over that extra column
 			}
 			else
 			{
-				out_normal[0] = Vec3::sZero();
-				out_normal[1] = Vec3::sZero();
+				normals_x_start = 0;
+				normals_x_skip = 0;
 			}
 
-			out_normal += 2;
+			// If we're not at the last block in y, we need one extra row of normals at the bottom
+			uint normals_y_end = block_y_end < inSizeY? block_y_end + 1 : inSizeY;
+
+			// Calculate triangle normals and make normals zero for triangles that are missing
+			Vec3 *out_normal = normals;
+			for (uint y = block_y; y < normals_y_end; ++y)
+			{
+				for (uint x = normals_x_start; x < block_x_end; ++x)
+				{
+					// Get height on diagonal
+					const float *height_samples = inHeights + (inY - inHeightsStartY + y) * inHeightsStride + (inX - inHeightsStartX + x);
+					float x1y1_h = height_samples[0];
+					float x2y2_h = height_samples[inHeightsStride + 1];
+					if (x1y1_h != cNoCollisionValue && x2y2_h != cNoCollisionValue)
+					{
+						// Calculate normal for lower left triangle (e.g. T1A)
+						float x1y2_h = height_samples[inHeightsStride];
+						if (x1y2_h != cNoCollisionValue)
+						{
+							Vec3 x2y2_minus_x1y2(mScale.GetX(), inHeightsScale * (x2y2_h - x1y2_h), 0);
+							Vec3 x1y1_minus_x1y2(0, inHeightsScale * (x1y1_h - x1y2_h), -mScale.GetZ());
+							out_normal[0] = x2y2_minus_x1y2.Cross(x1y1_minus_x1y2).Normalized();
+						}
+						else
+							out_normal[0] = Vec3::sZero();
+
+						// Calculate normal for upper right triangle (e.g. T1B)
+						float x2y1_h = height_samples[1];
+						if (x2y1_h != cNoCollisionValue)
+						{
+							Vec3 x1y1_minus_x2y1(-mScale.GetX(), inHeightsScale * (x1y1_h - x2y1_h), 0);
+							Vec3 x2y2_minus_x2y1(0, inHeightsScale * (x2y2_h - x2y1_h), mScale.GetZ());
+							out_normal[1] = x1y1_minus_x2y1.Cross(x2y2_minus_x2y1).Normalized();
+						}
+						else
+							out_normal[1] = Vec3::sZero();
+					}
+					else
+					{
+						out_normal[0] = Vec3::sZero();
+						out_normal[1] = Vec3::sZero();
+					}
+
+					out_normal += 2;
+				}
+			}
+
+			// Number of vectors to skip to get to the next row of normals
+			uint normals_pitch = 2 * (block_x_end - normals_x_start);
+
+			// Calculate active edges
+			const Vec3 *in_normal = normals;
+			uint global_bit_pos = 3 * ((inY + block_y) * (mSampleCount - 1) + (inX + block_x));
+			for (uint y = block_y; y < block_y_end; ++y)
+			{
+				in_normal += normals_x_skip; // If we have an extra column to the left, skip it here, we'll read it with in_normal[-1] below
+
+				for (uint x = block_x; x < block_x_end; ++x)
+				{
+					// Get vertex heights
+					const float *height_samples = inHeights + (inY - inHeightsStartY + y) * inHeightsStride + (inX - inHeightsStartX + x);
+					float x1y1_h = height_samples[0];
+					float x1y2_h = height_samples[inHeightsStride];
+					float x2y2_h = height_samples[inHeightsStride + 1];
+					bool x1y1_valid = x1y1_h != cNoCollisionValue;
+					bool x1y2_valid = x1y2_h != cNoCollisionValue;
+					bool x2y2_valid = x2y2_h != cNoCollisionValue;
+
+					// Calculate the edge flags (3 bits)
+					// See diagram in the next function for the edge numbering
+					uint16 edge_mask = 0b111;
+					uint16 edge_flags = 0;
+
+					// Edge 0
+					if (x == 0)
+						edge_mask &= 0b110; // We need normal x - 1 which we didn't calculate, don't update this edge
+					else if (x1y1_valid && x1y2_valid)
+					{
+						Vec3 edge0_direction(0, inHeightsScale * (x1y2_h - x1y1_h), mScale.GetZ());
+						if (ActiveEdges::IsEdgeActive(in_normal[0], in_normal[-1], edge0_direction, inActiveEdgeCosThresholdAngle))
+							edge_flags |= 0b001;
+					}
+
+					// Edge 1
+					if (y == inSizeY - 1)
+						edge_mask &= 0b101; // We need normal y + 1 which we didn't calculate, don't update this edge
+					else if (x1y2_valid && x2y2_valid)
+					{
+						Vec3 edge1_direction(mScale.GetX(), inHeightsScale * (x2y2_h - x1y2_h), 0);
+						if (ActiveEdges::IsEdgeActive(in_normal[0], in_normal[normals_pitch + 1], edge1_direction, inActiveEdgeCosThresholdAngle))
+							edge_flags |= 0b010;
+					}
+
+					// Edge 2
+					if (x1y1_valid && x2y2_valid)
+					{
+						Vec3 edge2_direction(-mScale.GetX(), inHeightsScale * (x1y1_h - x2y2_h), -mScale.GetZ());
+						if (ActiveEdges::IsEdgeActive(in_normal[0], in_normal[1], edge2_direction, inActiveEdgeCosThresholdAngle))
+							edge_flags |= 0b100;
+					}
+
+					// Store the edge flags in the array
+					uint byte_pos = global_bit_pos >> 3;
+					uint bit_pos = global_bit_pos & 0b111;
+					JPH_ASSERT(byte_pos < mActiveEdgesSize);
+					uint8 *edge_flags_ptr = &mActiveEdges[byte_pos];
+					uint16 combined_edge_flags = uint16(edge_flags_ptr[0]) | uint16(uint16(edge_flags_ptr[1]) << 8);
+					combined_edge_flags &= ~(edge_mask << bit_pos);
+					combined_edge_flags |= edge_flags << bit_pos;
+					edge_flags_ptr[0] = uint8(combined_edge_flags);
+					edge_flags_ptr[1] = uint8(combined_edge_flags >> 8);
+
+					in_normal += 2;
+					global_bit_pos += 3;
+				}
+
+				global_bit_pos += 3 * (mSampleCount - 1 - (block_x_end - block_x));
+			}
 		}
-
-	// Calculate active edges
-	const Vec3 *in_normal = normals;
-	uint global_bit_pos = 3 * (inY * (mSampleCount - 1) + inX);
-	for (uint y = 0; y < inSizeY; ++y)
-	{
-		for (uint x = 0; x < inSizeX; ++x)
-		{
-			// Get vertex heights
-			const float *height_samples = inHeights + (inY - inHeightsStartY + y) * inHeightsStride + (inX - inHeightsStartX + x);
-			float x1y1_h = height_samples[0];
-			float x1y2_h = height_samples[inHeightsStride];
-			float x2y2_h = height_samples[inHeightsStride + 1];
-			bool x1y1_valid = x1y1_h != cNoCollisionValue;
-			bool x1y2_valid = x1y2_h != cNoCollisionValue;
-			bool x2y2_valid = x2y2_h != cNoCollisionValue;
-
-			// Calculate the edge flags (3 bits)
-			// See diagram in the next function for the edge numbering
-			uint16 edge_mask = 0b111;
-			uint16 edge_flags = 0;
-
-			// Edge 0
-			if (x == 0)
-				edge_mask &= 0b110; // We need normal x - 1 which we didn't calculate, don't update this edge
-			else if (x1y1_valid && x1y2_valid)
-			{
-				Vec3 edge0_direction(0, inHeightsScale * (x1y2_h - x1y1_h), mScale.GetZ());
-				if (ActiveEdges::IsEdgeActive(in_normal[0], in_normal[-1], edge0_direction, inActiveEdgeCosThresholdAngle))
-					edge_flags |= 0b001;
-			}
-
-			// Edge 1
-			if (y == inSizeY - 1)
-				edge_mask &= 0b101; // We need normal y + 1 which we didn't calculate, don't update this edge
-			else if (x1y2_valid && x2y2_valid)
-			{
-				Vec3 edge1_direction(mScale.GetX(), inHeightsScale * (x2y2_h - x1y2_h), 0);
-				if (ActiveEdges::IsEdgeActive(in_normal[0], in_normal[2 * inSizeX + 1], edge1_direction, inActiveEdgeCosThresholdAngle))
-					edge_flags |= 0b010;
-			}
-
-			// Edge 2
-			if (x1y1_valid && x2y2_valid)
-			{
-				Vec3 edge2_direction(-mScale.GetX(), inHeightsScale * (x1y1_h - x2y2_h), -mScale.GetZ());
-				if (ActiveEdges::IsEdgeActive(in_normal[0], in_normal[1], edge2_direction, inActiveEdgeCosThresholdAngle))
-					edge_flags |= 0b100;
-			}
-
-			// Store the edge flags in the array
-			uint byte_pos = global_bit_pos >> 3;
-			uint bit_pos = global_bit_pos & 0b111;
-			JPH_ASSERT(byte_pos < mActiveEdgesSize);
-			uint8 *edge_flags_ptr = &mActiveEdges[byte_pos];
-			uint16 combined_edge_flags = uint16(edge_flags_ptr[0]) | uint16(uint16(edge_flags_ptr[1]) << 8);
-			combined_edge_flags &= ~(edge_mask << bit_pos);
-			combined_edge_flags |= edge_flags << bit_pos;
-			edge_flags_ptr[0] = uint8(combined_edge_flags);
-			edge_flags_ptr[1] = uint8(combined_edge_flags >> 8);
-
-			in_normal += 2;
-			global_bit_pos += 3;
-		}
-
-		global_bit_pos += 3 * (mSampleCount - 1 - inSizeX);
-	}
 }
 
 void HeightFieldShape::CalculateActiveEdges(const HeightFieldShapeSettings &inSettings)
@@ -1710,7 +1746,7 @@ public:
 	JPH_INLINE explicit			DecodingContext(const HeightFieldShape *inShape) :
 		mShape(inShape)
 	{
-		static_assert(sizeof(sGridOffsets) / sizeof(uint) == cNumBitsXY + 1, "Offsets array is not long enough");
+		static_assert(std::size(sGridOffsets) == cNumBitsXY + 1, "Offsets array is not long enough");
 
 		// Construct root stack entry
 		mPropertiesStack[0] = 0; // level: 0, x: 0, y: 0
@@ -1869,8 +1905,8 @@ public:
 					uint32 stride = block_size_plus_1 - size_x_plus_1;
 
 					// Start range with a very large inside-out box
-					Vec3 value_min = Vec3::sReplicate(1.0e30f);
-					Vec3 value_max = Vec3::sReplicate(-1.0e30f);
+					Vec3 value_min = Vec3::sReplicate(cLargeFloat);
+					Vec3 value_max = Vec3::sReplicate(-cLargeFloat);
 
 					// Loop over the samples to determine the min and max of this block
 					for (uint32 block_y = 0; block_y < size_y_plus_1; ++block_y)
