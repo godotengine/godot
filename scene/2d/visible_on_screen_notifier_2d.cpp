@@ -56,7 +56,7 @@ Rect2 VisibleOnScreenNotifier2D::_edit_get_rect() const {
 bool VisibleOnScreenNotifier2D::_edit_use_rect() const {
 	return show_rect;
 }
-#endif // DEBUG_ENABLED
+#endif // TOOLS_ENABLED
 
 void VisibleOnScreenNotifier2D::_visibility_enter() {
 	if (!is_inside_tree() || Engine::get_singleton()->is_editor_hint()) {

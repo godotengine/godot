@@ -1069,6 +1069,7 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 
 	set_up_ssh_public_key_path = memnew(LineEdit);
 	set_up_ssh_public_key_path->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	set_up_ssh_public_key_path->set_accessibility_name(TTR("SSH Public Key Path"));
 	set_up_ssh_public_key_path->set_text(EDITOR_GET("version_control/ssh_public_key_path"));
 	set_up_ssh_public_key_path->connect(SceneStringName(text_changed), callable_mp(this, &VersionControlEditorPlugin::_update_set_up_warning));
 	set_up_ssh_public_key_input_hbc->add_child(set_up_ssh_public_key_path);
@@ -1085,6 +1086,7 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	select_public_path_button->set_button_icon(EditorNode::get_singleton()->get_gui_base()->get_editor_theme_icon("Folder"));
 	select_public_path_button->connect(SceneStringName(pressed), callable_mp(this, &VersionControlEditorPlugin::_popup_file_dialog).bind(set_up_ssh_public_key_file_dialog));
 	select_public_path_button->set_tooltip_text(TTR("Select SSH public key path"));
+	select_public_path_button->set_accessibility_name(TTR("Select SSH public key path"));
 	set_up_ssh_public_key_input_hbc->add_child(select_public_path_button);
 
 	HBoxContainer *set_up_ssh_private_key_input = memnew(HBoxContainer);
@@ -1104,6 +1106,7 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	set_up_ssh_private_key_path->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	set_up_ssh_private_key_path->set_text(EDITOR_GET("version_control/ssh_private_key_path"));
 	set_up_ssh_private_key_path->connect(SceneStringName(text_changed), callable_mp(this, &VersionControlEditorPlugin::_update_set_up_warning));
+	set_up_ssh_private_key_path->set_accessibility_name(TTR("SSH Private Key Path"));
 	set_up_ssh_private_key_input_hbc->add_child(set_up_ssh_private_key_path);
 
 	set_up_ssh_private_key_file_dialog = memnew(FileDialog);
@@ -1118,6 +1121,7 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	select_private_path_button->set_button_icon(EditorNode::get_singleton()->get_gui_base()->get_editor_theme_icon("Folder"));
 	select_private_path_button->connect(SceneStringName(pressed), callable_mp(this, &VersionControlEditorPlugin::_popup_file_dialog).bind(set_up_ssh_private_key_file_dialog));
 	select_private_path_button->set_tooltip_text(TTR("Select SSH private key path"));
+	select_private_path_button->set_accessibility_name(TTR("Select SSH private key path"));
 	set_up_ssh_private_key_input_hbc->add_child(select_private_path_button);
 
 	HBoxContainer *set_up_ssh_passphrase_input = memnew(HBoxContainer);
@@ -1133,6 +1137,7 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	set_up_ssh_passphrase->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	set_up_ssh_passphrase->set_secret(true);
 	set_up_ssh_passphrase->connect(SceneStringName(text_changed), callable_mp(this, &VersionControlEditorPlugin::_update_set_up_warning));
+	set_up_ssh_passphrase->set_accessibility_name(TTR("SSH Passphrase"));
 	set_up_ssh_passphrase_input->add_child(set_up_ssh_passphrase);
 
 	set_up_warning_text = memnew(Label);
@@ -1158,6 +1163,7 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	unstage_title->add_child(unstage_label);
 
 	refresh_button = memnew(Button);
+	refresh_button->set_accessibility_name(TTR("Detect new changes"));
 	refresh_button->set_tooltip_text(TTR("Detect new changes"));
 	refresh_button->set_theme_type_variation(SceneStringName(FlatButton));
 	refresh_button->set_button_icon(EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("Reload"), EditorStringName(EditorIcons)));
@@ -1179,6 +1185,7 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	discard_all_confirm->get_ok_button()->connect(SceneStringName(pressed), callable_mp(this, &VersionControlEditorPlugin::_discard_all));
 
 	discard_all_button = memnew(Button);
+	discard_all_button->set_accessibility_name(TTR("Discard all changes"));
 	discard_all_button->set_tooltip_text(TTR("Discard all changes"));
 	discard_all_button->set_button_icon(EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("Close"), EditorStringName(EditorIcons)));
 	discard_all_button->connect(SceneStringName(pressed), callable_mp(this, &VersionControlEditorPlugin::_confirm_discard_all));
@@ -1186,6 +1193,7 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	unstage_title->add_child(discard_all_button);
 
 	stage_all_button = memnew(Button);
+	stage_all_button->set_accessibility_name(TTR("Stage all changes"));
 	stage_all_button->set_theme_type_variation(SceneStringName(FlatButton));
 	stage_all_button->set_button_icon(EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("MoveDown"), EditorStringName(EditorIcons)));
 	stage_all_button->set_tooltip_text(TTR("Stage all changes"));
@@ -1216,6 +1224,7 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	stage_title->add_child(stage_label);
 
 	unstage_all_button = memnew(Button);
+	unstage_all_button->set_accessibility_name(TTR("Unstage all changes"));
 	unstage_all_button->set_theme_type_variation(SceneStringName(FlatButton));
 	unstage_all_button->set_button_icon(EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("MoveUp"), EditorStringName(EditorIcons)));
 	unstage_all_button->set_tooltip_text(TTR("Unstage all changes"));
@@ -1247,6 +1256,7 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	commit_area->add_child(commit_label);
 
 	commit_message = memnew(TextEdit);
+	commit_message->set_accessibility_name(TTR("Commit Message"));
 	commit_message->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	commit_message->set_h_grow_direction(Control::GrowDirection::GROW_DIRECTION_BEGIN);
 	commit_message->set_v_grow_direction(Control::GrowDirection::GROW_DIRECTION_END);
@@ -1275,6 +1285,7 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	commit_list_hbc->add_child(commit_list_label);
 
 	commit_list_size_button = memnew(OptionButton);
+	commit_list_size_button->set_accessibility_name(TTR("Commit list size"));
 	commit_list_size_button->set_tooltip_text(TTR("Commit list size"));
 	commit_list_size_button->add_item("10");
 	commit_list_size_button->set_item_metadata(0, 10);
@@ -1307,6 +1318,7 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	version_commit_dock->add_child(menu_bar);
 
 	branch_select = memnew(OptionButton);
+	branch_select->set_accessibility_name(TTR("Branch"));
 	branch_select->set_tooltip_text(TTR("Branches"));
 	branch_select->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	branch_select->set_clip_text(true);
@@ -1348,11 +1360,13 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	branch_create_hbc->add_child(branch_create_name_label);
 
 	branch_create_name_input = memnew(LineEdit);
+	branch_create_name_input->set_accessibility_name(TTR("Branch Name"));
 	branch_create_name_input->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	branch_create_name_input->connect(SceneStringName(text_changed), callable_mp(this, &VersionControlEditorPlugin::_update_branch_create_button));
 	branch_create_hbc->add_child(branch_create_name_input);
 
 	remote_select = memnew(OptionButton);
+	remote_select->set_accessibility_name(TTR("Remote"));
 	remote_select->set_tooltip_text(TTR("Remotes"));
 	remote_select->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	remote_select->set_clip_text(true);
@@ -1394,6 +1408,7 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	remote_create_name_hbc->add_child(remote_create_name_label);
 
 	remote_create_name_input = memnew(LineEdit);
+	remote_create_name_input->set_accessibility_name(TTR("Remote Name"));
 	remote_create_name_input->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	remote_create_name_input->connect(SceneStringName(text_changed), callable_mp(this, &VersionControlEditorPlugin::_update_remote_create_button));
 	remote_create_name_hbc->add_child(remote_create_name_input);
@@ -1408,12 +1423,14 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	remote_create_hbc->add_child(remote_create_url_label);
 
 	remote_create_url_input = memnew(LineEdit);
+	remote_create_url_input->set_accessibility_name(TTR("Remote URL"));
 	remote_create_url_input->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	remote_create_url_input->connect(SceneStringName(text_changed), callable_mp(this, &VersionControlEditorPlugin::_update_remote_create_button));
 	remote_create_hbc->add_child(remote_create_url_input);
 
 	fetch_button = memnew(Button);
 	fetch_button->set_theme_type_variation(SceneStringName(FlatButton));
+	fetch_button->set_accessibility_name(TTR("Fetch"));
 	fetch_button->set_tooltip_text(TTR("Fetch"));
 	fetch_button->set_button_icon(EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("Reload"), EditorStringName(EditorIcons)));
 	fetch_button->connect(SceneStringName(pressed), callable_mp(this, &VersionControlEditorPlugin::_fetch));
@@ -1421,6 +1438,7 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 
 	pull_button = memnew(Button);
 	pull_button->set_theme_type_variation(SceneStringName(FlatButton));
+	pull_button->set_accessibility_name(TTR("Pull"));
 	pull_button->set_tooltip_text(TTR("Pull"));
 	pull_button->set_button_icon(EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("MoveDown"), EditorStringName(EditorIcons)));
 	pull_button->connect(SceneStringName(pressed), callable_mp(this, &VersionControlEditorPlugin::_pull));
@@ -1428,6 +1446,7 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 
 	push_button = memnew(Button);
 	push_button->set_theme_type_variation(SceneStringName(FlatButton));
+	push_button->set_accessibility_name(TTR("Push"));
 	push_button->set_tooltip_text(TTR("Push"));
 	push_button->set_button_icon(EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("MoveUp"), EditorStringName(EditorIcons)));
 	push_button->connect(SceneStringName(pressed), callable_mp(this, &VersionControlEditorPlugin::_push));
@@ -1494,6 +1513,7 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	diff_heading->add_child(view);
 
 	diff_view_type_select = memnew(OptionButton);
+	diff_view_type_select->set_accessibility_name(TTR("View"));
 	diff_view_type_select->add_item(TTR("Split"), DIFF_VIEW_TYPE_SPLIT);
 	diff_view_type_select->add_item(TTR("Unified"), DIFF_VIEW_TYPE_UNIFIED);
 	diff_view_type_select->connect(SceneStringName(item_selected), callable_mp(this, &VersionControlEditorPlugin::_display_diff));
