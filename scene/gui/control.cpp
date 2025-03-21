@@ -452,7 +452,7 @@ void Control::_validate_property(PropertyInfo &p_property) const {
 		Control *tmp_control = Object::cast_to<Control>(get_parent());
 		Window *tmp_window = Object::cast_to<Window>(get_parent());
 		while (tmp_control || tmp_window) {
-			//we go up and any non Control/Window will break the chain
+			// We go up and any non Control/Window will break the chain.
 			if (tmp_control) {
 				if (tmp_control->get_theme().is_valid()) {
 					tmp_control->get_theme()->get_type_variation_list(get_class_name(), &names);
