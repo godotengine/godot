@@ -30,7 +30,7 @@
 
 #include "visible_on_screen_notifier_2d.h"
 
-#ifdef DEBUG_ENABLED
+#ifdef TOOLS_ENABLED
 Dictionary VisibleOnScreenNotifier2D::_edit_get_state() const {
 	Dictionary state = Node2D::_edit_get_state();
 	state["rect"] = rect;
@@ -46,7 +46,9 @@ void VisibleOnScreenNotifier2D::_edit_set_state(const Dictionary &p_state) {
 void VisibleOnScreenNotifier2D::_edit_set_rect(const Rect2 &p_edit_rect) {
 	set_rect(p_edit_rect);
 }
+#endif // TOOLS_ENABLED
 
+#ifdef DEBUG_ENABLED
 Rect2 VisibleOnScreenNotifier2D::_edit_get_rect() const {
 	return rect;
 }
