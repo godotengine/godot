@@ -137,7 +137,7 @@ Error MultiplayerPeerExtension::get_packet(const uint8_t **r_buffer, int &r_buff
 			return FAILED;
 		}
 
-		if (script_buffer.size() == 0) {
+		if (script_buffer.is_empty()) {
 			return Error::ERR_UNAVAILABLE;
 		}
 

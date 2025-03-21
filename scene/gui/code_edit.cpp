@@ -963,7 +963,7 @@ void CodeEdit::indent_lines() {
 	for (Point2i line_range : line_ranges) {
 		for (int i = line_range.x; i <= line_range.y; i++) {
 			const String line_text = get_line(i);
-			if (line_text.size() == 0) {
+			if (line_text.is_empty()) {
 				// Ignore empty lines.
 				continue;
 			}
@@ -1599,7 +1599,7 @@ bool CodeEdit::can_fold_line(int p_line) const {
 		return false;
 	}
 
-	if (p_line + 1 >= get_line_count() || get_line(p_line).strip_edges().size() == 0) {
+	if (p_line + 1 >= get_line_count() || get_line(p_line).strip_edges().is_empty()) {
 		return false;
 	}
 
@@ -1658,7 +1658,7 @@ bool CodeEdit::can_fold_line(int p_line) const {
 	/* Otherwise check indent levels. */
 	int start_indent = get_indent_level(p_line);
 	for (int i = p_line + 1; i < get_line_count(); i++) {
-		if (is_in_string(i) != -1 || is_in_comment(i) != -1 || get_line(i).strip_edges().size() == 0) {
+		if (is_in_string(i) != -1 || is_in_comment(i) != -1 || get_line(i).strip_edges().is_empty()) {
 			continue;
 		}
 		return (get_indent_level(i) > start_indent);
@@ -1711,7 +1711,7 @@ void CodeEdit::fold_line(int p_line) {
 		} else {
 			int start_indent = get_indent_level(p_line);
 			for (int i = p_line + 1; i <= line_count; i++) {
-				if (get_line(i).strip_edges().size() == 0) {
+				if (get_line(i).strip_edges().is_empty()) {
 					continue;
 				}
 				if (get_indent_level(i) > start_indent) {
@@ -1958,7 +1958,7 @@ String CodeEdit::get_delimiter_end_key(int p_delimiter_idx) const {
 }
 
 Point2 CodeEdit::get_delimiter_start_position(int p_line, int p_column) const {
-	if (delimiters.size() == 0) {
+	if (delimiters.is_empty()) {
 		return Point2(-1, -1);
 	}
 	ERR_FAIL_INDEX_V(p_line, get_line_count(), Point2(-1, -1));
@@ -2009,7 +2009,7 @@ Point2 CodeEdit::get_delimiter_start_position(int p_line, int p_column) const {
 }
 
 Point2 CodeEdit::get_delimiter_end_position(int p_line, int p_column) const {
-	if (delimiters.size() == 0) {
+	if (delimiters.is_empty()) {
 		return Point2(-1, -1);
 	}
 	ERR_FAIL_INDEX_V(p_line, get_line_count(), Point2(-1, -1));
@@ -3060,7 +3060,7 @@ void CodeEdit::_update_code_region_tags() {
 
 /* Delimiters */
 void CodeEdit::_update_delimiter_cache(int p_from_line, int p_to_line) {
-	if (delimiters.size() == 0) {
+	if (delimiters.is_empty()) {
 		return;
 	}
 
@@ -3210,7 +3210,7 @@ void CodeEdit::_update_delimiter_cache(int p_from_line, int p_to_line) {
 }
 
 int CodeEdit::_is_in_delimiter(int p_line, int p_column, DelimiterType p_type) const {
-	if (delimiters.size() == 0 || p_line >= delimiter_cache.size()) {
+	if (delimiters.is_empty() || p_line >= delimiter_cache.size()) {
 		return -1;
 	}
 	ERR_FAIL_INDEX_V(p_line, get_line_count(), 0);
@@ -3424,7 +3424,7 @@ void CodeEdit::_filter_code_completion_candidates_impl() {
 		GDVIRTUAL_CALL(_filter_code_completion_candidates, completion_options_sources, completion_options);
 
 		/* No options to complete, cancel. */
-		if (completion_options.size() == 0) {
+		if (completion_options.is_empty()) {
 			cancel_code_completion();
 			return;
 		}
@@ -3656,7 +3656,7 @@ void CodeEdit::_filter_code_completion_candidates_impl() {
 	}
 
 	/* No options to complete, cancel. */
-	if (code_completion_options_new.size() == 0) {
+	if (code_completion_options_new.is_empty()) {
 		cancel_code_completion();
 		return;
 	}

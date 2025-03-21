@@ -301,7 +301,7 @@ Vector<Vector2> PolygonPathFinder::find_path(const Vector2 &p_from, const Vector
 	bool found_route = false;
 
 	while (true) {
-		if (open_list.size() == 0) {
+		if (open_list.is_empty()) {
 			print_verbose("Open list empty.");
 			break;
 		}

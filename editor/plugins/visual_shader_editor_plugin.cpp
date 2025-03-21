@@ -7979,7 +7979,7 @@ Control *VisualShaderNodePluginDefault::create_editor(const Ref<Resource> &p_par
 	}
 
 	Vector<StringName> properties = p_node->get_editable_properties();
-	if (properties.size() == 0) {
+	if (properties.is_empty()) {
 		return nullptr;
 	}
 
@@ -7996,7 +7996,7 @@ Control *VisualShaderNodePluginDefault::create_editor(const Ref<Resource> &p_par
 		}
 	}
 
-	if (pinfo.size() == 0) {
+	if (pinfo.is_empty()) {
 		return nullptr;
 	}
 

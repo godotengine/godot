@@ -924,7 +924,7 @@ Error RenderingServer::_surface_set_data(Array p_arrays, uint64_t p_format, uint
 		// Create AABBs for each detected bone.
 		int total_bones = max_bone + 1;
 
-		bool first = r_bone_aabb.size() == 0;
+		bool first = r_bone_aabb.is_empty();
 
 		r_bone_aabb.resize(total_bones);
 
