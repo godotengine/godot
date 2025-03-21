@@ -439,8 +439,8 @@ void LocalizationEditor::_filesystem_files_moved(const String &p_old_file, const
 
 	// Check for the Array elements of the values.
 	Array remap_keys = remaps.keys();
-	for (int i = 0; i < remap_keys.size(); i++) {
-		PackedStringArray remapped_files = remaps[remap_keys[i]];
+	for (const Variant &remap_key : remap_keys) {
+		PackedStringArray remapped_files = remaps[remap_key];
 		bool remapped_files_updated = false;
 
 		for (int j = 0; j < remapped_files.size(); j++) {
@@ -454,12 +454,12 @@ void LocalizationEditor::_filesystem_files_moved(const String &p_old_file, const
 				remapped_files.remove_at(j + 1);
 				remaps_changed = true;
 				remapped_files_updated = true;
-				print_verbose(vformat("Changed remap value \"%s\" to \"%s\" of key \"%s\" due to a moved file.", res_path + ":" + locale_name, remapped_files[j], remap_keys[i]));
+				print_verbose(vformat("Changed remap value \"%s\" to \"%s\" of key \"%s\" due to a moved file.", res_path + ":" + locale_name, remapped_files[j], remap_key));
 			}
 		}
 
 		if (remapped_files_updated) {
-			remaps[remap_keys[i]] = remapped_files;
+			remaps[remap_key] = remapped_files;
 		}
 	}
 
