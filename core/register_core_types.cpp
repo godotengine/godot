@@ -245,6 +245,7 @@ void register_core_types() {
 	GDREGISTER_CLASS(core_bind::Thread);
 	GDREGISTER_CLASS(core_bind::Mutex);
 	GDREGISTER_CLASS(core_bind::Semaphore);
+	GDREGISTER_VIRTUAL_CLASS(core_bind::Logger);
 
 	GDREGISTER_CLASS(XMLParser);
 	GDREGISTER_CLASS(JSON);
