@@ -74,6 +74,7 @@
 #include "scene/main/scene_tree.h"
 #include "scene/property_utils.h"
 #include "scene/resources/packed_scene.h"
+#include "scene/resources/style_box_flat.h"
 #include "servers/display/display_server.h"
 
 void SceneTreeDock::_nodes_drag_begin() {
@@ -295,6 +296,33 @@ void SceneTreeDock::_scene_tree_gui_input(Ref<InputEvent> p_event) {
 	} else if (ED_IS_SHORTCUT("scene_tree/open_scene_in_editor", p_event)) {
 		_tool_selected(TOOL_SCENE_OPEN);
 		accept_event();
+	}
+}
+
+void SceneTreeDock::_scene_tree_draw() {
+	if (highlighted_item.is_null()) {
+		return;
+	}
+	Tree *tree = scene_tree->get_scene_tree();
+	TreeItem *item = ObjectDB::get_instance<TreeItem>(highlighted_item);
+	if (!item || item->get_tree() != tree) {
+		return;
+	}
+	Rect2 rect = tree->get_item_rect(item);
+	constexpr float shrink = 4;
+	rect.position.x += EDSCALE_RND(shrink);
+	rect.size.x -= EDSCALE_RND(shrink * 2);
+	theme_cache.item_highlight->set_border_color(Color(theme_cache.item_highlight->get_border_color(), MIN(highlight_timer, 1.0)));
+	tree->draw_style_box(theme_cache.item_highlight, rect);
+}
+
+void SceneTreeDock::_scene_tree_item_selected() {
+	if (highlighted_item.is_null()) {
+		return;
+	}
+	TreeItem *item = ObjectDB::get_instance<TreeItem>(highlighted_item);
+	if (item && scene_tree->get_scene_tree()->get_selected() == item) {
+		_cancel_highlight();
 	}
 }
 
@@ -1825,6 +1853,14 @@ void SceneTreeDock::_notification(int p_what) {
 			}
 
 			menu_subresources->add_theme_constant_override("icon_max_width", get_theme_constant(SNAME("class_icon_size"), EditorStringName(Editor)));
+
+			if (theme_cache.item_highlight.is_null()) {
+				theme_cache.item_highlight.instantiate();
+				theme_cache.item_highlight->set_draw_center(false);
+				theme_cache.item_highlight->set_border_width_all(EDSCALE_RND(2));
+				theme_cache.item_highlight->set_corner_radius_all(8);
+			}
+			theme_cache.item_highlight->set_border_color(get_theme_color(SNAME("accent_color"), EditorStringName(Editor)));
 		} break;
 
 		case NOTIFICATION_DRAG_END: {
@@ -1861,6 +1897,19 @@ void SceneTreeDock::_notification(int p_what) {
 				editor_selection->clear();
 				editor_selection->add_node(node_edited);
 				scene_tree->set_selected(node_edited);
+			}
+		} break;
+
+		case NOTIFICATION_INTERNAL_PROCESS: {
+			TreeItem *item = ObjectDB::get_instance<TreeItem>(highlighted_item);
+			if (!item) {
+				_cancel_highlight();
+			}
+			highlight_timer -= get_process_delta_time();
+			if (highlight_timer <= 0.0) {
+				_cancel_highlight();
+			} else if (highlight_timer < 1.0) {
+				scene_tree->get_scene_tree()->queue_redraw();
 			}
 		} break;
 	}
@@ -3034,6 +3083,15 @@ void SceneTreeDock::_queue_update_script_button() {
 	callable_mp(this, &SceneTreeDock::_update_script_button).call_deferred();
 }
 
+void SceneTreeDock::_cancel_highlight() {
+	if (highlighted_item.is_null()) {
+		return;
+	}
+	highlighted_item = ObjectID();
+	scene_tree->get_scene_tree()->queue_redraw();
+	set_process_internal(false);
+}
+
 void SceneTreeDock::_selection_changed() {
 	int selection_size = editor_selection->get_selection().size();
 	if (selection_size > 1) {
@@ -3497,6 +3555,25 @@ void SceneTreeDock::set_selection(const Vector<Node *> &p_nodes) {
 
 void SceneTreeDock::set_selected(Node *p_node, bool p_emit_selected) {
 	scene_tree->set_selected(p_node, p_emit_selected);
+}
+
+void SceneTreeDock::highlight_node(Node *p_node) {
+	TreeItem *item = scene_tree->get_node_item(p_node);
+	ERR_FAIL_NULL(item);
+
+	TreeItem *parent = item->get_parent();
+	while (parent) {
+		parent->set_collapsed(false);
+		parent = parent->get_parent();
+	}
+
+	Tree *tree = scene_tree->get_scene_tree();
+	tree->scroll_to_item(item);
+	tree->queue_redraw();
+	highlighted_item = item->get_instance_id();
+
+	highlight_timer = 3.5;
+	set_process_internal(true);
 }
 
 void SceneTreeDock::_new_scene_from(const String &p_file) {
@@ -5146,9 +5223,12 @@ SceneTreeDock::SceneTreeDock(Node *p_scene_root, EditorSelection *p_editor_selec
 	scene_tree->connect("files_dropped", callable_mp(this, &SceneTreeDock::_files_dropped));
 	scene_tree->connect("script_dropped", callable_mp(this, &SceneTreeDock::_script_dropped));
 	scene_tree->connect("nodes_dragged", callable_mp(this, &SceneTreeDock::_nodes_drag_begin));
-	scene_tree->get_scene_tree()->get_vscroll_bar()->connect("value_changed", callable_mp(this, &SceneTreeDock::_reset_hovering_timer).unbind(1));
+	scene_tree->get_scene_tree()->get_vscroll_bar()->connect(SceneStringName(value_changed), callable_mp(this, &SceneTreeDock::_reset_hovering_timer).unbind(1));
+	scene_tree->get_scene_tree()->get_vscroll_bar()->connect(SceneStringName(value_changed), callable_mp(this, &SceneTreeDock::_cancel_highlight).unbind(1));
 
 	scene_tree->get_scene_tree()->connect(SceneStringName(gui_input), callable_mp(this, &SceneTreeDock::_scene_tree_gui_input));
+	scene_tree->get_scene_tree()->connect(SceneStringName(draw), callable_mp(this, &SceneTreeDock::_scene_tree_draw));
+	scene_tree->get_scene_tree()->connect("cell_selected", callable_mp(this, &SceneTreeDock::_scene_tree_item_selected));
 	scene_tree->get_scene_tree()->connect("item_icon_double_clicked", callable_mp(this, &SceneTreeDock::_focus_node));
 
 	editor_selection->connect("selection_changed", callable_mp(this, &SceneTreeDock::_selection_changed));
