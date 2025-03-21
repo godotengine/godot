@@ -79,6 +79,13 @@
 				Sets up a time-based seed for this [RandomNumberGenerator] instance. Unlike the [@GlobalScope] random number generation functions, different [RandomNumberGenerator] instances can use different seeds.
 			</description>
 		</method>
+		<method name="shuffle_array">
+			<return type="void" />
+			<param index="0" name="array" type="Array" />
+			<description>
+				Shuffles the given [param array] using this [RandomNumberGenerator] for randomization instead of the global one (unlike [method Array.shuffle]).
+			</description>
+		</method>
 	</methods>
 	<members>
 		<member name="seed" type="int" setter="set_seed" getter="get_seed" default="0">
