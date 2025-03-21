@@ -68,15 +68,14 @@ Files extracted from upstream source:
 Files extracted from upstream source:
 
 - `encoder/` and `transcoder/` folders, with the following files removed from `encoder`:
-  `jpgd.{cpp,h}`, `3rdparty/{qoi.h,tinydds.h,tinyexr.cpp,tinyexr.h}`
+  `3rdparty/{qoi.h,tinydds.h,tinyexr.cpp,tinyexr.h}`
 - `LICENSE`
 
 Patches:
 
 - `0001-external-zstd-pr344.patch` (GH-73441)
-- `0002-external-jpgd.patch` (GH-88508)
-- `0003-external-tinyexr.patch` (GH-97582)
-- `0004-remove-tinydds-qoi.patch` (GH-97582)
+- `0002-external-tinyexr.patch` (GH-97582)
+- `0003-remove-tinydds-qoi.patch` (GH-97582)
 
 
 ## brotli
@@ -455,22 +454,6 @@ Files extracted from upstream source:
 
 - All files in `Jolt/`, except `Jolt/Jolt.cmake` and any files dependent on `ENABLE_OBJECT_STREAM`, as seen in `Jolt/Jolt.cmake`
 - `LICENSE`
-
-
-## jpeg-compressor
-
-- Upstream: https://github.com/richgel999/jpeg-compressor
-- Version: 2.00 (aeb7d3b463aa8228b87a28013c15ee50a7e6fcf3, 2020)
-- License: Public domain or MIT
-
-Files extracted from upstream source:
-
-- `jpgd*.{c,h}`
-- `jpge*.{c,h}`
-
-Patches:
-
-- `0001-clang-fortify-fix.patch` (GH-101927)
 
 
 ## libbacktrace
