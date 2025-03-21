@@ -53,8 +53,7 @@ void TranslationPO::print_translation_map() {
 
 		List<StringName> id_l;
 		inner_map.get_key_list(&id_l);
-		for (List<StringName>::Element *E2 = id_l.front(); E2; E2 = E2->next()) {
-			StringName id = E2->get();
+		for (const StringName &id : id_l) {
 			file->store_line("msgid: " + String::utf8(String(id).utf8()));
 			for (int i = 0; i < inner_map[id].size(); i++) {
 				file->store_line("msgstr[" + String::num_int64(i) + "]: " + String::utf8(String(inner_map[id][i]).utf8()));
