@@ -184,6 +184,9 @@ private:
 	void _select_thread(int p_index);
 
 	bool debug_mute_audio = false;
+	bool audio_muted_on_break = false;
+	void _mute_audio_on_break(bool p_mute);
+	void _send_debug_mute_audio_msg(bool p_mute);
 
 	EditorDebuggerNode::CameraOverride camera_override;
 
