@@ -1137,6 +1137,11 @@
 				[b]Note:[/b] When this signal is emitted, the new script is not initialized yet. If you need to access the new script, defer connections to this signal with [constant CONNECT_DEFERRED].
 			</description>
 		</signal>
+		<signal name="script_changing">
+			<description>
+				Emitted just before the object's script changes.
+			</description>
+		</signal>
 	</signals>
 	<constants>
 		<constant name="NOTIFICATION_POSTINITIALIZE" value="0">
