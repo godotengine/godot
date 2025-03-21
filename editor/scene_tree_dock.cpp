@@ -1248,6 +1248,9 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 		case TOOL_HIDE_FILTERED_OUT_PARENTS: {
 			scene_tree->set_hide_filtered_out_parents(!EDITOR_GET("docks/scene_tree/hide_filtered_out_parents"), true);
 		} break;
+		case TOOL_ACCESSIBILITY_WARNINGS: {
+			scene_tree->set_accessibility_warnings(!EDITOR_GET("docks/scene_tree/accessibility_warnings"), true);
+		} break;
 		case TOOL_SCENE_EDITABLE_CHILDREN: {
 			if (!profile_allow_editing) {
 				break;
@@ -1612,6 +1615,7 @@ void SceneTreeDock::_notification(int p_what) {
 
 			node_shortcuts_toggle = memnew(Button);
 			node_shortcuts_toggle->set_flat(true);
+			node_shortcuts_toggle->set_accessibility_name(TTR("Favorite Nodes"));
 			node_shortcuts_toggle->set_button_icon(get_editor_theme_icon(SNAME("Favorites")));
 			node_shortcuts_toggle->set_toggle_mode(true);
 			node_shortcuts_toggle->set_tooltip_text(TTR("Toggle the display of favorite nodes."));
@@ -1674,6 +1678,7 @@ void SceneTreeDock::_notification(int p_what) {
 			clear_inherit_confirm->connect(SceneStringName(confirmed), callable_mp(this, &SceneTreeDock::_tool_selected).bind(TOOL_SCENE_CLEAR_INHERITANCE_CONFIRM, false));
 			scene_tree->set_auto_expand_selected(EDITOR_GET("docks/scene_tree/auto_expand_to_selected"), false);
 			scene_tree->set_hide_filtered_out_parents(EDITOR_GET("docks/scene_tree/hide_filtered_out_parents"), false);
+			scene_tree->set_accessibility_warnings(EDITOR_GET("docks/scene_tree/accessibility_warnings"), false);
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
@@ -1684,6 +1689,7 @@ void SceneTreeDock::_notification(int p_what) {
 			if (EditorSettings::get_singleton()->check_changed_settings_in_group("docks/scene_tree")) {
 				scene_tree->set_auto_expand_selected(EDITOR_GET("docks/scene_tree/auto_expand_to_selected"), false);
 				scene_tree->set_hide_filtered_out_parents(EDITOR_GET("docks/scene_tree/hide_filtered_out_parents"), false);
+				scene_tree->set_accessibility_warnings(EDITOR_GET("docks/scene_tree/accessibility_warnings"), false);
 			}
 		} break;
 
@@ -3976,6 +3982,9 @@ void SceneTreeDock::_update_tree_menu() {
 	tree_menu->set_item_checked(-1, EDITOR_GET("docks/scene_tree/hide_filtered_out_parents"));
 
 	tree_menu->add_separator();
+	tree_menu->add_check_item(TTR("Show Accessibility Warnings"), TOOL_ACCESSIBILITY_WARNINGS);
+	tree_menu->set_item_checked(tree_menu->get_item_index(TOOL_ACCESSIBILITY_WARNINGS), EDITOR_GET("docks/scene_tree/accessibility_warnings"));
+
 	PopupMenu *resource_list = memnew(PopupMenu);
 	resource_list->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	resource_list->connect("about_to_popup", callable_mp(this, &SceneTreeDock::_list_all_subresources).bind(resource_list));
@@ -4669,6 +4678,7 @@ SceneTreeDock::SceneTreeDock(Node *p_scene_root, EditorSelection *p_editor_selec
 	button_add->set_theme_type_variation("FlatMenuButton");
 	button_add->connect(SceneStringName(pressed), callable_mp(this, &SceneTreeDock::_tool_selected).bind(TOOL_NEW, false));
 	button_add->set_tooltip_text(TTRC("Add/Create a New Node."));
+	button_add->set_accessibility_name(TTR("Add/Create"));
 	button_add->set_shortcut(ED_GET_SHORTCUT("scene_tree/add_child_node"));
 	filter_hbc->add_child(button_add);
 
@@ -4676,6 +4686,7 @@ SceneTreeDock::SceneTreeDock(Node *p_scene_root, EditorSelection *p_editor_selec
 	button_instance->set_theme_type_variation("FlatMenuButton");
 	button_instance->connect(SceneStringName(pressed), callable_mp(this, &SceneTreeDock::_tool_selected).bind(TOOL_INSTANTIATE, false));
 	button_instance->set_tooltip_text(TTRC("Instantiate a scene file as a Node. Creates an inherited scene if no root node exists."));
+	button_instance->set_accessibility_name(TTR("Instantiate Scene File"));
 	button_instance->set_shortcut(ED_GET_SHORTCUT("scene_tree/instantiate_scene"));
 	filter_hbc->add_child(button_instance);
 	vbc->add_child(filter_hbc);
@@ -4684,6 +4695,7 @@ SceneTreeDock::SceneTreeDock(Node *p_scene_root, EditorSelection *p_editor_selec
 	filter = memnew(LineEdit);
 	filter->set_h_size_flags(SIZE_EXPAND_FILL);
 	filter->set_placeholder(TTR("Filter: name, t:type, g:group"));
+	filter->set_accessibility_name(TTR("Filter"));
 	filter->set_tooltip_text(TTR("Filter nodes by entering a part of their name, type (if prefixed with \"type:\" or \"t:\")\nor group (if prefixed with \"group:\" or \"g:\"). Filtering is case-insensitive."));
 	filter_hbc->add_child(filter);
 	filter->add_theme_constant_override("minimum_character_width", 0);
@@ -4701,6 +4713,7 @@ SceneTreeDock::SceneTreeDock(Node *p_scene_root, EditorSelection *p_editor_selec
 	button_create_script->set_theme_type_variation("FlatMenuButton");
 	button_create_script->connect(SceneStringName(pressed), callable_mp(this, &SceneTreeDock::_tool_selected).bind(TOOL_ATTACH_SCRIPT, false));
 	button_create_script->set_tooltip_text(TTRC("Attach a new or existing script to the selected node."));
+	button_create_script->set_accessibility_name(TTR("Attach Script"));
 	button_create_script->set_shortcut(ED_GET_SHORTCUT("scene_tree/attach_script"));
 	filter_hbc->add_child(button_create_script);
 	button_create_script->hide();
@@ -4709,6 +4722,7 @@ SceneTreeDock::SceneTreeDock(Node *p_scene_root, EditorSelection *p_editor_selec
 	button_detach_script->set_theme_type_variation("FlatMenuButton");
 	button_detach_script->connect(SceneStringName(pressed), callable_mp(this, &SceneTreeDock::_tool_selected).bind(TOOL_DETACH_SCRIPT, false));
 	button_detach_script->set_tooltip_text(TTRC("Detach the script from the selected node."));
+	button_detach_script->set_accessibility_name(TTR("Detach Script"));
 	button_detach_script->set_shortcut(ED_GET_SHORTCUT("scene_tree/detach_script"));
 	filter_hbc->add_child(button_detach_script);
 	button_detach_script->hide();
@@ -4717,6 +4731,7 @@ SceneTreeDock::SceneTreeDock(Node *p_scene_root, EditorSelection *p_editor_selec
 	button_extend_script->set_flat(true);
 	button_extend_script->connect(SceneStringName(pressed), callable_mp(this, &SceneTreeDock::_tool_selected).bind(TOOL_EXTEND_SCRIPT, false));
 	button_extend_script->set_tooltip_text(TTRC("Extend the script of the selected node."));
+	button_extend_script->set_accessibility_name(TTR("Extend Script"));
 	button_extend_script->set_shortcut(ED_GET_SHORTCUT("scene_tree/extend_script"));
 	filter_hbc->add_child(button_extend_script);
 	button_extend_script->hide();
@@ -4725,6 +4740,7 @@ SceneTreeDock::SceneTreeDock(Node *p_scene_root, EditorSelection *p_editor_selec
 	button_tree_menu->set_flat(false);
 	button_tree_menu->set_theme_type_variation("FlatMenuButton");
 	button_tree_menu->set_tooltip_text(TTR("Extra scene options."));
+	button_tree_menu->set_accessibility_name(TTR("Scene Options"));
 	button_tree_menu->connect("about_to_popup", callable_mp(this, &SceneTreeDock::_update_tree_menu));
 	filter_hbc->add_child(button_tree_menu);
 
