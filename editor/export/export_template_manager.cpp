@@ -1017,6 +1017,7 @@ ExportTemplateManager::ExportTemplateManager() {
 	current_installed_path = memnew(LineEdit);
 	current_installed_path->set_editable(false);
 	current_installed_path->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	current_installed_path->set_accessibility_name(TTRC("Installed Path"));
 	current_installed_hb->add_child(current_installed_path);
 
 #ifndef ANDROID_ENABLED
@@ -1052,6 +1053,7 @@ ExportTemplateManager::ExportTemplateManager() {
 	download_install_hb->add_child(mirrors_label);
 
 	mirrors_list = memnew(OptionButton);
+	mirrors_list->set_accessibility_name(TTRC("Mirror"));
 	mirrors_list->set_custom_minimum_size(Size2(280, 0) * EDSCALE);
 	download_install_hb->add_child(mirrors_list);
 
@@ -1060,6 +1062,7 @@ ExportTemplateManager::ExportTemplateManager() {
 	request_mirrors->connect("request_completed", callable_mp(this, &ExportTemplateManager::_refresh_mirrors_completed));
 
 	mirror_options_button = memnew(MenuButton);
+	mirror_options_button->set_accessibility_name(TTRC("Mirror Options"));
 	mirror_options_button->get_popup()->add_item(TTR("Open in Web Browser"), VISIT_WEB_MIRROR);
 	mirror_options_button->get_popup()->add_item(TTR("Copy Mirror URL"), COPY_MIRROR_URL);
 	download_install_hb->add_child(mirror_options_button);

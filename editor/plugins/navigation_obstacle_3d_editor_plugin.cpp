@@ -830,12 +830,14 @@ NavigationObstacle3DEditorPlugin::NavigationObstacle3DEditorPlugin() {
 	button_create->set_theme_type_variation(SceneStringName(FlatButton));
 	obstacle_editor->add_child(button_create);
 	button_create->set_tooltip_text(TTR("Add Vertex"));
+	button_create->set_accessibility_name(TTRC("Add Vertex"));
 	button_create->connect(SceneStringName(pressed), callable_mp(this, &NavigationObstacle3DEditorPlugin::set_mode).bind(NavigationObstacle3DEditorPlugin::MODE_CREATE));
 	button_create->set_toggle_mode(true);
 	button_create->set_button_group(bg);
 
 	button_edit = memnew(Button);
 	button_edit->set_theme_type_variation(SceneStringName(FlatButton));
+	button_edit->set_accessibility_name(TTRC("Edit"));
 	obstacle_editor->add_child(button_edit);
 	button_edit->connect(SceneStringName(pressed), callable_mp(this, &NavigationObstacle3DEditorPlugin::set_mode).bind(NavigationObstacle3DEditorPlugin::MODE_EDIT));
 	button_edit->set_toggle_mode(true);
@@ -843,6 +845,7 @@ NavigationObstacle3DEditorPlugin::NavigationObstacle3DEditorPlugin() {
 
 	button_delete = memnew(Button);
 	button_delete->set_theme_type_variation(SceneStringName(FlatButton));
+	button_delete->set_accessibility_name(TTRC("Delete"));
 	obstacle_editor->add_child(button_delete);
 	button_delete->connect(SceneStringName(pressed), callable_mp(this, &NavigationObstacle3DEditorPlugin::set_mode).bind(NavigationObstacle3DEditorPlugin::MODE_DELETE));
 	button_delete->set_toggle_mode(true);
@@ -850,12 +853,14 @@ NavigationObstacle3DEditorPlugin::NavigationObstacle3DEditorPlugin() {
 
 	button_flip = memnew(Button);
 	button_flip->set_theme_type_variation(SceneStringName(FlatButton));
+	button_flip->set_accessibility_name(TTRC("Flip"));
 	obstacle_editor->add_child(button_flip);
 	button_flip->connect(SceneStringName(pressed), callable_mp(this, &NavigationObstacle3DEditorPlugin::set_mode).bind(NavigationObstacle3DEditorPlugin::ACTION_FLIP));
 	button_flip->set_toggle_mode(true);
 
 	button_clear = memnew(Button);
 	button_clear->set_theme_type_variation(SceneStringName(FlatButton));
+	button_clear->set_accessibility_name(TTRC("Clear"));
 	obstacle_editor->add_child(button_clear);
 	button_clear->connect(SceneStringName(pressed), callable_mp(this, &NavigationObstacle3DEditorPlugin::set_mode).bind(NavigationObstacle3DEditorPlugin::ACTION_CLEAR));
 	button_clear->set_toggle_mode(true);

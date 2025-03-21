@@ -166,6 +166,7 @@ DirectoryCreateDialog::DirectoryCreateDialog() {
 	vb->add_child(name_label);
 
 	dir_path = memnew(LineEdit);
+	dir_path->set_accessibility_name(TTRC("Name"));
 	vb->add_child(dir_path);
 	register_text_enter(dir_path);
 

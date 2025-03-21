@@ -1724,6 +1724,7 @@ SceneImportSettingsDialog::SceneImportSettingsDialog() {
 	animation_play_button = memnew(Button);
 	animation_hbox->add_child(animation_play_button);
 	animation_play_button->set_flat(true);
+	animation_play_button->set_accessibility_name(TTRC("Play"));
 	animation_play_button->set_focus_mode(Control::FOCUS_NONE);
 	animation_play_button->set_shortcut(ED_SHORTCUT("scene_import_settings/play_selected_animation", TTRC("Selected Animation Play/Pause"), Key::SPACE));
 	animation_play_button->connect(SceneStringName(pressed), callable_mp(this, &SceneImportSettingsDialog::_play_animation));
@@ -1731,6 +1732,7 @@ SceneImportSettingsDialog::SceneImportSettingsDialog() {
 	animation_stop_button = memnew(Button);
 	animation_hbox->add_child(animation_stop_button);
 	animation_stop_button->set_flat(true);
+	animation_stop_button->set_accessibility_name(TTRC("Stop"));
 	animation_stop_button->set_focus_mode(Control::FOCUS_NONE);
 	animation_stop_button->set_tooltip_text(TTR("Selected Animation Stop"));
 	animation_stop_button->connect(SceneStringName(pressed), callable_mp(this, &SceneImportSettingsDialog::_stop_current_animation));
@@ -1743,6 +1745,7 @@ SceneImportSettingsDialog::SceneImportSettingsDialog() {
 	animation_slider->set_step(1.0 / 100.0);
 	animation_slider->set_value_no_signal(0.0);
 	animation_slider->set_focus_mode(Control::FOCUS_NONE);
+	animation_slider->set_accessibility_name(TTRC("Animation"));
 	animation_slider->connect(SceneStringName(value_changed), callable_mp(this, &SceneImportSettingsDialog::_animation_slider_value_changed));
 
 	animation_toggle_skeleton_visibility = memnew(Button);
@@ -1751,6 +1754,7 @@ SceneImportSettingsDialog::SceneImportSettingsDialog() {
 	animation_toggle_skeleton_visibility->set_theme_type_variation("FlatButton");
 	animation_toggle_skeleton_visibility->set_focus_mode(Control::FOCUS_NONE);
 	animation_toggle_skeleton_visibility->set_tooltip_text(TTR("Toggle Animation Skeleton Visibility"));
+	animation_toggle_skeleton_visibility->set_accessibility_name(TTRC("Skeleton Visibility"));
 
 	animation_toggle_skeleton_visibility->connect(SceneStringName(pressed), callable_mp(this, &SceneImportSettingsDialog::_animation_update_skeleton_visibility));
 
@@ -1771,6 +1775,7 @@ SceneImportSettingsDialog::SceneImportSettingsDialog() {
 	light_rotate_switch->set_toggle_mode(true);
 	light_rotate_switch->set_pressed(true);
 	light_rotate_switch->set_tooltip_text(TTR("Rotate Lights With Model"));
+	light_rotate_switch->set_accessibility_name(TTRC("Rotate Lights With Model"));
 	light_rotate_switch->connect(SceneStringName(pressed), callable_mp(this, &SceneImportSettingsDialog::_on_light_rotate_switch_pressed));
 	vb_light->add_child(light_rotate_switch);
 
@@ -1779,6 +1784,7 @@ SceneImportSettingsDialog::SceneImportSettingsDialog() {
 	light_1_switch->set_toggle_mode(true);
 	light_1_switch->set_pressed(true);
 	light_1_switch->set_tooltip_text(TTR("Primary Light"));
+	light_1_switch->set_accessibility_name(TTRC("Primary Light"));
 	light_1_switch->connect(SceneStringName(pressed), callable_mp(this, &SceneImportSettingsDialog::_on_light_1_switch_pressed));
 	vb_light->add_child(light_1_switch);
 
@@ -1787,6 +1793,7 @@ SceneImportSettingsDialog::SceneImportSettingsDialog() {
 	light_2_switch->set_toggle_mode(true);
 	light_2_switch->set_pressed(true);
 	light_2_switch->set_tooltip_text(TTR("Secondary Light"));
+	light_2_switch->set_accessibility_name(TTRC("Secondary Light"));
 	light_2_switch->connect(SceneStringName(pressed), callable_mp(this, &SceneImportSettingsDialog::_on_light_2_switch_pressed));
 	vb_light->add_child(light_2_switch);
 

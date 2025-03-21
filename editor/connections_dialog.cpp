@@ -736,6 +736,7 @@ ConnectDialog::ConnectDialog() {
 	vbc_left->set_custom_minimum_size(Vector2(400 * EDSCALE, 0));
 
 	from_signal = memnew(LineEdit);
+	from_signal->set_accessibility_name(TTRC("From Signal"));
 	vbc_left->add_margin_child(TTR("From Signal:"), from_signal);
 	from_signal->set_editable(false);
 
@@ -754,6 +755,7 @@ ConnectDialog::ConnectDialog() {
 	hbc_filter->add_child(filter_nodes);
 	filter_nodes->set_h_size_flags(Control::SIZE_FILL | Control::SIZE_EXPAND);
 	filter_nodes->set_placeholder(TTR("Filter Nodes"));
+	filter_nodes->set_accessibility_name(TTRC("Filter Nodes"));
 	filter_nodes->set_clear_button_enabled(true);
 	filter_nodes->connect(SceneStringName(text_changed), callable_mp(tree, &SceneTreeEditor::set_filter));
 
@@ -786,11 +788,13 @@ ConnectDialog::ConnectDialog() {
 	method_search = memnew(LineEdit);
 	method_vbc->add_child(method_search);
 	method_search->set_placeholder(TTR("Filter Methods"));
+	method_search->set_accessibility_name(TTRC("Filter Methods"));
 	method_search->set_clear_button_enabled(true);
 	method_search->connect(SceneStringName(text_changed), callable_mp(this, &ConnectDialog::_update_method_tree).unbind(1));
 
 	method_tree = memnew(Tree);
 	method_vbc->add_child(method_tree);
+	method_tree->set_accessibility_name(TTRC("Methods"));
 	method_tree->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	method_tree->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	method_tree->set_hide_root(true);
@@ -824,6 +828,7 @@ ConnectDialog::ConnectDialog() {
 	HBoxContainer *add_bind_hb = memnew(HBoxContainer);
 
 	type_list = memnew(OptionButton);
+	type_list->set_accessibility_name(TTRC("Type"));
 	type_list->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	add_bind_hb->add_child(type_list);
 	for (int i = 0; i < Variant::VARIANT_MAX; i++) {
@@ -851,12 +856,14 @@ ConnectDialog::ConnectDialog() {
 	vbc_right->add_margin_child(TTR("Add Extra Call Argument:"), add_bind_hb);
 
 	bind_editor = memnew(EditorInspector);
+	bind_editor->set_accessibility_name(TTRC("Extra Call Arguments"));
 	bind_controls.push_back(bind_editor);
 
 	vbc_right->add_margin_child(TTR("Extra Call Arguments:"), bind_editor, true);
 
 	unbind_count = memnew(SpinBox);
 	unbind_count->set_tooltip_text(TTR("Allows to drop arguments sent by signal emitter."));
+	unbind_count->set_accessibility_name(TTRC("Unbind Signal Arguments"));
 	unbind_count->connect(SceneStringName(value_changed), callable_mp(this, &ConnectDialog::_unbind_count_changed));
 
 	vbc_right->add_margin_child(TTR("Unbind Signal Arguments:"), unbind_count);
@@ -865,6 +872,7 @@ ConnectDialog::ConnectDialog() {
 	vbc_left->add_margin_child(TTR("Receiver Method:"), hbc_method);
 
 	dst_method = memnew(LineEdit);
+	dst_method->set_accessibility_name(TTRC("Receiver Method"));
 	dst_method->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	dst_method->connect(SceneStringName(text_changed), callable_mp(method_tree, &Tree::deselect_all).unbind(1));
 	hbc_method->add_child(dst_method);
@@ -1291,11 +1299,14 @@ void ConnectionsDock::_slot_menu_about_to_popup() {
 }
 
 void ConnectionsDock::_tree_gui_input(const Ref<InputEvent> &p_event) {
+	TreeItem *item = nullptr;
+	Point2 item_pos;
+
 	const Ref<InputEventKey> &key = p_event;
 
 	if (key.is_valid() && key->is_pressed() && !key->is_echo()) {
 		if (ED_IS_SHORTCUT("connections_editor/disconnect", p_event)) {
-			TreeItem *item = tree->get_selected();
+			item = tree->get_selected();
 			if (item && _get_item_type(*item) == TREE_ITEM_TYPE_CONNECTION) {
 				Connection connection = item->get_metadata(0);
 				_disconnect(connection);
@@ -1313,22 +1324,32 @@ void ConnectionsDock::_tree_gui_input(const Ref<InputEvent> &p_event) {
 			return;
 		}
 	}
+	if (key.is_valid() && key->is_pressed() && key->is_action("ui_menu", true)) {
+		item = tree->get_selected();
+		if (!item) {
+			return;
+		}
+		item_pos = tree->get_item_rect(item).position;
+	}
 
 	// Handle RMB press.
 	const Ref<InputEventMouseButton> &mb_event = p_event;
 
 	if (mb_event.is_valid() && mb_event->is_pressed() && mb_event->get_button_index() == MouseButton::RIGHT) {
-		TreeItem *item = tree->get_item_at_position(mb_event->get_position());
+		item = tree->get_item_at_position(mb_event->get_position());
 		if (!item) {
 			return;
 		}
+		item_pos = mb_event->get_position();
+	}
 
+	if (item) {
 		if (item->is_selectable(0)) {
 			// Update selection now, before `about_to_popup` signal. Needed for SIGNAL and CONNECTION context menus.
 			tree->set_selected(item);
 		}
 
-		Vector2 screen_position = tree->get_screen_position() + mb_event->get_position();
+		Vector2 screen_position = tree->get_screen_position() + item_pos;
 
 		switch (_get_item_type(*item)) {
 			case TREE_ITEM_TYPE_ROOT:
@@ -1601,11 +1622,13 @@ ConnectionsDock::ConnectionsDock() {
 	search_box = memnew(LineEdit);
 	search_box->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	search_box->set_placeholder(TTR("Filter Signals"));
+	search_box->set_accessibility_name(TTRC("Filter Signals"));
 	search_box->set_clear_button_enabled(true);
 	search_box->connect(SceneStringName(text_changed), callable_mp(this, &ConnectionsDock::_filter_changed));
 	vbc->add_child(search_box);
 
 	tree = memnew(ConnectionsDockTree);
+	tree->set_accessibility_name(TTRC("Connections"));
 	tree->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	tree->set_columns(1);
 	tree->set_select_mode(Tree::SELECT_ROW);
@@ -1616,6 +1639,7 @@ ConnectionsDock::ConnectionsDock() {
 	tree->set_allow_rmb_select(true);
 
 	connect_button = memnew(Button);
+	connect_button->set_accessibility_name(TTRC("Connect"));
 	HBoxContainer *hb = memnew(HBoxContainer);
 	vbc->add_child(hb);
 	hb->add_spacer();

@@ -61,7 +61,7 @@ private:
 	void _on_drag_handle_gui_input(const Ref<InputEvent> &p_event);
 	void _switch_layout();
 	void _lock_panel_toggled(bool p_pressed);
-	Button *_add_new_action_button(const String &p_shortcut, Key p_keycode = Key::NONE);
+	Button *_add_new_action_button(const String &p_shortcut, const String &p_name, Key p_keycode = Key::NONE);
 
 	void _hardware_keyboard_connected(bool p_connected);
 

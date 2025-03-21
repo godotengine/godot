@@ -118,6 +118,7 @@ public:
 		grid_offset_x->set_suffix("px");
 		grid_offset_x->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 		grid_offset_x->set_select_all_on_focus(true);
+		grid_offset_x->set_accessibility_name(TTRC("X Offset"));
 		child_container->add_child(grid_offset_x);
 
 		grid_offset_y = memnew(SpinBox);
@@ -128,6 +129,7 @@ public:
 		grid_offset_y->set_suffix("px");
 		grid_offset_y->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 		grid_offset_y->set_select_all_on_focus(true);
+		grid_offset_y->set_accessibility_name(TTRC("Y Offset"));
 		child_container->add_child(grid_offset_y);
 
 		label = memnew(Label);
@@ -142,6 +144,7 @@ public:
 		grid_step_x->set_suffix("px");
 		grid_step_x->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 		grid_step_x->set_select_all_on_focus(true);
+		grid_step_x->set_accessibility_name(TTRC("X Step"));
 		child_container->add_child(grid_step_x);
 
 		grid_step_y = memnew(SpinBox);
@@ -151,6 +154,7 @@ public:
 		grid_step_y->set_suffix("px");
 		grid_step_y->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 		grid_step_y->set_select_all_on_focus(true);
+		grid_step_y->set_accessibility_name(TTRC("X Step"));
 		child_container->add_child(grid_step_y);
 
 		label = memnew(Label);
@@ -166,6 +170,7 @@ public:
 		primary_grid_step_x->set_suffix("steps");
 		primary_grid_step_x->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 		primary_grid_step_x->set_select_all_on_focus(true);
+		primary_grid_step_x->set_accessibility_name(TTRC("X Primary Step"));
 		child_container->add_child(primary_grid_step_x);
 
 		primary_grid_step_y = memnew(SpinBox);
@@ -176,6 +181,7 @@ public:
 		primary_grid_step_y->set_suffix("steps");
 		primary_grid_step_y->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 		primary_grid_step_y->set_select_all_on_focus(true);
+		primary_grid_step_y->set_accessibility_name(TTRC("Y Primary Step"));
 		child_container->add_child(primary_grid_step_y);
 
 		container->add_child(memnew(HSeparator));
@@ -197,6 +203,7 @@ public:
 		rotation_offset->set_suffix("deg");
 		rotation_offset->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 		rotation_offset->set_select_all_on_focus(true);
+		rotation_offset->set_accessibility_name(TTRC("Rotation Offset"));
 		child_container->add_child(rotation_offset);
 
 		label = memnew(Label);
@@ -210,6 +217,7 @@ public:
 		rotation_step->set_suffix("deg");
 		rotation_step->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 		rotation_step->set_select_all_on_focus(true);
+		rotation_step->set_accessibility_name(TTRC("Rotation Step"));
 		child_container->add_child(rotation_step);
 
 		container->add_child(memnew(HSeparator));
@@ -229,6 +237,7 @@ public:
 		scale_step->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 		scale_step->set_step(0.01f);
 		scale_step->set_select_all_on_focus(true);
+		scale_step->set_accessibility_name(TTRC("Scale Step"));
 		child_container->add_child(scale_step);
 	}
 
@@ -4128,6 +4137,15 @@ void CanvasItemEditor::_notification(int p_what) {
 			ProjectSettings::get_singleton()->connect("settings_changed", callable_mp(this, &CanvasItemEditor::_project_settings_changed));
 		} break;
 
+		case NOTIFICATION_ACCESSIBILITY_UPDATE: {
+			RID ae = get_accessibility_element();
+			ERR_FAIL_COND(ae.is_null());
+
+			//TODO
+			DisplayServer::get_singleton()->accessibility_update_set_role(ae, DisplayServer::AccessibilityRole::ROLE_STATIC_TEXT);
+			DisplayServer::get_singleton()->accessibility_update_set_value(ae, TTR(vformat("The %s is not accessible at this time.", "Canvas item editor")));
+		} break;
+
 		case NOTIFICATION_PROCESS: {
 			// Update the viewport if the canvas_item changes
 			List<CanvasItem *> selection = _get_edited_canvas_items(true);
@@ -5360,6 +5378,7 @@ CanvasItemEditor::CanvasItemEditor() {
 	controls_hb->add_child(button_center_view);
 	button_center_view->set_flat(true);
 	button_center_view->set_tooltip_text(TTR("Center View"));
+	button_center_view->set_accessibility_name(TTRC("Center View"));
 	button_center_view->connect(SceneStringName(pressed), callable_mp(this, &CanvasItemEditor::_popup_callback).bind(VIEW_CENTER_TO_SELECTION));
 
 	zoom_widget = memnew(EditorZoomWidget);
@@ -5402,6 +5421,7 @@ CanvasItemEditor::CanvasItemEditor() {
 	select_button->set_shortcut(ED_SHORTCUT("canvas_item_editor/select_mode", TTRC("Select Mode"), Key::Q));
 	select_button->set_shortcut_context(this);
 	select_button->set_tooltip_text(keycode_get_string((Key)KeyModifierMask::CMD_OR_CTRL) + TTR("Drag: Rotate selected node around pivot.") + "\n" + TTR("Alt+Drag: Move selected node.") + "\n" + keycode_get_string((Key)KeyModifierMask::CMD_OR_CTRL) + TTR("Alt+Drag: Scale selected node.") + "\n" + TTR("V: Set selected node's pivot position.") + "\n" + TTR("Alt+RMB: Show list of all nodes at position clicked, including locked.") + "\n" + TTR("(Available in all modes.)") + "\n" + TTR("RMB: Add node at position clicked."));
+	select_button->set_accessibility_name(TTRC("Select Mode"));
 
 	main_menu_hbox->add_child(memnew(VSeparator));
 
@@ -5413,6 +5433,7 @@ CanvasItemEditor::CanvasItemEditor() {
 	move_button->set_shortcut(ED_SHORTCUT("canvas_item_editor/move_mode", TTRC("Move Mode"), Key::W));
 	move_button->set_shortcut_context(this);
 	move_button->set_tooltip_text(TTRC("Move Mode"));
+	move_button->set_accessibility_name(TTRC("Move Mode"));
 
 	rotate_button = memnew(Button);
 	rotate_button->set_theme_type_variation(SceneStringName(FlatButton));
@@ -5422,6 +5443,7 @@ CanvasItemEditor::CanvasItemEditor() {
 	rotate_button->set_shortcut(ED_SHORTCUT("canvas_item_editor/rotate_mode", TTRC("Rotate Mode"), Key::E));
 	rotate_button->set_shortcut_context(this);
 	rotate_button->set_tooltip_text(TTRC("Rotate Mode"));
+	rotate_button->set_accessibility_name(TTRC("Rotate Mode"));
 
 	scale_button = memnew(Button);
 	scale_button->set_theme_type_variation(SceneStringName(FlatButton));
@@ -5431,6 +5453,7 @@ CanvasItemEditor::CanvasItemEditor() {
 	scale_button->set_shortcut(ED_SHORTCUT("canvas_item_editor/scale_mode", TTRC("Scale Mode"), Key::S));
 	scale_button->set_shortcut_context(this);
 	scale_button->set_tooltip_text(TTRC("Shift: Scale proportionally."));
+	scale_button->set_accessibility_name(TTRC("Scale Mode"));
 
 	main_menu_hbox->add_child(memnew(VSeparator));
 
@@ -5440,6 +5463,7 @@ CanvasItemEditor::CanvasItemEditor() {
 	list_select_button->set_toggle_mode(true);
 	list_select_button->connect(SceneStringName(pressed), callable_mp(this, &CanvasItemEditor::_button_tool_select).bind(TOOL_LIST_SELECT));
 	list_select_button->set_tooltip_text(TTR("Show list of selectable nodes at position clicked."));
+	list_select_button->set_accessibility_name(TTRC("List Selectable Nodes"));
 
 	pivot_button = memnew(Button);
 	pivot_button->set_theme_type_variation(SceneStringName(FlatButton));
@@ -5447,6 +5471,7 @@ CanvasItemEditor::CanvasItemEditor() {
 	pivot_button->set_toggle_mode(true);
 	pivot_button->connect(SceneStringName(pressed), callable_mp(this, &CanvasItemEditor::_button_tool_select).bind(TOOL_EDIT_PIVOT));
 	pivot_button->set_tooltip_text(TTR("Click to change object's pivot.") + "\n" + TTR("Shift: Set temporary pivot.") + "\n" + TTR("Click this button while holding Shift to put the temporary pivot in the center of the selected nodes."));
+	pivot_button->set_accessibility_name(TTRC("Change Pivot"));
 
 	pan_button = memnew(Button);
 	pan_button->set_theme_type_variation(SceneStringName(FlatButton));
@@ -5456,6 +5481,7 @@ CanvasItemEditor::CanvasItemEditor() {
 	pan_button->set_shortcut(ED_SHORTCUT("canvas_item_editor/pan_mode", TTRC("Pan Mode"), Key::G));
 	pan_button->set_shortcut_context(this);
 	pan_button->set_tooltip_text(TTRC("You can also use Pan View shortcut (Space by default) to pan in any mode."));
+	pan_button->set_accessibility_name(TTRC("Pan View"));
 
 	ruler_button = memnew(Button);
 	ruler_button->set_theme_type_variation(SceneStringName(FlatButton));
@@ -5465,6 +5491,7 @@ CanvasItemEditor::CanvasItemEditor() {
 	ruler_button->set_shortcut(ED_SHORTCUT("canvas_item_editor/ruler_mode", TTRC("Ruler Mode"), Key::R));
 	ruler_button->set_shortcut_context(this);
 	ruler_button->set_tooltip_text(TTRC("Ruler Mode"));
+	ruler_button->set_accessibility_name(TTRC("Ruler Mode"));
 
 	main_menu_hbox->add_child(memnew(VSeparator));
 
@@ -5476,6 +5503,7 @@ CanvasItemEditor::CanvasItemEditor() {
 	smart_snap_button->set_tooltip_text(TTRC("Toggle smart snapping."));
 	smart_snap_button->set_shortcut(ED_SHORTCUT("canvas_item_editor/use_smart_snap", TTRC("Use Smart Snap"), KeyModifierMask::SHIFT | Key::S));
 	smart_snap_button->set_shortcut_context(this);
+	smart_snap_button->set_accessibility_name(TTRC("Smart Snap"));
 
 	grid_snap_button = memnew(Button);
 	grid_snap_button->set_theme_type_variation(SceneStringName(FlatButton));
@@ -5485,6 +5513,7 @@ CanvasItemEditor::CanvasItemEditor() {
 	grid_snap_button->set_tooltip_text(TTRC("Toggle grid snapping."));
 	grid_snap_button->set_shortcut(ED_SHORTCUT("canvas_item_editor/use_grid_snap", TTRC("Use Grid Snap"), KeyModifierMask::SHIFT | Key::G));
 	grid_snap_button->set_shortcut_context(this);
+	grid_snap_button->set_accessibility_name(TTRC("Grid Snap"));
 
 	snap_config_menu = memnew(MenuButton);
 	snap_config_menu->set_flat(false);
@@ -5494,6 +5523,7 @@ CanvasItemEditor::CanvasItemEditor() {
 	snap_config_menu->set_h_size_flags(SIZE_SHRINK_END);
 	snap_config_menu->set_tooltip_text(TTR("Snapping Options"));
 	snap_config_menu->set_switch_on_hover(true);
+	snap_config_menu->set_accessibility_name(TTRC("Snapping Options"));
 
 	PopupMenu *p = snap_config_menu->get_popup();
 	p->connect(SceneStringName(id_pressed), callable_mp(this, &CanvasItemEditor::_popup_callback));
@@ -5521,6 +5551,7 @@ CanvasItemEditor::CanvasItemEditor() {
 
 	lock_button = memnew(Button);
 	lock_button->set_theme_type_variation(SceneStringName(FlatButton));
+	lock_button->set_accessibility_name(TTRC("Lock"));
 	main_menu_hbox->add_child(lock_button);
 
 	lock_button->connect(SceneStringName(pressed), callable_mp(this, &CanvasItemEditor::_popup_callback).bind(LOCK_SELECTED));
@@ -5529,6 +5560,7 @@ CanvasItemEditor::CanvasItemEditor() {
 	lock_button->set_shortcut(ED_GET_SHORTCUT("editor/lock_selected_nodes"));
 
 	unlock_button = memnew(Button);
+	unlock_button->set_accessibility_name(TTRC("Unlock"));
 	unlock_button->set_theme_type_variation(SceneStringName(FlatButton));
 	main_menu_hbox->add_child(unlock_button);
 	unlock_button->connect(SceneStringName(pressed), callable_mp(this, &CanvasItemEditor::_popup_callback).bind(UNLOCK_SELECTED));
@@ -5537,6 +5569,7 @@ CanvasItemEditor::CanvasItemEditor() {
 	unlock_button->set_shortcut(ED_GET_SHORTCUT("editor/unlock_selected_nodes"));
 
 	group_button = memnew(Button);
+	group_button->set_accessibility_name(TTRC("Group"));
 	group_button->set_theme_type_variation(SceneStringName(FlatButton));
 	main_menu_hbox->add_child(group_button);
 	group_button->connect(SceneStringName(pressed), callable_mp(this, &CanvasItemEditor::_popup_callback).bind(GROUP_SELECTED));
@@ -5545,6 +5578,7 @@ CanvasItemEditor::CanvasItemEditor() {
 	group_button->set_shortcut(ED_GET_SHORTCUT("editor/group_selected_nodes"));
 
 	ungroup_button = memnew(Button);
+	ungroup_button->set_accessibility_name(TTRC("Ungroup"));
 	ungroup_button->set_theme_type_variation(SceneStringName(FlatButton));
 	main_menu_hbox->add_child(ungroup_button);
 	ungroup_button->connect(SceneStringName(pressed), callable_mp(this, &CanvasItemEditor::_popup_callback).bind(UNGROUP_SELECTED));
@@ -5561,6 +5595,7 @@ CanvasItemEditor::CanvasItemEditor() {
 	main_menu_hbox->add_child(skeleton_menu);
 	skeleton_menu->set_tooltip_text(TTR("Skeleton Options"));
 	skeleton_menu->set_switch_on_hover(true);
+	skeleton_menu->set_accessibility_name(TTRC("Skeleton Options"));
 
 	p = skeleton_menu->get_popup();
 	p->set_hide_on_checkable_item_selection(false);
@@ -5652,6 +5687,7 @@ CanvasItemEditor::CanvasItemEditor() {
 	key_loc_button->set_focus_mode(FOCUS_NONE);
 	key_loc_button->connect(SceneStringName(pressed), callable_mp(this, &CanvasItemEditor::_popup_callback).bind(ANIM_INSERT_POS));
 	key_loc_button->set_tooltip_text(TTR("Translation mask for inserting keys."));
+	key_loc_button->set_accessibility_name(TTRC("Translation Mask"));
 	animation_hb->add_child(key_loc_button);
 
 	key_rot_button = memnew(Button);
@@ -5661,6 +5697,7 @@ CanvasItemEditor::CanvasItemEditor() {
 	key_rot_button->set_focus_mode(FOCUS_NONE);
 	key_rot_button->connect(SceneStringName(pressed), callable_mp(this, &CanvasItemEditor::_popup_callback).bind(ANIM_INSERT_ROT));
 	key_rot_button->set_tooltip_text(TTR("Rotation mask for inserting keys."));
+	key_rot_button->set_accessibility_name(TTRC("Rotation Mask"));
 	animation_hb->add_child(key_rot_button);
 
 	key_scale_button = memnew(Button);
@@ -5669,6 +5706,7 @@ CanvasItemEditor::CanvasItemEditor() {
 	key_scale_button->set_focus_mode(FOCUS_NONE);
 	key_scale_button->connect(SceneStringName(pressed), callable_mp(this, &CanvasItemEditor::_popup_callback).bind(ANIM_INSERT_SCALE));
 	key_scale_button->set_tooltip_text(TTR("Scale mask for inserting keys."));
+	key_scale_button->set_accessibility_name(TTRC("Scale Mask"));
 	animation_hb->add_child(key_scale_button);
 
 	key_insert_button = memnew(Button);
@@ -5677,6 +5715,7 @@ CanvasItemEditor::CanvasItemEditor() {
 	key_insert_button->connect(SceneStringName(pressed), callable_mp(this, &CanvasItemEditor::_popup_callback).bind(ANIM_INSERT_KEY));
 	key_insert_button->set_tooltip_text(TTRC("Insert keys (based on mask)."));
 	key_insert_button->set_shortcut(ED_SHORTCUT("canvas_item_editor/anim_insert_key", TTRC("Insert Key"), Key::INSERT));
+	key_insert_button->set_accessibility_name(TTRC("Insert Keys"));
 	key_insert_button->set_shortcut_context(this);
 	animation_hb->add_child(key_insert_button);
 
@@ -5686,6 +5725,7 @@ CanvasItemEditor::CanvasItemEditor() {
 	key_auto_insert_button->set_focus_mode(FOCUS_NONE);
 	key_auto_insert_button->set_tooltip_text(TTRC("Auto insert keys when objects are translated, rotated or scaled (based on mask).\nKeys are only added to existing tracks, no new tracks will be created.\nKeys must be inserted manually for the first time."));
 	key_auto_insert_button->set_shortcut(ED_SHORTCUT("canvas_item_editor/anim_auto_insert_key", TTRC("Auto Insert Key")));
+	key_auto_insert_button->set_accessibility_name(TTRC("Auto Insert Keys"));
 	key_auto_insert_button->set_shortcut_context(this);
 	animation_hb->add_child(key_auto_insert_button);
 
@@ -5694,6 +5734,7 @@ CanvasItemEditor::CanvasItemEditor() {
 	animation_menu->set_theme_type_variation("FlatMenuButton");
 	animation_menu->set_shortcut_context(this);
 	animation_menu->set_tooltip_text(TTR("Animation Key and Pose Options"));
+	animation_menu->set_accessibility_name(TTRC("Animation Key and Pose"));
 	animation_hb->add_child(animation_menu);
 	animation_menu->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &CanvasItemEditor::_popup_callback));
 	animation_menu->set_switch_on_hover(true);
@@ -6134,6 +6175,9 @@ void CanvasItemEditorViewport::_perform_drop_data() {
 }
 
 bool CanvasItemEditorViewport::can_drop_data(const Point2 &p_point, const Variant &p_data) const {
+	if (p_point == Vector2(INFINITY, INFINITY)) {
+		return false;
+	}
 	Dictionary d = p_data;
 	if (!d.has("type") || (String(d["type"]) != "files")) {
 		label->hide();
@@ -6265,6 +6309,9 @@ bool CanvasItemEditorViewport::_is_any_texture_selected() const {
 }
 
 void CanvasItemEditorViewport::drop_data(const Point2 &p_point, const Variant &p_data) {
+	if (p_point == Vector2(INFINITY, INFINITY)) {
+		return;
+	}
 	bool is_shift = Input::get_singleton()->is_key_pressed(Key::SHIFT);
 	bool is_alt = Input::get_singleton()->is_key_pressed(Key::ALT);
 

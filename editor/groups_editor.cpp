@@ -633,6 +633,7 @@ void GroupsEditor::_show_add_group_dialog() {
 		add_group_name = memnew(LineEdit);
 		add_group_name->set_custom_minimum_size(Size2(200 * EDSCALE, 0));
 		add_group_name->set_h_size_flags(SIZE_EXPAND_FILL);
+		add_group_name->set_accessibility_name(TTRC("Name"));
 		hbc->add_child(add_group_name);
 
 		global_group_button = memnew(CheckButton);
@@ -646,6 +647,7 @@ void GroupsEditor::_show_add_group_dialog() {
 		add_group_description = memnew(LineEdit);
 		add_group_description->set_h_size_flags(SIZE_EXPAND_FILL);
 		add_group_description->set_editable(false);
+		add_group_description->set_accessibility_name(TTRC("Description"));
 		gc->add_child(add_group_description);
 
 		global_group_button->connect(SceneStringName(toggled), callable_mp(add_group_description, &LineEdit::set_editable));
@@ -841,6 +843,7 @@ GroupsEditor::GroupsEditor() {
 
 	add = memnew(Button);
 	add->set_theme_type_variation("FlatMenuButton");
+	add->set_accessibility_name(TTRC("Add Group"));
 	add->set_tooltip_text(TTR("Add a new group."));
 	add->connect(SceneStringName(pressed), callable_mp(this, &GroupsEditor::_show_add_group_dialog));
 	hbc->add_child(add);
@@ -848,6 +851,7 @@ GroupsEditor::GroupsEditor() {
 	filter = memnew(LineEdit);
 	filter->set_clear_button_enabled(true);
 	filter->set_placeholder(TTR("Filter Groups"));
+	filter->set_accessibility_name(TTRC("Filter Groups"));
 	filter->set_h_size_flags(SIZE_EXPAND_FILL);
 	filter->connect(SceneStringName(text_changed), callable_mp(this, &GroupsEditor::_update_tree).unbind(1));
 	hbc->add_child(filter);

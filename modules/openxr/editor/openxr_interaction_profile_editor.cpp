@@ -181,6 +181,7 @@ OpenXRInteractionProfileEditorBase::OpenXRInteractionProfileEditorBase() {
 	binding_modifiers_btn = memnew(Button);
 	binding_modifiers_btn->set_tooltip_text(TTR("Edit binding modifiers"));
 	binding_modifiers_btn->connect("pressed", callable_mp(this, &OpenXRInteractionProfileEditorBase::_on_open_binding_modifiers));
+	binding_modifiers_btn->set_accessibility_name(TTRC("Edit"));
 	// TODO show visual difference if there are binding modifiers for this interaction profile
 	toolbar_vb->add_child(binding_modifiers_btn);
 }
@@ -308,6 +309,7 @@ void OpenXRInteractionProfileEditor::_add_io_path(VBoxContainer *p_container, co
 				action_binding_modifiers_btn->set_flat(true);
 				action_binding_modifiers_btn->set_button_icon(get_theme_icon(SNAME("Modifiers"), EditorStringName(EditorIcons)));
 				action_binding_modifiers_btn->connect(SceneStringName(pressed), callable_mp((Window *)action_binding_modifiers_dialog, &Window::popup_centered).bind(Size2i(500, 400)));
+				action_binding_modifiers_btn->set_accessibility_name(TTRC("Modifiers"));
 				// TODO change style of button if there are binding modifiers
 				action_hb->add_child(action_binding_modifiers_btn);
 
@@ -315,6 +317,7 @@ void OpenXRInteractionProfileEditor::_add_io_path(VBoxContainer *p_container, co
 				action_rem->set_flat(true);
 				action_rem->set_button_icon(get_theme_icon(SNAME("Remove"), EditorStringName(EditorIcons)));
 				action_rem->connect(SceneStringName(pressed), callable_mp((OpenXRInteractionProfileEditor *)this, &OpenXRInteractionProfileEditor::_on_remove_pressed).bind(action->get_name_with_set(), String(p_io_path->openxr_path)));
+				action_rem->set_accessibility_name(TTRC("Remove"));
 				action_hb->add_child(action_rem);
 			}
 		}

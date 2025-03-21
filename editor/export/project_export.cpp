@@ -745,7 +745,14 @@ void ProjectExportDialog::_delete_preset_confirm() {
 
 Variant ProjectExportDialog::get_drag_data_fw(const Point2 &p_point, Control *p_from) {
 	if (p_from == presets) {
-		int pos = presets->get_item_at_position(p_point, true);
+		int pos = -1;
+		if (p_point == Vector2(INFINITY, INFINITY)) {
+			if (presets->is_anything_selected()) {
+				pos = presets->get_selected_items()[0];
+			}
+		} else {
+			pos = presets->get_item_at_position(p_point, true);
+		}
 
 		if (pos >= 0) {
 			Dictionary d;
@@ -766,7 +773,7 @@ Variant ProjectExportDialog::get_drag_data_fw(const Point2 &p_point, Control *p_
 			return d;
 		}
 	} else if (p_from == patches) {
-		TreeItem *item = patches->get_item_at_position(p_point);
+		TreeItem *item = (p_point == Vector2(INFINITY, INFINITY)) ? patches->get_selected() : patches->get_item_at_position(p_point);
 
 		if (item) {
 			int item_metadata = item->get_metadata(0);
@@ -791,7 +798,18 @@ bool ProjectExportDialog::can_drop_data_fw(const Point2 &p_point, const Variant 
 			return false;
 		}
 
-		if (presets->get_item_at_position(p_point, true) < 0 && !presets->is_pos_at_end_of_items(p_point)) {
+		int pos = -1;
+		bool end = true;
+		if (p_point == Vector2(INFINITY, INFINITY)) {
+			if (presets->is_anything_selected()) {
+				pos = presets->get_selected_items()[0];
+			}
+		} else {
+			pos = presets->get_item_at_position(p_point, true);
+			end = presets->is_pos_at_end_of_items(p_point);
+		}
+
+		if (pos < 0 && !end) {
 			return false;
 		}
 	} else if (p_from == patches) {
@@ -800,7 +818,7 @@ bool ProjectExportDialog::can_drop_data_fw(const Point2 &p_point, const Variant 
 			return false;
 		}
 
-		TreeItem *item = patches->get_item_at_position(p_point);
+		TreeItem *item = (p_point == Vector2(INFINITY, INFINITY)) ? patches->get_selected() : patches->get_item_at_position(p_point);
 		if (!item) {
 			return false;
 		}
@@ -818,11 +836,22 @@ void ProjectExportDialog::drop_data_fw(const Point2 &p_point, const Variant &p_d
 
 		int to_pos = -1;
 
-		if (presets->get_item_at_position(p_point, true) >= 0) {
-			to_pos = presets->get_item_at_position(p_point, true);
+		int pos = -1;
+		bool end = true;
+		if (p_point == Vector2(INFINITY, INFINITY)) {
+			if (presets->is_anything_selected()) {
+				pos = presets->get_selected_items()[0];
+			}
+		} else {
+			pos = presets->get_item_at_position(p_point, true);
+			end = presets->is_pos_at_end_of_items(p_point);
 		}
 
-		if (to_pos == -1 && !presets->is_pos_at_end_of_items(p_point)) {
+		if (pos >= 0) {
+			to_pos = pos;
+		}
+
+		if (to_pos == -1 && !end) {
 			return;
 		}
 
@@ -846,14 +875,20 @@ void ProjectExportDialog::drop_data_fw(const Point2 &p_point, const Variant &p_d
 		Dictionary d = p_data;
 		int from_pos = d["patch"];
 
-		TreeItem *item = patches->get_item_at_position(p_point);
+		TreeItem *item = (p_point == Vector2(INFINITY, INFINITY)) ? patches->get_selected() : patches->get_item_at_position(p_point);
 		if (!item) {
 			return;
 		}
 
 		int to_pos = item->get_metadata(0);
 
-		if (patches->get_drop_section_at_position(p_point) > 0) {
+		int pos = -1;
+		if (p_point == Vector2(INFINITY, INFINITY)) {
+			pos = patches->get_drop_section_at_position(patches->get_item_rect(item).position);
+		} else {
+			pos = patches->get_drop_section_at_position(p_point);
+		}
+		if (pos > 0) {
 			to_pos++;
 		}
 
@@ -1428,11 +1463,13 @@ ProjectExportDialog::ProjectExportDialog() {
 	presets->connect(SceneStringName(item_selected), callable_mp(this, &ProjectExportDialog::_edit_preset));
 	duplicate_preset = memnew(Button);
 	duplicate_preset->set_tooltip_text(TTR("Duplicate"));
+	duplicate_preset->set_accessibility_name(TTRC("Duplicate"));
 	duplicate_preset->set_flat(true);
 	preset_hb->add_child(duplicate_preset);
 	duplicate_preset->connect(SceneStringName(pressed), callable_mp(this, &ProjectExportDialog::_duplicate_preset));
 	delete_preset = memnew(Button);
 	delete_preset->set_tooltip_text(TTR("Delete"));
+	delete_preset->set_accessibility_name(TTRC("Delete"));
 	delete_preset->set_flat(true);
 	preset_hb->add_child(delete_preset);
 	delete_preset->connect(SceneStringName(pressed), callable_mp(this, &ProjectExportDialog::_delete_preset));
@@ -1501,6 +1538,7 @@ ProjectExportDialog::ProjectExportDialog() {
 	resources_scroll_container->add_child(resources_vb);
 
 	export_filter = memnew(OptionButton);
+	export_filter->set_accessibility_name(TTRC("Export Mode"));
 	export_filter->add_item(TTR("Export all resources in the project"));
 	export_filter->add_item(TTR("Export selected scenes (and dependencies)"));
 	export_filter->add_item(TTR("Export selected resources (and dependencies)"));
@@ -1555,12 +1593,14 @@ ProjectExportDialog::ProjectExportDialog() {
 	file_mode_popup->connect(SceneStringName(id_pressed), callable_mp(this, &ProjectExportDialog::_set_file_export_mode));
 
 	include_filters = memnew(LineEdit);
+	include_filters->set_accessibility_name(TTRC("Include Filters"));
 	resources_vb->add_margin_child(
 			TTR("Filters to export non-resource files/folders\n(comma-separated, e.g: *.json, *.txt, docs/*)"),
 			include_filters);
 	include_filters->connect(SceneStringName(text_changed), callable_mp(this, &ProjectExportDialog::_filter_changed));
 
 	exclude_filters = memnew(LineEdit);
+	exclude_filters->set_accessibility_name(TTRC("Exclude Filters"));
 	resources_vb->add_margin_child(
 			TTR("Filters to exclude files/folders from project\n(comma-separated, e.g: *.json, *.txt, docs/*)"),
 			exclude_filters);
@@ -1635,18 +1675,21 @@ ProjectExportDialog::ProjectExportDialog() {
 	sec_vb->add_child(enc_directory);
 
 	enc_in_filters = memnew(LineEdit);
+	enc_in_filters->set_accessibility_name(TTRC("Include Filters"));
 	enc_in_filters->connect(SceneStringName(text_changed), callable_mp(this, &ProjectExportDialog::_enc_filters_changed));
 	sec_vb->add_margin_child(
 			TTR("Filters to include files/folders\n(comma-separated, e.g: *.tscn, *.tres, scenes/*)"),
 			enc_in_filters);
 
 	enc_ex_filters = memnew(LineEdit);
+	enc_ex_filters->set_accessibility_name(TTRC("Exclude Filters"));
 	enc_ex_filters->connect(SceneStringName(text_changed), callable_mp(this, &ProjectExportDialog::_enc_filters_changed));
 	sec_vb->add_margin_child(
 			TTR("Filters to exclude files/folders\n(comma-separated, e.g: *.ctex, *.import, music/*)"),
 			enc_ex_filters);
 
 	script_key = memnew(LineEdit);
+	script_key->set_accessibility_name(TTRC("Encryption Key"));
 	script_key->connect(SceneStringName(text_changed), callable_mp(this, &ProjectExportDialog::_script_encryption_key_changed));
 	script_key_error = memnew(Label);
 	script_key_error->set_text(String::utf8("•  ") + TTR("Invalid Encryption Key (must be 64 hexadecimal characters long)"));
@@ -1656,6 +1699,7 @@ ProjectExportDialog::ProjectExportDialog() {
 	sections->add_child(sec_scroll_container);
 
 	seed_input = memnew(LineEdit);
+	seed_input->set_accessibility_name(TTRC("Encryption Seed"));
 	seed_input->connect(SceneStringName(text_changed), callable_mp(this, &ProjectExportDialog::_seed_input_changed));
 	sec_vb->add_margin_child(TTR("Initialization vector seed"), seed_input);
 
@@ -1674,6 +1718,7 @@ ProjectExportDialog::ProjectExportDialog() {
 	script_vb->set_name(TTR("Scripts"));
 
 	script_mode = memnew(OptionButton);
+	script_mode->set_accessibility_name(TTRC("GDScript Export Mode"));
 	script_vb->add_margin_child(TTR("GDScript Export Mode:"), script_mode);
 	script_mode->add_item(TTR("Text (easier debugging)"), (int)EditorExportPreset::MODE_SCRIPT_TEXT);
 	script_mode->add_item(TTR("Binary tokens (faster loading)"), (int)EditorExportPreset::MODE_SCRIPT_BINARY_TOKENS);

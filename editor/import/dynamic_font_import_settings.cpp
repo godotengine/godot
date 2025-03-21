@@ -1444,7 +1444,8 @@ DynamicFontImportSettingsDialog::DynamicFontImportSettingsDialog() {
 	page2_hb_vars->add_child(label_vars);
 
 	add_var = memnew(Button);
-	add_var->set_tooltip_text(TTR("Add configuration"));
+	add_var->set_tooltip_text(TTR("Add new font variation configuration."));
+	add_var->set_accessibility_name(TTRC("Add Configuration"));
 	page2_hb_vars->add_child(add_var);
 	add_var->connect(SceneStringName(pressed), callable_mp(this, &DynamicFontImportSettingsDialog::_variation_add));
 

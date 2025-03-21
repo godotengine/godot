@@ -196,12 +196,14 @@ EditorPropertyRootMotion::EditorPropertyRootMotion() {
 	HBoxContainer *hbc = memnew(HBoxContainer);
 	add_child(hbc);
 	assign = memnew(Button);
+	assign->set_accessibility_name(TTRC("Assign"));
 	assign->set_h_size_flags(SIZE_EXPAND_FILL);
 	assign->set_clip_text(true);
 	assign->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyRootMotion::_node_assign));
 	hbc->add_child(assign);
 
 	clear = memnew(Button);
+	clear->set_accessibility_name(TTRC("Clear"));
 	clear->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyRootMotion::_node_clear));
 	hbc->add_child(clear);
 
