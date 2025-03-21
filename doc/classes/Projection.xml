@@ -182,6 +182,12 @@
 				Returns the dimensions of the far clipping plane of the projection, divided by two.
 			</description>
 		</method>
+		<method name="get_far_plane_rect" qualifiers="const">
+			<return type="Rect2" />
+			<description>
+				Returns the bottom-left corner and the dimensions of the far clipping plane of the projection.
+			</description>
+		</method>
 		<method name="get_fov" qualifiers="const">
 			<return type="float" />
 			<description>
@@ -222,6 +228,12 @@
 			<return type="Vector2" />
 			<description>
 				Returns the dimensions of the viewport plane that this [Projection] projects positions onto, divided by two.
+			</description>
+		</method>
+		<method name="get_viewport_rect" qualifiers="const">
+			<return type="Rect2" />
+			<description>
+				Returns the bottom-left corner and the dimensions of the viewport plane that this [Projection] projects positions onto.
 			</description>
 		</method>
 		<method name="get_z_far" qualifiers="const">
