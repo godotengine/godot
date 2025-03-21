@@ -185,6 +185,9 @@ private:
 	void _select_thread(int p_index);
 
 	bool debug_mute_audio = false;
+	bool audio_muted_on_break = false;
+	void _mute_audio_on_break(bool p_mute);
+	void _send_debug_mute_audio_msg(bool p_mute);
 
 	EditorDebuggerNode::CameraOverride camera_override;
 
@@ -206,6 +209,7 @@ private:
 #ifndef DISABLE_DEPRECATED
 	void _msg_scene_inspect_object(uint64_t p_thread_id, const Array &p_data);
 #endif // DISABLE_DEPRECATED
+	void _msg_scene_debug_mute_audio(uint64_t p_thread_id, const Array &p_data);
 	void _msg_servers_memory_usage(uint64_t p_thread_id, const Array &p_data);
 	void _msg_servers_drawn(uint64_t p_thread_id, const Array &p_data);
 	void _msg_stack_dump(uint64_t p_thread_id, const Array &p_data);
