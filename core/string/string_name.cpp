@@ -33,6 +33,19 @@
 #include "core/os/os.h"
 #include "core/string/print_string.h"
 
+enum {
+	STRING_TABLE_BITS = 16,
+	STRING_TABLE_LEN = 1 << STRING_TABLE_BITS,
+	STRING_TABLE_MASK = STRING_TABLE_LEN - 1
+};
+
+struct StringName::TableEntry {
+	static inline LocalVector<TableEntry> _table[STRING_TABLE_LEN];
+
+	uint32_t hash;
+	_Data *data;
+};
+
 StaticCString StaticCString::create(const char *p_ptr) {
 	StaticCString scs;
 	scs.ptr = p_ptr;
@@ -47,10 +60,6 @@ bool StringName::_Data::operator==(const String &p_name) const {
 	}
 }
 
-bool StringName::_Data::operator!=(const String &p_name) const {
-	return !operator==(p_name);
-}
-
 bool StringName::_Data::operator==(const char *p_name) const {
 	if (cname) {
 		return strcmp(cname, p_name) == 0;
@@ -59,19 +68,12 @@ bool StringName::_Data::operator==(const char *p_name) const {
 	}
 }
 
-bool StringName::_Data::operator!=(const char *p_name) const {
-	return !operator==(p_name);
-}
-
 StringName _scs_create(const char *p_chr, bool p_static) {
 	return (p_chr[0] ? StringName(StaticCString::create(p_chr), p_static) : StringName());
 }
 
 void StringName::setup() {
 	ERR_FAIL_COND(configured);
-	for (int i = 0; i < STRING_TABLE_LEN; i++) {
-		_table[i] = nullptr;
-	}
 	configured = true;
 }
 
@@ -80,12 +82,10 @@ void StringName::cleanup() {
 
 #ifdef DEBUG_ENABLED
 	if (unlikely(debug_stringname)) {
-		Vector<_Data *> data;
+		LocalVector<_Data *> data;
 		for (int i = 0; i < STRING_TABLE_LEN; i++) {
-			_Data *d = _table[i];
-			while (d) {
-				data.push_back(d);
-				d = d->next;
+			for (const TableEntry &entry : TableEntry::_table[i]) {
+				data.push_back((_Data *)entry.data);
 			}
 		}
 
@@ -94,7 +94,7 @@ void StringName::cleanup() {
 		data.sort_custom<DebugSortReferences>();
 		int unreferenced_stringnames = 0;
 		int rarely_referenced_stringnames = 0;
-		for (int i = 0; i < data.size(); i++) {
+		for (uint32_t i = 0; i < data.size(); i++) {
 			print_line(itos(i + 1) + ": " + data[i]->get_name() + " - " + itos(data[i]->debug_references));
 			if (data[i]->debug_references == 0) {
 				unreferenced_stringnames += 1;
@@ -109,8 +109,8 @@ void StringName::cleanup() {
 #endif
 	int lost_strings = 0;
 	for (int i = 0; i < STRING_TABLE_LEN; i++) {
-		while (_table[i]) {
-			_Data *d = _table[i];
+		for (const TableEntry &entry : TableEntry::_table[i]) {
+			_Data *d = (_Data *)entry.data;
 			if (d->static_count.get() != d->refcount.get()) {
 				lost_strings++;
 
@@ -121,9 +121,9 @@ void StringName::cleanup() {
 				}
 			}
 
-			_table[i] = _table[i]->next;
 			memdelete(d);
 		}
+		TableEntry::_table[i].reset();
 	}
 	if (lost_strings) {
 		print_verbose(vformat("StringName: %d unclaimed string names at exit.", lost_strings));
@@ -135,27 +135,28 @@ void StringName::unref() {
 	ERR_FAIL_COND(!configured);
 
 	if (_data && _data->refcount.unref()) {
-		MutexLock lock(mutex);
+		{
+			MutexLock lock(mutex);
 
-		if (CoreGlobals::leak_reporting_enabled && _data->static_count.get() > 0) {
-			if (_data->cname) {
-				ERR_PRINT("BUG: Unreferenced static string to 0: " + String(_data->cname));
-			} else {
-				ERR_PRINT("BUG: Unreferenced static string to 0: " + String(_data->name));
+			if (CoreGlobals::leak_reporting_enabled && _data->static_count.get() > 0) {
+				if (_data->cname) {
+					ERR_PRINT("BUG: Unreferenced static string to 0: " + String(_data->cname));
+				} else {
+					ERR_PRINT("BUG: Unreferenced static string to 0: " + String(_data->name));
+				}
 			}
-		}
-		if (_data->prev) {
-			_data->prev->next = _data->next;
-		} else {
-			if (_table[_data->idx] != _data) {
-				ERR_PRINT("BUG!");
+
+			LocalVector<TableEntry> &vector = TableEntry::_table[_data->idx];
+			uint32_t inner_idx = 0;
+			for (const TableEntry &entry : vector) {
+				if (entry.data == _data) {
+					break;
+				}
+				inner_idx++;
 			}
-			_table[_data->idx] = _data->next;
+			vector.remove_at_unordered(inner_idx);
 		}
 
-		if (_data->next) {
-			_data->next->prev = _data->prev;
-		}
 		memdelete(_data);
 	}
 
@@ -272,28 +273,28 @@ StringName::StringName(const char *p_name, bool p_static) {
 	const uint32_t hash = String::hash(p_name);
 	const uint32_t idx = hash & STRING_TABLE_MASK;
 
+	LocalVector<TableEntry> &entries = TableEntry::_table[idx];
 	MutexLock lock(mutex);
-	_data = _table[idx];
 
-	while (_data) {
-		// compare hash first
-		if (_data->hash == hash && _data->operator==(p_name)) {
-			break;
-		}
-		_data = _data->next;
-	}
+	for (const TableEntry &entry : entries) {
+		if (entry.hash == hash && *entry.data == p_name) {
+			if (!entry.data->refcount.ref()) {
+				// Entry was destructed just as we were trying to access it, so we need to make a new entry.
+				break;
+			}
 
-	if (_data && _data->refcount.ref()) {
-		// exists
-		if (p_static) {
-			_data->static_count.increment();
-		}
+			_data = entry.data;
+
+			if (p_static) {
+				_data->static_count.increment();
+			}
 #ifdef DEBUG_ENABLED
-		if (unlikely(debug_stringname)) {
-			_data->debug_references++;
-		}
+			if (unlikely(debug_stringname)) {
+				_data->debug_references++;
+			}
 #endif
-		return;
+			return;
+		}
 	}
 
 	_data = memnew(_Data);
@@ -303,8 +304,8 @@ StringName::StringName(const char *p_name, bool p_static) {
 	_data->hash = hash;
 	_data->idx = idx;
 	_data->cname = nullptr;
-	_data->next = _table[idx];
-	_data->prev = nullptr;
+
+	entries.push_back(TableEntry{ hash, _data });
 
 #ifdef DEBUG_ENABLED
 	if (unlikely(debug_stringname)) {
@@ -313,10 +314,6 @@ StringName::StringName(const char *p_name, bool p_static) {
 		_data->static_count.increment();
 	}
 #endif
-	if (_table[idx]) {
-		_table[idx]->prev = _data;
-	}
-	_table[idx] = _data;
 }
 
 StringName::StringName(const StaticCString &p_static_string, bool p_static) {
@@ -329,28 +326,28 @@ StringName::StringName(const StaticCString &p_static_string, bool p_static) {
 	const uint32_t hash = String::hash(p_static_string.ptr);
 	const uint32_t idx = hash & STRING_TABLE_MASK;
 
+	LocalVector<TableEntry> &entries = TableEntry::_table[idx];
 	MutexLock lock(mutex);
-	_data = _table[idx];
 
-	while (_data) {
-		// compare hash first
-		if (_data->hash == hash && _data->operator==(p_static_string.ptr)) {
-			break;
-		}
-		_data = _data->next;
-	}
+	for (const TableEntry &entry : entries) {
+		if (entry.hash == hash && *entry.data == p_static_string.ptr) {
+			if (!entry.data->refcount.ref()) {
+				// Entry was destructed just as we were trying to access it, so we need to make a new entry.
+				break;
+			}
 
-	if (_data && _data->refcount.ref()) {
-		// exists
-		if (p_static) {
-			_data->static_count.increment();
-		}
+			_data = entry.data;
+
+			if (p_static) {
+				_data->static_count.increment();
+			}
 #ifdef DEBUG_ENABLED
-		if (unlikely(debug_stringname)) {
-			_data->debug_references++;
-		}
+			if (unlikely(debug_stringname)) {
+				_data->debug_references++;
+			}
 #endif
-		return;
+			return;
+		}
 	}
 
 	_data = memnew(_Data);
@@ -360,8 +357,9 @@ StringName::StringName(const StaticCString &p_static_string, bool p_static) {
 	_data->hash = hash;
 	_data->idx = idx;
 	_data->cname = p_static_string.ptr;
-	_data->next = _table[idx];
-	_data->prev = nullptr;
+
+	entries.push_back(TableEntry{ hash, _data });
+
 #ifdef DEBUG_ENABLED
 	if (unlikely(debug_stringname)) {
 		// Keep in memory, force static.
@@ -369,10 +367,6 @@ StringName::StringName(const StaticCString &p_static_string, bool p_static) {
 		_data->static_count.increment();
 	}
 #endif
-	if (_table[idx]) {
-		_table[idx]->prev = _data;
-	}
-	_table[idx] = _data;
 }
 
 StringName::StringName(const String &p_name, bool p_static) {
@@ -387,27 +381,28 @@ StringName::StringName(const String &p_name, bool p_static) {
 	const uint32_t hash = p_name.hash();
 	const uint32_t idx = hash & STRING_TABLE_MASK;
 
+	LocalVector<TableEntry> &entries = TableEntry::_table[idx];
 	MutexLock lock(mutex);
-	_data = _table[idx];
 
-	while (_data) {
-		if (_data->hash == hash && _data->operator==(p_name)) {
-			break;
-		}
-		_data = _data->next;
-	}
+	for (const TableEntry &entry : entries) {
+		if (entry.hash == hash && *entry.data == p_name) {
+			if (!entry.data->refcount.ref()) {
+				// Entry was destructed just as we were trying to access it, so we need to make a new entry.
+				break;
+			}
 
-	if (_data && _data->refcount.ref()) {
-		// exists
-		if (p_static) {
-			_data->static_count.increment();
-		}
+			_data = entry.data;
+
+			if (p_static) {
+				_data->static_count.increment();
+			}
 #ifdef DEBUG_ENABLED
-		if (unlikely(debug_stringname)) {
-			_data->debug_references++;
-		}
+			if (unlikely(debug_stringname)) {
+				_data->debug_references++;
+			}
 #endif
-		return;
+			return;
+		}
 	}
 
 	_data = memnew(_Data);
@@ -417,8 +412,9 @@ StringName::StringName(const String &p_name, bool p_static) {
 	_data->hash = hash;
 	_data->idx = idx;
 	_data->cname = nullptr;
-	_data->next = _table[idx];
-	_data->prev = nullptr;
+
+	entries.push_back(TableEntry{ hash, _data });
+
 #ifdef DEBUG_ENABLED
 	if (unlikely(debug_stringname)) {
 		// Keep in memory, force static.
@@ -426,104 +422,6 @@ StringName::StringName(const String &p_name, bool p_static) {
 		_data->static_count.increment();
 	}
 #endif
-
-	if (_table[idx]) {
-		_table[idx]->prev = _data;
-	}
-	_table[idx] = _data;
-}
-
-StringName StringName::search(const char *p_name) {
-	ERR_FAIL_COND_V(!configured, StringName());
-
-	ERR_FAIL_NULL_V(p_name, StringName());
-	if (!p_name[0]) {
-		return StringName();
-	}
-
-	const uint32_t hash = String::hash(p_name);
-	const uint32_t idx = hash & STRING_TABLE_MASK;
-
-	MutexLock lock(mutex);
-	_Data *_data = _table[idx];
-
-	while (_data) {
-		// compare hash first
-		if (_data->hash == hash && _data->operator==(p_name)) {
-			break;
-		}
-		_data = _data->next;
-	}
-
-	if (_data && _data->refcount.ref()) {
-#ifdef DEBUG_ENABLED
-		if (unlikely(debug_stringname)) {
-			_data->debug_references++;
-		}
-#endif
-
-		return StringName(_data);
-	}
-
-	return StringName(); //does not exist
-}
-
-StringName StringName::search(const char32_t *p_name) {
-	ERR_FAIL_COND_V(!configured, StringName());
-
-	ERR_FAIL_NULL_V(p_name, StringName());
-	if (!p_name[0]) {
-		return StringName();
-	}
-
-	const uint32_t hash = String::hash(p_name);
-	const uint32_t idx = hash & STRING_TABLE_MASK;
-
-	MutexLock lock(mutex);
-	_Data *_data = _table[idx];
-
-	while (_data) {
-		// compare hash first
-		if (_data->hash == hash && _data->operator==(p_name)) {
-			break;
-		}
-		_data = _data->next;
-	}
-
-	if (_data && _data->refcount.ref()) {
-		return StringName(_data);
-	}
-
-	return StringName(); //does not exist
-}
-
-StringName StringName::search(const String &p_name) {
-	ERR_FAIL_COND_V(p_name.is_empty(), StringName());
-
-	const uint32_t hash = p_name.hash();
-	const uint32_t idx = hash & STRING_TABLE_MASK;
-
-	MutexLock lock(mutex);
-	_Data *_data = _table[idx];
-
-	while (_data) {
-		// compare hash first
-		if (_data->hash == hash && _data->operator==(p_name)) {
-			break;
-		}
-		_data = _data->next;
-	}
-
-	if (_data && _data->refcount.ref()) {
-#ifdef DEBUG_ENABLED
-		if (unlikely(debug_stringname)) {
-			_data->debug_references++;
-		}
-#endif
-		return StringName(_data);
-	}
-
-	return StringName(); //does not exist
 }
 
 bool operator==(const String &p_name, const StringName &p_string_name) {
