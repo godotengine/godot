@@ -346,6 +346,17 @@ const GodotOS = {
 		return concurrency < 2 ? concurrency : 2;
 	},
 
+	godot_js_os_pthread_pool_size_get__proxy: 'sync',
+	godot_js_os_pthread_pool_size_get__sig: 'i',
+	godot_js_os_pthread_pool_size_get: function () {
+		if (typeof PThread === 'undefined') {
+			// Threads aren't supported, so default to `1`.
+			return 1;
+		}
+		const total = PThread.runningWorkers.length + PThread.unusedWorkers.length;
+		return Math.max(1, total - 1);
+	},
+
 	godot_js_os_download_buffer__proxy: 'sync',
 	godot_js_os_download_buffer__sig: 'viiii',
 	godot_js_os_download_buffer: function (p_ptr, p_size, p_name, p_mime) {
