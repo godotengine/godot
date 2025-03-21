@@ -142,8 +142,10 @@ TEST_CASE("[SceneTree][Control] Focus") {
 }
 
 TEST_CASE("[SceneTree][Control] Find next/prev valid focus") {
+	Node *intermediate = memnew(Node);
 	Control *ctrl = memnew(Control);
-	SceneTree::get_singleton()->get_root()->add_child(ctrl);
+	intermediate->add_child(ctrl);
+	SceneTree::get_singleton()->get_root()->add_child(intermediate);
 
 	SUBCASE("[SceneTree][Control] In FOCUS_CLICK mode") {
 		ctrl->set_focus_mode(Control::FocusMode::FOCUS_CLICK);
@@ -162,7 +164,7 @@ TEST_CASE("[SceneTree][Control] Find next/prev valid focus") {
 
 		SUBCASE("[SceneTree][Control] Has a sibling control but the parent node is not a control") {
 			Control *other_ctrl = memnew(Control);
-			SceneTree::get_singleton()->get_root()->add_child(other_ctrl);
+			intermediate->add_child(other_ctrl);
 
 			SUBCASE("[SceneTree][Control] Has a sibling control with FOCUS_ALL") {
 				other_ctrl->set_focus_mode(Control::FocusMode::FOCUS_ALL);
@@ -897,6 +899,7 @@ TEST_CASE("[SceneTree][Control] Find next/prev valid focus") {
 	}
 
 	memdelete(ctrl);
+	memdelete(intermediate);
 }
 
 TEST_CASE("[SceneTree][Control] Anchoring") {
