@@ -33,6 +33,7 @@
 #ifdef IOS_ENABLED
 
 #import "ios.h"
+#import "virtual_controller_ios.h"
 
 #import "drivers/apple/joypad_apple.h"
 #import "drivers/coreaudio/audio_driver_coreaudio.h"
@@ -60,6 +61,8 @@ private:
 	JoypadApple *joypad_apple = nullptr;
 
 	MainLoop *main_loop = nullptr;
+
+	IOSVirtualController *virtual_controller = nullptr;
 
 	virtual void initialize_core() override;
 	virtual void initialize() override;
@@ -126,6 +129,8 @@ public:
 
 	virtual bool _check_internal_feature_support(const String &p_feature) override;
 
+	virtual VirtualController *get_virtual_controller() const override;
+
 	void on_focus_out();
 	void on_focus_in();
 
@@ -133,6 +138,10 @@ public:
 	void on_exit_background();
 
 	virtual Rect2 calculate_boot_screen_rect(const Size2 &p_window_size, const Size2 &p_imgrect_size) const override;
+
+	virtual void controller_connected() const override;
+
+	virtual void controller_disconnected() const override;
 };
 
 #endif // IOS_ENABLED
