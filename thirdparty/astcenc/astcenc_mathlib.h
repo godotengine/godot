@@ -58,8 +58,10 @@
 #ifndef ASTCENC_AVX
   #if defined(__AVX2__)
     #define ASTCENC_AVX 2
+    #define ASTCENC_X86_GATHERS 1
   #elif defined(__AVX__)
     #define ASTCENC_AVX 1
+    #define ASTCENC_X86_GATHERS 1
   #else
     #define ASTCENC_AVX 0
   #endif
@@ -73,10 +75,25 @@
   #endif
 #endif
 
+#ifndef ASTCENC_SVE
+  #if defined(__ARM_FEATURE_SVE)
+    #if defined(__ARM_FEATURE_SVE_BITS) && __ARM_FEATURE_SVE_BITS == 256
+      #define ASTCENC_SVE 8
+    // Auto-detected SVE can only assume vector width of 4 is available, but
+    // must also allow for hardware being longer and so all use of intrinsics
+    // must explicitly use predicate masks to limit to 4-wide.
+    #else
+      #define ASTCENC_SVE 4
+    #endif
+    #else
+    #define ASTCENC_SVE 0
+  #endif
+#endif
+
 // Force vector-sized SIMD alignment
-#if ASTCENC_AVX
+#if ASTCENC_AVX || ASTCENC_SVE == 8
   #define ASTCENC_VECALIGN 32
-#elif ASTCENC_SSE || ASTCENC_NEON
+#elif ASTCENC_SSE || ASTCENC_NEON || ASTCENC_SVE == 4
   #define ASTCENC_VECALIGN 16
 // Use default alignment for non-SIMD builds
 #else
