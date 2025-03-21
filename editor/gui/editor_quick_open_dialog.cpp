@@ -538,34 +538,31 @@ void QuickOpenResultContainer::handle_search_box_input(const Ref<InputEvent> &p_
 	}
 
 	Ref<InputEventKey> key_event = p_ie;
-	if (key_event.is_valid() && key_event->is_pressed()) {
-		bool move_selection = false;
+	if (key_event.is_null() || !key_event->is_pressed()) {
+		return;
+	}
 
-		switch (key_event->get_keycode()) {
-			case Key::UP:
-			case Key::DOWN:
-			case Key::PAGEUP:
-			case Key::PAGEDOWN: {
-				move_selection = true;
-			} break;
-			case Key::LEFT:
-			case Key::RIGHT: {
-				if (content_display_mode == QuickOpenDisplayMode::GRID) {
-					// Maybe strip off the shift modifier to allow non-selecting navigation by character?
-					if (key_event->get_modifiers_mask() == 0) {
-						move_selection = true;
-					}
-				}
-			} break;
-			default:
-				break; // Let the event through so it will reach the search box.
+	Key move_selection = Key::NONE;
+	if (p_ie->is_action("ui_up", true)) {
+		move_selection = Key::UP;
+	} else if (p_ie->is_action("ui_down", true)) {
+		move_selection = Key::DOWN;
+	} else if (p_ie->is_action("ui_page_up")) {
+		move_selection = Key::PAGEUP;
+	} else if (p_ie->is_action("ui_page_down")) {
+		move_selection = Key::PAGEDOWN;
+	} else if (content_display_mode == QuickOpenDisplayMode::GRID) {
+		if (p_ie->is_action("ui_left", true)) {
+			move_selection = Key::LEFT;
+		} else if (p_ie->is_action("ui_right", true)) {
+			move_selection = Key::RIGHT;
 		}
+	}
 
-		if (move_selection) {
-			_move_selection_index(key_event->get_keycode());
-			queue_redraw();
-			accept_event();
-		}
+	if (move_selection != Key::NONE) {
+		_move_selection_index(key_event->get_keycode());
+		queue_redraw();
+		accept_event();
 	}
 }
 
