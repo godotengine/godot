@@ -222,6 +222,12 @@ public:
 	EXBIND2(shape_set_margin, RID, real_t)
 	EXBIND1RC(real_t, shape_get_margin, RID)
 
+	EXBIND3(shape_set_friction_override, RID, bool, real_t)
+	EXBIND3(shape_set_bounce_override, RID, bool, real_t)
+
+	EXBIND1RC(real_t, shape_get_friction_override, RID)
+	EXBIND1RC(real_t, shape_get_bounce_override, RID)
+
 	EXBIND1RC(ShapeType, shape_get_type, RID)
 	EXBIND1RC(Variant, shape_get_data, RID)
 	EXBIND1RC(real_t, shape_get_custom_solver_bias, RID)

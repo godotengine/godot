@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "jolt_physics_material.h"
 #include "servers/physics_server_3d.h"
 
 #include "Jolt/Jolt.h"
@@ -44,6 +45,8 @@ protected:
 	Mutex jolt_ref_mutex;
 	RID rid;
 	JPH::ShapeRefC jolt_ref;
+	JPH::Ref<JoltPhysicsMaterial> material = JPH::Ref(new JoltPhysicsMaterial(NAN, NAN));
+	bool _uses_shape_material = false;
 
 	virtual JPH::ShapeRefC _build() const = 0;
 
@@ -74,6 +77,14 @@ public:
 
 	float get_solver_bias() const;
 	void set_solver_bias(float p_bias);
+
+	real_t get_friction() const;
+	void set_friction(real_t p_friction);
+
+	real_t get_bounce() const;
+	void set_bounce(real_t p_bounce);
+
+	bool uses_shape_material() const;
 
 	JPH::ShapeRefC try_build();
 
