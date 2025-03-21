@@ -93,7 +93,7 @@ if env["module_webp_enabled"]:
         env_thirdparty.Prepend(CPPPATH=["#thirdparty/libwebp/src"])
 if env["module_jpg_enabled"]:
     env_thirdparty.Prepend(CPPPATH=[thirdparty_dir + "src/loaders/external_jpg"])
-    if True:  # FIXME: Support env["builtin_libjpeg_turbo"]
+    if env["builtin_libjpeg_turbo"]:
         env_thirdparty.Prepend(CPPPATH=["#thirdparty/libjpeg-turbo/src"])
 
 env_thirdparty.add_source_files(thirdparty_obj, thirdparty_sources)
