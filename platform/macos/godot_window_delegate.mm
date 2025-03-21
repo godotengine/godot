@@ -324,6 +324,9 @@
 
 	wd.focused = true;
 	ds->set_last_focused_window(window_id);
+#ifdef ACCESSKIT_ENABLED
+	ds->accessibility_set_window_focused(window_id, true);
+#endif
 	ds->send_window_event(wd, DisplayServerMacOS::WINDOW_EVENT_FOCUS_IN);
 }
 
@@ -341,6 +344,9 @@
 
 	wd.focused = false;
 	ds->release_pressed_events();
+#ifdef ACCESSKIT_ENABLED
+	ds->accessibility_set_window_focused(window_id, false);
+#endif
 	ds->send_window_event(wd, DisplayServerMacOS::WINDOW_EVENT_FOCUS_OUT);
 }
 
@@ -354,6 +360,9 @@
 
 	wd.focused = false;
 	ds->release_pressed_events();
+#ifdef ACCESSKIT_ENABLED
+	ds->accessibility_set_window_focused(window_id, false);
+#endif
 	ds->send_window_event(wd, DisplayServerMacOS::WINDOW_EVENT_FOCUS_OUT);
 }
 
@@ -368,6 +377,9 @@
 	if ([wd.window_object isKeyWindow]) {
 		wd.focused = true;
 		ds->set_last_focused_window(window_id);
+#ifdef ACCESSKIT_ENABLED
+		ds->accessibility_set_window_focused(window_id, true);
+#endif
 		ds->send_window_event(wd, DisplayServerMacOS::WINDOW_EVENT_FOCUS_IN);
 	}
 }

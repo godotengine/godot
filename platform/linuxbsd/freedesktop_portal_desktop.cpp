@@ -101,6 +101,11 @@ bool FreeDesktopPortalDesktop::try_parse_variant(DBusMessage *p_reply_message, R
 			return false;
 		}
 		dbus_message_iter_get_basic(&iter[2], r_value);
+	} else if (p_type == VAR_TYPE_BOOL) {
+		if (dbus_message_iter_get_arg_type(&iter[2]) != DBUS_TYPE_BOOLEAN) {
+			return false;
+		}
+		dbus_message_iter_get_basic(&iter[2], r_value);
 	}
 	return true;
 }
@@ -175,6 +180,18 @@ Color FreeDesktopPortalDesktop::get_appearance_accent_color() {
 	} else {
 		return Color(0, 0, 0, 0);
 	}
+}
+
+uint32_t FreeDesktopPortalDesktop::get_high_contrast() {
+	if (unsupported) {
+		return -1;
+	}
+
+	dbus_bool_t value = false;
+	if (read_setting("org.gnome.desktop.a11y.interface", "high-contrast", VAR_TYPE_BOOL, &value)) {
+		return value;
+	}
+	return -1;
 }
 
 static const char *cs_empty = "";

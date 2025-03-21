@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  godot_application_delegate.h                                          */
+/*  freedesktop_at_spi_monitor.h                                          */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -30,25 +30,27 @@
 
 #pragma once
 
-#include "core/os/os.h"
+#ifdef DBUS_ENABLED
 
-#import <AppKit/AppKit.h>
-#import <Foundation/Foundation.h>
+#include "core/os/thread.h"
+#include "core/os/thread_safe.h"
 
-@interface GodotApplicationDelegate : NSObject <NSUserInterfaceItemSearching, NSApplicationDelegate> {
-	bool high_contrast;
-	bool reduce_motion;
-	bool reduce_transparency;
-	bool voice_over;
-}
+class FreeDesktopAtSPIMonitor {
+private:
+	Thread thread;
 
-- (void)forceUnbundledWindowActivationHackStep1;
-- (void)forceUnbundledWindowActivationHackStep2;
-- (void)forceUnbundledWindowActivationHackStep3;
-- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context;
-- (void)accessibilityDisplayOptionsChange:(NSNotification *)notification;
-- (bool)getHighContrast;
-- (bool)getReduceMotion;
-- (bool)getReduceTransparency;
-- (bool)getVoiceOver;
-@end
+	SafeFlag exit_thread;
+	SafeFlag sr_enabled;
+	SafeFlag supported;
+
+	static void monitor_thread_func(void *p_userdata);
+
+public:
+	FreeDesktopAtSPIMonitor();
+	~FreeDesktopAtSPIMonitor();
+
+	bool is_supported() { return supported.is_set(); }
+	bool is_active() { return sr_enabled.is_set(); }
+};
+
+#endif // DBUS_ENABLED
