@@ -2659,6 +2659,8 @@ Error GDScriptCompiler::_prepare_compilation(GDScript *p_script, const GDScriptP
 
 	p_script->clearing = true;
 
+	p_script->cancel_pending_functions(true);
+
 	p_script->native = Ref<GDScriptNativeClass>();
 	p_script->base = Ref<GDScript>();
 	p_script->_base = nullptr;
