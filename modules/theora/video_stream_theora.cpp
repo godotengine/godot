@@ -543,8 +543,8 @@ void ResourceFormatLoaderTheora::get_recognized_extensions(List<String> *p_exten
 	p_extensions->push_back("ogv");
 }
 
-bool ResourceFormatLoaderTheora::handles_type(const String &p_type) const {
-	return ClassDB::is_parent_class(p_type, "VideoStream");
+bool ResourceFormatLoaderTheora::handles_type(const String &p_inherits) const {
+	return ClassDB::is_parent_class("VideoStream", p_inherits);
 }
 
 String ResourceFormatLoaderTheora::get_resource_type(const String &p_path) const {
