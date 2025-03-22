@@ -83,6 +83,24 @@ Size2 CheckButton::get_minimum_size() const {
 	return minsize;
 }
 
+void CheckButton::_set_left_and_right_internal_margins() {
+	Side icon_side = SIDE_RIGHT;
+	switch (theme_cache.check_position) {
+		case CHECK_POSITION_AUTO:
+			icon_side = is_layout_rtl() ? SIDE_LEFT : SIDE_RIGHT;
+			break;
+		case CHECK_POSITION_LEFT:
+			icon_side = SIDE_LEFT;
+			break;
+		case CHECK_POSITION_RIGHT:
+			icon_side = SIDE_RIGHT;
+			break;
+	}
+	_set_internal_margin(icon_side, get_icon_size().width);
+	// Reset opposite side margin
+	_set_internal_margin(icon_side == SIDE_LEFT ? SIDE_RIGHT : SIDE_LEFT, 0.f);
+}
+
 void CheckButton::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ACCESSIBILITY_UPDATE: {
@@ -95,13 +113,7 @@ void CheckButton::_notification(int p_what) {
 		case NOTIFICATION_THEME_CHANGED:
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
 		case NOTIFICATION_TRANSLATION_CHANGED: {
-			if (is_layout_rtl()) {
-				_set_internal_margin(SIDE_LEFT, get_icon_size().width);
-				_set_internal_margin(SIDE_RIGHT, 0.f);
-			} else {
-				_set_internal_margin(SIDE_LEFT, 0.f);
-				_set_internal_margin(SIDE_RIGHT, get_icon_size().width);
-			}
+			_set_left_and_right_internal_margins();
 		} break;
 
 		case NOTIFICATION_DRAW: {
@@ -132,7 +144,7 @@ void CheckButton::_notification(int p_what) {
 			Vector2 ofs;
 			Size2 tex_size = get_icon_size();
 
-			if (rtl) {
+			if ((theme_cache.check_position == CHECK_POSITION_AUTO && rtl) || theme_cache.check_position == CHECK_POSITION_LEFT) {
 				ofs.x = theme_cache.normal_style->get_margin(SIDE_LEFT);
 			} else {
 				ofs.x = get_size().width - (tex_size.width + theme_cache.normal_style->get_margin(SIDE_RIGHT));
@@ -151,6 +163,7 @@ void CheckButton::_notification(int p_what) {
 void CheckButton::_bind_methods() {
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, CheckButton, h_separation);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, CheckButton, check_v_offset);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, CheckButton, check_position);
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, CheckButton, normal_style, "normal");
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, CheckButton, checked);
@@ -172,11 +185,19 @@ CheckButton::CheckButton(const String &p_text) :
 
 	set_text_alignment(HORIZONTAL_ALIGNMENT_LEFT);
 
-	if (is_layout_rtl()) {
-		_set_internal_margin(SIDE_LEFT, get_icon_size().width);
-	} else {
-		_set_internal_margin(SIDE_RIGHT, get_icon_size().width);
+	Side icon_side = SIDE_RIGHT;
+	switch (theme_cache.check_position) {
+		case CHECK_POSITION_AUTO:
+			icon_side = is_layout_rtl() ? SIDE_LEFT : SIDE_RIGHT;
+			break;
+		case CHECK_POSITION_LEFT:
+			icon_side = SIDE_LEFT;
+			break;
+		case CHECK_POSITION_RIGHT:
+			icon_side = SIDE_RIGHT;
+			break;
 	}
+	_set_internal_margin(icon_side, get_icon_size().width);
 }
 
 CheckButton::~CheckButton() {
