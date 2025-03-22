@@ -853,6 +853,10 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, uint64_t p_thread
 			emit_signal(SNAME("remote_objects_updated"), objs);
 			emit_signal(SNAME("remote_tree_select_requested"), objs->remote_object_ids.duplicate());
 		}
+	} else if (p_msg == "request_embed_suspend_toggle") {
+		emit_signal(SNAME("embed_shortcut_requested"), EMBED_SUSPEND_TOGGLE);
+	} else if (p_msg == "request_embed_next_frame") {
+		emit_signal(SNAME("embed_shortcut_requested"), EMBED_NEXT_FRAME);
 	} else if (p_msg == "remote_nothing_clicked") {
 		EditorDebuggerNode::get_singleton()->stop_waiting_inspection();
 
@@ -1878,6 +1882,7 @@ void ScriptEditorDebugger::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("set_breakpoint", PropertyInfo("script"), PropertyInfo(Variant::INT, "line"), PropertyInfo(Variant::BOOL, "enabled")));
 	ADD_SIGNAL(MethodInfo("clear_breakpoints"));
 	ADD_SIGNAL(MethodInfo("errors_cleared"));
+	ADD_SIGNAL(MethodInfo("embed_shortcut_requested", PropertyInfo(Variant::INT, "embed_shortcut_action")));
 }
 
 void ScriptEditorDebugger::add_debugger_tab(Control *p_control) {
