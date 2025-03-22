@@ -2832,6 +2832,10 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_binary_operator(Expression
 			operation->operation = BinaryOpNode::OP_DIVISION;
 			operation->variant_op = Variant::OP_DIVIDE;
 			break;
+		case GDScriptTokenizer::Token::TILDE_SLASH:
+			operation->operation = BinaryOpNode::OP_INT_DIVISION;
+			operation->variant_op = Variant::OP_INT_DIVIDE;
+			break;
 		case GDScriptTokenizer::Token::PERCENT:
 			operation->operation = BinaryOpNode::OP_MODULO;
 			operation->variant_op = Variant::OP_MODULE;
@@ -4047,6 +4051,7 @@ GDScriptParser::ParseRule *GDScriptParser::get_rule(GDScriptTokenizer::Token::Ty
 		{ nullptr,                                          &GDScriptParser::parse_binary_operator,      	PREC_FACTOR }, // STAR,
 		{ nullptr,                                          &GDScriptParser::parse_binary_operator,      	PREC_POWER }, // STAR_STAR,
 		{ nullptr,                                          &GDScriptParser::parse_binary_operator,      	PREC_FACTOR }, // SLASH,
+		{ nullptr,                                          &GDScriptParser::parse_binary_operator,      	PREC_FACTOR }, // TILDE_SLASH,
 		{ &GDScriptParser::parse_get_node,                  &GDScriptParser::parse_binary_operator,      	PREC_FACTOR }, // PERCENT,
 		// Assignment
 		{ nullptr,                                          &GDScriptParser::parse_assignment,           	PREC_ASSIGNMENT }, // EQUAL,
@@ -5507,6 +5512,9 @@ void GDScriptParser::TreePrinter::print_assignment(AssignmentNode *p_assignment)
 		case AssignmentNode::OP_DIVISION:
 			push_text("/");
 			break;
+		case AssignmentNode::OP_INT_DIVISION:
+			push_text("~/");
+			break;
 		case AssignmentNode::OP_MODULO:
 			push_text("%");
 			break;
@@ -5557,6 +5565,9 @@ void GDScriptParser::TreePrinter::print_binary_op(BinaryOpNode *p_binary_op) {
 			break;
 		case BinaryOpNode::OP_DIVISION:
 			push_text(" / ");
+			break;
+		case BinaryOpNode::OP_INT_DIVISION:
+			push_text(" ~/ ");
 			break;
 		case BinaryOpNode::OP_MODULO:
 			push_text(" % ");
