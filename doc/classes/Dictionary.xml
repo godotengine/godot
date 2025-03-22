@@ -214,6 +214,13 @@
 				Returns the corresponding value for the given [param key] in the dictionary. If the [param key] does not exist, returns [param default], or [code]null[/code] if the parameter is omitted.
 			</description>
 		</method>
+		<method name="get_key_by_index" qualifiers="const">
+			<return type="Variant" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns the `index`-th key (by order of insertion) in the dictionary. If the index is out of bounds, returns `null`.
+			</description>
+		</method>
 		<method name="get_or_add">
 			<return type="Variant" />
 			<param index="0" name="key" type="Variant" />
