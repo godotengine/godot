@@ -1095,7 +1095,9 @@ void FileDialog::clear_filename_filter() {
 
 void FileDialog::update_filename_filter_gui() {
 	filename_filter_box->set_visible(show_filename_filter);
-	if (!show_filename_filter) {
+	// HACK: Using the opposite state for show_filename_filter does not work.
+	// Causes the text-box to be uneditable as it is constantly reset.
+	if (show_filename_filter) {
 		file_name_filter.clear();
 	}
 	if (filename_filter->get_text() == file_name_filter) {
