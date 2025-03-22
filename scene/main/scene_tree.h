@@ -267,6 +267,13 @@ private:
 		CALL_INPUT_TYPE_UNHANDLED_KEY_INPUT,
 	};
 
+	// Comparator to sort controls by their priority in handling shortcuts from 2 pieces of data:
+	// 1. whether they are ancestors of the focused control (the pair boolean)
+	// 2. their depth in the tree
+	struct GlobalShortcutControlNodeComparator {
+		bool operator()(const Pair<Node *, bool> &p_a, const Pair<Node *, bool> &p_b) const;
+	};
+
 	//used by viewport
 	void _call_input_pause(const StringName &p_group, CallInputType p_call_type, const Ref<InputEvent> &p_input, Viewport *p_viewport);
 
