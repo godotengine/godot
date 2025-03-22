@@ -302,6 +302,13 @@ void register_editor_types() {
 	ei_singleton.editor_only = true;
 	Engine::get_singleton()->add_singleton(ei_singleton);
 
+	if (RenderingServer::get_singleton()) {
+		// RenderingServer needs to exist for this to succeed.
+		Texture3DEditor::init_shaders();
+		TextureLayeredEditor::init_shaders();
+		TexturePreview::init_shaders();
+	}
+
 	// Required as GDExtensions can register docs at init time way before this
 	// class is actually instantiated.
 	EditorHelp::init_gdext_pointers();
@@ -311,6 +318,10 @@ void register_editor_types() {
 
 void unregister_editor_types() {
 	OS::get_singleton()->benchmark_begin_measure("Editor", "Unregister Types");
+
+	Texture3DEditor::finish_shaders();
+	TextureLayeredEditor::finish_shaders();
+	TexturePreview::finish_shaders();
 
 	EditorNode::cleanup();
 	EditorInterface::free();
