@@ -450,6 +450,22 @@ namespace Godot.Collections
         }
 
         /// <summary>
+        /// Returns the entry at the given <paramref name="index"/>.
+        /// </summary>
+        /// <exception cref="ArgumentOutOfRangeException">
+        /// <paramref name="index"/> is less than 0 or greater than the dictionary's size.
+        /// </exception>
+        /// <param name="index">The index of the entry to retrieve.</param>
+        /// <returns>The entry for the given <paramref name="index"/>.</returns>
+        public KeyValuePair<Variant, Variant> GetAt(int index)
+        {
+            if (index < 0 || index >= Count)
+                throw new ArgumentOutOfRangeException(nameof(index));
+
+            return GetKeyValuePair(index);
+        }
+
+        /// <summary>
         /// Converts this <see cref="Dictionary"/> to a string.
         /// </summary>
         /// <returns>A string representation of this dictionary.</returns>
@@ -737,6 +753,22 @@ namespace Godot.Collections
                     VariantUtils.ConvertTo<TKey>(key),
                     VariantUtils.ConvertTo<TValue>(value));
             }
+        }
+
+        /// <summary>
+        /// Returns the entry at the given <paramref name="index"/>.
+        /// </summary>
+        /// <exception cref="ArgumentOutOfRangeException">
+        /// <paramref name="index"/> is less than 0 or greater than the dictionary's size.
+        /// </exception>
+        /// <param name="index">The index of the entry to retrieve.</param>
+        /// <returns>The entry for the given <paramref name="index"/>.</returns>
+        public KeyValuePair<TKey, TValue> GetAt(int index)
+        {
+            if (index < 0 || index >= Count)
+                throw new ArgumentOutOfRangeException(nameof(index));
+
+            return GetKeyValuePair(index);
         }
 
         /// <summary>

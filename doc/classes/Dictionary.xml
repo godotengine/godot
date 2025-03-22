@@ -214,6 +214,24 @@
 				Returns the corresponding value for the given [param key] in the dictionary. If the [param key] does not exist, returns [param default], or [code]null[/code] if the parameter is omitted.
 			</description>
 		</method>
+		<method name="get_key_at_index" qualifiers="const">
+			<return type="Variant" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns the key for the [param index]-th element (by order of insertion) in the dictionary. Negative indices are supported (i.e., counting from the back). If the index is out of bounds, returns [code]null[/code].
+				[codeblock]
+				var dict = {"A": 0, "B": 1, "C": 2, "D": 3}
+
+				print(dict.get_key_at_index(0))  # Prints "A"
+				print(dict.get_key_at_index(1))  # Prints "B"
+
+				dict["E"] = 4
+				print(dict.get_key_at_index(4))  # Prints "E"
+				print(dict.get_key_at_index(-1)) # Prints "E"
+				[/codeblock]
+				[b]Note:[/b] This method iterates the dictionary to find the element at the given index. This is fast for elements near the start or end of the dictionary, but slower for elements in the middle. To retrieve all keys in order of insertion as an array, use [method keys].
+			</description>
+		</method>
 		<method name="get_or_add">
 			<return type="Variant" />
 			<param index="0" name="key" type="Variant" />
@@ -256,6 +274,24 @@
 			<return type="Variant" />
 			<description>
 				Returns the [Script] instance associated with this typed dictionary's values, or [code]null[/code] if it does not exist. See also [method is_typed_value].
+			</description>
+		</method>
+		<method name="get_value_at_index" qualifiers="const">
+			<return type="Variant" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns the value for the [param index]-th element (by order of insertion) in the dictionary. Negative indices are supported (i.e., counting from the back). If the index is out of bounds, returns [code]null[/code].
+				[codeblock]
+				var dict = {"A": 10, "B": 5, "C": 2, "D": 1}
+
+				print(dict.get_value_at_index(0))  # Prints 10
+				print(dict.get_value_at_index(1))  # Prints 5
+
+				dict["E"] = -1
+				print(dict.get_value_at_index(4))  # Prints -1
+				print(dict.get_value_at_index(-1)) # Prints -1
+				[/codeblock]
+				[b]Note:[/b] This method iterates the dictionary to find the element at the given index. This is fast for elements near the start or end of the dictionary, but slower for elements in the middle. To retrieve all values in order of insertion as an array, use [method values].
 			</description>
 		</method>
 		<method name="has" qualifiers="const">
