@@ -89,18 +89,23 @@ void _err_print_error(const char *p_function, const char *p_file, int p_line, co
 
 // Main error printing function.
 void _err_print_error(const char *p_function, const char *p_file, int p_line, const char *p_error, const char *p_message, bool p_editor_notify, ErrorHandlerType p_type) {
+	// Normalize the file path to forward slashes and convert to a C-style UTF-8 string.
+	String temp_path = String(p_file).replace("\\", "/");
+	CharString utf8_path = temp_path.utf8();
+	const char *file_path = utf8_path.get_data();
+
 	if (OS::get_singleton()) {
-		OS::get_singleton()->print_error(p_function, p_file, p_line, p_error, p_message, p_editor_notify, (Logger::ErrorType)p_type);
+		OS::get_singleton()->print_error(p_function, file_path, p_line, p_error, p_message, p_editor_notify, (Logger::ErrorType)p_type);
 	} else {
 		// Fallback if errors happen before OS init or after it's destroyed.
 		const char *err_details = (p_message && *p_message) ? p_message : p_error;
-		fprintf(stderr, "ERROR: %s\n   at: %s (%s:%i)\n", err_details, p_function, p_file, p_line);
+		fprintf(stderr, "ERROR: %s\n   at: %s (%s:%i)\n", err_details, p_function, file_path, p_line);
 	}
 
 	_global_lock();
 	ErrorHandlerList *l = error_handler_list;
 	while (l) {
-		l->errfunc(l->userdata, p_function, p_file, p_line, p_error, p_message, p_editor_notify, p_type);
+		l->errfunc(l->userdata, p_function, file_path, p_line, p_error, p_message, p_editor_notify, p_type);
 		l = l->next;
 	}
 
