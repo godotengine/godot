@@ -297,11 +297,11 @@ void VehicleWheel3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "wheel_friction_slip"), "set_friction_slip", "get_friction_slip");
 	ADD_GROUP("Suspension", "suspension_");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "suspension_travel", PROPERTY_HINT_NONE, "suffix:m"), "set_suspension_travel", "get_suspension_travel");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "suspension_stiffness"), "set_suspension_stiffness", "get_suspension_stiffness");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "suspension_stiffness", PROPERTY_HINT_NONE, U"suffix:N/mm"), "set_suspension_stiffness", "get_suspension_stiffness");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "suspension_max_force", PROPERTY_HINT_NONE, U"suffix:kg\u22C5m/s\u00B2 (N)"), "set_suspension_max_force", "get_suspension_max_force");
 	ADD_GROUP("Damping", "damping_");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "damping_compression"), "set_damping_compression", "get_damping_compression");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "damping_relaxation"), "set_damping_relaxation", "get_damping_relaxation");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "damping_compression", PROPERTY_HINT_NONE, U"suffix:N\u22C5s/mm"), "set_damping_compression", "get_damping_compression");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "damping_relaxation", PROPERTY_HINT_NONE, U"suffix:N\u22C5s/mm"), "set_damping_relaxation", "get_damping_relaxation");
 }
 
 void VehicleWheel3D::set_engine_force(real_t p_engine_force) {
@@ -542,7 +542,7 @@ void VehicleBody3D::_resolve_single_bilateral(PhysicsDirectBodyState3D *s, const
 	if (body2) {
 		rel_pos2 = pos2 - body2->get_global_transform().origin;
 	}
-	//this jacobian entry could be re-used for all iterations
+	// This Jacobian entry could be reused for all iterations.
 
 	Vector3 vel1 = s->get_linear_velocity() + (s->get_angular_velocity()).cross(rel_pos1); // * mPos);
 	Vector3 vel2;
@@ -852,18 +852,26 @@ void VehicleBody3D::_body_state_changed(PhysicsDirectBodyState3D *p_state) {
 	for (int i = 0; i < wheels.size(); i++) {
 		VehicleWheel3D &wheel = *wheels[i];
 		Vector3 relpos = wheel.m_raycastInfo.m_hardPointWS - p_state->get_transform().origin;
-		Vector3 vel = p_state->get_linear_velocity() + (p_state->get_angular_velocity()).cross(relpos); // * mPos);
+		Vector3 vel = p_state->get_linear_velocity() + (p_state->get_angular_velocity()).cross(relpos);
 
 		if (wheel.m_raycastInfo.m_isInContact) {
 			const Transform3D &chassisWorldTransform = p_state->get_transform();
 
+			// Get forward vector.
 			Vector3 fwd(
 					chassisWorldTransform.basis[0][Vector3::AXIS_Z],
 					chassisWorldTransform.basis[1][Vector3::AXIS_Z],
 					chassisWorldTransform.basis[2][Vector3::AXIS_Z]);
 
+			// Apply steering rotation to forward vector for steerable wheels.
+			if (wheel.steers) {
+				Basis steering_mat(Vector3(0, 1, 0), wheel.m_steering);
+				fwd = steering_mat.xform(fwd);
+			}
+
 			real_t proj = fwd.dot(wheel.m_raycastInfo.m_contactNormalWS);
 			fwd -= wheel.m_raycastInfo.m_contactNormalWS * proj;
+			fwd.normalize();
 
 			real_t proj2 = fwd.dot(vel);
 

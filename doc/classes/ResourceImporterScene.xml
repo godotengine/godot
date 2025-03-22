@@ -68,6 +68,9 @@
 		<member name="nodes/root_type" type="String" setter="" getter="" default="&quot;&quot;">
 			Override for the root node type. If empty, the root node will use what the scene specifies, or [Node3D] if the scene does not specify a root type. Using a node type that inherits from [Node3D] is recommended. Otherwise, you'll lose the ability to position the node directly in the 3D editor.
 		</member>
+		<member name="nodes/use_node_type_suffixes" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], use suffixes in the node names to determine the node type, such as [code]-col[/code] for collision shapes. Disabling this makes editor-imported files more similar to the original files, and more similar to importing files at runtime. See [url=$DOCS_URL/tutorials/assets_pipeline/importing_3d_scenes/node_type_customization.html]Node type customization using name suffixes[/url] for more information.
+		</member>
 		<member name="skins/use_named_skins" type="bool" setter="" getter="" default="true">
 			If checked, use named [Skin]s for animation. The [MeshInstance3D] node contains 3 properties of relevance here: a skeleton [NodePath] pointing to the [Skeleton3D] node (usually [code]..[/code]), a mesh, and a skin:
 			- The [Skeleton3D] node contains a list of bones with names, their pose and rest, a name and a parent bone.

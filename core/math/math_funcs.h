@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef MATH_FUNCS_H
-#define MATH_FUNCS_H
+#pragma once
 
 #include "core/error/error_macros.h"
 #include "core/math/math_defs.h"
@@ -222,7 +221,10 @@ public:
 
 	static _ALWAYS_INLINE_ double abs(double g) { return absd(g); }
 	static _ALWAYS_INLINE_ float abs(float g) { return absf(g); }
-	static _ALWAYS_INLINE_ int abs(int g) { return g > 0 ? g : -g; }
+	static _ALWAYS_INLINE_ int8_t abs(int8_t g) { return g > 0 ? g : -g; }
+	static _ALWAYS_INLINE_ int16_t abs(int16_t g) { return g > 0 ? g : -g; }
+	static _ALWAYS_INLINE_ int32_t abs(int32_t g) { return ::abs(g); }
+	static _ALWAYS_INLINE_ int64_t abs(int64_t g) { return ::llabs(g); }
 
 	static _ALWAYS_INLINE_ double fposmod(double p_x, double p_y) {
 		double value = Math::fmod(p_x, p_y);
@@ -594,6 +596,10 @@ public:
 		return abs(s) < (float)CMP_EPSILON;
 	}
 
+	static _ALWAYS_INLINE_ bool is_same(float a, float b) {
+		return (a == b) || (is_nan(a) && is_nan(b));
+	}
+
 	static _ALWAYS_INLINE_ bool is_equal_approx(double a, double b) {
 		// Check for exact equality first, required to handle "infinity" values.
 		if (a == b) {
@@ -620,25 +626,16 @@ public:
 		return abs(s) < CMP_EPSILON;
 	}
 
-	static _ALWAYS_INLINE_ float absf(float g) {
-		union {
-			float f;
-			uint32_t i;
-		} u;
+	static _ALWAYS_INLINE_ bool is_same(double a, double b) {
+		return (a == b) || (is_nan(a) && is_nan(b));
+	}
 
-		u.f = g;
-		u.i &= 2147483647u;
-		return u.f;
+	static _ALWAYS_INLINE_ float absf(float g) {
+		return ::fabsf(g);
 	}
 
 	static _ALWAYS_INLINE_ double absd(double g) {
-		union {
-			double d;
-			uint64_t i;
-		} u;
-		u.d = g;
-		u.i &= (uint64_t)9223372036854775807ll;
-		return u.d;
+		return ::fabs(g);
 	}
 
 	// This function should be as fast as possible and rounding mode should not matter.
@@ -758,5 +755,3 @@ public:
 		return p_target;
 	}
 };
-
-#endif // MATH_FUNCS_H

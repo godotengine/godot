@@ -28,24 +28,19 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef SHADER_GLES3_H
-#define SHADER_GLES3_H
+#pragma once
 
 #include "core/math/projection.h"
 #include "core/os/mutex.h"
 #include "core/string/string_builder.h"
 #include "core/templates/hash_map.h"
 #include "core/templates/local_vector.h"
-#include "core/templates/rb_map.h"
 #include "core/templates/rid_owner.h"
-#include "core/variant/variant.h"
 #include "servers/rendering_server.h"
 
 #ifdef GLES3_ENABLED
 
 #include "platform_gl.h"
-
-#include <stdio.h>
 
 class ShaderGLES3 {
 public:
@@ -262,5 +257,3 @@ public:
 };
 
 #endif // GLES3_ENABLED
-
-#endif // SHADER_GLES3_H

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef IMPORT_DOCK_H
-#define IMPORT_DOCK_H
+#pragma once
 
 #include "core/io/config_file.h"
 #include "core/io/resource_importer.h"
@@ -81,8 +80,6 @@ class ImportDock : public VBoxContainer {
 	void _reimport_and_cleanup();
 	void _reimport();
 
-	void _replace_resource_in_object(Object *p_object, const Ref<Resource> &old_resource, const Ref<Resource> &new_resource);
-
 	void _advanced_options();
 	enum {
 		ITEM_SET_AS_DEFAULT = 100,
@@ -110,5 +107,3 @@ public:
 	ImportDock();
 	~ImportDock();
 };
-
-#endif // IMPORT_DOCK_H

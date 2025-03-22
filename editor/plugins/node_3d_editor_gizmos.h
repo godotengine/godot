@@ -28,12 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef NODE_3D_EDITOR_GIZMOS_H
-#define NODE_3D_EDITOR_GIZMOS_H
+#pragma once
 
 #include "core/math/dynamic_bvh.h"
 #include "core/templates/hash_map.h"
-#include "core/templates/local_vector.h"
 #include "scene/3d/camera_3d.h"
 #include "scene/3d/node_3d.h"
 #include "scene/3d/skeleton_3d.h"
@@ -222,5 +220,3 @@ public:
 	EditorNode3DGizmoPlugin();
 	virtual ~EditorNode3DGizmoPlugin();
 };
-
-#endif // NODE_3D_EDITOR_GIZMOS_H

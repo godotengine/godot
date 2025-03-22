@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef CSG_SHAPE_H
-#define CSG_SHAPE_H
+#pragma once
 
 #include "csg.h"
 
@@ -38,6 +37,9 @@
 #include "scene/resources/3d/concave_polygon_shape_3d.h"
 
 #include "thirdparty/misc/mikktspace.h"
+
+class NavigationMesh;
+class NavigationMeshSourceGeometryData3D;
 
 class CSGShape3D : public GeometryInstance3D {
 	GDCLASS(CSGShape3D, GeometryInstance3D);
@@ -107,7 +109,6 @@ private:
 	static void mikktSetTSpaceDefault(const SMikkTSpaceContext *pContext, const float fvTangent[], const float fvBiTangent[], const float fMagS, const float fMagT,
 			const tbool bIsOrientationPreserving, const int iFace, const int iVert);
 
-	void _update_shape();
 	void _update_collision_faces();
 	bool _is_debug_collision_shape_visible();
 	void _update_debug_collision_shape();
@@ -119,6 +120,7 @@ protected:
 	void _notification(int p_what);
 	virtual CSGBrush *_build_brush() = 0;
 	void _make_dirty(bool p_parent_removing = false);
+	PackedStringArray get_configuration_warnings() const override;
 
 	static void _bind_methods();
 
@@ -129,6 +131,7 @@ protected:
 
 public:
 	Array get_meshes() const;
+	void update_shape();
 
 	void set_operation(Operation p_operation);
 	Operation get_operation() const;
@@ -152,11 +155,15 @@ public:
 	void set_collision_mask_value(int p_layer_number, bool p_value);
 	bool get_collision_mask_value(int p_layer_number) const;
 
+	RID _get_root_collision_instance() const;
+
 	void set_collision_priority(real_t p_priority);
 	real_t get_collision_priority() const;
 
+#ifndef DISABLE_DEPRECATED
 	void set_snap(float p_snap);
 	float get_snap() const;
+#endif // DISABLE_DEPRECATED
 
 	void set_calculate_tangents(bool p_calculate_tangents);
 	bool is_calculating_tangents() const;
@@ -165,6 +172,16 @@ public:
 
 	Ref<ArrayMesh> bake_static_mesh();
 	Ref<ConcavePolygonShape3D> bake_collision_shape();
+
+	virtual Ref<TriangleMesh> generate_triangle_mesh() const override;
+
+private:
+	static Callable _navmesh_source_geometry_parsing_callback;
+	static RID _navmesh_source_geometry_parser;
+
+public:
+	static void navmesh_parse_init();
+	static void navmesh_parse_source_geometry(const Ref<NavigationMesh> &p_navigation_mesh, Ref<NavigationMeshSourceGeometryData3D> p_source_geometry_data, Node *p_node);
 
 	CSGShape3D();
 	~CSGShape3D();
@@ -385,6 +402,7 @@ private:
 	float path_interval;
 	float path_simplify_angle;
 	PathRotation path_rotation;
+	bool path_rotation_accurate;
 	bool path_local;
 
 	Path3D *path = nullptr;
@@ -436,6 +454,9 @@ public:
 	void set_path_rotation(PathRotation p_rotation);
 	PathRotation get_path_rotation() const;
 
+	void set_path_rotation_accurate(bool p_enable);
+	bool get_path_rotation_accurate() const;
+
 	void set_path_local(bool p_enable);
 	bool is_path_local() const;
 
@@ -460,5 +481,3 @@ public:
 VARIANT_ENUM_CAST(CSGPolygon3D::Mode)
 VARIANT_ENUM_CAST(CSGPolygon3D::PathRotation)
 VARIANT_ENUM_CAST(CSGPolygon3D::PathIntervalType)
-
-#endif // CSG_SHAPE_H

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef GD_MONO_H
-#define GD_MONO_H
+#pragma once
 
 #include "../godotsharp_defs.h"
 
@@ -64,7 +63,7 @@ class GDMono {
 	bool finalizing_scripts_domain = false;
 
 	void *hostfxr_dll_handle = nullptr;
-	bool is_native_aot = false;
+	void *coreclr_dll_handle = nullptr;
 
 	String project_assembly_path;
 	uint64_t project_assembly_modified_time = 0;
@@ -180,5 +179,3 @@ public:
 };
 
 } // namespace mono_bind
-
-#endif // GD_MONO_H

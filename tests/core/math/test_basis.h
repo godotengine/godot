@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TEST_BASIS_H
-#define TEST_BASIS_H
+#pragma once
 
 #include "core/math/basis.h"
 #include "core/math/random_number_generator.h"
@@ -93,9 +92,9 @@ void test_rotation(Vector3 deg_original_euler, EulerOrder rot_order) {
 
 	Basis res = to_rotation.inverse() * rotation_from_computed_euler;
 
-	CHECK_MESSAGE((res.get_column(0) - Vector3(1.0, 0.0, 0.0)).length() <= 0.1, vformat("Fail due to X %s\n", String(res.get_column(0))));
-	CHECK_MESSAGE((res.get_column(1) - Vector3(0.0, 1.0, 0.0)).length() <= 0.1, vformat("Fail due to Y %s\n", String(res.get_column(1))));
-	CHECK_MESSAGE((res.get_column(2) - Vector3(0.0, 0.0, 1.0)).length() <= 0.1, vformat("Fail due to Z %s\n", String(res.get_column(2))));
+	CHECK_MESSAGE((res.get_column(0) - Vector3(1.0, 0.0, 0.0)).length() <= 0.001, vformat("Fail due to X %s\n", String(res.get_column(0))));
+	CHECK_MESSAGE((res.get_column(1) - Vector3(0.0, 1.0, 0.0)).length() <= 0.001, vformat("Fail due to Y %s\n", String(res.get_column(1))));
+	CHECK_MESSAGE((res.get_column(2) - Vector3(0.0, 0.0, 1.0)).length() <= 0.001, vformat("Fail due to Z %s\n", String(res.get_column(2))));
 
 	// Double check `to_rotation` decomposing with XYZ rotation order.
 	const Vector3 euler_xyz_from_rotation = to_rotation.get_euler(EulerOrder::XYZ);
@@ -103,9 +102,9 @@ void test_rotation(Vector3 deg_original_euler, EulerOrder rot_order) {
 
 	res = to_rotation.inverse() * rotation_from_xyz_computed_euler;
 
-	CHECK_MESSAGE((res.get_column(0) - Vector3(1.0, 0.0, 0.0)).length() <= 0.1, vformat("Double check with XYZ rot order failed, due to X %s\n", String(res.get_column(0))));
-	CHECK_MESSAGE((res.get_column(1) - Vector3(0.0, 1.0, 0.0)).length() <= 0.1, vformat("Double check with XYZ rot order failed, due to Y %s\n", String(res.get_column(1))));
-	CHECK_MESSAGE((res.get_column(2) - Vector3(0.0, 0.0, 1.0)).length() <= 0.1, vformat("Double check with XYZ rot order failed, due to Z %s\n", String(res.get_column(2))));
+	CHECK_MESSAGE((res.get_column(0) - Vector3(1.0, 0.0, 0.0)).length() <= 0.001, vformat("Double check with XYZ rot order failed, due to X %s\n", String(res.get_column(0))));
+	CHECK_MESSAGE((res.get_column(1) - Vector3(0.0, 1.0, 0.0)).length() <= 0.001, vformat("Double check with XYZ rot order failed, due to Y %s\n", String(res.get_column(1))));
+	CHECK_MESSAGE((res.get_column(2) - Vector3(0.0, 0.0, 1.0)).length() <= 0.001, vformat("Double check with XYZ rot order failed, due to Z %s\n", String(res.get_column(2))));
 
 	INFO(vformat("Rotation order: %s\n.", get_rot_order_name(rot_order)));
 	INFO(vformat("Original Rotation: %s\n", String(deg_original_euler)));
@@ -176,6 +175,12 @@ TEST_CASE("[Basis] Euler conversions") {
 	vectors_to_test.push_back(Vector3(120.0, -150.0, -130.0));
 	vectors_to_test.push_back(Vector3(120.0, 150.0, -130.0));
 	vectors_to_test.push_back(Vector3(120.0, 150.0, 130.0));
+	vectors_to_test.push_back(Vector3(89.9, 0.0, 0.0));
+	vectors_to_test.push_back(Vector3(-89.9, 0.0, 0.0));
+	vectors_to_test.push_back(Vector3(0.0, 89.9, 0.0));
+	vectors_to_test.push_back(Vector3(0.0, -89.9, 0.0));
+	vectors_to_test.push_back(Vector3(0.0, 0.0, 89.9));
+	vectors_to_test.push_back(Vector3(0.0, 0.0, -89.9));
 
 	for (int h = 0; h < euler_order_to_test.size(); h += 1) {
 		for (int i = 0; i < vectors_to_test.size(); i += 1) {
@@ -264,7 +269,7 @@ TEST_CASE("[Basis] Set axis angle") {
 }
 
 TEST_CASE("[Basis] Finite number checks") {
-	const Vector3 x(0, 1, 2);
+	constexpr Vector3 x(0, 1, 2);
 	const Vector3 infinite(NAN, NAN, NAN);
 
 	CHECK_MESSAGE(
@@ -421,5 +426,3 @@ TEST_CASE("[Basis] Is rotation checks") {
 }
 
 } // namespace TestBasis
-
-#endif // TEST_BASIS_H

@@ -1,14 +1,22 @@
 import os
 import platform
 import subprocess
+import sys
 
 import methods
 
 # NOTE: The multiprocessing module is not compatible with SCons due to conflict on cPickle
 
 
+compatibility_platform_aliases = {
+    "osx": "macos",
+    "iphone": "ios",
+    "x11": "linuxbsd",
+    "javascript": "web",
+}
+
 # CPU architecture options.
-architectures = ["x86_32", "x86_64", "arm32", "arm64", "rv64", "ppc32", "ppc64", "wasm32"]
+architectures = ["x86_32", "x86_64", "arm32", "arm64", "rv64", "ppc32", "ppc64", "wasm32", "loongarch64"]
 architecture_aliases = {
     "x86": "x86_32",
     "x64": "x86_64",
@@ -23,6 +31,7 @@ architecture_aliases = {
     "ppcle": "ppc32",
     "ppc": "ppc32",
     "ppc64le": "ppc64",
+    "loong64": "loongarch64",
 }
 
 
@@ -38,6 +47,15 @@ def detect_arch():
     else:
         methods.print_warning(f'Unsupported CPU architecture: "{host_machine}". Falling back to x86_64.')
         return "x86_64"
+
+
+def validate_arch(arch, platform_name, supported_arches):
+    if arch not in supported_arches:
+        methods.print_error(
+            'Unsupported CPU architecture "%s" for %s. Supported architectures are: %s.'
+            % (arch, platform_name, ", ".join(supported_arches))
+        )
+        sys.exit(255)
 
 
 def get_build_version(short):

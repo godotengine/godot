@@ -106,8 +106,8 @@ android {
         boolean devBuild = buildType == "dev"
         boolean debugSymbols = devBuild
         boolean runTests = devBuild
-        boolean productionBuild = !devBuild
         boolean storeRelease = buildType == "release"
+        boolean productionBuild = storeRelease
 
         def sconsTarget = flavorName
         if (sconsTarget == "template") {

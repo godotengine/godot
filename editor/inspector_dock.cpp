@@ -30,6 +30,9 @@
 
 #include "inspector_dock.h"
 
+#include "editor/debugger/editor_debugger_inspector.h"
+#include "editor/debugger/editor_debugger_node.h"
+#include "editor/editor_main_screen.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
@@ -97,7 +100,7 @@ void InspectorDock::_menu_option_confirm(int p_option, bool p_confirmed) {
 
 		case OBJECT_REQUEST_HELP: {
 			if (current) {
-				EditorNode::get_singleton()->set_visible_editor(EditorNode::EDITOR_SCRIPT);
+				EditorNode::get_singleton()->get_editor_main_screen()->select(EditorMainScreen::EDITOR_SCRIPT);
 				emit_signal(SNAME("request_help"), current->get_class());
 			}
 		} break;
@@ -124,17 +127,20 @@ void InspectorDock::_menu_option_confirm(int p_option, bool p_confirmed) {
 					List<PropertyInfo> props;
 					current->get_property_list(&props);
 
-					for (List<PropertyInfo>::Element *E = props.front(); E; E = E->next()) {
-						if (!(E->get().usage & PROPERTY_USAGE_STORAGE)) {
+					for (const PropertyInfo &property : props) {
+						if (!(property.usage & PROPERTY_USAGE_STORAGE)) {
+							continue;
+						}
+						if (property.usage & PROPERTY_USAGE_NEVER_DUPLICATE) {
 							continue;
 						}
 
-						Variant v = current->get(E->get().name);
+						Variant v = current->get(property.name);
 						Ref<RefCounted> ref = v;
 						Ref<Resource> res = ref;
 						if (v.is_ref_counted() && ref.is_valid() && res.is_valid()) {
 							// Valid resource which would be duplicated if action is confirmed.
-							resource_propnames.append(E->get().name);
+							resource_propnames.append(property.name);
 						}
 					}
 				}
@@ -312,6 +318,7 @@ Ref<Resource> InspectorDock::_get_current_resource() const {
 
 void InspectorDock::_prepare_history() {
 	EditorSelectionHistory *editor_history = EditorNode::get_singleton()->get_editor_selection_history();
+	editor_history->cleanup_history();
 
 	int history_to = MAX(0, editor_history->get_history_len() - 25);
 
@@ -346,7 +353,7 @@ void InspectorDock::_prepare_history() {
 			}
 		} else if (Object::cast_to<Node>(obj)) {
 			text = Object::cast_to<Node>(obj)->get_name();
-		} else if (obj->is_class("EditorDebuggerRemoteObject")) {
+		} else if (obj->is_class("EditorDebuggerRemoteObjects")) {
 			text = obj->call("get_title");
 		} else {
 			text = obj->get_class();
@@ -367,6 +374,10 @@ void InspectorDock::_select_history(int p_idx) {
 		return;
 	}
 	EditorNode::get_singleton()->push_item(obj);
+
+	if (const EditorDebuggerRemoteObjects *robjs = Object::cast_to<EditorDebuggerRemoteObjects>(obj)) {
+		EditorDebuggerNode::get_singleton()->set_remote_selection(robjs->remote_object_ids.duplicate());
+	}
 }
 
 void InspectorDock::_resource_created() {
@@ -391,6 +402,10 @@ void InspectorDock::_resource_selected(const Ref<Resource> &p_res, const String 
 void InspectorDock::_edit_forward() {
 	if (EditorNode::get_singleton()->get_editor_selection_history()->next()) {
 		EditorNode::get_singleton()->edit_current();
+
+		if (const EditorDebuggerRemoteObjects *robjs = Object::cast_to<EditorDebuggerRemoteObjects>(current)) {
+			EditorDebuggerNode::get_singleton()->set_remote_selection(robjs->remote_object_ids.duplicate());
+		}
 	}
 }
 
@@ -398,6 +413,10 @@ void InspectorDock::_edit_back() {
 	EditorSelectionHistory *editor_history = EditorNode::get_singleton()->get_editor_selection_history();
 	if ((current && editor_history->previous()) || editor_history->get_path_size() == 1) {
 		EditorNode::get_singleton()->edit_current();
+
+		if (const EditorDebuggerRemoteObjects *robjs = Object::cast_to<EditorDebuggerRemoteObjects>(current)) {
+			EditorDebuggerNode::get_singleton()->set_remote_selection(robjs->remote_object_ids.duplicate());
+		}
 	}
 }
 
@@ -426,35 +445,36 @@ void InspectorDock::_notification(int p_what) {
 		case NOTIFICATION_THEME_CHANGED:
 		case NOTIFICATION_TRANSLATION_CHANGED:
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED: {
-			resource_new_button->set_icon(get_editor_theme_icon(SNAME("New")));
-			resource_load_button->set_icon(get_editor_theme_icon(SNAME("Load")));
-			resource_save_button->set_icon(get_editor_theme_icon(SNAME("Save")));
-			resource_extra_button->set_icon(get_editor_theme_icon(SNAME("GuiTabMenuHl")));
-			open_docs_button->set_icon(get_editor_theme_icon(SNAME("HelpSearch")));
+			resource_new_button->set_button_icon(get_editor_theme_icon(SNAME("New")));
+			resource_load_button->set_button_icon(get_editor_theme_icon(SNAME("Load")));
+			resource_save_button->set_button_icon(get_editor_theme_icon(SNAME("Save")));
+			resource_extra_button->set_button_icon(get_editor_theme_icon(SNAME("GuiTabMenuHl")));
+			open_docs_button->set_button_icon(get_editor_theme_icon(SNAME("HelpSearch")));
 
 			PopupMenu *resource_extra_popup = resource_extra_button->get_popup();
 			resource_extra_popup->set_item_icon(resource_extra_popup->get_item_index(RESOURCE_EDIT_CLIPBOARD), get_editor_theme_icon(SNAME("ActionPaste")));
 			resource_extra_popup->set_item_icon(resource_extra_popup->get_item_index(RESOURCE_COPY), get_editor_theme_icon(SNAME("ActionCopy")));
+			resource_extra_popup->set_item_icon(resource_extra_popup->get_item_index(RESOURCE_SHOW_IN_FILESYSTEM), get_editor_theme_icon(SNAME("ShowInFileSystem")));
 
 			if (is_layout_rtl()) {
-				backward_button->set_icon(get_editor_theme_icon(SNAME("Forward")));
-				forward_button->set_icon(get_editor_theme_icon(SNAME("Back")));
+				backward_button->set_button_icon(get_editor_theme_icon(SNAME("Forward")));
+				forward_button->set_button_icon(get_editor_theme_icon(SNAME("Back")));
 			} else {
-				backward_button->set_icon(get_editor_theme_icon(SNAME("Back")));
-				forward_button->set_icon(get_editor_theme_icon(SNAME("Forward")));
+				backward_button->set_button_icon(get_editor_theme_icon(SNAME("Back")));
+				forward_button->set_button_icon(get_editor_theme_icon(SNAME("Forward")));
 			}
 
 			const int icon_width = get_theme_constant(SNAME("class_icon_size"), EditorStringName(Editor));
 			history_menu->get_popup()->add_theme_constant_override("icon_max_width", icon_width);
 
-			history_menu->set_icon(get_editor_theme_icon(SNAME("History")));
-			object_menu->set_icon(get_editor_theme_icon(SNAME("Tools")));
+			history_menu->set_button_icon(get_editor_theme_icon(SNAME("History")));
+			object_menu->set_button_icon(get_editor_theme_icon(SNAME("Tools")));
 			search->set_right_icon(get_editor_theme_icon(SNAME("Search")));
 			if (info_is_warning) {
-				info->set_icon(get_editor_theme_icon(SNAME("NodeWarning")));
+				info->set_button_icon(get_editor_theme_icon(SNAME("NodeWarning")));
 				info->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
 			} else {
-				info->set_icon(get_editor_theme_icon(SNAME("NodeInfo")));
+				info->set_button_icon(get_editor_theme_icon(SNAME("NodeInfo")));
 				info->add_theme_color_override(SceneStringName(font_color), get_theme_color(SceneStringName(font_color), EditorStringName(Editor)));
 			}
 		} break;
@@ -481,10 +501,10 @@ void InspectorDock::set_info(const String &p_button_text, const String &p_messag
 	info_is_warning = p_is_warning;
 
 	if (info_is_warning) {
-		info->set_icon(get_editor_theme_icon(SNAME("NodeWarning")));
+		info->set_button_icon(get_editor_theme_icon(SNAME("NodeWarning")));
 		info->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
 	} else {
-		info->set_icon(get_editor_theme_icon(SNAME("NodeInfo")));
+		info->set_button_icon(get_editor_theme_icon(SNAME("NodeInfo")));
 		info->add_theme_color_override(SceneStringName(font_color), get_theme_color(SceneStringName(font_color), EditorStringName(Editor)));
 	}
 
@@ -500,6 +520,7 @@ void InspectorDock::clear() {
 
 void InspectorDock::update(Object *p_object) {
 	EditorSelectionHistory *editor_history = EditorNode::get_singleton()->get_editor_selection_history();
+
 	backward_button->set_disabled(editor_history->is_at_beginning());
 	forward_button->set_disabled(editor_history->is_at_end());
 
@@ -536,10 +557,10 @@ void InspectorDock::update(Object *p_object) {
 	PopupMenu *p = object_menu->get_popup();
 
 	p->clear();
-	p->add_icon_shortcut(get_editor_theme_icon(SNAME("GuiTreeArrowDown")), ED_SHORTCUT("property_editor/expand_all", TTR("Expand All")), EXPAND_ALL);
-	p->add_icon_shortcut(get_editor_theme_icon(SNAME("GuiTreeArrowRight")), ED_SHORTCUT("property_editor/collapse_all", TTR("Collapse All")), COLLAPSE_ALL);
+	p->add_icon_shortcut(get_editor_theme_icon(SNAME("GuiTreeArrowDown")), ED_SHORTCUT("property_editor/expand_all", TTRC("Expand All")), EXPAND_ALL);
+	p->add_icon_shortcut(get_editor_theme_icon(SNAME("GuiTreeArrowRight")), ED_SHORTCUT("property_editor/collapse_all", TTRC("Collapse All")), COLLAPSE_ALL);
 	// Calling it 'revertable' internally, because that's what the implementation is based on, but labeling it as 'non-default' because that's more user friendly, even if not 100% accurate.
-	p->add_shortcut(ED_SHORTCUT("property_editor/expand_revertable", TTR("Expand Non-Default")), EXPAND_REVERTABLE);
+	p->add_shortcut(ED_SHORTCUT("property_editor/expand_revertable", TTRC("Expand Non-Default")), EXPAND_REVERTABLE);
 
 	p->add_separator(TTR("Property Name Style"));
 	p->add_radio_check_item(vformat(TTR("Raw (e.g. \"%s\")"), "z_index"), PROPERTY_NAME_STYLE_RAW);
@@ -554,12 +575,12 @@ void InspectorDock::update(Object *p_object) {
 	}
 
 	p->add_separator();
-	p->add_shortcut(ED_SHORTCUT("property_editor/copy_params", TTR("Copy Properties")), OBJECT_COPY_PARAMS);
-	p->add_shortcut(ED_SHORTCUT("property_editor/paste_params", TTR("Paste Properties")), OBJECT_PASTE_PARAMS);
+	p->add_shortcut(ED_SHORTCUT("property_editor/copy_params", TTRC("Copy Properties")), OBJECT_COPY_PARAMS);
+	p->add_shortcut(ED_SHORTCUT("property_editor/paste_params", TTRC("Paste Properties")), OBJECT_PASTE_PARAMS);
 
 	if (is_resource || is_node) {
 		p->add_separator();
-		p->add_shortcut(ED_SHORTCUT("property_editor/make_subresources_unique", TTR("Make Sub-Resources Unique")), OBJECT_UNIQUE_RESOURCES);
+		p->add_shortcut(ED_SHORTCUT("property_editor/make_subresources_unique", TTRC("Make Sub-Resources Unique")), OBJECT_UNIQUE_RESOURCES);
 	}
 
 	List<MethodInfo> methods;
@@ -678,12 +699,12 @@ InspectorDock::InspectorDock(EditorData &p_editor_data) {
 	resource_extra_button->set_tooltip_text(TTR("Extra resource options."));
 	general_options_hb->add_child(resource_extra_button);
 	resource_extra_button->connect("about_to_popup", callable_mp(this, &InspectorDock::_prepare_resource_extra_popup));
-	resource_extra_button->get_popup()->add_shortcut(ED_SHORTCUT("property_editor/paste_resource", TTR("Edit Resource from Clipboard")), RESOURCE_EDIT_CLIPBOARD);
-	resource_extra_button->get_popup()->add_shortcut(ED_SHORTCUT("property_editor/copy_resource", TTR("Copy Resource")), RESOURCE_COPY);
+	resource_extra_button->get_popup()->add_shortcut(ED_SHORTCUT("property_editor/paste_resource", TTRC("Edit Resource from Clipboard")), RESOURCE_EDIT_CLIPBOARD);
+	resource_extra_button->get_popup()->add_shortcut(ED_SHORTCUT("property_editor/copy_resource", TTRC("Copy Resource")), RESOURCE_COPY);
 	resource_extra_button->get_popup()->set_item_disabled(1, true);
 	resource_extra_button->get_popup()->add_separator();
-	resource_extra_button->get_popup()->add_shortcut(ED_SHORTCUT("property_editor/show_in_filesystem", TTR("Show in FileSystem")), RESOURCE_SHOW_IN_FILESYSTEM);
-	resource_extra_button->get_popup()->add_shortcut(ED_SHORTCUT("property_editor/unref_resource", TTR("Make Resource Built-In")), RESOURCE_MAKE_BUILT_IN);
+	resource_extra_button->get_popup()->add_shortcut(ED_SHORTCUT("property_editor/show_in_filesystem", TTRC("Show in FileSystem")), RESOURCE_SHOW_IN_FILESYSTEM);
+	resource_extra_button->get_popup()->add_shortcut(ED_SHORTCUT("property_editor/unref_resource", TTRC("Make Resource Built-In")), RESOURCE_MAKE_BUILT_IN);
 	resource_extra_button->get_popup()->set_item_disabled(3, true);
 	resource_extra_button->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &InspectorDock::_menu_option));
 
@@ -721,8 +742,8 @@ InspectorDock::InspectorDock(EditorData &p_editor_data) {
 	open_docs_button = memnew(Button);
 	open_docs_button->set_theme_type_variation("FlatMenuButton");
 	open_docs_button->set_disabled(true);
-	open_docs_button->set_tooltip_text(TTR("Open documentation for this object."));
-	open_docs_button->set_shortcut(ED_SHORTCUT("property_editor/open_help", TTR("Open Documentation")));
+	open_docs_button->set_tooltip_text(TTRC("Open documentation for this object."));
+	open_docs_button->set_shortcut(ED_SHORTCUT("property_editor/open_help", TTRC("Open Documentation")));
 	subresource_hb->add_child(open_docs_button);
 	open_docs_button->connect(SceneStringName(pressed), callable_mp(this, &InspectorDock::_menu_option).bind(OBJECT_REQUEST_HELP));
 
@@ -743,7 +764,6 @@ InspectorDock::InspectorDock(EditorData &p_editor_data) {
 	object_menu = memnew(MenuButton);
 	object_menu->set_flat(false);
 	object_menu->set_theme_type_variation("FlatMenuButton");
-	object_menu->set_shortcut_context(this);
 	property_tools_hb->add_child(object_menu);
 	object_menu->set_tooltip_text(TTR("Manage object properties."));
 	object_menu->get_popup()->connect("about_to_popup", callable_mp(this, &InspectorDock::_prepare_menu));
@@ -799,7 +819,7 @@ InspectorDock::InspectorDock(EditorData &p_editor_data) {
 	inspector->set_use_folding(!bool(EDITOR_GET("interface/inspector/disable_folding")));
 	inspector->register_text_enter(search);
 
-	inspector->set_use_filter(true); // TODO: check me
+	inspector->set_use_filter(true);
 
 	inspector->connect("resource_selected", callable_mp(this, &InspectorDock::_resource_selected));
 

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef RESOURCE_IMPORTER_DYNAMIC_FONT_H
-#define RESOURCE_IMPORTER_DYNAMIC_FONT_H
+#pragma once
 
 #include "core/io/resource_importer.h"
 
@@ -58,9 +57,7 @@ public:
 	bool has_advanced_options() const override;
 	void show_advanced_options(const String &p_path) override;
 
-	virtual Error import(const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files = nullptr, Variant *r_metadata = nullptr) override;
+	virtual Error import(ResourceUID::ID p_source_id, const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files = nullptr, Variant *r_metadata = nullptr) override;
 
-	ResourceImporterDynamicFont();
+	virtual bool can_import_threaded() const override { return true; }
 };
-
-#endif // RESOURCE_IMPORTER_DYNAMIC_FONT_H

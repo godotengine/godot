@@ -28,10 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "godot_content_view.h"
+#import "godot_content_view.h"
 
-#include "display_server_macos.h"
-#include "key_mapping_macos.h"
+#import "display_server_macos.h"
+#import "key_mapping_macos.h"
 
 #include "main/main.h"
 
@@ -394,6 +394,11 @@
 }
 
 - (void)mouseDown:(NSEvent *)event {
+	DisplayServerMacOS *ds = (DisplayServerMacOS *)DisplayServer::get_singleton();
+	if (ds && ds->has_window(window_id)) {
+		DisplayServerMacOS::WindowData &wd = ds->get_window(window_id);
+		wd.edge = DisplayServer::WINDOW_EDGE_MAX;
+	}
 	if (([event modifierFlags] & NSEventModifierFlagControl)) {
 		mouse_down_control = true;
 		[self processMouseEvent:event index:MouseButton::RIGHT pressed:true outofstream:false];
@@ -404,10 +409,65 @@
 }
 
 - (void)mouseDragged:(NSEvent *)event {
+	DisplayServerMacOS *ds = (DisplayServerMacOS *)DisplayServer::get_singleton();
+	if (ds && ds->has_window(window_id)) {
+		DisplayServerMacOS::WindowData &wd = ds->get_window(window_id);
+		if (wd.edge != DisplayServer::WINDOW_EDGE_MAX) {
+			Size2i max_size = wd.max_size / ds->screen_get_max_scale();
+			Size2i min_size = wd.min_size / ds->screen_get_max_scale();
+			NSRect frame = [wd.window_object frame];
+			switch (wd.edge) {
+				case DisplayServer::WINDOW_EDGE_TOP_LEFT: {
+					int clamped_dx = CLAMP(frame.size.width - event.deltaX, min_size.x, max_size.x) - frame.size.width;
+					int clamped_dy = CLAMP(frame.size.height - event.deltaY, min_size.y, max_size.y) - frame.size.height;
+					[wd.window_object setFrame:NSMakeRect(frame.origin.x - clamped_dx, frame.origin.y, frame.size.width + clamped_dx, frame.size.height + clamped_dy) display:YES];
+				} break;
+				case DisplayServer::WINDOW_EDGE_TOP: {
+					int clamped_dy = CLAMP(frame.size.height - event.deltaY, min_size.y, max_size.y) - frame.size.height;
+					[wd.window_object setFrame:NSMakeRect(frame.origin.x, frame.origin.y, frame.size.width, frame.size.height + clamped_dy) display:YES];
+				} break;
+				case DisplayServer::WINDOW_EDGE_TOP_RIGHT: {
+					int clamped_dx = CLAMP(frame.size.width + event.deltaX, min_size.x, max_size.x) - frame.size.width;
+					int clamped_dy = CLAMP(frame.size.height - event.deltaY, min_size.y, max_size.y) - frame.size.height;
+					[wd.window_object setFrame:NSMakeRect(frame.origin.x, frame.origin.y, frame.size.width + clamped_dx, frame.size.height + clamped_dy) display:YES];
+				} break;
+				case DisplayServer::WINDOW_EDGE_LEFT: {
+					int clamped_dx = CLAMP(frame.size.width - event.deltaX, min_size.x, max_size.x) - frame.size.width;
+					[wd.window_object setFrame:NSMakeRect(frame.origin.x - clamped_dx, frame.origin.y, frame.size.width + clamped_dx, frame.size.height) display:YES];
+				} break;
+				case DisplayServer::WINDOW_EDGE_RIGHT: {
+					int clamped_dx = CLAMP(frame.size.width + event.deltaX, min_size.x, max_size.x) - frame.size.width;
+					[wd.window_object setFrame:NSMakeRect(frame.origin.x, frame.origin.y, frame.size.width + clamped_dx, frame.size.height) display:YES];
+				} break;
+				case DisplayServer::WINDOW_EDGE_BOTTOM_LEFT: {
+					int clamped_dx = CLAMP(frame.size.width - event.deltaX, min_size.x, max_size.x) - frame.size.width;
+					int clamped_dy = CLAMP(frame.size.height + event.deltaY, min_size.y, max_size.y) - frame.size.height;
+					[wd.window_object setFrame:NSMakeRect(frame.origin.x - clamped_dx, frame.origin.y - clamped_dy, frame.size.width + clamped_dx, frame.size.height + clamped_dy) display:YES];
+				} break;
+				case DisplayServer::WINDOW_EDGE_BOTTOM: {
+					int clamped_dy = CLAMP(frame.size.height + event.deltaY, min_size.y, max_size.y) - frame.size.height;
+					[wd.window_object setFrame:NSMakeRect(frame.origin.x, frame.origin.y - clamped_dy, frame.size.width, frame.size.height + clamped_dy) display:YES];
+				} break;
+				case DisplayServer::WINDOW_EDGE_BOTTOM_RIGHT: {
+					int clamped_dx = CLAMP(frame.size.width + event.deltaX, min_size.x, max_size.x) - frame.size.width;
+					int clamped_dy = CLAMP(frame.size.height + event.deltaY, min_size.y, max_size.y) - frame.size.height;
+					[wd.window_object setFrame:NSMakeRect(frame.origin.x, frame.origin.y - clamped_dy, frame.size.width + clamped_dx, frame.size.height + clamped_dy) display:YES];
+				} break;
+				default:
+					break;
+			}
+			return;
+		}
+	}
 	[self mouseMoved:event];
 }
 
 - (void)mouseUp:(NSEvent *)event {
+	DisplayServerMacOS *ds = (DisplayServerMacOS *)DisplayServer::get_singleton();
+	if (ds && ds->has_window(window_id)) {
+		DisplayServerMacOS::WindowData &wd = ds->get_window(window_id);
+		wd.edge = DisplayServer::WINDOW_EDGE_MAX;
+	}
 	if (mouse_down_control) {
 		[self processMouseEvent:event index:MouseButton::RIGHT pressed:false outofstream:false];
 	} else {
@@ -562,7 +622,7 @@
 		[self removeTrackingArea:tracking_area];
 	}
 
-	NSTrackingAreaOptions options = NSTrackingMouseEnteredAndExited | NSTrackingActiveInKeyWindow | NSTrackingCursorUpdate | NSTrackingInVisibleRect;
+	NSTrackingAreaOptions options = NSTrackingMouseEnteredAndExited | NSTrackingActiveWhenFirstResponder | NSTrackingCursorUpdate | NSTrackingInVisibleRect;
 	tracking_area = [[NSTrackingArea alloc] initWithRect:[self bounds] options:options owner:self userInfo:nil];
 
 	[self addTrackingArea:tracking_area];

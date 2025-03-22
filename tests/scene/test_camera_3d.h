@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TEST_CAMERA_3D_H
-#define TEST_CAMERA_3D_H
+#pragma once
 
 #include "scene/3d/camera_3d.h"
 #include "scene/main/viewport.h"
@@ -231,10 +230,13 @@ TEST_CASE("[SceneTree][Camera3D] Project/Unproject position") {
 			test_camera->set_orthogonal(5.0f, 0.5f, 1000.0f);
 			// Center.
 			CHECK(test_camera->project_position(Vector2(200, 100), 0.5f).is_equal_approx(Vector3(0, 0, -0.5f)));
+			CHECK(test_camera->project_position(Vector2(200, 100), test_camera->get_far()).is_equal_approx(Vector3(0, 0, -test_camera->get_far())));
 			// Top left.
 			CHECK(test_camera->project_position(Vector2(0, 0), 1.5f).is_equal_approx(Vector3(-5.0f, 2.5f, -1.5f)));
+			CHECK(test_camera->project_position(Vector2(0, 0), test_camera->get_near()).is_equal_approx(Vector3(-5.0f, 2.5f, -test_camera->get_near())));
 			// Bottom right.
 			CHECK(test_camera->project_position(Vector2(400, 200), 5.0f).is_equal_approx(Vector3(5.0f, -2.5f, -5.0f)));
+			CHECK(test_camera->project_position(Vector2(400, 200), test_camera->get_far()).is_equal_approx(Vector3(5.0f, -2.5f, -test_camera->get_far())));
 		}
 
 		SUBCASE("Perspective projection") {
@@ -242,12 +244,15 @@ TEST_CASE("[SceneTree][Camera3D] Project/Unproject position") {
 			// Center.
 			CHECK(test_camera->project_position(Vector2(200, 100), 0.5f).is_equal_approx(Vector3(0, 0, -0.5f)));
 			CHECK(test_camera->project_position(Vector2(200, 100), 100.0f).is_equal_approx(Vector3(0, 0, -100.0f)));
+			CHECK(test_camera->project_position(Vector2(200, 100), test_camera->get_far()).is_equal_approx(Vector3(0, 0, -1.0f) * test_camera->get_far()));
 			// 3/4th way to Top left.
 			CHECK(test_camera->project_position(Vector2(100, 50), 0.5f).is_equal_approx(Vector3(-SQRT3 * 0.5f, SQRT3 * 0.25f, -0.5f)));
 			CHECK(test_camera->project_position(Vector2(100, 50), 1.0f).is_equal_approx(Vector3(-SQRT3, SQRT3 * 0.5f, -1.0f)));
+			CHECK(test_camera->project_position(Vector2(100, 50), test_camera->get_near()).is_equal_approx(Vector3(-SQRT3, SQRT3 * 0.5f, -1.0f) * test_camera->get_near()));
 			// 3/4th way to Bottom right.
 			CHECK(test_camera->project_position(Vector2(300, 150), 0.5f).is_equal_approx(Vector3(SQRT3 * 0.5f, -SQRT3 * 0.25f, -0.5f)));
 			CHECK(test_camera->project_position(Vector2(300, 150), 1.0f).is_equal_approx(Vector3(SQRT3, -SQRT3 * 0.5f, -1.0f)));
+			CHECK(test_camera->project_position(Vector2(300, 150), test_camera->get_far()).is_equal_approx(Vector3(SQRT3, -SQRT3 * 0.5f, -1.0f) * test_camera->get_far()));
 		}
 	}
 
@@ -366,5 +371,3 @@ TEST_CASE("[SceneTree][Camera3D] Project ray") {
 }
 
 #undef SQRT3
-
-#endif // TEST_CAMERA_3D_H

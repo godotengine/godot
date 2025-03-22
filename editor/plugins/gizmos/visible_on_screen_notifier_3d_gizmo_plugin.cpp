@@ -36,7 +36,7 @@
 #include "scene/3d/visible_on_screen_notifier_3d.h"
 
 VisibleOnScreenNotifier3DGizmoPlugin::VisibleOnScreenNotifier3DGizmoPlugin() {
-	Color gizmo_color = EDITOR_DEF_RST("editors/3d_gizmos/gizmo_colors/visibility_notifier", Color(0.8, 0.5, 0.7));
+	Color gizmo_color = EDITOR_GET("editors/3d_gizmos/gizmo_colors/visibility_notifier");
 	create_material("visibility_notifier_material", gizmo_color);
 	gizmo_color.a = 0.1;
 	create_material("visibility_notifier_solid_material", gizmo_color);

@@ -234,7 +234,7 @@
 			<return type="Texture2D" />
 			<description>
 				Override this method in your plugin to return a [Texture2D] in order to give it an icon.
-				For main screen plugins, this appears at the top of the screen, to the right of the "2D", "3D", "Script", and "AssetLib" buttons.
+				For main screen plugins, this appears at the top of the screen, to the right of the "2D", "3D", "Script", "Game", and "AssetLib" buttons.
 				Ideally, the plugin icon should be white with a transparent background and 16×16 pixels in size.
 				[codeblocks]
 				[gdscript]
@@ -260,7 +260,7 @@
 			<return type="String" />
 			<description>
 				Override this method in your plugin to provide the name of the plugin when displayed in the Godot editor.
-				For main screen plugins, this appears at the top of the screen, to the right of the "2D", "3D", "Script", and "AssetLib" buttons.
+				For main screen plugins, this appears at the top of the screen, to the right of the "2D", "3D", "Script", "Game", and "AssetLib" buttons.
 			</description>
 		</method>
 		<method name="_get_state" qualifiers="virtual const">
@@ -329,7 +329,7 @@
 		<method name="_has_main_screen" qualifiers="virtual const">
 			<return type="bool" />
 			<description>
-				Returns [code]true[/code] if this is a main screen editor plugin (it goes in the workspace selector together with [b]2D[/b], [b]3D[/b], [b]Script[/b] and [b]AssetLib[/b]).
+				Returns [code]true[/code] if this is a main screen editor plugin (it goes in the workspace selector together with [b]2D[/b], [b]3D[/b], [b]Script[/b], [b]Game[/b], and [b]AssetLib[/b]).
 				When the plugin's workspace is selected, other main screen plugins will be hidden, but your plugin will not appear automatically. It needs to be added as a child of [method EditorInterface.get_editor_main_screen] and made visible inside [method _make_visible].
 				Use [method _get_plugin_name] and [method _get_plugin_icon] to customize the plugin button's appearance.
 				[codeblock]
@@ -403,11 +403,11 @@
 		</method>
 		<method name="add_context_menu_plugin">
 			<return type="void" />
-			<param index="0" name="slot" type="int" enum="EditorPlugin.ContextMenuSlot" />
+			<param index="0" name="slot" type="int" enum="EditorContextMenuPlugin.ContextMenuSlot" />
 			<param index="1" name="plugin" type="EditorContextMenuPlugin" />
 			<description>
-				Adds a plugin to the context menu. [param slot] is the position in the context menu where the plugin will be added.
-				Context menus are supported for three commonly used areas: the file system, scene tree, and editor script list panel.
+				Adds a plugin to the context menu. [param slot] is the context menu where the plugin will be added.
+				See [enum EditorContextMenuPlugin.ContextMenuSlot] for available context menus. A plugin instance can belong only to a single context menu slot.
 			</description>
 		</method>
 		<method name="add_control_to_bottom_panel">
@@ -416,7 +416,7 @@
 			<param index="1" name="title" type="String" />
 			<param index="2" name="shortcut" type="Shortcut" default="null" />
 			<description>
-				Adds a control to the bottom panel (together with Output, Debug, Animation, etc). Returns a reference to the button added. It's up to you to hide/show the button when needed. When your plugin is deactivated, make sure to remove your custom control with [method remove_control_from_bottom_panel] and free it with [method Node.queue_free].
+				Adds a control to the bottom panel (together with Output, Debug, Animation, etc.). Returns a reference to the button added. It's up to you to hide/show the button when needed. When your plugin is deactivated, make sure to remove your custom control with [method remove_control_from_bottom_panel] and free it with [method Node.queue_free].
 				Optionally, you can specify a shortcut parameter. When pressed, this shortcut will toggle the bottom panel's visibility. See the default editor bottom panel shortcuts in the Editor Settings for inspiration. Per convention, they all use [kbd]Alt[/kbd] modifier.
 			</description>
 		</method>
@@ -439,7 +439,7 @@
 				Adds the control to a specific dock slot (see [enum DockSlot] for options).
 				If the dock is repositioned and as long as the plugin is active, the editor will save the dock position on further sessions.
 				When your plugin is deactivated, make sure to remove your custom control with [method remove_control_from_docks] and free it with [method Node.queue_free].
-				Optionally, you can specify a shortcut parameter. When pressed, this shortcut will toggle the dock's visibility once it's moved to the bottom panel (this shortcut does not affect the dock otherwise). See the default editor bottom panel shortcuts in the Editor Settings for inspiration. Per convention, they all use [kbd]Alt[/kbd] modifier.
+				Optionally, you can specify a shortcut parameter. When pressed, this shortcut will open and focus the dock.
 			</description>
 		</method>
 		<method name="add_custom_type">
@@ -635,10 +635,9 @@
 		</method>
 		<method name="remove_context_menu_plugin">
 			<return type="void" />
-			<param index="0" name="slot" type="int" enum="EditorPlugin.ContextMenuSlot" />
-			<param index="1" name="plugin" type="EditorContextMenuPlugin" />
+			<param index="0" name="plugin" type="EditorContextMenuPlugin" />
 			<description>
-				Removes a context menu plugin from the specified slot.
+				Removes the specified context menu plugin.
 			</description>
 		</method>
 		<method name="remove_control_from_bottom_panel">
@@ -702,7 +701,7 @@
 			<return type="void" />
 			<param index="0" name="plugin" type="EditorInspectorPlugin" />
 			<description>
-				Removes an inspector plugin registered by [method add_import_plugin]
+				Removes an inspector plugin registered by [method add_inspector_plugin].
 			</description>
 		</method>
 		<method name="remove_node_3d_gizmo_plugin">
@@ -785,7 +784,7 @@
 		<signal name="main_screen_changed">
 			<param index="0" name="screen_name" type="String" />
 			<description>
-				Emitted when user changes the workspace ([b]2D[/b], [b]3D[/b], [b]Script[/b], [b]AssetLib[/b]). Also works with custom screens defined by plugins.
+				Emitted when user changes the workspace ([b]2D[/b], [b]3D[/b], [b]Script[/b], [b]Game[/b], [b]AssetLib[/b]). Also works with custom screens defined by plugins.
 			</description>
 		</signal>
 		<signal name="project_settings_changed" deprecated="Use [signal ProjectSettings.settings_changed] instead.">
@@ -890,18 +889,6 @@
 		</constant>
 		<constant name="AFTER_GUI_INPUT_CUSTOM" value="2" enum="AfterGUIInput">
 			Pass the [InputEvent] to other editor plugins except the main [Node3D] one. This can be used to prevent node selection changes and work with sub-gizmos instead.
-		</constant>
-		<constant name="CONTEXT_SLOT_SCENE_TREE" value="0" enum="ContextMenuSlot">
-			Context menu slot for the SceneTree.
-		</constant>
-		<constant name="CONTEXT_SLOT_FILESYSTEM" value="1" enum="ContextMenuSlot">
-			Context menu slot for the FileSystem.
-		</constant>
-		<constant name="CONTEXT_SLOT_SCRIPT_EDITOR" value="2" enum="ContextMenuSlot">
-			Context menu slot for the ScriptEditor file list.
-		</constant>
-		<constant name="CONTEXT_SUBMENU_SLOT_FILESYSTEM_CREATE" value="3" enum="ContextMenuSlot">
-			Context menu slot for the FileSystem create submenu.
 		</constant>
 	</constants>
 </class>

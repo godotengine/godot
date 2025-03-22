@@ -28,14 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef FOG_GLES3_H
-#define FOG_GLES3_H
+#pragma once
 
 #ifdef GLES3_ENABLED
 
-#include "core/templates/local_vector.h"
-#include "core/templates/rid_owner.h"
-#include "core/templates/self_list.h"
 #include "servers/rendering/environment/renderer_fog.h"
 
 namespace GLES3 {
@@ -58,5 +54,3 @@ public:
 } // namespace GLES3
 
 #endif // GLES3_ENABLED
-
-#endif // FOG_GLES3_H

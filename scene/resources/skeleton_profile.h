@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef SKELETON_PROFILE_H
-#define SKELETON_PROFILE_H
+#pragma once
 
 #include "texture.h"
 
@@ -97,6 +96,7 @@ public:
 
 	int find_bone(const StringName &p_bone_name) const;
 
+	PackedStringArray get_bone_names();
 	StringName get_bone_name(int p_bone_idx) const;
 	void set_bone_name(int p_bone_idx, const StringName &p_bone_name);
 
@@ -136,5 +136,3 @@ public:
 };
 
 VARIANT_ENUM_CAST(SkeletonProfile::TailDirection);
-
-#endif // SKELETON_PROFILE_H

@@ -88,22 +88,23 @@ hb_aat_map_builder_t::compile (hb_aat_map_t  &m)
 
   /* Sort features by start/end events. */
   hb_vector_t<feature_event_t> feature_events;
+  feature_events.alloc_exact (features.length * 2 + 1);
   for (unsigned int i = 0; i < features.length; i++)
   {
-    auto &feature = features[i];
+    auto &feature = features.arrayZ[i];
 
-    if (features[i].start == features[i].end)
+    if (feature.start == feature.end)
       continue;
 
     feature_event_t *event;
 
     event = feature_events.push ();
-    event->index = features[i].start;
+    event->index = feature.start;
     event->start = true;
     event->feature = feature.info;
 
     event = feature_events.push ();
-    event->index = features[i].end;
+    event->index = feature.end;
     event->start = false;
     event->feature = feature.info;
   }
@@ -139,12 +140,12 @@ hb_aat_map_builder_t::compile (hb_aat_map_t  &m)
 	current_features.qsort ();
 	unsigned int j = 0;
 	for (unsigned int i = 1; i < current_features.length; i++)
-	  if (current_features[i].type != current_features[j].type ||
+	  if (current_features.arrayZ[i].type != current_features.arrayZ[j].type ||
 	      /* Nonexclusive feature selectors come in even/odd pairs to turn a setting on/off
 	       * respectively, so we mask out the low-order bit when checking for "duplicates"
 	       * (selectors referring to the same feature setting) here. */
-	      (!current_features[i].is_exclusive && ((current_features[i].setting & ~1) != (current_features[j].setting & ~1))))
-	    current_features[++j] = current_features[i];
+	      (!current_features.arrayZ[i].is_exclusive && ((current_features.arrayZ[i].setting & ~1) != (current_features.arrayZ[j].setting & ~1))))
+	    current_features.arrayZ[++j] = current_features.arrayZ[i];
 	current_features.shrink (j + 1);
       }
 

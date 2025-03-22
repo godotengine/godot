@@ -28,10 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef PHYSICS_BODY_3D_H
-#define PHYSICS_BODY_3D_H
+#pragma once
 
-#include "core/templates/vset.h"
 #include "scene/3d/physics/collision_object_3d.h"
 #include "scene/3d/physics/kinematic_collision_3d.h"
 #include "scene/resources/physics_material.h"
@@ -66,5 +64,3 @@ public:
 	void add_collision_exception_with(Node *p_node); //must be physicsbody
 	void remove_collision_exception_with(Node *p_node);
 };
-
-#endif // PHYSICS_BODY_3D_H

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef RANGE_H
-#define RANGE_H
+#pragma once
 
 #include "scene/gui/control.h"
 
@@ -64,7 +63,7 @@ class Range : public Control {
 
 protected:
 	virtual void _value_changed(double p_value);
-	void _notify_shared_value_changed() { shared->emit_value_changed(); };
+	void _notify_shared_value_changed() { shared->emit_value_changed(); }
 
 	static void _bind_methods();
 
@@ -108,5 +107,3 @@ public:
 	Range();
 	~Range();
 };
-
-#endif // RANGE_H

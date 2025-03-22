@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef INSPECTOR_DOCK_H
-#define INSPECTOR_DOCK_H
+#pragma once
 
 #include "editor/create_dialog.h"
 #include "editor/editor_data.h"
@@ -113,7 +112,7 @@ class InspectorDock : public VBoxContainer {
 
 	void _new_resource();
 	void _load_resource(const String &p_type = "");
-	void _open_resource_selector() { _load_resource(); }; // just used to call from arg-less signal
+	void _open_resource_selector() { _load_resource(); } // just used to call from arg-less signal
 	void _resource_file_selected(const String &p_file);
 	void _save_resource(bool save_as);
 	void _unref_resource();
@@ -164,5 +163,3 @@ public:
 	InspectorDock(EditorData &p_editor_data);
 	~InspectorDock();
 };
-
-#endif // INSPECTOR_DOCK_H

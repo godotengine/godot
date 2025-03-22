@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef CONDITION_VARIABLE_H
-#define CONDITION_VARIABLE_H
+#pragma once
 
 #include "core/os/mutex.h"
 #include "core/os/safe_binary_mutex.h"
@@ -57,12 +56,12 @@ class ConditionVariable {
 public:
 	template <typename BinaryMutexT>
 	_ALWAYS_INLINE_ void wait(const MutexLock<BinaryMutexT> &p_lock) const {
-		condition.wait(const_cast<THREADING_NAMESPACE::unique_lock<THREADING_NAMESPACE::mutex> &>(p_lock._get_lock()));
+		condition.wait(p_lock._get_lock());
 	}
 
 	template <int Tag>
 	_ALWAYS_INLINE_ void wait(const MutexLock<SafeBinaryMutex<Tag>> &p_lock) const {
-		condition.wait(const_cast<THREADING_NAMESPACE::unique_lock<THREADING_NAMESPACE::mutex> &>(p_lock.mutex._get_lock()));
+		condition.wait(p_lock.mutex._get_lock());
 	}
 
 	_ALWAYS_INLINE_ void notify_one() const {
@@ -85,5 +84,3 @@ public:
 };
 
 #endif // THREADS_ENABLED
-
-#endif // CONDITION_VARIABLE_H

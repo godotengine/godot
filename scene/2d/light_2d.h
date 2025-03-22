@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef LIGHT_2D_H
-#define LIGHT_2D_H
+#pragma once
 
 #include "scene/2d/node_2d.h"
 
@@ -160,9 +159,12 @@ public:
 	virtual void _edit_set_pivot(const Point2 &p_pivot) override;
 	virtual Point2 _edit_get_pivot() const override;
 	virtual bool _edit_use_pivot() const override;
+#endif // TOOLS_ENABLED
+
+#ifdef DEBUG_ENABLED
 	virtual Rect2 _edit_get_rect() const override;
 	virtual bool _edit_use_rect() const override;
-#endif
+#endif // DEBUG_ENABLED
 
 	virtual Rect2 get_anchorable_rect() const override;
 
@@ -194,5 +196,3 @@ public:
 
 	DirectionalLight2D();
 };
-
-#endif // LIGHT_2D_H

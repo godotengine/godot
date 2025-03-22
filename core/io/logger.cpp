@@ -30,14 +30,17 @@
 
 #include "logger.h"
 
-#include "core/config/project_settings.h"
 #include "core/core_globals.h"
 #include "core/io/dir_access.h"
-#include "core/os/os.h"
 #include "core/os/time.h"
-#include "core/string/print_string.h"
+#include "core/templates/rb_set.h"
 
 #include "modules/modules_enabled.gen.h" // For regex.
+#ifdef MODULE_REGEX_ENABLED
+#include "modules/regex/regex.h"
+#else
+class RegEx : public RefCounted {};
+#endif // MODULE_REGEX_ENABLED
 
 #if defined(MINGW_ENABLED) || defined(_MSC_VER)
 #define sprintf sprintf_s
@@ -127,7 +130,9 @@ void RotatedFileLogger::clear_old_backups() {
 
 	da->list_dir_begin();
 	String f = da->get_next();
-	HashSet<String> backups;
+	// backups is a RBSet because it guarantees that iterating on it is done in sorted order.
+	// RotatedFileLogger depends on this behavior to delete the oldest log file first.
+	RBSet<String> backups;
 	while (!f.is_empty()) {
 		if (!da->current_is_dir() && f.begins_with(basename) && f.get_extension() == extension && f != base_path.get_file()) {
 			backups.insert(f);
@@ -136,12 +141,12 @@ void RotatedFileLogger::clear_old_backups() {
 	}
 	da->list_dir_end();
 
-	if (backups.size() > (uint32_t)max_backups) {
+	if (backups.size() > max_backups) {
 		// since backups are appended with timestamp and Set iterates them in sorted order,
 		// first backups are the oldest
 		int to_delete = backups.size() - max_backups;
-		for (HashSet<String>::Iterator E = backups.begin(); E && to_delete > 0; ++E, --to_delete) {
-			da->remove(*E);
+		for (RBSet<String>::Element *E = backups.front(); E && to_delete > 0; E = E->next(), --to_delete) {
+			da->remove(E->get());
 		}
 	}
 }

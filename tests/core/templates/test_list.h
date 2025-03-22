@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TEST_LIST_H
-#define TEST_LIST_H
+#pragma once
 
 #include "core/templates/list.h"
 
@@ -43,6 +42,17 @@ static void populate_integers(List<int> &p_list, List<int>::Element *r_elements[
 		List<int>::Element *n = p_list.push_back(i);
 		r_elements[i] = n;
 	}
+}
+
+TEST_CASE("[List] List initialization") {
+	List<int> list{ 0, 1, 2, 3, 4 };
+
+	CHECK(list.size() == 5);
+	CHECK(list.get(0) == 0);
+	CHECK(list.get(1) == 1);
+	CHECK(list.get(2) == 2);
+	CHECK(list.get(3) == 3);
+	CHECK(list.get(4) == 4);
 }
 
 TEST_CASE("[List] Push/pop back") {
@@ -544,5 +554,3 @@ TEST_CASE("[Stress][List] Swap random 10 elements, 1000 iterations.") {
 	swap_random(list, n, 10, 1000);
 }
 } // namespace TestList
-
-#endif // TEST_LIST_H

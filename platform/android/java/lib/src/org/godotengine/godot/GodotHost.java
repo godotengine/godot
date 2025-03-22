@@ -92,7 +92,7 @@ public interface GodotHost {
 	 * @return the id of the new instance. See {@code onGodotForceQuit}
 	 */
 	default int onNewGodotInstanceRequested(String[] args) {
-		return 0;
+		return -1;
 	}
 
 	/**
@@ -136,4 +136,18 @@ public interface GodotHost {
 	default Error verifyApk(@NonNull String apkPath) {
 		return Error.ERR_UNAVAILABLE;
 	}
+
+	/**
+	 * Returns whether the given feature tag is supported.
+	 *
+	 * @see <a href="https://docs.godotengine.org/en/stable/tutorials/export/feature_tags.html">Feature tags</a>
+	 */
+	default boolean supportsFeature(String featureTag) {
+		return false;
+	}
+
+	/**
+	 * Invoked on the render thread when an editor workspace has been selected.
+	 */
+	default void onEditorWorkspaceSelected(String workspace) {}
 }

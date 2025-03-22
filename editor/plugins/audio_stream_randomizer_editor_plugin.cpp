@@ -32,6 +32,7 @@
 
 #include "editor/editor_node.h"
 #include "editor/editor_undo_redo_manager.h"
+#include "servers/audio/audio_stream.h"
 
 void AudioStreamRandomizerEditorPlugin::edit(Object *p_object) {
 }
@@ -118,5 +119,3 @@ void AudioStreamRandomizerEditorPlugin::_move_stream_array_element(Object *p_und
 AudioStreamRandomizerEditorPlugin::AudioStreamRandomizerEditorPlugin() {
 	EditorNode::get_editor_data().add_move_array_element_function(SNAME("AudioStreamRandomizer"), callable_mp(this, &AudioStreamRandomizerEditorPlugin::_move_stream_array_element));
 }
-
-AudioStreamRandomizerEditorPlugin::~AudioStreamRandomizerEditorPlugin() {}

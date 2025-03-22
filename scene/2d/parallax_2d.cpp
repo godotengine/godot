@@ -30,7 +30,6 @@
 
 #include "parallax_2d.h"
 
-#include "core/config/project_settings.h"
 #include "scene/main/viewport.h"
 
 void Parallax2D::_notification(int p_what) {
@@ -70,7 +69,9 @@ void Parallax2D::_notification(int p_what) {
 
 #ifdef TOOLS_ENABLED
 void Parallax2D::_edit_set_position(const Point2 &p_position) {
-	set_scroll_offset(p_position);
+	// Avoids early return for grid snap compatibility
+	scroll_offset = p_position;
+	_update_scroll();
 }
 #endif // TOOLS_ENABLED
 
@@ -83,7 +84,11 @@ void Parallax2D::_validate_property(PropertyInfo &p_property) const {
 void Parallax2D::_camera_moved(const Transform2D &p_transform, const Point2 &p_screen_offset, const Point2 &p_adj_screen_pos) {
 	if (!ignore_camera_scroll) {
 		if (get_viewport() && get_viewport()->is_snap_2d_transforms_to_pixel_enabled()) {
-			set_screen_offset((p_adj_screen_pos + Vector2(0.5, 0.5)).floor());
+			Size2 vps = get_viewport_rect().size;
+			Vector2 offset;
+			offset.x = ((int)vps.width % 2) ? 0.0 : 0.5;
+			offset.y = ((int)vps.height % 2) ? 0.0 : 0.5;
+			set_screen_offset((p_adj_screen_pos + offset).floor());
 		} else {
 			set_screen_offset(p_adj_screen_pos);
 		}

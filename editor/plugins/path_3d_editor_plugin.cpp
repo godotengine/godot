@@ -272,23 +272,42 @@ void Path3DGizmo::commit_handle(int p_id, bool p_secondary, const Variant &p_res
 void Path3DGizmo::redraw() {
 	clear();
 
-	Ref<StandardMaterial3D> path_material = gizmo_plugin->get_material("path_material", this);
 	Ref<StandardMaterial3D> path_thin_material = gizmo_plugin->get_material("path_thin_material", this);
 	Ref<StandardMaterial3D> path_tilt_material = gizmo_plugin->get_material("path_tilt_material", this);
 	Ref<StandardMaterial3D> path_tilt_muted_material = gizmo_plugin->get_material("path_tilt_muted_material", this);
 	Ref<StandardMaterial3D> handles_material = gizmo_plugin->get_material("handles");
+	Ref<StandardMaterial3D> first_pt_handle_material = gizmo_plugin->get_material("first_pt_handle");
+	Ref<StandardMaterial3D> last_pt_handle_material = gizmo_plugin->get_material("last_pt_handle");
+	Ref<StandardMaterial3D> closed_pt_handle_material = gizmo_plugin->get_material("closed_pt_handle");
 	Ref<StandardMaterial3D> sec_handles_material = gizmo_plugin->get_material("sec_handles");
+
+	first_pt_handle_material->set_albedo(Color(0.2, 1.0, 0.0));
+	last_pt_handle_material->set_albedo(Color(1.0, 0.2, 0.0));
+	closed_pt_handle_material->set_albedo(Color(1.0, 0.8, 0.0));
 
 	Ref<Curve3D> c = path->get_curve();
 	if (c.is_null()) {
 		return;
 	}
 
+	debug_material = gizmo_plugin->get_material("path_material", this);
+
+	Color path_color = path->get_debug_custom_color();
+	if (path_color != Color(0.0, 0.0, 0.0)) {
+		debug_material.instantiate();
+		debug_material->set_albedo(path_color);
+		debug_material->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
+		debug_material->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA);
+		debug_material->set_flag(StandardMaterial3D::FLAG_SRGB_VERTEX_COLOR, true);
+		debug_material->set_flag(StandardMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
+		debug_material->set_flag(StandardMaterial3D::FLAG_DISABLE_FOG, true);
+	}
+
 	real_t interval = 0.1;
 	const real_t length = c->get_baked_length();
 
-	// 1. Draw curve and bones.
-	if (length > CMP_EPSILON) {
+	// 1. Draw curve and bones if it is visible (alpha > 0.0).
+	if (length > CMP_EPSILON && path_color.a > 0.0) {
 		const int sample_count = int(length / interval) + 2;
 		interval = length / (sample_count - 1); // Recalculate real interval length.
 
@@ -333,21 +352,24 @@ void Path3DGizmo::redraw() {
 			// Path3D as a ribbon.
 			ribbon_ptr[i] = p1;
 
-			// Fish Bone.
-			const Vector3 p_left = p1 + (side + forward - up * 0.3) * 0.06;
-			const Vector3 p_right = p1 + (-side + forward - up * 0.3) * 0.06;
+			if (i % 4 == 0) {
+				// Draw fish bone every 4 points to reduce visual noise and performance impact
+				// (compared to drawing it for every point).
+				const Vector3 p_left = p1 + (side + forward - up * 0.3) * 0.06;
+				const Vector3 p_right = p1 + (-side + forward - up * 0.3) * 0.06;
 
-			const int bone_idx = i * 4;
+				const int bone_idx = i * 4;
 
-			bones_ptr[bone_idx] = p1;
-			bones_ptr[bone_idx + 1] = p_left;
-			bones_ptr[bone_idx + 2] = p1;
-			bones_ptr[bone_idx + 3] = p_right;
+				bones_ptr[bone_idx] = p1;
+				bones_ptr[bone_idx + 1] = p_left;
+				bones_ptr[bone_idx + 2] = p1;
+				bones_ptr[bone_idx + 3] = p_right;
+			}
 		}
 
 		add_collision_segments(_collision_segments);
-		add_lines(bones, path_material);
-		add_vertices(ribbon, path_material, Mesh::PRIMITIVE_LINE_STRIP);
+		add_lines(bones, debug_material);
+		add_vertices(ribbon, debug_material, Mesh::PRIMITIVE_LINE_STRIP);
 	}
 
 	// 2. Draw handles when selected.
@@ -369,7 +391,7 @@ void Path3DGizmo::redraw() {
 			info.point_idx = idx;
 
 			// Collect in-handles except for the first point.
-			if (idx > 0 && Path3DEditorPlugin::singleton->curve_edit_curve->is_pressed()) {
+			if (idx > (c->is_closed() ? -1 : 0) && Path3DEditorPlugin::singleton->curve_edit_curve->is_pressed()) {
 				const Vector3 in = c->get_point_in(idx);
 
 				info.type = HandleType::HANDLE_TYPE_IN;
@@ -383,7 +405,7 @@ void Path3DGizmo::redraw() {
 			}
 
 			// Collect out-handles except for the last point.
-			if (idx < c->get_point_count() - 1 && Path3DEditorPlugin::singleton->curve_edit_curve->is_pressed()) {
+			if (idx < (c->is_closed() ? c->get_point_count() : c->get_point_count() - 1) && Path3DEditorPlugin::singleton->curve_edit_curve->is_pressed()) {
 				const Vector3 out = c->get_point_out(idx);
 
 				info.type = HandleType::HANDLE_TYPE_OUT;
@@ -427,7 +449,7 @@ void Path3DGizmo::redraw() {
 						const Vector3 edge = sin(a) * side + cos(a) * up;
 						disk.append(pos + edge * disk_size);
 					}
-					add_vertices(disk, path_tilt_material, Mesh::PRIMITIVE_LINE_STRIP);
+					add_vertices(disk, debug_material, Mesh::PRIMITIVE_LINE_STRIP);
 				}
 			}
 		}
@@ -441,7 +463,42 @@ void Path3DGizmo::redraw() {
 		}
 
 		if (!Path3DEditorPlugin::singleton->curve_edit->is_pressed() && primary_handle_points.size()) {
-			add_handles(primary_handle_points, handles_material);
+			// Need to define indices separately.
+			// Point count.
+			const int pc = primary_handle_points.size();
+			Vector<int> idx;
+			idx.resize(pc);
+			int *idx_ptr = idx.ptrw();
+			for (int j = 0; j < pc; j++) {
+				idx_ptr[j] = j;
+			}
+
+			// Initialize arrays for first point.
+			PackedVector3Array first_pt_handle_point;
+			Vector<int> first_pt_id;
+			first_pt_handle_point.append(primary_handle_points[0]);
+			first_pt_id.append(idx[0]);
+
+			// Initialize arrays and add handle for last point if needed.
+			if (pc > 1) {
+				PackedVector3Array last_pt_handle_point;
+				Vector<int> last_pt_id;
+				last_pt_handle_point.append(primary_handle_points[pc - 1]);
+				last_pt_id.append(idx[pc - 1]);
+				primary_handle_points.remove_at(pc - 1);
+				idx.remove_at(pc - 1);
+				add_handles(last_pt_handle_point, c->is_closed() ? handles_material : last_pt_handle_material, last_pt_id);
+			}
+
+			// Add handle for first point.
+			primary_handle_points.remove_at(0);
+			idx.remove_at(0);
+			add_handles(first_pt_handle_point, c->is_closed() ? closed_pt_handle_material : first_pt_handle_material, first_pt_id);
+
+			// Add handles for remaining intermediate points.
+			if (!primary_handle_points.is_empty()) {
+				add_handles(primary_handle_points, handles_material, idx);
+			}
 		}
 		if (secondary_handle_points.size()) {
 			add_handles(secondary_handle_points, sec_handles_material, collected_secondary_handle_ids, false, true);
@@ -464,12 +521,13 @@ Path3DGizmo::Path3DGizmo(Path3D *p_path, float p_disk_size) {
 
 	// Connecting to a signal once, rather than plaguing the implementation with calls to `Node3DEditor::update_transform_gizmo`.
 	path->connect("curve_changed", callable_mp(this, &Path3DGizmo::_update_transform_gizmo));
+	path->connect("debug_color_changed", callable_mp(this, &Path3DGizmo::redraw));
 
 	Path3DEditorPlugin::singleton->curve_edit->connect(SceneStringName(pressed), callable_mp(this, &Path3DGizmo::redraw));
 	Path3DEditorPlugin::singleton->curve_edit_curve->connect(SceneStringName(pressed), callable_mp(this, &Path3DGizmo::redraw));
 	Path3DEditorPlugin::singleton->curve_create->connect(SceneStringName(pressed), callable_mp(this, &Path3DGizmo::redraw));
 	Path3DEditorPlugin::singleton->curve_del->connect(SceneStringName(pressed), callable_mp(this, &Path3DGizmo::redraw));
-	Path3DEditorPlugin::singleton->curve_close->connect(SceneStringName(pressed), callable_mp(this, &Path3DGizmo::redraw));
+	Path3DEditorPlugin::singleton->curve_closed->connect(SceneStringName(pressed), callable_mp(this, &Path3DGizmo::redraw));
 }
 
 EditorPlugin::AfterGUIInput Path3DEditorPlugin::forward_3d_gui_input(Camera3D *p_camera, const Ref<InputEvent> &p_event) {
@@ -696,7 +754,7 @@ void Path3DEditorPlugin::_mode_changed(int p_mode) {
 	Node3DEditor::get_singleton()->clear_subgizmo_selection();
 }
 
-void Path3DEditorPlugin::_close_curve() {
+void Path3DEditorPlugin::_toggle_closed_curve() {
 	Ref<Curve3D> c = path->get_curve();
 	if (c.is_null()) {
 		return;
@@ -704,13 +762,10 @@ void Path3DEditorPlugin::_close_curve() {
 	if (c->get_point_count() < 2) {
 		return;
 	}
-	if (c->get_point_position(0) == c->get_point_position(c->get_point_count() - 1)) {
-		return;
-	}
 	EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
-	ur->create_action(TTR("Close Curve"));
-	ur->add_do_method(c.ptr(), "add_point", c->get_point_position(0), c->get_point_in(0), c->get_point_out(0), -1);
-	ur->add_undo_method(c.ptr(), "remove_point", c->get_point_count());
+	ur->create_action(TTR("Toggle Open/Closed Curve"));
+	ur->add_do_method(c.ptr(), "set_closed", !c.ptr()->is_closed());
+	ur->add_undo_method(c.ptr(), "set_closed", c.ptr()->is_closed());
 	ur->commit_action();
 }
 
@@ -771,6 +826,7 @@ void Path3DEditorPlugin::_clear_curve_points() {
 		return;
 	}
 	Ref<Curve3D> curve = path->get_curve();
+	curve->set_closed(false);
 	curve->clear_points();
 }
 
@@ -790,14 +846,14 @@ void Path3DEditorPlugin::_restore_curve_points(const PackedVector3Array &p_point
 }
 
 void Path3DEditorPlugin::_update_theme() {
-	curve_edit->set_icon(topmenu_bar->get_editor_theme_icon(SNAME("CurveEdit")));
-	curve_edit_curve->set_icon(topmenu_bar->get_editor_theme_icon(SNAME("CurveCurve")));
-	curve_edit_tilt->set_icon(topmenu_bar->get_editor_theme_icon(SNAME("CurveTilt")));
-	curve_create->set_icon(topmenu_bar->get_editor_theme_icon(SNAME("CurveCreate")));
-	curve_del->set_icon(topmenu_bar->get_editor_theme_icon(SNAME("CurveDelete")));
-	curve_close->set_icon(topmenu_bar->get_editor_theme_icon(SNAME("CurveClose")));
-	curve_clear_points->set_icon(topmenu_bar->get_editor_theme_icon(SNAME("Clear")));
-	create_curve_button->set_icon(topmenu_bar->get_editor_theme_icon(SNAME("Curve3D")));
+	curve_edit->set_button_icon(topmenu_bar->get_editor_theme_icon(SNAME("CurveEdit")));
+	curve_edit_curve->set_button_icon(topmenu_bar->get_editor_theme_icon(SNAME("CurveCurve")));
+	curve_edit_tilt->set_button_icon(topmenu_bar->get_editor_theme_icon(SNAME("CurveTilt")));
+	curve_create->set_button_icon(topmenu_bar->get_editor_theme_icon(SNAME("CurveCreate")));
+	curve_del->set_button_icon(topmenu_bar->get_editor_theme_icon(SNAME("CurveDelete")));
+	curve_closed->set_button_icon(topmenu_bar->get_editor_theme_icon(SNAME("CurveClose")));
+	curve_clear_points->set_button_icon(topmenu_bar->get_editor_theme_icon(SNAME("Clear")));
+	create_curve_button->set_button_icon(topmenu_bar->get_editor_theme_icon(SNAME("Curve3D")));
 }
 
 void Path3DEditorPlugin::_update_toolbar() {
@@ -817,7 +873,10 @@ void Path3DEditorPlugin::_bind_methods() {
 
 Path3DEditorPlugin::Path3DEditorPlugin() {
 	singleton = this;
-	disk_size = EDITOR_DEF_RST("editors/3d_gizmos/gizmo_settings/path3d_tilt_disk_size", 0.8);
+	mirror_handle_angle = true;
+	mirror_handle_length = true;
+
+	disk_size = EDITOR_GET("editors/3d_gizmos/gizmo_settings/path3d_tilt_disk_size");
 
 	Ref<Path3DGizmoPlugin> gizmo_plugin = memnew(Path3DGizmoPlugin(disk_size));
 	Node3DEditor::get_singleton()->add_gizmo_plugin(gizmo_plugin);
@@ -830,7 +889,7 @@ Path3DEditorPlugin::Path3DEditorPlugin() {
 	topmenu_bar->add_child(toolbar);
 
 	curve_edit = memnew(Button);
-	curve_edit->set_theme_type_variation("FlatButton");
+	curve_edit->set_theme_type_variation(SceneStringName(FlatButton));
 	curve_edit->set_toggle_mode(true);
 	curve_edit->set_focus_mode(Control::FOCUS_NONE);
 	curve_edit->set_tooltip_text(TTR("Select Points") + "\n" + TTR("Shift+Click: Select multiple Points") + "\n" + keycode_get_string((Key)KeyModifierMask::CMD_OR_CTRL) + TTR("Click: Add Point") + "\n" + TTR("Right Click: Delete Point"));
@@ -838,7 +897,7 @@ Path3DEditorPlugin::Path3DEditorPlugin() {
 	curve_edit->connect(SceneStringName(pressed), callable_mp(this, &Path3DEditorPlugin::_mode_changed).bind(MODE_EDIT));
 
 	curve_edit_curve = memnew(Button);
-	curve_edit_curve->set_theme_type_variation("FlatButton");
+	curve_edit_curve->set_theme_type_variation(SceneStringName(FlatButton));
 	curve_edit_curve->set_toggle_mode(true);
 	curve_edit_curve->set_focus_mode(Control::FOCUS_NONE);
 	curve_edit_curve->set_tooltip_text(TTR("Select Control Points") + "\n" + TTR("Shift+Click: Drag out Control Points"));
@@ -846,7 +905,7 @@ Path3DEditorPlugin::Path3DEditorPlugin() {
 	curve_edit_curve->connect(SceneStringName(pressed), callable_mp(this, &Path3DEditorPlugin::_mode_changed).bind(MODE_EDIT_CURVE));
 
 	curve_edit_tilt = memnew(Button);
-	curve_edit_tilt->set_theme_type_variation("FlatButton");
+	curve_edit_tilt->set_theme_type_variation(SceneStringName(FlatButton));
 	curve_edit_tilt->set_toggle_mode(true);
 	curve_edit_tilt->set_focus_mode(Control::FOCUS_NONE);
 	curve_edit_tilt->set_tooltip_text(TTR("Select Tilt Handles"));
@@ -854,7 +913,7 @@ Path3DEditorPlugin::Path3DEditorPlugin() {
 	curve_edit_tilt->connect(SceneStringName(pressed), callable_mp(this, &Path3DEditorPlugin::_mode_changed).bind(MODE_EDIT_TILT));
 
 	curve_create = memnew(Button);
-	curve_create->set_theme_type_variation("FlatButton");
+	curve_create->set_theme_type_variation(SceneStringName(FlatButton));
 	curve_create->set_toggle_mode(true);
 	curve_create->set_focus_mode(Control::FOCUS_NONE);
 	curve_create->set_tooltip_text(TTR("Add Point (in empty space)") + "\n" + TTR("Split Segment (in curve)"));
@@ -862,22 +921,22 @@ Path3DEditorPlugin::Path3DEditorPlugin() {
 	curve_create->connect(SceneStringName(pressed), callable_mp(this, &Path3DEditorPlugin::_mode_changed).bind(MODE_CREATE));
 
 	curve_del = memnew(Button);
-	curve_del->set_theme_type_variation("FlatButton");
+	curve_del->set_theme_type_variation(SceneStringName(FlatButton));
 	curve_del->set_toggle_mode(true);
 	curve_del->set_focus_mode(Control::FOCUS_NONE);
 	curve_del->set_tooltip_text(TTR("Delete Point"));
 	toolbar->add_child(curve_del);
 	curve_del->connect(SceneStringName(pressed), callable_mp(this, &Path3DEditorPlugin::_mode_changed).bind(MODE_DELETE));
 
-	curve_close = memnew(Button);
-	curve_close->set_theme_type_variation("FlatButton");
-	curve_close->set_focus_mode(Control::FOCUS_NONE);
-	curve_close->set_tooltip_text(TTR("Close Curve"));
-	toolbar->add_child(curve_close);
-	curve_close->connect(SceneStringName(pressed), callable_mp(this, &Path3DEditorPlugin::_close_curve));
+	curve_closed = memnew(Button);
+	curve_closed->set_theme_type_variation(SceneStringName(FlatButton));
+	curve_closed->set_focus_mode(Control::FOCUS_NONE);
+	curve_closed->set_tooltip_text(TTR("Close Curve"));
+	toolbar->add_child(curve_closed);
+	curve_closed->connect(SceneStringName(pressed), callable_mp(this, &Path3DEditorPlugin::_toggle_closed_curve));
 
 	curve_clear_points = memnew(Button);
-	curve_clear_points->set_theme_type_variation("FlatButton");
+	curve_clear_points->set_theme_type_variation(SceneStringName(FlatButton));
 	curve_clear_points->set_focus_mode(Control::FOCUS_NONE);
 	curve_clear_points->set_tooltip_text(TTR("Clear Points"));
 	curve_clear_points->connect(SceneStringName(pressed), callable_mp(this, &Path3DEditorPlugin::_confirm_clear_points));
@@ -919,7 +978,7 @@ Ref<EditorNode3DGizmo> Path3DGizmoPlugin::create_gizmo(Node3D *p_spatial) {
 
 	Path3D *path = Object::cast_to<Path3D>(p_spatial);
 	if (path) {
-		ref = Ref<Path3DGizmo>(memnew(Path3DGizmo(path, disk_size)));
+		ref.instantiate(path, disk_size);
 	}
 
 	return ref;
@@ -940,6 +999,14 @@ void Path3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 	Ref<Curve3D> curve = path->get_curve();
 
 	Ref<StandardMaterial3D> handle_material = get_material("handles", p_gizmo);
+	Ref<StandardMaterial3D> first_pt_handle_material = get_material("first_pt_handle", p_gizmo);
+	Ref<StandardMaterial3D> last_pt_handle_material = get_material("last_pt_handle", p_gizmo);
+	Ref<StandardMaterial3D> closed_pt_handle_material = get_material("closed_pt_handle", p_gizmo);
+
+	first_pt_handle_material->set_albedo(Color(0.2, 1.0, 0.0));
+	last_pt_handle_material->set_albedo(Color(1.0, 0.2, 0.0));
+	closed_pt_handle_material->set_albedo(Color(1.0, 0.8, 0.0));
+
 	PackedVector3Array handles;
 
 	if (Path3DEditorPlugin::singleton->curve_edit->is_pressed()) {
@@ -952,7 +1019,37 @@ void Path3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 	}
 
 	if (handles.size()) {
-		p_gizmo->add_vertices(handles, handle_material, Mesh::PRIMITIVE_POINTS);
+		// Point count.
+		const int pc = handles.size();
+
+		// Initialize arrays for first point.
+		PackedVector3Array first_pt;
+		first_pt.append(handles[0]);
+
+		// Initialize arrays and add handle for last point if needed.
+		if (pc > 1) {
+			PackedVector3Array last_pt;
+			last_pt.append(handles[handles.size() - 1]);
+			handles.remove_at(handles.size() - 1);
+			if (curve->is_closed()) {
+				p_gizmo->add_vertices(last_pt, handle_material, Mesh::PRIMITIVE_POINTS);
+			} else {
+				p_gizmo->add_vertices(last_pt, last_pt_handle_material, Mesh::PRIMITIVE_POINTS);
+			}
+		}
+
+		// Add handle for first point.
+		handles.remove_at(0);
+		if (curve->is_closed()) {
+			p_gizmo->add_vertices(first_pt, closed_pt_handle_material, Mesh::PRIMITIVE_POINTS);
+		} else {
+			p_gizmo->add_vertices(first_pt, first_pt_handle_material, Mesh::PRIMITIVE_POINTS);
+		}
+
+		// Add handles for remaining intermediate points.
+		if (!handles.is_empty()) {
+			p_gizmo->add_vertices(handles, handle_material, Mesh::PRIMITIVE_POINTS);
+		}
 	}
 }
 
@@ -1061,7 +1158,7 @@ int Path3DGizmoPlugin::get_priority() const {
 
 Path3DGizmoPlugin::Path3DGizmoPlugin(float p_disk_size) {
 	Color path_color = SceneTree::get_singleton()->get_debug_paths_color();
-	Color path_tilt_color = EDITOR_DEF_RST("editors/3d_gizmos/gizmo_colors/path_tilt", Color(1.0, 1.0, 0.4, 0.9));
+	Color path_tilt_color = EDITOR_GET("editors/3d_gizmos/gizmo_colors/path_tilt");
 	disk_size = p_disk_size;
 
 	create_material("path_material", path_color);
@@ -1069,5 +1166,8 @@ Path3DGizmoPlugin::Path3DGizmoPlugin(float p_disk_size) {
 	create_material("path_tilt_material", path_tilt_color);
 	create_material("path_tilt_muted_material", path_tilt_color * 0.7);
 	create_handle_material("handles", false, EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("EditorPathSmoothHandle"), EditorStringName(EditorIcons)));
+	create_handle_material("first_pt_handle", false, EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("EditorPathSmoothHandle"), EditorStringName(EditorIcons)));
+	create_handle_material("last_pt_handle", false, EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("EditorPathSmoothHandle"), EditorStringName(EditorIcons)));
+	create_handle_material("closed_pt_handle", false, EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("EditorPathSmoothHandle"), EditorStringName(EditorIcons)));
 	create_handle_material("sec_handles", false, EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("EditorCurveHandle"), EditorStringName(EditorIcons)));
 }

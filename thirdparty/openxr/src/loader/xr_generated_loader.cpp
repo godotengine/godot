@@ -697,4 +697,17 @@ extern "C" LOADER_EXPORT XRAPI_ATTR XrResult XRAPI_CALL xrStopHapticFeedback(
 }
 XRLOADER_ABI_CATCH_FALLBACK
 
+extern "C" LOADER_EXPORT XRAPI_ATTR XrResult XRAPI_CALL xrLocateSpaces(
+    XrSession                                   session,
+    const XrSpacesLocateInfo*                   locateInfo,
+    XrSpaceLocations*                           spaceLocations) XRLOADER_ABI_TRY {
+    LoaderInstance* loader_instance;
+    XrResult result = ActiveLoaderInstance::Get(&loader_instance, "xrLocateSpaces");
+    if (XR_SUCCEEDED(result)) {
+        result = loader_instance->DispatchTable()->LocateSpaces(session, locateInfo, spaceLocations);
+    }
+    return result;
+}
+XRLOADER_ABI_CATCH_FALLBACK
+
 

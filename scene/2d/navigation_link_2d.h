@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef NAVIGATION_LINK_2D_H
-#define NAVIGATION_LINK_2D_H
+#pragma once
 
 #include "scene/2d/node_2d.h"
 
@@ -62,10 +61,10 @@ protected:
 #endif // DISABLE_DEPRECATED
 
 public:
-#ifdef TOOLS_ENABLED
+#ifdef DEBUG_ENABLED
 	virtual Rect2 _edit_get_rect() const override;
 	virtual bool _edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const override;
-#endif
+#endif // DEBUG_ENABLED
 	RID get_rid() const;
 
 	void set_enabled(bool p_enabled);
@@ -111,5 +110,3 @@ private:
 	void _link_exit_navigation_map();
 	void _link_update_transform();
 };
-
-#endif // NAVIGATION_LINK_2D_H

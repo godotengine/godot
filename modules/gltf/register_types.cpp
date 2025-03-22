@@ -37,6 +37,7 @@
 #include "extensions/physics/gltf_document_extension_physics.h"
 #include "gltf_document.h"
 #include "gltf_state.h"
+#include "structures/gltf_object_model_property.h"
 
 #ifdef TOOLS_ENABLED
 #include "editor/editor_import_blend_runner.h"
@@ -112,6 +113,7 @@ void initialize_gltf_module(ModuleInitializationLevel p_level) {
 		GDREGISTER_CLASS(GLTFLight);
 		GDREGISTER_CLASS(GLTFMesh);
 		GDREGISTER_CLASS(GLTFNode);
+		GDREGISTER_CLASS(GLTFObjectModelProperty);
 		GDREGISTER_CLASS(GLTFPhysicsBody);
 		GDREGISTER_CLASS(GLTFPhysicsShape);
 		GDREGISTER_CLASS(GLTFSkeleton);
@@ -133,10 +135,6 @@ void initialize_gltf_module(ModuleInitializationLevel p_level) {
 
 #ifdef TOOLS_ENABLED
 	if (p_level == MODULE_INITIALIZATION_LEVEL_EDITOR) {
-		// Editor-specific API.
-		ClassDB::APIType prev_api = ClassDB::get_current_api();
-		ClassDB::set_current_api(ClassDB::API_EDITOR);
-
 		GDREGISTER_CLASS(EditorSceneFormatImporterGLTF);
 		EditorPlugins::add_by_type<SceneExporterGLTFPlugin>();
 
@@ -147,10 +145,8 @@ void initialize_gltf_module(ModuleInitializationLevel p_level) {
 		GLOBAL_DEF_RST("filesystem/import/blender/enabled.android", false);
 		GLOBAL_DEF_RST("filesystem/import/blender/enabled.web", false);
 
-		ClassDB::set_current_api(prev_api);
 		EditorNode::add_init_callback(_editor_init);
 	}
-
 #endif // TOOLS_ENABLED
 }
 

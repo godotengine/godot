@@ -122,16 +122,12 @@ for user-defined purpose without allocating any real GPU memory.
 See documentation chapter: \ref statistics.
 */
 
+#include "drivers/vulkan/godot_vulkan.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#ifdef USE_VOLK
-    #include <volk.h>
-#else
-    #include <vulkan/vulkan.h>
-#endif
 
 #if !defined(VMA_VULKAN_VERSION)
     #if defined(VK_VERSION_1_3)
@@ -1716,6 +1712,19 @@ become outdated.
 VMA_CALL_PRE void VMA_CALL_POST vmaCalculateStatistics(
     VmaAllocator VMA_NOT_NULL allocator,
     VmaTotalStatistics* VMA_NOT_NULL pStats);
+
+/** \brief Retrieves lazily allocated bytes
+
+This function is called "calculate" not "get" because it has to traverse all
+internal data structures, so it may be quite slow. Use it for debugging purposes.
+For faster but more brief statistics suitable to be called every frame or every allocation,
+use vmaGetHeapBudgets().
+
+Note that when using allocator from multiple threads, returned information may immediately
+become outdated.
+*/
+VMA_CALL_PRE uint64_t VMA_CALL_POST vmaCalculateLazilyAllocatedBytes(
+    VmaAllocator VMA_NOT_NULL allocator);
 
 /** \brief Retrieves information about current memory usage and budget for all memory heaps.
 
@@ -14914,6 +14923,26 @@ VMA_CALL_PRE void VMA_CALL_POST vmaCalculateStatistics(
     VMA_ASSERT(allocator && pStats);
     VMA_DEBUG_GLOBAL_MUTEX_LOCK
     allocator->CalculateStatistics(pStats);
+}
+
+VMA_CALL_PRE uint64_t VMA_CALL_POST vmaCalculateLazilyAllocatedBytes(
+    VmaAllocator allocator)
+{
+    VMA_ASSERT(allocator);
+    VMA_DEBUG_GLOBAL_MUTEX_LOCK
+	VmaTotalStatistics stats;
+    allocator->CalculateStatistics(&stats);
+	uint64_t total_lazilily_allocated_bytes = 0;
+	for (uint32_t heapIndex = 0; heapIndex < allocator->GetMemoryHeapCount(); ++heapIndex) {
+		for (uint32_t typeIndex = 0; typeIndex < allocator->GetMemoryTypeCount(); ++typeIndex) {
+			if (allocator->MemoryTypeIndexToHeapIndex(typeIndex) == heapIndex) {
+				VkMemoryPropertyFlags flags = allocator->m_MemProps.memoryTypes[typeIndex].propertyFlags;
+				if (flags & VK_MEMORY_PROPERTY_LAZILY_ALLOCATED_BIT)
+					total_lazilily_allocated_bytes += stats.memoryType[typeIndex].statistics.allocationBytes;
+			}
+		}
+	}
+	return total_lazilily_allocated_bytes;
 }
 
 VMA_CALL_PRE void VMA_CALL_POST vmaGetHeapBudgets(

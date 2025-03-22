@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef GL_MANAGER_X11_EGL_H
-#define GL_MANAGER_X11_EGL_H
+#pragma once
 
 #if defined(X11_ENABLED) && defined(GLES3_ENABLED)
 
@@ -52,10 +51,8 @@ private:
 public:
 	void window_resize(DisplayServer::WindowID p_window_id, int p_width, int p_height) {}
 
-	GLManagerEGL_X11(){};
-	~GLManagerEGL_X11(){};
+	GLManagerEGL_X11() {}
+	~GLManagerEGL_X11() {}
 };
 
 #endif // X11_ENABLED && GLES3_ENABLED
-
-#endif // GL_MANAGER_X11_EGL_H

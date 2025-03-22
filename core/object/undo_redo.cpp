@@ -48,7 +48,7 @@ void UndoRedo::Operation::delete_reference() {
 	}
 }
 
-void UndoRedo::_discard_redo() {
+void UndoRedo::discard_redo() {
 	if (current_action == actions.size() - 1) {
 		return;
 	}
@@ -89,7 +89,7 @@ void UndoRedo::create_action(const String &p_name, MergeMode p_mode, bool p_back
 	uint64_t ticks = OS::get_singleton()->get_ticks_msec();
 
 	if (action_level == 0) {
-		_discard_redo();
+		discard_redo();
 
 		// Check if the merge operation is valid
 		if (p_mode != MERGE_DISABLE && actions.size() && actions[actions.size() - 1].name == p_name && actions[actions.size() - 1].backward_undo_ops == p_backward_undo_ops && actions[actions.size() - 1].last_tick + 800 > ticks) {
@@ -288,7 +288,7 @@ void UndoRedo::end_force_keep_in_merge_ends() {
 }
 
 void UndoRedo::_pop_history_tail() {
-	_discard_redo();
+	discard_redo();
 
 	if (!actions.size()) {
 		return;
@@ -364,7 +364,7 @@ void UndoRedo::_process_operation_list(List<Operation>::Element *E, bool p_execu
 					Variant ret;
 					op.callable.callp(nullptr, 0, ret, ce);
 					if (ce.error != Callable::CallError::CALL_OK) {
-						ERR_PRINT("Error calling UndoRedo method operation '" + String(op.name) + "': " + Variant::get_call_error_text(obj, op.name, nullptr, 0, ce));
+						ERR_PRINT(vformat("Error calling UndoRedo method operation '%s': %s.", String(op.name), Variant::get_call_error_text(obj, op.name, nullptr, 0, ce)));
 					}
 #ifdef TOOLS_ENABLED
 					Resource *res = Object::cast_to<Resource>(obj);
@@ -455,7 +455,7 @@ String UndoRedo::get_action_name(int p_id) {
 
 void UndoRedo::clear_history(bool p_increase_version) {
 	ERR_FAIL_COND(action_level > 0);
-	_discard_redo();
+	discard_redo();
 
 	while (actions.size()) {
 		_pop_history_tail();

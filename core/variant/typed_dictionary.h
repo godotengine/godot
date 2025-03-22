@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TYPED_DICTIONARY_H
-#define TYPED_DICTIONARY_H
+#pragma once
 
 #include "core/object/object.h"
 #include "core/variant/binder_common.h"
@@ -58,6 +57,14 @@ public:
 	}
 	_FORCE_INLINE_ TypedDictionary() {
 		set_typed(Variant::OBJECT, K::get_class_static(), Variant(), Variant::OBJECT, V::get_class_static(), Variant());
+	}
+
+	_FORCE_INLINE_ TypedDictionary(std::initializer_list<KeyValue<K, V>> p_init) :
+			Dictionary() {
+		set_typed(Variant::OBJECT, K::get_class_static(), Variant(), Variant::OBJECT, V::get_class_static(), Variant());
+		for (const KeyValue<K, V> &E : p_init) {
+			operator[](E.key) = E.value;
+		}
 	}
 };
 
@@ -134,6 +141,13 @@ struct GetTypeInfo<const TypedDictionary<K, V> &> {
 		}                                                                                                                                          \
 		_FORCE_INLINE_ TypedDictionary() {                                                                                                         \
 			set_typed(Variant::OBJECT, T::get_class_static(), Variant(), m_variant_type, StringName(), Variant());                                 \
+		}                                                                                                                                          \
+		_FORCE_INLINE_ TypedDictionary(std::initializer_list<KeyValue<T, m_type>> p_init) :                                                        \
+				Dictionary() {                                                                                                                     \
+			set_typed(Variant::OBJECT, T::get_class_static(), Variant(), m_variant_type, StringName(), Variant());                                 \
+			for (const KeyValue<T, m_type> &E : p_init) {                                                                                          \
+				operator[](E.key) = E.value;                                                                                                       \
+			}                                                                                                                                      \
 		}                                                                                                                                          \
 	};                                                                                                                                             \
 	template <typename T>                                                                                                                          \
@@ -216,6 +230,13 @@ struct GetTypeInfo<const TypedDictionary<K, V> &> {
 		}                                                                                                                         \
 		_FORCE_INLINE_ TypedDictionary() {                                                                                        \
 			set_typed(m_variant_type_key, StringName(), Variant(), m_variant_type_value, StringName(), Variant());                \
+		}                                                                                                                         \
+		_FORCE_INLINE_ TypedDictionary(std::initializer_list<KeyValue<m_type_key, m_type_value>> p_init) :                        \
+				Dictionary() {                                                                                                    \
+			set_typed(m_variant_type_key, StringName(), Variant(), m_variant_type_value, StringName(), Variant());                \
+			for (const KeyValue<m_type_key, m_type_value> &E : p_init) {                                                          \
+				operator[](E.key) = E.value;                                                                                      \
+			}                                                                                                                     \
 		}                                                                                                                         \
 	};                                                                                                                            \
 	template <>                                                                                                                   \
@@ -338,5 +359,3 @@ MAKE_TYPED_DICTIONARY(IPAddress, Variant::STRING)
 #undef MAKE_TYPED_DICTIONARY_NIL
 #undef MAKE_TYPED_DICTIONARY_EXPANDED
 #undef MAKE_TYPED_DICTIONARY_WITH_OBJECT
-
-#endif // TYPED_DICTIONARY_H

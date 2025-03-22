@@ -30,7 +30,7 @@
 
 #include "dir_access_jandroid.h"
 
-#include "string_android.h"
+#include "jni_utils.h"
 #include "thread_jandroid.h"
 
 #include "core/string/print_string.h"
@@ -154,7 +154,7 @@ String DirAccessJAndroid::get_current_dir(bool p_include_drive) const {
 	if (bd.begins_with(root_string)) {
 		return bd;
 	} else if (bd.begins_with("/")) {
-		return root_string + bd.substr(1, bd.length());
+		return root_string + bd.substr(1);
 	} else {
 		return root_string + bd;
 	}

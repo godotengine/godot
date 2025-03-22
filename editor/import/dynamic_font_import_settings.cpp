@@ -31,16 +31,15 @@
 #include "dynamic_font_import_settings.h"
 
 #include "core/config/project_settings.h"
-#include "core/string/translation_server.h"
+#include "core/string/translation.h"
 #include "editor/editor_file_system.h"
 #include "editor/editor_inspector.h"
 #include "editor/editor_locale_dialog.h"
 #include "editor/editor_node.h"
-#include "editor/editor_property_name_processor.h"
-#include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/themes/editor_scale.h"
+#include "scene/gui/split_container.h"
 
 /*************************************************************************/
 /* Settings data                                                         */
@@ -96,7 +95,7 @@ struct UniRange {
 };
 
 // Unicode Character Blocks
-// Source: https://www.unicode.org/Public/14.0.0/ucd/Blocks.txt
+// Source: https://www.unicode.org/Public/16.0.0/ucd/Blocks.txt
 static UniRange unicode_ranges[] = {
 	{ 0x0000, 0x007F, U"Basic Latin" },
 	{ 0x0080, 0x00FF, U"Latin-1 Supplement" },
@@ -283,6 +282,7 @@ static UniRange unicode_ranges[] = {
 	{ 0x10500, 0x1052F, U"Elbasan" },
 	{ 0x10530, 0x1056F, U"Caucasian Albanian" },
 	{ 0x10570, 0x105BF, U"Vithkuqi" },
+	{ 0x105C0, 0x105FF, U"Todhri" },
 	{ 0x10600, 0x1077F, U"Linear A" },
 	{ 0x10780, 0x107BF, U"Latin Extended-F" },
 	{ 0x10800, 0x1083F, U"Cypriot Syllabary" },
@@ -305,6 +305,7 @@ static UniRange unicode_ranges[] = {
 	{ 0x10C00, 0x10C4F, U"Old Turkic" },
 	{ 0x10C80, 0x10CFF, U"Old Hungarian" },
 	{ 0x10D00, 0x10D3F, U"Hanifi Rohingya" },
+	{ 0x10D40, 0x10D8F, U"Garay" },
 	{ 0x10E60, 0x10E7F, U"Rumi Numeral Symbols" },
 	{ 0x10E80, 0x10EBF, U"Yezidi" },
 	{ 0x10EC0, 0x10EFF, U"Arabic Extended-C" },
@@ -324,12 +325,14 @@ static UniRange unicode_ranges[] = {
 	{ 0x11280, 0x112AF, U"Multani" },
 	{ 0x112B0, 0x112FF, U"Khudawadi" },
 	{ 0x11300, 0x1137F, U"Grantha" },
+	{ 0x11380, 0x113FF, U"Tulu-Tigalari" },
 	{ 0x11400, 0x1147F, U"Newa" },
 	{ 0x11480, 0x114DF, U"Tirhuta" },
 	{ 0x11580, 0x115FF, U"Siddham" },
 	{ 0x11600, 0x1165F, U"Modi" },
 	{ 0x11660, 0x1167F, U"Mongolian Supplement" },
 	{ 0x11680, 0x116CF, U"Takri" },
+	{ 0x116D0, 0x116FF, U"Myanmar Extended-C" },
 	{ 0x11700, 0x1174F, U"Ahom" },
 	{ 0x11800, 0x1184F, U"Dogra" },
 	{ 0x118A0, 0x118FF, U"Warang Citi" },
@@ -340,6 +343,7 @@ static UniRange unicode_ranges[] = {
 	{ 0x11AB0, 0x11ABF, U"Unified Canadian Aboriginal Syllabics Extended-A" },
 	{ 0x11AC0, 0x11AFF, U"Pau Cin Hau" },
 	{ 0x11B00, 0x11B5F, U"Devanagari Extended-A" },
+	{ 0x11BC0, 0x11BFF, U"Sunuwar" },
 	{ 0x11C00, 0x11C6F, U"Bhaiksuki" },
 	{ 0x11C70, 0x11CBF, U"Marchen" },
 	{ 0x11D00, 0x11D5F, U"Masaram Gondi" },
@@ -354,12 +358,15 @@ static UniRange unicode_ranges[] = {
 	{ 0x12F90, 0x12FFF, U"Cypro-Minoan" },
 	{ 0x13000, 0x1342F, U"Egyptian Hieroglyphs" },
 	{ 0x13430, 0x1343F, U"Egyptian Hieroglyph Format Controls" },
+	{ 0x13460, 0x143FF, U"Egyptian Hieroglyphs Extended-A" },
 	{ 0x14400, 0x1467F, U"Anatolian Hieroglyphs" },
+	{ 0x16100, 0x1613F, U"Gurung Khema" },
 	{ 0x16800, 0x16A3F, U"Bamum Supplement" },
 	{ 0x16A40, 0x16A6F, U"Mro" },
 	{ 0x16A70, 0x16ACF, U"Tangsa" },
 	{ 0x16AD0, 0x16AFF, U"Bassa Vah" },
 	{ 0x16B00, 0x16B8F, U"Pahawh Hmong" },
+	{ 0x16D40, 0x16D7F, U"Kirat Rai" },
 	{ 0x16E40, 0x16E9F, U"Medefaidrin" },
 	{ 0x16F00, 0x16F9F, U"Miao" },
 	{ 0x16FE0, 0x16FFF, U"Ideographic Symbols and Punctuation" },
@@ -374,6 +381,7 @@ static UniRange unicode_ranges[] = {
 	{ 0x1B170, 0x1B2FF, U"Nushu" },
 	{ 0x1BC00, 0x1BC9F, U"Duployan" },
 	{ 0x1BCA0, 0x1BCAF, U"Shorthand Format Controls" },
+	{ 0x1CC00, 0x1CEBF, U"Symbols for Legacy Computing Supplement" },
 	{ 0x1CF00, 0x1CFCF, U"Znamenny Musical Notation" },
 	{ 0x1D000, 0x1D0FF, U"Byzantine Musical Symbols" },
 	{ 0x1D100, 0x1D1FF, U"Musical Symbols" },
@@ -391,6 +399,7 @@ static UniRange unicode_ranges[] = {
 	{ 0x1E290, 0x1E2BF, U"Toto" },
 	{ 0x1E2C0, 0x1E2FF, U"Wancho" },
 	{ 0x1E4D0, 0x1E4FF, U"Nag Mundari" },
+	{ 0x1E5D0, 0x1E5FF, U"Ol Onal" },
 	{ 0x1E7E0, 0x1E7FF, U"Ethiopic Extended-B" },
 	{ 0x1E800, 0x1E8DF, U"Mende Kikakui" },
 	{ 0x1E900, 0x1E95F, U"Adlam" },
@@ -418,6 +427,7 @@ static UniRange unicode_ranges[] = {
 	{ 0x2B740, 0x2B81F, U"CJK Unified Ideographs Extension D" },
 	{ 0x2B820, 0x2CEAF, U"CJK Unified Ideographs Extension E" },
 	{ 0x2CEB0, 0x2EBEF, U"CJK Unified Ideographs Extension F" },
+	{ 0x2EBF0, 0x2EE5F, U"CJK Unified Ideographs Extension I" },
 	{ 0x2F800, 0x2FA1F, U"CJK Compatibility Ideographs Supplement" },
 	{ 0x30000, 0x3134F, U"CJK Unified Ideographs Extension G" },
 	{ 0x31350, 0x323AF, U"CJK Unified Ideographs Extension H" },
@@ -463,6 +473,7 @@ void DynamicFontImportSettingsDialog::_main_prop_changed(const String &p_edited_
 	if (font_preview.is_valid()) {
 		if (p_edited_property == "antialiasing") {
 			font_preview->set_antialiasing((TextServer::FontAntialiasing)import_settings_data->get("antialiasing").operator int());
+			_variations_validate();
 		} else if (p_edited_property == "generate_mipmaps") {
 			font_preview->set_generate_mipmaps(import_settings_data->get("generate_mipmaps"));
 		} else if (p_edited_property == "disable_embedded_bitmaps") {
@@ -482,7 +493,18 @@ void DynamicFontImportSettingsDialog::_main_prop_changed(const String &p_edited_
 		} else if (p_edited_property == "hinting") {
 			font_preview->set_hinting((TextServer::Hinting)import_settings_data->get("hinting").operator int());
 		} else if (p_edited_property == "subpixel_positioning") {
-			font_preview->set_subpixel_positioning((TextServer::SubpixelPositioning)import_settings_data->get("subpixel_positioning").operator int());
+			int font_subpixel_positioning = import_settings_data->get("subpixel_positioning").operator int();
+			if (font_subpixel_positioning == 4 /* Auto (Except Pixel Fonts) */) {
+				if (is_pixel) {
+					font_subpixel_positioning = TextServer::SUBPIXEL_POSITIONING_DISABLED;
+				} else {
+					font_subpixel_positioning = TextServer::SUBPIXEL_POSITIONING_AUTO;
+				}
+			}
+			font_preview->set_subpixel_positioning((TextServer::SubpixelPositioning)font_subpixel_positioning);
+			_variations_validate();
+		} else if (p_edited_property == "keep_rounding_remainders") {
+			font_preview->set_keep_rounding_remainders(import_settings_data->get("keep_rounding_remainders"));
 		} else if (p_edited_property == "oversampling") {
 			font_preview->set_oversampling(import_settings_data->get("oversampling"));
 		}
@@ -608,7 +630,15 @@ void DynamicFontImportSettingsDialog::_variations_validate() {
 	if ((TextServer::FontAntialiasing)(int)import_settings_data->get("antialiasing") == TextServer::FONT_ANTIALIASING_LCD) {
 		warn += "\n" + TTR("Note: LCD Subpixel antialiasing is selected, each of the glyphs will be pre-rendered for all supported subpixel layouts (5x).");
 	}
-	if ((TextServer::SubpixelPositioning)(int)import_settings_data->get("subpixel_positioning") != TextServer::SUBPIXEL_POSITIONING_DISABLED) {
+	int font_subpixel_positioning = import_settings_data->get("subpixel_positioning").operator int();
+	if (font_subpixel_positioning == 4 /* Auto (Except Pixel Fonts) */) {
+		if (is_pixel) {
+			font_subpixel_positioning = TextServer::SUBPIXEL_POSITIONING_DISABLED;
+		} else {
+			font_subpixel_positioning = TextServer::SUBPIXEL_POSITIONING_AUTO;
+		}
+	}
+	if ((TextServer::SubpixelPositioning)font_subpixel_positioning != TextServer::SUBPIXEL_POSITIONING_DISABLED) {
 		warn += "\n" + TTR("Note: Subpixel positioning is selected, each of the glyphs might be pre-rendered for multiple subpixel offsets (up to 4x).");
 	}
 	if (warn.is_empty()) {
@@ -929,7 +959,7 @@ void DynamicFontImportSettingsDialog::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
-			add_var->set_icon(get_editor_theme_icon(SNAME("Add")));
+			add_var->set_button_icon(get_editor_theme_icon(SNAME("Add")));
 			label_warn->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
 		} break;
 	}
@@ -949,6 +979,7 @@ void DynamicFontImportSettingsDialog::_re_import() {
 	main_settings["force_autohinter"] = import_settings_data->get("force_autohinter");
 	main_settings["hinting"] = import_settings_data->get("hinting");
 	main_settings["subpixel_positioning"] = import_settings_data->get("subpixel_positioning");
+	main_settings["keep_rounding_remainders"] = import_settings_data->get("keep_rounding_remainders");
 	main_settings["oversampling"] = import_settings_data->get("oversampling");
 	main_settings["fallbacks"] = import_settings_data->get("fallbacks");
 	main_settings["compress"] = import_settings_data->get("compress");
@@ -1073,6 +1104,34 @@ void DynamicFontImportSettingsDialog::open_settings(const String &p_path) {
 	// Load font for preview.
 	font_preview.instantiate();
 	font_preview->set_data(font_data);
+
+	Array rids = font_preview->get_rids();
+	if (!rids.is_empty()) {
+		PackedInt32Array glyphs = TS->font_get_supported_glyphs(rids[0]);
+		is_pixel = true;
+		for (int32_t gl : glyphs) {
+			Dictionary ct = TS->font_get_glyph_contours(rids[0], 16, gl);
+			PackedInt32Array contours = ct["contours"];
+			PackedVector3Array points = ct["points"];
+			int prev_start = 0;
+			for (int i = 0; i < contours.size(); i++) {
+				for (int j = prev_start; j <= contours[i]; j++) {
+					int next_point = (j < contours[i]) ? (j + 1) : prev_start;
+					if ((points[j].z != TextServer::CONTOUR_CURVE_TAG_ON) || (!Math::is_equal_approx(points[j].x, points[next_point].x) && !Math::is_equal_approx(points[j].y, points[next_point].y))) {
+						is_pixel = false;
+						break;
+					}
+				}
+				prev_start = contours[i] + 1;
+				if (!is_pixel) {
+					break;
+				}
+			}
+			if (!is_pixel) {
+				break;
+			}
+		}
+	}
 
 	String font_name = vformat("%s (%s)", font_preview->get_font_name(), font_preview->get_font_style_name());
 	String sample;
@@ -1224,7 +1283,16 @@ void DynamicFontImportSettingsDialog::open_settings(const String &p_path) {
 		font_preview->set_allow_system_fallback(import_settings_data->get("allow_system_fallback"));
 		font_preview->set_force_autohinter(import_settings_data->get("force_autohinter"));
 		font_preview->set_hinting((TextServer::Hinting)import_settings_data->get("hinting").operator int());
-		font_preview->set_subpixel_positioning((TextServer::SubpixelPositioning)import_settings_data->get("subpixel_positioning").operator int());
+		int font_subpixel_positioning = import_settings_data->get("subpixel_positioning").operator int();
+		if (font_subpixel_positioning == 4 /* Auto (Except Pixel Fonts) */) {
+			if (is_pixel) {
+				font_subpixel_positioning = TextServer::SUBPIXEL_POSITIONING_DISABLED;
+			} else {
+				font_subpixel_positioning = TextServer::SUBPIXEL_POSITIONING_AUTO;
+			}
+		}
+		font_preview->set_subpixel_positioning((TextServer::SubpixelPositioning)font_subpixel_positioning);
+		font_preview->set_keep_rounding_remainders(import_settings_data->get("keep_rounding_remainders"));
 		font_preview->set_oversampling(import_settings_data->get("oversampling"));
 	}
 	font_preview_label->add_theme_font_override(SceneStringName(font), font_preview);
@@ -1256,7 +1324,8 @@ DynamicFontImportSettingsDialog::DynamicFontImportSettingsDialog() {
 	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::BOOL, "allow_system_fallback"), true));
 	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::BOOL, "force_autohinter"), false));
 	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::INT, "hinting", PROPERTY_HINT_ENUM, "None,Light,Normal"), 1));
-	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::INT, "subpixel_positioning", PROPERTY_HINT_ENUM, "Disabled,Auto,One Half of a Pixel,One Quarter of a Pixel"), 1));
+	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::INT, "subpixel_positioning", PROPERTY_HINT_ENUM, "Disabled,Auto,One Half of a Pixel,One Quarter of a Pixel,Auto (Except Pixel Fonts)"), 4));
+	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::BOOL, "keep_rounding_remainders"), true));
 	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::FLOAT, "oversampling", PROPERTY_HINT_RANGE, "0,10,0.1"), 0.0));
 
 	options_general.push_back(ResourceImporter::ImportOption(PropertyInfo(Variant::NIL, "Metadata Overrides", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_GROUP), Variant()));

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef DIR_ACCESS_UNIX_H
-#define DIR_ACCESS_UNIX_H
+#pragma once
 
 #if defined(UNIX_ENABLED)
 
@@ -52,6 +51,9 @@ protected:
 	virtual bool is_hidden(const String &p_name);
 
 public:
+	typedef void (*RemoveNotificationFunc)(const String &p_file);
+	static RemoveNotificationFunc remove_notification_func;
+
 	virtual Error list_dir_begin() override; ///< This starts dir listing
 	virtual String get_next() override;
 	virtual bool current_is_dir() const override;
@@ -93,5 +95,3 @@ public:
 };
 
 #endif // UNIX_ENABLED
-
-#endif // DIR_ACCESS_UNIX_H

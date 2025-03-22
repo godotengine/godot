@@ -30,14 +30,8 @@
 
 #include "editor_scene_importer_gltf.h"
 
-#ifdef TOOLS_ENABLED
-
 #include "../gltf_defines.h"
 #include "../gltf_document.h"
-
-uint32_t EditorSceneFormatImporterGLTF::get_import_flags() const {
-	return ImportFlags::IMPORT_SCENE | ImportFlags::IMPORT_ANIMATION;
-}
 
 void EditorSceneFormatImporterGLTF::get_extensions(List<String> *r_extensions) const {
 	r_extensions->push_back("gltf");
@@ -61,6 +55,9 @@ Node *EditorSceneFormatImporterGLTF::import_scene(const String &p_path, uint32_t
 	}
 	if (p_options.has(SNAME("nodes/import_as_skeleton_bones")) ? (bool)p_options[SNAME("nodes/import_as_skeleton_bones")] : false) {
 		state->set_import_as_skeleton_bones(true);
+	}
+	if (p_options.has(SNAME("extract_path"))) {
+		state->set_extract_path(p_options["extract_path"]);
 	}
 	state->set_bake_fps(p_options["animation/fps"]);
 	Error err = gltf->append_from_file(p_path, state, p_flags);
@@ -104,5 +101,3 @@ Variant EditorSceneFormatImporterGLTF::get_option_visibility(const String &p_pat
 		const String &p_option, const HashMap<StringName, Variant> &p_options) {
 	return true;
 }
-
-#endif // TOOLS_ENABLED

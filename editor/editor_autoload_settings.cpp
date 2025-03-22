@@ -38,7 +38,6 @@
 #include "editor/filesystem_dock.h"
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/project_settings_editor.h"
-#include "editor/themes/editor_scale.h"
 #include "scene/main/window.h"
 #include "scene/resources/packed_scene.h"
 
@@ -55,12 +54,12 @@ void EditorAutoloadSettings::_notification(int p_what) {
 				file_dialog->add_filter("*." + E);
 			}
 
-			browse_button->set_icon(get_editor_theme_icon(SNAME("Folder")));
+			browse_button->set_button_icon(get_editor_theme_icon(SNAME("Folder")));
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
-			browse_button->set_icon(get_editor_theme_icon(SNAME("Folder")));
-			add_autoload->set_icon(get_editor_theme_icon(SNAME("Add")));
+			browse_button->set_button_icon(get_editor_theme_icon(SNAME("Folder")));
+			add_autoload->set_button_icon(get_editor_theme_icon(SNAME("Add")));
 		} break;
 
 		case NOTIFICATION_VISIBILITY_CHANGED: {
@@ -88,14 +87,9 @@ void EditorAutoloadSettings::_notification(int p_what) {
 }
 
 bool EditorAutoloadSettings::_autoload_name_is_valid(const String &p_name, String *r_error) {
-	if (!p_name.is_valid_ascii_identifier()) {
+	if (!p_name.is_valid_unicode_identifier()) {
 		if (r_error) {
-			*r_error = TTR("Invalid name.") + " ";
-			if (p_name.size() > 0 && p_name.left(1).is_numeric()) {
-				*r_error += TTR("Cannot begin with a digit.");
-			} else {
-				*r_error += TTR("Valid characters:") + " a-z, A-Z, 0-9 or _";
-			}
+			*r_error = TTR("Invalid name.") + " " + TTR("Must be a valid Unicode identifier.");
 		}
 
 		return false;
@@ -117,14 +111,12 @@ bool EditorAutoloadSettings::_autoload_name_is_valid(const String &p_name, Strin
 		return false;
 	}
 
-	for (int i = 0; i < Variant::VARIANT_MAX; i++) {
-		if (Variant::get_type_name(Variant::Type(i)) == p_name) {
-			if (r_error) {
-				*r_error = TTR("Invalid name.") + " " + TTR("Must not collide with an existing built-in type name.");
-			}
-
-			return false;
+	if (Variant::get_type_by_name(p_name) < Variant::VARIANT_MAX) {
+		if (r_error) {
+			*r_error = TTR("Invalid name.") + " " + TTR("Must not collide with an existing built-in type name.");
 		}
+
+		return false;
 	}
 
 	for (int i = 0; i < CoreConstants::get_global_constant_count(); i++) {
@@ -195,7 +187,7 @@ void EditorAutoloadSettings::_autoload_edited() {
 
 	if (column == 0) {
 		String name = ti->get_text(0);
-		String old_name = selected_autoload.get_slice("/", 1);
+		String old_name = selected_autoload.get_slicec('/', 1);
 
 		if (name == old_name) {
 			return;
@@ -250,7 +242,7 @@ void EditorAutoloadSettings::_autoload_edited() {
 		String scr_path = GLOBAL_GET(base);
 
 		if (scr_path.begins_with("*")) {
-			scr_path = scr_path.substr(1, scr_path.length());
+			scr_path = scr_path.substr(1);
 		}
 
 		// Singleton autoloads are represented with a leading "*" in their path.
@@ -357,11 +349,7 @@ void EditorAutoloadSettings::_autoload_activated() {
 }
 
 void EditorAutoloadSettings::_autoload_open(const String &fpath) {
-	if (ResourceLoader::get_resource_type(fpath) == "PackedScene") {
-		EditorNode::get_singleton()->open_request(fpath);
-	} else {
-		EditorNode::get_singleton()->load_resource(fpath);
-	}
+	EditorNode::get_singleton()->load_scene_or_resource(fpath);
 	ProjectSettingsEditor::get_singleton()->hide();
 }
 
@@ -403,7 +391,7 @@ Node *EditorAutoloadSettings::_create_autoload(const String &p_path) {
 		scn.instantiate();
 		scn->set_path(p_path);
 		scn->reload_from_file();
-		ERR_FAIL_COND_V_MSG(!scn.is_valid(), nullptr, vformat("Failed to create an autoload, can't load from path: %s.", p_path));
+		ERR_FAIL_COND_V_MSG(scn.is_null(), nullptr, vformat("Failed to create an autoload, can't load from path: %s.", p_path));
 
 		if (scn.is_valid()) {
 			n = scn->instantiate();
@@ -491,7 +479,7 @@ void EditorAutoloadSettings::update_autoload() {
 			continue;
 		}
 
-		String name = pi.name.get_slice("/", 1);
+		String name = pi.name.get_slicec('/', 1);
 		String scr_path = GLOBAL_GET(pi.name);
 
 		if (name.is_empty()) {
@@ -502,7 +490,7 @@ void EditorAutoloadSettings::update_autoload() {
 		info.is_singleton = scr_path.begins_with("*");
 
 		if (info.is_singleton) {
-			scr_path = scr_path.substr(1, scr_path.length());
+			scr_path = scr_path.substr(1);
 		}
 
 		info.name = name;
@@ -644,6 +632,7 @@ Variant EditorAutoloadSettings::get_drag_data_fw(const Point2 &p_point, Control 
 	for (int i = 0; i < max_size; i++) {
 		Label *label = memnew(Label(autoloads[i]));
 		label->set_self_modulate(Color(1, 1, 1, Math::lerp(1, 0, float(i) / PREVIEW_LIST_MAX_SIZE)));
+		label->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 
 		preview->add_child(label);
 	}
@@ -722,6 +711,15 @@ void EditorAutoloadSettings::drop_data_fw(const Point2 &p_point, const Variant &
 	Dictionary drop_data = p_data;
 	PackedStringArray autoloads = drop_data["autoloads"];
 
+	// Store the initial order of the autoloads for comparison.
+	Vector<int> initial_orders;
+	initial_orders.resize(autoload_cache.size());
+	int idx = 0;
+	for (const AutoloadInfo &F : autoload_cache) {
+		initial_orders.write[idx++] = F.order;
+	}
+
+	// Perform the drag-and-drop operation.
 	Vector<int> orders;
 	orders.resize(autoload_cache.size());
 
@@ -741,10 +739,14 @@ void EditorAutoloadSettings::drop_data_fw(const Point2 &p_point, const Variant &
 		}
 	}
 
-	int i = 0;
-
+	idx = 0;
 	for (const AutoloadInfo &F : autoload_cache) {
-		orders.write[i++] = F.order;
+		orders.write[idx++] = F.order;
+	}
+
+	// If the order didn't change, we shouldn't create undo/redo actions.
+	if (orders == initial_orders) {
+		return;
 	}
 
 	orders.sort();
@@ -753,10 +755,9 @@ void EditorAutoloadSettings::drop_data_fw(const Point2 &p_point, const Variant &
 
 	undo_redo->create_action(TTR("Rearrange Autoloads"));
 
-	i = 0;
-
+	idx = 0;
 	for (const AutoloadInfo &F : autoload_cache) {
-		undo_redo->add_do_method(ProjectSettings::get_singleton(), "set_order", "autoload/" + F.name, orders[i++]);
+		undo_redo->add_do_method(ProjectSettings::get_singleton(), "set_order", "autoload/" + F.name, orders[idx++]);
 		undo_redo->add_undo_method(ProjectSettings::get_singleton(), "set_order", "autoload/" + F.name, F.order);
 	}
 
@@ -857,7 +858,7 @@ EditorAutoloadSettings::EditorAutoloadSettings() {
 			continue;
 		}
 
-		String name = pi.name.get_slice("/", 1);
+		String name = pi.name.get_slicec('/', 1);
 		String scr_path = GLOBAL_GET(pi.name);
 
 		if (name.is_empty()) {
@@ -868,7 +869,7 @@ EditorAutoloadSettings::EditorAutoloadSettings() {
 		info.is_singleton = scr_path.begins_with("*");
 
 		if (info.is_singleton) {
-			scr_path = scr_path.substr(1, scr_path.length());
+			scr_path = scr_path.substr(1);
 		}
 
 		info.name = name;
@@ -925,7 +926,7 @@ EditorAutoloadSettings::EditorAutoloadSettings() {
 
 	autoload_add_name = memnew(LineEdit);
 	autoload_add_name->set_h_size_flags(SIZE_EXPAND_FILL);
-	autoload_add_name->connect("text_submitted", callable_mp(this, &EditorAutoloadSettings::_autoload_text_submitted));
+	autoload_add_name->connect(SceneStringName(text_submitted), callable_mp(this, &EditorAutoloadSettings::_autoload_text_submitted));
 	autoload_add_name->connect(SceneStringName(text_changed), callable_mp(this, &EditorAutoloadSettings::_autoload_text_changed));
 	hbc->add_child(autoload_add_name);
 
@@ -979,7 +980,7 @@ EditorAutoloadSettings::~EditorAutoloadSettings() {
 
 void EditorAutoloadSettings::_set_autoload_add_path(const String &p_text) {
 	autoload_add_path->set_text(p_text);
-	autoload_add_path->emit_signal(SNAME("text_submitted"), p_text);
+	autoload_add_path->emit_signal(SceneStringName(text_submitted), p_text);
 }
 
 void EditorAutoloadSettings::_browse_autoload_add_path() {

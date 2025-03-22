@@ -41,7 +41,7 @@ void OpenXRActionEditor::_bind_methods() {
 }
 
 void OpenXRActionEditor::_theme_changed() {
-	rem_action->set_icon(get_theme_icon(SNAME("Remove"), EditorStringName(EditorIcons)));
+	rem_action->set_button_icon(get_theme_icon(SNAME("Remove"), EditorStringName(EditorIcons)));
 }
 
 void OpenXRActionEditor::_notification(int p_what) {

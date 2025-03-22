@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef GLTF_STATE_H
-#define GLTF_STATE_H
+#pragma once
 
 #include "extensions/gltf_light.h"
 #include "structures/gltf_accessor.h"
@@ -38,19 +37,24 @@
 #include "structures/gltf_camera.h"
 #include "structures/gltf_mesh.h"
 #include "structures/gltf_node.h"
+#include "structures/gltf_object_model_property.h"
 #include "structures/gltf_skeleton.h"
 #include "structures/gltf_skin.h"
 #include "structures/gltf_texture.h"
 #include "structures/gltf_texture_sampler.h"
 
 #include "scene/3d/importer_mesh_instance_3d.h"
+#include "scene/animation/animation_player.h"
 
 class GLTFState : public Resource {
 	GDCLASS(GLTFState, Resource);
 	friend class GLTFDocument;
+	friend class GLTFNode;
 
 protected:
 	String base_path;
+	String extract_path;
+	String extract_prefix;
 	String filename;
 	Dictionary json;
 	int major_version = 0;
@@ -100,6 +104,7 @@ protected:
 	Vector<Ref<GLTFAnimation>> animations;
 	HashMap<GLTFNodeIndex, Node *> scene_nodes;
 	HashMap<GLTFNodeIndex, ImporterMeshInstance3D *> scene_mesh_instances;
+	HashMap<String, Ref<GLTFObjectModelProperty>> object_model_properties;
 
 	HashMap<ObjectID, GLTFSkeletonIndex> skeleton3d_to_gltf_skeleton;
 	HashMap<ObjectID, HashMap<ObjectID, GLTFSkinIndex>> skin_and_skeleton3d_to_gltf_skin;
@@ -119,6 +124,7 @@ public:
 
 	void add_used_extension(const String &p_extension, bool p_required = false);
 	GLTFBufferViewIndex append_data_to_buffers(const Vector<uint8_t> &p_data, const bool p_deduplication);
+	GLTFNodeIndex append_gltf_node(Ref<GLTFNode> p_gltf_node, Node *p_godot_scene_node, GLTFNodeIndex p_parent_node_index);
 
 	enum GLTFHandleBinary {
 		HANDLE_BINARY_DISCARD_TEXTURES = 0,
@@ -185,7 +191,13 @@ public:
 	void set_scene_name(String p_scene_name);
 
 	String get_base_path();
-	void set_base_path(String p_base_path);
+	void set_base_path(const String &p_base_path);
+
+	String get_extract_path();
+	void set_extract_path(const String &p_extract_path);
+
+	String get_extract_prefix();
+	void set_extract_prefix(const String &p_extract_prefix);
 
 	String get_filename() const;
 	void set_filename(const String &p_filename);
@@ -239,5 +251,3 @@ public:
 	Variant get_additional_data(const StringName &p_extension_name);
 	void set_additional_data(const StringName &p_extension_name, Variant p_additional_data);
 };
-
-#endif // GLTF_STATE_H

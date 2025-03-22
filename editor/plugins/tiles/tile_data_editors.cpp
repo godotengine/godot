@@ -64,7 +64,7 @@ void TileDataEditor::_tile_set_changed_deferred_update() {
 }
 
 TileData *TileDataEditor::_get_tile_data(TileMapCell p_cell) {
-	ERR_FAIL_COND_V(!tile_set.is_valid(), nullptr);
+	ERR_FAIL_COND_V(tile_set.is_null(), nullptr);
 	ERR_FAIL_COND_V(!tile_set->has_source(p_cell.source_id), nullptr);
 
 	TileData *td = nullptr;
@@ -129,7 +129,7 @@ void DummyObject::clear_dummy_properties() {
 }
 
 void GenericTilePolygonEditor::_base_control_draw() {
-	ERR_FAIL_COND(!tile_set.is_valid());
+	ERR_FAIL_COND(tile_set.is_null());
 
 	real_t grab_threshold = EDITOR_GET("editors/polygon_editor/point_grab_radius");
 
@@ -452,7 +452,7 @@ void GenericTilePolygonEditor::_grab_polygon_segment_point(Vector2 p_pos, const 
 }
 
 void GenericTilePolygonEditor::_snap_to_tile_shape(Point2 &r_point, float &r_current_snapped_dist, float p_snap_dist) {
-	ERR_FAIL_COND(!tile_set.is_valid());
+	ERR_FAIL_COND(tile_set.is_null());
 
 	Vector<Point2> polygon = tile_set->get_tile_shape_polygon();
 	for (int i = 0; i < polygon.size(); i++) {
@@ -722,7 +722,7 @@ void GenericTilePolygonEditor::_base_control_gui_input(Ref<InputEvent> p_event) 
 
 void GenericTilePolygonEditor::_set_snap_option(int p_index) {
 	current_snap_option = p_index;
-	button_pixel_snap->set_icon(button_pixel_snap->get_popup()->get_item_icon(p_index));
+	button_pixel_snap->set_button_icon(button_pixel_snap->get_popup()->get_item_icon(p_index));
 	snap_subdivision->set_visible(p_index == SNAP_GRID);
 
 	if (initializing) {
@@ -751,7 +751,7 @@ void GenericTilePolygonEditor::set_use_undo_redo(bool p_use_undo_redo) {
 }
 
 void GenericTilePolygonEditor::set_tile_set(Ref<TileSet> p_tile_set) {
-	ERR_FAIL_COND(!p_tile_set.is_valid());
+	ERR_FAIL_COND(p_tile_set.is_null());
 	if (tile_set == p_tile_set) {
 		return;
 	}
@@ -874,17 +874,22 @@ void GenericTilePolygonEditor::_notification(int p_what) {
 				button_expand->set_pressed_no_signal(false);
 			}
 		} break;
+
+		case NOTIFICATION_READY: {
+			get_parent()->connect(SceneStringName(tree_exited), callable_mp(TileSetEditor::get_singleton(), &TileSetEditor::remove_expanded_editor));
+		} break;
+
 		case NOTIFICATION_THEME_CHANGED: {
-			button_expand->set_icon(get_editor_theme_icon(SNAME("DistractionFree")));
-			button_create->set_icon(get_editor_theme_icon(SNAME("CurveCreate")));
-			button_edit->set_icon(get_editor_theme_icon(SNAME("CurveEdit")));
-			button_delete->set_icon(get_editor_theme_icon(SNAME("CurveDelete")));
-			button_center_view->set_icon(get_editor_theme_icon(SNAME("CenterView")));
-			button_advanced_menu->set_icon(get_editor_theme_icon(SNAME("GuiTabMenuHl")));
+			button_expand->set_button_icon(get_editor_theme_icon(SNAME("DistractionFree")));
+			button_create->set_button_icon(get_editor_theme_icon(SNAME("CurveCreate")));
+			button_edit->set_button_icon(get_editor_theme_icon(SNAME("CurveEdit")));
+			button_delete->set_button_icon(get_editor_theme_icon(SNAME("CurveDelete")));
+			button_center_view->set_button_icon(get_editor_theme_icon(SNAME("CenterView")));
+			button_advanced_menu->set_button_icon(get_editor_theme_icon(SNAME("GuiTabMenuHl")));
 			button_pixel_snap->get_popup()->set_item_icon(0, get_editor_theme_icon(SNAME("SnapDisable")));
 			button_pixel_snap->get_popup()->set_item_icon(1, get_editor_theme_icon(SNAME("Snap")));
 			button_pixel_snap->get_popup()->set_item_icon(2, get_editor_theme_icon(SNAME("SnapGrid")));
-			button_pixel_snap->set_icon(button_pixel_snap->get_popup()->get_item_icon(current_snap_option));
+			button_pixel_snap->set_button_icon(button_pixel_snap->get_popup()->get_item_icon(current_snap_option));
 
 			PopupMenu *p = button_advanced_menu->get_popup();
 			p->set_item_icon(p->get_item_index(ROTATE_RIGHT), get_editor_theme_icon(SNAME("RotateRight")));
@@ -913,7 +918,7 @@ GenericTilePolygonEditor::GenericTilePolygonEditor() {
 	tools_button_group.instantiate();
 
 	button_expand = memnew(Button);
-	button_expand->set_theme_type_variation("FlatButton");
+	button_expand->set_theme_type_variation(SceneStringName(FlatButton));
 	button_expand->set_toggle_mode(true);
 	button_expand->set_pressed(false);
 	button_expand->set_tooltip_text(TTR("Expand editor"));
@@ -923,7 +928,7 @@ GenericTilePolygonEditor::GenericTilePolygonEditor() {
 	toolbar->add_child(memnew(VSeparator));
 
 	button_create = memnew(Button);
-	button_create->set_theme_type_variation("FlatButton");
+	button_create->set_theme_type_variation(SceneStringName(FlatButton));
 	button_create->set_toggle_mode(true);
 	button_create->set_button_group(tools_button_group);
 	button_create->set_pressed(true);
@@ -931,14 +936,14 @@ GenericTilePolygonEditor::GenericTilePolygonEditor() {
 	toolbar->add_child(button_create);
 
 	button_edit = memnew(Button);
-	button_edit->set_theme_type_variation("FlatButton");
+	button_edit->set_theme_type_variation(SceneStringName(FlatButton));
 	button_edit->set_toggle_mode(true);
 	button_edit->set_button_group(tools_button_group);
 	button_edit->set_tooltip_text(TTR("Edit points tool"));
 	toolbar->add_child(button_edit);
 
 	button_delete = memnew(Button);
-	button_delete->set_theme_type_variation("FlatButton");
+	button_delete->set_theme_type_variation(SceneStringName(FlatButton));
 	button_delete->set_toggle_mode(true);
 	button_delete->set_button_group(tools_button_group);
 	button_delete->set_tooltip_text(TTR("Delete points tool"));
@@ -1010,7 +1015,7 @@ GenericTilePolygonEditor::GenericTilePolygonEditor() {
 	button_center_view->set_anchors_and_offsets_preset(Control::PRESET_TOP_RIGHT, Control::PRESET_MODE_MINSIZE, 5);
 	button_center_view->set_grow_direction_preset(Control::PRESET_TOP_RIGHT);
 	button_center_view->connect(SceneStringName(pressed), callable_mp(this, &GenericTilePolygonEditor::_center_view));
-	button_center_view->set_theme_type_variation("FlatButton");
+	button_center_view->set_theme_type_variation(SceneStringName(FlatButton));
 	button_center_view->set_tooltip_text(TTR("Center View"));
 	button_center_view->set_disabled(true);
 	root->add_child(button_center_view);
@@ -1095,11 +1100,10 @@ void TileDataDefaultEditor::forward_draw_over_atlas(TileAtlasView *p_tile_atlas_
 		}
 		p_canvas_item->draw_set_transform_matrix(Transform2D());
 	}
-};
+}
 
-void TileDataDefaultEditor::forward_draw_over_alternatives(TileAtlasView *p_tile_atlas_view, TileSetAtlasSource *p_tile_set_atlas_source, CanvasItem *p_canvas_item, Transform2D p_transform){
-
-};
+void TileDataDefaultEditor::forward_draw_over_alternatives(TileAtlasView *p_tile_atlas_view, TileSetAtlasSource *p_tile_set_atlas_source, CanvasItem *p_canvas_item, Transform2D p_transform) {
+}
 
 void TileDataDefaultEditor::forward_painting_atlas_gui_input(TileAtlasView *p_tile_atlas_view, TileSetAtlasSource *p_tile_set_atlas_source, const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseMotion> mm = p_event;
@@ -1357,7 +1361,7 @@ void TileDataDefaultEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
-			picker_button->set_icon(get_editor_theme_icon(SNAME("ColorPick")));
+			picker_button->set_button_icon(get_editor_theme_icon(SNAME("ColorPick")));
 			tile_bool_checked = get_editor_theme_icon(SNAME("TileChecked"));
 			tile_bool_unchecked = get_editor_theme_icon(SNAME("TileUnchecked"));
 		} break;
@@ -1375,7 +1379,7 @@ TileDataDefaultEditor::TileDataDefaultEditor() {
 	add_child(label);
 
 	picker_button = memnew(Button);
-	picker_button->set_theme_type_variation("FlatButton");
+	picker_button->set_theme_type_variation(SceneStringName(FlatButton));
 	picker_button->set_toggle_mode(true);
 	picker_button->set_shortcut(ED_GET_SHORTCUT("tiles_editor/picker"));
 	toolbar->add_child(picker_button);
@@ -1848,7 +1852,7 @@ void TileDataCollisionEditor::draw_over_tile(CanvasItem *p_canvas_item, Transfor
 }
 
 void TileDataTerrainsEditor::_update_terrain_selector() {
-	ERR_FAIL_COND(!tile_set.is_valid());
+	ERR_FAIL_COND(tile_set.is_null());
 
 	// Update the terrain set selector.
 	Vector<String> options;
@@ -1901,7 +1905,7 @@ void TileDataTerrainsEditor::_property_value_changed(const StringName &p_propert
 }
 
 void TileDataTerrainsEditor::_tile_set_changed() {
-	ERR_FAIL_COND(!tile_set.is_valid());
+	ERR_FAIL_COND(tile_set.is_null());
 
 	// Fix if wrong values are selected.
 	int terrain_set = int(dummy_object->get("terrain_set"));
@@ -1919,7 +1923,7 @@ void TileDataTerrainsEditor::_tile_set_changed() {
 }
 
 void TileDataTerrainsEditor::forward_draw_over_atlas(TileAtlasView *p_tile_atlas_view, TileSetAtlasSource *p_tile_set_atlas_source, CanvasItem *p_canvas_item, Transform2D p_transform) {
-	ERR_FAIL_COND(!tile_set.is_valid());
+	ERR_FAIL_COND(tile_set.is_null());
 
 	// Draw the hovered terrain bit, or the whole tile if it has the wrong terrain set.
 	Vector2i hovered_coords = TileSetSource::INVALID_ATLAS_COORDS;
@@ -2106,7 +2110,7 @@ void TileDataTerrainsEditor::forward_draw_over_atlas(TileAtlasView *p_tile_atlas
 }
 
 void TileDataTerrainsEditor::forward_draw_over_alternatives(TileAtlasView *p_tile_atlas_view, TileSetAtlasSource *p_tile_set_atlas_source, CanvasItem *p_canvas_item, Transform2D p_transform) {
-	ERR_FAIL_COND(!tile_set.is_valid());
+	ERR_FAIL_COND(tile_set.is_null());
 
 	// Draw the hovered terrain bit, or the whole tile if it has the wrong terrain set.
 	Vector2i hovered_coords = TileSetSource::INVALID_ATLAS_COORDS;
@@ -2863,7 +2867,7 @@ void TileDataTerrainsEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
-			picker_button->set_icon(get_editor_theme_icon(SNAME("ColorPick")));
+			picker_button->set_button_icon(get_editor_theme_icon(SNAME("ColorPick")));
 		} break;
 	}
 }
@@ -2876,7 +2880,7 @@ TileDataTerrainsEditor::TileDataTerrainsEditor() {
 
 	// Toolbar
 	picker_button = memnew(Button);
-	picker_button->set_theme_type_variation("FlatButton");
+	picker_button->set_theme_type_variation(SceneStringName(FlatButton));
 	picker_button->set_toggle_mode(true);
 	picker_button->set_shortcut(ED_GET_SHORTCUT("tiles_editor/picker"));
 	toolbar->add_child(picker_button);

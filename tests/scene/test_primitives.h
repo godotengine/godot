@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TEST_PRIMITIVES_H
-#define TEST_PRIMITIVES_H
+#pragma once
 
 #include "scene/resources/3d/primitive_meshes.h"
 
@@ -104,8 +103,9 @@ TEST_CASE("[SceneTree][Primitive][Capsule] Capsule Primitive") {
 			float dist_to_yaxis = 0.f;
 			for (Vector3 point : points) {
 				float new_dist_to_y = point.x * point.x + point.z * point.z;
-				if (new_dist_to_y > dist_to_yaxis)
+				if (new_dist_to_y > dist_to_yaxis) {
 					dist_to_yaxis = new_dist_to_y;
+				}
 			}
 
 			CHECK(dist_to_yaxis <= radius * radius);
@@ -114,10 +114,12 @@ TEST_CASE("[SceneTree][Primitive][Capsule] Capsule Primitive") {
 			float max_y{ 0.f };
 			float min_y{ 0.f };
 			for (Vector3 point : points) {
-				if (point.y > max_y)
+				if (point.y > max_y) {
 					max_y = point.y;
-				if (point.y < min_y)
+				}
+				if (point.y < min_y) {
 					min_y = point.y;
+				}
 			}
 
 			CHECK(max_y - min_y <= height);
@@ -196,12 +198,14 @@ TEST_CASE("[SceneTree][Primitive][Box] Box Primitive") {
 			for (const Vector3 &normal : normals) {
 				bool add_normal{ true };
 				for (const Vector3 &vec : distinct_normals) {
-					if (vec.is_equal_approx(normal))
+					if (vec.is_equal_approx(normal)) {
 						add_normal = false;
+					}
 				}
 
-				if (add_normal)
+				if (add_normal) {
 					distinct_normals.push_back(normal);
+				}
 			}
 
 			CHECK_MESSAGE(distinct_normals.size() == 6,
@@ -218,8 +222,9 @@ TEST_CASE("[SceneTree][Primitive][Box] Box Primitive") {
 						break;
 					}
 				}
-				if (!normal_correct_direction)
+				if (!normal_correct_direction) {
 					break;
+				}
 			}
 
 			CHECK_MESSAGE(normal_correct_direction,
@@ -858,5 +863,3 @@ TEST_CASE("[SceneTree][Primitive][Text] Text Primitive") {
 }
 
 } // namespace TestPrimitives
-
-#endif // TEST_PRIMITIVES_H

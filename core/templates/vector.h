@@ -28,12 +28,14 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef VECTOR_H
-#define VECTOR_H
+#pragma once
 
 /**
  * @class Vector
- * Vector container. Regular Vector Container. Use with care and for smaller arrays when possible. Use Vector for large arrays.
+ * Vector container. Simple copy-on-write container.
+ *
+ * LocalVector is an alternative available for internal use when COW is not
+ * required.
  */
 
 #include "core/error/error_macros.h"
@@ -44,6 +46,7 @@
 
 #include <climits>
 #include <initializer_list>
+#include <utility>
 
 template <typename T>
 class VectorWriteProxy {
@@ -67,6 +70,7 @@ private:
 	CowData<T> _cowdata;
 
 public:
+	// Must take a copy instead of a reference (see GH-31736).
 	bool push_back(T p_elem);
 	_FORCE_INLINE_ bool append(const T &p_elem) { return push_back(p_elem); } //alias
 	void fill(T p_elem);
@@ -85,22 +89,44 @@ public:
 
 	_FORCE_INLINE_ T *ptrw() { return _cowdata.ptrw(); }
 	_FORCE_INLINE_ const T *ptr() const { return _cowdata.ptr(); }
+	_FORCE_INLINE_ Size size() const { return _cowdata.size(); }
+
+	_FORCE_INLINE_ operator Span<T>() const { return _cowdata.span(); }
+	_FORCE_INLINE_ Span<T> span() const { return _cowdata.span(); }
+
 	_FORCE_INLINE_ void clear() { resize(0); }
 	_FORCE_INLINE_ bool is_empty() const { return _cowdata.is_empty(); }
 
 	_FORCE_INLINE_ T get(Size p_index) { return _cowdata.get(p_index); }
 	_FORCE_INLINE_ const T &get(Size p_index) const { return _cowdata.get(p_index); }
 	_FORCE_INLINE_ void set(Size p_index, const T &p_elem) { _cowdata.set(p_index, p_elem); }
-	_FORCE_INLINE_ Size size() const { return _cowdata.size(); }
 	Error resize(Size p_size) { return _cowdata.resize(p_size); }
 	Error resize_zeroed(Size p_size) { return _cowdata.template resize<true>(p_size); }
 	_FORCE_INLINE_ const T &operator[](Size p_index) const { return _cowdata.get(p_index); }
+	// Must take a copy instead of a reference (see GH-31736).
 	Error insert(Size p_pos, T p_val) { return _cowdata.insert(p_pos, p_val); }
-	Size find(const T &p_val, Size p_from = 0) const { return _cowdata.find(p_val, p_from); }
-	Size rfind(const T &p_val, Size p_from = -1) const { return _cowdata.rfind(p_val, p_from); }
-	Size count(const T &p_val) const { return _cowdata.count(p_val); }
+	Size find(const T &p_val, Size p_from = 0) const {
+		if (p_from < 0) {
+			p_from = size() + p_from;
+		}
+		if (p_from < 0 || p_from >= size()) {
+			return -1;
+		}
+		return span().find(p_val, p_from);
+	}
+	Size rfind(const T &p_val, Size p_from = -1) const {
+		if (p_from < 0) {
+			p_from = size() + p_from;
+		}
+		if (p_from < 0 || p_from >= size()) {
+			return -1;
+		}
+		return span().rfind(p_val, p_from);
+	}
+	Size count(const T &p_val) const { return span().count(p_val); }
 
-	void append_array(const Vector<T> &p_other);
+	// Must take a copy instead of a reference (see GH-31736).
+	void append_array(Vector<T> p_other);
 
 	_FORCE_INLINE_ bool has(const T &p_val) const { return find(p_val) != -1; }
 
@@ -144,17 +170,19 @@ public:
 		insert(i, p_val);
 	}
 
-	inline void operator=(const Vector &p_from) {
-		_cowdata._ref(p_from._cowdata);
-	}
+	void operator=(const Vector &p_from) { _cowdata._ref(p_from._cowdata); }
+	void operator=(Vector &&p_from) { _cowdata = std::move(p_from._cowdata); }
 
 	Vector<uint8_t> to_byte_array() const {
 		Vector<uint8_t> ret;
 		if (is_empty()) {
 			return ret;
 		}
-		ret.resize(size() * sizeof(T));
-		memcpy(ret.ptrw(), ptr(), sizeof(T) * size());
+		size_t alloc_size = size() * sizeof(T);
+		ret.resize(alloc_size);
+		if (alloc_size) {
+			memcpy(ret.ptrw(), ptr(), alloc_size);
+		}
 		return ret;
 	}
 
@@ -277,16 +305,11 @@ public:
 	}
 
 	_FORCE_INLINE_ Vector() {}
-	_FORCE_INLINE_ Vector(std::initializer_list<T> p_init) {
-		Error err = _cowdata.resize(p_init.size());
-		ERR_FAIL_COND(err);
-
-		Size i = 0;
-		for (const T &element : p_init) {
-			_cowdata.set(i++, element);
-		}
-	}
+	_FORCE_INLINE_ Vector(std::initializer_list<T> p_init) :
+			_cowdata(p_init) {}
 	_FORCE_INLINE_ Vector(const Vector &p_from) { _cowdata._ref(p_from._cowdata); }
+	_FORCE_INLINE_ Vector(Vector &&p_from) :
+			_cowdata(std::move(p_from._cowdata)) {}
 
 	_FORCE_INLINE_ ~Vector() {}
 };
@@ -300,7 +323,7 @@ void Vector<T>::reverse() {
 }
 
 template <typename T>
-void Vector<T>::append_array(const Vector<T> &p_other) {
+void Vector<T>::append_array(Vector<T> p_other) {
 	const Size ds = p_other.size();
 	if (ds == 0) {
 		return;
@@ -329,4 +352,6 @@ void Vector<T>::fill(T p_elem) {
 	}
 }
 
-#endif // VECTOR_H
+// Zero-constructing Vector initializes CowData.ptr() to nullptr and thus empty.
+template <typename T>
+struct is_zero_constructible<Vector<T>> : std::true_type {};

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef SKELETON_IK_3D_H
-#define SKELETON_IK_3D_H
+#pragma once
 
 #include "scene/3d/skeleton_modifier_3d.h"
 
@@ -131,7 +130,7 @@ class SkeletonIK3D : public SkeletonModifier3D {
 	real_t min_distance = 0.01;
 	int max_iterations = 10;
 
-	Variant target_node_override_ref = Variant();
+	Variant target_node_override_ref;
 	FabrikInverseKinematic::Task *task = nullptr;
 
 #ifndef DISABLE_DEPRECATED
@@ -191,5 +190,3 @@ private:
 	void reload_goal();
 	void _solve_chain();
 };
-
-#endif // SKELETON_IK_3D_H

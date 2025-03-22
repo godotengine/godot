@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef CAMERA_ATTRIBUTES_STORAGE_H
-#define CAMERA_ATTRIBUTES_STORAGE_H
+#pragma once
 
 #include "core/templates/rid_owner.h"
 #include "servers/rendering_server.h"
@@ -72,8 +71,8 @@ public:
 	RendererCameraAttributes();
 	~RendererCameraAttributes();
 
-	CameraAttributes *get_camera_attributes(RID p_rid) { return camera_attributes_owner.get_or_null(p_rid); };
-	bool owns_camera_attributes(RID p_rid) { return camera_attributes_owner.owns(p_rid); };
+	CameraAttributes *get_camera_attributes(RID p_rid) { return camera_attributes_owner.get_or_null(p_rid); }
+	bool owns_camera_attributes(RID p_rid) { return camera_attributes_owner.owns(p_rid); }
 
 	RID camera_attributes_allocate();
 	void camera_attributes_initialize(RID p_rid);
@@ -125,5 +124,3 @@ public:
 		return dof_blur_use_jitter;
 	}
 };
-
-#endif // CAMERA_ATTRIBUTES_STORAGE_H

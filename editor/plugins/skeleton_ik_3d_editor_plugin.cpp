@@ -75,7 +75,7 @@ void SkeletonIK3DEditorPlugin::make_visible(bool p_visible) {
 
 SkeletonIK3DEditorPlugin::SkeletonIK3DEditorPlugin() {
 	play_btn = memnew(Button);
-	play_btn->set_icon(EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("Play"), EditorStringName(EditorIcons)));
+	play_btn->set_button_icon(EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("Play"), EditorStringName(EditorIcons)));
 	play_btn->set_text(TTR("Play IK"));
 	play_btn->set_toggle_mode(true);
 	play_btn->hide();
@@ -83,5 +83,3 @@ SkeletonIK3DEditorPlugin::SkeletonIK3DEditorPlugin() {
 	add_control_to_container(CONTAINER_SPATIAL_EDITOR_MENU, play_btn);
 	skeleton_ik = nullptr;
 }
-
-SkeletonIK3DEditorPlugin::~SkeletonIK3DEditorPlugin() {}

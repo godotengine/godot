@@ -28,14 +28,12 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef SOFT_BODY_3D_H
-#define SOFT_BODY_3D_H
+#pragma once
 
 #include "scene/3d/mesh_instance_3d.h"
 #include "servers/physics_server_3d.h"
 
 class PhysicsBody3D;
-class SoftBody3D;
 
 class SoftBodyRenderingServerHandler : public PhysicsServer3DRenderingServerHandler {
 	friend class SoftBody3D;
@@ -126,6 +124,11 @@ protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 
+#ifndef DISABLE_DEPRECATED
+	void _pin_point_bind_compat_94684(int p_point_index, bool pin, const NodePath &p_spatial_attachment_path = NodePath());
+	static void _bind_compatibility_methods();
+#endif
+
 	PackedStringArray get_configuration_warnings() const override;
 
 public:
@@ -177,7 +180,7 @@ public:
 	Vector3 get_point_transform(int p_point_index);
 
 	void pin_point_toggle(int p_point_index);
-	void pin_point(int p_point_index, bool pin, const NodePath &p_spatial_attachment_path = NodePath());
+	void pin_point(int p_point_index, bool pin, const NodePath &p_spatial_attachment_path = NodePath(), int p_insert_at = -1);
 	bool is_point_pinned(int p_point_index) const;
 
 	void _pin_point_deferred(int p_point_index, bool pin, const NodePath p_spatial_attachment_path);
@@ -193,7 +196,7 @@ private:
 	void _update_cache_pin_points_datas();
 
 	void _pin_point_on_physics_server(int p_point_index, bool pin);
-	void _add_pinned_point(int p_point_index, const NodePath &p_spatial_attachment_path);
+	void _add_pinned_point(int p_point_index, const NodePath &p_spatial_attachment_path, int p_insert_at = -1);
 	void _reset_points_offsets();
 
 	void _remove_pinned_point(int p_point_index);
@@ -202,5 +205,3 @@ private:
 };
 
 VARIANT_ENUM_CAST(SoftBody3D::DisableMode);
-
-#endif // SOFT_BODY_3D_H

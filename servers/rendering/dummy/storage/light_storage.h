@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef LIGHT_STORAGE_DUMMY_H
-#define LIGHT_STORAGE_DUMMY_H
+#pragma once
 
 #include "servers/rendering/storage/light_storage.h"
 
@@ -78,6 +77,8 @@ public:
 	virtual void light_set_cull_mask(RID p_light, uint32_t p_mask) override {}
 	virtual void light_set_distance_fade(RID p_light, bool p_enabled, float p_begin, float p_shadow, float p_length) override {}
 	virtual void light_set_reverse_cull_face_mode(RID p_light, bool p_enabled) override {}
+	virtual void light_set_shadow_caster_mask(RID p_light, uint32_t p_caster_mask) override {}
+	virtual uint32_t light_get_shadow_caster_mask(RID p_light) const override { return 0xFFFFFFFF; }
 	virtual void light_set_bake_mode(RID p_light, RS::LightBakeMode p_bake_mode) override {}
 	virtual void light_set_max_sdfgi_cascade(RID p_light, uint32_t p_cascade) override {}
 
@@ -122,6 +123,7 @@ public:
 
 	virtual void reflection_probe_set_update_mode(RID p_probe, RS::ReflectionProbeUpdateMode p_mode) override {}
 	virtual void reflection_probe_set_intensity(RID p_probe, float p_intensity) override {}
+	virtual void reflection_probe_set_blend_distance(RID p_probe, float p_blend_distance) override {}
 	virtual void reflection_probe_set_ambient_mode(RID p_probe, RS::ReflectionProbeAmbientMode p_mode) override {}
 	virtual void reflection_probe_set_ambient_color(RID p_probe, const Color &p_color) override {}
 	virtual void reflection_probe_set_ambient_energy(RID p_probe, float p_energy) override {}
@@ -189,6 +191,10 @@ public:
 	virtual void lightmap_set_probe_capture_update_speed(float p_speed) override {}
 	virtual float lightmap_get_probe_capture_update_speed() const override { return 0; }
 
+	virtual void lightmap_set_shadowmask_textures(RID p_lightmap, RID p_shadow) override {}
+	virtual RS::ShadowmaskMode lightmap_get_shadowmask_mode(RID p_lightmap) override { return RS::SHADOWMASK_MODE_NONE; }
+	virtual void lightmap_set_shadowmask_mode(RID p_lightmap, RS::ShadowmaskMode p_mode) override {}
+
 	/* LIGHTMAP INSTANCE */
 
 	bool owns_lightmap_instance(RID p_rid) { return lightmap_instance_owner.owns(p_rid); }
@@ -202,15 +208,13 @@ public:
 	virtual void shadow_atlas_free(RID p_atlas) override {}
 	virtual void shadow_atlas_set_size(RID p_atlas, int p_size, bool p_16_bits = true) override {}
 	virtual void shadow_atlas_set_quadrant_subdivision(RID p_atlas, int p_quadrant, int p_subdivision) override {}
-	virtual bool shadow_atlas_update_light(RID p_atlas, RID p_light_intance, float p_coverage, uint64_t p_light_version) override { return false; }
+	virtual bool shadow_atlas_update_light(RID p_atlas, RID p_light_instance, float p_coverage, uint64_t p_light_version) override { return false; }
 
 	virtual void shadow_atlas_update(RID p_atlas) override {}
 
 	virtual void directional_shadow_atlas_set_size(int p_size, bool p_16_bits = true) override {}
-	virtual int get_directional_light_shadow_size(RID p_light_intance) override { return 0; }
+	virtual int get_directional_light_shadow_size(RID p_light_instance) override { return 0; }
 	virtual void set_directional_shadow_count(int p_count) override {}
 };
 
 } // namespace RendererDummy
-
-#endif // LIGHT_STORAGE_DUMMY_H

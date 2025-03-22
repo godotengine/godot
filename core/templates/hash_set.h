@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef HASH_SET_H
-#define HASH_SET_H
+#pragma once
 
 #include "core/math/math_funcs.h"
 #include "core/os/memory.h"
@@ -445,6 +444,13 @@ public:
 		capacity_index = MIN_CAPACITY_INDEX;
 	}
 
+	HashSet(std::initializer_list<TKey> p_init) {
+		reserve(p_init.size());
+		for (const TKey &E : p_init) {
+			insert(E);
+		}
+	}
+
 	void reset() {
 		clear();
 
@@ -472,5 +478,3 @@ public:
 		}
 	}
 };
-
-#endif // HASH_SET_H

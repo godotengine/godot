@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef PROPERTY_SELECTOR_H
-#define PROPERTY_SELECTOR_H
+#pragma once
 
 #include "scene/gui/dialogs.h"
 
@@ -45,7 +44,7 @@ class PropertySelector : public ConfirmationDialog {
 	Tree *search_options = nullptr;
 
 	void _text_changed(const String &p_newtext);
-	void _sbox_input(const Ref<InputEvent> &p_ie);
+	void _sbox_input(const Ref<InputEvent> &p_event);
 	void _update_search();
 	void _confirmed();
 	void _item_selected();
@@ -85,5 +84,3 @@ public:
 
 	PropertySelector();
 };
-
-#endif // PROPERTY_SELECTOR_H

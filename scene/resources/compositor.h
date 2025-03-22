@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef COMPOSITOR_H
-#define COMPOSITOR_H
+#pragma once
 
 #include "core/io/resource.h"
 #include "core/object/gdvirtual.gen.inc"
@@ -64,6 +63,8 @@ private:
 protected:
 	static void _bind_methods();
 	void _validate_property(PropertyInfo &p_property) const;
+
+	void _call_render_callback(int p_effect_callback_type, const RenderData *p_render_data);
 
 	GDVIRTUAL2(_render_callback, int, const RenderData *)
 
@@ -121,5 +122,3 @@ public:
 	void set_compositor_effects(const TypedArray<CompositorEffect> &p_compositor_effects);
 	TypedArray<CompositorEffect> get_compositor_effects() const;
 };
-
-#endif // COMPOSITOR_H

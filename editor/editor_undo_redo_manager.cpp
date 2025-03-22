@@ -32,7 +32,6 @@
 
 #include "core/io/resource.h"
 #include "core/os/os.h"
-#include "core/templates/local_vector.h"
 #include "editor/debugger/editor_debugger_inspector.h"
 #include "editor/debugger/editor_debugger_node.h"
 #include "editor/editor_log.h"
@@ -62,7 +61,7 @@ UndoRedo *EditorUndoRedoManager::get_history_undo_redo(int p_idx) const {
 int EditorUndoRedoManager::get_history_id_for_object(Object *p_object) const {
 	int history_id = INVALID_HISTORY;
 
-	if (Object::cast_to<EditorDebuggerRemoteObject>(p_object)) {
+	if (Object::cast_to<EditorDebuggerRemoteObjects>(p_object)) {
 		return REMOTE_HISTORY;
 	}
 
@@ -262,6 +261,22 @@ void EditorUndoRedoManager::commit_action(bool p_execute) {
 
 	if (!merging) {
 		history.undo_stack.push_back(pending_action);
+	}
+
+	if (history.id != GLOBAL_HISTORY) {
+		// Clear global redo, to avoid unexpected actions when redoing.
+		History &global = get_or_create_history(GLOBAL_HISTORY);
+		global.redo_stack.clear();
+		global.undo_redo->discard_redo();
+	} else {
+		// On global actions, clear redo of all scenes instead.
+		for (KeyValue<int, History> &E : history_map) {
+			if (E.key == GLOBAL_HISTORY) {
+				continue;
+			}
+			E.value.redo_stack.clear();
+			E.value.undo_redo->discard_redo();
+		}
 	}
 
 	pending_action = Action();

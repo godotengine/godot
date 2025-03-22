@@ -28,11 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef CRYPTO_MBEDTLS_H
-#define CRYPTO_MBEDTLS_H
+#pragma once
 
 #include "core/crypto/crypto.h"
-#include "core/io/resource.h"
 
 #include <mbedtls/ctr_drbg.h>
 #include <mbedtls/entropy.h>
@@ -57,7 +55,7 @@ public:
 	virtual Error save(const String &p_path, bool p_public_only);
 	virtual String save_to_string(bool p_public_only);
 	virtual Error load_from_string(const String &p_string_key, bool p_public_only);
-	virtual bool is_public_only() const { return public_only; };
+	virtual bool is_public_only() const { return public_only; }
 
 	CryptoKeyMbedTLS() {
 		mbedtls_pk_init(&pkey);
@@ -151,5 +149,3 @@ public:
 	CryptoMbedTLS();
 	~CryptoMbedTLS();
 };
-
-#endif // CRYPTO_MBEDTLS_H

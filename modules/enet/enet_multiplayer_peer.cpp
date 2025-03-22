@@ -30,10 +30,6 @@
 
 #include "enet_multiplayer_peer.h"
 
-#include "core/io/ip.h"
-#include "core/io/marshalls.h"
-#include "core/os/os.h"
-
 void ENetMultiplayerPeer::set_target_peer(int p_peer) {
 	target_peer = p_peer;
 }
@@ -305,6 +301,7 @@ void ENetMultiplayerPeer::close() {
 	}
 	for (KeyValue<int, Ref<ENetConnection>> &E : hosts) {
 		E.value->flush();
+		E.value->destroy();
 	}
 
 	active_mode = MODE_NONE;
@@ -337,7 +334,7 @@ Error ENetMultiplayerPeer::get_packet(const uint8_t **r_buffer, int &r_buffer_si
 Error ENetMultiplayerPeer::put_packet(const uint8_t *p_buffer, int p_buffer_size) {
 	ERR_FAIL_COND_V_MSG(!_is_active(), ERR_UNCONFIGURED, "The multiplayer instance isn't currently active.");
 	ERR_FAIL_COND_V_MSG(connection_status != CONNECTION_CONNECTED, ERR_UNCONFIGURED, "The multiplayer instance isn't currently connected to any server or client.");
-	ERR_FAIL_COND_V_MSG(target_peer != 0 && !peers.has(ABS(target_peer)), ERR_INVALID_PARAMETER, vformat("Invalid target peer: %d", target_peer));
+	ERR_FAIL_COND_V_MSG(target_peer != 0 && !peers.has(Math::abs(target_peer)), ERR_INVALID_PARAMETER, vformat("Invalid target peer: %d", target_peer));
 	ERR_FAIL_COND_V(active_mode == MODE_CLIENT && !peers.has(1), ERR_BUG);
 
 	int packet_flags = 0;
@@ -397,7 +394,7 @@ Error ENetMultiplayerPeer::put_packet(const uint8_t *p_buffer, int p_buffer_size
 
 	} else {
 		if (target_peer <= 0) {
-			int exclude = ABS(target_peer);
+			int exclude = Math::abs(target_peer);
 			for (KeyValue<int, Ref<ENetPacketPeer>> &E : peers) {
 				if (E.key == exclude) {
 					continue;

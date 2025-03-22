@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TEST_ARRAY_H
-#define TEST_ARRAY_H
+#pragma once
 
 #include "core/variant/array.h"
 #include "tests/test_macros.h"
@@ -54,6 +53,26 @@ static inline Dictionary build_dictionary(Variant key, Variant item, Targs... Fa
 	Dictionary d = build_dictionary(Fargs...);
 	d[key] = item;
 	return d;
+}
+
+TEST_CASE("[Array] initializer list") {
+	Array arr = { 0, 1, "test", true, { 0.0, 1.0 } };
+	CHECK(arr.size() == 5);
+	CHECK(arr[0] == Variant(0));
+	CHECK(arr[1] == Variant(1));
+	CHECK(arr[2] == Variant("test"));
+	CHECK(arr[3] == Variant(true));
+	CHECK(arr[4] == Variant({ 0.0, 1.0 }));
+
+	arr = { "reassign" };
+	CHECK(arr.size() == 1);
+	CHECK(arr[0] == Variant("reassign"));
+
+	TypedArray<int> typed_arr = { 0, 1, 2 };
+	CHECK(typed_arr.size() == 3);
+	CHECK(typed_arr[0] == Variant(0));
+	CHECK(typed_arr[1] == Variant(1));
+	CHECK(typed_arr[2] == Variant(2));
 }
 
 TEST_CASE("[Array] size(), clear(), and is_empty()") {
@@ -634,6 +653,22 @@ TEST_CASE("[Array] Typed copying") {
 	a6.clear();
 }
 
-} // namespace TestArray
+static bool _find_custom_callable(const Variant &p_val) {
+	return (int)p_val % 2 == 0;
+}
 
-#endif // TEST_ARRAY_H
+TEST_CASE("[Array] Test find_custom") {
+	Array a1 = build_array(1, 3, 4, 5, 8, 9);
+	// Find first even number.
+	int index = a1.find_custom(callable_mp_static(_find_custom_callable));
+	CHECK_EQ(index, 2);
+}
+
+TEST_CASE("[Array] Test rfind_custom") {
+	Array a1 = build_array(1, 3, 4, 5, 8, 9);
+	// Find last even number.
+	int index = a1.rfind_custom(callable_mp_static(_find_custom_callable));
+	CHECK_EQ(index, 4);
+}
+
+} // namespace TestArray

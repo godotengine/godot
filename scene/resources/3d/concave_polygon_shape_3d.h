@@ -28,10 +28,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef CONCAVE_POLYGON_SHAPE_3D_H
-#define CONCAVE_POLYGON_SHAPE_3D_H
+#pragma once
 
 #include "scene/resources/3d/shape_3d.h"
+
+class ArrayMesh;
 
 class ConcavePolygonShape3D : public Shape3D {
 	GDCLASS(ConcavePolygonShape3D, Shape3D);
@@ -72,9 +73,8 @@ public:
 	bool is_backface_collision_enabled() const;
 
 	virtual Vector<Vector3> get_debug_mesh_lines() const override;
+	virtual Ref<ArrayMesh> get_debug_arraymesh_faces(const Color &p_modulate) const override;
 	virtual real_t get_enclosing_radius() const override;
 
 	ConcavePolygonShape3D();
 };
-
-#endif // CONCAVE_POLYGON_SHAPE_3D_H

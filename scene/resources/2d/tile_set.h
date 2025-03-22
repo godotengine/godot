@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TILE_SET_H
-#define TILE_SET_H
+#pragma once
 
 #include "core/io/resource.h"
 #include "core/object/object.h"
@@ -278,7 +277,7 @@ public:
 		bool operator==(const TerrainsPattern &p_terrains_pattern) const;
 		bool operator!=(const TerrainsPattern &p_terrains_pattern) const {
 			return !operator==(p_terrains_pattern);
-		};
+		}
 
 		void set_terrain(int p_terrain);
 		int get_terrain() const;
@@ -327,6 +326,7 @@ private:
 	struct PhysicsLayer {
 		uint32_t collision_layer = 1;
 		uint32_t collision_mask = 1;
+		real_t collision_priority = 1.0;
 		Ref<PhysicsMaterial> physics_material;
 	};
 	Vector<PhysicsLayer> physics_layers;
@@ -448,6 +448,8 @@ public:
 	uint32_t get_physics_layer_collision_layer(int p_layer_index) const;
 	void set_physics_layer_collision_mask(int p_layer_index, uint32_t p_mask);
 	uint32_t get_physics_layer_collision_mask(int p_layer_index) const;
+	void set_physics_layer_collision_priority(int p_layer_index, real_t p_priority);
+	real_t get_physics_layer_collision_priority(int p_layer_index) const;
 	void set_physics_layer_physics_material(int p_layer_index, Ref<PhysicsMaterial> p_physics_material);
 	Ref<PhysicsMaterial> get_physics_layer_physics_material(int p_layer_index) const;
 
@@ -488,6 +490,7 @@ public:
 	void remove_custom_data_layer(int p_index);
 	int get_custom_data_layer_by_name(String p_value) const;
 	void set_custom_data_layer_name(int p_layer_id, String p_value);
+	bool has_custom_data_layer_by_name(const String &p_value) const;
 	String get_custom_data_layer_name(int p_layer_id) const;
 	void set_custom_data_layer_type(int p_layer_id, Variant::Type p_value);
 	Variant::Type get_custom_data_layer_type(int p_layer_id) const;
@@ -571,25 +574,25 @@ public:
 	// Not exposed.
 	virtual void set_tile_set(const TileSet *p_tile_set);
 	TileSet *get_tile_set() const;
-	virtual void notify_tile_data_properties_should_change(){};
-	virtual void add_occlusion_layer(int p_index){};
-	virtual void move_occlusion_layer(int p_from_index, int p_to_pos){};
-	virtual void remove_occlusion_layer(int p_index){};
-	virtual void add_physics_layer(int p_index){};
-	virtual void move_physics_layer(int p_from_index, int p_to_pos){};
-	virtual void remove_physics_layer(int p_index){};
-	virtual void add_terrain_set(int p_index){};
-	virtual void move_terrain_set(int p_from_index, int p_to_pos){};
-	virtual void remove_terrain_set(int p_index){};
-	virtual void add_terrain(int p_terrain_set, int p_index){};
-	virtual void move_terrain(int p_terrain_set, int p_from_index, int p_to_pos){};
-	virtual void remove_terrain(int p_terrain_set, int p_index){};
-	virtual void add_navigation_layer(int p_index){};
-	virtual void move_navigation_layer(int p_from_index, int p_to_pos){};
-	virtual void remove_navigation_layer(int p_index){};
-	virtual void add_custom_data_layer(int p_index){};
-	virtual void move_custom_data_layer(int p_from_index, int p_to_pos){};
-	virtual void remove_custom_data_layer(int p_index){};
+	virtual void notify_tile_data_properties_should_change() {}
+	virtual void add_occlusion_layer(int p_index) {}
+	virtual void move_occlusion_layer(int p_from_index, int p_to_pos) {}
+	virtual void remove_occlusion_layer(int p_index) {}
+	virtual void add_physics_layer(int p_index) {}
+	virtual void move_physics_layer(int p_from_index, int p_to_pos) {}
+	virtual void remove_physics_layer(int p_index) {}
+	virtual void add_terrain_set(int p_index) {}
+	virtual void move_terrain_set(int p_from_index, int p_to_pos) {}
+	virtual void remove_terrain_set(int p_index) {}
+	virtual void add_terrain(int p_terrain_set, int p_index) {}
+	virtual void move_terrain(int p_terrain_set, int p_from_index, int p_to_pos) {}
+	virtual void remove_terrain(int p_terrain_set, int p_index) {}
+	virtual void add_navigation_layer(int p_index) {}
+	virtual void move_navigation_layer(int p_from_index, int p_to_pos) {}
+	virtual void remove_navigation_layer(int p_index) {}
+	virtual void add_custom_data_layer(int p_index) {}
+	virtual void move_custom_data_layer(int p_from_index, int p_to_pos) {}
+	virtual void remove_custom_data_layer(int p_index) {}
 	virtual void reset_state() override;
 
 	// Tiles.
@@ -812,8 +815,8 @@ public:
 
 	// Scenes accessors. Lot are similar to "Alternative tiles".
 	int get_scene_tiles_count() { return get_alternative_tiles_count(Vector2i()); }
-	int get_scene_tile_id(int p_index) { return get_alternative_tile_id(Vector2i(), p_index); };
-	bool has_scene_tile_id(int p_id) { return has_alternative_tile(Vector2i(), p_id); };
+	int get_scene_tile_id(int p_index) { return get_alternative_tile_id(Vector2i(), p_index); }
+	bool has_scene_tile_id(int p_id) { return has_alternative_tile(Vector2i(), p_id); }
 	int create_scene_tile(Ref<PackedScene> p_packed_scene = Ref<PackedScene>(), int p_id_override = -1);
 	void set_scene_tile_id(int p_id, int p_new_id);
 	void set_scene_tile_scene(int p_id, Ref<PackedScene> p_packed_scene);
@@ -836,7 +839,7 @@ private:
 	bool flip_v = false;
 	bool transpose = false;
 	Vector2i texture_origin;
-	Ref<Material> material = Ref<Material>();
+	Ref<Material> material;
 	Color modulate = Color(1.0, 1.0, 1.0, 1.0);
 	int z_index = 0;
 	int y_sort_origin = 0;
@@ -996,6 +999,7 @@ public:
 	// Custom data.
 	void set_custom_data(String p_layer_name, Variant p_value);
 	Variant get_custom_data(String p_layer_name) const;
+	bool has_custom_data(const String &p_layer_name) const;
 	void set_custom_data_by_layer_id(int p_layer_id, Variant p_value);
 	Variant get_custom_data_by_layer_id(int p_layer_id) const;
 
@@ -1010,5 +1014,3 @@ VARIANT_ENUM_CAST(TileSet::TileLayout);
 VARIANT_ENUM_CAST(TileSet::TileOffsetAxis);
 
 VARIANT_ENUM_CAST(TileSetAtlasSource::TileAnimationMode);
-
-#endif // TILE_SET_H

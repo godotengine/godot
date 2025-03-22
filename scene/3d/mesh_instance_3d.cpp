@@ -36,6 +36,13 @@
 #include "scene/resources/3d/concave_polygon_shape_3d.h"
 #include "scene/resources/3d/convex_polygon_shape_3d.h"
 
+#include "scene/resources/3d/navigation_mesh_source_geometry_data_3d.h"
+#include "scene/resources/navigation_mesh.h"
+#include "servers/navigation_server_3d.h"
+
+Callable MeshInstance3D::_navmesh_source_geometry_parsing_callback;
+RID MeshInstance3D::_navmesh_source_geometry_parser;
+
 bool MeshInstance3D::_set(const StringName &p_name, const Variant &p_value) {
 	//this is not _too_ bad performance wise, really. it only arrives here if the property was not set anywhere else.
 	//add to it that it's probably found on first call to _set anyway.
@@ -87,17 +94,9 @@ bool MeshInstance3D::_get(const StringName &p_name, Variant &r_ret) const {
 }
 
 void MeshInstance3D::_get_property_list(List<PropertyInfo> *p_list) const {
-	List<String> ls;
-	for (const KeyValue<StringName, int> &E : blend_shape_properties) {
-		ls.push_back(E.key);
+	for (uint32_t i = 0; i < blend_shape_tracks.size(); i++) {
+		p_list->push_back(PropertyInfo(Variant::FLOAT, vformat("blend_shapes/%s", String(mesh->get_blend_shape_name(i))), PROPERTY_HINT_RANGE, "-1,1,0.00001"));
 	}
-
-	ls.sort();
-
-	for (const String &E : ls) {
-		p_list->push_back(PropertyInfo(Variant::FLOAT, E, PROPERTY_HINT_RANGE, "-1,1,0.00001"));
-	}
-
 	if (mesh.is_valid()) {
 		for (int i = 0; i < mesh->get_surface_count(); i++) {
 			p_list->push_back(PropertyInfo(Variant::OBJECT, vformat("%s/%d", PNAME("surface_material_override"), i), PROPERTY_HINT_RESOURCE_TYPE, "BaseMaterial3D,ShaderMaterial", PROPERTY_USAGE_DEFAULT));
@@ -142,6 +141,7 @@ int MeshInstance3D::get_blend_shape_count() const {
 	}
 	return mesh->get_blend_shape_count();
 }
+
 int MeshInstance3D::find_blend_shape_by_name(const StringName &p_name) {
 	if (mesh.is_null()) {
 		return -1;
@@ -153,11 +153,13 @@ int MeshInstance3D::find_blend_shape_by_name(const StringName &p_name) {
 	}
 	return -1;
 }
+
 float MeshInstance3D::get_blend_shape_value(int p_blend_shape) const {
 	ERR_FAIL_COND_V(mesh.is_null(), 0.0);
 	ERR_FAIL_INDEX_V(p_blend_shape, (int)blend_shape_tracks.size(), 0);
 	return blend_shape_tracks[p_blend_shape];
 }
+
 void MeshInstance3D::set_blend_shape_value(int p_blend_shape, float p_value) {
 	ERR_FAIL_COND(mesh.is_null());
 	ERR_FAIL_INDEX(p_blend_shape, (int)blend_shape_tracks.size());
@@ -221,7 +223,7 @@ NodePath MeshInstance3D::get_skeleton_path() {
 }
 
 AABB MeshInstance3D::get_aabb() const {
-	if (!mesh.is_null()) {
+	if (mesh.is_valid()) {
 		return mesh->get_aabb();
 	}
 
@@ -386,21 +388,24 @@ Ref<Material> MeshInstance3D::get_active_material(int p_surface) const {
 
 void MeshInstance3D::_mesh_changed() {
 	ERR_FAIL_COND(mesh.is_null());
-	surface_override_materials.resize(mesh->get_surface_count());
+	const int surface_count = mesh->get_surface_count();
+
+	surface_override_materials.resize(surface_count);
 
 	uint32_t initialize_bs_from = blend_shape_tracks.size();
 	blend_shape_tracks.resize(mesh->get_blend_shape_count());
 
-	for (uint32_t i = 0; i < blend_shape_tracks.size(); i++) {
-		blend_shape_properties["blend_shapes/" + String(mesh->get_blend_shape_name(i))] = i;
-		if (i < initialize_bs_from) {
-			set_blend_shape_value(i, blend_shape_tracks[i]);
-		} else {
-			set_blend_shape_value(i, 0);
+	if (surface_count > 0) {
+		for (uint32_t i = 0; i < blend_shape_tracks.size(); i++) {
+			blend_shape_properties["blend_shapes/" + String(mesh->get_blend_shape_name(i))] = i;
+			if (i < initialize_bs_from) {
+				set_blend_shape_value(i, blend_shape_tracks[i]);
+			} else {
+				set_blend_shape_value(i, 0);
+			}
 		}
 	}
 
-	int surface_count = mesh->get_surface_count();
 	for (int surface_index = 0; surface_index < surface_count; ++surface_index) {
 		if (surface_override_materials[surface_index].is_valid()) {
 			RS::get_singleton()->instance_set_surface_override_material(get_instance(), surface_index, surface_override_materials[surface_index]->get_rid());
@@ -415,7 +420,7 @@ MeshInstance3D *MeshInstance3D::create_debug_tangents_node() {
 	Vector<Color> colors;
 
 	Ref<Mesh> m = get_mesh();
-	if (!m.is_valid()) {
+	if (m.is_null()) {
 		return nullptr;
 	}
 
@@ -835,6 +840,39 @@ Ref<ArrayMesh> MeshInstance3D::bake_mesh_from_current_skeleton_pose(Ref<ArrayMes
 	}
 
 	return bake_mesh;
+}
+
+Ref<TriangleMesh> MeshInstance3D::generate_triangle_mesh() const {
+	if (mesh.is_valid()) {
+		return mesh->generate_triangle_mesh();
+	}
+	return Ref<TriangleMesh>();
+}
+
+void MeshInstance3D::navmesh_parse_init() {
+	ERR_FAIL_NULL(NavigationServer3D::get_singleton());
+	if (!_navmesh_source_geometry_parser.is_valid()) {
+		_navmesh_source_geometry_parsing_callback = callable_mp_static(&MeshInstance3D::navmesh_parse_source_geometry);
+		_navmesh_source_geometry_parser = NavigationServer3D::get_singleton()->source_geometry_parser_create();
+		NavigationServer3D::get_singleton()->source_geometry_parser_set_callback(_navmesh_source_geometry_parser, _navmesh_source_geometry_parsing_callback);
+	}
+}
+
+void MeshInstance3D::navmesh_parse_source_geometry(const Ref<NavigationMesh> &p_navigation_mesh, Ref<NavigationMeshSourceGeometryData3D> p_source_geometry_data, Node *p_node) {
+	MeshInstance3D *mesh_instance = Object::cast_to<MeshInstance3D>(p_node);
+
+	if (mesh_instance == nullptr) {
+		return;
+	}
+
+	NavigationMesh::ParsedGeometryType parsed_geometry_type = p_navigation_mesh->get_parsed_geometry_type();
+
+	if (parsed_geometry_type == NavigationMesh::PARSED_GEOMETRY_MESH_INSTANCES || parsed_geometry_type == NavigationMesh::PARSED_GEOMETRY_BOTH) {
+		Ref<Mesh> mesh = mesh_instance->get_mesh();
+		if (mesh.is_valid()) {
+			p_source_geometry_data->add_mesh(mesh, mesh_instance->get_global_transform());
+		}
+	}
 }
 
 void MeshInstance3D::_bind_methods() {

@@ -53,7 +53,7 @@
 	</methods>
 	<members>
 		<member name="delta_interval" type="float" setter="set_delta_interval" getter="get_delta_interval" default="0.0">
-			Time interval between delta synchronizations. When set to [code]0.0[/code] (the default), delta synchronizations happen every network process frame.
+			Time interval between delta synchronizations. Used when the replication is set to [constant SceneReplicationConfig.REPLICATION_MODE_ON_CHANGE]. If set to [code]0.0[/code] (the default), delta synchronizations happen every network process frame.
 		</member>
 		<member name="public_visibility" type="bool" setter="set_visibility_public" getter="is_visibility_public" default="true">
 			Whether synchronization should be visible to all peers by default. See [method set_visibility_for] and [method add_visibility_filter] for ways of configuring fine-grained visibility options.
@@ -62,7 +62,7 @@
 			Resource containing which properties to synchronize.
 		</member>
 		<member name="replication_interval" type="float" setter="set_replication_interval" getter="get_replication_interval" default="0.0">
-			Time interval between synchronizations. When set to [code]0.0[/code] (the default), synchronizations happen every network process frame.
+			Time interval between synchronizations. Used when the replication is set to [constant SceneReplicationConfig.REPLICATION_MODE_ALWAYS]. If set to [code]0.0[/code] (the default), synchronizations happen every network process frame.
 		</member>
 		<member name="root_path" type="NodePath" setter="set_root_path" getter="get_root_path" default="NodePath(&quot;..&quot;)">
 			Node path that replicated properties are relative to.

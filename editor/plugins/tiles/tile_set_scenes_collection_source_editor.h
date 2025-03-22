@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TILE_SET_SCENES_COLLECTION_SOURCE_EDITOR_H
-#define TILE_SET_SCENES_COLLECTION_SOURCE_EDITOR_H
+#pragma once
 
 #include "editor/editor_inspector.h"
 #include "scene/gui/box_container.h"
@@ -85,7 +84,7 @@ private:
 		static void _bind_methods();
 
 	public:
-		// Update the proxyed object.
+		// Update the proxied object.
 		void edit(TileSetScenesCollectionSource *p_tile_set_atlas_source, int p_scene_id);
 
 		SceneTileProxyObject(TileSetScenesCollectionSourceEditor *p_tiles_set_scenes_collection_source_editor) {
@@ -144,5 +143,3 @@ public:
 	TileSetScenesCollectionSourceEditor();
 	~TileSetScenesCollectionSourceEditor();
 };
-
-#endif // TILE_SET_SCENES_COLLECTION_SOURCE_EDITOR_H

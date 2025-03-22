@@ -209,13 +209,11 @@ def build_gles3_header(
         defvariant = ""
 
         fd.write("/* WARNING, THIS FILE WAS GENERATED, DO NOT EDIT */\n")
+        fd.write("#pragma once\n")
 
         out_file_base = out_file
         out_file_base = out_file_base[out_file_base.rfind("/") + 1 :]
         out_file_base = out_file_base[out_file_base.rfind("\\") + 1 :]
-        out_file_ifdef = out_file_base.replace(".", "_").upper()
-        fd.write("#ifndef " + out_file_ifdef + class_suffix + "_GLES3\n")
-        fd.write("#define " + out_file_ifdef + class_suffix + "_GLES3\n")
 
         out_file_class = (
             out_file_base.replace(".glsl.gen.h", "").title().replace("_", "").replace(".", "") + "Shader" + class_suffix
@@ -499,7 +497,7 @@ def build_gles3_header(
             fd.write("\t\t};\n\n")
             variant_count = len(header_data.variant_defines)
         else:
-            fd.write("\t\tstatic const char **_variant_defines[]={" "};\n")
+            fd.write('\t\tstatic const char **_variant_defines[]={" "};\n')
 
         if header_data.texunits:
             fd.write("\t\tstatic TexUnitPair _texunit_pairs[]={\n")
@@ -580,10 +578,10 @@ def build_gles3_header(
 
         fd.write("\t}\n\n")
 
-        fd.write("};\n\n")
-        fd.write("#endif\n")
+        fd.write("};\n")
 
 
 def build_gles3_headers(target, source, env):
+    env.NoCache(target)
     for x in source:
         build_gles3_header(str(x), include="drivers/gles3/shader_gles3.h", class_suffix="GLES3")

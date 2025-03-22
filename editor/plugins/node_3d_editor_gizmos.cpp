@@ -227,7 +227,7 @@ void EditorNode3DGizmo::Instance::create_instance(Node3D *p_base, bool p_hidden)
 
 void EditorNode3DGizmo::add_mesh(const Ref<Mesh> &p_mesh, const Ref<Material> &p_material, const Transform3D &p_xform, const Ref<SkinReference> &p_skin_reference) {
 	ERR_FAIL_NULL(spatial_node);
-	ERR_FAIL_COND_MSG(!p_mesh.is_valid(), "EditorNode3DGizmo.add_mesh() requires a valid Mesh resource.");
+	ERR_FAIL_COND_MSG(p_mesh.is_null(), "EditorNode3DGizmo.add_mesh() requires a valid Mesh resource.");
 
 	Instance ins;
 
@@ -292,14 +292,11 @@ void EditorNode3DGizmo::add_vertices(const Vector<Vector3> &p_vertices, const Re
 
 	Vector<Color> color;
 	color.resize(p_vertices.size());
+	const Color vertex_color = (is_selected() ? Color(1, 1, 1, 0.8) : Color(1, 1, 1, 0.2)) * p_modulate;
 	{
 		Color *w = color.ptrw();
 		for (int i = 0; i < p_vertices.size(); i++) {
-			if (is_selected()) {
-				w[i] = Color(1, 1, 1, 0.8) * p_modulate;
-			} else {
-				w[i] = Color(1, 1, 1, 0.2) * p_modulate;
-			}
+			w[i] = vertex_color;
 		}
 	}
 
@@ -671,7 +668,7 @@ bool EditorNode3DGizmo::intersect_ray(Camera3D *p_camera, const Point2 &p_point,
 		Transform3D orig_camera_transform = p_camera->get_camera_transform();
 
 		if (!orig_camera_transform.origin.is_equal_approx(t.origin) &&
-				ABS(orig_camera_transform.basis.get_column(Vector3::AXIS_Z).dot(Vector3(0, 1, 0))) < 0.99) {
+				Math::abs(orig_camera_transform.basis.get_column(Vector3::AXIS_Z).dot(Vector3(0, 1, 0))) < 0.99) {
 			p_camera->look_at(t.origin);
 		}
 

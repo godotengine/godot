@@ -65,7 +65,7 @@
 		<method name="is_server_relay_supported" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Returns true if the server can act as a relay in the current configuration (i.e. if the higher level [MultiplayerAPI] should notify connected clients of other peers, and implement a relay protocol to allow communication between them).
+				Returns [code]true[/code] if the server can act as a relay in the current configuration. That is, if the higher level [MultiplayerAPI] should notify connected clients of other peers, and implement a relay protocol to allow communication between them.
 			</description>
 		</method>
 		<method name="poll">

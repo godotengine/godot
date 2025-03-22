@@ -30,16 +30,10 @@
 
 #include "editor_scene_importer_ufbx.h"
 
-#ifdef TOOLS_ENABLED
-
 #include "../fbx_document.h"
 #include "editor_scene_importer_fbx2gltf.h"
 
 #include "core/config/project_settings.h"
-
-uint32_t EditorSceneFormatImporterUFBX::get_import_flags() const {
-	return ImportFlags::IMPORT_SCENE | ImportFlags::IMPORT_ANIMATION;
-}
 
 void EditorSceneFormatImporterUFBX::get_extensions(List<String> *r_extensions) const {
 	r_extensions->push_back("fbx");
@@ -108,5 +102,3 @@ void EditorSceneFormatImporterUFBX::handle_compatibility_options(HashMap<StringN
 		p_import_params["fbx/importer"] = EditorSceneFormatImporterUFBX::FBX_IMPORTER_FBX2GLTF;
 	}
 }
-
-#endif // TOOLS_ENABLED

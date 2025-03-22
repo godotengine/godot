@@ -28,12 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef PHYSICAL_BONE_SIMULATOR_3D_H
-#define PHYSICAL_BONE_SIMULATOR_3D_H
+#pragma once
 
 #include "scene/3d/skeleton_modifier_3d.h"
-
-#include "scene/3d/physics/physical_bone_3d.h"
 
 class PhysicalBone3D;
 
@@ -73,6 +70,7 @@ protected:
 
 	void _bone_list_changed();
 	void _pose_updated();
+	void _bone_pose_updated(Skeleton3D *skeleton, int p_bone_id);
 
 	virtual void _process_modification() override;
 
@@ -105,5 +103,3 @@ public:
 
 	PhysicalBoneSimulator3D();
 };
-
-#endif // PHYSICAL_BONE_SIMULATOR_3D_H

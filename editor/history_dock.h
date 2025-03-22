@@ -28,12 +28,12 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef HISTORY_DOCK_H
-#define HISTORY_DOCK_H
+#pragma once
 
 #include "scene/gui/box_container.h"
 
 class CheckBox;
+class ConfigFile;
 class ItemList;
 class EditorUndoRedoManager;
 
@@ -53,15 +53,16 @@ class HistoryDock : public VBoxContainer {
 	void refresh_history();
 	void on_version_changed();
 	void refresh_version();
-	void save_options();
+
+	void _save_layout_to_config(Ref<ConfigFile> p_layout, const String &p_section) const;
+	void _load_layout_from_config(Ref<ConfigFile> p_layout, const String &p_section);
 
 protected:
 	void _notification(int p_notification);
+	static void _bind_methods();
 
 public:
 	void seek_history(int p_index);
 
 	HistoryDock();
 };
-
-#endif // HISTORY_DOCK_H

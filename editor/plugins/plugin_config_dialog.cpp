@@ -305,7 +305,7 @@ PluginConfigDialog::PluginConfigDialog() {
 	grid->add_child(script_name_label);
 
 	script_edit = memnew(LineEdit);
-	script_edit->set_tooltip_text(TTR("Optional. The path to the script (relative to the add-on folder). If left empty, will default to \"plugin.gd\"."));
+	script_edit->set_tooltip_text(TTR("Optional. The name of the script file. If left empty, will default to the subfolder name."));
 	script_edit->set_placeholder("\"plugin.gd\" -> res://addons/my_plugin/plugin.gd");
 	script_edit->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	grid->add_child(script_edit);
@@ -339,7 +339,4 @@ PluginConfigDialog::PluginConfigDialog() {
 	name_edit->connect(SceneStringName(text_changed), callable_mp(validation_panel, &EditorValidationPanel::update).unbind(1));
 	subfolder_edit->connect(SceneStringName(text_changed), callable_mp(validation_panel, &EditorValidationPanel::update).unbind(1));
 	script_edit->connect(SceneStringName(text_changed), callable_mp(validation_panel, &EditorValidationPanel::update).unbind(1));
-}
-
-PluginConfigDialog::~PluginConfigDialog() {
 }

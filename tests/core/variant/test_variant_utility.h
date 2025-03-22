@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TEST_VARIANT_UTILITY_H
-#define TEST_VARIANT_UTILITY_H
+#pragma once
 
 #include "core/variant/variant_utility.h"
 
@@ -89,7 +88,7 @@ TEST_CASE("[VariantUtility] Type conversion") {
 
 		converted = VariantUtilityFunctions::type_convert(basis, Variant::Type::STRING);
 		CHECK(converted.get_type() == Variant::Type::STRING);
-		CHECK(converted == Variant("[X: (1.2, 0, 0), Y: (0, 3.4, 0), Z: (0, 0, 5.6)]"));
+		CHECK(converted == Variant("[X: (1.2, 0.0, 0.0), Y: (0.0, 3.4, 0.0), Z: (0.0, 0.0, 5.6)]"));
 	}
 
 	{
@@ -137,5 +136,3 @@ TEST_CASE("[VariantUtility] Type conversion") {
 }
 
 } // namespace TestVariantUtility
-
-#endif // TEST_VARIANT_UTILITY_H

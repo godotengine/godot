@@ -28,12 +28,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef BINDINGS_GENERATOR_H
-#define BINDINGS_GENERATOR_H
+#pragma once
 
 #include "core/typedefs.h" // DEBUG_METHODS_ENABLED
 
-#if defined(DEBUG_METHODS_ENABLED) && defined(TOOLS_ENABLED)
+#ifdef DEBUG_METHODS_ENABLED
 
 #include "core/doc_data.h"
 #include "core/object/class_db.h"
@@ -265,6 +264,7 @@ class BindingsGenerator {
 		bool is_singleton = false;
 		bool is_singleton_instance = false;
 		bool is_ref_counted = false;
+		bool is_span_compatible = false;
 
 		/**
 		 * Class is a singleton, but can't be declared as a static class as that would
@@ -803,14 +803,16 @@ class BindingsGenerator {
 	void _append_text_param(StringBuilder &p_output, const String &p_link_target);
 	void _append_text_undeclared(StringBuilder &p_output, const String &p_link_target);
 
-	void _append_xml_method(StringBuilder &p_xml_output, const TypeInterface *p_target_itype, const StringName &p_target_cname, const String &p_link_target, const Vector<String> &p_link_target_parts);
-	void _append_xml_member(StringBuilder &p_xml_output, const TypeInterface *p_target_itype, const StringName &p_target_cname, const String &p_link_target, const Vector<String> &p_link_target_parts);
-	void _append_xml_signal(StringBuilder &p_xml_output, const TypeInterface *p_target_itype, const StringName &p_target_cname, const String &p_link_target, const Vector<String> &p_link_target_parts);
-	void _append_xml_enum(StringBuilder &p_xml_output, const TypeInterface *p_target_itype, const StringName &p_target_cname, const String &p_link_target, const Vector<String> &p_link_target_parts);
+	void _append_xml_method(StringBuilder &p_xml_output, const TypeInterface *p_target_itype, const StringName &p_target_cname, const String &p_link_target, const Vector<String> &p_link_target_parts, const TypeInterface *p_source_itype);
+	void _append_xml_member(StringBuilder &p_xml_output, const TypeInterface *p_target_itype, const StringName &p_target_cname, const String &p_link_target, const Vector<String> &p_link_target_parts, const TypeInterface *p_source_itype);
+	void _append_xml_signal(StringBuilder &p_xml_output, const TypeInterface *p_target_itype, const StringName &p_target_cname, const String &p_link_target, const Vector<String> &p_link_target_parts, const TypeInterface *p_source_itype);
+	void _append_xml_enum(StringBuilder &p_xml_output, const TypeInterface *p_target_itype, const StringName &p_target_cname, const String &p_link_target, const Vector<String> &p_link_target_parts, const TypeInterface *p_source_itype);
 	void _append_xml_constant(StringBuilder &p_xml_output, const TypeInterface *p_target_itype, const StringName &p_target_cname, const String &p_link_target, const Vector<String> &p_link_target_parts);
 	void _append_xml_constant_in_global_scope(StringBuilder &p_xml_output, const String &p_target_cname, const String &p_link_target);
 	void _append_xml_param(StringBuilder &p_xml_output, const String &p_link_target, bool p_is_signal);
 	void _append_xml_undeclared(StringBuilder &p_xml_output, const String &p_link_target);
+
+	bool _validate_api_type(const TypeInterface *p_target_itype, const TypeInterface *p_source_itype);
 
 	int _determine_enum_prefix(const EnumInterface &p_ienum);
 	void _apply_prefix_to_enum_constants(EnumInterface &p_ienum, int p_prefix_length);
@@ -840,7 +842,7 @@ class BindingsGenerator {
 	Error _generate_cs_type(const TypeInterface &itype, const String &p_output_file);
 
 	Error _generate_cs_property(const TypeInterface &p_itype, const PropertyInterface &p_iprop, StringBuilder &p_output);
-	Error _generate_cs_method(const TypeInterface &p_itype, const MethodInterface &p_imethod, int &p_method_bind_count, StringBuilder &p_output);
+	Error _generate_cs_method(const TypeInterface &p_itype, const MethodInterface &p_imethod, int &p_method_bind_count, StringBuilder &p_output, bool p_use_span);
 	Error _generate_cs_signal(const BindingsGenerator::TypeInterface &p_itype, const BindingsGenerator::SignalInterface &p_isignal, StringBuilder &p_output);
 
 	Error _generate_cs_native_calls(const InternalCall &p_icall, StringBuilder &r_output);
@@ -872,5 +874,3 @@ public:
 };
 
 #endif
-
-#endif // BINDINGS_GENERATOR_H

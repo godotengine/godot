@@ -10,8 +10,8 @@
  * # Date: 2015-03-12, 21:17:00 GMT [AG]
  * # Date: 2019-11-08, 23:22:00 GMT [AG]
  *
- * # Scripts-15.1.0.txt
- * # Date: 2023-07-28, 16:01:07 GMT
+ * # Scripts-16.0.0.txt
+ * # Date: 2024-04-30, 21:48:40 GMT
  */
 
 #include "hb.hh"
@@ -24,7 +24,7 @@ static void
 _output_dotted_circle (hb_buffer_t *buffer)
 {
   (void) buffer->output_glyph (0x25CCu);
-  _hb_glyph_info_reset_continuation (&buffer->prev());
+  _hb_glyph_info_clear_continuation (&buffer->prev());
 }
 
 static void

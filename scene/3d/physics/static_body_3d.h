@@ -28,10 +28,12 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef STATIC_BODY_3D_H
-#define STATIC_BODY_3D_H
+#pragma once
 
 #include "scene/3d/physics/physics_body_3d.h"
+
+class NavigationMesh;
+class NavigationMeshSourceGeometryData3D;
 
 class StaticBody3D : public PhysicsBody3D {
 	GDCLASS(StaticBody3D, PhysicsBody3D);
@@ -59,6 +61,11 @@ public:
 
 private:
 	void _reload_physics_characteristics();
-};
 
-#endif // STATIC_BODY_3D_H
+	static Callable _navmesh_source_geometry_parsing_callback;
+	static RID _navmesh_source_geometry_parser;
+
+public:
+	static void navmesh_parse_init();
+	static void navmesh_parse_source_geometry(const Ref<NavigationMesh> &p_navigation_mesh, Ref<NavigationMeshSourceGeometryData3D> p_source_geometry_data, Node *p_node);
+};

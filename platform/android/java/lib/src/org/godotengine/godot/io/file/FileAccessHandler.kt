@@ -191,12 +191,12 @@ class FileAccessHandler(val context: Context) {
 		return files[fileId].read(byteBuffer)
 	}
 
-	fun fileWrite(fileId: Int, byteBuffer: ByteBuffer?) {
+	fun fileWrite(fileId: Int, byteBuffer: ByteBuffer?): Boolean {
 		if (!hasFileId(fileId) || byteBuffer == null) {
-			return
+			return false
 		}
 
-		files[fileId].write(byteBuffer)
+		return files[fileId].write(byteBuffer)
 	}
 
 	fun fileFlush(fileId: Int) {
@@ -228,12 +228,42 @@ class FileAccessHandler(val context: Context) {
 		}
 	}
 
+	fun fileLastAccessed(filepath: String?): Long {
+		val storageScope = storageScopeIdentifier.identifyStorageScope(filepath)
+		if (storageScope == StorageScope.UNKNOWN) {
+			return 0L
+		}
+
+		return try {
+			filepath?.let {
+				DataAccess.fileLastAccessed(storageScope, context, it)
+			} ?: 0L
+		} catch (e: SecurityException) {
+			0L
+		}
+	}
+
 	fun fileResize(fileId: Int, length: Long): Int {
 		if (!hasFileId(fileId)) {
 			return Error.FAILED.toNativeValue()
 		}
 
 		return files[fileId].resize(length).toNativeValue()
+	}
+
+	fun fileSize(filepath: String?): Long {
+		val storageScope = storageScopeIdentifier.identifyStorageScope(filepath)
+		if (storageScope == StorageScope.UNKNOWN) {
+			return -1L
+		}
+
+		return try {
+			filepath?.let {
+				DataAccess.fileSize(storageScope, context, it)
+			} ?: -1L
+		} catch (e: SecurityException) {
+			-1L
+		}
 	}
 
 	fun fileGetPosition(fileId: Int): Long {

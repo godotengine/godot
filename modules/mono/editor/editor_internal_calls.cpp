@@ -41,6 +41,7 @@
 #include "core/os/os.h"
 #include "core/version.h"
 #include "editor/debugger/editor_debugger_node.h"
+#include "editor/editor_main_screen.h"
 #include "editor/editor_node.h"
 #include "editor/editor_paths.h"
 #include "editor/editor_settings.h"
@@ -67,19 +68,11 @@ void godot_icall_GodotSharpDirs_MonoUserDir(godot_string *r_dest) {
 }
 
 void godot_icall_GodotSharpDirs_BuildLogsDirs(godot_string *r_dest) {
-#ifdef TOOLS_ENABLED
 	memnew_placement(r_dest, String(GodotSharpDirs::get_build_logs_dir()));
-#else
-	return nullptr;
-#endif
 }
 
 void godot_icall_GodotSharpDirs_DataEditorToolsDir(godot_string *r_dest) {
-#ifdef TOOLS_ENABLED
 	memnew_placement(r_dest, String(GodotSharpDirs::get_data_editor_tools_dir()));
-#else
-	return nullptr;
-#endif
 }
 
 void godot_icall_GodotSharpDirs_CSharpProjectName(godot_string *r_dest) {
@@ -104,7 +97,7 @@ bool godot_icall_EditorProgress_Step(const godot_string *p_task, const godot_str
 }
 
 void godot_icall_Internal_FullExportTemplatesDir(godot_string *r_dest) {
-	String full_templates_dir = EditorPaths::get_singleton()->get_export_templates_dir().path_join(VERSION_FULL_CONFIG);
+	String full_templates_dir = EditorPaths::get_singleton()->get_export_templates_dir().path_join(GODOT_VERSION_FULL_CONFIG);
 	memnew_placement(r_dest, String(full_templates_dir));
 }
 
@@ -165,7 +158,7 @@ bool godot_icall_Internal_ScriptEditorEdit(Resource *p_resource, int32_t p_line,
 }
 
 void godot_icall_Internal_EditorNodeShowScriptScreen() {
-	EditorNode::get_singleton()->editor_select(EditorNode::EDITOR_SCRIPT);
+	EditorNode::get_editor_main_screen()->select(EditorMainScreen::EDITOR_SCRIPT);
 }
 
 void godot_icall_Internal_EditorRunPlay() {

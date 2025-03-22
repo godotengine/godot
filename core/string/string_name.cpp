@@ -162,6 +162,11 @@ void StringName::unref() {
 	_data = nullptr;
 }
 
+uint32_t StringName::get_empty_hash() {
+	static uint32_t empty_hash = String::hash("");
+	return empty_hash;
+}
+
 bool StringName::operator==(const String &p_name) const {
 	if (_data) {
 		return _data->operator==(p_name);
@@ -184,12 +189,6 @@ bool StringName::operator!=(const String &p_name) const {
 
 bool StringName::operator!=(const char *p_name) const {
 	return !(operator==(p_name));
-}
-
-bool StringName::operator!=(const StringName &p_name) const {
-	// the real magic of all this mess happens here.
-	// this is why path comparisons are very fast
-	return _data != p_name._data;
 }
 
 char32_t StringName::operator[](int p_index) const {
@@ -270,12 +269,10 @@ StringName::StringName(const char *p_name, bool p_static) {
 		return; //empty, ignore
 	}
 
+	const uint32_t hash = String::hash(p_name);
+	const uint32_t idx = hash & STRING_TABLE_MASK;
+
 	MutexLock lock(mutex);
-
-	uint32_t hash = String::hash(p_name);
-
-	uint32_t idx = hash & STRING_TABLE_MASK;
-
 	_data = _table[idx];
 
 	while (_data) {
@@ -329,12 +326,10 @@ StringName::StringName(const StaticCString &p_static_string, bool p_static) {
 
 	ERR_FAIL_COND(!p_static_string.ptr || !p_static_string.ptr[0]);
 
+	const uint32_t hash = String::hash(p_static_string.ptr);
+	const uint32_t idx = hash & STRING_TABLE_MASK;
+
 	MutexLock lock(mutex);
-
-	uint32_t hash = String::hash(p_static_string.ptr);
-
-	uint32_t idx = hash & STRING_TABLE_MASK;
-
 	_data = _table[idx];
 
 	while (_data) {
@@ -389,11 +384,10 @@ StringName::StringName(const String &p_name, bool p_static) {
 		return;
 	}
 
+	const uint32_t hash = p_name.hash();
+	const uint32_t idx = hash & STRING_TABLE_MASK;
+
 	MutexLock lock(mutex);
-
-	uint32_t hash = p_name.hash();
-	uint32_t idx = hash & STRING_TABLE_MASK;
-
 	_data = _table[idx];
 
 	while (_data) {
@@ -447,11 +441,10 @@ StringName StringName::search(const char *p_name) {
 		return StringName();
 	}
 
+	const uint32_t hash = String::hash(p_name);
+	const uint32_t idx = hash & STRING_TABLE_MASK;
+
 	MutexLock lock(mutex);
-
-	uint32_t hash = String::hash(p_name);
-	uint32_t idx = hash & STRING_TABLE_MASK;
-
 	_Data *_data = _table[idx];
 
 	while (_data) {
@@ -483,12 +476,10 @@ StringName StringName::search(const char32_t *p_name) {
 		return StringName();
 	}
 
+	const uint32_t hash = String::hash(p_name);
+	const uint32_t idx = hash & STRING_TABLE_MASK;
+
 	MutexLock lock(mutex);
-
-	uint32_t hash = String::hash(p_name);
-
-	uint32_t idx = hash & STRING_TABLE_MASK;
-
 	_Data *_data = _table[idx];
 
 	while (_data) {
@@ -509,12 +500,10 @@ StringName StringName::search(const char32_t *p_name) {
 StringName StringName::search(const String &p_name) {
 	ERR_FAIL_COND_V(p_name.is_empty(), StringName());
 
+	const uint32_t hash = p_name.hash();
+	const uint32_t idx = hash & STRING_TABLE_MASK;
+
 	MutexLock lock(mutex);
-
-	uint32_t hash = p_name.hash();
-
-	uint32_t idx = hash & STRING_TABLE_MASK;
-
 	_Data *_data = _table[idx];
 
 	while (_data) {

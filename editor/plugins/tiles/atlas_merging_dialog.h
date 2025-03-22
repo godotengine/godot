@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef ATLAS_MERGING_DIALOG_H
-#define ATLAS_MERGING_DIALOG_H
+#pragma once
 
 #include "editor/editor_properties.h"
 #include "scene/gui/dialogs.h"
@@ -44,7 +43,7 @@ class AtlasMergingDialog : public ConfirmationDialog {
 	GDCLASS(AtlasMergingDialog, ConfirmationDialog);
 
 private:
-	int commited_actions_count = 0;
+	int committed_actions_count = 0;
 	bool delete_original_atlases = true;
 	Ref<TileSetAtlasSource> merged;
 	LocalVector<HashMap<Vector2i, Vector2i>> merged_mapping;
@@ -83,5 +82,3 @@ public:
 
 	AtlasMergingDialog();
 };
-
-#endif // ATLAS_MERGING_DIALOG_H

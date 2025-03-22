@@ -28,14 +28,14 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef MESH_INSTANCE_3D_EDITOR_PLUGIN_H
-#define MESH_INSTANCE_3D_EDITOR_PLUGIN_H
+#pragma once
 
 #include "editor/plugins/editor_plugin.h"
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/gui/option_button.h"
 
 class AcceptDialog;
+class AspectRatioContainer;
 class ConfirmationDialog;
 class MenuButton;
 class SpinBox;
@@ -79,6 +79,7 @@ class MeshInstance3DEditor : public Control {
 	AcceptDialog *err_dialog = nullptr;
 
 	AcceptDialog *debug_uv_dialog = nullptr;
+	AspectRatioContainer *debug_uv_arc = nullptr;
 	Control *debug_uv = nullptr;
 	Vector<Vector2> uv_lines;
 
@@ -111,14 +112,11 @@ class MeshInstance3DEditorPlugin : public EditorPlugin {
 	MeshInstance3DEditor *mesh_editor = nullptr;
 
 public:
-	virtual String get_name() const override { return "MeshInstance3D"; }
+	virtual String get_plugin_name() const override { return "MeshInstance3D"; }
 	bool has_main_screen() const override { return false; }
 	virtual void edit(Object *p_object) override;
 	virtual bool handles(Object *p_object) const override;
 	virtual void make_visible(bool p_visible) override;
 
 	MeshInstance3DEditorPlugin();
-	~MeshInstance3DEditorPlugin();
 };
-
-#endif // MESH_INSTANCE_3D_EDITOR_PLUGIN_H

@@ -28,11 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef XR_POSITIONAL_TRACKER_H
-#define XR_POSITIONAL_TRACKER_H
+#pragma once
 
 #include "core/os/thread_safe.h"
-#include "scene/resources/mesh.h"
 #include "servers/xr/xr_pose.h"
 #include "servers/xr/xr_tracker.h"
 #include "servers/xr_server.h"
@@ -81,5 +79,3 @@ public:
 };
 
 VARIANT_ENUM_CAST(XRPositionalTracker::TrackerHand);
-
-#endif // XR_POSITIONAL_TRACKER_H

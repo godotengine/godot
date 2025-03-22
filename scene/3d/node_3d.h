@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef NODE_3D_H
-#define NODE_3D_H
+#pragma once
 
 #include "scene/main/node.h"
 #include "scene/resources/3d/world_3d.h"
@@ -233,8 +232,8 @@ public:
 #ifdef TOOLS_ENABLED
 	virtual Transform3D get_global_gizmo_transform() const;
 	virtual Transform3D get_local_gizmo_transform() const;
-	virtual void set_transform_gizmo_visible(bool p_enabled) { data.transform_gizmo_visible = p_enabled; };
-	virtual bool is_transform_gizmo_visible() const { return data.transform_gizmo_visible; };
+	virtual void set_transform_gizmo_visible(bool p_enabled) { data.transform_gizmo_visible = p_enabled; }
+	virtual bool is_transform_gizmo_visible() const { return data.transform_gizmo_visible; }
 #endif
 	virtual void reparent(Node *p_parent, bool p_keep_global_transform = true) override;
 
@@ -305,5 +304,3 @@ public:
 };
 
 VARIANT_ENUM_CAST(Node3D::RotationEditMode)
-
-#endif // NODE_3D_H

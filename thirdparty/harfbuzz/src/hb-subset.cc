@@ -295,8 +295,8 @@ _try_subset (const TableType *table,
   DEBUG_MSG (SUBSET, nullptr, "OT::%c%c%c%c ran out of room; reallocating to %u bytes.",
              HB_UNTAG (c->table_tag), buf_size);
 
-  if (unlikely (buf_size > c->source_blob->length * 16 ||
-		!buf->alloc (buf_size, true)))
+  if (unlikely (buf_size > c->source_blob->length * 256 ||
+		!buf->alloc_exact (buf_size)))
   {
     DEBUG_MSG (SUBSET, nullptr, "OT::%c%c%c%c failed to reallocate %u bytes.",
                HB_UNTAG (c->table_tag), buf_size);
@@ -594,14 +594,20 @@ static void _attach_accelerator_data (hb_subset_plan_t* plan,
  * @input: input to use for the subsetting.
  *
  * Subsets a font according to provided input. Returns nullptr
- * if the subset operation fails.
+ * if the subset operation fails or the face has no glyphs.
  *
  * Since: 2.9.0
  **/
 hb_face_t *
 hb_subset_or_fail (hb_face_t *source, const hb_subset_input_t *input)
 {
-  if (unlikely (!input || !source)) return hb_face_get_empty ();
+  if (unlikely (!input || !source)) return nullptr;
+
+  if (unlikely (!source->get_num_glyphs ()))
+  {
+    DEBUG_MSG (SUBSET, nullptr, "No glyphs in source font.");
+    return nullptr;
+  }
 
   hb_subset_plan_t *plan = hb_subset_plan_create_or_fail (source, input);
   if (unlikely (!plan)) {

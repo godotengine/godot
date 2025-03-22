@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef NAVIGATION_POLYGON_H
-#define NAVIGATION_POLYGON_H
+#pragma once
 
 #include "scene/2d/node_2d.h"
 #include "scene/resources/navigation_mesh.h"
@@ -68,10 +67,11 @@ protected:
 	TypedArray<Vector<Vector2>> _get_outlines() const;
 
 public:
-#ifdef TOOLS_ENABLED
+#ifdef DEBUG_ENABLED
 	Rect2 _edit_get_rect() const;
 	bool _edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const;
-#endif
+#endif // DEBUG_ENABLED
+
 	enum SamplePartitionType {
 		SAMPLE_PARTITION_CONVEX_PARTITION = 0,
 		SAMPLE_PARTITION_TRIANGULATE,
@@ -175,5 +175,3 @@ public:
 VARIANT_ENUM_CAST(NavigationPolygon::SamplePartitionType);
 VARIANT_ENUM_CAST(NavigationPolygon::ParsedGeometryType);
 VARIANT_ENUM_CAST(NavigationPolygon::SourceGeometryMode);
-
-#endif // NAVIGATION_POLYGON_H

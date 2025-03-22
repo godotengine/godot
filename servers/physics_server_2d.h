@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef PHYSICS_SERVER_2D_H
-#define PHYSICS_SERVER_2D_H
+#pragma once
 
 #include "core/io/resource.h"
 #include "core/object/class_db.h"
@@ -760,7 +759,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	PhysicsServer2D::MotionResult *get_result_ptr() const { return const_cast<PhysicsServer2D::MotionResult *>(&result); }
+	PhysicsServer2D::MotionResult *get_result_ptr() { return &result; }
 
 	Vector2 get_travel() const;
 	Vector2 get_remainder() const;
@@ -845,5 +844,3 @@ VARIANT_ENUM_CAST(PhysicsServer2D::PinJointFlag);
 VARIANT_ENUM_CAST(PhysicsServer2D::DampedSpringParam);
 VARIANT_ENUM_CAST(PhysicsServer2D::AreaBodyStatus);
 VARIANT_ENUM_CAST(PhysicsServer2D::ProcessInfo);
-
-#endif // PHYSICS_SERVER_2D_H

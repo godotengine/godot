@@ -30,7 +30,6 @@
 
 #include "tab_bar.h"
 
-#include "core/string/translation.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/label.h"
 #include "scene/gui/texture_rect.h"
@@ -354,6 +353,8 @@ void TabBar::_notification(int p_what) {
 			if (scroll_to_selected) {
 				ensure_tab_visible(current);
 			}
+			// Set initialized even if no tabs were set.
+			initialized = true;
 		} break;
 
 		case NOTIFICATION_INTERNAL_PROCESS: {
@@ -655,10 +656,10 @@ void TabBar::set_tab_count(int p_count) {
 	}
 
 	if (!initialized) {
-		if (queued_current != current) {
-			current = queued_current;
-		}
 		initialized = true;
+		if (queued_current != CURRENT_TAB_UNINITIALIZED && queued_current != current) {
+			set_current_tab(queued_current);
+		}
 	}
 
 	queue_redraw();
@@ -738,6 +739,13 @@ bool TabBar::select_next_available() {
 		}
 	}
 	return false;
+}
+
+void TabBar::set_tab_offset(int p_offset) {
+	ERR_FAIL_INDEX(p_offset, tabs.size());
+	offset = p_offset;
+	_update_cache();
+	queue_redraw();
 }
 
 int TabBar::get_tab_offset() const {
@@ -1237,7 +1245,7 @@ Variant TabBar::_handle_get_drag_data(const String &p_type, const Point2 &p_poin
 
 	HBoxContainer *drag_preview = memnew(HBoxContainer);
 
-	if (!tabs[tab_over].icon.is_null()) {
+	if (tabs[tab_over].icon.is_valid()) {
 		const Size2 icon_size = _get_tab_icon_size(tab_over);
 
 		TextureRect *tf = memnew(TextureRect);
@@ -1250,6 +1258,7 @@ Variant TabBar::_handle_get_drag_data(const String &p_type, const Point2 &p_poin
 	}
 
 	Label *label = memnew(Label(get_tab_title(tab_over)));
+	label->set_auto_translate_mode(get_auto_translate_mode()); // Reflect how the title is displayed.
 	drag_preview->add_child(label);
 
 	set_drag_preview(drag_preview);
@@ -1479,8 +1488,8 @@ int TabBar::get_tab_width(int p_idx) const {
 		style = theme_cache.tab_disabled_style;
 	} else if (current == p_idx) {
 		style = theme_cache.tab_selected_style;
-		// Use the unselected style's width if the hovered one is shorter, to avoid an infinite loop when switching tabs with the mouse.
-	} else if (hover == p_idx && theme_cache.tab_hovered_style->get_minimum_size().width >= theme_cache.tab_unselected_style->get_minimum_size().width) {
+		// Always pick the widest style between hovered and unselected, to avoid an infinite loop when switching tabs with the mouse.
+	} else if (theme_cache.tab_hovered_style->get_minimum_size().width > theme_cache.tab_unselected_style->get_minimum_size().width) {
 		style = theme_cache.tab_hovered_style;
 	} else {
 		style = theme_cache.tab_unselected_style;

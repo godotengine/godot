@@ -28,10 +28,13 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TEST_LSP_H
-#define TEST_LSP_H
+#pragma once
 
 #ifdef TOOLS_ENABLED
+
+#include "modules/modules_enabled.gen.h" // For jsonrpc.
+
+#ifdef MODULE_JSONRPC_ENABLED
 
 #include "tests/test_macros.h"
 
@@ -45,6 +48,7 @@
 #include "core/os/os.h"
 #include "editor/editor_help.h"
 #include "editor/editor_node.h"
+
 #include "modules/gdscript/gdscript_analyzer.h"
 #include "modules/regex/regex.h"
 
@@ -375,6 +379,18 @@ func f():
 			gd.to_lsp(lines);
 		}
 
+		SUBCASE("special case: zero column for root class") {
+			GodotPosition gd(1, 0);
+			lsp::Position expected = lsp_pos(0, 0);
+			lsp::Position actual = gd.to_lsp(lines);
+			CHECK_EQ(actual, expected);
+		}
+		SUBCASE("special case: zero line and column for root class") {
+			GodotPosition gd(0, 0);
+			lsp::Position expected = lsp_pos(0, 0);
+			lsp::Position actual = gd.to_lsp(lines);
+			CHECK_EQ(actual, expected);
+		}
 		SUBCASE("special case: negative line for root class") {
 			GodotPosition gd(-1, 0);
 			lsp::Position expected = lsp_pos(0, 0);
@@ -471,10 +487,35 @@ func f():
 		memdelete(proto);
 		finish_language();
 	}
+	TEST_CASE("[workspace][document_symbol]") {
+		GDScriptLanguageProtocol *proto = initialize(root);
+		REQUIRE(proto);
+
+		SUBCASE("selectionRange of root class must be inside range") {
+			LocalVector<String> paths = {
+				"res://lsp/first_line_comment.gd", // Comment on first line
+				"res://lsp/first_line_class_name.gd", // class_name (and thus selection range) before extends
+			};
+
+			for (const String &path : paths) {
+				assert_no_errors_in(path);
+				GDScriptLanguageProtocol::get_singleton()->get_workspace()->parse_local_script(path);
+				ExtendGDScriptParser *parser = GDScriptLanguageProtocol::get_singleton()->get_workspace()->parse_results[path];
+				REQUIRE(parser);
+				lsp::DocumentSymbol cls = parser->get_symbols();
+
+				REQUIRE(((cls.range.start.line == cls.selectionRange.start.line && cls.range.start.character <= cls.selectionRange.start.character) || (cls.range.start.line < cls.selectionRange.start.line)));
+				REQUIRE(((cls.range.end.line == cls.selectionRange.end.line && cls.range.end.character >= cls.selectionRange.end.character) || (cls.range.end.line > cls.selectionRange.end.line)));
+			}
+		}
+
+		memdelete(proto);
+		finish_language();
+	}
 }
 
 } // namespace GDScriptTests
 
-#endif // TOOLS_ENABLED
+#endif // MODULE_JSONRPC_ENABLED
 
-#endif // TEST_LSP_H
+#endif // TOOLS_ENABLED

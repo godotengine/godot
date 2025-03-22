@@ -36,7 +36,21 @@
 			<description>
 				[b]Optional.[/b]
 				Creates a PCK archive at [param path] for the specified [param preset].
-				This method is called when "Export PCK/ZIP" button is pressed in the export dialog, and PCK is selected as a file type.
+				This method is called when "Export PCK/ZIP" button is pressed in the export dialog, with "Export as Patch" disabled, and PCK is selected as a file type.
+			</description>
+		</method>
+		<method name="_export_pack_patch" qualifiers="virtual">
+			<return type="int" enum="Error" />
+			<param index="0" name="preset" type="EditorExportPreset" />
+			<param index="1" name="debug" type="bool" />
+			<param index="2" name="path" type="String" />
+			<param index="3" name="patches" type="PackedStringArray" />
+			<param index="4" name="flags" type="int" enum="EditorExportPlatform.DebugFlags" is_bitfield="true" />
+			<description>
+				[b]Optional.[/b]
+				Creates a patch PCK archive at [param path] for the specified [param preset], containing only the files that have changed since the last patch.
+				This method is called when "Export PCK/ZIP" button is pressed in the export dialog, with "Export as Patch" enabled, and PCK is selected as a file type.
+				[b]Note:[/b] The patches provided in [param patches] have already been loaded when this method is called and are merely provided as context. When empty the patches defined in the export preset have been loaded instead.
 			</description>
 		</method>
 		<method name="_export_project" qualifiers="virtual">
@@ -61,7 +75,21 @@
 			<description>
 				[b]Optional.[/b]
 				Create a ZIP archive at [param path] for the specified [param preset].
-				This method is called when "Export PCK/ZIP" button is pressed in the export dialog, and ZIP is selected as a file type.
+				This method is called when "Export PCK/ZIP" button is pressed in the export dialog, with "Export as Patch" disabled, and ZIP is selected as a file type.
+			</description>
+		</method>
+		<method name="_export_zip_patch" qualifiers="virtual">
+			<return type="int" enum="Error" />
+			<param index="0" name="preset" type="EditorExportPreset" />
+			<param index="1" name="debug" type="bool" />
+			<param index="2" name="path" type="String" />
+			<param index="3" name="patches" type="PackedStringArray" />
+			<param index="4" name="flags" type="int" enum="EditorExportPlatform.DebugFlags" is_bitfield="true" />
+			<description>
+				[b]Optional.[/b]
+				Create a ZIP archive at [param path] for the specified [param preset], containing only the files that have changed since the last patch.
+				This method is called when "Export PCK/ZIP" button is pressed in the export dialog, with "Export as Patch" enabled, and ZIP is selected as a file type.
+				[b]Note:[/b] The patches provided in [param patches] have already been loaded when this method is called and are merely provided as context. When empty the patches defined in the export preset have been loaded instead.
 			</description>
 		</method>
 		<method name="_get_binary_extensions" qualifiers="virtual const">

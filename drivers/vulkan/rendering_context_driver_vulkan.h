@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef RENDERING_CONTEXT_DRIVER_VULKAN_H
-#define RENDERING_CONTEXT_DRIVER_VULKAN_H
+#pragma once
 
 #ifdef VULKAN_ENABLED
 
@@ -40,11 +39,7 @@
 #define VK_TRACK_DEVICE_MEMORY
 #endif
 
-#ifdef USE_VOLK
-#include <volk.h>
-#else
-#include <vulkan/vulkan.h>
-#endif
+#include "drivers/vulkan/godot_vulkan.h"
 
 class RenderingContextDriverVulkan : public RenderingContextDriver {
 public:
@@ -169,7 +164,7 @@ public:
 	static VkAllocationCallbacks *get_allocation_callbacks(VkObjectType p_type);
 
 #if defined(VK_TRACK_DRIVER_MEMORY) || defined(VK_TRACK_DEVICE_MEMORY)
-	enum VkTrackedObjectType{
+	enum VkTrackedObjectType {
 		VK_TRACKED_OBJECT_DESCRIPTOR_UPDATE_TEMPLATE_KHR = VK_OBJECT_TYPE_COMMAND_POOL + 1,
 		VK_TRACKED_OBJECT_TYPE_SURFACE,
 		VK_TRACKED_OBJECT_TYPE_SWAPCHAIN,
@@ -180,7 +175,7 @@ public:
 		VK_TRACKED_OBJECT_TYPE_COUNT
 	};
 
-	enum VkTrackedSystemAllocationScope{
+	enum VkTrackedSystemAllocationScope {
 		VK_TRACKED_SYSTEM_ALLOCATION_SCOPE_COUNT = VK_SYSTEM_ALLOCATION_SCOPE_INSTANCE + 1
 	};
 #endif
@@ -210,5 +205,3 @@ public:
 };
 
 #endif // VULKAN_ENABLED
-
-#endif // RENDERING_CONTEXT_DRIVER_VULKAN_H

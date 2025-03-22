@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef GRID_MAP_H
-#define GRID_MAP_H
+#pragma once
 
 #include "scene/3d/node_3d.h"
 #include "scene/resources/3d/mesh_library.h"
@@ -38,6 +37,8 @@
 //heh heh, godotsphir!! this shares no code and the design is completely different with previous projects i've done..
 //should scale better with hardware that supports instancing
 
+class NavigationMesh;
+class NavigationMeshSourceGeometryData3D;
 class PhysicsMaterial;
 
 class GridMap : public Node3D {
@@ -300,8 +301,14 @@ public:
 	Array get_bake_meshes();
 	RID get_bake_mesh_instance(int p_idx);
 
+private:
+	static Callable _navmesh_source_geometry_parsing_callback;
+	static RID _navmesh_source_geometry_parser;
+
+public:
+	static void navmesh_parse_init();
+	static void navmesh_parse_source_geometry(const Ref<NavigationMesh> &p_navigation_mesh, Ref<NavigationMeshSourceGeometryData3D> p_source_geometry_data, Node *p_node);
+
 	GridMap();
 	~GridMap();
 };
-
-#endif // GRID_MAP_H

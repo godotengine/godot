@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef STRING_BUFFER_H
-#define STRING_BUFFER_H
+#pragma once
 
 #include "core/string/ustring.h"
 
@@ -118,7 +117,7 @@ StringBuffer<SHORT_BUFFER_SIZE> &StringBuffer<SHORT_BUFFER_SIZE>::append(const c
 
 template <int SHORT_BUFFER_SIZE>
 StringBuffer<SHORT_BUFFER_SIZE> &StringBuffer<SHORT_BUFFER_SIZE>::reserve(int p_size) {
-	if (p_size < SHORT_BUFFER_SIZE || p_size < buffer.size()) {
+	if (p_size < SHORT_BUFFER_SIZE || p_size < buffer.size() || !p_size) {
 		return *this;
 	}
 
@@ -158,5 +157,3 @@ int64_t StringBuffer<SHORT_BUFFER_SIZE>::as_int() {
 	current_buffer_ptr()[string_length] = '\0';
 	return String::to_int(current_buffer_ptr());
 }
-
-#endif // STRING_BUFFER_H

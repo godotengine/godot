@@ -47,7 +47,7 @@ void PacketPeerUDP::set_broadcast_enabled(bool p_enabled) {
 
 Error PacketPeerUDP::join_multicast_group(IPAddress p_multi_address, const String &p_if_name) {
 	ERR_FAIL_COND_V(udp_server, ERR_LOCKED);
-	ERR_FAIL_COND_V(!_sock.is_valid(), ERR_UNAVAILABLE);
+	ERR_FAIL_COND_V(_sock.is_null(), ERR_UNAVAILABLE);
 	ERR_FAIL_COND_V(!p_multi_address.is_valid(), ERR_INVALID_PARAMETER);
 
 	if (!_sock->is_open()) {
@@ -62,7 +62,7 @@ Error PacketPeerUDP::join_multicast_group(IPAddress p_multi_address, const Strin
 
 Error PacketPeerUDP::leave_multicast_group(IPAddress p_multi_address, const String &p_if_name) {
 	ERR_FAIL_COND_V(udp_server, ERR_LOCKED);
-	ERR_FAIL_COND_V(!_sock.is_valid(), ERR_UNAVAILABLE);
+	ERR_FAIL_COND_V(_sock.is_null(), ERR_UNAVAILABLE);
 	ERR_FAIL_COND_V(!_sock->is_open(), ERR_UNCONFIGURED);
 	return _sock->leave_multicast_group(p_multi_address, p_if_name);
 }
@@ -105,6 +105,19 @@ Error PacketPeerUDP::get_packet(const uint8_t **r_buffer, int &r_buffer_size) {
 		return ERR_UNAVAILABLE;
 	}
 
+/* Bogus GCC warning here:
+ * In member function 'int RingBuffer<T>::read(T*, int, bool) [with T = unsigned char]',
+ *     inlined from 'virtual Error PacketPeerUDP::get_packet(const uint8_t**, int&)' at core/io/packet_peer_udp.cpp:112:9,
+ *     inlined from 'virtual Error PacketPeerUDP::get_packet(const uint8_t**, int&)' at core/io/packet_peer_udp.cpp:99:7:
+ * Error: ./core/ring_buffer.h:68:46: error: writing 1 byte into a region of size 0 [-Werror=stringop-overflow=]
+ *   68 |                                 p_buf[dst++] = read[pos + i];
+ *      |                                 ~~~~~~~~~~~~~^~~~~~~
+ */
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic warning "-Wstringop-overflow=0"
+#endif
+
 	uint32_t size = 0;
 	uint8_t ipv6[16] = {};
 	rb.read(ipv6, 16, true);
@@ -115,11 +128,16 @@ Error PacketPeerUDP::get_packet(const uint8_t **r_buffer, int &r_buffer_size) {
 	--queue_count;
 	*r_buffer = packet_buffer;
 	r_buffer_size = size;
+
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
+
 	return OK;
 }
 
 Error PacketPeerUDP::put_packet(const uint8_t *p_buffer, int p_buffer_size) {
-	ERR_FAIL_COND_V(!_sock.is_valid(), ERR_UNAVAILABLE);
+	ERR_FAIL_COND_V(_sock.is_null(), ERR_UNAVAILABLE);
 	ERR_FAIL_COND_V(!peer_addr.is_valid(), ERR_UNCONFIGURED);
 
 	Error err;
@@ -160,7 +178,7 @@ int PacketPeerUDP::get_max_packet_size() const {
 }
 
 Error PacketPeerUDP::bind(int p_port, const IPAddress &p_bind_address, int p_recv_buffer_size) {
-	ERR_FAIL_COND_V(!_sock.is_valid(), ERR_UNAVAILABLE);
+	ERR_FAIL_COND_V(_sock.is_null(), ERR_UNAVAILABLE);
 	ERR_FAIL_COND_V(_sock->is_open(), ERR_ALREADY_IN_USE);
 	ERR_FAIL_COND_V(!p_bind_address.is_valid() && !p_bind_address.is_wildcard(), ERR_INVALID_PARAMETER);
 	ERR_FAIL_COND_V_MSG(p_port < 0 || p_port > 65535, ERR_INVALID_PARAMETER, "The local port number must be between 0 and 65535 (inclusive).");
@@ -209,7 +227,7 @@ void PacketPeerUDP::disconnect_shared_socket() {
 
 Error PacketPeerUDP::connect_to_host(const IPAddress &p_host, int p_port) {
 	ERR_FAIL_COND_V(udp_server, ERR_LOCKED);
-	ERR_FAIL_COND_V(!_sock.is_valid(), ERR_UNAVAILABLE);
+	ERR_FAIL_COND_V(_sock.is_null(), ERR_UNAVAILABLE);
 	ERR_FAIL_COND_V(!p_host.is_valid(), ERR_INVALID_PARAMETER);
 	ERR_FAIL_COND_V_MSG(p_port < 1 || p_port > 65535, ERR_INVALID_PARAMETER, "The remote port number must be between 1 and 65535 (inclusive).");
 
@@ -260,12 +278,12 @@ void PacketPeerUDP::close() {
 }
 
 Error PacketPeerUDP::wait() {
-	ERR_FAIL_COND_V(!_sock.is_valid(), ERR_UNAVAILABLE);
+	ERR_FAIL_COND_V(_sock.is_null(), ERR_UNAVAILABLE);
 	return _sock->poll(NetSocket::POLL_TYPE_IN, -1);
 }
 
 Error PacketPeerUDP::_poll() {
-	ERR_FAIL_COND_V(!_sock.is_valid(), ERR_UNAVAILABLE);
+	ERR_FAIL_COND_V(_sock.is_null(), ERR_UNAVAILABLE);
 
 	if (!_sock->is_open()) {
 		return FAILED;

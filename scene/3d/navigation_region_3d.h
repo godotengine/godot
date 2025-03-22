@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef NAVIGATION_REGION_3D_H
-#define NAVIGATION_REGION_3D_H
+#pragma once
 
 #include "scene/3d/node_3d.h"
 #include "scene/resources/navigation_mesh.h"
@@ -50,6 +49,8 @@ class NavigationRegion3D : public Node3D {
 	Transform3D current_global_transform;
 
 	void _navigation_mesh_changed();
+
+	AABB bounds;
 
 #ifdef DEBUG_ENABLED
 	RID debug_instance;
@@ -110,13 +111,14 @@ public:
 
 	PackedStringArray get_configuration_warnings() const override;
 
+	AABB get_bounds() const { return bounds; }
+
 	NavigationRegion3D();
 	~NavigationRegion3D();
 
 private:
+	void _update_bounds();
 	void _region_enter_navigation_map();
 	void _region_exit_navigation_map();
 	void _region_update_transform();
 };
-
-#endif // NAVIGATION_REGION_3D_H

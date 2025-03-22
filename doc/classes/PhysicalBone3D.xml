@@ -21,6 +21,9 @@
 			<return type="void" />
 			<param index="0" name="impulse" type="Vector3" />
 			<description>
+				Applies a directional impulse without affecting rotation.
+				An impulse is time-independent! Applying an impulse every frame would result in a framerate-dependent force. For this reason, it should only be used when simulating one-time impacts (use the "_integrate_forces" functions otherwise).
+				This is equivalent to using [method apply_impulse] at the body's center of mass.
 			</description>
 		</method>
 		<method name="apply_impulse">
@@ -28,27 +31,33 @@
 			<param index="0" name="impulse" type="Vector3" />
 			<param index="1" name="position" type="Vector3" default="Vector3(0, 0, 0)" />
 			<description>
+				Applies a positioned impulse to the PhysicsBone3D.
+				An impulse is time-independent! Applying an impulse every frame would result in a framerate-dependent force. For this reason, it should only be used when simulating one-time impacts (use the "_integrate_forces" functions otherwise).
+				[param position] is the offset from the PhysicsBone3D origin in global coordinates.
 			</description>
 		</method>
 		<method name="get_bone_id" qualifiers="const">
 			<return type="int" />
 			<description>
+				Returns the unique identifier of the PhysicsBone3D.
 			</description>
 		</method>
 		<method name="get_simulate_physics">
 			<return type="bool" />
 			<description>
+				Returns [code]true[/code] if the PhysicsBone3D is allowed to simulate physics.
 			</description>
 		</method>
 		<method name="is_simulating_physics">
 			<return type="bool" />
 			<description>
+				Returns [code]true[/code] if the PhysicsBone3D is currently simulating physics.
 			</description>
 		</method>
 	</methods>
 	<members>
 		<member name="angular_damp" type="float" setter="set_angular_damp" getter="get_angular_damp" default="0.0">
-			Damps the body's rotation. By default, the body will use the [b]Default Angular Damp[/b] in [b]Project &gt; Project Settings &gt; Physics &gt; 3d[/b] or any value override set by an [Area3D] the body is in. Depending on [member angular_damp_mode], you can set [member angular_damp] to be added to or to replace the body's damping value.
+			Damps the body's rotation. By default, the body will use the [member ProjectSettings.physics/3d/default_angular_damp] project setting or any value override set by an [Area3D] the body is in. Depending on [member angular_damp_mode], you can set [member angular_damp] to be added to or to replace the body's damping value.
 			See [member ProjectSettings.physics/3d/default_angular_damp] for more details about damping.
 		</member>
 		<member name="angular_damp_mode" type="int" setter="set_angular_damp_mode" getter="get_angular_damp_mode" enum="PhysicalBone3D.DampMode" default="0">
@@ -75,7 +84,7 @@
 			The body's friction, from [code]0[/code] (frictionless) to [code]1[/code] (max friction).
 		</member>
 		<member name="gravity_scale" type="float" setter="set_gravity_scale" getter="get_gravity_scale" default="1.0">
-			This is multiplied by the global 3D gravity setting found in [b]Project &gt; Project Settings &gt; Physics &gt; 3d[/b] to produce the body's gravity. For example, a value of 1 will be normal gravity, 2 will apply double gravity, and 0.5 will apply half gravity to this object.
+			This is multiplied by [member ProjectSettings.physics/3d/default_gravity] to produce this body's gravity. For example, a value of [code]1.0[/code] will apply normal gravity, [code]2.0[/code] will apply double the gravity, and [code]0.5[/code] will apply half the gravity to this body.
 		</member>
 		<member name="joint_offset" type="Transform3D" setter="set_joint_offset" getter="get_joint_offset" default="Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)">
 			Sets the joint's transform.
@@ -87,7 +96,7 @@
 			Sets the joint type. See [enum JointType] for possible values.
 		</member>
 		<member name="linear_damp" type="float" setter="set_linear_damp" getter="get_linear_damp" default="0.0">
-			Damps the body's movement. By default, the body will use the [b]Default Linear Damp[/b] in [b]Project &gt; Project Settings &gt; Physics &gt; 3d[/b] or any value override set by an [Area3D] the body is in. Depending on [member linear_damp_mode], you can set [member linear_damp] to be added to or to replace the body's damping value.
+			Damps the body's movement. By default, the body will use [member ProjectSettings.physics/3d/default_linear_damp] or any value override set by an [Area3D] the body is in. Depending on [member linear_damp_mode], [member linear_damp] may be added to or replace the body's damping value.
 			See [member ProjectSettings.physics/3d/default_linear_damp] for more details about damping.
 		</member>
 		<member name="linear_damp_mode" type="int" setter="set_linear_damp_mode" getter="get_linear_damp_mode" enum="PhysicalBone3D.DampMode" default="0">
@@ -108,16 +117,22 @@
 			In this mode, the body's damping value replaces any value set in areas or the default value.
 		</constant>
 		<constant name="JOINT_TYPE_NONE" value="0" enum="JointType">
+			No joint is applied to the PhysicsBone3D.
 		</constant>
 		<constant name="JOINT_TYPE_PIN" value="1" enum="JointType">
+			A pin joint is applied to the PhysicsBone3D.
 		</constant>
 		<constant name="JOINT_TYPE_CONE" value="2" enum="JointType">
+			A cone joint is applied to the PhysicsBone3D.
 		</constant>
 		<constant name="JOINT_TYPE_HINGE" value="3" enum="JointType">
+			A hinge joint is applied to the PhysicsBone3D.
 		</constant>
 		<constant name="JOINT_TYPE_SLIDER" value="4" enum="JointType">
+			A slider joint is applied to the PhysicsBone3D.
 		</constant>
 		<constant name="JOINT_TYPE_6DOF" value="5" enum="JointType">
+			A 6 degrees of freedom joint is applied to the PhysicsBone3D.
 		</constant>
 	</constants>
 </class>

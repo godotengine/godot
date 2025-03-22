@@ -121,7 +121,10 @@
 		<constant name="FEATURE_HISTORY_DOCK" value="7" enum="Feature">
 			The History dock. If this feature is disabled, the History dock won't be visible.
 		</constant>
-		<constant name="FEATURE_MAX" value="8" enum="Feature">
+		<constant name="FEATURE_GAME" value="8" enum="Feature">
+			The Game tab, which allows embedding the game window and selecting nodes by clicking inside of it. If this feature is disabled, the Game tab won't display.
+		</constant>
+		<constant name="FEATURE_MAX" value="9" enum="Feature">
 			Represents the size of the [enum Feature] enum.
 		</constant>
 	</constants>

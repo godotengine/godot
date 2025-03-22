@@ -13,7 +13,7 @@
 			<return type="bool" />
 			<param index="0" name="stream" type="int" />
 			<description>
-				Return true whether the stream associated with an integer ID is still playing. Check [method play_stream] for information on when this ID becomes invalid.
+				Returns [code]true[/code] if the stream associated with the given integer ID is still playing. Check [method play_stream] for information on when this ID becomes invalid.
 			</description>
 		</method>
 		<method name="play_stream">

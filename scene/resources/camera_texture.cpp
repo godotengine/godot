@@ -47,6 +47,11 @@ void CameraTexture::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "camera_is_active"), "set_camera_active", "get_camera_active");
 }
 
+void CameraTexture::_on_format_changed() {
+	// FIXME: `emit_changed` is more appropriate, but causes errors for some reason.
+	callable_mp((Resource *)this, &Resource::emit_changed).call_deferred();
+}
+
 int CameraTexture::get_width() const {
 	Ref<CameraFeed> feed = CameraServer::get_singleton()->get_feed_by_id(camera_feed_id);
 	if (feed.is_valid()) {
@@ -82,13 +87,26 @@ RID CameraTexture::get_rid() const {
 }
 
 Ref<Image> CameraTexture::get_image() const {
-	// not (yet) supported
-	return Ref<Image>();
+	return RenderingServer::get_singleton()->texture_2d_get(get_rid());
 }
 
 void CameraTexture::set_camera_feed_id(int p_new_id) {
+	Ref<CameraFeed> feed = CameraServer::get_singleton()->get_feed_by_id(camera_feed_id);
+	if (feed.is_valid()) {
+		if (feed->is_connected("format_changed", callable_mp(this, &CameraTexture::_on_format_changed))) {
+			feed->disconnect("format_changed", callable_mp(this, &CameraTexture::_on_format_changed));
+		}
+	}
+
 	camera_feed_id = p_new_id;
+
+	feed = CameraServer::get_singleton()->get_feed_by_id(camera_feed_id);
+	if (feed.is_valid()) {
+		feed->connect("format_changed", callable_mp(this, &CameraTexture::_on_format_changed));
+	}
+
 	notify_property_list_changed();
+	callable_mp((Resource *)this, &Resource::emit_changed).call_deferred();
 }
 
 int CameraTexture::get_camera_feed_id() const {
@@ -98,6 +116,7 @@ int CameraTexture::get_camera_feed_id() const {
 void CameraTexture::set_which_feed(CameraServer::FeedImage p_which) {
 	which_feed = p_which;
 	notify_property_list_changed();
+	callable_mp((Resource *)this, &Resource::emit_changed).call_deferred();
 }
 
 CameraServer::FeedImage CameraTexture::get_which_feed() const {
@@ -109,6 +128,7 @@ void CameraTexture::set_camera_active(bool p_active) {
 	if (feed.is_valid()) {
 		feed->set_active(p_active);
 		notify_property_list_changed();
+		callable_mp((Resource *)this, &Resource::emit_changed).call_deferred();
 	}
 }
 

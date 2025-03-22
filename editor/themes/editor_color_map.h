@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef EDITOR_COLOR_MAP_H
-#define EDITOR_COLOR_MAP_H
+#pragma once
 
 #include "core/math/color.h"
 #include "core/string/string_name.h"
@@ -50,11 +49,9 @@ public:
 	static void add_conversion_color_pair(const String &p_from_color, const String &p_to_color);
 	static void add_conversion_exception(const StringName &p_icon_name);
 
-	static HashMap<Color, Color> &get_color_conversion_map() { return color_conversion_map; };
-	static HashSet<StringName> &get_color_conversion_exceptions() { return color_conversion_exceptions; };
+	static HashMap<Color, Color> &get_color_conversion_map() { return color_conversion_map; }
+	static HashSet<StringName> &get_color_conversion_exceptions() { return color_conversion_exceptions; }
 
 	static void create();
 	static void finish();
 };
-
-#endif // EDITOR_COLOR_MAP_H

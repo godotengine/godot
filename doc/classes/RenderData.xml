@@ -19,7 +19,7 @@
 		<method name="get_environment" qualifiers="const">
 			<return type="RID" />
 			<description>
-				Returns the [RID] of the environments object in the [RenderingServer] being used to render this viewport.
+				Returns the [RID] of the environment object in the [RenderingServer] being used to render this viewport.
 			</description>
 		</method>
 		<method name="get_render_scene_buffers" qualifiers="const">

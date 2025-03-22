@@ -28,13 +28,14 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef GDSCRIPT_TEXT_DOCUMENT_H
-#define GDSCRIPT_TEXT_DOCUMENT_H
+#pragma once
 
 #include "godot_lsp.h"
 
 #include "core/io/file_access.h"
 #include "core/object/ref_counted.h"
+
+class GDScript;
 
 class GDScriptTextDocument : public RefCounted {
 	GDCLASS(GDScriptTextDocument, RefCounted)
@@ -49,6 +50,7 @@ protected:
 	void willSaveWaitUntil(const Variant &p_param);
 	void didSave(const Variant &p_param);
 
+	void reload_script(Ref<GDScript> p_to_reload_script);
 	void sync_script_content(const String &p_path, const String &p_content);
 	void show_native_symbol_in_editor(const String &p_symbol_id);
 
@@ -80,5 +82,3 @@ public:
 
 	GDScriptTextDocument();
 };
-
-#endif // GDSCRIPT_TEXT_DOCUMENT_H

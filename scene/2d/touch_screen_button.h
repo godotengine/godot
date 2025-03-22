@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TOUCH_SCREEN_BUTTON_H
-#define TOUCH_SCREEN_BUTTON_H
+#pragma once
 
 #include "scene/2d/node_2d.h"
 #include "scene/resources/2d/rectangle_shape_2d.h"
@@ -76,10 +75,10 @@ protected:
 #endif // DISABLE_DEPRECATED
 
 public:
-#ifdef TOOLS_ENABLED
+#ifdef DEBUG_ENABLED
 	virtual Rect2 _edit_get_rect() const override;
 	virtual bool _edit_use_rect() const override;
-#endif
+#endif // DEBUG_ENABLED
 
 	void set_texture_normal(const Ref<Texture2D> &p_texture);
 	Ref<Texture2D> get_texture_normal() const;
@@ -116,5 +115,3 @@ public:
 };
 
 VARIANT_ENUM_CAST(TouchScreenButton::VisibilityMode);
-
-#endif // TOUCH_SCREEN_BUTTON_H

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef AUDIO_SERVER_H
-#define AUDIO_SERVER_H
+#pragma once
 
 #include "core/math/audio_frame.h"
 #include "core/object/class_db.h"
@@ -99,6 +98,7 @@ public:
 	virtual Error init() = 0;
 	virtual void start() = 0;
 	virtual int get_mix_rate() const = 0;
+	virtual int get_input_mix_rate() const { return get_mix_rate(); }
 	virtual SpeakerMode get_speaker_mode() const = 0;
 	virtual float get_latency() { return 0; }
 
@@ -228,6 +228,10 @@ private:
 
 	bool tag_used_audio_streams = false;
 
+#ifdef DEBUG_ENABLED
+	bool debug_mute = false;
+#endif // DEBUG_ENABLED
+
 	struct Bus {
 		StringName name;
 		bool solo = false;
@@ -270,6 +274,14 @@ private:
 	};
 
 	struct AudioStreamPlaybackListNode {
+		// The state machine for audio stream playbacks is as follows:
+		// 1. The playback is created and added to the playback list in the playing state.
+		// 2. The playback is (maybe) paused, and the state is set to FADE_OUT_TO_PAUSE.
+		// 2.1. The playback is mixed after being paused, and the audio server thread atomically sets the state to PAUSED after performing a brief fade-out.
+		// 3. The playback is (maybe) deleted, and the state is set to FADE_OUT_TO_DELETION.
+		// 3.1. The playback is mixed after being deleted, and the audio server thread atomically sets the state to AWAITING_DELETION after performing a brief fade-out.
+		// 		NOTE: The playback is not deallocated at this time because allocation and deallocation are not realtime-safe.
+		// 4. The playback is removed and deallocated on the main thread using the SafeList maybe_cleanup method.
 		enum PlaybackState {
 			PAUSED = 0, // Paused. Keep this stream playback around though so it can be restarted.
 			PLAYING = 1, // Playing. Fading may still be necessary if volume changes!
@@ -297,6 +309,8 @@ private:
 
 	SafeList<AudioStreamPlaybackListNode *> playback_list;
 	SafeList<AudioStreamPlaybackBusDetails *> bus_details_graveyard;
+	void _delete_stream_playback(Ref<AudioStreamPlayback> p_playback);
+	void _delete_stream_playback_list_node(AudioStreamPlaybackListNode *p_node);
 
 	// TODO document if this is necessary.
 	SafeList<AudioStreamPlaybackBusDetails *> bus_details_graveyard_frame_old;
@@ -356,6 +370,11 @@ public:
 	int thread_get_mix_buffer_size() const;
 	int thread_find_bus_index(const StringName &p_name);
 
+#ifdef DEBUG_ENABLED
+	void set_debug_mute(bool p_mute);
+	bool get_debug_mute() const;
+#endif // DEBUG_ENABLED
+
 	void set_bus_count(int p_count);
 	int get_bus_count() const;
 
@@ -372,6 +391,9 @@ public:
 
 	void set_bus_volume_db(int p_bus, float p_volume_db);
 	float get_bus_volume_db(int p_bus) const;
+
+	void set_bus_volume_linear(int p_bus, float p_volume_linear);
+	float get_bus_volume_linear(int p_bus) const;
 
 	void set_bus_send(int p_bus, const StringName &p_send);
 	StringName get_bus_send(int p_bus) const;
@@ -425,6 +447,8 @@ public:
 	uint64_t get_mix_count() const;
 	uint64_t get_mixed_frames() const;
 
+	String get_driver_name() const;
+
 	void notify_listener_changed();
 
 	virtual void init();
@@ -439,6 +463,7 @@ public:
 
 	virtual SpeakerMode get_speaker_mode() const;
 	virtual float get_mix_rate() const;
+	virtual float get_input_mix_rate() const;
 
 	virtual float read_output_peak_db() const;
 
@@ -531,5 +556,3 @@ public:
 };
 
 typedef AudioServer AS;
-
-#endif // AUDIO_SERVER_H

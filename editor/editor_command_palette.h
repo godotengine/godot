@@ -28,11 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef EDITOR_COMMAND_PALETTE_H
-#define EDITOR_COMMAND_PALETTE_H
+#pragma once
 
 #include "core/input/shortcut.h"
-#include "core/os/thread_safe.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/tree.h"
 
@@ -80,7 +78,7 @@ class EditorCommandPalette : public ConfirmationDialog {
 
 	void _update_command_search(const String &search_text);
 	float _score_path(const String &p_search, const String &p_path);
-	void _sbox_input(const Ref<InputEvent> &p_ie);
+	void _sbox_input(const Ref<InputEvent> &p_event);
 	void _confirmed();
 	void _add_command(String p_command_name, String p_key_name, Callable p_binded_action, String p_shortcut_text = "None");
 	void _save_history() const;
@@ -104,5 +102,3 @@ public:
 
 Ref<Shortcut> ED_SHORTCUT_AND_COMMAND(const String &p_path, const String &p_name, Key p_keycode = Key::NONE, String p_command = "");
 Ref<Shortcut> ED_SHORTCUT_ARRAY_AND_COMMAND(const String &p_path, const String &p_name, const PackedInt32Array &p_keycodes, String p_command = "");
-
-#endif // EDITOR_COMMAND_PALETTE_H

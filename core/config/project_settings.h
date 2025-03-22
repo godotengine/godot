@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef PROJECT_SETTINGS_H
-#define PROJECT_SETTINGS_H
+#pragma once
 
 #include "core/object/class_db.h"
 
@@ -47,10 +46,8 @@ public:
 	typedef HashMap<String, Variant> CustomMap;
 	static const String PROJECT_DATA_DIR_NAME_SUFFIX;
 
-	enum {
-		// Properties that are not for built in values begin from this value, so builtin ones are displayed first.
-		NO_BUILTIN_ORDER_BASE = 1 << 16
-	};
+	// Properties that are not for built in values begin from this value, so builtin ones are displayed first.
+	constexpr static const int32_t NO_BUILTIN_ORDER_BASE = 1 << 16;
 
 #ifdef TOOLS_ENABLED
 	const static PackedStringArray get_required_features();
@@ -137,7 +134,8 @@ protected:
 
 	void _convert_to_last_version(int p_from_version);
 
-	bool _load_resource_pack(const String &p_pack, bool p_replace_files = true, int p_offset = 0);
+	bool load_resource_pack(const String &p_pack, bool p_replace_files, int p_offset);
+	bool _load_resource_pack(const String &p_pack, bool p_replace_files = true, int p_offset = 0, bool p_main_pack = false);
 
 	void _add_property_info_bind(const Dictionary &p_info);
 
@@ -244,5 +242,3 @@ Variant _GLOBAL_DEF(const PropertyInfo &p_info, const Variant &p_default, bool p
 #define GLOBAL_DEF_RST_NOVAL_BASIC(m_var, m_value) _GLOBAL_DEF(m_var, m_value, true, true, true)
 
 #define GLOBAL_DEF_INTERNAL(m_var, m_value) _GLOBAL_DEF(m_var, m_value, false, false, false, true)
-
-#endif // PROJECT_SETTINGS_H

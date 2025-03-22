@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef PERFORMANCE_H
-#define PERFORMANCE_H
+#pragma once
 
 #include "core/object/class_db.h"
 #include "core/templates/hash_map.h"
@@ -101,6 +100,11 @@ public:
 		NAVIGATION_EDGE_CONNECTION_COUNT,
 		NAVIGATION_EDGE_FREE_COUNT,
 		NAVIGATION_OBSTACLE_COUNT,
+		PIPELINE_COMPILATIONS_CANVAS,
+		PIPELINE_COMPILATIONS_MESH,
+		PIPELINE_COMPILATIONS_SURFACE,
+		PIPELINE_COMPILATIONS_DRAW,
+		PIPELINE_COMPILATIONS_SPECIALIZATION,
 		MONITOR_MAX
 	};
 
@@ -133,5 +137,3 @@ public:
 };
 
 VARIANT_ENUM_CAST(Performance::Monitor);
-
-#endif // PERFORMANCE_H

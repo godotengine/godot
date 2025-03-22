@@ -28,9 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef NATIVE_MENU_WINDOWS_H
-#define NATIVE_MENU_WINDOWS_H
+#pragma once
 
+#include "core/io/image.h"
 #include "core/templates/hash_map.h"
 #include "core/templates/rid_owner.h"
 #include "servers/display/native_menu.h"
@@ -60,6 +60,8 @@ class NativeMenuWindows : public NativeMenu {
 
 	struct MenuData {
 		HMENU menu = 0;
+
+		Callable close_cb;
 		bool is_rtl = false;
 	};
 
@@ -150,5 +152,3 @@ public:
 	NativeMenuWindows();
 	~NativeMenuWindows();
 };
-
-#endif // NATIVE_MENU_WINDOWS_H

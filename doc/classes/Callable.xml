@@ -13,7 +13,7 @@
 		func test():
 		    var callable = Callable(self, "print_args")
 		    callable.call("hello", "world")  # Prints "hello world ".
-		    callable.call(Vector2.UP, 42, callable)  # Prints "(0, -1) 42 Node(node.gd)::print_args".
+		    callable.call(Vector2.UP, 42, callable)  # Prints "(0.0, -1.0) 42 Node(node.gd)::print_args"
 		    callable.call("invalid")  # Invalid call, should have at least 2 arguments.
 		[/gdscript]
 		[csharp]
@@ -28,7 +28,7 @@
 		    // Invalid calls fail silently.
 		    Callable callable = new Callable(this, MethodName.PrintArgs);
 		    callable.Call("hello", "world"); // Default parameter values are not supported, should have 3 arguments.
-		    callable.Call(Vector2.Up, 42, callable); // Prints "(0, -1) 42 Node(Node.cs)::PrintArgs".
+		    callable.Call(Vector2.Up, 42, callable); // Prints "(0, -1) 42 Node(Node.cs)::PrintArgs"
 		    callable.Call("invalid"); // Invalid call, should have 3 arguments.
 		}
 		[/csharp]
@@ -39,7 +39,7 @@
 		    var my_lambda = func (message):
 		        print(message)
 
-		    # Prints Hello everyone!
+		    # Prints "Hello everyone!"
 		    my_lambda.call("Hello everyone!")
 
 		    # Prints "Attack!", when the button_pressed signal is emitted.
@@ -155,13 +155,21 @@
 		<method name="get_bound_arguments" qualifiers="const">
 			<return type="Array" />
 			<description>
-				Return the bound arguments (as long as [method get_bound_arguments_count] is greater than zero), or empty (if [method get_bound_arguments_count] is less than or equal to zero).
+				Returns the array of arguments bound via successive [method bind] or [method unbind] calls. These arguments will be added [i]after[/i] the arguments passed to the call, from which [method get_unbound_arguments_count] arguments on the right have been previously excluded.
+				[codeblock]
+				func get_effective_arguments(callable, call_args):
+				    assert(call_args.size() - callable.get_unbound_arguments_count() &gt;= 0)
+				    var result = call_args.slice(0, call_args.size() - callable.get_unbound_arguments_count())
+				    result.append_array(callable.get_bound_arguments())
+				    return result
+				[/codeblock]
 			</description>
 		</method>
 		<method name="get_bound_arguments_count" qualifiers="const">
 			<return type="int" />
 			<description>
-				Returns the total amount of arguments bound (or unbound) via successive [method bind] or [method unbind] calls. If the amount of arguments unbound is greater than the ones bound, this function returns a value less than zero.
+				Returns the total amount of arguments bound via successive [method bind] or [method unbind] calls. This is the same as the size of the array returned by [method get_bound_arguments]. See [method get_bound_arguments] for details.
+				[b]Note:[/b] The [method get_bound_arguments_count] and [method get_unbound_arguments_count] methods can both return positive values.
 			</description>
 		</method>
 		<method name="get_method" qualifiers="const">
@@ -180,6 +188,13 @@
 			<return type="int" />
 			<description>
 				Returns the ID of this [Callable]'s object (see [method Object.get_instance_id]).
+			</description>
+		</method>
+		<method name="get_unbound_arguments_count" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the total amount of arguments unbound via successive [method bind] or [method unbind] calls. See [method get_bound_arguments] for details.
+				[b]Note:[/b] The [method get_bound_arguments_count] and [method get_unbound_arguments_count] methods can both return positive values.
 			</description>
 		</method>
 		<method name="hash" qualifiers="const">

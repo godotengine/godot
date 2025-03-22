@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TYPE_INFO_H
-#define TYPE_INFO_H
+#pragma once
 
 #include "core/typedefs.h"
 
@@ -47,7 +46,9 @@ enum Metadata {
 	METADATA_INT_IS_UINT32,
 	METADATA_INT_IS_UINT64,
 	METADATA_REAL_IS_FLOAT,
-	METADATA_REAL_IS_DOUBLE
+	METADATA_REAL_IS_DOUBLE,
+	METADATA_INT_IS_CHAR16,
+	METADATA_INT_IS_CHAR32,
 };
 }
 
@@ -104,8 +105,8 @@ MAKE_TYPE_INFO_WITH_META(uint32_t, Variant::INT, GodotTypeInfo::METADATA_INT_IS_
 MAKE_TYPE_INFO_WITH_META(int32_t, Variant::INT, GodotTypeInfo::METADATA_INT_IS_INT32)
 MAKE_TYPE_INFO_WITH_META(uint64_t, Variant::INT, GodotTypeInfo::METADATA_INT_IS_UINT64)
 MAKE_TYPE_INFO_WITH_META(int64_t, Variant::INT, GodotTypeInfo::METADATA_INT_IS_INT64)
-MAKE_TYPE_INFO(char16_t, Variant::INT)
-MAKE_TYPE_INFO(char32_t, Variant::INT)
+MAKE_TYPE_INFO_WITH_META(char16_t, Variant::INT, GodotTypeInfo::METADATA_INT_IS_CHAR16)
+MAKE_TYPE_INFO_WITH_META(char32_t, Variant::INT, GodotTypeInfo::METADATA_INT_IS_CHAR32)
 MAKE_TYPE_INFO_WITH_META(float, Variant::FLOAT, GodotTypeInfo::METADATA_REAL_IS_FLOAT)
 MAKE_TYPE_INFO_WITH_META(double, Variant::FLOAT, GodotTypeInfo::METADATA_REAL_IS_DOUBLE)
 
@@ -267,6 +268,9 @@ public:
 	_FORCE_INLINE_ BitField<T> operator^(const BitField<T> &p_b) const { return BitField<T>(value ^ p_b.value); }
 };
 
+template <typename T>
+struct is_zero_constructible<BitField<T>> : std::true_type {};
+
 #define TEMPL_MAKE_BITFIELD_TYPE_INFO(m_enum, m_impl)                                                                                            \
 	template <>                                                                                                                                  \
 	struct GetTypeInfo<m_impl> {                                                                                                                 \
@@ -317,10 +321,12 @@ struct ZeroInitializer<T *> {
 	static void initialize(T *&value) { value = nullptr; }
 };
 
-#define ZERO_INITIALIZER_NUMBER(m_type)                      \
-	template <>                                              \
-	struct ZeroInitializer<m_type> {                         \
-		static void initialize(m_type &value) { value = 0; } \
+#define ZERO_INITIALIZER_NUMBER(m_type)         \
+	template <>                                 \
+	struct ZeroInitializer<m_type> {            \
+		static void initialize(m_type &value) { \
+			value = 0;                          \
+		}                                       \
 	};
 
 ZERO_INITIALIZER_NUMBER(uint8_t)
@@ -335,5 +341,3 @@ ZERO_INITIALIZER_NUMBER(char16_t)
 ZERO_INITIALIZER_NUMBER(char32_t)
 ZERO_INITIALIZER_NUMBER(float)
 ZERO_INITIALIZER_NUMBER(double)
-
-#endif // TYPE_INFO_H
