@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  test_navigation_agent_3d.h                                            */
+/*  triangle2.h                                                           */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -30,39 +30,23 @@
 
 #pragma once
 
-#include "scene/3d/navigation_agent_3d.h"
-#include "scene/3d/node_3d.h"
-#include "scene/main/window.h"
+#include "core/math/vector2.h"
 
-#include "tests/test_macros.h"
+struct Triangle2 {
+	Vector2 vertex[3];
 
-namespace TestNavigationAgent3D {
-
-TEST_SUITE("[Navigation3D]") {
-	TEST_CASE("[SceneTree][NavigationAgent3D] New agent should have valid RID") {
-		NavigationAgent3D *agent_node = memnew(NavigationAgent3D);
-		CHECK(agent_node->get_rid().is_valid());
-		memdelete(agent_node);
+	real_t get_area() const {
+		return Math::sqrt((vertex[0] - vertex[1]).cross(vertex[0] - vertex[2])) * 0.5f;
 	}
 
-	TEST_CASE("[SceneTree][NavigationAgent3D] New agent should attach to default map") {
-		Node3D *node_3d = memnew(Node3D);
-		SceneTree::get_singleton()->get_root()->add_child(node_3d);
+	Vector2 get_random_point_inside() const;
 
-		NavigationAgent3D *agent_node = memnew(NavigationAgent3D);
+	Vector2 get_closest_point_to(const Vector2 &p_point) const;
 
-		// agent should not be attached to any map when outside of tree
-		CHECK_FALSE(agent_node->get_navigation_map().is_valid());
-
-		SUBCASE("Agent should attach to default map when it enters the tree") {
-			node_3d->add_child(agent_node);
-			CHECK(agent_node->get_navigation_map().is_valid());
-			CHECK(agent_node->get_navigation_map() == node_3d->get_world_3d()->get_navigation_map());
-		}
-
-		memdelete(agent_node);
-		memdelete(node_3d);
+	Triangle2() {}
+	Triangle2(const Vector2 &p_v1, const Vector2 &p_v2, const Vector2 &p_v3) {
+		vertex[0] = p_v1;
+		vertex[1] = p_v2;
+		vertex[2] = p_v3;
 	}
-}
-
-} //namespace TestNavigationAgent3D
+};
