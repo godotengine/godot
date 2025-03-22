@@ -205,6 +205,19 @@ struct PropertyInfo {
 	bool operator<(const PropertyInfo &p_info) const {
 		return name < p_info.name;
 	}
+
+#ifdef TOOLS_ENABLED
+	Dictionary to_dictionary() const {
+		Dictionary dict;
+		dict["type"] = type;
+		dict["name"] = (String)name;
+		dict["class_name"] = class_name;
+		dict["hint"] = hint;
+		dict["hint_string"] = hint_string;
+		dict["usage"] = usage;
+		return dict;
+	}
+#endif // TOOLS_ENABLED
 };
 
 TypedArray<Dictionary> convert_property_list(const List<PropertyInfo> *p_list);
@@ -297,6 +310,38 @@ struct MethodInfo {
 		name = p_name;
 		arguments = Vector<PropertyInfo>{ p_params... };
 	}
+
+#ifdef TOOLS_ENABLED
+	Dictionary to_dictionary() const {
+		Dictionary dict;
+		dict["name"] = name;
+		dict["return_val"] = return_val.to_dictionary();
+		dict["flags"] = flags;
+		dict["id"] = id;
+
+		Array dict_arguments;
+		dict["arguments"] = dict_arguments;
+		for (const PropertyInfo &argument : arguments) {
+			dict_arguments.push_back(argument.to_dictionary());
+		}
+
+		Array dict_default_arguments;
+		dict["default_arguments"] = dict_default_arguments;
+		for (const Variant &default_argument : default_arguments) {
+			dict_default_arguments.push_back(default_argument);
+		}
+
+		dict["return_val_metadata"] = return_val_metadata;
+
+		Array dict_arguments_metadata;
+		dict["arguments_metadata"] = dict_arguments_metadata;
+		for (const int &argument_metadata : arguments_metadata) {
+			dict_arguments_metadata.push_back(argument_metadata);
+		}
+
+		return dict;
+	}
+#endif // TOOLS_ENABLED
 };
 
 // API used to extend in GDExtension and other C compatible compiled languages.
