@@ -1782,6 +1782,7 @@ uint64_t TextureStorage::texture_get_native_handle(RID p_texture, bool p_srgb) c
 }
 
 Ref<Image> TextureStorage::_validate_texture_format(const Ref<Image> &p_image, TextureToRDFormat &r_format) {
+	Image::Format original_format = p_image->get_format();
 	Ref<Image> image = p_image->duplicate();
 
 	switch (p_image->get_format()) {
@@ -2268,6 +2269,10 @@ Ref<Image> TextureStorage::_validate_texture_format(const Ref<Image> &p_image, T
 
 		default: {
 		}
+	}
+
+	if (original_format != image->get_format()) {
+		ERR_PRINT(vformat("Image format %s not supported by hardware, converting to %s.", Image::get_format_name(original_format), Image::get_format_name(image->get_format())));
 	}
 
 	return image;
