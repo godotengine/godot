@@ -83,18 +83,20 @@ Size2 CheckButton::get_minimum_size() const {
 	return minsize;
 }
 
+void CheckButton::_set_left_and_right_internal_margins() {
+	bool rtl = is_layout_rtl();
+	Side icon_side = (rtl ^ invert) ? SIDE_LEFT : SIDE_RIGHT;
+	Side text_side = (rtl ^ invert) ? SIDE_RIGHT : SIDE_LEFT;
+	_set_internal_margin(icon_side, get_icon_size().width);
+	_set_internal_margin(text_side, 0.f);
+}
+
 void CheckButton::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED:
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
 		case NOTIFICATION_TRANSLATION_CHANGED: {
-			if (is_layout_rtl()) {
-				_set_internal_margin(SIDE_LEFT, get_icon_size().width);
-				_set_internal_margin(SIDE_RIGHT, 0.f);
-			} else {
-				_set_internal_margin(SIDE_LEFT, 0.f);
-				_set_internal_margin(SIDE_RIGHT, get_icon_size().width);
-			}
+			_set_left_and_right_internal_margins();
 		} break;
 
 		case NOTIFICATION_DRAW: {
@@ -125,7 +127,7 @@ void CheckButton::_notification(int p_what) {
 			Vector2 ofs;
 			Size2 tex_size = get_icon_size();
 
-			if (rtl) {
+			if (rtl ^ invert) {
 				ofs.x = theme_cache.normal_style->get_margin(SIDE_LEFT);
 			} else {
 				ofs.x = get_size().width - (tex_size.width + theme_cache.normal_style->get_margin(SIDE_RIGHT));
@@ -142,6 +144,10 @@ void CheckButton::_notification(int p_what) {
 }
 
 void CheckButton::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_invert", "invert"), &CheckButton::set_invert);
+	ClassDB::bind_method(D_METHOD("is_invert"), &CheckButton::is_invert);
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "invert"), "set_invert", "is_invert");
+
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, CheckButton, h_separation);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT, CheckButton, check_v_offset);
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, CheckButton, normal_style, "normal");
@@ -159,17 +165,27 @@ void CheckButton::_bind_methods() {
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, CheckButton, button_unchecked_color);
 }
 
+void CheckButton::set_invert(bool p_invert) {
+	if (p_invert == invert) {
+		return;
+	}
+	invert = p_invert;
+	_set_left_and_right_internal_margins();
+	queue_redraw();
+}
+
+bool CheckButton::is_invert() const {
+	return invert;
+}
+
 CheckButton::CheckButton(const String &p_text) :
 		Button(p_text) {
 	set_toggle_mode(true);
 
 	set_text_alignment(HORIZONTAL_ALIGNMENT_LEFT);
 
-	if (is_layout_rtl()) {
-		_set_internal_margin(SIDE_LEFT, get_icon_size().width);
-	} else {
-		_set_internal_margin(SIDE_RIGHT, get_icon_size().width);
-	}
+	Side icon_side = (is_layout_rtl() ^ invert) ? SIDE_LEFT : SIDE_RIGHT;
+	_set_internal_margin(icon_side, get_icon_size().width);
 }
 
 CheckButton::~CheckButton() {
