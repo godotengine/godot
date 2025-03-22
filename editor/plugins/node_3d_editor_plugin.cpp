@@ -6819,13 +6819,13 @@ void Node3DEditor::_menu_gizmo_toggled(int p_option) {
 	const int state = gizmos_menu->get_item_state(idx);
 	switch (state) {
 		case EditorNode3DGizmoPlugin::VISIBLE:
-			gizmos_menu->set_item_icon(idx, view_layout_menu->get_popup()->get_theme_icon(SNAME("visibility_visible")));
+			gizmos_menu->set_item_icon(idx, get_editor_theme_icon(SNAME("GuiVisibilityVisible")));
 			break;
 		case EditorNode3DGizmoPlugin::ON_TOP:
-			gizmos_menu->set_item_icon(idx, view_layout_menu->get_popup()->get_theme_icon(SNAME("visibility_xray")));
+			gizmos_menu->set_item_icon(idx, get_editor_theme_icon(SNAME("GuiVisibilityXray")));
 			break;
 		case EditorNode3DGizmoPlugin::HIDDEN:
-			gizmos_menu->set_item_icon(idx, view_layout_menu->get_popup()->get_theme_icon(SNAME("visibility_hidden")));
+			gizmos_menu->set_item_icon(idx, get_editor_theme_icon(SNAME("GuiVisibilityHidden")));
 			break;
 	}
 
@@ -7646,13 +7646,13 @@ void Node3DEditor::_update_gizmos_menu() {
 				TTR("Click to toggle between visibility states.\n\nOpen eye: Gizmo is visible.\nClosed eye: Gizmo is hidden.\nHalf-open eye: Gizmo is also visible through opaque surfaces (\"x-ray\")."));
 		switch (plugin_state) {
 			case EditorNode3DGizmoPlugin::VISIBLE:
-				gizmos_menu->set_item_icon(idx, gizmos_menu->get_theme_icon(SNAME("visibility_visible")));
+				gizmos_menu->set_item_icon(idx, get_editor_theme_icon(SNAME("GuiVisibilityVisible")));
 				break;
 			case EditorNode3DGizmoPlugin::ON_TOP:
-				gizmos_menu->set_item_icon(idx, gizmos_menu->get_theme_icon(SNAME("visibility_xray")));
+				gizmos_menu->set_item_icon(idx, get_editor_theme_icon(SNAME("GuiVisibilityXray")));
 				break;
 			case EditorNode3DGizmoPlugin::HIDDEN:
-				gizmos_menu->set_item_icon(idx, gizmos_menu->get_theme_icon(SNAME("visibility_hidden")));
+				gizmos_menu->set_item_icon(idx, get_editor_theme_icon(SNAME("GuiVisibilityHidden")));
 				break;
 		}
 	}
@@ -7667,13 +7667,13 @@ void Node3DEditor::_update_gizmos_menu_theme() {
 		const int idx = gizmos_menu->get_item_index(i);
 		switch (plugin_state) {
 			case EditorNode3DGizmoPlugin::VISIBLE:
-				gizmos_menu->set_item_icon(idx, gizmos_menu->get_theme_icon(SNAME("visibility_visible")));
+				gizmos_menu->set_item_icon(idx, get_editor_theme_icon(SNAME("GuiVisibilityVisible")));
 				break;
 			case EditorNode3DGizmoPlugin::ON_TOP:
-				gizmos_menu->set_item_icon(idx, gizmos_menu->get_theme_icon(SNAME("visibility_xray")));
+				gizmos_menu->set_item_icon(idx, get_editor_theme_icon(SNAME("GuiVisibilityXray")));
 				break;
 			case EditorNode3DGizmoPlugin::HIDDEN:
-				gizmos_menu->set_item_icon(idx, gizmos_menu->get_theme_icon(SNAME("visibility_hidden")));
+				gizmos_menu->set_item_icon(idx, get_editor_theme_icon(SNAME("GuiVisibilityHidden")));
 				break;
 		}
 	}
