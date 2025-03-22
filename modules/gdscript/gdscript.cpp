@@ -3012,6 +3012,17 @@ Ref<GDScript> GDScriptLanguage::get_script_by_fully_qualified_name(const String 
 
 /*************** RESOURCE ***************/
 
+ResourceUID::ID ResourceFormatLoaderGDScript::_get_embedded_uid(const String &p_path) const {
+	Ref<FileAccess> file = FileAccess::open(p_path, FileAccess::READ);
+	if (file.is_valid()) {
+		String line = file->get_line();
+		if (line.begins_with("# uid://")) {
+			return ResourceUID::get_singleton()->text_to_id(line.erase(0, 2));
+		}
+	}
+	return ResourceUID::INVALID_ID;
+}
+
 Ref<Resource> ResourceFormatLoaderGDScript::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, CacheMode p_cache_mode) {
 	Error err;
 	bool ignoring = p_cache_mode == CACHE_MODE_IGNORE || p_cache_mode == CACHE_MODE_IGNORE_DEEP;
@@ -3120,6 +3131,22 @@ void ResourceFormatLoaderGDScript::get_classes_used(const String &p_path, HashSe
 
 		current = tokenizer.scan();
 	}
+}
+
+ResourceUID::ID ResourceFormatLoaderGDScript::get_resource_uid(const String &p_path) const {
+	Ref<FileAccess> file = FileAccess::open(p_path + ".uid", FileAccess::READ);
+	if (file.is_valid()) {
+		return ResourceUID::get_singleton()->text_to_id(file->get_line());
+	}
+	return _get_embedded_uid(p_path);
+}
+
+bool ResourceFormatLoaderGDScript::has_custom_uid_support() const {
+	return true;
+}
+
+bool ResourceFormatLoaderGDScript::should_create_uid_file(const String &p_path) const {
+	return _get_embedded_uid(p_path) == ResourceUID::INVALID_ID;
 }
 
 Error ResourceFormatSaverGDScript::save(const Ref<Resource> &p_resource, const String &p_path, uint32_t p_flags) {

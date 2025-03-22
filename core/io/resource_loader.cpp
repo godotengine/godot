@@ -129,6 +129,10 @@ bool ResourceFormatLoader::has_custom_uid_support() const {
 	return GDVIRTUAL_IS_OVERRIDDEN(_get_resource_uid);
 }
 
+bool ResourceFormatLoader::should_create_uid_file(const String &p_path) const {
+	return !has_custom_uid_support();
+}
+
 void ResourceFormatLoader::get_recognized_extensions_for_type(const String &p_type, List<String> *p_extensions) const {
 	if (p_type.is_empty() || handles_type(p_type)) {
 		get_recognized_extensions(p_extensions);
@@ -1224,7 +1228,7 @@ bool ResourceLoader::should_create_uid_file(const String &p_path) {
 
 	for (int i = 0; i < loader_count; i++) {
 		if (loader[i]->recognize_path(local_path)) {
-			return !loader[i]->has_custom_uid_support();
+			return loader[i]->should_create_uid_file(p_path);
 		}
 	}
 	return false;

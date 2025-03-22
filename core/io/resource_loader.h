@@ -84,6 +84,7 @@ public:
 	virtual String get_resource_script_class(const String &p_path) const;
 	virtual ResourceUID::ID get_resource_uid(const String &p_path) const;
 	virtual bool has_custom_uid_support() const;
+	virtual bool should_create_uid_file(const String &p_path) const;
 	virtual void get_dependencies(const String &p_path, List<String> *p_dependencies, bool p_add_types = false);
 	virtual Error rename_dependencies(const String &p_path, const HashMap<String, String> &p_map);
 	virtual bool is_import_valid(const String &p_path) const { return true; }
