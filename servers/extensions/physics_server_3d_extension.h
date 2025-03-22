@@ -231,9 +231,12 @@ public:
 	EXBIND0R(RID, space_create)
 	EXBIND2(space_set_active, RID, bool)
 	EXBIND1RC(bool, space_is_active, RID)
+	EXBIND2(space_step, RID, real_t)
+	EXBIND1(space_flush_queries, RID)
 
 	EXBIND3(space_set_param, RID, SpaceParameter, real_t)
 	EXBIND2RC(real_t, space_get_param, RID, SpaceParameter)
+	EXBIND1RC(real_t, space_get_time, RID)
 
 	EXBIND1R(PhysicsDirectSpaceState3D *, space_get_direct_state, RID)
 
@@ -534,6 +537,7 @@ public:
 
 	EXBIND0RC(bool, is_flushing_queries)
 	EXBIND1R(int, get_process_info, ProcessInfo)
+	EXBIND2R(int, space_get_last_process_info, RID, ProcessInfo)
 
 	PhysicsServer3DExtension();
 	~PhysicsServer3DExtension();

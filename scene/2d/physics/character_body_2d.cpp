@@ -33,10 +33,11 @@
 // So, if you pass 45 as limit, avoid numerical precision errors when angle is 45.
 #define FLOOR_ANGLE_THRESHOLD 0.01
 
-bool CharacterBody2D::move_and_slide() {
-	// Hack in order to work with calling from _process as well as from _physics_process; calling from thread is risky.
-	double delta = Engine::get_singleton()->is_in_physics_frame() ? get_physics_process_delta_time() : get_process_delta_time();
-
+bool CharacterBody2D::move_and_slide(double delta) {
+	if (delta <= 0) {
+		// Hack in order to work with calling from _process as well as from _physics_process; calling from thread is risky.
+		delta = Engine::get_singleton()->is_in_physics_frame() ? get_physics_process_delta_time() : get_process_delta_time();
+	}
 	Vector2 current_platform_velocity = platform_velocity;
 	Transform2D gt = get_global_transform();
 	previous_position = gt.columns[2];
