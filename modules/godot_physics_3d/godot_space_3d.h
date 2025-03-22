@@ -110,6 +110,7 @@ private:
 	bool locked = false;
 
 	real_t last_step = 0.001;
+	real_t total_time = 0.0;
 
 	int island_count = 0;
 	int active_objects = 0;
@@ -173,6 +174,8 @@ public:
 	void lock();
 	void unlock();
 
+	real_t get_time() const { return total_time; }
+	void set_time(real_t p_time) { total_time = p_time; }
 	real_t get_last_step() const { return last_step; }
 	void set_last_step(real_t p_step) { last_step = p_step; }
 

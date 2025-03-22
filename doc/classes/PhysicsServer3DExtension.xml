@@ -1252,6 +1252,12 @@
 			<description>
 			</description>
 		</method>
+		<method name="_space_get_time" qualifiers="virtual const">
+			<return type="float" />
+			<param index="0" name="space" type="RID" />
+			<description>
+			</description>
+		</method>
 		<method name="_space_is_active" qualifiers="virtual const">
 			<return type="bool" />
 			<param index="0" name="space" type="RID" />

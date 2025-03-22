@@ -1344,6 +1344,13 @@
 				Returns the value of a space parameter.
 			</description>
 		</method>
+		<method name="space_get_time" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="space" type="RID" />
+			<description>
+				Returns the total time a space has processed.
+			</description>
+		</method>
 		<method name="space_is_active" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="space" type="RID" />

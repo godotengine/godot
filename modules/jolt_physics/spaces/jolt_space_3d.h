@@ -73,6 +73,7 @@ class JoltSpace3D {
 	JoltArea3D *default_area = nullptr;
 
 	float last_step = 0.0f;
+	float total_time = 0.0f;
 
 	int bodies_added_since_optimizing = 0;
 
@@ -87,6 +88,7 @@ public:
 	~JoltSpace3D();
 
 	void step(float p_step);
+	float get_time() const { return total_time; }
 
 	void call_queries();
 

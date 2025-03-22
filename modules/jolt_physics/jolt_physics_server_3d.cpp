@@ -246,6 +246,13 @@ real_t JoltPhysicsServer3D::space_get_param(RID p_space, SpaceParameter p_param)
 	return (real_t)space->get_param(p_param);
 }
 
+real_t JoltPhysicsServer3D::space_get_time(RID p_space) const {
+	JoltSpace3D *space = space_owner.get_or_null(p_space);
+	ERR_FAIL_NULL_V(space, 0.0);
+
+	return (real_t)space->get_time();
+}
+
 PhysicsDirectSpaceState3D *JoltPhysicsServer3D::space_get_direct_state(RID p_space) {
 	JoltSpace3D *space = space_owner.get_or_null(p_space);
 	ERR_FAIL_NULL_V(space, nullptr);

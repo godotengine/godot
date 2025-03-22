@@ -162,6 +162,7 @@ void PhysicsServer3DExtension::_bind_methods() {
 
 	GDVIRTUAL_BIND(_space_set_param, "space", "param", "value");
 	GDVIRTUAL_BIND(_space_get_param, "space", "param");
+	GDVIRTUAL_BIND(_space_get_time, "space");
 
 	GDVIRTUAL_BIND(_space_get_direct_state, "space");
 

@@ -160,6 +160,7 @@ JoltSpace3D::~JoltSpace3D() {
 void JoltSpace3D::step(float p_step) {
 	stepping = true;
 	last_step = p_step;
+	total_time = total_time + p_step;
 
 	_pre_step(p_step);
 

@@ -162,6 +162,7 @@ public:
 
 	virtual void space_set_param(RID p_space, SpaceParameter p_param, real_t p_value) override {}
 	virtual real_t space_get_param(RID p_space, SpaceParameter p_param) const override { return 0; }
+	virtual real_t space_get_time(RID p_space) const override { return 0; }
 
 	virtual PhysicsDirectSpaceState3D *space_get_direct_state(RID p_space) override { return space_state_dummy; }
 

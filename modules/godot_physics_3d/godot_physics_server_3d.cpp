@@ -226,6 +226,12 @@ real_t GodotPhysicsServer3D::space_get_param(RID p_space, SpaceParameter p_param
 	return space->get_param(p_param);
 }
 
+real_t GodotPhysicsServer3D::space_get_time(RID p_space) const {
+	const GodotSpace3D *space = space_owner.get_or_null(p_space);
+	ERR_FAIL_NULL_V(space, 0);
+	return space->get_time();
+}
+
 PhysicsDirectSpaceState3D *GodotPhysicsServer3D::space_get_direct_state(RID p_space) {
 	GodotSpace3D *space = space_owner.get_or_null(p_space);
 	ERR_FAIL_NULL_V(space, nullptr);
