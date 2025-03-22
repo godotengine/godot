@@ -342,6 +342,7 @@ class EditorInspectorSection : public Container {
 	bool checked = false;
 	int indent_depth = 0;
 	int level = 1;
+	int reorder_placement = 0;
 	String related_enable_property;
 
 	Timer *dropping_unfold_timer = nullptr;
@@ -374,10 +375,11 @@ public:
 	virtual Size2 get_minimum_size() const override;
 	virtual Control *make_custom_tooltip(const String &p_text) const override;
 
-	void setup(const String &p_section, const String &p_label, Object *p_object, const Color &p_bg_color, bool p_foldable, int p_indent_depth = 0, int p_level = 1);
+	void setup(const String &p_section, const String &p_label, Object *p_object, const Color &p_bg_color, bool p_foldable, int p_indent_depth = 0, int p_level = 1, int p_reorder_placement = 0);
 	String get_section() const;
 	String get_label() const { return label; }
 	VBoxContainer *get_vbox();
+	int get_reorder_placement() const;
 	void unfold();
 	void fold();
 	void set_bg_color(const Color &p_bg_color);
