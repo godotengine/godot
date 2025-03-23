@@ -5,6 +5,8 @@
 	</brief_description>
 	<description>
 		Class that has everything pertaining to a world: A physics space, a visual scenario, and a sound space. 3D nodes register their resources into the current 3D world.
+
+		[b]Note:[/b] This class is not meant to be instantiated directly. Use [method Node3D.get_world_3d] to get the world's state.
 	</description>
 	<tutorials>
 		<link title="Ray-casting">$DOCS_URL/tutorials/physics/ray-casting.html</link>
