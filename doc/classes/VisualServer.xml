@@ -1488,14 +1488,6 @@
 				Sets a material that will override the material for all surfaces on the mesh associated with this instance. Equivalent to [member GeometryInstance.material_override].
 			</description>
 		</method>
-		<method name="instance_reset_physics_interpolation">
-			<return type="void" />
-			<argument index="0" name="instance" type="RID" />
-			<description>
-				Prevents physics interpolation for the current physics tick.
-				This is useful when moving an instance to a new location, to give an instantaneous change rather than interpolation from the previous location.
-			</description>
-		</method>
 		<method name="instance_set_base">
 			<return type="void" />
 			<argument index="0" name="instance" type="RID" />
@@ -1535,14 +1527,6 @@
 			<argument index="1" name="margin" type="float" />
 			<description>
 				Sets a margin to increase the size of the AABB when culling objects from the view frustum. This allows you to avoid culling objects that fall outside the view frustum. Equivalent to [member GeometryInstance.extra_cull_margin].
-			</description>
-		</method>
-		<method name="instance_set_interpolated">
-			<return type="void" />
-			<argument index="0" name="instance" type="RID" />
-			<argument index="1" name="interpolated" type="bool" />
-			<description>
-				Turns on and off physics interpolation for the instance.
 			</description>
 		</method>
 		<method name="instance_set_layer_mask">

@@ -105,6 +105,7 @@ void BoneAttachment::_notification(int p_what) {
 }
 
 BoneAttachment::BoneAttachment() {
+	set_physics_interpolation_mode(PHYSICS_INTERPOLATION_MODE_OFF);
 	bound = false;
 }
 
