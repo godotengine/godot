@@ -174,6 +174,7 @@ void DebugAdapterProtocol::reset_current_info() {
 void DebugAdapterProtocol::reset_ids() {
 	breakpoint_id = 0;
 	breakpoint_list.clear();
+	breakpoint_source_list.clear();
 
 	reset_stack_info();
 }
@@ -183,6 +184,7 @@ void DebugAdapterProtocol::reset_stack_info() {
 	variable_id = 1;
 
 	stackframe_list.clear();
+	scope_list.clear();
 	variable_list.clear();
 	object_list.clear();
 	object_pending_set.clear();
@@ -822,6 +824,30 @@ bool DebugAdapterProtocol::request_remote_evaluate(const String &p_eval, int p_s
 	return true;
 }
 
+const DAP::Source &DebugAdapterProtocol::fetch_source(const String &p_path) {
+	const String &global_path = ProjectSettings::get_singleton()->globalize_path(p_path);
+
+	HashMap<String, DAP::Source>::Iterator E = breakpoint_source_list.find(global_path);
+	if (E != breakpoint_source_list.end()) {
+		return E->value;
+	}
+	DAP::Source &added_source = breakpoint_source_list.insert(global_path, DAP::Source())->value;
+	added_source.name = global_path.get_file();
+	added_source.path = global_path;
+	added_source.compute_checksums();
+
+	return added_source;
+}
+
+void DebugAdapterProtocol::update_source(const String &p_path) {
+	const String &global_path = ProjectSettings::get_singleton()->globalize_path(p_path);
+
+	HashMap<String, DAP::Source>::Iterator E = breakpoint_source_list.find(global_path);
+	if (E != breakpoint_source_list.end()) {
+		E->value.compute_checksums();
+	}
+}
+
 bool DebugAdapterProtocol::process_message(const String &p_text) {
 	JSON json;
 	ERR_FAIL_COND_V_MSG(json.parse(p_text) != OK, true, "Malformed message!");
@@ -960,20 +986,38 @@ Array DebugAdapterProtocol::update_breakpoints(const String &p_path, const Array
 
 	// Add breakpoints
 	for (int i = 0; i < p_lines.size(); i++) {
-		EditorDebuggerNode::get_singleton()->get_default_debugger()->_set_breakpoint(p_path, p_lines[i], true);
-		DAP::Breakpoint breakpoint;
+		DAP::Breakpoint breakpoint(fetch_source(p_path));
 		breakpoint.line = p_lines[i];
-		breakpoint.source.path = p_path;
 
-		ERR_FAIL_COND_V(!breakpoint_list.find(breakpoint), Array());
-		updated_breakpoints.push_back(breakpoint_list.find(breakpoint)->get().to_json());
+		// Avoid duplicated entries.
+		List<DAP::Breakpoint>::Element *E = breakpoint_list.find(breakpoint);
+		if (E) {
+			updated_breakpoints.push_back(E->get().to_json());
+			continue;
+		}
+
+		EditorDebuggerNode::get_singleton()->get_default_debugger()->_set_breakpoint(p_path, p_lines[i], true);
+
+		// Breakpoints are inserted at the end of the breakpoint list.
+		List<DAP::Breakpoint>::Element *added_breakpoint = breakpoint_list.back();
+		ERR_FAIL_NULL_V(added_breakpoint, Array());
+		ERR_FAIL_COND_V(!(added_breakpoint->get() == breakpoint), Array());
+		updated_breakpoints.push_back(added_breakpoint->get().to_json());
 	}
 
 	// Remove breakpoints
+	// Must be deferred because we are iterating the breakpoint list.
+	Vector<int> to_remove;
+
 	for (const DAP::Breakpoint &b : breakpoint_list) {
-		if (b.source.path == p_path && !p_lines.has(b.line)) {
-			EditorDebuggerNode::get_singleton()->get_default_debugger()->_set_breakpoint(p_path, b.line, false);
+		if (b.source->path == p_path && !p_lines.has(b.line)) {
+			to_remove.push_back(b.line);
 		}
+	}
+
+	// Safe to remove queued data now.
+	for (const int &line : to_remove) {
+		EditorDebuggerNode::get_singleton()->get_default_debugger()->_set_breakpoint(p_path, line, false);
 	}
 
 	return updated_breakpoints;
@@ -1018,10 +1062,8 @@ void DebugAdapterProtocol::on_debug_breaked(const bool &p_reallydid, const bool 
 }
 
 void DebugAdapterProtocol::on_debug_breakpoint_toggled(const String &p_path, const int &p_line, const bool &p_enabled) {
-	DAP::Breakpoint breakpoint;
+	DAP::Breakpoint breakpoint(fetch_source(p_path));
 	breakpoint.verified = true;
-	breakpoint.source.path = ProjectSettings::get_singleton()->globalize_path(p_path);
-	breakpoint.source.compute_checksums();
 	breakpoint.line = p_line;
 
 	if (p_enabled) {
@@ -1044,8 +1086,7 @@ void DebugAdapterProtocol::on_debug_stack_dump(const Array &p_stack_dump) {
 	if (_processing_breakpoint && !p_stack_dump.is_empty()) {
 		// Find existing breakpoint
 		Dictionary d = p_stack_dump[0];
-		DAP::Breakpoint breakpoint;
-		breakpoint.source.path = ProjectSettings::get_singleton()->globalize_path(d["file"]);
+		DAP::Breakpoint breakpoint(fetch_source(d["file"]));
 		breakpoint.line = d["line"];
 
 		List<DAP::Breakpoint>::Element *E = breakpoint_list.find(breakpoint);
@@ -1058,25 +1099,26 @@ void DebugAdapterProtocol::on_debug_stack_dump(const Array &p_stack_dump) {
 
 	stackframe_id = 0;
 	stackframe_list.clear();
+	scope_list.clear();
 
 	// Fill in stacktrace information
 	for (int i = 0; i < p_stack_dump.size(); i++) {
 		Dictionary stack_info = p_stack_dump[i];
-		DAP::StackFrame stackframe;
+
+		DAP::StackFrame stackframe(fetch_source(stack_info["file"]));
 		stackframe.id = stackframe_id++;
 		stackframe.name = stack_info["function"];
 		stackframe.line = stack_info["line"];
 		stackframe.column = 0;
-		stackframe.source.path = ProjectSettings::get_singleton()->globalize_path(stack_info["file"]);
-		stackframe.source.compute_checksums();
 
 		// Information for "Locals", "Members" and "Globals" variables respectively
-		List<int> scope_ids;
+		Vector<int> scope_ids;
 		for (int j = 0; j < 3; j++) {
 			scope_ids.push_back(variable_id++);
 		}
 
-		stackframe_list.insert(stackframe, scope_ids);
+		stackframe_list.push_back(stackframe);
+		scope_list.insert(stackframe.id, scope_ids);
 	}
 
 	_current_frame = 0;
@@ -1085,11 +1127,9 @@ void DebugAdapterProtocol::on_debug_stack_dump(const Array &p_stack_dump) {
 
 void DebugAdapterProtocol::on_debug_stack_frame_vars(const int &p_size) {
 	_remaining_vars = p_size;
-	DAP::StackFrame frame;
-	frame.id = _current_frame;
-	ERR_FAIL_COND(!stackframe_list.has(frame));
-	List<int> scope_ids = stackframe_list.find(frame)->value;
-	for (const int var_id : scope_ids) {
+	ERR_FAIL_COND(!scope_list.has(_current_frame));
+	Vector<int> scope_ids = scope_list.find(_current_frame)->value;
+	for (const int &var_id : scope_ids) {
 		if (variable_list.has(var_id)) {
 			variable_list.find(var_id)->value.clear();
 		} else {
@@ -1102,11 +1142,9 @@ void DebugAdapterProtocol::on_debug_stack_frame_var(const Array &p_data) {
 	DebuggerMarshalls::ScriptStackVariable stack_var;
 	stack_var.deserialize(p_data);
 
-	ERR_FAIL_COND(stackframe_list.is_empty());
-	DAP::StackFrame frame;
-	frame.id = _current_frame;
+	ERR_FAIL_COND(!scope_list.has(_current_frame));
+	Vector<int> scope_ids = scope_list.find(_current_frame)->value;
 
-	List<int> scope_ids = stackframe_list.find(frame)->value;
 	ERR_FAIL_COND(scope_ids.size() != 3);
 	ERR_FAIL_INDEX(stack_var.type, 4);
 	int var_id = scope_ids.get(stack_var.type);
