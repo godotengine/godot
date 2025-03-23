@@ -225,7 +225,7 @@ static sljit_s32 call_with_args(struct sljit_compiler *compiler, sljit_s32 arg_t
 	sljit_ins f64_hi = TA(6), f64_lo = TA(7);
 #endif /* SLJIT_LITTLE_ENDIAN */
 
-	SLJIT_ASSERT(reg_map[TMP_REG1] == 4 && freg_map[TMP_FREG1] == 12);
+	SLJIT_ASSERT(reg_map[TMP_REG2] == 4 && freg_map[TMP_FREG1] == 12);
 
 	arg_types >>= SLJIT_ARG_SHIFT;
 
@@ -370,7 +370,7 @@ SLJIT_API_FUNC_ATTRIBUTE struct sljit_jump* sljit_emit_call(struct sljit_compile
 	} else if (type & SLJIT_CALL_RETURN)
 		PTR_FAIL_IF(emit_stack_frame_release(compiler, 0, &ins));
 
-	SLJIT_ASSERT(DR(PIC_ADDR_REG) == 25 && PIC_ADDR_REG == TMP_REG2);
+	SLJIT_ASSERT(DR(PIC_ADDR_REG) == 25);
 
 	if (ins == NOP && compiler->delay_slot != UNMOVABLE_INS)
 		jump->flags |= IS_MOVABLE;
@@ -441,7 +441,7 @@ SLJIT_API_FUNC_ATTRIBUTE sljit_s32 sljit_emit_icall(struct sljit_compiler *compi
 		return sljit_emit_ijump(compiler, type, src, srcw);
 	}
 
-	SLJIT_ASSERT(DR(PIC_ADDR_REG) == 25 && PIC_ADDR_REG == TMP_REG2);
+	SLJIT_ASSERT(DR(PIC_ADDR_REG) == 25);
 
 	if (src == SLJIT_IMM)
 		FAIL_IF(load_immediate(compiler, DR(PIC_ADDR_REG), srcw));
