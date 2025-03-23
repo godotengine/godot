@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  bone_attachment.cpp                                                   */
+/*  fti_helper.h                                                          */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,90 +28,83 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "bone_attachment.h"
+#ifndef FTI_HELPER_H
+#define FTI_HELPER_H
 
-void BoneAttachment::_validate_property(PropertyInfo &property) const {
-	if (property.name == "bone_name") {
-		Skeleton *parent = Object::cast_to<Skeleton>(get_parent());
+#include "core/math/transform.h"
+#include "core/pooled_list.h"
+#include "core/rid.h"
 
-		if (parent) {
-			String names;
-			for (int i = 0; i < parent->get_bone_count(); i++) {
-				if (i > 0) {
-					names += ",";
-				}
-				names += parent->get_bone_name(i);
-			}
+#include <cstdint>
 
-			property.hint = PROPERTY_HINT_ENUM;
-			property.hint_string = names;
-		} else {
-			property.hint = PROPERTY_HINT_NONE;
-			property.hint_string = "";
+class FTIHelper {
+	struct Handle {
+		static const uint64_t INVALID = UINT64_MAX;
+
+		// conversion operator
+		operator uint64_t() const { return _data; }
+		Handle(uint64_t p_value) { _data = p_value; }
+		Handle() { _data = INVALID; }
+
+		union {
+			struct
+			{
+				uint32_t _id;
+				uint32_t _revision;
+			};
+			uint64_t _data;
+		};
+
+		void set_invalid() { _data = INVALID; }
+		bool is_invalid() const { return _data == INVALID; }
+		uint32_t id() const { return _id; }
+		uint32_t &id() { return _id; }
+		void set_id(uint32_t p_id) { _id = p_id; }
+		uint32_t revision() const { return _revision; }
+		void set_revision(uint32_t p_revision) { _revision = p_revision; }
+
+		bool operator==(const Handle &p_h) const { return _data == p_h._data; }
+		bool operator!=(const Handle &p_h) const { return (*this == p_h) == false; }
+	};
+
+	struct Instance {
+		uint32_t revision = 0;
+		RID instance;
+		Transform curr;
+		Transform prev;
+		bool on_frame_list = false;
+		bool on_tick_list = false;
+		void clear() {
+			instance = RID();
+			curr = Transform();
+			prev = Transform();
+			on_frame_list = false;
+			on_tick_list = false;
 		}
-	}
-}
-
-void BoneAttachment::_check_bind() {
-	Skeleton *sk = Object::cast_to<Skeleton>(get_parent());
-	if (sk) {
-		int idx = sk->find_bone(bone_name);
-		if (idx != -1) {
-			sk->bind_child_node_to_bone(idx, this);
-			set_transform(sk->get_bone_global_pose(idx));
-			bound = true;
+		void pump() {
+			prev = curr;
 		}
-	}
-}
+	};
 
-void BoneAttachment::_check_unbind() {
-	if (bound) {
-		Skeleton *sk = Object::cast_to<Skeleton>(get_parent());
-		if (sk) {
-			int idx = sk->find_bone(bone_name);
-			if (idx != -1) {
-				sk->unbind_child_node_from_bone(idx, this);
-			}
-		}
-		bound = false;
-	}
-}
+	PooledList<Instance, uint32_t, true, true> _instances;
 
-void BoneAttachment::set_bone_name(const String &p_name) {
-	if (is_inside_tree()) {
-		_check_unbind();
-	}
+	LocalVector<Handle> _instance_frame_list;
+	LocalVector<Handle> _instance_tick_list[2];
+	LocalVector<Handle> *_instance_tick_list_curr = &_instance_tick_list[0];
+	LocalVector<Handle> *_instance_tick_list_prev = &_instance_tick_list[1];
 
-	bone_name = p_name;
+	// Check revisions etc. in case of user error.
+	Instance *get_instance(Handle h_instance);
+	void instance_changed(Instance &r_instance, Handle h_instance);
 
-	if (is_inside_tree()) {
-		_check_bind();
-	}
-}
+public:
+	Handle instance_create(RID p_instance);
+	bool instance_free(Handle h_instance);
+	void instance_set_transform(Handle h_instance, const Transform &p_xform);
+	void instance_reset_physics_interpolation(Handle h_instance);
 
-String BoneAttachment::get_bone_name() const {
-	return bone_name;
-}
+	void tick_update();
+	void frame_update();
+};
 
-void BoneAttachment::_notification(int p_what) {
-	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE: {
-			_check_bind();
-		} break;
-		case NOTIFICATION_EXIT_TREE: {
-			_check_unbind();
-		} break;
-	}
-}
-
-BoneAttachment::BoneAttachment() {
-	set_physics_interpolation_mode(PHYSICS_INTERPOLATION_MODE_OFF);
-	bound = false;
-}
-
-void BoneAttachment::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("set_bone_name", "bone_name"), &BoneAttachment::set_bone_name);
-	ClassDB::bind_method(D_METHOD("get_bone_name"), &BoneAttachment::get_bone_name);
-
-	ADD_PROPERTY(PropertyInfo(Variant::STRING, "bone_name"), "set_bone_name", "get_bone_name");
-}
+#endif // FTI_HELPER_H

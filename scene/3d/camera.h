@@ -91,25 +91,9 @@ private:
 	Ref<SpatialVelocityTracker> velocity_tracker;
 	bool affect_lod = true;
 
-	///////////////////////////////////////////////////////
-	// INTERPOLATION FUNCTIONS
-	void _physics_interpolation_ensure_transform_calculated(bool p_force = false) const;
-	void _physics_interpolation_ensure_data_flipped();
-
-	// These can be set by derived Cameras,
-	// if they wish to do processing (while still
-	// allowing physics interpolation to function).
+	// These can be set by derived Cameras.
 	bool _desired_process_internal = false;
 	bool _desired_physics_process_internal = false;
-
-	mutable struct InterpolationData {
-		Transform xform_curr;
-		Transform xform_prev;
-		Transform xform_interpolated;
-		Transform camera_xform_interpolated; // After modification according to camera type.
-		uint32_t last_update_physics_tick = 0;
-		uint32_t last_update_frame = UINT32_MAX;
-	} _interpolation_data;
 
 	void _update_process_mode();
 
@@ -118,9 +102,6 @@ protected:
 	// This is because physics interpolation may need to request process modes additionally.
 	void set_desired_process_modes(bool p_process_internal, bool p_physics_process_internal);
 
-	// Opportunity for derived classes to interpolate extra attributes.
-	virtual void physics_interpolation_flip_data() {}
-
 	virtual void _physics_interpolated_changed();
 	virtual Transform _get_adjusted_camera_transform(const Transform &p_xform) const;
 	///////////////////////////////////////////////////////
@@ -128,6 +109,7 @@ protected:
 	void _update_camera();
 	virtual void _request_camera_update();
 	void _update_camera_mode();
+	virtual void fti_update_servers();
 
 	void _notification(int p_what);
 	virtual void _validate_property(PropertyInfo &p_property) const;
@@ -248,8 +230,9 @@ private:
 
 protected:
 	virtual Transform _get_adjusted_camera_transform(const Transform &p_xform) const;
-	virtual void physics_interpolation_flip_data();
+	virtual void fti_pump();
 	virtual void _physics_interpolated_changed();
+	virtual void fti_update_servers();
 	///////////////////////////////////////////////////////
 
 	void _notification(int p_what);

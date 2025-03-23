@@ -1079,6 +1079,53 @@
 				[/codeblock]
 			</description>
 		</method>
+		<method name="fti_instance_create">
+			<return type="RID" />
+			<description>
+				FTI ("fixed timestep interpolation") instance provides a physics interpolation wrapper for users creating instances directly on the server rather than through Nodes.
+				[codeblock]
+				# Instance creation goes here, see the docs.
+				var instance = VisualServer.instance_create()
+
+				# Create an FTI instance and link it to the regular instance.
+				var fti_instance = VisualServer.fti_instance_create()
+				VisualServer.fti_instance_prepare(fti_instance, instance)
+
+				# Use this function instead of instance_set_transform().
+				VisualServer.fti_instance_set_transform(fti_instance, xform)
+
+				# This function provides reset_physics_interpolation().
+				VisualServer.fti_instance_reset(fti_instance)
+
+				# Be sure to free any RIDs on the server after use.
+				VisualServer.free_rid(fti_instance)
+				VisualServer.free_rid(instance)
+				[/codeblock]
+			</description>
+		</method>
+		<method name="fti_instance_prepare">
+			<return type="void" />
+			<argument index="0" name="fti_instance" type="RID" />
+			<argument index="1" name="instance" type="RID" />
+			<description>
+				An FTI instance must be linked with a regular instance before use.
+			</description>
+		</method>
+		<method name="fti_instance_reset">
+			<return type="void" />
+			<argument index="0" name="fti_instance" type="RID" />
+			<description>
+				Equivalent to reset_physics_interpolation() for Nodes.
+			</description>
+		</method>
+		<method name="fti_instance_set_transform">
+			<return type="void" />
+			<argument index="0" name="fti_instance" type="RID" />
+			<argument index="1" name="transform" type="Transform" />
+			<description>
+				Equivalent to instance_set_transform(), but provides automatic physics interpolation.
+			</description>
+		</method>
 		<method name="get_render_info">
 			<return type="int" />
 			<argument index="0" name="info" type="int" enum="VisualServer.RenderInfo" />
@@ -1488,14 +1535,6 @@
 				Sets a material that will override the material for all surfaces on the mesh associated with this instance. Equivalent to [member GeometryInstance.material_override].
 			</description>
 		</method>
-		<method name="instance_reset_physics_interpolation">
-			<return type="void" />
-			<argument index="0" name="instance" type="RID" />
-			<description>
-				Prevents physics interpolation for the current physics tick.
-				This is useful when moving an instance to a new location, to give an instantaneous change rather than interpolation from the previous location.
-			</description>
-		</method>
 		<method name="instance_set_base">
 			<return type="void" />
 			<argument index="0" name="instance" type="RID" />
@@ -1535,14 +1574,6 @@
 			<argument index="1" name="margin" type="float" />
 			<description>
 				Sets a margin to increase the size of the AABB when culling objects from the view frustum. This allows you to avoid culling objects that fall outside the view frustum. Equivalent to [member GeometryInstance.extra_cull_margin].
-			</description>
-		</method>
-		<method name="instance_set_interpolated">
-			<return type="void" />
-			<argument index="0" name="instance" type="RID" />
-			<argument index="1" name="interpolated" type="bool" />
-			<description>
-				Turns on and off physics interpolation for the instance.
 			</description>
 		</method>
 		<method name="instance_set_layer_mask">

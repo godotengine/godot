@@ -481,8 +481,6 @@ public:
 	FUNC2(instance_set_layer_mask, RID, uint32_t)
 	FUNC3(instance_set_pivot_data, RID, float, bool)
 	FUNC2(instance_set_transform, RID, const Transform &)
-	FUNC2(instance_set_interpolated, RID, bool)
-	FUNC1(instance_reset_physics_interpolation, RID)
 	FUNC2(instance_attach_object_instance_id, RID, ObjectID)
 	FUNC3(instance_set_blend_shape_weight, RID, int, float)
 	FUNC3(instance_set_surface_material, RID, int, RID)
@@ -495,6 +493,12 @@ public:
 	FUNC2(instance_set_exterior, RID, bool)
 
 	FUNC2(instance_set_extra_visibility_margin, RID, real_t)
+
+	/* FTI HELPER API */
+	FUNCRID(fti_instance)
+	FUNC2(fti_instance_prepare, RID, RID)
+	FUNC2(fti_instance_set_transform, RID, const Transform &)
+	FUNC1(fti_instance_reset, RID)
 
 	/* PORTALS API */
 
