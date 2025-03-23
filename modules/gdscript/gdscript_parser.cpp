@@ -3301,7 +3301,11 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_call(ExpressionNode *p_pre
 			IdentifierNode *identifier = parse_identifier();
 			call->callee = identifier;
 			call->function_name = identifier->name;
-			consume(GDScriptTokenizer::Token::PARENTHESIS_OPEN, R"(Expected "(" after function name.)");
+			if (!consume(GDScriptTokenizer::Token::PARENTHESIS_OPEN, R"(Expected "(" after function name.)")) {
+				pop_multiline();
+				complete_extents(call);
+				return nullptr;
+			}
 		}
 	} else {
 		call->callee = p_previous_operand;
