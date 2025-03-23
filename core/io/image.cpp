@@ -799,7 +799,7 @@ Image::Format Image::get_format() const {
 }
 
 static double _bicubic_interp_kernel(double x) {
-	x = ABS(x);
+	x = Math::abs(x);
 
 	double bc = 0;
 

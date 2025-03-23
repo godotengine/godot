@@ -225,14 +225,14 @@
 		</method>
 		<method name="register_composition_layer_provider">
 			<return type="void" />
-			<param index="0" name="extension" type="OpenXRExtensionWrapperExtension" />
+			<param index="0" name="extension" type="OpenXRExtensionWrapper" />
 			<description>
 				Registers the given extension as a composition layer provider.
 			</description>
 		</method>
 		<method name="register_projection_views_extension">
 			<return type="void" />
-			<param index="0" name="extension" type="OpenXRExtensionWrapperExtension" />
+			<param index="0" name="extension" type="OpenXRExtensionWrapper" />
 			<description>
 				Registers the given extension as a provider of additional data structures to projections views.
 			</description>
@@ -290,14 +290,14 @@
 		</method>
 		<method name="unregister_composition_layer_provider">
 			<return type="void" />
-			<param index="0" name="extension" type="OpenXRExtensionWrapperExtension" />
+			<param index="0" name="extension" type="OpenXRExtensionWrapper" />
 			<description>
 				Unregisters the given extension as a composition layer provider.
 			</description>
 		</method>
 		<method name="unregister_projection_views_extension">
 			<return type="void" />
-			<param index="0" name="extension" type="OpenXRExtensionWrapperExtension" />
+			<param index="0" name="extension" type="OpenXRExtensionWrapper" />
 			<description>
 				Unregisters the given extension as a provider of additional data structures to projections views.
 			</description>

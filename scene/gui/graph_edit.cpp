@@ -1198,7 +1198,7 @@ bool GraphEdit::_check_clickable_control(Control *p_control, const Vector2 &mpos
 	control_rect.size *= zoom;
 	control_rect.position += p_offset;
 
-	if (!control_rect.has_point(mpos) || p_control->get_mouse_filter() == MOUSE_FILTER_IGNORE) {
+	if (!control_rect.has_point(mpos) || p_control->get_mouse_filter_with_recursive() == MOUSE_FILTER_IGNORE) {
 		// Test children.
 		for (int i = 0; i < p_control->get_child_count(); i++) {
 			Control *child_rect = Object::cast_to<Control>(p_control->get_child(i));
@@ -1663,7 +1663,7 @@ void GraphEdit::_draw_grid() {
 			for (int i = from_pos.x; i < from_pos.x + len.x; i++) {
 				Color color;
 
-				if (ABS(i) % GRID_MINOR_STEPS_PER_MAJOR_LINE == 0) {
+				if (Math::abs(i) % GRID_MINOR_STEPS_PER_MAJOR_LINE == 0) {
 					color = theme_cache.grid_major;
 				} else {
 					color = theme_cache.grid_minor;
@@ -1676,7 +1676,7 @@ void GraphEdit::_draw_grid() {
 			for (int i = from_pos.y; i < from_pos.y + len.y; i++) {
 				Color color;
 
-				if (ABS(i) % GRID_MINOR_STEPS_PER_MAJOR_LINE == 0) {
+				if (Math::abs(i) % GRID_MINOR_STEPS_PER_MAJOR_LINE == 0) {
 					color = theme_cache.grid_major;
 				} else {
 					color = theme_cache.grid_minor;
@@ -1694,7 +1694,7 @@ void GraphEdit::_draw_grid() {
 			if (transparent_grid_minor.a != 0) {
 				for (int i = from_pos.x; i < from_pos.x + len.x; i++) {
 					for (int j = from_pos.y; j < from_pos.y + len.y; j++) {
-						if (ABS(i) % GRID_MINOR_STEPS_PER_MAJOR_DOT == 0 && ABS(j) % GRID_MINOR_STEPS_PER_MAJOR_DOT == 0) {
+						if (Math::abs(i) % GRID_MINOR_STEPS_PER_MAJOR_DOT == 0 && Math::abs(j) % GRID_MINOR_STEPS_PER_MAJOR_DOT == 0) {
 							continue;
 						}
 

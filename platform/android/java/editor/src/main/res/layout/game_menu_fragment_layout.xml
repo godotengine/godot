@@ -128,6 +128,15 @@
 					android:drawableStart="@drawable/list_select"
 					android:padding="15dp" />
 			</RadioGroup>
+
+			<ImageButton
+				android:id="@+id/game_menu_audio_mute_button"
+				style="?android:attr/borderlessButtonStyle"
+				android:layout_width="48dp"
+				android:layout_height="48dp"
+				android:background="@drawable/game_menu_button_bg"
+				android:src="@drawable/audio_player_icon_selector" />
+
 		</LinearLayout>
 	</HorizontalScrollView>
 

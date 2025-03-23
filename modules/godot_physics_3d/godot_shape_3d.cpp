@@ -960,7 +960,7 @@ void GodotConvexPolygonShape3D::get_supports(const Vector3 &p_normal, int p_max,
 
 	for (int i = 0; i < ec; i++) {
 		real_t dot = (vertices[edges[i].vertex_a] - vertices[edges[i].vertex_b]).normalized().dot(p_normal);
-		dot = ABS(dot);
+		dot = Math::abs(dot);
 		if (dot < edge_support_threshold_lower && (edges[i].vertex_a == vtx || edges[i].vertex_b == vtx)) {
 			r_amount = 2;
 			r_type = FEATURE_EDGE;
@@ -1238,7 +1238,7 @@ void GodotFaceShape3D::get_supports(const Vector3 &p_normal, int p_max, Vector3 
 
 		// check if edge is valid as a support
 		real_t dot = (vertex[i] - vertex[nx]).normalized().dot(n);
-		dot = ABS(dot);
+		dot = Math::abs(dot);
 		if (dot < edge_support_threshold_lower) {
 			r_amount = 2;
 			r_type = FEATURE_EDGE;

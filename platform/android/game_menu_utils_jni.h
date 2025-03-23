@@ -43,4 +43,5 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_utils_GameMenuUtils_setCameraM
 JNIEXPORT void JNICALL Java_org_godotengine_godot_utils_GameMenuUtils_resetCamera2DPosition(JNIEnv *env, jclass clazz);
 JNIEXPORT void JNICALL Java_org_godotengine_godot_utils_GameMenuUtils_resetCamera3DPosition(JNIEnv *env, jclass clazz);
 JNIEXPORT void JNICALL Java_org_godotengine_godot_utils_GameMenuUtils_playMainScene(JNIEnv *env, jclass clazz);
+JNIEXPORT void JNICALL Java_org_godotengine_godot_utils_GameMenuUtils_setDebugMuteAudio(JNIEnv *env, jclass clazz, jboolean enabled);
 }

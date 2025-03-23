@@ -33,6 +33,7 @@
 #include "core/io/image.h"
 #include "scene/gui/aspect_ratio_container.h"
 #include "scene/gui/color_mode.h"
+#include "scene/gui/color_picker_shape.h"
 #include "scene/gui/file_dialog.h"
 #include "scene/gui/grid_container.h"
 #include "scene/gui/label.h"
@@ -72,12 +73,6 @@ void ColorPicker::_notification(int p_what) {
 				btn_pick->set_tooltip_text(ETR("Pick a color from the application window."));
 				btn_pick->connect(SceneStringName(pressed), callable_mp(this, &ColorPicker::_pick_button_pressed_legacy));
 			}
-
-			// In HSV Wheel shape the wheel is around the rectangle and the engine cannot automatically select
-			// the square while pressing ui_up to change focused control from the wheel.
-			wheel->set_focus_neighbor(SIDE_TOP, wheel_uv->get_path());
-			wheel_uv->set_focus_neighbor(SIDE_BOTTOM, wheel->get_path());
-
 		} break;
 
 		case NOTIFICATION_TRANSLATION_CHANGED: {
@@ -107,11 +102,20 @@ void ColorPicker::_notification(int p_what) {
 			btn_shape->set_custom_minimum_size(Size2(28 * theme_cache.base_scale, 0));
 			btn_mode->set_custom_minimum_size(Size2(28 * theme_cache.base_scale, 0));
 
-			uv_edit->set_custom_minimum_size(Size2(theme_cache.sv_width, theme_cache.sv_height));
-			w_edit->set_custom_minimum_size(Size2(theme_cache.h_width, 0));
+			{
+				int i = 0;
+				for (ColorPickerShape *shape : shapes) {
+					if (shape->is_initialized) {
+						shape->update_theme();
+					}
+					shape_popup->set_item_icon(i, shape->get_icon());
+					i++;
+				}
+			}
 
-			wheel_edit->set_custom_minimum_size(Size2(theme_cache.sv_width, theme_cache.sv_height));
-			wheel_margin->add_theme_constant_override("margin_bottom", 8 * theme_cache.base_scale);
+			if (current_shape != SHAPE_NONE) {
+				btn_shape->set_button_icon(shape_popup->get_item_icon(current_shape));
+			}
 
 			for (int i = 0; i < SLIDER_COUNT; i++) {
 				labels[i]->set_custom_minimum_size(Size2(theme_cache.label_width, 0));
@@ -126,15 +130,6 @@ void ColorPicker::_notification(int p_what) {
 				mode_btns[i]->add_theme_style_override(CoreStringName(normal), theme_cache.mode_button_normal);
 				mode_btns[i]->add_theme_style_override(SceneStringName(hover), theme_cache.mode_button_hover);
 				mode_btns[i]->end_bulk_theme_override();
-			}
-
-			shape_popup->set_item_icon(shape_popup->get_item_index(SHAPE_HSV_RECTANGLE), theme_cache.shape_rect);
-			shape_popup->set_item_icon(shape_popup->get_item_index(SHAPE_HSV_WHEEL), theme_cache.shape_rect_wheel);
-			shape_popup->set_item_icon(shape_popup->get_item_index(SHAPE_VHS_CIRCLE), theme_cache.shape_circle);
-			shape_popup->set_item_icon(shape_popup->get_item_index(SHAPE_OKHSL_CIRCLE), theme_cache.shape_circle);
-
-			if (current_shape != SHAPE_NONE) {
-				btn_shape->set_button_icon(shape_popup->get_item_icon(current_shape));
 			}
 
 			internal_margin->begin_bulk_theme_override();
@@ -164,22 +159,28 @@ void ColorPicker::_notification(int p_what) {
 
 		case NOTIFICATION_FOCUS_ENTER:
 		case NOTIFICATION_FOCUS_EXIT: {
-			cursor_editing = false;
+			if (current_shape != SHAPE_NONE) {
+				shapes[current_shape]->cursor_editing = false;
+			}
 		} break;
 
 		case NOTIFICATION_INTERNAL_PROCESS: {
 			if (!is_picking_color) {
 				Input *input = Input::get_singleton();
-				bool is_picker_focused = uv_edit->has_focus() || wheel_uv->has_focus() || wheel->has_focus();
-
 				if (input->is_action_just_released("ui_left") ||
 						input->is_action_just_released("ui_right") ||
 						input->is_action_just_released("ui_up") ||
 						input->is_action_just_released("ui_down")) {
 					gamepad_event_delay_ms = DEFAULT_GAMEPAD_EVENT_DELAY_MS;
-					echo_multiplier = 1;
+					if (current_shape == SHAPE_NONE) {
+						shapes[current_shape]->echo_multiplier = 1;
+					}
 					accept_event();
 					set_process_internal(false);
+					return;
+				}
+
+				if (current_shape == SHAPE_NONE) {
 					return;
 				}
 
@@ -190,11 +191,9 @@ void ColorPicker::_notification(int p_what) {
 					Vector2 color_change_vector = Vector2(
 							input->is_action_pressed("ui_right") - input->is_action_pressed("ui_left"),
 							input->is_action_pressed("ui_down") - input->is_action_pressed("ui_up"));
-					if (is_picker_focused) {
-						_update_uv_cursor(color_change_vector, true);
-					} else if (w_edit->has_focus()) {
-						_update_w_cursor(color_change_vector.y, true);
-					}
+
+					shapes[current_shape]->update_cursor(color_change_vector, true);
+					accept_event();
 				}
 				return;
 			}
@@ -319,39 +318,7 @@ void ColorPicker::set_focus_on_line_edit() {
 }
 
 void ColorPicker::set_focus_on_picker_shape() {
-	switch (current_shape) {
-		case SHAPE_HSV_RECTANGLE:
-			callable_mp(w_edit, &Control::grab_focus).call_deferred();
-			break;
-		case SHAPE_HSV_WHEEL:
-			callable_mp(wheel, &Control::grab_focus).call_deferred();
-			break;
-		case SHAPE_VHS_CIRCLE:
-		case SHAPE_OKHSL_CIRCLE:
-			callable_mp(wheel_uv, &Control::grab_focus).call_deferred();
-			break;
-		default: {
-		}
-	}
-}
-
-void ColorPicker::_picker_shape_focus_entered() {
-	Input *input = Input::get_singleton();
-	if (!(input->is_action_pressed("ui_up") || input->is_action_pressed("ui_down") || input->is_action_pressed("ui_left") || input->is_action_pressed("ui_right"))) {
-		cursor_editing = true;
-	}
-
-	if (current_shape == SHAPE_HSV_WHEEL) {
-		wheel_focus_mode = wheel->has_focus() ? 2 : 1;
-	}
-}
-
-void ColorPicker::_picker_shape_focus_exited() {
-	cursor_editing = false;
-	if (wheel_focus_mode == 2) {
-		wheel_uv->queue_redraw();
-	}
-	wheel_focus_mode = 0;
+	shapes[current_shape]->grab_focus();
 }
 
 void ColorPicker::_update_controls() {
@@ -386,82 +353,25 @@ void ColorPicker::_update_controls() {
 		alpha_label->hide();
 	}
 
-	bool pre_update_cursor_editing = cursor_editing;
-	switch (current_shape) {
-		case SHAPE_HSV_RECTANGLE:
-			w_edit->show();
-			uv_edit->show();
-			btn_shape->show();
+	int i = 0;
+	for (ColorPickerShape *shape : shapes) {
+		bool is_active = current_shape == i;
+		i++;
 
-			if (wheel_focus_mode == 1) {
-				uv_edit->grab_focus();
-			} else if (wheel_focus_mode == 2) {
-				w_edit->grab_focus();
+		if (!shape->is_initialized) {
+			if (is_active) {
+				// Controls are initialized on demand, because ColorPicker does not need them all at once.
+				shape->initialize_controls();
+			} else {
+				continue;
 			}
+		}
 
-			wheel_edit->hide();
-			wheel->set_focus_mode(FOCUS_NONE);
-			break;
-		case SHAPE_HSV_WHEEL:
-			wheel_edit->show();
-			wheel->set_focus_mode(FOCUS_ALL);
-
-			if (w_edit->has_focus()) {
-				wheel_focus_mode = 2;
-				wheel->grab_focus();
-			} else if (uv_edit->has_focus()) {
-				wheel_uv->grab_focus();
-			}
-
-			w_edit->hide();
-			uv_edit->hide();
-			btn_shape->show();
-			wheel->set_material(wheel_mat);
-			break;
-		case SHAPE_VHS_CIRCLE:
-			wheel_edit->show();
-			w_edit->show();
-
-			if (uv_edit->has_focus()) {
-				wheel_uv->grab_focus();
-			} else if (wheel->has_focus()) {
-				w_edit->grab_focus();
-			}
-
-			uv_edit->hide();
-			btn_shape->show();
-			wheel->set_material(circle_mat);
-			circle_mat->set_shader(circle_shader);
-			wheel->set_focus_mode(FOCUS_NONE);
-			break;
-		case SHAPE_OKHSL_CIRCLE:
-			wheel_edit->show();
-			w_edit->show();
-
-			if (uv_edit->has_focus()) {
-				wheel_uv->grab_focus();
-			} else if (wheel->has_focus()) {
-				w_edit->grab_focus();
-			}
-
-			uv_edit->hide();
-			btn_shape->show();
-			wheel->set_material(circle_mat);
-			circle_mat->set_shader(circle_ok_color_shader);
-			wheel->set_focus_mode(FOCUS_NONE);
-			break;
-		case SHAPE_NONE:
-			wheel->set_focus_mode(FOCUS_NONE);
-			wheel_edit->hide();
-			w_edit->hide();
-			uv_edit->hide();
-			btn_shape->hide();
-			break;
-		default: {
+		for (Control *control : shape->controls) {
+			control->set_visible(is_active);
 		}
 	}
-
-	cursor_editing = pre_update_cursor_editing;
+	btn_shape->set_visible(current_shape != SHAPE_NONE);
 }
 
 void ColorPicker::_set_pick_color(const Color &p_color, bool p_update_sliders) {
@@ -567,6 +477,10 @@ void ColorPicker::_slider_drag_ended() {
 
 void ColorPicker::add_mode(ColorMode *p_mode) {
 	modes.push_back(p_mode);
+}
+
+void ColorPicker::add_shape(ColorPickerShape *p_shape) {
+	shapes.push_back(p_shape);
 }
 
 void ColorPicker::create_slider(GridContainer *gc, int idx) {
@@ -680,7 +594,7 @@ void ColorPicker::_copy_color_to_hsv() {
 }
 
 void ColorPicker::_copy_hsv_to_color() {
-	if (current_shape == SHAPE_OKHSL_CIRCLE) {
+	if (current_shape != SHAPE_NONE && shapes[current_shape]->is_ok_hsl()) {
 		color.set_ok_hsl(ok_hsl_h, ok_hsl_s, ok_hsl_l, color.a);
 	} else {
 		color.set_hsv(h, s, v, color.a);
@@ -719,21 +633,21 @@ void ColorPicker::_reset_sliders_theme() {
 
 	for (int i = 0; i < SLIDER_COUNT; i++) {
 		sliders[i]->begin_bulk_theme_override();
-		sliders[i]->add_theme_icon_override("grabber", theme_cache.bar_arrow);
-		sliders[i]->add_theme_icon_override("grabber_highlight", theme_cache.bar_arrow);
-		sliders[i]->add_theme_constant_override("grabber_offset", 8 * theme_cache.base_scale);
+		sliders[i]->add_theme_icon_override(SNAME("grabber"), theme_cache.bar_arrow);
+		sliders[i]->add_theme_icon_override(SNAME("grabber_highlight"), theme_cache.bar_arrow);
+		sliders[i]->add_theme_constant_override(SNAME("grabber_offset"), 8 * theme_cache.base_scale);
 		if (!colorize_sliders) {
-			sliders[i]->add_theme_style_override("slider", style_box_flat);
+			sliders[i]->add_theme_style_override(SNAME("slider"), style_box_flat);
 		}
 		sliders[i]->end_bulk_theme_override();
 	}
 
 	alpha_slider->begin_bulk_theme_override();
-	alpha_slider->add_theme_icon_override("grabber", theme_cache.bar_arrow);
-	alpha_slider->add_theme_icon_override("grabber_highlight", theme_cache.bar_arrow);
-	alpha_slider->add_theme_constant_override("grabber_offset", 8 * theme_cache.base_scale);
+	alpha_slider->add_theme_icon_override(SNAME("grabber"), theme_cache.bar_arrow);
+	alpha_slider->add_theme_icon_override(SNAME("grabber_highlight"), theme_cache.bar_arrow);
+	alpha_slider->add_theme_constant_override(SNAME("grabber_offset"), 8 * theme_cache.base_scale);
 	if (!colorize_sliders) {
-		alpha_slider->add_theme_style_override("slider", style_box_flat);
+		alpha_slider->add_theme_style_override(SNAME("slider"), style_box_flat);
 	}
 	alpha_slider->end_bulk_theme_override();
 }
@@ -799,15 +713,18 @@ void ColorPicker::_update_color(bool p_update_sliders) {
 
 	_update_text_value();
 
+	if (current_shape != SHAPE_NONE) {
+		for (Control *control : shapes[current_shape]->controls) {
+			control->queue_redraw();
+		}
+	}
+
 	sample->queue_redraw();
-	uv_edit->queue_redraw();
-	w_edit->queue_redraw();
+
 	for (int i = 0; i < current_slider_count; i++) {
 		sliders[i]->queue_redraw();
 	}
 	alpha_slider->queue_redraw();
-	wheel->queue_redraw();
-	wheel_uv->queue_redraw();
 	updating = false;
 }
 
@@ -1454,583 +1371,13 @@ void ColorPicker::_sample_draw() {
 
 	if (color.r > 1 || color.g > 1 || color.b > 1) {
 		// Draw an indicator to denote that the new color is "overbright" and can't be displayed accurately in the preview.
-		sample->draw_texture(theme_cache.overbright_indicator, Point2(display_old_color ? sample->get_size().width * 0.5 : 0, 0));
-	}
-}
-
-void ColorPicker::_draw_focus_stylebox(Control *p_c, Rect2 p_focus_rect, Ref<StyleBox> &p_focus_stylebox) {
-	if (p_c->has_focus()) {
-		RID ci = p_c->get_canvas_item();
-		if (wheel_focus_mode == 2) {
-			ci = wheel_uv->get_canvas_item();
-			p_focus_stylebox = theme_cache.picker_focus_circle;
-		}
-
-		if (!cursor_editing) {
-			Color not_editing_color = theme_cache.focused_not_editing_cursor_color;
-			if (p_focus_stylebox == theme_cache.picker_focus_circle) {
-				RenderingServer::get_singleton()->canvas_item_add_circle(ci, p_focus_rect.get_center(), p_focus_rect.size.y / 2, not_editing_color);
-			} else {
-				RenderingServer::get_singleton()->canvas_item_add_rect(ci, p_focus_rect, not_editing_color);
-			}
-		}
-		p_focus_stylebox->draw(ci, p_focus_rect);
-	}
-}
-
-void ColorPicker::_hsv_draw(int p_which, Control *c) {
-	if (!c) {
-		return;
-	}
-	Rect2 focus_rect = Rect2(Point2(), c->get_size());
-	Ref<StyleBox> focus_stylebox = theme_cache.picker_focus_rectangle;
-
-	if (p_which == 0) {
-		Color col = color;
-		Vector2 center = c->get_size() / 2.0;
-
-		if (current_shape == SHAPE_HSV_RECTANGLE || current_shape == SHAPE_HSV_WHEEL) {
-			Vector<Point2> points;
-			Vector<Color> colors;
-			Vector<Color> colors2;
-			points.resize(4);
-			colors.resize(4);
-			colors2.resize(4);
-			if (current_shape == SHAPE_HSV_RECTANGLE) {
-				points.set(0, Vector2());
-				points.set(1, Vector2(c->get_size().x, 0));
-				points.set(2, c->get_size());
-				points.set(3, Vector2(0, c->get_size().y));
-			} else {
-				real_t ring_radius_x = Math_SQRT12 * c->get_size().width * WHEEL_RADIUS;
-				real_t ring_radius_y = Math_SQRT12 * c->get_size().height * WHEEL_RADIUS;
-
-				points.set(0, center - Vector2(ring_radius_x, ring_radius_y));
-				points.set(1, center + Vector2(ring_radius_x, -ring_radius_y));
-				points.set(2, center + Vector2(ring_radius_x, ring_radius_y));
-				points.set(3, center + Vector2(-ring_radius_x, ring_radius_y));
-			}
-			colors.set(0, Color(1, 1, 1, 1));
-			colors.set(1, Color(1, 1, 1, 1));
-			colors.set(2, Color(0, 0, 0, 1));
-			colors.set(3, Color(0, 0, 0, 1));
-			c->draw_polygon(points, colors);
-
-			col.set_hsv(h, 1, 1);
-			col.a = 0;
-			colors2.set(0, col);
-			col.a = 1;
-			colors2.set(1, col);
-			col.set_hsv(h, 1, 0);
-			colors2.set(2, col);
-			col.a = 0;
-			colors2.set(3, col);
-			c->draw_polygon(points, colors2);
-		}
-
-		int x;
-		int y;
-		if (current_shape == SHAPE_VHS_CIRCLE || current_shape == SHAPE_OKHSL_CIRCLE) {
-			Vector2 hue_offset;
-			if (current_shape == SHAPE_OKHSL_CIRCLE) {
-				hue_offset = center * Vector2(Math::cos(ok_hsl_h * Math_TAU), Math::sin(ok_hsl_h * Math_TAU)) * ok_hsl_s;
-			} else {
-				hue_offset = center * Vector2(Math::cos(h * Math_TAU), Math::sin(h * Math_TAU)) * s;
-			}
-			x = center.x + hue_offset.x - (theme_cache.picker_cursor->get_width() / 2);
-			y = center.y + hue_offset.y - (theme_cache.picker_cursor->get_height() / 2);
-
-			focus_stylebox = theme_cache.picker_focus_circle;
-		} else {
-			real_t corner_x = (c == wheel_uv) ? center.x - Math_SQRT12 * c->get_size().width * WHEEL_RADIUS : 0;
-			real_t corner_y = (c == wheel_uv) ? center.y - Math_SQRT12 * c->get_size().height * WHEEL_RADIUS : 0;
-
-			Size2 real_size(c->get_size().x - corner_x * 2, c->get_size().y - corner_y * 2);
-			x = CLAMP(real_size.x * s, 0, real_size.x) + corner_x - (theme_cache.picker_cursor->get_width() / 2);
-			y = CLAMP(real_size.y - real_size.y * v, 0, real_size.y) + corner_y - (theme_cache.picker_cursor->get_height() / 2);
-			if (c == wheel_uv) {
-				focus_rect = Rect2(Point2(corner_x, corner_y), real_size);
-			}
-		}
-		_draw_focus_stylebox(c, focus_rect, focus_stylebox);
-		Color _col = color;
-		_col.a = 1.0;
-		c->draw_texture(theme_cache.picker_cursor_bg, Point2(x, y), _col);
-		c->draw_texture(theme_cache.picker_cursor, Point2(x, y));
-
-		if (current_shape == SHAPE_HSV_WHEEL) {
-			float _radius = WHEEL_RADIUS * 2.0;
-			_radius += (1.0 - _radius) * 0.5;
-			Point2 pos = center - (theme_cache.picker_cursor->get_size() * 0.5) + Point2(center.x * Math::cos(h * Math_TAU) * _radius, center.y * Math::sin(h * Math_TAU) * _radius);
-			c->draw_texture(theme_cache.picker_cursor, pos);
-		}
-
-	} else if (p_which == 1) {
-		if (current_shape == SHAPE_HSV_RECTANGLE) {
-			c->draw_set_transform(Point2(), -Math_PI / 2, Size2(c->get_size().x, -c->get_size().y));
-			c->draw_texture_rect(theme_cache.color_hue, Rect2(Point2(), Size2(1, 1)));
-			c->draw_set_transform(Point2(), 0, Size2(1, 1));
-			int y = c->get_size().y - c->get_size().y * (1.0 - h);
-			Color col;
-			col.set_hsv(h, 1, 1);
-			_draw_focus_stylebox(c, focus_rect, focus_stylebox);
-			c->draw_line(Point2(0, y), Point2(c->get_size().x, y), col.inverted());
-		} else if (current_shape == SHAPE_OKHSL_CIRCLE) {
-			Vector<Point2> points;
-			Vector<Color> colors;
-			Color col;
-			col.set_ok_hsl(ok_hsl_h, ok_hsl_s, 1);
-			Color col2;
-			col2.set_ok_hsl(ok_hsl_h, ok_hsl_s, 0.5);
-			Color col3;
-			col3.set_ok_hsl(ok_hsl_h, ok_hsl_s, 0);
-			points.resize(6);
-			colors.resize(6);
-			points.set(0, Vector2(c->get_size().x, 0));
-			points.set(1, Vector2(c->get_size().x, c->get_size().y * 0.5));
-			points.set(2, c->get_size());
-			points.set(3, Vector2(0, c->get_size().y));
-			points.set(4, Vector2(0, c->get_size().y * 0.5));
-			points.set(5, Vector2());
-			colors.set(0, col);
-			colors.set(1, col2);
-			colors.set(2, col3);
-			colors.set(3, col3);
-			colors.set(4, col2);
-			colors.set(5, col);
-			c->draw_polygon(points, colors);
-			int y = c->get_size().y - c->get_size().y * CLAMP(ok_hsl_l, 0, 1);
-			col.set_ok_hsl(ok_hsl_h, 1, ok_hsl_l);
-			_draw_focus_stylebox(c, focus_rect, focus_stylebox);
-			c->draw_line(Point2(0, y), Point2(c->get_size().x, y), col.inverted());
-		} else if (current_shape == SHAPE_VHS_CIRCLE) {
-			Vector<Point2> points;
-			Vector<Color> colors;
-			Color col;
-			col.set_hsv(h, s, 1);
-			points.resize(4);
-			colors.resize(4);
-			points.set(0, Vector2());
-			points.set(1, Vector2(c->get_size().x, 0));
-			points.set(2, c->get_size());
-			points.set(3, Vector2(0, c->get_size().y));
-			colors.set(0, col);
-			colors.set(1, col);
-			colors.set(2, Color(0, 0, 0));
-			colors.set(3, Color(0, 0, 0));
-			c->draw_polygon(points, colors);
-			int y = c->get_size().y - c->get_size().y * CLAMP(v, 0, 1);
-			col.set_hsv(h, 1, v);
-			_draw_focus_stylebox(c, focus_rect, focus_stylebox);
-			c->draw_line(Point2(0, y), Point2(c->get_size().x, y), col.inverted());
-		}
-	} else if (p_which == 2) {
-		c->draw_rect(Rect2(Point2(), c->get_size()), Color(1, 1, 1));
-		if (current_shape == SHAPE_VHS_CIRCLE) {
-			circle_mat->set_shader_parameter("v", v);
-		} else if (current_shape == SHAPE_OKHSL_CIRCLE) {
-			circle_mat->set_shader_parameter("ok_hsl_l", ok_hsl_l);
-		}
-
-		if (wheel_focus_mode == 2) {
-			_draw_focus_stylebox(c, focus_rect, focus_stylebox);
-		}
+		sample->draw_texture(theme_cache.overbright_indicator, Point2(sample->get_size().width * 0.5, 0));
 	}
 }
 
 void ColorPicker::_slider_draw(int p_which) {
 	if (colorize_sliders) {
 		modes[current_mode]->slider_draw(p_which);
-	}
-}
-
-int ColorPicker::_get_edge_h_change(const Vector2 &p_color_change_vector) {
-	int h_change = 0;
-
-	if (h > 0 && h < 0.5) {
-		h_change -= p_color_change_vector.x;
-	} else if (h > 0.5 && h < 1) {
-		h_change += p_color_change_vector.x;
-	}
-
-	if (h > 0.25 && h < 0.75) {
-		h_change -= p_color_change_vector.y;
-	} else if (h < 0.25 || h > 0.75) {
-		h_change += p_color_change_vector.y;
-	}
-
-	return h_change;
-}
-
-float ColorPicker::_get_h_on_circle_edge(const Vector2 &p_color_change_vector) {
-	int h_change = _get_edge_h_change(p_color_change_vector);
-
-	float target_h = Math::wrapf(h + h_change / 360.0, 0, 1);
-	int current_quarter = h * 4;
-	int future_quarter = target_h * 4;
-	if (p_color_change_vector.y > 0 && ((future_quarter == 0 && current_quarter == 1) || (future_quarter == 1 && current_quarter == 0))) {
-		target_h = 0.25f;
-	} else if (p_color_change_vector.y < 0 && ((future_quarter == 2 && current_quarter == 3) || (future_quarter == 3 && current_quarter == 2))) {
-		target_h = 0.75f;
-	} else if (p_color_change_vector.x < 0 && ((future_quarter == 1 && current_quarter == 2) || (future_quarter == 2 && current_quarter == 1))) {
-		target_h = 0.5f;
-	} else if (p_color_change_vector.x > 0 && ((future_quarter == 3 && current_quarter == 0) || (future_quarter == 0 && current_quarter == 3))) {
-		target_h = 0;
-	}
-	return target_h;
-}
-
-float ColorPicker::_get_h_on_wheel(const Vector2 &p_color_change_vector) {
-	int h_change = _get_edge_h_change(p_color_change_vector);
-
-	float target_h = Math::wrapf(h + h_change / 360.0, 0, 1);
-	int current_quarter = h * 4;
-	int future_quarter = target_h * 4;
-
-	if (p_color_change_vector.y > 0 && ((future_quarter == 0 && current_quarter == 1) || (future_quarter == 1 && current_quarter == 0))) {
-		rotate_next_echo_event = !rotate_next_echo_event;
-	} else if (p_color_change_vector.y < 0 && ((future_quarter == 2 && current_quarter == 3) || (future_quarter == 3 && current_quarter == 2))) {
-		rotate_next_echo_event = !rotate_next_echo_event;
-	} else if (p_color_change_vector.x < 0 && ((future_quarter == 1 && current_quarter == 2) || (future_quarter == 2 && current_quarter == 1))) {
-		rotate_next_echo_event = !rotate_next_echo_event;
-	} else if (p_color_change_vector.x > 0 && ((future_quarter == 3 && current_quarter == 0) || (future_quarter == 0 && current_quarter == 3))) {
-		rotate_next_echo_event = !rotate_next_echo_event;
-	}
-
-	return target_h;
-}
-
-void ColorPicker::_update_uv_cursor(Vector2 &p_color_change_vector, bool p_is_echo) {
-	echo_multiplier = p_is_echo ? CLAMP(echo_multiplier * echo_multiplier_step, 1, 25) : 1;
-
-	if (!p_color_change_vector.is_zero_approx()) {
-		p_color_change_vector *= echo_multiplier;
-
-		if (current_shape == SHAPE_HSV_RECTANGLE) {
-			s = CLAMP(s + p_color_change_vector.x / 100.0, 0, 1);
-			v = CLAMP(v - p_color_change_vector.y / 100.0, 0, 1);
-		} else if (current_shape == SHAPE_VHS_CIRCLE || current_shape == SHAPE_OKHSL_CIRCLE) {
-			Vector2 center = wheel_uv->get_size() / 2.0;
-
-			if (circle_keyboard_joypad_picker_cursor_position == Vector2i()) {
-				Vector2 hue_offset;
-				if (current_shape == SHAPE_OKHSL_CIRCLE) {
-					hue_offset = center * Vector2(Math::cos(ok_hsl_h * Math_TAU), Math::sin(ok_hsl_h * Math_TAU)) * ok_hsl_s;
-				} else {
-					hue_offset = center * Vector2(Math::cos(h * Math_TAU), Math::sin(h * Math_TAU)) * s;
-				}
-				circle_keyboard_joypad_picker_cursor_position = center + hue_offset;
-			}
-
-			Vector2i potential_cursor_position = circle_keyboard_joypad_picker_cursor_position + p_color_change_vector;
-			real_t potential_new_cursor_distance = center.distance_to(potential_cursor_position);
-			real_t dist_pre = center.distance_to(circle_keyboard_joypad_picker_cursor_position);
-			if (s < 1 || potential_new_cursor_distance < dist_pre) {
-				circle_keyboard_joypad_picker_cursor_position += p_color_change_vector;
-				real_t dist = center.distance_to(circle_keyboard_joypad_picker_cursor_position);
-				real_t rad = center.angle_to_point(circle_keyboard_joypad_picker_cursor_position);
-				h = ((rad >= 0) ? rad : (Math_TAU + rad)) / Math_TAU;
-				s = CLAMP(dist / center.x, 0, 1);
-			} else {
-				h = _get_h_on_circle_edge(p_color_change_vector);
-				circle_keyboard_joypad_picker_cursor_position = Vector2i();
-			}
-
-			ok_hsl_h = h;
-			ok_hsl_s = s;
-		} else if (current_shape == SHAPE_HSV_WHEEL) {
-			if (wheel_focus_mode == 1) {
-				s = CLAMP(s + p_color_change_vector.x / 100.0, 0, 1);
-				v = CLAMP(v - p_color_change_vector.y / 100.0, 0, 1);
-			} else if (wheel_focus_mode == 2) {
-				if (p_is_echo && rotate_next_echo_event) {
-					p_color_change_vector *= -1;
-				} else {
-					rotate_next_echo_event = false;
-				}
-
-				h = _get_h_on_wheel(p_color_change_vector);
-				wheel_uv->queue_redraw();
-			}
-		}
-
-		_copy_hsv_to_color();
-		last_color = color;
-		set_pick_color(color);
-
-		emit_signal(SNAME("color_changed"), color);
-	} else {
-		echo_multiplier = 1;
-	}
-
-	accept_event();
-}
-
-void ColorPicker::_update_cursor_editing(const Ref<InputEvent> &p_event, Control *p_c) {
-	if (p_event->is_action_pressed("ui_accept", false, true)) {
-		cursor_editing = !cursor_editing;
-		accept_event();
-
-		if (wheel_focus_mode == 2) {
-			wheel_uv->queue_redraw();
-		}
-		p_c->queue_redraw();
-	}
-
-	if (cursor_editing && p_event->is_action_pressed("ui_cancel", false, true)) {
-		cursor_editing = false;
-		accept_event();
-
-		if (wheel_focus_mode == 2) {
-			wheel_uv->queue_redraw();
-		}
-		p_c->queue_redraw();
-	}
-}
-
-void ColorPicker::_uv_input(const Ref<InputEvent> &p_event, Control *c) {
-	_update_cursor_editing(p_event, c);
-
-	Ref<InputEventMouseButton> bev = p_event;
-
-	if (bev.is_valid()) {
-		if (bev->is_pressed() && bev->get_button_index() == MouseButton::LEFT) {
-			Vector2 center = c->get_size() / 2.0;
-			if (current_shape == SHAPE_VHS_CIRCLE || current_shape == SHAPE_OKHSL_CIRCLE) {
-				real_t dist = center.distance_to(bev->get_position());
-				if (dist <= center.x) {
-					real_t rad = center.angle_to_point(bev->get_position());
-					h = ((rad >= 0) ? rad : (Math_TAU + rad)) / Math_TAU;
-					s = CLAMP(dist / center.x, 0, 1);
-					ok_hsl_h = h;
-					ok_hsl_s = s;
-					circle_keyboard_joypad_picker_cursor_position = Vector2i();
-				} else {
-					return;
-				}
-			} else {
-				real_t corner_x = (c == wheel_uv) ? center.x - Math_SQRT12 * c->get_size().width * 0.42 : 0;
-				real_t corner_y = (c == wheel_uv) ? center.y - Math_SQRT12 * c->get_size().height * 0.42 : 0;
-				Size2 real_size(c->get_size().x - corner_x * 2, c->get_size().y - corner_y * 2);
-
-				if (bev->get_position().x < corner_x || bev->get_position().x > c->get_size().x - corner_x ||
-						bev->get_position().y < corner_y || bev->get_position().y > c->get_size().y - corner_y) {
-					{
-						real_t dist = center.distance_to(bev->get_position());
-						if (dist >= center.x * 0.84 && dist <= center.x) {
-							real_t rad = center.angle_to_point(bev->get_position());
-							h = ((rad >= 0) ? rad : (Math_TAU + rad)) / Math_TAU;
-							spinning = true;
-							wheel->grab_focus();
-							wheel_uv->queue_redraw();
-						} else {
-							return;
-						}
-					}
-				}
-
-				if (!spinning) {
-					real_t x = CLAMP(bev->get_position().x - corner_x, 0, real_size.x);
-					real_t y = CLAMP(bev->get_position().y - corner_y, 0, real_size.y);
-
-					s = x / real_size.x;
-					v = 1.0 - y / real_size.y;
-					wheel_focus_mode = 1;
-				}
-			}
-
-			changing_color = true;
-
-			_copy_hsv_to_color();
-			last_color = color;
-			set_pick_color(color);
-
-			if (!deferred_mode_enabled) {
-				emit_signal(SNAME("color_changed"), color);
-			}
-		} else if (!bev->is_pressed() && bev->get_button_index() == MouseButton::LEFT) {
-			if (deferred_mode_enabled) {
-				emit_signal(SNAME("color_changed"), color);
-			}
-			add_recent_preset(color);
-			changing_color = false;
-			spinning = false;
-		} else {
-			changing_color = false;
-			spinning = false;
-		}
-	}
-
-	Ref<InputEventMouseMotion> mev = p_event;
-
-	if (mev.is_valid()) {
-		if (!changing_color) {
-			return;
-		}
-
-		Vector2 center = c->get_size() / 2.0;
-		if (current_shape == SHAPE_VHS_CIRCLE || current_shape == SHAPE_OKHSL_CIRCLE) {
-			real_t dist = center.distance_to(mev->get_position());
-			real_t rad = center.angle_to_point(mev->get_position());
-			h = ((rad >= 0) ? rad : (Math_TAU + rad)) / Math_TAU;
-			s = CLAMP(dist / center.x, 0, 1);
-			ok_hsl_h = h;
-			ok_hsl_s = s;
-			circle_keyboard_joypad_picker_cursor_position = Vector2i();
-		} else {
-			if (spinning) {
-				real_t rad = center.angle_to_point(mev->get_position());
-				h = ((rad >= 0) ? rad : (Math_TAU + rad)) / Math_TAU;
-				wheel_uv->queue_redraw();
-			} else {
-				real_t corner_x = (c == wheel_uv) ? center.x - Math_SQRT12 * c->get_size().width * 0.42 : 0;
-				real_t corner_y = (c == wheel_uv) ? center.y - Math_SQRT12 * c->get_size().height * 0.42 : 0;
-				Size2 real_size(c->get_size().x - corner_x * 2, c->get_size().y - corner_y * 2);
-
-				real_t x = CLAMP(mev->get_position().x - corner_x, 0, real_size.x);
-				real_t y = CLAMP(mev->get_position().y - corner_y, 0, real_size.y);
-
-				s = x / real_size.x;
-				v = 1.0 - y / real_size.y;
-			}
-		}
-
-		_copy_hsv_to_color();
-		last_color = color;
-		set_pick_color(color);
-
-		if (!deferred_mode_enabled) {
-			emit_signal(SNAME("color_changed"), color);
-		}
-	}
-
-	if (!cursor_editing) {
-		return;
-	}
-
-	Ref<InputEventJoypadMotion> joypadmotion_event = p_event;
-	Ref<InputEventJoypadButton> joypadbutton_event = p_event;
-	bool is_joypad_event = (joypadmotion_event.is_valid() || joypadbutton_event.is_valid());
-	bool is_echo = p_event->is_echo();
-
-	if (p_event->is_action_pressed("ui_left", true) ||
-			p_event->is_action_pressed("ui_right", true) ||
-			p_event->is_action_pressed("ui_up", true) ||
-			p_event->is_action_pressed("ui_down", true)) {
-		if (is_joypad_event) {
-			// Make sure moving joypad axis further in the same direction is not handled here, as NOTIFICATION_INTERNAL_PROCESS will handle it.
-			if (is_processing_internal()) {
-				accept_event();
-				return;
-			}
-			set_process_internal(true);
-		}
-
-		// Treat any input from joypad axis as -1, 0, or 1, as the value is added to Vector2i and would be lost.
-		Vector2 color_change_vector = Vector2(
-				p_event->is_action_pressed("ui_right", true) - p_event->is_action_pressed("ui_left", true),
-				p_event->is_action_pressed("ui_down", true) - p_event->is_action_pressed("ui_up", true));
-		_update_uv_cursor(color_change_vector, is_echo);
-	}
-}
-
-void ColorPicker::_update_w_cursor(float p_color_change, bool p_is_echo) {
-	echo_multiplier = p_is_echo ? CLAMP(echo_multiplier * echo_multiplier_step, 1, 25) : 1;
-
-	if (!Math::is_zero_approx(p_color_change)) {
-		p_color_change *= echo_multiplier;
-		if (current_shape == SHAPE_HSV_RECTANGLE) {
-			h = CLAMP(h + p_color_change / 360.0, 0, 1);
-		} else if (current_shape == SHAPE_VHS_CIRCLE || current_shape == SHAPE_OKHSL_CIRCLE) {
-			v = CLAMP(v - p_color_change / 100.0, 0, 1);
-			ok_hsl_l = CLAMP(ok_hsl_l - p_color_change / 100.0, 0, 1);
-		}
-
-		_copy_hsv_to_color();
-		last_color = color;
-		set_pick_color(color);
-
-		emit_signal(SNAME("color_changed"), color);
-	} else {
-		echo_multiplier = 1;
-	}
-
-	accept_event();
-}
-
-void ColorPicker::_w_input(const Ref<InputEvent> &p_event) {
-	_update_cursor_editing(p_event, w_edit);
-
-	Ref<InputEventMouseButton> bev = p_event;
-
-	if (bev.is_valid()) {
-		if (bev->is_pressed() && bev->get_button_index() == MouseButton::LEFT) {
-			changing_color = true;
-			float y = CLAMP((float)bev->get_position().y, 0, w_edit->get_size().height);
-			if (current_shape == SHAPE_VHS_CIRCLE || current_shape == SHAPE_OKHSL_CIRCLE) {
-				v = 1.0 - (y / w_edit->get_size().height);
-				ok_hsl_l = v;
-			} else {
-				h = y / w_edit->get_size().height;
-			}
-		} else {
-			changing_color = false;
-		}
-
-		_copy_hsv_to_color();
-		last_color = color;
-		set_pick_color(color);
-
-		if (!bev->is_pressed() && bev->get_button_index() == MouseButton::LEFT) {
-			add_recent_preset(color);
-			emit_signal(SNAME("color_changed"), color);
-		} else if (!deferred_mode_enabled) {
-			emit_signal(SNAME("color_changed"), color);
-		}
-	}
-
-	Ref<InputEventMouseMotion> mev = p_event;
-
-	if (mev.is_valid()) {
-		if (!changing_color) {
-			return;
-		}
-		float y = CLAMP((float)mev->get_position().y, 0, w_edit->get_size().height);
-		if (current_shape == SHAPE_VHS_CIRCLE || current_shape == SHAPE_OKHSL_CIRCLE) {
-			v = 1.0 - (y / w_edit->get_size().height);
-			ok_hsl_l = v;
-		} else {
-			h = y / w_edit->get_size().height;
-		}
-
-		_copy_hsv_to_color();
-		last_color = color;
-		set_pick_color(color);
-
-		if (!deferred_mode_enabled) {
-			emit_signal(SNAME("color_changed"), color);
-		}
-	}
-
-	if (!cursor_editing) {
-		return;
-	}
-
-	Ref<InputEventJoypadMotion> joypadmotion_event = p_event;
-	Ref<InputEventJoypadButton> joypadbutton_event = p_event;
-	bool is_joypad_event = (joypadmotion_event.is_valid() || joypadbutton_event.is_valid());
-	bool is_echo = p_event->is_echo();
-
-	if (p_event->is_action_pressed("ui_left", true) ||
-			p_event->is_action_pressed("ui_right", true) ||
-			p_event->is_action_pressed("ui_up", true) ||
-			p_event->is_action_pressed("ui_down", true)) {
-		if (is_joypad_event) {
-			set_process_internal(true);
-		}
-
-		float color_change = Input::get_singleton()->get_axis("ui_up", "ui_down");
-		_update_w_cursor(color_change, is_echo);
 	}
 }
 
@@ -2644,20 +1991,9 @@ ColorPicker::ColorPicker() {
 	VBoxContainer *real_vbox = memnew(VBoxContainer);
 	internal_margin->add_child(real_vbox);
 
-	HBoxContainer *hb_edit = memnew(HBoxContainer);
-	real_vbox->add_child(hb_edit);
-	hb_edit->set_v_size_flags(SIZE_SHRINK_BEGIN);
-
-	uv_edit = memnew(Control);
-	hb_edit->add_child(uv_edit);
-	uv_edit->connect(SceneStringName(gui_input), callable_mp(this, &ColorPicker::_uv_input).bind(uv_edit));
-	uv_edit->set_mouse_filter(MOUSE_FILTER_PASS);
-	uv_edit->set_focus_mode(FOCUS_ALL);
-	uv_edit->set_h_size_flags(SIZE_EXPAND_FILL);
-	uv_edit->set_v_size_flags(SIZE_EXPAND_FILL);
-	uv_edit->connect(SceneStringName(draw), callable_mp(this, &ColorPicker::_hsv_draw).bind(0, uv_edit));
-	uv_edit->connect(SceneStringName(focus_entered), callable_mp(this, &ColorPicker::_picker_shape_focus_entered));
-	uv_edit->connect(SceneStringName(focus_exited), callable_mp(this, &ColorPicker::_picker_shape_focus_exited));
+	shape_container = memnew(HBoxContainer);
+	shape_container->set_v_size_flags(SIZE_SHRINK_BEGIN);
+	real_vbox->add_child(shape_container);
 
 	sample_hbc = memnew(HBoxContainer);
 	real_vbox->add_child(sample_hbc);
@@ -2680,22 +2016,28 @@ ColorPicker::ColorPicker() {
 	btn_shape->set_icon_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	btn_shape->set_focus_mode(FOCUS_ALL);
 
-	current_shape = SHAPE_HSV_RECTANGLE;
+	add_shape(memnew(ColorPickerShapeRectangle(this)));
+	add_shape(memnew(ColorPickerShapeWheel(this)));
+	add_shape(memnew(ColorPickerShapeVHSCircle(this)));
+	add_shape(memnew(ColorPickerShapeOKHSLCircle(this)));
 
 	shape_popup = btn_shape->get_popup();
-	shape_popup->add_radio_check_item("HSV Rectangle", SHAPE_HSV_RECTANGLE);
-	shape_popup->add_radio_check_item("HSV Wheel", SHAPE_HSV_WHEEL);
-	shape_popup->add_radio_check_item("VHS Circle", SHAPE_VHS_CIRCLE);
-	shape_popup->add_radio_check_item("OKHSL Circle", SHAPE_OKHSL_CIRCLE);
+	{
+		int i = 0;
+		for (const ColorPickerShape *shape : shapes) {
+			shape_popup->add_radio_check_item(shape->get_name(), i);
+			i++;
+		}
+	}
 	shape_popup->set_item_checked(current_shape, true);
 	shape_popup->connect(SceneStringName(id_pressed), callable_mp(this, &ColorPicker::set_picker_shape));
 	shape_popup->connect("about_to_popup", callable_mp(this, &ColorPicker::_block_input_on_popup_show));
 	shape_popup->connect(SNAME("popup_hide"), callable_mp(this, &ColorPicker::_enable_input_on_popup_hide));
 
-	add_mode(new ColorModeRGB(this));
-	add_mode(new ColorModeHSV(this));
-	add_mode(new ColorModeRAW(this));
-	add_mode(new ColorModeOKHSL(this));
+	add_mode(memnew(ColorModeRGB(this)));
+	add_mode(memnew(ColorModeHSV(this)));
+	add_mode(memnew(ColorModeRAW(this)));
+	add_mode(memnew(ColorModeOKHSL(this)));
 
 	mode_hbc = memnew(HBoxContainer);
 	real_vbox->add_child(mode_hbc);
@@ -2722,11 +2064,13 @@ ColorPicker::ColorPicker() {
 	btn_mode->set_tooltip_text(ETR("Select a picker mode."));
 	btn_mode->set_focus_mode(FOCUS_ALL);
 
-	current_mode = MODE_RGB;
-
 	mode_popup = btn_mode->get_popup();
-	for (int i = 0; i < modes.size(); i++) {
-		mode_popup->add_radio_check_item(modes[i]->get_name(), i);
+	{
+		int i = 0;
+		for (const ColorMode *mode : modes) {
+			mode_popup->add_radio_check_item(mode->get_name(), i);
+			i++;
+		}
 	}
 	mode_popup->add_separator();
 	mode_popup->add_check_item(ETR("Colorized Sliders"), MODE_MAX);
@@ -2775,47 +2119,6 @@ ColorPicker::ColorPicker() {
 	c_text->connect(SceneStringName(text_submitted), callable_mp(this, &ColorPicker::_html_submitted));
 	c_text->connect(SceneStringName(text_changed), callable_mp(this, &ColorPicker::_text_changed));
 	c_text->connect(SceneStringName(focus_exited), callable_mp(this, &ColorPicker::_html_focus_exit));
-
-	wheel_edit = memnew(AspectRatioContainer);
-	wheel_edit->set_h_size_flags(SIZE_EXPAND_FILL);
-	wheel_edit->set_v_size_flags(SIZE_EXPAND_FILL);
-	hb_edit->add_child(wheel_edit);
-
-	wheel_mat.instantiate();
-	wheel_mat->set_shader(wheel_shader);
-	wheel_mat->set_shader_parameter("wheel_radius", WHEEL_RADIUS);
-	circle_mat.instantiate();
-	circle_mat->set_shader(circle_shader);
-
-	wheel_margin = memnew(MarginContainer);
-	wheel_margin->add_theme_constant_override("margin_bottom", 8);
-	wheel_edit->add_child(wheel_margin);
-
-	wheel = memnew(Control);
-	wheel_margin->add_child(wheel);
-	wheel->set_mouse_filter(MOUSE_FILTER_PASS);
-	wheel->connect(SceneStringName(draw), callable_mp(this, &ColorPicker::_hsv_draw).bind(2, wheel));
-	wheel->connect(SceneStringName(gui_input), callable_mp(this, &ColorPicker::_uv_input).bind(wheel));
-	wheel->connect(SceneStringName(focus_entered), callable_mp(this, &ColorPicker::_picker_shape_focus_entered));
-	wheel->connect(SceneStringName(focus_exited), callable_mp(this, &ColorPicker::_picker_shape_focus_exited));
-
-	wheel_uv = memnew(Control);
-	wheel_margin->add_child(wheel_uv);
-	wheel_uv->set_focus_mode(FOCUS_ALL);
-	wheel_uv->connect(SceneStringName(gui_input), callable_mp(this, &ColorPicker::_uv_input).bind(wheel_uv));
-	wheel_uv->connect(SceneStringName(draw), callable_mp(this, &ColorPicker::_hsv_draw).bind(0, wheel_uv));
-	wheel_uv->connect(SceneStringName(focus_entered), callable_mp(this, &ColorPicker::_picker_shape_focus_entered));
-	wheel_uv->connect(SceneStringName(focus_exited), callable_mp(this, &ColorPicker::_picker_shape_focus_exited));
-
-	w_edit = memnew(Control);
-	hb_edit->add_child(w_edit);
-	w_edit->set_focus_mode(FOCUS_ALL);
-	w_edit->set_h_size_flags(SIZE_FILL);
-	w_edit->set_v_size_flags(SIZE_EXPAND_FILL);
-	w_edit->connect(SceneStringName(gui_input), callable_mp(this, &ColorPicker::_w_input));
-	w_edit->connect(SceneStringName(draw), callable_mp(this, &ColorPicker::_hsv_draw).bind(1, w_edit));
-	w_edit->connect(SceneStringName(focus_entered), callable_mp(this, &ColorPicker::_picker_shape_focus_entered));
-	w_edit->connect(SceneStringName(focus_exited), callable_mp(this, &ColorPicker::_picker_shape_focus_exited));
 
 	_update_controls();
 	updating = false;
@@ -2889,8 +2192,11 @@ ColorPicker::ColorPicker() {
 }
 
 ColorPicker::~ColorPicker() {
-	for (int i = 0; i < modes.size(); i++) {
-		delete modes[i];
+	for (ColorMode *mode : modes) {
+		memdelete(mode);
+	}
+	for (ColorPickerShape *shape : shapes) {
+		memdelete(shape);
 	}
 }
 

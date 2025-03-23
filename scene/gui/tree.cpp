@@ -3732,7 +3732,7 @@ void Tree::gui_input(const Ref<InputEvent> &p_event) {
 			} else {
 				const TreeItem::Cell &c = popup_edited_item->cells[popup_edited_item_col];
 				float diff_y = -mm->get_relative().y;
-				diff_y = Math::pow(ABS(diff_y), 1.8f) * SIGN(diff_y);
+				diff_y = Math::pow(Math::abs(diff_y), 1.8f) * SIGN(diff_y);
 				diff_y *= 0.1;
 				range_drag_base = CLAMP(range_drag_base + c.step * diff_y, c.min, c.max);
 				popup_edited_item->set_range(popup_edited_item_col, range_drag_base);
@@ -4085,7 +4085,7 @@ bool Tree::edit_selected(bool p_force_edit) {
 		return false;
 	}
 
-	float popup_scale = popup_editor->is_embedded() ? 1.0 : popup_editor->get_parent_visible_window()->get_content_scale_factor();
+	real_t popup_scale = popup_editor->is_embedded() ? 1.0 : popup_editor->get_parent_visible_window()->get_content_scale_factor();
 	Rect2 rect = _get_item_focus_rect(s);
 	rect.position *= popup_scale;
 	popup_edited_item = s;
@@ -4127,13 +4127,16 @@ bool Tree::edit_selected(bool p_force_edit) {
 		Vector2 ofs(0, Math::floor((MAX(line_editor->get_minimum_size().height, rect.size.height - value_editor_height) - rect.size.height) / 2));
 
 		// Account for icon.
-		Size2 icon_size = _get_cell_icon_size(c) * popup_scale;
+		real_t icon_ofs = 0;
+		if (c.icon.is_valid()) {
+			icon_ofs = _get_cell_icon_size(c).x * popup_scale + theme_cache.h_separation;
+		}
 
 		popup_rect.size = rect.size;
-		popup_rect.size.x -= icon_size.x + theme_cache.h_separation;
+		popup_rect.size.x -= icon_ofs;
 
 		popup_rect.position = rect.position - ofs;
-		popup_rect.position.x += icon_size.x + theme_cache.h_separation;
+		popup_rect.position.x += icon_ofs;
 		if (cache.rtl) {
 			popup_rect.position.x = get_size().width - popup_rect.position.x - popup_rect.size.x;
 		}
@@ -4386,15 +4389,15 @@ void Tree::_notification(int p_what) {
 			if (scrolling && get_rect().grow(theme_cache.scroll_border).has_point(mouse_position)) {
 				Point2 point;
 
-				if ((ABS(mouse_position.x) < ABS(mouse_position.x - get_size().width)) && (ABS(mouse_position.x) < theme_cache.scroll_border)) {
+				if ((Math::abs(mouse_position.x) < Math::abs(mouse_position.x - get_size().width)) && (Math::abs(mouse_position.x) < theme_cache.scroll_border)) {
 					point.x = mouse_position.x - theme_cache.scroll_border;
-				} else if (ABS(mouse_position.x - get_size().width) < theme_cache.scroll_border) {
+				} else if (Math::abs(mouse_position.x - get_size().width) < theme_cache.scroll_border) {
 					point.x = mouse_position.x - (get_size().width - theme_cache.scroll_border);
 				}
 
-				if ((ABS(mouse_position.y) < ABS(mouse_position.y - get_size().height)) && (ABS(mouse_position.y) < theme_cache.scroll_border)) {
+				if ((Math::abs(mouse_position.y) < Math::abs(mouse_position.y - get_size().height)) && (Math::abs(mouse_position.y) < theme_cache.scroll_border)) {
 					point.y = mouse_position.y - theme_cache.scroll_border;
-				} else if (ABS(mouse_position.y - get_size().height) < theme_cache.scroll_border) {
+				} else if (Math::abs(mouse_position.y - get_size().height) < theme_cache.scroll_border) {
 					point.y = mouse_position.y - (get_size().height - theme_cache.scroll_border);
 				}
 

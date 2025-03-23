@@ -146,13 +146,14 @@
 # andres valenzuela pacheco <andresmauricio6777@gmail.com>, 2025.
 # Marco Antonio Silva Mendoza <n00028146@upn.pe>, 2025.
 # Lucas García da Rosa <gdarlucas@gmail.com>, 2025.
+# Erick Estuardo Pineda Palma <erickestuardopineda82004@gmail.com>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-03-05 16:13+0000\n"
-"Last-Translator: Alejandro Moctezuma <moctezumaalejandro25@gmail.com>\n"
+"PO-Revision-Date: 2025-03-18 05:43+0000\n"
+"Last-Translator: Javier <xavier.ocampos@gmail.com>\n"
 "Language-Team: Spanish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/es/>\n"
 "Language: es\n"
@@ -160,7 +161,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.10.3-dev\n"
+"X-Generator: Weblate 5.11-dev\n"
 
 msgid "Main Thread"
 msgstr "Hilo Principal"
@@ -1024,6 +1025,9 @@ msgstr "Un AnimationPlayer no puede animarse a sí mismo, solo a otros players."
 
 msgid "property '%s'"
 msgstr "propiedad '%s'"
+
+msgid "Nearest FPS: %d"
+msgstr "FPS más cercano: %d"
 
 msgid "Change Animation Step"
 msgstr "Cambiar Paso de Animación"
@@ -5364,6 +5368,9 @@ msgstr "Instalar desde un archivo"
 
 msgid "Install templates from a local file."
 msgstr "Instalar plantillas desde un archivo local."
+
+msgid "Online mode is needed to download the templates."
+msgstr "Se necesita el modo en línea para descargar las plantillas."
 
 msgid "Go Online"
 msgstr "Ir a Internet"
@@ -15059,6 +15066,9 @@ msgstr ""
 "Permite redirigir conexiones con libertad, posibilitando la conexión de "
 "varios puertos de entrada a un único puerto de salida."
 
+msgid "[None]"
+msgstr "[Ninguno]"
+
 msgid "Edit Visual Property: %s"
 msgstr "Editar Propiedad Visual: %s"
 
@@ -16625,6 +16635,24 @@ msgstr "Reiniciar y Actualizar"
 
 msgid "Updating Script UIDs"
 msgstr "Actualizando UIDs de Script"
+
+msgid ""
+"As of Godot 4.4, scenes and resources use UIDs to reference scripts and "
+"shaders. Upgrades apply on the next save of each scene/resource.\n"
+"\n"
+"To save time, this tool can open and save each of these files. Depending on "
+"the project size, it may take several minutes."
+msgstr ""
+"A partir de Godot 4.4, las escenas y los recursos usan UIDs para referenciar "
+"scripts y shaders. Las actualizaciones se aplican al siguiente guardado de "
+"cada escena/recurso.\n"
+"\n"
+"Para ahorrar tiempo, esta herramienta puede abrir y guardar cada uno de estos "
+"archivos. Dependiendo del tamaño del proyecto, esto puede llevar varios "
+"minutos."
+
+msgid "Re-save all scenes and resources to use UIDs"
+msgstr "Vuelve a guardar todas las escenas y recursos para poder usar UIDs"
 
 msgid "Learn More"
 msgstr "Más Información"

@@ -359,10 +359,20 @@ void CameraMacOS::update_feeds() {
 	};
 }
 
-CameraMacOS::CameraMacOS() {
-	// Find available cameras we have at this time
-	update_feeds();
+void CameraMacOS::set_monitoring_feeds(bool p_monitoring_feeds) {
+	if (p_monitoring_feeds == monitoring_feeds) {
+		return;
+	}
 
-	// should only have one of these....
-	device_notifications = [[MyDeviceNotifications alloc] initForServer:this];
+	CameraServer::set_monitoring_feeds(p_monitoring_feeds);
+	if (p_monitoring_feeds) {
+		// Find available cameras we have at this time.
+		update_feeds();
+
+		// Get notified on feed changes.
+		device_notifications = [[MyDeviceNotifications alloc] initForServer:this];
+	} else {
+		// Stop monitoring feed changes.
+		device_notifications = nil;
+	}
 }

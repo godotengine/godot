@@ -1453,10 +1453,10 @@ _FORCE_INLINE_ bool TextServerAdvanced::_ensure_cache_for_size(FontAdvanced *p_f
 
 		if (FT_HAS_COLOR(fd->face) && fd->face->num_fixed_sizes > 0) {
 			int best_match = 0;
-			int diff = ABS(fd->size.x - ((int64_t)fd->face->available_sizes[0].width));
+			int diff = Math::abs(fd->size.x - ((int64_t)fd->face->available_sizes[0].width));
 			fd->scale = double(fd->size.x * fd->oversampling) / fd->face->available_sizes[0].width;
 			for (int i = 1; i < fd->face->num_fixed_sizes; i++) {
-				int ndiff = ABS(fd->size.x - ((int64_t)fd->face->available_sizes[i].width));
+				int ndiff = Math::abs(fd->size.x - ((int64_t)fd->face->available_sizes[i].width));
 				if (ndiff < diff) {
 					best_match = i;
 					diff = ndiff;
@@ -6125,17 +6125,15 @@ Glyph TextServerAdvanced::_shape_single_glyph(ShapedTextDataAdvanced *p_sd, char
 	return gl;
 }
 
-_FORCE_INLINE_ void TextServerAdvanced::_add_featuers(const Dictionary &p_source, Vector<hb_feature_t> &r_ftrs) {
-	Array keys = p_source.keys();
-	Array values = p_source.values();
-	for (int i = 0; i < keys.size(); i++) {
-		int32_t value = values[i];
+_FORCE_INLINE_ void TextServerAdvanced::_add_features(const Dictionary &p_source, Vector<hb_feature_t> &r_ftrs) {
+	for (const KeyValue<Variant, Variant> &key_value : p_source) {
+		int32_t value = key_value.value;
 		if (value >= 0) {
 			hb_feature_t feature;
-			if (keys[i].is_string()) {
-				feature.tag = _name_to_tag(keys[i]);
+			if (key_value.key.is_string()) {
+				feature.tag = _name_to_tag(key_value.key);
 			} else {
-				feature.tag = keys[i];
+				feature.tag = key_value.key;
 			}
 			feature.value = value;
 			feature.start = 0;
@@ -6297,8 +6295,8 @@ void TextServerAdvanced::_shape_run(ShapedTextDataAdvanced *p_sd, int64_t p_star
 	hb_buffer_add_utf32(p_sd->hb_buffer, (const uint32_t *)p_sd->text.ptr(), p_sd->text.length(), p_start, p_end - p_start);
 
 	Vector<hb_feature_t> ftrs;
-	_add_featuers(_font_get_opentype_feature_overrides(f), ftrs);
-	_add_featuers(p_sd->spans[p_span].features, ftrs);
+	_add_features(_font_get_opentype_feature_overrides(f), ftrs);
+	_add_features(p_sd->spans[p_span].features, ftrs);
 
 	hb_shape(hb_font, p_sd->hb_buffer, ftrs.is_empty() ? nullptr : &ftrs[0], ftrs.size());
 

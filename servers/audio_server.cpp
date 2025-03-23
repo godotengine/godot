@@ -294,19 +294,23 @@ void AudioServer::_driver_process(int p_frames, int32_t *p_buffer) {
 			// The destination start for data will be the same in all cases.
 			int32_t *dest = &p_buffer[from_buf * (cs * 2) + (k * 2)];
 
+#ifdef DEBUG_ENABLED
+			if (!debug_mute && master->channels[k].active) {
+#else
 			if (master->channels[k].active) {
+#endif // DEBUG_ENABLED
 				const AudioFrame *buf = master->channels[k].buffer.ptr();
 
 				for (int j = 0; j < to_copy; j++) {
 					float l = CLAMP(buf[from + j].left, -1.0, 1.0);
 					int32_t vl = l * ((1 << 20) - 1);
-					int32_t vl2 = (vl < 0 ? -1 : 1) * (ABS(vl) << 11);
+					int32_t vl2 = (vl < 0 ? -1 : 1) * (Math::abs(vl) << 11);
 					*dest = vl2;
 					dest++;
 
 					float r = CLAMP(buf[from + j].right, -1.0, 1.0);
 					int32_t vr = r * ((1 << 20) - 1);
-					int32_t vr2 = (vr < 0 ? -1 : 1) * (ABS(vr) << 11);
+					int32_t vr2 = (vr < 0 ? -1 : 1) * (Math::abs(vr) << 11);
 					*dest = vr2;
 					dest += stride_minus_one;
 				}
@@ -621,11 +625,11 @@ void AudioServer::_mix_step() {
 			for (uint32_t j = 0; j < buffer_size; j++) {
 				buf[j] *= volume;
 
-				float l = ABS(buf[j].left);
+				float l = Math::abs(buf[j].left);
 				if (l > peak.left) {
 					peak.left = l;
 				}
-				float r = ABS(buf[j].right);
+				float r = Math::abs(buf[j].right);
 				if (r > peak.right) {
 					peak.right = r;
 				}
@@ -764,6 +768,16 @@ int AudioServer::thread_find_bus_index(const StringName &p_name) {
 		return 0;
 	}
 }
+
+#ifdef DEBUG_ENABLED
+void AudioServer::set_debug_mute(bool p_mute) {
+	debug_mute = p_mute;
+}
+
+bool AudioServer::get_debug_mute() const {
+	return debug_mute;
+}
+#endif // DEBUG_ENABLED
 
 void AudioServer::set_bus_count(int p_count) {
 	ERR_FAIL_COND(p_count < 1);

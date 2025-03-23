@@ -914,6 +914,8 @@ TileSetEditor::TileSetEditor() {
 	// No source selected.
 	no_source_selected_label = memnew(Label);
 	no_source_selected_label->set_text(TTR("No TileSet source selected. Select or create a TileSet source.\nYou can create a new source by using the Add button on the left or by dropping a tileset texture onto the source list."));
+	no_source_selected_label->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
+	no_source_selected_label->set_text_overrun_behavior(TextServer::OVERRUN_TRIM_ELLIPSIS);
 	no_source_selected_label->set_h_size_flags(SIZE_EXPAND_FILL);
 	no_source_selected_label->set_v_size_flags(SIZE_EXPAND_FILL);
 	no_source_selected_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
@@ -953,8 +955,9 @@ TileSetEditor::TileSetEditor() {
 
 	patterns_help_label = memnew(Label);
 	patterns_help_label->set_text(TTR("Add new patterns in the TileMap editing mode."));
+	patterns_help_label->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
 	patterns_help_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
-	patterns_help_label->set_anchors_and_offsets_preset(Control::PRESET_CENTER);
+	patterns_help_label->set_anchors_and_offsets_preset(Control::PRESET_HCENTER_WIDE);
 	patterns_item_list->add_child(patterns_help_label);
 
 	// Expanded editor
@@ -978,6 +981,8 @@ void TileSourceInspectorPlugin::_show_id_edit_dialog(Object *p_for_source) {
 
 		Label *label = memnew(Label(TTR("Warning: Modifying a source ID will result in all TileMaps using that source to reference an invalid source instead. This may result in unexpected data loss. Change this ID carefully.")));
 		label->set_autowrap_mode(TextServer::AUTOWRAP_WORD);
+		// Workaround too tall popup window due to text autowrapping. See GH-83546.
+		label->set_custom_minimum_size(Vector2i(400, 0));
 		vbox->add_child(label);
 
 		id_input = memnew(SpinBox);

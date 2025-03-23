@@ -252,14 +252,8 @@ class String {
 	void parse_latin1(const char *p_cstr) {
 		parse_latin1(Span(p_cstr, p_cstr ? strlen(p_cstr) : 0));
 	}
-	void parse_latin1(const char *p_cstr, int p_clip_to) {
-		parse_latin1(Span(p_cstr, p_cstr ? _strlen_clipped(p_cstr, p_clip_to) : 0));
-	}
 	void parse_utf32(const char32_t *p_cstr) {
 		parse_utf32(Span(p_cstr, p_cstr ? strlen(p_cstr) : 0));
-	}
-	void parse_utf32(const char32_t *p_cstr, int p_clip_to) {
-		parse_utf32(Span(p_cstr, p_cstr ? _strlen_clipped(p_cstr, p_clip_to) : 0));
 	}
 
 	// wchar_t copy_from depends on the platform.
@@ -279,15 +273,6 @@ class String {
 #else
 		// wchar_t is 32-bit, copy directly
 		parse_utf32((const char32_t *)p_cstr);
-#endif
-	}
-	void parse_wstring(const wchar_t *p_cstr, int p_clip_to) {
-#ifdef WINDOWS_ENABLED
-		// wchar_t is 16-bit, parse as UTF-16
-		parse_utf16((const char16_t *)p_cstr, p_clip_to);
-#else
-		// wchar_t is 32-bit, copy directly
-		parse_utf32((const char32_t *)p_cstr, p_clip_to);
 #endif
 	}
 
@@ -543,6 +528,11 @@ public:
 	static String utf16(const Span<char16_t> &p_range) { return utf16(p_range.ptr(), p_range.size()); }
 
 	void parse_utf32(const Span<char32_t> &p_cstr);
+	static String utf32(const Span<char32_t> &p_span) {
+		String string;
+		string.parse_utf32(p_span);
+		return string;
+	}
 
 	static uint32_t hash(const char32_t *p_cstr, int p_len); /* hash the string */
 	static uint32_t hash(const char32_t *p_cstr); /* hash the string */
@@ -638,15 +628,6 @@ public:
 	}
 	String(const char32_t *p_cstr) {
 		parse_utf32(p_cstr);
-	}
-	String(const char *p_cstr, int p_clip_to_len) {
-		parse_latin1(p_cstr, p_clip_to_len);
-	}
-	String(const wchar_t *p_cstr, int p_clip_to_len) {
-		parse_wstring(p_cstr, p_clip_to_len);
-	}
-	String(const char32_t *p_cstr, int p_clip_to_len) {
-		parse_utf32(p_cstr, p_clip_to_len);
 	}
 
 	// Copy assignment for NULL terminated C strings.
