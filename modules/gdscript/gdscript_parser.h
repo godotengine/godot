@@ -256,47 +256,6 @@ public:
 		}
 
 		~DataType() {}
-
-#ifdef TOOLS_ENABLED
-		Dictionary to_dictionary() const {
-			Dictionary dict;
-
-			Array dict_container_element_types;
-			dict["container_element_types"] = dict_container_element_types;
-			for (const DataType &container_element_type : container_element_types) {
-				dict_container_element_types.append(container_element_type.to_dictionary());
-			}
-
-			dict["kind"] = kind;
-			dict["type_source"] = type_source;
-
-			dict["is_read_only"] = is_read_only;
-			dict["is_constant"] = is_constant;
-			dict["is_meta_type"] = is_meta_type;
-			dict["is_pseudo_type"] = is_pseudo_type;
-			dict["is_coroutine"] = is_coroutine;
-
-			dict["builtin_type"] = builtin_type;
-
-			dict["native_type"] = (String)native_type;
-			dict["enum_type"] = (String)enum_type;
-
-			//dict["script_type"] = script_type;
-			dict["script_path"] = script_path;
-
-			////if(class_type != nullptr)
-			////dict["class_type"] = class_type->to_dictionary();
-
-			dict["method_info"] = method_info.to_dictionary();
-
-			Dictionary dict_enum_values;
-			dict["enum_values"] = dict_enum_values;
-			for (const KeyValue<StringName, int64_t> &kv : enum_values) {
-				dict_enum_values[(String)kv.key] = kv.value;
-			}
-			return dict;
-		}
-#endif // TOOLS_ENABLED
 	};
 
 	struct ParserError {
@@ -322,29 +281,6 @@ public:
 		String deprecated_message;
 		bool is_experimental = false;
 		String experimental_message;
-
-#ifdef TOOLS_ENABLED
-		Dictionary to_dictionary() const {
-			Dictionary dict;
-			dict["brief"] = brief;
-			dict["description"] = description;
-
-			Array dict_tutorials;
-			dict["tutorials"] = dict_tutorials;
-			for (const Pair<String, String> &p : tutorials) {
-				Array dict_p;
-				dict_p.push_back(p.first);
-				dict_p.push_back(p.second);
-				dict_tutorials.push_back(dict_p);
-			}
-
-			dict["is_deprecated"] = is_deprecated;
-			dict["deprecated_message"] = deprecated_message;
-			dict["is_experimental"] = is_experimental;
-			dict["experimental_message"] = experimental_message;
-			return dict;
-		}
-#endif // TOOLS_ENABLED
 	};
 
 	struct MemberDocData {
@@ -353,18 +289,6 @@ public:
 		String deprecated_message;
 		bool is_experimental = false;
 		String experimental_message;
-
-#ifdef TOOLS_ENABLED
-		Dictionary to_dictionary() const {
-			Dictionary dict;
-			dict["description"] = description;
-			dict["is_deprecated"] = is_deprecated;
-			dict["deprecated_message"] = deprecated_message;
-			dict["is_experimental"] = is_experimental;
-			dict["experimental_message"] = experimental_message;
-			return dict;
-		}
-#endif // TOOLS_ENABLED
 	};
 #endif // TOOLS_ENABLED
 
@@ -427,30 +351,6 @@ public:
 		virtual bool is_expression() const { return false; }
 
 		virtual ~Node() {}
-
-#ifdef TOOLS_ENABLED
-		virtual Dictionary to_dictionary() const {
-			Dictionary dict;
-			dict["type"] = type;
-			dict["start_line"] = start_line;
-			dict["end_line"] = end_line;
-			dict["start_column"] = start_column;
-			dict["end_column"] = end_column;
-			dict["leftmost_column"] = leftmost_column;
-			dict["rightmost_column"] = rightmost_column;
-			////if(next != nullptr)
-			////dict["next"] = next->to_dictionary();
-			Array dict_annotations;
-			dict["annotations"] = dict_annotations;
-			for (const AnnotationNode *annotation : annotations) {
-				if (annotation != nullptr) {
-					dict_annotations.push_back(annotation->to_dictionary());
-				}
-			}
-			dict["datatype"] = datatype.to_dictionary();
-			return dict;
-		}
-#endif // TOOLS_ENABLED
 	};
 
 	struct ExpressionNode : public Node {
@@ -494,34 +394,6 @@ public:
 		AnnotationNode() {
 			type = ANNOTATION;
 		}
-
-#ifdef TOOLS_ENABLED
-		virtual Dictionary to_dictionary() const {
-			Dictionary dict;
-			dict["name"] = name;
-
-			Array dict_arguments;
-			dict["arguments"] = dict_arguments;
-			for (const ExpressionNode *argument : arguments) {
-				if (argument != nullptr) {
-					dict_arguments.push_back(argument->to_dictionary());
-				}
-			}
-
-			Array dict_resolved_arguments;
-			dict["resolved_arguments"] = dict_resolved_arguments;
-			for (const Variant &argument : resolved_arguments) {
-				dict_resolved_arguments.push_back(argument);
-			}
-
-			////if(info != nullptr)
-			////dict["info"] = info->to_dictionary();
-			dict["export_info"] = export_info.to_dictionary();
-			dict["is_resolved"] = is_resolved;
-			dict["is_applied"] = is_applied;
-			return dict;
-		}
-#endif // TOOLS_ENABLED
 	};
 
 	struct ArrayNode : public ExpressionNode {
@@ -530,20 +402,6 @@ public:
 		ArrayNode() {
 			type = ARRAY;
 		}
-
-#ifdef TOOLS_ENABLED
-		virtual Dictionary to_dictionary() const override {
-			Dictionary dict = Node::to_dictionary();
-			Array dict_elements;
-			dict["elements"] = dict_elements;
-			for (const ExpressionNode *element : elements) {
-				if (element != nullptr) {
-					dict_elements.push_back(element->to_dictionary());
-				}
-			}
-			return dict;
-		}
-#endif // TOOLS_ENABLED
 	};
 
 	struct AssertNode : public Node {
@@ -628,22 +486,6 @@ public:
 		AssignmentNode() {
 			type = ASSIGNMENT;
 		}
-
-#ifdef TOOLS_ENABLED
-		Dictionary to_dictionary() const {
-			Dictionary dict = ExpressionNode::to_dictionary();
-			dict["operation"] = operation;
-			dict["variant_op"] = variant_op;
-			if (assignee != nullptr) {
-				dict["assignee"] = assignee->to_dictionary();
-			}
-			if (assigned_value != nullptr) {
-				dict["assigned_value"] = assigned_value->to_dictionary();
-			}
-			dict["use_conversion_assign"] = use_conversion_assign;
-			return dict;
-		}
-#endif // TOOLS_ENABLED
 	};
 
 	struct AwaitNode : public ExpressionNode {
@@ -652,16 +494,6 @@ public:
 		AwaitNode() {
 			type = AWAIT;
 		}
-
-#ifdef TOOLS_ENABLED
-		Dictionary to_dictionary() const {
-			Dictionary dict = ExpressionNode::to_dictionary();
-			if (to_await != nullptr) {
-				dict["to_await"] = to_await->to_dictionary();
-			}
-			return dict;
-		}
-#endif // TOOLS_ENABLED
 	};
 
 	struct BinaryOpNode : public ExpressionNode {
@@ -696,21 +528,6 @@ public:
 		BinaryOpNode() {
 			type = BINARY_OPERATOR;
 		}
-
-#ifdef TOOLS_ENABLED
-		Dictionary to_dictionary() const {
-			Dictionary dict = ExpressionNode::to_dictionary();
-			dict["operation"] = operation;
-			dict["variant_op"] = variant_op;
-			if (left_operand != nullptr) {
-				dict["left_operand"] = left_operand->to_dictionary();
-			}
-			if (right_operand != nullptr) {
-				dict["right_operand"] = right_operand->to_dictionary();
-			}
-			return dict;
-		}
-#endif // TOOLS_ENABLED
 	};
 
 	struct BreakNode : public Node {
@@ -743,27 +560,6 @@ public:
 				return callee->type;
 			}
 		}
-
-#ifdef TOOLS_ENABLED
-		virtual Dictionary to_dictionary() const {
-			Dictionary dict = ExpressionNode::to_dictionary();
-			if (callee != nullptr) {
-				dict["callee"] = callee->to_dictionary();
-			}
-
-			Array dict_arguments;
-			dict["arguments"] = dict_arguments;
-			for (ExpressionNode *arg : arguments) {
-				dict_arguments.append(arg->to_dictionary());
-			}
-
-			dict["function_name"] = function_name;
-			dict["is_super"] = is_super;
-			dict["is_static"] = is_static;
-
-			return dict;
-		}
-#endif // TOOLS_ENABLED
 	};
 
 	struct CastNode : public ExpressionNode {
@@ -773,19 +569,6 @@ public:
 		CastNode() {
 			type = CAST;
 		}
-
-#ifdef TOOLS_ENABLED
-		virtual Dictionary to_dictionary() const {
-			Dictionary dict = ExpressionNode::to_dictionary();
-			if (operand != nullptr) {
-				dict["operand"] = operand->to_dictionary();
-			}
-			if (cast_type != nullptr) {
-				dict["cast_type"] = cast_type->to_dictionary();
-			}
-			return dict;
-		}
-#endif // TOOLS_ENABLED
 	};
 
 	struct EnumNode : public Node {
@@ -814,26 +597,6 @@ public:
 		EnumNode() {
 			type = ENUM;
 		}
-
-#ifdef TOOLS_ENABLED
-		virtual Dictionary to_dictionary() const {
-			Dictionary dict = Node::to_dictionary();
-
-			if (identifier != nullptr) {
-				dict["identifier"] = identifier->to_dictionary();
-			}
-
-			Array dict_values;
-			dict["values"] = dict_values;
-			for (const Value &v : values) {
-				dict_values.push_back(v.identifier->to_dictionary());
-			}
-			dict["dictionary"] = dictionary;
-			dict["doc_data"] = doc_data.to_dictionary();
-
-			return dict;
-		}
-#endif // TOOLS_ENABLED
 	};
 
 	struct ClassNode : public Node {
@@ -1019,12 +782,6 @@ public:
 				type = GROUP;
 				annotation = p_annotation;
 			}
-
-#ifdef TOOLS_ENABLED
-			Dictionary to_dictionary() const {
-				return get_source_node()->to_dictionary();
-			}
-#endif // TOOLS_ENABLED
 		};
 
 		IdentifierNode *identifier = nullptr;
@@ -1086,49 +843,6 @@ public:
 		ClassNode() {
 			type = CLASS;
 		}
-
-#ifdef TOOLS_ENABLED
-		virtual Dictionary to_dictionary() const {
-			Dictionary dict = Node::to_dictionary();
-			if (identifier != nullptr) {
-				dict["identifier"] = identifier->to_dictionary();
-			}
-			dict["icon_path"] = icon_path;
-			dict["simplified_icon_path"] = simplified_icon_path;
-
-			Array dict_members;
-			dict["members"] = dict_members;
-			for (const Member &member : members) {
-				dict_members.push_back(member.to_dictionary());
-			}
-
-			Dictionary dict_members_indices;
-			dict["members_indices"] = dict_members_indices;
-			for (const KeyValue<StringName, int> &kv : members_indices) {
-				dict_members_indices[(String)kv.key] = kv.value;
-			}
-			////if(outer != nullptr)
-			////dict["outer"] = outer->to_dictionary();
-			dict["extends_used"] = extends_used;
-			dict["onready_used"] = onready_used;
-			dict["has_static_data"] = has_static_data;
-			dict["annotated_static_unload"] = annotated_static_unload;
-			dict["extends_path"] = extends_path;
-			Array dict_extends;
-			dict["extends"] = dict_extends;
-			for (const IdentifierNode *extend : extends) {
-				if (extend != nullptr) {
-					dict_extends.push_back(extend->to_dictionary());
-				}
-			}
-			dict["base_type"] = base_type.to_dictionary();
-			dict["fqcn"] = fqcn;
-			dict["doc_data"] = doc_data.to_dictionary();
-			dict["resolved_interface"] = resolved_interface;
-			dict["resolved_body"] = resolved_body;
-			return dict;
-		}
-#endif // TOOLS_ENABLED
 	};
 
 	struct ConstantNode : public AssignableNode {
@@ -1139,14 +853,6 @@ public:
 		ConstantNode() {
 			type = CONSTANT;
 		}
-
-#ifdef TOOLS_ENABLED
-		virtual Dictionary to_dictionary() const {
-			Dictionary dict = AssignableNode::to_dictionary();
-			dict["doc_data"] = doc_data.to_dictionary();
-			return dict;
-		}
-#endif // TOOLS_ENABLED
 	};
 
 	struct ContinueNode : public Node {
@@ -1159,18 +865,6 @@ public:
 		struct Pair {
 			ExpressionNode *key = nullptr;
 			ExpressionNode *value = nullptr;
-#ifdef TOOLS_ENABLED
-			Dictionary to_dictionary() const {
-				Dictionary dict;
-				if (key != nullptr) {
-					dict["key"] = key->to_dictionary();
-				}
-				if (value != nullptr) {
-					dict["value"] = value->to_dictionary();
-				}
-				return dict;
-			}
-#endif // TOOLS_ENABLED
 		};
 		Vector<Pair> elements;
 
@@ -1183,21 +877,6 @@ public:
 		DictionaryNode() {
 			type = DICTIONARY;
 		}
-
-#ifdef TOOLS_ENABLED
-		virtual Dictionary to_dictionary() const {
-			Dictionary dict = ExpressionNode::to_dictionary();
-
-			dict["style"] = style;
-
-			Array dict_elements;
-			dict["elements"] = dict_elements;
-			for (const Pair &pair : elements) {
-				dict_elements.push_back(pair.to_dictionary());
-			}
-			return dict;
-		}
-#endif // TOOLS_ENABLED
 	};
 
 	struct ForNode : public Node {
@@ -1210,26 +889,6 @@ public:
 		ForNode() {
 			type = FOR;
 		}
-
-#ifdef TOOLS_ENABLED
-		virtual Dictionary to_dictionary() const {
-			Dictionary dict = Node::to_dictionary();
-			if (variable != nullptr) {
-				dict["variable"] = variable->to_dictionary();
-			}
-			if (datatype_specifier != nullptr) {
-				dict["datatype_specifier"] = datatype_specifier->to_dictionary();
-			}
-			dict["use_conversion_assign"] = use_conversion_assign;
-			if (list != nullptr) {
-				dict["list"] = list->to_dictionary();
-			}
-			if (loop != nullptr) {
-				dict["loop"] = loop->to_dictionary();
-			}
-			return dict;
-		}
-#endif // TOOLS_ENABLED
 	};
 
 	struct FunctionNode : public Node {
@@ -1255,58 +914,6 @@ public:
 		FunctionNode() {
 			type = FUNCTION;
 		}
-
-#ifdef TOOLS_ENABLED
-		virtual Dictionary to_dictionary() const {
-			Dictionary dict = Node::to_dictionary();
-			if (identifier != nullptr) {
-				dict["identifier"] = identifier->to_dictionary();
-			}
-
-			Array dict_parameters;
-			dict["parameters"] = dict_parameters;
-			for (const ParameterNode *parameter : parameters) {
-				if (parameter != nullptr) {
-					dict_parameters.push_back(parameter->to_dictionary());
-				}
-			}
-			Dictionary dict_parameters_indices;
-			dict["parameters_indices"] = dict_parameters_indices;
-			for (const KeyValue<StringName, int> &kv : parameters_indices) {
-				dict_parameters_indices[(String)kv.key] = kv.value;
-			}
-
-			if (return_type != nullptr) {
-				dict["return_type"] = return_type->to_dictionary();
-			}
-			if (body != nullptr) {
-				dict["body"] = body->to_dictionary();
-			}
-
-			dict["is_static"] = is_static;
-			dict["is_coroutine"] = is_coroutine;
-			dict["rpc_config"] = rpc_config;
-
-			dict["info"] = info.to_dictionary();
-
-			////if(source_lambda != nullptr)
-			////dict["source_lambda"] = source_lambda->to_dictionary();
-
-			Array dict_default_arg_values;
-			dict["default_arg_values"] = dict_default_arg_values;
-			for (const Variant &default_arg_value : default_arg_values) {
-				dict_default_arg_values.push_back(default_arg_value);
-			}
-
-			dict["doc_data"] = doc_data.to_dictionary();
-			dict["min_local_doc_line"] = min_local_doc_line;
-
-			dict["resolved_signature"] = resolved_signature;
-			dict["resolved_body"] = resolved_body;
-
-			return dict;
-		}
-#endif // TOOLS_ENABLED
 	};
 
 	struct GetNodeNode : public ExpressionNode {
@@ -1316,15 +923,6 @@ public:
 		GetNodeNode() {
 			type = GET_NODE;
 		}
-
-#ifdef TOOLS_ENABLED
-		virtual Dictionary to_dictionary() const {
-			Dictionary dict = ExpressionNode::to_dictionary();
-			dict["full_path"] = full_path;
-			dict["use_dollar"] = use_dollar;
-			return dict;
-		}
-#endif // TOOLS_ENABLED
 	};
 
 	struct IdentifierNode : public ExpressionNode {
@@ -1365,58 +963,6 @@ public:
 		IdentifierNode() {
 			type = IDENTIFIER;
 		}
-
-#ifdef TOOLS_ENABLED
-		virtual Dictionary to_dictionary() const {
-			Dictionary dict = ExpressionNode::to_dictionary();
-
-			dict["name"] = name;
-			////if(suite != nullptr)
-			////dict["suite"] = suite->to_dictionary();
-			dict["source"] = source;
-
-			switch (source) {
-				case FUNCTION_PARAMETER:
-					////if(parameter_source != nullptr)
-					////dict["parameter_source"] = parameter_source->to_dictionary();
-					break;
-				case LOCAL_ITERATOR:
-				case LOCAL_BIND:
-					////if(bind_source != nullptr)
-					////dict["bind_source"] = bind_source->to_dictionary();
-					break;
-				case LOCAL_VARIABLE:
-				case MEMBER_VARIABLE:
-				case STATIC_VARIABLE:
-				case INHERITED_VARIABLE:
-					////if(variable_source != nullptr)
-					////dict["variable_source"] = variable_source->to_dictionary();
-					break;
-				case LOCAL_CONSTANT:
-				case MEMBER_CONSTANT:
-					////if(constant_source != nullptr)
-					////dict["constant_source"] = constant_source->to_dictionary();
-					break;
-				case MEMBER_SIGNAL:
-					////if(signal_source != nullptr)
-					////dict["signal_source"] = signal_source->to_dictionary();
-					break;
-				case MEMBER_FUNCTION:
-					////if(function_source != nullptr)
-					////dict["function_source"] = function_source->to_dictionary();
-					break;
-				case UNDEFINED_SOURCE:
-				case MEMBER_CLASS:
-					break;
-			}
-			dict["function_source_is_static"] = function_source_is_static;
-			////if(source_function != nullptr)
-			////dict["source_function"] = source_function->to_dictionary();
-
-			dict["usages"] = usages;
-			return dict;
-		}
-#endif // TOOLS_ENABLED
 	};
 
 	struct IfNode : public Node {
@@ -1427,22 +973,6 @@ public:
 		IfNode() {
 			type = IF;
 		}
-
-#ifdef TOOLS_ENABLED
-		virtual Dictionary to_dictionary() const {
-			Dictionary dict = Node::to_dictionary();
-			if (condition != nullptr) {
-				dict["condition"] = condition->to_dictionary();
-			}
-			if (true_block != nullptr) {
-				dict["true_block"] = true_block->to_dictionary();
-			}
-			if (false_block != nullptr) {
-				dict["false_block"] = false_block->to_dictionary();
-			}
-			return dict;
-		}
-#endif // TOOLS_ENABLED
 	};
 
 	struct LambdaNode : public ExpressionNode {
@@ -1460,37 +990,6 @@ public:
 		LambdaNode() {
 			type = LAMBDA;
 		}
-
-#ifdef TOOLS_ENABLED
-		virtual Dictionary to_dictionary() const {
-			Dictionary dict = ExpressionNode::to_dictionary();
-
-			if (function != nullptr) {
-				dict["function"] = function->to_dictionary();
-			}
-			////if(parent_function != nullptr)
-			////dict["parent_function"] = parent_function->to_dictionary();
-			////if(parent_lambda != nullptr)
-			////dict["parent_lambda"] = parent_lambda->to_dictionary();
-
-			Array dict_captures;
-			dict["captures"] = dict_captures;
-			for (const IdentifierNode *capture : captures) {
-				if (capture != nullptr) {
-					dict_captures.append(capture->to_dictionary());
-				}
-			}
-
-			Dictionary dict_captures_indices;
-			dict["captures_indices"] = dict_captures_indices;
-			for (const KeyValue<StringName, int> &kv : captures_indices) {
-				dict_captures_indices[(String)kv.key] = kv.value;
-			}
-
-			dict["use_self"] = use_self;
-			return dict;
-		}
-#endif // TOOLS_ENABLED
 	};
 
 	struct LiteralNode : public ExpressionNode {
@@ -1499,14 +998,6 @@ public:
 		LiteralNode() {
 			type = LITERAL;
 		}
-
-#ifdef TOOLS_ENABLED
-		virtual Dictionary to_dictionary() const {
-			Dictionary dict = ExpressionNode::to_dictionary();
-			dict["value"] = value;
-			return dict;
-		}
-#endif // TOOLS_ENABLED
 	};
 
 	struct MatchNode : public Node {
@@ -1516,24 +1007,6 @@ public:
 		MatchNode() {
 			type = MATCH;
 		}
-
-#ifdef TOOLS_ENABLED
-		virtual Dictionary to_dictionary() const {
-			Dictionary dict = Node::to_dictionary();
-			if (test != nullptr) {
-				dict["test"] = test->to_dictionary();
-			}
-
-			Array dict_branches;
-			dict["branches"] = dict_branches;
-			for (const MatchBranchNode *branch : branches) {
-				if (branch != nullptr) {
-					dict_branches.push_back(branch->to_dictionary());
-				}
-			}
-			return dict;
-		}
-#endif // TOOLS_ENABLED
 	};
 
 	struct MatchBranchNode : public Node {
@@ -1545,28 +1018,6 @@ public:
 		MatchBranchNode() {
 			type = MATCH_BRANCH;
 		}
-
-#ifdef TOOLS_ENABLED
-		virtual Dictionary to_dictionary() const {
-			Dictionary dict = Node::to_dictionary();
-
-			Array dict_patterns;
-			dict["patterns"] = dict_patterns;
-			for (const PatternNode *pattern : patterns) {
-				if (pattern != nullptr) {
-					dict_patterns.append(pattern->to_dictionary());
-				}
-			}
-			if (block != nullptr) {
-				dict["block"] = block->to_dictionary();
-			}
-			dict["has_wildcard"] = has_wildcard;
-			if (guard_body != nullptr) {
-				dict["guard_body"] = guard_body->to_dictionary();
-			}
-			return dict;
-		}
-#endif // TOOLS_ENABLED
 	};
 
 	struct ParameterNode : public AssignableNode {
@@ -1604,19 +1055,6 @@ public:
 		struct Pair {
 			ExpressionNode *key = nullptr;
 			PatternNode *value_pattern = nullptr;
-
-#ifdef TOOLS_ENABLED
-			Dictionary to_dictionary() const {
-				Dictionary dict;
-				if (key != nullptr) {
-					dict["key"] = key->to_dictionary();
-				}
-				if (value_pattern != nullptr) {
-					dict["value_pattern"] = value_pattern->to_dictionary();
-				}
-				return dict;
-			}
-#endif // TOOLS_ENABLED
 		};
 		Vector<Pair> dictionary;
 
@@ -1628,62 +1066,6 @@ public:
 		PatternNode() {
 			type = PATTERN;
 		}
-
-#ifdef TOOLS_ENABLED
-		virtual Dictionary to_dictionary() const {
-			Dictionary dict = Node::to_dictionary();
-			dict["pattern_type"] = pattern_type;
-
-			switch (pattern_type) {
-				case PT_LITERAL:
-					if (literal != nullptr) {
-						dict["literal"] = literal->to_dictionary();
-					}
-					break;
-				case PT_EXPRESSION:
-					if (expression != nullptr) {
-						dict["expression"] = expression->to_dictionary();
-					}
-					break;
-				case PT_BIND:
-					if (bind != nullptr) {
-						dict["bind"] = bind->to_dictionary();
-					}
-					break;
-				case PT_ARRAY:
-				case PT_DICTIONARY:
-				case PT_REST:
-				case PT_WILDCARD:
-					break;
-			}
-
-			Array dict_array;
-			dict["array"] = dict_array;
-			for (const PatternNode *pattern : array) {
-				if (pattern != nullptr) {
-					dict_array.append(pattern->to_dictionary());
-				}
-			}
-
-			dict["rest_used"] = rest_used;
-
-			Array dict_dictionary;
-			dict["dictionary"] = dict_dictionary;
-			for (const Pair &pair : dictionary) {
-				dict_dictionary.append(pair.to_dictionary());
-			}
-
-			Dictionary dict_binds;
-			dict["binds"] = dict_binds;
-			for (const KeyValue<StringName, IdentifierNode *> &kv : binds) {
-				if (kv.value != nullptr) {
-					dict_binds[(String)kv.key] = kv.value->to_dictionary();
-				}
-			}
-
-			return dict;
-		}
-#endif // TOOLS_ENABLED
 	};
 	struct PreloadNode : public ExpressionNode {
 		ExpressionNode *path = nullptr;
@@ -1693,19 +1075,6 @@ public:
 		PreloadNode() {
 			type = PRELOAD;
 		}
-
-#ifdef TOOLS_ENABLED
-		virtual Dictionary to_dictionary() const {
-			Dictionary dict = ExpressionNode::to_dictionary();
-			if (path != nullptr) {
-				dict["path"] = path->to_dictionary();
-			}
-			dict["resolved_path"] = resolved_path;
-			//if(resource.is_valid())
-			//dict["resource"] = resource->to_dictionary();
-			return dict;
-		}
-#endif // TOOLS_ENABLED
 	};
 
 	struct ReturnNode : public Node {
@@ -1715,17 +1084,6 @@ public:
 		ReturnNode() {
 			type = RETURN;
 		}
-
-#ifdef TOOLS_ENABLED
-		virtual Dictionary to_dictionary() const {
-			Dictionary dict = Node::to_dictionary();
-			if (return_value != nullptr) {
-				dict["return_value"] = return_value->to_dictionary();
-			}
-			dict["void_return"] = void_return;
-			return dict;
-		}
-#endif // TOOLS_ENABLED
 	};
 
 	struct SelfNode : public ExpressionNode {
@@ -1734,15 +1092,6 @@ public:
 		SelfNode() {
 			type = SELF;
 		}
-
-#ifdef TOOLS_ENABLED
-		virtual Dictionary to_dictionary() const {
-			Dictionary dict = ExpressionNode::to_dictionary();
-			////if(current_class != nullptr)
-			////dict["current_class"] = current_class->to_dictionary();
-			return dict;
-		}
-#endif // TOOLS_ENABLED
 	};
 
 	struct SignalNode : public Node {
@@ -1759,31 +1108,6 @@ public:
 		SignalNode() {
 			type = SIGNAL;
 		}
-
-#ifdef TOOLS_ENABLED
-		virtual Dictionary to_dictionary() const {
-			Dictionary dict = Node::to_dictionary();
-			if (identifier != nullptr) {
-				dict["identifier"] = identifier->to_dictionary();
-			}
-			Array dict_parameters;
-			dict["parameters"] = dict_parameters;
-			for (const ParameterNode *parameter : parameters) {
-				if (parameter != nullptr) {
-					dict_parameters.append(parameter->to_dictionary());
-				}
-			}
-			Dictionary dict_parameters_indices;
-			dict["parameters_indices"] = dict_parameters_indices;
-			for (const KeyValue<StringName, int> &kv : parameters_indices) {
-				dict_parameters_indices[(String)kv.key] = kv.value;
-			}
-			dict["method_info"] = method_info.to_dictionary();
-			dict["doc_data"] = doc_data.to_dictionary();
-			dict["usages"] = usages;
-			return dict;
-		}
-#endif // TOOLS_ENABLED
 	};
 
 	struct SubscriptNode : public ExpressionNode {
@@ -1798,26 +1122,6 @@ public:
 		SubscriptNode() {
 			type = SUBSCRIPT;
 		}
-
-#ifdef TOOLS_ENABLED
-		virtual Dictionary to_dictionary() const {
-			Dictionary dict = ExpressionNode::to_dictionary();
-			if (base != nullptr) {
-				dict["base"] = base->to_dictionary();
-			}
-			if (is_attribute) {
-				if (attribute != nullptr) {
-					dict["attribute"] = attribute->to_dictionary();
-				}
-			} else {
-				if (index != nullptr) {
-					dict["index"] = index->to_dictionary();
-				}
-			}
-			dict["is_attribute"] = is_attribute;
-			return dict;
-		}
-#endif // TOOLS_ENABLED
 	};
 
 	struct SuiteNode : public Node {
@@ -2548,59 +1852,5 @@ public:
 	GDScriptParser();
 	~GDScriptParser();
 
-#ifdef DEBUG_ENABLED
-	class TreePrinter {
-		int indent_level = 0;
-		String indent;
-		StringBuilder printed;
-		bool pending_indent = false;
-
-		void increase_indent();
-		void decrease_indent();
-		void push_line(const String &p_line = String());
-		void push_text(const String &p_text);
-
-		void print_annotation(const AnnotationNode *p_annotation);
-		void print_array(ArrayNode *p_array);
-		void print_assert(AssertNode *p_assert);
-		void print_assignment(AssignmentNode *p_assignment);
-		void print_await(AwaitNode *p_await);
-		void print_binary_op(BinaryOpNode *p_binary_op);
-		void print_call(CallNode *p_call);
-		void print_cast(CastNode *p_cast);
-		void print_class(ClassNode *p_class);
-		void print_constant(ConstantNode *p_constant);
-		void print_dictionary(DictionaryNode *p_dictionary);
-		void print_expression(ExpressionNode *p_expression);
-		void print_enum(EnumNode *p_enum);
-		void print_for(ForNode *p_for);
-		void print_function(FunctionNode *p_function, const String &p_context = "Function");
-		void print_get_node(GetNodeNode *p_get_node);
-		void print_if(IfNode *p_if, bool p_is_elif = false);
-		void print_identifier(IdentifierNode *p_identifier);
-		void print_lambda(LambdaNode *p_lambda);
-		void print_literal(LiteralNode *p_literal);
-		void print_match(MatchNode *p_match);
-		void print_match_branch(MatchBranchNode *p_match_branch);
-		void print_match_pattern(PatternNode *p_match_pattern);
-		void print_parameter(ParameterNode *p_parameter);
-		void print_preload(PreloadNode *p_preload);
-		void print_return(ReturnNode *p_return);
-		void print_self(SelfNode *p_self);
-		void print_signal(SignalNode *p_signal);
-		void print_statement(Node *p_statement);
-		void print_subscript(SubscriptNode *p_subscript);
-		void print_suite(SuiteNode *p_suite);
-		void print_ternary_op(TernaryOpNode *p_ternary_op);
-		void print_type(TypeNode *p_type);
-		void print_type_test(TypeTestNode *p_type_test);
-		void print_unary_op(UnaryOpNode *p_unary_op);
-		void print_variable(VariableNode *p_variable);
-		void print_while(WhileNode *p_while);
-
-	public:
-		void print_tree(const GDScriptParser &p_parser);
-	};
-#endif // DEBUG_ENABLED
 	static void cleanup();
 };
