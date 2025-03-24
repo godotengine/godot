@@ -218,6 +218,11 @@
 			<description>
 			</description>
 		</method>
+		<method name="_get_transform_updates" qualifiers="virtual const">
+			<return type="int" />
+			<description>
+			</description>
+		</method>
 		<method name="_get_velocity_at_local_position" qualifiers="virtual const">
 			<return type="Vector3" />
 			<param index="0" name="local_position" type="Vector3" />

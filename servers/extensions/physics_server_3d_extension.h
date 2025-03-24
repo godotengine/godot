@@ -90,6 +90,7 @@ public:
 	EXBIND0RC(bool, is_sleeping)
 
 	EXBIND0RC(int, get_contact_count)
+	EXBIND0RC(int, get_transform_updates)
 
 	EXBIND1RC(Vector3, get_contact_local_position, int)
 	EXBIND1RC(Vector3, get_contact_local_normal, int)

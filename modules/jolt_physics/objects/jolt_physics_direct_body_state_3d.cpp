@@ -166,6 +166,10 @@ int JoltPhysicsDirectBodyState3D::get_contact_count() const {
 	return body->get_contact_count();
 }
 
+int JoltPhysicsDirectBodyState3D::get_transform_updates() const {
+	return body->get_transform_updates();
+}
+
 Vector3 JoltPhysicsDirectBodyState3D::get_contact_local_position(int p_contact_idx) const {
 	ERR_FAIL_INDEX_V(p_contact_idx, (int)body->get_contact_count(), Vector3());
 	return body->get_contact(p_contact_idx).position;

@@ -83,6 +83,7 @@ public:
 	virtual bool is_sleeping() const override { return false; }
 
 	virtual int get_contact_count() const override { return 0; }
+	virtual int get_transform_updates() const override { return 0; }
 
 	virtual Vector3 get_contact_local_position(int p_contact_idx) const override { return Vector3(); }
 	virtual Vector3 get_contact_local_normal(int p_contact_idx) const override { return Vector3(); }
