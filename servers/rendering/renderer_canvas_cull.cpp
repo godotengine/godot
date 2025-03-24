@@ -424,6 +424,12 @@ void RendererCanvasCull::_cull_canvas_item(Item *p_canvas_item, const Transform2
 		p_z = ci->z_index;
 	}
 
+	RendererCanvasRender::Item *canvas_group_from = nullptr;
+	bool use_canvas_group = ci->canvas_group != nullptr && (ci->canvas_group->fit_empty || ci->commands != nullptr);
+	if (use_canvas_group) {
+		int zidx = p_z - RS::CANVAS_ITEM_Z_MIN;
+		canvas_group_from = r_z_last_list[zidx];
+	}
 	if (ci->sort_y) {
 		if (!p_is_already_y_sorted) {
 			if (ci->ysort_children_count == -1) {
@@ -433,12 +439,15 @@ void RendererCanvasCull::_cull_canvas_item(Item *p_canvas_item, const Transform2
 			child_item_count = ci->ysort_children_count + 1;
 			child_items = (Item **)alloca(child_item_count * sizeof(Item *));
 
-			ci->ysort_xform = Transform2D();
-			ci->ysort_modulate = Color(1, 1, 1, 1) / ci->modulate;
+			int i = 0;
+			if (!use_canvas_group) {
+				ci->ysort_xform = Transform2D();
+				ci->ysort_modulate = Color(1, 1, 1, 1) / ci->modulate;
 			ci->ysort_index = 0;
-			ci->ysort_parent_abs_z_index = parent_z;
-			child_items[0] = ci;
-			int i = 1;
+				ci->ysort_parent_abs_z_index = parent_z;
+				child_items[0] = ci;
+				i = 1;
+			}
 			_collect_ysort_children(ci, p_material_owner, Color(1, 1, 1, 1), child_items, i, p_z);
 
 			SortArray<Item *, ItemYSort> sorter;
@@ -447,24 +456,14 @@ void RendererCanvasCull::_cull_canvas_item(Item *p_canvas_item, const Transform2
 			for (i = 0; i < child_item_count; i++) {
 				_cull_canvas_item(child_items[i], final_xform * child_items[i]->ysort_xform, p_clip_rect, modulate * child_items[i]->ysort_modulate, child_items[i]->ysort_parent_abs_z_index, r_z_list, r_z_last_list, (Item *)ci->final_clip_owner, (Item *)child_items[i]->material_owner, true, p_canvas_cull_mask, child_items[i]->repeat_size, child_items[i]->repeat_times, child_items[i]->repeat_source_item);
 			}
-		} else {
-			RendererCanvasRender::Item *canvas_group_from = nullptr;
-			bool use_canvas_group = ci->canvas_group != nullptr && (ci->canvas_group->fit_empty || ci->commands != nullptr);
-			if (use_canvas_group) {
-				int zidx = p_z - RS::CANVAS_ITEM_Z_MIN;
-				canvas_group_from = r_z_last_list[zidx];
-			}
 
+			if (use_canvas_group) {
+				_attach_canvas_item_for_draw(ci, p_canvas_clip, r_z_list, r_z_last_list, final_xform, p_clip_rect, global_rect, modulate, p_z, p_material_owner, use_canvas_group, canvas_group_from);
+			}
+		} else {
 			_attach_canvas_item_for_draw(ci, p_canvas_clip, r_z_list, r_z_last_list, final_xform, p_clip_rect, global_rect, modulate, p_z, p_material_owner, use_canvas_group, canvas_group_from);
 		}
 	} else {
-		RendererCanvasRender::Item *canvas_group_from = nullptr;
-		bool use_canvas_group = ci->canvas_group != nullptr && (ci->canvas_group->fit_empty || ci->commands != nullptr);
-		if (use_canvas_group) {
-			int zidx = p_z - RS::CANVAS_ITEM_Z_MIN;
-			canvas_group_from = r_z_last_list[zidx];
-		}
-
 		for (int i = 0; i < child_item_count; i++) {
 			if (!child_items[i]->behind && !use_canvas_group) {
 				continue;
