@@ -51,7 +51,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-03-17 05:36+0000\n"
+"PO-Revision-Date: 2025-03-24 00:22+0000\n"
 "Last-Translator: Đức Anh Nguyễn <ducnah2132k9@gmail.com>\n"
 "Language-Team: Vietnamese <https://hosted.weblate.org/projects/godot-engine/"
 "godot/vi/>\n"
@@ -612,6 +612,15 @@ msgstr "Xóa các Animation Key"
 
 msgid "Focus"
 msgstr "Đường dẫn Tập trung"
+
+msgid "Select All Keys"
+msgstr "Chọn Toàn Bộ"
+
+msgid "Deselect All Keys"
+msgstr "Bỏ chọn tất cả các phím"
+
+msgid "Animation Change Transition"
+msgstr "Đổi Animation Chuyển tiếp"
 
 msgid "Change Animation Length"
 msgstr "Thay Độ Dài Hoạt Ảnh"
@@ -2152,11 +2161,28 @@ msgstr ""
 msgid "Allows to browse the local file system via a dedicated dock."
 msgstr "Cho phép duyệt hệ thống tập tin cục bộ thông qua một dock chuyên dụng ."
 
+msgid ""
+"Allows to configure import settings for individual assets. Requires the "
+"FileSystem dock to function."
+msgstr ""
+"Cho phép cấu hình cài đặt nhập cho từng tài sản. Yêu cầu thanh FileSystem "
+"hoạt động ."
+
+msgid "Provides an overview of the editor's and each scene's undo history."
+msgstr ""
+"Cung cấp tổng quan về lịch sử hoàn tác của trình chỉnh sửa và của từng cảnh ."
+
+msgid "Provides tools for selecting and debugging nodes at runtime."
+msgstr "Cung cấp các công cụ để chọn và gỡ lỗi các nút khi chạy."
+
 msgid "(current)"
 msgstr "(hiện tại)"
 
 msgid "(none)"
 msgstr "(không có)"
+
+msgid "Remove currently selected profile, '%s'? Cannot be undone."
+msgstr "Xóa hồ sơ hiện đang được chọn, ' %s '? Không thể hoàn tác."
 
 msgid "Profile must be a valid filename and must not contain '.'"
 msgstr "Hồ sơ có tên hợp lệ và không chứa ký tự '.'"
@@ -2219,6 +2245,9 @@ msgstr "Cấu hình hồ sơ được chọn:"
 msgid "Extra Options:"
 msgstr "Tuỳ chọn bổ sung:"
 
+msgid "Create or import a profile to edit available classes and properties."
+msgstr "Tạo hoặc nhập hồ sơ để chỉnh sửa các lớp và thuộc tính có sẵn."
+
 msgid "New profile name:"
 msgstr "Tên mới hồ sơ:"
 
@@ -2230,6 +2259,9 @@ msgstr "Nhập vào hồ sơ"
 
 msgid "Manage Editor Feature Profiles"
 msgstr "Quản lý trình tính năng"
+
+msgid "Initializing plugins..."
+msgstr "Đang khởi tạo plugin..."
 
 msgid "Restart"
 msgstr "Khởi động lại"
@@ -2250,8 +2282,23 @@ msgstr ""
 msgid "(Re)Importing Assets"
 msgstr "Nhập lại tài nguyên"
 
+msgid "Preparing files to reimport..."
+msgstr "Đang chuẩn bị tệp để nhập lại..."
+
+msgid "Executing pre-reimport operations..."
+msgstr "Thực hiện các hoạt động trước khi nhập lại..."
+
 msgid "Import resources of type: %s"
 msgstr "Nhập vào tài nguyên của dạng: %s"
+
+msgid "Finalizing Asset Import..."
+msgstr "Hoàn tất nhập tài sản ..."
+
+msgid "Executing post-reimport operations..."
+msgstr "Thực hiện các hoạt động sau khi nhập lại..."
+
+msgid "This method supports a variable number of arguments."
+msgstr "Phương pháp này hỗ trợ số lượng đối số khác nhau."
 
 msgid "This value is an integer composed as a bitmask of the following flags."
 msgstr ""

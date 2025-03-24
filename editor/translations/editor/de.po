@@ -113,7 +113,7 @@
 # Dirk Graf <bb3234@web.de>, 2024.
 # tct123 <tct1234@protonmail.com>, 2024.
 # Michael S <michi.mega123@gmail.com>, 2024.
-# jl <jl-friesen@gmx.de>, 2024.
+# jl <jl-friesen@gmx.de>, 2024, 2025.
 # Leona 'leo' Gottfried <s6573328@stud.uni-frankfurt.de>, 2024.
 # Deleted User <noreply+102345@weblate.org>, 2025.
 # Silikonmanns Kanal <silvan.goeth@gmail.com>, 2025.
@@ -124,8 +124,8 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-03-16 12:59+0000\n"
-"Last-Translator: Ettore Atalan <atalanttore@googlemail.com>\n"
+"PO-Revision-Date: 2025-03-24 08:46+0000\n"
+"Last-Translator: I_had_a_bad_idea <emmert_raphael@web.de>\n"
 "Language-Team: German <https://hosted.weblate.org/projects/godot-engine/godot/"
 "de/>\n"
 "Language: de\n"
@@ -2021,6 +2021,9 @@ msgstr "Alle ausklappen"
 msgid "Collapse All"
 msgstr "Alle einklappen"
 
+msgid "Evaluator"
+msgstr "Auswerter"
+
 msgid "Profiler"
 msgstr "Profiler"
 
@@ -2999,13 +3002,16 @@ msgid "Loading global class names..."
 msgstr "Globale Klassennamen laden …"
 
 msgid "Verifying GDExtensions..."
-msgstr "GDExtensions verifizieren …"
+msgstr "Verifiziere GDExtensions…"
 
 msgid "Creating autoload scripts..."
 msgstr "Autoload-Skripte erzeugen …"
 
 msgid "Initializing plugins..."
-msgstr "Plugins initialisieren …"
+msgstr "Plugins initialisieren…"
+
+msgid "Starting file scan..."
+msgstr "Dateiscan starten …"
 
 msgid "Scanning actions..."
 msgstr "Aktionen scannen …"
@@ -3031,7 +3037,7 @@ msgid "Updating scripts documentation"
 msgstr "Skriptedokumentation aktualisieren"
 
 msgid "Updating Scene Groups"
-msgstr "Szenengruppen aktualisieren"
+msgstr "Aktualisiere Szenen-Gruppen"
 
 msgid ""
 "There are multiple importers for different types pointing to file %s, import "
@@ -3687,6 +3693,15 @@ msgstr "Anzeige von Editornachrichten ein-/ausschalten."
 msgid "Native Shader Source Inspector"
 msgstr "Nativer Shaderquelleninspektor"
 
+msgid ""
+"The Android build template is already installed in this project and it won't "
+"be overwritten.\n"
+"Remove the \"%s\" directory manually before attempting this operation again."
+msgstr ""
+"Die Android-Build-Vorlage ist bereits in diesem Projekt installiert und wird "
+"nicht überschrieben.  \n"
+"Lösche das Verzeichnis „%s“ manuell, bevor du diesen Vorgang erneut ausführst."
+
 msgid "Unnamed Project"
 msgstr "Unbenanntes Projekt"
 
@@ -4095,7 +4110,7 @@ msgid "Loading docks..."
 msgstr "Docks laden …"
 
 msgid "Reopening scenes..."
-msgstr "Szenen neu öffnen …"
+msgstr "Öffne Szenen neu…"
 
 msgid "Loading central editor layout..."
 msgstr "Zentrales Editor-Layout laden …"
@@ -4527,7 +4542,7 @@ msgid "The following files are newer on disk:"
 msgstr "Die folgenden Dateien sind neuer auf der Festplatte:"
 
 msgid "What action should be taken?"
-msgstr "Was soll getan werden?"
+msgstr "Welche Aktion soll ausgeführt werden?"
 
 msgid "Reload from disk"
 msgstr "Von Festplatte neu laden"
@@ -5488,8 +5503,14 @@ msgstr ""
 msgid "Patches"
 msgstr "Patches"
 
+msgid "Base Packs:"
+msgstr "Basispacks:"
+
 msgid "Godot Project Pack"
 msgstr "Godot-Projekt-Pack"
+
+msgid "Add Pack"
+msgstr "Pack hinzufügen"
 
 msgid "Features"
 msgstr "Features"
@@ -6809,6 +6830,9 @@ msgstr "Materialien"
 msgid "Selected Animation Play/Pause"
 msgstr "Ausgewählte Animation abspielen/pausieren"
 
+msgid "Selected Animation Stop"
+msgstr "Animationsstop ausgewählt"
+
 msgid "Toggle Animation Skeleton Visibility"
 msgstr "Unteres Animation-Panel ein-/ausblenden"
 
@@ -7257,8 +7281,23 @@ msgstr "Objekteigenschaften verwalten."
 msgid "This cannot be undone. Are you sure?"
 msgstr "Dies kann nicht rückgängig gemacht werden. Wirklich fortfahren?"
 
+msgid "Add %d Translation"
+msgid_plural "Add %d Translations"
+msgstr[0] "%d Übersetzung hinzufügen"
+msgstr[1] "%d Übersetzungen hinzufügen"
+
 msgid "Remove Translation"
 msgstr "Übersetzung entfernen"
+
+msgid "Translation Resource Remap: Add %d Path"
+msgid_plural "Translation Resource Remap: Add %d Paths"
+msgstr[0] "Übersetzungs-Ressourcen-Neuzuweisung: %d Pfad hinzufügen"
+msgstr[1] "Übersetzungs-Ressourcen-Neuzuweisung: %d Pfade hinzufügen"
+
+msgid "Translation Resource Remap: Add %d Remap"
+msgid_plural "Translation Resource Remap: Add %d Remaps"
+msgstr[0] "Übersetzungs-Ressourcen-Neuzuweisung: %d Neuzuweisung hinzufügen"
+msgstr[1] "Übersetzungs-Ressourcen-Neuzuweisung: %d Neuzuweisungen hinzufügen"
 
 msgid "Change Resource Remap Language"
 msgstr "Ändere Zielsprache der Ressourcen-Neuzuweisung"
@@ -7268,6 +7307,11 @@ msgstr "Ressourcen-Neuzuweisung entfernen"
 
 msgid "Remove Resource Remap Option"
 msgstr "Option zur Ressourcen-Neuzuweisung entfernen"
+
+msgid "Add %d file for POT generation"
+msgid_plural "Add %d files for POT generation"
+msgstr[0] "%d Datei für POT-Erzeugung hinzufügen"
+msgstr[1] "%d Dateien für POT-Erzeugung hinzufügen"
 
 msgid "Remove file from POT generation"
 msgstr "Datei von POT-Erzeugung entfernen"
@@ -7543,6 +7587,12 @@ msgstr "Ausgewählte Child-Nodes füllen"
 msgid "Invert"
 msgstr "Umkehren"
 
+msgid "Start of Animation"
+msgstr "Start der Animation"
+
+msgid "End of Animation"
+msgstr "Ende der Animation"
+
 msgid "Library Name:"
 msgstr "Bibliotheksname:"
 
@@ -7775,6 +7825,12 @@ msgstr "Duplizierter Animationsname:"
 msgid "Onion skinning requires a RESET animation."
 msgstr "Onion-Skinning benötigt eine RESET-Animation."
 
+msgid "Play Animation Backwards"
+msgstr "Animation rückwärts abspielen"
+
+msgid "Play Animation"
+msgstr "Animation abspielen"
+
 msgid "Animation position (in seconds)."
 msgstr "Position der Animation (in Sekunden)."
 
@@ -7849,6 +7905,12 @@ msgstr "Blending-Zeiten:"
 
 msgid "Next (Auto Queue):"
 msgstr "Nächste (Automatische Warteschlange):"
+
+msgid "Go to Next Keyframe"
+msgstr "Zum nächsten Keyframe gehen"
+
+msgid "Go to Previous Keyframe"
+msgstr "Zum vorherigen Keyframe gehen"
 
 msgid "Toggle Animation Bottom Panel"
 msgstr "Unteres Animation-Panel ein-/ausschalten"
@@ -9056,8 +9118,14 @@ msgstr "Ostasiatische Breiten"
 msgid "Numeral Alignment"
 msgstr "Zahlen-Ausrichtung"
 
+msgid "Variation"
+msgstr "Variation"
+
 msgid "Unable to preview font"
 msgstr "Vorschau für Schriftart nicht verfügbar"
+
+msgid "Game starting..."
+msgstr "Spiel starten …"
 
 msgid "Game running not embedded."
 msgstr "Spielausführung nicht eingebettet."
@@ -9131,6 +9199,12 @@ msgstr "Spieleinbettung ist nicht im Einzelfenster-Modus verfügbar."
 msgid "Suspend"
 msgstr "Unterbrechen"
 
+msgid "Next Frame"
+msgstr "Nächster Frame"
+
+msgid "Input"
+msgstr "Eingabe"
+
 msgid "Allow game input."
 msgstr "Spieleingabe erlauben."
 
@@ -9146,6 +9220,24 @@ msgid ""
 msgstr ""
 "Spieleingabe deaktivieren und Node3Ds auswählen und die 3D-Kamera "
 "manipulieren."
+
+msgid "Toggle Selection Visibility"
+msgstr "Auswahl-Sichtbarkeit umschalten"
+
+msgid "Alt+RMB: Show list of all nodes at position clicked."
+msgstr "Alt+RMT: Liste aller Nodes an Klickposition anzeigen."
+
+msgid "Override the in-game camera."
+msgstr "Die In-Game-Kamera überschreiben."
+
+msgid "Camera Override Options"
+msgstr "Camera-Überschreibungs-Möglichkeiten"
+
+msgid "Reset 2D Camera"
+msgstr "2D Kamera zurücksetzen"
+
+msgid "Reset 3D Camera"
+msgstr "3D Kamera zurücksetzen"
 
 msgid "Manipulate In-Game"
 msgstr "Im Spiel manipulieren"
@@ -9165,11 +9257,17 @@ msgstr ""
 msgid "Keep the aspect ratio of the embedded game."
 msgstr "Seitenverhältnis des eingebetteten Spiels beibehalten."
 
+msgid "Embedding Options"
+msgstr "Einbettungsoptionen"
+
 msgid "Embed Game on Next Play"
 msgstr "Spiel beim nächsten Start einbetten"
 
 msgid "Make Game Workspace Floating on Next Play"
 msgstr "Spielarbeitsbereich beim nächsten Start als schwebend festlegen"
+
+msgid "Game Workspace"
+msgstr "Spielarbeitsbereich"
 
 msgid ""
 "No \"%s\" library found for GDExtension: \"%s\". Possible feature flags for "
@@ -9341,6 +9439,18 @@ msgstr ""
 "bearbeite die PrimitiveMesh-Ressource im Inspektor und aktiviere „UV2 "
 "hinzufügen“."
 
+msgid ""
+"To enable lightmapping support on a CSG mesh, select the root CSG node and "
+"choose CSG > Bake Mesh Instance at the top of the 3D editor viewport.\n"
+"Select the generated MeshInstance3D node and choose Mesh > Unwrap UV2 for "
+"Lightmap/AO at the top of the 3D editor viewport."
+msgstr ""
+"Um Lightmapping-Unterstützung für eine CSG-Instanz zu aktivieren, wähle den "
+"Root-CSG-Node aus und klicke oben im 3D-Editor-Viewport auf CSG > Mesh-"
+"Instance backen.\n"
+"Wähle anschließend die erzeugte MeshInstance3D-Node aus und klicke oben im 3D-"
+"Editor-Viewport auf Mesh > UV2 für Lightmap/AO entpacken."
+
 msgid "No editor scene root found."
 msgstr "Keinen Root-Node in Editorszene gefunden."
 
@@ -9365,6 +9475,12 @@ msgstr ""
 
 msgid "Bake Lightmaps"
 msgstr "Lightmaps backen"
+
+msgid "Lightmap baking is not supported on this GPU (%s)."
+msgstr "Das Backen von Lightmaps wird auf dieser GPU (%s) nicht unterstützt."
+
+msgid "Lightmaps cannot be baked on %s."
+msgstr "Lightmaps können auf %s nicht gebacken werden."
 
 msgid ""
 "Lightmaps cannot be baked, as the `lightmapper_rd` module was disabled at "
@@ -9573,6 +9689,9 @@ msgstr ""
 msgid "UV Channel Debug"
 msgstr "UV-Channel-Debug"
 
+msgid "Create NavigationMesh"
+msgstr "Navigation-Mesh erzeugen"
+
 msgid ""
 "Before converting a rendering mesh to a navigation mesh, please verify:\n"
 "\n"
@@ -9714,11 +9833,17 @@ msgstr "Hindernis bearbeiten (Wicklung invetieren)"
 msgid "Add Vertex"
 msgstr "Vertex hinzufügen"
 
+msgid "Flip Winding"
+msgstr "Zuordnung spiegeln"
+
 msgid "Edit Obstacle (Add Vertex)"
 msgstr "Hindernis bearbeiten (Vertex hinzufügen)"
 
 msgid "Edit Obstacle (Move Vertex)"
 msgstr "Hindernis bearbeiten (Vertex bewegen)"
+
+msgid "Edit Obstacle (Remove Vertex)"
+msgstr "Hindernis bearbeiten (Vertex entfernen)"
 
 msgid "Please Confirm..."
 msgstr "Bitte bestätigen …"
@@ -9796,6 +9921,9 @@ msgstr "Hinten orthogonal"
 
 msgid "Rear Perspective"
 msgstr "Hinten perspektivisch"
+
+msgid "[auto]"
+msgstr "[auto]"
 
 msgid "X-Axis Transform."
 msgstr "X-Achsen-Transformation."
@@ -10287,7 +10415,7 @@ msgid "Snap Settings"
 msgstr "Einrast-Einstellungen"
 
 msgid "Translate Snap:"
-msgstr "Verschieung einrasten:"
+msgstr "Verschiebung einrasten:"
 
 msgid "Rotate Snap (deg.):"
 msgstr "Rotieren einrasten (Grad):"
@@ -10549,6 +10677,9 @@ msgstr "Emissionsquelle:"
 msgid "A processor material of type 'ParticleProcessMaterial' is required."
 msgstr "Ein Prozessmaterial des Typs ‚ParticleProcessMaterial‘ wird benötigt."
 
+msgid "Create Emission Points"
+msgstr "Erzeuge Emissionspunkte"
+
 msgid "GPUParticles3D"
 msgstr "GPU-Partikel-3D"
 
@@ -10629,6 +10760,9 @@ msgstr "Griffwinkel spiegeln"
 
 msgid "Mirror Handle Lengths"
 msgstr "Grifflängen spiegeln"
+
+msgid "Create Curve"
+msgstr "Kurve erstellen"
 
 msgid "Curve Point #"
 msgstr "Kurvenpunkt #"
@@ -10845,6 +10979,9 @@ msgstr "Knochen"
 msgid "Move Points"
 msgstr "Punkte verschieben"
 
+msgid "%s: Rotate"
+msgstr "%s: Drehen"
+
 msgid "Shift: Move All"
 msgstr "Umschalt: Alles verschieben"
 
@@ -10958,6 +11095,9 @@ msgstr ""
 
 msgid "(truncated)"
 msgstr "(abgeschnitten)"
+
+msgid "Current value: "
+msgstr "Aktueller Wert: "
 
 msgid "Can't open '%s'. The file could have been moved or deleted."
 msgstr ""
@@ -13191,6 +13331,9 @@ msgstr "Szenensammlungseigenschaften:"
 msgid "Tile properties:"
 msgstr "Tile-Eigenschaften:"
 
+msgid "Eraser Tool"
+msgstr "Radiergummi Tool"
+
 msgid "TileMap"
 msgstr "TileMap"
 
@@ -15250,6 +15393,9 @@ msgstr "Fehler: Projekt ist nicht im Dateisystem vorhanden."
 msgid "Last edited timestamp"
 msgstr "Zeitstempel der letzten Bearbeitung"
 
+msgid "Scanning for projects..."
+msgstr "Scannen nach Projekten..."
+
 msgid "Missing Project"
 msgstr "Fehlendes Projekt"
 
@@ -15763,6 +15909,15 @@ msgstr "Node unter neuen Node hängen"
 msgid "This operation requires a single selected node."
 msgstr "Diese Aktion benötigt einen einzelnen ausgewählten Node."
 
+msgid "Reset Position"
+msgstr "Position zurücksetzen"
+
+msgid "Reset Scale"
+msgstr "Skalierung zurücksetzen"
+
+msgid "Reset Rotation"
+msgstr "Rotation zurücksetzen"
+
 msgid ""
 "Couldn't save new scene. Likely dependencies (instances) couldn't be "
 "satisfied."
@@ -15778,6 +15933,9 @@ msgstr "Fehler beim Duplizieren der Szene zum Speichern."
 
 msgid "Instantiate Script"
 msgstr "Skript instanziieren"
+
+msgid "<unknown>"
+msgstr "<unbekannt>"
 
 msgid "Sub-Resources"
 msgstr "Unter-Ressourcen"
@@ -16176,6 +16334,23 @@ msgstr ""
 msgid "Restart & Upgrade"
 msgstr "Neustart & Aktualisieren"
 
+msgid ""
+"As of Godot 4.4, scenes and resources use UIDs to reference scripts and "
+"shaders. Upgrades apply on the next save of each scene/resource.\n"
+"\n"
+"To save time, this tool can open and save each of these files. Depending on "
+"the project size, it may take several minutes."
+msgstr ""
+"Ab Godot 4.4 verwenden Szenen und Ressourcen UIDs, um auf Skripte und Shader "
+"zu verweisen. Upgrades werden beim nächsten Speichern jeder Szene oder "
+"Ressource angewendet.\n"
+"\n"
+"Um Zeit zu sparen, kann dieses Werkzeug jede dieser Dateien öffnen und "
+"speichern. Je nach Projektgröße kann dies mehrere Minuten dauern."
+
+msgid "Re-save all scenes and resources to use UIDs"
+msgstr "Alle Szenen und Ressourcen neu speichern, um UIDs zu verwenden"
+
 msgid "Learn More"
 msgstr "Mehr erfahren"
 
@@ -16208,6 +16383,14 @@ msgstr ""
 msgid "CSG operation returned an empty array."
 msgstr "Der CSG-Vorgang hat ein leeres Array zurückgegeben."
 
+msgid ""
+"Can not add a baked mesh as sibling for the scene root.\n"
+"Move the CSG root node below a parent node."
+msgstr ""
+"Ein gebackenes Mesh kann nicht als Nachbar des Szenen-Roots hinzugefügt "
+"werden.\n"
+"Verschiebe den Root-CSG-Node unter einen übergeordneten Node."
+
 msgid "CSG operation returned an empty mesh."
 msgstr "CSG-Vorgang hat ein leeres Mesh zurückgegeben."
 
@@ -16231,6 +16414,29 @@ msgstr "Größe des Arrays kann nicht geändert werden."
 
 msgid "Step argument is zero!"
 msgstr "Schrittargument ist Null!"
+
+msgid "Not a script with an instance."
+msgstr "Kein Skript mit einer Instanz."
+
+msgid "Not based on a script."
+msgstr "Basiert nicht auf einem Skript."
+
+msgid "Not based on a resource file."
+msgstr "Basiert nicht auf einer Ressourcendatei."
+
+msgid "Invalid instance dictionary format (missing @path)."
+msgstr "Ungültiges Format des Instanz-Dictionarys (fehlender @Pfad)."
+
+msgid "Invalid instance dictionary format (can't load script at @path)."
+msgstr ""
+"Ungültiges Format des Instanz-Dictionarys (Skript kann nicht über @Pfad "
+"geladen werden)."
+
+msgid "Invalid instance dictionary format (invalid script at @path)."
+msgstr "Ungültiges Format des Instanz-Dictionarys (ungültiges Skript in @Pfad)."
+
+msgid "Invalid instance dictionary (invalid subclasses)."
+msgstr "Ungültiges Instanzwörterbuch (ungültige Unterklassen)."
 
 msgid "Cannot instantiate GDScript class."
 msgstr "GDScript-Klasse kann nicht instanziiert werden."
@@ -16356,6 +16562,9 @@ msgstr "Y-Achse bearbeiten"
 msgid "Edit Z Axis"
 msgstr "Z-Achse bearbeiten"
 
+msgid "Keep Selection"
+msgstr "Auswahl behalten"
+
 msgid "GridMap Settings"
 msgstr "GridMap-Einstellungen"
 
@@ -16373,6 +16582,15 @@ msgstr "Y-Rotation am Mauszeiger"
 
 msgid "Cursor Rotate Z"
 msgstr "Z-Rotation am Mauszeiger"
+
+msgid ""
+"Change Grid Floor:\n"
+"Previous Plane (%s)\n"
+"Next Plane (%s)"
+msgstr ""
+"Gitterboden ändern:\n"
+"Vorherige Ebene (%s)\n"
+"Nächste Ebene (%s)"
 
 msgid "Filter Meshes"
 msgstr "Meshes filtern"
@@ -18735,6 +18953,9 @@ msgstr ""
 
 msgid "Copy this constructor in a script."
 msgstr "Diesen Konstruktor in ein Skript kopieren."
+
+msgid "Quick Load"
+msgstr "Schnelles Laden"
 
 msgid "Switch between hexadecimal and code values."
 msgstr "Wechselt zwischen Hexadezimal- und Zahlenwerten."

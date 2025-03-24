@@ -139,13 +139,14 @@
 # alpikespot <hasibe1973nurullah@gmail.com>, 2024.
 # Patrice Ferlet <metal3d@gmail.com>, 2025.
 # trobador <gbrosset@proton.me>, 2025.
+# Marc-Daniel DALEBA <marcodxv10@gmail.com>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-01-31 16:34+0000\n"
-"Last-Translator: trobador <gbrosset@proton.me>\n"
+"PO-Revision-Date: 2025-03-23 22:19+0000\n"
+"Last-Translator: Marc-Daniel DALEBA <marcodxv10@gmail.com>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/godot-engine/godot-"
 "properties/fr/>\n"
 "Language: fr\n"
@@ -153,7 +154,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 5.10-dev\n"
+"X-Generator: Weblate 5.11-dev\n"
 
 msgid "Application"
 msgstr "Application"
@@ -571,6 +572,9 @@ msgstr "Compatibilité"
 
 msgid "Legacy Just Pressed Behavior"
 msgstr "Comportement historique pour Just Pressed"
+
+msgid "Enable Accelerometer"
+msgstr "Activer l'Accéléromètre"
 
 msgid "Device"
 msgstr "Périphérique"
@@ -1831,6 +1835,9 @@ msgstr "Lignes maximales"
 
 msgid "Platforms"
 msgstr "Plateformes"
+
+msgid "Linux/*BSD"
+msgstr "Linux/*BSD"
 
 msgid "Prefer Wayland"
 msgstr "Préférer Wayland"
@@ -3501,11 +3508,14 @@ msgstr "Image source"
 msgid "Sampler"
 msgstr "Échantillonneur"
 
+msgid "Mag Filter"
+msgstr "Filtre d'agrandissement"
+
 msgid "Min Filter"
-msgstr "Filtre minimum"
+msgstr "Filtre de minification"
 
 msgid "Mesh Library"
-msgstr "Librairie de maillages"
+msgstr "Bibliothèque de modèles 3D"
 
 msgid "Physics Material"
 msgstr "Matériau physique"
