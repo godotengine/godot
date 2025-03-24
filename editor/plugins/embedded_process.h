@@ -39,6 +39,7 @@ class EmbeddedProcess : public Control {
 	uint64_t last_application_focus_time = 0;
 	OS::ProcessID focused_process_id = 0;
 	OS::ProcessID current_process_id = 0;
+	String current_embedded_window = "";
 	bool embedding_grab_focus = false;
 	bool embedding_completed = false;
 	uint64_t start_embedding_time = 0;
@@ -74,7 +75,7 @@ protected:
 	void _notification(int p_what);
 
 public:
-	void embed_process(OS::ProcessID p_pid);
+	void embed_process(OS::ProcessID p_pid, String p_embedded_window);
 	void reset();
 	void request_close();
 
