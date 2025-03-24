@@ -134,6 +134,7 @@ void ScriptEditorDebugger::debug_break() {
 	ERR_FAIL_COND(is_breaked());
 
 	_put_msg("break", Array());
+	_mute_audio_on_break(true);
 }
 
 void ScriptEditorDebugger::debug_continue() {
@@ -147,6 +148,7 @@ void ScriptEditorDebugger::debug_continue() {
 	_clear_execution();
 	_put_msg("continue", Array(), debugging_thread_id);
 	_put_msg("servers:foreground", Array());
+	_mute_audio_on_break(false);
 }
 
 void ScriptEditorDebugger::update_tabs() {
@@ -338,6 +340,7 @@ void ScriptEditorDebugger::_thread_debug_enter(uint64_t p_thread_id) {
 	ThreadDebugged &td = threads_debugged[p_thread_id];
 	_set_reason_text(td.error, MESSAGE_ERROR);
 	emit_signal(SNAME("breaked"), true, td.can_debug, td.error, td.has_stackdump);
+	_mute_audio_on_break(true);
 	if (!td.error.is_empty() && EDITOR_GET("debugger/auto_switch_to_stack_trace")) {
 		tabs->set_current_tab(0);
 	}
@@ -410,6 +413,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, uint64_t p_thread
 
 				_set_reason_text(TTR("Execution resumed."), MESSAGE_SUCCESS);
 				emit_signal(SNAME("breaked"), false, false, "", false);
+				_mute_audio_on_break(false);
 
 				_update_buttons_state();
 			} else {
@@ -445,6 +449,9 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, uint64_t p_thread
 			EditorDebuggerRemoteObjects *objs = inspector->set_objects(p_data);
 			emit_signal(SNAME("remote_objects_updated"), objs);
 		}
+	} else if (p_msg == "scene:debug_mute_audio") {
+		ERR_FAIL_COND(p_data.is_empty());
+		// This is handled by SceneDebugger, we need to ignore here to not show a warning.
 	} else if (p_msg == "servers:memory_usage") {
 		vmem_tree->clear();
 		TreeItem *root = vmem_tree->create_item();
@@ -1547,11 +1554,26 @@ bool ScriptEditorDebugger::get_debug_mute_audio() const {
 	return debug_mute_audio;
 }
 
-void ScriptEditorDebugger::set_debug_mute_audio(bool p_mute) {
+void ScriptEditorDebugger::_send_debug_mute_audio_msg(bool p_mute) {
 	Array msg;
 	msg.push_back(p_mute);
 	_put_msg("scene:debug_mute_audio", msg);
+}
+
+void ScriptEditorDebugger::set_debug_mute_audio(bool p_mute) {
+	// Send the message if we want to mute the audio or if it isn't muted already due to a break.
+	if (p_mute || !audio_muted_on_break) {
+		_send_debug_mute_audio_msg(p_mute);
+	}
 	debug_mute_audio = p_mute;
+}
+
+void ScriptEditorDebugger::_mute_audio_on_break(bool p_mute) {
+	// Send the message if we want to mute the audion on a break or if it isn't muted already.
+	if (p_mute || !debug_mute_audio) {
+		_send_debug_mute_audio_msg(p_mute);
+	}
+	audio_muted_on_break = p_mute;
 }
 
 CameraOverride ScriptEditorDebugger::get_camera_override() const {
