@@ -119,6 +119,10 @@ static_assert(__cplusplus >= 201703L, "Minimum of C++17 required.");
 #undef MAX
 #undef CLAMP
 
+// Discourage system headers included after us from defining there own versions.
+#define MIN MIN
+#define MAX MAX
+
 template <typename T>
 constexpr const T SIGN(const T m_v) {
 	return m_v > 0 ? +1.0f : (m_v < 0 ? -1.0f : 0.0f);
@@ -129,9 +133,19 @@ constexpr auto MIN(const T m_a, const T2 m_b) {
 	return m_a < m_b ? m_a : m_b;
 }
 
+template <typename T, typename T2, typename... Rest>
+constexpr auto MIN(const T m_a, const T2 m_b, const Rest... m_others) {
+	return MIN(MIN(m_a, m_b), m_others...);
+}
+
 template <typename T, typename T2>
 constexpr auto MAX(const T m_a, const T2 m_b) {
 	return m_a > m_b ? m_a : m_b;
+}
+
+template <typename T, typename T2, typename... Rest>
+constexpr auto MAX(const T m_a, const T2 m_b, const Rest... m_others) {
+	return MAX(MAX(m_a, m_b), m_others...);
 }
 
 template <typename T, typename T2, typename T3>
