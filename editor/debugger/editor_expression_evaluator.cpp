@@ -74,7 +74,9 @@ void EditorExpressionEvaluator::_clear() {
 }
 
 void EditorExpressionEvaluator::_remote_object_selected(ObjectID p_id) {
-	editor_debugger->emit_signal(SNAME("remote_object_requested"), p_id);
+	Array arr;
+	arr.append(p_id);
+	editor_debugger->emit_signal(SNAME("remote_objects_requested"), arr);
 }
 
 void EditorExpressionEvaluator::_on_expression_input_changed(const String &p_expression) {
