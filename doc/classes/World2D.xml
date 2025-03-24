@@ -5,8 +5,6 @@
 	</brief_description>
 	<description>
 		Class that has everything pertaining to a 2D world: A physics space, a canvas, and a sound space. 2D nodes register their resources into the current 2D world.
-
-		[b]Note:[/b] This class is not meant to be instantiated directly. Use [method CanvasItem.get_world_2d] to get the world's state.
 	</description>
 	<tutorials>
 		<link title="Ray-casting">$DOCS_URL/tutorials/physics/ray-casting.html</link>
