@@ -56,6 +56,8 @@ class ScriptCreateDialog : public ConfirmationDialog {
 	Button *parent_browse_button = nullptr;
 	Button *parent_search_button = nullptr;
 	OptionButton *language_menu = nullptr;
+	OptionButton *script_menu = nullptr;
+	Label *script_menu_label = nullptr;
 	OptionButton *template_menu = nullptr;
 	LineEdit *file_path = nullptr;
 	LineEdit *built_in_name = nullptr;
@@ -89,12 +91,18 @@ class ScriptCreateDialog : public ConfirmationDialog {
 	Vector<ScriptLanguage::ScriptTemplate> template_list;
 	ScriptLanguage *language = nullptr;
 
+	Vector<ScriptLanguage *> language_list;
+	bool only_attachable = true;
+	int selected_script = 0;
+
 	String base_type;
 
 	void _path_hbox_sorted();
 	bool _can_be_built_in();
 	void _path_changed(const String &p_path = String());
 	void _language_changed(int l = 0);
+	void set_script_menu();
+	void _on_script_menu_item_selected(int p_index);
 	void _built_in_pressed();
 	void _use_template_pressed();
 	bool _validate_parent(const String &p_string);
@@ -123,5 +131,6 @@ protected:
 public:
 	void config(const String &p_base_name, const String &p_base_path, bool p_built_in_enabled = true, bool p_load_enabled = true);
 	void set_inheritance_base_type(const String &p_base);
+	void set_languages_list(bool p_only_attachable);
 	ScriptCreateDialog();
 };
