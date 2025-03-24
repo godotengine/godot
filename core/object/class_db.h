@@ -563,4 +563,6 @@ _FORCE_INLINE_ Vector<Error> errarray(P... p_args) {
 
 #define GDREGISTER_NATIVE_STRUCT(m_class, m_code) ClassDB::register_native_struct(#m_class, m_code, sizeof(m_class))
 
+#define GD_IS_CLASS_ENABLED(m_class) m_class::_class_is_enabled
+
 #include "core/disabled_classes.gen.h"
