@@ -1893,6 +1893,49 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 #endif
 	}
 
+#ifdef TOOLS_ENABLED
+	if (!project_manager && !editor) {
+		// If we didn't find a project, we fall back to the project manager.
+		project_manager = !found_project && !cmdline_tool;
+	}
+
+	{
+		// Synced with https://github.com/baldurk/renderdoc/blob/2b01465c7/renderdoc/driver/vulkan/vk_layer.cpp#L118-L165
+		LocalVector<String> layers_to_disable = {
+			"DISABLE_RTSS_LAYER", // GH-57937.
+			"DISABLE_VULKAN_OBS_CAPTURE", // GH-103800.
+			"DISABLE_VULKAN_OW_OBS_CAPTURE", // GH-104154.
+			"DISABLE_SAMPLE_LAYER", // GH-104154.
+			"DISABLE_GAMEPP_LAYER", // GH-104154.
+			"DISABLE_VK_LAYER_TENCENT_wegame_cross_overlay_1", // GH-104154.
+			// "NODEVICE_SELECT", // Kept as it's useful - GH-104592.
+			"VK_LAYER_bandicam_helper_DEBUG_1", // GH-101480.
+			"DISABLE_VK_LAYER_bandicam_helper_1", // GH-101480.
+			"DISABLE_VK_LAYER_reshade_1", // GH-70849.
+			"DISABLE_VK_LAYER_GPUOpen_GRS", // GH-104154.
+			"DISABLE_LAYER", // GH-104154 (fpsmon).
+			"DISABLE_MANGOHUD", // GH-57403.
+			"DISABLE_VKBASALT",
+		};
+
+#if defined(WINDOWS_ENABLED) || defined(LINUXBSD_ENABLED)
+		if (editor || project_manager || test_rd_support || test_rd_creation) {
+#else
+		if (editor || project_manager) {
+#endif
+			// Disable Vulkan overlays in editor, they cause various issues.
+			for (const String &layer_disable : layers_to_disable) {
+				OS::get_singleton()->set_environment(layer_disable, "1");
+			}
+		} else {
+			// Re-allow using Vulkan overlays, disabled while using the editor.
+			for (const String &layer_disable : layers_to_disable) {
+				OS::get_singleton()->unset_environment(layer_disable);
+			}
+		}
+	}
+#endif
+
 #if defined(TOOLS_ENABLED) && (defined(WINDOWS_ENABLED) || defined(LINUXBSD_ENABLED))
 	if (test_rd_support) {
 		// Test Rendering Device creation and exit.
@@ -1930,11 +1973,6 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			init_maximized = true;
 			window_mode = DisplayServer::WINDOW_MODE_MAXIMIZED;
 		}
-	}
-
-	if (!project_manager && !editor) {
-		// If we didn't find a project, we fall back to the project manager.
-		project_manager = !found_project && !cmdline_tool;
 	}
 
 	if (project_manager) {
@@ -2526,38 +2564,9 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	OS::get_singleton()->_allow_layered = GLOBAL_DEF_RST("display/window/per_pixel_transparency/allowed", false);
 
 #ifdef TOOLS_ENABLED
-	{
-		// Synced with https://github.com/baldurk/renderdoc/blob/2b01465c7/renderdoc/driver/vulkan/vk_layer.cpp#L118-L165
-		LocalVector<String> layers_to_disable = {
-			"DISABLE_RTSS_LAYER", // GH-57937.
-			"DISABLE_VULKAN_OBS_CAPTURE", // GH-103800.
-			"DISABLE_VULKAN_OW_OBS_CAPTURE", // GH-104154.
-			"DISABLE_SAMPLE_LAYER", // GH-104154.
-			"DISABLE_GAMEPP_LAYER", // GH-104154.
-			"DISABLE_VK_LAYER_TENCENT_wegame_cross_overlay_1", // GH-104154.
-			// "NODEVICE_SELECT", // Kept as it's useful - GH-104592.
-			"VK_LAYER_bandicam_helper_DEBUG_1", // GH-101480.
-			"DISABLE_VK_LAYER_bandicam_helper_1", // GH-101480.
-			"DISABLE_VK_LAYER_reshade_1", // GH-70849.
-			"DISABLE_VK_LAYER_GPUOpen_GRS", // GH-104154.
-			"DISABLE_LAYER", // GH-104154 (fpsmon).
-			"DISABLE_MANGOHUD", // GH-57403.
-			"DISABLE_VKBASALT",
-		};
-
-		if (editor || project_manager) {
-			// The editor and project manager always detect and use hiDPI if needed.
-			OS::get_singleton()->_allow_hidpi = true;
-			// Disable Vulkan overlays in editor, they cause various issues.
-			for (const String &layer_disable : layers_to_disable) {
-				OS::get_singleton()->set_environment(layer_disable, "1");
-			}
-		} else {
-			// Re-allow using Vulkan overlays, disabled while using the editor.
-			for (const String &layer_disable : layers_to_disable) {
-				OS::get_singleton()->unset_environment(layer_disable);
-			}
-		}
+	if (editor || project_manager) {
+		// The editor and project manager always detect and use hiDPI if needed.
+		OS::get_singleton()->_allow_hidpi = true;
 	}
 #endif
 
