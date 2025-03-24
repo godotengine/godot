@@ -41,6 +41,10 @@ void NativeMenu::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_system_menu", "menu_id"), &NativeMenu::get_system_menu);
 	ClassDB::bind_method(D_METHOD("get_system_menu_name", "menu_id"), &NativeMenu::get_system_menu_name);
 
+	ClassDB::bind_method(D_METHOD("get_system_menu_no_default_items", "menu_id"), &NativeMenu::get_system_menu_no_default_items);
+	ClassDB::bind_method(D_METHOD("set_system_menu_name", "menu_id", "string"), &NativeMenu::set_system_menu_name);
+	ClassDB::bind_method(D_METHOD("set_system_menu_hidden", "menu_id", "hidden"), &NativeMenu::set_system_menu_hidden);
+
 	ClassDB::bind_method(D_METHOD("create_menu"), &NativeMenu::create_menu);
 	ClassDB::bind_method(D_METHOD("has_menu", "rid"), &NativeMenu::has_menu);
 	ClassDB::bind_method(D_METHOD("free_menu", "rid"), &NativeMenu::free_menu);
@@ -113,11 +117,55 @@ void NativeMenu::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("remove_item", "rid", "idx"), &NativeMenu::remove_item);
 	ClassDB::bind_method(D_METHOD("clear", "rid"), &NativeMenu::clear);
 
+	ClassDB::bind_method(D_METHOD("set_can_copy", "enabled"), &NativeMenu::set_can_copy);
+	ClassDB::bind_method(D_METHOD("get_can_copy"), &NativeMenu::get_can_copy);
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "can_copy", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_can_copy", "get_can_copy");
+	ClassDB::bind_method(D_METHOD("set_copy_callback", "callback"), &NativeMenu::set_copy_callback);
+	ClassDB::bind_method(D_METHOD("get_copy_callback"), &NativeMenu::get_copy_callback);
+	ADD_PROPERTY(PropertyInfo(Variant::CALLABLE, "copy", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_copy_callback", "get_copy_callback");
+
+	ClassDB::bind_method(D_METHOD("set_can_cut", "enabled"), &NativeMenu::set_can_cut);
+	ClassDB::bind_method(D_METHOD("get_can_cut"), &NativeMenu::get_can_cut);
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "can_cut", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_can_cut", "get_can_cut");
+	ClassDB::bind_method(D_METHOD("set_cut_callback", "callback"), &NativeMenu::set_cut_callback);
+	ClassDB::bind_method(D_METHOD("get_cut_callback"), &NativeMenu::get_cut_callback);
+	ADD_PROPERTY(PropertyInfo(Variant::CALLABLE, "cut", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_cut_callback", "get_cut_callback");
+
+	ClassDB::bind_method(D_METHOD("set_can_paste", "enabled"), &NativeMenu::set_can_paste);
+	ClassDB::bind_method(D_METHOD("get_can_paste"), &NativeMenu::get_can_paste);
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "can_paste", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_can_paste", "get_can_paste");
+	ClassDB::bind_method(D_METHOD("set_paste_callback", "callback"), &NativeMenu::set_paste_callback);
+	ClassDB::bind_method(D_METHOD("get_paste_callback"), &NativeMenu::get_paste_callback);
+	ADD_PROPERTY(PropertyInfo(Variant::CALLABLE, "paste", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_paste_callback", "get_paste_callback");
+
+	ClassDB::bind_method(D_METHOD("set_can_undo", "enabled"), &NativeMenu::set_can_undo);
+	ClassDB::bind_method(D_METHOD("get_can_undo"), &NativeMenu::get_can_undo);
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "can_undo", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_can_undo", "get_can_undo");
+	ClassDB::bind_method(D_METHOD("set_undo_callback", "callback"), &NativeMenu::set_undo_callback);
+	ClassDB::bind_method(D_METHOD("get_undo_callback"), &NativeMenu::get_undo_callback);
+	ADD_PROPERTY(PropertyInfo(Variant::CALLABLE, "undo", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_undo_callback", "get_undo_callback");
+
+	ClassDB::bind_method(D_METHOD("set_undo_description", "description"), &NativeMenu::set_undo_description);
+	ClassDB::bind_method(D_METHOD("get_undo_description"), &NativeMenu::get_undo_description);
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "undo_description", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_undo_description", "get_undo_description");
+
+	ClassDB::bind_method(D_METHOD("set_can_redo", "enabled"), &NativeMenu::set_can_redo);
+	ClassDB::bind_method(D_METHOD("get_can_redo"), &NativeMenu::get_can_redo);
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "can_redo", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_can_redo", "get_can_redo");
+	ClassDB::bind_method(D_METHOD("set_redo_callback", "callback"), &NativeMenu::set_redo_callback);
+	ClassDB::bind_method(D_METHOD("get_redo_callback"), &NativeMenu::get_redo_callback);
+	ADD_PROPERTY(PropertyInfo(Variant::CALLABLE, "redo", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_redo_callback", "get_redo_callback");
+
+	ClassDB::bind_method(D_METHOD("set_redo_description", "description"), &NativeMenu::set_redo_description);
+	ClassDB::bind_method(D_METHOD("get_redo_description"), &NativeMenu::get_redo_description);
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "redo_description", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_redo_description", "get_redo_description");
+
 	BIND_ENUM_CONSTANT(FEATURE_GLOBAL_MENU);
 	BIND_ENUM_CONSTANT(FEATURE_POPUP_MENU);
 	BIND_ENUM_CONSTANT(FEATURE_OPEN_CLOSE_CALLBACK);
 	BIND_ENUM_CONSTANT(FEATURE_HOVER_CALLBACK);
 	BIND_ENUM_CONSTANT(FEATURE_KEY_CALLBACK);
+	BIND_ENUM_CONSTANT(FEATURE_COPY_CUT_PASTE_CALLBACK);
 
 	BIND_ENUM_CONSTANT(INVALID_MENU_ID);
 	BIND_ENUM_CONSTANT(MAIN_MENU_ID);
@@ -125,6 +173,8 @@ void NativeMenu::_bind_methods() {
 	BIND_ENUM_CONSTANT(WINDOW_MENU_ID);
 	BIND_ENUM_CONSTANT(HELP_MENU_ID);
 	BIND_ENUM_CONSTANT(DOCK_MENU_ID);
+	BIND_ENUM_CONSTANT(EDIT_MENU_ID);
+	BIND_ENUM_CONSTANT(FILE_MENU_ID);
 }
 
 bool NativeMenu::has_feature(Feature p_feature) const {
@@ -152,9 +202,25 @@ String NativeMenu::get_system_menu_name(SystemMenus p_menu_id) const {
 			return "Help menu";
 		case DOCK_MENU_ID:
 			return "Dock menu";
+		case EDIT_MENU_ID:
+			return "Edit menu";
+		case FILE_MENU_ID:
+			return "File menu";
 		default:
 			return "Invalid";
 	}
+}
+
+bool NativeMenu::get_system_menu_no_default_items(SystemMenus p_menu_id) const {
+	return false;
+}
+
+void NativeMenu::set_system_menu_name(SystemMenus p_menu_id, const String &p_string) {
+	WARN_PRINT("Global menus are not supported on this platform.");
+}
+
+void NativeMenu::set_system_menu_hidden(SystemMenus p_menu_id, bool p_hidden) {
+	WARN_PRINT("Global menus are not supported on this platform.");
 }
 
 RID NativeMenu::create_menu() {
@@ -448,4 +514,112 @@ void NativeMenu::remove_item(const RID &p_rid, int p_idx) {
 
 void NativeMenu::clear(const RID &p_rid) {
 	WARN_PRINT("Global menus are not supported on this platform.");
+}
+
+void NativeMenu::set_can_copy(bool p_enabled) {
+	WARN_PRINT("Global menus are not supported on this platform.");
+}
+
+bool NativeMenu::get_can_copy() const {
+	WARN_PRINT("Global menus are not supported on this platform.");
+	return true;
+}
+
+void NativeMenu::set_copy_callback(const Callable &p_callback) {
+	WARN_PRINT("Global menus are not supported on this platform.");
+}
+
+Callable NativeMenu::get_copy_callback() const {
+	WARN_PRINT("Global menus are not supported on this platform.");
+	return Callable();
+}
+
+void NativeMenu::set_can_cut(bool p_enabled) {
+	WARN_PRINT("Global menus are not supported on this platform.");
+}
+
+bool NativeMenu::get_can_cut() const {
+	WARN_PRINT("Global menus are not supported on this platform.");
+	return true;
+}
+
+void NativeMenu::set_cut_callback(const Callable &p_callback) {
+	WARN_PRINT("Global menus are not supported on this platform.");
+}
+
+Callable NativeMenu::get_cut_callback() const {
+	WARN_PRINT("Global menus are not supported on this platform.");
+	return Callable();
+}
+
+void NativeMenu::set_can_paste(bool p_enabled) {
+	WARN_PRINT("Global menus are not supported on this platform.");
+}
+
+bool NativeMenu::get_can_paste() const {
+	WARN_PRINT("Global menus are not supported on this platform.");
+	return true;
+}
+
+void NativeMenu::set_paste_callback(const Callable &p_callback) {
+	WARN_PRINT("Global menus are not supported on this platform.");
+}
+
+Callable NativeMenu::get_paste_callback() const {
+	WARN_PRINT("Global menus are not supported on this platform.");
+	return Callable();
+}
+
+void NativeMenu::set_can_undo(bool p_enabled) {
+	WARN_PRINT("Global menus are not supported on this platform.");
+}
+
+bool NativeMenu::get_can_undo() const {
+	WARN_PRINT("Global menus are not supported on this platform.");
+	return true;
+}
+
+void NativeMenu::set_undo_callback(const Callable &p_callback) {
+	WARN_PRINT("Global menus are not supported on this platform.");
+}
+
+Callable NativeMenu::get_undo_callback() const {
+	WARN_PRINT("Global menus are not supported on this platform.");
+	return Callable();
+}
+
+void NativeMenu::set_can_redo(bool p_enabled) {
+	WARN_PRINT("Global menus are not supported on this platform.");
+}
+
+bool NativeMenu::get_can_redo() const {
+	WARN_PRINT("Global menus are not supported on this platform.");
+	return true;
+}
+
+void NativeMenu::set_redo_callback(const Callable &p_callback) {
+	WARN_PRINT("Global menus are not supported on this platform.");
+}
+
+Callable NativeMenu::get_redo_callback() const {
+	WARN_PRINT("Global menus are not supported on this platform.");
+	return Callable();
+}
+
+void NativeMenu::set_undo_description(const String &p_description) {
+	WARN_PRINT("Global menus are not supported on this platform.");
+}
+
+String NativeMenu::get_undo_description() const {
+	WARN_PRINT("Global menus are not supported on this platform.");
+	return String();
+}
+
+void NativeMenu::set_redo_description(const String &p_description) {
+	WARN_PRINT("Global menus are not supported on this platform.");
+}
+
+String NativeMenu::get_redo_description() const {
+	WARN_PRINT("Global menus are not supported on this platform.");
+	return String();
 }
