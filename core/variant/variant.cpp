@@ -984,34 +984,34 @@ bool Variant::is_zero() const {
 
 		// Arrays.
 		case PACKED_BYTE_ARRAY: {
-			return PackedArrayRef<uint8_t>::get_array(_data.packed_array).size() == 0;
+			return PackedArrayRef<uint8_t>::get_array(_data.packed_array).is_empty();
 		}
 		case PACKED_INT32_ARRAY: {
-			return PackedArrayRef<int32_t>::get_array(_data.packed_array).size() == 0;
+			return PackedArrayRef<int32_t>::get_array(_data.packed_array).is_empty();
 		}
 		case PACKED_INT64_ARRAY: {
-			return PackedArrayRef<int64_t>::get_array(_data.packed_array).size() == 0;
+			return PackedArrayRef<int64_t>::get_array(_data.packed_array).is_empty();
 		}
 		case PACKED_FLOAT32_ARRAY: {
-			return PackedArrayRef<float>::get_array(_data.packed_array).size() == 0;
+			return PackedArrayRef<float>::get_array(_data.packed_array).is_empty();
 		}
 		case PACKED_FLOAT64_ARRAY: {
-			return PackedArrayRef<double>::get_array(_data.packed_array).size() == 0;
+			return PackedArrayRef<double>::get_array(_data.packed_array).is_empty();
 		}
 		case PACKED_STRING_ARRAY: {
-			return PackedArrayRef<String>::get_array(_data.packed_array).size() == 0;
+			return PackedArrayRef<String>::get_array(_data.packed_array).is_empty();
 		}
 		case PACKED_VECTOR2_ARRAY: {
-			return PackedArrayRef<Vector2>::get_array(_data.packed_array).size() == 0;
+			return PackedArrayRef<Vector2>::get_array(_data.packed_array).is_empty();
 		}
 		case PACKED_VECTOR3_ARRAY: {
-			return PackedArrayRef<Vector3>::get_array(_data.packed_array).size() == 0;
+			return PackedArrayRef<Vector3>::get_array(_data.packed_array).is_empty();
 		}
 		case PACKED_COLOR_ARRAY: {
-			return PackedArrayRef<Color>::get_array(_data.packed_array).size() == 0;
+			return PackedArrayRef<Color>::get_array(_data.packed_array).is_empty();
 		}
 		case PACKED_VECTOR4_ARRAY: {
-			return PackedArrayRef<Vector4>::get_array(_data.packed_array).size() == 0;
+			return PackedArrayRef<Vector4>::get_array(_data.packed_array).is_empty();
 		}
 		default: {
 		}

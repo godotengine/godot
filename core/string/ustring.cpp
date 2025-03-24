@@ -300,7 +300,7 @@ Error String::parse_url(String &r_scheme, String &r_host, int &r_port, String &r
 }
 
 void String::parse_latin1(const Span<char> &p_cstr) {
-	if (p_cstr.size() == 0) {
+	if (p_cstr.is_empty()) {
 		resize(0);
 		return;
 	}
@@ -319,7 +319,7 @@ void String::parse_latin1(const Span<char> &p_cstr) {
 }
 
 void String::parse_utf32(const Span<char32_t> &p_cstr) {
-	if (p_cstr.size() == 0) {
+	if (p_cstr.is_empty()) {
 		resize(0);
 		return;
 	}
@@ -1922,7 +1922,7 @@ CharString String::ascii(bool p_allow_extended) const {
 }
 
 Error String::parse_ascii(const Span<char> &p_range) {
-	if (p_range.size() == 0) {
+	if (p_range.is_empty()) {
 		resize(0);
 		return OK;
 	}
@@ -3360,7 +3360,7 @@ int String::findmk(const Vector<String> &p_keys, int p_from, int *r_key) const {
 	if (p_from < 0) {
 		return -1;
 	}
-	if (p_keys.size() == 0) {
+	if (p_keys.is_empty()) {
 		return -1;
 	}
 

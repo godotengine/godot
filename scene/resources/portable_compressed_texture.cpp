@@ -35,7 +35,7 @@
 #include "scene/resources/bit_map.h"
 
 void PortableCompressedTexture2D::_set_data(const Vector<uint8_t> &p_data) {
-	if (p_data.size() == 0) {
+	if (p_data.is_empty()) {
 		return; //nothing to do
 	}
 

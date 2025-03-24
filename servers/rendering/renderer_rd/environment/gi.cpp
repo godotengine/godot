@@ -2676,13 +2676,13 @@ void GI::VoxelGIInstance::update(bool p_update_light_instances, const Vector<RID
 					dtf.format = RD::DATA_FORMAT_R16G16B16A16_SFLOAT;
 					dtf.usage_bits = RD::TEXTURE_USAGE_STORAGE_BIT;
 
-					if (dynamic_maps.size() == 0) {
+					if (dynamic_maps.is_empty()) {
 						dtf.usage_bits |= RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT;
 					}
 					dmap.texture = RD::get_singleton()->texture_create(dtf, RD::TextureView());
 					RD::get_singleton()->set_resource_name(dmap.texture, "VoxelGI Instance DMap Texture");
 
-					if (dynamic_maps.size() == 0) {
+					if (dynamic_maps.is_empty()) {
 						// Render depth for first one.
 						// Use 16-bit depth when supported to improve performance.
 						dtf.format = RD::get_singleton()->texture_is_format_supported_for_usage(RD::DATA_FORMAT_D16_UNORM, RD::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) ? RD::DATA_FORMAT_D16_UNORM : RD::DATA_FORMAT_X8_D24_UNORM_PACK32;
@@ -2698,7 +2698,7 @@ void GI::VoxelGIInstance::update(bool p_update_light_instances, const Vector<RID
 					dmap.depth = RD::get_singleton()->texture_create(dtf, RD::TextureView());
 					RD::get_singleton()->set_resource_name(dmap.depth, "VoxelGI Instance DMap Depth");
 
-					if (dynamic_maps.size() == 0) {
+					if (dynamic_maps.is_empty()) {
 						dtf.format = RD::DATA_FORMAT_R8G8B8A8_UNORM;
 						dtf.usage_bits = RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT;
 						dmap.albedo = RD::get_singleton()->texture_create(dtf, RD::TextureView());
@@ -3279,7 +3279,7 @@ void GI::VoxelGIInstance::free_resources() {
 void GI::VoxelGIInstance::debug(RD::DrawListID p_draw_list, RID p_framebuffer, const Projection &p_camera_with_transform, bool p_lighting, bool p_emission, float p_alpha) {
 	RendererRD::MaterialStorage *material_storage = RendererRD::MaterialStorage::get_singleton();
 
-	if (mipmaps.size() == 0) {
+	if (mipmaps.is_empty()) {
 		return;
 	}
 

@@ -656,7 +656,7 @@ void Particles3DEditorPlugin::_node_selected(const NodePath &p_path) {
 	}
 
 	geometry = mi->get_mesh()->get_faces();
-	if (geometry.size() == 0) {
+	if (geometry.is_empty()) {
 		EditorNode::get_singleton()->show_warning(vformat(TTR("\"%s\" doesn't contain face geometry."), sel->get_name()));
 		return;
 	}

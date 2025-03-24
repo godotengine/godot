@@ -2042,7 +2042,7 @@ void AnimationBezierTrackEdit::_menu_selected(int p_index) {
 }
 
 void AnimationBezierTrackEdit::duplicate_selected_keys(real_t p_ofs, bool p_ofs_valid) {
-	if (selection.size() == 0) {
+	if (selection.is_empty()) {
 		return;
 	}
 
