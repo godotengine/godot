@@ -90,7 +90,7 @@ static inline String jstring_to_string(jstring source, JNIEnv *env = nullptr) {
 		}
 		const char *const source_utf8 = env->GetStringUTFChars(source, nullptr);
 		if (source_utf8) {
-			result.parse_utf8(source_utf8);
+			result.append_utf8(source_utf8);
 			env->ReleaseStringUTFChars(source, source_utf8);
 		}
 	}

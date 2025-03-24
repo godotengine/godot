@@ -484,7 +484,7 @@ Error HTTPClientTCP::poll() {
 					// End of response, parse.
 					response_str.push_back(0);
 					String response;
-					response.parse_utf8((const char *)response_str.ptr(), response_str.size());
+					response.append_utf8((const char *)response_str.ptr(), response_str.size());
 					Vector<String> responses = response.split("\n");
 					body_size = -1;
 					chunked = false;

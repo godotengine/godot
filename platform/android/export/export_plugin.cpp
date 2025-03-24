@@ -1677,7 +1677,7 @@ String EditorExportPlatformAndroid::_parse_string(const uint8_t *p_bytes, bool p
 		}
 		str8.write[len] = 0;
 		String str;
-		str.parse_utf8((const char *)str8.ptr(), len);
+		str.append_utf8((const char *)str8.ptr(), len);
 		return str;
 	} else {
 		String str;

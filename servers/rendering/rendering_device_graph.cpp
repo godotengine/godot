@@ -1121,7 +1121,7 @@ void RenderingDeviceGraph::_run_label_command_change(RDD::CommandBufferID p_comm
 		Color label_color;
 		if (p_new_label_index >= 0) {
 			const char *label_chars = &command_label_chars[command_label_offsets[p_new_label_index]];
-			label_name.parse_utf8(label_chars);
+			label_name.append_utf8(label_chars);
 			label_color = command_label_colors[p_new_label_index];
 		} else if (p_use_label_for_empty) {
 			label_name = "Command graph";

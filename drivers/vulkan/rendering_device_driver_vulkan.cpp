@@ -3767,7 +3767,8 @@ RDD::ShaderID RenderingDeviceDriverVulkan::shader_create_from_bytecode(const Vec
 	read_offset += sizeof(uint32_t) * 4 + bin_data_size;
 
 	if (binary_data.shader_name_len) {
-		r_name.parse_utf8((const char *)(binptr + read_offset), binary_data.shader_name_len);
+		r_name.clear();
+		r_name.append_utf8((const char *)(binptr + read_offset), binary_data.shader_name_len);
 		read_offset += STEPIFY(binary_data.shader_name_len, 4);
 	}
 

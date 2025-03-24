@@ -123,7 +123,7 @@
 
 - (void)enterText:(NSString *)substring {
 	String characters;
-	characters.parse_utf8([substring UTF8String]);
+	characters.append_utf8([substring UTF8String]);
 
 	for (int i = 0; i < characters.size(); i++) {
 		int character = characters[i];

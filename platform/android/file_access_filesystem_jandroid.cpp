@@ -203,7 +203,7 @@ String FileAccessFilesystemJAndroid::get_line() const {
 			if (elem == '\n' || elem == '\0') {
 				// Found the end of the line
 				const_cast<FileAccessFilesystemJAndroid *>(this)->seek(start_position + line_buffer_position + 1);
-				if (result.parse_utf8((const char *)line_buffer.ptr(), line_buffer_position, true)) {
+				if (result.append_utf8((const char *)line_buffer.ptr(), line_buffer_position, true)) {
 					return String();
 				}
 				return result;
@@ -211,7 +211,7 @@ String FileAccessFilesystemJAndroid::get_line() const {
 		}
 	}
 
-	if (result.parse_utf8((const char *)line_buffer.ptr(), line_buffer_position, true)) {
+	if (result.append_utf8((const char *)line_buffer.ptr(), line_buffer_position, true)) {
 		return String();
 	}
 	return result;

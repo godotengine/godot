@@ -342,7 +342,7 @@ Error DirAccessUnix::change_dir(String p_dir) {
 	String prev_dir;
 	char real_current_dir_name[2048];
 	ERR_FAIL_NULL_V(getcwd(real_current_dir_name, 2048), ERR_BUG);
-	if (prev_dir.parse_utf8(real_current_dir_name) != OK) {
+	if (prev_dir.append_utf8(real_current_dir_name) != OK) {
 		prev_dir = real_current_dir_name; //no utf8, maybe latin?
 	}
 
@@ -365,7 +365,7 @@ Error DirAccessUnix::change_dir(String p_dir) {
 	if (!base.is_empty() && !try_dir.begins_with(base)) {
 		ERR_FAIL_NULL_V(getcwd(real_current_dir_name, 2048), ERR_BUG);
 		String new_dir;
-		new_dir.parse_utf8(real_current_dir_name);
+		new_dir.append_utf8(real_current_dir_name);
 
 		if (!new_dir.begins_with(base)) {
 			try_dir = current_dir; //revert
@@ -486,7 +486,7 @@ String DirAccessUnix::read_link(String p_file) {
 	ssize_t len = readlink(p_file.utf8().get_data(), buf, sizeof(buf));
 	String link;
 	if (len > 0) {
-		link.parse_utf8(buf, len);
+		link.append_utf8(buf, len);
 	}
 	return link;
 }
@@ -553,7 +553,8 @@ DirAccessUnix::DirAccessUnix() {
 	// set current directory to an absolute path of the current directory
 	char real_current_dir_name[2048];
 	ERR_FAIL_NULL(getcwd(real_current_dir_name, 2048));
-	if (current_dir.parse_utf8(real_current_dir_name) != OK) {
+	current_dir.clear();
+	if (current_dir.append_utf8(real_current_dir_name) != OK) {
 		current_dir = real_current_dir_name;
 	}
 

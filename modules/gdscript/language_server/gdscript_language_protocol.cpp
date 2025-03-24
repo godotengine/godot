@@ -61,7 +61,7 @@ Error GDScriptLanguageProtocol::LSPeer::handle_data() {
 			if (l > 3 && r[l] == '\n' && r[l - 1] == '\r' && r[l - 2] == '\n' && r[l - 3] == '\r') {
 				r[l - 3] = '\0'; // Null terminate to read string
 				String header;
-				header.parse_utf8(r);
+				header.append_utf8(r);
 				content_length = header.substr(16).to_int();
 				has_header = true;
 				req_pos = 0;
@@ -88,7 +88,7 @@ Error GDScriptLanguageProtocol::LSPeer::handle_data() {
 
 		// Parse data
 		String msg;
-		msg.parse_utf8((const char *)req_buf, req_pos);
+		msg.append_utf8((const char *)req_buf, req_pos);
 
 		// Reset to read again
 		req_pos = 0;

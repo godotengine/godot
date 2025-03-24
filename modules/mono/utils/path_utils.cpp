@@ -93,7 +93,7 @@ String cwd() {
 	}
 
 	String result;
-	result.parse_utf16(buffer.ptr());
+	result.append_utf16(buffer.ptr());
 	if (result.is_empty()) {
 		return ".";
 	}
@@ -105,7 +105,7 @@ String cwd() {
 	}
 
 	String result;
-	if (result.parse_utf8(buffer) != OK) {
+	if (result.append_utf8(buffer) != OK) {
 		return ".";
 	}
 
@@ -146,7 +146,7 @@ String realpath(const String &p_path) {
 	::CloseHandle(hFile);
 
 	String result;
-	result.parse_utf16(buffer.ptr());
+	result.append_utf16(buffer.ptr());
 	if (result.is_empty()) {
 		return p_path;
 	}
@@ -160,7 +160,7 @@ String realpath(const String &p_path) {
 	}
 
 	String result;
-	Error parse_ok = result.parse_utf8(resolved_path);
+	Error parse_ok = result.append_utf8(resolved_path);
 	::free(resolved_path);
 
 	if (parse_ok != OK) {
