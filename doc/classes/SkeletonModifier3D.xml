@@ -28,6 +28,20 @@
 				[param delta] is passed from parent [Skeleton3D]. See also [method Skeleton3D.advance].
 			</description>
 		</method>
+		<method name="_skeleton_changed" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="old_skeleton" type="Skeleton3D" />
+			<param index="1" name="new_skeleton" type="Skeleton3D" />
+			<description>
+				Called when the skeleton is changed.
+			</description>
+		</method>
+		<method name="_validate_bone_names" qualifiers="virtual">
+			<return type="void" />
+			<description>
+				Called when bone name and index need to be validated such as the timing of the entering tree or changing skeleton.
+			</description>
+		</method>
 		<method name="get_skeleton" qualifiers="const">
 			<return type="Skeleton3D" />
 			<description>
