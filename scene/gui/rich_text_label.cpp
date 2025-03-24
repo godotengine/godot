@@ -6954,10 +6954,10 @@ Dictionary RichTextLabel::parse_expressions_for_values(Vector<String> p_expressi
 		nodepath.compile("^\\$");
 		RegEx boolean = RegEx();
 		boolean.compile("^(true|false)$");
-		RegEx decimal = RegEx();
-		decimal.compile("^-?^.?\\d+(\\.\\d+?)?$");
 		RegEx numerical = RegEx();
-		numerical.compile("^\\d+$");
+		numerical.compile("^[-+]?\\d+$");
+		RegEx decimal = RegEx();
+		decimal.compile("^[+-]?\\d*(\\.\\d*)?([eE][+-]?\\d+)?$");
 
 		for (int j = 0; j < values.size(); j++) {
 			if (color.search(values[j]).is_valid()) {
@@ -6973,10 +6973,10 @@ Dictionary RichTextLabel::parse_expressions_for_values(Vector<String> p_expressi
 				} else if (values[j] == "false") {
 					a.append(false);
 				}
-			} else if (decimal.search(values[j]).is_valid()) {
-				a.append(values[j].to_float());
 			} else if (numerical.search(values[j]).is_valid()) {
 				a.append(values[j].to_int());
+			} else if (decimal.search(values[j]).is_valid()) {
+				a.append(values[j].to_float());
 			} else {
 				a.append(values[j]);
 			}
