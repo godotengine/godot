@@ -6,7 +6,7 @@
 	<description>
 		Provides direct access to a physics space in the [PhysicsServer2D]. It's used mainly to do queries against objects and areas residing in a given space.
 
-		[b]Note:[/b] This class is not meant to be instantiated directly. Use [property World2D.direct_space_state] to get the world's physics 2D space state.
+		[b]Note:[/b] This class is not meant to be instantiated directly. Use [member World2D.direct_space_state] to get the world's physics 2D space state.
 	</description>
 	<tutorials>
 		<link title="Physics introduction">$DOCS_URL/tutorials/physics/physics_introduction.html</link>
