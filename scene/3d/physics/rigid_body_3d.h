@@ -82,6 +82,8 @@ private:
 
 	int max_contacts_reported = 0;
 	int contact_count = 0;
+	int body_update_count = 0;
+	int sync_state_count = 0;
 
 	bool custom_integrator = false;
 
@@ -209,6 +211,8 @@ public:
 	void set_max_contacts_reported(int p_amount);
 	int get_max_contacts_reported() const;
 	int get_contact_count() const;
+	int get_body_update_count() const;
+	int get_sync_state_count() const;
 
 	void set_use_continuous_collision_detection(bool p_enable);
 	bool is_using_continuous_collision_detection() const;

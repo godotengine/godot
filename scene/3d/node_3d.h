@@ -95,6 +95,7 @@ private:
 	mutable SelfList<Node> xform_change;
 	SelfList<Node3D> _client_physics_interpolation_node_3d_list;
 
+	mutable int transform_update_count = 0;
 	// This Data struct is to avoid namespace pollution in derived classes.
 
 	struct Data {
@@ -223,6 +224,7 @@ public:
 	void set_global_transform(const Transform3D &p_transform);
 
 	Transform3D get_transform() const;
+	int get_transform_update_count() const { return transform_update_count; }
 	Basis get_basis() const;
 	Quaternion get_quaternion() const;
 	Transform3D get_global_transform() const;

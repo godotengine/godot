@@ -143,6 +143,7 @@ struct _RigidBodyInOut {
 
 void RigidBody3D::_sync_body_state(PhysicsDirectBodyState3D *p_state) {
 	set_ignore_transform_notification(true);
+	sync_state_count++;
 	set_global_transform(p_state->get_transform());
 	set_ignore_transform_notification(false);
 
@@ -161,7 +162,7 @@ void RigidBody3D::_sync_body_state(PhysicsDirectBodyState3D *p_state) {
 
 void RigidBody3D::_body_state_changed(PhysicsDirectBodyState3D *p_state) {
 	lock_callback();
-
+	body_update_count++;
 	if (GDVIRTUAL_IS_OVERRIDDEN(_integrate_forces)) {
 		_sync_body_state(p_state);
 
@@ -533,6 +534,14 @@ int RigidBody3D::get_contact_count() const {
 	return contact_count;
 }
 
+int RigidBody3D::get_body_update_count() const {
+	return body_update_count;
+}
+
+int RigidBody3D::get_sync_state_count() const {
+	return sync_state_count;
+}
+
 void RigidBody3D::apply_central_impulse(const Vector3 &p_impulse) {
 	PhysicsServer3D::get_singleton()->body_apply_central_impulse(get_rid(), p_impulse);
 }
@@ -711,6 +720,8 @@ void RigidBody3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_max_contacts_reported", "amount"), &RigidBody3D::set_max_contacts_reported);
 	ClassDB::bind_method(D_METHOD("get_max_contacts_reported"), &RigidBody3D::get_max_contacts_reported);
 	ClassDB::bind_method(D_METHOD("get_contact_count"), &RigidBody3D::get_contact_count);
+	ClassDB::bind_method(D_METHOD("get_body_update_count"), &RigidBody3D::get_body_update_count);
+	ClassDB::bind_method(D_METHOD("get_sync_state_count"), &RigidBody3D::get_sync_state_count);
 
 	ClassDB::bind_method(D_METHOD("set_use_custom_integrator", "enable"), &RigidBody3D::set_use_custom_integrator);
 	ClassDB::bind_method(D_METHOD("is_using_custom_integrator"), &RigidBody3D::is_using_custom_integrator);

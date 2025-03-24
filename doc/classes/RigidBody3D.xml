@@ -100,6 +100,11 @@
 				[b]Note:[/b] [member inertia] is required for this to work. To have [member inertia], an active [CollisionShape3D] must be a child of the node, or you can manually set [member inertia].
 			</description>
 		</method>
+		<method name="get_body_update_count" qualifiers="const">
+			<return type="int" />
+			<description>
+			</description>
+		</method>
 		<method name="get_colliding_bodies" qualifiers="const">
 			<return type="Node3D[]" />
 			<description>
@@ -118,6 +123,11 @@
 			<return type="Basis" />
 			<description>
 				Returns the inverse inertia tensor basis. This is used to calculate the angular acceleration resulting from a torque applied to the [RigidBody3D].
+			</description>
+		</method>
+		<method name="get_sync_state_count" qualifiers="const">
+			<return type="int" />
+			<description>
 			</description>
 		</method>
 		<method name="set_axis_velocity">

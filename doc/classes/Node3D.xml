@@ -61,6 +61,11 @@
 				[b]Note:[/b] Calling this method is not equivalent to [code]get_parent() as Node3D[/code], which does not take [member top_level] into account.
 			</description>
 		</method>
+		<method name="get_transform_update_count" qualifiers="const">
+			<return type="int" />
+			<description>
+			</description>
+		</method>
 		<method name="get_world_3d" qualifiers="const">
 			<return type="World3D" />
 			<description>
