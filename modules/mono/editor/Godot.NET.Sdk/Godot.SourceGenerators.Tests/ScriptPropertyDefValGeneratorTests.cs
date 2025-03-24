@@ -23,6 +23,13 @@ public class ScriptPropertyDefValGeneratorTests
     }
 
     [Fact]
+    public async void ExportedProperties2()
+    {
+        await CSharpSourceGeneratorVerifier<ScriptPropertyDefValGenerator>.Verify(
+            "ExportedProperties2.cs", "ExportedProperties2_ScriptPropertyDefVal.generated.cs");
+    }
+
+    [Fact]
     public async void ExportedComplexStrings()
     {
         await CSharpSourceGeneratorVerifier<ScriptPropertyDefValGenerator>.Verify(
