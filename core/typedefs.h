@@ -30,22 +30,29 @@
 
 #pragma once
 
-#include <stddef.h>
-
 /**
  * Basic definitions and simple functions to be used everywhere.
  */
+
+// IWYU pragma: always_keep
+
+// Ensure that C++ standard is at least C++17.
+// If on MSVC, also ensures that the `Zc:__cplusplus` flag is present.
+static_assert(__cplusplus >= 201703L, "Minimum of C++17 required.");
+
+// IWYU pragma: begin_exports
 
 // Include first in case the platform needs to pre-define/include some things.
 #include "platform_config.h"
 
 // Should be available everywhere.
 #include "core/error/error_list.h"
+
+#include <cstddef>
 #include <cstdint>
 #include <utility>
 
-// Ensure that C++ standard is at least C++17. If on MSVC, also ensures that the `Zc:__cplusplus` flag is present.
-static_assert(__cplusplus >= 201703L);
+// IWYU pragma: end_exports
 
 // Turn argument to string constant:
 // https://gcc.gnu.org/onlinedocs/cpp/Stringizing.html#Stringizing
