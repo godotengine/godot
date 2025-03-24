@@ -10,7 +10,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
-"PO-Revision-Date: 2025-03-19 02:17+0000\n"
+"PO-Revision-Date: 2025-03-24 15:28+0000\n"
 "Last-Translator: Bee Crankson <ProfB.crankson@gmail.com>\n"
 "Language-Team: Toki Pona <https://hosted.weblate.org/projects/godot-engine/"
 "godot/tok/>\n"
@@ -64,7 +64,7 @@ msgid "Double Click"
 msgstr "pilin tu"
 
 msgid "Mouse motion at position (%s) with velocity (%s)"
-msgstr "tawa pi ilo pana li lon e (%s) kepeken nanpa tawa (%s)"
+msgstr "tawa pi ilo luka li lon (%s) kepeken nanpa tawa (%s)"
 
 msgid "Left Stick X-Axis, Joystick 0 X-Axis"
 msgstr "nasin X pi palisa soto, nasin X pi palisa musi nanpa 0"
@@ -103,11 +103,24 @@ msgstr "nasin Y pi palisa musi nanpa 4"
 msgid "Unknown Joypad Axis"
 msgstr "tawa pi sona mi ala pi nena musi"
 
+msgid "Joypad Motion on Axis %d (%s) with Value %.2f"
+msgstr "tawa pi nena musi lon nasin nanpa %d (%s) kepeken %.2f"
+
+msgid "Bottom Action, Sony Cross, Xbox A, Nintendo B"
+msgstr ""
+"pali anpa, linja tu pi ilo Soni, nena A pi ilo Ekipoki, nena B pi ilo Nintento"
+
 msgid "Right Action, Sony Circle, Xbox B, Nintendo A"
-msgstr "pali teje, sike pi ilo Soni, B pi ilo Ekipoki, A pi ilo Nintento"
+msgstr ""
+"pali teje, sike pi ilo Soni, nena B pi ilo Ekipoki, nena A pi ilo Nintento"
 
 msgid "Left Action, Sony Square, Xbox X, Nintendo Y"
-msgstr "pali soto, leko pi ilo Soni, X pi ilo Ekipoki, Y pi ilo Nintento"
+msgstr ""
+"pali soto, leko pi ilo Soni, nena X pi ilo Ekipoki, nena Y pi ilo Nintento"
+
+msgid "Top Action, Sony Triangle, Xbox Y, Nintendo X"
+msgstr ""
+"pali sewi, kiki pi ilo Soni, nena Y pi ilo Ekipoki, nena X pi ilo Nintento"
 
 msgid "Left Stick, Sony L3, Xbox L/LS"
 msgstr "palisa soto, nena L3 pi ilo Soni, nena L/LS pi ilo Ekipoki"
@@ -144,6 +157,9 @@ msgstr "nena Patu nanpa 3 pi ilo Ekipoki"
 
 msgid "Xbox Paddle 4"
 msgstr "nena Patu nanpa 4 pi ilo Ekipoki"
+
+msgid "PS4/5 Touchpad"
+msgstr "ma pilin pi ilo PS4/5"
 
 msgid "Joypad Button %d"
 msgstr "nena musi nanpa %d"
@@ -235,11 +251,23 @@ msgstr "tenpo:"
 msgid "Change Animation Length"
 msgstr "o ante e suli pi sitelen tawa"
 
+msgid "Animation length (frames)"
+msgstr "suli pi sitelen tawa (sitelen)"
+
+msgid "Animation length (seconds)"
+msgstr "suli pi sitelen tawa (tenpo)"
+
+msgid "Time (s):"
+msgstr "tenpo:"
+
 msgid "Start (s):"
 msgstr "open:"
 
 msgid "End (s):"
 msgstr "pini:"
+
+msgid "Create"
+msgstr "o pali sin"
 
 msgid "node '%s'"
 msgstr "ijo pali '%s'"
@@ -419,6 +447,10 @@ msgstr ""
 
 msgid "Search Replacement Resource:"
 msgstr "o alasa e poki sona sama:"
+
+msgid "Open Scene"
+msgid_plural "Open Scenes"
+msgstr[0] "o open e ma pali"
 
 msgid "Open"
 msgstr "o open"
@@ -932,6 +964,24 @@ msgstr "kama lon sin..."
 msgid "Reloading done."
 msgstr "kama lon sin li pini."
 
+msgid "Forward+"
+msgstr "nasin Forward+"
+
+msgid "Mobile"
+msgstr "nasin Mobile"
+
+msgid "Compatibility"
+msgstr "nasin Compatibility"
+
+msgid "Group Selected Node(s)"
+msgstr "o kulupu e ijo pali ni"
+
+msgid "Ungroup Selected Node(s)"
+msgstr "o kulupu ala e ijo pali ni"
+
+msgid "Scene"
+msgstr "ma pali"
+
 msgid "Copy Text"
 msgstr "o jasima e toki"
 
@@ -1124,6 +1174,12 @@ msgstr "mi lukin ala e sin. pakala: %d."
 msgid "Update available: %s."
 msgstr "sin li lon: %s."
 
+msgid "Offline mode, update checks disabled."
+msgstr "nasin pi linluwi ala, mi alasa ala e sin."
+
+msgid "Update checks disabled."
+msgstr "mi alasa ala e sin."
+
 msgid "An error has occurred. Click to try again."
 msgstr "pakala li lon. o pilin tawa pali sin."
 
@@ -1214,6 +1270,18 @@ msgstr "pakala pi sona mi ala"
 
 msgid "Cannot create file \"%s\"."
 msgstr "mi ken ala pali sin e lipu \"%s\"."
+
+msgid "Can't open file for writing at path \"%s\"."
+msgstr "mi ken ala open e lipu tawa sitelen lon nasin \"%s\"."
+
+msgid "Can't open file for reading-writing at path \"%s\"."
+msgstr "mi ken ala open e lipu tawa lukin-sitelen lon nasin \"%s\"."
+
+msgid "Can't open file to read from path \"%s\"."
+msgstr "mi ken ala open e lipu tawa lukin lon nasin \"%s\"."
+
+msgid "Save ZIP"
+msgstr "o kama awen e lipu ZIP"
 
 msgid "GDExtension"
 msgstr "GDExtension"
@@ -1589,7 +1657,7 @@ msgid "Toggle Visible"
 msgstr "o ante tu e ken lukin"
 
 msgid "Ungroup Children"
-msgstr "o kulupu ala e ijo pi tan mama"
+msgstr "o kulupu ala e kili"
 
 msgid "Click to disable this."
 msgstr "o pilin tawa ala e ni."
@@ -1622,7 +1690,7 @@ msgid ""
 "Children are not selectable.\n"
 "Click to make them selectable."
 msgstr ""
-"sina ken ala pilin e ijo pi tan mama.\n"
+"sina ken ala pilin e kili.\n"
 "o pilin tawa ken pilin e ona."
 
 msgid "Open in Editor"
@@ -1765,11 +1833,17 @@ msgstr "o weka e lili."
 msgid "Edit Polygon"
 msgstr "o ante e ijo pi linja mute"
 
+msgid "Insert Point"
+msgstr "o pana e lili"
+
 msgid "Edit Polygon (Remove Point)"
 msgstr "o ante e ijo pi linja mute (o weka e lili)"
 
 msgid "Remove Polygon And Point"
 msgstr "o weka e ijo pi linja mute e lili"
+
+msgid "Add Animation"
+msgstr "o pana e sitelen tawa"
 
 msgid "Point"
 msgstr "lili"
@@ -2209,6 +2283,25 @@ msgstr "selo"
 msgid "Sibling"
 msgstr "ijo tan mama sama"
 
+msgid "Remove item %d?"
+msgstr "sina wile ala wile weka e ijo nanpa %d?"
+
+msgid ""
+"Update from existing scene?:\n"
+"%s"
+msgstr ""
+"sina wile ala wile sin tan ma pali lon?:\n"
+"%s"
+
+msgid "Add Item"
+msgstr "o pana e ijo"
+
+msgid "Remove Selected Item"
+msgstr "o weka e ijo ni"
+
+msgid "Update from Scene"
+msgstr "o sin tan ma pali"
+
 msgid "X: %s\n"
 msgstr "X: %s\n"
 
@@ -2356,14 +2449,53 @@ msgstr "CPUParticles3D"
 msgid "Convert to GPUParticles3D"
 msgstr "o ante tawa ijo pali GPUParticles3D"
 
+msgid "Remove Point from Curve"
+msgstr "o weka e lili tan linja"
+
+msgid "Move Point in Curve"
+msgstr "o tawa e lili lon linja"
+
+msgid "Add Point to Curve"
+msgstr "o pana e lili tawa linja"
+
 msgid "Split Curve"
 msgstr "o tu e linja"
+
+msgid "Close the Curve"
+msgstr "o pini e linja"
+
+msgid "Clear Curve Points"
+msgstr "o weka e lili linja"
+
+msgid "Create Curve in Path2D"
+msgstr "o pali sin e linja lon ijo pali Path2D"
+
+msgid "Select Points"
+msgstr "o anu e lili"
+
+msgid "Click: Add Point"
+msgstr "pilin: o pana e lili"
+
+msgid "Left Click: Split Segment (in curve)"
+msgstr "pilin soto: o tu e kipisi (lon linja)"
 
 msgid "Right Click: Delete Point"
 msgstr "pilin teje: o weka e lili"
 
+msgid "Add Point (in empty space)"
+msgstr "o pana e lili (lon ma pi jo ala)"
+
 msgid "Delete Point"
 msgstr "o weka e lili"
+
+msgid "Close Curve"
+msgstr "o pini e linja"
+
+msgid "Clear Points"
+msgstr "o weka e lili"
+
+msgid "Remove all curve points?"
+msgstr "sina wile ala wile weka e lili linja ale?"
 
 msgid "Create Curve"
 msgstr "o pali sin e linja"
@@ -2674,6 +2806,9 @@ msgstr "(jo ala)"
 
 msgid "Animations:"
 msgstr "sitelen tawa:"
+
+msgid "Animation Speed"
+msgstr "nanpa tawa pi sitelen tawa"
 
 msgid "Delete Animation"
 msgstr "o weka e sitelen tawa"
@@ -3003,6 +3138,9 @@ msgstr "o ante tu e ma anpa ni: poki sona pi ante sitelen"
 
 msgid "Toggle Button"
 msgstr "o ante tu e nena"
+
+msgid "Merge"
+msgstr "o wan"
 
 msgid "Alternative Tiles"
 msgstr "leko ante"
@@ -3693,6 +3831,9 @@ msgstr "o tawa e ijo pali lon mama"
 msgid "Duplicate Node(s)"
 msgstr "o pali tu e ijo pali"
 
+msgid "Delete %d nodes and any children?"
+msgstr "sina wile ala wile weka e ijo pali %d e kili?"
+
 msgid "Delete %d nodes?"
 msgstr "sina wile ala wile weka e ijo pali %d?"
 
@@ -3700,7 +3841,7 @@ msgid "Delete the root node \"%s\"?"
 msgstr "sina wile ala wile weka e ijo pali open\"%s\"?"
 
 msgid "Delete node \"%s\" and its children?"
-msgstr "sina wile ala wile weka e ijo pali \"%s\" e ijo tan ona?"
+msgstr "sina wile ala wile weka e ijo pali \"%s\" e kili ona?"
 
 msgid "Delete node \"%s\"?"
 msgstr "sina wile ala wile weka e ijo pali \"%s\"?"
@@ -3717,6 +3858,9 @@ msgstr "o ante tu e lukin ni: ijo pali pi olin sina."
 msgid "Other Node"
 msgstr "ijo pali ante"
 
+msgid "Toggle Editable Children"
+msgstr "o ante tu e kili pi ken ante"
+
 msgid "Remove Node(s)"
 msgstr "o weka e ijo pali"
 
@@ -3728,6 +3872,12 @@ msgstr "pali tu e ma pali tawa kama awen e ona la pakala li lon."
 
 msgid "<unknown>"
 msgstr "<mi sona ala e ni>"
+
+msgid "Editable Children"
+msgstr "kili pi ken ante"
+
+msgid "Add Child Node..."
+msgstr "o pana e ijo pali kili..."
 
 msgid "Path is empty."
 msgstr "nasin li jo ala."
