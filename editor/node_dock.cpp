@@ -118,7 +118,7 @@ NodeDock::NodeDock() {
 
 	connections_button = memnew(Button);
 	connections_button->set_theme_type_variation(SceneStringName(FlatButton));
-	connections_button->set_text(TTR("Signals"));
+	connections_button->set_text(TTRC("Signals"));
 	connections_button->set_toggle_mode(true);
 	connections_button->set_pressed(true);
 	connections_button->set_h_size_flags(SIZE_EXPAND_FILL);
@@ -128,7 +128,7 @@ NodeDock::NodeDock() {
 
 	groups_button = memnew(Button);
 	groups_button->set_theme_type_variation(SceneStringName(FlatButton));
-	groups_button->set_text(TTR("Groups"));
+	groups_button->set_text(TTRC("Groups"));
 	groups_button->set_toggle_mode(true);
 	groups_button->set_pressed(false);
 	groups_button->set_h_size_flags(SIZE_EXPAND_FILL);
@@ -147,7 +147,7 @@ NodeDock::NodeDock() {
 	groups->hide();
 
 	select_a_node = memnew(Label);
-	select_a_node->set_text(TTR("Select a single node to edit its signals and groups."));
+	select_a_node->set_text(TTRC("Select a single node to edit its signals and groups."));
 	select_a_node->set_custom_minimum_size(Size2(100 * EDSCALE, 0));
 	select_a_node->set_v_size_flags(SIZE_EXPAND_FILL);
 	select_a_node->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);

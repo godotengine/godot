@@ -157,9 +157,9 @@ void ImportDock::set_edit_path(const String &p_path) {
 
 void ImportDock::_add_keep_import_option(const String &p_importer_name) {
 	import_as->add_separator();
-	import_as->add_item(TTR("Keep File (exported as is)"));
+	import_as->add_item(TTRC("Keep File (exported as is)"));
 	import_as->set_item_metadata(-1, "keep");
-	import_as->add_item(TTR("Skip File (not exported)"));
+	import_as->add_item(TTRC("Skip File (not exported)"));
 	import_as->set_item_metadata(-1, "skip");
 	if (p_importer_name == "keep") {
 		import_as->select(import_as->get_item_count() - 2);
@@ -375,14 +375,14 @@ void ImportDock::_update_preset_menu() {
 	preset->get_popup()->clear();
 
 	if (params->importer.is_null()) {
-		preset->get_popup()->add_item(TTR("Default"));
+		preset->get_popup()->add_item(TTRC("Default"));
 		preset->hide();
 		return;
 	}
 	preset->show();
 
 	if (params->importer->get_preset_count() == 0) {
-		preset->get_popup()->add_item(TTR("Default"));
+		preset->get_popup()->add_item(TTRC("Default"));
 	} else {
 		for (int i = 0; i < params->importer->get_preset_count(); i++) {
 			preset->get_popup()->add_item(params->importer->get_preset_name(i));
@@ -392,7 +392,7 @@ void ImportDock::_update_preset_menu() {
 	preset->get_popup()->add_separator();
 	preset->get_popup()->add_item(vformat(TTR("Set as Default for '%s'"), params->importer->get_visible_name()), ITEM_SET_AS_DEFAULT);
 	if (ProjectSettings::get_singleton()->has_setting("importer_defaults/" + params->importer->get_importer_name())) {
-		preset->get_popup()->add_item(TTR("Load Default"), ITEM_LOAD_DEFAULT);
+		preset->get_popup()->add_item(TTRC("Load Default"), ITEM_LOAD_DEFAULT);
 		preset->get_popup()->add_separator();
 		preset->get_popup()->add_item(vformat(TTR("Clear Default for '%s'"), params->importer->get_visible_name()), ITEM_CLEAR_DEFAULT);
 	}
@@ -715,10 +715,10 @@ void ImportDock::_set_dirty(bool p_dirty) {
 		// Add a dirty marker to notify the user that they should reimport the selected resource to see changes.
 		import->set_text(TTR("Reimport") + " (*)");
 		import->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
-		import->set_tooltip_text(TTR("You have pending changes that haven't been applied yet. Click Reimport to apply changes made to the import options.\nSelecting another resource in the FileSystem dock without clicking Reimport first will discard changes made in the Import dock."));
+		import->set_tooltip_text(TTRC("You have pending changes that haven't been applied yet. Click Reimport to apply changes made to the import options.\nSelecting another resource in the FileSystem dock without clicking Reimport first will discard changes made in the Import dock."));
 	} else {
 		// Remove the dirty marker on the Reimport button.
-		import->set_text(TTR("Reimport"));
+		import->set_text(TTRC("Reimport"));
 		import->remove_theme_color_override(SceneStringName(font_color));
 		import->set_tooltip_text("");
 	}
@@ -756,7 +756,7 @@ ImportDock::ImportDock() {
 	imported->set_clip_text(true);
 	content->add_child(imported);
 	HBoxContainer *hb = memnew(HBoxContainer);
-	content->add_margin_child(TTR("Import As:"), hb);
+	content->add_margin_child(TTRC("Import As:"), hb);
 	import_as = memnew(OptionButton);
 	import_as->set_disabled(true);
 	import_as->set_fit_to_longest_item(false);
@@ -766,7 +766,7 @@ ImportDock::ImportDock() {
 	hb->add_child(import_as);
 	import_as->set_h_size_flags(SIZE_EXPAND_FILL);
 	preset = memnew(MenuButton);
-	preset->set_text(TTR("Preset"));
+	preset->set_text(TTRC("Preset"));
 	preset->set_disabled(true);
 	preset->get_popup()->connect("index_pressed", callable_mp(this, &ImportDock::_preset_selected));
 	hb->add_child(preset);
@@ -783,12 +783,12 @@ ImportDock::ImportDock() {
 	hb = memnew(HBoxContainer);
 	content->add_child(hb);
 	import = memnew(Button);
-	import->set_text(TTR("Reimport"));
+	import->set_text(TTRC("Reimport"));
 	import->set_disabled(true);
 	import->connect(SceneStringName(pressed), callable_mp(this, &ImportDock::_reimport_pressed));
 	advanced_spacer = hb->add_spacer();
 	advanced = memnew(Button);
-	advanced->set_text(TTR("Advanced..."));
+	advanced->set_text(TTRC("Advanced..."));
 	hb->add_child(advanced);
 	hb->add_spacer();
 	hb->add_child(import);
@@ -803,16 +803,16 @@ ImportDock::ImportDock() {
 	reimport_confirm->connect(SceneStringName(confirmed), callable_mp(this, &ImportDock::_reimport_and_cleanup));
 
 	VBoxContainer *vbc_confirm = memnew(VBoxContainer());
-	cleanup_warning = memnew(Label(TTR("The imported resource is currently loaded. All instances will be replaced and undo history will be cleared.")));
+	cleanup_warning = memnew(Label(TTRC("The imported resource is currently loaded. All instances will be replaced and undo history will be cleared.")));
 	vbc_confirm->add_child(cleanup_warning);
-	label_warning = memnew(Label(TTR("WARNING: Assets exist that use this resource. They may stop loading properly after changing type.")));
+	label_warning = memnew(Label(TTRC("WARNING: Assets exist that use this resource. They may stop loading properly after changing type.")));
 	vbc_confirm->add_child(label_warning);
 	reimport_confirm->add_child(vbc_confirm);
 
 	params = memnew(ImportDockParameters);
 
 	select_a_resource = memnew(Label);
-	select_a_resource->set_text(TTR("Select a resource file in the filesystem or in the inspector to adjust import settings."));
+	select_a_resource->set_text(TTRC("Select a resource file in the filesystem or in the inspector to adjust import settings."));
 	select_a_resource->set_autowrap_mode(TextServer::AUTOWRAP_WORD);
 	select_a_resource->set_custom_minimum_size(Size2(100 * EDSCALE, 0));
 	select_a_resource->set_v_size_flags(SIZE_EXPAND_FILL);
