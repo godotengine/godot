@@ -1656,6 +1656,8 @@ void EditorInspectorSection::_notification(int p_what) {
 			update_minimum_size();
 			bg_color = get_theme_color(SNAME("prop_subsection"), EditorStringName(Editor));
 			bg_color.a /= level;
+			int separation = get_theme_constant(SNAME("v_separation"), SNAME("EditorInspector"));
+			vbox->add_theme_constant_override(SNAME("separation"), separation);
 		} break;
 
 		case NOTIFICATION_SORT_CHILDREN: {
