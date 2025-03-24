@@ -2544,14 +2544,14 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 				Point2i button_ofs = Point2i(ofs + item_width_with_buttons - button_size.width, p_pos.y) - theme_cache.offset + p_draw_ofs;
 
 				bool should_draw_pressed = cache.click_type == Cache::CLICK_BUTTON && cache.click_item == p_item && cache.click_column == i && cache.click_index == j && !p_item->cells[i].buttons[j].disabled;
-				bool should_draw_hovered = !should_draw_pressed && !drop_mode_flags && cache.hover_item == p_item && cache.hover_column == i && cache.hover_button_index_in_column == j && !p_item->cells[i].buttons[j].disabled;
+				bool should_draw_hovered = !drop_mode_flags && cache.hover_item == p_item && cache.hover_column == i && cache.hover_button_index_in_column == j && !p_item->cells[i].buttons[j].disabled;
 
 				if (should_draw_pressed || should_draw_hovered) {
 					Point2 od = button_ofs;
 					if (rtl) {
 						od.x = get_size().width - od.x - button_size.x;
 					}
-					if (should_draw_pressed) {
+					if (should_draw_pressed && should_draw_hovered) {
 						theme_cache.button_pressed->draw(get_canvas_item(), Rect2(od.x, od.y, button_size.width, MAX(button_size.height, label_h)));
 					} else {
 						theme_cache.button_hover->draw(get_canvas_item(), Rect2(od.x, od.y, button_size.width, MAX(button_size.height, label_h)));
@@ -3831,9 +3831,16 @@ void Tree::gui_input(const Ref<InputEvent> &p_event) {
 			}
 
 			if (cache.click_type == Cache::CLICK_BUTTON && cache.click_item != nullptr) {
-				// make sure in case of wrong reference after reconstructing whole TreeItems
+				// Make sure the reference is current in case TreeItems is reconstructed.
 				cache.click_item = get_item_at_position(cache.click_pos);
-				emit_signal("button_clicked", cache.click_item, cache.click_column, cache.click_id, mb->get_button_index());
+
+				// Only emit the event if the click is still within the button rect.
+				TreeItem *current_item;
+				int current_column, current_index, current_section;
+				_find_button_at_pos(mb->get_position(), current_item, current_column, current_index, current_section);
+				if (current_item == cache.click_item && current_column == cache.click_column && current_index == cache.click_index) {
+					emit_signal("button_clicked", cache.click_item, cache.click_column, cache.click_id, mb->get_button_index());
+				}
 			}
 
 			cache.click_type = Cache::CLICK_NONE;
