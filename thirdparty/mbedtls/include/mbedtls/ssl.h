@@ -183,6 +183,41 @@
 #define MBEDTLS_ERR_SSL_BAD_CONFIG                        -0x5E80
 /** Cache entry not found */
 #define MBEDTLS_ERR_SSL_CACHE_ENTRY_NOT_FOUND             -0x5E00
+/** Attempt to verify a certificate without an expected hostname.
+ * This is usually insecure.
+ *
+ * In TLS clients, when a client authenticates a server through its
+ * certificate, the client normally checks three things:
+ * - the certificate chain must be valid;
+ * - the chain must start from a trusted CA;
+ * - the certificate must cover the server name that is expected by the client.
+ *
+ * Omitting any of these checks is generally insecure, and can allow a
+ * malicious server to impersonate a legitimate server.
+ *
+ * The third check may be safely skipped in some unusual scenarios,
+ * such as networks where eavesdropping is a risk but not active attacks,
+ * or a private PKI where the client equally trusts all servers that are
+ * accredited by the root CA.
+ *
+ * You should call mbedtls_ssl_set_hostname() with the expected server name
+ * before starting a TLS handshake on a client (unless the client is
+ * set up to only use PSK-based authentication, which does not rely on the
+ * host name). If you have determined that server name verification is not
+ * required for security in your scenario, call mbedtls_ssl_set_hostname()
+ * with \p NULL as the server name.
+ *
+ * This error is raised if all of the following conditions are met:
+ *
+ * - A TLS client is configured with the authentication mode
+ *   #MBEDTLS_SSL_VERIFY_REQUIRED (default).
+ * - Certificate authentication is enabled.
+ * - The client does not call mbedtls_ssl_set_hostname().
+ * - The configuration option
+ *   #MBEDTLS_SSL_CLI_ALLOW_WEAK_CERTIFICATE_VERIFICATION_WITHOUT_HOSTNAME
+ *   is not enabled.
+ */
+#define MBEDTLS_ERR_SSL_CERTIFICATE_VERIFICATION_WITHOUT_HOSTNAME  -0x5D80
 
 /*
  * Various constants
@@ -1403,8 +1438,36 @@ struct mbedtls_ssl_context {
      * User settings
      */
 #if defined(MBEDTLS_X509_CRT_PARSE_C)
-    char *hostname;             /*!< expected peer CN for verification
-                                     (and SNI if available)                 */
+    /** Expected peer CN for verification.
+     *
+     * Also used on clients for SNI.
+     *
+     * The value of this field can be:
+     * - \p NULL in a newly initialized or reset context.
+     * - A heap-allocated copy of the last value passed to
+     *   mbedtls_ssl_set_hostname(), if the last call had a non-null
+     *  \p hostname argument.
+     * - A special value to indicate that mbedtls_ssl_set_hostname()
+     *   was called with \p NULL (as opposed to never having been called).
+     *
+     * If you need to obtain the value passed to
+     * mbedtls_ssl_set_hostname() even if it may have been called with
+     * \p NULL, call mbedtls_ssl_get_hostname_pointer().
+     *
+     * If this field contains the value \p NULL and the configuration option
+     * #MBEDTLS_SSL_CLI_ALLOW_WEAK_CERTIFICATE_VERIFICATION_WITHOUT_HOSTNAME
+     * is unset, on a TLS client, attempting to verify a server certificate
+     * results in the error
+     * #MBEDTLS_ERR_SSL_CERTIFICATE_VERIFICATION_WITHOUT_HOSTNAME.
+     *
+     * If this field contains the special value described above, or if
+     * the value is \p NULL and the configuration option
+     * #MBEDTLS_SSL_CLI_ALLOW_WEAK_CERTIFICATE_VERIFICATION_WITHOUT_HOSTNAME
+     * is set, then the peer name verification is skipped, which may be
+     * insecure, especially on a client. Furthermore, on a client, the
+     * server_name extension is not sent.
+     */
+    char *hostname;
 #endif /* MBEDTLS_X509_CRT_PARSE_C */
 
 #if defined(MBEDTLS_SSL_ALPN)
@@ -1534,6 +1597,14 @@ void mbedtls_ssl_init(mbedtls_ssl_context *ssl);
  * \warning        This function must be called exactly once per context.
  *                 Calling mbedtls_ssl_setup again is not supported, even
  *                 if no session is active.
+ *
+ * \warning        After setting up a client context, if certificate-based
+ *                 authentication is enabled, you should call
+ *                 mbedtls_ssl_set_hostname() to specifiy the expected
+ *                 name of the server. Without this, in most scenarios,
+ *                 the TLS connection is insecure. See
+ *                 #MBEDTLS_ERR_SSL_CERTIFICATE_VERIFICATION_WITHOUT_HOSTNAME
+ *                 for more information.
  *
  * \note           If #MBEDTLS_USE_PSA_CRYPTO is enabled, the PSA crypto
  *                 subsystem must have been initialized by calling
@@ -3107,16 +3178,29 @@ void mbedtls_ssl_conf_sig_hashes(mbedtls_ssl_config *conf,
 #if defined(MBEDTLS_X509_CRT_PARSE_C)
 /**
  * \brief          Set or reset the hostname to check against the received
- *                 server certificate. It sets the ServerName TLS extension,
- *                 too, if that extension is enabled. (client-side only)
+ *                 peer certificate. On a client, this also sets the
+ *                 ServerName TLS extension, if that extension is enabled.
+ *                 On a TLS 1.3 client, this also sets the server name in
+ *                 the session resumption ticket, if that feature is enabled.
  *
  * \param ssl      SSL context
- * \param hostname the server hostname, may be NULL to clear hostname
-
- * \note           Maximum hostname length MBEDTLS_SSL_MAX_HOST_NAME_LEN.
+ * \param hostname The server hostname. This may be \c NULL to clear
+ *                 the hostname.
  *
- * \return         0 if successful, MBEDTLS_ERR_SSL_ALLOC_FAILED on
- *                 allocation failure, MBEDTLS_ERR_SSL_BAD_INPUT_DATA on
+ * \note           Maximum hostname length #MBEDTLS_SSL_MAX_HOST_NAME_LEN.
+ *
+ * \note           If the hostname is \c NULL on a client, then the server
+ *                 is not authenticated: it only needs to have a valid
+ *                 certificate, not a certificate matching its name.
+ *                 Therefore you should always call this function on a client,
+ *                 unless the connection is set up to only allow
+ *                 pre-shared keys, or in scenarios where server
+ *                 impersonation is not a concern. See the documentation of
+ *                 #MBEDTLS_ERR_SSL_CERTIFICATE_VERIFICATION_WITHOUT_HOSTNAME
+ *                 for more details.
+ *
+ * \return         0 if successful, #MBEDTLS_ERR_SSL_ALLOC_FAILED on
+ *                 allocation failure, #MBEDTLS_ERR_SSL_BAD_INPUT_DATA on
  *                 too long input hostname.
  *
  *                 Hostname set to the one provided on success (cleared
