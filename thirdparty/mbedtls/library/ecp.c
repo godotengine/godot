@@ -3056,7 +3056,7 @@ int mbedtls_ecp_check_privkey(const mbedtls_ecp_group *grp,
         /* see RFC 7748 sec. 5 para. 5 */
         if (mbedtls_mpi_get_bit(d, 0) != 0 ||
             mbedtls_mpi_get_bit(d, 1) != 0 ||
-            mbedtls_mpi_bitlen(d) - 1 != grp->nbits) {  /* mbedtls_mpi_bitlen is one-based! */
+            mbedtls_mpi_bitlen(d) != grp->nbits + 1) {  /* mbedtls_mpi_bitlen is one-based! */
             return MBEDTLS_ERR_ECP_INVALID_KEY;
         }
 
