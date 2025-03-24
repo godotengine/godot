@@ -271,7 +271,7 @@ EditorDebuggerRemoteObjects *EditorDebuggerInspector::set_objects(const Array &p
 	remote_objects->prop_list.clear();
 	int new_props_added = 0;
 	HashSet<String> changed;
-	for (const KeyValue<String, UsageData> &KV : usage) {
+	for (KeyValue<String, UsageData> &KV : usage) {
 		const PropertyInfo &pinfo = KV.value.prop.first;
 		Variant var = KV.value.values[remote_objects->remote_object_ids[0]];
 
@@ -287,6 +287,7 @@ EditorDebuggerRemoteObjects *EditorDebuggerInspector::set_objects(const Array &p
 					}
 				}
 				var = ResourceLoader::load(path);
+				KV.value.values[remote_objects->remote_object_ids[0]] = var;
 
 				if (pinfo.hint_string == "Script") {
 					if (remote_objects->get_script() != var) {

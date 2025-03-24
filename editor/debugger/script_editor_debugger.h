@@ -217,8 +217,8 @@ private:
 	void _msg_servers_profile_frame(uint64_t p_thread_id, const Array &p_data);
 	void _msg_servers_profile_total(uint64_t p_thread_id, const Array &p_data);
 	void _msg_request_quit(uint64_t p_thread_id, const Array &p_data);
-	void _msg_remote_nodes_clicked(uint64_t p_thread_id, const Array &p_data);
-	void _msg_remote_nothing_clicked(uint64_t p_thread_id, const Array &p_data);
+	void _msg_remote_objects_selected(uint64_t p_thread_id, const Array &p_data);
+	void _msg_remote_nothing_selected(uint64_t p_thread_id, const Array &p_data);
 	void _msg_remote_selection_invalidated(uint64_t p_thread_id, const Array &p_data);
 	void _msg_show_selection_limit_warning(uint64_t p_thread_id, const Array &p_data);
 	void _msg_performance_profile_names(uint64_t p_thread_id, const Array &p_data);
