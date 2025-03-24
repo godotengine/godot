@@ -710,7 +710,7 @@ Error OS_Unix::execute(const String &p_path, const List<String> &p_arguments, St
 				p_pipe_mutex->lock();
 			}
 			String pipe_out;
-			if (pipe_out.parse_utf8(buf) == OK) {
+			if (pipe_out.append_utf8(buf) == OK) {
 				(*r_pipe) += pipe_out;
 			} else {
 				(*r_pipe) += String(buf); // If not valid UTF-8 try decode as Latin-1
@@ -942,7 +942,7 @@ String OS_Unix::get_environment(const String &p_var) const {
 		return "";
 	}
 	String s;
-	if (s.parse_utf8(val) == OK) {
+	if (s.append_utf8(val) == OK) {
 		return s;
 	}
 	return String(val); // Not valid UTF-8, so return as-is
@@ -971,7 +971,7 @@ String OS_Unix::get_executable_path() const {
 	ssize_t len = readlink("/proc/self/exe", buf, sizeof(buf));
 	String b;
 	if (len > 0) {
-		b.parse_utf8(buf, len);
+		b.append_utf8(buf, len);
 	}
 	if (b.is_empty()) {
 		WARN_PRINT("Couldn't get executable path from /proc/self/exe, using argv[0]");
@@ -1008,7 +1008,7 @@ String OS_Unix::get_executable_path() const {
 		return OS::get_executable_path();
 	}
 	String b;
-	b.parse_utf8(buf);
+	b.append_utf8(buf);
 	return b;
 #elif defined(__APPLE__)
 	char temp_path[1];

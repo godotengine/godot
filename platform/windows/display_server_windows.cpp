@@ -981,7 +981,7 @@ String DisplayServerWindows::clipboard_get() const {
 		if (mem != nullptr) {
 			LPTSTR ptr = (LPTSTR)GlobalLock(mem);
 			if (ptr != nullptr) {
-				ret.parse_utf8((const char *)ptr);
+				ret.append_utf8((const char *)ptr);
 				GlobalUnlock(mem);
 			}
 		}
@@ -2761,7 +2761,7 @@ String DisplayServerWindows::ime_get_text() const {
 	int32_t length = ImmGetCompositionStringW(wd.im_himc, GCS_COMPSTR, nullptr, 0);
 	wchar_t *string = reinterpret_cast<wchar_t *>(memalloc(length));
 	ImmGetCompositionStringW(wd.im_himc, GCS_COMPSTR, string, length);
-	ret.parse_utf16((char16_t *)string, length / sizeof(wchar_t));
+	ret.append_utf16((char16_t *)string, length / sizeof(wchar_t));
 
 	memdelete(string);
 

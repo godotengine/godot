@@ -112,7 +112,7 @@ static String get_atom_name(Display *p_disp, Atom p_atom) {
 	char *name = XGetAtomName(p_disp, p_atom);
 	ERR_FAIL_NULL_V_MSG(name, String(), "Atom is invalid.");
 	String ret;
-	ret.parse_utf8(name);
+	ret.append_utf8(name);
 	XFree(name);
 	return ret;
 }
@@ -766,7 +766,7 @@ String DisplayServerX11::_clipboard_get_impl(Atom p_source, Window x11_window, A
 			}
 
 			if (success && (data_size > 0)) {
-				ret.parse_utf8((const char *)incr_data.ptr(), data_size);
+				ret.append_utf8((const char *)incr_data.ptr(), data_size);
 			}
 		} else if (bytes_left > 0) {
 			// Data is ready and can be processed all at once.
@@ -776,7 +776,7 @@ String DisplayServerX11::_clipboard_get_impl(Atom p_source, Window x11_window, A
 					&len, &dummy, &data);
 
 			if (result == Success) {
-				ret.parse_utf8((const char *)data);
+				ret.append_utf8((const char *)data);
 			} else {
 				print_verbose("Failed to get selection data.");
 			}
@@ -3685,7 +3685,7 @@ void DisplayServerX11::_handle_key_event(WindowID p_window, XKeyEvent *p_event, 
 			}
 
 			String tmp;
-			tmp.parse_utf8(utf8string, utf8bytes);
+			tmp.append_utf8(utf8string, utf8bytes);
 			for (int i = 0; i < tmp.length(); i++) {
 				Ref<InputEventKey> k;
 				k.instantiate();
@@ -3766,7 +3766,7 @@ void DisplayServerX11::_handle_key_event(WindowID p_window, XKeyEvent *p_event, 
 				int str_xkb_size = xkb_compose_state_get_utf8(wd.xkb_state, str_xkb, 255);
 
 				String tmp;
-				tmp.parse_utf8(str_xkb, str_xkb_size);
+				tmp.append_utf8(str_xkb, str_xkb_size);
 				for (int i = 0; i < tmp.length(); i++) {
 					Ref<InputEventKey> k;
 					k.instantiate();
@@ -4121,7 +4121,7 @@ void DisplayServerX11::_xim_preedit_draw_callback(::XIM xim, ::XPointer client_d
 			if (xim_text->encoding_is_wchar) {
 				changed_text = String(xim_text->string.wide_char);
 			} else {
-				changed_text.parse_utf8(xim_text->string.multi_byte);
+				changed_text.append_utf8(xim_text->string.multi_byte);
 			}
 
 			if (call_data->chg_length < 0) {

@@ -37,7 +37,8 @@
 void EMWSPeer::_esws_on_connect(void *p_obj, char *p_proto) {
 	EMWSPeer *peer = static_cast<EMWSPeer *>(p_obj);
 	peer->ready_state = STATE_OPEN;
-	peer->selected_protocol.parse_utf8(p_proto);
+	peer->selected_protocol.clear();
+	peer->selected_protocol.append_utf8(p_proto);
 }
 
 void EMWSPeer::_esws_on_message(void *p_obj, const uint8_t *p_data, int p_data_size, int p_is_string) {
@@ -54,7 +55,8 @@ void EMWSPeer::_esws_on_error(void *p_obj) {
 void EMWSPeer::_esws_on_close(void *p_obj, int p_code, const char *p_reason, int p_was_clean) {
 	EMWSPeer *peer = static_cast<EMWSPeer *>(p_obj);
 	peer->close_code = p_code;
-	peer->close_reason.parse_utf8(p_reason);
+	peer->close_reason.clear();
+	peer->close_reason.append_utf8(p_reason);
 	peer->ready_state = STATE_CLOSED;
 }
 

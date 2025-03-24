@@ -211,7 +211,7 @@ String FileAccessUnix::get_real_path() const {
 	}
 
 	String result;
-	Error parse_ok = result.parse_utf8(resolved_path);
+	Error parse_ok = result.append_utf8(resolved_path);
 	::free(resolved_path);
 
 	if (parse_ok != OK) {
