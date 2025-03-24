@@ -58,12 +58,12 @@ private:
 	void _session_started(Ref<EditorDebuggerSession> p_session);
 	void _session_stopped();
 
+	void _feature_profile_changed();
+
 protected:
 	static void _bind_methods();
 
 public:
-	void set_is_feature_enabled(bool p_enabled);
-
 	void set_suspend(bool p_enabled);
 	void next_frame();
 
@@ -81,6 +81,8 @@ public:
 	void reset_camera_3d_position();
 
 	virtual void setup_session(int p_session_id) override;
+
+	GameViewDebugger();
 };
 
 class GameView : public VBoxContainer {
@@ -198,12 +200,12 @@ class GameView : public VBoxContainer {
 
 	void _debugger_breaked(bool p_breaked, bool p_can_debug);
 
+	void _feature_profile_changed();
+
 protected:
 	void _notification(int p_what);
 
 public:
-	void set_is_feature_enabled(bool p_enabled);
-
 	void set_state(const Dictionary &p_state);
 	Dictionary get_state() const;
 
@@ -225,7 +227,6 @@ class GameViewPlugin : public EditorPlugin {
 
 	String last_editor;
 
-	void _feature_profile_changed();
 #ifndef ANDROID_ENABLED
 	void _window_visibility_changed(bool p_visible);
 #endif // ANDROID_ENABLED
