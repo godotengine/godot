@@ -736,7 +736,7 @@ void RichTextLabel::_set_table_size(ItemTable *p_table, int p_available_width) {
 
 		int column = idx % col_count;
 
-		offset.x += frame->padding.position.x;
+		HorizontalAlignment alignment = _find_alignment(frame);
 		float yofs = frame->padding.position.y;
 		float prev_h = 0;
 		float row_baseline = 0.0;
@@ -748,6 +748,23 @@ void RichTextLabel::_set_table_size(ItemTable *p_table, int p_available_width) {
 
 			frame->lines[i].offset.y = prev_h;
 
+			float available_width = p_table->columns[column].width - (frame->padding.position.x + frame->padding.size.x);
+			float centered_pos = (available_width - frame->lines[i].text_buf->get_size().x) / 2;
+			switch (alignment) {
+				case HORIZONTAL_ALIGNMENT_LEFT:
+					frame->lines[i].offset.x = offset.x + frame->padding.position.x;
+					break;
+				case HORIZONTAL_ALIGNMENT_CENTER:
+					frame->lines[i].offset.x = offset.x + frame->padding.position.x + centered_pos;
+					break;
+				case HORIZONTAL_ALIGNMENT_RIGHT:
+					frame->lines[i].offset.x = offset.x + p_table->columns[column].width - 
+									frame->lines[i].text_buf->get_size().x - frame->padding.size.x;
+					break;
+				default:
+					frame->lines[i].offset.x = offset.x + frame->padding.position.x;
+					break;
+			}
 			float h = frame->lines[i].text_buf->get_size().y + (frame->lines[i].text_buf->get_line_count() - 1) * theme_cache.line_separation;
 			if (i > 0) {
 				h += theme_cache.line_separation;
@@ -765,7 +782,7 @@ void RichTextLabel::_set_table_size(ItemTable *p_table, int p_available_width) {
 			row_baseline = MAX(row_baseline, frame->lines[i].text_buf->get_line_ascent(frame->lines[i].text_buf->get_line_count() - 1));
 		}
 		yofs += frame->padding.size.y;
-		offset.x += p_table->columns[column].width + theme_cache.table_h_separation + frame->padding.size.x;
+		offset.x += p_table->columns[column].width + theme_cache.table_h_separation;
 
 		row_height = MAX(yofs, row_height);
 		// Add row height after last column of the row or last cell of the table.
@@ -980,25 +997,27 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 										if (rtl) {
 											coff.x = rect.size.width - table->columns[col].width - coff.x;
 										}
+										float vertical_center_offset = (table->rows[row] - (frame->lines[0].text_buf->get_size().y)) / 2;
 										if (row % 2 == 0) {
 											Color c = frame->odd_row_bg != Color(0, 0, 0, 0) ? frame->odd_row_bg : odd_row_bg;
 											if (c.a > 0.0) {
-												draw_rect(Rect2(p_ofs + rect.position + off + coff - frame->padding.position - Vector2(h_separation * 0.5, v_separation * 0.5).floor(), Size2(table->columns[col].width + h_separation + frame->padding.position.x + frame->padding.size.x, table->rows[row])), c, true);
+												draw_rect(Rect2(p_ofs + rect.position + off + coff - frame->padding.position - Vector2(h_separation * 0.5, v_separation * 0.5 - vertical_center_offset).floor(), Size2(table->columns[col].width + h_separation + frame->padding.position.x + frame->padding.size.x, table->rows[row])), c, true);
 											}
 										} else {
 											Color c = frame->even_row_bg != Color(0, 0, 0, 0) ? frame->even_row_bg : even_row_bg;
 											if (c.a > 0.0) {
-												draw_rect(Rect2(p_ofs + rect.position + off + coff - frame->padding.position - Vector2(h_separation * 0.5, v_separation * 0.5).floor(), Size2(table->columns[col].width + h_separation + frame->padding.position.x + frame->padding.size.x, table->rows[row])), c, true);
+												draw_rect(Rect2(p_ofs + rect.position + off + coff - frame->padding.position - Vector2(h_separation * 0.5, v_separation * 0.5 - vertical_center_offset).floor(), Size2(table->columns[col].width + h_separation + frame->padding.position.x + frame->padding.size.x, table->rows[row])), c, true);
 											}
 										}
 										Color bc = frame->border != Color(0, 0, 0, 0) ? frame->border : border;
 										if (bc.a > 0.0) {
-											draw_rect(Rect2(p_ofs + rect.position + off + coff - frame->padding.position - Vector2(h_separation * 0.5, v_separation * 0.5).floor(), Size2(table->columns[col].width + h_separation + frame->padding.position.x + frame->padding.size.x, table->rows[row])), bc, false);
+											draw_rect(Rect2(p_ofs + rect.position + off + coff - frame->padding.position - Vector2(h_separation * 0.5, v_separation * 0.5 - vertical_center_offset).floor(), Size2(table->columns[col].width + h_separation + frame->padding.position.x + frame->padding.size.x, table->rows[row])), bc, false);
 										}
 									}
 
 									for (int j = 0; j < (int)frame->lines.size(); j++) {
-										_draw_line(frame, j, p_ofs + rect.position + off + Vector2(0, frame->lines[j].offset.y), rect.size.x, 0, p_base_color, p_outline_size, p_outline_color, p_font_shadow_color, p_shadow_outline_size, p_shadow_ofs, r_processed_glyphs);
+										_draw_line(frame, j, p_ofs + rect.position + off + Vector2(0, frame->lines[j].offset.y + (table->rows[row] - frame->lines[j].text_buf->get_size().y) / 2), 
+											rect.size.x, 0, p_base_color, p_outline_size, p_outline_color, p_font_shadow_color, p_shadow_outline_size, p_shadow_ofs, r_processed_glyphs);
 									}
 									idx++;
 								}
