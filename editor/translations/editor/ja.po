@@ -81,13 +81,14 @@
 # heppocogne <yuck945@gmail.com>, 2024.
 # Yu Tanaka <yrk00337@gmail.com>, 2024.
 # 喜多山真護 <shingo.kitayama@gmail.com>, 2025.
+# UtanoSchell <utano.mayonaka@gmail.com>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-03-22 07:13+0000\n"
-"Last-Translator: 喜多山真護 <shingo.kitayama@gmail.com>\n"
+"PO-Revision-Date: 2025-03-25 12:31+0000\n"
+"Last-Translator: UtanoSchell <utano.mayonaka@gmail.com>\n"
 "Language-Team: Japanese <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ja/>\n"
 "Language: ja\n"
@@ -16014,6 +16015,27 @@ msgstr "配列のサイズを変更できません。"
 msgid "Step argument is zero!"
 msgstr "ステップ引数がゼロです！"
 
+msgid "Not a script with an instance."
+msgstr "インスタンスのスクリプトではありません。"
+
+msgid "Not based on a script."
+msgstr "スクリプトがベースになっていません。"
+
+msgid "Not based on a resource file."
+msgstr "リソースファイルがベースになっていません。"
+
+msgid "Invalid instance dictionary format (missing @path)."
+msgstr "無効なインスタンス辞書形式です (@path がありません)。"
+
+msgid "Invalid instance dictionary format (can't load script at @path)."
+msgstr "無効なインスタンス辞書形式です (@path のスクリプトをロードできません)。"
+
+msgid "Invalid instance dictionary format (invalid script at @path)."
+msgstr "無効なインスタンス辞書形式です (@path が無効なスクリプトです)。"
+
+msgid "Invalid instance dictionary (invalid subclasses)."
+msgstr "無効なインスタンス辞書です (無効なサブクラスです)。"
+
 msgid "Cannot instantiate GDScript class."
 msgstr "GDScriptクラスをインスタンス化できません。"
 
@@ -16594,6 +16616,9 @@ msgstr "アクションを追加します。"
 
 msgid "Remove action set."
 msgstr "アクションセットを除去します。"
+
+msgid "Remove binding modifier."
+msgstr "バインドを削除。"
 
 msgid "OpenXR Action Map"
 msgstr "OpenXRアクションマップ"
