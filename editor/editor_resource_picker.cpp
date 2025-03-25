@@ -506,6 +506,9 @@ void EditorResourcePicker::set_create_options(Object *p_menu_node) {
 
 		_ensure_allowed_types();
 		HashSet<StringName> allowed_types = allowed_types_without_convert;
+		if (!allowed_types.is_empty()) {
+			edit_menu->add_separator(TTRC("New"));
+		}
 
 		for (const StringName &E : allowed_types) {
 			const String &t = E;
@@ -518,7 +521,8 @@ void EditorResourcePicker::set_create_options(Object *p_menu_node) {
 
 			Ref<Texture2D> icon = EditorNode::get_singleton()->get_class_icon(t, "Object");
 			int id = TYPE_BASE_ID + idx;
-			edit_menu->add_icon_item(icon, vformat(TTR("New %s"), t), id);
+			edit_menu->add_icon_item(icon, t, id);
+			edit_menu->set_item_auto_translate_mode(-1, AUTO_TRANSLATE_MODE_DISABLED);
 
 			HashMap<String, DocData::ClassDoc>::Iterator class_doc = EditorHelp::get_doc_data()->class_list.find(t);
 			if (class_doc) {
