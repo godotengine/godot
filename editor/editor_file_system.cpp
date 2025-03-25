@@ -913,6 +913,12 @@ bool EditorFileSystem::_update_scan_actions() {
 						// Re-assign the UID to file, just in case it was pulled from cache.
 						ResourceSaver::set_uid(new_file_path, existing_id);
 					}
+				} else if (ResourceLoader::should_create_uid_file(new_file_path)) {
+					Ref<FileAccess> f = FileAccess::open(new_file_path + ".uid", FileAccess::WRITE);
+					if (f.is_valid()) {
+						ia.new_file->uid = ResourceUID::get_singleton()->create_id();
+						f->store_line(ResourceUID::get_singleton()->id_to_text(ia.new_file->uid));
+					}
 				}
 
 				if (ClassDB::is_parent_class(ia.new_file->type, SNAME("Script"))) {
@@ -3107,8 +3113,11 @@ void EditorFileSystem::_refresh_filesystem() {
 }
 
 void EditorFileSystem::_reimport_thread(uint32_t p_index, ImportThreadData *p_import_data) {
+	ResourceLoader::set_is_import_thread(true);
 	int file_idx = p_import_data->reimport_from + int(p_index);
 	_reimport_file(p_import_data->reimport_files[file_idx].path);
+	ResourceLoader::set_is_import_thread(false);
+
 	p_import_data->imported_sem->post();
 }
 

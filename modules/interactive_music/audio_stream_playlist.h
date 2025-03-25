@@ -70,6 +70,7 @@ public:
 	virtual Ref<AudioStreamPlayback> instantiate_playback() override;
 	virtual String get_stream_name() const override;
 	virtual double get_length() const override;
+	virtual bool is_meta_stream() const override { return true; }
 
 protected:
 	static void _bind_methods();

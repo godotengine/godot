@@ -75,13 +75,15 @@
 # KyungHyungSo <valentine92exp@gmail.com>, 2025.
 # 백치현 <bagjob@gmail.com>, 2025.
 # Ji Yong Jeung <thomasjeung@gmail.com>, 2025.
+# ZiLA3 <kms-0509@naver.com>, 2025.
+# Wayne <eunchan0817@gmail.com>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-02-17 06:44+0000\n"
-"Last-Translator: Ji Yong Jeung <thomasjeung@gmail.com>\n"
+"PO-Revision-Date: 2025-03-24 03:29+0000\n"
+"Last-Translator: Wayne <eunchan0817@gmail.com>\n"
 "Language-Team: Korean <https://hosted.weblate.org/projects/godot-engine/godot/"
 "ko/>\n"
 "Language: ko\n"
@@ -89,7 +91,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.10\n"
+"X-Generator: Weblate 5.11-dev\n"
 
 msgid "Main Thread"
 msgstr "메인 스레드"
@@ -945,6 +947,9 @@ msgstr ""
 msgid "property '%s'"
 msgstr "속성 '%s'"
 
+msgid "Nearest FPS: %d"
+msgstr "가장 가까운 FPS: %d"
+
 msgid "Change Animation Step"
 msgstr "애니메이션 단계 바꾸기"
 
@@ -1582,6 +1587,9 @@ msgstr "시그널 인수 바인드 해제:"
 msgid "Receiver Method:"
 msgstr "받는 메서드:"
 
+msgid "Pick"
+msgstr "선택"
+
 msgid "Advanced"
 msgstr "고급"
 
@@ -2075,6 +2083,9 @@ msgstr ""
 msgid "Cannot remove:"
 msgstr "제거할 수 없음:"
 
+msgid "Files to be deleted:"
+msgstr "삭제할 파일:"
+
 msgid "Dependencies of files to be deleted:"
 msgstr "삭제될 파일의 의존성:"
 
@@ -2114,17 +2125,26 @@ msgstr "명확한 소유 관계가 없는 리소스:"
 msgid "Name cannot be empty."
 msgstr "이름은 비워둘 수 없습니다."
 
+msgid "File name can't end with /."
+msgstr "파일 이름은 /로 끝날 수 없습니다."
+
 msgid "File name cannot be empty."
 msgstr "파일 이름은 비어있을 수 없습니다."
 
 msgid "Folder name cannot be empty."
 msgstr "폴더 이름은 비워둘 수 없습니다."
 
+msgid "File name contains invalid characters."
+msgstr "파일 이름에 잘못된 문자가 있습니다."
+
 msgid "Folder name contains invalid characters."
 msgstr "폴더 이름에 잘못된 문자가 있습니다."
 
 msgid "File name begins with a dot."
 msgstr "파일명이 마침표로 시작합니다."
+
+msgid "Folder name begins with a dot."
+msgstr "폴더 이름이 마침표로 시작합니다."
 
 msgid "File with that name already exists."
 msgstr "이 이름으로 된 파일이 이미 있습니다."
@@ -2135,6 +2155,12 @@ msgstr "이 이름으로 된 폴더가 이미 있습니다."
 msgid "Using slashes in folder names will create subfolders recursively."
 msgstr ""
 "폴더 이름에 슬래시를 사용하면 해당하는 하위 폴더들을 재귀적으로 만듭니다."
+
+msgid "File name is valid."
+msgstr "파일 이름이 잘못되었습니다."
+
+msgid "Base path: %s"
+msgstr "베이스 경로: %s"
 
 msgid "Folder name is valid."
 msgstr "폴더 이름이 올바릅니다."
@@ -2413,6 +2439,9 @@ msgstr "오디오 버스 레이아웃"
 msgid "Invalid name."
 msgstr "올바르지 않은 이름입니다."
 
+msgid "Must be a valid Unicode identifier."
+msgstr "올바른 유니코드 식별자여야 합니다."
+
 msgid "Must not collide with an existing engine class name."
 msgstr "기존 엔진 클래스 이름과 충돌해서는 안 됩니다."
 
@@ -2676,6 +2705,12 @@ msgstr "[비었음]"
 msgid "[unsaved]"
 msgstr "[저장되지 않음]"
 
+msgid "Open the %s dock."
+msgstr "%s 독을 엽니다."
+
+msgid "Focus on the %s dock."
+msgstr "%s 독을 포커스 합니다."
+
 msgid "%s - Godot Engine"
 msgstr "%s - Godot 엔진"
 
@@ -2843,8 +2878,29 @@ msgstr "프로필 가져오기"
 msgid "Manage Editor Feature Profiles"
 msgstr "에디터 기능 프로필 관리"
 
+msgid "Project initialization"
+msgstr "프로젝트 초기화"
+
+msgid "Scanning file structure..."
+msgstr "파일 구조 탐색 중..."
+
+msgid "Loading global class names..."
+msgstr "전역 클래스 이름을 불러오는 중..."
+
+msgid "Verifying GDExtensions..."
+msgstr "GDExtensions 검증 중..."
+
+msgid "Creating autoload scripts..."
+msgstr "자동 로드 스크립트를 생성하는 중..."
+
 msgid "Initializing plugins..."
 msgstr "플러그인을 초기화중..."
+
+msgid "Starting file scan..."
+msgstr "파일 탐색 시작 중..."
+
+msgid "Scanning actions..."
+msgstr "액션 탐색 중..."
 
 msgid "Some extensions need the editor to restart to take effect."
 msgstr "변경사항을 반영하려면 에디터를 다시 시작해야 합니다."
@@ -4782,6 +4838,9 @@ msgstr "파일에서 설치"
 
 msgid "Install templates from a local file."
 msgstr "로컬 파일로부터 템플릿을 설치합니다."
+
+msgid "Go Online"
+msgstr "온라인으로"
 
 msgid "Cancel the download of the templates."
 msgstr "템플릿의 다운로드를 취소합니다."
@@ -7191,9 +7250,6 @@ msgid ""
 msgstr ""
 "에셋 라이브러리는 인터넷으로 데이터 전송이 가능한 온라인 연결이 필요합니다."
 
-msgid "Go Online"
-msgstr "온라인으로"
-
 msgid "Failed to get repository configuration."
 msgstr "저장소 환경 설정을 가져오는 데 실패했습니다."
 
@@ -9103,7 +9159,7 @@ msgid "Pre"
 msgstr "전"
 
 msgid "Post"
-msgstr "후"
+msgstr "게시물"
 
 msgid "Preview Sun"
 msgstr "태양 미리보기"
@@ -13832,9 +13888,6 @@ msgstr "기능 태그"
 
 msgid "Pick Root Node Type"
 msgstr "루트 노드 타입 선택"
-
-msgid "Pick"
-msgstr "선택"
 
 msgid "Scene name is empty."
 msgstr "씬 이름이 비었습니다."

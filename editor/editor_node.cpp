@@ -174,8 +174,8 @@ EditorNode *EditorNode::singleton = nullptr;
 
 static const String EDITOR_NODE_CONFIG_SECTION = "EditorNode";
 
-static const String REMOVE_ANDROID_BUILD_TEMPLATE_MESSAGE = "The Android build template is already installed in this project and it won't be overwritten.\nRemove the \"%s\" directory manually before attempting this operation again.";
-static const String INSTALL_ANDROID_BUILD_TEMPLATE_MESSAGE = "This will set up your project for gradle Android builds by installing the source template to \"%s\".\nNote that in order to make gradle builds instead of using pre-built APKs, the \"Use Gradle Build\" option should be enabled in the Android export preset.";
+static const String REMOVE_ANDROID_BUILD_TEMPLATE_MESSAGE = TTRC("The Android build template is already installed in this project and it won't be overwritten.\nRemove the \"%s\" directory manually before attempting this operation again.");
+static const String INSTALL_ANDROID_BUILD_TEMPLATE_MESSAGE = TTRC("This will set up your project for gradle Android builds by installing the source template to \"%s\".\nNote that in order to make gradle builds instead of using pre-built APKs, the \"Use Gradle Build\" option should be enabled in the Android export preset.");
 
 bool EditorProgress::step(const String &p_state, int p_step, bool p_force_refresh) {
 	if (!force_background && Thread::is_main_thread()) {
@@ -399,6 +399,9 @@ void EditorNode::_update_vsync_mode() {
 }
 
 void EditorNode::_update_from_settings() {
+	if (!is_inside_tree()) {
+		return;
+	}
 	_update_title();
 
 	int current_filter = GLOBAL_GET("rendering/textures/canvas_textures/default_texture_filter");
@@ -1207,7 +1210,7 @@ void EditorNode::_sources_changed(bool p_exist) {
 		}
 
 		// Start preview thread now that it's safe.
-		if (!singleton->cmdline_export_mode) {
+		if (!singleton->cmdline_mode) {
 			EditorResourcePreview::get_singleton()->start();
 		}
 
@@ -1807,7 +1810,7 @@ void EditorNode::_save_scene_with_preview(String p_file, int p_idx) {
 	save_scene_progress->step(TTR("Saving Scene"), 4);
 	_save_scene(p_file, p_idx);
 
-	if (!singleton->cmdline_export_mode) {
+	if (!singleton->cmdline_mode) {
 		EditorResourcePreview::get_singleton()->check_for_invalidation(p_file);
 	}
 
@@ -1867,6 +1870,7 @@ int EditorNode::_save_external_resources(bool p_also_save_external_data) {
 		res->set_edited(false);
 	}
 
+	bool script_was_saved = false;
 	for (const String &E : edited_resources) {
 		Ref<Resource> res = ResourceCache::get_ref(E);
 		if (res.is_null()) {
@@ -1876,8 +1880,16 @@ int EditorNode::_save_external_resources(bool p_also_save_external_data) {
 		if (ps.is_valid()) {
 			continue; // Do not save PackedScenes, this will mess up the editor.
 		}
+		if (!script_was_saved) {
+			Ref<Script> scr = res;
+			script_was_saved = scr.is_valid();
+		}
 		ResourceSaver::save(res, res->get_path(), flg);
 		saved++;
+	}
+
+	if (script_was_saved) {
+		ScriptEditor::get_singleton()->update_script_times();
 	}
 
 	if (p_also_save_external_data) {
@@ -4944,7 +4956,7 @@ bool EditorNode::is_object_of_custom_type(const Object *p_object, const StringNa
 void EditorNode::progress_add_task(const String &p_task, const String &p_label, int p_steps, bool p_can_cancel) {
 	if (!singleton) {
 		return;
-	} else if (singleton->cmdline_export_mode) {
+	} else if (singleton->cmdline_mode) {
 		print_line(p_task + ": begin: " + p_label + " steps: " + itos(p_steps));
 	} else if (singleton->progress_dialog) {
 		singleton->progress_dialog->add_task(p_task, p_label, p_steps, p_can_cancel);
@@ -4954,7 +4966,7 @@ void EditorNode::progress_add_task(const String &p_task, const String &p_label, 
 bool EditorNode::progress_task_step(const String &p_task, const String &p_state, int p_step, bool p_force_refresh) {
 	if (!singleton) {
 		return false;
-	} else if (singleton->cmdline_export_mode) {
+	} else if (singleton->cmdline_mode) {
 		print_line("\t" + p_task + ": step " + itos(p_step) + ": " + p_state);
 		return false;
 	} else if (singleton->progress_dialog) {
@@ -4967,7 +4979,7 @@ bool EditorNode::progress_task_step(const String &p_task, const String &p_state,
 void EditorNode::progress_end_task(const String &p_task) {
 	if (!singleton) {
 		return;
-	} else if (singleton->cmdline_export_mode) {
+	} else if (singleton->cmdline_mode) {
 		print_line(p_task + ": end");
 	} else if (singleton->progress_dialog) {
 		singleton->progress_dialog->end_task(p_task);
@@ -5220,7 +5232,7 @@ Error EditorNode::export_preset(const String &p_preset, const String &p_path, bo
 	export_defer.android_build_template = p_android_build_template;
 	export_defer.patch = p_patch;
 	export_defer.patches = p_patches;
-	cmdline_export_mode = true;
+	cmdline_mode = true;
 	return OK;
 }
 
@@ -6357,6 +6369,18 @@ void EditorNode::reload_instances_with_path_in_edited_scenes() {
 
 			get_scene_editor_data_for_node(owner, original_node, scene_editor_data_table);
 
+			// The current node being reloaded may also be an additional node for another node
+			// that is in the process of being reloaded.
+			// Replacing the additional node with the new one prevents a crash where nodes
+			// in 'addition_list' are removed from the scene tree and queued for deletion.
+			for (InstanceModificationsEntry &im : scene_modifications->instance_list) {
+				for (AdditiveNodeEntry &additive_node_entry : im.addition_list) {
+					if (additive_node_entry.node == original_node) {
+						additive_node_entry.node = instantiated_node;
+					}
+				}
+			}
+
 			bool original_node_scene_instance_load_placeholder = original_node->get_scene_instance_load_placeholder();
 
 			// Delete all the remaining node children.
@@ -6848,7 +6872,10 @@ EditorNode::EditorNode() {
 	DEV_ASSERT(!singleton);
 	singleton = this;
 
-	set_translation_domain("godot.editor");
+	// Detecting headless mode, that means the editor is running in command line.
+	if (!DisplayServer::get_singleton()->window_can_draw()) {
+		cmdline_mode = true;
+	}
 
 	Resource::_get_local_scene_func = _resource_get_edited_scene;
 

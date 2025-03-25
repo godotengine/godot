@@ -264,6 +264,14 @@ void ResourceLoader::LoadToken::clear() {
 				thread_load_tasks.erase(local_path);
 			}
 			local_path.clear(); // Mark as already cleared.
+			if (task_to_await) {
+				for (KeyValue<String, ResourceLoader::ThreadLoadTask> &E : thread_load_tasks) {
+					if (E.value.task_id == task_to_await) {
+						task_to_await = 0;
+						break; // Same task is reused by nested loads, do not wait for completion here.
+					}
+				}
+			}
 		}
 	}
 
@@ -772,6 +780,10 @@ Ref<Resource> ResourceLoader::_load_complete(LoadToken &p_load_token, Error *r_e
 	return _load_complete_inner(p_load_token, r_error, thread_load_lock);
 }
 
+void ResourceLoader::set_is_import_thread(bool p_import_thread) {
+	import_thread = p_import_thread;
+}
+
 Ref<Resource> ResourceLoader::_load_complete_inner(LoadToken &p_load_token, Error *r_error, MutexLock<SafeBinaryMutex<BINARY_MUTEX_TAG>> &p_thread_load_lock) {
 	if (r_error) {
 		*r_error = OK;
@@ -825,6 +837,12 @@ Ref<Resource> ResourceLoader::_load_complete_inner(LoadToken &p_load_token, Erro
 
 				p_thread_load_lock.temp_relock();
 				load_task.awaited = true;
+				// Mark nested loads with the same task id as awaited.
+				for (KeyValue<String, ResourceLoader::ThreadLoadTask> &E : thread_load_tasks) {
+					if (E.value.task_id == load_task.task_id) {
+						E.value.awaited = true;
+					}
+				}
 
 				DEV_ASSERT(load_task.status == THREAD_LOAD_FAILED || load_task.status == THREAD_LOAD_LOADED);
 			} else if (load_task.need_wait) {
@@ -886,9 +904,11 @@ Ref<Resource> ResourceLoader::_load_complete_inner(LoadToken &p_load_token, Erro
 							MessageQueue::get_main_singleton()->push_callable(callable_mp(rcc.source, &Resource::connect_changed).bind(rcc.callable, rcc.flags));
 						}
 					}
-					core_bind::Semaphore done;
-					MessageQueue::get_main_singleton()->push_callable(callable_mp(&done, &core_bind::Semaphore::post).bind(1));
-					done.wait();
+					if (!import_thread) { // Main thread is blocked by initial resource reimport, do not wait.
+						core_bind::Semaphore done;
+						MessageQueue::get_main_singleton()->push_callable(callable_mp(&done, &core_bind::Semaphore::post).bind(1));
+						done.wait();
+					}
 				}
 			}
 		}
@@ -1565,6 +1585,7 @@ bool ResourceLoader::create_missing_resources_if_class_unavailable = false;
 bool ResourceLoader::abort_on_missing_resource = true;
 bool ResourceLoader::timestamp_on_load = false;
 
+thread_local bool ResourceLoader::import_thread = false;
 thread_local int ResourceLoader::load_nesting = 0;
 thread_local Vector<String> ResourceLoader::load_paths_stack;
 thread_local HashMap<int, HashMap<String, Ref<Resource>>> ResourceLoader::res_ref_overrides;

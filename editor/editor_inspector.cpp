@@ -918,6 +918,9 @@ void EditorProperty::gui_input(const Ref<InputEvent> &p_event) {
 
 	if (me.is_valid()) {
 		Vector2 mpos = me->get_position();
+		if (bottom_child_rect.has_point(mpos)) {
+			return; // Makes child EditorProperties behave like sibling nodes when handling mouse events.
+		}
 		if (is_layout_rtl()) {
 			mpos.x = get_size().x - mpos.x;
 		}
@@ -2715,8 +2718,6 @@ VBoxContainer *EditorInspectorArray::get_vbox(int p_index) {
 EditorInspectorArray::EditorInspectorArray(bool p_read_only) {
 	read_only = p_read_only;
 
-	set_mouse_filter(Control::MOUSE_FILTER_STOP);
-
 	odd_style.instantiate();
 	even_style.instantiate();
 
@@ -3046,7 +3047,6 @@ void EditorInspector::update_tree() {
 	int current_focusable = -1;
 
 	// Temporarily disable focus following on the root inspector to avoid jumping while the inspector is updating.
-	bool was_following = get_root_inspector()->is_following_focus();
 	get_root_inspector()->set_follow_focus(false);
 
 	if (property_focusable != -1) {
@@ -3075,7 +3075,7 @@ void EditorInspector::update_tree() {
 	_clear(!object);
 
 	if (!object) {
-		get_root_inspector()->set_follow_focus(was_following);
+		get_root_inspector()->set_follow_focus(true);
 		return;
 	}
 
@@ -3132,13 +3132,14 @@ void EditorInspector::update_tree() {
 	Color sscolor = get_theme_color(SNAME("prop_subsection"), EditorStringName(Editor));
 	bool sub_inspectors_enabled = EDITOR_GET("interface/inspector/open_resources_in_current_inspector");
 
-	// Get the lists of editors to add the beginning.
-	for (Ref<EditorInspectorPlugin> &ped : valid_plugins) {
-		ped->parse_begin(object);
-		_parse_added_editors(begin_vbox, nullptr, ped);
-	}
-	if (begin_vbox->get_child_count()) {
+	if (!valid_plugins.is_empty()) {
 		begin_vbox->show();
+
+		// Get the lists of editors to add the beginning.
+		for (Ref<EditorInspectorPlugin> &ped : valid_plugins) {
+			ped->parse_begin(object);
+			_parse_added_editors(begin_vbox, nullptr, ped);
+		}
 	}
 
 	StringName doc_name;
@@ -3440,6 +3441,8 @@ void EditorInspector::update_tree() {
 		// Recreate the category vbox if it was reset.
 		if (category_vbox == nullptr) {
 			category_vbox = memnew(VBoxContainer);
+			int separation = get_theme_constant(SNAME("v_separation"), SNAME("EditorInspector"));
+			category_vbox->add_theme_constant_override(SNAME("separation"), separation);
 			category_vbox->hide();
 			main_vbox->add_child(category_vbox);
 		}
@@ -3918,8 +3921,9 @@ void EditorInspector::update_tree() {
 		}
 
 		// Clean up empty sections.
-		for (List<EditorInspectorSection *>::Element *I = sections.back(); I; I = I->prev()) {
+		for (List<EditorInspectorSection *>::Element *I = sections.back(); I;) {
 			EditorInspectorSection *section = I->get();
+			I = I->prev(); // Note: Advance before erasing element.
 			if (section->get_vbox()->get_child_count() == 0) {
 				sections.erase(section);
 				vbox_per_path[main_vbox].erase(section->get_section());
@@ -3954,7 +3958,7 @@ void EditorInspector::update_tree() {
 		EditorNode::get_singleton()->hide_unused_editors();
 	}
 
-	get_root_inspector()->set_follow_focus(was_following);
+	get_root_inspector()->set_follow_focus(true);
 }
 
 void EditorInspector::update_property(const String &p_prop) {
@@ -4528,14 +4532,6 @@ void EditorInspector::_node_removed(Node *p_node) {
 	}
 }
 
-void EditorInspector::_gui_focus_changed(Control *p_control) {
-	if (!is_visible_in_tree() && !is_following_focus()) {
-		return;
-	}
-	// Don't follow focus when the inspector nor any of its children is focused. Prevents potential jumping when gaining focus.
-	set_follow_focus(has_focus() || child_has_focus());
-}
-
 void EditorInspector::_update_current_favorites() {
 	current_favorites.clear();
 	if (!can_favorite) {
@@ -4733,10 +4729,6 @@ void EditorInspector::_notification(int p_what) {
 			if (!is_sub_inspector()) {
 				get_tree()->connect("node_removed", callable_mp(this, &EditorInspector::_node_removed));
 			}
-
-			Viewport *viewport = get_viewport();
-			ERR_FAIL_NULL(viewport);
-			viewport->connect("gui_focus_changed", callable_mp(this, &EditorInspector::_gui_focus_changed));
 		} break;
 
 		case NOTIFICATION_PREDELETE: {
@@ -4975,6 +4967,7 @@ EditorInspector::EditorInspector() {
 	base_vbox->add_child(main_vbox);
 
 	set_horizontal_scroll_mode(SCROLL_MODE_DISABLED);
+	set_follow_focus(true);
 
 	changing = 0;
 	search_box = nullptr;

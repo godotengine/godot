@@ -328,7 +328,7 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 
 						DeferredNodePathProperties dnp;
 						dnp.value = props[nprops[j].value];
-						dnp.base = node;
+						dnp.base = node->get_instance_id();
 						dnp.property = snames[name_idx];
 						deferred_node_paths.push_back(dnp);
 						continue;
@@ -521,25 +521,27 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 
 	for (const DeferredNodePathProperties &dnp : deferred_node_paths) {
 		// Replace properties stored as NodePaths with actual Nodes.
+		Node *base = Object::cast_to<Node>(ObjectDB::get_instance(dnp.base));
+		ERR_CONTINUE_EDMSG(!base, vformat("Failed to set deferred property '%s' as the base node disappeared.", dnp.property));
 		if (dnp.value.get_type() == Variant::ARRAY) {
 			Array paths = dnp.value;
 
 			bool valid;
-			Array array = dnp.base->get(dnp.property, &valid);
-			ERR_CONTINUE_EDMSG(!valid, vformat("Failed to get property '%s' from node '%s'.", dnp.property, dnp.base->get_name()));
+			Array array = base->get(dnp.property, &valid);
+			ERR_CONTINUE_EDMSG(!valid, vformat("Failed to get property '%s' from node '%s'.", dnp.property, base->get_name()));
 			array = array.duplicate();
 
 			array.resize(paths.size());
 			for (int i = 0; i < array.size(); i++) {
-				array.set(i, dnp.base->get_node_or_null(paths[i]));
+				array.set(i, base->get_node_or_null(paths[i]));
 			}
-			dnp.base->set(dnp.property, array);
+			base->set(dnp.property, array);
 		} else if (dnp.value.get_type() == Variant::DICTIONARY) {
 			Dictionary paths = dnp.value;
 
 			bool valid;
-			Dictionary dict = dnp.base->get(dnp.property, &valid);
-			ERR_CONTINUE_EDMSG(!valid, vformat("Failed to get property '%s' from node '%s'.", dnp.property, dnp.base->get_name()));
+			Dictionary dict = base->get(dnp.property, &valid);
+			ERR_CONTINUE_EDMSG(!valid, vformat("Failed to get property '%s' from node '%s'.", dnp.property, base->get_name()));
 			dict = dict.duplicate();
 			bool convert_key = dict.get_typed_key_builtin() == Variant::OBJECT &&
 					ClassDB::is_parent_class(dict.get_typed_key_class_name(), "Node");
@@ -549,17 +551,17 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 			for (int i = 0; i < paths.size(); i++) {
 				Variant key = paths.get_key_at_index(i);
 				if (convert_key) {
-					key = dnp.base->get_node_or_null(key);
+					key = base->get_node_or_null(key);
 				}
 				Variant value = paths.get_value_at_index(i);
 				if (convert_value) {
-					value = dnp.base->get_node_or_null(value);
+					value = base->get_node_or_null(value);
 				}
 				dict[key] = value;
 			}
-			dnp.base->set(dnp.property, dict);
+			base->set(dnp.property, dict);
 		} else {
-			dnp.base->set(dnp.property, dnp.base->get_node_or_null(dnp.value));
+			base->set(dnp.property, base->get_node_or_null(dnp.value));
 		}
 	}
 

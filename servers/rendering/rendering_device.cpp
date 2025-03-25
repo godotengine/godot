@@ -912,6 +912,8 @@ RID RenderingDevice::texture_create(const TextureFormat &p_format, const Texture
 				"Number of layers must be equal or greater than 1 for arrays and cubemaps.");
 		ERR_FAIL_COND_V_MSG((format.texture_type == TEXTURE_TYPE_CUBE_ARRAY || format.texture_type == TEXTURE_TYPE_CUBE) && (format.array_layers % 6) != 0, RID(),
 				"Cubemap and cubemap array textures must provide a layer number that is multiple of 6");
+		ERR_FAIL_COND_V_MSG(((format.texture_type == TEXTURE_TYPE_CUBE_ARRAY || format.texture_type == TEXTURE_TYPE_CUBE)) && (format.width != format.height), RID(),
+				"Cubemap and cubemap array textures must have equal width and height.");
 		ERR_FAIL_COND_V_MSG(format.array_layers > driver->limit_get(LIMIT_MAX_TEXTURE_ARRAY_LAYERS), RID(), "Number of layers exceeds device maximum.");
 	} else {
 		format.array_layers = 1;
@@ -7680,6 +7682,20 @@ void RenderingDevice::_bind_methods() {
 	BIND_ENUM_CONSTANT(DATA_FORMAT_G16_B16_R16_3PLANE_422_UNORM);
 	BIND_ENUM_CONSTANT(DATA_FORMAT_G16_B16R16_2PLANE_422_UNORM);
 	BIND_ENUM_CONSTANT(DATA_FORMAT_G16_B16_R16_3PLANE_444_UNORM);
+	BIND_ENUM_CONSTANT(DATA_FORMAT_ASTC_4x4_SFLOAT_BLOCK);
+	BIND_ENUM_CONSTANT(DATA_FORMAT_ASTC_5x4_SFLOAT_BLOCK);
+	BIND_ENUM_CONSTANT(DATA_FORMAT_ASTC_5x5_SFLOAT_BLOCK);
+	BIND_ENUM_CONSTANT(DATA_FORMAT_ASTC_6x5_SFLOAT_BLOCK);
+	BIND_ENUM_CONSTANT(DATA_FORMAT_ASTC_6x6_SFLOAT_BLOCK);
+	BIND_ENUM_CONSTANT(DATA_FORMAT_ASTC_8x5_SFLOAT_BLOCK);
+	BIND_ENUM_CONSTANT(DATA_FORMAT_ASTC_8x6_SFLOAT_BLOCK);
+	BIND_ENUM_CONSTANT(DATA_FORMAT_ASTC_8x8_SFLOAT_BLOCK);
+	BIND_ENUM_CONSTANT(DATA_FORMAT_ASTC_10x5_SFLOAT_BLOCK);
+	BIND_ENUM_CONSTANT(DATA_FORMAT_ASTC_10x6_SFLOAT_BLOCK);
+	BIND_ENUM_CONSTANT(DATA_FORMAT_ASTC_10x8_SFLOAT_BLOCK);
+	BIND_ENUM_CONSTANT(DATA_FORMAT_ASTC_10x10_SFLOAT_BLOCK);
+	BIND_ENUM_CONSTANT(DATA_FORMAT_ASTC_12x10_SFLOAT_BLOCK);
+	BIND_ENUM_CONSTANT(DATA_FORMAT_ASTC_12x12_SFLOAT_BLOCK);
 	BIND_ENUM_CONSTANT(DATA_FORMAT_MAX);
 
 #ifndef DISABLE_DEPRECATED

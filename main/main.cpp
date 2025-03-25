@@ -979,7 +979,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	String project_path = ".";
 	bool upwards = false;
 	String debug_uri = "";
-#if defined(TOOLS_ENABLED) && defined(WINDOWS_ENABLED)
+#if defined(TOOLS_ENABLED) && (defined(WINDOWS_ENABLED) || defined(LINUXBSD_ENABLED))
 	bool test_rd_creation = false;
 	bool test_rd_support = false;
 #endif
@@ -1671,7 +1671,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		} else if (arg == "--debug-stringnames") {
 			StringName::set_debug_stringnames(true);
 #endif
-#if defined(TOOLS_ENABLED) && defined(WINDOWS_ENABLED)
+#if defined(TOOLS_ENABLED) && (defined(WINDOWS_ENABLED) || defined(LINUXBSD_ENABLED))
 		} else if (arg == "--test-rd-support") {
 			test_rd_support = true;
 		} else if (arg == "--test-rd-creation") {
@@ -1880,12 +1880,12 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 #endif
 	}
 
-#if defined(TOOLS_ENABLED) && defined(WINDOWS_ENABLED)
+#if defined(TOOLS_ENABLED) && (defined(WINDOWS_ENABLED) || defined(LINUXBSD_ENABLED))
 	if (test_rd_support) {
 		// Test Rendering Device creation and exit.
 
 		OS::get_singleton()->set_crash_handler_silent();
-		if (OS::get_singleton()->_test_create_rendering_device()) {
+		if (OS::get_singleton()->_test_create_rendering_device(display_driver)) {
 			exit_err = ERR_HELP;
 		} else {
 			exit_err = ERR_UNAVAILABLE;
@@ -1895,7 +1895,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		// Test OpenGL context and Rendering Device simultaneous creation and exit.
 
 		OS::get_singleton()->set_crash_handler_silent();
-		if (OS::get_singleton()->_test_create_rendering_device_and_gl()) {
+		if (OS::get_singleton()->_test_create_rendering_device_and_gl(display_driver)) {
 			exit_err = ERR_HELP;
 		} else {
 			exit_err = ERR_UNAVAILABLE;
@@ -2479,27 +2479,27 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		}
 		window_mode = (DisplayServer::WindowMode)(GLOBAL_GET("display/window/size/mode").operator int());
 		int initial_position_type = GLOBAL_GET("display/window/size/initial_position_type").operator int();
-		if (initial_position_type == 0) { // Absolute.
+		if (initial_position_type == Window::WINDOW_INITIAL_POSITION_ABSOLUTE) { // Absolute.
 			if (!init_use_custom_pos) {
 				init_custom_pos = GLOBAL_GET("display/window/size/initial_position").operator Vector2i();
 				init_use_custom_pos = true;
 			}
-		} else if (initial_position_type == 1) { // Center of Primary Screen.
+		} else if (initial_position_type == Window::WINDOW_INITIAL_POSITION_CENTER_PRIMARY_SCREEN || initial_position_type == Window::WINDOW_INITIAL_POSITION_CENTER_MAIN_WINDOW_SCREEN) { // Center of Primary Screen.
 			if (!init_use_custom_screen) {
 				init_screen = DisplayServer::SCREEN_PRIMARY;
 				init_use_custom_screen = true;
 			}
-		} else if (initial_position_type == 2) { // Center of Other Screen.
+		} else if (initial_position_type == Window::WINDOW_INITIAL_POSITION_CENTER_OTHER_SCREEN) { // Center of Other Screen.
 			if (!init_use_custom_screen) {
 				init_screen = GLOBAL_GET("display/window/size/initial_screen").operator int();
 				init_use_custom_screen = true;
 			}
-		} else if (initial_position_type == 3) { // Center of Screen With Mouse Pointer.
+		} else if (initial_position_type == Window::WINDOW_INITIAL_POSITION_CENTER_SCREEN_WITH_MOUSE_FOCUS) { // Center of Screen With Mouse Pointer.
 			if (!init_use_custom_screen) {
 				init_screen = DisplayServer::SCREEN_WITH_MOUSE_FOCUS;
 				init_use_custom_screen = true;
 			}
-		} else if (initial_position_type == 4) { // Center of Screen With Keyboard Focus.
+		} else if (initial_position_type == Window::WINDOW_INITIAL_POSITION_CENTER_SCREEN_WITH_KEYBOARD_FOCUS) { // Center of Screen With Keyboard Focus.
 			if (!init_use_custom_screen) {
 				init_screen = DisplayServer::SCREEN_WITH_KEYBOARD_FOCUS;
 				init_use_custom_screen = true;
@@ -2513,24 +2513,38 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	OS::get_singleton()->_allow_layered = GLOBAL_DEF_RST("display/window/per_pixel_transparency/allowed", false);
 
 #ifdef TOOLS_ENABLED
-	if (editor || project_manager) {
-		// The editor and project manager always detect and use hiDPI if needed.
-		OS::get_singleton()->_allow_hidpi = true;
-		// Disable Vulkan overlays in editor, they cause various issues.
-		OS::get_singleton()->set_environment("DISABLE_MANGOHUD", "1"); // GH-57403.
-		OS::get_singleton()->set_environment("DISABLE_RTSS_LAYER", "1"); // GH-57937.
-		OS::get_singleton()->set_environment("DISABLE_VKBASALT", "1");
-		OS::get_singleton()->set_environment("DISABLE_VK_LAYER_reshade_1", "1"); // GH-70849.
-		OS::get_singleton()->set_environment("VK_LAYER_bandicam_helper_DEBUG_1", "1"); // GH-101480.
-		OS::get_singleton()->set_environment("DISABLE_VK_LAYER_bandicam_helper_1", "1"); // GH-101480.
-	} else {
-		// Re-allow using Vulkan overlays, disabled while using the editor.
-		OS::get_singleton()->unset_environment("DISABLE_MANGOHUD");
-		OS::get_singleton()->unset_environment("DISABLE_RTSS_LAYER");
-		OS::get_singleton()->unset_environment("DISABLE_VKBASALT");
-		OS::get_singleton()->unset_environment("DISABLE_VK_LAYER_reshade_1");
-		OS::get_singleton()->unset_environment("VK_LAYER_bandicam_helper_DEBUG_1");
-		OS::get_singleton()->unset_environment("DISABLE_VK_LAYER_bandicam_helper_1");
+	{
+		// Synced with https://github.com/baldurk/renderdoc/blob/2b01465c7/renderdoc/driver/vulkan/vk_layer.cpp#L118-L165
+		LocalVector<String> layers_to_disable = {
+			"DISABLE_RTSS_LAYER", // GH-57937.
+			"DISABLE_VULKAN_OBS_CAPTURE", // GH-103800.
+			"DISABLE_VULKAN_OW_OBS_CAPTURE", // GH-104154.
+			"DISABLE_SAMPLE_LAYER", // GH-104154.
+			"DISABLE_GAMEPP_LAYER", // GH-104154.
+			"DISABLE_VK_LAYER_TENCENT_wegame_cross_overlay_1", // GH-104154.
+			"NODEVICE_SELECT", // GH-104154.
+			"VK_LAYER_bandicam_helper_DEBUG_1", // GH-101480.
+			"DISABLE_VK_LAYER_bandicam_helper_1", // GH-101480.
+			"DISABLE_VK_LAYER_reshade_1", // GH-70849.
+			"DISABLE_VK_LAYER_GPUOpen_GRS", // GH-104154.
+			"DISABLE_LAYER", // GH-104154 (fpsmon).
+			"DISABLE_MANGOHUD", // GH-57403.
+			"DISABLE_VKBASALT",
+		};
+
+		if (editor || project_manager) {
+			// The editor and project manager always detect and use hiDPI if needed.
+			OS::get_singleton()->_allow_hidpi = true;
+			// Disable Vulkan overlays in editor, they cause various issues.
+			for (const String &layer_disable : layers_to_disable) {
+				OS::get_singleton()->set_environment(layer_disable, "1");
+			}
+		} else {
+			// Re-allow using Vulkan overlays, disabled while using the editor.
+			for (const String &layer_disable : layers_to_disable) {
+				OS::get_singleton()->unset_environment(layer_disable);
+			}
+		}
 	}
 #endif
 
@@ -4115,6 +4129,7 @@ int Main::start() {
 		if (editor) {
 			OS::get_singleton()->benchmark_begin_measure("Startup", "Editor");
 
+			sml->get_root()->set_translation_domain("godot.editor");
 			if (editor_pseudolocalization) {
 				translation_server->get_editor_domain()->set_pseudolocalization_enabled(true);
 			}
@@ -4312,6 +4327,7 @@ int Main::start() {
 			OS::get_singleton()->benchmark_begin_measure("Startup", "Project Manager");
 			Engine::get_singleton()->set_editor_hint(true);
 
+			sml->get_root()->set_translation_domain("godot.editor");
 			if (editor_pseudolocalization) {
 				translation_server->get_editor_domain()->set_pseudolocalization_enabled(true);
 			}

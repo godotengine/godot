@@ -606,7 +606,7 @@ File extracted from upstream source:
 ## mbedtls
 
 - Upstream: https://github.com/Mbed-TLS/mbedtls
-- Version: 3.6.2 (107ea89daaefb9867ea9121002fbbdf926780e98, 2024)
+- Version: 3.6.3 (22098d41c6620ce07cf8a0134d37302355e1e5ef, 2025)
 - License: Apache 2.0
 
 File extracted from upstream release tarball:
@@ -617,7 +617,7 @@ File extracted from upstream release tarball:
 - From `library/` to `thirdparty/mbedtls/library/`:
   - All `.c` and `.h` files
   - Except `bignum_mod.c`, `block_cipher.c`, `ecp_curves_new.c`, `lmots.c`,
-  `lms.c`
+  `lms.c`, `bignum_core_invasive.h`
 - The `LICENSE` file (edited to keep only the Apache 2.0 variant)
 - Added 2 files `godot_core_mbedtls_platform.c` and `godot_core_mbedtls_config.h`
   providing configuration for light bundling with core
@@ -627,7 +627,6 @@ File extracted from upstream release tarball:
 Patches:
 
 - `0001-msvc-2019-psa-redeclaration.patch` (GH-90535)
-- `0002-pr-9981-defragment-incoming-tls-handshake-messages.patch` (GH-103247)
 
 
 ## meshoptimizer

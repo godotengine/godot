@@ -177,13 +177,16 @@
 # Mikhail <mikhail.khadzhaev832@gmail.com>, 2024.
 # Olesya_Gerasimenko <gammaray@basealt.ru>, 2024.
 # Mister Ky <afanasievsergiy3524@gmail.com>, 2025.
+# Igor Shapilov <shatiger@yandex.ru>, 2025.
+# Aleksandr <sasha7onoff@gmail.com>, 2025.
+# Deniil <danpko@ya.ru>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-02-08 02:28+0000\n"
-"Last-Translator: Mister Ky <afanasievsergiy3524@gmail.com>\n"
+"PO-Revision-Date: 2025-03-24 03:29+0000\n"
+"Last-Translator: Deniil <danpko@ya.ru>\n"
 "Language-Team: Russian <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/ru/>\n"
 "Language: ru\n"
@@ -192,7 +195,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
 "n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
-"X-Generator: Weblate 5.10-dev\n"
+"X-Generator: Weblate 5.11-dev\n"
 
 msgid "Application"
 msgstr "Приложение"
@@ -367,6 +370,9 @@ msgstr "Скорость кадров"
 
 msgid "Android"
 msgstr "Android"
+
+msgid "Enable Frame Pacing"
+msgstr "Включить синхронизацию кадров"
 
 msgid "Physics"
 msgstr "Физика"
@@ -1001,6 +1007,9 @@ msgstr "Удаляемый"
 msgid "Selectable"
 msgstr "Доступно для выбора"
 
+msgid "Name Split Ratio"
+msgstr "Коэффициент разделения имени"
+
 msgid "Distraction Free Mode"
 msgstr "Режим без отвлечения"
 
@@ -1033,6 +1042,9 @@ msgstr "Использовать потоки"
 
 msgid "Localize Settings"
 msgstr "Локализация"
+
+msgid "Dock Tab Style"
+msgstr "Стиль вкладки док-станции"
 
 msgid "UI Layout Direction"
 msgstr "Направление макета интерфейса"
@@ -1072,6 +1084,9 @@ msgstr "Субпиксельное позиционирование шрифта
 
 msgid "Font Disable Embedded Bitmaps"
 msgstr "Отключение встроенных растровых представлений шрифта"
+
+msgid "Font Allow MSDF"
+msgstr "Разрешить шрифт MSDF"
 
 msgid "Main Font"
 msgstr "Основной шрифт"
@@ -1114,6 +1129,12 @@ msgstr ""
 "Задержка в режиме низкой нагрузки процессора без фокуса на окне редактора "
 "(мкс)"
 
+msgid "Import Resources When Unfocused"
+msgstr "Импорт ресурсов, когда они не в фокусе"
+
+msgid "V-Sync Mode"
+msgstr "Режим V-Sync"
+
 msgid "Update Continuously"
 msgstr "Непрерывное обновление"
 
@@ -1132,8 +1153,14 @@ msgstr "Панели"
 msgid "Scene Tree"
 msgstr "Дерево сцены"
 
+msgid "Ask Before Revoking Unique Name"
+msgstr "Спрашивать перед отменой уникального имени"
+
 msgid "Inspector"
 msgstr "Инспектор"
+
+msgid "Max Array Dictionary Items per Page"
+msgstr "Максимальное количество элементов словаря массива на страницу"
 
 msgid "Show Low Level OpenType Features"
 msgstr "Показать низкоуровневые возможности OpenType"
@@ -1170,6 +1197,9 @@ msgstr "Тема"
 
 msgid "Icon and Font Color"
 msgstr "Цвет значков и шрифтов"
+
+msgid "Contrast"
+msgstr "Контраст"
 
 msgid "Draw Extra Borders"
 msgstr "Рисовать дополнительные границы"
@@ -1271,6 +1301,12 @@ msgstr "Размер миниатюр"
 msgid "Max Results"
 msgstr "Макс. кол-во результатов"
 
+msgid "Show Search Highlight"
+msgstr "Показать выделение поиска"
+
+msgid "Enable Fuzzy Matching"
+msgstr "Включить приближенное соответствие строк"
+
 msgid "Include Addons"
 msgstr "Включать дополнения"
 
@@ -1346,6 +1382,9 @@ msgstr "Текстовый редактор"
 msgid "Line Spacing"
 msgstr "Межстрочный интервал"
 
+msgid "Color Theme"
+msgstr "Цветовая тема"
+
 msgid "Appearance"
 msgstr "Внешний вид"
 
@@ -1406,6 +1445,9 @@ msgstr "Строки"
 msgid "Code Folding"
 msgstr "Сворачивание кода"
 
+msgid "Word Wrap"
+msgstr "Перенос слов"
+
 msgid "Autowrap Mode"
 msgstr "Режим автопереноса"
 
@@ -1420,6 +1462,9 @@ msgstr "Рисовать пробелы"
 
 msgid "Behavior"
 msgstr "Поведение"
+
+msgid "Empty Selection Clipboard"
+msgstr "Очистить буфер обмена выбора"
 
 msgid "Navigation"
 msgstr "Навигация"
@@ -1489,6 +1534,12 @@ msgstr "Автоматически перезагружать и анализи�
 
 msgid "Open Dominant Script on Scene Change"
 msgstr "Открывать основной скрипт при смене сцены"
+
+msgid "Documentation"
+msgstr "Документация"
+
+msgid "Enable Tooltips"
+msgstr "Включить подсказки"
 
 msgid "Script List"
 msgstr "Список скриптов"
@@ -1661,6 +1712,12 @@ msgstr "CSG"
 msgid "GridMap Grid"
 msgstr "Сетка GridMap"
 
+msgid "Spring Bone Collision"
+msgstr "Коллизия пружинной кости"
+
+msgid "Spring Bone Inside Collision"
+msgstr "Пружинная кость внутри коллизии"
+
 msgid "Gizmo Settings"
 msgstr "Параметры гизмо"
 
@@ -1672,6 +1729,9 @@ msgstr "Форма кости"
 
 msgid "Path 3D Tilt Disk Size"
 msgstr "Размер диска наклона пути 3D"
+
+msgid "Primary Grid Steps"
+msgstr "Первичные шаги сетки"
 
 msgid "Grid Division Level Max"
 msgstr "Максимальный уровень деления сетки"
@@ -1738,6 +1798,9 @@ msgstr "Чувствительность свободного обзора"
 
 msgid "Freelook Inertia"
 msgstr "Инерция свободного обзора"
+
+msgid "Freelook Activation Modifier"
+msgstr "Активация Freelook Редактировать"
 
 msgid "Freelook Speed Zoom Link"
 msgstr "Связь скорости свободного обзора со значением масштабирования"
@@ -1859,9 +1922,6 @@ msgstr "Восстанавливать шейдеры при загрузке"
 msgid "Visual Editors"
 msgstr "Визуальные редакторы"
 
-msgid "Color Theme"
-msgstr "Цветовая тема"
-
 msgid "Minimap Opacity"
 msgstr "Непрозрачность миникарты"
 
@@ -1889,8 +1949,14 @@ msgstr "SCP"
 msgid "Window Placement"
 msgstr "Размещение окон"
 
+msgid "Rect"
+msgstr "Прямоугольник"
+
 msgid "Rect Custom Position"
 msgstr "Пользовательская позиция прямоугольника"
+
+msgid "Screen"
+msgstr "Экран"
 
 msgid "Auto Save"
 msgstr "Автосохранение"
@@ -1900,6 +1966,9 @@ msgstr "Сохранять перед запуском"
 
 msgid "Output"
 msgstr "Вывод"
+
+msgid "Font Size"
+msgstr "Размер шрифта"
 
 msgid "Always Clear Output on Play"
 msgstr "Всегда очищать панель вывода при запуске"
@@ -1931,11 +2000,20 @@ msgstr "Удалённый хост"
 msgid "Debugger"
 msgstr "Отладчик"
 
+msgid "Auto Switch to Remote Scene Tree"
+msgstr "Автоматическое переключение на удаленное дерево сцен"
+
+msgid "Auto Switch to Stack Trace"
+msgstr "Автоматическое переключение на трассировку стека"
+
 msgid "Profiler Frame History Size"
 msgstr "Размер истории кадров профайлера"
 
 msgid "Profiler Frame Max Functions"
 msgstr "Максимум функций для кадра в профайлере"
+
+msgid "Profiler Target FPS"
+msgstr "Целевая частота кадров профайлера"
 
 msgid "Remote Scene Tree Refresh Interval"
 msgstr "Интервал обновления удалённого дерева сцены"
@@ -1969,6 +2047,9 @@ msgstr "Менеджер проектов"
 
 msgid "Sorting Order"
 msgstr "Порядок сортировки"
+
+msgid "Directory Naming Convention"
+msgstr "Соглашение об именовании каталогов"
 
 msgid "Highlighting"
 msgstr "Подсветка"
@@ -2228,6 +2309,9 @@ msgstr "Сбросить все позы костей после импорта"
 msgid "Keep Global Rest on Leftovers"
 msgstr "Сохранить глобальный покой на остатках"
 
+msgid "Original Skeleton Name"
+msgstr "Оригинальное имя скелета"
+
 msgid "Fix Silhouette"
 msgstr "Исправить силуэт"
 
@@ -2465,6 +2549,9 @@ msgstr "Масштаб корня"
 msgid "Import as Skeleton Bones"
 msgstr "Импортировать как кости скелета"
 
+msgid "Use Node Type Suffixes"
+msgstr "Использовать суффиксы типа узла"
+
 msgid "Meshes"
 msgstr "Сетки"
 
@@ -2533,6 +2620,9 @@ msgstr "Хинтинг"
 
 msgid "Subpixel Positioning"
 msgstr "Субпиксельное позиционирование"
+
+msgid "Keep Rounding Remainders"
+msgstr "Продолжить округлять остатки"
 
 msgid "Oversampling"
 msgstr "Передискретизация"
@@ -2736,6 +2826,9 @@ msgstr "Индекс текущей группы"
 msgid "Current Bone Idx"
 msgstr "Индекс текущей кости"
 
+msgid "Particles Emission Shape"
+msgstr "Форма излучения частиц"
+
 msgid "ID"
 msgstr "Идентификатор"
 
@@ -2930,9 +3023,6 @@ msgstr "Портативный"
 msgid "Orientation"
 msgstr "Ориентация"
 
-msgid "V-Sync Mode"
-msgstr "Режим V-Sync"
-
 msgid "Output Latency"
 msgstr "Выходная задержка"
 
@@ -2995,6 +3085,12 @@ msgstr "Типы отладочных сообщений"
 
 msgid "Hand Tracking"
 msgstr "Отслеживание положения и ориентации рук"
+
+msgid "Hand Tracking Unobstructed Data Source"
+msgstr "Беспрепятственный источник данных отслеживания рук"
+
+msgid "Hand Tracking Controller Data Source"
+msgstr "Источник данных контроллера отслеживания рук"
 
 msgid "Hand Interaction Profile"
 msgstr "Профиль взаимодействия рук"
@@ -3185,6 +3281,12 @@ msgstr "Края свободны"
 msgid "Obstacles"
 msgstr "Препятствия"
 
+msgid "Pipeline"
+msgstr "Конвейер"
+
+msgid "Compilations Canvas"
+msgstr "Холст компиляций"
+
 msgid "Compilations Draw"
 msgstr "Розыгрыш компиляций"
 
@@ -3340,6 +3442,9 @@ msgstr "Макс. размер стека вызовов"
 
 msgid "Exclude Addons"
 msgstr "Исключить дополнения"
+
+msgid "Renamed in Godot 4 Hint"
+msgstr "Переименовано в Godot 4 Hint"
 
 msgid "Language Server"
 msgstr "Языковой сервер"
@@ -3605,8 +3710,17 @@ msgstr "Дочерние элементы"
 msgid "Light"
 msgstr "Свет"
 
+msgid "glTF to Godot Expression"
+msgstr "glTF к выражению Godot"
+
+msgid "Godot to glTF Expression"
+msgstr "Godot к выражению glTF"
+
 msgid "Node Paths"
 msgstr "Пути к узлам"
+
+msgid "Object Model Type"
+msgstr "Тип модели объекта"
 
 msgid "Json Pointers"
 msgstr "Json Указатели"
@@ -3700,6 +3814,42 @@ msgstr "Jolt Physics 3D"
 
 msgid "Simulation"
 msgstr "Симуляция"
+
+msgid "Use Enhanced Internal Edge Removal"
+msgstr "Использовать расширенное удаление внутренних сторон"
+
+msgid "Generate All Kinematic Contacts"
+msgstr "Генерировать все кинематические контакты"
+
+msgid "Baumgarte Stabilization Factor"
+msgstr "Коэффициент стабилизации Баумгарта"
+
+msgid "Bounce Velocity Threshold"
+msgstr "Порог скорости отскока"
+
+msgid "Continuous CD Movement Threshold"
+msgstr "Порог продолжительного движения CD"
+
+msgid "Body Pair Contact Cache Enabled"
+msgstr "Кэш контакта пары тел включен"
+
+msgid "Body Pair Contact Cache Distance Threshold"
+msgstr "Порог расстояния кэша контакта пары тел"
+
+msgid "Body Pair Contact Cache Angle Threshold"
+msgstr "Порог угла кэша контакта пары тел"
+
+msgid "Queries"
+msgstr "Запросы"
+
+msgid "Enable Ray Cast Face Index"
+msgstr "Включить индекс лица Ray Cast"
+
+msgid "World Boundary Shape Size"
+msgstr "Размер формы границы мира"
+
+msgid "Max Body Pairs"
+msgstr "Макс. количество пар тел"
 
 msgid "Lightmapping"
 msgstr "Карты освещения"
@@ -3929,6 +4079,15 @@ msgstr "Путь к профилю взаимодействия"
 msgid "Runtime Paths"
 msgstr "Пути среды выполнения"
 
+msgid "Is Sticky"
+msgstr "Липкий"
+
+msgid "On Haptic"
+msgstr "О тактильном ощущении"
+
+msgid "Off Haptic"
+msgstr "Выкл. Тактильный"
+
 msgid "Display Refresh Rate"
 msgstr "Частота обновления дисплея"
 
@@ -4068,6 +4227,12 @@ msgstr "Включённые возможности"
 msgid "Visibility State"
 msgstr "Состояние видимости"
 
+msgid "Install Exported APK"
+msgstr "Установить экспортированный APK"
+
+msgid "Java SDK Path"
+msgstr "Путь к Java SDK"
+
 msgid "Force System User"
 msgstr "Принудительное использование пользователя системы"
 
@@ -4182,8 +4347,8 @@ msgstr "Возможности XR"
 msgid "XR Mode"
 msgstr "Режим XR"
 
-msgid "Screen"
-msgstr "Экран"
+msgid "Swipe to Dismiss"
+msgstr "Проведите пальцем, чтобы закрыть"
 
 msgid "Immersive Mode"
 msgstr "Режим погружения"
@@ -4314,6 +4479,9 @@ msgstr "Удалять старые файлы экспорта в безусл�
 msgid "Entitlements"
 msgstr "Права"
 
+msgid "Increased Memory Limit"
+msgstr "Увеличенный лимит памяти"
+
 msgid "Push Notifications"
 msgstr "Push-уведомления"
 
@@ -4400,6 +4568,9 @@ msgstr "Запустить скрипт"
 
 msgid "Cleanup Script"
 msgstr "Скрипт очистки"
+
+msgid "macOS"
+msgstr "macOS"
 
 msgid "Distribution Type"
 msgstr "Тип распространения"
@@ -4772,9 +4943,6 @@ msgstr "Тип воспроизведения"
 
 msgid "Copy Mode"
 msgstr "Режим копирования"
-
-msgid "Rect"
-msgstr "Прямоугольник"
 
 msgid "Anchor Mode"
 msgstr "Режим якорей"
@@ -5928,9 +6096,6 @@ msgstr "Цвет контура текста"
 
 msgid "Font"
 msgstr "Шрифт"
-
-msgid "Font Size"
-msgstr "Размер шрифта"
 
 msgid "Horizontal Alignment"
 msgstr "Горизонтальное выравнивание"
@@ -8751,9 +8916,6 @@ msgstr "Настройки"
 msgid "Brightness"
 msgstr "Яркость"
 
-msgid "Contrast"
-msgstr "Контраст"
-
 msgid "Saturation"
 msgstr "Насыщенность"
 
@@ -9587,6 +9749,15 @@ msgstr "Смещение захвата"
 msgid "Updown"
 msgstr "Пользовательская текстура для стрелок «вверх» и «вниз»"
 
+msgid "Buttons Vertical Separation"
+msgstr "Вертикальное разделение кнопок"
+
+msgid "Field and Buttons Separation"
+msgstr "Разделение поля и кнопок"
+
+msgid "Buttons Width"
+msgstr "Ширина кнопок"
+
 msgid "Embedded Border"
 msgstr "Встроенная граница"
 
@@ -9629,6 +9800,12 @@ msgstr "Верт. смещение кнопки закрытия"
 msgid "Buttons Separation"
 msgstr "Разделение кнопок"
 
+msgid "Load"
+msgstr "Загрузить"
+
+msgid "Save"
+msgstr "Сохранить"
+
 msgid "Parent Folder"
 msgstr "Родительская папка"
 
@@ -9643,6 +9820,9 @@ msgstr "Перезагрузить"
 
 msgid "Toggle Hidden"
 msgstr "Переключение скрытых"
+
+msgid "Toggle Filename Filter"
+msgstr "Переключить фильтр имени файла"
 
 msgid "Folder"
 msgstr "Папка"
@@ -9724,6 +9904,9 @@ msgstr "Гор. смещение порта"
 
 msgid "Hovered"
 msgstr "Наведение"
+
+msgid "Hovered Dimmed"
+msgstr "Наведение затемненное"
 
 msgid "Selected Focus"
 msgstr "Выбранные элементы, когда список элементов в фокусе"
@@ -10703,6 +10886,9 @@ msgstr "Атлас 16 бит"
 msgid "Shadow Atlas"
 msgstr "Атлас теней"
 
+msgid "Batching"
+msgstr "Пакетирование"
+
 msgid "Item Buffer Size"
 msgstr "Размер буфера элементов"
 
@@ -10849,6 +11035,9 @@ msgstr "Сетки примитивов"
 
 msgid "Texel Size"
 msgstr "Размер текселя"
+
+msgid "Use Bicubic Filter"
+msgstr "Использовать бикубический фильтр"
 
 msgid "Probe Ray Count"
 msgstr "Количество лучей зонда"

@@ -17,11 +17,11 @@
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>4.4</string>
+	<string>4.4.1</string>
 	<key>CFBundleSignature</key>
 	<string>GODO</string>
 	<key>CFBundleVersion</key>
-	<string>4.4</string>
+	<string>4.4.1</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>Microphone access is required to capture audio.</string>
 	<key>NSCameraUsageDescription</key>

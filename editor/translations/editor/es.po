@@ -133,7 +133,7 @@
 # Victor Ortega <vitotankian@gmail.com>, 2024.
 # Augusto Hernández <agumano@outlook.es>, 2024.
 # jose luis barbosa cepeda <barbosa02058@gmail.com>, 2024.
-# Alejandro Moctezuma <moctezumaalejandro25@gmail.com>, 2024.
+# Alejandro Moctezuma <moctezumaalejandro25@gmail.com>, 2024, 2025.
 # trubiso <crishipohola@gmail.com>, 2024.
 # Luis Roel <luisroelsoftwarede@gmail.com>, 2024.
 # leonardo garcia hernandez <leoxdnpc2@gmail.com>, 2024.
@@ -145,12 +145,14 @@
 # José Andrés Urdaneta <urdaneta7834@gmail.com>, 2025.
 # andres valenzuela pacheco <andresmauricio6777@gmail.com>, 2025.
 # Marco Antonio Silva Mendoza <n00028146@upn.pe>, 2025.
+# Lucas García da Rosa <gdarlucas@gmail.com>, 2025.
+# Erick Estuardo Pineda Palma <erickestuardopineda82004@gmail.com>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-02-27 06:54+0000\n"
+"PO-Revision-Date: 2025-03-20 03:49+0000\n"
 "Last-Translator: Javier <xavier.ocampos@gmail.com>\n"
 "Language-Team: Spanish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/es/>\n"
@@ -159,7 +161,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.10.2-dev\n"
+"X-Generator: Weblate 5.11-dev\n"
 
 msgid "Main Thread"
 msgstr "Hilo Principal"
@@ -1024,6 +1026,9 @@ msgstr "Un AnimationPlayer no puede animarse a sí mismo, solo a otros players."
 msgid "property '%s'"
 msgstr "propiedad '%s'"
 
+msgid "Nearest FPS: %d"
+msgstr "FPS más cercano: %d"
+
 msgid "Change Animation Step"
 msgstr "Cambiar Paso de Animación"
 
@@ -1671,6 +1676,9 @@ msgstr "Desvincular Argumentos de Señal:"
 msgid "Receiver Method:"
 msgstr "Método Receptor:"
 
+msgid "Pick"
+msgstr "Seleccionar"
+
 msgid "Advanced"
 msgstr "Avanzado"
 
@@ -1872,7 +1880,7 @@ msgid "Value"
 msgstr "Valor"
 
 msgid "Pick one or more items from the list to display the graph."
-msgstr "Elige uno o más elementos de la lista para mostrar el gráfico."
+msgstr "Elige uno o más ítems de la lista para mostrar el gráfico."
 
 msgid "Stop"
 msgstr "Detener"
@@ -2196,7 +2204,7 @@ msgid "Errors loading!"
 msgstr "¡Errores al cargar!"
 
 msgid "Permanently delete %d item(s)? (No undo!)"
-msgstr "¿Eliminar permanentemente %d elemento(s)? (¡No se puede deshacer!)"
+msgstr "¿Eliminar permanentemente %d ítem(s)? (¡No se puede deshacer!)"
 
 msgid "Show Dependencies"
 msgstr "Mostrar Dependencias"
@@ -3255,7 +3263,7 @@ msgid "Font Sizes"
 msgstr "Tamaños de Fuente"
 
 msgid "Icons"
-msgstr "Iconos"
+msgstr "Íconos"
 
 msgid "Styles"
 msgstr "Estilos"
@@ -3697,6 +3705,28 @@ msgstr "Cambiar visibilidad de los mensajes del editor."
 
 msgid "Native Shader Source Inspector"
 msgstr "Inspector de Código Fuente del Shader Nativo"
+
+msgid ""
+"The Android build template is already installed in this project and it won't "
+"be overwritten.\n"
+"Remove the \"%s\" directory manually before attempting this operation again."
+msgstr ""
+"La plantilla de compilación de Android ya está instalada en este proyecto y "
+"no será sobrescrita.\n"
+"Elimina el directorio \"%s\" manualmente antes de intentar esta operación de "
+"nuevo."
+
+msgid ""
+"This will set up your project for gradle Android builds by installing the "
+"source template to \"%s\".\n"
+"Note that in order to make gradle builds instead of using pre-built APKs, the "
+"\"Use Gradle Build\" option should be enabled in the Android export preset."
+msgstr ""
+"Esto preparará tu proyecto para las compilaciones de Android con Gradle "
+"instalando la plantilla de origen en \"%s\".\n"
+"Ten en cuenta que para realizar compilaciones con Gradle en lugar de usar "
+"APKs precompilados, la opción \"Usar compilación de Gradle\" debe estar "
+"habilitada en la configuración de exportación de Android."
 
 msgid "Unnamed Project"
 msgstr "Proyecto Sin Nombre"
@@ -4712,7 +4742,7 @@ msgid "Size:"
 msgstr "Tamaño:"
 
 msgid "Remove Item"
-msgstr "Eliminar Elemento"
+msgstr "Eliminar Ítem"
 
 msgid "Add Key/Value Pair"
 msgstr "Agregar Par Clave/Valor"
@@ -5361,6 +5391,12 @@ msgstr "Instalar desde un archivo"
 msgid "Install templates from a local file."
 msgstr "Instalar plantillas desde un archivo local."
 
+msgid "Online mode is needed to download the templates."
+msgstr "Se necesita el modo en línea para descargar las plantillas."
+
+msgid "Go Online"
+msgstr "Ir a Internet"
+
 msgid "Cancel the download of the templates."
 msgstr "Cancele la descarga de las plantillas."
 
@@ -5490,11 +5526,11 @@ msgstr "Modo de Exportación:"
 msgid ""
 "\"Strip Visuals\" will replace the following resources with placeholders:"
 msgstr ""
-"\"Eliminar Elementos Visuales\" reemplazará los siguientes recursos con "
-"marcadores de posición:"
+"\"Strip Visuals\" reemplazará los siguientes recursos con marcadores de "
+"posición:"
 
 msgid "Strip Visuals"
-msgstr "Eliminar Elementos Visuales"
+msgstr "Strip Visuals"
 
 msgid "Keep"
 msgstr "Conservar"
@@ -5692,7 +5728,7 @@ msgid "View items as a grid of thumbnails."
 msgstr "Sesgo del nivel de división de la cuadrícula."
 
 msgid "View items as a list."
-msgstr "Ver elementos como una lista."
+msgstr "Ver ítems como una lista."
 
 msgid "Status: Import of file failed. Please fix file and reimport manually."
 msgstr ""
@@ -6140,8 +6176,8 @@ msgstr "Mover/Duplicar: %s"
 
 msgid "Move/Duplicate %d Item"
 msgid_plural "Move/Duplicate %d Items"
-msgstr[0] "Mover/Duplicar %d Elemento"
-msgstr[1] "Mover/Duplicar %d Elementos"
+msgstr[0] "Mover/Duplicar %d Ítem"
+msgstr[1] "Mover/Duplicar %d Ítems"
 
 msgid "Choose target directory:"
 msgstr "Seleccione el directorio de destino:"
@@ -8200,9 +8236,6 @@ msgstr ""
 "Nota: La Librería de Assets requiere de una conexión en línea e implica "
 "enviar datos a través de Internet."
 
-msgid "Go Online"
-msgstr "Ir a Internet"
-
 msgid "Failed to get repository configuration."
 msgstr "Error al obtener la configuración del repositorio."
 
@@ -8569,7 +8602,7 @@ msgid ""
 "Ungroups the selected node from its children. Child nodes will be individual "
 "items in 2D and 3D view."
 msgstr ""
-"Desagrupa el nodo seleccionado de sus hijos. Los nodos hijos serán elementos "
+"Desagrupa el nodo seleccionado de sus hijos. Los nodos hijos serán ítems "
 "individuales en las vistas 2D y 3D."
 
 msgid "Skeleton Options"
@@ -9816,7 +9849,7 @@ msgstr ""
 "se romperá."
 
 msgid "Remove item %d?"
-msgstr "¿Eliminar el elemento %d?"
+msgstr "¿Eliminar el ítem %d?"
 
 msgid ""
 "Update from existing scene?:\n"
@@ -9829,10 +9862,10 @@ msgid "MeshLibrary"
 msgstr "Librería de Mallas"
 
 msgid "Add Item"
-msgstr "Añadir Elemento"
+msgstr "Añadir Ítem"
 
 msgid "Remove Selected Item"
-msgstr "Eliminar Elemento Seleccionado"
+msgstr "Eliminar Ítem Seleccionado"
 
 msgid "Import from Scene (Ignore Transforms)"
 msgstr "Importar desde Escena (Ignorar Transformaciones)"
@@ -11052,7 +11085,7 @@ msgid ""
 "Note that a plugin may use several languages at once by adding more scripts "
 "to the plugin."
 msgstr ""
-"Requerido. El lenguaje scripting que se utilizará para el script.\n"
+"Requerido. El lenguaje de scripting que se utilizará para el script.\n"
 "Tenga en cuenta que un plugin puede utilizar varios lenguajes a la vez "
 "agregando más scripts al plugin."
 
@@ -12146,8 +12179,8 @@ msgstr "No se han encontrado tamaños de fuente."
 
 msgid "1 icon"
 msgid_plural "{num} icons"
-msgstr[0] "1 icono"
-msgstr[1] "{num} iconos"
+msgstr[0] "1 ícono"
+msgstr[1] "{num} íconos"
 
 msgid "No icons found."
 msgstr "No se han encontrado icons."
@@ -12169,10 +12202,10 @@ msgid "Nothing was selected for the import."
 msgstr "Ningún elemento fue seleccionado para la importación."
 
 msgid "Importing Theme Items"
-msgstr "Importar Elementos del Theme"
+msgstr "Importar Ítem del Theme"
 
 msgid "Importing items {n}/{n}"
-msgstr "Importación de elementos {n}/{n}"
+msgstr "Importación de ítems {n}/{n}"
 
 msgid "Updating the editor"
 msgstr "Actualización del editor"
@@ -12181,10 +12214,10 @@ msgid "Finalizing"
 msgstr "Finalizando"
 
 msgid "Import Theme Items"
-msgstr "Importar Elementos del Theme"
+msgstr "Importar Ítems del Theme"
 
 msgid "Filter Items"
-msgstr "Filtrar Elementos"
+msgstr "Filtrar Ítems"
 
 msgid "With Data"
 msgstr "Con Datos"
@@ -12193,68 +12226,67 @@ msgid "Select by data type:"
 msgstr "Seleccionar por tipo de datos:"
 
 msgid "Select all visible color items."
-msgstr "Seleccionar todos los elementos color visibles."
+msgstr "Seleccionar todos los ítems color visibles."
 
 msgid "Select all visible color items and their data."
-msgstr "Seleccionar todos los elementos color visibles y sus datos."
+msgstr "Seleccionar todos los ítems color visibles y sus datos."
 
 msgid "Deselect all visible color items."
-msgstr "Deseleccionar todos los elementos color visibles."
+msgstr "Deseleccionar todos los ítems color visibles."
 
 msgid "Select all visible constant items."
-msgstr "Seleccionar todos elementos constant visibles."
+msgstr "Seleccionar todos los ítems constant visibles."
 
 msgid "Select all visible constant items and their data."
-msgstr "Seleccionar todos los elementos constant visibles y sus datos."
+msgstr "Seleccionar todos los ítems constant visibles y sus datos."
 
 msgid "Deselect all visible constant items."
-msgstr "Deseleccionar todos los elementos constant visibles."
+msgstr "Deseleccionar todos los ítems constantes visibles."
 
 msgid "Select all visible font items."
-msgstr "Seleccionar todos los elementos font visibles."
+msgstr "Seleccionar todos los ítems de fuente visibles."
 
 msgid "Select all visible font items and their data."
-msgstr "Seleccionar todos los elementos font visibles y sus datos."
+msgstr "Seleccionar todos los ítems de fuente visibles y sus datos."
 
 msgid "Deselect all visible font items."
-msgstr "Deseleccionar todos los elementos font visibles."
+msgstr "Deseleccionar todos los ítems de fuente visibles."
 
 msgid "Font sizes"
 msgstr "Tamaño de fuente"
 
 msgid "Select all visible font size items."
-msgstr "Seleccionar todos los elementos de tamaño de fuente visibles."
+msgstr "Seleccionar todos los ítems de tamaño de fuente visibles."
 
 msgid "Select all visible font size items and their data."
-msgstr ""
-"Seleccionar todos los elementos de tamaño de fuente visibles y sus datos."
+msgstr "Seleccionar todos los ítems de tamaño de fuente visibles y sus datos."
 
 msgid "Deselect all visible font size items."
-msgstr "Deseleccionar todos los elementos de tamaño de fuente visibles."
+msgstr "Deseleccionar todos los ítems de tamaño de fuente visibles."
 
 msgid "Select all visible icon items."
-msgstr "Seleccionar todos los elementos icon visibles."
+msgstr "Seleccionar todos los ítems de ícono visibles."
 
 msgid "Select all visible icon items and their data."
-msgstr "Seleccionar todos los elementos icon visibles y sus datos."
+msgstr "Seleccionar todos los ítems de ícono visibles y sus datos."
 
 msgid "Deselect all visible icon items."
-msgstr "Deseleccionar todos los elementos icon visibles."
+msgstr "Deseleccionar todos los ítems de ícono visibles."
 
 msgid "Select all visible stylebox items."
-msgstr "Seleccionar todos los elementos stylebox visibles."
+msgstr "Seleccionar todos los ítems de StyleBox visibles."
 
 msgid "Select all visible stylebox items and their data."
-msgstr "Seleccionar todos los elementos stylebox visibles y sus datos."
+msgstr "Seleccionar todos los ítems de StyleBox visibles y sus datos."
 
 msgid "Deselect all visible stylebox items."
-msgstr "Deseleccionar todos los elementos stylebox visibles."
+msgstr "Deseleccionar todos los ítems de StyleBox visibles."
 
 msgid ""
 "Caution: Adding icon data may considerably increase the size of your Theme "
 "resource."
 msgstr ""
-"Precaución: Añadir datos de iconos puede aumentar considerablemente el tamaño "
+"Precaución: Añadir datos de íconos puede aumentar considerablemente el tamaño "
 "de su recurso Theme."
 
 msgid "Collapse types."
@@ -12264,19 +12296,19 @@ msgid "Expand types."
 msgstr "Expandir tipos."
 
 msgid "Select all Theme items."
-msgstr "Seleccionar todos los elementos del Theme."
+msgstr "Seleccionar todos los ítems del Theme."
 
 msgid "Select With Data"
 msgstr "Seleccionar Con Datos"
 
 msgid "Select all Theme items with item data."
-msgstr "Seleccionar todos los elementos del Theme con los datos del elemento."
+msgstr "Seleccionar todos los ítems de Theme con datos de ítem."
 
 msgid "Deselect All"
 msgstr "Deseleccionar Todo"
 
 msgid "Deselect all Theme items."
-msgstr "Deseleccionar todos los elementos del Theme."
+msgstr "Deseleccionar todos los ítems de Theme."
 
 msgid "Import Selected"
 msgstr "Importar Seleccionado"
@@ -12286,8 +12318,8 @@ msgid ""
 "this window.\n"
 "Close anyway?"
 msgstr ""
-"En la pestaña de Elementos de Importación se han seleccionado algunos "
-"elementos. La selección se perderá al cerrar esta ventana.\n"
+"La pestaña Importar ítems tiene algunos ítems seleccionados. La selección se "
+"perderá al cerrar esta ventana.\n"
 "¿Cerrar de todos modos?"
 
 msgid "Remove Type"
@@ -12302,25 +12334,25 @@ msgstr ""
 "desde otro theme."
 
 msgid "Remove All Color Items"
-msgstr "Eliminar Todos los Elementos de Color"
+msgstr "Eliminar Todos los Ítems Color"
 
 msgid "Rename Item"
-msgstr "Cambiar Nombre de Elemento"
+msgstr "Renombrar Ítem"
 
 msgid "Remove All Constant Items"
-msgstr "Eliminar Todos los Elementos Constant"
+msgstr "Eliminar todos los ítems Constant"
 
 msgid "Remove All Font Items"
-msgstr "Eliminar Todos los Elementos Font"
+msgstr "Eliminar Todos los Ítems de Fuente"
 
 msgid "Remove All Font Size Items"
-msgstr "Eliminar Todos los Elementos de Tamaño de Fuente"
+msgstr "Eliminar Todos los Ítems de Tamaño de Fuente"
 
 msgid "Remove All Icon Items"
-msgstr "Eliminar Todos los Elementos de Iconos"
+msgstr "Eliminar Todos los Ítems de íconos"
 
 msgid "Remove All StyleBox Items"
-msgstr "Eliminar Todos los Elementos de StyleBox"
+msgstr "Eliminar Todos los Ítems StyleBox"
 
 msgid ""
 "This theme type is empty.\n"
@@ -12330,67 +12362,67 @@ msgstr ""
 "Añade más elementos manualmente o importándolos desde otro theme."
 
 msgid "Remove Theme Item"
-msgstr "Eliminar Elemento de Theme"
+msgstr "Eliminar Ítem de Theme"
 
 msgid "Add Theme Type"
 msgstr "Añadir Tipo de Theme"
 
 msgid "Create Theme Item"
-msgstr "Crear Elemento de Theme"
+msgstr "Crear Ítem de Theme"
 
 msgid "Remove Theme Type"
 msgstr "Eliminar Tipo de Theme"
 
 msgid "Remove Data Type Items From Theme"
-msgstr "Eliminar Elementos de Tipo de Datos del Tema"
+msgstr "Eliminar Ítems de Tipo de Dato del Theme"
 
 msgid "Remove Class Items From Theme"
-msgstr "Eliminar Elementos de Clase del Theme"
+msgstr "Eliminar ítems de Clase del Theme"
 
 msgid "Remove Custom Items From Theme"
-msgstr "Eliminar Elementos Personalizados del Theme"
+msgstr "Eliminar Ítems Personalizados del Theme"
 
 msgid "Remove All Items From Theme"
-msgstr "Eliminar Todos los Elementos del Theme"
+msgstr "Eliminar Todos los Ítems del Theme"
 
 msgid "Add Color Item"
-msgstr "Añadir Elemento Color"
+msgstr "Añadir Ítem Color"
 
 msgid "Add Constant Item"
-msgstr "Añadir Elemento Constant"
+msgstr "Añadir Ítem Constant"
 
 msgid "Add Font Item"
-msgstr "Añadir Elemento Font"
+msgstr "Añadir Ítem Font"
 
 msgid "Add Font Size Item"
-msgstr "Añadir Elemento de Tamaño de Fuente"
+msgstr "Añadir Ítem de Tamaño de Fuente"
 
 msgid "Add Icon Item"
-msgstr "Añadir Elemento de Icono"
+msgstr "Añadir Ítem Ícono"
 
 msgid "Add Stylebox Item"
-msgstr "Añadir Elemento de Stylebox"
+msgstr "Añadir Ítem Stylebox"
 
 msgid "Rename Color Item"
-msgstr "Cambiar Nombre del Elemento Color"
+msgstr "Renombrar Ítem Color"
 
 msgid "Rename Constant Item"
-msgstr "Cambiar Nombre del Elemento Constant"
+msgstr "Renombrar Ítem Constant"
 
 msgid "Rename Font Item"
-msgstr "Renombrar Elemento Font"
+msgstr "Renombrar Ítem de Fuente"
 
 msgid "Rename Font Size Item"
-msgstr "Renombrar Elemento de Tamaño de Fuente"
+msgstr "Renombrar Ítem de Tamaño de Fuente"
 
 msgid "Rename Icon Item"
-msgstr "Renombrar Elemento de Icono"
+msgstr "Renombrar Ítem Ícono"
 
 msgid "Rename Stylebox Item"
-msgstr "Renombrar Elemento de Stylebox"
+msgstr "Renombrar Ítem Stylebox"
 
 msgid "Rename Theme Item"
-msgstr "Renombrar Elemento del Theme"
+msgstr "Renombrar Ítem de Theme"
 
 msgid "Invalid file, not a Theme resource."
 msgstr "Archivo inválido, no es un recurso del Theme."
@@ -12399,10 +12431,10 @@ msgid "Invalid file, same as the edited Theme resource."
 msgstr "Archivo inválido, igual que el recurso del Theme editado."
 
 msgid "Manage Theme Items"
-msgstr "Administrar Elementos del Theme"
+msgstr "Administrar Ítems de Theme"
 
 msgid "Edit Items"
-msgstr "Editar Elementos"
+msgstr "Editar Ítems"
 
 msgid "Types:"
 msgstr "Tipos:"
@@ -12411,31 +12443,31 @@ msgid "Add Type:"
 msgstr "Añadir Tipo:"
 
 msgid "Add Item:"
-msgstr "Añadir Elemento:"
+msgstr "Añadir Ítem:"
 
 msgid "Add StyleBox Item"
-msgstr "Añadir Elemento StyleBox"
+msgstr "Añadir Ítem StyleBox"
 
 msgid "Remove Items:"
-msgstr "Eliminar Elemento:"
+msgstr "Eliminar Ítems:"
 
 msgid "Remove Class Items"
-msgstr "Eliminar Clases de Elementos"
+msgstr "Eliminar Clases de Ítems"
 
 msgid "Remove Custom Items"
-msgstr "Eliminar Elementos Personalizados"
+msgstr "Eliminar Ítems Personalizados"
 
 msgid "Remove All Items"
-msgstr "Eliminar Todos los Elementos"
+msgstr "Eliminar Todos los Ítems"
 
 msgid "Add Theme Item"
-msgstr "Añadir Elemento del Theme"
+msgstr "Añadir Ítem de Theme"
 
 msgid "Old Name:"
 msgstr "Nombre Antiguo:"
 
 msgid "Import Items"
-msgstr "Importar Elementos"
+msgstr "Importar Ítems"
 
 msgid "Default Theme"
 msgstr "Theme Predeterminado"
@@ -12465,13 +12497,13 @@ msgid "Are you sure you want to create an empty type?"
 msgstr "¿Estás seguro de que quieres crear un tipo vacío?"
 
 msgid "Confirm Item Rename"
-msgstr "Confirmar Cambio de Nombre del Elemento"
+msgstr "Confirmar Cambio de Nombre del Ítem"
 
 msgid "Cancel Item Rename"
-msgstr "Cancelar Cambio de Nombre del Elemento"
+msgstr "Cancelar Cambio de Nombre del Ítem"
 
 msgid "Override Item"
-msgstr "Elemento de Anulación"
+msgstr "Ítem de Anulación"
 
 msgid "Unpin this StyleBox as a main style."
 msgstr "Quitar este StyleBox como estilo principal."
@@ -12485,34 +12517,34 @@ msgstr ""
 "de este tipo."
 
 msgid "Add Item Type"
-msgstr "Añadir Tipo de Elemento"
+msgstr "Añadir Tipo de Ítem"
 
 msgid "Add Type"
 msgstr "Añadir Tipo"
 
 msgid "Override All Default Theme Items"
-msgstr "Sobreescribir Todos los Elementos del Tema por Defecto"
+msgstr "Sobreescribir Todos los Ítems del Theme Por Defecto"
 
 msgid "Override Theme Item"
-msgstr "Anular Elemento del Theme"
+msgstr "Anular Ítem de Theme"
 
 msgid "Set Color Item in Theme"
-msgstr "Establecer Elemento de Color en el Theme"
+msgstr "Establecer Ítem Color en el Theme"
 
 msgid "Set Constant Item in Theme"
-msgstr "Establecer Elemento Constante en el Theme"
+msgstr "Establecer Ítem Constant en el Theme"
 
 msgid "Set Font Size Item in Theme"
 msgstr "Establecer Tamaño de la Fuente en el Objeto del Tema"
 
 msgid "Set Font Item in Theme"
-msgstr "Establecer Elemento de Fuente en el Theme"
+msgstr "Establecer Ítem de Fuente en el Theme"
 
 msgid "Set Icon Item in Theme"
-msgstr "Establecer Icono de Elemento en Theme"
+msgstr "Establecer Ítem de Ícono en Theme"
 
 msgid "Set Stylebox Item in Theme"
-msgstr "Establecer Elemento Stylebox en el Theme"
+msgstr "Establecer Ítem de StyleBox en Theme"
 
 msgid "Pin Stylebox"
 msgstr "Anclar Stylebox"
@@ -12537,14 +12569,14 @@ msgstr "Mostrar por Defecto"
 
 msgid "Show default type items alongside items that have been overridden."
 msgstr ""
-"Mostrar los elementos de tipo predeterminado junto a los elementos que han "
-"sido anulados."
+"Mostrar ítems de tipo predeterminado junto con los ítems que han sido "
+"sobrescritos."
 
 msgid "Override All"
 msgstr "Anular Todo"
 
 msgid "Override all default type items."
-msgstr "Anular todos los elementos de tipo predeterminado."
+msgstr "Sobrescribir todos los ítems de tipo predeterminado."
 
 msgid "Base Type"
 msgstr "Tipo Base"
@@ -12565,10 +12597,10 @@ msgid "Theme:"
 msgstr "Theme:"
 
 msgid "Manage Items..."
-msgstr "Administrar Elementos..."
+msgstr "Administrar Ítems..."
 
 msgid "Add, remove, organize and import Theme items."
-msgstr "Añadir, eliminar, organizar e importar elementos del Theme."
+msgstr "Agregar, eliminar, organizar e importar ítems de Theme."
 
 msgid "Add Preview"
 msgstr "Añadir Vista Previa"
@@ -12595,22 +12627,22 @@ msgid "Disabled Button"
 msgstr "Botón Desactivado"
 
 msgid "Item"
-msgstr "Elemento"
+msgstr "Ítem"
 
 msgid "Disabled Item"
-msgstr "Desactivar Elemento"
+msgstr "Desactivar Ítem"
 
 msgid "Check Item"
-msgstr "Activar Elemento"
+msgstr "Activar Ítem"
 
 msgid "Checked Item"
-msgstr "Elemento Activado"
+msgstr "Ítem Marcado"
 
 msgid "Radio Item"
-msgstr "Radio Elemento"
+msgstr "Ítem Radio"
 
 msgid "Checked Radio Item"
-msgstr "Radio Elemento Activo"
+msgstr "Ítem Radio Marcado"
 
 msgid "Named Separator"
 msgstr "Separador con nombre"
@@ -12619,10 +12651,10 @@ msgid "Submenu"
 msgstr "Submenú"
 
 msgid "Subitem 1"
-msgstr "Subelemento 1"
+msgstr "Subítem 1"
 
 msgid "Subitem 2"
-msgstr "Subelemento 2"
+msgstr "Subítem 2"
 
 msgid "Has"
 msgstr "Tiene"
@@ -12643,7 +12675,7 @@ msgid "Tab 3"
 msgstr "Tab 3"
 
 msgid "Editable Item"
-msgstr "Elemento Editable"
+msgstr "Ítem Editable"
 
 msgid "Subtree"
 msgstr "Subárbol"
@@ -14107,7 +14139,7 @@ msgid "SoftLight operator."
 msgstr "Operador SoftLight."
 
 msgid "Color constant."
-msgstr "Constante de color."
+msgstr "Color Constant."
 
 msgid "Color parameter."
 msgstr "Parámetro de Color."
@@ -15055,6 +15087,9 @@ msgstr ""
 "Permite redirigir conexiones con libertad, posibilitando la conexión de "
 "varios puertos de entrada a un único puerto de salida."
 
+msgid "[None]"
+msgstr "[Ninguno]"
+
 msgid "Edit Visual Property: %s"
 msgstr "Editar Propiedad Visual: %s"
 
@@ -15721,7 +15756,7 @@ msgid "Add Project Setting"
 msgstr "Añadir Configuración del Proyecto"
 
 msgid "Delete Item"
-msgstr "Eliminar Elemento"
+msgstr "Eliminar Ítem"
 
 msgid "(All)"
 msgstr "(Todo)"
@@ -15922,9 +15957,6 @@ msgstr "Etiquetas de Características"
 
 msgid "Pick Root Node Type"
 msgstr "Seleccionar Tipo de Nodo Raíz"
-
-msgid "Pick"
-msgstr "Seleccionar"
 
 msgid "Scene name is empty."
 msgstr "El nombre de la escena está vacío."
@@ -16627,38 +16659,21 @@ msgstr "Actualizando UIDs de Script"
 
 msgid ""
 "As of Godot 4.4, scenes and resources use UIDs to reference scripts and "
-"shaders.\n"
+"shaders. Upgrades apply on the next save of each scene/resource.\n"
 "\n"
-"Normally, this update is applied to a single scene or resource once you save "
-"it in Godot 4.4 for the first time. If you have a lot of scenes and/or "
-"resources, doing this manually may be time-consuming. This tool will update "
-"all of the project's scenes and resources at once.\n"
-"\n"
-"Click \"Restart & Upgrade\" to restart the editor and update all of the "
-"scenes and resources in this project. Depending on the project size, it may "
-"take several minutes.\n"
-"\n"
-"Note: Please make sure you have your project backed up before running the "
-"tool, to avoid the possibility of data loss. Additionally, make sure to "
-"commit all .uid files into version control (and do not add them to ignore-"
-"lists like .gitignore)."
+"To save time, this tool can open and save each of these files. Depending on "
+"the project size, it may take several minutes."
 msgstr ""
-"A partir de Godot 4.4, las escenas y recursos usan UIDs para referenciar "
-"scripts y shaders.\n"
+"A partir de Godot 4.4, las escenas y los recursos usan UIDs para referenciar "
+"scripts y shaders. Las actualizaciones se aplican al siguiente guardado de "
+"cada escena/recurso.\n"
 "\n"
-"Normalmente, esta actualización se aplica a una sola escena o recurso la "
-"primera vez que lo guardas en Godot 4.4. Si tienes muchas escenas y/o "
-"recursos, hacerlo manualmente puede llevar mucho tiempo. Esta herramienta "
-"actualizará todas las escenas y recursos del proyecto a la vez.\n"
-"\n"
-"Haz clic en \"Restart & Upgrade\" para reiniciar el editor y actualizar todas "
-"las escenas y recursos de este proyecto. Dependiendo del tamaño del proyecto, "
-"puede tardar varios minutos.\n"
-"\n"
-"Nota: Por favor, asegúrate de tener una copia de seguridad de tu proyecto "
-"antes de ejecutar la herramienta, para evitar la posibilidad de pérdida de "
-"datos. Además, asegúrate de confirmar todos los archivos .uid en el control "
-"de versiones (y no los añadas a listas de ignorados como .gitignore)."
+"Para ahorrar tiempo, esta herramienta puede abrir y guardar cada uno de estos "
+"archivos. Dependiendo del tamaño del proyecto, esto puede llevar varios "
+"minutos."
+
+msgid "Re-save all scenes and resources to use UIDs"
+msgstr "Vuelve a guardar todas las escenas y recursos para poder usar UIDs"
 
 msgid "Learn More"
 msgstr "Más Información"
@@ -17931,7 +17946,7 @@ msgstr ""
 "sistema."
 
 msgid "Export Icons"
-msgstr "Iconos de Exportación"
+msgstr "Exportar Íconos"
 
 msgid "Could not open a directory at path \"%s\"."
 msgstr "No se pudo abrir un directorio en la ruta \"%s\"."
@@ -18574,7 +18589,7 @@ msgid "Resources Modification"
 msgstr "Modificación de Recursos"
 
 msgid "Icon size \"%d\" is missing."
-msgstr "Falta el tamaño del icono \"%d\"."
+msgstr "Falta el tamaño del ícono \"%d\"."
 
 msgid ""
 "Mismatching custom export template executable architecture: found \"%s\", "
@@ -18587,7 +18602,7 @@ msgid "Failed to rename temporary file \"%s\"."
 msgstr "Fallo al renombrar el archivo temporal \"%s\"."
 
 msgid "Invalid icon path."
-msgstr "Ruta de icono inválida."
+msgstr "Ruta de ícono inválida."
 
 msgid "Invalid file version."
 msgstr "Versión de archivo inválida."
@@ -18602,16 +18617,16 @@ msgid "Could not find wine executable at \"%s\"."
 msgstr "No se pudo encontrar el ejecutable de wine en \"%s\"."
 
 msgid "Invalid icon file \"%s\"."
-msgstr "Archivo de icono \"%s\" inválido."
+msgstr "Archivo de ícono \"%s\" inválido."
 
 msgid ""
 "Could not start rcedit executable. Configure rcedit path in the Editor "
 "Settings (Export > Windows > rcedit), or disable \"Application > Modify "
 "Resources\" in the export preset."
 msgstr ""
-"No se pudo iniciar el ejecutable rcedit. Configura la ruta de rcedit en la "
-"Configuración del Editor (Exportar > Windows > rcedit), o desactiva "
-"\"Aplicación > Modificar Recursos\" en el ajuste de exportación."
+"No se pudo iniciar el ejecutable rcedit. Configure la ruta de rcedit en la "
+"Configuración del Editor (Exportar > Windows > rcedit), o desactive "
+"\"Aplicación > Modificar Recursos\" en los ajustes de exportación."
 
 msgid "rcedit failed to modify executable: %s."
 msgstr "rcedit falló al modificar el ejecutable: %s."
@@ -18660,7 +18675,7 @@ msgid ""
 "rcedit) to change the icon or app information data."
 msgstr ""
 "La herramienta rcedit debe configurarse en la Configuración del Editor "
-"(Exportar > Windows > rcedit) para cambiar el icono o los datos de "
+"(Exportar > Windows > rcedit) para cambiar el ícono o los datos de "
 "información de la aplicación."
 
 msgid "Windows executables cannot be >= 4 GiB."
@@ -20061,14 +20076,14 @@ msgstr ""
 "Para continuar con cambios mínimos en el código añade 'uniform sampler2D %s: "
 "hint_%s, filter_linear_mipmap;' cerca de la parte superior de tu shader."
 
+msgid "Can't use function as identifier: '%s'."
+msgstr "No se puede utilizar la función como identificador: '%s'."
+
 msgid "Varying with '%s' data type may only be used in the '%s' function."
 msgstr "El varying con tipo de dato '%s' solo puede usarse en la función '%s'."
 
 msgid "Varying '%s' must be assigned in the '%s' function first."
 msgstr "El varying '%s' debe asignarse primero en la función '%s'."
-
-msgid "Can't use function as identifier: '%s'."
-msgstr "No se puede utilizar la función como identificador: '%s'."
 
 msgid "Only integer expressions are allowed for indexing."
 msgstr "Sólo se permiten expresiones enteras para la indexación."

@@ -11,6 +11,7 @@
 #define MBEDTLS_SSL_MISC_H
 
 #include "mbedtls/build_info.h"
+#include "common.h"
 
 #include "mbedtls/error.h"
 
@@ -47,7 +48,7 @@
 #include "ssl_ciphersuites_internal.h"
 #include "x509_internal.h"
 #include "pk_internal.h"
-#include "common.h"
+
 
 /* Shorthand for restartable ECC */
 #if defined(MBEDTLS_ECP_RESTARTABLE) && \
@@ -2899,6 +2900,18 @@ int mbedtls_ssl_tls13_write_binders_of_pre_shared_key_ext(
     unsigned char *buf, unsigned char *end);
 #endif /* MBEDTLS_SSL_TLS1_3_KEY_EXCHANGE_MODE_SOME_PSK_ENABLED */
 
+#if defined(MBEDTLS_SSL_SERVER_NAME_INDICATION)
+/** Get the host name from the SSL context.
+ *
+ * \param[in]   ssl     SSL context
+ *
+ * \return The \p hostname pointer from the SSL context.
+ *         \c NULL if mbedtls_ssl_set_hostname() has never been called on
+ *         \p ssl or if it was last called with \p NULL.
+ */
+const char *mbedtls_ssl_get_hostname_pointer(const mbedtls_ssl_context *ssl);
+#endif /* MBEDTLS_SSL_SERVER_NAME_INDICATION */
+
 #if defined(MBEDTLS_SSL_PROTO_TLS1_3) && \
     defined(MBEDTLS_SSL_SESSION_TICKETS) && \
     defined(MBEDTLS_SSL_SERVER_NAME_INDICATION) && \
@@ -2982,6 +2995,7 @@ static inline void mbedtls_ssl_tls13_session_clear_ticket_flags(
 #define MBEDTLS_SSL_SESSION_TICKETS_TLS1_3_MASK \
     (1 << MBEDTLS_SSL_SESSION_TICKETS_TLS1_3_BIT)
 
+#if defined(MBEDTLS_SSL_PROTO_TLS1_2)
 static inline int mbedtls_ssl_conf_get_session_tickets(
     const mbedtls_ssl_config *conf)
 {
@@ -2989,6 +3003,7 @@ static inline int mbedtls_ssl_conf_get_session_tickets(
            MBEDTLS_SSL_SESSION_TICKETS_ENABLED :
            MBEDTLS_SSL_SESSION_TICKETS_DISABLED;
 }
+#endif /* MBEDTLS_SSL_PROTO_TLS1_2 */
 
 #if defined(MBEDTLS_SSL_PROTO_TLS1_3)
 static inline int mbedtls_ssl_conf_is_signal_new_session_tickets_enabled(
