@@ -790,7 +790,6 @@ bool JoltPhysicsDirectSpaceState3D::rest_info(const ShapeParameters &p_parameter
 	r_info->normal = to_godot(-hit.mPenetrationAxis.Normalized());
 	r_info->rid = object->get_rid();
 	r_info->collider_id = object->get_instance_id();
-	r_info->shape = 0;
 	r_info->linear_velocity = object->get_velocity_at_position(hit_point);
 
 	return true;
