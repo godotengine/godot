@@ -63,11 +63,7 @@ public:
 			CRASH_COND_MSG(!data, "Out of memory");
 		}
 
-		if constexpr (!std::is_trivially_constructible_v<T> && !force_trivial) {
-			memnew_placement(&data[count++], T(p_elem));
-		} else {
-			data[count++] = std::move(p_elem);
-		}
+		memnew_placement(&data[count++], T(p_elem));
 	}
 
 	void remove_at(U p_index) {
@@ -76,9 +72,7 @@ public:
 		for (U i = p_index; i < count; i++) {
 			data[i] = std::move(data[i + 1]);
 		}
-		if constexpr (!std::is_trivially_destructible_v<T> && !force_trivial) {
-			data[count].~T();
-		}
+		data[count].~T();
 	}
 
 	/// Removes the item copying the last value into the position of the one to
@@ -89,9 +83,7 @@ public:
 		if (count > p_index) {
 			data[p_index] = std::move(data[count]);
 		}
-		if constexpr (!std::is_trivially_destructible_v<T> && !force_trivial) {
-			data[count].~T();
-		}
+		data[count].~T();
 	}
 
 	_FORCE_INLINE_ bool erase(const T &p_val) {
@@ -145,9 +137,11 @@ public:
 		}
 	}
 
+	/// p_force_trivial can be used to skip the constructor, for better performance.
+	template <OnAllocInit p_init = force_trivial ? OnAllocInit::AVOID : OnAllocInit::DEFAULT>
 	void resize(U p_size) {
 		if (p_size < count) {
-			if constexpr (!std::is_trivially_destructible_v<T> && !force_trivial) {
+			if constexpr (!std::is_trivially_destructible_v<T>) {
 				for (U i = p_size; i < count; i++) {
 					data[i].~T();
 				}
@@ -159,9 +153,7 @@ public:
 				data = (T *)memrealloc(data, capacity * sizeof(T));
 				CRASH_COND_MSG(!data, "Out of memory");
 			}
-			if constexpr (!std::is_trivially_constructible_v<T> && !force_trivial) {
-				memnew_arr_placement(data + count, p_size - count);
-			}
+			memnew_arr_placement<p_init>(data + count, p_size - count);
 			count = p_size;
 		}
 	}
