@@ -407,9 +407,9 @@ void SceneDebugger::_send_object_ids(const Vector<ObjectID> &p_ids, bool p_updat
 		arr.append(invalid_selection);
 		EngineDebugger::get_singleton()->send_message("remote_selection_invalidated", arr);
 
-		EngineDebugger::get_singleton()->send_message(objs.is_empty() ? "remote_nothing_clicked" : "remote_nodes_clicked", objs);
+		EngineDebugger::get_singleton()->send_message(objs.is_empty() ? "remote_nothing_selected" : "remote_objects_selected", objs);
 	} else {
-		EngineDebugger::get_singleton()->send_message("scene:inspect_objects", objs);
+		EngineDebugger::get_singleton()->send_message(p_update_selection ? "remote_objects_selected" : "scene:inspect_objects", objs);
 	}
 }
 
@@ -1652,7 +1652,7 @@ void RuntimeNodeSelect::_physics_frame() {
 #else
 				if (!selected_ci_nodes.is_empty() || !selected_3d_nodes.is_empty()) {
 #endif // _3D_DISABLED
-					EngineDebugger::get_singleton()->send_message("remote_nothing_clicked", Array());
+					EngineDebugger::get_singleton()->send_message("remote_nothing_selected", Array());
 					_clear_selection();
 				}
 
@@ -1714,7 +1714,7 @@ void RuntimeNodeSelect::_send_ids(const Vector<Node *> &p_picked_nodes, bool p_i
 			message.append(arr);
 		}
 
-		EngineDebugger::get_singleton()->send_message("remote_nodes_clicked", message);
+		EngineDebugger::get_singleton()->send_message("remote_objects_selected", message);
 		_set_selected_nodes(picked_nodes);
 
 		return;
@@ -1778,7 +1778,7 @@ void RuntimeNodeSelect::_send_ids(const Vector<Node *> &p_picked_nodes, bool p_i
 	}
 
 	if (ids.is_empty()) {
-		EngineDebugger::get_singleton()->send_message("remote_nothing_clicked", message);
+		EngineDebugger::get_singleton()->send_message("remote_nothing_selected", message);
 	} else {
 		for (const ObjectID &id : ids) {
 			SceneDebuggerObject obj(id);
@@ -1787,7 +1787,7 @@ void RuntimeNodeSelect::_send_ids(const Vector<Node *> &p_picked_nodes, bool p_i
 			message.append(arr);
 		}
 
-		EngineDebugger::get_singleton()->send_message("remote_nodes_clicked", message);
+		EngineDebugger::get_singleton()->send_message("remote_objects_selected", message);
 	}
 
 	_set_selected_nodes(nodes);

@@ -300,7 +300,9 @@ void ScriptEditorDebugger::clear_inspector(bool p_send_msg) {
 }
 
 void ScriptEditorDebugger::_remote_object_selected(ObjectID p_id) {
-	emit_signal(SNAME("remote_object_requested"), p_id);
+	Array arr;
+	arr.append(p_id);
+	emit_signal(SNAME("remote_objects_requested"), arr);
 }
 
 void ScriptEditorDebugger::_remote_objects_edited(const String &p_prop, const TypedDictionary<uint64_t, Variant> &p_values, const String &p_field) {
@@ -439,16 +441,10 @@ void ScriptEditorDebugger::_msg_scene_scene_tree(uint64_t p_thread_id, const Arr
 
 void ScriptEditorDebugger::_msg_scene_inspect_objects(uint64_t p_thread_id, const Array &p_data) {
 	ERR_FAIL_COND(p_data.is_empty());
+	EditorDebuggerRemoteObjects *objs = inspector->set_objects(p_data);
+	if (objs && EditorDebuggerNode::get_singleton()->match_remote_selection(objs->remote_object_ids)) {
+		EditorDebuggerNode::get_singleton()->stop_waiting_inspection();
 
-	TypedArray<uint64_t> ids;
-	for (const Array arr : p_data) {
-		ERR_FAIL_COND(arr.is_empty());
-		ERR_FAIL_COND(arr[0].get_type() != Variant::INT);
-		ids.append(arr[0]);
-	}
-
-	if (EditorDebuggerNode::get_singleton()->match_remote_selection(ids)) {
-		EditorDebuggerRemoteObjects *objs = inspector->set_objects(p_data);
 		emit_signal(SNAME("remote_objects_updated"), objs);
 	}
 }
@@ -881,7 +877,7 @@ void ScriptEditorDebugger::_msg_request_quit(uint64_t p_thread_id, const Array &
 	_stop_and_notify();
 }
 
-void ScriptEditorDebugger::_msg_remote_nodes_clicked(uint64_t p_thread_id, const Array &p_data) {
+void ScriptEditorDebugger::_msg_remote_objects_selected(uint64_t p_thread_id, const Array &p_data) {
 	ERR_FAIL_COND(p_data.is_empty());
 	EditorDebuggerRemoteObjects *objs = inspector->set_objects(p_data);
 	if (objs) {
@@ -892,7 +888,7 @@ void ScriptEditorDebugger::_msg_remote_nodes_clicked(uint64_t p_thread_id, const
 	}
 }
 
-void ScriptEditorDebugger::_msg_remote_nothing_clicked(uint64_t p_thread_id, const Array &p_data) {
+void ScriptEditorDebugger::_msg_remote_nothing_selected(uint64_t p_thread_id, const Array &p_data) {
 	EditorDebuggerNode::get_singleton()->stop_waiting_inspection();
 
 	emit_signal(SNAME("remote_tree_clear_selection_requested"));
@@ -973,8 +969,8 @@ void ScriptEditorDebugger::_init_parse_message_handlers() {
 	parse_message_handlers["servers:profile_frame"] = &ScriptEditorDebugger::_msg_servers_profile_frame;
 	parse_message_handlers["servers:profile_total"] = &ScriptEditorDebugger::_msg_servers_profile_total;
 	parse_message_handlers["request_quit"] = &ScriptEditorDebugger::_msg_request_quit;
-	parse_message_handlers["remote_nodes_clicked"] = &ScriptEditorDebugger::_msg_remote_nodes_clicked;
-	parse_message_handlers["remote_nothing_clicked"] = &ScriptEditorDebugger::_msg_remote_nothing_clicked;
+	parse_message_handlers["remote_objects_selected"] = &ScriptEditorDebugger::_msg_remote_objects_selected;
+	parse_message_handlers["remote_nothing_selected"] = &ScriptEditorDebugger::_msg_remote_nothing_selected;
 	parse_message_handlers["remote_selection_invalidated"] = &ScriptEditorDebugger::_msg_remote_selection_invalidated;
 	parse_message_handlers["show_selection_limit_warning"] = &ScriptEditorDebugger::_msg_show_selection_limit_warning;
 	parse_message_handlers["performance:profile_names"] = &ScriptEditorDebugger::_msg_performance_profile_names;
@@ -1956,6 +1952,7 @@ void ScriptEditorDebugger::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("set_execution", PropertyInfo("script"), PropertyInfo(Variant::INT, "line")));
 	ADD_SIGNAL(MethodInfo("clear_execution", PropertyInfo("script")));
 	ADD_SIGNAL(MethodInfo("breaked", PropertyInfo(Variant::BOOL, "reallydid"), PropertyInfo(Variant::BOOL, "can_debug"), PropertyInfo(Variant::STRING, "reason"), PropertyInfo(Variant::BOOL, "has_stackdump")));
+	ADD_SIGNAL(MethodInfo("remote_objects_requested", PropertyInfo(Variant::ARRAY, "ids")));
 	ADD_SIGNAL(MethodInfo("remote_objects_updated", PropertyInfo(Variant::OBJECT, "remote_objects")));
 	ADD_SIGNAL(MethodInfo("remote_object_property_updated", PropertyInfo(Variant::INT, "id"), PropertyInfo(Variant::STRING, "property")));
 	ADD_SIGNAL(MethodInfo("remote_window_title_changed", PropertyInfo(Variant::STRING, "title")));
