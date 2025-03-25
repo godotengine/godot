@@ -136,7 +136,7 @@ String EditorVisualProfiler::_get_time_as_text(float p_time) {
 
 Color EditorVisualProfiler::_get_color_from_signature(const StringName &p_signature) const {
 	Color bc = get_theme_color(SNAME("error_color"), EditorStringName(Editor));
-	double rot = ABS(double(p_signature.hash()) / double(0x7FFFFFFF));
+	double rot = Math::abs(double(p_signature.hash()) / double(0x7FFFFFFF));
 	Color c;
 	c.set_hsv(rot, bc.get_s(), bc.get_v());
 	return c.lerp(get_theme_color(SNAME("base_color"), EditorStringName(Editor)), 0.07);
@@ -362,7 +362,7 @@ void EditorVisualProfiler::_update_frame(bool p_focus_selected) {
 			stack.push_back(category);
 			categories.push_back(category);
 
-			name = name.substr(1, name.length());
+			name = name.substr(1);
 
 			category->set_text(0, name);
 			category->set_metadata(1, cpu_time);

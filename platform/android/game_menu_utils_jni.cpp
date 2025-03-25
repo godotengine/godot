@@ -133,4 +133,13 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_utils_GameMenuUtils_playMainSc
 	}
 #endif
 }
+
+JNIEXPORT void JNICALL Java_org_godotengine_godot_utils_GameMenuUtils_setDebugMuteAudio(JNIEnv *env, jclass clazz, jboolean enabled) {
+#ifdef TOOLS_ENABLED
+	GameViewPlugin *game_view_plugin = _get_game_view_plugin();
+	if (game_view_plugin != nullptr && game_view_plugin->get_debugger().is_valid()) {
+		game_view_plugin->get_debugger()->set_debug_mute_audio(enabled);
+	}
+#endif
+}
 }

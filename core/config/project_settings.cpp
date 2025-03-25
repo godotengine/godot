@@ -77,7 +77,7 @@ String ProjectSettings::get_imported_files_path() const {
 // This is used by the project manager to provide the initial_settings for config/features.
 const PackedStringArray ProjectSettings::get_required_features() {
 	PackedStringArray features;
-	features.append(VERSION_BRANCH);
+	features.append(GODOT_VERSION_BRANCH);
 #ifdef REAL_T_IS_DOUBLE
 	features.append("Double Precision");
 #endif
@@ -92,9 +92,9 @@ const PackedStringArray ProjectSettings::_get_supported_features() {
 #endif
 	// Allow pinning to a specific patch number or build type by marking
 	// them as supported. They're only used if the user adds them manually.
-	features.append(VERSION_BRANCH "." _MKSTR(VERSION_PATCH));
-	features.append(VERSION_FULL_CONFIG);
-	features.append(VERSION_FULL_BUILD);
+	features.append(GODOT_VERSION_BRANCH "." _MKSTR(GODOT_VERSION_PATCH));
+	features.append(GODOT_VERSION_FULL_CONFIG);
+	features.append(GODOT_VERSION_FULL_BUILD);
 
 #ifdef RD_ENABLED
 	features.append("Forward Plus");
@@ -208,7 +208,7 @@ String ProjectSettings::localize_path(const String &p_path) const {
 		if (plocal[plocal.length() - 1] == '/') {
 			sep += 1;
 		}
-		return plocal + path.substr(sep, path.size() - sep);
+		return plocal + path.substr(sep);
 	}
 }
 
@@ -289,7 +289,7 @@ bool ProjectSettings::_set(const StringName &p_name, const Variant &p_value) {
 				remove_autoload(node_name);
 			}
 		} else if (p_name.operator String().begins_with("global_group/")) {
-			String group_name = p_name.operator String().get_slice("/", 1);
+			String group_name = p_name.operator String().get_slicec('/', 1);
 			if (global_groups.has(group_name)) {
 				remove_global_group(group_name);
 			}
@@ -340,7 +340,7 @@ bool ProjectSettings::_set(const StringName &p_name, const Variant &p_value) {
 			}
 			add_autoload(autoload);
 		} else if (p_name.operator String().begins_with("global_group/")) {
-			String group_name = p_name.operator String().get_slice("/", 1);
+			String group_name = p_name.operator String().get_slicec('/', 1);
 			add_global_group(group_name, p_value);
 		}
 	}
@@ -1129,7 +1129,7 @@ Error ProjectSettings::save_custom(const String &p_path, const CustomMap &p_cust
 			category = "";
 		} else {
 			category = category.substr(0, div);
-			name = name.substr(div + 1, name.size());
+			name = name.substr(div + 1);
 		}
 		save_props[category].push_back(name);
 	}
@@ -1141,7 +1141,7 @@ Error ProjectSettings::save_custom(const String &p_path, const CustomMap &p_cust
 			save_features += ",";
 		}
 
-		String f = p_custom_features[i].strip_edges().replace("\"", "");
+		String f = p_custom_features[i].strip_edges().remove_char('\"');
 		save_features += f;
 	}
 
@@ -1497,9 +1497,10 @@ ProjectSettings::ProjectSettings() {
 
 	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "display/window/size/mode", PROPERTY_HINT_ENUM, "Windowed,Minimized,Maximized,Fullscreen,Exclusive Fullscreen"), 0);
 
-	// Keep the enum values in sync with the `DisplayServer::SCREEN_` enum.
-	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "display/window/size/initial_position_type", PROPERTY_HINT_ENUM, "Absolute,Center of Primary Screen,Center of Other Screen,Center of Screen With Mouse Pointer,Center of Screen With Keyboard Focus"), 1);
+	// Keep the enum values in sync with the `Window::WINDOW_INITIAL_POSITION_` enum.
+	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "display/window/size/initial_position_type", PROPERTY_HINT_ENUM, "Absolute:0,Center of Primary Screen:1,Center of Other Screen:3,Center of Screen With Mouse Pointer:4,Center of Screen With Keyboard Focus:5"), 1);
 	GLOBAL_DEF_BASIC(PropertyInfo(Variant::VECTOR2I, "display/window/size/initial_position"), Vector2i());
+	// Keep the enum values in sync with the `DisplayServer::SCREEN_` enum.
 	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "display/window/size/initial_screen", PROPERTY_HINT_RANGE, "0,64,1,or_greater"), 0);
 
 	GLOBAL_DEF_BASIC("display/window/size/resizable", true);
@@ -1612,6 +1613,7 @@ ProjectSettings::ProjectSettings() {
 	GLOBAL_DEF_BASIC("input_devices/pointing/android/enable_long_press_as_right_click", false);
 	GLOBAL_DEF_BASIC("input_devices/pointing/android/enable_pan_and_scale_gestures", false);
 	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "input_devices/pointing/android/rotary_input_scroll_axis", PROPERTY_HINT_ENUM, "Horizontal,Vertical"), 1);
+	GLOBAL_DEF("input_devices/pointing/android/override_volume_buttons", false);
 
 	// These properties will not show up in the dialog. If you want to exclude whole groups, use add_hidden_prefix().
 	GLOBAL_DEF_INTERNAL("application/config/features", PackedStringArray());

@@ -14,6 +14,7 @@ from importlib.util import module_from_spec, spec_from_file_location
 from types import ModuleType
 
 from SCons import __version__ as scons_raw_version
+from SCons.Builder import ListEmitter
 
 # Explicitly resolve the helper modules, this is done to avoid clash with
 # modules of the same name that might be randomly added (e.g. someone adding
@@ -166,7 +167,7 @@ opts.Add(
         "optimize",
         "Optimization level (by default inferred from 'target' and 'dev_build')",
         "auto",
-        ("auto", "none", "custom", "debug", "speed", "speed_trace", "size"),
+        ("auto", "none", "custom", "debug", "speed", "speed_trace", "size", "size_extra"),
     )
 )
 opts.Add(BoolVariable("debug_symbols", "Build with debugging symbols", False))
@@ -186,7 +187,6 @@ opts.Add(BoolVariable("vulkan", "Enable the vulkan rendering driver", True))
 opts.Add(BoolVariable("opengl3", "Enable the OpenGL/GLES3 rendering driver", True))
 opts.Add(BoolVariable("d3d12", "Enable the Direct3D 12 rendering driver on supported platforms", False))
 opts.Add(BoolVariable("metal", "Enable the Metal rendering driver on supported platforms (Apple arm64 only)", False))
-opts.Add(BoolVariable("openxr", "Enable the OpenXR driver", True))
 opts.Add(BoolVariable("use_volk", "Use the volk library to load the Vulkan loader dynamically", True))
 opts.Add(BoolVariable("disable_exceptions", "Force disabling exception handling code", True))
 opts.Add("custom_modules", "A list of comma-separated directory paths containing custom modules to build.", "")
@@ -220,6 +220,7 @@ opts.Add("vsproj_name", "Name of the Visual Studio solution", "godot")
 opts.Add("import_env_vars", "A comma-separated list of environment variables to copy from the outer environment.", "")
 opts.Add(BoolVariable("disable_3d", "Disable 3D nodes for a smaller executable", False))
 opts.Add(BoolVariable("disable_advanced_gui", "Disable advanced GUI nodes and behaviors", False))
+opts.Add(BoolVariable("disable_xr", "Disable XR nodes and server", False))
 opts.Add("build_profile", "Path to a file containing a feature build profile", "")
 opts.Add(BoolVariable("modules_enabled_by_default", "If no, disable all modules except ones explicitly enabled", True))
 opts.Add(BoolVariable("no_editor_splash", "Don't use the custom splash screen for the editor", True))
@@ -236,6 +237,13 @@ opts.Add(BoolVariable("engine_update_check", "Enable engine update checks in the
 opts.Add(BoolVariable("steamapi", "Enable minimal SteamAPI integration for usage time tracking (editor only)", False))
 opts.Add("cache_path", "Path to a directory where SCons cache files will be stored. No value disables the cache.", "")
 opts.Add("cache_limit", "Max size (in GiB) for the SCons cache. 0 means no limit.", "0")
+opts.Add(
+    BoolVariable(
+        "redirect_build_objects",
+        "Enable redirecting built objects/libraries to `bin/obj/` to declutter the repository.",
+        True,
+    )
+)
 
 # Thirdparty libraries
 opts.Add(BoolVariable("builtin_brotli", "Use the built-in Brotli library", True))
@@ -717,9 +725,11 @@ if env.msvc:
         env.Append(LINKFLAGS=["/OPT:REF"])
         if env["optimize"] == "speed_trace":
             env.Append(LINKFLAGS=["/OPT:NOICF"])
-    elif env["optimize"] == "size":
+    elif env["optimize"].startswith("size"):
         env.Append(CCFLAGS=["/O1"])
         env.Append(LINKFLAGS=["/OPT:REF"])
+        if env["optimize"] == "size_extra":
+            env.Append(CPPDEFINES=["SIZE_EXTRA"])
     elif env["optimize"] == "debug" or env["optimize"] == "none":
         env.Append(CCFLAGS=["/Od"])
 else:
@@ -764,9 +774,11 @@ else:
     elif env["optimize"] == "speed_trace":
         env.Append(CCFLAGS=["-O2"])
         env.Append(LINKFLAGS=["-O2"])
-    elif env["optimize"] == "size":
+    elif env["optimize"].startswith("size"):
         env.Append(CCFLAGS=["-Os"])
         env.Append(LINKFLAGS=["-Os"])
+        if env["optimize"] == "size_extra":
+            env.Append(CPPDEFINES=["SIZE_EXTRA"])
     elif env["optimize"] == "debug":
         env.Append(CCFLAGS=["-Og"])
         env.Append(LINKFLAGS=["-Og"])
@@ -918,6 +930,31 @@ suffix += env.extra_suffix
 sys.path.remove(tmppath)
 sys.modules.pop("detect")
 
+if env["disable_3d"]:
+    if env.editor_build:
+        print_error("Build option `disable_3d=yes` cannot be used for editor builds, only for export template builds.")
+        Exit(255)
+    else:
+        env.Append(CPPDEFINES=["_3D_DISABLED"])
+        env["disable_xr"] = True
+if env["disable_advanced_gui"]:
+    if env.editor_build:
+        print_error(
+            "Build option `disable_advanced_gui=yes` cannot be used for editor builds, only for export template builds."
+        )
+        Exit(255)
+    else:
+        env.Append(CPPDEFINES=["ADVANCED_GUI_DISABLED"])
+if env["disable_xr"]:
+    env.Append(CPPDEFINES=["XR_DISABLED"])
+if env["minizip"]:
+    env.Append(CPPDEFINES=["MINIZIP_ENABLED"])
+if env["brotli"]:
+    env.Append(CPPDEFINES=["BROTLI_ENABLED"])
+
+if not env["verbose"]:
+    methods.no_verbose(env)
+
 modules_enabled = OrderedDict()
 env.module_dependencies = {}
 env.module_icons_paths = []
@@ -968,8 +1005,6 @@ if env.editor_build:
         print_error("Not all modules required by editor builds are enabled.")
         Exit(255)
 
-env.version_info = methods.get_version_info(env.module_version_string)
-
 env["PROGSUFFIX_WRAP"] = suffix + env.module_version_string + ".console" + env["PROGSUFFIX"]
 env["PROGSUFFIX"] = suffix + env.module_version_string + env["PROGSUFFIX"]
 env["OBJSUFFIX"] = suffix + env["OBJSUFFIX"]
@@ -988,28 +1023,6 @@ env["SHLIBSUFFIX"] = suffix + env["SHLIBSUFFIX"]
 
 env["OBJPREFIX"] = env["object_prefix"]
 env["SHOBJPREFIX"] = env["object_prefix"]
-
-if env["disable_3d"]:
-    if env.editor_build:
-        print_error("Build option `disable_3d=yes` cannot be used for editor builds, only for export template builds.")
-        Exit(255)
-    else:
-        env.Append(CPPDEFINES=["_3D_DISABLED"])
-if env["disable_advanced_gui"]:
-    if env.editor_build:
-        print_error(
-            "Build option `disable_advanced_gui=yes` cannot be used for editor builds, only for export template builds."
-        )
-        Exit(255)
-    else:
-        env.Append(CPPDEFINES=["ADVANCED_GUI_DISABLED"])
-if env["minizip"]:
-    env.Append(CPPDEFINES=["MINIZIP_ENABLED"])
-if env["brotli"]:
-    env.Append(CPPDEFINES=["BROTLI_ENABLED"])
-
-if not env["verbose"]:
-    methods.no_verbose(env)
 
 GLSL_BUILDERS = {
     "RD_GLSL": env.Builder(
@@ -1051,6 +1064,14 @@ if env["ninja"]:
 if env["threads"]:
     env.Append(CPPDEFINES=["THREADS_ENABLED"])
 
+# Ensure build objects are put in their own folder if `redirect_build_objects` is enabled.
+env.Prepend(LIBEMITTER=[methods.redirect_emitter])
+env.Prepend(SHLIBEMITTER=[methods.redirect_emitter])
+for key in (emitters := env.StaticObject.builder.emitter):
+    emitters[key] = ListEmitter([methods.redirect_emitter] + env.Flatten(emitters[key]))
+for key in (emitters := env.SharedObject.builder.emitter):
+    emitters[key] = ListEmitter([methods.redirect_emitter] + env.Flatten(emitters[key]))
+
 # Build subdirs, the build order is dependent on link order.
 Export("env")
 
@@ -1082,11 +1103,11 @@ if "check_c_headers" in env:
     for header in headers:
         if conf.CheckCHeader(header):
             env.AppendUnique(CPPDEFINES=[headers[header]])
+conf.Finish()
 
-
-methods.show_progress(env)
-# TODO: replace this with `env.Dump(format="json")`
-# once we start requiring SCons 4.0 as min version.
-methods.dump(env)
-methods.prepare_purge(env)
-methods.prepare_timer()
+# Miscellaneous & post-build methods.
+if not env.GetOption("clean") and not env.GetOption("help"):
+    methods.dump(env)
+    methods.show_progress(env)
+    methods.prepare_purge(env)
+    methods.prepare_timer()

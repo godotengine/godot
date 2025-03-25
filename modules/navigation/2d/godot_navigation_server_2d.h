@@ -28,14 +28,13 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef GODOT_NAVIGATION_SERVER_2D_H
-#define GODOT_NAVIGATION_SERVER_2D_H
+#pragma once
 
-#include "../nav_agent.h"
-#include "../nav_link.h"
-#include "../nav_map.h"
-#include "../nav_obstacle.h"
-#include "../nav_region.h"
+#include "../nav_agent_3d.h"
+#include "../nav_link_3d.h"
+#include "../nav_map_3d.h"
+#include "../nav_obstacle_3d.h"
+#include "../nav_region_3d.h"
 
 #include "servers/navigation_server_2d.h"
 
@@ -262,5 +261,3 @@ public:
 
 	virtual Vector<Vector2> simplify_path(const Vector<Vector2> &p_path, real_t p_epsilon) override;
 };
-
-#endif // GODOT_NAVIGATION_SERVER_2D_H

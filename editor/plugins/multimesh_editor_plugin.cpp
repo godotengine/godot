@@ -388,6 +388,3 @@ MultiMeshEditorPlugin::MultiMeshEditorPlugin() {
 
 	multimesh_editor->options->hide();
 }
-
-MultiMeshEditorPlugin::~MultiMeshEditorPlugin() {
-}

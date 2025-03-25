@@ -58,6 +58,7 @@
 				1. The current scene node is immediately removed from the tree. From that point, [method Node.get_tree] called on the current (outgoing) scene will return [code]null[/code]. [member current_scene] will be [code]null[/code], too, because the new scene is not available yet.
 				2. At the end of the frame, the formerly current scene, already removed from the tree, will be deleted (freed from memory) and then the new scene will be instantiated and added to the tree. [method Node.get_tree] and [member current_scene] will be back to working as usual.
 				This ensures that both scenes aren't running at the same time, while still freeing the previous scene in a safe way similar to [method Node.queue_free].
+				If you want to reliably access the new scene, await the [signal scene_changed] signal.
 			</description>
 		</method>
 		<method name="create_timer">
@@ -310,6 +311,17 @@
 		<signal name="process_frame">
 			<description>
 				Emitted immediately before [method Node._process] is called on every node in this tree.
+			</description>
+		</signal>
+		<signal name="scene_changed">
+			<description>
+				Emitted after the new scene is added to scene tree and initialized. Can be used to reliably access [member current_scene] when changing scenes.
+				[codeblock]
+				# This code should be inside an autoload.
+				get_tree().change_scene_to_file(other_scene_path)
+				await get_tree().scene_changed
+				print(get_tree().current_scene) # Prints the new scene.
+				[/codeblock]
 			</description>
 		</signal>
 		<signal name="tree_changed">

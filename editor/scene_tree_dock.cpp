@@ -88,8 +88,12 @@ static void _restore_treeitem_custom_color(TreeItem *p_item) {
 }
 
 void SceneTreeDock::_inspect_hovered_node() {
-	select_node_hovered_at_end_of_drag = true;
 	Tree *tree = scene_tree->get_scene_tree();
+	if (!tree->get_rect().has_point(tree->get_local_mouse_position())) {
+		return;
+	}
+
+	select_node_hovered_at_end_of_drag = true;
 	TreeItem *item = tree->get_item_with_metadata(node_hovered_now->get_path());
 
 	_restore_treeitem_custom_color(tree_item_inspected);
@@ -150,7 +154,14 @@ void SceneTreeDock::input(const Ref<InputEvent> &p_event) {
 		}
 	}
 
-	if (tree_clicked && get_viewport()->gui_is_dragging()) {
+	Ref<InputEventMouseMotion> mm = p_event;
+	bool tree_hovered = false;
+	if (mm.is_valid()) {
+		Tree *tree = scene_tree->get_scene_tree();
+		tree_hovered = tree->get_rect().has_point(tree->get_local_mouse_position());
+	}
+
+	if ((tree_clicked || tree_hovered) && get_viewport()->gui_is_dragging()) {
 		_handle_hover_to_inspect();
 	}
 }
@@ -424,7 +435,7 @@ void SceneTreeDock::_perform_create_audio_stream_players(const Vector<String> &p
 
 void SceneTreeDock::_replace_with_branch_scene(const String &p_file, Node *base) {
 	// `move_child` + `get_index` doesn't really work for internal nodes.
-	ERR_FAIL_COND_MSG(base->get_internal_mode() != INTERNAL_MODE_DISABLED, "Trying to replace internal node, this is not supported.");
+	ERR_FAIL_COND_MSG(base->is_internal(), "Trying to replace internal node, this is not supported.");
 
 	Ref<PackedScene> sdata = ResourceLoader::load(p_file);
 	if (sdata.is_null()) {
@@ -814,7 +825,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			int highest_id = 0;
 			for (Node *E : selection) {
 				// `move_child` + `get_index` doesn't really work for internal nodes.
-				ERR_FAIL_COND_MSG(E->get_internal_mode() != INTERNAL_MODE_DISABLED, "Trying to move internal node, this is not supported.");
+				ERR_FAIL_COND_MSG(E->is_internal(), "Trying to move internal node, this is not supported.");
 				int index = E->get_index(false);
 
 				if (index > highest_id) {
@@ -993,7 +1004,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			}
 
 			// `move_child` + `get_index` doesn't really work for internal nodes.
-			ERR_FAIL_COND_MSG(node->get_internal_mode() != INTERNAL_MODE_DISABLED, "Trying to set internal node as scene root, this is not supported.");
+			ERR_FAIL_COND_MSG(node->is_internal(), "Trying to set internal node as scene root, this is not supported.");
 
 			//check that from node to root, all owners are right
 
@@ -1381,7 +1392,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 		} break;
 		case TOOL_TOGGLE_SCENE_UNIQUE_NAME: {
 			// Enabling/disabling based on the same node based on which the checkbox in the menu is checked/unchecked.
-			List<Node *>::Element *first_selected = editor_selection->get_selected_node_list().front();
+			const List<Node *>::Element *first_selected = editor_selection->get_selected_node_list().front();
 			if (first_selected == nullptr) {
 				return;
 			}
@@ -1806,7 +1817,7 @@ void SceneTreeDock::_node_strip_signal_inheritance(Node *p_node) {
 }
 
 void SceneTreeDock::_load_request(const String &p_path) {
-	EditorNode::get_singleton()->open_request(p_path);
+	EditorNode::get_singleton()->load_scene(p_path);
 	_local_tree_selected();
 }
 
@@ -2331,7 +2342,7 @@ void SceneTreeDock::_do_reparent(Node *p_new_parent, int p_position_in_parent, V
 			return; // Attempt to reparent to itself.
 		}
 		// `move_child` + `get_index` doesn't really work for internal nodes.
-		ERR_FAIL_COND_MSG(p_nodes[ni]->get_internal_mode() != INTERNAL_MODE_DISABLED, "Trying to move internal node, this is not supported.");
+		ERR_FAIL_COND_MSG(p_nodes[ni]->is_internal(), "Trying to move internal node, this is not supported.");
 
 		if (p_nodes[ni]->get_index(false) < first_idx) {
 			nodes_before--;
@@ -2744,7 +2755,7 @@ void SceneTreeDock::_delete_confirm(bool p_cut) {
 	if (!entire_scene) {
 		for (const Node *E : remove_list) {
 			// `move_child` + `get_index` doesn't really work for internal nodes.
-			ERR_FAIL_COND_MSG(E->get_internal_mode() != INTERNAL_MODE_DISABLED, "Trying to remove internal node, this is not supported.");
+			ERR_FAIL_COND_MSG(E->is_internal(), "Trying to remove internal node, this is not supported.");
 		}
 	}
 
@@ -3181,7 +3192,7 @@ void SceneTreeDock::_replace_node(Node *p_node, Node *p_by_node, bool p_keep_pro
 
 	List<Node *> to_erase;
 	for (int i = 0; i < oldnode->get_child_count(); i++) {
-		if (oldnode->get_child(i)->get_owner() == nullptr && oldnode->is_owned_by_parent()) {
+		if (oldnode->get_child(i)->get_owner() == nullptr && oldnode->is_internal()) {
 			to_erase.push_back(oldnode->get_child(i));
 		}
 	}
@@ -3277,7 +3288,7 @@ bool SceneTreeDock::_check_node_recursive(Variant &r_variant, Node *p_node, Node
 			bool updated = false;
 			for (int i = 0; i < a.size(); i++) {
 				Variant value = a[i];
-				if (_check_node_recursive(value, p_node, p_by_node, type_hint.get_slice(":", 1), r_warn_message)) {
+				if (_check_node_recursive(value, p_node, p_by_node, type_hint.get_slicec(':', 1), r_warn_message)) {
 					if (!updated) {
 						a = a.duplicate(); // Need to duplicate for undo-redo to work.
 						updated = true;
@@ -3792,7 +3803,7 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 				menu->add_icon_shortcut(get_editor_theme_icon(SNAME("ScriptCreate")), ED_GET_SHORTCUT("scene_tree/attach_script"), TOOL_ATTACH_SCRIPT);
 			}
 
-			if (existing_script.is_valid()) {
+			if (existing_script.is_valid() && !existing_script->is_built_in()) {
 				menu->add_icon_shortcut(get_editor_theme_icon(SNAME("ScriptExtend")), ED_GET_SHORTCUT("scene_tree/extend_script"), TOOL_EXTEND_SCRIPT);
 			}
 		}
@@ -4268,7 +4279,7 @@ List<Node *> SceneTreeDock::paste_nodes(bool p_paste_as_sibling) {
 			// and added to the node_clipboard_edited_scene_owned list.
 			if (d != dup && E2.key->get_owner() == nullptr) {
 				if (node_clipboard_edited_scene_owned.find(const_cast<Node *>(E2.key))) {
-					ur->add_do_method(d, "set_owner", edited_scene);
+					ur->add_do_method(d, "set_owner", owner);
 				}
 			}
 		}
@@ -4775,6 +4786,7 @@ SceneTreeDock::SceneTreeDock(Node *p_scene_root, EditorSelection *p_editor_selec
 
 	inspect_hovered_node_delay = memnew(Timer);
 	inspect_hovered_node_delay->connect("timeout", callable_mp(this, &SceneTreeDock::_inspect_hovered_node));
+	inspect_hovered_node_delay->set_wait_time(.5);
 	inspect_hovered_node_delay->set_one_shot(true);
 	add_child(inspect_hovered_node_delay);
 

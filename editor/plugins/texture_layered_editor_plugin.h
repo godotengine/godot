@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TEXTURE_LAYERED_EDITOR_PLUGIN_H
-#define TEXTURE_LAYERED_EDITOR_PLUGIN_H
+#pragma once
 
 #include "editor/editor_inspector.h"
 #include "editor/plugins/editor_plugin.h"
@@ -83,7 +82,6 @@ public:
 	void edit(Ref<TextureLayered> p_texture);
 
 	TextureLayeredEditor();
-	~TextureLayeredEditor();
 };
 
 class EditorInspectorPluginLayeredTexture : public EditorInspectorPlugin {
@@ -102,5 +100,3 @@ public:
 
 	TextureLayeredEditorPlugin();
 };
-
-#endif // TEXTURE_LAYERED_EDITOR_PLUGIN_H

@@ -103,12 +103,13 @@
 # Daniel Schmid <daniel.ds.schmid@gmail.com>, 2025.
 # Michael Domanek <michael.domanek2@gmail.com>, 2025.
 # Keschler <keschler0@protonmail.com>, 2025.
+# Silikonmanns Kanal <silvan.goeth@gmail.com>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine class reference\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
-"PO-Revision-Date: 2025-02-26 15:06+0000\n"
-"Last-Translator: Keschler <keschler0@protonmail.com>\n"
+"PO-Revision-Date: 2025-03-10 14:33+0000\n"
+"Last-Translator: Silikonmann <silvan.goeth@gmail.com>\n"
 "Language-Team: German <https://hosted.weblate.org/projects/godot-engine/godot-"
 "class-reference/de/>\n"
 "Language: de\n"
@@ -116,7 +117,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.10.2-dev\n"
+"X-Generator: Weblate 5.10.3-dev\n"
 
 msgid "All classes"
 msgstr "Alle Klassen"
@@ -13722,6 +13723,9 @@ msgstr ""
 "Wenn [code]true[/code], wird die triplanare Abbildung für [code]UV2[/code] im "
 "globalen Raum und nicht im lokalen Objektraum berechnet. Siehe auch [member "
 "uv2_triplanar]."
+
+msgid "Using 3D transforms"
+msgstr "3D-Transformationen verwenden"
 
 msgid ""
 "Returns [code]true[/code] if this basis and [param b] are approximately "

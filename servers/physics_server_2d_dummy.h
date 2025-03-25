@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef PHYSICS_SERVER_2D_DUMMY_H
-#define PHYSICS_SERVER_2D_DUMMY_H
+#pragma once
 
 #include "physics_server_2d.h"
 
@@ -349,5 +348,3 @@ public:
 	virtual int get_process_info(ProcessInfo p_info) override { return 0; }
 	virtual int space_get_last_process_info(RID p_space, ProcessInfo p_info) override { return 0; }
 };
-
-#endif // PHYSICS_SERVER_2D_DUMMY_H

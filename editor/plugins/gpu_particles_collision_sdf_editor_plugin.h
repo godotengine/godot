@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef GPU_PARTICLES_COLLISION_SDF_EDITOR_PLUGIN_H
-#define GPU_PARTICLES_COLLISION_SDF_EDITOR_PLUGIN_H
+#pragma once
 
 #include "editor/plugins/editor_plugin.h"
 #include "scene/3d/gpu_particles_collision_3d.h"
@@ -68,7 +67,4 @@ public:
 	virtual void make_visible(bool p_visible) override;
 
 	GPUParticlesCollisionSDF3DEditorPlugin();
-	~GPUParticlesCollisionSDF3DEditorPlugin();
 };
-
-#endif // GPU_PARTICLES_COLLISION_SDF_EDITOR_PLUGIN_H

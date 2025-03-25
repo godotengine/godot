@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef DIR_ACCESS_MACOS_H
-#define DIR_ACCESS_MACOS_H
+#pragma once
 
 #if defined(UNIX_ENABLED)
 
@@ -55,5 +54,3 @@ protected:
 };
 
 #endif // UNIX ENABLED
-
-#endif // DIR_ACCESS_MACOS_H

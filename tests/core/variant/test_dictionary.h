@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TEST_DICTIONARY_H
-#define TEST_DICTIONARY_H
+#pragma once
 
 #include "core/variant/typed_dictionary.h"
 #include "tests/test_macros.h"
@@ -594,6 +593,21 @@ TEST_CASE("[Dictionary] Typed copying") {
 	d6.clear();
 }
 
-} // namespace TestDictionary
+TEST_CASE("[Dictionary] Iteration") {
+	Dictionary a1 = build_dictionary(1, 2, 3, 4, 5, 6);
+	Dictionary a2 = build_dictionary(1, 2, 3, 4, 5, 6);
 
-#endif // TEST_DICTIONARY_H
+	int idx = 0;
+
+	for (const KeyValue<Variant, Variant> &kv : (const Dictionary &)a1) {
+		CHECK_EQ(int(a2[kv.key]), int(kv.value));
+		idx++;
+	}
+
+	CHECK_EQ(idx, a1.size());
+
+	a1.clear();
+	a2.clear();
+}
+
+} // namespace TestDictionary

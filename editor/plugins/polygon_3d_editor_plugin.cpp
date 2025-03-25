@@ -475,7 +475,7 @@ void Polygon3DEditor::_polygon_draw() {
 		va.resize(poly.size());
 		Vector3 *w = va.ptrw();
 		for (int i = 0; i < poly.size(); i++) {
-			Vector2 p, p2;
+			Vector2 p;
 			p = i == edited_point ? edited_point_pos : poly[i];
 
 			Vector3 point = Vector3(p.x, p.y, depth);
@@ -610,7 +610,4 @@ Polygon3DEditorPlugin::Polygon3DEditorPlugin() {
 	Node3DEditor::get_singleton()->add_control_to_menu_panel(polygon_editor);
 
 	polygon_editor->hide();
-}
-
-Polygon3DEditorPlugin::~Polygon3DEditorPlugin() {
 }

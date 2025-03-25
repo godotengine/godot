@@ -1866,6 +1866,42 @@ Control::MouseFilter Control::get_mouse_filter() const {
 	return data.mouse_filter;
 }
 
+Control::MouseFilter Control::get_mouse_filter_with_recursive() const {
+	ERR_READ_THREAD_GUARD_V(MOUSE_FILTER_IGNORE);
+	if (_is_parent_mouse_disabled()) {
+		return MOUSE_FILTER_IGNORE;
+	}
+	return data.mouse_filter;
+}
+
+void Control::set_mouse_recursive_behavior(RecursiveBehavior p_recursive_mouse_behavior) {
+	ERR_MAIN_THREAD_GUARD;
+	ERR_FAIL_INDEX((int)p_recursive_mouse_behavior, 4);
+	if (data.mouse_recursive_behavior == p_recursive_mouse_behavior) {
+		return;
+	}
+	data.mouse_recursive_behavior = p_recursive_mouse_behavior;
+	if (p_recursive_mouse_behavior == RECURSIVE_BEHAVIOR_INHERITED) {
+		Control *parent = get_parent_control();
+		if (parent) {
+			_apply_mouse_behavior_recursively(parent->data.parent_mouse_recursive_behavior, false);
+		} else {
+			_apply_mouse_behavior_recursively(RECURSIVE_BEHAVIOR_ENABLED, false);
+		}
+	} else {
+		_apply_mouse_behavior_recursively(p_recursive_mouse_behavior, false);
+	}
+
+	if (get_viewport()) {
+		get_viewport()->_gui_update_mouse_over();
+	}
+}
+
+Control::RecursiveBehavior Control::get_mouse_recursive_behavior() const {
+	ERR_READ_THREAD_GUARD_V(RECURSIVE_BEHAVIOR_INHERITED);
+	return data.mouse_recursive_behavior;
+}
+
 void Control::set_force_pass_scroll_events(bool p_force_pass_scroll_events) {
 	ERR_MAIN_THREAD_GUARD;
 	data.force_pass_scroll_events = p_force_pass_scroll_events;
@@ -2014,6 +2050,38 @@ Control::FocusMode Control::get_focus_mode() const {
 	return data.focus_mode;
 }
 
+Control::FocusMode Control::get_focus_mode_with_recursive() const {
+	ERR_READ_THREAD_GUARD_V(FOCUS_NONE);
+	if (_is_focus_disabled_recursively()) {
+		return FOCUS_NONE;
+	}
+	return data.focus_mode;
+}
+
+void Control::set_focus_recursive_behavior(RecursiveBehavior p_recursive_focus_behavior) {
+	ERR_MAIN_THREAD_GUARD;
+	ERR_FAIL_INDEX((int)p_recursive_focus_behavior, 4);
+	if (data.focus_recursive_behavior == p_recursive_focus_behavior) {
+		return;
+	}
+	data.focus_recursive_behavior = p_recursive_focus_behavior;
+	if (p_recursive_focus_behavior == RECURSIVE_BEHAVIOR_INHERITED) {
+		Control *parent = get_parent_control();
+		if (parent) {
+			_apply_focus_behavior_recursively(parent->data.parent_focus_recursive_behavior, false);
+		} else {
+			_apply_focus_behavior_recursively(RECURSIVE_BEHAVIOR_ENABLED, false);
+		}
+	} else {
+		_apply_focus_behavior_recursively(p_recursive_focus_behavior, false);
+	}
+}
+
+Control::RecursiveBehavior Control::get_focus_recursive_behavior() const {
+	ERR_READ_THREAD_GUARD_V(RECURSIVE_BEHAVIOR_INHERITED);
+	return data.focus_recursive_behavior;
+}
+
 bool Control::has_focus() const {
 	ERR_READ_THREAD_GUARD_V(false);
 	return is_inside_tree() && get_viewport()->_gui_control_has_focus(this);
@@ -2054,7 +2122,7 @@ static Control *_next_control(Control *p_from) {
 		return nullptr; // Can't go above.
 	}
 
-	Control *parent = Object::cast_to<Control>(p_from->get_parent());
+	Control *parent = p_from->get_parent_control();
 
 	if (!parent) {
 		return nullptr;
@@ -2077,21 +2145,21 @@ static Control *_next_control(Control *p_from) {
 
 Control *Control::find_next_valid_focus() const {
 	ERR_READ_THREAD_GUARD_V(nullptr);
+
+	// If the focus property is manually overwritten, attempt to use it.
+	if (!data.focus_next.is_empty()) {
+		Node *n = get_node_or_null(data.focus_next);
+		ERR_FAIL_NULL_V_MSG(n, nullptr, "Next focus node path is invalid: '" + data.focus_next + "'.");
+		Control *c = Object::cast_to<Control>(n);
+		ERR_FAIL_NULL_V_MSG(c, nullptr, "Next focus node is not a control: '" + n->get_name() + "'.");
+		if (c->is_visible_in_tree() && c->get_focus_mode_with_recursive() != FOCUS_NONE) {
+			return c;
+		}
+	}
+
 	Control *from = const_cast<Control *>(this);
 
 	while (true) {
-		// If the focus property is manually overwritten, attempt to use it.
-
-		if (!data.focus_next.is_empty()) {
-			Node *n = get_node_or_null(data.focus_next);
-			ERR_FAIL_NULL_V_MSG(n, nullptr, "Next focus node path is invalid: '" + data.focus_next + "'.");
-			Control *c = Object::cast_to<Control>(n);
-			ERR_FAIL_NULL_V_MSG(c, nullptr, "Next focus node is not a control: '" + n->get_name() + "'.");
-			if (c->is_visible() && c->get_focus_mode() != FOCUS_NONE) {
-				return c;
-			}
-		}
-
 		// Find next child.
 
 		Control *next_child = nullptr;
@@ -2110,83 +2178,77 @@ Control *Control::find_next_valid_focus() const {
 			next_child = _next_control(from);
 			if (!next_child) { // Nothing else. Go up and find either window or subwindow.
 				next_child = const_cast<Control *>(this);
-				while (next_child && !next_child->is_set_as_top_level()) {
-					next_child = cast_to<Control>(next_child->get_parent());
-				}
 
-				if (!next_child) {
-					next_child = const_cast<Control *>(this);
-					while (next_child) {
-						if (next_child->data.RI) {
-							break;
-						}
-						next_child = next_child->get_parent_control();
+				while (next_child) {
+					if (next_child->is_set_as_top_level()) {
+						break;
 					}
+
+					if (next_child->data.RI) {
+						break;
+					}
+					next_child = next_child->data.parent_control;
 				}
 			}
 		}
 
-		if (next_child == from || next_child == this) { // No next control.
-			return (get_focus_mode() == FOCUS_ALL) ? next_child : nullptr;
-		}
-		if (next_child) {
-			if (next_child->get_focus_mode() == FOCUS_ALL) {
-				return next_child;
-			}
-			from = next_child;
-		} else {
+		if (!next_child) {
 			break;
 		}
+
+		if (next_child->get_focus_mode_with_recursive() == FOCUS_ALL) {
+			return next_child;
+		}
+
+		if (next_child == from || next_child == this) {
+			return nullptr; // Stuck in a loop with no next control.
+		}
+
+		from = next_child; // Try to find the next control with focus mode FOCUS_ALL.
 	}
 
 	return nullptr;
 }
 
 static Control *_prev_control(Control *p_from) {
-	Control *child = nullptr;
 	for (int i = p_from->get_child_count() - 1; i >= 0; i--) {
 		Control *c = Object::cast_to<Control>(p_from->get_child(i));
 		if (!c || !c->is_visible_in_tree() || c->is_set_as_top_level()) {
 			continue;
 		}
 
-		child = c;
-		break;
+		// Find the last child as prev, try the same in the last child.
+		return _prev_control(c);
 	}
 
-	if (!child) {
-		return p_from;
-	}
-
-	// No prev in parent, try the same in parent.
-	return _prev_control(child);
+	return p_from; // Not found in the children, return itself.
 }
 
 Control *Control::find_prev_valid_focus() const {
 	ERR_READ_THREAD_GUARD_V(nullptr);
+
+	// If the focus property is manually overwritten, attempt to use it.
+	if (!data.focus_prev.is_empty()) {
+		Node *n = get_node_or_null(data.focus_prev);
+		ERR_FAIL_NULL_V_MSG(n, nullptr, "Previous focus node path is invalid: '" + data.focus_prev + "'.");
+		Control *c = Object::cast_to<Control>(n);
+		ERR_FAIL_NULL_V_MSG(c, nullptr, "Previous focus node is not a control: '" + n->get_name() + "'.");
+		if (c->is_visible_in_tree() && c->get_focus_mode_with_recursive() != FOCUS_NONE) {
+			return c;
+		}
+	}
+
 	Control *from = const_cast<Control *>(this);
 
 	while (true) {
-		// If the focus property is manually overwritten, attempt to use it.
-
-		if (!data.focus_prev.is_empty()) {
-			Node *n = get_node_or_null(data.focus_prev);
-			ERR_FAIL_NULL_V_MSG(n, nullptr, "Previous focus node path is invalid: '" + data.focus_prev + "'.");
-			Control *c = Object::cast_to<Control>(n);
-			ERR_FAIL_NULL_V_MSG(c, nullptr, "Previous focus node is not a control: '" + n->get_name() + "'.");
-			if (c->is_visible() && c->get_focus_mode() != FOCUS_NONE) {
-				return c;
-			}
-		}
-
 		// Find prev child.
 
 		Control *prev_child = nullptr;
 
-		if (from->is_set_as_top_level() || !Object::cast_to<Control>(from->get_parent())) {
+		if (from->is_set_as_top_level() || !from->data.parent_control) {
 			// Find last of the children.
 
-			prev_child = _prev_control(from);
+			prev_child = _prev_control(from); // Wrap start here.
 
 		} else {
 			for (int i = (from->get_index() - 1); i >= 0; i--) {
@@ -2201,21 +2263,21 @@ Control *Control::find_prev_valid_focus() const {
 			}
 
 			if (!prev_child) {
-				prev_child = Object::cast_to<Control>(from->get_parent());
+				prev_child = from->data.parent_control;
 			} else {
 				prev_child = _prev_control(prev_child);
 			}
 		}
 
-		if (prev_child == from || prev_child == this) { // No prev control.
-			return (get_focus_mode() == FOCUS_ALL) ? prev_child : nullptr;
-		}
-
-		if (prev_child->get_focus_mode() == FOCUS_ALL) {
+		if (prev_child->get_focus_mode_with_recursive() == FOCUS_ALL) {
 			return prev_child;
 		}
 
-		from = prev_child;
+		if (prev_child == from || prev_child == this) {
+			return nullptr; // Stuck in a loop with no prev control.
+		}
+
+		from = prev_child; // Try to find the prev control with focus mode FOCUS_ALL.
 	}
 
 	return nullptr;
@@ -2266,14 +2328,7 @@ Control *Control::_get_focus_neighbor(Side p_side, int p_count) {
 		ERR_FAIL_NULL_V_MSG(n, nullptr, "Neighbor focus node path is invalid: '" + data.focus_neighbor[p_side] + "'.");
 		Control *c = Object::cast_to<Control>(n);
 		ERR_FAIL_NULL_V_MSG(c, nullptr, "Neighbor focus node is not a control: '" + n->get_name() + "'.");
-		bool valid = true;
-		if (!c->is_visible()) {
-			valid = false;
-		}
-		if (c->get_focus_mode() == FOCUS_NONE) {
-			valid = false;
-		}
-		if (valid) {
+		if (c->is_visible_in_tree() && c->get_focus_mode_with_recursive() != FOCUS_NONE) {
 			return c;
 		}
 
@@ -2382,6 +2437,64 @@ Control *Control::_get_focus_neighbor(Side p_side, int p_count) {
 	return result;
 }
 
+bool Control::_is_focus_disabled_recursively() const {
+	switch (data.focus_recursive_behavior) {
+		case RECURSIVE_BEHAVIOR_INHERITED:
+			return data.parent_focus_recursive_behavior == RECURSIVE_BEHAVIOR_DISABLED;
+		case RECURSIVE_BEHAVIOR_DISABLED:
+			return true;
+		case RECURSIVE_BEHAVIOR_ENABLED:
+			return false;
+	}
+	return false;
+}
+
+void Control::_apply_focus_behavior_recursively(RecursiveBehavior p_focus_recursive_behavior, bool p_skip_non_inherited) {
+	if (is_inside_tree() && (data.focus_recursive_behavior == RECURSIVE_BEHAVIOR_DISABLED || (data.focus_recursive_behavior == RECURSIVE_BEHAVIOR_INHERITED && p_focus_recursive_behavior == RECURSIVE_BEHAVIOR_DISABLED)) && has_focus()) {
+		release_focus();
+	}
+
+	if (p_skip_non_inherited && data.focus_recursive_behavior != RECURSIVE_BEHAVIOR_INHERITED) {
+		return;
+	}
+
+	data.parent_focus_recursive_behavior = p_focus_recursive_behavior;
+
+	for (int i = 0; i < get_child_count(); i++) {
+		Control *control = Object::cast_to<Control>(get_child(i));
+		if (control) {
+			control->_apply_focus_behavior_recursively(p_focus_recursive_behavior, true);
+		}
+	}
+}
+
+bool Control::_is_parent_mouse_disabled() const {
+	switch (data.mouse_recursive_behavior) {
+		case RECURSIVE_BEHAVIOR_INHERITED:
+			return data.parent_mouse_recursive_behavior == RECURSIVE_BEHAVIOR_DISABLED;
+		case RECURSIVE_BEHAVIOR_DISABLED:
+			return true;
+		case RECURSIVE_BEHAVIOR_ENABLED:
+			return false;
+	}
+	return false;
+}
+
+void Control::_apply_mouse_behavior_recursively(RecursiveBehavior p_mouse_recursive_behavior, bool p_skip_non_inherited) {
+	if (p_skip_non_inherited && data.mouse_recursive_behavior != RECURSIVE_BEHAVIOR_INHERITED) {
+		return;
+	}
+
+	data.parent_mouse_recursive_behavior = p_mouse_recursive_behavior;
+
+	for (int i = 0; i < get_child_count(); i++) {
+		Control *control = Object::cast_to<Control>(get_child(i));
+		if (control) {
+			control->_apply_mouse_behavior_recursively(p_mouse_recursive_behavior, true);
+		}
+	}
+}
+
 Control *Control::find_valid_focus_neighbor(Side p_side) const {
 	return const_cast<Control *>(this)->_get_focus_neighbor(p_side);
 }
@@ -2395,7 +2508,7 @@ void Control::_window_find_focus_neighbor(const Vector2 &p_dir, Node *p_at, cons
 	Container *container = Object::cast_to<Container>(p_at);
 	bool in_container = container ? container->is_ancestor_of(this) : false;
 
-	if (c && c != this && c->get_focus_mode() == FOCUS_ALL && !in_container && p_clamp.intersects(c->get_global_rect())) {
+	if (c && c != this && c->get_focus_mode_with_recursive() == FOCUS_ALL && !in_container && p_clamp.intersects(c->get_global_rect())) {
 		Rect2 r_c = c->get_global_rect();
 		r_c = r_c.intersection(p_clamp);
 		real_t begin_d = p_dir.dot(r_c.get_position());
@@ -2803,6 +2916,44 @@ Variant Control::get_theme_item(Theme::DataType p_data_type, const StringName &p
 			return get_theme_stylebox(p_name, p_theme_type);
 		case Theme::DATA_TYPE_MAX:
 			break; // Can't happen, but silences warning.
+	}
+
+	return Variant();
+}
+
+Variant Control::get_used_theme_item(const String &p_full_name, const StringName &p_theme_type) const {
+	if (p_full_name.begins_with("theme_override_icons/")) {
+		String name = p_full_name.substr(strlen("theme_override_icons/"));
+		if (has_theme_icon(name)) { // Exclude cached and default ones.
+			return get_theme_icon(name);
+		}
+	} else if (p_full_name.begins_with("theme_override_styles/")) {
+		String name = p_full_name.substr(strlen("theme_override_styles/"));
+		if (has_theme_stylebox(name)) {
+			return get_theme_stylebox(name);
+		}
+	} else if (p_full_name.begins_with("theme_override_fonts/")) {
+		String name = p_full_name.substr(strlen("theme_override_fonts/"));
+		if (has_theme_font(name)) {
+			return get_theme_font(name);
+		}
+	} else if (p_full_name.begins_with("theme_override_font_sizes/")) {
+		String name = p_full_name.substr(strlen("theme_override_font_sizes/"));
+		if (has_theme_font_size(name)) {
+			return get_theme_font_size(name);
+		}
+	} else if (p_full_name.begins_with("theme_override_colors/")) {
+		String name = p_full_name.substr(strlen("theme_override_colors/"));
+		if (has_theme_color(name)) {
+			return get_theme_color(name);
+		}
+	} else if (p_full_name.begins_with("theme_override_constants/")) {
+		String name = p_full_name.substr(strlen("theme_override_constants/"));
+		if (has_theme_constant(name)) {
+			return get_theme_constant(name);
+		}
+	} else {
+		ERR_FAIL_V_MSG(Variant(), vformat("The property %s is not a theme item.", p_full_name));
 	}
 
 	return Variant();
@@ -3298,6 +3449,9 @@ void Control::_notification(int p_notification) {
 			data.theme_owner->assign_theme_on_parented(this);
 
 			_update_layout_mode();
+
+			set_focus_recursive_behavior(data.focus_recursive_behavior);
+			set_mouse_recursive_behavior(data.mouse_recursive_behavior);
 		} break;
 
 		case NOTIFICATION_UNPARENTED: {
@@ -3518,6 +3672,9 @@ void Control::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_global_rect"), &Control::get_global_rect);
 	ClassDB::bind_method(D_METHOD("set_focus_mode", "mode"), &Control::set_focus_mode);
 	ClassDB::bind_method(D_METHOD("get_focus_mode"), &Control::get_focus_mode);
+	ClassDB::bind_method(D_METHOD("get_focus_mode_with_recursive"), &Control::get_focus_mode_with_recursive);
+	ClassDB::bind_method(D_METHOD("set_focus_recursive_behavior", "focus_recursive_behavior"), &Control::set_focus_recursive_behavior);
+	ClassDB::bind_method(D_METHOD("get_focus_recursive_behavior"), &Control::get_focus_recursive_behavior);
 	ClassDB::bind_method(D_METHOD("has_focus"), &Control::has_focus);
 	ClassDB::bind_method(D_METHOD("grab_focus"), &Control::grab_focus);
 	ClassDB::bind_method(D_METHOD("release_focus"), &Control::release_focus);
@@ -3613,6 +3770,10 @@ void Control::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_mouse_filter", "filter"), &Control::set_mouse_filter);
 	ClassDB::bind_method(D_METHOD("get_mouse_filter"), &Control::get_mouse_filter);
+	ClassDB::bind_method(D_METHOD("get_mouse_filter_with_recursive"), &Control::get_mouse_filter_with_recursive);
+
+	ClassDB::bind_method(D_METHOD("set_mouse_recursive_behavior", "mouse_recursive_behavior"), &Control::set_mouse_recursive_behavior);
+	ClassDB::bind_method(D_METHOD("get_mouse_recursive_behavior"), &Control::get_mouse_recursive_behavior);
 
 	ClassDB::bind_method(D_METHOD("set_force_pass_scroll_events", "force_pass_scroll_events"), &Control::set_force_pass_scroll_events);
 	ClassDB::bind_method(D_METHOD("is_force_pass_scroll_events"), &Control::is_force_pass_scroll_events);
@@ -3709,9 +3870,11 @@ void Control::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "focus_next", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Control"), "set_focus_next", "get_focus_next");
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "focus_previous", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Control"), "set_focus_previous", "get_focus_previous");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "focus_mode", PROPERTY_HINT_ENUM, "None,Click,All"), "set_focus_mode", "get_focus_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "focus_recursive_behavior", PROPERTY_HINT_ENUM, "Inherited,Disabled,Enabled"), "set_focus_recursive_behavior", "get_focus_recursive_behavior");
 
 	ADD_GROUP("Mouse", "mouse_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "mouse_filter", PROPERTY_HINT_ENUM, "Stop,Pass (Propagate Up),Ignore"), "set_mouse_filter", "get_mouse_filter");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "mouse_recursive_behavior", PROPERTY_HINT_ENUM, "Inherited,Disabled,Enabled"), "set_mouse_recursive_behavior", "get_mouse_recursive_behavior");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "mouse_force_pass_scroll_events"), "set_force_pass_scroll_events", "is_force_pass_scroll_events");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "mouse_default_cursor_shape", PROPERTY_HINT_ENUM, "Arrow,I-Beam,Pointing Hand,Cross,Wait,Busy,Drag,Can Drop,Forbidden,Vertical Resize,Horizontal Resize,Secondary Diagonal Resize,Main Diagonal Resize,Move,Vertical Split,Horizontal Split,Help"), "set_default_cursor_shape", "get_default_cursor_shape");
 
@@ -3725,6 +3888,10 @@ void Control::_bind_methods() {
 	BIND_ENUM_CONSTANT(FOCUS_NONE);
 	BIND_ENUM_CONSTANT(FOCUS_CLICK);
 	BIND_ENUM_CONSTANT(FOCUS_ALL);
+
+	BIND_ENUM_CONSTANT(RECURSIVE_BEHAVIOR_INHERITED);
+	BIND_ENUM_CONSTANT(RECURSIVE_BEHAVIOR_DISABLED);
+	BIND_ENUM_CONSTANT(RECURSIVE_BEHAVIOR_ENABLED);
 
 	BIND_CONSTANT(NOTIFICATION_RESIZED);
 	BIND_CONSTANT(NOTIFICATION_MOUSE_ENTER);

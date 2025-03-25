@@ -730,6 +730,3 @@ MeshInstance3DEditorPlugin::MeshInstance3DEditorPlugin() {
 
 	mesh_editor->options->hide();
 }
-
-MeshInstance3DEditorPlugin::~MeshInstance3DEditorPlugin() {
-}

@@ -317,7 +317,13 @@ void Viewport::_sub_window_register(Window *p_window) {
 
 void Viewport::_sub_window_update(Window *p_window) {
 	int index = _sub_window_find(p_window);
-	ERR_FAIL_COND(index == -1);
+
+	// _sub_window_update is sometimes called deferred, and the window may have been closed since then.
+	// For example, when the user resizes the game window.
+	// In that case, _sub_window_find will not find it, which is expected.
+	if (index == -1) {
+		return;
+	}
 
 	SubWindow &sw = gui.sub_windows.write[index];
 	sw.pending_window_update = false;
@@ -502,18 +508,14 @@ int Viewport::_sub_window_find(Window *p_window) const {
 }
 
 void Viewport::_update_viewport_path() {
-	if (viewport_textures.is_empty()) {
+	if (!is_inside_tree()) {
 		return;
 	}
 
-	Node *scene_root = get_scene_file_path().is_empty() ? get_owner() : this;
-	if (!scene_root && is_inside_tree()) {
-		scene_root = get_tree()->get_edited_scene_root();
-	}
-	if (scene_root && (scene_root == this || scene_root->is_ancestor_of(this))) {
-		NodePath path_in_scene = scene_root->get_path_to(this);
-		for (ViewportTexture *E : viewport_textures) {
-			E->path = path_in_scene;
+	for (ViewportTexture *E : viewport_textures) {
+		Node *loc_scene = E->get_local_scene();
+		if (loc_scene) {
+			E->path = loc_scene->get_path_to(this);
 		}
 	}
 }
@@ -701,7 +703,7 @@ void Viewport::_process_picking() {
 		physics_picking_events.clear();
 		return;
 	}
-#ifndef _3D_DISABLED
+#ifndef XR_DISABLED
 	if (use_xr) {
 		if (XRServer::get_singleton() != nullptr) {
 			Ref<XRInterface> xr_interface = XRServer::get_singleton()->get_primary_interface();
@@ -712,7 +714,7 @@ void Viewport::_process_picking() {
 			}
 		}
 	}
-#endif
+#endif // XR_DISABLED
 
 	_drop_physics_mouseover(true);
 
@@ -726,7 +728,7 @@ void Viewport::_process_picking() {
 	PhysicsDirectSpaceState2D *ss2d = PhysicsServer2D::get_singleton()->space_get_direct_state(find_world_2d()->get_space());
 
 	SubViewportContainer *parent_svc = Object::cast_to<SubViewportContainer>(get_parent());
-	bool parent_ignore_mouse = (parent_svc && parent_svc->get_mouse_filter() == Control::MOUSE_FILTER_IGNORE);
+	bool parent_ignore_mouse = (parent_svc && parent_svc->get_mouse_filter_with_recursive() == Control::MOUSE_FILTER_IGNORE);
 	bool create_passive_hover_event = true;
 	if (gui.mouse_over || parent_ignore_mouse) {
 		// When the mouse is over a Control node, passive hovering would cause input events for Colliders, that are behind Control nodes.
@@ -1002,10 +1004,10 @@ void Viewport::update_canvas_items() {
 	_update_canvas_items(this);
 }
 
-bool Viewport::_set_size(const Size2i &p_size, const Size2i &p_size_2d_override, bool p_allocated) {
+bool Viewport::_set_size(const Size2i &p_size, const Size2 &p_size_2d_override, bool p_allocated) {
 	Transform2D stretch_transform_new = Transform2D();
 	if (is_size_2d_override_stretch_enabled() && p_size_2d_override.width > 0 && p_size_2d_override.height > 0) {
-		Size2 scale = Size2(p_size) / Size2(p_size_2d_override);
+		Size2 scale = Size2(p_size) / p_size_2d_override;
 		stretch_transform_new.scale(scale);
 	}
 
@@ -1058,7 +1060,7 @@ bool Viewport::_set_size(const Size2i &p_size, const Size2i &p_size_2d_override,
 }
 
 Size2i Viewport::_get_size() const {
-#ifndef _3D_DISABLED
+#ifndef XR_DISABLED
 	if (use_xr) {
 		if (XRServer::get_singleton() != nullptr) {
 			Ref<XRInterface> xr_interface = XRServer::get_singleton()->get_primary_interface();
@@ -1069,12 +1071,12 @@ Size2i Viewport::_get_size() const {
 		}
 		return Size2i();
 	}
-#endif // _3D_DISABLED
+#endif // XR_DISABLED
 
 	return size;
 }
 
-Size2i Viewport::_get_size_2d_override() const {
+Size2 Viewport::_get_size_2d_override() const {
 	return size_2d_override;
 }
 
@@ -1092,7 +1094,7 @@ Rect2 Viewport::get_visible_rect() const {
 		r = Rect2(Point2(), size);
 	}
 
-	if (size_2d_override != Size2i()) {
+	if (size_2d_override != Size2()) {
 		r.size = size_2d_override;
 	}
 
@@ -1509,6 +1511,7 @@ void Viewport::_gui_show_tooltip() {
 	// This way, the custom tooltip from `ConnectionsDockTree` can create
 	// its own tooltip without conflicting with the default one, even an empty tooltip.
 	if (base_tooltip && !base_tooltip->is_visible()) {
+		memdelete(base_tooltip);
 		return;
 	}
 
@@ -1546,6 +1549,8 @@ void Viewport::_gui_show_tooltip() {
 	panel->set_flag(Window::FLAG_POPUP, false);
 	panel->set_flag(Window::FLAG_MOUSE_PASSTHROUGH, true);
 	panel->set_wrap_controls(true);
+	panel->set_default_canvas_item_texture_filter(get_default_canvas_item_texture_filter());
+	panel->set_default_canvas_item_texture_repeat(get_default_canvas_item_texture_repeat());
 	panel->add_child(base_tooltip);
 	panel->gui_parent = this;
 
@@ -1834,7 +1839,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 				while (ci) {
 					Control *control = Object::cast_to<Control>(ci);
 					if (control) {
-						if (control->get_focus_mode() != Control::FOCUS_NONE) {
+						if (control->get_focus_mode_with_recursive() != Control::FOCUS_NONE) {
 							// Grabbing unhovered focus can cause issues when mouse is dragged
 							// with another button held down.
 							if (control != gui.key_focus && gui.mouse_over_hierarchy.has(control)) {
@@ -2412,7 +2417,7 @@ void Viewport::_gui_update_mouse_over() {
 			int found = gui.mouse_over_hierarchy.find(ancestor_control);
 			if (found >= 0) {
 				// Remove the node if the propagation chain has been broken or it is now MOUSE_FILTER_IGNORE.
-				if (removing || ancestor_control->get_mouse_filter() == Control::MOUSE_FILTER_IGNORE) {
+				if (removing || ancestor_control->get_mouse_filter_with_recursive() == Control::MOUSE_FILTER_IGNORE) {
 					needs_exit.push_back(found);
 				}
 			}
@@ -2423,14 +2428,14 @@ void Viewport::_gui_update_mouse_over() {
 				}
 				reached_top = true;
 			}
-			if (!removing && ancestor_control->get_mouse_filter() != Control::MOUSE_FILTER_IGNORE) {
+			if (!removing && ancestor_control->get_mouse_filter_with_recursive() != Control::MOUSE_FILTER_IGNORE) {
 				new_mouse_over_hierarchy.push_back(ancestor_control);
 				// Add the node if it was not found and it is now not MOUSE_FILTER_IGNORE.
 				if (found < 0) {
 					needs_enter.push_back(ancestor_control);
 				}
 			}
-			if (ancestor_control->get_mouse_filter() == Control::MOUSE_FILTER_STOP) {
+			if (ancestor_control->get_mouse_filter_with_recursive() == Control::MOUSE_FILTER_STOP) {
 				// MOUSE_FILTER_STOP breaks the propagation chain.
 				if (reached_top) {
 					break;
@@ -2660,11 +2665,11 @@ Viewport::SubWindowResize Viewport::_sub_window_get_resize_margin(Window *p_subw
 
 	int limit = p_subwindow->theme_cache.resize_margin;
 
-	if (ABS(dist_x) > limit) {
+	if (Math::abs(dist_x) > limit) {
 		return SUB_WINDOW_RESIZE_DISABLED;
 	}
 
-	if (ABS(dist_y) > limit) {
+	if (Math::abs(dist_y) > limit) {
 		return SUB_WINDOW_RESIZE_DISABLED;
 	}
 
@@ -3089,7 +3094,7 @@ void Viewport::_update_mouse_over(Vector2 p_pos) {
 			while (ancestor) {
 				Control *ancestor_control = Object::cast_to<Control>(ancestor);
 				if (ancestor_control) {
-					if (ancestor_control->get_mouse_filter() != Control::MOUSE_FILTER_IGNORE) {
+					if (ancestor_control->get_mouse_filter_with_recursive() != Control::MOUSE_FILTER_IGNORE) {
 						int found = gui.mouse_over_hierarchy.find(ancestor_control);
 						if (found >= 0) {
 							common_ancestor = gui.mouse_over_hierarchy[found];
@@ -3097,7 +3102,7 @@ void Viewport::_update_mouse_over(Vector2 p_pos) {
 						}
 						over_ancestors.push_back(ancestor_control);
 					}
-					if (ancestor_control->get_mouse_filter() == Control::MOUSE_FILTER_STOP) {
+					if (ancestor_control->get_mouse_filter_with_recursive() == Control::MOUSE_FILTER_STOP) {
 						// MOUSE_FILTER_STOP breaks the propagation chain.
 						break;
 					}
@@ -5223,7 +5228,10 @@ void SubViewport::set_size_2d_override(const Size2i &p_size) {
 
 Size2i SubViewport::get_size_2d_override() const {
 	ERR_READ_THREAD_GUARD_V(Size2i());
-	return _get_size_2d_override();
+	// Rounding will cause offset issues with the
+	// exact positioning of subwindows, but changing the
+	// type of size_2d_override would break compatibility.
+	return Size2i((_get_size_2d_override() + Size2(0.5, 0.5)).floor());
 }
 
 void SubViewport::set_size_2d_override_stretch(bool p_enable) {

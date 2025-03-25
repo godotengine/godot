@@ -396,28 +396,27 @@ void EditorExportPlatformAndroid::_check_for_changes_poll_thread(void *ud) {
 							// its format is "[property]: [value]" so changed it as like build.prop
 							String p = props[j];
 							p = p.replace("]: ", "=");
-							p = p.replace("[", "");
-							p = p.replace("]", "");
+							p = p.remove_chars("[]");
 
 							if (p.begins_with("ro.product.model=")) {
-								device = p.get_slice("=", 1).strip_edges();
+								device = p.get_slicec('=', 1).strip_edges();
 							} else if (p.begins_with("ro.product.brand=")) {
-								vendor = p.get_slice("=", 1).strip_edges().capitalize();
+								vendor = p.get_slicec('=', 1).strip_edges().capitalize();
 							} else if (p.begins_with("ro.build.display.id=")) {
-								d.description += "Build: " + p.get_slice("=", 1).strip_edges() + "\n";
+								d.description += "Build: " + p.get_slicec('=', 1).strip_edges() + "\n";
 							} else if (p.begins_with("ro.build.version.release=")) {
-								d.description += "Release: " + p.get_slice("=", 1).strip_edges() + "\n";
+								d.description += "Release: " + p.get_slicec('=', 1).strip_edges() + "\n";
 							} else if (p.begins_with("ro.build.version.sdk=")) {
-								d.api_level = p.get_slice("=", 1).to_int();
+								d.api_level = p.get_slicec('=', 1).to_int();
 							} else if (p.begins_with("ro.product.cpu.abi=")) {
-								d.architecture = p.get_slice("=", 1).strip_edges();
+								d.architecture = p.get_slicec('=', 1).strip_edges();
 								d.description += "CPU: " + d.architecture + "\n";
 							} else if (p.begins_with("ro.product.manufacturer=")) {
-								d.description += "Manufacturer: " + p.get_slice("=", 1).strip_edges() + "\n";
+								d.description += "Manufacturer: " + p.get_slicec('=', 1).strip_edges() + "\n";
 							} else if (p.begins_with("ro.board.platform=")) {
-								d.description += "Chipset: " + p.get_slice("=", 1).strip_edges() + "\n";
+								d.description += "Chipset: " + p.get_slicec('=', 1).strip_edges() + "\n";
 							} else if (p.begins_with("ro.opengles.version=")) {
-								uint32_t opengl = p.get_slice("=", 1).to_int();
+								uint32_t opengl = p.get_slicec('=', 1).to_int();
 								d.description += "OpenGL: " + itos(opengl >> 16) + "." + itos((opengl >> 8) & 0xFF) + "." + itos((opengl) & 0xFF) + "\n";
 							}
 						}
@@ -489,7 +488,7 @@ String EditorExportPlatformAndroid::get_project_name(const String &p_name) const
 	}
 
 	if (aname.is_empty()) {
-		aname = VERSION_NAME;
+		aname = GODOT_VERSION_NAME;
 	}
 
 	return aname;
@@ -804,7 +803,12 @@ Error EditorExportPlatformAndroid::save_apk_so(void *p_userdata, const SharedObj
 
 Error EditorExportPlatformAndroid::save_apk_file(void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total, const Vector<String> &p_enc_in_filters, const Vector<String> &p_enc_ex_filters, const Vector<uint8_t> &p_key, uint64_t p_seed) {
 	APKExportData *ed = static_cast<APKExportData *>(p_userdata);
-	const String path = ResourceUID::ensure_path(p_path);
+
+	String path = p_path.simplify_path();
+	if (path.begins_with("uid://")) {
+		path = ResourceUID::uid_to_path(path).simplify_path();
+		print_verbose(vformat(R"(UID referenced exported file name "%s" was replaced with "%s".)", p_path, path));
+	}
 	const String dst_path = path.replace_first("res://", "assets/");
 
 	store_in_apk(ed, dst_path, p_data, _should_compress_asset(path, p_data) ? Z_DEFLATED : 0);
@@ -1629,7 +1633,7 @@ void EditorExportPlatformAndroid::_fix_resources(const Ref<EditorExportPreset> &
 				str = get_project_name(package_name);
 
 			} else {
-				String lang = str.substr(str.rfind_char('-') + 1, str.length()).replace("-", "_");
+				String lang = str.substr(str.rfind_char('-') + 1).replace("-", "_");
 				if (appnames.has(lang)) {
 					str = appnames[lang];
 				} else {
@@ -2041,7 +2045,9 @@ bool EditorExportPlatformAndroid::get_export_option_visibility(const EditorExpor
 	if (p_option == "graphics/opengl_debug" ||
 			p_option == "command_line/extra_args" ||
 			p_option == "permissions/custom_permissions" ||
-			p_option == "gradle_build/compress_native_libraries" ||
+			p_option == "keystore/debug" ||
+			p_option == "keystore/debug_user" ||
+			p_option == "keystore/debug_password" ||
 			p_option == "package/retain_data_on_uninstall" ||
 			p_option == "package/exclude_from_recents" ||
 			p_option == "package/show_in_app_library" ||
@@ -2065,6 +2071,9 @@ bool EditorExportPlatformAndroid::get_export_option_visibility(const EditorExpor
 		return false;
 	}
 
+	if (p_option == "dotnet/android_use_linux_bionic") {
+		return advanced_options_enabled;
+	}
 	return true;
 }
 
@@ -2532,7 +2541,7 @@ bool EditorExportPlatformAndroid::has_valid_username_and_password(const Ref<Edit
 
 #ifdef MODULE_MONO_ENABLED
 bool _validate_dotnet_tfm(const String &required_tfm, String &r_error) {
-	String assembly_name = path::get_csharp_project_name();
+	String assembly_name = Path::get_csharp_project_name();
 	String project_path = ProjectSettings::get_singleton()->globalize_path("res://" + assembly_name + ".csproj");
 
 	if (!FileAccess::exists(project_path)) {
@@ -3473,7 +3482,7 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 		cmdline.push_back("-Pperform_zipalign=" + zipalign_flag); // argument to specify whether the build should be zipaligned.
 		cmdline.push_back("-Pperform_signing=" + sign_flag); // argument to specify whether the build should be signed.
 		cmdline.push_back("-Pcompress_native_libraries=" + compress_native_libraries_flag); // argument to specify whether the build should compress native libraries.
-		cmdline.push_back("-Pgodot_editor_version=" + String(VERSION_FULL_CONFIG));
+		cmdline.push_back("-Pgodot_editor_version=" + String(GODOT_VERSION_FULL_CONFIG));
 		cmdline.push_back("-Pgodot_rendering_method=" + current_renderer);
 
 		// NOTE: The release keystore is not included in the verbose logging

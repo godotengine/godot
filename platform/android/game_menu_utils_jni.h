@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef GAME_MENU_UTILS_JNI_H
-#define GAME_MENU_UTILS_JNI_H
+#pragma once
 
 #include <jni.h>
 
@@ -44,6 +43,5 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_utils_GameMenuUtils_setCameraM
 JNIEXPORT void JNICALL Java_org_godotengine_godot_utils_GameMenuUtils_resetCamera2DPosition(JNIEnv *env, jclass clazz);
 JNIEXPORT void JNICALL Java_org_godotengine_godot_utils_GameMenuUtils_resetCamera3DPosition(JNIEnv *env, jclass clazz);
 JNIEXPORT void JNICALL Java_org_godotengine_godot_utils_GameMenuUtils_playMainScene(JNIEnv *env, jclass clazz);
+JNIEXPORT void JNICALL Java_org_godotengine_godot_utils_GameMenuUtils_setDebugMuteAudio(JNIEnv *env, jclass clazz, jboolean enabled);
 }
-
-#endif // GAME_MENU_UTILS_JNI_H

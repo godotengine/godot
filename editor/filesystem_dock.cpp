@@ -574,8 +574,6 @@ void FileSystemDock::_notification(int p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			_update_display_mode(true);
 
-			button_reload->set_button_icon(get_editor_theme_icon(SNAME("Reload")));
-
 			StringName mode_icon = "Panels1";
 			if (display_mode == DISPLAY_MODE_VSPLIT) {
 				mode_icon = "Panels2";
@@ -1234,10 +1232,8 @@ void FileSystemDock::_select_file(const String &p_path, bool p_select_in_favorit
 		}
 
 		String resource_type = ResourceLoader::get_resource_type(fpath);
-
 		if (resource_type == "PackedScene" || resource_type == "AnimationLibrary") {
 			bool is_imported = false;
-
 			{
 				List<String> importer_exts;
 				ResourceImporterScene::get_scene_importer_extensions(&importer_exts);
@@ -1252,10 +1248,8 @@ void FileSystemDock::_select_file(const String &p_path, bool p_select_in_favorit
 
 			if (is_imported) {
 				SceneImportSettingsDialog::get_singleton()->open_settings(p_path, resource_type);
-			} else if (resource_type == "PackedScene") {
-				EditorNode::get_singleton()->open_request(fpath);
 			} else {
-				EditorNode::get_singleton()->load_resource(fpath);
+				EditorNode::get_singleton()->load_scene_or_resource(fpath);
 			}
 		} else if (ResourceLoader::is_imported(fpath)) {
 			// If the importer has advanced settings, show them.
@@ -1275,7 +1269,6 @@ void FileSystemDock::_select_file(const String &p_path, bool p_select_in_favorit
 			if (!used_advanced_settings) {
 				EditorNode::get_singleton()->load_resource(fpath);
 			}
-
 		} else {
 			EditorNode::get_singleton()->load_resource(fpath);
 		}
@@ -1338,6 +1331,10 @@ void FileSystemDock::_fs_changed() {
 	}
 
 	set_process(false);
+	if (had_focus) {
+		had_focus->grab_focus();
+		had_focus = nullptr;
+	}
 }
 
 void FileSystemDock::_set_scanning_mode() {
@@ -1563,7 +1560,7 @@ void FileSystemDock::_update_resource_paths_after_move(const HashMap<String, Str
 		String extra_path;
 		int sep_pos = r->get_path().find("::");
 		if (sep_pos >= 0) {
-			extra_path = base_path.substr(sep_pos, base_path.length());
+			extra_path = base_path.substr(sep_pos);
 			base_path = base_path.substr(0, sep_pos);
 		}
 
@@ -1629,7 +1626,7 @@ void FileSystemDock::_update_project_settings_after_move(const HashMap<String, S
 			// If the autoload resource paths has a leading "*", it indicates that it is a Singleton,
 			// so we have to handle both cases when updating.
 			String autoload = GLOBAL_GET(E.name);
-			String autoload_singleton = autoload.substr(1, autoload.length());
+			String autoload_singleton = autoload.substr(1);
 			if (p_renames.has(autoload)) {
 				ProjectSettings::get_singleton()->set_setting(E.name, p_renames[autoload]);
 			} else if (autoload.begins_with("*") && p_renames.has(autoload_singleton)) {
@@ -2675,6 +2672,12 @@ bool FileSystemDock::_matches_all_search_tokens(const String &p_text) {
 }
 
 void FileSystemDock::_rescan() {
+	if (tree->has_focus()) {
+		had_focus = tree;
+	} else if (files->has_focus()) {
+		had_focus = files;
+	}
+
 	_set_scanning_mode();
 	EditorFileSystem::get_singleton()->scan();
 }
@@ -2737,7 +2740,13 @@ void FileSystemDock::focus_on_filter() {
 }
 
 void FileSystemDock::create_directory(const String &p_path, const String &p_base_dir) {
-	Error err = EditorFileSystem::get_singleton()->make_dir_recursive(p_path.trim_prefix(p_base_dir), p_base_dir);
+	String trimmed_path = p_path;
+	if (!p_base_dir.is_empty()) {
+		// Trims off the joining '/' if the base didn't end with one. If the base did have it
+		// and there's two slashes, the empty directory is safe to trim off anyways.
+		trimmed_path = trimmed_path.trim_prefix(p_base_dir).trim_prefix("/");
+	}
+	Error err = EditorFileSystem::get_singleton()->make_dir_recursive(trimmed_path, p_base_dir);
 	if (err != OK) {
 		EditorNode::get_singleton()->show_warning(vformat(TTR("Could not create folder: %s"), error_names[err]));
 	}
@@ -3695,7 +3704,7 @@ void FileSystemDock::_file_list_gui_input(Ref<InputEvent> p_event) {
 			if (fpath.size() > String("res://").size()) {
 				fpath = fpath.left(fpath.size() - 2); // Remove last '/'.
 				const int slash_idx = fpath.rfind_char('/');
-				fpath = fpath.substr(slash_idx + 1, fpath.size() - slash_idx - 1);
+				fpath = fpath.substr(slash_idx + 1);
 			}
 
 			tree_item = tree->get_item_with_text(fpath);
@@ -4089,13 +4098,6 @@ FileSystemDock::FileSystemDock() {
 	current_path_line_edit->set_h_size_flags(SIZE_EXPAND_FILL);
 	_set_current_path_line_edit_text(current_path);
 	toolbar_hbc->add_child(current_path_line_edit);
-
-	button_reload = memnew(Button);
-	button_reload->connect(SceneStringName(pressed), callable_mp(this, &FileSystemDock::_rescan));
-	button_reload->set_focus_mode(FOCUS_NONE);
-	button_reload->set_tooltip_text(TTR("Re-Scan Filesystem"));
-	button_reload->hide();
-	toolbar_hbc->add_child(button_reload);
 
 	button_toggle_display_mode = memnew(Button);
 	button_toggle_display_mode->connect(SceneStringName(pressed), callable_mp(this, &FileSystemDock::_change_split_mode));

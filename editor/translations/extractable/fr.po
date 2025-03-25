@@ -84,6 +84,9 @@ msgstr "Hex"
 msgid "Hex code or named color"
 msgstr "Code hexadécimal ou nom de couleur"
 
+msgid "Swatches"
+msgstr "Nuances"
+
 msgid "Show all options available."
 msgstr "Voir toutes les options disponibles."
 

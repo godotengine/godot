@@ -909,6 +909,9 @@ msgstr "Tampilkan Pembaruan Spinner"
 msgid "Low Processor Mode Sleep (µsec)"
 msgstr "Mode Tidur Prosesor Rendah (µdetik)"
 
+msgid "V-Sync Mode"
+msgstr "Mode V-Sync"
+
 msgid "Update Continuously"
 msgstr "Perbarui Terus-menerus"
 
@@ -965,6 +968,9 @@ msgstr "Tema"
 
 msgid "Icon and Font Color"
 msgstr "Ikon dan Warna Font"
+
+msgid "Contrast"
+msgstr "Kontras"
 
 msgid "Draw Extra Borders"
 msgstr "Gambar Batas Ekstra"
@@ -1106,6 +1112,9 @@ msgstr "Editor Teks"
 
 msgid "Line Spacing"
 msgstr "Jarak Baris"
+
+msgid "Color Theme"
+msgstr "Tema Warna"
 
 msgid "Appearance"
 msgstr "Penampilan"
@@ -1563,9 +1572,6 @@ msgstr "Pulihkan Shaders saat Dimuat"
 msgid "Visual Editors"
 msgstr "Editor Visual"
 
-msgid "Color Theme"
-msgstr "Tema Warna"
-
 msgid "Minimap Opacity"
 msgstr "Kegelapan Peta kecil"
 
@@ -1590,8 +1596,14 @@ msgstr "SCP"
 msgid "Window Placement"
 msgstr "Penempatan Jendela"
 
+msgid "Rect"
+msgstr "Kotak"
+
 msgid "Rect Custom Position"
 msgstr "Posisi Kotak Kustom"
+
+msgid "Screen"
+msgstr "Layar"
 
 msgid "Auto Save"
 msgstr "Simpan Otomatis"
@@ -1601,6 +1613,9 @@ msgstr "Simpan Sebelum Menjalankan"
 
 msgid "Output"
 msgstr "Luaran"
+
+msgid "Font Size"
+msgstr "Ukuran Fonta"
 
 msgid "Always Clear Output on Play"
 msgstr "Selalu Bersihkan Luaran Ketika Bermain"
@@ -2432,9 +2447,6 @@ msgstr "Genggam"
 
 msgid "Orientation"
 msgstr "Orientasi"
-
-msgid "V-Sync Mode"
-msgstr "Mode V-Sync"
 
 msgid "Output Latency"
 msgstr "Latensi Keluaran"
@@ -3387,9 +3399,6 @@ msgstr "Fitur XR"
 msgid "XR Mode"
 msgstr "Mode XR"
 
-msgid "Screen"
-msgstr "Layar"
-
 msgid "Immersive Mode"
 msgstr "Mode Imersif"
 
@@ -3929,9 +3938,6 @@ msgstr "Mask Area"
 
 msgid "Copy Mode"
 msgstr "Mode Salin"
-
-msgid "Rect"
-msgstr "Kotak"
 
 msgid "Anchor Mode"
 msgstr "Mode Jangkar"
@@ -5009,9 +5015,6 @@ msgstr "Modulasi Garis Besar"
 
 msgid "Font"
 msgstr "Font"
-
-msgid "Font Size"
-msgstr "Ukuran Fonta"
 
 msgid "Horizontal Alignment"
 msgstr "Penjajaran Horisontal"
@@ -7541,9 +7544,6 @@ msgstr "Penyesuaian"
 
 msgid "Brightness"
 msgstr "Kecerahan"
-
-msgid "Contrast"
-msgstr "Kontras"
 
 msgid "Saturation"
 msgstr "Ketepatan Warna"

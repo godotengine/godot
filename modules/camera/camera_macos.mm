@@ -31,7 +31,7 @@
 ///@TODO this is a near duplicate of CameraIOS, we should find a way to combine those to minimize code duplication!!!!
 // If you fix something here, make sure you fix it there as well!
 
-#include "camera_macos.h"
+#import "camera_macos.h"
 
 #include "servers/camera/camera_feed.h"
 
@@ -359,10 +359,20 @@ void CameraMacOS::update_feeds() {
 	};
 }
 
-CameraMacOS::CameraMacOS() {
-	// Find available cameras we have at this time
-	update_feeds();
+void CameraMacOS::set_monitoring_feeds(bool p_monitoring_feeds) {
+	if (p_monitoring_feeds == monitoring_feeds) {
+		return;
+	}
 
-	// should only have one of these....
-	device_notifications = [[MyDeviceNotifications alloc] initForServer:this];
+	CameraServer::set_monitoring_feeds(p_monitoring_feeds);
+	if (p_monitoring_feeds) {
+		// Find available cameras we have at this time.
+		update_feeds();
+
+		// Get notified on feed changes.
+		device_notifications = [[MyDeviceNotifications alloc] initForServer:this];
+	} else {
+		// Stop monitoring feed changes.
+		device_notifications = nil;
+	}
 }

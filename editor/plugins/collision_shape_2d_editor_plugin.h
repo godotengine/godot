@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef COLLISION_SHAPE_2D_EDITOR_PLUGIN_H
-#define COLLISION_SHAPE_2D_EDITOR_PLUGIN_H
+#pragma once
 
 #include "editor/plugins/editor_plugin.h"
 #include "scene/2d/physics/collision_shape_2d.h"
@@ -112,7 +111,4 @@ public:
 	virtual void make_visible(bool visible) override;
 
 	CollisionShape2DEditorPlugin();
-	~CollisionShape2DEditorPlugin();
 };
-
-#endif // COLLISION_SHAPE_2D_EDITOR_PLUGIN_H
