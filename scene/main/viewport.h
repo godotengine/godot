@@ -886,13 +886,19 @@ protected:
 	virtual DisplayServer::WindowID get_window_id() const override;
 	void _notification(int p_what);
 
+#ifndef DISABLE_DEPRECATED
+	Size2i _get_size_2d_override_bind_compat_104601() const;
+	void _set_size_2d_override_bind_compat_104601(const Size2i &p_size);
+	static void _bind_compatibility_methods();
+#endif
+
 public:
 	void set_size(const Size2i &p_size);
 	Size2i get_size() const;
 	void set_size_force(const Size2i &p_size);
 
-	void set_size_2d_override(const Size2i &p_size);
-	Size2i get_size_2d_override() const;
+	void set_size_2d_override(const Size2 &p_size);
+	Size2 get_size_2d_override() const;
 
 	void set_size_2d_override_stretch(bool p_enable);
 	bool is_size_2d_override_stretch_enabled() const override;

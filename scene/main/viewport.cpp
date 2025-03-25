@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "viewport.h"
+#include "viewport.compat.inc"
 
 #include "core/config/project_settings.h"
 #include "core/debugger/engine_debugger.h"
@@ -5409,17 +5410,14 @@ Size2i SubViewport::get_size() const {
 	return _get_size();
 }
 
-void SubViewport::set_size_2d_override(const Size2i &p_size) {
+void SubViewport::set_size_2d_override(const Size2 &p_size) {
 	ERR_MAIN_THREAD_GUARD;
 	_set_size(_get_size(), p_size, true);
 }
 
-Size2i SubViewport::get_size_2d_override() const {
-	ERR_READ_THREAD_GUARD_V(Size2i());
-	// Rounding will cause offset issues with the
-	// exact positioning of subwindows, but changing the
-	// type of size_2d_override would break compatibility.
-	return Size2i((_get_size_2d_override() + Size2(0.5, 0.5)).floor());
+Size2 SubViewport::get_size_2d_override() const {
+	ERR_READ_THREAD_GUARD_V(Size2());
+	return _get_size_2d_override();
 }
 
 void SubViewport::set_size_2d_override_stretch(bool p_enable) {
@@ -5542,7 +5540,7 @@ void SubViewport::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_clear_mode"), &SubViewport::get_clear_mode);
 
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "size", PROPERTY_HINT_NONE, "suffix:px"), "set_size", "get_size");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "size_2d_override", PROPERTY_HINT_NONE, "suffix:px"), "set_size_2d_override", "get_size_2d_override");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "size_2d_override", PROPERTY_HINT_NONE, "suffix:px"), "set_size_2d_override", "get_size_2d_override");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "size_2d_override_stretch"), "set_size_2d_override_stretch", "is_size_2d_override_stretch_enabled");
 	ADD_GROUP("Render Target", "render_target_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "render_target_clear_mode", PROPERTY_HINT_ENUM, "Always,Never,Next Frame"), "set_clear_mode", "get_clear_mode");
