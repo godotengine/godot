@@ -2535,7 +2535,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			"DISABLE_SAMPLE_LAYER", // GH-104154.
 			"DISABLE_GAMEPP_LAYER", // GH-104154.
 			"DISABLE_VK_LAYER_TENCENT_wegame_cross_overlay_1", // GH-104154.
-			"NODEVICE_SELECT", // GH-104154.
+			// "NODEVICE_SELECT", // Kept as it's useful - GH-104592.
 			"VK_LAYER_bandicam_helper_DEBUG_1", // GH-101480.
 			"DISABLE_VK_LAYER_bandicam_helper_1", // GH-101480.
 			"DISABLE_VK_LAYER_reshade_1", // GH-70849.
