@@ -370,6 +370,20 @@ void CollisionObject2D::shape_owner_set_one_way_collision_margin(uint32_t p_owne
 	}
 }
 
+void CollisionObject2D::shape_owner_set_one_way_collision_direction(uint32_t p_owner, Vector2 p_one_way_collision_direction) {
+	if (area) {
+		return; //not for areas
+	}
+
+	ERR_FAIL_COND(!shapes.has(p_owner));
+
+	ShapeData &sd = shapes[p_owner];
+	sd.one_way_collision_direction = p_one_way_collision_direction;
+	for (int i = 0; i < sd.shapes.size(); i++) {
+		PhysicsServer2D::get_singleton()->body_set_shape_as_one_way_collision(rid, sd.shapes[i].index, sd.one_way_collision, sd.one_way_collision_margin);
+	}
+}
+
 real_t CollisionObject2D::get_shape_owner_one_way_collision_margin(uint32_t p_owner) const {
 	ERR_FAIL_COND_V(!shapes.has(p_owner), 0);
 

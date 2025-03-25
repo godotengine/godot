@@ -47,6 +47,7 @@ void CollisionShape2D::_update_in_shape_owner(bool p_xform_only) {
 	collision_object->shape_owner_set_disabled(owner_id, disabled);
 	collision_object->shape_owner_set_one_way_collision(owner_id, one_way_collision);
 	collision_object->shape_owner_set_one_way_collision_margin(owner_id, one_way_collision_margin);
+	collision_object->shape_owner_set_one_way_collision_direction(owner_id, one_way_collision_direction)
 }
 
 void CollisionShape2D::_notification(int p_what) {
