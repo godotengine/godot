@@ -24,7 +24,7 @@ def run_closure_compiler(target, source, env, for_signature):
 
 
 def create_engine_file(env, target, source, externs, threads_enabled):
-    if env["use_closure_compiler"]:
+    if env["closure_compiler"]:
         return env.BuildJS(target, source, JSEXTERNS=externs)
     subst_dict = {"___GODOT_THREADS_ENABLED": "true" if threads_enabled else "false"}
     return env.Substfile(target=target, source=[env.File(s) for s in source], SUBST_DICT=subst_dict)

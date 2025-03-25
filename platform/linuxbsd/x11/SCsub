@@ -8,7 +8,7 @@ source_files = [
     "key_mapping_x11.cpp",
 ]
 
-if env["use_sowrap"]:
+if env["sowrap"]:
     source_files.append(
         [
             "dynwrappers/xlib-so_wrap.c",

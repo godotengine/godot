@@ -1,6 +1,6 @@
 def disable_warnings(self):
     # 'self' is the environment
-    if self["platform"] == "windows" and not self["use_mingw"]:
+    if self["platform"] == "windows" and not self["mingw"]:
         # We have to remove existing warning level defines before appending /w,
         # otherwise we get: "warning D9025 : overriding '/W3' with '/w'"
         WARN_FLAGS = ["/Wall", "/W4", "/W3", "/W2", "/W1", "/W0"]

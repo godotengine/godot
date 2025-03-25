@@ -35,11 +35,11 @@ jobs:
             # Validate godot-cpp compatibility on one arbitrary editor build.
             godot-cpp: true
 
-          - name: Editor with doubles and GCC sanitizers (target=editor, tests=yes, dev_build=yes, scu_build=yes, precision=double, use_asan=yes, use_ubsan=yes, linker=gold)
+          - name: Editor with doubles and GCC sanitizers (target=editor, tests=yes, dev_build=yes, scu_build=yes, precision=double, asan=yes, ubsan=yes, linker=gold)
             cache-name: linux-editor-double-sanitizers
             target: editor
             # Debug symbols disabled as they're huge on this build and we hit the 14 GB limit for runners.
-            sconsflags: dev_build=yes scu_build=yes debug_symbols=no precision=double use_asan=yes use_ubsan=yes linker=gold
+            sconsflags: dev_build=yes scu_build=yes debug_symbols=no precision=double asan=yes ubsan=yes linker=gold
             bin: ./bin/godot.linuxbsd.editor.dev.double.x86_64.san
             build-mono: false
             tests: true
@@ -47,10 +47,10 @@ jobs:
             # Skip 2GiB artifact speeding up action.
             artifact: false
 
-          - name: Editor with clang sanitizers (target=editor, tests=yes, dev_build=yes, use_asan=yes, use_ubsan=yes, use_llvm=yes, linker=lld)
+          - name: Editor with clang sanitizers (target=editor, tests=yes, dev_build=yes, asan=yes, ubsan=yes, llvm=yes, linker=lld)
             cache-name: linux-editor-llvm-sanitizers
             target: editor
-            sconsflags: dev_build=yes use_asan=yes use_ubsan=yes use_llvm=yes linker=lld
+            sconsflags: dev_build=yes asan=yes ubsan=yes llvm=yes linker=lld
             bin: ./bin/godot.linuxbsd.editor.dev.x86_64.llvm.san
             build-mono: false
             tests: true
@@ -59,11 +59,11 @@ jobs:
             # Test our oldest supported SCons/Python versions on one arbitrary editor build.
             legacy-scons: true
 
-          - name: Editor with ThreadSanitizer (target=editor, tests=yes, dev_build=yes, use_tsan=yes, use_llvm=yes, linker=lld)
+          - name: Editor with ThreadSanitizer (target=editor, tests=yes, dev_build=yes, tsan=yes, llvm=yes, linker=lld)
             cache-name: linux-editor-thread-sanitizer
             target: editor
             tests: true
-            sconsflags: dev_build=yes use_tsan=yes use_llvm=yes linker=lld
+            sconsflags: dev_build=yes tsan=yes llvm=yes linker=lld
             bin: ./bin/godot.linuxbsd.editor.dev.x86_64.llvm.san
             build-mono: false
             # Skip 2GiB artifact speeding up action.

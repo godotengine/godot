@@ -54,7 +54,7 @@ if env["brotli"] and env["builtin_brotli"]:
     env_thirdparty.Prepend(CPPPATH=[thirdparty_brotli_dir + "include"])
     env.Prepend(CPPPATH=[thirdparty_brotli_dir + "include"])
 
-    if env.get("use_ubsan") or env.get("use_asan") or env.get("use_tsan") or env.get("use_lsan") or env.get("use_msan"):
+    if env.get("ubsan") or env.get("asan") or env.get("tsan") or env.get("lsan") or env.get("msan"):
         env_thirdparty.Append(CPPDEFINES=["BROTLI_BUILD_PORTABLE"])
 
     env_thirdparty.add_source_files(thirdparty_obj, thirdparty_brotli_sources)

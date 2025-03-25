@@ -4,7 +4,7 @@ on:
 
 # Global Settings
 env:
-  SCONSFLAGS: verbose=yes warnings=extra werror=yes debug_symbols=no use_closure_compiler=yes strict_checks=yes
+  SCONSFLAGS: verbose=yes warnings=extra werror=yes debug_symbols=no closure_compiler=yes strict_checks=yes
   EM_VERSION: 3.1.64
 
 jobs:

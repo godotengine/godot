@@ -41,17 +41,19 @@ def get_opts():
         # Matches default values from before Emscripten 3.1.27. New defaults are too low for Godot.
         ("stack_size", "WASM stack size (in KiB)", 5120),
         ("default_pthread_stack_size", "WASM pthread default stack size (in KiB)", 2048),
-        BoolVariable("use_assertions", "Use Emscripten runtime assertions", False),
-        BoolVariable("use_ubsan", "Use Emscripten undefined behavior sanitizer (UBSAN)", False),
-        BoolVariable("use_asan", "Use Emscripten address sanitizer (ASAN)", False),
-        BoolVariable("use_lsan", "Use Emscripten leak sanitizer (LSAN)", False),
-        BoolVariable("use_safe_heap", "Use Emscripten SAFE_HEAP sanitizer", False),
+        BoolVariable(["assertions", "use_assertions"], "Use Emscripten runtime assertions", False),
+        BoolVariable(["ubsan", "use_ubsan"], "Use Emscripten undefined behavior sanitizer (UBSAN)", False),
+        BoolVariable(["asan", "use_asan"], "Use Emscripten address sanitizer (ASAN)", False),
+        BoolVariable(["lsan", "use_lsan"], "Use Emscripten leak sanitizer (LSAN)", False),
+        BoolVariable(["safe_heap", "use_safe_heap"], "Use Emscripten SAFE_HEAP sanitizer", False),
         # eval() can be a security concern, so it can be disabled.
         BoolVariable("javascript_eval", "Enable JavaScript eval interface", True),
         BoolVariable(
             "dlink_enabled", "Enable WebAssembly dynamic linking (GDExtension support). Produces bigger binaries", False
         ),
-        BoolVariable("use_closure_compiler", "Use closure compiler to minimize JavaScript code", False),
+        BoolVariable(
+            ["closure_compiler", "use_closure_compiler"], "Use closure compiler to minimize JavaScript code", False
+        ),
         BoolVariable(
             "proxy_to_pthread",
             "Use Emscripten PROXY_TO_PTHREAD option to run the main application code to a separate thread",
@@ -116,9 +118,9 @@ def configure(env: "SConsEnvironment"):
         # Retain function names for backtraces at the cost of file size.
         env.Append(LINKFLAGS=["--profiling-funcs"])
     else:
-        env["use_assertions"] = True
+        env["assertions"] = True
 
-    if env["use_assertions"]:
+    if env["assertions"]:
         env.Append(LINKFLAGS=["-sASSERTIONS=1"])
 
     if env.editor_build and env["initial_memory"] < 64:
@@ -144,20 +146,20 @@ def configure(env: "SConsEnvironment"):
             env.Append(LINKFLAGS=["-flto"])
 
     # Sanitizers
-    if env["use_ubsan"]:
+    if env["ubsan"]:
         env.Append(CCFLAGS=["-fsanitize=undefined"])
         env.Append(LINKFLAGS=["-fsanitize=undefined"])
-    if env["use_asan"]:
+    if env["asan"]:
         env.Append(CCFLAGS=["-fsanitize=address"])
         env.Append(LINKFLAGS=["-fsanitize=address"])
-    if env["use_lsan"]:
+    if env["lsan"]:
         env.Append(CCFLAGS=["-fsanitize=leak"])
         env.Append(LINKFLAGS=["-fsanitize=leak"])
-    if env["use_safe_heap"]:
+    if env["safe_heap"]:
         env.Append(LINKFLAGS=["-sSAFE_HEAP=1"])
 
     # Closure compiler
-    if env["use_closure_compiler"]:
+    if env["closure_compiler"]:
         # For emscripten support code.
         env.Append(LINKFLAGS=["--closure", "1"])
         # Register builder for our Engine files

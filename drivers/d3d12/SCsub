@@ -36,7 +36,7 @@ if env["agility_sdk_path"] != "" and os.path.exists(env["agility_sdk_path"]):
 
 # PIX.
 
-if env["use_pix"]:
+if env["pix"]:
     env_d3d12_rdd.Append(CPPDEFINES=["PIX_ENABLED"])
     env_d3d12_rdd.Append(CPPPATH=[env["pix_path"] + "/Include"])
 
