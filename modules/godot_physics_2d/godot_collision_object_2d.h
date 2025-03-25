@@ -61,6 +61,7 @@ private:
 		bool disabled = false;
 		bool one_way_collision = false;
 		real_t one_way_collision_margin = 0.0;
+		Vector2 one_way_collision_direction;
 	};
 
 	Vector<Shape> shapes;
@@ -152,6 +153,12 @@ public:
 	_FORCE_INLINE_ real_t get_shape_one_way_collision_margin(int p_idx) const {
 		CRASH_BAD_INDEX(p_idx, shapes.size());
 		return shapes[p_idx].one_way_collision_margin;
+	}
+
+	Vector2 get_shape_one_way_collision_direction(int p_idx) const {
+		CRASH_BAD_INDEX(p_idx, shapes.size());
+		/* maybe default to columns[1] */
+		return shapes[p_idx].one_way_collision_direction;
 	}
 
 	void set_collision_mask(uint32_t p_mask) {

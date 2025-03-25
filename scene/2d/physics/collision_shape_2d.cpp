@@ -227,6 +227,17 @@ real_t CollisionShape2D::get_one_way_collision_margin() const {
 	return one_way_collision_margin;
 }
 
+void CollisionShape2D::set_one_way_collision_direction(Vector2 p_one_way_collision_direction) {
+	one_way_collision_direction = p_one_way_collision_direction;
+	if (collision_object) {
+		collision_object->shape_owner_set_one_way_collision_margin(owner_id, one_way_collision_margin);
+	}
+}
+
+Vector2 CollisionShape2D::get_one_way_collision_direction() const {
+	return one_way_collision_direction;
+}
+
 Color CollisionShape2D::_get_default_debug_color() const {
 	const SceneTree *st = SceneTree::get_singleton();
 	return st ? st->get_debug_collisions_color() : Color(0.0, 0.0, 0.0, 0.0);
@@ -283,11 +294,14 @@ void CollisionShape2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_one_way_collision_enabled"), &CollisionShape2D::is_one_way_collision_enabled);
 	ClassDB::bind_method(D_METHOD("set_one_way_collision_margin", "margin"), &CollisionShape2D::set_one_way_collision_margin);
 	ClassDB::bind_method(D_METHOD("get_one_way_collision_margin"), &CollisionShape2D::get_one_way_collision_margin);
+	ClassDB::bind_method(D_METHOD("set_one_way_collision_direction"), &CollisionShape2D::set_one_way_collision_direction);
+	ClassDB::bind_method(D_METHOD("get_one_way_collision_direction"), &CollisionShape2D::get_one_way_collision_direction);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "shape", PROPERTY_HINT_RESOURCE_TYPE, "Shape2D"), "set_shape", "get_shape");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "disabled"), "set_disabled", "is_disabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "one_way_collision"), "set_one_way_collision", "is_one_way_collision_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "one_way_collision_margin", PROPERTY_HINT_RANGE, "0,128,0.1,suffix:px"), "set_one_way_collision_margin", "get_one_way_collision_margin");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "one_way_collision_direction", PROPERTY_HINT_NONE, "suffix:px"), "set_one_way_collision_direction", "get_one_way_collision_direction");
 
 	ClassDB::bind_method(D_METHOD("set_debug_color", "color"), &CollisionShape2D::set_debug_color);
 	ClassDB::bind_method(D_METHOD("get_debug_color"), &CollisionShape2D::get_debug_color);

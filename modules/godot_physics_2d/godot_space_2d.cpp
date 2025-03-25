@@ -852,7 +852,7 @@ bool GodotSpace2D::test_body_motion(GodotBody2D *p_body, const PhysicsServer2D::
 					cbk.amount = 0;
 					cbk.passed = 0;
 					cbk.ptr = cd;
-					cbk.valid_dir = col_obj_shape_xform.columns[1].normalized();
+					cbk.valid_dir = col_obj->get_shape_one_way_collision_direction(col_shape_idx);
 
 					cbk.valid_depth = 10e20;
 
