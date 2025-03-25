@@ -102,7 +102,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-03-24 02:22+0000\n"
+"PO-Revision-Date: 2025-03-25 22:16+0000\n"
 "Last-Translator: Tomek <kobewi4e@gmail.com>\n"
 "Language-Team: Polish <https://hosted.weblate.org/projects/godot-engine/godot-"
 "properties/pl/>\n"
@@ -6114,11 +6114,41 @@ msgstr "Klatki pionowe"
 msgid "Frame Coords"
 msgstr "Współrzędne klatki"
 
+msgid "Filter Clip Enabled"
+msgstr "Włącz przycięcie filtra"
+
 msgid "Tile Set"
 msgstr "Zestaw kafelków"
 
+msgid "Rendering Quadrant Size"
+msgstr "Rozmiar kwadrantu renderowania"
+
+msgid "Collision Animatable"
+msgstr "Animowalna kolizja"
+
+msgid "Collision Visibility Mode"
+msgstr "Tryb widoczności kolizji"
+
+msgid "Navigation Visibility Mode"
+msgstr "Tryb widoczności nawigacji"
+
+msgid "Occlusion Enabled"
+msgstr "Zasłanianie włączone"
+
 msgid "Y Sort Origin"
 msgstr "Początek sortowania Y"
+
+msgid "X Draw Order Reversed"
+msgstr "Odwrócona kolejność rysowania po X"
+
+msgid "Collision Enabled"
+msgstr "Włączone kolizje"
+
+msgid "Use Kinematic Bodies"
+msgstr "Użyj kinematycznych ciał"
+
+msgid "Navigation Enabled"
+msgstr "Nawigacja włączona"
 
 msgid "Texture Normal"
 msgstr "Normalna tekstury"
@@ -6129,20 +6159,168 @@ msgstr "Tekstura wciśniętego"
 msgid "Bitmask"
 msgstr "Maska bitowa"
 
+msgid "Shape Centered"
+msgstr "Kształt wyśrodkowany"
+
+msgid "Shape Visible"
+msgstr "Kształt widoczny"
+
+msgid "Passby Press"
+msgstr "Wciśnięcie przechodnie"
+
+msgid "Visibility Mode"
+msgstr "Tryb widoczności"
+
+msgid "Enabling"
+msgstr "Włączanie"
+
+msgid "Node Path"
+msgstr "Ścieżka węzła"
+
+msgid "Attenuation Model"
+msgstr "Model tłumienia"
+
+msgid "Unit Size"
+msgstr "Rozmiar jednostkowy"
+
+msgid "Max dB"
+msgstr "Maksymalne dB"
+
+msgid "Emission Angle"
+msgstr "Kąt emisji"
+
 msgid "Degrees"
 msgstr "Stopni"
+
+msgid "Filter Attenuation dB"
+msgstr "Tłumienie filtra (dB)"
+
+msgid "Attenuation Filter"
+msgstr "Filtr tłumienia"
+
+msgid "Cutoff Hz"
+msgstr "Odcięcie (Hz)"
+
+msgid "dB"
+msgstr "dB"
+
+msgid "Doppler"
+msgstr "Doppler"
+
+msgid "Tracking"
+msgstr "Śledzenie"
 
 msgid "Bone Name"
 msgstr "Nazwa kości"
 
+msgid "Bone Idx"
+msgstr "Indeks kości"
+
+msgid "Override Pose"
+msgstr "Nadpisz pozę"
+
+msgid "Keep Aspect"
+msgstr "Zachowaj proporcje"
+
 msgid "Cull Mask"
 msgstr "Maska usuwania"
+
+msgid "Attributes"
+msgstr "Atrybuty"
+
+msgid "Compositor"
+msgstr "Kompozytor"
+
+msgid "Doppler Tracking"
+msgstr "Śledzenie Dopplera"
+
+msgid "Projection"
+msgstr "Projekcja"
+
+msgid "Frustum Offset"
+msgstr "Przesunięcie bryły widzenia"
+
+msgid "Near"
+msgstr "Bliskie"
+
+msgid "Far"
+msgstr "Dalekie"
+
+msgid "Visibility AABB"
+msgstr "AABB widoczności"
+
+msgid "Box Extents"
+msgstr "Zakres pudełka"
+
+msgid "Ring Axis"
+msgstr "Oś pierścienia"
+
+msgid "Ring Height"
+msgstr "Wysokość pierścienia"
+
+msgid "Ring Radius"
+msgstr "Promień pierścienia"
+
+msgid "Ring Inner Radius"
+msgstr "Wewnętrzny promień pierścienia"
+
+msgid "Ring Cone Angle"
+msgstr "Kąt stożka pierścienia"
+
+msgid "Rotate Y"
+msgstr "Obróć Y"
+
+msgid "Disable Z"
+msgstr "Wyłącz Z"
+
+msgid "Flatness"
+msgstr "Płaskość"
+
+msgid "Scale Curve Z"
+msgstr "Skaluj krzywą Z"
+
+msgid "Albedo"
+msgstr "Albedo"
+
+msgctxt "Geometry"
+msgid "Normal"
+msgstr "Normalna"
+
+msgid "Orm"
+msgstr "ORM"
+
+msgid "Emission"
+msgstr "Emisja"
 
 msgid "Parameters"
 msgstr "Parametry"
 
+msgid "Emission Energy"
+msgstr "Energia emisji"
+
 msgid "Modulate"
-msgstr "Moduluj"
+msgstr "Modulacja"
+
+msgid "Albedo Mix"
+msgstr "Mieszanie albedo"
+
+msgid "Normal Fade"
+msgstr "Zanik normalnych"
+
+msgid "Vertical Fade"
+msgstr "Zanik pionowy"
+
+msgid "Upper Fade"
+msgstr "Zanik górny"
+
+msgid "Lower Fade"
+msgstr "Zanik dolny"
+
+msgid "Distance Fade"
+msgstr "Zanik dystansowy"
+
+msgid "Transform Align"
+msgstr "Wyrównanie przekształcenia"
 
 msgid "Draw Passes"
 msgstr "Przejścia rysowania"
@@ -6150,23 +6328,143 @@ msgstr "Przejścia rysowania"
 msgid "Passes"
 msgstr "Przejścia"
 
+msgid "Thickness"
+msgstr "Grubość"
+
+msgid "Bake Mask"
+msgstr "Wypal maskę"
+
+msgid "Update Mode"
+msgstr "Tryb aktualizacji"
+
+msgid "Follow Camera Enabled"
+msgstr "Włącz podążanie za kamerą"
+
+msgid "Heightfield Mask"
+msgstr "Maska pola wysokości"
+
+msgid "Directionality"
+msgstr "Kierunkowość"
+
+msgid "Skeleton Path"
+msgstr "Ścieżka szkieletu"
+
+msgid "Layer Mask"
+msgstr "Maska warstw"
+
+msgid "Visibility Range"
+msgstr "Zakres widoczności"
+
+msgid "Begin Margin"
+msgstr "Margines początkowy"
+
+msgid "End Margin"
+msgstr "Margines końcowy"
+
+msgid "Fade Mode"
+msgstr "Tryb zanikania"
+
+msgid "Pixel Size"
+msgstr "Rozmiar piksela"
+
 msgid "Flags"
 msgstr "Flagi"
+
+msgid "Billboard"
+msgstr "Bilbord"
+
+msgid "Shaded"
+msgstr "Cieniowany"
+
+msgid "Double Sided"
+msgstr "Dwustronny"
+
+msgid "No Depth Test"
+msgstr "Brak testu głębokości"
+
+msgid "Fixed Size"
+msgstr "Stały rozmiar"
+
+msgid "Alpha Cut"
+msgstr "Odcięcie alphy"
+
+msgid "Alpha Scissor Threshold"
+msgstr "Próg nożyc alphy"
+
+msgid "Alpha Antialiasing Mode"
+msgstr "Tryb wygładzania alphy"
+
+msgid "Alpha Antialiasing Edge"
+msgstr "Krawędź wygładzania alphy"
 
 msgid "Texture Filter"
 msgstr "Filtr tekstury"
 
+msgid "Render Priority"
+msgstr "Priorytet renderowania"
+
+msgid "Outline Render Priority"
+msgstr "Priorytet renderowania obwódki"
+
 msgid "Text"
 msgstr "Tekst"
+
+msgid "Outline Modulate"
+msgstr "Modulacja obwódki"
+
+msgid "Font"
+msgstr "Czcionka"
 
 msgid "Horizontal Alignment"
 msgstr "Poziome Wyrównanie"
 
+msgid "Vertical Alignment"
+msgstr "Wyrównanie w pionie"
+
 msgid "Uppercase"
 msgstr "Wielkie litery"
 
+msgid "Justification Flags"
+msgstr "Flagi justowania"
+
+msgid "BiDi"
+msgstr "BiDI"
+
+msgid "Text Direction"
+msgstr "Kierunek tekstu"
+
+msgid "Structured Text BiDi Override"
+msgstr "Nadpisanie BiDi strukturalnego tekstu"
+
+msgid "Structured Text BiDi Override Options"
+msgstr "Opcje nadpisania BiDi strukturalnego tekstu"
+
+msgid "Intensity Lumens"
+msgstr "Intensywność w lumenach"
+
+msgid "Intensity Lux"
+msgstr "Intensywność w luksach"
+
 msgid "Temperature"
 msgstr "Temperatura"
+
+msgid "Indirect Energy"
+msgstr "Pośrednia energia"
+
+msgid "Volumetric Fog Energy"
+msgstr "Energia objętości mgły"
+
+msgid "Projector"
+msgstr "Projektor"
+
+msgid "Angular Distance"
+msgstr "Odległość kątowa"
+
+msgid "Negative"
+msgstr "Negatywne"
+
+msgid "Bake Mode"
+msgstr "Tryb wypalania"
 
 msgid "Blur"
 msgstr "Rozmazanie"
