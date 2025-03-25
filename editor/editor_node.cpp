@@ -2416,22 +2416,39 @@ void EditorNode::edit_item(Object *p_object, Object *p_editing_owner) {
 			continue;
 		}
 
+		bool need_to_add = true;
+		List<EditorPropertyResource *> to_fold;
+
 		// If plugin is already associated with another owner, remove it from there first.
 		for (KeyValue<ObjectID, HashSet<EditorPlugin *>> &kv : active_plugins) {
-			if (kv.key != owner_id) {
-				EditorPropertyResource *epres = Object::cast_to<EditorPropertyResource>(ObjectDB::get_instance(kv.key));
-				if (epres && kv.value.has(plugin)) {
-					// If it's resource property editing the same resource type, fold it.
-					epres->fold_resource();
-				}
-				kv.value.erase(plugin);
+			if (kv.key == owner_id || !kv.value.has(plugin)) {
+				continue;
 			}
+			EditorPropertyResource *epres = Object::cast_to<EditorPropertyResource>(ObjectDB::get_instance(kv.key));
+			if (epres) {
+				// If it's resource property editing the same resource type, fold it later to avoid premature modifications
+				// that may result in unsafe iteration of active_plugins.
+				to_fold.push_back(epres);
+			} else {
+				kv.value.erase(plugin);
+				need_to_add = false;
+			}
+		}
+
+		if (!need_to_add && to_fold.is_empty()) {
+			plugin->make_visible(true);
+			plugin->edit(p_object);
+		} else {
+			for (EditorPropertyResource *epres : to_fold) {
+				epres->fold_resource();
+			}
+
+			// TODO: Call the function directly once a proper priority system is implemented.
+			to_over_edit.push_back(plugin);
 		}
 
 		// Activate previously inactive plugin and edit the object.
 		active_plugins[owner_id].insert(plugin);
-		// TODO: Call the function directly once a proper priority system is implemented.
-		to_over_edit.push_back(plugin);
 	}
 
 	for (EditorPlugin *plugin : to_over_edit) {
