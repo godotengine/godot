@@ -24,3 +24,12 @@ Validate extension JSON: Error: Field 'classes/OpenXRAPIExtension/methods/regist
 Validate extension JSON: Error: Field 'classes/OpenXRAPIExtension/methods/unregister_projection_views_extension/arguments/0': type changed value in new API, from "OpenXRExtensionWrapperExtension" to "OpenXRExtensionWrapper".
 
 Switched from `OpenXRExtensionWrapperExtension` to parent `OpenXRExtensionWrapper`. Compatibility methods registered.
+
+
+GH-104601
+---------
+Validate extension JSON: Error: Field 'classes/SubViewport/methods/set_size_2d_override/arguments/0': type changed value in new API, from "Vector2i" to "Vector2".
+Validate extension JSON: Error: Field 'classes/SubViewport/methods/get_size_2d_override/return_value': type changed value in new API, from "Vector2i" to "Vector2".
+Validate extension JSON: Error: Field 'classes/SubViewport/properties/size_2d_override': type changed value in new API, from "Vector2i" to "Vector2".
+
+Changed type of `size_2d_override` in `SubViewport` from `Vector2i` to `Vector2`.
