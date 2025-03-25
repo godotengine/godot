@@ -344,7 +344,7 @@ Transform3D Node3D::get_transform() const {
 	if (_test_dirty_bits(DIRTY_LOCAL_TRANSFORM)) {
 		// This update can happen if needed over multiple threads.
 		_update_local_transform();
-		transform_update_count++;
+		// transform_update_count++;
 	}
 
 	return data.local_transform;
@@ -475,7 +475,7 @@ Transform3D Node3D::get_global_transform() const {
 	if (dirty & DIRTY_GLOBAL_TRANSFORM) {
 		if (dirty & DIRTY_LOCAL_TRANSFORM) {
 			_update_local_transform(); // Update local transform atomically.
-			transform_update_count++;
+			// transform_update_count++;
 		}
 
 		Transform3D new_global;
@@ -490,7 +490,7 @@ Transform3D Node3D::get_global_transform() const {
 		}
 
 		data.global_transform = new_global;
-		transform_update_count++;
+		// transform_update_count++;
 		_clear_dirty_bits(DIRTY_GLOBAL_TRANSFORM);
 	}
 
@@ -1246,7 +1246,7 @@ bool Node3D::_property_get_revert(const StringName &p_name, Variant &r_property)
 void Node3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_transform", "local"), &Node3D::set_transform);
 	ClassDB::bind_method(D_METHOD("get_transform"), &Node3D::get_transform);
-	ClassDB::bind_method(D_METHOD("get_transform_update_count"), &Node3D::get_transform_update_count);
+	// ClassDB::bind_method(D_METHOD("get_transform_update_count"), &Node3D::get_transform_update_count);
 	ClassDB::bind_method(D_METHOD("set_position", "position"), &Node3D::set_position);
 	ClassDB::bind_method(D_METHOD("get_position"), &Node3D::get_position);
 	ClassDB::bind_method(D_METHOD("set_rotation", "euler_radians"), &Node3D::set_rotation);

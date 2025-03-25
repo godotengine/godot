@@ -502,7 +502,7 @@ void JoltBody3D::_joints_changed() {
 
 void JoltBody3D::_transform_changed() {
 	wake_up();
-	transform_updates++;
+	// transform_updates++;
 }
 
 void JoltBody3D::_motion_changed() {

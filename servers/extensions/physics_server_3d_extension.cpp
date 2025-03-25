@@ -97,7 +97,7 @@ void PhysicsDirectBodyState3DExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_is_sleeping);
 
 	GDVIRTUAL_BIND(_get_contact_count);
-	GDVIRTUAL_BIND(_get_transform_updates);
+	// GDVIRTUAL_BIND(_get_transform_updates);
 
 	GDVIRTUAL_BIND(_get_contact_local_position, "contact_idx");
 	GDVIRTUAL_BIND(_get_contact_local_normal, "contact_idx");

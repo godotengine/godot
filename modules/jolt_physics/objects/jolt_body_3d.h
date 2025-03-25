@@ -95,7 +95,7 @@ private:
 	float collision_priority = 1.0f;
 
 	int contact_count = 0;
-	mutable int transform_updates = 0;
+	// mutable int transform_updates = 0;
 
 	uint32_t locked_axes = 0;
 
@@ -204,7 +204,7 @@ public:
 	int get_contact_count() const { return contact_count; }
 	const Contact &get_contact(int p_index) { return contacts[p_index]; }
 	virtual bool reports_contacts() const override { return !contacts.is_empty(); }
-	int get_transform_updates() const { return transform_updates; }
+	// int get_transform_updates() const { return transform_updates; }
 
 	bool reports_all_kinematic_contacts() const;
 

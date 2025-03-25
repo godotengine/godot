@@ -139,7 +139,7 @@ void PhysicsDirectBodyState3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_sleeping"), &PhysicsDirectBodyState3D::is_sleeping);
 
 	ClassDB::bind_method(D_METHOD("get_contact_count"), &PhysicsDirectBodyState3D::get_contact_count);
-	ClassDB::bind_method(D_METHOD("get_transform_updates"), &PhysicsDirectBodyState3D::get_transform_updates);
+	// ClassDB::bind_method(D_METHOD("get_transform_updates"), &PhysicsDirectBodyState3D::get_transform_updates);
 
 	ClassDB::bind_method(D_METHOD("get_contact_local_position", "contact_idx"), &PhysicsDirectBodyState3D::get_contact_local_position);
 	ClassDB::bind_method(D_METHOD("get_contact_local_normal", "contact_idx"), &PhysicsDirectBodyState3D::get_contact_local_normal);
