@@ -1644,6 +1644,8 @@ void reflection_process(samplerCube reflection_map,
 	vec3 ref_normal = normalize(reflect(vertex, normal));
 	ref_normal = (local_matrix * vec4(ref_normal, 0.0)).xyz;
 
+	float distance_to_hit_point = 0.0;
+	float mip = sqrt(roughness) * MAX_ROUGHNESS_LOD;
 	if (use_box_project) { //box project
 
 		vec3 nrdir = normalize(ref_normal);
@@ -1651,13 +1653,19 @@ void reflection_process(samplerCube reflection_map,
 		vec3 rbmin = (-box_extents - local_pos) / nrdir;
 
 		vec3 rbminmax = mix(rbmin, rbmax, vec3(greaterThan(nrdir, vec3(0.0, 0.0, 0.0))));
+		distance_to_hit_point = min(min(rbminmax.x, rbminmax.y), rbminmax.z);
 
 		float fa = min(min(rbminmax.x, rbminmax.y), rbminmax.z);
 		vec3 posonbox = local_pos + nrdir * fa;
 		ref_normal = posonbox - box_offset.xyz;
+
+		// This clamp helps to make sure that when a fragment is far away, the mip level doesn't climb to a high value and look weird.
+		float mip_offset = clamp(distance_to_hit_point, 0.0, MAX_ROUGHNESS_LOD);
+		// Compute new mip level based on the mip offset value (this is mostly arbitrary).
+		mip = mix(0.0, mip, mip_offset / MAX_ROUGHNESS_LOD);
 	}
 
-	reflection.rgb = srgb_to_linear(textureLod(reflection_map, ref_normal, roughness * MAX_ROUGHNESS_LOD).rgb);
+	reflection.rgb = srgb_to_linear(textureLod(reflection_map, ref_normal, mip).rgb);
 
 	if (exterior) {
 		reflection.rgb = mix(skybox, reflection.rgb, blend);
