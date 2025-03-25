@@ -212,6 +212,12 @@ bool ResourceImporterTexture::get_option_visibility(const String &p_path, const 
 
 	} else if (p_option == "mipmaps/limit") {
 		return p_options["mipmaps/generate"];
+
+	} else if (p_option == "mipmaps/preserve_alpha_test_coverage") {
+		return p_options["mipmaps/generate"];
+
+	} else if (p_option == "mipmaps/alpha_test_threshold") {
+		return p_options["mipmaps/generate"];
 	}
 
 	return true;
@@ -240,6 +246,8 @@ void ResourceImporterTexture::get_import_options(const String &p_path, List<Impo
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "compress/channel_pack", PROPERTY_HINT_ENUM, "sRGB Friendly,Optimized"), 0));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "mipmaps/generate", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), (p_preset == PRESET_3D ? true : false)));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "mipmaps/limit", PROPERTY_HINT_RANGE, "-1,256"), -1));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "mipmaps/preserve_alpha_test_coverage"), false));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "mipmaps/alpha_test_threshold", PROPERTY_HINT_RANGE, "0,1,0.01"), 0.5));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "roughness/mode", PROPERTY_HINT_ENUM, "Detect,Disabled,Red,Green,Blue,Alpha,Gray"), 0));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::STRING, "roughness/src_normal", PROPERTY_HINT_FILE, "*.bmp,*.dds,*.exr,*.jpeg,*.jpg,*.hdr,*.png,*.svg,*.tga,*.webp"), ""));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "process/fix_alpha_border"), p_preset != PRESET_3D));
@@ -343,7 +351,7 @@ void ResourceImporterTexture::save_to_ctex_format(Ref<FileAccess> f, const Ref<I
 	}
 }
 
-void ResourceImporterTexture::_save_ctex(const Ref<Image> &p_image, const String &p_to_path, CompressMode p_compress_mode, float p_lossy_quality, Image::CompressMode p_vram_compression, bool p_mipmaps, bool p_streamable, bool p_detect_3d, bool p_detect_roughness, bool p_detect_normal, bool p_force_normal, bool p_srgb_friendly, bool p_force_po2_for_compressed, uint32_t p_limit_mipmap, const Ref<Image> &p_normal, Image::RoughnessChannel p_roughness_channel) {
+void ResourceImporterTexture::_save_ctex(const Ref<Image> &p_image, const String &p_to_path, CompressMode p_compress_mode, float p_lossy_quality, Image::CompressMode p_vram_compression, bool p_mipmaps, bool p_streamable, bool p_detect_3d, bool p_detect_roughness, bool p_detect_normal, bool p_force_normal, bool p_srgb_friendly, bool p_force_po2_for_compressed, uint32_t p_limit_mipmap, const Ref<Image> &p_normal, Image::RoughnessChannel p_roughness_channel, bool p_preserve_alpha_test_coverage, float alpha_test_threshold) {
 	Ref<FileAccess> f = FileAccess::open(p_to_path, FileAccess::WRITE);
 	ERR_FAIL_COND(f.is_null());
 
@@ -379,6 +387,7 @@ void ResourceImporterTexture::_save_ctex(const Ref<Image> &p_image, const String
 
 	f->store_32(flags);
 	f->store_32(p_limit_mipmap);
+	// TODO, should the preserve alpha settings be stored here?
 
 	// Reserved.
 	f->store_32(0);
@@ -397,7 +406,7 @@ void ResourceImporterTexture::_save_ctex(const Ref<Image> &p_image, const String
 		}
 
 		if (!image->has_mipmaps() || p_force_normal) {
-			image->generate_mipmaps(p_force_normal);
+			image->generate_mipmaps(p_force_normal, p_preserve_alpha_test_coverage, alpha_test_threshold);
 		}
 
 	} else {
@@ -499,6 +508,8 @@ Error ResourceImporterTexture::import(ResourceUID::ID p_source_id, const String 
 	// Mipmaps.
 	const bool mipmaps = p_options["mipmaps/generate"];
 	const uint32_t mipmap_limit = mipmaps ? uint32_t(p_options["mipmaps/limit"]) : uint32_t(-1);
+	const bool mipmaps_preserve_alpha_test_coverage = p_options["mipmaps/preserve_alpha_test_coverage"];
+	const float mipmaps_alpha_test_threshold = p_options["mipmaps/alpha_test_threshold"];
 
 	// Roughness.
 	const int roughness = p_options["roughness/mode"];
@@ -691,7 +702,7 @@ Error ResourceImporterTexture::import(ResourceUID::ID p_source_id, const String 
 
 		if (force_uncompressed) {
 			_save_ctex(image, p_save_path + ".ctex", COMPRESS_VRAM_UNCOMPRESSED, lossy, Image::COMPRESS_S3TC /* This is ignored. */,
-					mipmaps, stream, detect_3d, detect_roughness, detect_normal, force_normal, srgb_friendly_pack, false, mipmap_limit, normal_image, roughness_channel);
+					mipmaps, stream, detect_3d, detect_roughness, detect_normal, force_normal, srgb_friendly_pack, false, mipmap_limit, normal_image, roughness_channel, mipmaps_preserve_alpha_test_coverage, mipmaps_alpha_test_threshold);
 		} else {
 			if (can_s3tc_bptc) {
 				Image::CompressMode image_compress_mode;
@@ -705,7 +716,7 @@ Error ResourceImporterTexture::import(ResourceUID::ID p_source_id, const String 
 				}
 
 				_save_ctex(image, p_save_path + "." + image_compress_format + ".ctex", compress_mode, lossy, image_compress_mode, mipmaps, stream, detect_3d,
-						detect_roughness, detect_normal, force_normal, srgb_friendly_pack, false, mipmap_limit, normal_image, roughness_channel);
+						detect_roughness, detect_normal, force_normal, srgb_friendly_pack, false, mipmap_limit, normal_image, roughness_channel, mipmaps_preserve_alpha_test_coverage, mipmaps_alpha_test_threshold);
 				r_platform_variants->push_back(image_compress_format);
 			}
 
@@ -721,19 +732,19 @@ Error ResourceImporterTexture::import(ResourceUID::ID p_source_id, const String 
 				}
 
 				_save_ctex(image, p_save_path + "." + image_compress_format + ".ctex", compress_mode, lossy, image_compress_mode, mipmaps, stream, detect_3d,
-						detect_roughness, detect_normal, force_normal, srgb_friendly_pack, false, mipmap_limit, normal_image, roughness_channel);
+						detect_roughness, detect_normal, force_normal, srgb_friendly_pack, false, mipmap_limit, normal_image, roughness_channel, mipmaps_preserve_alpha_test_coverage, mipmaps_alpha_test_threshold);
 				r_platform_variants->push_back(image_compress_format);
 			}
 		}
 	} else {
 		// Import normally.
 		_save_ctex(image, p_save_path + ".ctex", compress_mode, lossy, Image::COMPRESS_S3TC /* This is ignored. */,
-				mipmaps, stream, detect_3d, detect_roughness, detect_normal, force_normal, srgb_friendly_pack, false, mipmap_limit, normal_image, roughness_channel);
+				mipmaps, stream, detect_3d, detect_roughness, detect_normal, force_normal, srgb_friendly_pack, false, mipmap_limit, normal_image, roughness_channel, mipmaps_preserve_alpha_test_coverage, mipmaps_alpha_test_threshold);
 	}
 
 	if (editor_image.is_valid()) {
 		_save_ctex(editor_image, p_save_path + ".editor.ctex", compress_mode, lossy, Image::COMPRESS_S3TC /* This is ignored. */,
-				mipmaps, stream, detect_3d, detect_roughness, detect_normal, force_normal, srgb_friendly_pack, false, mipmap_limit, normal_image, roughness_channel);
+				mipmaps, stream, detect_3d, detect_roughness, detect_normal, force_normal, srgb_friendly_pack, false, mipmap_limit, normal_image, roughness_channel, mipmaps_preserve_alpha_test_coverage, mipmaps_alpha_test_threshold);
 
 		// Generate and save editor-specific metadata, which we cannot save to the .import file.
 		Dictionary editor_meta;
