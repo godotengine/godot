@@ -124,7 +124,13 @@
 	}
 }
 
-- (void)applicationDidFinishLaunching:(NSNotification *)notice {
+- (void)applicationDidFinishLaunching:(NSNotification *)notification {
+	static_cast<OS_MacOS *>(OS::get_singleton())->start_main();
+}
+
+- (void)activate {
+	[NSApp activateIgnoringOtherApps:YES];
+
 	NSString *nsappname = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleName"];
 	const char *bundled_id = getenv("__CFBundleIdentifier");
 	NSString *nsbundleid_env = [NSString stringWithUTF8String:(bundled_id != nullptr) ? bundled_id : ""];
@@ -139,11 +145,6 @@
 
 - (id)init {
 	self = [super init];
-
-	NSAppleEventManager *aem = [NSAppleEventManager sharedAppleEventManager];
-	[aem setEventHandler:self andSelector:@selector(handleAppleEvent:withReplyEvent:) forEventClass:kInternetEventClass andEventID:kAEGetURL];
-	[aem setEventHandler:self andSelector:@selector(handleAppleEvent:withReplyEvent:) forEventClass:kCoreEventClass andEventID:kAEOpenDocuments];
-
 	return self;
 }
 
@@ -152,36 +153,45 @@
 	[[NSDistributedNotificationCenter defaultCenter] removeObserver:self name:@"AppleColorPreferencesChangedNotification" object:nil];
 }
 
-- (void)handleAppleEvent:(NSAppleEventDescriptor *)event withReplyEvent:(NSAppleEventDescriptor *)replyEvent {
+- (void)application:(NSApplication *)application openURLs:(NSArray<NSURL *> *)urls {
 	OS_MacOS *os = (OS_MacOS *)OS::get_singleton();
-	if (!event || !os) {
+	if (!os) {
 		return;
 	}
-
 	List<String> args;
-	if (([event eventClass] == kInternetEventClass) && ([event eventID] == kAEGetURL)) {
-		// Opening URL scheme.
-		NSString *url = [[event paramDescriptorForKeyword:keyDirectObject] stringValue];
-		args.push_back(vformat("--uri=\"%s\"", String::utf8([url UTF8String])));
-	}
-
-	if (([event eventClass] == kCoreEventClass) && ([event eventID] == kAEOpenDocuments)) {
-		// Opening file association.
-		NSAppleEventDescriptor *files = [event paramDescriptorForKeyword:keyDirectObject];
-		if (files) {
-			NSInteger count = [files numberOfItems];
-			for (NSInteger i = 1; i <= count; i++) {
-				NSURL *url = [NSURL URLWithString:[[files descriptorAtIndex:i] stringValue]];
-				args.push_back(String::utf8([url.path UTF8String]));
-			}
+	for (NSURL *url in urls) {
+		if ([url isFileURL]) {
+			args.push_back(String::utf8([url.path UTF8String]));
+		} else {
+			args.push_back(vformat("--uri=\"%s\"", String::utf8([url.absoluteString UTF8String])));
 		}
 	}
-
 	if (!args.is_empty()) {
 		if (os->get_main_loop()) {
 			// Application is already running, open a new instance with the URL/files as command line arguments.
 			os->create_instance(args);
-		} else {
+		} else if (os->get_cmd_argc() == 0) {
+			// Application is just started, add to the list of command line arguments and continue.
+			os->set_cmdline_platform_args(args);
+		}
+	}
+}
+
+- (void)application:(NSApplication *)sender openFiles:(NSArray<NSString *> *)filenames {
+	OS_MacOS *os = (OS_MacOS *)OS::get_singleton();
+	if (!os) {
+		return;
+	}
+	List<String> args;
+	for (NSString *filename in filenames) {
+		NSURL *url = [NSURL URLWithString:filename];
+		args.push_back(String::utf8([url.path UTF8String]));
+	}
+	if (!args.is_empty()) {
+		if (os->get_main_loop()) {
+			// Application is already running, open a new instance with the URL/files as command line arguments.
+			os->create_instance(args);
+		} else if (os->get_cmd_argc() == 0) {
 			// Application is just started, add to the list of command line arguments and continue.
 			os->set_cmdline_platform_args(args);
 		}
@@ -220,10 +230,22 @@
 	}
 }
 
+- (void)applicationWillTerminate:(NSNotification *)notification {
+	OS_MacOS *os = (OS_MacOS *)OS::get_singleton();
+	if (os) {
+		os->cleanup();
+		exit(os->get_exit_code());
+	}
+}
+
 - (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication *)sender {
 	DisplayServerMacOS *ds = (DisplayServerMacOS *)DisplayServer::get_singleton();
 	if (ds) {
 		ds->send_window_event(ds->get_window(DisplayServerMacOS::MAIN_WINDOW_ID), DisplayServerMacOS::WINDOW_EVENT_CLOSE_REQUEST);
+	}
+	OS_MacOS *os = (OS_MacOS *)OS::get_singleton();
+	if (!os || os->os_should_terminate()) {
+		return NSTerminateNow;
 	}
 	return NSTerminateCancel;
 }
