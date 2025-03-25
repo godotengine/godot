@@ -182,7 +182,7 @@ void TriangleMesh::create(const Vector<Vector3> &p_faces, const Vector<int32_t> 
 	valid = true;
 }
 
-bool TriangleMesh::intersect_segment(const Vector3 &p_begin, const Vector3 &p_end, Vector3 &r_point, Vector3 &r_normal, int32_t *r_surf_index) const {
+bool TriangleMesh::intersect_segment(const Vector3 &p_begin, const Vector3 &p_end, Vector3 &r_point, Vector3 &r_normal, int32_t *r_surf_index, int *r_face_index) const {
 	uint32_t *stack = (uint32_t *)alloca(sizeof(int) * max_depth);
 
 	enum {
@@ -234,6 +234,9 @@ bool TriangleMesh::intersect_segment(const Vector3 &p_begin, const Vector3 &p_en
 								if (r_surf_index) {
 									*r_surf_index = s.surface_index;
 								}
+								if (r_face_index) {
+									*r_face_index = b.face_index;
+								}
 								inters = true;
 							}
 						}
@@ -283,7 +286,7 @@ bool TriangleMesh::intersect_segment(const Vector3 &p_begin, const Vector3 &p_en
 	return inters;
 }
 
-bool TriangleMesh::intersect_ray(const Vector3 &p_begin, const Vector3 &p_dir, Vector3 &r_point, Vector3 &r_normal, int32_t *r_surf_index) const {
+bool TriangleMesh::intersect_ray(const Vector3 &p_begin, const Vector3 &p_dir, Vector3 &r_point, Vector3 &r_normal, int32_t *r_surf_index, int *r_face_index) const {
 	uint32_t *stack = (uint32_t *)alloca(sizeof(int) * max_depth);
 
 	enum {
@@ -334,6 +337,9 @@ bool TriangleMesh::intersect_ray(const Vector3 &p_begin, const Vector3 &p_dir, V
 								r_normal = f3.get_plane().get_normal();
 								if (r_surf_index) {
 									*r_surf_index = s.surface_index;
+								}
+								if (r_face_index) {
+									*r_face_index = b.face_index;
 								}
 								inters = true;
 							}
@@ -501,6 +507,77 @@ Vector<Face3> TriangleMesh::get_faces() const {
 	}
 
 	return faces;
+}
+
+bool TriangleMesh::create_from_faces(const Vector<Vector3> &p_faces) {
+	create(p_faces);
+	return is_valid();
+}
+
+Dictionary TriangleMesh::intersect_segment_scriptwrap(const Vector3 &p_begin, const Vector3 &p_end) const {
+	Vector3 r_point;
+	Vector3 r_normal;
+	int r_face_index = 0;
+
+	bool intersected = intersect_segment(p_begin, p_end, r_point, r_normal, nullptr, &r_face_index);
+	if (!intersected) {
+		return Dictionary();
+	}
+
+	Dictionary result;
+	result["position"] = r_point;
+	result["normal"] = r_normal;
+	result["face_index"] = r_face_index;
+
+	return result;
+}
+
+Dictionary TriangleMesh::intersect_ray_scriptwrap(const Vector3 &p_begin, const Vector3 &p_dir) const {
+	Vector3 r_point;
+	Vector3 r_normal;
+	int r_face_index = 0;
+
+	bool intersected = intersect_ray(p_begin, p_dir, r_point, r_normal, nullptr, &r_face_index);
+	if (!intersected) {
+		return Dictionary();
+	}
+
+	Dictionary result;
+	result["position"] = r_point;
+	result["normal"] = r_normal;
+	result["face_index"] = r_face_index;
+
+	return result;
+}
+
+Vector<Vector3> TriangleMesh::get_faces_scriptwrap() const {
+	if (!valid) {
+		return Vector<Vector3>();
+	}
+
+	Vector<Vector3> faces;
+	int ts = triangles.size();
+	faces.resize(triangles.size() * 3);
+
+	Vector3 *w = faces.ptrw();
+	const Triangle *r = triangles.ptr();
+	const Vector3 *rv = vertices.ptr();
+
+	for (int i = 0; i < ts; i++) {
+		for (int j = 0; j < 3; j++) {
+			w[i * 3 + j] = rv[r[i].indices[j]];
+		}
+	}
+
+	return faces;
+}
+
+void TriangleMesh::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("create_from_faces", "faces"), &TriangleMesh::create_from_faces);
+	ClassDB::bind_method(D_METHOD("get_faces"), &TriangleMesh::get_faces_scriptwrap);
+
+	ClassDB::bind_method(D_METHOD("intersect_segment", "begin", "end"), &TriangleMesh::intersect_segment_scriptwrap);
+	ClassDB::bind_method(D_METHOD("intersect_ray", "begin", "dir"), &TriangleMesh::intersect_ray_scriptwrap);
 }
 
 TriangleMesh::TriangleMesh() {
