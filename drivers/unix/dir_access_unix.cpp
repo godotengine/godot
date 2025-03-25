@@ -43,6 +43,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/ioctl.h>
+#include <sys/stat.h>
 #include <sys/statvfs.h>
 
 #ifdef HAVE_MNTENT
@@ -542,6 +543,24 @@ bool DirAccessUnix::is_case_sensitive(const String &p_path) const {
 	}
 #endif
 	return true;
+}
+
+bool DirAccessUnix::is_equivalent(const String &p_path_a, const String &p_path_b) const {
+	String f1 = fix_path(p_path_a);
+	struct stat st1 = {};
+	int err = stat(f1.utf8().get_data(), &st1);
+	if (err) {
+		return DirAccess::is_equivalent(p_path_a, p_path_b);
+	}
+
+	String f2 = fix_path(p_path_b);
+	struct stat st2 = {};
+	err = stat(f2.utf8().get_data(), &st2);
+	if (err) {
+		return DirAccess::is_equivalent(p_path_a, p_path_b);
+	}
+
+	return (st1.st_dev == st2.st_dev) && (st1.st_ino == st2.st_ino);
 }
 
 DirAccessUnix::DirAccessUnix() {

@@ -248,6 +248,14 @@
 				[b]Note:[/b] This method is implemented on macOS, Linux (for EXT4 and F2FS filesystems only) and Windows. On other platforms, it always returns [code]true[/code].
 			</description>
 		</method>
+		<method name="is_equivalent" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="path_a" type="String" />
+			<param index="1" name="path_b" type="String" />
+			<description>
+				Returns [code]true[/code] if paths [param path_a] and [param path_b] resolve to the same file system object. Returns [code]false[/code] otherwise, even if the files are bit-for-bit identical (e.g., identical copies of the file that are not symbolic links).
+			</description>
+		</method>
 		<method name="is_link">
 			<return type="bool" />
 			<param index="0" name="path" type="String" />
