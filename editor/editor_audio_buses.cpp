@@ -1050,9 +1050,6 @@ void EditorAudioBusDrop::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("dropped"));
 }
 
-EditorAudioBusDrop::EditorAudioBusDrop() {
-}
-
 void EditorAudioBuses::_rebuild_buses() {
 	for (int i = bus_hb->get_child_count() - 1; i >= 0; i--) {
 		EditorAudioBus *audio_bus = Object::cast_to<EditorAudioBus>(bus_hb->get_child(i));
@@ -1406,9 +1403,6 @@ void AudioBusesEditorPlugin::make_visible(bool p_visible) {
 
 AudioBusesEditorPlugin::AudioBusesEditorPlugin(EditorAudioBuses *p_node) {
 	audio_bus_editor = p_node;
-}
-
-AudioBusesEditorPlugin::~AudioBusesEditorPlugin() {
 }
 
 void EditorAudioMeterNotches::add_notch(float p_normalized_offset, float p_db_value, bool p_render_value) {

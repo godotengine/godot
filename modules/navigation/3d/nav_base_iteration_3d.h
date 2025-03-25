@@ -44,7 +44,7 @@ struct NavBaseIteration3D {
 	ObjectID owner_object_id;
 	RID owner_rid;
 	bool owner_use_edge_connections = false;
-	LocalVector<nav_3d::Polygon> navmesh_polygons;
+	LocalVector<Nav3D::Polygon> navmesh_polygons;
 
 	bool get_enabled() const { return enabled; }
 	NavigationUtilities::PathSegmentType get_type() const { return owner_type; }
@@ -54,5 +54,5 @@ struct NavBaseIteration3D {
 	real_t get_enter_cost() const { return enter_cost; }
 	real_t get_travel_cost() const { return travel_cost; }
 	bool get_use_edge_connections() const { return owner_use_edge_connections; }
-	const LocalVector<nav_3d::Polygon> &get_navmesh_polygons() const { return navmesh_polygons; }
+	const LocalVector<Nav3D::Polygon> &get_navmesh_polygons() const { return navmesh_polygons; }
 };

@@ -716,7 +716,7 @@ struct _VariantCall {
 		String s;
 		if (p_instance->size() > 0) {
 			const uint8_t *r = p_instance->ptr();
-			s = String((const char32_t *)r, floor((double)p_instance->size() / (double)sizeof(char32_t)));
+			s.parse_utf32(Span((const char32_t *)r, floor((double)p_instance->size() / (double)sizeof(char32_t))));
 		}
 		return s;
 	}
@@ -728,7 +728,7 @@ struct _VariantCall {
 #ifdef WINDOWS_ENABLED
 			s.parse_utf16((const char16_t *)r, floor((double)p_instance->size() / (double)sizeof(char16_t)));
 #else
-			s = String((const char32_t *)r, floor((double)p_instance->size() / (double)sizeof(char32_t)));
+			s.parse_utf32(Span((const char32_t *)r, floor((double)p_instance->size() / (double)sizeof(char32_t))));
 #endif
 		}
 		return s;

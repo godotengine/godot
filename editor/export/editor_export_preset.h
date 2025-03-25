@@ -194,8 +194,6 @@ public:
 
 	const HashMap<StringName, PropertyInfo> &get_properties() const { return properties; }
 	const HashMap<StringName, Variant> &get_values() const { return values; }
-
-	EditorExportPreset();
 };
 
 VARIANT_ENUM_CAST(EditorExportPreset::ExportFilter);

@@ -38,7 +38,7 @@
 
 struct NavBaseIteration3D;
 
-namespace nav_3d {
+namespace Nav3D {
 struct Polygon;
 
 union PointKey {
@@ -213,4 +213,4 @@ struct PerformanceData {
 	}
 };
 
-} // namespace nav_3d
+} // namespace Nav3D

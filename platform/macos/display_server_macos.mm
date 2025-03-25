@@ -265,9 +265,15 @@ void DisplayServerMacOS::set_window_per_pixel_transparency_enabled(bool p_enable
 		return;
 	}
 	if (p_enabled) {
-		[wd.window_object setBackgroundColor:[NSColor clearColor]];
 		[wd.window_object setOpaque:NO];
-		[wd.window_object setHasShadow:NO];
+		if (wd.borderless) {
+			[wd.window_object setBackgroundColor:[NSColor clearColor]];
+			[wd.window_object setHasShadow:NO];
+		} else {
+			// Note: transparent and not borderless - set alpha to non-zero value to ensure window shadow is rendered correctly.
+			[wd.window_object setBackgroundColor:[NSColor colorWithCalibratedRed:0 green:0 blue:0 alpha:0.004f]];
+			[wd.window_object setHasShadow:YES];
+		}
 		CALayer *layer = [(NSView *)wd.window_view layer];
 		if (layer) {
 			[layer setBackgroundColor:[NSColor clearColor].CGColor];
@@ -286,7 +292,9 @@ void DisplayServerMacOS::set_window_per_pixel_transparency_enabled(bool p_enable
 		}
 		[wd.window_object setBackgroundColor:bg_color];
 		[wd.window_object setOpaque:YES];
-		[wd.window_object setHasShadow:YES];
+		if (!wd.borderless) {
+			[wd.window_object setHasShadow:YES];
+		}
 		CALayer *layer = [(NSView *)wd.window_view layer];
 		if (layer) {
 			[layer setBackgroundColor:bg_color.CGColor];
@@ -1913,6 +1921,8 @@ void DisplayServerMacOS::delete_sub_window(WindowID p_id) {
 
 	[wd.window_object setContentView:nil];
 	[wd.window_object close];
+
+	mouse_enter_window(get_window_at_screen_position(mouse_get_position()));
 }
 
 void DisplayServerMacOS::window_set_rect_changed_callback(const Callable &p_callable, WindowID p_window) {
@@ -2622,12 +2632,17 @@ void DisplayServerMacOS::window_set_flag(WindowFlags p_flag, bool p_enabled, Win
 			wd.borderless = p_enabled;
 			if (p_enabled) {
 				[wd.window_object setStyleMask:NSWindowStyleMaskBorderless];
-			} else {
+				[wd.window_object setHasShadow:NO];
 				if (wd.layered_window) {
-					wd.layered_window = false;
-					set_window_per_pixel_transparency_enabled(false, p_window);
+					[wd.window_object setBackgroundColor:[NSColor clearColor]];
 				}
+			} else {
 				[wd.window_object setStyleMask:NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable | (wd.extend_to_title ? NSWindowStyleMaskFullSizeContentView : 0) | (wd.resize_disabled ? 0 : NSWindowStyleMaskResizable)];
+				[wd.window_object setHasShadow:YES];
+				if (wd.layered_window) {
+					// Note: transparent and not borderless - set alpha to non-zero value to ensure window shadow is rendered correctly.
+					[wd.window_object setBackgroundColor:[NSColor colorWithCalibratedRed:0 green:0 blue:0 alpha:0.004f]];
+				}
 				// Force update of the window styles.
 				NSRect frameRect = [wd.window_object frame];
 				[wd.window_object setFrame:NSMakeRect(frameRect.origin.x, frameRect.origin.y, frameRect.size.width + 1, frameRect.size.height) display:NO];
@@ -2658,11 +2673,6 @@ void DisplayServerMacOS::window_set_flag(WindowFlags p_flag, bool p_enabled, Win
 		case WINDOW_FLAG_TRANSPARENT: {
 			if (wd.fullscreen) {
 				return;
-			}
-			if (p_enabled) {
-				[wd.window_object setStyleMask:NSWindowStyleMaskBorderless]; // Force borderless.
-			} else if (!wd.borderless) {
-				[wd.window_object setStyleMask:NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable | (wd.extend_to_title ? NSWindowStyleMaskFullSizeContentView : 0) | (wd.resize_disabled ? 0 : NSWindowStyleMaskResizable)];
 			}
 			wd.layered_window = p_enabled;
 			set_window_per_pixel_transparency_enabled(p_enabled, p_window);
@@ -3894,7 +3904,6 @@ DisplayServerMacOS::DisplayServerMacOS(const String &p_rendering_driver, WindowM
 			window_set_flag(WindowFlags(i), true, main_window);
 		}
 	}
-	show_window(MAIN_WINDOW_ID);
 	force_process_and_drop_events();
 
 #if defined(GLES3_ENABLED)

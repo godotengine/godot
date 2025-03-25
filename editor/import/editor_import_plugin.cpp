@@ -33,9 +33,6 @@
 #include "core/object/script_language.h"
 #include "editor/editor_file_system.h"
 
-EditorImportPlugin::EditorImportPlugin() {
-}
-
 String EditorImportPlugin::get_importer_name() const {
 	String ret;
 	if (GDVIRTUAL_CALL(_get_importer_name, ret)) {

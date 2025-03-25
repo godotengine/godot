@@ -38,7 +38,7 @@
 #include "core/object/script_language.h"
 #include "core/os/keyboard.h"
 #include "core/string/string_builder.h"
-#include "core/version_generated.gen.h"
+#include "core/version.h"
 #include "editor/doc_data_compressed.gen.h"
 #include "editor/editor_file_system.h"
 #include "editor/editor_main_screen.h"
@@ -3365,9 +3365,6 @@ EditorHelp::EditorHelp() {
 	class_desc->set_selection_modifier(callable_mp_static(_replace_nbsp_with_space));
 
 	class_desc->hide();
-}
-
-EditorHelp::~EditorHelp() {
 }
 
 /// EditorHelpBit ///

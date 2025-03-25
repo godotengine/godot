@@ -79,12 +79,12 @@ if lib_arch_dir != "":
         lib_tools_dir = ""
 
     out_dir = "#platform/android/java/lib/libs/" + lib_tools_dir + lib_type_dir + "/" + lib_arch_dir
-    env_android.Command(out_dir + "/libgodot_android.so", lib, Move("$TARGET", "$SOURCE"))
+    env_android.CommandNoCache(out_dir + "/libgodot_android.so", lib, Move("$TARGET", "$SOURCE"))
 
     stl_lib_path = (
         str(env["ANDROID_NDK_ROOT"]) + "/sources/cxx-stl/llvm-libc++/libs/" + lib_arch_dir + "/libc++_shared.so"
     )
-    env_android.Command(out_dir + "/libc++_shared.so", stl_lib_path, Copy("$TARGET", "$SOURCE"))
+    env_android.CommandNoCache(out_dir + "/libc++_shared.so", stl_lib_path, Copy("$TARGET", "$SOURCE"))
 
     def generate_apk(target, source, env):
         gradle_process = []
@@ -112,6 +112,4 @@ if lib_arch_dir != "":
         )
 
     if env["generate_apk"]:
-        generate_apk_command = env_android.Command("generate_apk", [], generate_apk)
-        command = env_android.AlwaysBuild(generate_apk_command)
-        env_android.Depends(command, [lib])
+        env_android.AlwaysBuild(env_android.CommandNoCache("generate_apk", lib, env.Run(generate_apk)))

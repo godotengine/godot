@@ -1964,7 +1964,7 @@ static int ssl_write_encrypted_pms(mbedtls_ssl_context *ssl,
                                   ssl->out_msg + offset + len_bytes, olen,
                                   MBEDTLS_SSL_OUT_CONTENT_LEN - offset - len_bytes,
                                   ssl->conf->f_rng, ssl->conf->p_rng)) != 0) {
-        MBEDTLS_SSL_DEBUG_RET(1, "mbedtls_rsa_pkcs1_encrypt", ret);
+        MBEDTLS_SSL_DEBUG_RET(1, "mbedtls_pk_encrypt", ret);
         return ret;
     }
 

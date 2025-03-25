@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  openxr_composition_layer_provider.h                                   */
+/*  openxr_api_extension.compat.inc                                       */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,18 +28,31 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#pragma once
+#ifndef DISABLE_DEPRECATED
 
-#include "openxr_extension_wrapper.h"
+#include "extensions/openxr_extension_wrapper_extension.h"
 
-#include <openxr/openxr.h>
+void OpenXRAPIExtension::_register_composition_layer_provider_bind_compat_104087(OpenXRExtensionWrapperExtension *p_extension) {
+	register_composition_layer_provider(p_extension);
+}
 
-// Interface for OpenXR extensions that provide a composition layer.
-class OpenXRCompositionLayerProvider {
-public:
-	virtual int get_composition_layer_count() = 0;
-	virtual XrCompositionLayerBaseHeader *get_composition_layer(int p_index) = 0;
-	virtual int get_composition_layer_order(int p_index) = 0;
+void OpenXRAPIExtension::_unregister_composition_layer_provider_bind_compat_104087(OpenXRExtensionWrapperExtension *p_extension) {
+	unregister_composition_layer_provider(p_extension);
+}
 
-	virtual ~OpenXRCompositionLayerProvider() {}
-};
+void OpenXRAPIExtension::_register_projection_views_extension_bind_compat_104087(OpenXRExtensionWrapperExtension *p_extension) {
+	register_projection_views_extension(p_extension);
+}
+
+void OpenXRAPIExtension::_unregister_projection_views_extension_bind_compat_104087(OpenXRExtensionWrapperExtension *p_extension) {
+	unregister_projection_views_extension(p_extension);
+}
+
+void OpenXRAPIExtension::_bind_compatibility_methods() {
+	ClassDB::bind_compatibility_method(D_METHOD("register_composition_layer_provider", "extension"), &OpenXRAPIExtension::_register_composition_layer_provider_bind_compat_104087);
+	ClassDB::bind_compatibility_method(D_METHOD("unregister_composition_layer_provider", "extension"), &OpenXRAPIExtension::_unregister_composition_layer_provider_bind_compat_104087);
+	ClassDB::bind_compatibility_method(D_METHOD("register_projection_views_extension", "extension"), &OpenXRAPIExtension::_register_projection_views_extension_bind_compat_104087);
+	ClassDB::bind_compatibility_method(D_METHOD("unregister_projection_views_extension", "extension"), &OpenXRAPIExtension::_unregister_projection_views_extension_bind_compat_104087);
+}
+
+#endif // DISABLE_DEPRECATED

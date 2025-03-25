@@ -67,5 +67,4 @@ public:
 	virtual void make_visible(bool p_visible) override;
 
 	GPUParticlesCollisionSDF3DEditorPlugin();
-	~GPUParticlesCollisionSDF3DEditorPlugin();
 };

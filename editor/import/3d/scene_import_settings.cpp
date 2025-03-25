@@ -1585,6 +1585,10 @@ void SceneImportSettingsDialog::_save_dir_confirm() {
 			continue; //ignore
 		}
 		String path = item->get_text(1);
+		String uid_path = path;
+		if (path.begins_with("uid://")) {
+			path = ResourceUID::uid_to_path(uid_path);
+		}
 		if (!path.is_resource_file()) {
 			continue;
 		}
@@ -1601,9 +1605,11 @@ void SceneImportSettingsDialog::_save_dir_confirm() {
 					EditorNode::get_singleton()->add_io_error(TTR("Can't make material external to file, write error:") + "\n\t" + path);
 					continue;
 				}
+				uid_path = ResourceUID::path_to_uid(path);
 
 				md.settings["use_external/enabled"] = true;
-				md.settings["use_external/path"] = path;
+				md.settings["use_external/path"] = uid_path;
+				md.settings["use_external/fallback_path"] = path;
 
 			} break;
 			case ACTION_CHOOSE_MESH_SAVE_PATHS: {
@@ -1611,14 +1617,16 @@ void SceneImportSettingsDialog::_save_dir_confirm() {
 				MeshData &md = mesh_map[id];
 
 				md.settings["save_to_file/enabled"] = true;
-				md.settings["save_to_file/path"] = path;
+				md.settings["save_to_file/path"] = uid_path;
+				md.settings["save_to_file/fallback_path"] = path;
 			} break;
 			case ACTION_CHOOSE_ANIMATION_SAVE_PATHS: {
 				ERR_CONTINUE(!animation_map.has(id));
 				AnimationData &ad = animation_map[id];
 
 				ad.settings["save_to_file/enabled"] = true;
-				ad.settings["save_to_file/path"] = path;
+				ad.settings["save_to_file/path"] = uid_path;
+				ad.settings["save_to_file/fallback_path"] = path;
 
 			} break;
 		}
