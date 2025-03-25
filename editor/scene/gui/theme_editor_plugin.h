@@ -440,6 +440,8 @@ class ThemeEditor : public VBoxContainer {
 
 	Ref<Theme> theme;
 
+	Button *theme_close_button = nullptr;
+
 	TabBar *preview_tabs = nullptr;
 	PanelContainer *preview_tabs_content = nullptr;
 	Button *add_preview_button = nullptr;
