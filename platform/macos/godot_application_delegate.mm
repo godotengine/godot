@@ -240,7 +240,7 @@
 
 - (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication *)sender {
 	DisplayServerMacOS *ds = (DisplayServerMacOS *)DisplayServer::get_singleton();
-	if (ds) {
+	if (ds && ds->has_window(DisplayServerMacOS::MAIN_WINDOW_ID)) {
 		ds->send_window_event(ds->get_window(DisplayServerMacOS::MAIN_WINDOW_ID), DisplayServerMacOS::WINDOW_EVENT_CLOSE_REQUEST);
 	}
 	OS_MacOS *os = (OS_MacOS *)OS::get_singleton();

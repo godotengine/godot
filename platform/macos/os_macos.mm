@@ -882,9 +882,9 @@ void OS_MacOS::terminate() {
 void OS_MacOS::cleanup() {
 	if (main_loop) {
 		main_loop->finalize();
-		@autoreleasepool {
-			Main::cleanup();
-		}
+	}
+	@autoreleasepool {
+		Main::cleanup();
 	}
 }
 
