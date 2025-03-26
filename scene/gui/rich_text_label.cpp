@@ -685,6 +685,7 @@ void RichTextLabel::_set_table_size(ItemTable *p_table, int p_available_width) {
 		} else {
 			p_table->total_width += p_table->columns[i].width;
 		}
+		p_table->columns[i].width_with_padding = p_table->columns[i].width;
 	}
 
 	// Resize to max_width if needed and distribute the remaining space.
@@ -702,6 +703,7 @@ void RichTextLabel::_set_table_size(ItemTable *p_table, int p_available_width) {
 				p_table->columns[i].width = p_table->columns[i].max_width;
 				p_table->total_width -= dif;
 				total_ratio -= p_table->columns[i].expand_ratio;
+				p_table->columns[i].width_with_padding = p_table->columns[i].width;
 			}
 		}
 		// Grow.
@@ -715,6 +717,7 @@ void RichTextLabel::_set_table_size(ItemTable *p_table, int p_available_width) {
 						int incr = MIN(dif, slice);
 						p_table->columns[i].width += incr;
 						p_table->total_width += incr;
+						p_table->columns[i].width_with_padding = p_table->columns[i].width;
 					}
 				}
 			}
@@ -745,6 +748,7 @@ void RichTextLabel::_set_table_size(ItemTable *p_table, int p_available_width) {
 
 			frame->lines[i].text_buf->set_width(p_table->columns[column].width);
 			p_table->columns[column].width = MAX(p_table->columns[column].width, ceil(frame->lines[i].text_buf->get_size().x));
+			p_table->columns[column].width_with_padding = MAX(p_table->columns[column].width_with_padding, ceil(frame->lines[i].text_buf->get_size().x + frame->padding.position.x + frame->padding.size.x));
 
 			frame->lines[i].offset.y = prev_h;
 
@@ -779,6 +783,12 @@ void RichTextLabel::_set_table_size(ItemTable *p_table, int p_available_width) {
 			row_height = 0;
 		}
 		idx++;
+	}
+
+	// Recalculate total width.
+	p_table->total_width = 0;
+	for (int i = 0; i < col_count; i++) {
+		p_table->total_width += p_table->columns[i].width_with_padding + theme_cache.table_h_separation;
 	}
 }
 
