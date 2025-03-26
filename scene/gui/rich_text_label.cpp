@@ -758,8 +758,8 @@ void RichTextLabel::_set_table_size(ItemTable *p_table, int p_available_width) {
 					frame->lines[i].offset.x = offset.x + frame->padding.position.x + centered_pos;
 					break;
 				case HORIZONTAL_ALIGNMENT_RIGHT:
-					frame->lines[i].offset.x = offset.x + p_table->columns[column].width - 
-									frame->lines[i].text_buf->get_size().x - frame->padding.size.x;
+					frame->lines[i].offset.x = offset.x + p_table->columns[column].width -
+							frame->lines[i].text_buf->get_size().x - frame->padding.size.x;
 					break;
 				default:
 					frame->lines[i].offset.x = offset.x + frame->padding.position.x;
@@ -1016,8 +1016,8 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 									}
 
 									for (int j = 0; j < (int)frame->lines.size(); j++) {
-										_draw_line(frame, j, p_ofs + rect.position + off + Vector2(0, frame->lines[j].offset.y + (table->rows[row] - frame->lines[j].text_buf->get_size().y) / 2), 
-											rect.size.x, 0, p_base_color, p_outline_size, p_outline_color, p_font_shadow_color, p_shadow_outline_size, p_shadow_ofs, r_processed_glyphs);
+										_draw_line(frame, j, p_ofs + rect.position + off + Vector2(0, frame->lines[j].offset.y + (table->rows[row] - frame->lines[j].text_buf->get_size().y) / 2),
+												rect.size.x, 0, p_base_color, p_outline_size, p_outline_color, p_font_shadow_color, p_shadow_outline_size, p_shadow_ofs, r_processed_glyphs);
 									}
 									idx++;
 								}
