@@ -2618,6 +2618,9 @@ bool EditorExportPlatformAndroid::has_valid_username_and_password(const Ref<Edit
 }
 
 #ifdef MODULE_MONO_ENABLED
+static uint64_t _last_validate_tfm_time = 0;
+static String _last_validate_tfm = "";
+
 bool _validate_dotnet_tfm(const String &required_tfm, String &r_error) {
 	String assembly_name = Path::get_csharp_project_name();
 	String project_path = ProjectSettings::get_singleton()->globalize_path("res://" + assembly_name + ".csproj");
@@ -2626,28 +2629,39 @@ bool _validate_dotnet_tfm(const String &required_tfm, String &r_error) {
 		return true;
 	}
 
-	String pipe;
-	List<String> args;
-	args.push_back("build");
-	args.push_back(project_path);
-	args.push_back("--getProperty:TargetFramework");
+	uint64_t modified_time = FileAccess::get_modified_time(project_path);
+	String tfm;
 
-	int exitcode;
-	Error err = OS::get_singleton()->execute("dotnet", args, &pipe, &exitcode, true);
-	if (err != OK || exitcode != 0) {
-		if (err != OK) {
-			WARN_PRINT("Failed to execute dotnet command. Error " + String(error_names[err]));
-		} else if (exitcode != 0) {
-			print_line(pipe);
-			WARN_PRINT("dotnet command exited with code " + itos(exitcode) + ". See output above for more details.");
-		}
-		r_error += vformat(TTR("Unable to determine the C# project's TFM, it may be incompatible. The export template only supports '%s'. Make sure the project targets '%s' or consider using gradle builds instead."), required_tfm, required_tfm) + "\n";
+	if (modified_time == _last_validate_tfm_time) {
+		tfm = _last_validate_tfm;
 	} else {
-		String tfm = pipe.strip_edges();
-		if (tfm != required_tfm) {
-			r_error += vformat(TTR("C# project targets '%s' but the export template only supports '%s'. Consider using gradle builds instead."), tfm, required_tfm) + "\n";
-			return false;
+		String pipe;
+		List<String> args;
+		args.push_back("build");
+		args.push_back(project_path);
+		args.push_back("--getProperty:TargetFramework");
+
+		int exitcode;
+		Error err = OS::get_singleton()->execute("dotnet", args, &pipe, &exitcode, true);
+		if (err != OK || exitcode != 0) {
+			if (err != OK) {
+				WARN_PRINT("Failed to execute dotnet command. Error " + String(error_names[err]));
+			} else if (exitcode != 0) {
+				print_line(pipe);
+				WARN_PRINT("dotnet command exited with code " + itos(exitcode) + ". See output above for more details.");
+			}
+			r_error += vformat(TTR("Unable to determine the C# project's TFM, it may be incompatible. The export template only supports '%s'. Make sure the project targets '%s' or consider using gradle builds instead."), required_tfm, required_tfm) + "\n";
+			return true;
+		} else {
+			tfm = pipe.strip_edges();
+			_last_validate_tfm_time = modified_time;
+			_last_validate_tfm = tfm;
 		}
+	}
+
+	if (tfm != required_tfm) {
+		r_error += vformat(TTR("C# project targets '%s' but the export template only supports '%s'. Consider using gradle builds instead."), tfm, required_tfm) + "\n";
+		return false;
 	}
 
 	return true;
