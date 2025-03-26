@@ -39,11 +39,13 @@
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/check_box.h"
+#include "scene/gui/check_button.h"
 #include "scene/gui/file_dialog.h"
 #include "scene/gui/grid_container.h"
 #include "scene/gui/label.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/progress_bar.h"
+#include "scene/gui/tab_container.h"
 #include "scene/gui/tree.h"
 
 const char *FindInFiles::SIGNAL_RESULT_FOUND = "result_found";
@@ -700,10 +702,11 @@ FindInFilesPanel::FindInFilesPanel() {
 
 	{
 		HBoxContainer *hbc = memnew(HBoxContainer);
+		hbc->set_alignment(BoxContainer::ALIGNMENT_END);
 
-		Label *find_label = memnew(Label);
-		find_label->set_text(TTRC("Find:"));
-		hbc->add_child(find_label);
+		_find_label = memnew(Label);
+		_find_label->set_text(TTRC("Find:"));
+		hbc->add_child(_find_label);
 
 		_search_text_label = memnew(Label);
 		_search_text_label->set_text_overrun_behavior(TextServer::OVERRUN_TRIM_ELLIPSIS);
@@ -723,6 +726,12 @@ FindInFilesPanel::FindInFilesPanel() {
 		_status_label = memnew(Label);
 		_status_label->set_focus_mode(FOCUS_ACCESSIBILITY);
 		hbc->add_child(_status_label);
+
+		_keep_results_button = memnew(CheckButton);
+		_keep_results_button->set_text(TTRC("Keep Results"));
+		_keep_results_button->set_tooltip_text(TTRC("Keep these results and show subsequent results in a new window"));
+		_keep_results_button->set_pressed(false);
+		hbc->add_child(_keep_results_button);
 
 		_refresh_button = memnew(Button);
 		_refresh_button->set_text(TTRC("Refresh"));
@@ -802,6 +811,16 @@ void FindInFilesPanel::set_with_replace(bool with_replace) {
 
 void FindInFilesPanel::set_replace_text(const String &text) {
 	_replace_line_edit->set_text(text);
+}
+
+bool FindInFilesPanel::is_keep_results() const {
+	return _keep_results_button->is_pressed();
+}
+
+void FindInFilesPanel::set_search_labels_visibility(bool p_visible) {
+	_find_label->set_visible(p_visible);
+	_search_text_label->set_visible(p_visible);
+	_close_button->set_visible(p_visible);
 }
 
 void FindInFilesPanel::clear() {
@@ -1243,4 +1262,206 @@ void FindInFilesPanel::_bind_methods() {
 	ADD_SIGNAL(MethodInfo(SIGNAL_FILES_MODIFIED, PropertyInfo(Variant::STRING, "paths")));
 
 	ADD_SIGNAL(MethodInfo(SIGNAL_CLOSE_BUTTON_CLICKED));
+}
+
+//-----------------------------------------------------------------------------
+
+FindInFilesContainer::FindInFilesContainer() {
+	const Ref<StyleBox> bottom_panel_style = EditorNode::get_singleton()->get_editor_theme()->get_stylebox(SNAME("BottomPanel"), EditorStringName(EditorStyles));
+	if (bottom_panel_style.is_valid()) {
+		add_theme_constant_override("margin_top", -bottom_panel_style->get_margin(SIDE_TOP));
+		add_theme_constant_override("margin_left", -bottom_panel_style->get_margin(SIDE_LEFT));
+		add_theme_constant_override("margin_right", -bottom_panel_style->get_margin(SIDE_RIGHT));
+		add_theme_constant_override("margin_bottom", -bottom_panel_style->get_margin(SIDE_BOTTOM));
+	}
+
+	_tabs = memnew(TabContainer);
+	_tabs->set_tabs_visible(false);
+	add_child(_tabs);
+
+	_tabs->set_drag_to_rearrange_enabled(true);
+	_tabs->get_tab_bar()->set_select_with_rmb(true);
+	_tabs->get_tab_bar()->set_tab_close_display_policy(TabBar::CLOSE_BUTTON_SHOW_ACTIVE_ONLY);
+	_tabs->get_tab_bar()->connect("tab_close_pressed", callable_mp(this, &FindInFilesContainer::_on_tab_close_pressed));
+	_tabs->get_tab_bar()->connect(SceneStringName(gui_input), callable_mp(this, &FindInFilesContainer::_bar_input));
+
+	_tabs_context_menu = memnew(PopupMenu);
+	add_child(_tabs_context_menu);
+	_tabs_context_menu->add_item(TTRC("Close Tab"), PANEL_CLOSE);
+	_tabs_context_menu->add_item(TTRC("Close Other Tabs"), PANEL_CLOSE_OTHERS);
+	_tabs_context_menu->add_item(TTRC("Close Tabs to the Right"), PANEL_CLOSE_RIGHT);
+	_tabs_context_menu->add_item(TTRC("Close All Tabs"), PANEL_CLOSE_ALL);
+	_tabs_context_menu->connect(SceneStringName(id_pressed), callable_mp(this, &FindInFilesContainer::_bar_menu_option));
+}
+
+FindInFilesPanel *FindInFilesContainer::_create_new_panel() {
+	int index = _tabs->get_current_tab();
+	FindInFilesPanel *panel = memnew(FindInFilesPanel);
+	_tabs->add_child(panel);
+	_tabs->move_child(panel, index + 1); // New panel is added after the current activated panel.
+	_tabs->set_current_tab(index + 1);
+	_update_bar_visibility();
+
+	panel->connect(FindInFilesPanel::SIGNAL_RESULT_SELECTED, callable_mp(this, &FindInFilesContainer::_on_find_in_files_result_selected));
+	panel->connect(FindInFilesPanel::SIGNAL_FILES_MODIFIED, callable_mp(this, &FindInFilesContainer::_on_find_in_files_modified_files));
+	panel->connect(FindInFilesPanel::SIGNAL_CLOSE_BUTTON_CLICKED, callable_mp(this, &FindInFilesContainer::_on_find_in_files_close_button_clicked).bind(panel));
+	return panel;
+}
+
+FindInFilesPanel *FindInFilesContainer::_get_current_panel() {
+	return Object::cast_to<FindInFilesPanel>(_tabs->get_current_tab_control());
+}
+
+FindInFilesPanel *FindInFilesContainer::get_panel_for_results(const String &p_label) {
+	FindInFilesPanel *panel = nullptr;
+	// Prefer the current panel.
+	if (_get_current_panel() && !_get_current_panel()->is_keep_results()) {
+		panel = _get_current_panel();
+	} else {
+		// Find the first panel which does not keep results.
+		for (int i = 0; i < _tabs->get_tab_count(); i++) {
+			FindInFilesPanel *p = Object::cast_to<FindInFilesPanel>(_tabs->get_tab_control(i));
+			if (p && !p->is_keep_results()) {
+				panel = p;
+				_tabs->set_current_tab(i);
+				break;
+			}
+		}
+
+		if (!panel) {
+			panel = _create_new_panel();
+		}
+	}
+	_tabs->set_tab_title(_tabs->get_current_tab(), p_label);
+	return panel;
+}
+
+void FindInFilesContainer::_bind_methods() {
+	ADD_SIGNAL(MethodInfo("result_selected",
+			PropertyInfo(Variant::STRING, "path"),
+			PropertyInfo(Variant::INT, "line_number"),
+			PropertyInfo(Variant::INT, "begin"),
+			PropertyInfo(Variant::INT, "end")));
+
+	ADD_SIGNAL(MethodInfo("files_modified", PropertyInfo(Variant::STRING, "paths")));
+
+	ADD_SIGNAL(MethodInfo("close_button_clicked"));
+}
+
+void FindInFilesContainer::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_THEME_CHANGED: {
+			const Ref<StyleBox> bottom_panel_style = EditorNode::get_singleton()->get_editor_theme()->get_stylebox(SNAME("BottomPanel"), EditorStringName(EditorStyles));
+			if (bottom_panel_style.is_valid()) {
+				const int margin_top = -bottom_panel_style->get_margin(SIDE_TOP);
+				const int margin_left = -bottom_panel_style->get_margin(SIDE_LEFT);
+				const int margin_right = -bottom_panel_style->get_margin(SIDE_RIGHT);
+				const int margin_bottom = -bottom_panel_style->get_margin(SIDE_BOTTOM);
+
+				if (get_theme_constant("margin_top") != margin_top) {
+					add_theme_constant_override("margin_top", margin_top);
+				}
+				if (get_theme_constant("margin_left") != margin_left) {
+					add_theme_constant_override("margin_left", margin_left);
+				}
+				if (get_theme_constant("margin_right") != margin_right) {
+					add_theme_constant_override("margin_right", margin_right);
+				}
+				if (get_theme_constant("margin_bottom") != margin_bottom) {
+					add_theme_constant_override("margin_bottom", margin_bottom);
+				}
+			}
+		} break;
+	}
+}
+
+void FindInFilesContainer::_on_find_in_files_result_selected(const String &p_fpath, int p_line_number, int p_begin, int p_end) {
+	emit_signal(SNAME("result_selected"), p_fpath, p_line_number, p_begin, p_end);
+}
+
+void FindInFilesContainer::_on_find_in_files_modified_files(const PackedStringArray &p_paths) {
+	emit_signal(SNAME("files_modified"), p_paths);
+}
+
+void FindInFilesContainer::_on_find_in_files_close_button_clicked(FindInFilesPanel *p_panel) {
+	ERR_FAIL_COND_MSG(p_panel->get_parent() != _tabs, "This panel is not a child!");
+	_tabs->remove_child(p_panel);
+	p_panel->queue_free();
+	_update_bar_visibility();
+	if (_tabs->get_tab_count() == 0) {
+		emit_signal(SNAME("close_button_clicked"));
+	}
+}
+
+void FindInFilesContainer::_on_tab_close_pressed(int p_tab) {
+	FindInFilesPanel *panel = Object::cast_to<FindInFilesPanel>(_tabs->get_tab_control(p_tab));
+	if (panel) {
+		_on_find_in_files_close_button_clicked(panel);
+	}
+}
+
+void FindInFilesContainer::_update_bar_visibility() {
+	if (!_update_bar) {
+		return;
+	}
+
+	// If tab count <= 1, behaves like this is not a TabContainer and the bar is hidden.
+	bool bar_visible = _tabs->get_tab_count() > 1;
+	_tabs->set_tabs_visible(bar_visible);
+
+	// Hide or show the search labels based on the visibility of the bar, as the search terms are displayed in the title of each tab.
+	for (int i = 0; i < _tabs->get_tab_count(); i++) {
+		FindInFilesPanel *panel = Object::cast_to<FindInFilesPanel>(_tabs->get_tab_control(i));
+		if (panel) {
+			panel->set_search_labels_visibility(!bar_visible);
+		}
+	}
+}
+
+void FindInFilesContainer::_bar_menu_option(int p_option) {
+	int tab_index = _tabs->get_current_tab();
+	switch (p_option) {
+		case PANEL_CLOSE: {
+			_on_tab_close_pressed(tab_index);
+		} break;
+		case PANEL_CLOSE_OTHERS: {
+			_update_bar = false;
+			FindInFilesPanel *panel = Object::cast_to<FindInFilesPanel>(_tabs->get_tab_control(tab_index));
+			for (int i = _tabs->get_tab_count() - 1; i >= 0; i--) {
+				FindInFilesPanel *p = Object::cast_to<FindInFilesPanel>(_tabs->get_tab_control(i));
+				if (p != panel) {
+					_on_find_in_files_close_button_clicked(p);
+				}
+			}
+			_update_bar = true;
+			_update_bar_visibility();
+		} break;
+		case PANEL_CLOSE_RIGHT: {
+			_update_bar = false;
+			for (int i = _tabs->get_tab_count() - 1; i > tab_index; i--) {
+				_on_tab_close_pressed(i);
+			}
+			_update_bar = true;
+			_update_bar_visibility();
+		} break;
+		case PANEL_CLOSE_ALL: {
+			_update_bar = false;
+			for (int i = _tabs->get_tab_count() - 1; i >= 0; i--) {
+				_on_tab_close_pressed(i);
+			}
+			_update_bar = true;
+		} break;
+	}
+}
+
+void FindInFilesContainer::_bar_input(const Ref<InputEvent> &p_input) {
+	int tab_id = _tabs->get_tab_bar()->get_hovered_tab();
+	Ref<InputEventMouseButton> mb = p_input;
+
+	if (tab_id >= 0 && mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MouseButton::RIGHT) {
+		_tabs_context_menu->set_item_disabled(_tabs_context_menu->get_item_index(PANEL_CLOSE_RIGHT), tab_id == _tabs->get_tab_count() - 1);
+		_tabs_context_menu->set_position(_tabs->get_tab_bar()->get_screen_position() + mb->get_position());
+		_tabs_context_menu->reset_size();
+		_tabs_context_menu->popup();
+	}
 }
