@@ -175,7 +175,6 @@ public:
 			~Lock();
 		};
 	};
-	inline static Locker locker;
 
 	static HashMap<StringName, ClassInfo> classes;
 	static HashMap<StringName, StringName> resource_base_extensions;
