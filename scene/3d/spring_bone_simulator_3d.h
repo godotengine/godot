@@ -284,6 +284,8 @@ public:
 #ifdef TOOLS_ENABLED
 	virtual bool is_processed_on_saving() const override { return true; }
 #endif
+
+	~SpringBoneSimulator3D();
 };
 
 VARIANT_ENUM_CAST(SpringBoneSimulator3D::BoneDirection);
