@@ -97,6 +97,10 @@ void ProjectManager::_notification(int p_what) {
 			_titlebar_resized();
 		} break;
 
+		case NOTIFICATION_TRANSLATION_CHANGED: {
+			_titlebar_resized();
+		} break;
+
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			set_process_shortcut_input(is_visible_in_tree());
 		} break;

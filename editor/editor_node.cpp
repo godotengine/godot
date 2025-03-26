@@ -621,6 +621,10 @@ void EditorNode::update_preview_themes(int p_mode) {
 
 void EditorNode::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_TRANSLATION_CHANGED: {
+			callable_mp(this, &EditorNode::_titlebar_resized).call_deferred();
+		} break;
+
 		case NOTIFICATION_POSTINITIALIZE: {
 			EditorHelp::generate_doc();
 #if defined(MODULE_GDSCRIPT_ENABLED) || defined(MODULE_MONO_ENABLED)
