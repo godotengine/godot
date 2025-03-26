@@ -681,6 +681,38 @@ void DisplayServerMacOS::release_pressed_events() {
 	}
 }
 
+void DisplayServerMacOS::sync_mouse_state() {
+	_THREAD_SAFE_METHOD_
+	if (Input::get_singleton()) {
+		Vector2i pos = Input::get_singleton()->get_mouse_position();
+		BitField<MouseButtonMask> in_mask = Input::get_singleton()->get_mouse_button_mask();
+		BitField<MouseButtonMask> ds_mask = mouse_get_button_state();
+		for (int btn = (int)MouseButton::LEFT; btn <= (int)MouseButton::MB_XBUTTON2; btn++) {
+			MouseButtonMask mbm = mouse_button_to_mask(MouseButton(btn));
+			if (in_mask.has_flag(mbm) && !ds_mask.has_flag(mbm)) {
+				Ref<InputEventMouseButton> mb;
+				mb.instantiate();
+				mb->set_button_index(MouseButton(btn));
+				mb->set_pressed(false);
+				mb->set_position(pos);
+				mb->set_global_position(pos);
+				mb->set_button_mask(ds_mask);
+				Input::get_singleton()->parse_input_event(mb);
+			}
+			if (!in_mask.has_flag(mbm) && ds_mask.has_flag(mbm)) {
+				Ref<InputEventMouseButton> mb;
+				mb.instantiate();
+				mb->set_button_index(MouseButton(btn));
+				mb->set_pressed(true);
+				mb->set_position(pos);
+				mb->set_global_position(pos);
+				mb->set_button_mask(ds_mask);
+				Input::get_singleton()->parse_input_event(mb);
+			}
+		}
+	}
+}
+
 void DisplayServerMacOS::get_key_modifier_state(unsigned int p_macos_state, Ref<InputEventWithModifiers> r_state) const {
 	r_state->set_shift_pressed((p_macos_state & NSEventModifierFlagShift));
 	r_state->set_ctrl_pressed((p_macos_state & NSEventModifierFlagControl));
