@@ -805,7 +805,7 @@ TEST_CASE("[SceneTree][TabBar] layout and offset") {
 		CHECK(tab_bar->get_tab_offset() == 0);
 		CHECK(tab_bar->get_minimum_size() == tab_bar->get_size());
 		CHECK(tab_bar->get_size().x == tab_rects[0].size.x + tab_rects[1].size.x + tab_rects[2].size.x);
-		CHECK(tab_bar->get_size().y == MAX(tab_rects[0].size.y, MAX(tab_rects[1].size.y, tab_rects[2].size.y)));
+		CHECK(tab_bar->get_size().y == MAX(tab_rects[0].size.y, tab_rects[1].size.y, tab_rects[2].size.y));
 
 		tab_bar->set_clip_tabs(true);
 		CHECK(tab_bar->get_clip_tabs());

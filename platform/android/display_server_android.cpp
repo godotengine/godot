@@ -308,7 +308,7 @@ float DisplayServerAndroid::screen_get_scale(int p_screen) const {
 	if (screen_size != Size2i()) {
 		float width_scale = screen_size.width / (float)OS_Android::DEFAULT_WINDOW_WIDTH;
 		float height_scale = screen_size.height / (float)OS_Android::DEFAULT_WINDOW_HEIGHT;
-		screen_scale = MIN(screen_scale, MIN(width_scale, height_scale));
+		screen_scale = MIN(screen_scale, width_scale, height_scale);
 	}
 
 	return screen_scale;

@@ -289,7 +289,7 @@ int PopupMenu::_get_item_height(int p_idx) const {
 	Size2 icon_size = _get_item_icon_size(p_idx);
 	int icon_height = icon_size.height;
 	if (items[p_idx].checkable_type && !items[p_idx].separator) {
-		icon_height = MAX(icon_height, MAX(theme_cache.checked->get_height(), theme_cache.radio_checked->get_height()));
+		icon_height = MAX(icon_height, theme_cache.checked->get_height(), theme_cache.radio_checked->get_height());
 	}
 
 	int text_height = items[p_idx].text_buf->get_size().height;
@@ -299,10 +299,13 @@ int PopupMenu::_get_item_height(int p_idx) const {
 
 	int separator_height = 0;
 	if (items[p_idx].separator) {
-		separator_height = MAX(theme_cache.separator_style->get_minimum_size().height, MAX(theme_cache.labeled_separator_left->get_minimum_size().height, theme_cache.labeled_separator_right->get_minimum_size().height));
+		separator_height = MAX(
+				theme_cache.separator_style->get_minimum_size().height,
+				theme_cache.labeled_separator_left->get_minimum_size().height,
+				theme_cache.labeled_separator_right->get_minimum_size().height);
 	}
 
-	return MAX(separator_height, MAX(text_height, icon_height));
+	return MAX(separator_height, text_height, icon_height);
 }
 
 int PopupMenu::_get_items_total_height() const {

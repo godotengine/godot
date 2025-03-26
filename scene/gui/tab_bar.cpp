@@ -43,7 +43,11 @@ Size2 TabBar::get_minimum_size() const {
 		return ms;
 	}
 
-	int y_margin = MAX(MAX(MAX(theme_cache.tab_unselected_style->get_minimum_size().height, theme_cache.tab_hovered_style->get_minimum_size().height), theme_cache.tab_selected_style->get_minimum_size().height), theme_cache.tab_disabled_style->get_minimum_size().height);
+	int y_margin = MAX(
+			theme_cache.tab_unselected_style->get_minimum_size().height,
+			theme_cache.tab_hovered_style->get_minimum_size().height,
+			theme_cache.tab_selected_style->get_minimum_size().height,
+			theme_cache.tab_disabled_style->get_minimum_size().height);
 
 	for (int i = 0; i < tabs.size(); i++) {
 		if (tabs[i].hidden) {

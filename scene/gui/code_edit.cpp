@@ -3705,8 +3705,8 @@ void CodeEdit::_lines_edited_from(int p_from_line, int p_to_line) {
 	}
 
 	lines_edited_changed += p_to_line - p_from_line;
-	lines_edited_from = (lines_edited_from == -1) ? MIN(p_from_line, p_to_line) : MIN(lines_edited_from, MIN(p_from_line, p_to_line));
-	lines_edited_to = (lines_edited_to == -1) ? MAX(p_from_line, p_to_line) : MAX(lines_edited_from, MAX(p_from_line, p_to_line));
+	lines_edited_from = (lines_edited_from == -1) ? MIN(p_from_line, p_to_line) : MIN(lines_edited_from, p_from_line, p_to_line);
+	lines_edited_to = (lines_edited_to == -1) ? MAX(p_from_line, p_to_line) : MAX(lines_edited_from, p_from_line, p_to_line);
 }
 
 void CodeEdit::_text_set() {

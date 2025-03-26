@@ -72,7 +72,7 @@ void StyleBoxFlat::set_border_width_all(int p_size) {
 }
 
 int StyleBoxFlat::get_border_width_min() const {
-	return MIN(MIN(border_width[0], border_width[1]), MIN(border_width[2], border_width[3]));
+	return MIN(border_width[0], border_width[1], border_width[2], border_width[3]);
 }
 
 void StyleBoxFlat::set_border_width(Side p_side, int p_width) {
@@ -434,8 +434,8 @@ inline void adapt_values(int p_index_a, int p_index_b, real_t *adapted_values, c
 	real_t value_a = p_values[p_index_a];
 	real_t value_b = p_values[p_index_b];
 	real_t factor = MIN(1.0, p_width / (value_a + value_b));
-	adapted_values[p_index_a] = MIN(MIN(value_a * factor, p_max_a), adapted_values[p_index_a]);
-	adapted_values[p_index_b] = MIN(MIN(value_b * factor, p_max_b), adapted_values[p_index_b]);
+	adapted_values[p_index_a] = MIN(value_a * factor, p_max_a, adapted_values[p_index_a]);
+	adapted_values[p_index_b] = MIN(value_b * factor, p_max_b, adapted_values[p_index_b]);
 }
 
 Rect2 StyleBoxFlat::get_draw_rect(const Rect2 &p_rect) const {

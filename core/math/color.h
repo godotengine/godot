@@ -141,7 +141,7 @@ struct [[nodiscard]] Color {
 		const float _b = CLAMP(b, 0.0f, kMaxVal);
 
 		// Compute the maximum channel, no less than 1.0*2^-15
-		const float MaxChannel = MAX(MAX(_r, _g), MAX(_b, kMinVal));
+		const float MaxChannel = MAX(_r, _g, _b, kMinVal);
 
 		// Take the exponent of the maximum channel (rounding up the 9th bit) and
 		// add 15 to it.  When added to the channels, it causes the implicit '1.0'

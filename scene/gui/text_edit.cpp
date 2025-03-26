@@ -201,9 +201,9 @@ float TextEdit::Text::get_indent_offset(int p_line, bool p_rtl) const {
 		Vector<Vector2> sel = TS->shaped_text_get_selection(text_rid, 0, char_count);
 		for (const Vector2 v : sel) {
 			if (p_rtl) {
-				offset = MIN(v.x, MIN(v.y, offset));
+				offset = MIN(v.x, v.y, offset);
 			} else {
-				offset = MAX(v.x, MAX(v.y, offset));
+				offset = MAX(v.x, v.y, offset);
 			}
 		}
 		text_line.indent_ofs = (p_rtl) ? TS->shaped_text_get_size(text_rid).x - offset : offset;

@@ -7408,7 +7408,7 @@ float GLTFDocument::get_max_component(const Color &p_color) {
 	const float g = p_color.g;
 	const float b = p_color.b;
 
-	return MAX(MAX(r, g), b);
+	return MAX(r, g, b);
 }
 
 void GLTFDocument::_process_mesh_instances(Ref<GLTFState> p_state, Node *p_scene_root) {

@@ -3240,14 +3240,14 @@ void CanvasItemEditor::_draw_ruler_tool() {
 					: (end_to_begin.y < 0 ? 3.0 * Math_PI / 2.0 : Math_PI / 2.0 - vertical_angle_rad);
 			real_t arc_1_end_angle = arc_1_start_angle + vertical_angle_rad;
 			// Constrain arc to triangle height & max size.
-			real_t arc_1_radius = MIN(MIN(arc_radius_max_length_percent * ruler_length, Math::abs(end_to_begin.y)), arc_max_radius);
+			real_t arc_1_radius = MIN(arc_radius_max_length_percent * ruler_length, Math::abs(end_to_begin.y), arc_max_radius);
 
 			real_t arc_2_start_angle = end_to_begin.x < 0
 					? (end_to_begin.y < 0 ? 0.0 : -horizontal_angle_rad)
 					: (end_to_begin.y < 0 ? Math_PI - horizontal_angle_rad : Math_PI);
 			real_t arc_2_end_angle = arc_2_start_angle + horizontal_angle_rad;
 			// Constrain arc to triangle width & max size.
-			real_t arc_2_radius = MIN(MIN(arc_radius_max_length_percent * ruler_length, Math::abs(end_to_begin.x)), arc_max_radius);
+			real_t arc_2_radius = MIN(arc_radius_max_length_percent * ruler_length, Math::abs(end_to_begin.x), arc_max_radius);
 
 			viewport->draw_arc(begin, arc_1_radius, arc_1_start_angle, arc_1_end_angle, arc_point_count, ruler_primary_color, Math::round(EDSCALE * arc_line_width));
 			viewport->draw_arc(end, arc_2_radius, arc_2_start_angle, arc_2_end_angle, arc_point_count, ruler_primary_color, Math::round(EDSCALE * arc_line_width));
@@ -3290,13 +3290,13 @@ void CanvasItemEditor::_draw_ruler_tool() {
 				h_angle_text_pos.y = end.y + text_height * 1.5;
 				if (Math::abs(text_pos2.x - h_angle_text_pos.x) < text_width) {
 					int height_multiplier = 1.5 + (int)grid_snap_active;
-					h_angle_text_pos.y = MAX(text_pos.y + height_multiplier * text_height, MAX(end.y + text_height * 1.5, text_pos2.y + height_multiplier * text_height));
+					h_angle_text_pos.y = MAX(text_pos.y + height_multiplier * text_height, end.y + text_height * 1.5, text_pos2.y + height_multiplier * text_height);
 				}
 			} else {
 				h_angle_text_pos.y = end.y - text_height * 0.5;
 				if (Math::abs(text_pos2.x - h_angle_text_pos.x) < text_width) {
 					int height_multiplier = 1 + (int)grid_snap_active;
-					h_angle_text_pos.y = MIN(text_pos.y - height_multiplier * text_height, MIN(end.y - text_height * 0.5, text_pos2.y - height_multiplier * text_height));
+					h_angle_text_pos.y = MIN(text_pos.y - height_multiplier * text_height, end.y - text_height * 0.5, text_pos2.y - height_multiplier * text_height);
 				}
 			}
 			viewport->draw_string_outline(font, h_angle_text_pos, TS->format_number(vformat(U"%d°", horizontal_angle)), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, outline_size, outline_color);

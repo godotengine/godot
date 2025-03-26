@@ -1061,7 +1061,10 @@ void CylinderMesh::create_mesh_array(Array &p_arr, float top_radius, float botto
 	float height_v = height / vertical_length;
 	float padding_v = p_uv2_padding / vertical_length;
 
-	float horizontal_length = MAX(MAX(2.0 * (top_radius + bottom_radius + p_uv2_padding), top_circumference + p_uv2_padding), bottom_circumference + p_uv2_padding);
+	float horizontal_length = MAX(
+			2.0 * (top_radius + bottom_radius + p_uv2_padding),
+			top_circumference + p_uv2_padding,
+			bottom_circumference + p_uv2_padding);
 	float center_h = 0.5 * (horizontal_length - p_uv2_padding) / horizontal_length;
 	float top_h = top_circumference / horizontal_length;
 	float bottom_h = bottom_circumference / horizontal_length;

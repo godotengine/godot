@@ -73,8 +73,8 @@ void RenderGeometryInstanceBase::set_transform(const Transform3D &p_transform, c
 	Vector3 model_scale_vec = p_transform.basis.get_scale_abs();
 	// handle non uniform scale here
 
-	float max_scale = MAX(model_scale_vec.x, MAX(model_scale_vec.y, model_scale_vec.z));
-	float min_scale = MIN(model_scale_vec.x, MIN(model_scale_vec.y, model_scale_vec.z));
+	float max_scale = MAX(model_scale_vec.x, model_scale_vec.y, model_scale_vec.z);
+	float min_scale = MIN(model_scale_vec.x, model_scale_vec.y, model_scale_vec.z);
 	non_uniform_scale = max_scale >= 0.0 && (min_scale / max_scale) < 0.9;
 
 	lod_model_scale = max_scale;

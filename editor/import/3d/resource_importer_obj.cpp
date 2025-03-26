@@ -77,7 +77,7 @@ static Error _parse_material_library(const String &p_path, HashMap<String, Ref<S
 			float r = v[1].to_float();
 			float g = v[2].to_float();
 			float b = v[3].to_float();
-			float metalness = MAX(r, MAX(g, b));
+			float metalness = MAX(r, g, b);
 			current->set_metallic(metalness);
 		} else if (l.begins_with("Ns ")) {
 			//normal

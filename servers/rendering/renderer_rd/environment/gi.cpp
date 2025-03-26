@@ -2653,7 +2653,7 @@ void GI::VoxelGIInstance::update(bool p_update_light_instances, const Vector<RID
 			}
 
 			{
-				uint32_t dynamic_map_size = MAX(MAX(octree_size.x, octree_size.y), octree_size.z);
+				uint32_t dynamic_map_size = MAX(octree_size.x, octree_size.y, octree_size.z);
 				uint32_t oversample = nearest_power_of_2_templated(4);
 				int mipmap_index = 0;
 
@@ -3038,7 +3038,7 @@ void GI::VoxelGIInstance::update(bool p_update_light_instances, const Vector<RID
 
 	if (p_dynamic_objects.size() && dynamic_maps.size()) {
 		Vector3i octree_size = gi->voxel_gi_get_octree_size(probe);
-		int multiplier = dynamic_maps[0].size / MAX(MAX(octree_size.x, octree_size.y), octree_size.z);
+		int multiplier = dynamic_maps[0].size / MAX(octree_size.x, octree_size.y, octree_size.z);
 
 		Transform3D oversample_scale;
 		oversample_scale.basis.scale(Vector3(multiplier, multiplier, multiplier));

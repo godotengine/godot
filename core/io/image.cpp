@@ -2866,8 +2866,8 @@ void Image::_get_clipped_src_and_dest_rects(const Ref<Image> &p_src, const Rect2
 		r_clipped_dest_rect.position.y = 0;
 	}
 
-	r_clipped_src_rect.size.x = MAX(0, MIN(r_clipped_src_rect.size.x, MIN(p_src->width - r_clipped_src_rect.position.x, width - r_clipped_dest_rect.position.x)));
-	r_clipped_src_rect.size.y = MAX(0, MIN(r_clipped_src_rect.size.y, MIN(p_src->height - r_clipped_src_rect.position.y, height - r_clipped_dest_rect.position.y)));
+	r_clipped_src_rect.size.x = MAX(0, MIN(r_clipped_src_rect.size.x, p_src->width - r_clipped_src_rect.position.x, width - r_clipped_dest_rect.position.x));
+	r_clipped_src_rect.size.y = MAX(0, MIN(r_clipped_src_rect.size.y, p_src->height - r_clipped_src_rect.position.y, height - r_clipped_dest_rect.position.y));
 
 	r_clipped_dest_rect.size.x = r_clipped_src_rect.size.x;
 	r_clipped_dest_rect.size.y = r_clipped_src_rect.size.y;
