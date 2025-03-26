@@ -64,7 +64,7 @@
 #undef CursorShape
 
 class DisplayServerMacOS : public DisplayServer {
-	// No need to register with GDCLASS, it's platform-specific and nothing is added.
+	GDCLASS(DisplayServerMacOS, DisplayServer); // Note: required for Object::cast_to.
 
 	_THREAD_SAFE_CLASS_
 

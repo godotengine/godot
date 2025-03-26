@@ -46,6 +46,7 @@ class OS_MacOS : public OS_Unix {
 
 	id delegate = nullptr;
 	bool should_terminate = false;
+	bool main_stared = false;
 
 	JoypadApple *joypad_apple = nullptr;
 

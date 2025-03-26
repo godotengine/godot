@@ -51,8 +51,13 @@ void OS_MacOS::pre_wait_observer_cb(CFRunLoopObserverRef p_observer, CFRunLoopAc
 
 	@autoreleasepool {
 		@try {
-			if (DisplayServer::get_singleton()) {
-				static_cast<DisplayServerMacOS *>(DisplayServer::get_singleton())->_process_events(false); // Get rid of pending events.
+			// Get rid of pending events.
+			DisplayServer *ds = DisplayServer::get_singleton();
+			DisplayServerMacOS *ds_mac = Object::cast_to<DisplayServerMacOS>(ds);
+			if (ds_mac) {
+				ds_mac->_process_events(false);
+			} else if (ds) {
+				ds->process_events();
 			}
 			os->joypad_apple->process_joypads();
 
@@ -839,6 +844,8 @@ void OS_MacOS::start_main() {
 	}
 
 	if (err == OK) {
+		main_stared = true;
+
 		int ret;
 		@autoreleasepool {
 			ret = Main::start();
@@ -883,8 +890,10 @@ void OS_MacOS::cleanup() {
 	if (main_loop) {
 		main_loop->finalize();
 	}
-	@autoreleasepool {
-		Main::cleanup();
+	if (main_stared) {
+		@autoreleasepool {
+			Main::cleanup();
+		}
 	}
 }
 
