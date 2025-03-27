@@ -151,7 +151,11 @@ GameController::GameController(int p_joy_id, GCController *p_controller) :
 
 	if (@available(macOS 10.15, iOS 13.0, tvOS 13.0, *)) {
 		if ([controller.productCategory isEqualToString:@"Switch Pro Controller"] || [controller.productCategory isEqualToString:@"Nintendo Switch Joy-Con (L/R)"]) {
-			nintendo_button_layout = true;
+			double_nintendo_joycon_layout = true;
+		}
+
+		if ([controller.productCategory isEqualToString:@"Nintendo Switch Joy-Con (L)"] || [controller.productCategory isEqualToString:@"Nintendo Switch Joy-Con (R)"]) {
+			single_nintendo_joycon_layout = true;
 		}
 	}
 
@@ -207,7 +211,7 @@ GameController::GameController(int p_joy_id, GCController *p_controller) :
 			GCControllerButtonInput *buttonB = profile.buttons[GCInputButtonB];
 			GCControllerButtonInput *buttonX = profile.buttons[GCInputButtonX];
 			GCControllerButtonInput *buttonY = profile.buttons[GCInputButtonY];
-			if (nintendo_button_layout) {
+			if (double_nintendo_joycon_layout) {
 				if (buttonA) {
 					buttonA.pressedChangedHandler = BUTTON(JoyButton::B);
 				}
@@ -219,6 +223,19 @@ GameController::GameController(int p_joy_id, GCController *p_controller) :
 				}
 				if (buttonY) {
 					buttonY.pressedChangedHandler = BUTTON(JoyButton::X);
+				}
+			} else if (single_nintendo_joycon_layout) {
+				if (buttonA) {
+					buttonA.pressedChangedHandler = BUTTON(JoyButton::A);
+				}
+				if (buttonB) {
+					buttonB.pressedChangedHandler = BUTTON(JoyButton::X);
+				}
+				if (buttonX) {
+					buttonX.pressedChangedHandler = BUTTON(JoyButton::B);
+				}
+				if (buttonY) {
+					buttonY.pressedChangedHandler = BUTTON(JoyButton::Y);
 				}
 			} else {
 				if (buttonA) {
@@ -326,11 +343,16 @@ GameController::GameController(int p_joy_id, GCController *p_controller) :
 	} else if (controller.extendedGamepad != nil) {
 		GCExtendedGamepad *gamepad = controller.extendedGamepad;
 
-		if (nintendo_button_layout) {
+		if (double_nintendo_joycon_layout) {
 			gamepad.buttonA.pressedChangedHandler = BUTTON(JoyButton::B);
 			gamepad.buttonB.pressedChangedHandler = BUTTON(JoyButton::A);
 			gamepad.buttonX.pressedChangedHandler = BUTTON(JoyButton::Y);
 			gamepad.buttonY.pressedChangedHandler = BUTTON(JoyButton::X);
+		} else if (single_nintendo_joycon_layout) {
+			gamepad.buttonA.pressedChangedHandler = BUTTON(JoyButton::A);
+			gamepad.buttonB.pressedChangedHandler = BUTTON(JoyButton::X);
+			gamepad.buttonX.pressedChangedHandler = BUTTON(JoyButton::B);
+			gamepad.buttonY.pressedChangedHandler = BUTTON(JoyButton::Y);
 		} else {
 			gamepad.buttonA.pressedChangedHandler = BUTTON(JoyButton::A);
 			gamepad.buttonB.pressedChangedHandler = BUTTON(JoyButton::B);
