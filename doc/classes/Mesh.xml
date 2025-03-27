@@ -118,6 +118,7 @@
 				Calculate a [ConvexPolygonShape3D] from the mesh.
 				If [param clean] is [code]true[/code] (default), duplicate and interior vertices are removed automatically. You can set it to [code]false[/code] to make the process faster if not needed.
 				If [param simplify] is [code]true[/code], the geometry can be further simplified to reduce the number of vertices. Disabled by default.
+				[b]Note:[/b] This method requires the V-HACD module to be enabled, otherwise it will return an empty shape.
 			</description>
 		</method>
 		<method name="create_outline" qualifiers="const">
