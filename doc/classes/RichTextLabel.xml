@@ -502,6 +502,7 @@
 			<param index="3" name="st_parser" type="int" enum="TextServer.StructuredTextParser" default="0" />
 			<param index="4" name="justification_flags" type="int" enum="TextServer.JustificationFlag" is_bitfield="true" default="163" />
 			<param index="5" name="tab_stops" type="PackedFloat32Array" default="PackedFloat32Array()" />
+			<param index="6" name="autowrap_mode" type="int" enum="RichTextLabel.AutowrapMode" default="4" />
 			<description>
 				Adds a [code skip-lint][p][/code] tag to the tag stack.
 			</description>
@@ -774,6 +775,21 @@
 		</constant>
 		<constant name="LIST_DOTS" value="3" enum="ListType">
 			Each list item has a filled circle marker.
+		</constant>
+		<constant name="AUTOWRAP_OFF" value="0" enum="AutowrapMode">
+			Autowrap is disabled.
+		</constant>
+		<constant name="AUTOWRAP_ARBITRARY" value="1" enum="AutowrapMode">
+			Wraps the text inside the node's bounding rectangle by allowing to break lines at arbitrary positions, which is useful when very limited space is available.
+		</constant>
+		<constant name="AUTOWRAP_WORD" value="2" enum="AutowrapMode">
+			Wraps the text inside the node's bounding rectangle by soft-breaking between words.
+		</constant>
+		<constant name="AUTOWRAP_WORD_SMART" value="3" enum="AutowrapMode">
+			Behaves similarly to [constant AUTOWRAP_WORD], but force-breaks a word if that single word does not fit in one line.
+		</constant>
+		<constant name="AUTOWRAP_INHERITED" value="4" enum="AutowrapMode">
+			Use default [RichTextLabel] autowrap mode, see [member autowrap_mode].
 		</constant>
 		<constant name="MENU_COPY" value="0" enum="MenuItems">
 			Copies the selected text.

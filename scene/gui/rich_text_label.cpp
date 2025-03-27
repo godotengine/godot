@@ -432,18 +432,23 @@ float RichTextLabel::_shape_line(ItemFrame *p_frame, int p_line, const Ref<Font>
 	Line &l = p_frame->lines[p_line];
 	MutexLock lock(l.text_buf->get_mutex());
 
+	AutowrapMode aw_mode = _find_aw_flags(l.from);
+	if (aw_mode == AUTOWRAP_INHERITED) {
+		aw_mode = (AutowrapMode)autowrap_mode;
+	}
+
 	BitField<TextServer::LineBreakFlag> autowrap_flags = TextServer::BREAK_MANDATORY;
-	switch (autowrap_mode) {
-		case TextServer::AUTOWRAP_WORD_SMART:
+	switch (aw_mode) {
+		case AUTOWRAP_WORD_SMART:
 			autowrap_flags = TextServer::BREAK_WORD_BOUND | TextServer::BREAK_ADAPTIVE | TextServer::BREAK_MANDATORY;
 			break;
-		case TextServer::AUTOWRAP_WORD:
+		case AUTOWRAP_WORD:
 			autowrap_flags = TextServer::BREAK_WORD_BOUND | TextServer::BREAK_MANDATORY;
 			break;
-		case TextServer::AUTOWRAP_ARBITRARY:
+		case AUTOWRAP_ARBITRARY:
 			autowrap_flags = TextServer::BREAK_GRAPHEME_BOUND | TextServer::BREAK_MANDATORY;
 			break;
-		case TextServer::AUTOWRAP_OFF:
+		default:
 			break;
 	}
 	autowrap_flags = autowrap_flags | autowrap_flags_trim;
@@ -2664,6 +2669,21 @@ BitField<TextServer::JustificationFlag> RichTextLabel::_find_jst_flags(Item *p_i
 	return default_jst_flags;
 }
 
+RichTextLabel::AutowrapMode RichTextLabel::_find_aw_flags(Item *p_item) {
+	Item *item = p_item;
+
+	while (item) {
+		if (item->type == ITEM_PARAGRAPH) {
+			ItemParagraph *p = static_cast<ItemParagraph *>(item);
+			return p->autowrap_mode;
+		}
+
+		item = item->parent;
+	}
+
+	return AUTOWRAP_INHERITED;
+}
+
 PackedFloat32Array RichTextLabel::_find_tab_stops(Item *p_item) {
 	Item *item = p_item;
 
@@ -3807,7 +3827,7 @@ void RichTextLabel::push_strikethrough() {
 	_add_item(item, true);
 }
 
-void RichTextLabel::push_paragraph(HorizontalAlignment p_alignment, Control::TextDirection p_direction, const String &p_language, TextServer::StructuredTextParser p_st_parser, BitField<TextServer::JustificationFlag> p_jst_flags, const PackedFloat32Array &p_tab_stops) {
+void RichTextLabel::push_paragraph(HorizontalAlignment p_alignment, Control::TextDirection p_direction, const String &p_language, TextServer::StructuredTextParser p_st_parser, BitField<TextServer::JustificationFlag> p_jst_flags, const PackedFloat32Array &p_tab_stops, AutowrapMode p_autowrap_mode) {
 	_stop_thread();
 	MutexLock data_lock(data_mutex);
 
@@ -3822,6 +3842,7 @@ void RichTextLabel::push_paragraph(HorizontalAlignment p_alignment, Control::Tex
 	item->st_parser = p_st_parser;
 	item->jst_flags = p_jst_flags;
 	item->tab_stops = p_tab_stops;
+	item->autowrap_mode = p_autowrap_mode;
 	_add_item(item, true, true);
 }
 
@@ -4712,19 +4733,19 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 			add_text(String::chr(0x00AD));
 			pos = brk_end + 1;
 		} else if (tag == "center") {
-			push_paragraph(HORIZONTAL_ALIGNMENT_CENTER, text_direction, language, st_parser, default_jst_flags, default_tab_stops);
+			push_paragraph(HORIZONTAL_ALIGNMENT_CENTER, text_direction, language, st_parser, default_jst_flags, default_tab_stops, AUTOWRAP_INHERITED);
 			pos = brk_end + 1;
 			tag_stack.push_front(tag);
 		} else if (tag == "fill") {
-			push_paragraph(HORIZONTAL_ALIGNMENT_FILL, text_direction, language, st_parser, default_jst_flags, default_tab_stops);
+			push_paragraph(HORIZONTAL_ALIGNMENT_FILL, text_direction, language, st_parser, default_jst_flags, default_tab_stops, AUTOWRAP_INHERITED);
 			pos = brk_end + 1;
 			tag_stack.push_front(tag);
 		} else if (tag == "left") {
-			push_paragraph(HORIZONTAL_ALIGNMENT_LEFT, text_direction, language, st_parser, default_jst_flags, default_tab_stops);
+			push_paragraph(HORIZONTAL_ALIGNMENT_LEFT, text_direction, language, st_parser, default_jst_flags, default_tab_stops, AUTOWRAP_INHERITED);
 			pos = brk_end + 1;
 			tag_stack.push_front(tag);
 		} else if (tag == "right") {
-			push_paragraph(HORIZONTAL_ALIGNMENT_RIGHT, text_direction, language, st_parser, default_jst_flags, default_tab_stops);
+			push_paragraph(HORIZONTAL_ALIGNMENT_RIGHT, text_direction, language, st_parser, default_jst_flags, default_tab_stops, AUTOWRAP_INHERITED);
 			pos = brk_end + 1;
 			tag_stack.push_front(tag);
 		} else if (tag == "ul") {
@@ -4782,6 +4803,7 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 			Control::TextDirection dir = Control::TEXT_DIRECTION_INHERITED;
 			String lang = language;
 			PackedFloat32Array tab_stops = default_tab_stops;
+			AutowrapMode aw_mode = AUTOWRAP_INHERITED;
 			TextServer::StructuredTextParser st_parser_type = TextServer::STRUCTURED_TEXT_DEFAULT;
 			BitField<TextServer::JustificationFlag> jst_flags = default_jst_flags;
 
@@ -4870,8 +4892,25 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 					st_parser_type = TextServer::STRUCTURED_TEXT_CUSTOM;
 				}
 			}
+			OptionMap::Iterator aw_option = bbcode_options.find("autowrap");
+			if (!aw_option) {
+				aw_option = bbcode_options.find("aw");
+			}
+			if (aw_option) {
+				if (aw_option->value == "o" || aw_option->value == "off") {
+					aw_mode = AUTOWRAP_OFF;
+				} else if (aw_option->value == "a" || aw_option->value == "arbitrary") {
+					aw_mode = AUTOWRAP_ARBITRARY;
+				} else if (aw_option->value == "w" || aw_option->value == "word") {
+					aw_mode = AUTOWRAP_WORD;
+				} else if (aw_option->value == "s" || aw_option->value == "smart" || aw_option->value == "word_smart") {
+					aw_mode = AUTOWRAP_WORD_SMART;
+				} else if (aw_option->value == "i" || aw_option->value == "inherited") {
+					aw_mode = AUTOWRAP_INHERITED;
+				}
+			}
 
-			push_paragraph(alignment, dir, lang, st_parser_type, jst_flags, tab_stops);
+			push_paragraph(alignment, dir, lang, st_parser_type, jst_flags, tab_stops, aw_mode);
 			pos = brk_end + 1;
 			tag_stack.push_front("p");
 		} else if (tag == "url") {
@@ -6455,7 +6494,7 @@ void RichTextLabel::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("push_color", "color"), &RichTextLabel::push_color);
 	ClassDB::bind_method(D_METHOD("push_outline_size", "outline_size"), &RichTextLabel::push_outline_size);
 	ClassDB::bind_method(D_METHOD("push_outline_color", "color"), &RichTextLabel::push_outline_color);
-	ClassDB::bind_method(D_METHOD("push_paragraph", "alignment", "base_direction", "language", "st_parser", "justification_flags", "tab_stops"), &RichTextLabel::push_paragraph, DEFVAL(TextServer::DIRECTION_AUTO), DEFVAL(""), DEFVAL(TextServer::STRUCTURED_TEXT_DEFAULT), DEFVAL(TextServer::JUSTIFICATION_WORD_BOUND | TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_SKIP_LAST_LINE | TextServer::JUSTIFICATION_DO_NOT_SKIP_SINGLE_LINE), DEFVAL(PackedFloat32Array()));
+	ClassDB::bind_method(D_METHOD("push_paragraph", "alignment", "base_direction", "language", "st_parser", "justification_flags", "tab_stops", "autowrap_mode"), &RichTextLabel::push_paragraph, DEFVAL(TextServer::DIRECTION_AUTO), DEFVAL(""), DEFVAL(TextServer::STRUCTURED_TEXT_DEFAULT), DEFVAL(TextServer::JUSTIFICATION_WORD_BOUND | TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_SKIP_LAST_LINE | TextServer::JUSTIFICATION_DO_NOT_SKIP_SINGLE_LINE), DEFVAL(PackedFloat32Array()), DEFVAL(AUTOWRAP_INHERITED));
 	ClassDB::bind_method(D_METHOD("push_indent", "level"), &RichTextLabel::push_indent);
 	ClassDB::bind_method(D_METHOD("push_list", "level", "type", "capitalize", "bullet"), &RichTextLabel::push_list, DEFVAL(String::utf8("•")));
 	ClassDB::bind_method(D_METHOD("push_meta", "data", "underline_mode", "tooltip"), &RichTextLabel::push_meta, DEFVAL(META_UNDERLINE_ALWAYS), DEFVAL(String()));
@@ -6662,6 +6701,12 @@ void RichTextLabel::_bind_methods() {
 	BIND_ENUM_CONSTANT(LIST_LETTERS);
 	BIND_ENUM_CONSTANT(LIST_ROMAN);
 	BIND_ENUM_CONSTANT(LIST_DOTS);
+
+	BIND_ENUM_CONSTANT(AUTOWRAP_OFF);
+	BIND_ENUM_CONSTANT(AUTOWRAP_ARBITRARY);
+	BIND_ENUM_CONSTANT(AUTOWRAP_WORD);
+	BIND_ENUM_CONSTANT(AUTOWRAP_WORD_SMART);
+	BIND_ENUM_CONSTANT(AUTOWRAP_INHERITED);
 
 	BIND_ENUM_CONSTANT(MENU_COPY);
 	BIND_ENUM_CONSTANT(MENU_SELECT_ALL);

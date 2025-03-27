@@ -66,6 +66,14 @@ public:
 		META_UNDERLINE_ON_HOVER,
 	};
 
+	enum AutowrapMode {
+		AUTOWRAP_OFF = TextServer::AUTOWRAP_OFF,
+		AUTOWRAP_ARBITRARY = TextServer::AUTOWRAP_ARBITRARY,
+		AUTOWRAP_WORD = TextServer::AUTOWRAP_WORD,
+		AUTOWRAP_WORD_SMART = TextServer::AUTOWRAP_WORD_SMART,
+		AUTOWRAP_INHERITED,
+	};
+
 	enum ItemType {
 		ITEM_FRAME,
 		ITEM_TEXT,
@@ -139,6 +147,7 @@ protected:
 	void _add_image_bind_compat_80410(const Ref<Texture2D> &p_image, const int p_width, const int p_height, const Color &p_color, InlineAlignment p_alignment, const Rect2 &p_region);
 	bool _remove_paragraph_bind_compat_91098(int p_paragraph);
 	void _set_table_column_expand_bind_compat_101482(int p_column, bool p_expand, int p_ratio);
+	void _push_paragraph_bind_compat_1XXXXX(HorizontalAlignment p_alignment, Control::TextDirection p_direction, const String &p_language, TextServer::StructuredTextParser p_st_parser, BitField<TextServer::JustificationFlag> p_jst_flags, const PackedFloat32Array &p_tab_stops);
 	static void _bind_compatibility_methods();
 #endif
 
@@ -317,6 +326,7 @@ private:
 		Control::TextDirection direction = Control::TEXT_DIRECTION_AUTO;
 		TextServer::StructuredTextParser st_parser = TextServer::STRUCTURED_TEXT_DEFAULT;
 		BitField<TextServer::JustificationFlag> jst_flags = TextServer::JUSTIFICATION_WORD_BOUND | TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_SKIP_LAST_LINE | TextServer::JUSTIFICATION_DO_NOT_SKIP_SINGLE_LINE;
+		AutowrapMode autowrap_mode = AUTOWRAP_INHERITED;
 		PackedFloat32Array tab_stops;
 		ItemParagraph() { type = ITEM_PARAGRAPH; }
 	};
@@ -594,6 +604,7 @@ private:
 	int _find_margin(Item *p_item, const Ref<Font> &p_base_font, int p_base_font_size);
 	PackedFloat32Array _find_tab_stops(Item *p_item);
 	HorizontalAlignment _find_alignment(Item *p_item);
+	AutowrapMode _find_aw_flags(Item *p_item);
 	BitField<TextServer::JustificationFlag> _find_jst_flags(Item *p_item);
 	TextServer::Direction _find_direction(Item *p_item);
 	TextServer::StructuredTextParser _find_stt(Item *p_item);
@@ -713,7 +724,7 @@ public:
 	void push_underline();
 	void push_strikethrough();
 	void push_language(const String &p_language);
-	void push_paragraph(HorizontalAlignment p_alignment, Control::TextDirection p_direction = Control::TEXT_DIRECTION_INHERITED, const String &p_language = "", TextServer::StructuredTextParser p_st_parser = TextServer::STRUCTURED_TEXT_DEFAULT, BitField<TextServer::JustificationFlag> p_jst_flags = TextServer::JUSTIFICATION_WORD_BOUND | TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_SKIP_LAST_LINE | TextServer::JUSTIFICATION_DO_NOT_SKIP_SINGLE_LINE, const PackedFloat32Array &p_tab_stops = PackedFloat32Array());
+	void push_paragraph(HorizontalAlignment p_alignment, Control::TextDirection p_direction = Control::TEXT_DIRECTION_INHERITED, const String &p_language = "", TextServer::StructuredTextParser p_st_parser = TextServer::STRUCTURED_TEXT_DEFAULT, BitField<TextServer::JustificationFlag> p_jst_flags = TextServer::JUSTIFICATION_WORD_BOUND | TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_SKIP_LAST_LINE | TextServer::JUSTIFICATION_DO_NOT_SKIP_SINGLE_LINE, const PackedFloat32Array &p_tab_stops = PackedFloat32Array(), AutowrapMode p_autowrap_mode = AUTOWRAP_INHERITED);
 	void push_indent(int p_level);
 	void push_list(int p_level, ListType p_list, bool p_capitalize, const String &p_bullet = String::utf8("•"));
 	void push_meta(const Variant &p_meta, MetaUnderline p_underline_mode = META_UNDERLINE_ALWAYS, const String &p_tooltip = String());
@@ -894,6 +905,7 @@ public:
 };
 
 VARIANT_ENUM_CAST(RichTextLabel::ListType);
+VARIANT_ENUM_CAST(RichTextLabel::AutowrapMode);
 VARIANT_ENUM_CAST(RichTextLabel::MenuItems);
 VARIANT_ENUM_CAST(RichTextLabel::MetaUnderline);
 VARIANT_BITFIELD_CAST(RichTextLabel::ImageUpdateMask);
