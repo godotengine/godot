@@ -440,6 +440,9 @@ public:                                                                         
 	}                                                                                                                                       \
                                                                                                                                             \
 protected:                                                                                                                                  \
+	virtual bool _derives_from(const std::type_info &p_type_info) const override {                                                          \
+		return typeid(m_class) == p_type_info || m_inherits::_derives_from(p_type_info);                                                    \
+	}                                                                                                                                       \
 	_FORCE_INLINE_ static void (*_get_bind_methods())() {                                                                                   \
 		return &m_class::_bind_methods;                                                                                                     \
 	}                                                                                                                                       \
@@ -768,6 +771,12 @@ protected:
 	mutable VirtualMethodTracker *virtual_method_list = nullptr;
 #endif
 
+	virtual bool _derives_from(const std::type_info &p_type_info) const {
+		// This could just be false because nobody would reasonably ask if an Object subclass derives from Object,
+		// but it would be wrong if somebody actually does ask. It's not too slow to check anyway.
+		return typeid(Object) == p_type_info;
+	}
+
 public: // Should be protected, but bug in clang++.
 	static void initialize_class();
 	_FORCE_INLINE_ static void register_custom_data_to_otdb() {}
@@ -787,12 +796,26 @@ public:
 
 	template <typename T>
 	static T *cast_to(Object *p_object) {
-		return p_object ? dynamic_cast<T *>(p_object) : nullptr;
+		// This is like dynamic_cast, but faster.
+		// The reason is that we can assume no virtual and multiple inheritance.
+		static_assert(std::is_base_of_v<Object, T>, "T must be derived from Object");
+		if constexpr (std::is_same_v<std::decay_t<T>, typename T::self_type>) {
+			return p_object && p_object->_derives_from(typeid(T)) ? static_cast<T *>(p_object) : nullptr;
+		} else {
+			// T does not use GDCLASS, must fall back to dynamic_cast.
+			return p_object ? dynamic_cast<T *>(p_object) : nullptr;
+		}
 	}
 
 	template <typename T>
 	static const T *cast_to(const Object *p_object) {
-		return p_object ? dynamic_cast<const T *>(p_object) : nullptr;
+		static_assert(std::is_base_of_v<Object, T>, "T must be derived from Object");
+		if constexpr (std::is_same_v<std::decay_t<T>, typename T::self_type>) {
+			return p_object && p_object->_derives_from(typeid(T)) ? static_cast<const T *>(p_object) : nullptr;
+		} else {
+			// T does not use GDCLASS, must fall back to dynamic_cast.
+			return p_object ? dynamic_cast<const T *>(p_object) : nullptr;
+		}
 	}
 
 	enum {
