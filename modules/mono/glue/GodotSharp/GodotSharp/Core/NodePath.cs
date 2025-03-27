@@ -1,8 +1,7 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using Godot.NativeInterop;
-using BitFaster.Caching;
-using BitFaster.Caching.Lru;
+using System.Collections.Concurrent;
 
 #nullable enable
 
@@ -50,9 +49,8 @@ namespace Godot
 
         private WeakReference<IDisposable>? _weakReferenceToSelf;
 
-        private static readonly ICache<string, NodePath> _nodePathCache = new ConcurrentLruBuilder<string, NodePath>()
-            .WithExpireAfterAccess(TimeSpan.FromSeconds(30))
-            .Build();
+        private static readonly ConcurrentDictionary<string, WeakReference<NodePath>> _nodePathCache = new();
+        private string? _cachedString;
 
         ~NodePath()
         {
@@ -70,10 +68,15 @@ namespace Godot
 
         public void Dispose(bool disposing)
         {
+            if (_cachedString is not null)
+            {
+                _nodePathCache.TryRemove(_cachedString, out _);
+            }
+
             // Always dispose `NativeValue` even if disposing is true
             NativeValue.DangerousSelfRef.Dispose();
 
-            if (_weakReferenceToSelf != null)
+            if (_weakReferenceToSelf is not null)
             {
                 DisposablesTracker.UnregisterDisposable(_weakReferenceToSelf);
             }
@@ -127,6 +130,8 @@ namespace Godot
         /// <param name="path">A string that represents a path in a scene tree.</param>
         public NodePath(string path)
         {
+            _cachedString = path;
+
             if (!string.IsNullOrEmpty(path))
             {
                 NativeValue = (godot_node_path.movable)NativeFuncs.godotsharp_node_path_new_from_string(path);
@@ -143,10 +148,20 @@ namespace Godot
         public static implicit operator NodePath?(string? from)
         {
             if (from is null)
-            {
                 return null;
+
+            while (true)
+            {
+                WeakReference<NodePath> cachedNodePath = _nodePathCache.GetOrAdd(from,
+                    static (string from) => new WeakReference<NodePath>(new NodePath(from))
+                );
+
+                if (cachedNodePath.TryGetTarget(out NodePath? result))
+                {
+                    return result;
+                }
+                // It's possible to reach here if disposed in a race; try again
             }
-            return _nodePathCache.GetOrAdd(from, static (string from) => new NodePath(from));
         }
 
         /// <summary>
@@ -168,10 +183,16 @@ namespace Godot
             if (IsEmpty)
                 return string.Empty;
 
+            if (_cachedString is not null)
+                return _cachedString;
+
             var src = (godot_node_path)NativeValue;
             NativeFuncs.godotsharp_node_path_as_string(out godot_string dest, src);
             using (dest)
-                return Marshaling.ConvertStringToManaged(dest);
+            {
+                _cachedString = Marshaling.ConvertStringToManaged(dest);
+                return _cachedString;
+            }
         }
 
         /// <summary>

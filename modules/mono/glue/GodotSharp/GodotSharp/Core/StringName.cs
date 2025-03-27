@@ -1,8 +1,7 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using Godot.NativeInterop;
-using BitFaster.Caching;
-using BitFaster.Caching.Lru;
+using System.Collections.Concurrent;
 
 #nullable enable
 
@@ -21,9 +20,8 @@ namespace Godot
 
         private WeakReference<IDisposable>? _weakReferenceToSelf;
 
-        private static readonly ICache<string, StringName> _stringNameCache = new ConcurrentLruBuilder<string, StringName>()
-            .WithExpireAfterAccess(TimeSpan.FromSeconds(30))
-            .Build();
+        private static readonly ConcurrentDictionary<string, WeakReference<StringName>> _stringNameCache = new();
+        private string? _cachedString;
 
         ~StringName()
         {
@@ -41,10 +39,15 @@ namespace Godot
 
         public void Dispose(bool disposing)
         {
+            if (_cachedString is not null)
+            {
+                _stringNameCache.TryRemove(_cachedString, out _);
+            }
+
             // Always dispose `NativeValue` even if disposing is true
             NativeValue.DangerousSelfRef.Dispose();
 
-            if (_weakReferenceToSelf != null)
+            if (_weakReferenceToSelf is not null)
             {
                 DisposablesTracker.UnregisterDisposable(_weakReferenceToSelf);
             }
@@ -73,6 +76,8 @@ namespace Godot
         /// <param name="name">String to construct the <see cref="StringName"/> from.</param>
         public StringName(string name)
         {
+            _cachedString = name;
+
             if (!string.IsNullOrEmpty(name))
             {
                 NativeValue = (godot_string_name.movable)NativeFuncs.godotsharp_string_name_new_from_string(name);
@@ -89,10 +94,20 @@ namespace Godot
         public static implicit operator StringName?(string? from)
         {
             if (from is null)
-            {
                 return null;
+
+            while (true)
+            {
+                WeakReference<StringName> cachedStringName = _stringNameCache.GetOrAdd(from,
+                    static (string from) => new WeakReference<StringName>(new StringName(from))
+                );
+
+                if (cachedStringName.TryGetTarget(out StringName? result))
+                {
+                    return result;
+                }
+                // It's possible to reach here if disposed in a race; try again
             }
-            return _stringNameCache.GetOrAdd(from, static (string from) => new StringName(from));
         }
 
         /// <summary>
@@ -114,10 +129,16 @@ namespace Godot
             if (IsEmpty)
                 return string.Empty;
 
+            if (_cachedString is not null)
+                return _cachedString;
+
             var src = (godot_string_name)NativeValue;
             NativeFuncs.godotsharp_string_name_as_string(out godot_string dest, src);
             using (dest)
-                return Marshaling.ConvertStringToManaged(dest);
+            {
+                _cachedString = Marshaling.ConvertStringToManaged(dest);
+                return _cachedString;
+            }
         }
 
         /// <summary>
