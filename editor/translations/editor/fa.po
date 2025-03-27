@@ -57,7 +57,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-03-19 07:54+0000\n"
+"PO-Revision-Date: 2025-03-24 09:59+0000\n"
 "Last-Translator: John Smith <pkafsharix@gmail.com>\n"
 "Language-Team: Persian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fa/>\n"
@@ -3563,6 +3563,26 @@ msgstr "روشن/خاموش کردن پدیداری پیام‌های ویراس
 
 msgid "Native Shader Source Inspector"
 msgstr "بازرس سرچشمهٔ سایه‌زن بومی"
+
+msgid ""
+"The Android build template is already installed in this project and it won't "
+"be overwritten.\n"
+"Remove the \"%s\" directory manually before attempting this operation again."
+msgstr ""
+"قالب ساخت اندروید از قبل در این پروژه نصب شده است و بازنویسی نخواهد شد.\n"
+"پوشه «%s» را به‌صورت دستی حذف کنید و سپس دوباره این عملیات را انجام دهید."
+
+msgid ""
+"This will set up your project for gradle Android builds by installing the "
+"source template to \"%s\".\n"
+"Note that in order to make gradle builds instead of using pre-built APKs, the "
+"\"Use Gradle Build\" option should be enabled in the Android export preset."
+msgstr ""
+"این عملیات، پروژه شما را برای ساخت‌های اندروید با گریدل آماده می‌کند و قالب "
+"منبع را در «%s» نصب خواهد کرد.\n"
+"توجه داشته باشید که برای ساخت با گریدل به‌جای استفاده از ای‌پی‌کی‌های از پیش "
+"ساخته‌شده، گزینه «استفاده از ساخت گریدل» باید در پیش‌تنظیم برون‌برد اندروید فعال "
+"شود."
 
 msgid "Unnamed Project"
 msgstr "پروژه بی‌نام"
@@ -11490,6 +11510,9 @@ msgstr "افزودن مورد آیکن"
 msgid "Rename Color Item"
 msgstr "بازنامگذاری مورد رنگ"
 
+msgid "Rename Constant Item"
+msgstr "تغییر نام مورد ثابت"
+
 msgid "Rename Font Item"
 msgstr "بازنامگذاری مورد قلم"
 
@@ -12572,19 +12595,91 @@ msgid "Input parameter."
 msgstr "پارامتر ورودی."
 
 msgid "'%s' input parameter for sky shader mode."
-msgstr "'%s' پارامتر ورودی برای حالت شیدر آسمان"
+msgstr "پارامتر ورودی «%s» برای حالت سایه‌زن آسمان."
+
+msgid ""
+"A node for help to multiply a position input vector by rotation using "
+"specific axis. Intended to work with emitters."
+msgstr ""
+"گره‌ای برای کمک به ضرب بردار ورودی موقعیت در چرخش با استفاده از محور مشخص. "
+"برای کار با منتشرکننده‌ها طراحی شده است."
+
+msgid "Float function."
+msgstr "تابع اعشاری."
+
+msgid "Float operator."
+msgstr "عملگر اعشاری."
+
+msgid "Integer function."
+msgstr "تابع عدد صحیح."
+
+msgid "Integer operator."
+msgstr "عملگر عدد صحیح."
+
+msgid "Unsigned integer function."
+msgstr "تابع عدد صحیح بدون علامت."
+
+msgid "Unsigned integer operator."
+msgstr "عملگر عدد صحیح بدون علامت."
 
 msgid "Returns the absolute value of the parameter."
 msgstr "قدر مطلق پارامتر را برمی‌گرداند."
 
+msgid "Returns the arc-cosine of the parameter."
+msgstr "ارک‌کوسینوس پارامتر را بازمی‌گرداند."
+
+msgid "Returns the inverse hyperbolic cosine of the parameter."
+msgstr "معکوس ارک‌کوسینوس هیپربولیک پارامتر را بازمی‌گرداند."
+
+msgid "Returns the arc-sine of the parameter."
+msgstr "ارک‌سینوس پارامتر را بازمی‌گرداند."
+
+msgid "Returns the inverse hyperbolic sine of the parameter."
+msgstr "معکوس ارک‌سینوس هیپربولیک پارامتر را بازمی‌گرداند."
+
+msgid "Returns the arc-tangent of the parameter."
+msgstr "ارک‌تانژانت پارامتر را بازمی‌گرداند."
+
+msgid "Returns the arc-tangent of the parameters."
+msgstr "ارک‌تانژانت پارامترها را بازمی‌گرداند."
+
+msgid "Returns the result of bitwise NOT (~a) operation on the integer."
+msgstr "نتیجه عملگر نقیض بیتی (~a) روی عدد صحیح را برمی‌گرداند."
+
+msgid ""
+"Returns the result of bitwise NOT (~a) operation on the unsigned integer."
+msgstr "نتیجه عملگر نقیض بیتی (~a) روی عدد صحیح بدون علامت را برمی‌گرداند."
+
+msgid ""
+"Finds the nearest integer that is greater than or equal to the parameter."
+msgstr "نزدیک‌ترین عدد صحیح بزرگ‌تر از یا مساوی پارامتر را پیدا می‌کند."
+
+msgid "Constrains a value to lie between two further values."
+msgstr "مقدار را محدود می‌کند تا بین دو مقدار دیگر قرار گیرد."
+
 msgid "Returns the cosine of the parameter."
 msgstr "کسینوس پارامتر را برمی‌گرداند."
+
+msgid "Returns the hyperbolic cosine of the parameter."
+msgstr "کسینوس هذلولوی پارامتر را برمی‌گرداند."
 
 msgid "Converts a quantity in radians to degrees."
 msgstr "کمیّت رادیانی را به درجه تبدیل می‌کند."
 
+msgid "(Scalar) Derivative in 'x' using local differencing."
+msgstr "(عدد اسکالر) مشتق در «x» با استفاده از تفاوت محلی."
+
+msgid "(Scalar) Derivative in 'y' using local differencing."
+msgstr "(عدد اسکالر) مشتق در «y» با استفاده از تفاوت محلی."
+
+msgid "Finds the nearest integer less than or equal to the parameter."
+msgstr "نزدیک‌ترین عدد صحیح کمتر از یا مساوی پارامتر را پیدا می‌کند."
+
 msgid "Computes the fractional part of the argument."
 msgstr "بخش برخالی آرگومان را می‌رایاند."
+
+msgid "Returns the inverse of the square root of the parameter."
+msgstr "معکوس ریشه دوم پارامتر را برمی‌گرداند."
 
 msgid "Natural logarithm."
 msgstr "لگاریتم طبیعی."
@@ -12592,11 +12687,27 @@ msgstr "لگاریتم طبیعی."
 msgid "Base-2 logarithm."
 msgstr "لگاریتم پایه ۲."
 
+msgid "Returns the greater of two values."
+msgstr "بزرگ‌ترین مقدار از دو مقدار را برمی‌گرداند."
+
+msgid "Returns the lesser of two values."
+msgstr "کوچک‌ترین مقدار از دو مقدار را برمی‌گرداند."
+
 msgid "Linear interpolation between two scalars."
 msgstr "میان‌یابی خطی میان دو نرده‌ای."
 
+msgid "Performs a fused multiply-add operation (a * b + c) on scalars."
+msgstr "عملگر ضرب و جمع پیوسته (a * b + c) را روی اعداد اسکالر انجام می‌دهد."
+
+msgid "Returns the opposite value of the parameter."
+msgstr "مقدار مخالف پارامتر را برمی‌گرداند."
+
 msgid "1.0 - scalar"
 msgstr "۱.۰ - نرده‌ای"
+
+msgid ""
+"Returns the value of the first parameter raised to the power of the second."
+msgstr "مقدار پارامتر اول را به توان پارامتر دوم برمی‌گرداند."
 
 msgid "Converts a quantity in degrees to radians."
 msgstr "کمیّت درجه‌ای را به رادیان تبدیل می‌کند."
@@ -12604,14 +12715,116 @@ msgstr "کمیّت درجه‌ای را به رادیان تبدیل می‌کن
 msgid "1.0 / scalar"
 msgstr "۱.۰ / نرده‌ای"
 
+msgid "Remaps a value from the input range to the output range."
+msgstr "مقدار را از دامنه ورودی به دامنه خروجی بازنقش می‌کند."
+
+msgid "Finds the nearest integer to the parameter."
+msgstr "نزدیک‌ترین عدد صحیح به پارامتر را پیدا می‌کند."
+
+msgid "Finds the nearest even integer to the parameter."
+msgstr "نزدیک‌ترین عدد صحیح زوج به پارامتر را پیدا می‌کند."
+
+msgid "Clamps the value between 0.0 and 1.0."
+msgstr "مقدار را بین ۰.۰ و ۱.۰ محدود می‌کند."
+
+msgid "Extracts the sign of the parameter."
+msgstr "علامت پارامتر را استخراج می‌کند."
+
 msgid "Returns the sine of the parameter."
 msgstr "سینوس پارامتر را برمی‌گرداند."
+
+msgid "Returns the hyperbolic sine of the parameter."
+msgstr "سینوس هذلولوی پارامتر را برمی‌گرداند."
 
 msgid "Returns the square root of the parameter."
 msgstr "ریشهٔ دوم پارامتر را برمی‌گرداند."
 
+msgid ""
+"SmoothStep function( scalar(edge0), scalar(edge1), scalar(x) ).\n"
+"\n"
+"Returns 0.0 if 'x' is smaller than 'edge0' and 1.0 if x is larger than "
+"'edge1'. Otherwise the return value is interpolated between 0.0 and 1.0 using "
+"Hermite polynomials."
+msgstr ""
+"عملکرد SmoothStep (عدد اسکالر(edge0)، عدد اسکالر(edge1)، عدد اسکالر(x)).\n"
+"\n"
+"اگر «x» از «edge0» کوچک‌تر باشد، مقدار ۰.۰ را برمی‌گرداند و اگر «x» از «edge1» "
+"بزرگ‌تر باشد، مقدار ۱.۰ را برمی‌گرداند. در غیر این صورت، مقدار برگشتی بین ۰.۰ و "
+"۱.۰ با استفاده از چندجمله‌ای‌های هرمیت درون‌یابی می‌شود."
+
+msgid ""
+"Step function( scalar(edge), scalar(x) ).\n"
+"\n"
+"Returns 0.0 if 'x' is smaller than 'edge' and otherwise 1.0."
+msgstr ""
+"عملکرد Step (عدد اسکالر(edge)، عدد اسکالر(x)).\n"
+"\n"
+"اگر «x» از «edge» کوچک‌تر باشد، مقدار ۰.۰ را برمی‌گرداند و در غیر این صورت "
+"مقدار ۱.۰ را برمی‌گرداند."
+
+msgid ""
+"(Fragment/Light mode only) (Scalar) Sum of absolute derivative in 'x' and 'y'."
+msgstr "(فقط حالت Fragment/Light) (عدد اسکالر) مجموع مشتق‌های مطلق در «x» و «y»."
+
+msgid "(Scalar) Sum of absolute derivative in 'x' and 'y'."
+msgstr "(عدد اسکالر) مجموع مشتق‌های مطلق در «x» و «y»."
+
 msgid "Returns the tangent of the parameter."
 msgstr "تانژانت پارامتر را برمی‌گرداند."
+
+msgid "Returns the hyperbolic tangent of the parameter."
+msgstr "تانژانت هذلولوی پارامتر را برمی‌گرداند."
+
+msgid "Finds the truncated value of the parameter."
+msgstr "مقدار بریده‌شده پارامتر را پیدا می‌کند."
+
+msgid "Sums two floating-point scalars."
+msgstr "جمع دو عدد اعشاری اسکالر را محاسبه می‌کند."
+
+msgid "Sums two integer scalars."
+msgstr "جمع دو عدد صحیح اسکالر را محاسبه می‌کند."
+
+msgid "Sums two unsigned integer scalars."
+msgstr "جمع دو عدد صحیح بدون علامت اسکالر را محاسبه می‌کند."
+
+msgid "Returns the result of bitwise AND (a & b) operation for two integers."
+msgstr "نتیجه عملگر AND بیتی (a & b) برای دو عدد صحیح را برمی‌گرداند."
+
+msgid ""
+"Returns the result of bitwise AND (a & b) operation for two unsigned integers."
+msgstr "نتیجه عملگر AND بیتی (a & b) برای دو عدد صحیح بدون علامت را برمی‌گرداند."
+
+msgid ""
+"Returns the result of bitwise left shift (a << b) operation on the integer."
+msgstr "نتیجه عملگر جابه‌جایی بیتی به چپ (a << b) روی عدد صحیح را برمی‌گرداند."
+
+msgid ""
+"Returns the result of bitwise left shift (a << b) operation on the unsigned "
+"integer."
+msgstr ""
+"نتیجه عملگر جابه‌جایی بیتی به چپ (a << b) روی عدد صحیح بدون علامت را "
+"برمی‌گرداند."
+
+msgid "Returns the result of bitwise OR (a | b) operation for two integers."
+msgstr "نتیجه عملگر OR بیتی (a | b) برای دو عدد صحیح را برمی‌گرداند."
+
+msgid ""
+"Returns the result of bitwise OR (a | b) operation for two unsigned integers."
+msgstr "نتیجه عملگر OR بیتی (a | b) برای دو عدد صحیح بدون علامت را برمی‌گرداند."
+
+msgid ""
+"Returns the result of bitwise right shift (a >> b) operation on the integer."
+msgstr "نتیجه عملگر جابه‌جایی بیتی به راست (a >> b) روی عدد صحیح را برمی‌گرداند."
+
+msgid ""
+"Returns the result of bitwise right shift (a >> b) operation on the unsigned "
+"integer."
+msgstr ""
+"نتیجه عملگر جابه‌جایی بیتی به راست (a >> b) روی عدد صحیح بدون علامت را "
+"برمی‌گرداند."
+
+msgid "Returns the result of bitwise XOR (a ^ b) operation on the integer."
+msgstr "نتیجه عملگر XOR بیتی (a ^ b) روی عدد صحیح را برمی‌گرداند."
 
 msgid "Apply panning function on texture coordinates."
 msgstr "تابع سراسرنمایی را روی بافت مختصات به کار ببندید."
@@ -14154,6 +14367,17 @@ msgid "An empty CollisionPolygon2D has no effect on collision."
 msgstr "یک CollisionPolygon2D تهی بر برخوردگاه تاثیری ندارد."
 
 msgid ""
+"CollisionShape2D only serves to provide a collision shape to a "
+"CollisionObject2D derived node.\n"
+"Please only use it as a child of Area2D, StaticBody2D, RigidBody2D, "
+"CharacterBody2D, etc. to give them a shape."
+msgstr ""
+"CollisionShape2D تنها برای فراهم کردن یک شکل برخورد برای گره‌ای مشتق‌شده از "
+"CollisionObject2D به کار می‌رود.\n"
+"لطفاً از آن فقط به‌عنوان فرزند Area2D، StaticBody2D، RigidBody2D، "
+"CharacterBody2D و موارد مشابه برای تعیین شکل آن‌ها استفاده کنید."
+
+msgid ""
 "A shape must be provided for CollisionShape2D to function. Please create a "
 "shape resource for it!"
 msgstr ""
@@ -14185,6 +14409,59 @@ msgstr ""
 msgid "Path property must point to a valid Node2D node to work."
 msgstr "دارایی Path باید به یک گره Node2D معتبر اشاره کند تا کار کند."
 
+msgid "A Bone2D only works with a Skeleton2D or another Bone2D as parent node."
+msgstr ""
+"یک Bone2D تنها با یک Skeleton2D یا یک Bone2D دیگر به‌عنوان گره والد کار می‌کند."
+
+msgid ""
+"The TileMap node is deprecated as it is superseded by the use of multiple "
+"TileMapLayer nodes.\n"
+"To convert a TileMap to a set of TileMapLayer nodes, open the TileMap bottom "
+"panel with this node selected, click the toolbox icon in the top-right corner "
+"and choose \"Extract TileMap layers as individual TileMapLayer nodes\"."
+msgstr ""
+"گره TileMap منسوخ شده است، زیرا استفاده از چندین گره TileMapLayer جایگزین آن "
+"شده است.\n"
+"برای تبدیل یک TileMap به مجموعه‌ای از گره‌های TileMapLayer، پانل پایینی TileMap "
+"را با این گره انتخاب‌شده باز کنید، روی نماد جعبه‌ابزار در گوشهٔ بالا-راست کلیک "
+"کنید و گزینهٔ «استخراج لایه‌های TileMap به‌عنوان گره‌های جداگانهٔ TileMapLayer» را "
+"برگزینید."
+
+msgid ""
+"A Y-sorted layer has the same Z-index value as a not Y-sorted layer.\n"
+"This may lead to unwanted behaviors, as a layer that is not Y-sorted will be "
+"Y-sorted as a whole with tiles from Y-sorted layers."
+msgstr ""
+"یک لایهٔ Y-مرتب‌شده همان مقدار Z-اندیس را دارد که یک لایهٔ بدون Y-مرتب‌سازی "
+"دارد.\n"
+"این ممکن است به رفتارهای ناخواسته منجر شود، زیرا یک لایهٔ بدون Y-مرتب‌سازی "
+"به‌طور کلی همراه با کاشی‌های لایه‌های Y-مرتب‌شده، Y-مرتب خواهد شد."
+
+msgid ""
+"A TileMap layer is set as Y-sorted, but Y-sort is not enabled on the TileMap "
+"node itself."
+msgstr ""
+"یک لایهٔ TileMap به‌صورت Y-مرتب‌شده تنظیم شده است، اما Y-مرتب‌سازی در خود گرهٔ "
+"TileMap فعال نیست."
+
+msgid ""
+"The TileMap node is set as Y-sorted, but Y-sort is not enabled on any of the "
+"TileMap's layers.\n"
+"This may lead to unwanted behaviors, as a layer that is not Y-sorted will be "
+"Y-sorted as a whole."
+msgstr ""
+"گرهٔ TileMap به‌صورت Y-مرتب‌شده تنظیم شده است، اما Y-مرتب‌سازی در هیچ‌یک از "
+"لایه‌های TileMap فعال نیست.\n"
+"این ممکن است به رفتارهای ناخواسته منجر شود، زیرا یک لایهٔ بدون Y-مرتب‌سازی "
+"به‌طور کلی Y-مرتب خواهد شد."
+
+msgid ""
+"Isometric TileSet will likely not look as intended without Y-sort enabled for "
+"the TileMap and all of its layers."
+msgstr ""
+"TileSet ایزومتریک احتمالاً بدون فعال بودن Y-مرتب‌سازی برای گرهٔ TileMap و همهٔ "
+"لایه‌های آن به‌درستی نمایش داده نخواهد شد."
+
 msgid ""
 "External Skeleton3D node not set! Please set a path to an external Skeleton3D "
 "node."
@@ -14215,6 +14492,13 @@ msgstr ""
 "شود."
 
 msgid ""
+"The decal has no textures loaded into any of its texture properties, and will "
+"therefore not be visible."
+msgstr ""
+"برگردان هیچ‌یک از ویژگی‌های بافت خود را بارگذاری نکرده است و بنابراین قابل "
+"مشاهده نخواهد بود."
+
+msgid ""
 "Fog Volumes need volumetric fog to be enabled in the scene's Environment in "
 "order to be visible."
 msgstr ""
@@ -14229,6 +14513,23 @@ msgid ""
 msgstr ""
 "پویانمایی ذرات نیاز به استفاده از یک BaseMaterial3D دارد که حالت بیلبورد آن "
 "روی \"Particle Billboard\" تنظیم شده باشد."
+
+msgid "Trails active, but neither Trail meshes or a Skin were found."
+msgstr "دنباله‌ها فعال هستند، اما هیچ‌یک از مش‌های دنباله یا یک پوسته پیدا نشد."
+
+msgid ""
+"Only one Trail mesh is supported. If you want to use more than a single mesh, "
+"a Skin is needed (see documentation)."
+msgstr ""
+"فقط یک مش دنباله پشتیبانی می‌شود. اگر می‌خواهید از بیش از یک مش استفاده کنید، "
+"به یک پوسته نیاز دارید (به مستندات مراجعه کنید)."
+
+msgid ""
+"Trails enabled, but one or more mesh materials are either missing or not set "
+"for trails rendering."
+msgstr ""
+"آثار فعال شده‌اند، اما یک یا چند ماده مش یا گمشده‌اند یا برای رندر آثار تنظیم "
+"نشده‌اند."
 
 msgid ""
 "Particle sub-emitters are only available when using the Forward+ or Mobile "
@@ -14248,6 +14549,9 @@ msgstr ""
 
 msgid "A light's scale does not affect the visual size of the light."
 msgstr "مقیاس یک نور بر اندازه بصری نور تأثیر نمی‌گذارد."
+
+msgid "Projector texture only works with shadows active."
+msgstr "بافت پروجکتور تنها زمانی کار می‌کند که سایه‌ها فعال باشند."
 
 msgid ""
 "Projector textures are not supported when using the Compatibility renderer "
@@ -14273,6 +14577,29 @@ msgstr "ساختن کاوَندها از مش %d/%d"
 
 msgid "Preparing Environment"
 msgstr "آماده‌سازی محیط"
+
+msgid "Forward axis and primary rotation axis must not be parallel."
+msgstr "محور رو به جلو و محور چرخش اصلی نباید موازی باشند."
+
+msgid ""
+"The NavigationAgent3D can be used only under a Node3D inheriting parent node."
+msgstr ""
+"NavigationAgent3D تنها می‌تواند زیر گره‌ای که از Node3D ارث‌بری می‌کند، استفاده "
+"شود."
+
+msgid ""
+"NavigationLink3D start position should be different than the end position to "
+"be useful."
+msgstr ""
+"موقعیت شروع NavigationLink3D باید متفاوت از موقعیت انتها باشد تا مفید باشد."
+
+msgid ""
+"NavigationObstacle3D only takes global rotation around the y-axis into "
+"account. Rotations around the x-axis or z-axis might lead to unexpected "
+"results."
+msgstr ""
+"NavigationObstacle3D تنها چرخش جهانی حول محور y را در نظر می‌گیرد. چرخش‌ها حول "
+"محورهای x یا z ممکن است به نتایج غیرمنتظره منجر شود."
 
 msgid "NavigationObstacle3D does not support negative or zero scaling."
 msgstr "‏NavigationObstacle3D از مقیاس‌گذاری منفی یا صفر پشتیبانی نمی‌کند."
@@ -14331,6 +14658,13 @@ msgstr ""
 "ویراستار ۳‌بعدی دیدگستره افزوده شوند."
 
 msgid ""
+"PathFollow3D's ROTATION_ORIENTED requires \"Up Vector\" to be enabled in its "
+"parent Path3D's Curve resource."
+msgstr ""
+"NavigationObstacle3D تنها چرخش جهانی حول محور y را در نظر می‌گیرد. چرخش‌ها حول "
+"محورهای x یا z ممکن است به نتایج غیرمنتظره منجر شود."
+
+msgid ""
 "This node has no shape, so it can't collide or interact with other objects.\n"
 "Consider adding a CollisionShape3D or CollisionPolygon3D as a child to define "
 "its shape."
@@ -14339,6 +14673,15 @@ msgstr ""
 "باشد.\n"
 "برای تعریف کردن شکل آن، می‌توانید یک (CollisionShape3D) یا "
 "(CollisionPolygon3D) را به‌عنوان فرزند به آن بیفزایید."
+
+msgid ""
+"With a non-uniform scale this node will probably not function as expected.\n"
+"Please make its scale uniform (i.e. the same on all axes), and change the "
+"size in children collision shapes instead."
+msgstr ""
+"با مقیاس غیر یکنواخت، احتمالاً این گره به‌طور مورد انتظار عمل نخواهد کرد.\n"
+"لطفاً مقیاس آن را یکنواخت کنید (یعنی در تمام محور‌ها یکسان باشد) و اندازه را در "
+"اشکال برخورد فرزندان تغییر دهید."
 
 msgid ""
 "CollisionPolygon3D only serves to provide a collision shape to a "
@@ -14350,6 +14693,17 @@ msgstr ""
 "CollisionObject3D استفاده می‌شود.\n"
 "لطفاً تنها از آن به‌عنوان فرزند Area3D، StaticBody3D، RigidBody3D، "
 "CharacterBody3D و غیره برای اختصاص دادن یک شکل به آن‌ها استفاده کنید."
+
+msgid ""
+"A non-uniformly scaled CollisionPolygon3D node will probably not function as "
+"expected.\n"
+"Please make its scale uniform (i.e. the same on all axes), and change its "
+"polygon's vertices instead."
+msgstr ""
+"یک گرهٔ CollisionPolygon3D با مقیاس غیر یکنواخت احتمالاً به‌طور مورد انتظار عمل "
+"نخواهد کرد.\n"
+"لطفاً مقیاس آن را یکنواخت کنید (یعنی در تمام محور‌ها یکسان باشد) و به‌جای آن، "
+"رئوس چندضلعی آن را تغییر دهید."
 
 msgid ""
 "A shape must be provided for CollisionShape3D to function. Please create a "
@@ -14475,6 +14829,16 @@ msgstr ""
 "GeometryInstance3D برای محو شدن تدریجی بر اساس فاصله تنظیم شده است، اما فاصله "
 "انتقال محو شدن روی ۰ تنظیم شده است.\n"
 "برای رفع این مشکل، Visibility Range Begin Margin را بیشتر از ۰ افزایش دهید."
+
+msgid ""
+"The GeometryInstance3D is configured to fade out smoothly over distance, but "
+"the fade transition distance is set to 0.\n"
+"To resolve this, increase Visibility Range End Margin above 0."
+msgstr ""
+"GeometryInstance3D برای محو شدن تدریجی بر اساس فاصله تنظیم شده است، اما مقدار "
+"فاصلهٔ انتقال محو روی ۰ تنظیم شده است.\n"
+"برای رفع این مشکل، مقدار حاشیهٔ انتهایی برد دید را به عددی بزرگ‌تر از ۰ افزایش "
+"دهید."
 
 msgid ""
 "GeometryInstance3D visibility range transparency fade is only available when "

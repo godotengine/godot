@@ -28,13 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#pragma once
+#ifndef TEST_LSP_H
+#define TEST_LSP_H
 
 #ifdef TOOLS_ENABLED
-
-#include "modules/modules_enabled.gen.h" // For jsonrpc.
-
-#ifdef MODULE_JSONRPC_ENABLED
 
 #include "tests/test_macros.h"
 
@@ -55,15 +52,15 @@
 #include "thirdparty/doctest/doctest.h"
 
 template <>
-struct doctest::StringMaker<LSP::Position> {
-	static doctest::String convert(const LSP::Position &p_val) {
+struct doctest::StringMaker<lsp::Position> {
+	static doctest::String convert(const lsp::Position &p_val) {
 		return p_val.to_string().utf8().get_data();
 	}
 };
 
 template <>
-struct doctest::StringMaker<LSP::Range> {
-	static doctest::String convert(const LSP::Range &p_val) {
+struct doctest::StringMaker<lsp::Range> {
+	static doctest::String convert(const lsp::Range &p_val) {
 		return p_val.to_string().utf8().get_data();
 	}
 };
@@ -105,32 +102,32 @@ GDScriptLanguageProtocol *initialize(const String &p_root) {
 	return proto;
 }
 
-LSP::Position pos(const int p_line, const int p_character) {
-	LSP::Position p;
+lsp::Position pos(const int p_line, const int p_character) {
+	lsp::Position p;
 	p.line = p_line;
 	p.character = p_character;
 	return p;
 }
 
-LSP::Range range(const LSP::Position p_start, const LSP::Position p_end) {
-	LSP::Range r;
+lsp::Range range(const lsp::Position p_start, const lsp::Position p_end) {
+	lsp::Range r;
 	r.start = p_start;
 	r.end = p_end;
 	return r;
 }
 
-LSP::TextDocumentPositionParams pos_in(const LSP::DocumentUri &p_uri, const LSP::Position p_pos) {
-	LSP::TextDocumentPositionParams params;
+lsp::TextDocumentPositionParams pos_in(const lsp::DocumentUri &p_uri, const lsp::Position p_pos) {
+	lsp::TextDocumentPositionParams params;
 	params.textDocument.uri = p_uri;
 	params.position = p_pos;
 	return params;
 }
 
-const LSP::DocumentSymbol *test_resolve_symbol_at(const String &p_uri, const LSP::Position p_pos, const String &p_expected_uri, const String &p_expected_name, const LSP::Range &p_expected_range) {
+const lsp::DocumentSymbol *test_resolve_symbol_at(const String &p_uri, const lsp::Position p_pos, const String &p_expected_uri, const String &p_expected_name, const lsp::Range &p_expected_range) {
 	Ref<GDScriptWorkspace> workspace = GDScriptLanguageProtocol::get_singleton()->get_workspace();
 
-	LSP::TextDocumentPositionParams params = pos_in(p_uri, p_pos);
-	const LSP::DocumentSymbol *symbol = workspace->resolve_symbol(params);
+	lsp::TextDocumentPositionParams params = pos_in(p_uri, p_pos);
+	const lsp::DocumentSymbol *symbol = workspace->resolve_symbol(params);
 	CHECK(symbol);
 
 	if (symbol) {
@@ -143,7 +140,7 @@ const LSP::DocumentSymbol *test_resolve_symbol_at(const String &p_uri, const LSP
 }
 
 struct InlineTestData {
-	LSP::Range range;
+	lsp::Range range;
 	String text;
 	String name;
 	String ref;
@@ -260,7 +257,7 @@ void test_resolve_symbol(const String &p_uri, const InlineTestData &p_test_data,
 		REQUIRE_MESSAGE(target, vformat("No target for ref '%s'", p_test_data.ref));
 
 		Ref<GDScriptWorkspace> workspace = GDScriptLanguageProtocol::get_singleton()->get_workspace();
-		LSP::Position pos = p_test_data.range.start;
+		lsp::Position pos = p_test_data.range.start;
 
 		SUBCASE("start of identifier") {
 			pos.character = p_test_data.range.start.character;
@@ -311,17 +308,17 @@ void assert_no_errors_in(const String &p_path) {
 	REQUIRE_MESSAGE(err == OK, vformat("Errors while analyzing '%s'", p_path));
 }
 
-inline LSP::Position lsp_pos(int line, int character) {
-	LSP::Position p;
+inline lsp::Position lsp_pos(int line, int character) {
+	lsp::Position p;
 	p.line = line;
 	p.character = character;
 	return p;
 }
 
-void test_position_roundtrip(LSP::Position p_lsp, GodotPosition p_gd, const PackedStringArray &p_lines) {
+void test_position_roundtrip(lsp::Position p_lsp, GodotPosition p_gd, const PackedStringArray &p_lines) {
 	GodotPosition actual_gd = GodotPosition::from_lsp(p_lsp, p_lines);
 	CHECK_EQ(p_gd, actual_gd);
-	LSP::Position actual_lsp = p_gd.to_lsp(p_lines);
+	lsp::Position actual_lsp = p_gd.to_lsp(p_lines);
 	CHECK_EQ(p_lsp, actual_lsp);
 }
 
@@ -346,25 +343,25 @@ func f():
 		PackedStringArray lines = code.split("\n");
 
 		SUBCASE("line after end") {
-			LSP::Position lsp = lsp_pos(7, 0);
+			lsp::Position lsp = lsp_pos(7, 0);
 			GodotPosition gd(8, 1);
 			test_position_roundtrip(lsp, gd, lines);
 		}
 		SUBCASE("first char in first line") {
-			LSP::Position lsp = lsp_pos(0, 0);
+			lsp::Position lsp = lsp_pos(0, 0);
 			GodotPosition gd(1, 1);
 			test_position_roundtrip(lsp, gd, lines);
 		}
 
 		SUBCASE("with tabs") {
 			// On `v` in `value` in `var value := ...`.
-			LSP::Position lsp = lsp_pos(5, 6);
+			lsp::Position lsp = lsp_pos(5, 6);
 			GodotPosition gd(6, 13);
 			test_position_roundtrip(lsp, gd, lines);
 		}
 
 		SUBCASE("doesn't fail with column outside of character length") {
-			LSP::Position lsp = lsp_pos(2, 100);
+			lsp::Position lsp = lsp_pos(2, 100);
 			GodotPosition::from_lsp(lsp, lines);
 
 			GodotPosition gd(3, 100);
@@ -372,7 +369,7 @@ func f():
 		}
 
 		SUBCASE("doesn't fail with line outside of line length") {
-			LSP::Position lsp = lsp_pos(200, 100);
+			lsp::Position lsp = lsp_pos(200, 100);
 			GodotPosition::from_lsp(lsp, lines);
 
 			GodotPosition gd(300, 100);
@@ -381,26 +378,26 @@ func f():
 
 		SUBCASE("special case: zero column for root class") {
 			GodotPosition gd(1, 0);
-			LSP::Position expected = lsp_pos(0, 0);
-			LSP::Position actual = gd.to_lsp(lines);
+			lsp::Position expected = lsp_pos(0, 0);
+			lsp::Position actual = gd.to_lsp(lines);
 			CHECK_EQ(actual, expected);
 		}
 		SUBCASE("special case: zero line and column for root class") {
 			GodotPosition gd(0, 0);
-			LSP::Position expected = lsp_pos(0, 0);
-			LSP::Position actual = gd.to_lsp(lines);
+			lsp::Position expected = lsp_pos(0, 0);
+			lsp::Position actual = gd.to_lsp(lines);
 			CHECK_EQ(actual, expected);
 		}
 		SUBCASE("special case: negative line for root class") {
 			GodotPosition gd(-1, 0);
-			LSP::Position expected = lsp_pos(0, 0);
-			LSP::Position actual = gd.to_lsp(lines);
+			lsp::Position expected = lsp_pos(0, 0);
+			lsp::Position actual = gd.to_lsp(lines);
 			CHECK_EQ(actual, expected);
 		}
 		SUBCASE("special case: lines.length() + 1 for root class") {
 			GodotPosition gd(lines.size() + 1, 0);
-			LSP::Position expected = lsp_pos(lines.size(), 0);
-			LSP::Position actual = gd.to_lsp(lines);
+			lsp::Position expected = lsp_pos(lines.size(), 0);
+			lsp::Position actual = gd.to_lsp(lines);
 			CHECK_EQ(actual, expected);
 		}
 	}
@@ -502,7 +499,7 @@ func f():
 				GDScriptLanguageProtocol::get_singleton()->get_workspace()->parse_local_script(path);
 				ExtendGDScriptParser *parser = GDScriptLanguageProtocol::get_singleton()->get_workspace()->parse_results[path];
 				REQUIRE(parser);
-				LSP::DocumentSymbol cls = parser->get_symbols();
+				lsp::DocumentSymbol cls = parser->get_symbols();
 
 				REQUIRE(((cls.range.start.line == cls.selectionRange.start.line && cls.range.start.character <= cls.selectionRange.start.character) || (cls.range.start.line < cls.selectionRange.start.line)));
 				REQUIRE(((cls.range.end.line == cls.selectionRange.end.line && cls.range.end.character >= cls.selectionRange.end.character) || (cls.range.end.line > cls.selectionRange.end.line)));
@@ -516,6 +513,6 @@ func f():
 
 } // namespace GDScriptTests
 
-#endif // MODULE_JSONRPC_ENABLED
-
 #endif // TOOLS_ENABLED
+
+#endif // TEST_LSP_H

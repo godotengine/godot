@@ -4,6 +4,8 @@ on:
 
 # Global Settings
 env:
+  # Used for the cache key. Add version suffix to force clean build.
+  GODOT_BASE_BRANCH: 4.4
   SCONSFLAGS: verbose=yes warnings=extra werror=yes debug_symbols=no module_text_server_fb_enabled=yes strict_checks=yes
 
 jobs:
@@ -20,18 +22,21 @@ jobs:
             target: editor
             tests: false
             sconsflags: arch=arm64 production=yes swappy=yes
+            cache-limit: 1
 
           - name: Template arm32 (target=template_release, arch=arm32)
             cache-name: android-template-arm32
             target: template_release
             tests: false
             sconsflags: arch=arm32 swappy=yes
+            cache-limit: 1
 
           - name: Template arm64 (target=template_release, arch=arm64)
             cache-name: android-template-arm64
             target: template_release
             tests: false
             sconsflags: arch=arm64 swappy=yes
+            cache-limit: 1
 
     steps:
       - name: Checkout
@@ -72,6 +77,7 @@ jobs:
           platform: android
           target: ${{ matrix.target }}
           tests: ${{ matrix.tests }}
+          scons-cache-limit: ${{ matrix.cache-limit }}
 
       - name: Save Godot build cache
         uses: ./.github/actions/godot-cache-save

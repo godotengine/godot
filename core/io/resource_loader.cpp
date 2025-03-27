@@ -905,8 +905,8 @@ Ref<Resource> ResourceLoader::_load_complete_inner(LoadToken &p_load_token, Erro
 						}
 					}
 					if (!import_thread) { // Main thread is blocked by initial resource reimport, do not wait.
-						CoreBind::Semaphore done;
-						MessageQueue::get_main_singleton()->push_callable(callable_mp(&done, &CoreBind::Semaphore::post).bind(1));
+						core_bind::Semaphore done;
+						MessageQueue::get_main_singleton()->push_callable(callable_mp(&done, &core_bind::Semaphore::post).bind(1));
 						done.wait();
 					}
 				}
@@ -1359,8 +1359,10 @@ void ResourceLoader::load_translation_remaps() {
 	}
 
 	Dictionary remaps = GLOBAL_GET("internationalization/locale/translation_remaps");
-	for (const KeyValue<Variant, Variant> &kv : remaps) {
-		Array langs = kv.value;
+	List<Variant> keys;
+	remaps.get_key_list(&keys);
+	for (const Variant &E : keys) {
+		Array langs = remaps[E];
 		Vector<String> lang_remaps;
 		lang_remaps.resize(langs.size());
 		String *lang_remaps_ptrw = lang_remaps.ptrw();
@@ -1368,7 +1370,7 @@ void ResourceLoader::load_translation_remaps() {
 			*lang_remaps_ptrw++ = lang;
 		}
 
-		translation_remaps[String(kv.key)] = lang_remaps;
+		translation_remaps[String(E)] = lang_remaps;
 	}
 }
 

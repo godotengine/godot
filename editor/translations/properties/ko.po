@@ -53,13 +53,14 @@
 # nulta <un5450@outlook.com>, 2024.
 # Sovlus Haesaun <josuke4832@gmail.com>, 2024.
 # Amdid <changwha.com@gmail.com>, 2024.
+# YoungJune lee <lyj9035@gmail.com>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2024-11-26 19:03+0000\n"
-"Last-Translator: Amdid <changwha.com@gmail.com>\n"
+"PO-Revision-Date: 2025-03-25 03:08+0000\n"
+"Last-Translator: YoungJune lee <lyj9035@gmail.com>\n"
 "Language-Team: Korean <https://hosted.weblate.org/projects/godot-engine/godot-"
 "properties/ko/>\n"
 "Language: ko\n"
@@ -67,7 +68,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.9-dev\n"
+"X-Generator: Weblate 5.11-dev\n"
 
 msgid "Application"
 msgstr "어플리케이션"
@@ -233,6 +234,9 @@ msgstr "보조 창"
 
 msgid "Embed Subwindows"
 msgstr "보조 창 내장"
+
+msgid "Frame Pacing"
+msgstr "프레임 간격"
 
 msgid "Android"
 msgstr "Android"

@@ -80,13 +80,15 @@
 # ペチ <ptt_kr@outlook.jp>, 2024.
 # heppocogne <yuck945@gmail.com>, 2024.
 # Yu Tanaka <yrk00337@gmail.com>, 2024.
+# 喜多山真護 <shingo.kitayama@gmail.com>, 2025.
+# UtanoSchell <utano.mayonaka@gmail.com>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-03-01 22:41+0000\n"
-"Last-Translator: ueshita <nalto32@gmail.com>\n"
+"PO-Revision-Date: 2025-03-25 12:31+0000\n"
+"Last-Translator: UtanoSchell <utano.mayonaka@gmail.com>\n"
 "Language-Team: Japanese <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ja/>\n"
 "Language: ja\n"
@@ -94,7 +96,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.10.3-dev\n"
+"X-Generator: Weblate 5.11-dev\n"
 
 msgid "Main Thread"
 msgstr "メインスレッド"
@@ -956,6 +958,9 @@ msgstr ""
 
 msgid "property '%s'"
 msgstr "プロパティ '%s'"
+
+msgid "Nearest FPS: %d"
+msgstr "直近FPS: %d"
 
 msgid "Change Animation Step"
 msgstr "アニメーションのステップを変更"
@@ -3597,6 +3602,26 @@ msgstr "エディターメッセージの表示/非表示を切り替えます�
 msgid "Native Shader Source Inspector"
 msgstr "ネイティブ シェーダー ソース インスペクター"
 
+msgid ""
+"The Android build template is already installed in this project and it won't "
+"be overwritten.\n"
+"Remove the \"%s\" directory manually before attempting this operation again."
+msgstr ""
+"アンドロイド用ビルドテンプレートは既にこのプロジェクトにインストール済みで、上"
+"書きはされません。\n"
+"\"%s\" ディレクトリを手動で削除して再度操作を試してください。"
+
+msgid ""
+"This will set up your project for gradle Android builds by installing the "
+"source template to \"%s\".\n"
+"Note that in order to make gradle builds instead of using pre-built APKs, the "
+"\"Use Gradle Build\" option should be enabled in the Android export preset."
+msgstr ""
+"このプロジェクトの\"%s\"にAndroid Gradleビルド用テンプレートをセットアップしま"
+"す。\n"
+"ビルド済みAPKではなくGradleビルドファイルを生成するには、Android向けエクスポー"
+"トの設定で”Use Gradle Gradle\"オプションをオンにする必要があります。"
+
 msgid "Unnamed Project"
 msgstr "名無しのプロジェクト"
 
@@ -5436,6 +5461,9 @@ msgstr "無効な暗号化キー (16進数で64文字である必要がありま
 msgid "Encryption Key (256-bits as hexadecimal):"
 msgstr "暗号化キー (16 進数で 256 ビット):"
 
+msgid "Initialization vector seed"
+msgstr "初期化ベクトルのシード値"
+
 msgid ""
 "Note: Encryption key needs to be stored in the binary,\n"
 "you need to build the export templates from source."
@@ -5980,15 +6008,36 @@ msgstr "新規グループを追加する。"
 msgid "Filter Groups"
 msgstr "グループを絞り込む"
 
+msgid ""
+"Scroll Left\n"
+"Hold Ctrl to scroll to the begin.\n"
+"Hold Shift to scroll one page."
+msgstr ""
+"左へスクロール\n"
+"Ctrlを押しながらで行頭へスクロールします。\n"
+"Shiftを押しながらで1ページスクロールします。"
+
+msgid ""
+"Scroll Right\n"
+"Hold Ctrl to scroll to the end.\n"
+"Hold Shift to scroll one page."
+msgstr ""
+"右へスクロール\n"
+"Ctrlを押しながらで行末へスクロールします。\n"
+"Shiftを押しながらで1ページスクロールします。"
+
+msgid "Pin Bottom Panel Switching"
+msgstr "下パネルのピン留めを切り替え"
+
 msgid "Expand Bottom Panel"
 msgstr "下パネルを展開"
 
 msgid "Move/Duplicate: %s"
-msgstr "移動/コピー: %s"
+msgstr "移動/複製: %s"
 
 msgid "Move/Duplicate %d Item"
 msgid_plural "Move/Duplicate %d Items"
-msgstr[0] "%d個のアイテムを 移動/コピー"
+msgstr[0] "%d個のアイテムを 移動/複製"
 
 msgid "Choose target directory:"
 msgstr "ターゲットディレクトリを選択 :"
@@ -6379,6 +6428,15 @@ msgstr ""
 "Gitコミット日時: %s\n"
 "クリックしてバージョン情報をコピーします。"
 
+msgid ""
+"The root node of a scene is recommended to not be transformed, since "
+"instances of the scene will usually override this. Reset the transform and "
+"reload the scene to remove this warning."
+msgstr ""
+"シーンのルートノードはトランスフォームを変更しないことをおすすめします：シーン"
+"をインスタンス化する際に置き換えされることが一般的だからです。トランスフォーム"
+"をリセットして再読込するとこの警告は消えます。"
+
 msgid "Toggle Visible"
 msgstr "表示 / 非表示の切り替え"
 
@@ -6388,6 +6446,9 @@ msgstr "ノードをロック解除"
 msgid "Ungroup Children"
 msgstr "子をグループ解除"
 
+msgid "Revoke unique name for node \"%s\"?"
+msgstr "ノード固有名\"%s\"でのアクセスを取り消しますか？"
+
 msgid "Disable Scene Unique Name"
 msgstr "シーン固有名を無効にする"
 
@@ -6396,6 +6457,16 @@ msgstr "(接続元)"
 
 msgid "Node configuration warning:"
 msgstr "ノードの設定に関する警告:"
+
+msgid ""
+"This node can be accessed from anywhere within the scene it belongs to by "
+"using the '%s' prefix in the node path."
+msgstr ""
+"このノードには、ノード パスの先頭に '%s' プレフィックスを付けることで、シーン"
+"内のどこからでもアクセスできます。クリックすると無効になります。"
+
+msgid "Click to disable this."
+msgstr "クリックで無効化します。"
 
 msgid "Node has one connection."
 msgid_plural "Node has {num} connections."
@@ -6407,6 +6478,9 @@ msgstr[0] "ノードは次のグループ内にあります:"
 
 msgid "Click to show signals dock."
 msgstr "クリックでシグナルのドックを表示します。"
+
+msgid "Click to show groups dock."
+msgstr "クリックでグループのドックを表示します。"
 
 msgid ""
 "This script can run in the editor.\n"
@@ -6450,6 +6524,13 @@ msgstr "エディターで開く"
 
 msgid "\"%s\" is not a known filter."
 msgstr "\"%s\" は既知のフィルタではありません。"
+
+msgid ""
+"Root nodes cannot be accessed as unique names in their own scene. Instantiate "
+"in another scene and set as unique name there."
+msgstr ""
+"シーンのルートノードは、シーンそのものの内部からは固有名でアクセスすることはで"
+"きません。別なシーンでインスタンス化してから固有名を設定してください。"
 
 msgid "Invalid node name, the following characters are not allowed:"
 msgstr "無効なノード名。以下の文字は使えません:"
@@ -8210,6 +8291,9 @@ msgstr "Shift: 比率を保って拡大縮小。"
 msgid "Show list of selectable nodes at position clicked."
 msgstr "クリックした位置の選択可能なノードのリストを表示します。"
 
+msgid "Click to change object's pivot."
+msgstr "クリックしてオブジェクトの回転ピボットを変更します。"
+
 msgid "Pan Mode"
 msgstr "パンモード"
 
@@ -8919,8 +9003,27 @@ msgstr "ゲームを開始するには再生ボタンを押します。"
 msgid "Embedding is disabled."
 msgstr "埋め込みは無効です。"
 
+msgid ""
+"Game embedding not available on Wayland.\n"
+"Wayland can be disabled in the Editor Settings (Run > Platforms > Linux/*BSD "
+"> Prefer Wayland)."
+msgstr ""
+"ゲームウィンドウ埋め込みはWaylandには対応していません。\n"
+"エディター設定内の 実行 > プラットフォーム > Linux/*BSD > Prefer Wayland で"
+"Waylandを無効化できます。"
+
 msgid "Game embedding not available on your OS."
 msgstr "ゲームの埋め込みは現在のOSでは利用できません。"
+
+msgid ""
+"Game embedding not available for the Display Server: '%s'.\n"
+"Display Server can be modified in the Project Settings (Display > Display "
+"Server > Driver)."
+msgstr ""
+"ゲームウィンドウ埋め込みはこのディスプレイサーバーには対応していません: "
+"\"%s\"。\n"
+"ディスプレイサーバーはプロジェクト設定の 表示 > ディスプレイサーバー で変更で"
+"きます。"
 
 msgid ""
 "Game embedding not available when the game starts minimized.\n"
@@ -9178,6 +9281,39 @@ msgstr ""
 "ライトマップ画像の保存パスを確定できません。\n"
 "シーンを保存してから再度行ってください。"
 
+msgid ""
+"No meshes with lightmapping support to bake. Make sure they contain UV2 data "
+"and their Global Illumination property is set to Static."
+msgstr ""
+"ライトマッピングのベイクをサポートするメッシュがありません。メッシュにUV2デー"
+"タが含まれているか・グローバルイルミネーションプロパティがStaticに設定されてい"
+"るか確認してください。"
+
+msgid ""
+"To import a scene with lightmapping support, set Meshes > Light Baking to "
+"Static Lightmaps in the Import dock."
+msgstr ""
+"ライトマップを有効にしてシーンをインポートするには、インポートドックで メッ"
+"シュ > ライト焼き込み をStaticに設定してください。"
+
+msgid ""
+"To enable lightmapping support on a primitive mesh, edit the PrimitiveMesh "
+"resource in the inspector and check Add UV2."
+msgstr ""
+"プリミティブメッシュにライトマップを適用するには、プリミティブメッシュリソース"
+"のインスペクタでAdd UV2をオンにしてください。"
+
+msgid ""
+"To enable lightmapping support on a CSG mesh, select the root CSG node and "
+"choose CSG > Bake Mesh Instance at the top of the 3D editor viewport.\n"
+"Select the generated MeshInstance3D node and choose Mesh > Unwrap UV2 for "
+"Lightmap/AO at the top of the 3D editor viewport."
+msgstr ""
+"CSGメッシュにライトマッピングを適用するには、CSGノードのルートを選択した状態で"
+"3Dエディタビューの上部から CSG > Bake Mesh Instance を実行してください。\n"
+"生成されたMeshInstance3Dノードを選択して 3Dエディタビューの上部から メッシュ "
+"> Lightmap/AOのUV2を展開 を実行してください。"
+
 msgid "No editor scene root found."
 msgstr "エディター シーンのルートが見つかりません。"
 
@@ -9193,6 +9329,13 @@ msgstr ""
 
 msgid "Bake Lightmaps"
 msgstr "ライトマップをベイクする"
+
+msgid ""
+"Lightmaps cannot be baked, as the `lightmapper_rd` module was disabled at "
+"compile-time."
+msgstr ""
+"コンパイル時に`lightmapper_rd`モジュールが無効化されているため、ライトマップの"
+"ベイクに失敗しました。"
 
 msgid "LightMap Bake"
 msgstr "LightMapをベイク"
@@ -9389,6 +9532,27 @@ msgstr ""
 
 msgid "UV Channel Debug"
 msgstr "UVチャンネル デバッグ"
+
+msgid ""
+"Before converting a rendering mesh to a navigation mesh, please verify:\n"
+"\n"
+"- The mesh is two-dimensional.\n"
+"- The mesh has no surface overlap.\n"
+"- The mesh has no self-intersection.\n"
+"- The mesh surfaces have indices.\n"
+"\n"
+"If the mesh does not fulfill these requirements, the pathfinding will be "
+"broken."
+msgstr ""
+"レンダリング用メッシュをナビゲーションメッシュに変換する前に次のことを確認して"
+"ください：\n"
+"\n"
+"- メッシュが2次元である\n"
+"- メッシュの面が重なっていない\n"
+"- メッシュが交差していない\n"
+"- メッシュの面がインデックスを持っている\n"
+"\n"
+"メッシュがこれらの条件を満たさない場合は経路検索は機能しません。"
 
 msgid "Remove item %d?"
 msgstr "アイテム %d を取り除きますか？"
@@ -9812,6 +9976,18 @@ msgstr "シネマティックプレビュー"
 msgid "Not available when using the OpenGL renderer."
 msgstr "OpenGLレンダラー使用時は利用できません。"
 
+msgid "Viewport Pan Modifier 1"
+msgstr "ビューポート パンの修飾キー1"
+
+msgid "Viewport Pan Modifier 2"
+msgstr "ビューポート パンの修飾キー2"
+
+msgid "Viewport Zoom Modifier 1"
+msgstr "ビューポート ズームの修飾キー1"
+
+msgid "Viewport Zoom Modifier 2"
+msgstr "ビューポート ズームの修飾キー2"
+
 msgid "Freelook Left"
 msgstr "フリールック左"
 
@@ -9862,6 +10038,9 @@ msgstr "回転変換を開始"
 
 msgid "Begin Scale Transformation"
 msgstr "スケール変換を開始"
+
+msgid "Reposition Using Collisions"
+msgstr "コリジョンを使用して再配置"
 
 msgid "Toggle Camera Preview"
 msgstr "カメラのプレビューを切り替え"
@@ -10719,6 +10898,9 @@ msgstr ""
 "アニメーションミキサーに有効なルートノードのパスがないため、トラック名を取得で"
 "きません。"
 
+msgid "(truncated)"
+msgstr "(省略されました)"
+
 msgid "Current value: "
 msgstr "現在の値: "
 
@@ -10930,6 +11112,9 @@ msgstr "プレーンテキスト"
 msgid "JSON"
 msgstr "JSON"
 
+msgid "Markdown"
+msgstr "Markdown"
+
 msgid "Connections to method:"
 msgstr "メソッドへの接続:"
 
@@ -10977,6 +11162,9 @@ msgid "Can't drop nodes because script '%s' does not inherit Node."
 msgstr ""
 "スクリプト '%s' はNodeを継承していないため、ノードをドロップすることができませ"
 "ん。"
+
+msgid "Emoji & Symbols"
+msgstr "絵文字・記号"
 
 msgid "Pick Color"
 msgstr "色を取得"
@@ -11158,6 +11346,9 @@ msgstr "レストポーズを上書き"
 
 msgid "Set Bone Transform"
 msgstr "ボーン トランスフォームの設定"
+
+msgid "Modify metadata '%s' for bone '%s'"
+msgstr "メタデータ '%s'(ボーン '%s'内)を編集します"
 
 msgid "Set Bone Rest"
 msgstr "ボーンのレストを設定"
@@ -15824,6 +16015,27 @@ msgstr "配列のサイズを変更できません。"
 msgid "Step argument is zero!"
 msgstr "ステップ引数がゼロです！"
 
+msgid "Not a script with an instance."
+msgstr "インスタンスのスクリプトではありません。"
+
+msgid "Not based on a script."
+msgstr "スクリプトがベースになっていません。"
+
+msgid "Not based on a resource file."
+msgstr "リソースファイルがベースになっていません。"
+
+msgid "Invalid instance dictionary format (missing @path)."
+msgstr "無効なインスタンス辞書形式です (@path がありません)。"
+
+msgid "Invalid instance dictionary format (can't load script at @path)."
+msgstr "無効なインスタンス辞書形式です (@path のスクリプトをロードできません)。"
+
+msgid "Invalid instance dictionary format (invalid script at @path)."
+msgstr "無効なインスタンス辞書形式です (@path が無効なスクリプトです)。"
+
+msgid "Invalid instance dictionary (invalid subclasses)."
+msgstr "無効なインスタンス辞書です (無効なサブクラスです)。"
+
 msgid "Cannot instantiate GDScript class."
 msgstr "GDScriptクラスをインスタンス化できません。"
 
@@ -16404,6 +16616,9 @@ msgstr "アクションを追加します。"
 
 msgid "Remove action set."
 msgstr "アクションセットを除去します。"
+
+msgid "Remove binding modifier."
+msgstr "バインドを削除。"
 
 msgid "OpenXR Action Map"
 msgstr "OpenXRアクションマップ"

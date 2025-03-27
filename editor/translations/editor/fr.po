@@ -186,13 +186,14 @@
 # Valentin Pecatte <v.pecatte@gmail.com>, 2025.
 # xpeuvr327 <phucbaodomi@gmail.com>, 2025.
 # Alastair L <alockepublic+weblate@proton.me>, 2025.
+# Marc-Daniel DALEBA <marcodxv10@gmail.com>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-03-10 12:20+0000\n"
-"Last-Translator: Alastair L <alockepublic+weblate@proton.me>\n"
+"PO-Revision-Date: 2025-03-25 03:08+0000\n"
+"Last-Translator: Marc-Daniel DALEBA <marcodxv10@gmail.com>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/godot-engine/godot/"
 "fr/>\n"
 "Language: fr\n"
@@ -200,7 +201,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 5.10.3-dev\n"
+"X-Generator: Weblate 5.11-dev\n"
 
 msgid "Main Thread"
 msgstr "Fil principal"
@@ -1067,6 +1068,9 @@ msgstr ""
 msgid "property '%s'"
 msgstr "propriété « %s »"
 
+msgid "Nearest FPS: %d"
+msgstr "FPS le plus proche : %d"
+
 msgid "Change Animation Step"
 msgstr "Modifier l’étape d’animation"
 
@@ -1249,6 +1253,9 @@ msgstr "Appliquer la magnétisation sur le curseur chronologique."
 
 msgid "Apply snapping to selected key(s)."
 msgstr "Appliquer magnétisation sur la(les) clé(s) sélectionnée(s)."
+
+msgid "Apply snapping to the nearest integer FPS."
+msgstr "Appliquer la magnétisation au FPS entier le plus proche."
 
 msgid "Animation step value."
 msgstr "Valeur du pas d'animation."
@@ -1470,9 +1477,6 @@ msgstr "Tout Sélectionner/Désélectionner"
 msgid "Animation Change Keyframe Time"
 msgstr "Modifier le temps de la clé d'animation"
 
-msgid "Marker name is read-only in the inspector."
-msgstr "Cette propriété est en lecture seule dans l'inspecteur."
-
 msgid ""
 "A marker's name can only be changed by right-clicking it in the animation "
 "editor and selecting \"Rename Marker\", in order to make sure that marker "
@@ -1483,7 +1487,7 @@ msgstr ""
 "garantir que tous les noms de clés soient uniques."
 
 msgid "Rename Marker"
-msgstr "Renommer le calque"
+msgstr "Renommer la clé"
 
 msgid "Delete Marker(s)"
 msgstr "Supprimer les clé(s)"
@@ -3358,6 +3362,9 @@ msgstr "Annotation"
 msgid "Local Constant"
 msgstr "Constante Locale"
 
+msgid "TextFile"
+msgstr "Fichier texte"
+
 msgid "File"
 msgstr "Fichier"
 
@@ -3629,6 +3636,27 @@ msgstr "Activer / désactiver la visibilité des messages d'erreur."
 
 msgid "Native Shader Source Inspector"
 msgstr "Inspecteur de source de Shader Natif"
+
+msgid ""
+"The Android build template is already installed in this project and it won't "
+"be overwritten.\n"
+"Remove the \"%s\" directory manually before attempting this operation again."
+msgstr ""
+"Le modèle de compilation Android est déjà installé dans ce projet et ne sera "
+"pas remplacé.\n"
+"Retirez le dossier \"%s\" manuellement avant de réessayer l'opération."
+
+msgid ""
+"This will set up your project for gradle Android builds by installing the "
+"source template to \"%s\".\n"
+"Note that in order to make gradle builds instead of using pre-built APKs, the "
+"\"Use Gradle Build\" option should be enabled in the Android export preset."
+msgstr ""
+"Ceci va configurer votre projet pour les compilation Android gradle en "
+"installant le modèle source dans \"%s\".\n"
+"Notez qu'afin de faire des compilations gradle au lieu des APKs précompilées, "
+"l'option \"Utiliser une compilation gradle\" doit être activé dans les "
+"préreglages d'export Android."
 
 msgid "Unnamed Project"
 msgstr "Projet sans titre"
@@ -4025,6 +4053,15 @@ msgstr "Effacer la liste des scènes récentes"
 
 msgid "There is no defined scene to run."
 msgstr "Il n'y a pas de scène définie à exécuter."
+
+msgid ""
+"No main scene has ever been defined. Select one?\n"
+"You can change it later in \"Project Settings\" under the 'application' "
+"category."
+msgstr ""
+"Aucune scène principale n'a été définie, en sélectionner une ?\n"
+"Vous pouvez la modifier ultérieurement dans les 'Paramètres du projet' sous "
+"la catégorie 'application'."
 
 msgid "Save Layout..."
 msgstr "Enregistrer la disposition..."
@@ -4938,10 +4975,10 @@ msgstr ""
 "Impossible d'ouvrir le fichier en lecture/écriture depuis le chemin \"%s\"."
 
 msgid "Can't create encrypted file."
-msgstr "Impossible de créer fichier encrypté."
+msgstr "Impossible de créer le fichier chiffré."
 
 msgid "Can't open encrypted file to write."
-msgstr "Impossible d'ouvrir le fichier encrypté pour écriture."
+msgstr "Impossible d'ouvrir le fichier chiffré pour écriture."
 
 msgid "Can't open file to read from path \"%s\"."
 msgstr "Impossible d'ouvrir le fichier en lecture depuis le chemin \"%s\"."
@@ -5353,7 +5390,7 @@ msgid "Encryption"
 msgstr "Chiffrement"
 
 msgid "Encrypt Exported PCK"
-msgstr "Encrypter le PCK exporté"
+msgstr "Chiffrer le PCK exporté"
 
 msgid "Encrypt Index (File Names and Info)"
 msgstr "Chiffrer l'index (noms de fichiers et infos)"
@@ -5912,6 +5949,15 @@ msgstr "Ajouter un nouveau groupe."
 msgid "Filter Groups"
 msgstr "Filtrer les groupes"
 
+msgid ""
+"Scroll Right\n"
+"Hold Ctrl to scroll to the end.\n"
+"Hold Shift to scroll one page."
+msgstr ""
+"Faire défiler vers la droite\n"
+"Maintenez Ctrl pour défiler jusqu'à la fin.\n"
+"Maintenez Shift pour défiler d'une page."
+
 msgid "Expand Bottom Panel"
 msgstr "Développer le panneau inférieur"
 
@@ -6115,7 +6161,8 @@ msgid "Could not start subprocess(es)!"
 msgstr "Impossible de démarrer le(s) sous-processus !"
 
 msgid "Recovery Mode is enabled. Disable it to run the project."
-msgstr "Le mode de récupération est activé. Désacivez le pour lancer le projet."
+msgstr ""
+"Le mode de récupération est activé. Désactivez-le pour exécuter le projet."
 
 msgid ""
 "Autostart is enabled for the following profilers, which can have a "
@@ -6127,6 +6174,11 @@ msgstr ""
 msgid "Network Profiler"
 msgstr "Profileur réseau"
 
+msgid "Click to open the first profiler for which autostart is enabled."
+msgstr ""
+"Cliquez pour ouvrir le premier profileur pour lequel le démarrage automatique "
+"est activé."
+
 msgid ""
 "Godot opened the project in Recovery Mode, which is a special mode that can "
 "help recover projects that crash the engine upon initialization. The "
@@ -6136,6 +6188,9 @@ msgstr ""
 "peut aider à récupérer des projets qui plantent le moteur lors de "
 "l'initialisation. Les fonctionnalités suivantes ont été temporairements "
 "désactivées :"
+
+msgid "GDExtension addons"
+msgstr "Addons GDExtension"
 
 msgid "Automatic scene restoring"
 msgstr "Récupération de scène automatique"
@@ -12968,6 +13023,9 @@ msgstr "Propriétés de la collection de scènes :"
 msgid "Tile properties:"
 msgstr "Propriétés de la Tuile :"
 
+msgid "Line Tool"
+msgstr "Outil Ligne"
+
 msgid "TileMap"
 msgstr "TileMap"
 
@@ -13358,6 +13416,9 @@ msgstr "Activer la réduction automatique"
 
 msgid "Enable Tint Color"
 msgstr "Activer la couleur de teinte"
+
+msgid "Edit Preview Parameter: %s"
+msgstr "Modifier les paramètres de l'aperçu : %s"
 
 msgid "Duplicate VisualShader Node(s)"
 msgstr "Dupliquer le(s) nœud(s) VisualShader"
@@ -16744,6 +16805,10 @@ msgstr ""
 msgid "Exporting to Android when using C#/.NET is experimental."
 msgstr "Exporter un projet C#/.NET vers Android est expérimental."
 
+msgid "Gradle build is not supported for the Android editor."
+msgstr ""
+"La compilation via Gradle n'est pas prise en charge pour l'éditeur Android."
+
 msgid "Custom Android source template not found."
 msgstr "Le modèle personnalisé de la source android est introuvable."
 
@@ -16854,11 +16919,26 @@ msgstr ""
 msgid "Code Signing"
 msgstr "Signature de code"
 
+msgid "AAB signing is not supported"
+msgstr "La signature AAB n'est pas prise en charge"
+
+msgid "Signing debug APK..."
+msgstr "Signature de l'APK debug..."
+
 msgid "Could not find keystore, unable to export."
 msgstr "Impossible de trouver le keystore, impossible d'exporter."
 
 msgid "Unable to sign apk."
 msgstr "Impossible de signer l'apk."
+
+msgid ""
+"All 'apksigner' tools located in Android SDK 'build-tools' directory failed "
+"to execute. Please check that you have the correct version installed for your "
+"target sdk version. The resulting APK is unsigned."
+msgstr ""
+"Tous les outils 'apksigner' situés dans le répertoire 'build-tools' du SDK "
+"d'Android n'ont pas pu s'exécuter. Veuillez vérifier que vous avez la version "
+"correcte pour votre version cible du SDR. L'APK final n'est pas signé."
 
 msgid "Could not start apksigner executable."
 msgstr "Impossible de le programme apksigner."

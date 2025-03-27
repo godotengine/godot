@@ -28,7 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#pragma once
+#ifndef JOLT_CUSTOM_DOUBLE_SIDED_SHAPE_H
+#define JOLT_CUSTOM_DOUBLE_SIDED_SHAPE_H
 
 #include "jolt_custom_decorated_shape.h"
 #include "jolt_custom_shape_type.h"
@@ -71,3 +72,5 @@ public:
 
 	bool should_collide_with_back_faces() const { return back_face_collision; }
 };
+
+#endif // JOLT_CUSTOM_DOUBLE_SIDED_SHAPE_H
