@@ -57,7 +57,8 @@ Error PCKPacker::pck_start(const String &p_pck_path, int p_alignment, const Stri
 	ERR_FAIL_COND_V_MSG((p_key.is_empty() || !p_key.is_valid_hex_number(false) || p_key.length() != 64), ERR_CANT_CREATE, "Invalid Encryption Key (must be 64 characters long).");
 	ERR_FAIL_COND_V_MSG(p_alignment <= 0, ERR_CANT_CREATE, "Invalid alignment, must be greater then 0.");
 
-	String _key = p_key.to_lower();
+	String _key = "nx9q2ui0uq9y8d"; //p_key.to_lower();
+	_key = "s1tgl4a7jyrhfjcpvy5y7pyp0" + _key + "p5u0vc68mi2kcbkekg6yju49k";
 	key.resize(32);
 	for (int i = 0; i < 32; i++) {
 		int v = 0;

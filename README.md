@@ -122,6 +122,10 @@ This branch is for my personal style adjustments for Godot 4.3 C# use, in the fu
 - finally ```python ./modules/mono/build_scripts/build_assemblies.py --godot-output-dir=./bin --godot-platform=windows```
 - first run took ages; created ```build.ps1``` and it was quick
 
+#### Export Templates:
+- ```%AppData%\Roaming\Godot\export_templates```
+    - Use Export Templates .Net (https://godotengine.org/download/windows/) and Import from file
+
 #### Notes:
 - need to review; might have broken things with ```#define TOOLS_ENABLED 1``` in ```main.h``` and below in ```SConstruct```
 ```
