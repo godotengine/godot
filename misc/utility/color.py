@@ -9,6 +9,7 @@ from typing import Final
 # to a file, it won't contain color codes. Colors are always enabled on continuous integration.
 
 IS_CI: Final[bool] = bool(os.environ.get("CI"))
+NO_COLOR: Final[bool] = bool(os.environ.get("NO_COLOR"))
 STDOUT_TTY: Final[bool] = bool(sys.stdout.isatty())
 STDERR_TTY: Final[bool] = bool(sys.stderr.isatty())
 

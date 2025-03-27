@@ -208,7 +208,6 @@ Vector<float> Collada::AnimationTrack::get_value_at_time(float p_time) const {
 
 				Vector<float> ret;
 				ret.resize(16);
-				Transform3D tr;
 				// i wonder why collada matrices are transposed, given that's opposed to opengl..
 				ret.write[0] = interp.basis.rows[0][0];
 				ret.write[1] = interp.basis.rows[0][1];
@@ -2378,7 +2377,4 @@ Error Collada::load(const String &p_path, int p_flags) {
 
 	_optimize();
 	return OK;
-}
-
-Collada::Collada() {
 }

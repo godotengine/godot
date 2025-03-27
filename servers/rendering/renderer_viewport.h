@@ -134,7 +134,7 @@ public:
 			CanvasKey(const RID &p_canvas, int p_layer, int p_sublayer) {
 				canvas = p_canvas;
 				int64_t sign = p_layer < 0 ? -1 : 1;
-				stacking = sign * (((int64_t)ABS(p_layer)) << 32) + p_sublayer;
+				stacking = sign * (((int64_t)Math::abs(p_layer)) << 32) + p_sublayer;
 			}
 			int get_layer() const { return stacking >> 32; }
 		};

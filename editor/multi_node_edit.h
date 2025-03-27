@@ -79,5 +79,4 @@ public:
 
 		return true;
 	}
-	MultiNodeEdit();
 };

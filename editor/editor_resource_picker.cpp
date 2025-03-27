@@ -183,6 +183,12 @@ void EditorResourcePicker::_resource_saved(Object *p_resource) {
 }
 
 void EditorResourcePicker::_update_menu() {
+	if (edit_menu && edit_menu->is_visible()) {
+		edit_button->set_pressed(false);
+		edit_menu->hide();
+		return;
+	}
+
 	_update_menu_items();
 
 	Rect2 gt = edit_button->get_screen_rect();
@@ -549,6 +555,12 @@ void EditorResourcePicker::_button_input(const Ref<InputEvent> &p_event) {
 		// a valid resource or the Picker is editable, as
 		// there will otherwise be nothing to display.
 		if (edited_resource.is_valid() || is_editable()) {
+			if (edit_menu && edit_menu->is_visible()) {
+				edit_button->set_pressed(false);
+				edit_menu->hide();
+				return;
+			}
+
 			_update_menu_items();
 
 			Vector2 pos = get_screen_position() + mb->get_position();
@@ -1175,9 +1187,6 @@ void EditorScriptPicker::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "script_owner", PROPERTY_HINT_RESOURCE_TYPE, "Node", PROPERTY_USAGE_NONE), "set_script_owner", "get_script_owner");
 }
 
-EditorScriptPicker::EditorScriptPicker() {
-}
-
 // EditorShaderPicker
 
 void EditorShaderPicker::set_create_options(Object *p_menu_node) {
@@ -1216,9 +1225,6 @@ ShaderMaterial *EditorShaderPicker::get_edited_material() const {
 
 void EditorShaderPicker::set_preferred_mode(int p_mode) {
 	preferred_mode = p_mode;
-}
-
-EditorShaderPicker::EditorShaderPicker() {
 }
 
 //////////////

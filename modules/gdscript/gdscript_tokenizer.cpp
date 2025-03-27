@@ -366,7 +366,7 @@ GDScriptTokenizer::Token GDScriptTokenizerText::make_token(Token::Type p_type) {
 	token.end_column = column;
 	token.leftmost_column = leftmost_column;
 	token.rightmost_column = rightmost_column;
-	token.source = String(_start, _current - _start);
+	token.source = String::utf32(Span(_start, _current - _start));
 
 	if (p_type != Token::ERROR && cursor_line > -1) {
 		// Also count whitespace after token.
@@ -588,7 +588,7 @@ GDScriptTokenizer::Token GDScriptTokenizerText::potential_identifier() {
 		return token;
 	}
 
-	String name(_start, len);
+	String name = String::utf32(Span(_start, len));
 	if (len < MIN_KEYWORD_LENGTH || len > MAX_KEYWORD_LENGTH) {
 		// Cannot be a keyword, as the length doesn't match any.
 		return make_identifier(name);
@@ -863,7 +863,7 @@ GDScriptTokenizer::Token GDScriptTokenizerText::number() {
 
 	// Create a string with the whole number.
 	int len = _current - _start;
-	String number = String(_start, len).remove_char('_');
+	String number = String::utf32(Span(_start, len)).remove_char('_');
 
 	// Convert to the appropriate literal type.
 	if (base == 16) {

@@ -79,7 +79,6 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <cstdint>
 
 constexpr int COMPONENT_COUNT_FOR_ACCESSOR_TYPE[7] = {
 	1, 2, 3, 4, 4, 9, 16
@@ -5926,7 +5925,7 @@ void GLTFDocument::_convert_csg_shape_to_gltf(CSGShape3D *p_current, GLTFNodeInd
 	ERR_FAIL_MSG("csg module is disabled.");
 #else
 	CSGShape3D *csg = p_current;
-	csg->call("_update_shape");
+	csg->update_shape();
 	Array meshes = csg->get_meshes();
 	if (meshes.size() != 2) {
 		return;

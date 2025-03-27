@@ -183,7 +183,7 @@ void SpriteFramesEditor::_sheet_preview_input(const Ref<InputEvent> &p_event) {
 				const int from = last_frame_selected;
 				const int to = idx;
 
-				const int diff = ABS(to - from);
+				const int diff = Math::abs(to - from);
 				const int dir = SIGN(to - from);
 
 				for (int i = 0; i <= diff; i++) {
@@ -2535,7 +2535,4 @@ SpriteFramesEditorPlugin::SpriteFramesEditorPlugin() {
 	frames_editor->set_custom_minimum_size(Size2(0, 300) * EDSCALE);
 	button = EditorNode::get_bottom_panel()->add_item(TTR("SpriteFrames"), frames_editor, ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_sprite_frames_bottom_panel", TTRC("Toggle SpriteFrames Bottom Panel")));
 	button->hide();
-}
-
-SpriteFramesEditorPlugin::~SpriteFramesEditorPlugin() {
 }

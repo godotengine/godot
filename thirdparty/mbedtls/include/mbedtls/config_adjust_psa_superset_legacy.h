@@ -136,13 +136,6 @@
 #endif /* PSA_WANT_ECC_SECP_K1_192 */
 #endif /* MBEDTLS_ECP_DP_SECP192K1_ENABLED */
 
-/* SECP224K1 is buggy via the PSA API (https://github.com/Mbed-TLS/mbedtls/issues/3541) */
-#if 0 && defined(MBEDTLS_ECP_DP_SECP224K1_ENABLED)
-#if !defined(PSA_WANT_ECC_SECP_K1_224)
-#define PSA_WANT_ECC_SECP_K1_224 1
-#endif /* PSA_WANT_ECC_SECP_K1_224 */
-#endif /* MBEDTLS_ECP_DP_SECP224K1_ENABLED */
-
 #if defined(MBEDTLS_ECP_DP_SECP256K1_ENABLED)
 #if !defined(PSA_WANT_ECC_SECP_K1_256)
 #define PSA_WANT_ECC_SECP_K1_256 1
