@@ -67,6 +67,11 @@ void EditorSceneTabs::_notification(int p_what) {
 				_scene_tabs_resized();
 			}
 		} break;
+
+		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
+		case NOTIFICATION_TRANSLATION_CHANGED: {
+			_scene_tabs_resized();
+		} break;
 	}
 }
 

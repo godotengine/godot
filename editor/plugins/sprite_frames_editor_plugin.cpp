@@ -672,6 +672,11 @@ void SpriteFramesEditor::_notification(int p_what) {
 			_update_show_settings();
 		} break;
 
+		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
+		case NOTIFICATION_TRANSLATION_CHANGED: {
+			_update_show_settings();
+		} break;
+
 		case NOTIFICATION_READY: {
 			add_theme_constant_override("autohide", 1); // Fixes the dragger always showing up.
 		} break;

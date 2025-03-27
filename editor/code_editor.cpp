@@ -144,6 +144,11 @@ void FindReplaceBar::_notification(int p_what) {
 			_update_toggle_replace_button(replace_text->is_visible_in_tree());
 		} break;
 
+		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
+		case NOTIFICATION_TRANSLATION_CHANGED: {
+			_update_toggle_replace_button(replace_text->is_visible_in_tree());
+		} break;
+
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			set_process_input(is_visible_in_tree());
 		} break;
@@ -1647,6 +1652,13 @@ void CodeTextEditor::_notification(int p_what) {
 				update_toggle_scripts_button();
 			}
 			_update_text_editor_theme();
+		} break;
+
+		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
+		case NOTIFICATION_TRANSLATION_CHANGED: {
+			if (toggle_scripts_button->is_visible()) {
+				update_toggle_scripts_button();
+			}
 		} break;
 
 		case NOTIFICATION_VISIBILITY_CHANGED: {
