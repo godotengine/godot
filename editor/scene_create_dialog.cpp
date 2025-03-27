@@ -83,7 +83,7 @@ void SceneCreateDialog::browse_types() {
 }
 
 void SceneCreateDialog::on_type_picked() {
-	other_type_display->set_text(select_node_dialog->get_selected_type().get_slice(" ", 0));
+	other_type_display->set_text(select_node_dialog->get_selected_type().get_slicec(' ', 0));
 	if (node_type_other->is_pressed()) {
 		validation_panel->update();
 	} else {
@@ -261,6 +261,7 @@ SceneCreateDialog::SceneCreateDialog() {
 		ResourceSaver::get_recognized_extensions(sd, &extensions);
 
 		scene_extension_picker = memnew(OptionButton);
+		scene_extension_picker->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 		hb->add_child(scene_extension_picker);
 		for (const String &E : extensions) {
 			scene_extension_picker->add_item("." + E);

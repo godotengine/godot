@@ -28,10 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "godot_content_view.h"
+#import "godot_content_view.h"
 
-#include "display_server_macos.h"
-#include "key_mapping_macos.h"
+#import "display_server_macos.h"
+#import "key_mapping_macos.h"
 
 #include "main/main.h"
 
@@ -622,7 +622,7 @@
 		[self removeTrackingArea:tracking_area];
 	}
 
-	NSTrackingAreaOptions options = NSTrackingMouseEnteredAndExited | NSTrackingActiveInKeyWindow | NSTrackingCursorUpdate | NSTrackingInVisibleRect;
+	NSTrackingAreaOptions options = NSTrackingMouseEnteredAndExited | NSTrackingActiveWhenFirstResponder | NSTrackingCursorUpdate | NSTrackingInVisibleRect;
 	tracking_area = [[NSTrackingArea alloc] initWithRect:[self bounds] options:options owner:self userInfo:nil];
 
 	[self addTrackingArea:tracking_area];

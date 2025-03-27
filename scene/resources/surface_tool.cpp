@@ -645,8 +645,7 @@ Array SurfaceTool::commit_to_arrays() {
 			case Mesh::ARRAY_BONES: {
 				int count = skin_weights == SKIN_8_WEIGHTS ? 8 : 4;
 				Vector<int> array;
-				array.resize(varr_len * count);
-				array.fill(0);
+				array.resize_zeroed(varr_len * count);
 				int *w = array.ptrw();
 
 				for (uint32_t idx = 0; idx < vertex_array.size(); idx++) {
@@ -669,8 +668,7 @@ Array SurfaceTool::commit_to_arrays() {
 				Vector<float> array;
 				int count = skin_weights == SKIN_8_WEIGHTS ? 8 : 4;
 
-				array.resize(varr_len * count);
-				array.fill(0.0f);
+				array.resize_zeroed(varr_len * count);
 				float *w = array.ptrw();
 
 				for (uint32_t idx = 0; idx < vertex_array.size(); idx++) {

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef PATH_3D_EDITOR_PLUGIN_H
-#define PATH_3D_EDITOR_PLUGIN_H
+#pragma once
 
 #include "editor/plugins/editor_plugin.h"
 #include "editor/plugins/node_3d_editor_gizmos.h"
@@ -56,6 +55,7 @@ class Path3DGizmo : public EditorNode3DGizmo {
 	};
 
 	Path3D *path = nullptr;
+	Ref<StandardMaterial3D> debug_material;
 	mutable Vector3 original;
 	mutable float orig_in_length;
 	mutable float orig_out_length;
@@ -183,5 +183,3 @@ public:
 
 	Path3DEditorPlugin();
 };
-
-#endif // PATH_3D_EDITOR_PLUGIN_H

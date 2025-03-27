@@ -92,7 +92,7 @@ void OS_LinuxBSD::alert(const String &p_alert, const String &p_title) {
 	String program;
 
 	for (int i = 0; i < path_elems.size(); i++) {
-		for (uint64_t k = 0; k < sizeof(message_programs) / sizeof(char *); k++) {
+		for (uint64_t k = 0; k < std::size(message_programs); k++) {
 			String tested_path = path_elems[i].path_join(message_programs[k]);
 
 			if (FileAccess::exists(tested_path)) {
@@ -173,7 +173,7 @@ String OS_LinuxBSD::get_unique_id() const {
 		memset(buf, 0, sizeof(buf));
 		size_t len = sizeof(buf) - 1;
 		if (sysctl(mib, 2, buf, &len, 0x0, 0) != -1) {
-			machine_id = String::utf8(buf).replace("-", "");
+			machine_id = String::utf8(buf).remove_char('-');
 		}
 #else
 		Ref<FileAccess> f = FileAccess::open("/etc/machine-id", FileAccess::READ);
@@ -769,7 +769,7 @@ Vector<String> OS_LinuxBSD::get_system_font_path_for_text(const String &p_font_n
 
 	Vector<String> ret;
 	static const char *allowed_formats[] = { "TrueType", "CFF" };
-	for (size_t i = 0; i < sizeof(allowed_formats) / sizeof(const char *); i++) {
+	for (size_t i = 0; i < std::size(allowed_formats); i++) {
 		FcPattern *pattern = FcPatternCreate();
 		if (pattern) {
 			FcPatternAddBool(pattern, FC_SCALABLE, FcTrue);

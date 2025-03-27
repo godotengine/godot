@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef WORKER_THREAD_POOL_H
-#define WORKER_THREAD_POOL_H
+#pragma once
 
 #include "core/os/condition_variable.h"
 #include "core/os/memory.h"
@@ -294,5 +293,3 @@ public:
 	WorkerThreadPool(bool p_singleton = true);
 	~WorkerThreadPool();
 };
-
-#endif // WORKER_THREAD_POOL_H

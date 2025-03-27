@@ -383,14 +383,16 @@ void PListNode::store_text(String &p_stream, uint8_t p_indent) const {
 			p_stream += String("\t").repeat(p_indent);
 			p_stream += "<data>\n";
 			p_stream += String("\t").repeat(p_indent);
-			p_stream += data_string + "\n";
+			// Data should be Base64 (i.e. ASCII only).
+			p_stream += String::ascii(data_string) + "\n";
 			p_stream += String("\t").repeat(p_indent);
 			p_stream += "</data>\n";
 		} break;
 		case PList::PLNodeType::PL_NODE_TYPE_DATE: {
 			p_stream += String("\t").repeat(p_indent);
 			p_stream += "<date>";
-			p_stream += data_string;
+			// Data should be ISO 8601 (i.e. ASCII only).
+			p_stream += String::ascii(data_string);
 			p_stream += "</date>\n";
 		} break;
 		case PList::PLNodeType::PL_NODE_TYPE_STRING: {
@@ -629,7 +631,7 @@ bool PList::load_file(const String &p_filename) {
 	unsigned char magic[8];
 	fb->get_buffer(magic, 8);
 
-	if (String((const char *)magic, 8) == "bplist00") {
+	if (String::ascii(Span((const char *)magic, 8)) == "bplist00") {
 		fb->seek_end(-26);
 		trailer.offset_size = fb->get_8();
 		trailer.ref_size = fb->get_8();

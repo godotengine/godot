@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef FILE_ACCESS_WINDOWS_PIPE_H
-#define FILE_ACCESS_WINDOWS_PIPE_H
+#pragma once
 
 #ifdef WINDOWS_ENABLED
 
@@ -75,6 +74,8 @@ public:
 	virtual bool file_exists(const String &p_name) override { return false; }
 
 	uint64_t _get_modified_time(const String &p_file) override { return 0; }
+	virtual uint64_t _get_access_time(const String &p_file) override { return 0; }
+	virtual int64_t _get_size(const String &p_file) override { return -1; }
 	virtual BitField<FileAccess::UnixPermissionFlags> _get_unix_permissions(const String &p_file) override { return 0; }
 	virtual Error _set_unix_permissions(const String &p_file, BitField<FileAccess::UnixPermissionFlags> p_permissions) override { return ERR_UNAVAILABLE; }
 
@@ -90,5 +91,3 @@ public:
 };
 
 #endif // WINDOWS_ENABLED
-
-#endif // FILE_ACCESS_WINDOWS_PIPE_H

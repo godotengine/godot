@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TREE_H
-#define TREE_H
+#pragma once
 
 #include "scene/gui/control.h"
 #include "scene/gui/line_edit.h"
@@ -551,6 +550,8 @@ private:
 
 		Ref<StyleBox> hovered;
 		Ref<StyleBox> hovered_dimmed;
+		Ref<StyleBox> hovered_selected;
+		Ref<StyleBox> hovered_selected_focus;
 		Ref<StyleBox> selected;
 		Ref<StyleBox> selected_focus;
 		Ref<StyleBox> cursor;
@@ -581,6 +582,7 @@ private:
 		Color font_color;
 		Color font_hovered_color;
 		Color font_hovered_dimmed_color;
+		Color font_hovered_selected_color;
 		Color font_selected_color;
 		Color font_disabled_color;
 		Color guide_color;
@@ -854,5 +856,3 @@ public:
 
 VARIANT_ENUM_CAST(Tree::SelectMode);
 VARIANT_ENUM_CAST(Tree::DropModeFlags);
-
-#endif // TREE_H

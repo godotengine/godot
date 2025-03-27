@@ -123,8 +123,11 @@ This branch is for my personal style adjustments for Godot 4.3 C# use, in the fu
 - first run took ages; created ```build.ps1``` and it was quick
 
 #### Export Templates:
-- ```%AppData%\Roaming\Godot\export_templates```
-    - Use Export Templates .Net (https://godotengine.org/download/windows/) and Import from file
+Folder: ```%AppData%\Roaming\Godot\export_templates```
+- Or: %APPDATA%\Godot\templates\4.4.1-stable\
+
+- scons platform=<platform> target=template_release tools=no -j<number_of_threads>
+- Note: current encrypt method for custom key that's findable: scons platform=<platform> target=release tools=no encryption_key=<your_key>
 
 #### Notes:
 - need to review; might have broken things with ```#define TOOLS_ENABLED 1``` in ```main.h``` and below in ```SConstruct```

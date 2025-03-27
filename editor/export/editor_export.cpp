@@ -453,6 +453,3 @@ EditorExport::EditorExport() {
 	singleton = this;
 	set_process(true);
 }
-
-EditorExport::~EditorExport() {
-}

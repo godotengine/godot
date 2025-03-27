@@ -464,14 +464,14 @@ void AnimationNodeStateMachineEditor::_state_machine_gui_input(const Ref<InputEv
 				}
 				Vector2 npos = state_machine->get_node_position(E);
 
-				float d_x = ABS(npos.x - cpos.x);
+				float d_x = Math::abs(npos.x - cpos.x);
 				if (d_x < MIN(5, best_d_x)) {
 					drag_ofs.x -= cpos.x - npos.x;
 					best_d_x = d_x;
 					snap_x = E;
 				}
 
-				float d_y = ABS(npos.y - cpos.y);
+				float d_y = Math::abs(npos.y - cpos.y);
 				if (d_y < MIN(5, best_d_y)) {
 					drag_ofs.y -= cpos.y - npos.y;
 					best_d_y = d_y;
@@ -929,7 +929,7 @@ void AnimationNodeStateMachineEditor::_connection_draw(const Vector2 &p_from, co
 		state_machine_draw->draw_line(p_from, p_from.lerp(p_to, p_fade_ratio), fade_line_color, 2);
 	}
 
-	const int ICON_COUNT = sizeof(theme_cache.transition_icons) / sizeof(*theme_cache.transition_icons);
+	const int ICON_COUNT = std::size(theme_cache.transition_icons);
 	int icon_index = p_mode + (p_auto_advance ? ICON_COUNT / 2 : 0);
 	ERR_FAIL_COND(icon_index >= ICON_COUNT);
 	Ref<Texture2D> icon = theme_cache.transition_icons[icon_index];

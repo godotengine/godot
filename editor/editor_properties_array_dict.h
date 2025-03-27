@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef EDITOR_PROPERTIES_ARRAY_DICT_H
-#define EDITOR_PROPERTIES_ARRAY_DICT_H
+#pragma once
 
 #include "editor/editor_inspector.h"
 #include "editor/editor_locale_dialog.h"
@@ -54,8 +53,6 @@ public:
 
 	void set_array(const Variant &p_array);
 	Variant get_array();
-
-	EditorPropertyArrayObject();
 };
 
 class EditorPropertyDictionaryObject : public RefCounted {
@@ -89,8 +86,6 @@ public:
 	String get_label_for_index(int p_index);
 	String get_property_name_for_index(int p_index);
 	String get_key_name_for_index(int p_index);
-
-	EditorPropertyDictionaryObject();
 };
 
 class EditorPropertyArray : public EditorProperty {
@@ -164,6 +159,7 @@ protected:
 	virtual void _remove_pressed(int p_index);
 
 	virtual void _button_draw();
+	virtual void _button_add_item_draw();
 	virtual bool _is_drop_valid(const Dictionary &p_drag_data) const;
 	virtual bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;
 	virtual void drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
@@ -305,5 +301,3 @@ public:
 	virtual void update_property() override;
 	EditorPropertyLocalizableString();
 };
-
-#endif // EDITOR_PROPERTIES_ARRAY_DICT_H

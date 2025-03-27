@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef AUDIO_STREAM_INTERACTIVE_H
-#define AUDIO_STREAM_INTERACTIVE_H
+#pragma once
 
 #include "servers/audio/audio_stream.h"
 
@@ -269,5 +268,3 @@ public:
 	AudioStreamPlaybackInteractive();
 	~AudioStreamPlaybackInteractive();
 };
-
-#endif // AUDIO_STREAM_INTERACTIVE_H

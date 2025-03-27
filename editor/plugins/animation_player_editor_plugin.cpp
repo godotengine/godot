@@ -503,7 +503,7 @@ void AnimationPlayerEditor::_animation_rename() {
 
 	// Remove library prefix if present.
 	if (selected_name.contains_char('/')) {
-		selected_name = selected_name.get_slice("/", 1);
+		selected_name = selected_name.get_slicec('/', 1);
 	}
 
 	name_dialog->set_title(TTR("Rename Animation"));
@@ -536,7 +536,7 @@ void AnimationPlayerEditor::_animation_remove_confirmed() {
 
 	// For names of form lib_name/anim_name, remove library name prefix.
 	if (current.contains_char('/')) {
-		current = current.get_slice("/", 1);
+		current = current.get_slicec('/', 1);
 	}
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(TTR("Remove Animation"));
@@ -625,8 +625,8 @@ void AnimationPlayerEditor::_animation_name_edited() {
 			// Extract library prefix if present.
 			String new_library_prefix = "";
 			if (current.contains_char('/')) {
-				new_library_prefix = current.get_slice("/", 0) + "/";
-				current = current.get_slice("/", 1);
+				new_library_prefix = current.get_slicec('/', 0) + "/";
+				current = current.get_slicec('/', 1);
 			}
 
 			undo_redo->create_action(TTR("Rename Animation"));
@@ -655,6 +655,8 @@ void AnimationPlayerEditor::_animation_name_edited() {
 				if (current_anim.is_valid()) {
 					new_anim->set_step(current_anim->get_step());
 				}
+			} else {
+				new_anim->set_step(EDITOR_GET("editors/animation/default_animation_step"));
 			}
 
 			String library_name;
@@ -921,6 +923,10 @@ void AnimationPlayerEditor::set_state(const Dictionary &p_state) {
 	if (p_state.has("track_editor_state")) {
 		track_editor->set_state(p_state["track_editor_state"]);
 	}
+}
+
+void AnimationPlayerEditor::clear() {
+	track_editor->clear();
 }
 
 void AnimationPlayerEditor::_animation_resource_edit() {
@@ -1340,7 +1346,7 @@ void AnimationPlayerEditor::_animation_duplicate() {
 
 	if (new_name.contains_char('/')) {
 		// Discard library prefix.
-		new_name = new_name.get_slice("/", 1);
+		new_name = new_name.get_slicec('/', 1);
 	}
 
 	_update_name_dialog_library_dropdown();

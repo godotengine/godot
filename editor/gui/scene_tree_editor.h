@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef SCENE_TREE_EDITOR_H
-#define SCENE_TREE_EDITOR_H
+#pragma once
 
 #include "scene/gui/check_box.h"
 #include "scene/gui/check_button.h"
@@ -291,7 +290,4 @@ public:
 	LineEdit *get_filter_line_edit() { return filter; }
 
 	SceneTreeDialog();
-	~SceneTreeDialog();
 };
-
-#endif // SCENE_TREE_EDITOR_H

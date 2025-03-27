@@ -28,13 +28,13 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "os_macos.h"
+#import "os_macos.h"
 
-#include "dir_access_macos.h"
-#include "display_server_macos.h"
-#include "godot_application.h"
-#include "godot_application_delegate.h"
-#include "macos_terminal_logger.h"
+#import "dir_access_macos.h"
+#import "display_server_macos.h"
+#import "godot_application.h"
+#import "godot_application_delegate.h"
+#import "macos_terminal_logger.h"
 
 #include "core/crypto/crypto_core.h"
 #include "core/version_generated.gen.h"
@@ -42,19 +42,25 @@
 
 #include <dlfcn.h>
 #include <libproc.h>
-#include <mach-o/dyld.h>
+#import <mach-o/dyld.h>
 #include <os/log.h>
 #include <sys/sysctl.h>
 
 void OS_MacOS::pre_wait_observer_cb(CFRunLoopObserverRef p_observer, CFRunLoopActivity p_activiy, void *p_context) {
-	// Prevent main loop from sleeping and redraw window during modal popup display.
-	// Do not redraw when rendering is done from the separate thread, it will conflict with the OpenGL context updates.
+	OS_MacOS *os = static_cast<OS_MacOS *>(OS::get_singleton());
 
-	DisplayServerMacOS *ds = (DisplayServerMacOS *)DisplayServer::get_singleton();
-	if (get_singleton()->get_main_loop() && ds && !get_singleton()->is_separate_thread_rendering_enabled() && !ds->get_is_resizing()) {
-		Main::force_redraw();
-		if (!Main::is_iterating()) { // Avoid cyclic loop.
-			Main::iteration();
+	@autoreleasepool {
+		@try {
+			if (DisplayServer::get_singleton()) {
+				static_cast<DisplayServerMacOS *>(DisplayServer::get_singleton())->_process_events(false); // Get rid of pending events.
+			}
+			os->joypad_apple->process_joypads();
+
+			if (Main::iteration()) {
+				os->terminate();
+			}
+		} @catch (NSException *exception) {
+			ERR_PRINT("NSException: " + String::utf8([exception reason].UTF8String));
 		}
 	}
 
@@ -342,7 +348,7 @@ String OS_MacOS::get_bundle_icon_path() const {
 
 // Get properly capitalized engine name for system paths
 String OS_MacOS::get_godot_dir_name() const {
-	return String(VERSION_SHORT_NAME).capitalize();
+	return String(GODOT_VERSION_SHORT_NAME).capitalize();
 }
 
 String OS_MacOS::get_system_dir(SystemDir p_dir, bool p_shared_storage) const {
@@ -809,7 +815,8 @@ String OS_MacOS::get_system_ca_certificates() {
 		Error err = CryptoCore::b64_encode(pba.ptrw(), pba.size(), &b64len, (unsigned char *)CFDataGetBytePtr(der), derlen);
 		CFRelease(der);
 		ERR_CONTINUE(err != OK);
-		certs += "-----BEGIN CERTIFICATE-----\n" + String((char *)pba.ptr(), b64len) + "\n-----END CERTIFICATE-----\n";
+		// Certificate is bas64 encoded, aka ascii.
+		certs += "-----BEGIN CERTIFICATE-----\n" + String::ascii(Span((char *)pba.ptr(), b64len)) + "\n-----END CERTIFICATE-----\n";
 	}
 	CFRelease(result);
 	return certs;
@@ -822,36 +829,69 @@ OS::PreferredTextureFormat OS_MacOS::get_preferred_texture_format() const {
 }
 
 void OS_MacOS::run() {
-	if (!main_loop) {
-		return;
-	}
-
-	@autoreleasepool {
-		main_loop->initialize();
-	}
-
-	bool quit = false;
-	while (!quit) {
-		@autoreleasepool {
-			@try {
-				if (DisplayServer::get_singleton()) {
-					DisplayServer::get_singleton()->process_events(); // Get rid of pending events.
-				}
-				joypad_apple->process_joypads();
-
-				if (Main::iteration()) {
-					quit = true;
-				}
-			} @catch (NSException *exception) {
-				ERR_PRINT("NSException: " + String::utf8([exception reason].UTF8String));
-			}
-		}
-	}
-
-	main_loop->finalize();
+	[NSApp run];
 }
 
-OS_MacOS::OS_MacOS() {
+void OS_MacOS::start_main() {
+	Error err;
+	@autoreleasepool {
+		err = Main::setup(execpath, argc, argv);
+	}
+
+	if (err == OK) {
+		int ret;
+		@autoreleasepool {
+			ret = Main::start();
+		}
+		if (ret == EXIT_SUCCESS) {
+			if (main_loop) {
+				@autoreleasepool {
+					main_loop->initialize();
+				}
+				pre_wait_observer = CFRunLoopObserverCreate(kCFAllocatorDefault, kCFRunLoopBeforeWaiting, true, 0, &pre_wait_observer_cb, nullptr);
+				CFRunLoopAddObserver(CFRunLoopGetCurrent(), pre_wait_observer, kCFRunLoopCommonModes);
+				return;
+			}
+		} else {
+			set_exit_code(EXIT_FAILURE);
+		}
+	} else if (err == ERR_HELP) { // Returned by --help and --version, so success.
+		set_exit_code(EXIT_SUCCESS);
+	} else {
+		set_exit_code(EXIT_FAILURE);
+	}
+
+	terminate();
+}
+
+void OS_MacOS::activate() {
+	[delegate activate];
+}
+
+void OS_MacOS::terminate() {
+	if (pre_wait_observer) {
+		CFRunLoopRemoveObserver(CFRunLoopGetCurrent(), pre_wait_observer, kCFRunLoopCommonModes);
+		CFRelease(pre_wait_observer);
+		pre_wait_observer = nil;
+	}
+
+	should_terminate = true;
+	[NSApp terminate:nil];
+}
+
+void OS_MacOS::cleanup() {
+	if (main_loop) {
+		main_loop->finalize();
+	}
+	@autoreleasepool {
+		Main::cleanup();
+	}
+}
+
+OS_MacOS::OS_MacOS(const char *p_execpath, int p_argc, char **p_argv) {
+	execpath = p_execpath;
+	argc = p_argc;
+	argv = p_argv;
 	if (is_sandboxed()) {
 		// Load security-scoped bookmarks, request access, remove stale or invalid bookmarks.
 		NSArray *bookmarks = [[NSUserDefaults standardUserDefaults] arrayForKey:@"sec_bookmarks"];
@@ -885,7 +925,7 @@ OS_MacOS::OS_MacOS() {
 	[GodotApplication sharedApplication];
 
 	// In case we are unbundled, make us a proper UI application.
-	[NSApp setActivationPolicy:NSApplicationActivationPolicyRegular];
+	[NSApp setActivationPolicy:NSApplicationActivationPolicyAccessory];
 
 	// Menu bar setup must go between sharedApplication above and
 	// finishLaunching below, in order to properly emulate the behavior
@@ -893,35 +933,13 @@ OS_MacOS::OS_MacOS() {
 
 	NSMenu *main_menu = [[NSMenu alloc] initWithTitle:@""];
 	[NSApp setMainMenu:main_menu];
-	[NSApp finishLaunching];
 
-	id delegate = [[GodotApplicationDelegate alloc] init];
+	delegate = [[GodotApplicationDelegate alloc] init];
 	ERR_FAIL_NULL(delegate);
 	[NSApp setDelegate:delegate];
 	[NSApp registerUserInterfaceItemSearchHandler:delegate];
-
-	pre_wait_observer = CFRunLoopObserverCreate(kCFAllocatorDefault, kCFRunLoopBeforeWaiting, true, 0, &pre_wait_observer_cb, nullptr);
-	CFRunLoopAddObserver(CFRunLoopGetCurrent(), pre_wait_observer, kCFRunLoopCommonModes);
-
-	// Process application:openFile: event.
-	while (true) {
-		NSEvent *event = [NSApp
-				nextEventMatchingMask:NSEventMaskAny
-							untilDate:[NSDate distantPast]
-							   inMode:NSDefaultRunLoopMode
-							  dequeue:YES];
-
-		if (event == nil) {
-			break;
-		}
-
-		[NSApp sendEvent:event];
-	}
-
-	[NSApp activateIgnoringOtherApps:YES];
 }
 
 OS_MacOS::~OS_MacOS() {
-	CFRunLoopRemoveObserver(CFRunLoopGetCurrent(), pre_wait_observer, kCFRunLoopCommonModes);
-	CFRelease(pre_wait_observer);
+	// NOP
 }

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef VIDEO_STREAM_PLAYER_H
-#define VIDEO_STREAM_PLAYER_H
+#pragma once
 
 #include "scene/gui/control.h"
 #include "scene/resources/video_stream.h"
@@ -52,6 +51,8 @@ class VideoStreamPlayer : public Control {
 	RID stream_rid;
 
 	Ref<Texture2D> texture;
+	Size2 texture_size;
+	void texture_changed(const Ref<Texture2D> &p_texture);
 
 	AudioRBResampler resampler;
 	Vector<AudioFrame> mix_buffer;
@@ -126,5 +127,3 @@ public:
 	VideoStreamPlayer();
 	~VideoStreamPlayer();
 };
-
-#endif // VIDEO_STREAM_PLAYER_H

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef SPRING_BONE_SIMULATOR_3D_H
-#define SPRING_BONE_SIMULATOR_3D_H
+#pragma once
 
 #include "scene/3d/skeleton_modifier_3d.h"
 
@@ -142,6 +141,7 @@ public:
 
 protected:
 	Vector<SpringBone3DSetting *> settings;
+	Vector3 external_force;
 
 	bool _get(const StringName &p_path, Variant &r_ret) const;
 	bool _set(const StringName &p_path, const Variant &p_value);
@@ -269,6 +269,9 @@ public:
 
 	LocalVector<ObjectID> get_valid_collision_instance_ids(int p_index);
 
+	void set_external_force(const Vector3 &p_force);
+	Vector3 get_external_force() const;
+
 	// Helper.
 	static Quaternion get_local_pose_rotation(Skeleton3D *p_skeleton, int p_bone, const Quaternion &p_global_pose_rotation);
 	static Quaternion get_from_to_rotation(const Vector3 &p_from, const Vector3 &p_to, const Quaternion &p_prev_rot);
@@ -286,5 +289,3 @@ public:
 VARIANT_ENUM_CAST(SpringBoneSimulator3D::BoneDirection);
 VARIANT_ENUM_CAST(SpringBoneSimulator3D::CenterFrom);
 VARIANT_ENUM_CAST(SpringBoneSimulator3D::RotationAxis);
-
-#endif // SPRING_BONE_SIMULATOR_3D_H

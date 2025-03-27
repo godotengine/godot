@@ -930,7 +930,7 @@ bool JavaClassWrapper::_get_type_sig(JNIEnv *env, jobject obj, uint32_t &sig, St
 	if (str_type.begins_with("[")) {
 		t = JavaClass::ARG_ARRAY_BIT;
 		strsig = "[";
-		str_type = str_type.substr(1, str_type.length() - 1);
+		str_type = str_type.substr(1);
 		if (str_type.begins_with("[")) {
 			print_line("Nested arrays not supported for type: " + str_type);
 			return false;
@@ -1471,7 +1471,7 @@ Ref<JavaClass> JavaClassWrapper::_wrap(const String &p_class, bool p_allow_priva
 	ERR_FAIL_NULL_V(env, Ref<JavaClass>());
 
 	jclass bclass = env->FindClass(class_name_dots.replace(".", "/").utf8().get_data());
-	ERR_FAIL_NULL_V(bclass, Ref<JavaClass>());
+	ERR_FAIL_NULL_V_MSG(bclass, Ref<JavaClass>(), vformat("Java class '%s' not found.", p_class));
 
 	jobjectArray constructors = (jobjectArray)env->CallObjectMethod(bclass, Class_getDeclaredConstructors);
 	ERR_FAIL_NULL_V(constructors, Ref<JavaClass>());

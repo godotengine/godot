@@ -365,7 +365,7 @@ static Error _parse_obj(const String &p_path, List<Ref<ImporterMesh>> &r_meshes,
 				face[1] = face[2];
 			}
 		} else if (l.begins_with("s ")) { //smoothing
-			String what = l.substr(2, l.length()).strip_edges();
+			String what = l.substr(2).strip_edges();
 			bool do_smooth;
 			if (what == "off") {
 				do_smooth = false;
@@ -476,7 +476,7 @@ static Error _parse_obj(const String &p_path, List<Ref<ImporterMesh>> &r_meshes,
 			}
 
 			if (l.begins_with("o ")) {
-				name = l.substr(2, l.length()).strip_edges();
+				name = l.substr(2).strip_edges();
 			}
 
 			if (l.begins_with("usemtl ")) {
@@ -484,7 +484,7 @@ static Error _parse_obj(const String &p_path, List<Ref<ImporterMesh>> &r_meshes,
 			}
 
 			if (l.begins_with("g ")) {
-				current_group = l.substr(2, l.length()).strip_edges();
+				current_group = l.substr(2).strip_edges();
 			}
 
 		} else if (l.begins_with("mtllib ")) { //parse material
@@ -584,9 +584,6 @@ void EditorOBJImporter::get_extensions(List<String> *r_extensions) const {
 	r_extensions->push_back("obj");
 }
 
-EditorOBJImporter::EditorOBJImporter() {
-}
-
 ////////////////////////////////////////////////////
 
 String ResourceImporterOBJ::get_importer_name() const {
@@ -681,7 +678,4 @@ Error ResourceImporterOBJ::import(ResourceUID::ID p_source_id, const String &p_s
 	r_gen_files->push_back(save_path);
 
 	return OK;
-}
-
-ResourceImporterOBJ::ResourceImporterOBJ() {
 }

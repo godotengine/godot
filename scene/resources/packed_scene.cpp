@@ -829,7 +829,7 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Has
 				int slash_pos = subtype_string.find_char('/');
 				PropertyHint subtype_hint = PropertyHint::PROPERTY_HINT_NONE;
 				if (slash_pos >= 0) {
-					subtype_hint = PropertyHint(subtype_string.get_slice("/", 1).to_int());
+					subtype_hint = PropertyHint(subtype_string.get_slicec('/', 1).to_int());
 					subtype_string = subtype_string.substr(0, slash_pos);
 				}
 				Variant::Type subtype = Variant::Type(subtype_string.to_int());
@@ -859,7 +859,7 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Has
 				int key_slash_pos = key_subtype_string.find_char('/');
 				PropertyHint key_subtype_hint = PropertyHint::PROPERTY_HINT_NONE;
 				if (key_slash_pos >= 0) {
-					key_subtype_hint = PropertyHint(key_subtype_string.get_slice("/", 1).to_int());
+					key_subtype_hint = PropertyHint(key_subtype_string.get_slicec('/', 1).to_int());
 					key_subtype_string = key_subtype_string.substr(0, key_slash_pos);
 				}
 				Variant::Type key_subtype = Variant::Type(key_subtype_string.to_int());
@@ -870,7 +870,7 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Has
 				int value_slash_pos = value_subtype_string.find_char('/');
 				PropertyHint value_subtype_hint = PropertyHint::PROPERTY_HINT_NONE;
 				if (value_slash_pos >= 0) {
-					value_subtype_hint = PropertyHint(value_subtype_string.get_slice("/", 1).to_int());
+					value_subtype_hint = PropertyHint(value_subtype_string.get_slicec('/', 1).to_int());
 					value_subtype_string = value_subtype_string.substr(0, value_slash_pos);
 				}
 				Variant::Type value_subtype = Variant::Type(value_subtype_string.to_int());
@@ -2092,6 +2092,8 @@ Vector<String> SceneState::_get_node_groups(int p_idx) const {
 void SceneState::_bind_methods() {
 	//unbuild API
 
+	ClassDB::bind_method(D_METHOD("get_path"), &SceneState::get_path);
+	ClassDB::bind_method(D_METHOD("get_base_scene_state"), &SceneState::get_base_scene_state);
 	ClassDB::bind_method(D_METHOD("get_node_count"), &SceneState::get_node_count);
 	ClassDB::bind_method(D_METHOD("get_node_type", "idx"), &SceneState::get_node_type);
 	ClassDB::bind_method(D_METHOD("get_node_name", "idx"), &SceneState::get_node_name);

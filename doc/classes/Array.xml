@@ -674,7 +674,7 @@
 			<param index="0" name="size" type="int" />
 			<description>
 				Sets the array's number of elements to [param size]. If [param size] is smaller than the array's current size, the elements at the end are removed. If [param size] is greater, new default elements (usually [code]null[/code]) are added, depending on the array's type.
-				Returns [constant OK] on success, or one of the other [enum Error] constants if this method fails.
+				Returns [constant OK] on success, or one of the following [enum Error] constants if this method fails: [constant ERR_LOCKED] if the array is read-only, [constant ERR_INVALID_PARAMETER] if the size is negative, or [constant ERR_OUT_OF_MEMORY] if allocations fail. Use [method size] to find the actual size of the array after resize.
 				[b]Note:[/b] Calling this method once and assigning the new values is faster than calling [method append] for every new element.
 			</description>
 		</method>

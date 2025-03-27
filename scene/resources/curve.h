@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef CURVE_H
-#define CURVE_H
+#pragma once
 
 #include "core/io/resource.h"
 
@@ -364,5 +363,3 @@ public:
 
 	Curve3D();
 };
-
-#endif // CURVE_H

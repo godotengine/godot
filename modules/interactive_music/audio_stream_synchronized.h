@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef AUDIO_STREAM_SYNCHRONIZED_H
-#define AUDIO_STREAM_SYNCHRONIZED_H
+#pragma once
 
 #include "servers/audio/audio_stream.h"
 
@@ -118,5 +117,3 @@ public:
 	AudioStreamPlaybackSynchronized();
 	~AudioStreamPlaybackSynchronized();
 };
-
-#endif // AUDIO_STREAM_SYNCHRONIZED_H

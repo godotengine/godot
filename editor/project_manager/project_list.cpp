@@ -156,7 +156,7 @@ void ProjectListItemControl::set_unsupported_features(PackedStringArray p_featur
 					project_version_major = project_version_split[0].to_int();
 					project_version_minor = project_version_split[1].to_int();
 				}
-				if (VERSION_MAJOR != project_version_major || VERSION_MINOR <= project_version_minor) {
+				if (GODOT_VERSION_MAJOR != project_version_major || GODOT_VERSION_MINOR <= project_version_minor) {
 					// Don't show a warning if the project was last edited in a previous minor version.
 					tooltip_text += TTR("This project was last edited in a different Godot version: ") + p_features[i] + "\n";
 				}
@@ -444,7 +444,7 @@ void ProjectList::_migrate_config() {
 		String path = EDITOR_GET(property_key);
 		print_line("Migrating legacy project '" + path + "'.");
 
-		String favoriteKey = "favorite_projects/" + property_key.get_slice("/", 1);
+		String favoriteKey = "favorite_projects/" + property_key.get_slicec('/', 1);
 		bool favorite = EditorSettings::get_singleton()->has_setting(favoriteKey);
 		add_project(path, favorite);
 		if (favorite) {
@@ -651,7 +651,7 @@ void ProjectList::sort_projects() {
 			PackedStringArray remaining;
 			for (const String &part : search_parts) {
 				if (part.begins_with("tag:")) {
-					tags.push_back(part.get_slice(":", 1));
+					tags.push_back(part.get_slicec(':', 1));
 				} else {
 					remaining.append(part);
 				}

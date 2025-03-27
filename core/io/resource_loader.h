@@ -28,15 +28,14 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef RESOURCE_LOADER_H
-#define RESOURCE_LOADER_H
+#pragma once
 
 #include "core/io/resource.h"
 #include "core/object/gdvirtual.gen.inc"
 #include "core/object/worker_thread_pool.h"
 #include "core/os/thread.h"
 
-namespace core_bind {
+namespace CoreBind {
 class ResourceLoader;
 }
 
@@ -105,7 +104,7 @@ typedef void (*ResourceLoadedCallback)(Ref<Resource> p_resource, const String &p
 
 class ResourceLoader {
 	friend class LoadToken;
-	friend class core_bind::ResourceLoader;
+	friend class CoreBind::ResourceLoader;
 
 	enum {
 		MAX_LOADERS = 64
@@ -319,5 +318,3 @@ public:
 	static void initialize();
 	static void finalize();
 };
-
-#endif // RESOURCE_LOADER_H

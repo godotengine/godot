@@ -33,6 +33,7 @@
 
 #include "core/os/keyboard.h"
 #include "editor/add_metadata_dialog.h"
+#include "editor/debugger/editor_debugger_inspector.h"
 #include "editor/doc_tools.h"
 #include "editor/editor_feature_profile.h"
 #include "editor/editor_main_screen.h"
@@ -615,6 +616,16 @@ Object *EditorProperty::get_edited_object() {
 
 StringName EditorProperty::get_edited_property() const {
 	return property;
+}
+
+Variant EditorProperty::get_edited_property_display_value() const {
+	ERR_FAIL_NULL_V(object, Variant());
+	Control *control = Object::cast_to<Control>(object);
+	if (checkable && !checked && control && String(property).begins_with("theme_override_")) {
+		return control->get_used_theme_item(property);
+	} else {
+		return get_edited_property_value();
+	}
 }
 
 EditorInspector *EditorProperty::get_parent_inspector() const {
@@ -1380,6 +1391,7 @@ void EditorProperty::_update_popup() {
 			menu->add_icon_item(get_editor_theme_icon(SNAME("Unfavorite")), TTR("Unfavorite Property"), MENU_FAVORITE_PROPERTY);
 			menu->set_item_tooltip(menu->get_item_index(MENU_FAVORITE_PROPERTY), TTR("Make this property be put back at its original place."));
 		} else {
+			// TRANSLATORS: This is a menu item to add a property to the favorites.
 			menu->add_icon_item(get_editor_theme_icon(SNAME("Favorites")), TTR("Favorite Property"), MENU_FAVORITE_PROPERTY);
 			menu->set_item_tooltip(menu->get_item_index(MENU_FAVORITE_PROPERTY), TTR("Make this property be placed at the top for all objects of this class."));
 		}
@@ -1644,6 +1656,8 @@ void EditorInspectorSection::_notification(int p_what) {
 			update_minimum_size();
 			bg_color = get_theme_color(SNAME("prop_subsection"), EditorStringName(Editor));
 			bg_color.a /= level;
+			int separation = get_theme_constant(SNAME("v_separation"), SNAME("EditorInspector"));
+			vbox->add_theme_constant_override(SNAME("separation"), separation);
 		} break;
 
 		case NOTIFICATION_SORT_CHILDREN: {
@@ -1888,6 +1902,15 @@ void EditorInspectorSection::gui_input(const Ref<InputEvent> &p_event) {
 	} else if (mb.is_valid() && !mb->is_pressed()) {
 		queue_redraw();
 	}
+
+	Ref<InputEventMouseMotion> mm = p_event;
+	if (mm.is_valid()) {
+		int header_height = _get_header_height();
+		Vector2 previous = mm->get_position() - mm->get_relative();
+		if ((mm->get_position().y >= header_height) != (previous.y >= header_height)) {
+			queue_redraw();
+		}
+	}
 }
 
 String EditorInspectorSection::get_section() const {
@@ -2090,7 +2113,7 @@ void EditorInspectorArray::_panel_gui_input(Ref<InputEvent> p_event, int p_index
 			popup_array_index_pressed = begin_array_index + p_index;
 			rmb_popup->set_item_disabled(OPTION_MOVE_UP, popup_array_index_pressed == 0);
 			rmb_popup->set_item_disabled(OPTION_MOVE_DOWN, popup_array_index_pressed == count - 1);
-			rmb_popup->set_position(get_screen_position() + mb->get_position());
+			rmb_popup->set_position(array_elements[p_index].panel->get_screen_position() + mb->get_position());
 			rmb_popup->reset_size();
 			rmb_popup->popup();
 		}
@@ -3538,9 +3561,9 @@ void EditorInspector::update_tree() {
 			String swap_method;
 			for (int i = (p.type == Variant::NIL ? 1 : 2); i < class_name_components.size(); i++) {
 				if (class_name_components[i].begins_with("page_size") && class_name_components[i].get_slice_count("=") == 2) {
-					page_size = class_name_components[i].get_slice("=", 1).to_int();
+					page_size = class_name_components[i].get_slicec('=', 1).to_int();
 				} else if (class_name_components[i].begins_with("add_button_text") && class_name_components[i].get_slice_count("=") == 2) {
-					add_button_text = class_name_components[i].get_slice("=", 1).strip_edges();
+					add_button_text = class_name_components[i].get_slicec('=', 1).strip_edges();
 				} else if (class_name_components[i] == "static") {
 					movable = false;
 				} else if (class_name_components[i] == "const") {
@@ -3550,7 +3573,7 @@ void EditorInspector::update_tree() {
 				} else if (class_name_components[i] == "unfoldable") {
 					foldable = false;
 				} else if (class_name_components[i].begins_with("swap_method") && class_name_components[i].get_slice_count("=") == 2) {
-					swap_method = class_name_components[i].get_slice("=", 1).strip_edges();
+					swap_method = class_name_components[i].get_slicec('=', 1).strip_edges();
 				}
 			}
 
@@ -4275,6 +4298,10 @@ void EditorInspector::_edit_set(const String &p_name, const Variant &p_value, bo
 		Object::cast_to<MultiNodeEdit>(object)->set_property_field(p_name, p_value, p_changed_field);
 		_edit_request_change(object, p_name);
 		emit_signal(_prop_edited, p_name);
+	} else if (Object::cast_to<EditorDebuggerRemoteObjects>(object)) {
+		Object::cast_to<EditorDebuggerRemoteObjects>(object)->set_property_field(p_name, p_value, p_changed_field);
+		_edit_request_change(object, p_name);
+		emit_signal(_prop_edited, p_name);
 	} else {
 		undo_redo->create_action(vformat(TTR("Set %s"), p_name), UndoRedo::MERGE_ENDS);
 		undo_redo->add_do_property(object, p_name, p_value);
@@ -4454,13 +4481,26 @@ void EditorInspector::_property_checked(const String &p_path, bool p_checked) {
 			_edit_set(p_path, Variant(), false, "");
 		} else {
 			Variant to_create;
-			List<PropertyInfo> pinfo;
-			object->get_property_list(&pinfo);
-			for (const PropertyInfo &E : pinfo) {
-				if (E.name == p_path) {
-					Callable::CallError ce;
-					Variant::construct(E.type, to_create, nullptr, 0, ce);
-					break;
+			Control *control = Object::cast_to<Control>(object);
+			bool skip = false;
+			if (control && p_path.begins_with("theme_override_")) {
+				to_create = control->get_used_theme_item(p_path);
+				Ref<Resource> resource = to_create;
+				if (resource.is_valid()) {
+					to_create = resource->duplicate();
+				}
+				skip = true;
+			}
+
+			if (!skip) {
+				List<PropertyInfo> pinfo;
+				object->get_property_list(&pinfo);
+				for (const PropertyInfo &E : pinfo) {
+					if (E.name == p_path) {
+						Callable::CallError ce;
+						Variant::construct(E.type, to_create, nullptr, 0, ce);
+						break;
+					}
 				}
 			}
 			_edit_set(p_path, to_create, false, "");
@@ -4604,7 +4644,7 @@ void EditorInspector::_set_property_favorited(const String &p_path, bool p_favor
 
 	String theme_property;
 	if (p_path.begins_with("theme_override_")) {
-		theme_property = p_path.get_slice("/", 1);
+		theme_property = p_path.get_slicec('/', 1);
 	}
 
 	while (!validate_name.is_empty()) {
