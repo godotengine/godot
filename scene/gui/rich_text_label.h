@@ -352,6 +352,7 @@ private:
 
 		LocalVector<Column> columns;
 		LocalVector<float> rows;
+		LocalVector<float> rows_no_padding;
 		LocalVector<float> rows_baseline;
 
 		int align_to_row = -1;

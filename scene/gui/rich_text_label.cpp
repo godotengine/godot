@@ -728,20 +728,24 @@ void RichTextLabel::_set_table_size(ItemTable *p_table, int p_available_width) {
 	int idx = 0;
 	p_table->total_height = 0;
 	p_table->rows.clear();
+	p_table->rows_no_padding.clear();
 	p_table->rows_baseline.clear();
 
 	Vector2 offset = Vector2(theme_cache.table_h_separation * 0.5, theme_cache.table_v_separation * 0.5).floor();
 	float row_height = 0.0;
+	float row_top_padding = 0.0;
+	float row_bottom_padding = 0.0;
+	const List<Item *>::Element *prev = p_table->subitems.front();
 
-	for (const List<Item *>::Element *E = p_table->subitems.front(); E; E = E->next()) {
+	for (const List<Item *>::Element *E = prev; E; E = E->next()) {
 		ERR_CONTINUE(E->get()->type != ITEM_FRAME); // Children should all be frames.
 		ItemFrame *frame = static_cast<ItemFrame *>(E->get());
 
 		int column = idx % col_count;
 
 		offset.x += frame->padding.position.x;
-		float yofs = frame->padding.position.y;
-		float prev_h = 0;
+		float yofs = 0.0;
+		float prev_h = 0.0;
 		float row_baseline = 0.0;
 		for (int i = 0; i < (int)frame->lines.size(); i++) {
 			MutexLock sub_lock(frame->lines[i].text_buf->get_mutex());
@@ -768,19 +772,35 @@ void RichTextLabel::_set_table_size(ItemTable *p_table, int p_available_width) {
 			frame->lines[i].offset += offset;
 			row_baseline = MAX(row_baseline, frame->lines[i].text_buf->get_line_ascent(frame->lines[i].text_buf->get_line_count() - 1));
 		}
-		yofs += frame->padding.size.y;
+		row_top_padding = MAX(row_top_padding, frame->padding.position.y);
+		row_bottom_padding = MAX(row_bottom_padding, frame->padding.size.y);
 		offset.x += p_table->columns[column].width + theme_cache.table_h_separation + frame->padding.size.x;
 
 		row_height = MAX(yofs, row_height);
 		// Add row height after last column of the row or last cell of the table.
 		if (column == col_count - 1 || E->next() == nullptr) {
 			offset.x = Math::floor(theme_cache.table_h_separation * 0.5);
+			float row_contents_height = row_height;
+			row_height += row_top_padding + row_bottom_padding;
 			row_height += theme_cache.table_v_separation;
 			p_table->total_height += row_height;
 			offset.y += row_height;
 			p_table->rows.push_back(row_height);
+			p_table->rows_no_padding.push_back(row_contents_height);
 			p_table->rows_baseline.push_back(p_table->total_height - row_height + row_baseline + Math::floor(theme_cache.table_v_separation * 0.5));
-			row_height = 0;
+			for (const List<Item *>::Element *F = prev; F; F = F->next()) {
+				ItemFrame *in_frame = static_cast<ItemFrame *>(F->get());
+				for (int i = 0; i < (int)in_frame->lines.size(); i++) {
+					in_frame->lines[i].offset.y += row_top_padding;
+				}
+				if (in_frame == frame) {
+					break;
+				}
+			}
+			row_height = 0.0;
+			row_top_padding = 0.0;
+			row_bottom_padding = 0.0;
+			prev = E->next();
 		}
 		idx++;
 	}
@@ -993,17 +1013,17 @@ int RichTextLabel::_draw_line(ItemFrame *p_frame, int p_line, const Vector2 &p_o
 										if (row % 2 == 0) {
 											Color c = frame->odd_row_bg != Color(0, 0, 0, 0) ? frame->odd_row_bg : odd_row_bg;
 											if (c.a > 0.0) {
-												draw_rect(Rect2(p_ofs + rect.position + off + coff - frame->padding.position - Vector2(h_separation * 0.5, v_separation * 0.5).floor(), Size2(table->columns[col].width + h_separation + frame->padding.position.x + frame->padding.size.x, table->rows[row])), c, true);
+												draw_rect(Rect2(p_ofs + rect.position + off + coff - frame->padding.position - Vector2(h_separation * 0.5, v_separation * 0.5).floor(), Size2(table->columns[col].width + h_separation + frame->padding.position.x + frame->padding.size.x, table->rows_no_padding[row] + frame->padding.position.y + frame->padding.size.y)), c, true);
 											}
 										} else {
 											Color c = frame->even_row_bg != Color(0, 0, 0, 0) ? frame->even_row_bg : even_row_bg;
 											if (c.a > 0.0) {
-												draw_rect(Rect2(p_ofs + rect.position + off + coff - frame->padding.position - Vector2(h_separation * 0.5, v_separation * 0.5).floor(), Size2(table->columns[col].width + h_separation + frame->padding.position.x + frame->padding.size.x, table->rows[row])), c, true);
+												draw_rect(Rect2(p_ofs + rect.position + off + coff - frame->padding.position - Vector2(h_separation * 0.5, v_separation * 0.5).floor(), Size2(table->columns[col].width + h_separation + frame->padding.position.x + frame->padding.size.x, table->rows_no_padding[row] + frame->padding.position.y + frame->padding.size.y)), c, true);
 											}
 										}
 										Color bc = frame->border != Color(0, 0, 0, 0) ? frame->border : border;
 										if (bc.a > 0.0) {
-											draw_rect(Rect2(p_ofs + rect.position + off + coff - frame->padding.position - Vector2(h_separation * 0.5, v_separation * 0.5).floor(), Size2(table->columns[col].width + h_separation + frame->padding.position.x + frame->padding.size.x, table->rows[row])), bc, false);
+											draw_rect(Rect2(p_ofs + rect.position + off + coff - frame->padding.position - Vector2(h_separation * 0.5, v_separation * 0.5).floor(), Size2(table->columns[col].width + h_separation + frame->padding.position.x + frame->padding.size.x, table->rows_no_padding[row] + frame->padding.position.y + frame->padding.size.y)), bc, false);
 										}
 									}
 
