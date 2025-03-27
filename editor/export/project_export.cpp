@@ -1804,6 +1804,3 @@ ProjectExportDialog::ProjectExportDialog() {
 		}
 	}
 }
-
-ProjectExportDialog::~ProjectExportDialog() {
-}

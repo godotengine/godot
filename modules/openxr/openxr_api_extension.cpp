@@ -30,7 +30,8 @@
 
 #include "openxr_api_extension.h"
 
-#include "extensions/openxr_extension_wrapper_extension.h"
+#include "extensions/openxr_extension_wrapper.h"
+#include "openxr_api_extension.compat.inc"
 
 void OpenXRAPIExtension::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_instance"), &OpenXRAPIExtension::get_instance);
@@ -220,22 +221,22 @@ uint64_t OpenXRAPIExtension::get_hand_tracker(int p_hand_index) {
 	return (uint64_t)OpenXRAPI::get_singleton()->get_hand_tracker(p_hand_index);
 }
 
-void OpenXRAPIExtension::register_composition_layer_provider(OpenXRExtensionWrapperExtension *p_extension) {
+void OpenXRAPIExtension::register_composition_layer_provider(OpenXRExtensionWrapper *p_extension) {
 	ERR_FAIL_NULL(OpenXRAPI::get_singleton());
 	OpenXRAPI::get_singleton()->register_composition_layer_provider(p_extension);
 }
 
-void OpenXRAPIExtension::unregister_composition_layer_provider(OpenXRExtensionWrapperExtension *p_extension) {
+void OpenXRAPIExtension::unregister_composition_layer_provider(OpenXRExtensionWrapper *p_extension) {
 	ERR_FAIL_NULL(OpenXRAPI::get_singleton());
 	OpenXRAPI::get_singleton()->unregister_composition_layer_provider(p_extension);
 }
 
-void OpenXRAPIExtension::register_projection_views_extension(OpenXRExtensionWrapperExtension *p_extension) {
+void OpenXRAPIExtension::register_projection_views_extension(OpenXRExtensionWrapper *p_extension) {
 	ERR_FAIL_NULL(OpenXRAPI::get_singleton());
 	OpenXRAPI::get_singleton()->register_projection_views_extension(p_extension);
 }
 
-void OpenXRAPIExtension::unregister_projection_views_extension(OpenXRExtensionWrapperExtension *p_extension) {
+void OpenXRAPIExtension::unregister_projection_views_extension(OpenXRExtensionWrapper *p_extension) {
 	ERR_FAIL_NULL(OpenXRAPI::get_singleton());
 	OpenXRAPI::get_singleton()->unregister_projection_views_extension(p_extension);
 }

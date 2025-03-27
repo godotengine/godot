@@ -254,9 +254,6 @@ public:
 
 	void enable_plugin();
 	void disable_plugin();
-
-	EditorPlugin() {}
-	virtual ~EditorPlugin() {}
 };
 
 VARIANT_ENUM_CAST(EditorPlugin::CustomControlContainer);

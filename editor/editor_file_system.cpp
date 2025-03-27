@@ -913,6 +913,12 @@ bool EditorFileSystem::_update_scan_actions() {
 						// Re-assign the UID to file, just in case it was pulled from cache.
 						ResourceSaver::set_uid(new_file_path, existing_id);
 					}
+				} else if (ResourceLoader::should_create_uid_file(new_file_path)) {
+					Ref<FileAccess> f = FileAccess::open(new_file_path + ".uid", FileAccess::WRITE);
+					if (f.is_valid()) {
+						ia.new_file->uid = ResourceUID::get_singleton()->create_id();
+						f->store_line(ResourceUID::get_singleton()->id_to_text(ia.new_file->uid));
+					}
 				}
 
 				if (ClassDB::is_parent_class(ia.new_file->type, SNAME("Script"))) {
@@ -3439,7 +3445,7 @@ Error EditorFileSystem::make_dir_recursive(const String &p_path, const String &p
 	ERR_FAIL_NULL_V(parent, ERR_FILE_NOT_FOUND);
 	folders_to_sort.insert(parent->get_instance_id());
 
-	const PackedStringArray folders = p_path.trim_prefix(path).trim_suffix("/").split("/");
+	const PackedStringArray folders = p_path.trim_prefix(path).split("/", false);
 	for (const String &folder : folders) {
 		const int current = parent->find_dir_index(folder);
 		if (current > -1) {

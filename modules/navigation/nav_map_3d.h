@@ -110,7 +110,7 @@ class NavMap3D : public NavRid3D {
 	bool avoidance_use_high_priority_threads = true;
 
 	// Performance Monitor
-	nav_3d::PerformanceData performance_data;
+	Nav3D::PerformanceData performance_data;
 
 	struct {
 		SelfList<NavRegion3D>::List regions;
@@ -178,7 +178,7 @@ public:
 		return link_connection_radius;
 	}
 
-	nav_3d::PointKey get_point_key(const Vector3 &p_pos) const;
+	Nav3D::PointKey get_point_key(const Vector3 &p_pos) const;
 	const Vector3 &get_merge_rasterizer_cell_size() const;
 
 	void query_path(NavMeshQueries3D::NavMeshPathQueryTask3D &p_query_task);
@@ -186,7 +186,7 @@ public:
 	Vector3 get_closest_point_to_segment(const Vector3 &p_from, const Vector3 &p_to, const bool p_use_collision) const;
 	Vector3 get_closest_point(const Vector3 &p_point) const;
 	Vector3 get_closest_point_normal(const Vector3 &p_point) const;
-	nav_3d::ClosestPointQueryResult get_closest_point_info(const Vector3 &p_point) const;
+	Nav3D::ClosestPointQueryResult get_closest_point_info(const Vector3 &p_point) const;
 	RID get_closest_point_owner(const Vector3 &p_point) const;
 
 	void add_region(NavRegion3D *p_region);

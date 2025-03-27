@@ -52,6 +52,7 @@
 #include "scene/main/window.h"
 #include "scene/resources/packed_scene.h"
 #include "scene/theme/theme_db.h"
+#include "servers/audio_server.h"
 
 SceneDebugger::SceneDebugger() {
 	singleton = this;
@@ -149,6 +150,11 @@ Error SceneDebugger::parse_message(void *p_user, const String &p_msg, const Arra
 
 	} else if (p_msg == "next_frame") {
 		_next_frame();
+
+	} else if (p_msg == "debug_mute_audio") { // Enable/disable audio.
+		ERR_FAIL_COND_V(p_args.is_empty(), ERR_INVALID_DATA);
+		bool do_mute = p_args[0];
+		AudioServer::get_singleton()->set_debug_mute(do_mute);
 
 	} else if (p_msg == "override_cameras") { /// Camera
 		ERR_FAIL_COND_V(p_args.is_empty(), ERR_INVALID_DATA);
@@ -401,9 +407,9 @@ void SceneDebugger::_send_object_ids(const Vector<ObjectID> &p_ids, bool p_updat
 		arr.append(invalid_selection);
 		EngineDebugger::get_singleton()->send_message("remote_selection_invalidated", arr);
 
-		EngineDebugger::get_singleton()->send_message(objs.is_empty() ? "remote_nothing_clicked" : "remote_nodes_clicked", objs);
+		EngineDebugger::get_singleton()->send_message(objs.is_empty() ? "remote_nothing_selected" : "remote_objects_selected", objs);
 	} else {
-		EngineDebugger::get_singleton()->send_message("scene:inspect_objects", objs);
+		EngineDebugger::get_singleton()->send_message(p_update_selection ? "remote_objects_selected" : "scene:inspect_objects", objs);
 	}
 }
 
@@ -1641,8 +1647,12 @@ void RuntimeNodeSelect::_physics_frame() {
 				// Allow forcing box selection when an item was clicked.
 				selection_drag_state = SELECTION_DRAG_MOVE;
 			} else if (items.is_empty()) {
+#ifdef _3D_DISABLED
+				if (!selected_ci_nodes.is_empty()) {
+#else
 				if (!selected_ci_nodes.is_empty() || !selected_3d_nodes.is_empty()) {
-					EngineDebugger::get_singleton()->send_message("remote_nothing_clicked", Array());
+#endif // _3D_DISABLED
+					EngineDebugger::get_singleton()->send_message("remote_nothing_selected", Array());
 					_clear_selection();
 				}
 
@@ -1704,13 +1714,16 @@ void RuntimeNodeSelect::_send_ids(const Vector<Node *> &p_picked_nodes, bool p_i
 			message.append(arr);
 		}
 
-		EngineDebugger::get_singleton()->send_message("remote_nodes_clicked", message);
+		EngineDebugger::get_singleton()->send_message("remote_objects_selected", message);
 		_set_selected_nodes(picked_nodes);
 
 		return;
 	}
 
-	const int limit = max_selection - (selected_ci_nodes.size() + selected_3d_nodes.size());
+	int limit = max_selection - selected_ci_nodes.size();
+#ifndef _3D_DISABLED
+	limit -= selected_3d_nodes.size();
+#endif // _3D_DISABLED
 	if (limit <= 0) {
 		return;
 	}
@@ -1765,7 +1778,7 @@ void RuntimeNodeSelect::_send_ids(const Vector<Node *> &p_picked_nodes, bool p_i
 	}
 
 	if (ids.is_empty()) {
-		EngineDebugger::get_singleton()->send_message("remote_nothing_clicked", message);
+		EngineDebugger::get_singleton()->send_message("remote_nothing_selected", message);
 	} else {
 		for (const ObjectID &id : ids) {
 			SceneDebuggerObject obj(id);
@@ -1774,7 +1787,7 @@ void RuntimeNodeSelect::_send_ids(const Vector<Node *> &p_picked_nodes, bool p_i
 			message.append(arr);
 		}
 
-		EngineDebugger::get_singleton()->send_message("remote_nodes_clicked", message);
+		EngineDebugger::get_singleton()->send_message("remote_objects_selected", message);
 	}
 
 	_set_selected_nodes(nodes);
@@ -1848,9 +1861,15 @@ void RuntimeNodeSelect::_set_selected_nodes(const Vector<Node *> &p_nodes) {
 		}
 	}
 
+#ifdef _3D_DISABLED
+	if (!changed && nodes_ci.size() == selected_ci_nodes.size()) {
+		return;
+	}
+#else
 	if (!changed && nodes_ci.size() == selected_ci_nodes.size() && nodes_3d.size() == selected_3d_nodes.size()) {
 		return;
 	}
+#endif // _3D_DISABLED
 
 	_clear_selection();
 	selected_ci_nodes = nodes_ci;

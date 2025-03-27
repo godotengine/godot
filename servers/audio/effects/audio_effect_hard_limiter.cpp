@@ -47,7 +47,7 @@ void AudioEffectHardLimiterInstance::process(const AudioFrame *p_src_frames, Aud
 		sample_left *= pre_gain;
 		sample_right *= pre_gain;
 
-		float largest_sample = MAX(ABS(sample_left), ABS(sample_right));
+		float largest_sample = MAX(Math::abs(sample_left), Math::abs(sample_right));
 
 		release_factor = MAX(0.0, release_factor - 1.0 / sample_rate);
 		release_factor = MIN(release_factor, release);

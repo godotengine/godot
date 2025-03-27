@@ -42,7 +42,7 @@ msgstr ""
 "Project-Id-Version: Ukrainian (Godot Engine)\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-02-21 19:26+0000\n"
+"PO-Revision-Date: 2025-03-14 17:05+0000\n"
 "Last-Translator: Максим Горпиніч <maksimgorpinic2005a@gmail.com>\n"
 "Language-Team: Ukrainian <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/uk/>\n"
@@ -52,7 +52,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
 "n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
-"X-Generator: Weblate 5.10.1-dev\n"
+"X-Generator: Weblate 5.11-dev\n"
 
 msgid "Application"
 msgstr "Застосування"
@@ -912,6 +912,9 @@ msgstr "Використовувати потоки обробки"
 msgid "Localize Settings"
 msgstr "Параметри локалізації"
 
+msgid "Dock Tab Style"
+msgstr "Стиль вкладки Dock"
+
 msgid "UI Layout Direction"
 msgstr "Напрямок макета інтерфейсу користувача"
 
@@ -927,6 +930,12 @@ msgstr "Екран редактора"
 msgid "Project Manager Screen"
 msgstr "Екран менеджера проекту"
 
+msgid "Connection"
+msgstr "Підключення"
+
+msgid "Engine Version Update Mode"
+msgstr "Режим оновлення версії двигуна"
+
 msgid "Use Embedded Menu"
 msgstr "Використання вбудованого меню"
 
@@ -936,6 +945,12 @@ msgstr "Використовуйте рідні діалоги файлів"
 msgid "Expand to Title"
 msgstr "Розгорнути до заголовка"
 
+msgid "Main Font Size"
+msgstr "Основний розмір шрифту"
+
+msgid "Code Font Size"
+msgstr "Розмір шрифту коду"
+
 msgid "Code Font Contextual Ligatures"
 msgstr "Контекстні лігатури кодового шрифту"
 
@@ -944,6 +959,12 @@ msgstr "Користувацькі функції OpenType шрифту коду
 
 msgid "Code Font Custom Variations"
 msgstr "Користувацькі варіанти шрифту коду"
+
+msgid "Font Antialiasing"
+msgstr "Згладжування шрифту"
+
+msgid "Font Hinting"
+msgstr "Підказка шрифту"
 
 msgid "Font Subpixel Positioning"
 msgstr "Позиціонування субпікселів шрифту"
@@ -978,6 +999,9 @@ msgstr "Додаткові кнопки миші для навігації жу�
 msgid "Save Each Scene on Quit"
 msgstr "Зберігати усі сцени при виході"
 
+msgid "Save on Focus Loss"
+msgstr "Заощаджуйте на втраті фокусу"
+
 msgid "Accept Dialog Cancel OK Buttons"
 msgstr "Погоджувати діалогові кнопки Скасувати ОК"
 
@@ -992,6 +1016,9 @@ msgstr "Низький режим сну процесора (мкс)"
 
 msgid "Unfocused Low Processor Mode Sleep (µsec)"
 msgstr "Несфокусований низький рівень сну в режимі процесора (мкс)"
+
+msgid "Import Resources When Unfocused"
+msgstr "Імпортуйте ресурси, коли вони не сфокусовані"
 
 msgid "V-Sync Mode"
 msgstr "Режим верт. синхронізації"
@@ -1020,8 +1047,17 @@ msgstr "Запитувати перед відкликанням унікаль�
 msgid "Inspector"
 msgstr "Інспектор"
 
+msgid "Max Array Dictionary Items per Page"
+msgstr "Макс. масив словникових елементів на сторінку"
+
 msgid "Show Low Level OpenType Features"
 msgstr "Показати низькорівневі функції OpenType"
+
+msgid "Float Drag Speed"
+msgstr "Швидкість перетягування"
+
+msgid "Nested Color Mode"
+msgstr "Режим вкладених кольорів"
 
 msgid "Delimitate All Container and Resources"
 msgstr "Розмежуйте всі контейнери та ресурси"
@@ -1050,11 +1086,35 @@ msgstr "Відкрити ресурси у поточному Інспектор
 msgid "Resources to Open in New Inspector"
 msgstr "Ресурси, які слід відкрити у новому Інспекторі"
 
+msgid "Default Color Picker Mode"
+msgstr "Режим вибору кольорів за замовчуванням"
+
+msgid "Default Color Picker Shape"
+msgstr "Типова форма палітри кольорів"
+
 msgid "Theme"
 msgstr "Тема"
 
+msgid "Follow System Theme"
+msgstr "Слідкуйте за системною темою"
+
+msgid "Preset"
+msgstr "Попереднє налаштування"
+
+msgid "Spacing Preset"
+msgstr "Попередній інтервал"
+
 msgid "Icon and Font Color"
 msgstr "Колір піктограм і шрифту"
+
+msgid "Base Color"
+msgstr "Базовий колір"
+
+msgid "Accent Color"
+msgstr "Колір акценту"
+
+msgid "Use System Accent Color"
+msgstr "Використовуйте колір системного акценту"
 
 msgid "Contrast"
 msgstr "Контрастність"
@@ -1110,11 +1170,35 @@ msgstr "Показувати кнопку скрипту"
 msgid "Restore Scenes on Load"
 msgstr "Відновлення сцен під час завантаження"
 
+msgid "Multi Window"
+msgstr "Багато вікон"
+
+msgid "Restore Windows on Load"
+msgstr "Відновити Windows під час завантаження"
+
+msgid "Maximize Window"
+msgstr "Розгорнути вікно"
+
 msgid "FileSystem"
 msgstr "Файлова система"
 
 msgid "External Programs"
 msgstr "Зовнішні програми"
+
+msgid "Raster Image Editor"
+msgstr "Редактор растрових зображень"
+
+msgid "Vector Image Editor"
+msgstr "Редактор векторних зображень"
+
+msgid "Audio Editor"
+msgstr "Аудіоредактор"
+
+msgid "3D Model Editor"
+msgstr "Редактор 3D моделей"
+
+msgid "Terminal Emulator"
+msgstr "Емулятор терміналу"
 
 msgid "Terminal Emulator Flags"
 msgstr "Прапори емулятора терміналу"
@@ -1124,6 +1208,9 @@ msgstr "Каталоги"
 
 msgid "Autoscan Project Path"
 msgstr "Автоматичне сканування шляху проєкту"
+
+msgid "Default Project Path"
+msgstr "Шлях проекту за замовчуванням"
 
 msgid "On Save"
 msgstr "При зберіганні"
@@ -1308,6 +1395,9 @@ msgstr "Рядки"
 msgid "Code Folding"
 msgstr "Згортання коду"
 
+msgid "Word Wrap"
+msgstr "Перенесення слів"
+
 msgid "Autowrap Mode"
 msgstr "Режим автозгортки"
 
@@ -1485,6 +1575,18 @@ msgstr "Довідка"
 msgid "Show Help Index"
 msgstr "Показати покажчик довідки"
 
+msgid "Help Font Size"
+msgstr "Розмір шрифту довідки"
+
+msgid "Help Source Font Size"
+msgstr "Довідка Джерело Розмір шрифту"
+
+msgid "Help Title Font Size"
+msgstr "Розмір шрифту заголовка довідки"
+
+msgid "Class Reference Examples"
+msgstr "Приклади посилання на клас"
+
 msgid "Sort Functions Alphabetically"
 msgstr "Упорядкувати функції за абеткою"
 
@@ -1496,6 +1598,15 @@ msgstr "Відстань вибору"
 
 msgid "Palette Min Width"
 msgstr "Мінімальна ширина палітри"
+
+msgid "Preview Size"
+msgstr "Розмір попереднього перегляду"
+
+msgid "Primary Grid Color"
+msgstr "Основний колір сітки"
+
+msgid "Secondary Grid Color"
+msgstr "Колір вторинної сітки"
 
 msgid "Selection Box Color"
 msgstr "Колір прямокутника позначення"
@@ -1596,6 +1707,12 @@ msgstr "Форма кістки"
 msgid "Path 3D Tilt Disk Size"
 msgstr "Розмір диска Path 3D Tilt"
 
+msgid "Primary Grid Steps"
+msgstr "Основні кроки сітки"
+
+msgid "Grid Size"
+msgstr "Розмір сітки"
+
 msgid "Grid Division Level Max"
 msgstr "Макс. рівень поділу сітки"
 
@@ -1614,11 +1731,35 @@ msgstr "Площина XY сітки"
 msgid "Grid YZ Plane"
 msgstr "Площина YZ сітки"
 
+msgid "Default FOV"
+msgstr "Поле зору за замовчуванням"
+
+msgid "Default Z Near"
+msgstr "За замовчуванням Z поблизу"
+
+msgid "Default Z Far"
+msgstr "За замовчуванням Z Far"
+
 msgid "Invert X Axis"
 msgstr "Інвертувати вісь X"
 
 msgid "Invert Y Axis"
 msgstr "Інвертувати вісь Y"
+
+msgid "Navigation Scheme"
+msgstr "Навігаційна схема"
+
+msgid "Orbit Mouse Button"
+msgstr "Кнопка орбіти миші"
+
+msgid "Pan Mouse Button"
+msgstr "Кнопка панорамування миші"
+
+msgid "Zoom Mouse Button"
+msgstr "Кнопка масштабування миші"
+
+msgid "Zoom Style"
+msgstr "Стиль масштабування"
 
 msgid "Emulate Numpad"
 msgstr "Імітувати цифрову панель"
@@ -1656,11 +1797,20 @@ msgstr "Показати Gizmo Viewport Navigation"
 msgid "Freelook"
 msgstr "Довільний огляд"
 
+msgid "Freelook Navigation Scheme"
+msgstr "Схема навігації Freelook"
+
 msgid "Freelook Sensitivity"
 msgstr "Чутливість довільного огляду"
 
 msgid "Freelook Inertia"
 msgstr "Інерція довільного огляду"
+
+msgid "Freelook Base Speed"
+msgstr "Базова швидкість Freelook"
+
+msgid "Freelook Activation Modifier"
+msgstr "Редагування активації Freelook"
 
 msgid "Freelook Speed Zoom Link"
 msgstr "Зв'язок швидкості масштабування довільного огляду"
@@ -1707,6 +1857,9 @@ msgstr "Колір рамки панелі перегляду"
 msgid "Use Integer Zoom by Default"
 msgstr "Використовувати цілочисельне масштабування за замовчуванням"
 
+msgid "Zoom Speed Factor"
+msgstr "Коефіцієнт швидкості масштабування"
+
 msgid "Bone Mapper"
 msgstr "Картограф кісток"
 
@@ -1727,6 +1880,15 @@ msgstr "Помилка"
 
 msgid "Panning"
 msgstr "Панорамування"
+
+msgid "2D Editor Panning Scheme"
+msgstr "Схема панорамування 2D редактора"
+
+msgid "Sub Editors Panning Scheme"
+msgstr "Схема панорамування підредакторів"
+
+msgid "Animation Editors Panning Scheme"
+msgstr "Схема панорамування редакторів анімації"
 
 msgid "Simple Panning"
 msgstr "Просте панорамування"
@@ -1818,11 +1980,26 @@ msgstr "Нетипове розташування прямокутника"
 msgid "Screen"
 msgstr "Екран"
 
+msgid "Android Window"
+msgstr "Вікно Android"
+
+msgid "Game Embed Mode"
+msgstr "Режим вставки гри"
+
 msgid "Auto Save"
 msgstr "Автозбереження"
 
 msgid "Save Before Running"
 msgstr "Зберігати перед запуском"
+
+msgid "Bottom Panel"
+msgstr "Нижня панель"
+
+msgid "Action on Play"
+msgstr "Дія в Play"
+
+msgid "Action on Stop"
+msgstr "Дія при зупинці"
 
 msgid "Output"
 msgstr "Вивід"
@@ -1845,6 +2022,9 @@ msgstr "Linux/*BSD"
 msgid "Prefer Wayland"
 msgstr "Віддайте перевагу Wayland"
 
+msgid "Network Mode"
+msgstr "Режим мережі"
+
 msgid "HTTP Proxy"
 msgstr "HTTP-проксі"
 
@@ -1863,6 +2043,12 @@ msgstr "Віддалений вузол"
 msgid "Debugger"
 msgstr "Засіб діагностики"
 
+msgid "Auto Switch to Remote Scene Tree"
+msgstr "Автоматичний перехід до віддаленого дерева сцен"
+
+msgid "Auto Switch to Stack Trace"
+msgstr "Автоматичний перехід до трасування стека"
+
 msgid "Profiler Frame History Size"
 msgstr "Розмір журналу панелі засобу профілювання"
 
@@ -1877,6 +2063,9 @@ msgstr "Інтервал оновлення ієрархії віддалено�
 
 msgid "Remote Inspect Refresh Interval"
 msgstr "Інтервал оновлення віддаленого інспектування"
+
+msgid "Profile Native Calls"
+msgstr "Профіль Native Calls"
 
 msgid "Version Control"
 msgstr "Керування версіями"
@@ -1904,6 +2093,12 @@ msgstr "Керування проєктами"
 
 msgid "Sorting Order"
 msgstr "Режим упорядковування"
+
+msgid "Directory Naming Convention"
+msgstr "Правила іменування каталогів"
+
+msgid "Default Renderer"
+msgstr "Рендерер за замовчуванням"
 
 msgid "Highlighting"
 msgstr "Підсвічування"
@@ -4201,6 +4396,24 @@ msgstr "Увімкнені функції"
 msgid "Visibility State"
 msgstr "Перемкнути видимість"
 
+msgid "Debug Keystore"
+msgstr "Сховище ключів налагодження"
+
+msgid "Debug Keystore User"
+msgstr "Налагодити користувача сховища ключів"
+
+msgid "Debug Keystore Pass"
+msgstr "Налагодження Keystore Pass"
+
+msgid "Install Exported APK"
+msgstr "Установіть експортований APK"
+
+msgid "Java SDK Path"
+msgstr "Шлях Java SDK"
+
+msgid "Android SDK Path"
+msgstr "Шлях Android SDK"
+
 msgid "Force System User"
 msgstr "Примусовий користувач системи"
 
@@ -4582,6 +4795,12 @@ msgstr "Запустіть сценарій"
 msgid "Cleanup Script"
 msgstr "Сценарій очищення"
 
+msgid "macOS"
+msgstr "macOS"
+
+msgid "rcodesign"
+msgstr "rcodesign"
+
 msgid "Distribution Type"
 msgstr "Тип розподілу"
 
@@ -4857,6 +5076,21 @@ msgstr "Піктограма 180⨯180"
 
 msgid "Icon 512 X 512"
 msgstr "Піктограма 512⨯12"
+
+msgid "Windows"
+msgstr "Windows"
+
+msgid "rcedit"
+msgstr "rcedit"
+
+msgid "signtool"
+msgstr "інструмент підпису"
+
+msgid "osslsigncode"
+msgstr "osslsigncode"
+
+msgid "wine"
+msgstr "wine"
 
 msgid "Identity Type"
 msgstr "Тип профілю"

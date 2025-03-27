@@ -684,6 +684,3 @@ Sprite2DEditorPlugin::Sprite2DEditorPlugin() {
 
 	//sprite_editor->options->hide();
 }
-
-Sprite2DEditorPlugin::~Sprite2DEditorPlugin() {
-}

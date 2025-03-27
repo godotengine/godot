@@ -68,8 +68,6 @@ public:
 
 	virtual bool generate_small_preview_automatically() const;
 	virtual bool can_generate_small_preview() const;
-
-	EditorResourcePreviewGenerator();
 };
 
 class EditorResourcePreview : public Node {

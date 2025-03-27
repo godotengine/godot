@@ -803,7 +803,12 @@ Error EditorExportPlatformAndroid::save_apk_so(void *p_userdata, const SharedObj
 
 Error EditorExportPlatformAndroid::save_apk_file(void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total, const Vector<String> &p_enc_in_filters, const Vector<String> &p_enc_ex_filters, const Vector<uint8_t> &p_key, uint64_t p_seed) {
 	APKExportData *ed = static_cast<APKExportData *>(p_userdata);
-	const String path = ResourceUID::ensure_path(p_path);
+
+	String path = p_path.simplify_path();
+	if (path.begins_with("uid://")) {
+		path = ResourceUID::uid_to_path(path).simplify_path();
+		print_verbose(vformat(R"(UID referenced exported file name "%s" was replaced with "%s".)", p_path, path));
+	}
 	const String dst_path = path.replace_first("res://", "assets/");
 
 	store_in_apk(ed, dst_path, p_data, _should_compress_asset(path, p_data) ? Z_DEFLATED : 0);
@@ -2040,7 +2045,6 @@ bool EditorExportPlatformAndroid::get_export_option_visibility(const EditorExpor
 	if (p_option == "graphics/opengl_debug" ||
 			p_option == "command_line/extra_args" ||
 			p_option == "permissions/custom_permissions" ||
-			p_option == "gradle_build/compress_native_libraries" ||
 			p_option == "keystore/debug" ||
 			p_option == "keystore/debug_user" ||
 			p_option == "keystore/debug_password" ||
@@ -2537,7 +2541,7 @@ bool EditorExportPlatformAndroid::has_valid_username_and_password(const Ref<Edit
 
 #ifdef MODULE_MONO_ENABLED
 bool _validate_dotnet_tfm(const String &required_tfm, String &r_error) {
-	String assembly_name = path::get_csharp_project_name();
+	String assembly_name = Path::get_csharp_project_name();
 	String project_path = ProjectSettings::get_singleton()->globalize_path("res://" + assembly_name + ".csproj");
 
 	if (!FileAccess::exists(project_path)) {

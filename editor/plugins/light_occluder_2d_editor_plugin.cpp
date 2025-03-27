@@ -106,8 +106,6 @@ void LightOccluder2DEditor::_create_resource() {
 	_menu_option(MODE_CREATE);
 }
 
-LightOccluder2DEditor::LightOccluder2DEditor() {}
-
 LightOccluder2DEditorPlugin::LightOccluder2DEditorPlugin() :
 		AbstractPolygon2DEditorPlugin(memnew(LightOccluder2DEditor), "LightOccluder2D") {
 }

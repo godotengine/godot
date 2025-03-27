@@ -43,7 +43,7 @@ class NavMapBuilder3D {
 	static void _build_update_map_iteration(NavMapIterationBuild3D &r_build);
 
 public:
-	static nav_3d::PointKey get_point_key(const Vector3 &p_pos, const Vector3 &p_cell_size);
+	static Nav3D::PointKey get_point_key(const Vector3 &p_pos, const Vector3 &p_cell_size);
 
 	static void build_navmap_iteration(NavMapIterationBuild3D &r_build);
 };

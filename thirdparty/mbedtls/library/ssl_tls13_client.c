@@ -319,6 +319,7 @@ static int ssl_tls13_write_key_share_ext(mbedtls_ssl_context *ssl,
             ssl, group_id, p, end, &key_exchange_len);
         p += key_exchange_len;
         if (ret != 0) {
+            MBEDTLS_SSL_DEBUG_MSG(1, ("client hello: failed generating xxdh key exchange"));
             return ret;
         }
 

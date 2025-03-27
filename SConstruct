@@ -14,6 +14,7 @@ from importlib.util import module_from_spec, spec_from_file_location
 from types import ModuleType
 
 from SCons import __version__ as scons_raw_version
+from SCons.Builder import ListEmitter
 
 # Explicitly resolve the helper modules, this is done to avoid clash with
 # modules of the same name that might be randomly added (e.g. someone adding
@@ -166,7 +167,7 @@ opts.Add(
         "optimize",
         "Optimization level (by default inferred from 'target' and 'dev_build')",
         "auto",
-        ("auto", "none", "custom", "debug", "speed", "speed_trace", "size"),
+        ("auto", "none", "custom", "debug", "speed", "speed_trace", "size", "size_extra"),
     )
 )
 opts.Add(BoolVariable("debug_symbols", "Build with debugging symbols", False))
@@ -236,6 +237,13 @@ opts.Add(BoolVariable("engine_update_check", "Enable engine update checks in the
 opts.Add(BoolVariable("steamapi", "Enable minimal SteamAPI integration for usage time tracking (editor only)", False))
 opts.Add("cache_path", "Path to a directory where SCons cache files will be stored. No value disables the cache.", "")
 opts.Add("cache_limit", "Max size (in GiB) for the SCons cache. 0 means no limit.", "0")
+opts.Add(
+    BoolVariable(
+        "redirect_build_objects",
+        "Enable redirecting built objects/libraries to `bin/obj/` to declutter the repository.",
+        True,
+    )
+)
 
 # Thirdparty libraries
 opts.Add(BoolVariable("builtin_brotli", "Use the built-in Brotli library", True))
@@ -717,9 +725,11 @@ if env.msvc:
         env.Append(LINKFLAGS=["/OPT:REF"])
         if env["optimize"] == "speed_trace":
             env.Append(LINKFLAGS=["/OPT:NOICF"])
-    elif env["optimize"] == "size":
+    elif env["optimize"].startswith("size"):
         env.Append(CCFLAGS=["/O1"])
         env.Append(LINKFLAGS=["/OPT:REF"])
+        if env["optimize"] == "size_extra":
+            env.Append(CPPDEFINES=["SIZE_EXTRA"])
     elif env["optimize"] == "debug" or env["optimize"] == "none":
         env.Append(CCFLAGS=["/Od"])
 else:
@@ -764,9 +774,11 @@ else:
     elif env["optimize"] == "speed_trace":
         env.Append(CCFLAGS=["-O2"])
         env.Append(LINKFLAGS=["-O2"])
-    elif env["optimize"] == "size":
+    elif env["optimize"].startswith("size"):
         env.Append(CCFLAGS=["-Os"])
         env.Append(LINKFLAGS=["-Os"])
+        if env["optimize"] == "size_extra":
+            env.Append(CPPDEFINES=["SIZE_EXTRA"])
     elif env["optimize"] == "debug":
         env.Append(CCFLAGS=["-Og"])
         env.Append(LINKFLAGS=["-Og"])
@@ -918,6 +930,31 @@ suffix += env.extra_suffix
 sys.path.remove(tmppath)
 sys.modules.pop("detect")
 
+if env["disable_3d"]:
+    if env.editor_build:
+        print_error("Build option `disable_3d=yes` cannot be used for editor builds, only for export template builds.")
+        Exit(255)
+    else:
+        env.Append(CPPDEFINES=["_3D_DISABLED"])
+        env["disable_xr"] = True
+if env["disable_advanced_gui"]:
+    if env.editor_build:
+        print_error(
+            "Build option `disable_advanced_gui=yes` cannot be used for editor builds, only for export template builds."
+        )
+        Exit(255)
+    else:
+        env.Append(CPPDEFINES=["ADVANCED_GUI_DISABLED"])
+if env["disable_xr"]:
+    env.Append(CPPDEFINES=["XR_DISABLED"])
+if env["minizip"]:
+    env.Append(CPPDEFINES=["MINIZIP_ENABLED"])
+if env["brotli"]:
+    env.Append(CPPDEFINES=["BROTLI_ENABLED"])
+
+if not env["verbose"]:
+    methods.no_verbose(env)
+
 modules_enabled = OrderedDict()
 env.module_dependencies = {}
 env.module_icons_paths = []
@@ -987,31 +1024,6 @@ env["SHLIBSUFFIX"] = suffix + env["SHLIBSUFFIX"]
 env["OBJPREFIX"] = env["object_prefix"]
 env["SHOBJPREFIX"] = env["object_prefix"]
 
-if env["disable_3d"]:
-    if env.editor_build:
-        print_error("Build option `disable_3d=yes` cannot be used for editor builds, only for export template builds.")
-        Exit(255)
-    else:
-        env.Append(CPPDEFINES=["_3D_DISABLED"])
-        env["disable_xr"] = True
-if env["disable_advanced_gui"]:
-    if env.editor_build:
-        print_error(
-            "Build option `disable_advanced_gui=yes` cannot be used for editor builds, only for export template builds."
-        )
-        Exit(255)
-    else:
-        env.Append(CPPDEFINES=["ADVANCED_GUI_DISABLED"])
-if env["disable_xr"]:
-    env.Append(CPPDEFINES=["XR_DISABLED"])
-if env["minizip"]:
-    env.Append(CPPDEFINES=["MINIZIP_ENABLED"])
-if env["brotli"]:
-    env.Append(CPPDEFINES=["BROTLI_ENABLED"])
-
-if not env["verbose"]:
-    methods.no_verbose(env)
-
 GLSL_BUILDERS = {
     "RD_GLSL": env.Builder(
         action=env.Run(glsl_builders.build_rd_headers),
@@ -1051,6 +1063,14 @@ if env["ninja"]:
 # Threads
 if env["threads"]:
     env.Append(CPPDEFINES=["THREADS_ENABLED"])
+
+# Ensure build objects are put in their own folder if `redirect_build_objects` is enabled.
+env.Prepend(LIBEMITTER=[methods.redirect_emitter])
+env.Prepend(SHLIBEMITTER=[methods.redirect_emitter])
+for key in (emitters := env.StaticObject.builder.emitter):
+    emitters[key] = ListEmitter([methods.redirect_emitter] + env.Flatten(emitters[key]))
+for key in (emitters := env.SharedObject.builder.emitter):
+    emitters[key] = ListEmitter([methods.redirect_emitter] + env.Flatten(emitters[key]))
 
 # Build subdirs, the build order is dependent on link order.
 Export("env")

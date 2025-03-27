@@ -261,7 +261,7 @@ OpenXRBindingModifierEditor::OpenXRBindingModifierEditor() {
 	header_hb->add_child(binding_modifier_title);
 
 	rem_binding_modifier_btn = memnew(Button);
-	rem_binding_modifier_btn->set_tooltip_text(TTR("Remove binding modifier."));
+	rem_binding_modifier_btn->set_tooltip_text(TTR("Remove this binding modifier."));
 	rem_binding_modifier_btn->connect(SceneStringName(pressed), callable_mp(this, &OpenXRBindingModifierEditor::_on_remove_binding_modifier));
 	rem_binding_modifier_btn->set_flat(true);
 	header_hb->add_child(rem_binding_modifier_btn);

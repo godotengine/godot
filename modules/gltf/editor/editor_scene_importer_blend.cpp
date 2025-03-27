@@ -30,8 +30,6 @@
 
 #include "editor_scene_importer_blend.h"
 
-#ifdef TOOLS_ENABLED
-
 #include "../gltf_defines.h"
 #include "../gltf_document.h"
 #include "editor_import_blend_runner.h"
@@ -595,8 +593,3 @@ bool EditorFileSystemImportFormatSupportQueryBlend::query() {
 
 	return false;
 }
-
-EditorFileSystemImportFormatSupportQueryBlend::EditorFileSystemImportFormatSupportQueryBlend() {
-}
-
-#endif // TOOLS_ENABLED

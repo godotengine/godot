@@ -240,6 +240,21 @@ void OptionButton::set_item_tooltip(int p_idx, const String &p_tooltip) {
 	popup->set_item_tooltip(p_idx, p_tooltip);
 }
 
+void OptionButton::set_item_auto_translate_mode(int p_idx, AutoTranslateMode p_mode) {
+	if (p_idx < 0) {
+		p_idx += get_item_count();
+	}
+	if (popup->get_item_auto_translate_mode(p_idx) == p_mode) {
+		return;
+	}
+	popup->set_item_auto_translate_mode(p_idx, p_mode);
+
+	if (current == p_idx) {
+		set_text(popup->get_item_text(p_idx));
+	}
+	_queue_update_size_cache();
+}
+
 void OptionButton::set_item_disabled(int p_idx, bool p_disabled) {
 	popup->set_item_disabled(p_idx, p_disabled);
 }
@@ -270,6 +285,10 @@ Variant OptionButton::get_item_metadata(int p_idx) const {
 
 String OptionButton::get_item_tooltip(int p_idx) const {
 	return popup->get_item_tooltip(p_idx);
+}
+
+Node::AutoTranslateMode OptionButton::get_item_auto_translate_mode(int p_idx) const {
+	return popup->get_item_auto_translate_mode(p_idx);
 }
 
 bool OptionButton::is_item_disabled(int p_idx) const {
@@ -431,6 +450,25 @@ void OptionButton::_queue_update_size_cache() {
 	callable_mp(this, &OptionButton::_refresh_size_cache).call_deferred();
 }
 
+String OptionButton::_get_translated_text(const String &p_text) const {
+	if (0 <= current && current < popup->get_item_count()) {
+		AutoTranslateMode mode = popup->get_item_auto_translate_mode(current);
+		switch (mode) {
+			case AUTO_TRANSLATE_MODE_INHERIT: {
+				return atr(p_text);
+			} break;
+			case AUTO_TRANSLATE_MODE_ALWAYS: {
+				return tr(p_text);
+			} break;
+			case AUTO_TRANSLATE_MODE_DISABLED: {
+				return p_text;
+			} break;
+		}
+		ERR_FAIL_V_MSG(atr(p_text), "Unexpected auto translate mode: " + itos(mode));
+	}
+	return atr(p_text);
+}
+
 void OptionButton::select(int p_idx) {
 	_select(p_idx, false);
 }
@@ -510,12 +548,14 @@ void OptionButton::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_item_id", "idx", "id"), &OptionButton::set_item_id);
 	ClassDB::bind_method(D_METHOD("set_item_metadata", "idx", "metadata"), &OptionButton::set_item_metadata);
 	ClassDB::bind_method(D_METHOD("set_item_tooltip", "idx", "tooltip"), &OptionButton::set_item_tooltip);
+	ClassDB::bind_method(D_METHOD("set_item_auto_translate_mode", "idx", "mode"), &OptionButton::set_item_auto_translate_mode);
 	ClassDB::bind_method(D_METHOD("get_item_text", "idx"), &OptionButton::get_item_text);
 	ClassDB::bind_method(D_METHOD("get_item_icon", "idx"), &OptionButton::get_item_icon);
 	ClassDB::bind_method(D_METHOD("get_item_id", "idx"), &OptionButton::get_item_id);
 	ClassDB::bind_method(D_METHOD("get_item_index", "id"), &OptionButton::get_item_index);
 	ClassDB::bind_method(D_METHOD("get_item_metadata", "idx"), &OptionButton::get_item_metadata);
 	ClassDB::bind_method(D_METHOD("get_item_tooltip", "idx"), &OptionButton::get_item_tooltip);
+	ClassDB::bind_method(D_METHOD("get_item_auto_translate_mode", "idx"), &OptionButton::get_item_auto_translate_mode);
 	ClassDB::bind_method(D_METHOD("is_item_disabled", "idx"), &OptionButton::is_item_disabled);
 	ClassDB::bind_method(D_METHOD("is_item_separator", "idx"), &OptionButton::is_item_separator);
 	ClassDB::bind_method(D_METHOD("add_separator", "text"), &OptionButton::add_separator, DEFVAL(String()));
