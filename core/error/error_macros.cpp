@@ -188,7 +188,7 @@ void _physics_interpolation_warning(const char *p_function, const char *p_file, 
 			} else {
 				String node_name;
 				if (p_id.is_valid()) {
-					Node *node = Object::cast_to<Node>(ObjectDB::get_instance(p_id));
+					Node *node = ObjectDB::get_instance<Node>(p_id);
 					if (node && node->is_inside_tree()) {
 						node_name = "\"" + String(node->get_path()) + "\"";
 					} else {
