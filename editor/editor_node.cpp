@@ -2486,7 +2486,7 @@ void EditorNode::edit_item(Object *p_object, Object *p_editing_owner) {
 			if (kv.key == owner_id || !kv.value.has(plugin)) {
 				continue;
 			}
-			EditorPropertyResource *epres = Object::cast_to<EditorPropertyResource>(ObjectDB::get_instance(kv.key));
+			EditorPropertyResource *epres = ObjectDB::get_instance<EditorPropertyResource>(kv.key);
 			if (epres) {
 				// If it's resource property editing the same resource type, fold it later to avoid premature modifications
 				// that may result in unsafe iteration of active_plugins.
@@ -2617,7 +2617,7 @@ void EditorNode::_add_to_history(const Object *p_object, const String &p_propert
 	ObjectID history_id = editor_history.get_current();
 	if (id != history_id) {
 		const MultiNodeEdit *multi_node_edit = Object::cast_to<const MultiNodeEdit>(p_object);
-		const MultiNodeEdit *history_multi_node_edit = Object::cast_to<const MultiNodeEdit>(ObjectDB::get_instance(history_id));
+		const MultiNodeEdit *history_multi_node_edit = ObjectDB::get_instance<MultiNodeEdit>(history_id);
 		if (multi_node_edit && history_multi_node_edit && multi_node_edit->is_same_selection(history_multi_node_edit)) {
 			return;
 		}

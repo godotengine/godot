@@ -113,7 +113,7 @@ private:
 
 	template <typename T>
 	static T *get_id_as(const ObjectID &p_id) {
-		return p_id.is_valid() ? Object::cast_to<T>(ObjectDB::get_instance(p_id)) : nullptr;
+		return p_id.is_valid() ? ObjectDB::get_instance<T>(p_id) : nullptr;
 	}
 
 #ifdef DEBUG_ENABLED

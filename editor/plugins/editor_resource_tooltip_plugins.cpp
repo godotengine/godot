@@ -38,7 +38,7 @@
 
 void EditorResourceTooltipPlugin::_thumbnail_ready(const String &p_path, const Ref<Texture2D> &p_preview, const Ref<Texture2D> &p_small_preview, const Variant &p_udata) {
 	ObjectID trid = p_udata;
-	TextureRect *tr = Object::cast_to<TextureRect>(ObjectDB::get_instance(trid));
+	TextureRect *tr = ObjectDB::get_instance<TextureRect>(trid);
 
 	if (!tr) {
 		return;

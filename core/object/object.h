@@ -46,6 +46,9 @@
 template <typename T>
 class TypedArray;
 
+template <typename T>
+class Ref;
+
 enum PropertyHint {
 	PROPERTY_HINT_NONE, ///< no hint provided.
 	PROPERTY_HINT_RANGE, ///< hint_text = "min,max[,step][,or_greater][,or_less][,hide_slider][,radians_as_degrees][,degrees][,exp][,suffix:<keyword>] range.
@@ -1075,6 +1078,15 @@ public:
 
 		return object;
 	}
+
+	template <typename T>
+	_ALWAYS_INLINE_ static T *get_instance(ObjectID p_instance_id) {
+		return Object::cast_to<T>(get_instance(p_instance_id));
+	}
+
+	template <typename T>
+	_ALWAYS_INLINE_ static Ref<T> get_ref(ObjectID p_instance_id); // Defined in ref_counted.h
+
 	static void debug_objects(DebugFunc p_func);
 	static int get_object_count();
 };

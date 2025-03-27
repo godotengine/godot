@@ -118,7 +118,7 @@ void SkeletonModification2DPhysicalBones::_execute(float p_delta) {
 			continue;
 		}
 
-		PhysicalBone2D *physical_bone = Object::cast_to<PhysicalBone2D>(ObjectDB::get_instance(bone_data.physical_bone_node_cache));
+		PhysicalBone2D *physical_bone = ObjectDB::get_instance<PhysicalBone2D>(bone_data.physical_bone_node_cache);
 		if (!physical_bone) {
 			ERR_PRINT_ONCE("PhysicalBone2D not found at index " + itos(i) + "!");
 			return;
@@ -249,7 +249,7 @@ void SkeletonModification2DPhysicalBones::_update_simulation_state() {
 		}
 	} else {
 		for (int i = 0; i < physical_bone_chain.size(); i++) {
-			PhysicalBone2D *physical_bone = Object::cast_to<PhysicalBone2D>(ObjectDB::get_instance(physical_bone_chain[i].physical_bone_node_cache));
+			PhysicalBone2D *physical_bone = ObjectDB::get_instance<PhysicalBone2D>(physical_bone_chain[i].physical_bone_node_cache);
 			if (!physical_bone) {
 				continue;
 			}

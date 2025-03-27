@@ -929,7 +929,7 @@ void Viewport::_process_picking() {
 
 		CollisionObject3D *capture_object = nullptr;
 		if (physics_object_capture.is_valid()) {
-			capture_object = Object::cast_to<CollisionObject3D>(ObjectDB::get_instance(physics_object_capture));
+			capture_object = ObjectDB::get_instance<CollisionObject3D>(physics_object_capture);
 			if (!capture_object || !camera_3d || (mb.is_valid() && mb->get_button_index() == MouseButton::LEFT && !mb->is_pressed())) {
 				physics_object_capture = ObjectID();
 			} else {
@@ -978,7 +978,7 @@ void Viewport::_process_picking() {
 
 					if (is_mouse && new_collider != physics_object_over) {
 						if (physics_object_over.is_valid()) {
-							CollisionObject3D *previous_co = Object::cast_to<CollisionObject3D>(ObjectDB::get_instance(physics_object_over));
+							CollisionObject3D *previous_co = ObjectDB::get_instance<CollisionObject3D>(physics_object_over);
 							if (previous_co) {
 								previous_co->_mouse_exit();
 							}
@@ -2112,7 +2112,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 			}
 		} else {
 			ObjectID control_id = gui.touch_focus[touch_index];
-			Control *over = control_id.is_valid() ? Object::cast_to<Control>(ObjectDB::get_instance(control_id)) : nullptr;
+			Control *over = control_id.is_valid() ? ObjectDB::get_instance<Control>(control_id) : nullptr;
 			if (over && over->can_process()) {
 				touch_event = touch_event->xformed_by(Transform2D()); // Make a copy.
 				pos = over->get_global_transform_with_canvas().affine_inverse().xform(pos);
@@ -2147,7 +2147,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 	if (drag_event.is_valid()) {
 		const int drag_event_index = drag_event->get_index();
 		ObjectID control_id = gui.touch_focus[drag_event_index];
-		Control *over = control_id.is_valid() ? Object::cast_to<Control>(ObjectDB::get_instance(control_id)) : nullptr;
+		Control *over = control_id.is_valid() ? ObjectDB::get_instance<Control>(control_id) : nullptr;
 		if (!over) {
 			over = gui_find_control(drag_event->get_position());
 		}
@@ -2351,7 +2351,7 @@ Control *Viewport::_gui_get_drag_preview() {
 	if (gui.drag_preview_id.is_null()) {
 		return nullptr;
 	} else {
-		Control *drag_preview = Object::cast_to<Control>(ObjectDB::get_instance(gui.drag_preview_id));
+		Control *drag_preview = ObjectDB::get_instance<Control>(gui.drag_preview_id);
 		if (!drag_preview) {
 			ERR_PRINT("Don't free the control set as drag preview.");
 			gui.drag_preview_id = ObjectID();
@@ -2583,7 +2583,7 @@ void Viewport::_drop_physics_mouseover(bool p_paused_only) {
 
 #ifndef PHYSICS_3D_DISABLED
 	if (physics_object_over.is_valid()) {
-		CollisionObject3D *co = Object::cast_to<CollisionObject3D>(ObjectDB::get_instance(physics_object_over));
+		CollisionObject3D *co = ObjectDB::get_instance<CollisionObject3D>(physics_object_over);
 		if (co) {
 			if (!co->is_inside_tree()) {
 				physics_object_over = ObjectID();
