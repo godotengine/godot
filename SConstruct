@@ -221,6 +221,11 @@ opts.Add("import_env_vars", "A comma-separated list of environment variables to 
 opts.Add(BoolVariable("disable_3d", "Disable 3D nodes for a smaller executable", False))
 opts.Add(BoolVariable("disable_advanced_gui", "Disable advanced GUI nodes and behaviors", False))
 opts.Add(BoolVariable("disable_xr", "Disable XR nodes and server", False))
+opts.Add(
+    BoolVariable(
+        "disable_tony_mc_mapface", "Disable Tony McMapface tonemapping mode (decreases binary size by ~300 KB)", False
+    )
+)
 opts.Add("build_profile", "Path to a file containing a feature build profile", "")
 opts.Add(BoolVariable("modules_enabled_by_default", "If no, disable all modules except ones explicitly enabled", True))
 opts.Add(BoolVariable("no_editor_splash", "Don't use the custom splash screen for the editor", True))
@@ -947,6 +952,8 @@ if env["disable_advanced_gui"]:
         env.Append(CPPDEFINES=["ADVANCED_GUI_DISABLED"])
 if env["disable_xr"]:
     env.Append(CPPDEFINES=["XR_DISABLED"])
+if env["disable_tony_mc_mapface"]:
+    env.Append(CPPDEFINES=["TONY_MC_MAPFACE_DISABLED"])
 if env["minizip"]:
     env.Append(CPPDEFINES=["MINIZIP_ENABLED"])
 if env["brotli"]:
