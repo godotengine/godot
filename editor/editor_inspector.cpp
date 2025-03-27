@@ -4757,6 +4757,12 @@ void EditorInspector::_clear_current_favorites() {
 
 void EditorInspector::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_TRANSLATION_CHANGED: {
+			if (property_name_style == EditorPropertyNameProcessor::STYLE_LOCALIZED) {
+				update_tree_pending = true;
+			}
+		} break;
+
 		case NOTIFICATION_THEME_CHANGED: {
 			favorites_category->icon = get_editor_theme_icon(SNAME("Favorites"));
 
@@ -4837,7 +4843,6 @@ void EditorInspector::_notification(int p_what) {
 		} break;
 
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
-			bool needs_update = false;
 			if (!is_sub_inspector() && EditorThemeManager::is_generated_theme_outdated()) {
 				add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SceneStringName(panel), SNAME("Tree")));
 			}
@@ -4846,16 +4851,12 @@ void EditorInspector::_notification(int p_what) {
 				EditorPropertyNameProcessor::Style style = EditorPropertyNameProcessor::get_settings_style();
 				if (property_name_style != style) {
 					property_name_style = style;
-					needs_update = true;
+					update_tree_pending = true;
 				}
 			}
 
 			if (EditorSettings::get_singleton()->check_changed_settings_in_group("interface/inspector")) {
-				needs_update = true;
-			}
-
-			if (needs_update) {
-				update_tree();
+				update_tree_pending = true;
 			}
 		} break;
 	}
