@@ -109,36 +109,29 @@ uint64_t Color::to_rgba64() const {
 	return c;
 }
 
-String _to_hex(float p_val) {
+void _append_hex(float p_val, char32_t *string) {
 	int v = Math::round(p_val * 255.0f);
 	v = CLAMP(v, 0, 255);
-	String ret;
 
 	for (int i = 0; i < 2; i++) {
-		char32_t c[2] = { 0, 0 };
-		int lv = v & 0xF;
-		if (lv < 10) {
-			c[0] = '0' + lv;
-		} else {
-			c[0] = 'a' + lv - 10;
-		}
-
+		string[i] = hex_char_table_lower[v & 0xF];
 		v >>= 4;
-		String cs = (const char32_t *)c;
-		ret = cs + ret;
 	}
-
-	return ret;
 }
 
 String Color::to_html(bool p_alpha) const {
 	String txt;
-	txt += _to_hex(r);
-	txt += _to_hex(g);
-	txt += _to_hex(b);
+	txt.resize(p_alpha ? 9 : 7);
+	char32_t *ptr = txt.ptrw();
+
+	_append_hex(r, ptr + 0);
+	_append_hex(g, ptr + 2);
+	_append_hex(b, ptr + 4);
 	if (p_alpha) {
-		txt += _to_hex(a);
+		_append_hex(a, ptr + 6);
 	}
+	ptr[txt.size() - 1] = '\0';
+
 	return txt;
 }
 
