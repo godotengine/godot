@@ -292,6 +292,20 @@ void register_editor_types() {
 	GLOBAL_DEF("editor/version_control/plugin_name", "");
 	GLOBAL_DEF("editor/version_control/autoload_on_startup", false);
 
+	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "editor/3d/preview_sun/default_angle_altitude", PROPERTY_HINT_RANGE, "-90,90,0.1,degrees"), 60.0);
+	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "editor/3d/preview_sun/default_angle_azimuth", PROPERTY_HINT_RANGE, "-180,180,0.1,or_greater,or_less,degrees"), 30.0);
+	GLOBAL_DEF("editor/3d/preview_sun/default_color", Color(1, 1, 1));
+	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "editor/3d/preview_sun/default_energy", PROPERTY_HINT_RANGE, "0,16,0.001,or_greater"), 1.0);
+	GLOBAL_DEF("editor/3d/preview_sun/default_shadow_enabled", true);
+	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "editor/3d/preview_sun/default_shadow_max_distance", PROPERTY_HINT_RANGE, "0,8192,0.1,or_greater,exp"), 100.0);
+	GLOBAL_DEF("editor/3d/preview_environment/default_sky_color", Color(0.385, 0.454, 0.55));
+	GLOBAL_DEF("editor/3d/preview_environment/default_ground_color", Color(0.2, 0.169, 0.133));
+	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "editor/3d/preview_environment/default_sky_energy", PROPERTY_HINT_RANGE, "0,64,0.01"), 1.0);
+	GLOBAL_DEF("editor/3d/preview_environment/default_glow", true);
+	GLOBAL_DEF("editor/3d/preview_environment/default_tonemap", true);
+	GLOBAL_DEF("editor/3d/preview_environment/default_ao", false);
+	GLOBAL_DEF("editor/3d/preview_environment/default_gi", false);
+
 	EditorInterface::create();
 	Engine::Singleton ei_singleton = Engine::Singleton("EditorInterface", EditorInterface::get_singleton());
 	ei_singleton.editor_only = true;

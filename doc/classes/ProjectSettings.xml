@@ -955,6 +955,45 @@
 			Directory that contains the [code].sln[/code] file. By default, the [code].sln[/code] files is in the root of the project directory, next to the [code]project.godot[/code] and [code].csproj[/code] files.
 			Changing this value allows setting up a multi-project scenario where there are multiple [code].csproj[/code]. Keep in mind that the Godot project is considered one of the C# projects in the workspace and it's root directory should contain the [code]project.godot[/code] and [code].csproj[/code] next to each other.
 		</member>
+		<member name="editor/3d/preview_environment/default_ao" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], ambient occlusion is enabled by default for the preview environment in the 3D editor.
+		</member>
+		<member name="editor/3d/preview_environment/default_gi" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], global illumination is enabled by default for the preview environment in the 3D editor.
+		</member>
+		<member name="editor/3d/preview_environment/default_glow" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], glow is enabled by default for the preview environment in the 3D editor.
+		</member>
+		<member name="editor/3d/preview_environment/default_ground_color" type="Color" setter="" getter="" default="Color(0.2, 0.169, 0.133, 1)">
+			Default ground color for the preview environment in the 3D editor.
+		</member>
+		<member name="editor/3d/preview_environment/default_sky_color" type="Color" setter="" getter="" default="Color(0.385, 0.454, 0.55, 1)">
+			Default sky color for the preview environment in the 3D editor.
+		</member>
+		<member name="editor/3d/preview_environment/default_sky_energy" type="float" setter="" getter="" default="1.0">
+			Default sky energy multiplier for the preview environment in the 3D editor.
+		</member>
+		<member name="editor/3d/preview_environment/default_tonemap" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], tonemapping is enabled by default for the preview environment in the 3D editor.
+		</member>
+		<member name="editor/3d/preview_sun/default_angle_altitude" type="float" setter="" getter="" default="60.0">
+			Default altitude (in degrees) for the preview sun in the 3D editor.
+		</member>
+		<member name="editor/3d/preview_sun/default_angle_azimuth" type="float" setter="" getter="" default="30.0">
+			Default azimuth (in degrees) for the preview sun in the 3D editor.
+		</member>
+		<member name="editor/3d/preview_sun/default_color" type="Color" setter="" getter="" default="Color(1, 1, 1, 1)">
+			Default color for the preview sun in the 3D editor.
+		</member>
+		<member name="editor/3d/preview_sun/default_energy" type="float" setter="" getter="" default="1.0">
+			Default energy for the preview sun in the 3D editor.
+		</member>
+		<member name="editor/3d/preview_sun/default_shadow_enabled" type="bool" setter="" getter="" default="true">
+			If [code]true[/code], shadows are enabled by default for the preview sun in the 3D editor.
+		</member>
+		<member name="editor/3d/preview_sun/default_shadow_max_distance" type="float" setter="" getter="" default="100.0">
+			Default max shadow distance for the preview sun in the 3D editor.
+		</member>
 		<member name="editor/export/convert_text_resources_to_binary" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], text resource ([code]tres[/code]) and text scene ([code]tscn[/code]) files are converted to their corresponding binary format on export. This decreases file sizes and speeds up loading slightly.
 			[b]Note:[/b] Because a resource's file extension may change in an exported project, it is heavily recommended to use [method @GDScript.load] or [ResourceLoader] instead of [FileAccess] to load resources dynamically.
