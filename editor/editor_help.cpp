@@ -39,18 +39,18 @@
 #include "core/os/keyboard.h"
 #include "core/string/string_builder.h"
 #include "core/version.h"
-#include "editor/doc_data_compressed.gen.h"
+#include "editor/docks/filesystem_dock.h"
 #include "editor/editor_file_system.h"
 #include "editor/editor_main_screen.h"
 #include "editor/editor_node.h"
 #include "editor/editor_paths.h"
-#include "editor/editor_property_name_processor.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
-#include "editor/filesystem_dock.h"
 #include "editor/gui/editor_toaster.h"
-#include "editor/plugins/script_editor_plugin.h"
+#include "editor/inspector/editor_property_name_processor.h"
+#include "editor/plugins/script/script_editor_plugin.h"
 #include "editor/themes/editor_scale.h"
+#include "editor/translations/doc_data_compressed.gen.h"
 #include "scene/gui/line_edit.h"
 
 #include "modules/modules_enabled.gen.h" // For gdscript, mono.
@@ -63,7 +63,6 @@
 
 // For syntax highlighting.
 #ifdef MODULE_MONO_ENABLED
-#include "editor/plugins/script_editor_plugin.h"
 #include "modules/mono/csharp_script.h"
 #endif
 

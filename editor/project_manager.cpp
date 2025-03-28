@@ -37,7 +37,7 @@
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
 #include "core/version.h"
-#include "editor/editor_about.h"
+#include "editor/dialogs/editor_about.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
 #include "editor/engine_update_label.h"

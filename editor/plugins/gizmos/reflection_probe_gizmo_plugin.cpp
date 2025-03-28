@@ -34,8 +34,8 @@
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
+#include "editor/plugins/3d/node_3d_editor_plugin.h"
 #include "editor/plugins/gizmos/gizmo_3d_helper.h"
-#include "editor/plugins/node_3d_editor_plugin.h"
 #include "scene/3d/reflection_probe.h"
 
 ReflectionProbeGizmoPlugin::ReflectionProbeGizmoPlugin() {
