@@ -1526,6 +1526,10 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 
 			add_root_node(new_node);
 
+			if (GLOBAL_GET("editor/naming/node_name_casing").operator int() != NAME_CASING_PASCAL_CASE) {
+				new_node->set_name(Node::adjust_name_casing(new_node->get_name()));
+			}
+
 			EditorNode::get_singleton()->edit_node(new_node);
 			editor_selection->clear();
 			editor_selection->add_node(new_node);
