@@ -1141,7 +1141,7 @@ bool Image::is_size_po2() const {
 }
 
 void Image::resize_to_po2(bool p_square, Interpolation p_interpolation) {
-	ERR_FAIL_COND_MSG(!_can_modify(format), "Cannot resize in compressed or custom image formats.");
+	ERR_FAIL_COND_MSG(is_compressed(), "Cannot resize in compressed image formats.");
 
 	int w = next_power_of_2(width);
 	int h = next_power_of_2(height);
@@ -1160,7 +1160,7 @@ void Image::resize_to_po2(bool p_square, Interpolation p_interpolation) {
 
 void Image::resize(int p_width, int p_height, Interpolation p_interpolation) {
 	ERR_FAIL_COND_MSG(data.is_empty(), "Cannot resize image before creating it, use set_data() first.");
-	ERR_FAIL_COND_MSG(!_can_modify(format), "Cannot resize in compressed or custom image formats.");
+	ERR_FAIL_COND_MSG(is_compressed(), "Cannot resize in compressed image formats.");
 
 	bool mipmap_aware = p_interpolation == INTERPOLATE_TRILINEAR /* || p_interpolation == INTERPOLATE_TRICUBIC */;
 
@@ -1463,8 +1463,7 @@ void Image::resize(int p_width, int p_height, Interpolation p_interpolation) {
 }
 
 void Image::crop_from_point(int p_x, int p_y, int p_width, int p_height) {
-	ERR_FAIL_COND_MSG(!_can_modify(format), "Cannot crop in compressed or custom image formats.");
-
+	ERR_FAIL_COND_MSG(is_compressed(), "Cannot crop in compressed image formats.");
 	ERR_FAIL_COND_MSG(p_x < 0, "Start x position cannot be smaller than 0.");
 	ERR_FAIL_COND_MSG(p_y < 0, "Start y position cannot be smaller than 0.");
 	ERR_FAIL_COND_MSG(p_width <= 0, "Width of image must be greater than 0.");
@@ -1517,7 +1516,7 @@ void Image::crop(int p_width, int p_height) {
 }
 
 void Image::rotate_90(ClockDirection p_direction) {
-	ERR_FAIL_COND_MSG(!_can_modify(format), "Cannot rotate in compressed or custom image formats.");
+	ERR_FAIL_COND_MSG(is_compressed(), "Cannot rotate in compressed image formats.");
 	ERR_FAIL_COND_MSG(width <= 0, vformat("The Image width specified (%d pixels) must be greater than 0 pixels.", width));
 	ERR_FAIL_COND_MSG(height <= 0, vformat("The Image height specified (%d pixels) must be greater than 0 pixels.", height));
 
@@ -1635,7 +1634,7 @@ void Image::rotate_90(ClockDirection p_direction) {
 }
 
 void Image::rotate_180() {
-	ERR_FAIL_COND_MSG(!_can_modify(format), "Cannot rotate in compressed or custom image formats.");
+	ERR_FAIL_COND_MSG(is_compressed(), "Cannot rotate in compressed image formats.");
 	ERR_FAIL_COND_MSG(width <= 0, vformat("The Image width specified (%d pixels) must be greater than 0 pixels.", width));
 	ERR_FAIL_COND_MSG(height <= 0, vformat("The Image height specified (%d pixels) must be greater than 0 pixels.", height));
 
@@ -1669,7 +1668,7 @@ void Image::rotate_180() {
 }
 
 void Image::flip_y() {
-	ERR_FAIL_COND_MSG(!_can_modify(format), "Cannot flip_y in compressed or custom image formats.");
+	ERR_FAIL_COND_MSG(is_compressed(), "Cannot flip_y in compressed image formats.");
 
 	bool used_mipmaps = has_mipmaps();
 	if (used_mipmaps) {
@@ -1699,7 +1698,7 @@ void Image::flip_y() {
 }
 
 void Image::flip_x() {
-	ERR_FAIL_COND_MSG(!_can_modify(format), "Cannot flip_x in compressed or custom image formats.");
+	ERR_FAIL_COND_MSG(is_compressed(), "Cannot flip_x in compressed image formats.");
 
 	bool used_mipmaps = has_mipmaps();
 	if (used_mipmaps) {
@@ -1789,10 +1788,6 @@ int64_t Image::_get_dst_image_size(int p_width, int p_height, Format p_format, i
 
 	r_mipmaps = mm;
 	return size;
-}
-
-bool Image::_can_modify(Format p_format) const {
-	return !Image::is_format_compressed(p_format);
 }
 
 template <typename Component, int CC, bool renormalize,
@@ -1928,7 +1923,7 @@ void Image::shrink_x2() {
 		memcpy(new_data.ptrw(), data.ptr() + ofs, new_size);
 	} else {
 		// Generate a mipmap and replace the original.
-		ERR_FAIL_COND(!_can_modify(format));
+		ERR_FAIL_COND(is_compressed());
 
 		new_data.resize((width / 2) * (height / 2) * get_format_pixel_size(format));
 		ERR_FAIL_COND(data.is_empty() || new_data.is_empty());
@@ -1965,7 +1960,7 @@ void Image::normalize() {
 }
 
 Error Image::generate_mipmaps(bool p_renormalize) {
-	ERR_FAIL_COND_V_MSG(!_can_modify(format), ERR_UNAVAILABLE, "Cannot generate mipmaps in compressed or custom image formats.");
+	ERR_FAIL_COND_V_MSG(is_compressed(), ERR_UNAVAILABLE, "Cannot generate mipmaps from compressed image formats.");
 	ERR_FAIL_COND_V_MSG(format == FORMAT_RGBA4444, ERR_UNAVAILABLE, "Cannot generate mipmaps from RGBA4444 format.");
 	ERR_FAIL_COND_V_MSG(width == 0 || height == 0, ERR_UNCONFIGURED, "Cannot generate mipmaps with width or height equal to 0.");
 
@@ -2880,7 +2875,7 @@ void Image::blit_rect(const Ref<Image> &p_src, const Rect2i &p_src_rect, const P
 	ERR_FAIL_COND(dsize == 0);
 	ERR_FAIL_COND(srcdsize == 0);
 	ERR_FAIL_COND(format != p_src->format);
-	ERR_FAIL_COND_MSG(!_can_modify(format), "Cannot blit_rect in compressed or custom image formats.");
+	ERR_FAIL_COND_MSG(is_compressed(), "Cannot blit_rect in compressed image formats.");
 
 	Rect2i src_rect;
 	Rect2i dest_rect;
@@ -3063,7 +3058,7 @@ void Image::fill(const Color &p_color) {
 	if (data.size() == 0) {
 		return;
 	}
-	ERR_FAIL_COND_MSG(!_can_modify(format), "Cannot fill in compressed or custom image formats.");
+	ERR_FAIL_COND_MSG(is_compressed(), "Cannot fill in compressed image formats.");
 
 	uint8_t *dst_data_ptr = data.ptrw();
 
@@ -3079,7 +3074,7 @@ void Image::fill_rect(const Rect2i &p_rect, const Color &p_color) {
 	if (data.size() == 0) {
 		return;
 	}
-	ERR_FAIL_COND_MSG(!_can_modify(format), "Cannot fill rect in compressed or custom image formats.");
+	ERR_FAIL_COND_MSG(is_compressed(), "Cannot fill rect in compressed image formats.");
 
 	Rect2i r = Rect2i(0, 0, width, height).intersection(p_rect.abs());
 	if (!r.has_area()) {
@@ -3383,7 +3378,7 @@ int64_t Image::get_data_size() const {
 }
 
 void Image::adjust_bcs(float p_brightness, float p_contrast, float p_saturation) {
-	ERR_FAIL_COND_MSG(!_can_modify(format), "Cannot adjust_bcs in compressed or custom image formats.");
+	ERR_FAIL_COND_MSG(is_compressed(), "Cannot adjust_bcs in compressed image formats.");
 
 	uint8_t *w = data.ptrw();
 	uint32_t pixel_size = get_format_pixel_size(format);
@@ -3745,7 +3740,7 @@ Ref<Image> Image::get_image_from_mipmap(int p_mipmap) const {
 }
 
 void Image::bump_map_to_normal_map(float bump_scale) {
-	ERR_FAIL_COND(!_can_modify(format));
+	ERR_FAIL_COND(is_compressed());
 	clear_mipmaps();
 	convert(Image::FORMAT_RF);
 
