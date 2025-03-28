@@ -104,7 +104,8 @@ void ControlPositioningWarning::gui_input(const Ref<InputEvent> &p_event) {
 
 void ControlPositioningWarning::_notification(int p_notification) {
 	switch (p_notification) {
-		case NOTIFICATION_ENTER_TREE:
+		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
+		case NOTIFICATION_TRANSLATION_CHANGED:
 		case NOTIFICATION_THEME_CHANGED:
 			_update_warning();
 			_update_toggler();
