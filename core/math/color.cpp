@@ -113,10 +113,8 @@ void _append_hex(float p_val, char32_t *string) {
 	int v = Math::round(p_val * 255.0f);
 	v = CLAMP(v, 0, 255);
 
-	for (int i = 0; i < 2; i++) {
-		string[i] = hex_char_table_lower[v & 0xF];
-		v >>= 4;
-	}
+	string[0] = hex_char_table_lower[(v >> 4) & 0xF];
+	string[1] = hex_char_table_lower[v & 0xF];
 }
 
 String Color::to_html(bool p_alpha) const {
