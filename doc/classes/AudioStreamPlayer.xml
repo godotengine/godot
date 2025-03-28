@@ -63,7 +63,7 @@
 			If [code]true[/code], this node calls [method play] when entering the tree.
 		</member>
 		<member name="bus" type="StringName" setter="set_bus" getter="get_bus" default="&amp;&quot;Master&quot;">
-			The target bus name. All sounds from this node will be playing on this bus.
+			The target bus name. All sounds from this node will be playing on this bus. See also [member sends].
 			[b]Note:[/b] At runtime, if no bus with the given name exists, all sounds will fall back on [code]"Master"[/code]. See also [method AudioServer.get_bus_name].
 		</member>
 		<member name="max_polyphony" type="int" setter="set_max_polyphony" getter="get_max_polyphony" default="1">
@@ -80,6 +80,9 @@
 		</member>
 		<member name="playing" type="bool" setter="set_playing" getter="is_playing" default="false">
 			If [code]true[/code], this node is playing sounds. Setting this property has the same effect as [method play] and [method stop].
+		</member>
+		<member name="sends" type="Dictionary" setter="set_sends" getter="get_sends" default="{}">
+			The target sends' names. All sounds from this node will be sent to these buses in addition to the node's primary output bus. See also [member bus].
 		</member>
 		<member name="stream" type="AudioStream" setter="set_stream" getter="get_stream">
 			The [AudioStream] resource to be played. Setting this property stops all currently playing sounds. If left empty, the [AudioStreamPlayer] does not work.
