@@ -619,6 +619,43 @@ void EditorNode::update_preview_themes(int p_mode) {
 	}
 }
 
+bool EditorNode::_is_project_data_missing() {
+	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+	const String project_data_dir = EditorPaths::get_singleton()->get_project_data_dir();
+	if (!da->dir_exists(project_data_dir)) {
+		return true;
+	}
+
+	String project_data_gdignore_file_path = project_data_dir.path_join(".gdignore");
+	if (!FileAccess::exists(project_data_gdignore_file_path)) {
+		Ref<FileAccess> f = FileAccess::open(project_data_gdignore_file_path, FileAccess::WRITE);
+		if (f.is_valid()) {
+			f->store_line("");
+		} else {
+			ERR_PRINT("Failed to create file " + project_data_gdignore_file_path.quote() + ".");
+		}
+	}
+
+	String uid_cache = ResourceUID::get_singleton()->get_cache_file();
+	if (!da->file_exists(uid_cache)) {
+		Error err = ResourceUID::get_singleton()->save_to_cache();
+		if (err != OK) {
+			ERR_PRINT("Failed to create file " + uid_cache.quote() + ".");
+		}
+	}
+
+	const String dirs[] = {
+		EditorPaths::get_singleton()->get_project_settings_dir(),
+		ProjectSettings::get_singleton()->get_imported_files_path()
+	};
+	for (const String &dir : dirs) {
+		if (!da->dir_exists(dir)) {
+			return true;
+		}
+	}
+	return false;
+}
+
 void EditorNode::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_POSTINITIALIZE: {
@@ -772,7 +809,11 @@ void EditorNode::_notification(int p_what) {
 			// Restore the original FPS cap after focusing back on the editor.
 			OS::get_singleton()->set_low_processor_usage_mode_sleep_usec(int(EDITOR_GET("interface/editor/low_processor_mode_sleep_usec")));
 
-			EditorFileSystem::get_singleton()->scan_changes();
+			if (_is_project_data_missing()) {
+				project_data_missing->popup_centered();
+			} else {
+				EditorFileSystem::get_singleton()->scan_changes();
+			}
 			_scan_external_changes();
 
 			GDExtensionManager *gdextension_manager = GDExtensionManager::get_singleton();
@@ -8016,6 +8057,13 @@ EditorNode::EditorNode() {
 	}
 
 	gui_base->add_child(disk_changed);
+
+	project_data_missing = memnew(ConfirmationDialog);
+	project_data_missing->set_text(TTRC("Project data folder (.godot) is missing. Please restart editor."));
+	project_data_missing->connect(SceneStringName(confirmed), callable_mp(this, &EditorNode::restart_editor).bind(false));
+	project_data_missing->set_ok_button_text(TTRC("Restart"));
+
+	gui_base->add_child(project_data_missing);
 
 	add_editor_plugin(memnew(AnimationPlayerEditorPlugin));
 	add_editor_plugin(memnew(AnimationTrackKeyEditEditorPlugin));
