@@ -47,7 +47,7 @@ void CollisionShape2D::_update_in_shape_owner(bool p_xform_only) {
 	collision_object->shape_owner_set_disabled(owner_id, disabled);
 	collision_object->shape_owner_set_one_way_collision(owner_id, one_way_collision);
 	collision_object->shape_owner_set_one_way_collision_margin(owner_id, one_way_collision_margin);
-	collision_object->shape_owner_set_one_way_collision_direction(owner_id, one_way_collision_direction);
+	collision_object->shape_owner_set_one_way_collision_direction(owner_id, one_way_collision_direction.normalized());
 }
 
 void CollisionShape2D::_notification(int p_what) {
@@ -229,10 +229,10 @@ real_t CollisionShape2D::get_one_way_collision_margin() const {
 	return one_way_collision_margin;
 }
 
-void CollisionShape2D::set_one_way_collision_direction(Vector2 p_one_way_collision_direction) {
-	one_way_collision_direction = p_one_way_collision_direction;
+void CollisionShape2D::set_one_way_collision_direction(Vector2 p_direction) {
+	one_way_collision_direction = p_direction.normalized();
 	if (collision_object) {
-		collision_object->shape_owner_set_one_way_collision_direction(owner_id, p_one_way_collision_direction);
+		collision_object->shape_owner_set_one_way_collision_direction(owner_id, p_direction.normalized());
 	}
 	queue_redraw();
 }
