@@ -803,7 +803,7 @@ bool GodotSpace2D::test_body_motion(GodotBody2D *p_body, const PhysicsServer2D::
 				//test initial overlap
 				if (GodotCollisionSolver2D::solve(body_shape, body_shape_xform, Vector2(), against_shape, col_obj_shape_xform, Vector2(), nullptr, nullptr, nullptr, 0)) {
 					if (body_shape->allows_one_way_collision() && col_obj->is_shape_set_as_one_way_collision(col_shape_idx)) {
-						Vector2 direction = col_obj->get_shape_one_way_collision_direction(col_shape_idx));
+						Vector2 direction = col_obj->get_shape_one_way_collision_direction(col_shape_idx);
 						if (motion_normal.dot(direction) < 0) {
 							continue;
 						}

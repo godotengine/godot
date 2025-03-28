@@ -111,11 +111,16 @@ void CollisionShape2D::_notification(int p_what) {
 
 			if (one_way_collision) {
 				// Draw an arrow indicating the one-way collision direction
+
+				// one_way_collision_direction
 				draw_col = debug_color.inverted();
 				if (disabled) {
 					draw_col = draw_col.darkened(0.25);
 				}
+
+				// TODO: rotate this
 				Vector2 line_to(0, 20);
+				line_to = line_to.rotated(one_way_collision_direction.angle());
 				draw_line(Vector2(), line_to, draw_col, 2);
 				real_t tsize = 8;
 
