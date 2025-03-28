@@ -637,9 +637,9 @@ bool GodotSpace2D::test_body_motion(GodotBody2D *p_body, const PhysicsServer2D::
 					Transform2D col_obj_shape_xform = col_obj->get_transform() * col_obj->get_shape_transform(shape_idx);
 
 					if (body_shape->allows_one_way_collision() && col_obj->is_shape_set_as_one_way_collision(shape_idx)) {
-						cbk.valid_dir = col_obj_shape_xform.columns[1].normalized().rotated(
-							col_obj->get_shape_one_way_collision_direction(shape_idx).angle()
-						);
+						cbk.valid_dir = Vector2::from_angle(
+								col_obj_shape_xform.columns[1].normalized().angle() +
+								col_obj->get_shape_one_way_collision_direction(shape_idx).angle());
 						WARN_PRINT(vformat("%f %f", cbk.valid_dir.x, cbk.valid_dir.y));
 
 						real_t owc_margin = col_obj->get_shape_one_way_collision_margin(shape_idx);
@@ -805,7 +805,7 @@ bool GodotSpace2D::test_body_motion(GodotBody2D *p_body, const PhysicsServer2D::
 				//test initial overlap
 				if (GodotCollisionSolver2D::solve(body_shape, body_shape_xform, Vector2(), against_shape, col_obj_shape_xform, Vector2(), nullptr, nullptr, nullptr, 0)) {
 					if (body_shape->allows_one_way_collision() && col_obj->is_shape_set_as_one_way_collision(col_shape_idx)) {
-						Vector2 direction = col_obj->get_shape_one_way_collision_direction(col_shape_idx);
+						Vector2 direction = col_obj_shape_xform.columns[1].normalized().rotated(col_obj->get_shape_one_way_collision_direction(col_shape_idx).angle());
 						if (motion_normal.dot(direction) < 0) {
 							continue;
 						}
@@ -855,9 +855,9 @@ bool GodotSpace2D::test_body_motion(GodotBody2D *p_body, const PhysicsServer2D::
 					cbk.amount = 0;
 					cbk.passed = 0;
 					cbk.ptr = cd;
-					cbk.valid_dir = col_obj_shape_xform.columns[1].normalized().rotated(
-						col_obj->get_shape_one_way_collision_direction(col_shape_idx).angle()
-					);
+					cbk.valid_dir = Vector2::from_angle(
+							col_obj_shape_xform.columns[1].angle() +
+							col_obj->get_shape_one_way_collision_direction(col_shape_idx).angle());
 					cbk.valid_depth = 10e20;
 
 					Vector2 sep = motion_normal; //important optimization for this to work fast enough
@@ -947,7 +947,8 @@ bool GodotSpace2D::test_body_motion(GodotBody2D *p_body, const PhysicsServer2D::
 				Transform2D col_obj_shape_xform = col_obj->get_transform() * col_obj->get_shape_transform(shape_idx);
 
 				if (body_shape->allows_one_way_collision() && col_obj->is_shape_set_as_one_way_collision(shape_idx)) {
-					rcd.valid_dir = col_obj->get_shape_one_way_collision_direction(shape_idx);
+					rcd.valid_dir = Vector2::from_angle(
+							col_obj_shape_xform.columns[1].angle() + col_obj->get_shape_one_way_collision_direction(shape_idx).angle());
 
 					real_t owc_margin = col_obj->get_shape_one_way_collision_margin(shape_idx);
 					rcd.valid_depth = MAX(owc_margin, margin); //user specified, but never less than actual margin or it won't work

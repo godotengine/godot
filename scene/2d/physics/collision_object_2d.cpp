@@ -372,10 +372,13 @@ void CollisionObject2D::shape_owner_set_one_way_collision_margin(uint32_t p_owne
 
 void CollisionObject2D::shape_owner_set_one_way_collision_direction(uint32_t p_owner, Vector2 p_one_way_collision_direction) {
 	if (area) {
+		WARN_PRINT("Not updating, area");
 		return; //not for areas
 	}
 
 	ERR_FAIL_COND(!shapes.has(p_owner));
+
+	WARN_PRINT("updating!");
 
 	ShapeData &sd = shapes[p_owner];
 	sd.one_way_collision_direction = p_one_way_collision_direction;
