@@ -237,6 +237,7 @@ void CollisionShape2D::set_one_way_collision_direction(Vector2 p_one_way_collisi
 	if (collision_object) {
 		collision_object->shape_owner_set_one_way_collision_direction(owner_id, p_one_way_collision_direction);
 	}
+	queue_redraw();
 }
 
 Vector2 CollisionShape2D::get_one_way_collision_direction() const {
