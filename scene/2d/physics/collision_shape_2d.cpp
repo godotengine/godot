@@ -119,15 +119,14 @@ void CollisionShape2D::_notification(int p_what) {
 				}
 
 				// TODO: rotate this
-				Vector2 line_to(0, 20);
-				line_to = line_to.rotated(one_way_collision_direction.angle());
+				Vector2 line_to = Vector2(0, 20).rotated(one_way_collision_direction.angle());
 				draw_line(Vector2(), line_to, draw_col, 2);
 				real_t tsize = 8;
 
 				Vector<Vector2> pts{
-					line_to + Vector2(0, tsize),
-					line_to + Vector2(Math_SQRT12 * tsize, 0),
-					line_to + Vector2(-Math_SQRT12 * tsize, 0)
+					line_to + Vector2(0, tsize).rotated(one_way_collision_direction.angle()),
+					line_to + Vector2(Math_SQRT12 * tsize, 0).rotated(one_way_collision_direction.angle()),
+					line_to + Vector2(-Math_SQRT12 * tsize, 0).rotated(one_way_collision_direction.angle())
 				};
 
 				Vector<Color> cols{ draw_col, draw_col, draw_col };
