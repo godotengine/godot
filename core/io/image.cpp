@@ -2694,6 +2694,19 @@ Error Image::decompress() {
 	return OK;
 }
 
+bool Image::can_decompress(const String &p_format_tag) {
+	if (p_format_tag == "astc") {
+		return _image_decompress_astc != nullptr;
+	} else if (p_format_tag == "bptc") {
+		return _image_decompress_bptc != nullptr;
+	} else if (p_format_tag == "etc2") {
+		return _image_decompress_etc2 != nullptr;
+	} else if (p_format_tag == "s3tc") {
+		return _image_decompress_bc != nullptr;
+	}
+	return false;
+}
+
 Error Image::compress(CompressMode p_mode, CompressSource p_source, ASTCFormat p_astc_format) {
 	ERR_FAIL_INDEX_V_MSG(p_mode, COMPRESS_MAX, ERR_INVALID_PARAMETER, "Invalid compress mode.");
 	ERR_FAIL_INDEX_V_MSG(p_source, COMPRESS_SOURCE_MAX, ERR_INVALID_PARAMETER, "Invalid compress source.");
