@@ -153,17 +153,14 @@ void GodotPhysicsServer2D::_shape_col_cbk(const Vector2 &p_point_A, const Vector
 	Vector2 rel_dir = (p_point_A - p_point_B);
 	real_t rel_length2 = rel_dir.length_squared();
 	if (cbk->valid_dir != Vector2()) {
-		WARN_PRINT(vformat("cbk valid dir is set: %f %f", cbk->valid_dir.x, cbk->valid_dir.y));
 		if (cbk->valid_depth < 10e20) {
 			if (rel_length2 > cbk->valid_depth * cbk->valid_depth ||
 					(rel_length2 > CMP_EPSILON && cbk->valid_dir.dot(rel_dir.normalized()) < CMP_EPSILON)) {
-				WARN_PRINT("invalid by dir");
 				cbk->invalid_by_dir++;
 				return;
 			}
 		} else {
 			if (rel_length2 > 0 && cbk->valid_dir.dot(rel_dir.normalized()) < CMP_EPSILON) {
-				WARN_PRINT("valid_dir.dot < CMP_EPSILON, returning");
 				return;
 			}
 		}

@@ -158,7 +158,6 @@ public:
 
 	Vector2 get_shape_one_way_collision_direction(int p_idx) const {
 		CRASH_BAD_INDEX(p_idx, shapes.size());
-		/* maybe default to columns[1] */
 		return shapes[p_idx].one_way_collision_direction;
 	}
 

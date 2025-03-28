@@ -111,8 +111,6 @@ void CollisionShape2D::_notification(int p_what) {
 
 			if (one_way_collision) {
 				// Draw an arrow indicating the one-way collision direction
-
-				// one_way_collision_direction
 				draw_col = debug_color.inverted();
 				if (disabled) {
 					draw_col = draw_col.darkened(0.25);
