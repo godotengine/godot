@@ -35,9 +35,11 @@
 #include "core/os/os.h"
 #include "core/version.h"
 
-Error PackedData::add_pack(const String &p_path, bool p_replace_files, uint64_t p_offset) {
+HashSet<String> PackedData::require_encryption;
+
+Error PackedData::add_pack(const String &p_path, bool p_replace_files, uint64_t p_offset, bool p_require_encryption) {
 	for (int i = 0; i < sources.size(); i++) {
-		if (sources[i]->try_open_pack(p_path, p_replace_files, p_offset)) {
+		if (sources[i]->try_open_pack(p_path, p_replace_files, p_offset, p_require_encryption)) {
 			return OK;
 		}
 	}
@@ -174,6 +176,17 @@ void PackedData::_free_packed_dirs(PackedDir *p_dir) {
 	memdelete(p_dir);
 }
 
+bool PackedData::file_requires_encryption(const String &p_name) {
+	if (require_encryption.is_empty()) {
+		// Core files, always encrypt if PCK encryption is enabled.
+		require_encryption.insert("project.godot");
+		require_encryption.insert("project.binary");
+		require_encryption.insert("extension_list.cfg");
+		require_encryption.insert("override.cfg");
+	}
+	return require_encryption.has(p_name.get_file());
+}
+
 PackedData::~PackedData() {
 	if (singleton == this) {
 		singleton = nullptr;
@@ -187,7 +200,7 @@ PackedData::~PackedData() {
 
 //////////////////////////////////////////////////////////////////
 
-bool PackedSourcePCK::try_open_pack(const String &p_path, bool p_replace_files, uint64_t p_offset) {
+bool PackedSourcePCK::try_open_pack(const String &p_path, bool p_replace_files, uint64_t p_offset, bool p_require_encryption) {
 	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ);
 	if (f.is_null()) {
 		return false;
@@ -261,7 +274,7 @@ bool PackedSourcePCK::try_open_pack(const String &p_path, bool p_replace_files, 
 	uint32_t version = f->get_32();
 	uint32_t ver_major = f->get_32();
 	uint32_t ver_minor = f->get_32();
-	f->get_32(); // patch number, not used for validation.
+	f->get_32(); // Patch number, not used for validation.
 
 	ERR_FAIL_COND_V_MSG(version != PACK_FORMAT_VERSION, false, vformat("Pack version unsupported: %d.", version));
 	ERR_FAIL_COND_V_MSG(ver_major > GODOT_VERSION_MAJOR || (ver_major == GODOT_VERSION_MAJOR && ver_minor > GODOT_VERSION_MINOR), false, vformat("Pack created with a newer version of the engine: %d.%d.", ver_major, ver_minor));
@@ -272,8 +285,10 @@ bool PackedSourcePCK::try_open_pack(const String &p_path, bool p_replace_files, 
 	bool enc_directory = (pack_flags & PACK_DIR_ENCRYPTED);
 	bool rel_filebase = (pack_flags & PACK_REL_FILEBASE);
 
+	ERR_FAIL_COND_V_MSG(p_require_encryption && !enc_directory, false, "Can't open encrypted pack directory.");
+
 	for (int i = 0; i < 16; i++) {
-		//reserved
+		// Reserved.
 		f->get_32();
 	}
 
@@ -315,6 +330,8 @@ bool PackedSourcePCK::try_open_pack(const String &p_path, bool p_replace_files, 
 		f->get_buffer(md5, 16);
 		uint32_t flags = f->get_32();
 
+		ERR_FAIL_COND_V_MSG(p_require_encryption && PackedData::file_requires_encryption(path) && (flags & PACK_FILE_ENCRYPTED) != PACK_FILE_ENCRYPTED, false, "Can't open encrypted pack-referenced file '" + path + "'.");
+
 		if (flags & PACK_FILE_REMOVAL) { // The file was removed.
 			PackedData::get_singleton()->remove_path(path);
 		} else {
@@ -331,7 +348,7 @@ Ref<FileAccess> PackedSourcePCK::get_file(const String &p_path, PackedData::Pack
 
 //////////////////////////////////////////////////////////////////
 
-bool PackedSourceDirectory::try_open_pack(const String &p_path, bool p_replace_files, uint64_t p_offset) {
+bool PackedSourceDirectory::try_open_pack(const String &p_path, bool p_replace_files, uint64_t p_offset, bool p_require_encryption) {
 	// Load with offset feature only supported for PCK files.
 	ERR_FAIL_COND_V_MSG(p_offset != 0, false, "Invalid PCK data. Note that loading files with a non-zero offset isn't supported with directories.");
 

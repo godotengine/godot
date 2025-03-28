@@ -134,8 +134,8 @@ protected:
 
 	void _convert_to_last_version(int p_from_version);
 
-	bool load_resource_pack(const String &p_pack, bool p_replace_files, int p_offset);
-	bool _load_resource_pack(const String &p_pack, bool p_replace_files = true, int p_offset = 0, bool p_main_pack = false);
+	bool load_resource_pack(const String &p_pack, bool p_replace_files, int p_offset, bool p_require_encryption = false);
+	bool _load_resource_pack(const String &p_pack, bool p_replace_files = true, int p_offset = 0, bool p_main_pack = false, bool p_require_encryption = false);
 
 	void _add_property_info_bind(const Dictionary &p_info);
 
@@ -145,6 +145,11 @@ protected:
 
 protected:
 	static void _bind_methods();
+
+#ifndef DISABLE_DEPRECATED
+	bool _load_resource_pack_bind_compat_76161(const String &p_pack, bool p_replace_files, int p_offset);
+	static void _bind_compatibility_methods();
+#endif
 
 public:
 	static const int CONFIG_VERSION = 5;

@@ -416,7 +416,9 @@ String OS_Android::get_resource_dir() const {
 #ifdef TOOLS_ENABLED
 	return OS_Unix::get_resource_dir();
 #else
-	if (remote_fs_dir.is_empty()) {
+	if (use_apk_expansion) {
+		return OS_Unix::get_resource_dir();
+	} else if (remote_fs_dir.is_empty()) {
 		return "/"; // Android has its own filesystem for resources inside the APK
 	} else {
 		return remote_fs_dir;

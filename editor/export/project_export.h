@@ -168,7 +168,6 @@ class ProjectExportDialog : public ConfirmationDialog {
 	EditorFileDialog *export_project = nullptr;
 
 	CheckButton *enc_pck = nullptr;
-	CheckButton *enc_directory = nullptr;
 	LineEdit *enc_in_filters = nullptr;
 	LineEdit *enc_ex_filters = nullptr;
 	LineEdit *seed_input = nullptr;
@@ -194,7 +193,6 @@ class ProjectExportDialog : public ConfirmationDialog {
 	bool updating_enc_filters = false;
 	bool updating_seed = false;
 	void _enc_pck_changed(bool p_pressed);
-	void _enc_directory_changed(bool p_pressed);
 	void _enc_filters_changed(const String &p_text);
 	void _seed_input_changed(const String &p_text);
 	void _script_encryption_key_changed(const String &p_key);

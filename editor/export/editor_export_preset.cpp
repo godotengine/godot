@@ -84,7 +84,9 @@ void EditorExportPreset::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_encryption_in_filter"), &EditorExportPreset::get_enc_in_filter);
 	ClassDB::bind_method(D_METHOD("get_encryption_ex_filter"), &EditorExportPreset::get_enc_ex_filter);
 	ClassDB::bind_method(D_METHOD("get_encrypt_pck"), &EditorExportPreset::get_enc_pck);
+#ifndef DISABLE_DEPRECATED
 	ClassDB::bind_method(D_METHOD("get_encrypt_directory"), &EditorExportPreset::get_enc_directory);
+#endif
 	ClassDB::bind_method(D_METHOD("get_encryption_key"), &EditorExportPreset::get_script_encryption_key);
 	ClassDB::bind_method(D_METHOD("get_script_export_mode"), &EditorExportPreset::get_script_export_mode);
 
@@ -469,14 +471,11 @@ bool EditorExportPreset::get_enc_pck() const {
 	return enc_pck;
 }
 
-void EditorExportPreset::set_enc_directory(bool p_enabled) {
-	enc_directory = p_enabled;
-	EditorExport::singleton->save_presets();
-}
-
+#ifndef DISABLE_DEPRECATED
 bool EditorExportPreset::get_enc_directory() const {
-	return enc_directory;
+	return true;
 }
+#endif
 
 void EditorExportPreset::set_script_encryption_key(const String &p_key) {
 	script_key = p_key;

@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "gradle_export_util.h"
+#include "encryption_export_util.h"
 
 #include "core/config/project_settings.h"
 
@@ -177,10 +178,29 @@ Error rename_and_store_file_in_gradle_project(void *p_userdata, const String &p_
 		path = ResourceUID::uid_to_path(path).simplify_path();
 		print_verbose(vformat(R"(UID referenced exported file name "%s" was replaced with "%s".)", p_path, path));
 	}
-	const String dst_path = path.replace_first("res://", export_data->assets_directory + "/");
 
-	print_verbose("Saving project files from " + path + " into " + dst_path);
-	Error err = store_file_at_path(dst_path, p_data);
+	Error err = OK;
+	bool encrypted = export_data->enc_pack;
+	if (encrypted && !p_key.is_empty()) {
+		encrypted = EditorExportPlatform::file_requires_encryption(p_path, p_enc_in_filters, p_enc_ex_filters);
+	}
+
+	if (encrypted) {
+		Vector<uint8_t> enc_data;
+		String id = encrypt_file(enc_data, export_data->ids, export_data->directory, path, p_data, p_key, p_seed);
+		if (id.is_empty()) {
+			return ERR_SKIP;
+		}
+
+		String dst_path = export_data->assets_directory + "/encrypted/" + id;
+		print_verbose("Saving project files from " + p_path + " into " + dst_path);
+		err = store_file_at_path(dst_path, enc_data);
+	} else {
+		String dst_path = path.replace_first("res://", export_data->assets_directory + "/");
+		print_verbose("Saving project files from " + p_path + " into " + dst_path);
+		err = store_file_at_path(dst_path, p_data);
+	}
+
 	return err;
 }
 
