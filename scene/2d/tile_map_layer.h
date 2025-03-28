@@ -108,9 +108,11 @@ struct CellData {
 	SelfList<CellData> rendering_quadrant_list_element;
 	LocalVector<LocalVector<RID>> occluders;
 
+#ifndef PHYSICS_2D_DISABLED
 	// Physics.
 	Ref<PhysicsQuadrant> physics_quadrant;
 	SelfList<CellData> physics_quadrant_list_element;
+#endif // PHYSICS_2D_DISABLED
 
 	// Navigation.
 	LocalVector<RID> navigation_regions;
@@ -140,7 +142,9 @@ struct CellData {
 
 	CellData(const CellData &p_other) :
 			rendering_quadrant_list_element(this),
+#ifndef PHYSICS_2D_DISABLED
 			physics_quadrant_list_element(this),
+#endif // PHYSICS_2D_DISABLED
 			dirty_list_element(this) {
 		coords = p_other.coords;
 		cell = p_other.cell;
@@ -152,7 +156,9 @@ struct CellData {
 
 	CellData() :
 			rendering_quadrant_list_element(this),
+#ifndef PHYSICS_2D_DISABLED
 			physics_quadrant_list_element(this),
+#endif // PHYSICS_2D_DISABLED
 			dirty_list_element(this) {
 	}
 };
@@ -221,6 +227,7 @@ public:
 	}
 };
 
+#ifndef PHYSICS_2D_DISABLED
 class PhysicsQuadrant : public RefCounted {
 	GDCLASS(PhysicsQuadrant, RefCounted);
 
@@ -302,6 +309,7 @@ public:
 		cells.clear();
 	}
 };
+#endif // PHYSICS_2D_DISABLED
 
 class TileMapLayer : public Node2D {
 	GDCLASS(TileMapLayer, Node2D);
@@ -432,6 +440,7 @@ private:
 	void _rendering_draw_cell_debug(const RID &p_canvas_item, const Vector2 &p_quadrant_pos, const CellData &r_cell_data);
 #endif // DEBUG_ENABLED
 
+#ifndef PHYSICS_2D_DISABLED
 	HashMap<Vector2i, Ref<PhysicsQuadrant>> physics_quadrant_map;
 	HashMap<RID, Vector2i> bodies_coords; // Mapping for RID to coords.
 	bool _physics_was_cleaned_up = false;
@@ -443,6 +452,7 @@ private:
 #ifdef DEBUG_ENABLED
 	void _physics_draw_quadrant_debug(const RID &p_canvas_item, DebugQuadrant &r_debug_quadrant);
 #endif // DEBUG_ENABLED
+#endif // PHYSICS_2D_DISABLED
 
 	bool _navigation_was_cleaned_up = false;
 	void _navigation_update(bool p_force_cleanup);
@@ -545,9 +555,11 @@ public:
 	void set_cells_terrain_connect(TypedArray<Vector2i> p_cells, int p_terrain_set, int p_terrain, bool p_ignore_empty_terrains = true);
 	void set_cells_terrain_path(TypedArray<Vector2i> p_path, int p_terrain_set, int p_terrain, bool p_ignore_empty_terrains = true);
 
+#ifndef PHYSICS_2D_DISABLED
 	// --- Physics helpers ---
 	bool has_body_rid(RID p_physics_body) const;
 	Vector2i get_coords_for_body_rid(RID p_physics_body) const; // For finding tiles from collision.
+#endif // PHYSICS_2D_DISABLED
 
 	// --- Runtime ---
 	void update_internals();

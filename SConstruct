@@ -220,6 +220,8 @@ opts.Add("vsproj_name", "Name of the Visual Studio solution", "godot")
 opts.Add("import_env_vars", "A comma-separated list of environment variables to copy from the outer environment.", "")
 opts.Add(BoolVariable("disable_3d", "Disable 3D nodes for a smaller executable", False))
 opts.Add(BoolVariable("disable_advanced_gui", "Disable advanced GUI nodes and behaviors", False))
+opts.Add(BoolVariable("disable_physics_2d", "Disable 2D physics nodes and server", False))
+opts.Add(BoolVariable("disable_physics_3d", "Disable 3D physics nodes and server", False))
 opts.Add(BoolVariable("disable_xr", "Disable XR nodes and server", False))
 opts.Add("build_profile", "Path to a file containing a feature build profile", "")
 opts.Add(BoolVariable("modules_enabled_by_default", "If no, disable all modules except ones explicitly enabled", True))
@@ -935,21 +937,29 @@ suffix += env.extra_suffix
 sys.path.remove(tmppath)
 sys.modules.pop("detect")
 
-if env["disable_3d"]:
-    if env.editor_build:
-        print_error("Build option `disable_3d=yes` cannot be used for editor builds, only for export template builds.")
-        Exit(255)
-    else:
-        env.Append(CPPDEFINES=["_3D_DISABLED"])
-        env["disable_xr"] = True
-if env["disable_advanced_gui"]:
-    if env.editor_build:
+if env.editor_build:
+    unsupported_opts = []
+    for disable_opt in ["disable_3d", "disable_advanced_gui", "disable_physics_2d", "disable_physics_3d"]:
+        if env[disable_opt]:
+            unsupported_opts.append(disable_opt)
+    if unsupported_opts != []:
         print_error(
-            "Build option `disable_advanced_gui=yes` cannot be used for editor builds, only for export template builds."
+            "The following build option(s) cannot be used for editor builds, but only for export template builds: {}.".format(
+                ", ".join(unsupported_opts)
+            )
         )
         Exit(255)
-    else:
-        env.Append(CPPDEFINES=["ADVANCED_GUI_DISABLED"])
+
+if env["disable_3d"]:
+    env.Append(CPPDEFINES=["_3D_DISABLED"])
+    env["disable_physics_3d"] = True
+    env["disable_xr"] = True
+if env["disable_advanced_gui"]:
+    env.Append(CPPDEFINES=["ADVANCED_GUI_DISABLED"])
+if env["disable_physics_2d"]:
+    env.Append(CPPDEFINES=["PHYSICS_2D_DISABLED"])
+if env["disable_physics_3d"]:
+    env.Append(CPPDEFINES=["PHYSICS_3D_DISABLED"])
 if env["disable_xr"]:
     env.Append(CPPDEFINES=["XR_DISABLED"])
 if env["minizip"]:

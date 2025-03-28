@@ -54,7 +54,9 @@ static inline Array reverse_nested(Array array) {
 }
 
 TEST_CASE("[SceneTree][TextEdit] text entry") {
+#if !defined(PHYSICS_2D_DISABLED) || !defined(PHYSICS_3D_DISABLED)
 	SceneTree::get_singleton()->get_root()->set_physics_object_picking(false);
+#endif // !defined(PHYSICS_2D_DISABLED) || !defined(PHYSICS_3D_DISABLED)
 	TextEdit *text_edit = memnew(TextEdit);
 	SceneTree::get_singleton()->get_root()->add_child(text_edit);
 	text_edit->grab_focus();

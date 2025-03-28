@@ -39,6 +39,10 @@
 #include "scene/resources/world_2d.h"
 #include "servers/navigation_server_2d.h"
 
+#ifndef PHYSICS_2D_DISABLED
+#include "servers/physics_server_2d.h"
+#endif // PHYSICS_3D_DISABLED
+
 Callable TileMapLayer::_navmesh_source_geometry_parsing_callback;
 RID TileMapLayer::_navmesh_source_geometry_parser;
 
@@ -87,18 +91,22 @@ void TileMapLayer::_debug_update(bool p_force_cleanup) {
 		for (KeyValue<Vector2i, CellData> &kv : tile_map_layer_data) {
 			CellData &cell_data = kv.value;
 			quadrants_to_updates.insert(_coords_to_quadrant_coords(cell_data.coords, TILE_MAP_DEBUG_QUADRANT_SIZE));
+#ifndef PHYSICS_2D_DISABLED
 			// Physics quadrants are drawn from their origin.
 			Vector2i physics_quadrant_origin = _coords_to_quadrant_coords(cell_data.coords, physics_quadrant_size) * physics_quadrant_size;
 			quadrants_to_updates.insert(_coords_to_quadrant_coords(physics_quadrant_origin, TILE_MAP_DEBUG_QUADRANT_SIZE));
+#endif // PHYSICS_2D_DISABLED
 		}
 	} else {
 		// Update dirty cells.
 		for (SelfList<CellData> *cell_data_list_element = dirty.cell_list.first(); cell_data_list_element; cell_data_list_element = cell_data_list_element->next()) {
 			CellData &cell_data = *cell_data_list_element->self();
 			quadrants_to_updates.insert(_coords_to_quadrant_coords(cell_data.coords, TILE_MAP_DEBUG_QUADRANT_SIZE));
+#ifndef PHYSICS_2D_DISABLED
 			// Physics quadrants are drawn from their origin.
 			Vector2i physics_quadrant_origin = _coords_to_quadrant_coords(cell_data.coords, physics_quadrant_size) * physics_quadrant_size;
 			quadrants_to_updates.insert(_coords_to_quadrant_coords(physics_quadrant_origin, TILE_MAP_DEBUG_QUADRANT_SIZE));
+#endif // PHYSICS_2D_DISABLED
 		}
 	}
 
@@ -131,8 +139,10 @@ void TileMapLayer::_debug_update(bool p_force_cleanup) {
 		Transform2D xform(0, quadrant_pos);
 		rs->canvas_item_set_transform(ci, xform);
 
+#ifndef PHYSICS_2D_DISABLED
 		// Draw physics.
 		_physics_draw_quadrant_debug(ci, *debug_quadrant.ptr());
+#endif // PHYSICS_2D_DISABLED
 
 		// Draw debug info.
 		for (SelfList<CellData> *cell_data_list_element = debug_quadrant->cells.first(); cell_data_list_element; cell_data_list_element = cell_data_list_element->next()) {
@@ -675,6 +685,7 @@ void TileMapLayer::_rendering_draw_cell_debug(const RID &p_canvas_item, const Ve
 
 /////////////////////////////// Physics //////////////////////////////////////
 
+#ifndef PHYSICS_2D_DISABLED
 void TileMapLayer::_physics_update(bool p_force_cleanup) {
 	PhysicsServer2D *ps = PhysicsServer2D::get_singleton();
 
@@ -1125,6 +1136,7 @@ void TileMapLayer::_physics_draw_quadrant_debug(const RID &p_canvas_item, DebugQ
 	rs->canvas_item_add_mesh(p_canvas_item, r_debug_quadrant.physics_mesh, Transform2D());
 }
 #endif // DEBUG_ENABLED
+#endif // PHYSICS_2D_DISABLED
 
 /////////////////////////////// Navigation //////////////////////////////////////
 
@@ -1870,7 +1882,9 @@ void TileMapLayer::_internal_update(bool p_force_cleanup) {
 
 	// Update all subsystems.
 	_rendering_update(p_force_cleanup);
+#ifndef PHYSICS_2D_DISABLED
 	_physics_update(p_force_cleanup);
+#endif // PHYSICS_2D_DISABLED
 	_navigation_update(p_force_cleanup);
 	_scenes_update(p_force_cleanup);
 #ifdef DEBUG_ENABLED
@@ -1972,7 +1986,9 @@ void TileMapLayer::_notification(int p_what) {
 	}
 
 	_rendering_notification(p_what);
+#ifndef PHYSICS_2D_DISABLED
 	_physics_notification(p_what);
+#endif // PHYSICS_2D_DISABLED
 	_navigation_notification(p_what);
 }
 
@@ -2005,9 +2021,11 @@ void TileMapLayer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_cells_terrain_connect", "cells", "terrain_set", "terrain", "ignore_empty_terrains"), &TileMapLayer::set_cells_terrain_connect, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("set_cells_terrain_path", "path", "terrain_set", "terrain", "ignore_empty_terrains"), &TileMapLayer::set_cells_terrain_path, DEFVAL(true));
 
+#ifndef PHYSICS_2D_DISABLED
 	// --- Physics helpers ---
 	ClassDB::bind_method(D_METHOD("has_body_rid", "body"), &TileMapLayer::has_body_rid);
 	ClassDB::bind_method(D_METHOD("get_coords_for_body_rid", "body"), &TileMapLayer::get_coords_for_body_rid);
+#endif // PHYSICS_2D_DISABLED
 
 	// --- Runtime ---
 	ClassDB::bind_method(D_METHOD("update_internals"), &TileMapLayer::update_internals);
@@ -2872,6 +2890,7 @@ void TileMapLayer::set_cells_terrain_path(TypedArray<Vector2i> p_path, int p_ter
 	}
 }
 
+#ifndef PHYSICS_2D_DISABLED
 bool TileMapLayer::has_body_rid(RID p_physics_body) const {
 	return bodies_coords.has(p_physics_body);
 }
@@ -2881,6 +2900,7 @@ Vector2i TileMapLayer::get_coords_for_body_rid(RID p_physics_body) const {
 	ERR_FAIL_NULL_V(found, Vector2i());
 	return *found;
 }
+#endif // PHYSICS_2D_DISABLED
 
 void TileMapLayer::update_internals() {
 	_internal_update(false);
@@ -3281,14 +3301,17 @@ void TileMapLayer::navmesh_parse_source_geometry(const Ref<NavigationPolygon> &p
 		return;
 	}
 
-	int physics_layers_count = tile_set->get_physics_layers_count();
 	int navigation_layers_count = tile_set->get_navigation_layers_count();
+#ifndef PHYSICS_2D_DISABLED
+	int physics_layers_count = tile_set->get_physics_layers_count();
 	if (physics_layers_count <= 0 && navigation_layers_count <= 0) {
 		return;
 	}
-
-	NavigationPolygon::ParsedGeometryType parsed_geometry_type = p_navigation_mesh->get_parsed_geometry_type();
-	uint32_t parsed_collision_mask = p_navigation_mesh->get_parsed_collision_mask();
+#else
+	if (navigation_layers_count <= 0) {
+		return;
+	}
+#endif // PHYSICS_2D_DISABLED
 
 	const Transform2D tilemap_xform = p_source_geometry_data->root_node_transform * tile_map_layer->get_global_transform();
 
@@ -3337,6 +3360,10 @@ void TileMapLayer::navmesh_parse_source_geometry(const Ref<NavigationPolygon> &p
 			}
 		}
 
+#ifndef PHYSICS_2D_DISABLED
+		NavigationPolygon::ParsedGeometryType parsed_geometry_type = p_navigation_mesh->get_parsed_geometry_type();
+		uint32_t parsed_collision_mask = p_navigation_mesh->get_parsed_collision_mask();
+
 		// Parse obstacles.
 		for (int physics_layer = 0; physics_layer < physics_layers_count; physics_layer++) {
 			if ((parsed_geometry_type == NavigationPolygon::PARSED_GEOMETRY_STATIC_COLLIDERS || parsed_geometry_type == NavigationPolygon::PARSED_GEOMETRY_BOTH) &&
@@ -3365,6 +3392,7 @@ void TileMapLayer::navmesh_parse_source_geometry(const Ref<NavigationPolygon> &p
 				}
 			}
 		}
+#endif // PHYSICS_2D_DISABLED
 	}
 }
 
