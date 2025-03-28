@@ -124,17 +124,18 @@
 			<return type="bool" />
 			<description>
 				Tells whether this importer can be run in parallel on threads, or, on the contrary, it's only safe for the editor to call it from the main thread, for one file at a time.
-				If this method is not overridden, it will return [code]false[/code] by default.
 				If this importer's implementation is thread-safe and can be run in parallel, override this with [code]true[/code] to optimize for concurrency.
+				If not overridden, returns [code]false[/code].
 			</description>
 		</method>
 		<method name="_get_format_version" qualifiers="virtual const">
 			<return type="int" />
 			<description>
 				Gets the format version of this importer. Increment this version when making incompatible changes to the format of the imported resources.
+				If not overridden, the format version is [code]0[/code].
 			</description>
 		</method>
-		<method name="_get_import_options" qualifiers="virtual const">
+		<method name="_get_import_options" qualifiers="virtual required const">
 			<return type="Dictionary[]" />
 			<param index="0" name="path" type="String" />
 			<param index="1" name="preset_index" type="int" />
@@ -148,7 +149,7 @@
 				Gets the order of this importer to be run when importing resources. Importers with [i]lower[/i] import orders will be called first, and higher values will be called later. Use this to ensure the importer runs after the dependencies are already imported. The default import order is [code]0[/code] unless overridden by a specific importer. See [enum ResourceImporter.ImportOrder] for some predefined values.
 			</description>
 		</method>
-		<method name="_get_importer_name" qualifiers="virtual const">
+		<method name="_get_importer_name" qualifiers="virtual required const">
 			<return type="String" />
 			<description>
 				Gets the unique name of the importer.
@@ -189,9 +190,10 @@
 			<return type="int" />
 			<description>
 				Gets the number of initial presets defined by the plugin. Use [method _get_import_options] to get the default options for the preset and [method _get_preset_name] to get the name of the preset.
+				By default, there are no presets.
 			</description>
 		</method>
-		<method name="_get_preset_name" qualifiers="virtual const">
+		<method name="_get_preset_name" qualifiers="virtual required const">
 			<return type="String" />
 			<param index="0" name="preset_index" type="int" />
 			<description>
@@ -204,31 +206,31 @@
 				Gets the priority of this plugin for the recognized extension. Higher priority plugins will be preferred. The default priority is [code]1.0[/code].
 			</description>
 		</method>
-		<method name="_get_recognized_extensions" qualifiers="virtual const">
+		<method name="_get_recognized_extensions" qualifiers="virtual required const">
 			<return type="PackedStringArray" />
 			<description>
 				Gets the list of file extensions to associate with this loader (case-insensitive). e.g. [code]["obj"][/code].
 			</description>
 		</method>
-		<method name="_get_resource_type" qualifiers="virtual const">
+		<method name="_get_resource_type" qualifiers="virtual required const">
 			<return type="String" />
 			<description>
 				Gets the Godot resource type associated with this loader. e.g. [code]"Mesh"[/code] or [code]"Animation"[/code].
 			</description>
 		</method>
-		<method name="_get_save_extension" qualifiers="virtual const">
+		<method name="_get_save_extension" qualifiers="virtual required const">
 			<return type="String" />
 			<description>
 				Gets the extension used to save this resource in the [code].godot/imported[/code] directory (see [member ProjectSettings.application/config/use_hidden_project_data_directory]).
 			</description>
 		</method>
-		<method name="_get_visible_name" qualifiers="virtual const">
+		<method name="_get_visible_name" qualifiers="virtual required const">
 			<return type="String" />
 			<description>
 				Gets the name to display in the import window. You should choose this name as a continuation to "Import as", e.g. "Import as Special Mesh".
 			</description>
 		</method>
-		<method name="_import" qualifiers="virtual const">
+		<method name="_import" qualifiers="virtual required const">
 			<return type="int" enum="Error" />
 			<param index="0" name="source_file" type="String" />
 			<param index="1" name="save_path" type="String" />
