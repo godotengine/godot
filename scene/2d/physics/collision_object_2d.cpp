@@ -390,6 +390,12 @@ real_t CollisionObject2D::get_shape_owner_one_way_collision_margin(uint32_t p_ow
 	return shapes[p_owner].one_way_collision_margin;
 }
 
+Vector2 CollisionObject2D::get_shape_owner_one_way_collision_direction(uint32_t p_owner) const {
+	ERR_FAIL_COND_V(!shapes.has(p_owner), Vector2());
+
+	return shapes[p_owner].one_way_collision_direction;
+}
+
 void CollisionObject2D::get_shape_owners(List<uint32_t> *r_owners) {
 	for (const KeyValue<uint32_t, ShapeData> &E : shapes) {
 		r_owners->push_back(E.key);
@@ -633,6 +639,8 @@ void CollisionObject2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_shape_owner_one_way_collision_enabled", "owner_id"), &CollisionObject2D::is_shape_owner_one_way_collision_enabled);
 	ClassDB::bind_method(D_METHOD("shape_owner_set_one_way_collision_margin", "owner_id", "margin"), &CollisionObject2D::shape_owner_set_one_way_collision_margin);
 	ClassDB::bind_method(D_METHOD("get_shape_owner_one_way_collision_margin", "owner_id"), &CollisionObject2D::get_shape_owner_one_way_collision_margin);
+	ClassDB::bind_method(D_METHOD("get_shape_owner_one_way_collision_direction", "owner_id"), &CollisionObject2D::get_shape_owner_one_way_collision_direction);
+	ClassDB::bind_method(D_METHOD("shape_owner_set_one_way_collision_direction", "owner_id"), &CollisionObject2D::shape_owner_set_one_way_collision_direction);
 	ClassDB::bind_method(D_METHOD("shape_owner_add_shape", "owner_id", "shape"), &CollisionObject2D::shape_owner_add_shape);
 	ClassDB::bind_method(D_METHOD("shape_owner_get_shape_count", "owner_id"), &CollisionObject2D::shape_owner_get_shape_count);
 	ClassDB::bind_method(D_METHOD("shape_owner_get_shape", "owner_id", "shape_id"), &CollisionObject2D::shape_owner_get_shape);
