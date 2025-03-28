@@ -2382,6 +2382,12 @@
 			Controls the maximum number of physics steps that can be simulated each rendered frame. The default value is tuned to avoid "spiral of death" situations where expensive physics simulations trigger more expensive simulations indefinitely. However, the game will appear to slow down if the rendering FPS is less than [code]1 / max_physics_steps_per_frame[/code] of [member physics/common/physics_ticks_per_second]. This occurs even if [code]delta[/code] is consistently used in physics calculations. To avoid this, increase [member physics/common/max_physics_steps_per_frame] if you have increased [member physics/common/physics_ticks_per_second] significantly above its default value.
 			[b]Note:[/b] This property is only read when the project starts. To change the maximum number of simulated physics steps per frame at runtime, set [member Engine.max_physics_steps_per_frame] instead.
 		</member>
+		<member name="physics/common/object_picking_2d_mask" type="int" setter="" getter="" default="4294967295">
+			Sets the default value for [member Viewport.input_cull_mask_2d] on the root viewport.
+		</member>
+		<member name="physics/common/object_picking_3d_mask" type="int" setter="" getter="" default="4294967295">
+			Sets the default value for [member Viewport.input_cull_mask_3d] on the root viewport.
+		</member>
 		<member name="physics/common/physics_interpolation" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], the renderer will interpolate the transforms of objects (both physics and non-physics) between the last two transforms, so that smooth motion is seen even when physics ticks do not coincide with rendered frames. See also [method Node.reset_physics_interpolation].
 			[b]Note:[/b] Although this is a global setting, finer control of individual branches of the [SceneTree] is possible using [member Node.physics_interpolation_mode].
