@@ -457,8 +457,11 @@ Container *InspectorDock::get_addon_area() {
 
 void InspectorDock::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_TRANSLATION_CHANGED: {
+			update(current);
+			[[fallthrough]];
+		}
 		case NOTIFICATION_THEME_CHANGED:
-		case NOTIFICATION_TRANSLATION_CHANGED:
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED: {
 			resource_new_button->set_button_icon(get_editor_theme_icon(SNAME("New")));
 			resource_load_button->set_button_icon(get_editor_theme_icon(SNAME("Load")));
