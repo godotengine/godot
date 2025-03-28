@@ -933,15 +933,16 @@ bool EditorFileSystem::_update_scan_actions() {
 				int idx = ia.dir->find_file_index(ia.file);
 				ERR_CONTINUE(idx == -1);
 
-				String class_name = ia.dir->files[idx]->class_info.name;
+				const String file_path = ia.dir->get_file_path(idx);
+				const String class_name = ia.dir->files[idx]->class_info.name;
 				if (ClassDB::is_parent_class(ia.dir->files[idx]->type, SNAME("Script"))) {
-					_queue_update_script_class(ia.dir->get_file_path(idx), ScriptClassInfoUpdate());
+					_queue_update_script_class(file_path, ScriptClassInfoUpdate());
 				}
 				if (ia.dir->files[idx]->type == SNAME("PackedScene")) {
-					_queue_update_scene_groups(ia.dir->get_file_path(idx));
+					_queue_update_scene_groups(file_path);
 				}
 
-				_delete_internal_files(ia.dir->files[idx]->file);
+				_delete_internal_files(file_path);
 				memdelete(ia.dir->files[idx]);
 				ia.dir->files.remove_at(idx);
 
