@@ -310,8 +310,7 @@ void Window::set_title(const String &p_title) {
 
 #ifdef DEBUG_ENABLED
 	if (EngineDebugger::get_singleton() && window_id == DisplayServer::MAIN_WINDOW_ID && !Engine::get_singleton()->is_project_manager_hint()) {
-		Array arr;
-		arr.push_back(tr_title);
+		Array arr = { tr_title };
 		EngineDebugger::get_singleton()->send_message("window:title", arr);
 	}
 #endif

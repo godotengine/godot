@@ -580,6 +580,126 @@ Dictionary OS_Unix::get_memory_info() const {
 	return meminfo;
 }
 
+#ifndef __GLIBC__
+void OS_Unix::_load_iconv() {
+#if defined(MACOS_ENABLED) || defined(IOS_ENABLED)
+	String iconv_lib_aliases[] = { "/usr/lib/libiconv.2.dylib" };
+	String iconv_func_aliases[] = { "iconv" };
+	String charset_lib_aliases[] = { "/usr/lib/libcharset.1.dylib" };
+#else
+	String iconv_lib_aliases[] = { "", "libiconv.2.so", "libiconv.so" };
+	String iconv_func_aliases[] = { "libiconv", "iconv", "bsd_iconv", "rpl_iconv" };
+	String charset_lib_aliases[] = { "", "libcharset.1.so", "libcharset.so" };
+#endif
+
+	for (size_t i = 0; i < sizeof(iconv_lib_aliases) / sizeof(iconv_lib_aliases[0]); i++) {
+		void *iconv_lib = iconv_lib_aliases[i].is_empty() ? RTLD_NEXT : dlopen(iconv_lib_aliases[i].utf8().get_data(), RTLD_NOW);
+		if (iconv_lib) {
+			for (size_t j = 0; j < sizeof(iconv_func_aliases) / sizeof(iconv_func_aliases[0]); j++) {
+				gd_iconv_open = (PIConvOpen)dlsym(iconv_lib, (iconv_func_aliases[j] + "_open").utf8().get_data());
+				gd_iconv = (PIConv)dlsym(iconv_lib, (iconv_func_aliases[j]).utf8().get_data());
+				gd_iconv_close = (PIConvClose)dlsym(iconv_lib, (iconv_func_aliases[j] + "_close").utf8().get_data());
+				if (gd_iconv_open && gd_iconv && gd_iconv_close) {
+					break;
+				}
+			}
+			if (gd_iconv_open && gd_iconv && gd_iconv_close) {
+				break;
+			}
+			if (!iconv_lib_aliases[i].is_empty()) {
+				dlclose(iconv_lib);
+			}
+		}
+	}
+
+	for (size_t i = 0; i < sizeof(charset_lib_aliases) / sizeof(charset_lib_aliases[0]); i++) {
+		void *cs_lib = charset_lib_aliases[i].is_empty() ? RTLD_NEXT : dlopen(charset_lib_aliases[i].utf8().get_data(), RTLD_NOW);
+		if (cs_lib) {
+			gd_locale_charset = (PIConvLocaleCharset)dlsym(cs_lib, "locale_charset");
+			if (gd_locale_charset) {
+				break;
+			}
+			if (!charset_lib_aliases[i].is_empty()) {
+				dlclose(cs_lib);
+			}
+		}
+	}
+	_iconv_ok = gd_iconv_open && gd_iconv && gd_iconv_close && gd_locale_charset;
+}
+#endif
+
+String OS_Unix::multibyte_to_string(const String &p_encoding, const PackedByteArray &p_array) const {
+	ERR_FAIL_COND_V_MSG(!_iconv_ok, String(), "Conversion failed: Unable to load libiconv");
+
+	LocalVector<char> chars;
+#ifdef __GLIBC__
+	gd_iconv_t ctx = gd_iconv_open("UTF-8", p_encoding.is_empty() ? nl_langinfo(CODESET) : p_encoding.utf8().get_data());
+#else
+	gd_iconv_t ctx = gd_iconv_open("UTF-8", p_encoding.is_empty() ? gd_locale_charset() : p_encoding.utf8().get_data());
+#endif
+	ERR_FAIL_COND_V_MSG(ctx == (gd_iconv_t)(-1), String(), "Conversion failed: Unknown encoding");
+
+	char *in_ptr = (char *)p_array.ptr();
+	size_t in_size = p_array.size();
+
+	chars.resize(in_size);
+	char *out_ptr = (char *)chars.ptr();
+	size_t out_size = chars.size();
+
+	while (gd_iconv(ctx, &in_ptr, &in_size, &out_ptr, &out_size) == (size_t)-1) {
+		if (errno != E2BIG) {
+			gd_iconv_close(ctx);
+			ERR_FAIL_V_MSG(String(), vformat("Conversion failed: %d - %s", errno, strerror(errno)));
+		}
+		int64_t rate = (chars.size()) / (p_array.size() - in_size);
+		size_t oldpos = chars.size() - out_size;
+		chars.resize(chars.size() + in_size * rate);
+		out_ptr = (char *)chars.ptr() + oldpos;
+		out_size = chars.size() - oldpos;
+	}
+	chars.resize(chars.size() - out_size);
+	gd_iconv_close(ctx);
+
+	return String::utf8((const char *)chars.ptr(), chars.size());
+}
+
+PackedByteArray OS_Unix::string_to_multibyte(const String &p_encoding, const String &p_string) const {
+	ERR_FAIL_COND_V_MSG(!_iconv_ok, PackedByteArray(), "Conversion failed: Unable to load libiconv");
+
+	CharString charstr = p_string.utf8();
+
+	PackedByteArray ret;
+#ifdef __GLIBC__
+	gd_iconv_t ctx = gd_iconv_open(p_encoding.is_empty() ? nl_langinfo(CODESET) : p_encoding.utf8().get_data(), "UTF-8");
+#else
+	gd_iconv_t ctx = gd_iconv_open(p_encoding.is_empty() ? gd_locale_charset() : p_encoding.utf8().get_data(), "UTF-8");
+#endif
+	ERR_FAIL_COND_V_MSG(ctx == (gd_iconv_t)(-1), PackedByteArray(), "Conversion failed: Unknown encoding");
+
+	char *in_ptr = (char *)charstr.ptr();
+	size_t in_size = charstr.size();
+
+	ret.resize(in_size);
+	char *out_ptr = (char *)ret.ptrw();
+	size_t out_size = ret.size();
+
+	while (gd_iconv(ctx, &in_ptr, &in_size, &out_ptr, &out_size) == (size_t)-1) {
+		if (errno != E2BIG) {
+			gd_iconv_close(ctx);
+			ERR_FAIL_V_MSG(PackedByteArray(), vformat("Conversion failed: %d - %s", errno, strerror(errno)));
+		}
+		int64_t rate = (ret.size()) / (charstr.size() - in_size);
+		size_t oldpos = ret.size() - out_size;
+		ret.resize(ret.size() + in_size * rate);
+		out_ptr = (char *)ret.ptrw() + oldpos;
+		out_size = ret.size() - oldpos;
+	}
+	ret.resize(ret.size() - out_size);
+	gd_iconv_close(ctx);
+
+	return ret;
+}
+
 Dictionary OS_Unix::execute_with_pipe(const String &p_path, const List<String> &p_arguments, bool p_blocking) {
 #define CLEAN_PIPES           \
 	if (pipe_in[0] >= 0) {    \
@@ -1082,6 +1202,10 @@ void UnixTerminalLogger::log_error(const char *p_function, const char *p_file, i
 UnixTerminalLogger::~UnixTerminalLogger() {}
 
 OS_Unix::OS_Unix() {
+#ifndef __GLIBC__
+	_load_iconv();
+#endif
+
 	Vector<Logger *> loggers;
 	loggers.push_back(memnew(UnixTerminalLogger));
 	_set_logger(memnew(CompositeLogger(loggers)));

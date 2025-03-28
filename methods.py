@@ -428,9 +428,9 @@ def use_windows_spawn_fix(self, platform=None):
 
 
 def no_verbose(env):
-    from misc.utility.color import Ansi
+    from misc.utility.color import Ansi, is_stdout_color
 
-    colors = [Ansi.BLUE, Ansi.BOLD, Ansi.REGULAR, Ansi.RESET]
+    colors = [Ansi.BLUE, Ansi.BOLD, Ansi.REGULAR, Ansi.RESET] if is_stdout_color() else ["", "", "", ""]
 
     # There is a space before "..." to ensure that source file names can be
     # Ctrl + clicked in the VS Code terminal.

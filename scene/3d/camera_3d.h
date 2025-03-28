@@ -94,8 +94,10 @@ private:
 	DopplerTracking doppler_tracking = DOPPLER_TRACKING_DISABLED;
 	Ref<VelocityTracker3D> velocity_tracker;
 
+#ifndef PHYSICS_3D_DISABLED
 	RID pyramid_shape;
 	Vector<Vector3> pyramid_shape_points;
+#endif // PHYSICS_3D_DISABLED
 
 	///////////////////////////////////////////////////////
 	// INTERPOLATION FUNCTIONS
@@ -217,7 +219,9 @@ public:
 
 	Vector3 get_doppler_tracked_velocity() const;
 
+#ifndef PHYSICS_3D_DISABLED
 	RID get_pyramid_shape_rid();
+#endif // PHYSICS_3D_DISABLED
 
 	Camera3D();
 	~Camera3D();

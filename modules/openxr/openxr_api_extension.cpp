@@ -52,6 +52,7 @@ void OpenXRAPIExtension::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_initialized"), &OpenXRAPIExtension::is_initialized);
 	ClassDB::bind_method(D_METHOD("is_running"), &OpenXRAPIExtension::is_running);
 
+	ClassDB::bind_method(D_METHOD("set_custom_play_space", "space"), &OpenXRAPIExtension::set_custom_play_space);
 	ClassDB::bind_method(D_METHOD("get_play_space"), &OpenXRAPIExtension::get_play_space);
 	ClassDB::bind_method(D_METHOD("get_predicted_display_time"), &OpenXRAPIExtension::get_predicted_display_time);
 	ClassDB::bind_method(D_METHOD("get_next_frame_time"), &OpenXRAPIExtension::get_next_frame_time);
@@ -67,6 +68,9 @@ void OpenXRAPIExtension::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("register_projection_views_extension", "extension"), &OpenXRAPIExtension::register_projection_views_extension);
 	ClassDB::bind_method(D_METHOD("unregister_projection_views_extension", "extension"), &OpenXRAPIExtension::unregister_projection_views_extension);
+
+	ClassDB::bind_method(D_METHOD("register_frame_info_extension", "extension"), &OpenXRAPIExtension::register_frame_info_extension);
+	ClassDB::bind_method(D_METHOD("unregister_frame_info_extension", "extension"), &OpenXRAPIExtension::unregister_frame_info_extension);
 
 	ClassDB::bind_method(D_METHOD("get_render_state_z_near"), &OpenXRAPIExtension::get_render_state_z_near);
 	ClassDB::bind_method(D_METHOD("get_render_state_z_far"), &OpenXRAPIExtension::get_render_state_z_far);
@@ -181,6 +185,11 @@ bool OpenXRAPIExtension::is_running() {
 	return OpenXRAPI::get_singleton()->is_running();
 }
 
+void OpenXRAPIExtension::set_custom_play_space(GDExtensionConstPtr<const void> p_custom_space) {
+	ERR_FAIL_NULL(OpenXRAPI::get_singleton());
+	OpenXRAPI::get_singleton()->set_custom_play_space(*(XrSpace *)p_custom_space.data);
+}
+
 uint64_t OpenXRAPIExtension::get_play_space() {
 	ERR_FAIL_NULL_V(OpenXRAPI::get_singleton(), 0);
 	return (uint64_t)OpenXRAPI::get_singleton()->get_play_space();
@@ -239,6 +248,16 @@ void OpenXRAPIExtension::register_projection_views_extension(OpenXRExtensionWrap
 void OpenXRAPIExtension::unregister_projection_views_extension(OpenXRExtensionWrapper *p_extension) {
 	ERR_FAIL_NULL(OpenXRAPI::get_singleton());
 	OpenXRAPI::get_singleton()->unregister_projection_views_extension(p_extension);
+}
+
+void OpenXRAPIExtension::register_frame_info_extension(OpenXRExtensionWrapper *p_extension) {
+	ERR_FAIL_NULL(OpenXRAPI::get_singleton());
+	OpenXRAPI::get_singleton()->register_frame_info_extension(p_extension);
+}
+
+void OpenXRAPIExtension::unregister_frame_info_extension(OpenXRExtensionWrapper *p_extension) {
+	ERR_FAIL_NULL(OpenXRAPI::get_singleton());
+	OpenXRAPI::get_singleton()->unregister_frame_info_extension(p_extension);
 }
 
 double OpenXRAPIExtension::get_render_state_z_near() {
