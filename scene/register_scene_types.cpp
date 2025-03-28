@@ -251,6 +251,7 @@
 #include "scene/3d/multimesh_instance_3d.h"
 #include "scene/3d/navigation_agent_3d.h"
 #include "scene/3d/navigation_link_3d.h"
+#include "scene/3d/navigation_mesh_area_3d.h"
 #include "scene/3d/navigation_obstacle_3d.h"
 #include "scene/3d/navigation_region_3d.h"
 #include "scene/3d/node_3d.h"
@@ -671,6 +672,10 @@ void register_scene_types() {
 	GDREGISTER_CLASS(NavigationAgent3D);
 	GDREGISTER_CLASS(NavigationObstacle3D);
 	GDREGISTER_CLASS(NavigationLink3D);
+	GDREGISTER_VIRTUAL_CLASS(NavigationMeshArea3D);
+	GDREGISTER_CLASS(NavigationMeshAreaBox3D);
+	GDREGISTER_CLASS(NavigationMeshAreaCylinder3D);
+	GDREGISTER_CLASS(NavigationMeshAreaPolygon3D);
 
 	OS::get_singleton()->yield(); // may take time to init
 #endif // _3D_DISABLED
@@ -1065,6 +1070,7 @@ void register_scene_types() {
 	MultiMeshInstance3D::navmesh_parse_init();
 	NavigationObstacle3D::navmesh_parse_init();
 	StaticBody3D::navmesh_parse_init();
+	NavigationMeshArea3D::navmesh_parse_init();
 #endif
 
 	OS::get_singleton()->yield(); // may take time to init

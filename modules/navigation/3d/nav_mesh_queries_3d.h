@@ -44,6 +44,8 @@ class NavMap3D;
 struct NavMapIteration3D;
 
 class NavMeshQueries3D {
+	static float _get_polygon_travel_cost(const nav_3d::Polygon *p_polygon, uint32_t p_navigation_layers, const LocalVector<float> &p_cost_map);
+
 public:
 	struct PathQuerySlot {
 		LocalVector<Nav3D::NavigationPoly> path_corridor;
@@ -74,6 +76,7 @@ public:
 		bool include_regions = false;
 		LocalVector<RID> excluded_regions;
 		LocalVector<RID> included_regions;
+		LocalVector<float> navigation_layers_cost_map;
 
 		// Path building.
 		Vector3 begin_position;
