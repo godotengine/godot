@@ -143,6 +143,8 @@ struct [[nodiscard]] Rect2 {
 		return size.x > 0.0f && size.y > 0.0f;
 	}
 
+	Rect2 intersection_transformed(const Transform2D &p_xform, const Rect2 &p_rect) const;
+
 	// Returns the intersection between two Rect2s or an empty Rect2 if there is no intersection.
 	inline Rect2 intersection(const Rect2 &p_rect) const {
 		Rect2 new_rect = p_rect;
@@ -369,6 +371,25 @@ struct [[nodiscard]] Rect2 {
 	constexpr Rect2(const Point2 &p_pos, const Size2 &p_size) :
 			position(p_pos),
 			size(p_size) {
+	}
+	Rect2(const Vector2 *p_points, int p_point_count) {
+		position = p_points[0];
+		Vector2 end = position;
+		for (int i = 0; i < p_point_count; i++) {
+			const Vector2 &p = p_points[i];
+
+			if (p.x < position.x) {
+				position.x = p.x;
+			} else if (p.x > end.x) {
+				end.x = p.x;
+			}
+			if (p.y < position.y) {
+				position.y = p.y;
+			} else if (p.y > end.y) {
+				end.y = p.y;
+			}
+		}
+		size = end - position;
 	}
 };
 

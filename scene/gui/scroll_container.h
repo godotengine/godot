@@ -72,6 +72,9 @@ private:
 	int scroll_border = 20;
 	int scroll_speed = 12;
 
+	bool following = false;
+	Vector2 scroll_diff;
+
 	struct ThemeCache {
 		Ref<StyleBox> panel_style;
 		Ref<StyleBox> focus_style;
@@ -85,6 +88,8 @@ private:
 	bool draw_focus_border = false;
 	bool focus_border_is_drawn = false;
 	bool child_has_focus();
+
+	Rect2 _get_local_visible_rect() const;
 
 protected:
 	Size2 get_minimum_size() const override;
