@@ -58,7 +58,7 @@ import gles3_builders
 import glsl_builders
 import methods
 import scu_builders
-from misc.utility.color import STDERR_COLOR, print_error, print_info, print_warning
+from misc.utility.color import is_stderr_color, print_error, print_info, print_warning
 from platform_methods import architecture_aliases, architectures, compatibility_platform_aliases
 
 if ARGUMENTS.get("target", "editor") == "editor":
@@ -704,9 +704,9 @@ if env["arch"] == "x86_32":
 
 # Explicitly specify colored output.
 if methods.using_gcc(env):
-    env.AppendUnique(CCFLAGS=["-fdiagnostics-color" if STDERR_COLOR else "-fno-diagnostics-color"])
+    env.AppendUnique(CCFLAGS=["-fdiagnostics-color" if is_stderr_color() else "-fno-diagnostics-color"])
 elif methods.using_clang(env) or methods.using_emcc(env):
-    env.AppendUnique(CCFLAGS=["-fcolor-diagnostics" if STDERR_COLOR else "-fno-color-diagnostics"])
+    env.AppendUnique(CCFLAGS=["-fcolor-diagnostics" if is_stderr_color() else "-fno-color-diagnostics"])
     if sys.platform == "win32":
         env.AppendUnique(CCFLAGS=["-fansi-escape-codes"])
 
