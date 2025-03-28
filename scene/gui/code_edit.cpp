@@ -247,7 +247,18 @@ void CodeEdit::_notification(int p_what) {
 						}
 
 						if (code_completion_options[i].deprecated) {
-							draw_line(Point2(title_pos.x, title_pos.y + row_height / 2), Point2(title_pos.x + tl->get_line_width(), title_pos.y + row_height / 2), code_completion_options[l].font_color, Math::round(theme_cache.font_size / 8.0));
+							// draw_line(Point2(title_pos.x, title_pos.y + row_height / 2), Point2(title_pos.x + tl->get_line_width(), title_pos.y + row_height / 2), code_completion_options[l].font_color, Math::round(theme_cache.font_size / 8.0));
+
+							RID rid = tl->get_rid();
+							Size2 l_size = TS->shaped_text_get_size(rid);
+							double l_ascent = TS->shaped_text_get_ascent(rid);
+							float st_width = MAX(1.0, TS->shaped_text_get_underline_thickness(rid) * get_theme_default_base_scale());
+
+							draw_line(
+									Vector2(title_pos.x, title_pos.y + l_ascent / 2 + st_width / 2),
+									Vector2(title_pos.x + tl->get_line_width(), title_pos.y + l_ascent / 2 + st_width / 2),
+									code_completion_options[l].font_color,
+									st_width);
 						}
 
 						Point2 match_pos = Point2(code_completion_rect.position.x + icon_area_size.x + theme_cache.code_completion_icon_separation, code_completion_rect.position.y + i * row_height);
