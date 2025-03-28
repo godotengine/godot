@@ -30,10 +30,16 @@
 
 #pragma once
 
+#include "core/object/ref_counted.h"
+#include "core/templates/vector.h"
+#include "core/variant/callable.h"
+#include "core/variant/variant.h"
 #include "editor/plugins/editor_plugin.h"
 #include "editor/plugins/theme_editor_preview.h"
+#include "scene/gui/box_container.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/margin_container.h"
+#include "scene/gui/spin_box.h"
 #include "scene/gui/tree.h"
 #include "scene/resources/theme.h"
 
@@ -82,7 +88,9 @@ class ThemeItemImportTree : public VBoxContainer {
 
 	Tree *import_items_tree = nullptr;
 	List<TreeItem *> tree_color_items;
+	List<TreeItem *> tree_color_array_items;
 	List<TreeItem *> tree_constant_items;
+	List<TreeItem *> tree_constant_array_items;
 	List<TreeItem *> tree_font_items;
 	List<TreeItem *> tree_font_size_items;
 	List<TreeItem *> tree_icon_items;
@@ -102,12 +110,26 @@ class ThemeItemImportTree : public VBoxContainer {
 	Button *deselect_all_colors_button = nullptr;
 	Label *total_selected_colors_label = nullptr;
 
+	TextureRect *select_color_array_icon = nullptr;
+	Label *select_color_array_label = nullptr;
+	Button *select_all_color_array_button = nullptr;
+	Button *select_full_color_array_button = nullptr;
+	Button *deselect_all_color_array_button = nullptr;
+	Label *total_selected_color_array_label = nullptr;
+
 	TextureRect *select_constants_icon = nullptr;
 	Label *select_constants_label = nullptr;
 	Button *select_all_constants_button = nullptr;
 	Button *select_full_constants_button = nullptr;
 	Button *deselect_all_constants_button = nullptr;
 	Label *total_selected_constants_label = nullptr;
+
+	TextureRect *select_constant_array_icon = nullptr;
+	Label *select_constant_array_label = nullptr;
+	Button *select_all_constant_array_button = nullptr;
+	Button *select_full_constant_array_button = nullptr;
+	Button *deselect_all_constant_array_button = nullptr;
+	Label *total_selected_constant_array_label = nullptr;
 
 	TextureRect *select_fonts_icon = nullptr;
 	Label *select_fonts_label = nullptr;
@@ -205,7 +227,9 @@ class ThemeItemEditorDialog : public AcceptDialog {
 	String edited_item_type;
 
 	Button *edit_items_add_color = nullptr;
+	Button *edit_items_add_color_array = nullptr;
 	Button *edit_items_add_constant = nullptr;
+	Button *edit_items_add_constant_array = nullptr;
 	Button *edit_items_add_font = nullptr;
 	Button *edit_items_add_font_size = nullptr;
 	Button *edit_items_add_icon = nullptr;
@@ -349,7 +373,9 @@ class ThemeTypeEditor : public MarginContainer {
 
 	TabContainer *data_type_tabs = nullptr;
 	VBoxContainer *color_items_list = nullptr;
+	VBoxContainer *color_array_items_list = nullptr;
 	VBoxContainer *constant_items_list = nullptr;
+	VBoxContainer *constant_array_items_list = nullptr;
 	VBoxContainer *font_items_list = nullptr;
 	VBoxContainer *font_size_items_list = nullptr;
 	VBoxContainer *icon_items_list = nullptr;
@@ -393,7 +419,9 @@ class ThemeTypeEditor : public MarginContainer {
 	void _item_rename_canceled(int p_data_type, String p_item_name, Control *p_control);
 
 	void _color_item_changed(Color p_value, String p_item_name);
+	void _color_array_item_changed(PackedColorArray p_value, String p_item_name);
 	void _constant_item_changed(float p_value, String p_item_name);
+	void _constant_array_item_changed(PackedInt32Array p_value, String p_item_name);
 	void _font_size_item_changed(float p_value, String p_item_name);
 	void _edit_resource_item(Ref<Resource> p_resource, bool p_edit);
 	void _font_item_changed(Ref<Font> p_value, String p_item_name);
@@ -466,6 +494,61 @@ public:
 	void drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
 
 	ThemeEditor();
+};
+
+template <typename TArrayElement, typename TElementEditor>
+class EditorMiniArrayInspector : public VBoxContainer {
+	struct ElementEditorData {
+		HBoxContainer *container;
+		TElementEditor *editor;
+		Button *remove_button;
+	};
+
+	Button *add_button;
+	Callable value_changed;
+	Vector<TArrayElement> elements;
+	Vector<ElementEditorData> element_editors;
+
+	void _recreate_editors();
+	void _append_editor();
+	void _element_added();
+	void _element_removed(int p_index);
+
+	virtual TElementEditor *_create_editor() = 0;
+	virtual void _bind_changed_callback(TElementEditor *p_editor, int p_index) = 0;
+	virtual void _set_value(TElementEditor *p_editor, TArrayElement p_value) = 0;
+	virtual void _set_disabled(TElementEditor *p_editor, bool p_disabled) = 0;
+
+protected:
+	void _element_edited(TArrayElement p_value, int p_index);
+
+public:
+	void set_value(const Vector<TArrayElement> &p_elements);
+	void set_disabled(bool p_disabled);
+	Vector<TArrayElement> get_value() const;
+	void set_value_changed(Callable p_callback);
+
+	EditorMiniArrayInspector();
+};
+
+class EditorMiniPackedColorArrayInspector : public EditorMiniArrayInspector<Color, ColorPickerButton> {
+	GDCLASS(EditorMiniPackedColorArrayInspector, VBoxContainer)
+
+	ColorPickerButton *_create_editor() override;
+	void _bind_changed_callback(ColorPickerButton *p_editor, int p_index) override;
+	void _set_value(ColorPickerButton *p_editor, Color p_value) override;
+	void _set_disabled(ColorPickerButton *p_editor, bool p_disabled) override;
+	void _element_edited_color(Color p_value, int p_index);
+};
+
+class EditorMiniPackedInt32ArrayInspector : public EditorMiniArrayInspector<int, SpinBox> {
+	GDCLASS(EditorMiniPackedInt32ArrayInspector, VBoxContainer)
+
+	SpinBox *_create_editor() override;
+	void _bind_changed_callback(SpinBox *p_editor, int p_index) override;
+	void _set_value(SpinBox *p_editor, int p_value) override;
+	void _set_disabled(SpinBox *p_editor, bool p_disabled) override;
+	void _element_edited_spinbox(float p_value, int p_index);
 };
 
 class ThemeEditorPlugin : public EditorPlugin {

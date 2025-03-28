@@ -2322,6 +2322,30 @@ Color Window::get_theme_color(const StringName &p_name, const StringName &p_them
 	return color;
 }
 
+PackedColorArray Window::get_theme_color_array(const StringName &p_name, const StringName &p_theme_type) const {
+	ERR_READ_THREAD_GUARD_V(PackedColorArray());
+	if (!initialized) {
+		WARN_PRINT_ONCE(vformat("Attempting to access theme items too early in %s; prefer NOTIFICATION_POSTINITIALIZE and NOTIFICATION_THEME_CHANGED", get_description()));
+	}
+
+	if (p_theme_type == StringName() || p_theme_type == get_class_name() || p_theme_type == theme_type_variation) {
+		const PackedColorArray *color_array = theme_color_array_override.getptr(p_name);
+		if (color_array) {
+			return *color_array;
+		}
+	}
+
+	if (theme_color_array_cache.has(p_theme_type) && theme_color_array_cache[p_theme_type].has(p_name)) {
+		return theme_color_array_cache[p_theme_type][p_name];
+	}
+
+	Vector<StringName> theme_types;
+	theme_owner->get_theme_type_dependencies(this, p_theme_type, theme_types);
+	PackedColorArray color_array = theme_owner->get_theme_item_in_types(Theme::DATA_TYPE_COLOR_ARRAY, p_name, theme_types);
+	theme_color_array_cache[p_theme_type][p_name] = color_array;
+	return color_array;
+}
+
 int Window::get_theme_constant(const StringName &p_name, const StringName &p_theme_type) const {
 	ERR_READ_THREAD_GUARD_V(0);
 	if (!initialized) {
@@ -2346,12 +2370,40 @@ int Window::get_theme_constant(const StringName &p_name, const StringName &p_the
 	return constant;
 }
 
+PackedInt32Array Window::get_theme_constant_array(const StringName &p_name, const StringName &p_theme_type) const {
+	ERR_READ_THREAD_GUARD_V(PackedInt32Array());
+	if (!initialized) {
+		WARN_PRINT_ONCE(vformat("Attempting to access theme items too early in %s; prefer NOTIFICATION_POSTINITIALIZE and NOTIFICATION_THEME_CHANGED", get_description()));
+	}
+
+	if (p_theme_type == StringName() || p_theme_type == get_class_name() || p_theme_type == theme_type_variation) {
+		const PackedInt32Array *constant_array = theme_constant_array_override.getptr(p_name);
+		if (constant_array) {
+			return *constant_array;
+		}
+	}
+
+	if (theme_constant_array_cache.has(p_theme_type) && theme_constant_array_cache[p_theme_type].has(p_name)) {
+		return theme_constant_array_cache[p_theme_type][p_name];
+	}
+
+	Vector<StringName> theme_types;
+	theme_owner->get_theme_type_dependencies(this, p_theme_type, theme_types);
+	PackedInt32Array constant_array = theme_owner->get_theme_item_in_types(Theme::DATA_TYPE_CONSTANT_ARRAY, p_name, theme_types);
+	theme_constant_array_cache[p_theme_type][p_name] = constant_array;
+	return constant_array;
+}
+
 Variant Window::get_theme_item(Theme::DataType p_data_type, const StringName &p_name, const StringName &p_theme_type) const {
 	switch (p_data_type) {
 		case Theme::DATA_TYPE_COLOR:
 			return get_theme_color(p_name, p_theme_type);
+		case Theme::DATA_TYPE_COLOR_ARRAY:
+			return get_theme_color_array(p_name, p_theme_type);
 		case Theme::DATA_TYPE_CONSTANT:
 			return get_theme_constant(p_name, p_theme_type);
+		case Theme::DATA_TYPE_CONSTANT_ARRAY:
+			return get_theme_constant_array(p_name, p_theme_type);
 		case Theme::DATA_TYPE_FONT:
 			return get_theme_font(p_name, p_theme_type);
 		case Theme::DATA_TYPE_FONT_SIZE:
@@ -2470,6 +2522,23 @@ bool Window::has_theme_color(const StringName &p_name, const StringName &p_theme
 	return theme_owner->has_theme_item_in_types(Theme::DATA_TYPE_COLOR, p_name, theme_types);
 }
 
+bool Window::has_theme_color_array(const StringName &p_name, const StringName &p_theme_type) const {
+	ERR_READ_THREAD_GUARD_V(false);
+	if (!initialized) {
+		WARN_PRINT_ONCE(vformat("Attempting to access theme items too early in %s; prefer NOTIFICATION_POSTINITIALIZE and NOTIFICATION_THEME_CHANGED", get_description()));
+	}
+
+	if (p_theme_type == StringName() || p_theme_type == get_class_name() || p_theme_type == theme_type_variation) {
+		if (has_theme_color_array_override(p_name)) {
+			return true;
+		}
+	}
+
+	Vector<StringName> theme_types;
+	theme_owner->get_theme_type_dependencies(this, p_theme_type, theme_types);
+	return theme_owner->has_theme_item_in_types(Theme::DATA_TYPE_COLOR_ARRAY, p_name, theme_types);
+}
+
 bool Window::has_theme_constant(const StringName &p_name, const StringName &p_theme_type) const {
 	ERR_READ_THREAD_GUARD_V(false);
 	if (!initialized) {
@@ -2485,6 +2554,23 @@ bool Window::has_theme_constant(const StringName &p_name, const StringName &p_th
 	Vector<StringName> theme_types;
 	theme_owner->get_theme_type_dependencies(this, p_theme_type, theme_types);
 	return theme_owner->has_theme_item_in_types(Theme::DATA_TYPE_CONSTANT, p_name, theme_types);
+}
+
+bool Window::has_theme_constant_array(const StringName &p_name, const StringName &p_theme_type) const {
+	ERR_READ_THREAD_GUARD_V(false);
+	if (!initialized) {
+		WARN_PRINT_ONCE(vformat("Attempting to access theme items too early in %s; prefer NOTIFICATION_POSTINITIALIZE and NOTIFICATION_THEME_CHANGED", get_description()));
+	}
+
+	if (p_theme_type == StringName() || p_theme_type == get_class_name() || p_theme_type == theme_type_variation) {
+		if (has_theme_constant_array_override(p_name)) {
+			return true;
+		}
+	}
+
+	Vector<StringName> theme_types;
+	theme_owner->get_theme_type_dependencies(this, p_theme_type, theme_types);
+	return theme_owner->has_theme_item_in_types(Theme::DATA_TYPE_CONSTANT_ARRAY, p_name, theme_types);
 }
 
 /// Local property overrides.
@@ -2540,9 +2626,21 @@ void Window::add_theme_color_override(const StringName &p_name, const Color &p_c
 	_notify_theme_override_changed();
 }
 
+void Window::add_theme_color_array_override(const StringName &p_name, const PackedColorArray &p_color_array) {
+	ERR_MAIN_THREAD_GUARD;
+	theme_color_array_override[p_name] = p_color_array;
+	_notify_theme_override_changed();
+}
+
 void Window::add_theme_constant_override(const StringName &p_name, int p_constant) {
 	ERR_MAIN_THREAD_GUARD;
 	theme_constant_override[p_name] = p_constant;
+	_notify_theme_override_changed();
+}
+
+void Window::add_theme_constant_array_override(const StringName &p_name, const PackedInt32Array &p_constant_array) {
+	ERR_MAIN_THREAD_GUARD;
+	theme_constant_array_override[p_name] = p_constant_array;
 	_notify_theme_override_changed();
 }
 
@@ -2588,9 +2686,21 @@ void Window::remove_theme_color_override(const StringName &p_name) {
 	_notify_theme_override_changed();
 }
 
+void Window::remove_theme_color_array_override(const StringName &p_name) {
+	ERR_MAIN_THREAD_GUARD;
+	theme_color_array_override.erase(p_name);
+	_notify_theme_override_changed();
+}
+
 void Window::remove_theme_constant_override(const StringName &p_name) {
 	ERR_MAIN_THREAD_GUARD;
 	theme_constant_override.erase(p_name);
+	_notify_theme_override_changed();
+}
+
+void Window::remove_theme_constant_array_override(const StringName &p_name) {
+	ERR_MAIN_THREAD_GUARD;
+	theme_constant_array_override.erase(p_name);
 	_notify_theme_override_changed();
 }
 
@@ -2624,10 +2734,22 @@ bool Window::has_theme_color_override(const StringName &p_name) const {
 	return color != nullptr;
 }
 
+bool Window::has_theme_color_array_override(const StringName &p_name) const {
+	ERR_READ_THREAD_GUARD_V(false);
+	const PackedColorArray *color_array = theme_color_array_override.getptr(p_name);
+	return color_array != nullptr;
+}
+
 bool Window::has_theme_constant_override(const StringName &p_name) const {
 	ERR_READ_THREAD_GUARD_V(false);
 	const int *constant = theme_constant_override.getptr(p_name);
 	return constant != nullptr;
+}
+
+bool Window::has_theme_constant_array_override(const StringName &p_name) const {
+	ERR_READ_THREAD_GUARD_V(false);
+	const PackedInt32Array *constant_array = theme_constant_array_override.getptr(p_name);
+	return constant_array != nullptr;
 }
 
 /// Default theme properties.

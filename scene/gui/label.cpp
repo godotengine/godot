@@ -30,6 +30,9 @@
 
 #include "label.h"
 
+#include "core/string/print_string.h"
+#include "core/templates/vector.h"
+#include "core/variant/variant.h"
 #include "scene/gui/container.h"
 #include "scene/theme/theme_db.h"
 #include "servers/text_server.h"
@@ -747,7 +750,13 @@ void Label::_notification(int p_what) {
 			Color font_outline_color = has_settings ? settings->get_outline_color() : theme_cache.font_outline_color;
 			int outline_size = has_settings ? settings->get_outline_size() : theme_cache.font_outline_size;
 			int shadow_outline_size = has_settings ? settings->get_shadow_size() : theme_cache.font_shadow_outline_size;
+			PackedColorArray font_stacked_outline_colors = has_settings ? settings->get_stacked_outline_colors() : theme_cache.font_stacked_outline_colors;
+			PackedInt32Array font_stacked_outline_sizes = has_settings ? settings->get_stacked_outline_sizes() : theme_cache.font_stacked_outline_sizes;
 			bool rtl_layout = is_layout_rtl();
+
+			if (get_text().begins_with("Lorem ipsum dolor sit amet")) {
+				print_verbose("Test");
+			}
 
 			style->draw(ci, Rect2(Point2(0, 0), get_size()));
 
@@ -798,6 +807,14 @@ void Label::_notification(int p_what) {
 
 						ofs.y += asc;
 
+						int stacked_outline_draw_size = outline_size;
+						for (int j = 0; j < font_stacked_outline_sizes.size(); j++) {
+							if (font_stacked_outline_sizes[j] <= 0) {
+								continue;
+							}
+							stacked_outline_draw_size += font_stacked_outline_sizes[j];
+						}
+
 						// Draw shadow, outline and text. Note: Do not merge this into the single loop iteration, to prevent overlaps.
 						int processed_glyphs_step = 0;
 						for (int step = DRAW_STEP_SHADOW_OUTLINE; step < DRAW_STEP_MAX; step++) {
@@ -807,83 +824,113 @@ void Label::_notification(int p_what) {
 							if (step == DRAW_STEP_SHADOW && (font_shadow_color.a == 0)) {
 								continue;
 							}
+							if (step == DRAW_STEP_STACKED_OUTLINE && (font_stacked_outline_colors.size() == 0 || font_stacked_outline_sizes.size() == 0)) {
+								continue;
+							}
 							if (step == DRAW_STEP_OUTLINE && (outline_size <= 0 || font_outline_color.a == 0)) {
 								continue;
 							}
 
 							processed_glyphs_step = processed_glyphs;
-							Vector2 offset_step = ofs;
-							// Draw RTL ellipsis string when necessary.
-							if (rtl && ellipsis_pos >= 0) {
-								for (int gl_idx = ellipsis_gl_size - 1; gl_idx >= 0; gl_idx--) {
-									for (int j = 0; j < ellipsis_glyphs[gl_idx].repeat; j++) {
-										bool skip = (trim_chars && ellipsis_glyphs[gl_idx].end + para.start > visible_chars) || (trim_glyphs_ltr && (processed_glyphs_step >= visible_glyphs)) || (trim_glyphs_rtl && (processed_glyphs_step < total_glyphs - visible_glyphs));
+							int max_draw_iterations = 1;
+							if (step == DRAW_STEP_STACKED_OUTLINE) {
+								max_draw_iterations = MIN(font_stacked_outline_colors.size(), font_stacked_outline_sizes.size());
+							}
+							for (int draw_iteration_index = 0; draw_iteration_index < max_draw_iterations; draw_iteration_index++) {
+								Color font_stacked_outline_color;
+								int font_stacked_outline_size = 0;
+								if (step == DRAW_STEP_STACKED_OUTLINE) {
+									int index = max_draw_iterations - draw_iteration_index - 1;
+									font_stacked_outline_color = font_stacked_outline_colors[index];
+									font_stacked_outline_size = font_stacked_outline_sizes[index];
+									if (font_stacked_outline_color.a == 0 || font_stacked_outline_size <= 0) {
+										continue;
+									}
+								}
+
+								Vector2 offset_step = ofs;
+								// Draw RTL ellipsis string when necessary.
+								if (rtl && ellipsis_pos >= 0) {
+									for (int gl_idx = ellipsis_gl_size - 1; gl_idx >= 0; gl_idx--) {
+										for (int j = 0; j < ellipsis_glyphs[gl_idx].repeat; j++) {
+											bool skip = (trim_chars && ellipsis_glyphs[gl_idx].end + para.start > visible_chars) || (trim_glyphs_ltr && (processed_glyphs_step >= visible_glyphs)) || (trim_glyphs_rtl && (processed_glyphs_step < total_glyphs - visible_glyphs));
+											if (!skip) {
+												if (step == DRAW_STEP_SHADOW_OUTLINE) {
+													draw_glyph_shadow_outline(ellipsis_glyphs[gl_idx], ci, font_shadow_color, shadow_outline_size, offset_step, shadow_ofs);
+												} else if (step == DRAW_STEP_SHADOW) {
+													draw_glyph_shadow(ellipsis_glyphs[gl_idx], ci, font_shadow_color, offset_step, shadow_ofs);
+												} else if (step == DRAW_STEP_OUTLINE) {
+													draw_glyph_outline(ellipsis_glyphs[gl_idx], ci, font_outline_color, outline_size, offset_step);
+												} else if (step == DRAW_STEP_STACKED_OUTLINE) {
+													draw_glyph_outline(ellipsis_glyphs[gl_idx], ci, font_stacked_outline_color, stacked_outline_draw_size, offset_step);
+												} else if (step == DRAW_STEP_TEXT) {
+													draw_glyph(ellipsis_glyphs[gl_idx], ci, font_color, offset_step);
+												}
+											}
+											processed_glyphs_step++;
+											offset_step.x += ellipsis_glyphs[gl_idx].advance;
+										}
+									}
+								}
+								// Draw main text.
+								for (int j = 0; j < gl_size; j++) {
+									// Trim when necessary.
+									if (trim_pos >= 0) {
+										if (rtl) {
+											if (j < trim_pos) {
+												continue;
+											}
+										} else {
+											if (j >= trim_pos) {
+												break;
+											}
+										}
+									}
+									for (int k = 0; k < glyphs[j].repeat; k++) {
+										bool skip = (trim_chars && glyphs[j].end + para.start > visible_chars) || (trim_glyphs_ltr && (processed_glyphs_step >= visible_glyphs)) || (trim_glyphs_rtl && (processed_glyphs_step < total_glyphs - visible_glyphs));
 										if (!skip) {
 											if (step == DRAW_STEP_SHADOW_OUTLINE) {
-												draw_glyph_shadow_outline(ellipsis_glyphs[gl_idx], ci, font_shadow_color, shadow_outline_size, offset_step, shadow_ofs);
+												draw_glyph_shadow_outline(glyphs[j], ci, font_shadow_color, shadow_outline_size, offset_step, shadow_ofs);
 											} else if (step == DRAW_STEP_SHADOW) {
-												draw_glyph_shadow(ellipsis_glyphs[gl_idx], ci, font_shadow_color, offset_step, shadow_ofs);
+												draw_glyph_shadow(glyphs[j], ci, font_shadow_color, offset_step, shadow_ofs);
 											} else if (step == DRAW_STEP_OUTLINE) {
-												draw_glyph_outline(ellipsis_glyphs[gl_idx], ci, font_outline_color, outline_size, offset_step);
+												draw_glyph_outline(glyphs[j], ci, font_outline_color, outline_size, offset_step);
+											} else if (step == DRAW_STEP_STACKED_OUTLINE) {
+												draw_glyph_outline(glyphs[j], ci, font_stacked_outline_color, stacked_outline_draw_size, offset_step);
 											} else if (step == DRAW_STEP_TEXT) {
-												draw_glyph(ellipsis_glyphs[gl_idx], ci, font_color, offset_step);
+												draw_glyph(glyphs[j], ci, font_color, offset_step);
 											}
 										}
 										processed_glyphs_step++;
-										offset_step.x += ellipsis_glyphs[gl_idx].advance;
+										offset_step.x += glyphs[j].advance;
 									}
 								}
-							}
-							// Draw main text.
-							for (int j = 0; j < gl_size; j++) {
-								// Trim when necessary.
-								if (trim_pos >= 0) {
-									if (rtl) {
-										if (j < trim_pos) {
-											continue;
-										}
-									} else {
-										if (j >= trim_pos) {
-											break;
-										}
-									}
-								}
-								for (int k = 0; k < glyphs[j].repeat; k++) {
-									bool skip = (trim_chars && glyphs[j].end + para.start > visible_chars) || (trim_glyphs_ltr && (processed_glyphs_step >= visible_glyphs)) || (trim_glyphs_rtl && (processed_glyphs_step < total_glyphs - visible_glyphs));
-									if (!skip) {
-										if (step == DRAW_STEP_SHADOW_OUTLINE) {
-											draw_glyph_shadow_outline(glyphs[j], ci, font_shadow_color, shadow_outline_size, offset_step, shadow_ofs);
-										} else if (step == DRAW_STEP_SHADOW) {
-											draw_glyph_shadow(glyphs[j], ci, font_shadow_color, offset_step, shadow_ofs);
-										} else if (step == DRAW_STEP_OUTLINE) {
-											draw_glyph_outline(glyphs[j], ci, font_outline_color, outline_size, offset_step);
-										} else if (step == DRAW_STEP_TEXT) {
-											draw_glyph(glyphs[j], ci, font_color, offset_step);
-										}
-									}
-									processed_glyphs_step++;
-									offset_step.x += glyphs[j].advance;
-								}
-							}
-							// Draw LTR ellipsis string when necessary.
-							if (!rtl && ellipsis_pos >= 0) {
-								for (int gl_idx = 0; gl_idx < ellipsis_gl_size; gl_idx++) {
-									for (int j = 0; j < ellipsis_glyphs[gl_idx].repeat; j++) {
-										bool skip = (trim_chars && ellipsis_glyphs[gl_idx].end + para.start > visible_chars) || (trim_glyphs_ltr && (processed_glyphs_step >= visible_glyphs)) || (trim_glyphs_rtl && (processed_glyphs_step < total_glyphs - visible_glyphs));
-										if (!skip) {
-											if (step == DRAW_STEP_SHADOW_OUTLINE) {
-												draw_glyph_shadow_outline(ellipsis_glyphs[gl_idx], ci, font_shadow_color, shadow_outline_size, offset_step, shadow_ofs);
-											} else if (step == DRAW_STEP_SHADOW) {
-												draw_glyph_shadow(ellipsis_glyphs[gl_idx], ci, font_shadow_color, offset_step, shadow_ofs);
-											} else if (step == DRAW_STEP_OUTLINE) {
-												draw_glyph_outline(ellipsis_glyphs[gl_idx], ci, font_outline_color, outline_size, offset_step);
-											} else if (step == DRAW_STEP_TEXT) {
-												draw_glyph(ellipsis_glyphs[gl_idx], ci, font_color, offset_step);
+								// Draw LTR ellipsis string when necessary.
+								if (!rtl && ellipsis_pos >= 0) {
+									for (int gl_idx = 0; gl_idx < ellipsis_gl_size; gl_idx++) {
+										for (int j = 0; j < ellipsis_glyphs[gl_idx].repeat; j++) {
+											bool skip = (trim_chars && ellipsis_glyphs[gl_idx].end + para.start > visible_chars) || (trim_glyphs_ltr && (processed_glyphs_step >= visible_glyphs)) || (trim_glyphs_rtl && (processed_glyphs_step < total_glyphs - visible_glyphs));
+											if (!skip) {
+												if (step == DRAW_STEP_SHADOW_OUTLINE) {
+													draw_glyph_shadow_outline(ellipsis_glyphs[gl_idx], ci, font_shadow_color, shadow_outline_size, offset_step, shadow_ofs);
+												} else if (step == DRAW_STEP_SHADOW) {
+													draw_glyph_shadow(ellipsis_glyphs[gl_idx], ci, font_shadow_color, offset_step, shadow_ofs);
+												} else if (step == DRAW_STEP_OUTLINE) {
+													draw_glyph_outline(ellipsis_glyphs[gl_idx], ci, font_outline_color, outline_size, offset_step);
+												} else if (step == DRAW_STEP_STACKED_OUTLINE) {
+													draw_glyph_outline(ellipsis_glyphs[gl_idx], ci, font_stacked_outline_color, stacked_outline_draw_size, offset_step);
+												} else if (step == DRAW_STEP_TEXT) {
+													draw_glyph(ellipsis_glyphs[gl_idx], ci, font_color, offset_step);
+												}
 											}
+											processed_glyphs_step++;
+											offset_step.x += ellipsis_glyphs[gl_idx].advance;
 										}
-										processed_glyphs_step++;
-										offset_step.x += ellipsis_glyphs[gl_idx].advance;
 									}
+								}
+
+								if (step == DRAW_STEP_STACKED_OUTLINE) {
+									stacked_outline_draw_size -= font_stacked_outline_size;
 								}
 							}
 						}
@@ -1460,6 +1507,9 @@ void Label::_bind_methods() {
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, Label, font_outline_color);
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_CONSTANT, Label, font_outline_size, "outline_size");
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_CONSTANT, Label, font_shadow_outline_size, "shadow_outline_size");
+
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR_ARRAY, Label, font_stacked_outline_colors);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT_ARRAY, Label, font_stacked_outline_sizes);
 }
 
 Label::Label(const String &p_text) {

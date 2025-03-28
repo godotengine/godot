@@ -1483,13 +1483,16 @@ void EditorThemeManager::_populate_standard_styles(const Ref<EditorTheme> &p_the
 
 		p_theme->set_color(SceneStringName(font_color), "Label", p_config.font_color);
 		p_theme->set_color("font_shadow_color", "Label", Color(0, 0, 0, 0));
-		p_theme->set_color("font_outline_color", "Label", p_config.font_outline_color);
+		p_theme->set_color("font_shadow_color", "Label", Color(0, 0, 0, 0));
 
 		p_theme->set_constant("shadow_offset_x", "Label", 1 * EDSCALE);
 		p_theme->set_constant("shadow_offset_y", "Label", 1 * EDSCALE);
 		p_theme->set_constant("shadow_outline_size", "Label", 1 * EDSCALE);
 		p_theme->set_constant("line_spacing", "Label", 3 * EDSCALE);
 		p_theme->set_constant("outline_size", "Label", 0);
+
+		p_theme->set_color_array("font_stacked_outline_colors", "Label", PackedColorArray());
+		p_theme->set_constant_array("font_stacked_outline_sizes", "Label", PackedInt32Array());
 	}
 
 	// SpinBox.

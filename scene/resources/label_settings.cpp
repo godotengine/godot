@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "label_settings.h"
+#include "core/variant/variant.h"
 
 void LabelSettings::_font_changed() {
 	emit_changed();
@@ -197,4 +198,26 @@ void LabelSettings::set_shadow_offset(const Vector2 &p_offset) {
 
 Vector2 LabelSettings::get_shadow_offset() const {
 	return shadow_offset;
+}
+
+void LabelSettings::set_stacked_outline_sizes(const PackedInt32Array &p_size) {
+	if (stacked_outline_sizes != p_size) {
+		stacked_outline_sizes = p_size;
+		emit_changed();
+	}
+}
+
+PackedInt32Array LabelSettings::get_stacked_outline_sizes() const {
+	return stacked_outline_sizes;
+}
+
+void LabelSettings::set_stacked_outline_colors(const PackedColorArray &p_color) {
+	if (stacked_outline_colors != p_color) {
+		stacked_outline_colors = p_color;
+		emit_changed();
+	}
+}
+
+PackedColorArray LabelSettings::get_stacked_outline_colors() const {
+	return stacked_outline_colors;
 }

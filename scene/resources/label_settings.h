@@ -31,6 +31,7 @@
 #pragma once
 
 #include "core/io/resource.h"
+#include "core/variant/variant.h"
 #include "font.h"
 
 /*************************************************************************/
@@ -51,6 +52,9 @@ class LabelSettings : public Resource {
 	int shadow_size = 1;
 	Color shadow_color = Color(0, 0, 0, 0);
 	Vector2 shadow_offset = Vector2(1, 1);
+
+	PackedInt32Array stacked_outline_sizes;
+	PackedColorArray stacked_outline_colors;
 
 	void _font_changed();
 
@@ -87,4 +91,10 @@ public:
 
 	void set_shadow_offset(const Vector2 &p_offset);
 	Vector2 get_shadow_offset() const;
+
+	void set_stacked_outline_sizes(const PackedInt32Array &p_size);
+	PackedInt32Array get_stacked_outline_sizes() const;
+
+	void set_stacked_outline_colors(const PackedColorArray &p_color);
+	PackedColorArray get_stacked_outline_colors() const;
 };

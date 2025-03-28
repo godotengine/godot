@@ -46,7 +46,9 @@ public:
 		Variant value;
 	} const valid_data[Theme::DATA_TYPE_MAX] = {
 		{ Theme::DATA_TYPE_COLOR, Color() },
+		{ Theme::DATA_TYPE_COLOR_ARRAY, PackedColorArray() },
 		{ Theme::DATA_TYPE_CONSTANT, 42 },
+		{ Theme::DATA_TYPE_CONSTANT_ARRAY, PackedInt32Array() },
 		{ Theme::DATA_TYPE_FONT, Ref<FontFile>(memnew(FontFile)) },
 		{ Theme::DATA_TYPE_FONT_SIZE, 42 },
 		{ Theme::DATA_TYPE_ICON, Ref<Texture>(memnew(ImageTexture)) },

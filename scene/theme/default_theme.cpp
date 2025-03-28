@@ -409,6 +409,9 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_constant("shadow_outline_size", "Label", Math::round(1 * scale));
 	theme->set_constant("line_spacing", "Label", Math::round(3 * scale));
 
+	theme->set_color_array("font_stacked_outline_colors", "Label", PackedColorArray());
+	theme->set_constant_array("font_stacked_outline_sizes", "Label", PackedInt32Array());
+
 	theme->set_type_variation("HeaderSmall", "Label");
 	theme->set_font_size(SceneStringName(font_size), "HeaderSmall", default_font_size + 4);
 

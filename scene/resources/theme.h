@@ -31,6 +31,7 @@
 #pragma once
 
 #include "core/io/resource.h"
+#include "core/variant/variant.h"
 #include "scene/resources/font.h"
 #include "scene/resources/style_box.h"
 #include "scene/resources/texture.h"
@@ -52,6 +53,8 @@ public:
 	using ThemeFontSizeMap = HashMap<StringName, int>;
 	using ThemeColorMap = HashMap<StringName, Color>;
 	using ThemeConstantMap = HashMap<StringName, int>;
+	using ThemeConstantArrayMap = HashMap<StringName, PackedInt32Array>;
+	using ThemeColorArrayMap = HashMap<StringName, PackedColorArray>;
 
 	enum DataType {
 		DATA_TYPE_COLOR,
@@ -60,6 +63,8 @@ public:
 		DATA_TYPE_FONT_SIZE,
 		DATA_TYPE_ICON,
 		DATA_TYPE_STYLEBOX,
+		DATA_TYPE_CONSTANT_ARRAY,
+		DATA_TYPE_COLOR_ARRAY,
 		DATA_TYPE_MAX
 	};
 
@@ -80,6 +85,10 @@ private:
 	Vector<String> _get_color_type_list() const;
 	Vector<String> _get_constant_list(const String &p_theme_type) const;
 	Vector<String> _get_constant_type_list() const;
+	Vector<String> _get_constant_array_list(const String &p_theme_type) const;
+	Vector<String> _get_constant_array_type_list() const;
+	Vector<String> _get_color_array_list(const String &p_theme_type) const;
+	Vector<String> _get_color_array_type_list() const;
 
 	Vector<String> _get_theme_item_list(DataType p_data_type, const String &p_theme_type) const;
 	Vector<String> _get_theme_item_type_list(DataType p_data_type) const;
@@ -103,6 +112,8 @@ protected:
 	HashMap<StringName, ThemeFontSizeMap> font_size_map;
 	HashMap<StringName, ThemeColorMap> color_map;
 	HashMap<StringName, ThemeConstantMap> constant_map;
+	HashMap<StringName, ThemeConstantArrayMap> constant_array_map;
+	HashMap<StringName, ThemeColorArrayMap> color_array_map;
 	HashMap<StringName, StringName> variation_map;
 	HashMap<StringName, List<StringName>> variation_base_map;
 
@@ -196,6 +207,28 @@ public:
 	void add_constant_type(const StringName &p_theme_type);
 	void remove_constant_type(const StringName &p_theme_type);
 	void get_constant_type_list(List<StringName> *p_list) const;
+
+	void set_constant_array(const StringName &p_name, const StringName &p_theme_type, PackedInt32Array p_constant_array);
+	virtual PackedInt32Array get_constant_array(const StringName &p_name, const StringName &p_theme_type) const;
+	bool has_constant_array(const StringName &p_name, const StringName &p_theme_type) const;
+	bool has_constant_array_nocheck(const StringName &p_name, const StringName &p_theme_type) const;
+	void rename_constant_array(const StringName &p_old_name, const StringName &p_name, const StringName &p_theme_type);
+	void clear_constant_array(const StringName &p_name, const StringName &p_theme_type);
+	void get_constant_array_list(const StringName &p_theme_type, List<StringName> *p_list) const;
+	void add_constant_array_type(const StringName &p_theme_type);
+	void remove_constant_array_type(const StringName &p_theme_type);
+	void get_constant_array_type_list(List<StringName> *p_list) const;
+
+	void set_color_array(const StringName &p_name, const StringName &p_theme_type, PackedColorArray p_color_array);
+	virtual PackedColorArray get_color_array(const StringName &p_name, const StringName &p_theme_type) const;
+	bool has_color_array(const StringName &p_name, const StringName &p_theme_type) const;
+	bool has_color_array_nocheck(const StringName &p_name, const StringName &p_theme_type) const;
+	void rename_color_array(const StringName &p_old_name, const StringName &p_name, const StringName &p_theme_type);
+	void clear_color_array(const StringName &p_name, const StringName &p_theme_type);
+	void get_color_array_list(const StringName &p_theme_type, List<StringName> *p_list) const;
+	void add_color_array_type(const StringName &p_theme_type);
+	void remove_color_array_type(const StringName &p_theme_type);
+	void get_color_array_type_list(List<StringName> *p_list) const;
 
 	void set_theme_item(DataType p_data_type, const StringName &p_name, const StringName &p_theme_type, const Variant &p_value);
 	Variant get_theme_item(DataType p_data_type, const StringName &p_name, const StringName &p_theme_type) const;

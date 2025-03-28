@@ -34,6 +34,7 @@
 #include "core/config/project_settings.h"
 #include "core/os/os.h"
 #include "core/string/translation_server.h"
+#include "core/variant/variant.h"
 #include "scene/gui/scroll_container.h"
 #include "scene/main/canvas_layer.h"
 #include "scene/main/window.h"
@@ -202,8 +203,12 @@ void Control::get_argument_options(const StringName &p_function, int p_idx, List
 
 		if (pf == "add_theme_color_override" || pf == "has_theme_color" || pf == "has_theme_color_override" || pf == "get_theme_color" || pf == "remove_theme_color_override") {
 			type = Theme::DATA_TYPE_COLOR;
+		} else if (pf == "add_theme_color_array_override" || pf == "has_theme_color_array" || pf == "has_theme_color_array_override" || pf == "get_theme_color_array" || pf == "remove_theme_color_array_override") {
+			type = Theme::DATA_TYPE_COLOR_ARRAY;
 		} else if (pf == "add_theme_constant_override" || pf == "has_theme_constant" || pf == "has_theme_constant_override" || pf == "get_theme_constant" || pf == "remove_theme_constant_override") {
 			type = Theme::DATA_TYPE_CONSTANT;
+		} else if (pf == "add_theme_constant_array_override" || pf == "has_theme_constant_array" || pf == "has_theme_constant_array_override" || pf == "get_theme_constant_array" || pf == "remove_theme_constant_array_override") {
+			type = Theme::DATA_TYPE_CONSTANT_ARRAY;
 		} else if (pf == "add_theme_font_override" || pf == "has_theme_font" || pf == "has_theme_font_override" || pf == "get_theme_font" || pf == "remove_theme_font_override") {
 			type = Theme::DATA_TYPE_FONT;
 		} else if (pf == "add_theme_font_size_override" || pf == "has_theme_font_size" || pf == "has_theme_font_size_override" || pf == "get_theme_font_size" || pf == "remove_theme_font_size_override") {
@@ -306,9 +311,17 @@ bool Control::_set(const StringName &p_name, const Variant &p_value) {
 			String dname = name.get_slicec('/', 1);
 			data.theme_color_override.erase(dname);
 			_notify_theme_override_changed();
+		} else if (name.begins_with("theme_override_color_arrays/")) {
+			String dname = name.get_slicec('/', 1);
+			data.theme_color_array_override.erase(dname);
+			_notify_theme_override_changed();
 		} else if (name.begins_with("theme_override_constants/")) {
 			String dname = name.get_slicec('/', 1);
 			data.theme_constant_override.erase(dname);
+			_notify_theme_override_changed();
+		} else if (name.begins_with("theme_override_constant_arrays/")) {
+			String dname = name.get_slicec('/', 1);
+			data.theme_constant_array_override.erase(dname);
 			_notify_theme_override_changed();
 		} else {
 			return false;
@@ -329,9 +342,15 @@ bool Control::_set(const StringName &p_name, const Variant &p_value) {
 		} else if (name.begins_with("theme_override_colors/")) {
 			String dname = name.get_slicec('/', 1);
 			add_theme_color_override(dname, p_value);
+		} else if (name.begins_with("theme_override_color_arrays/")) {
+			String dname = name.get_slicec('/', 1);
+			add_theme_color_array_override(dname, p_value);
 		} else if (name.begins_with("theme_override_constants/")) {
 			String dname = name.get_slicec('/', 1);
 			add_theme_constant_override(dname, p_value);
+		} else if (name.begins_with("theme_override_constant_arrays/")) {
+			String dname = name.get_slicec('/', 1);
+			add_theme_constant_array_override(dname, p_value);
 		} else {
 			return false;
 		}
@@ -363,9 +382,15 @@ bool Control::_get(const StringName &p_name, Variant &r_ret) const {
 	} else if (sname.begins_with("theme_override_colors/")) {
 		String name = sname.get_slicec('/', 1);
 		r_ret = data.theme_color_override.has(name) ? Variant(data.theme_color_override[name]) : Variant();
+	} else if (sname.begins_with("theme_override_color_arrays/")) {
+		String name = sname.get_slicec('/', 1);
+		r_ret = data.theme_color_array_override.has(name) ? Variant(data.theme_color_array_override[name]) : Variant();
 	} else if (sname.begins_with("theme_override_constants/")) {
 		String name = sname.get_slicec('/', 1);
 		r_ret = data.theme_constant_override.has(name) ? Variant(data.theme_constant_override[name]) : Variant();
+	} else if (sname.begins_with("theme_override_constant_arrays/")) {
+		String name = sname.get_slicec('/', 1);
+		r_ret = data.theme_constant_array_override.has(name) ? Variant(data.theme_constant_array_override[name]) : Variant();
 	} else {
 		return false;
 	}
@@ -391,11 +416,25 @@ void Control::_get_property_list(List<PropertyInfo> *p_list) const {
 				p_list->push_back(PropertyInfo(Variant::COLOR, PNAME("theme_override_colors") + String("/") + E.item_name, PROPERTY_HINT_NONE, "", usage));
 			} break;
 
+			case Theme::DATA_TYPE_COLOR_ARRAY: {
+				if (data.theme_color_array_override.has(E.item_name)) {
+					usage |= PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_CHECKED;
+				}
+				p_list->push_back(PropertyInfo(Variant::PACKED_COLOR_ARRAY, PNAME("theme_override_color_arrays") + String("/") + E.item_name, PROPERTY_HINT_NONE, "", usage));
+			} break;
+
 			case Theme::DATA_TYPE_CONSTANT: {
 				if (data.theme_constant_override.has(E.item_name)) {
 					usage |= PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_CHECKED;
 				}
 				p_list->push_back(PropertyInfo(Variant::INT, PNAME("theme_override_constants") + String("/") + E.item_name, PROPERTY_HINT_RANGE, "-16384,16384", usage));
+			} break;
+
+			case Theme::DATA_TYPE_CONSTANT_ARRAY: {
+				if (data.theme_constant_array_override.has(E.item_name)) {
+					usage |= PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_CHECKED;
+				}
+				p_list->push_back(PropertyInfo(Variant::PACKED_INT32_ARRAY, PNAME("theme_override_constant_arrays") + String("/") + E.item_name, PROPERTY_HINT_NONE, "", usage));
 			} break;
 
 			case Theme::DATA_TYPE_FONT: {
@@ -2868,6 +2907,30 @@ Color Control::get_theme_color(const StringName &p_name, const StringName &p_the
 	return color;
 }
 
+PackedColorArray Control::get_theme_color_array(const StringName &p_name, const StringName &p_theme_type) const {
+	ERR_READ_THREAD_GUARD_V(PackedColorArray());
+	if (!data.initialized) {
+		WARN_PRINT_ONCE(vformat("Attempting to access theme items too early in %s; prefer NOTIFICATION_POSTINITIALIZE and NOTIFICATION_THEME_CHANGED", get_description()));
+	}
+
+	if (p_theme_type == StringName() || p_theme_type == get_class_name() || p_theme_type == data.theme_type_variation) {
+		const PackedColorArray *color = data.theme_color_array_override.getptr(p_name);
+		if (color) {
+			return *color;
+		}
+	}
+
+	if (data.theme_color_array_cache.has(p_theme_type) && data.theme_color_array_cache[p_theme_type].has(p_name)) {
+		return data.theme_color_array_cache[p_theme_type][p_name];
+	}
+
+	Vector<StringName> theme_types;
+	data.theme_owner->get_theme_type_dependencies(this, p_theme_type, theme_types);
+	PackedColorArray color = data.theme_owner->get_theme_item_in_types(Theme::DATA_TYPE_COLOR_ARRAY, p_name, theme_types);
+	data.theme_color_array_cache[p_theme_type][p_name] = color;
+	return color;
+}
+
 int Control::get_theme_constant(const StringName &p_name, const StringName &p_theme_type) const {
 	ERR_READ_THREAD_GUARD_V(0);
 	if (!data.initialized) {
@@ -2892,12 +2955,40 @@ int Control::get_theme_constant(const StringName &p_name, const StringName &p_th
 	return constant;
 }
 
+PackedInt32Array Control::get_theme_constant_array(const StringName &p_name, const StringName &p_theme_type) const {
+	ERR_READ_THREAD_GUARD_V(PackedInt32Array());
+	if (!data.initialized) {
+		WARN_PRINT_ONCE(vformat("Attempting to access theme items too early in %s; prefer NOTIFICATION_POSTINITIALIZE and NOTIFICATION_THEME_CHANGED", get_description()));
+	}
+
+	if (p_theme_type == StringName() || p_theme_type == get_class_name() || p_theme_type == data.theme_type_variation) {
+		const PackedInt32Array *constant = data.theme_constant_array_override.getptr(p_name);
+		if (constant) {
+			return *constant;
+		}
+	}
+
+	if (data.theme_constant_array_cache.has(p_theme_type) && data.theme_constant_array_cache[p_theme_type].has(p_name)) {
+		return data.theme_constant_array_cache[p_theme_type][p_name];
+	}
+
+	Vector<StringName> theme_types;
+	data.theme_owner->get_theme_type_dependencies(this, p_theme_type, theme_types);
+	PackedInt32Array constant = data.theme_owner->get_theme_item_in_types(Theme::DATA_TYPE_CONSTANT_ARRAY, p_name, theme_types);
+	data.theme_constant_array_cache[p_theme_type][p_name] = constant;
+	return constant;
+}
+
 Variant Control::get_theme_item(Theme::DataType p_data_type, const StringName &p_name, const StringName &p_theme_type) const {
 	switch (p_data_type) {
 		case Theme::DATA_TYPE_COLOR:
 			return get_theme_color(p_name, p_theme_type);
+		case Theme::DATA_TYPE_COLOR_ARRAY:
+			return get_theme_color_array(p_name, p_theme_type);
 		case Theme::DATA_TYPE_CONSTANT:
 			return get_theme_constant(p_name, p_theme_type);
+		case Theme::DATA_TYPE_CONSTANT_ARRAY:
+			return get_theme_constant_array(p_name, p_theme_type);
 		case Theme::DATA_TYPE_FONT:
 			return get_theme_font(p_name, p_theme_type);
 		case Theme::DATA_TYPE_FONT_SIZE:
@@ -2939,10 +3030,20 @@ Variant Control::get_used_theme_item(const String &p_full_name, const StringName
 		if (has_theme_color(name)) {
 			return get_theme_color(name);
 		}
+	} else if (p_full_name.begins_with("theme_override_color_arrays/")) {
+		String name = p_full_name.substr(strlen("theme_override_color_arrays/"));
+		if (has_theme_color_array(name)) {
+			return get_theme_color_array(name);
+		}
 	} else if (p_full_name.begins_with("theme_override_constants/")) {
 		String name = p_full_name.substr(strlen("theme_override_constants/"));
 		if (has_theme_constant(name)) {
 			return get_theme_constant(name);
+		}
+	} else if (p_full_name.begins_with("theme_override_constant_arrays/")) {
+		String name = p_full_name.substr(strlen("theme_override_constant_arrays/"));
+		if (has_theme_constant_array(name)) {
+			return get_theme_constant_array(name);
 		}
 	} else {
 		ERR_FAIL_V_MSG(Variant(), vformat("The property %s is not a theme item.", p_full_name));
@@ -3042,6 +3143,23 @@ bool Control::has_theme_color(const StringName &p_name, const StringName &p_them
 	return data.theme_owner->has_theme_item_in_types(Theme::DATA_TYPE_COLOR, p_name, theme_types);
 }
 
+bool Control::has_theme_color_array(const StringName &p_name, const StringName &p_theme_type) const {
+	ERR_READ_THREAD_GUARD_V(false);
+	if (!data.initialized) {
+		WARN_PRINT_ONCE(vformat("Attempting to access theme items too early in %s; prefer NOTIFICATION_POSTINITIALIZE and NOTIFICATION_THEME_CHANGED", get_description()));
+	}
+
+	if (p_theme_type == StringName() || p_theme_type == get_class_name() || p_theme_type == data.theme_type_variation) {
+		if (has_theme_color_array_override(p_name)) {
+			return true;
+		}
+	}
+
+	Vector<StringName> theme_types;
+	data.theme_owner->get_theme_type_dependencies(this, p_theme_type, theme_types);
+	return data.theme_owner->has_theme_item_in_types(Theme::DATA_TYPE_COLOR_ARRAY, p_name, theme_types);
+}
+
 bool Control::has_theme_constant(const StringName &p_name, const StringName &p_theme_type) const {
 	ERR_READ_THREAD_GUARD_V(false);
 	if (!data.initialized) {
@@ -3057,6 +3175,23 @@ bool Control::has_theme_constant(const StringName &p_name, const StringName &p_t
 	Vector<StringName> theme_types;
 	data.theme_owner->get_theme_type_dependencies(this, p_theme_type, theme_types);
 	return data.theme_owner->has_theme_item_in_types(Theme::DATA_TYPE_CONSTANT, p_name, theme_types);
+}
+
+bool Control::has_theme_constant_array(const StringName &p_name, const StringName &p_theme_type) const {
+	ERR_READ_THREAD_GUARD_V(false);
+	if (!data.initialized) {
+		WARN_PRINT_ONCE(vformat("Attempting to access theme items too early in %s; prefer NOTIFICATION_POSTINITIALIZE and NOTIFICATION_THEME_CHANGED", get_description()));
+	}
+
+	if (p_theme_type == StringName() || p_theme_type == get_class_name() || p_theme_type == data.theme_type_variation) {
+		if (has_theme_constant_array_override(p_name)) {
+			return true;
+		}
+	}
+
+	Vector<StringName> theme_types;
+	data.theme_owner->get_theme_type_dependencies(this, p_theme_type, theme_types);
+	return data.theme_owner->has_theme_item_in_types(Theme::DATA_TYPE_CONSTANT_ARRAY, p_name, theme_types);
 }
 
 /// Local property overrides.
@@ -3112,9 +3247,21 @@ void Control::add_theme_color_override(const StringName &p_name, const Color &p_
 	_notify_theme_override_changed();
 }
 
+void Control::add_theme_color_array_override(const StringName &p_name, const PackedColorArray &p_color_array) {
+	ERR_MAIN_THREAD_GUARD;
+	data.theme_color_array_override[p_name] = p_color_array;
+	_notify_theme_override_changed();
+}
+
 void Control::add_theme_constant_override(const StringName &p_name, int p_constant) {
 	ERR_MAIN_THREAD_GUARD;
 	data.theme_constant_override[p_name] = p_constant;
+	_notify_theme_override_changed();
+}
+
+void Control::add_theme_constant_array_override(const StringName &p_name, const PackedInt32Array &p_constant_array) {
+	ERR_MAIN_THREAD_GUARD;
+	data.theme_constant_array_override[p_name] = p_constant_array;
 	_notify_theme_override_changed();
 }
 
@@ -3160,9 +3307,21 @@ void Control::remove_theme_color_override(const StringName &p_name) {
 	_notify_theme_override_changed();
 }
 
+void Control::remove_theme_color_array_override(const StringName &p_name) {
+	ERR_MAIN_THREAD_GUARD;
+	data.theme_color_array_override.erase(p_name);
+	_notify_theme_override_changed();
+}
+
 void Control::remove_theme_constant_override(const StringName &p_name) {
 	ERR_MAIN_THREAD_GUARD;
 	data.theme_constant_override.erase(p_name);
+	_notify_theme_override_changed();
+}
+
+void Control::remove_theme_constant_array_override(const StringName &p_name) {
+	ERR_MAIN_THREAD_GUARD;
+	data.theme_constant_array_override.erase(p_name);
 	_notify_theme_override_changed();
 }
 
@@ -3196,10 +3355,22 @@ bool Control::has_theme_color_override(const StringName &p_name) const {
 	return color != nullptr;
 }
 
+bool Control::has_theme_color_array_override(const StringName &p_name) const {
+	ERR_READ_THREAD_GUARD_V(false);
+	const PackedColorArray *color_array = data.theme_color_array_override.getptr(p_name);
+	return color_array != nullptr;
+}
+
 bool Control::has_theme_constant_override(const StringName &p_name) const {
 	ERR_READ_THREAD_GUARD_V(false);
 	const int *constant = data.theme_constant_override.getptr(p_name);
 	return constant != nullptr;
+}
+
+bool Control::has_theme_constant_array_override(const StringName &p_name) const {
+	ERR_READ_THREAD_GUARD_V(false);
+	const PackedInt32Array *constant_array = data.theme_constant_array_override.getptr(p_name);
+	return constant_array != nullptr;
 }
 
 /// Default theme properties.
