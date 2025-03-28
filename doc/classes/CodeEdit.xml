@@ -54,7 +54,7 @@
 			<description>
 				Submits an item to the queue of potential candidates for the autocomplete menu. Call [method update_code_completion_options] to update the list.
 				[param location] indicates location of the option relative to the location of the code completion query. See [enum CodeEdit.CodeCompletionLocation] for how to set this value.
-				If [param deprecated] is `true`, then the item will be indicated to the user as being unwise to use (such as with a strikethrough effect).
+				If [param deprecated] is [code]true[/code], then the item will be indicated to the user as being unwise to use (such as with a strikethrough effect).
 				[b]Note:[/b] This list will replace all current candidates.
 			</description>
 		</method>
