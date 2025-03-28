@@ -27,11 +27,11 @@ jobs:
             bin: ./bin/godot.windows.editor.x86_64.exe
             compiler: msvc
 
-          - name: Editor w/ clang-cl (target=editor, tests=yes, use_llvm=yes)
+          - name: Editor w/ clang-cl (target=editor, tests=yes, llvm=yes)
             cache-name: windows-editor-clang
             target: editor
             tests: true
-            sconsflags: debug_symbols=no windows_subsystem=console use_llvm=yes
+            sconsflags: debug_symbols=no windows_subsystem=console llvm=yes
             bin: ./bin/godot.windows.editor.x86_64.llvm.exe
             compiler: clang
 
@@ -43,12 +43,12 @@ jobs:
             bin: ./bin/godot.windows.template_release.x86_64.console.exe
             compiler: msvc
 
-          - name: Template w/ GCC (target=template_release, tests=yes, use_mingw=yes)
+          - name: Template w/ GCC (target=template_release, tests=yes, mingw=yes)
             cache-name: windows-template-gcc
             # MinGW takes MUCH longer to compile; save time by only targeting Template.
             target: template_release
             tests: true
-            sconsflags: debug_symbols=no use_mingw=yes
+            sconsflags: debug_symbols=no mingw=yes
             bin: ./bin/godot.windows.template_release.x86_64.console.exe
             compiler: gcc
 

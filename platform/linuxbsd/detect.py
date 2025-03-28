@@ -31,15 +31,17 @@ def get_opts():
 
     return [
         EnumVariable("linker", "Linker program", "default", ("default", "bfd", "gold", "lld", "mold")),
-        BoolVariable("use_llvm", "Use the LLVM compiler", False),
-        BoolVariable("use_static_cpp", "Link libgcc and libstdc++ statically for better portability", True),
-        BoolVariable("use_coverage", "Test Godot coverage", False),
-        BoolVariable("use_ubsan", "Use LLVM/GCC compiler undefined behavior sanitizer (UBSAN)", False),
-        BoolVariable("use_asan", "Use LLVM/GCC compiler address sanitizer (ASAN)", False),
-        BoolVariable("use_lsan", "Use LLVM/GCC compiler leak sanitizer (LSAN)", False),
-        BoolVariable("use_tsan", "Use LLVM/GCC compiler thread sanitizer (TSAN)", False),
-        BoolVariable("use_msan", "Use LLVM compiler memory sanitizer (MSAN)", False),
-        BoolVariable("use_sowrap", "Dynamically load system libraries", True),
+        BoolVariable(["llvm", "use_llvm"], "Use the LLVM compiler", False),
+        BoolVariable(
+            ["static_cpp", "use_static_cpp"], "Link libgcc and libstdc++ statically for better portability", True
+        ),
+        BoolVariable(["coverage", "use_coverage"], "Test Godot coverage", False),
+        BoolVariable(["ubsan", "use_ubsan"], "Use LLVM/GCC compiler undefined behavior sanitizer (UBSAN)", False),
+        BoolVariable(["asan", "use_asan"], "Use LLVM/GCC compiler address sanitizer (ASAN)", False),
+        BoolVariable(["lsan", "use_lsan"], "Use LLVM/GCC compiler leak sanitizer (LSAN)", False),
+        BoolVariable(["tsan", "use_tsan"], "Use LLVM/GCC compiler thread sanitizer (TSAN)", False),
+        BoolVariable(["msan", "use_msan"], "Use LLVM compiler memory sanitizer (MSAN)", False),
+        BoolVariable(["sowrap", "use_sowrap"], "Dynamically load system libraries", True),
         BoolVariable("alsa", "Use ALSA", True),
         BoolVariable("pulseaudio", "Use PulseAudio", True),
         BoolVariable("dbus", "Use D-Bus to handle screensaver and portal desktop settings", True),
@@ -102,9 +104,9 @@ def configure(env: "SConsEnvironment"):
 
     if "CXX" in env and "clang" in os.path.basename(env["CXX"]):
         # Convenience check to enforce the use_llvm overrides when CXX is clang(++)
-        env["use_llvm"] = True
+        env["llvm"] = True
 
-    if env["use_llvm"]:
+    if env["llvm"]:
         if "clang++" not in os.path.basename(env["CXX"]):
             env["CC"] = "clang"
             env["CXX"] = "clang++"
@@ -138,22 +140,22 @@ def configure(env: "SConsEnvironment"):
         else:
             env.Append(LINKFLAGS=["-fuse-ld=%s" % env["linker"]])
 
-    if env["use_coverage"]:
+    if env["coverage"]:
         env.Append(CCFLAGS=["-ftest-coverage", "-fprofile-arcs"])
         env.Append(LINKFLAGS=["-ftest-coverage", "-fprofile-arcs"])
 
-    if env["use_ubsan"] or env["use_asan"] or env["use_lsan"] or env["use_tsan"] or env["use_msan"]:
+    if env["ubsan"] or env["asan"] or env["lsan"] or env["tsan"] or env["msan"]:
         env.extra_suffix += ".san"
         env.Append(CCFLAGS=["-DSANITIZERS_ENABLED"])
 
-        if env["use_ubsan"]:
+        if env["ubsan"]:
             env.Append(
                 CCFLAGS=[
                     "-fsanitize=undefined,shift,shift-exponent,integer-divide-by-zero,unreachable,vla-bound,null,return,signed-integer-overflow,bounds,float-divide-by-zero,float-cast-overflow,nonnull-attribute,returns-nonnull-attribute,bool,enum,vptr,pointer-overflow,builtin"
                 ]
             )
             env.Append(LINKFLAGS=["-fsanitize=undefined"])
-            if env["use_llvm"]:
+            if env["llvm"]:
                 env.Append(
                     CCFLAGS=[
                         "-fsanitize=nullability-return,nullability-arg,function,nullability-assign,implicit-integer-sign-change"
@@ -162,19 +164,19 @@ def configure(env: "SConsEnvironment"):
             else:
                 env.Append(CCFLAGS=["-fsanitize=bounds-strict"])
 
-        if env["use_asan"]:
+        if env["asan"]:
             env.Append(CCFLAGS=["-fsanitize=address,pointer-subtract,pointer-compare"])
             env.Append(LINKFLAGS=["-fsanitize=address"])
 
-        if env["use_lsan"]:
+        if env["lsan"]:
             env.Append(CCFLAGS=["-fsanitize=leak"])
             env.Append(LINKFLAGS=["-fsanitize=leak"])
 
-        if env["use_tsan"]:
+        if env["tsan"]:
             env.Append(CCFLAGS=["-fsanitize=thread"])
             env.Append(LINKFLAGS=["-fsanitize=thread"])
 
-        if env["use_msan"] and env["use_llvm"]:
+        if env["msan"] and env["llvm"]:
             env.Append(CCFLAGS=["-fsanitize=memory"])
             env.Append(CCFLAGS=["-fsanitize-memory-track-origins"])
             env.Append(CCFLAGS=["-fsanitize-recover=memory"])
@@ -185,23 +187,23 @@ def configure(env: "SConsEnvironment"):
     # LTO
 
     if env["lto"] == "auto":  # Enable LTO for production.
-        env["lto"] = "thin" if env["use_llvm"] else "full"
+        env["lto"] = "thin" if env["llvm"] else "full"
 
     if env["lto"] != "none":
         if env["lto"] == "thin":
-            if not env["use_llvm"]:
+            if not env["llvm"]:
                 print_error("ThinLTO is only compatible with LLVM, use `use_llvm=yes` or `lto=full`.")
                 sys.exit(255)
             env.Append(CCFLAGS=["-flto=thin"])
             env.Append(LINKFLAGS=["-flto=thin"])
-        elif not env["use_llvm"] and env.GetOption("num_jobs") > 1:
+        elif not env["llvm"] and env.GetOption("num_jobs") > 1:
             env.Append(CCFLAGS=["-flto"])
             env.Append(LINKFLAGS=["-flto=" + str(env.GetOption("num_jobs"))])
         else:
             env.Append(CCFLAGS=["-flto"])
             env.Append(LINKFLAGS=["-flto"])
 
-        if not env["use_llvm"]:
+        if not env["llvm"]:
             env["RANLIB"] = "gcc-ranlib"
             env["AR"] = "gcc-ar"
 
@@ -209,7 +211,7 @@ def configure(env: "SConsEnvironment"):
 
     ## Dependencies
 
-    if env["use_sowrap"]:
+    if env["sowrap"]:
         env.Append(CPPDEFINES=["SOWRAP_ENABLED"])
 
     if env["wayland"]:
@@ -304,7 +306,7 @@ def configure(env: "SConsEnvironment"):
         env.ParseConfig("pkg-config openxr --cflags --libs")
 
     if env["fontconfig"]:
-        if not env["use_sowrap"]:
+        if not env["sowrap"]:
             if os.system("pkg-config --exists fontconfig") == 0:  # 0 means found
                 env.ParseConfig("pkg-config fontconfig --cflags --libs")
                 env.Append(CPPDEFINES=["FONTCONFIG_ENABLED"])
@@ -315,7 +317,7 @@ def configure(env: "SConsEnvironment"):
             env.Append(CPPDEFINES=["FONTCONFIG_ENABLED"])
 
     if env["alsa"]:
-        if not env["use_sowrap"]:
+        if not env["sowrap"]:
             if os.system("pkg-config --exists alsa") == 0:  # 0 means found
                 env.ParseConfig("pkg-config alsa --cflags --libs")
                 env.Append(CPPDEFINES=["ALSA_ENABLED", "ALSAMIDI_ENABLED"])
@@ -326,7 +328,7 @@ def configure(env: "SConsEnvironment"):
             env.Append(CPPDEFINES=["ALSA_ENABLED", "ALSAMIDI_ENABLED"])
 
     if env["pulseaudio"]:
-        if not env["use_sowrap"]:
+        if not env["sowrap"]:
             if os.system("pkg-config --exists libpulse") == 0:  # 0 means found
                 env.ParseConfig("pkg-config libpulse --cflags --libs")
                 env.Append(CPPDEFINES=["PULSEAUDIO_ENABLED"])
@@ -337,7 +339,7 @@ def configure(env: "SConsEnvironment"):
             env.Append(CPPDEFINES=["PULSEAUDIO_ENABLED", "_REENTRANT"])
 
     if env["dbus"]:
-        if not env["use_sowrap"]:
+        if not env["sowrap"]:
             if os.system("pkg-config --exists dbus-1") == 0:  # 0 means found
                 env.ParseConfig("pkg-config dbus-1 --cflags --libs")
                 env.Append(CPPDEFINES=["DBUS_ENABLED"])
@@ -348,7 +350,7 @@ def configure(env: "SConsEnvironment"):
             env.Append(CPPDEFINES=["DBUS_ENABLED"])
 
     if env["speechd"]:
-        if not env["use_sowrap"]:
+        if not env["sowrap"]:
             if os.system("pkg-config --exists speech-dispatcher") == 0:  # 0 means found
                 env.ParseConfig("pkg-config speech-dispatcher --cflags --libs")
                 env.Append(CPPDEFINES=["SPEECHD_ENABLED"])
@@ -358,7 +360,7 @@ def configure(env: "SConsEnvironment"):
         else:
             env.Append(CPPDEFINES=["SPEECHD_ENABLED"])
 
-    if not env["use_sowrap"]:
+    if not env["sowrap"]:
         if os.system("pkg-config --exists xkbcommon") == 0:  # 0 means found
             env.ParseConfig("pkg-config xkbcommon --cflags --libs")
             env.Append(CPPDEFINES=["XKB_ENABLED"])
@@ -376,7 +378,7 @@ def configure(env: "SConsEnvironment"):
     if platform.system() == "Linux":
         env.Append(CPPDEFINES=["JOYDEV_ENABLED"])
         if env["udev"]:
-            if not env["use_sowrap"]:
+            if not env["sowrap"]:
                 if os.system("pkg-config --exists libudev") == 0:  # 0 means found
                     env.ParseConfig("pkg-config libudev --cflags --libs")
                     env.Append(CPPDEFINES=["UDEV_ENABLED"])
@@ -393,7 +395,7 @@ def configure(env: "SConsEnvironment"):
         env.ParseConfig("pkg-config zlib --cflags --libs")
 
     env.Prepend(CPPPATH=["#platform/linuxbsd"])
-    if env["use_sowrap"]:
+    if env["sowrap"]:
         env.Prepend(CPPPATH=["#thirdparty/linuxbsd_headers"])
 
     env.Append(
@@ -405,7 +407,7 @@ def configure(env: "SConsEnvironment"):
     )
 
     if env["x11"]:
-        if not env["use_sowrap"]:
+        if not env["sowrap"]:
             if os.system("pkg-config --exists x11"):
                 print_error("X11 libraries not found. Aborting.")
                 sys.exit(255)
@@ -437,7 +439,7 @@ def configure(env: "SConsEnvironment"):
         env.Append(CPPDEFINES=["X11_ENABLED"])
 
     if env["wayland"]:
-        if not env["use_sowrap"]:
+        if not env["sowrap"]:
             if os.system("pkg-config --exists libdecor-0"):
                 print_warning("libdecor development libraries not found. Disabling client-side decorations.")
                 env["libdecor"] = False
@@ -468,7 +470,7 @@ def configure(env: "SConsEnvironment"):
 
     if env["vulkan"]:
         env.Append(CPPDEFINES=["VULKAN_ENABLED", "RD_ENABLED"])
-        if not env["use_volk"]:
+        if not env["volk"]:
             env.ParseConfig("pkg-config vulkan --cflags --libs")
         if not env["builtin_glslang"]:
             # No pkgconfig file so far, hardcode expected lib name.
@@ -497,10 +499,10 @@ def configure(env: "SConsEnvironment"):
         env.Append(LINKFLAGS=["-lkvm"])
 
     # Link those statically for portability
-    if env["use_static_cpp"]:
+    if env["static_cpp"]:
         env.Append(LINKFLAGS=["-static-libgcc", "-static-libstdc++"])
-        if env["use_llvm"] and platform.system() != "FreeBSD":
+        if env["llvm"] and platform.system() != "FreeBSD":
             env["LINKCOM"] = env["LINKCOM"] + " -l:libatomic.a"
     else:
-        if env["use_llvm"] and platform.system() != "FreeBSD":
+        if env["llvm"] and platform.system() != "FreeBSD":
             env.Append(LIBS=["atomic"])

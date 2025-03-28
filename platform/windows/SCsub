@@ -119,7 +119,7 @@ if env["d3d12"]:
             )
 
     # PIX
-    if env["use_pix"]:
+    if env["pix"]:
         pix_dll = "WinPixEventRuntime.dll"
         env.CommandNoCache(
             "#bin/" + pix_dll,

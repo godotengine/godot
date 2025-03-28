@@ -148,7 +148,7 @@ def detect_build_env_arch():
 
 
 def get_tools(env: "SConsEnvironment"):
-    if os.name != "nt" or env.get("use_mingw"):
+    if os.name != "nt" or env.get("mingw"):
         return ["mingw"]
     else:
         msvc_arch_aliases = {"x86_32": "x86", "arm32": "arm"}
@@ -190,11 +190,11 @@ def get_opts():
         ),
         EnumVariable("windows_subsystem", "Windows subsystem", "gui", ("gui", "console")),
         ("msvc_version", "MSVC version to use. Handled automatically by SCons if omitted.", ""),
-        BoolVariable("use_mingw", "Use the Mingw compiler, even if MSVC is installed.", False),
-        BoolVariable("use_llvm", "Use the LLVM compiler", False),
-        BoolVariable("use_static_cpp", "Link MinGW/MSVC C++ runtime libraries statically", True),
-        BoolVariable("use_asan", "Use address sanitizer (ASAN)", False),
-        BoolVariable("use_ubsan", "Use LLVM compiler undefined behavior sanitizer (UBSAN)", False),
+        BoolVariable(["mingw", "use_mingw"], "Use the Mingw compiler, even if MSVC is installed.", False),
+        BoolVariable(["llvm", "use_llvm"], "Use the LLVM compiler", False),
+        BoolVariable(["static_cpp", "use_static_cpp"], "Link MinGW/MSVC C++ runtime libraries statically", True),
+        BoolVariable(["asan", "use_asan"], "Use address sanitizer (ASAN)", False),
+        BoolVariable(["ubsan", "use_ubsan"], "Use LLVM compiler undefined behavior sanitizer (UBSAN)", False),
         BoolVariable("debug_crt", "Compile with MSVC's debug CRT (/MDd)", False),
         BoolVariable("incremental_link", "Use MSVC incremental linking. May increase or decrease build times.", False),
         BoolVariable("silence_msvc", "Silence MSVC's cl/link stdout bloat, redirecting any errors to stderr.", True),
@@ -215,7 +215,7 @@ def get_opts():
             "Whether the Agility SDK DLLs will be stored in arch-specific subdirectories",
             False,
         ),
-        BoolVariable("use_pix", "Use PIX (Performance tuning and debugging for DirectX 12) runtime", False),
+        BoolVariable(["pix", "use_pix"], "Use PIX (Performance tuning and debugging for DirectX 12) runtime", False),
         (
             "pix_path",
             "Path to the PIX runtime distribution (optional for D3D12)",
@@ -260,7 +260,7 @@ def configure_msvc(env: "SConsEnvironment"):
 
     ## Compile/link flags
 
-    if env["use_llvm"]:
+    if env["llvm"]:
         env["CC"] = "clang-cl"
         env["CXX"] = "clang-cl"
         env["LINK"] = "lld-link"
@@ -340,7 +340,7 @@ def configure_msvc(env: "SConsEnvironment"):
         # Always use dynamic runtime, static debug CRT breaks thread_local.
         env.AppendUnique(CCFLAGS=["/MDd"])
     else:
-        if env["use_static_cpp"]:
+        if env["static_cpp"]:
             env.AppendUnique(CCFLAGS=["/MT"])
         else:
             env.AppendUnique(CCFLAGS=["/MD"])
@@ -380,7 +380,7 @@ def configure_msvc(env: "SConsEnvironment"):
 
     # Sanitizers
     prebuilt_lib_extra_suffix = ""
-    if env["use_asan"]:
+    if env["asan"]:
         env.extra_suffix += ".san"
         prebuilt_lib_extra_suffix = ".san"
         env.AppendUnique(CPPDEFINES=["SANITIZERS_ENABLED"])
@@ -421,7 +421,7 @@ def configure_msvc(env: "SConsEnvironment"):
 
     if env["vulkan"]:
         env.AppendUnique(CPPDEFINES=["VULKAN_ENABLED", "RD_ENABLED"])
-        if not env["use_volk"]:
+        if not env["volk"]:
             LIBS += ["vulkan"]
 
     if env["d3d12"]:
@@ -437,9 +437,9 @@ def configure_msvc(env: "SConsEnvironment"):
 
         # PIX
         if env["arch"] not in ["x86_64", "arm64"] or env["pix_path"] == "" or not os.path.exists(env["pix_path"]):
-            env["use_pix"] = False
+            env["pix"] = False
 
-        if env["use_pix"]:
+        if env["pix"]:
             arch_subdir = "arm64" if env["arch"] == "arm64" else "x64"
 
             env.Append(LIBPATH=[env["pix_path"] + "/bin/" + arch_subdir])
@@ -464,7 +464,7 @@ def configure_msvc(env: "SConsEnvironment"):
     if env["target"] in ["editor", "template_debug"]:
         LIBS += ["psapi", "dbghelp"]
 
-    if env["use_llvm"]:
+    if env["llvm"]:
         LIBS += [f"clang_rt.builtins-{env['arch']}"]
 
     env.Append(LINKFLAGS=[p + env["LIBSUFFIX"] for p in LIBS])
@@ -476,12 +476,12 @@ def configure_msvc(env: "SConsEnvironment"):
 
     if env["lto"] != "none":
         if env["lto"] == "thin":
-            if not env["use_llvm"]:
+            if not env["llvm"]:
                 print("ThinLTO is only compatible with LLVM, use `use_llvm=yes` or `lto=full`.")
                 sys.exit(255)
 
             env.AppendUnique(CCFLAGS=["-flto=thin"])
-        elif env["use_llvm"]:
+        elif env["llvm"]:
             env.AppendUnique(CCFLAGS=["-flto"])
         else:
             env.AppendUnique(CCFLAGS=["/GL"])
@@ -493,7 +493,7 @@ def configure_msvc(env: "SConsEnvironment"):
 
     env.Append(LINKFLAGS=["/NATVIS:platform\\windows\\godot.natvis"])
 
-    if env["use_asan"]:
+    if env["asan"]:
         env.AppendUnique(LINKFLAGS=["/STACK:" + str(STACK_SIZE_SANITIZERS)])
     else:
         env.AppendUnique(LINKFLAGS=["/STACK:" + str(STACK_SIZE)])
@@ -605,15 +605,15 @@ def configure_mingw(env: "SConsEnvironment"):
 
     ## Build type
 
-    if not env["use_llvm"] and not try_cmd("gcc --version", env["mingw_prefix"], env["arch"]):
-        env["use_llvm"] = True
+    if not env["llvm"] and not try_cmd("gcc --version", env["mingw_prefix"], env["arch"]):
+        env["llvm"] = True
 
-    if env["use_llvm"] and not try_cmd("clang --version", env["mingw_prefix"], env["arch"]):
-        env["use_llvm"] = False
+    if env["llvm"] and not try_cmd("clang --version", env["mingw_prefix"], env["arch"]):
+        env["llvm"] = False
 
-    if not env["use_llvm"] and try_cmd("gcc --version", env["mingw_prefix"], env["arch"], True):
+    if not env["llvm"] and try_cmd("gcc --version", env["mingw_prefix"], env["arch"], True):
         print("Detected GCC to be a wrapper for Clang.")
-        env["use_llvm"] = True
+        env["llvm"] = True
 
     if env.dev_build:
         # Allow big objects. It's supposed not to have drawbacks but seems to break
@@ -630,12 +630,12 @@ def configure_mingw(env: "SConsEnvironment"):
     ## Compiler configuration
 
     if env["arch"] == "x86_32":
-        if env["use_static_cpp"]:
+        if env["static_cpp"]:
             env.Append(LINKFLAGS=["-static"])
             env.Append(LINKFLAGS=["-static-libgcc"])
             env.Append(LINKFLAGS=["-static-libstdc++"])
     else:
-        if env["use_static_cpp"]:
+        if env["static_cpp"]:
             env.Append(LINKFLAGS=["-static"])
 
     if env["arch"] == "x86_32":
@@ -643,7 +643,7 @@ def configure_mingw(env: "SConsEnvironment"):
 
     env.Append(CCFLAGS=["-ffp-contract=off"])
 
-    if env["use_llvm"]:
+    if env["llvm"]:
         env["CC"] = get_detected(env, "clang")
         env["CXX"] = get_detected(env, "clang++")
         env["AR"] = get_detected(env, "ar")
@@ -672,27 +672,27 @@ def configure_mingw(env: "SConsEnvironment"):
     ## LTO
 
     if env["lto"] == "auto":  # Enable LTO for production with MinGW.
-        env["lto"] = "thin" if env["use_llvm"] else "full"
+        env["lto"] = "thin" if env["llvm"] else "full"
 
     if env["lto"] != "none":
         if env["lto"] == "thin":
-            if not env["use_llvm"]:
+            if not env["llvm"]:
                 print("ThinLTO is only compatible with LLVM, use `use_llvm=yes` or `lto=full`.")
                 sys.exit(255)
             env.Append(CCFLAGS=["-flto=thin"])
             env.Append(LINKFLAGS=["-flto=thin"])
-        elif not env["use_llvm"] and env.GetOption("num_jobs") > 1:
+        elif not env["llvm"] and env.GetOption("num_jobs") > 1:
             env.Append(CCFLAGS=["-flto"])
             env.Append(LINKFLAGS=["-flto=" + str(env.GetOption("num_jobs"))])
         else:
             env.Append(CCFLAGS=["-flto"])
             env.Append(LINKFLAGS=["-flto"])
-        if not env["use_llvm"]:
+        if not env["llvm"]:
             # For mingw-gcc LTO, disable linker plugin and enable whole program to work around GH-102867.
             env.Append(CCFLAGS=["-fno-use-linker-plugin", "-fwhole-program"])
             env.Append(LINKFLAGS=["-fno-use-linker-plugin", "-fwhole-program"])
 
-    if env["use_asan"]:
+    if env["asan"]:
         env.Append(LINKFLAGS=["-Wl,--stack," + str(STACK_SIZE_SANITIZERS)])
     else:
         env.Append(LINKFLAGS=["-Wl,--stack," + str(STACK_SIZE)])
@@ -701,11 +701,11 @@ def configure_mingw(env: "SConsEnvironment"):
 
     validate_win_version(env)
 
-    if not env["use_llvm"]:
+    if not env["llvm"]:
         env.Append(CCFLAGS=["-mwindows"])
 
-    if env["use_asan"] or env["use_ubsan"]:
-        if not env["use_llvm"]:
+    if env["asan"] or env["ubsan"]:
+        if not env["llvm"]:
             print("GCC does not support sanitizers on Windows.")
             sys.exit(255)
         if env["arch"] not in ["x86_32", "x86_64"]:
@@ -715,9 +715,9 @@ def configure_mingw(env: "SConsEnvironment"):
         env.extra_suffix += ".san"
         env.AppendUnique(CPPDEFINES=["SANITIZERS_ENABLED"])
         san_flags = []
-        if env["use_asan"]:
+        if env["asan"]:
             san_flags.append("-fsanitize=address")
-        if env["use_ubsan"]:
+        if env["ubsan"]:
             san_flags.append("-fsanitize=undefined")
             # Disable the vptr check since it gets triggered on any COM interface calls.
             san_flags.append("-fno-sanitize=vptr")
@@ -770,7 +770,7 @@ def configure_mingw(env: "SConsEnvironment"):
 
     if env["vulkan"]:
         env.Append(CPPDEFINES=["VULKAN_ENABLED", "RD_ENABLED"])
-        if not env["use_volk"]:
+        if not env["volk"]:
             env.Append(LIBS=["vulkan"])
 
     if env["d3d12"]:
@@ -781,9 +781,9 @@ def configure_mingw(env: "SConsEnvironment"):
 
         # PIX
         if env["arch"] not in ["x86_64", "arm64"] or env["pix_path"] == "" or not os.path.exists(env["pix_path"]):
-            env["use_pix"] = False
+            env["pix"] = False
 
-        if env["use_pix"]:
+        if env["pix"]:
             arch_subdir = "arm64" if env["arch"] == "arm64" else "x64"
 
             env.Append(LIBPATH=[env["pix_path"] + "/bin/" + arch_subdir])

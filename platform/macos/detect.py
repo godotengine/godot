@@ -32,10 +32,12 @@ def get_opts():
         ("MACOS_SDK_PATH", "Path to the macOS SDK", ""),
         ("vulkan_sdk_path", "Path to the Vulkan SDK", ""),
         EnumVariable("macports_clang", "Build using Clang from MacPorts", "no", ("no", "5.0", "devel")),
-        BoolVariable("use_ubsan", "Use LLVM/GCC compiler undefined behavior sanitizer (UBSAN)", False),
-        BoolVariable("use_asan", "Use LLVM/GCC compiler address sanitizer (ASAN)", False),
-        BoolVariable("use_tsan", "Use LLVM/GCC compiler thread sanitizer (TSAN)", False),
-        BoolVariable("use_coverage", "Use instrumentation codes in the binary (e.g. for code coverage)", False),
+        BoolVariable(["ubsan", "use_ubsan"], "Use LLVM/GCC compiler undefined behavior sanitizer (UBSAN)", False),
+        BoolVariable(["asan", "use_asan"], "Use LLVM/GCC compiler address sanitizer (ASAN)", False),
+        BoolVariable(["tsan", "use_tsan"], "Use LLVM/GCC compiler thread sanitizer (TSAN)", False),
+        BoolVariable(
+            ["coverage", "use_coverage"], "Use instrumentation codes in the binary (e.g. for code coverage)", False
+        ),
         ("angle_libs", "Path to the ANGLE static libraries", ""),
         (
             "bundle_sign_identity",
@@ -151,11 +153,11 @@ def configure(env: "SConsEnvironment"):
 
     # Sanitizers
 
-    if env["use_ubsan"] or env["use_asan"] or env["use_tsan"]:
+    if env["ubsan"] or env["asan"] or env["tsan"]:
         env.extra_suffix += ".san"
         env.Append(CCFLAGS=["-DSANITIZERS_ENABLED"])
 
-        if env["use_ubsan"]:
+        if env["ubsan"]:
             env.Append(
                 CCFLAGS=[
                     "-fsanitize=undefined,shift,shift-exponent,integer-divide-by-zero,unreachable,vla-bound,null,return,signed-integer-overflow,bounds,float-divide-by-zero,float-cast-overflow,nonnull-attribute,returns-nonnull-attribute,bool,enum,vptr,pointer-overflow,builtin"
@@ -164,11 +166,11 @@ def configure(env: "SConsEnvironment"):
             env.Append(LINKFLAGS=["-fsanitize=undefined"])
             env.Append(CCFLAGS=["-fsanitize=nullability-return,nullability-arg,function,nullability-assign"])
 
-        if env["use_asan"]:
+        if env["asan"]:
             env.Append(CCFLAGS=["-fsanitize=address,pointer-subtract,pointer-compare"])
             env.Append(LINKFLAGS=["-fsanitize=address"])
 
-        if env["use_tsan"]:
+        if env["tsan"]:
             env.Append(CCFLAGS=["-fsanitize=thread"])
             env.Append(LINKFLAGS=["-fsanitize=thread"])
 
@@ -176,7 +178,7 @@ def configure(env: "SConsEnvironment"):
     else:
         env.Append(LINKFLAGS=["-Wl,-stack_size," + hex(STACK_SIZE)])
 
-    if env["use_coverage"]:
+    if env["coverage"]:
         env.Append(CCFLAGS=["-ftest-coverage", "-fprofile-arcs"])
         env.Append(LINKFLAGS=["-ftest-coverage", "-fprofile-arcs"])
 
@@ -252,7 +254,7 @@ def configure(env: "SConsEnvironment"):
         env.AppendUnique(CPPDEFINES=["VULKAN_ENABLED", "RD_ENABLED"])
         extra_frameworks.add("Metal")
         extra_frameworks.add("IOSurface")
-        if not env["use_volk"]:
+        if not env["volk"]:
             env.Append(LINKFLAGS=["-lMoltenVK"])
 
             mvk_path = ""

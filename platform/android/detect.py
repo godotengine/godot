@@ -237,7 +237,7 @@ def configure(env: "SConsEnvironment"):
         if has_swappy:
             env.Append(CPPDEFINES=["SWAPPY_FRAME_PACING_ENABLED"])
             env.Append(LIBS=["swappy_static"])
-        if not env["use_volk"]:
+        if not env["volk"]:
             env.Append(LIBS=["vulkan"])
 
     if env["opengl3"]:

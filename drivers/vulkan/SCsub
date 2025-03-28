@@ -10,7 +10,7 @@ thirdparty_volk_dir = "#thirdparty/volk"
 # Use bundled Vulkan headers
 env.Prepend(CPPPATH=[thirdparty_dir, thirdparty_dir + "/include"])
 
-if env["use_volk"]:
+if env["volk"]:
     env.AppendUnique(CPPDEFINES=["USE_VOLK"])
     env.Prepend(CPPPATH=[thirdparty_volk_dir])
 
@@ -33,7 +33,7 @@ env_thirdparty_vma = env.Clone()
 env_thirdparty_vma.disable_warnings()
 thirdparty_sources_vma = [thirdparty_dir + "/vk_mem_alloc.cpp"]
 
-if env["use_volk"]:
+if env["volk"]:
     env_thirdparty_vma.AppendUnique(CPPDEFINES=["VMA_STATIC_VULKAN_FUNCTIONS=1"])
     env_thirdparty_volk = env.Clone()
     env_thirdparty_volk.disable_warnings()
