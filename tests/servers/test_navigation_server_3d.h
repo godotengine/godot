@@ -771,9 +771,7 @@ TEST_SUITE("[Navigation]") {
 			query_parameters->set_map(map);
 			query_parameters->set_start_position(Vector3(10, 0, 10));
 			query_parameters->set_target_position(Vector3(0, 0, 0));
-			Array excluded_regions;
-			excluded_regions.push_back(region);
-			query_parameters->set_excluded_regions(excluded_regions);
+			query_parameters->set_excluded_regions({ region });
 			Ref<NavigationPathQueryResult3D> query_result;
 			query_result.instantiate();
 			navigation_server->query_path(query_parameters, query_result);
@@ -786,9 +784,7 @@ TEST_SUITE("[Navigation]") {
 			query_parameters->set_map(map);
 			query_parameters->set_start_position(Vector3(10, 0, 10));
 			query_parameters->set_target_position(Vector3(0, 0, 0));
-			Array included_regions;
-			included_regions.push_back(region);
-			query_parameters->set_included_regions(included_regions);
+			query_parameters->set_included_regions({ region });
 			Ref<NavigationPathQueryResult3D> query_result;
 			query_result.instantiate();
 			navigation_server->query_path(query_parameters, query_result);
@@ -801,12 +797,8 @@ TEST_SUITE("[Navigation]") {
 			query_parameters->set_map(map);
 			query_parameters->set_start_position(Vector3(10, 0, 10));
 			query_parameters->set_target_position(Vector3(0, 0, 0));
-			Array excluded_regions;
-			excluded_regions.push_back(region);
-			query_parameters->set_excluded_regions(excluded_regions);
-			Array included_regions;
-			included_regions.push_back(region);
-			query_parameters->set_included_regions(included_regions);
+			query_parameters->set_excluded_regions({ region });
+			query_parameters->set_included_regions({ region });
 			Ref<NavigationPathQueryResult3D> query_result;
 			query_result.instantiate();
 			navigation_server->query_path(query_parameters, query_result);

@@ -40,10 +40,11 @@
 #ifdef DEBUG_ENABLED
 _FORCE_INLINE_ void SceneMultiplayer::_profile_bandwidth(const String &p_what, int p_value) {
 	if (EngineDebugger::is_profiling("multiplayer:bandwidth")) {
-		Array values;
-		values.push_back(p_what);
-		values.push_back(OS::get_singleton()->get_ticks_msec());
-		values.push_back(p_value);
+		Array values = {
+			p_what,
+			OS::get_singleton()->get_ticks_msec(),
+			p_value
+		};
 		EngineDebugger::profiler_add_frame_data("multiplayer:bandwidth", values);
 	}
 }

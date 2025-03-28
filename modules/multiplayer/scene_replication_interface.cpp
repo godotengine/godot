@@ -43,10 +43,7 @@
 #ifdef DEBUG_ENABLED
 _FORCE_INLINE_ void SceneReplicationInterface::_profile_node_data(const String &p_what, ObjectID p_id, int p_size) {
 	if (EngineDebugger::is_profiling("multiplayer:replication")) {
-		Array values;
-		values.push_back(p_what);
-		values.push_back(p_id);
-		values.push_back(p_size);
+		Array values = { p_what, p_id, p_size };
 		EngineDebugger::profiler_add_frame_data("multiplayer:replication", values);
 	}
 }

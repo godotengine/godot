@@ -139,9 +139,7 @@ TEST_CASE("[Array] front() and back()") {
 }
 
 TEST_CASE("[Array] has() and count()") {
-	Array arr;
-	arr.push_back(1);
-	arr.push_back(1);
+	Array arr = { 1, 1 };
 	CHECK(arr.has(1));
 	CHECK(!arr.has(2));
 	CHECK(arr.count(1) == 2);
@@ -149,9 +147,7 @@ TEST_CASE("[Array] has() and count()") {
 }
 
 TEST_CASE("[Array] remove_at()") {
-	Array arr;
-	arr.push_back(1);
-	arr.push_back(2);
+	Array arr = { 1, 2 };
 	arr.remove_at(0);
 	CHECK(arr.size() == 1);
 	CHECK(int(arr[0]) == 2);
@@ -168,18 +164,12 @@ TEST_CASE("[Array] remove_at()") {
 }
 
 TEST_CASE("[Array] get()") {
-	Array arr;
-	arr.push_back(1);
+	Array arr = { 1 };
 	CHECK(int(arr.get(0)) == 1);
 }
 
 TEST_CASE("[Array] sort()") {
-	Array arr;
-
-	arr.push_back(3);
-	arr.push_back(4);
-	arr.push_back(2);
-	arr.push_back(1);
+	Array arr = { 3, 4, 2, 1 };
 	arr.sort();
 	int val = 1;
 	for (int i = 0; i < arr.size(); i++) {
@@ -206,12 +196,7 @@ TEST_CASE("[Array] push_front(), pop_front(), pop_back()") {
 TEST_CASE("[Array] pop_at()") {
 	ErrorDetector ed;
 
-	Array arr;
-	arr.push_back(2);
-	arr.push_back(4);
-	arr.push_back(6);
-	arr.push_back(8);
-	arr.push_back(10);
+	Array arr = { 2, 4, 6, 8, 10 };
 
 	REQUIRE(int(arr.pop_at(2)) == 6);
 	REQUIRE(arr.size() == 4);
@@ -266,13 +251,7 @@ TEST_CASE("[Array] max() and min()") {
 }
 
 TEST_CASE("[Array] slice()") {
-	Array array;
-	array.push_back(0);
-	array.push_back(1);
-	array.push_back(2);
-	array.push_back(3);
-	array.push_back(4);
-	array.push_back(5);
+	Array array = { 0, 1, 2, 3, 4, 5 };
 
 	Array slice0 = array.slice(0, 0);
 	CHECK(slice0.size() == 0);
@@ -617,11 +596,8 @@ TEST_CASE("[Array] Iteration and modification") {
 }
 
 TEST_CASE("[Array] Typed copying") {
-	TypedArray<int> a1;
-	a1.push_back(1);
-
-	TypedArray<double> a2;
-	a2.push_back(1.0);
+	TypedArray<int> a1 = { 1 };
+	TypedArray<double> a2 = { 1.0 };
 
 	Array a3 = a1;
 	TypedArray<int> a4 = a3;
