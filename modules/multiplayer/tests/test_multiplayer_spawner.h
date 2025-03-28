@@ -36,17 +36,6 @@
 #include "../multiplayer_spawner.h"
 
 namespace TestMultiplayerSpawner {
-
-static inline Array build_array() {
-	return Array();
-}
-template <typename... Targs>
-static inline Array build_array(Variant item, Targs... Fargs) {
-	Array a = build_array(Fargs...);
-	a.push_front(item);
-	return a;
-}
-
 class Wasp : public Node {
 	GDCLASS(Wasp, Node);
 

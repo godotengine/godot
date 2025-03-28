@@ -36,16 +36,6 @@
 #include "tests/test_macros.h"
 
 namespace TestTabBar {
-static inline Array build_array() {
-	return Array();
-}
-template <typename... Targs>
-static inline Array build_array(Variant item, Targs... Fargs) {
-	Array a = build_array(Fargs...);
-	a.push_front(item);
-	return a;
-}
-
 TEST_CASE("[SceneTree][TabBar] tab operations") {
 	TabBar *tab_bar = memnew(TabBar);
 	SceneTree::get_singleton()->get_root()->add_child(tab_bar);
@@ -66,8 +56,8 @@ TEST_CASE("[SceneTree][TabBar] tab operations") {
 		CHECK(tab_bar->get_tab_count() == 1);
 		CHECK(tab_bar->get_current_tab() == 0);
 		CHECK(tab_bar->get_previous_tab() == -1);
-		SIGNAL_CHECK("tab_selected", build_array(build_array(0)));
-		SIGNAL_CHECK("tab_changed", build_array(build_array(0)));
+		SIGNAL_CHECK("tab_selected", { { 0 } });
+		SIGNAL_CHECK("tab_changed", { { 0 } });
 
 		tab_bar->add_tab("tab1");
 		CHECK(tab_bar->get_tab_count() == 2);
@@ -204,7 +194,7 @@ TEST_CASE("[SceneTree][TabBar] tab operations") {
 		CHECK(tab_bar->get_current_tab() == -1);
 		CHECK(tab_bar->get_previous_tab() == -1);
 		SIGNAL_CHECK_FALSE("tab_selected");
-		SIGNAL_CHECK("tab_changed", build_array(build_array(-1)));
+		SIGNAL_CHECK("tab_changed", { { -1 } });
 
 		// Remove current tab when there are other tabs.
 		tab_bar->add_tab("tab0");
@@ -223,7 +213,7 @@ TEST_CASE("[SceneTree][TabBar] tab operations") {
 		CHECK(tab_bar->get_current_tab() == 1);
 		CHECK(tab_bar->get_previous_tab() == 1);
 		SIGNAL_CHECK_FALSE("tab_selected");
-		SIGNAL_CHECK("tab_changed", build_array(build_array(1)));
+		SIGNAL_CHECK("tab_changed", { { 1 } });
 	}
 
 	SUBCASE("[TabBar] move tabs") {
@@ -273,21 +263,21 @@ TEST_CASE("[SceneTree][TabBar] tab operations") {
 		tab_bar->add_tab("tab2");
 		CHECK(tab_bar->get_current_tab() == 0);
 		CHECK(tab_bar->get_previous_tab() == -1);
-		SIGNAL_CHECK("tab_selected", build_array(build_array(0)));
-		SIGNAL_CHECK("tab_changed", build_array(build_array(0)));
+		SIGNAL_CHECK("tab_selected", { { 0 } });
+		SIGNAL_CHECK("tab_changed", { { 0 } });
 
 		// Set the current tab.
 		tab_bar->set_current_tab(1);
 		CHECK(tab_bar->get_current_tab() == 1);
 		CHECK(tab_bar->get_previous_tab() == 0);
-		SIGNAL_CHECK("tab_selected", build_array(build_array(1)));
-		SIGNAL_CHECK("tab_changed", build_array(build_array(1)));
+		SIGNAL_CHECK("tab_selected", { { 1 } });
+		SIGNAL_CHECK("tab_changed", { { 1 } });
 
 		// Set to same tab.
 		tab_bar->set_current_tab(1);
 		CHECK(tab_bar->get_current_tab() == 1);
 		CHECK(tab_bar->get_previous_tab() == 1);
-		SIGNAL_CHECK("tab_selected", build_array(build_array(1)));
+		SIGNAL_CHECK("tab_selected", { { 1 } });
 		SIGNAL_CHECK_FALSE("tab_changed");
 
 		// Out of bounds.
@@ -327,8 +317,8 @@ TEST_CASE("[SceneTree][TabBar] tab operations") {
 		tab_bar->set_current_tab(-1);
 		CHECK(tab_bar->get_current_tab() == -1);
 		CHECK(tab_bar->get_previous_tab() == 0);
-		SIGNAL_CHECK("tab_selected", build_array(build_array(-1)));
-		SIGNAL_CHECK("tab_changed", build_array(build_array(-1)));
+		SIGNAL_CHECK("tab_selected", { { -1 } });
+		SIGNAL_CHECK("tab_changed", { { -1 } });
 
 		// Adding a tab will still set the current tab to 0.
 		tab_bar->clear_tabs();
@@ -341,8 +331,8 @@ TEST_CASE("[SceneTree][TabBar] tab operations") {
 		CHECK(tab_bar->get_tab_count() == 3);
 		CHECK(tab_bar->get_current_tab() == 0);
 		CHECK(tab_bar->get_previous_tab() == -1);
-		SIGNAL_CHECK("tab_selected", build_array(build_array(0)));
-		SIGNAL_CHECK("tab_changed", build_array(build_array(0)));
+		SIGNAL_CHECK("tab_selected", { { 0 } });
+		SIGNAL_CHECK("tab_changed", { { 0 } });
 
 		tab_bar->set_current_tab(-1);
 		SIGNAL_DISCARD("tab_selected");
@@ -353,8 +343,8 @@ TEST_CASE("[SceneTree][TabBar] tab operations") {
 		CHECK_FALSE(tab_bar->get_deselect_enabled());
 		CHECK(tab_bar->get_current_tab() == 0);
 		CHECK(tab_bar->get_previous_tab() == -1);
-		SIGNAL_CHECK("tab_selected", build_array(build_array(0)));
-		SIGNAL_CHECK("tab_changed", build_array(build_array(0)));
+		SIGNAL_CHECK("tab_selected", { { 0 } });
+		SIGNAL_CHECK("tab_changed", { { 0 } });
 
 		// Cannot set to -1 if disabled.
 		ERR_PRINT_OFF;
@@ -375,8 +365,8 @@ TEST_CASE("[SceneTree][TabBar] tab operations") {
 		tab_bar->set_deselect_enabled(false);
 		CHECK(tab_bar->get_current_tab() == 2);
 		CHECK(tab_bar->get_previous_tab() == -1);
-		SIGNAL_CHECK("tab_selected", build_array(build_array(2)));
-		SIGNAL_CHECK("tab_changed", build_array(build_array(2)));
+		SIGNAL_CHECK("tab_selected", { { 2 } });
+		SIGNAL_CHECK("tab_changed", { { 2 } });
 	}
 
 	SUBCASE("[TabBar] hidden tabs") {
@@ -472,15 +462,15 @@ TEST_CASE("[SceneTree][TabBar] tab operations") {
 		CHECK(tab_bar->select_next_available());
 		CHECK(tab_bar->get_current_tab() == 1);
 		CHECK(tab_bar->get_previous_tab() == 0);
-		SIGNAL_CHECK("tab_selected", build_array(build_array(1)));
-		SIGNAL_CHECK("tab_changed", build_array(build_array(1)));
+		SIGNAL_CHECK("tab_selected", { { 1 } });
+		SIGNAL_CHECK("tab_changed", { { 1 } });
 
 		// Skips over disabled and hidden tabs.
 		CHECK(tab_bar->select_next_available());
 		CHECK(tab_bar->get_current_tab() == 4);
 		CHECK(tab_bar->get_previous_tab() == 1);
-		SIGNAL_CHECK("tab_selected", build_array(build_array(4)));
-		SIGNAL_CHECK("tab_changed", build_array(build_array(4)));
+		SIGNAL_CHECK("tab_selected", { { 4 } });
+		SIGNAL_CHECK("tab_changed", { { 4 } });
 
 		// Does not wrap around.
 		CHECK_FALSE(tab_bar->select_next_available());
@@ -548,15 +538,15 @@ TEST_CASE("[SceneTree][TabBar] tab operations") {
 		CHECK(tab_bar->select_previous_available());
 		CHECK(tab_bar->get_current_tab() == 3);
 		CHECK(tab_bar->get_previous_tab() == 4);
-		SIGNAL_CHECK("tab_selected", build_array(build_array(3)));
-		SIGNAL_CHECK("tab_changed", build_array(build_array(3)));
+		SIGNAL_CHECK("tab_selected", { { 3 } });
+		SIGNAL_CHECK("tab_changed", { { 3 } });
 
 		// Skips over disabled and hidden tabs.
 		CHECK(tab_bar->select_previous_available());
 		CHECK(tab_bar->get_current_tab() == 0);
 		CHECK(tab_bar->get_previous_tab() == 3);
-		SIGNAL_CHECK("tab_selected", build_array(build_array(0)));
-		SIGNAL_CHECK("tab_changed", build_array(build_array(0)));
+		SIGNAL_CHECK("tab_selected", { { 0 } });
+		SIGNAL_CHECK("tab_changed", { { 0 } });
 
 		// Does not wrap around.
 		CHECK_FALSE(tab_bar->select_previous_available());
@@ -630,8 +620,8 @@ TEST_CASE("[SceneTree][TabBar] initialization") {
 		CHECK(tab_bar->get_tab_count() == 2);
 		CHECK(tab_bar->get_current_tab() == 1);
 		CHECK(tab_bar->get_previous_tab() == 0);
-		SIGNAL_CHECK("tab_selected", build_array(build_array(1)));
-		SIGNAL_CHECK("tab_changed", build_array(build_array(1)));
+		SIGNAL_CHECK("tab_selected", { { 1 } });
+		SIGNAL_CHECK("tab_changed", { { 1 } });
 
 		// Does not work again.
 		ERR_PRINT_OFF;
