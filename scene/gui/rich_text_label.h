@@ -37,6 +37,10 @@
 #include "scene/resources/image_texture.h"
 #include "scene/resources/text_paragraph.h"
 
+#ifdef TOOLS_ENABLED
+#include "editor/themes/editor_scale.h"
+#endif
+
 class CharFXTransform;
 class RichTextEffect;
 
@@ -679,6 +683,17 @@ private:
 	void _update_fx(ItemFrame *p_frame, double p_delta_time);
 	void _scroll_changed(double);
 	int _find_first_line(int p_from, int p_to, int p_vofs) const;
+
+#ifdef TOOLS_ENABLED
+	const real_t auto_scroll_speed = EDSCALE * 2.0f;
+#else
+	const real_t auto_scroll_speed = 2.0f;
+#endif
+	Vector2 last_clamped_mouse_pos;
+	Timer *click_select_held = nullptr;
+	Vector2 local_mouse_pos;
+	bool is_selecting_text = false;
+	void _update_selection();
 
 	_FORCE_INLINE_ float _calculate_line_vertical_offset(const Line &line) const;
 
