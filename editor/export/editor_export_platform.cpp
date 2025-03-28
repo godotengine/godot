@@ -1161,30 +1161,35 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 
 		// Get encryption key.
 		String script_key = _get_script_encryption_key(p_preset);
-		key.resize(32);
-		if (script_key.length() == 64) {
-			for (int i = 0; i < 32; i++) {
-				int v = 0;
-				if (i * 2 < script_key.length()) {
-					char32_t ct = script_key[i * 2];
-					if (is_digit(ct)) {
-						ct = ct - '0';
-					} else if (ct >= 'a' && ct <= 'f') {
-						ct = 10 + ct - 'a';
+		{
+			Vector<uint8_t> pkey;
+			pkey.resize(32);
+			if (script_key.length() == 64) {
+				for (int i = 0; i < 32; i++) {
+					int v = 0;
+					if (i * 2 < script_key.length()) {
+						char32_t ct = script_key[i * 2];
+						if (is_digit(ct)) {
+							ct = ct - '0';
+						} else if (ct >= 'a' && ct <= 'f') {
+							ct = 10 + ct - 'a';
+						}
+						v |= ct << 4;
 					}
-					v |= ct << 4;
-				}
 
-				if (i * 2 + 1 < script_key.length()) {
-					char32_t ct = script_key[i * 2 + 1];
-					if (is_digit(ct)) {
-						ct = ct - '0';
-					} else if (ct >= 'a' && ct <= 'f') {
-						ct = 10 + ct - 'a';
+					if (i * 2 + 1 < script_key.length()) {
+						char32_t ct = script_key[i * 2 + 1];
+						if (is_digit(ct)) {
+							ct = ct - '0';
+						} else if (ct >= 'a' && ct <= 'f') {
+							ct = 10 + ct - 'a';
+						}
+						v |= ct;
 					}
-					v |= ct;
+					pkey.write[i] = v;
 				}
-				key.write[i] = v;
+				String salt = vformat("GODOT PCK:%d.%d.%d", PACK_FORMAT_VERSION, GODOT_VERSION_MAJOR, GODOT_VERSION_MINOR);
+				key = CryptoCore::pbkdf2_sha256(pkey.ptr(), 32, (const uint8_t *)salt.utf8().get_data(), salt.utf8().length(), 500000, 32);
 			}
 		}
 	}
@@ -1994,30 +1999,35 @@ Error EditorExportPlatform::save_pack(const Ref<EditorExportPreset> &p_preset, b
 		uint64_t seed = p_preset->get_seed();
 		String script_key = _get_script_encryption_key(p_preset);
 		Vector<uint8_t> key;
-		key.resize(32);
-		if (script_key.length() == 64) {
-			for (int i = 0; i < 32; i++) {
-				int v = 0;
-				if (i * 2 < script_key.length()) {
-					char32_t ct = script_key[i * 2];
-					if (is_digit(ct)) {
-						ct = ct - '0';
-					} else if (ct >= 'a' && ct <= 'f') {
-						ct = 10 + ct - 'a';
+		{
+			Vector<uint8_t> pkey;
+			pkey.resize(32);
+			if (script_key.length() == 64) {
+				for (int i = 0; i < 32; i++) {
+					int v = 0;
+					if (i * 2 < script_key.length()) {
+						char32_t ct = script_key[i * 2];
+						if (is_digit(ct)) {
+							ct = ct - '0';
+						} else if (ct >= 'a' && ct <= 'f') {
+							ct = 10 + ct - 'a';
+						}
+						v |= ct << 4;
 					}
-					v |= ct << 4;
-				}
 
-				if (i * 2 + 1 < script_key.length()) {
-					char32_t ct = script_key[i * 2 + 1];
-					if (is_digit(ct)) {
-						ct = ct - '0';
-					} else if (ct >= 'a' && ct <= 'f') {
-						ct = 10 + ct - 'a';
+					if (i * 2 + 1 < script_key.length()) {
+						char32_t ct = script_key[i * 2 + 1];
+						if (is_digit(ct)) {
+							ct = ct - '0';
+						} else if (ct >= 'a' && ct <= 'f') {
+							ct = 10 + ct - 'a';
+						}
+						v |= ct;
 					}
-					v |= ct;
+					pkey.write[i] = v;
 				}
-				key.write[i] = v;
+				String salt = vformat("GODOT PCK:%d.%d.%d", PACK_FORMAT_VERSION, GODOT_VERSION_MAJOR, GODOT_VERSION_MINOR);
+				key = CryptoCore::pbkdf2_sha256(pkey.ptr(), 32, (const uint8_t *)salt.utf8().get_data(), salt.utf8().length(), 500000, 32);
 			}
 		}
 		fae.instantiate();
