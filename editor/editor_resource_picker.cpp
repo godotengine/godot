@@ -31,6 +31,7 @@
 #include "editor_resource_picker.h"
 
 #include "editor/audio_stream_preview.h"
+#include "editor/editor_file_system.h"
 #include "editor/editor_help.h"
 #include "editor/editor_node.h"
 #include "editor/editor_resource_preview.h"
@@ -317,16 +318,30 @@ void EditorResourcePicker::add_menu_options() {
 }
 
 void EditorResourcePicker::add_menu_files() {
-	Vector<String> files = dir_access->get_files_at(directory_path);
+	EditorFileSystemDirectory *filesys_dir = EditorFileSystem::get_singleton()->get_filesystem_path(directory_path);
 	String res_path = "";
 	if (edited_resource.is_valid() && edited_resource->get_path().is_resource_file()) {
 		res_path = edited_resource->get_path();
 	}
 
-	for (String file : files) {
-		edit_menu->add_radio_check_item(file, OBJ_MENU_LOAD_FILE);
-		if (res_path != "") {
-			edit_menu->set_item_checked(-1, res_path == directory_path + "/" + file);
+	for (int i = 0; i < filesys_dir->get_file_count(); i++) {
+		String file = filesys_dir->get_file(i);
+		String file_path = filesys_dir->get_file_path(i);
+
+		const StringName engine_type = filesys_dir->get_file_type(i);
+		const StringName script_type = filesys_dir->get_file_resource_script_class(i);
+
+		const bool is_engine_type = script_type == StringName();
+
+		for (String base : base_type.split(",")) {
+			bool is_valid = ClassDB::is_parent_class(engine_type, base) || (!is_engine_type && EditorNode::get_editor_data().script_class_is_parent(script_type, base));
+
+			if (is_valid) {
+				edit_menu->add_radio_check_item(file, OBJ_MENU_LOAD_FILE);
+				if (res_path != "") {
+					edit_menu->set_item_checked(-1, res_path == file_path);
+				}
+			}
 		}
 	}
 }
