@@ -37,6 +37,7 @@
 #include "gdscript_warning.h"
 #endif
 
+#include "core/io/dir_access.h"
 #include "core/io/resource.h"
 #include "core/object/ref_counted.h"
 #include "core/object/script_language.h"
@@ -1341,6 +1342,7 @@ private:
 	bool can_continue = false;
 	List<bool> multiline_stack;
 	HashMap<String, Ref<GDScriptParserRef>> depended_parsers;
+	Ref<DirAccess> dir_access;
 
 	ClassNode *head = nullptr;
 	Node *list = nullptr;

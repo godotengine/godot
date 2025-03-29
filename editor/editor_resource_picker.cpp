@@ -31,6 +31,7 @@
 #include "editor_resource_picker.h"
 
 #include "editor/audio_stream_preview.h"
+#include "editor/editor_file_system.h"
 #include "editor/editor_help.h"
 #include "editor/editor_node.h"
 #include "editor/editor_resource_preview.h"
@@ -203,6 +204,14 @@ void EditorResourcePicker::_update_menu_items() {
 	_ensure_resource_menu();
 	edit_menu->clear();
 
+	if (directory_path != "" && dir_access->dir_exists_absolute(directory_path)) {
+		add_menu_files();
+	} else {
+		add_menu_options();
+	}
+}
+
+void EditorResourcePicker::add_menu_options() {
 	// Add options for creating specific subtypes of the base resource type.
 	if (is_editable()) {
 		set_create_options(edit_menu);
@@ -310,6 +319,35 @@ void EditorResourcePicker::_update_menu_items() {
 
 			edit_menu->add_icon_item(icon, vformat(TTR("Convert to %s"), what), CONVERT_BASE_ID + relative_id);
 			relative_id++;
+		}
+	}
+}
+
+void EditorResourcePicker::add_menu_files() {
+	EditorFileSystemDirectory *filesys_dir = EditorFileSystem::get_singleton()->get_filesystem_path(directory_path);
+	String res_path = "";
+	if (edited_resource.is_valid() && edited_resource->get_path().is_resource_file()) {
+		res_path = edited_resource->get_path();
+	}
+
+	for (int i = 0; i < filesys_dir->get_file_count(); i++) {
+		String file = filesys_dir->get_file(i);
+		String file_path = filesys_dir->get_file_path(i);
+
+		const StringName engine_type = filesys_dir->get_file_type(i);
+		const StringName script_type = filesys_dir->get_file_resource_script_class(i);
+
+		const bool is_engine_type = script_type == StringName();
+
+		for (String base : base_type.split(",")) {
+			bool is_valid = ClassDB::is_parent_class(engine_type, base) || (!is_engine_type && EditorNode::get_editor_data().script_class_is_parent(script_type, base));
+
+			if (is_valid) {
+				edit_menu->add_radio_check_item(file, OBJ_MENU_LOAD_FILE);
+				if (res_path != "") {
+					edit_menu->set_item_checked(-1, res_path == file_path);
+				}
+			}
 		}
 	}
 }
@@ -490,6 +528,17 @@ void EditorResourcePicker::_edit_menu_cbk(int p_which) {
 			edited_resource = Ref<Resource>(resp);
 			_resource_changed();
 		} break;
+	}
+}
+
+void EditorResourcePicker::_on_file_pressed(int index) {
+	if (edit_menu->get_item_id(index) == OBJ_MENU_LOAD_FILE) {
+		String file_path = directory_path + "/" + edit_menu->get_item_text(index);
+		edited_resource = ResourceLoader::load(file_path);
+
+		edit_menu->set_item_checked(index, true);
+
+		_resource_changed();
 	}
 }
 
@@ -1007,6 +1056,10 @@ bool EditorResourcePicker::is_editable() const {
 	return editable;
 }
 
+void EditorResourcePicker::set_directory(const String &d_path) {
+	directory_path = d_path;
+}
+
 void EditorResourcePicker::_ensure_resource_menu() {
 	if (edit_menu) {
 		return;
@@ -1015,6 +1068,7 @@ void EditorResourcePicker::_ensure_resource_menu() {
 	edit_menu->add_theme_constant_override("icon_max_width", get_theme_constant(SNAME("class_icon_size"), EditorStringName(Editor)));
 	add_child(edit_menu);
 	edit_menu->connect(SceneStringName(id_pressed), callable_mp(this, &EditorResourcePicker::_edit_menu_cbk));
+	edit_menu->connect("index_pressed", callable_mp(this, &EditorResourcePicker::_on_file_pressed));
 	edit_menu->connect("popup_hide", callable_mp((BaseButton *)edit_button, &BaseButton::set_pressed).bind(false));
 }
 
