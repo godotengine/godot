@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "core/crypto/crypto.h"
 #include "core/object/class_db.h"
 
 template <typename T>
@@ -134,8 +135,8 @@ protected:
 
 	void _convert_to_last_version(int p_from_version);
 
-	bool load_resource_pack(const String &p_pack, bool p_replace_files, int p_offset);
-	bool _load_resource_pack(const String &p_pack, bool p_replace_files = true, int p_offset = 0, bool p_main_pack = false);
+	bool load_resource_pack(const String &p_pack, bool p_replace_files, int p_offset, const Ref<CryptoKey> &p_key = Ref<CryptoKey>());
+	bool _load_resource_pack(const String &p_pack, bool p_replace_files = true, int p_offset = 0, bool p_main_pack = false, const Ref<CryptoKey> &p_key = Ref<CryptoKey>());
 
 	void _add_property_info_bind(const Dictionary &p_info);
 
@@ -145,6 +146,12 @@ protected:
 
 protected:
 	static void _bind_methods();
+
+#ifndef DISABLE_DEPRECATED
+	bool _load_resource_pack_bind_compat_87696(const String &p_pack, bool p_replace_files = true, int p_offset = 0);
+
+	static void _bind_compatibility_methods();
+#endif
 
 public:
 	static const int CONFIG_VERSION = 5;
