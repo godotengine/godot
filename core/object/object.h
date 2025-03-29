@@ -544,16 +544,17 @@ protected:                                                                      
 	_FORCE_INLINE_ void (Object::*_get_notification() const)(int) {                                                                         \
 		return (void(Object::*)(int)) & m_class::_notification;                                                                             \
 	}                                                                                                                                       \
-	virtual void _notificationv(int p_notification, bool p_reversed) override {                                                             \
-		if (!p_reversed) {                                                                                                                  \
-			m_inherits::_notificationv(p_notification, p_reversed);                                                                         \
-		}                                                                                                                                   \
+	virtual void _notification_forward(int p_notification) override {                                                                       \
+		m_inherits::_notification_forward(p_notification);                                                                                  \
 		if (m_class::_get_notification() != m_inherits::_get_notification()) {                                                              \
 			_notification(p_notification);                                                                                                  \
 		}                                                                                                                                   \
-		if (p_reversed) {                                                                                                                   \
-			m_inherits::_notificationv(p_notification, p_reversed);                                                                         \
+	}                                                                                                                                       \
+	virtual void _notification_backward(int p_notification) override {                                                                      \
+		if (m_class::_get_notification() != m_inherits::_get_notification()) {                                                              \
+			_notification(p_notification);                                                                                                  \
 		}                                                                                                                                   \
+		m_inherits::_notification_backward(p_notification);                                                                                 \
 	}                                                                                                                                       \
                                                                                                                                             \
 private:
@@ -697,7 +698,9 @@ protected:
 	virtual void _validate_propertyv(PropertyInfo &p_property) const {}
 	virtual bool _property_can_revertv(const StringName &p_name) const { return false; }
 	virtual bool _property_get_revertv(const StringName &p_name, Variant &r_property) const { return false; }
-	virtual void _notificationv(int p_notification, bool p_reversed) {}
+
+	virtual void _notification_forward(int p_notification);
+	virtual void _notification_backward(int p_notification);
 
 	static void _bind_methods();
 	static void _bind_compatibility_methods() {}
@@ -895,7 +898,14 @@ public:
 		return (cerr.error == Callable::CallError::CALL_OK) ? ret : Variant();
 	}
 
-	void notification(int p_notification, bool p_reversed = false);
+	_FORCE_INLINE_ void notification(int p_notification, bool p_reversed = false) {
+		if (p_reversed) {
+			_notification_backward(p_notification);
+		} else {
+			_notification_forward(p_notification);
+		}
+	}
+
 	virtual String to_string();
 
 	// Used mainly by script, get and set all INCLUDING string.
