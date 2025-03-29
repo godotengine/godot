@@ -1,0 +1,4 @@
+GDTEST_OK
+~~ WARNING at line 1: (UNTYPED_DECLARATION) Function "no_exec_test()" has no static return type.
+~~ WARNING at line 2: (UNTYPED_DECLARATION) Variable "my_var" has no static type.
+~~ WARNING at line 5: (UNTYPED_DECLARATION) Function "test()" has no static return type.

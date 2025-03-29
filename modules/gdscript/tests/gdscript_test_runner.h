@@ -66,6 +66,8 @@ public:
 		TOKENIZER_BUFFER,
 	};
 
+	bool use_static_typing_warnings = false;
+
 private:
 	struct ErrorHandlerData {
 		TestResult *result = nullptr;
