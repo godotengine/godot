@@ -113,72 +113,18 @@ void TexturePreview::_update_texture_display_ratio() {
 	}
 }
 
-static Image::Format get_texture_2d_format(const Ref<Texture2D> &p_texture) {
-	const Ref<ImageTexture> image_texture = p_texture;
-	if (image_texture.is_valid()) {
-		return image_texture->get_format();
-	}
-
-	const Ref<CompressedTexture2D> compressed_texture = p_texture;
-	if (compressed_texture.is_valid()) {
-		return compressed_texture->get_format();
-	}
-
-	// AtlasTexture?
-
-	// Unknown
-	return Image::FORMAT_MAX;
-}
-
-static int get_texture_mipmaps_count(const Ref<Texture2D> &p_texture) {
-	ERR_FAIL_COND_V(p_texture.is_null(), -1);
-
-	// We are having to download the image only to get its mipmaps count. It would be nice if we didn't have to.
-	Ref<Image> image;
-	Ref<AtlasTexture> at = p_texture;
-	if (at.is_valid()) {
-		// The AtlasTexture tries to obtain the region from the atlas as an image,
-		// which will fail if it is a compressed format.
-		Ref<Texture2D> atlas = at->get_atlas();
-		if (atlas.is_valid()) {
-			image = atlas->get_image();
-		}
-	} else {
-		image = p_texture->get_image();
-	}
-
-	if (image.is_valid()) {
-		return image->get_mipmap_count();
-	}
-	return -1;
-}
-
 void TexturePreview::_update_metadata_label_text() {
 	const Ref<Texture2D> texture = texture_display->get_texture();
 	ERR_FAIL_COND(texture.is_null());
 
-	const Image::Format format = get_texture_2d_format(texture.ptr());
-
+	const Image::Format format = texture->get_format();
 	const String format_name = format != Image::FORMAT_MAX ? Image::get_format_name(format) : texture->get_class();
 
 	const Vector2i resolution = texture->get_size();
-	const int mipmaps = get_texture_mipmaps_count(texture);
+	const int mipmaps = texture->has_mipmaps() ? Image::get_image_required_mipmaps(texture->get_width(), texture->get_height(), format) : 0;
 
 	if (format != Image::FORMAT_MAX) {
-		// Avoid signed integer overflow that could occur with huge texture sizes by casting everything to uint64_t.
-		uint64_t memory = uint64_t(resolution.x) * uint64_t(resolution.y) * uint64_t(Image::get_format_pixel_size(format));
-		// Handle VRAM-compressed formats that are stored with 4 bpp.
-		memory >>= Image::get_format_pixel_rshift(format);
-
-		float mipmaps_multiplier = 1.0;
-		float mipmap_increase = 0.25;
-		for (int i = 0; i < mipmaps; i++) {
-			// Each mip adds 25% memory usage of the previous one.
-			// With a complete mipmap chain, memory usage increases by ~33%.
-			mipmaps_multiplier += mipmap_increase;
-			mipmap_increase *= 0.25;
-		}
-		memory *= mipmaps_multiplier;
+		uint64_t memory = Image::get_image_data_size(resolution.x, resolution.y, format, mipmaps > 0);
 
 		if (mipmaps >= 1) {
 			metadata_label->set_text(
@@ -264,7 +210,7 @@ TexturePreview::TexturePreview(Ref<Texture2D> p_texture, bool p_show_metadata) {
 	}
 
 	// Null can be passed by `Camera3DPreview` (which immediately after sets a texture anyways).
-	const Image::Format format = p_texture.is_valid() ? get_texture_2d_format(p_texture.ptr()) : Image::FORMAT_MAX;
+	const Image::Format format = p_texture.is_valid() ? p_texture->get_format() : Image::FORMAT_MAX;
 	const uint32_t components_mask = format != Image::FORMAT_MAX ? Image::get_format_component_mask(format) : 0xf;
 
 	// Add color channel selector at the bottom left if more than 1 channel is available.

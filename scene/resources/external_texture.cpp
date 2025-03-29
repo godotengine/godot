@@ -76,6 +76,14 @@ bool ExternalTexture::has_alpha() const {
 	return false;
 }
 
+bool ExternalTexture::has_mipmaps() const {
+	return false;
+}
+
+Image::Format ExternalTexture::get_format() const {
+	return Image::FORMAT_MAX;
+}
+
 RID ExternalTexture::get_rid() const {
 	if (!texture.is_valid()) {
 		texture = RenderingServer::get_singleton()->texture_2d_placeholder_create();

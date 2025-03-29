@@ -52,6 +52,8 @@ public:
 	virtual RID get_rid() const override;
 
 	virtual bool has_alpha() const override;
+	virtual bool has_mipmaps() const override;
+	virtual Image::Format get_format() const override;
 
 	void set_atlas(const Ref<Texture2D> &p_atlas);
 	Ref<Texture2D> get_atlas() const;

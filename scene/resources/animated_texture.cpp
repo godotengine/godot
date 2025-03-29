@@ -205,6 +205,26 @@ bool AnimatedTexture::has_alpha() const {
 	return frames[current_frame].texture->has_alpha();
 }
 
+bool AnimatedTexture::has_mipmaps() const {
+	RWLockRead r(rw_lock);
+
+	if (frames[current_frame].texture.is_null()) {
+		return false;
+	}
+
+	return frames[current_frame].texture->has_mipmaps();
+}
+
+Image::Format AnimatedTexture::get_format() const {
+	RWLockRead r(rw_lock);
+
+	if (frames[current_frame].texture.is_null()) {
+		return Image::FORMAT_MAX;
+	}
+
+	return frames[current_frame].texture->get_format();
+}
+
 Ref<Image> AnimatedTexture::get_image() const {
 	RWLockRead r(rw_lock);
 
