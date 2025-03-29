@@ -1006,7 +1006,7 @@
 			<param index="0" name="shape" type="RID" />
 			<description>
 				Returns the collision margin for the shape.
-				[b]Note:[/b] This is not used in Godot Physics, so will always return [code]0[/code].
+				[b]Note:[/b] This is not used in GodotPhysics3D, so will always return [code]0[/code].
 			</description>
 		</method>
 		<method name="shape_get_type" qualifiers="const">
@@ -1030,7 +1030,7 @@
 			<param index="1" name="margin" type="float" />
 			<description>
 				Sets the collision margin for the shape.
-				[b]Note:[/b] This is not used in Godot Physics.
+				[b]Note:[/b] This is not used in GodotPhysics3D.
 			</description>
 		</method>
 		<method name="slider_joint_get_param" qualifiers="const">
