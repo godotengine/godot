@@ -5188,7 +5188,7 @@ void VisualShaderEditor::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
-			highend_label->set_modulate(get_theme_color(SNAME("highend_color"), EditorStringName(Editor)));
+			highend_label->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
 
 			param_filter->set_right_icon(Control::get_editor_theme_icon(SNAME("Search")));
 			node_filter->set_right_icon(Control::get_editor_theme_icon(SNAME("Search")));
@@ -6770,9 +6770,9 @@ VisualShaderEditor::VisualShaderEditor() {
 	highend_label = memnew(Label);
 	desc_hbox->add_child(highend_label);
 	highend_label->set_visible(false);
-	highend_label->set_text("Vulkan");
+	highend_label->set_text(TTRC("Forward+/Mobile"));
 	highend_label->set_mouse_filter(Control::MOUSE_FILTER_STOP);
-	highend_label->set_tooltip_text(TTR("High-end node"));
+	highend_label->set_tooltip_text(TTR("Only supported in the Forward+ and Mobile rendering methods, not Compatibility."));
 
 	node_desc = memnew(RichTextLabel);
 	members_vb->add_child(node_desc);
