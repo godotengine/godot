@@ -127,6 +127,15 @@ public:
 		ref(p_from);
 	}
 
+	void operator=(Ref &&p_from) {
+		if (reference == p_from.reference) {
+			return;
+		}
+		unref();
+		reference = p_from.reference;
+		p_from.reference = nullptr;
+	}
+
 	template <typename T_Other>
 	void operator=(const Ref<T_Other> &p_from) {
 		ref_pointer<false>(Object::cast_to<T>(p_from.ptr()));
@@ -157,6 +166,11 @@ public:
 
 	Ref(const Ref &p_from) {
 		this->operator=(p_from);
+	}
+
+	Ref(Ref &&p_from) {
+		reference = p_from.reference;
+		p_from.reference = nullptr;
 	}
 
 	template <typename T_Other>
