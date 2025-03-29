@@ -2159,6 +2159,9 @@ Control *Control::find_next_valid_focus() const {
 
 	Control *from = const_cast<Control *>(this);
 
+	// Index of the current `Control` subtree within the containing `Window`
+	int window_next = -1;
+
 	while (true) {
 		// Find next child.
 
@@ -2188,6 +2191,25 @@ Control *Control::find_next_valid_focus() const {
 						break;
 					}
 					next_child = next_child->data.parent_control;
+				}
+
+				Window *win = next_child == nullptr ? nullptr : next_child->data.parent_window;
+				if (win) { // Cycle through `Control` subtrees of the parent window
+					if (window_next == -1) {
+						window_next = next_child->get_index();
+						ERR_FAIL_INDEX_V(window_next, win->get_child_count(), nullptr);
+					}
+
+					for (int i = 1; i < win->get_child_count() + 1; i++) {
+						int next = Math::wrapi(window_next + i, 0, win->get_child_count());
+						Control *c = Object::cast_to<Control>(win->get_child(next));
+						if (!c || !c->is_visible_in_tree() || c->is_set_as_top_level()) {
+							continue;
+						}
+						window_next = next;
+						next_child = c;
+						break;
+					}
 				}
 			}
 		}
@@ -2240,6 +2262,9 @@ Control *Control::find_prev_valid_focus() const {
 
 	Control *from = const_cast<Control *>(this);
 
+	// Index of the current `Control` subtree within the containing `Window`
+	int window_prev = -1;
+
 	while (true) {
 		// Find prev child.
 
@@ -2248,7 +2273,28 @@ Control *Control::find_prev_valid_focus() const {
 		if (from->is_set_as_top_level() || !from->data.parent_control) {
 			// Find last of the children.
 
-			prev_child = _prev_control(from); // Wrap start here.
+			Window *win = from->data.parent_window;
+			if (win) { // Cycle through `Control` subtrees of the parent window
+				if (window_prev == -1) {
+					window_prev = from->get_index();
+					ERR_FAIL_INDEX_V(window_prev, win->get_child_count(), nullptr);
+				}
+
+				for (int i = 1; i < win->get_child_count() + 1; i++) {
+					int prev = Math::wrapi(window_prev - i, 0, win->get_child_count());
+					Control *c = Object::cast_to<Control>(win->get_child(prev));
+					if (!c || !c->is_visible_in_tree() || c->is_set_as_top_level()) {
+						continue;
+					}
+					window_prev = prev;
+					prev_child = _prev_control(c);
+					break;
+				}
+			}
+
+			if (!prev_child) {
+				prev_child = _prev_control(from); // Wrap start here.
+			}
 
 		} else {
 			for (int i = (from->get_index() - 1); i >= 0; i--) {
