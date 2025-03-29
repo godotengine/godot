@@ -1254,12 +1254,11 @@ def generate_vs_project(env, original_args, project_name="godot"):
             properties.append(
                 "<ActiveProjectItemList_%s>;%s;</ActiveProjectItemList_%s>" % (x, ";".join(itemlist[x]), x)
             )
-        output = f"bin\\godot{env['PROGSUFFIX']}"
+        output = os.path.join("bin", f"godot{env['PROGSUFFIX']}")
 
         with open("misc/msvs/props.template", "r", encoding="utf-8") as file:
             props_template = file.read()
 
-        props_template = props_template.replace("%%VSCONF%%", vsconf)
         props_template = props_template.replace("%%CONDITION%%", condition)
         props_template = props_template.replace("%%PROPERTIES%%", "\n    ".join(properties))
         props_template = props_template.replace("%%EXTRA_ITEMS%%", "\n    ".join(extraItems))
@@ -1272,6 +1271,7 @@ def generate_vs_project(env, original_args, project_name="godot"):
 
         proplist = [str(j) for j in env["CPPPATH"]]
         proplist += [str(j) for j in env.get("VSHINT_INCLUDES", [])]
+        proplist += [str(j) for j in get_default_include_paths(env)]
         props_template = props_template.replace("%%INCLUDES%%", ";".join(proplist))
 
         proplist = env["CCFLAGS"]
@@ -1307,17 +1307,17 @@ def generate_vs_project(env, original_args, project_name="godot"):
 
         commands = "scons"
         if len(common_build_prefix) == 0:
-            commands = "echo Starting SCons &amp;&amp; cmd /V /C " + commands
+            commands = "echo Starting SCons &amp;" + commands
         else:
-            common_build_prefix[0] = "echo Starting SCons &amp;&amp; cmd /V /C " + common_build_prefix[0]
+            common_build_prefix[0] = "echo Starting SCons &amp;" + common_build_prefix[0]
 
-        cmd = " ^&amp; ".join(common_build_prefix + [" ".join([commands] + common_build_postfix)])
+        cmd = " ".join(common_build_prefix + [" ".join([commands] + common_build_postfix)])
         props_template = props_template.replace("%%BUILD%%", cmd)
 
-        cmd = " ^&amp; ".join(common_build_prefix + [" ".join([commands] + cmd_rebuild)])
+        cmd = " ".join(common_build_prefix + [" ".join([commands] + cmd_rebuild)])
         props_template = props_template.replace("%%REBUILD%%", cmd)
 
-        cmd = " ^&amp; ".join(common_build_prefix + [" ".join([commands] + cmd_clean)])
+        cmd = " ".join(common_build_prefix + [" ".join([commands] + cmd_clean)])
         props_template = props_template.replace("%%CLEAN%%", cmd)
 
         with open(
@@ -1606,3 +1606,18 @@ def to_raw_cstring(value: Union[str, List[str]]) -> str:
     else:
         # Wrap multiple segments in parenthesis to suppress `string-concatenation` warnings on clang.
         return "({})".format(" ".join(f'R"<!>({segment.decode()})<!>"' for segment in split))
+
+
+def get_default_include_paths(env):
+    if env.msvc:
+        return []
+    compiler = env.subst("$CXX")
+    target = os.path.join(env.Dir("#main").abspath, "main.cpp")
+    args = [compiler, target, "-x", "c++", "-v"]
+    ret = subprocess.run(args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+    output = ret.stdout
+    match = re.search(r"#include <\.\.\.> search starts here:([\S\s]*)End of search list.", output)
+    if not match:
+        print_warning("Failed to find the include paths in the compiler output.")
+        return []
+    return [x.strip() for x in match[1].strip().splitlines()]
