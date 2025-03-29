@@ -253,7 +253,35 @@
 			<param index="0" name="path_a" type="String" />
 			<param index="1" name="path_b" type="String" />
 			<description>
-				Returns [code]true[/code] if paths [param path_a] and [param path_b] resolve to the same file system object. Returns [code]false[/code] otherwise, even if the files are bit-for-bit identical (e.g., identical copies of the file that are not symbolic links).
+				Returns [code]true[/code] if paths [param path_a] and [param path_b] resolve to the same file system object (taking into account case sensitivity, relative paths, symbolic links, and hard links). Returns [code]false[/code] otherwise, even if the files are bit-for-bit identical (i.e. identical copies of a file that are not symbolic links).
+				[codeblocks]
+				[gdscript]
+				var dir = DirAccess.open("/")
+
+				print(dir.is_equivalent("/sbin/md5sum", "/sBin/MD5Sum")) # Prints `true` on a case-insensitive filesystem, `false` otherwise.
+
+				dir.create_link(ProjectSettings.globalize_path("res://icon.svg"), ProjectSettings.globalize_path("res://icon2.svg"))
+				print(dir.is_equivalent(ProjectSettings.globalize_path("res://icon.svg"), ProjectSettings.globalize_path("res://icon2.svg"))) # Prints `true`, symbolic link.
+				dir.remove(ProjectSettings.globalize_path("res://icon2.svg"))
+
+				dir.copy(ProjectSettings.globalize_path("res://icon.svg"), ProjectSettings.globalize_path("res://icon2.svg"))
+				print(dir.is_equivalent(ProjectSettings.globalize_path("res://icon.svg"), ProjectSettings.globalize_path("res://icon2.svg"))) # Prints `false`, identical file copy.
+				dir.remove(ProjectSettings.globalize_path("res://icon2.svg"))
+				[/gdscript]
+				[csharp]
+				[/csharp]
+				using var dir = DirAccess.Open("/");
+
+				GD.Print(dir.IsEquivalent("/sbin/md5sum", "/sBin/MD5Sum")); // Prints `true` on a case-insensitive filesystem, `false` otherwise.
+
+				dir.CreateLink(ProjectSettings.GlobalizePath("res://icon.svg"), ProjectSettings.GlobalizePath("res://icon2.svg"));
+				GD.Print(dir.IsEquivalent(ProjectSettings.GlobalizePath("res://icon.svg"), ProjectSettings.GlobalizePath("res://icon2.svg"))); // Prints `true`, symbolic link.
+				dir.Remove(ProjectSettings.GlobalizePath("res://icon2.svg"));
+
+				dir.Copy(ProjectSettings.GlobalizePath("res://icon.svg"), ProjectSettings.GlobalizePath("res://icon2.svg"));
+				GD.Print(dir.IsEquivalent(ProjectSettings.GlobalizePath("res://icon.svg"), ProjectSettings.GlobalizePath("res://icon2.svg"))); // Prints `false`, identical file copy.
+				dir.Remove(ProjectSettings.GlobalizePath("res://icon2.svg"));
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="is_link">
