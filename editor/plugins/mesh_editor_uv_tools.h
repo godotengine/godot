@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  multimesh_instance_3d.h                                               */
+/*  mesh_editor_uv_tools.h                                                */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -30,41 +30,25 @@
 
 #pragma once
 
-#include "scene/3d/visual_instance_3d.h"
-#include "scene/resources/multimesh.h"
+#include "scene/gui/control.h"
 
-class NavigationMesh;
-class NavigationMeshSourceGeometryData3D;
+class AcceptDialog;
+class AspectRatioContainer;
+class Mesh;
 
-class MultiMeshInstance3D : public GeometryInstance3D {
-	GDCLASS(MultiMeshInstance3D, GeometryInstance3D);
+class MeshEditorUVTools : public Control {
+	GDCLASS(MeshEditorUVTools, Control);
 
-	Ref<MultiMesh> multimesh;
-
-	void _refresh_interpolated();
-
-protected:
-	virtual void _physics_interpolated_changed() override;
-	static void _bind_methods();
-	void _notification(int p_what);
+	AcceptDialog *err_dialog = nullptr;
+	AcceptDialog *debug_uv_dialog = nullptr;
+	AspectRatioContainer *debug_uv_arc = nullptr;
+	Control *debug_uv = nullptr;
+	Vector<Vector2> uv_lines;
 
 public:
-	void set_multimesh(const Ref<MultiMesh> &p_multimesh);
-	Ref<MultiMesh> get_multimesh() const;
+	void debug_uv_draw();
+	void create_uv_lines(Ref<Mesh> p_mesh, int p_layer);
+	void create_uv2(Node3D *p_node, Ref<Mesh> p_mesh);
 
-	Array get_meshes() const;
-
-	virtual AABB get_aabb() const override;
-	Array get_bake_meshes();
-
-private:
-	static Callable _navmesh_source_geometry_parsing_callback;
-	static RID _navmesh_source_geometry_parser;
-
-public:
-	static void navmesh_parse_init();
-	static void navmesh_parse_source_geometry(const Ref<NavigationMesh> &p_navigation_mesh, Ref<NavigationMeshSourceGeometryData3D> p_source_geometry_data, Node *p_node);
-
-	MultiMeshInstance3D();
-	~MultiMeshInstance3D();
+	MeshEditorUVTools();
 };
