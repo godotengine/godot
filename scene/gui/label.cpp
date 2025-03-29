@@ -448,57 +448,59 @@ inline void draw_glyph_outline(const Glyph &p_gl, const RID &p_canvas, const Col
 }
 
 #define DRAW_TEXT(rtl, ellipsis_pos, ellipsis_gl_size, ellipsis_glyphs, trim_chars, para_start, visible_chars, trim_glyphs_ltr, processed_glyphs_step, processed_glyphs, visible_glyphs, trim_glyphs_rtl, total_glyphs, ci, ofs, gl_size, trim_pos, glyphs, color, draw_func, ...) \
-	processed_glyphs_step = processed_glyphs;                                                                                                                                                                                                                                      \
-	Vector2 offset_step = ofs;                                                                                                                                                                                                                                                     \
-	/* Draw RTL ellipsis string when necessary. */                                                                                                                                                                                                                                 \
-	if (rtl && ellipsis_pos >= 0) {                                                                                                                                                                                                                                                \
-		for (int gl_idx = ellipsis_gl_size - 1; gl_idx >= 0; gl_idx--) {                                                                                                                                                                                                           \
-			for (int j = 0; j < ellipsis_glyphs[gl_idx].repeat; j++) {                                                                                                                                                                                                             \
-				bool skip = (trim_chars && ellipsis_glyphs[gl_idx].end + para_start > visible_chars) || (trim_glyphs_ltr && (processed_glyphs_step >= visible_glyphs)) || (trim_glyphs_rtl && (processed_glyphs_step < total_glyphs - visible_glyphs));                            \
+	do {                                                                                                                                                                                                                                                                           \
+		processed_glyphs_step = processed_glyphs;                                                                                                                                                                                                                                  \
+		Vector2 offset_step = ofs;                                                                                                                                                                                                                                                 \
+		/* Draw RTL ellipsis string when necessary. */                                                                                                                                                                                                                             \
+		if (rtl && ellipsis_pos >= 0) {                                                                                                                                                                                                                                            \
+			for (int gl_idx = ellipsis_gl_size - 1; gl_idx >= 0; gl_idx--) {                                                                                                                                                                                                       \
+				for (int j = 0; j < ellipsis_glyphs[gl_idx].repeat; j++) {                                                                                                                                                                                                         \
+					bool skip = (trim_chars && ellipsis_glyphs[gl_idx].end + para_start > visible_chars) || (trim_glyphs_ltr && (processed_glyphs_step >= visible_glyphs)) || (trim_glyphs_rtl && (processed_glyphs_step < total_glyphs - visible_glyphs));                        \
+					if (!skip) {                                                                                                                                                                                                                                                   \
+						draw_func(ellipsis_glyphs[gl_idx], ci, color, offset_step, ##__VA_ARGS__);                                                                                                                                                                                 \
+					}                                                                                                                                                                                                                                                              \
+					processed_glyphs_step++;                                                                                                                                                                                                                                       \
+					offset_step.x += ellipsis_glyphs[gl_idx].advance;                                                                                                                                                                                                              \
+				}                                                                                                                                                                                                                                                                  \
+			}                                                                                                                                                                                                                                                                      \
+		}                                                                                                                                                                                                                                                                          \
+		/* Draw main text. */                                                                                                                                                                                                                                                      \
+		for (int j = 0; j < gl_size; j++) {                                                                                                                                                                                                                                        \
+			/* Trim when necessary. */                                                                                                                                                                                                                                             \
+			if (trim_pos >= 0) {                                                                                                                                                                                                                                                   \
+				if (rtl) {                                                                                                                                                                                                                                                         \
+					if (j < trim_pos) {                                                                                                                                                                                                                                            \
+						continue;                                                                                                                                                                                                                                                  \
+					}                                                                                                                                                                                                                                                              \
+				} else {                                                                                                                                                                                                                                                           \
+					if (j >= trim_pos) {                                                                                                                                                                                                                                           \
+						break;                                                                                                                                                                                                                                                     \
+					}                                                                                                                                                                                                                                                              \
+				}                                                                                                                                                                                                                                                                  \
+			}                                                                                                                                                                                                                                                                      \
+			for (int k = 0; k < glyphs[j].repeat; k++) {                                                                                                                                                                                                                           \
+				bool skip = (trim_chars && glyphs[j].end + para_start > visible_chars) || (trim_glyphs_ltr && (processed_glyphs_step >= visible_glyphs)) || (trim_glyphs_rtl && (processed_glyphs_step < total_glyphs - visible_glyphs));                                          \
 				if (!skip) {                                                                                                                                                                                                                                                       \
-					draw_func(ellipsis_glyphs[gl_idx], ci, color, offset_step, ##__VA_ARGS__);                                                                                                                                                                                     \
+					draw_func(glyphs[j], ci, color, offset_step, ##__VA_ARGS__);                                                                                                                                                                                                   \
 				}                                                                                                                                                                                                                                                                  \
 				processed_glyphs_step++;                                                                                                                                                                                                                                           \
-				offset_step.x += ellipsis_glyphs[gl_idx].advance;                                                                                                                                                                                                                  \
+				offset_step.x += glyphs[j].advance;                                                                                                                                                                                                                                \
 			}                                                                                                                                                                                                                                                                      \
 		}                                                                                                                                                                                                                                                                          \
-	}                                                                                                                                                                                                                                                                              \
-	/* Draw main text. */                                                                                                                                                                                                                                                          \
-	for (int j = 0; j < gl_size; j++) {                                                                                                                                                                                                                                            \
-		/* Trim when necessary. */                                                                                                                                                                                                                                                 \
-		if (trim_pos >= 0) {                                                                                                                                                                                                                                                       \
-			if (rtl) {                                                                                                                                                                                                                                                             \
-				if (j < trim_pos) {                                                                                                                                                                                                                                                \
-					continue;                                                                                                                                                                                                                                                      \
-				}                                                                                                                                                                                                                                                                  \
-			} else {                                                                                                                                                                                                                                                               \
-				if (j >= trim_pos) {                                                                                                                                                                                                                                               \
-					break;                                                                                                                                                                                                                                                         \
+		/* Draw LTR ellipsis string when necessary. */                                                                                                                                                                                                                             \
+		if (!rtl && ellipsis_pos >= 0) {                                                                                                                                                                                                                                           \
+			for (int gl_idx = 0; gl_idx < ellipsis_gl_size; gl_idx++) {                                                                                                                                                                                                            \
+				for (int j = 0; j < ellipsis_glyphs[gl_idx].repeat; j++) {                                                                                                                                                                                                         \
+					bool skip = (trim_chars && ellipsis_glyphs[gl_idx].end + para_start > visible_chars) || (trim_glyphs_ltr && (processed_glyphs_step >= visible_glyphs)) || (trim_glyphs_rtl && (processed_glyphs_step < total_glyphs - visible_glyphs));                        \
+					if (!skip) {                                                                                                                                                                                                                                                   \
+						draw_func(ellipsis_glyphs[gl_idx], ci, color, offset_step, ##__VA_ARGS__);                                                                                                                                                                                 \
+					}                                                                                                                                                                                                                                                              \
+					processed_glyphs_step++;                                                                                                                                                                                                                                       \
+					offset_step.x += ellipsis_glyphs[gl_idx].advance;                                                                                                                                                                                                              \
 				}                                                                                                                                                                                                                                                                  \
 			}                                                                                                                                                                                                                                                                      \
 		}                                                                                                                                                                                                                                                                          \
-		for (int k = 0; k < glyphs[j].repeat; k++) {                                                                                                                                                                                                                               \
-			bool skip = (trim_chars && glyphs[j].end + para_start > visible_chars) || (trim_glyphs_ltr && (processed_glyphs_step >= visible_glyphs)) || (trim_glyphs_rtl && (processed_glyphs_step < total_glyphs - visible_glyphs));                                              \
-			if (!skip) {                                                                                                                                                                                                                                                           \
-				draw_func(glyphs[j], ci, color, offset_step, ##__VA_ARGS__);                                                                                                                                                                                                       \
-			}                                                                                                                                                                                                                                                                      \
-			processed_glyphs_step++;                                                                                                                                                                                                                                               \
-			offset_step.x += glyphs[j].advance;                                                                                                                                                                                                                                    \
-		}                                                                                                                                                                                                                                                                          \
-	}                                                                                                                                                                                                                                                                              \
-	/* Draw LTR ellipsis string when necessary. */                                                                                                                                                                                                                                 \
-	if (!rtl && ellipsis_pos >= 0) {                                                                                                                                                                                                                                               \
-		for (int gl_idx = 0; gl_idx < ellipsis_gl_size; gl_idx++) {                                                                                                                                                                                                                \
-			for (int j = 0; j < ellipsis_glyphs[gl_idx].repeat; j++) {                                                                                                                                                                                                             \
-				bool skip = (trim_chars && ellipsis_glyphs[gl_idx].end + para_start > visible_chars) || (trim_glyphs_ltr && (processed_glyphs_step >= visible_glyphs)) || (trim_glyphs_rtl && (processed_glyphs_step < total_glyphs - visible_glyphs));                            \
-				if (!skip) {                                                                                                                                                                                                                                                       \
-					draw_func(ellipsis_glyphs[gl_idx], ci, color, offset_step, ##__VA_ARGS__);                                                                                                                                                                                     \
-				}                                                                                                                                                                                                                                                                  \
-				processed_glyphs_step++;                                                                                                                                                                                                                                           \
-				offset_step.x += ellipsis_glyphs[gl_idx].advance;                                                                                                                                                                                                                  \
-			}                                                                                                                                                                                                                                                                      \
-		}                                                                                                                                                                                                                                                                          \
-	}
+	} while (false)
 
 void Label::_ensure_shaped() const {
 	if (dirty || font_dirty || text_dirty) {
@@ -805,6 +807,10 @@ void Label::_notification(int p_what) {
 			int shadow_outline_size = has_settings ? settings->get_shadow_size() : theme_cache.font_shadow_outline_size;
 			PackedColorArray font_stacked_outline_colors = has_settings ? settings->get_stacked_outline_colors() : theme_cache.font_stacked_outline_colors;
 			PackedInt32Array font_stacked_outline_sizes = has_settings ? settings->get_stacked_outline_sizes() : theme_cache.font_stacked_outline_sizes;
+			PackedColorArray font_stacked_shadow_colors = has_settings ? settings->get_stacked_shadow_colors() : theme_cache.font_stacked_shadow_colors;
+			PackedInt32Array font_stacked_shadow_offset_xs = has_settings ? settings->get_stacked_shadow_offset_xs() : theme_cache.font_stacked_shadow_offset_xs;
+			PackedInt32Array font_stacked_shadow_offset_ys = has_settings ? settings->get_stacked_shadow_offset_ys() : theme_cache.font_stacked_shadow_offset_ys;
+			PackedInt32Array font_stacked_shadow_outline_sizes = has_settings ? settings->get_stacked_shadow_outline_sizes() : theme_cache.font_stacked_shadow_outline_sizes;
 			bool rtl_layout = is_layout_rtl();
 
 			if (get_text().begins_with("Lorem ipsum dolor sit amet")) {
@@ -865,12 +871,38 @@ void Label::_notification(int p_what) {
 
 						// Draw shadow outline.
 						if (font_shadow_color.a != 0 && shadow_outline_size > 0) {
-							DRAW_TEXT(rtl, ellipsis_pos, ellipsis_gl_size, ellipsis_glyphs, trim_chars, para.start, visible_chars, trim_glyphs_ltr, processed_glyphs_step, processed_glyphs, visible_glyphs, trim_glyphs_rtl, total_glyphs, ci, ofs, gl_size, trim_pos, glyphs, font_shadow_color, draw_glyph_shadow_outline, shadow_outline_size, shadow_ofs)
+							DRAW_TEXT(rtl, ellipsis_pos, ellipsis_gl_size, ellipsis_glyphs, trim_chars, para.start, visible_chars, trim_glyphs_ltr, processed_glyphs_step, processed_glyphs, visible_glyphs, trim_glyphs_rtl, total_glyphs, ci, ofs, gl_size, trim_pos, glyphs, font_shadow_color, draw_glyph_shadow_outline, shadow_outline_size, shadow_ofs);
 						}
 
 						// Draw shadow.
 						if (font_shadow_color.a > 0) {
-							DRAW_TEXT(rtl, ellipsis_pos, ellipsis_gl_size, ellipsis_glyphs, trim_chars, para.start, visible_chars, trim_glyphs_ltr, processed_glyphs_step, processed_glyphs, visible_glyphs, trim_glyphs_rtl, total_glyphs, ci, ofs, gl_size, trim_pos, glyphs, font_shadow_color, draw_glyph_shadow, shadow_ofs)
+							DRAW_TEXT(rtl, ellipsis_pos, ellipsis_gl_size, ellipsis_glyphs, trim_chars, para.start, visible_chars, trim_glyphs_ltr, processed_glyphs_step, processed_glyphs, visible_glyphs, trim_glyphs_rtl, total_glyphs, ci, ofs, gl_size, trim_pos, glyphs, font_shadow_color, draw_glyph_shadow, shadow_ofs);
+						}
+
+						// Draw stacked shadow.
+						if (font_stacked_shadow_colors.size() != 0 && font_stacked_shadow_offset_xs.size() != 0 && font_stacked_shadow_offset_ys.size() != 0) {
+							int draw_iterations = MIN(font_stacked_shadow_offset_xs.size(), font_stacked_shadow_offset_ys.size());
+							draw_iterations = MIN(draw_iterations, font_stacked_shadow_colors.size());
+
+							for (int draw_iteration_index = draw_iterations - 1; draw_iteration_index >= 0; --draw_iteration_index) {
+								Color font_stacked_shadow_color = font_stacked_shadow_colors[draw_iteration_index];
+
+								if (font_stacked_shadow_color.a == 0) {
+									continue;
+								}
+
+								Point2 font_stacked_shadow_offset = Point2(font_stacked_shadow_offset_xs[draw_iteration_index], font_stacked_shadow_offset_ys[draw_iteration_index]);
+								int font_stacked_shadow_outline_size = 0;
+								if (draw_iteration_index < font_stacked_shadow_outline_sizes.size()) {
+									font_stacked_shadow_outline_size = font_stacked_shadow_outline_sizes[draw_iteration_index];
+								}
+
+								if (font_stacked_shadow_outline_size > 0) {
+									DRAW_TEXT(rtl, ellipsis_pos, ellipsis_gl_size, ellipsis_glyphs, trim_chars, para.start, visible_chars, trim_glyphs_ltr, processed_glyphs_step, processed_glyphs, visible_glyphs, trim_glyphs_rtl, total_glyphs, ci, ofs, gl_size, trim_pos, glyphs, font_stacked_shadow_color, draw_glyph_shadow_outline, font_stacked_shadow_outline_size, font_stacked_shadow_offset);
+								}
+
+								DRAW_TEXT(rtl, ellipsis_pos, ellipsis_gl_size, ellipsis_glyphs, trim_chars, para.start, visible_chars, trim_glyphs_ltr, processed_glyphs_step, processed_glyphs, visible_glyphs, trim_glyphs_rtl, total_glyphs, ci, ofs, gl_size, trim_pos, glyphs, font_stacked_shadow_color, draw_glyph_shadow, font_stacked_shadow_offset);
+							}
 						}
 
 						// Draw stacked outline.
@@ -893,19 +925,19 @@ void Label::_notification(int p_what) {
 									continue;
 								}
 
-								DRAW_TEXT(rtl, ellipsis_pos, ellipsis_gl_size, ellipsis_glyphs, trim_chars, para.start, visible_chars, trim_glyphs_ltr, processed_glyphs_step, processed_glyphs, visible_glyphs, trim_glyphs_rtl, total_glyphs, ci, ofs, gl_size, trim_pos, glyphs, font_stacked_outline_color, draw_glyph_outline, stacked_outline_draw_size)
+								DRAW_TEXT(rtl, ellipsis_pos, ellipsis_gl_size, ellipsis_glyphs, trim_chars, para.start, visible_chars, trim_glyphs_ltr, processed_glyphs_step, processed_glyphs, visible_glyphs, trim_glyphs_rtl, total_glyphs, ci, ofs, gl_size, trim_pos, glyphs, font_stacked_outline_color, draw_glyph_outline, stacked_outline_draw_size);
 								stacked_outline_draw_size -= font_stacked_outline_size;
 							}
 						}
 
 						// Draw outline.
 						if (outline_size > 0 && font_outline_color.a != 0) {
-							DRAW_TEXT(rtl, ellipsis_pos, ellipsis_gl_size, ellipsis_glyphs, trim_chars, para.start, visible_chars, trim_glyphs_ltr, processed_glyphs_step, processed_glyphs, visible_glyphs, trim_glyphs_rtl, total_glyphs, ci, ofs, gl_size, trim_pos, glyphs, font_outline_color, draw_glyph_outline, outline_size)
+							DRAW_TEXT(rtl, ellipsis_pos, ellipsis_gl_size, ellipsis_glyphs, trim_chars, para.start, visible_chars, trim_glyphs_ltr, processed_glyphs_step, processed_glyphs, visible_glyphs, trim_glyphs_rtl, total_glyphs, ci, ofs, gl_size, trim_pos, glyphs, font_outline_color, draw_glyph_outline, outline_size);
 						}
 
 						// Draw text.
 						{
-							DRAW_TEXT(rtl, ellipsis_pos, ellipsis_gl_size, ellipsis_glyphs, trim_chars, para.start, visible_chars, trim_glyphs_ltr, processed_glyphs_step, processed_glyphs, visible_glyphs, trim_glyphs_rtl, total_glyphs, ci, ofs, gl_size, trim_pos, glyphs, font_color, draw_glyph)
+							DRAW_TEXT(rtl, ellipsis_pos, ellipsis_gl_size, ellipsis_glyphs, trim_chars, para.start, visible_chars, trim_glyphs_ltr, processed_glyphs_step, processed_glyphs, visible_glyphs, trim_glyphs_rtl, total_glyphs, ci, ofs, gl_size, trim_pos, glyphs, font_color, draw_glyph);
 						}
 
 						processed_glyphs = processed_glyphs_step;
@@ -1484,6 +1516,10 @@ void Label::_bind_methods() {
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR_ARRAY, Label, font_stacked_outline_colors);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT_ARRAY, Label, font_stacked_outline_sizes);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR_ARRAY, Label, font_stacked_shadow_colors);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT_ARRAY, Label, font_stacked_shadow_offset_xs);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT_ARRAY, Label, font_stacked_shadow_offset_ys);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_CONSTANT_ARRAY, Label, font_stacked_shadow_outline_sizes);
 }
 
 Label::Label(const String &p_text) {

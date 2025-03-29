@@ -221,3 +221,47 @@ void LabelSettings::set_stacked_outline_colors(const PackedColorArray &p_color) 
 PackedColorArray LabelSettings::get_stacked_outline_colors() const {
 	return stacked_outline_colors;
 }
+
+void LabelSettings::set_stacked_shadow_colors(const PackedColorArray &p_color) {
+	if (stacked_shadow_colors != p_color) {
+		stacked_shadow_colors = p_color;
+		emit_changed();
+	}
+}
+
+PackedColorArray LabelSettings::get_stacked_shadow_colors() const {
+	return stacked_shadow_colors;
+}
+
+void LabelSettings::set_stacked_shadow_offset_xs(const PackedInt32Array &p_size) {
+	if (stacked_shadow_offset_xs != p_size) {
+		stacked_shadow_offset_xs = p_size;
+		emit_changed();
+	}
+}
+
+PackedInt32Array LabelSettings::get_stacked_shadow_offset_xs() const {
+	return stacked_shadow_offset_xs;
+}
+
+void LabelSettings::set_stacked_shadow_offset_ys(const PackedInt32Array &p_size) {
+	if (stacked_shadow_offset_ys != p_size) {
+		stacked_shadow_offset_ys = p_size;
+		emit_changed();
+	}
+}
+
+PackedInt32Array LabelSettings::get_stacked_shadow_offset_ys() const {
+	return stacked_shadow_offset_ys;
+}
+
+void LabelSettings::set_stacked_shadow_outline_sizes(const PackedInt32Array &p_size) {
+	if (stacked_shadow_outline_sizes != p_size) {
+		stacked_shadow_outline_sizes = p_size;
+		emit_changed();
+	}
+}
+
+PackedInt32Array LabelSettings::get_stacked_shadow_outline_sizes() const {
+	return stacked_shadow_outline_sizes;
+}

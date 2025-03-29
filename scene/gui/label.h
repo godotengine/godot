@@ -98,6 +98,10 @@ private:
 
 		PackedColorArray font_stacked_outline_colors;
 		PackedInt32Array font_stacked_outline_sizes;
+		PackedColorArray font_stacked_shadow_colors;
+		PackedInt32Array font_stacked_shadow_offset_xs;
+		PackedInt32Array font_stacked_shadow_offset_ys;
+		PackedInt32Array font_stacked_shadow_outline_sizes;
 	} theme_cache;
 
 	Rect2 _get_line_rect(int p_para, int p_line) const;

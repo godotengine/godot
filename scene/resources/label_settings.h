@@ -55,6 +55,10 @@ class LabelSettings : public Resource {
 
 	PackedInt32Array stacked_outline_sizes;
 	PackedColorArray stacked_outline_colors;
+	PackedColorArray stacked_shadow_colors;
+	PackedInt32Array stacked_shadow_offset_xs;
+	PackedInt32Array stacked_shadow_offset_ys;
+	PackedInt32Array stacked_shadow_outline_sizes;
 
 	void _font_changed();
 
@@ -97,4 +101,16 @@ public:
 
 	void set_stacked_outline_colors(const PackedColorArray &p_color);
 	PackedColorArray get_stacked_outline_colors() const;
+
+	void set_stacked_shadow_colors(const PackedColorArray &p_color);
+	PackedColorArray get_stacked_shadow_colors() const;
+
+	void set_stacked_shadow_offset_xs(const PackedInt32Array &p_size);
+	PackedInt32Array get_stacked_shadow_offset_xs() const;
+
+	void set_stacked_shadow_offset_ys(const PackedInt32Array &p_size);
+	PackedInt32Array get_stacked_shadow_offset_ys() const;
+
+	void set_stacked_shadow_outline_sizes(const PackedInt32Array &p_size);
+	PackedInt32Array get_stacked_shadow_outline_sizes() const;
 };

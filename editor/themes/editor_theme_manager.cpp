@@ -1493,6 +1493,10 @@ void EditorThemeManager::_populate_standard_styles(const Ref<EditorTheme> &p_the
 
 		p_theme->set_color_array("font_stacked_outline_colors", "Label", PackedColorArray());
 		p_theme->set_constant_array("font_stacked_outline_sizes", "Label", PackedInt32Array());
+		p_theme->set_color_array("font_stacked_shadow_colors", "Label", PackedColorArray());
+		p_theme->set_constant_array("font_stacked_shadow_offset_xs", "Label", PackedInt32Array());
+		p_theme->set_constant_array("font_stacked_shadow_offset_ys", "Label", PackedInt32Array());
+		p_theme->set_constant_array("font_stacked_shadow_outline_sizes", "Label", PackedInt32Array());
 	}
 
 	// SpinBox.
