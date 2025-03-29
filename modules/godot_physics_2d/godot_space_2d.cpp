@@ -944,7 +944,7 @@ bool GodotSpace2D::test_body_motion(GodotBody2D *p_body, const PhysicsServer2D::
 
 				if (body_shape->allows_one_way_collision() && col_obj->is_shape_set_as_one_way_collision(shape_idx)) {
 					rcd.valid_dir = col_obj->get_shape_one_way_collision_direction(shape_idx).rotated(col_obj_shape_xform.get_rotation());
-					
+
 					real_t owc_margin = col_obj->get_shape_one_way_collision_margin(shape_idx);
 					rcd.valid_depth = MAX(owc_margin, margin); //user specified, but never less than actual margin or it won't work
 
