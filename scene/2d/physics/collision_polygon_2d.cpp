@@ -292,6 +292,17 @@ real_t CollisionPolygon2D::get_one_way_collision_margin() const {
 	return one_way_collision_margin;
 }
 
+void CollisionPolygon2D::set_one_way_collision_direction(Vector2 p_direction) {
+	one_way_collision_direction = p_direction.normalized();
+	if (collision_object) {
+		collision_object->shape_owner_set_one_way_collision_direction(owner_id, p_direction);
+	}
+}
+
+Vector2 CollisionPolygon2D::get_one_way_collision_direction() const {
+	return one_way_collision_direction;
+}
+
 void CollisionPolygon2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_polygon", "polygon"), &CollisionPolygon2D::set_polygon);
 	ClassDB::bind_method(D_METHOD("get_polygon"), &CollisionPolygon2D::get_polygon);
