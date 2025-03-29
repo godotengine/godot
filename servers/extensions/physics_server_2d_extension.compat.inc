@@ -35,7 +35,7 @@ void PhysicsServer2DExtension::_body_set_shape_as_one_way_collision_bind_compat_
 }
 
 void PhysicsServer2DExtension::_bind_compatibility_methods() {
-	ClassDB::bind_compatibility_method(D_METHOD("body_set_shape_as_one_way_collision", "body", "shape_idx", "enable", "margin"), &PhysicsServer2DExtension::_body_set_shape_as_one_way_collision_bind_compat_104736);
+	ClassDB::bind_compatibility_method(D_METHOD("_body_set_shape_as_one_way_collision", "body", "shape_idx", "enable", "margin"), &PhysicsServer2DExtension::_body_set_shape_as_one_way_collision_bind_compat_104736);
 }
 
 #endif
