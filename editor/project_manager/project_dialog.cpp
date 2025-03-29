@@ -774,7 +774,7 @@ void ProjectDialog::show_dialog(bool p_reset_name) {
 		renderer_container->hide();
 		default_files_container->hide();
 
-		callable_mp((Control *)project_name, &Control::grab_focus).call_deferred();
+		callable_mp((Control *)project_name, &Control::grab_focus).call_deferred(PlayerId::P1);
 		callable_mp(project_name, &LineEdit::select_all).call_deferred();
 	} else {
 		if (p_reset_name) {
@@ -819,7 +819,7 @@ void ProjectDialog::show_dialog(bool p_reset_name) {
 			renderer_container->show();
 			default_files_container->show();
 
-			callable_mp((Control *)project_name, &Control::grab_focus).call_deferred();
+			callable_mp((Control *)project_name, &Control::grab_focus).call_deferred(PlayerId::P1);
 			callable_mp(project_name, &LineEdit::select_all).call_deferred();
 		} else if (mode == MODE_INSTALL) {
 			set_title(TTR("Install Project:") + " " + zip_title);
@@ -832,7 +832,7 @@ void ProjectDialog::show_dialog(bool p_reset_name) {
 			renderer_container->hide();
 			default_files_container->hide();
 
-			callable_mp((Control *)project_path, &Control::grab_focus).call_deferred();
+			callable_mp((Control *)project_path, &Control::grab_focus).call_deferred(PlayerId::P1);
 		}
 
 		auto_dir = "";

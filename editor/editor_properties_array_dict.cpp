@@ -514,7 +514,7 @@ void EditorPropertyArray::update_property() {
 				slot.set_index(idx);
 			}
 			if (slot.index == changing_type_index) {
-				callable_mp(slot.prop, &EditorProperty::grab_focus).call_deferred(0);
+				callable_mp(slot.prop, &EditorProperty::grab_focus).call_deferred(PlayerId::P1);
 				changing_type_index = EditorPropertyArrayObject::NOT_CHANGING_TYPE;
 			}
 			slot.prop->update_property();
@@ -1383,7 +1383,7 @@ void EditorPropertyDictionary::update_property() {
 			// We need to grab the focus of the property that is being changed, even if the type didn't actually changed.
 			// Otherwise, focus will stay on the change type button, which is not very user friendly.
 			if (changing_type_index == slot.index) {
-				callable_mp(slot.prop, &EditorProperty::grab_focus).call_deferred(0);
+				callable_mp(slot.prop, &EditorProperty::grab_focus).call_deferred(PlayerId::P1);
 				changing_type_index = EditorPropertyDictionaryObject::NOT_CHANGING_TYPE; // Reset to avoid grabbing focus again.
 			}
 

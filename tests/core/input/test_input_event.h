@@ -46,6 +46,7 @@ TEST_CASE("[InputEvent] Signal is emitted when device is changed") {
 
 	Array empty_args = { {} };
 	input_event->set_device(1);
+	input_event->set_player_from_device();
 
 	SIGNAL_CHECK("changed", empty_args);
 	CHECK(input_event->get_device() == 1);

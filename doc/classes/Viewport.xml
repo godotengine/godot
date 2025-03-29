@@ -150,6 +150,7 @@
 		</method>
 		<method name="gui_get_focus_owner" qualifiers="const">
 			<return type="Control" />
+			<param index="0" name="player_id" type="int" enum="PlayerId" default="0" />
 			<description>
 				Returns the currently focused [Control] within this viewport. If no [Control] is focused, returns [code]null[/code].
 			</description>
@@ -176,6 +177,7 @@
 		</method>
 		<method name="gui_release_focus">
 			<return type="void" />
+			<param index="0" name="player_id" type="int" enum="PlayerId" default="0" />
 			<description>
 				Removes the focus from the currently focused [Control] within this viewport. If no [Control] has the focus, does nothing.
 			</description>
@@ -223,6 +225,7 @@
 		<method name="push_text_input">
 			<return type="void" />
 			<param index="0" name="text" type="String" />
+			<param index="1" name="player_id" type="int" enum="PlayerId" />
 			<description>
 				Helper method which calls the [code]set_text()[/code] method on the currently focused [Control], provided that it is defined (e.g. if the focused Control is [Button] or [LineEdit]).
 			</description>
