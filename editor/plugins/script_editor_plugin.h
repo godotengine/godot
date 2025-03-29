@@ -228,7 +228,7 @@ typedef ScriptEditorBase *(*CreateScriptEditorFunc)(const Ref<Resource> &p_resou
 
 class EditorScriptCodeCompletionCache;
 class FindInFilesDialog;
-class FindInFilesPanel;
+class FindInFilesTab;
 
 #ifdef MINGW_ENABLED
 #undef FILE_OPEN
@@ -342,7 +342,7 @@ class ScriptEditor : public PanelContainer {
 	Button *script_forward = nullptr;
 
 	FindInFilesDialog *find_in_files_dialog = nullptr;
-	FindInFilesPanel *find_in_files = nullptr;
+	FindInFilesTab *find_in_files = nullptr;
 	Button *find_in_files_button = nullptr;
 
 	WindowWrapper *window_wrapper = nullptr;
