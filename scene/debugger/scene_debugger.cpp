@@ -338,7 +338,7 @@ Error SceneDebugger::parse_message(void *p_user, const String &p_msg, const Arra
 }
 
 void SceneDebugger::_save_node(ObjectID id, const String &p_path) {
-	Node *node = Object::cast_to<Node>(ObjectDB::get_instance(id));
+	Node *node = ObjectDB::get_instance<Node>(id);
 	ERR_FAIL_NULL(node);
 
 #ifdef TOOLS_ENABLED
@@ -390,7 +390,7 @@ void SceneDebugger::_send_object_ids(const Vector<ObjectID> &p_ids, bool p_updat
 		}
 
 		if (p_update_selection) {
-			if (Node *node = Object::cast_to<Node>(ObjectDB::get_instance(id))) {
+			if (Node *node = ObjectDB::get_instance<Node>(id)) {
 				nodes.push_back(node);
 			}
 		}
@@ -1767,12 +1767,12 @@ void RuntimeNodeSelect::_send_ids(const Vector<Node *> &p_picked_nodes, bool p_i
 
 	for (ObjectID id : selected_ci_nodes) {
 		ids.push_back(id);
-		nodes.push_back(Object::cast_to<Node>(ObjectDB::get_instance(id)));
+		nodes.push_back(ObjectDB::get_instance<Node>(id));
 	}
 #ifndef _3D_DISABLED
 	for (const KeyValue<ObjectID, Ref<SelectionBox3D>> &KV : selected_3d_nodes) {
 		ids.push_back(KV.key);
-		nodes.push_back(Object::cast_to<Node>(ObjectDB::get_instance(KV.key)));
+		nodes.push_back(ObjectDB::get_instance<Node>(KV.key));
 	}
 #endif // _3D_DISABLED
 
@@ -1907,7 +1907,7 @@ void RuntimeNodeSelect::_update_selection() {
 
 	for (LocalVector<ObjectID>::Iterator E = selected_ci_nodes.begin(); E != selected_ci_nodes.end(); ++E) {
 		ObjectID id = *E;
-		CanvasItem *ci = Object::cast_to<CanvasItem>(ObjectDB::get_instance(id));
+		CanvasItem *ci = ObjectDB::get_instance<CanvasItem>(id);
 		if (!ci) {
 			selected_ci_nodes.erase(id);
 			--E;
@@ -1955,7 +1955,7 @@ void RuntimeNodeSelect::_update_selection() {
 #ifndef _3D_DISABLED
 	for (HashMap<ObjectID, Ref<SelectionBox3D>>::ConstIterator KV = selected_3d_nodes.begin(); KV != selected_3d_nodes.end(); ++KV) {
 		ObjectID id = KV->key;
-		Node3D *node_3d = Object::cast_to<Node3D>(ObjectDB::get_instance(id));
+		Node3D *node_3d = ObjectDB::get_instance<Node3D>(id);
 		if (!node_3d) {
 			selected_3d_nodes.erase(id);
 			--KV;

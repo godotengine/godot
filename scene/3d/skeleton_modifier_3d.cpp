@@ -45,7 +45,7 @@ PackedStringArray SkeletonModifier3D::get_configuration_warnings() const {
 /* Skeleton3D */
 
 Skeleton3D *SkeletonModifier3D::get_skeleton() const {
-	return Object::cast_to<Skeleton3D>(ObjectDB::get_instance(skeleton_id));
+	return ObjectDB::get_instance<Skeleton3D>(skeleton_id);
 }
 
 void SkeletonModifier3D::_update_skeleton_path() {
