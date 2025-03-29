@@ -4123,10 +4123,8 @@ void TextServerAdvanced::_font_set_global_oversampling(double p_oversampling) {
 	_THREAD_SAFE_METHOD_
 	if (oversampling != p_oversampling) {
 		oversampling = p_oversampling;
-		List<RID> fonts;
-		font_owner.get_owned_list(&fonts);
 		bool font_cleared = false;
-		for (const RID &E : fonts) {
+		for (const RID &E : font_owner.get_owned_list()) {
 			if (!_font_is_multichannel_signed_distance_field(E) && _font_get_oversampling(E) <= 0) {
 				_font_clear_size_cache(E);
 				font_cleared = true;
@@ -4134,9 +4132,7 @@ void TextServerAdvanced::_font_set_global_oversampling(double p_oversampling) {
 		}
 
 		if (font_cleared) {
-			List<RID> text_bufs;
-			shaped_owner.get_owned_list(&text_bufs);
-			for (const RID &E : text_bufs) {
+			for (const RID &E : shaped_owner.get_owned_list()) {
 				invalidate(shaped_owner.get_or_null(E), false);
 			}
 		}
