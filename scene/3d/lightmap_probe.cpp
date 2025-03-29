@@ -30,5 +30,34 @@
 
 #include "lightmap_probe.h"
 
+void LightmapProbe::set_size(Vector3 p_size) {
+	size = Vector3(MAX(0.001, p_size.x), MAX(0.001, p_size.y), MAX(0.001, p_size.z));
+	update_gizmos();
+}
+
+Vector3 LightmapProbe::get_size() const {
+	return size;
+}
+
+void LightmapProbe::set_cell_size(Vector3 p_cell_size) {
+	cell_size = Vector3(MAX(0.001, p_cell_size.x), MAX(0.001, p_cell_size.y), MAX(0.001, p_cell_size.z));
+	update_gizmos();
+}
+
+Vector3 LightmapProbe::get_cell_size() const {
+	return cell_size;
+}
+
+void LightmapProbe::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_size", "size"), &LightmapProbe::set_size);
+	ClassDB::bind_method(D_METHOD("get_size"), &LightmapProbe::get_size);
+
+	ClassDB::bind_method(D_METHOD("set_cell_size", "cell_size"), &LightmapProbe::set_cell_size);
+	ClassDB::bind_method(D_METHOD("get_cell_size"), &LightmapProbe::get_cell_size);
+
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "size"), "set_size", "get_size");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "cell_size"), "set_cell_size", "get_cell_size");
+}
+
 LightmapProbe::LightmapProbe() {
 }

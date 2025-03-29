@@ -455,8 +455,35 @@ void LightmapGI::_find_meshes_and_lights(Node *p_at_node, Vector<MeshesFound> &m
 	LightmapProbe *probe = Object::cast_to<LightmapProbe>(p_at_node);
 
 	if (probe) {
-		Transform3D xf = get_global_transform().affine_inverse() * probe->get_global_transform();
-		probes.push_back(xf.origin);
+		const Transform3D xf = get_global_transform().affine_inverse() * probe->get_global_transform();
+
+		// Spawn a probe for each subdivision in the grid within the LightmapProbe's extents
+		// (at least one per dimension, even if cell size is greater than grid size).
+		const Vector3 size_div_cell_size = (probe->get_size() / probe->get_cell_size());
+		const Vector3i subdivisions = size_div_cell_size.floor();
+
+		// Enlarge cell size slightly if necessary so that the probe's extents are always fully covered by probes.
+		// For example, if probe size is 25×25×25 and cell size is 2x2x2, we can't fully cover the probe's extents
+		// using 12 subdivisions and a cell size of 2x2x2. Instead, we enlarge the cell size to roughly 2.083x2.083x2.083.
+		const Vector3 cell_enlarge_factor = (size_div_cell_size / subdivisions.max(Vector3(1, 1, 1)));
+
+		for (int subdiv_x = 0; subdiv_x <= subdivisions.x; subdiv_x++) {
+			for (int subdiv_y = 0; subdiv_y <= subdivisions.y; subdiv_y++) {
+				for (int subdiv_z = 0; subdiv_z <= subdivisions.z; subdiv_z++) {
+					// Center probe on the grid if it's the only one to be generated on each dimension.
+					// This means that a default configuration (1x1x1 size, 2x2x2 cell size) will only generate a single probe.
+					const Vector3 unique_offset = Vector3(
+							subdivisions.x == 0 ? probe->get_size().x * 0.5 : 0,
+							subdivisions.y == 0 ? probe->get_size().y * 0.5 : 0,
+							subdivisions.z == 0 ? probe->get_size().z * 0.5 : 0);
+
+					const Vector3 real_cell_size = probe->get_cell_size() * cell_enlarge_factor;
+
+					const Vector3 offset = -probe->get_size() * 0.5 + unique_offset + real_cell_size * Vector3i(subdiv_x, subdiv_y, subdiv_z);
+					probes.push_back(xf.translated_local(offset).origin);
+				}
+			}
+		}
 	}
 
 	for (int i = 0; i < p_at_node->get_child_count(); i++) {
