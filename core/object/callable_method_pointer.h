@@ -81,8 +81,7 @@ class CallableCustomMethodPointer : public CallableCustomMethodPointerBase {
 	struct Data {
 		T *instance;
 		uint64_t object_id;
-		R(T::*method)
-		(P...);
+		R (T::*method)(P...);
 	} data;
 
 public:
@@ -151,8 +150,7 @@ class CallableCustomMethodPointerC : public CallableCustomMethodPointerBase {
 	struct Data {
 		T *instance;
 		uint64_t object_id;
-		R(T::*method)
-		(P...) const;
+		R (T::*method)(P...) const;
 	} data;
 
 public:
@@ -225,8 +223,7 @@ Callable create_custom_callable_function_pointer(T *p_instance,
 template <typename R, typename... P>
 class CallableCustomStaticMethodPointer : public CallableCustomMethodPointerBase {
 	struct Data {
-		R(*method)
-		(P...);
+		R (*method)(P...);
 	} data;
 
 public:
