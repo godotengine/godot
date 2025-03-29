@@ -31,17 +31,14 @@
 #pragma once
 
 #include "core/string/ustring.h"
+#include "core/templates/either.h"
 #include "core/templates/local_vector.h"
+#include "core/templates/span.h"
 
 class StringBuilder {
 	uint32_t string_length = 0;
 
-	LocalVector<String> strings;
-	LocalVector<const char *> c_strings;
-
-	// -1 means it's a Godot String
-	// a natural number means C string.
-	LocalVector<int32_t> appended_strings;
+	LocalVector<Either<String, Span<char>>> strings;
 
 public:
 	StringBuilder &append(const String &p_string);
@@ -64,7 +61,7 @@ public:
 	}
 
 	_FORCE_INLINE_ int num_strings_appended() const {
-		return appended_strings.size();
+		return strings.size();
 	}
 
 	_FORCE_INLINE_ uint32_t get_string_length() const {
