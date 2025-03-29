@@ -1240,6 +1240,16 @@ bool Node3D::_property_get_revert(const StringName &p_name, Variant &r_property)
 	return true;
 }
 
+PackedStringArray Node3D::get_configuration_warnings() const {
+	PackedStringArray warnings = Node::get_configuration_warnings();
+
+	if (is_physics_interpolated() && is_inside_tree() && get_parent() && !get_parent()->is_physics_interpolated()) {
+		warnings.push_back(RTR("Node3Ds with physics_interpolation_mode ON may render incorrectly if their parent has physics_interpolation_mode OFF."));
+	}
+
+	return warnings;
+}
+
 void Node3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_transform", "local"), &Node3D::set_transform);
 	ClassDB::bind_method(D_METHOD("get_transform"), &Node3D::get_transform);
