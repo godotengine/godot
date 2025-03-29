@@ -48,14 +48,14 @@ static void decompress_image(BCdecFormat format, const void *src, void *dst, con
 	const uint8_t *src_blocks = reinterpret_cast<const uint8_t *>(src);
 	uint8_t *dec_blocks = reinterpret_cast<uint8_t *>(dst);
 
-#define DECOMPRESS_LOOP(func, block_size, color_bytesize, color_components)            \
-	for (uint64_t y = 0; y < height; y += 4) {                                         \
-		for (uint64_t x = 0; x < width; x += 4) {                                      \
-			func(&src_blocks[src_pos], &dec_blocks[dst_pos], width *color_components); \
-			src_pos += block_size;                                                     \
-			dst_pos += 4 * color_bytesize;                                             \
-		}                                                                              \
-		dst_pos += 3 * width * color_bytesize;                                         \
+#define DECOMPRESS_LOOP(func, block_size, color_bytesize, color_components)             \
+	for (uint64_t y = 0; y < height; y += 4) {                                          \
+		for (uint64_t x = 0; x < width; x += 4) {                                       \
+			func(&src_blocks[src_pos], &dec_blocks[dst_pos], width * color_components); \
+			src_pos += block_size;                                                      \
+			dst_pos += 4 * color_bytesize;                                              \
+		}                                                                               \
+		dst_pos += 3 * width * color_bytesize;                                          \
 	}
 
 #define DECOMPRESS_LOOP_SAFE(func, block_size, color_bytesize, color_components, output)                                                              \

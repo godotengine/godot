@@ -283,43 +283,43 @@ Dictionary GDExtensionAPIDump::generate_extension_api(bool p_include_docs) {
 #define REAL_MEMBER_OFFSET(type, member) \
 	{                                    \
 		type,                            \
-				member,                  \
-				"float",                 \
-				sizeof(float),           \
-				"float",                 \
-				sizeof(float),           \
-				"double",                \
-				sizeof(double),          \
-				"double",                \
-				sizeof(double),          \
+		member,                          \
+		"float",                         \
+		sizeof(float),                   \
+		"float",                         \
+		sizeof(float),                   \
+		"double",                        \
+		sizeof(double),                  \
+		"double",                        \
+		sizeof(double),                  \
 	}
 
 #define INT32_MEMBER_OFFSET(type, member) \
 	{                                     \
 		type,                             \
-				member,                   \
-				"int32",                  \
-				sizeof(int32_t),          \
-				"int32",                  \
-				sizeof(int32_t),          \
-				"int32",                  \
-				sizeof(int32_t),          \
-				"int32",                  \
-				sizeof(int32_t),          \
+		member,                           \
+		"int32",                          \
+		sizeof(int32_t),                  \
+		"int32",                          \
+		sizeof(int32_t),                  \
+		"int32",                          \
+		sizeof(int32_t),                  \
+		"int32",                          \
+		sizeof(int32_t),                  \
 	}
 
 #define INT32_BASED_BUILTIN_MEMBER_OFFSET(type, member, member_type, member_elems) \
 	{                                                                              \
 		type,                                                                      \
-				member,                                                            \
-				member_type,                                                       \
-				sizeof(int32_t) * member_elems,                                    \
-				member_type,                                                       \
-				sizeof(int32_t) * member_elems,                                    \
-				member_type,                                                       \
-				sizeof(int32_t) * member_elems,                                    \
-				member_type,                                                       \
-				sizeof(int32_t) * member_elems,                                    \
+		member,                                                                    \
+		member_type,                                                               \
+		sizeof(int32_t) * member_elems,                                            \
+		member_type,                                                               \
+		sizeof(int32_t) * member_elems,                                            \
+		member_type,                                                               \
+		sizeof(int32_t) * member_elems,                                            \
+		member_type,                                                               \
+		sizeof(int32_t) * member_elems,                                            \
 	}
 
 #define REAL_BASED_BUILTIN_MEMBER_OFFSET(type, member, member_type, member_elems) \

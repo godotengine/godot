@@ -44,11 +44,10 @@ class Span {
 
 public:
 	static constexpr bool is_string = std::disjunction_v<
-		std::is_same<T, char>,
-		std::is_same<T, char16_t>,
-		std::is_same<T, char32_t>,
-		std::is_same<T, wchar_t>
-	>;
+			std::is_same<T, char>,
+			std::is_same<T, char16_t>,
+			std::is_same<T, char32_t>,
+			std::is_same<T, wchar_t>>;
 
 	_FORCE_INLINE_ constexpr Span() = default;
 	_FORCE_INLINE_ constexpr Span(const T *p_ptr, uint64_t p_len) :
