@@ -11,6 +11,9 @@
 	</tutorials>
 	<members>
 		<member name="alignment" type="int" setter="set_text_alignment" getter="get_text_alignment" overrides="Button" enum="HorizontalAlignment" default="0" />
+		<member name="invert" type="bool" setter="set_invert" getter="is_invert" default="false">
+			If [code]true[/code] [theme_item checked]/[theme_item unchecked] will be drawn in the right for for right-to-left layouts or in the left for left-to-right layouts.
+		</member>
 		<member name="toggle_mode" type="bool" setter="set_toggle_mode" getter="is_toggle_mode" overrides="BaseButton" default="true" />
 	</members>
 	<theme_items>
