@@ -65,6 +65,11 @@ int RemoteDebuggerPeerTCP::get_max_message_size() const {
 }
 
 void RemoteDebuggerPeerTCP::close() {
+	MutexLock lock(mutex);
+	while (out_queue.size() > 0) {
+		close_cv.wait(lock);
+	}
+	lock.temp_unlock();
 	running = false;
 	if (thread.is_started()) {
 		thread.wait_to_finish();
@@ -96,13 +101,14 @@ void RemoteDebuggerPeerTCP::_write_out() {
 	while (tcp_client->get_status() == StreamPeerTCP::STATUS_CONNECTED && tcp_client->wait(NetSocket::POLL_TYPE_OUT) == OK) {
 		uint8_t *buf = out_buf.ptrw();
 		if (out_left <= 0) {
+			MutexLock lock(mutex);
 			if (out_queue.size() == 0) {
+				close_cv.notify_all();
 				break; // Nothing left to send
 			}
-			mutex.lock();
 			Variant var = out_queue.front()->get();
 			out_queue.pop_front();
-			mutex.unlock();
+			lock.temp_unlock();
 			int size = 0;
 			Error err = encode_variant(var, nullptr, size);
 			ERR_CONTINUE(err != OK || size > out_buf.size() - 4); // 4 bytes separator.
