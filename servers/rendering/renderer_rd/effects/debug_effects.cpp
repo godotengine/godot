@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "debug_effects.h"
+#include "core/math/frustum.h"
 #include "servers/rendering/renderer_rd/storage_rd/light_storage.h"
 #include "servers/rendering/renderer_rd/storage_rd/material_storage.h"
 #include "servers/rendering/renderer_rd/uniform_set_cache_rd.h"
@@ -177,7 +178,7 @@ DebugEffects::~DebugEffects() {
 	motion_vectors.shader.version_free(motion_vectors.shader_version);
 }
 
-void DebugEffects::draw_shadow_frustum(RID p_light, const Projection &p_cam_projection, const Transform3D &p_cam_transform, RID p_dest_fb, const Rect2 p_rect) {
+void DebugEffects::draw_shadow_frustum(RID p_light, const Frustum &p_cam_frustum, bool p_cam_is_orthogonal, const Transform3D &p_cam_transform, RID p_dest_fb, const Rect2 p_rect) {
 	RendererRD::LightStorage *light_storage = RendererRD::LightStorage::get_singleton();
 
 	RID base = light_storage->light_instance_get_base_light(p_light);
@@ -201,17 +202,9 @@ void DebugEffects::draw_shadow_frustum(RID p_light, const Projection &p_cam_proj
 	}
 
 	// Setup our camera info (this is mostly a duplicate of the logic found in RendererSceneCull::_light_instance_setup_directional_shadow).
-	bool is_orthogonal = p_cam_projection.is_orthogonal();
-	real_t aspect = p_cam_projection.get_aspect();
-	real_t fov = 0.0;
-	Vector2 vp_he;
-	if (is_orthogonal) {
-		vp_he = p_cam_projection.get_viewport_half_extents();
-	} else {
-		fov = p_cam_projection.get_fov(); //this is actually yfov, because set aspect tries to keep it
-	}
-	real_t min_distance = p_cam_projection.get_z_near();
-	real_t max_distance = p_cam_projection.get_z_far();
+	bool is_orthogonal = p_cam_is_orthogonal;
+	real_t min_distance = p_cam_frustum.get_z_near();
+	real_t max_distance = p_cam_frustum.get_z_far();
 	real_t shadow_max = RSG::light_storage->light_get_param(base, RS::LIGHT_PARAM_SHADOW_MAX_DISTANCE);
 	if (shadow_max > 0 && !is_orthogonal) {
 		max_distance = MIN(shadow_max, max_distance);
@@ -241,15 +234,11 @@ void DebugEffects::draw_shadow_frustum(RID p_light, const Projection &p_cam_proj
 		uint8_t *w = points.ptrw();
 		Vector3 *vw = (Vector3 *)w;
 
-		Projection projection;
+		Frustum camera_frustum = p_cam_frustum;
+		camera_frustum.planes[Projection::PLANE_NEAR].d = -distances[(split == 0 || !overlap) ? split : split - 1];
+		camera_frustum.planes[Projection::PLANE_FAR].d = distances[split + 1];
 
-		if (is_orthogonal) {
-			projection.set_orthogonal(vp_he.y * 2.0, aspect, distances[(split == 0 || !overlap) ? split : split - 1], distances[split + 1], false);
-		} else {
-			projection.set_perspective(fov, aspect, distances[(split == 0 || !overlap) ? split : split - 1], distances[split + 1], true);
-		}
-
-		bool res = projection.get_endpoints(p_cam_transform, vw);
+		bool res = camera_frustum.get_endpoints(p_cam_transform, vw);
 		ERR_CONTINUE(!res);
 
 		RD::get_singleton()->buffer_update(frustum.vertex_buffer, 0, 8 * sizeof(float) * 3, w);

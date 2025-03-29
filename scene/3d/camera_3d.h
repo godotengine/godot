@@ -36,6 +36,8 @@
 #include "scene/resources/compositor.h"
 #include "scene/resources/environment.h"
 
+struct Frustum;
+
 class Camera3D : public Node3D {
 	GDCLASS(Camera3D, Node3D);
 
@@ -142,6 +144,7 @@ protected:
 	static void _bind_methods();
 
 	Projection _get_camera_projection(real_t p_near) const;
+	Frustum _get_camera_frustum() const;
 
 public:
 	enum {
