@@ -1998,6 +1998,10 @@ static bool _guess_expression_type(GDScriptParser::CompletionContext &p_context,
 					}
 
 					{
+						if (r_type.value.get_type() == Variant::NIL) {
+							break;
+						}
+
 						bool valid;
 						Variant value = base.value.get(index.value, &valid);
 						if (valid) {
