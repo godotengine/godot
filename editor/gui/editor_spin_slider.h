@@ -72,6 +72,10 @@ class EditorSpinSlider : public Range {
 	bool flat = false;
 	bool editing_integer = false;
 
+	double true_value = 0.0;
+
+	void _value_changed_notify() override;
+
 	void _grab_start();
 	void _grab_end();
 
@@ -101,6 +105,9 @@ protected:
 	void _focus_entered();
 
 public:
+	void set_value(double p_val) override;
+	void set_value_no_signal(double p_val) override;
+
 	String get_tooltip(const Point2 &p_pos) const override;
 
 	String get_text_value() const;
@@ -128,5 +135,8 @@ public:
 	LineEdit *get_line_edit();
 
 	virtual Size2 get_minimum_size() const override;
+
+	double get_value() const override;
+
 	EditorSpinSlider();
 };
