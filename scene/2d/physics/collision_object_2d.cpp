@@ -370,7 +370,7 @@ void CollisionObject2D::shape_owner_set_one_way_collision_margin(uint32_t p_owne
 	}
 }
 
-void CollisionObject2D::shape_owner_set_one_way_collision_direction(uint32_t p_owner, Vector2 p_one_way_collision_direction) {
+void CollisionObject2D::shape_owner_set_one_way_collision_direction(uint32_t p_owner, Vector2 p_direction) {
 	if (area) {
 		return; //not for areas
 	}
@@ -378,9 +378,9 @@ void CollisionObject2D::shape_owner_set_one_way_collision_direction(uint32_t p_o
 	ERR_FAIL_COND(!shapes.has(p_owner));
 
 	ShapeData &sd = shapes[p_owner];
-	sd.one_way_collision_direction = p_one_way_collision_direction;
+	sd.one_way_collision_direction = p_direction.normalized();
 	for (int i = 0; i < sd.shapes.size(); i++) {
-		PhysicsServer2D::get_singleton()->body_set_shape_as_one_way_collision(rid, sd.shapes[i].index, sd.one_way_collision, sd.one_way_collision_margin, sd.one_way_collision_direction.normalized());
+		PhysicsServer2D::get_singleton()->body_set_shape_as_one_way_collision(rid, sd.shapes[i].index, sd.one_way_collision, sd.one_way_collision_margin, sd.one_way_collision_direction);
 	}
 }
 
@@ -640,7 +640,7 @@ void CollisionObject2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("shape_owner_set_one_way_collision_margin", "owner_id", "margin"), &CollisionObject2D::shape_owner_set_one_way_collision_margin);
 	ClassDB::bind_method(D_METHOD("get_shape_owner_one_way_collision_margin", "owner_id"), &CollisionObject2D::get_shape_owner_one_way_collision_margin);
 	ClassDB::bind_method(D_METHOD("get_shape_owner_one_way_collision_direction", "owner_id"), &CollisionObject2D::get_shape_owner_one_way_collision_direction);
-	ClassDB::bind_method(D_METHOD("shape_owner_set_one_way_collision_direction", "owner_id"), &CollisionObject2D::shape_owner_set_one_way_collision_direction);
+	ClassDB::bind_method(D_METHOD("shape_owner_set_one_way_collision_direction", "owner_id", "p_direction"), &CollisionObject2D::shape_owner_set_one_way_collision_direction);
 	ClassDB::bind_method(D_METHOD("shape_owner_add_shape", "owner_id", "shape"), &CollisionObject2D::shape_owner_add_shape);
 	ClassDB::bind_method(D_METHOD("shape_owner_get_shape_count", "owner_id"), &CollisionObject2D::shape_owner_get_shape_count);
 	ClassDB::bind_method(D_METHOD("shape_owner_get_shape", "owner_id", "shape_id"), &CollisionObject2D::shape_owner_get_shape);
