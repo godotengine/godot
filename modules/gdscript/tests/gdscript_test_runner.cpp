@@ -196,8 +196,10 @@ int GDScriptTestRunner::run_tests() {
 		return -1;
 	}
 
+#ifdef DEBUG_ENABLED
 	const String untyped_declaration_path = GDScriptWarning::get_settings_path_from_code(GDScriptWarning::UNTYPED_DECLARATION);
 	const String inferred_declaration_path = GDScriptWarning::get_settings_path_from_code(GDScriptWarning::INFERRED_DECLARATION);
+#endif // DEBUG_ENABLED
 
 	int failed = 0;
 	for (int i = 0; i < tests.size(); i++) {
@@ -206,17 +208,21 @@ int GDScriptTestRunner::run_tests() {
 			print_line(test.get_source_relative_filepath());
 		}
 
+#ifdef DEBUG_ENABLED
 		if (test.use_static_typing_warnings) {
 			ProjectSettings::get_singleton()->set_setting(untyped_declaration_path, (int)GDScriptWarning::WARN);
 			ProjectSettings::get_singleton()->set_setting(inferred_declaration_path, (int)GDScriptWarning::WARN);
 		}
+#endif // DEBUG_ENABLED
 
 		GDScriptTest::TestResult result = test.run_test();
 
+#ifdef DEBUG_ENABLED
 		if (test.use_static_typing_warnings) {
 			ProjectSettings::get_singleton()->set_setting(untyped_declaration_path, (int)GDScriptWarning::IGNORE);
 			ProjectSettings::get_singleton()->set_setting(inferred_declaration_path, (int)GDScriptWarning::IGNORE);
 		}
+#endif // DEBUG_ENABLED
 
 		String expected = FileAccess::get_file_as_string(test.get_output_file());
 #ifndef DEBUG_ENABLED
@@ -246,8 +252,10 @@ bool GDScriptTestRunner::generate_outputs() {
 		return false;
 	}
 
+#ifdef DEBUG_ENABLED
 	const String untyped_declaration_path = GDScriptWarning::get_settings_path_from_code(GDScriptWarning::UNTYPED_DECLARATION);
 	const String inferred_declaration_path = GDScriptWarning::get_settings_path_from_code(GDScriptWarning::INFERRED_DECLARATION);
+#endif
 
 	for (int i = 0; i < tests.size(); i++) {
 		GDScriptTest test = tests[i];
@@ -257,17 +265,21 @@ bool GDScriptTestRunner::generate_outputs() {
 			OS::get_singleton()->print(".");
 		}
 
+#ifdef DEBUG_ENABLED
 		if (test.use_static_typing_warnings) {
 			ProjectSettings::get_singleton()->set_setting(untyped_declaration_path, (int)GDScriptWarning::WARN);
 			ProjectSettings::get_singleton()->set_setting(inferred_declaration_path, (int)GDScriptWarning::WARN);
 		}
+#endif
 
 		bool result = test.generate_output();
 
+#ifdef DEBUG_ENABLED
 		if (test.use_static_typing_warnings) {
 			ProjectSettings::get_singleton()->set_setting(untyped_declaration_path, (int)GDScriptWarning::IGNORE);
 			ProjectSettings::get_singleton()->set_setting(inferred_declaration_path, (int)GDScriptWarning::IGNORE);
 		}
+#endif
 
 		if (!result) {
 			print_line("\nCould not generate output for " + test.get_source_file());
