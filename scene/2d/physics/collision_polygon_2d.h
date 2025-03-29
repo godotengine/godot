@@ -52,7 +52,7 @@ protected:
 	bool disabled = false;
 	bool one_way_collision = false;
 	real_t one_way_collision_margin = 1.0;
-	Vector2 one_way_collision_direction;
+	Vector2 one_way_collision_direction = Vector2(0.0, 1.0);
 
 	Vector<Vector<Vector2>> _decompose_in_convex();
 
