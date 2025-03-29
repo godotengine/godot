@@ -45,11 +45,11 @@ class TreeItem : public Object {
 
 public:
 	enum TreeCellMode {
-		CELL_MODE_STRING, ///< just a string
-		CELL_MODE_CHECK, ///< string + check
-		CELL_MODE_RANGE, ///< Contains a range
-		CELL_MODE_ICON, ///< Contains an icon, not editable
-		CELL_MODE_CUSTOM, ///< Contains a custom value, show a string, and an edit button
+		CELL_MODE_STRING,
+		CELL_MODE_CHECK,
+		CELL_MODE_RANGE,
+		CELL_MODE_ICON,
+		CELL_MODE_CUSTOM,
 	};
 
 private:
@@ -127,21 +127,21 @@ private:
 
 	Vector<Cell> cells;
 
-	bool collapsed = false; // won't show children
+	bool collapsed = false; // Won't show children.
 	bool visible = true;
 	bool parent_visible_in_tree = true;
 	bool disable_folding = false;
 	int custom_min_height = 0;
 
-	TreeItem *parent = nullptr; // parent item
-	TreeItem *prev = nullptr; // previous in list
-	TreeItem *next = nullptr; // next in list
+	TreeItem *parent = nullptr; // Parent item.
+	TreeItem *prev = nullptr; // Previous in list.
+	TreeItem *next = nullptr; // Next in list.
 	TreeItem *first_child = nullptr;
 	TreeItem *last_child = nullptr;
 
 	Vector<TreeItem *> children_cache;
-	bool is_root = false; // for tree root
-	Tree *tree = nullptr; // tree (for reference)
+	bool is_root = false; // For tree root.
+	Tree *tree = nullptr; // Tree (for reference).
 
 	TreeItem(Tree *p_tree);
 
@@ -190,7 +190,7 @@ private:
 protected:
 	static void _bind_methods();
 
-	// Bind helpers
+	// Bind helpers.
 	Dictionary _get_range_config(int p_column) {
 		Dictionary d;
 		double min = 0.0, max = 0.0, step = 0.0;
@@ -206,19 +206,19 @@ protected:
 	void _call_recursive_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
 
 public:
-	/* cell mode */
+	// Cell mode.
 	void set_cell_mode(int p_column, TreeCellMode p_mode);
 	TreeCellMode get_cell_mode(int p_column) const;
 
-	/* auto translate mode */
+	// Auto translate mode.
 	void set_auto_translate_mode(int p_column, Node::AutoTranslateMode p_mode);
 	Node::AutoTranslateMode get_auto_translate_mode(int p_column) const;
 
-	/* multiline editable */
+	// Multiline editable.
 	void set_edit_multiline(int p_column, bool p_multiline);
 	bool is_edit_multiline(int p_column) const;
 
-	/* check mode */
+	// Check mode.
 	void set_checked(int p_column, bool p_checked);
 	void set_indeterminate(int p_column, bool p_indeterminate);
 	bool is_checked(int p_column) const;
@@ -291,8 +291,7 @@ public:
 	void set_button_disabled(int p_column, int p_index, bool p_disabled);
 	bool is_button_disabled(int p_column, int p_index) const;
 
-	/* range works for mode number or mode combo */
-
+	// Range works for mode number or mode combo.
 	void set_range(int p_column, double p_value);
 	double get_range(int p_column) const;
 
@@ -366,8 +365,7 @@ public:
 
 	Size2 get_minimum_size(int p_column);
 
-	/* Item manipulation */
-
+	// Item manipulation.
 	TreeItem *create_child(int p_index = -1);
 	void add_child(TreeItem *p_item);
 	void remove_child(TreeItem *p_item);
@@ -459,9 +457,6 @@ private:
 
 	bool propagate_mouse_activated = false;
 
-	//TreeItem *cursor_item;
-	//int cursor_column;
-
 	Rect2 custom_popup_rect;
 	int edited_col = -1;
 	int selected_col = -1;
@@ -519,7 +514,6 @@ private:
 	void update_column(int p_col);
 	void update_item_cell(TreeItem *p_item, int p_col) const;
 	void update_item_cache(TreeItem *p_item) const;
-	//void draw_item_text(String p_text,const Ref<Texture2D>& p_icon,int p_icon_max_w,bool p_tool,Rect2i p_rect,const Color& p_color);
 	void draw_item_rect(TreeItem::Cell &p_cell, const Rect2i &p_rect, const Color &p_color, const Color &p_icon_color, int p_ol_size, const Color &p_ol_color);
 	int draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 &p_draw_size, TreeItem *p_item, int &r_self_height);
 	void select_single_item(TreeItem *p_selected, TreeItem *p_current, int p_col, TreeItem *p_prev = nullptr, bool *r_in_range = nullptr, bool p_force_deselect = false);
@@ -663,7 +657,6 @@ private:
 	void update_scrollbars();
 
 	Rect2 search_item_rect(TreeItem *p_from, TreeItem *p_item);
-	//Rect2 get_item_rect(TreeItem *p_item);
 	uint64_t last_keypress = 0;
 	String incr_search;
 	bool cursor_can_exit_tree = true;
@@ -685,17 +678,9 @@ private:
 
 	FindColumnButtonResult _find_column_and_button_at_pos(int p_x, const TreeItem *p_item, int p_x_ofs, int p_x_limit) const;
 
-	/*	float drag_speed;
-	float drag_accum;
-
-	float last_drag_accum;
-	float last_drag_time;
-	float time_since_motion;*/
-
 	float drag_speed = 0.0;
 	float drag_from = 0.0;
 	float drag_accum = 0.0;
-	Vector2 last_speed;
 	bool drag_touching = false;
 	bool drag_touching_deaccel = false;
 	bool click_handled = false;
