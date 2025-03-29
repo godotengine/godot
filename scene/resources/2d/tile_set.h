@@ -317,6 +317,7 @@ private:
 	// Rendering.
 	bool uv_clipping = false;
 	struct OcclusionLayer {
+		String name;
 		uint32_t light_mask = 1;
 		bool sdf_collision = false;
 	};
@@ -329,6 +330,7 @@ private:
 #ifndef PHYSICS_2D_DISABLED
 	// Physics
 	struct PhysicsLayer {
+		String name;
 		uint32_t collision_layer = 1;
 		uint32_t collision_mask = 1;
 		real_t collision_priority = 1.0;
@@ -343,6 +345,7 @@ private:
 		Color color;
 	};
 	struct TerrainSet {
+		String name;
 		TerrainMode mode = TERRAIN_MODE_MATCH_CORNERS_AND_SIDES;
 		Vector<Terrain> terrains;
 	};
@@ -358,6 +361,7 @@ private:
 
 	// Navigation
 	struct NavigationLayer {
+		String name;
 		uint32_t layers = 1;
 	};
 	Vector<NavigationLayer> navigation_layers;
@@ -437,6 +441,8 @@ public:
 	bool is_uv_clipping() const;
 
 	int get_occlusion_layers_count() const;
+	String get_occlusion_layer_name(int p_index) const;
+	void set_occlusion_layer_name(int p_index, String p_name);
 	void add_occlusion_layer(int p_index = -1);
 	void move_occlusion_layer(int p_from_index, int p_to_pos);
 	void remove_occlusion_layer(int p_index);
@@ -448,6 +454,8 @@ public:
 #ifndef PHYSICS_2D_DISABLED
 	// Physics
 	int get_physics_layers_count() const;
+	String get_physics_layer_name(int p_index) const;
+	void set_physics_layer_name(int p_index, String p_name);
 	void add_physics_layer(int p_index = -1);
 	void move_physics_layer(int p_from_index, int p_to_pos);
 	void remove_physics_layer(int p_index);
@@ -463,6 +471,8 @@ public:
 
 	// Terrain sets
 	int get_terrain_sets_count() const;
+	String get_terrain_set_name(int p_index) const;
+	void set_terrain_set_name(int p_index, String p_name);
 	void add_terrain_set(int p_index = -1);
 	void move_terrain_set(int p_from_index, int p_to_pos);
 	void remove_terrain_set(int p_index);
@@ -483,6 +493,8 @@ public:
 
 	// Navigation
 	int get_navigation_layers_count() const;
+	String get_navigation_layer_name(int p_index) const;
+	void set_navigation_layer_name(int p_index, String p_name);
 	void add_navigation_layer(int p_index = -1);
 	void move_navigation_layer(int p_from_index, int p_to_pos);
 	void remove_navigation_layer(int p_index);
