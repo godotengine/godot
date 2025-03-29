@@ -20,11 +20,11 @@
 			If [code]true[/code], only edges that face [member one_way_collision_direction], relative to [CollisionPolygon2D]'s rotation, will collide with other objects.
 			[b]Note:[/b] This property has no effect if this [CollisionPolygon2D] is a child of an [Area2D] node.
 		</member>
-		<member name="one_way_collision_margin" type="float" setter="set_one_way_collision_margin" getter="get_one_way_collision_margin" default="1.0">
-			The margin used for one-way collision (in pixels). Higher values will make the shape thicker, and work better for colliders that enter the polygon at a high velocity.
-		</member>
 		<member name="one_way_collision_direction" type="Vector2" setter="set_one_way_collision_direction" getter="get_one_way_collision_direction" default="Vector2(0, 1)">
 			The direction used for one-way collision.
+		</member>
+		<member name="one_way_collision_margin" type="float" setter="set_one_way_collision_margin" getter="get_one_way_collision_margin" default="1.0">
+			The margin used for one-way collision (in pixels). Higher values will make the shape thicker, and work better for colliders that enter the polygon at a high velocity.
 		</member>
 		<member name="polygon" type="PackedVector2Array" setter="set_polygon" getter="get_polygon" default="PackedVector2Array()">
 			The polygon's list of vertices. Each point will be connected to the next, and the final point will be connected to the first.
