@@ -467,7 +467,7 @@ def configure(env: "SConsEnvironment"):
         env.Append(LIBS=["rt"])  # Needed by glibc, used by _allocate_shm_file
 
     if env["vulkan"]:
-        env.Append(CPPDEFINES=["VULKAN_ENABLED", "RD_ENABLED"])
+        env.Append(CPPDEFINES=["VULKAN_ENABLED"])
         if not env["use_volk"]:
             env.ParseConfig("pkg-config vulkan --cflags --libs")
         if not env["builtin_glslang"]:

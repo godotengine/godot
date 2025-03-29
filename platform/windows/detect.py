@@ -422,14 +422,16 @@ def configure_msvc(env: "SConsEnvironment"):
         LIBS += ["psapi", "dbghelp"]
 
     if env["vulkan"]:
-        env.AppendUnique(CPPDEFINES=["VULKAN_ENABLED", "RD_ENABLED"])
+        env.AppendUnique(CPPDEFINES=["VULKAN_ENABLED"])
+
         if not env["use_volk"]:
             LIBS += ["vulkan"]
 
     if env["d3d12"]:
         check_d3d12_installed(env)
 
-        env.AppendUnique(CPPDEFINES=["D3D12_ENABLED", "RD_ENABLED"])
+        env.AppendUnique(CPPDEFINES=["D3D12_ENABLED"])
+
         LIBS += ["dxgi", "dxguid"]
         LIBS += ["version"]  # Mesa dependency.
 
@@ -771,14 +773,20 @@ def configure_mingw(env: "SConsEnvironment"):
         env.Append(LIBS=["psapi", "dbghelp"])
 
     if env["vulkan"]:
-        env.Append(CPPDEFINES=["VULKAN_ENABLED", "RD_ENABLED"])
+        env.Append(CPPDEFINES=["VULKAN_ENABLED"])
+        if env["rendering_device"]:
+            env.AppendUnique(CPPDEFINES=["RD_ENABLED"])
+
         if not env["use_volk"]:
             env.Append(LIBS=["vulkan"])
 
     if env["d3d12"]:
         check_d3d12_installed(env)
 
-        env.AppendUnique(CPPDEFINES=["D3D12_ENABLED", "RD_ENABLED"])
+        env.AppendUnique(CPPDEFINES=["D3D12_ENABLED"])
+        if env["rendering_device"]:
+            env.AppendUnique(CPPDEFINES=["RD_ENABLED"])
+
         env.Append(LIBS=["dxgi", "dxguid"])
 
         # PIX

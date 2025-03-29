@@ -42,7 +42,7 @@
 #include "drivers/png/png_driver_common.h"
 #include "main/main.h"
 
-#if defined(VULKAN_ENABLED)
+#if defined(RD_ENABLED)
 #include "servers/rendering/renderer_rd/renderer_compositor_rd.h"
 #endif
 

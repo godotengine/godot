@@ -324,17 +324,22 @@ RendererCompositorRD::RendererCompositorRD() {
 
 	if (rendering_method == "mobile" || textures_per_stage < 48) {
 		if (rendering_method == "forward_plus") {
-			WARN_PRINT_ONCE("Platform supports less than 48 textures per stage which is less than required by the Clustered renderer. Defaulting to Mobile renderer.");
+			WARN_PRINT_ONCE("Platform supports less than 48 textures per stage which is less than required by the Clustered renderer. Attempting to fallback to the Mobile renderer.");
 		}
+#ifdef MOBILE_RD_ENABLED
 		scene = memnew(RendererSceneRenderImplementation::RenderForwardMobile());
-	} else if (rendering_method == "forward_plus") {
-		scene = memnew(RendererSceneRenderImplementation::RenderForwardClustered());
+#endif // MOBILE_RD_ENABLED
 	} else {
-		// Fall back to our high end renderer.
-		ERR_PRINT(vformat("Cannot instantiate RenderingDevice-based renderer with renderer type '%s'. Defaulting to Forward+ renderer.", rendering_method));
+		if (rendering_method != "forward_plus") {
+			// Fall back to our high end renderer.
+			ERR_PRINT(vformat("Cannot instantiate RenderingDevice-based renderer with renderer type '%s'. Attempting to fallback to the to Forward+ renderer.", rendering_method));
+		}
+#ifdef FORWARD_RD_ENABLED
 		scene = memnew(RendererSceneRenderImplementation::RenderForwardClustered());
+#endif // FORWARD_RD_ENABLED
 	}
 
+	ERR_FAIL_NULL_MSG(scene, "No RendererSceneRenderRDs available.");
 	scene->init();
 }
 
