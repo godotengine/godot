@@ -496,7 +496,7 @@
 				Create a new map.
 			</description>
 		</method>
-		<method name="map_force_update">
+		<method name="map_force_update" deprecated="No longer supported as incompatible with async updates. Can only be used in single-threaded context at own risk.">
 			<return type="void" />
 			<param index="0" name="map" type="RID" />
 			<description>
