@@ -1695,6 +1695,14 @@ void CodeTextEditor::set_warning_count(int p_warning_count) {
 	}
 }
 
+bool CodeTextEditor::check_for_errors() {
+	if (!idle->is_stopped()) {
+		idle->stop();
+		_text_changed_idle_timeout();
+	}
+	return error_button->is_visible();
+}
+
 void CodeTextEditor::toggle_bookmark() {
 	Vector<int> sorted_carets = text_editor->get_sorted_carets();
 	int last_line = -1;
