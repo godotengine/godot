@@ -897,8 +897,12 @@ void EditorPropertyArray::_reorder_button_gui_input(const Ref<InputEvent> &p_eve
 				// Automatically move to the next/previous page.
 				_page_changed(page_index + direction);
 			}
-			// Ensure the moving element is visible.
-			InspectorDock::get_inspector_singleton()->ensure_control_visible(reorder_slot.container);
+			// Ensure the moving element is visible in the root inspector.
+			EditorInspector *parent_inspector = get_parent_inspector();
+			if (parent_inspector) {
+				// Defer to prevent moving elements from not displaying properly, especially near borders.
+				callable_mp((ScrollContainer *)parent_inspector->get_root_inspector(), &ScrollContainer::ensure_control_visible).call_deferred(reorder_slot.container);
+			}
 		}
 	}
 }
