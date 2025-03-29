@@ -43,6 +43,9 @@ public:
 		int32_t surface_index;
 	};
 
+protected:
+	static void _bind_methods();
+
 private:
 	Vector<Triangle> triangles;
 	Vector<Vector3> vertices;
@@ -81,8 +84,8 @@ private:
 
 public:
 	bool is_valid() const;
-	bool intersect_segment(const Vector3 &p_begin, const Vector3 &p_end, Vector3 &r_point, Vector3 &r_normal, int32_t *r_surf_index = nullptr) const;
-	bool intersect_ray(const Vector3 &p_begin, const Vector3 &p_dir, Vector3 &r_point, Vector3 &r_normal, int32_t *r_surf_index = nullptr) const;
+	bool intersect_segment(const Vector3 &p_begin, const Vector3 &p_end, Vector3 &r_point, Vector3 &r_normal, int32_t *r_surf_index = nullptr, int *r_face_index = nullptr) const;
+	bool intersect_ray(const Vector3 &p_begin, const Vector3 &p_dir, Vector3 &r_point, Vector3 &r_normal, int32_t *r_surf_index = nullptr, int *r_face_index = nullptr) const;
 	bool inside_convex_shape(const Plane *p_planes, int p_plane_count, const Vector3 *p_points, int p_point_count, Vector3 p_scale = Vector3(1, 1, 1)) const;
 	Vector<Face3> get_faces() const;
 
@@ -91,5 +94,13 @@ public:
 	void get_indices(Vector<int> *r_triangles_indices) const;
 
 	void create(const Vector<Vector3> &p_faces, const Vector<int32_t> &p_surface_indices = Vector<int32_t>());
+
+	// Wrapped functions for compatibility with method bindings
+	// and user exposed script api that can't use more native types.
+	bool create_from_faces(const Vector<Vector3> &p_faces);
+	Dictionary intersect_segment_scriptwrap(const Vector3 &p_begin, const Vector3 &p_end) const;
+	Dictionary intersect_ray_scriptwrap(const Vector3 &p_begin, const Vector3 &p_dir) const;
+	Vector<Vector3> get_faces_scriptwrap() const;
+
 	TriangleMesh();
 };
