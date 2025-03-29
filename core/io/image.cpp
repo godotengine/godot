@@ -3168,11 +3168,11 @@ void Image::_set_data(const Dictionary &p_data) {
 
 Dictionary Image::_get_data() const {
 	Dictionary d;
-	d["width"] = width;
-	d["height"] = height;
-	d["format"] = get_format_name(format);
-	d["mipmaps"] = mipmaps;
 	d["data"] = data;
+	d["format"] = get_format_name(format);
+	d["height"] = height;
+	d["mipmaps"] = mipmaps;
+	d["width"] = width;
 	return d;
 }
 
