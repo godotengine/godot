@@ -1095,9 +1095,6 @@ void FileDialog::clear_filename_filter() {
 
 void FileDialog::update_filename_filter_gui() {
 	filename_filter_box->set_visible(show_filename_filter);
-	if (!show_filename_filter) {
-		file_name_filter.clear();
-	}
 	if (filename_filter->get_text() == file_name_filter) {
 		return;
 	}
