@@ -46,6 +46,15 @@ bool EditorSceneExporterGLTFSettings::_set(const StringName &p_name, const Varia
 		_document->set_lossy_quality(p_value);
 		return true;
 	}
+	if (p_name == StringName("fallback_image_format")) {
+		_document->set_fallback_image_format(p_value);
+		emit_signal(CoreStringName(property_list_changed));
+		return true;
+	}
+	if (p_name == StringName("fallback_image_quality")) {
+		_document->set_fallback_image_quality(p_value);
+		return true;
+	}
 	if (p_name == StringName("root_node_mode")) {
 		_document->set_root_node_mode((GLTFDocument::RootNodeMode)(int64_t)p_value);
 		return true;
@@ -66,6 +75,14 @@ bool EditorSceneExporterGLTFSettings::_get(const StringName &p_name, Variant &r_
 		r_ret = _document->get_lossy_quality();
 		return true;
 	}
+	if (p_name == StringName("fallback_image_format")) {
+		r_ret = _document->get_fallback_image_format();
+		return true;
+	}
+	if (p_name == StringName("fallback_image_quality")) {
+		r_ret = _document->get_fallback_image_quality();
+		return true;
+	}
 	if (p_name == StringName("root_node_mode")) {
 		r_ret = _document->get_root_node_mode();
 		return true;
@@ -76,9 +93,20 @@ bool EditorSceneExporterGLTFSettings::_get(const StringName &p_name, Variant &r_
 void EditorSceneExporterGLTFSettings::_get_property_list(List<PropertyInfo> *p_list) const {
 	for (PropertyInfo prop : _property_list) {
 		if (prop.name == "lossy_quality") {
-			String image_format = get("image_format");
-			bool is_image_format_lossy = image_format == "JPEG" || image_format.containsn("Lossy");
+			const String image_format = get("image_format");
+			const bool is_image_format_lossy = image_format == "JPEG" || image_format.containsn("Lossy");
 			prop.usage = is_image_format_lossy ? PROPERTY_USAGE_DEFAULT : PROPERTY_USAGE_STORAGE;
+		}
+		if (prop.name == "fallback_image_format") {
+			const String image_format = get("image_format");
+			const bool is_image_format_extension = image_format != "None" && image_format != "PNG" && image_format != "JPEG";
+			prop.usage = is_image_format_extension ? PROPERTY_USAGE_DEFAULT : PROPERTY_USAGE_STORAGE;
+		}
+		if (prop.name == "fallback_image_quality") {
+			const String image_format = get("image_format");
+			const bool is_image_format_extension = image_format != "None" && image_format != "PNG" && image_format != "JPEG";
+			const String fallback_format = get("fallback_image_format");
+			prop.usage = (is_image_format_extension && fallback_format != "None") ? PROPERTY_USAGE_DEFAULT : PROPERTY_USAGE_STORAGE;
 		}
 		p_list->push_back(prop);
 	}
@@ -117,7 +145,7 @@ String get_friendly_config_prefix(Ref<GLTFDocumentExtension> p_extension) {
 		return config_prefix;
 	}
 	const String class_name = p_extension->get_class_name();
-	config_prefix = class_name.trim_prefix("GLTFDocumentExtension").capitalize();
+	config_prefix = class_name.trim_prefix("GLTFDocumentExtension").trim_suffix("GLTFDocumentExtension").capitalize();
 	if (!config_prefix.is_empty()) {
 		return config_prefix;
 	}
@@ -166,6 +194,10 @@ void EditorSceneExporterGLTFSettings::generate_property_list(Ref<GLTFDocument> p
 	_property_list.push_back(image_format_prop);
 	PropertyInfo lossy_quality_prop = PropertyInfo(Variant::FLOAT, "lossy_quality", PROPERTY_HINT_RANGE, "0,1,0.01");
 	_property_list.push_back(lossy_quality_prop);
+	PropertyInfo fallback_image_format_prop = PropertyInfo(Variant::STRING, "fallback_image_format", PROPERTY_HINT_ENUM, "None,PNG,JPEG");
+	_property_list.push_back(fallback_image_format_prop);
+	PropertyInfo fallback_image_quality_prop = PropertyInfo(Variant::FLOAT, "fallback_image_quality", PROPERTY_HINT_RANGE, "0,1,0.01");
+	_property_list.push_back(fallback_image_quality_prop);
 	PropertyInfo root_node_mode_prop = PropertyInfo(Variant::INT, "root_node_mode", PROPERTY_HINT_ENUM, "Single Root,Keep Root,Multi Root");
 	_property_list.push_back(root_node_mode_prop);
 }

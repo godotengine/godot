@@ -115,9 +115,16 @@
 		</method>
 	</methods>
 	<members>
+		<member name="fallback_image_format" type="String" setter="set_fallback_image_format" getter="get_fallback_image_format" default="&quot;None&quot;">
+			The user-friendly name of the fallback image format. This is used when exporting the glTF file, including writing to a file and writing to a byte array.
+			This property may only be one of "None", "PNG", or "JPEG", and is only used when the [member image_format] is not one of "None", "PNG", or "JPEG". If having multiple extension image formats is desired, that can be done using a [GLTFDocumentExtension] class - this property only covers the use case of providing a base glTF fallback image when using a custom image format.
+		</member>
+		<member name="fallback_image_quality" type="float" setter="set_fallback_image_quality" getter="get_fallback_image_quality" default="0.25">
+			The quality of the fallback image, if any. For PNG files, this downscales the image on both dimensions by this factor. For JPEG files, this is the lossy quality of the image. A low value is recommended, since including multiple high quality images in a glTF file defeats the file size gains of using a more efficient image format.
+		</member>
 		<member name="image_format" type="String" setter="set_image_format" getter="get_image_format" default="&quot;PNG&quot;">
 			The user-friendly name of the export image format. This is used when exporting the glTF file, including writing to a file and writing to a byte array.
-			By default, Godot allows the following options: "None", "PNG", "JPEG", "Lossless WebP", and "Lossy WebP". Support for more image formats can be added in [GLTFDocumentExtension] classes.
+			By default, Godot allows the following options: "None", "PNG", "JPEG", "Lossless WebP", and "Lossy WebP". Support for more image formats can be added in [GLTFDocumentExtension] classes. A single extension class can provide multiple options for the specific format to use, or even an option that uses multiple formats at once.
 		</member>
 		<member name="lossy_quality" type="float" setter="set_lossy_quality" getter="get_lossy_quality" default="0.75">
 			If [member image_format] is a lossy image format, this determines the lossy quality of the image. On a range of [code]0.0[/code] to [code]1.0[/code], where [code]0.0[/code] is the lowest quality and [code]1.0[/code] is the highest quality. A lossy quality of [code]1.0[/code] is not the same as lossless.
