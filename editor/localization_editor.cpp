@@ -32,10 +32,12 @@
 
 #include "core/config/project_settings.h"
 #include "core/string/translation_server.h"
+#include "editor/editor_node.h"
 #include "editor/editor_translation_parser.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/filesystem_dock.h"
 #include "editor/gui/editor_file_dialog.h"
+#include "editor/gui/editor_quick_open_dialog.h"
 #include "editor/pot_generator.h"
 #include "scene/gui/control.h"
 #include "scene/gui/tab_container.h"
@@ -359,6 +361,12 @@ void LocalizationEditor::_pot_add(const PackedStringArray &p_paths) {
 	undo_redo->commit_action();
 }
 
+void LocalizationEditor::_pot_add_one(const String &p_path) {
+	if (!p_path.is_empty()) {
+		_pot_add({ p_path });
+	}
+}
+
 void LocalizationEditor::_pot_delete(Object *p_item, int p_column, int p_button, MouseButton p_mouse_button) {
 	if (p_mouse_button != MouseButton::LEFT) {
 		return;
@@ -388,6 +396,10 @@ void LocalizationEditor::_pot_delete(Object *p_item, int p_column, int p_button,
 
 void LocalizationEditor::_pot_file_open() {
 	pot_file_open_dialog->popup_file_dialog();
+}
+
+void LocalizationEditor::_pot_file_quick_open() {
+	EditorNode::get_singleton()->get_quick_open_dialog()->popup_dialog({ SNAME("PackedScene") }, callable_mp(this, &LocalizationEditor::_pot_add_one));
 }
 
 void LocalizationEditor::_pot_generate_open() {
@@ -736,17 +748,21 @@ LocalizationEditor::LocalizationEditor() {
 		translations->add_child(tvb);
 
 		HBoxContainer *thb = memnew(HBoxContainer);
-		Label *l = memnew(Label(TTR("Files with translation strings:")));
+		Label *l = memnew(Label(TTRC("Files with translation strings:")));
 		l->set_theme_type_variation("HeaderSmall");
 		thb->add_child(l);
 		thb->add_spacer();
 		tvb->add_child(thb);
 
-		Button *addtr = memnew(Button(TTR("Add...")));
+		Button *addtr = memnew(Button(TTRC("Add...")));
 		addtr->connect(SceneStringName(pressed), callable_mp(this, &LocalizationEditor::_pot_file_open));
 		thb->add_child(addtr);
 
-		pot_generate_button = memnew(Button(TTR("Generate POT")));
+		addtr = memnew(Button(TTRC("Quick Add...")));
+		addtr->connect(SceneStringName(pressed), callable_mp(this, &LocalizationEditor::_pot_file_quick_open));
+		thb->add_child(addtr);
+
+		pot_generate_button = memnew(Button(TTRC("Generate POT")));
 		pot_generate_button->connect(SceneStringName(pressed), callable_mp(this, &LocalizationEditor::_pot_generate_open));
 		thb->add_child(pot_generate_button);
 
@@ -754,8 +770,8 @@ LocalizationEditor::LocalizationEditor() {
 		translation_pot_list->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 		tvb->add_child(translation_pot_list);
 
-		translation_pot_add_builtin = memnew(CheckBox(TTR("Add Built-in Strings to POT")));
-		translation_pot_add_builtin->set_tooltip_text(TTR("Add strings from built-in components such as certain Control nodes."));
+		translation_pot_add_builtin = memnew(CheckBox(TTRC("Add Built-in Strings to POT")));
+		translation_pot_add_builtin->set_tooltip_text(TTRC("Add strings from built-in components such as certain Control nodes."));
 		translation_pot_add_builtin->connect(SceneStringName(pressed), callable_mp(this, &LocalizationEditor::_pot_add_builtin_toggled));
 		tvb->add_child(translation_pot_add_builtin);
 
