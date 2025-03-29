@@ -4755,6 +4755,10 @@ void EditorInspector::_clear_current_favorites() {
 	update_tree();
 }
 
+void EditorInspector::_update_theme() {
+	add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SceneStringName(panel), SNAME("Tree")));
+}
+
 void EditorInspector::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_TRANSLATION_CHANGED: {
@@ -4774,11 +4778,15 @@ void EditorInspector::_notification(int p_what) {
 			main_vbox->add_theme_constant_override("separation", separation);
 		} break;
 
+		case NOTIFICATION_ENTER_TREE: {
+			get_parent()->connect(SceneStringName(theme_changed), callable_mp(this, &EditorInspector::_update_theme));
+			_update_theme();
+		} break;
+
 		case NOTIFICATION_READY: {
 			ERR_FAIL_NULL(EditorFeatureProfileManager::get_singleton());
 			EditorFeatureProfileManager::get_singleton()->connect("current_feature_profile_changed", callable_mp(this, &EditorInspector::_feature_profile_changed));
 			set_process(is_visible_in_tree());
-			add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SceneStringName(panel), SNAME("Tree")));
 			if (!is_sub_inspector()) {
 				get_tree()->connect("node_removed", callable_mp(this, &EditorInspector::_node_removed));
 			}
@@ -4844,7 +4852,7 @@ void EditorInspector::_notification(int p_what) {
 
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 			if (!is_sub_inspector() && EditorThemeManager::is_generated_theme_outdated()) {
-				add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SceneStringName(panel), SNAME("Tree")));
+				_update_theme();
 			}
 
 			if (use_settings_name_style && EditorSettings::get_singleton()->check_changed_settings_in_group("interface/editor/localize_settings")) {
