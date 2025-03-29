@@ -54,10 +54,9 @@ void OpenXRSelectRuntime::_update_items() {
 	set_item_metadata(index, "");
 	index++;
 
-	Array keys = runtimes.keys();
-	for (int i = 0; i < keys.size(); i++) {
-		String key = keys[i];
-		String path = runtimes[key];
+	for (const KeyValue<Variant, Variant> &kv : runtimes) {
+		const String &key = kv.key;
+		const String &path = kv.value;
 		String adj_path = path.replace("~", home_folder);
 
 		if (da->file_exists(adj_path)) {

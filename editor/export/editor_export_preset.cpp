@@ -208,10 +208,9 @@ void EditorExportPreset::update_value_overrides() {
 
 		Dictionary plugin_overrides = export_plugins[i]->_get_export_options_overrides(platform);
 		if (!plugin_overrides.is_empty()) {
-			Array keys = plugin_overrides.keys();
-			for (int x = 0; x < keys.size(); x++) {
-				StringName key = keys[x];
-				Variant value = plugin_overrides[key];
+			for (const KeyValue<Variant, Variant> &kv : plugin_overrides) {
+				const StringName &key = kv.key;
+				const Variant &value = kv.value;
 				if (new_value_overrides.has(key) && new_value_overrides[key] != value) {
 					WARN_PRINT_ED(vformat("Editor export plugin '%s' overrides pre-existing export option override '%s' with new value.", export_plugins[i]->get_name(), key));
 				}

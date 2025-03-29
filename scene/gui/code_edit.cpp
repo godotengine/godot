@@ -1247,9 +1247,8 @@ void CodeEdit::add_auto_brace_completion_pair(const String &p_open_key, const St
 void CodeEdit::set_auto_brace_completion_pairs(const Dictionary &p_auto_brace_completion_pairs) {
 	auto_brace_completion_pairs.clear();
 
-	Array keys = p_auto_brace_completion_pairs.keys();
-	for (int i = 0; i < keys.size(); i++) {
-		add_auto_brace_completion_pair(keys[i], p_auto_brace_completion_pairs[keys[i]]);
+	for (const KeyValue<Variant, Variant> &kv : p_auto_brace_completion_pairs) {
+		add_auto_brace_completion_pair(kv.key, kv.value);
 	}
 }
 
