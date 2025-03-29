@@ -5015,6 +5015,7 @@ EditorInspector::EditorInspector() {
 	base_vbox->add_child(main_vbox);
 
 	set_horizontal_scroll_mode(SCROLL_MODE_DISABLED);
+	set_vertical_scroll_mode(SCROLL_MODE_RESERVE);
 	set_follow_focus(true);
 
 	changing = 0;
