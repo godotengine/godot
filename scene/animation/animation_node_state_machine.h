@@ -115,6 +115,11 @@ public:
 		STATE_MACHINE_TYPE_GROUPED,
 	};
 
+	enum {
+		ANIMATION_NODE_NOTIFICATION_STATE_MACHINE_STARTED = 2000,
+		ANIMATION_NODE_NOTIFICATION_STATE_MACHINE_FINISHED = 2001
+	};
+
 private:
 	friend class AnimationNodeStateMachinePlayback;
 
@@ -295,7 +300,7 @@ class AnimationNodeStateMachinePlayback : public Resource {
 	bool _make_travel_path(AnimationTree *p_tree, AnimationNodeStateMachine *p_state_machine, bool p_is_allow_transition_to_self, Vector<StringName> &r_path, bool p_test_only);
 	String _validate_path(AnimationNodeStateMachine *p_state_machine, const String &p_path);
 	bool _travel(AnimationTree *p_tree, AnimationNodeStateMachine *p_state_machine, bool p_is_allow_transition_to_self, bool p_test_only);
-	void _start(AnimationNodeStateMachine *p_state_machine);
+	void _start(AnimationNodeStateMachine *p_state_machine, bool p_test_only);
 
 	void _clear_path_children(AnimationTree *p_tree, AnimationNodeStateMachine *p_state_machine, bool p_test_only);
 	bool _travel_children(AnimationTree *p_tree, AnimationNodeStateMachine *p_state_machine, const String &p_path, bool p_is_allow_transition_to_self, bool p_is_parent_same_state, bool p_test_only);

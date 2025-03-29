@@ -587,6 +587,12 @@ void AnimationNode::_bind_methods() {
 	BIND_ENUM_CONSTANT(FILTER_BLEND);
 }
 
+void AnimationNode::_animation_tree_notify(int p_what) {
+	ERR_FAIL_NULL(process_state);
+	ERR_FAIL_NULL(process_state->tree);
+	process_state->tree->emit_signal(SceneStringName(animation_node_notification), process_state->tree->property_reference_map[get_instance_id()], p_what);
+}
+
 AnimationNode::AnimationNode() {
 }
 
@@ -989,6 +995,7 @@ void AnimationTree::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "anim_player", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "AnimationPlayer"), "set_animation_player", "get_animation_player");
 
 	ADD_SIGNAL(MethodInfo(SNAME("animation_player_changed")));
+	ADD_SIGNAL(MethodInfo(SceneStringName(animation_node_notification), PropertyInfo(Variant::STRING_NAME, "animation_node_path"), PropertyInfo(Variant::INT, "what")));
 }
 
 AnimationTree::AnimationTree() {

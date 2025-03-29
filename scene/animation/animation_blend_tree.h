@@ -137,6 +137,13 @@ public:
 		MIX_MODE_ADD
 	};
 
+	enum {
+		ANIMATION_NODE_NOTIFICATION_ONESHOT_STARTED = 1000,
+		ANIMATION_NODE_NOTIFICATION_ONESHOT_FINISHED = 1001,
+		ANIMATION_NODE_NOTIFICATION_ONESHOT_FADEIN_FINISHED = 1002,
+		ANIMATION_NODE_NOTIFICATION_ONESHOT_FADEOUT_STARTED = 1003
+	};
+
 private:
 	double fade_in = 0.0;
 	Ref<Curve> fade_in_curve;
@@ -155,6 +162,8 @@ private:
 	StringName fade_in_remaining = "fade_in_remaining";
 	StringName fade_out_remaining = "fade_out_remaining";
 	StringName time_to_restart = "time_to_restart";
+
+	void _check_and_notify_state_changes(bool p_active, bool p_internal_active, double p_fade_in_remaining);
 
 protected:
 	static void _bind_methods();
@@ -354,6 +363,11 @@ protected:
 	void _get_property_list(List<PropertyInfo> *p_list) const;
 
 public:
+	enum {
+		ANIMATION_NODE_NOTIFICATION_TRANSITION_STARTED = 3000,
+		ANIMATION_NODE_NOTIFICATION_TRANSITION_FINISHED = 3001
+	};
+
 	virtual void get_parameter_list(List<PropertyInfo> *r_list) const override;
 	virtual Variant get_parameter_default_value(const StringName &p_parameter) const override;
 	virtual bool is_parameter_read_only(const StringName &p_parameter) const override;

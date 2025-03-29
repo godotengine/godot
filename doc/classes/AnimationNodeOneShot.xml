@@ -106,5 +106,17 @@
 		<constant name="MIX_MODE_ADD" value="1" enum="MixMode">
 			Blends two animations additively. See also [AnimationNodeAdd2].
 		</constant>
+		<constant name="ANIMATION_NODE_NOTIFICATION_ONESHOT_STARTED" value="1000">
+			The oneshot node has started playback.
+		</constant>
+		<constant name="ANIMATION_NODE_NOTIFICATION_ONESHOT_FINISHED" value="1001">
+			The oneshot node has finished playback.
+		</constant>
+		<constant name="ANIMATION_NODE_NOTIFICATION_ONESHOT_FADEIN_FINISHED" value="1002">
+			The oneshot node has finished fading in. Only emitted if fade-in is enabled.
+		</constant>
+		<constant name="ANIMATION_NODE_NOTIFICATION_ONESHOT_FADEOUT_STARTED" value="1003">
+			The oneshot node has started fading out. Only emitted if fade-out is enabled.
+		</constant>
 	</constants>
 </class>
