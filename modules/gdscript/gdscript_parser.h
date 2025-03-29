@@ -364,6 +364,17 @@ public:
 
 	protected:
 		ExpressionNode() {}
+
+#ifdef TOOLS_ENABLED
+	public:
+		virtual Dictionary to_dictionary() const override {
+			Dictionary dict = Node::to_dictionary();
+			dict["reduced"] = reduced;
+			dict["is_constant"] = is_constant;
+			dict["reduced_value"] = reduced_value;
+			return dict;
+		}
+#endif // TOOLS_ENABLED
 	};
 
 	struct AnnotationNode : public Node {
@@ -400,6 +411,19 @@ public:
 		AssertNode() {
 			type = ASSERT;
 		}
+
+#ifdef TOOLS_ENABLED
+		virtual Dictionary to_dictionary() const override {
+			Dictionary dict = Node::to_dictionary();
+			if (condition != nullptr) {
+				dict["condition"] = condition->to_dictionary();
+			}
+			if (message != nullptr) {
+				dict["message"] = message->to_dictionary();
+			}
+			return dict;
+		}
+#endif // TOOLS_ENABLED
 	};
 
 	struct AssignableNode : public Node {
@@ -414,6 +438,26 @@ public:
 
 	protected:
 		AssignableNode() {}
+
+#ifdef TOOLS_ENABLED
+	public:
+		virtual Dictionary to_dictionary() const override {
+			Dictionary dict = Node::to_dictionary();
+			if (identifier != nullptr) {
+				dict["identifier"] = identifier->to_dictionary();
+			}
+			if (initializer != nullptr) {
+				dict["initializer"] = initializer->to_dictionary();
+			}
+			if (datatype_specifier != nullptr) {
+				dict["datatype_specifier"] = datatype_specifier->to_dictionary();
+			}
+			dict["infer_datatype"] = infer_datatype;
+			dict["use_conversion_assign"] = use_conversion_assign;
+			dict["usages"] = usages;
+			return dict;
+		}
+#endif // TOOLS_ENABLED
 	};
 
 	struct AssignmentNode : public ExpressionNode {
@@ -1162,6 +1206,42 @@ public:
 				leftmost_column = p_identifier->leftmost_column;
 				rightmost_column = p_identifier->rightmost_column;
 			}
+
+#ifdef TOOLS_ENABLED
+			Dictionary to_dictionary() const {
+				Dictionary dict;
+				dict["type"] = type;
+				switch (type) {
+					case CONSTANT:
+						////if(constant != nullptr)
+						////dict["constant"] = constant->to_dictionary();
+						break;
+					case VARIABLE:
+					case FOR_VARIABLE:
+						////if(variable != nullptr)
+						////dict["variable"] = variable->to_dictionary();
+						break;
+					case PARAMETER:
+						////if(parameter != nullptr)
+						////dict["parameter"] = parameter->to_dictionary();
+						break;
+					case PATTERN_BIND:
+						////if(bind != nullptr)
+						////dict["bind"] = bind->to_dictionary();
+						break;
+					case UNDEFINED:
+						break;
+				}
+				dict["name"] = (String)name;
+				dict["start_line"] = start_line;
+				dict["end_line"] = end_line;
+				dict["start_column"] = start_column;
+				dict["end_column"] = end_column;
+				dict["leftmost_column"] = leftmost_column;
+				dict["rightmost_column"] = rightmost_column;
+				return dict;
+			}
+#endif // TOOLS_ENABLED
 		};
 		Local empty;
 		Vector<Local> locals;
@@ -1190,6 +1270,48 @@ public:
 		SuiteNode() {
 			type = SUITE;
 		}
+
+#ifdef TOOLS_ENABLED
+		virtual Dictionary to_dictionary() const {
+			Dictionary dict = Node::to_dictionary();
+			////if(parent_block != nullptr)
+			////dict["parent_block"] = parent_block->to_dictionary();
+
+			Array dict_statements;
+			dict["statements"] = dict_statements;
+			for (const Node *statement : statements) {
+				if (statement != nullptr) {
+					dict_statements.append(statement->to_dictionary());
+				}
+			}
+
+			dict["empty"] = empty.to_dictionary();
+
+			Array dict_locals;
+			dict["locals"] = dict_locals;
+			for (const Local &local : locals) {
+				dict_locals.push_back(local.to_dictionary());
+			}
+
+			Dictionary dict_locals_indices;
+			dict["locals_indices"] = dict_locals_indices;
+			for (const KeyValue<StringName, int> &kv : locals_indices) {
+				dict_locals_indices[(String)kv.key] = kv.value;
+			}
+
+			////if(parent_function != nullptr)
+			////dict["parent_function"] = parent_function->to_dictionary();
+			////if(parent_if != nullptr)
+			////dict["parent_if"] = parent_if->to_dictionary();
+
+			dict["has_return"] = has_return;
+			dict["has_continue"] = has_continue;
+			dict["has_unreachable_code"] = has_unreachable_code;
+			dict["is_in_loop"] = is_in_loop;
+
+			return dict;
+		}
+#endif // TOOLS_ENABLED
 	};
 
 	struct TernaryOpNode : public ExpressionNode {
@@ -1201,6 +1323,16 @@ public:
 		TernaryOpNode() {
 			type = TERNARY_OPERATOR;
 		}
+
+#ifdef TOOLS_ENABLED
+		virtual Dictionary to_dictionary() const {
+			Dictionary dict = ExpressionNode::to_dictionary();
+			dict["condition"] = condition->to_dictionary();
+			dict["true_expr"] = true_expr->to_dictionary();
+			dict["false_expr"] = false_expr->to_dictionary();
+			return dict;
+		}
+#endif // TOOLS_ENABLED
 	};
 
 	struct TypeNode : public Node {
@@ -1214,6 +1346,30 @@ public:
 		TypeNode() {
 			type = TYPE;
 		}
+
+#ifdef TOOLS_ENABLED
+		virtual Dictionary to_dictionary() const {
+			Dictionary dict = Node::to_dictionary();
+
+			Array dict_type_chain;
+			dict["type_chain"] = dict_type_chain;
+			for (const IdentifierNode *type_from_chain : type_chain) {
+				if (type_from_chain != nullptr) {
+					dict_type_chain.append(type_from_chain->to_dictionary());
+				}
+			}
+
+			Array dict_container_types;
+			dict["container_types"] = dict_container_types;
+			for (const TypeNode *container_type : container_types) {
+				if (container_type != nullptr) {
+					dict_container_types.append(container_type->to_dictionary());
+				}
+			}
+
+			return dict;
+		}
+#endif // TOOLS_ENABLED
 	};
 
 	struct TypeTestNode : public ExpressionNode {
@@ -1224,6 +1380,20 @@ public:
 		TypeTestNode() {
 			type = TYPE_TEST;
 		}
+
+#ifdef TOOLS_ENABLED
+		virtual Dictionary to_dictionary() const {
+			Dictionary dict = ExpressionNode::to_dictionary();
+			if (operand != nullptr) {
+				dict["operand"] = operand->to_dictionary();
+			}
+			if (test_type != nullptr) {
+				dict["test_type"] = test_type->to_dictionary();
+			}
+			dict["test_datatype"] = test_datatype.to_dictionary();
+			return dict;
+		}
+#endif // TOOLS_ENABLED
 	};
 
 	struct UnaryOpNode : public ExpressionNode {
@@ -1241,6 +1411,18 @@ public:
 		UnaryOpNode() {
 			type = UNARY_OPERATOR;
 		}
+
+#ifdef TOOLS_ENABLED
+		virtual Dictionary to_dictionary() const {
+			Dictionary dict = ExpressionNode::to_dictionary();
+			dict["operation"] = operation;
+			dict["variant_op"] = variant_op;
+			if (operand != nullptr) {
+				dict["operand"] = operand->to_dictionary();
+			}
+			return dict;
+		}
+#endif // TOOLS_ENABLED
 	};
 
 	struct VariableNode : public AssignableNode {
@@ -1273,6 +1455,43 @@ public:
 		VariableNode() {
 			type = VARIABLE;
 		}
+
+#ifdef TOOLS_ENABLED
+		virtual Dictionary to_dictionary() const {
+			Dictionary dict = AssignableNode::to_dictionary();
+			dict["property"] = property;
+			switch (property) {
+				case PROP_INLINE:
+					if (setter != nullptr) {
+						dict["setter"] = setter->to_dictionary();
+					}
+					if (setter_parameter != nullptr) {
+						dict["setter_parameter"] = setter_parameter->to_dictionary();
+					}
+					if (getter != nullptr) {
+						dict["getter"] = getter->to_dictionary();
+					}
+					break;
+				case PROP_SETGET:
+					if (setter_pointer != nullptr) {
+						dict["setter"] = setter_pointer->to_dictionary();
+					}
+					if (getter_pointer != nullptr) {
+						dict["getter"] = getter_pointer->to_dictionary();
+					}
+					break;
+				case PROP_NONE:
+					break;
+			}
+			dict["exported"] = exported;
+			dict["onready"] = onready;
+			dict["export_info"] = export_info.to_dictionary();
+			dict["assignments"] = assignments;
+			dict["is_static"] = is_static;
+			dict["doc_data"] = doc_data.to_dictionary();
+			return dict;
+		}
+#endif // TOOLS_ENABLED
 	};
 
 	struct WhileNode : public Node {
@@ -1282,6 +1501,19 @@ public:
 		WhileNode() {
 			type = WHILE;
 		}
+
+#ifdef TOOLS_ENABLED
+		virtual Dictionary to_dictionary() const {
+			Dictionary dict = Node::to_dictionary();
+			if (condition != nullptr) {
+				dict["condition"] = condition->to_dictionary();
+			}
+			if (loop != nullptr) {
+				dict["loop"] = loop->to_dictionary();
+			}
+			return dict;
+		}
+#endif // TOOLS_ENABLED
 	};
 
 	enum CompletionType {
@@ -1395,6 +1627,16 @@ private:
 		uint32_t target_kind = 0; // Flags.
 		AnnotationAction apply = nullptr;
 		MethodInfo info;
+
+#ifdef TOOLS_ENABLED
+		Dictionary to_dictionary() const {
+			Dictionary dict;
+			dict["target_kind"] = target_kind;
+			//dict["apply"] = apply;
+			dict["info"] = info.to_dictionary();
+			return dict;
+		}
+#endif // TOOLS_ENABLED
 	};
 	static HashMap<StringName, AnnotationInfo> valid_annotations;
 	List<AnnotationNode *> annotation_stack;
@@ -1610,59 +1852,5 @@ public:
 	GDScriptParser();
 	~GDScriptParser();
 
-#ifdef DEBUG_ENABLED
-	class TreePrinter {
-		int indent_level = 0;
-		String indent;
-		StringBuilder printed;
-		bool pending_indent = false;
-
-		void increase_indent();
-		void decrease_indent();
-		void push_line(const String &p_line = String());
-		void push_text(const String &p_text);
-
-		void print_annotation(const AnnotationNode *p_annotation);
-		void print_array(ArrayNode *p_array);
-		void print_assert(AssertNode *p_assert);
-		void print_assignment(AssignmentNode *p_assignment);
-		void print_await(AwaitNode *p_await);
-		void print_binary_op(BinaryOpNode *p_binary_op);
-		void print_call(CallNode *p_call);
-		void print_cast(CastNode *p_cast);
-		void print_class(ClassNode *p_class);
-		void print_constant(ConstantNode *p_constant);
-		void print_dictionary(DictionaryNode *p_dictionary);
-		void print_expression(ExpressionNode *p_expression);
-		void print_enum(EnumNode *p_enum);
-		void print_for(ForNode *p_for);
-		void print_function(FunctionNode *p_function, const String &p_context = "Function");
-		void print_get_node(GetNodeNode *p_get_node);
-		void print_if(IfNode *p_if, bool p_is_elif = false);
-		void print_identifier(IdentifierNode *p_identifier);
-		void print_lambda(LambdaNode *p_lambda);
-		void print_literal(LiteralNode *p_literal);
-		void print_match(MatchNode *p_match);
-		void print_match_branch(MatchBranchNode *p_match_branch);
-		void print_match_pattern(PatternNode *p_match_pattern);
-		void print_parameter(ParameterNode *p_parameter);
-		void print_preload(PreloadNode *p_preload);
-		void print_return(ReturnNode *p_return);
-		void print_self(SelfNode *p_self);
-		void print_signal(SignalNode *p_signal);
-		void print_statement(Node *p_statement);
-		void print_subscript(SubscriptNode *p_subscript);
-		void print_suite(SuiteNode *p_suite);
-		void print_ternary_op(TernaryOpNode *p_ternary_op);
-		void print_type(TypeNode *p_type);
-		void print_type_test(TypeTestNode *p_type_test);
-		void print_unary_op(UnaryOpNode *p_unary_op);
-		void print_variable(VariableNode *p_variable);
-		void print_while(WhileNode *p_while);
-
-	public:
-		void print_tree(const GDScriptParser &p_parser);
-	};
-#endif // DEBUG_ENABLED
 	static void cleanup();
 };
