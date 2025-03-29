@@ -473,9 +473,9 @@ void Control::_validate_property(PropertyInfo &p_property) const {
 	}
 
 	// Validate which positioning properties should be displayed depending on the parent and the layout mode.
-	Node *parent_node = get_parent_control();
-	if (!parent_node) {
-		// If there is no parent, display both anchor and container options.
+	Control *parent_control = get_parent_control();
+	if (!parent_control) {
+		// If there is no parent control, display both anchor and container options.
 
 		// Set the layout mode to be disabled with the proper value.
 		if (p_property.name == "layout_mode") {
@@ -488,7 +488,7 @@ void Control::_validate_property(PropertyInfo &p_property) const {
 		if (!use_custom_anchors && (p_property.name.begins_with("anchor_") || p_property.name.begins_with("offset_") || p_property.name.begins_with("grow_"))) {
 			p_property.usage ^= PROPERTY_USAGE_EDITOR;
 		}
-	} else if (Object::cast_to<Container>(parent_node)) {
+	} else if (Object::cast_to<Container>(parent_control)) {
 		// If the parent is a container, display only container-related properties.
 		if (p_property.name.begins_with("anchor_") || p_property.name.begins_with("offset_") || p_property.name.begins_with("grow_") || p_property.name == "anchors_preset") {
 			p_property.usage ^= PROPERTY_USAGE_DEFAULT;
@@ -500,7 +500,7 @@ void Control::_validate_property(PropertyInfo &p_property) const {
 			p_property.usage |= PROPERTY_USAGE_READ_ONLY;
 		} else if (p_property.name == "size_flags_horizontal" || p_property.name == "size_flags_vertical") {
 			// Filter allowed size flags based on the parent container configuration.
-			Container *parent_container = Object::cast_to<Container>(parent_node);
+			Container *parent_container = Object::cast_to<Container>(parent_control);
 			Vector<int> size_flags;
 			if (p_property.name == "size_flags_horizontal") {
 				size_flags = parent_container->get_allowed_size_flags_horizontal();
@@ -540,7 +540,7 @@ void Control::_validate_property(PropertyInfo &p_property) const {
 			}
 		}
 	} else {
-		// If the parent is NOT a container or not a control at all, display only anchoring-related properties.
+		// If the parent is a non-container control, display only anchoring-related properties.
 		if (p_property.name.begins_with("size_flags_")) {
 			p_property.usage ^= PROPERTY_USAGE_EDITOR;
 
@@ -562,7 +562,7 @@ void Control::_validate_property(PropertyInfo &p_property) const {
 	}
 
 	// Disable the property if it's managed by the parent container.
-	if (!Object::cast_to<Container>(parent_node)) {
+	if (!Object::cast_to<Container>(parent_control)) {
 		return;
 	}
 	bool property_is_managed_by_container = false;
@@ -897,11 +897,11 @@ void Control::_update_layout_mode() {
 }
 
 Control::LayoutMode Control::_get_layout_mode() const {
-	Node *parent_node = get_parent_control();
+	Control *parent_control = get_parent_control();
 	// In these modes the property is read-only.
-	if (!parent_node) {
+	if (!parent_control) {
 		return LayoutMode::LAYOUT_MODE_UNCONTROLLED;
-	} else if (Object::cast_to<Container>(parent_node)) {
+	} else if (Object::cast_to<Container>(parent_control)) {
 		return LayoutMode::LAYOUT_MODE_CONTAINER;
 	}
 
@@ -910,20 +910,25 @@ Control::LayoutMode Control::_get_layout_mode() const {
 		return LayoutMode::LAYOUT_MODE_ANCHORS;
 	}
 
-	// Otherwise fallback on what's stored.
-	return data.stored_layout_mode;
+	// Only position/anchors modes are valid for non-container control parent.
+	if (data.stored_layout_mode == LayoutMode::LAYOUT_MODE_POSITION || data.stored_layout_mode == LayoutMode::LAYOUT_MODE_ANCHORS) {
+		return data.stored_layout_mode;
+	}
+
+	// Otherwise fallback to position mode.
+	return LayoutMode::LAYOUT_MODE_POSITION;
 }
 
 Control::LayoutMode Control::_get_default_layout_mode() const {
-	Node *parent_node = get_parent_control();
+	Control *parent_control = get_parent_control();
 	// In these modes the property is read-only.
-	if (!parent_node) {
+	if (!parent_control) {
 		return LayoutMode::LAYOUT_MODE_UNCONTROLLED;
-	} else if (Object::cast_to<Container>(parent_node)) {
+	} else if (Object::cast_to<Container>(parent_control)) {
 		return LayoutMode::LAYOUT_MODE_CONTAINER;
 	}
 
-	// Otherwise fallback on the position mode.
+	// Otherwise fallback to the position mode.
 	return LayoutMode::LAYOUT_MODE_POSITION;
 }
 
