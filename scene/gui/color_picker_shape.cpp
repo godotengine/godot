@@ -68,9 +68,9 @@ bool ColorPickerShape::can_handle(const Ref<InputEvent> &p_event, Vector2 &r_pos
 }
 
 void ColorPickerShape::apply_color() {
-	color_picker->_copy_hsv_to_color();
-	color_picker->last_color = color_picker->color;
-	color_picker->set_pick_color(color_picker->color);
+	color_picker->_copy_hsv_okhsl_to_normalized();
+	color_picker->_normalized_apply_intensity_to_color();
+	color_picker->_set_pick_color(color_picker->color, true, false);
 
 	if (!color_picker->deferred_mode_enabled) {
 		_emit_color_changed();
@@ -122,7 +122,7 @@ void ColorPickerShape::draw_sv_square(Control *p_control, const Rect2 &p_square,
 		Vector2(p_square.position.x, end.y),
 	};
 
-	Color color1 = color_picker->color;
+	Color color1 = color_picker->_get_pick_color_normalized();
 	color1.set_hsv(color_picker->h, 1, 1);
 	Color color2 = color1;
 	color2.set_hsv(color_picker->h, 1, 0);
