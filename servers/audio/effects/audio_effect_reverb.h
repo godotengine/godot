@@ -77,6 +77,7 @@ public:
 	void set_spread(float p_spread);
 	void set_dry(float p_dry);
 	void set_wet(float p_wet);
+	void set_hpf_hz(float p_hpf_hz);
 	void set_hpf(float p_hpf);
 
 	float get_predelay_msec() const;
@@ -86,6 +87,7 @@ public:
 	float get_spread() const;
 	float get_dry() const;
 	float get_wet() const;
+	float get_hpf_hz() const;
 	float get_hpf() const;
 
 	Ref<AudioEffectInstance> instantiate() override;
