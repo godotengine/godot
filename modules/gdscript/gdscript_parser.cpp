@@ -1087,7 +1087,11 @@ void GDScriptParser::parse_class_body(bool p_is_multiline) {
 				// Display a completion with identifiers.
 				make_completion_context(COMPLETION_IDENTIFIER, nullptr);
 				advance();
-				push_error(vformat(R"(Unexpected %s in class body.)", previous.get_debug_name()));
+				if (previous.get_identifier() == "export") {
+					push_error(R"(The "export" keyword was removed in Godot 4. Use an export annotation ("@export", "@export_range", etc.) instead.)");
+				} else {
+					push_error(vformat(R"(Unexpected %s in class body.)", previous.get_debug_name()));
+				}
 				break;
 		}
 		if (token.type != GDScriptTokenizer::Token::STATIC) {
