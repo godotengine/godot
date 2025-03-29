@@ -64,7 +64,7 @@ class OptimizedTranslation : public Translation {
 			d = 0x1000193;
 		}
 		while (*p_str) {
-			d = (d * 0x1000193) ^ uint32_t(*p_str);
+			d = (d * 0x1000193) ^ static_cast<uint8_t>(*p_str);
 			p_str++;
 		}
 
