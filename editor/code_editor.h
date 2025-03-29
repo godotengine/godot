@@ -169,6 +169,8 @@ class CodeTextEditor : public VBoxContainer {
 	Control *toggle_scripts_list = nullptr;
 	Button *error_button = nullptr;
 	Button *warning_button = nullptr;
+	Button *tab_moves_focus_button = nullptr;
+	bool is_tab_moving_focus = false;
 
 	MenuButton *zoom_button = nullptr;
 	Label *line_and_col_txt = nullptr;
@@ -214,6 +216,7 @@ class CodeTextEditor : public VBoxContainer {
 
 	void _error_button_pressed();
 	void _warning_button_pressed();
+	void _tab_moves_focus_button_pressed();
 	void _set_show_errors_panel(bool p_show);
 	void _set_show_warnings_panel(bool p_show);
 	void _error_pressed(const Ref<InputEvent> &p_event);
@@ -269,6 +272,9 @@ public:
 
 	bool is_previewing_navigation_change() const;
 	void set_preview_navigation_change(bool p_preview);
+
+	void set_tab_key_moving_focus(bool p_enabled);
+	bool is_tab_key_moving_focus();
 
 	void set_error_count(int p_error_count);
 	void set_warning_count(int p_warning_count);
