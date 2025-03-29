@@ -193,6 +193,11 @@ protected:
 
 	GDVIRTUAL8R_REQUIRED(bool, _body_collide_shape, RID, int, RID, const Transform2D &, const Vector2 &, GDExtensionPtr<Vector2>, int, GDExtensionPtr<int>)
 
+#ifndef DISABLE_DEPRECATED
+	void _body_set_shape_as_one_way_collision_bind_compat_104736(RID p_body, int p_shape_idx, bool p_enable, real_t p_margin);
+	static void _bind_compatibility_methods();
+#endif
+
 public:
 	// The warning is valid, but unavoidable. If the function is not overridden it will error anyway.
 
