@@ -113,10 +113,6 @@ Char16String &Char16String::operator+=(char16_t p_char) {
 	return *this;
 }
 
-void Char16String::operator=(const char16_t *p_cstr) {
-	copy_from(p_cstr);
-}
-
 const char16_t *Char16String::get_data() const {
 	if (size()) {
 		return &operator[](0);
@@ -125,27 +121,19 @@ const char16_t *Char16String::get_data() const {
 	}
 }
 
-void Char16String::copy_from(const char16_t *p_cstr) {
-	if (!p_cstr) {
+Error Char16String::copy_from(const Span<char16_t> &p_cstr) {
+	if (p_cstr.size() == 0) {
 		resize(0);
-		return;
+		return OK;
 	}
 
-	const char16_t *s = p_cstr;
-	for (; *s; s++) {
-	}
-	size_t len = s - p_cstr;
+	const Error err = resize(p_cstr.size() + 1); // Include terminating null char.
+	ERR_FAIL_COND_V_MSG(err != OK, err, "Failed to copy char16_t string.");
 
-	if (len == 0) {
-		resize(0);
-		return;
-	}
-
-	Error err = resize(++len); // include terminating null char
-
-	ERR_FAIL_COND_MSG(err != OK, "Failed to copy char16_t string.");
-
-	memcpy(ptrw(), p_cstr, len * sizeof(char16_t));
+	char16_t *dst = ptrw();
+	memcpy(dst, p_cstr.ptr(), p_cstr.size() * sizeof(char16_t));
+	dst[p_cstr.size()] = _null;
+	return OK;
 }
 
 /*************************************************************************/
@@ -183,10 +171,6 @@ CharString &CharString::operator+=(char p_char) {
 	return *this;
 }
 
-void CharString::operator=(const char *p_cstr) {
-	copy_from(p_cstr);
-}
-
 const char *CharString::get_data() const {
 	if (size()) {
 		return &operator[](0);
@@ -195,24 +179,19 @@ const char *CharString::get_data() const {
 	}
 }
 
-void CharString::copy_from(const char *p_cstr) {
-	if (!p_cstr) {
+Error CharString::copy_from(const Span<char> &p_cstr) {
+	if (p_cstr.size() == 0) {
 		resize(0);
-		return;
+		return OK;
 	}
 
-	size_t len = strlen(p_cstr);
+	const Error err = resize(p_cstr.size() + 1); // Include terminating null char.
+	ERR_FAIL_COND_V_MSG(err != OK, err, "Failed to copy C-string.");
 
-	if (len == 0) {
-		resize(0);
-		return;
-	}
-
-	Error err = resize(++len); // include terminating null char
-
-	ERR_FAIL_COND_MSG(err != OK, "Failed to copy C-string.");
-
-	memcpy(ptrw(), p_cstr, len);
+	char *dst = ptrw();
+	memcpy(dst, p_cstr.ptr(), p_cstr.size());
+	dst[p_cstr.size()] = _null;
+	return OK;
 }
 
 /*************************************************************************/
