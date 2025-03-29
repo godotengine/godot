@@ -100,7 +100,7 @@ Rect2 AnimatedSprite2D::_get_rect() const {
 	}
 	Size2 s = t->get_size();
 
-	Point2 ofs = offset;
+	Point2 ofs = offset + alignment * s;
 	if (centered) {
 		ofs -= s / 2;
 	}
@@ -115,6 +115,15 @@ Rect2 AnimatedSprite2D::_get_rect() const {
 void AnimatedSprite2D::_validate_property(PropertyInfo &p_property) const {
 	if (frames.is_null()) {
 		return;
+	}
+
+	if (p_property.name == "alignment") {
+		p_property.hint = PROPERTY_HINT_RANGE;
+		if (centered) {
+			p_property.hint_string = "-0.5,0.5,0.01,or_greater,or_lower";
+		} else {
+			p_property.hint_string = "-1,0,0.01,or_greater,or_lower";
+		}
 	}
 
 	if (p_property.name == "animation") {
@@ -263,7 +272,7 @@ void AnimatedSprite2D::_notification(int p_what) {
 			RID ci = get_canvas_item();
 
 			Size2 s = texture->get_size();
-			Point2 ofs = offset;
+			Point2 ofs = offset + alignment * s;
 			if (centered) {
 				ofs -= s / 2;
 			}
@@ -390,6 +399,7 @@ void AnimatedSprite2D::set_centered(bool p_center) {
 	centered = p_center;
 	queue_redraw();
 	item_rect_changed();
+	notify_property_list_changed();
 }
 
 bool AnimatedSprite2D::is_centered() const {
@@ -408,6 +418,20 @@ void AnimatedSprite2D::set_offset(const Point2 &p_offset) {
 
 Point2 AnimatedSprite2D::get_offset() const {
 	return offset;
+}
+
+void AnimatedSprite2D::set_alignment(const Vector2 &p_alignment) {
+	if (alignment == p_alignment) {
+		return;
+	}
+
+	alignment = p_alignment;
+	queue_redraw();
+	item_rect_changed();
+}
+
+Vector2 AnimatedSprite2D::get_alignment() const {
+	return alignment;
 }
 
 void AnimatedSprite2D::set_flip_h(bool p_flip) {
@@ -629,6 +653,9 @@ void AnimatedSprite2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_offset", "offset"), &AnimatedSprite2D::set_offset);
 	ClassDB::bind_method(D_METHOD("get_offset"), &AnimatedSprite2D::get_offset);
 
+	ClassDB::bind_method(D_METHOD("set_alignment", "alignment"), &AnimatedSprite2D::set_alignment);
+	ClassDB::bind_method(D_METHOD("get_alignment"), &AnimatedSprite2D::get_alignment);
+
 	ClassDB::bind_method(D_METHOD("set_flip_h", "flip_h"), &AnimatedSprite2D::set_flip_h);
 	ClassDB::bind_method(D_METHOD("is_flipped_h"), &AnimatedSprite2D::is_flipped_h);
 
@@ -663,6 +690,7 @@ void AnimatedSprite2D::_bind_methods() {
 	ADD_GROUP("Offset", "");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "centered"), "set_centered", "is_centered");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "offset", PROPERTY_HINT_NONE, "suffix:px"), "set_offset", "get_offset");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "alignment"), "set_alignment", "get_alignment");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flip_h"), "set_flip_h", "is_flipped_h");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flip_v"), "set_flip_v", "is_flipped_v");
 }

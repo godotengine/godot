@@ -87,6 +87,17 @@ void SpriteBase3D::_notification(int p_what) {
 	}
 }
 
+void SpriteBase3D::_validate_property(PropertyInfo &p_property) const {
+	if (p_property.name == "alignment") {
+		p_property.hint = PROPERTY_HINT_RANGE;
+		if (centered) {
+			p_property.hint_string = "-0.5,0.5,0.01,or_greater,or_lower";
+		} else {
+			p_property.hint_string = "-1,0,0.01,or_greater,or_lower";
+		}
+	}
+}
+
 void SpriteBase3D::draw_texture_rect(Ref<Texture2D> p_texture, Rect2 p_dst_rect, Rect2 p_src_rect) {
 	ERR_FAIL_COND(p_texture.is_null());
 
@@ -292,6 +303,7 @@ void SpriteBase3D::set_centered(bool p_center) {
 
 	centered = p_center;
 	_queue_redraw();
+	notify_property_list_changed();
 }
 
 bool SpriteBase3D::is_centered() const {
@@ -309,6 +321,19 @@ void SpriteBase3D::set_offset(const Point2 &p_offset) {
 
 Point2 SpriteBase3D::get_offset() const {
 	return offset;
+}
+
+void SpriteBase3D::set_alignment(const Vector2 &p_alignment) {
+	if (alignment == p_alignment) {
+		return;
+	}
+
+	alignment = p_alignment;
+	_queue_redraw();
+}
+
+Vector2 SpriteBase3D::get_alignment() const {
+	return alignment;
 }
 
 void SpriteBase3D::set_flip_h(bool p_flip) {
@@ -595,6 +620,9 @@ void SpriteBase3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_offset", "offset"), &SpriteBase3D::set_offset);
 	ClassDB::bind_method(D_METHOD("get_offset"), &SpriteBase3D::get_offset);
 
+	ClassDB::bind_method(D_METHOD("set_alignment", "alignment"), &SpriteBase3D::set_alignment);
+	ClassDB::bind_method(D_METHOD("get_alignment"), &SpriteBase3D::get_alignment);
+
 	ClassDB::bind_method(D_METHOD("set_flip_h", "flip_h"), &SpriteBase3D::set_flip_h);
 	ClassDB::bind_method(D_METHOD("is_flipped_h"), &SpriteBase3D::is_flipped_h);
 
@@ -642,6 +670,7 @@ void SpriteBase3D::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "centered"), "set_centered", "is_centered");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "offset", PROPERTY_HINT_NONE, "suffix:px"), "set_offset", "get_offset");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "alignment"), "set_alignment", "get_alignment");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flip_h"), "set_flip_h", "is_flipped_h");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flip_v"), "set_flip_v", "is_flipped_v");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "modulate"), "set_modulate", "get_modulate");
@@ -780,7 +809,7 @@ void Sprite3D::_draw() {
 	Size2 frame_size = base_rect.size / Size2(hframes, vframes);
 	Point2 frame_offset = Point2(frame % hframes, frame / hframes) * frame_size;
 
-	Point2 dst_offset = get_offset();
+	Point2 dst_offset = get_offset() + get_alignment() * frame_size;
 	if (is_centered()) {
 		dst_offset -= frame_size / 2.0f;
 	}
@@ -930,7 +959,7 @@ Rect2 Sprite3D::get_item_rect() const {
 		s = s / Point2(hframes, vframes);
 	}
 
-	Point2 ofs = get_offset();
+	Point2 ofs = get_offset() + get_alignment() * s;
 	if (is_centered()) {
 		ofs -= s / 2;
 	}
@@ -1021,7 +1050,7 @@ void AnimatedSprite3D::_draw() {
 	Rect2 src_rect;
 	src_rect.size = tsize;
 
-	Point2 ofs = get_offset();
+	Point2 ofs = get_offset() + get_alignment() * tsize;
 	if (is_centered()) {
 		ofs -= tsize / 2;
 	}
@@ -1284,7 +1313,7 @@ Rect2 AnimatedSprite3D::get_item_rect() const {
 	}
 	Size2 s = t->get_size();
 
-	Point2 ofs = get_offset();
+	Point2 ofs = get_offset() + get_alignment() * s;
 	if (is_centered()) {
 		ofs -= s / 2;
 	}
