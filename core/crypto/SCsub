@@ -37,6 +37,8 @@ if not has_module:
         "entropy.c",
         "md.c",
         "md5.c",
+        "pkcs5.c",
+        "platform_util.c",
         "sha1.c",
         "sha256.c",
         "godot_core_mbedtls_platform.c",

@@ -37,6 +37,7 @@
 #include <mbedtls/ctr_drbg.h>
 #include <mbedtls/entropy.h>
 #include <mbedtls/md5.h>
+#include <mbedtls/pkcs5.h>
 #include <mbedtls/sha1.h>
 #include <mbedtls/sha256.h>
 #if MBEDTLS_VERSION_MAJOR >= 3
@@ -248,4 +249,11 @@ Error CryptoCore::sha1(const uint8_t *p_src, int p_src_len, unsigned char r_hash
 Error CryptoCore::sha256(const uint8_t *p_src, int p_src_len, unsigned char r_hash[32]) {
 	int ret = mbedtls_sha256_ret(p_src, p_src_len, r_hash, 0);
 	return ret ? FAILED : OK;
+}
+
+PackedByteArray CryptoCore::pbkdf2_sha256(const uint8_t *p_src, int p_src_len, const uint8_t *p_salt, int p_salt_len, int p_iterations, int p_key_size) {
+	PackedByteArray out;
+	out.resize(p_key_size);
+	ERR_FAIL_COND_V(mbedtls_pkcs5_pbkdf2_hmac_ext(MBEDTLS_MD_SHA256, p_src, p_src_len, p_salt, p_salt_len, p_iterations, p_key_size, (unsigned char *)out.ptrw()) != 0, PackedByteArray());
+	return out;
 }

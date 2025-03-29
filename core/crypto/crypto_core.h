@@ -113,4 +113,6 @@ public:
 	static Error md5(const uint8_t *p_src, int p_src_len, unsigned char r_hash[16]);
 	static Error sha1(const uint8_t *p_src, int p_src_len, unsigned char r_hash[20]);
 	static Error sha256(const uint8_t *p_src, int p_src_len, unsigned char r_hash[32]);
+
+	static PackedByteArray pbkdf2_sha256(const uint8_t *p_src, int p_src_len, const uint8_t *p_salt, int p_salt_len, int p_iterations, int p_key_size);
 };
