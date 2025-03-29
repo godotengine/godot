@@ -28,6 +28,7 @@ namespace GodotTools
         public static class Settings
         {
             public const string ExternalEditor = "dotnet/editor/external_editor";
+            public const string BuildOnFocus = "dotnet/editor/build_on_focus";
             public const string CustomExecPath = "dotnet/editor/custom_exec_path";
             public const string CustomExecPathArgs = "dotnet/editor/custom_exec_path_args";
             public const string VerbosityLevel = "dotnet/build/verbosity_level";
@@ -461,6 +462,28 @@ namespace GodotTools
                 _bottomPanelBtn.Icon = MSBuildPanel.GetBuildStateIcon();
         }
 
+        public void HotReloadScripts(bool windowFocused)
+        {
+            if (Internal.IsAssembliesReloadingNeeded())
+            {
+                BuildManager.UpdateLastValidBuildDateTime();
+                Internal.ReloadAssemblies(softReload: false);
+            }
+
+            if (windowFocused && _editorSettings.GetSetting(Settings.BuildOnFocus).As<bool>())
+            {
+                if (!BuildManager.IsBuildInProgress())
+                {
+                    if (!File.Exists(GodotSharpDirs.ProjectCsProjPath) || BuildManager.CSProjectFilesChanged())
+                    {
+                        // Build scripts if CS Proj needs to be created
+                        // or if any CS script files have changed since last build.
+                        BuildProjectPressed();
+                    }
+                }
+            }
+        }
+
         public override void _EnablePlugin()
         {
             base._EnablePlugin();
@@ -554,6 +577,7 @@ namespace GodotTools
 
             // External editor settings
             EditorDef(Settings.ExternalEditor, Variant.From(ExternalEditorId.None));
+            EditorDef(Settings.BuildOnFocus, false);
             EditorDef(Settings.CustomExecPath, "");
             EditorDef(Settings.CustomExecPathArgs, "");
             EditorDef(Settings.VerbosityLevel, Variant.From(VerbosityLevelId.Normal));
