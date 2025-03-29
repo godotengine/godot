@@ -3540,6 +3540,11 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 	switch (p_type) {
 		// atomic types
 		case Variant::NIL: {
+			// handle null values for Object types by recalling with Variant::OBJECT
+			if (p_hint == PROPERTY_HINT_RESOURCE_TYPE || p_hint == PROPERTY_HINT_NODE_TYPE) {
+				return get_editor_for_property(p_object, Variant::OBJECT, p_path, p_hint, p_hint_text, p_usage, p_wide);
+			}
+
 			EditorPropertyNil *editor = memnew(EditorPropertyNil);
 			return editor;
 		} break;
