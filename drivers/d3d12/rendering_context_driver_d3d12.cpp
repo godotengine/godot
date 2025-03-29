@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "rendering_context_driver_d3d12.h"
+#include "d3d12_hooks.h"
 
 #include "core/config/engine.h"
 #include "core/config/project_settings.h"
