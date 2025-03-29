@@ -43,7 +43,8 @@ public:
 	/// Constructor used when rebinding to another type. This expects the allocator to use the original memory pool from the first allocator,
 	/// but in our case we cannot use the local buffer of the original allocator as it has different size and alignment rules.
 	/// To solve this we make this allocator fall back to the heap immediately.
-	template <class T2>		STLLocalAllocator(const STLLocalAllocator<T2, N> &) : mNumElementsUsed(N) { }
+	template <class T2>
+	explicit				STLLocalAllocator(const STLLocalAllocator<T2, N> &) : mNumElementsUsed(N) { }
 
 	/// Check if inPointer is in the local buffer
 	inline bool				is_local(const_pointer inPointer) const

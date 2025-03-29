@@ -31,7 +31,11 @@ class SoftBodyCreationSettings;
 /// The functions that get/set the position of the body all indicate if they are relative to the center of mass or to the original position in which the shape was created.
 ///
 /// The linear velocity is also velocity of the center of mass, to correct for this: \f$VelocityCOM = Velocity - AngularVelocity \times ShapeCOM\f$.
-class alignas(JPH_RVECTOR_ALIGNMENT) JPH_EXPORT_GCC_BUG_WORKAROUND Body : public NonCopyable
+class
+#ifndef JPH_PLATFORM_DOXYGEN // Doxygen gets confused here
+	JPH_EXPORT_GCC_BUG_WORKAROUND alignas(JPH_RVECTOR_ALIGNMENT)
+#endif
+	Body : public NonCopyable
 {
 public:
 	JPH_OVERRIDE_NEW_DELETE
@@ -280,6 +284,25 @@ public:
 
 	/// Get world space bounding box
 	inline const AABox &	GetWorldSpaceBounds() const										{ return mBounds; }
+
+#ifdef JPH_ENABLE_ASSERTS
+	/// Validate that the cached bounding box of the body matches the actual bounding box of the body.
+	/// If this check fails then there are a number of possible causes:
+	/// 1. Shape is being modified without notifying the system of the change. E.g. if you modify a MutableCompoundShape
+	/// without calling BodyInterface::NotifyShapeChanged then there will be a mismatch between the cached bounding box
+	/// in the broad phase and the bounding box of the Shape.
+	/// 2. You are calling functions postfixed with 'Internal' which are not meant to be called by the application.
+	/// 3. If the actual bounds and cached bounds are very close, it could mean that you have a mismatch in floating
+	/// point unit state between threads. E.g. one thread has flush to zero (FTZ) or denormals are zero (DAZ) set and
+	/// the other thread does not. Or if the rounding mode differs between threads. This can cause small differences
+	/// in floating point calculations. If you are using JobSystemThreadPool you can use JobSystemThreadPool::SetThreadInitFunction
+	/// to initialize the floating point unit state.
+	inline void				ValidateCachedBounds() const
+	{
+		AABox actual_body_bounds = mShape->GetWorldSpaceBounds(GetCenterOfMassTransform(), Vec3::sOne());
+		JPH_ASSERT(actual_body_bounds == mBounds, "Mismatch between cached bounding box and actual bounding box");
+	}
+#endif // JPH_ENABLE_ASSERTS
 
 	/// Access to the motion properties
 	const MotionProperties *GetMotionProperties() const										{ JPH_ASSERT(!IsStatic()); return mMotionProperties; }

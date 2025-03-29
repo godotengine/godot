@@ -107,8 +107,8 @@ void MotionProperties::ApplyGyroscopicForceInternal(QuatArg inBodyRotation, floa
 
 	// Calculate local space inertia tensor (a diagonal in local space)
 	UVec4 is_zero = Vec3::sEquals(mInvInertiaDiagonal, Vec3::sZero());
-	Vec3 denominator = Vec3::sSelect(mInvInertiaDiagonal, Vec3::sReplicate(1.0f), is_zero);
-	Vec3 nominator = Vec3::sSelect(Vec3::sReplicate(1.0f), Vec3::sZero(), is_zero);
+	Vec3 denominator = Vec3::sSelect(mInvInertiaDiagonal, Vec3::sOne(), is_zero);
+	Vec3 nominator = Vec3::sSelect(Vec3::sOne(), Vec3::sZero(), is_zero);
 	Vec3 local_inertia = nominator / denominator; // Avoid dividing by zero, inertia in this axis will be zero
 
 	// Calculate local space angular momentum

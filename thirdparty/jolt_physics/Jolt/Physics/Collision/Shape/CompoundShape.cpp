@@ -92,7 +92,12 @@ MassProperties CompoundShape::GetMassProperties() const
 
 AABox CompoundShape::GetWorldSpaceBounds(Mat44Arg inCenterOfMassTransform, Vec3Arg inScale) const
 {
-	if (mSubShapes.size() <= 10)
+	if (mSubShapes.empty())
+	{
+		// If there are no sub-shapes, we must return an empty box to avoid overflows in the broadphase
+		return AABox(inCenterOfMassTransform.GetTranslation(), inCenterOfMassTransform.GetTranslation());
+	}
+	else if (mSubShapes.size() <= 10)
 	{
 		AABox bounds;
 		for (const SubShape &shape : mSubShapes)
