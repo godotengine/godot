@@ -30,7 +30,7 @@
 
 #pragma once
 
-#include "servers/navigation_server_2d.h"
+#include "servers/navigation/navigation_server_2d.h"
 
 #include "tests/test_macros.h"
 

@@ -34,7 +34,7 @@
 #include "../openxr_api.h"
 
 #include "scene/3d/skeleton_3d.h"
-#include "servers/xr_server.h"
+#include "servers/xr/xr_server.h"
 
 void OpenXRHand::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_hand", "hand"), &OpenXRHand::set_hand);

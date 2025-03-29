@@ -67,32 +67,32 @@
 #include "scene/resources/packed_scene.h"
 #include "scene/theme/theme_db.h"
 #include "servers/audio/audio_driver_dummy.h"
-#include "servers/audio_server.h"
-#include "servers/camera_server.h"
-#include "servers/display_server.h"
+#include "servers/audio/audio_server.h"
+#include "servers/camera/camera_server.h"
+#include "servers/display/display_server.h"
 #include "servers/movie_writer/movie_writer.h"
 #include "servers/movie_writer/movie_writer_mjpeg.h"
-#include "servers/navigation_server_3d.h"
-#include "servers/navigation_server_3d_dummy.h"
+#include "servers/navigation/navigation_server_3d.h"
+#include "servers/navigation/navigation_server_3d_dummy.h"
 #include "servers/register_server_types.h"
 #include "servers/rendering/rendering_server_default.h"
+#include "servers/text/text_server.h"
 #include "servers/text/text_server_dummy.h"
-#include "servers/text_server.h"
 
 // 2D
-#include "servers/navigation_server_2d.h"
-#include "servers/navigation_server_2d_dummy.h"
+#include "servers/navigation/navigation_server_2d.h"
+#include "servers/navigation/navigation_server_2d_dummy.h"
 #ifndef PHYSICS_2D_DISABLED
-#include "servers/physics_server_2d.h"
-#include "servers/physics_server_2d_dummy.h"
+#include "servers/physics_2d/physics_server_2d.h"
+#include "servers/physics_2d/physics_server_2d_dummy.h"
 #endif // PHYSICS_2D_DISABLED
 
 #ifndef PHYSICS_3D_DISABLED
-#include "servers/physics_server_3d.h"
-#include "servers/physics_server_3d_dummy.h"
+#include "servers/physics_3d/physics_server_3d.h"
+#include "servers/physics_3d/physics_server_3d_dummy.h"
 #endif // PHYSICS_3D_DISABLED
 #ifndef _3D_DISABLED
-#include "servers/xr_server.h"
+#include "servers/xr/xr_server.h"
 #endif // _3D_DISABLED
 
 #ifdef TESTS_ENABLED
@@ -176,9 +176,9 @@ static PhysicsServer2D *physics_server_2d = nullptr;
 static PhysicsServer3DManager *physics_server_3d_manager = nullptr;
 static PhysicsServer3D *physics_server_3d = nullptr;
 #endif // PHYSICS_3D_DISABLED
-#ifndef _3D_DISABLED
+#ifndef XR_DISABLED
 static XRServer *xr_server = nullptr;
-#endif // _3D_DISABLED
+#endif // XR_DISABLED
 // We error out if setup2() doesn't turn this true
 static bool _start_success = false;
 
@@ -4856,11 +4856,11 @@ void Main::cleanup(bool p_force) {
 
 	EngineDebugger::deinitialize();
 
-#ifndef _3D_DISABLED
+#ifndef XR_DISABLED
 	if (xr_server) {
 		memdelete(xr_server);
 	}
-#endif // _3D_DISABLED
+#endif // XR_DISABLED
 
 	if (audio_server) {
 		audio_server->finish();

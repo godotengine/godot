@@ -29,10 +29,11 @@
 /**************************************************************************/
 
 #include "xr_server.h"
-#include "core/config/project_settings.h"
-#include "xr/xr_interface.h"
-#include "xr/xr_positional_tracker.h"
 #include "xr_server.compat.inc"
+
+#include "core/config/project_settings.h"
+#include "servers/xr/xr_interface.h"
+#include "servers/xr/xr_positional_tracker.h"
 
 XRServer::XRMode XRServer::xr_mode = XRMODE_DEFAULT;
 

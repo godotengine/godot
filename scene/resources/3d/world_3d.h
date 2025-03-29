@@ -33,8 +33,10 @@
 #include "core/io/resource.h"
 #include "scene/resources/compositor.h"
 #include "scene/resources/environment.h"
+#include "servers/rendering/rendering_server.h"
+
 #ifndef PHYSICS_3D_DISABLED
-#include "servers/physics_server_3d.h"
+#include "servers/physics_3d/physics_server_3d.h"
 #endif // PHYSICS_3D_DISABLED
 
 class CameraAttributes;

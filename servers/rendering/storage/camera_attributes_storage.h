@@ -31,7 +31,7 @@
 #pragma once
 
 #include "core/templates/rid_owner.h"
-#include "servers/rendering_server.h"
+#include "servers/rendering/rendering_server.h"
 
 class RendererCameraAttributes {
 private:
