@@ -2877,7 +2877,8 @@ void EditorHelp::_wait_for_thread(Thread &p_thread) {
 
 void EditorHelp::_compute_doc_version_hash() {
 	uint32_t version_hash = Engine::get_singleton()->get_version_info().hash();
-	doc_version_hash = vformat("%d/%d/%d/%s", version_hash, ClassDB::get_api_hash(ClassDB::API_CORE), ClassDB::get_api_hash(ClassDB::API_EDITOR), _doc_data_hash);
+	String lang = EditorSettings::get_singleton()->get("interface/editor/editor_language");
+	doc_version_hash = vformat("%d/%d/%d/%s/%s", version_hash, ClassDB::get_api_hash(ClassDB::API_CORE), ClassDB::get_api_hash(ClassDB::API_EDITOR), _doc_data_hash, lang);
 }
 
 String EditorHelp::get_cache_full_path() {
