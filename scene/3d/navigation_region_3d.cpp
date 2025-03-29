@@ -194,30 +194,7 @@ void NavigationRegion3D::set_navigation_mesh(const Ref<NavigationMesh> &p_naviga
 		navigation_mesh->connect_changed(callable_mp(this, &NavigationRegion3D::_navigation_mesh_changed));
 	}
 
-	_update_bounds();
-
-	NavigationServer3D::get_singleton()->region_set_navigation_mesh(region, p_navigation_mesh);
-
-#ifdef DEBUG_ENABLED
-	if (is_inside_tree() && NavigationServer3D::get_singleton()->get_debug_navigation_enabled()) {
-		if (navigation_mesh.is_valid()) {
-			_update_debug_mesh();
-			_update_debug_edge_connections_mesh();
-		} else {
-			if (debug_instance.is_valid()) {
-				RS::get_singleton()->instance_set_visible(debug_instance, false);
-			}
-			if (debug_edge_connections_instance.is_valid()) {
-				RS::get_singleton()->instance_set_visible(debug_edge_connections_instance, false);
-			}
-		}
-	}
-#endif // DEBUG_ENABLED
-
-	emit_signal(SNAME("navigation_mesh_changed"));
-
-	update_gizmos();
-	update_configuration_warnings();
+	_navigation_mesh_changed();
 }
 
 Ref<NavigationMesh> NavigationRegion3D::get_navigation_mesh() const {
@@ -253,19 +230,18 @@ void NavigationRegion3D::bake_navigation_mesh(bool p_on_thread) {
 	NavigationServer3D::get_singleton()->parse_source_geometry_data(navigation_mesh, source_geometry_data, this);
 
 	if (p_on_thread) {
-		NavigationServer3D::get_singleton()->bake_from_source_geometry_data_async(navigation_mesh, source_geometry_data, callable_mp(this, &NavigationRegion3D::_bake_finished).bind(navigation_mesh));
+		NavigationServer3D::get_singleton()->bake_from_source_geometry_data_async(navigation_mesh, source_geometry_data, callable_mp(this, &NavigationRegion3D::_bake_finished));
 	} else {
-		NavigationServer3D::get_singleton()->bake_from_source_geometry_data(navigation_mesh, source_geometry_data, callable_mp(this, &NavigationRegion3D::_bake_finished).bind(navigation_mesh));
+		NavigationServer3D::get_singleton()->bake_from_source_geometry_data(navigation_mesh, source_geometry_data, callable_mp(this, &NavigationRegion3D::_bake_finished));
 	}
 }
 
-void NavigationRegion3D::_bake_finished(Ref<NavigationMesh> p_navigation_mesh) {
+void NavigationRegion3D::_bake_finished() {
 	if (!Thread::is_main_thread()) {
-		callable_mp(this, &NavigationRegion3D::_bake_finished).call_deferred(p_navigation_mesh);
+		callable_mp(this, &NavigationRegion3D::_bake_finished).call_deferred();
 		return;
 	}
 
-	set_navigation_mesh(p_navigation_mesh);
 	emit_signal(SNAME("bake_finished"));
 }
 
@@ -350,12 +326,32 @@ bool NavigationRegion3D::_get(const StringName &p_name, Variant &r_ret) const {
 #endif // DISABLE_DEPRECATED
 
 void NavigationRegion3D::_navigation_mesh_changed() {
-	update_gizmos();
-	update_configuration_warnings();
+	_update_bounds();
+
+	NavigationServer3D::get_singleton()->region_set_navigation_mesh(region, navigation_mesh);
 
 #ifdef DEBUG_ENABLED
+	if (is_inside_tree() && NavigationServer3D::get_singleton()->get_debug_navigation_enabled()) {
+		if (navigation_mesh.is_valid()) {
+			_update_debug_mesh();
+			_update_debug_edge_connections_mesh();
+		} else {
+			if (debug_instance.is_valid()) {
+				RS::get_singleton()->instance_set_visible(debug_instance, false);
+			}
+			if (debug_edge_connections_instance.is_valid()) {
+				RS::get_singleton()->instance_set_visible(debug_edge_connections_instance, false);
+			}
+		}
+	}
+
 	_update_debug_edge_connections_mesh();
 #endif // DEBUG_ENABLED
+
+	emit_signal(SNAME("navigation_mesh_changed"));
+
+	update_gizmos();
+	update_configuration_warnings();
 }
 
 #ifdef DEBUG_ENABLED

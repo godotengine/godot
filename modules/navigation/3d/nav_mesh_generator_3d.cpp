@@ -94,6 +94,7 @@ void NavMeshGenerator3D::sync() {
 				if (generator_task->callback.is_valid()) {
 					generator_emit_callback(generator_task->callback);
 				}
+				generator_task->navigation_mesh->emit_changed();
 				memdelete(generator_task);
 			}
 		}
@@ -151,6 +152,7 @@ void NavMeshGenerator3D::bake_from_source_geometry_data(Ref<NavigationMesh> p_na
 		if (p_callback.is_valid()) {
 			generator_emit_callback(p_callback);
 		}
+		p_navigation_mesh->emit_changed();
 		return;
 	}
 
@@ -170,6 +172,8 @@ void NavMeshGenerator3D::bake_from_source_geometry_data(Ref<NavigationMesh> p_na
 	if (p_callback.is_valid()) {
 		generator_emit_callback(p_callback);
 	}
+
+	p_navigation_mesh->emit_changed();
 }
 
 void NavMeshGenerator3D::bake_from_source_geometry_data_async(Ref<NavigationMesh> p_navigation_mesh, Ref<NavigationMeshSourceGeometryData3D> p_source_geometry_data, const Callable &p_callback) {
@@ -181,6 +185,7 @@ void NavMeshGenerator3D::bake_from_source_geometry_data_async(Ref<NavigationMesh
 		if (p_callback.is_valid()) {
 			generator_emit_callback(p_callback);
 		}
+		p_navigation_mesh->emit_changed();
 		return;
 	}
 

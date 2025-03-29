@@ -198,27 +198,12 @@ void NavigationRegion2D::set_navigation_polygon(const Ref<NavigationPolygon> &p_
 	}
 
 	navigation_polygon = p_navigation_polygon;
-#ifdef DEBUG_ENABLED
-	debug_mesh_dirty = true;
-#endif // DEBUG_ENABLED
-
-	_update_bounds();
-
-	NavigationServer2D::get_singleton()->region_set_navigation_polygon(region, p_navigation_polygon);
 
 	if (navigation_polygon.is_valid()) {
 		navigation_polygon->connect_changed(callable_mp(this, &NavigationRegion2D::_navigation_polygon_changed));
 	}
 
-#ifdef DEBUG_ENABLED
-	if (navigation_polygon.is_null()) {
-		_set_debug_visible(false);
-	}
-#endif // DEBUG_ENABLED
-
 	_navigation_polygon_changed();
-
-	update_configuration_warnings();
 }
 
 Ref<NavigationPolygon> NavigationRegion2D::get_navigation_polygon() const {
@@ -254,19 +239,18 @@ void NavigationRegion2D::bake_navigation_polygon(bool p_on_thread) {
 	NavigationServer2D::get_singleton()->parse_source_geometry_data(navigation_polygon, source_geometry_data, this);
 
 	if (p_on_thread) {
-		NavigationServer2D::get_singleton()->bake_from_source_geometry_data_async(navigation_polygon, source_geometry_data, callable_mp(this, &NavigationRegion2D::_bake_finished).bind(navigation_polygon));
+		NavigationServer2D::get_singleton()->bake_from_source_geometry_data_async(navigation_polygon, source_geometry_data, callable_mp(this, &NavigationRegion2D::_bake_finished));
 	} else {
-		NavigationServer2D::get_singleton()->bake_from_source_geometry_data(navigation_polygon, source_geometry_data, callable_mp(this, &NavigationRegion2D::_bake_finished).bind(navigation_polygon));
+		NavigationServer2D::get_singleton()->bake_from_source_geometry_data(navigation_polygon, source_geometry_data, callable_mp(this, &NavigationRegion2D::_bake_finished));
 	}
 }
 
-void NavigationRegion2D::_bake_finished(Ref<NavigationPolygon> p_navigation_polygon) {
+void NavigationRegion2D::_bake_finished() {
 	if (!Thread::is_main_thread()) {
-		callable_mp(this, &NavigationRegion2D::_bake_finished).call_deferred(p_navigation_polygon);
+		callable_mp(this, &NavigationRegion2D::_bake_finished).call_deferred();
 		return;
 	}
 
-	set_navigation_polygon(p_navigation_polygon);
 	emit_signal(SNAME("bake_finished"));
 }
 
@@ -275,12 +259,25 @@ bool NavigationRegion2D::is_baking() const {
 }
 
 void NavigationRegion2D::_navigation_polygon_changed() {
+	_update_bounds();
+
+	NavigationServer2D::get_singleton()->region_set_navigation_polygon(region, navigation_polygon);
+
+#ifdef DEBUG_ENABLED
+	debug_mesh_dirty = true;
+
+	if (navigation_polygon.is_null()) {
+		_set_debug_visible(false);
+	}
+
 	if (is_inside_tree() && (Engine::get_singleton()->is_editor_hint() || get_tree()->is_debugging_navigation_hint())) {
 		queue_redraw();
 	}
-	if (navigation_polygon.is_valid()) {
-		NavigationServer2D::get_singleton()->region_set_navigation_polygon(region, navigation_polygon);
-	}
+#endif // DEBUG_ENABLED
+
+	emit_signal(SNAME("navigation_polygon_changed"));
+
+	update_configuration_warnings();
 }
 
 #ifdef DEBUG_ENABLED
