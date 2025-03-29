@@ -59,6 +59,7 @@
 #endif
 
 #ifdef ANDROID_ENABLED
+#include "../java_godot_wrapper.h"
 #include "../os_android.h"
 #endif
 
@@ -2721,10 +2722,6 @@ bool EditorExportPlatformAndroid::has_valid_export_configuration(const Ref<Edito
 			err += template_err;
 		}
 	} else {
-#ifdef ANDROID_ENABLED
-		err += TTR("Gradle build is not supported for the Android editor.") + "\n";
-		valid = false;
-#else
 		// Validate the custom gradle android source template.
 		bool android_source_template_valid = false;
 		const String android_source_template = p_preset->get("gradle_build/android_source_template");
@@ -2747,7 +2744,6 @@ bool EditorExportPlatformAndroid::has_valid_export_configuration(const Ref<Edito
 		}
 
 		valid = installed_android_build_template && !r_missing_templates;
-#endif
 	}
 
 	// Validate the rest of the export configuration.
@@ -3336,6 +3332,12 @@ Error EditorExportPlatformAndroid::export_project(const Ref<EditorExportPreset> 
 	return export_project_helper(p_preset, p_debug, p_path, export_format, should_sign, p_flags);
 }
 
+void EditorExportPlatformAndroid::_termux_result_callback(int p_error_code, const String &p_stdout, const String &p_stderr) {
+	print_line("Termux result: ", p_error_code);
+	print_line("Termux stdout: ", p_stdout);
+	print_line("Termux stderr: ", p_stderr);
+}
+
 Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int export_format, bool should_sign, BitField<EditorExportPlatform::DebugFlags> p_flags) {
 	ExportNotifier notifier(*this, p_preset, p_debug, p_path, p_flags);
 
@@ -3355,6 +3357,13 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 	bool p_give_internet = p_flags.has_flag(DEBUG_FLAG_DUMB_CLIENT) || p_flags.has_flag(DEBUG_FLAG_REMOTE_DEBUG);
 	bool apk_expansion = p_preset->get("apk_expansion/enable");
 	Vector<ABI> enabled_abis = get_enabled_abis(p_preset);
+
+#ifdef ANDROID_ENABLED
+	GodotJavaWrapper *godot_java = OS_Android::get_singleton()->get_godot_java();
+	Vector<String> termux_args;
+	termux_args.push_back("godot-was-here.txt");
+	godot_java->termux_execute("/data/data/com.termux/files/usr/bin/touch", termux_args, "/data/data/com.termux/files/home", false, callable_mp(this, &EditorExportPlatformAndroid::_termux_result_callback));
+#endif
 
 	print_verbose("Exporting for Android...");
 	print_verbose("- debug build: " + bool_to_string(p_debug));
@@ -3481,6 +3490,11 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 				return err;
 			}
 		}
+
+#ifdef ANDROID_ENABLED
+		return OK;
+#endif
+
 		print_verbose("Storing command line flags...");
 		store_file_at_path(assets_directory + "/_cl_", command_line_flags);
 

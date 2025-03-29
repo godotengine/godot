@@ -33,6 +33,7 @@ package org.godotengine.godot;
 import org.godotengine.godot.error.Error;
 import org.godotengine.godot.plugin.GodotPlugin;
 import org.godotengine.godot.utils.BenchmarkUtils;
+import org.godotengine.godot.variant.Callable;
 
 import android.app.Activity;
 import android.app.PendingIntent;
@@ -515,5 +516,13 @@ public class GodotFragment extends Fragment implements IDownloaderClient, GodotH
 		if (parentHost != null) {
 			parentHost.onEditorWorkspaceSelected(workspace);
 		}
+	}
+
+	@Override
+	public boolean termuxExecute(@NonNull String path, @NonNull String[] arguments, @NonNull String workDir, boolean background, Callable resultCallback) {
+		if (parentHost != null) {
+			return parentHost.termuxExecute(path, arguments, workDir, background, resultCallback);
+		}
+		return false;
 	}
 }

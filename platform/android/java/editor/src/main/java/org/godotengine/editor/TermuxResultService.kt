@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  Callable.kt                                                           */
+/*  TermuxResultService.kt                                                */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,67 +28,56 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-package org.godotengine.godot.variant
+package org.godotengine.editor
 
-import androidx.annotation.Keep
+import android.app.IntentService
+import android.content.Intent
+import android.os.Bundle
+import android.util.Log
+import java.util.concurrent.ConcurrentHashMap
+import org.godotengine.godot.variant.Callable
 
-/**
- * Android version of a Godot built-in Callable type representing a method or a standalone function.
- */
-@Keep
-class Callable private constructor(private val nativeCallablePointer: Long) {
+class TermuxResultService : IntentService(PLUGIN_SERVICE_LABEL) {
 
 	companion object {
-		/**
-		 * Invoke method [methodName] on the Godot object specified by [godotObjectId]
-		 */
-		@JvmStatic
-		fun call(godotObjectId: Long, methodName: String, vararg methodParameters: Any): Any? {
-			return nativeCallObject(godotObjectId, methodName, methodParameters)
+		const val EXTRA_EXECUTION_ID = "execution_id"
+		const val PLUGIN_SERVICE_LABEL = "TermuxResultService"
+		private const val LOG_TAG = "TermuxResultService"
+		private var EXECUTION_ID = 1000
+		private val executionMap = ConcurrentHashMap<Int, Callable>()
+
+		@Synchronized
+		fun getNextExecutionId(resultCallback: Callable): Int {
+			val id = EXECUTION_ID++
+			executionMap[id] = resultCallback
+			return id
 		}
-
-		/**
-		 * Invoke method [methodName] on the Godot object specified by [godotObjectId] during idle time.
-		 */
-		@JvmStatic
-		fun callDeferred(godotObjectId: Long, methodName: String, vararg methodParameters: Any) {
-			nativeCallObjectDeferred(godotObjectId, methodName, methodParameters)
-		}
-
-		@JvmStatic
-		private external fun nativeCall(pointer: Long, params: Array<out Any>): Any?
-
-		@JvmStatic
-		private external fun nativeCallObject(godotObjectId: Long, methodName: String, params: Array<out Any>): Any?
-
-		@JvmStatic
-		private external fun nativeCallObjectDeferred(godotObjectId: Long, methodName: String, params: Array<out Any>)
-
-		@JvmStatic
-		private external fun releaseNativePointer(nativePointer: Long)
 	}
 
-	/**
-	 * Calls the method represented by this [Callable]. Arguments can be passed and should match the method's signature.
-	 */
-	fun call(vararg params: Any): Any? {
-		if (nativeCallablePointer == 0L) {
-			return null
+	override fun onHandleIntent(intent: Intent?) {
+		if (intent == null) return
+
+		Log.d(LOG_TAG, "$PLUGIN_SERVICE_LABEL received execution result")
+
+		val resultBundle = intent.getBundleExtra("result")
+		if (resultBundle == null) {
+			Log.e(LOG_TAG, "The intent does not contain the result bundle at the \"result\" key.")
+			return
 		}
 
-		return nativeCall(nativeCallablePointer, params)
-	}
+		val executionId = intent.getIntExtra(EXTRA_EXECUTION_ID, 0)
+		val resultCallback = executionMap.remove(executionId)
 
-	/**
-	 * Used to provide access to the native callable pointer to the native logic.
-	 */
-	private fun getNativePointer() = nativeCallablePointer
+		// @todo This should use constants
+		val exitCode = resultBundle.getInt("exitCode") ?: 127;
+		var stdout = resultBundle.getString("stdout") ?: "";
+		val stderr = resultBundle.getString("stderr") ?: "";
 
-	/** Note that [finalize] is deprecated and shouldn't be used, unfortunately its replacement,
-	 * [java.lang.ref.Cleaner], is only available on Android api 33 and higher.
-	 * So we resort to using it for the time being until our min api catches up to api 33.
-	 **/
-	protected fun finalize() {
-		releaseNativePointer(nativeCallablePointer)
+		Log.d(LOG_TAG, "Execution id $executionId result:\n" +
+				"errCode: " + exitCode.toString() + "\n" +
+				"stdout:\n" + stdout + "\n" +
+				"stderr:\n" + stderr + "\n")
+
+		resultCallback?.call(exitCode, stdout, stderr)
 	}
 }
