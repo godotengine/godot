@@ -32,6 +32,7 @@
 
 #include "core/config/project_settings.h"
 #include "editor/create_dialog.h"
+#include "editor/editor_file_system.h"
 #include "editor/editor_node.h"
 #include "editor/editor_properties_array_dict.h"
 #include "editor/editor_properties_vector.h"
@@ -477,7 +478,7 @@ void EditorPropertyPath::_path_selected(const String &p_path) {
 	String full_path = p_path;
 
 	if (!global) {
-		const ResourceUID::ID id = ResourceLoader::get_resource_uid(full_path);
+		const ResourceUID::ID id = EditorFileSystem::get_singleton()->get_file_uid(full_path);
 		if (id != ResourceUID::INVALID_ID) {
 			full_path = ResourceUID::get_singleton()->id_to_text(id);
 		}
