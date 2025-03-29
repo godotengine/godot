@@ -30,8 +30,6 @@
 
 #pragma once
 
-#ifndef _3D_DISABLED
-
 #include "core/object/class_db.h"
 #include "core/object/worker_thread_pool.h"
 #include "core/templates/rid_owner.h"
@@ -99,5 +97,3 @@ public:
 	NavMeshGenerator3D();
 	~NavMeshGenerator3D();
 };
-
-#endif // _3D_DISABLED

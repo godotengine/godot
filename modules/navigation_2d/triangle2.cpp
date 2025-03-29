@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  test_navigation_agent_3d.h                                            */
+/*  triangle2.cpp                                                         */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,41 +28,85 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#pragma once
+#include "triangle2.h"
 
-#include "scene/3d/navigation_agent_3d.h"
-#include "scene/3d/node_3d.h"
-#include "scene/main/window.h"
-
-#include "tests/test_macros.h"
-
-namespace TestNavigationAgent3D {
-
-TEST_SUITE("[Navigation3D]") {
-	TEST_CASE("[SceneTree][NavigationAgent3D] New agent should have valid RID") {
-		NavigationAgent3D *agent_node = memnew(NavigationAgent3D);
-		CHECK(agent_node->get_rid().is_valid());
-		memdelete(agent_node);
+Vector2 Triangle2::get_random_point_inside() const {
+	real_t a = Math::random(0.0, 1.0);
+	real_t b = Math::random(0.0, 1.0);
+	if (a > b) {
+		SWAP(a, b);
 	}
 
-	TEST_CASE("[SceneTree][NavigationAgent3D] New agent should attach to default map") {
-		Node3D *node_3d = memnew(Node3D);
-		SceneTree::get_singleton()->get_root()->add_child(node_3d);
-
-		NavigationAgent3D *agent_node = memnew(NavigationAgent3D);
-
-		// agent should not be attached to any map when outside of tree
-		CHECK_FALSE(agent_node->get_navigation_map().is_valid());
-
-		SUBCASE("Agent should attach to default map when it enters the tree") {
-			node_3d->add_child(agent_node);
-			CHECK(agent_node->get_navigation_map().is_valid());
-			CHECK(agent_node->get_navigation_map() == node_3d->get_world_3d()->get_navigation_map());
-		}
-
-		memdelete(agent_node);
-		memdelete(node_3d);
-	}
+	return vertex[0] * a + vertex[1] * (b - a) + vertex[2] * (1.0f - b);
 }
 
-} //namespace TestNavigationAgent3D
+Vector2 Triangle2::get_closest_point_to(const Vector2 &p_point) const {
+	Vector2 edge0 = vertex[1] - vertex[0];
+	Vector2 edge1 = vertex[2] - vertex[0];
+	Vector2 v0 = vertex[0] - p_point;
+
+	real_t a = edge0.dot(edge0);
+	real_t b = edge0.dot(edge1);
+	real_t c = edge1.dot(edge1);
+	real_t d = edge0.dot(v0);
+	real_t e = edge1.dot(v0);
+
+	real_t det = a * c - b * b;
+	real_t s = b * e - c * d;
+	real_t t = b * d - a * e;
+
+	if (s + t < det) {
+		if (s < 0.f) {
+			if (t < 0.f) {
+				if (d < 0.f) {
+					s = CLAMP(-d / a, 0.f, 1.f);
+					t = 0.f;
+				} else {
+					s = 0.f;
+					t = CLAMP(-e / c, 0.f, 1.f);
+				}
+			} else {
+				s = 0.f;
+				t = CLAMP(-e / c, 0.f, 1.f);
+			}
+		} else if (t < 0.f) {
+			s = CLAMP(-d / a, 0.f, 1.f);
+			t = 0.f;
+		} else {
+			real_t inv_det = 1.f / det;
+			s *= inv_det;
+			t *= inv_det;
+		}
+	} else {
+		if (s < 0.f) {
+			real_t tmp0 = b + d;
+			real_t tmp1 = c + e;
+			if (tmp1 > tmp0) {
+				real_t numer = tmp1 - tmp0;
+				real_t denom = a - 2 * b + c;
+				s = CLAMP(numer / denom, 0.f, 1.f);
+				t = 1 - s;
+			} else {
+				t = CLAMP(-e / c, 0.f, 1.f);
+				s = 0.f;
+			}
+		} else if (t < 0.f) {
+			if (a + d > b + e) {
+				real_t numer = c + e - b - d;
+				real_t denom = a - 2 * b + c;
+				s = CLAMP(numer / denom, 0.f, 1.f);
+				t = 1 - s;
+			} else {
+				s = CLAMP(-d / a, 0.f, 1.f);
+				t = 0.f;
+			}
+		} else {
+			real_t numer = c + e - b - d;
+			real_t denom = a - 2 * b + c;
+			s = CLAMP(numer / denom, 0.f, 1.f);
+			t = 1.f - s;
+		}
+	}
+
+	return vertex[0] + s * edge0 + t * edge1;
+}

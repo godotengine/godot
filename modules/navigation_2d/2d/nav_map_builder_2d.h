@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  navigation_mesh_generator.h                                           */
+/*  nav_map_builder_2d.h                                                  */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -30,32 +30,20 @@
 
 #pragma once
 
-#ifndef _3D_DISABLED
+#include "../nav_utils_2d.h"
 
-#include "scene/3d/navigation_region_3d.h"
-#include "scene/resources/navigation_mesh.h"
+struct NavMapIterationBuild2D;
 
-class NavigationMeshSourceGeometryData3D;
-
-class NavigationMeshGenerator : public Object {
-	GDCLASS(NavigationMeshGenerator, Object);
-
-	static NavigationMeshGenerator *singleton;
-
-protected:
-	static void _bind_methods();
+class NavMapBuilder2D {
+	static void _build_step_gather_region_polygons(NavMapIterationBuild2D &r_build);
+	static void _build_step_find_edge_connection_pairs(NavMapIterationBuild2D &r_build);
+	static void _build_step_merge_edge_connection_pairs(NavMapIterationBuild2D &r_build);
+	static void _build_step_edge_connection_margin_connections(NavMapIterationBuild2D &r_build);
+	static void _build_step_navlink_connections(NavMapIterationBuild2D &r_build);
+	static void _build_update_map_iteration(NavMapIterationBuild2D &r_build);
 
 public:
-	static NavigationMeshGenerator *get_singleton();
+	static nav_2d::PointKey get_point_key(const Vector2 &p_pos, const Vector2 &p_cell_size);
 
-	NavigationMeshGenerator();
-	~NavigationMeshGenerator();
-
-	void bake(const Ref<NavigationMesh> &p_navigation_mesh, Node *p_root_node);
-	void clear(Ref<NavigationMesh> p_navigation_mesh);
-
-	void parse_source_geometry_data(const Ref<NavigationMesh> &p_navigation_mesh, Ref<NavigationMeshSourceGeometryData3D> p_source_geometry_data, Node *p_root_node, const Callable &p_callback = Callable());
-	void bake_from_source_geometry_data(Ref<NavigationMesh> p_navigation_mesh, const Ref<NavigationMeshSourceGeometryData3D> &p_source_geometry_data, const Callable &p_callback = Callable());
+	static void build_navmap_iteration(NavMapIterationBuild2D &r_build);
 };
-
-#endif

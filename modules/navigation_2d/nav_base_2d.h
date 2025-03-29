@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  test_navigation_agent_3d.h                                            */
+/*  nav_base_2d.h                                                         */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -30,39 +30,38 @@
 
 #pragma once
 
-#include "scene/3d/navigation_agent_3d.h"
-#include "scene/3d/node_3d.h"
-#include "scene/main/window.h"
+#include "nav_rid_2d.h"
+#include "nav_utils_2d.h"
 
-#include "tests/test_macros.h"
+#include "servers/navigation/navigation_utilities.h"
 
-namespace TestNavigationAgent3D {
+class NavMap2D;
 
-TEST_SUITE("[Navigation3D]") {
-	TEST_CASE("[SceneTree][NavigationAgent3D] New agent should have valid RID") {
-		NavigationAgent3D *agent_node = memnew(NavigationAgent3D);
-		CHECK(agent_node->get_rid().is_valid());
-		memdelete(agent_node);
-	}
+class NavBase2D : public NavRid2D {
+protected:
+	uint32_t navigation_layers = 1;
+	real_t enter_cost = 0.0;
+	real_t travel_cost = 1.0;
+	ObjectID owner_id;
+	NavigationUtilities::PathSegmentType type;
 
-	TEST_CASE("[SceneTree][NavigationAgent3D] New agent should attach to default map") {
-		Node3D *node_3d = memnew(Node3D);
-		SceneTree::get_singleton()->get_root()->add_child(node_3d);
+public:
+	NavigationUtilities::PathSegmentType get_type() const { return type; }
 
-		NavigationAgent3D *agent_node = memnew(NavigationAgent3D);
+	virtual void set_use_edge_connections(bool p_enabled) {}
+	virtual bool get_use_edge_connections() const { return false; }
 
-		// agent should not be attached to any map when outside of tree
-		CHECK_FALSE(agent_node->get_navigation_map().is_valid());
+	virtual void set_navigation_layers(uint32_t p_navigation_layers) {}
+	uint32_t get_navigation_layers() const { return navigation_layers; }
 
-		SUBCASE("Agent should attach to default map when it enters the tree") {
-			node_3d->add_child(agent_node);
-			CHECK(agent_node->get_navigation_map().is_valid());
-			CHECK(agent_node->get_navigation_map() == node_3d->get_world_3d()->get_navigation_map());
-		}
+	virtual void set_enter_cost(real_t p_enter_cost) {}
+	real_t get_enter_cost() const { return enter_cost; }
 
-		memdelete(agent_node);
-		memdelete(node_3d);
-	}
-}
+	virtual void set_travel_cost(real_t p_travel_cost) {}
+	real_t get_travel_cost() const { return travel_cost; }
 
-} //namespace TestNavigationAgent3D
+	virtual void set_owner_id(ObjectID p_owner_id) {}
+	ObjectID get_owner_id() const { return owner_id; }
+
+	virtual ~NavBase2D() {}
+};

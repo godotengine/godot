@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  test_navigation_agent_3d.h                                            */
+/*  nav_map_iteration_2d.h                                                */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -30,39 +30,81 @@
 
 #pragma once
 
-#include "scene/3d/navigation_agent_3d.h"
-#include "scene/3d/node_3d.h"
-#include "scene/main/window.h"
+#include "../nav_rid_2d.h"
+#include "../nav_utils_2d.h"
+#include "nav_mesh_queries_2d.h"
 
-#include "tests/test_macros.h"
+#include "core/math/math_defs.h"
+#include "core/os/semaphore.h"
 
-namespace TestNavigationAgent3D {
+struct NavLinkIteration2D;
+class NavRegion2D;
+struct NavRegionIteration2D;
+struct NavMapIteration2D;
 
-TEST_SUITE("[Navigation3D]") {
-	TEST_CASE("[SceneTree][NavigationAgent3D] New agent should have valid RID") {
-		NavigationAgent3D *agent_node = memnew(NavigationAgent3D);
-		CHECK(agent_node->get_rid().is_valid());
-		memdelete(agent_node);
+struct NavMapIterationBuild2D {
+	Vector2 merge_rasterizer_cell_size;
+	bool use_edge_connections = true;
+	real_t edge_connection_margin;
+	real_t link_connection_radius;
+	nav_2d::PerformanceData performance_data;
+	int polygon_count = 0;
+	int free_edge_count = 0;
+
+	HashMap<nav_2d::EdgeKey, nav_2d::EdgeConnectionPair, nav_2d::EdgeKey> iter_connection_pairs_map;
+	LocalVector<nav_2d::Edge::Connection> iter_free_edges;
+
+	NavMapIteration2D *map_iteration = nullptr;
+
+	int navmesh_polygon_count = 0;
+	int link_polygon_count = 0;
+
+	void reset() {
+		performance_data.reset();
+
+		iter_connection_pairs_map.clear();
+		iter_free_edges.clear();
+		polygon_count = 0;
+		free_edge_count = 0;
+
+		navmesh_polygon_count = 0;
+		link_polygon_count = 0;
 	}
+};
 
-	TEST_CASE("[SceneTree][NavigationAgent3D] New agent should attach to default map") {
-		Node3D *node_3d = memnew(Node3D);
-		SceneTree::get_singleton()->get_root()->add_child(node_3d);
+struct NavMapIteration2D {
+	mutable SafeNumeric<uint32_t> users;
+	RWLock rwlock;
 
-		NavigationAgent3D *agent_node = memnew(NavigationAgent3D);
+	LocalVector<nav_2d::Polygon> link_polygons;
 
-		// agent should not be attached to any map when outside of tree
-		CHECK_FALSE(agent_node->get_navigation_map().is_valid());
+	LocalVector<NavRegionIteration2D> region_iterations;
+	LocalVector<NavLinkIteration2D> link_iterations;
 
-		SUBCASE("Agent should attach to default map when it enters the tree") {
-			node_3d->add_child(agent_node);
-			CHECK(agent_node->get_navigation_map().is_valid());
-			CHECK(agent_node->get_navigation_map() == node_3d->get_world_3d()->get_navigation_map());
-		}
+	int navmesh_polygon_count = 0;
+	int link_polygon_count = 0;
 
-		memdelete(agent_node);
-		memdelete(node_3d);
+	// The edge connections that the map builds on top with the edge connection margin.
+	HashMap<uint32_t, LocalVector<nav_2d::Edge::Connection>> external_region_connections;
+
+	HashMap<NavRegion2D *, uint32_t> region_ptr_to_region_id;
+
+	LocalVector<NavMeshQueries2D::PathQuerySlot> path_query_slots;
+	Mutex path_query_slots_mutex;
+	Semaphore path_query_slots_semaphore;
+};
+
+class NavMapIterationRead2D {
+	const NavMapIteration2D &map_iteration;
+
+public:
+	_ALWAYS_INLINE_ NavMapIterationRead2D(const NavMapIteration2D &p_iteration) :
+			map_iteration(p_iteration) {
+		map_iteration.rwlock.read_lock();
+		map_iteration.users.increment();
 	}
-}
-
-} //namespace TestNavigationAgent3D
+	_ALWAYS_INLINE_ ~NavMapIterationRead2D() {
+		map_iteration.users.decrement();
+		map_iteration.rwlock.read_unlock();
+	}
+};
