@@ -1316,7 +1316,7 @@ Ref<GraphEdit::Connection> GraphEdit::get_closest_connection_at_point(const Vect
 
 		Vector<Vector2> points = get_connection_line(conn->_cache.from_pos * zoom, conn->_cache.to_pos * zoom);
 		for (int i = 0; i < points.size() - 1; i++) {
-			float distance = Geometry2D::get_distance_to_segment(transformed_point, &points[i]);
+			const real_t distance = Geometry2D::get_distance_to_segment(transformed_point, points[i], points[i + 1]);
 			if (distance <= lines_thickness * 0.5 + p_max_distance && distance < closest_distance) {
 				closest_connection = conn;
 				closest_distance = distance;

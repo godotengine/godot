@@ -806,13 +806,11 @@ Vector<Vector2> Geometry2D::get_closest_points_between_segments(const Vector2 &p
 }
 
 Vector2 Geometry2D::get_closest_point_to_segment(const Vector2 &p_point, const Vector2 &p_a, const Vector2 &p_b) {
-	Vector2 s[2] = { p_a, p_b };
-	return ::Geometry2D::get_closest_point_to_segment(p_point, s);
+	return ::Geometry2D::get_closest_point_to_segment(p_point, p_a, p_b);
 }
 
 Vector2 Geometry2D::get_closest_point_to_segment_uncapped(const Vector2 &p_point, const Vector2 &p_a, const Vector2 &p_b) {
-	Vector2 s[2] = { p_a, p_b };
-	return ::Geometry2D::get_closest_point_to_segment_uncapped(p_point, s);
+	return ::Geometry2D::get_closest_point_to_segment_uncapped(p_point, p_a, p_b);
 }
 
 bool Geometry2D::point_is_inside_triangle(const Vector2 &s, const Vector2 &a, const Vector2 &b, const Vector2 &c) const {
@@ -1069,13 +1067,11 @@ Vector<Vector3> Geometry3D::get_closest_points_between_segments(const Vector3 &p
 }
 
 Vector3 Geometry3D::get_closest_point_to_segment(const Vector3 &p_point, const Vector3 &p_a, const Vector3 &p_b) {
-	Vector3 s[2] = { p_a, p_b };
-	return ::Geometry3D::get_closest_point_to_segment(p_point, s);
+	return ::Geometry3D::get_closest_point_to_segment(p_point, p_a, p_b);
 }
 
 Vector3 Geometry3D::get_closest_point_to_segment_uncapped(const Vector3 &p_point, const Vector3 &p_a, const Vector3 &p_b) {
-	Vector3 s[2] = { p_a, p_b };
-	return ::Geometry3D::get_closest_point_to_segment_uncapped(p_point, s);
+	return ::Geometry3D::get_closest_point_to_segment_uncapped(p_point, p_a, p_b);
 }
 
 Vector3 Geometry3D::get_triangle_barycentric_coords(const Vector3 &p_point, const Vector3 &p_v0, const Vector3 &p_v1, const Vector3 &p_v2) {

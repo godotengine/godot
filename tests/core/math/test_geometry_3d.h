@@ -129,8 +129,9 @@ TEST_CASE("[Geometry3D] Compute Convex Mesh Points") {
 }
 
 TEST_CASE("[Geometry3D] Get Closest Point To Segment") {
-	constexpr Vector3 segment[2] = { Vector3(1, 1, 1), Vector3(5, 5, 5) };
-	Vector3 output = Geometry3D::get_closest_point_to_segment(Vector3(2, 1, 4), segment);
+	constexpr Vector3 a = Vector3(1, 1, 1);
+	constexpr Vector3 b = Vector3(5, 5, 5);
+	Vector3 output = Geometry3D::get_closest_point_to_segment(Vector3(2, 1, 4), a, b);
 	CHECK(output.is_equal_approx(Vector3(2.33333, 2.33333, 2.33333)));
 }
 
@@ -189,13 +190,12 @@ TEST_CASE("[Geometry3D] Triangle and Box Overlap") {
 }
 
 TEST_CASE("[Geometry3D] Triangle and Sphere Intersect") {
-	Vector<Vector3> triangle;
-	triangle.push_back(Vector3(3, 0, 0));
-	triangle.push_back(Vector3(-3, 0, 0));
-	triangle.push_back(Vector3(0, 3, 0));
+	constexpr Vector3 triangle_a = Vector3(3, 0, 0);
+	constexpr Vector3 triangle_b = Vector3(-3, 0, 0);
+	constexpr Vector3 triangle_c = Vector3(0, 3, 0);
 	Vector3 triangle_contact, sphere_contact;
-	CHECK(Geometry3D::triangle_sphere_intersection_test(&triangle[0], Vector3(0, -1, 0), Vector3(0, 0, 0), 5, triangle_contact, sphere_contact) == true);
-	CHECK(Geometry3D::triangle_sphere_intersection_test(&triangle[0], Vector3(0, 1, 0), Vector3(0, 0, 0), 5, triangle_contact, sphere_contact) == true);
-	CHECK(Geometry3D::triangle_sphere_intersection_test(&triangle[0], Vector3(0, 1, 0), Vector3(20, 0, 0), 5, triangle_contact, sphere_contact) == false);
+	CHECK(Geometry3D::triangle_sphere_intersection_test(triangle_a, triangle_b, triangle_c, Vector3(0, -1, 0), Vector3(0, 0, 0), 5, triangle_contact, sphere_contact) == true);
+	CHECK(Geometry3D::triangle_sphere_intersection_test(triangle_a, triangle_b, triangle_c, Vector3(0, 1, 0), Vector3(0, 0, 0), 5, triangle_contact, sphere_contact) == true);
+	CHECK(Geometry3D::triangle_sphere_intersection_test(triangle_a, triangle_b, triangle_c, Vector3(0, 1, 0), Vector3(20, 0, 0), 5, triangle_contact, sphere_contact) == false);
 }
 } // namespace TestGeometry3D
