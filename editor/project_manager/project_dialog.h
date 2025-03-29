@@ -49,6 +49,7 @@ public:
 		MODE_IMPORT,
 		MODE_INSTALL,
 		MODE_RENAME,
+		MODE_BACKUP,
 	};
 
 private:
@@ -98,6 +99,7 @@ private:
 
 	String zip_path;
 	String zip_title;
+	String original_project_path;
 
 	void _set_message(const String &p_msg, MessageType p_type, InputType input_type = PROJECT_PATH);
 	void _validate_path();
@@ -143,6 +145,7 @@ public:
 	void set_project_path(const String &p_path);
 	void set_zip_path(const String &p_path);
 	void set_zip_title(const String &p_title);
+	void set_original_project_path(const String &p_path);
 
 	void ask_for_path_and_show();
 	void show_dialog(bool p_reset_name = true);
