@@ -79,13 +79,14 @@
 #include "servers/text/text_server_dummy.h"
 #include "servers/text_server.h"
 
-// 2D
+#ifndef _2D_DISABLED
 #include "servers/navigation_server_2d.h"
 #include "servers/navigation_server_2d_dummy.h"
 #ifndef PHYSICS_2D_DISABLED
 #include "servers/physics_server_2d.h"
 #include "servers/physics_server_2d_dummy.h"
 #endif // PHYSICS_2D_DISABLED
+#endif // _2D_DISABLED
 
 #ifndef PHYSICS_3D_DISABLED
 #include "servers/physics_server_3d.h"
@@ -3499,7 +3500,9 @@ Error Main::setup2(bool p_show_boot_logo) {
 	MAIN_PRINT("Main: Load Navigation");
 
 	NavigationServer3DManager::initialize_server(); // 3D server first because 2D depends on it.
+#ifndef _2D_DISABLED
 	NavigationServer2DManager::initialize_server();
+#endif // _2D_DISABLED
 
 	register_scene_types();
 	register_driver_types();
@@ -4561,7 +4564,9 @@ bool Main::iteration() {
 	XRServer::get_singleton()->_process();
 #endif // XR_DISABLED
 
+#ifndef _2D_DISABLED
 	NavigationServer2D::get_singleton()->sync();
+#endif // _2D_DISABLED
 	NavigationServer3D::get_singleton()->sync();
 
 	for (int iters = 0; iters < advance.physics_steps; ++iters) {
@@ -4846,7 +4851,9 @@ void Main::cleanup(bool p_force) {
 	finalize_theme_db();
 
 	// Before deinitializing server extensions, finalize servers which may be loaded as extensions.
+#ifndef _2D_DISABLED
 	NavigationServer2DManager::finalize_server(); // 2D goes first as it uses the 3D server behind the scene.
+#endif // _2D_DISABLED
 	NavigationServer3DManager::finalize_server();
 	finalize_physics();
 

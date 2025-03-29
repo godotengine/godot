@@ -30,8 +30,12 @@
 
 #include "register_types.h"
 
-#include "2d/godot_navigation_server_2d.h"
+// 3D navigation server is required for 2D even when 3D is disabled.
 #include "3d/godot_navigation_server_3d.h"
+
+#ifndef _2D_DISABLED
+#include "2d/godot_navigation_server_2d.h"
+#endif // _2D_DISABLED
 
 #ifndef DISABLE_DEPRECATED
 #ifndef _3D_DISABLED
@@ -57,14 +61,18 @@ NavigationServer3D *new_navigation_server_3d() {
 	return memnew(GodotNavigationServer3D);
 }
 
+#ifndef _2D_DISABLED
 NavigationServer2D *new_navigation_server_2d() {
 	return memnew(GodotNavigationServer2D);
 }
+#endif // _2D_DISABLED
 
 void initialize_navigation_module(ModuleInitializationLevel p_level) {
 	if (p_level == MODULE_INITIALIZATION_LEVEL_SERVERS) {
 		NavigationServer3DManager::set_default_server(new_navigation_server_3d);
+#ifndef _2D_DISABLED
 		NavigationServer2DManager::set_default_server(new_navigation_server_2d);
+#endif // _2D_DISABLED
 
 #ifndef DISABLE_DEPRECATED
 #ifndef _3D_DISABLED
