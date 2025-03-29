@@ -1706,6 +1706,27 @@ void Viewport::_gui_call_notification(Control *p_control, int p_what) {
 	}
 }
 
+Control *Viewport::gui_get_control_at_position(const Vector2 &p_global, bool p_ignore_subwindows) {
+	Window *window = p_ignore_subwindows ? nullptr : gui_get_window_at_position(p_global);
+	if (window) {
+		return window->gui_get_control_at_position(window->get_final_transform().affine_inverse().xform(p_global - window->get_position()));
+	} else {
+		return gui_find_control(p_global);
+	}
+}
+
+Window *Viewport::gui_get_window_at_position(const Vector2 &p_global) {
+	for (int i = 0; i < gui.sub_windows.size(); i++) {
+		Viewport::SubWindow sw = gui.sub_windows[i];
+		Rect2i sw_rect = Rect2i(sw.window->get_position_with_decorations(), sw.window->get_size_with_decorations());
+		if (sw_rect.has_point(p_global)) {
+			return sw.window;
+		}
+	}
+
+	return nullptr;
+}
+
 // `gui_find_control` doesn't take embedded windows into account. So the caller of this function
 // needs to make sure, that there is no embedded window at the specified position.
 Control *Viewport::gui_find_control(const Point2 &p_global) {
@@ -4869,6 +4890,9 @@ void Viewport::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("gui_release_focus"), &Viewport::gui_release_focus);
 	ClassDB::bind_method(D_METHOD("gui_get_focus_owner"), &Viewport::gui_get_focus_owner);
 	ClassDB::bind_method(D_METHOD("gui_get_hovered_control"), &Viewport::gui_get_hovered_control);
+
+	ClassDB::bind_method(D_METHOD("gui_get_control_at_position", "position", "ignore_subwindows"), &Viewport::gui_get_control_at_position, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("gui_get_window_at_position", "position"), &Viewport::gui_get_window_at_position);
 
 	ClassDB::bind_method(D_METHOD("set_disable_input", "disable"), &Viewport::set_disable_input);
 	ClassDB::bind_method(D_METHOD("is_input_disabled"), &Viewport::is_input_disabled);
