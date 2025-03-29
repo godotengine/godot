@@ -15,6 +15,7 @@ partial class NestedClass
         /// </summary>
         public new static readonly global::Godot.StringName @_Get = "_Get";
     }
+    public override bool HasCustomGetMethod => true;
     /// <summary>
     /// Get the method information for all the methods declared in this class.
     /// This method is used by Godot to register the available methods in the editor.

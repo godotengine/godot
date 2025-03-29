@@ -128,7 +128,13 @@ namespace Godot.SourceGenerators
             var methodSymbols = members
                 .Where(s => s.Kind == SymbolKind.Method && !s.IsImplicitlyDeclared)
                 .Cast<IMethodSymbol>()
-                .Where(m => m.MethodKind == MethodKind.Ordinary);
+                .Where(m => m.MethodKind == MethodKind.Ordinary)
+                .ToArray();
+
+            var propertySymbols = members
+                .Where(s => s.Kind == SymbolKind.Property && !s.IsImplicitlyDeclared)
+                .Cast<IPropertySymbol>()
+                .ToArray();
 
             var godotClassMethods = methodSymbols.WhereHasGodotCompatibleSignature(typeCache)
                 .Distinct(new MethodOverloadEqualityComparer())
@@ -166,6 +172,18 @@ namespace Godot.SourceGenerators
             }
 
             source.Append("    }\n"); // class GodotInternal
+
+            // Generate HasCustomGetMethod & HasCustomSetMethod Flag
+
+            if (!propertySymbols.Any(m => m.Name == "HasCustomGetMethod" && m.IsOverride) && methodSymbols.Any(m => m.Name == "_Get" && m.IsOverride))
+            {
+                source.Append("    public override bool HasCustomGetMethod => true;\n");
+            }
+
+            if (!propertySymbols.Any(m => m.Name == "HasCustomSetMethod" && m.IsOverride) && methodSymbols.Any(m => m.Name == "_Set" && m.IsOverride))
+            {
+                source.Append("    public override bool HasCustomSetMethod => true;\n");
+            }
 
             // Generate GetGodotMethodList
 
