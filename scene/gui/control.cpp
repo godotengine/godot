@@ -1872,16 +1872,20 @@ void Control::set_mouse_recursive_behavior(RecursiveBehavior p_recursive_mouse_b
 	if (data.mouse_recursive_behavior == p_recursive_mouse_behavior) {
 		return;
 	}
+	_set_mouse_recursive_behavior_ignore_cache(p_recursive_mouse_behavior);
+}
+
+void Control::_set_mouse_recursive_behavior_ignore_cache(RecursiveBehavior p_recursive_mouse_behavior) {
 	data.mouse_recursive_behavior = p_recursive_mouse_behavior;
 	if (p_recursive_mouse_behavior == RECURSIVE_BEHAVIOR_INHERITED) {
 		Control *parent = get_parent_control();
 		if (parent) {
-			_apply_mouse_behavior_recursively(parent->data.parent_mouse_recursive_behavior, false);
+			_propagate_mouse_behavior_recursively(parent->data.parent_mouse_recursive_behavior, false);
 		} else {
-			_apply_mouse_behavior_recursively(RECURSIVE_BEHAVIOR_ENABLED, false);
+			_propagate_mouse_behavior_recursively(RECURSIVE_BEHAVIOR_ENABLED, false);
 		}
 	} else {
-		_apply_mouse_behavior_recursively(p_recursive_mouse_behavior, false);
+		_propagate_mouse_behavior_recursively(p_recursive_mouse_behavior, false);
 	}
 
 	if (get_viewport()) {
@@ -2056,16 +2060,20 @@ void Control::set_focus_recursive_behavior(RecursiveBehavior p_recursive_focus_b
 	if (data.focus_recursive_behavior == p_recursive_focus_behavior) {
 		return;
 	}
+	_set_focus_recursive_behavior_ignore_cache(p_recursive_focus_behavior);
+}
+
+void Control::_set_focus_recursive_behavior_ignore_cache(RecursiveBehavior p_recursive_focus_behavior) {
 	data.focus_recursive_behavior = p_recursive_focus_behavior;
 	if (p_recursive_focus_behavior == RECURSIVE_BEHAVIOR_INHERITED) {
 		Control *parent = get_parent_control();
 		if (parent) {
-			_apply_focus_behavior_recursively(parent->data.parent_focus_recursive_behavior, false);
+			_propagate_focus_behavior_recursively(parent->data.parent_focus_recursive_behavior, false);
 		} else {
-			_apply_focus_behavior_recursively(RECURSIVE_BEHAVIOR_ENABLED, false);
+			_propagate_focus_behavior_recursively(RECURSIVE_BEHAVIOR_ENABLED, false);
 		}
 	} else {
-		_apply_focus_behavior_recursively(p_recursive_focus_behavior, false);
+		_propagate_focus_behavior_recursively(p_recursive_focus_behavior, false);
 	}
 }
 
@@ -2441,7 +2449,7 @@ bool Control::_is_focus_disabled_recursively() const {
 	return false;
 }
 
-void Control::_apply_focus_behavior_recursively(RecursiveBehavior p_focus_recursive_behavior, bool p_skip_non_inherited) {
+void Control::_propagate_focus_behavior_recursively(RecursiveBehavior p_focus_recursive_behavior, bool p_skip_non_inherited) {
 	if (is_inside_tree() && (data.focus_recursive_behavior == RECURSIVE_BEHAVIOR_DISABLED || (data.focus_recursive_behavior == RECURSIVE_BEHAVIOR_INHERITED && p_focus_recursive_behavior == RECURSIVE_BEHAVIOR_DISABLED)) && has_focus()) {
 		release_focus();
 	}
@@ -2455,7 +2463,7 @@ void Control::_apply_focus_behavior_recursively(RecursiveBehavior p_focus_recurs
 	for (int i = 0; i < get_child_count(); i++) {
 		Control *control = Object::cast_to<Control>(get_child(i));
 		if (control) {
-			control->_apply_focus_behavior_recursively(p_focus_recursive_behavior, true);
+			control->_propagate_focus_behavior_recursively(p_focus_recursive_behavior, true);
 		}
 	}
 }
@@ -2472,7 +2480,7 @@ bool Control::_is_parent_mouse_disabled() const {
 	return false;
 }
 
-void Control::_apply_mouse_behavior_recursively(RecursiveBehavior p_mouse_recursive_behavior, bool p_skip_non_inherited) {
+void Control::_propagate_mouse_behavior_recursively(RecursiveBehavior p_mouse_recursive_behavior, bool p_skip_non_inherited) {
 	if (p_skip_non_inherited && data.mouse_recursive_behavior != RECURSIVE_BEHAVIOR_INHERITED) {
 		return;
 	}
@@ -2482,7 +2490,7 @@ void Control::_apply_mouse_behavior_recursively(RecursiveBehavior p_mouse_recurs
 	for (int i = 0; i < get_child_count(); i++) {
 		Control *control = Object::cast_to<Control>(get_child(i));
 		if (control) {
-			control->_apply_mouse_behavior_recursively(p_mouse_recursive_behavior, true);
+			control->_propagate_mouse_behavior_recursively(p_mouse_recursive_behavior, true);
 		}
 	}
 }
@@ -3442,8 +3450,8 @@ void Control::_notification(int p_notification) {
 
 			_update_layout_mode();
 
-			set_focus_recursive_behavior(data.focus_recursive_behavior);
-			set_mouse_recursive_behavior(data.mouse_recursive_behavior);
+			_set_focus_recursive_behavior_ignore_cache(data.focus_recursive_behavior);
+			_set_mouse_recursive_behavior_ignore_cache(data.mouse_recursive_behavior);
 		} break;
 
 		case NOTIFICATION_UNPARENTED: {
