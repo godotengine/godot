@@ -3331,7 +3331,7 @@ void Image::_set_color_at_ofs(uint8_t *ptr, uint32_t ofs, const Color &p_color) 
 			uint16_t rgba = 0;
 
 			rgba = uint16_t(CLAMP(p_color.r * 31.0, 0, 31));
-			rgba |= uint16_t(CLAMP(p_color.g * 63.0, 0, 33)) << 5;
+			rgba |= uint16_t(CLAMP(p_color.g * 63.0, 0, 63)) << 5;
 			rgba |= uint16_t(CLAMP(p_color.b * 31.0, 0, 31)) << 11;
 
 			((uint16_t *)ptr)[ofs] = rgba;
@@ -4203,6 +4203,24 @@ void Image::convert_rgba8_to_bgra8() {
 		uint8_t r = w[i];
 		w[i] = w[i + 2]; // Swap R to B
 		w[i + 2] = r; // Swap B to R
+	}
+}
+
+void Image::convert_rgb565_to_bgr565() {
+	ERR_FAIL_COND(format != FORMAT_RGB565);
+	ERR_FAIL_COND(data.is_empty());
+
+	int64_t size = data.size() / 2;
+	uint16_t *ptr = reinterpret_cast<uint16_t *>(data.ptrw());
+
+	for (int64_t i = 0; i < size; i++) {
+		uint16_t px = ptr[i];
+
+		uint8_t r = (px >> 11) & 0x1F;
+		uint8_t g = (px >> 5) & 0x3F;
+		uint8_t b = px & 0x1F;
+
+		ptr[i] = (b << 11) | (g << 5) | r;
 	}
 }
 
