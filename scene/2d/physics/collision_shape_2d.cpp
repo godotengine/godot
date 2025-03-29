@@ -297,7 +297,7 @@ void CollisionShape2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_one_way_collision_enabled"), &CollisionShape2D::is_one_way_collision_enabled);
 	ClassDB::bind_method(D_METHOD("set_one_way_collision_margin", "margin"), &CollisionShape2D::set_one_way_collision_margin);
 	ClassDB::bind_method(D_METHOD("get_one_way_collision_margin"), &CollisionShape2D::get_one_way_collision_margin);
-	ClassDB::bind_method(D_METHOD("set_one_way_collision_direction"), &CollisionShape2D::set_one_way_collision_direction);
+	ClassDB::bind_method(D_METHOD("set_one_way_collision_direction", "p_direction"), &CollisionShape2D::set_one_way_collision_direction);
 	ClassDB::bind_method(D_METHOD("get_one_way_collision_direction"), &CollisionShape2D::get_one_way_collision_direction);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "shape", PROPERTY_HINT_RESOURCE_TYPE, "Shape2D"), "set_shape", "get_shape");
