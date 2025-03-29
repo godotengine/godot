@@ -33,6 +33,13 @@
 				- [code]license[/code] - The license applied to this component (such as "[url=https://en.wikipedia.org/wiki/MIT_License#Ambiguity_and_variants]Expat[/url]" or "[url=https://creativecommons.org/licenses/by/4.0/]CC-BY-4.0[/url]").
 			</description>
 		</method>
+		<method name="get_cpu_gpu_sync_mode" qualifiers="const">
+			<return type="int" enum="Engine.CpuGpuSyncMode" />
+			<description>
+				Gets the CPU/GPU synchronization mode for the renderer. See [enum CpuGpuSyncMode] for options.
+				[b]Note:[/b] This setting should be used with care, as the sequential low latency mode prevents the CPU and GPU from running in parallel, which may adversely affect performance by as much as 30-50% under load. It is recommended that this option is exposed in your game's settings menu, so that users can select the best mode based on their preferences and hardware.
+			</description>
+		</method>
 		<method name="get_donor_info" qualifiers="const">
 			<return type="Dictionary" />
 			<description>
@@ -283,6 +290,14 @@
 				Registers the given [Object] [param instance] as a singleton, available globally under [param name]. Useful for plugins.
 			</description>
 		</method>
+		<method name="set_cpu_gpu_sync_mode">
+			<return type="void" />
+			<param index="0" name="cpu_gpu_sync_mode" type="int" enum="Engine.CpuGpuSyncMode" />
+			<description>
+				Sets the CPU/GPU synchronization mode for the renderer. See [enum CpuGpuSyncMode] for options. Equivalent to [member ProjectSettings.rendering/driver/synchronization/cpu_gpu_sync].
+				[b]Note:[/b] This setting should be used with care, as the sequential low latency mode prevents the CPU and GPU from running in parallel, which may adversely affect performance by as much as 30-50% under load. It is recommended that this option is exposed in your game's settings menu, so that users can select the best mode based on their preferences and hardware.
+			</description>
+		</method>
 		<method name="unregister_script_language">
 			<return type="int" enum="Error" />
 			<param index="0" name="language" type="ScriptLanguage" />
@@ -341,4 +356,12 @@
 			[b]Note:[/b] This does not automatically adjust [member physics_ticks_per_second]. With values above [code]1.0[/code] physics simulation may become less precise, as each physics tick will stretch over a larger period of engine time. If you're modifying [member Engine.time_scale] to speed up simulation by a large factor, consider also increasing [member physics_ticks_per_second] to make the simulation more reliable.
 		</member>
 	</members>
+	<constants>
+		<constant name="CPU_GPU_SYNC_PARALLEL" value="0" enum="CpuGpuSyncMode">
+			Tells the renderer to prioritize higher framerate by allowing the CPU to queue up additional frames before they're rendered by the GPU. This allows the CPU and GPU to work in tandem, improving the framerate and framepacing in complex scenes at the expense of input latency. This default setting is suitable for most 3D applications, especially on mobile and lower-performance desktop hardware.
+		</constant>
+		<constant name="CPU_GPU_SYNC_SEQUENTIAL" value="1" enum="CpuGpuSyncMode">
+			Tells the renderer to prioritize lower display latency by limiting how far the CPU is allowed to go ahead of the GPU when queueing frames. This can greatly help with input lag, at the cost of significantly reduced framerate in complex scenes. This setting is useful for games and applications with simple graphics where responsive input is important. Your results may vary based on platform, drivers, and scene contents.
+		</constant>
+	</constants>
 </class>

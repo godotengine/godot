@@ -1781,6 +1781,14 @@ double Engine::get_physics_interpolation_fraction() const {
 	return ::Engine::get_singleton()->get_physics_interpolation_fraction();
 }
 
+void Engine::set_cpu_gpu_sync_mode(Engine::CpuGpuSyncMode p_sync_mode) {
+	::Engine::get_singleton()->set_cpu_gpu_sync_mode((::Engine::CpuGpuSyncMode)p_sync_mode);
+}
+
+Engine::CpuGpuSyncMode Engine::get_cpu_gpu_sync_mode() const {
+	return (CpuGpuSyncMode)::Engine::get_singleton()->get_cpu_gpu_sync_mode();
+}
+
 void Engine::set_max_fps(int p_fps) {
 	::Engine::get_singleton()->set_max_fps(p_fps);
 }
@@ -1956,6 +1964,9 @@ void Engine::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_max_fps", "max_fps"), &Engine::set_max_fps);
 	ClassDB::bind_method(D_METHOD("get_max_fps"), &Engine::get_max_fps);
 
+	ClassDB::bind_method(D_METHOD("set_cpu_gpu_sync_mode", "cpu_gpu_sync_mode"), &Engine::set_cpu_gpu_sync_mode);
+	ClassDB::bind_method(D_METHOD("get_cpu_gpu_sync_mode"), &Engine::get_cpu_gpu_sync_mode);
+
 	ClassDB::bind_method(D_METHOD("set_time_scale", "time_scale"), &Engine::set_time_scale);
 	ClassDB::bind_method(D_METHOD("get_time_scale"), &Engine::get_time_scale);
 
@@ -1999,6 +2010,9 @@ void Engine::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_print_error_messages", "enabled"), &Engine::set_print_error_messages);
 	ClassDB::bind_method(D_METHOD("is_printing_error_messages"), &Engine::is_printing_error_messages);
+
+	BIND_ENUM_CONSTANT(CPU_GPU_SYNC_PARALLEL);
+	BIND_ENUM_CONSTANT(CPU_GPU_SYNC_SEQUENTIAL);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "print_error_messages"), "set_print_error_messages", "is_printing_error_messages");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "print_to_stdout"), "set_print_to_stdout", "is_printing_to_stdout");

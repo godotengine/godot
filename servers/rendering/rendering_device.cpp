@@ -6245,6 +6245,10 @@ void RenderingDevice::swap_buffers(bool p_present) {
 	_end_frame();
 	_execute_frame(p_present);
 
+	if (Engine::get_singleton()->get_cpu_gpu_sync_mode() == Engine::CPU_GPU_SYNC_SEQUENTIAL) {
+		_stall_for_previous_frames();
+	}
+
 	// Advance to the next frame and begin recording again.
 	frame = (frame + 1) % frames.size();
 
