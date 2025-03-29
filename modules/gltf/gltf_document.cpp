@@ -300,7 +300,7 @@ Error GLTFDocument::_parse_json(const String &p_path, Ref<GLTFState> p_state) {
 	array.resize(file->get_length());
 	file->get_buffer(array.ptrw(), array.size());
 	String text;
-	text.parse_utf8((const char *)array.ptr(), array.size());
+	text.append_utf8((const char *)array.ptr(), array.size());
 
 	JSON json;
 	err = json.parse(text);
@@ -331,7 +331,7 @@ Error GLTFDocument::_parse_glb(Ref<FileAccess> p_file, Ref<GLTFState> p_state) {
 	ERR_FAIL_COND_V(len != chunk_length, ERR_FILE_CORRUPT);
 
 	String text;
-	text.parse_utf8((const char *)json_data.ptr(), json_data.size());
+	text.append_utf8((const char *)json_data.ptr(), json_data.size());
 
 	JSON json;
 	Error err = json.parse(text);

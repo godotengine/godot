@@ -249,30 +249,30 @@ class String {
 	void copy_from_unchecked(const char32_t *p_char, int p_length);
 
 	// NULL-terminated c string copy - automatically parse the string to find the length.
-	void parse_latin1(const char *p_cstr) {
-		parse_latin1(Span(p_cstr, p_cstr ? strlen(p_cstr) : 0));
+	void append_latin1(const char *p_cstr) {
+		append_latin1(Span(p_cstr, p_cstr ? strlen(p_cstr) : 0));
 	}
-	void parse_utf32(const char32_t *p_cstr) {
-		parse_utf32(Span(p_cstr, p_cstr ? strlen(p_cstr) : 0));
+	void append_utf32(const char32_t *p_cstr) {
+		append_utf32(Span(p_cstr, p_cstr ? strlen(p_cstr) : 0));
 	}
 
 	// wchar_t copy_from depends on the platform.
-	void parse_wstring(const Span<wchar_t> &p_cstr) {
+	void append_wstring(const Span<wchar_t> &p_cstr) {
 #ifdef WINDOWS_ENABLED
 		// wchar_t is 16-bit, parse as UTF-16
-		parse_utf16((const char16_t *)p_cstr.ptr(), p_cstr.size());
+		append_utf16((const char16_t *)p_cstr.ptr(), p_cstr.size());
 #else
 		// wchar_t is 32-bit, copy directly
-		parse_utf32((Span<char32_t> &)p_cstr);
+		append_utf32((Span<char32_t> &)p_cstr);
 #endif
 	}
-	void parse_wstring(const wchar_t *p_cstr) {
+	void append_wstring(const wchar_t *p_cstr) {
 #ifdef WINDOWS_ENABLED
 		// wchar_t is 16-bit, parse as UTF-16
-		parse_utf16((const char16_t *)p_cstr);
+		append_utf16((const char16_t *)p_cstr);
 #else
 		// wchar_t is 32-bit, copy directly
-		parse_utf32((const char32_t *)p_cstr);
+		append_utf32((const char32_t *)p_cstr);
 #endif
 	}
 
@@ -424,7 +424,7 @@ public:
 	static String num_uint64(uint64_t p_num, int base = 10, bool capitalize_hex = false);
 	static String chr(char32_t p_char) {
 		String string;
-		string.parse_utf32(Span(&p_char, 1));
+		string.append_utf32(Span(&p_char, 1));
 		return string;
 	}
 	static String md5(const uint8_t *p_md5);
@@ -497,40 +497,40 @@ public:
 	CharString ascii(bool p_allow_extended = false) const;
 	// Parse an ascii string.
 	// If any character is > 127, an error will be logged, and 0xfffd will be inserted.
-	Error parse_ascii(const Span<char> &p_range);
+	Error append_ascii(const Span<char> &p_range);
 	static String ascii(const Span<char> &p_range) {
 		String s;
-		s.parse_ascii(p_range);
+		s.append_ascii(p_range);
 		return s;
 	}
 	CharString latin1() const { return ascii(true); }
-	void parse_latin1(const Span<char> &p_cstr);
+	void append_latin1(const Span<char> &p_cstr);
 	static String latin1(const Span<char> &p_string) {
 		String string;
-		string.parse_latin1(p_string);
+		string.append_latin1(p_string);
 		return string;
 	}
 
 	CharString utf8() const;
-	Error parse_utf8(const char *p_utf8, int p_len = -1, bool p_skip_cr = false);
-	Error parse_utf8(const Span<char> &p_range, bool p_skip_cr = false) {
-		return parse_utf8(p_range.ptr(), p_range.size(), p_skip_cr);
+	Error append_utf8(const char *p_utf8, int p_len = -1, bool p_skip_cr = false);
+	Error append_utf8(const Span<char> &p_range, bool p_skip_cr = false) {
+		return append_utf8(p_range.ptr(), p_range.size(), p_skip_cr);
 	}
 	static String utf8(const char *p_utf8, int p_len = -1);
 	static String utf8(const Span<char> &p_range) { return utf8(p_range.ptr(), p_range.size()); }
 
 	Char16String utf16() const;
-	Error parse_utf16(const char16_t *p_utf16, int p_len = -1, bool p_default_little_endian = true);
-	Error parse_utf16(const Span<char16_t> p_range, bool p_skip_cr = false) {
-		return parse_utf16(p_range.ptr(), p_range.size(), p_skip_cr);
+	Error append_utf16(const char16_t *p_utf16, int p_len = -1, bool p_default_little_endian = true);
+	Error append_utf16(const Span<char16_t> p_range, bool p_skip_cr = false) {
+		return append_utf16(p_range.ptr(), p_range.size(), p_skip_cr);
 	}
 	static String utf16(const char16_t *p_utf16, int p_len = -1);
 	static String utf16(const Span<char16_t> &p_range) { return utf16(p_range.ptr(), p_range.size()); }
 
-	void parse_utf32(const Span<char32_t> &p_cstr);
+	void append_utf32(const Span<char32_t> &p_cstr);
 	static String utf32(const Span<char32_t> &p_span) {
 		String string;
-		string.parse_utf32(p_span);
+		string.append_utf32(p_span);
 		return string;
 	}
 
@@ -622,24 +622,27 @@ public:
 
 	// Constructors for NULL terminated C strings.
 	String(const char *p_cstr) {
-		parse_latin1(p_cstr);
+		append_latin1(p_cstr);
 	}
 	String(const wchar_t *p_cstr) {
-		parse_wstring(p_cstr);
+		append_wstring(p_cstr);
 	}
 	String(const char32_t *p_cstr) {
-		parse_utf32(p_cstr);
+		append_utf32(p_cstr);
 	}
 
 	// Copy assignment for NULL terminated C strings.
 	void operator=(const char *p_cstr) {
-		parse_latin1(p_cstr);
+		clear();
+		append_latin1(p_cstr);
 	}
 	void operator=(const wchar_t *p_cstr) {
-		parse_wstring(p_cstr);
+		clear();
+		append_wstring(p_cstr);
 	}
 	void operator=(const char32_t *p_cstr) {
-		parse_utf32(p_cstr);
+		clear();
+		append_utf32(p_cstr);
 	}
 };
 

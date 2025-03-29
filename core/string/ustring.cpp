@@ -301,17 +301,17 @@ Error String::parse_url(String &r_scheme, String &r_host, int &r_port, String &r
 	return OK;
 }
 
-void String::parse_latin1(const Span<char> &p_cstr) {
-	if (p_cstr.size() == 0) {
-		resize(0);
+void String::append_latin1(const Span<char> &p_cstr) {
+	if (p_cstr.is_empty()) {
 		return;
 	}
 
-	resize(p_cstr.size() + 1); // include 0
+	const int prev_length = length();
+	resize(prev_length + p_cstr.size() + 1); // include 0
 
 	const char *src = p_cstr.ptr();
 	const char *end = src + p_cstr.size();
-	char32_t *dst = ptrw();
+	char32_t *dst = ptrw() + prev_length;
 
 	for (; src < end; ++src, ++dst) {
 		// If char is int8_t, a set sign bit will be reinterpreted as 256 - val implicitly.
@@ -320,16 +320,16 @@ void String::parse_latin1(const Span<char> &p_cstr) {
 	*dst = 0;
 }
 
-void String::parse_utf32(const Span<char32_t> &p_cstr) {
-	if (p_cstr.size() == 0) {
-		resize(0);
+void String::append_utf32(const Span<char32_t> &p_cstr) {
+	if (p_cstr.is_empty()) {
 		return;
 	}
 
-	resize(p_cstr.size() + 1);
+	const int prev_length = length();
+	resize(prev_length + p_cstr.size() + 1);
 	const char32_t *src = p_cstr.ptr();
 	const char32_t *end = p_cstr.ptr() + p_cstr.size();
-	char32_t *dst = ptrw();
+	char32_t *dst = ptrw() + prev_length;
 
 	// Copy the string, and check for UTF-32 problems.
 	for (; src < end; ++src, ++dst) {
@@ -414,55 +414,16 @@ String operator+(char32_t p_chr, const String &p_str) {
 }
 
 String &String::operator+=(const String &p_str) {
-	const int lhs_len = length();
-	if (lhs_len == 0) {
+	if (is_empty()) {
 		*this = p_str;
 		return *this;
 	}
-
-	const int rhs_len = p_str.length();
-	if (rhs_len == 0) {
-		return *this;
-	}
-
-	resize(lhs_len + rhs_len + 1);
-
-	const char32_t *src = p_str.ptr();
-	char32_t *dst = ptrw() + lhs_len;
-
-	// Don't copy the terminating null with `memcpy` to avoid undefined behavior when string is being added to itself (it would overlap the destination).
-	memcpy(dst, src, rhs_len * sizeof(char32_t));
-	*(dst + rhs_len) = _null;
-
+	append_utf32(p_str);
 	return *this;
 }
 
 String &String::operator+=(const char *p_str) {
-	if (!p_str || p_str[0] == 0) {
-		return *this;
-	}
-
-	const int lhs_len = length();
-	const size_t rhs_len = strlen(p_str);
-
-	resize(lhs_len + rhs_len + 1);
-
-	char32_t *dst = ptrw() + lhs_len;
-
-	for (size_t i = 0; i <= rhs_len; i++) {
-#if CHAR_MIN == 0
-		uint8_t c = p_str[i];
-#else
-		uint8_t c = p_str[i] >= 0 ? p_str[i] : uint8_t(256 + p_str[i]);
-#endif
-		if (c == 0 && i < rhs_len) {
-			print_unicode_error("NUL character", true);
-			dst[i] = _replacement_char;
-		} else {
-			dst[i] = c;
-		}
-	}
-
+	append_latin1(p_str);
 	return *this;
 }
 
@@ -478,32 +439,12 @@ String &String::operator+=(const wchar_t *p_str) {
 }
 
 String &String::operator+=(const char32_t *p_str) {
-	*this += String(p_str);
+	append_utf32(Span(p_str, strlen(p_str)));
 	return *this;
 }
 
 String &String::operator+=(char32_t p_char) {
-	if (p_char == 0) {
-		print_unicode_error("NUL character", true);
-		return *this;
-	}
-
-	const int lhs_len = length();
-	resize(lhs_len + 2);
-	char32_t *dst = ptrw();
-
-	if ((p_char & 0xfffff800) == 0xd800) {
-		print_unicode_error(vformat("Unpaired surrogate (%x)", (uint32_t)p_char));
-		dst[lhs_len] = _replacement_char;
-	} else if (p_char > 0x10ffff) {
-		print_unicode_error(vformat("Invalid unicode codepoint (%x)", (uint32_t)p_char));
-		dst[lhs_len] = _replacement_char;
-	} else {
-		dst[lhs_len] = p_char;
-	}
-
-	dst[lhs_len + 1] = 0;
-
+	append_utf32(Span(&p_char, 1));
 	return *this;
 }
 
@@ -1923,17 +1864,17 @@ CharString String::ascii(bool p_allow_extended) const {
 	return cs;
 }
 
-Error String::parse_ascii(const Span<char> &p_range) {
-	if (p_range.size() == 0) {
-		resize(0);
+Error String::append_ascii(const Span<char> &p_range) {
+	if (p_range.is_empty()) {
 		return OK;
 	}
 
-	resize(p_range.size() + 1); // Include \0
+	const int prev_length = length();
+	resize(prev_length + p_range.size() + 1); // Include \0
 
 	const char *src = p_range.ptr();
 	const char *end = src + p_range.size();
-	char32_t *dst = ptrw();
+	char32_t *dst = ptrw() + prev_length;
 	bool decode_failed = false;
 
 	for (; src < end; ++src, ++dst) {
@@ -1953,12 +1894,12 @@ Error String::parse_ascii(const Span<char> &p_range) {
 
 String String::utf8(const char *p_utf8, int p_len) {
 	String ret;
-	ret.parse_utf8(p_utf8, p_len);
+	ret.append_utf8(p_utf8, p_len);
 
 	return ret;
 }
 
-Error String::parse_utf8(const char *p_utf8, int p_len, bool p_skip_cr) {
+Error String::append_utf8(const char *p_utf8, int p_len, bool p_skip_cr) {
 	if (!p_utf8) {
 		return ERR_INVALID_DATA;
 	}
@@ -1979,9 +1920,10 @@ Error String::parse_utf8(const char *p_utf8, int p_len, bool p_skip_cr) {
 		p_len = strlen(p_utf8);
 	}
 
+	const int prev_length = length();
 	// If all utf8 characters maps to ASCII, then the max size will be p_len, and we add +1 for the null termination.
-	resize(p_len + 1);
-	char32_t *dst = ptrw();
+	resize(prev_length + p_len + 1);
+	char32_t *dst = ptrw() + prev_length;
 
 	Error result = Error::OK;
 
@@ -2126,7 +2068,7 @@ Error String::parse_utf8(const char *p_utf8, int p_len, bool p_skip_cr) {
 	}
 
 	(*dst++) = 0;
-	resize(dst - ptr());
+	resize(prev_length + dst - ptr());
 
 	return result;
 }
@@ -2217,12 +2159,12 @@ CharString String::utf8() const {
 
 String String::utf16(const char16_t *p_utf16, int p_len) {
 	String ret;
-	ret.parse_utf16(p_utf16, p_len, true);
+	ret.append_utf16(p_utf16, p_len, true);
 
 	return ret;
 }
 
-Error String::parse_utf16(const char16_t *p_utf16, int p_len, bool p_default_little_endian) {
+Error String::append_utf16(const char16_t *p_utf16, int p_len, bool p_default_little_endian) {
 	if (!p_utf16) {
 		return ERR_INVALID_DATA;
 	}
@@ -2299,8 +2241,9 @@ Error String::parse_utf16(const char16_t *p_utf16, int p_len, bool p_default_lit
 		return OK; // empty string
 	}
 
-	resize(str_size + 1);
-	char32_t *dst = ptrw();
+	const int prev_length = length();
+	resize(prev_length + str_size + 1);
+	char32_t *dst = ptrw() + prev_length;
 	dst[str_size] = 0;
 
 	bool skip = false;

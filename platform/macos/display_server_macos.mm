@@ -513,10 +513,10 @@ void DisplayServerMacOS::_update_keyboard_layouts() const {
 	for (NSUInteger i = 0; i < [list_ime count]; i++) {
 		LayoutInfo ly;
 		NSString *name = (__bridge NSString *)TISGetInputSourceProperty((__bridge TISInputSourceRef)[list_ime objectAtIndex:i], kTISPropertyLocalizedName);
-		ly.name.parse_utf8([name UTF8String]);
+		ly.name.append_utf8([name UTF8String]);
 
 		NSArray *langs = (__bridge NSArray *)TISGetInputSourceProperty((__bridge TISInputSourceRef)[list_ime objectAtIndex:i], kTISPropertyInputSourceLanguages);
-		ly.code.parse_utf8([(NSString *)[langs objectAtIndex:0] UTF8String]);
+		ly.code.append_utf8([(NSString *)[langs objectAtIndex:0] UTF8String]);
 		kbd_layouts.push_back(ly);
 
 		if ([name isEqualToString:cur_name]) {
@@ -530,10 +530,10 @@ void DisplayServerMacOS::_update_keyboard_layouts() const {
 	for (NSUInteger i = 0; i < [list_kbd count]; i++) {
 		LayoutInfo ly;
 		NSString *name = (__bridge NSString *)TISGetInputSourceProperty((__bridge TISInputSourceRef)[list_kbd objectAtIndex:i], kTISPropertyLocalizedName);
-		ly.name.parse_utf8([name UTF8String]);
+		ly.name.append_utf8([name UTF8String]);
 
 		NSArray *langs = (__bridge NSArray *)TISGetInputSourceProperty((__bridge TISInputSourceRef)[list_kbd objectAtIndex:i], kTISPropertyInputSourceLanguages);
-		ly.code.parse_utf8([(NSString *)[langs objectAtIndex:0] UTF8String]);
+		ly.code.append_utf8([(NSString *)[langs objectAtIndex:0] UTF8String]);
 		kbd_layouts.push_back(ly);
 
 		if ([name isEqualToString:cur_name]) {
@@ -1086,7 +1086,7 @@ Error DisplayServerMacOS::_file_dialog_with_options_show(const String &p_title, 
 				// Callback.
 				Vector<String> files;
 				String url;
-				url.parse_utf8([[[panel URL] path] UTF8String]);
+				url.append_utf8([[[panel URL] path] UTF8String]);
 				files.push_back(url);
 				if (callback.is_valid()) {
 					if (p_options_in_cb) {
@@ -1205,7 +1205,7 @@ Error DisplayServerMacOS::_file_dialog_with_options_show(const String &p_title, 
 				Vector<String> files;
 				for (NSUInteger i = 0; i != [urls count]; ++i) {
 					String url;
-					url.parse_utf8([[[urls objectAtIndex:i] path] UTF8String]);
+					url.append_utf8([[[urls objectAtIndex:i] path] UTF8String]);
 					files.push_back(url);
 				}
 				if (callback.is_valid()) {
@@ -1303,7 +1303,7 @@ Error DisplayServerMacOS::dialog_input_text(String p_title, String p_description
 	[window runModal];
 
 	String ret;
-	ret.parse_utf8([[input stringValue] UTF8String]);
+	ret.append_utf8([[input stringValue] UTF8String]);
 
 	if (p_callback.is_valid()) {
 		Variant v_result = ret;
@@ -1587,7 +1587,7 @@ String DisplayServerMacOS::clipboard_get() const {
 	NSString *string = [objectsToPaste objectAtIndex:0];
 
 	String ret;
-	ret.parse_utf8([string UTF8String]);
+	ret.append_utf8([string UTF8String]);
 	return ret;
 }
 
