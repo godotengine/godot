@@ -39,7 +39,7 @@
 #include "editor/themes/editor_icons.h"
 #include "editor/themes/editor_scale.h"
 #include "editor/themes/editor_theme.h"
-#include "scene/gui/graph_edit.h"
+#include "scene/gui/advanced/graph_edit.h"
 #include "scene/resources/image_texture.h"
 #include "scene/resources/style_box_flat.h"
 #include "scene/resources/style_box_line.h"

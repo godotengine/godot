@@ -30,10 +30,10 @@
 
 #pragma once
 
+#include "scene/gui/advanced/dialogs.h"
+#include "scene/gui/advanced/menu_button.h"
+#include "scene/gui/advanced/rich_text_label.h"
 #include "scene/gui/box_container.h"
-#include "scene/gui/dialogs.h"
-#include "scene/gui/menu_button.h"
-#include "scene/gui/rich_text_label.h"
 
 class EditorRunNative : public HBoxContainer {
 	GDCLASS(EditorRunNative, HBoxContainer);

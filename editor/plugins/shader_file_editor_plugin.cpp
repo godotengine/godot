@@ -35,8 +35,8 @@
 #include "editor/editor_string_names.h"
 #include "editor/gui/editor_bottom_panel.h"
 #include "editor/themes/editor_scale.h"
+#include "scene/gui/advanced/split_container.h"
 #include "scene/gui/item_list.h"
-#include "scene/gui/split_container.h"
 #include "servers/display_server.h"
 
 /*** SHADER SCRIPT EDITOR ****/

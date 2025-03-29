@@ -37,8 +37,8 @@
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/plugins/node_3d_editor_plugin.h"
 #include "scene/3d/navigation_obstacle_3d.h"
+#include "scene/gui/advanced/dialogs.h"
 #include "scene/gui/button.h"
-#include "scene/gui/dialogs.h"
 #include "servers/navigation_server_3d.h"
 
 bool NavigationObstacle3DGizmoPlugin::has_gizmo(Node3D *p_spatial) {

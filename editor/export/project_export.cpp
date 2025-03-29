@@ -41,17 +41,17 @@
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/import/resource_importer_texture_settings.h"
 #include "editor/themes/editor_scale.h"
+#include "scene/gui/advanced/menu_button.h"
+#include "scene/gui/advanced/option_button.h"
+#include "scene/gui/advanced/popup_menu.h"
+#include "scene/gui/advanced/split_container.h"
+#include "scene/gui/advanced/tree.h"
 #include "scene/gui/check_button.h"
 #include "scene/gui/item_list.h"
 #include "scene/gui/link_button.h"
 #include "scene/gui/margin_container.h"
-#include "scene/gui/menu_button.h"
-#include "scene/gui/option_button.h"
-#include "scene/gui/popup_menu.h"
-#include "scene/gui/split_container.h"
 #include "scene/gui/tab_container.h"
 #include "scene/gui/texture_rect.h"
-#include "scene/gui/tree.h"
 
 void ProjectExportTextureFormatError::_on_fix_texture_format_pressed() {
 	ProjectSettings::get_singleton()->set_setting(setting_identifier, true);

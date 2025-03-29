@@ -30,7 +30,7 @@
 
 #include "syntax_highlighter.h"
 
-#include "scene/gui/text_edit.h"
+#include "scene/gui/advanced/text_edit.h"
 
 Dictionary SyntaxHighlighter::get_line_syntax_highlighting(int p_line) {
 	if (highlighting_cache.has(p_line)) {

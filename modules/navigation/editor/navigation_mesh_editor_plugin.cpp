@@ -33,9 +33,9 @@
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
 #include "scene/3d/navigation_region_3d.h"
+#include "scene/gui/advanced/dialogs.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
-#include "scene/gui/dialogs.h"
 #include "scene/gui/label.h"
 
 void NavigationMeshEditor::_node_removed(Node *p_node) {

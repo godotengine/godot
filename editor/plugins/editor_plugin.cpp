@@ -54,7 +54,7 @@
 #include "editor/project_settings_editor.h"
 #include "editor/scene_tree_dock.h"
 #include "scene/3d/camera_3d.h"
-#include "scene/gui/popup_menu.h"
+#include "scene/gui/advanced/popup_menu.h"
 
 void EditorPlugin::add_custom_type(const String &p_type, const String &p_base, const Ref<Script> &p_script, const Ref<Texture2D> &p_icon) {
 	EditorNode::get_editor_data().add_custom_type(p_type, p_base, p_script, p_icon);

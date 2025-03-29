@@ -40,6 +40,7 @@
 #include "editor/editor_string_names.h"
 #include "editor/filesystem_dock.h"
 #include "editor/themes/editor_scale.h"
+#include "scene/gui/advanced/tree.h"
 #include "scene/gui/center_container.h"
 #include "scene/gui/check_button.h"
 #include "scene/gui/flow_container.h"
@@ -47,7 +48,6 @@
 #include "scene/gui/panel_container.h"
 #include "scene/gui/separator.h"
 #include "scene/gui/texture_rect.h"
-#include "scene/gui/tree.h"
 
 void HighlightedLabel::draw_substr_rects(const Vector2i &p_substr, Vector2 p_offset, int p_line_limit, int line_spacing) {
 	for (int i = get_lines_skipped(); i < p_line_limit; i++) {

@@ -37,8 +37,8 @@
 #include "scene/2d/parallax_2d.h"
 #include "scene/2d/parallax_background.h"
 #include "scene/2d/parallax_layer.h"
+#include "scene/gui/advanced/menu_button.h"
 #include "scene/gui/box_container.h"
-#include "scene/gui/menu_button.h"
 
 void ParallaxBackgroundEditorPlugin::edit(Object *p_object) {
 	parallax_background = Object::cast_to<ParallaxBackground>(p_object);

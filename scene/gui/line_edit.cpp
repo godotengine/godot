@@ -397,12 +397,14 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 				set_caret_at_pixel_pos(b->get_position().x);
 			}
 
+#ifndef ADVANCED_GUI_DISABLED
 			if (context_menu_enabled) {
 				_update_context_menu();
 				menu->set_position(get_screen_transform().xform(get_local_mouse_position()));
 				menu->reset_size();
 				menu->popup();
 			}
+#endif // ADVANCED_GUI_DISABLED
 
 			if (editable && !editing) {
 				edit();
@@ -625,6 +627,7 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 		return;
 	}
 
+#ifndef ADVANCED_GUI_DISABLED
 	// Open context menu.
 	if (context_menu_enabled) {
 		if (k->is_action("ui_menu", true)) {
@@ -639,6 +642,7 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 			return;
 		}
 	}
+#endif // ADVANCED_GUI_DISABLED
 
 	if (is_shortcut_keys_enabled()) {
 		if (k->is_action("ui_copy", true)) {
@@ -1734,7 +1738,13 @@ void LineEdit::_validate_caret_can_draw() {
 		draw_caret = true;
 		caret_blink_timer = 0.0;
 	}
-	caret_can_draw = (caret_force_displayed && !is_part_of_edited_scene()) || (editing && (window_has_focus || (menu && menu->has_focus())) && has_focus());
+
+#ifndef ADVANCED_GUI_DISABLED
+	bool menu_focused = menu && menu->has_focus();
+#else
+	bool menu_focused = false;
+#endif // ADVANCED_GUI_DISABLED
+	caret_can_draw = (caret_force_displayed && !is_part_of_edited_scene()) || (editing && (window_has_focus || menu_focused) && has_focus());
 }
 
 void LineEdit::delete_char() {
@@ -1802,12 +1812,14 @@ void LineEdit::set_text_direction(Control::TextDirection p_text_direction) {
 		}
 		_shape();
 
+#ifndef ADVANCED_GUI_DISABLED
 		if (menu_dir) {
 			menu_dir->set_item_checked(menu_dir->get_item_index(MENU_DIR_INHERITED), text_direction == TEXT_DIRECTION_INHERITED);
 			menu_dir->set_item_checked(menu_dir->get_item_index(MENU_DIR_AUTO), text_direction == TEXT_DIRECTION_AUTO);
 			menu_dir->set_item_checked(menu_dir->get_item_index(MENU_DIR_LTR), text_direction == TEXT_DIRECTION_LTR);
 			menu_dir->set_item_checked(menu_dir->get_item_index(MENU_DIR_RTL), text_direction == TEXT_DIRECTION_RTL);
 		}
+#endif // ADVANCED_GUI_DISABLED
 		queue_redraw();
 	}
 }
@@ -1831,9 +1843,11 @@ String LineEdit::get_language() const {
 void LineEdit::set_draw_control_chars(bool p_draw_control_chars) {
 	if (draw_control_chars != p_draw_control_chars) {
 		draw_control_chars = p_draw_control_chars;
+#ifndef ADVANCED_GUI_DISABLED
 		if (menu && menu->get_item_index(MENU_DISPLAY_UCC) >= 0) {
 			menu->set_item_checked(menu->get_item_index(MENU_DISPLAY_UCC), draw_control_chars);
 		}
+#endif // ADVANCED_GUI_DISABLED
 		_shape();
 		queue_redraw();
 	}
@@ -2399,7 +2413,9 @@ void LineEdit::show_emoji_and_symbol_picker() {
 void LineEdit::set_emoji_menu_enabled(bool p_enabled) {
 	if (emoji_menu_enabled != p_enabled) {
 		emoji_menu_enabled = p_enabled;
+#ifndef ADVANCED_GUI_DISABLED
 		_update_context_menu();
+#endif // ADVANCED_GUI_DISABLED
 	}
 }
 
@@ -2408,15 +2424,21 @@ bool LineEdit::is_emoji_menu_enabled() const {
 }
 
 bool LineEdit::is_menu_visible() const {
+#ifndef ADVANCED_GUI_DISABLED
 	return menu && menu->is_visible();
+#else
+	return false;
+#endif // ADVANCED_GUI_DISABLED
 }
 
+#ifndef ADVANCED_GUI_DISABLED
 PopupMenu *LineEdit::get_menu() const {
 	if (!menu) {
 		const_cast<LineEdit *>(this)->_generate_context_menu();
 	}
 	return menu;
 }
+#endif // ADVANCED_GUI_DISABLED
 
 void LineEdit::_editor_settings_changed() {
 #ifdef TOOLS_ENABLED
@@ -2705,6 +2727,7 @@ Key LineEdit::_get_menu_action_accelerator(const String &p_action) {
 	}
 }
 
+#ifndef ADVANCED_GUI_DISABLED
 void LineEdit::_generate_context_menu() {
 	menu = memnew(PopupMenu);
 	add_child(menu, false, INTERNAL_MODE_FRONT);
@@ -2817,6 +2840,7 @@ void LineEdit::_update_context_menu() {
 #undef MENU_ITEM_DISABLED
 #undef MENU_ITEM_CHECKED
 }
+#endif // ADVANCED_GUI_DISABLED
 
 void LineEdit::_validate_property(PropertyInfo &p_property) const {
 	if (!caret_blink_enabled && p_property.name == "caret_blink_interval") {

@@ -32,7 +32,7 @@
 
 #include "core/input/shortcut.h"
 #include "editor/editor_string_names.h"
-#include "scene/gui/popup_menu.h"
+#include "scene/gui/advanced/popup_menu.h"
 #include "scene/resources/texture.h"
 
 void EditorContextMenuPlugin::get_options(const Vector<String> &p_paths) {

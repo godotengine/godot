@@ -30,7 +30,7 @@
 
 #pragma once
 
-#include "scene/gui/tree.h"
+#include "scene/gui/advanced/tree.h"
 
 class AcceptDialog;
 class SceneDebuggerTree;

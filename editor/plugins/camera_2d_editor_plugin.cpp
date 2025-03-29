@@ -36,8 +36,8 @@
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/2d/camera_2d.h"
+#include "scene/gui/advanced/menu_button.h"
 #include "scene/gui/label.h"
-#include "scene/gui/menu_button.h"
 
 void Camera2DEditor::edit(Camera2D *p_camera) {
 	if (p_camera == selected_camera) {

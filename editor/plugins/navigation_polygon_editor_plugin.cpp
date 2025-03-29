@@ -34,7 +34,7 @@
 #include "editor/editor_settings.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "scene/2d/navigation_region_2d.h"
-#include "scene/gui/dialogs.h"
+#include "scene/gui/advanced/dialogs.h"
 
 Ref<NavigationPolygon> NavigationPolygonEditor::_ensure_navpoly() const {
 	Ref<NavigationPolygon> navpoly = node->get_navigation_polygon();

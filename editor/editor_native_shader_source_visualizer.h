@@ -30,7 +30,7 @@
 
 #pragma once
 
-#include "scene/gui/dialogs.h"
+#include "scene/gui/advanced/dialogs.h"
 #include "scene/gui/tab_container.h"
 #include "scene/resources/syntax_highlighter.h"
 

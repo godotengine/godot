@@ -30,7 +30,7 @@
 
 #pragma once
 
-#include "scene/gui/dialogs.h"
+#include "scene/gui/advanced/dialogs.h"
 
 class ButtonGroup;
 class CheckBox;

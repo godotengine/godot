@@ -33,7 +33,7 @@
 #include "tile_atlas_view.h"
 #include "tile_data_editors.h"
 
-#include "scene/gui/split_container.h"
+#include "scene/gui/advanced/split_container.h"
 #include "scene/resources/2d/tile_set.h"
 
 class Popup;

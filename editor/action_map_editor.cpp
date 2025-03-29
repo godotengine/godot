@@ -35,9 +35,9 @@
 #include "editor/event_listener_line_edit.h"
 #include "editor/input_event_configuration_dialog.h"
 #include "editor/themes/editor_scale.h"
+#include "scene/gui/advanced/tree.h"
 #include "scene/gui/check_button.h"
 #include "scene/gui/separator.h"
-#include "scene/gui/tree.h"
 
 static bool _is_action_name_valid(const String &p_name) {
 	const char32_t *cstr = p_name.get_data();

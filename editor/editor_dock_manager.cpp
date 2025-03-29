@@ -30,10 +30,10 @@
 
 #include "editor_dock_manager.h"
 
+#include "scene/gui/advanced/split_container.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/label.h"
-#include "scene/gui/split_container.h"
 #include "scene/gui/tab_container.h"
 #include "scene/main/window.h"
 

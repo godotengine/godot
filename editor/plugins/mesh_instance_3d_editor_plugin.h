@@ -32,7 +32,7 @@
 
 #include "editor/plugins/editor_plugin.h"
 #include "scene/3d/mesh_instance_3d.h"
-#include "scene/gui/option_button.h"
+#include "scene/gui/advanced/option_button.h"
 
 class AcceptDialog;
 class AspectRatioContainer;

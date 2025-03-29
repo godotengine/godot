@@ -40,11 +40,11 @@
 #include "editor/inspector_dock.h"
 #include "editor/plugins/editor_context_menu_plugin.h"
 #include "editor/themes/editor_scale.h"
+#include "scene/gui/advanced/popup_menu.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/panel.h"
 #include "scene/gui/panel_container.h"
-#include "scene/gui/popup_menu.h"
 #include "scene/gui/tab_bar.h"
 #include "scene/gui/texture_rect.h"
 

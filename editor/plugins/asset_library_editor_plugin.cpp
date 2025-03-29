@@ -42,7 +42,7 @@
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/project_settings_editor.h"
 #include "editor/themes/editor_scale.h"
-#include "scene/gui/menu_button.h"
+#include "scene/gui/advanced/menu_button.h"
 #include "scene/gui/separator.h"
 #include "scene/resources/image_texture.h"
 
