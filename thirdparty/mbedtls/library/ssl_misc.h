@@ -11,6 +11,7 @@
 #define MBEDTLS_SSL_MISC_H
 
 #include "mbedtls/build_info.h"
+#include "common.h"
 
 #include "mbedtls/error.h"
 
@@ -47,7 +48,7 @@
 #include "ssl_ciphersuites_internal.h"
 #include "x509_internal.h"
 #include "pk_internal.h"
-#include "common.h"
+
 
 /* Shorthand for restartable ECC */
 #if defined(MBEDTLS_ECP_RESTARTABLE) && \
@@ -1507,7 +1508,7 @@ int mbedtls_ssl_psk_derive_premaster(mbedtls_ssl_context *ssl,
 #endif /* MBEDTLS_KEY_EXCHANGE_SOME_PSK_ENABLED */
 
 #if defined(MBEDTLS_SSL_HANDSHAKE_WITH_PSK_ENABLED)
-#if defined(MBEDTLS_SSL_CLI_C)
+#if defined(MBEDTLS_SSL_CLI_C) || defined(MBEDTLS_SSL_SRV_C)
 MBEDTLS_CHECK_RETURN_CRITICAL
 int mbedtls_ssl_conf_has_static_psk(mbedtls_ssl_config const *conf);
 #endif
@@ -1674,18 +1675,53 @@ static inline mbedtls_x509_crt *mbedtls_ssl_own_cert(mbedtls_ssl_context *ssl)
 }
 
 /*
- * Check usage of a certificate wrt extensions:
- * keyUsage, extendedKeyUsage (later), and nSCertType (later).
+ * Verify a certificate.
  *
- * Warning: cert_endpoint is the endpoint of the cert (ie, of our peer when we
- * check a cert we received from them)!
+ * [in/out] ssl: misc. things read
+ *               ssl->session_negotiate->verify_result updated
+ * [in] authmode: one of MBEDTLS_SSL_VERIFY_{NONE,OPTIONAL,REQUIRED}
+ * [in] chain: the certificate chain to verify (ie the peer's chain)
+ * [in] ciphersuite_info: For TLS 1.2, this session's ciphersuite;
+ *                        for TLS 1.3, may be left NULL.
+ * [in] rs_ctx: restart context if restartable ECC is in use;
+ *              leave NULL for no restartable behaviour.
+ *
+ * Return:
+ * - 0 if the handshake should continue. Depending on the
+ *   authmode it means:
+ *   - REQUIRED: the certificate was found to be valid, trusted & acceptable.
+ *     ssl->session_negotiate->verify_result is 0.
+ *   - OPTIONAL: the certificate may or may not be acceptable, but
+ *     ssl->session_negotiate->verify_result was updated with the result.
+ *   - NONE: the certificate wasn't even checked.
+ * - MBEDTLS_ERR_X509_CERT_VERIFY_FAILED or MBEDTLS_ERR_SSL_BAD_CERTIFICATE if
+ *   the certificate was found to be invalid/untrusted/unacceptable and the
+ *   handshake should be aborted (can only happen with REQUIRED).
+ * - another error code if another error happened (out-of-memory, etc.)
+ */
+MBEDTLS_CHECK_RETURN_CRITICAL
+int mbedtls_ssl_verify_certificate(mbedtls_ssl_context *ssl,
+                                   int authmode,
+                                   mbedtls_x509_crt *chain,
+                                   const mbedtls_ssl_ciphersuite_t *ciphersuite_info,
+                                   void *rs_ctx);
+
+/*
+ * Check usage of a certificate wrt usage extensions:
+ * keyUsage and extendedKeyUsage.
+ * (Note: nSCertType is deprecated and not standard, we don't check it.)
+ *
+ * Note: if tls_version is 1.3, ciphersuite is ignored and can be NULL.
+ *
+ * Note: recv_endpoint is the receiver's endpoint.
  *
  * Return 0 if everything is OK, -1 if not.
  */
 MBEDTLS_CHECK_RETURN_CRITICAL
 int mbedtls_ssl_check_cert_usage(const mbedtls_x509_crt *cert,
                                  const mbedtls_ssl_ciphersuite_t *ciphersuite,
-                                 int cert_endpoint,
+                                 int recv_endpoint,
+                                 mbedtls_ssl_protocol_version tls_version,
                                  uint32_t *flags);
 #endif /* MBEDTLS_X509_CRT_PARSE_C */
 
@@ -1794,10 +1830,11 @@ void mbedtls_ssl_set_timer(mbedtls_ssl_context *ssl, uint32_t millisecs);
 MBEDTLS_CHECK_RETURN_CRITICAL
 int mbedtls_ssl_check_timer(mbedtls_ssl_context *ssl);
 
-void mbedtls_ssl_reset_in_out_pointers(mbedtls_ssl_context *ssl);
+void mbedtls_ssl_reset_in_pointers(mbedtls_ssl_context *ssl);
+void mbedtls_ssl_update_in_pointers(mbedtls_ssl_context *ssl);
+void mbedtls_ssl_reset_out_pointers(mbedtls_ssl_context *ssl);
 void mbedtls_ssl_update_out_pointers(mbedtls_ssl_context *ssl,
                                      mbedtls_ssl_transform *transform);
-void mbedtls_ssl_update_in_pointers(mbedtls_ssl_context *ssl);
 
 MBEDTLS_CHECK_RETURN_CRITICAL
 int mbedtls_ssl_session_reset_int(mbedtls_ssl_context *ssl, int partial);
@@ -1891,6 +1928,26 @@ static inline int mbedtls_ssl_conf_is_hybrid_tls12_tls13(const mbedtls_ssl_confi
 #endif /* MBEDTLS_SSL_PROTO_TLS1_2 && MBEDTLS_SSL_PROTO_TLS1_3 */
 
 #if defined(MBEDTLS_SSL_PROTO_TLS1_3)
+
+/** \brief Initialize the PSA crypto subsystem if necessary.
+ *
+ * Call this function before doing any cryptography in a TLS 1.3 handshake.
+ *
+ * This is necessary in Mbed TLS 3.x for backward compatibility.
+ * Up to Mbed TLS 3.5, in the default configuration, you could perform
+ * a TLS connection with default parameters without having called
+ * psa_crypto_init(), since the TLS layer only supported TLS 1.2 and
+ * did not use PSA crypto. (TLS 1.2 only uses PSA crypto if
+ * MBEDTLS_USE_PSA_CRYPTO is enabled, which is not the case in the default
+ * configuration.) Starting with Mbed TLS 3.6.0, TLS 1.3 is enabled
+ * by default, and the TLS 1.3 layer uses PSA crypto. This means that
+ * applications that are not otherwise using PSA crypto and that worked
+ * with Mbed TLS 3.5 started failing in TLS 3.6.0 if they connected to
+ * a peer that supports TLS 1.3. See
+ * https://github.com/Mbed-TLS/mbedtls/issues/9072
+ */
+int mbedtls_ssl_tls13_crypto_init(mbedtls_ssl_context *ssl);
+
 extern const uint8_t mbedtls_ssl_tls13_hello_retry_request_magic[
     MBEDTLS_SERVER_HELLO_RANDOM_LEN];
 MBEDTLS_CHECK_RETURN_CRITICAL
@@ -2843,6 +2900,18 @@ int mbedtls_ssl_tls13_write_binders_of_pre_shared_key_ext(
     unsigned char *buf, unsigned char *end);
 #endif /* MBEDTLS_SSL_TLS1_3_KEY_EXCHANGE_MODE_SOME_PSK_ENABLED */
 
+#if defined(MBEDTLS_SSL_SERVER_NAME_INDICATION)
+/** Get the host name from the SSL context.
+ *
+ * \param[in]   ssl     SSL context
+ *
+ * \return The \p hostname pointer from the SSL context.
+ *         \c NULL if mbedtls_ssl_set_hostname() has never been called on
+ *         \p ssl or if it was last called with \p NULL.
+ */
+const char *mbedtls_ssl_get_hostname_pointer(const mbedtls_ssl_context *ssl);
+#endif /* MBEDTLS_SSL_SERVER_NAME_INDICATION */
+
 #if defined(MBEDTLS_SSL_PROTO_TLS1_3) && \
     defined(MBEDTLS_SSL_SESSION_TICKETS) && \
     defined(MBEDTLS_SSL_SERVER_NAME_INDICATION) && \
@@ -2914,7 +2983,38 @@ static inline void mbedtls_ssl_tls13_session_clear_ticket_flags(
 {
     session->ticket_flags &= ~(flags & MBEDTLS_SSL_TLS1_3_TICKET_FLAGS_MASK);
 }
+
 #endif /* MBEDTLS_SSL_PROTO_TLS1_3 && MBEDTLS_SSL_SESSION_TICKETS */
+
+#if defined(MBEDTLS_SSL_SESSION_TICKETS) && defined(MBEDTLS_SSL_CLI_C)
+#define MBEDTLS_SSL_SESSION_TICKETS_TLS1_2_BIT 0
+#define MBEDTLS_SSL_SESSION_TICKETS_TLS1_3_BIT 1
+
+#define MBEDTLS_SSL_SESSION_TICKETS_TLS1_2_MASK \
+    (1 << MBEDTLS_SSL_SESSION_TICKETS_TLS1_2_BIT)
+#define MBEDTLS_SSL_SESSION_TICKETS_TLS1_3_MASK \
+    (1 << MBEDTLS_SSL_SESSION_TICKETS_TLS1_3_BIT)
+
+#if defined(MBEDTLS_SSL_PROTO_TLS1_2)
+static inline int mbedtls_ssl_conf_get_session_tickets(
+    const mbedtls_ssl_config *conf)
+{
+    return conf->session_tickets & MBEDTLS_SSL_SESSION_TICKETS_TLS1_2_MASK ?
+           MBEDTLS_SSL_SESSION_TICKETS_ENABLED :
+           MBEDTLS_SSL_SESSION_TICKETS_DISABLED;
+}
+#endif /* MBEDTLS_SSL_PROTO_TLS1_2 */
+
+#if defined(MBEDTLS_SSL_PROTO_TLS1_3)
+static inline int mbedtls_ssl_conf_is_signal_new_session_tickets_enabled(
+    const mbedtls_ssl_config *conf)
+{
+    return conf->session_tickets & MBEDTLS_SSL_SESSION_TICKETS_TLS1_3_MASK ?
+           MBEDTLS_SSL_TLS1_3_SIGNAL_NEW_SESSION_TICKETS_ENABLED :
+           MBEDTLS_SSL_TLS1_3_SIGNAL_NEW_SESSION_TICKETS_DISABLED;
+}
+#endif /* MBEDTLS_SSL_PROTO_TLS1_3 */
+#endif /* MBEDTLS_SSL_SESSION_TICKETS && MBEDTLS_SSL_CLI_C */
 
 #if defined(MBEDTLS_SSL_CLI_C) && defined(MBEDTLS_SSL_PROTO_TLS1_3)
 int mbedtls_ssl_tls13_finalize_client_hello(mbedtls_ssl_context *ssl);

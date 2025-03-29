@@ -38,12 +38,13 @@
 #include "servers/navigation_server_3d.h"
 #include "servers/rendering_server.h"
 
-// 2D
+#ifndef PHYSICS_2D_DISABLED
 #include "servers/physics_server_2d.h"
+#endif // PHYSICS_2D_DISABLED
 
-#ifndef _3D_DISABLED
+#ifndef PHYSICS_3D_DISABLED
 #include "servers/physics_server_3d.h"
-#endif // _3D_DISABLED
+#endif // PHYSICS_3D_DISABLED
 
 Performance *Performance::singleton = nullptr;
 
@@ -91,6 +92,12 @@ void Performance::_bind_methods() {
 	BIND_ENUM_CONSTANT(NAVIGATION_EDGE_MERGE_COUNT);
 	BIND_ENUM_CONSTANT(NAVIGATION_EDGE_CONNECTION_COUNT);
 	BIND_ENUM_CONSTANT(NAVIGATION_EDGE_FREE_COUNT);
+	BIND_ENUM_CONSTANT(NAVIGATION_OBSTACLE_COUNT);
+	BIND_ENUM_CONSTANT(PIPELINE_COMPILATIONS_CANVAS);
+	BIND_ENUM_CONSTANT(PIPELINE_COMPILATIONS_MESH);
+	BIND_ENUM_CONSTANT(PIPELINE_COMPILATIONS_SURFACE);
+	BIND_ENUM_CONSTANT(PIPELINE_COMPILATIONS_DRAW);
+	BIND_ENUM_CONSTANT(PIPELINE_COMPILATIONS_SPECIALIZATION);
 	BIND_ENUM_CONSTANT(MONITOR_MAX);
 }
 
@@ -126,11 +133,9 @@ String Performance::get_monitor_name(Monitor p_monitor) const {
 		PNAME("physics_2d/active_objects"),
 		PNAME("physics_2d/collision_pairs"),
 		PNAME("physics_2d/islands"),
-#ifndef _3D_DISABLED
 		PNAME("physics_3d/active_objects"),
 		PNAME("physics_3d/collision_pairs"),
 		PNAME("physics_3d/islands"),
-#endif // _3D_DISABLED
 		PNAME("audio/driver/output_latency"),
 		PNAME("navigation/active_maps"),
 		PNAME("navigation/regions"),
@@ -141,8 +146,14 @@ String Performance::get_monitor_name(Monitor p_monitor) const {
 		PNAME("navigation/edges_merged"),
 		PNAME("navigation/edges_connected"),
 		PNAME("navigation/edges_free"),
-
+		PNAME("navigation/obstacles"),
+		PNAME("pipeline/compilations_canvas"),
+		PNAME("pipeline/compilations_mesh"),
+		PNAME("pipeline/compilations_surface"),
+		PNAME("pipeline/compilations_draw"),
+		PNAME("pipeline/compilations_specialization"),
 	};
+	static_assert(std::size(names) == MONITOR_MAX);
 
 	return names[p_monitor];
 }
@@ -183,27 +194,46 @@ double Performance::get_monitor(Monitor p_monitor) const {
 			return RS::get_singleton()->get_rendering_info(RS::RENDERING_INFO_TEXTURE_MEM_USED);
 		case RENDER_BUFFER_MEM_USED:
 			return RS::get_singleton()->get_rendering_info(RS::RENDERING_INFO_BUFFER_MEM_USED);
+		case PIPELINE_COMPILATIONS_CANVAS:
+			return RS::get_singleton()->get_rendering_info(RS::RENDERING_INFO_PIPELINE_COMPILATIONS_CANVAS);
+		case PIPELINE_COMPILATIONS_MESH:
+			return RS::get_singleton()->get_rendering_info(RS::RENDERING_INFO_PIPELINE_COMPILATIONS_MESH);
+		case PIPELINE_COMPILATIONS_SURFACE:
+			return RS::get_singleton()->get_rendering_info(RS::RENDERING_INFO_PIPELINE_COMPILATIONS_SURFACE);
+		case PIPELINE_COMPILATIONS_DRAW:
+			return RS::get_singleton()->get_rendering_info(RS::RENDERING_INFO_PIPELINE_COMPILATIONS_DRAW);
+		case PIPELINE_COMPILATIONS_SPECIALIZATION:
+			return RS::get_singleton()->get_rendering_info(RS::RENDERING_INFO_PIPELINE_COMPILATIONS_SPECIALIZATION);
+#ifndef PHYSICS_2D_DISABLED
 		case PHYSICS_2D_ACTIVE_OBJECTS:
 			return PhysicsServer2D::get_singleton()->get_process_info(PhysicsServer2D::INFO_ACTIVE_OBJECTS);
 		case PHYSICS_2D_COLLISION_PAIRS:
 			return PhysicsServer2D::get_singleton()->get_process_info(PhysicsServer2D::INFO_COLLISION_PAIRS);
 		case PHYSICS_2D_ISLAND_COUNT:
 			return PhysicsServer2D::get_singleton()->get_process_info(PhysicsServer2D::INFO_ISLAND_COUNT);
-#ifdef _3D_DISABLED
-		case PHYSICS_3D_ACTIVE_OBJECTS:
-			return 0;
-		case PHYSICS_3D_COLLISION_PAIRS:
-			return 0;
-		case PHYSICS_3D_ISLAND_COUNT:
-			return 0;
 #else
+		case PHYSICS_2D_ACTIVE_OBJECTS:
+			return 0;
+		case PHYSICS_2D_COLLISION_PAIRS:
+			return 0;
+		case PHYSICS_2D_ISLAND_COUNT:
+			return 0;
+#endif // PHYSICS_2D_DISABLED
+#ifndef PHYSICS_3D_DISABLED
 		case PHYSICS_3D_ACTIVE_OBJECTS:
 			return PhysicsServer3D::get_singleton()->get_process_info(PhysicsServer3D::INFO_ACTIVE_OBJECTS);
 		case PHYSICS_3D_COLLISION_PAIRS:
 			return PhysicsServer3D::get_singleton()->get_process_info(PhysicsServer3D::INFO_COLLISION_PAIRS);
 		case PHYSICS_3D_ISLAND_COUNT:
 			return PhysicsServer3D::get_singleton()->get_process_info(PhysicsServer3D::INFO_ISLAND_COUNT);
-#endif // _3D_DISABLED
+#else
+		case PHYSICS_3D_ACTIVE_OBJECTS:
+			return 0;
+		case PHYSICS_3D_COLLISION_PAIRS:
+			return 0;
+		case PHYSICS_3D_ISLAND_COUNT:
+			return 0;
+#endif // PHYSICS_3D_DISABLED
 
 		case AUDIO_OUTPUT_LATENCY:
 			return AudioServer::get_singleton()->get_output_latency();
@@ -225,6 +255,8 @@ double Performance::get_monitor(Monitor p_monitor) const {
 			return NavigationServer3D::get_singleton()->get_process_info(NavigationServer3D::INFO_EDGE_CONNECTION_COUNT);
 		case NAVIGATION_EDGE_FREE_COUNT:
 			return NavigationServer3D::get_singleton()->get_process_info(NavigationServer3D::INFO_EDGE_FREE_COUNT);
+		case NAVIGATION_OBSTACLE_COUNT:
+			return NavigationServer3D::get_singleton()->get_process_info(NavigationServer3D::INFO_OBSTACLE_COUNT);
 
 		default: {
 		}
@@ -257,12 +289,16 @@ Performance::MonitorType Performance::get_monitor_type(Monitor p_monitor) const 
 		MONITOR_TYPE_QUANTITY,
 		MONITOR_TYPE_QUANTITY,
 		MONITOR_TYPE_QUANTITY,
-#ifndef _3D_DISABLED
 		MONITOR_TYPE_QUANTITY,
 		MONITOR_TYPE_QUANTITY,
 		MONITOR_TYPE_QUANTITY,
-#endif // _3D_DISABLED
 		MONITOR_TYPE_TIME,
+		MONITOR_TYPE_QUANTITY,
+		MONITOR_TYPE_QUANTITY,
+		MONITOR_TYPE_QUANTITY,
+		MONITOR_TYPE_QUANTITY,
+		MONITOR_TYPE_QUANTITY,
+		MONITOR_TYPE_QUANTITY,
 		MONITOR_TYPE_QUANTITY,
 		MONITOR_TYPE_QUANTITY,
 		MONITOR_TYPE_QUANTITY,
@@ -274,6 +310,7 @@ Performance::MonitorType Performance::get_monitor_type(Monitor p_monitor) const 
 		MONITOR_TYPE_QUANTITY,
 
 	};
+	static_assert((sizeof(types) / sizeof(MonitorType)) == MONITOR_MAX);
 
 	return types[p_monitor];
 }

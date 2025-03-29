@@ -141,22 +141,15 @@ void EditorZoomWidget::set_zoom_by_increments(int p_increment_count, bool p_inte
 			}
 		}
 	} else {
-		// Base increment factor defined as the twelveth root of two.
-		// This allows for a smooth geometric evolution of the zoom, with the advantage of
-		// visiting all integer power of two scale factors.
-		// Note: this is analogous to the 'semitone' interval in the music world
-		// In order to avoid numerical imprecisions, we compute and edit a zoom index
-		// with the following relation: zoom = 2 ^ (index / 12)
-
 		if (zoom < CMP_EPSILON || p_increment_count == 0) {
 			return;
 		}
 
-		// zoom = 2**(index/12) => log2(zoom) = index/12
-		float closest_zoom_index = Math::round(Math::log(zoom_noscale) * 12.f / Math::log(2.f));
-
-		float new_zoom_index = closest_zoom_index + p_increment_count;
-		float new_zoom = Math::pow(2.f, new_zoom_index / 12.f);
+		// Zoom is calculated as pow(zoom_factor, zoom_step).
+		// This ensures the zoom will always equal 100% when zoom_step is 0.
+		float zoom_factor = EDITOR_GET("editors/2d/zoom_speed_factor");
+		float current_zoom_step = Math::round(Math::log(zoom_noscale) / Math::log(zoom_factor));
+		float new_zoom = Math::pow(zoom_factor, current_zoom_step + p_increment_count);
 
 		// Restore Editor scale transformation.
 		new_zoom *= MAX(1, EDSCALE);
@@ -169,8 +162,8 @@ void EditorZoomWidget::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
-			zoom_minus->set_icon(get_editor_theme_icon(SNAME("ZoomLess")));
-			zoom_plus->set_icon(get_editor_theme_icon(SNAME("ZoomMore")));
+			zoom_minus->set_button_icon(get_editor_theme_icon(SNAME("ZoomLess")));
+			zoom_plus->set_button_icon(get_editor_theme_icon(SNAME("ZoomMore")));
 		} break;
 	}
 }
@@ -195,7 +188,7 @@ EditorZoomWidget::EditorZoomWidget() {
 	// Zoom buttons
 	zoom_minus = memnew(Button);
 	zoom_minus->set_flat(true);
-	zoom_minus->set_shortcut(ED_SHORTCUT_ARRAY("canvas_item_editor/zoom_minus", TTR("Zoom Out"), { int32_t(KeyModifierMask::CMD_OR_CTRL | Key::MINUS), int32_t(KeyModifierMask::CMD_OR_CTRL | Key::KP_SUBTRACT) }));
+	zoom_minus->set_shortcut(ED_SHORTCUT_ARRAY("canvas_item_editor/zoom_minus", TTRC("Zoom Out"), { int32_t(KeyModifierMask::CMD_OR_CTRL | Key::MINUS), int32_t(KeyModifierMask::CMD_OR_CTRL | Key::KP_SUBTRACT) }));
 	zoom_minus->set_shortcut_context(this);
 	zoom_minus->set_focus_mode(FOCUS_NONE);
 	add_child(zoom_minus);
@@ -206,7 +199,7 @@ EditorZoomWidget::EditorZoomWidget() {
 
 	Ref<StyleBoxEmpty> empty_stylebox = memnew(StyleBoxEmpty);
 	zoom_reset->add_theme_style_override(CoreStringName(normal), empty_stylebox);
-	zoom_reset->add_theme_style_override("hover", empty_stylebox);
+	zoom_reset->add_theme_style_override(SceneStringName(hover), empty_stylebox);
 	zoom_reset->add_theme_style_override("focus", empty_stylebox);
 	zoom_reset->add_theme_style_override(SceneStringName(pressed), empty_stylebox);
 	zoom_reset->add_theme_constant_override("outline_size", Math::ceil(2 * EDSCALE));
@@ -224,7 +217,7 @@ EditorZoomWidget::EditorZoomWidget() {
 
 	zoom_plus = memnew(Button);
 	zoom_plus->set_flat(true);
-	zoom_plus->set_shortcut(ED_SHORTCUT_ARRAY("canvas_item_editor/zoom_plus", TTR("Zoom In"), { int32_t(KeyModifierMask::CMD_OR_CTRL | Key::EQUAL), int32_t(KeyModifierMask::CMD_OR_CTRL | Key::KP_ADD) }));
+	zoom_plus->set_shortcut(ED_SHORTCUT_ARRAY("canvas_item_editor/zoom_plus", TTRC("Zoom In"), { int32_t(KeyModifierMask::CMD_OR_CTRL | Key::EQUAL), int32_t(KeyModifierMask::CMD_OR_CTRL | Key::KP_ADD) }));
 	zoom_plus->set_shortcut_context(this);
 	zoom_plus->set_focus_mode(FOCUS_NONE);
 	add_child(zoom_plus);

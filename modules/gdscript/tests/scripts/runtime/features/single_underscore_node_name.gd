@@ -12,4 +12,4 @@ func test() -> void:
     node1.add_child(node2)
     add_child(node3)
 
-    assert(get_node("_/Child") == $_/Child)
+    Utils.check(get_node("_/Child") == $_/Child)

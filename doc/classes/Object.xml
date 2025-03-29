@@ -22,6 +22,7 @@
 		Lastly, every object can also contain metadata (data about data). [method set_meta] can be useful to store information that the object itself does not depend on. To keep your code clean, making excessive use of metadata is discouraged.
 		[b]Note:[/b] Unlike references to a [RefCounted], references to an object stored in a variable can become invalid without being set to [code]null[/code]. To check if an object has been deleted, do [i]not[/i] compare it against [code]null[/code]. Instead, use [method @GlobalScope.is_instance_valid]. It's also recommended to inherit from [RefCounted] for classes storing data instead of [Object].
 		[b]Note:[/b] The [code]script[/code] is not exposed like most properties. To set or get an object's [Script] in code, use [method set_script] and [method get_script], respectively.
+		[b]Note:[/b] In a boolean context, an [Object] will evaluate to [code]false[/code] if it is equal to [code]null[/code] or it has been freed. Otherwise, an [Object] will always evaluate to [code]true[/code]. See also [method @GlobalScope.is_instance_valid].
 	</description>
 	<tutorials>
 		<link title="Object class introduction">$DOCS_URL/contributing/development/core_and_modules/object_class.html</link>
@@ -60,14 +61,14 @@
 
 				public override Godot.Collections.Array&lt;Godot.Collections.Dictionary&gt; _GetPropertyList()
 				{
-				    return new Godot.Collections.Array&lt;Godot.Collections.Dictionary&gt;()
-				    {
+				    return
+				    [
 				        new Godot.Collections.Dictionary()
 				        {
 				            { "name", "FakeProperty" },
-				            { "type", (int)Variant.Type.Int }
-				        }
-				    };
+				            { "type", (int)Variant.Type.Int },
+				        },
+				    ];
 				}
 				[/csharp]
 				[/codeblocks]
@@ -136,11 +137,11 @@
 				        }
 				    }
 
-				    private List&lt;int&gt; _numbers = new();
+				    private Godot.Collections.Array&lt;int&gt; _numbers = [];
 
 				    public override Godot.Collections.Array&lt;Godot.Collections.Dictionary&gt; _GetPropertyList()
 				    {
-				        var properties = new Godot.Collections.Array&lt;Godot.Collections.Dictionary&gt;();
+				        Godot.Collections.Array&lt;Godot.Collections.Dictionary&gt; properties = [];
 
 				        for (int i = 0; i &lt; _numberCount; i++)
 				        {
@@ -173,7 +174,7 @@
 				        if (propertyName.StartsWith("number_"))
 				        {
 				            int index = int.Parse(propertyName.Substring("number_".Length));
-				            numbers[index] = value.As&lt;int&gt;();
+				            _numbers[index] = value.As&lt;int&gt;();
 				            return true;
 				        }
 				        return false;
@@ -190,6 +191,55 @@
 			<description>
 				Called when the object's script is instantiated, oftentimes after the object is initialized in memory (through [code]Object.new()[/code] in GDScript, or [code]new GodotObject[/code] in C#). It can be also defined to take in parameters. This method is similar to a constructor in most programming languages.
 				[b]Note:[/b] If [method _init] is defined with [i]required[/i] parameters, the Object with script may only be created directly. If any other means (such as [method PackedScene.instantiate] or [method Node.duplicate]) are used, the script's initialization will fail.
+			</description>
+		</method>
+		<method name="_iter_get" qualifiers="virtual">
+			<return type="Variant" />
+			<param index="0" name="iter" type="Variant" />
+			<description>
+				Returns the current iterable value. [param iter] stores the iteration state, but unlike [method _iter_init] and [method _iter_next] the state is supposed to be read-only, so there is no [Array] wrapper.
+			</description>
+		</method>
+		<method name="_iter_init" qualifiers="virtual">
+			<return type="bool" />
+			<param index="0" name="iter" type="Array" />
+			<description>
+				Initializes the iterator. [param iter] stores the iteration state. Since GDScript does not support passing arguments by reference, a single-element array is used as a wrapper. Returns [code]true[/code] so long as the iterator has not reached the end.
+				Example:
+				[codeblock]
+				class MyRange:
+				    var _from
+				    var _to
+
+				    func _init(from, to):
+				        assert(from &lt;= to)
+				        _from = from
+				        _to = to
+
+				    func _iter_init(iter):
+				        iter[0] = _from
+				        return iter[0] &lt; _to
+
+				    func _iter_next(iter):
+				        iter[0] += 1
+				        return iter[0] &lt; _to
+
+				    func _iter_get(iter):
+				        return iter
+
+				func _ready():
+				    var my_range = MyRange.new(2, 5)
+				    for x in my_range:
+				        print(x) # Prints 2, 3, 4.
+				[/codeblock]
+				[b]Note:[/b] Alternatively, you can ignore [param iter] and use the object's state instead, see [url=$DOCS_URL/tutorials/scripting/gdscript/gdscript_advanced.html#custom-iterators]online docs[/url] for an example. Note that in this case you will not be able to reuse the same iterator instance in nested loops. Also, make sure you reset the iterator state in this method if you want to reuse the same instance multiple times.
+			</description>
+		</method>
+		<method name="_iter_next" qualifiers="virtual">
+			<return type="bool" />
+			<param index="0" name="iter" type="Array" />
+			<description>
+				Moves the iterator to the next iteration. [param iter] stores the iteration state. Since GDScript does not support passing arguments by reference, a single-element array is used as a wrapper. Returns [code]true[/code] so long as the iterator has not reached the end.
 			</description>
 		</method>
 		<method name="_notification" qualifiers="virtual">
@@ -272,14 +322,14 @@
 
 				public override Godot.Collections.Array&lt;Godot.Collections.Dictionary&gt; _GetPropertyList()
 				{
-				    return new Godot.Collections.Array&lt;Godot.Collections.Dictionary&gt;()
-				    {
+				    return
+				    [
 				        new Godot.Collections.Dictionary()
 				        {
 				            { "name", "FakeProperty" },
-				            { "type", (int)Variant.Type.Int }
-				        }
-				    };
+				            { "type", (int)Variant.Type.Int },
+				        },
+				    ];
 				}
 				[/csharp]
 				[/codeblocks]
@@ -294,7 +344,7 @@
 				    return "Welcome to Godot 4!"
 
 				func _init():
-				    print(self)       # Prints Welcome to Godot 4!"
+				    print(self)       # Prints "Welcome to Godot 4!"
 				    var a = str(self) # a is "Welcome to Godot 4!"
 				[/codeblock]
 			</description>
@@ -357,7 +407,7 @@
 			<param index="0" name="signal" type="String" />
 			<param index="1" name="arguments" type="Array" default="[]" />
 			<description>
-				Adds a user-defined [param signal]. Optional arguments for the signal can be added as an [Array] of dictionaries, each defining a [code]name[/code] [String] and a [code]type[/code] [int] (see [enum Variant.Type]). See also [method has_user_signal] and [method remove_user_signal].
+				Adds a user-defined signal named [param signal]. Optional arguments for the signal can be added as an [Array] of dictionaries, each defining a [code]name[/code] [String] and a [code]type[/code] [int] (see [enum Variant.Type]). See also [method has_user_signal] and [method remove_user_signal].
 				[codeblocks]
 				[gdscript]
 				add_user_signal("hurt", [
@@ -366,19 +416,19 @@
 				])
 				[/gdscript]
 				[csharp]
-				AddUserSignal("Hurt", new Godot.Collections.Array()
-				{
+				AddUserSignal("Hurt",
+				[
 				    new Godot.Collections.Dictionary()
 				    {
 				        { "name", "damage" },
-				        { "type", (int)Variant.Type.Int }
+				        { "type", (int)Variant.Type.Int },
 				    },
 				    new Godot.Collections.Dictionary()
 				    {
 				        { "name", "source" },
-				        { "type", (int)Variant.Type.Object }
-				    }
-				});
+				        { "type", (int)Variant.Type.Object },
+				    },
+				]);
 				[/csharp]
 				[/codeblocks]
 			</description>
@@ -405,7 +455,7 @@
 			<return type="Variant" />
 			<param index="0" name="method" type="StringName" />
 			<description>
-				Calls the [param method] on the object during idle time. Always returns null, [b]not[/b] the method's result.
+				Calls the [param method] on the object during idle time. Always returns [code]null[/code], [b]not[/b] the method's result.
 				Idle time happens mainly at the end of process and physics frames. In it, deferred calls will be run until there are none left, which means you can defer calls from other deferred calls and they'll still be run in the current idle time cycle. This means you should not call a method deferred from itself (or from a method called by it), as this causes infinite recursion the same way as if you had called the method directly.
 				This method supports a variable number of arguments, so parameters can be passed as a comma separated list.
 				[codeblocks]
@@ -444,7 +494,7 @@
 				[/gdscript]
 				[csharp]
 				var node = new Node3D();
-				node.Callv(Node3D.MethodName.Rotate, new Godot.Collections.Array { new Vector3(1f, 0f, 0f), 1.571f });
+				node.Callv(Node3D.MethodName.Rotate, [new Vector3(1f, 0f, 0f), 1.571f]);
 				[/csharp]
 				[/codeblocks]
 				[b]Note:[/b] In C#, [param method] must be in snake_case when referring to built-in Godot methods. Prefer using the names exposed in the [code]MethodName[/code] class to avoid allocating a new [StringName] on each call.
@@ -709,7 +759,7 @@
 		<method name="get_meta_list" qualifiers="const">
 			<return type="StringName[]" />
 			<description>
-				Returns the object's metadata entry names as a [PackedStringArray].
+				Returns the object's metadata entry names as an [Array] of [StringName]s.
 			</description>
 		</method>
 		<method name="get_method_argument_count" qualifiers="const">
@@ -769,6 +819,20 @@
 				[b]Note:[/b] Due of the implementation, each [Dictionary] is formatted very similarly to the returned values of [method get_method_list].
 			</description>
 		</method>
+		<method name="get_translation_domain" qualifiers="const">
+			<return type="StringName" />
+			<description>
+				Returns the name of the translation domain used by [method tr] and [method tr_n]. See also [TranslationServer].
+			</description>
+		</method>
+		<method name="has_connections" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="signal" type="StringName" />
+			<description>
+				Returns [code]true[/code] if any connection exists on the given [param signal] name.
+				[b]Note:[/b] In C#, [param signal] must be in snake_case when referring to built-in Godot methods. Prefer using the names exposed in the [code]SignalName[/code] class to avoid allocating a new [StringName] on each call.
+			</description>
+		</method>
 		<method name="has_meta" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="name" type="StringName" />
@@ -791,7 +855,7 @@
 			<param index="0" name="signal" type="StringName" />
 			<description>
 				Returns [code]true[/code] if the given [param signal] name exists in the object.
-				[b]Note:[/b] In C#, [param signal] must be in snake_case when referring to built-in Godot methods. Prefer using the names exposed in the [code]SignalName[/code] class to avoid allocating a new [StringName] on each call.
+				[b]Note:[/b] In C#, [param signal] must be in snake_case when referring to built-in Godot signals. Prefer using the names exposed in the [code]SignalName[/code] class to avoid allocating a new [StringName] on each call.
 			</description>
 		</method>
 		<method name="has_user_signal" qualifiers="const">
@@ -835,7 +899,7 @@
 			<param index="1" name="callable" type="Callable" />
 			<description>
 				Returns [code]true[/code] if a connection exists between the given [param signal] name and [param callable].
-				[b]Note:[/b] In C#, [param signal] must be in snake_case when referring to built-in Godot methods. Prefer using the names exposed in the [code]SignalName[/code] class to avoid allocating a new [StringName] on each call.
+				[b]Note:[/b] In C#, [param signal] must be in snake_case when referring to built-in Godot signals. Prefer using the names exposed in the [code]SignalName[/code] class to avoid allocating a new [StringName] on each call.
 			</description>
 		</method>
 		<method name="is_queued_for_deletion" qualifiers="const">
@@ -923,12 +987,12 @@
 				[gdscript]
 				var node = Node2D.new()
 				node.set("global_scale", Vector2(8, 2.5))
-				print(node.global_scale) # Prints (8, 2.5)
+				print(node.global_scale) # Prints (8.0, 2.5)
 				[/gdscript]
 				[csharp]
 				var node = new Node2D();
-				node.Set(Node2D.PropertyName.GlobalScale, new Vector2(8, 2.5));
-				GD.Print(node.GlobalScale); // Prints Vector2(8, 2.5)
+				node.Set(Node2D.PropertyName.GlobalScale, new Vector2(8, 2.5f));
+				GD.Print(node.GlobalScale); // Prints (8, 2.5)
 				[/csharp]
 				[/codeblocks]
 				[b]Note:[/b] In C#, [param property] must be in snake_case when referring to built-in Godot properties. Prefer using the names exposed in the [code]PropertyName[/code] class to avoid allocating a new [StringName] on each call.
@@ -983,7 +1047,7 @@
 				var node = Node2D.new()
 				node.set_indexed("position", Vector2(42, 0))
 				node.set_indexed("position:y", -10)
-				print(node.position) # Prints (42, -10)
+				print(node.position) # Prints (42.0, -10.0)
 				[/gdscript]
 				[csharp]
 				var node = new Node2D();
@@ -1019,6 +1083,13 @@
 			<description>
 				Attaches [param script] to the object, and instantiates it. As a result, the script's [method _init] is called. A [Script] is used to extend the object's functionality.
 				If a script already exists, its instance is detached, and its property values and state are lost. Built-in property values are still kept.
+			</description>
+		</method>
+		<method name="set_translation_domain">
+			<return type="void" />
+			<param index="0" name="domain" type="StringName" />
+			<description>
+				Sets the name of the translation domain used by [method tr] and [method tr_n]. See also [TranslationServer].
 			</description>
 		</method>
 		<method name="to_string">
@@ -1072,7 +1143,7 @@
 			Notification received when the object is initialized, before its script is attached. Used internally.
 		</constant>
 		<constant name="NOTIFICATION_PREDELETE" value="1">
-			Notification received when the object is about to be deleted. Can act as the deconstructor of some programming languages.
+			Notification received when the object is about to be deleted. Can be used like destructors in object-oriented programming languages.
 		</constant>
 		<constant name="NOTIFICATION_EXTENSION_RELOADED" value="2">
 			Notification received when the object finishes hot reloading. This notification is only sent for extensions classes and derived.

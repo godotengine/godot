@@ -63,7 +63,7 @@ void TTS_Linux::speech_init_thread_func(void *p_userdata) {
 			} else {
 				class_str = config_name.utf8();
 			}
-			tts->synth = spd_open(class_str, "Godot_Engine_Speech_API", "Godot_Engine", SPD_MODE_THREADED);
+			tts->synth = spd_open(class_str.get_data(), "Godot_Engine_Speech_API", "Godot_Engine", SPD_MODE_THREADED);
 			if (tts->synth) {
 				tts->synth->callback_end = &speech_event_callback;
 				tts->synth->callback_cancel = &speech_event_callback;
@@ -101,7 +101,7 @@ void TTS_Linux::speech_event_callback(size_t p_msg_id, size_t p_client_id, SPDNo
 	}
 }
 
-void TTS_Linux::_load_voices() {
+void TTS_Linux::_load_voices() const {
 	if (!voices_loaded) {
 		SPDVoice **spd_voices = spd_list_synthesis_voices(synth);
 		if (spd_voices != nullptr) {
@@ -193,7 +193,7 @@ Array TTS_Linux::get_voices() const {
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_NULL_V(synth, Array());
-	const_cast<TTS_Linux *>(this)->_load_voices();
+	_load_voices();
 
 	Array list;
 	for (const KeyValue<String, VoiceInfo> &E : voices) {

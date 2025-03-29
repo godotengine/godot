@@ -30,8 +30,6 @@
 
 #include "tile_atlas_view.h"
 
-#include "core/input/input.h"
-#include "core/os/keyboard.h"
 #include "editor/editor_settings.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/2d/tile_map.h"
@@ -41,7 +39,7 @@
 #include "scene/gui/view_panner.h"
 
 void TileAtlasView::gui_input(const Ref<InputEvent> &p_event) {
-	if (panner->gui_input(p_event)) {
+	if (panner->gui_input(p_event, get_global_rect())) {
 		accept_event();
 	}
 }
@@ -372,7 +370,7 @@ void TileAtlasView::_draw_base_tiles_shape_grid() {
 	for (int i = 0; i < tile_set_atlas_source->get_tiles_count(); i++) {
 		Vector2i tile_id = tile_set_atlas_source->get_tile_id(i);
 		Vector2 in_tile_base_offset = tile_set_atlas_source->get_tile_data(tile_id, 0)->get_texture_origin();
-		if (tile_set_atlas_source->is_position_in_tile_texture_region(tile_id, 0, -tile_shape_size / 2) && tile_set_atlas_source->is_position_in_tile_texture_region(tile_id, 0, tile_shape_size / 2 - Vector2(1, 1))) {
+		if (tile_set_atlas_source->is_rect_in_tile_texture_region(tile_id, 0, Rect2(Vector2(-tile_shape_size) / 2, tile_shape_size))) {
 			for (int frame = 0; frame < tile_set_atlas_source->get_tile_animation_frames_count(tile_id); frame++) {
 				Color color = grid_color;
 				if (frame > 0) {
@@ -496,13 +494,13 @@ void TileAtlasView::set_atlas_source(TileSet *p_tile_set, TileSetAtlasSource *p_
 
 float TileAtlasView::get_zoom() const {
 	return zoom_widget->get_zoom();
-};
+}
 
 void TileAtlasView::set_transform(float p_zoom, Vector2i p_panning) {
 	zoom_widget->set_zoom(p_zoom);
 	panning = p_panning;
 	_update_zoom_and_panning();
-};
+}
 
 void TileAtlasView::set_padding(Side p_side, int p_padding) {
 	ERR_FAIL_COND(p_padding < 0);
@@ -515,7 +513,7 @@ Vector2i TileAtlasView::get_atlas_tile_coords_at_pos(const Vector2 p_pos, bool p
 	}
 
 	Ref<Texture2D> texture = tile_set_atlas_source->get_texture();
-	if (!texture.is_valid()) {
+	if (texture.is_null()) {
 		return TileSetSource::INVALID_ATLAS_COORDS;
 	}
 
@@ -615,10 +613,11 @@ void TileAtlasView::_notification(int p_what) {
 		}
 		case NOTIFICATION_ENTER_TREE: {
 			panner->setup((ViewPanner::ControlScheme)EDITOR_GET("editors/panning/sub_editors_panning_scheme").operator int(), ED_GET_SHORTCUT("canvas_item_editor/pan_view"), bool(EDITOR_GET("editors/panning/simple_panning")));
+			panner->setup_warped_panning(get_viewport(), EDITOR_GET("editors/panning/warped_mouse_panning"));
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
-			button_center_view->set_icon(theme_cache.center_view_icon);
+			button_center_view->set_button_icon(theme_cache.center_view_icon);
 		} break;
 	}
 }

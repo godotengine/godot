@@ -51,6 +51,7 @@
 				Returns the acceleration in m/s² of the device's accelerometer sensor, if the device has one. Otherwise, the method returns [constant Vector3.ZERO].
 				Note this method returns an empty [Vector3] when running from the editor even when your device has an accelerometer. You must export your project to a supported device to read values from the accelerometer.
 				[b]Note:[/b] This method only works on Android and iOS. On other platforms, it always returns [constant Vector3.ZERO].
+				[b]Note:[/b] For Android, [member ProjectSettings.input_devices/sensors/enable_accelerometer] must be enabled.
 			</description>
 		</method>
 		<method name="get_action_raw_strength" qualifiers="const">
@@ -97,6 +98,7 @@
 			<description>
 				Returns the gravity in m/s² of the device's accelerometer sensor, if the device has one. Otherwise, the method returns [constant Vector3.ZERO].
 				[b]Note:[/b] This method only works on Android and iOS. On other platforms, it always returns [constant Vector3.ZERO].
+				[b]Note:[/b] For Android, [member ProjectSettings.input_devices/sensors/enable_gravity] must be enabled.
 			</description>
 		</method>
 		<method name="get_gyroscope" qualifiers="const">
@@ -104,6 +106,7 @@
 			<description>
 				Returns the rotation rate in rad/s around a device's X, Y, and Z axes of the gyroscope sensor, if the device has one. Otherwise, the method returns [constant Vector3.ZERO].
 				[b]Note:[/b] This method only works on Android and iOS. On other platforms, it always returns [constant Vector3.ZERO].
+				[b]Note:[/b] For Android, [member ProjectSettings.input_devices/sensors/enable_gyroscope] must be enabled.
 			</description>
 		</method>
 		<method name="get_joy_axis" qualifiers="const">
@@ -118,7 +121,8 @@
 			<return type="String" />
 			<param index="0" name="device" type="int" />
 			<description>
-				Returns an SDL2-compatible device GUID on platforms that use gamepad remapping, e.g. [code]030000004c050000c405000000010000[/code]. Returns [code]"Default Gamepad"[/code] otherwise. Godot uses the [url=https://github.com/gabomdq/SDL_GameControllerDB]SDL2 game controller database[/url] to determine gamepad names and mappings based on this GUID.
+				Returns an SDL2-compatible device GUID on platforms that use gamepad remapping, e.g. [code]030000004c050000c405000000010000[/code]. Returns an empty string if it cannot be found. Godot uses the [url=https://github.com/gabomdq/SDL_GameControllerDB]SDL2 game controller database[/url] to determine gamepad names and mappings based on this GUID.
+				On Windows, all XInput joypad GUIDs will be overridden by Godot to [code]__XINPUT_DEVICE__[/code], because their mappings are the same.
 			</description>
 		</method>
 		<method name="get_joy_info" qualifiers="const">
@@ -126,13 +130,16 @@
 			<param index="0" name="device" type="int" />
 			<description>
 				Returns a dictionary with extra platform-specific information about the device, e.g. the raw gamepad name from the OS or the Steam Input index.
-				On Windows the dictionary contains the following fields:
-				[code]xinput_index[/code]: The index of the controller in the XInput system.
+				On Windows, the dictionary contains the following fields:
+				[code]xinput_index[/code]: The index of the controller in the XInput system. Undefined for DirectInput devices.
+				[code]vendor_id[/code]: The USB vendor ID of the device.
+				[code]product_id[/code]: The USB product ID of the device.
 				On Linux:
 				[code]raw_name[/code]: The name of the controller as it came from the OS, before getting renamed by the godot controller database.
 				[code]vendor_id[/code]: The USB vendor ID of the device.
 				[code]product_id[/code]: The USB product ID of the device.
 				[code]steam_input_index[/code]: The Steam Input gamepad index, if the device is not a Steam Input device this key won't be present.
+				[b]Note:[/b] The returned dictionary is always empty on Web, iOS, Android, and macOS.
 			</description>
 		</method>
 		<method name="get_joy_name">
@@ -173,6 +180,7 @@
 			<description>
 				Returns the magnetic field strength in micro-Tesla for all axes of the device's magnetometer sensor, if the device has one. Otherwise, the method returns [constant Vector3.ZERO].
 				[b]Note:[/b] This method only works on Android and iOS. On other platforms, it always returns [constant Vector3.ZERO].
+				[b]Note:[/b] For Android, [member ProjectSettings.input_devices/sensors/enable_magnetometer] must be enabled.
 			</description>
 		</method>
 		<method name="get_mouse_button_mask" qualifiers="const">
@@ -286,7 +294,6 @@
 			<param index="0" name="event" type="InputEvent" />
 			<description>
 				Feeds an [InputEvent] to the game. Can be used to artificially trigger input events from code. Also generates [method Node._input] calls.
-				[b]Example:[/b]
 				[codeblocks]
 				[gdscript]
 				var cancel_event = InputEventAction.new()
@@ -308,7 +315,8 @@
 			<return type="void" />
 			<param index="0" name="guid" type="String" />
 			<description>
-				Removes all mappings from the internal database that match the given GUID.
+				Removes all mappings from the internal database that match the given GUID. All currently connected joypads that use this GUID will become unmapped.
+				On Android, Godot will map to an internal fallback mapping.
 			</description>
 		</method>
 		<method name="set_accelerometer">
@@ -459,6 +467,9 @@
 		</constant>
 		<constant name="MOUSE_MODE_CONFINED_HIDDEN" value="4" enum="MouseMode">
 			Confines the mouse cursor to the game window, and make it hidden.
+		</constant>
+		<constant name="MOUSE_MODE_MAX" value="5" enum="MouseMode">
+			Max value of the [enum MouseMode].
 		</constant>
 		<constant name="CURSOR_ARROW" value="0" enum="CursorShape">
 			Arrow cursor. Standard, default pointing cursor.

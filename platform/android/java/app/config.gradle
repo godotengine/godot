@@ -12,7 +12,8 @@ ext.versions = [
     javaVersion        : JavaVersion.VERSION_17,
     // Also update 'platform/android/detect.py#get_ndk_version()' when this is updated.
     ndkVersion         : '23.2.8568313',
-    splashscreenVersion: '1.0.1'
+    splashscreenVersion: '1.0.1',
+    openxrVendorsVersion: '3.1.2-stable'
 
 ]
 
@@ -68,20 +69,6 @@ ext.getExportTargetSdkVersion = { ->
     } catch (NumberFormatException ignored) {
         return versions.targetSdk
     }
-}
-
-ext.getGodotEditorVersion = { ->
-    String editorVersion = project.hasProperty("godot_editor_version") ? project.property("godot_editor_version") : ""
-    if (editorVersion == null || editorVersion.isEmpty()) {
-        // Try the library version first
-        editorVersion = getGodotLibraryVersionName()
-
-        if (editorVersion.isEmpty()) {
-            // Fallback value.
-            editorVersion = "custom_build"
-        }
-    }
-    return editorVersion
 }
 
 ext.getGodotLibraryVersionCode = { ->
@@ -222,6 +209,30 @@ ext.getExportFilename = {
         exportFilename = "godot_android"
     }
     return exportFilename
+}
+
+ext.getExportEdition = {
+    String exportEdition = project.hasProperty("export_edition") ? project.property("export_edition") : ""
+    if (exportEdition == null || exportEdition.isEmpty()) {
+        exportEdition = "standard"
+    }
+    return exportEdition
+}
+
+ext.getExportBuildType = {
+    String exportBuildType = project.hasProperty("export_build_type") ? project.property("export_build_type") : ""
+    if (exportBuildType == null || exportBuildType.isEmpty()) {
+        exportBuildType = "debug"
+    }
+    return exportBuildType
+}
+
+ext.getExportFormat = {
+    String exportFormat = project.hasProperty("export_format") ? project.property("export_format") : ""
+    if (exportFormat == null || exportFormat.isEmpty()) {
+        exportFormat = "apk"
+    }
+    return exportFormat
 }
 
 /**
@@ -383,4 +394,9 @@ ext.shouldUseLegacyPackaging = { ->
 
     // Default behavior for minSdk >= 23
     return false
+}
+
+ext.getAddonsDirectory = { ->
+    String addonsDirectory = project.hasProperty("addons_directory") ? project.property("addons_directory") : ""
+    return addonsDirectory
 }

@@ -28,15 +28,12 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef EDITOR_FEATURE_PROFILE_H
-#define EDITOR_FEATURE_PROFILE_H
+#pragma once
 
-#include "core/io/file_access.h"
 #include "core/object/ref_counted.h"
 #include "editor/editor_help.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/option_button.h"
-#include "scene/gui/separator.h"
 #include "scene/gui/split_container.h"
 #include "scene/gui/tree.h"
 
@@ -55,6 +52,7 @@ public:
 		FEATURE_FILESYSTEM_DOCK,
 		FEATURE_IMPORT_DOCK,
 		FEATURE_HISTORY_DOCK,
+		FEATURE_GAME,
 		FEATURE_MAX
 	};
 
@@ -186,5 +184,3 @@ public:
 	static EditorFeatureProfileManager *get_singleton() { return singleton; }
 	EditorFeatureProfileManager();
 };
-
-#endif // EDITOR_FEATURE_PROFILE_H

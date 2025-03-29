@@ -28,18 +28,19 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef GODOT_NAVIGATION_SERVER_3D_H
-#define GODOT_NAVIGATION_SERVER_3D_H
+#pragma once
 
-#include "../nav_agent.h"
-#include "../nav_link.h"
-#include "../nav_map.h"
-#include "../nav_obstacle.h"
-#include "../nav_region.h"
+#include "../nav_agent_3d.h"
+#include "../nav_link_3d.h"
+#include "../nav_map_3d.h"
+#include "../nav_obstacle_3d.h"
+#include "../nav_region_3d.h"
 
 #include "core/templates/local_vector.h"
 #include "core/templates/rid.h"
 #include "core/templates/rid_owner.h"
+#include "servers/navigation/navigation_path_query_parameters_3d.h"
+#include "servers/navigation/navigation_path_query_result_3d.h"
 #include "servers/navigation_server_3d.h"
 
 /// The commands are functions executed during the `sync` phase.
@@ -60,8 +61,8 @@ class GodotNavigationServer3D;
 class NavMeshGenerator3D;
 #endif // _3D_DISABLED
 
-struct SetCommand {
-	virtual ~SetCommand() {}
+struct SetCommand3D {
+	virtual ~SetCommand3D() {}
 	virtual void exec(GodotNavigationServer3D *server) = 0;
 };
 
@@ -70,16 +71,16 @@ class GodotNavigationServer3D : public NavigationServer3D {
 	/// Mutex used to make any operation threadsafe.
 	Mutex operations_mutex;
 
-	LocalVector<SetCommand *> commands;
+	LocalVector<SetCommand3D *> commands;
 
-	mutable RID_Owner<NavLink> link_owner;
-	mutable RID_Owner<NavMap> map_owner;
-	mutable RID_Owner<NavRegion> region_owner;
-	mutable RID_Owner<NavAgent> agent_owner;
-	mutable RID_Owner<NavObstacle> obstacle_owner;
+	mutable RID_Owner<NavLink3D> link_owner;
+	mutable RID_Owner<NavMap3D> map_owner;
+	mutable RID_Owner<NavRegion3D> region_owner;
+	mutable RID_Owner<NavAgent3D> agent_owner;
+	mutable RID_Owner<NavObstacle3D> obstacle_owner;
 
 	bool active = true;
-	LocalVector<NavMap *> active_maps;
+	LocalVector<NavMap3D *> active_maps;
 	LocalVector<uint32_t> active_maps_iteration_id;
 
 #ifndef _3D_DISABLED
@@ -95,12 +96,13 @@ class GodotNavigationServer3D : public NavigationServer3D {
 	int pm_edge_merge_count = 0;
 	int pm_edge_connection_count = 0;
 	int pm_edge_free_count = 0;
+	int pm_obstacle_count = 0;
 
 public:
 	GodotNavigationServer3D();
 	virtual ~GodotNavigationServer3D();
 
-	void add_command(SetCommand *command);
+	void add_command(SetCommand3D *command);
 
 	virtual TypedArray<RID> get_maps() const override;
 
@@ -129,7 +131,7 @@ public:
 	COMMAND_2(map_set_link_connection_radius, RID, p_map, real_t, p_connection_radius);
 	virtual real_t map_get_link_connection_radius(RID p_map) const override;
 
-	virtual Vector<Vector3> map_get_path(RID p_map, Vector3 p_origin, Vector3 p_destination, bool p_optimize, uint32_t p_navigation_layers = 1) const override;
+	virtual Vector<Vector3> map_get_path(RID p_map, Vector3 p_origin, Vector3 p_destination, bool p_optimize, uint32_t p_navigation_layers = 1) override;
 
 	virtual Vector3 map_get_closest_point_to_segment(RID p_map, const Vector3 &p_from, const Vector3 &p_to, const bool p_use_collision = false) const override;
 	virtual Vector3 map_get_closest_point(RID p_map, const Vector3 &p_point) const override;
@@ -143,6 +145,9 @@ public:
 
 	virtual void map_force_update(RID p_map) override;
 	virtual uint32_t map_get_iteration_id(RID p_map) const override;
+
+	COMMAND_2(map_set_use_async_iterations, RID, p_map, bool, p_enabled);
+	virtual bool map_get_use_async_iterations(RID p_map) const override;
 
 	virtual Vector3 map_get_random_point(RID p_map, uint32_t p_navigation_layers, bool p_uniformly) const override;
 
@@ -177,7 +182,11 @@ public:
 	virtual int region_get_connections_count(RID p_region) const override;
 	virtual Vector3 region_get_connection_pathway_start(RID p_region, int p_connection_id) const override;
 	virtual Vector3 region_get_connection_pathway_end(RID p_region, int p_connection_id) const override;
+	virtual Vector3 region_get_closest_point_to_segment(RID p_region, const Vector3 &p_from, const Vector3 &p_to, bool p_use_collision = false) const override;
+	virtual Vector3 region_get_closest_point(RID p_region, const Vector3 &p_point) const override;
+	virtual Vector3 region_get_closest_point_normal(RID p_region, const Vector3 &p_point) const override;
 	virtual Vector3 region_get_random_point(RID p_region, uint32_t p_navigation_layers, bool p_uniformly) const override;
+	virtual AABB region_get_bounds(RID p_region) const override;
 
 	virtual RID link_create() override;
 	COMMAND_2(link_set_map, RID, p_link, RID, p_map);
@@ -269,10 +278,6 @@ public:
 
 	virtual Vector<Vector3> simplify_path(const Vector<Vector3> &p_path, real_t p_epsilon) override;
 
-private:
-	static void simplify_path_segment(int p_start_inx, int p_end_inx, const Vector<Vector3> &p_points, real_t p_epsilon, LocalVector<bool> &r_valid_points);
-	static LocalVector<uint32_t> get_simplified_path_indices(const Vector<Vector3> &p_path, real_t p_epsilon);
-
 public:
 	COMMAND_1(free, RID, p_object);
 
@@ -284,7 +289,7 @@ public:
 	virtual void sync() override;
 	virtual void finish() override;
 
-	virtual NavigationUtilities::PathQueryResult _query_path(const NavigationUtilities::PathQueryParameters &p_parameters) const override;
+	virtual void query_path(const Ref<NavigationPathQueryParameters3D> &p_query_parameters, Ref<NavigationPathQueryResult3D> p_query_result, const Callable &p_callback = Callable()) override;
 
 	int get_process_info(ProcessInfo p_info) const override;
 
@@ -295,5 +300,3 @@ private:
 
 #undef COMMAND_1
 #undef COMMAND_2
-
-#endif // GODOT_NAVIGATION_SERVER_3D_H

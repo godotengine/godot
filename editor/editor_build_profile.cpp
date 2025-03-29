@@ -30,16 +30,15 @@
 
 #include "editor_build_profile.h"
 
-#include "core/io/dir_access.h"
 #include "core/io/json.h"
 #include "editor/editor_file_system.h"
 #include "editor/editor_node.h"
 #include "editor/editor_paths.h"
-#include "editor/editor_property_name_processor.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
 #include "editor/gui/editor_file_dialog.h"
 #include "editor/themes/editor_scale.h"
+#include "scene/gui/separator.h"
 
 const char *EditorBuildProfile::build_option_identifiers[BUILD_OPTION_MAX] = {
 	// This maps to SCons build options.
@@ -47,7 +46,7 @@ const char *EditorBuildProfile::build_option_identifiers[BUILD_OPTION_MAX] = {
 	"disable_2d_physics",
 	"disable_3d_physics",
 	"disable_navigation",
-	"openxr",
+	"disable_xr",
 	"rendering_device", // FIXME: there's no scons option to disable rendering device
 	"opengl3",
 	"vulkan",
@@ -73,7 +72,7 @@ const bool EditorBuildProfile::build_option_disabled_by_default[BUILD_OPTION_MAX
 	false, // TEXT_SERVER_COMPLEX
 	false, // DYNAMIC_FONTS
 	false, // WOFF2_FONTS
-	false, // GRPAHITE_FONTS
+	false, // GRAPHITE_FONTS
 	false, // MSDFGEN
 };
 
@@ -83,7 +82,7 @@ const bool EditorBuildProfile::build_option_disable_values[BUILD_OPTION_MAX] = {
 	true, // PHYSICS_2D
 	true, // PHYSICS_3D
 	true, // NAVIGATION
-	false, // XR
+	true, // XR
 	false, // RENDERING_DEVICE
 	false, // OPENGL
 	false, // VULKAN
@@ -91,7 +90,7 @@ const bool EditorBuildProfile::build_option_disable_values[BUILD_OPTION_MAX] = {
 	false, // TEXT_SERVER_COMPLEX
 	false, // DYNAMIC_FONTS
 	false, // WOFF2_FONTS
-	false, // GRPAHITE_FONTS
+	false, // GRAPHITE_FONTS
 	false, // MSDFGEN
 };
 
@@ -108,7 +107,7 @@ const EditorBuildProfile::BuildOptionCategory EditorBuildProfile::build_option_c
 	BUILD_OPTION_CATEGORY_TEXT_SERVER, // TEXT_SERVER_COMPLEX
 	BUILD_OPTION_CATEGORY_TEXT_SERVER, // DYNAMIC_FONTS
 	BUILD_OPTION_CATEGORY_TEXT_SERVER, // WOFF2_FONTS
-	BUILD_OPTION_CATEGORY_TEXT_SERVER, // GRPAHITE_FONTS
+	BUILD_OPTION_CATEGORY_TEXT_SERVER, // GRAPHITE_FONTS
 	BUILD_OPTION_CATEGORY_TEXT_SERVER, // MSDFGEN
 };
 
@@ -298,11 +297,9 @@ Error EditorBuildProfile::load_from_file(const String &p_path) {
 
 	if (data.has("disabled_build_options")) {
 		Dictionary disabled_build_options_arr = data["disabled_build_options"];
-		List<Variant> keys;
-		disabled_build_options_arr.get_key_list(&keys);
 
-		for (const Variant &K : keys) {
-			String key = K;
+		for (const KeyValue<Variant, Variant> &kv : disabled_build_options_arr) {
+			String key = kv.key;
 
 			for (int i = 0; i < BUILD_OPTION_MAX; i++) {
 				String f = build_option_identifiers[i];
@@ -345,7 +342,7 @@ void EditorBuildProfile::_bind_methods() {
 	BIND_ENUM_CONSTANT(BUILD_OPTION_TEXT_SERVER_ADVANCED);
 	BIND_ENUM_CONSTANT(BUILD_OPTION_DYNAMIC_FONTS);
 	BIND_ENUM_CONSTANT(BUILD_OPTION_WOFF2_FONTS);
-	BIND_ENUM_CONSTANT(BUILD_OPTION_GRPAHITE_FONTS);
+	BIND_ENUM_CONSTANT(BUILD_OPTION_GRAPHITE_FONTS);
 	BIND_ENUM_CONSTANT(BUILD_OPTION_MSDFGEN);
 	BIND_ENUM_CONSTANT(BUILD_OPTION_MAX);
 
@@ -649,7 +646,7 @@ void EditorBuildProfileManager::_class_list_item_selected() {
 	}
 
 	Variant md = item->get_metadata(0);
-	if (md.get_type() == Variant::STRING || md.get_type() == Variant::STRING_NAME) {
+	if (md.is_string()) {
 		description_bit->parse_symbol("class|" + md.operator String() + "|");
 	} else if (md.get_type() == Variant::INT) {
 		String build_option_description = EditorBuildProfile::get_build_option_description(EditorBuildProfile::BuildOption((int)md));
@@ -670,7 +667,7 @@ void EditorBuildProfileManager::_class_list_item_edited() {
 	bool checked = item->is_checked(0);
 
 	Variant md = item->get_metadata(0);
-	if (md.get_type() == Variant::STRING || md.get_type() == Variant::STRING_NAME) {
+	if (md.is_string()) {
 		String class_selected = md;
 		edited->set_disable_class(class_selected, !checked);
 		_update_edited_profile();
@@ -691,7 +688,7 @@ void EditorBuildProfileManager::_class_list_item_collapsed(Object *p_item) {
 	}
 
 	Variant md = item->get_metadata(0);
-	if (md.get_type() != Variant::STRING && md.get_type() != Variant::STRING_NAME) {
+	if (!md.is_string()) {
 		return;
 	}
 
@@ -706,7 +703,7 @@ void EditorBuildProfileManager::_update_edited_profile() {
 
 	if (class_list->get_selected()) {
 		Variant md = class_list->get_selected()->get_metadata(0);
-		if (md.get_type() == Variant::STRING || md.get_type() == Variant::STRING_NAME) {
+		if (md.is_string()) {
 			class_selected = md;
 		} else if (md.get_type() == Variant::INT) {
 			build_option_selected = md;
@@ -869,7 +866,7 @@ EditorBuildProfileManager::EditorBuildProfileManager() {
 	import_profile = memnew(EditorFileDialog);
 	add_child(import_profile);
 	import_profile->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
-	import_profile->add_filter("*.build", TTR("Engine Compilation Profile"));
+	import_profile->add_filter("*.gdbuild,*.build", TTR("Engine Compilation Profile"));
 	import_profile->connect("files_selected", callable_mp(this, &EditorBuildProfileManager::_import_profile));
 	import_profile->set_title(TTR("Load Profile"));
 	import_profile->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
@@ -877,7 +874,7 @@ EditorBuildProfileManager::EditorBuildProfileManager() {
 	export_profile = memnew(EditorFileDialog);
 	add_child(export_profile);
 	export_profile->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
-	export_profile->add_filter("*.build", TTR("Engine Compilation Profile"));
+	export_profile->add_filter("*.gdbuild,*.build", TTR("Engine Compilation Profile"));
 	export_profile->connect("file_selected", callable_mp(this, &EditorBuildProfileManager::_export_profile));
 	export_profile->set_title(TTR("Export Profile"));
 	export_profile->set_access(EditorFileDialog::ACCESS_FILESYSTEM);

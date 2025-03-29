@@ -40,6 +40,7 @@
 #include "editor/editor_translation_parser.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/export/editor_export.h"
+#include "editor/export/editor_export_platform.h"
 #include "editor/gui/editor_bottom_panel.h"
 #include "editor/gui/editor_title_bar.h"
 #include "editor/import/3d/resource_importer_scene.h"
@@ -54,8 +55,6 @@
 #include "editor/scene_tree_dock.h"
 #include "scene/3d/camera_3d.h"
 #include "scene/gui/popup_menu.h"
-#include "scene/resources/image_texture.h"
-#include "servers/rendering_server.h"
 
 void EditorPlugin::add_custom_type(const String &p_type, const String &p_base, const Ref<Script> &p_script, const Ref<Texture2D> &p_icon) {
 	EditorNode::get_editor_data().add_custom_type(p_type, p_base, p_script, p_icon);
@@ -152,7 +151,6 @@ void EditorPlugin::add_control_to_container(CustomControlContainer p_location, C
 		} break;
 		case CONTAINER_PROJECT_SETTING_TAB_RIGHT: {
 			ProjectSettingsEditor::get_singleton()->get_tabs()->add_child(p_control);
-			ProjectSettingsEditor::get_singleton()->get_tabs()->move_child(p_control, 1);
 
 		} break;
 	}
@@ -307,13 +305,13 @@ void EditorPlugin::forward_3d_force_draw_over_viewport(Control *p_overlay) {
 	GDVIRTUAL_CALL(_forward_3d_force_draw_over_viewport, p_overlay);
 }
 
-String EditorPlugin::get_name() const {
+String EditorPlugin::get_plugin_name() const {
 	String name;
 	GDVIRTUAL_CALL(_get_plugin_name, name);
 	return name;
 }
 
-const Ref<Texture2D> EditorPlugin::get_icon() const {
+const Ref<Texture2D> EditorPlugin::get_plugin_icon() const {
 	Ref<Texture2D> icon;
 	GDVIRTUAL_CALL(_get_plugin_icon, icon);
 	return icon;
@@ -402,17 +400,17 @@ void EditorPlugin::remove_undo_redo_inspector_hook_callback(Callable p_callable)
 }
 
 void EditorPlugin::add_translation_parser_plugin(const Ref<EditorTranslationParserPlugin> &p_parser) {
-	ERR_FAIL_COND(!p_parser.is_valid());
+	ERR_FAIL_COND(p_parser.is_null());
 	EditorTranslationParser::get_singleton()->add_parser(p_parser, EditorTranslationParser::CUSTOM);
 }
 
 void EditorPlugin::remove_translation_parser_plugin(const Ref<EditorTranslationParserPlugin> &p_parser) {
-	ERR_FAIL_COND(!p_parser.is_valid());
+	ERR_FAIL_COND(p_parser.is_null());
 	EditorTranslationParser::get_singleton()->remove_parser(p_parser, EditorTranslationParser::CUSTOM);
 }
 
 void EditorPlugin::add_import_plugin(const Ref<EditorImportPlugin> &p_importer, bool p_first_priority) {
-	ERR_FAIL_COND(!p_importer.is_valid());
+	ERR_FAIL_COND(p_importer.is_null());
 	ResourceFormatImporter::get_singleton()->add_importer(p_importer, p_first_priority);
 	// Plugins are now loaded during the first scan. It's important not to start another scan,
 	// even a deferred one, as it would cause a scan during a scan at the next main thread iteration.
@@ -422,7 +420,7 @@ void EditorPlugin::add_import_plugin(const Ref<EditorImportPlugin> &p_importer, 
 }
 
 void EditorPlugin::remove_import_plugin(const Ref<EditorImportPlugin> &p_importer) {
-	ERR_FAIL_COND(!p_importer.is_valid());
+	ERR_FAIL_COND(p_importer.is_null());
 	ResourceFormatImporter::get_singleton()->remove_importer(p_importer);
 	// Plugins are now loaded during the first scan. It's important not to start another scan,
 	// even a deferred one, as it would cause a scan during a scan at the next main thread iteration.
@@ -432,42 +430,52 @@ void EditorPlugin::remove_import_plugin(const Ref<EditorImportPlugin> &p_importe
 }
 
 void EditorPlugin::add_export_plugin(const Ref<EditorExportPlugin> &p_exporter) {
-	ERR_FAIL_COND(!p_exporter.is_valid());
+	ERR_FAIL_COND(p_exporter.is_null());
 	EditorExport::get_singleton()->add_export_plugin(p_exporter);
 }
 
 void EditorPlugin::remove_export_plugin(const Ref<EditorExportPlugin> &p_exporter) {
-	ERR_FAIL_COND(!p_exporter.is_valid());
+	ERR_FAIL_COND(p_exporter.is_null());
 	EditorExport::get_singleton()->remove_export_plugin(p_exporter);
 }
 
+void EditorPlugin::add_export_platform(const Ref<EditorExportPlatform> &p_platform) {
+	ERR_FAIL_COND(p_platform.is_null());
+	EditorExport::get_singleton()->add_export_platform(p_platform);
+}
+
+void EditorPlugin::remove_export_platform(const Ref<EditorExportPlatform> &p_platform) {
+	ERR_FAIL_COND(p_platform.is_null());
+	EditorExport::get_singleton()->remove_export_platform(p_platform);
+}
+
 void EditorPlugin::add_node_3d_gizmo_plugin(const Ref<EditorNode3DGizmoPlugin> &p_gizmo_plugin) {
-	ERR_FAIL_COND(!p_gizmo_plugin.is_valid());
+	ERR_FAIL_COND(p_gizmo_plugin.is_null());
 	Node3DEditor::get_singleton()->add_gizmo_plugin(p_gizmo_plugin);
 }
 
 void EditorPlugin::remove_node_3d_gizmo_plugin(const Ref<EditorNode3DGizmoPlugin> &p_gizmo_plugin) {
-	ERR_FAIL_COND(!p_gizmo_plugin.is_valid());
+	ERR_FAIL_COND(p_gizmo_plugin.is_null());
 	Node3DEditor::get_singleton()->remove_gizmo_plugin(p_gizmo_plugin);
 }
 
 void EditorPlugin::add_inspector_plugin(const Ref<EditorInspectorPlugin> &p_plugin) {
-	ERR_FAIL_COND(!p_plugin.is_valid());
+	ERR_FAIL_COND(p_plugin.is_null());
 	EditorInspector::add_inspector_plugin(p_plugin);
 }
 
 void EditorPlugin::remove_inspector_plugin(const Ref<EditorInspectorPlugin> &p_plugin) {
-	ERR_FAIL_COND(!p_plugin.is_valid());
+	ERR_FAIL_COND(p_plugin.is_null());
 	EditorInspector::remove_inspector_plugin(p_plugin);
 }
 
 void EditorPlugin::add_scene_format_importer_plugin(const Ref<EditorSceneFormatImporter> &p_importer, bool p_first_priority) {
-	ERR_FAIL_COND(!p_importer.is_valid());
+	ERR_FAIL_COND(p_importer.is_null());
 	ResourceImporterScene::add_scene_importer(p_importer, p_first_priority);
 }
 
 void EditorPlugin::remove_scene_format_importer_plugin(const Ref<EditorSceneFormatImporter> &p_importer) {
-	ERR_FAIL_COND(!p_importer.is_valid());
+	ERR_FAIL_COND(p_importer.is_null());
 	ResourceImporterScene::remove_scene_importer(p_importer);
 }
 
@@ -477,6 +485,14 @@ void EditorPlugin::add_scene_post_import_plugin(const Ref<EditorScenePostImportP
 
 void EditorPlugin::remove_scene_post_import_plugin(const Ref<EditorScenePostImportPlugin> &p_plugin) {
 	ResourceImporterScene::remove_post_importer_plugin(p_plugin);
+}
+
+void EditorPlugin::add_context_menu_plugin(EditorContextMenuPlugin::ContextMenuSlot p_slot, const Ref<EditorContextMenuPlugin> &p_plugin) {
+	EditorContextMenuPluginManager::get_singleton()->add_plugin(p_slot, p_plugin);
+}
+
+void EditorPlugin::remove_context_menu_plugin(const Ref<EditorContextMenuPlugin> &p_plugin) {
+	EditorContextMenuPluginManager::get_singleton()->remove_plugin(p_plugin);
 }
 
 int find(const PackedStringArray &a, const String &v) {
@@ -608,6 +624,8 @@ void EditorPlugin::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("remove_scene_post_import_plugin", "scene_import_plugin"), &EditorPlugin::remove_scene_post_import_plugin);
 	ClassDB::bind_method(D_METHOD("add_export_plugin", "plugin"), &EditorPlugin::add_export_plugin);
 	ClassDB::bind_method(D_METHOD("remove_export_plugin", "plugin"), &EditorPlugin::remove_export_plugin);
+	ClassDB::bind_method(D_METHOD("add_export_platform", "platform"), &EditorPlugin::add_export_platform);
+	ClassDB::bind_method(D_METHOD("remove_export_platform", "platform"), &EditorPlugin::remove_export_platform);
 	ClassDB::bind_method(D_METHOD("add_node_3d_gizmo_plugin", "plugin"), &EditorPlugin::add_node_3d_gizmo_plugin);
 	ClassDB::bind_method(D_METHOD("remove_node_3d_gizmo_plugin", "plugin"), &EditorPlugin::remove_node_3d_gizmo_plugin);
 	ClassDB::bind_method(D_METHOD("add_inspector_plugin", "plugin"), &EditorPlugin::add_inspector_plugin);
@@ -616,6 +634,8 @@ void EditorPlugin::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("remove_resource_conversion_plugin", "plugin"), &EditorPlugin::remove_resource_conversion_plugin);
 	ClassDB::bind_method(D_METHOD("set_input_event_forwarding_always_enabled"), &EditorPlugin::set_input_event_forwarding_always_enabled);
 	ClassDB::bind_method(D_METHOD("set_force_draw_over_forwarding_enabled"), &EditorPlugin::set_force_draw_over_forwarding_enabled);
+	ClassDB::bind_method(D_METHOD("add_context_menu_plugin", "slot", "plugin"), &EditorPlugin::add_context_menu_plugin);
+	ClassDB::bind_method(D_METHOD("remove_context_menu_plugin", "plugin"), &EditorPlugin::remove_context_menu_plugin);
 
 	ClassDB::bind_method(D_METHOD("get_editor_interface"), &EditorPlugin::get_editor_interface);
 	ClassDB::bind_method(D_METHOD("get_script_create_dialog"), &EditorPlugin::get_script_create_dialog);

@@ -254,6 +254,7 @@ Variant ActionMapEditor::get_drag_data_fw(const Point2 &p_point, Control *p_from
 	Label *label = memnew(Label(name));
 	label->set_theme_type_variation("HeaderSmall");
 	label->set_modulate(Color(1, 1, 1, 1.0f));
+	label->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	action_tree->set_drag_preview(label);
 
 	Dictionary drag_data;
@@ -357,7 +358,7 @@ void ActionMapEditor::_notification(int p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			action_list_search->set_right_icon(get_editor_theme_icon(SNAME("Search")));
-			add_button->set_icon(get_editor_theme_icon(SNAME("Add")));
+			add_button->set_button_icon(get_editor_theme_icon(SNAME("Add")));
 			if (!actions_cache.is_empty()) {
 				update_action_list();
 			}
@@ -569,8 +570,9 @@ ActionMapEditor::ActionMapEditor() {
 	add_edit->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	add_edit->set_placeholder(TTR("Add New Action"));
 	add_edit->set_clear_button_enabled(true);
+	add_edit->set_keep_editing_on_text_submit(true);
 	add_edit->connect(SceneStringName(text_changed), callable_mp(this, &ActionMapEditor::_add_edit_text_changed));
-	add_edit->connect("text_submitted", callable_mp(this, &ActionMapEditor::_add_action));
+	add_edit->connect(SceneStringName(text_submitted), callable_mp(this, &ActionMapEditor::_add_action));
 	add_hbox->add_child(add_edit);
 
 	add_button = memnew(Button);
@@ -584,11 +586,11 @@ ActionMapEditor::ActionMapEditor() {
 
 	show_builtin_actions_checkbutton = memnew(CheckButton);
 	show_builtin_actions_checkbutton->set_text(TTR("Show Built-in Actions"));
-	show_builtin_actions_checkbutton->connect("toggled", callable_mp(this, &ActionMapEditor::set_show_builtin_actions));
+	show_builtin_actions_checkbutton->connect(SceneStringName(toggled), callable_mp(this, &ActionMapEditor::set_show_builtin_actions));
 	add_hbox->add_child(show_builtin_actions_checkbutton);
 
 	show_builtin_actions = EditorSettings::get_singleton()->get_project_metadata("project_settings", "show_builtin_actions", false);
-	show_builtin_actions_checkbutton->set_pressed(show_builtin_actions);
+	show_builtin_actions_checkbutton->set_pressed_no_signal(show_builtin_actions);
 
 	main_vbox->add_child(add_hbox);
 

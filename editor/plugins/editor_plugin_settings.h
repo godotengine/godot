@@ -28,12 +28,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef EDITOR_PLUGIN_SETTINGS_H
-#define EDITOR_PLUGIN_SETTINGS_H
+#pragma once
 
-#include "editor/editor_data.h"
 #include "editor/plugins/plugin_config_dialog.h"
 
+class TextureRect;
 class Tree;
 
 class EditorPluginSettings : public VBoxContainer {
@@ -55,6 +54,7 @@ class EditorPluginSettings : public VBoxContainer {
 	};
 
 	PluginConfigDialog *plugin_config_dialog = nullptr;
+	TextureRect *recovery_mode_icon = nullptr;
 	Tree *plugin_list = nullptr;
 	bool updating = false;
 
@@ -67,12 +67,8 @@ class EditorPluginSettings : public VBoxContainer {
 protected:
 	void _notification(int p_what);
 
-	static void _bind_methods();
-
 public:
 	void update_plugins();
 
 	EditorPluginSettings();
 };
-
-#endif // EDITOR_PLUGIN_SETTINGS_H

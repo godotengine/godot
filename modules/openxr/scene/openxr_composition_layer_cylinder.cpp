@@ -30,28 +30,12 @@
 
 #include "openxr_composition_layer_cylinder.h"
 
-#include "../extensions/openxr_composition_layer_extension.h"
-#include "../openxr_api.h"
 #include "../openxr_interface.h"
 
-#include "scene/3d/mesh_instance_3d.h"
-#include "scene/main/viewport.h"
 #include "scene/resources/mesh.h"
 
-OpenXRCompositionLayerCylinder::OpenXRCompositionLayerCylinder() {
-	composition_layer = {
-		XR_TYPE_COMPOSITION_LAYER_CYLINDER_KHR, // type
-		nullptr, // next
-		0, // layerFlags
-		XR_NULL_HANDLE, // space
-		XR_EYE_VISIBILITY_BOTH, // eyeVisibility
-		{}, // subImage
-		{ { 0, 0, 0, 0 }, { 0, 0, 0 } }, // pose
-		radius, // radius
-		central_angle, // centralAngle
-		aspect_ratio, // aspectRatio
-	};
-	openxr_layer_provider = memnew(OpenXRViewportCompositionLayerProvider((XrCompositionLayerBaseHeader *)&composition_layer));
+OpenXRCompositionLayerCylinder::OpenXRCompositionLayerCylinder() :
+		OpenXRCompositionLayer((XrCompositionLayerBaseHeader *)&composition_layer) {
 	XRServer::get_singleton()->connect("reference_frame_changed", callable_mp(this, &OpenXRCompositionLayerCylinder::update_transform));
 }
 

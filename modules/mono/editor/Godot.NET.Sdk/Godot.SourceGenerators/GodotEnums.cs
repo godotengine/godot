@@ -88,7 +88,9 @@ namespace Godot.SourceGenerators
         HideQuaternionEdit = 35,
         Password = 36,
         LayersAvoidance = 37,
-        Max = 38
+        DictionaryType = 38,
+        ToolButton = 39,
+        Max = 40
     }
 
     [Flags]

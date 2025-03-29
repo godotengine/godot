@@ -132,7 +132,7 @@ void SpriteBase3D::draw_texture_rect(Ref<Texture2D> p_texture, Rect2 p_dst_rect,
 
 	// Properly setup UVs for impostor textures (AtlasTexture).
 	Ref<AtlasTexture> atlas_tex = p_texture;
-	if (atlas_tex != nullptr) {
+	if (atlas_tex.is_valid()) {
 		src_tsize[0] = atlas_tex->get_atlas()->get_width();
 		src_tsize[1] = atlas_tex->get_atlas()->get_height();
 	}
@@ -276,6 +276,7 @@ void SpriteBase3D::draw_texture_rect(Ref<Texture2D> p_texture, Rect2 p_dst_rect,
 	}
 	if (last_texture != p_texture->get_rid()) {
 		RS::get_singleton()->material_set_param(get_material(), "texture_albedo", p_texture->get_rid());
+		RS::get_singleton()->material_set_param(get_material(), "albedo_texture_size", Vector2i(p_texture->get_width(), p_texture->get_height()));
 		last_texture = p_texture->get_rid();
 	}
 	if (get_alpha_cut_mode() == ALPHA_CUT_DISABLED) {
@@ -470,7 +471,7 @@ Ref<TriangleMesh> SpriteBase3D::generate_triangle_mesh() const {
 		facesw[j] = vtx;
 	}
 
-	triangle_mesh = Ref<TriangleMesh>(memnew(TriangleMesh));
+	triangle_mesh.instantiate();
 	triangle_mesh->create(faces);
 
 	return triangle_mesh;
@@ -1031,7 +1032,7 @@ void AnimatedSprite3D::_draw() {
 }
 
 void AnimatedSprite3D::_validate_property(PropertyInfo &p_property) const {
-	if (!frames.is_valid()) {
+	if (frames.is_null()) {
 		return;
 	}
 
@@ -1086,7 +1087,7 @@ void AnimatedSprite3D::_validate_property(PropertyInfo &p_property) const {
 void AnimatedSprite3D::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_READY: {
-			if (!Engine::get_singleton()->is_editor_hint() && !frames.is_null() && frames->has_animation(autoplay)) {
+			if (!Engine::get_singleton()->is_editor_hint() && frames.is_valid() && frames->has_animation(autoplay)) {
 				play(autoplay);
 			}
 		} break;
@@ -1324,7 +1325,7 @@ void AnimatedSprite3D::play(const StringName &p_name, float p_custom_scale, bool
 		name = animation;
 	}
 
-	ERR_FAIL_NULL_MSG(frames, vformat("There is no animation with name '%s'.", name));
+	ERR_FAIL_COND_MSG(frames.is_null(), vformat("There is no animation with name '%s'.", name));
 	ERR_FAIL_COND_MSG(!frames->get_animation_names().has(name), vformat("There is no animation with name '%s'.", name));
 
 	if (frames->get_frame_count(name) == 0) {
@@ -1402,7 +1403,7 @@ void AnimatedSprite3D::set_animation(const StringName &p_name) {
 
 	emit_signal(SceneStringName(animation_changed));
 
-	if (frames == nullptr) {
+	if (frames.is_null()) {
 		animation = StringName();
 		stop();
 		ERR_FAIL_MSG(vformat("There is no animation with name '%s'.", p_name));

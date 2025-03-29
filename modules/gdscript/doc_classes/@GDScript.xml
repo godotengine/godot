@@ -4,14 +4,14 @@
 		Built-in GDScript constants, functions, and annotations.
 	</brief_description>
 	<description>
-		A list of GDScript-specific utility functions and annotations accessible from any script.
-		For the list of the global functions and constants see [@GlobalScope].
+		A list of utility functions and annotations accessible from any script written in GDScript.
+		For the list of global functions and constants that can be accessed in any scripting language, see [@GlobalScope].
 	</description>
 	<tutorials>
 		<link title="GDScript exports">$DOCS_URL/tutorials/scripting/gdscript/gdscript_exports.html</link>
 	</tutorials>
 	<methods>
-		<method name="Color8">
+		<method name="Color8" deprecated="Use [method Color.from_rgba8] instead.">
 			<return type="Color" />
 			<param index="0" name="r8" type="int" />
 			<param index="1" name="g8" type="int" />
@@ -52,16 +52,16 @@
 			<description>
 				Returns a single character (as a [String]) of the given Unicode code point (which is compatible with ASCII code).
 				[codeblock]
-				a = char(65)      # a is "A"
-				a = char(65 + 32) # a is "a"
-				a = char(8364)    # a is "€"
+				var upper = char(65)      # upper is "A"
+				var lower = char(65 + 32) # lower is "a"
+				var euro = char(8364)     # euro is "€"
 				[/codeblock]
 			</description>
 		</method>
 		<method name="convert" deprecated="Use [method @GlobalScope.type_convert] instead.">
 			<return type="Variant" />
 			<param index="0" name="what" type="Variant" />
-			<param index="1" name="type" type="int" />
+			<param index="1" name="type" type="int" enum="Variant.Type" />
 			<description>
 				Converts [param what] to [param type] in the best way possible. The [param type] uses the [enum Variant.Type] values.
 				[codeblock]
@@ -74,7 +74,7 @@
 				[/codeblock]
 			</description>
 		</method>
-		<method name="dict_to_inst">
+		<method name="dict_to_inst" deprecated="Consider using [method JSON.to_native] or [method Object.get_property_list] instead.">
 			<return type="Object" />
 			<param index="0" name="dictionary" type="Dictionary" />
 			<description>
@@ -103,12 +103,11 @@
 				[b]Note:[/b] Calling this function from a [Thread] is not supported. Doing so will return an empty array.
 			</description>
 		</method>
-		<method name="inst_to_dict">
+		<method name="inst_to_dict" deprecated="Consider using [method JSON.from_native] or [method Object.get_property_list] instead.">
 			<return type="Dictionary" />
 			<param index="0" name="instance" type="Object" />
 			<description>
 				Returns the passed [param instance] converted to a Dictionary. Can be useful for serializing.
-				[b]Note:[/b] Cannot be used to serialize objects with built-in scripts attached or objects allocated within built-in scripts.
 				[codeblock]
 				var foo = "bar"
 				func _ready():
@@ -121,6 +120,8 @@
 				[@subpath, @path, foo]
 				[, res://test.gd, bar]
 				[/codeblock]
+				[b]Note:[/b] This function can only be used to serialize objects with an attached [GDScript] stored in a separate file. Objects without an attached script, with a script written in another language, or with a built-in script are not supported.
+				[b]Note:[/b] This function is not recursive, which means that nested objects will not be represented as dictionaries. Also, properties passed by reference ([Object], [Dictionary], [Array], and packed arrays) are copied by reference, not duplicated.
 			</description>
 		</method>
 		<method name="is_instance_of">
@@ -133,7 +134,7 @@
 				- An [Object]-derived class which exists in [ClassDB], for example [Node].
 				- A [Script] (you can use any class, including inner one).
 				Unlike the right operand of the [code]is[/code] operator, [param type] can be a non-constant value. The [code]is[/code] operator supports more features (such as typed arrays). Use the operator instead of this method if you do not need dynamic type checking.
-				Examples:
+				[b]Examples:[/b]
 				[codeblock]
 				print(is_instance_of(a, TYPE_INT))
 				print(is_instance_of(a, Node))
@@ -150,10 +151,10 @@
 			<description>
 				Returns the length of the given Variant [param var]. The length can be the character count of a [String] or [StringName], the element count of any array type, or the size of a [Dictionary]. For every other Variant type, a run-time error is generated and execution is stopped.
 				[codeblock]
-				a = [1, 2, 3, 4]
+				var a = [1, 2, 3, 4]
 				len(a) # Returns 4
 
-				b = "Hello!"
+				var b = "Hello!"
 				len(b) # Returns 6
 				[/codeblock]
 			</description>
@@ -220,7 +221,7 @@
 				[code]range(b: int, n: int, s: int)[/code]: Starts from [code]b[/code], increases/decreases by steps of [code]s[/code], and stops [i]before[/i] [code]n[/code]. The arguments [code]b[/code] and [code]n[/code] are [b]inclusive[/b] and [b]exclusive[/b], respectively. The argument [code]s[/code] [b]can[/b] be negative, but not [code]0[/code]. If [code]s[/code] is [code]0[/code], an error message is printed.
 				[method range] converts all arguments to [int] before processing.
 				[b]Note:[/b] Returns an empty array if no value meets the value constraint (e.g. [code]range(2, 5, -1)[/code] or [code]range(5, 5, 1)[/code]).
-				Examples:
+				[b]Examples:[/b]
 				[codeblock]
 				print(range(4))        # Prints [0, 1, 2, 3]
 				print(range(2, 5))     # Prints [2, 3, 4]
@@ -666,7 +667,54 @@
 				@export var car_label = "Speedy"
 				@export var car_number = 3
 				[/codeblock]
-				[b]Note:[/b] Subgroups cannot be nested, they only provide one extra level of depth. Just like the next group ends the previous group, so do the subsequent subgroups.
+				[b]Note:[/b] Subgroups cannot be nested, but you can use the slash separator ([code]/[/code]) to achieve the desired effect:
+				[codeblock]
+				@export_group("Car Properties")
+				@export_subgroup("Wheels", "wheel_")
+				@export_subgroup("Wheels/Front", "front_wheel_")
+				@export var front_wheel_strength = 10
+				@export var front_wheel_mobility = 5
+				@export_subgroup("Wheels/Rear", "rear_wheel_")
+				@export var rear_wheel_strength = 8
+				@export var rear_wheel_mobility = 3
+				@export_subgroup("Wheels", "wheel_")
+				@export var wheel_material: PhysicsMaterial
+				[/codeblock]
+			</description>
+		</annotation>
+		<annotation name="@export_tool_button">
+			<return type="void" />
+			<param index="0" name="text" type="String" />
+			<param index="1" name="icon" type="String" default="&quot;&quot;" />
+			<description>
+				Export a [Callable] property as a clickable button with the label [param text]. When the button is pressed, the callable is called.
+				If [param icon] is specified, it is used to fetch an icon for the button via [method Control.get_theme_icon], from the [code]"EditorIcons"[/code] theme type. If [param icon] is omitted, the default [code]"Callable"[/code] icon is used instead.
+				Consider using the [EditorUndoRedoManager] to allow the action to be reverted safely.
+				See also [constant PROPERTY_HINT_TOOL_BUTTON].
+				[codeblock]
+				@tool
+				extends Sprite2D
+
+				@export_tool_button("Hello") var hello_action = hello
+				@export_tool_button("Randomize the color!", "ColorRect")
+				var randomize_color_action = randomize_color
+
+				func hello():
+				    print("Hello world!")
+
+				func randomize_color():
+				    var undo_redo = EditorInterface.get_editor_undo_redo()
+				    undo_redo.create_action("Randomized Sprite2D Color")
+				    undo_redo.add_do_property(self, &amp;"self_modulate", Color(randf(), randf(), randf()))
+				    undo_redo.add_undo_property(self, &amp;"self_modulate", self_modulate)
+				    undo_redo.commit_action()
+				[/codeblock]
+				[b]Note:[/b] The property is exported without the [constant PROPERTY_USAGE_STORAGE] flag because a [Callable] cannot be properly serialized and stored in a file.
+				[b]Note:[/b] In an exported project neither [EditorInterface] nor [EditorUndoRedoManager] exist, which may cause some scripts to break. To prevent this, you can use [method Engine.get_singleton] and omit the static type from the variable declaration:
+				[codeblock]
+				var undo_redo = Engine.get_singleton(&amp;"EditorInterface").get_editor_undo_redo()
+				[/codeblock]
+				[b]Note:[/b] Avoid storing lambda callables in member variables of [RefCounted]-based classes (e.g. resources), as this can lead to memory leaks. Use only method callables and optionally [method Callable.bind] or [method Callable.unbind].
 			</description>
 		</annotation>
 		<annotation name="@icon">
@@ -679,7 +727,7 @@
 				[/codeblock]
 				[b]Note:[/b] Only the script can have a custom icon. Inner classes are not supported.
 				[b]Note:[/b] As annotations describe their subject, the [annotation @icon] annotation must be placed before the class definition and inheritance.
-				[b]Note:[/b] Unlike other annotations, the argument of the [annotation @icon] annotation must be a string literal (constant expressions are not supported).
+				[b]Note:[/b] Unlike most other annotations, the argument of the [annotation @icon] annotation must be a string literal (constant expressions are not supported).
 			</description>
 		</annotation>
 		<annotation name="@onready">
@@ -687,7 +735,7 @@
 			<description>
 				Mark the following property as assigned when the [Node] is ready. Values for these properties are not assigned immediately when the node is initialized ([method Object._init]), and instead are computed and stored right before [method Node._ready].
 				[codeblock]
-				@onready var character_name: Label = $Label
+				@onready var character_name = $Label
 				[/codeblock]
 			</description>
 		</annotation>
@@ -747,6 +795,33 @@
 				    @warning_ignore("unreachable_code")
 				    print("unreachable")
 				[/codeblock]
+				See also [annotation @warning_ignore_start] and [annotation @warning_ignore_restore].
+			</description>
+		</annotation>
+		<annotation name="@warning_ignore_restore" qualifiers="vararg">
+			<return type="void" />
+			<param index="0" name="warning" type="String" />
+			<description>
+				Stops ignoring the listed warning types after [annotation @warning_ignore_start]. Ignoring the specified warning types will be reset to Project Settings. This annotation can be omitted to ignore the warning types until the end of the file.
+				[b]Note:[/b] Unlike most other annotations, arguments of the [annotation @warning_ignore_restore] annotation must be string literals (constant expressions are not supported).
+			</description>
+		</annotation>
+		<annotation name="@warning_ignore_start" qualifiers="vararg">
+			<return type="void" />
+			<param index="0" name="warning" type="String" />
+			<description>
+				Starts ignoring the listed warning types until the end of the file or the [annotation @warning_ignore_restore] annotation with the given warning type.
+				[codeblock]
+				func test():
+				    var a = 1 # Warning (if enabled in the Project Settings).
+				    @warning_ignore_start("unused_variable")
+				    var b = 2 # No warning.
+				    var c = 3 # No warning.
+				    @warning_ignore_restore("unused_variable")
+				    var d = 4 # Warning (if enabled in the Project Settings).
+				[/codeblock]
+				[b]Note:[/b] To suppress a single warning, use [annotation @warning_ignore] instead.
+				[b]Note:[/b] Unlike most other annotations, arguments of the [annotation @warning_ignore_start] annotation must be string literals (constant expressions are not supported).
 			</description>
 		</annotation>
 	</annotations>

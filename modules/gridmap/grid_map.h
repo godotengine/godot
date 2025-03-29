@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef GRID_MAP_H
-#define GRID_MAP_H
+#pragma once
 
 #include "scene/3d/node_3d.h"
 #include "scene/resources/3d/mesh_library.h"
@@ -38,7 +37,11 @@
 //heh heh, godotsphir!! this shares no code and the design is completely different with previous projects i've done..
 //should scale better with hardware that supports instancing
 
+class NavigationMesh;
+class NavigationMeshSourceGeometryData3D;
+#ifndef PHYSICS_3D_DISABLED
 class PhysicsMaterial;
+#endif // PHYSICS_3D_DISABLED
 
 class GridMap : public Node3D {
 	GDCLASS(GridMap, Node3D);
@@ -149,10 +152,12 @@ class GridMap : public Node3D {
 		OctantKey() {}
 	};
 
+#ifndef PHYSICS_3D_DISABLED
 	uint32_t collision_layer = 1;
 	uint32_t collision_mask = 1;
 	real_t collision_priority = 1.0;
 	Ref<PhysicsMaterial> physics_material;
+#endif // PHYSICS_3D_DISABLED
 	bool bake_navigation = false;
 	RID map_override;
 
@@ -186,8 +191,10 @@ class GridMap : public Node3D {
 		return Vector3(p_key.x, p_key.y, p_key.z) * cell_size * octant_size;
 	}
 
+#ifndef PHYSICS_3D_DISABLED
 	void _update_physics_bodies_collision_properties();
 	void _update_physics_bodies_characteristics();
+#endif // PHYSICS_3D_DISABLED
 	void _octant_enter_world(const OctantKey &p_key);
 	void _octant_exit_world(const OctantKey &p_key);
 	bool _octant_update(const OctantKey &p_key);
@@ -232,6 +239,7 @@ public:
 		INVALID_CELL_ITEM = -1
 	};
 
+#ifndef PHYSICS_3D_DISABLED
 	void set_collision_layer(uint32_t p_layer);
 	uint32_t get_collision_layer() const;
 
@@ -251,6 +259,7 @@ public:
 	Ref<PhysicsMaterial> get_physics_material() const;
 
 	Array get_collision_shapes() const;
+#endif // PHYSICS_3D_DISABLED
 
 	void set_bake_navigation(bool p_bake_navigation);
 	bool is_baking_navigation();
@@ -300,8 +309,14 @@ public:
 	Array get_bake_meshes();
 	RID get_bake_mesh_instance(int p_idx);
 
+private:
+	static Callable _navmesh_source_geometry_parsing_callback;
+	static RID _navmesh_source_geometry_parser;
+
+public:
+	static void navmesh_parse_init();
+	static void navmesh_parse_source_geometry(const Ref<NavigationMesh> &p_navigation_mesh, Ref<NavigationMeshSourceGeometryData3D> p_source_geometry_data, Node *p_node);
+
 	GridMap();
 	~GridMap();
 };
-
-#endif // GRID_MAP_H

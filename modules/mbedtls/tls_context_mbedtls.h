@@ -28,12 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TLS_CONTEXT_MBEDTLS_H
-#define TLS_CONTEXT_MBEDTLS_H
+#pragma once
 
 #include "crypto_mbedtls.h"
 
-#include "core/io/file_access.h"
 #include "core/object/ref_counted.h"
 
 #include <mbedtls/ctr_drbg.h>
@@ -87,5 +85,3 @@ public:
 	TLSContextMbedTLS();
 	~TLSContextMbedTLS();
 };
-
-#endif // TLS_CONTEXT_MBEDTLS_H

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef OPENXR_COMPOSITION_LAYER_QUAD_H
-#define OPENXR_COMPOSITION_LAYER_QUAD_H
+#pragma once
 
 #include <openxr/openxr.h>
 
@@ -38,7 +37,16 @@
 class OpenXRCompositionLayerQuad : public OpenXRCompositionLayer {
 	GDCLASS(OpenXRCompositionLayerQuad, OpenXRCompositionLayer);
 
-	XrCompositionLayerQuad composition_layer;
+	XrCompositionLayerQuad composition_layer = {
+		XR_TYPE_COMPOSITION_LAYER_QUAD, // type
+		nullptr, // next
+		0, // layerFlags
+		XR_NULL_HANDLE, // space
+		XR_EYE_VISIBILITY_BOTH, // eyeVisibility
+		{}, // subImage
+		{ { 0, 0, 0, 0 }, { 0, 0, 0 } }, // pose
+		{ 1.0, 1.0 }, // size
+	};
 
 	Size2 quad_size = Size2(1.0, 1.0);
 
@@ -60,5 +68,3 @@ public:
 	OpenXRCompositionLayerQuad();
 	~OpenXRCompositionLayerQuad();
 };
-
-#endif // OPENXR_COMPOSITION_LAYER_QUAD_H

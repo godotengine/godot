@@ -20,6 +20,7 @@
  * SOFTWARE.
  */
 
+#include "tvgPaint.h"
 #include "tvgPicture.h"
 
 /************************************************************************/
@@ -55,29 +56,33 @@ RenderUpdateFlag Picture::Impl::load()
 }
 
 
-bool Picture::Impl::needComposition(uint8_t opacity)
+void Picture::Impl::queryComposition(uint8_t opacity)
 {
+    cFlag = CompositionFlag::Invalid;
+
     //In this case, paint(scene) would try composition itself.
-    if (opacity < 255) return false;
+    if (opacity < 255) return;
 
     //Composition test
     const Paint* target;
     auto method = picture->composite(&target);
-    if (!target || method == tvg::CompositeMethod::ClipPath) return false;
-    if (target->pImpl->opacity == 255 || target->pImpl->opacity == 0) return false;
+    if (!target || method == tvg::CompositeMethod::ClipPath) return;
+    if (target->pImpl->opacity == 255 || target->pImpl->opacity == 0) return;
 
-    return true;
+    cFlag = CompositionFlag::Opacity;
 }
 
 
 bool Picture::Impl::render(RenderMethod* renderer)
 {
     bool ret = false;
+    renderer->blend(PP(picture)->blendMethod);
+
     if (surface) return renderer->renderImage(rd);
     else if (paint) {
-        Compositor* cmp = nullptr;
-        if (needComp) {
-            cmp = renderer->target(bounds(renderer), renderer->colorSpace());
+        RenderCompositor* cmp = nullptr;
+        if (cFlag) {
+            cmp = renderer->target(bounds(renderer), renderer->colorSpace(), static_cast<CompositionFlag>(cFlag));
             renderer->beginComposite(cmp, CompositeMethod::None, 255);
         }
         ret = paint->pImpl->render(renderer);
@@ -101,21 +106,6 @@ RenderRegion Picture::Impl::bounds(RenderMethod* renderer)
     if (rd) return renderer->region(rd);
     if (paint) return paint->pImpl->bounds(renderer);
     return {0, 0, 0, 0};
-}
-
-
-RenderTransform Picture::Impl::resizeTransform(const RenderTransform* pTransform)
-{
-    //Overriding Transformation by the desired image size
-    auto sx = w / loader->w;
-    auto sy = h / loader->h;
-    auto scale = sx < sy ? sx : sy;
-
-    RenderTransform tmp;
-    tmp.m = {scale, 0, 0, 0, scale, 0, 0, 0, 1};
-
-    if (!pTransform) return tmp;
-    else return RenderTransform(pTransform, &tmp);
 }
 
 
@@ -147,7 +137,6 @@ Result Picture::Impl::load(ImageLoader* loader)
 
 Picture::Picture() : pImpl(new Impl(this))
 {
-    Paint::pImpl->id = TVG_CLASS_ID_PICTURE;
 }
 
 
@@ -163,17 +152,28 @@ unique_ptr<Picture> Picture::gen() noexcept
 }
 
 
-uint32_t Picture::identifier() noexcept
+TVG_DEPRECATED uint32_t Picture::identifier() noexcept
 {
-    return TVG_CLASS_ID_PICTURE;
+    return (uint32_t) Type::Picture;
+}
+
+
+Type Picture::type() const noexcept
+{
+    return Type::Picture;
 }
 
 
 Result Picture::load(const std::string& path) noexcept
 {
+#ifdef THORVG_FILE_IO_SUPPORT
     if (path.empty()) return Result::InvalidArguments;
 
     return pImpl->load(path);
+#else
+    TVGLOG("RENDERER", "FILE IO is disabled!");
+    return Result::NonSupport;
+#endif
 }
 
 
@@ -215,18 +215,24 @@ Result Picture::size(float* w, float* h) const noexcept
 }
 
 
-Result Picture::mesh(const Polygon* triangles, uint32_t triangleCnt) noexcept
+const Paint* Picture::paint(uint32_t id) noexcept
 {
-    if (!triangles && triangleCnt > 0) return Result::InvalidArguments;
-    if (triangles && triangleCnt == 0) return Result::InvalidArguments;
+    struct Value
+    {
+        uint32_t id;
+        const Paint* ret;
+    } value = {id, nullptr};
 
-    pImpl->mesh(triangles, triangleCnt);
-    return Result::Success;
-}
+    auto cb = [](const tvg::Paint* paint, void* data) -> bool
+    {
+        auto p = static_cast<Value*>(data);
+        if (p->id == paint->id) {
+            p->ret = paint;
+            return false;
+        }
+        return true;
+    };
 
-
-uint32_t Picture::mesh(const Polygon** triangles) const noexcept
-{
-    if (triangles) *triangles = pImpl->rm.triangles;
-    return pImpl->rm.triangleCnt;
+    tvg::Accessor::gen()->set(this, cb, &value);
+    return value.ret;
 }

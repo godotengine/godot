@@ -30,9 +30,6 @@
 
 #include "render_data_rd.h"
 
-void RenderDataRD::_bind_methods() {
-}
-
 Ref<RenderSceneBuffers> RenderDataRD::get_render_scene_buffers() const {
 	return render_buffers;
 }

@@ -31,7 +31,6 @@
 #include "audio_stream.h"
 
 #include "core/config/project_settings.h"
-#include "core/os/os.h"
 
 void AudioStreamPlayback::start(double p_from_pos) {
 	if (GDVIRTUAL_CALL(_start, p_from_pos)) {
@@ -72,8 +71,44 @@ void AudioStreamPlayback::seek(double p_time) {
 
 int AudioStreamPlayback::mix(AudioFrame *p_buffer, float p_rate_scale, int p_frames) {
 	int ret = 0;
-	GDVIRTUAL_REQUIRED_CALL(_mix, p_buffer, p_rate_scale, p_frames, ret);
+	GDVIRTUAL_CALL(_mix, p_buffer, p_rate_scale, p_frames, ret);
 	return ret;
+}
+
+PackedVector2Array AudioStreamPlayback::_mix_audio_bind(float p_rate_scale, int p_frames) {
+	Vector<AudioFrame> frames = mix_audio(p_rate_scale, p_frames);
+
+	PackedVector2Array res;
+	res.resize(frames.size());
+
+	Vector2 *res_ptrw = res.ptrw();
+	for (int i = 0; i < frames.size(); i++) {
+		res_ptrw[i] = Vector2(frames[i].left, frames[i].right);
+	}
+
+	return res;
+}
+
+Vector<AudioFrame> AudioStreamPlayback::mix_audio(float p_rate_scale, int p_frames) {
+	Vector<AudioFrame> res;
+	res.resize(p_frames);
+
+	int frames = mix(res.ptrw(), p_rate_scale, p_frames);
+	res.resize(frames);
+
+	return res;
+}
+
+void AudioStreamPlayback::start_playback(double p_from_pos) {
+	start(p_from_pos);
+}
+
+void AudioStreamPlayback::stop_playback() {
+	stop();
+}
+
+void AudioStreamPlayback::seek_playback(double p_time) {
+	seek(p_time);
 }
 
 void AudioStreamPlayback::tag_used_streams() {
@@ -108,6 +143,13 @@ void AudioStreamPlayback::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_sample_playback", "playback_sample"), &AudioStreamPlayback::set_sample_playback);
 	ClassDB::bind_method(D_METHOD("get_sample_playback"), &AudioStreamPlayback::get_sample_playback);
+	ClassDB::bind_method(D_METHOD("mix_audio", "rate_scale", "frames"), &AudioStreamPlayback::_mix_audio_bind);
+	ClassDB::bind_method(D_METHOD("start", "from_pos"), &AudioStreamPlayback::start_playback, DEFVAL(0.0));
+	ClassDB::bind_method(D_METHOD("seek", "time"), &AudioStreamPlayback::seek_playback, DEFVAL(0.0));
+	ClassDB::bind_method(D_METHOD("stop"), &AudioStreamPlayback::stop_playback);
+	ClassDB::bind_method(D_METHOD("get_loop_count"), &AudioStreamPlayback::get_loop_count);
+	ClassDB::bind_method(D_METHOD("get_playback_position"), &AudioStreamPlayback::get_playback_position);
+	ClassDB::bind_method(D_METHOD("is_playing"), &AudioStreamPlayback::is_playing);
 }
 
 AudioStreamPlayback::AudioStreamPlayback() {}
@@ -132,12 +174,12 @@ void AudioStreamPlaybackResampled::begin_resample() {
 
 int AudioStreamPlaybackResampled::_mix_internal(AudioFrame *p_buffer, int p_frames) {
 	int ret = 0;
-	GDVIRTUAL_REQUIRED_CALL(_mix_resampled, p_buffer, p_frames, ret);
+	GDVIRTUAL_CALL(_mix_resampled, p_buffer, p_frames, ret);
 	return ret;
 }
 float AudioStreamPlaybackResampled::get_stream_sampling_rate() {
 	float ret = 0;
-	GDVIRTUAL_REQUIRED_CALL(_get_stream_sampling_rate, ret);
+	GDVIRTUAL_CALL(_get_stream_sampling_rate, ret);
 	return ret;
 }
 
@@ -173,12 +215,12 @@ int AudioStreamPlaybackResampled::mix(AudioFrame *p_buffer, float p_rate_scale, 
 		}
 
 		float mu2 = mu * mu;
-		AudioFrame a0 = 3 * y1 - 3 * y2 + y3 - y0;
-		AudioFrame a1 = 2 * y0 - 5 * y1 + 4 * y2 - y3;
-		AudioFrame a2 = y2 - y0;
-		AudioFrame a3 = 2 * y1;
+		float h11 = mu2 * (mu - 1);
+		float z = mu2 - h11;
+		float h01 = z - h11;
+		float h10 = mu - z;
 
-		p_buffer[i] = (a0 * mu * mu2 + a1 * mu2 + a2 * mu + a3) / 2;
+		p_buffer[i] = y1 + (y2 - y1) * h01 + ((y2 - y0) * h10 + (y3 - y1) * h11) * 0.5;
 
 		mix_offset += mix_increment;
 
@@ -238,7 +280,7 @@ double AudioStream::get_bpm() const {
 }
 
 bool AudioStream::has_loop() const {
-	bool ret = 0;
+	bool ret = false;
 	GDVIRTUAL_CALL(_has_loop, ret);
 	return ret;
 }
@@ -309,6 +351,8 @@ void AudioStream::_bind_methods() {
 	GDVIRTUAL_BIND(_get_bpm)
 	GDVIRTUAL_BIND(_get_beat_count)
 	GDVIRTUAL_BIND(_get_parameter_list)
+	GDVIRTUAL_BIND(_has_loop);
+	GDVIRTUAL_BIND(_get_bar_beats);
 
 	ADD_SIGNAL(MethodInfo("parameter_list_changed"));
 }
@@ -342,18 +386,12 @@ bool AudioStreamMicrophone::is_monophonic() const {
 	return true;
 }
 
-void AudioStreamMicrophone::_bind_methods() {
-}
-
-AudioStreamMicrophone::AudioStreamMicrophone() {
-}
-
 int AudioStreamPlaybackMicrophone::_mix_internal(AudioFrame *p_buffer, int p_frames) {
 	AudioDriver::get_singleton()->lock();
 
 	Vector<int32_t> buf = AudioDriver::get_singleton()->get_input_buffer();
 	unsigned int input_size = AudioDriver::get_singleton()->get_input_size();
-	int mix_rate = AudioDriver::get_singleton()->get_mix_rate();
+	int mix_rate = AudioDriver::get_singleton()->get_input_mix_rate();
 	unsigned int playback_delay = MIN(((50 * mix_rate) / 1000) * 2, buf.size() >> 1);
 #ifdef DEBUG_ENABLED
 	unsigned int input_position = AudioDriver::get_singleton()->get_input_position();
@@ -404,7 +442,7 @@ int AudioStreamPlaybackMicrophone::mix(AudioFrame *p_buffer, float p_rate_scale,
 }
 
 float AudioStreamPlaybackMicrophone::get_stream_sampling_rate() {
-	return AudioDriver::get_singleton()->get_mix_rate();
+	return AudioDriver::get_singleton()->get_input_mix_rate();
 }
 
 void AudioStreamPlaybackMicrophone::start(double p_from_pos) {

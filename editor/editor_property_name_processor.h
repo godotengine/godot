@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef EDITOR_PROPERTY_NAME_PROCESSOR_H
-#define EDITOR_PROPERTY_NAME_PROCESSOR_H
+#pragma once
 
 #include "scene/main/node.h"
 
@@ -51,7 +50,7 @@ class EditorPropertyNameProcessor : public Node {
 	StringName _get_context(const String &p_name, const String &p_property, const StringName &p_class) const;
 
 public:
-	// Matches `interface/inspector/capitalize_properties` editor setting.
+	// Matches `interface/inspector/default_property_name_style` editor setting.
 	enum Style {
 		STYLE_RAW,
 		STYLE_CAPITALIZED,
@@ -76,5 +75,3 @@ public:
 	EditorPropertyNameProcessor();
 	~EditorPropertyNameProcessor();
 };
-
-#endif // EDITOR_PROPERTY_NAME_PROCESSOR_H

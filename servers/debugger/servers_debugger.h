@@ -28,10 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef SERVERS_DEBUGGER_H
-#define SERVERS_DEBUGGER_H
-
-#include "core/debugger/debugger_marshalls.h"
+#pragma once
 
 #include "servers/rendering_server.h"
 
@@ -129,5 +126,3 @@ public:
 
 	~ServersDebugger();
 };
-
-#endif // SERVERS_DEBUGGER_H

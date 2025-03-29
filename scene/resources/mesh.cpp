@@ -34,10 +34,10 @@
 #include "core/templates/pair.h"
 #include "scene/resources/surface_tool.h"
 
-#ifndef _3D_DISABLED
+#ifndef PHYSICS_3D_DISABLED
 #include "scene/resources/3d/concave_polygon_shape_3d.h"
 #include "scene/resources/3d/convex_polygon_shape_3d.h"
-#endif // _3D_DISABLED
+#endif // PHYSICS_3D_DISABLED
 
 void MeshConvexDecompositionSettings::set_max_concavity(real_t p_max_concavity) {
 	max_concavity = CLAMP(p_max_concavity, 0.001, 1.0);
@@ -45,23 +45,23 @@ void MeshConvexDecompositionSettings::set_max_concavity(real_t p_max_concavity) 
 
 real_t MeshConvexDecompositionSettings::get_max_concavity() const {
 	return max_concavity;
-};
+}
 
 void MeshConvexDecompositionSettings::set_symmetry_planes_clipping_bias(real_t p_symmetry_planes_clipping_bias) {
 	symmetry_planes_clipping_bias = CLAMP(p_symmetry_planes_clipping_bias, 0.0, 1.0);
-};
+}
 
 real_t MeshConvexDecompositionSettings::get_symmetry_planes_clipping_bias() const {
 	return symmetry_planes_clipping_bias;
-};
+}
 
 void MeshConvexDecompositionSettings::set_revolution_axes_clipping_bias(real_t p_revolution_axes_clipping_bias) {
 	revolution_axes_clipping_bias = CLAMP(p_revolution_axes_clipping_bias, 0.0, 1.0);
-};
+}
 
 real_t MeshConvexDecompositionSettings::get_revolution_axes_clipping_bias() const {
 	return revolution_axes_clipping_bias;
-};
+}
 
 void MeshConvexDecompositionSettings::set_min_volume_per_convex_hull(real_t p_min_volume_per_convex_hull) {
 	min_volume_per_convex_hull = CLAMP(p_min_volume_per_convex_hull, 0.0001, 0.01);
@@ -201,85 +201,87 @@ void MeshConvexDecompositionSettings::_bind_methods() {
 	BIND_ENUM_CONSTANT(CONVEX_DECOMPOSITION_MODE_TETRAHEDRON);
 }
 
+#ifndef PHYSICS_3D_DISABLED
 Mesh::ConvexDecompositionFunc Mesh::convex_decomposition_function = nullptr;
+#endif // PHYSICS_3D_DISABLED
 
 int Mesh::get_surface_count() const {
 	int ret = 0;
-	GDVIRTUAL_REQUIRED_CALL(_get_surface_count, ret);
+	GDVIRTUAL_CALL(_get_surface_count, ret);
 	return ret;
 }
 
 int Mesh::surface_get_array_len(int p_idx) const {
 	int ret = 0;
-	GDVIRTUAL_REQUIRED_CALL(_surface_get_array_len, p_idx, ret);
+	GDVIRTUAL_CALL(_surface_get_array_len, p_idx, ret);
 	return ret;
 }
 
 int Mesh::surface_get_array_index_len(int p_idx) const {
 	int ret = 0;
-	GDVIRTUAL_REQUIRED_CALL(_surface_get_array_index_len, p_idx, ret);
+	GDVIRTUAL_CALL(_surface_get_array_index_len, p_idx, ret);
 	return ret;
 }
 
 Array Mesh::surface_get_arrays(int p_surface) const {
 	Array ret;
-	GDVIRTUAL_REQUIRED_CALL(_surface_get_arrays, p_surface, ret);
+	GDVIRTUAL_CALL(_surface_get_arrays, p_surface, ret);
 	return ret;
 }
 
 TypedArray<Array> Mesh::surface_get_blend_shape_arrays(int p_surface) const {
 	TypedArray<Array> ret;
-	GDVIRTUAL_REQUIRED_CALL(_surface_get_blend_shape_arrays, p_surface, ret);
+	GDVIRTUAL_CALL(_surface_get_blend_shape_arrays, p_surface, ret);
 	return ret;
 }
 
 Dictionary Mesh::surface_get_lods(int p_surface) const {
 	Dictionary ret;
-	GDVIRTUAL_REQUIRED_CALL(_surface_get_lods, p_surface, ret);
+	GDVIRTUAL_CALL(_surface_get_lods, p_surface, ret);
 	return ret;
 }
 
 BitField<Mesh::ArrayFormat> Mesh::surface_get_format(int p_idx) const {
 	uint32_t ret = 0;
-	GDVIRTUAL_REQUIRED_CALL(_surface_get_format, p_idx, ret);
+	GDVIRTUAL_CALL(_surface_get_format, p_idx, ret);
 	return ret;
 }
 
 Mesh::PrimitiveType Mesh::surface_get_primitive_type(int p_idx) const {
 	uint32_t ret = PRIMITIVE_MAX;
-	GDVIRTUAL_REQUIRED_CALL(_surface_get_primitive_type, p_idx, ret);
+	GDVIRTUAL_CALL(_surface_get_primitive_type, p_idx, ret);
 	return (Mesh::PrimitiveType)ret;
 }
 
 void Mesh::surface_set_material(int p_idx, const Ref<Material> &p_material) {
-	GDVIRTUAL_REQUIRED_CALL(_surface_set_material, p_idx, p_material);
+	GDVIRTUAL_CALL(_surface_set_material, p_idx, p_material);
 }
 
 Ref<Material> Mesh::surface_get_material(int p_idx) const {
 	Ref<Material> ret;
-	GDVIRTUAL_REQUIRED_CALL(_surface_get_material, p_idx, ret);
+	GDVIRTUAL_CALL(_surface_get_material, p_idx, ret);
 	return ret;
 }
 
 int Mesh::get_blend_shape_count() const {
 	int ret = 0;
-	GDVIRTUAL_REQUIRED_CALL(_get_blend_shape_count, ret);
+	GDVIRTUAL_CALL(_get_blend_shape_count, ret);
 	return ret;
 }
 
 StringName Mesh::get_blend_shape_name(int p_index) const {
 	StringName ret;
-	GDVIRTUAL_REQUIRED_CALL(_get_blend_shape_name, p_index, ret);
+	GDVIRTUAL_CALL(_get_blend_shape_name, p_index, ret);
 	return ret;
 }
 
 void Mesh::set_blend_shape_name(int p_index, const StringName &p_name) {
-	GDVIRTUAL_REQUIRED_CALL(_set_blend_shape_name, p_index, p_name);
+	GDVIRTUAL_CALL(_set_blend_shape_name, p_index, p_name);
 }
 
 AABB Mesh::get_aabb() const {
 	AABB ret;
-	GDVIRTUAL_REQUIRED_CALL(_get_aabb, ret);
+	GDVIRTUAL_CALL(_get_aabb, ret);
 	return ret;
 }
 
@@ -385,7 +387,7 @@ Ref<TriangleMesh> Mesh::generate_triangle_mesh() const {
 		}
 	}
 
-	triangle_mesh = Ref<TriangleMesh>(memnew(TriangleMesh));
+	triangle_mesh.instantiate();
 	triangle_mesh->create(faces);
 
 	return triangle_mesh;
@@ -521,7 +523,7 @@ Vector<Face3> Mesh::get_surface_faces(int p_surface) const {
 	return Vector<Face3>();
 }
 
-#ifndef _3D_DISABLED
+#ifndef PHYSICS_3D_DISABLED
 Ref<ConvexPolygonShape3D> Mesh::create_convex_shape(bool p_clean, bool p_simplify) const {
 	if (p_simplify) {
 		Ref<MeshConvexDecompositionSettings> settings = Ref<MeshConvexDecompositionSettings>();
@@ -581,7 +583,7 @@ Ref<ConcavePolygonShape3D> Mesh::create_trimesh_shape() const {
 	shape->set_faces(face_points);
 	return shape;
 }
-#endif // _3D_DISABLED
+#endif // PHYSICS_3D_DISABLED
 
 Ref<Mesh> Mesh::create_outline(float p_margin) const {
 	Array arrays;
@@ -900,12 +902,12 @@ void Mesh::clear_cache() const {
 	debug_lines.clear();
 }
 
-#ifndef _3D_DISABLED
+#ifndef PHYSICS_3D_DISABLED
 Vector<Ref<Shape3D>> Mesh::convex_decompose(const Ref<MeshConvexDecompositionSettings> &p_settings) const {
 	ERR_FAIL_NULL_V(convex_decomposition_function, Vector<Ref<Shape3D>>());
 
 	Ref<TriangleMesh> tm = generate_triangle_mesh();
-	ERR_FAIL_COND_V(!tm.is_valid(), Vector<Ref<Shape3D>>());
+	ERR_FAIL_COND_V(tm.is_null(), Vector<Ref<Shape3D>>());
 
 	const Vector<TriangleMesh::Triangle> &triangles = tm->get_triangles();
 	int triangle_count = triangles.size();
@@ -937,7 +939,7 @@ Vector<Ref<Shape3D>> Mesh::convex_decompose(const Ref<MeshConvexDecompositionSet
 
 	return ret;
 }
-#endif // _3D_DISABLED
+#endif // PHYSICS_3D_DISABLED
 
 int Mesh::get_builtin_bind_pose_count() const {
 	return 0;
@@ -1315,7 +1317,7 @@ bool ArrayMesh::_set(const StringName &p_name, const Variant &p_value) {
 	String sname = p_name;
 
 	if (sname.begins_with("surface_")) {
-		int sl = sname.find("/");
+		int sl = sname.find_char('/');
 		if (sl == -1) {
 			return false;
 		}
@@ -1708,7 +1710,7 @@ bool ArrayMesh::_get(const StringName &p_name, Variant &r_ret) const {
 
 	String sname = p_name;
 	if (sname.begins_with("surface_")) {
-		int sl = sname.find("/");
+		int sl = sname.find_char('/');
 		if (sl == -1) {
 			return false;
 		}
@@ -1740,7 +1742,7 @@ void ArrayMesh::_get_property_list(List<PropertyInfo> *p_list) const {
 	}
 
 	for (int i = 0; i < surfaces.size(); i++) {
-		p_list->push_back(PropertyInfo(Variant::STRING, "surface_" + itos(i) + "/name", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR));
+		p_list->push_back(PropertyInfo(Variant::STRING, "surface_" + itos(i) + "/name", PROPERTY_HINT_NO_NODEPATH, "", PROPERTY_USAGE_EDITOR));
 		if (surfaces[i].is_2d) {
 			p_list->push_back(PropertyInfo(Variant::OBJECT, "surface_" + itos(i) + "/material", PROPERTY_HINT_RESOURCE_TYPE, "CanvasItemMaterial,ShaderMaterial", PROPERTY_USAGE_EDITOR));
 		} else {
@@ -2007,6 +2009,17 @@ void ArrayMesh::clear_surfaces() {
 	aabb = AABB();
 }
 
+void ArrayMesh::surface_remove(int p_surface) {
+	ERR_FAIL_INDEX(p_surface, surfaces.size());
+	RS::get_singleton()->mesh_surface_remove(mesh, p_surface);
+	surfaces.remove_at(p_surface);
+
+	clear_cache();
+	_recompute_aabb();
+	notify_property_list_changed();
+	emit_changed();
+}
+
 void ArrayMesh::set_custom_aabb(const AABB &p_custom) {
 	_create_if_empty();
 	custom_aabb = p_custom;
@@ -2251,6 +2264,7 @@ Error ArrayMesh::lightmap_unwrap_cached(const Transform3D &p_base_transform, flo
 }
 
 void ArrayMesh::set_shadow_mesh(const Ref<ArrayMesh> &p_mesh) {
+	ERR_FAIL_COND_MSG(p_mesh == this, "Cannot set a mesh as its own shadow mesh.");
 	shadow_mesh = p_mesh;
 	if (shadow_mesh.is_valid()) {
 		RS::get_singleton()->mesh_set_shadow_mesh(mesh, shadow_mesh->get_rid());
@@ -2274,6 +2288,7 @@ void ArrayMesh::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("add_surface_from_arrays", "primitive", "arrays", "blend_shapes", "lods", "flags"), &ArrayMesh::add_surface_from_arrays, DEFVAL(Array()), DEFVAL(Dictionary()), DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("clear_surfaces"), &ArrayMesh::clear_surfaces);
+	ClassDB::bind_method(D_METHOD("surface_remove", "surf_idx"), &ArrayMesh::surface_remove);
 	ClassDB::bind_method(D_METHOD("surface_update_vertex_region", "surf_idx", "offset", "data"), &ArrayMesh::surface_update_vertex_region);
 	ClassDB::bind_method(D_METHOD("surface_update_attribute_region", "surf_idx", "offset", "data"), &ArrayMesh::surface_update_attribute_region);
 	ClassDB::bind_method(D_METHOD("surface_update_skin_region", "surf_idx", "offset", "data"), &ArrayMesh::surface_update_skin_region);
@@ -2284,10 +2299,10 @@ void ArrayMesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("surface_find_by_name", "name"), &ArrayMesh::surface_find_by_name);
 	ClassDB::bind_method(D_METHOD("surface_set_name", "surf_idx", "name"), &ArrayMesh::surface_set_name);
 	ClassDB::bind_method(D_METHOD("surface_get_name", "surf_idx"), &ArrayMesh::surface_get_name);
-#ifndef _3D_DISABLED
+#ifndef PHYSICS_3D_DISABLED
 	ClassDB::bind_method(D_METHOD("create_trimesh_shape"), &ArrayMesh::create_trimesh_shape);
 	ClassDB::bind_method(D_METHOD("create_convex_shape", "clean", "simplify"), &ArrayMesh::create_convex_shape, DEFVAL(true), DEFVAL(false));
-#endif // _3D_DISABLED
+#endif // PHYSICS_3D_DISABLED
 	ClassDB::bind_method(D_METHOD("create_outline", "margin"), &ArrayMesh::create_outline);
 	ClassDB::bind_method(D_METHOD("regen_normal_maps"), &ArrayMesh::regen_normal_maps);
 	ClassDB::set_method_flags(get_class_static(), _scs_create("regen_normal_maps"), METHOD_FLAGS_DEFAULT | METHOD_FLAG_EDITOR);
@@ -2307,10 +2322,10 @@ void ArrayMesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_set_surfaces", "surfaces"), &ArrayMesh::_set_surfaces);
 	ClassDB::bind_method(D_METHOD("_get_surfaces"), &ArrayMesh::_get_surfaces);
 
-	ADD_PROPERTY(PropertyInfo(Variant::PACKED_STRING_ARRAY, "_blend_shape_names", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_blend_shape_names", "_get_blend_shape_names");
-	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "_surfaces", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_surfaces", "_get_surfaces");
+	ADD_PROPERTY(PropertyInfo(Variant::PACKED_STRING_ARRAY, "_blend_shape_names", PROPERTY_HINT_NO_NODEPATH, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_blend_shape_names", "_get_blend_shape_names");
+	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "_surfaces", PROPERTY_HINT_NO_NODEPATH, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_surfaces", "_get_surfaces");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "blend_shape_mode", PROPERTY_HINT_ENUM, "Normalized,Relative"), "set_blend_shape_mode", "get_blend_shape_mode");
-	ADD_PROPERTY(PropertyInfo(Variant::AABB, "custom_aabb", PROPERTY_HINT_NONE, "suffix:m"), "set_custom_aabb", "get_custom_aabb");
+	ADD_PROPERTY(PropertyInfo(Variant::AABB, "custom_aabb", PROPERTY_HINT_NO_NODEPATH, "suffix:m"), "set_custom_aabb", "get_custom_aabb");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "shadow_mesh", PROPERTY_HINT_RESOURCE_TYPE, "ArrayMesh"), "set_shadow_mesh", "get_shadow_mesh");
 }
 

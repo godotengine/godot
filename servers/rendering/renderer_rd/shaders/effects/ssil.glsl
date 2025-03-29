@@ -49,8 +49,9 @@ const int num_taps[5] = { 3, 5, 12, 0, 0 };
 #define SSIL_DEPTH_MIPS_ENABLE_AT_QUALITY_PRESET (2)
 #define SSIL_DEPTH_MIPS_GLOBAL_OFFSET (-4.3) // best noise/quality/performance tradeoff, found empirically
 //
-// !!warning!! the edge handling is hard-coded to 'disabled' on quality level 0, and enabled above, on the C++ side; while toggling it here will work for
-// testing purposes, it will not yield performance gains (or correct results)
+// WARNING: The edge handling is hard-coded to 'disabled' on quality level 0, and enabled above,
+// on the C++ side; while toggling it here will work for testing purposes, it will not yield
+// performance gains (or correct results).
 #define SSIL_DEPTH_BASED_EDGES_ENABLE_AT_QUALITY_PRESET (1)
 //
 #define SSIL_REDUCE_RADIUS_NEAR_SCREEN_BORDER_ENABLE_AT_QUALITY_PRESET (1)

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef AUDIO_DRIVER_WEB_H
-#define AUDIO_DRIVER_WEB_H
+#pragma once
 
 #include "godot_audio.h"
 #include "godot_js.h"
@@ -96,6 +95,7 @@ public:
 	virtual void stop_sample_playback(const Ref<AudioSamplePlayback> &p_playback) override;
 	virtual void set_sample_playback_pause(const Ref<AudioSamplePlayback> &p_playback, bool p_paused) override;
 	virtual bool is_sample_playback_active(const Ref<AudioSamplePlayback> &p_playback) override;
+	virtual double get_sample_playback_position(const Ref<AudioSamplePlayback> &p_playback) override;
 	virtual void update_sample_playback_pitch_scale(const Ref<AudioSamplePlayback> &p_playback, float p_pitch_scale = 0.0f) override;
 	virtual void set_sample_playback_bus_volumes_linear(const Ref<AudioSamplePlayback> &p_playback, const HashMap<StringName, Vector<AudioFrame>> &p_bus_volumes) override;
 
@@ -168,6 +168,8 @@ public:
 	AudioDriverWorklet() { singleton = this; }
 };
 
+#endif // THREADS_ENABLED
+
 class AudioDriverScriptProcessor : public AudioDriverWeb {
 private:
 	static void _process_callback();
@@ -177,7 +179,6 @@ private:
 protected:
 	virtual Error create(int &p_buffer_size, int p_output_channels) override;
 	virtual void start(float *p_out_buf, int p_out_buf_size, float *p_in_buf, int p_in_buf_size) override;
-	virtual void finish_driver() override;
 
 public:
 	virtual const char *get_name() const override { return "ScriptProcessor"; }
@@ -189,7 +190,3 @@ public:
 
 	AudioDriverScriptProcessor() { singleton = this; }
 };
-
-#endif // THREADS_ENABLED
-
-#endif // AUDIO_DRIVER_WEB_H

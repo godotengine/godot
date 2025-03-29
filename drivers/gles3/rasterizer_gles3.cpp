@@ -35,6 +35,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
+#include "core/io/image.h"
 #include "core/os/os.h"
 #include "storage/texture_storage.h"
 
@@ -54,6 +55,7 @@
 #define _EXT_DEBUG_TYPE_PORTABILITY_ARB 0x824F
 #define _EXT_DEBUG_TYPE_PERFORMANCE_ARB 0x8250
 #define _EXT_DEBUG_TYPE_OTHER_ARB 0x8251
+#define _EXT_DEBUG_TYPE_MARKER_ARB 0x8268
 #define _EXT_MAX_DEBUG_MESSAGE_LENGTH_ARB 0x9143
 #define _EXT_MAX_DEBUG_LOGGED_MESSAGES_ARB 0x9144
 #define _EXT_DEBUG_LOGGED_MESSAGES_ARB 0x9145
@@ -61,6 +63,10 @@
 #define _EXT_DEBUG_SEVERITY_MEDIUM_ARB 0x9147
 #define _EXT_DEBUG_SEVERITY_LOW_ARB 0x9148
 #define _EXT_DEBUG_OUTPUT 0x92E0
+
+#ifndef GL_FRAMEBUFFER_SRGB
+#define GL_FRAMEBUFFER_SRGB 0x8DB9
+#endif
 
 #ifndef GLAPIENTRY
 #if defined(WINDOWS_ENABLED)
@@ -80,6 +86,10 @@
 
 #if defined(MINGW_ENABLED) || defined(_MSC_VER)
 #define strcpy strcpy_s
+#endif
+
+#ifdef WINDOWS_ENABLED
+bool RasterizerGLES3::screen_flipped_y = false;
 #endif
 
 bool RasterizerGLES3::gles_over_gl = true;
@@ -131,7 +141,7 @@ void RasterizerGLES3::clear_depth(float p_depth) {
 #ifdef CAN_DEBUG
 static void GLAPIENTRY _gl_debug_print(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar *message, const GLvoid *userParam) {
 	// These are ultimately annoying, so removing for now.
-	if (type == _EXT_DEBUG_TYPE_OTHER_ARB || type == _EXT_DEBUG_TYPE_PERFORMANCE_ARB) {
+	if (type == _EXT_DEBUG_TYPE_OTHER_ARB || type == _EXT_DEBUG_TYPE_PERFORMANCE_ARB || type == _EXT_DEBUG_TYPE_MARKER_ARB) {
 		return;
 	}
 
@@ -209,6 +219,7 @@ void RasterizerGLES3::finalize() {
 	memdelete(glow);
 	memdelete(cubemap_filter);
 	memdelete(copy_effects);
+	memdelete(feed_effects);
 	memdelete(light_storage);
 	memdelete(particles_storage);
 	memdelete(mesh_storage);
@@ -357,10 +368,16 @@ RasterizerGLES3::RasterizerGLES3() {
 	cubemap_filter = memnew(GLES3::CubemapFilter);
 	glow = memnew(GLES3::Glow);
 	post_effects = memnew(GLES3::PostEffects);
+	feed_effects = memnew(GLES3::FeedEffects);
 	gi = memnew(GLES3::GI);
 	fog = memnew(GLES3::Fog);
 	canvas = memnew(RasterizerCanvasGLES3());
 	scene = memnew(RasterizerSceneGLES3());
+
+	// Disable OpenGL linear to sRGB conversion, because Godot will always do this conversion itself.
+	if (config->srgb_framebuffer_supported) {
+		glDisable(GL_FRAMEBUFFER_SRGB);
+	}
 }
 
 RasterizerGLES3::~RasterizerGLES3() {
@@ -379,6 +396,12 @@ void RasterizerGLES3::_blit_render_target_to_screen(RID p_render_target, Display
 		// We're probably rendering directly to an XR device.
 		flip_y = false;
 	}
+
+#ifdef WINDOWS_ENABLED
+	if (screen_flipped_y) {
+		flip_y = !flip_y;
+	}
+#endif
 
 	GLuint read_fbo = 0;
 	glGenFramebuffers(1, &read_fbo);
@@ -448,9 +471,9 @@ void RasterizerGLES3::set_boot_image(const Ref<Image> &p_image, const Color &p_c
 	glBindFramebuffer(GL_FRAMEBUFFER, GLES3::TextureStorage::system_fbo);
 	glViewport(0, 0, win_size.width, win_size.height);
 	glEnable(GL_BLEND);
-	glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ZERO, GL_ONE);
+	glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE);
 	glDepthMask(GL_FALSE);
-	glClearColor(p_color.r, p_color.g, p_color.b, 1.0);
+	glClearColor(p_color.r, p_color.g, p_color.b, OS::get_singleton()->is_layered_allowed() ? p_color.a : 1.0);
 	glClear(GL_COLOR_BUFFER_BIT);
 
 	RID texture = texture_storage->texture_allocate();
@@ -476,9 +499,14 @@ void RasterizerGLES3::set_boot_image(const Ref<Image> &p_image, const Color &p_c
 		screenrect.position += ((Size2(win_size.width, win_size.height) - screenrect.size) / 2.0).floor();
 	}
 
-	// Flip Y.
-	screenrect.position.y = win_size.y - screenrect.position.y;
-	screenrect.size.y = -screenrect.size.y;
+#ifdef WINDOWS_ENABLED
+	if (!screen_flipped_y)
+#endif
+	{
+		// Flip Y.
+		screenrect.position.y = win_size.y - screenrect.position.y;
+		screenrect.size.y = -screenrect.size.y;
+	}
 
 	// Normalize texture coordinates to window size.
 	screenrect.position /= win_size;

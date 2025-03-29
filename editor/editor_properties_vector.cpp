@@ -130,9 +130,11 @@ void EditorPropertyVectorN::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_READY: {
 			if (linked->is_visible()) {
-				const String key = vformat("%s:%s", get_edited_object()->get_class(), get_edited_property());
-				linked->set_pressed_no_signal(EditorSettings::get_singleton()->get_project_metadata("linked_properties", key, true));
-				_update_ratio();
+				if (get_edited_object()) {
+					const String key = vformat("%s:%s", get_edited_object()->get_class(), get_edited_property());
+					linked->set_pressed_no_signal(EditorSettings::get_singleton()->get_project_metadata("linked_properties", key, true));
+					_update_ratio();
+				}
 			}
 		} break;
 
@@ -151,7 +153,7 @@ void EditorPropertyVectorN::_notification(int p_what) {
 	}
 }
 
-void EditorPropertyVectorN::setup(double p_min, double p_max, double p_step, bool p_hide_slider, bool p_link, const String &p_suffix, bool p_radians_as_degrees) {
+void EditorPropertyVectorN::setup(double p_min, double p_max, double p_step, bool p_hide_slider, bool p_link, const String &p_suffix, bool p_radians_as_degrees, bool p_is_int) {
 	radians_as_degrees = p_radians_as_degrees;
 
 	for (EditorSpinSlider *spin : spin_sliders) {
@@ -162,6 +164,7 @@ void EditorPropertyVectorN::setup(double p_min, double p_max, double p_step, boo
 		spin->set_allow_greater(true);
 		spin->set_allow_lesser(true);
 		spin->set_suffix(p_suffix);
+		spin->set_editing_integer(p_is_int);
 	}
 
 	if (!p_link) {
@@ -236,7 +239,7 @@ EditorPropertyVectorN::EditorPropertyVectorN(Variant::Type p_type, bool p_force_
 	linked->set_stretch_mode(TextureButton::STRETCH_KEEP_CENTERED);
 	linked->set_tooltip_text(TTR("Lock/Unlock Component Ratio"));
 	linked->connect(SceneStringName(pressed), callable_mp(this, &EditorPropertyVectorN::_update_ratio));
-	linked->connect(SNAME("toggled"), callable_mp(this, &EditorPropertyVectorN::_store_link));
+	linked->connect(SceneStringName(toggled), callable_mp(this, &EditorPropertyVectorN::_store_link));
 	hb->add_child(linked);
 
 	add_child(hb);

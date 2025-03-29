@@ -18,6 +18,9 @@ msgstr ""
 "Plural-Forms: nplurals=3; plural=((n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2);\n"
 "X-Generator: Weblate 5.5-dev\n"
 
+msgid "All Recognized"
+msgstr "Všechny rozpoznatelné"
+
 msgid ""
 "Color: #%s\n"
 "LMB: Apply color"
@@ -37,11 +40,11 @@ msgstr "Otevřít"
 msgid "Select Current Folder"
 msgstr "Vybrat stávající složku"
 
+msgid "Save"
+msgstr "Uložit"
+
 msgid "Select This Folder"
 msgstr "Vybrat tuto složku"
-
-msgid "All Recognized"
-msgstr "Všechny rozpoznatelné"
 
 msgid "All Files"
 msgstr "Všechny soubory"
@@ -57,9 +60,6 @@ msgstr "Otevřít složku"
 
 msgid "Open a File or Directory"
 msgstr "Otevřít soubor nebo složku"
-
-msgid "Save"
-msgstr "Uložit"
 
 msgid "Save a File"
 msgstr "Uložit soubor"

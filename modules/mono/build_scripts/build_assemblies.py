@@ -194,7 +194,7 @@ def run_msbuild(tools: ToolsLocation, sln: str, chdir_to: str, msbuild_args: Opt
     return subprocess.call(args, env=msbuild_env, cwd=chdir_to)
 
 
-def build_godot_api(msbuild_tool, module_dir, output_dir, push_nupkgs_local, precision):
+def build_godot_api(msbuild_tool, module_dir, output_dir, push_nupkgs_local, precision, no_deprecated, werror):
     target_filenames = [
         "GodotSharp.dll",
         "GodotSharp.pdb",
@@ -217,6 +217,10 @@ def build_godot_api(msbuild_tool, module_dir, output_dir, push_nupkgs_local, pre
             args += ["/p:ClearNuGetLocalCache=true", "/p:PushNuGetToLocalSource=" + push_nupkgs_local]
         if precision == "double":
             args += ["/p:GodotFloat64=true"]
+        if no_deprecated:
+            args += ["/p:GodotNoDeprecated=true"]
+        if werror:
+            args += ["/p:TreatWarningsAsErrors=true"]
 
         sln = os.path.join(module_dir, "glue/GodotSharp/GodotSharp.sln")
         exit_code = run_msbuild(msbuild_tool, sln=sln, chdir_to=module_dir, msbuild_args=args)
@@ -227,7 +231,7 @@ def build_godot_api(msbuild_tool, module_dir, output_dir, push_nupkgs_local, pre
 
         core_src_dir = os.path.abspath(os.path.join(sln, os.pardir, "GodotSharp", "bin", build_config))
         editor_src_dir = os.path.abspath(os.path.join(sln, os.pardir, "GodotSharpEditor", "bin", build_config))
-        plugins_src_dir = os.path.abspath(os.path.join(sln, os.pardir, "GodotPlugins", "bin", build_config, "net6.0"))
+        plugins_src_dir = os.path.abspath(os.path.join(sln, os.pardir, "GodotPlugins", "bin", build_config, "net8.0"))
 
         if not os.path.isdir(editor_api_dir):
             assert not os.path.isfile(editor_api_dir)
@@ -336,12 +340,16 @@ def generate_sdk_package_versions():
         f.write(constants)
 
 
-def build_all(msbuild_tool, module_dir, output_dir, godot_platform, dev_debug, push_nupkgs_local, precision):
+def build_all(
+    msbuild_tool, module_dir, output_dir, godot_platform, dev_debug, push_nupkgs_local, precision, no_deprecated, werror
+):
     # Generate SdkPackageVersions.props and VersionDocsUrl constant
     generate_sdk_package_versions()
 
     # Godot API
-    exit_code = build_godot_api(msbuild_tool, module_dir, output_dir, push_nupkgs_local, precision)
+    exit_code = build_godot_api(
+        msbuild_tool, module_dir, output_dir, push_nupkgs_local, precision, no_deprecated, werror
+    )
     if exit_code != 0:
         return exit_code
 
@@ -364,6 +372,8 @@ def build_all(msbuild_tool, module_dir, output_dir, godot_platform, dev_debug, p
         args += ["/p:ClearNuGetLocalCache=true", "/p:PushNuGetToLocalSource=" + push_nupkgs_local]
     if precision == "double":
         args += ["/p:GodotFloat64=true"]
+    if no_deprecated:
+        args += ["/p:GodotNoDeprecated=true"]
     sln = os.path.join(module_dir, "editor/Godot.NET.Sdk/Godot.NET.Sdk.sln")
     exit_code = run_msbuild(msbuild_tool, sln=sln, chdir_to=module_dir, msbuild_args=args)
     if exit_code != 0:
@@ -390,6 +400,13 @@ def main():
     parser.add_argument(
         "--precision", type=str, default="single", choices=["single", "double"], help="Floating-point precision level"
     )
+    parser.add_argument(
+        "--no-deprecated",
+        action="store_true",
+        default=False,
+        help="Build GodotSharp without using deprecated features. This is required, if the engine was built with 'deprecated=no'.",
+    )
+    parser.add_argument("--werror", action="store_true", default=False, help="Treat compiler warnings as errors.")
 
     args = parser.parse_args()
 
@@ -414,6 +431,8 @@ def main():
         args.dev_debug,
         push_nupkgs_local,
         args.precision,
+        args.no_deprecated,
+        args.werror,
     )
     sys.exit(exit_code)
 

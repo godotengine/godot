@@ -712,7 +712,7 @@ void TextShaderEditor::_menu_option(int p_option) {
 			code_editor->get_find_replace_bar()->popup_replace();
 		} break;
 		case SEARCH_GOTO_LINE: {
-			goto_line_dialog->popup_find_line(code_editor->get_text_editor());
+			goto_line_popup->popup_find_line(code_editor);
 		} break;
 		case BOOKMARK_TOGGLE: {
 			code_editor->toggle_bookmark();
@@ -727,7 +727,10 @@ void TextShaderEditor::_menu_option(int p_option) {
 			code_editor->remove_all_bookmarks();
 		} break;
 		case HELP_DOCS: {
-			OS::get_singleton()->shell_open(vformat("%s/tutorials/shaders/shader_reference/index.html", VERSION_DOCS_URL));
+			OS::get_singleton()->shell_open(vformat("%s/tutorials/shaders/shader_reference/index.html", GODOT_VERSION_DOCS_URL));
+		} break;
+		case EDIT_EMOJI_AND_SYMBOL: {
+			code_editor->get_text_editor()->show_emoji_and_symbol_picker();
 		} break;
 	}
 	if (p_option != SEARCH_FIND && p_option != SEARCH_REPLACE && p_option != SEARCH_GOTO_LINE) {
@@ -779,7 +782,7 @@ void TextShaderEditor::_show_warnings_panel(bool p_show) {
 
 void TextShaderEditor::_warning_clicked(const Variant &p_line) {
 	if (p_line.get_type() == Variant::INT) {
-		code_editor->get_text_editor()->set_caret_line(p_line.operator int64_t());
+		code_editor->goto_line_centered(p_line.operator int64_t());
 	}
 }
 
@@ -867,7 +870,7 @@ void TextShaderEditor::_check_for_external_edit() {
 
 void TextShaderEditor::_reload_shader_from_disk() {
 	Ref<Shader> rel_shader = ResourceLoader::load(shader->get_path(), shader->get_class(), ResourceFormatLoader::CACHE_MODE_IGNORE);
-	ERR_FAIL_COND(!rel_shader.is_valid());
+	ERR_FAIL_COND(rel_shader.is_null());
 
 	code_editor->set_block_shader_changed(true);
 	shader->set_code(rel_shader->get_code());
@@ -878,7 +881,7 @@ void TextShaderEditor::_reload_shader_from_disk() {
 
 void TextShaderEditor::_reload_shader_include_from_disk() {
 	Ref<ShaderInclude> rel_shader_include = ResourceLoader::load(shader_inc->get_path(), shader_inc->get_class(), ResourceFormatLoader::CACHE_MODE_IGNORE);
-	ERR_FAIL_COND(!rel_shader_include.is_valid());
+	ERR_FAIL_COND(rel_shader_include.is_null());
 
 	code_editor->set_block_shader_changed(true);
 	shader_inc->set_code(rel_shader_include->get_code());
@@ -895,7 +898,7 @@ void TextShaderEditor::_reload() {
 	}
 }
 
-void TextShaderEditor::edit(const Ref<Shader> &p_shader) {
+void TextShaderEditor::edit_shader(const Ref<Shader> &p_shader) {
 	if (p_shader.is_null() || !p_shader->is_text_shader()) {
 		return;
 	}
@@ -910,7 +913,7 @@ void TextShaderEditor::edit(const Ref<Shader> &p_shader) {
 	code_editor->set_edited_shader(shader);
 }
 
-void TextShaderEditor::edit(const Ref<ShaderInclude> &p_shader_inc) {
+void TextShaderEditor::edit_shader_include(const Ref<ShaderInclude> &p_shader_inc) {
 	if (p_shader_inc.is_null()) {
 		return;
 	}
@@ -1072,7 +1075,7 @@ void TextShaderEditor::_update_bookmark_list() {
 			line = line.substr(0, 50);
 		}
 
-		bookmarks_menu->add_item(String::num((int)bookmark_list[i] + 1) + " - \"" + line + "\"");
+		bookmarks_menu->add_item(String::num_int64(bookmark_list[i] + 1) + " - \"" + line + "\"");
 		bookmarks_menu->set_item_metadata(-1, bookmark_list[i]);
 	}
 }
@@ -1087,6 +1090,10 @@ void TextShaderEditor::_bookmark_item_pressed(int p_idx) {
 
 void TextShaderEditor::_make_context_menu(bool p_selection, Vector2 p_position) {
 	context_menu->clear();
+	if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_EMOJI_AND_SYMBOL_PICKER)) {
+		context_menu->add_item(TTR("Emoji & Symbols"), EDIT_EMOJI_AND_SYMBOL);
+		context_menu->add_separator();
+	}
 	if (p_selection) {
 		context_menu->add_shortcut(ED_GET_SHORTCUT("ui_cut"), EDIT_CUT);
 		context_menu->add_shortcut(ED_GET_SHORTCUT("ui_copy"), EDIT_COPY);
@@ -1141,6 +1148,7 @@ TextShaderEditor::TextShaderEditor() {
 	context_menu->connect(SceneStringName(id_pressed), callable_mp(this, &TextShaderEditor::_menu_option));
 
 	VBoxContainer *main_container = memnew(VBoxContainer);
+	main_container->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 	HBoxContainer *hbc = memnew(HBoxContainer);
 
 	edit_menu = memnew(MenuButton);
@@ -1234,8 +1242,8 @@ TextShaderEditor::TextShaderEditor() {
 	editor_box->add_child(warnings_panel);
 	code_editor->set_warnings_panel(warnings_panel);
 
-	goto_line_dialog = memnew(GotoLineDialog);
-	add_child(goto_line_dialog);
+	goto_line_popup = memnew(GotoLinePopup);
+	add_child(goto_line_popup);
 
 	disk_changed = memnew(ConfirmationDialog);
 
@@ -1255,4 +1263,5 @@ TextShaderEditor::TextShaderEditor() {
 	add_child(disk_changed);
 
 	_editor_settings_changed();
+	code_editor->show_toggle_scripts_button(); // TODO: Disabled for now, because it doesn't work properly.
 }

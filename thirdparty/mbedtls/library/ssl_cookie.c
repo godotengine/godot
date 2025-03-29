@@ -84,6 +84,10 @@ void mbedtls_ssl_cookie_set_timeout(mbedtls_ssl_cookie_ctx *ctx, unsigned long d
 
 void mbedtls_ssl_cookie_free(mbedtls_ssl_cookie_ctx *ctx)
 {
+    if (ctx == NULL) {
+        return;
+    }
+
 #if defined(MBEDTLS_USE_PSA_CRYPTO)
     psa_destroy_key(ctx->psa_hmac_key);
 #else

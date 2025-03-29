@@ -7,7 +7,7 @@ and semantics are as close as possible to those of the Perl 5 language.
 
                        Written by Philip Hazel
      Original API code Copyright (c) 1997-2012 University of Cambridge
-          New API code Copyright (c) 2016-2023 University of Cambridge
+          New API code Copyright (c) 2016-2024 University of Cambridge
 
 -----------------------------------------------------------------------------
 Redistribution and use in source and binary forms, with or without
@@ -96,7 +96,7 @@ static const unsigned char compile_error_texts[] =
   "length of lookbehind assertion is not limited\0"
   "a relative value of zero is not allowed\0"
   "conditional subpattern contains more than two branches\0"
-  "assertion expected after (?( or (?(?C)\0"
+  "atomic assertion expected after (?( or (?(?C)\0"
   "digit expected after (?+ or (?-\0"
   /* 30 */
   "unknown POSIX class name\0"
@@ -161,7 +161,7 @@ static const unsigned char compile_error_texts[] =
   "using UCP is disabled by the application\0"
   "name is too long in (*MARK), (*PRUNE), (*SKIP), or (*THEN)\0"
   "character code point value in \\u.... sequence is too large\0"
-  "digits missing in \\x{} or \\o{} or \\N{U+}\0"
+  "digits missing after \\x or in \\x{} or \\o{} or \\N{U+}\0"
   "syntax error or number too big in (?(VERSION condition\0"
   /* 80 */
   "internal error: unknown opcode in auto_possessify()\0"
@@ -185,10 +185,29 @@ static const unsigned char compile_error_texts[] =
   "(*alpha_assertion) not recognized\0"
   "script runs require Unicode support, which this version of PCRE2 does not have\0"
   "too many capturing groups (maximum 65535)\0"
-  "atomic assertion expected after (?( or (?(?C)\0"
+  "octal digit missing after \\0 (PCRE2_EXTRA_NO_BS0 is set)\0"
   "\\K is not allowed in lookarounds (but see PCRE2_EXTRA_ALLOW_LOOKAROUND_BSK)\0"
   /* 100 */
   "branch too long in variable-length lookbehind assertion\0"
+  "compiled pattern would be longer than the limit set by the application\0"
+  "octal value given by \\ddd is greater than \\377 (forbidden by PCRE2_EXTRA_PYTHON_OCTAL)\0"
+  "using callouts is disabled by the application\0"
+  "PCRE2_EXTRA_TURKISH_CASING require Unicode (UTF or UCP) mode\0"
+  /* 105 */
+  "PCRE2_EXTRA_TURKISH_CASING requires UTF in 8-bit mode\0"
+  "PCRE2_EXTRA_TURKISH_CASING and PCRE2_EXTRA_CASELESS_RESTRICT are not compatible\0"
+  "extended character class nesting is too deep\0"
+  "invalid operator in extended character class\0"
+  "unexpected operator in extended character class (no preceding operand)\0"
+  /* 110 */
+  "expected operand after operator in extended character class\0"
+  "square brackets needed to clarify operator precedence in extended character class\0"
+  "missing terminating ] for extended character class (note '[' must be escaped under PCRE2_ALT_EXTENDED_CLASS)\0"
+  "unexpected expression in extended character class (no preceding operator)\0"
+  "empty expression in extended character class\0"
+  /* 115 */
+  "terminating ] with no following closing parenthesis in (?[...]\0"
+  "unexpected character in (?[...]) extended character class\0"
   ;
 
 /* Match-time and UTF error texts are in the same format. */
@@ -275,6 +294,10 @@ static const unsigned char match_error_texts[] =
   "internal error - duplicate substitution match\0"
   "PCRE2_MATCH_INVALID_UTF is not supported for DFA matching\0"
   "INTERNAL ERROR: invalid substring offset\0"
+  "feature is not supported by the JIT compiler\0"
+  "error performing replacement case transformation\0"
+  /* 70 */
+  "replacement too large (longer than PCRE2_SIZE)\0"
   ;
 
 
@@ -317,7 +340,7 @@ else if (enumber < 0)               /* Match or UTF error */
   }
 else                                /* Invalid error number */
   {
-  message = (unsigned char *)"\0";  /* Empty message list */
+  message = (const unsigned char *)"\0";  /* Empty message list */
   n = 1;
   }
 

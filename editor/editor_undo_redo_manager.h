@@ -28,10 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef EDITOR_UNDO_REDO_MANAGER_H
-#define EDITOR_UNDO_REDO_MANAGER_H
+#pragma once
 
-#include "core/object/class_db.h"
 #include "core/object/object.h"
 #include "core/object/undo_redo.h"
 
@@ -125,7 +123,7 @@ public:
 	bool undo_history(int p_id);
 	bool redo();
 	bool redo_history(int p_id);
-	void clear_history(bool p_increase_version = true, int p_idx = INVALID_HISTORY);
+	void clear_history(int p_idx = INVALID_HISTORY, bool p_increase_version = true);
 
 	void set_history_as_saved(int p_idx);
 	void set_history_as_unsaved(int p_idx);
@@ -145,5 +143,3 @@ public:
 };
 
 VARIANT_ENUM_CAST(EditorUndoRedoManager::SpecialHistory);
-
-#endif // EDITOR_UNDO_REDO_MANAGER_H

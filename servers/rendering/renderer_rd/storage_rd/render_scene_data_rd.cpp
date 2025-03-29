@@ -32,10 +32,6 @@
 #include "servers/rendering/renderer_rd/renderer_scene_render_rd.h"
 #include "servers/rendering/renderer_rd/storage_rd/light_storage.h"
 #include "servers/rendering/renderer_rd/storage_rd/texture_storage.h"
-#include "servers/rendering/rendering_server_default.h"
-
-void RenderSceneDataRD::_bind_methods() {
-}
 
 Transform3D RenderSceneDataRD::get_cam_transform() const {
 	return cam_transform;
@@ -115,6 +111,7 @@ void RenderSceneDataRD::update_ubo(RID p_uniform_buffer, RS::ViewportDebugDraw p
 
 	ubo.taa_jitter[0] = taa_jitter.x;
 	ubo.taa_jitter[1] = taa_jitter.y;
+	ubo.taa_frame_count = taa_frame_count;
 
 	ubo.z_far = z_far;
 	ubo.z_near = z_near;

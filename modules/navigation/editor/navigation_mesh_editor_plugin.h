@@ -28,10 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef NAVIGATION_MESH_EDITOR_PLUGIN_H
-#define NAVIGATION_MESH_EDITOR_PLUGIN_H
-
-#ifdef TOOLS_ENABLED
+#pragma once
 
 #include "editor/plugins/editor_plugin.h"
 
@@ -60,13 +57,11 @@ class NavigationMeshEditor : public Control {
 
 protected:
 	void _node_removed(Node *p_node);
-	static void _bind_methods();
 	void _notification(int p_what);
 
 public:
 	void edit(NavigationRegion3D *p_nav_region);
 	NavigationMeshEditor();
-	~NavigationMeshEditor();
 };
 
 class NavigationMeshEditorPlugin : public EditorPlugin {
@@ -75,16 +70,11 @@ class NavigationMeshEditorPlugin : public EditorPlugin {
 	NavigationMeshEditor *navigation_mesh_editor = nullptr;
 
 public:
-	virtual String get_name() const override { return "NavigationMesh"; }
+	virtual String get_plugin_name() const override { return "NavigationMesh"; }
 	bool has_main_screen() const override { return false; }
 	virtual void edit(Object *p_object) override;
 	virtual bool handles(Object *p_object) const override;
 	virtual void make_visible(bool p_visible) override;
 
 	NavigationMeshEditorPlugin();
-	~NavigationMeshEditorPlugin();
 };
-
-#endif // TOOLS_ENABLED
-
-#endif // NAVIGATION_MESH_EDITOR_PLUGIN_H

@@ -348,7 +348,7 @@ static void _fill_std140_variant_ubo_value(ShaderLanguage::DataType type, int p_
 	}
 }
 
-_FORCE_INLINE_ static void _fill_std140_ubo_value(ShaderLanguage::DataType type, const Vector<ShaderLanguage::ConstantNode::Value> &value, uint8_t *data) {
+_FORCE_INLINE_ static void _fill_std140_ubo_value(ShaderLanguage::DataType type, const Vector<ShaderLanguage::Scalar> &value, uint8_t *data) {
 	switch (type) {
 		case ShaderLanguage::TYPE_BOOL: {
 			uint32_t *gui = (uint32_t *)data;
@@ -572,7 +572,10 @@ void ShaderData::set_default_texture_parameter(const StringName &p_name, RID p_t
 Variant ShaderData::get_default_parameter(const StringName &p_parameter) const {
 	if (uniforms.has(p_parameter)) {
 		ShaderLanguage::ShaderNode::Uniform uniform = uniforms[p_parameter];
-		Vector<ShaderLanguage::ConstantNode::Value> default_value = uniform.default_value;
+		Vector<ShaderLanguage::Scalar> default_value = uniform.default_value;
+		if (default_value.is_empty()) {
+			return ShaderLanguage::get_default_datatype_value(uniform.type, uniform.array_size, uniform.hint);
+		}
 		return ShaderLanguage::constant_value_to_variant(default_value, uniform.type, uniform.array_size, uniform.hint);
 	}
 	return Variant();
@@ -586,11 +589,7 @@ void ShaderData::get_shader_uniform_list(List<PropertyInfo> *p_param_list) const
 		if (E.value.scope != ShaderLanguage::ShaderNode::Uniform::SCOPE_LOCAL) {
 			continue;
 		}
-		if (E.value.texture_order >= 0) {
-			filtered_uniforms.push_back(Pair<StringName, int>(E.key, E.value.texture_order + 100000));
-		} else {
-			filtered_uniforms.push_back(Pair<StringName, int>(E.key, E.value.order));
-		}
+		filtered_uniforms.push_back(Pair<StringName, int>(E.key, E.value.prop_order));
 	}
 	int uniform_count = filtered_uniforms.size();
 	sorter.sort(filtered_uniforms.ptr(), uniform_count);
@@ -640,7 +639,7 @@ bool ShaderData::is_parameter_texture(const StringName &p_param) const {
 		return false;
 	}
 
-	return uniforms[p_param].texture_order >= 0;
+	return uniforms[p_param].is_texture();
 }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -679,6 +678,7 @@ static const GLenum target_from_type[ShaderLanguage::TYPE_MAX] = {
 	GL_TEXTURE_3D, // TYPE_USAMPLER3D,
 	GL_TEXTURE_CUBE_MAP, // TYPE_SAMPLERCUBE,
 	GL_TEXTURE_CUBE_MAP, // TYPE_SAMPLERCUBEARRAY,
+	_GL_TEXTURE_EXTERNAL_OES, // TYPE_SAMPLEREXT
 	GL_TEXTURE_2D, // TYPE_STRUCT
 };
 
@@ -719,7 +719,7 @@ void MaterialData::update_uniform_buffer(const HashMap<StringName, ShaderLanguag
 	bool uses_global_buffer = false;
 
 	for (const KeyValue<StringName, ShaderLanguage::ShaderNode::Uniform> &E : p_uniforms) {
-		if (E.value.order < 0) {
+		if (E.value.is_texture()) {
 			continue; // texture, does not go here
 		}
 
@@ -948,7 +948,10 @@ void MaterialData::update_textures(const HashMap<StringName, Variant> &p_paramet
 					}
 				} break;
 				case ShaderLanguage::TYPE_SAMPLERCUBEARRAY: {
-					ERR_PRINT_ONCE("Type: SamplerCubeArray not supported in GL Compatibility rendering backend, please use another type.");
+					ERR_PRINT_ONCE("Type: SamplerCubeArray is not supported in the Compatibility renderer, please use another type.");
+				} break;
+				case ShaderLanguage::TYPE_SAMPLEREXT: {
+					gl_texture = texture_storage->texture_gl_get_default(DEFAULT_GL_TEXTURE_EXT);
 				} break;
 
 				case ShaderLanguage::TYPE_ISAMPLER3D:
@@ -1193,6 +1196,7 @@ MaterialStorage::MaterialStorage() {
 		actions.render_mode_defines["world_vertex_coords"] = "#define USE_WORLD_VERTEX_COORDS\n";
 
 		actions.global_buffer_array_variable = "global_shader_uniforms";
+		actions.instance_uniform_index_variable = "read_draw_data_instance_offset";
 
 		shaders.compiler_canvas.initialize(actions);
 	}
@@ -1237,6 +1241,8 @@ MaterialStorage::MaterialStorage() {
 		actions.renames["PI"] = _MKSTR(Math_PI);
 		actions.renames["TAU"] = _MKSTR(Math_TAU);
 		actions.renames["E"] = _MKSTR(Math_E);
+		actions.renames["OUTPUT_IS_SRGB"] = "SHADER_IS_SRGB";
+		actions.renames["CLIP_SPACE_FAR"] = "SHADER_SPACE_FAR";
 		actions.renames["VIEWPORT_SIZE"] = "scene_data.viewport_size";
 
 		actions.renames["FRAGCOORD"] = "gl_FragCoord";
@@ -1276,7 +1282,6 @@ MaterialStorage::MaterialStorage() {
 		actions.renames["CUSTOM1"] = "custom1_attrib";
 		actions.renames["CUSTOM2"] = "custom2_attrib";
 		actions.renames["CUSTOM3"] = "custom3_attrib";
-		actions.renames["OUTPUT_IS_SRGB"] = "SHADER_IS_SRGB";
 		actions.renames["LIGHT_VERTEX"] = "light_vertex";
 
 		actions.renames["NODE_POSITION_WORLD"] = "model_matrix[3].xyz";
@@ -1367,6 +1372,10 @@ MaterialStorage::MaterialStorage() {
 		actions.render_mode_defines["ambient_light_disabled"] = "#define AMBIENT_LIGHT_DISABLED\n";
 		actions.render_mode_defines["shadow_to_opacity"] = "#define USE_SHADOW_TO_OPACITY\n";
 		actions.render_mode_defines["unshaded"] = "#define MODE_UNSHADED\n";
+		if (!GLES3::Config::get_singleton()->force_vertex_shading) {
+			// If forcing vertex shading, this will be defined already.
+			actions.render_mode_defines["vertex_lighting"] = "#define USE_VERTEX_LIGHTING\n";
+		}
 		actions.render_mode_defines["fog_disabled"] = "#define FOG_DISABLED\n";
 
 		actions.default_filter = ShaderLanguage::FILTER_LINEAR_MIPMAP;
@@ -1374,6 +1383,7 @@ MaterialStorage::MaterialStorage() {
 
 		actions.check_multiview_samplers = RasterizerGLES3::get_singleton()->is_xr_enabled();
 		actions.global_buffer_array_variable = "global_shader_uniforms";
+		actions.instance_uniform_index_variable = "instance_offset";
 
 		shaders.compiler_scene.initialize(actions);
 	}
@@ -1385,7 +1395,7 @@ MaterialStorage::MaterialStorage() {
 
 		actions.renames["COLOR"] = "out_color";
 		actions.renames["VELOCITY"] = "out_velocity_flags.xyz";
-		//actions.renames["MASS"] = "mass"; ?
+		actions.renames["MASS"] = "mass";
 		actions.renames["ACTIVE"] = "particle_active";
 		actions.renames["RESTART"] = "restart";
 		actions.renames["CUSTOM"] = "out_custom";
@@ -1915,7 +1925,7 @@ void MaterialStorage::global_shader_parameters_load_settings(bool p_load_texture
 
 	for (const PropertyInfo &E : settings) {
 		if (E.name.begins_with("shader_globals/")) {
-			StringName name = E.name.get_slice("/", 1);
+			StringName name = E.name.get_slicec('/', 1);
 			Dictionary d = GLOBAL_GET(E.name);
 
 			ERR_CONTINUE(!d.has("type"));
@@ -1952,6 +1962,7 @@ void MaterialStorage::global_shader_parameters_load_settings(bool p_load_texture
 				"sampler2DArray",
 				"sampler3D",
 				"samplerCube",
+				"samplerExternalOES"
 			};
 
 			RS::GlobalShaderParameterType gvtype = RS::GLOBAL_VAR_TYPE_MAX;
@@ -2498,6 +2509,19 @@ bool MaterialStorage::material_casts_shadows(RID p_material) {
 	return true; //by default everything casts shadows
 }
 
+RS::CullMode MaterialStorage::material_get_cull_mode(RID p_material) const {
+	const GLES3::Material *material = material_owner.get_or_null(p_material);
+	ERR_FAIL_NULL_V(material, RS::CULL_MODE_DISABLED);
+	ERR_FAIL_NULL_V(material->shader, RS::CULL_MODE_DISABLED);
+	if (material->shader->data) {
+		SceneShaderData *data = dynamic_cast<SceneShaderData *>(material->shader->data);
+		if (data) {
+			return (RS::CullMode)data->cull_mode;
+		}
+	}
+	return RS::CULL_MODE_DISABLED;
+}
+
 void MaterialStorage::material_get_instance_shader_parameters(RID p_material, List<InstanceShaderParam> *r_parameters) {
 	GLES3::Material *material = material_owner.get_or_null(p_material);
 	ERR_FAIL_NULL(material);
@@ -2664,7 +2688,11 @@ static void bind_uniforms_generic(const Vector<RID> &p_textures, const Vector<Sh
 		const ShaderCompiler::GeneratedCode::Texture &texture_uniform = texture_uniforms[texture_uniform_index];
 		if (texture) {
 			glActiveTexture(GL_TEXTURE0 + texture_offset + ti);
-			glBindTexture(target_from_type[texture_uniform.type], texture->tex_id);
+			GLenum target = target_from_type[texture_uniform.type];
+			if (target == _GL_TEXTURE_EXTERNAL_OES && !GLES3::Config::get_singleton()->external_texture_supported) {
+				target = GL_TEXTURE_2D;
+			}
+			glBindTexture(target, texture->tex_id);
 			if (texture->render_target) {
 				texture->render_target->used_in_frame = true;
 			}
@@ -2896,7 +2924,7 @@ void SceneShaderData::set_code(const String &p_code) {
 	int blend_modei = BLEND_MODE_MIX;
 	int depth_testi = DEPTH_TEST_ENABLED;
 	int alpha_antialiasing_modei = ALPHA_ANTIALIASING_OFF;
-	int cull_modei = CULL_BACK;
+	int cull_modei = RS::CULL_MODE_BACK;
 	int depth_drawi = DEPTH_DRAW_OPAQUE;
 
 	ShaderCompiler::IdentifierActions actions;
@@ -2919,9 +2947,9 @@ void SceneShaderData::set_code(const String &p_code) {
 
 	actions.render_mode_values["depth_test_disabled"] = Pair<int *, int>(&depth_testi, DEPTH_TEST_DISABLED);
 
-	actions.render_mode_values["cull_disabled"] = Pair<int *, int>(&cull_modei, CULL_DISABLED);
-	actions.render_mode_values["cull_front"] = Pair<int *, int>(&cull_modei, CULL_FRONT);
-	actions.render_mode_values["cull_back"] = Pair<int *, int>(&cull_modei, CULL_BACK);
+	actions.render_mode_values["cull_disabled"] = Pair<int *, int>(&cull_modei, RS::CULL_MODE_DISABLED);
+	actions.render_mode_values["cull_front"] = Pair<int *, int>(&cull_modei, RS::CULL_MODE_FRONT);
+	actions.render_mode_values["cull_back"] = Pair<int *, int>(&cull_modei, RS::CULL_MODE_BACK);
 
 	actions.render_mode_flags["unshaded"] = &unshaded;
 	actions.render_mode_flags["wireframe"] = &wireframe;
@@ -2979,7 +3007,7 @@ void SceneShaderData::set_code(const String &p_code) {
 	alpha_antialiasing_mode = AlphaAntiAliasing(alpha_antialiasing_modei);
 	depth_draw = DepthDraw(depth_drawi);
 	depth_test = DepthTest(depth_testi);
-	cull_mode = Cull(cull_modei);
+	cull_mode = RS::CullMode(cull_modei);
 
 	vertex_input_mask = RS::ARRAY_FORMAT_VERTEX | RS::ARRAY_FORMAT_NORMAL; // We can always read vertices and normals.
 	vertex_input_mask |= uses_tangent << RS::ARRAY_TANGENT;
@@ -3002,19 +3030,19 @@ void SceneShaderData::set_code(const String &p_code) {
 
 #ifdef DEBUG_ENABLED
 	if (uses_particle_trails) {
-		WARN_PRINT_ONCE_ED("Particle trails are only available when using the Forward+ or Mobile rendering backends.");
+		WARN_PRINT_ONCE_ED("Particle trails are only available when using the Forward+ or Mobile renderers.");
 	}
 
 	if (uses_sss) {
-		WARN_PRINT_ONCE_ED("Sub-surface scattering is only available when using the Forward+ rendering backend.");
+		WARN_PRINT_ONCE_ED("Subsurface scattering is only available when using the Forward+ renderer.");
 	}
 
 	if (uses_transmittance) {
-		WARN_PRINT_ONCE_ED("Transmittance is only available when using the Forward+ rendering backend.");
+		WARN_PRINT_ONCE_ED("Transmittance is only available when using the Forward+ renderer.");
 	}
 
 	if (uses_normal_texture) {
-		WARN_PRINT_ONCE_ED("Reading from the normal-roughness texture is only available when using the Forward+ or Mobile rendering backends.");
+		WARN_PRINT_ONCE_ED("Reading from the normal-roughness texture is only available when using the Forward+ or Mobile renderers.");
 	}
 #endif
 

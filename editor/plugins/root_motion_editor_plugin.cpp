@@ -37,7 +37,6 @@
 #include "scene/gui/button.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/tree.h"
-#include "scene/main/window.h"
 
 void EditorPropertyRootMotion::_confirmed() {
 	TreeItem *ti = filters->get_selected();
@@ -169,13 +168,13 @@ void EditorPropertyRootMotion::update_property() {
 	NodePath p = get_edited_property_value();
 	assign->set_tooltip_text(p);
 	if (p == NodePath()) {
-		assign->set_icon(Ref<Texture2D>());
+		assign->set_button_icon(Ref<Texture2D>());
 		assign->set_text(TTR("Assign..."));
 		assign->set_flat(false);
 		return;
 	}
 
-	assign->set_icon(Ref<Texture2D>());
+	assign->set_button_icon(Ref<Texture2D>());
 	assign->set_text(p);
 }
 
@@ -188,12 +187,9 @@ void EditorPropertyRootMotion::_notification(int p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
 			Ref<Texture2D> t = get_editor_theme_icon(SNAME("Clear"));
-			clear->set_icon(t);
+			clear->set_button_icon(t);
 		} break;
 	}
-}
-
-void EditorPropertyRootMotion::_bind_methods() {
 }
 
 EditorPropertyRootMotion::EditorPropertyRootMotion() {

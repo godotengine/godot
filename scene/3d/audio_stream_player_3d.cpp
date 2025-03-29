@@ -34,11 +34,14 @@
 #include "core/config/project_settings.h"
 #include "scene/3d/audio_listener_3d.h"
 #include "scene/3d/camera_3d.h"
-#include "scene/3d/physics/area_3d.h"
 #include "scene/3d/velocity_tracker_3d.h"
 #include "scene/audio/audio_stream_player_internal.h"
 #include "scene/main/viewport.h"
 #include "servers/audio/audio_stream.h"
+
+#ifndef PHYSICS_3D_DISABLED
+#include "scene/3d/physics/area_3d.h"
+#endif // PHYSICS_3D_DISABLED
 
 // Based on "A Novel Multichannel Panning Method for Standard and Arbitrary Loudspeaker Configurations" by Ramy Sadek and Chris Kyriakakis (2004)
 // Speaker-Placement Correction Amplitude Panning (SPCAP)
@@ -141,6 +144,7 @@ void AudioStreamPlayer3D::_calc_output_vol(const Vector3 &source_dir, real_t tig
 	}
 }
 
+#ifndef PHYSICS_3D_DISABLED
 void AudioStreamPlayer3D::_calc_reverb_vol(Area3D *area, Vector3 listener_area_pos, Vector<AudioFrame> direct_path_vol, Vector<AudioFrame> &reverb_vol) {
 	reverb_vol.resize(4);
 	reverb_vol.write[0] = AudioFrame(0, 0);
@@ -209,6 +213,7 @@ void AudioStreamPlayer3D::_calc_reverb_vol(Area3D *area, Vector3 listener_area_p
 		}
 	}
 }
+#endif // PHYSICS_3D_DISABLED
 
 float AudioStreamPlayer3D::_get_attenuation_db(float p_distance) const {
 	float att = 0;
@@ -283,6 +288,7 @@ void AudioStreamPlayer3D::_notification(int p_what) {
 	}
 }
 
+#ifndef PHYSICS_3D_DISABLED
 // Interacts with PhysicsServer3D, so can only be called during _physics_process
 Area3D *AudioStreamPlayer3D::_get_overriding_area() {
 	//check if any area is diverting sound into a bus
@@ -321,13 +327,16 @@ Area3D *AudioStreamPlayer3D::_get_overriding_area() {
 	}
 	return nullptr;
 }
+#endif // PHYSICS_3D_DISABLED
 
 // Interacts with PhysicsServer3D, so can only be called during _physics_process.
 StringName AudioStreamPlayer3D::_get_actual_bus() {
+#ifndef PHYSICS_3D_DISABLED
 	Area3D *overriding_area = _get_overriding_area();
 	if (overriding_area && overriding_area->is_overriding_audio_bus() && !overriding_area->is_using_reverb_bus()) {
 		return overriding_area->get_audio_bus_name();
 	}
+#endif // PHYSICS_3D_DISABLED
 	return internal->bus;
 }
 
@@ -358,7 +367,9 @@ Vector<AudioFrame> AudioStreamPlayer3D::_update_panning() {
 	HashSet<Camera3D *> cameras = world_3d->get_cameras();
 	cameras.insert(get_viewport()->get_camera_3d());
 
+#ifndef PHYSICS_3D_DISABLED
 	PhysicsDirectSpaceState3D *space_state = PhysicsServer3D::get_singleton()->space_get_direct_state(world_3d->get_space());
+#endif // PHYSICS_3D_DISABLED
 
 	for (Camera3D *camera : cameras) {
 		if (!camera) {
@@ -388,23 +399,35 @@ Vector<AudioFrame> AudioStreamPlayer3D::_update_panning() {
 		Vector3 area_sound_pos;
 		Vector3 listener_area_pos;
 
+#ifndef PHYSICS_3D_DISABLED
 		Area3D *area = _get_overriding_area();
-
 		if (area && area->is_using_reverb_bus() && area->get_reverb_uniformity() > 0) {
 			area_sound_pos = space_state->get_closest_point_to_object_volume(area->get_rid(), listener_node->get_global_transform().origin);
 			listener_area_pos = listener_node->get_global_transform().affine_inverse().xform(area_sound_pos);
 		}
+#endif // PHYSICS_3D_DISABLED
 
 		if (max_distance > 0) {
 			float total_max = max_distance;
 
+#ifndef PHYSICS_3D_DISABLED
 			if (area && area->is_using_reverb_bus() && area->get_reverb_uniformity() > 0) {
 				total_max = MAX(total_max, listener_area_pos.length());
 			}
-			if (total_max > max_distance) {
+#endif // PHYSICS_3D_DISABLED
+			if (dist > total_max || total_max > max_distance) {
+				if (!was_further_than_max_distance_last_frame) {
+					HashMap<StringName, Vector<AudioFrame>> bus_volumes;
+					for (Ref<AudioStreamPlayback> &playback : internal->stream_playbacks) {
+						// So the player gets muted and mostly stops mixing when out of range.
+						AudioServer::get_singleton()->set_playback_bus_volumes_linear(playback, bus_volumes);
+					}
+					was_further_than_max_distance_last_frame = true; // Cache so we don't set the volume over and over.
+				}
 				continue; //can't hear this sound in this listener
 			}
 		}
+		was_further_than_max_distance_last_frame = false;
 
 		float multiplier = Math::db_to_linear(_get_attenuation_db(dist));
 		if (max_distance > 0) {
@@ -436,6 +459,7 @@ Vector<AudioFrame> AudioStreamPlayer3D::_update_panning() {
 		}
 
 		HashMap<StringName, Vector<AudioFrame>> bus_volumes;
+#ifndef PHYSICS_3D_DISABLED
 		if (area) {
 			if (area->is_overriding_audio_bus()) {
 				//override audio bus
@@ -448,7 +472,9 @@ Vector<AudioFrame> AudioStreamPlayer3D::_update_panning() {
 				_calc_reverb_vol(area, listener_area_pos, output_volume_vector, reverb_vol);
 				bus_volumes[reverb_bus_name] = reverb_vol;
 			}
-		} else {
+		} else
+#endif // PHYSICS_3D_DISABLED
+		{
 			bus_volumes[internal->bus] = output_volume_vector;
 		}
 
@@ -510,6 +536,14 @@ float AudioStreamPlayer3D::get_volume_db() const {
 	return internal->volume_db;
 }
 
+void AudioStreamPlayer3D::set_volume_linear(float p_volume) {
+	set_volume_db(Math::linear_to_db(p_volume));
+}
+
+float AudioStreamPlayer3D::get_volume_linear() const {
+	return Math::db_to_linear(get_volume_db());
+}
+
 void AudioStreamPlayer3D::set_unit_size(float p_volume) {
 	unit_size = p_volume;
 	update_gizmos();
@@ -544,7 +578,7 @@ void AudioStreamPlayer3D::play(float p_from_pos) {
 	setplay.set(p_from_pos);
 
 	// Sample handling.
-	if (stream_playback->get_is_sample()) {
+	if (stream_playback->get_is_sample() && stream_playback->get_sample_playback().is_valid()) {
 		Ref<AudioSamplePlayback> sample_playback = stream_playback->get_sample_playback();
 		sample_playback->offset = p_from_pos;
 		sample_playback->bus = _get_actual_bus();
@@ -554,15 +588,12 @@ void AudioStreamPlayer3D::play(float p_from_pos) {
 }
 
 void AudioStreamPlayer3D::seek(float p_seconds) {
-	if (is_playing()) {
-		stop();
-		play(p_seconds);
-	}
+	internal->seek(p_seconds);
 }
 
 void AudioStreamPlayer3D::stop() {
 	setplay.set(-1);
-	internal->stop();
+	internal->stop_basic();
 }
 
 bool AudioStreamPlayer3D::is_playing() const {
@@ -573,6 +604,9 @@ bool AudioStreamPlayer3D::is_playing() const {
 }
 
 float AudioStreamPlayer3D::get_playback_position() {
+	if (setplay.get() >= 0) {
+		return setplay.get(); // play() has been called this frame, but no playback exists just yet.
+	}
 	return internal->get_playback_position();
 }
 
@@ -594,10 +628,6 @@ bool AudioStreamPlayer3D::is_autoplay_enabled() const {
 
 void AudioStreamPlayer3D::_set_playing(bool p_enable) {
 	internal->set_playing(p_enable);
-}
-
-bool AudioStreamPlayer3D::_is_active() const {
-	return internal->is_active();
 }
 
 void AudioStreamPlayer3D::_validate_property(PropertyInfo &p_property) const {
@@ -757,6 +787,9 @@ void AudioStreamPlayer3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_volume_db", "volume_db"), &AudioStreamPlayer3D::set_volume_db);
 	ClassDB::bind_method(D_METHOD("get_volume_db"), &AudioStreamPlayer3D::get_volume_db);
 
+	ClassDB::bind_method(D_METHOD("set_volume_linear", "volume_linear"), &AudioStreamPlayer3D::set_volume_linear);
+	ClassDB::bind_method(D_METHOD("get_volume_linear"), &AudioStreamPlayer3D::get_volume_linear);
+
 	ClassDB::bind_method(D_METHOD("set_unit_size", "unit_size"), &AudioStreamPlayer3D::set_unit_size);
 	ClassDB::bind_method(D_METHOD("get_unit_size"), &AudioStreamPlayer3D::get_unit_size);
 
@@ -779,8 +812,7 @@ void AudioStreamPlayer3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_autoplay", "enable"), &AudioStreamPlayer3D::set_autoplay);
 	ClassDB::bind_method(D_METHOD("is_autoplay_enabled"), &AudioStreamPlayer3D::is_autoplay_enabled);
 
-	ClassDB::bind_method(D_METHOD("_set_playing", "enable"), &AudioStreamPlayer3D::_set_playing);
-	ClassDB::bind_method(D_METHOD("_is_active"), &AudioStreamPlayer3D::_is_active);
+	ClassDB::bind_method(D_METHOD("set_playing", "enable"), &AudioStreamPlayer3D::_set_playing);
 
 	ClassDB::bind_method(D_METHOD("set_max_distance", "meters"), &AudioStreamPlayer3D::set_max_distance);
 	ClassDB::bind_method(D_METHOD("get_max_distance"), &AudioStreamPlayer3D::get_max_distance);
@@ -827,10 +859,11 @@ void AudioStreamPlayer3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "stream", PROPERTY_HINT_RESOURCE_TYPE, "AudioStream"), "set_stream", "get_stream");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "attenuation_model", PROPERTY_HINT_ENUM, "Inverse,Inverse Square,Logarithmic,Disabled"), "set_attenuation_model", "get_attenuation_model");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "volume_db", PROPERTY_HINT_RANGE, "-80,80,suffix:dB"), "set_volume_db", "get_volume_db");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "volume_linear", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_volume_linear", "get_volume_linear");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "unit_size", PROPERTY_HINT_RANGE, "0.1,100,0.01,or_greater"), "set_unit_size", "get_unit_size");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "max_db", PROPERTY_HINT_RANGE, "-24,6,suffix:dB"), "set_max_db", "get_max_db");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "pitch_scale", PROPERTY_HINT_RANGE, "0.01,4,0.01,or_greater"), "set_pitch_scale", "get_pitch_scale");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "playing", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "_set_playing", "is_playing");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "playing", PROPERTY_HINT_ONESHOT, "", PROPERTY_USAGE_EDITOR), "set_playing", "is_playing");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "autoplay"), "set_autoplay", "is_autoplay_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "stream_paused", PROPERTY_HINT_NONE, ""), "set_stream_paused", "get_stream_paused");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "max_distance", PROPERTY_HINT_RANGE, "0,4096,0.01,or_greater,suffix:m"), "set_max_distance", "get_max_distance");
@@ -862,7 +895,7 @@ void AudioStreamPlayer3D::_bind_methods() {
 }
 
 AudioStreamPlayer3D::AudioStreamPlayer3D() {
-	internal = memnew(AudioStreamPlayerInternal(this, callable_mp(this, &AudioStreamPlayer3D::play), true));
+	internal = memnew(AudioStreamPlayerInternal(this, callable_mp(this, &AudioStreamPlayer3D::play), callable_mp(this, &AudioStreamPlayer3D::stop), true));
 	velocity_tracker.instantiate();
 	set_disable_scale(true);
 	cached_global_panning_strength = GLOBAL_GET("audio/general/3d_panning_strength");

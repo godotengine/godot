@@ -306,8 +306,7 @@ static inline psa_status_t psa_driver_wrapper_sign_hash(
 #endif /* PSA_CRYPTO_DRIVER_TEST */
 #if defined (MBEDTLS_PSA_P256M_DRIVER_ENABLED)
             if( PSA_KEY_TYPE_IS_ECC( psa_get_key_type(attributes) ) &&
-                PSA_ALG_IS_ECDSA(alg) &&
-                !PSA_ALG_ECDSA_IS_DETERMINISTIC( alg ) &&
+                PSA_ALG_IS_RANDOMIZED_ECDSA(alg) &&
                 PSA_KEY_TYPE_ECC_GET_FAMILY(psa_get_key_type(attributes)) == PSA_ECC_FAMILY_SECP_R1 &&
                 psa_get_key_bits(attributes) == 256 )
             {
@@ -411,7 +410,6 @@ static inline psa_status_t psa_driver_wrapper_verify_hash(
 #if defined (MBEDTLS_PSA_P256M_DRIVER_ENABLED)
             if( PSA_KEY_TYPE_IS_ECC( psa_get_key_type(attributes) ) &&
                 PSA_ALG_IS_ECDSA(alg) &&
-                !PSA_ALG_ECDSA_IS_DETERMINISTIC( alg ) &&
                 PSA_KEY_TYPE_ECC_GET_FAMILY(psa_get_key_type(attributes)) == PSA_ECC_FAMILY_SECP_R1 &&
                 psa_get_key_bits(attributes) == 256 )
             {
@@ -728,10 +726,10 @@ static inline psa_status_t psa_driver_wrapper_get_key_buffer_size_from_key_data(
     }
 }
 
-#ifndef __cplusplus
 static inline psa_status_t psa_driver_wrapper_generate_key(
     const psa_key_attributes_t *attributes,
-    const psa_key_production_parameters_t *params, size_t params_data_length,
+    const psa_custom_key_parameters_t *custom,
+    const uint8_t *custom_data, size_t custom_data_length,
     uint8_t *key_buffer, size_t key_buffer_size, size_t *key_buffer_length )
 {
     psa_status_t status = PSA_ERROR_CORRUPTION_DETECTED;
@@ -740,7 +738,7 @@ static inline psa_status_t psa_driver_wrapper_generate_key(
 
 #if defined(PSA_WANT_KEY_TYPE_RSA_KEY_PAIR_GENERATE)
     int is_default_production =
-        psa_key_production_parameters_are_default(params, params_data_length);
+        psa_custom_key_parameters_are_default(custom, custom_data_length);
     if( location != PSA_KEY_LOCATION_LOCAL_STORAGE && !is_default_production )
     {
         /* We don't support passing custom production parameters
@@ -811,7 +809,7 @@ static inline psa_status_t psa_driver_wrapper_generate_key(
 
             /* Software fallback */
             status = psa_generate_key_internal(
-                attributes, params, params_data_length,
+                attributes, custom, custom_data, custom_data_length,
                 key_buffer, key_buffer_size, key_buffer_length );
             break;
 
@@ -833,7 +831,6 @@ static inline psa_status_t psa_driver_wrapper_generate_key(
 
     return( status );
 }
-#endif
 
 static inline psa_status_t psa_driver_wrapper_import_key(
     const psa_key_attributes_t *attributes,

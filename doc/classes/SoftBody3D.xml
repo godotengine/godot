@@ -87,6 +87,7 @@
 			<param index="0" name="point_index" type="int" />
 			<param index="1" name="pinned" type="bool" />
 			<param index="2" name="attachment_path" type="NodePath" default="NodePath(&quot;&quot;)" />
+			<param index="3" name="insert_at" type="int" default="-1" />
 			<description>
 				Sets the pinned state of a surface vertex. When set to [code]true[/code], the optional [param attachment_path] can define a [Node3D] the pinned vertex will be attached to.
 			</description>

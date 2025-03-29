@@ -28,12 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef BIT_MAP_H
-#define BIT_MAP_H
+#pragma once
 
 #include "core/io/image.h"
 #include "core/io/resource.h"
-#include "core/io/resource_loader.h"
 
 template <typename T>
 class TypedArray;
@@ -81,5 +79,3 @@ public:
 
 	BitMap();
 };
-
-#endif // BIT_MAP_H

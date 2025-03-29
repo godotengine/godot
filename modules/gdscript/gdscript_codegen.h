@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef GDSCRIPT_CODEGEN_H
-#define GDSCRIPT_CODEGEN_H
+#pragma once
 
 #include "gdscript_function.h"
 #include "gdscript_utility_functions.h"
@@ -142,6 +141,7 @@ public:
 	virtual void write_construct_array(const Address &p_target, const Vector<Address> &p_arguments) = 0;
 	virtual void write_construct_typed_array(const Address &p_target, const GDScriptDataType &p_element_type, const Vector<Address> &p_arguments) = 0;
 	virtual void write_construct_dictionary(const Address &p_target, const Vector<Address> &p_arguments) = 0;
+	virtual void write_construct_typed_dictionary(const Address &p_target, const GDScriptDataType &p_key_type, const GDScriptDataType &p_value_type, const Vector<Address> &p_arguments) = 0;
 	virtual void write_await(const Address &p_target, const Address &p_operand) = 0;
 	virtual void write_if(const Address &p_condition) = 0;
 	virtual void write_else() = 0;
@@ -164,5 +164,3 @@ public:
 
 	virtual ~GDScriptCodeGenerator() {}
 };
-
-#endif // GDSCRIPT_CODEGEN_H

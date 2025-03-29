@@ -28,12 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef RENDER_SCENE_DATA_RD_H
-#define RENDER_SCENE_DATA_RD_H
+#pragma once
 
-#include "render_scene_buffers_rd.h"
 #include "servers/rendering/renderer_scene_render.h"
-#include "servers/rendering/rendering_device.h"
 #include "servers/rendering/storage/render_scene_data.h"
 
 // This is a container for data related to rendering a single frame of a viewport where we load this data into a UBO
@@ -48,8 +45,10 @@ public:
 	Transform3D cam_transform;
 	Projection cam_projection;
 	Vector2 taa_jitter;
+	float taa_frame_count = 0.0f;
 	uint32_t camera_visible_layers;
 	bool cam_orthogonal = false;
+	bool cam_frustum = false;
 	bool flip_y = false;
 
 	// For billboards to cast correct shadows.
@@ -95,8 +94,6 @@ public:
 	virtual RID get_uniform_buffer() const override;
 
 private:
-	static void _bind_methods();
-
 	RID uniform_buffer; // loaded into this uniform buffer (supplied externally)
 
 	// This struct is loaded into Set 1 - Binding 0, populated at start of rendering a frame, must match with shader code
@@ -150,8 +147,8 @@ private:
 
 		float fog_height_density;
 		float fog_depth_curve;
-		float pad;
 		float fog_depth_begin;
+		float taa_frame_count; // Used to add break up samples over multiple frames. Value is an integer from 0 to taa_phase_count -1.
 
 		float fog_light_color[3];
 		float fog_depth_end;
@@ -176,5 +173,3 @@ private:
 		UBO prev_ubo;
 	};
 };
-
-#endif // RENDER_SCENE_DATA_RD_H

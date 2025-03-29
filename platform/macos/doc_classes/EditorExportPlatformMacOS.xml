@@ -38,8 +38,11 @@
 		<member name="application/icon_interpolation" type="int" setter="" getter="">
 			Interpolation method used to resize application icon.
 		</member>
-		<member name="application/min_macos_version" type="String" setter="" getter="">
-			Minimum version of macOS required for this application to run in the [code]major.minor.patch[/code] or [code]major.minor[/code] format, can only contain numeric characters ([code]0-9[/code]) and periods ([code].[/code]).
+		<member name="application/min_macos_version_arm64" type="String" setter="" getter="">
+			Minimum version of macOS required for this application to run on Apple Silicon Macs, in the [code]major.minor.patch[/code] or [code]major.minor[/code] format, can only contain numeric characters ([code]0-9[/code]) and periods ([code].[/code]).
+		</member>
+		<member name="application/min_macos_version_x86_64" type="String" setter="" getter="">
+			Minimum version of macOS required for this application to run on Intel Macs, in the [code]major.minor.patch[/code] or [code]major.minor[/code] format, can only contain numeric characters ([code]0-9[/code]) and periods ([code].[/code]).
 		</member>
 		<member name="application/short_version" type="String" setter="" getter="">
 			Application version visible to the user, can only contain numeric characters ([code]0-9[/code]) and periods ([code].[/code]). Falls back to [member ProjectSettings.application/config/version] if left empty.
@@ -71,6 +74,13 @@
 		</member>
 		<member name="codesign/custom_options" type="PackedStringArray" setter="" getter="">
 			Array of the additional command line arguments passed to the code signing tool.
+		</member>
+		<member name="codesign/entitlements/additional" type="String" setter="" getter="">
+			Additional data added to the root [code]&lt;dict&gt;[/code] section of the [url=https://developer.apple.com/documentation/bundleresources/entitlements].entitlements[/url] file. The value should be an XML section with pairs of key-value elements, for example:
+			[codeblock lang=text]
+			&lt;key&gt;key_name&lt;/key&gt;
+			&lt;string&gt;value&lt;/string&gt;
+			[/codeblock]
 		</member>
 		<member name="codesign/entitlements/address_book" type="bool" setter="" getter="">
 			Enable to allow access to contacts in the user's address book, if it's enabled you should also provide usage message in the [member privacy/address_book_usage_description] option. See [url=https://developer.apple.com/documentation/bundleresources/entitlements/com_apple_security_personal-information_addressbook]com.apple.security.personal-information.addressbook[/url].

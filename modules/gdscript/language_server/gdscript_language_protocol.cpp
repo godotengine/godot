@@ -171,7 +171,7 @@ void GDScriptLanguageProtocol::_bind_methods() {
 }
 
 Dictionary GDScriptLanguageProtocol::initialize(const Dictionary &p_params) {
-	lsp::InitializeResult ret;
+	LSP::InitializeResult ret;
 
 	String root_uri = p_params["rootUri"];
 	String root = p_params["rootPath"];
@@ -196,7 +196,7 @@ Dictionary GDScriptLanguageProtocol::initialize(const Dictionary &p_params) {
 		ERR_FAIL_COND_V_MSG(!clients.has(latest_client_id), ret.to_json(),
 				vformat("GDScriptLanguageProtocol: Can't initialize invalid peer '%d'.", latest_client_id));
 		Ref<LSPeer> peer = clients.get(latest_client_id);
-		if (peer != nullptr) {
+		if (peer.is_valid()) {
 			String msg = Variant(request).to_json_string();
 			msg = format_output(msg);
 			(*peer)->res_queue.push_back(msg.utf8());
@@ -213,11 +213,11 @@ Dictionary GDScriptLanguageProtocol::initialize(const Dictionary &p_params) {
 }
 
 void GDScriptLanguageProtocol::initialized(const Variant &p_params) {
-	lsp::GodotCapabilities capabilities;
+	LSP::GodotCapabilities capabilities;
 
 	DocTools *doc = EditorHelp::get_doc_data();
 	for (const KeyValue<String, DocData::ClassDoc> &E : doc->class_list) {
-		lsp::GodotNativeClassInfo gdclass;
+		LSP::GodotNativeClassInfo gdclass;
 		gdclass.name = E.value.name;
 		gdclass.class_doc = &(E.value);
 		if (ClassDB::ClassInfo *ptr = ClassDB::classes.getptr(StringName(E.value.name))) {
@@ -298,7 +298,7 @@ void GDScriptLanguageProtocol::notify_client(const String &p_method, const Varia
 	}
 	ERR_FAIL_COND(!clients.has(p_client_id));
 	Ref<LSPeer> peer = clients.get(p_client_id);
-	ERR_FAIL_NULL(peer);
+	ERR_FAIL_COND(peer.is_null());
 
 	Dictionary message = make_notification(p_method, p_params);
 	String msg = Variant(message).to_json_string();
@@ -319,7 +319,7 @@ void GDScriptLanguageProtocol::request_client(const String &p_method, const Vari
 	}
 	ERR_FAIL_COND(!clients.has(p_client_id));
 	Ref<LSPeer> peer = clients.get(p_client_id);
-	ERR_FAIL_NULL(peer);
+	ERR_FAIL_COND(peer.is_null());
 
 	Dictionary message = make_request(p_method, p_params, next_server_id);
 	next_server_id++;

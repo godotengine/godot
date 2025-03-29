@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef ANIMATION_NODE_STATE_MACHINE_H
-#define ANIMATION_NODE_STATE_MACHINE_H
+#pragma once
 
 #include "core/math/expression.h"
 #include "scene/animation/animation_tree.h"
@@ -110,9 +109,6 @@ class AnimationNodeStateMachine : public AnimationRootNode {
 	GDCLASS(AnimationNodeStateMachine, AnimationRootNode);
 
 public:
-	static StringName START_NODE;
-	static StringName END_NODE;
-
 	enum StateMachineType {
 		STATE_MACHINE_TYPE_ROOT,
 		STATE_MACHINE_TYPE_NESTED,
@@ -222,6 +218,9 @@ public:
 #ifdef TOOLS_ENABLED
 	virtual void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const override;
 #endif
+
+	Vector<StringName> get_nodes_with_transitions_from(const StringName &p_node) const;
+	Vector<StringName> get_nodes_with_transitions_to(const StringName &p_node) const;
 
 	AnimationNodeStateMachine();
 };
@@ -348,5 +347,3 @@ public:
 
 	AnimationNodeStateMachinePlayback();
 };
-
-#endif // ANIMATION_NODE_STATE_MACHINE_H

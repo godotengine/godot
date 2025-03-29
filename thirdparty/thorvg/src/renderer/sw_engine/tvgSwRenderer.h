@@ -36,9 +36,8 @@ namespace tvg
 class SwRenderer : public RenderMethod
 {
 public:
-    RenderData prepare(const RenderShape& rshape, RenderData data, const RenderTransform* transform, Array<RenderData>& clips, uint8_t opacity, RenderUpdateFlag flags, bool clipper) override;
-    RenderData prepare(const Array<RenderData>& scene, RenderData data, const RenderTransform* transform, Array<RenderData>& clips, uint8_t opacity, RenderUpdateFlag flags) override;
-    RenderData prepare(Surface* surface, const RenderMesh* mesh, RenderData data, const RenderTransform* transform, Array<RenderData>& clips, uint8_t opacity, RenderUpdateFlag flags) override;
+    RenderData prepare(const RenderShape& rshape, RenderData data, const Matrix& transform, Array<RenderData>& clips, uint8_t opacity, RenderUpdateFlag flags, bool clipper) override;
+    RenderData prepare(RenderSurface* surface, RenderData data, const Matrix& transform, Array<RenderData>& clips, uint8_t opacity, RenderUpdateFlag flags) override;
     bool preRender() override;
     bool renderShape(RenderData data) override;
     bool renderImage(RenderData data) override;
@@ -49,17 +48,21 @@ public:
     bool viewport(const RenderRegion& vp) override;
     bool blend(BlendMethod method) override;
     ColorSpace colorSpace() override;
-    const Surface* mainSurface() override;
+    const RenderSurface* mainSurface() override;
 
     bool clear() override;
     bool sync() override;
     bool target(pixel_t* data, uint32_t stride, uint32_t w, uint32_t h, ColorSpace cs);
     bool mempool(bool shared);
 
-    Compositor* target(const RenderRegion& region, ColorSpace cs) override;
-    bool beginComposite(Compositor* cmp, CompositeMethod method, uint8_t opacity) override;
-    bool endComposite(Compositor* cmp) override;
+    RenderCompositor* target(const RenderRegion& region, ColorSpace cs, CompositionFlag flags) override;
+    bool beginComposite(RenderCompositor* cmp, CompositeMethod method, uint8_t opacity) override;
+    bool endComposite(RenderCompositor* cmp) override;
     void clearCompositors();
+
+    void prepare(RenderEffect* effect, const Matrix& transform) override;
+    bool region(RenderEffect* effect) override;
+    bool render(RenderCompositor* cmp, const RenderEffect* effect, bool direct) override;
 
     static SwRenderer* gen();
     static bool init(uint32_t threads);
@@ -77,7 +80,8 @@ private:
     SwRenderer();
     ~SwRenderer();
 
-    RenderData prepareCommon(SwTask* task, const RenderTransform* transform, const Array<RenderData>& clips, uint8_t opacity, RenderUpdateFlag flags);
+    SwSurface* request(int channelSize, bool square);
+    RenderData prepareCommon(SwTask* task, const Matrix& transform, const Array<RenderData>& clips, uint8_t opacity, RenderUpdateFlag flags);
 };
 
 }

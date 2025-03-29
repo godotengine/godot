@@ -41,6 +41,7 @@
 #include <cxxabi.h>
 #include <signal.h>
 #include <algorithm>
+#include <cstdlib>
 #include <iterator>
 #include <string>
 #include <vector>
@@ -133,6 +134,10 @@ extern void CrashHandlerException(int signal) {
 		return;
 	}
 
+	if (OS::get_singleton()->is_crash_handler_silent()) {
+		std::_Exit(0);
+	}
+
 	String msg;
 	const ProjectSettings *proj_settings = ProjectSettings::get_singleton();
 	if (proj_settings) {
@@ -148,10 +153,10 @@ extern void CrashHandlerException(int signal) {
 	print_error(vformat("%s: Program crashed with signal %d", __FUNCTION__, signal));
 
 	// Print the engine version just before, so that people are reminded to include the version in backtrace reports.
-	if (String(VERSION_HASH).is_empty()) {
-		print_error(vformat("Engine version: %s", VERSION_FULL_NAME));
+	if (String(GODOT_VERSION_HASH).is_empty()) {
+		print_error(vformat("Engine version: %s", GODOT_VERSION_FULL_NAME));
 	} else {
-		print_error(vformat("Engine version: %s (%s)", VERSION_FULL_NAME, VERSION_HASH));
+		print_error(vformat("Engine version: %s (%s)", GODOT_VERSION_FULL_NAME, GODOT_VERSION_HASH));
 	}
 	print_error(vformat("Dumping the backtrace. %s", msg));
 
@@ -159,12 +164,18 @@ extern void CrashHandlerException(int signal) {
 
 	// Load process and image info to determine ASLR addresses offset.
 	MODULEINFO mi;
-	GetModuleInformation(GetCurrentProcess(), GetModuleHandle(NULL), &mi, sizeof(mi));
+	GetModuleInformation(GetCurrentProcess(), GetModuleHandle(nullptr), &mi, sizeof(mi));
 	int64_t image_mem_base = reinterpret_cast<int64_t>(mi.lpBaseOfDll);
 	int64_t image_file_base = get_image_base(_execpath);
 	data.offset = image_mem_base - image_file_base;
 
-	data.state = backtrace_create_state(_execpath.utf8().get_data(), 0, &error_callback, reinterpret_cast<void *>(&data));
+	if (FileAccess::exists(_execpath + ".debugsymbols")) {
+		_execpath = _execpath + ".debugsymbols";
+	}
+	_execpath = _execpath.replace("/", "\\");
+
+	CharString cs = _execpath.utf8(); // Note: should remain in scope during backtrace_simple call.
+	data.state = backtrace_create_state(cs.get_data(), 0, &error_callback, reinterpret_cast<void *>(&data));
 	if (data.state != nullptr) {
 		data.index = 1;
 		backtrace_simple(data.state, 1, &trace_callback, &error_callback, reinterpret_cast<void *>(&data));

@@ -62,7 +62,7 @@ func test():
 		0 when side_effect():
 			print("will run the side effect call, but not this")
 		_:
-			assert(global == 1)
+			Utils.check(global == 1)
 			print("side effect only ran once")
 
 func side_effect():

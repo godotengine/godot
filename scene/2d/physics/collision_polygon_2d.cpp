@@ -36,8 +36,6 @@
 #include "scene/resources/2d/concave_polygon_shape_2d.h"
 #include "scene/resources/2d/convex_polygon_shape_2d.h"
 
-#include "thirdparty/misc/polypartition.h"
-
 void CollisionPolygon2D::_build_polygon() {
 	collision_object->shape_owner_clear_shapes(owner_id);
 
@@ -217,7 +215,7 @@ CollisionPolygon2D::BuildMode CollisionPolygon2D::get_build_mode() const {
 	return build_mode;
 }
 
-#ifdef TOOLS_ENABLED
+#ifdef DEBUG_ENABLED
 Rect2 CollisionPolygon2D::_edit_get_rect() const {
 	return aabb;
 }
@@ -232,7 +230,7 @@ bool CollisionPolygon2D::_edit_is_selected_on_click(const Point2 &p_point, doubl
 #endif
 
 PackedStringArray CollisionPolygon2D::get_configuration_warnings() const {
-	PackedStringArray warnings = Node::get_configuration_warnings();
+	PackedStringArray warnings = Node2D::get_configuration_warnings();
 
 	if (!Object::cast_to<CollisionObject2D>(get_parent())) {
 		warnings.push_back(RTR("CollisionPolygon2D only serves to provide a collision shape to a CollisionObject2D derived node. Please only use it as a child of Area2D, StaticBody2D, RigidBody2D, CharacterBody2D, etc. to give them a shape."));

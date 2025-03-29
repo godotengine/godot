@@ -123,9 +123,9 @@
 				[b]Note:[/b] Not all runtimes support all environment blend modes, so it is important to check this at startup. For example:
 				[codeblock]
 				func _ready():
-				    var xr_interface: XRInterface = XRServer.find_interface("OpenXR")
+				    var xr_interface = XRServer.find_interface("OpenXR")
 				    if xr_interface and xr_interface.is_initialized():
-				        var vp: Viewport = get_viewport()
+				        var vp = get_viewport()
 				        vp.use_xr = true
 				        var acceptable_modes = [XRInterface.XR_ENV_BLEND_MODE_OPAQUE, XRInterface.XR_ENV_BLEND_MODE_ADDITIVE]
 				        var modes = xr_interface.get_supported_environment_blend_modes()
@@ -262,6 +262,9 @@
 		</constant>
 		<constant name="XR_PLAY_AREA_STAGE" value="4" enum="PlayAreaMode">
 			Same as [constant XR_PLAY_AREA_ROOMSCALE] but origin point is fixed to the center of the physical space. In this mode, system-level recentering may be disabled, requiring the use of [method XRServer.center_on_hmd].
+		</constant>
+		<constant name="XR_PLAY_AREA_CUSTOM" value="2147483647" enum="PlayAreaMode">
+			Custom play area set by a GDExtension.
 		</constant>
 		<constant name="XR_ENV_BLEND_MODE_OPAQUE" value="0" enum="EnvironmentBlendMode">
 			Opaque blend mode. This is typically used for VR devices.

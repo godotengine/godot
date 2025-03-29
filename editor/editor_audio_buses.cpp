@@ -91,19 +91,28 @@ void EditorAudioBus::_notification(int p_what) {
 			Color mute_color = EditorThemeManager::is_dark_theme() ? Color(1.0, 0.16, 0.16) : Color(2.35, 1.03, 1.03);
 			Color bypass_color = EditorThemeManager::is_dark_theme() ? Color(0.13, 0.8, 1.0) : Color(1.03, 2.04, 2.35);
 			float darkening_factor = EditorThemeManager::is_dark_theme() ? 0.15 : 0.65;
+			Color solo_color_darkened = solo_color.darkened(darkening_factor);
+			Color mute_color_darkened = mute_color.darkened(darkening_factor);
+			Color bypass_color_darkened = bypass_color.darkened(darkening_factor);
 
-			Ref<StyleBoxFlat>(solo->get_theme_stylebox(SceneStringName(pressed)))->set_border_color(solo_color.darkened(darkening_factor));
-			Ref<StyleBoxFlat>(mute->get_theme_stylebox(SceneStringName(pressed)))->set_border_color(mute_color.darkened(darkening_factor));
-			Ref<StyleBoxFlat>(bypass->get_theme_stylebox(SceneStringName(pressed)))->set_border_color(bypass_color.darkened(darkening_factor));
+			Ref<StyleBoxFlat>(solo->get_theme_stylebox(SceneStringName(pressed)))->set_border_color(solo_color_darkened);
+			Ref<StyleBoxFlat>(mute->get_theme_stylebox(SceneStringName(pressed)))->set_border_color(mute_color_darkened);
+			Ref<StyleBoxFlat>(bypass->get_theme_stylebox(SceneStringName(pressed)))->set_border_color(bypass_color_darkened);
+			Ref<StyleBoxFlat>(solo->get_theme_stylebox("hover_pressed"))->set_border_color(solo_color_darkened);
+			Ref<StyleBoxFlat>(mute->get_theme_stylebox("hover_pressed"))->set_border_color(mute_color_darkened);
+			Ref<StyleBoxFlat>(bypass->get_theme_stylebox("hover_pressed"))->set_border_color(bypass_color_darkened);
 
-			solo->set_icon(get_editor_theme_icon(SNAME("AudioBusSolo")));
+			solo->set_button_icon(get_editor_theme_icon(SNAME("AudioBusSolo")));
 			solo->add_theme_color_override("icon_pressed_color", solo_color);
-			mute->set_icon(get_editor_theme_icon(SNAME("AudioBusMute")));
+			solo->add_theme_color_override("icon_hover_pressed_color", solo_color_darkened);
+			mute->set_button_icon(get_editor_theme_icon(SNAME("AudioBusMute")));
 			mute->add_theme_color_override("icon_pressed_color", mute_color);
-			bypass->set_icon(get_editor_theme_icon(SNAME("AudioBusBypass")));
+			mute->add_theme_color_override("icon_hover_pressed_color", mute_color_darkened);
+			bypass->set_button_icon(get_editor_theme_icon(SNAME("AudioBusBypass")));
 			bypass->add_theme_color_override("icon_pressed_color", bypass_color);
+			bypass->add_theme_color_override("icon_hover_pressed_color", bypass_color_darkened);
 
-			bus_options->set_icon(get_editor_theme_icon(SNAME("GuiTabMenuHl")));
+			bus_options->set_button_icon(get_editor_theme_icon(SNAME("GuiTabMenuHl")));
 
 			audio_value_preview_label->add_theme_color_override(SceneStringName(font_color), get_theme_color(SceneStringName(font_color), SNAME("TooltipLabel")));
 			audio_value_preview_label->add_theme_color_override("font_shadow_color", get_theme_color(SNAME("font_shadow_color"), SNAME("TooltipLabel")));
@@ -127,7 +136,7 @@ void EditorAudioBus::_notification(int p_what) {
 			} else if (has_focus()) {
 				draw_style_box(get_theme_stylebox(SNAME("focus"), SNAME("Button")), Rect2(Vector2(), get_size()));
 			} else {
-				draw_style_box(get_theme_stylebox(SceneStringName(panel), SNAME("TabContainer")), Rect2(Vector2(), get_size()));
+				draw_style_box(get_theme_stylebox(SNAME("BottomPanel"), EditorStringName(EditorStyles)), Rect2(Vector2(), get_size()));
 			}
 
 			if (get_index() != 0 && hovering_drop) {
@@ -657,6 +666,7 @@ Variant EditorAudioBus::get_drag_data_fw(const Point2 &p_point, Control *p_from)
 
 		Label *l = memnew(Label);
 		l->set_text(item->get_text(0));
+		l->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 		effects->set_drag_preview(l);
 
 		return fxd;
@@ -805,28 +815,28 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
 	set_v_size_flags(SIZE_EXPAND_FILL);
 
 	track_name = memnew(LineEdit);
-	track_name->connect("text_submitted", callable_mp(this, &EditorAudioBus::_name_changed));
+	track_name->connect(SceneStringName(text_submitted), callable_mp(this, &EditorAudioBus::_name_changed));
 	track_name->connect(SceneStringName(focus_exited), callable_mp(this, &EditorAudioBus::_name_focus_exit));
 	vb->add_child(track_name);
 
 	HBoxContainer *hbc = memnew(HBoxContainer);
 	vb->add_child(hbc);
 	solo = memnew(Button);
-	solo->set_theme_type_variation("FlatButton");
+	solo->set_theme_type_variation(SceneStringName(FlatButton));
 	solo->set_toggle_mode(true);
 	solo->set_tooltip_text(TTR("Solo"));
 	solo->set_focus_mode(FOCUS_NONE);
 	solo->connect(SceneStringName(pressed), callable_mp(this, &EditorAudioBus::_solo_toggled));
 	hbc->add_child(solo);
 	mute = memnew(Button);
-	mute->set_theme_type_variation("FlatButton");
+	mute->set_theme_type_variation(SceneStringName(FlatButton));
 	mute->set_toggle_mode(true);
 	mute->set_tooltip_text(TTR("Mute"));
 	mute->set_focus_mode(FOCUS_NONE);
 	mute->connect(SceneStringName(pressed), callable_mp(this, &EditorAudioBus::_mute_toggled));
 	hbc->add_child(mute);
 	bypass = memnew(Button);
-	bypass->set_theme_type_variation("FlatButton");
+	bypass->set_theme_type_variation(SceneStringName(FlatButton));
 	bypass->set_toggle_mode(true);
 	bypass->set_tooltip_text(TTR("Bypass"));
 	bypass->set_focus_mode(FOCUS_NONE);
@@ -839,14 +849,19 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
 		Control *child = Object::cast_to<Control>(hbc->get_child(i));
 		child->begin_bulk_theme_override();
 		child->add_theme_style_override(CoreStringName(normal), sbempty);
-		child->add_theme_style_override("hover", sbempty);
+		child->add_theme_style_override(SceneStringName(hover), sbempty);
+		child->add_theme_style_override("hover_mirrored", sbempty);
 		child->add_theme_style_override("focus", sbempty);
+		child->add_theme_style_override("focus_mirrored", sbempty);
 
 		Ref<StyleBoxFlat> sbflat = memnew(StyleBoxFlat);
 		sbflat->set_content_margin_all(0);
 		sbflat->set_bg_color(Color(1, 1, 1, 0));
 		sbflat->set_border_width(Side::SIDE_BOTTOM, Math::round(3 * EDSCALE));
 		child->add_theme_style_override(SceneStringName(pressed), sbflat);
+		child->add_theme_style_override("pressed_mirrored", sbflat);
+		child->add_theme_style_override("hover_pressed", sbflat);
+		child->add_theme_style_override("hover_pressed_mirrored", sbflat);
 
 		child->end_bulk_theme_override();
 	}
@@ -929,6 +944,7 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
 	hb->add_child(scale);
 
 	effects = memnew(Tree);
+	effects->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	effects->set_hide_root(true);
 	effects->set_custom_minimum_size(Size2(0, 80) * EDSCALE);
 	effects->set_hide_folding(true);
@@ -943,6 +959,7 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
 	effects->set_allow_rmb_select(true);
 	effects->set_focus_mode(FOCUS_CLICK);
 	effects->set_allow_reselect(true);
+	effects->set_theme_type_variation("TreeSecondary");
 	effects->connect(SceneStringName(gui_input), callable_mp(this, &EditorAudioBus::_effects_gui_input));
 
 	send = memnew(OptionButton);
@@ -954,6 +971,7 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
 	set_focus_mode(FOCUS_CLICK);
 
 	effect_options = memnew(PopupMenu);
+	effect_options->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED); // Don't translate class names.
 	effect_options->connect("index_pressed", callable_mp(this, &EditorAudioBus::_effect_add));
 	add_child(effect_options);
 	List<StringName> effect_list;
@@ -977,8 +995,8 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
 	hbc->add_child(bus_options);
 
 	bus_popup = bus_options->get_popup();
-	bus_popup->add_shortcut(ED_SHORTCUT("audio_bus_editor/duplicate_selected_bus", TTR("Duplicate Bus"), KeyModifierMask::CMD_OR_CTRL | Key::D));
-	bus_popup->add_shortcut(ED_SHORTCUT("audio_bus_editor/delete_selected_bus", TTR("Delete Bus"), Key::KEY_DELETE));
+	bus_popup->add_shortcut(ED_SHORTCUT("audio_bus_editor/duplicate_selected_bus", TTRC("Duplicate Bus"), KeyModifierMask::CMD_OR_CTRL | Key::D));
+	bus_popup->add_shortcut(ED_SHORTCUT("audio_bus_editor/delete_selected_bus", TTRC("Delete Bus"), Key::KEY_DELETE));
 	bus_popup->set_item_disabled(1, is_master);
 	bus_popup->add_item(TTR("Reset Volume"));
 	bus_popup->connect("index_pressed", callable_mp(this, &EditorAudioBus::_bus_popup_pressed));
@@ -1032,9 +1050,6 @@ void EditorAudioBusDrop::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("dropped"));
 }
 
-EditorAudioBusDrop::EditorAudioBusDrop() {
-}
-
 void EditorAudioBuses::_rebuild_buses() {
 	for (int i = bus_hb->get_child_count() - 1; i >= 0; i--) {
 		EditorAudioBus *audio_bus = Object::cast_to<EditorAudioBus>(bus_hb->get_child(i));
@@ -1064,7 +1079,7 @@ void EditorAudioBuses::_rebuild_buses() {
 
 EditorAudioBuses *EditorAudioBuses::register_editor() {
 	EditorAudioBuses *audio_buses = memnew(EditorAudioBuses);
-	EditorNode::get_bottom_panel()->add_item(TTR("Audio"), audio_buses, ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_audio_bottom_panel", TTR("Toggle Audio Bottom Panel"), KeyModifierMask::ALT | Key::A));
+	EditorNode::get_bottom_panel()->add_item(TTR("Audio"), audio_buses, ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_audio_bottom_panel", TTRC("Toggle Audio Bottom Panel"), KeyModifierMask::ALT | Key::A));
 	return audio_buses;
 }
 
@@ -1100,9 +1115,8 @@ void EditorAudioBuses::_notification(int p_what) {
 				}
 			}
 
-			AudioServer::get_singleton()->set_edited(false);
-
 			if (edited) {
+				AudioServer::get_singleton()->set_edited(false);
 				save_timer->start();
 			}
 		} break;
@@ -1247,41 +1261,11 @@ void EditorAudioBuses::_load_layout() {
 }
 
 void EditorAudioBuses::_load_default_layout() {
-	String layout_path = GLOBAL_GET("audio/buses/default_bus_layout");
-
-	Ref<AudioBusLayout> state;
-	if (ResourceLoader::exists(layout_path)) {
-		state = ResourceLoader::load(layout_path, "", ResourceFormatLoader::CACHE_MODE_IGNORE);
-	}
-	if (state.is_null()) {
-		EditorNode::get_singleton()->show_warning(vformat(TTR("There is no '%s' file."), layout_path));
-		return;
-	}
-
-	edited_path = layout_path;
-	file->set_text(String(TTR("Layout:")) + " " + layout_path.get_file());
-	AudioServer::get_singleton()->set_bus_layout(state);
-	_rebuild_buses();
-	EditorUndoRedoManager::get_singleton()->clear_history(true, EditorUndoRedoManager::GLOBAL_HISTORY);
-	callable_mp(this, &EditorAudioBuses::_select_layout).call_deferred();
+	open_layout(GLOBAL_GET("audio/buses/default_bus_layout"));
 }
 
 void EditorAudioBuses::_file_dialog_callback(const String &p_string) {
-	if (file_dialog->get_file_mode() == EditorFileDialog::FILE_MODE_OPEN_FILE) {
-		Ref<AudioBusLayout> state = ResourceLoader::load(p_string, "", ResourceFormatLoader::CACHE_MODE_IGNORE);
-		if (state.is_null()) {
-			EditorNode::get_singleton()->show_warning(TTR("Invalid file, not an audio bus layout."));
-			return;
-		}
-
-		edited_path = p_string;
-		file->set_text(String(TTR("Layout:")) + " " + p_string.get_file());
-		AudioServer::get_singleton()->set_bus_layout(state);
-		_rebuild_buses();
-		EditorUndoRedoManager::get_singleton()->clear_history(true, EditorUndoRedoManager::GLOBAL_HISTORY);
-		callable_mp(this, &EditorAudioBuses::_select_layout).call_deferred();
-
-	} else if (file_dialog->get_file_mode() == EditorFileDialog::FILE_MODE_SAVE_FILE) {
+	if (file_dialog->get_file_mode() == EditorFileDialog::FILE_MODE_SAVE_FILE) {
 		if (new_layout) {
 			Ref<AudioBusLayout> empty_state;
 			empty_state.instantiate();
@@ -1289,18 +1273,12 @@ void EditorAudioBuses::_file_dialog_callback(const String &p_string) {
 		}
 
 		Error err = ResourceSaver::save(AudioServer::get_singleton()->generate_bus_layout(), p_string);
-
 		if (err != OK) {
 			EditorNode::get_singleton()->show_warning(vformat(TTR("Error saving file: %s"), p_string));
 			return;
 		}
-
-		edited_path = p_string;
-		file->set_text(String(TTR("Layout:")) + " " + p_string.get_file());
-		_rebuild_buses();
-		EditorUndoRedoManager::get_singleton()->clear_history(true, EditorUndoRedoManager::GLOBAL_HISTORY);
-		callable_mp(this, &EditorAudioBuses::_select_layout).call_deferred();
 	}
+	open_layout(p_string);
 }
 
 void EditorAudioBuses::_bind_methods() {
@@ -1312,9 +1290,10 @@ EditorAudioBuses::EditorAudioBuses() {
 	top_hb = memnew(HBoxContainer);
 	add_child(top_hb);
 
+	edited_path = ResourceUID::ensure_path(GLOBAL_GET("audio/buses/default_bus_layout"));
+
 	file = memnew(Label);
-	String layout_path = GLOBAL_GET("audio/buses/default_bus_layout");
-	file->set_text(String(TTR("Layout:")) + " " + layout_path.get_file());
+	file->set_text(vformat("%s %s", TTR("Layout:"), edited_path.get_file()));
 	file->set_clip_text(true);
 	file->set_h_size_flags(SIZE_EXPAND_FILL);
 	top_hb->add_child(file);
@@ -1368,8 +1347,6 @@ EditorAudioBuses::EditorAudioBuses() {
 
 	set_v_size_flags(SIZE_EXPAND_FILL);
 
-	edited_path = GLOBAL_GET("audio/buses/default_bus_layout");
-
 	file_dialog = memnew(EditorFileDialog);
 	List<String> ext;
 	ResourceLoader::get_recognized_extensions_for_type("AudioBusLayout", &ext);
@@ -1387,17 +1364,24 @@ EditorAudioBuses::EditorAudioBuses() {
 void EditorAudioBuses::open_layout(const String &p_path) {
 	EditorNode::get_bottom_panel()->make_item_visible(this);
 
-	Ref<AudioBusLayout> state = ResourceLoader::load(p_path, "", ResourceFormatLoader::CACHE_MODE_IGNORE);
-	if (state.is_null()) {
-		EditorNode::get_singleton()->show_warning(TTR("Invalid file, not an audio bus layout."));
+	const String path = ResourceUID::ensure_path(p_path);
+
+	if (!ResourceLoader::exists(path)) {
+		EditorNode::get_singleton()->show_warning(vformat(TTR(R"(Can't open audio bus layout: "%s" doesn't exist.)"), path));
 		return;
 	}
 
-	edited_path = p_path;
-	file->set_text(p_path.get_file());
+	Ref<AudioBusLayout> state = ResourceLoader::load(path, "", ResourceFormatLoader::CACHE_MODE_IGNORE);
+	if (state.is_null()) {
+		EditorNode::get_singleton()->show_warning(vformat(TTR(R"(Can't open audio bus layout: "%s" is not a valid audio bus layout.)"), path));
+		return;
+	}
+
+	edited_path = path;
+	file->set_text(vformat("%s %s", TTR("Layout:"), path.get_file()));
 	AudioServer::get_singleton()->set_bus_layout(state);
 	_rebuild_buses();
-	EditorUndoRedoManager::get_singleton()->clear_history(true, EditorUndoRedoManager::GLOBAL_HISTORY);
+	EditorUndoRedoManager::get_singleton()->clear_history(EditorUndoRedoManager::GLOBAL_HISTORY);
 	callable_mp(this, &EditorAudioBuses::_select_layout).call_deferred();
 }
 
@@ -1419,9 +1403,6 @@ void AudioBusesEditorPlugin::make_visible(bool p_visible) {
 
 AudioBusesEditorPlugin::AudioBusesEditorPlugin(EditorAudioBuses *p_node) {
 	audio_bus_editor = p_node;
-}
-
-AudioBusesEditorPlugin::~AudioBusesEditorPlugin() {
 }
 
 void EditorAudioMeterNotches::add_notch(float p_normalized_offset, float p_db_value, bool p_render_value) {

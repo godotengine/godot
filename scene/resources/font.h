@@ -28,12 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef FONT_H
-#define FONT_H
+#pragma once
 
 #include "core/io/resource.h"
 #include "core/templates/lru.h"
-#include "core/templates/rb_map.h"
 #include "scene/resources/texture.h"
 #include "servers/text_server.h"
 
@@ -97,7 +95,7 @@ protected:
 
 	static void _bind_methods();
 
-	virtual void _update_rids_fb(const Ref<Font> &p_f, int p_depth) const;
+	virtual void _update_rids_fb(const Font *p_f, int p_depth) const;
 	virtual void _update_rids() const;
 	virtual void reset_state() override;
 
@@ -183,7 +181,7 @@ class FontFile : public Font {
 	// Font source data.
 	const uint8_t *data_ptr = nullptr;
 	size_t data_size = 0;
-	PackedByteArray data;
+	mutable PackedByteArray data;
 
 	TextServer::FontAntialiasing antialiasing = TextServer::FONT_ANTIALIASING_GRAY;
 	bool mipmaps = false;
@@ -197,6 +195,7 @@ class FontFile : public Font {
 	bool allow_system_fallback = true;
 	TextServer::Hinting hinting = TextServer::HINTING_LIGHT;
 	TextServer::SubpixelPositioning subpixel_positioning = TextServer::SUBPIXEL_POSITIONING_AUTO;
+	bool keep_rounding_remainders = true;
 	real_t oversampling = 0.f;
 
 #ifndef DISABLE_DEPRECATED
@@ -279,6 +278,9 @@ public:
 
 	virtual void set_subpixel_positioning(TextServer::SubpixelPositioning p_subpixel);
 	virtual TextServer::SubpixelPositioning get_subpixel_positioning() const;
+
+	virtual void set_keep_rounding_remainders(bool p_keep_rounding_remainders);
+	virtual bool get_keep_rounding_remainders() const;
 
 	virtual void set_oversampling(real_t p_oversampling);
 	virtual real_t get_oversampling() const;
@@ -468,7 +470,7 @@ class SystemFont : public Font {
 	mutable Ref<Font> theme_font;
 
 	Ref<FontFile> base_font;
-	Vector<int> face_indeces;
+	Vector<int> face_indices;
 	int ftr_weight = 0;
 	int ftr_stretch = 0;
 	int ftr_italic = 0;
@@ -480,6 +482,7 @@ class SystemFont : public Font {
 	bool allow_system_fallback = true;
 	TextServer::Hinting hinting = TextServer::HINTING_LIGHT;
 	TextServer::SubpixelPositioning subpixel_positioning = TextServer::SUBPIXEL_POSITIONING_AUTO;
+	bool keep_rounding_remainders = true;
 	real_t oversampling = 0.f;
 	bool msdf = false;
 	int msdf_pixel_range = 16;
@@ -518,6 +521,9 @@ public:
 	virtual void set_subpixel_positioning(TextServer::SubpixelPositioning p_subpixel);
 	virtual TextServer::SubpixelPositioning get_subpixel_positioning() const;
 
+	virtual void set_keep_rounding_remainders(bool p_keep_rounding_remainders);
+	virtual bool get_keep_rounding_remainders() const;
+
 	virtual void set_oversampling(real_t p_oversampling);
 	virtual real_t get_oversampling() const;
 
@@ -552,5 +558,3 @@ public:
 	SystemFont();
 	~SystemFont();
 };
-
-#endif // FONT_H

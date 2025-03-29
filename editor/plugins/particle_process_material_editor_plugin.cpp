@@ -30,14 +30,12 @@
 
 #include "particle_process_material_editor_plugin.h"
 
-#include "editor/editor_property_name_processor.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
 #include "editor/gui/editor_spin_slider.h"
 #include "editor/themes/editor_theme_manager.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
-#include "scene/gui/label.h"
 #include "scene/resources/particle_process_material.h"
 
 void ParticleProcessMaterialMinMaxPropertyEditor::_update_sizing() {
@@ -346,7 +344,7 @@ float ParticleProcessMaterialMinMaxPropertyEditor::_get_max_spread() const {
 void ParticleProcessMaterialMinMaxPropertyEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
-			toggle_mode_button->set_icon(get_editor_theme_icon(SNAME("Anchor")));
+			toggle_mode_button->set_button_icon(get_editor_theme_icon(SNAME("Anchor")));
 			range_slider_left_icon = get_editor_theme_icon(SNAME("RangeSliderLeft"));
 			range_slider_right_icon = get_editor_theme_icon(SNAME("RangeSliderRight"));
 
@@ -438,7 +436,7 @@ ParticleProcessMaterialMinMaxPropertyEditor::ParticleProcessMaterialMinMaxProper
 	toggle_mode_button->set_toggle_mode(true);
 	toggle_mode_button->set_tooltip_text(TTR("Toggle between minimum/maximum and base value/spread modes."));
 	hb->add_child(toggle_mode_button);
-	toggle_mode_button->connect(SNAME("toggled"), callable_mp(this, &ParticleProcessMaterialMinMaxPropertyEditor::_toggle_mode));
+	toggle_mode_button->connect(SceneStringName(toggled), callable_mp(this, &ParticleProcessMaterialMinMaxPropertyEditor::_toggle_mode));
 
 	set_bottom_editor(content_vb);
 }

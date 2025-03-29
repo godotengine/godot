@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TEST_CLASS_DB_H
-#define TEST_CLASS_DB_H
+#pragma once
 
 #include "core/core_bind.h"
 #include "core/core_constants.h"
@@ -289,6 +288,38 @@ bool arg_default_value_is_assignable_to_type(const Context &p_context, const Var
 	return false;
 }
 
+bool arg_default_value_is_valid_data(const Variant &p_val, String *r_err_msg = nullptr) {
+	switch (p_val.get_type()) {
+		case Variant::RID:
+		case Variant::ARRAY:
+		case Variant::DICTIONARY:
+		case Variant::PACKED_BYTE_ARRAY:
+		case Variant::PACKED_INT32_ARRAY:
+		case Variant::PACKED_INT64_ARRAY:
+		case Variant::PACKED_FLOAT32_ARRAY:
+		case Variant::PACKED_FLOAT64_ARRAY:
+		case Variant::PACKED_STRING_ARRAY:
+		case Variant::PACKED_VECTOR2_ARRAY:
+		case Variant::PACKED_VECTOR3_ARRAY:
+		case Variant::PACKED_COLOR_ARRAY:
+		case Variant::PACKED_VECTOR4_ARRAY:
+		case Variant::CALLABLE:
+		case Variant::SIGNAL:
+		case Variant::OBJECT:
+			if (p_val.is_zero()) {
+				return true;
+			}
+			if (r_err_msg) {
+				*r_err_msg = "Must be zero.";
+			}
+			break;
+		default:
+			return true;
+	}
+
+	return false;
+}
+
 void validate_property(const Context &p_context, const ExposedClass &p_class, const PropertyData &p_prop) {
 	const MethodData *setter = p_class.find_method_by_name(p_prop.setter);
 
@@ -383,6 +414,9 @@ void validate_argument(const Context &p_context, const ExposedClass &p_class, co
 #ifdef DEBUG_METHODS_ENABLED
 	TEST_COND((p_arg.name.is_empty() || p_arg.name.begins_with("_unnamed_arg")),
 			vformat("Unnamed argument in position %d of %s '%s.%s'.", p_arg.position, p_owner_type, p_class.name, p_owner_name));
+
+	TEST_FAIL_COND((p_arg.name != "@varargs@" && !p_arg.name.is_valid_ascii_identifier()),
+			vformat("Invalid argument name '%s' of %s '%s.%s'.", p_arg.name, p_owner_type, p_class.name, p_owner_name));
 #endif // DEBUG_METHODS_ENABLED
 
 	const ExposedClass *arg_class = p_context.find_exposed_class(p_arg.type);
@@ -411,6 +445,14 @@ void validate_argument(const Context &p_context, const ExposedClass &p_class, co
 		}
 
 		TEST_COND(!arg_defval_assignable_to_type, err_msg);
+
+		bool arg_defval_valid_data = arg_default_value_is_valid_data(p_arg.defval, &type_error_msg);
+
+		if (!type_error_msg.is_empty()) {
+			err_msg += " " + type_error_msg;
+		}
+
+		TEST_COND(!arg_defval_valid_data, err_msg);
 	}
 }
 
@@ -563,7 +605,7 @@ void add_exposed_classes(Context &r_context) {
 
 			MethodData method;
 			method.name = method_info.name;
-			TEST_FAIL_COND(!String(method.name).is_valid_identifier(),
+			TEST_FAIL_COND(!String(method.name).is_valid_ascii_identifier(),
 					"Method name is not a valid identifier: '", exposed_class.name, ".", method.name, "'.");
 
 			if (method_info.flags & METHOD_FLAG_VIRTUAL) {
@@ -618,9 +660,8 @@ void add_exposed_classes(Context &r_context) {
 				method.return_type.name = Variant::get_type_name(return_info.type);
 			}
 
-			int i = 0;
-			for (List<PropertyInfo>::ConstIterator itr = method_info.arguments.begin(); itr != method_info.arguments.end(); ++itr, ++i) {
-				const PropertyInfo &arg_info = *itr;
+			for (int64_t i = 0; i < method_info.arguments.size(); ++i) {
+				const PropertyInfo &arg_info = method_info.arguments[i];
 
 				String orig_arg_name = arg_info.name;
 
@@ -689,12 +730,11 @@ void add_exposed_classes(Context &r_context) {
 			const MethodInfo &method_info = signal_map.get(K.key);
 
 			signal.name = method_info.name;
-			TEST_FAIL_COND(!String(signal.name).is_valid_identifier(),
+			TEST_FAIL_COND(!String(signal.name).is_valid_ascii_identifier(),
 					"Signal name is not a valid identifier: '", exposed_class.name, ".", signal.name, "'.");
 
-			int i = 0;
-			for (List<PropertyInfo>::ConstIterator itr = method_info.arguments.begin(); itr != method_info.arguments.end(); ++itr, ++i) {
-				const PropertyInfo &arg_info = *itr;
+			for (int64_t i = 0; i < method_info.arguments.size(); ++i) {
+				const PropertyInfo &arg_info = method_info.arguments[i];
 
 				String orig_arg_name = arg_info.name;
 
@@ -823,16 +863,19 @@ void add_global_enums(Context &r_context) {
 		}
 	}
 
-	// HARDCODED
-	List<StringName> hardcoded_enums;
-	hardcoded_enums.push_back("Vector2.Axis");
-	hardcoded_enums.push_back("Vector2i.Axis");
-	hardcoded_enums.push_back("Vector3.Axis");
-	hardcoded_enums.push_back("Vector3i.Axis");
-	for (const StringName &E : hardcoded_enums) {
-		// These enums are not generated and must be written manually (e.g.: Vector3.Axis)
-		// Here, we assume core types do not begin with underscore
-		r_context.enum_types.push_back(E);
+	for (int i = 0; i < Variant::VARIANT_MAX; i++) {
+		if (i == Variant::OBJECT) {
+			continue;
+		}
+
+		const Variant::Type type = Variant::Type(i);
+
+		List<StringName> enum_names;
+		Variant::get_enums_for_type(type, &enum_names);
+
+		for (const StringName &enum_name : enum_names) {
+			r_context.enum_types.push_back(Variant::get_type_name(type) + "." + enum_name);
+		}
 	}
 }
 
@@ -857,5 +900,3 @@ TEST_SUITE("[ClassDB]") {
 	}
 }
 } // namespace TestClassDB
-
-#endif // TEST_CLASS_DB_H

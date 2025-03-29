@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef THEME_H
-#define THEME_H
+#pragma once
 
 #include "core/io/resource.h"
 #include "scene/resources/font.h"
@@ -155,6 +154,7 @@ public:
 	void set_font(const StringName &p_name, const StringName &p_theme_type, const Ref<Font> &p_font);
 	virtual Ref<Font> get_font(const StringName &p_name, const StringName &p_theme_type) const;
 	bool has_font(const StringName &p_name, const StringName &p_theme_type) const;
+	bool has_font_no_default(const StringName &p_name, const StringName &p_theme_type) const;
 	bool has_font_nocheck(const StringName &p_name, const StringName &p_theme_type) const;
 	void rename_font(const StringName &p_old_name, const StringName &p_name, const StringName &p_theme_type);
 	void clear_font(const StringName &p_name, const StringName &p_theme_type);
@@ -166,6 +166,7 @@ public:
 	void set_font_size(const StringName &p_name, const StringName &p_theme_type, int p_font_size);
 	virtual int get_font_size(const StringName &p_name, const StringName &p_theme_type) const;
 	bool has_font_size(const StringName &p_name, const StringName &p_theme_type) const;
+	bool has_font_size_no_default(const StringName &p_name, const StringName &p_theme_type) const;
 	bool has_font_size_nocheck(const StringName &p_name, const StringName &p_theme_type) const;
 	void rename_font_size(const StringName &p_old_name, const StringName &p_name, const StringName &p_theme_type);
 	void clear_font_size(const StringName &p_name, const StringName &p_theme_type);
@@ -216,7 +217,7 @@ public:
 	void add_type(const StringName &p_theme_type);
 	void remove_type(const StringName &p_theme_type);
 	void get_type_list(List<StringName> *p_list) const;
-	void get_type_dependencies(const StringName &p_base_type, const StringName &p_type_variant, List<StringName> *p_list);
+	void get_type_dependencies(const StringName &p_base_type, const StringName &p_type_variant, Vector<StringName> &r_result);
 
 	void merge_with(const Ref<Theme> &p_other);
 	void clear();
@@ -226,5 +227,3 @@ public:
 };
 
 VARIANT_ENUM_CAST(Theme::DataType);
-
-#endif // THEME_H

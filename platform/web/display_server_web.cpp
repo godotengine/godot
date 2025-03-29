@@ -550,24 +550,45 @@ void DisplayServerWeb::cursor_set_custom_image(const Ref<Resource> &p_cursor, Cu
 }
 
 // Mouse mode
-void DisplayServerWeb::mouse_set_mode(MouseMode p_mode) {
-	ERR_FAIL_COND_MSG(p_mode == MOUSE_MODE_CONFINED || p_mode == MOUSE_MODE_CONFINED_HIDDEN, "MOUSE_MODE_CONFINED is not supported for the Web platform.");
-	if (p_mode == mouse_get_mode()) {
+void DisplayServerWeb::_mouse_update_mode() {
+	MouseMode wanted_mouse_mode = mouse_mode_override_enabled
+			? mouse_mode_override
+			: mouse_mode_base;
+
+	ERR_FAIL_COND_MSG(wanted_mouse_mode == MOUSE_MODE_CONFINED || wanted_mouse_mode == MOUSE_MODE_CONFINED_HIDDEN, "MOUSE_MODE_CONFINED is not supported for the Web platform.");
+	if (wanted_mouse_mode == mouse_get_mode()) {
 		return;
 	}
 
-	if (p_mode == MOUSE_MODE_VISIBLE) {
+	if (wanted_mouse_mode == MOUSE_MODE_VISIBLE) {
 		godot_js_display_cursor_set_visible(1);
 		godot_js_display_cursor_lock_set(0);
 
-	} else if (p_mode == MOUSE_MODE_HIDDEN) {
+	} else if (wanted_mouse_mode == MOUSE_MODE_HIDDEN) {
 		godot_js_display_cursor_set_visible(0);
 		godot_js_display_cursor_lock_set(0);
 
-	} else if (p_mode == MOUSE_MODE_CAPTURED) {
+	} else if (wanted_mouse_mode == MOUSE_MODE_CAPTURED) {
 		godot_js_display_cursor_set_visible(1);
 		godot_js_display_cursor_lock_set(1);
 	}
+}
+
+void DisplayServerWeb::mouse_set_mode(MouseMode p_mode) {
+	ERR_FAIL_INDEX(p_mode, MouseMode::MOUSE_MODE_MAX);
+
+	if (mouse_mode_override_enabled) {
+		mouse_mode_base = p_mode;
+		// No need to update, as override is enabled.
+		return;
+	}
+	if (p_mode == mouse_mode_base && p_mode == mouse_get_mode()) {
+		// No need to update, as it is currently set as the correct mode.
+		return;
+	}
+
+	mouse_mode_base = p_mode;
+	_mouse_update_mode();
 }
 
 DisplayServer::MouseMode DisplayServerWeb::mouse_get_mode() const {
@@ -579,6 +600,39 @@ DisplayServer::MouseMode DisplayServerWeb::mouse_get_mode() const {
 		return MOUSE_MODE_CAPTURED;
 	}
 	return MOUSE_MODE_VISIBLE;
+}
+
+void DisplayServerWeb::mouse_set_mode_override(MouseMode p_mode) {
+	ERR_FAIL_INDEX(p_mode, MouseMode::MOUSE_MODE_MAX);
+
+	if (!mouse_mode_override_enabled) {
+		mouse_mode_override = p_mode;
+		// No need to update, as override is not enabled.
+		return;
+	}
+	if (p_mode == mouse_mode_override && p_mode == mouse_get_mode()) {
+		// No need to update, as it is currently set as the correct mode.
+		return;
+	}
+
+	mouse_mode_override = p_mode;
+	_mouse_update_mode();
+}
+
+DisplayServer::MouseMode DisplayServerWeb::mouse_get_mode_override() const {
+	return mouse_mode_override;
+}
+
+void DisplayServerWeb::mouse_set_mode_override_enabled(bool p_override_enabled) {
+	if (p_override_enabled == mouse_mode_override_enabled) {
+		return;
+	}
+	mouse_mode_override_enabled = p_override_enabled;
+	_mouse_update_mode();
+}
+
+bool DisplayServerWeb::mouse_is_mode_override_enabled() const {
+	return mouse_mode_override_enabled;
 }
 
 Point2i DisplayServerWeb::mouse_get_position() const {
@@ -902,8 +956,10 @@ void DisplayServerWeb::process_joypads() {
 		for (int b = 0; b < s_btns_num; b++) {
 			// Buttons 6 and 7 in the standard mapping need to be
 			// axis to be handled as JoyAxis::TRIGGER by Godot.
-			if (s_standard && (b == 6 || b == 7)) {
-				input->joy_axis(idx, (JoyAxis)b, s_btns[b]);
+			if (s_standard && (b == 6)) {
+				input->joy_axis(idx, JoyAxis::TRIGGER_LEFT, s_btns[b]);
+			} else if (s_standard && (b == 7)) {
+				input->joy_axis(idx, JoyAxis::TRIGGER_RIGHT, s_btns[b]);
 			} else {
 				input->joy_button(idx, (JoyButton)b, s_btns[b]);
 			}
@@ -1023,11 +1079,11 @@ void DisplayServerWeb::_dispatch_input_event(const Ref<InputEvent> &p_event) {
 	}
 }
 
-DisplayServer *DisplayServerWeb::create_func(const String &p_rendering_driver, WindowMode p_window_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Point2i *p_position, const Size2i &p_resolution, int p_screen, Context p_context, Error &r_error) {
-	return memnew(DisplayServerWeb(p_rendering_driver, p_window_mode, p_vsync_mode, p_flags, p_position, p_resolution, p_screen, p_context, r_error));
+DisplayServer *DisplayServerWeb::create_func(const String &p_rendering_driver, WindowMode p_window_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Point2i *p_position, const Size2i &p_resolution, int p_screen, Context p_context, int64_t p_parent_window, Error &r_error) {
+	return memnew(DisplayServerWeb(p_rendering_driver, p_window_mode, p_vsync_mode, p_flags, p_position, p_resolution, p_screen, p_context, p_parent_window, r_error));
 }
 
-DisplayServerWeb::DisplayServerWeb(const String &p_rendering_driver, WindowMode p_window_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Point2i *p_position, const Size2i &p_resolution, int p_screen, Context p_context, Error &r_error) {
+DisplayServerWeb::DisplayServerWeb(const String &p_rendering_driver, WindowMode p_window_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Point2i *p_position, const Size2i &p_resolution, int p_screen, Context p_context, int64_t p_parent_window, Error &r_error) {
 	r_error = OK; // Always succeeds for now.
 
 	tts = GLOBAL_GET("audio/general/text_to_speech");
@@ -1131,6 +1187,8 @@ bool DisplayServerWeb::has_feature(Feature p_feature) const {
 		//case FEATURE_NATIVE_DIALOG:
 		//case FEATURE_NATIVE_DIALOG_INPUT:
 		//case FEATURE_NATIVE_DIALOG_FILE:
+		//case FEATURE_NATIVE_DIALOG_FILE_EXTRA:
+		//case FEATURE_NATIVE_DIALOG_FILE_MIME:
 		//case FEATURE_NATIVE_ICON:
 		//case FEATURE_WINDOW_TRANSPARENCY:
 		//case FEATURE_KEEP_SCREEN_ON:

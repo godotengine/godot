@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef SPRITE_BASE_3D_GIZMO_PLUGIN_H
-#define SPRITE_BASE_3D_GIZMO_PLUGIN_H
+#pragma once
 
 #include "editor/plugins/node_3d_editor_gizmos.h"
 
@@ -42,8 +41,4 @@ public:
 	int get_priority() const override;
 	bool can_be_hidden() const override;
 	void redraw(EditorNode3DGizmo *p_gizmo) override;
-
-	SpriteBase3DGizmoPlugin();
 };
-
-#endif // SPRITE_BASE_3D_GIZMO_PLUGIN_H

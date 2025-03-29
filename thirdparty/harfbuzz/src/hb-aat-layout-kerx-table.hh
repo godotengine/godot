@@ -107,10 +107,10 @@ struct KerxSubTableFormat0
     TRACE_APPLY (this);
 
     if (!c->plan->requested_kerning)
-      return false;
+      return_trace (false);
 
     if (header.coverage & header.Backwards)
-      return false;
+      return_trace (false);
 
     accelerator_t accel (*this, c);
     hb_kern_machine_t<accelerator_t> machine (accel, header.coverage & header.CrossStream);
@@ -140,7 +140,7 @@ struct KerxSubTableFormat0
 
     int get_kerning (hb_codepoint_t left, hb_codepoint_t right) const
     {
-      if (!c->left_set[left] || !c->right_set[right]) return 0;
+      if (!(*c->left_set)[left] || !(*c->right_set)[right]) return 0;
       return table.get_kerning (left, right, c);
     }
   };
@@ -207,6 +207,9 @@ struct Format1Entry<false>
 
   typedef void EntryData;
 
+  static bool initiateAction (const Entry<EntryData> &entry)
+  { return entry.flags & Push; }
+
   static bool performAction (const Entry<EntryData> &entry)
   { return entry.flags & Offset; }
 
@@ -223,13 +226,23 @@ struct KerxSubTableFormat1
   typedef Format1Entry<Types::extended> Format1EntryT;
   typedef typename Format1EntryT::EntryData EntryData;
 
+  enum Flags
+  {
+    DontAdvance	= Format1EntryT::DontAdvance,
+  };
+
+  bool is_action_initiable (const Entry<EntryData> &entry) const
+  {
+    return Format1EntryT::initiateAction (entry);
+  }
+  bool is_actionable (const Entry<EntryData> &entry) const
+  {
+    return Format1EntryT::performAction (entry);
+  }
+
   struct driver_context_t
   {
     static constexpr bool in_place = true;
-    enum
-    {
-      DontAdvance	= Format1EntryT::DontAdvance,
-    };
 
     driver_context_t (const KerxSubTableFormat1 *table_,
 		      hb_aat_apply_context_t *c_) :
@@ -242,12 +255,8 @@ struct KerxSubTableFormat1
 	depth (0),
 	crossStream (table->header.coverage & table->header.CrossStream) {}
 
-    bool is_actionable (hb_buffer_t *buffer HB_UNUSED,
-			StateTableDriver<Types, EntryData> *driver HB_UNUSED,
-			const Entry<EntryData> &entry)
-    { return Format1EntryT::performAction (entry); }
     void transition (hb_buffer_t *buffer,
-		     StateTableDriver<Types, EntryData> *driver,
+		     StateTableDriver<Types, EntryData, Flags> *driver,
 		     const Entry<EntryData> &entry)
     {
       unsigned int flags = entry.flags;
@@ -347,9 +356,10 @@ struct KerxSubTableFormat1
       }
     }
 
-    private:
+    public:
     hb_aat_apply_context_t *c;
     const KerxSubTableFormat1 *table;
+    private:
     const UnsizedArrayOf<FWORD> &kernAction;
     unsigned int stack[8];
     unsigned int depth;
@@ -366,7 +376,8 @@ struct KerxSubTableFormat1
 
     driver_context_t dc (this, c);
 
-    StateTableDriver<Types, EntryData> driver (machine, c->font->face);
+    StateTableDriver<Types, EntryData, Flags> driver (machine, c->font->face);
+
     driver.drive (&dc, c);
 
     return_trace (true);
@@ -425,10 +436,10 @@ struct KerxSubTableFormat2
     TRACE_APPLY (this);
 
     if (!c->plan->requested_kerning)
-      return false;
+      return_trace (false);
 
     if (header.coverage & header.Backwards)
-      return false;
+      return_trace (false);
 
     accelerator_t accel (*this, c);
     hb_kern_machine_t<accelerator_t> machine (accel, header.coverage & header.CrossStream);
@@ -455,7 +466,7 @@ struct KerxSubTableFormat2
 
     int get_kerning (hb_codepoint_t left, hb_codepoint_t right) const
     {
-      if (!c->left_set[left] || !c->right_set[right]) return 0;
+      if (!(*c->left_set)[left] || !(*c->right_set)[right]) return 0;
       return table.get_kerning (left, right, c);
     }
   };
@@ -499,17 +510,26 @@ struct KerxSubTableFormat4
     DEFINE_SIZE_STATIC (2);
   };
 
+  enum Flags
+  {
+    Mark		= 0x8000,	/* If set, remember this glyph as the marked glyph. */
+    DontAdvance		= 0x4000,	/* If set, don't advance to the next glyph before
+					 * going to the new state. */
+    Reserved		= 0x3FFF,	/* Not used; set to 0. */
+  };
+
+  bool is_action_initiable (const Entry<EntryData> &entry) const
+  {
+    return (entry.flags & Mark);
+  }
+  bool is_actionable (const Entry<EntryData> &entry) const
+  {
+    return entry.data.ankrActionIndex != 0xFFFF;
+  }
+
   struct driver_context_t
   {
     static constexpr bool in_place = true;
-    enum Flags
-    {
-      Mark		= 0x8000,	/* If set, remember this glyph as the marked glyph. */
-      DontAdvance	= 0x4000,	/* If set, don't advance to the next glyph before
-					 * going to the new state. */
-      Reserved		= 0x3FFF,	/* Not used; set to 0. */
-    };
-
     enum SubTableFlags
     {
       ActionType	= 0xC0000000,	/* A two-bit field containing the action type. */
@@ -519,20 +539,17 @@ struct KerxSubTableFormat4
 					 * point table. */
     };
 
-    driver_context_t (const KerxSubTableFormat4 *table,
+    driver_context_t (const KerxSubTableFormat4 *table_,
 		      hb_aat_apply_context_t *c_) :
 	c (c_),
+	table (table_),
 	action_type ((table->flags & ActionType) >> 30),
 	ankrData ((HBUINT16 *) ((const char *) &table->machine + (table->flags & Offset))),
 	mark_set (false),
 	mark (0) {}
 
-    bool is_actionable (hb_buffer_t *buffer HB_UNUSED,
-			StateTableDriver<Types, EntryData> *driver HB_UNUSED,
-			const Entry<EntryData> &entry)
-    { return entry.data.ankrActionIndex != 0xFFFF; }
     void transition (hb_buffer_t *buffer,
-		     StateTableDriver<Types, EntryData> *driver,
+		     StateTableDriver<Types, EntryData, Flags> *driver,
 		     const Entry<EntryData> &entry)
     {
       if (mark_set && entry.data.ankrActionIndex != 0xFFFF && buffer->idx < buffer->len)
@@ -620,8 +637,10 @@ struct KerxSubTableFormat4
       }
     }
 
-    private:
+    public:
     hb_aat_apply_context_t *c;
+    const KerxSubTableFormat4 *table;
+    private:
     unsigned int action_type;
     const HBUINT16 *ankrData;
     bool mark_set;
@@ -634,7 +653,8 @@ struct KerxSubTableFormat4
 
     driver_context_t dc (this, c);
 
-    StateTableDriver<Types, EntryData> driver (machine, c->font->face);
+    StateTableDriver<Types, EntryData, Flags> driver (machine, c->font->face);
+
     driver.drive (&dc, c);
 
     return_trace (true);
@@ -710,10 +730,10 @@ struct KerxSubTableFormat6
     TRACE_APPLY (this);
 
     if (!c->plan->requested_kerning)
-      return false;
+      return_trace (false);
 
     if (header.coverage & header.Backwards)
-      return false;
+      return_trace (false);
 
     accelerator_t accel (*this, c);
     hb_kern_machine_t<accelerator_t> machine (accel, header.coverage & header.CrossStream);
@@ -769,7 +789,7 @@ struct KerxSubTableFormat6
 
     int get_kerning (hb_codepoint_t left, hb_codepoint_t right) const
     {
-      if (!c->left_set[left] || !c->right_set[right]) return 0;
+      if (!(*c->left_set)[left] || !(*c->right_set)[right]) return 0;
       return table.get_kerning (left, right, c);
     }
   };
@@ -901,7 +921,7 @@ struct KerxSubTable
  * The 'kerx' Table
  */
 
-using kern_accelerator_data_t = hb_vector_t<hb_pair_t<hb_set_digest_t, hb_set_digest_t>>;
+using kern_accelerator_data_t = hb_vector_t<hb_pair_t<hb_bit_set_t, hb_bit_set_t>>;
 
 template <typename T>
 struct KerxTable
@@ -919,6 +939,9 @@ struct KerxTable
     {
       if (st->get_type () == 1)
 	return true;
+
+      // TODO: What about format 4? What's this API used for anyway?
+
       st = &StructAfter<SubTable> (*st);
     }
     return false;
@@ -958,7 +981,7 @@ struct KerxTable
   }
 
   bool apply (AAT::hb_aat_apply_context_t *c,
-	      const kern_accelerator_data_t *accel_data = nullptr) const
+	      const kern_accelerator_data_t &accel_data) const
   {
     c->buffer->unsafe_to_concat ();
 
@@ -1005,15 +1028,8 @@ struct KerxTable
       if (reverse)
 	c->buffer->reverse ();
 
-      if (accel_data)
-      {
-	c->left_set = (*accel_data)[i].first;
-	c->right_set = (*accel_data)[i].second;
-      }
-      else
-      {
-        c->left_set = c->right_set = hb_set_digest_t::full ();
-      }
+      c->left_set = &accel_data[i].first;
+      c->right_set = &accel_data[i].second;
 
       {
 	/* See comment in sanitize() for conditional here. */
@@ -1090,7 +1106,7 @@ struct KerxTable
     unsigned int count = thiz()->tableCount;
     for (unsigned int i = 0; i < count; i++)
     {
-      hb_set_digest_t left_set, right_set;
+      hb_bit_set_t left_set, right_set;
       st->collect_glyphs (left_set, right_set, num_glyphs);
       accel_data.push (hb_pair (left_set, right_set));
       st = &StructAfter<SubTable> (*st);
@@ -1116,7 +1132,7 @@ struct KerxTable
 
     bool apply (AAT::hb_aat_apply_context_t *c) const
     {
-      return table->apply (c, &accel_data);
+      return table->apply (c, accel_data);
     }
 
     hb_blob_ptr_t<T> table;

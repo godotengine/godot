@@ -30,16 +30,12 @@
 
 #include "crypto.h"
 
-#include "core/config/engine.h"
-#include "core/io/certs_compressed.gen.h"
-#include "core/io/compression.h"
-
 /// Resources
 
-CryptoKey *(*CryptoKey::_create)() = nullptr;
-CryptoKey *CryptoKey::create() {
+CryptoKey *(*CryptoKey::_create)(bool p_notify_postinitialize) = nullptr;
+CryptoKey *CryptoKey::create(bool p_notify_postinitialize) {
 	if (_create) {
-		return _create();
+		return _create(p_notify_postinitialize);
 	}
 	return nullptr;
 }
@@ -52,10 +48,10 @@ void CryptoKey::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("load_from_string", "string_key", "public_only"), &CryptoKey::load_from_string, DEFVAL(false));
 }
 
-X509Certificate *(*X509Certificate::_create)() = nullptr;
-X509Certificate *X509Certificate::create() {
+X509Certificate *(*X509Certificate::_create)(bool p_notify_postinitialize) = nullptr;
+X509Certificate *X509Certificate::create(bool p_notify_postinitialize) {
 	if (_create) {
-		return _create();
+		return _create(p_notify_postinitialize);
 	}
 	return nullptr;
 }
@@ -116,10 +112,10 @@ void HMACContext::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("finish"), &HMACContext::finish);
 }
 
-HMACContext *(*HMACContext::_create)() = nullptr;
-HMACContext *HMACContext::create() {
+HMACContext *(*HMACContext::_create)(bool p_notify_postinitialize) = nullptr;
+HMACContext *HMACContext::create(bool p_notify_postinitialize) {
 	if (_create) {
-		return _create();
+		return _create(p_notify_postinitialize);
 	}
 	ERR_FAIL_V_MSG(nullptr, "HMACContext is not available when the mbedtls module is disabled.");
 }
@@ -127,10 +123,10 @@ HMACContext *HMACContext::create() {
 /// Crypto
 
 void (*Crypto::_load_default_certificates)(const String &p_path) = nullptr;
-Crypto *(*Crypto::_create)() = nullptr;
-Crypto *Crypto::create() {
+Crypto *(*Crypto::_create)(bool p_notify_postinitialize) = nullptr;
+Crypto *Crypto::create(bool p_notify_postinitialize) {
 	if (_create) {
-		return _create();
+		return _create(p_notify_postinitialize);
 	}
 	ERR_FAIL_V_MSG(nullptr, "Crypto is not available when the mbedtls module is disabled.");
 }
@@ -240,7 +236,7 @@ Error ResourceFormatSaverCrypto::save(const Ref<Resource> &p_resource, const Str
 	} else {
 		ERR_FAIL_V(ERR_INVALID_PARAMETER);
 	}
-	ERR_FAIL_COND_V_MSG(err != OK, err, "Cannot save Crypto resource to file '" + p_path + "'.");
+	ERR_FAIL_COND_V_MSG(err != OK, err, vformat("Cannot save Crypto resource to file '%s'.", p_path));
 	return OK;
 }
 

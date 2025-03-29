@@ -28,13 +28,12 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef GDSCRIPT_CACHE_H
-#define GDSCRIPT_CACHE_H
+#pragma once
 
 #include "gdscript.h"
 
 #include "core/object/ref_counted.h"
-#include "core/os/mutex.h"
+#include "core/os/safe_binary_mutex.h"
 #include "core/templates/hash_map.h"
 #include "core/templates/hash_set.h"
 
@@ -95,7 +94,12 @@ class GDScriptCache {
 
 	bool cleared = false;
 
-	Mutex mutex;
+public:
+	static const int BINARY_MUTEX_TAG = 2;
+
+private:
+	static SafeBinaryMutex<BINARY_MUTEX_TAG> mutex;
+	friend SafeBinaryMutex<BINARY_MUTEX_TAG> &_get_gdscript_cache_mutex();
 
 public:
 	static void move_script(const String &p_from, const String &p_to);
@@ -117,5 +121,3 @@ public:
 	GDScriptCache();
 	~GDScriptCache();
 };
-
-#endif // GDSCRIPT_CACHE_H

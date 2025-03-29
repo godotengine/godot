@@ -28,12 +28,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef OA_HASH_MAP_H
-#define OA_HASH_MAP_H
+#pragma once
 
-#include "core/math/math_funcs.h"
 #include "core/os/memory.h"
 #include "core/templates/hashfuncs.h"
+#include "core/templates/pair.h"
 
 /**
  * A HashMap implementation that uses open addressing with Robin Hood hashing.
@@ -353,6 +352,13 @@ public:
 		return it;
 	}
 
+	OAHashMap(std::initializer_list<KeyValue<TKey, TValue>> p_init) {
+		reserve(p_init.size());
+		for (const KeyValue<TKey, TValue> &E : p_init) {
+			set(E.key, E.value);
+		}
+	}
+
 	OAHashMap(const OAHashMap &p_other) {
 		(*this) = p_other;
 	}
@@ -397,5 +403,3 @@ public:
 		Memory::free_static(hashes);
 	}
 };
-
-#endif // OA_HASH_MAP_H

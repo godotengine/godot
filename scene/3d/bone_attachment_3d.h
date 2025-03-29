@@ -28,13 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef BONE_ATTACHMENT_3D_H
-#define BONE_ATTACHMENT_3D_H
+#pragma once
 
 #include "scene/3d/skeleton_3d.h"
-#ifdef TOOLS_ENABLED
-#include "scene/resources/bone_map.h"
-#endif // TOOLS_ENABLED
 
 class BoneAttachment3D : public Node3D {
 	GDCLASS(BoneAttachment3D, Node3D);
@@ -57,7 +53,6 @@ class BoneAttachment3D : public Node3D {
 	bool updating = false;
 	void _transform_changed();
 	void _update_external_skeleton_cache();
-	Skeleton3D *_get_skeleton3d();
 
 protected:
 	void _validate_property(PropertyInfo &p_property) const;
@@ -78,6 +73,8 @@ public:
 #endif // TOOLS_ENABLED
 
 	virtual PackedStringArray get_configuration_warnings() const override;
+
+	Skeleton3D *get_skeleton();
 
 	void set_bone_name(const String &p_name);
 	String get_bone_name() const;
@@ -101,5 +98,3 @@ public:
 
 	BoneAttachment3D();
 };
-
-#endif // BONE_ATTACHMENT_3D_H

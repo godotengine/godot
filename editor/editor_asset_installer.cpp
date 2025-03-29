@@ -130,14 +130,14 @@ void EditorAssetInstaller::open_asset(const String &p_path, bool p_autoskip_topl
 
 		// Create intermediate directories if they aren't reported by unzip.
 		// We are only interested in subfolders, so skip the root slash.
-		int separator = source_name.find("/", 1);
+		int separator = source_name.find_char('/', 1);
 		while (separator != -1) {
 			String dir_name = source_name.substr(0, separator + 1);
 			if (!dir_name.is_empty() && !asset_files.has(dir_name)) {
 				asset_files.insert(dir_name);
 			}
 
-			separator = source_name.find("/", separator + 1);
+			separator = source_name.find_char('/', separator + 1);
 		}
 
 		if (!source_name.is_empty() && !asset_files.has(source_name)) {
@@ -214,7 +214,7 @@ void EditorAssetInstaller::_rebuild_source_tree() {
 
 		TreeItem *parent_item;
 
-		int separator = path.rfind("/");
+		int separator = path.rfind_char('/');
 		if (separator == -1) {
 			parent_item = root;
 		} else {
@@ -313,7 +313,7 @@ void EditorAssetInstaller::_rebuild_destination_tree() {
 
 		TreeItem *parent_item;
 
-		int separator = path.rfind("/");
+		int separator = path.rfind_char('/');
 		if (separator == -1) {
 			parent_item = root;
 		} else {
@@ -411,9 +411,9 @@ void EditorAssetInstaller::_toggle_source_tree(bool p_visible, bool p_scroll_to_
 	show_source_files_button->set_pressed_no_signal(p_visible); // To keep in sync if triggered by something else.
 
 	if (p_visible) {
-		show_source_files_button->set_icon(get_editor_theme_icon(SNAME("Back")));
+		show_source_files_button->set_button_icon(get_editor_theme_icon(SNAME("Back")));
 	} else {
-		show_source_files_button->set_icon(get_editor_theme_icon(SNAME("Forward")));
+		show_source_files_button->set_button_icon(get_editor_theme_icon(SNAME("Forward")));
 	}
 
 	if (p_visible && p_scroll_to_error && first_file_conflict) {
@@ -597,9 +597,9 @@ void EditorAssetInstaller::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			if (show_source_files_button->is_pressed()) {
-				show_source_files_button->set_icon(get_editor_theme_icon(SNAME("Back")));
+				show_source_files_button->set_button_icon(get_editor_theme_icon(SNAME("Back")));
 			} else {
-				show_source_files_button->set_icon(get_editor_theme_icon(SNAME("Forward")));
+				show_source_files_button->set_button_icon(get_editor_theme_icon(SNAME("Forward")));
 			}
 			asset_conflicts_link->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
 
@@ -659,9 +659,6 @@ void EditorAssetInstaller::_notification(int p_what) {
 	}
 }
 
-void EditorAssetInstaller::_bind_methods() {
-}
-
 EditorAssetInstaller::EditorAssetInstaller() {
 	VBoxContainer *vb = memnew(VBoxContainer);
 	add_child(vb);
@@ -688,7 +685,7 @@ EditorAssetInstaller::EditorAssetInstaller() {
 	show_source_files_button->set_toggle_mode(true);
 	show_source_files_button->set_tooltip_text(TTR("Open the list of the asset contents and select which files to install."));
 	remapping_tools->add_child(show_source_files_button);
-	show_source_files_button->connect("toggled", callable_mp(this, &EditorAssetInstaller::_toggle_source_tree).bind(false));
+	show_source_files_button->connect(SceneStringName(toggled), callable_mp(this, &EditorAssetInstaller::_toggle_source_tree).bind(false));
 
 	Button *target_dir_button = memnew(Button);
 	target_dir_button->set_text(TTR("Change Install Folder"));
@@ -701,7 +698,7 @@ EditorAssetInstaller::EditorAssetInstaller() {
 	skip_toplevel_check = memnew(CheckBox);
 	skip_toplevel_check->set_text(TTR("Ignore asset root"));
 	skip_toplevel_check->set_tooltip_text(TTR("Ignore the root directory when extracting files."));
-	skip_toplevel_check->connect("toggled", callable_mp(this, &EditorAssetInstaller::_set_skip_toplevel));
+	skip_toplevel_check->connect(SceneStringName(toggled), callable_mp(this, &EditorAssetInstaller::_set_skip_toplevel));
 	remapping_tools->add_child(skip_toplevel_check);
 
 	remapping_tools->add_spacer();
@@ -738,6 +735,7 @@ EditorAssetInstaller::EditorAssetInstaller() {
 	source_tree->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	source_tree->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	source_tree->connect("item_edited", callable_mp(this, &EditorAssetInstaller::_item_checked_cbk));
+	source_tree->set_theme_type_variation("TreeSecondary");
 	source_tree_vb->add_child(source_tree);
 
 	VBoxContainer *destination_tree_vb = memnew(VBoxContainer);

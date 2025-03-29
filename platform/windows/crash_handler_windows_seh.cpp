@@ -41,6 +41,7 @@
 // Backtrace code based on: https://stackoverflow.com/questions/6205981/windows-c-stack-trace-from-a-running-app
 
 #include <algorithm>
+#include <cstdlib>
 #include <iterator>
 #include <string>
 #include <vector>
@@ -118,13 +119,17 @@ DWORD CrashHandlerException(EXCEPTION_POINTERS *ep) {
 	HANDLE process = GetCurrentProcess();
 	HANDLE hThread = GetCurrentThread();
 	DWORD offset_from_symbol = 0;
-	IMAGEHLP_LINE64 line = { 0 };
+	IMAGEHLP_LINE64 line = {};
 	std::vector<module_data> modules;
 	DWORD cbNeeded;
 	std::vector<HMODULE> module_handles(1);
 
 	if (OS::get_singleton() == nullptr || OS::get_singleton()->is_disable_crash_handler() || IsDebuggerPresent()) {
 		return EXCEPTION_CONTINUE_SEARCH;
+	}
+
+	if (OS::get_singleton()->is_crash_handler_silent()) {
+		std::_Exit(0);
 	}
 
 	String msg;
@@ -142,10 +147,10 @@ DWORD CrashHandlerException(EXCEPTION_POINTERS *ep) {
 	print_error(vformat("%s: Program crashed", __FUNCTION__));
 
 	// Print the engine version just before, so that people are reminded to include the version in backtrace reports.
-	if (String(VERSION_HASH).is_empty()) {
-		print_error(vformat("Engine version: %s", VERSION_FULL_NAME));
+	if (String(GODOT_VERSION_HASH).is_empty()) {
+		print_error(vformat("Engine version: %s", GODOT_VERSION_FULL_NAME));
 	} else {
-		print_error(vformat("Engine version: %s (%s)", VERSION_FULL_NAME, VERSION_HASH));
+		print_error(vformat("Engine version: %s (%s)", GODOT_VERSION_FULL_NAME, GODOT_VERSION_HASH));
 	}
 	print_error(vformat("Dumping the backtrace. %s", msg));
 

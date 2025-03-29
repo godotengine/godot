@@ -31,12 +31,15 @@
 #include "renderer_scene_render_rd.h"
 
 #include "core/config/project_settings.h"
-#include "core/os/os.h"
+#include "core/io/image.h"
 #include "renderer_compositor_rd.h"
 #include "servers/rendering/renderer_rd/environment/fog.h"
-#include "servers/rendering/renderer_rd/storage_rd/material_storage.h"
+#include "servers/rendering/renderer_rd/shaders/decal_data_inc.glsl.gen.h"
+#include "servers/rendering/renderer_rd/shaders/light_data_inc.glsl.gen.h"
+#include "servers/rendering/renderer_rd/shaders/scene_data_inc.glsl.gen.h"
 #include "servers/rendering/renderer_rd/storage_rd/texture_storage.h"
 #include "servers/rendering/rendering_server_default.h"
+#include "servers/rendering/shader_include_db.h"
 #include "servers/rendering/storage/camera_attributes_storage.h"
 
 void get_vogel_disk(float *r_kernel, int p_sample_count) {
@@ -133,7 +136,7 @@ Ref<Image> RendererSceneRenderRD::environment_bake_panorama(RID p_env, bool p_ba
 
 	if (use_cube_map) {
 		Ref<Image> panorama = sky_bake_panorama(environment_get_sky(p_env), environment_get_bg_energy_multiplier(p_env), p_bake_irradiance, p_size);
-		if (use_ambient_light) {
+		if (use_ambient_light && panorama.is_valid()) {
 			for (int x = 0; x < p_size.width; x++) {
 				for (int y = 0; y < p_size.height; y++) {
 					panorama->set_pixel(x, y, ambient_color.lerp(panorama->get_pixel(x, y), ambient_color_sky_mix));
@@ -306,12 +309,8 @@ void RendererSceneRenderRD::_process_compositor_effects(RS::CompositorEffectCall
 	Vector<RID> re_rids = comp_storage->compositor_get_compositor_effects(p_render_data->compositor, p_callback_type, true);
 
 	for (RID rid : re_rids) {
-		Array arr;
 		Callable callback = comp_storage->compositor_effect_get_callback(rid);
-
-		arr.push_back(p_callback_type);
-		arr.push_back(p_render_data);
-
+		Array arr = { p_callback_type, p_render_data };
 		callback.callv(arr);
 	}
 }
@@ -426,8 +425,18 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 	can_use_effects &= _debug_draw_can_use_effects(debug_draw);
 	bool can_use_storage = _render_buffers_can_be_storage();
 
-	bool use_fsr = fsr && can_use_effects && rb->get_scaling_3d_mode() == RS::VIEWPORT_SCALING_3D_MODE_FSR;
-	bool use_upscaled_texture = rb->has_upscaled_texture() && rb->get_scaling_3d_mode() == RS::VIEWPORT_SCALING_3D_MODE_FSR2;
+	RS::ViewportScaling3DMode scale_mode = rb->get_scaling_3d_mode();
+	bool use_upscaled_texture = rb->has_upscaled_texture() && (scale_mode == RS::VIEWPORT_SCALING_3D_MODE_FSR2 || scale_mode == RS::VIEWPORT_SCALING_3D_MODE_METALFX_TEMPORAL);
+	SpatialUpscaler *spatial_upscaler = nullptr;
+	if (can_use_effects) {
+		if (scale_mode == RS::VIEWPORT_SCALING_3D_MODE_FSR) {
+			spatial_upscaler = fsr;
+		} else if (scale_mode == RS::VIEWPORT_SCALING_3D_MODE_METALFX_SPATIAL) {
+#if METAL_ENABLED
+			spatial_upscaler = mfx_spatial;
+#endif
+		}
+	}
 
 	RID render_target = rb->get_render_target();
 	RID color_texture = use_upscaled_texture ? rb->get_upscaled_texture() : rb->get_internal_texture();
@@ -641,11 +650,10 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 		tonemap.convert_to_srgb = !texture_storage->render_target_is_using_hdr(render_target);
 
 		RID dest_fb;
-		bool use_intermediate_fb = use_fsr;
-		if (use_intermediate_fb) {
-			// If we use FSR to upscale we need to write our result into an intermediate buffer.
+		if (spatial_upscaler != nullptr) {
+			// If we use a spatial upscaler to upscale we need to write our result into an intermediate buffer.
 			// Note that this is cached so we only create the texture the first time.
-			RID dest_texture = rb->create_texture(SNAME("Tonemapper"), SNAME("destination"), _render_buffers_get_color_format(), RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT);
+			RID dest_texture = rb->create_texture(SNAME("Tonemapper"), SNAME("destination"), _render_buffers_get_color_format(), RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT, RD::TEXTURE_SAMPLES_1, Size2i(), 0, 1, true, true);
 			dest_fb = FramebufferCacheRD::get_singleton()->get_cache(dest_texture);
 		} else {
 			// If we do a bilinear upscale we just render into our render target and our shader will upscale automatically.
@@ -665,14 +673,16 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 		RD::get_singleton()->draw_command_end_label();
 	}
 
-	if (use_fsr) {
-		RD::get_singleton()->draw_command_begin_label("FSR 1.0 Upscale");
+	if (rb.is_valid() && spatial_upscaler) {
+		spatial_upscaler->ensure_context(rb);
+
+		RD::get_singleton()->draw_command_begin_label(spatial_upscaler->get_label());
 
 		for (uint32_t v = 0; v < rb->get_view_count(); v++) {
 			RID source_texture = rb->get_texture_slice(SNAME("Tonemapper"), SNAME("destination"), v, 0);
 			RID dest_texture = texture_storage->render_target_get_rd_texture_slice(render_target, v);
 
-			fsr->fsr_upscale(rb, source_texture, dest_texture);
+			spatial_upscaler->process(rb, source_texture, dest_texture);
 		}
 
 		if (dest_is_msaa_2d) {
@@ -1040,6 +1050,14 @@ void RendererSceneRenderRD::light_projectors_set_filter(RenderingServer::LightPr
 	_update_shader_quality_settings();
 }
 
+void RendererSceneRenderRD::lightmaps_set_bicubic_filter(bool p_enable) {
+	if (lightmap_filter_bicubic == p_enable) {
+		return;
+	}
+	lightmap_filter_bicubic = p_enable;
+	_update_shader_quality_settings();
+}
+
 int RendererSceneRenderRD::get_roughness_layers() const {
 	return sky.roughness_layers;
 }
@@ -1121,8 +1139,10 @@ void RendererSceneRenderRD::render_scene(const Ref<RenderSceneBuffers> &p_render
 		scene_data.cam_transform = p_camera_data->main_transform;
 		scene_data.cam_projection = p_camera_data->main_projection;
 		scene_data.cam_orthogonal = p_camera_data->is_orthogonal;
+		scene_data.cam_frustum = p_camera_data->is_frustum;
 		scene_data.camera_visible_layers = p_camera_data->visible_layers;
 		scene_data.taa_jitter = p_camera_data->taa_jitter;
+		scene_data.taa_frame_count = p_camera_data->taa_frame_count;
 		scene_data.main_cam_transform = p_camera_data->main_transform;
 		scene_data.flip_y = !p_reflection_probe.is_valid();
 
@@ -1204,6 +1224,7 @@ void RendererSceneRenderRD::render_scene(const Ref<RenderSceneBuffers> &p_render
 
 		if (p_render_buffers.is_valid() && p_reflection_probe.is_null()) {
 			render_data.transparent_bg = texture_storage->render_target_get_transparent(rb->get_render_target());
+			render_data.render_region = texture_storage->render_target_get_render_region(rb->get_render_target());
 		}
 	}
 
@@ -1441,6 +1462,13 @@ void RendererSceneRenderRD::init() {
 	/* Forward ID */
 	forward_id_storage = create_forward_id_storage();
 
+	/* Register the include files we make available by default to our users */
+	{
+		ShaderIncludeDB::register_built_in_include_file("godot/decal_data_inc.glsl", decal_data_inc_shader_glsl);
+		ShaderIncludeDB::register_built_in_include_file("godot/light_data_inc.glsl", light_data_inc_shader_glsl);
+		ShaderIncludeDB::register_built_in_include_file("godot/scene_data_inc.glsl", scene_data_inc_shader_glsl);
+	}
+
 	/* SKY SHADER */
 
 	sky.init();
@@ -1483,6 +1511,7 @@ void RendererSceneRenderRD::init() {
 
 	decals_set_filter(RS::DecalFilter(int(GLOBAL_GET("rendering/textures/decals/filter"))));
 	light_projectors_set_filter(RS::LightProjectorFilter(int(GLOBAL_GET("rendering/textures/light_projectors/filter"))));
+	lightmaps_set_bicubic_filter(GLOBAL_GET("rendering/lightmapping/lightmap_gi/use_bicubic_filter"));
 
 	cull_argument.set_page_pool(&cull_argument_pool);
 
@@ -1499,6 +1528,9 @@ void RendererSceneRenderRD::init() {
 	if (can_use_storage) {
 		fsr = memnew(RendererRD::FSR);
 	}
+#ifdef METAL_ENABLED
+	mfx_spatial = memnew(RendererRD::MFXSpatialEffect);
+#endif
 }
 
 RendererSceneRenderRD::~RendererSceneRenderRD() {
@@ -1527,6 +1559,11 @@ RendererSceneRenderRD::~RendererSceneRenderRD() {
 	if (fsr) {
 		memdelete(fsr);
 	}
+#ifdef METAL_ENABLED
+	if (mfx_spatial) {
+		memdelete(mfx_spatial);
+	}
+#endif
 
 	if (sky.sky_scene_state.uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(sky.sky_scene_state.uniform_set)) {
 		RD::get_singleton()->free(sky.sky_scene_state.uniform_set);

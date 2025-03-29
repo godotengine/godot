@@ -5,7 +5,6 @@
 	</brief_description>
 	<description>
 		Allows control of [AnimationTree] state machines created with [AnimationNodeStateMachine]. Retrieve with [code]$AnimationTree.get("parameters/playback")[/code].
-		[b]Example:[/b]
 		[codeblocks]
 		[gdscript]
 		var state_machine = $AnimationTree.get("parameters/playback")

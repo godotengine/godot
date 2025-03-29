@@ -2,6 +2,8 @@
  * \file mbedtls/config_adjust_psa_superset_legacy.h
  * \brief Adjust PSA configuration: automatic enablement from legacy
  *
+ * This is an internal header. Do not include it directly.
+ *
  * To simplify some edge cases, we automatically enable certain cryptographic
  * mechanisms in the PSA API if they are enabled in the legacy API. The general
  * idea is that if legacy module M uses mechanism A internally, and A has
@@ -16,6 +18,14 @@
 
 #ifndef MBEDTLS_CONFIG_ADJUST_PSA_SUPERSET_LEGACY_H
 #define MBEDTLS_CONFIG_ADJUST_PSA_SUPERSET_LEGACY_H
+
+#if !defined(MBEDTLS_CONFIG_FILES_READ)
+#error "Do not include mbedtls/config_adjust_*.h manually! This can lead to problems, " \
+    "up to and including runtime errors such as buffer overflows. " \
+    "If you're trying to fix a complaint from check_config.h, just remove " \
+    "it from your configuration file: since Mbed TLS 3.0, it is included " \
+    "automatically at the right point."
+#endif /* */
 
 /****************************************************************/
 /* Hashes that are built in are also enabled in PSA.
@@ -125,13 +135,6 @@
 #define PSA_WANT_ECC_SECP_K1_192 1
 #endif /* PSA_WANT_ECC_SECP_K1_192 */
 #endif /* MBEDTLS_ECP_DP_SECP192K1_ENABLED */
-
-/* SECP224K1 is buggy via the PSA API (https://github.com/Mbed-TLS/mbedtls/issues/3541) */
-#if 0 && defined(MBEDTLS_ECP_DP_SECP224K1_ENABLED)
-#if !defined(PSA_WANT_ECC_SECP_K1_224)
-#define PSA_WANT_ECC_SECP_K1_224 1
-#endif /* PSA_WANT_ECC_SECP_K1_224 */
-#endif /* MBEDTLS_ECP_DP_SECP224K1_ENABLED */
 
 #if defined(MBEDTLS_ECP_DP_SECP256K1_ENABLED)
 #if !defined(PSA_WANT_ECC_SECP_K1_256)

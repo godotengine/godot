@@ -33,10 +33,6 @@
 #include "core/io/dir_access.h"
 #include "core/os/os.h"
 #include "editor/editor_settings.h"
-#include "editor/editor_string_names.h"
-
-void OpenXRSelectRuntime::_bind_methods() {
-}
 
 void OpenXRSelectRuntime::_update_items() {
 	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
@@ -78,7 +74,7 @@ void OpenXRSelectRuntime::_update_items() {
 	select(current_runtime);
 }
 
-void OpenXRSelectRuntime::_item_selected(int p_which) {
+void OpenXRSelectRuntime::_on_item_selected(int p_which) {
 	OS *os = OS::get_singleton();
 
 	if (p_which == 0) {
@@ -98,11 +94,11 @@ void OpenXRSelectRuntime::_notification(int p_notification) {
 			_update_items();
 
 			// Connect signal
-			connect(SceneStringName(item_selected), callable_mp(this, &OpenXRSelectRuntime::_item_selected));
+			connect(SceneStringName(item_selected), callable_mp(this, &OpenXRSelectRuntime::_on_item_selected));
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
 			// Disconnect signal
-			disconnect(SceneStringName(item_selected), callable_mp(this, &OpenXRSelectRuntime::_item_selected));
+			disconnect(SceneStringName(item_selected), callable_mp(this, &OpenXRSelectRuntime::_on_item_selected));
 		} break;
 	}
 }
@@ -122,6 +118,7 @@ OpenXRSelectRuntime::OpenXRSelectRuntime() {
 	default_runtimes["SteamVR"] = "~/.steam/steam/steamapps/common/SteamVR/steamxr_linux64.json";
 #endif
 
+	// TODO: Move to editor_settings.cpp
 	EDITOR_DEF_RST("xr/openxr/runtime_paths", default_runtimes);
 
 	set_flat(true);

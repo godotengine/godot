@@ -383,7 +383,7 @@ String DirAccessUnix::get_current_dir(bool p_include_drive) const {
 	if (!base.is_empty()) {
 		String bd = current_dir.replace_first(base, "");
 		if (bd.begins_with("/")) {
-			return _get_root_string() + bd.substr(1, bd.length());
+			return _get_root_string() + bd.substr(1);
 		} else {
 			return _get_root_string() + bd;
 		}
@@ -397,14 +397,30 @@ Error DirAccessUnix::rename(String p_path, String p_new_path) {
 	}
 
 	p_path = fix_path(p_path);
+	if (p_path.ends_with("/")) {
+		p_path = p_path.left(-1);
+	}
 
 	if (p_new_path.is_relative_path()) {
 		p_new_path = get_current_dir().path_join(p_new_path);
 	}
 
 	p_new_path = fix_path(p_new_path);
+	if (p_new_path.ends_with("/")) {
+		p_new_path = p_new_path.left(-1);
+	}
 
-	return ::rename(p_path.utf8().get_data(), p_new_path.utf8().get_data()) == 0 ? OK : FAILED;
+	int res = ::rename(p_path.utf8().get_data(), p_new_path.utf8().get_data());
+	if (res != 0 && errno == EXDEV) { // Cross-device move, use copy and remove.
+		Error err = OK;
+		err = copy(p_path, p_new_path);
+		if (err != OK) {
+			return err;
+		}
+		return remove(p_path);
+	} else {
+		return (res == 0) ? OK : FAILED;
+	}
 }
 
 Error DirAccessUnix::remove(String p_path) {
@@ -413,17 +429,28 @@ Error DirAccessUnix::remove(String p_path) {
 	}
 
 	p_path = fix_path(p_path);
+	if (p_path.ends_with("/")) {
+		p_path = p_path.left(-1);
+	}
 
 	struct stat flags = {};
-	if ((stat(p_path.utf8().get_data(), &flags) != 0)) {
+	if ((lstat(p_path.utf8().get_data(), &flags) != 0)) {
 		return FAILED;
 	}
 
+	int err;
 	if (S_ISDIR(flags.st_mode) && !is_link(p_path)) {
-		return ::rmdir(p_path.utf8().get_data()) == 0 ? OK : FAILED;
+		err = ::rmdir(p_path.utf8().get_data());
 	} else {
-		return ::unlink(p_path.utf8().get_data()) == 0 ? OK : FAILED;
+		err = ::unlink(p_path.utf8().get_data());
 	}
+	if (err != 0) {
+		return FAILED;
+	}
+	if (remove_notification_func != nullptr) {
+		remove_notification_func(p_path);
+	}
+	return OK;
 }
 
 bool DirAccessUnix::is_link(String p_file) {
@@ -432,6 +459,9 @@ bool DirAccessUnix::is_link(String p_file) {
 	}
 
 	p_file = fix_path(p_file);
+	if (p_file.ends_with("/")) {
+		p_file = p_file.left(-1);
+	}
 
 	struct stat flags = {};
 	if ((lstat(p_file.utf8().get_data(), &flags) != 0)) {
@@ -447,6 +477,9 @@ String DirAccessUnix::read_link(String p_file) {
 	}
 
 	p_file = fix_path(p_file);
+	if (p_file.ends_with("/")) {
+		p_file = p_file.left(-1);
+	}
 
 	char buf[256];
 	memset(buf, 0, 256);
@@ -526,6 +559,8 @@ DirAccessUnix::DirAccessUnix() {
 
 	change_dir(current_dir);
 }
+
+DirAccessUnix::RemoveNotificationFunc DirAccessUnix::remove_notification_func = nullptr;
 
 DirAccessUnix::~DirAccessUnix() {
 	list_dir_end();
