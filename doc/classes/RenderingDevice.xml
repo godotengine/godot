@@ -676,7 +676,7 @@
 		<method name="get_tracked_object_type_count" qualifiers="const">
 			<return type="int" />
 			<description>
-				Returns how many types of trackable objects are.
+				Returns how many types of trackable objects there are.
 				This is only used by Vulkan in debug builds. Godot must also be started with the [code]--extra-gpu-memory-tracking[/code] [url=$DOCS_URL/tutorials/editor/command_line_tutorial.html]command line argument[/url].
 			</description>
 		</method>
@@ -1112,7 +1112,7 @@
 			<param index="1" name="data" type="PackedByteArray" default="PackedByteArray()" />
 			<param index="2" name="creation_bits" type="int" enum="RenderingDevice.BufferCreationBits" is_bitfield="true" default="0" />
 			<description>
-				It can be accessed with the RID that is returned.
+				Creates a new vertex buffer. It can be accessed with the RID that is returned.
 				Once finished with your RID, you will want to free the RID using the RenderingDevice's [method free_rid] method.
 			</description>
 		</method>
