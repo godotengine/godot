@@ -39,9 +39,25 @@ class MenuButton;
 class Camera2DEditor : public Control {
 	GDCLASS(Camera2DEditor, Control);
 
+	EditorPlugin *plugin = nullptr;
+
 	enum Menu {
 		MENU_SNAP_LIMITS_TO_VIEWPORT,
 	};
+
+	enum class Drag {
+		NONE,
+		LEFT,
+		TOP,
+		RIGHT,
+		BOTTOM,
+		CENTER,
+	};
+	Drag drag_type = Drag::NONE;
+	Drag hover_type = Drag::NONE;
+
+	Rect2 drag_revert;
+	Vector2 center_drag_point;
 
 	Camera2D *selected_camera = nullptr;
 
@@ -49,8 +65,9 @@ class Camera2DEditor : public Control {
 	MenuButton *options = nullptr;
 
 	void _menu_option(int p_option);
-	void _snap_limits_to_viewport();
-	void _undo_snap_limits_to_viewport(const Rect2 &p_prev_rect);
+	void _snap_limits_to_viewport(Camera2D *p_camera);
+	void _update_overlays_if_needed(Camera2D *p_camera);
+	void _update_hover(const Vector2 &p_mouse_pos);
 
 protected:
 	static void _bind_methods();
@@ -58,7 +75,11 @@ protected:
 
 public:
 	void edit(Camera2D *p_camera);
-	Camera2DEditor();
+
+	bool forward_canvas_gui_input(const Ref<InputEvent> &p_event);
+	void forward_canvas_draw_over_viewport(Control *p_overlay);
+
+	Camera2DEditor(EditorPlugin *p_plugin);
 };
 
 class Camera2DEditorPlugin : public EditorPlugin {
@@ -66,15 +87,13 @@ class Camera2DEditorPlugin : public EditorPlugin {
 
 	Camera2DEditor *camera_2d_editor = nullptr;
 
-	Label *approach_to_move_rect = nullptr;
-
-	void _editor_theme_changed();
-	void _update_approach_text_visibility();
-
 public:
 	virtual void edit(Object *p_object) override;
 	virtual bool handles(Object *p_object) const override;
 	virtual void make_visible(bool p_visible) override;
+
+	virtual bool forward_canvas_gui_input(const Ref<InputEvent> &p_event) override { return camera_2d_editor->forward_canvas_gui_input(p_event); }
+	virtual void forward_canvas_draw_over_viewport(Control *p_overlay) override { camera_2d_editor->forward_canvas_draw_over_viewport(p_overlay); }
 
 	Camera2DEditorPlugin();
 };
