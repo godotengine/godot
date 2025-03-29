@@ -50,6 +50,8 @@ layout(set = 1, binding = 0, std140) uniform MaterialUniforms {
 
 uint instance_index;
 
+InstanceData draw_data;
+
 #GLOBALS
 
 #ifdef USE_ATTRIBUTES
@@ -73,7 +75,7 @@ void main() {
 	instance_index = gl_InstanceIndex + params.base_instance_index;
 	instance_index_interp = instance_index;
 #endif // USE_ATTRIBUTES
-	const InstanceData draw_data = instances.data[instance_index];
+	draw_data = instances.data[instance_index];
 
 #ifdef USE_PRIMITIVE
 
@@ -291,6 +293,8 @@ vec2 sdf_to_screen_uv(vec2 p_sdf) {
 
 uint instance_index;
 
+InstanceData draw_data;
+
 #GLOBALS
 
 #ifdef LIGHT_CODE_USED
@@ -306,7 +310,6 @@ vec4 light_compute(
 		vec2 screen_uv,
 		vec2 uv,
 		vec4 color, bool is_directional) {
-	const InstanceData draw_data = instances.data[instance_index];
 	vec4 light = vec4(0.0);
 	vec3 light_direction = vec3(0.0);
 
@@ -327,8 +330,6 @@ vec4 light_compute(
 #ifdef USE_NINEPATCH
 
 float map_ninepatch_axis(float pixel, float draw_size, float tex_pixel_size, float margin_begin, float margin_end, int np_repeat, inout int draw_center) {
-	const InstanceData draw_data = instances.data[instance_index];
-
 	float tex_size = 1.0 / tex_pixel_size;
 
 	if (pixel < margin_begin) {
@@ -470,7 +471,7 @@ void main() {
 #else
 	instance_index = instance_index_interp;
 #endif // USE_ATTRIBUTES
-	const InstanceData draw_data = instances.data[instance_index];
+	draw_data = instances.data[instance_index];
 
 #if !defined(USE_ATTRIBUTES) && !defined(USE_PRIMITIVE)
 
