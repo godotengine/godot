@@ -44,6 +44,8 @@ class PropertySelector;
 class SceneTreeDialog;
 class TextEdit;
 class TextureButton;
+class Tree;
+class TreeItem;
 
 class EditorPropertyNil : public EditorProperty {
 	GDCLASS(EditorPropertyNil, EditorProperty);
@@ -129,6 +131,39 @@ public:
 	void setup(const Vector<String> &p_options, bool p_string_name = false, bool p_loose_mode = false);
 	virtual void update_property() override;
 	EditorPropertyTextEnum();
+};
+
+class EditorPropertyOrderedList : public EditorProperty {
+	GDCLASS(EditorPropertyOrderedList, EditorProperty);
+
+	enum EditorPropertyOrderedListButtonID {
+		BUTTON_UP,
+		BUTTON_DOWN,
+	};
+
+	HBoxContainer *default_layout = nullptr;
+
+	bool read_only = false;
+	Tree *tree = nullptr;
+
+	HashMap<String, String> names;
+	Vector<String> values;
+
+	void _update_tree();
+	void _tree_button_pressed(TreeItem *p_item, int p_column, int p_id, MouseButton p_button);
+
+protected:
+	virtual void _set_read_only(bool p_read_only) override;
+	void _notification(int p_what);
+
+	Variant get_drag_data_fw(const Point2 &p_point, Control *p_from);
+	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;
+	void drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
+
+public:
+	void setup(const Vector<String> &p_options);
+	virtual void update_property() override;
+	EditorPropertyOrderedList();
 };
 
 class EditorPropertyPath : public EditorProperty {
