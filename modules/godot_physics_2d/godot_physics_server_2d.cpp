@@ -164,7 +164,6 @@ void GodotPhysicsServer2D::_shape_col_cbk(const Vector2 &p_point_A, const Vector
 				return;
 			}
 		}
-	} else {
 	}
 
 	if (cbk->amount == cbk->max) {
