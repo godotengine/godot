@@ -486,10 +486,10 @@ void EditorNode3DGizmo::add_handles(const Vector<Vector3> &p_handles, const Ref<
 void EditorNode3DGizmo::add_solid_box(const Ref<Material> &p_material, Vector3 p_size, Vector3 p_position, const Transform3D &p_xform) {
 	ERR_FAIL_NULL(spatial_node);
 
-	BoxMesh box_mesh;
-	box_mesh.set_size(p_size);
+	Array arrays;
+	arrays.resize(RS::ARRAY_MAX);
+	BoxMesh::create_mesh_array(arrays, p_size);
 
-	Array arrays = box_mesh.surface_get_arrays(0);
 	PackedVector3Array vertex = arrays[RS::ARRAY_VERTEX];
 	Vector3 *w = vertex.ptrw();
 
@@ -499,8 +499,9 @@ void EditorNode3DGizmo::add_solid_box(const Ref<Material> &p_material, Vector3 p
 
 	arrays[RS::ARRAY_VERTEX] = vertex;
 
-	Ref<ArrayMesh> m = memnew(ArrayMesh);
-	m->add_surface_from_arrays(box_mesh.surface_get_primitive_type(0), arrays);
+	Ref<ArrayMesh> m;
+	m.instantiate();
+	m->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, arrays);
 	add_mesh(m, p_material, p_xform);
 }
 
