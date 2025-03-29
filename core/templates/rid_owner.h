@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "core/config/project_settings.h"
 #include "core/os/memory.h"
 #include "core/os/mutex.h"
 #include "core/string/print_string.h"
@@ -420,9 +421,12 @@ public:
 		description = p_description;
 	}
 
-	RID_Alloc(uint32_t p_target_chunk_byte_size = 65536, uint32_t p_maximum_number_of_elements = 262144) {
+	RID_Alloc(uint32_t p_target_chunk_byte_size = 65536, uint32_t p_maximum_number_of_elements = 0) {
 		elements_in_chunk = sizeof(T) > p_target_chunk_byte_size ? 1 : (p_target_chunk_byte_size / sizeof(T));
 		if constexpr (THREAD_SAFE) {
+			if (p_maximum_number_of_elements == 0) {
+				p_maximum_number_of_elements = GLOBAL_GET("memory/limits/rid/max_rid_allocate");
+			}
 			chunk_limit = (p_maximum_number_of_elements / elements_in_chunk) + 1;
 			chunks = (Chunk **)memalloc(sizeof(Chunk *) * chunk_limit);
 			free_list_chunks = (uint32_t **)memalloc(sizeof(uint32_t *) * chunk_limit);
@@ -518,7 +522,7 @@ public:
 		alloc.set_description(p_description);
 	}
 
-	RID_PtrOwner(uint32_t p_target_chunk_byte_size = 65536, uint32_t p_maximum_number_of_elements = 262144) :
+	RID_PtrOwner(uint32_t p_target_chunk_byte_size = 65536, uint32_t p_maximum_number_of_elements = 0) :
 			alloc(p_target_chunk_byte_size, p_maximum_number_of_elements) {}
 };
 
@@ -572,6 +576,6 @@ public:
 	void set_description(const char *p_description) {
 		alloc.set_description(p_description);
 	}
-	RID_Owner(uint32_t p_target_chunk_byte_size = 65536, uint32_t p_maximum_number_of_elements = 262144) :
+	RID_Owner(uint32_t p_target_chunk_byte_size = 65536, uint32_t p_maximum_number_of_elements = 0) :
 			alloc(p_target_chunk_byte_size, p_maximum_number_of_elements) {}
 };
