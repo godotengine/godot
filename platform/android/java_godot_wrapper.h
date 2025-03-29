@@ -44,7 +44,6 @@ private:
 	jobject godot_instance;
 	jobject activity;
 	jclass godot_class;
-	jclass activity_class;
 
 	GodotJavaViewWrapper *godot_view = nullptr;
 
