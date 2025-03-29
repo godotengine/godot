@@ -196,13 +196,33 @@ int GDScriptTestRunner::run_tests() {
 		return -1;
 	}
 
+#ifdef DEBUG_ENABLED
+	const String untyped_declaration_path = GDScriptWarning::get_settings_path_from_code(GDScriptWarning::UNTYPED_DECLARATION);
+	const String inferred_declaration_path = GDScriptWarning::get_settings_path_from_code(GDScriptWarning::INFERRED_DECLARATION);
+#endif // DEBUG_ENABLED
+
 	int failed = 0;
 	for (int i = 0; i < tests.size(); i++) {
 		GDScriptTest test = tests[i];
 		if (print_filenames) {
 			print_line(test.get_source_relative_filepath());
 		}
+
+#ifdef DEBUG_ENABLED
+		if (test.use_static_typing_warnings) {
+			ProjectSettings::get_singleton()->set_setting(untyped_declaration_path, (int)GDScriptWarning::WARN);
+			ProjectSettings::get_singleton()->set_setting(inferred_declaration_path, (int)GDScriptWarning::WARN);
+		}
+#endif // DEBUG_ENABLED
+
 		GDScriptTest::TestResult result = test.run_test();
+
+#ifdef DEBUG_ENABLED
+		if (test.use_static_typing_warnings) {
+			ProjectSettings::get_singleton()->set_setting(untyped_declaration_path, (int)GDScriptWarning::IGNORE);
+			ProjectSettings::get_singleton()->set_setting(inferred_declaration_path, (int)GDScriptWarning::IGNORE);
+		}
+#endif // DEBUG_ENABLED
 
 		String expected = FileAccess::get_file_as_string(test.get_output_file());
 #ifndef DEBUG_ENABLED
@@ -232,6 +252,11 @@ bool GDScriptTestRunner::generate_outputs() {
 		return false;
 	}
 
+#ifdef DEBUG_ENABLED
+	const String untyped_declaration_path = GDScriptWarning::get_settings_path_from_code(GDScriptWarning::UNTYPED_DECLARATION);
+	const String inferred_declaration_path = GDScriptWarning::get_settings_path_from_code(GDScriptWarning::INFERRED_DECLARATION);
+#endif
+
 	for (int i = 0; i < tests.size(); i++) {
 		GDScriptTest test = tests[i];
 		if (print_filenames) {
@@ -240,7 +265,21 @@ bool GDScriptTestRunner::generate_outputs() {
 			OS::get_singleton()->print(".");
 		}
 
+#ifdef DEBUG_ENABLED
+		if (test.use_static_typing_warnings) {
+			ProjectSettings::get_singleton()->set_setting(untyped_declaration_path, (int)GDScriptWarning::WARN);
+			ProjectSettings::get_singleton()->set_setting(inferred_declaration_path, (int)GDScriptWarning::WARN);
+		}
+#endif
+
 		bool result = test.generate_output();
+
+#ifdef DEBUG_ENABLED
+		if (test.use_static_typing_warnings) {
+			ProjectSettings::get_singleton()->set_setting(untyped_declaration_path, (int)GDScriptWarning::IGNORE);
+			ProjectSettings::get_singleton()->set_setting(inferred_declaration_path, (int)GDScriptWarning::IGNORE);
+		}
+#endif
 
 		if (!result) {
 			print_line("\nCould not generate output for " + test.get_source_file());
@@ -302,12 +341,20 @@ bool GDScriptTestRunner::make_tests_for_dir(const String &p_dir) {
 				String out_file = next.get_basename() + ".out";
 				ERR_FAIL_COND_V_MSG(!is_generating && !dir->file_exists(out_file), false, "Could not find output file for " + next);
 
+				// Enables UNTYPED_DECLARATION and INFERRED_DECLARATION warnings.
+				bool use_static_typing_warnings = false;
+				if (next.contains(".static.")) {
+					use_static_typing_warnings = true;
+				}
+
 				if (next.ends_with(".bin.gd")) {
 					// Test text mode first.
 					GDScriptTest text_test(current_dir.path_join(next), current_dir.path_join(out_file), source_dir);
+					text_test.use_static_typing_warnings = use_static_typing_warnings;
 					tests.push_back(text_test);
 					// Test binary mode even without `--use-binary-tokens`.
 					GDScriptTest bin_test(current_dir.path_join(next), current_dir.path_join(out_file), source_dir);
+					bin_test.use_static_typing_warnings = use_static_typing_warnings;
 					bin_test.set_tokenizer_mode(GDScriptTest::TOKENIZER_BUFFER);
 					tests.push_back(bin_test);
 				} else {
@@ -315,6 +362,7 @@ bool GDScriptTestRunner::make_tests_for_dir(const String &p_dir) {
 					if (binary_tokens) {
 						test.set_tokenizer_mode(GDScriptTest::TOKENIZER_BUFFER);
 					}
+					test.use_static_typing_warnings = use_static_typing_warnings;
 					tests.push_back(test);
 				}
 			}
