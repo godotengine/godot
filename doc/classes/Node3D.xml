@@ -62,6 +62,11 @@
 				[b]Note:[/b] This method is not always equivalent to [method Node.get_parent], which does not take [member top_level] into account.
 			</description>
 		</method>
+		<method name="get_transform_update_count" qualifiers="const">
+			<return type="int" />
+			<description>
+			</description>
+		</method>
 		<method name="get_world_3d" qualifiers="const">
 			<return type="World3D" />
 			<description>

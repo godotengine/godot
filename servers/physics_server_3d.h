@@ -90,6 +90,7 @@ public:
 	virtual bool is_sleeping() const = 0;
 
 	virtual int get_contact_count() const = 0;
+	// virtual int get_transform_updates() const = 0;
 
 	virtual Vector3 get_contact_local_position(int p_contact_idx) const = 0;
 	virtual Vector3 get_contact_local_normal(int p_contact_idx) const = 0;
@@ -283,6 +284,8 @@ public:
 	virtual RID space_create() = 0;
 	virtual void space_set_active(RID p_space, bool p_active) = 0;
 	virtual bool space_is_active(RID p_space) const = 0;
+	virtual void space_step(RID p_space, real_t p_delta) = 0;
+	virtual void space_flush_queries(RID p_space) = 0;
 
 	enum SpaceParameter {
 		SPACE_PARAM_CONTACT_RECYCLE_RADIUS,
@@ -297,6 +300,7 @@ public:
 
 	virtual void space_set_param(RID p_space, SpaceParameter p_param, real_t p_value) = 0;
 	virtual real_t space_get_param(RID p_space, SpaceParameter p_param) const = 0;
+	virtual real_t space_get_time(RID p_space) const = 0;
 
 	// this function only works on physics process, errors and returns null otherwise
 	virtual PhysicsDirectSpaceState3D *space_get_direct_state(RID p_space) = 0;
@@ -808,6 +812,7 @@ public:
 	};
 
 	virtual int get_process_info(ProcessInfo p_info) = 0;
+	virtual int space_get_last_process_info(RID p_space, ProcessInfo p_info) = 0;
 
 	PhysicsServer3D();
 	~PhysicsServer3D();

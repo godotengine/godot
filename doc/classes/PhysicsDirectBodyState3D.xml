@@ -192,6 +192,11 @@
 				Returns the current state of the space, useful for queries.
 			</description>
 		</method>
+		<method name="get_transform_updates" qualifiers="const">
+			<return type="int" />
+			<description>
+			</description>
+		</method>
 		<method name="get_velocity_at_local_position" qualifiers="const">
 			<return type="Vector3" />
 			<param index="0" name="local_position" type="Vector3" />

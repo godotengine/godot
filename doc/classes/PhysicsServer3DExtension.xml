@@ -1214,6 +1214,12 @@
 			<description>
 			</description>
 		</method>
+		<method name="_space_flush_queries" qualifiers="virtual" experimental="">
+			<return type="void" />
+			<param index="0" name="space" type="RID" />
+			<description>
+			</description>
+		</method>
 		<method name="_space_get_contact_count" qualifiers="virtual const">
 			<return type="int" />
 			<param index="0" name="space" type="RID" />
@@ -1232,10 +1238,23 @@
 			<description>
 			</description>
 		</method>
+		<method name="_space_get_last_process_info" qualifiers="virtual" experimental="">
+			<return type="int" />
+			<param index="0" name="space" type="RID" />
+			<param index="1" name="process_info" type="int" enum="PhysicsServer3D.ProcessInfo" />
+			<description>
+			</description>
+		</method>
 		<method name="_space_get_param" qualifiers="virtual const">
 			<return type="float" />
 			<param index="0" name="space" type="RID" />
 			<param index="1" name="param" type="int" enum="PhysicsServer3D.SpaceParameter" />
+			<description>
+			</description>
+		</method>
+		<method name="_space_get_time" qualifiers="virtual const">
+			<return type="float" />
+			<param index="0" name="space" type="RID" />
 			<description>
 			</description>
 		</method>
@@ -1264,6 +1283,13 @@
 			<param index="0" name="space" type="RID" />
 			<param index="1" name="param" type="int" enum="PhysicsServer3D.SpaceParameter" />
 			<param index="2" name="value" type="float" />
+			<description>
+			</description>
+		</method>
+		<method name="_space_step" qualifiers="virtual" experimental="">
+			<return type="void" />
+			<param index="0" name="space" type="RID" />
+			<param index="1" name="delta" type="float" />
 			<description>
 			</description>
 		</method>
