@@ -7920,6 +7920,20 @@ TEST_CASE("[SceneTree][TextEdit] viewport") {
 	memdelete(text_edit);
 }
 
+TEST_CASE("[SceneTree][TextEdit] small height value") {
+	TextEdit *text_edit = memnew(TextEdit);
+	SceneTree::get_singleton()->get_root()->add_child(text_edit);
+
+	text_edit->set_size(Size2(800, 32));
+	text_edit->set_text("0\n1\n2");
+	MessageQueue::get_singleton()->flush();
+
+	text_edit->set_v_scroll(100);
+	CHECK(text_edit->get_v_scroll() < 3);
+
+	memdelete(text_edit);
+}
+
 TEST_CASE("[SceneTree][TextEdit] setter getters") {
 	TextEdit *text_edit = memnew(TextEdit);
 	SceneTree::get_singleton()->get_root()->add_child(text_edit);

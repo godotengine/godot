@@ -852,7 +852,7 @@ void TextEdit::_notification(int p_what) {
 			}
 
 			int first_vis_line = get_first_visible_line() - 1;
-			int draw_amount = visible_rows + (smooth_scroll_enabled ? 1 : 0);
+			int draw_amount = visible_rows + 1;
 			draw_amount += draw_placeholder ? placeholder_wrapped_rows.size() - 1 : get_line_wrap_count(first_vis_line + 1);
 
 			// Draw minimap.
@@ -4639,7 +4639,7 @@ int TextEdit::get_minimap_line_at_pos(const Point2i &p_pos) const {
 	int minimap_visible_lines = get_minimap_visible_lines();
 	int visible_rows = get_visible_line_count() + 1;
 	int first_vis_line = get_first_visible_line() - 1;
-	int draw_amount = visible_rows + (smooth_scroll_enabled ? 1 : 0);
+	int draw_amount = visible_rows + 1;
 	draw_amount += get_line_wrap_count(first_vis_line + 1);
 	int minimap_line_height = (minimap_char_size.y + minimap_line_spacing);
 
@@ -8053,7 +8053,7 @@ void TextEdit::_update_scrollbars() {
 
 	int visible_rows = get_visible_line_count();
 	int total_rows = draw_placeholder ? placeholder_wrapped_rows.size() : get_total_visible_line_count();
-	if (scroll_past_end_of_file_enabled && !fit_content_height) {
+	if ((scroll_past_end_of_file_enabled && !fit_content_height) || visible_rows == 0) {
 		total_rows += visible_rows - 1;
 	}
 
@@ -8076,7 +8076,6 @@ void TextEdit::_update_scrollbars() {
 		v_scroll->set_max(total_rows + _get_visible_lines_offset());
 		v_scroll->set_page(visible_rows + _get_visible_lines_offset());
 		set_v_scroll(get_v_scroll());
-
 	} else {
 		first_visible_line = 0;
 		first_visible_line_wrap_ofs = 0;
