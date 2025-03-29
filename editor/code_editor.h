@@ -79,14 +79,13 @@ class FindReplaceBar : public HBoxContainer {
 	Button *find_next = nullptr;
 	CheckBox *case_sensitive = nullptr;
 	CheckBox *whole_words = nullptr;
-	TextureButton *hide_button = nullptr;
+	Button *hide_button = nullptr;
 
 	LineEdit *replace_text = nullptr;
 	Button *replace = nullptr;
 	Button *replace_all = nullptr;
 	CheckBox *selection_only = nullptr;
 
-	VBoxContainer *vbc_lineedit = nullptr;
 	HBoxContainer *hbc_button_replace = nullptr;
 	HBoxContainer *hbc_option_replace = nullptr;
 
