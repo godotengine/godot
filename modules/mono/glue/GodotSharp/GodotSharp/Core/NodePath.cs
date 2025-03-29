@@ -1,6 +1,7 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using Godot.NativeInterop;
+using System.Collections.Concurrent;
 
 #nullable enable
 
@@ -48,6 +49,9 @@ namespace Godot
 
         private WeakReference<IDisposable>? _weakReferenceToSelf;
 
+        private static readonly ConcurrentDictionary<string, WeakReference<NodePath>> _nodePathCache = new();
+        private string? _cachedString;
+
         ~NodePath()
         {
             Dispose(false);
@@ -64,10 +68,15 @@ namespace Godot
 
         public void Dispose(bool disposing)
         {
+            if (_cachedString is not null)
+            {
+                _nodePathCache.TryRemove(_cachedString, out _);
+            }
+
             // Always dispose `NativeValue` even if disposing is true
             NativeValue.DangerousSelfRef.Dispose();
 
-            if (_weakReferenceToSelf != null)
+            if (_weakReferenceToSelf is not null)
             {
                 DisposablesTracker.UnregisterDisposable(_weakReferenceToSelf);
             }
@@ -121,6 +130,8 @@ namespace Godot
         /// <param name="path">A string that represents a path in a scene tree.</param>
         public NodePath(string path)
         {
+            _cachedString = path;
+
             if (!string.IsNullOrEmpty(path))
             {
                 NativeValue = (godot_node_path.movable)NativeFuncs.godotsharp_node_path_new_from_string(path);
@@ -129,17 +140,39 @@ namespace Godot
         }
 
         /// <summary>
-        /// Converts a string to a <see cref="NodePath"/>.
+        /// Converts a <see cref="string"/> to a <see cref="NodePath"/>.<br/>
+        /// The resulting <see cref="NodePath"/> is temporarily cached for future casts.
         /// </summary>
         /// <param name="from">The string to convert.</param>
-        public static implicit operator NodePath(string from) => new NodePath(from);
+        [return: NotNullIfNotNull(nameof(from))]
+        public static implicit operator NodePath?(string? from)
+        {
+            if (from is null)
+                return null;
+
+            while (true)
+            {
+                WeakReference<NodePath> cachedNodePath = _nodePathCache.GetOrAdd(from,
+                    static (string from) => new WeakReference<NodePath>(new NodePath(from))
+                );
+
+                if (cachedNodePath.TryGetTarget(out NodePath? result))
+                {
+                    return result;
+                }
+                // It's possible to reach here if disposed in a race; try again
+            }
+        }
 
         /// <summary>
-        /// Converts this <see cref="NodePath"/> to a string.
+        /// Converts a <see cref="NodePath"/> to a <see cref="string"/>.
         /// </summary>
         /// <param name="from">The <see cref="NodePath"/> to convert.</param>
-        [return: NotNullIfNotNull("from")]
-        public static implicit operator string?(NodePath? from) => from?.ToString();
+        [return: NotNullIfNotNull(nameof(from))]
+        public static implicit operator string?(NodePath? from)
+        {
+            return from?.ToString();
+        }
 
         /// <summary>
         /// Converts this <see cref="NodePath"/> to a string.
@@ -150,10 +183,16 @@ namespace Godot
             if (IsEmpty)
                 return string.Empty;
 
+            if (_cachedString is not null)
+                return _cachedString;
+
             var src = (godot_node_path)NativeValue;
             NativeFuncs.godotsharp_node_path_as_string(out godot_string dest, src);
             using (dest)
-                return Marshaling.ConvertStringToManaged(dest);
+            {
+                _cachedString = Marshaling.ConvertStringToManaged(dest);
+                return _cachedString;
+            }
         }
 
         /// <summary>
