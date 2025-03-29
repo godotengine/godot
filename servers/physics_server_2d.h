@@ -213,6 +213,11 @@ class PhysicsServer2D : public Object {
 protected:
 	static void _bind_methods();
 
+#ifndef DISABLE_DEPRECATED
+	void _body_set_shape_as_one_way_collision_bind_compat_104736(RID p_body, int p_shape_idx, bool p_enable, real_t p_margin);
+	static void _bind_compatibility_methods();
+#endif
+
 public:
 	static PhysicsServer2D *get_singleton();
 
