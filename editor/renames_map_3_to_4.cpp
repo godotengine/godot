@@ -1163,6 +1163,7 @@ const char *RenamesMap3To4::gdscript_properties_renames[][2] = {
 	{ "table_hseparation", "table_h_separation" }, // Theme
 	{ "table_vseparation", "table_v_separation" }, // Theme
 	{ "tangent", "orthogonal" }, // Vector2
+	{ "target_fps", "max_fps" }, // Engine
 	{ "target_location", "target_position" }, // NavigationAgent2D, NavigationAgent3D
 	{ "toplevel", "top_level" }, // Node
 	{ "translation", "position" }, // Node3D
