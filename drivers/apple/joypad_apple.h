@@ -47,6 +47,13 @@ struct GameController {
 	NSInteger ff_effect_timestamp = 0;
 	bool force_feedback = false;
 	bool nintendo_button_layout = false;
+	Color color;
+	Input::JoyAdaptiveTriggerMode l_mode = Input::JOY_ADAPTIVE_TRIGGER_MODE_OFF;
+	Vector2 l_strength;
+	Vector2 l_position;
+	Input::JoyAdaptiveTriggerMode r_mode = Input::JOY_ADAPTIVE_TRIGGER_MODE_OFF;
+	Vector2 r_strength;
+	Vector2 r_position;
 
 	bool axis_changed[(int)JoyAxis::MAX];
 	double axis_value[(int)JoyAxis::MAX];
