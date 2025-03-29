@@ -188,6 +188,15 @@
 				Returns whether [param class] or its ancestry has a signal called [param signal] or not.
 			</description>
 		</method>
+		<method name="class_override_api_type" qualifiers="const">
+			<return type="int" enum="Error" />
+			<param index="0" name="class" type="StringName" />
+			<param index="1" name="api" type="int" enum="ClassDB.APIType" />
+			<description>
+				Overrides the API type of [param class] to [param api]. See [enum ClassDB.APIType].
+				[b]Note:[/b] This should only be used with a thorough understanding of its implications.
+			</description>
+		</method>
 		<method name="class_set_property" qualifiers="const">
 			<return type="int" enum="Error" />
 			<param index="0" name="object" type="Object" />
@@ -201,6 +210,12 @@
 			<return type="PackedStringArray" />
 			<description>
 				Returns the names of all the classes available.
+			</description>
+		</method>
+		<method name="get_current_api" qualifiers="const">
+			<return type="int" enum="ClassDB.APIType" />
+			<description>
+				Returns the currently active API type. See [enum ClassDB.APIType].
 			</description>
 		</method>
 		<method name="get_inheriters_from_class" qualifiers="const">
@@ -246,6 +261,14 @@
 			<param index="1" name="inherits" type="StringName" />
 			<description>
 				Returns whether [param inherits] is an ancestor of [param class] or not.
+			</description>
+		</method>
+		<method name="set_current_api" qualifiers="const">
+			<return type="void" />
+			<param index="0" name="api" type="int" enum="ClassDB.APIType" />
+			<description>
+				Sets the globally active API type to [param api]. See [enum ClassDB.APIType].
+				[b]Note:[/b] This should only be used with a thorough understanding of its implications.
 			</description>
 		</method>
 	</methods>
