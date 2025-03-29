@@ -32,7 +32,6 @@
 
 #include "../misc/jolt_math_funcs.h"
 #include "../misc/jolt_type_conversions.h"
-#include "../shapes/jolt_custom_double_sided_shape.h"
 #include "../shapes/jolt_shape_3d.h"
 #include "../spaces/jolt_space_3d.h"
 
@@ -332,7 +331,16 @@ void JoltShapedObject3D::commit_shapes(bool p_optimize_compound) {
 	previous_jolt_shape = jolt_shape;
 	jolt_shape = new_shape;
 
-	space->get_body_iface().SetShape(jolt_id, jolt_shape, false, JPH::EActivation::DontActivate);
+	JPH::BodyInterface &iface = space->get_body_iface();
+
+	if (uses_shape_materials()) {
+		// This body/area uses per-shape physics materials, manifold reduction is not safe (can merge shapes with different materials).
+		iface.SetUseManifoldReduction(jolt_id, false);
+	} else if (!reports_contacts()) {
+		iface.SetUseManifoldReduction(jolt_id, true);
+	}
+
+	iface.SetShape(jolt_id, jolt_shape, false, JPH::EActivation::DontActivate);
 
 	_enqueue_shapes_changed();
 
@@ -353,12 +361,19 @@ void JoltShapedObject3D::add_shape(JoltShape3D *p_shape, Transform3D p_transform
 
 	shapes.push_back(JoltShapeInstance3D(this, p_shape, p_transform, shape_scale, p_disabled));
 
+	if (p_shape->uses_shape_material()) {
+		add_shape_material();
+	}
+
 	_shapes_changed();
 }
 
 void JoltShapedObject3D::remove_shape(const JoltShape3D *p_shape) {
 	for (int i = shapes.size() - 1; i >= 0; i--) {
 		if (shapes[i].get_shape() == p_shape) {
+			if (shapes[i].get_shape()->uses_shape_material()) {
+				remove_shape_material();
+			}
 			shapes.remove_at(i);
 		}
 	}
@@ -380,6 +395,12 @@ JoltShape3D *JoltShapedObject3D::get_shape(int p_index) const {
 
 void JoltShapedObject3D::set_shape(int p_index, JoltShape3D *p_shape) {
 	ERR_FAIL_INDEX(p_index, (int)shapes.size());
+
+	// Only add to the per-shape material count if the old shape uses a default material.
+	if (p_shape->uses_shape_material() && !shapes[p_index].get_shape()->uses_shape_material()) {
+		add_shape_material();
+	}
+
 	shapes[p_index] = JoltShapeInstance3D(this, p_shape);
 
 	_shapes_changed();
@@ -475,4 +496,16 @@ void JoltShapedObject3D::set_shape_disabled(int p_index, bool p_disabled) {
 	}
 
 	_shapes_changed();
+}
+
+void JoltShapedObject3D::add_shape_material() {
+	shape_material_count++;
+}
+
+void JoltShapedObject3D::remove_shape_material() {
+	shape_material_count--;
+}
+
+bool JoltShapedObject3D::uses_shape_materials() const {
+	return shape_material_count > 0;
 }
