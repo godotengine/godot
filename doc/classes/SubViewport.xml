@@ -30,7 +30,7 @@
 			The width and height of the sub-viewport. Must be set to a value greater than or equal to 2 pixels on both dimensions. Otherwise, nothing will be displayed.
 			[b]Note:[/b] If the parent node is a [SubViewportContainer] and its [member SubViewportContainer.stretch] is [code]true[/code], the viewport size cannot be changed manually.
 		</member>
-		<member name="size_2d_override" type="Vector2i" setter="set_size_2d_override" getter="get_size_2d_override" default="Vector2i(0, 0)">
+		<member name="size_2d_override" type="Vector2" setter="set_size_2d_override" getter="get_size_2d_override" default="Vector2(0, 0)">
 			The 2D size override of the sub-viewport. If either the width or height is [code]0[/code], the override is disabled.
 		</member>
 		<member name="size_2d_override_stretch" type="bool" setter="set_size_2d_override_stretch" getter="is_size_2d_override_stretch_enabled" default="false">
