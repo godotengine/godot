@@ -40,6 +40,17 @@ body:
     validations:
       required: true
 
+  - type: input
+    attributes:
+      label: Target device information (optional)
+      description: |
+        - Please provide the target device details if the issue occurs on or is related to Android/iOS.
+        - If using a Samsung device, check if it has a Snapdragon or Exynos SoC as well. Samsung devices sold in the US, Canada and China typically have a Snapdragon SoC, while devices sold elsewhere typically have an Exynos SoC.
+        - You can check your device information in the system settings.
+      placeholder: Pixel 6 - Android 12 - Google Tensor - Mali-G78 MP20 - 8 GB RAM, iPhone 15 Pro
+    validations:
+      required: false
+
   - type: textarea
     attributes:
       label: Issue description
