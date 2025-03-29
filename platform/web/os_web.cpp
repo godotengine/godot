@@ -105,15 +105,15 @@ void OS_Web::finalize() {
 
 // Miscellaneous
 
-Error OS_Web::execute(const String &p_path, const List<String> &p_arguments, String *r_pipe, int *r_exitcode, bool read_stderr, Mutex *p_pipe_mutex, bool p_open_console) {
+Error OS_Web::execute(const String &p_path, const List<String> &p_arguments, String *r_pipe, int *r_exitcode, bool p_read_stderr, Mutex *p_pipe_mutex, bool p_open_console, const String &p_working_dir, const Dictionary &p_env) {
 	return create_process(p_path, p_arguments);
 }
 
-Dictionary OS_Web::execute_with_pipe(const String &p_path, const List<String> &p_arguments, bool p_blocking) {
+Dictionary OS_Web::execute_with_pipe(const String &p_path, const List<String> &p_arguments, bool p_blocking, const String &p_working_dir, const Dictionary &p_env) {
 	ERR_FAIL_V_MSG(Dictionary(), "OS::execute_with_pipe is not available on the Web platform.");
 }
 
-Error OS_Web::create_process(const String &p_path, const List<String> &p_arguments, ProcessID *r_child_id, bool p_open_console) {
+Error OS_Web::create_process(const String &p_path, const List<String> &p_arguments, ProcessID *r_child_id, bool p_open_console, const String &p_working_dir, const Dictionary &p_env) {
 	Array args;
 	for (const String &E : p_arguments) {
 		args.push_back(E);

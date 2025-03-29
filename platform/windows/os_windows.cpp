@@ -1208,7 +1208,7 @@ Dictionary OS_Windows::get_memory_info() const {
 	return meminfo;
 }
 
-Dictionary OS_Windows::execute_with_pipe(const String &p_path, const List<String> &p_arguments, bool p_blocking) {
+Dictionary OS_Windows::execute_with_pipe(const String &p_path, const List<String> &p_arguments, bool p_blocking, const String &p_working_dir, const Dictionary &p_env) {
 #define CLEAN_PIPES               \
 	if (pipe_in[0] != 0) {        \
 		CloseHandle(pipe_in[0]);  \
@@ -1293,19 +1293,39 @@ Dictionary OS_Windows::execute_with_pipe(const String &p_path, const List<String
 
 	DWORD creation_flags = NORMAL_PRIORITY_CLASS | CREATE_NO_WINDOW | EXTENDED_STARTUPINFO_PRESENT;
 
+	Vector<wchar_t> env_data;
+	void *env = nullptr;
+	if (!p_env.is_empty()) {
+		for (const KeyValue<Variant, Variant> &pair : p_env) {
+			const String &key_s = pair.key;
+			const String &val_s = pair.value;
+
+			Char16String ev = vformat("%s=%s", key_s, val_s).utf16();
+			env_data.append_buffer((const wchar_t *)ev.get_data(), ev.size());
+		}
+		env_data.push_back(0);
+
+		env = env_data.ptrw();
+		creation_flags |= CREATE_UNICODE_ENVIRONMENT;
+	}
+
 	Char16String current_dir_name;
-	size_t str_len = GetCurrentDirectoryW(0, nullptr);
-	current_dir_name.resize(str_len + 1);
-	GetCurrentDirectoryW(current_dir_name.size(), (LPWSTR)current_dir_name.ptrw());
+	if (p_working_dir.is_empty()) {
+		size_t str_len = GetCurrentDirectoryW(0, nullptr);
+		current_dir_name.resize(str_len + 1);
+		GetCurrentDirectoryW(current_dir_name.size(), (LPWSTR)current_dir_name.ptrw());
+	} else {
+		current_dir_name = fix_path(p_working_dir).utf16();
+	}
 	if (current_dir_name.size() >= MAX_PATH) {
 		Char16String current_short_dir_name;
-		str_len = GetShortPathNameW((LPCWSTR)current_dir_name.ptr(), nullptr, 0);
+		size_t str_len = GetShortPathNameW((LPCWSTR)current_dir_name.ptr(), nullptr, 0);
 		current_short_dir_name.resize(str_len);
 		GetShortPathNameW((LPCWSTR)current_dir_name.ptr(), (LPWSTR)current_short_dir_name.ptrw(), current_short_dir_name.size());
 		current_dir_name = current_short_dir_name;
 	}
 
-	if (!CreateProcessW(nullptr, (LPWSTR)(command.utf16().ptrw()), nullptr, nullptr, true, creation_flags, nullptr, (LPWSTR)current_dir_name.ptr(), si_w, &pi.pi)) {
+	if (!CreateProcessW(nullptr, (LPWSTR)(command.utf16().ptrw()), nullptr, nullptr, true, creation_flags, env, (LPWSTR)current_dir_name.ptr(), si_w, &pi.pi)) {
 		CLEAN_PIPES
 		DeleteProcThreadAttributeList(pi.si.lpAttributeList);
 		ERR_FAIL_V_MSG(ret, "Could not create child process: " + command);
@@ -1336,7 +1356,7 @@ Dictionary OS_Windows::execute_with_pipe(const String &p_path, const List<String
 	return ret;
 }
 
-Error OS_Windows::execute(const String &p_path, const List<String> &p_arguments, String *r_pipe, int *r_exitcode, bool read_stderr, Mutex *p_pipe_mutex, bool p_open_console) {
+Error OS_Windows::execute(const String &p_path, const List<String> &p_arguments, String *r_pipe, int *r_exitcode, bool p_read_stderr, Mutex *p_pipe_mutex, bool p_open_console, const String &p_working_dir, const Dictionary &p_env) {
 	String path = p_path.is_absolute_path() ? fix_path(p_path) : p_path;
 	String command = _quote_command_line_argument(path);
 	for (const String &E : p_arguments) {
@@ -1362,7 +1382,7 @@ Error OS_Windows::execute(const String &p_path, const List<String> &p_arguments,
 
 		pi.si.StartupInfo.dwFlags |= STARTF_USESTDHANDLES;
 		pi.si.StartupInfo.hStdOutput = pipe[1];
-		if (read_stderr) {
+		if (p_read_stderr) {
 			pi.si.StartupInfo.hStdError = pipe[1];
 		}
 
@@ -1399,19 +1419,39 @@ Error OS_Windows::execute(const String &p_path, const List<String> &p_arguments,
 		creation_flags |= CREATE_NO_WINDOW;
 	}
 
+	Vector<wchar_t> env_data;
+	void *env = nullptr;
+	if (!p_env.is_empty()) {
+		for (const KeyValue<Variant, Variant> &pair : p_env) {
+			const String &key_s = pair.key;
+			const String &val_s = pair.value;
+
+			Char16String ev = vformat("%s=%s", key_s, val_s).utf16();
+			env_data.append_buffer((const wchar_t *)ev.get_data(), ev.size());
+		}
+		env_data.push_back(0);
+
+		env = env_data.ptrw();
+		creation_flags |= CREATE_UNICODE_ENVIRONMENT;
+	}
+
 	Char16String current_dir_name;
-	size_t str_len = GetCurrentDirectoryW(0, nullptr);
-	current_dir_name.resize(str_len + 1);
-	GetCurrentDirectoryW(current_dir_name.size(), (LPWSTR)current_dir_name.ptrw());
+	if (p_working_dir.is_empty()) {
+		size_t str_len = GetCurrentDirectoryW(0, nullptr);
+		current_dir_name.resize(str_len + 1);
+		GetCurrentDirectoryW(current_dir_name.size(), (LPWSTR)current_dir_name.ptrw());
+	} else {
+		current_dir_name = fix_path(p_working_dir).utf16();
+	}
 	if (current_dir_name.size() >= MAX_PATH) {
 		Char16String current_short_dir_name;
-		str_len = GetShortPathNameW((LPCWSTR)current_dir_name.ptr(), nullptr, 0);
+		size_t str_len = GetShortPathNameW((LPCWSTR)current_dir_name.ptr(), nullptr, 0);
 		current_short_dir_name.resize(str_len);
 		GetShortPathNameW((LPCWSTR)current_dir_name.ptr(), (LPWSTR)current_short_dir_name.ptrw(), current_short_dir_name.size());
 		current_dir_name = current_short_dir_name;
 	}
 
-	int ret = CreateProcessW(nullptr, (LPWSTR)(command.utf16().ptrw()), nullptr, nullptr, inherit_handles, creation_flags, nullptr, (LPWSTR)current_dir_name.ptr(), si_w, &pi.pi);
+	int ret = CreateProcessW(nullptr, (LPWSTR)(command.utf16().ptrw()), nullptr, nullptr, inherit_handles, creation_flags, env, (LPWSTR)current_dir_name.ptr(), si_w, &pi.pi);
 	if (!ret && r_pipe) {
 		CloseHandle(pipe[0]); // Cleanup pipe handles.
 		CloseHandle(pipe[1]);
@@ -1478,7 +1518,7 @@ Error OS_Windows::execute(const String &p_path, const List<String> &p_arguments,
 	return OK;
 }
 
-Error OS_Windows::create_process(const String &p_path, const List<String> &p_arguments, ProcessID *r_child_id, bool p_open_console) {
+Error OS_Windows::create_process(const String &p_path, const List<String> &p_arguments, ProcessID *r_child_id, bool p_open_console, const String &p_working_dir, const Dictionary &p_env) {
 	String path = p_path.is_absolute_path() ? fix_path(p_path) : p_path;
 	String command = _quote_command_line_argument(path);
 	for (const String &E : p_arguments) {
@@ -1498,19 +1538,39 @@ Error OS_Windows::create_process(const String &p_path, const List<String> &p_arg
 		creation_flags |= CREATE_NO_WINDOW;
 	}
 
+	Vector<wchar_t> env_data;
+	void *env = nullptr;
+	if (!p_env.is_empty()) {
+		for (const KeyValue<Variant, Variant> &pair : p_env) {
+			const String &key_s = pair.key;
+			const String &val_s = pair.value;
+
+			Char16String ev = vformat("%s=%s", key_s, val_s).utf16();
+			env_data.append_buffer((const wchar_t *)ev.get_data(), ev.size());
+		}
+		env_data.push_back(0);
+
+		env = env_data.ptrw();
+		creation_flags |= CREATE_UNICODE_ENVIRONMENT;
+	}
+
 	Char16String current_dir_name;
-	size_t str_len = GetCurrentDirectoryW(0, nullptr);
-	current_dir_name.resize(str_len + 1);
-	GetCurrentDirectoryW(current_dir_name.size(), (LPWSTR)current_dir_name.ptrw());
+	if (p_working_dir.is_empty()) {
+		size_t str_len = GetCurrentDirectoryW(0, nullptr);
+		current_dir_name.resize(str_len + 1);
+		GetCurrentDirectoryW(current_dir_name.size(), (LPWSTR)current_dir_name.ptrw());
+	} else {
+		current_dir_name = fix_path(p_working_dir).utf16();
+	}
 	if (current_dir_name.size() >= MAX_PATH) {
 		Char16String current_short_dir_name;
-		str_len = GetShortPathNameW((LPCWSTR)current_dir_name.ptr(), nullptr, 0);
+		size_t str_len = GetShortPathNameW((LPCWSTR)current_dir_name.ptr(), nullptr, 0);
 		current_short_dir_name.resize(str_len);
 		GetShortPathNameW((LPCWSTR)current_dir_name.ptr(), (LPWSTR)current_short_dir_name.ptrw(), current_short_dir_name.size());
 		current_dir_name = current_short_dir_name;
 	}
 
-	int ret = CreateProcessW(nullptr, (LPWSTR)(command.utf16().ptrw()), nullptr, nullptr, false, creation_flags, nullptr, (LPWSTR)current_dir_name.ptr(), si_w, &pi.pi);
+	int ret = CreateProcessW(nullptr, (LPWSTR)(command.utf16().ptrw()), nullptr, nullptr, false, creation_flags, env, (LPWSTR)current_dir_name.ptr(), si_w, &pi.pi);
 	ERR_FAIL_COND_V_MSG(ret == 0, ERR_CANT_FORK, "Could not create child process: " + command);
 
 	ProcessID pid = pi.pi.dwProcessId;

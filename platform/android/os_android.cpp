@@ -893,19 +893,19 @@ OS_Android::OS_Android(GodotJavaWrapper *p_godot_java, GodotIOJavaWrapper *p_god
 	DisplayServerAndroid::register_android_driver();
 }
 
-Error OS_Android::execute(const String &p_path, const List<String> &p_arguments, String *r_pipe, int *r_exitcode, bool read_stderr, Mutex *p_pipe_mutex, bool p_open_console) {
+Error OS_Android::execute(const String &p_path, const List<String> &p_arguments, String *r_pipe, int *r_exitcode, bool p_read_stderr, Mutex *p_pipe_mutex, bool p_open_console, const String &p_working_dir, const Dictionary &p_env) {
 	if (p_path == ANDROID_EXEC_PATH) {
 		return create_instance(p_arguments);
 	} else {
-		return OS_Unix::execute(p_path, p_arguments, r_pipe, r_exitcode, read_stderr, p_pipe_mutex, p_open_console);
+		return OS_Unix::execute(p_path, p_arguments, r_pipe, r_exitcode, p_read_stderr, p_pipe_mutex, p_open_console, p_working_dir, p_env);
 	}
 }
 
-Error OS_Android::create_process(const String &p_path, const List<String> &p_arguments, ProcessID *r_child_id, bool p_open_console) {
+Error OS_Android::create_process(const String &p_path, const List<String> &p_arguments, ProcessID *r_child_id, bool p_open_console, const String &p_working_dir, const Dictionary &p_env) {
 	if (p_path == ANDROID_EXEC_PATH) {
 		return create_instance(p_arguments, r_child_id);
 	} else {
-		return OS_Unix::create_process(p_path, p_arguments, r_child_id, p_open_console);
+		return OS_Unix::create_process(p_path, p_arguments, r_child_id, p_open_console, p_working_dir, p_env);
 	}
 }
 
