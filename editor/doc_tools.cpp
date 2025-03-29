@@ -702,9 +702,17 @@ void DocTools::generate(BitField<GenerateFlags> p_flags) {
 							tid.type = "Color";
 							tid.data_type = "color";
 							break;
+						case Theme::DATA_TYPE_COLOR_ARRAY:
+							tid.type = "PackedColorArray";
+							tid.data_type = "color_array";
+							break;
 						case Theme::DATA_TYPE_CONSTANT:
 							tid.type = "int";
 							tid.data_type = "constant";
+							break;
+						case Theme::DATA_TYPE_CONSTANT_ARRAY:
+							tid.type = "PackedInt32Array";
+							tid.data_type = "constant_array";
 							break;
 						case Theme::DATA_TYPE_FONT:
 							tid.type = "Font";

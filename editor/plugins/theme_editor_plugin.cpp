@@ -30,9 +30,17 @@
 
 #include "theme_editor_plugin.h"
 
+#include "core/error/error_macros.h"
+#include "core/object/object.h"
+#include "core/object/ref_counted.h"
+#include "core/os/memory.h"
+#include "core/string/ustring.h"
+#include "core/variant/callable.h"
+#include "core/variant/variant.h"
 #include "editor/editor_command_palette.h"
 #include "editor/editor_file_system.h"
 #include "editor/editor_help.h"
+#include "editor/editor_inspector.h"
 #include "editor/editor_node.h"
 #include "editor/editor_resource_picker.h"
 #include "editor/editor_string_names.h"
@@ -42,6 +50,8 @@
 #include "editor/inspector_dock.h"
 #include "editor/progress_dialog.h"
 #include "editor/themes/editor_scale.h"
+#include "scene/gui/box_container.h"
+#include "scene/gui/button.h"
 #include "scene/gui/check_button.h"
 #include "scene/gui/color_picker.h"
 #include "scene/gui/item_list.h"
@@ -55,6 +65,8 @@
 #include "scene/gui/tab_container.h"
 #include "scene/gui/texture_rect.h"
 #include "scene/resources/packed_scene.h"
+#include "scene/resources/theme.h"
+#include "scene/scene_string_names.h"
 #include "scene/theme/theme_db.h"
 
 void ThemeItemImportTree::_update_items_tree() {
@@ -74,14 +86,18 @@ void ThemeItemImportTree::_update_items_tree() {
 	types.sort_custom<StringName::AlphCompare>();
 
 	int color_amount = 0;
+	int color_array_amount = 0;
 	int constant_amount = 0;
+	int constant_array_amount = 0;
 	int font_amount = 0;
 	int font_size_amount = 0;
 	int icon_amount = 0;
 	int stylebox_amount = 0;
 
 	tree_color_items.clear();
+	tree_color_array_items.clear();
 	tree_constant_items.clear();
+	tree_constant_array_items.clear();
 	tree_font_items.clear();
 	tree_font_size_items.clear();
 	tree_icon_items.clear();
@@ -162,12 +178,28 @@ void ThemeItemImportTree::_update_items_tree() {
 					color_amount += filtered_names.size();
 					break;
 
+				case Theme::DATA_TYPE_COLOR_ARRAY:
+					data_type_node->set_icon(0, get_editor_theme_icon(SNAME("Array")));
+					data_type_node->set_text(0, TTR("Color Array"));
+
+					item_list = &tree_color_array_items;
+					color_array_amount += filtered_names.size();
+					break;
+
 				case Theme::DATA_TYPE_CONSTANT:
 					data_type_node->set_icon(0, get_editor_theme_icon(SNAME("MemberConstant")));
 					data_type_node->set_text(0, TTR("Constants"));
 
 					item_list = &tree_constant_items;
 					constant_amount += filtered_names.size();
+					break;
+
+				case Theme::DATA_TYPE_CONSTANT_ARRAY:
+					data_type_node->set_icon(0, get_editor_theme_icon(SNAME("Array")));
+					data_type_node->set_text(0, TTR("Constant Array"));
+
+					item_list = &tree_color_array_items;
+					constant_array_amount += filtered_names.size();
 					break;
 
 				case Theme::DATA_TYPE_FONT:
@@ -252,6 +284,20 @@ void ThemeItemImportTree::_update_items_tree() {
 		deselect_all_colors_button->set_visible(false);
 	}
 
+	if (color_array_amount > 0) {
+		Array arr;
+		arr.push_back(color_array_amount);
+		select_color_array_label->set_text(TTRN("1 color array", "{num} color arrays", color_array_amount).format(arr, "{num}"));
+		select_all_color_array_button->set_visible(true);
+		select_full_color_array_button->set_visible(true);
+		deselect_all_color_array_button->set_visible(true);
+	} else {
+		select_color_array_label->set_text(TTR("No color arrays found."));
+		select_all_color_array_button->set_visible(false);
+		select_full_color_array_button->set_visible(false);
+		deselect_all_color_array_button->set_visible(false);
+	}
+
 	if (constant_amount > 0) {
 		Array arr = { constant_amount };
 		select_constants_label->set_text(TTRN("1 constant", "{num} constants", constant_amount).format(arr, "{num}"));
@@ -263,6 +309,20 @@ void ThemeItemImportTree::_update_items_tree() {
 		select_all_constants_button->set_visible(false);
 		select_full_constants_button->set_visible(false);
 		deselect_all_constants_button->set_visible(false);
+	}
+
+	if (constant_array_amount > 0) {
+		Array arr;
+		arr.push_back(constant_array_amount);
+		select_constant_array_label->set_text(TTRN("1 constant array", "{num} constant arrays", constant_array_amount).format(arr, "{num}"));
+		select_all_constant_array_button->set_visible(true);
+		select_full_constant_array_button->set_visible(true);
+		deselect_all_constant_array_button->set_visible(true);
+	} else {
+		select_constant_array_label->set_text(TTR("No constant arrays found."));
+		select_all_constant_array_button->set_visible(false);
+		select_full_constant_array_button->set_visible(false);
+		deselect_all_constant_array_button->set_visible(false);
 	}
 
 	if (font_amount > 0) {
@@ -415,8 +475,16 @@ void ThemeItemImportTree::_update_total_selected(Theme::DataType p_data_type) {
 			total_selected_items_label = total_selected_colors_label;
 			break;
 
+		case Theme::DATA_TYPE_COLOR_ARRAY:
+			total_selected_items_label = total_selected_color_array_label;
+			break;
+
 		case Theme::DATA_TYPE_CONSTANT:
 			total_selected_items_label = total_selected_constants_label;
+			break;
+
+		case Theme::DATA_TYPE_CONSTANT_ARRAY:
+			total_selected_items_label = total_selected_constant_array_label;
 			break;
 
 		case Theme::DATA_TYPE_FONT:
@@ -579,8 +647,16 @@ void ThemeItemImportTree::_select_all_data_type_pressed(int p_data_type) {
 			item_list = &tree_color_items;
 			break;
 
+		case Theme::DATA_TYPE_COLOR_ARRAY:
+			item_list = &tree_color_array_items;
+			break;
+
 		case Theme::DATA_TYPE_CONSTANT:
 			item_list = &tree_constant_items;
+			break;
+
+		case Theme::DATA_TYPE_CONSTANT_ARRAY:
+			item_list = &tree_constant_array_items;
 			break;
 
 		case Theme::DATA_TYPE_FONT:
@@ -634,8 +710,16 @@ void ThemeItemImportTree::_select_full_data_type_pressed(int p_data_type) {
 			item_list = &tree_color_items;
 			break;
 
+		case Theme::DATA_TYPE_COLOR_ARRAY:
+			item_list = &tree_color_array_items;
+			break;
+
 		case Theme::DATA_TYPE_CONSTANT:
 			item_list = &tree_constant_items;
+			break;
+
+		case Theme::DATA_TYPE_CONSTANT_ARRAY:
+			item_list = &tree_constant_array_items;
 			break;
 
 		case Theme::DATA_TYPE_FONT:
@@ -691,8 +775,16 @@ void ThemeItemImportTree::_deselect_all_data_type_pressed(int p_data_type) {
 			item_list = &tree_color_items;
 			break;
 
+		case Theme::DATA_TYPE_COLOR_ARRAY:
+			item_list = &tree_color_array_items;
+			break;
+
 		case Theme::DATA_TYPE_CONSTANT:
 			item_list = &tree_constant_items;
+			break;
+
+		case Theme::DATA_TYPE_CONSTANT_ARRAY:
+			item_list = &tree_constant_array_items;
 			break;
 
 		case Theme::DATA_TYPE_FONT:
@@ -767,8 +859,16 @@ void ThemeItemImportTree::_import_selected() {
 						item_value = Color();
 						break;
 
+					case Theme::DATA_TYPE_COLOR_ARRAY:
+						item_value = PackedColorArray();
+						break;
+
 					case Theme::DATA_TYPE_CONSTANT:
 						item_value = 0;
+						break;
+
+					case Theme::DATA_TYPE_CONSTANT_ARRAY:
+						item_value = PackedInt32Array();
 						break;
 
 					case Theme::DATA_TYPE_FONT:
@@ -833,7 +933,9 @@ void ThemeItemImportTree::reset_item_tree() {
 	selected_items.clear();
 
 	total_selected_colors_label->hide();
+	total_selected_color_array_label->hide();
 	total_selected_constants_label->hide();
+	total_selected_constant_array_label->hide();
 	total_selected_fonts_label->hide();
 	total_selected_font_sizes_label->hide();
 	total_selected_icons_label->hide();
@@ -953,12 +1055,26 @@ ThemeItemImportTree::ThemeItemImportTree() {
 	select_full_colors_button = memnew(Button);
 	total_selected_colors_label = memnew(Label);
 
+	select_color_array_icon = memnew(TextureRect);
+	select_color_array_label = memnew(Label);
+	deselect_all_color_array_button = memnew(Button);
+	select_all_color_array_button = memnew(Button);
+	select_full_color_array_button = memnew(Button);
+	total_selected_color_array_label = memnew(Label);
+
 	select_constants_icon = memnew(TextureRect);
 	select_constants_label = memnew(Label);
 	deselect_all_constants_button = memnew(Button);
 	select_all_constants_button = memnew(Button);
 	select_full_constants_button = memnew(Button);
 	total_selected_constants_label = memnew(Label);
+
+	select_constant_array_icon = memnew(TextureRect);
+	select_constant_array_label = memnew(Label);
+	deselect_all_constant_array_button = memnew(Button);
+	select_all_constant_array_button = memnew(Button);
+	select_full_constant_array_button = memnew(Button);
+	total_selected_constant_array_label = memnew(Label);
 
 	select_fonts_icon = memnew(TextureRect);
 	select_fonts_label = memnew(Label);
@@ -1018,6 +1134,20 @@ ThemeItemImportTree::ThemeItemImportTree() {
 				deselect_all_items_tooltip = TTR("Deselect all visible color items.");
 				break;
 
+			case Theme::DATA_TYPE_COLOR_ARRAY:
+				select_items_icon = select_color_array_icon;
+				select_items_label = select_color_array_label;
+				deselect_all_items_button = deselect_all_color_array_button;
+				select_all_items_button = select_all_color_array_button;
+				select_full_items_button = select_full_color_array_button;
+				total_selected_items_label = total_selected_color_array_label;
+
+				items_title = TTR("Color Arrays");
+				select_all_items_tooltip = TTR("Select all visible color array items.");
+				select_full_items_tooltip = TTR("Select all visible color array items and their data.");
+				deselect_all_items_tooltip = TTR("Deselect all visible color array items.");
+				break;
+
 			case Theme::DATA_TYPE_CONSTANT:
 				select_items_icon = select_constants_icon;
 				select_items_label = select_constants_label;
@@ -1030,6 +1160,20 @@ ThemeItemImportTree::ThemeItemImportTree() {
 				select_all_items_tooltip = TTR("Select all visible constant items.");
 				select_full_items_tooltip = TTR("Select all visible constant items and their data.");
 				deselect_all_items_tooltip = TTR("Deselect all visible constant items.");
+				break;
+
+			case Theme::DATA_TYPE_CONSTANT_ARRAY:
+				select_items_icon = select_constant_array_icon;
+				select_items_label = select_constant_array_label;
+				deselect_all_items_button = deselect_all_constant_array_button;
+				select_all_items_button = select_all_constant_array_button;
+				select_full_items_button = select_full_constant_array_button;
+				total_selected_items_label = total_selected_constant_array_label;
+
+				items_title = TTR("Constant Arrays");
+				select_all_items_tooltip = TTR("Select all visible constant array items.");
+				select_full_items_tooltip = TTR("Select all visible constant array items and their data.");
+				deselect_all_items_tooltip = TTR("Deselect all visible constant array items.");
 				break;
 
 			case Theme::DATA_TYPE_FONT:
@@ -1356,6 +1500,29 @@ void ThemeItemEditorDialog::_update_edit_item_tree(String p_item_type) {
 		}
 	}
 
+	{ // Color Arrays.
+		names.clear();
+		edited_theme->get_color_array_list(p_item_type, &names);
+
+		if (names.size() > 0) {
+			TreeItem *color_array_root = edit_items_tree->create_item(root);
+			color_array_root->set_metadata(0, Theme::DATA_TYPE_COLOR_ARRAY);
+			color_array_root->set_icon(0, get_editor_theme_icon(SNAME("ColorArray")));
+			color_array_root->set_text(0, TTR("Color Arrays"));
+			color_array_root->add_button(0, get_editor_theme_icon(SNAME("Clear")), ITEMS_TREE_REMOVE_DATA_TYPE, false, TTR("Remove All Color Array Items"));
+
+			names.sort_custom<StringName::AlphCompare>();
+			for (const StringName &E : names) {
+				TreeItem *item = edit_items_tree->create_item(color_array_root);
+				item->set_text(0, E);
+				item->add_button(0, get_editor_theme_icon(SNAME("Edit")), ITEMS_TREE_RENAME_ITEM, false, TTR("Rename Item"));
+				item->add_button(0, get_editor_theme_icon(SNAME("Remove")), ITEMS_TREE_REMOVE_ITEM, false, TTR("Remove Item"));
+			}
+
+			has_any_items = true;
+		}
+	}
+
 	{ // Constants.
 		names.clear();
 		edited_theme->get_constant_list(p_item_type, &names);
@@ -1370,6 +1537,29 @@ void ThemeItemEditorDialog::_update_edit_item_tree(String p_item_type) {
 			names.sort_custom<StringName::AlphCompare>();
 			for (const StringName &E : names) {
 				TreeItem *item = edit_items_tree->create_item(constant_root);
+				item->set_text(0, E);
+				item->add_button(0, get_editor_theme_icon(SNAME("Edit")), ITEMS_TREE_RENAME_ITEM, false, TTR("Rename Item"));
+				item->add_button(0, get_editor_theme_icon(SNAME("Remove")), ITEMS_TREE_REMOVE_ITEM, false, TTR("Remove Item"));
+			}
+
+			has_any_items = true;
+		}
+	}
+
+	{ // Constant Arrays.
+		names.clear();
+		edited_theme->get_constant_array_list(p_item_type, &names);
+
+		if (names.size() > 0) {
+			TreeItem *constant_array_root = edit_items_tree->create_item(root);
+			constant_array_root->set_metadata(0, Theme::DATA_TYPE_CONSTANT_ARRAY);
+			constant_array_root->set_icon(0, get_editor_theme_icon(SNAME("MemberConstantArray")));
+			constant_array_root->set_text(0, TTR("Constant Arrays"));
+			constant_array_root->add_button(0, get_editor_theme_icon(SNAME("Clear")), ITEMS_TREE_REMOVE_DATA_TYPE, false, TTR("Remove All Constant Array Items"));
+
+			names.sort_custom<StringName::AlphCompare>();
+			for (const StringName &E : names) {
+				TreeItem *item = edit_items_tree->create_item(constant_array_root);
 				item->set_text(0, E);
 				item->add_button(0, get_editor_theme_icon(SNAME("Edit")), ITEMS_TREE_RENAME_ITEM, false, TTR("Rename Item"));
 				item->add_button(0, get_editor_theme_icon(SNAME("Remove")), ITEMS_TREE_REMOVE_ITEM, false, TTR("Remove Item"));
@@ -1564,9 +1754,17 @@ void ThemeItemEditorDialog::_add_theme_item(Theme::DataType p_data_type, String 
 			ur->add_do_method(*edited_theme, "set_color", p_item_name, p_item_type, Color());
 			ur->add_undo_method(*edited_theme, "clear_color", p_item_name, p_item_type);
 			break;
+		case Theme::DATA_TYPE_COLOR_ARRAY:
+			ur->add_do_method(*edited_theme, "set_color_array", p_item_name, p_item_type, Array());
+			ur->add_undo_method(*edited_theme, "clear_color_array", p_item_name, p_item_type);
+			break;
 		case Theme::DATA_TYPE_CONSTANT:
 			ur->add_do_method(*edited_theme, "set_constant", p_item_name, p_item_type, 0);
 			ur->add_undo_method(*edited_theme, "clear_constant", p_item_name, p_item_type);
+			break;
+		case Theme::DATA_TYPE_CONSTANT_ARRAY:
+			ur->add_do_method(*edited_theme, "set_constant_array", p_item_name, p_item_type, Array());
+			ur->add_undo_method(*edited_theme, "clear_constant_array", p_item_name, p_item_type);
 			break;
 		case Theme::DATA_TYPE_MAX:
 			break; // Can't happen, but silences warning.
@@ -1739,8 +1937,14 @@ void ThemeItemEditorDialog::_open_add_theme_item_dialog(int p_data_type) {
 		case Theme::DATA_TYPE_COLOR:
 			edit_theme_item_dialog->set_title(TTR("Add Color Item"));
 			break;
+		case Theme::DATA_TYPE_COLOR_ARRAY:
+			edit_theme_item_dialog->set_title(TTR("Add Color Array Item"));
+			break;
 		case Theme::DATA_TYPE_CONSTANT:
 			edit_theme_item_dialog->set_title(TTR("Add Constant Item"));
+			break;
+		case Theme::DATA_TYPE_CONSTANT_ARRAY:
+			edit_theme_item_dialog->set_title(TTR("Add Constant Array Item"));
 			break;
 		case Theme::DATA_TYPE_FONT:
 			edit_theme_item_dialog->set_title(TTR("Add Font Item"));
@@ -1775,8 +1979,14 @@ void ThemeItemEditorDialog::_open_rename_theme_item_dialog(Theme::DataType p_dat
 		case Theme::DATA_TYPE_COLOR:
 			edit_theme_item_dialog->set_title(TTR("Rename Color Item"));
 			break;
+		case Theme::DATA_TYPE_COLOR_ARRAY:
+			edit_theme_item_dialog->set_title(TTR("Rename Color Array Item"));
+			break;
 		case Theme::DATA_TYPE_CONSTANT:
 			edit_theme_item_dialog->set_title(TTR("Rename Constant Item"));
+			break;
+		case Theme::DATA_TYPE_CONSTANT_ARRAY:
+			edit_theme_item_dialog->set_title(TTR("Rename Constant Array Item"));
 			break;
 		case Theme::DATA_TYPE_FONT:
 			edit_theme_item_dialog->set_title(TTR("Rename Font Item"));
@@ -1869,7 +2079,9 @@ void ThemeItemEditorDialog::_notification(int p_what) {
 		}
 		case NOTIFICATION_THEME_CHANGED: {
 			edit_items_add_color->set_button_icon(get_editor_theme_icon(SNAME("Color")));
+			edit_items_add_color_array->set_button_icon(get_editor_theme_icon(SNAME("Array")));
 			edit_items_add_constant->set_button_icon(get_editor_theme_icon(SNAME("MemberConstant")));
+			edit_items_add_constant_array->set_button_icon(get_editor_theme_icon(SNAME("Array")));
 			edit_items_add_font->set_button_icon(get_editor_theme_icon(SNAME("FontItem")));
 			edit_items_add_font_size->set_button_icon(get_editor_theme_icon(SNAME("FontSize")));
 			edit_items_add_icon->set_button_icon(get_editor_theme_icon(SNAME("ImageTexture")));
@@ -1962,12 +2174,26 @@ ThemeItemEditorDialog::ThemeItemEditorDialog(ThemeTypeEditor *p_theme_type_edito
 	edit_items_toolbar->add_child(edit_items_add_color);
 	edit_items_add_color->connect(SceneStringName(pressed), callable_mp(this, &ThemeItemEditorDialog::_open_add_theme_item_dialog).bind(Theme::DATA_TYPE_COLOR));
 
+	edit_items_add_color_array = memnew(Button);
+	edit_items_add_color_array->set_tooltip_text(TTR("Add Color Array Item"));
+	edit_items_add_color_array->set_flat(true);
+	edit_items_add_color_array->set_disabled(true);
+	edit_items_toolbar->add_child(edit_items_add_color_array);
+	edit_items_add_color_array->connect(SceneStringName(pressed), callable_mp(this, &ThemeItemEditorDialog::_open_add_theme_item_dialog).bind(Theme::DATA_TYPE_COLOR_ARRAY));
+
 	edit_items_add_constant = memnew(Button);
 	edit_items_add_constant->set_tooltip_text(TTR("Add Constant Item"));
 	edit_items_add_constant->set_flat(true);
 	edit_items_add_constant->set_disabled(true);
 	edit_items_toolbar->add_child(edit_items_add_constant);
 	edit_items_add_constant->connect(SceneStringName(pressed), callable_mp(this, &ThemeItemEditorDialog::_open_add_theme_item_dialog).bind(Theme::DATA_TYPE_CONSTANT));
+
+	edit_items_add_constant_array = memnew(Button);
+	edit_items_add_constant_array->set_tooltip_text(TTR("Add Constant Array Item"));
+	edit_items_add_constant_array->set_flat(true);
+	edit_items_add_constant_array->set_disabled(true);
+	edit_items_toolbar->add_child(edit_items_add_constant_array);
+	edit_items_add_constant_array->connect(SceneStringName(pressed), callable_mp(this, &ThemeItemEditorDialog::_open_add_theme_item_dialog).bind(Theme::DATA_TYPE_CONSTANT_ARRAY));
 
 	edit_items_add_font = memnew(Button);
 	edit_items_add_font->set_tooltip_text(TTR("Add Font Item"));
@@ -2551,6 +2777,34 @@ void ThemeTypeEditor::_update_type_items() {
 		}
 	}
 
+	// Colors Arrays.
+	{
+		for (int i = color_array_items_list->get_child_count() - 1; i >= 0; i--) {
+			Node *node = color_array_items_list->get_child(i);
+			node->queue_free();
+			color_array_items_list->remove_child(node);
+		}
+
+		HashMap<StringName, bool> color_array_items = _get_type_items(edited_type, Theme::DATA_TYPE_COLOR_ARRAY, show_default);
+		for (const KeyValue<StringName, bool> &E : color_array_items) {
+			HBoxContainer *item_control = _create_property_control(Theme::DATA_TYPE_COLOR_ARRAY, E.key, E.value);
+			EditorMiniPackedColorArrayInspector *item_editor = memnew(EditorMiniPackedColorArrayInspector());
+			item_editor->set_h_size_flags(SIZE_EXPAND_FILL);
+			item_control->add_child(item_editor);
+
+			if (E.value) {
+				item_editor->set_value(edited_theme->get_color_array(E.key, edited_type));
+				item_editor->set_value_changed(callable_mp(this, &ThemeTypeEditor::_color_array_item_changed).bind(E.key));
+			} else {
+				item_editor->set_value(ThemeDB::get_singleton()->get_default_theme()->get_color_array(E.key, edited_type));
+				item_editor->set_disabled(true);
+			}
+
+			_add_focusable(item_editor);
+			color_array_items_list->add_child(item_control);
+		}
+	}
+
 	// Constants.
 	{
 		for (int i = constant_items_list->get_child_count() - 1; i >= 0; i--) {
@@ -2581,6 +2835,34 @@ void ThemeTypeEditor::_update_type_items() {
 
 			_add_focusable(item_editor);
 			constant_items_list->add_child(item_control);
+		}
+	}
+
+	// Constant Arrays.
+	{
+		for (int i = constant_array_items_list->get_child_count() - 1; i >= 0; i--) {
+			Node *node = constant_array_items_list->get_child(i);
+			node->queue_free();
+			constant_array_items_list->remove_child(node);
+		}
+
+		HashMap<StringName, bool> constant_array_items = _get_type_items(edited_type, Theme::DATA_TYPE_CONSTANT_ARRAY, show_default);
+		for (const KeyValue<StringName, bool> &E : constant_array_items) {
+			HBoxContainer *item_control = _create_property_control(Theme::DATA_TYPE_CONSTANT_ARRAY, E.key, E.value);
+			EditorMiniPackedInt32ArrayInspector *item_editor = memnew(EditorMiniPackedInt32ArrayInspector());
+			item_editor->set_h_size_flags(SIZE_EXPAND_FILL);
+			item_control->add_child(item_editor);
+
+			if (E.value) {
+				item_editor->set_value(edited_theme->get_constant_array(E.key, edited_type));
+				item_editor->set_value_changed(callable_mp(this, &ThemeTypeEditor::_constant_array_item_changed).bind(E.key));
+			} else {
+				item_editor->set_value(ThemeDB::get_singleton()->get_default_theme()->get_constant_array(E.key, edited_type));
+				item_editor->set_disabled(true);
+			}
+
+			_add_focusable(item_editor);
+			constant_array_items_list->add_child(item_control);
 		}
 	}
 
@@ -2861,10 +3143,28 @@ void ThemeTypeEditor::_add_default_type_items() {
 	}
 	{
 		names.clear();
+		ThemeDB::get_singleton()->get_default_theme()->get_color_array_list(default_type, &names);
+		for (const StringName &E : names) {
+			if (!new_snapshot->has_color_array(E, edited_type)) {
+				new_snapshot->set_color_array(E, edited_type, ThemeDB::get_singleton()->get_default_theme()->get_color_array(E, edited_type));
+			}
+		}
+	}
+	{
+		names.clear();
 		ThemeDB::get_singleton()->get_default_theme()->get_constant_list(default_type, &names);
 		for (const StringName &E : names) {
 			if (!new_snapshot->has_constant(E, edited_type)) {
 				new_snapshot->set_constant(E, edited_type, ThemeDB::get_singleton()->get_default_theme()->get_constant(E, edited_type));
+			}
+		}
+	}
+	{
+		names.clear();
+		ThemeDB::get_singleton()->get_default_theme()->get_constant_array_list(default_type, &names);
+		for (const StringName &E : names) {
+			if (!new_snapshot->has_constant_array(E, edited_type)) {
+				new_snapshot->set_constant_array(E, edited_type, ThemeDB::get_singleton()->get_default_theme()->get_constant_array(E, edited_type));
 			}
 		}
 	}
@@ -2904,9 +3204,17 @@ void ThemeTypeEditor::_item_add_cbk(int p_data_type, Control *p_control) {
 			ur->add_do_method(*edited_theme, "set_color", item_name, edited_type, Color());
 			ur->add_undo_method(*edited_theme, "clear_color", item_name, edited_type);
 		} break;
+		case Theme::DATA_TYPE_COLOR_ARRAY: {
+			ur->add_do_method(*edited_theme, "set_color_array", item_name, edited_type, PackedColorArray());
+			ur->add_undo_method(*edited_theme, "clear_color_array", item_name, edited_type);
+		} break;
 		case Theme::DATA_TYPE_CONSTANT: {
 			ur->add_do_method(*edited_theme, "set_constant", item_name, edited_type, 0);
 			ur->add_undo_method(*edited_theme, "clear_constant", item_name, edited_type);
+		} break;
+		case Theme::DATA_TYPE_CONSTANT_ARRAY: {
+			ur->add_do_method(*edited_theme, "set_constant_array", item_name, edited_type, PackedInt32Array());
+			ur->add_undo_method(*edited_theme, "clear_constant_array", item_name, edited_type);
 		} break;
 		case Theme::DATA_TYPE_FONT: {
 			ur->add_do_method(*edited_theme, "set_font", item_name, edited_type, Ref<Font>());
@@ -2950,9 +3258,17 @@ void ThemeTypeEditor::_item_override_cbk(int p_data_type, String p_item_name) {
 			ur->add_do_method(*edited_theme, "set_color", p_item_name, edited_type, ThemeDB::get_singleton()->get_default_theme()->get_color(p_item_name, edited_type));
 			ur->add_undo_method(*edited_theme, "clear_color", p_item_name, edited_type);
 		} break;
+		case Theme::DATA_TYPE_COLOR_ARRAY: {
+			ur->add_do_method(*edited_theme, "set_color_array", p_item_name, edited_type, ThemeDB::get_singleton()->get_default_theme()->get_color_array(p_item_name, edited_type));
+			ur->add_undo_method(*edited_theme, "clear_color_array", p_item_name, edited_type);
+		} break;
 		case Theme::DATA_TYPE_CONSTANT: {
 			ur->add_do_method(*edited_theme, "set_constant", p_item_name, edited_type, ThemeDB::get_singleton()->get_default_theme()->get_constant(p_item_name, edited_type));
 			ur->add_undo_method(*edited_theme, "clear_constant", p_item_name, edited_type);
+		} break;
+		case Theme::DATA_TYPE_CONSTANT_ARRAY: {
+			ur->add_do_method(*edited_theme, "set_constant_array", p_item_name, edited_type, ThemeDB::get_singleton()->get_default_theme()->get_constant_array(p_item_name, edited_type));
+			ur->add_undo_method(*edited_theme, "clear_constant_array", p_item_name, edited_type);
 		} break;
 		case Theme::DATA_TYPE_FONT: {
 			ur->add_do_method(*edited_theme, "set_font", p_item_name, edited_type, Ref<Font>());
@@ -2989,9 +3305,17 @@ void ThemeTypeEditor::_item_remove_cbk(int p_data_type, String p_item_name) {
 			ur->add_do_method(*edited_theme, "clear_color", p_item_name, edited_type);
 			ur->add_undo_method(*edited_theme, "set_color", p_item_name, edited_type, edited_theme->get_color(p_item_name, edited_type));
 		} break;
+		case Theme::DATA_TYPE_COLOR_ARRAY: {
+			ur->add_do_method(*edited_theme, "clear_color_array", p_item_name, edited_type);
+			ur->add_undo_method(*edited_theme, "set_color_array", p_item_name, edited_type, edited_theme->get_color_array(p_item_name, edited_type));
+		} break;
 		case Theme::DATA_TYPE_CONSTANT: {
 			ur->add_do_method(*edited_theme, "clear_constant", p_item_name, edited_type);
 			ur->add_undo_method(*edited_theme, "set_constant", p_item_name, edited_type, edited_theme->get_constant(p_item_name, edited_type));
+		} break;
+		case Theme::DATA_TYPE_CONSTANT_ARRAY: {
+			ur->add_do_method(*edited_theme, "clear_constant_array", p_item_name, edited_type);
+			ur->add_undo_method(*edited_theme, "set_constant_array", p_item_name, edited_type, edited_theme->get_constant_array(p_item_name, edited_type));
 		} break;
 		case Theme::DATA_TYPE_FONT: {
 			ur->add_do_method(*edited_theme, "clear_font", p_item_name, edited_type);
@@ -3067,9 +3391,17 @@ void ThemeTypeEditor::_item_rename_confirmed(int p_data_type, String p_item_name
 			ur->add_do_method(*edited_theme, "rename_color", p_item_name, new_name, edited_type);
 			ur->add_undo_method(*edited_theme, "rename_color", new_name, p_item_name, edited_type);
 		} break;
+		case Theme::DATA_TYPE_COLOR_ARRAY: {
+			ur->add_do_method(*edited_theme, "rename_color_array", p_item_name, new_name, edited_type);
+			ur->add_undo_method(*edited_theme, "rename_color_array", new_name, p_item_name, edited_type);
+		} break;
 		case Theme::DATA_TYPE_CONSTANT: {
 			ur->add_do_method(*edited_theme, "rename_constant", p_item_name, new_name, edited_type);
 			ur->add_undo_method(*edited_theme, "rename_constant", new_name, p_item_name, edited_type);
+		} break;
+		case Theme::DATA_TYPE_CONSTANT_ARRAY: {
+			ur->add_do_method(*edited_theme, "rename_constant_array", p_item_name, new_name, edited_type);
+			ur->add_undo_method(*edited_theme, "rename_constant_array", new_name, p_item_name, edited_type);
 		} break;
 		case Theme::DATA_TYPE_FONT: {
 			ur->add_do_method(*edited_theme, "rename_font", p_item_name, new_name, edited_type);
@@ -3122,11 +3454,27 @@ void ThemeTypeEditor::_color_item_changed(Color p_value, String p_item_name) {
 	ur->commit_action();
 }
 
+void ThemeTypeEditor::_color_array_item_changed(PackedColorArray p_value, String p_item_name) {
+	EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
+	ur->create_action(TTR("Set Color Array Item in Theme"), UndoRedo::MERGE_ENDS);
+	ur->add_do_method(*edited_theme, "set_color_array", p_item_name, edited_type, p_value);
+	ur->add_undo_method(*edited_theme, "set_color_array", p_item_name, edited_type, edited_theme->get_color_array(p_item_name, edited_type));
+	ur->commit_action();
+}
+
 void ThemeTypeEditor::_constant_item_changed(float p_value, String p_item_name) {
 	EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
 	ur->create_action(TTR("Set Constant Item in Theme"));
 	ur->add_do_method(*edited_theme, "set_constant", p_item_name, edited_type, p_value);
 	ur->add_undo_method(*edited_theme, "set_constant", p_item_name, edited_type, edited_theme->get_constant(p_item_name, edited_type));
+	ur->commit_action();
+}
+
+void ThemeTypeEditor::_constant_array_item_changed(PackedInt32Array p_value, String p_item_name) {
+	EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
+	ur->create_action(TTR("Set Constant Array Item in Theme"));
+	ur->add_do_method(*edited_theme, "set_constant_array", p_item_name, edited_type, p_value);
+	ur->add_undo_method(*edited_theme, "set_constant_array", p_item_name, edited_type, edited_theme->get_constant_array(p_item_name, edited_type));
 	ur->commit_action();
 }
 
@@ -3364,12 +3712,14 @@ void ThemeTypeEditor::_notification(int p_what) {
 			add_type_button->set_button_icon(get_editor_theme_icon(SNAME("Add")));
 
 			data_type_tabs->set_tab_icon(0, get_editor_theme_icon(SNAME("Color")));
-			data_type_tabs->set_tab_icon(1, get_editor_theme_icon(SNAME("MemberConstant")));
-			data_type_tabs->set_tab_icon(2, get_editor_theme_icon(SNAME("FontItem")));
-			data_type_tabs->set_tab_icon(3, get_editor_theme_icon(SNAME("FontSize")));
-			data_type_tabs->set_tab_icon(4, get_editor_theme_icon(SNAME("ImageTexture")));
-			data_type_tabs->set_tab_icon(5, get_editor_theme_icon(SNAME("StyleBoxFlat")));
-			data_type_tabs->set_tab_icon(6, get_editor_theme_icon(SNAME("Tools")));
+			data_type_tabs->set_tab_icon(1, get_editor_theme_icon(SNAME("Array")));
+			data_type_tabs->set_tab_icon(2, get_editor_theme_icon(SNAME("MemberConstant")));
+			data_type_tabs->set_tab_icon(3, get_editor_theme_icon(SNAME("Array")));
+			data_type_tabs->set_tab_icon(4, get_editor_theme_icon(SNAME("FontItem")));
+			data_type_tabs->set_tab_icon(5, get_editor_theme_icon(SNAME("FontSize")));
+			data_type_tabs->set_tab_icon(6, get_editor_theme_icon(SNAME("ImageTexture")));
+			data_type_tabs->set_tab_icon(7, get_editor_theme_icon(SNAME("StyleBoxFlat")));
+			data_type_tabs->set_tab_icon(8, get_editor_theme_icon(SNAME("Tools")));
 
 			type_variation_button->set_button_icon(get_editor_theme_icon(SNAME("Add")));
 		} break;
@@ -3418,7 +3768,9 @@ void ThemeTypeEditor::select_type(String p_type_name) {
 		edited_theme->add_font_type(edited_type);
 		edited_theme->add_font_size_type(edited_type);
 		edited_theme->add_color_type(edited_type);
+		edited_theme->add_color_array_type(edited_type);
 		edited_theme->add_constant_type(edited_type);
+		edited_theme->add_constant_array_type(edited_type);
 
 		_update_type_list();
 	}
@@ -3477,7 +3829,9 @@ ThemeTypeEditor::ThemeTypeEditor() {
 	data_type_tabs->set_theme_type_variation("TabContainerOdd");
 
 	color_items_list = _create_item_list(Theme::DATA_TYPE_COLOR);
+	color_array_items_list = _create_item_list(Theme::DATA_TYPE_COLOR_ARRAY);
 	constant_items_list = _create_item_list(Theme::DATA_TYPE_CONSTANT);
+	constant_array_items_list = _create_item_list(Theme::DATA_TYPE_CONSTANT_ARRAY);
 	font_items_list = _create_item_list(Theme::DATA_TYPE_FONT);
 	font_size_items_list = _create_item_list(Theme::DATA_TYPE_FONT_SIZE);
 	icon_items_list = _create_item_list(Theme::DATA_TYPE_ICON);
@@ -3866,4 +4220,143 @@ ThemeEditorPlugin::ThemeEditorPlugin() {
 
 	button = EditorNode::get_bottom_panel()->add_item(TTR("Theme"), theme_editor, ED_SHORTCUT_AND_COMMAND("bottom_panels/toggle_theme_bottom_panel", TTRC("Toggle Theme Bottom Panel")));
 	button->hide();
+}
+
+///////////////////////
+
+template <typename TArrayElement, typename TElementEditor>
+EditorMiniArrayInspector<TArrayElement, TElementEditor>::EditorMiniArrayInspector() {
+	add_button = memnew(Button);
+	add_button->set_text(TTR("Add"));
+	add_button->set_h_size_flags(SIZE_EXPAND_FILL);
+	add_button->connect(SceneStringName(pressed), callable_mp(this, &EditorMiniArrayInspector::_element_added));
+	add_child(add_button, false, InternalMode::INTERNAL_MODE_BACK);
+}
+
+template <typename TArrayElement, typename TElementEditor>
+void EditorMiniArrayInspector<TArrayElement, TElementEditor>::set_value(const Vector<TArrayElement> &p_elements) {
+	elements = p_elements;
+	_recreate_editors();
+}
+
+template <typename TArrayElement, typename TElementEditor>
+void EditorMiniArrayInspector<TArrayElement, TElementEditor>::set_disabled(bool p_disabled) {
+	for (ElementEditorData &E : element_editors) {
+		_set_disabled(E.editor, p_disabled);
+		E.remove_button->set_disabled(p_disabled);
+	}
+	add_button->set_disabled(p_disabled);
+}
+
+template <typename TArrayElement, typename TElementEditor>
+Vector<TArrayElement> EditorMiniArrayInspector<TArrayElement, TElementEditor>::get_value() const {
+	return elements;
+}
+
+template <typename TArrayElement, typename TElementEditor>
+void EditorMiniArrayInspector<TArrayElement, TElementEditor>::set_value_changed(Callable p_callback) {
+	value_changed = p_callback;
+}
+
+template <typename TArrayElement, typename TElementEditor>
+void EditorMiniArrayInspector<TArrayElement, TElementEditor>::_recreate_editors() {
+	for (ElementEditorData &E : element_editors) {
+		E.container->queue_free();
+	}
+	element_editors.clear();
+
+	for (int i = 0; i < elements.size(); i++) {
+		_append_editor();
+	}
+}
+
+template <typename TArrayElement, typename TElementEditor>
+void EditorMiniArrayInspector<TArrayElement, TElementEditor>::_append_editor() {
+	HBoxContainer *container = memnew(HBoxContainer);
+
+	int index = element_editors.size();
+
+	TElementEditor *editor = _create_editor();
+	_set_value(editor, elements[index]);
+	editor->set_h_size_flags(SIZE_EXPAND_FILL);
+	_bind_changed_callback(editor, index);
+	container->add_child(editor);
+
+	Button *remove_button = memnew(Button);
+	remove_button->set_custom_minimum_size(Size2(30, 30) * EDSCALE);
+	remove_button->set_text("x");
+	remove_button->connect(SceneStringName(pressed), callable_mp(this, &EditorMiniArrayInspector::_element_removed).bind(index));
+	container->add_child(remove_button);
+
+	add_child(container);
+
+	element_editors.push_back(ElementEditorData{ container, editor, remove_button });
+}
+
+template <typename TArrayElement, typename TElementEditor>
+void EditorMiniArrayInspector<TArrayElement, TElementEditor>::_element_added() {
+	elements.push_back(TArrayElement());
+	_append_editor();
+}
+
+template <typename TArrayElement, typename TElementEditor>
+void EditorMiniArrayInspector<TArrayElement, TElementEditor>::_element_edited(TArrayElement p_value, int p_index) {
+	ERR_FAIL_INDEX_MSG(p_index, elements.size(), "Error editing element in array.");
+	elements.write[p_index] = p_value;
+	value_changed.call(elements);
+}
+
+template <typename TArrayElement, typename TElementEditor>
+void EditorMiniArrayInspector<TArrayElement, TElementEditor>::_element_removed(int p_index) {
+	ERR_FAIL_INDEX_MSG(p_index, elements.size(), "Error removing element from array.");
+	elements.remove_at(p_index);
+	_recreate_editors();
+}
+
+///////////////////////
+
+ColorPickerButton *EditorMiniPackedColorArrayInspector::_create_editor() {
+	ColorPickerButton *editor = memnew(ColorPickerButton);
+	return editor;
+}
+
+void EditorMiniPackedColorArrayInspector::_set_value(ColorPickerButton *p_editor, Color p_value) {
+	p_editor->set_pick_color(p_value);
+}
+
+void EditorMiniPackedColorArrayInspector::_set_disabled(ColorPickerButton *p_editor, bool p_disabled) {
+	p_editor->set_disabled(p_disabled);
+}
+
+void EditorMiniPackedColorArrayInspector::_bind_changed_callback(ColorPickerButton *p_editor, int p_index) {
+	p_editor->connect("color_changed", callable_mp(this, &EditorMiniPackedColorArrayInspector::_element_edited_color).bind(p_index));
+	p_editor->get_popup()->connect("about_to_popup", callable_mp(EditorNode::get_singleton(), &EditorNode::setup_color_picker).bind(p_editor->get_picker()));
+}
+
+void EditorMiniPackedColorArrayInspector::_element_edited_color(Color p_color, int p_index) {
+	_element_edited(p_color, p_index);
+}
+
+SpinBox *EditorMiniPackedInt32ArrayInspector::_create_editor() {
+	SpinBox *editor = memnew(SpinBox);
+	editor->set_min(0);
+	editor->set_max(0xFFFFFFFF);
+	editor->set_use_rounded_values(true);
+	return editor;
+}
+
+void EditorMiniPackedInt32ArrayInspector::_set_value(SpinBox *p_editor, int p_value) {
+	p_editor->set_value(p_value);
+}
+
+void EditorMiniPackedInt32ArrayInspector::_set_disabled(SpinBox *p_editor, bool p_disabled) {
+	p_editor->set_editable(!p_disabled);
+}
+
+void EditorMiniPackedInt32ArrayInspector::_bind_changed_callback(SpinBox *p_editor, int p_index) {
+	p_editor->connect(SceneStringName(value_changed), callable_mp(this, &EditorMiniPackedInt32ArrayInspector::_element_edited_spinbox).bind(p_index));
+}
+
+void EditorMiniPackedInt32ArrayInspector::_element_edited_spinbox(float p_value, int p_index) {
+	_element_edited(round(p_value), p_index);
 }

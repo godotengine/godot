@@ -30,6 +30,8 @@
 
 #pragma once
 
+#include "core/templates/vector.h"
+#include "core/variant/variant.h"
 #include "scene/gui/control.h"
 #include "scene/resources/label_settings.h"
 
@@ -37,14 +39,6 @@ class Label : public Control {
 	GDCLASS(Label, Control);
 
 private:
-	enum LabelDrawStep {
-		DRAW_STEP_SHADOW_OUTLINE,
-		DRAW_STEP_SHADOW,
-		DRAW_STEP_OUTLINE,
-		DRAW_STEP_TEXT,
-		DRAW_STEP_MAX,
-	};
-
 	HorizontalAlignment horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT;
 	VerticalAlignment vertical_alignment = VERTICAL_ALIGNMENT_TOP;
 	String text;
@@ -101,6 +95,13 @@ private:
 		Color font_outline_color;
 		int font_outline_size;
 		int font_shadow_outline_size;
+
+		PackedColorArray font_stacked_outline_colors;
+		PackedInt32Array font_stacked_outline_sizes;
+		PackedColorArray font_stacked_shadow_colors;
+		PackedInt32Array font_stacked_shadow_offset_xs;
+		PackedInt32Array font_stacked_shadow_offset_ys;
+		PackedInt32Array font_stacked_shadow_outline_sizes;
 	} theme_cache;
 
 	Rect2 _get_line_rect(int p_para, int p_line) const;

@@ -30,6 +30,9 @@
 
 #include "theme.h"
 
+#include "core/string/ustring.h"
+#include "core/templates/vector.h"
+#include "core/variant/variant.h"
 #include "scene/theme/theme_db.h"
 
 // Dynamic properties.
@@ -53,6 +56,10 @@ bool Theme::_set(const StringName &p_name, const Variant &p_value) {
 			set_color(prop_name, theme_type, p_value);
 		} else if (type == "constants") {
 			set_constant(prop_name, theme_type, p_value);
+		} else if (type == "constant_arrays") {
+			set_constant_array(prop_name, theme_type, p_value);
+		} else if (type == "color_arrays") {
+			set_color_array(prop_name, theme_type, p_value);
 		} else if (type == "base_type") {
 			set_type_variation(theme_type, p_value);
 		} else {
@@ -97,6 +104,10 @@ bool Theme::_get(const StringName &p_name, Variant &r_ret) const {
 			r_ret = get_color(prop_name, theme_type);
 		} else if (type == "constants") {
 			r_ret = get_constant(prop_name, theme_type);
+		} else if (type == "constant_arrays") {
+			r_ret = get_constant_array(prop_name, theme_type);
+		} else if (type == "color_arrays") {
+			r_ret = get_color_array(prop_name, theme_type);
 		} else if (type == "base_type") {
 			r_ret = get_type_variation_base(theme_type);
 		} else {
@@ -156,6 +167,20 @@ void Theme::_get_property_list(List<PropertyInfo> *p_list) const {
 	for (const KeyValue<StringName, ThemeConstantMap> &E : constant_map) {
 		for (const KeyValue<StringName, int> &F : E.value) {
 			list.push_back(PropertyInfo(Variant::INT, String() + E.key + "/constants/" + F.key));
+		}
+	}
+
+	// Constant arrays.
+	for (const KeyValue<StringName, ThemeConstantArrayMap> &E : constant_array_map) {
+		for (const KeyValue<StringName, PackedInt32Array> &F : E.value) {
+			list.push_back(PropertyInfo(Variant::PACKED_INT32_ARRAY, String() + E.key + "/constant_arrays/" + F.key));
+		}
+	}
+
+	// Color arrays.
+	for (const KeyValue<StringName, ThemeColorArrayMap> &E : color_array_map) {
+		for (const KeyValue<StringName, PackedColorArray> &F : E.value) {
+			list.push_back(PropertyInfo(Variant::PACKED_COLOR_ARRAY, String() + E.key + "/color_arrays/" + F.key));
 		}
 	}
 
@@ -859,6 +884,178 @@ void Theme::get_constant_type_list(List<StringName> *p_list) const {
 	}
 }
 
+// Theme constant arrays.
+void Theme::set_constant_array(const StringName &p_name, const StringName &p_theme_type, PackedInt32Array p_constant_array) {
+	ERR_FAIL_COND_MSG(!is_valid_item_name(p_name), vformat("Invalid item name: '%s'", p_name));
+	ERR_FAIL_COND_MSG(!is_valid_type_name(p_theme_type), vformat("Invalid type name: '%s'", p_theme_type));
+
+	bool existing = has_constant_array_nocheck(p_name, p_theme_type);
+	constant_array_map[p_theme_type][p_name] = p_constant_array;
+
+	_emit_theme_changed(!existing);
+}
+
+PackedInt32Array Theme::get_constant_array(const StringName &p_name, const StringName &p_theme_type) const {
+	if (constant_array_map.has(p_theme_type) && constant_array_map[p_theme_type].has(p_name)) {
+		return constant_array_map[p_theme_type][p_name];
+	} else {
+		return PackedInt32Array();
+	}
+}
+
+bool Theme::has_constant_array(const StringName &p_name, const StringName &p_theme_type) const {
+	return (constant_array_map.has(p_theme_type) && constant_array_map[p_theme_type].has(p_name));
+}
+
+bool Theme::has_constant_array_nocheck(const StringName &p_name, const StringName &p_theme_type) const {
+	return (constant_array_map.has(p_theme_type) && constant_array_map[p_theme_type].has(p_name));
+}
+
+void Theme::rename_constant_array(const StringName &p_old_name, const StringName &p_name, const StringName &p_theme_type) {
+	ERR_FAIL_COND_MSG(!is_valid_item_name(p_name), vformat("Invalid item name: '%s'", p_name));
+	ERR_FAIL_COND_MSG(!is_valid_type_name(p_theme_type), vformat("Invalid type name: '%s'", p_theme_type));
+	ERR_FAIL_COND_MSG(!constant_array_map.has(p_theme_type), "Cannot rename the constant array '" + String(p_old_name) + "' because the node type '" + String(p_theme_type) + "' does not exist.");
+	ERR_FAIL_COND_MSG(constant_array_map[p_theme_type].has(p_name), "Cannot rename the constant array '" + String(p_old_name) + "' because the new name '" + String(p_name) + "' already exists.");
+	ERR_FAIL_COND_MSG(!constant_array_map[p_theme_type].has(p_old_name), "Cannot rename the constant array '" + String(p_old_name) + "' because it does not exist.");
+
+	constant_array_map[p_theme_type][p_name] = constant_array_map[p_theme_type][p_old_name];
+	constant_array_map[p_theme_type].erase(p_old_name);
+
+	_emit_theme_changed(true);
+}
+
+void Theme::clear_constant_array(const StringName &p_name, const StringName &p_theme_type) {
+	ERR_FAIL_COND_MSG(!constant_array_map.has(p_theme_type), "Cannot clear the constant array '" + String(p_name) + "' because the node type '" + String(p_theme_type) + "' does not exist.");
+	ERR_FAIL_COND_MSG(!constant_array_map[p_theme_type].has(p_name), "Cannot clear the constant array '" + String(p_name) + "' because it does not exist.");
+
+	constant_array_map[p_theme_type].erase(p_name);
+
+	_emit_theme_changed(true);
+}
+
+void Theme::get_constant_array_list(const StringName &p_theme_type, List<StringName> *p_list) const {
+	ERR_FAIL_NULL(p_list);
+
+	if (!constant_array_map.has(p_theme_type)) {
+		return;
+	}
+
+	for (const KeyValue<StringName, PackedInt32Array> &E : constant_array_map[p_theme_type]) {
+		p_list->push_back(E.key);
+	}
+}
+
+void Theme::add_constant_array_type(const StringName &p_theme_type) {
+	ERR_FAIL_COND_MSG(!is_valid_type_name(p_theme_type), vformat("Invalid type name: '%s'", p_theme_type));
+
+	if (constant_array_map.has(p_theme_type)) {
+		return;
+	}
+	constant_array_map[p_theme_type] = ThemeConstantArrayMap();
+}
+
+void Theme::remove_constant_array_type(const StringName &p_theme_type) {
+	if (!constant_array_map.has(p_theme_type)) {
+		return;
+	}
+
+	constant_array_map.erase(p_theme_type);
+}
+
+void Theme::get_constant_array_type_list(List<StringName> *p_list) const {
+	ERR_FAIL_NULL(p_list);
+
+	for (const KeyValue<StringName, ThemeConstantArrayMap> &E : constant_array_map) {
+		p_list->push_back(E.key);
+	}
+}
+
+// Theme color arrays.
+void Theme::set_color_array(const StringName &p_name, const StringName &p_theme_type, PackedColorArray p_color_array) {
+	ERR_FAIL_COND_MSG(!is_valid_item_name(p_name), vformat("Invalid item name: '%s'", p_name));
+	ERR_FAIL_COND_MSG(!is_valid_type_name(p_theme_type), vformat("Invalid type name: '%s'", p_theme_type));
+
+	bool existing = has_color_array_nocheck(p_name, p_theme_type);
+	color_array_map[p_theme_type][p_name] = p_color_array;
+
+	_emit_theme_changed(!existing);
+}
+
+PackedColorArray Theme::get_color_array(const StringName &p_name, const StringName &p_theme_type) const {
+	if (color_array_map.has(p_theme_type) && color_array_map[p_theme_type].has(p_name)) {
+		return color_array_map[p_theme_type][p_name];
+	} else {
+		return PackedColorArray();
+	}
+}
+
+bool Theme::has_color_array(const StringName &p_name, const StringName &p_theme_type) const {
+	return (color_array_map.has(p_theme_type) && color_array_map[p_theme_type].has(p_name));
+}
+
+bool Theme::has_color_array_nocheck(const StringName &p_name, const StringName &p_theme_type) const {
+	return (color_array_map.has(p_theme_type) && color_array_map[p_theme_type].has(p_name));
+}
+
+void Theme::rename_color_array(const StringName &p_old_name, const StringName &p_name, const StringName &p_theme_type) {
+	ERR_FAIL_COND_MSG(!is_valid_item_name(p_name), vformat("Invalid item name: '%s'", p_name));
+	ERR_FAIL_COND_MSG(!is_valid_type_name(p_theme_type), vformat("Invalid type name: '%s'", p_theme_type));
+	ERR_FAIL_COND_MSG(!color_array_map.has(p_theme_type), "Cannot rename the color array '" + String(p_old_name) + "' because the node type '" + String(p_theme_type) + "' does not exist.");
+	ERR_FAIL_COND_MSG(color_array_map[p_theme_type].has(p_name), "Cannot rename the color array '" + String(p_old_name) + "' because the new name '" + String(p_name) + "' already exists.");
+	ERR_FAIL_COND_MSG(!color_array_map[p_theme_type].has(p_old_name), "Cannot rename the color array '" + String(p_old_name) + "' because it does not exist.");
+
+	color_array_map[p_theme_type][p_name] = color_array_map[p_theme_type][p_old_name];
+	color_array_map[p_theme_type].erase(p_old_name);
+
+	_emit_theme_changed(true);
+}
+
+void Theme::clear_color_array(const StringName &p_name, const StringName &p_theme_type) {
+	ERR_FAIL_COND_MSG(!color_array_map.has(p_theme_type), "Cannot clear the color array '" + String(p_name) + "' because the node type '" + String(p_theme_type) + "' does not exist.");
+	ERR_FAIL_COND_MSG(!color_array_map[p_theme_type].has(p_name), "Cannot clear the color array '" + String(p_name) + "' because it does not exist.");
+
+	color_array_map[p_theme_type].erase(p_name);
+
+	_emit_theme_changed(true);
+}
+
+void Theme::get_color_array_list(const StringName &p_theme_type, List<StringName> *p_list) const {
+	ERR_FAIL_NULL(p_list);
+
+	if (!color_array_map.has(p_theme_type)) {
+		return;
+	}
+
+	for (const KeyValue<StringName, PackedColorArray> &E : color_array_map[p_theme_type]) {
+		p_list->push_back(E.key);
+	}
+}
+
+void Theme::add_color_array_type(const StringName &p_theme_type) {
+	ERR_FAIL_COND_MSG(!is_valid_type_name(p_theme_type), vformat("Invalid type name: '%s'", p_theme_type));
+
+	if (color_array_map.has(p_theme_type)) {
+		return;
+	}
+	color_array_map[p_theme_type] = ThemeColorArrayMap();
+}
+
+void Theme::remove_color_array_type(const StringName &p_theme_type) {
+	if (!color_array_map.has(p_theme_type)) {
+		return;
+	}
+
+	color_array_map.erase(p_theme_type);
+}
+
+void Theme::get_color_array_type_list(List<StringName> *p_list) const {
+	ERR_FAIL_NULL(p_list);
+
+	for (const KeyValue<StringName, ThemeColorArrayMap> &E : color_array_map) {
+		p_list->push_back(E.key);
+	}
+}
+
 // Generic methods for managing theme items.
 void Theme::set_theme_item(DataType p_data_type, const StringName &p_name, const StringName &p_theme_type, const Variant &p_value) {
 	switch (p_data_type) {
@@ -873,6 +1070,18 @@ void Theme::set_theme_item(DataType p_data_type, const StringName &p_name, const
 
 			int constant_value = p_value;
 			set_constant(p_name, p_theme_type, constant_value);
+		} break;
+		case DATA_TYPE_CONSTANT_ARRAY: {
+			ERR_FAIL_COND_MSG(p_value.get_type() != Variant::PACKED_INT32_ARRAY, "Theme item's data type (PackedInt32Array) does not match Variant's type (" + Variant::get_type_name(p_value.get_type()) + ").");
+
+			PackedInt32Array constant_array_value = p_value;
+			set_constant_array(p_name, p_theme_type, constant_array_value);
+		} break;
+		case DATA_TYPE_COLOR_ARRAY: {
+			ERR_FAIL_COND_MSG(p_value.get_type() != Variant::PACKED_COLOR_ARRAY, "Theme item's data type (PackedColorArray) does not match Variant's type (" + Variant::get_type_name(p_value.get_type()) + ").");
+
+			PackedColorArray color_array_value = p_value;
+			set_color_array(p_name, p_theme_type, color_array_value);
 		} break;
 		case DATA_TYPE_FONT: {
 			ERR_FAIL_COND_MSG(p_value.get_type() != Variant::OBJECT, "Theme item's data type (Object) does not match Variant's type (" + Variant::get_type_name(p_value.get_type()) + ").");
@@ -909,6 +1118,10 @@ Variant Theme::get_theme_item(DataType p_data_type, const StringName &p_name, co
 			return get_color(p_name, p_theme_type);
 		case DATA_TYPE_CONSTANT:
 			return get_constant(p_name, p_theme_type);
+		case DATA_TYPE_CONSTANT_ARRAY:
+			return get_constant_array(p_name, p_theme_type);
+		case DATA_TYPE_COLOR_ARRAY:
+			return get_color_array(p_name, p_theme_type);
 		case DATA_TYPE_FONT:
 			return get_font(p_name, p_theme_type);
 		case DATA_TYPE_FONT_SIZE:
@@ -930,6 +1143,10 @@ bool Theme::has_theme_item(DataType p_data_type, const StringName &p_name, const
 			return has_color(p_name, p_theme_type);
 		case DATA_TYPE_CONSTANT:
 			return has_constant(p_name, p_theme_type);
+		case DATA_TYPE_CONSTANT_ARRAY:
+			return has_constant_array(p_name, p_theme_type);
+		case DATA_TYPE_COLOR_ARRAY:
+			return has_color_array(p_name, p_theme_type);
 		case DATA_TYPE_FONT:
 			if (!variation_map.has(p_theme_type)) {
 				return has_font(p_name, p_theme_type);
@@ -959,6 +1176,10 @@ bool Theme::has_theme_item_nocheck(DataType p_data_type, const StringName &p_nam
 			return has_color_nocheck(p_name, p_theme_type);
 		case DATA_TYPE_CONSTANT:
 			return has_constant_nocheck(p_name, p_theme_type);
+		case DATA_TYPE_CONSTANT_ARRAY:
+			return has_constant_array_nocheck(p_name, p_theme_type);
+		case DATA_TYPE_COLOR_ARRAY:
+			return has_color_array_nocheck(p_name, p_theme_type);
 		case DATA_TYPE_FONT:
 			return has_font_nocheck(p_name, p_theme_type);
 		case DATA_TYPE_FONT_SIZE:
@@ -981,6 +1202,12 @@ void Theme::rename_theme_item(DataType p_data_type, const StringName &p_old_name
 			break;
 		case DATA_TYPE_CONSTANT:
 			rename_constant(p_old_name, p_name, p_theme_type);
+			break;
+		case DATA_TYPE_CONSTANT_ARRAY:
+			rename_constant_array(p_old_name, p_name, p_theme_type);
+			break;
+		case DATA_TYPE_COLOR_ARRAY:
+			rename_color_array(p_old_name, p_name, p_theme_type);
 			break;
 		case DATA_TYPE_FONT:
 			rename_font(p_old_name, p_name, p_theme_type);
@@ -1007,6 +1234,12 @@ void Theme::clear_theme_item(DataType p_data_type, const StringName &p_name, con
 		case DATA_TYPE_CONSTANT:
 			clear_constant(p_name, p_theme_type);
 			break;
+		case DATA_TYPE_CONSTANT_ARRAY:
+			clear_constant_array(p_name, p_theme_type);
+			break;
+		case DATA_TYPE_COLOR_ARRAY:
+			clear_color_array(p_name, p_theme_type);
+			break;
 		case DATA_TYPE_FONT:
 			clear_font(p_name, p_theme_type);
 			break;
@@ -1031,6 +1264,12 @@ void Theme::get_theme_item_list(DataType p_data_type, const StringName &p_theme_
 			break;
 		case DATA_TYPE_CONSTANT:
 			get_constant_list(p_theme_type, p_list);
+			break;
+		case DATA_TYPE_CONSTANT_ARRAY:
+			get_constant_array_list(p_theme_type, p_list);
+			break;
+		case DATA_TYPE_COLOR_ARRAY:
+			get_color_array_list(p_theme_type, p_list);
 			break;
 		case DATA_TYPE_FONT:
 			get_font_list(p_theme_type, p_list);
@@ -1057,6 +1296,12 @@ void Theme::add_theme_item_type(DataType p_data_type, const StringName &p_theme_
 		case DATA_TYPE_CONSTANT:
 			add_constant_type(p_theme_type);
 			break;
+		case DATA_TYPE_CONSTANT_ARRAY:
+			add_constant_array_type(p_theme_type);
+			break;
+		case DATA_TYPE_COLOR_ARRAY:
+			add_color_array_type(p_theme_type);
+			break;
 		case DATA_TYPE_FONT:
 			add_font_type(p_theme_type);
 			break;
@@ -1082,6 +1327,12 @@ void Theme::remove_theme_item_type(DataType p_data_type, const StringName &p_the
 		case DATA_TYPE_CONSTANT:
 			remove_constant_type(p_theme_type);
 			break;
+		case DATA_TYPE_CONSTANT_ARRAY:
+			remove_constant_array_type(p_theme_type);
+			break;
+		case DATA_TYPE_COLOR_ARRAY:
+			remove_color_array_type(p_theme_type);
+			break;
 		case DATA_TYPE_FONT:
 			remove_font_type(p_theme_type);
 			break;
@@ -1106,6 +1357,12 @@ void Theme::get_theme_item_type_list(DataType p_data_type, List<StringName> *p_l
 			break;
 		case DATA_TYPE_CONSTANT:
 			get_constant_type_list(p_list);
+			break;
+		case DATA_TYPE_CONSTANT_ARRAY:
+			get_constant_array_type_list(p_list);
+			break;
+		case DATA_TYPE_COLOR_ARRAY:
+			get_color_array_type_list(p_list);
 			break;
 		case DATA_TYPE_FONT:
 			get_font_type_list(p_list);
@@ -1252,6 +1509,16 @@ void Theme::get_type_list(List<StringName> *p_list) const {
 
 	// Constants.
 	for (const KeyValue<StringName, ThemeConstantMap> &E : constant_map) {
+		types.insert(E.key);
+	}
+
+	// Constant arrays.
+	for (const KeyValue<StringName, ThemeConstantArrayMap> &E : constant_array_map) {
+		types.insert(E.key);
+	}
+
+	// Color arrays.
+	for (const KeyValue<StringName, ThemeColorArrayMap> &E : color_array_map) {
 		types.insert(E.key);
 	}
 
@@ -1465,12 +1732,76 @@ Vector<String> Theme::_get_constant_type_list() const {
 	return ilret;
 }
 
+Vector<String> Theme::_get_constant_array_list(const String &p_theme_type) const {
+	Vector<String> ilret;
+	List<StringName> il;
+
+	get_constant_array_list(p_theme_type, &il);
+	ilret.resize(il.size());
+
+	int i = 0;
+	String *w = ilret.ptrw();
+	for (List<StringName>::Element *E = il.front(); E; E = E->next(), i++) {
+		w[i] = E->get();
+	}
+	return ilret;
+}
+
+Vector<String> Theme::_get_constant_array_type_list() const {
+	Vector<String> ilret;
+	List<StringName> il;
+
+	get_constant_array_type_list(&il);
+	ilret.resize(il.size());
+
+	int i = 0;
+	String *w = ilret.ptrw();
+	for (List<StringName>::Element *E = il.front(); E; E = E->next(), i++) {
+		w[i] = E->get();
+	}
+	return ilret;
+}
+
+Vector<String> Theme::_get_color_array_list(const String &p_theme_type) const {
+	Vector<String> ilret;
+	List<StringName> il;
+
+	get_color_array_list(p_theme_type, &il);
+	ilret.resize(il.size());
+
+	int i = 0;
+	String *w = ilret.ptrw();
+	for (List<StringName>::Element *E = il.front(); E; E = E->next(), i++) {
+		w[i] = E->get();
+	}
+	return ilret;
+}
+
+Vector<String> Theme::_get_color_array_type_list() const {
+	Vector<String> ilret;
+	List<StringName> il;
+
+	get_color_array_type_list(&il);
+	ilret.resize(il.size());
+
+	int i = 0;
+	String *w = ilret.ptrw();
+	for (List<StringName>::Element *E = il.front(); E; E = E->next(), i++) {
+		w[i] = E->get();
+	}
+	return ilret;
+}
+
 Vector<String> Theme::_get_theme_item_list(DataType p_data_type, const String &p_theme_type) const {
 	switch (p_data_type) {
 		case DATA_TYPE_COLOR:
 			return _get_color_list(p_theme_type);
 		case DATA_TYPE_CONSTANT:
 			return _get_constant_list(p_theme_type);
+		case DATA_TYPE_CONSTANT_ARRAY:
+			return _get_constant_array_list(p_theme_type);
+		case DATA_TYPE_COLOR_ARRAY:
+			return _get_color_array_list(p_theme_type);
 		case DATA_TYPE_FONT:
 			return _get_font_list(p_theme_type);
 		case DATA_TYPE_FONT_SIZE:
@@ -1492,6 +1823,10 @@ Vector<String> Theme::_get_theme_item_type_list(DataType p_data_type) const {
 			return _get_color_type_list();
 		case DATA_TYPE_CONSTANT:
 			return _get_constant_type_list();
+		case DATA_TYPE_CONSTANT_ARRAY:
+			return _get_constant_array_type_list();
+		case DATA_TYPE_COLOR_ARRAY:
+			return _get_color_array_type_list();
 		case DATA_TYPE_FONT:
 			return _get_font_type_list();
 		case DATA_TYPE_FONT_SIZE:
@@ -1579,6 +1914,24 @@ void Theme::merge_with(const Ref<Theme> &p_other) {
 		for (const KeyValue<StringName, ThemeConstantMap> &E : p_other->constant_map) {
 			for (const KeyValue<StringName, int> &F : E.value) {
 				set_constant(F.key, E.key, F.value);
+			}
+		}
+	}
+
+	// Constant arrays.
+	{
+		for (const KeyValue<StringName, ThemeConstantArrayMap> &E : p_other->constant_array_map) {
+			for (const KeyValue<StringName, PackedInt32Array> &F : E.value) {
+				set_constant_array(F.key, E.key, F.value);
+			}
+		}
+	}
+
+	// Color arrays.
+	{
+		for (const KeyValue<StringName, ThemeColorArrayMap> &E : p_other->color_array_map) {
+			for (const KeyValue<StringName, PackedColorArray> &F : E.value) {
+				set_color_array(F.key, E.key, F.value);
 			}
 		}
 	}
@@ -1681,6 +2034,8 @@ void Theme::clear() {
 	font_size_map.clear();
 	color_map.clear();
 	constant_map.clear();
+	constant_array_map.clear();
+	color_array_map.clear();
 
 	variation_map.clear();
 	variation_base_map.clear();
@@ -1741,6 +2096,22 @@ void Theme::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_constant_list", "theme_type"), &Theme::_get_constant_list);
 	ClassDB::bind_method(D_METHOD("get_constant_type_list"), &Theme::_get_constant_type_list);
 
+	ClassDB::bind_method(D_METHOD("set_constant_array", "name", "theme_type", "constant_array"), &Theme::set_constant_array);
+	ClassDB::bind_method(D_METHOD("get_constant_array", "name", "theme_type"), &Theme::get_constant_array);
+	ClassDB::bind_method(D_METHOD("has_constant_array", "name", "theme_type"), &Theme::has_constant_array);
+	ClassDB::bind_method(D_METHOD("rename_constant_array", "old_name", "name", "theme_type"), &Theme::rename_constant_array);
+	ClassDB::bind_method(D_METHOD("clear_constant_array", "name", "theme_type"), &Theme::clear_constant_array);
+	ClassDB::bind_method(D_METHOD("get_constant_array_list", "theme_type"), &Theme::_get_constant_array_list);
+	ClassDB::bind_method(D_METHOD("get_constant_array_type_list"), &Theme::_get_constant_array_type_list);
+
+	ClassDB::bind_method(D_METHOD("set_color_array", "name", "theme_type", "color_array"), &Theme::set_color_array);
+	ClassDB::bind_method(D_METHOD("get_color_array", "name", "theme_type"), &Theme::get_color_array);
+	ClassDB::bind_method(D_METHOD("has_color_array", "name", "theme_type"), &Theme::has_color_array);
+	ClassDB::bind_method(D_METHOD("rename_color_array", "old_name", "name", "theme_type"), &Theme::rename_color_array);
+	ClassDB::bind_method(D_METHOD("clear_color_array", "name", "theme_type"), &Theme::clear_color_array);
+	ClassDB::bind_method(D_METHOD("get_color_array_list", "theme_type"), &Theme::_get_color_array_list);
+	ClassDB::bind_method(D_METHOD("get_color_array_type_list"), &Theme::_get_color_array_type_list);
+
 	ClassDB::bind_method(D_METHOD("set_default_base_scale", "base_scale"), &Theme::set_default_base_scale);
 	ClassDB::bind_method(D_METHOD("get_default_base_scale"), &Theme::get_default_base_scale);
 	ClassDB::bind_method(D_METHOD("has_default_base_scale"), &Theme::has_default_base_scale);
@@ -1784,6 +2155,8 @@ void Theme::_bind_methods() {
 	BIND_ENUM_CONSTANT(DATA_TYPE_FONT_SIZE);
 	BIND_ENUM_CONSTANT(DATA_TYPE_ICON);
 	BIND_ENUM_CONSTANT(DATA_TYPE_STYLEBOX);
+	BIND_ENUM_CONSTANT(DATA_TYPE_CONSTANT_ARRAY);
+	BIND_ENUM_CONSTANT(DATA_TYPE_COLOR_ARRAY);
 	BIND_ENUM_CONSTANT(DATA_TYPE_MAX);
 }
 

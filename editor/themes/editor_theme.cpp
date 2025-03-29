@@ -49,6 +49,18 @@ Color EditorTheme::get_color(const StringName &p_name, const StringName &p_theme
 	}
 }
 
+// Keep in sync with Theme::get_color_array.
+PackedColorArray EditorTheme::get_color_array(const StringName &p_name, const StringName &p_theme_type) const {
+	if (color_array_map.has(p_theme_type) && color_array_map[p_theme_type].has(p_name)) {
+		return color_array_map[p_theme_type][p_name];
+	} else {
+		if (editor_theme_types.has(p_theme_type)) {
+			WARN_PRINT(vformat("Trying to access a non-existing editor theme color array '%s' in '%s'.", p_name, p_theme_type));
+		}
+		return PackedColorArray();
+	}
+}
+
 // Keep in sync with Theme::get_constant.
 int EditorTheme::get_constant(const StringName &p_name, const StringName &p_theme_type) const {
 	if (constant_map.has(p_theme_type) && constant_map[p_theme_type].has(p_name)) {
@@ -58,6 +70,18 @@ int EditorTheme::get_constant(const StringName &p_name, const StringName &p_them
 			WARN_PRINT(vformat("Trying to access a non-existing editor theme constant '%s' in '%s'.", p_name, p_theme_type));
 		}
 		return 0;
+	}
+}
+
+// Keep in sync with Theme::get_constant_array.
+PackedInt32Array EditorTheme::get_constant_array(const StringName &p_name, const StringName &p_theme_type) const {
+	if (constant_array_map.has(p_theme_type) && constant_array_map[p_theme_type].has(p_name)) {
+		return constant_array_map[p_theme_type][p_name];
+	} else {
+		if (editor_theme_types.has(p_theme_type)) {
+			WARN_PRINT(vformat("Trying to access a non-existing editor theme constant array '%s' in '%s'.", p_name, p_theme_type));
+		}
+		return PackedInt32Array();
 	}
 }
 
