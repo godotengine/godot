@@ -30,6 +30,7 @@
 
 #include "register_types.h"
 
+#include "extensions/audio/gltf_document_extension_audio.h"
 #include "extensions/gltf_document_extension_convert_importer_mesh.h"
 #include "extensions/gltf_document_extension_texture_ktx.h"
 #include "extensions/gltf_document_extension_texture_webp.h"
@@ -108,6 +109,7 @@ void initialize_gltf_module(ModuleInitializationLevel p_level) {
 		// glTF API available at runtime.
 		GDREGISTER_CLASS(GLTFAccessor);
 		GDREGISTER_CLASS(GLTFAnimation);
+		GDREGISTER_CLASS(GLTFAudioPlayer);
 		GDREGISTER_CLASS(GLTFBufferView);
 		GDREGISTER_CLASS(GLTFCamera);
 		GDREGISTER_CLASS(GLTFDocument);
@@ -127,11 +129,12 @@ void initialize_gltf_module(ModuleInitializationLevel p_level) {
 		GDREGISTER_CLASS(GLTFState);
 		GDREGISTER_CLASS(GLTFTexture);
 		GDREGISTER_CLASS(GLTFTextureSampler);
-// Register GLTFDocumentExtension classes with GLTFDocument.
+		// Register GLTFDocumentExtension classes with GLTFDocument.
 #ifndef PHYSICS_3D_DISABLED
 		// Ensure physics is first in this list so that physics nodes are created before other nodes.
 		GLTF_REGISTER_DOCUMENT_EXTENSION(GLTFDocumentExtensionPhysics);
 #endif // PHYSICS_3D_DISABLED
+		GLTF_REGISTER_DOCUMENT_EXTENSION(GLTFDocumentExtensionAudio);
 		GLTF_REGISTER_DOCUMENT_EXTENSION(GLTFDocumentExtensionTextureKTX);
 		GLTF_REGISTER_DOCUMENT_EXTENSION(GLTFDocumentExtensionTextureWebP);
 		bool is_editor = Engine::get_singleton()->is_editor_hint();
