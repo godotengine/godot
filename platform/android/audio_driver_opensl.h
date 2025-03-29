@@ -87,7 +87,7 @@ class AudioDriverOpenSL : public AudioDriver {
 
 public:
 	virtual const char *get_name() const override {
-		return "Android";
+		return "OpenSLES";
 	}
 
 	virtual Error init() override;
