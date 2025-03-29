@@ -30,12 +30,14 @@
 
 #pragma once
 
-#include "editor/editor_help.h"
-#include "scene/gui/button.h"
 #include "scene/gui/dialogs.h"
-#include "scene/gui/item_list.h"
-#include "scene/gui/line_edit.h"
-#include "scene/gui/tree.h"
+
+class Button;
+class EditorHelpBit;
+class FilterLineEdit;
+class ItemList;
+class Tree;
+class TreeItem;
 
 class CreateDialog : public ConfirmationDialog {
 	GDCLASS(CreateDialog, ConfirmationDialog);
@@ -46,7 +48,7 @@ class CreateDialog : public ConfirmationDialog {
 		OTHER_TYPE
 	};
 
-	LineEdit *search_box = nullptr;
+	FilterLineEdit *search_box = nullptr;
 	Tree *search_options = nullptr;
 
 	String base_type;
