@@ -4401,7 +4401,7 @@ int Main::start() {
 			sml->get_root()->set_snap_controls_to_pixels(snap_controls);
 
 			bool font_oversampling = GLOBAL_GET("gui/fonts/dynamic_fonts/use_oversampling");
-			sml->get_root()->set_use_font_oversampling(font_oversampling);
+			sml->get_root()->set_use_oversampling(font_oversampling);
 
 			int texture_filter = GLOBAL_GET("rendering/textures/canvas_textures/default_texture_filter");
 			int texture_repeat = GLOBAL_GET("rendering/textures/canvas_textures/default_texture_repeat");

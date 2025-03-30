@@ -83,6 +83,12 @@
 				Returns the mouse's position in this [Viewport] using the coordinate system of this [Viewport].
 			</description>
 		</method>
+		<method name="get_oversampling" qualifiers="const">
+			<return type="float" />
+			<description>
+				Returns viewport oversampling factor.
+			</description>
+		</method>
 		<method name="get_positional_shadow_atlas_quadrant_subdiv" qualifiers="const">
 			<return type="int" enum="Viewport.PositionalShadowAtlasQuadrantSubdiv" />
 			<param index="0" name="quadrant" type="int" />
@@ -358,6 +364,12 @@
 		<member name="msaa_3d" type="int" setter="set_msaa_3d" getter="get_msaa_3d" enum="Viewport.MSAA" default="0">
 			The multisample antialiasing mode for 3D rendering. A higher number results in smoother edges at the cost of significantly worse performance. A value of [constant Viewport.MSAA_2X] or [constant Viewport.MSAA_4X] is best unless targeting very high-end systems. See also bilinear scaling 3D [member scaling_3d_mode] for supersampling, which provides higher quality but is much more expensive. This has no effect on shader-induced aliasing or texture aliasing.
 			See also [member ProjectSettings.rendering/anti_aliasing/quality/msaa_3d] and [method RenderingServer.viewport_set_msaa_3d].
+		</member>
+		<member name="oversampling" type="bool" setter="set_use_oversampling" getter="is_using_oversampling" default="true">
+			If [code]true[/code] and one of the following conditions is true: [member SubViewport.size_2d_override_stretch] and [member SubViewport.size_2d_override] are set, [member Window.content_scale_factor] is set and scaling is enabled, [member oversampling_override] is set, font oversampling is enabled.
+		</member>
+		<member name="oversampling_override" type="float" setter="set_oversampling_override" getter="get_oversampling_override" default="0.0">
+			If greater than zero, this value is used as the font oversampling factor, otherwise oversampling is equal to viewport scale.
 		</member>
 		<member name="own_world_3d" type="bool" setter="set_use_own_world_3d" getter="is_using_own_world_3d" default="false">
 			If [code]true[/code], the viewport will use a unique copy of the [World3D] defined in [member world_3d].
