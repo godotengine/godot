@@ -4,6 +4,7 @@ abstract class A:
 
 	# No `UNUSED_PARAMETER` warning.
 	abstract func func_with_param(param: int) -> int
+	abstract func func_with_rest_param(...args: Array) -> int
 	abstract func func_with_semicolon() -> int;
 	abstract func func_1() -> int; abstract func func_2() -> int
 	abstract func func_without_return_type()
@@ -23,6 +24,7 @@ class C extends B:
 		return "text_2c"
 
 	func func_with_param(param: int) -> int: return param
+	func func_with_rest_param(...args: Array) -> int: return args.size()
 	func func_with_semicolon() -> int: return 0
 	func func_1() -> int: return 0
 	func func_2() -> int: return 0
