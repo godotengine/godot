@@ -1013,6 +1013,9 @@ public:
 	FUNC1(canvas_item_reset_physics_interpolation, RID)
 	FUNC2(canvas_item_transform_physics_interpolation, RID, const Transform2D &)
 
+	FUNC2(canvas_item_set_oversampling_factor, RID, float)
+	FUNC1RC(float, canvas_item_get_oversampling_factor, RID)
+
 	FUNCRIDSPLIT(canvas_light)
 
 	FUNC2(canvas_light_set_mode, RID, CanvasLightMode)

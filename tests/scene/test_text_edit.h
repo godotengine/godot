@@ -7201,7 +7201,7 @@ TEST_CASE("[SceneTree][TextEdit] multicaret") {
 		CHECK(text_edit->get_caret_column(1) == 4);
 		CHECK(text_edit->has_selection(2));
 		CHECK(text_edit->get_selection_origin_line(2) == 2);
-		CHECK(text_edit->get_selection_origin_column(2) == 7);
+		CHECK(text_edit->get_selection_origin_column(2) == 8);
 		CHECK(text_edit->get_caret_line(2) == 2);
 		CHECK(text_edit->get_caret_column(2) == 5);
 
