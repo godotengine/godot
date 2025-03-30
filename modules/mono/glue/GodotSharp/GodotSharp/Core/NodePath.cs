@@ -50,7 +50,7 @@ namespace Godot
         private WeakReference<IDisposable>? _weakReferenceToSelf;
 
         private static readonly ConcurrentDictionary<string, WeakReference<NodePath>> _nodePathCache = new();
-        private bool _isCached;
+        private string? _cacheKey;
         private string? _stringRepresentation;
 
         ~NodePath()
@@ -69,9 +69,9 @@ namespace Godot
 
         public void Dispose(bool disposing)
         {
-            if (_isCached && _stringRepresentation is not null)
+            if (_cacheKey is not null)
             {
-                _nodePathCache.TryRemove(_stringRepresentation, out _);
+                _nodePathCache.TryRemove(_cacheKey, out _);
             }
 
             // Always dispose `NativeValue` even if disposing is true
@@ -131,8 +131,6 @@ namespace Godot
         /// <param name="path">A string that represents a path in a scene tree.</param>
         public NodePath(string path)
         {
-            _stringRepresentation = path;
-
             if (!string.IsNullOrEmpty(path))
             {
                 NativeValue = (godot_node_path.movable)NativeFuncs.godotsharp_node_path_new_from_string(path);
@@ -156,7 +154,7 @@ namespace Godot
                 WeakReference<NodePath> cachedNodePath = _nodePathCache.GetOrAdd(from,
                     static (string from) => new WeakReference<NodePath>(new NodePath(from)
                     {
-                        _isCached = true,
+                        _cacheKey = from,
                     })
                 );
 

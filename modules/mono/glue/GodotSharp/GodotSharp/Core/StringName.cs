@@ -21,7 +21,7 @@ namespace Godot
         private WeakReference<IDisposable>? _weakReferenceToSelf;
 
         private static readonly ConcurrentDictionary<string, WeakReference<StringName>> _stringNameCache = new();
-        private bool _isCached;
+        private string? _cacheKey;
         private string? _stringRepresentation;
 
         ~StringName()
@@ -40,9 +40,9 @@ namespace Godot
 
         public void Dispose(bool disposing)
         {
-            if (_isCached && _stringRepresentation is not null)
+            if (_cacheKey is not null)
             {
-                _stringNameCache.TryRemove(_stringRepresentation, out _);
+                _stringNameCache.TryRemove(_cacheKey, out _);
             }
 
             // Always dispose `NativeValue` even if disposing is true
@@ -77,7 +77,7 @@ namespace Godot
         /// <param name="name">String to construct the <see cref="StringName"/> from.</param>
         public StringName(string name)
         {
-            _stringRepresentation = name;
+            _stringRepresentation = name; // StringNames can never change or simplify
 
             if (!string.IsNullOrEmpty(name))
             {
@@ -102,7 +102,7 @@ namespace Godot
                 WeakReference<StringName> cachedStringName = _stringNameCache.GetOrAdd(from,
                     static (string from) => new WeakReference<StringName>(new StringName(from)
                     {
-                        _isCached = true,
+                        _cacheKey = from,
                     })
                 );
 
