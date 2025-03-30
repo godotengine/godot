@@ -4773,9 +4773,12 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			// if the same nIDEvent is passed, the timer is replaced and the same timer_id is returned.
 			// The problem with the timer is that the window cannot be resized or the buttons cannot be used correctly
 			// if the window is not activated first. This happens because the code in the activation process runs
-			// after the mouse click is handled. To address this, the timer is now used only when the window is created.
+			// after the mouse click is handled. To address this, the timer is now used only during the window creation,
+			// and only as part of the activation process. We don't want 'Input::release_pressed_events()'
+			// to be called immediately in '_process_activate_event' when the window is not yet activated,
+			// as it would reset the currently pressed keys when hiding a window, which is incorrect behavior.
 			windows[window_id].activate_state = GET_WM_ACTIVATE_STATE(wParam, lParam);
-			if (windows[window_id].first_activation_done) {
+			if (windows[window_id].first_activation_done && (windows[window_id].activate_state == WA_ACTIVE || windows[window_id].activate_state == WA_CLICKACTIVE)) {
 				_process_activate_event(window_id);
 			} else {
 				windows[window_id].activate_timer_id = SetTimer(windows[window_id].hWnd, DisplayServerWindows::TIMER_ID_WINDOW_ACTIVATION, USER_TIMER_MINIMUM, (TIMERPROC) nullptr);
