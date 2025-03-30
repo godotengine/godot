@@ -135,8 +135,7 @@ Node *SceneRPCInterface::_process_get_node(int p_from, const uint8_t *p_packet, 
 
 		ERR_FAIL_COND_V_MSG(ofs >= p_packet_len, nullptr, "Invalid packet received. Size smaller than declared.");
 
-		String paths;
-		paths.append_utf8((const char *)&p_packet[ofs], p_packet_len - ofs);
+		String paths = String::utf8((const char *)&p_packet[ofs], p_packet_len - ofs);
 
 		NodePath np = paths;
 

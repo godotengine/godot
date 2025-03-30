@@ -286,11 +286,7 @@ void ExportTemplateManager::_refresh_mirrors_completed(int p_status, int p_code,
 		return;
 	}
 
-	String response_json;
-	{
-		const uint8_t *r = p_data.ptr();
-		response_json.append_utf8((const char *)r, p_data.size());
-	}
+	String response_json = String::utf8((const char *)p_data.ptr(), p_data.size());
 
 	JSON json;
 	Error err = json.parse(response_json);
@@ -469,8 +465,7 @@ bool ExportTemplateManager::_install_file_selected(const String &p_file, bool p_
 			ERR_BREAK_MSG(ret < 0, vformat("An error occurred while attempting to read from file: %s. This file will not be used.", file));
 			unzCloseCurrentFile(pkg);
 
-			String data_str;
-			data_str.append_utf8((const char *)uncomp_data.ptr(), uncomp_data.size());
+			String data_str = String::utf8((const char *)uncomp_data.ptr(), uncomp_data.size());
 			data_str = data_str.strip_edges();
 
 			// Version number should be of the form major.minor[.patch].status[.module_config]

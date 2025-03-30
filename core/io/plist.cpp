@@ -647,10 +647,8 @@ bool PList::load_file(const String &p_filename) {
 		Vector<uint8_t> array = FileAccess::get_file_as_bytes(p_filename, &err);
 		ERR_FAIL_COND_V(err != OK, false);
 
-		String ret;
-		ret.append_utf8((const char *)array.ptr(), array.size());
 		String err_str;
-		bool ok = load_string(ret, err_str);
+		bool ok = load_string(String::utf8((const char *)array.ptr(), array.size()), err_str);
 		ERR_FAIL_COND_V_MSG(!ok, false, "PList: " + err_str);
 
 		return true;

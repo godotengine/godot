@@ -110,8 +110,7 @@ Vector<String> OS_MacOS::get_granted_permissions() const {
 			BOOL isStale = NO;
 			NSURL *url = [NSURL URLByResolvingBookmarkData:bookmark options:NSURLBookmarkResolutionWithSecurityScope relativeToURL:nil bookmarkDataIsStale:&isStale error:&error];
 			if (!error && !isStale) {
-				String url_string;
-				url_string.append_utf8([[url path] UTF8String]);
+				String url_string = String::utf8([[url path] UTF8String]);
 				ret.push_back(url_string);
 			}
 		}
@@ -651,10 +650,7 @@ String OS_MacOS::get_executable_path() const {
 	if (ret <= 0) {
 		return OS::get_executable_path();
 	} else {
-		String path;
-		path.append_utf8(pathbuf);
-
-		return path;
+		return String::utf8(pathbuf);
 	}
 }
 
@@ -724,8 +720,7 @@ Error OS_MacOS::create_instance(const List<String> &p_arguments, ProcessID *r_ch
 	// If executable is bundled, always execute editor instances as an app bundle to ensure app window is registered and activated correctly.
 	NSString *nsappname = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleName"];
 	if (nsappname != nil) {
-		String path;
-		path.append_utf8([[[NSBundle mainBundle] bundlePath] UTF8String]);
+		String path = String::utf8([[[NSBundle mainBundle] bundlePath] UTF8String]);
 		return create_process(path, p_arguments, r_child_id, false);
 	} else {
 		return create_process(get_executable_path(), p_arguments, r_child_id, false);

@@ -306,9 +306,7 @@ bool PackedSourcePCK::try_open_pack(const String &p_path, bool p_replace_files, 
 		f->get_buffer((uint8_t *)cs.ptr(), sl);
 		cs[sl] = 0;
 
-		String path;
-		path.append_utf8(cs.ptr(), sl);
-
+		String path = String::utf8(cs.ptr(), sl);
 		uint64_t ofs = f->get_64();
 		uint64_t size = f->get_64();
 		uint8_t md5[16];

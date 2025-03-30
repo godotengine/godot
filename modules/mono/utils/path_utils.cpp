@@ -92,8 +92,7 @@ String cwd() {
 		return ".";
 	}
 
-	String result;
-	result.append_utf16(buffer.ptr());
+	String result = String::utf16((buffer.ptr());
 	if (result.is_empty()) {
 		return ".";
 	}
@@ -145,8 +144,7 @@ String realpath(const String &p_path) {
 
 	::CloseHandle(hFile);
 
-	String result;
-	result.append_utf16(buffer.ptr());
+	String result = String::utf16(buffer.ptr());
 	if (result.is_empty()) {
 		return p_path;
 	}

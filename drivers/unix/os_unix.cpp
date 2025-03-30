@@ -1127,9 +1127,8 @@ String OS_Unix::get_executable_path() const {
 		WARN_PRINT("Couldn't get executable path from sysctl");
 		return OS::get_executable_path();
 	}
-	String b;
-	b.append_utf8(buf);
-	return b;
+
+	return String::utf8(buf);
 #elif defined(__APPLE__)
 	char temp_path[1];
 	uint32_t buff_size = 1;

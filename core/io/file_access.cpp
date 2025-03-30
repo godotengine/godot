@@ -744,9 +744,7 @@ String FileAccess::get_pascal_string() {
 	get_buffer((uint8_t *)cs.ptr(), sl);
 	cs[sl] = 0;
 
-	String ret;
-	ret.append_utf8(cs.ptr(), sl);
-	return ret;
+	return String::utf8(cs.ptr(), sl);
 }
 
 bool FileAccess::store_line(const String &p_line) {

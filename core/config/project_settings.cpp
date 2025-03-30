@@ -774,8 +774,7 @@ Error ProjectSettings::_load_settings_binary(const String &p_path) {
 		cs.resize(slen + 1);
 		cs[slen] = 0;
 		f->get_buffer((uint8_t *)cs.ptr(), slen);
-		String key;
-		key.append_utf8(cs.ptr(), slen);
+		String key = String::utf8(cs.ptr(), slen);
 
 		uint32_t vlen = f->get_32();
 		Vector<uint8_t> d;

@@ -111,8 +111,7 @@ struct Hints {
 static String get_atom_name(Display *p_disp, Atom p_atom) {
 	char *name = XGetAtomName(p_disp, p_atom);
 	ERR_FAIL_NULL_V_MSG(name, String(), "Atom is invalid.");
-	String ret;
-	ret.append_utf8(name);
+	String ret = String::utf8(name);
 	XFree(name);
 	return ret;
 }
@@ -3684,8 +3683,7 @@ void DisplayServerX11::_handle_key_event(WindowID p_window, XKeyEvent *p_event, 
 				keycode -= 'a' - 'A';
 			}
 
-			String tmp;
-			tmp.append_utf8(utf8string, utf8bytes);
+			String tmp = String::utf8(utf8string, utf8bytes);
 			for (int i = 0; i < tmp.length(); i++) {
 				Ref<InputEventKey> k;
 				k.instantiate();
@@ -3765,8 +3763,7 @@ void DisplayServerX11::_handle_key_event(WindowID p_window, XKeyEvent *p_event, 
 				char str_xkb[256] = {};
 				int str_xkb_size = xkb_compose_state_get_utf8(wd.xkb_state, str_xkb, 255);
 
-				String tmp;
-				tmp.append_utf8(str_xkb, str_xkb_size);
+				String tmp = String::utf8(str_xkb, str_xkb_size);
 				for (int i = 0; i < tmp.length(); i++) {
 					Ref<InputEventKey> k;
 					k.instantiate();
