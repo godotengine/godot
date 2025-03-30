@@ -66,39 +66,45 @@ constexpr size_t strlen(const char32_t *p_str) {
 }
 
 // strlen equivalent function for wchar_t * arguments; depends on the platform.
-constexpr size_t strlen(const wchar_t *str) {
+constexpr size_t strlen(const wchar_t *p_str) {
 	// Use static_cast twice because reinterpret_cast is not allowed in constexpr
 #ifdef WINDOWS_ENABLED
 	// wchar_t is 16-bit
-	return strlen(static_cast<const char16_t *>(static_cast<const void *>(str)));
+	return strlen(static_cast<const char16_t *>(static_cast<const void *>(p_str)));
 #else
 	// wchar_t is 32-bit
-	return strlen(static_cast<const char32_t *>(static_cast<const void *>(str)));
+	return strlen(static_cast<const char32_t *>(static_cast<const void *>(p_str)));
 #endif
 }
 
-constexpr size_t _strlen_clipped(const char *p_str, int p_clip_to_len) {
-	if (p_clip_to_len < 0) {
-		return strlen(p_str);
-	}
-
-	int len = 0;
+// strnlen equivalent function for char16_t * arguments.
+constexpr size_t strnlen(const char16_t *p_str, size_t p_clip_to_len) {
+	size_t len = 0;
 	while (len < p_clip_to_len && *(p_str++) != 0) {
 		len++;
 	}
 	return len;
 }
 
-constexpr size_t _strlen_clipped(const char32_t *p_str, int p_clip_to_len) {
-	if (p_clip_to_len < 0) {
-		return strlen(p_str);
-	}
-
-	int len = 0;
+// strnlen equivalent function for char32_t * arguments.
+constexpr size_t strnlen(const char32_t *p_str, size_t p_clip_to_len) {
+	size_t len = 0;
 	while (len < p_clip_to_len && *(p_str++) != 0) {
 		len++;
 	}
 	return len;
+}
+
+// strnlen equivalent function for wchar_t * arguments; depends on the platform.
+constexpr size_t strnlen(const wchar_t *p_str, size_t p_clip_to_len) {
+	// Use static_cast twice because reinterpret_cast is not allowed in constexpr
+#ifdef WINDOWS_ENABLED
+	// wchar_t is 16-bit
+	return strnlen(static_cast<const char16_t *>(static_cast<const void *>(p_str)), p_clip_to_len);
+#else
+	// wchar_t is 32-bit
+	return strnlen(static_cast<const char32_t *>(static_cast<const void *>(p_str)), p_clip_to_len);
+#endif
 }
 
 template <typename L, typename R>
