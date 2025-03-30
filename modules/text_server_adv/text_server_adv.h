@@ -286,6 +286,7 @@ class TextServerAdvanced : public TextServerExtension {
 		HashMap<int64_t, int64_t> inv_glyph_map;
 		HashMap<int32_t, FontGlyph> glyph_map;
 		HashMap<Vector2i, Vector2> kerning_map;
+		int64_t gl_count = 0;
 		hb_font_t *hb_handle = nullptr;
 
 #ifdef MODULE_FREETYPE_ENABLED
@@ -294,6 +295,19 @@ class TextServerAdvanced : public TextServerExtension {
 #endif
 
 		~FontForSizeAdvanced() {
+			int64_t sz = 0;
+			for (const ShelfPackTexture &tex : textures) {
+				if (tex.image.is_valid()) {
+					sz += tex.image->get_data_size() * 2;
+				}
+			}
+			TextServerAdvanced::pref_data_tx_bytes -= sz;
+			TextServerAdvanced::pref_data_glyphs -= glyph_map.size();
+			if (viewport_oversampling != 0) {
+				TextServerAdvanced::pref_data_os_tx_bytes -= sz;
+				TextServerAdvanced::pref_data_os_glyphs -= glyph_map.size();
+			}
+
 			if (hb_handle != nullptr) {
 				hb_font_destroy(hb_handle);
 			}
@@ -372,6 +386,7 @@ class TextServerAdvanced : public TextServerExtension {
 		}
 	};
 
+	_FORCE_INLINE_ void _sync_glyph_count(FontForSizeAdvanced *p_data) const;
 	_FORCE_INLINE_ FontTexturePosition find_texture_pos_for_glyph(FontForSizeAdvanced *p_data, int p_color_size, Image::Format p_image_format, int p_width, int p_height, bool p_msdf) const;
 #ifdef MODULE_MSDFGEN_ENABLED
 	_FORCE_INLINE_ FontGlyph rasterize_msdf(FontAdvanced *p_font_data, FontForSizeAdvanced *p_data, int p_pixel_range, int p_rect_margin, FT_Outline *p_outline, const Vector2 &p_advance) const;
@@ -562,6 +577,8 @@ class TextServerAdvanced : public TextServerExtension {
 		bool chars_valid = false;
 
 		~ShapedTextDataAdvanced() {
+			TextServerAdvanced::buf_glyphs -= glyphs.size();
+			TextServerAdvanced::buf_glyphs -= glyphs_logical.size();
 			for (int i = 0; i < bidi_iter.size(); i++) {
 				if (bidi_iter[i]) {
 					ubidi_close(bidi_iter[i]);
@@ -731,6 +748,17 @@ class TextServerAdvanced : public TextServerExtension {
 			}
 		}
 	};
+
+public:
+	static int64_t buf_count;
+	static int64_t font_count;
+	static int64_t font_var_count;
+	static int64_t buf_glyphs;
+	static int64_t pref_data_glyphs;
+	static int64_t pref_data_tx_bytes;
+	static int64_t pref_data_os_glyphs;
+	static int64_t pref_data_os_tx_bytes;
+	static int64_t pref_sys_fonts;
 
 protected:
 	static void _bind_methods() {}
@@ -1046,6 +1074,8 @@ public:
 	MODBIND2RC(String, string_to_upper, const String &, const String &);
 	MODBIND2RC(String, string_to_lower, const String &, const String &);
 	MODBIND2RC(String, string_to_title, const String &, const String &);
+
+	MODBIND1RC(int64_t, get_process_info, ProcessInfo);
 
 	MODBIND0(cleanup);
 

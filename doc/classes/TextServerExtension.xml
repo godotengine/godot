@@ -1221,6 +1221,14 @@
 				Returns the name of the server interface.
 			</description>
 		</method>
+		<method name="_get_process_info" qualifiers="virtual const">
+			<return type="int" />
+			<param index="0" name="info" type="int" enum="TextServer.ProcessInfo" />
+			<description>
+				[b]Optional.[/b]
+				Returns information about the current state of the text server. See [enum TextServer.ProcessInfo] for the list of available states.
+			</description>
+		</method>
 		<method name="_get_support_data" qualifiers="virtual const">
 			<return type="PackedByteArray" />
 			<description>
