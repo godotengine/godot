@@ -31,9 +31,9 @@
 #pragma once
 
 #ifdef DEBUG_ENABLED
-#define MAIN_THREAD_SYNC_CHECK                                                                         \
-	if (unlikely(Thread::is_main_thread() && Engine::get_singleton()->notify_frame_server_synced())) { \
-		MAIN_THREAD_SYNC_WARN                                                                          \
+#define MAIN_THREAD_SYNC_CHECK                                                                            \
+	if (Thread::is_main_thread() && Engine::get_singleton()->notify_frame_server_synced()) [[unlikely]] { \
+		MAIN_THREAD_SYNC_WARN                                                                             \
 	}
 #else
 #define MAIN_THREAD_SYNC_CHECK

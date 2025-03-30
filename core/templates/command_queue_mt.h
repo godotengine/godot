@@ -154,7 +154,7 @@ class CommandQueueMT {
 	}
 
 	void _flush() {
-		if (unlikely(flush_read_ptr)) {
+		if (flush_read_ptr) [[unlikely]] {
 			// Re-entrant call.
 			return;
 		}
@@ -172,7 +172,7 @@ class CommandQueueMT {
 			// Handle potential realloc due to the command and unlock allowance.
 			cmd = reinterpret_cast<CommandBase *>(&command_mem[flush_read_ptr]);
 
-			if (unlikely(cmd->sync)) {
+			if (cmd->sync) [[unlikely]] {
 				sync_head++;
 				lock.~MutexLock(); // Give an opportunity to awaiters right away.
 				sync_cond_var.notify_all();
@@ -228,7 +228,7 @@ public:
 	}
 
 	_FORCE_INLINE_ void flush_if_pending() {
-		if (unlikely(pending.load())) {
+		if (pending.load()) [[unlikely]] {
 			_flush();
 		}
 	}

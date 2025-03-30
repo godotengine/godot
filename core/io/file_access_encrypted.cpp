@@ -56,7 +56,7 @@ Error FileAccessEncrypted::open_and_parse(Ref<FileAccess> p_base, const Vector<u
 		key = p_key;
 		if (p_iv.is_empty()) {
 			iv.resize(16);
-			if (unlikely(!_fae_static_rng)) {
+			if (!_fae_static_rng) [[unlikely]] {
 				_fae_static_rng = memnew(CryptoCore::RandomGenerator);
 				if (_fae_static_rng->init() != OK) {
 					memdelete(_fae_static_rng);

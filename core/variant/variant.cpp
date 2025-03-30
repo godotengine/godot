@@ -176,7 +176,7 @@ String Variant::get_type_name(Variant::Type p_type) {
 
 Variant::Type Variant::get_type_by_name(const String &p_type_name) {
 	static HashMap<String, Type> type_names;
-	if (unlikely(type_names.is_empty())) {
+	if (type_names.is_empty()) [[unlikely]] {
 		for (int i = 0; i < VARIANT_MAX; i++) {
 			type_names[get_type_name((Type)i)] = (Type)i;
 		}
@@ -2641,11 +2641,11 @@ Variant::Variant(const Vector<StringName> &p_array) {
 }
 
 void Variant::operator=(const Variant &p_variant) {
-	if (unlikely(this == &p_variant)) {
+	if (this == &p_variant) [[unlikely]] {
 		return;
 	}
 
-	if (unlikely(type != p_variant.type)) {
+	if (type != p_variant.type) [[unlikely]] {
 		reference(p_variant);
 		return;
 	}
@@ -2967,7 +2967,7 @@ uint32_t Variant::recursive_hash(int recursion_count) const {
 		case PACKED_BYTE_ARRAY: {
 			const PackedByteArray &arr = PackedArrayRef<uint8_t>::get_array(_data.packed_array);
 			int len = arr.size();
-			if (likely(len)) {
+			if (len) [[likely]] {
 				const uint8_t *r = arr.ptr();
 				return hash_murmur3_buffer((uint8_t *)&r[0], len);
 			} else {
@@ -2978,7 +2978,7 @@ uint32_t Variant::recursive_hash(int recursion_count) const {
 		case PACKED_INT32_ARRAY: {
 			const PackedInt32Array &arr = PackedArrayRef<int32_t>::get_array(_data.packed_array);
 			int len = arr.size();
-			if (likely(len)) {
+			if (len) [[likely]] {
 				const int32_t *r = arr.ptr();
 				return hash_murmur3_buffer((uint8_t *)&r[0], len * sizeof(int32_t));
 			} else {
@@ -2989,7 +2989,7 @@ uint32_t Variant::recursive_hash(int recursion_count) const {
 		case PACKED_INT64_ARRAY: {
 			const PackedInt64Array &arr = PackedArrayRef<int64_t>::get_array(_data.packed_array);
 			int len = arr.size();
-			if (likely(len)) {
+			if (len) [[likely]] {
 				const int64_t *r = arr.ptr();
 				return hash_murmur3_buffer((uint8_t *)&r[0], len * sizeof(int64_t));
 			} else {
@@ -3001,7 +3001,7 @@ uint32_t Variant::recursive_hash(int recursion_count) const {
 			const PackedFloat32Array &arr = PackedArrayRef<float>::get_array(_data.packed_array);
 			int len = arr.size();
 
-			if (likely(len)) {
+			if (len) [[likely]] {
 				const float *r = arr.ptr();
 				uint32_t h = HASH_MURMUR3_SEED;
 				for (int32_t i = 0; i < len; i++) {
@@ -3017,7 +3017,7 @@ uint32_t Variant::recursive_hash(int recursion_count) const {
 			const PackedFloat64Array &arr = PackedArrayRef<double>::get_array(_data.packed_array);
 			int len = arr.size();
 
-			if (likely(len)) {
+			if (len) [[likely]] {
 				const double *r = arr.ptr();
 				uint32_t h = HASH_MURMUR3_SEED;
 				for (int32_t i = 0; i < len; i++) {
@@ -3034,7 +3034,7 @@ uint32_t Variant::recursive_hash(int recursion_count) const {
 			const PackedStringArray &arr = PackedArrayRef<String>::get_array(_data.packed_array);
 			int len = arr.size();
 
-			if (likely(len)) {
+			if (len) [[likely]] {
 				const String *r = arr.ptr();
 
 				for (int i = 0; i < len; i++) {
@@ -3050,7 +3050,7 @@ uint32_t Variant::recursive_hash(int recursion_count) const {
 			const PackedVector2Array &arr = PackedArrayRef<Vector2>::get_array(_data.packed_array);
 			int len = arr.size();
 
-			if (likely(len)) {
+			if (len) [[likely]] {
 				const Vector2 *r = arr.ptr();
 
 				for (int i = 0; i < len; i++) {
@@ -3067,7 +3067,7 @@ uint32_t Variant::recursive_hash(int recursion_count) const {
 			const PackedVector3Array &arr = PackedArrayRef<Vector3>::get_array(_data.packed_array);
 			int len = arr.size();
 
-			if (likely(len)) {
+			if (len) [[likely]] {
 				const Vector3 *r = arr.ptr();
 
 				for (int i = 0; i < len; i++) {
@@ -3085,7 +3085,7 @@ uint32_t Variant::recursive_hash(int recursion_count) const {
 			const PackedColorArray &arr = PackedArrayRef<Color>::get_array(_data.packed_array);
 			int len = arr.size();
 
-			if (likely(len)) {
+			if (len) [[likely]] {
 				const Color *r = arr.ptr();
 
 				for (int i = 0; i < len; i++) {
@@ -3104,7 +3104,7 @@ uint32_t Variant::recursive_hash(int recursion_count) const {
 			const PackedVector4Array &arr = PackedArrayRef<Vector4>::get_array(_data.packed_array);
 			int len = arr.size();
 
-			if (likely(len)) {
+			if (len) [[likely]] {
 				const Vector4 *r = arr.ptr();
 
 				for (int i = 0; i < len; i++) {

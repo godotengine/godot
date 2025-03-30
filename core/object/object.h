@@ -402,7 +402,7 @@ public:                                                                         
 	}                                                                                                                                       \
 	virtual const StringName *_get_class_namev() const override {                                                                           \
 		static StringName _class_name_static;                                                                                               \
-		if (unlikely(!_class_name_static)) {                                                                                                \
+		if (!_class_name_static) [[unlikely]] {                                                                                             \
 			StringName::assign_static_unique_class_name(&_class_name_static, #m_class);                                                     \
 		}                                                                                                                                   \
 		return &_class_name_static;                                                                                                         \
@@ -744,7 +744,7 @@ protected:
 
 	virtual const StringName *_get_class_namev() const {
 		static StringName _class_name_static;
-		if (unlikely(!_class_name_static)) {
+		if (!_class_name_static) [[unlikely]] {
 			StringName::assign_static_unique_class_name(&_class_name_static, "Object");
 		}
 		return &_class_name_static;
@@ -854,7 +854,7 @@ public:
 			return _extension->class_name;
 		}
 
-		if (unlikely(!_class_name_ptr)) {
+		if (!_class_name_ptr) [[unlikely]] {
 			// While class is initializing / deinitializing, constructors and destructurs
 			// need access to the proper class at the proper stage.
 			return *_get_class_namev();
@@ -1064,7 +1064,7 @@ public:
 
 		uint64_t validator = (id >> OBJECTDB_SLOT_MAX_COUNT_BITS) & OBJECTDB_VALIDATOR_MASK;
 
-		if (unlikely(object_slots[slot].validator != validator)) {
+		if (object_slots[slot].validator != validator) [[unlikely]] {
 			spin_lock.unlock();
 			return nullptr;
 		}

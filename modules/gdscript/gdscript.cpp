@@ -120,16 +120,16 @@ Variant GDScriptNativeClass::callp(const StringName &p_method, const Variant **p
 }
 
 GDScriptFunction *GDScript::_super_constructor(GDScript *p_script) {
-	if (likely(p_script->valid) && p_script->initializer) {
-		return p_script->initializer;
-	} else {
-		GDScript *base_src = p_script->_base;
-		if (base_src != nullptr) {
-			return _super_constructor(base_src);
-		} else {
-			return nullptr;
+	if (p_script->valid) [[likely]] {
+		if (p_script->initializer) {
+			return p_script->initializer;
 		}
 	}
+	GDScript *base_src = p_script->_base;
+	if (base_src) {
+		return _super_constructor(base_src);
+	}
+	return nullptr;
 }
 
 void GDScript::_super_implicit_constructor(GDScript *p_script, GDScriptInstance *p_instance, Callable::CallError &r_error) {
@@ -141,7 +141,7 @@ void GDScript::_super_implicit_constructor(GDScript *p_script, GDScriptInstance 
 		}
 	}
 	ERR_FAIL_NULL(p_script->implicit_initializer);
-	if (likely(p_script->valid)) {
+	if (p_script->valid) [[likely]] {
 		p_script->implicit_initializer->call(p_instance, nullptr, 0, r_error);
 	} else {
 		r_error.error = Callable::CallError::CALL_ERROR_INVALID_METHOD;
@@ -673,11 +673,13 @@ String GDScript::_get_debug_path() const {
 }
 
 Error GDScript::_static_init() {
-	if (likely(valid) && static_initializer) {
-		Callable::CallError call_err;
-		static_initializer->call(nullptr, nullptr, 0, call_err);
-		if (call_err.error != Callable::CallError::CALL_OK) {
-			return ERR_CANT_CREATE;
+	if (valid) [[likely]] {
+		if (static_initializer) {
+			Callable::CallError call_err;
+			static_initializer->call(nullptr, nullptr, 0, call_err);
+			if (call_err.error != Callable::CallError::CALL_OK) {
+				return ERR_CANT_CREATE;
+			}
 		}
 	}
 	Error err = OK;
@@ -933,7 +935,7 @@ void GDScript::unload_static() const {
 Variant GDScript::callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
 	GDScript *top = this;
 	while (top) {
-		if (likely(top->valid)) {
+		if (top->valid) [[likely]] {
 			HashMap<StringName, GDScriptFunction *>::Iterator E = top->member_functions.find(p_method);
 			if (E) {
 				ERR_FAIL_COND_V_MSG(!E->value->is_static(), Variant(), "Can't call non-static function '" + String(p_method) + "' in script.");
@@ -968,18 +970,20 @@ bool GDScript::_get(const StringName &p_name, Variant &r_ret) const {
 		{
 			HashMap<StringName, MemberInfo>::ConstIterator E = top->static_variables_indices.find(p_name);
 			if (E) {
-				if (likely(top->valid) && E->value.getter) {
-					Callable::CallError ce;
-					const Variant ret = const_cast<GDScript *>(this)->callp(E->value.getter, nullptr, 0, ce);
-					r_ret = (ce.error == Callable::CallError::CALL_OK) ? ret : Variant();
-					return true;
+				if (top->valid) [[likely]] {
+					if (E->value.getter) {
+						Callable::CallError ce;
+						const Variant ret = const_cast<GDScript *>(this)->callp(E->value.getter, nullptr, 0, ce);
+						r_ret = (ce.error == Callable::CallError::CALL_OK) ? ret : Variant();
+						return true;
+					}
 				}
 				r_ret = top->static_variables[E->value.index];
 				return true;
 			}
 		}
 
-		if (likely(top->valid)) {
+		if (top->valid) [[likely]] {
 			HashMap<StringName, GDScriptFunction *>::ConstIterator E = top->member_functions.find(p_name);
 			if (E && E->value->is_static()) {
 				if (top->rpc_config.has(p_name)) {
@@ -1026,12 +1030,13 @@ bool GDScript::_set(const StringName &p_name, const Variant &p_value) {
 					return false;
 				}
 			}
-			if (likely(top->valid) && member->setter) {
-				const Variant *args = &value;
-				Callable::CallError err;
-				callp(member->setter, &args, 1, err);
-				return err.error == Callable::CallError::CALL_OK;
-			} else {
+			if (top->valid) [[likely]] {
+				if (member->setter) {
+					const Variant *args = &value;
+					Callable::CallError err;
+					callp(member->setter, &args, 1, err);
+					return err.error == Callable::CallError::CALL_OK;
+				}
 				top->static_variables.write[member->index] = value;
 				return true;
 			}
@@ -1679,15 +1684,16 @@ bool GDScriptInstance::set(const StringName &p_name, const Variant &p_value) {
 					return false;
 				}
 			}
-			if (likely(script->valid) && member->setter) {
-				const Variant *args = &value;
-				Callable::CallError err;
-				callp(member->setter, &args, 1, err);
-				return err.error == Callable::CallError::CALL_OK;
-			} else {
-				members.write[member->index] = value;
-				return true;
+			if (script->valid) [[likely]] {
+				if (member->setter) {
+					const Variant *args = &value;
+					Callable::CallError err;
+					callp(member->setter, &args, 1, err);
+					return err.error == Callable::CallError::CALL_OK;
+				}
 			}
+			members.write[member->index] = value;
+			return true;
 		}
 	}
 
@@ -1706,19 +1712,20 @@ bool GDScriptInstance::set(const StringName &p_name, const Variant &p_value) {
 						return false;
 					}
 				}
-				if (likely(sptr->valid) && member->setter) {
-					const Variant *args = &value;
-					Callable::CallError err;
-					callp(member->setter, &args, 1, err);
-					return err.error == Callable::CallError::CALL_OK;
-				} else {
-					sptr->static_variables.write[member->index] = value;
-					return true;
+				if (sptr->valid) [[likely]] {
+					if (member->setter) {
+						const Variant *args = &value;
+						Callable::CallError err;
+						callp(member->setter, &args, 1, err);
+						return err.error == Callable::CallError::CALL_OK;
+					}
 				}
+				sptr->static_variables.write[member->index] = value;
+				return true;
 			}
 		}
 
-		if (likely(sptr->valid)) {
+		if (sptr->valid) [[likely]] {
 			HashMap<StringName, GDScriptFunction *>::Iterator E = sptr->member_functions.find(GDScriptLanguage::get_singleton()->strings._set);
 			if (E) {
 				Variant name = p_name;
@@ -1742,11 +1749,13 @@ bool GDScriptInstance::get(const StringName &p_name, Variant &r_ret) const {
 	{
 		HashMap<StringName, GDScript::MemberInfo>::ConstIterator E = script->member_indices.find(p_name);
 		if (E) {
-			if (likely(script->valid) && E->value.getter) {
-				Callable::CallError err;
-				const Variant ret = const_cast<GDScriptInstance *>(this)->callp(E->value.getter, nullptr, 0, err);
-				r_ret = (err.error == Callable::CallError::CALL_OK) ? ret : Variant();
-				return true;
+			if (script->valid) [[likely]] {
+				if (E->value.getter) {
+					Callable::CallError err;
+					const Variant ret = const_cast<GDScriptInstance *>(this)->callp(E->value.getter, nullptr, 0, err);
+					r_ret = (err.error == Callable::CallError::CALL_OK) ? ret : Variant();
+					return true;
+				}
 			}
 			r_ret = members[E->value.index];
 			return true;
@@ -1766,11 +1775,13 @@ bool GDScriptInstance::get(const StringName &p_name, Variant &r_ret) const {
 		{
 			HashMap<StringName, GDScript::MemberInfo>::ConstIterator E = sptr->static_variables_indices.find(p_name);
 			if (E) {
-				if (likely(sptr->valid) && E->value.getter) {
-					Callable::CallError ce;
-					const Variant ret = const_cast<GDScript *>(sptr)->callp(E->value.getter, nullptr, 0, ce);
-					r_ret = (ce.error == Callable::CallError::CALL_OK) ? ret : Variant();
-					return true;
+				if (sptr->valid) [[likely]] {
+					if (E->value.getter) {
+						Callable::CallError ce;
+						const Variant ret = const_cast<GDScript *>(sptr)->callp(E->value.getter, nullptr, 0, ce);
+						r_ret = (ce.error == Callable::CallError::CALL_OK) ? ret : Variant();
+						return true;
+					}
 				}
 				r_ret = sptr->static_variables[E->value.index];
 				return true;
@@ -1785,7 +1796,7 @@ bool GDScriptInstance::get(const StringName &p_name, Variant &r_ret) const {
 			}
 		}
 
-		if (likely(sptr->valid)) {
+		if (sptr->valid) [[likely]] {
 			HashMap<StringName, GDScriptFunction *>::ConstIterator E = sptr->member_functions.find(p_name);
 			if (E) {
 				if (sptr->rpc_config.has(p_name)) {
@@ -1805,7 +1816,7 @@ bool GDScriptInstance::get(const StringName &p_name, Variant &r_ret) const {
 			}
 		}
 
-		if (likely(sptr->valid)) {
+		if (sptr->valid) [[likely]] {
 			HashMap<StringName, GDScriptFunction *>::ConstIterator E = sptr->member_functions.find(GDScriptLanguage::get_singleton()->strings._get);
 			if (E) {
 				Variant name = p_name;
@@ -1842,7 +1853,7 @@ Variant::Type GDScriptInstance::get_property_type(const StringName &p_name, bool
 void GDScriptInstance::validate_property(PropertyInfo &p_property) const {
 	const GDScript *sptr = script.ptr();
 	while (sptr) {
-		if (likely(sptr->valid)) {
+		if (sptr->valid) [[likely]] {
 			HashMap<StringName, GDScriptFunction *>::ConstIterator E = sptr->member_functions.find(GDScriptLanguage::get_singleton()->strings._validate_property);
 			if (E) {
 				Variant property = (Dictionary)p_property;
@@ -1867,7 +1878,7 @@ void GDScriptInstance::get_property_list(List<PropertyInfo> *p_properties) const
 	List<PropertyInfo> props;
 
 	while (sptr) {
-		if (likely(sptr->valid)) {
+		if (sptr->valid) [[likely]] {
 			HashMap<StringName, GDScriptFunction *>::ConstIterator E = sptr->member_functions.find(GDScriptLanguage::get_singleton()->strings._get_property_list);
 			if (E) {
 				Callable::CallError err;
@@ -1946,7 +1957,7 @@ bool GDScriptInstance::property_can_revert(const StringName &p_name) const {
 
 	const GDScript *sptr = script.ptr();
 	while (sptr) {
-		if (likely(sptr->valid)) {
+		if (sptr->valid) [[likely]] {
 			HashMap<StringName, GDScriptFunction *>::ConstIterator E = sptr->member_functions.find(GDScriptLanguage::get_singleton()->strings._property_can_revert);
 			if (E) {
 				Callable::CallError err;
@@ -1968,7 +1979,7 @@ bool GDScriptInstance::property_get_revert(const StringName &p_name, Variant &r_
 
 	const GDScript *sptr = script.ptr();
 	while (sptr) {
-		if (likely(sptr->valid)) {
+		if (sptr->valid) [[likely]] {
 			HashMap<StringName, GDScriptFunction *>::ConstIterator E = sptr->member_functions.find(GDScriptLanguage::get_singleton()->strings._property_get_revert);
 			if (E) {
 				Callable::CallError err;
@@ -2032,20 +2043,22 @@ void GDScriptInstance::_call_implicit_ready_recursively(GDScript *p_script) {
 	if (p_script->_base) {
 		_call_implicit_ready_recursively(p_script->_base);
 	}
-	if (likely(p_script->valid) && p_script->implicit_ready) {
-		Callable::CallError err;
-		p_script->implicit_ready->call(this, nullptr, 0, err);
+	if (p_script->valid) [[likely]] {
+		if (p_script->implicit_ready) {
+			Callable::CallError err;
+			p_script->implicit_ready->call(this, nullptr, 0, err);
+		}
 	}
 }
 
 Variant GDScriptInstance::callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
 	GDScript *sptr = script.ptr();
-	if (unlikely(p_method == SceneStringName(_ready))) {
+	if (p_method == SceneStringName(_ready)) [[unlikely]] {
 		// Call implicit ready first, including for the super classes recursively.
 		_call_implicit_ready_recursively(sptr);
 	}
 	while (sptr) {
-		if (likely(sptr->valid)) {
+		if (sptr->valid) [[likely]] {
 			HashMap<StringName, GDScriptFunction *>::Iterator E = sptr->member_functions.find(p_method);
 			if (E) {
 				return E->value->call(this, p_args, p_argcount, r_error);
@@ -2059,7 +2072,7 @@ Variant GDScriptInstance::callp(const StringName &p_method, const Variant **p_ar
 }
 
 void GDScriptInstance::notification(int p_notification, bool p_reversed) {
-	if (unlikely(!script->valid)) {
+	if (!script->valid) [[unlikely]] {
 		return;
 	}
 
@@ -2078,7 +2091,7 @@ void GDScriptInstance::notification(int p_notification, bool p_reversed) {
 		sptr = sptr->_base;
 	}
 	for (GDScript *sc : pl) {
-		if (likely(sc->valid)) {
+		if (sc->valid) [[likely]] {
 			HashMap<StringName, GDScriptFunction *>::Iterator E = sc->member_functions.find(GDScriptLanguage::get_singleton()->strings._notification);
 			if (E) {
 				Callable::CallError err;

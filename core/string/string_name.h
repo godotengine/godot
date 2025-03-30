@@ -233,8 +233,10 @@ public:
 	_FORCE_INLINE_
 #endif
 	~StringName() {
-		if (likely(configured) && _data) { //only free if configured
-			unref();
+		if (configured) [[likely]] { // Only free if configured.
+			if (_data) {
+				unref();
+			}
 		}
 	}
 

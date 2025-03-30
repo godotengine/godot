@@ -192,7 +192,7 @@ void WorkerThreadPool::_thread_function(void *p_user) {
 
 			while (true) {
 				bool exit = thread_data->pool->_handle_runlevel(thread_data, lock);
-				if (unlikely(exit)) {
+				if (exit) [[unlikely]] {
 					return;
 				}
 
@@ -285,7 +285,7 @@ void WorkerThreadPool::_notify_threads(const ThreadData *p_current_thread_data, 
 		if (th.current_task) {
 			// Good thread for promoting low-prio?
 			if (to_promote && th.awaited_task && th.current_task->low_priority) {
-				if (likely(&th != p_current_thread_data)) {
+				if (&th != p_current_thread_data) [[likely]] {
 					th.cond_var.notify_one();
 				}
 				th.signaled = true;
@@ -293,7 +293,7 @@ void WorkerThreadPool::_notify_threads(const ThreadData *p_current_thread_data, 
 			}
 		} else {
 			if (to_process) {
-				if (likely(&th != p_current_thread_data)) {
+				if (&th != p_current_thread_data) [[likely]] {
 					th.cond_var.notify_one();
 				}
 				th.signaled = true;
@@ -313,7 +313,7 @@ void WorkerThreadPool::_notify_threads(const ThreadData *p_current_thread_data, 
 			continue;
 		}
 		if (th.awaited_task) {
-			if (likely(&th != p_current_thread_data)) {
+			if (&th != p_current_thread_data) [[likely]] {
 				th.cond_var.notify_one();
 			}
 			th.signaled = true;
@@ -469,12 +469,12 @@ void WorkerThreadPool::_wait_collaboratively(ThreadData *p_caller_pool_thread, T
 			p_caller_pool_thread->signaled = false;
 
 			bool exit = _handle_runlevel(p_caller_pool_thread, lock);
-			if (unlikely(exit)) {
+			if (exit) [[unlikely]] {
 				break;
 			}
 
 			bool wait_is_over = false;
-			if (unlikely(p_task == ThreadData::YIELDING)) {
+			if (p_task == ThreadData::YIELDING) [[unlikely]] {
 				if (p_caller_pool_thread->yield_is_over) {
 					p_caller_pool_thread->yield_is_over = false;
 					wait_is_over = true;
