@@ -36,7 +36,7 @@
 #include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/plugins/node_3d_editor_plugin.h"
-#include "scene/3d/navigation_obstacle_3d.h"
+#include "scene/3d/navigation/navigation_obstacle_3d.h"
 #include "scene/gui/button.h"
 #include "scene/gui/dialogs.h"
 #include "servers/navigation_server_3d.h"

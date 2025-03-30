@@ -30,7 +30,7 @@
 
 #include "navigation_agent_3d.h"
 
-#include "scene/3d/navigation_link_3d.h"
+#include "scene/3d/navigation/navigation_link_3d.h"
 #include "servers/navigation_server_3d.h"
 
 void NavigationAgent3D::_bind_methods() {

@@ -31,13 +31,17 @@
 #include "polygon_2d.h"
 
 #include "core/math/geometry_2d.h"
+#ifndef NAVIGATION_2D_DISABLED
 #include "scene/resources/2d/navigation_mesh_source_geometry_data_2d.h"
 #include "scene/resources/2d/navigation_polygon.h"
 #include "servers/navigation_server_2d.h"
+#endif // NAVIGATION_2D_DISABLED
 #include "skeleton_2d.h"
 
+#ifndef NAVIGATION_2D_DISABLED
 Callable Polygon2D::_navmesh_source_geometry_parsing_callback;
 RID Polygon2D::_navmesh_source_geometry_parser;
+#endif // NAVIGATION_2D_DISABLED
 
 #ifdef TOOLS_ENABLED
 Dictionary Polygon2D::_edit_get_state() const {
@@ -610,6 +614,7 @@ NodePath Polygon2D::get_skeleton() const {
 	return skeleton;
 }
 
+#ifndef NAVIGATION_2D_DISABLED
 void Polygon2D::navmesh_parse_init() {
 	ERR_FAIL_NULL(NavigationServer2D::get_singleton());
 	if (!_navmesh_source_geometry_parser.is_valid()) {
@@ -639,6 +644,7 @@ void Polygon2D::navmesh_parse_source_geometry(const Ref<NavigationPolygon> &p_na
 		p_source_geometry_data->add_obstruction_outline(shape_outline);
 	}
 }
+#endif // NAVIGATION_2D_DISABLED
 
 void Polygon2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_polygon", "polygon"), &Polygon2D::set_polygon);

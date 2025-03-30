@@ -36,10 +36,13 @@
 #include "core/math/geometry_2d.h"
 #include "scene/resources/3d/navigation_mesh_source_geometry_data_3d.h"
 #include "scene/resources/navigation_mesh.h"
+#ifndef NAVIGATION_3D_DISABLED
 #include "servers/navigation_server_3d.h"
+#endif // NAVIGATION_3D_DISABLED
 
 #include <manifold/manifold.h>
 
+#ifndef NAVIGATION_3D_DISABLED
 Callable CSGShape3D::_navmesh_source_geometry_parsing_callback;
 RID CSGShape3D::_navmesh_source_geometry_parser;
 
@@ -76,6 +79,7 @@ void CSGShape3D::navmesh_parse_source_geometry(const Ref<NavigationMesh> &p_navi
 		}
 	}
 }
+#endif // NAVIGATION_3D_DISABLED
 
 #ifndef PHYSICS_3D_DISABLED
 void CSGShape3D::set_use_collision(bool p_enable) {
