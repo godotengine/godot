@@ -31,9 +31,6 @@
 #include "mesh_instance_3d.h"
 
 #include "scene/3d/skeleton_3d.h"
-#include "scene/resources/3d/navigation_mesh_source_geometry_data_3d.h"
-#include "scene/resources/navigation_mesh.h"
-#include "servers/navigation_server_3d.h"
 
 #ifndef PHYSICS_3D_DISABLED
 #include "scene/3d/physics/collision_shape_3d.h"
@@ -42,8 +39,14 @@
 #include "scene/resources/3d/convex_polygon_shape_3d.h"
 #endif // PHYSICS_3D_DISABLED
 
+#ifndef NAVIGATION_3D_DISABLED
+#include "scene/resources/3d/navigation_mesh_source_geometry_data_3d.h"
+#include "scene/resources/navigation_mesh.h"
+#include "servers/navigation_server_3d.h"
+
 Callable MeshInstance3D::_navmesh_source_geometry_parsing_callback;
 RID MeshInstance3D::_navmesh_source_geometry_parser;
+#endif // NAVIGATION_3D_DISABLED
 
 bool MeshInstance3D::_set(const StringName &p_name, const Variant &p_value) {
 	//this is not _too_ bad performance wise, really. it only arrives here if the property was not set anywhere else.
@@ -853,6 +856,7 @@ Ref<TriangleMesh> MeshInstance3D::generate_triangle_mesh() const {
 	return Ref<TriangleMesh>();
 }
 
+#ifndef NAVIGATION_3D_DISABLED
 void MeshInstance3D::navmesh_parse_init() {
 	ERR_FAIL_NULL(NavigationServer3D::get_singleton());
 	if (!_navmesh_source_geometry_parser.is_valid()) {
@@ -878,6 +882,7 @@ void MeshInstance3D::navmesh_parse_source_geometry(const Ref<NavigationMesh> &p_
 		}
 	}
 }
+#endif // NAVIGATION_3D_DISABLED
 
 void MeshInstance3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_mesh", "mesh"), &MeshInstance3D::set_mesh);

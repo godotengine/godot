@@ -32,7 +32,7 @@
 
 #include "editor/editor_node.h"
 #include "editor/editor_string_names.h"
-#include "scene/3d/navigation_region_3d.h"
+#include "scene/3d/navigation/navigation_region_3d.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/dialogs.h"
