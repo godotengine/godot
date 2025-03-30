@@ -1503,15 +1503,15 @@ def generated_wrapper(
     unassigned, the value is determined by file extension.
     """
 
-    if guard is None:
-        guard = path.endswith((".h", ".hh", ".hpp", ".hxx", ".inc"))
-
     with open(path, "wt", encoding="utf-8", newline="\n") as file:
-        file.write(generate_copyright_header(path))
-        file.write("\n/* THIS FILE IS GENERATED. EDITS WILL BE LOST. */\n\n")
+        if not path.endswith(".out"):  # For test output, we only care about the content.
+            file.write(generate_copyright_header(path))
+            file.write("\n/* THIS FILE IS GENERATED. EDITS WILL BE LOST. */\n\n")
 
-        if guard:
-            file.write("#pragma once\n\n")
+            if guard is None:
+                guard = path.endswith((".h", ".hh", ".hpp", ".hxx", ".inc"))
+            if guard:
+                file.write("#pragma once\n\n")
 
         with StringIO(newline="\n") as str_io:
             yield str_io
