@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  test_navigation_agent_3d.h                                            */
+/*  nav_obstacle_2d.h                                                     */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -30,39 +30,71 @@
 
 #pragma once
 
-#include "scene/3d/navigation_agent_3d.h"
-#include "scene/3d/node_3d.h"
-#include "scene/main/window.h"
+#include "nav_rid_2d.h"
 
-#include "tests/test_macros.h"
+#include "core/object/class_db.h"
+#include "core/templates/self_list.h"
 
-namespace TestNavigationAgent3D {
+class NavAgent2D;
+class NavMap2D;
 
-TEST_SUITE("[Navigation3D]") {
-	TEST_CASE("[SceneTree][NavigationAgent3D] New agent should have valid RID") {
-		NavigationAgent3D *agent_node = memnew(NavigationAgent3D);
-		CHECK(agent_node->get_rid().is_valid());
-		memdelete(agent_node);
-	}
+class NavObstacle2D : public NavRid2D {
+	NavAgent2D *agent = nullptr;
+	NavMap2D *map = nullptr;
+	Vector2 velocity;
+	Vector2 position;
+	Vector<Vector2> vertices;
 
-	TEST_CASE("[SceneTree][NavigationAgent3D] New agent should attach to default map") {
-		Node3D *node_3d = memnew(Node3D);
-		SceneTree::get_singleton()->get_root()->add_child(node_3d);
+	real_t radius = 0.0;
 
-		NavigationAgent3D *agent_node = memnew(NavigationAgent3D);
+	bool avoidance_enabled = false;
+	uint32_t avoidance_layers = 1;
 
-		// agent should not be attached to any map when outside of tree
-		CHECK_FALSE(agent_node->get_navigation_map().is_valid());
+	bool obstacle_dirty = true;
 
-		SUBCASE("Agent should attach to default map when it enters the tree") {
-			node_3d->add_child(agent_node);
-			CHECK(agent_node->get_navigation_map().is_valid());
-			CHECK(agent_node->get_navigation_map() == node_3d->get_world_3d()->get_navigation_map());
-		}
+	uint32_t last_map_iteration_id = 0;
+	bool paused = false;
 
-		memdelete(agent_node);
-		memdelete(node_3d);
-	}
-}
+	SelfList<NavObstacle2D> sync_dirty_request_list_element;
 
-} //namespace TestNavigationAgent3D
+public:
+	NavObstacle2D();
+	~NavObstacle2D();
+
+	void set_avoidance_enabled(bool p_enabled);
+	bool is_avoidance_enabled() { return avoidance_enabled; }
+
+	void set_map(NavMap2D *p_map);
+	NavMap2D *get_map() { return map; }
+
+	void set_agent(NavAgent2D *p_agent);
+	NavAgent2D *get_agent() { return agent; }
+
+	void set_position(const Vector2 &p_position);
+	Vector2 get_position() const { return position; }
+
+	void set_radius(real_t p_radius);
+	real_t get_radius() const { return radius; }
+
+	void set_velocity(const Vector2 &p_velocity);
+	Vector2 get_velocity() const { return velocity; }
+
+	void set_vertices(const Vector<Vector2> &p_vertices);
+	const Vector<Vector2> &get_vertices() const { return vertices; }
+
+	bool is_map_changed();
+
+	void set_avoidance_layers(uint32_t p_layers);
+	uint32_t get_avoidance_layers() const { return avoidance_layers; }
+
+	void set_paused(bool p_paused);
+	bool get_paused() const;
+
+	bool is_dirty() const;
+	void sync();
+	void request_sync();
+	void cancel_sync_request();
+
+private:
+	void internal_update_agent();
+};
