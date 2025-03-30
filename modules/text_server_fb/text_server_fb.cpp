@@ -267,7 +267,7 @@ _FORCE_INLINE_ TextServerFallback::FontTexturePosition TextServerFallback::find_
 
 	if (ret.index == -1) {
 		// Could not find texture to fit, create one.
-		int texsize = MAX(p_data->size.x * p_data->oversampling * 8, 256);
+		int texsize = MAX(p_data->size.x * 0.125, 256);
 
 		texsize = next_power_of_2(texsize);
 
@@ -500,7 +500,7 @@ _FORCE_INLINE_ TextServerFallback::FontGlyph TextServerFallback::rasterize_msdf(
 #ifdef MODULE_FREETYPE_ENABLED
 _FORCE_INLINE_ TextServerFallback::FontGlyph TextServerFallback::rasterize_bitmap(FontForSizeFallback *p_data, int p_rect_margin, FT_Bitmap p_bitmap, int p_yofs, int p_xofs, const Vector2 &p_advance, bool p_bgra) const {
 	FontGlyph chr;
-	chr.advance = p_advance * p_data->scale / p_data->oversampling;
+	chr.advance = p_advance * p_data->scale;
 	chr.found = true;
 
 	int w = p_bitmap.width;
@@ -613,8 +613,8 @@ _FORCE_INLINE_ TextServerFallback::FontGlyph TextServerFallback::rasterize_bitma
 	chr.texture_idx = tex_pos.index;
 
 	chr.uv_rect = Rect2(tex_pos.x + p_rect_margin, tex_pos.y + p_rect_margin, w + p_rect_margin * 2, h + p_rect_margin * 2);
-	chr.rect.position = Vector2(p_xofs - p_rect_margin, -p_yofs - p_rect_margin) * p_data->scale / p_data->oversampling;
-	chr.rect.size = chr.uv_rect.size * p_data->scale / p_data->oversampling;
+	chr.rect.position = Vector2(p_xofs - p_rect_margin, -p_yofs - p_rect_margin) * p_data->scale;
+	chr.rect.size = chr.uv_rect.size * p_data->scale;
 	return chr;
 }
 #endif
@@ -623,9 +623,9 @@ _FORCE_INLINE_ TextServerFallback::FontGlyph TextServerFallback::rasterize_bitma
 /* Font Cache                                                            */
 /*************************************************************************/
 
-_FORCE_INLINE_ bool TextServerFallback::_ensure_glyph(FontFallback *p_font_data, const Vector2i &p_size, int32_t p_glyph, FontGlyph &r_glyph) const {
+_FORCE_INLINE_ bool TextServerFallback::_ensure_glyph(FontFallback *p_font_data, const Vector2i &p_size, int32_t p_glyph, FontGlyph &r_glyph, uint32_t p_oversampling) const {
 	FontForSizeFallback *fd = nullptr;
-	ERR_FAIL_COND_V(!_ensure_cache_for_size(p_font_data, p_size, fd), false);
+	ERR_FAIL_COND_V(!_ensure_cache_for_size(p_font_data, p_size, fd, false, p_oversampling), false);
 
 	int32_t glyph_index = p_glyph & 0xffffff; // Remove subpixel shifts.
 
@@ -681,17 +681,17 @@ _FORCE_INLINE_ bool TextServerFallback::_ensure_glyph(FontFallback *p_font_data,
 		}
 
 		if (!p_font_data->msdf) {
-			if ((p_font_data->subpixel_positioning == SUBPIXEL_POSITIONING_ONE_QUARTER) || (p_font_data->subpixel_positioning == SUBPIXEL_POSITIONING_AUTO && p_size.x <= SUBPIXEL_POSITIONING_ONE_QUARTER_MAX_SIZE)) {
+			if ((p_font_data->subpixel_positioning == SUBPIXEL_POSITIONING_ONE_QUARTER) || (p_font_data->subpixel_positioning == SUBPIXEL_POSITIONING_AUTO && p_size.x <= SUBPIXEL_POSITIONING_ONE_QUARTER_MAX_SIZE * 64)) {
 				FT_Pos xshift = (int)((p_glyph >> 27) & 3) << 4;
 				FT_Outline_Translate(&fd->face->glyph->outline, xshift, 0);
-			} else if ((p_font_data->subpixel_positioning == SUBPIXEL_POSITIONING_ONE_HALF) || (p_font_data->subpixel_positioning == SUBPIXEL_POSITIONING_AUTO && p_size.x <= SUBPIXEL_POSITIONING_ONE_HALF_MAX_SIZE)) {
+			} else if ((p_font_data->subpixel_positioning == SUBPIXEL_POSITIONING_ONE_HALF) || (p_font_data->subpixel_positioning == SUBPIXEL_POSITIONING_AUTO && p_size.x <= SUBPIXEL_POSITIONING_ONE_HALF_MAX_SIZE * 64)) {
 				FT_Pos xshift = (int)((p_glyph >> 27) & 3) << 5;
 				FT_Outline_Translate(&fd->face->glyph->outline, xshift, 0);
 			}
 		}
 
 		if (p_font_data->embolden != 0.f) {
-			FT_Pos strength = p_font_data->embolden * p_size.x * fd->oversampling * 4; // 26.6 fractional units (1 / 64).
+			FT_Pos strength = p_font_data->embolden * p_size.x / 16; // 26.6 fractional units (1 / 64).
 			FT_Outline_Embolden(&fd->face->glyph->outline, strength);
 		}
 
@@ -760,7 +760,7 @@ _FORCE_INLINE_ bool TextServerFallback::_ensure_glyph(FontFallback *p_font_data,
 				ERR_FAIL_V_MSG(false, "FreeType: Failed to load glyph stroker.");
 			}
 
-			FT_Stroker_Set(stroker, (int)(fd->size.y * fd->oversampling * 16.0), FT_STROKER_LINECAP_BUTT, FT_STROKER_LINEJOIN_ROUND, 0);
+			FT_Stroker_Set(stroker, (int)(fd->size.y * 16.0), FT_STROKER_LINECAP_BUTT, FT_STROKER_LINEJOIN_ROUND, 0);
 			FT_Glyph glyph;
 			FT_BitmapGlyph glyph_bitmap;
 
@@ -792,12 +792,19 @@ _FORCE_INLINE_ bool TextServerFallback::_ensure_glyph(FontFallback *p_font_data,
 	return false;
 }
 
-_FORCE_INLINE_ bool TextServerFallback::_ensure_cache_for_size(FontFallback *p_font_data, const Vector2i &p_size, FontForSizeFallback *&r_cache_for_size, bool p_silent) const {
+_FORCE_INLINE_ bool TextServerFallback::_ensure_cache_for_size(FontFallback *p_font_data, const Vector2i &p_size, FontForSizeFallback *&r_cache_for_size, bool p_silent, uint32_t p_oversampling) const {
 	ERR_FAIL_COND_V(p_size.x <= 0, false);
 
 	HashMap<Vector2i, FontForSizeFallback *>::Iterator E = p_font_data->cache.find(p_size);
 	if (E) {
 		r_cache_for_size = E->value;
+		// Size used directly, remove from oversampling list.
+		if (p_oversampling == 0 && E->value->viewport_oversampling != 0) {
+			OversamplingLevel *ol = oversampling_levels.getptr(E->value->viewport_oversampling);
+			if (ol) {
+				ol->fonts.erase(E->value);
+			}
+		}
 		return true;
 	}
 
@@ -860,39 +867,42 @@ _FORCE_INLINE_ bool TextServerFallback::_ensure_cache_for_size(FontFallback *p_f
 			}
 		}
 
+		double sz = double(fd->size.x) / 64.0;
 		if (p_font_data->msdf) {
-			fd->oversampling = 1.0;
-			fd->size.x = p_font_data->msdf_source_size;
-		} else if (p_font_data->oversampling <= 0.0) {
-			fd->oversampling = _font_get_global_oversampling();
-		} else {
-			fd->oversampling = p_font_data->oversampling;
+			sz = p_font_data->msdf_source_size;
 		}
 
 		if (FT_HAS_COLOR(fd->face) && fd->face->num_fixed_sizes > 0) {
 			int best_match = 0;
-			int diff = Math::abs(fd->size.x - ((int64_t)fd->face->available_sizes[0].width));
-			fd->scale = double(fd->size.x * fd->oversampling) / fd->face->available_sizes[0].width;
+			int diff = Math::abs(sz - ((int64_t)fd->face->available_sizes[0].width));
+			fd->scale = sz / fd->face->available_sizes[0].width;
 			for (int i = 1; i < fd->face->num_fixed_sizes; i++) {
-				int ndiff = Math::abs(fd->size.x - ((int64_t)fd->face->available_sizes[i].width));
+				int ndiff = Math::abs(sz - ((int64_t)fd->face->available_sizes[i].width));
 				if (ndiff < diff) {
 					best_match = i;
 					diff = ndiff;
-					fd->scale = double(fd->size.x * fd->oversampling) / fd->face->available_sizes[i].width;
+					fd->scale = sz / fd->face->available_sizes[i].width;
 				}
 			}
 			FT_Select_Size(fd->face, best_match);
 		} else {
-			FT_Set_Pixel_Sizes(fd->face, 0, Math::round(fd->size.x * fd->oversampling));
+			FT_Size_RequestRec req;
+			req.type = FT_SIZE_REQUEST_TYPE_NOMINAL;
+			req.width = sz * 64.0;
+			req.height = sz * 64.0;
+			req.horiResolution = 0;
+			req.vertResolution = 0;
+
+			FT_Request_Size(fd->face, &req);
 			if (fd->face->size->metrics.y_ppem != 0) {
-				fd->scale = ((double)fd->size.x * fd->oversampling) / (double)fd->face->size->metrics.y_ppem;
+				fd->scale = sz / (double)fd->face->size->metrics.y_ppem;
 			}
 		}
 
-		fd->ascent = (fd->face->size->metrics.ascender / 64.0) / fd->oversampling * fd->scale;
-		fd->descent = (-fd->face->size->metrics.descender / 64.0) / fd->oversampling * fd->scale;
-		fd->underline_position = (-FT_MulFix(fd->face->underline_position, fd->face->size->metrics.y_scale) / 64.0) / fd->oversampling * fd->scale;
-		fd->underline_thickness = (FT_MulFix(fd->face->underline_thickness, fd->face->size->metrics.y_scale) / 64.0) / fd->oversampling * fd->scale;
+		fd->ascent = (fd->face->size->metrics.ascender / 64.0) / fd->scale;
+		fd->descent = (-fd->face->size->metrics.descender / 64.0) / fd->scale;
+		fd->underline_position = (-FT_MulFix(fd->face->underline_position, fd->face->size->metrics.y_scale) / 64.0) / fd->scale;
+		fd->underline_thickness = (FT_MulFix(fd->face->underline_thickness, fd->face->size->metrics.y_scale) / 64.0) / fd->scale;
 
 		if (!p_font_data->face_init) {
 			// When a font does not provide a `family_name`, FreeType tries to synthesize one based on other names.
@@ -999,9 +1009,50 @@ _FORCE_INLINE_ bool TextServerFallback::_ensure_cache_for_size(FontFallback *p_f
 #endif
 	}
 
+	fd->owner = p_font_data;
 	p_font_data->cache.insert(p_size, fd);
 	r_cache_for_size = fd;
+	if (p_oversampling != 0) {
+		OversamplingLevel *ol = oversampling_levels.getptr(p_oversampling);
+		if (ol) {
+			fd->viewport_oversampling = p_oversampling;
+			ol->fonts.insert(fd);
+		}
+	}
 	return true;
+}
+
+void TextServerFallback::_reference_oversampling_level(double p_oversampling) {
+	uint32_t oversampling = CLAMP(p_oversampling, 0.1, 100.0) * 64;
+	if (oversampling == 64) {
+		return;
+	}
+	OversamplingLevel *ol = oversampling_levels.getptr(oversampling);
+	if (ol) {
+		ol->refcount++;
+	} else {
+		OversamplingLevel new_ol;
+		oversampling_levels.insert(oversampling, new_ol);
+	}
+}
+
+void TextServerFallback::_unreference_oversampling_level(double p_oversampling) {
+	uint32_t oversampling = CLAMP(p_oversampling, 0.1, 100.0) * 64;
+	if (oversampling == 64) {
+		return;
+	}
+	OversamplingLevel *ol = oversampling_levels.getptr(oversampling);
+	if (ol) {
+		ol->refcount--;
+		if (ol->refcount == 0) {
+			for (FontForSizeFallback *fd : ol->fonts) {
+				fd->owner->cache.erase(fd->size);
+				memdelete(fd);
+			}
+			ol->fonts.clear();
+			oversampling_levels.erase(oversampling);
+		}
+	}
 }
 
 _FORCE_INLINE_ bool TextServerFallback::_font_validate(const RID &p_font_rid) const {
@@ -1018,6 +1069,12 @@ _FORCE_INLINE_ void TextServerFallback::_font_clear_cache(FontFallback *p_font_d
 	MutexLock ftlock(ft_mutex);
 
 	for (const KeyValue<Vector2i, FontForSizeFallback *> &E : p_font_data->cache) {
+		if (E.value->viewport_oversampling != 0) {
+			OversamplingLevel *ol = oversampling_levels.getptr(E.value->viewport_oversampling);
+			if (ol) {
+				ol->fonts.erase(E.value);
+			}
+		}
 		memdelete(E.value);
 	}
 
@@ -1626,25 +1683,6 @@ Dictionary TextServerFallback::_font_get_variation_coordinates(const RID &p_font
 	return fd->variation_coordinates;
 }
 
-void TextServerFallback::_font_set_oversampling(const RID &p_font_rid, double p_oversampling) {
-	FontFallback *fd = _get_font_data(p_font_rid);
-	ERR_FAIL_NULL(fd);
-
-	MutexLock lock(fd->mutex);
-	if (fd->oversampling != p_oversampling) {
-		_font_clear_cache(fd);
-		fd->oversampling = p_oversampling;
-	}
-}
-
-double TextServerFallback::_font_get_oversampling(const RID &p_font_rid) const {
-	FontFallback *fd = _get_font_data(p_font_rid);
-	ERR_FAIL_NULL_V(fd, 0.0);
-
-	MutexLock lock(fd->mutex);
-	return fd->oversampling;
-}
-
 TypedArray<Vector2i> TextServerFallback::_font_get_size_cache_list(const RID &p_font_rid) const {
 	FontFallback *fd = _get_font_data(p_font_rid);
 	ERR_FAIL_NULL_V(fd, TypedArray<Vector2i>());
@@ -1652,8 +1690,35 @@ TypedArray<Vector2i> TextServerFallback::_font_get_size_cache_list(const RID &p_
 	MutexLock lock(fd->mutex);
 	TypedArray<Vector2i> ret;
 	for (const KeyValue<Vector2i, FontForSizeFallback *> &E : fd->cache) {
-		ret.push_back(E.key);
+		if ((E.key.x % 64 == 0) && (E.value->viewport_oversampling == 0)) {
+			ret.push_back(Vector2i(E.key.x / 64, E.key.y));
+		}
 	}
+	return ret;
+}
+
+TypedArray<Dictionary> TextServerFallback::_font_get_size_cache_info(const RID &p_font_rid) const {
+	FontFallback *fd = _get_font_data(p_font_rid);
+	ERR_FAIL_NULL_V(fd, TypedArray<Dictionary>());
+
+	MutexLock lock(fd->mutex);
+	TypedArray<Dictionary> ret;
+	for (const KeyValue<Vector2i, FontForSizeFallback *> &E : fd->cache) {
+		Dictionary size_info;
+		size_info["size_px"] = Vector2i(E.key.x / 64, E.key.y);
+		if (E.value->viewport_oversampling) {
+			size_info["viewport_oversampling"] = double(E.value->viewport_oversampling) / 64.0;
+		}
+		size_info["glyphs"] = E.value->glyph_map.size();
+		size_info["textures"] = E.value->textures.size();
+		uint64_t sz = 0;
+		for (const ShelfPackTexture &tx : E.value->textures) {
+			sz += tx.image->get_data_size() * 2;
+		}
+		size_info["textures_size"] = sz;
+		ret.push_back(size_info);
+	}
+
 	return ret;
 }
 
@@ -1664,6 +1729,12 @@ void TextServerFallback::_font_clear_size_cache(const RID &p_font_rid) {
 	MutexLock lock(fd->mutex);
 	MutexLock ftlock(ft_mutex);
 	for (const KeyValue<Vector2i, FontForSizeFallback *> &E : fd->cache) {
+		if (E.value->viewport_oversampling != 0) {
+			OversamplingLevel *ol = oversampling_levels.getptr(E.value->viewport_oversampling);
+			if (ol) {
+				ol->fonts.erase(E.value);
+			}
+		}
 		memdelete(E.value);
 	}
 	fd->cache.clear();
@@ -1675,9 +1746,16 @@ void TextServerFallback::_font_remove_size_cache(const RID &p_font_rid, const Ve
 
 	MutexLock lock(fd->mutex);
 	MutexLock ftlock(ft_mutex);
-	if (fd->cache.has(p_size)) {
-		memdelete(fd->cache[p_size]);
-		fd->cache.erase(p_size);
+	Vector2i size = Vector2i(p_size.x * 64, p_size.y);
+	if (fd->cache.has(size)) {
+		if (fd->cache[size]->viewport_oversampling != 0) {
+			OversamplingLevel *ol = oversampling_levels.getptr(fd->cache[size]->viewport_oversampling);
+			if (ol) {
+				ol->fonts.erase(fd->cache[size]);
+			}
+		}
+		memdelete(fd->cache[size]);
+		fd->cache.erase(size);
 	}
 }
 
@@ -1705,7 +1783,7 @@ double TextServerFallback::_font_get_ascent(const RID &p_font_rid, int64_t p_siz
 
 	if (fd->msdf) {
 		return ffsd->ascent * (double)p_size / (double)fd->msdf_source_size;
-	} else if (fd->fixed_size > 0 && fd->fixed_size_scale_mode != FIXED_SIZE_SCALE_DISABLE && size.x != p_size) {
+	} else if (fd->fixed_size > 0 && fd->fixed_size_scale_mode != FIXED_SIZE_SCALE_DISABLE && size.x != p_size * 64) {
 		if (fd->fixed_size_scale_mode == FIXED_SIZE_SCALE_ENABLED) {
 			return ffsd->ascent * (double)p_size / (double)fd->fixed_size;
 		} else {
@@ -1739,7 +1817,7 @@ double TextServerFallback::_font_get_descent(const RID &p_font_rid, int64_t p_si
 
 	if (fd->msdf) {
 		return ffsd->descent * (double)p_size / (double)fd->msdf_source_size;
-	} else if (fd->fixed_size > 0 && fd->fixed_size_scale_mode != FIXED_SIZE_SCALE_DISABLE && size.x != p_size) {
+	} else if (fd->fixed_size > 0 && fd->fixed_size_scale_mode != FIXED_SIZE_SCALE_DISABLE && size.x != p_size * 64) {
 		if (fd->fixed_size_scale_mode == FIXED_SIZE_SCALE_ENABLED) {
 			return ffsd->descent * (double)p_size / (double)fd->fixed_size;
 		} else {
@@ -1774,7 +1852,7 @@ double TextServerFallback::_font_get_underline_position(const RID &p_font_rid, i
 
 	if (fd->msdf) {
 		return ffsd->underline_position * (double)p_size / (double)fd->msdf_source_size;
-	} else if (fd->fixed_size > 0 && fd->fixed_size_scale_mode != FIXED_SIZE_SCALE_DISABLE && size.x != p_size) {
+	} else if (fd->fixed_size > 0 && fd->fixed_size_scale_mode != FIXED_SIZE_SCALE_DISABLE && size.x != p_size * 64) {
 		if (fd->fixed_size_scale_mode == FIXED_SIZE_SCALE_ENABLED) {
 			return ffsd->underline_position * (double)p_size / (double)fd->fixed_size;
 		} else {
@@ -1809,7 +1887,7 @@ double TextServerFallback::_font_get_underline_thickness(const RID &p_font_rid, 
 
 	if (fd->msdf) {
 		return ffsd->underline_thickness * (double)p_size / (double)fd->msdf_source_size;
-	} else if (fd->fixed_size > 0 && fd->fixed_size_scale_mode != FIXED_SIZE_SCALE_DISABLE && size.x != p_size) {
+	} else if (fd->fixed_size > 0 && fd->fixed_size_scale_mode != FIXED_SIZE_SCALE_DISABLE && size.x != p_size * 64) {
 		if (fd->fixed_size_scale_mode == FIXED_SIZE_SCALE_ENABLED) {
 			return ffsd->underline_thickness * (double)p_size / (double)fd->fixed_size;
 		} else {
@@ -1849,14 +1927,14 @@ double TextServerFallback::_font_get_scale(const RID &p_font_rid, int64_t p_size
 
 	if (fd->msdf) {
 		return ffsd->scale * (double)p_size / (double)fd->msdf_source_size;
-	} else if (fd->fixed_size > 0 && fd->fixed_size_scale_mode != FIXED_SIZE_SCALE_DISABLE && size.x != p_size) {
+	} else if (fd->fixed_size > 0 && fd->fixed_size_scale_mode != FIXED_SIZE_SCALE_DISABLE && size.x != p_size * 64) {
 		if (fd->fixed_size_scale_mode == FIXED_SIZE_SCALE_ENABLED) {
 			return ffsd->scale * (double)p_size / (double)fd->fixed_size;
 		} else {
 			return ffsd->scale * Math::round((double)p_size / (double)fd->fixed_size);
 		}
 	} else {
-		return ffsd->scale / ffsd->oversampling;
+		return ffsd->scale;
 	}
 }
 
@@ -2053,19 +2131,19 @@ Vector2 TextServerFallback::_font_get_glyph_advance(const RID &p_font_rid, int64
 
 	Vector2 ea;
 	if (fd->embolden != 0.0) {
-		ea.x = fd->embolden * double(size.x) / 64.0;
+		ea.x = fd->embolden * double(size.x) / 4096.0;
 	}
 
 	double scale = _font_get_scale(p_font_rid, p_size);
 	if (fd->msdf) {
 		return (fgl.advance + ea) * (double)p_size / (double)fd->msdf_source_size;
-	} else if (fd->fixed_size > 0 && fd->fixed_size_scale_mode != FIXED_SIZE_SCALE_DISABLE && size.x != p_size) {
+	} else if (fd->fixed_size > 0 && fd->fixed_size_scale_mode != FIXED_SIZE_SCALE_DISABLE && size.x != p_size * 64) {
 		if (fd->fixed_size_scale_mode == FIXED_SIZE_SCALE_ENABLED) {
 			return (fgl.advance + ea) * (double)p_size / (double)fd->fixed_size;
 		} else {
 			return (fgl.advance + ea) * Math::round((double)p_size / (double)fd->fixed_size);
 		}
-	} else if ((scale == 1.0) && ((fd->subpixel_positioning == SUBPIXEL_POSITIONING_DISABLED) || (fd->subpixel_positioning == SUBPIXEL_POSITIONING_AUTO && size.x > SUBPIXEL_POSITIONING_ONE_HALF_MAX_SIZE))) {
+	} else if ((scale == 1.0) && ((fd->subpixel_positioning == SUBPIXEL_POSITIONING_DISABLED) || (fd->subpixel_positioning == SUBPIXEL_POSITIONING_AUTO && size.x > SUBPIXEL_POSITIONING_ONE_HALF_MAX_SIZE * 64))) {
 		return (fgl.advance + ea).round();
 	} else {
 		return fgl.advance + ea;
@@ -2113,7 +2191,7 @@ Vector2 TextServerFallback::_font_get_glyph_offset(const RID &p_font_rid, const 
 
 	if (fd->msdf) {
 		return fgl.rect.position * (double)p_size.x / (double)fd->msdf_source_size;
-	} else if (fd->fixed_size > 0 && fd->fixed_size_scale_mode != FIXED_SIZE_SCALE_DISABLE && size.x != p_size.x) {
+	} else if (fd->fixed_size > 0 && fd->fixed_size_scale_mode != FIXED_SIZE_SCALE_DISABLE && size.x != p_size.x * 64) {
 		if (fd->fixed_size_scale_mode == FIXED_SIZE_SCALE_ENABLED) {
 			return fgl.rect.position * (double)p_size.x / (double)fd->fixed_size;
 		} else {
@@ -2165,7 +2243,7 @@ Vector2 TextServerFallback::_font_get_glyph_size(const RID &p_font_rid, const Ve
 
 	if (fd->msdf) {
 		return fgl.rect.size * (double)p_size.x / (double)fd->msdf_source_size;
-	} else if (fd->fixed_size > 0 && fd->fixed_size_scale_mode != FIXED_SIZE_SCALE_DISABLE && size.x != p_size.x) {
+	} else if (fd->fixed_size > 0 && fd->fixed_size_scale_mode != FIXED_SIZE_SCALE_DISABLE && size.x != p_size.x * 64) {
 		if (fd->fixed_size_scale_mode == FIXED_SIZE_SCALE_ENABLED) {
 			return fgl.rect.size * (double)p_size.x / (double)fd->fixed_size;
 		} else {
@@ -2400,7 +2478,7 @@ Dictionary TextServerFallback::_font_get_glyph_contours(const RID &p_font_rid, i
 	ERR_FAIL_COND_V(error, Dictionary());
 
 	if (fd->embolden != 0.f) {
-		FT_Pos strength = fd->embolden * p_size * 4; // 26.6 fractional units (1 / 64).
+		FT_Pos strength = fd->embolden * size.x / 16; // 26.6 fractional units (1 / 64).
 		FT_Outline_Embolden(&ffsd->face->glyph->outline, strength);
 	}
 
@@ -2409,10 +2487,10 @@ Dictionary TextServerFallback::_font_get_glyph_contours(const RID &p_font_rid, i
 		FT_Outline_Transform(&ffsd->face->glyph->outline, &mat);
 	}
 
-	double scale = (1.0 / 64.0) / ffsd->oversampling * ffsd->scale;
+	double scale = (1.0 / 64.0) * ffsd->scale;
 	if (fd->msdf) {
 		scale = scale * (double)p_size / (double)fd->msdf_source_size;
-	} else if (fd->fixed_size > 0 && fd->fixed_size_scale_mode != FIXED_SIZE_SCALE_DISABLE && size.x != p_size) {
+	} else if (fd->fixed_size > 0 && fd->fixed_size_scale_mode != FIXED_SIZE_SCALE_DISABLE && size.x != p_size * 64) {
 		if (fd->fixed_size_scale_mode == FIXED_SIZE_SCALE_ENABLED) {
 			scale = scale * (double)p_size / (double)fd->fixed_size;
 		} else {
@@ -2505,7 +2583,7 @@ Vector2 TextServerFallback::_font_get_kerning(const RID &p_font_rid, int64_t p_s
 	if (kern.has(p_glyph_pair)) {
 		if (fd->msdf) {
 			return kern[p_glyph_pair] * (double)p_size / (double)fd->msdf_source_size;
-		} else if (fd->fixed_size > 0 && fd->fixed_size_scale_mode != FIXED_SIZE_SCALE_DISABLE && size.x != p_size) {
+		} else if (fd->fixed_size > 0 && fd->fixed_size_scale_mode != FIXED_SIZE_SCALE_DISABLE && size.x != p_size * 64) {
 			if (fd->fixed_size_scale_mode == FIXED_SIZE_SCALE_ENABLED) {
 				return kern[p_glyph_pair] * (double)p_size / (double)fd->fixed_size;
 			} else {
@@ -2523,7 +2601,7 @@ Vector2 TextServerFallback::_font_get_kerning(const RID &p_font_rid, int64_t p_s
 			FT_Get_Kerning(ffsd->face, glyph_a, glyph_b, FT_KERNING_DEFAULT, &delta);
 			if (fd->msdf) {
 				return Vector2(delta.x, delta.y) * (double)p_size / (double)fd->msdf_source_size;
-			} else if (fd->fixed_size > 0 && fd->fixed_size_scale_mode != FIXED_SIZE_SCALE_DISABLE && size.x != p_size) {
+			} else if (fd->fixed_size > 0 && fd->fixed_size_scale_mode != FIXED_SIZE_SCALE_DISABLE && size.x != p_size * 64) {
 				if (fd->fixed_size_scale_mode == FIXED_SIZE_SCALE_ENABLED) {
 					return Vector2(delta.x, delta.y) * (double)p_size / (double)fd->fixed_size;
 				} else {
@@ -2557,7 +2635,7 @@ bool TextServerFallback::_font_has_char(const RID &p_font_rid, int64_t p_char) c
 	MutexLock lock(fd->mutex);
 	FontForSizeFallback *ffsd = nullptr;
 	if (fd->cache.is_empty()) {
-		ERR_FAIL_COND_V(!_ensure_cache_for_size(fd, fd->msdf ? Vector2i(fd->msdf_source_size, 0) : Vector2i(16, 0), ffsd), false);
+		ERR_FAIL_COND_V(!_ensure_cache_for_size(fd, fd->msdf ? Vector2i(fd->msdf_source_size * 64, 0) : Vector2i(16 * 64, 0), ffsd), false);
 	} else {
 		ffsd = fd->cache.begin()->value;
 	}
@@ -2577,7 +2655,7 @@ String TextServerFallback::_font_get_supported_chars(const RID &p_font_rid) cons
 	MutexLock lock(fd->mutex);
 	FontForSizeFallback *ffsd = nullptr;
 	if (fd->cache.is_empty()) {
-		ERR_FAIL_COND_V(!_ensure_cache_for_size(fd, fd->msdf ? Vector2i(fd->msdf_source_size, 0) : Vector2i(16, 0), ffsd), String());
+		ERR_FAIL_COND_V(!_ensure_cache_for_size(fd, fd->msdf ? Vector2i(fd->msdf_source_size * 64, 0) : Vector2i(16 * 64, 0), ffsd), String());
 	} else {
 		ffsd = fd->cache.begin()->value;
 	}
@@ -2610,7 +2688,7 @@ PackedInt32Array TextServerFallback::_font_get_supported_glyphs(const RID &p_fon
 	MutexLock lock(fd->mutex);
 	FontForSizeFallback *at_size = nullptr;
 	if (fd->cache.is_empty()) {
-		ERR_FAIL_COND_V(!_ensure_cache_for_size(fd, fd->msdf ? Vector2i(fd->msdf_source_size, 0) : Vector2i(16, 0), at_size), PackedInt32Array());
+		ERR_FAIL_COND_V(!_ensure_cache_for_size(fd, fd->msdf ? Vector2i(fd->msdf_source_size * 64, 0) : Vector2i(16 * 64, 0), at_size), PackedInt32Array());
 	} else {
 		at_size = fd->cache.begin()->value;
 	}
@@ -2655,12 +2733,12 @@ void TextServerFallback::_font_render_range(const RID &p_font_rid, const Vector2
 				_ensure_glyph(fd, size, (int32_t)idx, fgl);
 			} else {
 				for (int aa = 0; aa < ((fd->antialiasing == FONT_ANTIALIASING_LCD) ? FONT_LCD_SUBPIXEL_LAYOUT_MAX : 1); aa++) {
-					if ((fd->subpixel_positioning == SUBPIXEL_POSITIONING_ONE_QUARTER) || (fd->subpixel_positioning == SUBPIXEL_POSITIONING_AUTO && size.x <= SUBPIXEL_POSITIONING_ONE_QUARTER_MAX_SIZE)) {
+					if ((fd->subpixel_positioning == SUBPIXEL_POSITIONING_ONE_QUARTER) || (fd->subpixel_positioning == SUBPIXEL_POSITIONING_AUTO && size.x <= SUBPIXEL_POSITIONING_ONE_QUARTER_MAX_SIZE * 64)) {
 						_ensure_glyph(fd, size, (int32_t)idx | (0 << 27) | (aa << 24), fgl);
 						_ensure_glyph(fd, size, (int32_t)idx | (1 << 27) | (aa << 24), fgl);
 						_ensure_glyph(fd, size, (int32_t)idx | (2 << 27) | (aa << 24), fgl);
 						_ensure_glyph(fd, size, (int32_t)idx | (3 << 27) | (aa << 24), fgl);
-					} else if ((fd->subpixel_positioning == SUBPIXEL_POSITIONING_ONE_HALF) || (fd->subpixel_positioning == SUBPIXEL_POSITIONING_AUTO && size.x <= SUBPIXEL_POSITIONING_ONE_HALF_MAX_SIZE)) {
+					} else if ((fd->subpixel_positioning == SUBPIXEL_POSITIONING_ONE_HALF) || (fd->subpixel_positioning == SUBPIXEL_POSITIONING_AUTO && size.x <= SUBPIXEL_POSITIONING_ONE_HALF_MAX_SIZE * 64)) {
 						_ensure_glyph(fd, size, (int32_t)idx | (1 << 27) | (aa << 24), fgl);
 						_ensure_glyph(fd, size, (int32_t)idx | (0 << 27) | (aa << 24), fgl);
 					} else {
@@ -2689,12 +2767,12 @@ void TextServerFallback::_font_render_glyph(const RID &p_font_rid, const Vector2
 			_ensure_glyph(fd, size, (int32_t)idx, fgl);
 		} else {
 			for (int aa = 0; aa < ((fd->antialiasing == FONT_ANTIALIASING_LCD) ? FONT_LCD_SUBPIXEL_LAYOUT_MAX : 1); aa++) {
-				if ((fd->subpixel_positioning == SUBPIXEL_POSITIONING_ONE_QUARTER) || (fd->subpixel_positioning == SUBPIXEL_POSITIONING_AUTO && size.x <= SUBPIXEL_POSITIONING_ONE_QUARTER_MAX_SIZE)) {
+				if ((fd->subpixel_positioning == SUBPIXEL_POSITIONING_ONE_QUARTER) || (fd->subpixel_positioning == SUBPIXEL_POSITIONING_AUTO && size.x <= SUBPIXEL_POSITIONING_ONE_QUARTER_MAX_SIZE * 64)) {
 					_ensure_glyph(fd, size, (int32_t)idx | (0 << 27) | (aa << 24), fgl);
 					_ensure_glyph(fd, size, (int32_t)idx | (1 << 27) | (aa << 24), fgl);
 					_ensure_glyph(fd, size, (int32_t)idx | (2 << 27) | (aa << 24), fgl);
 					_ensure_glyph(fd, size, (int32_t)idx | (3 << 27) | (aa << 24), fgl);
-				} else if ((fd->subpixel_positioning == SUBPIXEL_POSITIONING_ONE_HALF) || (fd->subpixel_positioning == SUBPIXEL_POSITIONING_AUTO && size.x <= SUBPIXEL_POSITIONING_ONE_HALF_MAX_SIZE)) {
+				} else if ((fd->subpixel_positioning == SUBPIXEL_POSITIONING_ONE_HALF) || (fd->subpixel_positioning == SUBPIXEL_POSITIONING_AUTO && size.x <= SUBPIXEL_POSITIONING_ONE_HALF_MAX_SIZE * 64)) {
 					_ensure_glyph(fd, size, (int32_t)idx | (1 << 27) | (aa << 24), fgl);
 					_ensure_glyph(fd, size, (int32_t)idx | (0 << 27) | (aa << 24), fgl);
 				} else {
@@ -2706,7 +2784,7 @@ void TextServerFallback::_font_render_glyph(const RID &p_font_rid, const Vector2
 #endif
 }
 
-void TextServerFallback::_font_draw_glyph(const RID &p_font_rid, const RID &p_canvas, int64_t p_size, const Vector2 &p_pos, int64_t p_index, const Color &p_color) const {
+void TextServerFallback::_font_draw_glyph(const RID &p_font_rid, const RID &p_canvas, int64_t p_size, const Vector2 &p_pos, int64_t p_index, const Color &p_color, float p_oversampling) const {
 	if (p_index == 0) {
 		return; // Non visual character, skip.
 	}
@@ -2714,9 +2792,31 @@ void TextServerFallback::_font_draw_glyph(const RID &p_font_rid, const RID &p_ca
 	ERR_FAIL_NULL(fd);
 
 	MutexLock lock(fd->mutex);
-	Vector2i size = _get_size(fd, p_size);
+
+	// Oversampling.
+	bool viewport_oversampling = false;
+	float oversampling_factor = p_oversampling;
+	if (p_oversampling <= 0.0) {
+		if (vp_oversampling > 0.0) {
+			oversampling_factor = vp_oversampling;
+			viewport_oversampling = true;
+		} else {
+			oversampling_factor = 1.0;
+		}
+	}
+	bool skip_oversampling = fd->msdf || fd->fixed_size > 0;
+	uint64_t oversampling_level = CLAMP(oversampling_factor, 0.1, 100.0) * 64;
+	oversampling_factor = double(oversampling_level) / 64.0;
+
+	Vector2i size;
+	if (skip_oversampling) {
+		size = _get_size(fd, p_size);
+	} else {
+		size = Vector2i(p_size * 64 * oversampling_factor, 0);
+	}
+
 	FontForSizeFallback *ffsd = nullptr;
-	ERR_FAIL_COND(!_ensure_cache_for_size(fd, size, ffsd));
+	ERR_FAIL_COND(!_ensure_cache_for_size(fd, size, ffsd, false, viewport_oversampling ? 64 * oversampling_factor : 0));
 
 	int32_t index = p_index & 0xffffff; // Remove subpixel shifts.
 	bool lcd_aa = false;
@@ -2732,10 +2832,10 @@ void TextServerFallback::_font_draw_glyph(const RID &p_font_rid, const RID &p_ca
 			}
 		}
 		// Subpixel X-shift, bits 27, 28
-		if ((fd->subpixel_positioning == SUBPIXEL_POSITIONING_ONE_QUARTER) || (fd->subpixel_positioning == SUBPIXEL_POSITIONING_AUTO && size.x <= SUBPIXEL_POSITIONING_ONE_QUARTER_MAX_SIZE)) {
+		if ((fd->subpixel_positioning == SUBPIXEL_POSITIONING_ONE_QUARTER) || (fd->subpixel_positioning == SUBPIXEL_POSITIONING_AUTO && size.x <= SUBPIXEL_POSITIONING_ONE_QUARTER_MAX_SIZE * 64)) {
 			int xshift = (int)(Math::floor(4 * (p_pos.x + 0.125)) - 4 * Math::floor(p_pos.x + 0.125));
 			index = index | (xshift << 27);
-		} else if ((fd->subpixel_positioning == SUBPIXEL_POSITIONING_ONE_HALF) || (fd->subpixel_positioning == SUBPIXEL_POSITIONING_AUTO && size.x <= SUBPIXEL_POSITIONING_ONE_HALF_MAX_SIZE)) {
+		} else if ((fd->subpixel_positioning == SUBPIXEL_POSITIONING_ONE_HALF) || (fd->subpixel_positioning == SUBPIXEL_POSITIONING_AUTO && size.x <= SUBPIXEL_POSITIONING_ONE_HALF_MAX_SIZE * 64)) {
 			int xshift = (int)(Math::floor(2 * (p_pos.x + 0.25)) - 2 * Math::floor(p_pos.x + 0.25));
 			index = index | (xshift << 27);
 		}
@@ -2743,7 +2843,7 @@ void TextServerFallback::_font_draw_glyph(const RID &p_font_rid, const RID &p_ca
 #endif
 
 	FontGlyph fgl;
-	if (!_ensure_glyph(fd, size, index, fgl)) {
+	if (!_ensure_glyph(fd, size, index, fgl, viewport_oversampling ? 64 * oversampling_factor : 0)) {
 		return; // Invalid or non-graphical glyph, do not display errors, nothing to draw.
 	}
 
@@ -2784,7 +2884,7 @@ void TextServerFallback::_font_draw_glyph(const RID &p_font_rid, const RID &p_ca
 					RenderingServer::get_singleton()->canvas_item_add_msdf_texture_rect_region(p_canvas, Rect2(cpos, csize), texture, fgl.uv_rect, modulate, 0, fd->msdf_range, (double)p_size / (double)fd->msdf_source_size);
 				} else {
 					Point2 cpos = p_pos;
-					double scale = _font_get_scale(p_font_rid, p_size);
+					double scale = _font_get_scale(p_font_rid, p_size) / oversampling_factor;
 					if ((fd->subpixel_positioning == SUBPIXEL_POSITIONING_ONE_QUARTER) || (fd->subpixel_positioning == SUBPIXEL_POSITIONING_AUTO && size.x <= SUBPIXEL_POSITIONING_ONE_QUARTER_MAX_SIZE)) {
 						cpos.x = cpos.x + 0.125;
 					} else if ((fd->subpixel_positioning == SUBPIXEL_POSITIONING_ONE_HALF) || (fd->subpixel_positioning == SUBPIXEL_POSITIONING_AUTO && size.x <= SUBPIXEL_POSITIONING_ONE_HALF_MAX_SIZE)) {
@@ -2796,7 +2896,7 @@ void TextServerFallback::_font_draw_glyph(const RID &p_font_rid, const RID &p_ca
 					}
 					Vector2 gpos = fgl.rect.position;
 					Size2 csize = fgl.rect.size;
-					if (fd->fixed_size > 0 && fd->fixed_size_scale_mode != FIXED_SIZE_SCALE_DISABLE && size.x != p_size) {
+					if (fd->fixed_size > 0 && fd->fixed_size_scale_mode != FIXED_SIZE_SCALE_DISABLE && size.x != p_size * 64) {
 						if (fd->fixed_size_scale_mode == FIXED_SIZE_SCALE_ENABLED) {
 							double gl_scale = (double)p_size / (double)fd->fixed_size;
 							gpos *= gl_scale;
@@ -2806,6 +2906,9 @@ void TextServerFallback::_font_draw_glyph(const RID &p_font_rid, const RID &p_ca
 							gpos *= gl_scale;
 							csize *= gl_scale;
 						}
+					} else {
+						gpos /= oversampling_factor;
+						csize /= oversampling_factor;
 					}
 					cpos += gpos;
 					if (lcd_aa) {
@@ -2819,7 +2922,7 @@ void TextServerFallback::_font_draw_glyph(const RID &p_font_rid, const RID &p_ca
 	}
 }
 
-void TextServerFallback::_font_draw_glyph_outline(const RID &p_font_rid, const RID &p_canvas, int64_t p_size, int64_t p_outline_size, const Vector2 &p_pos, int64_t p_index, const Color &p_color) const {
+void TextServerFallback::_font_draw_glyph_outline(const RID &p_font_rid, const RID &p_canvas, int64_t p_size, int64_t p_outline_size, const Vector2 &p_pos, int64_t p_index, const Color &p_color, float p_oversampling) const {
 	if (p_index == 0) {
 		return; // Non visual character, skip.
 	}
@@ -2827,9 +2930,31 @@ void TextServerFallback::_font_draw_glyph_outline(const RID &p_font_rid, const R
 	ERR_FAIL_NULL(fd);
 
 	MutexLock lock(fd->mutex);
-	Vector2i size = _get_size_outline(fd, Vector2i(p_size, p_outline_size));
+
+	// Oversampling.
+	bool viewport_oversampling = false;
+	float oversampling_factor = p_oversampling;
+	if (p_oversampling <= 0.0) {
+		if (vp_oversampling > 0.0) {
+			oversampling_factor = vp_oversampling;
+			viewport_oversampling = true;
+		} else {
+			oversampling_factor = 1.0;
+		}
+	}
+	bool skip_oversampling = fd->msdf || fd->fixed_size > 0;
+	uint64_t oversampling_level = CLAMP(oversampling_factor, 0.1, 100.0) * 64;
+	oversampling_factor = double(oversampling_level) / 64.0;
+
+	Vector2i size;
+	if (skip_oversampling) {
+		size = _get_size_outline(fd, Vector2i(p_size, p_outline_size));
+	} else {
+		size = Vector2i(p_size * 64 * oversampling_factor, p_outline_size);
+	}
+
 	FontForSizeFallback *ffsd = nullptr;
-	ERR_FAIL_COND(!_ensure_cache_for_size(fd, size, ffsd));
+	ERR_FAIL_COND(!_ensure_cache_for_size(fd, size, ffsd, false, viewport_oversampling ? 64 * oversampling_factor : 0));
 
 	int32_t index = p_index & 0xffffff; // Remove subpixel shifts.
 	bool lcd_aa = false;
@@ -2845,10 +2970,10 @@ void TextServerFallback::_font_draw_glyph_outline(const RID &p_font_rid, const R
 			}
 		}
 		// Subpixel X-shift, bits 27, 28
-		if ((fd->subpixel_positioning == SUBPIXEL_POSITIONING_ONE_QUARTER) || (fd->subpixel_positioning == SUBPIXEL_POSITIONING_AUTO && size.x <= SUBPIXEL_POSITIONING_ONE_QUARTER_MAX_SIZE)) {
+		if ((fd->subpixel_positioning == SUBPIXEL_POSITIONING_ONE_QUARTER) || (fd->subpixel_positioning == SUBPIXEL_POSITIONING_AUTO && size.x <= SUBPIXEL_POSITIONING_ONE_QUARTER_MAX_SIZE * 64)) {
 			int xshift = (int)(Math::floor(4 * (p_pos.x + 0.125)) - 4 * Math::floor(p_pos.x + 0.125));
 			index = index | (xshift << 27);
-		} else if ((fd->subpixel_positioning == SUBPIXEL_POSITIONING_ONE_HALF) || (fd->subpixel_positioning == SUBPIXEL_POSITIONING_AUTO && size.x <= SUBPIXEL_POSITIONING_ONE_HALF_MAX_SIZE)) {
+		} else if ((fd->subpixel_positioning == SUBPIXEL_POSITIONING_ONE_HALF) || (fd->subpixel_positioning == SUBPIXEL_POSITIONING_AUTO && size.x <= SUBPIXEL_POSITIONING_ONE_HALF_MAX_SIZE * 64)) {
 			int xshift = (int)(Math::floor(2 * (p_pos.x + 0.25)) - 2 * Math::floor(p_pos.x + 0.25));
 			index = index | (xshift << 27);
 		}
@@ -2856,7 +2981,7 @@ void TextServerFallback::_font_draw_glyph_outline(const RID &p_font_rid, const R
 #endif
 
 	FontGlyph fgl;
-	if (!_ensure_glyph(fd, size, index, fgl)) {
+	if (!_ensure_glyph(fd, size, index, fgl, viewport_oversampling ? 64 * oversampling_factor : 0)) {
 		return; // Invalid or non-graphical glyph, do not display errors, nothing to draw.
 	}
 
@@ -2893,7 +3018,7 @@ void TextServerFallback::_font_draw_glyph_outline(const RID &p_font_rid, const R
 					RenderingServer::get_singleton()->canvas_item_add_msdf_texture_rect_region(p_canvas, Rect2(cpos, csize), texture, fgl.uv_rect, modulate, p_outline_size, fd->msdf_range, (double)p_size / (double)fd->msdf_source_size);
 				} else {
 					Point2 cpos = p_pos;
-					double scale = _font_get_scale(p_font_rid, p_size);
+					double scale = _font_get_scale(p_font_rid, p_size) / oversampling_factor;
 					if ((fd->subpixel_positioning == SUBPIXEL_POSITIONING_ONE_QUARTER) || (fd->subpixel_positioning == SUBPIXEL_POSITIONING_AUTO && size.x <= SUBPIXEL_POSITIONING_ONE_QUARTER_MAX_SIZE)) {
 						cpos.x = cpos.x + 0.125;
 					} else if ((fd->subpixel_positioning == SUBPIXEL_POSITIONING_ONE_HALF) || (fd->subpixel_positioning == SUBPIXEL_POSITIONING_AUTO && size.x <= SUBPIXEL_POSITIONING_ONE_HALF_MAX_SIZE)) {
@@ -2905,7 +3030,7 @@ void TextServerFallback::_font_draw_glyph_outline(const RID &p_font_rid, const R
 					}
 					Vector2 gpos = fgl.rect.position;
 					Size2 csize = fgl.rect.size;
-					if (fd->fixed_size > 0 && fd->fixed_size_scale_mode != FIXED_SIZE_SCALE_DISABLE && size.x != p_size) {
+					if (fd->fixed_size > 0 && fd->fixed_size_scale_mode != FIXED_SIZE_SCALE_DISABLE && size.x != p_size * 64) {
 						if (fd->fixed_size_scale_mode == FIXED_SIZE_SCALE_ENABLED) {
 							double gl_scale = (double)p_size / (double)fd->fixed_size;
 							gpos *= gl_scale;
@@ -2915,6 +3040,9 @@ void TextServerFallback::_font_draw_glyph_outline(const RID &p_font_rid, const R
 							gpos *= gl_scale;
 							csize *= gl_scale;
 						}
+					} else {
+						gpos /= oversampling_factor;
+						csize /= oversampling_factor;
 					}
 					cpos += gpos;
 					if (lcd_aa) {
@@ -3059,34 +3187,6 @@ Dictionary TextServerFallback::_font_supported_variation_list(const RID &p_font_
 	FontForSizeFallback *ffsd = nullptr;
 	ERR_FAIL_COND_V(!_ensure_cache_for_size(fd, size, ffsd), Dictionary());
 	return fd->supported_varaitions;
-}
-
-double TextServerFallback::_font_get_global_oversampling() const {
-	return oversampling;
-}
-
-void TextServerFallback::_font_set_global_oversampling(double p_oversampling) {
-	_THREAD_SAFE_METHOD_
-	if (oversampling != p_oversampling) {
-		oversampling = p_oversampling;
-		List<RID> fonts;
-		font_owner.get_owned_list(&fonts);
-		bool font_cleared = false;
-		for (const RID &E : fonts) {
-			if (!_font_is_multichannel_signed_distance_field(E) && _font_get_oversampling(E) <= 0) {
-				_font_clear_size_cache(E);
-				font_cleared = true;
-			}
-		}
-
-		if (font_cleared) {
-			List<RID> text_bufs;
-			shaped_owner.get_owned_list(&text_bufs);
-			for (const RID &E : text_bufs) {
-				invalidate(shaped_owner.get_or_null(E));
-			}
-		}
-	}
 }
 
 /*************************************************************************/
@@ -4318,7 +4418,6 @@ RID TextServerFallback::_find_sys_font_for_text(const RID &p_fdef, const String 
 				_font_set_subpixel_positioning(sysf.rid, key.subpixel_positioning);
 				_font_set_keep_rounding_remainders(sysf.rid, key.keep_rounding_remainders);
 				_font_set_variation_coordinates(sysf.rid, var);
-				_font_set_oversampling(sysf.rid, key.oversampling);
 				_font_set_embolden(sysf.rid, key.embolden);
 				_font_set_transform(sysf.rid, key.transform);
 				_font_set_spacing(sysf.rid, SPACING_TOP, key.extra_spacing[SPACING_TOP]);
@@ -5062,7 +5161,7 @@ TextServerFallback::TextServerFallback() {
 	ProjectSettings::get_singleton()->connect("settings_changed", callable_mp(this, &TextServerFallback::_update_settings));
 }
 
-void TextServerFallback::_cleanup() {
+void TextServerFallback::_font_clear_system_fallback_cache() {
 	for (const KeyValue<SystemFontKey, SystemFontCache> &E : system_fonts) {
 		const Vector<SystemFontCacheRec> &sysf_cache = E.value.var;
 		for (const SystemFontCacheRec &F : sysf_cache) {
@@ -5071,6 +5170,10 @@ void TextServerFallback::_cleanup() {
 	}
 	system_fonts.clear();
 	system_font_data.clear();
+}
+
+void TextServerFallback::_cleanup() {
+	font_clear_system_fallback_cache();
 }
 
 TextServerFallback::~TextServerFallback() {
