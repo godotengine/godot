@@ -1470,6 +1470,12 @@ ProjectExportDialog::ProjectExportDialog() {
 	export_path->set_save_mode();
 	export_path->connect("property_changed", callable_mp(this, &ProjectExportDialog::_export_path_changed));
 
+	// Add the "Open user:// Directory" button
+	Button *open_user_dir_button = memnew(Button);
+	open_user_dir_button->set_text(TTR("Open user:// Directory"));
+	open_user_dir_button->connect(SceneStringName(pressed), callable_mp(this, &ProjectExportDialog::_open_user_directory));
+	settings_vb->add_child(open_user_dir_button);
+
 	// Subsections.
 
 	sections = memnew(TabContainer);
@@ -1803,4 +1809,9 @@ ProjectExportDialog::ProjectExportDialog() {
 			default_filename = "UnnamedProject";
 		}
 	}
+}
+
+void ProjectExportDialog::_open_user_directory() {
+	String user_dir = ProjectSettings::get_singleton()->get_user_data_dir();
+	OS::get_singleton()->shell_open(user_dir);
 }

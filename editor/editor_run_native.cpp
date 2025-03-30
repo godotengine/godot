@@ -189,6 +189,11 @@ bool EditorRunNative::is_deploy_debug_remote_enabled() const {
 	return EditorSettings::get_singleton()->get_project_metadata("debug_options", "run_deploy_remote_debug", true);
 }
 
+void EditorRunNative::open_user_directory() {
+	String user_dir = ProjectSettings::get_singleton()->get_user_data_dir();
+	OS::get_singleton()->shell_open(user_dir);
+}
+
 EditorRunNative::EditorRunNative() {
 	ED_SHORTCUT("remote_deploy/deploy_to_device_1", TTRC("Deploy to First Device in List"), KeyModifierMask::SHIFT | Key::F5);
 	ED_SHORTCUT_OVERRIDE("remote_deploy/deploy_to_device_1", "macos", KeyModifierMask::META | KeyModifierMask::SHIFT | Key::B);

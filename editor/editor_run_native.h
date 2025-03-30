@@ -60,5 +60,7 @@ public:
 
 	bool is_deploy_debug_remote_enabled() const;
 
+	void open_user_directory();
+
 	EditorRunNative();
 };
