@@ -682,10 +682,10 @@ void Node::_propagate_pause_notification(bool p_enable) {
 	bool next_can_process = _can_process(p_enable);
 
 	bool process_mode_pausible = !prev_can_process && next_can_process;
-	bool process_mode_when_pauded = prev_can_process && !next_can_process;
+	bool process_mode_when_paused = prev_can_process && !next_can_process;
 	bool process_mode_always = prev_can_process && next_can_process;
 
-	bool should_send_notification = process_mode_always || process_mode_pausible || process_mode_when_pauded;
+	bool should_send_notification = process_mode_always || process_mode_pausible || process_mode_when_paused;
 
 	if(should_send_notification)
 	{
