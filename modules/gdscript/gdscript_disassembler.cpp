@@ -1153,6 +1153,8 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 	m_macro(VECTOR2I);                     \
 	m_macro(VECTOR3);                      \
 	m_macro(VECTOR3I);                     \
+	m_macro(RECT2);                        \
+	m_macro(RECT2I);                       \
 	m_macro(STRING);                       \
 	m_macro(DICTIONARY);                   \
 	m_macro(ARRAY);                        \
