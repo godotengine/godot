@@ -24,3 +24,9 @@ Validate extension JSON: Error: Field 'classes/OpenXRAPIExtension/methods/regist
 Validate extension JSON: Error: Field 'classes/OpenXRAPIExtension/methods/unregister_projection_views_extension/arguments/0': type changed value in new API, from "OpenXRExtensionWrapperExtension" to "OpenXRExtensionWrapper".
 
 Switched from `OpenXRExtensionWrapperExtension` to parent `OpenXRExtensionWrapper`. Compatibility methods registered.
+
+
+GH-10736
+---------
+Validate extension JSON: Error: Field 'classes/PhysicsServer2D/methods/body_set_shape_as_one_way_collision/arguments': size changed value in new API, from 4 to 5.
+Validate extension JSON: Error: Field 'classes/PhysicsServer2DExtension/methods/_body_set_shape_as_one_way_collision/arguments': size changed value in new API, from 4 to 5.
