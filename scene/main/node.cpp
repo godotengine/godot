@@ -681,10 +681,18 @@ void Node::_propagate_pause_notification(bool p_enable) {
 	bool prev_can_process = _can_process(!p_enable);
 	bool next_can_process = _can_process(p_enable);
 
-	if (prev_can_process && !next_can_process) {
-		notification(NOTIFICATION_PAUSED);
-	} else if (!prev_can_process && next_can_process) {
-		notification(NOTIFICATION_UNPAUSED);
+	bool process_mode_pausible = !prev_can_process && next_can_process;
+	bool process_mode_when_pauded = prev_can_process && !next_can_process;
+	bool process_mode_always = prev_can_process && next_can_process;
+
+	bool should_send_notification = process_mode_always || process_mode_pausible || process_mode_when_pauded;
+
+	if(should_send_notification)
+	{
+		if(get_tree()->is_paused())
+			notification(NOTIFICATION_PAUSED); 
+		else
+			notification(NOTIFICATION_UNPAUSED);
 	}
 
 	data.blocked++;
