@@ -202,6 +202,7 @@ void CameraFeed::set_rgb_image(const Ref<Image> &p_rgb_img) {
 		}
 
 		datatype = CameraFeed::FEED_RGB;
+		emit_signal(SNAME("frame_changed"));
 	}
 }
 
@@ -225,6 +226,7 @@ void CameraFeed::set_ycbcr_image(const Ref<Image> &p_ycbcr_img) {
 		}
 
 		datatype = CameraFeed::FEED_YCBCR;
+		emit_signal(SNAME("frame_changed"));
 	}
 }
 
@@ -259,6 +261,7 @@ void CameraFeed::set_ycbcr_images(const Ref<Image> &p_y_img, const Ref<Image> &p
 		}
 
 		datatype = CameraFeed::FEED_YCBCR_SEP;
+		emit_signal(SNAME("frame_changed"));
 	}
 }
 
@@ -273,6 +276,7 @@ void CameraFeed::set_external(int p_width, int p_height) {
 	}
 
 	datatype = CameraFeed::FEED_EXTERNAL;
+	emit_signal(SNAME("frame_changed"));
 }
 
 bool CameraFeed::activate_feed() {
