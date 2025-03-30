@@ -1214,14 +1214,7 @@ void EditorAssetLibrary::_api_request(const String &p_request, RequestType p_req
 }
 
 void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const PackedStringArray &headers, const PackedByteArray &p_data) {
-	String str;
-
-	{
-		int datalen = p_data.size();
-		const uint8_t *r = p_data.ptr();
-		str.append_utf8((const char *)r, datalen);
-	}
-
+	String str = String::utf8((const char *)p_data.ptr(), (int)p_data.size());
 	bool error_abort = true;
 
 	switch (p_status) {

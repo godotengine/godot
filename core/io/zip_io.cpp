@@ -76,8 +76,7 @@ void *zipio_open(voidpf opaque, const char *p_fname, int mode) {
 	Ref<FileAccess> *fa = reinterpret_cast<Ref<FileAccess> *>(opaque);
 	ERR_FAIL_NULL_V(fa, nullptr);
 
-	String fname;
-	fname.append_utf8(p_fname);
+	String fname = String::utf8(p_fname);
 
 	int file_access_mode = 0;
 	if (mode & ZLIB_FILEFUNC_MODE_READ) {
