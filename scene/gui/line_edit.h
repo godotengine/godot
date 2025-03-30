@@ -31,7 +31,9 @@
 #pragma once
 
 #include "scene/gui/control.h"
-#include "scene/gui/popup_menu.h"
+#ifndef ADVANCED_GUI_DISABLED
+#include "scene/gui/advanced/popup_menu.h"
+#endif // ADVANCED_GUI_DISABLED
 
 class LineEdit : public Control {
 	GDCLASS(LineEdit, Control);
@@ -111,11 +113,16 @@ private:
 	bool deselect_on_focus_loss_enabled = true;
 	bool drag_and_drop_selection_enabled = true;
 
+#ifndef ADVANCED_GUI_DISABLED
 	bool context_menu_enabled = true;
 	bool emoji_menu_enabled = true;
 	PopupMenu *menu = nullptr;
 	PopupMenu *menu_dir = nullptr;
 	PopupMenu *menu_ctl = nullptr;
+#else
+	bool context_menu_enabled = false;
+	bool emoji_menu_enabled = false;
+#endif // ADVANCED_GUI_DISABLED
 
 	bool caret_mid_grapheme_enabled = false;
 
@@ -217,8 +224,10 @@ private:
 	void _create_undo_state();
 
 	Key _get_menu_action_accelerator(const String &p_action);
+#ifndef ADVANCED_GUI_DISABLED
 	void _generate_context_menu();
 	void _update_context_menu();
+#endif // ADVANCED_GUI_DISABLED
 
 	void _shape();
 	void _fit_to_width();
@@ -287,7 +296,9 @@ public:
 	void menu_option(int p_option);
 	void set_context_menu_enabled(bool p_enable);
 	bool is_context_menu_enabled();
+#ifndef ADVANCED_GUI_DISABLED
 	PopupMenu *get_menu() const;
+#endif // ADVANCED_GUI_DISABLED
 	bool is_menu_visible() const;
 
 	void show_emoji_and_symbol_picker();

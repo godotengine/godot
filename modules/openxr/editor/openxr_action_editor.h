@@ -33,11 +33,11 @@
 #include "../action_map/openxr_action.h"
 
 #include "editor/editor_undo_redo_manager.h"
+#include "scene/gui/advanced/option_button.h"
+#include "scene/gui/advanced/text_edit.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/line_edit.h"
-#include "scene/gui/option_button.h"
-#include "scene/gui/text_edit.h"
 
 class OpenXRActionEditor : public HBoxContainer {
 	GDCLASS(OpenXRActionEditor, HBoxContainer);

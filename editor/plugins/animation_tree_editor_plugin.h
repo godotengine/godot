@@ -32,7 +32,7 @@
 
 #include "editor/plugins/editor_plugin.h"
 #include "scene/animation/animation_tree.h"
-#include "scene/gui/graph_edit.h"
+#include "scene/gui/advanced/graph_edit.h"
 
 class Button;
 class EditorFileDialog;

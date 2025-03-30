@@ -39,10 +39,10 @@
 #include "editor/plugins/tiles/tile_set_editor.h"
 #include "editor/themes/editor_scale.h"
 
+#include "scene/gui/advanced/split_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/item_list.h"
 #include "scene/gui/label.h"
-#include "scene/gui/split_container.h"
 
 void TileSetScenesCollectionSourceEditor::TileSetScenesCollectionProxyObject::set_id(int p_id) {
 	ERR_FAIL_COND(p_id < 0);

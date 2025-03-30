@@ -35,7 +35,7 @@
 #include "scene/3d/camera_3d.h"
 #include "scene/3d/light_3d.h"
 #include "scene/3d/mesh_instance_3d.h"
-#include "scene/gui/subviewport_container.h"
+#include "scene/gui/advanced/subviewport_container.h"
 #include "scene/resources/camera_attributes.h"
 
 class SubViewport;

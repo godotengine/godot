@@ -32,7 +32,6 @@
 
 #include "core/input/input.h"
 #include "editor/editor_settings.h"
-#include "editor/editor_string_names.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/color_rect.h"

@@ -40,11 +40,11 @@
 #include "editor/gui/editor_toaster.h"
 #include "editor/progress_dialog.h"
 #include "editor/themes/editor_scale.h"
+#include "scene/gui/advanced/split_container.h"
 #include "scene/gui/check_box.h"
 #include "scene/gui/label.h"
 #include "scene/gui/link_button.h"
 #include "scene/gui/separator.h"
-#include "scene/gui/split_container.h"
 
 void EditorAssetInstaller::_item_checked_cbk() {
 	if (updating_source || !source_tree->get_edited()) {

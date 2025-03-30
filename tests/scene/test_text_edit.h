@@ -30,7 +30,7 @@
 
 #pragma once
 
-#include "scene/gui/text_edit.h"
+#include "scene/gui/advanced/text_edit.h"
 
 #include "tests/test_macros.h"
 

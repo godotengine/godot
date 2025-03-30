@@ -41,7 +41,7 @@
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/3d/navigation_region_3d.h"
 #include "scene/3d/physics/static_body_3d.h"
-#include "scene/gui/menu_button.h"
+#include "scene/gui/advanced/menu_button.h"
 #include "scene/resources/packed_scene.h"
 
 void MeshLibraryEditor::edit(const Ref<MeshLibrary> &p_mesh_library) {
