@@ -2199,22 +2199,4 @@ TEST_CASE("[String][URL] Parse URL") {
 
 #undef CHECK_URL
 }
-
-TEST_CASE("[Stress][String] Empty via ' == String()'") {
-	for (int i = 0; i < 100000; ++i) {
-		String str = "Hello World!";
-		if (str == String()) {
-			continue;
-		}
-	}
-}
-
-TEST_CASE("[Stress][String] Empty via `is_empty()`") {
-	for (int i = 0; i < 100000; ++i) {
-		String str = "Hello World!";
-		if (str.is_empty()) {
-			continue;
-		}
-	}
-}
 } // namespace TestString
