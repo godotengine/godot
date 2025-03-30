@@ -342,6 +342,10 @@ void PhysicsServer2DExtension::_bind_methods() {
 
 	GDVIRTUAL_BIND(_is_flushing_queries);
 	GDVIRTUAL_BIND(_get_process_info, "process_info");
+
+#ifndef DISABLE_DEPRECATED
+	GDVIRTUAL_BIND_COMPAT(_body_set_shape_as_one_way_collision_bind_compat_104736, "body", "shape_idx", "enable", "margin");
+#endif
 }
 
 PhysicsServer2DExtension::PhysicsServer2DExtension() {
