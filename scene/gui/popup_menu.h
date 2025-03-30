@@ -144,11 +144,13 @@ class PopupMenu : public Popup {
 	void _activate_submenu(int p_over, bool p_by_keyboard = false);
 	void _submenu_timeout();
 
+	int _focus_previous_selectable();
+	int _focus_next_selectable();
+
 	uint64_t popup_time_msec = 0;
 	bool hide_on_item_selection = true;
 	bool hide_on_checkable_item_selection = true;
 	bool hide_on_multistate_item_selection = false;
-	Vector2 moved;
 
 	HashMap<Ref<Shortcut>, int> shortcut_refcount;
 
