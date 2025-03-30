@@ -50,7 +50,8 @@ namespace Godot
         private WeakReference<IDisposable>? _weakReferenceToSelf;
 
         private static readonly ConcurrentDictionary<string, WeakReference<NodePath>> _nodePathCache = new();
-        private string? _cachedString;
+        private bool _isCached;
+        private string? _stringRepresentation;
 
         ~NodePath()
         {
@@ -68,9 +69,9 @@ namespace Godot
 
         public void Dispose(bool disposing)
         {
-            if (_cachedString is not null)
+            if (_isCached && _stringRepresentation is not null)
             {
-                _nodePathCache.TryRemove(_cachedString, out _);
+                _nodePathCache.TryRemove(_stringRepresentation, out _);
             }
 
             // Always dispose `NativeValue` even if disposing is true
@@ -130,7 +131,7 @@ namespace Godot
         /// <param name="path">A string that represents a path in a scene tree.</param>
         public NodePath(string path)
         {
-            _cachedString = path;
+            _stringRepresentation = path;
 
             if (!string.IsNullOrEmpty(path))
             {
@@ -153,7 +154,10 @@ namespace Godot
             while (true)
             {
                 WeakReference<NodePath> cachedNodePath = _nodePathCache.GetOrAdd(from,
-                    static (string from) => new WeakReference<NodePath>(new NodePath(from))
+                    static (string from) => new WeakReference<NodePath>(new NodePath(from)
+                    {
+                        _isCached = true,
+                    })
                 );
 
                 if (cachedNodePath.TryGetTarget(out NodePath? result))
@@ -183,15 +187,15 @@ namespace Godot
             if (IsEmpty)
                 return string.Empty;
 
-            if (_cachedString is not null)
-                return _cachedString;
+            if (_stringRepresentation is not null)
+                return _stringRepresentation;
 
             var src = (godot_node_path)NativeValue;
             NativeFuncs.godotsharp_node_path_as_string(out godot_string dest, src);
             using (dest)
             {
-                _cachedString = Marshaling.ConvertStringToManaged(dest);
-                return _cachedString;
+                _stringRepresentation = Marshaling.ConvertStringToManaged(dest);
+                return _stringRepresentation;
             }
         }
 
