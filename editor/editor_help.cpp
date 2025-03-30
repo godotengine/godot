@@ -582,14 +582,20 @@ void EditorHelp::_add_method(const DocData::MethodDoc &p_method, bool p_overview
 	for (int j = 0; j < p_method.arguments.size(); j++) {
 		const DocData::ArgumentDoc &argument = p_method.arguments[j];
 
-		class_desc->push_color(theme_cache.text_color);
-
 		if (j > 0) {
+			class_desc->push_color(theme_cache.symbol_color);
 			class_desc->add_text(", ");
+			class_desc->pop(); // color
 		}
 
+		class_desc->push_color(theme_cache.text_color);
 		class_desc->add_text(argument.name);
+		class_desc->pop(); // color
+
+		class_desc->push_color(theme_cache.symbol_color);
 		class_desc->add_text(colon_nbsp);
+		class_desc->pop(); // color
+
 		_add_type(argument.type, argument.enumeration, argument.is_bitfield);
 
 		if (!argument.default_value.is_empty()) {
@@ -601,13 +607,11 @@ void EditorHelp::_add_method(const DocData::MethodDoc &p_method, bool p_overview
 			class_desc->add_text(_fix_constant(argument.default_value));
 			class_desc->pop(); // color
 		}
-
-		class_desc->pop(); // color
 	}
 
 	if (is_vararg) {
 		if (!p_method.arguments.is_empty()) {
-			class_desc->push_color(theme_cache.text_color);
+			class_desc->push_color(theme_cache.symbol_color);
 			class_desc->add_text(", ");
 			class_desc->pop(); // color
 		}
@@ -615,6 +619,22 @@ void EditorHelp::_add_method(const DocData::MethodDoc &p_method, bool p_overview
 		class_desc->push_color(theme_cache.symbol_color);
 		class_desc->add_text("...");
 		class_desc->pop(); // color
+
+		const DocData::ArgumentDoc &rest_argument = p_method.rest_argument;
+
+		class_desc->push_color(theme_cache.text_color);
+		class_desc->add_text(rest_argument.name.is_empty() ? "args" : rest_argument.name);
+		class_desc->pop(); // color
+
+		class_desc->push_color(theme_cache.symbol_color);
+		class_desc->add_text(colon_nbsp);
+		class_desc->pop(); // color
+
+		if (rest_argument.type.is_empty()) {
+			_add_type("Array");
+		} else {
+			_add_type(rest_argument.type, rest_argument.enumeration, rest_argument.is_bitfield);
+		}
 	}
 
 	class_desc->push_color(theme_cache.symbol_color);
@@ -1558,14 +1578,20 @@ void EditorHelp::_update_doc() {
 			for (int j = 0; j < signal.arguments.size(); j++) {
 				const DocData::ArgumentDoc &argument = signal.arguments[j];
 
-				class_desc->push_color(theme_cache.text_color);
-
 				if (j > 0) {
+					class_desc->push_color(theme_cache.symbol_color);
 					class_desc->add_text(", ");
+					class_desc->pop(); // color
 				}
 
+				class_desc->push_color(theme_cache.text_color);
 				class_desc->add_text(argument.name);
+				class_desc->pop(); // color
+
+				class_desc->push_color(theme_cache.symbol_color);
 				class_desc->add_text(colon_nbsp);
+				class_desc->pop(); // color
+
 				_add_type(argument.type, argument.enumeration, argument.is_bitfield);
 
 				// Signals currently do not support default argument values, neither the core nor GDScript.
@@ -1579,8 +1605,6 @@ void EditorHelp::_update_doc() {
 					class_desc->add_text(_fix_constant(argument.default_value));
 					class_desc->pop(); // color
 				}
-
-				class_desc->pop(); // color
 			}
 
 			class_desc->push_color(theme_cache.symbol_color);
@@ -2002,14 +2026,20 @@ void EditorHelp::_update_doc() {
 				for (int j = 0; j < annotation.arguments.size(); j++) {
 					const DocData::ArgumentDoc &argument = annotation.arguments[j];
 
-					class_desc->push_color(theme_cache.text_color);
-
 					if (j > 0) {
+						class_desc->push_color(theme_cache.symbol_color);
 						class_desc->add_text(", ");
+						class_desc->pop(); // color
 					}
 
+					class_desc->push_color(theme_cache.text_color);
 					class_desc->add_text(argument.name);
+					class_desc->pop(); // color
+
+					class_desc->push_color(theme_cache.symbol_color);
 					class_desc->add_text(colon_nbsp);
+					class_desc->pop(); // color
+
 					_add_type(argument.type, argument.enumeration, argument.is_bitfield);
 
 					if (!argument.default_value.is_empty()) {
@@ -2021,13 +2051,11 @@ void EditorHelp::_update_doc() {
 						class_desc->add_text(_fix_constant(argument.default_value));
 						class_desc->pop(); // color
 					}
-
-					class_desc->pop(); // color
 				}
 
 				if (annotation.qualifiers.contains("vararg")) {
 					if (!annotation.arguments.is_empty()) {
-						class_desc->push_color(theme_cache.text_color);
+						class_desc->push_color(theme_cache.symbol_color);
 						class_desc->add_text(", ");
 						class_desc->pop(); // color
 					}
@@ -2035,6 +2063,22 @@ void EditorHelp::_update_doc() {
 					class_desc->push_color(theme_cache.symbol_color);
 					class_desc->add_text("...");
 					class_desc->pop(); // color
+
+					const DocData::ArgumentDoc &rest_argument = annotation.rest_argument;
+
+					class_desc->push_color(theme_cache.text_color);
+					class_desc->add_text(rest_argument.name.is_empty() ? "args" : rest_argument.name);
+					class_desc->pop(); // color
+
+					class_desc->push_color(theme_cache.symbol_color);
+					class_desc->add_text(colon_nbsp);
+					class_desc->pop(); // color
+
+					if (rest_argument.type.is_empty()) {
+						_add_type("Array");
+					} else {
+						_add_type(rest_argument.type, rest_argument.enumeration, rest_argument.is_bitfield);
+					}
 				}
 
 				class_desc->push_color(theme_cache.symbol_color);
@@ -3730,10 +3774,13 @@ EditorHelpBit::HelpData EditorHelpBit::_get_method_help_data(const StringName &p
 			}
 			current.doc_type = { method.return_type, method.return_enum, method.return_is_bitfield };
 			for (const DocData::ArgumentDoc &argument : method.arguments) {
-				const DocType argument_type = { argument.type, argument.enumeration, argument.is_bitfield };
-				current.arguments.push_back({ argument.name, argument_type, argument.default_value });
+				const DocType argument_doc_type = { argument.type, argument.enumeration, argument.is_bitfield };
+				current.arguments.push_back({ argument.name, argument_doc_type, argument.default_value });
 			}
 			current.qualifiers = method.qualifiers;
+			const DocData::ArgumentDoc &rest_argument = method.rest_argument;
+			const DocType rest_argument_doc_type = { rest_argument.type, rest_argument.enumeration, rest_argument.is_bitfield };
+			current.rest_argument = { rest_argument.name, rest_argument_doc_type, rest_argument.default_value };
 
 			if (method.name == p_method_name) {
 				result = current;
@@ -3895,6 +3942,7 @@ void EditorHelpBit::_update_labels() {
 
 		title->pop(); // font
 
+		const Color text_color = get_theme_color(SNAME("text_color"), SNAME("EditorHelp"));
 		const Color symbol_color = get_theme_color(SNAME("symbol_color"), SNAME("EditorHelp"));
 		const Color value_color = get_theme_color(SNAME("value_color"), SNAME("EditorHelp"));
 		const Color qualifier_color = get_theme_color(SNAME("qualifier_color"), SNAME("EditorHelp"));
@@ -3970,10 +4018,14 @@ void EditorHelpBit::_update_labels() {
 					const ArgumentData &argument = help_data.arguments[i];
 
 					if (i > 0) {
+						title->push_color(symbol_color);
 						title->add_text(", ");
+						title->pop(); // color
 					}
 
+					title->push_color(text_color);
 					title->add_text(argument.name);
+					title->pop(); // color
 
 					title->push_color(symbol_color);
 					title->add_text(colon_nbsp);
@@ -3994,12 +4046,30 @@ void EditorHelpBit::_update_labels() {
 
 				if (help_data.qualifiers.contains("vararg")) {
 					if (!help_data.arguments.is_empty()) {
+						title->push_color(symbol_color);
 						title->add_text(", ");
+						title->pop(); // color
 					}
 
 					title->push_color(symbol_color);
 					title->add_text("...");
 					title->pop(); // color
+
+					const ArgumentData &rest_argument = help_data.rest_argument;
+
+					title->push_color(text_color);
+					title->add_text(rest_argument.name.is_empty() ? "args" : rest_argument.name);
+					title->pop(); // color
+
+					title->push_color(symbol_color);
+					title->add_text(colon_nbsp);
+					title->pop(); // color
+
+					if (rest_argument.doc_type.type.is_empty()) {
+						_add_type_to_title({ "Array", "", false });
+					} else {
+						_add_type_to_title(rest_argument.doc_type);
+					}
 				}
 
 				title->push_color(symbol_color);
