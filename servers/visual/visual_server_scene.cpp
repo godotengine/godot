@@ -673,9 +673,6 @@ void VisualServerScene::instance_set_scenario(RID p_instance, RID p_scenario) {
 			_instance_destroy_occlusion_rep(instance);
 		}
 
-		// remove any interpolation data associated with the instance in this scenario
-		_interpolation_data.notify_free_instance(p_instance, *instance);
-
 		switch (instance->base_type) {
 			case VS::INSTANCE_LIGHT: {
 				InstanceLightData *light = static_cast<InstanceLightData *>(instance->base_data);
@@ -765,27 +762,6 @@ void VisualServerScene::instance_set_pivot_data(RID p_instance, float p_sorting_
 	instance->use_aabb_center = p_use_aabb_center;
 }
 
-void VisualServerScene::instance_reset_physics_interpolation(RID p_instance) {
-	Instance *instance = instance_owner.get(p_instance);
-	ERR_FAIL_COND(!instance);
-
-	if (_interpolation_data.interpolation_enabled && instance->interpolated) {
-		instance->transform_prev = instance->transform_curr;
-		instance->transform_checksum_prev = instance->transform_checksum_curr;
-
-#ifdef VISUAL_SERVER_DEBUG_PHYSICS_INTERPOLATION
-		print_line("instance_reset_physics_interpolation .. tick " + itos(Engine::get_singleton()->get_physics_frames()));
-		print_line("\tprev " + rtos(instance->transform_prev.origin.x) + ", curr " + rtos(instance->transform_curr.origin.x));
-#endif
-	}
-}
-
-void VisualServerScene::instance_set_interpolated(RID p_instance, bool p_interpolated) {
-	Instance *instance = instance_owner.get(p_instance);
-	ERR_FAIL_COND(!instance);
-	instance->interpolated = p_interpolated;
-}
-
 void VisualServerScene::instance_set_transform(RID p_instance, const Transform &p_transform) {
 	Instance *instance = instance_owner.get(p_instance);
 	ERR_FAIL_COND(!instance);
@@ -794,47 +770,8 @@ void VisualServerScene::instance_set_transform(RID p_instance, const Transform &
 	print_line("instance_set_transform " + rtos(p_transform.origin.x) + " .. tick " + itos(Engine::get_singleton()->get_physics_frames()));
 #endif
 
-	if (!(_interpolation_data.interpolation_enabled && instance->interpolated) || !instance->scenario) {
-		if (instance->transform == p_transform) {
-			return; //must be checked to avoid worst evil
-		}
-
-#ifdef DEBUG_ENABLED
-
-		for (int i = 0; i < 4; i++) {
-			const Vector3 &v = i < 3 ? p_transform.basis.elements[i] : p_transform.origin;
-			ERR_FAIL_COND(Math::is_inf(v.x));
-			ERR_FAIL_COND(Math::is_nan(v.x));
-			ERR_FAIL_COND(Math::is_inf(v.y));
-			ERR_FAIL_COND(Math::is_nan(v.y));
-			ERR_FAIL_COND(Math::is_inf(v.z));
-			ERR_FAIL_COND(Math::is_nan(v.z));
-		}
-
-#endif
-		instance->transform = p_transform;
-		_instance_queue_update(instance, true);
-
-#if defined(DEBUG_ENABLED) && defined(TOOLS_ENABLED)
-		if ((_interpolation_data.interpolation_enabled && !instance->interpolated) && (Engine::get_singleton()->is_in_physics_frame())) {
-			PHYSICS_INTERPOLATION_NODE_WARNING(instance->object_id, "Non-interpolated triggered from physics process");
-		}
-#endif
-
-		return;
-	}
-
-	float new_checksum = TransformInterpolator::checksum_transform(p_transform);
-	bool checksums_match = (instance->transform_checksum_curr == new_checksum) && (instance->transform_checksum_prev == new_checksum);
-
-	// we can't entirely reject no changes because we need the interpolation
-	// system to keep on stewing
-
-	// Optimized check. First checks the checksums. If they pass it does the slow check at the end.
-	// Alternatively we can do this non-optimized and ignore the checksum...
-	// if no change
-	if (checksums_match && (instance->transform_curr == p_transform) && (instance->transform_prev == p_transform)) {
-		return;
+	if (instance->transform == p_transform) {
+		return; //must be checked to avoid worst evil
 	}
 
 #ifdef DEBUG_ENABLED
@@ -850,62 +787,8 @@ void VisualServerScene::instance_set_transform(RID p_instance, const Transform &
 	}
 
 #endif
-
-	instance->transform_curr = p_transform;
-
-#ifdef VISUAL_SERVER_DEBUG_PHYSICS_INTERPOLATION
-	print_line("\tprev " + rtos(instance->transform_prev.origin.x) + ", curr " + rtos(instance->transform_curr.origin.x));
-#endif
-
-	// keep checksums up to date
-	instance->transform_checksum_curr = new_checksum;
-
-	if (!instance->on_interpolate_transform_list) {
-		_interpolation_data.instance_transform_update_list_curr->push_back(p_instance);
-		instance->on_interpolate_transform_list = true;
-	} else {
-		DEV_ASSERT(_interpolation_data.instance_transform_update_list_curr->size());
-	}
-
-	// If the instance is invisible, then we are simply updating the data flow, there is no need to calculate the interpolated
-	// transform or anything else.
-	// Ideally we would not even call the VisualServer::set_transform() when invisible but that would entail having logic
-	// to keep track of the previous transform on the SceneTree side. The "early out" below is less efficient but a lot cleaner codewise.
-	if (!instance->visible) {
-		return;
-	}
-
-	// decide on the interpolation method .. slerp if possible
-	instance->interpolation_method = TransformInterpolator::find_method(instance->transform_prev.basis, instance->transform_curr.basis);
-
-	if (!instance->on_interpolate_list) {
-		_interpolation_data.instance_interpolate_update_list.push_back(p_instance);
-		instance->on_interpolate_list = true;
-	} else {
-		DEV_ASSERT(_interpolation_data.instance_interpolate_update_list.size());
-	}
-
+	instance->transform = p_transform;
 	_instance_queue_update(instance, true);
-
-#if defined(DEBUG_ENABLED) && defined(TOOLS_ENABLED)
-	if (!Engine::get_singleton()->is_in_physics_frame()) {
-		PHYSICS_INTERPOLATION_NODE_WARNING(instance->object_id, "Interpolated triggered from outside physics process");
-	}
-#endif
-}
-
-void VisualServerScene::InterpolationData::notify_free_instance(RID p_rid, Instance &r_instance) {
-	r_instance.on_interpolate_list = false;
-	r_instance.on_interpolate_transform_list = false;
-
-	if (!interpolation_enabled) {
-		return;
-	}
-
-	// if the instance was on any of the lists, remove
-	instance_interpolate_update_list.erase_multiple_unordered(p_rid);
-	instance_transform_update_list_curr->erase_multiple_unordered(p_rid);
-	instance_transform_update_list_prev->erase_multiple_unordered(p_rid);
 }
 
 void VisualServerScene::update_interpolation_tick(bool p_process) {
@@ -915,84 +798,11 @@ void VisualServerScene::update_interpolation_tick(bool p_process) {
 
 	// update interpolation in storage
 	VSG::storage->update_interpolation_tick(p_process);
-
-	// detect any that were on the previous transform list that are no longer active,
-	// we should remove them from the interpolate list
-
-	for (unsigned int n = 0; n < _interpolation_data.instance_transform_update_list_prev->size(); n++) {
-		const RID &rid = (*_interpolation_data.instance_transform_update_list_prev)[n];
-		Instance *instance = instance_owner.getornull(rid);
-
-		bool active = true;
-
-		// no longer active? (either the instance deleted or no longer being transformed)
-		if (instance && !instance->on_interpolate_transform_list) {
-			active = false;
-			instance->on_interpolate_list = false;
-
-			// make sure the most recent transform is set
-			instance->transform = instance->transform_curr;
-
-			// and that both prev and current are the same, just in case of any interpolations
-			instance->transform_prev = instance->transform_curr;
-
-			// make sure are updated one more time to ensure the AABBs are correct
-			_instance_queue_update(instance, true);
-		}
-
-		if (!instance) {
-			active = false;
-		}
-
-		if (!active) {
-			_interpolation_data.instance_interpolate_update_list.erase(rid);
-		}
-	}
-
-	// and now for any in the transform list (being actively interpolated), keep the previous transform
-	// value up to date ready for the next tick
-	if (p_process) {
-		for (unsigned int n = 0; n < _interpolation_data.instance_transform_update_list_curr->size(); n++) {
-			const RID &rid = (*_interpolation_data.instance_transform_update_list_curr)[n];
-			Instance *instance = instance_owner.getornull(rid);
-			if (instance) {
-				instance->transform_prev = instance->transform_curr;
-				instance->transform_checksum_prev = instance->transform_checksum_curr;
-				instance->on_interpolate_transform_list = false;
-			}
-		}
-	}
-
-	// we maintain a mirror list for the transform updates, so we can detect when an instance
-	// is no longer being transformed, and remove it from the interpolate list
-	SWAP(_interpolation_data.instance_transform_update_list_curr, _interpolation_data.instance_transform_update_list_prev);
-
-	// prepare for the next iteration
-	_interpolation_data.instance_transform_update_list_curr->clear();
 }
 
 void VisualServerScene::update_interpolation_frame(bool p_process) {
 	// update interpolation in storage
 	VSG::storage->update_interpolation_frame(p_process);
-
-	if (p_process) {
-		real_t f = Engine::get_singleton()->get_physics_interpolation_fraction();
-
-		for (unsigned int i = 0; i < _interpolation_data.instance_interpolate_update_list.size(); i++) {
-			const RID &rid = _interpolation_data.instance_interpolate_update_list[i];
-			Instance *instance = instance_owner.getornull(rid);
-			if (instance) {
-				TransformInterpolator::interpolate_transform_via_method(instance->transform_prev, instance->transform_curr, instance->transform, f, instance->interpolation_method);
-
-#ifdef VISUAL_SERVER_DEBUG_PHYSICS_INTERPOLATION
-				print_line("\t\tinterpolated: " + rtos(instance->transform.origin.x) + "\t( prev " + rtos(instance->transform_prev.origin.x) + ", curr " + rtos(instance->transform_curr.origin.x) + " ) on tick " + itos(Engine::get_singleton()->get_physics_frames()));
-#endif
-
-				// make sure AABBs are constantly up to date through the interpolation
-				_instance_queue_update(instance, true);
-			}
-		} // for n
-	}
 }
 
 void VisualServerScene::instance_attach_object_instance_id(RID p_instance, ObjectID p_id) {
@@ -1045,25 +855,6 @@ void VisualServerScene::instance_set_visible(RID p_instance, bool p_visible) {
 	}
 
 	instance->visible = p_visible;
-
-	// Special case for physics interpolation, we want to ensure the interpolated data is up to date
-	if (_interpolation_data.interpolation_enabled && p_visible && instance->interpolated && instance->scenario && !instance->on_interpolate_list) {
-		// Do all the extra work we normally do on instance_set_transform(), because this is optimized out for hidden instances.
-		// This prevents a glitch of stale interpolation transform data when unhiding before the next physics tick.
-		instance->interpolation_method = TransformInterpolator::find_method(instance->transform_prev.basis, instance->transform_curr.basis);
-		_interpolation_data.instance_interpolate_update_list.push_back(p_instance);
-		instance->on_interpolate_list = true;
-		_instance_queue_update(instance, true);
-
-		// We must also place on the transform update list for a tick, so the system
-		// can auto-detect if the instance is no longer moving, and remove from the interpolate lists again.
-		// If this step is ignored, an unmoving instance could remain on the interpolate lists indefinitely
-		// (or rather until the object is deleted) and cause unnecessary updates and drawcalls.
-		if (!instance->on_interpolate_transform_list) {
-			_interpolation_data.instance_transform_update_list_curr->push_back(p_instance);
-			instance->on_interpolate_transform_list = true;
-		}
-	}
 
 	// give the opportunity for the spatial partitioning scene to use a special implementation of visibility
 	// for efficiency (supported in BVH but not octree)
@@ -4496,7 +4287,6 @@ bool VisualServerScene::free(RID p_rid) {
 		update_dirty_instances();
 
 		Instance *instance = instance_owner.get(p_rid);
-		_interpolation_data.notify_free_instance(p_rid, *instance);
 
 		instance_set_use_lightmap(p_rid, RID(), RID(), -1, Rect2(0, 0, 1, 1));
 		instance_set_scenario(p_rid, RID());
