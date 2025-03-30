@@ -990,7 +990,7 @@ void EditorExportPlatformAndroid::_get_manifest_info(const Ref<EditorExportPrese
 
 	MetadataInfo editor_version_metadata = {
 		"org.godotengine.editor.version",
-		String(VERSION_FULL_CONFIG)
+		String(GODOT_VERSION_FULL_CONFIG)
 	};
 	r_metadata.append(editor_version_metadata);
 }
