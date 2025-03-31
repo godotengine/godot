@@ -152,7 +152,7 @@ void RoomManager::_preview_camera_update() {
 	RID scenario = world->get_scenario();
 
 	if (_godot_preview_camera_ID != (ObjectID)-1) {
-		Camera *cam = Object::cast_to<Camera>(ObjectDB::get_instance(_godot_preview_camera_ID));
+		Camera *cam = ObjectDB::get_instance<Camera>(_godot_preview_camera_ID);
 		if (!cam) {
 			_godot_preview_camera_ID = (ObjectID)-1;
 		} else {

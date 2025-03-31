@@ -1547,7 +1547,7 @@ real_t KinematicCollision::get_angle(const Vector3 &p_up_direction) const {
 }
 
 Object *KinematicCollision::get_local_shape() const {
-	PhysicsBody *owner = Object::cast_to<PhysicsBody>(ObjectDB::get_instance(owner_id));
+	PhysicsBody *owner = ObjectDB::get_instance<PhysicsBody>(owner_id);
 	if (!owner) {
 		return nullptr;
 	}

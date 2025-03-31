@@ -349,7 +349,7 @@ bool SceneTreeTween::can_process(bool p_tree_paused) const {
 
 Node *SceneTreeTween::get_bound_node() const {
 	if (is_bound) {
-		return Object::cast_to<Node>(ObjectDB::get_instance(bound_node));
+		return ObjectDB::get_instance<Node>(bound_node);
 	} else {
 		return nullptr;
 	}

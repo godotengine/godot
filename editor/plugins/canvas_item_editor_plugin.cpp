@@ -663,7 +663,7 @@ void CanvasItemEditor::_get_bones_at_pos(const Point2 &p_pos, Vector<_SelectResu
 	Point2 screen_pos = transform.xform(p_pos);
 
 	for (Map<BoneKey, BoneList>::Element *E = bone_list.front(); E; E = E->next()) {
-		Node2D *from_node = Object::cast_to<Node2D>(ObjectDB::get_instance(E->key().from));
+		Node2D *from_node = ObjectDB::get_instance<Node2D>(E->key().from);
 
 		Vector<Vector2> bone_shape;
 		if (!_get_bone_shape(&bone_shape, nullptr, E)) {
@@ -698,8 +698,8 @@ bool CanvasItemEditor::_get_bone_shape(Vector<Vector2> *shape, Vector<Vector2> *
 	int bone_width = EditorSettings::get_singleton()->get("editors/2d/bone_width");
 	int bone_outline_width = EditorSettings::get_singleton()->get("editors/2d/bone_outline_size");
 
-	Node2D *from_node = Object::cast_to<Node2D>(ObjectDB::get_instance(bone->key().from));
-	Node2D *to_node = Object::cast_to<Node2D>(ObjectDB::get_instance(bone->key().to));
+	Node2D *from_node = ObjectDB::get_instance<Node2D>(bone->key().from);
+	Node2D *to_node = ObjectDB::get_instance<Node2D>(bone->key().to);
 
 	if (!from_node) {
 		return false;
@@ -3766,7 +3766,7 @@ void CanvasItemEditor::_draw_bones() {
 				continue;
 			}
 
-			Node2D *from_node = Object::cast_to<Node2D>(ObjectDB::get_instance(E->key().from));
+			Node2D *from_node = ObjectDB::get_instance<Node2D>(E->key().from);
 			if (!from_node->is_visible_in_tree()) {
 				continue;
 			}
@@ -4377,7 +4377,7 @@ void CanvasItemEditor::_update_bone_list() {
 			continue;
 		}
 
-		Node *node = Object::cast_to<Node>(ObjectDB::get_instance(E->key().from));
+		Node *node = ObjectDB::get_instance<Node>(E->key().from);
 		if (!node || !node->is_inside_tree() || (node != get_tree()->get_edited_scene_root() && !get_tree()->get_edited_scene_root()->is_a_parent_of(node))) {
 			bone_to_erase.push_back(E);
 			continue;
@@ -5242,7 +5242,7 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 
 			undo_redo->create_action(TTR("Paste Pose"));
 			for (List<PoseClipboard>::Element *E = pose_clipboard.front(); E; E = E->next()) {
-				Node2D *n2d = Object::cast_to<Node2D>(ObjectDB::get_instance(E->get().id));
+				Node2D *n2d = ObjectDB::get_instance<Node2D>(E->get().id);
 				if (!n2d) {
 					continue;
 				}

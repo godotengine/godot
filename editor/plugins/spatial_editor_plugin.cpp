@@ -637,7 +637,7 @@ void SpatialEditorViewport::_select_clicked(bool p_append, bool p_single, bool p
 		return;
 	}
 
-	Node *node = Object::cast_to<Node>(ObjectDB::get_instance(clicked));
+	Node *node = ObjectDB::get_instance<Node>(clicked);
 	Spatial *selected = Object::cast_to<Spatial>(node);
 	if (!selected) {
 		return;
@@ -697,7 +697,7 @@ ObjectID SpatialEditorViewport::_select_ray(const Point2 &p_pos, bool p_append, 
 	int selected_handle = -1;
 
 	for (int i = 0; i < instances.size(); i++) {
-		Spatial *spat = Object::cast_to<Spatial>(ObjectDB::get_instance(instances[i]));
+		Spatial *spat = ObjectDB::get_instance<Spatial>(instances[i]);
 
 		if (!spat) {
 			continue;
@@ -761,7 +761,7 @@ void SpatialEditorViewport::_find_items_at_pos(const Point2 &p_pos, bool &r_incl
 	r_includes_current = false;
 
 	for (int i = 0; i < instances.size(); i++) {
-		Spatial *spat = Object::cast_to<Spatial>(ObjectDB::get_instance(instances[i]));
+		Spatial *spat = ObjectDB::get_instance<Spatial>(instances[i]);
 
 		if (!spat) {
 			continue;
@@ -884,7 +884,7 @@ void SpatialEditorViewport::_select_region() {
 	Node *edited_scene = get_tree()->get_edited_scene_root();
 
 	for (int i = 0; i < instances.size(); i++) {
-		Spatial *sp = Object::cast_to<Spatial>(ObjectDB::get_instance(instances[i]));
+		Spatial *sp = ObjectDB::get_instance<Spatial>(instances[i]);
 		if (!sp || _is_node_locked(sp)) {
 			continue;
 		}
@@ -1592,7 +1592,7 @@ void SpatialEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 					}
 
 					if (clicked && gizmo_handle >= 0) {
-						Spatial *spa = Object::cast_to<Spatial>(ObjectDB::get_instance(clicked));
+						Spatial *spa = ObjectDB::get_instance<Spatial>(clicked);
 						if (spa) {
 							Ref<EditorSpatialGizmo> seg = spa->get_gizmo();
 							if (seg.is_valid()) {
