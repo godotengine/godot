@@ -2773,7 +2773,7 @@
 		<constant name="PROPERTY_HINT_RANGE" value="1" enum="PropertyHint">
 			Hints that an [int] or [float] property should be within a range specified via the hint string [code]"min,max"[/code] or [code]"min,max,step"[/code]. The hint string can optionally include [code]"or_greater"[/code] and/or [code]"or_less"[/code] to allow manual input going respectively above the max or below the min values.
 			[b]Example:[/b] [code]"-360,360,1,or_greater,or_less"[/code].
-			Additionally, other keywords can be included: [code]"exp"[/code] for exponential range editing, [code]"radians_as_degrees"[/code] for editing radian angles in degrees (the range values are also in degrees), [code]"degrees"[/code] to hint at an angle and [code]"hide_slider"[/code] to hide the slider.
+			Additionally, other keywords can be included: [code]"exp"[/code] for exponential range editing, [code]"radians_as_degrees"[/code] for editing radian angles in degrees (the range values are also in degrees), [code]"degrees"[/code] to hint at an angle, [code]"suffix:unit"[/code] to display a [code]unit[/code] suffix, and [code]"hide_slider"[/code] to hide the slider.
 		</constant>
 		<constant name="PROPERTY_HINT_ENUM" value="2" enum="PropertyHint">
 			Hints that an [int] or [String] property is an enumerated value to pick in a list specified via a hint string.
@@ -2787,7 +2787,7 @@
 			Hints that a [float] property should be edited via an exponential easing function. The hint string can include [code]"attenuation"[/code] to flip the curve horizontally and/or [code]"positive_only"[/code] to exclude in/out easing and limit values to be greater than or equal to zero.
 		</constant>
 		<constant name="PROPERTY_HINT_LINK" value="5" enum="PropertyHint">
-			Hints that a vector property should allow its components to be linked. For example, this allows [member Vector2.x] and [member Vector2.y] to be edited together.
+			Hints that a vector property should allow its components to be linked. For example, this allows [member Vector2.x] and [member Vector2.y] to be edited together. This is typically used for scale properties to keep proportions.
 		</constant>
 		<constant name="PROPERTY_HINT_FLAGS" value="6" enum="PropertyHint">
 			Hints that an [int] property is a bitmask with named bit flags.
@@ -2817,19 +2817,20 @@
 			Hints that an integer property is a bitmask using the optionally named avoidance layers.
 		</constant>
 		<constant name="PROPERTY_HINT_FILE" value="13" enum="PropertyHint">
-			Hints that a [String] property is a path to a file. Editing it will show a file dialog for picking the path. The hint string can be a set of filters with wildcards like [code]"*.png,*.jpg"[/code].
+			Hints that a [String] property is a path to a file. Editing it will show a file dialog for picking the path. The hint string can be a set of filters with wildcards like [code]"*.png,*.jpg"[/code]. See also [constant PROPERTY_HINT_SAVE_FILE] and [member FileDialog.filters].
 		</constant>
 		<constant name="PROPERTY_HINT_DIR" value="14" enum="PropertyHint">
 			Hints that a [String] property is a path to a directory. Editing it will show a file dialog for picking the path.
 		</constant>
 		<constant name="PROPERTY_HINT_GLOBAL_FILE" value="15" enum="PropertyHint">
-			Hints that a [String] property is an absolute path to a file outside the project folder. Editing it will show a file dialog for picking the path. The hint string can be a set of filters with wildcards, like [code]"*.png,*.jpg"[/code].
+			Hints that a [String] property is an absolute path to a file outside the project folder. Editing it will show a file dialog for picking the path. The hint string can be a set of filters with wildcards, like [code]"*.png,*.jpg"[/code]. See also [constant PROPERTY_HINT_GLOBAL_SAVE_FILE] and [member FileDialog.filters].
 		</constant>
 		<constant name="PROPERTY_HINT_GLOBAL_DIR" value="16" enum="PropertyHint">
 			Hints that a [String] property is an absolute path to a directory outside the project folder. Editing it will show a file dialog for picking the path.
 		</constant>
 		<constant name="PROPERTY_HINT_RESOURCE_TYPE" value="17" enum="PropertyHint">
-			Hints that a property is an instance of a [Resource]-derived type, optionally specified via the hint string (e.g. [code]"Texture2D"[/code]). Editing it will show a popup menu of valid resource types to instantiate.
+			Hints that a property is an instance of a [Resource]-derived type, optionally specified via the hint string (e.g. [code]"Texture2D"[/code]). Editing it will show a popup menu of valid resource types to instantiate. The hint string can specify multiple classes separated by commas (e.g. [code]"NoiseTexture,GradientTexture2D"[/code]); all subclasses are included automatically. Specific subclasses can be excluded with a [code]"-"[/code] prefix if placed *after* the base class, e.g. [code]"Texture2D,-MeshTexture"[/code].
+			This is similar to [constant PROPERTY_HINT_NODE_TYPE] and [constant PROPERTY_HINT_NODE_PATH_VALID_TYPES], but for resources.
 		</constant>
 		<constant name="PROPERTY_HINT_MULTILINE_TEXT" value="18" enum="PropertyHint">
 			Hints that a [String] property is text with line breaks. Editing it will show a text input field where line breaks can be typed.
@@ -2909,13 +2910,14 @@
 			Hints that an object is too big to be sent via the debugger.
 		</constant>
 		<constant name="PROPERTY_HINT_NODE_PATH_VALID_TYPES" value="26" enum="PropertyHint">
-			Hints that the hint string specifies valid node types for property of type [NodePath].
+			Hints that the hint string specifies valid node types for property of type [NodePath]. The hint string can specify multiple classes separated by commas (e.g. [code]"Node2D,Node3D"[/code]); all subclasses are included automatically. Editing the property will show a dialog for picking a node from the scene.
+			This is similar to [constant PROPERTY_HINT_RESOURCE_TYPE], but for [NodePath] properties. Use [constant PROPERTY_HINT_NODE_TYPE] for [Node] properties instead.
 		</constant>
 		<constant name="PROPERTY_HINT_SAVE_FILE" value="27" enum="PropertyHint">
-			Hints that a [String] property is a path to a file. Editing it will show a file dialog for picking the path for the file to be saved at. The dialog has access to the project's directory. The hint string can be a set of filters with wildcards like [code]"*.png,*.jpg"[/code]. See also [member FileDialog.filters].
+			Hints that a [String] property is a path to a file. Editing it will show a file dialog for picking the path for the file to be saved at. The dialog has access to the project's directory. The hint string can be a set of filters with wildcards like [code]"*.png,*.jpg"[/code]. See also [constant PROPERTY_HINT_FILE] and [member FileDialog.filters].
 		</constant>
 		<constant name="PROPERTY_HINT_GLOBAL_SAVE_FILE" value="28" enum="PropertyHint">
-			Hints that a [String] property is a path to a file. Editing it will show a file dialog for picking the path for the file to be saved at. The dialog has access to the entire filesystem. The hint string can be a set of filters with wildcards like [code]"*.png,*.jpg"[/code]. See also [member FileDialog.filters].
+			Hints that a [String] property is a path to a file. Editing it will show a file dialog for picking the path for the file to be saved at. The dialog has access to the entire filesystem. The hint string can be a set of filters with wildcards like [code]"*.png,*.jpg"[/code]. See also [constant PROPERTY_HINT_GLOBAL_FILE] and [member FileDialog.filters].
 		</constant>
 		<constant name="PROPERTY_HINT_INT_IS_OBJECTID" value="29" enum="PropertyHint" deprecated="This hint is not used by the engine.">
 		</constant>
@@ -2932,16 +2934,17 @@
 			Hints that a string property is a locale code. Editing it will show a locale dialog for picking language and country.
 		</constant>
 		<constant name="PROPERTY_HINT_LOCALIZABLE_STRING" value="33" enum="PropertyHint">
-			Hints that a dictionary property is string translation map. Dictionary keys are locale codes and, values are translated strings.
+			Hints that a dictionary property is a string translation map. Dictionary keys are locale codes; values are translated strings.
 		</constant>
 		<constant name="PROPERTY_HINT_NODE_TYPE" value="34" enum="PropertyHint">
-			Hints that a property is an instance of a [Node]-derived type, optionally specified via the hint string (e.g. [code]"Node2D"[/code]). Editing it will show a dialog for picking a node from the scene.
+			Hints that a property is an instance of a [Node]-derived type, optionally specified via the hint string (e.g. [code]"Node2D"[/code]). The hint string can specify multiple classes separated by commas (e.g. [code]"Node2D,Node3D"[/code]); all subclasses are included automatically. Editing the property will show a dialog for picking a node from the scene.
+			This is similar to [constant PROPERTY_HINT_RESOURCE_TYPE], but for [Node] properties. Use [constant PROPERTY_HINT_NODE_PATH_VALID_TYPES] for [NodePath] properties instead.
 		</constant>
 		<constant name="PROPERTY_HINT_HIDE_QUATERNION_EDIT" value="35" enum="PropertyHint">
-			Hints that a quaternion property should disable the temporary euler editor.
+			Hints that a [Quaternion] property should disable the temporary Euler editor.
 		</constant>
 		<constant name="PROPERTY_HINT_PASSWORD" value="36" enum="PropertyHint">
-			Hints that a string property is a password, and every character is replaced with the secret character.
+			Hints that a string property is a password, and every character is replaced with the secret character in the inspector.
 		</constant>
 		<constant name="PROPERTY_HINT_TOOL_BUTTON" value="39" enum="PropertyHint">
 			Hints that a [Callable] property should be displayed as a clickable button. When the button is pressed, the callable is called. The hint string specifies the button text and optionally an icon from the [code]"EditorIcons"[/code] theme type.
@@ -2971,9 +2974,11 @@
 		</constant>
 		<constant name="PROPERTY_USAGE_CHECKABLE" value="16" enum="PropertyUsageFlags" is_bitfield="true">
 			The property can be checked in the [EditorInspector].
+			[b]Note:[/b] Not to be confused with boolean properties' checkbox. [constant PROPERTY_USAGE_CHECKABLE]'s checkbox is a separate control displayed at the left of the property name, as seen for theme items in [Control] nodes.
 		</constant>
 		<constant name="PROPERTY_USAGE_CHECKED" value="32" enum="PropertyUsageFlags" is_bitfield="true">
 			The property is checked in the [EditorInspector].
+			[b]Note:[/b] Not to be confused with boolean properties' checkbox. [constant PROPERTY_USAGE_CHECKABLE]'s checkbox is a separate control displayed at the left of the property name, as seen for theme items in [Control] nodes.
 		</constant>
 		<constant name="PROPERTY_USAGE_GROUP" value="64" enum="PropertyUsageFlags" is_bitfield="true">
 			Used to group properties together in the editor. See [EditorInspector].
@@ -3011,7 +3016,7 @@
 			If property has [code]nil[/code] as default value, its type will be [Variant].
 		</constant>
 		<constant name="PROPERTY_USAGE_ARRAY" value="262144" enum="PropertyUsageFlags" is_bitfield="true">
-			The property is an array.
+			The property is an array. This is used in the inspector to group properties as elements of an array.
 		</constant>
 		<constant name="PROPERTY_USAGE_ALWAYS_DUPLICATE" value="524288" enum="PropertyUsageFlags" is_bitfield="true">
 			When duplicating a resource with [method Resource.duplicate], and this flag is set on a property of that resource, the property should always be duplicated, regardless of the [code]subresources[/code] bool parameter.

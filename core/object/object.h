@@ -50,103 +50,471 @@ template <typename T>
 class Ref;
 
 enum PropertyHint {
-	PROPERTY_HINT_NONE, ///< no hint provided.
-	PROPERTY_HINT_RANGE, ///< hint_text = "min,max[,step][,or_greater][,or_less][,hide_slider][,radians_as_degrees][,degrees][,exp][,suffix:<keyword>] range.
-	PROPERTY_HINT_ENUM, ///< hint_text= "val1,val2,val3,etc"
-	PROPERTY_HINT_ENUM_SUGGESTION, ///< hint_text= "val1,val2,val3,etc"
-	PROPERTY_HINT_EXP_EASING, /// exponential easing function (Math::ease) use "attenuation" hint string to revert (flip h), "positive_only" to exclude in-out and out-in. (ie: "attenuation,positive_only")
+	// The property has no hint for the editor.
+	PROPERTY_HINT_NONE,
+
+	// Hints that an `int` or `float` property should be within a range specified via the hint string `"min,max"` or `"min,max,step"`.
+	// The hint string can optionally include `"or_greater"` and/or `"or_less"`
+	// to allow manual input going respectively above the max or below the min values.
+	// Example: `"-360,360,1,or_greater,or_less"`
+	// Additionally, other keywords can be included: `"exp"` for exponential range editing,
+	// `"radians_as_degrees"` for editing radian angles in degrees (the range values are also in degrees),
+	// `"degrees"` to hint at an angle, `"suffix:unit"` to display a `unit` suffix,
+	// and `"hide_slider"` to hide the slider.
+	PROPERTY_HINT_RANGE,
+
+	// Hints that an `int` or `String` property is an enumerated value to pick in a list specified via a hint string.
+	// The hint string is a comma separated list of names such as `"Hello,Something,Else"`.
+	// Whitespaces are *not* removed from either end of a name.
+	// For integer properties, the first name in the list has value 0, the next 1, and so on.
+	// Explicit values can also be specified by appending `:integer` to the name, e.g. `"Zero,One,Three:3,Four,Six:6"`.
+	PROPERTY_HINT_ENUM,
+
+	// Hints that a `String` property can be an enumerated value to pick in a list
+	// specified via a hint string such as `"Hello,Something,Else"`.
+	// Unlike `PROPERTY_HINT_ENUM`, a property with this hint still accepts arbitrary values and can be empty.
+	// The list of values serves to suggest possible values.
+	PROPERTY_HINT_ENUM_SUGGESTION,
+
+	// Hints that a `float` property should be edited via an exponential easing function.
+	// The hint string can include `"attenuation"` to flip the curve horizontally and/or
+	// `"positive_only"` to exclude in/out easing and limit values to be greater than or equal to zero.
+	PROPERTY_HINT_EXP_EASING,
+
+	// Hints that a vector property should allow its components to be linked.
+	// For example, this allows `Vector2.x` and `Vector2.y` to be edited together.
+	// This is typically used for scale properties to keep proportions.
 	PROPERTY_HINT_LINK,
-	PROPERTY_HINT_FLAGS, ///< hint_text= "flag1,flag2,etc" (as bit flags)
+
+	// Hints that an `int` property is a bitmask with named bit flags.
+	// The hint string is a comma separated list of names such as `"Bit0,Bit1,Bit2,Bit3"`.
+	// Whitespaces are *not* removed from either end of a name. The first name in the list has value 1, the next 2, then 4, 8, 16 and so on.
+	// Explicit values can also be specified by appending `:integer` to the name, e.g. `"A:4,B:8,C:16"`.
+	// You can also combine several flags (`"A:4,B:8,AB:12,C:16"`).
+	// NOTE: A flag value must be at least `1` and at most `2 ** 32 - 1`.
+	// NOTE: Unlike `PROPERTY_HINT_ENUM`, the previous explicit value is not taken into account. For the hint `"A:16,B,C"`, A is 16, B is 2, C is 4.
+	PROPERTY_HINT_FLAGS,
+
+	// Hints that an `int` property is a bitmask using the optionally named 2D render layers.
 	PROPERTY_HINT_LAYERS_2D_RENDER,
+
+	// Hints that an `int` property is a bitmask using the optionally named 2D physics layers.
 	PROPERTY_HINT_LAYERS_2D_PHYSICS,
+
+	// Hints that an `int` property is a bitmask using the optionally named 2D navigation layers.
 	PROPERTY_HINT_LAYERS_2D_NAVIGATION,
+
+	// Hints that an `int` property is a bitmask using the optionally named 3D render layers.
 	PROPERTY_HINT_LAYERS_3D_RENDER,
+
+	// Hints that an `int` property is a bitmask using the optionally named 3D physics layers.
 	PROPERTY_HINT_LAYERS_3D_PHYSICS,
+
+	// Hints that an `int` property is a bitmask using the optionally named 3D navigation layers.
 	PROPERTY_HINT_LAYERS_3D_NAVIGATION,
-	PROPERTY_HINT_FILE, ///< a file path must be passed, hint_text (optionally) is a filter "*.png,*.wav,*.doc,"
-	PROPERTY_HINT_DIR, ///< a directory path must be passed
-	PROPERTY_HINT_GLOBAL_FILE, ///< a file path must be passed, hint_text (optionally) is a filter "*.png,*.wav,*.doc,"
-	PROPERTY_HINT_GLOBAL_DIR, ///< a directory path must be passed
-	PROPERTY_HINT_RESOURCE_TYPE, ///< a comma-separated resource object type, e.g. "NoiseTexture,GradientTexture2D". Subclasses can be excluded with a "-" prefix if placed *after* the base class, e.g. "Texture2D,-MeshTexture".
-	PROPERTY_HINT_MULTILINE_TEXT, ///< used for string properties that can contain multiple lines
-	PROPERTY_HINT_EXPRESSION, ///< used for string properties that can contain multiple lines
-	PROPERTY_HINT_PLACEHOLDER_TEXT, ///< used to set a placeholder text for string properties
-	PROPERTY_HINT_COLOR_NO_ALPHA, ///< used for ignoring alpha component when editing a color
+
+	// Hints that a `String` property is a path to a file.
+	// Editing it will show a file dialog for picking the path.
+	// The hint string can be a set of filters with wildcards like `"*.png,*.jpg"`. See also `PROPERTY_HINT_SAVE_FILE`.
+	PROPERTY_HINT_FILE,
+
+	// Hints that a `String` property is a path to a directory.
+	// Editing it will show a file dialog for picking the path.
+	PROPERTY_HINT_DIR,
+
+	// Hints that a `String` property is an absolute path to a file outside the project folder.
+	// Editing it will show a file dialog for picking the path.
+	// The hint string can be a set of filters with wildcards, like `"*.png,*.jpg"`. See also `PROPERTY_HINT_GLOBAL_SAVE_FILE`.
+	PROPERTY_HINT_GLOBAL_FILE,
+
+	// Hints that a `String` property is an absolute path to a directory outside the project folder.
+	// Editing it will show a file dialog for picking the path.
+	PROPERTY_HINT_GLOBAL_DIR,
+
+	// Hints that a property is an instance of a [Resource]-derived type,
+	// optionally specified via the hint string (e.g. `"Texture2D"`).
+	// Editing it will show a popup menu of valid resource types to instantiate.
+	// The hint string can specify multiple classes separated by commas (e.g. `"NoiseTexture,GradientTexture2D"`);
+	// all subclasses are included automatically. Specific subclasses can be excluded with a `"-"` prefix
+	// if placed *after* the base class, e.g. `"Texture2D,-MeshTexture"`.
+	// This is similar to `PROPERTY_HINT_NODE_PATH_VALID_TYPES`, but for resources.
+	PROPERTY_HINT_RESOURCE_TYPE,
+
+	// Hints that a `String` property is text with line breaks.
+	// Editing it will show a text input field where line breaks can be typed.
+	PROPERTY_HINT_MULTILINE_TEXT,
+
+	// Hints that a `String` property is an [Expression].
+	PROPERTY_HINT_EXPRESSION,
+
+	// Hints that a `String` property should show a placeholder text on its input field, if empty.
+	// The hint string is the placeholder text to use.
+	PROPERTY_HINT_PLACEHOLDER_TEXT,
+
+	// Hints that a `Color` property should be edited without affecting its transparency
+	// (`Color.a` is not editable).
+	PROPERTY_HINT_COLOR_NO_ALPHA,
+
+	// Hints that the property's value is an object encoded as object ID,
+	// with its type specified in the hint string. Used by the debugger.
 	PROPERTY_HINT_OBJECT_ID,
-	PROPERTY_HINT_TYPE_STRING, ///< a type string, the hint is the base type to choose
-	PROPERTY_HINT_NODE_PATH_TO_EDITED_NODE, // Deprecated.
-	PROPERTY_HINT_OBJECT_TOO_BIG, ///< object is too big to send
+
+	// If a property is `String`, hints that the property represents a particular type (class).
+	// This allows to select a type from the create dialog. The property will store the selected type as a string.
+	// If a property is `Array`, hints the editor how to show elements.
+	// The `hint_string` must encode nested types using `":"` and `"/"`.
+	PROPERTY_HINT_TYPE_STRING,
+
+	// Deprecated. This hint is not used by the engine.
+	PROPERTY_HINT_NODE_PATH_TO_EDITED_NODE,
+
+	// Hints that an object is too big to be sent via the debugger.
+	PROPERTY_HINT_OBJECT_TOO_BIG,
+
+	// Hints that the hint string specifies valid node types for property of type `NodePath`.
+	// The hint string can specify multiple classes separated by commas (e.g. `"Node2D,Node3D"`);
+	// all subclasses are included automatically.
+	// Editing the property will show a dialog for picking a node from the scene.
+	// This is similar to `PROPERTY_HINT_RESOURCE_TYPE`, but for `NodePath` properties.
+	// Use `PROPERTY_HINT_NODE_TYPE` for `Node` properties instead.
 	PROPERTY_HINT_NODE_PATH_VALID_TYPES,
-	PROPERTY_HINT_SAVE_FILE, ///< a file path must be passed, hint_text (optionally) is a filter "*.png,*.wav,*.doc,". This opens a save dialog
-	PROPERTY_HINT_GLOBAL_SAVE_FILE, ///< a file path must be passed, hint_text (optionally) is a filter "*.png,*.wav,*.doc,". This opens a save dialog
-	PROPERTY_HINT_INT_IS_OBJECTID, // Deprecated.
+
+	// Hints that a `String` property is a path to a file.
+	// Editing it will show a file dialog for picking the path for the file to be saved at.
+	// The dialog has access to the project's directory.
+	// The hint string can be a set of filters with wildcards like `"*.png,*.jpg"`. See also `PROPERTY_HINT_FILE`.
+	PROPERTY_HINT_SAVE_FILE,
+
+	// Hints that a `String` property is a path to a file.
+	// Editing it will show a file dialog for picking the path for the file to be saved at.
+	// The dialog has access to the entire filesystem.
+	// The hint string can be a set of filters with wildcards like `"*.png,*.jpg"`. See also `PROPERTY_HINT_GLOBAL_FILE`.
+	PROPERTY_HINT_GLOBAL_SAVE_FILE,
+
+	// Deprecated.
+	PROPERTY_HINT_INT_IS_OBJECTID,
+
+	// Hints that an `int` property is a pointer. Used by GDExtension.
 	PROPERTY_HINT_INT_IS_POINTER,
+
+	// Hints that a property is an [Array] with the stored type specified in the hint string.
 	PROPERTY_HINT_ARRAY_TYPE,
+
+	// Hints that a string property is a locale code.
+	// Editing it will show a locale dialog for picking language and country.
 	PROPERTY_HINT_LOCALE_ID,
+
+	// Hints that a dictionary property is a string translation map.
+	// Dictionary keys are locale codes; values are translated strings.
 	PROPERTY_HINT_LOCALIZABLE_STRING,
-	PROPERTY_HINT_NODE_TYPE, ///< a node object type
-	PROPERTY_HINT_HIDE_QUATERNION_EDIT, /// Only Node3D::transform should hide the quaternion editor.
+
+	// Hints that a property is an instance of a `Node`-derived type, optionally specified via the hint string (e.g. `"Node2D"`).
+	// The hint string can specify multiple classes separated by commas (e.g. `"Node2D,Node3D"`);
+	// all subclasses are included automatically.
+	// Editing the property will show a dialog for picking a node from the scene.
+	// This is similar to `PROPERTY_HINT_RESOURCE_TYPE`, but for `Node` properties.
+	// Use `PROPERTY_HINT_NODE_PATH_VALID_TYPES` for `NodePath` properties instead.
+	PROPERTY_HINT_NODE_TYPE,
+
+	// Hints that a `Quaternion` property should disable the temporary Euler editor.
+	PROPERTY_HINT_HIDE_QUATERNION_EDIT,
+
+	// Hints that a string property is a password, and every character is replaced
+	// with the secret character in the inspector.
 	PROPERTY_HINT_PASSWORD,
+
+	// Hints that an integer property is a bitmask using the optionally named avoidance layers.
 	PROPERTY_HINT_LAYERS_AVOIDANCE,
+
+	// Hints that a property is a Dictionary with the stored types specified in the hint string.
+	// The hint string contains the key and value types separated by a semicolon (e.g. `"int;String"`).
 	PROPERTY_HINT_DICTIONARY_TYPE,
+
+	// Hints that a Callable property should be displayed as a clickable button.
+	// When the button is pressed, the callable is called.
+	// The hint string specifies the button text and optionally an icon from the `"EditorIcons"` theme type.
+	// ```text
+	// "Click me!" - A button with the text "Click me!" and the default "Callable" icon.
+	// "Click me!,ColorRect" - A button with the text "Click me!" and the "ColorRect" icon.
+	// ```
+	// NOTE: A Callable cannot be properly serialized and stored in a file,
+	// so it is recommended to use `PROPERTY_USAGE_EDITOR` instead of `PROPERTY_USAGE_DEFAULT`.
 	PROPERTY_HINT_TOOL_BUTTON,
-	PROPERTY_HINT_ONESHOT, ///< the property will be changed by self after setting, such as AudioStreamPlayer.playing, Particles.emitting.
-	PROPERTY_HINT_NO_NODEPATH, /// < this property will not contain a NodePath, regardless of type (Array, Dictionary, List, etc.). Needed for SceneTreeDock.
+
+	// Hints that a property will be changed on its own after setting,
+	// such as `AudioStreamPlayer::playing` or `GPUParticles3D::emitting`.
+	PROPERTY_HINT_ONESHOT,
+
+	// This property will not contain a `NodePath`, regardless of type (`Array`, `Dictionary`, `List`, etc.).
+	// Needed for SceneTreeDock.
+	PROPERTY_HINT_NO_NODEPATH,
+
+	// Represents the size of the PropertyHint enum.
 	PROPERTY_HINT_MAX,
 };
 
 enum PropertyUsageFlags {
+	// The property is not stored, and does not display in the editor.
+	// NOTE: This is not the default value for properties exposed using `ADD_PROPERTY()`
+	// (see `PROPERTY_USAGE_DEFAULT` instead).
 	PROPERTY_USAGE_NONE = 0,
-	PROPERTY_USAGE_STORAGE = 1 << 1,
-	PROPERTY_USAGE_EDITOR = 1 << 2,
-	PROPERTY_USAGE_INTERNAL = 1 << 3,
-	PROPERTY_USAGE_CHECKABLE = 1 << 4, // Used for editing global variables.
-	PROPERTY_USAGE_CHECKED = 1 << 5, // Used for editing global variables.
-	PROPERTY_USAGE_GROUP = 1 << 6, // Used for grouping props in the editor.
-	PROPERTY_USAGE_CATEGORY = 1 << 7,
-	PROPERTY_USAGE_SUBGROUP = 1 << 8,
-	PROPERTY_USAGE_CLASS_IS_BITFIELD = 1 << 9,
-	PROPERTY_USAGE_NO_INSTANCE_STATE = 1 << 10,
-	PROPERTY_USAGE_RESTART_IF_CHANGED = 1 << 11,
-	PROPERTY_USAGE_SCRIPT_VARIABLE = 1 << 12,
-	PROPERTY_USAGE_STORE_IF_NULL = 1 << 13,
-	PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED = 1 << 14,
-	PROPERTY_USAGE_SCRIPT_DEFAULT_VALUE = 1 << 15, // Deprecated.
-	PROPERTY_USAGE_CLASS_IS_ENUM = 1 << 16,
-	PROPERTY_USAGE_NIL_IS_VARIANT = 1 << 17,
-	PROPERTY_USAGE_ARRAY = 1 << 18, // Used in the inspector to group properties as elements of an array.
-	PROPERTY_USAGE_ALWAYS_DUPLICATE = 1 << 19, // When duplicating a resource, always duplicate, even with subresource duplication disabled.
-	PROPERTY_USAGE_NEVER_DUPLICATE = 1 << 20, // When duplicating a resource, never duplicate, even with subresource duplication enabled.
-	PROPERTY_USAGE_HIGH_END_GFX = 1 << 21,
-	PROPERTY_USAGE_NODE_PATH_FROM_SCENE_ROOT = 1 << 22,
-	PROPERTY_USAGE_RESOURCE_NOT_PERSISTENT = 1 << 23,
-	PROPERTY_USAGE_KEYING_INCREMENTS = 1 << 24, // Used in inspector to increment property when keyed in animation player.
-	PROPERTY_USAGE_DEFERRED_SET_RESOURCE = 1 << 25, // Deprecated.
-	PROPERTY_USAGE_EDITOR_INSTANTIATE_OBJECT = 1 << 26, // For Object properties, instantiate them when creating in editor.
-	PROPERTY_USAGE_EDITOR_BASIC_SETTING = 1 << 27, //for project or editor settings, show when basic settings are selected.
-	PROPERTY_USAGE_READ_ONLY = 1 << 28, // Mark a property as read-only in the inspector.
-	PROPERTY_USAGE_SECRET = 1 << 29, // Export preset credentials that should be stored separately from the rest of the export config.
 
+	// The property is serialized and saved in the scene file.
+	PROPERTY_USAGE_STORAGE = 1 << 1,
+
+	// The property is shown in the EditorInspector.
+	PROPERTY_USAGE_EDITOR = 1 << 2,
+
+	// The property is excluded from the class reference.
+	PROPERTY_USAGE_INTERNAL = 1 << 3,
+
+	// The property can be checked in the EditorInspector and is currently unchecked.
+	// NOTE: Not to be confused with boolean properties' checkbox.
+	// `PROPERTY_USAGE_CHECKABLE`'s checkbox is a separate control displayed at the left of the property name.
+	PROPERTY_USAGE_CHECKABLE = 1 << 4,
+
+	// The property can be checked in the EditorInspector and is currently checked.
+	// NOTE: Not to be confused with boolean properties' checkbox.
+	// `PROPERTY_USAGE_CHECKED`'s checkbox is a separate control displayed at the left of the property name.
+	PROPERTY_USAGE_CHECKED = 1 << 5,
+
+	// Used to group properties together in the editor.
+	PROPERTY_USAGE_GROUP = 1 << 6,
+
+	// Used to categorize properties together in the editor.
+	PROPERTY_USAGE_CATEGORY = 1 << 7,
+
+	// Used to group properties together in the editor in a subgroup (under a group).
+	PROPERTY_USAGE_SUBGROUP = 1 << 8,
+
+	// The property is a bitfield, i.e. it contains multiple flags represented as bits.
+	PROPERTY_USAGE_CLASS_IS_BITFIELD = 1 << 9,
+
+	// The property does not save its state in PackedScene.
+	PROPERTY_USAGE_NO_INSTANCE_STATE = 1 << 10,
+
+	// Editing the property prompts the user for restarting the editor.
+	PROPERTY_USAGE_RESTART_IF_CHANGED = 1 << 11,
+
+	// The property is a script variable. `PROPERTY_USAGE_SCRIPT_VARIABLE` can be used to distinguish between
+	// exported script variables from built-in variables (which don't have this usage flag).
+	// By default, `PROPERTY_USAGE_SCRIPT_VARIABLE` is *not* applied to variables
+	// that are created by overriding `Object::_get_property_list()` in a script.
+	PROPERTY_USAGE_SCRIPT_VARIABLE = 1 << 12,
+
+	// The property value of type [Object] will be stored even if its value is `null`.
+	PROPERTY_USAGE_STORE_IF_NULL = 1 << 13,
+
+	// If this property is modified, all inspector fields will be refreshed.
+	PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED = 1 << 14,
+
+	// Deprecated. This flag is not used by the engine.
+	PROPERTY_USAGE_SCRIPT_DEFAULT_VALUE = 1 << 15,
+
+	// The property is a variable of enum type, i.e. it only takes named integer constants
+	// from its associated enumeration.
+	PROPERTY_USAGE_CLASS_IS_ENUM = 1 << 16,
+
+	// If property has `nullptr` as default value, its type will be Variant.
+	PROPERTY_USAGE_NIL_IS_VARIANT = 1 << 17,
+
+	// The property is an array. This is used in the inspector to group properties as elements of an array.
+	PROPERTY_USAGE_ARRAY = 1 << 18,
+
+	// When duplicating a resource with `duplicate()`, and this flag is set on a property of that resource,
+	// the property should always be duplicated, regardless of the `subresources` bool parameter.
+	PROPERTY_USAGE_ALWAYS_DUPLICATE = 1 << 19,
+
+	// When duplicating a resource with `duplicate()`, and this flag is set on a property of that resource,
+	// the property should never be duplicated, regardless of the `subresources` bool parameter.
+	PROPERTY_USAGE_NEVER_DUPLICATE = 1 << 20,
+
+	// The property is only shown in the editor if modern renderers are supported
+	// (the Compatibility rendering method is excluded).
+	PROPERTY_USAGE_HIGH_END_GFX = 1 << 21,
+
+	// The NodePath property will always be relative to the scene's root. Mostly useful for local resources.
+	PROPERTY_USAGE_NODE_PATH_FROM_SCENE_ROOT = 1 << 22,
+
+	// Use when a resource is created on the fly, i.e. the getter will always return a different instance.
+	// ResourceSaver needs this information to properly save such resources.
+	PROPERTY_USAGE_RESOURCE_NOT_PERSISTENT = 1 << 23,
+
+	// Inserting an animation key frame of this property will automatically increment the value,
+	// allowing to easily keyframe multiple values in a row.
+	PROPERTY_USAGE_KEYING_INCREMENTS = 1 << 24,
+
+	// Deprecated.
+	PROPERTY_USAGE_DEFERRED_SET_RESOURCE = 1 << 25,
+
+	// When this property is a `Resource` and base object is a `Node`,
+	// a resource instance will be automatically created whenever the node is created in the editor.
+	PROPERTY_USAGE_EDITOR_INSTANTIATE_OBJECT = 1 << 26,
+
+	// The property is considered a basic setting and will appear even when advanced mode is disabled.
+	// Used for project settings.
+	PROPERTY_USAGE_EDITOR_BASIC_SETTING = 1 << 27,
+
+	// The property is read-only in the [EditorInspector].
+	PROPERTY_USAGE_READ_ONLY = 1 << 28,
+
+	// An export preset property with this flag contains confidential information
+	// and is stored separately from the rest of the export preset configuration.
+	PROPERTY_USAGE_SECRET = 1 << 29,
+
+	// Default usage (storage and editor).
+	// NOTE: To hide a property in the inspector, use `PROPERTY_USAGE_NO_EDITOR` instead of `PROPERTY_USAGE_NONE`.
 	PROPERTY_USAGE_DEFAULT = PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_EDITOR,
+
+	// Default usage but without showing the property in the editor (storage).
 	PROPERTY_USAGE_NO_EDITOR = PROPERTY_USAGE_STORAGE,
 };
 
+// Binds a signal with the name `m_signal` to the scripting API.
 #define ADD_SIGNAL(m_signal) ::ClassDB::add_signal(get_class_static(), m_signal)
+
+// Binds the PropertyInfo `m_property` to the scripting API.
+// `m_setter` and `m_getter` are the setter and getter methods for the property.
+// `m_setter` should take exactly 1 parameter (the value), and `m_getter` should take no parameters.
+//
+// Example:
+// ```cpp
+// ADD_PROPERTY(PropertyInfo(Variant::INT, "display_mode", PROPERTY_HINT_ENUM, "Thumbnails,List"), "set_display_mode", "get_display_mode");
+// ```
 #define ADD_PROPERTY(m_property, m_setter, m_getter) ::ClassDB::add_property(get_class_static(), m_property, _scs_create(m_setter), _scs_create(m_getter))
+
+// Binds the indexed PropertyInfo with the name `m_property` to the scripting API.
+// This is used for properties that call a setter that takes an index parameter when set, such as Light3D's various properties.
+// `m_setter` should take exactly 2 parameters (index then value), and `m_getter` should exactly 1 parameter (the index).
+//
+// Example:
+// ```cpp
+// ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "offset_top", PROPERTY_HINT_RANGE, "-4096,4096,1,or_less,or_greater,suffix:px"), "set_offset", "get_offset", SIDE_TOP);
+// ```
 #define ADD_PROPERTYI(m_property, m_setter, m_getter, m_index) ::ClassDB::add_property(get_class_static(), m_property, _scs_create(m_setter), _scs_create(m_getter), m_index)
+
+// Binds the PropertyInfo with the name `m_property` to the scripting API, with the default value in the documentation set to `m_default`.
+// Compared to `ADD_PROPERTY()`, this will not call the method to determine its default value when using `--doctool`.
+// This can be used to avoid platform-specific differences in the generated documentation.
+//
+// Example:
+// ```cpp
+// ADD_PROPERTY_DEFAULT("input_device", "Default");
+// ```
 #define ADD_PROPERTY_DEFAULT(m_property, m_default) ::ClassDB::set_property_default_value(get_class_static(), m_property, m_default)
+
+// Begins an inspector property group with the name `m_name` and the prefix `m_prefix`.
+// All properties added after this macro will be part of this group until another group is created below it,
+// or until `ADD_GROUP("", "")` is called to end the group without creating another group below.
+// `m_name` should be in Title Case, while `m_prefix` should be in snake_case and end with an underscore.
+// `m_prefix` is purely cosmetic and can be an empty string. If the beginning of a property's name matches `m_prefix`,
+// the prefix will be hidden in the inspector. Not all properties have to match the prefix to be added to the group.
+//
+// Example:
+// ```cpp
+// ADD_GROUP("Collision", "collision_");
+// ```
 #define ADD_GROUP(m_name, m_prefix) ::ClassDB::add_property_group(get_class_static(), m_name, m_prefix)
+
+// Begins an inspector property group with the name `m_name`, the prefix `m_prefix` and the depth level `m_depth` (must be 1 or greater).
+// All properties added after this macro will be part of this group until another group is created below it,
+// or until `ADD_GROUP("", "")` is called to end the group without creating another group below.
+// `m_name` should be in Title Case, while `m_prefix` should be in snake_case and end with an underscore.
+// `m_prefix` is purely cosmetic and can be an empty string. If the beginning of a property's name matches `m_prefix`,
+// the prefix will be hidden in the inspector. Not all properties have to match the prefix to be added to the group.
+//
+// NOTE: Most of the time, `ADD_SUBGROUP()` should be preferred over `ADD_GROUP_INDENT()`.
+//
+// Example:
+// ```cpp
+// ADD_GROUP_INDENT("Grow Direction", "grow_", 1);
+// ```
 #define ADD_GROUP_INDENT(m_name, m_prefix, m_depth) ::ClassDB::add_property_group(get_class_static(), m_name, m_prefix, m_depth)
+
+// Begins an inspector property subgroup with the name `m_name` and the prefix `m_prefix`.
+// All properties added after this macro will be part of this subgroup until another subgroup is created below it,
+// or until `ADD_GROUP("", "")` is called to end the subgroup without creating another subgroup below.
+// `m_name` should be in Title Case, while `m_prefix` should be in snake_case and end with an underscore.
+// `m_prefix` is purely cosmetic and can be an empty string. If the beginning of a property's name matches `m_prefix`,
+// the prefix will be hidden in the inspector. Not all properties have to match the prefix to be added to the group.
+//
+// Example:
+// ```cpp
+// ADD_SUBGROUP("Tangential Accel", "tangential_");
+// ```
 #define ADD_SUBGROUP(m_name, m_prefix) ::ClassDB::add_property_subgroup(get_class_static(), m_name, m_prefix)
+
+// Begins an inspector property subgroup with the name `m_name`, the prefix `m_prefix` and the depth level `m_depth` (must be 1 or greater).
+// All properties added after this macro will be part of this subgroup until another subgroup is created below it,
+// or until `ADD_GROUP("", "")` is called to end the subgroup without creating another group below.
+// `m_name` should be in Title Case, while `m_prefix` should be in snake_case and end with an underscore.
+// `m_prefix` is purely cosmetic and can be an empty string. If the beginning of a property's name matches `m_prefix`,
+// the prefix will be hidden in the inspector. Not all properties have to match the prefix to be added to the group.
+//
+// Example:
+// ```cpp
+// ADD_SUBGROUP_INDENT("Grow Direction", "grow_", 1);
+// ```
 #define ADD_SUBGROUP_INDENT(m_name, m_prefix, m_depth) ::ClassDB::add_property_subgroup(get_class_static(), m_name, m_prefix, m_depth)
+
+// Defines a property to be linked with another (both properties must have been bound using `ADD_PROPERTY` beforehand).
+// When `m_property` property is modified through the inspector, the old value of `m_linked_property` is stored before
+// the change is made, so that it can be reverted to using the editor's undo/redo system.
+// For dynamic properties, the class must also define the `_get_linked_undo_properties()` method for this to work.
+// Behavior is one-way by default, but can be made two-way by defining the link in both directions.
+//
+// Example:
+// ```cpp
+// ADD_LINKED_PROPERTY("radius", "height");
+// ADD_LINKED_PROPERTY("height", "radius");
+// ```
 #define ADD_LINKED_PROPERTY(m_property, m_linked_property) ::ClassDB::add_linked_property(get_class_static(), m_property, m_linked_property)
 
+// Binds an array to the scripting API, with a dedicated array editor in the inspector.
+// `m_label` should be in Title Case, while `m_prefix` should be in snake_case and end with a slash.
+// `m_count_property`, `m_count_property_setter` and `m_count_property_getter` are used to set/get
+// the array length and are defined like in `ADD_PROPERTY()`.
+// To define custom property usage flags, use `ADD_ARRAY_COUNT_WITH_USAGE_FLAGS()` instead.
+//
+// Example:
+// ```cpp
+// ADD_ARRAY_COUNT("Items", "item_count", "set_item_count", "get_item_count", "item_");
+// ```
 #define ADD_ARRAY_COUNT(m_label, m_count_property, m_count_property_setter, m_count_property_getter, m_prefix) ClassDB::add_property_array_count(get_class_static(), m_label, m_count_property, _scs_create(m_count_property_setter), _scs_create(m_count_property_getter), m_prefix)
+
+// Binds an array to the scripting API, with a dedicated array editor in the inspector.
+// `m_label` should be in Title Case, while `m_prefix` should be in snake_case and end with a slash.
+// `m_count_property`, `m_count_property_setter` and `m_count_property_getter` are used to set/get
+// the array length and are defined like in `ADD_PROPERTY()`.
+// Property usage flags are defined using `m_property_usage_flags`.
+//
+// Example:
+// ```cpp
+// ADD_ARRAY_COUNT_WITH_USAGE_FLAGS("Items", "item_count", "set_item_count", "get_item_count", "item_", PROPERTY_USAGE_NO_EDITOR);
+// ```
 #define ADD_ARRAY_COUNT_WITH_USAGE_FLAGS(m_label, m_count_property, m_count_property_setter, m_count_property_getter, m_prefix, m_property_usage_flags) ClassDB::add_property_array_count(get_class_static(), m_label, m_count_property, _scs_create(m_count_property_setter), _scs_create(m_count_property_getter), m_prefix, m_property_usage_flags)
+
+// Binds an array to the scripting API, with a dedicated array editor in the inspector.
+// `m_array_path` should be in snake_case, while `m_prefix` should be in snake_case and end with an underscore.
+// Array properties created this way will have the naming `m_prefix/N`, where `N` is an integer starting from 0
+// representing the array index.
+//
+// For this to be effective, the class must have a `_set()` method implemented that reads the property name
+// and acts accordingly if the property name is `m_prefix/N`. Alternatively, you can use PropertyListHelper
+// to handle this for you (see the TileMap class for an example).
+//
+// Example:
+// ```cpp
+// ADD_ARRAY("physics_layers", "physics_layer_");
+// ```
 #define ADD_ARRAY(m_array_path, m_prefix) ClassDB::add_property_array(get_class_static(), m_array_path, m_prefix)
 
-// Helper macro to use with PROPERTY_HINT_ARRAY_TYPE for arrays of specific resources:
-// PropertyInfo(Variant::ARRAY, "fallbacks", PROPERTY_HINT_ARRAY_TYPE, MAKE_RESOURCE_TYPE_HINT("Font")
+// Helper macro to use with `PROPERTY_HINT_ARRAY_TYPE` for arrays of specific resources.
+//
+// Example:
+// ```cpp
+// PropertyInfo(Variant::ARRAY, "fallbacks", PROPERTY_HINT_ARRAY_TYPE, MAKE_RESOURCE_TYPE_HINT("Font"))
+// ```
 #define MAKE_RESOURCE_TYPE_HINT(m_type) vformat("%s/%s:%s", Variant::OBJECT, PROPERTY_HINT_RESOURCE_TYPE, m_type)
 
 struct PropertyInfo {
@@ -389,6 +757,15 @@ struct ObjectGDExtension {
  * much alone defines the object model.
  */
 
+// Registers a class to be exposed to the scripting API.
+// This must be used in the header file within the class definition.
+//
+// Example:
+// ```cpp
+// class RenderData : public Object {
+//     GDCLASS(RenderData, Object);
+//     // ...
+// ```
 #define GDCLASS(m_class, m_inherits)                                                                                                        \
 private:                                                                                                                                    \
 	void operator=(const m_class &p_rval) {}                                                                                                \
@@ -977,6 +1354,7 @@ public:
 
 	// Translate message (internationalization).
 	String tr(const StringName &p_message, const StringName &p_context = "") const;
+	// Translate message with plural form (internationalization).
 	String tr_n(const StringName &p_message, const StringName &p_message_plural, int p_n, const StringName &p_context = "") const;
 
 	bool _is_queued_for_deletion = false; // Set to true by SceneTree::queue_delete().
