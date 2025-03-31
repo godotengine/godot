@@ -93,9 +93,6 @@ void EditorResourcePreviewGenerator::_bind_methods() {
 	GDVIRTUAL_BIND(_can_generate_small_preview);
 }
 
-EditorResourcePreviewGenerator::EditorResourcePreviewGenerator() {
-}
-
 void EditorResourcePreviewGenerator::DrawRequester::request_and_wait(RID p_viewport) {
 	Callable request_vp_update_once = callable_mp(RS::get_singleton(), &RS::viewport_set_update_mode).bind(p_viewport, RS::VIEWPORT_UPDATE_ONCE);
 

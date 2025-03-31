@@ -180,10 +180,15 @@ public:
 		// do a lot of referencing on references and stuff
 		// mutexes will avoid more crashes?
 
-		if (reference && reference->unreference()) {
-			memdelete(reference);
+		if (reference) {
+			// NOTE: `reinterpret_cast` is "safe" here because we know `T` has simple linear
+			// inheritance to `RefCounted`. This guarantees that `T * == `RefCounted *`, which
+			// allows us to declare `Ref<T>` with forward declared `T` types.
+			if (reinterpret_cast<RefCounted *>(reference)->unreference()) {
+				memdelete(reinterpret_cast<RefCounted *>(reference));
+			}
+			reference = nullptr;
 		}
-		reference = nullptr;
 	}
 
 	template <typename... VarArgs>
@@ -276,3 +281,7 @@ struct VariantInternalAccessor<const Ref<T> &> {
 	static _FORCE_INLINE_ Ref<T> get(const Variant *v) { return Ref<T>(*VariantInternal::get_object(v)); }
 	static _FORCE_INLINE_ void set(Variant *v, const Ref<T> &p_ref) { VariantInternal::object_assign(v, p_ref); }
 };
+
+// Zero-constructing Ref initializes reference to nullptr (and thus empty).
+template <typename T>
+struct is_zero_constructible<Ref<T>> : std::true_type {};

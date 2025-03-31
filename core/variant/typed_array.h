@@ -55,6 +55,8 @@ public:
 			assign(p_array);
 		}
 	}
+	_FORCE_INLINE_ TypedArray(std::initializer_list<Variant> p_init) :
+			TypedArray(Array(p_init)) {}
 	_FORCE_INLINE_ TypedArray() {
 		set_typed(Variant::OBJECT, T::get_class_static(), Variant());
 	}
@@ -80,6 +82,9 @@ struct VariantInternalAccessor<const TypedArray<T> &> {
 		_FORCE_INLINE_ void operator=(const Array &p_array) {                                                    \
 			ERR_FAIL_COND_MSG(!is_same_typed(p_array), "Cannot assign an array with a different element type."); \
 			_ref(p_array);                                                                                       \
+		}                                                                                                        \
+		_FORCE_INLINE_ TypedArray(std::initializer_list<Variant> p_init) :                                       \
+				Array(Array(p_init), m_variant_type, StringName(), Variant()) {                                  \
 		}                                                                                                        \
 		_FORCE_INLINE_ TypedArray(const Variant &p_variant) :                                                    \
 				TypedArray(Array(p_variant)) {                                                                   \

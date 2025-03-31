@@ -54,13 +54,14 @@ static inline Array reverse_nested(Array array) {
 }
 
 TEST_CASE("[SceneTree][TextEdit] text entry") {
+#if !defined(PHYSICS_2D_DISABLED) || !defined(PHYSICS_3D_DISABLED)
 	SceneTree::get_singleton()->get_root()->set_physics_object_picking(false);
+#endif // !defined(PHYSICS_2D_DISABLED) || !defined(PHYSICS_3D_DISABLED)
 	TextEdit *text_edit = memnew(TextEdit);
 	SceneTree::get_singleton()->get_root()->add_child(text_edit);
 	text_edit->grab_focus();
 
-	Array empty_signal_args;
-	empty_signal_args.push_back(Array());
+	Array empty_signal_args = { {} };
 
 	SUBCASE("[TextEdit] text entry") {
 		SIGNAL_WATCH(text_edit, "text_set");
@@ -6445,8 +6446,7 @@ TEST_CASE("[SceneTree][TextEdit] versioning") {
 
 		CHECK(text_edit->get_caret_count() == 1);
 
-		Array caret_index;
-		caret_index.push_back(0);
+		Array caret_index = { 0 };
 
 		for (int i = 1; i < 4; i++) {
 			caret_index.push_back(text_edit->add_caret(i, 0));
@@ -6710,8 +6710,7 @@ TEST_CASE("[SceneTree][TextEdit] multicaret") {
 	SceneTree::get_singleton()->get_root()->add_child(text_edit);
 	text_edit->set_multiple_carets_enabled(true);
 
-	Array empty_signal_args;
-	empty_signal_args.push_back(Array());
+	Array empty_signal_args = { {} };
 
 	SIGNAL_WATCH(text_edit, "caret_changed");
 
@@ -7344,7 +7343,7 @@ TEST_CASE("[SceneTree][TextEdit] multicaret") {
 		CHECK(text_edit->get_caret_line(1) == 1);
 		CHECK(text_edit->get_caret_column(1) == 1);
 		CHECK(text_edit->get_caret_line(2) == 0);
-		CHECK(text_edit->get_caret_column(2) == 8);
+		CHECK(text_edit->get_caret_column(2) == 7);
 
 		// Add caret above from first line and not first line wrap.
 		text_edit->add_caret_at_carets(false);
@@ -7355,9 +7354,9 @@ TEST_CASE("[SceneTree][TextEdit] multicaret") {
 		CHECK(text_edit->get_caret_line(1) == 1);
 		CHECK(text_edit->get_caret_column(1) == 1);
 		CHECK(text_edit->get_caret_line(2) == 0);
-		CHECK(text_edit->get_caret_column(2) == 8);
+		CHECK(text_edit->get_caret_column(2) == 7);
 		CHECK(text_edit->get_caret_line(3) == 0);
-		CHECK(text_edit->get_caret_column(3) == 4);
+		CHECK(text_edit->get_caret_column(3) == 2);
 
 		// Cannot add caret above from first line first line wrap.
 		text_edit->remove_secondary_carets();
@@ -8005,8 +8004,7 @@ TEST_CASE("[SceneTree][TextEdit] gutters") {
 	TextEdit *text_edit = memnew(TextEdit);
 	SceneTree::get_singleton()->get_root()->add_child(text_edit);
 
-	Array empty_signal_args;
-	empty_signal_args.push_back(Array());
+	Array empty_signal_args = { {} };
 
 	SIGNAL_WATCH(text_edit, "gutter_clicked");
 	SIGNAL_WATCH(text_edit, "gutter_added");

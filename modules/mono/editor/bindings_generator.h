@@ -32,7 +32,7 @@
 
 #include "core/typedefs.h" // DEBUG_METHODS_ENABLED
 
-#if defined(DEBUG_METHODS_ENABLED) && defined(TOOLS_ENABLED)
+#ifdef DEBUG_METHODS_ENABLED
 
 #include "core/doc_data.h"
 #include "core/object/class_db.h"

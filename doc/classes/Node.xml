@@ -1226,6 +1226,9 @@
 		<constant name="NOTIFICATION_VP_MOUSE_EXIT" value="1011">
 			Notification received when the mouse cursor leaves the [Viewport]'s visible area, that is not occluded behind other [Control]s or [Window]s, provided its [member Viewport.gui_disable_input] is [code]false[/code] and regardless if it's currently focused or not.
 		</constant>
+		<constant name="NOTIFICATION_WM_POSITION_CHANGED" value="1012">
+			Notification received when the window is moved.
+		</constant>
 		<constant name="NOTIFICATION_OS_MEMORY_WARNING" value="2009">
 			Notification received from the OS when the application is exceeding its allocated memory.
 			Implemented only on iOS.

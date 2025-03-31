@@ -10,6 +10,14 @@
 		<link title="Using NavigationPathQueryObjects">$DOCS_URL/tutorials/navigation/navigation_using_navigationpathqueryobjects.html</link>
 	</tutorials>
 	<members>
+		<member name="excluded_regions" type="RID[]" setter="set_excluded_regions" getter="get_excluded_regions" default="[]">
+			The list of region [RID]s that will be excluded from the path query. Use [method NavigationRegion2D.get_rid] to get the [RID] associated with a [NavigationRegion2D] node.
+			[b]Note:[/b] The returned array is copied and any changes to it will not update the original property value. To update the value you need to modify the returned array, and then set it to the property again.
+		</member>
+		<member name="included_regions" type="RID[]" setter="set_included_regions" getter="get_included_regions" default="[]">
+			The list of region [RID]s that will be included by the path query. Use [method NavigationRegion2D.get_rid] to get the [RID] associated with a [NavigationRegion2D] node. If left empty all regions are included. If a region ends up being both included and excluded at the same time it will be excluded.
+			[b]Note:[/b] The returned array is copied and any changes to it will not update the original property value. To update the value you need to modify the returned array, and then set it to the property again.
+		</member>
 		<member name="map" type="RID" setter="set_map" getter="get_map" default="RID()">
 			The navigation map [RID] used in the path query.
 		</member>

@@ -913,6 +913,12 @@ bool EditorFileSystem::_update_scan_actions() {
 						// Re-assign the UID to file, just in case it was pulled from cache.
 						ResourceSaver::set_uid(new_file_path, existing_id);
 					}
+				} else if (ResourceLoader::should_create_uid_file(new_file_path)) {
+					Ref<FileAccess> f = FileAccess::open(new_file_path + ".uid", FileAccess::WRITE);
+					if (f.is_valid()) {
+						ia.new_file->uid = ResourceUID::get_singleton()->create_id();
+						f->store_line(ResourceUID::get_singleton()->id_to_text(ia.new_file->uid));
+					}
 				}
 
 				if (ClassDB::is_parent_class(ia.new_file->type, SNAME("Script"))) {
@@ -927,15 +933,16 @@ bool EditorFileSystem::_update_scan_actions() {
 				int idx = ia.dir->find_file_index(ia.file);
 				ERR_CONTINUE(idx == -1);
 
-				String class_name = ia.dir->files[idx]->class_info.name;
+				const String file_path = ia.dir->get_file_path(idx);
+				const String class_name = ia.dir->files[idx]->class_info.name;
 				if (ClassDB::is_parent_class(ia.dir->files[idx]->type, SNAME("Script"))) {
-					_queue_update_script_class(ia.dir->get_file_path(idx), ScriptClassInfoUpdate());
+					_queue_update_script_class(file_path, ScriptClassInfoUpdate());
 				}
 				if (ia.dir->files[idx]->type == SNAME("PackedScene")) {
-					_queue_update_scene_groups(ia.dir->get_file_path(idx));
+					_queue_update_scene_groups(file_path);
 				}
 
-				_delete_internal_files(ia.dir->files[idx]->file);
+				_delete_internal_files(file_path);
 				memdelete(ia.dir->files[idx]);
 				ia.dir->files.remove_at(idx);
 
@@ -1145,15 +1152,15 @@ int EditorFileSystem::_scan_new_dir(ScannedDirectory *p_dir, Ref<DirAccess> &da)
 
 	int nb_files_total_scan = 0;
 
-	for (List<String>::Element *E = dirs.front(); E; E = E->next()) {
-		if (da->change_dir(E->get()) == OK) {
+	for (const String &dir : dirs) {
+		if (da->change_dir(dir) == OK) {
 			String d = da->get_current_dir();
 
 			if (d == cd || !d.begins_with(cd)) {
 				da->change_dir(cd); //avoid recursion
 			} else {
 				ScannedDirectory *sd = memnew(ScannedDirectory);
-				sd->name = E->get();
+				sd->name = dir;
 				sd->full_path = p_dir->full_path.path_join(sd->name);
 
 				nb_files_total_scan += _scan_new_dir(sd, da);
@@ -1163,7 +1170,7 @@ int EditorFileSystem::_scan_new_dir(ScannedDirectory *p_dir, Ref<DirAccess> &da)
 				da->change_dir("..");
 			}
 		} else {
-			ERR_PRINT("Cannot go into subdir '" + E->get() + "'.");
+			ERR_PRINT("Cannot go into subdir '" + dir + "'.");
 		}
 	}
 
@@ -2171,6 +2178,7 @@ void EditorFileSystem::_update_script_documentation() {
 
 		if (!efd || index < 0) {
 			// The file was removed
+			EditorHelp::remove_script_doc_by_path(path);
 			continue;
 		}
 
@@ -2188,7 +2196,7 @@ void EditorFileSystem::_update_script_documentation() {
 					scr->reload_from_file();
 				}
 				for (const DocData::ClassDoc &cd : scr->get_documentation()) {
-					EditorHelp::get_doc_data()->add_doc(cd);
+					EditorHelp::add_doc(cd);
 					if (!first_scan) {
 						// Update the documentation in the Script Editor if it is open.
 						ScriptEditor::get_singleton()->update_doc(cd.name);
@@ -2824,11 +2832,9 @@ Error EditorFileSystem::_reimport_file(const String &p_file, const HashMap<Strin
 	if (load_default && ProjectSettings::get_singleton()->has_setting("importer_defaults/" + importer->get_importer_name())) {
 		//use defaults if exist
 		Dictionary d = GLOBAL_GET("importer_defaults/" + importer->get_importer_name());
-		List<Variant> v;
-		d.get_key_list(&v);
 
-		for (const Variant &E : v) {
-			params[E] = d[E];
+		for (const KeyValue<Variant, Variant> &kv : d) {
+			params[kv.key] = kv.value;
 		}
 	}
 
@@ -3107,8 +3113,11 @@ void EditorFileSystem::_refresh_filesystem() {
 }
 
 void EditorFileSystem::_reimport_thread(uint32_t p_index, ImportThreadData *p_import_data) {
+	ResourceLoader::set_is_import_thread(true);
 	int file_idx = p_import_data->reimport_from + int(p_index);
 	_reimport_file(p_import_data->reimport_files[file_idx].path);
+	ResourceLoader::set_is_import_thread(false);
+
 	p_import_data->imported_sem->post();
 }
 
@@ -3437,7 +3446,7 @@ Error EditorFileSystem::make_dir_recursive(const String &p_path, const String &p
 	ERR_FAIL_NULL_V(parent, ERR_FILE_NOT_FOUND);
 	folders_to_sort.insert(parent->get_instance_id());
 
-	const PackedStringArray folders = p_path.trim_prefix(path).trim_suffix("/").split("/");
+	const PackedStringArray folders = p_path.trim_prefix(path).split("/", false);
 	for (const String &folder : folders) {
 		const int current = parent->find_dir_index(folder);
 		if (current > -1) {

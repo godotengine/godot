@@ -196,7 +196,7 @@ Error HTTPClientTCP::request(Method p_method, const String &p_url, const Vector<
 		// Should it add utf8 encoding?
 	}
 	if (add_uagent) {
-		request += "User-Agent: GodotEngine/" + String(VERSION_FULL_BUILD) + " (" + OS::get_singleton()->get_name() + ")\r\n";
+		request += "User-Agent: GodotEngine/" + String(GODOT_VERSION_FULL_BUILD) + " (" + OS::get_singleton()->get_name() + ")\r\n";
 	}
 	if (add_accept) {
 		request += "Accept: */*\r\n";
@@ -484,7 +484,7 @@ Error HTTPClientTCP::poll() {
 					// End of response, parse.
 					response_str.push_back(0);
 					String response;
-					response.parse_utf8((const char *)response_str.ptr(), response_str.size());
+					response.append_utf8((const char *)response_str.ptr(), response_str.size());
 					Vector<String> responses = response.split("\n");
 					body_size = -1;
 					chunked = false;

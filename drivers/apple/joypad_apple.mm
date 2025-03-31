@@ -134,6 +134,11 @@ public:
 GameController::GameController(int p_joy_id, GCController *p_controller) :
 		joy_id(p_joy_id), controller(p_controller) {
 	force_feedback = NO;
+
+	for (int i = 0; i < (int)JoyAxis::MAX; i++) {
+		axis_changed[i] = false;
+		axis_value[i] = 0.0;
+	}
 	if (@available(macOS 11.0, iOS 14.0, tvOS 14.0, *)) {
 		if (controller.haptics != nil) {
 			// Create a rumble context for the controller.
@@ -158,7 +163,159 @@ GameController::GameController(int p_joy_id, GCController *p_controller) :
 		};
 	};
 
-	if (controller.extendedGamepad != nil) {
+	if (@available(macOS 11.0, iOS 14.0, tvOS 14.0, *)) {
+		if (controller.physicalInputProfile != nil) {
+			GCPhysicalInputProfile *profile = controller.physicalInputProfile;
+
+			GCControllerButtonInput *buttonA = profile.buttons[GCInputButtonA];
+			GCControllerButtonInput *buttonB = profile.buttons[GCInputButtonB];
+			GCControllerButtonInput *buttonX = profile.buttons[GCInputButtonX];
+			GCControllerButtonInput *buttonY = profile.buttons[GCInputButtonY];
+			if (nintendo_button_layout) {
+				if (buttonA) {
+					buttonA.pressedChangedHandler = BUTTON(JoyButton::B);
+				}
+				if (buttonB) {
+					buttonB.pressedChangedHandler = BUTTON(JoyButton::A);
+				}
+				if (buttonX) {
+					buttonX.pressedChangedHandler = BUTTON(JoyButton::Y);
+				}
+				if (buttonY) {
+					buttonY.pressedChangedHandler = BUTTON(JoyButton::X);
+				}
+			} else {
+				if (buttonA) {
+					buttonA.pressedChangedHandler = BUTTON(JoyButton::A);
+				}
+				if (buttonB) {
+					buttonB.pressedChangedHandler = BUTTON(JoyButton::B);
+				}
+				if (buttonX) {
+					buttonX.pressedChangedHandler = BUTTON(JoyButton::X);
+				}
+				if (buttonY) {
+					buttonY.pressedChangedHandler = BUTTON(JoyButton::Y);
+				}
+			}
+
+			GCControllerButtonInput *leftThumbstickButton = profile.buttons[GCInputLeftThumbstickButton];
+			GCControllerButtonInput *rightThumbstickButton = profile.buttons[GCInputRightThumbstickButton];
+			if (leftThumbstickButton) {
+				leftThumbstickButton.pressedChangedHandler = BUTTON(JoyButton::LEFT_STICK);
+			}
+			if (rightThumbstickButton) {
+				rightThumbstickButton.pressedChangedHandler = BUTTON(JoyButton::RIGHT_STICK);
+			}
+
+			GCControllerButtonInput *leftShoulder = profile.buttons[GCInputLeftShoulder];
+			GCControllerButtonInput *rightShoulder = profile.buttons[GCInputRightShoulder];
+			if (leftShoulder) {
+				leftShoulder.pressedChangedHandler = BUTTON(JoyButton::LEFT_SHOULDER);
+			}
+			if (rightShoulder) {
+				rightShoulder.pressedChangedHandler = BUTTON(JoyButton::RIGHT_SHOULDER);
+			}
+
+			GCControllerButtonInput *leftTrigger = profile.buttons[GCInputLeftTrigger];
+			GCControllerButtonInput *rightTrigger = profile.buttons[GCInputRightTrigger];
+			if (leftTrigger) {
+				leftTrigger.valueChangedHandler = ^(GCControllerButtonInput *button, float value, BOOL pressed) {
+					if (axis_value[(int)JoyAxis::TRIGGER_LEFT] != value) {
+						axis_changed[(int)JoyAxis::TRIGGER_LEFT] = true;
+						axis_value[(int)JoyAxis::TRIGGER_LEFT] = value;
+					}
+				};
+			}
+			if (rightTrigger) {
+				rightTrigger.valueChangedHandler = ^(GCControllerButtonInput *button, float value, BOOL pressed) {
+					if (axis_value[(int)JoyAxis::TRIGGER_RIGHT] != value) {
+						axis_changed[(int)JoyAxis::TRIGGER_RIGHT] = true;
+						axis_value[(int)JoyAxis::TRIGGER_RIGHT] = value;
+					}
+				};
+			}
+
+			GCControllerButtonInput *buttonMenu = profile.buttons[GCInputButtonMenu];
+			GCControllerButtonInput *buttonHome = profile.buttons[GCInputButtonHome];
+			GCControllerButtonInput *buttonOptions = profile.buttons[GCInputButtonOptions];
+			if (buttonMenu) {
+				buttonMenu.pressedChangedHandler = BUTTON(JoyButton::START);
+			}
+			if (buttonHome) {
+				buttonHome.pressedChangedHandler = BUTTON(JoyButton::GUIDE);
+			}
+			if (buttonOptions) {
+				buttonOptions.pressedChangedHandler = BUTTON(JoyButton::BACK);
+			}
+
+			// Xbox controller buttons.
+			if (@available(macOS 12.0, iOS 15.0, tvOS 15.0, *)) {
+				GCControllerButtonInput *buttonShare = profile.buttons[GCInputButtonShare];
+				if (buttonShare) {
+					buttonShare.pressedChangedHandler = BUTTON(JoyButton::MISC1);
+				}
+			}
+
+			GCControllerButtonInput *paddleButton1 = profile.buttons[GCInputXboxPaddleOne];
+			GCControllerButtonInput *paddleButton2 = profile.buttons[GCInputXboxPaddleTwo];
+			GCControllerButtonInput *paddleButton3 = profile.buttons[GCInputXboxPaddleThree];
+			GCControllerButtonInput *paddleButton4 = profile.buttons[GCInputXboxPaddleFour];
+			if (paddleButton1) {
+				paddleButton1.pressedChangedHandler = BUTTON(JoyButton::PADDLE1);
+			}
+			if (paddleButton2) {
+				paddleButton2.pressedChangedHandler = BUTTON(JoyButton::PADDLE2);
+			}
+			if (paddleButton3) {
+				paddleButton3.pressedChangedHandler = BUTTON(JoyButton::PADDLE3);
+			}
+			if (paddleButton4) {
+				paddleButton4.pressedChangedHandler = BUTTON(JoyButton::PADDLE4);
+			}
+
+			GCControllerDirectionPad *leftThumbstick = profile.dpads[GCInputLeftThumbstick];
+			if (leftThumbstick) {
+				leftThumbstick.valueChangedHandler = ^(GCControllerDirectionPad *dpad, float xValue, float yValue) {
+					if (axis_value[(int)JoyAxis::LEFT_X] != xValue) {
+						axis_changed[(int)JoyAxis::LEFT_X] = true;
+						axis_value[(int)JoyAxis::LEFT_X] = xValue;
+					}
+					if (axis_value[(int)JoyAxis::LEFT_Y] != -yValue) {
+						axis_changed[(int)JoyAxis::LEFT_Y] = true;
+						axis_value[(int)JoyAxis::LEFT_Y] = -yValue;
+					}
+				};
+			}
+
+			GCControllerDirectionPad *rightThumbstick = profile.dpads[GCInputRightThumbstick];
+			if (rightThumbstick) {
+				rightThumbstick.valueChangedHandler = ^(GCControllerDirectionPad *dpad, float xValue, float yValue) {
+					if (axis_value[(int)JoyAxis::RIGHT_X] != xValue) {
+						axis_changed[(int)JoyAxis::RIGHT_X] = true;
+						axis_value[(int)JoyAxis::RIGHT_X] = xValue;
+					}
+					if (axis_value[(int)JoyAxis::RIGHT_Y] != -yValue) {
+						axis_changed[(int)JoyAxis::RIGHT_Y] = true;
+						axis_value[(int)JoyAxis::RIGHT_Y] = -yValue;
+					}
+				};
+			}
+
+			GCControllerDirectionPad *dpad = nil;
+			if (controller.extendedGamepad != nil) {
+				dpad = controller.extendedGamepad.dpad;
+			} else if (controller.microGamepad != nil) {
+				dpad = controller.microGamepad.dpad;
+			}
+			if (dpad) {
+				dpad.up.pressedChangedHandler = BUTTON(JoyButton::DPAD_UP);
+				dpad.down.pressedChangedHandler = BUTTON(JoyButton::DPAD_DOWN);
+				dpad.left.pressedChangedHandler = BUTTON(JoyButton::DPAD_LEFT);
+				dpad.right.pressedChangedHandler = BUTTON(JoyButton::DPAD_RIGHT);
+			}
+		}
+	} else if (controller.extendedGamepad != nil) {
 		GCExtendedGamepad *gamepad = controller.extendedGamepad;
 
 		if (nintendo_button_layout) {
@@ -181,19 +338,37 @@ GameController::GameController(int p_joy_id, GCController *p_controller) :
 		gamepad.dpad.right.pressedChangedHandler = BUTTON(JoyButton::DPAD_RIGHT);
 
 		gamepad.leftThumbstick.valueChangedHandler = ^(GCControllerDirectionPad *dpad, float xValue, float yValue) {
-			Input::get_singleton()->joy_axis(l_joy_id, JoyAxis::LEFT_X, xValue);
-			Input::get_singleton()->joy_axis(l_joy_id, JoyAxis::LEFT_Y, -yValue);
+			if (axis_value[(int)JoyAxis::LEFT_X] != xValue) {
+				axis_changed[(int)JoyAxis::LEFT_X] = true;
+				axis_value[(int)JoyAxis::LEFT_X] = xValue;
+			}
+			if (axis_value[(int)JoyAxis::LEFT_Y] != -yValue) {
+				axis_changed[(int)JoyAxis::LEFT_Y] = true;
+				axis_value[(int)JoyAxis::LEFT_Y] = -yValue;
+			}
 		};
 
 		gamepad.rightThumbstick.valueChangedHandler = ^(GCControllerDirectionPad *dpad, float xValue, float yValue) {
-			Input::get_singleton()->joy_axis(l_joy_id, JoyAxis::RIGHT_X, xValue);
-			Input::get_singleton()->joy_axis(l_joy_id, JoyAxis::RIGHT_Y, -yValue);
+			if (axis_value[(int)JoyAxis::RIGHT_X] != xValue) {
+				axis_changed[(int)JoyAxis::RIGHT_X] = true;
+				axis_value[(int)JoyAxis::RIGHT_X] = xValue;
+			}
+			if (axis_value[(int)JoyAxis::RIGHT_Y] != -yValue) {
+				axis_changed[(int)JoyAxis::RIGHT_Y] = true;
+				axis_value[(int)JoyAxis::RIGHT_Y] = -yValue;
+			}
 		};
 		gamepad.leftTrigger.valueChangedHandler = ^(GCControllerButtonInput *button, float value, BOOL pressed) {
-			Input::get_singleton()->joy_axis(l_joy_id, JoyAxis::TRIGGER_LEFT, value);
+			if (axis_value[(int)JoyAxis::TRIGGER_LEFT] != value) {
+				axis_changed[(int)JoyAxis::TRIGGER_LEFT] = true;
+				axis_value[(int)JoyAxis::TRIGGER_LEFT] = value;
+			}
 		};
 		gamepad.rightTrigger.valueChangedHandler = ^(GCControllerButtonInput *button, float value, BOOL pressed) {
-			Input::get_singleton()->joy_axis(l_joy_id, JoyAxis::TRIGGER_RIGHT, value);
+			if (axis_value[(int)JoyAxis::TRIGGER_RIGHT] != value) {
+				axis_changed[(int)JoyAxis::TRIGGER_RIGHT] = true;
+				axis_value[(int)JoyAxis::TRIGGER_RIGHT] = value;
+			}
 		};
 
 		if (@available(macOS 10.14.1, iOS 12.1, tvOS 12.1, *)) {
@@ -417,6 +592,13 @@ void JoypadApple::process_joypads() {
 		for (KeyValue<int, GameController *> &E : joypads) {
 			int id = E.key;
 			GameController &joypad = *E.value;
+
+			for (int i = 0; i < (int)JoyAxis::MAX; i++) {
+				if (joypad.axis_changed[i]) {
+					joypad.axis_changed[i] = false;
+					Input::get_singleton()->joy_axis(id, (JoyAxis)i, joypad.axis_value[i]);
+				}
+			}
 
 			if (joypad.force_feedback) {
 				Input *input = Input::get_singleton();

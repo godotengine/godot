@@ -59,11 +59,7 @@ EditorPropertyNameProcessor::Style EditorPropertyNameProcessor::get_tooltip_styl
 }
 
 bool EditorPropertyNameProcessor::is_localization_available() {
-	if (!EditorSettings::get_singleton()) {
-		return false;
-	}
-	const Vector<String> forbidden = String("en").split(",");
-	return !forbidden.has(EDITOR_GET("interface/editor/editor_language"));
+	return EditorSettings::get_singleton() && EDITOR_GET("interface/editor/editor_language") != "en";
 }
 
 String EditorPropertyNameProcessor::_capitalize_name(const String &p_name) const {
@@ -315,6 +311,8 @@ EditorPropertyNameProcessor::EditorPropertyNameProcessor() {
 	capitalize_string_remaps["webrtc"] = "WebRTC";
 	capitalize_string_remaps["websocket"] = "WebSocket";
 	capitalize_string_remaps["wine"] = "wine";
+	capitalize_string_remaps["wintab"] = "WinTab";
+	capitalize_string_remaps["winink"] = "Windows Ink";
 	capitalize_string_remaps["wifi"] = "Wi-Fi";
 	capitalize_string_remaps["x86"] = "x86";
 	capitalize_string_remaps["x86_32"] = "x86_32";

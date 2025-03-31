@@ -402,7 +402,7 @@ static const _BuiltinActionDisplayName _builtin_action_display_names[] = {
     { "ui_filedialog_show_hidden",                     TTRC("Show Hidden") },
     { "ui_swap_input_direction ",                      TTRC("Swap Input Direction") },
     { "ui_unicode_start",                              TTRC("Start Unicode Character Input") },
-    { "ui_toggle_licenses_dialog",                     TTRC("Toggle License Notices") },
+    { "ui_colorpicker_delete_preset",               TTRC("Toggle License Notices") },
     { "",                                              ""}
 	/* clang-format on */
 };
@@ -790,11 +790,11 @@ const HashMap<String, List<Ref<InputEvent>>> &InputMap::get_builtins() {
 	inputs.push_back(InputEventKey::create_reference(Key::QUOTELEFT | KeyModifierMask::CMD_OR_CTRL));
 	default_builtin_cache.insert("ui_swap_input_direction", inputs);
 
-	// ///// UI Misc Shortcuts /////
-
+	// ///// UI ColorPicker Shortcuts /////
 	inputs = List<Ref<InputEvent>>();
-	inputs.push_back(InputEventKey::create_reference(Key::L | KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT));
-	default_builtin_cache.insert("ui_toggle_licenses_dialog", inputs);
+	inputs.push_back(InputEventJoypadButton::create_reference(JoyButton::X));
+	inputs.push_back(InputEventKey::create_reference(Key::KEY_DELETE));
+	default_builtin_cache.insert("ui_colorpicker_delete_preset", inputs);
 
 	return default_builtin_cache;
 }

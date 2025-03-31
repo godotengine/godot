@@ -655,6 +655,8 @@ void AnimationPlayerEditor::_animation_name_edited() {
 				if (current_anim.is_valid()) {
 					new_anim->set_step(current_anim->get_step());
 				}
+			} else {
+				new_anim->set_step(EDITOR_GET("editors/animation/default_animation_step"));
 			}
 
 			String library_name;
@@ -921,6 +923,10 @@ void AnimationPlayerEditor::set_state(const Dictionary &p_state) {
 	if (p_state.has("track_editor_state")) {
 		track_editor->set_state(p_state["track_editor_state"]);
 	}
+}
+
+void AnimationPlayerEditor::clear() {
+	track_editor->clear();
 }
 
 void AnimationPlayerEditor::_animation_resource_edit() {

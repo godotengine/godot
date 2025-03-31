@@ -55,10 +55,15 @@ class Path3DGizmo : public EditorNode3DGizmo {
 	};
 
 	Path3D *path = nullptr;
+	Ref<StandardMaterial3D> debug_material;
 	mutable Vector3 original;
 	mutable float orig_in_length;
 	mutable float orig_out_length;
 	mutable float disk_size = 0.8;
+
+	// Index that should have swapped control points for achieving an outwards curve.
+	int swapped_control_points_idx = -1;
+	bool control_points_overlapped = false;
 
 	// Cache information of secondary handles.
 	Vector<HandleInfo> _secondary_handles_info;

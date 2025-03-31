@@ -877,10 +877,10 @@ _FORCE_INLINE_ bool TextServerFallback::_ensure_cache_for_size(FontFallback *p_f
 
 		if (FT_HAS_COLOR(fd->face) && fd->face->num_fixed_sizes > 0) {
 			int best_match = 0;
-			int diff = ABS(fd->size.x - ((int64_t)fd->face->available_sizes[0].width));
+			int diff = Math::abs(fd->size.x - ((int64_t)fd->face->available_sizes[0].width));
 			fd->scale = double(fd->size.x * fd->oversampling) / fd->face->available_sizes[0].width;
 			for (int i = 1; i < fd->face->num_fixed_sizes; i++) {
-				int ndiff = ABS(fd->size.x - ((int64_t)fd->face->available_sizes[i].width));
+				int ndiff = Math::abs(fd->size.x - ((int64_t)fd->face->available_sizes[i].width));
 				if (ndiff < diff) {
 					best_match = i;
 					diff = ndiff;
@@ -920,12 +920,14 @@ _FORCE_INLINE_ bool TextServerFallback::_ensure_cache_for_size(FontFallback *p_f
 
 					switch (sfnt_name.platform_id) {
 						case TT_PLATFORM_APPLE_UNICODE: {
-							p_font_data->font_name.parse_utf16((const char16_t *)sfnt_name.string, sfnt_name.string_len / 2, false);
+							p_font_data->font_name.clear();
+							p_font_data->font_name.append_utf16((const char16_t *)sfnt_name.string, sfnt_name.string_len / 2, false);
 						} break;
 
 						case TT_PLATFORM_MICROSOFT: {
 							if (sfnt_name.encoding_id == TT_MS_ID_UNICODE_CS || sfnt_name.encoding_id == TT_MS_ID_UCS_4) {
-								p_font_data->font_name.parse_utf16((const char16_t *)sfnt_name.string, sfnt_name.string_len / 2, false);
+								p_font_data->font_name.clear();
+								p_font_data->font_name.append_utf16((const char16_t *)sfnt_name.string, sfnt_name.string_len / 2, false);
 							}
 						} break;
 					}

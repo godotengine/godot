@@ -137,5 +137,4 @@ public:
 	void set_current(Node *p_node);
 
 	GroupsEditor();
-	~GroupsEditor();
 };

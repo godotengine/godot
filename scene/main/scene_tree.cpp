@@ -41,22 +41,28 @@
 #include "scene/animation/tween.h"
 #include "scene/debugger/scene_debugger.h"
 #include "scene/gui/control.h"
-#include "scene/gui/licenses_dialog.h"
 #include "scene/main/multiplayer_api.h"
 #include "scene/main/viewport.h"
+#include "scene/main/window.h"
 #include "scene/resources/environment.h"
 #include "scene/resources/image_texture.h"
 #include "scene/resources/material.h"
 #include "scene/resources/mesh.h"
 #include "scene/resources/packed_scene.h"
 #include "scene/resources/world_2d.h"
-#include "servers/physics_server_2d.h"
+
 #ifndef _3D_DISABLED
 #include "scene/3d/node_3d.h"
 #include "scene/resources/3d/world_3d.h"
-#include "servers/physics_server_3d.h"
 #endif // _3D_DISABLED
-#include "window.h"
+
+#ifndef PHYSICS_2D_DISABLED
+#include "servers/physics_server_2d.h"
+#endif // PHYSICS_2D_DISABLED
+
+#ifndef PHYSICS_3D_DISABLED
+#include "servers/physics_server_3d.h"
+#endif // PHYSICS_3D_DISABLED
 
 void SceneTreeTimer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_time_left", "time"), &SceneTreeTimer::set_time_left);
@@ -131,7 +137,7 @@ void SceneTree::ClientPhysicsInterpolation::physics_process() {
 		}
 	}
 }
-#endif
+#endif // _3D_DISABLED
 
 void SceneTree::tree_changed() {
 	emit_signal(tree_changed_name);
@@ -527,7 +533,9 @@ bool SceneTree::physics_process(double p_time) {
 
 	emit_signal(SNAME("physics_frame"));
 
+#if !defined(PHYSICS_2D_DISABLED) || !defined(PHYSICS_3D_DISABLED)
 	call_group(SNAME("_picking_viewports"), SNAME("_process_picking"));
+#endif // !defined(PHYSICS_2D_DISABLED) || !defined(PHYSICS_3D_DISABLED)
 
 	_process(true);
 
@@ -587,7 +595,7 @@ bool SceneTree::process(double p_time) {
 	MessageQueue::get_singleton()->flush(); //small little hack
 	flush_transform_notifications(); //transforms after world update, to avoid unnecessary enter/exit notifications
 
-	if (unlikely(pending_new_scene)) {
+	if (unlikely(pending_new_scene_id.is_valid())) {
 		_flush_scene_change();
 	}
 
@@ -770,9 +778,7 @@ void SceneTree::_main_window_focus_in() {
 void SceneTree::_notification(int p_notification) {
 	switch (p_notification) {
 		case NOTIFICATION_TRANSLATION_CHANGED: {
-			if (!Engine::get_singleton()->is_editor_hint()) {
-				get_root()->propagate_notification(p_notification);
-			}
+			get_root()->propagate_notification(p_notification);
 		} break;
 
 		case NOTIFICATION_OS_MEMORY_WARNING:
@@ -973,10 +979,12 @@ void SceneTree::set_pause(bool p_enabled) {
 
 	paused = p_enabled;
 
-#ifndef _3D_DISABLED
+#ifndef PHYSICS_3D_DISABLED
 	PhysicsServer3D::get_singleton()->set_active(!p_enabled);
-#endif // _3D_DISABLED
+#endif // PHYSICS_3D_DISABLED
+#ifndef PHYSICS_2D_DISABLED
 	PhysicsServer2D::get_singleton()->set_active(!p_enabled);
+#endif // PHYSICS_2D_DISABLED
 	if (get_root()) {
 		get_root()->_propagate_pause_notification(p_enabled);
 	}
@@ -997,10 +1005,12 @@ void SceneTree::set_suspend(bool p_enabled) {
 
 	Engine::get_singleton()->set_freeze_time_scale(p_enabled);
 
-#ifndef _3D_DISABLED
+#ifndef PHYSICS_3D_DISABLED
 	PhysicsServer3D::get_singleton()->set_active(!p_enabled && !paused);
-#endif // _3D_DISABLED
+#endif // PHYSICS_3D_DISABLED
+#ifndef PHYSICS_2D_DISABLED
 	PhysicsServer2D::get_singleton()->set_active(!p_enabled && !paused);
+#endif // PHYSICS_2D_DISABLED
 	if (get_root()) {
 		get_root()->_propagate_suspend_notification(p_enabled);
 	}
@@ -1509,15 +1519,33 @@ Node *SceneTree::get_current_scene() const {
 }
 
 void SceneTree::_flush_scene_change() {
-	if (prev_scene) {
-		memdelete(prev_scene);
-		prev_scene = nullptr;
+	if (prev_scene_id.is_valid()) {
+		// Might have already been freed externally.
+		Node *prev_scene = Object::cast_to<Node>(ObjectDB::get_instance(prev_scene_id));
+		if (prev_scene) {
+			memdelete(prev_scene);
+		}
+		prev_scene_id = ObjectID();
 	}
-	current_scene = pending_new_scene;
-	root->add_child(pending_new_scene);
-	pending_new_scene = nullptr;
-	// Update display for cursor instantly.
-	root->update_mouse_cursor_state();
+
+	DEV_ASSERT(pending_new_scene_id.is_valid());
+	Node *pending_new_scene = Object::cast_to<Node>(ObjectDB::get_instance(pending_new_scene_id));
+	if (pending_new_scene) {
+		// Ensure correct state before `add_child` (might enqueue subsequent scene change).
+		current_scene = pending_new_scene;
+		pending_new_scene_id = ObjectID();
+
+		root->add_child(pending_new_scene);
+		// Update display for cursor instantly.
+		root->update_mouse_cursor_state();
+
+		// Only on successful scene change.
+		emit_signal(SNAME("scene_changed"));
+	} else {
+		current_scene = nullptr;
+		pending_new_scene_id = ObjectID();
+		ERR_PRINT("Scene instance has been freed before becoming the current scene. No current scene is set.");
+	}
 }
 
 Error SceneTree::change_scene_to_file(const String &p_path) {
@@ -1537,21 +1565,23 @@ Error SceneTree::change_scene_to_packed(const Ref<PackedScene> &p_scene) {
 	ERR_FAIL_NULL_V(new_scene, ERR_CANT_CREATE);
 
 	// If called again while a change is pending.
-	if (pending_new_scene) {
-		queue_delete(pending_new_scene);
-		pending_new_scene = nullptr;
+	if (pending_new_scene_id.is_valid()) {
+		Node *pending_new_scene = Object::cast_to<Node>(ObjectDB::get_instance(pending_new_scene_id));
+		if (pending_new_scene) {
+			queue_delete(pending_new_scene);
+		}
+		pending_new_scene_id = ObjectID();
 	}
 
-	prev_scene = current_scene;
-
 	if (current_scene) {
+		prev_scene_id = current_scene->get_instance_id();
 		// Let as many side effects as possible happen or be queued now,
 		// so they are run before the scene is actually deleted.
 		root->remove_child(current_scene);
 	}
 	DEV_ASSERT(!current_scene);
 
-	pending_new_scene = new_scene;
+	pending_new_scene_id = new_scene->get_instance_id();
 	return OK;
 }
 
@@ -1698,36 +1728,6 @@ bool SceneTree::is_multiplayer_poll_enabled() const {
 	return multiplayer_poll;
 }
 
-void SceneTree::set_licenses_dialog_visible(bool p_visible) {
-	if (p_visible) {
-		if (licenses_dialog == nullptr) {
-			licenses_dialog = memnew(LicensesDialog);
-			// Begin name with an underscore to avoid conflict with project nodes.
-			licenses_dialog->set_name("_LicensesDialog");
-			get_root()->add_child(licenses_dialog, false, Node::INTERNAL_MODE_BACK);
-		} else {
-			ERR_PRINT("Licenses dialog already exists.");
-		}
-	} else {
-		if (licenses_dialog != nullptr) {
-			// Free when closing to avoid reserving memory during the project's run duration.
-			licenses_dialog->queue_free();
-			licenses_dialog = nullptr;
-		} else {
-			ERR_PRINT("Couldn't find licenses dialog to hide.");
-		}
-	}
-}
-
-bool SceneTree::is_licenses_dialog_visible() const {
-	if (licenses_dialog) {
-		return licenses_dialog->is_visible();
-	}
-
-	// Licenses dialog isn't created yet. Therefore, it's not visible.
-	return false;
-}
-
 void SceneTree::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_root"), &SceneTree::get_root);
 	ClassDB::bind_method(D_METHOD("has_group", "name"), &SceneTree::has_group);
@@ -1802,9 +1802,6 @@ void SceneTree::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_multiplayer_poll_enabled", "enabled"), &SceneTree::set_multiplayer_poll_enabled);
 	ClassDB::bind_method(D_METHOD("is_multiplayer_poll_enabled"), &SceneTree::is_multiplayer_poll_enabled);
 
-	ClassDB::bind_method(D_METHOD("set_licenses_dialog_visible", "visible"), &SceneTree::set_licenses_dialog_visible);
-	ClassDB::bind_method(D_METHOD("is_licenses_dialog_visible"), &SceneTree::is_licenses_dialog_visible);
-
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "auto_accept_quit"), "set_auto_accept_quit", "is_auto_accept_quit");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "quit_on_go_back"), "set_quit_on_go_back", "is_quit_on_go_back");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "debug_collisions_hint"), "set_debug_collisions_hint", "is_debugging_collisions_hint");
@@ -1816,9 +1813,9 @@ void SceneTree::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "root", PROPERTY_HINT_RESOURCE_TYPE, "Node", PROPERTY_USAGE_NONE), "", "get_root");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "multiplayer_poll"), "set_multiplayer_poll_enabled", "is_multiplayer_poll_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "physics_interpolation"), "set_physics_interpolation_enabled", "is_physics_interpolation_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "licenses_dialog_visible"), "set_licenses_dialog_visible", "is_licenses_dialog_visible");
 
 	ADD_SIGNAL(MethodInfo("tree_changed"));
+	ADD_SIGNAL(MethodInfo("scene_changed"));
 	ADD_SIGNAL(MethodInfo("tree_process_mode_changed")); //editor only signal, but due to API hash it can't be removed in run-time
 	ADD_SIGNAL(MethodInfo("node_added", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_RESOURCE_TYPE, "Node")));
 	ADD_SIGNAL(MethodInfo("node_removed", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_RESOURCE_TYPE, "Node")));
@@ -2027,7 +2024,9 @@ SceneTree::SceneTree() {
 	}
 #endif // _3D_DISABLED
 
+#if !defined(PHYSICS_2D_DISABLED) || !defined(PHYSICS_3D_DISABLED)
 	root->set_physics_object_picking(GLOBAL_DEF("physics/common/enable_object_picking", true));
+#endif // !defined(PHYSICS_2D_DISABLED) || !defined(PHYSICS_3D_DISABLED)
 
 	root->connect("close_requested", callable_mp(this, &SceneTree::_main_window_close));
 	root->connect("go_back_requested", callable_mp(this, &SceneTree::_main_window_go_back));
@@ -2041,13 +2040,19 @@ SceneTree::SceneTree() {
 }
 
 SceneTree::~SceneTree() {
-	if (prev_scene) {
-		memdelete(prev_scene);
-		prev_scene = nullptr;
+	if (prev_scene_id.is_valid()) {
+		Node *prev_scene = Object::cast_to<Node>(ObjectDB::get_instance(prev_scene_id));
+		if (prev_scene) {
+			memdelete(prev_scene);
+		}
+		prev_scene_id = ObjectID();
 	}
-	if (pending_new_scene) {
-		memdelete(pending_new_scene);
-		pending_new_scene = nullptr;
+	if (pending_new_scene_id.is_valid()) {
+		Node *pending_new_scene = Object::cast_to<Node>(ObjectDB::get_instance(pending_new_scene_id));
+		if (pending_new_scene) {
+			memdelete(pending_new_scene);
+		}
+		pending_new_scene_id = ObjectID();
 	}
 	if (root) {
 		root->_set_tree(nullptr);

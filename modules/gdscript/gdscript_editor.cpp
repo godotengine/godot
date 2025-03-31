@@ -1508,8 +1508,8 @@ static void _find_identifiers(const GDScriptParser::CompletionContext &p_context
 	List<StringName> utility_func_names;
 	Variant::get_utility_function_list(&utility_func_names);
 
-	for (List<StringName>::Element *E = utility_func_names.front(); E; E = E->next()) {
-		ScriptLanguage::CodeCompletionOption option(E->get(), ScriptLanguage::CODE_COMPLETION_KIND_FUNCTION);
+	for (const StringName &util_func_name : utility_func_names) {
+		ScriptLanguage::CodeCompletionOption option(util_func_name, ScriptLanguage::CODE_COMPLETION_KIND_FUNCTION);
 		option.insert_text += "(";
 		option.display += U"(\u2026)"; // As all utility functions contain an argument or more, this is hardcoded here.
 		r_result.insert(option.display, option);
@@ -2839,9 +2839,9 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 								// Handle user preference.
 								if (opt.is_quoted()) {
 									opt = opt.unquote().quote(quote_style);
-									if (use_string_names && info.arguments.get(p_argidx).type == Variant::STRING_NAME) {
+									if (use_string_names && info.arguments[p_argidx].type == Variant::STRING_NAME) {
 										opt = "&" + opt;
-									} else if (use_node_paths && info.arguments.get(p_argidx).type == Variant::NODE_PATH) {
+									} else if (use_node_paths && info.arguments[p_argidx].type == Variant::NODE_PATH) {
 										opt = "^" + opt;
 									}
 								}
@@ -2852,7 +2852,7 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 					}
 
 					if (p_argidx < method_args) {
-						const PropertyInfo &arg_info = info.arguments.get(p_argidx);
+						const PropertyInfo &arg_info = info.arguments[p_argidx];
 						if (arg_info.usage & (PROPERTY_USAGE_CLASS_IS_ENUM | PROPERTY_USAGE_CLASS_IS_BITFIELD)) {
 							_find_enumeration_candidates(p_context, arg_info.class_name, r_result);
 						}
@@ -3495,17 +3495,17 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 				}
 				method_hint += "(";
 
-				for (List<PropertyInfo>::ConstIterator arg_itr = mi.arguments.begin(); arg_itr != mi.arguments.end(); ++arg_itr) {
-					if (arg_itr != mi.arguments.begin()) {
+				for (int64_t i = 0; i < mi.arguments.size(); ++i) {
+					if (i > 0) {
 						method_hint += ", ";
 					}
-					String arg = arg_itr->name;
+					String arg = mi.arguments[i].name;
 					if (arg.contains_char(':')) {
 						arg = arg.substr(0, arg.find_char(':'));
 					}
 					method_hint += arg;
 					if (use_type_hint) {
-						method_hint += ": " + _get_visual_datatype(*arg_itr, true, class_name);
+						method_hint += ": " + _get_visual_datatype(mi.arguments[i], true, class_name);
 					}
 				}
 				method_hint += ")";

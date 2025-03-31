@@ -89,6 +89,7 @@ public:
 	Ref<Material> get_surface_override_material(int p_surface) const;
 	Ref<Material> get_active_material(int p_surface) const;
 
+#ifndef PHYSICS_3D_DISABLED
 	Node *create_trimesh_collision_node();
 	void create_trimesh_collision();
 
@@ -97,6 +98,7 @@ public:
 
 	Node *create_multiple_convex_collisions_node(const Ref<MeshConvexDecompositionSettings> &p_settings = Ref<MeshConvexDecompositionSettings>());
 	void create_multiple_convex_collisions(const Ref<MeshConvexDecompositionSettings> &p_settings = Ref<MeshConvexDecompositionSettings>());
+#endif // PHYSICS_3D_DISABLED
 
 	MeshInstance3D *create_debug_tangents_node();
 	void create_debug_tangents();

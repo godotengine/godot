@@ -268,6 +268,7 @@ private:
 	bool snap_2d_transforms_to_pixel = false;
 	bool snap_2d_vertices_to_pixel = false;
 
+#if !defined(PHYSICS_2D_DISABLED) || !defined(PHYSICS_3D_DISABLED)
 	bool physics_object_picking = false;
 	bool physics_object_picking_sort = false;
 	bool physics_object_picking_first_only = false;
@@ -277,6 +278,7 @@ private:
 	Transform3D physics_last_object_transform;
 	Transform3D physics_last_camera_transform;
 	ObjectID physics_last_id;
+#endif // !defined(PHYSICS_2D_DISABLED) || !defined(PHYSICS_3D_DISABLED)
 
 	bool handle_input_locally = true;
 	bool local_input_handled = false;
@@ -498,7 +500,9 @@ protected:
 	bool _is_size_allocated() const;
 
 	void _notification(int p_what);
+#if !defined(PHYSICS_2D_DISABLED) || !defined(PHYSICS_3D_DISABLED)
 	void _process_picking();
+#endif // !defined(PHYSICS_2D_DISABLED) || !defined(PHYSICS_3D_DISABLED)
 	static void _bind_methods();
 	void _validate_property(PropertyInfo &p_property) const;
 
@@ -608,12 +612,14 @@ public:
 	Point2 wrap_mouse_in_rect(const Vector2 &p_relative, const Rect2 &p_rect);
 	virtual void update_mouse_cursor_state();
 
+#if !defined(PHYSICS_2D_DISABLED) || !defined(PHYSICS_3D_DISABLED)
 	void set_physics_object_picking(bool p_enable);
 	bool get_physics_object_picking();
 	void set_physics_object_picking_sort(bool p_enable);
 	bool get_physics_object_picking_sort();
 	void set_physics_object_picking_first_only(bool p_enable);
 	bool get_physics_object_picking_first_only();
+#endif // !defined(PHYSICS_2D_DISABLED) || !defined(PHYSICS_3D_DISABLED)
 
 	Variant gui_get_drag_data() const;
 
@@ -718,12 +724,14 @@ private:
 	Camera2D *camera_2d = nullptr;
 	void _camera_2d_set(Camera2D *p_camera_2d);
 
+#ifndef PHYSICS_2D_DISABLED
 	// Collider to frame
 	HashMap<ObjectID, uint64_t> physics_2d_mouseover;
 	// Collider & shape to frame
 	HashMap<Pair<ObjectID, int>, uint64_t, PairHash<ObjectID, int>> physics_2d_shape_mouseover;
 	// Cleans up colliders corresponding to old frames or all of them.
 	void _cleanup_mouseover_colliders(bool p_clean_all_frames, bool p_paused_only, uint64_t p_frame_reference = 0);
+#endif // PHYSICS_2D_DISABLED
 
 public:
 	AudioListener2D *get_audio_listener_2d() const;
@@ -749,7 +757,9 @@ private:
 	void _audio_listener_3d_remove(AudioListener3D *p_listener);
 	void _audio_listener_3d_make_next_current(AudioListener3D *p_exclude);
 
+#ifndef PHYSICS_3D_DISABLED
 	void _collision_object_3d_input_event(CollisionObject3D *p_object, Camera3D *p_camera, const Ref<InputEvent> &p_input_event, const Vector3 &p_pos, const Vector3 &p_normal, int p_shape);
+#endif // PHYSICS_3D_DISABLED
 
 	struct Camera3DOverrideData {
 		Transform3D transform;

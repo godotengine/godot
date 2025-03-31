@@ -143,6 +143,7 @@ protected:
 	GDVIRTUAL2RC(String, _get_android_manifest_activity_element_contents, const Ref<EditorExportPlatform> &, bool);
 	GDVIRTUAL2RC(String, _get_android_manifest_application_element_contents, const Ref<EditorExportPlatform> &, bool);
 	GDVIRTUAL2RC(String, _get_android_manifest_element_contents, const Ref<EditorExportPlatform> &, bool);
+	GDVIRTUAL2RC(PackedByteArray, _update_android_prebuilt_manifest, const Ref<EditorExportPlatform> &, const PackedByteArray &);
 
 	virtual bool _begin_customize_resources(const Ref<EditorExportPlatform> &p_platform, const Vector<String> &p_features); // Return true if this plugin does property export customization
 	virtual Ref<Resource> _customize_resource(const Ref<Resource> &p_resource, const String &p_path); // If nothing is returned, it means do not touch (nothing changed). If something is returned (either the same or a different resource) it means changes are made.
@@ -174,6 +175,7 @@ public:
 	virtual String get_android_manifest_activity_element_contents(const Ref<EditorExportPlatform> &p_export_platform, bool p_debug) const;
 	virtual String get_android_manifest_application_element_contents(const Ref<EditorExportPlatform> &p_export_platform, bool p_debug) const;
 	virtual String get_android_manifest_element_contents(const Ref<EditorExportPlatform> &p_export_platform, bool p_debug) const;
+	virtual PackedByteArray update_android_prebuilt_manifest(const Ref<EditorExportPlatform> &p_export_platform, const PackedByteArray &p_manifest_data) const;
 
 	Vector<String> get_ios_frameworks() const;
 	Vector<String> get_ios_embedded_frameworks() const;

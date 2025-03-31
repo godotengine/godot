@@ -526,6 +526,7 @@ public:
 	Variant(const Signal &p_signal);
 	Variant(const Dictionary &p_dictionary);
 
+	Variant(std::initializer_list<Variant> p_init);
 	Variant(const Array &p_array);
 	Variant(const PackedByteArray &p_byte_array);
 	Variant(const PackedInt32Array &p_int32_array);
@@ -909,12 +910,7 @@ struct StringLikeVariantComparator {
 };
 
 struct StringLikeVariantOrder {
-	static _ALWAYS_INLINE_ bool compare(const Variant &p_lhs, const Variant &p_rhs) {
-		if (p_lhs.is_string() && p_rhs.is_string()) {
-			return p_lhs.operator String() < p_rhs.operator String();
-		}
-		return p_lhs < p_rhs;
-	}
+	static bool compare(const Variant &p_lhs, const Variant &p_rhs);
 
 	_ALWAYS_INLINE_ bool operator()(const Variant &p_lhs, const Variant &p_rhs) const {
 		return compare(p_lhs, p_rhs);
@@ -997,18 +993,10 @@ Array::Iterator &Array::Iterator::operator--() {
 }
 
 const Variant &Array::ConstIterator::operator*() const {
-	if (unlikely(read_only)) {
-		*read_only = *element_ptr;
-		return *read_only;
-	}
 	return *element_ptr;
 }
 
 const Variant *Array::ConstIterator::operator->() const {
-	if (unlikely(read_only)) {
-		*read_only = *element_ptr;
-		return read_only;
-	}
 	return element_ptr;
 }
 
@@ -1021,3 +1009,7 @@ Array::ConstIterator &Array::ConstIterator::operator--() {
 	element_ptr--;
 	return *this;
 }
+
+// Zero-constructing Variant results in NULL.
+template <>
+struct is_zero_constructible<Variant> : std::true_type {};

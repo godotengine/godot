@@ -126,6 +126,3 @@ Camera3DEditorPlugin::Camera3DEditorPlugin() {
 	plugin.instantiate();
 	add_inspector_plugin(plugin);
 }
-
-Camera3DEditorPlugin::~Camera3DEditorPlugin() {
-}

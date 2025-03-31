@@ -271,7 +271,7 @@
 	[characters getCharacters:(unichar *)text.ptrw() range:NSMakeRange(0, [characters length])];
 
 	String u32text;
-	u32text.parse_utf16(text.ptr(), text.length());
+	u32text.append_utf16(text.ptr(), text.length());
 
 	for (int i = 0; i < u32text.length(); i++) {
 		const char32_t codepoint = u32text[i];
@@ -622,7 +622,7 @@
 		[self removeTrackingArea:tracking_area];
 	}
 
-	NSTrackingAreaOptions options = NSTrackingMouseEnteredAndExited | NSTrackingActiveInKeyWindow | NSTrackingCursorUpdate | NSTrackingInVisibleRect;
+	NSTrackingAreaOptions options = NSTrackingMouseEnteredAndExited | NSTrackingActiveWhenFirstResponder | NSTrackingCursorUpdate | NSTrackingInVisibleRect;
 	tracking_area = [[NSTrackingArea alloc] initWithRect:[self bounds] options:options owner:self userInfo:nil];
 
 	[self addTrackingArea:tracking_area];
@@ -653,7 +653,7 @@
 			[characters getCharacters:(unichar *)text.ptrw() range:NSMakeRange(0, [characters length])];
 
 			String u32text;
-			u32text.parse_utf16(text.ptr(), text.length());
+			u32text.append_utf16(text.ptr(), text.length());
 
 			DisplayServerMacOS::KeyEvent ke;
 			ke.window_id = window_id;

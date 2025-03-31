@@ -1251,12 +1251,12 @@ void AnimationMultiTrackKeyEdit::_get_property_list(List<PropertyInfo> *p_list) 
 					if (ap) {
 						List<StringName> anims;
 						ap->get_animation_list(&anims);
-						for (List<StringName>::Element *G = anims.front(); G; G = G->next()) {
+						for (const StringName &anim : anims) {
 							if (!animations.is_empty()) {
 								animations += ",";
 							}
 
-							animations += String(G->get());
+							animations += String(anim);
 						}
 					}
 				}
@@ -2235,8 +2235,21 @@ void AnimationTrackEdit::_notification(int p_what) {
 							offset_n = offset_n + editor->get_moving_selection_offset();
 						}
 						offset_n = offset_n * scale + limit;
-
+						float offset_last = limit_end;
+						if (i < animation->track_get_key_count(track) - 2) {
+							offset_last = animation->track_get_key_time(track, i + 2) - timeline->get_value();
+							if (editor->is_key_selected(track, i + 2) && editor->is_moving_selection()) {
+								offset_last = offset_last + editor->get_moving_selection_offset();
+							}
+							offset_last = offset_last * scale + limit;
+						}
+						int limit_string = (editor->is_key_selected(track, i + 1) && editor->is_moving_selection()) ? int(offset_last) : int(offset_n);
+						if (editor->is_key_selected(track, i) && editor->is_moving_selection()) {
+							limit_string = int(MAX(limit_end, offset_last));
+						}
 						draw_key_link(i, scale, int(offset), int(offset_n), limit, limit_end);
+						draw_key(i, scale, int(offset), editor->is_key_selected(track, i), limit, limit_string);
+						continue;
 					}
 
 					draw_key(i, scale, int(offset), editor->is_key_selected(track, i), limit, limit_end);
@@ -2541,7 +2554,8 @@ void AnimationTrackEdit::draw_key(int p_index, float p_pixels_sec, int p_x, bool
 		}
 		text += ")";
 
-		int limit = MAX(0, p_clip_right - p_x - icon_to_draw->get_width());
+		int limit = ((p_selected && editor->is_moving_selection()) || editor->is_function_name_pressed()) ? 0 : MAX(0, p_clip_right - p_x - icon_to_draw->get_width() * 2);
+
 		if (limit > 0) {
 			draw_string(font, Vector2(p_x + icon_to_draw->get_width(), int(get_size().height - font->get_height(font_size)) / 2 + font->get_ascent(font_size)), text, HORIZONTAL_ALIGNMENT_LEFT, limit, font_size, color);
 		}
@@ -2792,7 +2806,7 @@ String AnimationTrackEdit::get_tooltip(const Point2 &p_pos) const {
 
 			if (rect.has_point(p_pos)) {
 				if (const_cast<AnimationTrackEdit *>(this)->is_key_selectable_by_distance()) {
-					float distance = ABS(offset - p_pos.x);
+					float distance = Math::abs(offset - p_pos.x);
 					if (key_idx == -1 || distance < key_distance) {
 						key_idx = i;
 						key_distance = distance;
@@ -3197,7 +3211,7 @@ void AnimationTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 
 					if (rect.has_point(pos)) {
 						if (is_key_selectable_by_distance()) {
-							const float distance = ABS(offset - pos.x);
+							const float distance = Math::abs(offset - pos.x);
 							if (key_idx == -1 || distance < key_distance) {
 								key_idx = i;
 								key_distance = distance;
@@ -3261,7 +3275,7 @@ bool AnimationTrackEdit::_try_select_at_ui_pos(const Point2 &p_pos, bool p_aggre
 
 				if (rect.has_point(p_pos)) {
 					if (is_key_selectable_by_distance()) {
-						float distance = ABS(offset - p_pos.x);
+						float distance = Math::abs(offset - p_pos.x);
 						if (key_idx == -1 || distance < key_distance) {
 							key_idx = i;
 							key_distance = distance;
@@ -3894,6 +3908,7 @@ bool AnimationTrackEditor::has_keying() const {
 Dictionary AnimationTrackEditor::get_state() const {
 	Dictionary state;
 	state["fps_mode"] = timeline->is_using_fps();
+	state["fps_compat"] = fps_compat->is_pressed();
 	state["zoom"] = zoom->get_value();
 	state["offset"] = timeline->get_value();
 	state["v_scroll"] = scroll->get_v_scroll_bar()->get_value();
@@ -3909,25 +3924,32 @@ void AnimationTrackEditor::set_state(const Dictionary &p_state) {
 			snap_mode->select(0);
 		}
 		_snap_mode_changed(snap_mode->get_selected());
-	} else {
-		snap_mode->select(0);
-		_snap_mode_changed(snap_mode->get_selected());
 	}
+
+	if (p_state.has("fps_compat")) {
+		fps_compat->set_pressed(p_state["fps_compat"]);
+	}
+
 	if (p_state.has("zoom")) {
 		zoom->set_value(p_state["zoom"]);
-	} else {
-		zoom->set_value(1.0);
 	}
+
 	if (p_state.has("offset")) {
 		timeline->set_value(p_state["offset"]);
-	} else {
-		timeline->set_value(0);
 	}
+
 	if (p_state.has("v_scroll")) {
 		scroll->get_v_scroll_bar()->set_value(p_state["v_scroll"]);
-	} else {
-		scroll->get_v_scroll_bar()->set_value(0);
 	}
+}
+
+void AnimationTrackEditor::clear() {
+	snap_mode->select(EDITOR_GET("editors/animation/default_fps_mode"));
+	_snap_mode_changed(snap_mode->get_selected());
+	fps_compat->set_pressed(EDITOR_GET("editors/animation/default_fps_compatibility"));
+	zoom->set_value(1.0);
+	timeline->set_value(0);
+	scroll->get_v_scroll_bar()->set_value(0);
 }
 
 void AnimationTrackEditor::cleanup() {
@@ -5088,7 +5110,7 @@ void AnimationTrackEditor::_update_nearest_fps_label() {
 		nearest_fps_label->hide();
 	} else {
 		nearest_fps_label->show();
-		nearest_fps_label->set_text("Nearest FPS: " + itos(nearest_fps));
+		nearest_fps_label->set_text(vformat(TTR("Nearest FPS: %d"), nearest_fps));
 	}
 }
 
@@ -5154,6 +5176,7 @@ void AnimationTrackEditor::_notification(int p_what) {
 			snap_keys->set_button_icon(get_editor_theme_icon(SNAME("SnapKeys")));
 			fps_compat->set_button_icon(get_editor_theme_icon(SNAME("FPS")));
 			view_group->set_button_icon(get_editor_theme_icon(view_group->is_pressed() ? SNAME("AnimationTrackList") : SNAME("AnimationTrackGroup")));
+			function_name_toggler->set_button_icon(get_editor_theme_icon(SNAME("MemberMethod")));
 			selected_filter->set_button_icon(get_editor_theme_icon(SNAME("AnimationFilter")));
 			imported_anim_warning->set_button_icon(get_editor_theme_icon(SNAME("NodeWarning")));
 			dummy_player_warning->set_button_icon(get_editor_theme_icon(SNAME("NodeWarning")));
@@ -5168,6 +5191,8 @@ void AnimationTrackEditor::_notification(int p_what) {
 
 			const int track_separation = get_theme_constant(SNAME("track_v_separation"), SNAME("AnimationTrackEditor"));
 			track_vbox->add_theme_constant_override("separation", track_separation);
+
+			function_name_toggler->add_theme_color_override("icon_pressed_color", get_theme_color("icon_disabled_color", EditorStringName(Editor)));
 		} break;
 
 		case NOTIFICATION_READY: {
@@ -5628,17 +5653,16 @@ void AnimationTrackEditor::_add_method_key(const String &p_method) {
 			Dictionary d;
 			d["method"] = p_method;
 			Array params;
-			int first_defarg = E.arguments.size() - E.default_arguments.size();
+			int64_t first_defarg = E.arguments.size() - E.default_arguments.size();
 
-			int i = 0;
-			for (List<PropertyInfo>::ConstIterator itr = E.arguments.begin(); itr != E.arguments.end(); ++itr, ++i) {
+			for (int64_t i = 0; i < E.arguments.size(); ++i) {
 				if (i >= first_defarg) {
 					Variant arg = E.default_arguments[i - first_defarg];
 					params.push_back(arg);
 				} else {
 					Callable::CallError ce;
 					Variant arg;
-					Variant::construct(itr->type, arg, nullptr, 0, ce);
+					Variant::construct(E.arguments[i].type, arg, nullptr, 0, ce);
 					params.push_back(arg);
 				}
 			}
@@ -6713,7 +6737,7 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 				to_restore.push_back(amr);
 			}
 
-#define NEW_POS(m_ofs) (((s > 0) ? m_ofs : from_t + (len - (m_ofs - from_t))) - pivot) * ABS(s) + from_t
+#define NEW_POS(m_ofs) (((s > 0) ? m_ofs : from_t + (len - (m_ofs - from_t))) - pivot) * Math::abs(s) + from_t
 			// 3 - Move the keys (re insert them).
 			for (RBMap<SelectedKey, KeyInfo>::Element *E = selection.back(); E; E = E->prev()) {
 				float newpos = NEW_POS(E->get().pos);
@@ -7338,6 +7362,10 @@ void AnimationTrackEditor::_cleanup_animation(Ref<Animation> p_animation) {
 	_update_tracks();
 }
 
+void AnimationTrackEditor::_toggle_function_names() {
+	_redraw_tracks();
+}
+
 void AnimationTrackEditor::_view_group_toggle() {
 	_update_tracks();
 	view_group->set_button_icon(get_editor_theme_icon(view_group->is_pressed() ? SNAME("AnimationTrackList") : SNAME("AnimationTrackGroup")));
@@ -7350,6 +7378,10 @@ bool AnimationTrackEditor::is_grouping_tracks() {
 	}
 
 	return !view_group->is_pressed();
+}
+
+bool AnimationTrackEditor::is_function_name_pressed() {
+	return function_name_toggler->is_pressed();
 }
 
 void AnimationTrackEditor::_auto_fit() {
@@ -7645,6 +7677,16 @@ AnimationTrackEditor::AnimationTrackEditor() {
 
 	bottom_hf->add_child(bezier_edit_icon);
 
+	function_name_toggler = memnew(Button);
+	function_name_toggler->set_flat(true);
+	function_name_toggler->connect(SceneStringName(pressed), callable_mp(this, &AnimationTrackEditor::_toggle_function_names));
+	function_name_toggler->set_shortcut(ED_SHORTCUT("animation_editor/toggle_function_names", TTRC("Toggle method names")));
+	function_name_toggler->set_toggle_mode(true);
+	function_name_toggler->set_shortcut_in_tooltip(false);
+	function_name_toggler->set_tooltip_text(TTRC("Toggle function names in the track editor."));
+
+	bottom_hf->add_child(function_name_toggler);
+
 	selected_filter = memnew(Button);
 	selected_filter->set_flat(true);
 	selected_filter->connect(SceneStringName(pressed), callable_mp(this, &AnimationTrackEditor::_view_group_toggle)); // Same function works the same.
@@ -7688,6 +7730,7 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	fps_compat->connect(SceneStringName(toggled), callable_mp(this, &AnimationTrackEditor::_update_fps_compat_mode));
 
 	nearest_fps_label = memnew(Label);
+	nearest_fps_label->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	bottom_hf->add_child(nearest_fps_label);
 
 	step = memnew(EditorSpinSlider);
@@ -7704,9 +7747,9 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	snap_mode = memnew(OptionButton);
 	snap_mode->add_item(TTR("Seconds"));
 	snap_mode->add_item(TTR("FPS"));
+	snap_mode->set_disabled(true);
 	bottom_hf->add_child(snap_mode);
 	snap_mode->connect(SceneStringName(item_selected), callable_mp(this, &AnimationTrackEditor::_snap_mode_changed));
-	snap_mode->set_disabled(true);
 
 	bottom_hf->add_child(memnew(VSeparator));
 
@@ -8108,9 +8151,6 @@ AnimationTrackKeyEditEditor::AnimationTrackKeyEditEditor(Ref<Animation> p_animat
 	spinner->connect("ungrabbed", callable_mp(this, &AnimationTrackKeyEditEditor::_time_edit_exited), CONNECT_DEFERRED);
 	spinner->connect("value_focus_entered", callable_mp(this, &AnimationTrackKeyEditEditor::_time_edit_entered), CONNECT_DEFERRED);
 	spinner->connect("value_focus_exited", callable_mp(this, &AnimationTrackKeyEditEditor::_time_edit_exited), CONNECT_DEFERRED);
-}
-
-AnimationTrackKeyEditEditor::~AnimationTrackKeyEditEditor() {
 }
 
 void AnimationMarkerEdit::_zoom_changed() {
@@ -8635,7 +8675,7 @@ String AnimationMarkerEdit::get_tooltip(const Point2 &p_pos) const {
 
 			if (rect.has_point(p_pos)) {
 				if (const_cast<AnimationMarkerEdit *>(this)->is_key_selectable_by_distance()) {
-					float distance = ABS(offset - p_pos.x);
+					float distance = Math::abs(offset - p_pos.x);
 					if (key_idx == -1 || distance < key_distance) {
 						key_idx = i;
 						key_distance = distance;
@@ -9101,9 +9141,6 @@ AnimationMarkerEdit::AnimationMarkerEdit() {
 	marker_rename_confirm->add_child(marker_rename_error_dialog);
 }
 
-AnimationMarkerEdit::~AnimationMarkerEdit() {
-}
-
 float AnimationMarkerKeyEdit::get_time() const {
 	return animation->get_marker_time(marker_name);
 }
@@ -9290,7 +9327,4 @@ AnimationMarkerKeyEditEditor::AnimationMarkerKeyEditEditor(Ref<Animation> p_anim
 
 	spinner->connect("ungrabbed", callable_mp(this, &AnimationMarkerKeyEditEditor::_time_edit_exited), CONNECT_DEFERRED);
 	spinner->connect("value_focus_exited", callable_mp(this, &AnimationMarkerKeyEditEditor::_time_edit_exited), CONNECT_DEFERRED);
-}
-
-AnimationMarkerKeyEditEditor::~AnimationMarkerKeyEditEditor() {
 }

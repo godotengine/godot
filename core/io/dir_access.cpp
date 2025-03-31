@@ -626,6 +626,10 @@ bool DirAccess::is_case_sensitive(const String &p_path) const {
 	return true;
 }
 
+bool DirAccess::is_equivalent(const String &p_path_a, const String &p_path_b) const {
+	return p_path_a == p_path_b;
+}
+
 void DirAccess::_bind_methods() {
 	ClassDB::bind_static_method("DirAccess", D_METHOD("open", "path"), &DirAccess::_open);
 	ClassDB::bind_static_method("DirAccess", D_METHOD("get_open_error"), &DirAccess::get_open_error);
@@ -671,6 +675,7 @@ void DirAccess::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_include_hidden"), &DirAccess::get_include_hidden);
 
 	ClassDB::bind_method(D_METHOD("is_case_sensitive", "path"), &DirAccess::is_case_sensitive);
+	ClassDB::bind_method(D_METHOD("is_equivalent", "path_a", "path_b"), &DirAccess::is_equivalent);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "include_navigational"), "set_include_navigational", "get_include_navigational");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "include_hidden"), "set_include_hidden", "get_include_hidden");

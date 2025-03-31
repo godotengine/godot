@@ -70,9 +70,7 @@
 
 #include "common.h"
 
-#if defined(MBEDTLS_BIGNUM_C)
 #include "mbedtls/bignum.h"
-#endif
 
 #include "constant_time_internal.h"
 
@@ -106,10 +104,17 @@
  *  } else {
  *      // safe path
  *  }
- * not the other way round, in order to prevent misuse. (This is, if a value
- * other than the two below is passed, default to the safe path.) */
+ * not the other way round, in order to prevent misuse. (That is, if a value
+ * other than the two below is passed, default to the safe path.)
+ *
+ * The value of MBEDTLS_MPI_IS_PUBLIC is chosen in a way that is unlikely to happen by accident, but
+ * which can be used as an immediate value in a Thumb2 comparison (for code size). */
 #define MBEDTLS_MPI_IS_PUBLIC  0x2a2a2a2a
 #define MBEDTLS_MPI_IS_SECRET  0
+#if defined(MBEDTLS_TEST_HOOKS) && !defined(MBEDTLS_THREADING_C)
+// Default value for testing that is neither MBEDTLS_MPI_IS_PUBLIC nor MBEDTLS_MPI_IS_SECRET
+#define MBEDTLS_MPI_IS_TEST  1
+#endif
 
 /** Count leading zero bits in a given integer.
  *
@@ -816,18 +821,5 @@ void mbedtls_mpi_core_from_mont_rep(mbedtls_mpi_uint *X,
                                     size_t AN_limbs,
                                     mbedtls_mpi_uint mm,
                                     mbedtls_mpi_uint *T);
-
-/*
- * Can't define thread local variables with our abstraction layer: do nothing if threading is on.
- */
-#if defined(MBEDTLS_TEST_HOOKS) && !defined(MBEDTLS_THREADING_C)
-extern int mbedtls_mpi_optionally_safe_codepath;
-
-static inline void mbedtls_mpi_optionally_safe_codepath_reset(void)
-{
-    // Set to a default that is neither MBEDTLS_MPI_IS_PUBLIC nor MBEDTLS_MPI_IS_SECRET
-    mbedtls_mpi_optionally_safe_codepath = MBEDTLS_MPI_IS_PUBLIC + MBEDTLS_MPI_IS_SECRET + 1;
-}
-#endif
 
 #endif /* MBEDTLS_BIGNUM_CORE_H */

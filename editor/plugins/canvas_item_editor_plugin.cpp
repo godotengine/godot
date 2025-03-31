@@ -49,10 +49,10 @@
 #include "editor/themes/editor_scale.h"
 #include "editor/themes/editor_theme_manager.h"
 #include "scene/2d/audio_stream_player_2d.h"
+#include "scene/2d/physics/touch_screen_button.h"
 #include "scene/2d/polygon_2d.h"
 #include "scene/2d/skeleton_2d.h"
 #include "scene/2d/sprite_2d.h"
-#include "scene/2d/touch_screen_button.h"
 #include "scene/gui/base_button.h"
 #include "scene/gui/flow_container.h"
 #include "scene/gui/grid_container.h"
@@ -770,14 +770,15 @@ void CanvasItemEditor::_find_canvas_items_in_rect(const Rect2 &p_rect, Node *p_n
 
 bool CanvasItemEditor::_select_click_on_item(CanvasItem *item, Point2 p_click_pos, bool p_append) {
 	bool still_selected = true;
-	if (p_append && !editor_selection->get_selected_node_list().is_empty()) {
+	const List<Node *> &top_node_list = editor_selection->get_top_selected_node_list();
+	if (p_append && !top_node_list.is_empty()) {
 		if (editor_selection->is_selected(item)) {
 			// Already in the selection, remove it from the selected nodes
 			editor_selection->remove_node(item);
 			still_selected = false;
 
-			if (editor_selection->get_selected_node_list().size() == 1) {
-				EditorNode::get_singleton()->push_item(editor_selection->get_selected_node_list().front()->get());
+			if (top_node_list.size() == 1) {
+				EditorNode::get_singleton()->push_item(top_node_list.front()->get());
 			}
 		} else {
 			// Add the item to the selection
@@ -974,7 +975,7 @@ void CanvasItemEditor::_add_node_pressed(int p_result) {
 			[[fallthrough]];
 		}
 		case ADD_MOVE: {
-			nodes_to_move = EditorNode::get_singleton()->get_editor_selection()->get_selected_node_list();
+			nodes_to_move = EditorNode::get_singleton()->get_editor_selection()->get_top_selected_node_list();
 			if (nodes_to_move.is_empty()) {
 				return;
 			}
@@ -1116,7 +1117,7 @@ bool CanvasItemEditor::_gui_input_rulers_and_guides(const Ref<InputEvent> &p_eve
 			if (m.is_valid() && m->get_position().x < RULER_WIDTH) {
 				// Check if we are hovering an existing horizontal guide
 				for (int i = 0; i < hguides.size(); i++) {
-					if (ABS(xform.xform(Point2(0, hguides[i])).y - m->get_position().y) < MIN(minimum, 8)) {
+					if (Math::abs(xform.xform(Point2(0, hguides[i])).y - m->get_position().y) < MIN(minimum, 8)) {
 						is_hovering_h_guide = true;
 						is_hovering_v_guide = false;
 						break;
@@ -1126,7 +1127,7 @@ bool CanvasItemEditor::_gui_input_rulers_and_guides(const Ref<InputEvent> &p_eve
 			} else if (m.is_valid() && m->get_position().y < RULER_WIDTH) {
 				// Check if we are hovering an existing vertical guide
 				for (int i = 0; i < vguides.size(); i++) {
-					if (ABS(xform.xform(Point2(vguides[i], 0)).x - m->get_position().x) < MIN(minimum, 8)) {
+					if (Math::abs(xform.xform(Point2(vguides[i], 0)).x - m->get_position().x) < MIN(minimum, 8)) {
 						is_hovering_v_guide = true;
 						is_hovering_h_guide = false;
 						break;
@@ -1146,7 +1147,7 @@ bool CanvasItemEditor::_gui_input_rulers_and_guides(const Ref<InputEvent> &p_eve
 					// Check if we drag an existing horizontal guide
 					dragged_guide_index = -1;
 					for (int i = 0; i < hguides.size(); i++) {
-						if (ABS(xform.xform(Point2(0, hguides[i])).y - b->get_position().y) < MIN(minimum, 8)) {
+						if (Math::abs(xform.xform(Point2(0, hguides[i])).y - b->get_position().y) < MIN(minimum, 8)) {
 							dragged_guide_index = i;
 						}
 					}
@@ -1163,7 +1164,7 @@ bool CanvasItemEditor::_gui_input_rulers_and_guides(const Ref<InputEvent> &p_eve
 					// Check if we drag an existing vertical guide
 					dragged_guide_index = -1;
 					for (int i = 0; i < vguides.size(); i++) {
-						if (ABS(xform.xform(Point2(vguides[i], 0)).x - b->get_position().x) < MIN(minimum, 8)) {
+						if (Math::abs(xform.xform(Point2(vguides[i], 0)).x - b->get_position().x) < MIN(minimum, 8)) {
 							dragged_guide_index = i;
 						}
 					}
@@ -1597,7 +1598,7 @@ bool CanvasItemEditor::_gui_input_open_scene_on_double_click(const Ref<InputEven
 		if (selection.size() == 1) {
 			CanvasItem *ci = selection.front()->get();
 			if (!ci->get_scene_file_path().is_empty() && ci != EditorNode::get_singleton()->get_edited_scene()) {
-				EditorNode::get_singleton()->open_request(ci->get_scene_file_path());
+				EditorNode::get_singleton()->load_scene(ci->get_scene_file_path());
 				return true;
 			}
 		}
@@ -2220,7 +2221,7 @@ bool CanvasItemEditor::_gui_input_move(const Ref<InputEvent> &p_event) {
 
 			bool single_axis = m->is_shift_pressed();
 			if (single_axis) {
-				if (ABS(new_pos.x - previous_pos.x) > ABS(new_pos.y - previous_pos.y)) {
+				if (Math::abs(new_pos.x - previous_pos.x) > Math::abs(new_pos.y - previous_pos.y)) {
 					new_pos.y = previous_pos.y;
 				} else {
 					new_pos.x = previous_pos.x;
@@ -2468,7 +2469,7 @@ bool CanvasItemEditor::_gui_input_select(const Ref<InputEvent> &p_event) {
 					break;
 				}
 			}
-			for (Node *node : EditorNode::get_singleton()->get_editor_selection()->get_selected_node_list()) {
+			for (Node *node : EditorNode::get_singleton()->get_editor_selection()->get_top_selected_node_list()) {
 				if (Object::cast_to<CanvasItem>(node)) {
 					add_node_menu->add_icon_item(get_editor_theme_icon(SNAME("ToolMove")), TTR("Move Node(s) Here"), ADD_MOVE);
 					break;
@@ -2599,7 +2600,7 @@ bool CanvasItemEditor::_gui_input_select(const Ref<InputEvent> &p_event) {
 				}
 
 				_find_canvas_items_in_rect(Rect2(bsfrom, bsto - bsfrom), scene, &selitems);
-				if (selitems.size() == 1 && editor_selection->get_selected_node_list().is_empty()) {
+				if (selitems.size() == 1 && editor_selection->get_top_selected_node_list().is_empty()) {
 					EditorNode::get_singleton()->push_item(selitems.front()->get());
 				}
 				for (CanvasItem *E : selitems) {
@@ -2812,7 +2813,7 @@ void CanvasItemEditor::_update_lock_and_group_button() {
 	bool all_locked = true;
 	bool all_group = true;
 	bool has_canvas_item = false;
-	List<Node *> selection = editor_selection->get_selected_node_list();
+	List<Node *> selection = editor_selection->get_top_selected_node_list();
 	if (selection.is_empty()) {
 		all_locked = false;
 		all_group = false;
@@ -3240,14 +3241,14 @@ void CanvasItemEditor::_draw_ruler_tool() {
 					: (end_to_begin.y < 0 ? 3.0 * Math_PI / 2.0 : Math_PI / 2.0 - vertical_angle_rad);
 			real_t arc_1_end_angle = arc_1_start_angle + vertical_angle_rad;
 			// Constrain arc to triangle height & max size.
-			real_t arc_1_radius = MIN(MIN(arc_radius_max_length_percent * ruler_length, ABS(end_to_begin.y)), arc_max_radius);
+			real_t arc_1_radius = MIN(MIN(arc_radius_max_length_percent * ruler_length, Math::abs(end_to_begin.y)), arc_max_radius);
 
 			real_t arc_2_start_angle = end_to_begin.x < 0
 					? (end_to_begin.y < 0 ? 0.0 : -horizontal_angle_rad)
 					: (end_to_begin.y < 0 ? Math_PI - horizontal_angle_rad : Math_PI);
 			real_t arc_2_end_angle = arc_2_start_angle + horizontal_angle_rad;
 			// Constrain arc to triangle width & max size.
-			real_t arc_2_radius = MIN(MIN(arc_radius_max_length_percent * ruler_length, ABS(end_to_begin.x)), arc_max_radius);
+			real_t arc_2_radius = MIN(MIN(arc_radius_max_length_percent * ruler_length, Math::abs(end_to_begin.x)), arc_max_radius);
 
 			viewport->draw_arc(begin, arc_1_radius, arc_1_start_angle, arc_1_end_angle, arc_point_count, ruler_primary_color, Math::round(EDSCALE * arc_line_width));
 			viewport->draw_arc(end, arc_2_radius, arc_2_start_angle, arc_2_end_angle, arc_point_count, ruler_primary_color, Math::round(EDSCALE * arc_line_width));
@@ -3288,13 +3289,13 @@ void CanvasItemEditor::_draw_ruler_tool() {
 			h_angle_text_pos.x = CLAMP(end.x - angle_text_width / 2, angle_text_width / 2, viewport->get_rect().size.x - angle_text_width);
 			if (begin.y < end.y) {
 				h_angle_text_pos.y = end.y + text_height * 1.5;
-				if (ABS(text_pos2.x - h_angle_text_pos.x) < text_width) {
+				if (Math::abs(text_pos2.x - h_angle_text_pos.x) < text_width) {
 					int height_multiplier = 1.5 + (int)grid_snap_active;
 					h_angle_text_pos.y = MAX(text_pos.y + height_multiplier * text_height, MAX(end.y + text_height * 1.5, text_pos2.y + height_multiplier * text_height));
 				}
 			} else {
 				h_angle_text_pos.y = end.y - text_height * 0.5;
-				if (ABS(text_pos2.x - h_angle_text_pos.x) < text_width) {
+				if (Math::abs(text_pos2.x - h_angle_text_pos.x) < text_width) {
 					int height_multiplier = 1 + (int)grid_snap_active;
 					h_angle_text_pos.y = MIN(text_pos.y - height_multiplier * text_height, MIN(end.y - text_height * 0.5, text_pos2.y - height_multiplier * text_height));
 				}
@@ -4584,7 +4585,7 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 			snap_dialog->popup_centered(Size2(320, 160) * EDSCALE);
 		} break;
 		case SKELETON_SHOW_BONES: {
-			List<Node *> selection = editor_selection->get_selected_node_list();
+			List<Node *> selection = editor_selection->get_top_selected_node_list();
 			for (Node *E : selection) {
 				// Add children nodes so they are processed
 				for (int child = 0; child < E->get_child_count(); child++) {
@@ -4619,7 +4620,7 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 		case LOCK_SELECTED: {
 			undo_redo->create_action(TTR("Lock Selected"));
 
-			List<Node *> selection = editor_selection->get_selected_node_list();
+			List<Node *> selection = editor_selection->get_top_selected_node_list();
 			for (Node *E : selection) {
 				CanvasItem *ci = Object::cast_to<CanvasItem>(E);
 				if (!ci || !ci->is_inside_tree()) {
@@ -4638,7 +4639,7 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 		case UNLOCK_SELECTED: {
 			undo_redo->create_action(TTR("Unlock Selected"));
 
-			List<Node *> selection = editor_selection->get_selected_node_list();
+			List<Node *> selection = editor_selection->get_top_selected_node_list();
 			for (Node *E : selection) {
 				CanvasItem *ci = Object::cast_to<CanvasItem>(E);
 				if (!ci || !ci->is_inside_tree()) {
@@ -4657,7 +4658,7 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 		case GROUP_SELECTED: {
 			undo_redo->create_action(TTR("Group Selected"));
 
-			List<Node *> selection = editor_selection->get_selected_node_list();
+			List<Node *> selection = editor_selection->get_top_selected_node_list();
 			for (Node *E : selection) {
 				CanvasItem *ci = Object::cast_to<CanvasItem>(E);
 				if (!ci || !ci->is_inside_tree()) {
@@ -4676,7 +4677,7 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 		case UNGROUP_SELECTED: {
 			undo_redo->create_action(TTR("Ungroup Selected"));
 
-			List<Node *> selection = editor_selection->get_selected_node_list();
+			List<Node *> selection = editor_selection->get_top_selected_node_list();
 			for (Node *E : selection) {
 				CanvasItem *ci = Object::cast_to<CanvasItem>(E);
 				if (!ci || !ci->is_inside_tree()) {
@@ -4872,7 +4873,6 @@ void CanvasItemEditor::_set_owner_for_node_and_children(Node *p_node, Node *p_ow
 }
 
 void CanvasItemEditor::_focus_selection(int p_op) {
-	Vector2 center(0.f, 0.f);
 	Rect2 rect;
 	int count = 0;
 
@@ -4882,31 +4882,30 @@ void CanvasItemEditor::_focus_selection(int p_op) {
 		if (!ci) {
 			continue;
 		}
-
-		// counting invisible items, for now
-		//if (!ci->is_visible_in_tree()) continue;
-		++count;
-
+		const Transform2D canvas_item_transform = ci->get_global_transform();
+		if (!canvas_item_transform.is_finite()) {
+			continue;
+		}
 		Rect2 item_rect;
 		if (ci->_edit_use_rect()) {
 			item_rect = ci->_edit_get_rect();
 		} else {
 			item_rect = Rect2();
 		}
-
-		Vector2 pos = ci->get_global_transform().get_origin();
-		Vector2 scale = ci->get_global_transform().get_scale();
-		real_t angle = ci->get_global_transform().get_rotation();
+		Vector2 pos = canvas_item_transform.get_origin();
+		const Vector2 scale = canvas_item_transform.get_scale();
+		const real_t angle = canvas_item_transform.get_rotation();
 		pos = ci->get_viewport()->get_popup_base_transform().xform(pos);
 
 		Transform2D t(angle, Vector2(0.f, 0.f));
 		item_rect = t.xform(item_rect);
 		Rect2 canvas_item_rect(pos + scale * item_rect.position, scale * item_rect.size);
-		if (count == 1) {
+		if (count == 0) {
 			rect = canvas_item_rect;
 		} else {
 			rect = rect.merge(canvas_item_rect);
 		}
+		count++;
 	}
 
 	if (p_op == VIEW_FRAME_TO_SELECTION && rect.size.x > CMP_EPSILON && rect.size.y > CMP_EPSILON) {
@@ -5794,9 +5793,6 @@ CanvasItemEditorPlugin::CanvasItemEditorPlugin() {
 	canvas_item_editor->hide();
 }
 
-CanvasItemEditorPlugin::~CanvasItemEditorPlugin() {
-}
-
 void CanvasItemEditorViewport::_on_mouse_exit() {
 	if (!texture_node_type_selector->is_visible()) {
 		_remove_preview();
@@ -6281,7 +6277,7 @@ void CanvasItemEditorViewport::drop_data(const Point2 &p_point, const Variant &p
 		return;
 	}
 
-	List<Node *> selected_nodes = EditorNode::get_singleton()->get_editor_selection()->get_selected_node_list();
+	List<Node *> selected_nodes = EditorNode::get_singleton()->get_editor_selection()->get_top_selected_node_list();
 	Node *root_node = EditorNode::get_singleton()->get_edited_scene();
 	if (selected_nodes.size() > 0) {
 		Node *selected_node = selected_nodes.front()->get();

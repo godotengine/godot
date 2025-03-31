@@ -452,7 +452,7 @@ void EditorExportPlatformIOS::_fix_config_file(const Ref<EditorExportPreset> &p_
 
 	String str;
 	String strnew;
-	str.parse_utf8((const char *)pfile.ptr(), pfile.size());
+	str.append_utf8((const char *)pfile.ptr(), pfile.size());
 	Vector<String> lines = str.split("\n");
 	for (int i = 0; i < lines.size(); i++) {
 		if (lines[i].contains("$binary")) {

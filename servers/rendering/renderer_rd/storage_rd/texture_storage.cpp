@@ -482,17 +482,15 @@ TextureStorage::TextureStorage() {
 		}
 	}
 
-	{ //create default VRS
-
+	{
+		// Create default VRS texture.
+		bool vrs_supported = RD::get_singleton()->has_feature(RD::SUPPORTS_ATTACHMENT_VRS);
 		RD::TextureFormat tformat;
-		tformat.format = RD::DATA_FORMAT_R8_UINT;
+		tformat.format = vrs_supported ? RD::get_singleton()->vrs_get_format() : RD::DATA_FORMAT_R8_UINT;
 		tformat.width = 4;
 		tformat.height = 4;
-		tformat.usage_bits = RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT | RD::TEXTURE_USAGE_VRS_ATTACHMENT_BIT;
+		tformat.usage_bits = RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT | (vrs_supported ? RD::TEXTURE_USAGE_VRS_ATTACHMENT_BIT : 0);
 		tformat.texture_type = RD::TEXTURE_TYPE_2D;
-		if (!RD::get_singleton()->has_feature(RD::SUPPORTS_ATTACHMENT_VRS)) {
-			tformat.usage_bits = RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT;
-		}
 
 		Vector<uint8_t> pv;
 		pv.resize(4 * 4);
@@ -1645,8 +1643,8 @@ void TextureStorage::texture_debug_usage(List<RS::TextureInfo> *r_info) {
 	List<RID> textures;
 	texture_owner.get_owned_list(&textures);
 
-	for (List<RID>::Element *E = textures.front(); E; E = E->next()) {
-		Texture *t = texture_owner.get_or_null(E->get());
+	for (const RID &rid : textures) {
+		Texture *t = texture_owner.get_or_null(rid);
 		if (!t) {
 			continue;
 		}

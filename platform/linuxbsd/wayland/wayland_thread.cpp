@@ -1110,8 +1110,10 @@ void WaylandThread::_wl_output_on_geometry(void *data, struct wl_output *wl_outp
 	ss->pending_data.physical_size.width = physical_width;
 	ss->pending_data.physical_size.height = physical_height;
 
-	ss->pending_data.make.parse_utf8(make);
-	ss->pending_data.model.parse_utf8(model);
+	ss->pending_data.make.clear();
+	ss->pending_data.make.append_utf8(make);
+	ss->pending_data.model.clear();
+	ss->pending_data.model.append_utf8(model);
 
 	// `wl_output::done` is a version 2 addition. We'll directly update the data
 	// for compatibility.
@@ -4139,7 +4141,7 @@ String WaylandThread::keyboard_get_layout_name(int p_index) const {
 
 	if (ss && ss->xkb_keymap) {
 		String ret;
-		ret.parse_utf8(xkb_keymap_layout_get_name(ss->xkb_keymap, p_index));
+		ret.append_utf8(xkb_keymap_layout_get_name(ss->xkb_keymap, p_index));
 
 		return ret;
 	}

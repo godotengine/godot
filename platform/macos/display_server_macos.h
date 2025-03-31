@@ -64,7 +64,7 @@
 #undef CursorShape
 
 class DisplayServerMacOS : public DisplayServer {
-	// No need to register with GDCLASS, it's platform-specific and nothing is added.
+	GDCLASS(DisplayServerMacOS, DisplayServer); // Note: required for Object::cast_to.
 
 	_THREAD_SAFE_CLASS_
 
@@ -253,6 +253,7 @@ public:
 	void send_event(NSEvent *p_event);
 	void send_window_event(const WindowData &p_wd, WindowEvent p_event);
 	void release_pressed_events();
+	void sync_mouse_state();
 	void get_key_modifier_state(unsigned int p_macos_state, Ref<InputEventWithModifiers> r_state) const;
 	void update_mouse_pos(WindowData &p_wd, NSPoint p_location_in_window);
 	void push_to_key_event_buffer(const KeyEvent &p_event);
@@ -441,6 +442,7 @@ public:
 	virtual Key keyboard_get_label_from_physical(Key p_keycode) const override;
 	virtual void show_emoji_and_symbol_picker() const override;
 
+	void _process_events(bool p_pump);
 	virtual void process_events() override;
 	virtual void force_process_and_drop_events() override;
 

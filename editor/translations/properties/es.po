@@ -115,7 +115,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2025-03-02 02:51+0000\n"
+"PO-Revision-Date: 2025-03-18 06:06+0000\n"
 "Last-Translator: Javier <xavier.ocampos@gmail.com>\n"
 "Language-Team: Spanish <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/es/>\n"
@@ -124,7 +124,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 5.10.3-dev\n"
+"X-Generator: Weblate 5.11-dev\n"
 
 msgid "Application"
 msgstr "Aplicación"
@@ -984,6 +984,9 @@ msgstr "Usar Hilos"
 msgid "Localize Settings"
 msgstr "Ajustes de Localización"
 
+msgid "Dock Tab Style"
+msgstr "Estilo de Pestañas del Dock"
+
 msgid "UI Layout Direction"
 msgstr "Orientación del Layout de la UI"
 
@@ -999,6 +1002,12 @@ msgstr "Pantalla del Editor"
 msgid "Project Manager Screen"
 msgstr "Pantalla del Administrador de Proyectos"
 
+msgid "Connection"
+msgstr "Conexión"
+
+msgid "Engine Version Update Mode"
+msgstr "Modo de Actualización de Versión del Motor"
+
 msgid "Use Embedded Menu"
 msgstr "Usar Menú Incrustado"
 
@@ -1008,6 +1017,12 @@ msgstr "Usar Archivo de Diálogos Nativo"
 msgid "Expand to Title"
 msgstr "Expandir al Título"
 
+msgid "Main Font Size"
+msgstr "Tamaño de Fuente Principal"
+
+msgid "Code Font Size"
+msgstr "Tamaño de Fuente Código"
+
 msgid "Code Font Contextual Ligatures"
 msgstr "Ligaduras Contextuales en la Fuente de Código"
 
@@ -1016,6 +1031,12 @@ msgstr "Funciones Personalizadas OpenType de la Fuente de Código"
 
 msgid "Code Font Custom Variations"
 msgstr "Variaciones Personalizadas de la Fuente de Código"
+
+msgid "Font Antialiasing"
+msgstr "Antialiasing de Fuente"
+
+msgid "Font Hinting"
+msgstr "Hinting de Fuente"
 
 msgid "Font Subpixel Positioning"
 msgstr "Posicionamiento Subpíxel de Fuentes"
@@ -1050,6 +1071,9 @@ msgstr "Botones Extra del Mouse para Navegar por el Historial"
 msgid "Save Each Scene on Quit"
 msgstr "Guardar Cada Escena Al Salir"
 
+msgid "Save on Focus Loss"
+msgstr "Guardar al Perder el Foco"
+
 msgid "Accept Dialog Cancel OK Buttons"
 msgstr "Botones Aceptar Cancelar de un cuadro de Diálogo"
 
@@ -1064,6 +1088,12 @@ msgstr "Modo de Reposo con Procesador en Bajo Consumo (µseg)"
 
 msgid "Unfocused Low Processor Mode Sleep (µsec)"
 msgstr "Modo de Reposo con Procesador en Bajo Consumo no Enfocado (µseg)"
+
+msgid "Import Resources When Unfocused"
+msgstr "Importar Recursos Cuando Pierde el Foco"
+
+msgid "V-Sync Mode"
+msgstr "Modo V-Sync"
 
 msgid "Update Continuously"
 msgstr "Actualizar Continuamente"
@@ -1089,8 +1119,17 @@ msgstr "Avisar Antes de Revocar Nombre Único"
 msgid "Inspector"
 msgstr "Inspector"
 
+msgid "Max Array Dictionary Items per Page"
+msgstr "Máximo Array Diccionario Elementos por Página"
+
 msgid "Show Low Level OpenType Features"
 msgstr "Mostrar Características de Bajo Nivel de OpenType"
+
+msgid "Float Drag Speed"
+msgstr "Velocidad de Arrastre Flotante"
+
+msgid "Nested Color Mode"
+msgstr "Modo de Color Anidado"
 
 msgid "Delimitate All Container and Resources"
 msgstr "Delimitar Todos los Contenedores y Recursos"
@@ -1119,11 +1158,38 @@ msgstr "Recursos Abiertos en el Inspector Actual"
 msgid "Resources to Open in New Inspector"
 msgstr "Recursos Para Abrir En el Nuevo Inspector"
 
+msgid "Default Color Picker Mode"
+msgstr "Modo de Selector de Color Por Defecto"
+
+msgid "Default Color Picker Shape"
+msgstr "Forma de Selector de Color Por Defecto"
+
 msgid "Theme"
 msgstr "Theme"
 
+msgid "Follow System Theme"
+msgstr "Seguir Tema del Sistema"
+
+msgid "Preset"
+msgstr "Preestablecido"
+
+msgid "Spacing Preset"
+msgstr "Espaciado Preestablecido"
+
 msgid "Icon and Font Color"
 msgstr "Color de Fuente e Ícono"
+
+msgid "Base Color"
+msgstr "Color Base"
+
+msgid "Accent Color"
+msgstr "Color de Acento"
+
+msgid "Use System Accent Color"
+msgstr "Usar Color de Acento del Sistema"
+
+msgid "Contrast"
+msgstr "Contraste"
 
 msgid "Draw Extra Borders"
 msgstr "Dibujar Bordes extras"
@@ -1176,11 +1242,35 @@ msgstr "Mostrar Botón de Script"
 msgid "Restore Scenes on Load"
 msgstr "Restaurar Escenas al Cargar"
 
+msgid "Multi Window"
+msgstr "Múltiple Ventana"
+
+msgid "Restore Windows on Load"
+msgstr "Restaurar Ventanas al Inicio"
+
+msgid "Maximize Window"
+msgstr "Maximizar Ventana"
+
 msgid "FileSystem"
 msgstr "Sistema de Archivos"
 
 msgid "External Programs"
 msgstr "Programas Externos"
+
+msgid "Raster Image Editor"
+msgstr "Editor de Imagen Ráster"
+
+msgid "Vector Image Editor"
+msgstr "Editor de Imagen Vectorial"
+
+msgid "Audio Editor"
+msgstr "Editor de Audio"
+
+msgid "3D Model Editor"
+msgstr "Editor de Modelo 3D"
+
+msgid "Terminal Emulator"
+msgstr "Emulador de Terminal"
 
 msgid "Terminal Emulator Flags"
 msgstr "Indicadores del Emulador de Terminal"
@@ -1189,7 +1279,10 @@ msgid "Directories"
 msgstr "Directorios"
 
 msgid "Autoscan Project Path"
-msgstr "Autoescaneo de la Ruta del Proyecto"
+msgstr "Ruta de Proyecto de Autoescaneo"
+
+msgid "Default Project Path"
+msgstr "Ruta de Proyecto Por Defecto"
 
 msgid "On Save"
 msgstr "Al Guardar"
@@ -1311,6 +1404,9 @@ msgstr "Editor de Textos"
 msgid "Line Spacing"
 msgstr "Espaciado de Línea"
 
+msgid "Color Theme"
+msgstr "Tema de Color"
+
 msgid "Appearance"
 msgstr "Apariencia"
 
@@ -1370,6 +1466,9 @@ msgstr "Líneas"
 
 msgid "Code Folding"
 msgstr "Plegado de Código"
+
+msgid "Word Wrap"
+msgstr "Ajuste de Palabras"
 
 msgid "Autowrap Mode"
 msgstr "Modo de Ajuste Automático de Línea"
@@ -1548,6 +1647,18 @@ msgstr "Ayuda"
 msgid "Show Help Index"
 msgstr "Mostrar Índice de Ayuda"
 
+msgid "Help Font Size"
+msgstr "Tamaño de Fuente de Ayuda"
+
+msgid "Help Source Font Size"
+msgstr "Tamaño de Fuente del Origen de la Ayuda"
+
+msgid "Help Title Font Size"
+msgstr "Tamaño de Fuente del Título de Ayuda"
+
+msgid "Class Reference Examples"
+msgstr "Ejemplos de Referencia de Clases"
+
 msgid "Sort Functions Alphabetically"
 msgstr "Ordenar Funciones Alfabéticamente"
 
@@ -1559,6 +1670,15 @@ msgstr "Distancia de Selección"
 
 msgid "Palette Min Width"
 msgstr "Ancho Mínimo de la Paleta"
+
+msgid "Preview Size"
+msgstr "Tamaño de Vista Previa"
+
+msgid "Primary Grid Color"
+msgstr "Color Primario de Cuadrícula"
+
+msgid "Secondary Grid Color"
+msgstr "Color Secundario de Cuadrícula"
 
 msgid "Selection Box Color"
 msgstr "Color de Caja de Selección"
@@ -1659,14 +1779,20 @@ msgstr "Forma del Hueso"
 msgid "Path 3D Tilt Disk Size"
 msgstr "Tamaño del Disco de Inclinación de Path 3D"
 
+msgid "Primary Grid Steps"
+msgstr "Pasos Primarios de Cuadrícula"
+
+msgid "Grid Size"
+msgstr "Tamaño de Cuadrícula"
+
 msgid "Grid Division Level Max"
-msgstr "Nivel Máximo de División de Cuadrícula"
+msgstr "Nivel Máximo de Subdivisión de Cuadrícula"
 
 msgid "Grid Division Level Min"
-msgstr "Nivel Mínimo de División de Cuadrícula"
+msgstr "Nivel Mínimo de Subdivisión de Cuadrícula"
 
 msgid "Grid Division Level Bias"
-msgstr "Sesgo del Nivel de División de la Cuadrícula"
+msgstr "Sesgo del Nivel de Subdivisión de Cuadrícula"
 
 msgid "Grid XZ Plane"
 msgstr "Cuadrícula Plano XZ"
@@ -1724,6 +1850,9 @@ msgstr "Sensibilidad de Vista Libre"
 
 msgid "Freelook Inertia"
 msgstr "Inercia de Vista Libre"
+
+msgid "Freelook Activation Modifier"
+msgstr "Modificador de Activación de Vista Libre"
 
 msgid "Freelook Speed Zoom Link"
 msgstr "Velocidad de Zoom de Vista Libre"
@@ -1845,9 +1974,6 @@ msgstr "Restaurar Shaders al Cargar"
 msgid "Visual Editors"
 msgstr "Editores Visuales"
 
-msgid "Color Theme"
-msgstr "Tema de Color"
-
 msgid "Minimap Opacity"
 msgstr "Opacidad del Minimapa"
 
@@ -1875,8 +2001,14 @@ msgstr "SCP"
 msgid "Window Placement"
 msgstr "Ubicación de la Ventana"
 
+msgid "Rect"
+msgstr "Rect"
+
 msgid "Rect Custom Position"
 msgstr "Posición Personalizada del Rect"
+
+msgid "Screen"
+msgstr "Pantalla"
 
 msgid "Auto Save"
 msgstr "Guardado Automático"
@@ -1886,6 +2018,9 @@ msgstr "Guardar Antes de Ejecutar"
 
 msgid "Output"
 msgstr "Salida"
+
+msgid "Font Size"
+msgstr "Tamaño de Fuente"
 
 msgid "Always Clear Output on Play"
 msgstr "Siempre Limpiar la Salida en la Reproducción"
@@ -1916,6 +2051,12 @@ msgstr "Host Remoto"
 
 msgid "Debugger"
 msgstr "Depurador"
+
+msgid "Auto Switch to Remote Scene Tree"
+msgstr "Cambio Automático al Árbol de Escenas Remoto"
+
+msgid "Auto Switch to Stack Trace"
+msgstr "Cambio Automático a la Traza de Pila"
 
 msgid "Profiler Frame History Size"
 msgstr "Tamaño del Historial del Perfilador de Fotogramas"
@@ -1958,6 +2099,9 @@ msgstr "Administrador de Proyectos"
 
 msgid "Sorting Order"
 msgstr "Orden de Ordenamiento"
+
+msgid "Directory Naming Convention"
+msgstr "Convención de Nombres de Directorio"
 
 msgid "Highlighting"
 msgstr "Resaltado"
@@ -2928,9 +3072,6 @@ msgstr "Manipulador"
 
 msgid "Orientation"
 msgstr "Orientación"
-
-msgid "V-Sync Mode"
-msgstr "Modo V-Sync"
 
 msgid "Output Latency"
 msgstr "Latencia de Salida"
@@ -4093,6 +4234,12 @@ msgstr "Características Activadas"
 msgid "Visibility State"
 msgstr "Estado de Visibilidad"
 
+msgid "Install Exported APK"
+msgstr "Instalar APK Exportado"
+
+msgid "Java SDK Path"
+msgstr "Ruta del SDK de Java"
+
 msgid "Force System User"
 msgstr "Forzar Usuario del Sistema"
 
@@ -4209,9 +4356,6 @@ msgstr "Modo XR"
 
 msgid "Swipe to Dismiss"
 msgstr "Deslizar para Descartar"
-
-msgid "Screen"
-msgstr "Pantalla"
 
 msgid "Immersive Mode"
 msgstr "Modo Inmersivo"
@@ -4431,6 +4575,9 @@ msgstr "Ejecutar Script"
 
 msgid "Cleanup Script"
 msgstr "Limpiar Script"
+
+msgid "macOS"
+msgstr "macOS"
 
 msgid "Distribution Type"
 msgstr "Tipo de Distribución"
@@ -4702,6 +4849,18 @@ msgstr "Icono 180 X 180"
 msgid "Icon 512 X 512"
 msgstr "Icono 512 X 512"
 
+msgid "rcedit"
+msgstr "rcedit"
+
+msgid "signtool"
+msgstr "signtool"
+
+msgid "osslsigncode"
+msgstr "osslsigncode"
+
+msgid "wine"
+msgstr "wine"
+
 msgid "Identity Type"
 msgstr "Tipo de Identidad"
 
@@ -4803,9 +4962,6 @@ msgstr "Tipo de Reproducción"
 
 msgid "Copy Mode"
 msgstr "Modo de Copia"
-
-msgid "Rect"
-msgstr "Rect"
 
 msgid "Anchor Mode"
 msgstr "Modo de Anclaje"
@@ -5957,9 +6113,6 @@ msgstr "Modular Contorno"
 
 msgid "Font"
 msgstr "Fuente"
-
-msgid "Font Size"
-msgstr "Tamaño de Fuente"
 
 msgid "Horizontal Alignment"
 msgstr "Alineación Horizontal"
@@ -8817,9 +8970,6 @@ msgstr "Ajustes"
 
 msgid "Brightness"
 msgstr "Luminosidad"
-
-msgid "Contrast"
-msgstr "Contraste"
 
 msgid "Saturation"
 msgstr "Saturación"

@@ -1872,7 +1872,7 @@ bool CodeEdit::is_line_code_region_start(int p_line) const {
 	if (is_in_string(p_line) != -1) {
 		return false;
 	}
-	Vector<String> split = get_line(p_line).strip_edges().split_spaces();
+	Vector<String> split = get_line(p_line).strip_edges().split_spaces(1);
 	return split.size() > 0 && split[0] == code_region_start_string;
 }
 
@@ -1884,7 +1884,7 @@ bool CodeEdit::is_line_code_region_end(int p_line) const {
 	if (is_in_string(p_line) != -1) {
 		return false;
 	}
-	Vector<String> split = get_line(p_line).strip_edges().split_spaces();
+	Vector<String> split = get_line(p_line).strip_edges().split_spaces(1);
 	return split.size() > 0 && split[0] == code_region_end_string;
 }
 

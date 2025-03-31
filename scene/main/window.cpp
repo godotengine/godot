@@ -310,8 +310,7 @@ void Window::set_title(const String &p_title) {
 
 #ifdef DEBUG_ENABLED
 	if (EngineDebugger::get_singleton() && window_id == DisplayServer::MAIN_WINDOW_ID && !Engine::get_singleton()->is_project_manager_hint()) {
-		Array arr;
-		arr.push_back(tr_title);
+		Array arr = { tr_title };
 		EngineDebugger::get_singleton()->send_message("window:title", arr);
 	}
 #endif
@@ -2370,6 +2369,18 @@ Variant Window::get_theme_item(Theme::DataType p_data_type, const StringName &p_
 
 #ifdef TOOLS_ENABLED
 Ref<Texture2D> Window::get_editor_theme_icon(const StringName &p_name) const {
+	return get_theme_icon(p_name, SNAME("EditorIcons"));
+}
+
+Ref<Texture2D> Window::get_editor_theme_native_menu_icon(const StringName &p_name, bool p_global_menu, bool p_dark_mode) const {
+	if (!p_global_menu) {
+		return get_theme_icon(p_name, SNAME("EditorIcons"));
+	}
+	if (p_dark_mode && has_theme_icon(String(p_name) + "Dark", SNAME("EditorIcons"))) {
+		return get_theme_icon(String(p_name) + "Dark", SNAME("EditorIcons"));
+	} else if (!p_dark_mode && has_theme_icon(String(p_name) + "Light", SNAME("EditorIcons"))) {
+		return get_theme_icon(String(p_name) + "Light", SNAME("EditorIcons"));
+	}
 	return get_theme_icon(p_name, SNAME("EditorIcons"));
 }
 #endif

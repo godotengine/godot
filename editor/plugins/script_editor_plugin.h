@@ -222,8 +222,6 @@ public:
 	virtual CodeTextEditor *get_code_editor() const = 0;
 
 	virtual void validate() = 0;
-
-	ScriptEditorBase() {}
 };
 
 typedef ScriptEditorBase *(*CreateScriptEditorFunc)(const Ref<Resource> &p_resource);
@@ -623,7 +621,7 @@ protected:
 	void _notification(int p_what);
 
 public:
-	virtual String get_plugin_name() const override { return "Script"; }
+	virtual String get_plugin_name() const override { return TTRC("Script"); }
 	bool has_main_screen() const override { return true; }
 	virtual void edit(Object *p_object) override;
 	virtual bool handles(Object *p_object) const override;
@@ -642,5 +640,4 @@ public:
 	virtual void edited_scene_changed() override;
 
 	ScriptEditorPlugin();
-	~ScriptEditorPlugin();
 };

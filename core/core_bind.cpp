@@ -42,7 +42,7 @@
 #include "core/os/thread_safe.h"
 #include "core/variant/typed_array.h"
 
-namespace core_bind {
+namespace CoreBind {
 
 ////// ResourceLoader //////
 
@@ -466,8 +466,8 @@ bool OS::is_restart_on_exit_set() const {
 Vector<String> OS::get_restart_on_exit_arguments() const {
 	List<String> args = ::OS::get_singleton()->get_restart_on_exit_arguments();
 	Vector<String> args_vector;
-	for (List<String>::Element *E = args.front(); E; E = E->next()) {
-		args_vector.push_back(E->get());
+	for (const String &arg : args) {
+		args_vector.push_back(arg);
 	}
 
 	return args_vector;
@@ -1241,6 +1241,9 @@ Vector<uint8_t> Marshalls::base64_to_raw(const String &p_str) {
 }
 
 String Marshalls::utf8_to_base64(const String &p_str) {
+	if (p_str.is_empty()) {
+		return String();
+	}
 	CharString cstr = p_str.utf8();
 	String ret = CryptoCore::b64_encode_str((unsigned char *)cstr.get_data(), cstr.length());
 	ERR_FAIL_COND_V(ret.is_empty(), ret);
@@ -1419,7 +1422,7 @@ void Thread::_bind_methods() {
 	BIND_ENUM_CONSTANT(PRIORITY_HIGH);
 }
 
-namespace special {
+namespace Special {
 
 ////// ClassDB //////
 
@@ -1746,7 +1749,7 @@ void ClassDB::_bind_methods() {
 	BIND_ENUM_CONSTANT(API_NONE);
 }
 
-} // namespace special
+} // namespace Special
 
 ////// Engine //////
 
@@ -1876,8 +1879,8 @@ Vector<String> Engine::get_singleton_list() const {
 	List<::Engine::Singleton> singletons;
 	::Engine::get_singleton()->get_singletons(&singletons);
 	Vector<String> ret;
-	for (List<::Engine::Singleton>::Element *E = singletons.front(); E; E = E->next()) {
-		ret.push_back(E->get().name);
+	for (const ::Engine::Singleton &E : singletons) {
+		ret.push_back(E.name);
 	}
 	return ret;
 }
@@ -2190,4 +2193,4 @@ void EngineDebugger::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("clear_breakpoints"), &EngineDebugger::clear_breakpoints);
 }
 
-} // namespace core_bind
+} // namespace CoreBind

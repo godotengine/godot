@@ -166,6 +166,42 @@
 #define MBEDTLS_ERR_SSL_VERSION_MISMATCH                  -0x5F00
 /** Invalid value in SSL config */
 #define MBEDTLS_ERR_SSL_BAD_CONFIG                        -0x5E80
+/* Error space gap */
+/** Attempt to verify a certificate without an expected hostname.
+ * This is usually insecure.
+ *
+ * In TLS clients, when a client authenticates a server through its
+ * certificate, the client normally checks three things:
+ * - the certificate chain must be valid;
+ * - the chain must start from a trusted CA;
+ * - the certificate must cover the server name that is expected by the client.
+ *
+ * Omitting any of these checks is generally insecure, and can allow a
+ * malicious server to impersonate a legitimate server.
+ *
+ * The third check may be safely skipped in some unusual scenarios,
+ * such as networks where eavesdropping is a risk but not active attacks,
+ * or a private PKI where the client equally trusts all servers that are
+ * accredited by the root CA.
+ *
+ * You should call mbedtls_ssl_set_hostname() with the expected server name
+ * before starting a TLS handshake on a client (unless the client is
+ * set up to only use PSK-based authentication, which does not rely on the
+ * host name). If you have determined that server name verification is not
+ * required for security in your scenario, call mbedtls_ssl_set_hostname()
+ * with \p NULL as the server name.
+ *
+ * This error is raised if all of the following conditions are met:
+ *
+ * - A TLS client is configured with the authentication mode
+ *   #MBEDTLS_SSL_VERIFY_REQUIRED (default).
+ * - Certificate authentication is enabled.
+ * - The client does not call mbedtls_ssl_set_hostname().
+ * - The configuration option
+ *   #MBEDTLS_SSL_CLI_ALLOW_WEAK_CERTIFICATE_VERIFICATION_WITHOUT_HOSTNAME
+ *   is not enabled.
+ */
+#define MBEDTLS_ERR_SSL_CERTIFICATE_VERIFICATION_WITHOUT_HOSTNAME  -0x5D80
 
 /*
  * Constants from RFC 8446 for TLS 1.3 PSK modes
@@ -1893,8 +1929,35 @@ struct mbedtls_ssl_context {
      * User settings
      */
 #if defined(MBEDTLS_X509_CRT_PARSE_C)
-    char *MBEDTLS_PRIVATE(hostname);             /*!< expected peer CN for verification
-                                                    (and SNI if available)                 */
+    /** Expected peer CN for verification.
+     *
+     * Also used on clients for SNI,
+     * and for TLS 1.3 session resumption using tickets.
+     *
+     * The value of this field can be:
+     * - \p NULL in a newly initialized or reset context.
+     * - A heap-allocated copy of the last value passed to
+     *   mbedtls_ssl_set_hostname(), if the last call had a non-null
+     *  \p hostname argument.
+     * - A special value to indicate that mbedtls_ssl_set_hostname()
+     *   was called with \p NULL (as opposed to never having been called).
+     *   See `mbedtls_ssl_get_hostname_pointer()` in `ssl_tls.c`.
+     *
+     * If this field contains the value \p NULL and the configuration option
+     * #MBEDTLS_SSL_CLI_ALLOW_WEAK_CERTIFICATE_VERIFICATION_WITHOUT_HOSTNAME
+     * is unset, on a TLS client, attempting to verify a server certificate
+     * results in the error
+     * #MBEDTLS_ERR_SSL_CERTIFICATE_VERIFICATION_WITHOUT_HOSTNAME.
+     *
+     * If this field contains the special value described above, or if
+     * the value is \p NULL and the configuration option
+     * #MBEDTLS_SSL_CLI_ALLOW_WEAK_CERTIFICATE_VERIFICATION_WITHOUT_HOSTNAME
+     * is set, then the peer name verification is skipped, which may be
+     * insecure, especially on a client. Furthermore, on a client, the
+     * server_name extension is not sent, and the server name is ignored
+     * in TLS 1.3 session resumption using tickets.
+     */
+    char *MBEDTLS_PRIVATE(hostname);
 #endif /* MBEDTLS_X509_CRT_PARSE_C */
 
 #if defined(MBEDTLS_SSL_ALPN)
@@ -2001,6 +2064,14 @@ void mbedtls_ssl_init(mbedtls_ssl_context *ssl);
  * \warning        This function must be called exactly once per context.
  *                 Calling mbedtls_ssl_setup again is not supported, even
  *                 if no session is active.
+ *
+ * \warning        After setting up a client context, if certificate-based
+ *                 authentication is enabled, you should call
+ *                 mbedtls_ssl_set_hostname() to specifiy the expected
+ *                 name of the server. Without this, in most scenarios,
+ *                 the TLS connection is insecure. See
+ *                 #MBEDTLS_ERR_SSL_CERTIFICATE_VERIFICATION_WITHOUT_HOSTNAME
+ *                 for more information.
  *
  * \note           If #MBEDTLS_USE_PSA_CRYPTO is enabled, the PSA crypto
  *                 subsystem must have been initialized by calling
@@ -3976,16 +4047,29 @@ void mbedtls_ssl_conf_sig_algs(mbedtls_ssl_config *conf,
 #if defined(MBEDTLS_X509_CRT_PARSE_C)
 /**
  * \brief          Set or reset the hostname to check against the received
- *                 server certificate. It sets the ServerName TLS extension,
- *                 too, if that extension is enabled. (client-side only)
+ *                 peer certificate. On a client, this also sets the
+ *                 ServerName TLS extension, if that extension is enabled.
+ *                 On a TLS 1.3 client, this also sets the server name in
+ *                 the session resumption ticket, if that feature is enabled.
  *
  * \param ssl      SSL context
- * \param hostname the server hostname, may be NULL to clear hostname
-
- * \note           Maximum hostname length MBEDTLS_SSL_MAX_HOST_NAME_LEN.
+ * \param hostname The server hostname. This may be \c NULL to clear
+ *                 the hostname.
  *
- * \return         0 if successful, MBEDTLS_ERR_SSL_ALLOC_FAILED on
- *                 allocation failure, MBEDTLS_ERR_SSL_BAD_INPUT_DATA on
+ * \note           Maximum hostname length #MBEDTLS_SSL_MAX_HOST_NAME_LEN.
+ *
+ * \note           If the hostname is \c NULL on a client, then the server
+ *                 is not authenticated: it only needs to have a valid
+ *                 certificate, not a certificate matching its name.
+ *                 Therefore you should always call this function on a client,
+ *                 unless the connection is set up to only allow
+ *                 pre-shared keys, or in scenarios where server
+ *                 impersonation is not a concern. See the documentation of
+ *                 #MBEDTLS_ERR_SSL_CERTIFICATE_VERIFICATION_WITHOUT_HOSTNAME
+ *                 for more details.
+ *
+ * \return         0 if successful, #MBEDTLS_ERR_SSL_ALLOC_FAILED on
+ *                 allocation failure, #MBEDTLS_ERR_SSL_BAD_INPUT_DATA on
  *                 too long input hostname.
  *
  *                 Hostname set to the one provided on success (cleared
@@ -4448,6 +4532,10 @@ void mbedtls_ssl_conf_cert_req_ca_list(mbedtls_ssl_config *conf,
  * \note           With TLS, this currently only affects ApplicationData (sent
  *                 with \c mbedtls_ssl_read()), not handshake messages.
  *                 With DTLS, this affects both ApplicationData and handshake.
+ *
+ * \note           Defragmentation of TLS handshake messages is supported
+ *                 with some limitations. See the documentation of
+ *                 mbedtls_ssl_handshake() for details.
  *
  * \note           This sets the maximum length for a record's payload,
  *                 excluding record overhead that will be added to it, see
@@ -4979,6 +5067,24 @@ int mbedtls_ssl_get_session(const mbedtls_ssl_context *ssl,
  *                 if a negotiation involving TLS 1.3 takes place (this may
  *                 be the case even if TLS 1.3 is offered but eventually
  *                 not selected).
+ *
+ * \note           In TLS, reception of fragmented handshake messages is
+ *                 supported with some limitations (those limitations do
+ *                 not apply to DTLS, where defragmentation is fully
+ *                 supported):
+ *                 - On an Mbed TLS server that only accepts TLS 1.2,
+ *                   the initial ClientHello message must not be fragmented.
+ *                   A TLS 1.2 ClientHello may be fragmented if the server
+ *                   also accepts TLS 1.3 connections (meaning
+ *                   that #MBEDTLS_SSL_PROTO_TLS1_3 enabled, and the
+ *                   accepted versions have not been restricted with
+ *                   mbedtls_ssl_conf_max_tls_version() or the like).
+ *                 - The first fragment of a handshake message must be
+ *                   at least 4 bytes long.
+ *                 - Non-handshake records must not be interleaved between
+ *                   the fragments of a handshake message. (This is permitted
+ *                   in TLS 1.2 but not in TLS 1.3, but Mbed TLS rejects it
+ *                   even in TLS 1.2.)
  */
 int mbedtls_ssl_handshake(mbedtls_ssl_context *ssl);
 

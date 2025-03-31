@@ -51,9 +51,6 @@ ReflectionProbeGizmoPlugin::ReflectionProbeGizmoPlugin() {
 	create_handle_material("handles");
 }
 
-ReflectionProbeGizmoPlugin::~ReflectionProbeGizmoPlugin() {
-}
-
 bool ReflectionProbeGizmoPlugin::has_gizmo(Node3D *p_spatial) {
 	return Object::cast_to<ReflectionProbe>(p_spatial) != nullptr;
 }

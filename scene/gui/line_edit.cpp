@@ -399,7 +399,7 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 
 			if (context_menu_enabled) {
 				_update_context_menu();
-				menu->set_position(get_screen_position() + get_local_mouse_position());
+				menu->set_position(get_screen_transform().xform(get_local_mouse_position()));
 				menu->reset_size();
 				menu->popup();
 			}
@@ -630,7 +630,7 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 		if (k->is_action("ui_menu", true)) {
 			_update_context_menu();
 			Point2 pos = Point2(get_caret_pixel_pos().x, (get_size().y + theme_cache.font->get_height(theme_cache.font_size)) / 2);
-			menu->set_position(get_screen_position() + pos);
+			menu->set_position(get_screen_transform().xform(pos));
 			menu->reset_size();
 			menu->popup();
 			menu->grab_focus();
@@ -1202,7 +1202,8 @@ void LineEdit::_notification(int p_what) {
 					if (rect.position.x < x_ofs) {
 						rect.size.x -= (x_ofs - rect.position.x);
 						rect.position.x = x_ofs;
-					} else if (rect.position.x + rect.size.x > ofs_max) {
+					}
+					if (rect.position.x + rect.size.x > ofs_max) {
 						rect.size.x = ofs_max - rect.position.x;
 					}
 					RenderingServer::get_singleton()->canvas_item_add_rect(ci, rect, selection_color);
