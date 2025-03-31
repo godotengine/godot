@@ -125,6 +125,8 @@ public:
 /*************************************************************************/
 
 class CodeSignBlob : public Reference {
+	GDSOFTCLASS(CodeSignBlob, Reference);
+
 public:
 	virtual PoolByteArray get_hash_sha1() const = 0;
 	virtual PoolByteArray get_hash_sha256() const = 0;

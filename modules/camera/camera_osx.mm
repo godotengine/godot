@@ -200,6 +200,8 @@
 // CameraFeedOSX - Subclass for camera feeds in OSX
 
 class CameraFeedOSX : public CameraFeed {
+	GDSOFTCLASS(CameraFeedOSX, CameraFeed);
+
 private:
 	AVCaptureDevice *device;
 	MyCaptureSession *capture_session;
