@@ -910,7 +910,7 @@ void MultiplayerAPI::_init_node_profile(ObjectID p_node) {
 	}
 	profiler_frame_data.insert(p_node, ProfilingInfo());
 	profiler_frame_data[p_node].node = p_node;
-	profiler_frame_data[p_node].node_path = Object::cast_to<Node>(ObjectDB::get_instance(p_node))->get_path();
+	profiler_frame_data[p_node].node_path = ObjectDB::get_instance<Node>(p_node)->get_path();
 	profiler_frame_data[p_node].incoming_rpc = 0;
 	profiler_frame_data[p_node].incoming_rset = 0;
 	profiler_frame_data[p_node].outgoing_rpc = 0;

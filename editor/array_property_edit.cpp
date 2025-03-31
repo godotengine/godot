@@ -275,7 +275,7 @@ void ArrayPropertyEdit::edit(Object *p_obj, const StringName &p_prop, const Stri
 }
 
 Node *ArrayPropertyEdit::get_node() {
-	return Object::cast_to<Node>(ObjectDB::get_instance(obj));
+	return ObjectDB::get_instance<Node>(obj);
 }
 
 bool ArrayPropertyEdit::_dont_undo_redo() {

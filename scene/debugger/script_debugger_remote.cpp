@@ -118,7 +118,7 @@ void ScriptDebuggerRemote::_put_variable(const String &p_name, const Variant &p_
 }
 
 void ScriptDebuggerRemote::_save_node(ObjectID id, const String &p_path) {
-	Node *node = Object::cast_to<Node>(ObjectDB::get_instance(id));
+	Node *node = ObjectDB::get_instance<Node>(id);
 	ERR_FAIL_COND(!node);
 
 	Ref<PackedScene> ps = memnew(PackedScene);

@@ -1319,7 +1319,7 @@ void ScriptEditorDebugger::_notification(int p_what) {
 				if (inspect_edited_object_timeout < 0) {
 					inspect_edited_object_timeout = EditorSettings::get_singleton()->get("debugger/remote_inspect_refresh_interval");
 					if (inspected_object_id) {
-						if (ScriptEditorDebuggerInspectedObject *obj = Object::cast_to<ScriptEditorDebuggerInspectedObject>(ObjectDB::get_instance(editor->get_editor_history()->get_current()))) {
+						if (ScriptEditorDebuggerInspectedObject *obj = ObjectDB::get_instance<ScriptEditorDebuggerInspectedObject>(editor->get_editor_history()->get_current())) {
 							if (obj->remote_object_id == inspected_object_id) {
 								//take the chance and re-inspect selected object
 								Array msg;

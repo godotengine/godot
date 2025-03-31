@@ -51,7 +51,7 @@ void RemoteTransform::_update_remote() {
 		return;
 	}
 
-	Spatial *n = Object::cast_to<Spatial>(ObjectDB::get_instance(cache));
+	Spatial *n = ObjectDB::get_instance<Spatial>(cache);
 	if (!n) {
 		return;
 	}

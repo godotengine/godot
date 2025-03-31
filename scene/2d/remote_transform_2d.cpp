@@ -52,7 +52,7 @@ void RemoteTransform2D::_update_remote() {
 		return;
 	}
 
-	Node2D *n = Object::cast_to<Node2D>(ObjectDB::get_instance(cache));
+	Node2D *n = ObjectDB::get_instance<Node2D>(cache);
 	if (!n) {
 		return;
 	}
