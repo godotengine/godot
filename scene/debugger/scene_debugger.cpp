@@ -1518,7 +1518,7 @@ RuntimeNodeSelect::~RuntimeNodeSelect() {
 
 	if (draw_canvas.is_valid()) {
 		RS::get_singleton()->free_rid(sel_drag_ci);
-		RS::get_singleton()->free_rid(sbox_2d_ci);
+		RS::get_singleton()->free_rid(ssquare_ci);
 		RS::get_singleton()->free_rid(draw_canvas);
 	}
 }
@@ -1551,12 +1551,14 @@ void RuntimeNodeSelect::_setup(const Dictionary &p_settings) {
 	draw_canvas = RS::get_singleton()->canvas_create();
 	sel_drag_ci = RS::get_singleton()->canvas_item_create();
 
-	/// 2D Selection Box Generation
+	/// 2D Selection Square Generation
 
-	sbox_2d_ci = RS::get_singleton()->canvas_item_create();
+	ssquare_color = p_settings.get("editors/2d/selection_square_color", Color());
+
+	ssquare_ci = RS::get_singleton()->canvas_item_create();
 	RS::get_singleton()->viewport_attach_canvas(root->get_viewport_rid(), draw_canvas);
 	RS::get_singleton()->canvas_item_set_parent(sel_drag_ci, draw_canvas);
-	RS::get_singleton()->canvas_item_set_parent(sbox_2d_ci, draw_canvas);
+	RS::get_singleton()->canvas_item_set_parent(ssquare_ci, draw_canvas);
 
 #ifndef _3D_DISABLED
 	cursor = Cursor();
@@ -1577,7 +1579,7 @@ void RuntimeNodeSelect::_setup(const Dictionary &p_settings) {
 	/// 3D Selection Box Generation
 	// Copied from the Node3DEditor implementation.
 
-	sbox_3d_color = p_settings.get("editors/3d/selection_box_color", Color());
+	sbox_color = p_settings.get("editors/3d/selection_box_color", Color());
 
 	// Use two AABBs to create the illusion of a slightly thicker line.
 	AABB aabb(Vector3(), Vector3(1, 1, 1));
@@ -1603,19 +1605,19 @@ void RuntimeNodeSelect::_setup(const Dictionary &p_settings) {
 	Ref<StandardMaterial3D> mat = memnew(StandardMaterial3D);
 	mat->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
 	mat->set_flag(StandardMaterial3D::FLAG_DISABLE_FOG, true);
-	mat->set_albedo(sbox_3d_color);
+	mat->set_albedo(sbox_color);
 	mat->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA);
 	st->set_material(mat);
-	sbox_3d_mesh = st->commit();
+	sbox_mesh = st->commit();
 
 	Ref<StandardMaterial3D> mat_xray = memnew(StandardMaterial3D);
 	mat_xray->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
 	mat_xray->set_flag(StandardMaterial3D::FLAG_DISABLE_FOG, true);
 	mat_xray->set_flag(StandardMaterial3D::FLAG_DISABLE_DEPTH_TEST, true);
-	mat_xray->set_albedo(sbox_3d_color * Color(1, 1, 1, 0.15));
+	mat_xray->set_albedo(sbox_color * Color(1, 1, 1, 0.15));
 	mat_xray->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA);
 	st_xray->set_material(mat_xray);
-	sbox_3d_mesh_xray = st_xray->commit();
+	sbox_mesh_xray = st_xray->commit();
 #endif // _3D_DISABLED
 
 	SceneTree::get_singleton()->connect("process_frame", callable_mp(this, &RuntimeNodeSelect::_process_frame));
@@ -2010,7 +2012,7 @@ void RuntimeNodeSelect::_send_ids(const Vector<Node *> &p_picked_nodes, bool p_i
 		nodes.push_back(ObjectDB::get_instance<Node>(id));
 	}
 #ifndef _3D_DISABLED
-	for (const KeyValue<ObjectID, Ref<SelectionBox3D>> &KV : selected_3d_nodes) {
+	for (const KeyValue<ObjectID, Ref<SelectionBox>> &KV : selected_3d_nodes) {
 		ids.push_back(KV.key);
 		nodes.push_back(ObjectDB::get_instance<Node>(KV.key));
 	}
@@ -2041,7 +2043,7 @@ void RuntimeNodeSelect::_set_selected_nodes(const Vector<Node *> &p_nodes) {
 	bool changed = false;
 	LocalVector<ObjectID> nodes_ci;
 #ifndef _3D_DISABLED
-	HashMap<ObjectID, Ref<SelectionBox3D>> nodes_3d;
+	HashMap<ObjectID, Ref<SelectionBox>> nodes_3d;
 #endif // _3D_DISABLED
 
 	for (Node *node : p_nodes) {
@@ -2069,18 +2071,18 @@ void RuntimeNodeSelect::_set_selected_nodes(const Vector<Node *> &p_nodes) {
 				continue;
 			}
 
-			if (sbox_3d_mesh.is_null() || sbox_3d_mesh_xray.is_null()) {
+			if (sbox_mesh.is_null() || sbox_mesh_xray.is_null()) {
 				continue;
 			}
 
-			Ref<SelectionBox3D> sb;
+			Ref<SelectionBox> sb;
 			sb.instantiate();
 			nodes_3d[id] = sb;
 
 			RID scenario = node_3d->get_world_3d()->get_scenario();
 
-			sb->instance = RS::get_singleton()->instance_create2(sbox_3d_mesh->get_rid(), scenario);
-			sb->instance_ofs = RS::get_singleton()->instance_create2(sbox_3d_mesh->get_rid(), scenario);
+			sb->instance = RS::get_singleton()->instance_create2(sbox_mesh->get_rid(), scenario);
+			sb->instance_ofs = RS::get_singleton()->instance_create2(sbox_mesh->get_rid(), scenario);
 			RS::get_singleton()->instance_geometry_set_cast_shadows_setting(sb->instance, RS::SHADOW_CASTING_SETTING_OFF);
 			RS::get_singleton()->instance_geometry_set_cast_shadows_setting(sb->instance_ofs, RS::SHADOW_CASTING_SETTING_OFF);
 			RS::get_singleton()->instance_geometry_set_flag(sb->instance, RS::INSTANCE_FLAG_IGNORE_OCCLUSION_CULLING, true);
@@ -2088,8 +2090,8 @@ void RuntimeNodeSelect::_set_selected_nodes(const Vector<Node *> &p_nodes) {
 			RS::get_singleton()->instance_geometry_set_flag(sb->instance_ofs, RS::INSTANCE_FLAG_IGNORE_OCCLUSION_CULLING, true);
 			RS::get_singleton()->instance_geometry_set_flag(sb->instance_ofs, RS::INSTANCE_FLAG_USE_BAKED_LIGHT, false);
 
-			sb->instance_xray = RS::get_singleton()->instance_create2(sbox_3d_mesh_xray->get_rid(), scenario);
-			sb->instance_xray_ofs = RS::get_singleton()->instance_create2(sbox_3d_mesh_xray->get_rid(), scenario);
+			sb->instance_xray = RS::get_singleton()->instance_create2(sbox_mesh_xray->get_rid(), scenario);
+			sb->instance_xray_ofs = RS::get_singleton()->instance_create2(sbox_mesh_xray->get_rid(), scenario);
 			RS::get_singleton()->instance_geometry_set_cast_shadows_setting(sb->instance_xray, RS::SHADOW_CASTING_SETTING_OFF);
 			RS::get_singleton()->instance_geometry_set_cast_shadows_setting(sb->instance_xray_ofs, RS::SHADOW_CASTING_SETTING_OFF);
 			RS::get_singleton()->instance_geometry_set_flag(sb->instance_xray, RS::INSTANCE_FLAG_IGNORE_OCCLUSION_CULLING, true);
@@ -2135,8 +2137,8 @@ void RuntimeNodeSelect::_queue_selection_update() {
 }
 
 void RuntimeNodeSelect::_update_selection() {
-	RS::get_singleton()->canvas_item_clear(sbox_2d_ci);
-	RS::get_singleton()->canvas_item_set_visible(sbox_2d_ci, selection_visible);
+	RS::get_singleton()->canvas_item_clear(ssquare_ci);
+	RS::get_singleton()->canvas_item_set_visible(ssquare_ci, selection_visible);
 
 	for (LocalVector<ObjectID>::Iterator E = selected_ci_nodes.begin(); E != selected_ci_nodes.end(); ++E) {
 		ObjectID id = *E;
@@ -2177,14 +2179,13 @@ void RuntimeNodeSelect::_update_selection() {
 			xform.xform(rect.position + Point2(0, rect.size.y))
 		};
 
-		const Color selection_color_2d = Color(1, 0.6, 0.4, 0.7);
 		for (int i = 0; i < 4; i++) {
-			RS::get_singleton()->canvas_item_add_line(sbox_2d_ci, endpoints[i], endpoints[(i + 1) % 4], selection_color_2d, 2);
+			RS::get_singleton()->canvas_item_add_line(ssquare_ci, endpoints[i], endpoints[(i + 1) % 4], ssquare_color, 2);
 		}
 	}
 
 #ifndef _3D_DISABLED
-	for (HashMap<ObjectID, Ref<SelectionBox3D>>::ConstIterator KV = selected_3d_nodes.begin(); KV != selected_3d_nodes.end(); ++KV) {
+	for (HashMap<ObjectID, Ref<SelectionBox>>::ConstIterator KV = selected_3d_nodes.begin(); KV != selected_3d_nodes.end(); ++KV) {
 		ObjectID id = KV->key;
 		Node3D *node_3d = ObjectDB::get_instance<Node3D>(id);
 		if (!node_3d) {
@@ -2219,7 +2220,7 @@ void RuntimeNodeSelect::_update_selection() {
 		bounds = xform_to_top_level_parent_space.xform(bounds);
 		Transform3D t = node_3d->get_global_transform();
 
-		Ref<SelectionBox3D> sb = KV->value;
+		Ref<SelectionBox> sb = KV->value;
 		if (t == sb->transform && bounds == sb->bounds) {
 			continue; // Nothing changed.
 		}
@@ -2260,7 +2261,7 @@ void RuntimeNodeSelect::_update_selection() {
 void RuntimeNodeSelect::_clear_selection() {
 	selected_ci_nodes.clear();
 	if (draw_canvas.is_valid()) {
-		RS::get_singleton()->canvas_item_clear(sbox_2d_ci);
+		RS::get_singleton()->canvas_item_clear(ssquare_ci);
 	}
 
 #ifndef _3D_DISABLED

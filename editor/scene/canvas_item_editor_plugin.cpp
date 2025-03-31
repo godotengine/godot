@@ -3797,14 +3797,14 @@ void CanvasItemEditor::_draw_selection() {
 				xform.xform(rect.position + Vector2(0, rect.size.y))
 			};
 
-			Color c = Color(1, 0.6, 0.4, 0.7);
+			Color selection_square_color = EDITOR_GET("editors/2d/selection_square_color");
 
 			if (item_locked) {
-				c = Color(0.7, 0.7, 0.7, 0.7);
+				selection_square_color = EDITOR_GET("editors/2d/locked_selection_square_color");
 			}
 
 			for (int i = 0; i < 4; i++) {
-				viewport->draw_line(endpoints[i], endpoints[(i + 1) % 4], c, Math::round(2 * EDSCALE));
+				viewport->draw_line(endpoints[i], endpoints[(i + 1) % 4], selection_square_color, Math::round(2 * EDSCALE));
 			}
 		} else {
 			Transform2D unscaled_transform = (xform * ci->get_transform().affine_inverse() * ci->_edit_get_transform()).orthonormalized();
