@@ -100,8 +100,7 @@ void SceneCacheInterface::process_simplify_path(int p_from, const uint8_t *p_pac
 	ERR_FAIL_NULL(root_node);
 	int ofs = 1;
 
-	String methods_md5;
-	methods_md5.append_utf8((const char *)(p_packet + ofs), 32);
+	String methods_md5 = String::utf8((const char *)(p_packet + ofs), 32);
 	ofs += 33;
 
 	int id = decode_uint32(&p_packet[ofs]);
@@ -109,8 +108,7 @@ void SceneCacheInterface::process_simplify_path(int p_from, const uint8_t *p_pac
 
 	ERR_FAIL_COND_MSG(peers_info[p_from].recv_nodes.has(id), vformat("Duplicate remote cache ID %d for peer %d", id, p_from));
 
-	String paths;
-	paths.append_utf8((const char *)(p_packet + ofs), p_packet_len - ofs);
+	String paths = String::utf8((const char *)(p_packet + ofs), p_packet_len - ofs);
 
 	const NodePath path = paths;
 

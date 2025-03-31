@@ -4140,10 +4140,7 @@ String WaylandThread::keyboard_get_layout_name(int p_index) const {
 	SeatState *ss = wl_seat_get_seat_state(wl_seat_current);
 
 	if (ss && ss->xkb_keymap) {
-		String ret;
-		ret.append_utf8(xkb_keymap_layout_get_name(ss->xkb_keymap, p_index));
-
-		return ret;
+		return String::utf8(xkb_keymap_layout_get_name(ss->xkb_keymap, p_index));
 	}
 
 	return "";
