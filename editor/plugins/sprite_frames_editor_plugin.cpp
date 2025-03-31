@@ -1294,6 +1294,10 @@ void SpriteFramesEditor::_animation_speed_resized() {
 }
 
 void SpriteFramesEditor::_animation_speed_changed(double p_value) {
+	if (frames.is_null()) {
+		return;
+	}
+
 	if (updating) {
 		return;
 	}
@@ -1374,6 +1378,10 @@ void SpriteFramesEditor::_frame_list_item_selected(int p_index, bool p_selected)
 }
 
 void SpriteFramesEditor::_frame_duration_changed(double p_value) {
+	if (frames.is_null()) {
+		return;
+	}
+
 	if (updating) {
 		return;
 	}
