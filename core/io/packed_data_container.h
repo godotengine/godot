@@ -28,15 +28,14 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef PACKED_DATA_CONTAINER_H
-#define PACKED_DATA_CONTAINER_H
+#pragma once
 
 #include "core/io/resource.h"
 
 class PackedDataContainer : public Resource {
 	GDCLASS(PackedDataContainer, Resource);
 
-	enum {
+	enum : uint32_t {
 		TYPE_DICT = 0xFFFFFFFF,
 		TYPE_ARRAY = 0xFFFFFFFE,
 	};
@@ -100,5 +99,3 @@ public:
 
 	PackedDataContainerRef() {}
 };
-
-#endif // PACKED_DATA_CONTAINER_H

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef PARALLAX_2D_H
-#define PARALLAX_2D_H
+#pragma once
 
 #include "scene/2d/node_2d.h"
 
@@ -47,7 +46,6 @@ class Parallax2D : public Node2D {
 	Point2 limit_begin = Point2(-DEFAULT_LIMIT, -DEFAULT_LIMIT);
 	Point2 limit_end = Point2(DEFAULT_LIMIT, DEFAULT_LIMIT);
 	Point2 autoscroll;
-	Point2 autoscroll_offset;
 	bool follow_viewport = true;
 	bool ignore_camera_scroll = false;
 
@@ -97,5 +95,3 @@ public:
 
 	Parallax2D();
 };
-
-#endif // PARALLAX_2D_H

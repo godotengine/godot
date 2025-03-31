@@ -37,7 +37,7 @@ void SkeletonModifier3D::_validate_property(PropertyInfo &p_property) const {
 PackedStringArray SkeletonModifier3D::get_configuration_warnings() const {
 	PackedStringArray warnings = Node3D::get_configuration_warnings();
 	if (skeleton_id.is_null()) {
-		warnings.push_back(RTR("Skeleton3D node not set! SkeletonModifier3D must be child of Skeleton3D or set a path to an external skeleton."));
+		warnings.push_back(RTR("Skeleton3D node not set! SkeletonModifier3D must be child of Skeleton3D."));
 	}
 	return warnings;
 }
@@ -45,7 +45,7 @@ PackedStringArray SkeletonModifier3D::get_configuration_warnings() const {
 /* Skeleton3D */
 
 Skeleton3D *SkeletonModifier3D::get_skeleton() const {
-	return Object::cast_to<Skeleton3D>(ObjectDB::get_instance(skeleton_id));
+	return ObjectDB::get_instance<Skeleton3D>(skeleton_id);
 }
 
 void SkeletonModifier3D::_update_skeleton_path() {
@@ -75,6 +75,17 @@ void SkeletonModifier3D::_skeleton_changed(Skeleton3D *p_old, Skeleton3D *p_new)
 	//
 }
 
+void SkeletonModifier3D::_force_update_skeleton_skin() {
+	if (!is_inside_tree()) {
+		return;
+	}
+	Skeleton3D *skeleton = get_skeleton();
+	if (!skeleton) {
+		return;
+	}
+	skeleton->force_update_deferred();
+}
+
 /* Process */
 
 void SkeletonModifier3D::set_active(bool p_active) {
@@ -83,6 +94,7 @@ void SkeletonModifier3D::set_active(bool p_active) {
 	}
 	active = p_active;
 	_set_active(active);
+	_force_update_skeleton_skin();
 }
 
 bool SkeletonModifier3D::is_active() const {
@@ -119,10 +131,16 @@ void SkeletonModifier3D::_notification(int p_what) {
 		case NOTIFICATION_PARENTED: {
 			_update_skeleton();
 		} break;
+		case NOTIFICATION_EXIT_TREE:
+		case NOTIFICATION_UNPARENTED: {
+			_force_update_skeleton_skin();
+		} break;
 	}
 }
 
 void SkeletonModifier3D::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("get_skeleton"), &SkeletonModifier3D::get_skeleton);
+
 	ClassDB::bind_method(D_METHOD("set_active", "active"), &SkeletonModifier3D::set_active);
 	ClassDB::bind_method(D_METHOD("is_active"), &SkeletonModifier3D::is_active);
 
@@ -134,6 +152,73 @@ void SkeletonModifier3D::_bind_methods() {
 
 	ADD_SIGNAL(MethodInfo("modification_processed"));
 	GDVIRTUAL_BIND(_process_modification);
+
+	BIND_ENUM_CONSTANT(BONE_AXIS_PLUS_X);
+	BIND_ENUM_CONSTANT(BONE_AXIS_MINUS_X);
+	BIND_ENUM_CONSTANT(BONE_AXIS_PLUS_Y);
+	BIND_ENUM_CONSTANT(BONE_AXIS_MINUS_Y);
+	BIND_ENUM_CONSTANT(BONE_AXIS_PLUS_Z);
+	BIND_ENUM_CONSTANT(BONE_AXIS_MINUS_Z);
+}
+
+Vector3 SkeletonModifier3D::get_vector_from_bone_axis(BoneAxis p_axis) {
+	Vector3 ret;
+	switch (p_axis) {
+		case BONE_AXIS_PLUS_X: {
+			ret = Vector3(1, 0, 0);
+		} break;
+		case BONE_AXIS_MINUS_X: {
+			ret = Vector3(-1, 0, 0);
+		} break;
+		case BONE_AXIS_PLUS_Y: {
+			ret = Vector3(0, 1, 0);
+		} break;
+		case BONE_AXIS_MINUS_Y: {
+			ret = Vector3(0, -1, 0);
+		} break;
+		case BONE_AXIS_PLUS_Z: {
+			ret = Vector3(0, 0, 1);
+		} break;
+		case BONE_AXIS_MINUS_Z: {
+			ret = Vector3(0, 0, -1);
+		} break;
+	}
+	return ret;
+}
+
+Vector3 SkeletonModifier3D::get_vector_from_axis(Vector3::Axis p_axis) {
+	Vector3 ret;
+	switch (p_axis) {
+		case Vector3::AXIS_X: {
+			ret = Vector3(1, 0, 0);
+		} break;
+		case Vector3::AXIS_Y: {
+			ret = Vector3(0, 1, 0);
+		} break;
+		case Vector3::AXIS_Z: {
+			ret = Vector3(0, 0, 1);
+		} break;
+	}
+	return ret;
+}
+
+Vector3::Axis SkeletonModifier3D::get_axis_from_bone_axis(BoneAxis p_axis) {
+	Vector3::Axis ret = Vector3::AXIS_X;
+	switch (p_axis) {
+		case BONE_AXIS_PLUS_X:
+		case BONE_AXIS_MINUS_X: {
+			ret = Vector3::AXIS_X;
+		} break;
+		case BONE_AXIS_PLUS_Y:
+		case BONE_AXIS_MINUS_Y: {
+			ret = Vector3::AXIS_Y;
+		} break;
+		case BONE_AXIS_PLUS_Z:
+		case BONE_AXIS_MINUS_Z: {
+			ret = Vector3::AXIS_Z;
+		} break;
+	}
+	return ret;
 }
 
 SkeletonModifier3D::SkeletonModifier3D() {

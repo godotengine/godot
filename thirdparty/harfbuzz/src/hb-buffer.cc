@@ -271,6 +271,7 @@ hb_buffer_t::similar (const hb_buffer_t &src)
   replacement = src.replacement;
   invisible = src.invisible;
   not_found = src.not_found;
+  not_found_variation_selector = src.not_found_variation_selector;
 }
 
 void
@@ -283,6 +284,7 @@ hb_buffer_t::reset ()
   replacement = HB_BUFFER_REPLACEMENT_CODEPOINT_DEFAULT;
   invisible = 0;
   not_found = 0;
+  not_found_variation_selector = HB_CODEPOINT_INVALID;
 
   clear ();
 }
@@ -705,6 +707,7 @@ DEFINE_NULL_INSTANCE (hb_buffer_t) =
   HB_BUFFER_REPLACEMENT_CODEPOINT_DEFAULT,
   0, /* invisible */
   0, /* not_found */
+  HB_CODEPOINT_INVALID, /* not_found_variation_selector */
 
 
   HB_BUFFER_CONTENT_TYPE_INVALID,
@@ -857,7 +860,7 @@ hb_buffer_destroy (hb_buffer_t *buffer)
  * @destroy: (nullable): A callback to call when @data is not needed anymore
  * @replace: Whether to replace an existing data with the same key
  *
- * Attaches a user-data key/data pair to the specified buffer. 
+ * Attaches a user-data key/data pair to the specified buffer.
  *
  * Return value: `true` if success, `false` otherwise
  *
@@ -1206,7 +1209,7 @@ hb_buffer_get_flags (const hb_buffer_t *buffer)
  * @cluster_level: The cluster level to set on the buffer
  *
  * Sets the cluster level of a buffer. The #hb_buffer_cluster_level_t
- * dictates one aspect of how HarfBuzz will treat non-base characters 
+ * dictates one aspect of how HarfBuzz will treat non-base characters
  * during shaping.
  *
  * Since: 0.9.42
@@ -1226,7 +1229,7 @@ hb_buffer_set_cluster_level (hb_buffer_t               *buffer,
  * @buffer: An #hb_buffer_t
  *
  * Fetches the cluster level of a buffer. The #hb_buffer_cluster_level_t
- * dictates one aspect of how HarfBuzz will treat non-base characters 
+ * dictates one aspect of how HarfBuzz will treat non-base characters
  * during shaping.
  *
  * Return value: The cluster level of @buffer
@@ -1358,6 +1361,46 @@ hb_codepoint_t
 hb_buffer_get_not_found_glyph (const hb_buffer_t *buffer)
 {
   return buffer->not_found;
+}
+
+/**
+ * hb_buffer_set_not_found_variation_selector_glyph:
+ * @buffer: An #hb_buffer_t
+ * @not_found_variation_selector: the not-found-variation-selector #hb_codepoint_t
+ *
+ * Sets the #hb_codepoint_t that replaces variation-selector characters not resolved
+ * in the font during shaping.
+ *
+ * The not-found-variation-selector glyph defaults to #HB_CODEPOINT_INVALID,
+ * in which case an unresolved variation-selector will be removed from the glyph
+ * string during shaping. This API allows for changing that and retaining a glyph,
+ * such that the situation can be detected by the client and handled accordingly
+ * (e.g. by using a different font).
+ *
+ * Since: 10.0.0
+ **/
+void
+hb_buffer_set_not_found_variation_selector_glyph (hb_buffer_t    *buffer,
+						  hb_codepoint_t  not_found_variation_selector)
+{
+  buffer->not_found_variation_selector = not_found_variation_selector;
+}
+
+/**
+ * hb_buffer_get_not_found_variation_selector_glyph:
+ * @buffer: An #hb_buffer_t
+ *
+ * See hb_buffer_set_not_found_variation_selector_glyph().
+ *
+ * Return value:
+ * The @buffer not-found-variation-selector #hb_codepoint_t
+ *
+ * Since: 10.0.0
+ **/
+hb_codepoint_t
+hb_buffer_get_not_found_variation_selector_glyph (const hb_buffer_t *buffer)
+{
+  return buffer->not_found_variation_selector;
 }
 
 /**
@@ -1940,7 +1983,7 @@ hb_buffer_add_codepoints (hb_buffer_t          *buffer,
  * @buffer: An #hb_buffer_t
  * @source: source #hb_buffer_t
  * @start: start index into source buffer to copy.  Use 0 to copy from start of buffer.
- * @end: end index into source buffer to copy.  Use @HB_FEATURE_GLOBAL_END to copy to end of buffer.
+ * @end: end index into source buffer to copy.  Use @UINT_MAX (or ((unsigned int) -1)) to copy to end of buffer.
  *
  * Append (part of) contents of another buffer to this buffer.
  *

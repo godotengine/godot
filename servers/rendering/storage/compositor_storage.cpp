@@ -53,7 +53,23 @@ void RendererCompositorStorage::compositor_effect_initialize(RID p_rid) {
 }
 
 void RendererCompositorStorage::compositor_effect_free(RID p_rid) {
-	// TODO remove this RID from any compositor that uses it.
+	CompositorEffect *effect = compositor_effects_owner.get_or_null(p_rid);
+	ERR_FAIL_NULL(effect);
+
+	// Remove this RID from any compositor that uses it.
+	List<RID> compositor_rids;
+	compositor_owner.get_owned_list(&compositor_rids);
+	for (const RID &compositor_rid : compositor_rids) {
+		Compositor *compositor = compositor_owner.get_or_null(compositor_rid);
+		if (compositor) {
+			compositor->compositor_effects.erase(p_rid);
+		}
+	}
+
+	// Update motion vector count if needed.
+	if (effect->is_enabled && effect->flags.has_flag(RS::CompositorEffectFlags::COMPOSITOR_EFFECT_FLAG_NEEDS_MOTION_VECTORS)) {
+		num_compositor_effects_with_motion_vectors--;
+	}
 
 	compositor_effects_owner.free(p_rid);
 }
@@ -69,6 +85,14 @@ void RendererCompositorStorage::compositor_effect_set_callback(RID p_effect, RS:
 void RendererCompositorStorage::compositor_effect_set_enabled(RID p_effect, bool p_enabled) {
 	CompositorEffect *effect = compositor_effects_owner.get_or_null(p_effect);
 	ERR_FAIL_NULL(effect);
+
+	if (effect->is_enabled != p_enabled && effect->flags.has_flag(RS::CompositorEffectFlags::COMPOSITOR_EFFECT_FLAG_NEEDS_MOTION_VECTORS)) {
+		if (p_enabled) {
+			num_compositor_effects_with_motion_vectors++;
+		} else {
+			num_compositor_effects_with_motion_vectors--;
+		}
+	}
 
 	effect->is_enabled = p_enabled;
 }
@@ -97,6 +121,18 @@ Callable RendererCompositorStorage::compositor_effect_get_callback(RID p_effect)
 void RendererCompositorStorage::compositor_effect_set_flag(RID p_effect, RS::CompositorEffectFlags p_flag, bool p_set) {
 	CompositorEffect *effect = compositor_effects_owner.get_or_null(p_effect);
 	ERR_FAIL_NULL(effect);
+
+	if (effect->is_enabled && p_flag == RS::CompositorEffectFlags::COMPOSITOR_EFFECT_FLAG_NEEDS_MOTION_VECTORS) {
+		bool was_set = effect->flags.has_flag(RS::CompositorEffectFlags::COMPOSITOR_EFFECT_FLAG_NEEDS_MOTION_VECTORS);
+
+		if (was_set != p_set) {
+			if (p_set) {
+				num_compositor_effects_with_motion_vectors++;
+			} else {
+				num_compositor_effects_with_motion_vectors--;
+			}
+		}
+	}
 
 	if (p_set) {
 		effect->flags.set_flag(p_flag);

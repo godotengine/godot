@@ -28,14 +28,14 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TILE_MAP_H
-#define TILE_MAP_H
+#pragma once
 
 #include "scene/2d/tile_map_layer.h"
 #include "scene/property_list_helper.h"
 #include "scene/resources/2d/tile_set.h"
 
 class Control;
+class NavigationMeshSourceGeometryData2D;
 class TileMapLayer;
 class TerrainConstraint;
 
@@ -107,16 +107,16 @@ protected:
 	VisibilityMode _get_navigation_visibility_mode_bind_compat_87115();
 
 	static void _bind_compatibility_methods();
-#endif
+#endif // DISABLE_DEPRECATED
 
 public:
-#ifdef TOOLS_ENABLED
+#ifdef DEBUG_ENABLED
 	virtual Rect2 _edit_get_rect() const override;
-#endif
+#endif // DEBUG_ENABLED
 
 #ifndef DISABLE_DEPRECATED
 	void force_update(int p_layer);
-#endif
+#endif // DISABLE_DEPRECATED
 
 	void set_rendering_quadrant_size(int p_size);
 	int get_rendering_quadrant_size() const;
@@ -167,6 +167,10 @@ public:
 	// Helper method to make accessing the data easier.
 	TileData *get_cell_tile_data(int p_layer, const Vector2i &p_coords, bool p_use_proxies = false) const;
 
+	bool is_cell_flipped_h(int p_layer, const Vector2i &p_coords, bool p_use_proxies = false) const;
+	bool is_cell_flipped_v(int p_layer, const Vector2i &p_coords, bool p_use_proxies = false) const;
+	bool is_cell_transposed(int p_layer, const Vector2i &p_coords, bool p_use_proxies = false) const;
+
 	// Patterns.
 	Ref<TileMapPattern> get_pattern(int p_layer, TypedArray<Vector2i> p_coords_array);
 	Vector2i map_pattern(const Vector2i &p_position_in_tilemap, const Vector2i &p_coords_in_pattern, Ref<TileMapPattern> p_pattern);
@@ -203,10 +207,12 @@ public:
 	virtual void set_texture_filter(CanvasItem::TextureFilter p_texture_filter) override;
 	virtual void set_texture_repeat(CanvasItem::TextureRepeat p_texture_repeat) override;
 
+#ifndef PHYSICS_2D_DISABLED
 	// For finding tiles from collision.
 	Vector2i get_coords_for_body_rid(RID p_physics_body);
 	// For getting their layers as well.
 	int get_layer_for_body_rid(RID p_physics_body);
+#endif // PHYSICS_2D_DISABLED
 
 	// Fixing and clearing methods.
 	void fix_invalid_tiles();
@@ -234,9 +240,15 @@ public:
 	// Configuration warnings.
 	PackedStringArray get_configuration_warnings() const override;
 
+private:
+	static Callable _navmesh_source_geometry_parsing_callback;
+	static RID _navmesh_source_geometry_parser;
+
+public:
+	static void navmesh_parse_init();
+	static void navmesh_parse_source_geometry(const Ref<NavigationPolygon> &p_navigation_mesh, Ref<NavigationMeshSourceGeometryData2D> p_source_geometry_data, Node *p_node);
+
 	TileMap();
 };
 
 VARIANT_ENUM_CAST(TileMap::VisibilityMode);
-
-#endif // TILE_MAP_H

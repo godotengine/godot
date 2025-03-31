@@ -32,7 +32,6 @@
 		</member>
 		<member name="uri" type="String" setter="set_uri" getter="get_uri" default="&quot;&quot;">
 			The [url=https://en.wikipedia.org/wiki/Uniform_Resource_Identifier]URI[/url] for this [LinkButton]. If set to a valid URI, pressing the button opens the URI using the operating system's default program for the protocol (via [method OS.shell_open]). HTTP and HTTPS URLs open the default web browser.
-			[b]Examples:[/b]
 			[codeblocks]
 			[gdscript]
 			uri = "https://godotengine.org"  # Opens the URL in the default web browser.

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TEST_TEXT_EDIT_H
-#define TEST_TEXT_EDIT_H
+#pragma once
 
 #include "scene/gui/text_edit.h"
 
@@ -55,13 +54,14 @@ static inline Array reverse_nested(Array array) {
 }
 
 TEST_CASE("[SceneTree][TextEdit] text entry") {
+#if !defined(PHYSICS_2D_DISABLED) || !defined(PHYSICS_3D_DISABLED)
 	SceneTree::get_singleton()->get_root()->set_physics_object_picking(false);
+#endif // !defined(PHYSICS_2D_DISABLED) || !defined(PHYSICS_3D_DISABLED)
 	TextEdit *text_edit = memnew(TextEdit);
 	SceneTree::get_singleton()->get_root()->add_child(text_edit);
 	text_edit->grab_focus();
 
-	Array empty_signal_args;
-	empty_signal_args.push_back(Array());
+	Array empty_signal_args = { {} };
 
 	SUBCASE("[TextEdit] text entry") {
 		SIGNAL_WATCH(text_edit, "text_set");
@@ -1763,6 +1763,28 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK_FALSE(text_edit->has_selection());
 			CHECK(text_edit->get_caret_line() == 0);
 			CHECK(text_edit->get_caret_column() == 4);
+
+			// Wrapped lines.
+			text_edit->set_line_wrapping_mode(TextEdit::LineWrappingMode::LINE_WRAPPING_BOUNDARY);
+			text_edit->set_text("this is some text\nfor selection");
+			text_edit->set_size(Size2(110, 100));
+			MessageQueue::get_singleton()->flush();
+
+			// Line 0 wraps: 'this is ', 'some text'.
+			// Line 1 wraps: 'for ', 'selection'.
+			CHECK(text_edit->is_line_wrapped(0));
+
+			// Select to the first character of a wrapped line.
+			SEND_GUI_MOUSE_BUTTON_EVENT(text_edit->get_rect_at_line_column(0, 11).get_center(), MouseButton::LEFT, MouseButtonMask::LEFT, Key::NONE);
+			SEND_GUI_MOUSE_MOTION_EVENT(text_edit->get_rect_at_line_column(0, 8).get_center(), MouseButtonMask::LEFT, Key::NONE);
+			CHECK(text_edit->has_selection());
+			CHECK(text_edit->get_selected_text() == "so");
+			CHECK(text_edit->get_selection_mode() == TextEdit::SELECTION_MODE_POINTER);
+			CHECK(text_edit->get_selection_origin_line() == 0);
+			CHECK(text_edit->get_selection_origin_column() == 10);
+			CHECK(text_edit->get_caret_line() == 0);
+			CHECK(text_edit->get_caret_column() == 8);
+			CHECK(text_edit->is_dragging_cursor());
 		}
 
 		SUBCASE("[TextEdit] mouse word select") {
@@ -3563,6 +3585,54 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			SIGNAL_CHECK_FALSE("lines_edited_from");
 		}
 
+		SUBCASE("[TextEdit] cut when empty selection clipboard disabled") {
+			text_edit->set_empty_selection_clipboard_enabled(false);
+			DS->clipboard_set("");
+
+			text_edit->set_text("this is\nsome\n");
+			text_edit->set_caret_line(0);
+			text_edit->set_caret_column(6);
+			MessageQueue::get_singleton()->flush();
+			SIGNAL_DISCARD("text_set");
+			SIGNAL_DISCARD("text_changed");
+			SIGNAL_DISCARD("lines_edited_from");
+			SIGNAL_DISCARD("caret_changed");
+
+			text_edit->cut();
+			MessageQueue::get_singleton()->flush();
+			CHECK(DS->clipboard_get() == "");
+			CHECK(text_edit->get_text() == "this is\nsome\n");
+			CHECK(text_edit->get_caret_line() == 0);
+			CHECK(text_edit->get_caret_column() == 6);
+			SIGNAL_CHECK_FALSE("caret_changed");
+			SIGNAL_CHECK_FALSE("text_changed");
+			SIGNAL_CHECK_FALSE("lines_edited_from");
+		}
+
+		SUBCASE("[TextEdit] copy when empty selection clipboard disabled") {
+			text_edit->set_empty_selection_clipboard_enabled(false);
+			DS->clipboard_set("");
+
+			text_edit->set_text("this is\nsome\n");
+			text_edit->set_caret_line(0);
+			text_edit->set_caret_column(6);
+			MessageQueue::get_singleton()->flush();
+			SIGNAL_DISCARD("text_set");
+			SIGNAL_DISCARD("text_changed");
+			SIGNAL_DISCARD("lines_edited_from");
+			SIGNAL_DISCARD("caret_changed");
+
+			text_edit->copy();
+			MessageQueue::get_singleton()->flush();
+			CHECK(DS->clipboard_get() == "");
+			CHECK(text_edit->get_text() == "this is\nsome\n");
+			CHECK(text_edit->get_caret_line() == 0);
+			CHECK(text_edit->get_caret_column() == 6);
+			SIGNAL_CHECK_FALSE("caret_changed");
+			SIGNAL_CHECK_FALSE("text_changed");
+			SIGNAL_CHECK_FALSE("lines_edited_from");
+		}
+
 		SIGNAL_UNWATCH(text_edit, "text_set");
 		SIGNAL_UNWATCH(text_edit, "text_changed");
 		SIGNAL_UNWATCH(text_edit, "lines_edited_from");
@@ -4210,6 +4280,18 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK(text_edit->get_caret_line(0) == 0);
 			CHECK(text_edit->get_caret_column(0) == 4);
 			text_edit->remove_secondary_carets();
+
+			// Remove when there are no words, only symbols.
+			text_edit->set_text("#{}");
+			text_edit->set_caret_line(0);
+			text_edit->set_caret_column(3);
+
+			SEND_GUI_ACTION("ui_text_backspace_word");
+			CHECK(text_edit->get_viewport()->is_input_handled());
+			CHECK_FALSE(text_edit->has_selection());
+			CHECK(text_edit->get_text() == "");
+			CHECK(text_edit->get_caret_line(0) == 0);
+			CHECK(text_edit->get_caret_column(0) == 0);
 		}
 
 		SUBCASE("[TextEdit] ui_text_backspace_word same line") {
@@ -4869,6 +4951,18 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK(text_edit->get_caret_line(0) == 0);
 			CHECK(text_edit->get_caret_column(0) == 2);
 			text_edit->remove_secondary_carets();
+
+			// Remove when there are no words, only symbols.
+			text_edit->set_text("#{}");
+			text_edit->set_caret_line(0);
+			text_edit->set_caret_column(0);
+
+			SEND_GUI_ACTION("ui_text_delete_word");
+			CHECK(text_edit->get_viewport()->is_input_handled());
+			CHECK_FALSE(text_edit->has_selection());
+			CHECK(text_edit->get_text() == "");
+			CHECK(text_edit->get_caret_line(0) == 0);
+			CHECK(text_edit->get_caret_column(0) == 0);
 		}
 
 		SUBCASE("[TextEdit] ui_text_delete_word same line") {
@@ -5279,6 +5373,16 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			SIGNAL_CHECK("caret_changed", empty_signal_args);
 			SIGNAL_CHECK_FALSE("text_changed");
 			SIGNAL_CHECK_FALSE("lines_edited_from");
+
+			// Move when there are no words, only symbols.
+			text_edit->set_text("#{}");
+			text_edit->set_caret_line(0);
+			text_edit->set_caret_column(3);
+
+			SEND_GUI_ACTION("ui_text_caret_word_left");
+			CHECK(text_edit->get_viewport()->is_input_handled());
+			CHECK(text_edit->get_caret_line(0) == 0);
+			CHECK(text_edit->get_caret_column(0) == 0);
 		}
 
 		SUBCASE("[TextEdit] ui_text_caret_left") {
@@ -5541,6 +5645,16 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			SIGNAL_CHECK("caret_changed", empty_signal_args);
 			SIGNAL_CHECK_FALSE("text_changed");
 			SIGNAL_CHECK_FALSE("lines_edited_from");
+
+			// Move when there are no words, only symbols.
+			text_edit->set_text("#{}");
+			text_edit->set_caret_line(0);
+			text_edit->set_caret_column(0);
+
+			SEND_GUI_ACTION("ui_text_caret_word_right");
+			CHECK(text_edit->get_viewport()->is_input_handled());
+			CHECK(text_edit->get_caret_line(0) == 0);
+			CHECK(text_edit->get_caret_column(0) == 3);
 		}
 
 		SUBCASE("[TextEdit] ui_text_caret_right") {
@@ -5713,6 +5827,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK(text_edit->get_caret_count() == 2);
 
 			MessageQueue::get_singleton()->flush();
+			// Lines 0 and 4 are wrapped into 2 parts: 'this is ' and 'some'.
 			CHECK(text_edit->is_line_wrapped(0));
 			SIGNAL_DISCARD("text_set");
 			SIGNAL_DISCARD("text_changed");
@@ -5762,9 +5877,9 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			SIGNAL_CHECK("caret_changed", empty_signal_args);
 			SIGNAL_CHECK_FALSE("text_changed");
 			SIGNAL_CHECK_FALSE("lines_edited_from");
-			text_edit->set_caret_column(12, false);
 
 			// Normal up over wrapped line to line 0.
+			text_edit->set_caret_column(12, false);
 			SEND_GUI_ACTION("ui_text_caret_up");
 			CHECK(text_edit->get_viewport()->is_input_handled());
 			CHECK(text_edit->get_caret_line() == 0);
@@ -5777,6 +5892,23 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			SIGNAL_CHECK("caret_changed", empty_signal_args);
 			SIGNAL_CHECK_FALSE("text_changed");
 			SIGNAL_CHECK_FALSE("lines_edited_from");
+
+			// Normal up from column 0 to a wrapped line.
+			text_edit->remove_secondary_carets();
+			text_edit->set_caret_line(5);
+			text_edit->set_caret_column(0);
+			SEND_GUI_ACTION("ui_text_caret_up");
+			CHECK(text_edit->get_viewport()->is_input_handled());
+			CHECK(text_edit->get_caret_line() == 4);
+			CHECK(text_edit->get_caret_column() == 8);
+			CHECK_FALSE(text_edit->has_selection(0));
+
+			// Normal up to column 0 of a wrapped line.
+			SEND_GUI_ACTION("ui_text_caret_up");
+			CHECK(text_edit->get_viewport()->is_input_handled());
+			CHECK(text_edit->get_caret_line() == 4);
+			CHECK(text_edit->get_caret_column() == 0);
+			CHECK_FALSE(text_edit->has_selection(0));
 		}
 
 		SUBCASE("[TextEdit] ui_text_caret_down") {
@@ -5792,6 +5924,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 
 			MessageQueue::get_singleton()->flush();
 
+			// Lines 3 and 7 are wrapped into 2 parts: 'this is ' and 'some'.
 			CHECK(text_edit->is_line_wrapped(3));
 			SIGNAL_DISCARD("text_set");
 			SIGNAL_DISCARD("text_changed");
@@ -5841,9 +5974,9 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			SIGNAL_CHECK("caret_changed", empty_signal_args);
 			SIGNAL_CHECK_FALSE("text_changed");
 			SIGNAL_CHECK_FALSE("lines_edited_from");
-			text_edit->set_caret_column(7, false);
 
 			// Normal down over wrapped line to last wrapped line.
+			text_edit->set_caret_column(7, false);
 			SEND_GUI_ACTION("ui_text_caret_down");
 			CHECK(text_edit->get_viewport()->is_input_handled());
 			CHECK(text_edit->get_caret_line() == 3);
@@ -5856,6 +5989,23 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			SIGNAL_CHECK("caret_changed", empty_signal_args);
 			SIGNAL_CHECK_FALSE("text_changed");
 			SIGNAL_CHECK_FALSE("lines_edited_from");
+
+			// Normal down to column 0 of a wrapped line.
+			text_edit->remove_secondary_carets();
+			text_edit->set_caret_line(3);
+			text_edit->set_caret_column(0);
+			SEND_GUI_ACTION("ui_text_caret_down");
+			CHECK(text_edit->get_viewport()->is_input_handled());
+			CHECK(text_edit->get_caret_line() == 3);
+			CHECK(text_edit->get_caret_column() == 8);
+			CHECK_FALSE(text_edit->has_selection(0));
+
+			// Normal down out of visual column 0 of a wrapped line moves to start of next line.
+			SEND_GUI_ACTION("ui_text_caret_down");
+			CHECK(text_edit->get_viewport()->is_input_handled());
+			CHECK(text_edit->get_caret_line() == 4);
+			CHECK(text_edit->get_caret_column() == 0);
+			CHECK_FALSE(text_edit->has_selection(0));
 		}
 
 		SUBCASE("[TextEdit] ui_text_caret_document_start") {
@@ -6296,8 +6446,7 @@ TEST_CASE("[SceneTree][TextEdit] versioning") {
 
 		CHECK(text_edit->get_caret_count() == 1);
 
-		Array caret_index;
-		caret_index.push_back(0);
+		Array caret_index = { 0 };
 
 		for (int i = 1; i < 4; i++) {
 			caret_index.push_back(text_edit->add_caret(i, 0));
@@ -6561,8 +6710,7 @@ TEST_CASE("[SceneTree][TextEdit] multicaret") {
 	SceneTree::get_singleton()->get_root()->add_child(text_edit);
 	text_edit->set_multiple_carets_enabled(true);
 
-	Array empty_signal_args;
-	empty_signal_args.push_back(Array());
+	Array empty_signal_args = { {} };
 
 	SIGNAL_WATCH(text_edit, "caret_changed");
 
@@ -7162,7 +7310,7 @@ TEST_CASE("[SceneTree][TextEdit] multicaret") {
 		CHECK(text_edit->get_caret_line(0) == 2);
 		CHECK(text_edit->get_caret_column(0) == 5);
 		CHECK(text_edit->get_caret_line(1) == 2);
-		CHECK(text_edit->get_caret_column(1) == 10);
+		CHECK(text_edit->get_caret_column(1) == 6);
 
 		// Cannot add caret below from last line last line wrap.
 		text_edit->add_caret_at_carets(true);
@@ -7171,7 +7319,7 @@ TEST_CASE("[SceneTree][TextEdit] multicaret") {
 		CHECK(text_edit->get_caret_line(0) == 2);
 		CHECK(text_edit->get_caret_column(0) == 5);
 		CHECK(text_edit->get_caret_line(1) == 2);
-		CHECK(text_edit->get_caret_column(1) == 10);
+		CHECK(text_edit->get_caret_column(1) == 6);
 
 		// Add caret above from not first line wrap.
 		text_edit->remove_secondary_carets();
@@ -7195,7 +7343,7 @@ TEST_CASE("[SceneTree][TextEdit] multicaret") {
 		CHECK(text_edit->get_caret_line(1) == 1);
 		CHECK(text_edit->get_caret_column(1) == 1);
 		CHECK(text_edit->get_caret_line(2) == 0);
-		CHECK(text_edit->get_caret_column(2) == 8);
+		CHECK(text_edit->get_caret_column(2) == 7);
 
 		// Add caret above from first line and not first line wrap.
 		text_edit->add_caret_at_carets(false);
@@ -7206,9 +7354,9 @@ TEST_CASE("[SceneTree][TextEdit] multicaret") {
 		CHECK(text_edit->get_caret_line(1) == 1);
 		CHECK(text_edit->get_caret_column(1) == 1);
 		CHECK(text_edit->get_caret_line(2) == 0);
-		CHECK(text_edit->get_caret_column(2) == 8);
+		CHECK(text_edit->get_caret_column(2) == 7);
 		CHECK(text_edit->get_caret_line(3) == 0);
-		CHECK(text_edit->get_caret_column(3) == 4);
+		CHECK(text_edit->get_caret_column(3) == 2);
 
 		// Cannot add caret above from first line first line wrap.
 		text_edit->remove_secondary_carets();
@@ -7856,14 +8004,15 @@ TEST_CASE("[SceneTree][TextEdit] gutters") {
 	TextEdit *text_edit = memnew(TextEdit);
 	SceneTree::get_singleton()->get_root()->add_child(text_edit);
 
-	Array empty_signal_args;
-	empty_signal_args.push_back(Array());
+	Array empty_signal_args = { {} };
 
 	SIGNAL_WATCH(text_edit, "gutter_clicked");
 	SIGNAL_WATCH(text_edit, "gutter_added");
 	SIGNAL_WATCH(text_edit, "gutter_removed");
 
 	SUBCASE("[TextEdit] gutter add and remove") {
+		text_edit->set_text("test1\ntest2\ntest3\ntest4");
+
 		text_edit->add_gutter();
 		CHECK(text_edit->get_gutter_count() == 1);
 		CHECK(text_edit->get_gutter_width(0) == 24);
@@ -8001,6 +8150,93 @@ TEST_CASE("[SceneTree][TextEdit] gutters") {
 		// Merging tested via CodeEdit gutters.
 	}
 
+	SUBCASE("[TextEdit] gutter mouse") {
+		DisplayServerMock *DS = (DisplayServerMock *)(DisplayServer::get_singleton());
+		// Set size for mouse input.
+		text_edit->set_size(Size2(200, 200));
+
+		text_edit->set_text("test1\ntest2\ntest3\ntest4");
+		text_edit->grab_focus();
+
+		text_edit->add_gutter();
+		text_edit->set_gutter_name(0, "test_gutter");
+		text_edit->set_gutter_width(0, 10);
+		text_edit->set_gutter_clickable(0, true);
+
+		text_edit->add_gutter();
+		text_edit->set_gutter_name(1, "test_gutter_not_clickable");
+		text_edit->set_gutter_width(1, 10);
+		text_edit->set_gutter_clickable(1, false);
+
+		text_edit->add_gutter();
+		CHECK(text_edit->get_gutter_count() == 3);
+		text_edit->set_gutter_name(2, "test_gutter_3");
+		text_edit->set_gutter_width(2, 10);
+		text_edit->set_gutter_clickable(2, true);
+
+		MessageQueue::get_singleton()->flush();
+		const int line_height = text_edit->get_line_height();
+
+		// Defaults to none.
+		CHECK(text_edit->get_hovered_gutter() == Vector2i(-1, -1));
+		CHECK(DS->get_cursor_shape() == DisplayServer::CURSOR_ARROW);
+
+		// Hover over gutter.
+		SEND_GUI_MOUSE_MOTION_EVENT(Point2(5, line_height + line_height / 2), MouseButtonMask::NONE, Key::NONE);
+		CHECK(text_edit->get_hovered_gutter() == Vector2i(0, 1));
+		SIGNAL_CHECK_FALSE("gutter_clicked");
+		CHECK(DS->get_cursor_shape() == DisplayServer::CURSOR_POINTING_HAND);
+
+		// Click on gutter.
+		SEND_GUI_MOUSE_BUTTON_EVENT(Point2(5, line_height / 2), MouseButton::LEFT, MouseButtonMask::LEFT, Key::NONE);
+		CHECK(text_edit->get_hovered_gutter() == Vector2i(0, 0));
+		SIGNAL_CHECK("gutter_clicked", build_array(build_array(0, 0)));
+
+		// Click on gutter on another line.
+		SEND_GUI_MOUSE_BUTTON_EVENT(Point2(5, line_height * 3 + line_height / 2), MouseButton::LEFT, MouseButtonMask::LEFT, Key::NONE);
+		CHECK(text_edit->get_hovered_gutter() == Vector2i(0, 3));
+		SIGNAL_CHECK("gutter_clicked", build_array(build_array(3, 0)));
+
+		// Unclickable gutter can be hovered.
+		SEND_GUI_MOUSE_MOTION_EVENT(Point2(15, line_height + line_height / 2), MouseButtonMask::NONE, Key::NONE);
+		CHECK(text_edit->get_hovered_gutter() == Vector2i(1, 1));
+		SIGNAL_CHECK_FALSE("gutter_clicked");
+		CHECK(DS->get_cursor_shape() == DisplayServer::CURSOR_ARROW);
+
+		// Unclickable gutter can be clicked.
+		SEND_GUI_MOUSE_BUTTON_EVENT(Point2(15, line_height * 2 + line_height / 2), MouseButton::LEFT, MouseButtonMask::LEFT, Key::NONE);
+		CHECK(text_edit->get_hovered_gutter() == Vector2i(1, 2));
+		SIGNAL_CHECK("gutter_clicked", build_array(build_array(2, 1)));
+		CHECK(DS->get_cursor_shape() == DisplayServer::CURSOR_ARROW);
+
+		// Hover past last line.
+		SEND_GUI_MOUSE_MOTION_EVENT(Point2(5, line_height * 5), MouseButtonMask::NONE, Key::NONE);
+		CHECK(text_edit->get_hovered_gutter() == Vector2i(-1, -1));
+		SIGNAL_CHECK_FALSE("gutter_clicked");
+		CHECK(DS->get_cursor_shape() == DisplayServer::CURSOR_ARROW);
+
+		// Click on gutter past last line.
+		SEND_GUI_MOUSE_BUTTON_EVENT(Point2(5, line_height * 5), MouseButton::LEFT, MouseButtonMask::LEFT, Key::NONE);
+		CHECK(text_edit->get_hovered_gutter() == Vector2i(-1, -1));
+		SIGNAL_CHECK_FALSE("gutter_clicked");
+
+		// Mouse exit resets hover.
+		SEND_GUI_MOUSE_MOTION_EVENT(Point2(5, line_height + line_height / 2), MouseButtonMask::NONE, Key::NONE);
+		CHECK(text_edit->get_hovered_gutter() == Vector2i(0, 1));
+		SEND_GUI_MOUSE_MOTION_EVENT(Point2(-1, -1), MouseButtonMask::NONE, Key::NONE);
+		CHECK(text_edit->get_hovered_gutter() == Vector2i(-1, -1));
+
+		// Removing gutter updates hover.
+		SEND_GUI_MOUSE_MOTION_EVENT(Point2(25, line_height + line_height / 2), MouseButtonMask::NONE, Key::NONE);
+		CHECK(text_edit->get_hovered_gutter() == Vector2i(2, 1));
+		text_edit->remove_gutter(2);
+		CHECK(text_edit->get_hovered_gutter() == Vector2i(-1, -1));
+
+		// Updating size updates hover.
+		text_edit->set_gutter_width(1, 20);
+		CHECK(text_edit->get_hovered_gutter() == Vector2i(1, 1));
+	}
+
 	SIGNAL_UNWATCH(text_edit, "gutter_clicked");
 	SIGNAL_UNWATCH(text_edit, "gutter_added");
 	SIGNAL_UNWATCH(text_edit, "gutter_removed");
@@ -8008,5 +8244,3 @@ TEST_CASE("[SceneTree][TextEdit] gutters") {
 }
 
 } // namespace TestTextEdit
-
-#endif // TEST_TEXT_EDIT_H

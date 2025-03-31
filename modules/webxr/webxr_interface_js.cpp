@@ -58,7 +58,7 @@ void _emwebxr_on_session_supported(char *p_session_mode, int p_supported) {
 	interface->emit_signal(SNAME("session_supported"), session_mode, p_supported ? true : false);
 }
 
-void _emwebxr_on_session_started(char *p_reference_space_type, char *p_enabled_features) {
+void _emwebxr_on_session_started(char *p_reference_space_type, char *p_enabled_features, char *p_environment_blend_mode) {
 	XRServer *xr_server = XRServer::get_singleton();
 	ERR_FAIL_NULL(xr_server);
 
@@ -68,6 +68,7 @@ void _emwebxr_on_session_started(char *p_reference_space_type, char *p_enabled_f
 	String reference_space_type = String(p_reference_space_type);
 	interface->_set_reference_space_type(reference_space_type);
 	interface->_set_enabled_features(p_enabled_features);
+	interface->_set_environment_blend_mode(p_environment_blend_mode);
 	interface->emit_signal(SNAME("session_started"));
 }
 
@@ -230,21 +231,59 @@ Array WebXRInterfaceJS::get_available_display_refresh_rates() const {
 	return ret;
 }
 
+Array WebXRInterfaceJS::get_supported_environment_blend_modes() {
+	Array blend_modes;
+	// The blend mode can't be changed, so return the current blend mode as the only supported one.
+	blend_modes.push_back(environment_blend_mode);
+	return blend_modes;
+}
+
+XRInterface::EnvironmentBlendMode WebXRInterfaceJS::get_environment_blend_mode() const {
+	return environment_blend_mode;
+}
+
+bool WebXRInterfaceJS::set_environment_blend_mode(EnvironmentBlendMode p_new_environment_blend_mode) {
+	if (environment_blend_mode == p_new_environment_blend_mode) {
+		// Environment blend mode can't be changed, but we'll consider it a success to set it
+		// to what it already is.
+		return true;
+	}
+	return false;
+}
+
+void WebXRInterfaceJS::_set_environment_blend_mode(String p_blend_mode_string) {
+	if (p_blend_mode_string == "opaque") {
+		environment_blend_mode = XRInterface::XR_ENV_BLEND_MODE_OPAQUE;
+	} else if (p_blend_mode_string == "additive") {
+		environment_blend_mode = XRInterface::XR_ENV_BLEND_MODE_ADDITIVE;
+	} else if (p_blend_mode_string == "alpha-blend") {
+		environment_blend_mode = XRInterface::XR_ENV_BLEND_MODE_ALPHA_BLEND;
+	} else {
+		// Not all browsers can give us this information, so as a fallback,
+		// we'll make some guesses about the blend mode.
+		if (session_mode == "immersive-ar") {
+			environment_blend_mode = XRInterface::XR_ENV_BLEND_MODE_ALPHA_BLEND;
+		} else {
+			environment_blend_mode = XRInterface::XR_ENV_BLEND_MODE_OPAQUE;
+		}
+	}
+}
+
 StringName WebXRInterfaceJS::get_name() const {
 	return "WebXR";
-};
+}
 
 uint32_t WebXRInterfaceJS::get_capabilities() const {
 	return XRInterface::XR_STEREO | XRInterface::XR_MONO | XRInterface::XR_VR | XRInterface::XR_AR;
-};
+}
 
 uint32_t WebXRInterfaceJS::get_view_count() {
 	return godot_webxr_get_view_count();
-};
+}
 
 bool WebXRInterfaceJS::is_initialized() const {
 	return (initialized);
-};
+}
 
 bool WebXRInterfaceJS::initialize() {
 	XRServer *xr_server = XRServer::get_singleton();
@@ -294,7 +333,7 @@ bool WebXRInterfaceJS::initialize() {
 	};
 
 	return true;
-};
+}
 
 void WebXRInterfaceJS::uninitialize() {
 	if (initialized) {
@@ -336,9 +375,10 @@ void WebXRInterfaceJS::uninitialize() {
 		texture_cache.clear();
 		reference_space_type.clear();
 		enabled_features.clear();
+		environment_blend_mode = XRInterface::XR_ENV_BLEND_MODE_OPAQUE;
 		initialized = false;
 	};
-};
+}
 
 Dictionary WebXRInterfaceJS::get_system_info() {
 	Dictionary dict;
@@ -387,7 +427,7 @@ Size2 WebXRInterfaceJS::get_render_target_size() {
 	render_targetsize.height = (float)js_size[1];
 
 	return render_targetsize;
-};
+}
 
 Transform3D WebXRInterfaceJS::get_camera_transform() {
 	Transform3D camera_transform;
@@ -405,7 +445,7 @@ Transform3D WebXRInterfaceJS::get_camera_transform() {
 	}
 
 	return camera_transform;
-};
+}
 
 Transform3D WebXRInterfaceJS::get_transform_for_view(uint32_t p_view, const Transform3D &p_cam_transform) {
 	XRServer *xr_server = XRServer::get_singleton();
@@ -424,7 +464,7 @@ Transform3D WebXRInterfaceJS::get_transform_for_view(uint32_t p_view, const Tran
 	transform_for_view.origin *= world_scale;
 
 	return p_cam_transform * xr_server->get_reference_frame() * transform_for_view;
-};
+}
 
 Projection WebXRInterfaceJS::get_projection_for_view(uint32_t p_view, double p_aspect, double p_z_near, double p_z_far) {
 	Projection view;
@@ -487,7 +527,7 @@ Vector<BlitToScreen> WebXRInterfaceJS::post_draw_viewport(RID p_render_target, c
 	texture_storage->render_target_set_reattach_textures(p_render_target, false);
 
 	return blit_to_screen;
-};
+}
 
 RID WebXRInterfaceJS::_get_color_texture() {
 	unsigned int texture_id = godot_webxr_get_color_texture();
@@ -521,8 +561,8 @@ RID WebXRInterfaceJS::_get_texture(unsigned int p_texture_id) {
 	uint32_t view_count = godot_webxr_get_view_count();
 	Size2 texture_size = get_render_target_size();
 
-	RID texture = texture_storage->texture_create_external(
-			view_count == 1 ? GLES3::Texture::TYPE_2D : GLES3::Texture::TYPE_LAYERED,
+	RID texture = texture_storage->texture_create_from_native_handle(
+			view_count == 1 ? RS::TEXTURE_TYPE_2D : RS::TEXTURE_TYPE_LAYERED,
 			Image::FORMAT_RGBA8,
 			p_texture_id,
 			(int)texture_size.width,
@@ -568,7 +608,7 @@ void WebXRInterfaceJS::process() {
 			_update_input_source(i);
 		}
 	};
-};
+}
 
 void WebXRInterfaceJS::_update_input_source(int p_input_source_id) {
 	XRServer *xr_server = XRServer::get_singleton();
@@ -740,12 +780,20 @@ void WebXRInterfaceJS::_update_input_source(int p_input_source_id) {
 
 			// WebXR doesn't have a palm joint, so we calculate it by finding the middle of the middle finger metacarpal bone.
 			{
-				// 10 is the WebXR middle finger metacarpal joint, and 12 is the offset to the transform origin.
-				const float *start_pos = hand_joints + (10 * 16) + 12;
-				// 11 is the WebXR middle finger phalanx proximal joint, and 12 is the offset to the transform origin.
-				const float *end_pos = hand_joints + (11 * 16) + 12;
-				Transform3D palm_transform;
-				palm_transform.origin = (Vector3(start_pos[0], start_pos[1], start_pos[2]) + Vector3(end_pos[0], end_pos[1], end_pos[2])) / 2.0;
+				// Start by getting the middle finger metacarpal joint.
+				// Note: 10 is the WebXR middle finger metacarpal joint.
+				Transform3D palm_transform = _js_matrix_to_transform(hand_joints + (10 * 16));
+				palm_transform.basis *= bone_adjustment;
+
+				// Get the middle finger phalanx position.
+				// Note: 11 is the WebXR middle finger phalanx proximal joint and 12 is the origin offset.
+				const float *phalanx_pos = hand_joints + (11 * 16) + 12;
+				Vector3 phalanx(phalanx_pos[0], phalanx_pos[1], phalanx_pos[2]);
+
+				// Offset the palm half-way towards the phalanx joint.
+				palm_transform.origin = (palm_transform.origin + phalanx) / 2.0;
+
+				// Set the palm joint and the pose.
 				hand_tracker->set_hand_joint_transform(XRHandTracker::HAND_JOINT_PALM, palm_transform);
 				hand_tracker->set_pose("default", palm_transform, Vector3(), Vector3());
 			}
@@ -823,13 +871,13 @@ WebXRInterfaceJS::WebXRInterfaceJS() {
 	initialized = false;
 	session_mode = "inline";
 	requested_reference_space_types = "local";
-};
+}
 
 WebXRInterfaceJS::~WebXRInterfaceJS() {
 	// and make sure we cleanup if we haven't already
 	if (initialized) {
 		uninitialize();
 	};
-};
+}
 
 #endif // WEB_ENABLED

@@ -28,11 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef CRYPTO_MBEDTLS_H
-#define CRYPTO_MBEDTLS_H
+#pragma once
 
 #include "core/crypto/crypto.h"
-#include "core/io/resource.h"
 
 #include <mbedtls/ctr_drbg.h>
 #include <mbedtls/entropy.h>
@@ -49,7 +47,7 @@ private:
 	int _parse_key(const uint8_t *p_buf, int p_size);
 
 public:
-	static CryptoKey *create();
+	static CryptoKey *create(bool p_notify_postinitialize = true);
 	static void make_default() { CryptoKey::_create = create; }
 	static void finalize() { CryptoKey::_create = nullptr; }
 
@@ -57,7 +55,7 @@ public:
 	virtual Error save(const String &p_path, bool p_public_only);
 	virtual String save_to_string(bool p_public_only);
 	virtual Error load_from_string(const String &p_string_key, bool p_public_only);
-	virtual bool is_public_only() const { return public_only; };
+	virtual bool is_public_only() const { return public_only; }
 
 	CryptoKeyMbedTLS() {
 		mbedtls_pk_init(&pkey);
@@ -80,7 +78,7 @@ private:
 	int locks;
 
 public:
-	static X509Certificate *create();
+	static X509Certificate *create(bool p_notify_postinitialize = true);
 	static void make_default() { X509Certificate::_create = create; }
 	static void finalize() { X509Certificate::_create = nullptr; }
 
@@ -112,7 +110,7 @@ private:
 	void *ctx = nullptr;
 
 public:
-	static HMACContext *create();
+	static HMACContext *create(bool p_notify_postinitialize = true);
 	static void make_default() { HMACContext::_create = create; }
 	static void finalize() { HMACContext::_create = nullptr; }
 
@@ -133,7 +131,7 @@ private:
 	static X509CertificateMbedTLS *default_certs;
 
 public:
-	static Crypto *create();
+	static Crypto *create(bool p_notify_postinitialize = true);
 	static void initialize_crypto();
 	static void finalize_crypto();
 	static X509CertificateMbedTLS *get_default_certificates();
@@ -151,5 +149,3 @@ public:
 	CryptoMbedTLS();
 	~CryptoMbedTLS();
 };
-
-#endif // CRYPTO_MBEDTLS_H

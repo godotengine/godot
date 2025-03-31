@@ -2,144 +2,82 @@
 # -*- coding: utf-8 -*-
 
 import sys
-from pathlib import Path
 
 if len(sys.argv) < 2:
     print("Invalid usage of header_guards.py, it should be called with a path to one or multiple files.")
     sys.exit(1)
 
-HEADER_CHECK_OFFSET = 30
-HEADER_BEGIN_OFFSET = 31
-HEADER_END_OFFSET = -1
-
 changed = []
 invalid = []
 
 for file in sys.argv[1:]:
-    with open(file, "rt", encoding="utf-8", newline="\n") as f:
+    header_start = -1
+    header_end = -1
+
+    with open(file.strip(), "rt", encoding="utf-8", newline="\n") as f:
         lines = f.readlines()
 
-    if len(lines) <= HEADER_BEGIN_OFFSET:
-        continue  # Most likely a dummy file.
+    for idx, line in enumerate(lines):
+        sline = line.strip()
 
-    if lines[HEADER_CHECK_OFFSET].startswith("#import"):
-        continue  # Early catch obj-c file.
+        if header_start < 0:
+            if sline == "":  # Skip empty lines at the top.
+                continue
 
-    split = file.split("/")  # Already in posix-format.
+            if sline.startswith("/**********"):  # Godot header starts this way.
+                header_start = idx
+            else:
+                header_end = 0  # There is no Godot header.
+                break
+        else:
+            if not sline.startswith(("*", "/*")):  # Not in the Godot header anymore.
+                header_end = idx + 1  # The guard should be two lines below the Godot header.
+                break
 
-    prefix = ""
-    if split[0] == "modules" and split[-1] == "register_types.h":
-        prefix = f"{split[1]}_"  # Name of module.
-    elif split[0] == "platform" and (file.endswith("api/api.h") or "/export/" in file):
-        prefix = f"{split[1]}_"  # Name of platform.
-    elif file.startswith("modules/mono/utils") and "mono" not in split[-1]:
-        prefix = "MONO_"
-    elif file == "servers/rendering/storage/utilities.h":
-        prefix = "RENDERER_"
-
-    suffix = ""
-    if "dummy" in file and "dummy" not in split[-1]:
-        suffix = "_DUMMY"
-    elif "gles3" in file and "gles3" not in split[-1]:
-        suffix = "_GLES3"
-    elif "renderer_rd" in file and "rd" not in split[-1]:
-        suffix = "_RD"
-    elif split[-1] == "ustring.h":
-        suffix = "_GODOT"
-
-    name = (f"{prefix}{Path(file).stem}{suffix}{Path(file).suffix}".upper()
-            .replace(".", "_").replace("-", "_").replace(" ", "_"))  # fmt: skip
-
-    HEADER_CHECK = f"#ifndef {name}\n"
-    HEADER_BEGIN = f"#define {name}\n"
-    HEADER_END = f"#endif // {name}\n"
-
-    if (
-        lines[HEADER_CHECK_OFFSET] == HEADER_CHECK
-        and lines[HEADER_BEGIN_OFFSET] == HEADER_BEGIN
-        and lines[HEADER_END_OFFSET] == HEADER_END
-    ):
+    if (HEADER_CHECK_OFFSET := header_end) < 0 or HEADER_CHECK_OFFSET >= len(lines):
+        invalid.append(file)
         continue
 
-    # Guards might exist but with the wrong names.
+    if lines[HEADER_CHECK_OFFSET].startswith("#pragma once"):
+        continue
+
+    # Might be using legacy header guards.
+    HEADER_BEGIN_OFFSET = HEADER_CHECK_OFFSET + 1
+    HEADER_END_OFFSET = len(lines) - 1
+
+    if HEADER_BEGIN_OFFSET >= HEADER_END_OFFSET:
+        invalid.append(file)
+        continue
+
     if (
         lines[HEADER_CHECK_OFFSET].startswith("#ifndef")
         and lines[HEADER_BEGIN_OFFSET].startswith("#define")
         and lines[HEADER_END_OFFSET].startswith("#endif")
     ):
-        lines[HEADER_CHECK_OFFSET] = HEADER_CHECK
-        lines[HEADER_BEGIN_OFFSET] = HEADER_BEGIN
-        lines[HEADER_END_OFFSET] = HEADER_END
+        lines[HEADER_CHECK_OFFSET] = "#pragma once"
+        lines[HEADER_BEGIN_OFFSET] = "\n"
+        lines.pop()
         with open(file, "wt", encoding="utf-8", newline="\n") as f:
             f.writelines(lines)
         changed.append(file)
         continue
 
-    header_check = -1
-    header_begin = -1
-    header_end = -1
-    pragma_once = -1
-    objc = False
-
-    for idx, line in enumerate(lines):
-        if not line.startswith("#"):
-            continue
-        elif line.startswith("#ifndef") and header_check == -1:
-            header_check = idx
-        elif line.startswith("#define") and header_begin == -1:
-            header_begin = idx
-        elif line.startswith("#endif") and header_end == -1:
-            header_end = idx
-        elif line.startswith("#pragma once"):
-            pragma_once = idx
-            break
-        elif line.startswith("#import"):
-            objc = True
+    # Verify `#pragma once` doesn't exist at invalid location.
+    misplaced = False
+    for line in lines:
+        if line.startswith("#pragma once"):
+            misplaced = True
             break
 
-    if objc:
+    if misplaced:
+        invalid.append(file)
         continue
 
-    if pragma_once != -1:
-        lines.pop(pragma_once)
-        lines.insert(HEADER_CHECK_OFFSET, HEADER_CHECK)
-        lines.insert(HEADER_BEGIN_OFFSET, HEADER_BEGIN)
-        lines.append("\n")
-        lines.append(HEADER_END)
-        with open(file, "wt", encoding="utf-8", newline="\n") as f:
-            f.writelines(lines)
-        changed.append(file)
-        continue
-
-    if header_check == -1 and header_begin == -1 and header_end == -1:
-        # Guards simply didn't exist
-        lines.insert(HEADER_CHECK_OFFSET, HEADER_CHECK)
-        lines.insert(HEADER_BEGIN_OFFSET, HEADER_BEGIN)
-        lines.append("\n")
-        lines.append(HEADER_END)
-        with open(file, "wt", encoding="utf-8", newline="\n") as f:
-            f.writelines(lines)
-        changed.append(file)
-        continue
-
-    if header_check != -1 and header_begin != -1 and header_end != -1:
-        # All prepends "found", see if we can salvage this.
-        if header_check == header_begin - 1 and header_begin < header_end:
-            lines.pop(header_check)
-            lines.pop(header_begin - 1)
-            lines.pop(header_end - 2)
-            if lines[header_end - 3] == "\n":
-                lines.pop(header_end - 3)
-            lines.insert(HEADER_CHECK_OFFSET, HEADER_CHECK)
-            lines.insert(HEADER_BEGIN_OFFSET, HEADER_BEGIN)
-            lines.append("\n")
-            lines.append(HEADER_END)
-            with open(file, "wt", encoding="utf-8", newline="\n") as f:
-                f.writelines(lines)
-            changed.append(file)
-            continue
-
-    invalid.append(file)
+    # Assume that we're simply missing a guard entirely.
+    lines.insert(HEADER_CHECK_OFFSET, "#pragma once\n\n")
+    with open(file, "wt", encoding="utf-8", newline="\n") as f:
+        f.writelines(lines)
+    changed.append(file)
 
 if changed:
     for file in changed:

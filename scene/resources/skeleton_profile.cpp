@@ -132,7 +132,10 @@ void SkeletonProfile::_validate_property(PropertyInfo &p_property) const {
 	if (p_property.name == ("root_bone") || p_property.name == ("scale_base_bone")) {
 		String hint = "";
 		for (int i = 0; i < bones.size(); i++) {
-			hint += i == 0 ? String(bones[i].bone_name) : "," + String(bones[i].bone_name);
+			if (i > 0) {
+				hint += ",";
+			}
+			hint += String(bones[i].bone_name);
 		}
 		p_property.hint_string = hint;
 	}
@@ -264,6 +267,14 @@ int SkeletonProfile::find_bone(const StringName &p_bone_name) const {
 		}
 	}
 	return -1;
+}
+
+PackedStringArray SkeletonProfile::get_bone_names() {
+	PackedStringArray s;
+	for (const SkeletonProfileBone &bone : bones) {
+		s.push_back(bone.bone_name);
+	}
+	return s;
 }
 
 StringName SkeletonProfile::get_bone_name(int p_bone_idx) const {

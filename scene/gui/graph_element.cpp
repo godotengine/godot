@@ -30,7 +30,6 @@
 
 #include "graph_element.h"
 
-#include "core/string/translation.h"
 #include "scene/gui/graph_edit.h"
 #include "scene/theme/theme_db.h"
 
@@ -60,8 +59,8 @@ void GraphElement::_resort() {
 Size2 GraphElement::get_minimum_size() const {
 	Size2 minsize;
 	for (int i = 0; i < get_child_count(); i++) {
-		Control *child = Object::cast_to<Control>(get_child(i));
-		if (!child || child->is_set_as_top_level()) {
+		Control *child = as_sortable_control(get_child(i), SortableVisibilityMode::IGNORE);
+		if (!child) {
 			continue;
 		}
 

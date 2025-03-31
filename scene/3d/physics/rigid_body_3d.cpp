@@ -249,7 +249,7 @@ void RigidBody3D::_body_state_changed(PhysicsDirectBodyState3D *p_state) {
 		//process additions
 
 		for (int i = 0; i < toadd_count; i++) {
-			_body_inout(1, toremove[i].rid, toadd[i].id, toadd[i].shape, toadd[i].local_shape);
+			_body_inout(1, toadd[i].rid, toadd[i].id, toadd[i].shape, toadd[i].local_shape);
 		}
 
 		contact_monitor->locked = false;
@@ -659,10 +659,10 @@ void RigidBody3D::_reload_physics_characteristics() {
 }
 
 PackedStringArray RigidBody3D::get_configuration_warnings() const {
-	PackedStringArray warnings = CollisionObject3D::get_configuration_warnings();
+	PackedStringArray warnings = PhysicsBody3D::get_configuration_warnings();
 
 	Vector3 scale = get_transform().get_basis().get_scale();
-	if (ABS(scale.x - 1.0) > 0.05 || ABS(scale.y - 1.0) > 0.05 || ABS(scale.z - 1.0) > 0.05) {
+	if (Math::abs(scale.x - 1.0) > 0.05 || Math::abs(scale.y - 1.0) > 0.05 || Math::abs(scale.z - 1.0) > 0.05) {
 		warnings.push_back(RTR("Scale changes to RigidBody3D will be overridden by the physics engine when running.\nPlease change the size in children collision shapes instead."));
 	}
 

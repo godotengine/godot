@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef WAYLAND_THREAD_H
-#define WAYLAND_THREAD_H
+#pragma once
 
 #ifdef WAYLAND_ENABLED
 
@@ -43,6 +42,9 @@
 #else
 #include <wayland-client-core.h>
 #include <wayland-cursor.h>
+#ifdef GLES3_ENABLED
+#include <wayland-egl-core.h>
+#endif
 #include <xkbcommon/xkbcommon.h>
 #endif // SOWRAP_ENABLED
 
@@ -59,18 +61,23 @@
 #undef pointer
 #include "wayland/protocol/fractional_scale.gen.h"
 #include "wayland/protocol/tablet.gen.h"
+#include "wayland/protocol/text_input.gen.h"
 #include "wayland/protocol/viewporter.gen.h"
 #include "wayland/protocol/wayland.gen.h"
 #include "wayland/protocol/xdg_activation.gen.h"
 #include "wayland/protocol/xdg_decoration.gen.h"
-#include "wayland/protocol/xdg_foreign.gen.h"
+#include "wayland/protocol/xdg_foreign_v2.gen.h"
 #include "wayland/protocol/xdg_shell.gen.h"
+#include "wayland/protocol/xdg_system_bell.gen.h"
+
+// NOTE: Deprecated.
+#include "wayland/protocol/xdg_foreign_v1.gen.h"
 
 #ifdef LIBDECOR_ENABLED
 #ifdef SOWRAP_ENABLED
 #include "dynwrappers/libdecor-so_wrap.h"
 #else
-#include <libdecor-0/libdecor.h>
+#include <libdecor.h>
 #endif // SOWRAP_ENABLED
 #endif // LIBDECOR_ENABLED
 
@@ -109,6 +116,17 @@ public:
 		Vector<String> files;
 	};
 
+	class IMEUpdateEventMessage : public Message {
+	public:
+		String text;
+		Vector2i selection;
+	};
+
+	class IMECommitEventMessage : public Message {
+	public:
+		String text;
+	};
+
 	struct RegistryState {
 		WaylandThread *wayland_thread;
 
@@ -133,8 +151,12 @@ public:
 		struct xdg_wm_base *xdg_wm_base = nullptr;
 		uint32_t xdg_wm_base_name = 0;
 
-		struct zxdg_exporter_v1 *xdg_exporter = nullptr;
-		uint32_t xdg_exporter_name = 0;
+		// NOTE: Deprecated.
+		struct zxdg_exporter_v1 *xdg_exporter_v1 = nullptr;
+		uint32_t xdg_exporter_v1_name = 0;
+
+		uint32_t xdg_exporter_v2_name = 0;
+		struct zxdg_exporter_v2 *xdg_exporter_v2 = nullptr;
 
 		// wayland-protocols globals.
 
@@ -146,6 +168,9 @@ public:
 
 		struct zxdg_decoration_manager_v1 *xdg_decoration_manager = nullptr;
 		uint32_t xdg_decoration_manager_name = 0;
+
+		struct xdg_system_bell_v1 *xdg_system_bell = nullptr;
+		uint32_t xdg_system_bell_name = 0;
 
 		struct xdg_activation_v1 *xdg_activation = nullptr;
 		uint32_t xdg_activation_name = 0;
@@ -167,6 +192,9 @@ public:
 
 		struct zwp_tablet_manager_v2 *wp_tablet_manager = nullptr;
 		uint32_t wp_tablet_manager_name = 0;
+
+		struct zwp_text_input_manager_v3 *wp_text_input_manager = nullptr;
+		uint32_t wp_text_input_manager_name = 0;
 	};
 
 	// General Wayland-specific states. Shouldn't be accessed directly.
@@ -202,7 +230,11 @@ public:
 
 		struct wp_viewport *wp_viewport = nullptr;
 		struct wp_fractional_scale_v1 *wp_fractional_scale = nullptr;
-		struct zxdg_exported_v1 *xdg_exported = nullptr;
+
+		// NOTE: Deprecated.
+		struct zxdg_exported_v1 *xdg_exported_v1 = nullptr;
+
+		struct zxdg_exported_v2 *xdg_exported_v2 = nullptr;
 
 		String exported_handle;
 
@@ -277,7 +309,7 @@ public:
 	};
 
 	struct PointerData {
-		Point2i position;
+		Point2 position;
 		uint32_t motion_time = 0;
 
 		// Relative motion has its own optional event and so needs its own time.
@@ -287,7 +319,7 @@ public:
 		BitField<MouseButtonMask> pressed_button_mask;
 
 		MouseButton last_button_pressed = MouseButton::NONE;
-		Point2i last_pressed_position;
+		Point2 last_pressed_position;
 
 		// This is needed to check for a new double click every time.
 		bool double_click_begun = false;
@@ -307,14 +339,14 @@ public:
 	};
 
 	struct TabletToolData {
-		Point2i position;
+		Point2 position;
 		Vector2 tilt;
 		uint32_t pressure = 0;
 
 		BitField<MouseButtonMask> pressed_button_mask;
 
 		MouseButton last_button_pressed = MouseButton::NONE;
-		Point2i last_pressed_position;
+		Point2 last_pressed_position;
 
 		bool double_click_begun = false;
 
@@ -395,6 +427,8 @@ public:
 		const char *keymap_buffer = nullptr;
 		uint32_t keymap_buffer_size = 0;
 
+		HashMap<xkb_keycode_t, Key> pressed_keycodes;
+
 		xkb_layout_index_t current_layout_index = 0;
 
 		int32_t repeat_key_delay_msec = 0;
@@ -435,6 +469,15 @@ public:
 		struct zwp_tablet_seat_v2 *wp_tablet_seat = nullptr;
 
 		List<struct zwp_tablet_tool_v2 *> tablet_tools;
+
+		// IME.
+		struct zwp_text_input_v3 *wp_text_input = nullptr;
+		bool ime_enabled = false;
+		bool ime_active = false;
+		String ime_text;
+		String ime_text_commit;
+		Vector2i ime_cursor;
+		Rect2i ime_rect;
 	};
 
 	struct CustomCursor {
@@ -442,7 +485,6 @@ public:
 		uint32_t *buffer_data = nullptr;
 		uint32_t buffer_data_size = 0;
 
-		RID rid;
 		Point2i hotspot;
 	};
 
@@ -479,10 +521,8 @@ private:
 
 	HashMap<DisplayServer::CursorShape, CustomCursor> custom_cursors;
 
-	struct wl_cursor *current_wl_cursor = nullptr;
-	struct CustomCursor *current_custom_cursor = nullptr;
-
-	DisplayServer::CursorShape last_cursor_shape = DisplayServer::CURSOR_ARROW;
+	DisplayServer::CursorShape cursor_shape = DisplayServer::CURSOR_ARROW;
+	bool cursor_visible = true;
 
 	PointerConstraint pointer_constraint = PointerConstraint::NONE;
 
@@ -615,9 +655,19 @@ private:
 	static void _wp_tablet_tool_on_button(void *data, struct zwp_tablet_tool_v2 *wp_tablet_tool_v2, uint32_t serial, uint32_t button, uint32_t state);
 	static void _wp_tablet_tool_on_frame(void *data, struct zwp_tablet_tool_v2 *wp_tablet_tool_v2, uint32_t time);
 
+	static void _wp_text_input_on_enter(void *data, struct zwp_text_input_v3 *wp_text_input_v3, struct wl_surface *surface);
+	static void _wp_text_input_on_leave(void *data, struct zwp_text_input_v3 *wp_text_input_v3, struct wl_surface *surface);
+	static void _wp_text_input_on_preedit_string(void *data, struct zwp_text_input_v3 *wp_text_input_v3, const char *text, int32_t cursor_begin, int32_t cursor_end);
+	static void _wp_text_input_on_commit_string(void *data, struct zwp_text_input_v3 *wp_text_input_v3, const char *text);
+	static void _wp_text_input_on_delete_surrounding_text(void *data, struct zwp_text_input_v3 *wp_text_input_v3, uint32_t before_length, uint32_t after_length);
+	static void _wp_text_input_on_done(void *data, struct zwp_text_input_v3 *wp_text_input_v3, uint32_t serial);
+
 	static void _xdg_toplevel_decoration_on_configure(void *data, struct zxdg_toplevel_decoration_v1 *xdg_toplevel_decoration, uint32_t mode);
 
-	static void _xdg_exported_on_exported(void *data, zxdg_exported_v1 *exported, const char *handle);
+	// NOTE: Deprecated.
+	static void _xdg_exported_v1_on_handle(void *data, zxdg_exported_v1 *exported, const char *handle);
+
+	static void _xdg_exported_v2_on_handle(void *data, zxdg_exported_v2 *exported, const char *handle);
 
 	static void _xdg_activation_token_on_done(void *data, struct xdg_activation_token_v1 *xdg_activation_token, const char *token);
 
@@ -634,7 +684,7 @@ private:
 		.preferred_buffer_transform = _wl_surface_on_preferred_buffer_transform,
 	};
 
-	static constexpr struct wl_callback_listener frame_wl_callback_listener {
+	static constexpr struct wl_callback_listener frame_wl_callback_listener = {
 		.done = _frame_wl_callback_on_done,
 	};
 
@@ -652,7 +702,7 @@ private:
 		.name = _wl_seat_on_name,
 	};
 
-	static constexpr struct wl_callback_listener cursor_frame_callback_listener {
+	static constexpr struct wl_callback_listener cursor_frame_callback_listener = {
 		.done = _cursor_frame_callback_on_done,
 	};
 
@@ -776,8 +826,22 @@ private:
 		.frame = _wp_tablet_tool_on_frame,
 	};
 
-	static constexpr struct zxdg_exported_v1_listener xdg_exported_listener = {
-		.handle = _xdg_exported_on_exported
+	static constexpr struct zwp_text_input_v3_listener wp_text_input_listener = {
+		.enter = _wp_text_input_on_enter,
+		.leave = _wp_text_input_on_leave,
+		.preedit_string = _wp_text_input_on_preedit_string,
+		.commit_string = _wp_text_input_on_commit_string,
+		.delete_surrounding_text = _wp_text_input_on_delete_surrounding_text,
+		.done = _wp_text_input_on_done,
+	};
+
+	// NOTE: Deprecated.
+	static constexpr struct zxdg_exported_v1_listener xdg_exported_v1_listener = {
+		.handle = _xdg_exported_v1_on_handle,
+	};
+
+	static constexpr struct zxdg_exported_v2_listener xdg_exported_v2_listener = {
+		.handle = _xdg_exported_v2_on_handle,
 	};
 
 	static constexpr struct zxdg_toplevel_decoration_v1_listener xdg_toplevel_decoration_listener = {
@@ -840,7 +904,8 @@ private:
 	static Vector<uint8_t> _wp_primary_selection_offer_read(struct wl_display *wl_display, const char *p_mime, struct zwp_primary_selection_offer_v1 *wp_primary_selection_offer);
 
 	static void _seat_state_set_current(WaylandThread::SeatState &p_ss);
-	static bool _seat_state_configure_key_event(WaylandThread::SeatState &p_seat, Ref<InputEventKey> p_event, xkb_keycode_t p_keycode, bool p_pressed);
+	static Ref<InputEventKey> _seat_state_get_key_event(SeatState *p_ss, xkb_keycode_t p_keycode, bool p_pressed);
+	static Ref<InputEventKey> _seat_state_get_unstuck_key_event(SeatState *p_ss, xkb_keycode_t p_keycode, bool p_pressed, Key p_key);
 
 	static void _wayland_state_update_cursor();
 
@@ -886,9 +951,13 @@ public:
 	bool has_message();
 	Ref<Message> pop_message();
 
+	void beep() const;
+
 	void window_create(DisplayServer::WindowID p_window_id, int p_width, int p_height);
 
 	struct wl_surface *window_get_wl_surface(DisplayServer::WindowID p_window_id) const;
+
+	void window_start_resize(DisplayServer::WindowResizeEdge p_edge, DisplayServer::WindowID p_window);
 
 	void window_set_max_size(DisplayServer::WindowID p_window_id, const Size2i &p_size);
 	void window_set_min_size(DisplayServer::WindowID p_window_id, const Size2i &p_size);
@@ -906,6 +975,8 @@ public:
 	// Optional - requires xdg_activation_v1
 	void window_request_attention(DisplayServer::WindowID p_window_id);
 
+	void window_start_drag(DisplayServer::WindowID p_window_id);
+
 	// Optional - require idle_inhibit_unstable_v1
 	void window_set_idle_inhibition(DisplayServer::WindowID p_window_id, bool p_enable);
 	bool window_get_idle_inhibition(DisplayServer::WindowID p_window_id) const;
@@ -919,12 +990,15 @@ public:
 	DisplayServer::WindowID pointer_get_pointed_window_id() const;
 	BitField<MouseButtonMask> pointer_get_button_mask() const;
 
-	void cursor_hide();
+	void cursor_set_visible(bool p_visible);
 	void cursor_set_shape(DisplayServer::CursorShape p_cursor_shape);
 
 	void cursor_set_custom_shape(DisplayServer::CursorShape p_cursor_shape);
 	void cursor_shape_set_custom_image(DisplayServer::CursorShape p_cursor_shape, Ref<Image> p_image, const Point2i &p_hotspot);
 	void cursor_shape_clear_custom_image(DisplayServer::CursorShape p_cursor_shape);
+
+	void window_set_ime_active(const bool p_active, DisplayServer::WindowID p_window_id);
+	void window_set_ime_position(const Point2i &p_pos, DisplayServer::WindowID p_window_id);
 
 	int keyboard_get_layout_count() const;
 	int keyboard_get_current_layout_index() const;
@@ -946,6 +1020,8 @@ public:
 
 	void primary_set_text(const String &p_text);
 
+	void commit_surfaces();
+
 	void set_frame();
 	bool get_reset_frame();
 	bool wait_frame_suspend_ms(int p_timeout);
@@ -957,5 +1033,3 @@ public:
 };
 
 #endif // WAYLAND_ENABLED
-
-#endif // WAYLAND_THREAD_H

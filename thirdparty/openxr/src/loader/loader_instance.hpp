@@ -23,7 +23,7 @@
 #include <vector>
 
 class ApiLayerInterface;
-struct XrGeneratedDispatchTable;
+struct XrGeneratedDispatchTableCore;
 class LoaderInstance;
 
 // Manage the single loader instance that is available.
@@ -54,7 +54,7 @@ class LoaderInstance {
     virtual ~LoaderInstance();
 
     XrInstance GetInstanceHandle() { return _runtime_instance; }
-    const std::unique_ptr<XrGeneratedDispatchTable>& DispatchTable() { return _dispatch_table; }
+    const std::unique_ptr<XrGeneratedDispatchTableCore>& DispatchTable() { return _dispatch_table; }
     std::vector<std::unique_ptr<ApiLayerInterface>>& LayerInterfaces() { return _api_layer_interfaces; }
     bool ExtensionIsEnabled(const std::string& extension);
     XrDebugUtilsMessengerEXT DefaultDebugUtilsMessenger() { return _messenger; }
@@ -71,7 +71,7 @@ class LoaderInstance {
     std::vector<std::string> _enabled_extensions;
     std::vector<std::unique_ptr<ApiLayerInterface>> _api_layer_interfaces;
 
-    std::unique_ptr<XrGeneratedDispatchTable> _dispatch_table;
+    std::unique_ptr<XrGeneratedDispatchTableCore> _dispatch_table;
     // Internal debug messenger created during xrCreateInstance
     XrDebugUtilsMessengerEXT _messenger{XR_NULL_HANDLE};
 };

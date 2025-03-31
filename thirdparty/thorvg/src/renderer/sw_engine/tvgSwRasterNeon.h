@@ -89,46 +89,58 @@ static void neonRasterPixel32(uint32_t *dst, uint32_t val, uint32_t offset, int3
 }
 
 
-static bool neonRasterTranslucentRle(SwSurface* surface, const SwRleData* rle, uint8_t r, uint8_t g, uint8_t b, uint8_t a)
+static bool neonRasterTranslucentRle(SwSurface* surface, const SwRle* rle, uint8_t r, uint8_t g, uint8_t b, uint8_t a)
 {
-    if (surface->channelSize != sizeof(uint32_t)) {
-        TVGERR("SW_ENGINE", "Unsupported Channel Size = %d", surface->channelSize);
-        return false;
-    }
-
-    auto color = surface->join(r, g, b, a);
     auto span = rle->spans;
-    uint32_t src;
-    uint8x8_t *vDst = nullptr;
-    uint16_t align;
 
-    for (uint32_t i = 0; i < rle->size; ++i) {
-        if (span->coverage < 255) src = ALPHA_BLEND(color, span->coverage);
-        else src = color;
+    //32bit channels
+    if (surface->channelSize == sizeof(uint32_t)) {
+        auto color = surface->join(r, g, b, a);
+        uint32_t src;
+        uint8x8_t *vDst = nullptr;
+        uint16_t align;
 
-        auto dst = &surface->buf32[span->y * surface->stride + span->x];
-        auto ialpha = IA(src);
+        for (uint32_t i = 0; i < rle->size; ++i) {
+            if (span->coverage < 255) src = ALPHA_BLEND(color, span->coverage);
+            else src = color;
 
-        if ((((uintptr_t) dst) & 0x7) != 0) {
-            //fill not aligned byte
-            *dst = src + ALPHA_BLEND(*dst, ialpha);
-            vDst = (uint8x8_t*)(dst + 1);
-            align = 1;
-        } else {
-            vDst = (uint8x8_t*) dst;
-            align = 0;
+            auto dst = &surface->buf32[span->y * surface->stride + span->x];
+            auto ialpha = IA(src);
+
+            if ((((uintptr_t) dst) & 0x7) != 0) {
+                //fill not aligned byte
+                *dst = src + ALPHA_BLEND(*dst, ialpha);
+                vDst = (uint8x8_t*)(dst + 1);
+                align = 1;
+            } else {
+                vDst = (uint8x8_t*) dst;
+                align = 0;
+            }
+
+            uint8x8_t vSrc = (uint8x8_t) vdup_n_u32(src);
+            uint8x8_t vIalpha = vdup_n_u8((uint8_t) ialpha);
+
+            for (uint32_t x = 0; x < (span->len - align) / 2; ++x)
+                vDst[x] = vadd_u8(vSrc, ALPHA_BLEND(vDst[x], vIalpha));
+
+            auto leftovers = (span->len - align) % 2;
+            if (leftovers > 0) dst[span->len - 1] = src + ALPHA_BLEND(dst[span->len - 1], ialpha);
+
+            ++span;
         }
-
-        uint8x8_t vSrc = (uint8x8_t) vdup_n_u32(src);
-        uint8x8_t vIalpha = vdup_n_u8((uint8_t) ialpha);
-
-        for (uint32_t x = 0; x < (span->len - align) / 2; ++x)
-            vDst[x] = vadd_u8(vSrc, ALPHA_BLEND(vDst[x], vIalpha));
-
-        auto leftovers = (span->len - align) % 2;
-        if (leftovers > 0) dst[span->len - 1] = src + ALPHA_BLEND(dst[span->len - 1], ialpha);
-
-        ++span;
+    //8bit grayscale
+    } else if (surface->channelSize == sizeof(uint8_t)) {
+        TVGLOG("SW_ENGINE", "Require Neon Optimization, Channel Size = %d", surface->channelSize);
+        uint8_t src;
+        for (uint32_t i = 0; i < rle->size; ++i, ++span) {
+            auto dst = &surface->buf8[span->y * surface->stride + span->x];
+            if (span->coverage < 255) src = MULTIPLY(span->coverage, a);
+            else src = a;
+            auto ialpha = ~a;
+            for (uint32_t x = 0; x < span->len; ++x, ++dst) {
+                *dst = src + MULTIPLY(*dst, ialpha);
+            }
+        }
     }
     return true;
 }
@@ -136,41 +148,51 @@ static bool neonRasterTranslucentRle(SwSurface* surface, const SwRleData* rle, u
 
 static bool neonRasterTranslucentRect(SwSurface* surface, const SwBBox& region, uint8_t r, uint8_t g, uint8_t b, uint8_t a)
 {
-    if (surface->channelSize != sizeof(uint32_t)) {
-        TVGERR("SW_ENGINE", "Unsupported Channel Size = %d", surface->channelSize);
-        return false;
-    }
-
-    auto color = surface->join(r, g, b, a);
-    auto buffer = surface->buf32 + (region.min.y * surface->stride) + region.min.x;
     auto h = static_cast<uint32_t>(region.max.y - region.min.y);
     auto w = static_cast<uint32_t>(region.max.x - region.min.x);
-    auto ialpha = 255 - a;
 
-    auto vColor = vdup_n_u32(color);
-    auto vIalpha = vdup_n_u8((uint8_t) ialpha);
+    //32bits channels
+    if (surface->channelSize == sizeof(uint32_t)) {
+        auto color = surface->join(r, g, b, a);
+        auto buffer = surface->buf32 + (region.min.y * surface->stride) + region.min.x;
+        auto ialpha = 255 - a;
 
-    uint8x8_t* vDst = nullptr;
-    uint32_t align;
+        auto vColor = vdup_n_u32(color);
+        auto vIalpha = vdup_n_u8((uint8_t) ialpha);
 
-    for (uint32_t y = 0; y < h; ++y) {
-        auto dst = &buffer[y * surface->stride];
+        uint8x8_t* vDst = nullptr;
+        uint32_t align;
 
-        if ((((uintptr_t) dst) & 0x7) != 0) {
-            //fill not aligned byte
-            *dst = color + ALPHA_BLEND(*dst, ialpha);
-            vDst = (uint8x8_t*) (dst + 1);
-            align = 1;
-        } else {
-            vDst = (uint8x8_t*) dst;
-            align = 0;
+        for (uint32_t y = 0; y < h; ++y) {
+            auto dst = &buffer[y * surface->stride];
+
+            if ((((uintptr_t) dst) & 0x7) != 0) {
+                //fill not aligned byte
+                *dst = color + ALPHA_BLEND(*dst, ialpha);
+                vDst = (uint8x8_t*) (dst + 1);
+                align = 1;
+            } else {
+                vDst = (uint8x8_t*) dst;
+                align = 0;
+            }
+
+            for (uint32_t x = 0; x <  (w - align) / 2; ++x)
+                vDst[x] = vadd_u8((uint8x8_t)vColor, ALPHA_BLEND(vDst[x], vIalpha));
+
+            auto leftovers = (w - align) % 2;
+            if (leftovers > 0) dst[w - 1] = color + ALPHA_BLEND(dst[w - 1], ialpha);
         }
-
-        for (uint32_t x = 0; x <  (w - align) / 2; ++x)
-            vDst[x] = vadd_u8((uint8x8_t)vColor, ALPHA_BLEND(vDst[x], vIalpha));
-
-        auto leftovers = (w - align) % 2;
-        if (leftovers > 0) dst[w - 1] = color + ALPHA_BLEND(dst[w - 1], ialpha);
+    //8bit grayscale
+    } else if (surface->channelSize == sizeof(uint8_t)) {
+        TVGLOG("SW_ENGINE", "Require Neon Optimization, Channel Size = %d", surface->channelSize);
+        auto buffer = surface->buf8 + (region.min.y * surface->stride) + region.min.x;
+        auto ialpha = ~a;
+        for (uint32_t y = 0; y < h; ++y) {
+            auto dst = &buffer[y * surface->stride];
+            for (uint32_t x = 0; x < w; ++x, ++dst) {
+                *dst = a + MULTIPLY(*dst, ialpha);
+            }
+        }
     }
     return true;
 }

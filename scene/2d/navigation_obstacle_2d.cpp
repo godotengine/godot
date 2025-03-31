@@ -31,9 +31,13 @@
 #include "navigation_obstacle_2d.h"
 
 #include "core/math/geometry_2d.h"
+#include "scene/resources/2d/navigation_mesh_source_geometry_data_2d.h"
+#include "scene/resources/2d/navigation_polygon.h"
 #include "scene/resources/world_2d.h"
 #include "servers/navigation_server_2d.h"
-#include "servers/navigation_server_3d.h"
+
+Callable NavigationObstacle2D::_navmesh_source_geometry_parsing_callback;
+RID NavigationObstacle2D::_navmesh_source_geometry_parser;
 
 void NavigationObstacle2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_rid"), &NavigationObstacle2D::get_rid);
@@ -89,7 +93,7 @@ void NavigationObstacle2D::_notification(int p_what) {
 			previous_transform = get_global_transform();
 			// need to trigger map controlled agent assignment somehow for the fake_agent since obstacles use no callback like regular agents
 			NavigationServer2D::get_singleton()->obstacle_set_avoidance_enabled(obstacle, avoidance_enabled);
-			_update_position(get_global_position());
+			_update_transform();
 			set_physics_process_internal(true);
 #ifdef DEBUG_ENABLED
 			RS::get_singleton()->canvas_item_set_parent(debug_canvas_item, get_world_2d()->get_canvas());
@@ -104,6 +108,7 @@ void NavigationObstacle2D::_notification(int p_what) {
 #endif // DEBUG_ENABLED
 		} break;
 
+		case NOTIFICATION_SUSPENDED:
 		case NOTIFICATION_PAUSED: {
 			if (!can_process()) {
 				map_before_pause = map_current;
@@ -114,6 +119,13 @@ void NavigationObstacle2D::_notification(int p_what) {
 			}
 			NavigationServer2D::get_singleton()->obstacle_set_paused(obstacle, !can_process());
 		} break;
+
+		case NOTIFICATION_UNSUSPENDED: {
+			if (get_tree()->is_paused()) {
+				break;
+			}
+			[[fallthrough]];
+		}
 
 		case NOTIFICATION_UNPAUSED: {
 			if (!can_process()) {
@@ -134,7 +146,7 @@ void NavigationObstacle2D::_notification(int p_what) {
 
 		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
 			if (is_inside_tree()) {
-				_update_position(get_global_position());
+				_update_transform();
 
 				if (velocity_submitted) {
 					velocity_submitted = false;
@@ -159,8 +171,7 @@ void NavigationObstacle2D::_notification(int p_what) {
 
 				if (is_debug_enabled) {
 					RS::get_singleton()->canvas_item_clear(debug_canvas_item);
-					Transform2D debug_transform = Transform2D(0.0, get_global_position());
-					RS::get_singleton()->canvas_item_set_transform(debug_canvas_item, debug_transform);
+					RS::get_singleton()->canvas_item_set_transform(debug_canvas_item, Transform2D());
 					_update_fake_agent_radius_debug();
 					_update_static_obstacle_debug();
 				}
@@ -180,6 +191,7 @@ NavigationObstacle2D::NavigationObstacle2D() {
 
 #ifdef DEBUG_ENABLED
 	debug_canvas_item = RenderingServer::get_singleton()->canvas_item_create();
+	debug_mesh_rid = RenderingServer::get_singleton()->mesh_create();
 #endif // DEBUG_ENABLED
 }
 
@@ -190,6 +202,10 @@ NavigationObstacle2D::~NavigationObstacle2D() {
 	obstacle = RID();
 
 #ifdef DEBUG_ENABLED
+	if (debug_mesh_rid.is_valid()) {
+		RenderingServer::get_singleton()->free(debug_mesh_rid);
+		debug_mesh_rid = RID();
+	}
 	if (debug_canvas_item.is_valid()) {
 		RenderingServer::get_singleton()->free(debug_canvas_item);
 		debug_canvas_item = RID();
@@ -199,7 +215,12 @@ NavigationObstacle2D::~NavigationObstacle2D() {
 
 void NavigationObstacle2D::set_vertices(const Vector<Vector2> &p_vertices) {
 	vertices = p_vertices;
-	NavigationServer2D::get_singleton()->obstacle_set_vertices(obstacle, vertices);
+
+	vertices_are_clockwise = !Geometry2D::is_polygon_clockwise(vertices); // Geometry2D is inverted.
+	vertices_are_valid = !Geometry2D::triangulate_polygon(vertices).is_empty();
+
+	const Transform2D node_transform = is_inside_tree() ? get_global_transform() : Transform2D();
+	NavigationServer2D::get_singleton()->obstacle_set_vertices(obstacle, node_transform.xform(vertices));
 #ifdef DEBUG_ENABLED
 	queue_redraw();
 #endif // DEBUG_ENABLED
@@ -230,7 +251,8 @@ void NavigationObstacle2D::set_radius(real_t p_radius) {
 
 	radius = p_radius;
 
-	NavigationServer2D::get_singleton()->obstacle_set_radius(obstacle, radius);
+	const Vector2 safe_scale = (is_inside_tree() ? get_global_scale() : get_scale()).abs().maxf(0.001);
+	NavigationServer2D::get_singleton()->obstacle_set_radius(obstacle, safe_scale[safe_scale.max_axis_index()] * radius);
 #ifdef DEBUG_ENABLED
 	queue_redraw();
 #endif // DEBUG_ENABLED
@@ -303,6 +325,94 @@ bool NavigationObstacle2D::get_carve_navigation_mesh() const {
 	return carve_navigation_mesh;
 }
 
+PackedStringArray NavigationObstacle2D::get_configuration_warnings() const {
+	PackedStringArray warnings = Node2D::get_configuration_warnings();
+
+	const Vector2 global_scale = get_global_scale();
+	if (global_scale.x < 0.001 || global_scale.y < 0.001) {
+		warnings.push_back(RTR("NavigationObstacle2D does not support negative or zero scaling."));
+	}
+
+	if (radius > 0.0 && !get_global_transform().is_conformal()) {
+		warnings.push_back(RTR("The agent radius can only be scaled uniformly. The largest value along the two axes of the global scale will be used to scale the radius. This value may change in unexpected ways when the node is rotated."));
+	}
+
+	if (radius > 0.0 && get_global_skew() != 0.0) {
+		warnings.push_back(RTR("Skew has no effect on the agent radius."));
+	}
+
+	return warnings;
+}
+
+void NavigationObstacle2D::navmesh_parse_init() {
+	ERR_FAIL_NULL(NavigationServer2D::get_singleton());
+	if (!_navmesh_source_geometry_parser.is_valid()) {
+		_navmesh_source_geometry_parsing_callback = callable_mp_static(&NavigationObstacle2D::navmesh_parse_source_geometry);
+		_navmesh_source_geometry_parser = NavigationServer2D::get_singleton()->source_geometry_parser_create();
+		NavigationServer2D::get_singleton()->source_geometry_parser_set_callback(_navmesh_source_geometry_parser, _navmesh_source_geometry_parsing_callback);
+	}
+}
+
+void NavigationObstacle2D::navmesh_parse_source_geometry(const Ref<NavigationPolygon> &p_navigation_mesh, Ref<NavigationMeshSourceGeometryData2D> p_source_geometry_data, Node *p_node) {
+	NavigationObstacle2D *obstacle = Object::cast_to<NavigationObstacle2D>(p_node);
+
+	if (obstacle == nullptr) {
+		return;
+	}
+
+	if (!obstacle->get_affect_navigation_mesh()) {
+		return;
+	}
+
+	const Vector2 safe_scale = obstacle->get_global_scale().abs().maxf(0.001);
+	const float obstacle_radius = obstacle->get_radius();
+
+	if (obstacle_radius > 0.0) {
+		// Radius defined obstacle should be uniformly scaled from obstacle basis max scale axis.
+		const float scaling_max_value = safe_scale[safe_scale.max_axis_index()];
+		const Vector2 uniform_max_scale = Vector2(scaling_max_value, scaling_max_value);
+		const Transform2D obstacle_circle_transform = p_source_geometry_data->root_node_transform * Transform2D(obstacle->get_global_rotation(), uniform_max_scale, 0.0, obstacle->get_global_position());
+
+		Vector<Vector2> obstruction_circle_vertices;
+
+		// The point of this is that the moving obstacle can make a simple hole in the navigation mesh and affect the pathfinding.
+		// Without, navigation paths can go directly through the middle of the obstacle and conflict with the avoidance to get agents stuck.
+		// No place for excessive "round" detail here. Every additional edge adds a high cost for something that needs to be quick, not pretty.
+		static const int circle_points = 12;
+
+		obstruction_circle_vertices.resize(circle_points);
+		Vector2 *circle_vertices_ptrw = obstruction_circle_vertices.ptrw();
+		const real_t circle_point_step = Math_TAU / circle_points;
+
+		for (int i = 0; i < circle_points; i++) {
+			const float angle = i * circle_point_step;
+			circle_vertices_ptrw[i] = obstacle_circle_transform.xform(Vector2(Math::cos(angle) * obstacle_radius, Math::sin(angle) * obstacle_radius));
+		}
+
+		p_source_geometry_data->add_projected_obstruction(obstruction_circle_vertices, obstacle->get_carve_navigation_mesh());
+	}
+
+	// Obstacles are projected to the xz-plane, so only rotation around the y-axis can be taken into account.
+	const Transform2D node_xform = p_source_geometry_data->root_node_transform * obstacle->get_global_transform();
+
+	const Vector<Vector2> &obstacle_vertices = obstacle->get_vertices();
+
+	if (obstacle_vertices.is_empty()) {
+		return;
+	}
+
+	Vector<Vector2> obstruction_shape_vertices;
+	obstruction_shape_vertices.resize(obstacle_vertices.size());
+
+	const Vector2 *obstacle_vertices_ptr = obstacle_vertices.ptr();
+	Vector2 *obstruction_shape_vertices_ptrw = obstruction_shape_vertices.ptrw();
+
+	for (int i = 0; i < obstacle_vertices.size(); i++) {
+		obstruction_shape_vertices_ptrw[i] = node_xform.xform(obstacle_vertices_ptr[i]);
+	}
+	p_source_geometry_data->add_projected_obstruction(obstruction_shape_vertices, obstacle->get_carve_navigation_mesh());
+}
+
 void NavigationObstacle2D::_update_map(RID p_map) {
 	map_current = p_map;
 	NavigationServer2D::get_singleton()->obstacle_set_map(obstacle, p_map);
@@ -315,54 +425,88 @@ void NavigationObstacle2D::_update_position(const Vector2 p_position) {
 #endif // DEBUG_ENABLED
 }
 
+void NavigationObstacle2D::_update_transform() {
+	_update_position(get_global_position());
+	// Prevent non-positive or non-uniform scaling of dynamic obstacle radius.
+	const Vector2 safe_scale = get_global_scale().abs().maxf(0.001);
+	const float scaling_max_value = safe_scale[safe_scale.max_axis_index()];
+	NavigationServer2D::get_singleton()->obstacle_set_radius(obstacle, scaling_max_value * radius);
+	NavigationServer2D::get_singleton()->obstacle_set_vertices(obstacle, get_global_transform().translated(-get_global_position()).xform(vertices));
+#ifdef DEBUG_ENABLED
+	queue_redraw();
+#endif // DEBUG_ENABLED
+}
+
 #ifdef DEBUG_ENABLED
 void NavigationObstacle2D::_update_fake_agent_radius_debug() {
 	if (radius > 0.0 && NavigationServer2D::get_singleton()->get_debug_navigation_avoidance_enable_obstacles_radius()) {
 		Color debug_radius_color = NavigationServer2D::get_singleton()->get_debug_navigation_avoidance_obstacles_radius_color();
-
-		RS::get_singleton()->canvas_item_add_circle(debug_canvas_item, Vector2(), radius, debug_radius_color);
+		// Prevent non-positive scaling.
+		const Vector2 safe_scale = get_global_scale().abs().maxf(0.001);
+		// Agent radius is a scalar value and does not support non-uniform scaling, choose the largest axis.
+		const float scaling_max_value = safe_scale[safe_scale.max_axis_index()];
+		RS::get_singleton()->canvas_item_add_circle(debug_canvas_item, get_global_position(), scaling_max_value * radius, debug_radius_color);
 	}
 }
 #endif // DEBUG_ENABLED
 
 #ifdef DEBUG_ENABLED
 void NavigationObstacle2D::_update_static_obstacle_debug() {
-	if (get_vertices().size() > 2 && NavigationServer2D::get_singleton()->get_debug_navigation_avoidance_enable_obstacles_static()) {
-		bool obstacle_pushes_inward = Geometry2D::is_polygon_clockwise(get_vertices());
-
-		Color debug_static_obstacle_face_color;
-
-		if (obstacle_pushes_inward) {
-			debug_static_obstacle_face_color = NavigationServer2D::get_singleton()->get_debug_navigation_avoidance_static_obstacle_pushin_face_color();
-		} else {
-			debug_static_obstacle_face_color = NavigationServer2D::get_singleton()->get_debug_navigation_avoidance_static_obstacle_pushout_face_color();
-		}
-
-		Vector<Vector2> debug_obstacle_polygon_vertices = get_vertices();
-
-		Vector<Color> debug_obstacle_polygon_colors;
-		debug_obstacle_polygon_colors.resize(debug_obstacle_polygon_vertices.size());
-		debug_obstacle_polygon_colors.fill(debug_static_obstacle_face_color);
-
-		RS::get_singleton()->canvas_item_add_polygon(debug_canvas_item, debug_obstacle_polygon_vertices, debug_obstacle_polygon_colors);
-
-		Color debug_static_obstacle_edge_color;
-
-		if (obstacle_pushes_inward) {
-			debug_static_obstacle_edge_color = NavigationServer2D::get_singleton()->get_debug_navigation_avoidance_static_obstacle_pushin_edge_color();
-		} else {
-			debug_static_obstacle_edge_color = NavigationServer2D::get_singleton()->get_debug_navigation_avoidance_static_obstacle_pushout_edge_color();
-		}
-
-		Vector<Vector2> debug_obstacle_line_vertices = get_vertices();
-		debug_obstacle_line_vertices.push_back(debug_obstacle_line_vertices[0]);
-		debug_obstacle_line_vertices.resize(debug_obstacle_line_vertices.size());
-
-		Vector<Color> debug_obstacle_line_colors;
-		debug_obstacle_line_colors.resize(debug_obstacle_line_vertices.size());
-		debug_obstacle_line_colors.fill(debug_static_obstacle_edge_color);
-
-		RS::get_singleton()->canvas_item_add_polyline(debug_canvas_item, debug_obstacle_line_vertices, debug_obstacle_line_colors, 4.0);
+	if (get_vertices().size() < 3) {
+		return;
 	}
+
+	if (!NavigationServer2D::get_singleton()->get_debug_navigation_avoidance_enable_obstacles_static()) {
+		return;
+	}
+
+	RenderingServer *rs = RenderingServer::get_singleton();
+
+	rs->mesh_clear(debug_mesh_rid);
+
+	const int vertex_count = vertices.size();
+
+	Vector<Vector2> edge_vertex_array;
+	edge_vertex_array.resize(vertex_count * 4);
+
+	Vector2 *edge_vertex_array_ptrw = edge_vertex_array.ptrw();
+
+	int vertex_index = 0;
+
+	for (int i = 0; i < vertex_count; i++) {
+		Vector2 point = vertices[i];
+		Vector2 next_point = vertices[(i + 1) % vertex_count];
+
+		Vector2 direction = next_point.direction_to(point);
+		Vector2 arrow_dir = -direction.orthogonal();
+		Vector2 edge_middle = point + ((next_point - point) * 0.5);
+
+		edge_vertex_array_ptrw[vertex_index++] = edge_middle;
+		edge_vertex_array_ptrw[vertex_index++] = edge_middle + (arrow_dir * 10.0);
+
+		edge_vertex_array_ptrw[vertex_index++] = point;
+		edge_vertex_array_ptrw[vertex_index++] = next_point;
+	}
+
+	Color debug_static_obstacle_edge_color;
+
+	if (are_vertices_valid()) {
+		debug_static_obstacle_edge_color = NavigationServer2D::get_singleton()->get_debug_navigation_avoidance_static_obstacle_pushout_edge_color();
+	} else {
+		debug_static_obstacle_edge_color = NavigationServer2D::get_singleton()->get_debug_navigation_avoidance_static_obstacle_pushin_edge_color();
+	}
+
+	Vector<Color> line_color_array;
+	line_color_array.resize(edge_vertex_array.size());
+	line_color_array.fill(debug_static_obstacle_edge_color);
+
+	Array edge_mesh_array;
+	edge_mesh_array.resize(Mesh::ARRAY_MAX);
+	edge_mesh_array[Mesh::ARRAY_VERTEX] = edge_vertex_array;
+	edge_mesh_array[Mesh::ARRAY_COLOR] = line_color_array;
+
+	rs->mesh_add_surface_from_arrays(debug_mesh_rid, RS::PRIMITIVE_LINES, edge_mesh_array, Array(), Dictionary(), RS::ARRAY_FLAG_USE_2D_VERTICES);
+
+	rs->canvas_item_add_mesh(debug_canvas_item, debug_mesh_rid, get_global_transform());
 }
 #endif // DEBUG_ENABLED

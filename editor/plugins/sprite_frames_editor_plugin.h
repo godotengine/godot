@@ -28,14 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef SPRITE_FRAMES_EDITOR_PLUGIN_H
-#define SPRITE_FRAMES_EDITOR_PLUGIN_H
+#pragma once
 
 #include "editor/plugins/editor_plugin.h"
-#include "scene/2d/animated_sprite_2d.h"
-#include "scene/3d/sprite_3d.h"
 #include "scene/gui/button.h"
-#include "scene/gui/check_button.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/item_list.h"
 #include "scene/gui/line_edit.h"
@@ -45,6 +41,7 @@
 #include "scene/gui/texture_rect.h"
 #include "scene/gui/tree.h"
 #include "scene/resources/image_texture.h"
+#include "scene/resources/sprite_frames.h"
 
 class OptionButton;
 class EditorFileDialog;
@@ -89,6 +86,12 @@ class SpriteFramesEditor : public HSplitContainer {
 		FRAME_ORDER_BOTTOM_TOP_RIGHT_LEFT,
 	};
 
+	enum {
+		MENU_SHOW_IN_FILESYSTEM,
+	};
+
+	int right_clicked_frame = -1;
+
 	bool read_only = false;
 
 	Ref<Texture2D> autoplay_icon;
@@ -121,6 +124,7 @@ class SpriteFramesEditor : public HSplitContainer {
 	Vector<int> selection;
 
 	Button *add_anim = nullptr;
+	Button *duplicate_anim = nullptr;
 	Button *delete_anim = nullptr;
 	SpinBox *anim_speed = nullptr;
 	Button *anim_loop = nullptr;
@@ -137,6 +141,8 @@ class SpriteFramesEditor : public HSplitContainer {
 	EditorFileDialog *file = nullptr;
 
 	AcceptDialog *dialog = nullptr;
+
+	PopupMenu *menu = nullptr;
 
 	StringName edited_anim;
 
@@ -210,14 +216,18 @@ class SpriteFramesEditor : public HSplitContainer {
 	void _animation_selected();
 	void _animation_name_edited();
 	void _animation_add();
+	void _animation_duplicate();
 	void _animation_remove();
 	void _animation_remove_confirmed();
 	void _animation_search_text_changed(const String &p_text);
 	void _animation_loop_changed();
+	void _animation_speed_resized();
 	void _animation_speed_changed(double p_value);
 
 	void _frame_list_gui_input(const Ref<InputEvent> &p_event);
 	void _frame_list_item_selected(int p_index, bool p_selected);
+
+	void _menu_selected(int p_id);
 
 	void _zoom_in();
 	void _zoom_out();
@@ -234,6 +244,9 @@ class SpriteFramesEditor : public HSplitContainer {
 	void drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
 
 	void _open_sprite_sheet();
+	void _auto_slice_sprite_sheet();
+	bool _matches_background_color(const Color &p_background_color, const Color &p_pixel_color);
+	Size2i _estimate_sprite_sheet_size(const Ref<Texture2D> p_texture);
 	void _prepare_sprite_sheet(const String &p_file);
 	int _sheet_preview_position_to_frame_index(const Vector2 &p_position);
 	void _sheet_preview_draw();
@@ -269,7 +282,7 @@ protected:
 
 public:
 	void edit(Ref<SpriteFrames> p_frames);
-	bool is_editing() const;
+	Ref<SpriteFrames> get_sprite_frames() const;
 
 	SpriteFramesEditor();
 };
@@ -281,14 +294,11 @@ class SpriteFramesEditorPlugin : public EditorPlugin {
 	Button *button = nullptr;
 
 public:
-	virtual String get_name() const override { return "SpriteFrames"; }
+	virtual String get_plugin_name() const override { return "SpriteFrames"; }
 	bool has_main_screen() const override { return false; }
 	virtual void edit(Object *p_object) override;
 	virtual bool handles(Object *p_object) const override;
 	virtual void make_visible(bool p_visible) override;
 
 	SpriteFramesEditorPlugin();
-	~SpriteFramesEditorPlugin();
 };
-
-#endif // SPRITE_FRAMES_EDITOR_PLUGIN_H

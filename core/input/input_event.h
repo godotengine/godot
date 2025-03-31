@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef INPUT_EVENT_H
-#define INPUT_EVENT_H
+#pragma once
 
 #include "core/input/input_enums.h"
 #include "core/io/resource.h"
@@ -453,6 +452,7 @@ class InputEventAction : public InputEvent {
 
 	StringName action;
 	float strength = 1.0f;
+	int event_index = -1;
 
 protected:
 	static void _bind_methods();
@@ -465,6 +465,9 @@ public:
 
 	void set_strength(float p_strength);
 	float get_strength() const;
+
+	void set_event_index(int p_index);
+	int get_event_index() const;
 
 	virtual bool is_action(const StringName &p_action) const;
 
@@ -591,5 +594,3 @@ public:
 
 	InputEventShortcut();
 };
-
-#endif // INPUT_EVENT_H

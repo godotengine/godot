@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TTS_IOS_H
-#define TTS_IOS_H
+#pragma once
 
 #include "core/string/ustring.h"
 #include "core/templates/hash_map.h"
@@ -59,5 +58,3 @@
 - (void)speak:(const String &)text voice:(const String &)voice volume:(int)volume pitch:(float)pitch rate:(float)rate utterance_id:(int)utterance_id interrupt:(bool)interrupt;
 - (Array)getVoices;
 @end
-
-#endif // TTS_IOS_H

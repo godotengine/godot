@@ -72,7 +72,7 @@
 			</description>
 		</signal>
 		<signal name="request_save_previous_state">
-			<param index="0" name="line" type="int" />
+			<param index="0" name="state" type="Dictionary" />
 			<description>
 				Emitted when the user changes current script or moves caret by 10 or more columns within the same script.
 			</description>

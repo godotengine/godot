@@ -32,14 +32,13 @@
 
 #include "core/io/resource_loader.h"
 #include "core/object/script_language.h"
-#include "scene/gui/option_button.h"
 #include "scene/resources/packed_scene.h"
 
 void PackedSceneEditorTranslationParserPlugin::get_recognized_extensions(List<String> *r_extensions) const {
 	ResourceLoader::get_recognized_extensions_for_type("PackedScene", r_extensions);
 }
 
-Error PackedSceneEditorTranslationParserPlugin::parse_file(const String &p_path, Vector<String> *r_ids, Vector<Vector<String>> *r_ids_ctx_plural) {
+Error PackedSceneEditorTranslationParserPlugin::parse_file(const String &p_path, Vector<Vector<String>> *r_translations) {
 	// Parse specific scene Node's properties (see in constructor) that are auto-translated by the engine when set. E.g Label's text property.
 	// These properties are translated with the tr() function in the C++ code when being set or updated.
 
@@ -49,11 +48,13 @@ Error PackedSceneEditorTranslationParserPlugin::parse_file(const String &p_path,
 		ERR_PRINT("Failed to load " + p_path);
 		return err;
 	}
-	Ref<SceneState> state = Ref<PackedScene>(loaded_res)->get_state();
+	Ref<PackedScene> packed_scene = loaded_res;
+	ERR_FAIL_COND_V_MSG(packed_scene.is_null(), ERR_FILE_UNRECOGNIZED, vformat("'%s' is not a valid PackedScene resource.", p_path));
+	Ref<SceneState> state = packed_scene->get_state();
 
-	Vector<String> parsed_strings;
 	Vector<Pair<NodePath, bool>> atr_owners;
 	Vector<String> tabcontainer_paths;
+
 	for (int i = 0; i < state->get_node_count(); i++) {
 		String node_type = state->get_node_type(i);
 		String parent_path = state->get_node_path(i, true);
@@ -71,7 +72,11 @@ Error PackedSceneEditorTranslationParserPlugin::parse_file(const String &p_path,
 		bool auto_translating = true;
 		bool auto_translate_mode_found = false;
 		for (int j = 0; j < state->get_node_property_count(i); j++) {
-			if (state->get_node_property_name(i, j) != "auto_translate_mode") {
+			String property = state->get_node_property_name(i, j);
+			// If an old scene wasn't saved in the new version, the `auto_translate` property won't be converted into `auto_translate_mode`,
+			// so the deprecated property still needs to be checked as well.
+			// TODO: Remove the check for "auto_translate" once the property if fully removed.
+			if (property != "auto_translate_mode" && property != "auto_translate") {
 				continue;
 			}
 
@@ -79,14 +84,18 @@ Error PackedSceneEditorTranslationParserPlugin::parse_file(const String &p_path,
 
 			int idx_last = atr_owners.size() - 1;
 			if (idx_last > 0 && !parent_path.begins_with(atr_owners[idx_last].first)) {
-				// Switch to the previous auto translation owner this was nested in, if that was the case.
+				// Exit from the current owner nesting into the previous one.
 				atr_owners.remove_at(idx_last);
-				idx_last -= 1;
 			}
 
-			int auto_translate_mode = (int)state->get_node_property_value(i, j);
-			if (auto_translate_mode == Node::AUTO_TRANSLATE_MODE_DISABLED) {
-				auto_translating = false;
+			if (property == "auto_translate_mode") {
+				int auto_translate_mode = (int)state->get_node_property_value(i, j);
+				if (auto_translate_mode == Node::AUTO_TRANSLATE_MODE_DISABLED) {
+					auto_translating = false;
+				}
+			} else {
+				// TODO: Remove this once `auto_translate` is fully removed.
+				auto_translating = (bool)state->get_node_property_value(i, j);
 			}
 
 			atr_owners.push_back(Pair(state->get_node_path(i), auto_translating));
@@ -97,7 +106,7 @@ Error PackedSceneEditorTranslationParserPlugin::parse_file(const String &p_path,
 		// If `auto_translate_mode` wasn't found, that means it is set to its default value (`AUTO_TRANSLATE_MODE_INHERIT`).
 		if (!auto_translate_mode_found) {
 			int idx_last = atr_owners.size() - 1;
-			if (idx_last > 0 && atr_owners[idx_last].first == parent_path) {
+			if (idx_last > 0 && parent_path.begins_with(atr_owners[idx_last].first)) {
 				auto_translating = atr_owners[idx_last].second;
 			} else {
 				atr_owners.push_back(Pair(state->get_node_path(i), true));
@@ -113,10 +122,9 @@ Error PackedSceneEditorTranslationParserPlugin::parse_file(const String &p_path,
 
 			if (auto_translating && !tabcontainer_paths.is_empty() && ClassDB::is_parent_class(node_type, "Control") &&
 					parent_path == tabcontainer_paths[tabcontainer_paths.size() - 1]) {
-				parsed_strings.push_back(state->get_node_name(i));
+				r_translations->push_back({ state->get_node_name(i) });
 			}
 		}
-
 		if (!auto_translating) {
 			continue;
 		}
@@ -142,32 +150,26 @@ Error PackedSceneEditorTranslationParserPlugin::parse_file(const String &p_path,
 
 				String extension = s->get_language()->get_extension();
 				if (EditorTranslationParser::get_singleton()->can_parse(extension)) {
-					Vector<String> temp;
-					Vector<Vector<String>> ids_context_plural;
-					EditorTranslationParser::get_singleton()->get_parser(extension)->parse_file(s->get_path(), &temp, &ids_context_plural);
-					parsed_strings.append_array(temp);
-					r_ids_ctx_plural->append_array(ids_context_plural);
+					EditorTranslationParser::get_singleton()->get_parser(extension)->parse_file(s->get_path(), r_translations);
 				}
 			} else if (node_type == "FileDialog" && property_name == "filters") {
 				// Extract FileDialog's filters property with values in format "*.png ; PNG Images","*.gd ; GDScript Files".
 				Vector<String> str_values = property_value;
 				for (int k = 0; k < str_values.size(); k++) {
-					String desc = str_values[k].get_slice(";", 1).strip_edges();
+					String desc = str_values[k].get_slicec(';', 1).strip_edges();
 					if (!desc.is_empty()) {
-						parsed_strings.push_back(desc);
+						r_translations->push_back({ desc });
 					}
 				}
 			} else if (property_value.get_type() == Variant::STRING) {
 				String str_value = String(property_value);
 				// Prevent reading text containing only spaces.
 				if (!str_value.strip_edges().is_empty()) {
-					parsed_strings.push_back(str_value);
+					r_translations->push_back({ str_value });
 				}
 			}
 		}
 	}
-
-	r_ids->append_array(parsed_strings);
 
 	return OK;
 }
@@ -200,6 +202,7 @@ PackedSceneEditorTranslationParserPlugin::PackedSceneEditorTranslationParserPlug
 	lookup_properties.insert("title");
 	lookup_properties.insert("filters");
 	lookup_properties.insert("script");
+	lookup_properties.insert("item_*/text");
 
 	// Exception list (to prevent false positives).
 	exception_list.insert("LineEdit", { "text" });

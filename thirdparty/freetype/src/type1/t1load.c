@@ -4,7 +4,7 @@
  *
  *   Type 1 font loader (body).
  *
- * Copyright (C) 1996-2023 by
+ * Copyright (C) 1996-2024 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -751,6 +751,7 @@
         PS_DesignMap  dmap = blend->design_map + n;
 
 
+        FT_FREE( dmap->blend_points );
         FT_FREE( dmap->design_points );
         dmap->num_points = 0;
       }
@@ -1043,9 +1044,9 @@
       }
 
       /* allocate design map data */
-      if ( FT_QNEW_ARRAY( map->design_points, num_points * 2 ) )
+      if ( FT_QNEW_ARRAY( map->design_points, num_points ) ||
+           FT_QNEW_ARRAY( map->blend_points,  num_points ) )
         goto Exit;
-      map->blend_points = map->design_points + num_points;
       map->num_points   = (FT_Byte)num_points;
 
       for ( p = 0; p < num_points; p++ )
@@ -1876,9 +1877,8 @@
         }
 
         /* t1_decrypt() shouldn't write to base -- make temporary copy */
-        if ( FT_QALLOC( temp, size ) )
+        if ( FT_DUP( temp, base, size ) )
           goto Fail;
-        FT_MEM_COPY( temp, base, size );
         psaux->t1_decrypt( temp, size, 4330 );
         size -= (FT_ULong)t1face->type1.private_dict.lenIV;
         error = T1_Add_Table( table,
@@ -2090,9 +2090,8 @@
           }
 
           /* t1_decrypt() shouldn't write to base -- make temporary copy */
-          if ( FT_QALLOC( temp, size ) )
+          if ( FT_DUP( temp, base, size ) )
             goto Fail;
-          FT_MEM_COPY( temp, base, size );
           psaux->t1_decrypt( temp, size, 4330 );
           size -= (FT_ULong)t1face->type1.private_dict.lenIV;
           error = T1_Add_Table( code_table,
@@ -2284,7 +2283,7 @@
                        T1_FIELD_DICT_PRIVATE )
 #endif
 
-    { 0, T1_FIELD_LOCATION_CID_INFO, T1_FIELD_TYPE_NONE, 0, 0, 0, 0, 0, 0 }
+    T1_FIELD_ZERO
   };
 
 
@@ -2392,18 +2391,13 @@
           T1_Field  keyword = (T1_Field)t1_keywords;
 
 
-          for (;;)
+          while ( keyword->len )
           {
-            FT_Byte*  name;
+            FT_Byte*  name = (FT_Byte*)keyword->ident;
 
 
-            name = (FT_Byte*)keyword->ident;
-            if ( !name )
-              break;
-
-            if ( cur[0] == name[0]                      &&
-                 len == ft_strlen( (const char *)name ) &&
-                 ft_memcmp( cur, name, len ) == 0       )
+            if ( keyword->len == len              &&
+                 ft_memcmp( cur, name, len ) == 0 )
             {
               /* We found it -- run the parsing callback!     */
               /* We record every instance of every field      */

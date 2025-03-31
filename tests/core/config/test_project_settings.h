@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TEST_PROJECT_SETTINGS_H
-#define TEST_PROJECT_SETTINGS_H
+#pragma once
 
 #include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
@@ -40,7 +39,7 @@ class TestProjectSettingsInternalsAccessor {
 public:
 	static String &resource_path() {
 		return ProjectSettings::get_singleton()->resource_path;
-	};
+	}
 };
 
 namespace TestProjectSettings {
@@ -126,10 +125,9 @@ TEST_CASE("[ProjectSettings] localize_path") {
 	CHECK_EQ(ProjectSettings::get_singleton()->localize_path("path\\.\\filename"), "res://path/filename");
 #endif
 
-	// FIXME?: These checks pass, but that doesn't seems correct
-	CHECK_EQ(ProjectSettings::get_singleton()->localize_path("../filename"), "res://filename");
-	CHECK_EQ(ProjectSettings::get_singleton()->localize_path("../path/filename"), "res://path/filename");
-	CHECK_EQ(ProjectSettings::get_singleton()->localize_path("..\\path\\filename"), "res://path/filename");
+	CHECK_EQ(ProjectSettings::get_singleton()->localize_path("../filename"), "../filename");
+	CHECK_EQ(ProjectSettings::get_singleton()->localize_path("../path/filename"), "../path/filename");
+	CHECK_EQ(ProjectSettings::get_singleton()->localize_path("..\\path\\filename"), "../path/filename");
 
 	CHECK_EQ(ProjectSettings::get_singleton()->localize_path("/testroot/filename"), "/testroot/filename");
 	CHECK_EQ(ProjectSettings::get_singleton()->localize_path("/testroot/path/filename"), "/testroot/path/filename");
@@ -161,5 +159,3 @@ TEST_CASE("[ProjectSettings] localize_path") {
 }
 
 } // namespace TestProjectSettings
-
-#endif // TEST_PROJECT_SETTINGS_H

@@ -57,7 +57,7 @@ int GradientEdit::_get_point_at(int p_xpos) const {
 			break;
 		}
 		// Check if we clicked at point.
-		float distance = ABS(p_xpos - gradient->get_offset(i) * total_w);
+		float distance = Math::abs(p_xpos - gradient->get_offset(i) * total_w);
 		if (distance < min_distance) {
 			result = i;
 			min_distance = distance;
@@ -385,14 +385,14 @@ void GradientEdit::gui_input(const Ref<InputEvent> &p_event) {
 			int nearest_idx = -1;
 			// Only check the two adjacent points to find which one is the nearest.
 			if (selected_index > 0) {
-				float temp_offset = ABS(gradient->get_offset(selected_index - 1) - new_offset);
+				float temp_offset = Math::abs(gradient->get_offset(selected_index - 1) - new_offset);
 				if (temp_offset < smallest_offset) {
 					smallest_offset = temp_offset;
 					nearest_idx = selected_index - 1;
 				}
 			}
 			if (selected_index < gradient->get_point_count() - 1) {
-				float temp_offset = ABS(gradient->get_offset(selected_index + 1) - new_offset);
+				float temp_offset = Math::abs(gradient->get_offset(selected_index + 1) - new_offset);
 				if (temp_offset < smallest_offset) {
 					smallest_offset = temp_offset;
 					nearest_idx = selected_index + 1;
@@ -604,8 +604,8 @@ void GradientEditor::set_gradient(const Ref<Gradient> &p_gradient) {
 void GradientEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
-			reverse_button->set_icon(get_editor_theme_icon(SNAME("ReverseGradient")));
-			snap_button->set_icon(get_editor_theme_icon(SNAME("SnapGrid")));
+			reverse_button->set_button_icon(get_editor_theme_icon(SNAME("ReverseGradient")));
+			snap_button->set_button_icon(get_editor_theme_icon(SNAME("SnapGrid")));
 		} break;
 		case NOTIFICATION_READY: {
 			Ref<Gradient> gradient = gradient_editor_rect->get_gradient();
@@ -632,7 +632,7 @@ GradientEditor::GradientEditor() {
 	snap_button->set_tooltip_text(TTR("Toggle Grid Snap"));
 	snap_button->set_toggle_mode(true);
 	toolbar->add_child(snap_button);
-	snap_button->connect("toggled", callable_mp(this, &GradientEditor::_set_snap_enabled));
+	snap_button->connect(SceneStringName(toggled), callable_mp(this, &GradientEditor::_set_snap_enabled));
 
 	snap_count_edit = memnew(EditorSpinSlider);
 	snap_count_edit->set_min(2);
@@ -640,7 +640,7 @@ GradientEditor::GradientEditor() {
 	snap_count_edit->set_value(DEFAULT_SNAP);
 	snap_count_edit->set_custom_minimum_size(Size2(65 * EDSCALE, 0));
 	toolbar->add_child(snap_count_edit);
-	snap_count_edit->connect("value_changed", callable_mp(this, &GradientEditor::_set_snap_count));
+	snap_count_edit->connect(SceneStringName(value_changed), callable_mp(this, &GradientEditor::_set_snap_count));
 
 	gradient_editor_rect = memnew(GradientEdit);
 	add_child(gradient_editor_rect);

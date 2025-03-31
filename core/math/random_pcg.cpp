@@ -60,6 +60,11 @@ int64_t RandomPCG::rand_weighted(const Vector<float> &p_weights) {
 		}
 	}
 
+	for (int64_t i = weights_size - 1; i >= 0; --i) {
+		if (weights[i] > 0) {
+			return i;
+		}
+	}
 	return -1;
 }
 
@@ -75,5 +80,5 @@ int RandomPCG::random(int p_from, int p_to) {
 	if (p_from == p_to) {
 		return p_from;
 	}
-	return rand(abs(p_from - p_to) + 1) + MIN(p_from, p_to);
+	return int(rand(uint32_t(Math::abs(p_from - p_to)) + 1U)) + MIN(p_from, p_to);
 }

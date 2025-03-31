@@ -21,13 +21,10 @@ typedef mbedtls_psa_external_random_context_t mbedtls_psa_random_context_t;
 #include "mbedtls/entropy.h"
 
 /* Choose a DRBG based on configuration and availability */
-#if defined(MBEDTLS_PSA_HMAC_DRBG_MD_TYPE)
-
-#include "mbedtls/hmac_drbg.h"
-
-#elif defined(MBEDTLS_CTR_DRBG_C)
+#if defined(MBEDTLS_CTR_DRBG_C)
 
 #include "mbedtls/ctr_drbg.h"
+#undef MBEDTLS_PSA_HMAC_DRBG_MD_TYPE
 
 #elif defined(MBEDTLS_HMAC_DRBG_C)
 
@@ -49,17 +46,11 @@ typedef mbedtls_psa_external_random_context_t mbedtls_psa_random_context_t;
 #error "No hash algorithm available for HMAC_DBRG."
 #endif
 
-#else /* !MBEDTLS_PSA_HMAC_DRBG_MD_TYPE && !MBEDTLS_CTR_DRBG_C && !MBEDTLS_HMAC_DRBG_C*/
+#else /* !MBEDTLS_CTR_DRBG_C && !MBEDTLS_HMAC_DRBG_C*/
 
 #error "No DRBG module available for the psa_crypto module."
 
-#endif /* !MBEDTLS_PSA_HMAC_DRBG_MD_TYPE && !MBEDTLS_CTR_DRBG_C && !MBEDTLS_HMAC_DRBG_C*/
-
-#if defined(MBEDTLS_CTR_DRBG_C)
-#include "mbedtls/ctr_drbg.h"
-#elif defined(MBEDTLS_HMAC_DRBG_C)
-#include "mbedtls/hmac_drbg.h"
-#endif /* !MBEDTLS_CTR_DRBG_C && !MBEDTLS_HMAC_DRBG_C */
+#endif /* !MBEDTLS_CTR_DRBG_C && !MBEDTLS_HMAC_DRBG_C*/
 
 /* The maximum number of bytes that mbedtls_psa_get_random() is expected to return. */
 #if defined(MBEDTLS_CTR_DRBG_C)

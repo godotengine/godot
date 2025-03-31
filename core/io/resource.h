@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef RESOURCE_H
-#define RESOURCE_H
+#pragma once
 
 #include "core/io/resource_uid.h"
 #include "core/object/class_db.h"
@@ -40,11 +39,15 @@
 
 class Node;
 
-#define RES_BASE_EXTENSION(m_ext)                                                                                   \
-public:                                                                                                             \
-	static void register_custom_data_to_otdb() { ClassDB::add_resource_base_extension(m_ext, get_class_static()); } \
-	virtual String get_base_extension() const override { return m_ext; }                                            \
-                                                                                                                    \
+#define RES_BASE_EXTENSION(m_ext)                                        \
+public:                                                                  \
+	static void register_custom_data_to_otdb() {                         \
+		ClassDB::add_resource_base_extension(m_ext, get_class_static()); \
+	}                                                                    \
+	virtual String get_base_extension() const override {                 \
+		return m_ext;                                                    \
+	}                                                                    \
+                                                                         \
 private:
 
 class Resource : public RefCounted {
@@ -68,6 +71,12 @@ private:
 	String import_path;
 #endif
 
+	enum EmitChangedState {
+		EMIT_CHANGED_UNBLOCKED,
+		EMIT_CHANGED_BLOCKED,
+		EMIT_CHANGED_BLOCKED_PENDING_EMIT,
+	};
+	EmitChangedState emit_changed_state = EMIT_CHANGED_UNBLOCKED;
 	bool local_to_scene = false;
 	friend class SceneState;
 	Node *local_scene = nullptr;
@@ -81,11 +90,19 @@ protected:
 	virtual void _resource_path_changed();
 	static void _bind_methods();
 
+	void _block_emit_changed();
+	void _unblock_emit_changed();
+
 	void _set_path(const String &p_path);
 	void _take_over_path(const String &p_path);
 
 	virtual void reset_local_to_scene();
 	GDVIRTUAL0(_setup_local_to_scene);
+
+	GDVIRTUAL0RC(RID, _get_rid);
+
+	GDVIRTUAL1C(_set_path_cache, String);
+	GDVIRTUAL0(_reset_state);
 
 public:
 	static Node *(*_get_local_scene_func)(); //used by editor
@@ -109,6 +126,7 @@ public:
 	virtual void set_path_cache(const String &p_path); // Set raw path without involving resource cache.
 	_FORCE_INLINE_ bool is_built_in() const { return path_cache.is_empty() || path_cache.contains("::") || path_cache.begins_with("local://"); }
 
+	static void seed_scene_unique_id(uint32_t p_seed);
 	static String generate_scene_unique_id();
 	void set_scene_unique_id(const String &p_id);
 	String get_scene_unique_id() const;
@@ -142,11 +160,9 @@ public:
 
 	virtual RID get_rid() const; // some resources may offer conversion to RID
 
-#ifdef TOOLS_ENABLED
 	//helps keep IDs same number when loading/saving scenes. -1 clears ID and it Returns -1 when no id stored
 	void set_id_for_path(const String &p_path, const String &p_id);
 	String get_id_for_path(const String &p_path) const;
-#endif
 
 	Resource();
 	~Resource();
@@ -182,5 +198,3 @@ public:
 	static void listen_for_eviction(void *p_context, void (*p_listener)(void *p_context, const String &p_path));
 	static void unlisten_for_eviction(void *p_context);
 };
-
-#endif // RESOURCE_H

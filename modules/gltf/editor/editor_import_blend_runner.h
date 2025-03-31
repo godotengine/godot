@@ -28,10 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef EDITOR_IMPORT_BLEND_RUNNER_H
-#define EDITOR_IMPORT_BLEND_RUNNER_H
-
-#ifdef TOOLS_ENABLED
+#pragma once
 
 #include "core/io/http_client.h"
 #include "core/os/os.h"
@@ -47,6 +44,7 @@ class EditorImportBlendRunner : public Node {
 	void _resources_reimported(const PackedStringArray &p_files);
 	void _kill_blender();
 	void _notification(int p_what);
+	bool _extract_error_message_xml(const Vector<uint8_t> &p_response_data, String &r_error_message);
 
 protected:
 	int rpc_port = 0;
@@ -65,7 +63,3 @@ public:
 
 	EditorImportBlendRunner();
 };
-
-#endif // TOOLS_ENABLED
-
-#endif // EDITOR_IMPORT_BLEND_RUNNER_H

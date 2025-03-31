@@ -31,9 +31,6 @@
 #include "dialogs.h"
 #include "dialogs.compat.inc"
 
-#include "core/os/keyboard.h"
-#include "core/string/print_string.h"
-#include "core/string/translation.h"
 #include "scene/gui/line_edit.h"
 #include "scene/theme/theme_db.h"
 
@@ -47,7 +44,7 @@ void AcceptDialog::_input_from_window(const Ref<InputEvent> &p_event) {
 }
 
 void AcceptDialog::_parent_focused() {
-	if (!is_exclusive() && get_flag(FLAG_POPUP)) {
+	if (popped_up && !is_exclusive() && get_flag(FLAG_POPUP)) {
 		_cancel_pressed();
 	}
 }
@@ -71,6 +68,7 @@ void AcceptDialog::_notification(int p_what) {
 					parent_visible->connect(SceneStringName(focus_entered), callable_mp(this, &AcceptDialog::_parent_focused));
 				}
 			} else {
+				popped_up = false;
 				if (parent_visible) {
 					parent_visible->disconnect(SceneStringName(focus_entered), callable_mp(this, &AcceptDialog::_parent_focused));
 					parent_visible = nullptr;
@@ -78,8 +76,16 @@ void AcceptDialog::_notification(int p_what) {
 			}
 		} break;
 
+		case NOTIFICATION_WM_WINDOW_FOCUS_IN: {
+			if (!is_in_edited_scene_root()) {
+				if (has_focus()) {
+					popped_up = true;
+				}
+			}
+		} break;
+
 		case NOTIFICATION_THEME_CHANGED: {
-			bg_panel->add_theme_style_override("panel", theme_cache.panel_style);
+			bg_panel->add_theme_style_override(SceneStringName(panel), theme_cache.panel_style);
 
 			child_controls_changed();
 			if (is_visible()) {
@@ -114,16 +120,23 @@ void AcceptDialog::_text_submitted(const String &p_text) {
 	_ok_pressed();
 }
 
+void AcceptDialog::_post_popup() {
+	Window::_post_popup();
+	popped_up = true;
+}
+
 void AcceptDialog::_ok_pressed() {
 	if (hide_on_ok) {
+		popped_up = false;
 		set_visible(false);
 	}
 	ok_pressed();
-	emit_signal(SNAME("confirmed"));
+	emit_signal(SceneStringName(confirmed));
 	set_input_as_handled();
 }
 
 void AcceptDialog::_cancel_pressed() {
+	popped_up = false;
 	Window *parent_window = parent_visible;
 	if (parent_visible) {
 		parent_visible->disconnect(SceneStringName(focus_entered), callable_mp(this, &AcceptDialog::_parent_focused));
@@ -184,21 +197,17 @@ bool AcceptDialog::has_autowrap() {
 }
 
 void AcceptDialog::set_ok_button_text(String p_ok_button_text) {
-	ok_button->set_text(p_ok_button_text);
-
-	child_controls_changed();
-	if (is_visible()) {
-		_update_child_rects();
-	}
+	ok_text = p_ok_button_text;
+	_update_ok_text();
 }
 
 String AcceptDialog::get_ok_button_text() const {
-	return ok_button->get_text();
+	return ok_text;
 }
 
 void AcceptDialog::register_text_enter(LineEdit *p_line_edit) {
 	ERR_FAIL_NULL(p_line_edit);
-	p_line_edit->connect("text_submitted", callable_mp(this, &AcceptDialog::_text_submitted));
+	p_line_edit->connect(SceneStringName(text_submitted), callable_mp(this, &AcceptDialog::_text_submitted));
 }
 
 void AcceptDialog::_update_child_rects() {
@@ -244,6 +253,25 @@ void AcceptDialog::_update_child_rects() {
 	}
 }
 
+void AcceptDialog::_update_ok_text() {
+	String prev_text = ok_button->get_text();
+	String new_text = internal_ok_text;
+
+	if (!ok_text.is_empty()) {
+		new_text = ok_text;
+	}
+
+	if (new_text == prev_text) {
+		return;
+	}
+	ok_button->set_text(new_text);
+
+	child_controls_changed();
+	if (is_visible()) {
+		_update_child_rects();
+	}
+}
+
 Size2 AcceptDialog::_get_contents_minimum_size() const {
 	// First, we then iterate over the label and any other custom controls
 	// to try and find the size that encompasses all content.
@@ -279,6 +307,11 @@ Size2 AcceptDialog::_get_contents_minimum_size() const {
 	}
 
 	return content_minsize;
+}
+
+void AcceptDialog::set_internal_ok_text(const String &p_text) {
+	internal_ok_text = p_text;
+	_update_ok_text();
 }
 
 void AcceptDialog::_custom_action(const String &p_action) {
@@ -429,7 +462,7 @@ AcceptDialog::AcceptDialog() {
 
 	buttons_hbox->add_spacer();
 	ok_button = memnew(Button);
-	ok_button->set_text(ETR("OK"));
+	set_internal_ok_text(ETR("OK"));
 	buttons_hbox->add_child(ok_button);
 	buttons_hbox->add_spacer();
 

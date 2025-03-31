@@ -132,7 +132,7 @@ void SpriteBase3D::draw_texture_rect(Ref<Texture2D> p_texture, Rect2 p_dst_rect,
 
 	// Properly setup UVs for impostor textures (AtlasTexture).
 	Ref<AtlasTexture> atlas_tex = p_texture;
-	if (atlas_tex != nullptr) {
+	if (atlas_tex.is_valid()) {
 		src_tsize[0] = atlas_tex->get_atlas()->get_width();
 		src_tsize[1] = atlas_tex->get_atlas()->get_height();
 	}
@@ -276,6 +276,7 @@ void SpriteBase3D::draw_texture_rect(Ref<Texture2D> p_texture, Rect2 p_dst_rect,
 	}
 	if (last_texture != p_texture->get_rid()) {
 		RS::get_singleton()->material_set_param(get_material(), "texture_albedo", p_texture->get_rid());
+		RS::get_singleton()->material_set_param(get_material(), "albedo_texture_size", Vector2i(p_texture->get_width(), p_texture->get_height()));
 		last_texture = p_texture->get_rid();
 	}
 	if (get_alpha_cut_mode() == ALPHA_CUT_DISABLED) {
@@ -470,7 +471,7 @@ Ref<TriangleMesh> SpriteBase3D::generate_triangle_mesh() const {
 		facesw[j] = vtx;
 	}
 
-	triangle_mesh = Ref<TriangleMesh>(memnew(TriangleMesh));
+	triangle_mesh.instantiate();
 	triangle_mesh->create(faces);
 
 	return triangle_mesh;
@@ -984,7 +985,7 @@ void Sprite3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "hframes", PROPERTY_HINT_RANGE, "1,16384,1"), "set_hframes", "get_hframes");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "vframes", PROPERTY_HINT_RANGE, "1,16384,1"), "set_vframes", "get_vframes");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "frame"), "set_frame", "get_frame");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "frame_coords", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "set_frame_coords", "get_frame_coords");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "frame_coords", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "set_frame_coords", "get_frame_coords");
 	ADD_GROUP("Region", "region_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "region_enabled"), "set_region_enabled", "is_region_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::RECT2, "region_rect", PROPERTY_HINT_NONE, "suffix:px"), "set_region_rect", "get_region_rect");
@@ -1031,7 +1032,7 @@ void AnimatedSprite3D::_draw() {
 }
 
 void AnimatedSprite3D::_validate_property(PropertyInfo &p_property) const {
-	if (!frames.is_valid()) {
+	if (frames.is_null()) {
 		return;
 	}
 
@@ -1086,7 +1087,7 @@ void AnimatedSprite3D::_validate_property(PropertyInfo &p_property) const {
 void AnimatedSprite3D::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_READY: {
-			if (!Engine::get_singleton()->is_editor_hint() && !frames.is_null() && frames->has_animation(autoplay)) {
+			if (!Engine::get_singleton()->is_editor_hint() && frames.is_valid() && frames->has_animation(autoplay)) {
 				play(autoplay);
 			}
 		} break;
@@ -1324,7 +1325,7 @@ void AnimatedSprite3D::play(const StringName &p_name, float p_custom_scale, bool
 		name = animation;
 	}
 
-	ERR_FAIL_NULL_MSG(frames, vformat("There is no animation with name '%s'.", name));
+	ERR_FAIL_COND_MSG(frames.is_null(), vformat("There is no animation with name '%s'.", name));
 	ERR_FAIL_COND_MSG(!frames->get_animation_names().has(name), vformat("There is no animation with name '%s'.", name));
 
 	if (frames->get_frame_count(name) == 0) {
@@ -1334,9 +1335,10 @@ void AnimatedSprite3D::play(const StringName &p_name, float p_custom_scale, bool
 	playing = true;
 	custom_speed_scale = p_custom_scale;
 
-	int end_frame = MAX(0, frames->get_frame_count(animation) - 1);
 	if (name != animation) {
 		animation = name;
+		int end_frame = MAX(0, frames->get_frame_count(animation) - 1);
+
 		if (p_from_end) {
 			set_frame_and_progress(end_frame, 1.0);
 		} else {
@@ -1344,7 +1346,9 @@ void AnimatedSprite3D::play(const StringName &p_name, float p_custom_scale, bool
 		}
 		emit_signal(SceneStringName(animation_changed));
 	} else {
+		int end_frame = MAX(0, frames->get_frame_count(animation) - 1);
 		bool is_backward = signbit(speed_scale * custom_speed_scale);
+
 		if (p_from_end && is_backward && frame == 0 && frame_progress <= 0.0) {
 			set_frame_and_progress(end_frame, 1.0);
 		} else if (!p_from_end && !is_backward && frame == end_frame && frame_progress >= 1.0) {
@@ -1399,7 +1403,7 @@ void AnimatedSprite3D::set_animation(const StringName &p_name) {
 
 	emit_signal(SceneStringName(animation_changed));
 
-	if (frames == nullptr) {
+	if (frames.is_null()) {
 		animation = StringName();
 		stop();
 		ERR_FAIL_MSG(vformat("There is no animation with name '%s'.", p_name));
@@ -1432,7 +1436,7 @@ StringName AnimatedSprite3D::get_animation() const {
 PackedStringArray AnimatedSprite3D::get_configuration_warnings() const {
 	PackedStringArray warnings = SpriteBase3D::get_configuration_warnings();
 	if (frames.is_null()) {
-		warnings.push_back(RTR("A SpriteFrames resource must be created or set in the \"Frames\" property in order for AnimatedSprite3D to display frames."));
+		warnings.push_back(RTR("A SpriteFrames resource must be created or set in the \"Sprite Frames\" property in order for AnimatedSprite3D to display frames."));
 	}
 	return warnings;
 }

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef GRAPH_FRAME_H
-#define GRAPH_FRAME_H
+#pragma once
 
 #include "scene/gui/graph_element.h"
 
@@ -89,6 +88,7 @@ public:
 	int get_autoshrink_margin() const;
 
 	HBoxContainer *get_titlebar_hbox();
+	Size2 get_titlebar_size() const;
 
 	void set_drag_margin(int p_margin);
 	int get_drag_margin() const;
@@ -104,5 +104,3 @@ public:
 
 	GraphFrame();
 };
-
-#endif // GRAPH_FRAME_H

@@ -50,7 +50,7 @@
 
 #define LONG_BITS (sizeof(long) * 8)
 #define test_bit(nr, addr) (((1UL << ((nr) % LONG_BITS)) & ((addr)[(nr) / LONG_BITS])) != 0)
-#define NBITS(x) ((((x)-1) / LONG_BITS) + 1)
+#define NBITS(x) ((((x) - 1) / LONG_BITS) + 1)
 
 #ifdef UDEV_ENABLED
 static const char *ignore_str = "/dev/input/js";
@@ -225,7 +225,7 @@ void JoypadLinux::monitor_joypads(udev *p_udev) {
 				udev_device_unref(dev);
 			}
 		}
-		usleep(50000);
+		OS::get_singleton()->delay_usec(50'000);
 	}
 	udev_monitor_unref(mon);
 }
@@ -250,7 +250,7 @@ void JoypadLinux::monitor_joypads() {
 			}
 		}
 		closedir(input_directory);
-		usleep(1000000); // 1s
+		OS::get_singleton()->delay_usec(1'000'000);
 	}
 }
 
@@ -372,6 +372,12 @@ void JoypadLinux::open_joypad(const char *p_path) {
 		input_id inpid;
 		if (ioctl(fd, EVIOCGNAME(sizeof(namebuf)), namebuf) >= 0) {
 			name = namebuf;
+		}
+
+		for (const String &word : name.to_lower().split(" ")) {
+			if (banned_words.has(word)) {
+				return;
+			}
 		}
 
 		if (ioctl(fd, EVIOCGID, &inpid) < 0) {
@@ -508,7 +514,7 @@ void JoypadLinux::joypad_events_thread_run() {
 			}
 		}
 		if (no_events) {
-			usleep(10000); // 10ms
+			OS::get_singleton()->delay_usec(10'000);
 		}
 	}
 }

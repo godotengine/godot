@@ -42,7 +42,7 @@ void iOS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("supports_haptic_engine"), &iOS::supports_haptic_engine);
 	ClassDB::bind_method(D_METHOD("start_haptic_engine"), &iOS::start_haptic_engine);
 	ClassDB::bind_method(D_METHOD("stop_haptic_engine"), &iOS::stop_haptic_engine);
-};
+}
 
 bool iOS::supports_haptic_engine() {
 	if (@available(iOS 13, *)) {
@@ -191,7 +191,7 @@ String iOS::get_model() const {
 String iOS::get_rate_url(int p_app_id) const {
 	String app_url_path = "itms-apps://itunes.apple.com/app/idAPP_ID";
 
-	String ret = app_url_path.replace("APP_ID", String::num(p_app_id));
+	String ret = app_url_path.replace("APP_ID", String::num_int64(p_app_id));
 
 	print_verbose(vformat("Returning rate url %s", ret));
 	return ret;

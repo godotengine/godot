@@ -28,12 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef GL_MANAGER_MACOS_LEGACY_H
-#define GL_MANAGER_MACOS_LEGACY_H
+#pragma once
 
 #if defined(MACOS_ENABLED) && defined(GLES3_ENABLED)
 
-#include "core/error/error_list.h"
 #include "core/os/os.h"
 #include "core/templates/local_vector.h"
 #include "servers/display_server.h"
@@ -62,6 +60,7 @@ class GLManagerLegacy_MacOS {
 
 	Error create_context(GLWindow &win);
 
+	bool framework_loaded = false;
 	bool use_vsync = false;
 	CGLEnablePtr CGLEnable = nullptr;
 	CGLSetParameterPtr CGLSetParameter = nullptr;
@@ -93,5 +92,3 @@ public:
 #pragma clang diagnostic push
 
 #endif // MACOS_ENABLED && GLES3_ENABLED
-
-#endif // GL_MANAGER_MACOS_LEGACY_H

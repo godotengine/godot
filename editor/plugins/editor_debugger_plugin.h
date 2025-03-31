@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef EDITOR_DEBUGGER_PLUGIN_H
-#define EDITOR_DEBUGGER_PLUGIN_H
+#pragma once
 
 #include "scene/gui/control.h"
 
@@ -62,6 +61,8 @@ public:
 	bool is_debuggable();
 	bool is_active();
 
+	void set_breakpoint(const String &p_path, int p_line, bool p_enabled);
+
 	EditorDebuggerSession(ScriptEditorDebugger *p_debugger);
 	~EditorDebuggerSession();
 };
@@ -90,8 +91,14 @@ public:
 	GDVIRTUAL1RC(bool, _has_capture, const String &);
 	GDVIRTUAL1(_setup_session, int);
 
-	EditorDebuggerPlugin() {}
+	virtual void goto_script_line(const Ref<Script> &p_script, int p_line);
+	virtual void breakpoints_cleared_in_tree();
+	virtual void breakpoint_set_in_tree(const Ref<Script> &p_script, int p_line, bool p_enabled);
+
+	GDVIRTUAL2(_goto_script_line, const Ref<Script> &, int);
+	GDVIRTUAL0(_breakpoints_cleared_in_tree);
+	GDVIRTUAL3(_breakpoint_set_in_tree, const Ref<Script> &, int, bool);
+
+	EditorDebuggerPlugin();
 	~EditorDebuggerPlugin();
 };
-
-#endif // EDITOR_DEBUGGER_PLUGIN_H

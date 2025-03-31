@@ -96,6 +96,15 @@ struct Coverage
     default:return NOT_COVERED;
     }
   }
+  unsigned int get_coverage (hb_codepoint_t glyph_id,
+			     hb_ot_lookup_cache_t *cache) const
+  {
+    unsigned coverage;
+    if (cache && cache->get (glyph_id, &coverage)) return coverage;
+    coverage = get_coverage (glyph_id);
+    if (cache) cache->set (glyph_id, coverage);
+    return coverage;
+  }
 
   unsigned get_population () const
   {
@@ -198,6 +207,19 @@ struct Coverage
     case 4: return u.format4.intersects_coverage (glyphs, index);
 #endif
     default:return false;
+    }
+  }
+
+  unsigned cost () const
+  {
+    switch (u.format) {
+    case 1: hb_barrier (); return u.format1.cost ();
+    case 2: hb_barrier (); return u.format2.cost ();
+#ifndef HB_NO_BEYOND_64K
+    case 3: hb_barrier (); return u.format3.cost ();
+    case 4: hb_barrier (); return u.format4.cost ();
+#endif
+    default:return 0u;
     }
   }
 

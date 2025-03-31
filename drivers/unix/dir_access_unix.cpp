@@ -43,6 +43,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/ioctl.h>
+#include <sys/stat.h>
 #include <sys/statvfs.h>
 
 #ifdef HAVE_MNTENT
@@ -342,7 +343,7 @@ Error DirAccessUnix::change_dir(String p_dir) {
 	String prev_dir;
 	char real_current_dir_name[2048];
 	ERR_FAIL_NULL_V(getcwd(real_current_dir_name, 2048), ERR_BUG);
-	if (prev_dir.parse_utf8(real_current_dir_name) != OK) {
+	if (prev_dir.append_utf8(real_current_dir_name) != OK) {
 		prev_dir = real_current_dir_name; //no utf8, maybe latin?
 	}
 
@@ -365,7 +366,7 @@ Error DirAccessUnix::change_dir(String p_dir) {
 	if (!base.is_empty() && !try_dir.begins_with(base)) {
 		ERR_FAIL_NULL_V(getcwd(real_current_dir_name, 2048), ERR_BUG);
 		String new_dir;
-		new_dir.parse_utf8(real_current_dir_name);
+		new_dir.append_utf8(real_current_dir_name);
 
 		if (!new_dir.begins_with(base)) {
 			try_dir = current_dir; //revert
@@ -383,7 +384,7 @@ String DirAccessUnix::get_current_dir(bool p_include_drive) const {
 	if (!base.is_empty()) {
 		String bd = current_dir.replace_first(base, "");
 		if (bd.begins_with("/")) {
-			return _get_root_string() + bd.substr(1, bd.length());
+			return _get_root_string() + bd.substr(1);
 		} else {
 			return _get_root_string() + bd;
 		}
@@ -397,14 +398,30 @@ Error DirAccessUnix::rename(String p_path, String p_new_path) {
 	}
 
 	p_path = fix_path(p_path);
+	if (p_path.ends_with("/")) {
+		p_path = p_path.left(-1);
+	}
 
 	if (p_new_path.is_relative_path()) {
 		p_new_path = get_current_dir().path_join(p_new_path);
 	}
 
 	p_new_path = fix_path(p_new_path);
+	if (p_new_path.ends_with("/")) {
+		p_new_path = p_new_path.left(-1);
+	}
 
-	return ::rename(p_path.utf8().get_data(), p_new_path.utf8().get_data()) == 0 ? OK : FAILED;
+	int res = ::rename(p_path.utf8().get_data(), p_new_path.utf8().get_data());
+	if (res != 0 && errno == EXDEV) { // Cross-device move, use copy and remove.
+		Error err = OK;
+		err = copy(p_path, p_new_path);
+		if (err != OK) {
+			return err;
+		}
+		return remove(p_path);
+	} else {
+		return (res == 0) ? OK : FAILED;
+	}
 }
 
 Error DirAccessUnix::remove(String p_path) {
@@ -413,17 +430,28 @@ Error DirAccessUnix::remove(String p_path) {
 	}
 
 	p_path = fix_path(p_path);
+	if (p_path.ends_with("/")) {
+		p_path = p_path.left(-1);
+	}
 
 	struct stat flags = {};
-	if ((stat(p_path.utf8().get_data(), &flags) != 0)) {
+	if ((lstat(p_path.utf8().get_data(), &flags) != 0)) {
 		return FAILED;
 	}
 
+	int err;
 	if (S_ISDIR(flags.st_mode) && !is_link(p_path)) {
-		return ::rmdir(p_path.utf8().get_data()) == 0 ? OK : FAILED;
+		err = ::rmdir(p_path.utf8().get_data());
 	} else {
-		return ::unlink(p_path.utf8().get_data()) == 0 ? OK : FAILED;
+		err = ::unlink(p_path.utf8().get_data());
 	}
+	if (err != 0) {
+		return FAILED;
+	}
+	if (remove_notification_func != nullptr) {
+		remove_notification_func(p_path);
+	}
+	return OK;
 }
 
 bool DirAccessUnix::is_link(String p_file) {
@@ -432,6 +460,9 @@ bool DirAccessUnix::is_link(String p_file) {
 	}
 
 	p_file = fix_path(p_file);
+	if (p_file.ends_with("/")) {
+		p_file = p_file.left(-1);
+	}
 
 	struct stat flags = {};
 	if ((lstat(p_file.utf8().get_data(), &flags) != 0)) {
@@ -447,13 +478,16 @@ String DirAccessUnix::read_link(String p_file) {
 	}
 
 	p_file = fix_path(p_file);
+	if (p_file.ends_with("/")) {
+		p_file = p_file.left(-1);
+	}
 
 	char buf[256];
 	memset(buf, 0, 256);
 	ssize_t len = readlink(p_file.utf8().get_data(), buf, sizeof(buf));
 	String link;
 	if (len > 0) {
-		link.parse_utf8(buf, len);
+		link.append_utf8(buf, len);
 	}
 	return link;
 }
@@ -511,6 +545,24 @@ bool DirAccessUnix::is_case_sensitive(const String &p_path) const {
 	return true;
 }
 
+bool DirAccessUnix::is_equivalent(const String &p_path_a, const String &p_path_b) const {
+	String f1 = fix_path(p_path_a);
+	struct stat st1 = {};
+	int err = stat(f1.utf8().get_data(), &st1);
+	if (err) {
+		return DirAccess::is_equivalent(p_path_a, p_path_b);
+	}
+
+	String f2 = fix_path(p_path_b);
+	struct stat st2 = {};
+	err = stat(f2.utf8().get_data(), &st2);
+	if (err) {
+		return DirAccess::is_equivalent(p_path_a, p_path_b);
+	}
+
+	return (st1.st_dev == st2.st_dev) && (st1.st_ino == st2.st_ino);
+}
+
 DirAccessUnix::DirAccessUnix() {
 	dir_stream = nullptr;
 	_cisdir = false;
@@ -520,12 +572,15 @@ DirAccessUnix::DirAccessUnix() {
 	// set current directory to an absolute path of the current directory
 	char real_current_dir_name[2048];
 	ERR_FAIL_NULL(getcwd(real_current_dir_name, 2048));
-	if (current_dir.parse_utf8(real_current_dir_name) != OK) {
+	current_dir.clear();
+	if (current_dir.append_utf8(real_current_dir_name) != OK) {
 		current_dir = real_current_dir_name;
 	}
 
 	change_dir(current_dir);
 }
+
+DirAccessUnix::RemoveNotificationFunc DirAccessUnix::remove_notification_func = nullptr;
 
 DirAccessUnix::~DirAccessUnix() {
 	list_dir_end();

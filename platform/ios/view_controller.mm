@@ -258,7 +258,11 @@
 		case DisplayServer::SCREEN_PORTRAIT:
 			return UIInterfaceOrientationMaskPortrait;
 		case DisplayServer::SCREEN_REVERSE_LANDSCAPE:
-			return UIInterfaceOrientationMaskLandscapeRight;
+			if (UIDevice.currentDevice.userInterfaceIdiom == UIUserInterfaceIdiomPad) {
+				return UIInterfaceOrientationMaskLandscapeLeft;
+			} else {
+				return UIInterfaceOrientationMaskLandscapeRight;
+			}
 		case DisplayServer::SCREEN_REVERSE_PORTRAIT:
 			return UIInterfaceOrientationMaskPortraitUpsideDown;
 		case DisplayServer::SCREEN_SENSOR_LANDSCAPE:
@@ -268,7 +272,11 @@
 		case DisplayServer::SCREEN_SENSOR:
 			return UIInterfaceOrientationMaskAll;
 		case DisplayServer::SCREEN_LANDSCAPE:
-			return UIInterfaceOrientationMaskLandscapeLeft;
+			if (UIDevice.currentDevice.userInterfaceIdiom == UIUserInterfaceIdiomPad) {
+				return UIInterfaceOrientationMaskLandscapeRight;
+			} else {
+				return UIInterfaceOrientationMaskLandscapeLeft;
+			}
 	}
 }
 

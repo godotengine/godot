@@ -28,15 +28,14 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef MATERIAL_STORAGE_H
-#define MATERIAL_STORAGE_H
+#pragma once
 
 #include "servers/rendering_server.h"
 #include "utilities.h"
 
 class RendererMaterialStorage {
 public:
-	virtual ~RendererMaterialStorage(){};
+	virtual ~RendererMaterialStorage() {}
 
 	/* GLOBAL SHADER UNIFORM API */
 	virtual void global_shader_parameter_add(const StringName &p_name, RS::GlobalShaderParameterType p_type, const Variant &p_value) = 0;
@@ -87,6 +86,7 @@ public:
 
 	virtual bool material_is_animated(RID p_material) = 0;
 	virtual bool material_casts_shadows(RID p_material) = 0;
+	virtual RS::CullMode material_get_cull_mode(RID p_material) const = 0;
 
 	struct InstanceShaderParam {
 		PropertyInfo info;
@@ -98,5 +98,3 @@ public:
 
 	virtual void material_update_dependency(RID p_material, DependencyTracker *p_instance) = 0;
 };
-
-#endif // MATERIAL_STORAGE_H

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef ANIMATION_NODE_STATE_MACHINE_H
-#define ANIMATION_NODE_STATE_MACHINE_H
+#pragma once
 
 #include "core/math/expression.h"
 #include "scene/animation/animation_tree.h"
@@ -164,9 +163,6 @@ protected:
 	virtual void reset_state() override;
 
 public:
-	StringName start_node = "Start";
-	StringName end_node = "End";
-
 	virtual void get_parameter_list(List<PropertyInfo> *r_list) const override;
 	virtual Variant get_parameter_default_value(const StringName &p_parameter) const override;
 	virtual bool is_parameter_read_only(const StringName &p_parameter) const override;
@@ -222,6 +218,9 @@ public:
 #ifdef TOOLS_ENABLED
 	virtual void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const override;
 #endif
+
+	Vector<StringName> get_nodes_with_transitions_from(const StringName &p_node) const;
+	Vector<StringName> get_nodes_with_transitions_to(const StringName &p_node) const;
 
 	AnimationNodeStateMachine();
 };
@@ -306,7 +305,7 @@ class AnimationNodeStateMachinePlayback : public Resource {
 	AnimationNode::NodeTimeInfo _process(const String &p_base_path, AnimationNodeStateMachine *p_state_machine, const AnimationMixer::PlaybackInfo p_playback_info, bool p_test_only);
 
 	bool _check_advance_condition(const Ref<AnimationNodeStateMachine> p_state_machine, const Ref<AnimationNodeStateMachineTransition> p_transition) const;
-	bool _transition_to_next_recursive(AnimationTree *p_tree, AnimationNodeStateMachine *p_state_machine, bool p_test_only);
+	bool _transition_to_next_recursive(AnimationTree *p_tree, AnimationNodeStateMachine *p_state_machine, double p_delta, bool p_test_only);
 	NextInfo _find_next(AnimationTree *p_tree, AnimationNodeStateMachine *p_state_machine) const;
 	Ref<AnimationNodeStateMachineTransition> _check_group_transition(AnimationTree *p_tree, AnimationNodeStateMachine *p_state_machine, const AnimationNodeStateMachine::Transition &p_transition, Ref<AnimationNodeStateMachine> &r_state_machine, bool &r_bypass) const;
 	bool _can_transition_to_next(AnimationTree *p_tree, AnimationNodeStateMachine *p_state_machine, NextInfo p_next, bool p_test_only);
@@ -348,5 +347,3 @@ public:
 
 	AnimationNodeStateMachinePlayback();
 };
-
-#endif // ANIMATION_NODE_STATE_MACHINE_H

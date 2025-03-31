@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TEST_NAVIGATION_SERVER_3D_H
-#define TEST_NAVIGATION_SERVER_3D_H
+#pragma once
 
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/resources/3d/primitive_meshes.h"
@@ -48,7 +47,7 @@ public:
 	}
 
 	unsigned function1_calls{ 0 };
-	Variant function1_latest_arg0{};
+	Variant function1_latest_arg0;
 };
 
 static inline Array build_array() {
@@ -61,7 +60,7 @@ static inline Array build_array(Variant item, Targs... Fargs) {
 	return a;
 }
 
-TEST_SUITE("[Navigation]") {
+TEST_SUITE("[Navigation3D]") {
 	TEST_CASE("[NavigationServer3D] Server should be empty when initialized") {
 		NavigationServer3D *navigation_server = NavigationServer3D::get_singleton();
 		CHECK_EQ(navigation_server->get_maps().size(), 0);
@@ -545,6 +544,7 @@ TEST_SUITE("[Navigation]") {
 		RID map = navigation_server->map_create();
 		RID region = navigation_server->region_create();
 		Ref<NavigationMesh> navigation_mesh = memnew(NavigationMesh);
+		navigation_server->map_set_use_async_iterations(map, false);
 		navigation_server->map_set_active(map, true);
 		navigation_server->region_set_map(region, map);
 		navigation_server->region_set_navigation_mesh(region, navigation_mesh);
@@ -605,7 +605,7 @@ TEST_SUITE("[Navigation]") {
 			CHECK_EQ(source_geometry->get_indices().size(), 6);
 		}
 
-		SUBCASE("Parsed geometry should be extendible with other geometry") {
+		SUBCASE("Parsed geometry should be extendable with other geometry") {
 			source_geometry->merge(source_geometry); // Merging with itself.
 			const Vector<float> vertices = source_geometry->get_vertices();
 			const Vector<int> indices = source_geometry->get_indices();
@@ -640,6 +640,7 @@ TEST_SUITE("[Navigation]") {
 		RID map = navigation_server->map_create();
 		RID region = navigation_server->region_create();
 		Ref<NavigationMesh> navigation_mesh = memnew(NavigationMesh);
+		navigation_server->map_set_use_async_iterations(map, false);
 		navigation_server->map_set_active(map, true);
 		navigation_server->region_set_map(region, map);
 		navigation_server->region_set_navigation_mesh(region, navigation_mesh);
@@ -689,6 +690,7 @@ TEST_SUITE("[Navigation]") {
 		RID map = navigation_server->map_create();
 		RID region = navigation_server->region_create();
 		navigation_server->map_set_active(map, true);
+		navigation_server->map_set_use_async_iterations(map, false);
 		navigation_server->region_set_map(region, map);
 		navigation_server->region_set_navigation_mesh(region, navigation_mesh);
 		navigation_server->process(0.0); // Give server some cycles to commit.
@@ -697,10 +699,14 @@ TEST_SUITE("[Navigation]") {
 			CHECK_NE(navigation_server->map_get_closest_point(map, Vector3(0, 0, 0)), Vector3(0, 0, 0));
 			CHECK_NE(navigation_server->map_get_closest_point_normal(map, Vector3(0, 0, 0)), Vector3());
 			CHECK(navigation_server->map_get_closest_point_owner(map, Vector3(0, 0, 0)).is_valid());
-			// TODO: Test map_get_closest_point_to_segment() with p_use_collision=true as well.
 			CHECK_NE(navigation_server->map_get_closest_point_to_segment(map, Vector3(0, 0, 0), Vector3(1, 1, 1), false), Vector3());
+			CHECK_NE(navigation_server->map_get_closest_point_to_segment(map, Vector3(0, 0, 0), Vector3(1, 1, 1), true), Vector3());
 			CHECK_NE(navigation_server->map_get_path(map, Vector3(0, 0, 0), Vector3(10, 0, 10), true).size(), 0);
 			CHECK_NE(navigation_server->map_get_path(map, Vector3(0, 0, 0), Vector3(10, 0, 10), false).size(), 0);
+		}
+
+		SUBCASE("'map_get_closest_point_to_segment' with 'use_collision' should return default if segment doesn't intersect map") {
+			CHECK_EQ(navigation_server->map_get_closest_point_to_segment(map, Vector3(1, 2, 1), Vector3(1, 1, 1), true), Vector3());
 		}
 
 		SUBCASE("Elaborate query with 'CORRIDORFUNNEL' post-processing should yield non-empty result") {
@@ -759,6 +765,46 @@ TEST_SUITE("[Navigation]") {
 			CHECK_EQ(query_result->get_path_owner_ids().size(), 0);
 		}
 
+		SUBCASE("Elaborate query with excluded region should yield empty path") {
+			Ref<NavigationPathQueryParameters3D> query_parameters;
+			query_parameters.instantiate();
+			query_parameters->set_map(map);
+			query_parameters->set_start_position(Vector3(10, 0, 10));
+			query_parameters->set_target_position(Vector3(0, 0, 0));
+			query_parameters->set_excluded_regions({ region });
+			Ref<NavigationPathQueryResult3D> query_result;
+			query_result.instantiate();
+			navigation_server->query_path(query_parameters, query_result);
+			CHECK_EQ(query_result->get_path().size(), 0);
+		}
+
+		SUBCASE("Elaborate query with included region should yield path") {
+			Ref<NavigationPathQueryParameters3D> query_parameters;
+			query_parameters.instantiate();
+			query_parameters->set_map(map);
+			query_parameters->set_start_position(Vector3(10, 0, 10));
+			query_parameters->set_target_position(Vector3(0, 0, 0));
+			query_parameters->set_included_regions({ region });
+			Ref<NavigationPathQueryResult3D> query_result;
+			query_result.instantiate();
+			navigation_server->query_path(query_parameters, query_result);
+			CHECK_NE(query_result->get_path().size(), 0);
+		}
+
+		SUBCASE("Elaborate query with excluded and included region should yield empty path") {
+			Ref<NavigationPathQueryParameters3D> query_parameters;
+			query_parameters.instantiate();
+			query_parameters->set_map(map);
+			query_parameters->set_start_position(Vector3(10, 0, 10));
+			query_parameters->set_target_position(Vector3(0, 0, 0));
+			query_parameters->set_excluded_regions({ region });
+			query_parameters->set_included_regions({ region });
+			Ref<NavigationPathQueryResult3D> query_result;
+			query_result.instantiate();
+			navigation_server->query_path(query_parameters, query_result);
+			CHECK_EQ(query_result->get_path().size(), 0);
+		}
+
 		navigation_server->free(region);
 		navigation_server->free(map);
 		navigation_server->process(0.0); // Give server some cycles to commit.
@@ -784,7 +830,20 @@ TEST_SUITE("[Navigation]") {
 		CHECK_EQ(navigation_mesh->get_vertices().size(), 0);
 	}
 	*/
+
+	TEST_CASE("[NavigationServer3D] Server should simplify path properly") {
+		real_t simplify_epsilon = 0.2;
+		Vector<Vector3> source_path;
+		source_path.resize(7);
+		source_path.write[0] = Vector3(0.0, 0.0, 0.0);
+		source_path.write[1] = Vector3(0.0, 0.0, 1.0); // This point needs to go.
+		source_path.write[2] = Vector3(0.0, 0.0, 2.0); // This point needs to go.
+		source_path.write[3] = Vector3(0.0, 0.0, 2.0);
+		source_path.write[4] = Vector3(2.0, 1.0, 3.0);
+		source_path.write[5] = Vector3(2.0, 1.5, 4.0); // This point needs to go.
+		source_path.write[6] = Vector3(2.0, 2.0, 5.0);
+		Vector<Vector3> simplified_path = NavigationServer3D::get_singleton()->simplify_path(source_path, simplify_epsilon);
+		CHECK_EQ(simplified_path.size(), 4);
+	}
 }
 } //namespace TestNavigationServer3D
-
-#endif // TEST_NAVIGATION_SERVER_3D_H

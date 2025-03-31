@@ -147,6 +147,7 @@ module.exports = [
 				'GodotEventListeners': true,
 				'GodotFS': true,
 				'GodotOS': true,
+				'GodotAudio': true,
 				'GodotRuntime': true,
 				'IDHandler': true,
 				'XRWebGLLayer': true,

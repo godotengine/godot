@@ -56,7 +56,9 @@ Point2 AnimatedSprite2D::_edit_get_pivot() const {
 bool AnimatedSprite2D::_edit_use_pivot() const {
 	return true;
 }
+#endif // TOOLS_ENABLED
 
+#ifdef DEBUG_ENABLED
 Rect2 AnimatedSprite2D::_edit_get_rect() const {
 	return _get_rect();
 }
@@ -75,7 +77,7 @@ bool AnimatedSprite2D::_edit_use_rect() const {
 	}
 	return t.is_valid();
 }
-#endif
+#endif // DEBUG_ENABLED
 
 Rect2 AnimatedSprite2D::get_anchorable_rect() const {
 	return _get_rect();
@@ -111,7 +113,7 @@ Rect2 AnimatedSprite2D::_get_rect() const {
 }
 
 void AnimatedSprite2D::_validate_property(PropertyInfo &p_property) const {
-	if (!frames.is_valid()) {
+	if (frames.is_null()) {
 		return;
 	}
 
@@ -166,7 +168,7 @@ void AnimatedSprite2D::_validate_property(PropertyInfo &p_property) const {
 void AnimatedSprite2D::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_READY: {
-			if (!Engine::get_singleton()->is_editor_hint() && !frames.is_null() && frames->has_animation(autoplay)) {
+			if (!Engine::get_singleton()->is_editor_hint() && frames.is_valid() && frames->has_animation(autoplay)) {
 				play(autoplay);
 			}
 		} break;
@@ -267,7 +269,7 @@ void AnimatedSprite2D::_notification(int p_what) {
 			}
 
 			if (get_viewport() && get_viewport()->is_snap_2d_transforms_to_pixel_enabled()) {
-				ofs = ofs.round();
+				ofs = (ofs + Point2(0.5, 0.5)).floor();
 			}
 
 			Rect2 dst_rect(ofs, s);
@@ -463,7 +465,7 @@ void AnimatedSprite2D::play(const StringName &p_name, float p_custom_scale, bool
 		name = animation;
 	}
 
-	ERR_FAIL_NULL_MSG(frames, vformat("There is no animation with name '%s'.", name));
+	ERR_FAIL_COND_MSG(frames.is_null(), vformat("There is no animation with name '%s'.", name));
 	ERR_FAIL_COND_MSG(!frames->get_animation_names().has(name), vformat("There is no animation with name '%s'.", name));
 
 	if (frames->get_frame_count(name) == 0) {
@@ -473,9 +475,10 @@ void AnimatedSprite2D::play(const StringName &p_name, float p_custom_scale, bool
 	playing = true;
 	custom_speed_scale = p_custom_scale;
 
-	int end_frame = MAX(0, frames->get_frame_count(animation) - 1);
 	if (name != animation) {
 		animation = name;
+		int end_frame = MAX(0, frames->get_frame_count(animation) - 1);
+
 		if (p_from_end) {
 			set_frame_and_progress(end_frame, 1.0);
 		} else {
@@ -483,7 +486,9 @@ void AnimatedSprite2D::play(const StringName &p_name, float p_custom_scale, bool
 		}
 		emit_signal(SceneStringName(animation_changed));
 	} else {
+		int end_frame = MAX(0, frames->get_frame_count(animation) - 1);
 		bool is_backward = signbit(speed_scale * custom_speed_scale);
+
 		if (p_from_end && is_backward && frame == 0 && frame_progress <= 0.0) {
 			set_frame_and_progress(end_frame, 1.0);
 		} else if (!p_from_end && !is_backward && frame == end_frame && frame_progress >= 1.0) {
@@ -538,7 +543,7 @@ void AnimatedSprite2D::set_animation(const StringName &p_name) {
 
 	emit_signal(SceneStringName(animation_changed));
 
-	if (frames == nullptr) {
+	if (frames.is_null()) {
 		animation = StringName();
 		stop();
 		ERR_FAIL_MSG(vformat("There is no animation with name '%s'.", p_name));
@@ -571,7 +576,7 @@ StringName AnimatedSprite2D::get_animation() const {
 PackedStringArray AnimatedSprite2D::get_configuration_warnings() const {
 	PackedStringArray warnings = Node2D::get_configuration_warnings();
 	if (frames.is_null()) {
-		warnings.push_back(RTR("A SpriteFrames resource must be created or set in the \"Frames\" property in order for AnimatedSprite2D to display frames."));
+		warnings.push_back(RTR("A SpriteFrames resource must be created or set in the \"Sprite Frames\" property in order for AnimatedSprite2D to display frames."));
 	}
 	return warnings;
 }
@@ -590,7 +595,7 @@ void AnimatedSprite2D::get_argument_options(const StringName &p_function, int p_
 	}
 	Node2D::get_argument_options(p_function, p_idx, r_options);
 }
-#endif
+#endif // TOOLS_ENABLED
 
 #ifndef DISABLE_DEPRECATED
 bool AnimatedSprite2D::_set(const StringName &p_name, const Variant &p_value) {

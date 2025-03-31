@@ -33,6 +33,7 @@
 #include "core/config/project_settings.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
+#include "editor/editor_string_names.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/3d/camera_3d.h"
@@ -41,10 +42,12 @@
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/color_rect.h"
+#include "scene/gui/label.h"
 #include "scene/gui/subviewport_container.h"
 #include "scene/main/viewport.h"
 #include "scene/resources/3d/fog_material.h"
 #include "scene/resources/3d/sky_material.h"
+#include "scene/resources/canvas_item_material.h"
 #include "scene/resources/particle_process_material.h"
 
 void MaterialEditor::gui_input(const Ref<InputEvent> &p_event) {
@@ -54,9 +57,15 @@ void MaterialEditor::gui_input(const Ref<InputEvent> &p_event) {
 	if (mm.is_valid() && (mm->get_button_mask().has_flag(MouseButtonMask::LEFT))) {
 		rot.x -= mm->get_relative().y * 0.01;
 		rot.y -= mm->get_relative().x * 0.01;
-
-		rot.x = CLAMP(rot.x, -Math_PI / 2, Math_PI / 2);
+		if (quad_instance->is_visible()) {
+			// Clamp rotation so the quad is always visible.
+			const real_t limit = Math::deg_to_rad(80.0);
+			rot = rot.clampf(-limit, limit);
+		} else {
+			rot.x = CLAMP(rot.x, -Math_PI / 2, Math_PI / 2);
+		}
 		_update_rotation();
+		_store_rotation_metadata();
 	}
 }
 
@@ -68,6 +77,7 @@ void MaterialEditor::_update_theme_item_cache() {
 
 	theme_cache.sphere_icon = get_editor_theme_icon(SNAME("MaterialPreviewSphere"));
 	theme_cache.box_icon = get_editor_theme_icon(SNAME("MaterialPreviewCube"));
+	theme_cache.quad_icon = get_editor_theme_icon(SNAME("MaterialPreviewQuad"));
 
 	theme_cache.checkerboard = get_editor_theme_icon(SNAME("Checkerboard"));
 }
@@ -75,18 +85,35 @@ void MaterialEditor::_update_theme_item_cache() {
 void MaterialEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
-			light_1_switch->set_icon(theme_cache.light_1_icon);
-			light_2_switch->set_icon(theme_cache.light_2_icon);
+			light_1_switch->set_button_icon(theme_cache.light_1_icon);
+			light_2_switch->set_button_icon(theme_cache.light_2_icon);
 
-			sphere_switch->set_icon(theme_cache.sphere_icon);
-			box_switch->set_icon(theme_cache.box_icon);
+			sphere_switch->set_button_icon(theme_cache.sphere_icon);
+			box_switch->set_button_icon(theme_cache.box_icon);
+			quad_switch->set_button_icon(theme_cache.quad_icon);
+
+			error_label->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
 		} break;
 
 		case NOTIFICATION_DRAW: {
-			Size2 size = get_size();
-			draw_texture_rect(theme_cache.checkerboard, Rect2(Point2(), size), true);
+			if (!is_unsupported_shader_mode) {
+				Size2 size = get_size();
+				draw_texture_rect(theme_cache.checkerboard, Rect2(Point2(), size), true);
+			}
 		} break;
 	}
+}
+
+void MaterialEditor::_set_rotation(real_t p_x_degrees, real_t p_y_degrees) {
+	rot.x = Math::deg_to_rad(p_x_degrees);
+	rot.y = Math::deg_to_rad(p_y_degrees);
+	_update_rotation();
+}
+
+// Store the rotation so it can persist when switching between materials.
+void MaterialEditor::_store_rotation_metadata() {
+	Vector2 rotation_degrees = Vector2(Math::rad_to_deg(rot.x), Math::rad_to_deg(rot.y));
+	EditorSettings::get_singleton()->set_project_metadata("inspector_options", "material_preview_rotation", rotation_degrees);
 }
 
 void MaterialEditor::_update_rotation() {
@@ -99,32 +126,38 @@ void MaterialEditor::_update_rotation() {
 void MaterialEditor::edit(Ref<Material> p_material, const Ref<Environment> &p_env) {
 	material = p_material;
 	camera->set_environment(p_env);
-	if (!material.is_null()) {
+
+	is_unsupported_shader_mode = false;
+	if (material.is_valid()) {
 		Shader::Mode mode = p_material->get_shader_mode();
 		switch (mode) {
 			case Shader::MODE_CANVAS_ITEM:
+				layout_error->hide();
 				layout_3d->hide();
 				layout_2d->show();
 				vc->hide();
 				rect_instance->set_material(material);
 				break;
 			case Shader::MODE_SPATIAL:
+				layout_error->hide();
 				layout_2d->hide();
 				layout_3d->show();
 				vc->show();
 				sphere_instance->set_material_override(material);
 				box_instance->set_material_override(material);
+				quad_instance->set_material_override(material);
 				break;
 			default:
+				layout_error->show();
+				layout_2d->hide();
+				layout_3d->hide();
+				vc->hide();
+				is_unsupported_shader_mode = true;
 				break;
 		}
 	} else {
 		hide();
 	}
-
-	rot.x = Math::deg_to_rad(-15.0);
-	rot.y = Math::deg_to_rad(30.0);
-	_update_rotation();
 }
 
 void MaterialEditor::_on_light_1_switch_pressed() {
@@ -136,19 +169,36 @@ void MaterialEditor::_on_light_2_switch_pressed() {
 }
 
 void MaterialEditor::_on_sphere_switch_pressed() {
-	box_instance->hide();
 	sphere_instance->show();
+	box_instance->hide();
+	quad_instance->hide();
 	box_switch->set_pressed(false);
-	sphere_switch->set_pressed(true);
-	EditorSettings::get_singleton()->set_project_metadata("inspector_options", "material_preview_on_sphere", true);
+	quad_switch->set_pressed(false);
+	_set_rotation(-15.0, 30.0);
+	_store_rotation_metadata();
+	EditorSettings::get_singleton()->set_project_metadata("inspector_options", "material_preview_mesh", "sphere");
 }
 
 void MaterialEditor::_on_box_switch_pressed() {
-	box_instance->show();
 	sphere_instance->hide();
-	box_switch->set_pressed(true);
+	box_instance->show();
+	quad_instance->hide();
 	sphere_switch->set_pressed(false);
-	EditorSettings::get_singleton()->set_project_metadata("inspector_options", "material_preview_on_sphere", false);
+	quad_switch->set_pressed(false);
+	_set_rotation(-15.0, 30.0);
+	_store_rotation_metadata();
+	EditorSettings::get_singleton()->set_project_metadata("inspector_options", "material_preview_mesh", "box");
+}
+
+void MaterialEditor::_on_quad_switch_pressed() {
+	sphere_instance->hide();
+	box_instance->hide();
+	quad_instance->show();
+	sphere_switch->set_pressed(false);
+	box_switch->set_pressed(false);
+	_set_rotation(0.0, 0.0);
+	_store_rotation_metadata();
+	EditorSettings::get_singleton()->set_project_metadata("inspector_options", "material_preview_mesh", "quad");
 }
 
 MaterialEditor::MaterialEditor() {
@@ -175,6 +225,20 @@ MaterialEditor::MaterialEditor() {
 
 	layout_2d->set_visible(false);
 
+	layout_error = memnew(VBoxContainer);
+	layout_error->set_alignment(BoxContainer::ALIGNMENT_CENTER);
+	layout_error->set_anchors_and_offsets_preset(PRESET_FULL_RECT);
+
+	error_label = memnew(Label);
+	error_label->set_text(TTR("Preview is not available for this shader mode."));
+	error_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
+	error_label->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);
+	error_label->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
+
+	layout_error->add_child(error_label);
+	layout_error->hide();
+	add_child(layout_error);
+
 	// Spatial
 
 	vc = memnew(SubViewportContainer);
@@ -184,7 +248,7 @@ MaterialEditor::MaterialEditor() {
 	viewport = memnew(SubViewport);
 	Ref<World3D> world_3d;
 	world_3d.instantiate();
-	viewport->set_world_3d(world_3d); //use own world
+	viewport->set_world_3d(world_3d); // Use own world.
 	vc->add_child(viewport);
 	viewport->set_disable_input(true);
 	viewport->set_transparent_background(true);
@@ -192,7 +256,7 @@ MaterialEditor::MaterialEditor() {
 
 	camera = memnew(Camera3D);
 	camera->set_transform(Transform3D(Basis(), Vector3(0, 0, 1.1)));
-	// Use low field of view so the sphere/box is fully encompassed within the preview,
+	// Use low field of view so the sphere/box/quad is fully encompassed within the preview,
 	// without much distortion.
 	camera->set_perspective(20, 0.1, 10);
 	camera->make_current();
@@ -220,13 +284,19 @@ MaterialEditor::MaterialEditor() {
 	box_instance = memnew(MeshInstance3D);
 	rotation->add_child(box_instance);
 
-	box_instance->set_transform(Transform3D() * 0.25);
+	quad_instance = memnew(MeshInstance3D);
+	rotation->add_child(quad_instance);
+
 	sphere_instance->set_transform(Transform3D() * 0.375);
+	box_instance->set_transform(Transform3D() * 0.25);
+	quad_instance->set_transform(Transform3D() * 0.375);
 
 	sphere_mesh.instantiate();
 	sphere_instance->set_mesh(sphere_mesh);
 	box_mesh.instantiate();
 	box_instance->set_mesh(box_mesh);
+	quad_mesh.instantiate();
+	quad_instance->set_mesh(quad_mesh);
 
 	set_custom_minimum_size(Size2(1, 150) * EDSCALE);
 
@@ -240,16 +310,20 @@ MaterialEditor::MaterialEditor() {
 	sphere_switch = memnew(Button);
 	sphere_switch->set_theme_type_variation("PreviewLightButton");
 	sphere_switch->set_toggle_mode(true);
-	sphere_switch->set_pressed(true);
 	vb_shape->add_child(sphere_switch);
 	sphere_switch->connect(SceneStringName(pressed), callable_mp(this, &MaterialEditor::_on_sphere_switch_pressed));
 
 	box_switch = memnew(Button);
 	box_switch->set_theme_type_variation("PreviewLightButton");
 	box_switch->set_toggle_mode(true);
-	box_switch->set_pressed(false);
 	vb_shape->add_child(box_switch);
 	box_switch->connect(SceneStringName(pressed), callable_mp(this, &MaterialEditor::_on_box_switch_pressed));
+
+	quad_switch = memnew(Button);
+	quad_switch->set_theme_type_variation("PreviewLightButton");
+	quad_switch->set_toggle_mode(true);
+	vb_shape->add_child(quad_switch);
+	quad_switch->connect(SceneStringName(pressed), callable_mp(this, &MaterialEditor::_on_quad_switch_pressed));
 
 	layout_3d->add_spacer();
 
@@ -270,14 +344,23 @@ MaterialEditor::MaterialEditor() {
 	vb_light->add_child(light_2_switch);
 	light_2_switch->connect(SceneStringName(pressed), callable_mp(this, &MaterialEditor::_on_light_2_switch_pressed));
 
-	if (EditorSettings::get_singleton()->get_project_metadata("inspector_options", "material_preview_on_sphere", true)) {
+	String shape = EditorSettings::get_singleton()->get_project_metadata("inspector_options", "material_preview_mesh", "sphere");
+	if (shape == "sphere") {
 		box_instance->hide();
-	} else {
-		box_instance->show();
+		quad_instance->hide();
+		sphere_switch->set_pressed_no_signal(true);
+	} else if (shape == "box") {
 		sphere_instance->hide();
-		box_switch->set_pressed(true);
-		sphere_switch->set_pressed(false);
+		quad_instance->hide();
+		box_switch->set_pressed_no_signal(true);
+	} else {
+		sphere_instance->hide();
+		box_instance->hide();
+		quad_switch->set_pressed_no_signal(true);
 	}
+
+	Vector2 stored_rot = EditorSettings::get_singleton()->get_project_metadata("inspector_options", "material_preview_rotation", Vector2());
+	_set_rotation(stored_rot.x, stored_rot.y);
 }
 
 ///////////////////////
@@ -366,7 +449,7 @@ bool StandardMaterial3DConversionPlugin::handles(const Ref<Resource> &p_resource
 
 Ref<Resource> StandardMaterial3DConversionPlugin::convert(const Ref<Resource> &p_resource) const {
 	Ref<StandardMaterial3D> mat = p_resource;
-	ERR_FAIL_COND_V(!mat.is_valid(), Ref<Resource>());
+	ERR_FAIL_COND_V(mat.is_null(), Ref<Resource>());
 
 	Ref<ShaderMaterial> smat;
 	smat.instantiate();
@@ -412,7 +495,7 @@ bool ORMMaterial3DConversionPlugin::handles(const Ref<Resource> &p_resource) con
 
 Ref<Resource> ORMMaterial3DConversionPlugin::convert(const Ref<Resource> &p_resource) const {
 	Ref<ORMMaterial3D> mat = p_resource;
-	ERR_FAIL_COND_V(!mat.is_valid(), Ref<Resource>());
+	ERR_FAIL_COND_V(mat.is_null(), Ref<Resource>());
 
 	Ref<ShaderMaterial> smat;
 	smat.instantiate();
@@ -458,7 +541,7 @@ bool ParticleProcessMaterialConversionPlugin::handles(const Ref<Resource> &p_res
 
 Ref<Resource> ParticleProcessMaterialConversionPlugin::convert(const Ref<Resource> &p_resource) const {
 	Ref<ParticleProcessMaterial> mat = p_resource;
-	ERR_FAIL_COND_V(!mat.is_valid(), Ref<Resource>());
+	ERR_FAIL_COND_V(mat.is_null(), Ref<Resource>());
 
 	Ref<ShaderMaterial> smat;
 	smat.instantiate();
@@ -497,7 +580,7 @@ bool CanvasItemMaterialConversionPlugin::handles(const Ref<Resource> &p_resource
 
 Ref<Resource> CanvasItemMaterialConversionPlugin::convert(const Ref<Resource> &p_resource) const {
 	Ref<CanvasItemMaterial> mat = p_resource;
-	ERR_FAIL_COND_V(!mat.is_valid(), Ref<Resource>());
+	ERR_FAIL_COND_V(mat.is_null(), Ref<Resource>());
 
 	Ref<ShaderMaterial> smat;
 	smat.instantiate();
@@ -536,7 +619,7 @@ bool ProceduralSkyMaterialConversionPlugin::handles(const Ref<Resource> &p_resou
 
 Ref<Resource> ProceduralSkyMaterialConversionPlugin::convert(const Ref<Resource> &p_resource) const {
 	Ref<ProceduralSkyMaterial> mat = p_resource;
-	ERR_FAIL_COND_V(!mat.is_valid(), Ref<Resource>());
+	ERR_FAIL_COND_V(mat.is_null(), Ref<Resource>());
 
 	Ref<ShaderMaterial> smat;
 	smat.instantiate();
@@ -575,7 +658,7 @@ bool PanoramaSkyMaterialConversionPlugin::handles(const Ref<Resource> &p_resourc
 
 Ref<Resource> PanoramaSkyMaterialConversionPlugin::convert(const Ref<Resource> &p_resource) const {
 	Ref<PanoramaSkyMaterial> mat = p_resource;
-	ERR_FAIL_COND_V(!mat.is_valid(), Ref<Resource>());
+	ERR_FAIL_COND_V(mat.is_null(), Ref<Resource>());
 
 	Ref<ShaderMaterial> smat;
 	smat.instantiate();
@@ -614,7 +697,7 @@ bool PhysicalSkyMaterialConversionPlugin::handles(const Ref<Resource> &p_resourc
 
 Ref<Resource> PhysicalSkyMaterialConversionPlugin::convert(const Ref<Resource> &p_resource) const {
 	Ref<PhysicalSkyMaterial> mat = p_resource;
-	ERR_FAIL_COND_V(!mat.is_valid(), Ref<Resource>());
+	ERR_FAIL_COND_V(mat.is_null(), Ref<Resource>());
 
 	Ref<ShaderMaterial> smat;
 	smat.instantiate();
@@ -653,7 +736,7 @@ bool FogMaterialConversionPlugin::handles(const Ref<Resource> &p_resource) const
 
 Ref<Resource> FogMaterialConversionPlugin::convert(const Ref<Resource> &p_resource) const {
 	Ref<FogMaterial> mat = p_resource;
-	ERR_FAIL_COND_V(!mat.is_valid(), Ref<Resource>());
+	ERR_FAIL_COND_V(mat.is_null(), Ref<Resource>());
 
 	Ref<ShaderMaterial> smat;
 	smat.instantiate();

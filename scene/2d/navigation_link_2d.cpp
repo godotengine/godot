@@ -33,13 +33,15 @@
 #include "core/math/geometry_2d.h"
 #include "scene/resources/world_2d.h"
 #include "servers/navigation_server_2d.h"
-#include "servers/navigation_server_3d.h"
 
 void NavigationLink2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_rid"), &NavigationLink2D::get_rid);
 
 	ClassDB::bind_method(D_METHOD("set_enabled", "enabled"), &NavigationLink2D::set_enabled);
 	ClassDB::bind_method(D_METHOD("is_enabled"), &NavigationLink2D::is_enabled);
+
+	ClassDB::bind_method(D_METHOD("set_navigation_map", "navigation_map"), &NavigationLink2D::set_navigation_map);
+	ClassDB::bind_method(D_METHOD("get_navigation_map"), &NavigationLink2D::get_navigation_map);
 
 	ClassDB::bind_method(D_METHOD("set_bidirectional", "bidirectional"), &NavigationLink2D::set_bidirectional);
 	ClassDB::bind_method(D_METHOD("is_bidirectional"), &NavigationLink2D::is_bidirectional);
@@ -106,12 +108,7 @@ bool NavigationLink2D::_get(const StringName &p_name, Variant &r_ret) const {
 void NavigationLink2D::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
-			if (enabled) {
-				NavigationServer2D::get_singleton()->link_set_map(link, get_world_2d()->get_navigation_map());
-			}
-			current_global_transform = get_global_transform();
-			NavigationServer2D::get_singleton()->link_set_start_position(link, current_global_transform.xform(start_position));
-			NavigationServer2D::get_singleton()->link_set_end_position(link, current_global_transform.xform(end_position));
+			_link_enter_navigation_map();
 		} break;
 
 		case NOTIFICATION_TRANSFORM_CHANGED: {
@@ -120,42 +117,21 @@ void NavigationLink2D::_notification(int p_what) {
 
 		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
 			set_physics_process_internal(false);
-			if (is_inside_tree()) {
-				Transform2D new_global_transform = get_global_transform();
-				if (current_global_transform != new_global_transform) {
-					current_global_transform = new_global_transform;
-					NavigationServer2D::get_singleton()->link_set_start_position(link, current_global_transform.xform(start_position));
-					NavigationServer2D::get_singleton()->link_set_end_position(link, current_global_transform.xform(end_position));
-					queue_redraw();
-				}
-			}
+			_link_update_transform();
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
-			NavigationServer2D::get_singleton()->link_set_map(link, RID());
+			_link_exit_navigation_map();
 		} break;
 		case NOTIFICATION_DRAW: {
 #ifdef DEBUG_ENABLED
-			if (is_inside_tree() && (Engine::get_singleton()->is_editor_hint() || NavigationServer2D::get_singleton()->get_debug_enabled())) {
-				Color color;
-				if (enabled) {
-					color = NavigationServer2D::get_singleton()->get_debug_navigation_link_connection_color();
-				} else {
-					color = NavigationServer2D::get_singleton()->get_debug_navigation_link_connection_disabled_color();
-				}
-
-				real_t radius = NavigationServer2D::get_singleton()->map_get_link_connection_radius(get_world_2d()->get_navigation_map());
-
-				draw_line(get_start_position(), get_end_position(), color);
-				draw_arc(get_start_position(), radius, 0, Math_TAU, 10, color);
-				draw_arc(get_end_position(), radius, 0, Math_TAU, 10, color);
-			}
+			_update_debug_mesh();
 #endif // DEBUG_ENABLED
 		} break;
 	}
 }
 
-#ifdef TOOLS_ENABLED
+#ifdef DEBUG_ENABLED
 Rect2 NavigationLink2D::_edit_get_rect() const {
 	if (!is_inside_tree()) {
 		return Rect2();
@@ -175,7 +151,7 @@ bool NavigationLink2D::_edit_is_selected_on_click(const Point2 &p_point, double 
 	Vector2 closest_point = Geometry2D::get_closest_point_to_segment(p_point, segment);
 	return p_point.distance_to(closest_point) < p_tolerance;
 }
-#endif // TOOLS_ENABLED
+#endif // DEBUG_ENABLED
 
 RID NavigationLink2D::get_rid() const {
 	return link;
@@ -188,13 +164,30 @@ void NavigationLink2D::set_enabled(bool p_enabled) {
 
 	enabled = p_enabled;
 
-	NavigationServer3D::get_singleton()->link_set_enabled(link, enabled);
+	NavigationServer2D::get_singleton()->link_set_enabled(link, enabled);
 
 #ifdef DEBUG_ENABLED
-	if (Engine::get_singleton()->is_editor_hint() || NavigationServer2D::get_singleton()->get_debug_enabled()) {
-		queue_redraw();
-	}
+	queue_redraw();
 #endif // DEBUG_ENABLED
+}
+
+void NavigationLink2D::set_navigation_map(RID p_navigation_map) {
+	if (map_override == p_navigation_map) {
+		return;
+	}
+
+	map_override = p_navigation_map;
+
+	NavigationServer2D::get_singleton()->link_set_map(link, map_override);
+}
+
+RID NavigationLink2D::get_navigation_map() const {
+	if (map_override.is_valid()) {
+		return map_override;
+	} else if (is_inside_tree()) {
+		return get_world_2d()->get_navigation_map();
+	}
+	return RID();
 }
 
 void NavigationLink2D::set_bidirectional(bool p_bidirectional) {
@@ -205,6 +198,10 @@ void NavigationLink2D::set_bidirectional(bool p_bidirectional) {
 	bidirectional = p_bidirectional;
 
 	NavigationServer2D::get_singleton()->link_set_bidirectional(link, bidirectional);
+
+#ifdef DEBUG_ENABLED
+	queue_redraw();
+#endif // DEBUG_ENABLED
 }
 
 void NavigationLink2D::set_navigation_layers(uint32_t p_navigation_layers) {
@@ -255,9 +252,7 @@ void NavigationLink2D::set_start_position(Vector2 p_position) {
 	update_configuration_warnings();
 
 #ifdef DEBUG_ENABLED
-	if (Engine::get_singleton()->is_editor_hint() || NavigationServer2D::get_singleton()->get_debug_enabled()) {
-		queue_redraw();
-	}
+	queue_redraw();
 #endif // DEBUG_ENABLED
 }
 
@@ -277,9 +272,7 @@ void NavigationLink2D::set_end_position(Vector2 p_position) {
 	update_configuration_warnings();
 
 #ifdef DEBUG_ENABLED
-	if (Engine::get_singleton()->is_editor_hint() || NavigationServer2D::get_singleton()->get_debug_enabled()) {
-		queue_redraw();
-	}
+	queue_redraw();
 #endif // DEBUG_ENABLED
 }
 
@@ -338,7 +331,7 @@ void NavigationLink2D::set_travel_cost(real_t p_travel_cost) {
 }
 
 PackedStringArray NavigationLink2D::get_configuration_warnings() const {
-	PackedStringArray warnings = Node::get_configuration_warnings();
+	PackedStringArray warnings = Node2D::get_configuration_warnings();
 
 	if (start_position.is_equal_approx(end_position)) {
 		warnings.push_back(RTR("NavigationLink2D start position should be different than the end position to be useful."));
@@ -346,6 +339,92 @@ PackedStringArray NavigationLink2D::get_configuration_warnings() const {
 
 	return warnings;
 }
+
+void NavigationLink2D::_link_enter_navigation_map() {
+	if (!is_inside_tree()) {
+		return;
+	}
+
+	if (map_override.is_valid()) {
+		NavigationServer2D::get_singleton()->link_set_map(link, map_override);
+	} else {
+		NavigationServer2D::get_singleton()->link_set_map(link, get_world_2d()->get_navigation_map());
+	}
+
+	current_global_transform = get_global_transform();
+
+	NavigationServer2D::get_singleton()->link_set_start_position(link, current_global_transform.xform(start_position));
+	NavigationServer2D::get_singleton()->link_set_end_position(link, current_global_transform.xform(end_position));
+	NavigationServer2D::get_singleton()->link_set_enabled(link, enabled);
+
+	queue_redraw();
+}
+
+void NavigationLink2D::_link_exit_navigation_map() {
+	NavigationServer2D::get_singleton()->link_set_map(link, RID());
+}
+
+void NavigationLink2D::_link_update_transform() {
+	if (!is_inside_tree()) {
+		return;
+	}
+
+	Transform2D new_global_transform = get_global_transform();
+	if (current_global_transform != new_global_transform) {
+		current_global_transform = new_global_transform;
+		NavigationServer2D::get_singleton()->link_set_start_position(link, current_global_transform.xform(start_position));
+		NavigationServer2D::get_singleton()->link_set_end_position(link, current_global_transform.xform(end_position));
+		queue_redraw();
+	}
+}
+
+#ifdef DEBUG_ENABLED
+void NavigationLink2D::_update_debug_mesh() {
+	if (!is_inside_tree()) {
+		return;
+	}
+
+	if (!Engine::get_singleton()->is_editor_hint() && !NavigationServer2D::get_singleton()->get_debug_enabled()) {
+		return;
+	}
+
+	Color color;
+	if (enabled) {
+		color = NavigationServer2D::get_singleton()->get_debug_navigation_link_connection_color();
+	} else {
+		color = NavigationServer2D::get_singleton()->get_debug_navigation_link_connection_disabled_color();
+	}
+
+	real_t radius = NavigationServer2D::get_singleton()->map_get_link_connection_radius(get_world_2d()->get_navigation_map());
+
+	draw_line(get_start_position(), get_end_position(), color);
+	draw_arc(get_start_position(), radius, 0, Math_TAU, 10, color);
+	draw_arc(get_end_position(), radius, 0, Math_TAU, 10, color);
+
+	const Vector2 link_segment = end_position - start_position;
+	const float arror_len = 5.0;
+
+	{
+		Vector2 anchor = start_position + (link_segment * 0.75);
+		Vector2 direction = start_position.direction_to(end_position);
+		Vector2 arrow_dir = -direction.orthogonal();
+		draw_line(anchor, anchor + (arrow_dir - direction) * arror_len, color);
+
+		arrow_dir = direction.orthogonal();
+		draw_line(anchor, anchor + (arrow_dir - direction) * arror_len, color);
+	}
+
+	if (is_bidirectional()) {
+		Vector2 anchor = start_position + (link_segment * 0.25);
+		Vector2 direction = end_position.direction_to(start_position);
+		Vector2 arrow_dir = -direction.orthogonal();
+		draw_line(anchor, anchor + (arrow_dir - direction) * arror_len, color);
+
+		arrow_dir = direction.orthogonal();
+		draw_line(anchor, anchor + (arrow_dir - direction) * arror_len, color);
+	}
+}
+#endif // DEBUG_ENABLED
 
 NavigationLink2D::NavigationLink2D() {
 	link = NavigationServer2D::get_singleton()->link_create();

@@ -33,11 +33,8 @@
 #include "core/config/project_settings.h"
 #include "core/io/resource_importer.h"
 #include "editor/action_map_editor.h"
-#include "editor/editor_autoload_settings.h"
+#include "editor/editor_inspector.h"
 #include "editor/editor_sectioned_inspector.h"
-#include "editor/localization_editor.h"
-#include "editor/plugins/editor_plugin_settings.h"
-#include "editor/shader_globals_editor.h"
 #include "scene/gui/center_container.h"
 
 class ImportDefaultsEditorSettings : public Object {
@@ -207,7 +204,7 @@ ImportDefaultsEditor::ImportDefaultsEditor() {
 	importers = memnew(OptionButton);
 	hb->add_child(importers);
 	hb->add_spacer();
-	importers->connect("item_selected", callable_mp(this, &ImportDefaultsEditor::_importer_selected));
+	importers->connect(SceneStringName(item_selected), callable_mp(this, &ImportDefaultsEditor::_importer_selected));
 	reset_defaults = memnew(Button);
 	reset_defaults->set_text(TTR("Reset to Defaults"));
 	reset_defaults->set_disabled(true);

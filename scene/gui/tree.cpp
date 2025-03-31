@@ -62,8 +62,15 @@ void TreeItem::Cell::draw_icon(const RID &p_where, const Point2 &p_pos, const Si
 
 	if (icon_region == Rect2i()) {
 		icon->draw_rect_region(p_where, Rect2(p_pos, dsize), Rect2(Point2(), icon->get_size()), p_color);
+		if (icon_overlay.is_valid()) {
+			Vector2 offset = icon->get_size() - icon_overlay->get_size();
+			icon_overlay->draw_rect_region(p_where, Rect2(p_pos + offset, dsize), Rect2(Point2(), icon_overlay->get_size()), p_color);
+		}
 	} else {
 		icon->draw_rect_region(p_where, Rect2(p_pos, dsize), icon_region, p_color);
+		if (icon_overlay.is_valid()) {
+			icon_overlay->draw_rect_region(p_where, Rect2(p_pos, dsize), icon_region, p_color);
+		}
 	}
 }
 
@@ -149,7 +156,6 @@ void TreeItem::_change_tree(Tree *p_tree) {
 	}
 }
 
-/* cell mode */
 void TreeItem::set_cell_mode(int p_column, TreeCellMode p_mode) {
 	ERR_FAIL_INDEX(p_column, cells.size());
 
@@ -178,7 +184,25 @@ TreeItem::TreeCellMode TreeItem::get_cell_mode(int p_column) const {
 	return cells[p_column].mode;
 }
 
-/* multiline editable */
+void TreeItem::set_auto_translate_mode(int p_column, Node::AutoTranslateMode p_mode) {
+	ERR_FAIL_INDEX(p_column, cells.size());
+
+	if (cells[p_column].auto_translate_mode == p_mode) {
+		return;
+	}
+
+	cells.write[p_column].auto_translate_mode = p_mode;
+	cells.write[p_column].dirty = true;
+	cells.write[p_column].cached_minimum_size_dirty = true;
+
+	_changed_notify(p_column);
+}
+
+Node::AutoTranslateMode TreeItem::get_auto_translate_mode(int p_column) const {
+	ERR_FAIL_INDEX_V(p_column, cells.size(), Node::AUTO_TRANSLATE_MODE_INHERIT);
+	return cells[p_column].auto_translate_mode;
+}
+
 void TreeItem::set_edit_multiline(int p_column, bool p_multiline) {
 	ERR_FAIL_INDEX(p_column, cells.size());
 	cells.write[p_column].edit_multiline = p_multiline;
@@ -190,7 +214,6 @@ bool TreeItem::is_edit_multiline(int p_column) const {
 	return cells[p_column].edit_multiline;
 }
 
-/* check mode */
 void TreeItem::set_checked(int p_column, bool p_checked) {
 	ERR_FAIL_INDEX(p_column, cells.size());
 
@@ -208,7 +231,7 @@ void TreeItem::set_checked(int p_column, bool p_checked) {
 void TreeItem::set_indeterminate(int p_column, bool p_indeterminate) {
 	ERR_FAIL_INDEX(p_column, cells.size());
 
-	// Prevent uncheck if indeterminate set to false twice
+	// Prevent uncheck if indeterminate set to false twice.
 	if (p_indeterminate == cells[p_column].indeterminate) {
 		return;
 	}
@@ -238,6 +261,24 @@ void TreeItem::propagate_check(int p_column, bool p_emit_signal) {
 	}
 	_propagate_check_through_children(p_column, ch, p_emit_signal);
 	_propagate_check_through_parents(p_column, p_emit_signal);
+}
+
+String TreeItem::atr(int p_column, const String &p_text) const {
+	ERR_FAIL_INDEX_V(p_column, cells.size(), tree->atr(p_text));
+
+	switch (cells[p_column].auto_translate_mode) {
+		case Node::AUTO_TRANSLATE_MODE_INHERIT: {
+			return tree->atr(p_text);
+		} break;
+		case Node::AUTO_TRANSLATE_MODE_ALWAYS: {
+			return tree->tr(p_text);
+		} break;
+		case Node::AUTO_TRANSLATE_MODE_DISABLED: {
+			return p_text;
+		} break;
+	}
+
+	ERR_FAIL_V_MSG(tree->atr(p_text), "Unexpected auto translate mode: " + itos(cells[p_column].auto_translate_mode));
 }
 
 void TreeItem::_propagate_check_through_children(int p_column, bool p_checked, bool p_emit_signal) {
@@ -316,7 +357,7 @@ void TreeItem::set_text(int p_column, String p_text) {
 	} else {
 		// Don't auto translate if it's in string mode and editable, as the text can be changed to anything by the user.
 		if (tree && (!cells[p_column].editable || cells[p_column].mode != TreeItem::CELL_MODE_STRING)) {
-			cells.write[p_column].xl_text = tree->atr(p_text);
+			cells.write[p_column].xl_text = atr(p_column, p_text);
 		} else {
 			cells.write[p_column].xl_text = p_text;
 		}
@@ -477,6 +518,24 @@ Ref<Texture2D> TreeItem::get_icon(int p_column) const {
 	return cells[p_column].icon;
 }
 
+void TreeItem::set_icon_overlay(int p_column, const Ref<Texture2D> &p_icon_overlay) {
+	ERR_FAIL_INDEX(p_column, cells.size());
+
+	if (cells[p_column].icon_overlay == p_icon_overlay) {
+		return;
+	}
+
+	cells.write[p_column].icon_overlay = p_icon_overlay;
+	cells.write[p_column].cached_minimum_size_dirty = true;
+
+	_changed_notify(p_column);
+}
+
+Ref<Texture2D> TreeItem::get_icon_overlay(int p_column) const {
+	ERR_FAIL_INDEX_V(p_column, cells.size(), Ref<Texture2D>());
+	return cells[p_column].icon_overlay;
+}
+
 void TreeItem::set_icon_region(int p_column, const Rect2 &p_icon_region) {
 	ERR_FAIL_INDEX(p_column, cells.size());
 
@@ -529,7 +588,6 @@ int TreeItem::get_icon_max_width(int p_column) const {
 	return cells[p_column].icon_max_w;
 }
 
-/* range works for mode number or mode combo */
 void TreeItem::set_range(int p_column, double p_value) {
 	ERR_FAIL_INDEX(p_column, cells.size());
 	if (cells[p_column].step > 0) {
@@ -629,7 +687,7 @@ void TreeItem::set_collapsed(bool p_collapsed) {
 		while (ci && ci != this) {
 			ci = ci->parent;
 		}
-		if (ci) { // collapsing cursor/selected, move it!
+		if (ci) { // Collapsing cursor/selected, move it!
 
 			if (tree->select_mode == Tree::SELECT_MULTI) {
 				tree->selected_item = this;
@@ -761,8 +819,6 @@ int TreeItem::get_custom_minimum_height() const {
 	return custom_min_height;
 }
 
-/* Item manipulation */
-
 TreeItem *TreeItem::create_child(int p_index) {
 	TreeItem *ti = memnew(TreeItem(tree));
 	if (tree) {
@@ -773,17 +829,21 @@ TreeItem *TreeItem::create_child(int p_index) {
 	TreeItem *item_prev = nullptr;
 	TreeItem *item_next = first_child;
 
-	int idx = 0;
-	while (item_next) {
-		if (idx == p_index) {
-			item_next->prev = ti;
-			ti->next = item_next;
-			break;
-		}
+	if (p_index < 0 && last_child) {
+		item_prev = last_child;
+	} else {
+		int idx = 0;
+		while (item_next) {
+			if (idx == p_index) {
+				item_next->prev = ti;
+				ti->next = item_next;
+				break;
+			}
 
-		item_prev = item_next;
-		item_next = item_next->next;
-		idx++;
+			item_prev = item_next;
+			item_next = item_next->next;
+			idx++;
+		}
 	}
 
 	if (item_prev) {
@@ -804,6 +864,10 @@ TreeItem *TreeItem::create_child(int p_index) {
 		}
 	}
 
+	if (item_prev == last_child) {
+		last_child = ti;
+	}
+
 	ti->parent = this;
 	ti->parent_visible_in_tree = is_visible_in_tree();
 
@@ -820,17 +884,13 @@ void TreeItem::add_child(TreeItem *p_item) {
 	p_item->parent_visible_in_tree = is_visible_in_tree();
 	p_item->_handle_visibility_changed(p_item->parent_visible_in_tree);
 
-	TreeItem *item_prev = first_child;
-	while (item_prev && item_prev->next) {
-		item_prev = item_prev->next;
-	}
-
-	if (item_prev) {
-		item_prev->next = p_item;
-		p_item->prev = item_prev;
+	if (last_child) {
+		last_child->next = p_item;
+		p_item->prev = last_child;
 	} else {
 		first_child = p_item;
 	}
+	last_child = p_item;
 
 	if (!children_cache.is_empty()) {
 		children_cache.append(p_item);
@@ -868,7 +928,7 @@ TreeItem *TreeItem::get_prev() {
 	if (!parent || parent->first_child == this) {
 		return nullptr;
 	}
-	// This is an edge case
+	// This is an edge case.
 	TreeItem *l_prev = parent->first_child;
 	while (l_prev && l_prev->next != this) {
 		l_prev = l_prev->next;
@@ -894,29 +954,22 @@ TreeItem *TreeItem::_get_prev_in_tree(bool p_wrap, bool p_include_invisible) {
 
 	if (!prev_item) {
 		current = current->parent;
-		if (current == tree->root && tree->hide_root) {
-			return nullptr;
-		} else if (!current) {
-			if (p_wrap) {
-				current = this;
-				TreeItem *temp = get_next_visible();
-				while (temp) {
-					current = temp;
-					temp = temp->get_next_visible();
-				}
-			} else {
+		if (!current || (current == tree->root && tree->hide_root)) {
+			if (!p_wrap) {
 				return nullptr;
+			}
+			// Wrap around to the last visible item.
+			current = this;
+			TreeItem *temp = get_next_visible();
+			while (temp) {
+				current = temp;
+				temp = temp->get_next_visible();
 			}
 		}
 	} else {
 		current = prev_item;
-		while ((!current->collapsed || p_include_invisible) && current->first_child) {
-			//go to the very end
-
-			current = current->first_child;
-			while (current->next) {
-				current = current->next;
-			}
+		while ((!current->collapsed || p_include_invisible) && current->last_child) {
+			current = current->last_child;
 		}
 	}
 
@@ -1037,7 +1090,9 @@ void TreeItem::clear_children() {
 	}
 
 	first_child = nullptr;
-};
+	last_child = nullptr;
+	children_cache.clear();
+}
 
 int TreeItem::get_index() {
 	int idx = 0;
@@ -1141,6 +1196,7 @@ void TreeItem::move_after(TreeItem *p_item) {
 	if (next) {
 		parent->children_cache.clear();
 	} else {
+		parent->last_child = this;
 		// If the cache is empty, it has not been built but there
 		// are items in the tree (note p_item != nullptr,) so we cannot update it.
 		if (!parent->children_cache.is_empty()) {
@@ -1195,9 +1251,21 @@ void TreeItem::deselect(int p_column) {
 	_cell_deselected(p_column);
 }
 
+void TreeItem::clear_buttons() {
+	int i = 0;
+	for (Cell &cell : cells) {
+		if (!cell.buttons.is_empty()) {
+			cell.buttons.clear();
+			cell.cached_minimum_size_dirty = true;
+			_changed_notify(i);
+		}
+		++i;
+	}
+}
+
 void TreeItem::add_button(int p_column, const Ref<Texture2D> &p_button, int p_id, bool p_disabled, const String &p_tooltip) {
 	ERR_FAIL_INDEX(p_column, cells.size());
-	ERR_FAIL_COND(!p_button.is_valid());
+	ERR_FAIL_COND(p_button.is_null());
 	TreeItem::Cell::Button button;
 	button.texture = p_button;
 	if (p_id < 0) {
@@ -1511,7 +1579,7 @@ Size2 TreeItem::get_minimum_size(int p_column) {
 
 	const TreeItem::Cell &cell = cells[p_column];
 
-	if (cell.cached_minimum_size_dirty) {
+	if (cell.cached_minimum_size_dirty || cell.text_buf->is_dirty() || cell.dirty) {
 		Size2 size = Size2(
 				parent_tree->theme_cache.inner_item_margin_left + parent_tree->theme_cache.inner_item_margin_right,
 				parent_tree->theme_cache.inner_item_margin_top + parent_tree->theme_cache.inner_item_margin_bottom);
@@ -1530,7 +1598,9 @@ Size2 TreeItem::get_minimum_size(int p_column) {
 
 		// Icon.
 		if (cell.mode == CELL_MODE_CHECK) {
-			size.width += parent_tree->theme_cache.checked->get_width() + parent_tree->theme_cache.h_separation;
+			Size2i check_size = parent_tree->theme_cache.checked->get_size();
+			size.width += check_size.width + parent_tree->theme_cache.h_separation;
+			size.height = MAX(size.height, check_size.height);
 		}
 		if (cell.icon.is_valid()) {
 			Size2i icon_size = parent_tree->_get_cell_icon_size(cell);
@@ -1542,7 +1612,8 @@ Size2 TreeItem::get_minimum_size(int p_column) {
 		for (int i = 0; i < cell.buttons.size(); i++) {
 			Ref<Texture2D> texture = cell.buttons[i].texture;
 			if (texture.is_valid()) {
-				Size2 button_size = texture->get_size() + parent_tree->theme_cache.button_pressed->get_minimum_size();
+				Size2 button_size = texture->get_size();
+				button_size.width += parent_tree->theme_cache.button_pressed->get_minimum_size().width;
 				size.width += button_size.width + parent_tree->theme_cache.button_margin;
 				size.height = MAX(size.height, button_size.height);
 			}
@@ -1562,7 +1633,7 @@ void TreeItem::_call_recursive_bind(const Variant **p_args, int p_argcount, Call
 		return;
 	}
 
-	if (p_args[0]->get_type() != Variant::STRING && p_args[0]->get_type() != Variant::STRING_NAME) {
+	if (!p_args[0]->is_string()) {
 		r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 		r_error.argument = 0;
 		r_error.expected = Variant::STRING_NAME;
@@ -1593,6 +1664,9 @@ void TreeItem::call_recursive(const StringName &p_method, const Variant **p_args
 void TreeItem::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_cell_mode", "column", "mode"), &TreeItem::set_cell_mode);
 	ClassDB::bind_method(D_METHOD("get_cell_mode", "column"), &TreeItem::get_cell_mode);
+
+	ClassDB::bind_method(D_METHOD("set_auto_translate_mode", "column", "mode"), &TreeItem::set_auto_translate_mode);
+	ClassDB::bind_method(D_METHOD("get_auto_translate_mode", "column"), &TreeItem::get_auto_translate_mode);
 
 	ClassDB::bind_method(D_METHOD("set_edit_multiline", "column", "multiline"), &TreeItem::set_edit_multiline);
 	ClassDB::bind_method(D_METHOD("is_edit_multiline", "column"), &TreeItem::is_edit_multiline);
@@ -1630,6 +1704,9 @@ void TreeItem::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_icon", "column", "texture"), &TreeItem::set_icon);
 	ClassDB::bind_method(D_METHOD("get_icon", "column"), &TreeItem::get_icon);
+
+	ClassDB::bind_method(D_METHOD("set_icon_overlay", "column", "texture"), &TreeItem::set_icon_overlay);
+	ClassDB::bind_method(D_METHOD("get_icon_overlay", "column"), &TreeItem::get_icon_overlay);
 
 	ClassDB::bind_method(D_METHOD("set_icon_region", "column", "region"), &TreeItem::set_icon_region);
 	ClassDB::bind_method(D_METHOD("get_icon_region", "column"), &TreeItem::get_icon_region);
@@ -1696,6 +1773,7 @@ void TreeItem::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_custom_as_button", "column", "enable"), &TreeItem::set_custom_as_button);
 	ClassDB::bind_method(D_METHOD("is_custom_set_as_button", "column"), &TreeItem::is_custom_set_as_button);
 
+	ClassDB::bind_method(D_METHOD("clear_buttons"), &TreeItem::clear_buttons);
 	ClassDB::bind_method(D_METHOD("add_button", "column", "button", "id", "disabled", "tooltip_text"), &TreeItem::add_button, DEFVAL(-1), DEFVAL(false), DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("get_button_count", "column"), &TreeItem::get_button_count);
 	ClassDB::bind_method(D_METHOD("get_button_tooltip_text", "column", "button_index"), &TreeItem::get_button_tooltip_text);
@@ -1779,12 +1857,7 @@ TreeItem::~TreeItem() {
 	clear_children();
 }
 
-/**********************************************/
-/**********************************************/
-/**********************************************/
-/**********************************************/
-/**********************************************/
-/**********************************************/
+/*************************** END of TreeItem ***************************/
 
 void Tree::_update_theme_item_cache() {
 	Control::_update_theme_item_cache();
@@ -1820,44 +1893,7 @@ int Tree::compute_item_height(TreeItem *p_item) const {
 	int height = 0;
 
 	for (int i = 0; i < columns.size(); i++) {
-		if (p_item->cells[i].dirty) {
-			const_cast<Tree *>(this)->update_item_cell(p_item, i);
-		}
-		height = MAX(height, p_item->cells[i].text_buf->get_size().y);
-		for (int j = 0; j < p_item->cells[i].buttons.size(); j++) {
-			Size2i s; // = cache.button_pressed->get_minimum_size();
-			s += p_item->cells[i].buttons[j].texture->get_size();
-			if (s.height > height) {
-				height = s.height;
-			}
-		}
-
-		switch (p_item->cells[i].mode) {
-			case TreeItem::CELL_MODE_CHECK: {
-				int check_icon_h = theme_cache.checked->get_height();
-				if (height < check_icon_h) {
-					height = check_icon_h;
-				}
-				[[fallthrough]];
-			}
-			case TreeItem::CELL_MODE_STRING:
-			case TreeItem::CELL_MODE_CUSTOM:
-			case TreeItem::CELL_MODE_ICON: {
-				Ref<Texture2D> icon = p_item->cells[i].icon;
-				if (!icon.is_null()) {
-					Size2i s = _get_cell_icon_size(p_item->cells[i]);
-					if (s.height > height) {
-						height = s.height;
-					}
-				}
-				if (p_item->cells[i].mode == TreeItem::CELL_MODE_CUSTOM && p_item->cells[i].custom_button) {
-					height += theme_cache.custom_button->get_minimum_size().height;
-				}
-
-			} break;
-			default: {
-			}
-		}
+		height = MAX(height, p_item->get_minimum_size(i).y);
 	}
 	int item_min_height = MAX(theme_cache.font->get_height(theme_cache.font_size), p_item->get_custom_minimum_height());
 	if (height < item_min_height) {
@@ -1876,7 +1912,7 @@ int Tree::get_item_height(TreeItem *p_item) const {
 	int height = compute_item_height(p_item);
 	height += theme_cache.v_separation;
 
-	if (!p_item->collapsed) { /* if not collapsed, check the children */
+	if (!p_item->collapsed) { // If not collapsed, check the children.
 
 		TreeItem *c = p_item->first_child;
 
@@ -1899,7 +1935,7 @@ void Tree::draw_item_rect(TreeItem::Cell &p_cell, const Rect2i &p_rect, const Co
 
 	int w = 0;
 	Size2i bmsize;
-	if (!p_cell.icon.is_null()) {
+	if (p_cell.icon.is_valid()) {
 		bmsize = _get_cell_icon_size(p_cell);
 		w += bmsize.width + theme_cache.h_separation;
 		if (rect.size.width > 0 && (w + ts.width) > rect.size.width) {
@@ -1938,7 +1974,7 @@ void Tree::draw_item_rect(TreeItem::Cell &p_cell, const Rect2i &p_rect, const Co
 		rect.size.x -= ts.width + theme_cache.h_separation;
 	}
 
-	if (!p_cell.icon.is_null()) {
+	if (p_cell.icon.is_valid()) {
 		p_cell.draw_icon(ci, rect.position + Size2i(0, Math::floor((real_t)(rect.size.y - bmsize.y) / 2)), bmsize, p_icon_color);
 		rect.position.x += bmsize.x + theme_cache.h_separation;
 		rect.size.x -= bmsize.x + theme_cache.h_separation;
@@ -1967,7 +2003,7 @@ void Tree::update_column(int p_col) {
 	columns.write[p_col].cached_minimum_width_dirty = true;
 }
 
-void Tree::update_item_cell(TreeItem *p_item, int p_col) {
+void Tree::update_item_cell(TreeItem *p_item, int p_col) const {
 	String valtext;
 
 	p_item->cells.write[p_col].text_buf->clear();
@@ -1979,7 +2015,7 @@ void Tree::update_item_cell(TreeItem *p_item, int p_col) {
 
 			int option = (int)p_item->cells[p_col].val;
 
-			valtext = atr(ETR("(Other)"));
+			valtext = p_item->atr(p_col, ETR("(Other)"));
 			Vector<String> strings = p_item->cells[p_col].text.split(",");
 			for (int j = 0; j < strings.size(); j++) {
 				int value = j;
@@ -1987,7 +2023,7 @@ void Tree::update_item_cell(TreeItem *p_item, int p_col) {
 					value = strings[j].get_slicec(':', 1).to_int();
 				}
 				if (option == value) {
-					valtext = atr(strings[j].get_slicec(':', 0));
+					valtext = p_item->atr(p_col, strings[j].get_slicec(':', 0));
 					break;
 				}
 			}
@@ -1998,7 +2034,7 @@ void Tree::update_item_cell(TreeItem *p_item, int p_col) {
 	} else {
 		// Don't auto translate if it's in string mode and editable, as the text can be changed to anything by the user.
 		if (!p_item->cells[p_col].editable || p_item->cells[p_col].mode != TreeItem::CELL_MODE_STRING) {
-			p_item->cells.write[p_col].xl_text = atr(p_item->cells[p_col].text);
+			p_item->cells.write[p_col].xl_text = p_item->atr(p_col, p_item->cells[p_col].text);
 		} else {
 			p_item->cells.write[p_col].xl_text = p_item->cells[p_col].text;
 		}
@@ -2034,7 +2070,7 @@ void Tree::update_item_cell(TreeItem *p_item, int p_col) {
 	}
 	p_item->cells.write[p_col].text_buf->add_string(valtext, font, font_size, p_item->cells[p_col].language);
 
-	BitField<TextServer::LineBreakFlag> break_flags = TextServer::BREAK_MANDATORY | TextServer::BREAK_TRIM_EDGE_SPACES;
+	BitField<TextServer::LineBreakFlag> break_flags = TextServer::BREAK_MANDATORY | TextServer::BREAK_TRIM_START_EDGE_SPACES | TextServer::BREAK_TRIM_END_EDGE_SPACES;
 	switch (p_item->cells.write[p_col].autowrap_mode) {
 		case TextServer::AUTOWRAP_OFF:
 			break;
@@ -2055,7 +2091,7 @@ void Tree::update_item_cell(TreeItem *p_item, int p_col) {
 	p_item->cells.write[p_col].dirty = false;
 }
 
-void Tree::update_item_cache(TreeItem *p_item) {
+void Tree::update_item_cache(TreeItem *p_item) const {
 	for (int i = 0; i < p_item->cells.size(); i++) {
 		update_item_cell(p_item, i);
 	}
@@ -2069,7 +2105,7 @@ void Tree::update_item_cache(TreeItem *p_item) {
 
 int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 &p_draw_size, TreeItem *p_item, int &r_self_height) {
 	if (p_pos.y - theme_cache.offset.y > (p_draw_size.height)) {
-		return -1; //draw no more!
+		return -1; // Draw no more!
 	}
 
 	if (!p_item->is_visible_in_tree()) {
@@ -2083,8 +2119,7 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 	int label_h = 0;
 	bool rtl = cache.rtl;
 
-	/* Draw label, if height fits */
-
+	// Draw label, if height fits.
 	bool skip = (p_item == root && hide_root);
 
 	if (!skip) {
@@ -2094,12 +2129,18 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 
 		int ofs = p_pos.x + ((p_item->disable_folding || hide_folding) ? theme_cache.h_separation : theme_cache.item_margin);
 		int skip2 = 0;
+
+		bool is_row_hovered = (!cache.hover_header_row && cache.hover_item == p_item);
+
 		for (int i = 0; i < columns.size(); i++) {
 			if (skip2) {
 				skip2--;
 				continue;
 			}
 
+			bool is_col_hovered = cache.hover_column == i;
+			bool is_cell_hovered = is_row_hovered && is_col_hovered;
+			bool is_cell_button_hovered = is_cell_hovered && cache.hover_button_index_in_column != -1;
 			int item_width = get_column_width(i);
 
 			if (i == 0) {
@@ -2123,7 +2164,7 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 				}
 			}
 
-			if (!rtl && p_item->cells[i].buttons.size()) {
+			if (!p_item->cells[i].buttons.is_empty()) {
 				int buttons_width = 0;
 				for (int j = p_item->cells[i].buttons.size() - 1; j >= 0; j--) {
 					Ref<Texture2D> button_texture = p_item->cells[i].buttons[j].texture;
@@ -2132,12 +2173,14 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 
 				int total_ofs = ofs - theme_cache.offset.x;
 
+				// If part of the column is beyond the right side of the control due to scrolling, clamp the label width
+				// so that all buttons attached to the cell remain within view.
 				if (total_ofs + item_width > p_draw_size.width) {
 					item_width = MAX(buttons_width, p_draw_size.width - total_ofs);
 				}
 			}
 
-			int item_width_with_buttons = item_width; // used later for drawing buttons
+			int item_width_with_buttons = item_width; // Used later for drawing buttons.
 			int buttons_width = 0;
 			for (int j = p_item->cells[i].buttons.size() - 1; j >= 0; j--) {
 				Ref<Texture2D> button_texture = p_item->cells[i].buttons[j].texture;
@@ -2176,17 +2219,50 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 				RenderingServer::get_singleton()->canvas_item_add_line(ci, Point2i(r.position.x, r.position.y + r.size.height), r.position + r.size, theme_cache.guide_color, 1);
 			}
 
-			if (i == 0) {
-				if (p_item->cells[0].selected && select_mode == SELECT_ROW) {
+			if (i == 0 && select_mode == SELECT_ROW) {
+				if (p_item->cells[0].selected || is_row_hovered) {
 					const Rect2 content_rect = _get_content_rect();
 					Rect2i row_rect = Rect2i(Point2i(content_rect.position.x, item_rect.position.y), Size2i(content_rect.size.x, item_rect.size.y));
 					if (rtl) {
 						row_rect.position.x = get_size().width - row_rect.position.x - row_rect.size.x;
 					}
-					if (has_focus()) {
-						theme_cache.selected_focus->draw(ci, row_rect);
+
+					if (p_item->cells[0].selected) {
+						if (is_row_hovered) {
+							if (has_focus()) {
+								theme_cache.hovered_selected_focus->draw(ci, row_rect);
+							} else {
+								theme_cache.hovered_selected->draw(ci, row_rect);
+							}
+						} else {
+							if (has_focus()) {
+								theme_cache.selected_focus->draw(ci, row_rect);
+							} else {
+								theme_cache.selected->draw(ci, row_rect);
+							}
+						}
+					} else if (!drop_mode_flags) {
+						if (is_cell_button_hovered) {
+							theme_cache.hovered_dimmed->draw(ci, row_rect);
+						} else {
+							theme_cache.hovered->draw(ci, row_rect);
+						}
+					}
+				}
+			}
+
+			if (select_mode != SELECT_ROW) {
+				Rect2i r = cell_rect;
+				if (rtl) {
+					r.position.x = get_size().width - r.position.x - r.size.x;
+				}
+
+				// Cell hover.
+				if (is_cell_hovered && !p_item->cells[i].selected && !drop_mode_flags) {
+					if (is_cell_button_hovered) {
+						theme_cache.hovered_dimmed->draw(ci, r);
 					} else {
-						theme_cache.selected->draw(ci, row_rect);
+						theme_cache.hovered->draw(ci, r);
 					}
 				}
 			}
@@ -2200,10 +2276,18 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 						r.position.x = get_size().width - r.position.x - r.size.x;
 					}
 					if (p_item->cells[i].selected) {
-						if (has_focus()) {
-							theme_cache.selected_focus->draw(ci, r);
+						if (is_cell_hovered) {
+							if (has_focus()) {
+								theme_cache.hovered_selected_focus->draw(ci, r);
+							} else {
+								theme_cache.hovered_selected->draw(ci, r);
+							}
 						} else {
-							theme_cache.selected->draw(ci, r);
+							if (has_focus()) {
+								theme_cache.selected_focus->draw(ci, r);
+							} else {
+								theme_cache.selected->draw(ci, r);
+							}
 						}
 					}
 				} else {
@@ -2253,7 +2337,7 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 						RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(r.position.x, r.position.y + r.size.y, r.size.x, 1), theme_cache.drop_position_color);
 					}
 				} else if (drop_mode_over == p_item->get_parent()) {
-					if (drop_mode_section == 1 && !p_item->get_prev() /* && !drop_mode_over->is_collapsed() */) { // The drop_mode_over shouldn't ever be collapsed in here, otherwise we would be drawing a child of a collapsed item.
+					if (drop_mode_section == 1 && !p_item->get_prev()) {
 						// Line above.
 						RenderingServer::get_singleton()->canvas_item_add_rect(ci, Rect2(r.position.x, r.position.y, r.size.x, 1), theme_cache.drop_position_color);
 					}
@@ -2264,7 +2348,9 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 			if (p_item->cells[i].custom_color) {
 				cell_color = p_item->cells[i].color;
 			} else {
-				cell_color = p_item->cells[i].selected ? theme_cache.font_selected_color : theme_cache.font_color;
+				bool draw_as_hover = !drop_mode_flags && (select_mode == SELECT_ROW ? is_row_hovered : is_cell_hovered);
+				bool draw_as_hover_dim = draw_as_hover && is_cell_button_hovered;
+				cell_color = p_item->cells[i].selected && draw_as_hover ? theme_cache.font_hovered_selected_color : (p_item->cells[i].selected ? theme_cache.font_selected_color : (draw_as_hover_dim ? theme_cache.font_hovered_dimmed_color : (draw_as_hover ? theme_cache.font_hovered_color : theme_cache.font_color)));
 			}
 
 			Color font_outline_color = theme_cache.font_outline_color;
@@ -2272,7 +2358,7 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 			Color icon_col = p_item->cells[i].icon_color;
 
 			if (p_item->cells[i].dirty) {
-				const_cast<Tree *>(this)->update_item_cell(p_item, i);
+				update_item_cell(p_item, i);
 			}
 
 			if (rtl) {
@@ -2416,7 +2502,7 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 					ir.size.width -= downarrow->get_width();
 
 					if (p_item->cells[i].custom_button) {
-						if (cache.hover_item == p_item && cache.hover_cell == i) {
+						if (cache.hover_item == p_item && cache.hover_column == i) {
 							if (Input::get_singleton()->is_mouse_button_pressed(MouseButton::LEFT)) {
 								draw_style_box(theme_cache.custom_button_pressed, ir);
 							} else {
@@ -2437,19 +2523,26 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 				} break;
 			}
 
+			// Draw the buttons inside the cell.
 			for (int j = p_item->cells[i].buttons.size() - 1; j >= 0; j--) {
 				Ref<Texture2D> button_texture = p_item->cells[i].buttons[j].texture;
 				Size2 button_size = button_texture->get_size() + theme_cache.button_pressed->get_minimum_size();
 
 				Point2i button_ofs = Point2i(ofs + item_width_with_buttons - button_size.width, p_pos.y) - theme_cache.offset + p_draw_ofs;
 
-				if (cache.click_type == Cache::CLICK_BUTTON && cache.click_item == p_item && cache.click_column == i && cache.click_index == j && !p_item->cells[i].buttons[j].disabled) {
-					// Being pressed.
+				bool should_draw_pressed = cache.click_type == Cache::CLICK_BUTTON && cache.click_item == p_item && cache.click_column == i && cache.click_index == j && !p_item->cells[i].buttons[j].disabled;
+				bool should_draw_hovered = !drop_mode_flags && cache.hover_item == p_item && cache.hover_column == i && cache.hover_button_index_in_column == j && !p_item->cells[i].buttons[j].disabled;
+
+				if (should_draw_pressed || should_draw_hovered) {
 					Point2 od = button_ofs;
 					if (rtl) {
 						od.x = get_size().width - od.x - button_size.x;
 					}
-					theme_cache.button_pressed->draw(get_canvas_item(), Rect2(od.x, od.y, button_size.width, MAX(button_size.height, label_h)));
+					if (should_draw_pressed && should_draw_hovered) {
+						theme_cache.button_pressed->draw(get_canvas_item(), Rect2(od.x, od.y, button_size.width, MAX(button_size.height, label_h)));
+					} else {
+						theme_cache.button_hover->draw(get_canvas_item(), Rect2(od.x, od.y, button_size.width, MAX(button_size.height, label_h)));
+					}
 				}
 
 				button_ofs.y += (label_h - button_size.height) / 2;
@@ -2480,7 +2573,8 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 			}
 		}
 
-		if (!p_item->disable_folding && !hide_folding && p_item->first_child && p_item->get_visible_child_count() != 0) { //has visible children, draw the guide box
+		// Draw the folding arrow.
+		if (!p_item->disable_folding && !hide_folding && p_item->first_child && p_item->get_visible_child_count() != 0) { // Has visible children, draw the guide box.
 
 			Ref<Texture2D> arrow;
 
@@ -2494,14 +2588,27 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 				arrow = theme_cache.arrow;
 			}
 
-			Point2 apos = p_pos + Point2i(0, (label_h - arrow->get_height()) / 2) - theme_cache.offset + p_draw_ofs;
-			apos.x += theme_cache.item_margin - arrow->get_width();
+			Size2 arrow_full_size = arrow->get_size();
 
-			if (rtl) {
-				apos.x = get_size().width - apos.x - arrow->get_width();
+			Point2 apos = p_pos + Point2i(0, (label_h - arrow_full_size.height) / 2) - theme_cache.offset + p_draw_ofs;
+			apos.x += theme_cache.item_margin - arrow_full_size.width;
+
+			Size2 arrow_draw_size = arrow_full_size;
+			int out_width = p_pos.x + theme_cache.item_margin - get_column_width(0);
+			if (out_width > 0) {
+				arrow_draw_size.width -= out_width;
 			}
 
-			arrow->draw(ci, apos);
+			if (arrow_draw_size.width > 0) {
+				Point2 src_pos = Point2();
+				if (rtl) {
+					apos.x = get_size().width - apos.x - arrow_draw_size.width;
+					src_pos = Point2(arrow_full_size.width - arrow_draw_size.width, 0);
+				}
+				Rect2 arrow_rect = Rect2(apos, arrow_draw_size);
+				Rect2 arrow_src_rect = Rect2(src_pos, arrow_draw_size);
+				arrow->draw_rect_region(ci, arrow_rect, arrow_src_rect);
+			}
 		}
 	}
 
@@ -2513,7 +2620,7 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 		children_pos.y += htotal;
 	}
 
-	if (!p_item->collapsed) { /* if not collapsed, check the children */
+	if (!p_item->collapsed) { // If not collapsed, check the children.
 		TreeItem *c = p_item->first_child;
 
 		int base_ofs = children_pos.y - theme_cache.offset.y + p_draw_ofs.y;
@@ -2530,19 +2637,21 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 
 			// Draw relationship lines.
 			if (theme_cache.draw_relationship_lines > 0 && (!hide_root || c->parent != root) && c->is_visible_in_tree()) {
-				int root_ofs = children_pos.x + ((p_item->disable_folding || hide_folding) ? theme_cache.h_separation : theme_cache.item_margin);
 				int parent_ofs = p_pos.x + theme_cache.item_margin;
-				Point2i root_pos = Point2i(root_ofs, children_pos.y + child_self_height / 2) - theme_cache.offset + p_draw_ofs;
+				Point2i parent_pos = Point2i(parent_ofs - theme_cache.arrow->get_width() / 2, p_pos.y + label_h / 2 + theme_cache.arrow->get_height() / 2) - theme_cache.offset + p_draw_ofs;
 
-				if (c->get_visible_child_count() > 0) {
+				int root_ofs = children_pos.x + ((p_item->disable_folding || hide_folding) ? theme_cache.h_separation : theme_cache.item_margin);
+				Point2i root_pos = Point2i(root_ofs, children_pos.y + child_self_height / 2) - theme_cache.offset + p_draw_ofs;
+				if (!hide_folding && !p_item->disable_folding && c->get_visible_child_count() > 0) {
 					root_pos -= Point2i(theme_cache.arrow->get_width(), 0);
 				}
+				root_pos.x = MIN(root_pos.x, get_column_width(0) + p_draw_ofs.x);
+
+				bool is_no_space = root_pos.x <= parent_pos.x;
 
 				float line_width = theme_cache.relationship_line_width * Math::round(theme_cache.base_scale);
 				float parent_line_width = theme_cache.parent_hl_line_width * Math::round(theme_cache.base_scale);
 				float children_line_width = theme_cache.children_hl_line_width * Math::round(theme_cache.base_scale);
-
-				Point2i parent_pos = Point2i(parent_ofs - theme_cache.arrow->get_width() / 2, p_pos.y + label_h / 2 + theme_cache.arrow->get_height() / 2) - theme_cache.offset + p_draw_ofs;
 
 				int more_prev_ofs = 0;
 
@@ -2555,10 +2664,12 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 					// Order of parts on this bend: the horizontal line first, then the vertical line.
 					if (_is_branch_selected(c)) {
 						// If this item or one of its children is selected, we draw the line using parent highlight style.
-						if (htotal >= 0) {
-							RenderingServer::get_singleton()->canvas_item_add_line(ci, root_pos, Point2i(parent_pos.x + Math::floor(parent_line_width / 2), root_pos.y), theme_cache.parent_hl_line_color, parent_line_width);
+						if (!is_no_space) {
+							if (htotal >= 0) {
+								RenderingServer::get_singleton()->canvas_item_add_line(ci, root_pos, Point2i(parent_pos.x + Math::floor(parent_line_width / 2), root_pos.y), theme_cache.parent_hl_line_color, parent_line_width);
+							}
+							RenderingServer::get_singleton()->canvas_item_add_line(ci, Point2i(parent_pos.x, root_pos.y + Math::floor(parent_line_width / 2)), Point2i(parent_pos.x, prev_hl_ofs), theme_cache.parent_hl_line_color, parent_line_width);
 						}
-						RenderingServer::get_singleton()->canvas_item_add_line(ci, Point2i(parent_pos.x, root_pos.y + Math::floor(parent_line_width / 2)), Point2i(parent_pos.x, prev_hl_ofs), theme_cache.parent_hl_line_color, parent_line_width);
 
 						more_prev_ofs = theme_cache.parent_hl_line_margin;
 						prev_hl_ofs = root_pos.y + Math::floor(parent_line_width / 2);
@@ -2566,33 +2677,41 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 						// If parent item is selected (but this item is not), we draw the line using children highlight style.
 						// Siblings of the selected branch can be drawn with a slight offset and their vertical line must appear as highlighted.
 						if (_is_sibling_branch_selected(c)) {
-							if (htotal >= 0) {
-								RenderingServer::get_singleton()->canvas_item_add_line(ci, root_pos, Point2i(parent_pos.x + Math::floor(parent_line_width / 2), root_pos.y), theme_cache.children_hl_line_color, children_line_width);
+							if (!is_no_space) {
+								if (htotal >= 0) {
+									RenderingServer::get_singleton()->canvas_item_add_line(ci, root_pos, Point2i(parent_pos.x + Math::floor(parent_line_width / 2), root_pos.y), theme_cache.children_hl_line_color, children_line_width);
+								}
+								RenderingServer::get_singleton()->canvas_item_add_line(ci, Point2i(parent_pos.x, root_pos.y + Math::floor(parent_line_width / 2)), Point2i(parent_pos.x, prev_hl_ofs), theme_cache.parent_hl_line_color, parent_line_width);
 							}
-							RenderingServer::get_singleton()->canvas_item_add_line(ci, Point2i(parent_pos.x, root_pos.y + Math::floor(parent_line_width / 2)), Point2i(parent_pos.x, prev_hl_ofs), theme_cache.parent_hl_line_color, parent_line_width);
 
 							prev_hl_ofs = root_pos.y + Math::floor(parent_line_width / 2);
 						} else {
-							if (htotal >= 0) {
-								RenderingServer::get_singleton()->canvas_item_add_line(ci, root_pos, Point2i(parent_pos.x + Math::floor(children_line_width / 2), root_pos.y), theme_cache.children_hl_line_color, children_line_width);
+							if (!is_no_space) {
+								if (htotal >= 0) {
+									RenderingServer::get_singleton()->canvas_item_add_line(ci, root_pos, Point2i(parent_pos.x + Math::floor(children_line_width / 2), root_pos.y), theme_cache.children_hl_line_color, children_line_width);
+								}
+								RenderingServer::get_singleton()->canvas_item_add_line(ci, Point2i(parent_pos.x, root_pos.y + Math::floor(children_line_width / 2)), Point2i(parent_pos.x, prev_ofs + Math::floor(children_line_width / 2)), theme_cache.children_hl_line_color, children_line_width);
 							}
-							RenderingServer::get_singleton()->canvas_item_add_line(ci, Point2i(parent_pos.x, root_pos.y + Math::floor(children_line_width / 2)), Point2i(parent_pos.x, prev_ofs + Math::floor(children_line_width / 2)), theme_cache.children_hl_line_color, children_line_width);
 						}
 					} else {
 						// If nothing of the above is true, we draw the line using normal style.
 						// Siblings of the selected branch can be drawn with a slight offset and their vertical line must appear as highlighted.
 						if (_is_sibling_branch_selected(c)) {
-							if (htotal >= 0) {
-								RenderingServer::get_singleton()->canvas_item_add_line(ci, root_pos, Point2i(parent_pos.x + theme_cache.parent_hl_line_margin, root_pos.y), theme_cache.relationship_line_color, line_width);
+							if (!is_no_space) {
+								if (htotal >= 0) {
+									RenderingServer::get_singleton()->canvas_item_add_line(ci, root_pos, Point2i(parent_pos.x + theme_cache.parent_hl_line_margin, root_pos.y), theme_cache.relationship_line_color, line_width);
+								}
+								RenderingServer::get_singleton()->canvas_item_add_line(ci, Point2i(parent_pos.x, root_pos.y + Math::floor(parent_line_width / 2)), Point2i(parent_pos.x, prev_hl_ofs), theme_cache.parent_hl_line_color, parent_line_width);
 							}
-							RenderingServer::get_singleton()->canvas_item_add_line(ci, Point2i(parent_pos.x, root_pos.y + Math::floor(parent_line_width / 2)), Point2i(parent_pos.x, prev_hl_ofs), theme_cache.parent_hl_line_color, parent_line_width);
 
 							prev_hl_ofs = root_pos.y + Math::floor(parent_line_width / 2);
 						} else {
-							if (htotal >= 0) {
-								RenderingServer::get_singleton()->canvas_item_add_line(ci, root_pos, Point2i(parent_pos.x + Math::floor(line_width / 2), root_pos.y), theme_cache.relationship_line_color, line_width);
+							if (!is_no_space) {
+								if (htotal >= 0) {
+									RenderingServer::get_singleton()->canvas_item_add_line(ci, root_pos, Point2i(parent_pos.x + Math::floor(line_width / 2), root_pos.y), theme_cache.relationship_line_color, line_width);
+								}
+								RenderingServer::get_singleton()->canvas_item_add_line(ci, Point2i(parent_pos.x, root_pos.y + Math::floor(line_width / 2)), Point2i(parent_pos.x, prev_ofs + Math::floor(line_width / 2)), theme_cache.relationship_line_color, line_width);
 							}
-							RenderingServer::get_singleton()->canvas_item_add_line(ci, Point2i(parent_pos.x, root_pos.y + Math::floor(line_width / 2)), Point2i(parent_pos.x, prev_ofs + Math::floor(line_width / 2)), theme_cache.relationship_line_color, line_width);
 						}
 					}
 				}
@@ -2693,7 +2812,7 @@ void Tree::select_single_item(TreeItem *p_selected, TreeItem *p_current, int p_c
 				c.selected = true;
 				selected_item = p_selected;
 				if (!emitted_row) {
-					emit_signal(SNAME("item_selected"));
+					emit_signal(SceneStringName(item_selected));
 					emitted_row = true;
 				}
 			} else if (c.selected) {
@@ -2717,7 +2836,7 @@ void Tree::select_single_item(TreeItem *p_selected, TreeItem *p_current, int p_c
 					if (select_mode == SELECT_MULTI) {
 						emit_signal(SNAME("multi_selected"), p_current, i, true);
 					} else if (select_mode == SELECT_SINGLE) {
-						emit_signal(SNAME("item_selected"));
+						emit_signal(SceneStringName(item_selected));
 					}
 
 				} else if (select_mode == SELECT_MULTI && (selected_item != p_selected || selected_col != i)) {
@@ -2738,7 +2857,6 @@ void Tree::select_single_item(TreeItem *p_selected, TreeItem *p_current, int p_c
 					}
 					c.selected = false;
 				}
-				//p_current->deselected_signal.call(p_col);
 			}
 		}
 	}
@@ -2750,7 +2868,9 @@ void Tree::select_single_item(TreeItem *p_selected, TreeItem *p_current, int p_c
 	TreeItem *c = p_current->first_child;
 
 	while (c) {
-		select_single_item(p_selected, c, p_col, p_prev, r_in_range, p_current->is_collapsed() || p_force_deselect);
+		if (c->is_visible()) {
+			select_single_item(p_selected, c, p_col, p_prev, r_in_range, p_current->is_collapsed() || p_force_deselect);
+		}
 		c = c->next;
 	}
 }
@@ -2779,14 +2899,11 @@ void Tree::_range_click_timeout() {
 		Ref<InputEventMouseButton> mb;
 		mb.instantiate();
 
-		int x_limit = get_size().width - theme_cache.panel_style->get_minimum_size().width;
-		if (v_scroll->is_visible()) {
-			x_limit -= v_scroll->get_minimum_size().width;
-		}
+		int x_limit = _get_content_rect().size.x;
 
 		cache.rtl = is_layout_rtl();
 
-		propagate_mouse_activated = false; // done from outside, so signal handler can't clear the tree in the middle of emit (which is a common case)
+		propagate_mouse_activated = false; // Done from outside, so signal handler can't clear the tree in the middle of emit (which is a common case).
 		blocked++;
 		propagate_mouse_event(pos + theme_cache.offset, 0, 0, x_limit + theme_cache.offset.width, false, root, MouseButton::LEFT, mb);
 		blocked--;
@@ -2816,14 +2933,17 @@ int Tree::propagate_mouse_event(const Point2i &p_pos, int x_ofs, int y_ofs, int 
 		// Skip any processing of invisible items.
 		return 0;
 	}
+	if (p_pos.x > x_limit) {
+		// Inside the scroll area.
+		return -1;
+	}
 
 	int item_h = compute_item_height(p_item) + theme_cache.v_separation;
 
 	bool skip = (p_item == root && hide_root);
 
 	if (!skip && p_pos.y < item_h) {
-		// check event!
-
+		// Check event!
 		if (range_click_timer->get_time_left() > 0 && p_item != range_item_last) {
 			return -1;
 		}
@@ -2837,95 +2957,42 @@ int Tree::propagate_mouse_event(const Point2i &p_pos, int x_ofs, int y_ofs, int 
 			return -1;
 		}
 
-		int x = p_pos.x;
-		/* find clicked column */
-		int col = -1;
-		int col_ofs = 0;
-		int col_width = 0;
+		FindColumnButtonResult find_result = _find_column_and_button_at_pos(p_pos.x, p_item, x_ofs, x_limit);
 
-		int limit_w = x_limit;
-
-		for (int i = 0; i < columns.size(); i++) {
-			col_width = get_column_width(i);
-
-			if (p_item->cells[i].expand_right) {
-				int plus = 1;
-				while (i + plus < columns.size() && !p_item->cells[i + plus].editable && p_item->cells[i + plus].mode == TreeItem::CELL_MODE_STRING && p_item->cells[i + plus].text.is_empty() && p_item->cells[i + plus].icon.is_null()) {
-					col_width += theme_cache.h_separation;
-					col_width += get_column_width(i + plus);
-					plus++;
-				}
-			}
-
-			if (x > col_width) {
-				col_ofs += col_width;
-				x -= col_width;
-				limit_w -= col_width;
-				continue;
-			}
-
-			col = i;
-			break;
-		}
-
-		if (col == -1) {
+		if (find_result.column_index == -1) {
 			return -1;
-		} else if (col == 0) {
-			int margin = x_ofs + theme_cache.item_margin; //-theme_cache.h_separation;
-			//int lm = theme_cache.panel_style->get_margin(SIDE_LEFT);
-			col_width -= margin;
-			limit_w -= margin;
-			col_ofs += margin;
-			x -= margin;
-		} else {
-			col_width -= theme_cache.h_separation;
-			limit_w -= theme_cache.h_separation;
-			x -= theme_cache.h_separation;
 		}
 
+		int col = find_result.column_index;
+		int col_width = find_result.column_width;
+		int col_ofs = find_result.column_offset;
+		int x = find_result.pos_x;
 		const TreeItem::Cell &c = p_item->cells[col];
 
-		if (!cache.rtl && !p_item->cells[col].buttons.is_empty()) {
-			int button_w = 0;
-			for (int j = p_item->cells[col].buttons.size() - 1; j >= 0; j--) {
-				Ref<Texture2D> b = p_item->cells[col].buttons[j].texture;
-				button_w += b->get_size().width + theme_cache.button_pressed->get_minimum_size().width + theme_cache.button_margin;
-			}
-
-			col_width = MAX(button_w, MIN(limit_w, col_width));
-		}
-
-		for (int j = c.buttons.size() - 1; j >= 0; j--) {
-			Ref<Texture2D> b = c.buttons[j].texture;
-			int w = b->get_size().width + theme_cache.button_pressed->get_minimum_size().width;
-
-			if (x > col_width - w) {
-				if (c.buttons[j].disabled) {
-					pressed_button = -1;
-					cache.click_type = Cache::CLICK_NONE;
-					return -1;
-				}
-
-				// Make sure the click is correct.
-				Point2 click_pos = get_global_mouse_position() - get_global_position();
-				if (!get_item_at_position(click_pos)) {
-					pressed_button = -1;
-					cache.click_type = Cache::CLICK_NONE;
-					return -1;
-				}
-
-				pressed_button = j;
-				cache.click_type = Cache::CLICK_BUTTON;
-				cache.click_index = j;
-				cache.click_id = c.buttons[j].id;
-				cache.click_item = p_item;
-				cache.click_column = col;
-				cache.click_pos = click_pos;
-				queue_redraw();
+		if (find_result.button_index >= 0) {
+			if (c.buttons[find_result.button_index].disabled) {
+				pressed_button = -1;
+				cache.click_type = Cache::CLICK_NONE;
 				return -1;
 			}
 
-			col_width -= w + theme_cache.button_margin;
+			// Make sure the click is correct.
+			const Point2 click_pos = get_local_mouse_position();
+			if (!get_item_at_position(click_pos)) {
+				pressed_button = -1;
+				cache.click_type = Cache::CLICK_NONE;
+				return -1;
+			}
+
+			pressed_button = find_result.button_index;
+			cache.click_type = Cache::CLICK_BUTTON;
+			cache.click_index = find_result.button_index;
+			cache.click_id = c.buttons[find_result.button_index].id;
+			cache.click_item = p_item;
+			cache.click_column = col;
+			cache.click_pos = click_pos;
+			queue_redraw();
+			return -1;
 		}
 
 		if (!p_item->disable_folding && !hide_folding && !p_item->cells[col].editable && !p_item->cells[col].selectable && p_item->get_first_child()) {
@@ -2941,10 +3008,10 @@ int Tree::propagate_mouse_event(const Point2i &p_pos, int x_ofs, int y_ofs, int 
 		bool already_cursor = (p_item == selected_item) && col == selected_col;
 
 		if (p_button == MouseButton::LEFT || (p_button == MouseButton::RIGHT && allow_rmb_select)) {
-			/* process selection */
+			// Process selection.
 
-			if (p_double_click && (!c.editable || c.mode == TreeItem::CELL_MODE_CUSTOM || c.mode == TreeItem::CELL_MODE_ICON /*|| c.mode==TreeItem::CELL_MODE_CHECK*/)) { //it's confusing for check
-				// Emits the "item_activated" signal.
+			if (p_double_click && (!c.editable || c.mode == TreeItem::CELL_MODE_CUSTOM || c.mode == TreeItem::CELL_MODE_ICON)) {
+				// Emits the `item_activated` signal.
 				propagate_mouse_activated = true;
 
 				incr_search.clear();
@@ -2971,6 +3038,9 @@ int Tree::propagate_mouse_event(const Point2i &p_pos, int x_ofs, int y_ofs, int 
 						int icount = _count_selected_items(root);
 
 						if (select_mode == SELECT_MULTI && icount > 1 && p_button != MouseButton::RIGHT) {
+							if (!already_selected) {
+								select_single_item(p_item, root, col);
+							}
 							single_select_defer = p_item;
 							single_select_defer_column = col;
 						} else {
@@ -2987,17 +3057,16 @@ int Tree::propagate_mouse_event(const Point2i &p_pos, int x_ofs, int y_ofs, int 
 		}
 
 		if (!c.editable) {
-			return -1; // if cell is not editable, don't bother
+			return -1; // If cell is not editable, don't bother.
 		}
 
-		/* editing */
-
+		// Editing.
 		bool bring_up_editor = allow_reselect ? (c.selected && already_selected) : c.selected;
 		String editor_text = c.text;
 
 		switch (c.mode) {
 			case TreeItem::CELL_MODE_STRING: {
-				//nothing in particular
+				// Nothing in particular.
 
 				if (select_mode == SELECT_MULTI && (get_viewport()->get_processed_events_count() == focus_in_id || !already_cursor)) {
 					bring_up_editor = false;
@@ -3005,7 +3074,7 @@ int Tree::propagate_mouse_event(const Point2i &p_pos, int x_ofs, int y_ofs, int 
 
 			} break;
 			case TreeItem::CELL_MODE_CHECK: {
-				bring_up_editor = false; //checkboxes are not edited with editor
+				bring_up_editor = false; // Checkboxes are not edited with editor.
 				if (force_edit_checkbox_only_on_checkbox) {
 					if (x < theme_cache.checked->get_width()) {
 						p_item->set_checked(col, !c.checked);
@@ -3016,12 +3085,10 @@ int Tree::propagate_mouse_event(const Point2i &p_pos, int x_ofs, int y_ofs, int 
 					item_edited(col, p_item, p_button);
 				}
 				click_handled = true;
-				//p_item->edited_signal.call(col);
 
 			} break;
 			case TreeItem::CELL_MODE_RANGE: {
 				if (!c.text.is_empty()) {
-					//if (x >= (get_column_width(col)-item_h/2)) {
 					popup_menu->clear();
 					for (int i = 0; i < c.text.get_slice_count(","); i++) {
 						String s = c.text.get_slicec(',', i);
@@ -3033,11 +3100,10 @@ int Tree::propagate_mouse_event(const Point2i &p_pos, int x_ofs, int y_ofs, int 
 					popup_menu->popup();
 					popup_edited_item = p_item;
 					popup_edited_item_col = col;
-					//}
 					bring_up_editor = false;
 				} else {
 					if (x >= (col_width - item_h / 2)) {
-						/* touching the combo */
+						// Touching the combo.
 						bool up = p_pos.y < (item_h / 2);
 
 						if (p_button == MouseButton::LEFT) {
@@ -3050,7 +3116,7 @@ int Tree::propagate_mouse_event(const Point2i &p_pos, int x_ofs, int y_ofs, int 
 								range_click_timer->start();
 
 							} else if (up != range_up_last) {
-								return -1; // break. avoid changing direction on mouse held
+								return -1; // Break. Avoid changing direction on mouse held.
 							}
 
 							p_item->set_range(col, c.val + (up ? 1.0 : -1.0) * c.step);
@@ -3068,7 +3134,6 @@ int Tree::propagate_mouse_event(const Point2i &p_pos, int x_ofs, int y_ofs, int 
 							item_edited(col, p_item, p_button);
 						}
 
-						//p_item->edited_signal.call(col);
 						bring_up_editor = false;
 
 					} else {
@@ -3115,18 +3180,17 @@ int Tree::propagate_mouse_event(const Point2i &p_pos, int x_ofs, int y_ofs, int 
 		pressing_for_editor_text = editor_text;
 		pressing_for_editor = true;
 
-		return -1; //select
+		return -1; // Select.
 	} else {
 		Point2i new_pos = p_pos;
 
 		if (!skip) {
 			x_ofs += theme_cache.item_margin;
-			//new_pos.x-=theme_cache.item_margin;
 			y_ofs += item_h;
 			new_pos.y -= item_h;
 		}
 
-		if (!p_item->collapsed) { /* if not collapsed, check the children */
+		if (!p_item->collapsed) { // If not collapsed, check the children.
 
 			TreeItem *c = p_item->first_child;
 
@@ -3134,7 +3198,7 @@ int Tree::propagate_mouse_event(const Point2i &p_pos, int x_ofs, int y_ofs, int 
 				int child_h = propagate_mouse_event(new_pos, x_ofs, y_ofs, x_limit, p_double_click, c, p_button, p_mod);
 
 				if (child_h < 0) {
-					return -1; // break, stop propagating, no need to anymore
+					return -1; // Break, stop propagating, no need to anymore.
 				}
 
 				new_pos.y -= child_h;
@@ -3148,12 +3212,12 @@ int Tree::propagate_mouse_event(const Point2i &p_pos, int x_ofs, int y_ofs, int 
 		}
 	}
 
-	return item_h; // nothing found
+	return item_h; // Nothing found.
 }
 
 void Tree::_text_editor_popup_modal_close() {
-	if (popup_edit_commited) {
-		return; // Already processed by LineEdit/TextEdit commit.
+	if (popup_edit_committed) {
+		return; // Already processed by `LineEdit` / `TextEdit` commit.
 	}
 
 	if (popup_editor->get_hide_reason() == Popup::HIDE_REASON_CANCELED) {
@@ -3176,8 +3240,8 @@ void Tree::_text_editor_popup_modal_close() {
 }
 
 void Tree::_text_editor_gui_input(const Ref<InputEvent> &p_event) {
-	if (popup_edit_commited) {
-		return; // Already processed by _text_editor_popup_modal_close
+	if (popup_edit_committed) {
+		return; // Already processed by `_text_editor_popup_modal_close`.
 	}
 
 	if (popup_editor->get_hide_reason() == Popup::HIDE_REASON_CANCELED) {
@@ -3187,7 +3251,7 @@ void Tree::_text_editor_gui_input(const Ref<InputEvent> &p_event) {
 	if (p_event->is_action_pressed("ui_text_newline_blank", true)) {
 		accept_event();
 	} else if (p_event->is_action_pressed("ui_text_newline")) {
-		popup_edit_commited = true; // End edit popup processing.
+		popup_edit_committed = true; // End edit popup processing.
 		popup_editor->hide();
 		_apply_multiline_edit();
 		accept_event();
@@ -3218,15 +3282,15 @@ void Tree::_apply_multiline_edit() {
 }
 
 void Tree::_line_editor_submit(String p_text) {
-	if (popup_edit_commited) {
-		return; // Already processed by _text_editor_popup_modal_close
+	if (popup_edit_committed) {
+		return; // Already processed by _text_editor_popup_modal_close.
 	}
 
 	if (popup_editor->get_hide_reason() == Popup::HIDE_REASON_CANCELED) {
 		return; // ESC pressed, app focus lost, or forced close from code.
 	}
 
-	popup_edit_commited = true; // End edit popup processing.
+	popup_edit_committed = true; // End edit popup processing.
 	popup_editor->hide();
 
 	if (!popup_edited_item) {
@@ -3241,7 +3305,6 @@ void Tree::_line_editor_submit(String p_text) {
 	switch (c.mode) {
 		case TreeItem::CELL_MODE_STRING: {
 			c.text = p_text;
-			//popup_edited_item->edited_signal.call( popup_edited_item_col );
 		} break;
 		case TreeItem::CELL_MODE_RANGE: {
 			c.val = p_text.to_float();
@@ -3253,7 +3316,6 @@ void Tree::_line_editor_submit(String p_text) {
 			} else if (c.val > c.max) {
 				c.val = c.max;
 			}
-			//popup_edited_item->edited_signal.call( popup_edited_item_col );
 		} break;
 		default: {
 			ERR_FAIL();
@@ -3272,12 +3334,10 @@ void Tree::value_editor_changed(double p_value) {
 		return;
 	}
 
-	TreeItem::Cell &c = popup_edited_item->cells.write[popup_edited_item_col];
-	c.val = p_value;
+	const TreeItem::Cell &c = popup_edited_item->cells[popup_edited_item_col];
 
-	line_editor->set_text(String::num(c.val, Math::range_step_decimals(c.step)));
+	line_editor->set_text(String::num(p_value, Math::range_step_decimals(c.step)));
 
-	item_edited(popup_edited_item_col, popup_edited_item);
 	queue_redraw();
 }
 
@@ -3291,7 +3351,6 @@ void Tree::popup_select(int p_option) {
 	}
 
 	popup_edited_item->cells.write[popup_edited_item_col].val = p_option;
-	//popup_edited_item->edited_signal.call( popup_edited_item_col );
 	queue_redraw();
 	item_edited(popup_edited_item_col, popup_edited_item);
 }
@@ -3301,14 +3360,14 @@ void Tree::_go_left() {
 		if (selected_item->get_first_child() != nullptr && !selected_item->is_collapsed()) {
 			selected_item->set_collapsed(true);
 		} else {
-			if (columns.size() == 1) { // goto parent with one column
+			if (columns.size() == 1) { // Goto parent with one column.
 				TreeItem *parent = selected_item->get_parent();
 				if (selected_item != get_root() && parent && parent->is_selectable(selected_col) && !(hide_root && parent == get_root())) {
 					select_single_item(parent, get_root(), selected_col);
 				}
 			} else if (selected_item->get_prev_visible()) {
 				selected_col = columns.size() - 1;
-				_go_up(); // go to upper column if possible
+				_go_up(); // Go to upper column if possible.
 			}
 		}
 	} else {
@@ -3354,20 +3413,22 @@ void Tree::_go_up() {
 		prev = selected_item->get_prev_visible();
 	}
 
+	int col = MAX(selected_col, 0);
+
 	if (select_mode == SELECT_MULTI) {
 		if (!prev) {
 			return;
 		}
 
-		select_single_item(prev, get_root(), selected_col);
+		selected_item = prev;
+		emit_signal(SNAME("cell_selected"));
 		queue_redraw();
 	} else {
-		int col = selected_col < 0 ? 0 : selected_col;
 		while (prev && !prev->cells[col].selectable) {
 			prev = prev->get_prev_visible();
 		}
 		if (!prev) {
-			return; // do nothing..
+			return; // Do nothing.
 		}
 		prev->select(col);
 	}
@@ -3386,21 +3447,22 @@ void Tree::_go_down() {
 		next = selected_item->get_next_visible();
 	}
 
+	int col = MAX(selected_col, 0);
+
 	if (select_mode == SELECT_MULTI) {
 		if (!next) {
 			return;
 		}
 
-		select_single_item(next, get_root(), selected_col);
+		selected_item = next;
+		emit_signal(SNAME("cell_selected"));
 		queue_redraw();
 	} else {
-		int col = selected_col < 0 ? 0 : selected_col;
-
 		while (next && !next->cells[col].selectable) {
 			next = next->get_next_visible();
 		}
 		if (!next) {
-			return; // do nothing..
+			return; // Do nothing.
 		}
 		next->select(col);
 	}
@@ -3415,7 +3477,11 @@ bool Tree::_scroll(bool p_horizontal, float p_pages) {
 	double prev_value = scroll->get_value();
 	scroll->set_value(scroll->get_value() + scroll->get_page() * p_pages);
 
-	return scroll->get_value() != prev_value;
+	bool scroll_happened = scroll->get_value() != prev_value;
+	if (scroll_happened) {
+		_determine_hovered_item();
+	}
+	return scroll_happened;
 }
 
 Rect2 Tree::_get_scrollbar_layout_rect() const {
@@ -3460,34 +3526,42 @@ void Tree::gui_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventKey> k = p_event;
 
 	bool is_command = k.is_valid() && k->is_command_or_control_pressed();
-	if (p_event->is_action("ui_right") && p_event->is_pressed()) {
+	if (p_event->is_action(cache.rtl ? "ui_left" : "ui_right") && p_event->is_pressed()) {
 		if (!cursor_can_exit_tree) {
 			accept_event();
 		}
 
-		if (!selected_item || select_mode == SELECT_ROW || selected_col > (columns.size() - 1)) {
+		if (!selected_item || selected_col > (columns.size() - 1)) {
 			return;
 		}
+
 		if (k.is_valid() && k->is_shift_pressed()) {
 			selected_item->set_collapsed_recursive(false);
-		} else {
+		} else if (select_mode != SELECT_ROW) {
 			_go_right();
+		} else if (selected_item->get_first_child() != nullptr && selected_item->is_collapsed()) {
+			selected_item->set_collapsed(false);
+		} else {
+			_go_down();
 		}
-	} else if (p_event->is_action("ui_left") && p_event->is_pressed()) {
+	} else if (p_event->is_action(cache.rtl ? "ui_right" : "ui_left") && p_event->is_pressed()) {
 		if (!cursor_can_exit_tree) {
 			accept_event();
 		}
 
-		if (!selected_item || select_mode == SELECT_ROW || selected_col < 0) {
+		if (!selected_item || selected_col < 0) {
 			return;
 		}
 
 		if (k.is_valid() && k->is_shift_pressed()) {
 			selected_item->set_collapsed_recursive(true);
-		} else {
+		} else if (select_mode != SELECT_ROW) {
 			_go_left();
+		} else if (selected_item->get_first_child() != nullptr && !selected_item->is_collapsed()) {
+			selected_item->set_collapsed(true);
+		} else {
+			_go_up();
 		}
-
 	} else if (p_event->is_action("ui_up") && p_event->is_pressed() && !is_command) {
 		if (!cursor_can_exit_tree) {
 			accept_event();
@@ -3534,7 +3608,7 @@ void Tree::gui_input(const Ref<InputEvent> &p_event) {
 				next = next->get_next_visible();
 			}
 			if (!next) {
-				return; // do nothing..
+				return; // Do nothing.
 			}
 			next->select(selected_col);
 		}
@@ -3572,20 +3646,11 @@ void Tree::gui_input(const Ref<InputEvent> &p_event) {
 				prev = prev->get_prev_visible();
 			}
 			if (!prev) {
-				return; // do nothing..
+				return; // Do nothing.
 			}
 			prev->select(selected_col);
 		}
 		ensure_cursor_is_visible();
-	} else if (p_event->is_action("ui_accept") && p_event->is_pressed()) {
-		if (selected_item) {
-			//bring up editor if possible
-			if (!edit_selected()) {
-				emit_signal(SNAME("item_activated"));
-				incr_search.clear();
-			}
-		}
-		accept_event();
 	} else if (p_event->is_action("ui_select") && p_event->is_pressed()) {
 		if (select_mode == SELECT_MULTI) {
 			if (!selected_item) {
@@ -3600,9 +3665,18 @@ void Tree::gui_input(const Ref<InputEvent> &p_event) {
 			}
 		}
 		accept_event();
+	} else if (p_event->is_action("ui_accept") && p_event->is_pressed()) {
+		if (selected_item) {
+			// Bring up editor if possible.
+			if (!edit_selected()) {
+				emit_signal(SNAME("item_activated"));
+				incr_search.clear();
+			}
+		}
+		accept_event();
 	}
 
-	if (allow_search && k.is_valid()) { // Incremental search
+	if (allow_search && k.is_valid()) { // Incremental search.
 
 		if (!k->is_pressed()) {
 			return;
@@ -3632,94 +3706,12 @@ void Tree::gui_input(const Ref<InputEvent> &p_event) {
 
 	Ref<InputEventMouseMotion> mm = p_event;
 	if (mm.is_valid()) {
-		Ref<StyleBox> bg = theme_cache.panel_style;
+		hovered_pos = mm->get_position();
+		_determine_hovered_item();
+
 		bool rtl = is_layout_rtl();
-
-		Point2 pos = mm->get_position();
-		if (rtl) {
-			pos.x = get_size().width - pos.x;
-		}
-		pos -= theme_cache.panel_style->get_offset();
-
-		Cache::ClickType old_hover = cache.hover_type;
-		int old_index = cache.hover_index;
-
-		cache.hover_type = Cache::CLICK_NONE;
-		cache.hover_index = 0;
-		if (show_column_titles) {
-			pos.y -= _get_title_button_height();
-			if (pos.y < 0) {
-				pos.x += theme_cache.offset.x;
-				int len = 0;
-				for (int i = 0; i < columns.size(); i++) {
-					len += get_column_width(i);
-					if (pos.x < len) {
-						cache.hover_type = Cache::CLICK_TITLE;
-						cache.hover_index = i;
-						break;
-					}
-				}
-			}
-		}
-
-		if (root) {
-			Point2 mpos = mm->get_position();
-			if (rtl) {
-				mpos.x = get_size().width - mpos.x;
-			}
-			mpos -= theme_cache.panel_style->get_offset();
-			mpos.y -= _get_title_button_height();
-			if (mpos.y >= 0) {
-				if (h_scroll->is_visible_in_tree()) {
-					mpos.x += h_scroll->get_value();
-				}
-				if (v_scroll->is_visible_in_tree()) {
-					mpos.y += v_scroll->get_value();
-				}
-
-				TreeItem *old_it = cache.hover_item;
-				int old_col = cache.hover_cell;
-
-				int col, h, section;
-				TreeItem *it = _find_item_at_pos(root, mpos, col, h, section);
-
-				if (drop_mode_flags) {
-					if (it != drop_mode_over) {
-						drop_mode_over = it;
-						queue_redraw();
-					}
-					if (it && section != drop_mode_section) {
-						drop_mode_section = section;
-						queue_redraw();
-					}
-				}
-
-				cache.hover_item = it;
-				cache.hover_cell = col;
-
-				if (it != old_it || col != old_col) {
-					if (old_it && old_col >= old_it->cells.size()) {
-						// Columns may have changed since last redraw().
-						queue_redraw();
-					} else {
-						// Only need to update if mouse enters/exits a button
-						bool was_over_button = old_it && old_it->cells[old_col].custom_button;
-						bool is_over_button = it && it->cells[col].custom_button;
-						if (was_over_button || is_over_button) {
-							queue_redraw();
-						}
-					}
-				}
-			}
-		}
-
-		// Update if mouse enters/exits columns
-		if (cache.hover_type != old_hover || cache.hover_index != old_index) {
-			queue_redraw();
-		}
-
-		if (pressing_for_editor && popup_pressing_edited_item && (popup_pressing_edited_item->get_cell_mode(popup_pressing_edited_item_column) == TreeItem::CELL_MODE_RANGE)) {
-			/* This needs to happen now, because the popup can be closed when pressing another item, and must remain the popup edited item until it actually closes */
+		if (pressing_for_editor && popup_pressing_edited_item && !popup_pressing_edited_item->cells.is_empty() && (popup_pressing_edited_item->get_cell_mode(popup_pressing_edited_item_column) == TreeItem::CELL_MODE_RANGE)) {
+			// This needs to happen now, because the popup can be closed when pressing another item, and must remain the popup edited item until it actually closes.
 			popup_edited_item = popup_pressing_edited_item;
 			popup_edited_item_col = popup_pressing_edited_item_column;
 
@@ -3727,7 +3719,7 @@ void Tree::gui_input(const Ref<InputEvent> &p_event) {
 			popup_pressing_edited_item_column = -1;
 
 			if (!range_drag_enabled) {
-				//range drag
+				// Range drag.
 				Vector2 cpos = mm->get_position();
 				if (rtl) {
 					cpos.x = get_size().width - cpos.x;
@@ -3741,7 +3733,7 @@ void Tree::gui_input(const Ref<InputEvent> &p_event) {
 			} else {
 				const TreeItem::Cell &c = popup_edited_item->cells[popup_edited_item_col];
 				float diff_y = -mm->get_relative().y;
-				diff_y = Math::pow(ABS(diff_y), 1.8f) * SIGN(diff_y);
+				diff_y = Math::pow(Math::abs(diff_y), 1.8f) * SIGN(diff_y);
 				diff_y *= 0.1;
 				range_drag_base = CLAMP(range_drag_base + c.step * diff_y, c.min, c.max);
 				popup_edited_item->set_range(popup_edited_item_col, range_drag_base);
@@ -3765,7 +3757,7 @@ void Tree::gui_input(const Ref<InputEvent> &p_event) {
 					mb->get_button_index() == MouseButton::RIGHT) {
 				Point2 pos = mb->get_position();
 				if (rtl) {
-					pos.x = get_size().width - pos.x;
+					pos.x = get_size().width - pos.x - 1;
 				}
 				pos -= theme_cache.panel_style->get_offset();
 				if (show_column_titles) {
@@ -3799,12 +3791,7 @@ void Tree::gui_input(const Ref<InputEvent> &p_event) {
 						Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_VISIBLE);
 						warp_mouse(range_drag_capture_pos);
 					} else {
-						Rect2 rect;
-						if (select_mode == SELECT_ROW) {
-							rect = get_selected()->get_meta("__focus_col_" + itos(selected_col));
-						} else {
-							rect = get_selected()->get_meta("__focus_rect");
-						}
+						Rect2 rect = _get_item_focus_rect(get_selected());
 						Point2 mpos = mb->get_position();
 						int icon_size_x = 0;
 						Ref<Texture2D> icon = get_selected()->get_icon(selected_col);
@@ -3816,7 +3803,7 @@ void Tree::gui_input(const Ref<InputEvent> &p_event) {
 								icon_size_x = icon_region.size.width;
 							}
 						}
-						// Icon is treated as if it is outside of the rect so that double clicking on it will emit the item_icon_double_clicked signal.
+						// Icon is treated as if it is outside of the rect so that double clicking on it will emit the `item_icon_double_clicked` signal.
 						if (rtl) {
 							mpos.x = get_size().width - (mpos.x + icon_size_x);
 						} else {
@@ -3837,7 +3824,7 @@ void Tree::gui_input(const Ref<InputEvent> &p_event) {
 					if (drag_speed == 0) {
 						drag_touching_deaccel = false;
 						drag_touching = false;
-						set_physics_process_internal(false);
+						set_process_internal(false);
 					} else {
 						drag_touching_deaccel = true;
 					}
@@ -3845,9 +3832,16 @@ void Tree::gui_input(const Ref<InputEvent> &p_event) {
 			}
 
 			if (cache.click_type == Cache::CLICK_BUTTON && cache.click_item != nullptr) {
-				// make sure in case of wrong reference after reconstructing whole TreeItems
+				// Make sure the reference is current in case TreeItems is reconstructed.
 				cache.click_item = get_item_at_position(cache.click_pos);
-				emit_signal("button_clicked", cache.click_item, cache.click_column, cache.click_id, mb->get_button_index());
+
+				// Only emit the event if the click is still within the button rect.
+				TreeItem *current_item;
+				int current_column, current_index, current_section;
+				_find_button_at_pos(mb->get_position(), current_item, current_column, current_index, current_section);
+				if (current_item == cache.click_item && current_column == cache.click_column && current_index == cache.click_index) {
+					emit_signal("button_clicked", cache.click_item, cache.click_column, cache.click_id, mb->get_button_index());
+				}
 			}
 
 			cache.click_type = Cache::CLICK_NONE;
@@ -3870,7 +3864,7 @@ void Tree::gui_input(const Ref<InputEvent> &p_event) {
 
 				Point2 pos = mb->get_position();
 				if (rtl) {
-					pos.x = get_size().width - pos.x;
+					pos.x = get_size().width - pos.x - 1;
 				}
 				pos -= bg->get_offset();
 				cache.click_type = Cache::CLICK_NONE;
@@ -3902,10 +3896,7 @@ void Tree::gui_input(const Ref<InputEvent> &p_event) {
 				pressing_for_editor = false;
 				propagate_mouse_activated = false;
 
-				int x_limit = get_size().width - theme_cache.panel_style->get_minimum_size().width;
-				if (v_scroll->is_visible()) {
-					x_limit -= v_scroll->get_minimum_size().width;
-				}
+				int x_limit = _get_content_rect().size.x;
 
 				cache.rtl = is_layout_rtl();
 				blocked++;
@@ -3924,7 +3915,7 @@ void Tree::gui_input(const Ref<InputEvent> &p_event) {
 				}
 
 				if (drag_touching) {
-					set_physics_process_internal(false);
+					set_process_internal(false);
 					drag_touching_deaccel = false;
 					drag_touching = false;
 					drag_speed = 0;
@@ -3934,12 +3925,12 @@ void Tree::gui_input(const Ref<InputEvent> &p_event) {
 				if (!click_handled) {
 					drag_speed = 0;
 					drag_accum = 0;
-					//last_drag_accum=0;
 					drag_from = v_scroll->get_value();
+
 					drag_touching = DisplayServer::get_singleton()->is_touchscreen_available();
 					drag_touching_deaccel = false;
 					if (drag_touching) {
-						set_physics_process_internal(true);
+						set_process_internal(true);
 					}
 
 					if (mb->get_button_index() == MouseButton::LEFT) {
@@ -3956,25 +3947,25 @@ void Tree::gui_input(const Ref<InputEvent> &p_event) {
 
 			} break;
 			case MouseButton::WHEEL_UP: {
-				if (_scroll(false, -mb->get_factor() / 8)) {
+				if (_scroll(mb->is_shift_pressed(), -mb->get_factor() / 8)) {
 					accept_event();
 				}
 
 			} break;
 			case MouseButton::WHEEL_DOWN: {
-				if (_scroll(false, mb->get_factor() / 8)) {
+				if (_scroll(mb->is_shift_pressed(), mb->get_factor() / 8)) {
 					accept_event();
 				}
 
 			} break;
 			case MouseButton::WHEEL_LEFT: {
-				if (_scroll(true, -mb->get_factor() / 8)) {
+				if (_scroll(!mb->is_shift_pressed(), -mb->get_factor() / 8)) {
 					accept_event();
 				}
 
 			} break;
 			case MouseButton::WHEEL_RIGHT: {
-				if (_scroll(true, mb->get_factor() / 8)) {
+				if (_scroll(!mb->is_shift_pressed(), mb->get_factor() / 8)) {
 					accept_event();
 				}
 
@@ -4002,6 +3993,94 @@ void Tree::gui_input(const Ref<InputEvent> &p_event) {
 	}
 }
 
+void Tree::_determine_hovered_item() {
+	Ref<StyleBox> bg = theme_cache.panel_style;
+	bool rtl = is_layout_rtl();
+
+	Point2 pos = hovered_pos;
+	if (rtl) {
+		pos.x = get_size().width - pos.x - 1;
+	}
+	pos -= theme_cache.panel_style->get_offset();
+
+	bool old_header_row = cache.hover_header_row;
+	int old_header_column = cache.hover_header_column;
+	TreeItem *old_item = cache.hover_item;
+	int old_column = cache.hover_column;
+	int old_button_index_in_column = cache.hover_button_index_in_column;
+
+	// Determine hover on column headers.
+	cache.hover_header_row = false;
+	cache.hover_header_column = 0;
+	if (show_column_titles && is_mouse_hovering) {
+		pos.y -= _get_title_button_height();
+		if (pos.y < 0) {
+			pos.x += theme_cache.offset.x;
+			int len = 0;
+			for (int i = 0; i < columns.size(); i++) {
+				len += get_column_width(i);
+				if (pos.x < len) {
+					cache.hover_header_row = true;
+					cache.hover_header_column = i;
+					cache.hover_button_index_in_column = -1;
+					break;
+				}
+			}
+		}
+	}
+
+	// Determine hover on rows and items.
+	if (root && is_mouse_hovering && hovered_pos.y >= 0) {
+		TreeItem *it;
+		int col, section, col_button_index;
+		_find_button_at_pos(hovered_pos, it, col, col_button_index, section);
+
+		if (drop_mode_flags) {
+			if (it != drop_mode_over) {
+				drop_mode_over = it;
+				queue_redraw();
+			}
+			if (it && section != drop_mode_section) {
+				drop_mode_section = section;
+				queue_redraw();
+			}
+		}
+
+		cache.hover_item = it;
+		cache.hover_column = col;
+		cache.hover_button_index_in_column = col_button_index;
+
+		if (it != old_item || col != old_column) {
+			if (old_item && old_column >= old_item->cells.size()) {
+				// Columns may have changed since last `redraw()`.
+				queue_redraw();
+			} else {
+				// Only need to update if mouse enters/exits a button.
+				bool was_over_button = old_item && old_item->cells[old_column].custom_button;
+				bool is_over_button = it && it->cells[col].custom_button;
+				if (was_over_button || is_over_button) {
+					queue_redraw();
+				}
+			}
+		}
+	}
+
+	// Reduce useless redraw calls.
+	bool hovered_cell_button_changed = (cache.hover_button_index_in_column != old_button_index_in_column);
+	bool hovered_column_changed = (cache.hover_column != old_column);
+
+	// Mouse has moved from row to row, or from cell to cell within same row unless selection mode is full row which saves a useless redraw.
+	bool item_hover_needs_redraw = !cache.hover_header_row && (cache.hover_item != old_item || hovered_cell_button_changed || (select_mode != SELECT_ROW && hovered_column_changed));
+	// Mouse has moved between two different column header sections.
+	bool header_hover_needs_redraw = cache.hover_header_row && cache.hover_header_column != old_header_column;
+	// Mouse has moved between header and "main" areas.
+	bool whole_needs_redraw = cache.hover_header_row != old_header_row;
+
+	if (whole_needs_redraw || header_hover_needs_redraw || item_hover_needs_redraw) {
+		queue_redraw();
+	}
+}
+
 bool Tree::edit_selected(bool p_force_edit) {
 	TreeItem *s = get_selected();
 	ERR_FAIL_NULL_V_MSG(s, false, "No item selected.");
@@ -4013,13 +4092,10 @@ bool Tree::edit_selected(bool p_force_edit) {
 		return false;
 	}
 
-	float popup_scale = popup_editor->is_embedded() ? 1.0 : popup_editor->get_parent_visible_window()->get_content_scale_factor();
-	Rect2 rect;
-	if (select_mode == SELECT_ROW) {
-		rect = s->get_meta("__focus_col_" + itos(selected_col));
-	} else {
-		rect = s->get_meta("__focus_rect");
-	}
+	Size2 scale = popup_editor->get_parent_viewport()->get_popup_base_transform().get_scale() * get_global_transform_with_canvas().get_scale();
+	real_t popup_scale = MIN(scale.x, scale.y);
+
+	Rect2 rect = _get_item_focus_rect(s);
 	rect.position *= popup_scale;
 	popup_edited_item = s;
 	popup_edited_item_col = col;
@@ -4056,16 +4132,24 @@ bool Tree::edit_selected(bool p_force_edit) {
 		Rect2 popup_rect;
 
 		int value_editor_height = c.mode == TreeItem::CELL_MODE_RANGE ? value_editor->get_minimum_size().height : 0;
-		// "floor()" centers vertically.
+		// `floor()` centers vertically.
 		Vector2 ofs(0, Math::floor((MAX(line_editor->get_minimum_size().height, rect.size.height - value_editor_height) - rect.size.height) / 2));
 
-		popup_rect.position = get_screen_position() + rect.position - ofs;
-		popup_rect.size = rect.size;
-
 		// Account for icon.
-		Size2 icon_size = _get_cell_icon_size(c) * popup_scale;
-		popup_rect.position.x += icon_size.x;
-		popup_rect.size.x -= icon_size.x;
+		real_t icon_ofs = 0;
+		if (c.icon.is_valid()) {
+			icon_ofs = _get_cell_icon_size(c).x * popup_scale + theme_cache.h_separation;
+		}
+
+		popup_rect.size = rect.size;
+		popup_rect.size.x -= icon_ofs;
+
+		popup_rect.position = rect.position - ofs;
+		popup_rect.position.x += icon_ofs;
+		if (cache.rtl) {
+			popup_rect.position.x = get_size().width - popup_rect.position.x - popup_rect.size.x;
+		}
+		popup_rect.position += get_screen_position();
 
 		line_editor->clear();
 		line_editor->set_text(c.mode == TreeItem::CELL_MODE_STRING ? c.text : String::num(c.val, Math::range_step_decimals(c.step)));
@@ -4094,7 +4178,7 @@ bool Tree::edit_selected(bool p_force_edit) {
 		if (!popup_editor->is_embedded()) {
 			popup_editor->set_content_scale_factor(popup_scale);
 		}
-		popup_edit_commited = false; // Start edit popup processing.
+		popup_edit_committed = false; // Start edit popup processing.
 		popup_editor->popup();
 		popup_editor->child_controls_changed();
 
@@ -4114,7 +4198,7 @@ bool Tree::edit_selected(bool p_force_edit) {
 		if (!popup_editor->is_embedded()) {
 			popup_editor->set_content_scale_factor(popup_scale);
 		}
-		popup_edit_commited = false; // Start edit popup processing.
+		popup_edit_committed = false; // Start edit popup processing.
 		popup_editor->popup();
 		popup_editor->child_controls_changed();
 
@@ -4124,6 +4208,16 @@ bool Tree::edit_selected(bool p_force_edit) {
 	}
 
 	return false;
+}
+
+Rect2 Tree::_get_item_focus_rect(const TreeItem *p_item) const {
+	Rect2 rect;
+	if (select_mode == SELECT_ROW) {
+		rect = p_item->get_meta("__focus_col_" + itos(selected_col));
+	} else {
+		rect = p_item->get_meta("__focus_rect");
+	}
+	return rect;
 }
 
 bool Tree::is_editing() {
@@ -4226,9 +4320,20 @@ void Tree::_notification(int p_what) {
 			}
 		} break;
 
+		case NOTIFICATION_MOUSE_ENTER: {
+			is_mouse_hovering = true;
+			_determine_hovered_item();
+		} break;
+
 		case NOTIFICATION_MOUSE_EXIT: {
-			if (cache.hover_type != Cache::CLICK_NONE) {
-				cache.hover_type = Cache::CLICK_NONE;
+			is_mouse_hovering = false;
+			// Clear hovered item cache.
+			if (cache.hover_header_row || cache.hover_item != nullptr) {
+				cache.hover_header_row = false;
+				cache.hover_header_column = -1;
+				cache.hover_item = nullptr;
+				cache.hover_column = -1;
+				cache.hover_button_index_in_column = -1;
 				queue_redraw();
 			}
 		} break;
@@ -4240,7 +4345,7 @@ void Tree::_notification(int p_what) {
 		case NOTIFICATION_DRAG_END: {
 			drop_mode_flags = 0;
 			scrolling = false;
-			set_physics_process_internal(false);
+			set_process_internal(false);
 			queue_redraw();
 		} break;
 
@@ -4248,21 +4353,21 @@ void Tree::_notification(int p_what) {
 			single_select_defer = nullptr;
 			if (theme_cache.scroll_speed > 0) {
 				scrolling = true;
-				set_physics_process_internal(true);
+				set_process_internal(true);
 			}
 		} break;
 
-		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
+		case NOTIFICATION_INTERNAL_PROCESS: {
 			if (drag_touching) {
 				if (drag_touching_deaccel) {
 					float pos = v_scroll->get_value();
-					pos += drag_speed * get_physics_process_delta_time();
+					pos += drag_speed * get_process_delta_time();
 
 					bool turnoff = false;
 					if (pos < 0) {
 						pos = 0;
 						turnoff = true;
-						set_physics_process_internal(false);
+						set_process_internal(false);
 						drag_touching = false;
 						drag_touching_deaccel = false;
 					}
@@ -4274,7 +4379,7 @@ void Tree::_notification(int p_what) {
 					v_scroll->set_value(pos);
 					float sgn = drag_speed < 0 ? -1 : 1;
 					float val = Math::abs(drag_speed);
-					val -= 1000 * get_physics_process_delta_time();
+					val -= 1000 * get_process_delta_time();
 
 					if (val < 0) {
 						turnoff = true;
@@ -4282,7 +4387,7 @@ void Tree::_notification(int p_what) {
 					drag_speed = sgn * val;
 
 					if (turnoff) {
-						set_physics_process_internal(false);
+						set_process_internal(false);
 						drag_touching = false;
 						drag_touching_deaccel = false;
 					}
@@ -4293,19 +4398,19 @@ void Tree::_notification(int p_what) {
 			if (scrolling && get_rect().grow(theme_cache.scroll_border).has_point(mouse_position)) {
 				Point2 point;
 
-				if ((ABS(mouse_position.x) < ABS(mouse_position.x - get_size().width)) && (ABS(mouse_position.x) < theme_cache.scroll_border)) {
+				if ((Math::abs(mouse_position.x) < Math::abs(mouse_position.x - get_size().width)) && (Math::abs(mouse_position.x) < theme_cache.scroll_border)) {
 					point.x = mouse_position.x - theme_cache.scroll_border;
-				} else if (ABS(mouse_position.x - get_size().width) < theme_cache.scroll_border) {
+				} else if (Math::abs(mouse_position.x - get_size().width) < theme_cache.scroll_border) {
 					point.x = mouse_position.x - (get_size().width - theme_cache.scroll_border);
 				}
 
-				if ((ABS(mouse_position.y) < ABS(mouse_position.y - get_size().height)) && (ABS(mouse_position.y) < theme_cache.scroll_border)) {
+				if ((Math::abs(mouse_position.y) < Math::abs(mouse_position.y - get_size().height)) && (Math::abs(mouse_position.y) < theme_cache.scroll_border)) {
 					point.y = mouse_position.y - theme_cache.scroll_border;
-				} else if (ABS(mouse_position.y - get_size().height) < theme_cache.scroll_border) {
+				} else if (Math::abs(mouse_position.y - get_size().height) < theme_cache.scroll_border) {
 					point.y = mouse_position.y - (get_size().height - theme_cache.scroll_border);
 				}
 
-				point *= theme_cache.scroll_speed * get_physics_process_delta_time();
+				point *= theme_cache.scroll_speed * get_process_delta_time();
 				point += get_scroll();
 				h_scroll->set_value(point.x);
 				v_scroll->set_value(point.y);
@@ -4339,17 +4444,17 @@ void Tree::_notification(int p_what) {
 			}
 
 			if (show_column_titles) {
-				//title buttons
+				// Title buttons.
 				int ofs2 = theme_cache.panel_style->get_margin(SIDE_LEFT);
 				for (int i = 0; i < columns.size(); i++) {
-					Ref<StyleBox> sb = (cache.click_type == Cache::CLICK_TITLE && cache.click_index == i) ? theme_cache.title_button_pressed : ((cache.hover_type == Cache::CLICK_TITLE && cache.hover_index == i) ? theme_cache.title_button_hover : theme_cache.title_button);
+					Ref<StyleBox> sb = (cache.click_type == Cache::CLICK_TITLE && cache.click_index == i) ? theme_cache.title_button_pressed : ((cache.hover_header_row && cache.hover_header_column == i) ? theme_cache.title_button_hover : theme_cache.title_button);
 					Rect2 tbrect = Rect2(ofs2 - theme_cache.offset.x, bg->get_margin(SIDE_TOP), get_column_width(i), tbh);
 					if (cache.rtl) {
 						tbrect.position.x = get_size().width - tbrect.size.x - tbrect.position.x;
 					}
 					sb->draw(ci, tbrect);
 					ofs2 += tbrect.size.width;
-					//text
+					// Text.
 					int clip_w = tbrect.size.width - sb->get_minimum_size().width;
 					columns.write[i].text_buf->set_width(clip_w);
 					columns.write[i].cached_minimum_width_dirty = true;
@@ -4397,7 +4502,7 @@ void Tree::_notification(int p_what) {
 		case NOTIFICATION_RESIZED:
 		case NOTIFICATION_TRANSFORM_CHANGED: {
 			if (popup_edited_item != nullptr) {
-				Rect2 rect = popup_edited_item->get_meta("__focus_rect");
+				Rect2 rect = _get_item_focus_rect(popup_edited_item);
 
 				popup_editor->set_position(get_global_position() + rect.position);
 				popup_editor->set_size(rect.size);
@@ -4458,6 +4563,8 @@ TreeItem *Tree::create_item(TreeItem *p_parent, int p_index) {
 		}
 	}
 
+	_determine_hovered_item();
+
 	return ti;
 }
 
@@ -4467,15 +4574,8 @@ TreeItem *Tree::get_root() const {
 
 TreeItem *Tree::get_last_item() const {
 	TreeItem *last = root;
-
-	while (last) {
-		if (last->next) {
-			last = last->next;
-		} else if (last->first_child) {
-			last = last->first_child;
-		} else {
-			break;
-		}
+	while (last && last->last_child && !last->collapsed) {
+		last = last->last_child;
 	}
 
 	return last;
@@ -4486,6 +4586,7 @@ void Tree::item_edited(int p_column, TreeItem *p_item, MouseButton p_custom_mous
 	edited_col = p_column;
 	if (p_item != nullptr && p_column >= 0 && p_column < p_item->cells.size()) {
 		edited_item->cells.write[p_column].dirty = true;
+		edited_item->cells.write[p_column].cached_minimum_size_dirty = true;
 	}
 	emit_signal(SNAME("item_edited"));
 	if (p_custom_mouse_index != MouseButton::NONE) {
@@ -4494,9 +4595,16 @@ void Tree::item_edited(int p_column, TreeItem *p_item, MouseButton p_custom_mous
 }
 
 void Tree::item_changed(int p_column, TreeItem *p_item) {
-	if (p_item != nullptr && p_column >= 0 && p_column < p_item->cells.size()) {
-		p_item->cells.write[p_column].dirty = true;
-		columns.write[p_column].cached_minimum_width_dirty = true;
+	if (p_item != nullptr) {
+		if (p_column >= 0 && p_column < p_item->cells.size()) {
+			p_item->cells.write[p_column].dirty = true;
+			columns.write[p_column].cached_minimum_width_dirty = true;
+		} else if (p_column == -1) {
+			for (int i = 0; i < p_item->cells.size(); i++) {
+				p_item->cells.write[i].dirty = true;
+				columns.write[i].cached_minimum_width_dirty = true;
+			}
+		}
 	}
 	queue_redraw();
 }
@@ -4508,7 +4616,7 @@ void Tree::item_selected(int p_column, TreeItem *p_item) {
 		}
 
 		p_item->cells.write[p_column].selected = true;
-		//emit_signal(SNAME("multi_selected"),p_item,p_column,true); - NO this is for TreeItem::select
+		//emit_signal(SNAME("multi_selected"),p_item,p_column,true); - NO this is for `TreeItem::select`
 
 		selected_col = p_column;
 		selected_item = p_item;
@@ -4601,8 +4709,10 @@ void Tree::clear() {
 	popup_edited_item = nullptr;
 	popup_pressing_edited_item = nullptr;
 
+	_determine_hovered_item();
+
 	queue_redraw();
-};
+}
 
 void Tree::set_hide_root(bool p_enabled) {
 	if (hide_root == p_enabled) {
@@ -4853,6 +4963,7 @@ int Tree::get_columns() const {
 }
 
 void Tree::_scroll_moved(float) {
+	_determine_hovered_item();
 	queue_redraw();
 }
 
@@ -4894,7 +5005,7 @@ int Tree::get_item_offset(TreeItem *p_item) const {
 		}
 	}
 
-	return -1; //not found
+	return -1; // Not found.
 }
 
 void Tree::ensure_cursor_is_visible() {
@@ -4905,7 +5016,7 @@ void Tree::ensure_cursor_is_visible() {
 		return; // Nothing under cursor.
 	}
 
-	// Note: Code below similar to Tree::scroll_to_item(), in case of bug fix both.
+	// Note: Code below similar to `Tree::scroll_to_item()`, in case of bug fix both.
 	const Size2 area_size = _get_content_rect().size;
 
 	int y_offset = get_item_offset(selected_item);
@@ -4925,7 +5036,7 @@ void Tree::ensure_cursor_is_visible() {
 		}
 	}
 
-	if (select_mode != SELECT_ROW) { // Cursor always at col 0 in this mode.
+	if (select_mode != SELECT_ROW) { // Cursor always at column 0 in this mode.
 		int x_offset = 0;
 		for (int i = 0; i < selected_col; i++) {
 			x_offset += get_column_width(i);
@@ -4955,15 +5066,17 @@ Rect2 Tree::get_item_rect(TreeItem *p_item, int p_column, int p_button) const {
 		ERR_FAIL_INDEX_V(p_column, columns.size(), Rect2());
 	}
 	if (p_button != -1) {
-		ERR_FAIL_COND_V(p_column == -1, Rect2()); // pass a column if you want to pass a button
+		ERR_FAIL_COND_V(p_column == -1, Rect2()); // Pass a column if you want to pass a button.
 		ERR_FAIL_INDEX_V(p_button, p_item->cells[p_column].buttons.size(), Rect2());
 	}
 
 	int ofs = get_item_offset(p_item);
-	int height = compute_item_height(p_item);
+	int height = compute_item_height(p_item) + theme_cache.v_separation;
 	Rect2 r;
-	r.position.y = ofs;
+	r.position.y = ofs - theme_cache.offset.y + theme_cache.panel_style->get_offset().y;
 	r.size.height = height;
+	bool rtl = is_layout_rtl();
+	const Rect2 content_rect = _get_content_rect();
 
 	if (p_column == -1) {
 		r.position.x = 0;
@@ -4973,18 +5086,45 @@ Rect2 Tree::get_item_rect(TreeItem *p_item, int p_column, int p_button) const {
 		for (int i = 0; i < p_column; i++) {
 			accum += get_column_width(i);
 		}
-		r.position.x = accum;
+		r.position.x = (rtl) ? get_size().x - (accum - theme_cache.offset.x) - get_column_width(p_column) - theme_cache.panel_style->get_margin(SIDE_LEFT) : accum - theme_cache.offset.x + theme_cache.panel_style->get_margin(SIDE_LEFT);
 		r.size.x = get_column_width(p_column);
 		if (p_button != -1) {
+			// RTL direction support for button rect is different due to buttons not
+			// having same behavior as they do in LTR when tree is scrolled.
 			const TreeItem::Cell &c = p_item->cells[p_column];
-			Vector2 ofst = Vector2(r.position.x + r.size.x, r.position.y);
+			Vector2 ofst = Vector2(r.position.x + r.size.x + theme_cache.button_margin, r.position.y);
+
+			// Compute total width of buttons block including spacings.
+			int buttons_width = 0;
 			for (int j = c.buttons.size() - 1; j >= 0; j--) {
 				Ref<Texture2D> b = c.buttons[j].texture;
 				Size2 size = b->get_size() + theme_cache.button_pressed->get_minimum_size();
-				ofst.x -= size.x;
+				buttons_width += size.width + theme_cache.button_margin;
+			}
+			for (int j = c.buttons.size() - 1; j >= 0; j--) {
+				Ref<Texture2D> b = c.buttons[j].texture;
+				Size2 size = b->get_size() + theme_cache.button_pressed->get_minimum_size();
+				ofst.x -= size.x + theme_cache.button_margin;
+
+				if (rtl) {
+					if (j == p_button) {
+						return Rect2(r.position, Size2(size.x, r.size.y));
+					}
+					r.position.x += size.x + theme_cache.button_margin;
+					continue;
+				}
 
 				if (j == p_button) {
-					return Rect2(ofst, size);
+					float content_rect_end_x = content_rect.position.x + content_rect.size.width;
+					if (r.position.x + r.size.x < content_rect_end_x) {
+						return Rect2(ofst, Size2(size.x, r.size.y));
+					}
+					// Button block can be outside of `content_rect`.
+					if (content_rect_end_x - (r.position.x + theme_cache.h_separation) < buttons_width) {
+						return Rect2(r.position + Point2(theme_cache.h_separation + (buttons_width - ((r.position.x + r.size.x) - ofst.x)), 0), Size2(size.x, r.size.y));
+					}
+
+					return Rect2(ofst - Vector2((r.position.x + r.size.x) - content_rect_end_x, 0), Size2(size.x, r.size.y));
 				}
 			}
 		}
@@ -5091,19 +5231,21 @@ void Tree::scroll_to_item(TreeItem *p_item, bool p_center_on_item) {
 
 	update_scrollbars();
 
-	// Note: Code below similar to Tree::ensure_cursor_is_visible(), in case of bug fix both.
+	// Note: Code below similar to `Tree::ensure_cursor_is_visible()`, in case of bug fix both.
 	const Size2 area_size = _get_content_rect().size;
 
 	int y_offset = get_item_offset(p_item);
 	if (y_offset != -1) {
-		const int tbh = _get_title_button_height();
-		y_offset -= tbh;
+		const int title_button_height = _get_title_button_height();
+		y_offset -= title_button_height;
 
 		const int cell_h = compute_item_height(p_item) + theme_cache.v_separation;
-		int screen_h = area_size.height - tbh;
+		int screen_h = area_size.height - title_button_height;
 
 		if (p_center_on_item) {
-			v_scroll->set_value(y_offset - (screen_h - cell_h) / 2.0f);
+			// This makes sure that centering the offset doesn't overflow.
+			const double v_scroll_value = y_offset - MAX((screen_h - cell_h) / 2.0, 0.0);
+			v_scroll->set_value(v_scroll_value);
 		} else {
 			if (cell_h > screen_h) { // Screen size is too small, maybe it was not resized yet.
 				v_scroll->set_value(y_offset);
@@ -5221,7 +5363,7 @@ TreeItem *Tree::get_item_with_metadata(const Variant &p_find, int p_column) cons
 }
 
 void Tree::_do_incr_search(const String &p_add) {
-	uint64_t time = OS::get_singleton()->get_ticks_usec() / 1000; // convert to msec
+	uint64_t time = OS::get_singleton()->get_ticks_usec() / 1000; // Convert to msec.
 	uint64_t diff = time - last_keypress;
 	if (diff > uint64_t(GLOBAL_GET("gui/timers/incremental_search_max_interval_msec"))) {
 		incr_search = p_add;
@@ -5244,22 +5386,30 @@ void Tree::_do_incr_search(const String &p_add) {
 	ensure_cursor_is_visible();
 }
 
-TreeItem *Tree::_find_item_at_pos(TreeItem *p_item, const Point2 &p_pos, int &r_column, int &h, int &section) const {
+TreeItem *Tree::_find_item_at_pos(TreeItem *p_item, const Point2 &p_pos, int &r_column, int &r_height, int &r_section) const {
+	r_column = -1;
+	r_height = 0;
+	r_section = -100;
+
+	if (!root) {
+		return nullptr;
+	}
+
 	Point2 pos = p_pos;
 
 	if ((root != p_item || !hide_root) && p_item->is_visible_in_tree()) {
-		h = compute_item_height(p_item) + theme_cache.v_separation;
-		if (pos.y < h) {
+		r_height = compute_item_height(p_item) + theme_cache.v_separation;
+		if (pos.y < r_height) {
 			if (drop_mode_flags == DROP_MODE_ON_ITEM) {
-				section = 0;
+				r_section = 0;
 			} else if (drop_mode_flags == DROP_MODE_INBETWEEN) {
-				section = pos.y < h / 2 ? -1 : 1;
-			} else if (pos.y < h / 4) {
-				section = -1;
-			} else if (pos.y >= (h * 3 / 4)) {
-				section = 1;
+				r_section = pos.y < r_height / 2 ? -1 : 1;
+			} else if (pos.y < r_height / 4) {
+				r_section = -1;
+			} else if (pos.y >= (r_height * 3 / 4)) {
+				r_section = 1;
 			} else {
-				section = 0;
+				r_section = 0;
 			}
 
 			for (int i = 0; i < columns.size(); i++) {
@@ -5274,22 +5424,22 @@ TreeItem *Tree::_find_item_at_pos(TreeItem *p_item, const Point2 &p_pos, int &r_
 
 			return nullptr;
 		} else {
-			pos.y -= h;
+			pos.y -= r_height;
 		}
 	} else {
-		h = 0;
+		r_height = 0;
 	}
 
 	if (p_item->is_collapsed() || !p_item->is_visible_in_tree()) {
-		return nullptr; // do not try children, it's collapsed
+		return nullptr; // Do not try children, it's collapsed.
 	}
 
 	TreeItem *n = p_item->get_first_child();
 	while (n) {
 		int ch;
-		TreeItem *r = _find_item_at_pos(n, pos, r_column, ch, section);
+		TreeItem *r = _find_item_at_pos(n, pos, r_column, ch, r_section);
 		pos.y -= ch;
-		h += ch;
+		r_height += ch;
 		if (r) {
 			return r;
 		}
@@ -5299,28 +5449,36 @@ TreeItem *Tree::_find_item_at_pos(TreeItem *p_item, const Point2 &p_pos, int &r_
 	return nullptr;
 }
 
-// When on a button, r_index is valid.
-// When on an item, both r_item and r_column are valid.
-// Otherwise, all output arguments are invalid.
-void Tree::_find_button_at_pos(const Point2 &p_pos, TreeItem *&r_item, int &r_column, int &r_index) const {
+void Tree::_find_button_at_pos(const Point2 &p_pos, TreeItem *&r_item, int &r_column, int &r_index, int &r_section) const {
+	// When on a button, `r_index` is valid.
+	// When on an item, both `r_item` and `r_column` are valid.
+	// Otherwise, all output arguments are invalid.
 	r_item = nullptr;
 	r_column = -1;
 	r_index = -1;
+	r_section = -1;
 
 	if (!root) {
 		return;
 	}
 
-	Point2 pos = p_pos - theme_cache.panel_style->get_offset();
+	Point2 pos = p_pos;
+	if (cache.rtl) {
+		pos.x = get_size().width - pos.x - 1;
+	}
+	pos -= theme_cache.panel_style->get_offset();
 	pos.y -= _get_title_button_height();
 	if (pos.y < 0) {
 		return;
 	}
-
-	if (cache.rtl) {
-		pos.x = get_size().width - pos.x;
-	}
 	pos += theme_cache.offset; // Scrolling.
+
+	int x_limit = _get_content_rect().size.x + theme_cache.offset.width;
+
+	if (pos.x > x_limit) {
+		// Inside the scroll area.
+		return;
+	}
 
 	int col, h, section;
 	TreeItem *it = _find_item_at_pos(root, pos, col, h, section);
@@ -5330,149 +5488,219 @@ void Tree::_find_button_at_pos(const Point2 &p_pos, TreeItem *&r_item, int &r_co
 
 	r_item = it;
 	r_column = col;
+	r_section = section;
 
 	const TreeItem::Cell &c = it->cells[col];
 	if (c.buttons.is_empty()) {
 		return;
 	}
 
-	int x_limit = get_size().width - theme_cache.panel_style->get_minimum_size().width + theme_cache.offset.x;
-	if (v_scroll->is_visible_in_tree()) {
-		x_limit -= v_scroll->get_minimum_size().width;
-	}
+	// Search the button index.
+	FindColumnButtonResult result = _find_column_and_button_at_pos(pos.x, it, 0, x_limit);
+	r_index = result.button_index;
+}
 
-	for (int i = 0; i < col; i++) {
-		const int col_w = get_column_width(i) + theme_cache.h_separation;
-		pos.x -= col_w;
-		x_limit -= col_w;
-	}
+Tree::FindColumnButtonResult Tree::_find_column_and_button_at_pos(int p_x, const TreeItem *p_item, int p_x_ofs, int p_x_limit) const {
+	int x = p_x;
 
-	int x_check;
-	if (cache.rtl) {
-		x_check = get_column_width(col);
-	} else {
-		// Right edge of the buttons area, relative to the start of the column.
-		int buttons_area_min = 0;
-		if (col == 0) {
-			// Content of column 0 should take indentation into account.
-			for (TreeItem *current = it; current && (current != root || !hide_root); current = current->parent) {
-				buttons_area_min += theme_cache.item_margin;
+	int col = -1;
+	int col_ofs = 0;
+	int col_width = 0;
+
+	int limit_w = p_x_limit;
+
+	FindColumnButtonResult result;
+
+	for (int i = 0; i < columns.size(); i++) {
+		col_width = get_column_width(i);
+
+		if (p_item->cells[i].expand_right) {
+			int plus = 1;
+			while (i + plus < columns.size() && !p_item->cells[i + plus].editable && p_item->cells[i + plus].mode == TreeItem::CELL_MODE_STRING && p_item->cells[i + plus].text.is_empty() && p_item->cells[i + plus].icon.is_null()) {
+				col_width += theme_cache.h_separation;
+				col_width += get_column_width(i + plus);
+				plus++;
 			}
 		}
-		for (int i = c.buttons.size() - 1; i >= 0; i--) {
-			Ref<Texture2D> b = c.buttons[i].texture;
-			buttons_area_min += b->get_size().width + theme_cache.button_pressed->get_minimum_size().width + theme_cache.button_margin;
+
+		if (x < col_width) {
+			col = i;
+			break;
 		}
 
-		x_check = MAX(buttons_area_min, MIN(get_column_width(col), x_limit));
+		col_ofs += col_width;
+		x -= col_width;
+		limit_w -= col_width;
 	}
 
-	for (int i = c.buttons.size() - 1; i >= 0; i--) {
-		Ref<Texture2D> b = c.buttons[i].texture;
-		Size2 size = b->get_size() + theme_cache.button_pressed->get_minimum_size();
-		if (pos.x > x_check - size.width) {
-			x_limit -= theme_cache.item_margin;
-			r_index = i;
-			return;
+	if (col >= 0) {
+		if (col == 0) {
+			int margin = p_x_ofs + theme_cache.item_margin;
+			col_width -= margin;
+			limit_w -= margin;
+			col_ofs += margin;
+			x -= margin;
+		} else {
+			col_width -= theme_cache.h_separation;
+			limit_w -= theme_cache.h_separation;
+			x -= theme_cache.h_separation;
 		}
-		x_check -= size.width + theme_cache.button_margin;
+
+		if (!cache.rtl && !p_item->cells[col].buttons.is_empty()) {
+			int button_w = 0;
+			for (int j = p_item->cells[col].buttons.size() - 1; j >= 0; j--) {
+				const Ref<Texture2D> &b = p_item->cells[col].buttons[j].texture;
+				button_w += b->get_size().width + theme_cache.button_pressed->get_minimum_size().width + theme_cache.button_margin;
+			}
+
+			col_width = MAX(button_w, MIN(limit_w, col_width));
+		}
+
+		// Cell button detection code.
+		// The first half of the button margin will be applied to the left button,
+		// and the other half to the right button.
+		const int offset_button_width = theme_cache.button_margin / 2;
+		const TreeItem::Cell &c = p_item->cells[col];
+		for (int j = c.buttons.size() - 1; j >= 0; j--) {
+			const Ref<Texture2D> &b = c.buttons[j].texture;
+			int w = b->get_size().width + theme_cache.button_pressed->get_minimum_size().width;
+
+			if (x >= col_width - w - offset_button_width - 1) {
+				result.button_index = j;
+				break;
+			}
+
+			col_width -= w + theme_cache.button_margin;
+		}
 	}
+
+	result.column_index = col;
+	result.column_offset = col_ofs;
+	result.column_width = col_width;
+	result.pos_x = x;
+
+	return result;
 }
 
 int Tree::get_column_at_position(const Point2 &p_pos) const {
-	if (root) {
-		Point2 pos = p_pos;
-		if (is_layout_rtl()) {
-			pos.x = get_size().width - pos.x;
-		}
-		pos -= theme_cache.panel_style->get_offset();
-		pos.y -= _get_title_button_height();
-		if (pos.y < 0) {
-			return -1;
-		}
-
-		if (h_scroll->is_visible_in_tree()) {
-			pos.x += h_scroll->get_value();
-		}
-		if (v_scroll->is_visible_in_tree()) {
-			pos.y += v_scroll->get_value();
-		}
-
-		int col, h, section;
-		TreeItem *it = _find_item_at_pos(root, pos, col, h, section);
-
-		if (it) {
-			return col;
-		}
+	if (!root || !Rect2(Vector2(), get_size()).has_point(p_pos)) {
+		return -1;
 	}
 
+	Point2 pos = p_pos;
+	if (is_layout_rtl()) {
+		pos.x = get_size().width - pos.x - 1;
+	}
+	pos -= theme_cache.panel_style->get_offset();
+	pos.y -= _get_title_button_height();
+	if (pos.y < 0) {
+		return -1;
+	}
+
+	if (h_scroll->is_visible_in_tree()) {
+		pos.x += h_scroll->get_value();
+	}
+	if (v_scroll->is_visible_in_tree()) {
+		pos.y += v_scroll->get_value();
+	}
+
+	int col, h, section;
+	TreeItem *it = _find_item_at_pos(root, pos, col, h, section);
+
+	if (it) {
+		return col;
+	}
 	return -1;
 }
 
 int Tree::get_drop_section_at_position(const Point2 &p_pos) const {
-	if (root) {
-		Point2 pos = p_pos;
-		if (is_layout_rtl()) {
-			pos.x = get_size().width - pos.x;
-		}
-		pos -= theme_cache.panel_style->get_offset();
-		pos.y -= _get_title_button_height();
-		if (pos.y < 0) {
-			return -100;
-		}
-
-		if (h_scroll->is_visible_in_tree()) {
-			pos.x += h_scroll->get_value();
-		}
-		if (v_scroll->is_visible_in_tree()) {
-			pos.y += v_scroll->get_value();
-		}
-
-		int col, h, section;
-		TreeItem *it = _find_item_at_pos(root, pos, col, h, section);
-
-		if (it) {
-			return section;
-		}
+	if (!root || !Rect2(Vector2(), get_size()).has_point(p_pos)) {
+		return -100;
 	}
 
+	Point2 pos = p_pos;
+	if (is_layout_rtl()) {
+		pos.x = get_size().width - pos.x - 1;
+	}
+	pos -= theme_cache.panel_style->get_offset();
+	pos.y -= _get_title_button_height();
+	if (pos.y < 0) {
+		return -100;
+	}
+
+	if (h_scroll->is_visible_in_tree()) {
+		pos.x += h_scroll->get_value();
+	}
+	if (v_scroll->is_visible_in_tree()) {
+		pos.y += v_scroll->get_value();
+	}
+
+	int col, h, section;
+	TreeItem *it = _find_item_at_pos(root, pos, col, h, section);
+
+	if (it) {
+		return section;
+	}
 	return -100;
 }
 
-TreeItem *Tree::get_item_at_position(const Point2 &p_pos) const {
-	if (root) {
-		Point2 pos = p_pos;
-		if (is_layout_rtl()) {
-			pos.x = get_size().width - pos.x;
-		}
-		pos -= theme_cache.panel_style->get_offset();
-		pos.y -= _get_title_button_height();
-		if (pos.y < 0) {
-			return nullptr;
-		}
-
-		if (h_scroll->is_visible_in_tree()) {
-			pos.x += h_scroll->get_value();
-		}
-		if (v_scroll->is_visible_in_tree()) {
-			pos.y += v_scroll->get_value();
-		}
-
-		int col, h, section;
-		TreeItem *it = _find_item_at_pos(root, pos, col, h, section);
-
-		if (it) {
-			return it;
-		}
+bool Tree::can_drop_data(const Point2 &p_point, const Variant &p_data) const {
+	if (drag_touching) {
+		// Disable data drag & drop when touch dragging.
+		return false;
 	}
 
+	return Control::can_drop_data(p_point, p_data);
+}
+
+Variant Tree::get_drag_data(const Point2 &p_point) {
+	if (drag_touching) {
+		// Disable data drag & drop when touch dragging.
+		return Variant();
+	}
+
+	return Control::get_drag_data(p_point);
+}
+
+TreeItem *Tree::get_item_at_position(const Point2 &p_pos) const {
+	if (!root || !Rect2(Vector2(), get_size()).has_point(p_pos)) {
+		return nullptr;
+	}
+
+	Point2 pos = p_pos;
+	if (is_layout_rtl()) {
+		pos.x = get_size().width - pos.x - 1;
+	}
+	pos -= theme_cache.panel_style->get_offset();
+	pos.y -= _get_title_button_height();
+	if (pos.y < 0) {
+		return nullptr;
+	}
+
+	if (h_scroll->is_visible_in_tree()) {
+		pos.x += h_scroll->get_value();
+	}
+	if (v_scroll->is_visible_in_tree()) {
+		pos.y += v_scroll->get_value();
+	}
+
+	int col, h, section;
+	TreeItem *it = _find_item_at_pos(root, pos, col, h, section);
+
+	if (it) {
+		return it;
+	}
 	return nullptr;
 }
 
 int Tree::get_button_id_at_position(const Point2 &p_pos) const {
+	if (!root || !Rect2(Vector2(), get_size()).has_point(p_pos)) {
+		return -1;
+	}
+
 	TreeItem *it;
-	int col, index;
-	_find_button_at_pos(p_pos, it, col, index);
+	int col, index, section;
+	_find_button_at_pos(p_pos, it, col, index, section);
 
 	if (index == -1) {
 		return -1;
@@ -5488,8 +5716,8 @@ String Tree::get_tooltip(const Point2 &p_pos) const {
 	}
 
 	TreeItem *it;
-	int col, index;
-	_find_button_at_pos(p_pos, it, col, index);
+	int col, index, section;
+	_find_button_at_pos(p_pos, it, col, index, section);
 
 	if (index != -1) {
 		return it->cells[col].buttons[index].tooltip;
@@ -5497,7 +5725,7 @@ String Tree::get_tooltip(const Point2 &p_pos) const {
 
 	if (it) {
 		const String item_tooltip = it->get_tooltip_text(col);
-		if (item_tooltip.is_empty()) {
+		if (enable_auto_tooltip && item_tooltip.is_empty()) {
 			return it->get_text(col);
 		}
 		return item_tooltip;
@@ -5577,6 +5805,14 @@ void Tree::set_allow_search(bool p_allow) {
 
 bool Tree::get_allow_search() const {
 	return allow_search;
+}
+
+void Tree::set_auto_tooltip(bool p_enable) {
+	enable_auto_tooltip = p_enable;
+}
+
+bool Tree::is_auto_tooltip_enabled() const {
+	return enable_auto_tooltip;
 }
 
 void Tree::_bind_methods() {
@@ -5662,6 +5898,9 @@ void Tree::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_allow_search", "allow"), &Tree::set_allow_search);
 	ClassDB::bind_method(D_METHOD("get_allow_search"), &Tree::get_allow_search);
 
+	ClassDB::bind_method(D_METHOD("set_auto_tooltip", "enable"), &Tree::set_auto_tooltip);
+	ClassDB::bind_method(D_METHOD("is_auto_tooltip_enabled"), &Tree::is_auto_tooltip_enabled);
+
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "columns"), "set_columns", "get_columns");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "column_titles_visible"), "set_column_titles_visible", "are_column_titles_visible");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "allow_reselect"), "set_allow_reselect", "get_allow_reselect");
@@ -5674,6 +5913,7 @@ void Tree::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "select_mode", PROPERTY_HINT_ENUM, "Single,Row,Multi"), "set_select_mode", "get_select_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "scroll_horizontal_enabled"), "set_h_scroll_enabled", "is_h_scroll_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "scroll_vertical_enabled"), "set_v_scroll_enabled", "is_v_scroll_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "auto_tooltip"), "set_auto_tooltip", "is_auto_tooltip_enabled");
 
 	ADD_SIGNAL(MethodInfo("item_selected"));
 	ADD_SIGNAL(MethodInfo("cell_selected"));
@@ -5707,10 +5947,15 @@ void Tree::_bind_methods() {
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_FONT, Tree, tb_font, "title_button_font");
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_FONT_SIZE, Tree, tb_font_size, "title_button_font_size");
 
+	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, Tree, hovered);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, Tree, hovered_dimmed);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, Tree, hovered_selected);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, Tree, hovered_selected_focus);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, Tree, selected);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, Tree, selected_focus);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, Tree, cursor);
 	BIND_THEME_ITEM_CUSTOM(Theme::DATA_TYPE_STYLEBOX, Tree, cursor_unfocus, "cursor_unfocused");
+	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, Tree, button_hover);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_STYLEBOX, Tree, button_pressed);
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_ICON, Tree, checked);
@@ -5731,6 +5976,9 @@ void Tree::_bind_methods() {
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, Tree, custom_button_font_highlight);
 
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, Tree, font_color);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, Tree, font_hovered_color);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, Tree, font_hovered_dimmed_color);
+	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, Tree, font_hovered_selected_color);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, Tree, font_selected_color);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, Tree, font_disabled_color);
 	BIND_THEME_ITEM(Theme::DATA_TYPE_COLOR, Tree, drop_position_color);
@@ -5816,13 +6064,13 @@ Tree::Tree() {
 	range_click_timer->connect("timeout", callable_mp(this, &Tree::_range_click_timeout));
 	add_child(range_click_timer, false, INTERNAL_MODE_FRONT);
 
-	h_scroll->connect("value_changed", callable_mp(this, &Tree::_scroll_moved));
-	v_scroll->connect("value_changed", callable_mp(this, &Tree::_scroll_moved));
-	line_editor->connect("text_submitted", callable_mp(this, &Tree::_line_editor_submit));
+	h_scroll->connect(SceneStringName(value_changed), callable_mp(this, &Tree::_scroll_moved));
+	v_scroll->connect(SceneStringName(value_changed), callable_mp(this, &Tree::_scroll_moved));
+	line_editor->connect(SceneStringName(text_submitted), callable_mp(this, &Tree::_line_editor_submit));
 	text_editor->connect(SceneStringName(gui_input), callable_mp(this, &Tree::_text_editor_gui_input));
 	popup_editor->connect("popup_hide", callable_mp(this, &Tree::_text_editor_popup_modal_close));
-	popup_menu->connect("id_pressed", callable_mp(this, &Tree::popup_select));
-	value_editor->connect("value_changed", callable_mp(this, &Tree::value_editor_changed));
+	popup_menu->connect(SceneStringName(id_pressed), callable_mp(this, &Tree::popup_select));
+	value_editor->connect(SceneStringName(value_changed), callable_mp(this, &Tree::value_editor_changed));
 
 	set_notify_transform(true);
 

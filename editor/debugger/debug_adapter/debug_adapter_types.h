@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef DEBUG_ADAPTER_TYPES_H
-#define DEBUG_ADAPTER_TYPES_H
+#pragma once
 
 #include "core/io/json.h"
 #include "core/variant/dictionary.h"
@@ -100,10 +99,10 @@ public:
 };
 
 struct Breakpoint {
-	int id;
-	bool verified;
+	int id = 0;
+	bool verified = false;
 	Source source;
-	int line;
+	int line = 0;
 
 	bool operator==(const Breakpoint &p_other) const {
 		return source.path == p_other.source.path && line == p_other.line;
@@ -121,7 +120,7 @@ struct Breakpoint {
 };
 
 struct BreakpointLocation {
-	int line;
+	int line = 0;
 	int endLine = -1;
 
 	_FORCE_INLINE_ Dictionary to_json() const {
@@ -159,9 +158,7 @@ struct Capabilities {
 		dict["supportsTerminateRequest"] = supportsTerminateRequest;
 		dict["supportsBreakpointLocationsRequest"] = supportsBreakpointLocationsRequest;
 
-		Array arr;
-		arr.push_back(supportedChecksumAlgorithms[0]);
-		arr.push_back(supportedChecksumAlgorithms[1]);
+		Array arr = { supportedChecksumAlgorithms[0], supportedChecksumAlgorithms[1] };
 		dict["supportedChecksumAlgorithms"] = arr;
 
 		return dict;
@@ -169,10 +166,10 @@ struct Capabilities {
 };
 
 struct Message {
-	int id;
+	int id = 0;
 	String format;
 	bool sendTelemetry = false; // Just in case :)
-	bool showUser;
+	bool showUser = false;
 	Dictionary variables;
 
 	_FORCE_INLINE_ Dictionary to_json() const {
@@ -190,8 +187,8 @@ struct Message {
 struct Scope {
 	String name;
 	String presentationHint;
-	int variablesReference;
-	bool expensive;
+	int variablesReference = 0;
+	bool expensive = false;
 
 	_FORCE_INLINE_ Dictionary to_json() const {
 		Dictionary dict;
@@ -205,7 +202,7 @@ struct Scope {
 };
 
 struct SourceBreakpoint {
-	int line;
+	int line = 0;
 
 	_FORCE_INLINE_ void from_json(const Dictionary &p_params) {
 		line = p_params["line"];
@@ -213,11 +210,11 @@ struct SourceBreakpoint {
 };
 
 struct StackFrame {
-	int id;
+	int id = 0;
 	String name;
 	Source source;
-	int line;
-	int column;
+	int line = 0;
+	int column = 0;
 
 	static uint32_t hash(const StackFrame &p_frame) {
 		return hash_murmur3_one_32(p_frame.id);
@@ -247,7 +244,7 @@ struct StackFrame {
 };
 
 struct Thread {
-	int id;
+	int id = 0;
 	String name;
 
 	_FORCE_INLINE_ Dictionary to_json() const {
@@ -277,5 +274,3 @@ struct Variable {
 };
 
 } // namespace DAP
-
-#endif // DEBUG_ADAPTER_TYPES_H

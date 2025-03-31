@@ -93,7 +93,7 @@ void SpriteFrames::clear(const StringName &p_anim) {
 
 void SpriteFrames::clear_all() {
 	animations.clear();
-	add_animation("default");
+	add_animation(SceneStringName(default_));
 }
 
 void SpriteFrames::add_animation(const StringName &p_anim) {
@@ -104,6 +104,12 @@ void SpriteFrames::add_animation(const StringName &p_anim) {
 
 bool SpriteFrames::has_animation(const StringName &p_anim) const {
 	return animations.has(p_anim);
+}
+
+void SpriteFrames::duplicate_animation(const StringName &p_from, const StringName &p_to) {
+	ERR_FAIL_COND_MSG(!animations.has(p_from), vformat("SpriteFrames doesn't have animation '%s'.", p_from));
+	ERR_FAIL_COND_MSG(animations.has(p_to), vformat("Animation '%s' already exists.", p_to));
+	animations[p_to] = animations[p_from];
 }
 
 void SpriteFrames::remove_animation(const StringName &p_anim) {
@@ -246,6 +252,7 @@ void SpriteFrames::get_argument_options(const StringName &p_function, int p_idx,
 void SpriteFrames::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_animation", "anim"), &SpriteFrames::add_animation);
 	ClassDB::bind_method(D_METHOD("has_animation", "anim"), &SpriteFrames::has_animation);
+	ClassDB::bind_method(D_METHOD("duplicate_animation", "anim_from", "anim_to"), &SpriteFrames::duplicate_animation);
 	ClassDB::bind_method(D_METHOD("remove_animation", "anim"), &SpriteFrames::remove_animation);
 	ClassDB::bind_method(D_METHOD("rename_animation", "anim", "newname"), &SpriteFrames::rename_animation);
 

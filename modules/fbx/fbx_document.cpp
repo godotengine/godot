@@ -251,18 +251,16 @@ static bool _thread_pool_init_fn(void *user, ufbx_thread_pool_context ctx, const
 	return true;
 }
 
-static bool _thread_pool_run_fn(void *user, ufbx_thread_pool_context ctx, uint32_t group, uint32_t start_index, uint32_t count) {
+static void _thread_pool_run_fn(void *user, ufbx_thread_pool_context ctx, uint32_t group, uint32_t start_index, uint32_t count) {
 	ThreadPoolFBX *pool = (ThreadPoolFBX *)user;
 	ThreadPoolFBX::Group &pool_group = pool->groups[group];
 	pool_group.start_index = start_index;
 	pool_group.task_id = pool->pool->add_native_group_task(_thread_pool_task, &pool_group, (int)count, -1, true, "ufbx");
-	return true;
 }
 
-static bool _thread_pool_wait_fn(void *user, ufbx_thread_pool_context ctx, uint32_t group, uint32_t max_index) {
+static void _thread_pool_wait_fn(void *user, ufbx_thread_pool_context ctx, uint32_t group, uint32_t max_index) {
 	ThreadPoolFBX *pool = (ThreadPoolFBX *)user;
 	pool->pool->wait_for_group_task_completion(pool->groups[group].task_id);
-	return true;
 }
 
 String FBXDocument::_gen_unique_name(HashSet<String> &unique_names, const String &p_name) {
@@ -288,14 +286,8 @@ String FBXDocument::_gen_unique_name(HashSet<String> &unique_names, const String
 }
 
 String FBXDocument::_sanitize_animation_name(const String &p_name) {
-	// Animations disallow the normal node invalid characters as well as  "," and "["
-	// (See animation/animation_player.cpp::add_animation)
-
-	// TODO: Consider adding invalid_characters or a validate_animation_name to animation_player to mirror Node.
 	String anim_name = p_name.validate_node_name();
-	anim_name = anim_name.replace(",", "");
-	anim_name = anim_name.replace("[", "");
-	return anim_name;
+	return AnimationLibrary::validate_library_name(anim_name);
 }
 
 String FBXDocument::_gen_unique_animation_name(Ref<FBXState> p_state, const String &p_name) {
@@ -375,21 +367,25 @@ Error FBXDocument::_parse_nodes(Ref<FBXState> p_state) {
 				// all skin clusters connected to the bone.
 				for (const ufbx_connection &child_conn : fbx_node->element.connections_src) {
 					ufbx_skin_cluster *child_cluster = ufbx_as_skin_cluster(child_conn.dst);
-					if (!child_cluster)
+					if (!child_cluster) {
 						continue;
+					}
 					ufbx_skin_deformer *child_deformer = _find_skin_deformer(child_cluster);
-					if (!child_deformer)
+					if (!child_deformer) {
 						continue;
+					}
 
 					// Found a skin cluster: Now iterate through all the skin clusters of the parent and
 					// try to find one that used by the same deformer.
 					for (const ufbx_connection &parent_conn : fbx_node->parent->element.connections_src) {
 						ufbx_skin_cluster *parent_cluster = ufbx_as_skin_cluster(parent_conn.dst);
-						if (!parent_cluster)
+						if (!parent_cluster) {
 							continue;
+						}
 						ufbx_skin_deformer *parent_deformer = _find_skin_deformer(parent_cluster);
-						if (parent_deformer != child_deformer)
+						if (parent_deformer != child_deformer) {
 							continue;
+						}
 
 						// Success: Found two skin clusters from the same deformer, now we can resolve the
 						// local bind pose from the difference between the two world-space bind poses.
@@ -875,7 +871,7 @@ Error FBXDocument::_parse_meshes(Ref<FBXState> p_state) {
 						const int material = int(fbx_material->typed_id);
 						ERR_FAIL_INDEX_V(material, p_state->materials.size(), ERR_FILE_CORRUPT);
 						Ref<Material> mat3d = p_state->materials[material];
-						ERR_FAIL_NULL_V(mat3d, ERR_FILE_CORRUPT);
+						ERR_FAIL_COND_V(mat3d.is_null(), ERR_FILE_CORRUPT);
 
 						Ref<BaseMaterial3D> base_material = mat3d;
 						if (has_vertex_color && base_material.is_valid()) {
@@ -891,7 +887,7 @@ Error FBXDocument::_parse_meshes(Ref<FBXState> p_state) {
 						}
 						mat = mat3d;
 					}
-					ERR_FAIL_NULL_V(mat, ERR_FILE_CORRUPT);
+					ERR_FAIL_COND_V(mat.is_null(), ERR_FILE_CORRUPT);
 					mat_name = mat->get_name();
 				}
 				import_mesh->add_surface(primitive, array, morphs,
@@ -1056,7 +1052,7 @@ GLTFImageIndex FBXDocument::_parse_image_save_image(Ref<FBXState> p_state, const
 }
 
 Error FBXDocument::_parse_images(Ref<FBXState> p_state, const String &p_base_path) {
-	ERR_FAIL_NULL_V(p_state, ERR_INVALID_PARAMETER);
+	ERR_FAIL_COND_V(p_state.is_null(), ERR_INVALID_PARAMETER);
 
 	const ufbx_scene *fbx_scene = p_state->scene.get();
 	for (int texture_i = 0; texture_i < static_cast<int>(fbx_scene->texture_files.count); texture_i++) {
@@ -1395,7 +1391,7 @@ Error FBXDocument::_parse_animations(Ref<FBXState> p_state) {
 
 		for (const ufbx_baked_node &fbx_baked_node : fbx_baked_anim->nodes) {
 			const GLTFNodeIndex node = fbx_baked_node.typed_id;
-			GLTFAnimation::Track &track = animation->get_tracks()[node];
+			GLTFAnimation::NodeTrack &track = animation->get_node_tracks()[node];
 
 			for (const ufbx_baked_vec3 &key : fbx_baked_node.translation_keys) {
 				track.position_track.times.push_back(float(key.time));
@@ -1660,8 +1656,7 @@ void FBXDocument::_generate_scene_node(Ref<FBXState> p_state, const GLTFNodeInde
 	// Add the node we generated and set the owner to the scene root.
 	p_scene_parent->add_child(current_node, true);
 	if (current_node != p_scene_root) {
-		Array args;
-		args.append(p_scene_root);
+		Array args = { p_scene_root };
 		current_node->propagate_call(StringName("set_owner"), args);
 	}
 	current_node->set_transform(fbx_node->transform);
@@ -1748,8 +1743,7 @@ void FBXDocument::_generate_skeleton_bone_node(Ref<FBXState> p_state, const GLTF
 		// Add the node we generated and set the owner to the scene root.
 		p_scene_parent->add_child(current_node, true);
 		if (current_node != p_scene_root) {
-			Array args;
-			args.append(p_scene_root);
+			Array args = { p_scene_root };
 			current_node->propagate_call(StringName("set_owner"), args);
 		}
 		// Do not set transform here. Transform is already applied to our bone.
@@ -1785,8 +1779,8 @@ void FBXDocument::_import_animation(Ref<FBXState> p_state, AnimationPlayer *p_an
 
 	double anim_start_offset = p_trimming ? double(additional_animation_data["time_begin"]) : 0.0;
 
-	for (const KeyValue<int, GLTFAnimation::Track> &track_i : anim->get_tracks()) {
-		const GLTFAnimation::Track &track = track_i.value;
+	for (const KeyValue<int, GLTFAnimation::NodeTrack> &track_i : anim->get_node_tracks()) {
+		const GLTFAnimation::NodeTrack &track = track_i.value;
 		//need to find the path: for skeletons, weight tracks will affect the mesh
 		NodePath node_path;
 		//for skeletons, transform tracks always affect bones
@@ -2017,6 +2011,7 @@ void FBXDocument::_process_mesh_instances(Ref<FBXState> p_state, Node *p_scene_r
 		ERR_CONTINUE_MSG(skeleton == nullptr, vformat("Unable to find Skeleton for node %d skin %d", node_i, skin_i));
 
 		mi->get_parent()->remove_child(mi);
+		mi->set_owner(nullptr);
 		skeleton->add_child(mi, true);
 		mi->set_owner(skeleton->get_owner());
 
@@ -2114,13 +2109,9 @@ Error FBXDocument::_parse(Ref<FBXState> p_state, String p_path, Ref<FileAccess> 
 	return OK;
 }
 
-void FBXDocument::_bind_methods() {
-}
-
 Node *FBXDocument::generate_scene(Ref<GLTFState> p_state, float p_bake_fps, bool p_trimming, bool p_remove_immutable_tracks) {
 	Ref<FBXState> state = p_state;
 	ERR_FAIL_COND_V(state.is_null(), nullptr);
-	ERR_FAIL_NULL_V(state, nullptr);
 	ERR_FAIL_INDEX_V(0, state->root_nodes.size(), nullptr);
 	p_state->set_bake_fps(p_bake_fps);
 	GLTFNodeIndex fbx_root = state->root_nodes.write[0];
@@ -2248,7 +2239,7 @@ Error FBXDocument::append_from_file(String p_path, Ref<GLTFState> p_state, uint3
 	Error err;
 	Ref<FileAccess> file = FileAccess::open(p_path, FileAccess::READ, &err);
 	ERR_FAIL_COND_V(err != OK, ERR_FILE_CANT_OPEN);
-	ERR_FAIL_NULL_V(file, ERR_FILE_CANT_OPEN);
+	ERR_FAIL_COND_V(file.is_null(), ERR_FILE_CANT_OPEN);
 	String base_path = p_base_path;
 	if (base_path.is_empty()) {
 		base_path = p_path.get_base_dir();

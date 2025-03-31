@@ -28,20 +28,25 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef MULTIMESH_INSTANCE_3D_H
-#define MULTIMESH_INSTANCE_3D_H
+#pragma once
 
 #include "scene/3d/visual_instance_3d.h"
 #include "scene/resources/multimesh.h"
+
+class NavigationMesh;
+class NavigationMeshSourceGeometryData3D;
 
 class MultiMeshInstance3D : public GeometryInstance3D {
 	GDCLASS(MultiMeshInstance3D, GeometryInstance3D);
 
 	Ref<MultiMesh> multimesh;
 
+	void _refresh_interpolated();
+
 protected:
+	virtual void _physics_interpolated_changed() override;
 	static void _bind_methods();
-	// bind helpers
+	void _notification(int p_what);
 
 public:
 	void set_multimesh(const Ref<MultiMesh> &p_multimesh);
@@ -51,8 +56,14 @@ public:
 
 	virtual AABB get_aabb() const override;
 
+private:
+	static Callable _navmesh_source_geometry_parsing_callback;
+	static RID _navmesh_source_geometry_parser;
+
+public:
+	static void navmesh_parse_init();
+	static void navmesh_parse_source_geometry(const Ref<NavigationMesh> &p_navigation_mesh, Ref<NavigationMeshSourceGeometryData3D> p_source_geometry_data, Node *p_node);
+
 	MultiMeshInstance3D();
 	~MultiMeshInstance3D();
 };
-
-#endif // MULTIMESH_INSTANCE_3D_H

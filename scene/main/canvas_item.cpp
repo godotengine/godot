@@ -34,7 +34,7 @@
 #include "scene/2d/canvas_group.h"
 #include "scene/main/canvas_layer.h"
 #include "scene/main/window.h"
-#include "scene/resources/canvas_item_material.h"
+#include "scene/resources/atlas_texture.h"
 #include "scene/resources/font.h"
 #include "scene/resources/multimesh.h"
 #include "scene/resources/style_box.h"
@@ -43,7 +43,7 @@
 #define ERR_DRAW_GUARD \
 	ERR_FAIL_COND_MSG(!drawing, "Drawing is only allowed inside this node's `_draw()`, functions connected to its `draw` signal, or when it receives NOTIFICATION_DRAW.")
 
-#ifdef TOOLS_ENABLED
+#ifdef DEBUG_ENABLED
 bool CanvasItem::_edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const {
 	if (_edit_use_rect()) {
 		return _edit_get_rect().has_point(p_point);
@@ -51,11 +51,13 @@ bool CanvasItem::_edit_is_selected_on_click(const Point2 &p_point, double p_tole
 		return p_point.length() < p_tolerance;
 	}
 }
+#endif // DEBUG_ENABLED
 
+#ifdef TOOLS_ENABLED
 Transform2D CanvasItem::_edit_get_transform() const {
 	return Transform2D(_edit_get_rotation(), _edit_get_position() + _edit_get_pivot());
 }
-#endif
+#endif //TOOLS_ENABLED
 
 bool CanvasItem::is_visible_in_tree() const {
 	ERR_READ_THREAD_GUARD_V(false);
@@ -181,6 +183,20 @@ Transform2D CanvasItem::get_global_transform() const {
 
 		global_transform = new_global;
 		_set_global_invalid(false);
+	}
+
+	return global_transform;
+}
+
+// Same as get_global_transform() but no reset for `global_invalid`.
+Transform2D CanvasItem::get_global_transform_const() const {
+	if (_is_global_invalid()) {
+		const CanvasItem *pi = get_parent_item();
+		if (pi) {
+			global_transform = pi->get_global_transform_const() * get_transform();
+		} else {
+			global_transform = get_transform();
+		}
 	}
 
 	return global_transform;
@@ -549,6 +565,60 @@ int CanvasItem::get_light_mask() const {
 	return light_mask;
 }
 
+const StringName *CanvasItem::_instance_shader_parameter_get_remap(const StringName &p_name) const {
+	StringName *r = instance_shader_parameter_property_remap.getptr(p_name);
+	if (!r) {
+		String s = p_name;
+		if (s.begins_with("instance_shader_parameters/")) {
+			StringName name = s.trim_prefix("instance_shader_parameters/");
+			instance_shader_parameter_property_remap[p_name] = name;
+			return instance_shader_parameter_property_remap.getptr(p_name);
+		}
+		return nullptr;
+	}
+	return r;
+}
+
+bool CanvasItem::_set(const StringName &p_name, const Variant &p_value) {
+	const StringName *r = _instance_shader_parameter_get_remap(p_name);
+	if (r) {
+		set_instance_shader_parameter(*r, p_value);
+		return true;
+	}
+	return false;
+}
+
+bool CanvasItem::_get(const StringName &p_name, Variant &r_ret) const {
+	const StringName *r = _instance_shader_parameter_get_remap(p_name);
+	if (r) {
+		r_ret = get_instance_shader_parameter(*r);
+		return true;
+	}
+
+	return false;
+}
+
+void CanvasItem::_get_property_list(List<PropertyInfo> *p_list) const {
+	List<PropertyInfo> pinfo;
+	RS::get_singleton()->canvas_item_get_instance_shader_parameter_list(get_canvas_item(), &pinfo);
+
+	for (PropertyInfo &pi : pinfo) {
+		bool has_def_value = false;
+		Variant def_value = RS::get_singleton()->canvas_item_get_instance_shader_parameter_default_value(get_canvas_item(), pi.name);
+		if (def_value.get_type() != Variant::NIL) {
+			has_def_value = true;
+		}
+		if (instance_shader_parameters.has(pi.name)) {
+			pi.usage = PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_STORAGE | (has_def_value ? (PROPERTY_USAGE_CHECKABLE | PROPERTY_USAGE_CHECKED) : PROPERTY_USAGE_NONE);
+		} else {
+			pi.usage = PROPERTY_USAGE_EDITOR | (has_def_value ? PROPERTY_USAGE_CHECKABLE : PROPERTY_USAGE_NONE); // Do not save if not changed.
+		}
+
+		pi.name = "instance_shader_parameters/" + pi.name;
+		p_list->push_back(pi);
+	}
+}
+
 void CanvasItem::item_rect_changed(bool p_size_changed) {
 	ERR_MAIN_THREAD_GUARD;
 	if (p_size_changed) {
@@ -850,18 +920,28 @@ void CanvasItem::draw_polygon(const Vector<Point2> &p_points, const Vector<Color
 	ERR_THREAD_GUARD;
 	ERR_DRAW_GUARD;
 
-	RID rid = p_texture.is_valid() ? p_texture->get_rid() : RID();
+	const Ref<AtlasTexture> atlas = p_texture;
+	if (atlas.is_valid() && atlas->get_atlas().is_valid()) {
+		const Ref<Texture2D> &texture = atlas->get_atlas();
+		const Vector2 atlas_size = texture->get_size();
 
-	RenderingServer::get_singleton()->canvas_item_add_polygon(canvas_item, p_points, p_colors, p_uvs, rid);
+		const Vector2 remap_min = atlas->get_region().position / atlas_size;
+		const Vector2 remap_max = atlas->get_region().get_end() / atlas_size;
+
+		PackedVector2Array uvs = p_uvs;
+		for (Vector2 &p : uvs) {
+			p.x = Math::remap(p.x, 0, 1, remap_min.x, remap_max.x);
+			p.y = Math::remap(p.y, 0, 1, remap_min.y, remap_max.y);
+		}
+		RenderingServer::get_singleton()->canvas_item_add_polygon(canvas_item, p_points, p_colors, uvs, texture->get_rid());
+	} else {
+		RID texture_rid = p_texture.is_valid() ? p_texture->get_rid() : RID();
+		RenderingServer::get_singleton()->canvas_item_add_polygon(canvas_item, p_points, p_colors, p_uvs, texture_rid);
+	}
 }
 
 void CanvasItem::draw_colored_polygon(const Vector<Point2> &p_points, const Color &p_color, const Vector<Point2> &p_uvs, Ref<Texture2D> p_texture) {
-	ERR_THREAD_GUARD;
-	ERR_DRAW_GUARD;
-
-	Vector<Color> colors = { p_color };
-	RID rid = p_texture.is_valid() ? p_texture->get_rid() : RID();
-	RenderingServer::get_singleton()->canvas_item_add_polygon(canvas_item, p_points, colors, p_uvs, rid);
+	draw_polygon(p_points, { p_color }, p_uvs, p_texture);
 }
 
 void CanvasItem::draw_mesh(const Ref<Mesh> &p_mesh, const Ref<Texture2D> &p_texture, const Transform2D &p_transform, const Color &p_modulate) {
@@ -973,6 +1053,24 @@ void CanvasItem::_physics_interpolated_changed() {
 	RenderingServer::get_singleton()->canvas_item_set_interpolated(canvas_item, is_physics_interpolated());
 }
 
+void CanvasItem::set_canvas_item_use_identity_transform(bool p_enable) {
+	// Prevent sending item transforms to RenderingServer when using global coords.
+	_set_use_identity_transform(p_enable);
+
+	// Let RenderingServer know not to concatenate the parent transform during the render.
+	RenderingServer::get_singleton()->canvas_item_set_use_identity_transform(get_canvas_item(), p_enable);
+
+	if (is_inside_tree()) {
+		if (p_enable) {
+			// Make sure item is using identity transform in server.
+			RenderingServer::get_singleton()->canvas_item_set_transform(get_canvas_item(), Transform2D());
+		} else {
+			// Make sure item transform is up to date in server if switching identity transform off.
+			RenderingServer::get_singleton()->canvas_item_set_transform(get_canvas_item(), get_transform());
+		}
+	}
+}
+
 Rect2 CanvasItem::get_viewport_rect() const {
 	ERR_READ_THREAD_GUARD_V(Rect2());
 	ERR_FAIL_COND_V(!is_inside_tree(), Rect2());
@@ -1069,6 +1167,26 @@ void CanvasItem::set_use_parent_material(bool p_use_parent_material) {
 	RS::get_singleton()->canvas_item_set_use_parent_material(canvas_item, p_use_parent_material);
 }
 
+void CanvasItem::set_instance_shader_parameter(const StringName &p_name, const Variant &p_value) {
+	if (p_value.get_type() == Variant::NIL) {
+		Variant def_value = RS::get_singleton()->canvas_item_get_instance_shader_parameter_default_value(get_canvas_item(), p_name);
+		RS::get_singleton()->canvas_item_set_instance_shader_parameter(get_canvas_item(), p_name, def_value);
+		instance_shader_parameters.erase(p_value);
+	} else {
+		instance_shader_parameters[p_name] = p_value;
+		if (p_value.get_type() == Variant::OBJECT) {
+			RID tex_id = p_value;
+			RS::get_singleton()->canvas_item_set_instance_shader_parameter(get_canvas_item(), p_name, tex_id);
+		} else {
+			RS::get_singleton()->canvas_item_set_instance_shader_parameter(get_canvas_item(), p_name, p_value);
+		}
+	}
+}
+
+Variant CanvasItem::get_instance_shader_parameter(const StringName &p_name) const {
+	return RS::get_singleton()->canvas_item_get_instance_shader_parameter(get_canvas_item(), p_name);
+}
+
 bool CanvasItem::get_use_parent_material() const {
 	ERR_READ_THREAD_GUARD_V(false);
 	return use_parent_material;
@@ -1127,6 +1245,38 @@ void CanvasItem::_validate_property(PropertyInfo &p_property) const {
 	}
 }
 
+PackedStringArray CanvasItem::get_configuration_warnings() const {
+	PackedStringArray warnings = Node::get_configuration_warnings();
+
+	if (clip_children_mode != CLIP_CHILDREN_DISABLED && is_inside_tree()) {
+		bool warned_about_ancestor_clipping = false;
+		bool warned_about_canvasgroup_ancestor = false;
+		Node *n = get_parent();
+		while (n) {
+			CanvasItem *as_canvas_item = Object::cast_to<CanvasItem>(n);
+			if (!warned_about_ancestor_clipping && as_canvas_item && as_canvas_item->clip_children_mode != CLIP_CHILDREN_DISABLED) {
+				warnings.push_back(vformat(RTR("Ancestor \"%s\" clips its children, so this node will not be able to clip its children."), as_canvas_item->get_name()));
+				warned_about_ancestor_clipping = true;
+			}
+
+			CanvasGroup *as_canvas_group = Object::cast_to<CanvasGroup>(n);
+			if (!warned_about_canvasgroup_ancestor && as_canvas_group) {
+				warnings.push_back(vformat(RTR("Ancestor \"%s\" is a CanvasGroup, so this node will not be able to clip its children."), as_canvas_group->get_name()));
+				warned_about_canvasgroup_ancestor = true;
+			}
+
+			// Only break out early once both warnings have been triggered, so
+			// that the user is aware of both possible reasons for clipping not working.
+			if (warned_about_ancestor_clipping && warned_about_canvasgroup_ancestor) {
+				break;
+			}
+			n = n->get_parent();
+		}
+	}
+
+	return warnings;
+}
+
 void CanvasItem::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_top_level_raise_self"), &CanvasItem::_top_level_raise_self);
 
@@ -1147,7 +1297,7 @@ void CanvasItem::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_edit_get_pivot"), &CanvasItem::_edit_get_pivot);
 	ClassDB::bind_method(D_METHOD("_edit_use_pivot"), &CanvasItem::_edit_use_pivot);
 	ClassDB::bind_method(D_METHOD("_edit_get_transform"), &CanvasItem::_edit_get_transform);
-#endif
+#endif //TOOLS_ENABLED
 
 	ClassDB::bind_method(D_METHOD("get_canvas_item"), &CanvasItem::get_canvas_item);
 
@@ -1231,6 +1381,9 @@ void CanvasItem::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_material", "material"), &CanvasItem::set_material);
 	ClassDB::bind_method(D_METHOD("get_material"), &CanvasItem::get_material);
 
+	ClassDB::bind_method(D_METHOD("set_instance_shader_parameter", "name", "value"), &CanvasItem::set_instance_shader_parameter);
+	ClassDB::bind_method(D_METHOD("get_instance_shader_parameter", "name"), &CanvasItem::get_instance_shader_parameter);
+
 	ClassDB::bind_method(D_METHOD("set_use_parent_material", "enable"), &CanvasItem::set_use_parent_material);
 	ClassDB::bind_method(D_METHOD("get_use_parent_material"), &CanvasItem::get_use_parent_material);
 
@@ -1242,7 +1395,7 @@ void CanvasItem::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("force_update_transform"), &CanvasItem::force_update_transform);
 
-	ClassDB::bind_method(D_METHOD("make_canvas_position_local", "screen_point"), &CanvasItem::make_canvas_position_local);
+	ClassDB::bind_method(D_METHOD("make_canvas_position_local", "viewport_point"), &CanvasItem::make_canvas_position_local);
 	ClassDB::bind_method(D_METHOD("make_input_local", "event"), &CanvasItem::make_input_local);
 
 	ClassDB::bind_method(D_METHOD("set_visibility_layer", "layer"), &CanvasItem::set_visibility_layer);
@@ -1524,6 +1677,8 @@ void CanvasItem::set_clip_children_mode(ClipChildrenMode p_clip_mode) {
 		return;
 	}
 	clip_children_mode = p_clip_mode;
+
+	update_configuration_warnings();
 
 	if (Object::cast_to<CanvasGroup>(this) != nullptr) {
 		//avoid accidental bugs, make this not work on CanvasGroup

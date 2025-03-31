@@ -807,7 +807,7 @@ inline int optlog2(float v)
 
 	u.f = v;
 	// +1 accounts for implicit 1. in mantissa; denormalized numbers will end up clamped to min_exp by calling code
-	return u.ui == 0 ? 0 : int((u.ui >> 23) & 0xff) - 127 + 1;
+	return v == 0 ? 0 : int((u.ui >> 23) & 0xff) - 127 + 1;
 }
 
 // optimized variant of ldexp
@@ -1010,6 +1010,20 @@ void meshopt_encodeFilterExp(void* destination_, size_t count, size_t stride, in
 				component_exp[j] = (min_exp < e) ? e : min_exp;
 			}
 		}
+		else if (mode == meshopt_EncodeExpClamped)
+		{
+			for (size_t j = 0; j < stride_float; ++j)
+			{
+				int e = optlog2(v[j]);
+
+				component_exp[j] = (0 < e) ? e : 0;
+			}
+		}
+		else
+		{
+			// the code below assumes component_exp is initialized outside of the loop
+			assert(mode == meshopt_EncodeExpSharedComponent);
+		}
 
 		for (size_t j = 0; j < stride_float; ++j)
 		{
@@ -1020,7 +1034,6 @@ void meshopt_encodeFilterExp(void* destination_, size_t count, size_t stride, in
 
 			// compute renormalized rounded mantissa for each component
 			int mmask = (1 << 24) - 1;
-
 			int m = int(v[j] * optexp2(-exp) + (v[j] >= 0 ? 0.5f : -0.5f));
 
 			d[j] = (m & mmask) | (unsigned(exp) << 24);

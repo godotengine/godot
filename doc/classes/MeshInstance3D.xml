@@ -21,6 +21,14 @@
 				[b]Performance:[/b] [Mesh] data needs to be received from the GPU, stalling the [RenderingServer] in the process.
 			</description>
 		</method>
+		<method name="bake_mesh_from_current_skeleton_pose">
+			<return type="ArrayMesh" />
+			<param index="0" name="existing" type="ArrayMesh" default="null" />
+			<description>
+				Takes a snapshot of the current animated skeleton pose of the skinned mesh and bakes it to the provided [param existing] mesh. If no [param existing] mesh is provided a new [ArrayMesh] is created, baked, and returned. Requires a skeleton with a registered skin to work. Blendshapes are ignored. Mesh surface materials are not copied.
+				[b]Performance:[/b] [Mesh] data needs to be retrieved from the GPU, stalling the [RenderingServer] in the process.
+			</description>
+		</method>
 		<method name="create_convex_collision">
 			<return type="void" />
 			<param index="0" name="clean" type="bool" default="true" />
@@ -112,7 +120,7 @@
 			<param index="1" name="material" type="Material" />
 			<description>
 				Sets the override [param material] for the specified [param surface] of the [Mesh] resource. This material is associated with this [MeshInstance3D] rather than with [member mesh].
-				[b]Note:[/b] This assigns the [Material] associated to the [MeshInstance3D]'s Surface Material Override properties, not the material within the [Mesh] resource. To set the material within the [Mesh] resource, use [method Mesh.surface_get_material] instead.
+				[b]Note:[/b] This assigns the [Material] associated to the [MeshInstance3D]'s Surface Material Override properties, not the material within the [Mesh] resource. To set the material within the [Mesh] resource, use [method Mesh.surface_set_material] instead.
 			</description>
 		</method>
 	</methods>

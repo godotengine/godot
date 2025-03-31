@@ -28,11 +28,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef FILESYSTEM_DOCK_H
-#define FILESYSTEM_DOCK_H
+#pragma once
 
 #include "editor/dependency_editor.h"
 #include "editor/editor_file_system.h"
+#include "editor/file_info.h"
 #include "editor/plugins/script_editor_plugin.h"
 #include "editor/script_create_dialog.h"
 #include "scene/gui/box_container.h"
@@ -59,7 +59,7 @@ class FileSystemTree : public Tree {
 class FileSystemList : public ItemList {
 	GDCLASS(FileSystemList, ItemList);
 
-	bool popup_edit_commited = true;
+	bool popup_edit_committed = true;
 	VBoxContainer *popup_editor_vb = nullptr;
 	Popup *popup_editor = nullptr;
 	LineEdit *line_editor = nullptr;
@@ -93,16 +93,6 @@ public:
 		DISPLAY_MODE_HSPLIT,
 	};
 
-	enum FileSortOption {
-		FILE_SORT_NAME = 0,
-		FILE_SORT_NAME_REVERSE,
-		FILE_SORT_TYPE,
-		FILE_SORT_TYPE_REVERSE,
-		FILE_SORT_MODIFIED_TIME,
-		FILE_SORT_MODIFIED_TIME_REVERSE,
-		FILE_SORT_MAX,
-	};
-
 	enum Overwrite {
 		OVERWRITE_UNDECIDED,
 		OVERWRITE_REPLACE,
@@ -125,7 +115,6 @@ private:
 		FILE_REMOVE,
 		FILE_DUPLICATE,
 		FILE_REIMPORT,
-		FILE_INFO,
 		FILE_NEW,
 		FILE_SHOW_IN_EXPLORER,
 		FILE_OPEN_EXTERNAL,
@@ -140,13 +129,14 @@ private:
 		FILE_NEW_FOLDER,
 		FILE_NEW_SCRIPT,
 		FILE_NEW_SCENE,
+		CONVERT_BASE_ID = 1000,
 	};
 
-	HashMap<String, String> icon_cache;
+	HashMap<String, TreeItem *> folder_map;
 	HashMap<String, Color> folder_colors;
 	Dictionary assigned_folder_colors;
 
-	FileSortOption file_sort = FILE_SORT_NAME;
+	FileSortOption file_sort = FileSortOption::FILE_SORT_NAME;
 
 	VBoxContainer *scanning_vb = nullptr;
 	ProgressBar *scanning_progress = nullptr;
@@ -161,7 +151,6 @@ private:
 	Button *button_dock_placement = nullptr;
 
 	Button *button_toggle_display_mode = nullptr;
-	Button *button_reload = nullptr;
 	Button *button_file_list_display_mode = nullptr;
 	Button *button_hist_next = nullptr;
 	Button *button_hist_prev = nullptr;
@@ -192,8 +181,6 @@ private:
 	DependencyRemoveDialog *remove_dialog = nullptr;
 
 	EditorDirDialog *move_dialog = nullptr;
-	ConfirmationDialog *duplicate_dialog = nullptr;
-	LineEdit *duplicate_dialog_text = nullptr;
 	DirectoryCreateDialog *make_dir_dialog = nullptr;
 
 	ConfirmationDialog *overwrite_dialog = nullptr;
@@ -201,6 +188,8 @@ private:
 	Label *overwrite_dialog_header = nullptr;
 	Label *overwrite_dialog_footer = nullptr;
 	Label *overwrite_dialog_file_list = nullptr;
+
+	ConfirmationDialog *conversion_dialog = nullptr;
 
 	SceneCreateDialog *make_scene_dialog = nullptr;
 	ScriptCreateDialog *make_script_dialog = nullptr;
@@ -227,6 +216,9 @@ private:
 	String to_move_path;
 	bool to_move_or_copy = false;
 
+	Vector<String> to_convert;
+	int selected_conversion_id = 0;
+
 	Vector<String> history;
 	int history_pos;
 	int history_max_size;
@@ -239,6 +231,9 @@ private:
 	FileSystemTree *tree = nullptr;
 	FileSystemList *files = nullptr;
 	bool import_dock_needs_update = false;
+	TreeItem *resources_item = nullptr;
+	TreeItem *favorites_item = nullptr;
+	Control *had_focus = nullptr;
 
 	bool holding_branch = false;
 	Vector<TreeItem *> tree_items_selected_on_drag_begin;
@@ -246,24 +241,28 @@ private:
 
 	LocalVector<Ref<EditorResourceTooltipPlugin>> tooltip_plugins;
 
+	HashSet<String> cached_valid_conversion_targets;
+
 	void _tree_mouse_exited();
 	void _reselect_items_selected_on_drag_begin(bool reset = false);
 
 	Ref<Texture2D> _get_tree_item_icon(bool p_is_valid, const String &p_file_type, const String &p_icon_path);
-	String _get_entry_script_icon(const EditorFileSystemDirectory *p_dir, int p_file);
-	bool _create_tree(TreeItem *p_parent, EditorFileSystemDirectory *p_dir, Vector<String> &uncollapsed_paths, bool p_select_in_favorites, bool p_unfold_path = false);
-	void _update_tree(const Vector<String> &p_uncollapsed_paths = Vector<String>(), bool p_uncollapse_root = false, bool p_select_in_favorites = false, bool p_unfold_path = false);
+	void _create_tree(TreeItem *p_parent, EditorFileSystemDirectory *p_dir, Vector<String> &uncollapsed_paths, bool p_select_in_favorites, bool p_unfold_path = false);
+	void _update_tree(const Vector<String> &p_uncollapsed_paths = Vector<String>(), bool p_uncollapse_root = false, bool p_scroll_to_selected = true);
 	void _navigate_to_path(const String &p_path, bool p_select_in_favorites = false);
+	bool _update_filtered_items(TreeItem *p_tree_item = nullptr);
 
 	void _file_list_gui_input(Ref<InputEvent> p_event);
 	void _tree_gui_input(Ref<InputEvent> p_event);
+
+	HashSet<String> _get_valid_conversions_for_file_paths(const Vector<String> &p_paths);
 
 	void _update_file_list(bool p_keep_selection);
 	void _toggle_file_display();
 	void _set_file_display(bool p_active);
 	void _fs_changed();
 
-	void _select_file(const String &p_path, bool p_select_in_favorites = false);
+	void _select_file(const String &p_path, bool p_select_in_favorites = false, bool p_navigate = true);
 	void _tree_activate_file();
 	void _file_list_activate_file(int p_idx);
 	void _file_multi_selected(int p_index, bool p_selected);
@@ -279,7 +278,7 @@ private:
 	void _before_move(HashMap<String, ResourceUID::ID> &r_uids, HashSet<String> &r_file_owners) const;
 	void _update_dependencies_after_move(const HashMap<String, String> &p_renames, const HashSet<String> &p_file_owners) const;
 	void _update_resource_paths_after_move(const HashMap<String, String> &p_renames, const HashMap<String, ResourceUID::ID> &p_uids) const;
-	void _update_favorites_list_after_move(const HashMap<String, String> &p_files_renames, const HashMap<String, String> &p_folders_renames) const;
+	void _update_favorites_after_move(const HashMap<String, String> &p_files_renames, const HashMap<String, String> &p_folders_renames) const;
 	void _update_project_settings_after_move(const HashMap<String, String> &p_renames, const HashMap<String, String> &p_folders_renames);
 	String _get_unique_name(const FileOrFolder &p_entry, const String &p_at_path);
 
@@ -292,13 +291,15 @@ private:
 	void _resource_created();
 	void _make_scene_confirm();
 	void _rename_operation_confirm();
-	void _duplicate_operation_confirm();
+	void _duplicate_operation_confirm(const String &p_path);
 	void _overwrite_dialog_action(bool p_overwrite);
+	void _convert_dialog_action();
 	Vector<String> _check_existing();
 	void _move_operation_confirm(const String &p_to_path, bool p_copy = false, Overwrite p_overwrite = OVERWRITE_UNDECIDED);
 
 	void _tree_rmb_option(int p_option);
 	void _file_list_rmb_option(int p_option);
+	void _generic_rmb_option_selected(int p_option);
 	void _file_option(int p_option, const Vector<String> &p_selected);
 
 	void _fw_history();
@@ -326,25 +327,6 @@ private:
 	void _tree_empty_click(const Vector2 &p_pos, MouseButton p_button);
 	void _tree_empty_selected();
 
-	struct FileInfo {
-		String name;
-		String path;
-		String icon_path;
-		StringName type;
-		Vector<String> sources;
-		bool import_broken = false;
-		uint64_t modified_time = 0;
-
-		bool operator<(const FileInfo &fi) const {
-			return FileNoCaseComparator()(name, fi.name);
-		}
-	};
-
-	struct FileInfoTypeComparator;
-	struct FileInfoModifiedTimeComparator;
-
-	void _sort_file_info_list(List<FileSystemDock::FileInfo> &r_file_list);
-
 	void _search(EditorFileSystemDirectory *p_path, List<FileInfo> *matches, int p_max_items);
 
 	void _set_current_path_line_edit_text(const String &p_path);
@@ -361,6 +343,7 @@ private:
 	void _update_display_mode(bool p_force = false);
 
 	Vector<String> _tree_get_selected(bool remove_self_inclusion = true, bool p_include_unselected_cursor = false) const;
+	Vector<String> _file_list_get_selected() const;
 
 	bool _is_file_type_disabled_by_feature_profile(const StringName &p_class);
 
@@ -373,8 +356,11 @@ private:
 	bool _can_dock_horizontal() const;
 	void _set_dock_horizontal(bool p_enable);
 
+	void _save_layout_to_config(Ref<ConfigFile> p_layout, const String &p_section) const;
+	void _load_layout_from_config(Ref<ConfigFile> p_layout, const String &p_section);
+
 private:
-	static FileSystemDock *singleton;
+	inline static FileSystemDock *singleton = nullptr;
 
 public:
 	static FileSystemDock *get_singleton() { return singleton; }
@@ -397,14 +383,17 @@ public:
 
 	String get_current_path() const;
 	String get_current_directory() const;
+	String get_folder_path_at_mouse_position() const;
 
 	void navigate_to_path(const String &p_path);
 	void focus_on_path();
 	void focus_on_filter();
+	void create_directory(const String &p_path, const String &p_base_dir);
 
 	ScriptCreateDialog *get_script_create_dialog() const;
 
 	void fix_dependencies(const String &p_for_file);
+	void update_all();
 
 	int get_h_split_offset() const { return split_box_offset_h; }
 	void set_h_split_offset(int p_offset) { split_box_offset_h = p_offset; }
@@ -419,7 +408,7 @@ public:
 	FileSortOption get_file_sort() const { return file_sort; }
 
 	void set_file_list_display_mode(FileListDisplayMode p_mode);
-	FileListDisplayMode get_file_list_display_mode() const { return file_list_display_mode; };
+	FileListDisplayMode get_file_list_display_mode() const { return file_list_display_mode; }
 
 	Tree *get_tree_control() { return tree; }
 
@@ -427,13 +416,8 @@ public:
 	void remove_resource_tooltip_plugin(const Ref<EditorResourceTooltipPlugin> &p_plugin);
 	Control *create_tooltip_for_path(const String &p_path) const;
 
-	void save_layout_to_config(Ref<ConfigFile> p_layout, const String &p_section) const;
-	void load_layout_from_config(Ref<ConfigFile> p_layout, const String &p_section);
-
 	FileSystemDock();
 	~FileSystemDock();
 };
 
 VARIANT_ENUM_CAST(FileSystemDock::Overwrite);
-
-#endif // FILESYSTEM_DOCK_H

@@ -109,36 +109,27 @@ uint64_t Color::to_rgba64() const {
 	return c;
 }
 
-String _to_hex(float p_val) {
+void _append_hex(float p_val, char32_t *string) {
 	int v = Math::round(p_val * 255.0f);
 	v = CLAMP(v, 0, 255);
-	String ret;
 
-	for (int i = 0; i < 2; i++) {
-		char32_t c[2] = { 0, 0 };
-		int lv = v & 0xF;
-		if (lv < 10) {
-			c[0] = '0' + lv;
-		} else {
-			c[0] = 'a' + lv - 10;
-		}
-
-		v >>= 4;
-		String cs = (const char32_t *)c;
-		ret = cs + ret;
-	}
-
-	return ret;
+	string[0] = hex_char_table_lower[(v >> 4) & 0xF];
+	string[1] = hex_char_table_lower[v & 0xF];
 }
 
 String Color::to_html(bool p_alpha) const {
 	String txt;
-	txt += _to_hex(r);
-	txt += _to_hex(g);
-	txt += _to_hex(b);
+	txt.resize(p_alpha ? 9 : 7);
+	char32_t *ptr = txt.ptrw();
+
+	_append_hex(r, ptr + 0);
+	_append_hex(g, ptr + 2);
+	_append_hex(b, ptr + 4);
 	if (p_alpha) {
-		txt += _to_hex(a);
+		_append_hex(a, ptr + 6);
 	}
+	ptr[txt.size() - 1] = '\0';
+
 	return txt;
 }
 
@@ -257,6 +248,10 @@ void Color::set_ok_hsl(float p_h, float p_s, float p_l, float p_alpha) {
 
 bool Color::is_equal_approx(const Color &p_color) const {
 	return Math::is_equal_approx(r, p_color.r) && Math::is_equal_approx(g, p_color.g) && Math::is_equal_approx(b, p_color.b) && Math::is_equal_approx(a, p_color.a);
+}
+
+bool Color::is_same(const Color &p_color) const {
+	return Math::is_same(r, p_color.r) && Math::is_same(g, p_color.g) && Math::is_same(b, p_color.b) && Math::is_same(a, p_color.a);
 }
 
 Color Color::clamp(const Color &p_min, const Color &p_max) const {
@@ -415,18 +410,14 @@ Color Color::named(const String &p_name, const Color &p_default) {
 int Color::find_named_color(const String &p_name) {
 	String name = p_name;
 	// Normalize name.
-	name = name.replace(" ", "");
-	name = name.replace("-", "");
-	name = name.replace("_", "");
-	name = name.replace("'", "");
-	name = name.replace(".", "");
+	name = name.remove_chars(" -_'.");
 	name = name.to_upper();
 
 	static HashMap<String, int> named_colors_hashmap;
 	if (unlikely(named_colors_hashmap.is_empty())) {
 		const int named_color_count = get_named_color_count();
 		for (int i = 0; i < named_color_count; i++) {
-			named_colors_hashmap[String(named_colors[i].name).replace("_", "")] = i;
+			named_colors_hashmap[String(named_colors[i].name).remove_char('_')] = i;
 		}
 	}
 
@@ -439,7 +430,7 @@ int Color::find_named_color(const String &p_name) {
 }
 
 int Color::get_named_color_count() {
-	return sizeof(named_colors) / sizeof(NamedColor);
+	return std::size(named_colors);
 }
 
 String Color::get_named_color_name(int p_idx) {
@@ -482,106 +473,12 @@ Color Color::from_rgbe9995(uint32_t p_rgbe) {
 	return Color(rd, gd, bd, 1.0f);
 }
 
+Color Color::from_rgba8(int64_t p_r8, int64_t p_g8, int64_t p_b8, int64_t p_a8) {
+	return Color(p_r8 / 255.0f, p_g8 / 255.0f, p_b8 / 255.0f, p_a8 / 255.0f);
+}
+
 Color::operator String() const {
 	return "(" + String::num(r, 4) + ", " + String::num(g, 4) + ", " + String::num(b, 4) + ", " + String::num(a, 4) + ")";
-}
-
-Color Color::operator+(const Color &p_color) const {
-	return Color(
-			r + p_color.r,
-			g + p_color.g,
-			b + p_color.b,
-			a + p_color.a);
-}
-
-void Color::operator+=(const Color &p_color) {
-	r = r + p_color.r;
-	g = g + p_color.g;
-	b = b + p_color.b;
-	a = a + p_color.a;
-}
-
-Color Color::operator-(const Color &p_color) const {
-	return Color(
-			r - p_color.r,
-			g - p_color.g,
-			b - p_color.b,
-			a - p_color.a);
-}
-
-void Color::operator-=(const Color &p_color) {
-	r = r - p_color.r;
-	g = g - p_color.g;
-	b = b - p_color.b;
-	a = a - p_color.a;
-}
-
-Color Color::operator*(const Color &p_color) const {
-	return Color(
-			r * p_color.r,
-			g * p_color.g,
-			b * p_color.b,
-			a * p_color.a);
-}
-
-Color Color::operator*(float p_scalar) const {
-	return Color(
-			r * p_scalar,
-			g * p_scalar,
-			b * p_scalar,
-			a * p_scalar);
-}
-
-void Color::operator*=(const Color &p_color) {
-	r = r * p_color.r;
-	g = g * p_color.g;
-	b = b * p_color.b;
-	a = a * p_color.a;
-}
-
-void Color::operator*=(float p_scalar) {
-	r = r * p_scalar;
-	g = g * p_scalar;
-	b = b * p_scalar;
-	a = a * p_scalar;
-}
-
-Color Color::operator/(const Color &p_color) const {
-	return Color(
-			r / p_color.r,
-			g / p_color.g,
-			b / p_color.b,
-			a / p_color.a);
-}
-
-Color Color::operator/(float p_scalar) const {
-	return Color(
-			r / p_scalar,
-			g / p_scalar,
-			b / p_scalar,
-			a / p_scalar);
-}
-
-void Color::operator/=(const Color &p_color) {
-	r = r / p_color.r;
-	g = g / p_color.g;
-	b = b / p_color.b;
-	a = a / p_color.a;
-}
-
-void Color::operator/=(float p_scalar) {
-	r = r / p_scalar;
-	g = g / p_scalar;
-	b = b / p_scalar;
-	a = a / p_scalar;
-}
-
-Color Color::operator-() const {
-	return Color(
-			1.0f - r,
-			1.0f - g,
-			1.0f - b,
-			1.0f - a);
 }
 
 Color Color::from_ok_hsl(float p_h, float p_s, float p_l, float p_alpha) {

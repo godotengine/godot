@@ -172,6 +172,7 @@ static LoadModule* _find(FileType type)
 }
 
 
+#ifdef THORVG_FILE_IO_SUPPORT
 static LoadModule* _findByPath(const string& path)
 {
     auto ext = path.substr(path.find_last_of(".") + 1);
@@ -185,6 +186,7 @@ static LoadModule* _findByPath(const string& path)
     if (!ext.compare("otf") || !ext.compare("otc")) return _find(FileType::Ttf);
     return nullptr;
 }
+#endif
 
 
 static FileType _convert(const string& mimeType)
@@ -265,7 +267,11 @@ bool LoaderMgr::term()
     auto loader = _activeLoaders.head;
 
     //clean up the remained font loaders which is globally used.
-    while (loader && loader->type == FileType::Ttf) {
+    while (loader) {
+        if (loader->type != FileType::Ttf) {
+            loader = loader->next;
+            continue;
+        }
         auto ret = loader->close();
         auto tmp = loader;
         loader = loader->next;
@@ -292,12 +298,13 @@ bool LoaderMgr::retrieve(LoadModule* loader)
 
 LoadModule* LoaderMgr::loader(const string& path, bool* invalid)
 {
+#ifdef THORVG_FILE_IO_SUPPORT
     *invalid = false;
 
-    //TODO: lottie is not sharable.
+    //TODO: svg & lottie is not sharable.
     auto allowCache = true;
     auto ext = path.substr(path.find_last_of(".") + 1);
-    if (!ext.compare("json")) allowCache = false;
+    if (!ext.compare("svg") || !ext.compare("json")) allowCache = false;
 
     if (allowCache) {
         if (auto loader = _findFromCache(path)) return loader;
@@ -317,7 +324,7 @@ LoadModule* LoaderMgr::loader(const string& path, bool* invalid)
         }
         delete(loader);
     }
-    //Unkown MimeType. Try with the candidates in the order
+    //Unknown MimeType. Try with the candidates in the order
     for (int i = 0; i < static_cast<int>(FileType::Raw); i++) {
         if (auto loader = _find(static_cast<FileType>(i))) {
             if (loader->open(path)) {
@@ -335,6 +342,7 @@ LoadModule* LoaderMgr::loader(const string& path, bool* invalid)
         }
     }
     *invalid = true;
+#endif
     return nullptr;
 }
 
@@ -392,7 +400,7 @@ LoadModule* LoaderMgr::loader(const char* data, uint32_t size, const string& mim
             }
         }
     }
-    //Unkown MimeType. Try with the candidates in the order
+    //Unknown MimeType. Try with the candidates in the order
     for (int i = 0; i < static_cast<int>(FileType::Raw); i++) {
         auto loader = _find(static_cast<FileType>(i));
         if (loader) {
@@ -431,5 +439,29 @@ LoadModule* LoaderMgr::loader(const uint32_t *data, uint32_t w, uint32_t h, bool
         return loader;
     }
     delete(loader);
+    return nullptr;
+}
+
+
+//loads fonts from memory - loader is cached (regardless of copy value) in order to access it while setting font
+LoadModule* LoaderMgr::loader(const char* name, const char* data, uint32_t size, TVG_UNUSED const string& mimeType, bool copy)
+{
+#ifdef THORVG_TTF_LOADER_SUPPORT
+    //TODO: add check for mimetype ?
+    if (auto loader = _findFromCache(name)) return loader;
+
+    //function is dedicated for ttf loader (the only supported font loader)
+    auto loader = new TtfLoader;
+    if (loader->open(data, size, copy)) {
+        loader->hashpath = strdup(name);
+        loader->pathcache = true;
+        ScopedLock lock(key);
+        _activeLoaders.back(loader);
+        return loader;
+    }
+
+    TVGLOG("LOADER", "The font data \"%s\" could not be loaded.", name);
+    delete(loader);
+#endif
     return nullptr;
 }

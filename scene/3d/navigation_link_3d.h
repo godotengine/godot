@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef NAVIGATION_LINK_3D_H
-#define NAVIGATION_LINK_3D_H
+#pragma once
 
 #include "scene/3d/node_3d.h"
 
@@ -38,6 +37,7 @@ class NavigationLink3D : public Node3D {
 
 	bool enabled = true;
 	RID link;
+	RID map_override;
 	bool bidirectional = true;
 	uint32_t navigation_layers = 1;
 	Vector3 end_position;
@@ -72,6 +72,9 @@ public:
 	void set_enabled(bool p_enabled);
 	bool is_enabled() const { return enabled; }
 
+	void set_navigation_map(RID p_navigation_map);
+	RID get_navigation_map() const;
+
 	void set_bidirectional(bool p_bidirectional);
 	bool is_bidirectional() const { return bidirectional; }
 
@@ -100,6 +103,9 @@ public:
 	real_t get_travel_cost() const { return travel_cost; }
 
 	PackedStringArray get_configuration_warnings() const override;
-};
 
-#endif // NAVIGATION_LINK_3D_H
+private:
+	void _link_enter_navigation_map();
+	void _link_exit_navigation_map();
+	void _link_update_transform();
+};

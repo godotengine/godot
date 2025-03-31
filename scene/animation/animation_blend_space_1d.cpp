@@ -278,7 +278,7 @@ void AnimationNodeBlendSpace1D::_add_blend_point(int p_index, const Ref<Animatio
 }
 
 AnimationNode::NodeTimeInfo AnimationNodeBlendSpace1D::_process(const AnimationMixer::PlaybackInfo p_playback_info, bool p_test_only) {
-	if (blend_points_used == 0) {
+	if (!blend_points_used) {
 		return NodeTimeInfo();
 	}
 
@@ -374,21 +374,26 @@ AnimationNode::NodeTimeInfo AnimationNodeBlendSpace1D::_process(const AnimationM
 		}
 
 		if (new_closest != cur_closest && new_closest != -1) {
-			NodeTimeInfo from;
 			if (blend_mode == BLEND_MODE_DISCRETE_CARRY && cur_closest != -1) {
-				//for ping-pong loop
+				NodeTimeInfo from;
+				// For ping-pong loop.
 				Ref<AnimationNodeAnimation> na_c = static_cast<Ref<AnimationNodeAnimation>>(blend_points[cur_closest].node);
 				Ref<AnimationNodeAnimation> na_n = static_cast<Ref<AnimationNodeAnimation>>(blend_points[new_closest].node);
-				if (!na_c.is_null() && !na_n.is_null()) {
+				if (na_c.is_valid() && na_n.is_valid()) {
+					na_n->process_state = process_state;
+					na_c->process_state = process_state;
+
 					na_n->set_backward(na_c->is_backward());
+
+					na_n = nullptr;
+					na_c = nullptr;
 				}
-				//see how much animation remains
+				// See how much animation remains.
 				pi.seeked = false;
 				pi.weight = 0;
-				from = blend_node(blend_points[cur_closest].node, blend_points[cur_closest].name, pi, FILTER_IGNORE, true, p_test_only);
+				from = blend_node(blend_points[cur_closest].node, blend_points[cur_closest].name, pi, FILTER_IGNORE, true, true);
+				pi.time = from.position;
 			}
-
-			pi.time = from.position;
 			pi.seeked = true;
 			pi.weight = 1.0;
 			mind = blend_node(blend_points[new_closest].node, blend_points[new_closest].name, pi, FILTER_IGNORE, true, p_test_only);

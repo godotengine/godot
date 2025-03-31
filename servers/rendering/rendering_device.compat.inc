@@ -86,7 +86,29 @@ RenderingDevice::FinalAction RenderingDevice::_convert_final_action_84976(FinalA
 }
 
 RenderingDevice::DrawListID RenderingDevice::_draw_list_begin_bind_compat_84976(RID p_framebuffer, InitialAction p_initial_color_action, FinalAction p_final_color_action, InitialAction p_initial_depth_action, FinalAction p_final_depth_action, const Vector<Color> &p_clear_color_values, float p_clear_depth, uint32_t p_clear_stencil, const Rect2 &p_region, const TypedArray<RID> &p_storage_textures) {
-	return draw_list_begin(p_framebuffer, _convert_initial_action_84976(p_initial_color_action), _convert_final_action_84976(p_final_color_action), _convert_initial_action_84976(p_initial_depth_action), _convert_final_action_84976(p_final_depth_action), p_clear_color_values, p_clear_depth, p_clear_stencil, p_region);
+	return _draw_list_begin_bind_compat_98670(p_framebuffer, _convert_initial_action_84976(p_initial_color_action), _convert_final_action_84976(p_final_color_action), _convert_initial_action_84976(p_initial_depth_action), _convert_final_action_84976(p_final_depth_action), p_clear_color_values, p_clear_depth, p_clear_stencil, p_region, RDD::BreadcrumbMarker::NONE);
+}
+
+RenderingDevice::DrawListID RenderingDevice::_draw_list_begin_bind_compat_90993(RID p_framebuffer, InitialAction p_initial_color_action, FinalAction p_final_color_action, InitialAction p_initial_depth_action, FinalAction p_final_depth_action, const Vector<Color> &p_clear_color_values, float p_clear_depth, uint32_t p_clear_stencil, const Rect2 &p_region) {
+	return _draw_list_begin_bind_compat_98670(p_framebuffer, p_initial_color_action, p_final_color_action, p_initial_depth_action, p_final_depth_action, p_clear_color_values, p_clear_depth, p_clear_stencil, p_region, RDD::BreadcrumbMarker::NONE);
+}
+
+RenderingDevice::DrawListID RenderingDevice::_draw_list_begin_bind_compat_98670(RID p_framebuffer, InitialAction p_initial_color_action, FinalAction p_final_color_action, InitialAction p_initial_depth_action, FinalAction p_final_depth_action, const Vector<Color> &p_clear_color_values, float p_clear_depth, uint32_t p_clear_stencil, const Rect2 &p_region, uint32_t p_breadcrumb) {
+	// Deduce flags from initial and final actions.
+	BitField<DrawFlags> draw_flags = RD::DRAW_DEFAULT_ALL;
+	if (p_initial_color_action == RD::INITIAL_ACTION_CLEAR) {
+		draw_flags.set_flag(DrawFlags(RD::DRAW_CLEAR_COLOR_ALL));
+	} else if (p_initial_color_action == RD::INITIAL_ACTION_DISCARD) {
+		draw_flags.set_flag(DrawFlags(RD::DRAW_IGNORE_COLOR_ALL));
+	}
+
+	if (p_initial_depth_action == RD::INITIAL_ACTION_CLEAR) {
+		draw_flags.set_flag(DrawFlags(RD::DRAW_CLEAR_DEPTH | RD::DRAW_CLEAR_STENCIL));
+	} else if (p_initial_depth_action == RD::INITIAL_ACTION_DISCARD) {
+		draw_flags.set_flag(DrawFlags(RD::DRAW_IGNORE_DEPTH | RD::DRAW_IGNORE_STENCIL));
+	}
+
+	return draw_list_begin(p_framebuffer, draw_flags, p_clear_color_values, p_clear_depth, p_clear_stencil, p_region, p_breadcrumb);
 }
 
 RenderingDevice::ComputeListID RenderingDevice::_compute_list_begin_bind_compat_84976(bool p_allow_draw_overlap) {
@@ -121,11 +143,29 @@ RenderingDevice::FramebufferFormatID RenderingDevice::_screen_get_framebuffer_fo
 	return screen_get_framebuffer_format(DisplayServer::MAIN_WINDOW_ID);
 }
 
+RID RenderingDevice::_uniform_buffer_create_bind_compat_101561(uint32_t p_size_bytes, const Vector<uint8_t> &p_data) {
+	return uniform_buffer_create(p_size_bytes, p_data, 0);
+}
+
+RID RenderingDevice::_storage_buffer_create_bind_compat_101561(uint32_t p_size, const Vector<uint8_t> &p_data, BitField<StorageBufferUsage> p_usage) {
+	return storage_buffer_create(p_size, p_data, p_usage, 0);
+}
+
+RID RenderingDevice::_vertex_buffer_create_bind_compat_101561(uint32_t p_size_bytes, const Vector<uint8_t> &p_data, bool p_use_as_storage) {
+	return vertex_buffer_create(p_size_bytes, p_data, p_use_as_storage ? RD::BUFFER_CREATION_AS_STORAGE_BIT : 0);
+}
+
+RID RenderingDevice::_index_buffer_create_bind_compat_101561(uint32_t p_size_indices, IndexBufferFormat p_format, const Vector<uint8_t> &p_data, bool p_use_restart_indices) {
+	return index_buffer_create(p_size_indices, p_format, p_data, p_use_restart_indices, 0);
+}
+
 void RenderingDevice::_bind_compatibility_methods() {
 	ClassDB::bind_compatibility_method(D_METHOD("shader_create_from_bytecode", "binary_data"), &RenderingDevice::_shader_create_from_bytecode_bind_compat_79606);
+
 	ClassDB::bind_compatibility_method(D_METHOD("draw_list_end", "post_barrier"), &RenderingDevice::_draw_list_end_bind_compat_81356, DEFVAL(7));
 	ClassDB::bind_compatibility_method(D_METHOD("compute_list_end", "post_barrier"), &RenderingDevice::_compute_list_end_bind_compat_81356, DEFVAL(7));
 	ClassDB::bind_compatibility_method(D_METHOD("barrier", "from", "to"), &RenderingDevice::_barrier_bind_compat_81356, DEFVAL(7), DEFVAL(7));
+
 	ClassDB::bind_compatibility_method(D_METHOD("draw_list_end", "post_barrier"), &RenderingDevice::_draw_list_end_bind_compat_84976, DEFVAL(0x7FFF));
 	ClassDB::bind_compatibility_method(D_METHOD("compute_list_end", "post_barrier"), &RenderingDevice::_compute_list_end_bind_compat_84976, DEFVAL(0x7FFF));
 	ClassDB::bind_compatibility_method(D_METHOD("draw_list_begin", "framebuffer", "initial_color_action", "final_color_action", "initial_depth_action", "final_depth_action", "clear_color_values", "clear_depth", "clear_stencil", "region", "storage_textures"), &RenderingDevice::_draw_list_begin_bind_compat_84976, DEFVAL(Vector<Color>()), DEFVAL(1.0), DEFVAL(0), DEFVAL(Rect2()), DEFVAL(TypedArray<RID>()));
@@ -136,7 +176,17 @@ void RenderingDevice::_bind_compatibility_methods() {
 	ClassDB::bind_compatibility_method(D_METHOD("texture_copy", "from_texture", "to_texture", "from_pos", "to_pos", "size", "src_mipmap", "dst_mipmap", "src_layer", "dst_layer", "post_barrier"), &RenderingDevice::_texture_copy_bind_compat_84976, DEFVAL(0x7FFF));
 	ClassDB::bind_compatibility_method(D_METHOD("texture_clear", "texture", "color", "base_mipmap", "mipmap_count", "base_layer", "layer_count", "post_barrier"), &RenderingDevice::_texture_clear_bind_compat_84976, DEFVAL(0x7FFF));
 	ClassDB::bind_compatibility_method(D_METHOD("texture_resolve_multisample", "from_texture", "to_texture", "post_barrier"), &RenderingDevice::_texture_resolve_multisample_bind_compat_84976, DEFVAL(0x7FFF));
+
 	ClassDB::bind_compatibility_method(D_METHOD("screen_get_framebuffer_format"), &RenderingDevice::_screen_get_framebuffer_format_bind_compat_87340);
+
+	ClassDB::bind_compatibility_method(D_METHOD("draw_list_begin", "framebuffer", "initial_color_action", "final_color_action", "initial_depth_action", "final_depth_action", "clear_color_values", "clear_depth", "clear_stencil", "region"), &RenderingDevice::_draw_list_begin_bind_compat_90993, DEFVAL(Vector<Color>()), DEFVAL(1.0), DEFVAL(0), DEFVAL(Rect2()));
+
+	ClassDB::bind_compatibility_method(D_METHOD("draw_list_begin", "framebuffer", "initial_color_action", "final_color_action", "initial_depth_action", "final_depth_action", "clear_color_values", "clear_depth", "clear_stencil", "region", "breadcrumb"), &RenderingDevice::_draw_list_begin_bind_compat_98670, DEFVAL(Vector<Color>()), DEFVAL(1.0), DEFVAL(0), DEFVAL(Rect2()), DEFVAL(0));
+
+	ClassDB::bind_compatibility_method(D_METHOD("uniform_buffer_create", "size_bytes", "data"), &RenderingDevice::_uniform_buffer_create_bind_compat_101561, DEFVAL(Vector<uint8_t>()));
+	ClassDB::bind_compatibility_method(D_METHOD("storage_buffer_create", "size_bytes", "data", "usage"), &RenderingDevice::_storage_buffer_create_bind_compat_101561, DEFVAL(Vector<uint8_t>()), DEFVAL(0));
+	ClassDB::bind_compatibility_method(D_METHOD("vertex_buffer_create", "size_bytes", "data", "use_as_storage"), &RenderingDevice::_vertex_buffer_create_bind_compat_101561, DEFVAL(Vector<uint8_t>()), DEFVAL(false));
+	ClassDB::bind_compatibility_method(D_METHOD("index_buffer_create", "size_indices", "format", "data", "use_restart_indices"), &RenderingDevice::_index_buffer_create_bind_compat_101561, DEFVAL(Vector<uint8_t>()), DEFVAL(false));
 }
 
 #endif

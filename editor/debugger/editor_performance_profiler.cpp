@@ -37,8 +37,6 @@
 #include "editor/themes/editor_theme_manager.h"
 #include "main/performance.h"
 
-EditorPerformanceProfiler::Monitor::Monitor() {}
-
 EditorPerformanceProfiler::Monitor::Monitor(const String &p_name, const String &p_base, int p_frame_index, Performance::MonitorType p_type, TreeItem *p_item) {
 	type = p_type;
 	item = p_item;
@@ -81,6 +79,9 @@ void EditorPerformanceProfiler::Monitor::reset() {
 
 String EditorPerformanceProfiler::_create_label(float p_value, Performance::MonitorType p_type) {
 	switch (p_type) {
+		case Performance::MONITOR_TYPE_QUANTITY: {
+			return TS->format_number(itos(p_value));
+		}
 		case Performance::MONITOR_TYPE_MEMORY: {
 			return String::humanize_size(p_value);
 		}
@@ -113,8 +114,8 @@ void EditorPerformanceProfiler::_monitor_draw() {
 	info_message->hide();
 
 	Ref<StyleBox> graph_style_box = get_theme_stylebox(CoreStringName(normal), SNAME("TextEdit"));
-	Ref<Font> graph_font = get_theme_font(SNAME("font"), SNAME("TextEdit"));
-	int font_size = get_theme_font_size(SNAME("font_size"), SNAME("TextEdit"));
+	Ref<Font> graph_font = get_theme_font(SceneStringName(font), SNAME("TextEdit"));
+	int font_size = get_theme_font_size(SceneStringName(font_size), SNAME("TextEdit"));
 
 	int columns = int(Math::ceil(Math::sqrt(float(active.size()))));
 	int rows = int(Math::ceil(float(active.size()) / float(columns)));
@@ -393,17 +394,23 @@ EditorPerformanceProfiler::EditorPerformanceProfiler() {
 	set_split_offset(340 * EDSCALE);
 
 	monitor_tree = memnew(Tree);
+	monitor_tree->set_custom_minimum_size(Size2(300, 0) * EDSCALE);
 	monitor_tree->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
 	monitor_tree->set_columns(2);
 	monitor_tree->set_column_title(0, TTR("Monitor"));
+	monitor_tree->set_column_expand(0, true);
 	monitor_tree->set_column_title(1, TTR("Value"));
+	monitor_tree->set_column_custom_minimum_width(1, 100 * EDSCALE);
+	monitor_tree->set_column_expand(1, false);
 	monitor_tree->set_column_titles_visible(true);
 	monitor_tree->connect("item_edited", callable_mp(this, &EditorPerformanceProfiler::_monitor_select));
 	monitor_tree->create_item();
 	monitor_tree->set_hide_root(true);
+	monitor_tree->set_theme_type_variation("TreeSecondary");
 	add_child(monitor_tree);
 
 	monitor_draw = memnew(Control);
+	monitor_draw->set_custom_minimum_size(Size2(300, 0) * EDSCALE);
 	monitor_draw->set_clip_contents(true);
 	monitor_draw->connect(SceneStringName(draw), callable_mp(this, &EditorPerformanceProfiler::_monitor_draw));
 	monitor_draw->connect(SceneStringName(gui_input), callable_mp(this, &EditorPerformanceProfiler::_marker_input));

@@ -28,11 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef NODE_H
-#define NODE_H
+#pragma once
 
 #include "core/string/node_path.h"
-#include "core/templates/rb_map.h"
 #include "core/variant/typed_array.h"
 #include "scene/main/scene_tree.h"
 #include "scene/scene_string_names.h"
@@ -199,7 +197,7 @@ private:
 		void *process_group = nullptr; // to avoid cyclic dependency
 
 		int multiplayer_authority = 1; // Server by default.
-		Variant rpc_config;
+		Variant rpc_config = Dictionary();
 
 		// Variables used to properly sort the node when processing, ignored otherwise.
 		int process_priority = 0;
@@ -225,8 +223,21 @@ private:
 		// is switched on.
 		bool physics_interpolated : 1;
 
-		bool parent_owned : 1;
-		bool in_constructor : 1;
+		// We can auto-reset physics interpolation when e.g. adding a node for the first time.
+		bool physics_interpolation_reset_requested : 1;
+
+		// Most nodes need not be interpolated in the scene tree, physics interpolation
+		// is normally only needed in the RenderingServer. However if we need to read the
+		// interpolated transform of a node in the SceneTree, it is necessary to duplicate
+		// the interpolation logic client side, in order to prevent stalling the RenderingServer
+		// by reading back.
+		bool physics_interpolated_client_side : 1;
+
+		// For certain nodes (e.g. CPU particles in global mode)
+		// it can be useful to not send the instance transform to the
+		// RenderingServer, and specify the mesh in world space.
+		bool use_identity_transform : 1;
+
 		bool use_placeholder : 1;
 
 		bool display_folded : 1;
@@ -239,6 +250,9 @@ private:
 		AutoTranslateMode auto_translate_mode = AUTO_TRANSLATE_MODE_INHERIT;
 		mutable bool is_auto_translating = true;
 		mutable bool is_auto_translate_dirty = true;
+
+		mutable bool is_translation_domain_inherited = true;
+		mutable bool is_translation_domain_dirty = true;
 
 		mutable NodePath *path_cache = nullptr;
 
@@ -263,8 +277,10 @@ private:
 	void _propagate_exit_tree();
 	void _propagate_after_exit_tree();
 	void _propagate_physics_interpolated(bool p_interpolated);
+	void _propagate_physics_interpolation_reset_requested(bool p_requested);
 	void _propagate_process_owner(Node *p_owner, int p_pause_notification, int p_enabled_notification);
 	void _propagate_groups_dirty();
+	void _propagate_translation_domain_dirty();
 	Array _get_node_and_resource(const NodePath &p_path);
 
 	void _duplicate_properties(const Node *p_root, const Node *p_original, Node *p_copy, int p_flags) const;
@@ -280,6 +296,7 @@ private:
 
 	void _set_tree(SceneTree *p_tree);
 	void _propagate_pause_notification(bool p_enable);
+	void _propagate_suspend_notification(bool p_enable);
 
 	_FORCE_INLINE_ bool _can_process(bool p_paused) const;
 	_FORCE_INLINE_ bool _is_enabled() const;
@@ -310,6 +327,13 @@ private:
 	Variant _call_deferred_thread_group_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
 	Variant _call_thread_safe_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
 
+	// Editor only signal to keep the SceneTreeEditor in sync.
+#ifdef TOOLS_ENABLED
+	void _emit_editor_state_changed();
+#else
+	void _emit_editor_state_changed() {}
+#endif
+
 protected:
 	void _block() { data.blocked++; }
 	void _unblock() { data.blocked--; }
@@ -333,6 +357,15 @@ protected:
 	void _add_child_nocheck(Node *p_child, const StringName &p_name, InternalMode p_internal_mode = INTERNAL_MODE_DISABLED);
 	void _set_owner_nocheck(Node *p_owner);
 	void _set_name_nocheck(const StringName &p_name);
+
+	void _set_physics_interpolated_client_side(bool p_enable) { data.physics_interpolated_client_side = p_enable; }
+	bool _is_physics_interpolated_client_side() const { return data.physics_interpolated_client_side; }
+
+	void _set_physics_interpolation_reset_requested(bool p_enable) { data.physics_interpolation_reset_requested = p_enable; }
+	bool _is_physics_interpolation_reset_requested() const { return data.physics_interpolation_reset_requested; }
+
+	void _set_use_identity_transform(bool p_enable) { data.use_identity_transform = p_enable; }
+	bool _is_using_identity_transform() const { return data.use_identity_transform; }
 
 	//call from SceneTree
 	void _call_input(const Ref<InputEvent> &p_event);
@@ -395,6 +428,7 @@ public:
 		NOTIFICATION_WM_DPI_CHANGE = 1009,
 		NOTIFICATION_VP_MOUSE_ENTER = 1010,
 		NOTIFICATION_VP_MOUSE_EXIT = 1011,
+		NOTIFICATION_WM_POSITION_CHANGED = 1012,
 
 		NOTIFICATION_OS_MEMORY_WARNING = MainLoop::NOTIFICATION_OS_MEMORY_WARNING,
 		NOTIFICATION_TRANSLATION_CHANGED = MainLoop::NOTIFICATION_TRANSLATION_CHANGED,
@@ -410,6 +444,8 @@ public:
 		// Editor specific node notifications
 		NOTIFICATION_EDITOR_PRE_SAVE = 9001,
 		NOTIFICATION_EDITOR_POST_SAVE = 9002,
+		NOTIFICATION_SUSPENDED = 9003,
+		NOTIFICATION_UNSUSPENDED = 9004
 	};
 
 	/* NODE/TREE */
@@ -448,6 +484,7 @@ public:
 	}
 
 	_FORCE_INLINE_ bool is_inside_tree() const { return data.inside_tree; }
+	bool is_internal() const { return data.internal_mode != INTERNAL_MODE_DISABLED; }
 
 	bool is_ancestor_of(const Node *p_node) const;
 	bool is_greater_than(const Node *p_node) const;
@@ -596,7 +633,7 @@ public:
 			// No thread processing.
 			// Only accessible if node is outside the scene tree
 			// or access will happen from a node-safe thread.
-			return !data.inside_tree || is_current_thread_safe_for_nodes();
+			return is_current_thread_safe_for_nodes() || unlikely(!data.inside_tree);
 		} else {
 			// Thread processing.
 			return true;
@@ -632,7 +669,7 @@ public:
 		return binds;
 	}
 
-	void replace_by(Node *p_node, bool p_keep_data = false);
+	void replace_by(Node *p_node, bool p_keep_groups = false);
 
 	void set_process_mode(ProcessMode p_mode);
 	ProcessMode get_process_mode() const;
@@ -667,8 +704,6 @@ public:
 	//hacks for speed
 	static void init_node_hrcr();
 
-	void force_parent_owned() { data.parent_owned = true; } //hack to avoid duplicate nodes
-
 	void set_import_path(const NodePath &p_import_path); //path used when imported, used by scene editors to keep tracking
 	NodePath get_import_path() const;
 
@@ -692,7 +727,7 @@ public:
 	bool is_multiplayer_authority() const;
 
 	void rpc_config(const StringName &p_method, const Variant &p_config); // config a local method for RPC
-	const Variant get_node_rpc_config() const;
+	Variant get_rpc_config() const;
 
 	template <typename... VarArgs>
 	Error rpc(const StringName &p_method, VarArgs... p_args);
@@ -710,8 +745,17 @@ public:
 	AutoTranslateMode get_auto_translate_mode() const;
 	bool can_auto_translate() const;
 
-	_FORCE_INLINE_ String atr(const String p_message, const StringName p_context = "") const { return can_auto_translate() ? tr(p_message, p_context) : p_message; }
-	_FORCE_INLINE_ String atr_n(const String p_message, const StringName &p_message_plural, int p_n, const StringName p_context = "") const { return can_auto_translate() ? tr_n(p_message, p_message_plural, p_n, p_context) : p_message; }
+	virtual StringName get_translation_domain() const override;
+	virtual void set_translation_domain(const StringName &p_domain) override;
+	void set_translation_domain_inherited();
+
+	_FORCE_INLINE_ String atr(const String &p_message, const StringName &p_context = "") const { return can_auto_translate() ? tr(p_message, p_context) : p_message; }
+	_FORCE_INLINE_ String atr_n(const String &p_message, const StringName &p_message_plural, int p_n, const StringName &p_context = "") const {
+		if (can_auto_translate()) {
+			return tr_n(p_message, p_message_plural, p_n, p_context);
+		}
+		return p_n == 1 ? p_message : String(p_message_plural);
+	}
 
 	/* THREADING */
 
@@ -764,6 +808,7 @@ public:
 	virtual Error connect(const StringName &p_signal, const Callable &p_callable, uint32_t p_flags = 0) override;
 	virtual void disconnect(const StringName &p_signal, const Callable &p_callable) override;
 	virtual bool is_connected(const StringName &p_signal, const Callable &p_callable) const override;
+	virtual bool has_connections(const StringName &p_signal) const override;
 #endif
 	Node();
 	~Node();
@@ -816,5 +861,3 @@ Error Node::rpc_id(int p_peer_id, const StringName &p_method, VarArgs... p_args)
 // Add these macro to your class's 'get_configuration_warnings' function to have warnings show up in the scene tree inspector.
 #define DEPRECATED_NODE_WARNING warnings.push_back(RTR("This node is marked as deprecated and will be removed in future versions.\nPlease check the Godot documentation for information about migration."));
 #define EXPERIMENTAL_NODE_WARNING warnings.push_back(RTR("This node is marked as experimental and may be subject to removal or major changes in future versions."));
-
-#endif // NODE_H

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef GDSCRIPT_TOKENIZER_BUFFER_H
-#define GDSCRIPT_TOKENIZER_BUFFER_H
+#pragma once
 
 #include "gdscript_tokenizer.h"
 
@@ -79,7 +78,7 @@ public:
 	virtual bool is_past_cursor() const override;
 	virtual void push_expression_indented_block() override; // For lambdas, or blocks inside expressions.
 	virtual void pop_expression_indented_block() override; // For lambdas, or blocks inside expressions.
-	virtual bool is_text() override { return false; };
+	virtual bool is_text() override { return false; }
 
 #ifdef TOOLS_ENABLED
 	virtual const HashMap<int, CommentData> &get_comments() const override {
@@ -89,5 +88,3 @@ public:
 
 	virtual Token scan() override;
 };
-
-#endif // GDSCRIPT_TOKENIZER_BUFFER_H

@@ -31,7 +31,6 @@
 #include "audio_stream_playlist.h"
 
 #include "core/math/math_funcs.h"
-#include "core/string/print_string.h"
 
 Ref<AudioStreamPlayback> AudioStreamPlaylist::instantiate_playback() {
 	Ref<AudioStreamPlaybackPlaylist> playback_playlist;
@@ -259,10 +258,7 @@ void AudioStreamPlaybackPlaylist::seek(double p_time) {
 
 int AudioStreamPlaybackPlaylist::mix(AudioFrame *p_buffer, float p_rate_scale, int p_frames) {
 	if (!active) {
-		for (int i = 0; i < p_frames; i++) {
-			p_buffer[i] = AudioFrame(0.0, 0.0);
-		}
-		return p_frames;
+		return 0;
 	}
 
 	double time_dec = (1.0 / AudioServer::get_singleton()->get_mix_rate());
@@ -314,7 +310,7 @@ int AudioStreamPlaybackPlaylist::mix(AudioFrame *p_buffer, float p_rate_scale, i
 					break;
 				}
 
-				if (!playback[play_order[play_index]].is_valid()) {
+				if (playback[play_order[play_index]].is_null()) {
 					todo = to_mix; // Weird error.
 					active = false;
 					break;

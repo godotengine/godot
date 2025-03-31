@@ -252,23 +252,24 @@ typedef enum {
 // Message choices for what errors and warnings are given.
 //
 enum EShMessages : unsigned {
-    EShMsgDefault          = 0,         // default is to give all required errors and extra warnings
-    EShMsgRelaxedErrors    = (1 << 0),  // be liberal in accepting input
-    EShMsgSuppressWarnings = (1 << 1),  // suppress all warnings, except those required by the specification
-    EShMsgAST              = (1 << 2),  // print the AST intermediate representation
-    EShMsgSpvRules         = (1 << 3),  // issue messages for SPIR-V generation
-    EShMsgVulkanRules      = (1 << 4),  // issue messages for Vulkan-requirements of GLSL for SPIR-V
-    EShMsgOnlyPreprocessor = (1 << 5),  // only print out errors produced by the preprocessor
-    EShMsgReadHlsl         = (1 << 6),  // use HLSL parsing rules and semantics
-    EShMsgCascadingErrors  = (1 << 7),  // get cascading errors; risks error-recovery issues, instead of an early exit
-    EShMsgKeepUncalled     = (1 << 8),  // for testing, don't eliminate uncalled functions
-    EShMsgHlslOffsets      = (1 << 9),  // allow block offsets to follow HLSL rules instead of GLSL rules
-    EShMsgDebugInfo        = (1 << 10), // save debug information
-    EShMsgHlslEnable16BitTypes  = (1 << 11), // enable use of 16-bit types in SPIR-V for HLSL
-    EShMsgHlslLegalization  = (1 << 12), // enable HLSL Legalization messages
-    EShMsgHlslDX9Compatible = (1 << 13), // enable HLSL DX9 compatible mode (for samplers and semantics)
-    EShMsgBuiltinSymbolTable = (1 << 14), // print the builtin symbol table
-    EShMsgEnhanced         = (1 << 15), // enhanced message readability
+    EShMsgDefault              = 0,         // default is to give all required errors and extra warnings
+    EShMsgRelaxedErrors        = (1 << 0),  // be liberal in accepting input
+    EShMsgSuppressWarnings     = (1 << 1),  // suppress all warnings, except those required by the specification
+    EShMsgAST                  = (1 << 2),  // print the AST intermediate representation
+    EShMsgSpvRules             = (1 << 3),  // issue messages for SPIR-V generation
+    EShMsgVulkanRules          = (1 << 4),  // issue messages for Vulkan-requirements of GLSL for SPIR-V
+    EShMsgOnlyPreprocessor     = (1 << 5),  // only print out errors produced by the preprocessor
+    EShMsgReadHlsl             = (1 << 6),  // use HLSL parsing rules and semantics
+    EShMsgCascadingErrors      = (1 << 7),  // get cascading errors; risks error-recovery issues, instead of an early exit
+    EShMsgKeepUncalled         = (1 << 8),  // for testing, don't eliminate uncalled functions
+    EShMsgHlslOffsets          = (1 << 9),  // allow block offsets to follow HLSL rules instead of GLSL rules
+    EShMsgDebugInfo            = (1 << 10), // save debug information
+    EShMsgHlslEnable16BitTypes = (1 << 11), // enable use of 16-bit types in SPIR-V for HLSL
+    EShMsgHlslLegalization     = (1 << 12), // enable HLSL Legalization messages
+    EShMsgHlslDX9Compatible    = (1 << 13), // enable HLSL DX9 compatible mode (for samplers and semantics)
+    EShMsgBuiltinSymbolTable   = (1 << 14), // print the builtin symbol table
+    EShMsgEnhanced             = (1 << 15), // enhanced message readability
+    EShMsgAbsolutePath         = (1 << 16), // Output Absolute path for messages
     LAST_ELEMENT_MARKER(EShMsgCount),
 };
 
@@ -335,7 +336,8 @@ GLSLANG_EXPORT int ShCompile(const ShHandle, const char* const shaderStrings[], 
                              int,                      // debugOptions unused
                              int defaultVersion = 110, // use 100 for ES environment, overridden by #version in shader
                              bool forwardCompatible = false,      // give errors for use of deprecated features
-                             EShMessages messages = EShMsgDefault // warnings and errors
+                             EShMessages messages = EShMsgDefault, // warnings and errors
+                             const char* fileName = nullptr
 );
 
 GLSLANG_EXPORT int ShLinkExt(

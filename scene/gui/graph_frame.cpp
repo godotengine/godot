@@ -30,7 +30,6 @@
 
 #include "graph_frame.h"
 
-#include "core/string/translation.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/label.h"
 #include "scene/resources/style_box_flat.h"
@@ -260,6 +259,10 @@ int GraphFrame::get_autoshrink_margin() const {
 
 HBoxContainer *GraphFrame::get_titlebar_hbox() {
 	return titlebar_hbox;
+}
+
+Size2 GraphFrame::get_titlebar_size() const {
+	return titlebar_hbox->get_size() + theme_cache.titlebar->get_minimum_size();
 }
 
 void GraphFrame::set_drag_margin(int p_margin) {

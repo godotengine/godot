@@ -30,7 +30,7 @@
 
 #include "sprite_2d.h"
 
-#include "scene/main/window.h"
+#include "scene/main/viewport.h"
 
 #ifdef TOOLS_ENABLED
 Dictionary Sprite2D::_edit_get_state() const {
@@ -56,7 +56,9 @@ Point2 Sprite2D::_edit_get_pivot() const {
 bool Sprite2D::_edit_use_pivot() const {
 	return true;
 }
+#endif // TOOLS_ENABLED
 
+#ifdef DEBUG_ENABLED
 bool Sprite2D::_edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const {
 	return is_pixel_opaque(p_point);
 }
@@ -68,7 +70,7 @@ Rect2 Sprite2D::_edit_get_rect() const {
 bool Sprite2D::_edit_use_rect() const {
 	return texture.is_valid();
 }
-#endif
+#endif // DEBUG_ENABLED
 
 Rect2 Sprite2D::get_anchorable_rect() const {
 	return get_rect();
@@ -98,7 +100,7 @@ void Sprite2D::_get_rects(Rect2 &r_src_rect, Rect2 &r_dst_rect, bool &r_filter_c
 	}
 
 	if (get_viewport() && get_viewport()->is_snap_2d_transforms_to_pixel_enabled()) {
-		dest_offset = dest_offset.round();
+		dest_offset = (dest_offset + Point2(0.5, 0.5)).floor();
 	}
 
 	r_dst_rect = Rect2(dest_offset, frame_size);
@@ -400,7 +402,7 @@ Rect2 Sprite2D::get_rect() const {
 	}
 
 	if (get_viewport() && get_viewport()->is_snap_2d_transforms_to_pixel_enabled()) {
-		ofs = ofs.round();
+		ofs = (ofs + Point2(0.5, 0.5)).floor();
 	}
 
 	if (s == Size2(0, 0)) {
@@ -421,7 +423,7 @@ void Sprite2D::_validate_property(PropertyInfo &p_property) const {
 		p_property.usage |= PROPERTY_USAGE_KEYING_INCREMENTS;
 	}
 
-	if (!region_enabled && (p_property.name == "region_rect" || p_property.name == "region_filter_clip")) {
+	if (!region_enabled && (p_property.name == "region_rect" || p_property.name == "region_filter_clip_enabled")) {
 		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
 	}
 }

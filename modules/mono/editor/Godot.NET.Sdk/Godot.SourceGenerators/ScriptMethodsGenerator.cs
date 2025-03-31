@@ -158,7 +158,7 @@ namespace Godot.SourceGenerators
                     .Append("' method.\n")
                     .Append("        /// </summary>\n");
 
-                source.Append("        public new static readonly global::Godot.StringName ");
+                source.Append("        public new static readonly global::Godot.StringName @");
                 source.Append(methodName);
                 source.Append(" = \"");
                 source.Append(methodName);
@@ -287,7 +287,7 @@ namespace Godot.SourceGenerators
 
         private static void AppendMethodInfo(StringBuilder source, MethodInfo methodInfo)
         {
-            source.Append("        methods.Add(new(name: MethodName.")
+            source.Append("        methods.Add(new(name: MethodName.@")
                 .Append(methodInfo.Name)
                 .Append(", returnVal: ");
 
@@ -414,7 +414,7 @@ namespace Godot.SourceGenerators
         )
         {
             source.Append("        ");
-            source.Append("if (method == MethodName.");
+            source.Append("if (method == MethodName.@");
             source.Append(methodName);
             source.Append(") {\n           return true;\n        }\n");
         }
@@ -426,7 +426,7 @@ namespace Godot.SourceGenerators
         {
             string methodName = method.Method.Name;
 
-            source.Append("        if (method == MethodName.");
+            source.Append("        if (method == MethodName.@");
             source.Append(methodName);
             source.Append(" && args.Count == ");
             source.Append(method.ParamTypes.Length);
@@ -437,6 +437,7 @@ namespace Godot.SourceGenerators
             else
                 source.Append("            ");
 
+            source.Append("@");
             source.Append(methodName);
             source.Append("(");
 

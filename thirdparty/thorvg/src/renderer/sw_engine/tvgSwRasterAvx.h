@@ -101,105 +101,127 @@ static void avxRasterPixel32(uint32_t *dst, uint32_t val, uint32_t offset, int32
 
 static bool avxRasterTranslucentRect(SwSurface* surface, const SwBBox& region, uint8_t r, uint8_t g, uint8_t b, uint8_t a)
 {
-    if (surface->channelSize != sizeof(uint32_t)) {
-        TVGERR("SW_ENGINE", "Unsupported Channel Size = %d", surface->channelSize);
-        return false;
-    }
-
-    auto color = surface->join(r, g, b, a);
-    auto buffer = surface->buf32 + (region.min.y * surface->stride) + region.min.x;
     auto h = static_cast<uint32_t>(region.max.y - region.min.y);
     auto w = static_cast<uint32_t>(region.max.x - region.min.x);
 
-    uint32_t ialpha = 255 - a;
+    //32bits channels
+    if (surface->channelSize == sizeof(uint32_t)) {
+        auto color = surface->join(r, g, b, a);
+        auto buffer = surface->buf32 + (region.min.y * surface->stride) + region.min.x;
 
-    auto avxColor = _mm_set1_epi32(color);
-    auto avxIalpha = _mm_set1_epi8(ialpha);
+        uint32_t ialpha = 255 - a;
 
-    for (uint32_t y = 0; y < h; ++y) {
-        auto dst = &buffer[y * surface->stride];
+        auto avxColor = _mm_set1_epi32(color);
+        auto avxIalpha = _mm_set1_epi8(ialpha);
 
-        //1. fill the not aligned memory (for 128-bit registers a 16-bytes alignment is required)
-        auto notAligned = ((uintptr_t)dst & 0xf) / 4;
-        if (notAligned) {
-            notAligned = (N_32BITS_IN_128REG - notAligned > w ? w : N_32BITS_IN_128REG - notAligned);
-            for (uint32_t x = 0; x < notAligned; ++x, ++dst) {
+        for (uint32_t y = 0; y < h; ++y) {
+            auto dst = &buffer[y * surface->stride];
+
+            //1. fill the not aligned memory (for 128-bit registers a 16-bytes alignment is required)
+            auto notAligned = ((uintptr_t)dst & 0xf) / 4;
+            if (notAligned) {
+                notAligned = (N_32BITS_IN_128REG - notAligned > w ? w : N_32BITS_IN_128REG - notAligned);
+                for (uint32_t x = 0; x < notAligned; ++x, ++dst) {
+                    *dst = color + ALPHA_BLEND(*dst, ialpha);
+                }
+            }
+
+            //2. fill the aligned memory - N_32BITS_IN_128REG pixels processed at once
+            uint32_t iterations = (w - notAligned) / N_32BITS_IN_128REG;
+            uint32_t avxFilled = iterations * N_32BITS_IN_128REG;
+            auto avxDst = (__m128i*)dst;
+            for (uint32_t x = 0; x < iterations; ++x, ++avxDst) {
+                *avxDst = _mm_add_epi32(avxColor, ALPHA_BLEND(*avxDst, avxIalpha));
+            }
+
+            //3. fill the remaining pixels
+            int32_t leftovers = w - notAligned - avxFilled;
+            dst += avxFilled;
+            while (leftovers--) {
                 *dst = color + ALPHA_BLEND(*dst, ialpha);
+                dst++;
             }
         }
-
-        //2. fill the aligned memory - N_32BITS_IN_128REG pixels processed at once
-        uint32_t iterations = (w - notAligned) / N_32BITS_IN_128REG;
-        uint32_t avxFilled = iterations * N_32BITS_IN_128REG;
-        auto avxDst = (__m128i*)dst;
-        for (uint32_t x = 0; x < iterations; ++x, ++avxDst) {
-            *avxDst = _mm_add_epi32(avxColor, ALPHA_BLEND(*avxDst, avxIalpha));
-        }
-
-        //3. fill the remaining pixels
-        int32_t leftovers = w - notAligned - avxFilled;
-        dst += avxFilled;
-        while (leftovers--) {
-            *dst = color + ALPHA_BLEND(*dst, ialpha);
-            dst++;
+    //8bit grayscale
+    } else if (surface->channelSize == sizeof(uint8_t)) {
+        TVGLOG("SW_ENGINE", "Require AVX Optimization, Channel Size = %d", surface->channelSize);
+        auto buffer = surface->buf8 + (region.min.y * surface->stride) + region.min.x;
+        auto ialpha = ~a;
+        for (uint32_t y = 0; y < h; ++y) {
+            auto dst = &buffer[y * surface->stride];
+            for (uint32_t x = 0; x < w; ++x, ++dst) {
+                *dst = a + MULTIPLY(*dst, ialpha);
+            }
         }
     }
     return true;
 }
 
 
-static bool avxRasterTranslucentRle(SwSurface* surface, const SwRleData* rle, uint8_t r, uint8_t g, uint8_t b, uint8_t a)
+static bool avxRasterTranslucentRle(SwSurface* surface, const SwRle* rle, uint8_t r, uint8_t g, uint8_t b, uint8_t a)
 {
-    if (surface->channelSize != sizeof(uint32_t)) {
-        TVGERR("SW_ENGINE", "Unsupported Channel Size = %d", surface->channelSize);
-        return false;
-    }
-
-    auto color = surface->join(r, g, b, a);
     auto span = rle->spans;
-    uint32_t src;
 
-    for (uint32_t i = 0; i < rle->size; ++i) {
-        auto dst = &surface->buf32[span->y * surface->stride + span->x];
+    //32bit channels
+    if (surface->channelSize == sizeof(uint32_t)) {
+        auto color = surface->join(r, g, b, a);
+        uint32_t src;
 
-        if (span->coverage < 255) src = ALPHA_BLEND(color, span->coverage);
-        else src = color;
+        for (uint32_t i = 0; i < rle->size; ++i) {
+            auto dst = &surface->buf32[span->y * surface->stride + span->x];
 
-	auto ialpha = IA(src);
+            if (span->coverage < 255) src = ALPHA_BLEND(color, span->coverage);
+            else src = color;
 
-        //1. fill the not aligned memory (for 128-bit registers a 16-bytes alignment is required)
-        auto notAligned = ((uintptr_t)dst & 0xf) / 4;
-        if (notAligned) {
-            notAligned = (N_32BITS_IN_128REG - notAligned > span->len ? span->len : N_32BITS_IN_128REG - notAligned);
-            for (uint32_t x = 0; x < notAligned; ++x, ++dst) {
+        auto ialpha = IA(src);
+
+            //1. fill the not aligned memory (for 128-bit registers a 16-bytes alignment is required)
+            auto notAligned = ((uintptr_t)dst & 0xf) / 4;
+            if (notAligned) {
+                notAligned = (N_32BITS_IN_128REG - notAligned > span->len ? span->len : N_32BITS_IN_128REG - notAligned);
+                for (uint32_t x = 0; x < notAligned; ++x, ++dst) {
+                    *dst = src + ALPHA_BLEND(*dst, ialpha);
+                }
+            }
+
+            //2. fill the aligned memory using avx - N_32BITS_IN_128REG pixels processed at once
+            //In order to avoid unnecessary avx variables declarations a check is made whether there are any iterations at all
+            uint32_t iterations = (span->len - notAligned) / N_32BITS_IN_128REG;
+            uint32_t avxFilled = 0;
+            if (iterations > 0) {
+                auto avxSrc = _mm_set1_epi32(src);
+                auto avxIalpha = _mm_set1_epi8(ialpha);
+
+                avxFilled = iterations * N_32BITS_IN_128REG;
+                auto avxDst = (__m128i*)dst;
+                for (uint32_t x = 0; x < iterations; ++x, ++avxDst) {
+                    *avxDst = _mm_add_epi32(avxSrc, ALPHA_BLEND(*avxDst, avxIalpha));
+                }
+            }
+
+            //3. fill the remaining pixels
+            int32_t leftovers = span->len - notAligned - avxFilled;
+            dst += avxFilled;
+            while (leftovers--) {
                 *dst = src + ALPHA_BLEND(*dst, ialpha);
+                dst++;
+            }
+
+            ++span;
+        }
+    //8bit grayscale
+    } else if (surface->channelSize == sizeof(uint8_t)) {
+        TVGLOG("SW_ENGINE", "Require AVX Optimization, Channel Size = %d", surface->channelSize);
+        uint8_t src;
+        for (uint32_t i = 0; i < rle->size; ++i, ++span) {
+            auto dst = &surface->buf8[span->y * surface->stride + span->x];
+            if (span->coverage < 255) src = MULTIPLY(span->coverage, a);
+            else src = a;
+            auto ialpha = ~a;
+            for (uint32_t x = 0; x < span->len; ++x, ++dst) {
+                *dst = src + MULTIPLY(*dst, ialpha);
             }
         }
-
-        //2. fill the aligned memory using avx - N_32BITS_IN_128REG pixels processed at once
-        //In order to avoid unneccessary avx variables declarations a check is made whether there are any iterations at all
-        uint32_t iterations = (span->len - notAligned) / N_32BITS_IN_128REG;
-        uint32_t avxFilled = 0;
-        if (iterations > 0) {
-            auto avxSrc = _mm_set1_epi32(src);
-            auto avxIalpha = _mm_set1_epi8(ialpha);
-
-            avxFilled = iterations * N_32BITS_IN_128REG;
-            auto avxDst = (__m128i*)dst;
-            for (uint32_t x = 0; x < iterations; ++x, ++avxDst) {
-                *avxDst = _mm_add_epi32(avxSrc, ALPHA_BLEND(*avxDst, avxIalpha));
-            }
-        }
-
-        //3. fill the remaining pixels
-        int32_t leftovers = span->len - notAligned - avxFilled;
-        dst += avxFilled;
-        while (leftovers--) {
-            *dst = src + ALPHA_BLEND(*dst, ialpha);
-            dst++;
-        }
-
-        ++span;
     }
     return true;
 }

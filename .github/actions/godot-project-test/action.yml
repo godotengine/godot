@@ -1,11 +1,13 @@
 name: Test Godot project
 description: Run the test Godot project.
+
 inputs:
   bin:
     description: The path to the Godot executable
     required: true
+
 runs:
-  using: "composite"
+  using: composite
   steps:
     # Download and extract zip archive with project, folder is renamed to be able to easy change used project
     - name: Download test project

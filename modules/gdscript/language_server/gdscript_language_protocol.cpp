@@ -60,8 +60,7 @@ Error GDScriptLanguageProtocol::LSPeer::handle_data() {
 			// End of headers
 			if (l > 3 && r[l] == '\n' && r[l - 1] == '\r' && r[l - 2] == '\n' && r[l - 3] == '\r') {
 				r[l - 3] = '\0'; // Null terminate to read string
-				String header;
-				header.parse_utf8(r);
+				String header = String::utf8(r);
 				content_length = header.substr(16).to_int();
 				has_header = true;
 				req_pos = 0;
@@ -87,8 +86,7 @@ Error GDScriptLanguageProtocol::LSPeer::handle_data() {
 		}
 
 		// Parse data
-		String msg;
-		msg.parse_utf8((const char *)req_buf, req_pos);
+		String msg = String::utf8((const char *)req_buf, req_pos);
 
 		// Reset to read again
 		req_pos = 0;
@@ -171,7 +169,7 @@ void GDScriptLanguageProtocol::_bind_methods() {
 }
 
 Dictionary GDScriptLanguageProtocol::initialize(const Dictionary &p_params) {
-	lsp::InitializeResult ret;
+	LSP::InitializeResult ret;
 
 	String root_uri = p_params["rootUri"];
 	String root = p_params["rootPath"];
@@ -196,7 +194,7 @@ Dictionary GDScriptLanguageProtocol::initialize(const Dictionary &p_params) {
 		ERR_FAIL_COND_V_MSG(!clients.has(latest_client_id), ret.to_json(),
 				vformat("GDScriptLanguageProtocol: Can't initialize invalid peer '%d'.", latest_client_id));
 		Ref<LSPeer> peer = clients.get(latest_client_id);
-		if (peer != nullptr) {
+		if (peer.is_valid()) {
 			String msg = Variant(request).to_json_string();
 			msg = format_output(msg);
 			(*peer)->res_queue.push_back(msg.utf8());
@@ -213,11 +211,11 @@ Dictionary GDScriptLanguageProtocol::initialize(const Dictionary &p_params) {
 }
 
 void GDScriptLanguageProtocol::initialized(const Variant &p_params) {
-	lsp::GodotCapabilities capabilities;
+	LSP::GodotCapabilities capabilities;
 
 	DocTools *doc = EditorHelp::get_doc_data();
 	for (const KeyValue<String, DocData::ClassDoc> &E : doc->class_list) {
-		lsp::GodotNativeClassInfo gdclass;
+		LSP::GodotNativeClassInfo gdclass;
 		gdclass.name = E.value.name;
 		gdclass.class_doc = &(E.value);
 		if (ClassDB::ClassInfo *ptr = ClassDB::classes.getptr(StringName(E.value.name))) {
@@ -298,7 +296,7 @@ void GDScriptLanguageProtocol::notify_client(const String &p_method, const Varia
 	}
 	ERR_FAIL_COND(!clients.has(p_client_id));
 	Ref<LSPeer> peer = clients.get(p_client_id);
-	ERR_FAIL_NULL(peer);
+	ERR_FAIL_COND(peer.is_null());
 
 	Dictionary message = make_notification(p_method, p_params);
 	String msg = Variant(message).to_json_string();
@@ -319,7 +317,7 @@ void GDScriptLanguageProtocol::request_client(const String &p_method, const Vari
 	}
 	ERR_FAIL_COND(!clients.has(p_client_id));
 	Ref<LSPeer> peer = clients.get(p_client_id);
-	ERR_FAIL_NULL(peer);
+	ERR_FAIL_COND(peer.is_null());
 
 	Dictionary message = make_request(p_method, p_params, next_server_id);
 	next_server_id++;

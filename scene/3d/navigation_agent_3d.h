@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef NAVIGATION_AGENT_3D_H
-#define NAVIGATION_AGENT_3D_H
+#pragma once
 
 #include "scene/main/node.h"
 #include "servers/navigation/navigation_path_query_parameters_3d.h"
@@ -98,8 +97,6 @@ class NavigationAgent3D : public Node {
 	bool target_reached = false;
 	bool navigation_finished = true;
 	bool last_waypoint_reached = false;
-	// No initialized on purpose
-	uint32_t update_frame_id = 0;
 
 	// Debug properties for exposed bindings
 	bool debug_enabled = false;
@@ -280,5 +277,3 @@ private:
 	void _update_debug_path();
 #endif // DEBUG_ENABLED
 };
-
-#endif // NAVIGATION_AGENT_3D_H

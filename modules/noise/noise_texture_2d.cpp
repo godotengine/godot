@@ -194,6 +194,9 @@ Ref<Image> NoiseTexture2D::_modulate_with_gradient(Ref<Image> p_image, Ref<Gradi
 
 void NoiseTexture2D::_update_texture() {
 	bool use_thread = true;
+#ifndef THREADS_ENABLED
+	use_thread = false;
+#endif
 	if (first_time) {
 		use_thread = false;
 		first_time = false;

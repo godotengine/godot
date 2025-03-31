@@ -28,10 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef EDITOR_LOCALE_DIALOG_H
-#define EDITOR_LOCALE_DIALOG_H
+#pragma once
 
-#include "core/string/translation.h"
 #include "scene/gui/dialogs.h"
 
 class Button;
@@ -86,5 +84,3 @@ public:
 	void set_locale(const String &p_locale);
 	void popup_locale_dialog();
 };
-
-#endif // EDITOR_LOCALE_DIALOG_H

@@ -160,7 +160,7 @@ void PluginConfigDialog::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_READY: {
-			connect("confirmed", callable_mp(this, &PluginConfigDialog::_on_confirmed));
+			connect(SceneStringName(confirmed), callable_mp(this, &PluginConfigDialog::_on_confirmed));
 			get_cancel_button()->connect(SceneStringName(pressed), callable_mp(this, &PluginConfigDialog::_on_canceled));
 		} break;
 	}
@@ -305,7 +305,7 @@ PluginConfigDialog::PluginConfigDialog() {
 	grid->add_child(script_name_label);
 
 	script_edit = memnew(LineEdit);
-	script_edit->set_tooltip_text(TTR("Optional. The path to the script (relative to the add-on folder). If left empty, will default to \"plugin.gd\"."));
+	script_edit->set_tooltip_text(TTR("Optional. The name of the script file. If left empty, will default to the subfolder name."));
 	script_edit->set_placeholder("\"plugin.gd\" -> res://addons/my_plugin/plugin.gd");
 	script_edit->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	grid->add_child(script_edit);
@@ -335,11 +335,8 @@ PluginConfigDialog::PluginConfigDialog() {
 	validation_panel->set_update_callback(callable_mp(this, &PluginConfigDialog::_on_required_text_changed));
 	validation_panel->set_accept_button(get_ok_button());
 
-	script_option_edit->connect("item_selected", callable_mp(validation_panel, &EditorValidationPanel::update).unbind(1));
-	name_edit->connect("text_changed", callable_mp(validation_panel, &EditorValidationPanel::update).unbind(1));
-	subfolder_edit->connect("text_changed", callable_mp(validation_panel, &EditorValidationPanel::update).unbind(1));
-	script_edit->connect("text_changed", callable_mp(validation_panel, &EditorValidationPanel::update).unbind(1));
-}
-
-PluginConfigDialog::~PluginConfigDialog() {
+	script_option_edit->connect(SceneStringName(item_selected), callable_mp(validation_panel, &EditorValidationPanel::update).unbind(1));
+	name_edit->connect(SceneStringName(text_changed), callable_mp(validation_panel, &EditorValidationPanel::update).unbind(1));
+	subfolder_edit->connect(SceneStringName(text_changed), callable_mp(validation_panel, &EditorValidationPanel::update).unbind(1));
+	script_edit->connect(SceneStringName(text_changed), callable_mp(validation_panel, &EditorValidationPanel::update).unbind(1));
 }

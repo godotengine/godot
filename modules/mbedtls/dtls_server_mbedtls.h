@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef DTLS_SERVER_MBEDTLS_H
-#define DTLS_SERVER_MBEDTLS_H
+#pragma once
 
 #include "tls_context_mbedtls.h"
 
@@ -37,7 +36,7 @@
 
 class DTLSServerMbedTLS : public DTLSServer {
 private:
-	static DTLSServer *_create_func();
+	static DTLSServer *_create_func(bool p_notify_postinitialize);
 	Ref<TLSOptions> tls_options;
 	Ref<CookieContextMbedTLS> cookies;
 
@@ -52,5 +51,3 @@ public:
 	DTLSServerMbedTLS();
 	~DTLSServerMbedTLS();
 };
-
-#endif // DTLS_SERVER_MBEDTLS_H

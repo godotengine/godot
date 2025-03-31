@@ -45,13 +45,15 @@
 
 #import <sys/utsname.h>
 
+#import <GameController/GameController.h>
+
 static const float kDisplayServerIOSAcceleration = 1.f;
 
 DisplayServerIOS *DisplayServerIOS::get_singleton() {
 	return (DisplayServerIOS *)DisplayServer::get_singleton();
 }
 
-DisplayServerIOS::DisplayServerIOS(const String &p_rendering_driver, WindowMode p_mode, DisplayServer::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, Error &r_error) {
+DisplayServerIOS::DisplayServerIOS(const String &p_rendering_driver, WindowMode p_mode, DisplayServer::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, int64_t p_parent_window, Error &r_error) {
 	KeyMappingIOS::initialize();
 
 	rendering_driver = p_rendering_driver;
@@ -73,6 +75,13 @@ DisplayServerIOS::DisplayServerIOS(const String &p_rendering_driver, WindowMode 
 #ifdef VULKAN_ENABLED
 		RenderingContextDriverVulkanIOS::WindowPlatformData vulkan;
 #endif
+#ifdef METAL_ENABLED
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunguarded-availability"
+		// Eliminate "RenderingContextDriverMetal is only available on iOS 14.0 or newer".
+		RenderingContextDriverMetal::WindowPlatformData metal;
+#pragma clang diagnostic pop
+#endif
 	} wpd;
 
 #if defined(VULKAN_ENABLED)
@@ -85,15 +94,41 @@ DisplayServerIOS::DisplayServerIOS(const String &p_rendering_driver, WindowMode 
 		rendering_context = memnew(RenderingContextDriverVulkanIOS);
 	}
 #endif
-
-	if (rendering_context) {
-		if (rendering_context->initialize() != OK) {
-			ERR_PRINT(vformat("Failed to initialize %s context", rendering_driver));
-			memdelete(rendering_context);
-			rendering_context = nullptr;
+#ifdef METAL_ENABLED
+	if (rendering_driver == "metal") {
+		if (@available(iOS 14.0, *)) {
+			layer = [AppDelegate.viewController.godotView initializeRenderingForDriver:@"metal"];
+			wpd.metal.layer = (CAMetalLayer *)layer;
+			rendering_context = memnew(RenderingContextDriverMetal);
+		} else {
+			OS::get_singleton()->alert("Metal is only supported on iOS 14.0 and later.");
+			r_error = ERR_UNAVAILABLE;
 			return;
 		}
+	}
+#endif
+	if (rendering_context) {
+		if (rendering_context->initialize() != OK) {
+			memdelete(rendering_context);
+			rendering_context = nullptr;
+#if defined(GLES3_ENABLED)
+			bool fallback_to_opengl3 = GLOBAL_GET("rendering/rendering_device/fallback_to_opengl3");
+			if (fallback_to_opengl3 && rendering_driver != "opengl3") {
+				WARN_PRINT("Your device seem not to support MoltenVK or Metal, switching to OpenGL 3.");
+				rendering_driver = "opengl3";
+				OS::get_singleton()->set_current_rendering_method("gl_compatibility");
+				OS::get_singleton()->set_current_rendering_driver_name(rendering_driver);
+			} else
+#endif
+			{
+				ERR_PRINT(vformat("Failed to initialize %s context", rendering_driver));
+				r_error = ERR_UNAVAILABLE;
+				return;
+			}
+		}
+	}
 
+	if (rendering_context) {
 		if (rendering_context->window_create(MAIN_WINDOW_ID, &wpd) != OK) {
 			ERR_PRINT(vformat("Failed to create %s window.", rendering_driver));
 			memdelete(rendering_context);
@@ -107,7 +142,13 @@ DisplayServerIOS::DisplayServerIOS(const String &p_rendering_driver, WindowMode 
 		rendering_context->window_set_vsync_mode(MAIN_WINDOW_ID, p_vsync_mode);
 
 		rendering_device = memnew(RenderingDevice);
-		rendering_device->initialize(rendering_context, MAIN_WINDOW_ID);
+		if (rendering_device->initialize(rendering_context, MAIN_WINDOW_ID) != OK) {
+			rendering_device = nullptr;
+			memdelete(rendering_context);
+			rendering_context = nullptr;
+			r_error = ERR_UNAVAILABLE;
+			return;
+		}
 		rendering_device->screen_create(MAIN_WINDOW_ID);
 
 		RendererCompositorRD::make_current();
@@ -155,8 +196,8 @@ DisplayServerIOS::~DisplayServerIOS() {
 #endif
 }
 
-DisplayServer *DisplayServerIOS::create_func(const String &p_rendering_driver, WindowMode p_mode, DisplayServer::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, Error &r_error) {
-	return memnew(DisplayServerIOS(p_rendering_driver, p_mode, p_vsync_mode, p_flags, p_position, p_resolution, p_screen, p_context, r_error));
+DisplayServer *DisplayServerIOS::create_func(const String &p_rendering_driver, WindowMode p_mode, DisplayServer::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, int64_t p_parent_window, Error &r_error) {
+	return memnew(DisplayServerIOS(p_rendering_driver, p_mode, p_vsync_mode, p_flags, p_position, p_resolution, p_screen, p_context, p_parent_window, r_error));
 }
 
 Vector<String> DisplayServerIOS::get_rendering_drivers_func() {
@@ -164,6 +205,11 @@ Vector<String> DisplayServerIOS::get_rendering_drivers_func() {
 
 #if defined(VULKAN_ENABLED)
 	drivers.push_back("vulkan");
+#endif
+#if defined(METAL_ENABLED)
+	if (@available(ios 14.0, *)) {
+		drivers.push_back("metal");
+	}
 #endif
 #if defined(GLES3_ENABLED)
 	drivers.push_back("opengl3");
@@ -324,6 +370,8 @@ bool DisplayServerIOS::has_feature(Feature p_feature) const {
 		// case FEATURE_NATIVE_DIALOG:
 		// case FEATURE_NATIVE_DIALOG_INPUT:
 		// case FEATURE_NATIVE_DIALOG_FILE:
+		// case FEATURE_NATIVE_DIALOG_FILE_EXTRA:
+		// case FEATURE_NATIVE_DIALOG_FILE_MIME:
 		// case FEATURE_NATIVE_ICON:
 		// case FEATURE_WINDOW_TRANSPARENCY:
 		case FEATURE_CLIPBOARD:
@@ -399,7 +447,12 @@ void DisplayServerIOS::set_system_theme_change_callback(const Callable &p_callab
 
 void DisplayServerIOS::emit_system_theme_changed() {
 	if (system_theme_changed.is_valid()) {
-		system_theme_changed.call();
+		Variant ret;
+		Callable::CallError ce;
+		system_theme_changed.callp(nullptr, 0, ret, ce);
+		if (ce.error != Callable::CallError::CALL_OK) {
+			ERR_PRINT(vformat("Failed to execute system theme changed callback: %s.", Variant::get_callable_error_text(system_theme_changed, nullptr, 0, ce)));
+		}
 	}
 }
 
@@ -712,8 +765,16 @@ int DisplayServerIOS::virtual_keyboard_get_height() const {
 	return virtual_keyboard_height;
 }
 
+bool DisplayServerIOS::has_hardware_keyboard() const {
+	if (@available(iOS 14.0, *)) {
+		return [GCKeyboard coalescedKeyboard];
+	} else {
+		return false;
+	}
+}
+
 void DisplayServerIOS::clipboard_set(const String &p_text) {
-	[UIPasteboard generalPasteboard].string = [NSString stringWithUTF8String:p_text.utf8()];
+	[UIPasteboard generalPasteboard].string = [NSString stringWithUTF8String:p_text.utf8().get_data()];
 }
 
 String DisplayServerIOS::clipboard_get() const {

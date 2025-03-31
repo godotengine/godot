@@ -216,7 +216,7 @@ void EventListenerLineEdit::grab_focus() {
 void EventListenerLineEdit::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
-			connect("text_changed", callable_mp(this, &EventListenerLineEdit::_on_text_changed));
+			connect(SceneStringName(text_changed), callable_mp(this, &EventListenerLineEdit::_on_text_changed));
 			connect(SceneStringName(focus_entered), callable_mp(this, &EventListenerLineEdit::_on_focus));
 			connect(SceneStringName(focus_exited), callable_mp(this, &EventListenerLineEdit::_on_unfocus));
 			set_right_icon(get_editor_theme_icon(SNAME("Keyboard")));

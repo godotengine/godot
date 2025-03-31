@@ -38,7 +38,7 @@ String ResourceImporterImageFont::get_importer_name() const {
 }
 
 String ResourceImporterImageFont::get_visible_name() const {
-	return "Font Data (Monospace Image Font)";
+	return "Font Data (Image Font)";
 }
 
 void ResourceImporterImageFont::get_recognized_extensions(List<String> *p_extensions) const {
@@ -75,7 +75,7 @@ void ResourceImporterImageFont::get_import_options(const String &p_path, List<Im
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "scaling_mode", PROPERTY_HINT_ENUM, "Disabled,Enabled (Integer),Enabled (Fractional)"), TextServer::FIXED_SIZE_SCALE_ENABLED));
 }
 
-Error ResourceImporterImageFont::import(const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
+Error ResourceImporterImageFont::import(ResourceUID::ID p_source_id, const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
 	print_verbose("Importing image font from: " + p_source_file);
 
 	int columns = p_options["columns"];
@@ -112,6 +112,7 @@ Error ResourceImporterImageFont::import(const String &p_source_file, const Strin
 	font->set_multichannel_signed_distance_field(false);
 	font->set_fixed_size(chr_height);
 	font->set_subpixel_positioning(TextServer::SUBPIXEL_POSITIONING_DISABLED);
+	font->set_keep_rounding_remainders(true);
 	font->set_force_autohinter(false);
 	font->set_allow_system_fallback(false);
 	font->set_hinting(TextServer::HINTING_NONE);
@@ -158,7 +159,7 @@ Error ResourceImporterImageFont::import(const String &p_source_file, const Strin
 								c++; // Skip "+".
 								continue;
 							}
-						} else if (range[c] == '0' && (c <= range.length() - 2) && range[c + 1] == 'x') {
+						} else if (range[c] == '0' && (c <= range.length() - 2) && (range[c + 1] == 'x' || range[c + 1] == 'X')) {
 							// Read hexadecimal value, start.
 							token = String();
 							if (step == STEP_START_BEGIN) {
@@ -199,7 +200,7 @@ Error ResourceImporterImageFont::import(const String &p_source_file, const Strin
 					case STEP_OFF_Y_BEGIN: {
 						// Read advance and offset.
 						if (range[c] == ' ') {
-							int next = range.find(" ", c + 1);
+							int next = range.find_char(' ', c + 1);
 							if (next < c) {
 								next = range.length();
 							}
@@ -229,6 +230,7 @@ Error ResourceImporterImageFont::import(const String &p_source_file, const Strin
 							} else {
 								end = token.hex_to_int();
 								step = STEP_ADVANCE_BEGIN;
+								c--;
 							}
 						}
 					} break;
@@ -244,6 +246,7 @@ Error ResourceImporterImageFont::import(const String &p_source_file, const Strin
 							} else {
 								end = token.to_int();
 								step = STEP_ADVANCE_BEGIN;
+								c--;
 							}
 						}
 					} break;
@@ -289,10 +292,31 @@ Error ResourceImporterImageFont::import(const String &p_source_file, const Strin
 			WARN_PRINT(vformat("Invalid kerning pairs string: \"%s\"", kp));
 			continue;
 		}
+		String from_tokens;
+		for (int i = 0; i < kp_tokens[0].length(); i++) {
+			if (i <= kp_tokens[0].length() - 6 && kp_tokens[0][i] == '\\' && kp_tokens[0][i + 1] == 'u' && is_hex_digit(kp_tokens[0][i + 2]) && is_hex_digit(kp_tokens[0][i + 3]) && is_hex_digit(kp_tokens[0][i + 4]) && is_hex_digit(kp_tokens[0][i + 5])) {
+				char32_t charcode = kp_tokens[0].substr(i + 2, 4).hex_to_int();
+				from_tokens += charcode;
+				i += 5;
+			} else {
+				from_tokens += kp_tokens[0][i];
+			}
+		}
+		String to_tokens;
+		for (int i = 0; i < kp_tokens[1].length(); i++) {
+			if (i <= kp_tokens[1].length() - 6 && kp_tokens[1][i] == '\\' && kp_tokens[1][i + 1] == 'u' && is_hex_digit(kp_tokens[1][i + 2]) && is_hex_digit(kp_tokens[1][i + 3]) && is_hex_digit(kp_tokens[1][i + 4]) && is_hex_digit(kp_tokens[1][i + 5])) {
+				char32_t charcode = kp_tokens[1].substr(i + 2, 4).hex_to_int();
+				to_tokens += charcode;
+				i += 5;
+			} else {
+				to_tokens += kp_tokens[1][i];
+			}
+		}
 		int offset = kp_tokens[2].to_int();
-		for (int a = 0; a < kp_tokens[0].length(); a++) {
-			for (int b = 0; b < kp_tokens[1].length(); b++) {
-				font->set_kerning(0, chr_height, Vector2i(kp_tokens[0].unicode_at(a), kp_tokens[1].unicode_at(b)), Vector2(offset, 0));
+
+		for (int a = 0; a < from_tokens.length(); a++) {
+			for (int b = 0; b < to_tokens.length(); b++) {
+				font->set_kerning(0, chr_height, Vector2i(from_tokens.unicode_at(a), to_tokens.unicode_at(b)), Vector2(offset, 0));
 			}
 		}
 	}
@@ -319,7 +343,4 @@ Error ResourceImporterImageFont::import(const String &p_source_file, const Strin
 	ERR_FAIL_COND_V_MSG(err != OK, err, "Cannot save font to file \"" + p_save_path + ".res\".");
 	print_verbose("Done saving to: " + p_save_path + ".fontdata");
 	return OK;
-}
-
-ResourceImporterImageFont::ResourceImporterImageFont() {
 }

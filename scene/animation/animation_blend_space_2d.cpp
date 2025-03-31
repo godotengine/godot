@@ -316,7 +316,7 @@ void AnimationNodeBlendSpace2D::_set_triangles(const Vector<int> &p_triangles) {
 
 Vector<int> AnimationNodeBlendSpace2D::_get_triangles() const {
 	Vector<int> t;
-	if (auto_triangles && trianges_dirty) {
+	if (auto_triangles && triangles_dirty) {
 		return t;
 	}
 
@@ -330,20 +330,20 @@ Vector<int> AnimationNodeBlendSpace2D::_get_triangles() const {
 }
 
 void AnimationNodeBlendSpace2D::_queue_auto_triangles() {
-	if (!auto_triangles || trianges_dirty) {
+	if (!auto_triangles || triangles_dirty) {
 		return;
 	}
 
-	trianges_dirty = true;
+	triangles_dirty = true;
 	callable_mp(this, &AnimationNodeBlendSpace2D::_update_triangles).call_deferred();
 }
 
 void AnimationNodeBlendSpace2D::_update_triangles() {
-	if (!auto_triangles || !trianges_dirty) {
+	if (!auto_triangles || !triangles_dirty) {
 		return;
 	}
 
-	trianges_dirty = false;
+	triangles_dirty = false;
 	triangles.clear();
 	if (blend_points_used < 3) {
 		emit_signal(SNAME("triangles_updated"));
@@ -448,6 +448,10 @@ void AnimationNodeBlendSpace2D::_blend_triangle(const Vector2 &p_pos, const Vect
 AnimationNode::NodeTimeInfo AnimationNodeBlendSpace2D::_process(const AnimationMixer::PlaybackInfo p_playback_info, bool p_test_only) {
 	_update_triangles();
 
+	if (!blend_points_used) {
+		return NodeTimeInfo();
+	}
+
 	Vector2 blend_pos = get_parameter(blend_position);
 	int cur_closest = get_parameter(closest);
 	NodeTimeInfo mind; //time of min distance point
@@ -455,7 +459,7 @@ AnimationNode::NodeTimeInfo AnimationNodeBlendSpace2D::_process(const AnimationM
 	AnimationMixer::PlaybackInfo pi = p_playback_info;
 
 	if (blend_mode == BLEND_MODE_INTERPOLATED) {
-		if (triangles.size() == 0) {
+		if (triangles.is_empty()) {
 			return NodeTimeInfo();
 		}
 
@@ -511,9 +515,9 @@ AnimationNode::NodeTimeInfo AnimationNodeBlendSpace2D::_process(const AnimationM
 
 		first = true;
 
-		bool found = false;
 		double max_weight = 0.0;
 		for (int i = 0; i < blend_points_used; i++) {
+			bool found = false;
 			for (int j = 0; j < 3; j++) {
 				if (i == triangle_points[j]) {
 					//blend with the given weight
@@ -547,21 +551,26 @@ AnimationNode::NodeTimeInfo AnimationNodeBlendSpace2D::_process(const AnimationM
 		}
 
 		if (new_closest != cur_closest && new_closest != -1) {
-			NodeTimeInfo from;
 			if (blend_mode == BLEND_MODE_DISCRETE_CARRY && cur_closest != -1) {
-				//for ping-pong loop
+				NodeTimeInfo from;
+				// For ping-pong loop.
 				Ref<AnimationNodeAnimation> na_c = static_cast<Ref<AnimationNodeAnimation>>(blend_points[cur_closest].node);
 				Ref<AnimationNodeAnimation> na_n = static_cast<Ref<AnimationNodeAnimation>>(blend_points[new_closest].node);
-				if (!na_c.is_null() && !na_n.is_null()) {
+				if (na_c.is_valid() && na_n.is_valid()) {
+					na_n->process_state = process_state;
+					na_c->process_state = process_state;
+
 					na_n->set_backward(na_c->is_backward());
+
+					na_n = nullptr;
+					na_c = nullptr;
 				}
-				//see how much animation remains
+				// See how much animation remains.
 				pi.seeked = false;
 				pi.weight = 0;
-				from = blend_node(blend_points[cur_closest].node, blend_points[cur_closest].name, pi, FILTER_IGNORE, true, p_test_only);
+				from = blend_node(blend_points[cur_closest].node, blend_points[cur_closest].name, pi, FILTER_IGNORE, true, true);
+				pi.time = from.position;
 			}
-
-			pi.time = from.position;
 			pi.seeked = true;
 			pi.weight = 1.0;
 			mind = blend_node(blend_points[new_closest].node, blend_points[new_closest].name, pi, FILTER_IGNORE, true, p_test_only);

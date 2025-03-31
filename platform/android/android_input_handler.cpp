@@ -130,7 +130,7 @@ void AndroidInputHandler::process_key_event(int p_physical_keycode, int p_unicod
 
 	_set_key_modifier_state(ev, keycode);
 
-	if (p_physical_keycode == AKEYCODE_BACK) {
+	if (p_physical_keycode == AKEYCODE_BACK && p_pressed) {
 		if (DisplayServerAndroid *dsa = Object::cast_to<DisplayServerAndroid>(DisplayServer::get_singleton())) {
 			dsa->send_window_event(DisplayServer::WINDOW_EVENT_GO_BACK_REQUEST, true);
 		}
@@ -176,6 +176,8 @@ void AndroidInputHandler::process_touch_event(int p_event, int p_pointer, const 
 			for (int i = 0; i < p_points.size(); i++) {
 				touch.write[i].id = p_points[i].id;
 				touch.write[i].pos = p_points[i].pos;
+				touch.write[i].pressure = p_points[i].pressure;
+				touch.write[i].tilt = p_points[i].tilt;
 			}
 
 			//send touch
@@ -208,6 +210,8 @@ void AndroidInputHandler::process_touch_event(int p_event, int p_pointer, const 
 				ev->set_position(p_points[idx].pos);
 				ev->set_relative(p_points[idx].pos - touch[i].pos);
 				ev->set_relative_screen_position(ev->get_relative());
+				ev->set_pressure(p_points[idx].pressure);
+				ev->set_tilt(p_points[idx].tilt);
 				Input::get_singleton()->parse_input_event(ev);
 				touch.write[i].pos = p_points[idx].pos;
 			}
@@ -333,7 +337,7 @@ void AndroidInputHandler::process_mouse_event(int p_event_action, int p_event_an
 		} break;
 
 		case AMOTION_EVENT_ACTION_MOVE: {
-			if (!mouse_event_info.valid) {
+			if (!p_source_mouse_relative && !mouse_event_info.valid) {
 				return;
 			}
 

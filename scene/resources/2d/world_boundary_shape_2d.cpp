@@ -49,9 +49,7 @@ bool WorldBoundaryShape2D::_edit_is_selected_on_click(const Point2 &p_point, dou
 }
 
 void WorldBoundaryShape2D::_update_shape() {
-	Array arr;
-	arr.push_back(normal);
-	arr.push_back(distance);
+	Array arr = { normal, distance };
 	PhysicsServer2D::get_singleton()->shape_set_data(get_rid(), arr);
 	emit_changed();
 }

@@ -140,14 +140,14 @@ typedef struct {
 	#endif
 } qoa_desc;
 
-inline unsigned int qoa_encode_header(qoa_desc *qoa, unsigned char *bytes);
-inline unsigned int qoa_encode_frame(const short *sample_data, qoa_desc *qoa, unsigned int frame_len, unsigned char *bytes);
-inline void *qoa_encode(const short *sample_data, qoa_desc *qoa, unsigned int *out_len);
+unsigned int qoa_encode_header(qoa_desc *qoa, unsigned char *bytes);
+unsigned int qoa_encode_frame(const short *sample_data, qoa_desc *qoa, unsigned int frame_len, unsigned char *bytes);
+void *qoa_encode(const short *sample_data, qoa_desc *qoa, unsigned int *out_len);
 
-inline unsigned int qoa_max_frame_size(qoa_desc *qoa);
-inline unsigned int qoa_decode_header(const unsigned char *bytes, int size, qoa_desc *qoa);
-inline unsigned int qoa_decode_frame(const unsigned char *bytes, unsigned int size, qoa_desc *qoa, short *sample_data, unsigned int *frame_len);
-inline short *qoa_decode(const unsigned char *bytes, int size, qoa_desc *file);
+unsigned int qoa_max_frame_size(qoa_desc *qoa);
+unsigned int qoa_decode_header(const unsigned char *bytes, int size, qoa_desc *qoa);
+unsigned int qoa_decode_frame(const unsigned char *bytes, unsigned int size, qoa_desc *qoa, short *sample_data, unsigned int *frame_len);
+short *qoa_decode(const unsigned char *bytes, int size, qoa_desc *file);
 
 #ifndef QOA_NO_STDIO
 
@@ -391,9 +391,12 @@ unsigned int qoa_encode_frame(const short *sample_data, qoa_desc *qoa, unsigned 
 			16 scalefactors, encode all samples for the current slice and 
 			meassure the total squared error. */
 			qoa_uint64_t best_rank = -1;
-			qoa_uint64_t best_slice = -1;
-			qoa_lms_t best_lms = {{-1, -1, -1, -1}, {-1, -1, -1, -1}};
-			int best_scalefactor = -1;
+			#ifdef QOA_RECORD_TOTAL_ERROR
+				qoa_uint64_t best_error = -1;
+			#endif
+			qoa_uint64_t best_slice = 0;
+			qoa_lms_t best_lms;
+			int best_scalefactor = 0;
 
 			for (int sfi = 0; sfi < 16; sfi++) {
 				/* There is a strong correlation between the scalefactors of
@@ -407,6 +410,9 @@ unsigned int qoa_encode_frame(const short *sample_data, qoa_desc *qoa, unsigned 
 				qoa_lms_t lms = qoa->lms[c];
 				qoa_uint64_t slice = scalefactor;
 				qoa_uint64_t current_rank = 0;
+				#ifdef QOA_RECORD_TOTAL_ERROR
+					qoa_uint64_t current_error = 0;
+				#endif
 
 				for (int si = slice_start; si < slice_end; si += channels) {
 					int sample = sample_data[si];
@@ -436,6 +442,9 @@ unsigned int qoa_encode_frame(const short *sample_data, qoa_desc *qoa, unsigned 
 					qoa_uint64_t error_sq = error * error;
 
 					current_rank += error_sq + weights_penalty * weights_penalty;
+					#ifdef QOA_RECORD_TOTAL_ERROR
+						current_error += error_sq;
+					#endif
 					if (current_rank > best_rank) {
 						break;
 					}
@@ -446,6 +455,9 @@ unsigned int qoa_encode_frame(const short *sample_data, qoa_desc *qoa, unsigned 
 
 				if (current_rank < best_rank) {
 					best_rank = current_rank;
+					#ifdef QOA_RECORD_TOTAL_ERROR
+						best_error = current_error;
+					#endif
 					best_slice = slice;
 					best_lms = lms;
 					best_scalefactor = scalefactor;
@@ -488,7 +500,7 @@ void *qoa_encode(const short *sample_data, qoa_desc *qoa, unsigned int *out_len)
 		num_frames * QOA_LMS_LEN * 4 * qoa->channels + /* 4 * 4 bytes lms state per channel */
 		num_slices * 8 * qoa->channels;                /* 8 byte slices */
 
-	unsigned char *bytes = (unsigned char *)QOA_MALLOC(encoded_size);
+	unsigned char *bytes = QOA_MALLOC(encoded_size);
 
 	for (unsigned int c = 0; c < qoa->channels; c++) {
 		/* Set the initial LMS weights to {0, 0, -1, 2}. This helps with the 
@@ -581,8 +593,8 @@ unsigned int qoa_decode_frame(const unsigned char *bytes, unsigned int size, qoa
 	unsigned int samples    = (frame_header >> 16) & 0x00ffff;
 	unsigned int frame_size = (frame_header      ) & 0x00ffff;
 
-	int data_size = frame_size - 8 - QOA_LMS_LEN * 4 * channels;
-	int num_slices = data_size / 8;
+	unsigned int data_size = frame_size - 8 - QOA_LMS_LEN * 4 * channels;
+	unsigned int num_slices = data_size / 8;
 	unsigned int max_total_samples = num_slices * QOA_SLICE_LEN;
 
 	if (
@@ -614,12 +626,14 @@ unsigned int qoa_decode_frame(const unsigned char *bytes, unsigned int size, qoa
 			qoa_uint64_t slice = qoa_read_u64(bytes, &p);
 
 			int scalefactor = (slice >> 60) & 0xf;
+			slice <<= 4;
+
 			int slice_start = sample_index * channels + c;
 			int slice_end = qoa_clamp(sample_index + QOA_SLICE_LEN, 0, samples) * channels + c;
 
 			for (int si = slice_start; si < slice_end; si += channels) {
 				int predicted = qoa_lms_predict(&qoa->lms[c]);
-				int quantized = (slice >> 57) & 0x7;
+				int quantized = (slice >> 61) & 0x7;
 				int dequantized = qoa_dequant_tab[scalefactor][quantized];
 				int reconstructed = qoa_clamp_s16(predicted + dequantized);
 				
@@ -643,7 +657,7 @@ short *qoa_decode(const unsigned char *bytes, int size, qoa_desc *qoa) {
 
 	/* Calculate the required size of the sample buffer and allocate */
 	int total_samples = qoa->samples * qoa->channels;
-	short *sample_data = (short *)QOA_MALLOC(total_samples * sizeof(short));
+	short *sample_data = QOA_MALLOC(total_samples * sizeof(short));
 
 	unsigned int sample_index = 0;
 	unsigned int frame_len;

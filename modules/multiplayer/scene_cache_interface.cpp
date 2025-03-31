@@ -54,11 +54,14 @@ void SceneCacheInterface::_remove_node_cache(ObjectID p_oid) {
 	if (nc->cache_id) {
 		assigned_ids.erase(nc->cache_id);
 	}
+#if 0
+	// TODO: Find a way to cleanup recv_nodes without breaking visibility and RPCs interactions.
 	for (KeyValue<int, int> &E : nc->recv_ids) {
 		PeerInfo *pinfo = peers_info.getptr(E.key);
 		ERR_CONTINUE(!pinfo);
 		pinfo->recv_nodes.erase(E.value);
 	}
+#endif
 	for (KeyValue<int, bool> &E : nc->confirmed_peers) {
 		PeerInfo *pinfo = peers_info.getptr(E.key);
 		ERR_CONTINUE(!pinfo);
@@ -73,10 +76,13 @@ void SceneCacheInterface::on_peer_change(int p_id, bool p_connected) {
 	} else {
 		PeerInfo *pinfo = peers_info.getptr(p_id);
 		ERR_FAIL_NULL(pinfo); // Bug.
-		for (KeyValue<int, ObjectID> E : pinfo->recv_nodes) {
-			NodeCache *nc = nodes_cache.getptr(E.value);
-			ERR_CONTINUE(!nc);
-			nc->recv_ids.erase(E.key);
+		for (KeyValue<int, RecvNode> E : pinfo->recv_nodes) {
+			NodeCache *nc = nodes_cache.getptr(E.value.oid);
+			if (!nc) {
+				// Node might have already been deleted locally.
+				continue;
+			}
+			nc->recv_ids.erase(p_id);
 		}
 		for (const ObjectID &oid : pinfo->sent_nodes) {
 			NodeCache *nc = nodes_cache.getptr(oid);
@@ -94,8 +100,7 @@ void SceneCacheInterface::process_simplify_path(int p_from, const uint8_t *p_pac
 	ERR_FAIL_NULL(root_node);
 	int ofs = 1;
 
-	String methods_md5;
-	methods_md5.parse_utf8((const char *)(p_packet + ofs), 32);
+	String methods_md5 = String::utf8((const char *)(p_packet + ofs), 32);
 	ofs += 33;
 
 	int id = decode_uint32(&p_packet[ofs]);
@@ -103,8 +108,7 @@ void SceneCacheInterface::process_simplify_path(int p_from, const uint8_t *p_pac
 
 	ERR_FAIL_COND_MSG(peers_info[p_from].recv_nodes.has(id), vformat("Duplicate remote cache ID %d for peer %d", id, p_from));
 
-	String paths;
-	paths.parse_utf8((const char *)(p_packet + ofs), p_packet_len - ofs);
+	String paths = String::utf8((const char *)(p_packet + ofs), p_packet_len - ofs);
 
 	const NodePath path = paths;
 
@@ -115,7 +119,7 @@ void SceneCacheInterface::process_simplify_path(int p_from, const uint8_t *p_pac
 		ERR_PRINT("The rpc node checksum failed. Make sure to have the same methods on both nodes. Node path: " + path);
 	}
 
-	peers_info[p_from].recv_nodes.insert(id, node->get_instance_id());
+	peers_info[p_from].recv_nodes.insert(id, RecvNode(node->get_instance_id(), path));
 	NodeCache &cache = _track(node);
 	cache.recv_ids.insert(p_from, id);
 
@@ -148,7 +152,7 @@ void SceneCacheInterface::process_confirm_path(int p_from, const uint8_t *p_pack
 	}
 
 	if (valid_rpc_checksum == false) {
-		const Node *node = Object::cast_to<Node>(ObjectDB::get_instance(*oid));
+		const Node *node = ObjectDB::get_instance<Node>(*oid);
 		ERR_FAIL_NULL(node); // Bug.
 		ERR_PRINT("The rpc node checksum failed. Make sure to have the same methods on both nodes. Node path: " + node->get_path());
 	}
@@ -269,14 +273,21 @@ bool SceneCacheInterface::send_object_cache(Object *p_obj, int p_peer_id, int &r
 }
 
 Object *SceneCacheInterface::get_cached_object(int p_from, uint32_t p_cache_id) {
-	Node *root_node = SceneTree::get_singleton()->get_root()->get_node(multiplayer->get_root_path());
-	ERR_FAIL_NULL_V(root_node, nullptr);
 	PeerInfo *pinfo = peers_info.getptr(p_from);
 	ERR_FAIL_NULL_V(pinfo, nullptr);
 
-	const ObjectID *oid = pinfo->recv_nodes.getptr(p_cache_id);
-	ERR_FAIL_NULL_V_MSG(oid, nullptr, vformat("ID %d not found in cache of peer %d.", p_cache_id, p_from));
-	Node *node = Object::cast_to<Node>(ObjectDB::get_instance(*oid));
+	RecvNode *recv_node = pinfo->recv_nodes.getptr(p_cache_id);
+	ERR_FAIL_NULL_V_MSG(recv_node, nullptr, vformat("ID %d not found in cache of peer %d.", p_cache_id, p_from));
+	Node *node = ObjectDB::get_instance<Node>(recv_node->oid);
+	if (!node) {
+		// Fallback to path lookup.
+		Node *root_node = SceneTree::get_singleton()->get_root()->get_node(multiplayer->get_root_path());
+		ERR_FAIL_NULL_V(root_node, nullptr);
+		node = root_node->get_node(recv_node->path);
+		if (node) {
+			recv_node->oid = node->get_instance_id();
+		}
+	}
 	ERR_FAIL_NULL_V_MSG(node, nullptr, vformat("Failed to get cached node from peer %d with cache ID %d.", p_from, p_cache_id));
 	return node;
 }

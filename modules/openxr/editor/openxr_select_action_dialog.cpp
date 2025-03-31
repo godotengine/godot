@@ -38,7 +38,7 @@ void OpenXRSelectActionDialog::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
-			scroll->add_theme_style_override("panel", get_theme_stylebox(SNAME("panel"), SNAME("Tree")));
+			scroll->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SceneStringName(panel), SNAME("Tree")));
 		} break;
 	}
 }
@@ -66,7 +66,7 @@ void OpenXRSelectActionDialog::_on_select_action(const String p_action) {
 void OpenXRSelectActionDialog::open() {
 	ERR_FAIL_COND(action_map.is_null());
 
-	// out with the old...
+	// Out with the old.
 	while (main_vb->get_child_count() > 0) {
 		memdelete(main_vb->get_child(0));
 	}
@@ -74,6 +74,7 @@ void OpenXRSelectActionDialog::open() {
 	selected_action = "";
 	action_buttons.clear();
 
+	// In with the new.
 	Array action_sets = action_map->get_action_sets();
 	for (int i = 0; i < action_sets.size(); i++) {
 		Ref<OpenXRActionSet> action_set = action_sets[i];

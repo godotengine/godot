@@ -104,7 +104,7 @@ void TileSetScenesCollectionSourceEditor::TileSetScenesCollectionProxyObject::_b
 }
 
 void TileSetScenesCollectionSourceEditor::TileSetScenesCollectionProxyObject::edit(Ref<TileSet> p_tile_set, TileSetScenesCollectionSource *p_tile_set_scenes_collection_source, int p_source_id) {
-	ERR_FAIL_COND(!p_tile_set.is_valid());
+	ERR_FAIL_COND(p_tile_set.is_null());
 	ERR_FAIL_NULL(p_tile_set_scenes_collection_source);
 	ERR_FAIL_COND(p_source_id < 0);
 	ERR_FAIL_COND(p_tile_set->get_source(p_source_id) != p_tile_set_scenes_collection_source);
@@ -233,7 +233,7 @@ void TileSetScenesCollectionSourceEditor::_scene_thumbnail_done(const String &p_
 void TileSetScenesCollectionSourceEditor::_scenes_list_item_activated(int p_index) {
 	Ref<PackedScene> packed_scene = tile_set_scenes_collection_source->get_scene_tile_scene(scene_tiles_list->get_item_metadata(p_index));
 	if (packed_scene.is_valid()) {
-		EditorNode::get_singleton()->open_request(packed_scene->get_path());
+		EditorNode::get_singleton()->load_scene(packed_scene->get_path());
 	}
 }
 
@@ -367,8 +367,8 @@ void TileSetScenesCollectionSourceEditor::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
-			scene_tile_add_button->set_icon(get_editor_theme_icon(SNAME("Add")));
-			scene_tile_delete_button->set_icon(get_editor_theme_icon(SNAME("Remove")));
+			scene_tile_add_button->set_button_icon(get_editor_theme_icon(SNAME("Add")));
+			scene_tile_delete_button->set_button_icon(get_editor_theme_icon(SNAME("Remove")));
 			_update_scenes_list();
 		} break;
 
@@ -398,7 +398,7 @@ void TileSetScenesCollectionSourceEditor::_notification(int p_what) {
 }
 
 void TileSetScenesCollectionSourceEditor::edit(Ref<TileSet> p_tile_set, TileSetScenesCollectionSource *p_tile_set_scenes_collection_source, int p_source_id) {
-	ERR_FAIL_COND(!p_tile_set.is_valid());
+	ERR_FAIL_COND(p_tile_set.is_null());
 	ERR_FAIL_NULL(p_tile_set_scenes_collection_source);
 	ERR_FAIL_COND(p_source_id < 0);
 	ERR_FAIL_COND(p_tile_set->get_source(p_source_id) != p_tile_set_scenes_collection_source);
@@ -534,7 +534,6 @@ TileSetScenesCollectionSourceEditor::TileSetScenesCollectionSourceEditor() {
 	scenes_collection_source_inspector = memnew(EditorInspector);
 	scenes_collection_source_inspector->set_vertical_scroll_mode(ScrollContainer::SCROLL_MODE_DISABLED);
 	scenes_collection_source_inspector->set_use_doc_hints(true);
-	scenes_collection_source_inspector->add_inspector_plugin(memnew(TileSourceInspectorPlugin));
 	middle_vbox_container->add_child(scenes_collection_source_inspector);
 
 	// Tile inspector.
@@ -562,8 +561,8 @@ TileSetScenesCollectionSourceEditor::TileSetScenesCollectionSourceEditor() {
 	scene_tiles_list->set_h_size_flags(SIZE_EXPAND_FILL);
 	scene_tiles_list->set_v_size_flags(SIZE_EXPAND_FILL);
 	SET_DRAG_FORWARDING_CDU(scene_tiles_list, TileSetScenesCollectionSourceEditor);
-	scene_tiles_list->connect("item_selected", callable_mp(this, &TileSetScenesCollectionSourceEditor::_update_tile_inspector).unbind(1));
-	scene_tiles_list->connect("item_selected", callable_mp(this, &TileSetScenesCollectionSourceEditor::_update_action_buttons).unbind(1));
+	scene_tiles_list->connect(SceneStringName(item_selected), callable_mp(this, &TileSetScenesCollectionSourceEditor::_update_tile_inspector).unbind(1));
+	scene_tiles_list->connect(SceneStringName(item_selected), callable_mp(this, &TileSetScenesCollectionSourceEditor::_update_action_buttons).unbind(1));
 	scene_tiles_list->connect("item_activated", callable_mp(this, &TileSetScenesCollectionSourceEditor::_scenes_list_item_activated));
 	scene_tiles_list->set_texture_filter(CanvasItem::TEXTURE_FILTER_NEAREST);
 	right_vbox_container->add_child(scene_tiles_list);
@@ -572,15 +571,17 @@ TileSetScenesCollectionSourceEditor::TileSetScenesCollectionSourceEditor() {
 	right_vbox_container->add_child(scenes_bottom_actions);
 
 	scene_tile_add_button = memnew(Button);
-	scene_tile_add_button->set_theme_type_variation("FlatButton");
+	scene_tile_add_button->set_theme_type_variation(SceneStringName(FlatButton));
 	scene_tile_add_button->connect(SceneStringName(pressed), callable_mp(this, &TileSetScenesCollectionSourceEditor::_source_add_pressed));
 	scenes_bottom_actions->add_child(scene_tile_add_button);
 
 	scene_tile_delete_button = memnew(Button);
-	scene_tile_delete_button->set_theme_type_variation("FlatButton");
+	scene_tile_delete_button->set_theme_type_variation(SceneStringName(FlatButton));
 	scene_tile_delete_button->set_disabled(true);
 	scene_tile_delete_button->connect(SceneStringName(pressed), callable_mp(this, &TileSetScenesCollectionSourceEditor::_source_delete_pressed));
 	scenes_bottom_actions->add_child(scene_tile_delete_button);
+
+	EditorInspector::add_inspector_plugin(memnew(TileSourceInspectorPlugin));
 }
 
 TileSetScenesCollectionSourceEditor::~TileSetScenesCollectionSourceEditor() {

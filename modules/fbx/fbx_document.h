@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef FBX_DOCUMENT_H
-#define FBX_DOCUMENT_H
+#pragma once
 
 #include "fbx_state.h"
 
@@ -60,9 +59,6 @@ public:
 	Node *generate_scene(Ref<GLTFState> p_state, float p_bake_fps = 30.0f, bool p_trimming = false, bool p_remove_immutable_tracks = true) override;
 	PackedByteArray generate_buffer(Ref<GLTFState> p_state) override;
 	Error write_to_filesystem(Ref<GLTFState> p_state, const String &p_path) override;
-
-protected:
-	static void _bind_methods();
 
 private:
 	String _get_texture_path(const String &p_base_directory, const String &p_source_file_path) const;
@@ -102,5 +98,3 @@ public:
 			const GLTFAnimationIndex p_index, const bool p_trimming, const bool p_remove_immutable_tracks);
 	Error _parse(Ref<FBXState> p_state, String p_path, Ref<FileAccess> p_file);
 };
-
-#endif // FBX_DOCUMENT_H

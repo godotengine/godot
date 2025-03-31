@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef SCRIPT_TEXT_EDITOR_H
-#define SCRIPT_TEXT_EDITOR_H
+#pragma once
 
 #include "script_editor_plugin.h"
 
@@ -85,7 +84,7 @@ class ScriptTextEditor : public ScriptEditorBase {
 	PopupMenu *highlighter_menu = nullptr;
 	PopupMenu *context_menu = nullptr;
 
-	GotoLineDialog *goto_line_dialog = nullptr;
+	GotoLinePopup *goto_line_popup = nullptr;
 	ScriptEditorQuickOpen *quick_open = nullptr;
 	ConnectionInfoDialog *connection_info_dialog = nullptr;
 
@@ -98,6 +97,7 @@ class ScriptTextEditor : public ScriptEditorBase {
 	Color safe_line_number_color = Color(1, 1, 1);
 
 	Color marked_line_color = Color(1, 1, 1);
+	Color warning_line_color = Color(1, 1, 1);
 	Color folded_code_region_color = Color(1, 1, 1);
 	int previous_line = 0;
 
@@ -118,6 +118,7 @@ class ScriptTextEditor : public ScriptEditorBase {
 		EDIT_COMPLETE,
 		EDIT_AUTO_INDENT,
 		EDIT_TRIM_TRAILING_WHITESAPCE,
+		EDIT_TRIM_FINAL_NEWLINES,
 		EDIT_CONVERT_INDENT_TO_SPACES,
 		EDIT_CONVERT_INDENT_TO_TABS,
 		EDIT_TOGGLE_COMMENT,
@@ -156,6 +157,7 @@ class ScriptTextEditor : public ScriptEditorBase {
 		DEBUG_GOTO_PREV_BREAKPOINT,
 		HELP_CONTEXTUAL,
 		LOOKUP_SYMBOL,
+		EDIT_EMOJI_AND_SYMBOL,
 	};
 
 	void _enable_code_editor();
@@ -199,6 +201,8 @@ protected:
 	void _lookup_symbol(const String &p_symbol, int p_row, int p_column);
 	void _validate_symbol(const String &p_symbol);
 
+	void _show_symbol_tooltip(const String &p_symbol, int p_row, int p_column);
+
 	void _convert_case(CodeTextEditor::CaseStyle p_case);
 
 	Variant get_drag_data_fw(const Point2 &p_point, Control *p_from);
@@ -228,13 +232,14 @@ public:
 	virtual Variant get_navigation_state() override;
 	virtual void ensure_focus() override;
 	virtual void trim_trailing_whitespace() override;
+	virtual void trim_final_newlines() override;
 	virtual void insert_final_newline() override;
 	virtual void convert_indent() override;
 	virtual void tag_saved_version() override;
 
-	virtual void goto_line(int p_line, bool p_with_error = false) override;
+	virtual void goto_line(int p_line, int p_column = 0) override;
 	void goto_line_selection(int p_line, int p_begin, int p_end);
-	void goto_line_centered(int p_line);
+	void goto_line_centered(int p_line, int p_column = 0);
 	virtual void set_executing_line(int p_line) override;
 	virtual void clear_executing_line() override;
 
@@ -269,5 +274,3 @@ public:
 	ScriptTextEditor();
 	~ScriptTextEditor();
 };
-
-#endif // SCRIPT_TEXT_EDITOR_H

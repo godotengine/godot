@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef ENGINE_UPDATE_LABEL_H
-#define ENGINE_UPDATE_LABEL_H
+#pragma once
 
 #include "scene/gui/link_button.h"
 
@@ -60,7 +59,6 @@ private:
 
 	enum class UpdateStatus {
 		NONE,
-		DEV,
 		OFFLINE,
 		BUSY,
 		ERROR,
@@ -79,7 +77,7 @@ private:
 
 	UpdateStatus status = UpdateStatus::NONE;
 	bool checked_update = false;
-	String found_version;
+	String available_newer_version;
 
 	bool _can_check_updates() const;
 	void _check_update();
@@ -100,5 +98,3 @@ protected:
 public:
 	EngineUpdateLabel();
 };
-
-#endif // ENGINE_UPDATE_LABEL_H

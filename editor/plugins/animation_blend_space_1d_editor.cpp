@@ -217,12 +217,12 @@ void AnimationNodeBlendSpace1DEditor::_blend_space_draw() {
 		return;
 	}
 
-	Color linecolor = get_theme_color(SNAME("font_color"), SNAME("Label"));
+	Color linecolor = get_theme_color(SceneStringName(font_color), SNAME("Label"));
 	Color linecolor_soft = linecolor;
 	linecolor_soft.a *= 0.5;
 
-	Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Label"));
-	int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
+	Ref<Font> font = get_theme_font(SceneStringName(font), SNAME("Label"));
+	int font_size = get_theme_font_size(SceneStringName(font_size), SNAME("Label"));
 	Ref<Texture2D> icon = get_editor_theme_icon(SNAME("KeyValue"));
 	Ref<Texture2D> icon_selected = get_editor_theme_icon(SNAME("KeySelected"));
 
@@ -428,7 +428,7 @@ void AnimationNodeBlendSpace1DEditor::_add_menu_type(int p_index) {
 		node = Ref<AnimationNode>(an);
 	}
 
-	if (!node.is_valid()) {
+	if (node.is_null()) {
 		EditorNode::get_singleton()->show_warning(TTR("This type of node can't be used. Only root nodes are allowed."));
 		return;
 	}
@@ -573,15 +573,15 @@ void AnimationNodeBlendSpace1DEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
-			error_panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("panel"), SNAME("Tree")));
-			error_label->add_theme_color_override("font_color", get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
-			panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("panel"), SNAME("Tree")));
-			tool_blend->set_icon(get_editor_theme_icon(SNAME("EditPivot")));
-			tool_select->set_icon(get_editor_theme_icon(SNAME("ToolSelect")));
-			tool_create->set_icon(get_editor_theme_icon(SNAME("EditKey")));
-			tool_erase->set_icon(get_editor_theme_icon(SNAME("Remove")));
-			snap->set_icon(get_editor_theme_icon(SNAME("SnapGrid")));
-			open_editor->set_icon(get_editor_theme_icon(SNAME("Edit")));
+			error_panel->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SceneStringName(panel), SNAME("Tree")));
+			error_label->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("error_color"), EditorStringName(Editor)));
+			panel->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SceneStringName(panel), SNAME("Tree")));
+			tool_blend->set_button_icon(get_editor_theme_icon(SNAME("EditPivot")));
+			tool_select->set_button_icon(get_editor_theme_icon(SNAME("ToolSelect")));
+			tool_create->set_button_icon(get_editor_theme_icon(SNAME("EditKey")));
+			tool_erase->set_button_icon(get_editor_theme_icon(SNAME("Remove")));
+			snap->set_button_icon(get_editor_theme_icon(SNAME("SnapGrid")));
+			open_editor->set_button_icon(get_editor_theme_icon(SNAME("Edit")));
 			interpolation->clear();
 			interpolation->add_icon_item(get_editor_theme_icon(SNAME("TrackContinuous")), TTR("Continuous"), 0);
 			interpolation->add_icon_item(get_editor_theme_icon(SNAME("TrackDiscrete")), TTR("Discrete"), 1);
@@ -634,7 +634,7 @@ void AnimationNodeBlendSpace1DEditor::edit(const Ref<AnimationNode> &p_node) {
 	blend_space = p_node;
 	read_only = false;
 
-	if (!blend_space.is_null()) {
+	if (blend_space.is_valid()) {
 		read_only = EditorNode::get_singleton()->is_resource_read_only(blend_space);
 
 		_update_space();
@@ -661,7 +661,7 @@ AnimationNodeBlendSpace1DEditor::AnimationNodeBlendSpace1DEditor() {
 	bg.instantiate();
 
 	tool_blend = memnew(Button);
-	tool_blend->set_theme_type_variation("FlatButton");
+	tool_blend->set_theme_type_variation(SceneStringName(FlatButton));
 	tool_blend->set_toggle_mode(true);
 	tool_blend->set_button_group(bg);
 	top_hb->add_child(tool_blend);
@@ -670,7 +670,7 @@ AnimationNodeBlendSpace1DEditor::AnimationNodeBlendSpace1DEditor() {
 	tool_blend->connect(SceneStringName(pressed), callable_mp(this, &AnimationNodeBlendSpace1DEditor::_tool_switch).bind(3));
 
 	tool_select = memnew(Button);
-	tool_select->set_theme_type_variation("FlatButton");
+	tool_select->set_theme_type_variation(SceneStringName(FlatButton));
 	tool_select->set_toggle_mode(true);
 	tool_select->set_button_group(bg);
 	top_hb->add_child(tool_select);
@@ -678,7 +678,7 @@ AnimationNodeBlendSpace1DEditor::AnimationNodeBlendSpace1DEditor() {
 	tool_select->connect(SceneStringName(pressed), callable_mp(this, &AnimationNodeBlendSpace1DEditor::_tool_switch).bind(0));
 
 	tool_create = memnew(Button);
-	tool_create->set_theme_type_variation("FlatButton");
+	tool_create->set_theme_type_variation(SceneStringName(FlatButton));
 	tool_create->set_toggle_mode(true);
 	tool_create->set_button_group(bg);
 	top_hb->add_child(tool_create);
@@ -688,7 +688,7 @@ AnimationNodeBlendSpace1DEditor::AnimationNodeBlendSpace1DEditor() {
 	tool_erase_sep = memnew(VSeparator);
 	top_hb->add_child(tool_erase_sep);
 	tool_erase = memnew(Button);
-	tool_erase->set_theme_type_variation("FlatButton");
+	tool_erase->set_theme_type_variation(SceneStringName(FlatButton));
 	top_hb->add_child(tool_erase);
 	tool_erase->set_tooltip_text(TTR("Erase points."));
 	tool_erase->connect(SceneStringName(pressed), callable_mp(this, &AnimationNodeBlendSpace1DEditor::_erase_selected));
@@ -696,7 +696,7 @@ AnimationNodeBlendSpace1DEditor::AnimationNodeBlendSpace1DEditor() {
 	top_hb->add_child(memnew(VSeparator));
 
 	snap = memnew(Button);
-	snap->set_theme_type_variation("FlatButton");
+	snap->set_theme_type_variation(SceneStringName(FlatButton));
 	snap->set_toggle_mode(true);
 	top_hb->add_child(snap);
 	snap->set_pressed(true);
@@ -713,14 +713,14 @@ AnimationNodeBlendSpace1DEditor::AnimationNodeBlendSpace1DEditor() {
 	top_hb->add_child(memnew(Label(TTR("Sync:"))));
 	sync = memnew(CheckBox);
 	top_hb->add_child(sync);
-	sync->connect("toggled", callable_mp(this, &AnimationNodeBlendSpace1DEditor::_config_changed));
+	sync->connect(SceneStringName(toggled), callable_mp(this, &AnimationNodeBlendSpace1DEditor::_config_changed));
 
 	top_hb->add_child(memnew(VSeparator));
 
 	top_hb->add_child(memnew(Label(TTR("Blend:"))));
 	interpolation = memnew(OptionButton);
 	top_hb->add_child(interpolation);
-	interpolation->connect("item_selected", callable_mp(this, &AnimationNodeBlendSpace1DEditor::_config_changed));
+	interpolation->connect(SceneStringName(item_selected), callable_mp(this, &AnimationNodeBlendSpace1DEditor::_config_changed));
 
 	edit_hb = memnew(HBoxContainer);
 	top_hb->add_child(edit_hb);
@@ -732,7 +732,7 @@ AnimationNodeBlendSpace1DEditor::AnimationNodeBlendSpace1DEditor() {
 	edit_value->set_min(-1000);
 	edit_value->set_max(1000);
 	edit_value->set_step(0.01);
-	edit_value->connect("value_changed", callable_mp(this, &AnimationNodeBlendSpace1DEditor::_edit_point_pos));
+	edit_value->connect(SceneStringName(value_changed), callable_mp(this, &AnimationNodeBlendSpace1DEditor::_edit_point_pos));
 
 	open_editor = memnew(Button);
 	edit_hb->add_child(open_editor);
@@ -786,10 +786,10 @@ AnimationNodeBlendSpace1DEditor::AnimationNodeBlendSpace1DEditor() {
 		bottom_hb->add_child(max_value);
 	}
 
-	snap_value->connect("value_changed", callable_mp(this, &AnimationNodeBlendSpace1DEditor::_config_changed));
-	min_value->connect("value_changed", callable_mp(this, &AnimationNodeBlendSpace1DEditor::_config_changed));
-	max_value->connect("value_changed", callable_mp(this, &AnimationNodeBlendSpace1DEditor::_config_changed));
-	label_value->connect("text_changed", callable_mp(this, &AnimationNodeBlendSpace1DEditor::_labels_changed));
+	snap_value->connect(SceneStringName(value_changed), callable_mp(this, &AnimationNodeBlendSpace1DEditor::_config_changed));
+	min_value->connect(SceneStringName(value_changed), callable_mp(this, &AnimationNodeBlendSpace1DEditor::_config_changed));
+	max_value->connect(SceneStringName(value_changed), callable_mp(this, &AnimationNodeBlendSpace1DEditor::_config_changed));
+	label_value->connect(SceneStringName(text_changed), callable_mp(this, &AnimationNodeBlendSpace1DEditor::_labels_changed));
 
 	error_panel = memnew(PanelContainer);
 	add_child(error_panel);
@@ -799,7 +799,7 @@ AnimationNodeBlendSpace1DEditor::AnimationNodeBlendSpace1DEditor() {
 
 	menu = memnew(PopupMenu);
 	add_child(menu);
-	menu->connect("id_pressed", callable_mp(this, &AnimationNodeBlendSpace1DEditor::_add_menu_type));
+	menu->connect(SceneStringName(id_pressed), callable_mp(this, &AnimationNodeBlendSpace1DEditor::_add_menu_type));
 
 	animations_menu = memnew(PopupMenu);
 	animations_menu->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);

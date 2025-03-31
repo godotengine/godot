@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TYPE_INFO_H
-#define TYPE_INFO_H
+#pragma once
 
 #include "core/typedefs.h"
 
@@ -47,7 +46,9 @@ enum Metadata {
 	METADATA_INT_IS_UINT32,
 	METADATA_INT_IS_UINT64,
 	METADATA_REAL_IS_FLOAT,
-	METADATA_REAL_IS_DOUBLE
+	METADATA_REAL_IS_DOUBLE,
+	METADATA_INT_IS_CHAR16,
+	METADATA_INT_IS_CHAR32,
 };
 }
 
@@ -104,8 +105,8 @@ MAKE_TYPE_INFO_WITH_META(uint32_t, Variant::INT, GodotTypeInfo::METADATA_INT_IS_
 MAKE_TYPE_INFO_WITH_META(int32_t, Variant::INT, GodotTypeInfo::METADATA_INT_IS_INT32)
 MAKE_TYPE_INFO_WITH_META(uint64_t, Variant::INT, GodotTypeInfo::METADATA_INT_IS_UINT64)
 MAKE_TYPE_INFO_WITH_META(int64_t, Variant::INT, GodotTypeInfo::METADATA_INT_IS_INT64)
-MAKE_TYPE_INFO(char16_t, Variant::INT)
-MAKE_TYPE_INFO(char32_t, Variant::INT)
+MAKE_TYPE_INFO_WITH_META(char16_t, Variant::INT, GodotTypeInfo::METADATA_INT_IS_CHAR16)
+MAKE_TYPE_INFO_WITH_META(char32_t, Variant::INT, GodotTypeInfo::METADATA_INT_IS_CHAR32)
 MAKE_TYPE_INFO_WITH_META(float, Variant::FLOAT, GodotTypeInfo::METADATA_REAL_IS_FLOAT)
 MAKE_TYPE_INFO_WITH_META(double, Variant::FLOAT, GodotTypeInfo::METADATA_REAL_IS_DOUBLE)
 
@@ -208,8 +209,8 @@ struct GetTypeInfo<T *, std::enable_if_t<std::is_base_of_v<Object, T>>> {
 	}
 };
 
-namespace godot {
-namespace details {
+namespace GodotTypeInfo {
+namespace Internal {
 inline String enum_qualified_name_to_class_info_name(const String &p_qualified_name) {
 	Vector<String> parts = p_qualified_name.split("::", false);
 	if (parts.size() <= 2) {
@@ -218,8 +219,8 @@ inline String enum_qualified_name_to_class_info_name(const String &p_qualified_n
 	// Contains namespace. We only want the class and enum names.
 	return parts[parts.size() - 2] + "." + parts[parts.size() - 1];
 }
-} // namespace details
-} // namespace godot
+} // namespace Internal
+} // namespace GodotTypeInfo
 
 #define TEMPL_MAKE_ENUM_TYPE_INFO(m_enum, m_impl)                                                                                            \
 	template <>                                                                                                                              \
@@ -228,7 +229,7 @@ inline String enum_qualified_name_to_class_info_name(const String &p_qualified_n
 		static const GodotTypeInfo::Metadata METADATA = GodotTypeInfo::METADATA_NONE;                                                        \
 		static inline PropertyInfo get_class_info() {                                                                                        \
 			return PropertyInfo(Variant::INT, String(), PROPERTY_HINT_NONE, String(), PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_CLASS_IS_ENUM, \
-					godot::details::enum_qualified_name_to_class_info_name(String(#m_enum)));                                                \
+					GodotTypeInfo::Internal::enum_qualified_name_to_class_info_name(String(#m_enum)));                                       \
 		}                                                                                                                                    \
 	};
 
@@ -267,6 +268,9 @@ public:
 	_FORCE_INLINE_ BitField<T> operator^(const BitField<T> &p_b) const { return BitField<T>(value ^ p_b.value); }
 };
 
+template <typename T>
+struct is_zero_constructible<BitField<T>> : std::true_type {};
+
 #define TEMPL_MAKE_BITFIELD_TYPE_INFO(m_enum, m_impl)                                                                                            \
 	template <>                                                                                                                                  \
 	struct GetTypeInfo<m_impl> {                                                                                                                 \
@@ -274,7 +278,7 @@ public:
 		static const GodotTypeInfo::Metadata METADATA = GodotTypeInfo::METADATA_NONE;                                                            \
 		static inline PropertyInfo get_class_info() {                                                                                            \
 			return PropertyInfo(Variant::INT, String(), PROPERTY_HINT_NONE, String(), PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_CLASS_IS_BITFIELD, \
-					godot::details::enum_qualified_name_to_class_info_name(String(#m_enum)));                                                    \
+					GodotTypeInfo::Internal::enum_qualified_name_to_class_info_name(String(#m_enum)));                                           \
 		}                                                                                                                                        \
 	};                                                                                                                                           \
 	template <>                                                                                                                                  \
@@ -283,7 +287,7 @@ public:
 		static const GodotTypeInfo::Metadata METADATA = GodotTypeInfo::METADATA_NONE;                                                            \
 		static inline PropertyInfo get_class_info() {                                                                                            \
 			return PropertyInfo(Variant::INT, String(), PROPERTY_HINT_NONE, String(), PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_CLASS_IS_BITFIELD, \
-					godot::details::enum_qualified_name_to_class_info_name(String(#m_enum)));                                                    \
+					GodotTypeInfo::Internal::enum_qualified_name_to_class_info_name(String(#m_enum)));                                           \
 		}                                                                                                                                        \
 	};
 
@@ -317,10 +321,12 @@ struct ZeroInitializer<T *> {
 	static void initialize(T *&value) { value = nullptr; }
 };
 
-#define ZERO_INITIALIZER_NUMBER(m_type)                      \
-	template <>                                              \
-	struct ZeroInitializer<m_type> {                         \
-		static void initialize(m_type &value) { value = 0; } \
+#define ZERO_INITIALIZER_NUMBER(m_type)         \
+	template <>                                 \
+	struct ZeroInitializer<m_type> {            \
+		static void initialize(m_type &value) { \
+			value = 0;                          \
+		}                                       \
 	};
 
 ZERO_INITIALIZER_NUMBER(uint8_t)
@@ -335,5 +341,3 @@ ZERO_INITIALIZER_NUMBER(char16_t)
 ZERO_INITIALIZER_NUMBER(char32_t)
 ZERO_INITIALIZER_NUMBER(float)
 ZERO_INITIALIZER_NUMBER(double)
-
-#endif // TYPE_INFO_H

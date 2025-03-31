@@ -31,6 +31,7 @@
 #include "editor_locale_dialog.h"
 
 #include "core/config/project_settings.h"
+#include "core/string/translation_server.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/themes/editor_scale.h"
 #include "scene/gui/check_button.h"
@@ -399,7 +400,7 @@ EditorLocaleDialog::EditorLocaleDialog() {
 			filter_mode->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 			filter_mode->add_item(TTR("Show Selected Locales Only"), SHOW_ONLY_SELECTED_LOCALES);
 			filter_mode->select(0);
-			filter_mode->connect("item_selected", callable_mp(this, &EditorLocaleDialog::_filter_mode_changed));
+			filter_mode->connect(SceneStringName(item_selected), callable_mp(this, &EditorLocaleDialog::_filter_mode_changed));
 			hb_filter->add_child(filter_mode);
 		}
 		{
@@ -407,7 +408,7 @@ EditorLocaleDialog::EditorLocaleDialog() {
 			edit_filters->set_text(TTR("Edit Filters"));
 			edit_filters->set_toggle_mode(true);
 			edit_filters->set_pressed(false);
-			edit_filters->connect("toggled", callable_mp(this, &EditorLocaleDialog::_edit_filters));
+			edit_filters->connect(SceneStringName(toggled), callable_mp(this, &EditorLocaleDialog::_edit_filters));
 			hb_filter->add_child(edit_filters);
 		}
 		{
@@ -415,7 +416,7 @@ EditorLocaleDialog::EditorLocaleDialog() {
 			advanced->set_text(TTR("Advanced"));
 			advanced->set_toggle_mode(true);
 			advanced->set_pressed(false);
-			advanced->connect("toggled", callable_mp(this, &EditorLocaleDialog::_toggle_advanced));
+			advanced->connect(SceneStringName(toggled), callable_mp(this, &EditorLocaleDialog::_toggle_advanced));
 			hb_filter->add_child(advanced);
 		}
 		vb->add_child(hb_filter);

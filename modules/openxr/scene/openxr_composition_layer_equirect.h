@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef OPENXR_COMPOSITION_LAYER_EQUIRECT_H
-#define OPENXR_COMPOSITION_LAYER_EQUIRECT_H
+#pragma once
 
 #include <openxr/openxr.h>
 
@@ -38,7 +37,19 @@
 class OpenXRCompositionLayerEquirect : public OpenXRCompositionLayer {
 	GDCLASS(OpenXRCompositionLayerEquirect, OpenXRCompositionLayer);
 
-	XrCompositionLayerEquirect2KHR composition_layer;
+	XrCompositionLayerEquirect2KHR composition_layer = {
+		XR_TYPE_COMPOSITION_LAYER_EQUIRECT2_KHR, // type
+		nullptr, // next
+		0, // layerFlags
+		XR_NULL_HANDLE, // space
+		XR_EYE_VISIBILITY_BOTH, // eyeVisibility
+		{}, // subImage
+		{ { 0, 0, 0, 0 }, { 0, 0, 0 } }, // pose
+		1.0, // radius
+		Math_PI / 2.0, // centralHorizontalAngle
+		Math_PI / 4.0, // upperVerticalAngle
+		-Math_PI / 4.0, // lowerVerticalAngle
+	};
 
 	float radius = 1.0;
 	float central_horizontal_angle = Math_PI / 2.0;
@@ -50,6 +61,8 @@ protected:
 	static void _bind_methods();
 
 	void _notification(int p_what);
+
+	void update_transform();
 
 	virtual Ref<Mesh> _create_fallback_mesh() override;
 
@@ -74,5 +87,3 @@ public:
 	OpenXRCompositionLayerEquirect();
 	~OpenXRCompositionLayerEquirect();
 };
-
-#endif // OPENXR_COMPOSITION_LAYER_EQUIRECT_H

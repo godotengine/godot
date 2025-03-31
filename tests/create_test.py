@@ -13,12 +13,16 @@ def main():
     os.chdir(os.path.dirname(os.path.realpath(__file__)))
 
     parser = argparse.ArgumentParser(description="Creates a new unit test file.")
-    parser.add_argument("name", type=str, help="The unit test name in PascalCase notation")
+    parser.add_argument(
+        "name",
+        type=str,
+        help="Specifies the class or component name to be tested, in PascalCase (e.g., MeshInstance3D). The name will be prefixed with 'test_' for the header file and 'Test' for the namespace.",
+    )
     parser.add_argument(
         "path",
         type=str,
         nargs="?",
-        help="The path to the unit test file relative to the tests folder (default: .)",
+        help="The path to the unit test file relative to the tests folder (e.g. core). This should correspond to the relative path of the class or component being tested. (default: .)",
         default=".",
     )
     parser.add_argument(
@@ -29,10 +33,14 @@ def main():
     )
     args = parser.parse_args()
 
-    snake_case_regex = re.compile(r"(?<!^)(?=[A-Z])")
-    name_snake_case = snake_case_regex.sub("_", args.name).lower()
-
+    snake_case_regex = re.compile(r"(?<!^)(?=[A-Z, 0-9])")
+    # Replace 2D, 3D, and 4D with 2d, 3d, and 4d, respectively. This avoids undesired splits like node_3_d.
+    prefiltered_name = re.sub(r"([234])D", lambda match: match.group(1).lower() + "d", args.name)
+    name_snake_case = snake_case_regex.sub("_", prefiltered_name).lower()
     file_path = os.path.normpath(os.path.join(args.path, f"test_{name_snake_case}.h"))
+
+    # Ensure the directory exists.
+    os.makedirs(os.path.dirname(file_path), exist_ok=True)
 
     print(file_path)
     if os.path.isfile(file_path):
@@ -70,8 +78,7 @@ def main():
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TEST_{name_upper_snake_case}_H
-#define TEST_{name_upper_snake_case}_H
+#pragma once
 
 #include "tests/test_macros.h"
 
@@ -82,14 +89,11 @@ TEST_CASE("[{name_pascal_case}] Example test case") {{
 }}
 
 }} // namespace Test{name_pascal_case}
-
-#endif // TEST_{name_upper_snake_case}_H
 """.format(
                 name_snake_case=name_snake_case,
                 # Capitalize the first letter but keep capitalization for the rest of the string.
                 # This is done in case the user passes a camelCase string instead of PascalCase.
                 name_pascal_case=args.name[0].upper() + args.name[1:],
-                name_upper_snake_case=name_snake_case.upper(),
                 # The padding length depends on the test name length.
                 padding=" " * (61 - len(name_snake_case)),
             )

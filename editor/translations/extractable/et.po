@@ -16,6 +16,9 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
 "X-Generator: Weblate 5.1-dev\n"
 
+msgid "All Recognized"
+msgstr "Kõik tuvastatud"
+
 msgid "Network"
 msgstr "Võrk"
 
@@ -32,11 +35,11 @@ msgstr "Ava"
 msgid "Select Current Folder"
 msgstr "Valige praegune kaust"
 
+msgid "Save"
+msgstr "Salvesta"
+
 msgid "Select This Folder"
 msgstr "Vali see kaust"
-
-msgid "All Recognized"
-msgstr "Kõik tuvastatud"
 
 msgid "Open a File"
 msgstr "Ava fail"
@@ -49,9 +52,6 @@ msgstr "Ava kataloog"
 
 msgid "Open a File or Directory"
 msgstr "Ava kaust või kataloog"
-
-msgid "Save"
-msgstr "Salvesta"
 
 msgid "Save a File"
 msgstr "Salvesta fail"
