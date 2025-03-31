@@ -244,6 +244,9 @@ private:
 	Vector2i primary_grid_step;
 	int grid_step_multiplier = 0;
 
+	Color selection_rectangle_color;
+	Color locked_selection_rectangle_color;
+
 	real_t snap_rotation_step = 0.0;
 	real_t snap_rotation_offset = 0.0;
 	real_t snap_scale_step = 0.0;
@@ -279,7 +282,7 @@ private:
 	real_t grab_distance = 0.0;
 	bool simple_panning = false;
 
-	MenuOption last_option;
+	MenuOption last_option = SNAP_USE;
 
 public:
 	struct SelectResult {
