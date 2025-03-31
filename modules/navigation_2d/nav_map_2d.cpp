@@ -532,10 +532,8 @@ void NavMap2D::compute_single_avoidance_step(uint32_t p_index, NavAgent2D **p_ag
 	(*(p_agent + p_index))->update();
 }
 
-void NavMap2D::step(real_t p_deltatime) {
-	deltatime = p_deltatime;
-
-	rvo_simulation.setTimeStep(float(deltatime));
+void NavMap2D::step(double p_delta_time) {
+	rvo_simulation.setTimeStep(float(p_delta_time));
 
 	if (active_avoidance_agents.size() > 0) {
 		if (use_threads && avoidance_use_multiple_threads) {

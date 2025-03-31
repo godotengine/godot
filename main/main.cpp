@@ -4648,10 +4648,10 @@ bool Main::iteration() {
 		uint64_t navigation_begin = OS::get_singleton()->get_ticks_usec();
 
 #ifndef NAVIGATION_2D_DISABLED
-		NavigationServer2D::get_singleton()->process(physics_step * time_scale);
+		NavigationServer2D::get_singleton()->physics_process(physics_step * time_scale);
 #endif // NAVIGATION_2D_DISABLED
 #ifndef NAVIGATION_3D_DISABLED
-		NavigationServer3D::get_singleton()->process(physics_step * time_scale);
+		NavigationServer3D::get_singleton()->physics_process(physics_step * time_scale);
 #endif // NAVIGATION_3D_DISABLED
 
 		navigation_process_ticks = MAX(navigation_process_ticks, OS::get_singleton()->get_ticks_usec() - navigation_begin); // keep the largest one for reference
@@ -4690,6 +4690,13 @@ bool Main::iteration() {
 		exit = true;
 	}
 	message_queue->flush();
+
+#ifndef NAVIGATION_2D_DISABLED
+	NavigationServer2D::get_singleton()->process(process_step * time_scale);
+#endif // NAVIGATION_2D_DISABLED
+#ifndef NAVIGATION_3D_DISABLED
+	NavigationServer3D::get_singleton()->process(process_step * time_scale);
+#endif // NAVIGATION_3D_DISABLED
 
 	RenderingServer::get_singleton()->sync(); //sync if still drawing from previous frames.
 
