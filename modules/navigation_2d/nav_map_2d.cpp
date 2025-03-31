@@ -192,9 +192,7 @@ void NavMap2D::add_region(NavRegion2D *p_region) {
 }
 
 void NavMap2D::remove_region(NavRegion2D *p_region) {
-	int64_t region_index = regions.find(p_region);
-	if (region_index >= 0) {
-		regions.remove_at_unordered(region_index);
+	if (regions.erase_unordered(p_region)) {
 		iteration_dirty = true;
 	}
 }
@@ -205,9 +203,7 @@ void NavMap2D::add_link(NavLink2D *p_link) {
 }
 
 void NavMap2D::remove_link(NavLink2D *p_link) {
-	int64_t link_index = links.find(p_link);
-	if (link_index >= 0) {
-		links.remove_at_unordered(link_index);
+	if (links.erase_unordered(p_link)) {
 		iteration_dirty = true;
 	}
 }
@@ -225,9 +221,7 @@ void NavMap2D::add_agent(NavAgent2D *p_agent) {
 
 void NavMap2D::remove_agent(NavAgent2D *p_agent) {
 	remove_agent_as_controlled(p_agent);
-	int64_t agent_index = agents.find(p_agent);
-	if (agent_index >= 0) {
-		agents.remove_at_unordered(agent_index);
+	if (agents.erase_unordered(p_agent)) {
 		agents_dirty = true;
 	}
 }
@@ -249,9 +243,7 @@ void NavMap2D::add_obstacle(NavObstacle2D *p_obstacle) {
 }
 
 void NavMap2D::remove_obstacle(NavObstacle2D *p_obstacle) {
-	int64_t obstacle_index = obstacles.find(p_obstacle);
-	if (obstacle_index >= 0) {
-		obstacles.remove_at_unordered(obstacle_index);
+	if (obstacles.erase_unordered(p_obstacle)) {
 		obstacles_dirty = true;
 	}
 }
@@ -272,9 +264,7 @@ void NavMap2D::set_agent_as_controlled(NavAgent2D *p_agent) {
 }
 
 void NavMap2D::remove_agent_as_controlled(NavAgent2D *p_agent) {
-	int64_t agent_index = active_avoidance_agents.find(p_agent);
-	if (agent_index >= 0) {
-		active_avoidance_agents.remove_at_unordered(agent_index);
+	if (active_avoidance_agents.erase_unordered(p_agent)) {
 		agents_dirty = true;
 	}
 }
