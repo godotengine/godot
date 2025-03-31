@@ -78,64 +78,6 @@ void SurfaceTool::strip_mesh_arrays(PackedVector3Array &r_vertices, PackedInt32A
 	r_indices.resize(filtered_indices_count * 3);
 }
 
-bool SurfaceTool::Vertex::operator==(const Vertex &p_vertex) const {
-	if (vertex != p_vertex.vertex) {
-		return false;
-	}
-
-	if (uv != p_vertex.uv) {
-		return false;
-	}
-
-	if (uv2 != p_vertex.uv2) {
-		return false;
-	}
-
-	if (normal != p_vertex.normal) {
-		return false;
-	}
-
-	if (binormal != p_vertex.binormal) {
-		return false;
-	}
-
-	if (tangent != p_vertex.tangent) {
-		return false;
-	}
-
-	if (color != p_vertex.color) {
-		return false;
-	}
-
-	if (bones.size() != p_vertex.bones.size()) {
-		return false;
-	}
-
-	for (int i = 0; i < bones.size(); i++) {
-		if (bones[i] != p_vertex.bones[i]) {
-			return false;
-		}
-	}
-
-	for (int i = 0; i < weights.size(); i++) {
-		if (weights[i] != p_vertex.weights[i]) {
-			return false;
-		}
-	}
-
-	for (int i = 0; i < RS::ARRAY_CUSTOM_COUNT; i++) {
-		if (custom[i] != p_vertex.custom[i]) {
-			return false;
-		}
-	}
-
-	if (smooth_group != p_vertex.smooth_group) {
-		return false;
-	}
-
-	return true;
-}
-
 uint32_t SurfaceTool::VertexHasher::hash(const Vertex &p_vtx) {
 	uint32_t h = hash_djb2_buffer((const uint8_t *)p_vtx.bones.ptr(), p_vtx.bones.size() * sizeof(int));
 	h = hash_djb2_buffer((const uint8_t *)p_vtx.weights.ptr(), p_vtx.weights.size() * sizeof(float), h);
@@ -144,18 +86,6 @@ uint32_t SurfaceTool::VertexHasher::hash(const Vertex &p_vtx) {
 	const void *key = &p_vtx.smooth_group;
 	h = hash_murmur3_buffer(key, length, h);
 	return h;
-}
-
-bool SurfaceTool::SmoothGroupVertex::operator==(const SmoothGroupVertex &p_vertex) const {
-	if (vertex != p_vertex.vertex) {
-		return false;
-	}
-
-	if (smooth_group != p_vertex.smooth_group) {
-		return false;
-	}
-
-	return true;
 }
 
 uint32_t SurfaceTool::SmoothGroupVertexHasher::hash(const SmoothGroupVertex &p_vtx) {

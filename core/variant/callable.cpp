@@ -496,10 +496,6 @@ StringName Signal::get_name() const {
 	return name;
 }
 
-bool Signal::operator==(const Signal &p_signal) const {
-	return object == p_signal.object && name == p_signal.name;
-}
-
 bool Signal::operator<(const Signal &p_signal) const {
 	if (object == p_signal.object) {
 		return name < p_signal.name;

@@ -123,7 +123,7 @@ struct [[nodiscard]] Basis {
 	bool is_same(const Basis &p_basis) const;
 	bool is_finite() const;
 
-	constexpr bool operator==(const Basis &p_matrix) const;
+	bool operator==(const Basis &p_matrix) const = default;
 
 	_FORCE_INLINE_ Vector3 xform(const Vector3 &p_vector) const;
 	_FORCE_INLINE_ Vector3 xform_inv(const Vector3 &p_vector) const;
@@ -245,18 +245,6 @@ private:
 	// Helper method.
 	void _set_diagonal(const Vector3 &p_diag);
 };
-
-constexpr bool Basis::operator==(const Basis &p_matrix) const {
-	for (int i = 0; i < 3; i++) {
-		for (int j = 0; j < 3; j++) {
-			if (rows[i][j] != p_matrix.rows[i][j]) {
-				return false;
-			}
-		}
-	}
-
-	return true;
-}
 
 _FORCE_INLINE_ void Basis::operator*=(const Basis &p_matrix) {
 	set(

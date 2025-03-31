@@ -60,7 +60,7 @@ public:
 		Vector<int> bones;
 		Vector<float> weights;
 
-		bool operator==(const Vertex &p_vertex) const;
+		bool operator==(const Vertex &p_vertex) const = default;
 
 		Vertex() {}
 	};
@@ -119,7 +119,7 @@ private:
 	struct SmoothGroupVertex {
 		Vector3 vertex;
 		uint32_t smooth_group = 0;
-		bool operator==(const SmoothGroupVertex &p_vertex) const;
+		bool operator==(const SmoothGroupVertex &p_vertex) const = default;
 
 		SmoothGroupVertex(const Vertex &p_vertex) {
 			vertex = p_vertex.vertex;

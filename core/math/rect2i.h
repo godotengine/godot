@@ -143,7 +143,7 @@ struct [[nodiscard]] Rect2i {
 		return true;
 	}
 
-	constexpr bool operator==(const Rect2i &p_rect) const { return position == p_rect.position && size == p_rect.size; }
+	bool operator==(const Rect2i &p_rect) const = default;
 
 	Rect2i grow(int p_amount) const {
 		Rect2i g = *this;

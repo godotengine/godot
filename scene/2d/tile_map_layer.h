@@ -255,13 +255,7 @@ public:
 			return physics_layer < p_other.physics_layer;
 		}
 
-		bool operator==(const PhysicsBodyKey &p_other) const {
-			return physics_layer == p_other.physics_layer &&
-					linear_velocity == p_other.linear_velocity &&
-					angular_velocity == p_other.angular_velocity &&
-					one_way_collision == p_other.one_way_collision &&
-					one_way_collision_margin == p_other.one_way_collision_margin;
-		}
+		bool operator==(const PhysicsBodyKey &p_other) const = default;
 	};
 
 	struct PhysicsBodyKeyHasher {
