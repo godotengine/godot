@@ -981,6 +981,19 @@ void Spatial::force_update_transform() {
 	notification(NOTIFICATION_TRANSFORM_CHANGED);
 }
 
+String Spatial::get_configuration_warning() const {
+	String warning = Node::get_configuration_warning();
+
+	if (is_physics_interpolated() && is_inside_tree() && get_parent() && !get_parent()->is_physics_interpolated()) {
+		if (!warning.empty()) {
+			warning += "\n\n";
+		}
+		warning += TTR("Spatials with physics_interpolation_mode ON may render incorrectly if their parent has physics_interpolation_mode OFF.");
+	}
+
+	return warning;
+}
+
 void Spatial::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_transform", "local"), &Spatial::set_transform);
 	ClassDB::bind_method(D_METHOD("get_transform"), &Spatial::get_transform);
