@@ -260,6 +260,8 @@ def configure(env: "SConsEnvironment"):
         env.Append(LINKFLAGS=["-sSIDE_MODULE=2"])
         env.Append(CCFLAGS=["-fvisibility=hidden"])
         env.Append(LINKFLAGS=["-fvisibility=hidden"])
+        env.Append(CCFLAGS=["-fwasm-exceptions"])
+        env.Append(LINKFLAGS=["-fwasm-exceptions"])
         env.extra_suffix = ".dlink" + env.extra_suffix
 
     env.Append(LINKFLAGS=["-sWASM_BIGINT"])
