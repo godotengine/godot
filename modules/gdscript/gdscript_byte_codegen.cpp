@@ -161,7 +161,7 @@ void GDScriptByteCodeGenerator::end_parameters() {
 
 void GDScriptByteCodeGenerator::write_start(GDScript *p_script, const StringName &p_function_name, bool p_static, Variant p_rpc_config, const GDScriptDataType &p_return_type) {
 	function = memnew(GDScriptFunction);
-	debug_stack = EngineDebugger::is_active();
+	debug_stack = GDScriptLanguage::get_singleton()->should_track_locals();
 
 	function->name = p_function_name;
 	function->_script = p_script;

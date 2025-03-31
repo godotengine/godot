@@ -9,6 +9,16 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="capture_script_backtraces" qualifiers="const">
+			<return type="ScriptBacktrace[]" />
+			<param index="0" name="include_variables" type="bool" default="false" />
+			<description>
+				Captures and returns backtraces from all registered script languages.
+				By default, the returned [ScriptBacktrace] will only contain stack frames in editor builds and debug builds. To enable them for release builds as well, you need to enable [member ProjectSettings.debug/settings/gdscript/always_track_call_stacks].
+				If [param include_variables] is [code]true[/code], the backtrace will also include the names and values of any global variables (e.g. autoload singletons) at the point of the capture, as well as local variables and class member variables at each stack frame. This will however will only be respected when running the game with a debugger attached, like when running the game from the editor. To enable it for export builds as well, you need to enable [member ProjectSettings.debug/settings/gdscript/always_track_local_variables].
+				[b]Warning:[/b] When [param include_variables] is [code]true[/code], any captured variables can potentially (e.g. with GDScript backtraces) be their actual values, including any object references. This means that storing such a [ScriptBacktrace] will prevent those objects from being deallocated, so it's generally recommended not to do so.
+			</description>
+		</method>
 		<method name="get_architecture_name" qualifiers="const">
 			<return type="String" />
 			<description>
