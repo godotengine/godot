@@ -167,11 +167,7 @@ public:
 		return p_segment_a + n * d; // Inside.
 	}
 
-// Disable False Positives in MSVC compiler; we correctly check for 0 here to prevent a division by 0.
-// See: https://github.com/godotengine/godot/pull/44274
-#ifdef _MSC_VER
-#pragma warning(disable : 4723)
-#endif
+	GODOT_MSVC_WARNING_PUSH_AND_IGNORE(4723) // Potential divide by 0. False positive (see: GH-44274).
 
 	static bool line_intersects_line(const Vector2 &p_from_a, const Vector2 &p_dir_a, const Vector2 &p_from_b, const Vector2 &p_dir_b, Vector2 &r_result) {
 		// See http://paulbourke.net/geometry/pointlineplane/
@@ -187,10 +183,7 @@ public:
 		return true;
 	}
 
-// Re-enable division by 0 warning
-#ifdef _MSC_VER
-#pragma warning(default : 4723)
-#endif
+	GODOT_MSVC_WARNING_POP
 
 	static bool segment_intersects_segment(const Vector2 &p_from_a, const Vector2 &p_to_a, const Vector2 &p_from_b, const Vector2 &p_to_b, Vector2 *r_result) {
 		Vector2 B = p_to_a - p_from_a;

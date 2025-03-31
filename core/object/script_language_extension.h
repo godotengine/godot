@@ -711,11 +711,7 @@ public:
 
 	GDExtensionScriptInstanceDataPtr instance = nullptr;
 
-// There should not be warnings on explicit casts.
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wignored-qualifiers"
-#endif
+	GODOT_GCC_WARNING_PUSH_AND_IGNORE("-Wignored-qualifiers") // There should not be warnings on explicit casts.
 
 	virtual bool set(const StringName &p_name, const Variant &p_value) override {
 		if (native_info->set_func) {
@@ -963,7 +959,5 @@ public:
 #endif // DISABLE_DEPRECATED
 	}
 
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic pop
-#endif
+	GODOT_GCC_WARNING_POP
 };
