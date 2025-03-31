@@ -92,7 +92,7 @@ String cwd() {
 		return ".";
 	}
 
-	String result = String::utf16((buffer.ptr());
+	String result = String::utf16(buffer.ptr());
 	if (result.is_empty()) {
 		return ".";
 	}
