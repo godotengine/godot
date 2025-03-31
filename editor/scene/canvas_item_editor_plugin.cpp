@@ -3807,14 +3807,8 @@ void CanvasItemEditor::_draw_selection() {
 				xform.xform(rect.position + Vector2(0, rect.size.y))
 			};
 
-			Color c = Color(1, 0.6, 0.4, 0.7);
-
-			if (item_locked) {
-				c = Color(0.7, 0.7, 0.7, 0.7);
-			}
-
 			for (int i = 0; i < 4; i++) {
-				viewport->draw_line(endpoints[i], endpoints[(i + 1) % 4], c, Math::round(2 * EDSCALE));
+				viewport->draw_line(endpoints[i], endpoints[(i + 1) % 4], item_locked ? locked_selection_rectangle_color : selection_rectangle_color, Math::round(2 * EDSCALE));
 			}
 		} else {
 			Transform2D unscaled_transform = (xform * ci->get_transform().affine_inverse() * ci->_edit_get_transform()).orthonormalized();
@@ -4347,6 +4341,9 @@ void CanvasItemEditor::_update_editor_settings() {
 	const Color key_auto_color = EditorThemeManager::is_dark_icon_and_font() ? Color(1, 1, 1) : Color(4.25, 4.25, 4.25);
 	key_auto_insert_button->add_theme_color_override("icon_pressed_color", key_auto_color.lerp(Color(1, 0, 0), 0.55));
 	animation_menu->set_button_icon(get_editor_theme_icon(SNAME("GuiTabMenuHl")));
+
+	selection_rectangle_color = EDITOR_GET("editors/2d/selection_rectangle_color");
+	locked_selection_rectangle_color = EDITOR_GET("editors/2d/locked_selection_rectangle_color");
 
 	context_toolbar_panel->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SNAME("ContextualToolbar"), EditorStringName(EditorStyles)));
 
