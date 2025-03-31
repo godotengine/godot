@@ -321,15 +321,11 @@ TEST_CASE("[Expression] Boolean expressions") {
 TEST_CASE("[Expression] Expressions with variables") {
 	Expression expression;
 
-	PackedStringArray parameter_names;
-	parameter_names.push_back("foo");
-	parameter_names.push_back("bar");
+	PackedStringArray parameter_names = { "foo", "bar" };
 	CHECK_MESSAGE(
 			expression.parse("foo + bar + 50", parameter_names) == OK,
 			"The expression should parse successfully.");
-	Array values;
-	values.push_back(60);
-	values.push_back(20);
+	Array values = { 60, 20 };
 	CHECK_MESSAGE(
 			int(expression.execute(values)) == 130,
 			"The expression should return the expected value.");
@@ -340,9 +336,7 @@ TEST_CASE("[Expression] Expressions with variables") {
 	CHECK_MESSAGE(
 			expression.parse("foo + bar + 50", parameter_names_invalid) == OK,
 			"The expression should parse successfully.");
-	Array values_invalid;
-	values_invalid.push_back(60);
-	values_invalid.push_back(20);
+	Array values_invalid = { 60, 20 };
 	// Invalid parameters will parse successfully but print an error message when executing.
 	ERR_PRINT_OFF;
 	CHECK_MESSAGE(
@@ -351,31 +345,21 @@ TEST_CASE("[Expression] Expressions with variables") {
 	ERR_PRINT_ON;
 
 	// Mismatched argument count (more values than parameters).
-	PackedStringArray parameter_names_mismatch;
-	parameter_names_mismatch.push_back("foo");
-	parameter_names_mismatch.push_back("bar");
+	PackedStringArray parameter_names_mismatch = { "foo", "bar" };
 	CHECK_MESSAGE(
 			expression.parse("foo + bar + 50", parameter_names_mismatch) == OK,
 			"The expression should parse successfully.");
-	Array values_mismatch;
-	values_mismatch.push_back(60);
-	values_mismatch.push_back(20);
-	values_mismatch.push_back(110);
+	Array values_mismatch = { 60, 20, 110 };
 	CHECK_MESSAGE(
 			int(expression.execute(values_mismatch)) == 130,
 			"The expression should return the expected value.");
 
 	// Mismatched argument count (more parameters than values).
-	PackedStringArray parameter_names_mismatch2;
-	parameter_names_mismatch2.push_back("foo");
-	parameter_names_mismatch2.push_back("bar");
-	parameter_names_mismatch2.push_back("baz");
+	PackedStringArray parameter_names_mismatch2 = { "foo", "bar", "baz" };
 	CHECK_MESSAGE(
 			expression.parse("foo + bar + baz + 50", parameter_names_mismatch2) == OK,
 			"The expression should parse successfully.");
-	Array values_mismatch2;
-	values_mismatch2.push_back(60);
-	values_mismatch2.push_back(20);
+	Array values_mismatch2 = { 60, 20 };
 	// Having more parameters than values will parse successfully but print an
 	// error message when executing.
 	ERR_PRINT_OFF;

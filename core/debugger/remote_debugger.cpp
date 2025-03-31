@@ -95,10 +95,7 @@ public:
 };
 
 Error RemoteDebugger::_put_msg(const String &p_message, const Array &p_data) {
-	Array msg;
-	msg.push_back(p_message);
-	msg.push_back(Thread::get_caller_id());
-	msg.push_back(p_data);
+	Array msg = { p_message, Thread::get_caller_id(), p_data };
 	Error err = peer->put_message(msg);
 	if (err != OK) {
 		n_messages_dropped++;
@@ -235,9 +232,7 @@ void RemoteDebugger::flush_output() {
 			types.push_back(MESSAGE_TYPE_LOG);
 		}
 
-		Array arr;
-		arr.push_back(strings);
-		arr.push_back(types);
+		Array arr = { strings, types };
 		_put_msg("output", arr);
 		output_strings.clear();
 	}
@@ -418,11 +413,12 @@ void RemoteDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 	const String error_str = script_lang ? script_lang->debug_get_error() : "";
 
 	if (can_break) {
-		Array msg;
-		msg.push_back(p_can_continue);
-		msg.push_back(error_str);
-		msg.push_back(script_lang->debug_get_stack_level_count() > 0);
-		msg.push_back(Thread::get_caller_id());
+		Array msg = {
+			p_can_continue,
+			error_str,
+			script_lang->debug_get_stack_level_count() > 0,
+			Thread::get_caller_id()
+		};
 		if (allow_focus_steal_fn) {
 			allow_focus_steal_fn();
 		}
@@ -514,8 +510,7 @@ void RemoteDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 				script_lang->debug_get_globals(&globals, &globals_vals);
 				ERR_FAIL_COND(globals.size() != globals_vals.size());
 
-				Array var_size;
-				var_size.push_back(local_vals.size() + member_vals.size() + globals_vals.size());
+				Array var_size = { local_vals.size() + member_vals.size() + globals_vals.size() };
 				send_message("stack_frame_vars", var_size);
 				_send_stack_vars(locals, local_vals, 0);
 				_send_stack_vars(members, member_vals, 1);

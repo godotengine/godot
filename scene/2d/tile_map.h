@@ -207,10 +207,12 @@ public:
 	virtual void set_texture_filter(CanvasItem::TextureFilter p_texture_filter) override;
 	virtual void set_texture_repeat(CanvasItem::TextureRepeat p_texture_repeat) override;
 
+#ifndef PHYSICS_2D_DISABLED
 	// For finding tiles from collision.
 	Vector2i get_coords_for_body_rid(RID p_physics_body);
 	// For getting their layers as well.
 	int get_layer_for_body_rid(RID p_physics_body);
+#endif // PHYSICS_2D_DISABLED
 
 	// Fixing and clearing methods.
 	void fix_invalid_tiles();

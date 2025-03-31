@@ -161,7 +161,7 @@ Error ImageLoaderSVG::load_image(Ref<Image> p_image, Ref<FileAccess> p_fileacces
 	p_fileaccess->get_buffer(buffer.ptrw(), buffer.size());
 
 	String svg;
-	Error err = svg.parse_utf8((const char *)buffer.ptr(), buffer.size());
+	Error err = svg.append_utf8((const char *)buffer.ptr(), buffer.size());
 	if (err != OK) {
 		return err;
 	}

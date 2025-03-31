@@ -59,36 +59,12 @@ int main(int argc, char **argv) {
 		}
 	}
 
-	OS_MacOS os;
-	Error err;
+	OS_MacOS os(argv[0], argc - first_arg, &argv[first_arg]);
 
 	// We must override main when testing is enabled.
 	TEST_MAIN_OVERRIDE
 
-	@autoreleasepool {
-		err = Main::setup(argv[0], argc - first_arg, &argv[first_arg]);
-	}
-
-	if (err != OK) {
-		if (err == ERR_HELP) { // Returned by --help and --version, so success.
-			return EXIT_SUCCESS;
-		}
-		return EXIT_FAILURE;
-	}
-
-	int ret;
-	@autoreleasepool {
-		ret = Main::start();
-	}
-	if (ret == EXIT_SUCCESS) {
-		os.run();
-	} else {
-		os.set_exit_code(EXIT_FAILURE);
-	}
-
-	@autoreleasepool {
-		Main::cleanup();
-	}
+	os.run(); // Note: This function will never return.
 
 	return os.get_exit_code();
 }

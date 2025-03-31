@@ -780,9 +780,7 @@ bool EditorProperty::use_keying_next() const {
 	List<PropertyInfo> plist;
 	object->get_property_list(&plist, true);
 
-	for (List<PropertyInfo>::Element *I = plist.front(); I; I = I->next()) {
-		PropertyInfo &p = I->get();
-
+	for (const PropertyInfo &p : plist) {
 		if (p.name == property) {
 			return (p.usage & PROPERTY_USAGE_KEYING_INCREMENTS);
 		}
@@ -1950,6 +1948,12 @@ void EditorInspectorSection::fold() {
 void EditorInspectorSection::set_bg_color(const Color &p_bg_color) {
 	bg_color = p_bg_color;
 	queue_redraw();
+}
+
+void EditorInspectorSection::reset_timer() {
+	if (dropping_for_unfold && !dropping_unfold_timer->is_stopped()) {
+		dropping_unfold_timer->start();
+	}
 }
 
 bool EditorInspectorSection::has_revertable_properties() const {
@@ -3493,6 +3497,7 @@ void EditorInspector::update_tree() {
 			if (!vbox_per_path[root_vbox].has(acc_path)) {
 				// If the section does not exists, create it.
 				EditorInspectorSection *section = memnew(EditorInspectorSection);
+				get_root_inspector()->get_v_scroll_bar()->connect(SceneStringName(value_changed), callable_mp(section, &EditorInspectorSection::reset_timer).unbind(1));
 				current_vbox->add_child(section);
 				sections.push_back(section);
 
@@ -3893,6 +3898,7 @@ void EditorInspector::update_tree() {
 				}
 
 				EditorInspectorSection *section = memnew(EditorInspectorSection);
+				get_root_inspector()->get_v_scroll_bar()->connect(SceneStringName(value_changed), callable_mp(section, &EditorInspectorSection::reset_timer).unbind(1));
 				favorites_groups_vbox->add_child(section);
 				parent_vbox = section->get_vbox();
 				section->setup("", section_name, object, sscolor, false);
@@ -3912,6 +3918,7 @@ void EditorInspector::update_tree() {
 					}
 
 					EditorInspectorSection *section = memnew(EditorInspectorSection);
+					get_root_inspector()->get_v_scroll_bar()->connect(SceneStringName(value_changed), callable_mp(section, &EditorInspectorSection::reset_timer).unbind(1));
 					vbox->add_child(section);
 					vbox = section->get_vbox();
 					section->setup("", section_name, object, sscolor, false);
@@ -4750,6 +4757,12 @@ void EditorInspector::_clear_current_favorites() {
 
 void EditorInspector::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_TRANSLATION_CHANGED: {
+			if (property_name_style == EditorPropertyNameProcessor::STYLE_LOCALIZED) {
+				update_tree_pending = true;
+			}
+		} break;
+
 		case NOTIFICATION_THEME_CHANGED: {
 			favorites_category->icon = get_editor_theme_icon(SNAME("Favorites"));
 
@@ -4830,7 +4843,6 @@ void EditorInspector::_notification(int p_what) {
 		} break;
 
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
-			bool needs_update = false;
 			if (!is_sub_inspector() && EditorThemeManager::is_generated_theme_outdated()) {
 				add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SceneStringName(panel), SNAME("Tree")));
 			}
@@ -4839,16 +4851,12 @@ void EditorInspector::_notification(int p_what) {
 				EditorPropertyNameProcessor::Style style = EditorPropertyNameProcessor::get_settings_style();
 				if (property_name_style != style) {
 					property_name_style = style;
-					needs_update = true;
+					update_tree_pending = true;
 				}
 			}
 
 			if (EditorSettings::get_singleton()->check_changed_settings_in_group("interface/inspector")) {
-				needs_update = true;
-			}
-
-			if (needs_update) {
-				update_tree();
+				update_tree_pending = true;
 			}
 		} break;
 	}
@@ -5034,4 +5042,5 @@ EditorInspector::EditorInspector() {
 	set_property_name_style(EditorPropertyNameProcessor::get_singleton()->get_settings_style());
 
 	set_draw_focus_border(true);
+	set_scroll_on_drag_hover(true);
 }

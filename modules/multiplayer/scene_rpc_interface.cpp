@@ -54,10 +54,7 @@
 #ifdef DEBUG_ENABLED
 _FORCE_INLINE_ void SceneRPCInterface::_profile_node_data(const String &p_what, ObjectID p_id, int p_size) {
 	if (EngineDebugger::is_profiling("multiplayer:rpc")) {
-		Array values;
-		values.push_back(p_what);
-		values.push_back(p_id);
-		values.push_back(p_size);
+		Array values = { p_what, p_id, p_size };
 		EngineDebugger::profiler_add_frame_data("multiplayer:rpc", values);
 	}
 }
@@ -139,7 +136,7 @@ Node *SceneRPCInterface::_process_get_node(int p_from, const uint8_t *p_packet, 
 		ERR_FAIL_COND_V_MSG(ofs >= p_packet_len, nullptr, "Invalid packet received. Size smaller than declared.");
 
 		String paths;
-		paths.parse_utf8((const char *)&p_packet[ofs], p_packet_len - ofs);
+		paths.append_utf8((const char *)&p_packet[ofs], p_packet_len - ofs);
 
 		NodePath np = paths;
 

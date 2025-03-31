@@ -504,10 +504,10 @@ String TranslationServer::get_tool_locale() {
 #ifdef TOOLS_ENABLED
 	if (Engine::get_singleton()->is_editor_hint() || Engine::get_singleton()->is_project_manager_hint()) {
 		const PackedStringArray &locales = editor_domain->get_loaded_locales();
-		if (locales.is_empty()) {
-			return "en";
+		if (locales.has(locale)) {
+			return locale;
 		}
-		return locales[0];
+		return "en";
 	} else {
 #else
 	{

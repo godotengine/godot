@@ -664,201 +664,96 @@ Variant JSON::_from_native(const Variant &p_variant, bool p_full_objects, int p_
 
 		case Variant::VECTOR2: {
 			const Vector2 v = p_variant;
-
-			Array args;
-			args.push_back(v.x);
-			args.push_back(v.y);
-
+			Array args = { v.x, v.y };
 			RETURN_ARGS;
 		} break;
 		case Variant::VECTOR2I: {
 			const Vector2i v = p_variant;
-
-			Array args;
-			args.push_back(v.x);
-			args.push_back(v.y);
-
+			Array args = { v.x, v.y };
 			RETURN_ARGS;
 		} break;
 		case Variant::RECT2: {
 			const Rect2 r = p_variant;
-
-			Array args;
-			args.push_back(r.position.x);
-			args.push_back(r.position.y);
-			args.push_back(r.size.width);
-			args.push_back(r.size.height);
-
+			Array args = { r.position.x, r.position.y, r.size.width, r.size.height };
 			RETURN_ARGS;
 		} break;
 		case Variant::RECT2I: {
 			const Rect2i r = p_variant;
-
-			Array args;
-			args.push_back(r.position.x);
-			args.push_back(r.position.y);
-			args.push_back(r.size.width);
-			args.push_back(r.size.height);
-
+			Array args = { r.position.x, r.position.y, r.size.width, r.size.height };
 			RETURN_ARGS;
 		} break;
 		case Variant::VECTOR3: {
 			const Vector3 v = p_variant;
-
-			Array args;
-			args.push_back(v.x);
-			args.push_back(v.y);
-			args.push_back(v.z);
-
+			Array args = { v.x, v.y, v.z };
 			RETURN_ARGS;
 		} break;
 		case Variant::VECTOR3I: {
 			const Vector3i v = p_variant;
-
-			Array args;
-			args.push_back(v.x);
-			args.push_back(v.y);
-			args.push_back(v.z);
-
+			Array args = { v.x, v.y, v.z };
 			RETURN_ARGS;
 		} break;
 		case Variant::TRANSFORM2D: {
 			const Transform2D t = p_variant;
-
-			Array args;
-			args.push_back(t[0].x);
-			args.push_back(t[0].y);
-			args.push_back(t[1].x);
-			args.push_back(t[1].y);
-			args.push_back(t[2].x);
-			args.push_back(t[2].y);
-
+			Array args = { t[0].x, t[0].y, t[1].x, t[1].y, t[2].x, t[2].y };
 			RETURN_ARGS;
 		} break;
 		case Variant::VECTOR4: {
 			const Vector4 v = p_variant;
-
-			Array args;
-			args.push_back(v.x);
-			args.push_back(v.y);
-			args.push_back(v.z);
-			args.push_back(v.w);
-
+			Array args = { v.x, v.y, v.z, v.w };
 			RETURN_ARGS;
 		} break;
 		case Variant::VECTOR4I: {
 			const Vector4i v = p_variant;
-
-			Array args;
-			args.push_back(v.x);
-			args.push_back(v.y);
-			args.push_back(v.z);
-			args.push_back(v.w);
-
+			Array args = { v.x, v.y, v.z, v.w };
 			RETURN_ARGS;
 		} break;
 		case Variant::PLANE: {
 			const Plane p = p_variant;
-
-			Array args;
-			args.push_back(p.normal.x);
-			args.push_back(p.normal.y);
-			args.push_back(p.normal.z);
-			args.push_back(p.d);
-
+			Array args = { p.normal.x, p.normal.y, p.normal.z, p.d };
 			RETURN_ARGS;
 		} break;
 		case Variant::QUATERNION: {
 			const Quaternion q = p_variant;
-
-			Array args;
-			args.push_back(q.x);
-			args.push_back(q.y);
-			args.push_back(q.z);
-			args.push_back(q.w);
-
+			Array args = { q.x, q.y, q.z, q.w };
 			RETURN_ARGS;
 		} break;
 		case Variant::AABB: {
 			const AABB aabb = p_variant;
-
-			Array args;
-			args.push_back(aabb.position.x);
-			args.push_back(aabb.position.y);
-			args.push_back(aabb.position.z);
-			args.push_back(aabb.size.x);
-			args.push_back(aabb.size.y);
-			args.push_back(aabb.size.z);
-
+			Array args = { aabb.position.x, aabb.position.y, aabb.position.z, aabb.size.x, aabb.size.y, aabb.size.z };
 			RETURN_ARGS;
 		} break;
 		case Variant::BASIS: {
 			const Basis b = p_variant;
 
-			Array args;
-			args.push_back(b.get_column(0).x);
-			args.push_back(b.get_column(0).y);
-			args.push_back(b.get_column(0).z);
-			args.push_back(b.get_column(1).x);
-			args.push_back(b.get_column(1).y);
-			args.push_back(b.get_column(1).z);
-			args.push_back(b.get_column(2).x);
-			args.push_back(b.get_column(2).y);
-			args.push_back(b.get_column(2).z);
+			Array args = { b.get_column(0).x, b.get_column(0).y, b.get_column(0).z,
+				b.get_column(1).x, b.get_column(1).y, b.get_column(1).z,
+				b.get_column(2).x, b.get_column(2).y, b.get_column(2).z };
 
 			RETURN_ARGS;
 		} break;
 		case Variant::TRANSFORM3D: {
 			const Transform3D t = p_variant;
 
-			Array args;
-			args.push_back(t.basis.get_column(0).x);
-			args.push_back(t.basis.get_column(0).y);
-			args.push_back(t.basis.get_column(0).z);
-			args.push_back(t.basis.get_column(1).x);
-			args.push_back(t.basis.get_column(1).y);
-			args.push_back(t.basis.get_column(1).z);
-			args.push_back(t.basis.get_column(2).x);
-			args.push_back(t.basis.get_column(2).y);
-			args.push_back(t.basis.get_column(2).z);
-			args.push_back(t.origin.x);
-			args.push_back(t.origin.y);
-			args.push_back(t.origin.z);
+			Array args = { t.basis.get_column(0).x, t.basis.get_column(0).y, t.basis.get_column(0).z,
+				t.basis.get_column(1).x, t.basis.get_column(1).y, t.basis.get_column(1).z,
+				t.basis.get_column(2).x, t.basis.get_column(2).y, t.basis.get_column(2).z,
+				t.origin.x, t.origin.y, t.origin.z };
 
 			RETURN_ARGS;
 		} break;
 		case Variant::PROJECTION: {
 			const Projection p = p_variant;
 
-			Array args;
-			args.push_back(p[0].x);
-			args.push_back(p[0].y);
-			args.push_back(p[0].z);
-			args.push_back(p[0].w);
-			args.push_back(p[1].x);
-			args.push_back(p[1].y);
-			args.push_back(p[1].z);
-			args.push_back(p[1].w);
-			args.push_back(p[2].x);
-			args.push_back(p[2].y);
-			args.push_back(p[2].z);
-			args.push_back(p[2].w);
-			args.push_back(p[3].x);
-			args.push_back(p[3].y);
-			args.push_back(p[3].z);
-			args.push_back(p[3].w);
+			Array args = { p[0].x, p[0].y, p[0].z, p[0].w,
+				p[1].x, p[1].y, p[1].z, p[1].w,
+				p[2].x, p[2].y, p[2].z, p[2].w,
+				p[3].x, p[3].y, p[3].z, p[3].w };
 
 			RETURN_ARGS;
 		} break;
 		case Variant::COLOR: {
 			const Color c = p_variant;
-
-			Array args;
-			args.push_back(c.r);
-			args.push_back(c.g);
-			args.push_back(c.b);
-			args.push_back(c.a);
-
+			Array args = { c.r, c.g, c.b, c.a };
 			RETURN_ARGS;
 		} break;
 

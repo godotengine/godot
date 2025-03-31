@@ -1219,7 +1219,7 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 	{
 		int datalen = p_data.size();
 		const uint8_t *r = p_data.ptr();
-		str.parse_utf8((const char *)r, datalen);
+		str.append_utf8((const char *)r, datalen);
 	}
 
 	bool error_abort = true;

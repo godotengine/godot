@@ -148,9 +148,7 @@ TEST_CASE("[SceneTree][ArrayMesh] Adding and modifying blendshapes.") {
 		blend_shape[Mesh::ARRAY_VERTEX] = cylinder_array[Mesh::ARRAY_VERTEX];
 		blend_shape[Mesh::ARRAY_NORMAL] = cylinder_array[Mesh::ARRAY_NORMAL];
 		blend_shape[Mesh::ARRAY_TANGENT] = cylinder_array[Mesh::ARRAY_TANGENT];
-		Array blend_shapes;
-		blend_shapes.push_back(blend_shape);
-		blend_shapes.push_back(blend_shape);
+		Array blend_shapes = { blend_shape, blend_shape };
 		mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, cylinder_array, blend_shapes);
 		mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, cylinder_array, blend_shapes);
 
@@ -188,9 +186,7 @@ TEST_CASE("[SceneTree][ArrayMesh] Adding and modifying blendshapes.") {
 		blend_shape[Mesh::ARRAY_VERTEX] = cylinder_array[Mesh::ARRAY_VERTEX];
 		blend_shape[Mesh::ARRAY_NORMAL] = cylinder_array[Mesh::ARRAY_NORMAL];
 		blend_shape[Mesh::ARRAY_TANGENT] = cylinder_array[Mesh::ARRAY_TANGENT];
-		Array blend_shapes;
-		blend_shapes.push_back(blend_shape);
-		blend_shapes.push_back(blend_shape);
+		Array blend_shapes = { blend_shape, blend_shape };
 		mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, cylinder_array, blend_shapes);
 
 		ERR_PRINT_OFF

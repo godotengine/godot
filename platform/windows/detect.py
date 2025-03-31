@@ -148,7 +148,9 @@ def detect_build_env_arch():
 
 
 def get_tools(env: "SConsEnvironment"):
-    if os.name != "nt" or env.get("use_mingw"):
+    from SCons.Tool.MSCommon import msvc_exists
+
+    if os.name != "nt" or env.get("use_mingw") or not msvc_exists():
         return ["mingw"]
     else:
         msvc_arch_aliases = {"x86_32": "x86", "arm32": "arm"}

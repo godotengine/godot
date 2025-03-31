@@ -64,7 +64,7 @@ public:
 		}
 
 		if constexpr (!std::is_trivially_constructible_v<T> && !force_trivial) {
-			memnew_placement(&data[count++], T(p_elem));
+			memnew_placement(&data[count++], T(std::move(p_elem)));
 		} else {
 			data[count++] = std::move(p_elem);
 		}
