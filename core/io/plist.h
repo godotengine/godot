@@ -83,6 +83,8 @@ public:
 /*************************************************************************/
 
 class PListNode : public RefCounted {
+	GDSOFTCLASS(PListNode, RefCounted);
+
 	static int _asn1_size_len(uint8_t p_len_octets);
 
 public:

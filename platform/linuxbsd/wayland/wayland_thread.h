@@ -88,6 +88,8 @@ class WaylandThread {
 public:
 	// Messages used for exchanging information between Godot's and Wayland's thread.
 	class Message : public RefCounted {
+		GDSOFTCLASS(Message, RefCounted);
+
 	public:
 		Message() {}
 		virtual ~Message() = default;
@@ -95,6 +97,8 @@ public:
 
 	// Message data for window rect changes.
 	class WindowRectMessage : public Message {
+		GDSOFTCLASS(WindowRectMessage, Message);
+
 	public:
 		// NOTE: This is in "scaled" terms. For example, if there's a 1920x1080 rect
 		// with a scale factor of 2, the actual value of `rect` will be 3840x2160.
@@ -102,27 +106,37 @@ public:
 	};
 
 	class WindowEventMessage : public Message {
+		GDSOFTCLASS(WindowEventMessage, Message);
+
 	public:
 		DisplayServer::WindowEvent event;
 	};
 
 	class InputEventMessage : public Message {
+		GDSOFTCLASS(InputEventMessage, Message);
+
 	public:
 		Ref<InputEvent> event;
 	};
 
 	class DropFilesEventMessage : public Message {
+		GDSOFTCLASS(DropFilesEventMessage, Message);
+
 	public:
 		Vector<String> files;
 	};
 
 	class IMEUpdateEventMessage : public Message {
+		GDSOFTCLASS(IMEUpdateEventMessage, Message);
+
 	public:
 		String text;
 		Vector2i selection;
 	};
 
 	class IMECommitEventMessage : public Message {
+		GDSOFTCLASS(IMECommitEventMessage, Message);
+
 	public:
 		String text;
 	};

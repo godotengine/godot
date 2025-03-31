@@ -37,6 +37,8 @@
 #include "core/os/shared_object.h"
 
 class GDExtensionLibraryLoader : public GDExtensionLoader {
+	GDSOFTCLASS(GDExtensionLibraryLoader, GDExtensionLoader);
+
 	friend class GDExtensionManager;
 	friend class GDExtension;
 
