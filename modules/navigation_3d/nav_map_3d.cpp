@@ -614,11 +614,9 @@ void NavMap3D::compute_single_avoidance_step_3d(uint32_t index, NavAgent3D **age
 	(*(agent + index))->update();
 }
 
-void NavMap3D::step(real_t p_deltatime) {
-	deltatime = p_deltatime;
-
-	rvo_simulation_2d.setTimeStep(float(deltatime));
-	rvo_simulation_3d.setTimeStep(float(deltatime));
+void NavMap3D::step(double p_delta_time) {
+	rvo_simulation_2d.setTimeStep(float(p_delta_time));
+	rvo_simulation_3d.setTimeStep(float(p_delta_time));
 
 	if (active_2d_avoidance_agents.size() > 0) {
 		if (use_threads && avoidance_use_multiple_threads) {

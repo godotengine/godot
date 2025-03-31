@@ -99,9 +99,6 @@ class NavMap3D : public NavRid3D {
 	/// Are rvo obstacles modified?
 	bool obstacles_dirty = true;
 
-	/// Physics delta time
-	real_t deltatime = 0.0;
-
 	/// Change the id each time the map is updated.
 	uint32_t iteration_id = 0;
 
@@ -221,7 +218,7 @@ public:
 	Vector3 get_random_point(uint32_t p_navigation_layers, bool p_uniformly) const;
 
 	void sync();
-	void step(real_t p_deltatime);
+	void step(double p_delta_time);
 	void dispatch_callbacks();
 
 	// Performance Monitor
