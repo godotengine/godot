@@ -179,7 +179,7 @@ void QuickSettingsDialog::_add_setting_control(const String &p_text, Control *p_
 #ifndef ANDROID_ENABLED
 void QuickSettingsDialog::_language_selected(int p_id) {
 	const String selected_language = language_option_button->get_item_metadata(p_id);
-	_set_setting_value("interface/editor/editor_language", selected_language, true);
+	_set_setting_value("interface/editor/editor_language", selected_language);
 }
 #endif
 
@@ -222,7 +222,7 @@ void QuickSettingsDialog::_set_setting_value(const String &p_setting, const Vari
 			if (ed_swap_cancel_ok == 0) {
 				ed_swap_cancel_ok = DisplayServer::get_singleton()->get_swap_cancel_ok() ? 2 : 1;
 			}
-			restart_required_button = add_button(TTR("Restart Now"), ed_swap_cancel_ok != 2);
+			restart_required_button = add_button(TTRC("Restart Now"), ed_swap_cancel_ok != 2);
 			restart_required_button->connect(SceneStringName(pressed), callable_mp(this, &QuickSettingsDialog::_request_restart));
 		}
 	}
@@ -260,8 +260,8 @@ void QuickSettingsDialog::_bind_methods() {
 }
 
 QuickSettingsDialog::QuickSettingsDialog() {
-	set_title(TTR("Quick Settings"));
-	set_ok_button_text(TTR("Close"));
+	set_title(TTRC("Quick Settings"));
+	set_ok_button_text(TTRC("Close"));
 
 	VBoxContainer *main_vbox = memnew(VBoxContainer);
 	add_child(main_vbox);
@@ -291,7 +291,7 @@ QuickSettingsDialog::QuickSettingsDialog() {
 				language_option_button->set_item_metadata(i, lang_value);
 			}
 
-			_add_setting_control(TTR("Language"), language_option_button);
+			_add_setting_control(TTRC("Language"), language_option_button);
 		}
 #endif
 
@@ -306,9 +306,9 @@ QuickSettingsDialog::QuickSettingsDialog() {
 				theme_option_button->add_item(theme_value, i);
 			}
 
-			_add_setting_control(TTR("Interface Theme"), theme_option_button);
+			_add_setting_control(TTRC("Interface Theme"), theme_option_button);
 
-			custom_theme_label = memnew(Label(TTR("Custom preset can be further configured in the editor.")));
+			custom_theme_label = memnew(Label(TTRC("Custom preset can be further configured in the editor.")));
 			custom_theme_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_RIGHT);
 			custom_theme_label->set_custom_minimum_size(Size2(220, 0) * EDSCALE);
 			custom_theme_label->set_autowrap_mode(TextServer::AUTOWRAP_WORD);
@@ -329,7 +329,7 @@ QuickSettingsDialog::QuickSettingsDialog() {
 				scale_option_button->add_item(scale_value, i);
 			}
 
-			_add_setting_control(TTR("Display Scale"), scale_option_button);
+			_add_setting_control(TTRC("Display Scale"), scale_option_button);
 		}
 
 		// Network mode options.
@@ -343,7 +343,7 @@ QuickSettingsDialog::QuickSettingsDialog() {
 				network_mode_option_button->add_item(network_mode_value, i);
 			}
 
-			_add_setting_control(TTR("Network Mode"), network_mode_option_button);
+			_add_setting_control(TTRC("Network Mode"), network_mode_option_button);
 		}
 
 		// Engine version update mode options.
@@ -357,7 +357,7 @@ QuickSettingsDialog::QuickSettingsDialog() {
 				engine_version_update_mode_button->add_item(engine_version_update_mode_value, i);
 			}
 
-			_add_setting_control(TTR("Engine Version Update Mode"), engine_version_update_mode_button);
+			_add_setting_control(TTRC("Engine Version Update Mode"), engine_version_update_mode_button);
 		}
 
 		// Project directory naming options.
@@ -371,7 +371,7 @@ QuickSettingsDialog::QuickSettingsDialog() {
 				directory_naming_convention_button->add_item(directory_naming_convention, i);
 			}
 
-			_add_setting_control(TTR("Directory Naming Convention"), directory_naming_convention_button);
+			_add_setting_control(TTRC("Directory Naming Convention"), directory_naming_convention_button);
 		}
 
 		_update_current_values();
@@ -379,7 +379,7 @@ QuickSettingsDialog::QuickSettingsDialog() {
 
 	// Restart required panel.
 	{
-		restart_required_label = memnew(Label(TTR("Settings changed! The project manager must be restarted for changes to take effect.")));
+		restart_required_label = memnew(Label(TTRC("Settings changed! The project manager must be restarted for changes to take effect.")));
 		restart_required_label->set_custom_minimum_size(Size2(560, 0) * EDSCALE);
 		restart_required_label->set_autowrap_mode(TextServer::AUTOWRAP_WORD);
 		restart_required_label->set_h_size_flags(Control::SIZE_EXPAND_FILL);

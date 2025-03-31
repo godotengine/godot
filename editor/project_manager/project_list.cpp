@@ -293,11 +293,11 @@ void ProjectListItemControl::set_is_missing(bool p_missing) {
 		project_icon->set_modulate(Color(1, 1, 1, 0.5));
 
 		explore_button->set_button_icon(get_editor_theme_icon(SNAME("FileBroken")));
-		explore_button->set_tooltip_text(TTR("Error: Project is missing on the filesystem."));
+		explore_button->set_tooltip_text(TTRC("Error: Project is missing on the filesystem."));
 	} else {
 #if !defined(ANDROID_ENABLED) && !defined(WEB_ENABLED)
 		explore_button->set_button_icon(get_editor_theme_icon(SNAME("Load")));
-		explore_button->set_tooltip_text(TTR("Show in File Manager"));
+		explore_button->set_tooltip_text(TTRC("Show in File Manager"));
 #else
 		// Opening the system file manager is not supported on the Android and web editors.
 		explore_button->hide();
@@ -407,7 +407,7 @@ ProjectListItemControl::ProjectListItemControl() {
 		last_edited_info = memnew(Label);
 		last_edited_info->set_name("LastEditedInfo");
 		last_edited_info->set_mouse_filter(Control::MOUSE_FILTER_PASS);
-		last_edited_info->set_tooltip_text(TTR("Last edited timestamp"));
+		last_edited_info->set_tooltip_text(TTRC("Last edited timestamp"));
 		last_edited_info->set_modulate(Color(1, 1, 1, 0.5));
 		path_hb->add_child(last_edited_info);
 
@@ -451,6 +451,13 @@ bool ProjectList::project_feature_looks_like_version(const String &p_feature) {
 
 void ProjectList::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_TRANSLATION_CHANGED: {
+			if (is_ready()) {
+				// FIXME: Technically this only needs to update some dynamic texts, not the whole list.
+				update_project_list();
+			}
+		} break;
+
 		case NOTIFICATION_PROCESS: {
 			// Load icons as a coroutine to speed up launch when you have hundreds of projects.
 			if (_icon_load_index < _projects.size()) {
@@ -626,7 +633,7 @@ ProjectList::Item ProjectList::load_project_data(const String &p_path, bool p_fa
 			unsupported_features.push_back("3.x");
 			project_version = "3.x";
 		} else {
-			unsupported_features.push_back("Unknown version");
+			unsupported_features.push_back(TTR("Unknown version"));
 		}
 	}
 
@@ -647,7 +654,6 @@ ProjectList::Item ProjectList::load_project_data(const String &p_path, bool p_fa
 	} else {
 		grayed = true;
 		missing = true;
-		print_line("Project is missing: " + conf);
 	}
 
 	for (const String &tag : tags) {
@@ -818,14 +824,14 @@ void ProjectList::find_projects(const String &p_path) {
 void ProjectList::find_projects_multiple(const PackedStringArray &p_paths) {
 	if (!scan_progress && is_inside_tree()) {
 		scan_progress = memnew(AcceptDialog);
-		scan_progress->set_title(TTR("Scanning"));
-		scan_progress->set_ok_button_text(TTR("Cancel"));
+		scan_progress->set_title(TTRC("Scanning"));
+		scan_progress->set_ok_button_text(TTRC("Cancel"));
 
 		VBoxContainer *vb = memnew(VBoxContainer);
 		scan_progress->add_child(vb);
 
 		Label *label = memnew(Label);
-		label->set_text(TTR("Scanning for projects..."));
+		label->set_text(TTRC("Scanning for projects..."));
 		vb->add_child(label);
 
 		ProgressBar *progress = memnew(ProgressBar);
