@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="ScriptBacktraces" inherits="Resource" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		A captured backtrace of all registered script languages.
+	</brief_description>
+	<description>
+		[ScriptBacktraces] holds an already captured backtrace of all registered script languages, such as GDScript or C#, which are captured using [method Engine.capture_script_backtraces].
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_backtrace" qualifiers="const">
+			<return type="ScriptBacktrace" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns the captured [ScriptBacktrace] at the specified index.
+			</description>
+		</method>
+		<method name="get_backtrace_count" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the number of captured [ScriptBacktrace], which is always one per registered script language.
+			</description>
+		</method>
+	</methods>
+</class>
