@@ -293,8 +293,7 @@ Dictionary LightmapGIData::_get_probe_data() const {
 
 #ifndef DISABLE_DEPRECATED
 void LightmapGIData::set_light_texture(const Ref<TextureLayered> &p_light_texture) {
-	TypedArray<TextureLayered> arr;
-	arr.append(p_light_texture);
+	TypedArray<TextureLayered> arr = { p_light_texture };
 	set_lightmap_textures(arr);
 }
 

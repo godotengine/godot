@@ -362,24 +362,28 @@ bool ProjectSettings::_get(const StringName &p_name, Variant &r_ret) const {
 Variant ProjectSettings::get_setting_with_override(const StringName &p_name) const {
 	_THREAD_SAFE_METHOD_
 
-	StringName name = p_name;
-	if (feature_overrides.has(name)) {
-		const LocalVector<Pair<StringName, StringName>> &overrides = feature_overrides[name];
-		for (uint32_t i = 0; i < overrides.size(); i++) {
-			if (OS::get_singleton()->has_feature(overrides[i].first)) { // Custom features are checked in OS.has_feature() already. No need to check twice.
-				if (props.has(overrides[i].second)) {
-					name = overrides[i].second;
-					break;
-				}
+	const LocalVector<Pair<StringName, StringName>> *overrides = feature_overrides.getptr(p_name);
+	if (overrides) {
+		for (uint32_t i = 0; i < overrides->size(); i++) {
+			if (!OS::get_singleton()->has_feature((*overrides)[i].first)) {
+				continue;
+			}
+
+			// Custom features are checked in OS.has_feature() already. No need to check twice.
+			const RBMap<StringName, VariantContainer>::Element *override_prop = props.find((*overrides)[i].second);
+			if (override_prop) {
+				return override_prop->get().variant;
 			}
 		}
 	}
 
-	if (!props.has(name)) {
-		WARN_PRINT(vformat("Property not found: '%s'.", String(name)));
+	const RBMap<StringName, VariantContainer>::Element *prop = props.find(p_name);
+	if (!prop) {
+		WARN_PRINT(vformat("Property not found: '%s'.", p_name));
 		return Variant();
 	}
-	return props[name].variant;
+
+	return prop->get().variant;
 }
 
 struct _VCSort {
@@ -771,7 +775,7 @@ Error ProjectSettings::_load_settings_binary(const String &p_path) {
 		cs[slen] = 0;
 		f->get_buffer((uint8_t *)cs.ptr(), slen);
 		String key;
-		key.parse_utf8(cs.ptr(), slen);
+		key.append_utf8(cs.ptr(), slen);
 
 		uint32_t vlen = f->get_32();
 		Vector<uint8_t> d;
@@ -1434,8 +1438,8 @@ void ProjectSettings::_add_builtin_input_map() {
 			Array events;
 
 			// Convert list of input events into array
-			for (List<Ref<InputEvent>>::Element *I = E.value.front(); I; I = I->next()) {
-				events.push_back(I->get());
+			for (const Ref<InputEvent> &event : E.value) {
+				events.push_back(event);
 			}
 
 			Dictionary action;
@@ -1544,8 +1548,13 @@ ProjectSettings::ProjectSettings() {
 #else
 	custom_prop_info["rendering/driver/threads/thread_model"] = PropertyInfo(Variant::INT, "rendering/driver/threads/thread_model", PROPERTY_HINT_ENUM, "Unsafe (deprecated),Safe,Separate");
 #endif
+
+#ifndef PHYSICS_2D_DISABLED
 	GLOBAL_DEF("physics/2d/run_on_separate_thread", false);
+#endif // PHYSICS_2D_DISABLED
+#ifndef PHYSICS_3D_DISABLED
 	GLOBAL_DEF("physics/3d/run_on_separate_thread", false);
+#endif // PHYSICS_3D_DISABLED
 
 	GLOBAL_DEF_BASIC(PropertyInfo(Variant::STRING, "display/window/stretch/mode", PROPERTY_HINT_ENUM, "disabled,canvas_items,viewport"), "disabled");
 	GLOBAL_DEF_BASIC(PropertyInfo(Variant::STRING, "display/window/stretch/aspect", PROPERTY_HINT_ENUM, "ignore,keep,keep_width,keep_height,expand"), "keep");
@@ -1621,6 +1630,17 @@ ProjectSettings::ProjectSettings() {
 	GLOBAL_DEF_INTERNAL("internationalization/locale/translations", PackedStringArray());
 	GLOBAL_DEF_INTERNAL("internationalization/locale/translations_pot_files", PackedStringArray());
 	GLOBAL_DEF_INTERNAL("internationalization/locale/translation_add_builtin_strings_to_pot", false);
+
+	GLOBAL_DEF("navigation/world/map_use_async_iterations", true);
+
+	GLOBAL_DEF("navigation/avoidance/thread_model/avoidance_use_multiple_threads", true);
+	GLOBAL_DEF("navigation/avoidance/thread_model/avoidance_use_high_priority_threads", true);
+
+	GLOBAL_DEF("navigation/pathfinding/max_threads", 4);
+
+	GLOBAL_DEF("navigation/baking/use_crash_prevention_checks", true);
+	GLOBAL_DEF("navigation/baking/thread_model/baking_use_multiple_threads", true);
+	GLOBAL_DEF("navigation/baking/thread_model/baking_use_high_priority_threads", true);
 
 	ProjectSettings::get_singleton()->add_hidden_prefix("input/");
 }

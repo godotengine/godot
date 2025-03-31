@@ -300,7 +300,7 @@ Error GLTFDocument::_parse_json(const String &p_path, Ref<GLTFState> p_state) {
 	array.resize(file->get_length());
 	file->get_buffer(array.ptrw(), array.size());
 	String text;
-	text.parse_utf8((const char *)array.ptr(), array.size());
+	text.append_utf8((const char *)array.ptr(), array.size());
 
 	JSON json;
 	err = json.parse(text);
@@ -331,7 +331,7 @@ Error GLTFDocument::_parse_glb(Ref<FileAccess> p_file, Ref<GLTFState> p_state) {
 	ERR_FAIL_COND_V(len != chunk_length, ERR_FILE_CORRUPT);
 
 	String text;
-	text.parse_utf8((const char *)json_data.ptr(), json_data.size());
+	text.append_utf8((const char *)json_data.ptr(), json_data.size());
 
 	JSON json;
 	Error err = json.parse(text);
@@ -3193,9 +3193,11 @@ Error GLTFDocument::_serialize_meshes(Ref<GLTFState> p_state) {
 			primitives.push_back(primitive);
 		}
 
-		Dictionary e;
-		e["targetNames"] = target_names;
-		gltf_mesh["extras"] = e;
+		if (!target_names.is_empty()) {
+			Dictionary e;
+			e["targetNames"] = target_names;
+			gltf_mesh["extras"] = e;
+		}
 		_attach_meta_to_extras(import_mesh, gltf_mesh);
 
 		weights.resize(target_names.size());
@@ -4404,12 +4406,8 @@ Error GLTFDocument::_serialize_materials(Ref<GLTFState> p_state) {
 
 		Dictionary mr;
 		{
-			Array arr;
 			const Color c = base_material->get_albedo().srgb_to_linear();
-			arr.push_back(c.r);
-			arr.push_back(c.g);
-			arr.push_back(c.b);
-			arr.push_back(c.a);
+			Array arr = { c.r, c.g, c.b, c.a };
 			mr["baseColorFactor"] = arr;
 		}
 		if (_image_format != "None") {
@@ -4615,10 +4613,7 @@ Error GLTFDocument::_serialize_materials(Ref<GLTFState> p_state) {
 
 		if (base_material->get_feature(BaseMaterial3D::FEATURE_EMISSION)) {
 			const Color c = base_material->get_emission().linear_to_srgb();
-			Array arr;
-			arr.push_back(c.r);
-			arr.push_back(c.g);
-			arr.push_back(c.b);
+			Array arr = { c.r, c.g, c.b };
 			d["emissiveFactor"] = arr;
 		}
 
@@ -8552,18 +8547,16 @@ Error GLTFDocument::append_from_scene(Node *p_node, Ref<GLTFState> p_state, uint
 	// Add the root node(s) and their descendants to the state.
 	if (_root_node_mode == RootNodeMode::ROOT_NODE_MODE_MULTI_ROOT) {
 		const int child_count = p_node->get_child_count();
-		if (child_count > 0) {
-			for (int i = 0; i < child_count; i++) {
-				_convert_scene_node(state, p_node->get_child(i), -1, -1);
-			}
-			state->scene_name = p_node->get_name();
-			return OK;
+		for (int i = 0; i < child_count; i++) {
+			_convert_scene_node(state, p_node->get_child(i), -1, -1);
 		}
+		state->scene_name = p_node->get_name();
+	} else {
+		if (_root_node_mode == RootNodeMode::ROOT_NODE_MODE_SINGLE_ROOT) {
+			state->extensions_used.append("GODOT_single_root");
+		}
+		_convert_scene_node(state, p_node, -1, -1);
 	}
-	if (_root_node_mode == RootNodeMode::ROOT_NODE_MODE_SINGLE_ROOT) {
-		state->extensions_used.append("GODOT_single_root");
-	}
-	_convert_scene_node(state, p_node, -1, -1);
 	// Run post-convert for each extension, in case an extension needs to do something after converting the scene.
 	for (Ref<GLTFDocumentExtension> ext : document_extensions) {
 		ERR_CONTINUE(ext.is_null());

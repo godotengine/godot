@@ -34,11 +34,14 @@
 #include "core/config/project_settings.h"
 #include "scene/3d/audio_listener_3d.h"
 #include "scene/3d/camera_3d.h"
-#include "scene/3d/physics/area_3d.h"
 #include "scene/3d/velocity_tracker_3d.h"
 #include "scene/audio/audio_stream_player_internal.h"
 #include "scene/main/viewport.h"
 #include "servers/audio/audio_stream.h"
+
+#ifndef PHYSICS_3D_DISABLED
+#include "scene/3d/physics/area_3d.h"
+#endif // PHYSICS_3D_DISABLED
 
 // Based on "A Novel Multichannel Panning Method for Standard and Arbitrary Loudspeaker Configurations" by Ramy Sadek and Chris Kyriakakis (2004)
 // Speaker-Placement Correction Amplitude Panning (SPCAP)
@@ -141,6 +144,7 @@ void AudioStreamPlayer3D::_calc_output_vol(const Vector3 &source_dir, real_t tig
 	}
 }
 
+#ifndef PHYSICS_3D_DISABLED
 void AudioStreamPlayer3D::_calc_reverb_vol(Area3D *area, Vector3 listener_area_pos, Vector<AudioFrame> direct_path_vol, Vector<AudioFrame> &reverb_vol) {
 	reverb_vol.resize(4);
 	reverb_vol.write[0] = AudioFrame(0, 0);
@@ -209,6 +213,7 @@ void AudioStreamPlayer3D::_calc_reverb_vol(Area3D *area, Vector3 listener_area_p
 		}
 	}
 }
+#endif // PHYSICS_3D_DISABLED
 
 float AudioStreamPlayer3D::_get_attenuation_db(float p_distance) const {
 	float att = 0;
@@ -283,6 +288,7 @@ void AudioStreamPlayer3D::_notification(int p_what) {
 	}
 }
 
+#ifndef PHYSICS_3D_DISABLED
 // Interacts with PhysicsServer3D, so can only be called during _physics_process
 Area3D *AudioStreamPlayer3D::_get_overriding_area() {
 	//check if any area is diverting sound into a bus
@@ -321,13 +327,16 @@ Area3D *AudioStreamPlayer3D::_get_overriding_area() {
 	}
 	return nullptr;
 }
+#endif // PHYSICS_3D_DISABLED
 
 // Interacts with PhysicsServer3D, so can only be called during _physics_process.
 StringName AudioStreamPlayer3D::_get_actual_bus() {
+#ifndef PHYSICS_3D_DISABLED
 	Area3D *overriding_area = _get_overriding_area();
 	if (overriding_area && overriding_area->is_overriding_audio_bus() && !overriding_area->is_using_reverb_bus()) {
 		return overriding_area->get_audio_bus_name();
 	}
+#endif // PHYSICS_3D_DISABLED
 	return internal->bus;
 }
 
@@ -358,7 +367,9 @@ Vector<AudioFrame> AudioStreamPlayer3D::_update_panning() {
 	HashSet<Camera3D *> cameras = world_3d->get_cameras();
 	cameras.insert(get_viewport()->get_camera_3d());
 
+#ifndef PHYSICS_3D_DISABLED
 	PhysicsDirectSpaceState3D *space_state = PhysicsServer3D::get_singleton()->space_get_direct_state(world_3d->get_space());
+#endif // PHYSICS_3D_DISABLED
 
 	for (Camera3D *camera : cameras) {
 		if (!camera) {
@@ -388,19 +399,22 @@ Vector<AudioFrame> AudioStreamPlayer3D::_update_panning() {
 		Vector3 area_sound_pos;
 		Vector3 listener_area_pos;
 
+#ifndef PHYSICS_3D_DISABLED
 		Area3D *area = _get_overriding_area();
-
 		if (area && area->is_using_reverb_bus() && area->get_reverb_uniformity() > 0) {
 			area_sound_pos = space_state->get_closest_point_to_object_volume(area->get_rid(), listener_node->get_global_transform().origin);
 			listener_area_pos = listener_node->get_global_transform().affine_inverse().xform(area_sound_pos);
 		}
+#endif // PHYSICS_3D_DISABLED
 
 		if (max_distance > 0) {
 			float total_max = max_distance;
 
+#ifndef PHYSICS_3D_DISABLED
 			if (area && area->is_using_reverb_bus() && area->get_reverb_uniformity() > 0) {
 				total_max = MAX(total_max, listener_area_pos.length());
 			}
+#endif // PHYSICS_3D_DISABLED
 			if (dist > total_max || total_max > max_distance) {
 				if (!was_further_than_max_distance_last_frame) {
 					HashMap<StringName, Vector<AudioFrame>> bus_volumes;
@@ -445,6 +459,7 @@ Vector<AudioFrame> AudioStreamPlayer3D::_update_panning() {
 		}
 
 		HashMap<StringName, Vector<AudioFrame>> bus_volumes;
+#ifndef PHYSICS_3D_DISABLED
 		if (area) {
 			if (area->is_overriding_audio_bus()) {
 				//override audio bus
@@ -457,7 +472,9 @@ Vector<AudioFrame> AudioStreamPlayer3D::_update_panning() {
 				_calc_reverb_vol(area, listener_area_pos, output_volume_vector, reverb_vol);
 				bus_volumes[reverb_bus_name] = reverb_vol;
 			}
-		} else {
+		} else
+#endif // PHYSICS_3D_DISABLED
+		{
 			bus_volumes[internal->bus] = output_volume_vector;
 		}
 

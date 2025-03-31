@@ -852,7 +852,7 @@ Patches:
 ## pcre2
 
 - Upstream: http://www.pcre.org
-- Version: 10.43 (3864abdb713f78831dd12d898ab31bbb0fa630b6, 2024)
+- Version: 10.45 (2dce7761b1831fd3f82a9c2bd5476259d945da4d, 2025)
 - License: BSD-3-Clause
 
 Files extracted from upstream source:
@@ -862,8 +862,8 @@ Files extracted from upstream source:
 - `src/pcre2_jit_match.c`
 - `src/pcre2_jit_misc.c`
 - `src/pcre2_ucptables.c`
-- `src/sljit/`
-- `AUTHORS` and `LICENCE`
+- `deps/sljit/sljit_src`
+- `AUTHORS.md` and `LICENCE.md`
 
 
 ## recastnavigation

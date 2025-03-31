@@ -144,6 +144,11 @@ void FindReplaceBar::_notification(int p_what) {
 			_update_toggle_replace_button(replace_text->is_visible_in_tree());
 		} break;
 
+		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
+		case NOTIFICATION_TRANSLATION_CHANGED: {
+			_update_toggle_replace_button(replace_text->is_visible_in_tree());
+		} break;
+
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			set_process_input(is_visible_in_tree());
 		} break;
@@ -1649,6 +1654,13 @@ void CodeTextEditor::_notification(int p_what) {
 			_update_text_editor_theme();
 		} break;
 
+		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
+		case NOTIFICATION_TRANSLATION_CHANGED: {
+			if (toggle_scripts_button->is_visible()) {
+				update_toggle_scripts_button();
+			}
+		} break;
+
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			if (toggle_scripts_button->is_visible()) {
 				update_toggle_scripts_button();
@@ -1940,15 +1952,7 @@ CodeTextEditor::CodeTextEditor() {
 	text_editor->connect("caret_changed", callable_mp(this, &CodeTextEditor::_line_col_changed));
 	text_editor->connect(SceneStringName(text_changed), callable_mp(this, &CodeTextEditor::_text_changed));
 	text_editor->connect("code_completion_requested", callable_mp(this, &CodeTextEditor::_complete_request));
-	TypedArray<String> cs;
-	cs.push_back(".");
-	cs.push_back(",");
-	cs.push_back("(");
-	cs.push_back("=");
-	cs.push_back("$");
-	cs.push_back("@");
-	cs.push_back("\"");
-	cs.push_back("\'");
+	TypedArray<String> cs = { ".", ",", "(", "=", "$", "@", "\"", "\'" };
 	text_editor->set_code_completion_prefixes(cs);
 	idle->connect("timeout", callable_mp(this, &CodeTextEditor::_text_changed_idle_timeout));
 

@@ -68,8 +68,8 @@
 #include "scene/resources/portable_compressed_texture.h"
 #include "scene/theme/theme_db.h"
 #include "servers/display_server.h"
+#include "servers/navigation_server_2d.h"
 #include "servers/navigation_server_3d.h"
-#include "servers/physics_server_2d.h"
 #include "servers/rendering_server.h"
 
 #include "editor/audio_stream_preview.h"
@@ -167,9 +167,17 @@
 
 #include "modules/modules_enabled.gen.h" // For gdscript, mono.
 
+#ifndef PHYSICS_2D_DISABLED
+#include "servers/physics_server_2d.h"
+#endif // PHYSICS_2D_DISABLED
+
+#ifndef PHYSICS_3D_DISABLED
+#include "servers/physics_server_3d.h"
+#endif // PHYSICS_3D_DISABLED
+
 #ifdef ANDROID_ENABLED
 #include "editor/gui/touch_actions_panel.h"
-#endif
+#endif // ANDROID_ENABLED
 
 #include <stdlib.h>
 
@@ -490,16 +498,25 @@ void EditorNode::_update_from_settings() {
 	ResourceImporterTexture::get_singleton()->update_imports();
 
 #ifdef DEBUG_ENABLED
-	NavigationServer3D::get_singleton()->set_debug_navigation_edge_connection_color(GLOBAL_GET("debug/shapes/navigation/edge_connection_color"));
-	NavigationServer3D::get_singleton()->set_debug_navigation_geometry_edge_color(GLOBAL_GET("debug/shapes/navigation/geometry_edge_color"));
-	NavigationServer3D::get_singleton()->set_debug_navigation_geometry_face_color(GLOBAL_GET("debug/shapes/navigation/geometry_face_color"));
-	NavigationServer3D::get_singleton()->set_debug_navigation_geometry_edge_disabled_color(GLOBAL_GET("debug/shapes/navigation/geometry_edge_disabled_color"));
-	NavigationServer3D::get_singleton()->set_debug_navigation_geometry_face_disabled_color(GLOBAL_GET("debug/shapes/navigation/geometry_face_disabled_color"));
-	NavigationServer3D::get_singleton()->set_debug_navigation_enable_edge_connections(GLOBAL_GET("debug/shapes/navigation/enable_edge_connections"));
-	NavigationServer3D::get_singleton()->set_debug_navigation_enable_edge_connections_xray(GLOBAL_GET("debug/shapes/navigation/enable_edge_connections_xray"));
-	NavigationServer3D::get_singleton()->set_debug_navigation_enable_edge_lines(GLOBAL_GET("debug/shapes/navigation/enable_edge_lines"));
-	NavigationServer3D::get_singleton()->set_debug_navigation_enable_edge_lines_xray(GLOBAL_GET("debug/shapes/navigation/enable_edge_lines_xray"));
-	NavigationServer3D::get_singleton()->set_debug_navigation_enable_geometry_face_random_color(GLOBAL_GET("debug/shapes/navigation/enable_geometry_face_random_color"));
+	NavigationServer2D::get_singleton()->set_debug_navigation_edge_connection_color(GLOBAL_GET("debug/shapes/navigation/2d/edge_connection_color"));
+	NavigationServer2D::get_singleton()->set_debug_navigation_geometry_edge_color(GLOBAL_GET("debug/shapes/navigation/2d/geometry_edge_color"));
+	NavigationServer2D::get_singleton()->set_debug_navigation_geometry_face_color(GLOBAL_GET("debug/shapes/navigation/2d/geometry_face_color"));
+	NavigationServer2D::get_singleton()->set_debug_navigation_geometry_edge_disabled_color(GLOBAL_GET("debug/shapes/navigation/2d/geometry_edge_disabled_color"));
+	NavigationServer2D::get_singleton()->set_debug_navigation_geometry_face_disabled_color(GLOBAL_GET("debug/shapes/navigation/2d/geometry_face_disabled_color"));
+	NavigationServer2D::get_singleton()->set_debug_navigation_enable_edge_connections(GLOBAL_GET("debug/shapes/navigation/2d/enable_edge_connections"));
+	NavigationServer2D::get_singleton()->set_debug_navigation_enable_edge_lines(GLOBAL_GET("debug/shapes/navigation/2d/enable_edge_lines"));
+	NavigationServer2D::get_singleton()->set_debug_navigation_enable_geometry_face_random_color(GLOBAL_GET("debug/shapes/navigation/2d/enable_geometry_face_random_color"));
+
+	NavigationServer3D::get_singleton()->set_debug_navigation_edge_connection_color(GLOBAL_GET("debug/shapes/navigation/3d/edge_connection_color"));
+	NavigationServer3D::get_singleton()->set_debug_navigation_geometry_edge_color(GLOBAL_GET("debug/shapes/navigation/3d/geometry_edge_color"));
+	NavigationServer3D::get_singleton()->set_debug_navigation_geometry_face_color(GLOBAL_GET("debug/shapes/navigation/3d/geometry_face_color"));
+	NavigationServer3D::get_singleton()->set_debug_navigation_geometry_edge_disabled_color(GLOBAL_GET("debug/shapes/navigation/3d/geometry_edge_disabled_color"));
+	NavigationServer3D::get_singleton()->set_debug_navigation_geometry_face_disabled_color(GLOBAL_GET("debug/shapes/navigation/3d/geometry_face_disabled_color"));
+	NavigationServer3D::get_singleton()->set_debug_navigation_enable_edge_connections(GLOBAL_GET("debug/shapes/navigation/3d/enable_edge_connections"));
+	NavigationServer3D::get_singleton()->set_debug_navigation_enable_edge_connections_xray(GLOBAL_GET("debug/shapes/navigation/3d/enable_edge_connections_xray"));
+	NavigationServer3D::get_singleton()->set_debug_navigation_enable_edge_lines(GLOBAL_GET("debug/shapes/navigation/3d/enable_edge_lines"));
+	NavigationServer3D::get_singleton()->set_debug_navigation_enable_edge_lines_xray(GLOBAL_GET("debug/shapes/navigation/3d/enable_edge_lines_xray"));
+	NavigationServer3D::get_singleton()->set_debug_navigation_enable_geometry_face_random_color(GLOBAL_GET("debug/shapes/navigation/3d/enable_geometry_face_random_color"));
 #endif // DEBUG_ENABLED
 }
 
@@ -619,8 +636,49 @@ void EditorNode::update_preview_themes(int p_mode) {
 	}
 }
 
+bool EditorNode::_is_project_data_missing() {
+	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+	const String project_data_dir = EditorPaths::get_singleton()->get_project_data_dir();
+	if (!da->dir_exists(project_data_dir)) {
+		return true;
+	}
+
+	String project_data_gdignore_file_path = project_data_dir.path_join(".gdignore");
+	if (!FileAccess::exists(project_data_gdignore_file_path)) {
+		Ref<FileAccess> f = FileAccess::open(project_data_gdignore_file_path, FileAccess::WRITE);
+		if (f.is_valid()) {
+			f->store_line("");
+		} else {
+			ERR_PRINT("Failed to create file " + project_data_gdignore_file_path.quote() + ".");
+		}
+	}
+
+	String uid_cache = ResourceUID::get_singleton()->get_cache_file();
+	if (!da->file_exists(uid_cache)) {
+		Error err = ResourceUID::get_singleton()->save_to_cache();
+		if (err != OK) {
+			ERR_PRINT("Failed to create file " + uid_cache.quote() + ".");
+		}
+	}
+
+	const String dirs[] = {
+		EditorPaths::get_singleton()->get_project_settings_dir(),
+		ProjectSettings::get_singleton()->get_imported_files_path()
+	};
+	for (const String &dir : dirs) {
+		if (!da->dir_exists(dir)) {
+			return true;
+		}
+	}
+	return false;
+}
+
 void EditorNode::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_TRANSLATION_CHANGED: {
+			callable_mp(this, &EditorNode::_titlebar_resized).call_deferred();
+		} break;
+
 		case NOTIFICATION_POSTINITIALIZE: {
 			EditorHelp::generate_doc();
 #if defined(MODULE_GDSCRIPT_ENABLED) || defined(MODULE_MONO_ENABLED)
@@ -772,7 +830,11 @@ void EditorNode::_notification(int p_what) {
 			// Restore the original FPS cap after focusing back on the editor.
 			OS::get_singleton()->set_low_processor_usage_mode_sleep_usec(int(EDITOR_GET("interface/editor/low_processor_mode_sleep_usec")));
 
-			EditorFileSystem::get_singleton()->scan_changes();
+			if (_is_project_data_missing()) {
+				project_data_missing->popup_centered();
+			} else {
+				EditorFileSystem::get_singleton()->scan_changes();
+			}
 			_scan_external_changes();
 
 			GDExtensionManager *gdextension_manager = GDExtensionManager::get_singleton();
@@ -2416,22 +2478,39 @@ void EditorNode::edit_item(Object *p_object, Object *p_editing_owner) {
 			continue;
 		}
 
+		bool need_to_add = true;
+		List<EditorPropertyResource *> to_fold;
+
 		// If plugin is already associated with another owner, remove it from there first.
 		for (KeyValue<ObjectID, HashSet<EditorPlugin *>> &kv : active_plugins) {
-			if (kv.key != owner_id) {
-				EditorPropertyResource *epres = Object::cast_to<EditorPropertyResource>(ObjectDB::get_instance(kv.key));
-				if (epres && kv.value.has(plugin)) {
-					// If it's resource property editing the same resource type, fold it.
-					epres->fold_resource();
-				}
-				kv.value.erase(plugin);
+			if (kv.key == owner_id || !kv.value.has(plugin)) {
+				continue;
 			}
+			EditorPropertyResource *epres = Object::cast_to<EditorPropertyResource>(ObjectDB::get_instance(kv.key));
+			if (epres) {
+				// If it's resource property editing the same resource type, fold it later to avoid premature modifications
+				// that may result in unsafe iteration of active_plugins.
+				to_fold.push_back(epres);
+			} else {
+				kv.value.erase(plugin);
+				need_to_add = false;
+			}
+		}
+
+		if (!need_to_add && to_fold.is_empty()) {
+			plugin->make_visible(true);
+			plugin->edit(p_object);
+		} else {
+			for (EditorPropertyResource *epres : to_fold) {
+				epres->fold_resource();
+			}
+
+			// TODO: Call the function directly once a proper priority system is implemented.
+			to_over_edit.push_back(plugin);
 		}
 
 		// Activate previously inactive plugin and edit the object.
 		active_plugins[owner_id].insert(plugin);
-		// TODO: Call the function directly once a proper priority system is implemented.
-		to_over_edit.push_back(plugin);
 	}
 
 	for (EditorPlugin *plugin : to_over_edit) {
@@ -6432,7 +6511,7 @@ void EditorNode::reload_instances_with_path_in_edited_scenes() {
 
 			// Store all the paths for any selected nodes which are ancestors of the node we're replacing.
 			List<NodePath> selected_node_paths;
-			for (Node *selected_node : editor_selection->get_selected_node_list()) {
+			for (Node *selected_node : editor_selection->get_top_selected_node_list()) {
 				if (selected_node == original_node || original_node->is_ancestor_of(selected_node)) {
 					selected_node_paths.push_back(original_node->get_path_to(selected_node));
 					editor_selection->remove_node(selected_node);
@@ -6993,8 +7072,12 @@ EditorNode::EditorNode() {
 		}
 
 		// No physics by default if in editor.
+#ifndef PHYSICS_3D_DISABLED
 		PhysicsServer3D::get_singleton()->set_active(false);
+#endif // PHYSICS_3D_DISABLED
+#ifndef PHYSICS_2D_DISABLED
 		PhysicsServer2D::get_singleton()->set_active(false);
+#endif // PHYSICS_2D_DISABLED
 
 		// No scripting by default if in editor (except for tool).
 		ScriptServer::set_scripting_enabled(false);
@@ -7791,11 +7874,12 @@ EditorNode::EditorNode() {
 	// Instantiate and place editor docks.
 
 	memnew(SceneTreeDock(scene_root, editor_selection, editor_data));
+	memnew(FileSystemDock);
 	memnew(InspectorDock(editor_data));
 	memnew(ImportDock);
 	memnew(NodeDock);
 
-	FileSystemDock *filesystem_dock = memnew(FileSystemDock);
+	FileSystemDock *filesystem_dock = FileSystemDock::get_singleton();
 	filesystem_dock->connect("inherit", callable_mp(this, &EditorNode::_inherit_request));
 	filesystem_dock->connect("instantiate", callable_mp(this, &EditorNode::_instantiate_request));
 	filesystem_dock->connect("display_mode_changed", callable_mp(this, &EditorNode::_save_editor_layout));
@@ -7804,22 +7888,22 @@ EditorNode::EditorNode() {
 	history_dock = memnew(HistoryDock);
 
 	// Scene: Top left.
-	editor_dock_manager->add_dock(SceneTreeDock::get_singleton(), TTR("Scene"), EditorDockManager::DOCK_SLOT_LEFT_UR, ED_SHORTCUT_AND_COMMAND("docks/open_scene", TTRC("Open Scene Dock")), "PackedScene");
+	editor_dock_manager->add_dock(SceneTreeDock::get_singleton(), TTRC("Scene"), EditorDockManager::DOCK_SLOT_LEFT_UR, ED_SHORTCUT_AND_COMMAND("docks/open_scene", TTRC("Open Scene Dock")), "PackedScene");
 
 	// Import: Top left, behind Scene.
-	editor_dock_manager->add_dock(ImportDock::get_singleton(), TTR("Import"), EditorDockManager::DOCK_SLOT_LEFT_UR, ED_SHORTCUT_AND_COMMAND("docks/open_import", TTRC("Open Import Dock")), "FileAccess");
+	editor_dock_manager->add_dock(ImportDock::get_singleton(), TTRC("Import"), EditorDockManager::DOCK_SLOT_LEFT_UR, ED_SHORTCUT_AND_COMMAND("docks/open_import", TTRC("Open Import Dock")), "FileAccess");
 
 	// FileSystem: Bottom left.
-	editor_dock_manager->add_dock(FileSystemDock::get_singleton(), TTR("FileSystem"), EditorDockManager::DOCK_SLOT_LEFT_BR, ED_SHORTCUT_AND_COMMAND("docks/open_filesystem", TTRC("Open FileSystem Dock"), KeyModifierMask::ALT | Key::F), "Folder");
+	editor_dock_manager->add_dock(FileSystemDock::get_singleton(), TTRC("FileSystem"), EditorDockManager::DOCK_SLOT_LEFT_BR, ED_SHORTCUT_AND_COMMAND("docks/open_filesystem", TTRC("Open FileSystem Dock"), KeyModifierMask::ALT | Key::F), "Folder");
 
 	// Inspector: Full height right.
-	editor_dock_manager->add_dock(InspectorDock::get_singleton(), TTR("Inspector"), EditorDockManager::DOCK_SLOT_RIGHT_UL, ED_SHORTCUT_AND_COMMAND("docks/open_inspector", TTRC("Open Inspector Dock")), "AnimationTrackList");
+	editor_dock_manager->add_dock(InspectorDock::get_singleton(), TTRC("Inspector"), EditorDockManager::DOCK_SLOT_RIGHT_UL, ED_SHORTCUT_AND_COMMAND("docks/open_inspector", TTRC("Open Inspector Dock")), "AnimationTrackList");
 
 	// Node: Full height right, behind Inspector.
-	editor_dock_manager->add_dock(NodeDock::get_singleton(), TTR("Node"), EditorDockManager::DOCK_SLOT_RIGHT_UL, ED_SHORTCUT_AND_COMMAND("docks/open_node", TTRC("Open Node Dock")), "Object");
+	editor_dock_manager->add_dock(NodeDock::get_singleton(), TTRC("Node"), EditorDockManager::DOCK_SLOT_RIGHT_UL, ED_SHORTCUT_AND_COMMAND("docks/open_node", TTRC("Open Node Dock")), "Object");
 
 	// History: Full height right, behind Node.
-	editor_dock_manager->add_dock(history_dock, TTR("History"), EditorDockManager::DOCK_SLOT_RIGHT_UL, ED_SHORTCUT_AND_COMMAND("docks/open_history", TTRC("Open History Dock")), "History");
+	editor_dock_manager->add_dock(history_dock, TTRC("History"), EditorDockManager::DOCK_SLOT_RIGHT_UL, ED_SHORTCUT_AND_COMMAND("docks/open_history", TTRC("Open History Dock")), "History");
 
 	// Add some offsets to left_r and main hsplits to make LEFT_R and RIGHT_L docks wider than minsize.
 	left_r_hsplit->set_split_offset(270 * EDSCALE);
@@ -7998,6 +8082,13 @@ EditorNode::EditorNode() {
 	}
 
 	gui_base->add_child(disk_changed);
+
+	project_data_missing = memnew(ConfirmationDialog);
+	project_data_missing->set_text(TTRC("Project data folder (.godot) is missing. Please restart editor."));
+	project_data_missing->connect(SceneStringName(confirmed), callable_mp(this, &EditorNode::restart_editor).bind(false));
+	project_data_missing->set_ok_button_text(TTRC("Restart"));
+
+	gui_base->add_child(project_data_missing);
 
 	add_editor_plugin(memnew(AnimationPlayerEditorPlugin));
 	add_editor_plugin(memnew(AnimationTrackKeyEditEditorPlugin));

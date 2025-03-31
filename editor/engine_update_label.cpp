@@ -63,7 +63,7 @@ void EngineUpdateLabel::_http_request_completed(int p_result, int p_response_cod
 	{
 		String s;
 		const uint8_t *r = p_body.ptr();
-		s.parse_utf8((const char *)r, p_body.size());
+		s.append_utf8((const char *)r, p_body.size());
 
 		Variant result = JSON::parse_string(s);
 		if (result == Variant()) {
