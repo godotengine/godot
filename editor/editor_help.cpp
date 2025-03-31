@@ -38,7 +38,7 @@
 #include "core/object/script_language.h"
 #include "core/os/keyboard.h"
 #include "core/string/string_builder.h"
-#include "core/version_generated.gen.h"
+#include "core/version.h"
 #include "editor/doc_data_compressed.gen.h"
 #include "editor/editor_file_system.h"
 #include "editor/editor_main_screen.h"
@@ -3236,6 +3236,8 @@ void EditorHelp::_notification(int p_what) {
 			update_toggle_scripts_button();
 		} break;
 
+		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
+		case NOTIFICATION_TRANSLATION_CHANGED:
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			update_toggle_scripts_button();
 		} break;

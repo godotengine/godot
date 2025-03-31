@@ -6,6 +6,7 @@ Import("env")
 env.add_source_files(env.scene_sources, "*.cpp")
 
 # Chain load SCsubs
-SConscript("physics/SCsub")
+if not env["disable_physics_3d"]:
+    SConscript("physics/SCsub")
 if not env["disable_xr"]:
     SConscript("xr/SCsub")

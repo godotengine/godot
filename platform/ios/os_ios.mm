@@ -359,7 +359,7 @@ String OS_IOS::get_user_data_dir(const String &p_user_dir) const {
 	if (ret.is_empty()) {
 		NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
 		if (paths && [paths count] >= 1) {
-			ret.parse_utf8([[paths firstObject] UTF8String]);
+			ret.append_utf8([[paths firstObject] UTF8String]);
 		}
 	}
 	return ret;
@@ -370,7 +370,7 @@ String OS_IOS::get_cache_path() const {
 	if (ret.is_empty()) {
 		NSArray *paths = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);
 		if (paths && [paths count] >= 1) {
-			ret.parse_utf8([[paths firstObject] UTF8String]);
+			ret.append_utf8([[paths firstObject] UTF8String]);
 		}
 	}
 	return ret;

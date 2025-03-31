@@ -67,7 +67,6 @@ void GameViewDebugger::_session_started(Ref<EditorDebuggerSession> p_session) {
 	settings["canvas_item_editor/pan_view"] = DebuggerMarshalls::serialize_key_shortcut(ED_GET_SHORTCUT("canvas_item_editor/pan_view"));
 	settings["box_selection_fill_color"] = EditorNode::get_singleton()->get_editor_theme()->get_color(SNAME("box_selection_fill_color"), EditorStringName(Editor));
 	settings["box_selection_stroke_color"] = EditorNode::get_singleton()->get_editor_theme()->get_color(SNAME("box_selection_stroke_color"), EditorStringName(Editor));
-#ifndef _3D_DISABLED
 	settings["editors/3d/default_fov"] = EDITOR_GET("editors/3d/default_fov");
 	settings["editors/3d/default_z_near"] = EDITOR_GET("editors/3d/default_z_near");
 	settings["editors/3d/default_z_far"] = EDITOR_GET("editors/3d/default_z_far");
@@ -80,7 +79,6 @@ void GameViewDebugger::_session_started(Ref<EditorDebuggerSession> p_session) {
 	settings["editors/3d/navigation_feel/translation_sensitivity"] = EDITOR_GET("editors/3d/navigation_feel/translation_sensitivity");
 	settings["editors/3d/selection_box_color"] = EDITOR_GET("editors/3d/selection_box_color");
 	settings["editors/3d/freelook/freelook_base_speed"] = EDITOR_GET("editors/3d/freelook/freelook_base_speed");
-#endif // _3D_DISABLED
 
 	Array setup_data;
 	setup_data.append(settings);
@@ -108,10 +106,6 @@ void GameViewDebugger::_session_stopped() {
 	}
 
 	emit_signal(SNAME("session_stopped"));
-}
-
-void GameViewDebugger::set_is_feature_enabled(bool p_enabled) {
-	is_feature_enabled = p_enabled;
 }
 
 void GameViewDebugger::set_suspend(bool p_enabled) {
@@ -215,9 +209,18 @@ void GameViewDebugger::setup_session(int p_session_id) {
 	session->connect("stopped", callable_mp(this, &GameViewDebugger::_session_stopped));
 }
 
+void GameViewDebugger::_feature_profile_changed() {
+	Ref<EditorFeatureProfile> profile = EditorFeatureProfileManager::get_singleton()->get_current_profile();
+	is_feature_enabled = profile.is_null() || !profile->is_feature_disabled(EditorFeatureProfile::FEATURE_GAME);
+}
+
 void GameViewDebugger::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("session_started"));
 	ADD_SIGNAL(MethodInfo("session_stopped"));
+}
+
+GameViewDebugger::GameViewDebugger() {
+	EditorFeatureProfileManager::get_singleton()->connect("current_feature_profile_changed", callable_mp(this, &GameViewDebugger::_feature_profile_changed));
 }
 
 ///////
@@ -250,6 +253,7 @@ void GameView::_instance_starting(int p_idx, List<String> &r_arguments) {
 	if (!is_feature_enabled) {
 		return;
 	}
+
 	if (p_idx == 0 && embed_on_play && make_floating_on_play && window_wrapper->is_window_available() && !window_wrapper->get_window_enabled() && _get_embed_available() == EMBED_AVAILABLE) {
 		// Set the Floating Window default title. Always considered in DEBUG mode, same as in Window::set_title.
 		String appname = GLOBAL_GET("application/config/name");
@@ -431,6 +435,10 @@ void GameView::_node_type_pressed(int p_option) {
 
 void GameView::_select_mode_pressed(int p_option) {
 	RuntimeNodeSelect::SelectMode mode = (RuntimeNodeSelect::SelectMode)p_option;
+	if (!select_mode_button[mode]->is_visible()) {
+		return;
+	}
+
 	for (int i = 0; i < RuntimeNodeSelect::SELECT_MODE_MAX; i++) {
 		select_mode_button[i]->set_pressed_no_signal(i == mode);
 	}
@@ -656,9 +664,7 @@ void GameView::_notification(int p_what) {
 
 			node_type_button[RuntimeNodeSelect::NODE_TYPE_NONE]->set_button_icon(get_editor_theme_icon(SNAME("InputEventJoypadMotion")));
 			node_type_button[RuntimeNodeSelect::NODE_TYPE_2D]->set_button_icon(get_editor_theme_icon(SNAME("2DNodes")));
-#ifndef _3D_DISABLED
 			node_type_button[RuntimeNodeSelect::NODE_TYPE_3D]->set_button_icon(get_editor_theme_icon(SNAME("Node3D")));
-#endif // _3D_DISABLED
 
 			select_mode_button[RuntimeNodeSelect::SELECT_MODE_SINGLE]->set_button_icon(get_editor_theme_icon(SNAME("ToolSelect")));
 			select_mode_button[RuntimeNodeSelect::SELECT_MODE_LIST]->set_button_icon(get_editor_theme_icon(SNAME("ListSelect")));
@@ -725,10 +731,6 @@ void GameView::_notification(int p_what) {
 			}
 		} break;
 	}
-}
-
-void GameView::set_is_feature_enabled(bool p_enabled) {
-	is_feature_enabled = p_enabled;
 }
 
 void GameView::set_window_layout(Ref<ConfigFile> p_layout) {
@@ -888,6 +890,19 @@ void GameView::_debugger_breaked(bool p_breaked, bool p_can_debug) {
 	_update_embed_window_size();
 }
 
+void GameView::_feature_profile_changed() {
+	Ref<EditorFeatureProfile> profile = EditorFeatureProfileManager::get_singleton()->get_current_profile();
+	bool is_profile_null = profile.is_null();
+
+	is_feature_enabled = is_profile_null || !profile->is_feature_disabled(EditorFeatureProfile::FEATURE_GAME);
+
+	bool is_3d_enabled = is_profile_null || !profile->is_feature_disabled(EditorFeatureProfile::FEATURE_3D);
+	if (!is_3d_enabled && node_type_button[RuntimeNodeSelect::NODE_TYPE_3D]->is_pressed()) {
+		_node_type_pressed(RuntimeNodeSelect::NODE_TYPE_NONE);
+	}
+	node_type_button[RuntimeNodeSelect::NODE_TYPE_3D]->set_visible(is_3d_enabled);
+}
+
 GameView::GameView(Ref<GameViewDebugger> p_debugger, WindowWrapper *p_wrapper) {
 	singleton = this;
 
@@ -937,7 +952,6 @@ GameView::GameView(Ref<GameViewDebugger> p_debugger, WindowWrapper *p_wrapper) {
 	node_type_button[RuntimeNodeSelect::NODE_TYPE_2D]->connect(SceneStringName(pressed), callable_mp(this, &GameView::_node_type_pressed).bind(RuntimeNodeSelect::NODE_TYPE_2D));
 	node_type_button[RuntimeNodeSelect::NODE_TYPE_2D]->set_tooltip_text(TTR("Disable game input and allow to select Node2Ds, Controls, and manipulate the 2D camera."));
 
-#ifndef _3D_DISABLED
 	node_type_button[RuntimeNodeSelect::NODE_TYPE_3D] = memnew(Button);
 	main_menu_hbox->add_child(node_type_button[RuntimeNodeSelect::NODE_TYPE_3D]);
 	node_type_button[RuntimeNodeSelect::NODE_TYPE_3D]->set_text(TTR("3D"));
@@ -945,7 +959,6 @@ GameView::GameView(Ref<GameViewDebugger> p_debugger, WindowWrapper *p_wrapper) {
 	node_type_button[RuntimeNodeSelect::NODE_TYPE_3D]->set_theme_type_variation(SceneStringName(FlatButton));
 	node_type_button[RuntimeNodeSelect::NODE_TYPE_3D]->connect(SceneStringName(pressed), callable_mp(this, &GameView::_node_type_pressed).bind(RuntimeNodeSelect::NODE_TYPE_3D));
 	node_type_button[RuntimeNodeSelect::NODE_TYPE_3D]->set_tooltip_text(TTR("Disable game input and allow to select Node3Ds and manipulate the 3D camera."));
-#endif // _3D_DISABLED
 
 	main_menu_hbox->add_child(memnew(VSeparator));
 
@@ -1096,6 +1109,8 @@ GameView::GameView(Ref<GameViewDebugger> p_debugger, WindowWrapper *p_wrapper) {
 	p_wrapper->connect("window_size_changed", callable_mp(this, &GameView::_update_floating_window_settings));
 
 	EditorDebuggerNode::get_singleton()->connect("breaked", callable_mp(this, &GameView::_debugger_breaked));
+
+	EditorFeatureProfileManager::get_singleton()->connect("current_feature_profile_changed", callable_mp(this, &GameView::_feature_profile_changed));
 }
 
 ///////
@@ -1142,24 +1157,6 @@ void GameViewPlugin::_notification(int p_what) {
 	}
 }
 
-void GameViewPlugin::_feature_profile_changed() {
-	bool is_feature_enabled = true;
-	Ref<EditorFeatureProfile> profile = EditorFeatureProfileManager::get_singleton()->get_current_profile();
-	if (profile.is_valid()) {
-		is_feature_enabled = !profile->is_feature_disabled(EditorFeatureProfile::FEATURE_GAME);
-	}
-
-	if (debugger.is_valid()) {
-		debugger->set_is_feature_enabled(is_feature_enabled);
-	}
-
-#ifndef ANDROID_ENABLED
-	if (game_view) {
-		game_view->set_is_feature_enabled(is_feature_enabled);
-	}
-#endif // ANDROID_ENABLED
-}
-
 void GameViewPlugin::_save_last_editor(const String &p_editor) {
 	if (p_editor != get_plugin_name()) {
 		last_editor = p_editor;
@@ -1202,6 +1199,4 @@ GameViewPlugin::GameViewPlugin() {
 	window_wrapper->hide();
 	window_wrapper->connect("window_visibility_changed", callable_mp(this, &GameViewPlugin::_focus_another_editor).unbind(1));
 #endif // ANDROID_ENABLED
-
-	EditorFeatureProfileManager::get_singleton()->connect("current_feature_profile_changed", callable_mp(this, &GameViewPlugin::_feature_profile_changed));
 }

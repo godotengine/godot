@@ -310,7 +310,7 @@ void test(TestType p_type) {
 	buf.write[flen] = 0;
 
 	String code;
-	code.parse_utf8((const char *)&buf[0]);
+	code.append_utf8((const char *)&buf[0]);
 
 	Vector<String> lines;
 	int last = 0;

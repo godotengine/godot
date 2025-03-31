@@ -973,6 +973,204 @@ static void _append_to_pipe(char *p_bytes, int p_size, String *r_pipe, Mutex *p_
 	}
 }
 
+void OS_Windows::_init_encodings() {
+	encodings[""] = 0;
+	encodings["CP_ACP"] = 0;
+	encodings["CP_OEMCP"] = 1;
+	encodings["CP_MACCP"] = 2;
+	encodings["CP_THREAD_ACP"] = 3;
+	encodings["CP_SYMBOL"] = 42;
+	encodings["IBM037"] = 37;
+	encodings["IBM437"] = 437;
+	encodings["IBM500"] = 500;
+	encodings["ASMO-708"] = 708;
+	encodings["ASMO-449"] = 709;
+	encodings["DOS-710"] = 710;
+	encodings["DOS-720"] = 720;
+	encodings["IBM737"] = 737;
+	encodings["IBM775"] = 775;
+	encodings["IBM850"] = 850;
+	encodings["IBM852"] = 852;
+	encodings["IBM855"] = 855;
+	encodings["IBM857"] = 857;
+	encodings["IBM00858"] = 858;
+	encodings["IBM860"] = 860;
+	encodings["IBM861"] = 861;
+	encodings["DOS-862"] = 862;
+	encodings["IBM863"] = 863;
+	encodings["IBM864"] = 864;
+	encodings["IBM865"] = 865;
+	encodings["CP866"] = 866;
+	encodings["IBM869"] = 869;
+	encodings["IBM870"] = 870;
+	encodings["WINDOWS-874"] = 874;
+	encodings["CP875"] = 875;
+	encodings["SHIFT_JIS"] = 932;
+	encodings["GB2312"] = 936;
+	encodings["KS_C_5601-1987"] = 949;
+	encodings["BIG5"] = 950;
+	encodings["IBM1026"] = 1026;
+	encodings["IBM01047"] = 1047;
+	encodings["IBM01140"] = 1140;
+	encodings["IBM01141"] = 1141;
+	encodings["IBM01142"] = 1142;
+	encodings["IBM01143"] = 1143;
+	encodings["IBM01144"] = 1144;
+	encodings["IBM01145"] = 1145;
+	encodings["IBM01146"] = 1146;
+	encodings["IBM01147"] = 1147;
+	encodings["IBM01148"] = 1148;
+	encodings["IBM01149"] = 1149;
+	encodings["UTF-16"] = 1200;
+	encodings["UNICODEFFFE"] = 1201;
+	encodings["WINDOWS-1250"] = 1250;
+	encodings["WINDOWS-1251"] = 1251;
+	encodings["WINDOWS-1252"] = 1252;
+	encodings["WINDOWS-1253"] = 1253;
+	encodings["WINDOWS-1254"] = 1254;
+	encodings["WINDOWS-1255"] = 1255;
+	encodings["WINDOWS-1256"] = 1256;
+	encodings["WINDOWS-1257"] = 1257;
+	encodings["WINDOWS-1258"] = 1258;
+	encodings["JOHAB"] = 1361;
+	encodings["MACINTOSH"] = 10000;
+	encodings["X-MAC-JAPANESE"] = 10001;
+	encodings["X-MAC-CHINESETRAD"] = 10002;
+	encodings["X-MAC-KOREAN"] = 10003;
+	encodings["X-MAC-ARABIC"] = 10004;
+	encodings["X-MAC-HEBREW"] = 10005;
+	encodings["X-MAC-GREEK"] = 10006;
+	encodings["X-MAC-CYRILLIC"] = 10007;
+	encodings["X-MAC-CHINESESIMP"] = 10008;
+	encodings["X-MAC-ROMANIAN"] = 10010;
+	encodings["X-MAC-UKRAINIAN"] = 10017;
+	encodings["X-MAC-THAI"] = 10021;
+	encodings["X-MAC-CE"] = 10029;
+	encodings["X-MAC-ICELANDIC"] = 10079;
+	encodings["X-MAC-TURKISH"] = 10081;
+	encodings["X-MAC-CROATIAN"] = 10082;
+	encodings["UTF-32"] = 12000;
+	encodings["UTF-32BE"] = 12001;
+	encodings["X-CHINESE_CNS"] = 20000;
+	encodings["X-CP20001"] = 20001;
+	encodings["X_CHINESE-ETEN"] = 20002;
+	encodings["X-CP20003"] = 20003;
+	encodings["X-CP20004"] = 20004;
+	encodings["X-CP20005"] = 20005;
+	encodings["X-IA5"] = 20105;
+	encodings["X-IA5-GERMAN"] = 20106;
+	encodings["X-IA5-SWEDISH"] = 20107;
+	encodings["X-IA5-NORWEGIAN"] = 20108;
+	encodings["US-ASCII"] = 20127;
+	encodings["X-CP20261"] = 20261;
+	encodings["X-CP20269"] = 20269;
+	encodings["IBM273"] = 20273;
+	encodings["IBM277"] = 20277;
+	encodings["IBM278"] = 20278;
+	encodings["IBM280"] = 20280;
+	encodings["IBM284"] = 20284;
+	encodings["IBM285"] = 20285;
+	encodings["IBM290"] = 20290;
+	encodings["IBM297"] = 20297;
+	encodings["IBM420"] = 20420;
+	encodings["IBM423"] = 20423;
+	encodings["IBM424"] = 20424;
+	encodings["X-EBCDIC-KOREANEXTENDED"] = 20833;
+	encodings["IBM-THAI"] = 20838;
+	encodings["KOI8-R"] = 20866;
+	encodings["IBM871"] = 20871;
+	encodings["IBM880"] = 20880;
+	encodings["IBM905"] = 20905;
+	encodings["IBM00924"] = 20924;
+	encodings["EUC-JP"] = 20932;
+	encodings["X-CP20936"] = 20936;
+	encodings["X-CP20949"] = 20949;
+	encodings["CP1025"] = 21025;
+	encodings["KOI8-U"] = 21866;
+	encodings["ISO-8859-1"] = 28591;
+	encodings["ISO-8859-2"] = 28592;
+	encodings["ISO-8859-3"] = 28593;
+	encodings["ISO-8859-4"] = 28594;
+	encodings["ISO-8859-5"] = 28595;
+	encodings["ISO-8859-6"] = 28596;
+	encodings["ISO-8859-7"] = 28597;
+	encodings["ISO-8859-8"] = 28598;
+	encodings["ISO-8859-9"] = 28599;
+	encodings["ISO-8859-13"] = 28603;
+	encodings["ISO-8859-15"] = 28605;
+	encodings["X-EUROPA"] = 29001;
+	encodings["ISO-8859-8-I"] = 38598;
+	encodings["ISO-2022-JP"] = 50220;
+	encodings["CSISO2022JP"] = 50221;
+	encodings["ISO-2022-JP"] = 50222;
+	encodings["ISO-2022-KR"] = 50225;
+	encodings["X-CP50227"] = 50227;
+	encodings["EBCDIC-JP"] = 50930;
+	encodings["EBCDIC-US-JP"] = 50931;
+	encodings["EBCDIC-KR"] = 50933;
+	encodings["EBCDIC-CN-eXT"] = 50935;
+	encodings["EBCDIC-CN"] = 50936;
+	encodings["EBCDIC-US-CN"] = 50937;
+	encodings["EBCDIC-JP-EXT"] = 50939;
+	encodings["EUC-JP"] = 51932;
+	encodings["EUC-CN"] = 51936;
+	encodings["EUC-KR"] = 51949;
+	encodings["HZ-GB-2312"] = 52936;
+	encodings["GB18030"] = 54936;
+	encodings["X-ISCII-DE"] = 57002;
+	encodings["X-ISCII-BE"] = 57003;
+	encodings["X-ISCII-TA"] = 57004;
+	encodings["X-ISCII-TE"] = 57005;
+	encodings["X-ISCII-AS"] = 57006;
+	encodings["X-ISCII-OR"] = 57007;
+	encodings["X-ISCII-KA"] = 57008;
+	encodings["X-ISCII-MA"] = 57009;
+	encodings["X-ISCII-GU"] = 57010;
+	encodings["X-ISCII-PA"] = 57011;
+	encodings["UTF-7"] = 65000;
+	encodings["UTF-8"] = 65001;
+}
+
+String OS_Windows::multibyte_to_string(const String &p_encoding, const PackedByteArray &p_array) const {
+	const int *encoding = encodings.getptr(p_encoding.to_upper());
+	ERR_FAIL_NULL_V_MSG(encoding, String(), "Conversion failed: Unknown encoding");
+
+	LocalVector<wchar_t> wchars;
+	int total_wchars = MultiByteToWideChar(*encoding, 0, (const char *)p_array.ptr(), p_array.size(), nullptr, 0);
+	if (total_wchars == 0) {
+		DWORD err_code = GetLastError();
+		ERR_FAIL_V_MSG(String(), vformat("Conversion failed: %s", format_error_message(err_code)));
+	}
+	wchars.resize(total_wchars);
+	if (MultiByteToWideChar(*encoding, 0, (const char *)p_array.ptr(), p_array.size(), wchars.ptr(), total_wchars) == 0) {
+		DWORD err_code = GetLastError();
+		ERR_FAIL_V_MSG(String(), vformat("Conversion failed: %s", format_error_message(err_code)));
+	}
+
+	return String::utf16((const char16_t *)wchars.ptr(), wchars.size());
+}
+
+PackedByteArray OS_Windows::string_to_multibyte(const String &p_encoding, const String &p_string) const {
+	const int *encoding = encodings.getptr(p_encoding.to_upper());
+	ERR_FAIL_NULL_V_MSG(encoding, PackedByteArray(), "Conversion failed: Unknown encoding");
+
+	Char16String charstr = p_string.utf16();
+	PackedByteArray ret;
+	int total_mbchars = WideCharToMultiByte(*encoding, 0, (const wchar_t *)charstr.ptr(), charstr.size(), nullptr, 0, nullptr, nullptr);
+	if (total_mbchars == 0) {
+		DWORD err_code = GetLastError();
+		ERR_FAIL_V_MSG(PackedByteArray(), vformat("Conversion failed: %s", format_error_message(err_code)));
+	}
+
+	ret.resize(total_mbchars);
+	if (WideCharToMultiByte(*encoding, 0, (const wchar_t *)charstr.ptr(), charstr.size(), (char *)ret.ptrw(), ret.size(), nullptr, nullptr) == 0) {
+		DWORD err_code = GetLastError();
+		ERR_FAIL_V_MSG(PackedByteArray(), vformat("Conversion failed: %s", format_error_message(err_code)));
+	}
+
+	return ret;
+}
+
 Dictionary OS_Windows::get_memory_info() const {
 	Dictionary meminfo;
 
@@ -2462,6 +2660,8 @@ bool OS_Windows::_test_create_rendering_device_and_gl(const String &p_display_dr
 
 OS_Windows::OS_Windows(HINSTANCE _hInstance) {
 	hInstance = _hInstance;
+
+	_init_encodings();
 
 	// Reset CWD to ensure long path is used.
 	Char16String current_dir_name;

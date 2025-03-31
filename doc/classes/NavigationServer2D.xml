@@ -303,6 +303,13 @@
 				Returns all created navigation map [RID]s on the NavigationServer. This returns both 2D and 3D created navigation maps as there is technically no distinction between them.
 			</description>
 		</method>
+		<method name="get_process_info" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="process_info" type="int" enum="NavigationServer2D.ProcessInfo" />
+			<description>
+				Returns information about the current state of the NavigationServer. See [enum ProcessInfo] for a list of available states.
+			</description>
+		</method>
 		<method name="is_baking_navigation_polygon" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="navigation_polygon" type="NavigationPolygon" />
@@ -971,6 +978,13 @@
 				If [param enabled] is [code]true[/code], the navigation [param region] will use edge connections to connect with other navigation regions within proximity of the navigation map edge connection margin.
 			</description>
 		</method>
+		<method name="set_active">
+			<return type="void" />
+			<param index="0" name="active" type="bool" />
+			<description>
+				Control activation of this server.
+			</description>
+		</method>
 		<method name="set_debug_enabled">
 			<return type="void" />
 			<param index="0" name="enabled" type="bool" />
@@ -1006,6 +1020,11 @@
 		</method>
 	</methods>
 	<signals>
+		<signal name="avoidance_debug_changed">
+			<description>
+				Emitted when avoidance debug settings are changed. Only available in debug builds.
+			</description>
+		</signal>
 		<signal name="map_changed">
 			<param index="0" name="map" type="RID" />
 			<description>
@@ -1018,4 +1037,36 @@
 			</description>
 		</signal>
 	</signals>
+	<constants>
+		<constant name="INFO_ACTIVE_MAPS" value="0" enum="ProcessInfo">
+			Constant to get the number of active navigation maps.
+		</constant>
+		<constant name="INFO_REGION_COUNT" value="1" enum="ProcessInfo">
+			Constant to get the number of active navigation regions.
+		</constant>
+		<constant name="INFO_AGENT_COUNT" value="2" enum="ProcessInfo">
+			Constant to get the number of active navigation agents processing avoidance.
+		</constant>
+		<constant name="INFO_LINK_COUNT" value="3" enum="ProcessInfo">
+			Constant to get the number of active navigation links.
+		</constant>
+		<constant name="INFO_POLYGON_COUNT" value="4" enum="ProcessInfo">
+			Constant to get the number of navigation mesh polygons.
+		</constant>
+		<constant name="INFO_EDGE_COUNT" value="5" enum="ProcessInfo">
+			Constant to get the number of navigation mesh polygon edges.
+		</constant>
+		<constant name="INFO_EDGE_MERGE_COUNT" value="6" enum="ProcessInfo">
+			Constant to get the number of navigation mesh polygon edges that were merged due to edge key overlap.
+		</constant>
+		<constant name="INFO_EDGE_CONNECTION_COUNT" value="7" enum="ProcessInfo">
+			Constant to get the number of navigation mesh polygon edges that are considered connected by edge proximity.
+		</constant>
+		<constant name="INFO_EDGE_FREE_COUNT" value="8" enum="ProcessInfo">
+			Constant to get the number of navigation mesh polygon edges that could not be merged but may be still connected by edge proximity or with links.
+		</constant>
+		<constant name="INFO_OBSTACLE_COUNT" value="9" enum="ProcessInfo">
+			Constant to get the number of active navigation obstacles.
+		</constant>
+	</constants>
 </class>

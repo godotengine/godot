@@ -243,12 +243,14 @@ OpenXRActionSetEditor::OpenXRActionSetEditor(Ref<OpenXRActionMap> p_action_map, 
 
 	action_set_name = memnew(LineEdit);
 	action_set_name->set_text(action_set->get_name());
+	action_set_name->set_tooltip_text(TTR("Internal name of the action. Some XR runtimes don't allow spaces or special characters."));
 	action_set_name->set_custom_minimum_size(Size2(150.0, 0.0));
 	action_set_name->connect(SceneStringName(text_changed), callable_mp(this, &OpenXRActionSetEditor::_on_action_set_name_changed));
 	action_set_hb->add_child(action_set_name);
 
 	action_set_localized_name = memnew(LineEdit);
 	action_set_localized_name->set_text(action_set->get_localized_name());
+	action_set_localized_name->set_tooltip_text(TTR("Human-readable name of the action set. This can be displayed to end users."));
 	action_set_localized_name->set_custom_minimum_size(Size2(150.0, 0.0));
 	action_set_localized_name->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	action_set_localized_name->connect(SceneStringName(text_changed), callable_mp(this, &OpenXRActionSetEditor::_on_action_set_localized_name_changed));
@@ -256,6 +258,7 @@ OpenXRActionSetEditor::OpenXRActionSetEditor(Ref<OpenXRActionMap> p_action_map, 
 
 	action_set_priority = memnew(TextEdit);
 	action_set_priority->set_text(itos(action_set->get_priority()));
+	action_set_priority->set_tooltip_text(TTR("Priority of the action set. If multiple action sets bind to the same input, the action set with the highest priority will be updated."));
 	action_set_priority->set_custom_minimum_size(Size2(50.0, 0.0));
 	action_set_priority->connect(SceneStringName(text_changed), callable_mp(this, &OpenXRActionSetEditor::_on_action_set_priority_changed));
 	action_set_hb->add_child(action_set_priority);

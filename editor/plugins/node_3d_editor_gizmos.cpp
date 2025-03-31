@@ -67,7 +67,7 @@ void EditorNode3DGizmo::clear() {
 
 	billboard_handle = false;
 	collision_segments.clear();
-	collision_mesh = Ref<TriangleMesh>();
+	collision_meshes.clear();
 	instances.clear();
 	handles.clear();
 	handle_ids.clear();
@@ -259,11 +259,15 @@ void EditorNode3DGizmo::_update_bvh() {
 		aabb.expand_to(transform.xform(segment_end));
 	}
 
-	if (collision_mesh.is_valid()) {
-		for (const Face3 &face : collision_mesh->get_faces()) {
-			aabb.expand_to(transform.xform(face.vertex[0]));
-			aabb.expand_to(transform.xform(face.vertex[1]));
-			aabb.expand_to(transform.xform(face.vertex[2]));
+	if (!collision_meshes.is_empty()) {
+		for (Ref<TriangleMesh> collision_mesh : collision_meshes) {
+			if (collision_mesh.is_valid()) {
+				for (const Face3 &face : collision_mesh->get_faces()) {
+					aabb.expand_to(transform.xform(face.vertex[0]));
+					aabb.expand_to(transform.xform(face.vertex[1]));
+					aabb.expand_to(transform.xform(face.vertex[2]));
+				}
+			}
 		}
 	}
 
@@ -384,7 +388,7 @@ void EditorNode3DGizmo::add_unscaled_billboard(const Ref<Material> &p_material, 
 }
 
 void EditorNode3DGizmo::add_collision_triangles(const Ref<TriangleMesh> &p_tmesh) {
-	collision_mesh = p_tmesh;
+	collision_meshes.push_back(p_tmesh);
 }
 
 void EditorNode3DGizmo::add_collision_segments(const Vector<Vector3> &p_lines) {
@@ -553,7 +557,7 @@ bool EditorNode3DGizmo::intersect_frustum(const Camera3D *p_camera, const Vector
 		}
 	}
 
-	if (collision_mesh.is_valid()) {
+	if (!collision_meshes.is_empty()) {
 		Transform3D t = spatial_node->get_global_transform();
 
 		Vector3 mesh_scale = t.get_basis().get_scale();
@@ -570,8 +574,13 @@ bool EditorNode3DGizmo::intersect_frustum(const Camera3D *p_camera, const Vector
 		}
 
 		Vector<Vector3> convex_points = Geometry3D::compute_convex_mesh_points(transformed_frustum.ptr(), plane_count);
-		if (collision_mesh->inside_convex_shape(transformed_frustum.ptr(), plane_count, convex_points.ptr(), convex_points.size(), mesh_scale)) {
-			return true;
+
+		for (Ref<TriangleMesh> collision_mesh : collision_meshes) {
+			if (collision_mesh.is_valid()) {
+				if (collision_mesh->inside_convex_shape(transformed_frustum.ptr(), plane_count, convex_points.ptr(), convex_points.size(), mesh_scale)) {
+					return true;
+				}
+			}
 		}
 	}
 
@@ -741,7 +750,7 @@ bool EditorNode3DGizmo::intersect_ray(Camera3D *p_camera, const Point2 &p_point,
 		}
 	}
 
-	if (collision_mesh.is_valid()) {
+	if (!collision_meshes.is_empty()) {
 		Transform3D gt = spatial_node->get_global_transform();
 
 		if (billboard_handle) {
@@ -753,10 +762,14 @@ bool EditorNode3DGizmo::intersect_ray(Camera3D *p_camera, const Point2 &p_point,
 		Vector3 ray_dir = ai.basis.xform(p_camera->project_ray_normal(p_point)).normalized();
 		Vector3 rpos, rnorm;
 
-		if (collision_mesh->intersect_ray(ray_from, ray_dir, rpos, rnorm)) {
-			r_pos = gt.xform(rpos);
-			r_normal = gt.basis.xform(rnorm).normalized();
-			return true;
+		for (Ref<TriangleMesh> collision_mesh : collision_meshes) {
+			if (collision_mesh.is_valid()) {
+				if (collision_mesh->intersect_ray(ray_from, ray_dir, rpos, rnorm)) {
+					r_pos = gt.xform(rpos);
+					r_normal = gt.basis.xform(rnorm).normalized();
+					return true;
+				}
+			}
 		}
 	}
 

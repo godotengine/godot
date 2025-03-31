@@ -920,12 +920,14 @@ _FORCE_INLINE_ bool TextServerFallback::_ensure_cache_for_size(FontFallback *p_f
 
 					switch (sfnt_name.platform_id) {
 						case TT_PLATFORM_APPLE_UNICODE: {
-							p_font_data->font_name.parse_utf16((const char16_t *)sfnt_name.string, sfnt_name.string_len / 2, false);
+							p_font_data->font_name.clear();
+							p_font_data->font_name.append_utf16((const char16_t *)sfnt_name.string, sfnt_name.string_len / 2, false);
 						} break;
 
 						case TT_PLATFORM_MICROSOFT: {
 							if (sfnt_name.encoding_id == TT_MS_ID_UNICODE_CS || sfnt_name.encoding_id == TT_MS_ID_UCS_4) {
-								p_font_data->font_name.parse_utf16((const char16_t *)sfnt_name.string, sfnt_name.string_len / 2, false);
+								p_font_data->font_name.clear();
+								p_font_data->font_name.append_utf16((const char16_t *)sfnt_name.string, sfnt_name.string_len / 2, false);
 							}
 						} break;
 					}

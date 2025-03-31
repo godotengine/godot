@@ -22,6 +22,7 @@ if env["builtin_pcre2"]:
         "pcre2_chartables.c",
         "pcre2_chkdint.c",
         "pcre2_compile.c",
+        "pcre2_compile_class.c",
         "pcre2_config.c",
         "pcre2_context.c",
         "pcre2_convert.c",

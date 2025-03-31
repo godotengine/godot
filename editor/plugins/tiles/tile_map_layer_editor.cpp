@@ -44,10 +44,28 @@
 
 #include "core/input/input.h"
 #include "core/math/geometry_2d.h"
+#include "core/math/random_pcg.h"
 #include "core/os/keyboard.h"
 
 TileMapLayer *TileMapLayerSubEditorPlugin::_get_edited_layer() const {
 	return Object::cast_to<TileMapLayer>(ObjectDB::get_instance(edited_tile_map_layer_id));
+}
+
+void TileMapLayerSubEditorPlugin::draw_tile_coords_over_viewport(Control *p_overlay, const TileMapLayer *p_edited_layer, Ref<TileSet> p_tile_set, bool p_show_rectangle_size, const Vector2i &p_rectangle_origin) {
+	Point2 msgpos = Point2(20 * EDSCALE, p_overlay->get_size().y - 20 * EDSCALE);
+	String text = p_tile_set->local_to_map(p_edited_layer->get_local_mouse_position());
+
+	if (p_show_rectangle_size) {
+		Vector2i rect_size = p_tile_set->local_to_map(p_edited_layer->get_local_mouse_position()) - p_tile_set->local_to_map(p_rectangle_origin);
+		text += vformat(" %s (%dx%d)", TTR("Drawing Rect:"), Math::abs(rect_size.x) + 1, Math::abs(rect_size.y) + 1);
+	}
+
+	Ref<Font> font = p_overlay->get_theme_font(SceneStringName(font), SNAME("Label"));
+	int font_size = p_overlay->get_theme_font_size(SceneStringName(font_size), SNAME("Label"));
+
+	p_overlay->draw_string(font, msgpos + Point2(1, 1), text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, Color(0, 0, 0, 0.8));
+	p_overlay->draw_string(font, msgpos + Point2(-1, -1), text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, Color(0, 0, 0, 0.8));
+	p_overlay->draw_string(font, msgpos, text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, Color(1, 1, 1, 1));
 }
 
 void TileMapLayerEditorTilesPlugin::tile_set_changed() {
@@ -66,7 +84,7 @@ void TileMapLayerEditorTilesPlugin::_on_scattering_spinbox_changed(double p_valu
 }
 
 void TileMapLayerEditorTilesPlugin::_update_toolbar() {
-	// Stop draggig if needed.
+	// Stop dragging if needed.
 	_stop_dragging();
 
 	// Hide all settings.
@@ -783,7 +801,7 @@ bool TileMapLayerEditorTilesPlugin::forward_canvas_gui_input(const Ref<InputEven
 }
 
 void TileMapLayerEditorTilesPlugin::forward_canvas_draw_over_viewport(Control *p_overlay) {
-	TileMapLayer *edited_layer = _get_edited_layer();
+	const TileMapLayer *edited_layer = _get_edited_layer();
 	if (!edited_layer) {
 		return;
 	}
@@ -1000,19 +1018,7 @@ void TileMapLayerEditorTilesPlugin::forward_canvas_draw_over_viewport(Control *p
 			}
 		}
 
-		Ref<Font> font = p_overlay->get_theme_font(SceneStringName(font), SNAME("Label"));
-		int font_size = p_overlay->get_theme_font_size(SceneStringName(font_size), SNAME("Label"));
-		Point2 msgpos = Point2(20 * EDSCALE, p_overlay->get_size().y - 20 * EDSCALE);
-
-		String text = tile_set->local_to_map(edited_layer->get_local_mouse_position());
-		if (drawing_rect) {
-			Vector2i size = tile_set->local_to_map(edited_layer->get_local_mouse_position()) - tile_set->local_to_map(drag_start_mouse_pos);
-			text += vformat(" %s (%dx%d)", TTR("Drawing Rect:"), Math::abs(size.x) + 1, Math::abs(size.y) + 1);
-		}
-
-		p_overlay->draw_string(font, msgpos + Point2(1, 1), text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, Color(0, 0, 0, 0.8));
-		p_overlay->draw_string(font, msgpos + Point2(-1, -1), text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, Color(0, 0, 0, 0.8));
-		p_overlay->draw_string(font, msgpos, text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, Color(1, 1, 1, 1));
+		draw_tile_coords_over_viewport(p_overlay, edited_layer, tile_set, drawing_rect, drag_start_mouse_pos);
 	}
 }
 
@@ -3168,6 +3174,7 @@ void TileMapLayerEditorTerrainsPlugin::forward_canvas_draw_over_viewport(Control
 	Transform2D xform = CanvasItemEditor::get_singleton()->get_canvas_transform() * edited_layer->get_global_transform_with_canvas();
 	Vector2 mpos = edited_layer->get_local_mouse_position();
 	Vector2i tile_shape_size = tile_set->get_tile_size();
+	bool drawing_rect = false;
 
 	// Handle the preview of the tiles to be placed.
 	if (main_vbox_container->is_visible_in_tree() && has_mouse) { // Only if the tilemap editor is opened and the viewport is hovered.
@@ -3214,6 +3221,8 @@ void TileMapLayerEditorTerrainsPlugin::forward_canvas_draw_over_viewport(Control
 						preview.insert(Vector2i(x, y));
 					}
 				}
+
+				drawing_rect = !preview.is_empty();
 				expand_grid = true;
 			} else if (tool_buttons_group->get_pressed_button() == bucket_tool_button && drag_type == DRAG_TYPE_NONE) {
 				// Preview for a fill.
@@ -3272,6 +3281,8 @@ void TileMapLayerEditorTerrainsPlugin::forward_canvas_draw_over_viewport(Control
 				}
 			}
 		}
+
+		draw_tile_coords_over_viewport(p_overlay, edited_layer, tile_set, drawing_rect, drag_start_mouse_pos);
 	}
 }
 
@@ -4274,10 +4285,7 @@ void TileMapLayerEditor::forward_canvas_draw_over_viewport(Control *p_overlay) {
 
 			if (!source || !source->has_tile(tile_atlas_coords) || !source->has_alternative_tile(tile_atlas_coords, tile_alternative_tile)) {
 				// Generate a random color from the hashed identifier of the tiles.
-				Array to_hash;
-				to_hash.push_back(tile_source_id);
-				to_hash.push_back(tile_atlas_coords);
-				to_hash.push_back(tile_alternative_tile);
+				Array to_hash = { tile_source_id, tile_atlas_coords, tile_alternative_tile };
 				uint32_t hash = RandomPCG(to_hash.hash()).rand();
 
 				Color color;

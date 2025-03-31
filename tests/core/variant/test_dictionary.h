@@ -545,11 +545,7 @@ TEST_CASE("[Dictionary] Order and find") {
 	d[12] = "twelve";
 	d["4"] = "four";
 
-	Array keys;
-	keys.append(4);
-	keys.append(8);
-	keys.append(12);
-	keys.append("4");
+	Array keys = { 4, 8, 12, "4" };
 
 	CHECK_EQ(d.keys(), keys);
 	CHECK_EQ(d.find_key("four"), Variant(4));

@@ -565,7 +565,7 @@ String FileAccess::get_as_utf8_string(bool p_skip_cr) const {
 	w[len] = 0;
 
 	String s;
-	s.parse_utf8((const char *)w, len, p_skip_cr);
+	s.append_utf8((const char *)w, len, p_skip_cr);
 	return s;
 }
 
@@ -745,7 +745,7 @@ String FileAccess::get_pascal_string() {
 	cs[sl] = 0;
 
 	String ret;
-	ret.parse_utf8(cs.ptr(), sl);
+	ret.append_utf8(cs.ptr(), sl);
 	return ret;
 }
 
@@ -838,7 +838,7 @@ String FileAccess::get_file_as_string(const String &p_path, Error *r_error) {
 	}
 
 	String ret;
-	ret.parse_utf8((const char *)array.ptr(), array.size());
+	ret.append_utf8((const char *)array.ptr(), array.size());
 	return ret;
 }
 

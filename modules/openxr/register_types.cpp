@@ -36,9 +36,12 @@
 #include "action_map/openxr_haptic_feedback.h"
 #include "action_map/openxr_interaction_profile.h"
 #include "action_map/openxr_interaction_profile_metadata.h"
+#include "openxr_api_extension.h"
 #include "openxr_interface.h"
 
+#ifndef DISABLE_DEPRECATED
 #include "extensions/openxr_extension_wrapper_extension.h"
+#endif // DISABLE_DEPRECATED
 
 #include "scene/openxr_composition_layer.h"
 #include "scene/openxr_composition_layer_cylinder.h"
@@ -112,8 +115,10 @@ static void _editor_init() {
 
 void initialize_openxr_module(ModuleInitializationLevel p_level) {
 	if (p_level == MODULE_INITIALIZATION_LEVEL_CORE) {
-		GDREGISTER_ABSTRACT_CLASS(OpenXRExtensionWrapper);
+		GDREGISTER_VIRTUAL_CLASS(OpenXRExtensionWrapper);
+#ifndef DISABLE_DEPRECATED
 		GDREGISTER_VIRTUAL_CLASS(OpenXRExtensionWrapperExtension);
+#endif // DISABLE_DEPRECATED
 		GDREGISTER_ABSTRACT_CLASS(OpenXRFutureResult); // Declared abstract, should never be instantiated by a user (Q or should this be internal?)
 		GDREGISTER_CLASS(OpenXRFutureExtension);
 		GDREGISTER_CLASS(OpenXRAPIExtension);

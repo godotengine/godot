@@ -183,6 +183,12 @@ void EditorResourcePicker::_resource_saved(Object *p_resource) {
 }
 
 void EditorResourcePicker::_update_menu() {
+	if (edit_menu && edit_menu->is_visible()) {
+		edit_button->set_pressed(false);
+		edit_menu->hide();
+		return;
+	}
+
 	_update_menu_items();
 
 	Rect2 gt = edit_button->get_screen_rect();
@@ -500,6 +506,9 @@ void EditorResourcePicker::set_create_options(Object *p_menu_node) {
 
 		_ensure_allowed_types();
 		HashSet<StringName> allowed_types = allowed_types_without_convert;
+		if (!allowed_types.is_empty()) {
+			edit_menu->add_separator(TTRC("New"));
+		}
 
 		for (const StringName &E : allowed_types) {
 			const String &t = E;
@@ -512,7 +521,8 @@ void EditorResourcePicker::set_create_options(Object *p_menu_node) {
 
 			Ref<Texture2D> icon = EditorNode::get_singleton()->get_class_icon(t, "Object");
 			int id = TYPE_BASE_ID + idx;
-			edit_menu->add_icon_item(icon, vformat(TTR("New %s"), t), id);
+			edit_menu->add_icon_item(icon, t, id);
+			edit_menu->set_item_auto_translate_mode(-1, AUTO_TRANSLATE_MODE_DISABLED);
 
 			HashMap<String, DocData::ClassDoc>::Iterator class_doc = EditorHelp::get_doc_data()->class_list.find(t);
 			if (class_doc) {
@@ -549,6 +559,12 @@ void EditorResourcePicker::_button_input(const Ref<InputEvent> &p_event) {
 		// a valid resource or the Picker is editable, as
 		// there will otherwise be nothing to display.
 		if (edited_resource.is_valid() || is_editable()) {
+			if (edit_menu && edit_menu->is_visible()) {
+				edit_button->set_pressed(false);
+				edit_menu->hide();
+				return;
+			}
+
 			_update_menu_items();
 
 			Vector2 pos = get_screen_position() + mb->get_position();
@@ -1019,8 +1035,7 @@ void EditorResourcePicker::_gather_resources_to_duplicate(const Ref<Resource> p_
 	p_item->set_icon(0, EditorNode::get_singleton()->get_object_icon(p_resource.ptr()));
 	p_item->set_editable(0, true);
 
-	Array meta;
-	meta.append(p_resource);
+	Array meta = { p_resource };
 	p_item->set_metadata(0, meta);
 
 	if (!p_property_name.is_empty()) {

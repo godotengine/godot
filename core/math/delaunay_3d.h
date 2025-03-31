@@ -30,14 +30,13 @@
 
 #pragma once
 
-#include "core/io/file_access.h"
 #include "core/math/aabb.h"
 #include "core/math/projection.h"
 #include "core/math/vector3.h"
+#include "core/templates/list.h"
 #include "core/templates/local_vector.h"
 #include "core/templates/oa_hash_map.h"
 #include "core/templates/vector.h"
-#include "core/variant/variant.h"
 
 #include "thirdparty/misc/r128.h"
 

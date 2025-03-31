@@ -180,10 +180,15 @@ public:
 		// do a lot of referencing on references and stuff
 		// mutexes will avoid more crashes?
 
-		if (reference && reference->unreference()) {
-			memdelete(reference);
+		if (reference) {
+			// NOTE: `reinterpret_cast` is "safe" here because we know `T` has simple linear
+			// inheritance to `RefCounted`. This guarantees that `T * == `RefCounted *`, which
+			// allows us to declare `Ref<T>` with forward declared `T` types.
+			if (reinterpret_cast<RefCounted *>(reference)->unreference()) {
+				memdelete(reinterpret_cast<RefCounted *>(reference));
+			}
+			reference = nullptr;
 		}
-		reference = nullptr;
 	}
 
 	template <typename... VarArgs>

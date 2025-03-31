@@ -396,7 +396,10 @@ Error VariantParser::get_token(Stream *p_stream, Token &r_token, int &line, Stri
 				}
 
 				if (p_stream->is_utf8()) {
-					str.parse_utf8(str.ascii(true).get_data());
+					// Re-interpret the string we built as ascii.
+					CharString string_as_ascii = str.ascii(true);
+					str.clear();
+					str.append_utf8(string_as_ascii);
 				}
 				if (string_name) {
 					r_token.type = TK_STRING_NAME;
@@ -1734,7 +1737,8 @@ Error VariantParser::_parse_tag(Token &token, Stream *p_stream, int &line, Strin
 				}
 				cs += c;
 			}
-			r_tag.name.parse_utf8(cs.get_data(), cs.length());
+			r_tag.name.clear();
+			r_tag.name.append_utf8(cs.get_data(), cs.length());
 		} else {
 			while (true) {
 				char32_t c = p_stream->get_char();

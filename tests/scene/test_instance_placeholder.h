@@ -502,10 +502,11 @@ TEST_CASE("[SceneTree][InstancePlaceholder] Instance a PackedScene containing an
 	REQUIRE(final_node->get_reference_property().identity_compare(instanced_main_node->get_child(1, true)));
 	Array final_array = final_node->get_reference_array_property();
 	REQUIRE(final_array.size() == 3);
-	Array wanted_node_array;
-	wanted_node_array.push_back(instanced_main_node->get_child(2, true)); // ExternalArrayMember
-	wanted_node_array.push_back(final_node->get_child(1, true)); // ArrayRef1
-	wanted_node_array.push_back(final_node->get_child(2, true)); // ArrayRef2
+	Array wanted_node_array = {
+		instanced_main_node->get_child(2, true), // ExternalArrayMember
+		final_node->get_child(1, true), // ArrayRef1
+		final_node->get_child(2, true) // ArrayRef2
+	};
 
 	// Iterate over all nodes, since the ordering is not guaranteed.
 	for (int i = 0; i < wanted_node_array.size(); i++) {

@@ -648,7 +648,7 @@ bool PList::load_file(const String &p_filename) {
 		ERR_FAIL_COND_V(err != OK, false);
 
 		String ret;
-		ret.parse_utf8((const char *)array.ptr(), array.size());
+		ret.append_utf8((const char *)array.ptr(), array.size());
 		String err_str;
 		bool ok = load_string(ret, err_str);
 		ERR_FAIL_COND_V_MSG(!ok, false, "PList: " + err_str);

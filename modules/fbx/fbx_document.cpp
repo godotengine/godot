@@ -1656,8 +1656,7 @@ void FBXDocument::_generate_scene_node(Ref<FBXState> p_state, const GLTFNodeInde
 	// Add the node we generated and set the owner to the scene root.
 	p_scene_parent->add_child(current_node, true);
 	if (current_node != p_scene_root) {
-		Array args;
-		args.append(p_scene_root);
+		Array args = { p_scene_root };
 		current_node->propagate_call(StringName("set_owner"), args);
 	}
 	current_node->set_transform(fbx_node->transform);
@@ -1744,8 +1743,7 @@ void FBXDocument::_generate_skeleton_bone_node(Ref<FBXState> p_state, const GLTF
 		// Add the node we generated and set the owner to the scene root.
 		p_scene_parent->add_child(current_node, true);
 		if (current_node != p_scene_root) {
-			Array args;
-			args.append(p_scene_root);
+			Array args = { p_scene_root };
 			current_node->propagate_call(StringName("set_owner"), args);
 		}
 		// Do not set transform here. Transform is already applied to our bone.

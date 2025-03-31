@@ -1740,8 +1740,8 @@ Error BindingsGenerator::generate_cs_core_project(const String &p_proj_dir) {
 	da->make_dir("Generated");
 	da->make_dir("Generated/GodotObjects");
 
-	String base_gen_dir = path::join(p_proj_dir, "Generated");
-	String godot_objects_gen_dir = path::join(base_gen_dir, "GodotObjects");
+	String base_gen_dir = Path::join(p_proj_dir, "Generated");
+	String godot_objects_gen_dir = Path::join(base_gen_dir, "GodotObjects");
 
 	Vector<String> compile_items;
 
@@ -1749,7 +1749,7 @@ Error BindingsGenerator::generate_cs_core_project(const String &p_proj_dir) {
 	{
 		StringBuilder constants_source;
 		_generate_global_constants(constants_source);
-		String output_file = path::join(base_gen_dir, BINDINGS_GLOBAL_SCOPE_CLASS "_constants.cs");
+		String output_file = Path::join(base_gen_dir, BINDINGS_GLOBAL_SCOPE_CLASS "_constants.cs");
 		Error save_err = _save_file(output_file, constants_source);
 		if (save_err != OK) {
 			return save_err;
@@ -1762,7 +1762,7 @@ Error BindingsGenerator::generate_cs_core_project(const String &p_proj_dir) {
 	{
 		StringBuilder extensions_source;
 		_generate_array_extensions(extensions_source);
-		String output_file = path::join(base_gen_dir, BINDINGS_GLOBAL_SCOPE_CLASS "_extensions.cs");
+		String output_file = Path::join(base_gen_dir, BINDINGS_GLOBAL_SCOPE_CLASS "_extensions.cs");
 		Error save_err = _save_file(output_file, extensions_source);
 		if (save_err != OK) {
 			return save_err;
@@ -1778,7 +1778,7 @@ Error BindingsGenerator::generate_cs_core_project(const String &p_proj_dir) {
 			continue;
 		}
 
-		String output_file = path::join(godot_objects_gen_dir, itype.proxy_name + ".cs");
+		String output_file = Path::join(godot_objects_gen_dir, itype.proxy_name + ".cs");
 		Error err = _generate_cs_type(itype, output_file);
 
 		if (err == ERR_SKIP) {
@@ -1845,7 +1845,7 @@ Error BindingsGenerator::generate_cs_core_project(const String &p_proj_dir) {
 
 		cs_built_in_ctors_content.append(CLOSE_BLOCK);
 
-		String constructors_file = path::join(base_gen_dir, BINDINGS_CLASS_CONSTRUCTOR ".cs");
+		String constructors_file = Path::join(base_gen_dir, BINDINGS_CLASS_CONSTRUCTOR ".cs");
 		Error err = _save_file(constructors_file, cs_built_in_ctors_content);
 
 		if (err != OK) {
@@ -1888,7 +1888,7 @@ Error BindingsGenerator::generate_cs_core_project(const String &p_proj_dir) {
 
 	cs_icalls_content.append(CLOSE_BLOCK);
 
-	String internal_methods_file = path::join(base_gen_dir, BINDINGS_CLASS_NATIVECALLS ".cs");
+	String internal_methods_file = Path::join(base_gen_dir, BINDINGS_CLASS_NATIVECALLS ".cs");
 
 	Error err = _save_file(internal_methods_file, cs_icalls_content);
 	if (err != OK) {
@@ -1904,14 +1904,14 @@ Error BindingsGenerator::generate_cs_core_project(const String &p_proj_dir) {
 								  "  <ItemGroup>\n");
 
 	for (int i = 0; i < compile_items.size(); i++) {
-		String include = path::relative_to(compile_items[i], p_proj_dir).replace("/", "\\");
+		String include = Path::relative_to(compile_items[i], p_proj_dir).replace("/", "\\");
 		includes_props_content.append("    <Compile Include=\"" + include + "\" />\n");
 	}
 
 	includes_props_content.append("  </ItemGroup>\n"
 								  "</Project>\n");
 
-	String includes_props_file = path::join(base_gen_dir, "GeneratedIncludes.props");
+	String includes_props_file = Path::join(base_gen_dir, "GeneratedIncludes.props");
 
 	err = _save_file(includes_props_file, includes_props_content);
 	if (err != OK) {
@@ -1936,8 +1936,8 @@ Error BindingsGenerator::generate_cs_editor_project(const String &p_proj_dir) {
 	da->make_dir("Generated");
 	da->make_dir("Generated/GodotObjects");
 
-	String base_gen_dir = path::join(p_proj_dir, "Generated");
-	String godot_objects_gen_dir = path::join(base_gen_dir, "GodotObjects");
+	String base_gen_dir = Path::join(p_proj_dir, "Generated");
+	String godot_objects_gen_dir = Path::join(base_gen_dir, "GodotObjects");
 
 	Vector<String> compile_items;
 
@@ -1948,7 +1948,7 @@ Error BindingsGenerator::generate_cs_editor_project(const String &p_proj_dir) {
 			continue;
 		}
 
-		String output_file = path::join(godot_objects_gen_dir, itype.proxy_name + ".cs");
+		String output_file = Path::join(godot_objects_gen_dir, itype.proxy_name + ".cs");
 		Error err = _generate_cs_type(itype, output_file);
 
 		if (err == ERR_SKIP) {
@@ -2003,7 +2003,7 @@ Error BindingsGenerator::generate_cs_editor_project(const String &p_proj_dir) {
 
 		cs_built_in_ctors_content.append(CLOSE_BLOCK);
 
-		String constructors_file = path::join(base_gen_dir, BINDINGS_CLASS_CONSTRUCTOR_EDITOR ".cs");
+		String constructors_file = Path::join(base_gen_dir, BINDINGS_CLASS_CONSTRUCTOR_EDITOR ".cs");
 		Error err = _save_file(constructors_file, cs_built_in_ctors_content);
 
 		if (err != OK) {
@@ -2048,7 +2048,7 @@ Error BindingsGenerator::generate_cs_editor_project(const String &p_proj_dir) {
 
 	cs_icalls_content.append(CLOSE_BLOCK);
 
-	String internal_methods_file = path::join(base_gen_dir, BINDINGS_CLASS_NATIVECALLS_EDITOR ".cs");
+	String internal_methods_file = Path::join(base_gen_dir, BINDINGS_CLASS_NATIVECALLS_EDITOR ".cs");
 
 	Error err = _save_file(internal_methods_file, cs_icalls_content);
 	if (err != OK) {
@@ -2064,14 +2064,14 @@ Error BindingsGenerator::generate_cs_editor_project(const String &p_proj_dir) {
 								  "  <ItemGroup>\n");
 
 	for (int i = 0; i < compile_items.size(); i++) {
-		String include = path::relative_to(compile_items[i], p_proj_dir).replace("/", "\\");
+		String include = Path::relative_to(compile_items[i], p_proj_dir).replace("/", "\\");
 		includes_props_content.append("    <Compile Include=\"" + include + "\" />\n");
 	}
 
 	includes_props_content.append("  </ItemGroup>\n"
 								  "</Project>\n");
 
-	String includes_props_file = path::join(base_gen_dir, "GeneratedIncludes.props");
+	String includes_props_file = Path::join(base_gen_dir, "GeneratedIncludes.props");
 
 	err = _save_file(includes_props_file, includes_props_content);
 	if (err != OK) {
@@ -2084,7 +2084,7 @@ Error BindingsGenerator::generate_cs_editor_project(const String &p_proj_dir) {
 Error BindingsGenerator::generate_cs_api(const String &p_output_dir) {
 	ERR_FAIL_COND_V(!initialized, ERR_UNCONFIGURED);
 
-	String output_dir = path::abspath(path::realpath(p_output_dir));
+	String output_dir = Path::abspath(Path::realpath(p_output_dir));
 
 	Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 	ERR_FAIL_COND_V(da.is_null(), ERR_CANT_CREATE);

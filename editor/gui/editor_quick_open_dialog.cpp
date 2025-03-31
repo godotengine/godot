@@ -373,12 +373,36 @@ void QuickOpenResultContainer::init(const Vector<StringName> &p_base_types) {
 	_create_initial_results();
 }
 
+void QuickOpenResultContainer::_sort_filepaths(int p_max_results) {
+	struct FilepathComparator {
+		bool operator()(const String &p_lhs, const String &p_rhs) const {
+			// Sort on (length, alphanumeric) to prioritize shorter filepaths
+			return p_lhs.length() == p_rhs.length() ? p_lhs < p_rhs : p_lhs.length() < p_rhs.length();
+		}
+	};
+
+	SortArray<String, FilepathComparator> sorter;
+	if (filepaths.size() > p_max_results) {
+		sorter.partial_sort(0, filepaths.size(), p_max_results, filepaths.ptrw());
+	} else {
+		sorter.sort(filepaths.ptrw(), filepaths.size());
+	}
+}
+
 void QuickOpenResultContainer::_create_initial_results() {
 	file_type_icons.clear();
 	file_type_icons.insert(SNAME("__default_icon"), get_editor_theme_icon(SNAME("Object")));
 	filepaths.clear();
 	filetypes.clear();
+	history_set.clear();
+	Vector<QuickOpenResultCandidate> *history = _get_history();
+	if (history) {
+		for (const QuickOpenResultCandidate &candidate : *history) {
+			history_set.insert(candidate.file_path);
+		}
+	}
 	_find_filepaths_in_folder(EditorFileSystem::get_singleton()->get_filesystem(), include_addons_toggle->is_pressed());
+	_sort_filepaths(result_items.size());
 	max_total_results = MIN(filepaths.size(), result_items.size());
 	update_results();
 }
@@ -416,25 +440,26 @@ void QuickOpenResultContainer::set_query_and_update(const String &p_query) {
 	update_results();
 }
 
-void QuickOpenResultContainer::_setup_candidate(QuickOpenResultCandidate &p_candidate, const String &p_filepath) {
-	ResourceUID::ID id = EditorFileSystem::get_singleton()->get_file_uid(p_filepath);
-	if (id == ResourceUID::INVALID_ID) {
-		p_candidate.file_path = p_filepath;
-	} else {
-		p_candidate.file_path = ResourceUID::get_singleton()->id_to_text(id);
+Vector<QuickOpenResultCandidate> *QuickOpenResultContainer::_get_history() {
+	if (base_types.size() == 1) {
+		return selected_history.lookup_ptr(base_types[0]);
 	}
-	p_candidate.result = nullptr;
+	return nullptr;
+}
 
+void QuickOpenResultContainer::_setup_candidate(QuickOpenResultCandidate &p_candidate, const String &p_filepath) {
+	p_candidate.file_path = ResourceUID::ensure_path(p_filepath);
+	p_candidate.result = nullptr;
 	StringName actual_type;
 	{
 		StringName *actual_type_ptr = filetypes.lookup_ptr(p_filepath);
 		if (actual_type_ptr) {
 			actual_type = *actual_type_ptr;
 		} else {
-			ERR_PRINT(vformat("EditorQuickOpenDialog: No type for path %s.", p_filepath));
+			ERR_PRINT(vformat("EditorQuickOpenDialog: No type for path %s.", p_candidate.file_path));
 		}
 	}
-	EditorResourcePreview::PreviewItem item = EditorResourcePreview::get_singleton()->get_resource_preview_if_available(p_filepath);
+	EditorResourcePreview::PreviewItem item = EditorResourcePreview::get_singleton()->get_resource_preview_if_available(p_candidate.file_path);
 	if (item.preview.is_valid()) {
 		p_candidate.thumbnail = item.preview;
 	} else if (file_type_icons.has(actual_type)) {
@@ -453,7 +478,6 @@ void QuickOpenResultContainer::_setup_candidate(QuickOpenResultCandidate &p_cand
 }
 
 void QuickOpenResultContainer::update_results() {
-	showing_history = false;
 	candidates.clear();
 	if (query.is_empty()) {
 		_use_default_candidates();
@@ -464,17 +488,18 @@ void QuickOpenResultContainer::update_results() {
 }
 
 void QuickOpenResultContainer::_use_default_candidates() {
-	if (filepaths.size() <= SHOW_ALL_FILES_THRESHOLD) {
-		candidates.resize(filepaths.size());
-		QuickOpenResultCandidate *candidates_write = candidates.ptrw();
-		for (const String &filepath : filepaths) {
-			_setup_candidate(*candidates_write++, filepath);
+	Vector<QuickOpenResultCandidate> *history = _get_history();
+	if (history) {
+		candidates.append_array(*history);
+	}
+	int count = candidates.size();
+	candidates.resize(MIN(max_total_results, filepaths.size()));
+	for (const String &filepath : filepaths) {
+		if (count >= max_total_results) {
+			break;
 		}
-	} else if (base_types.size() == 1) {
-		Vector<QuickOpenResultCandidate> *history = selected_history.lookup_ptr(base_types[0]);
-		if (history) {
-			showing_history = true;
-			candidates.append_array(*history);
+		if (!history || !history_set.has(filepath)) {
+			_setup_candidate(candidates.write[count++], filepath);
 		}
 	}
 }
@@ -524,8 +549,6 @@ void QuickOpenResultContainer::_update_result_items(int p_new_visible_results_co
 	if (!any_results) {
 		if (filepaths.is_empty()) {
 			no_results_label->set_text(TTR("No files found for this type"));
-		} else if (query.is_empty()) {
-			no_results_label->set_text(TTR("Start searching to find files..."));
 		} else {
 			no_results_label->set_text(TTR("No results found"));
 		}
@@ -621,7 +644,8 @@ void QuickOpenResultContainer::_select_item(int p_index) {
 	}
 
 	result_items[selection_index]->highlight_item(true);
-	file_details_path->set_text(get_selected() + (showing_history ? TTR(" (recently opened)") : ""));
+	bool in_history = history_set.has(candidates[selection_index].file_path);
+	file_details_path->set_text(get_selected() + (in_history ? TTR(" (recently opened)") : ""));
 
 	const QuickOpenResultItem *item = result_items[selection_index];
 
@@ -727,7 +751,7 @@ bool QuickOpenResultContainer::has_nothing_selected() const {
 
 String QuickOpenResultContainer::get_selected() const {
 	ERR_FAIL_COND_V_MSG(has_nothing_selected(), String(), "Tried to get selected file, but nothing was selected.");
-	return ResourceUID::ensure_path(candidates[selection_index].file_path);
+	return candidates[selection_index].file_path;
 }
 
 QuickOpenDisplayMode QuickOpenResultContainer::get_adaptive_display_mode(const Vector<StringName> &p_base_types) {
@@ -747,6 +771,11 @@ QuickOpenDisplayMode QuickOpenResultContainer::get_adaptive_display_mode(const V
 	}
 
 	return QuickOpenDisplayMode::LIST;
+}
+
+String _get_uid_string(const String &p_filepath) {
+	ResourceUID::ID id = EditorFileSystem::get_singleton()->get_file_uid(p_filepath);
+	return id == ResourceUID::INVALID_ID ? p_filepath : ResourceUID::get_singleton()->id_to_text(id);
 }
 
 void QuickOpenResultContainer::save_selected_item() {
@@ -773,6 +802,7 @@ void QuickOpenResultContainer::save_selected_item() {
 	}
 
 	selected.result = nullptr;
+	history_set.insert(selected.file_path);
 	type_history->insert(0, selected);
 	if (type_history->size() > MAX_HISTORY_SIZE) {
 		type_history->resize(MAX_HISTORY_SIZE);
@@ -785,7 +815,7 @@ void QuickOpenResultContainer::save_selected_item() {
 
 		int i = 0;
 		for (const QuickOpenResultCandidate &candidate : *type_history) {
-			paths_write[i] = candidate.file_path;
+			paths_write[i] = _get_uid_string(candidate.file_path);
 			i++;
 		}
 	}
@@ -796,6 +826,7 @@ void QuickOpenResultContainer::save_selected_item() {
 void QuickOpenResultContainer::cleanup() {
 	num_visible_results = 0;
 	candidates.clear();
+	history_set.clear();
 	_select_item(-1);
 
 	for (QuickOpenResultItem *item : result_items) {
@@ -981,9 +1012,8 @@ QuickOpenResultListItem::QuickOpenResultListItem() {
 
 void QuickOpenResultListItem::set_content(const QuickOpenResultCandidate &p_candidate, bool p_highlight) {
 	thumbnail->set_texture(p_candidate.thumbnail);
-	const String file_path = ResourceUID::ensure_path(p_candidate.file_path);
-	name->set_text(file_path.get_file());
-	path->set_text(file_path.get_base_dir());
+	name->set_text(p_candidate.file_path.get_file());
+	path->set_text(p_candidate.file_path.get_base_dir());
 	name->reset_highlights();
 	path->reset_highlights();
 
@@ -1053,9 +1083,8 @@ QuickOpenResultGridItem::QuickOpenResultGridItem() {
 
 void QuickOpenResultGridItem::set_content(const QuickOpenResultCandidate &p_candidate, bool p_highlight) {
 	thumbnail->set_texture(p_candidate.thumbnail);
-	const String file_path = ResourceUID::ensure_path(p_candidate.file_path);
-	name->set_text(file_path.get_file());
-	name->set_tooltip_text(file_path);
+	name->set_text(p_candidate.file_path.get_file());
+	name->set_tooltip_text(p_candidate.file_path);
 	name->reset_highlights();
 
 	if (p_highlight && p_candidate.result != nullptr) {

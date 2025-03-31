@@ -856,6 +856,8 @@ EditorDockManager::EditorDockManager() {
 
 void DockContextPopup::_notification(int p_what) {
 	switch (p_what) {
+		case Control::NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
+		case NOTIFICATION_TRANSLATION_CHANGED:
 		case NOTIFICATION_THEME_CHANGED: {
 			if (make_float_button) {
 				make_float_button->set_button_icon(get_editor_theme_icon(SNAME("MakeFloating")));

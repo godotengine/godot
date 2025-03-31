@@ -38,6 +38,7 @@
 #include "core/io/image_loader.h"
 #include "core/io/resource_uid.h"
 #include "core/io/zip_io.h"
+#include "core/math/random_pcg.h"
 #include "core/version.h"
 #include "editor/editor_file_system.h"
 #include "editor/editor_node.h"
@@ -255,6 +256,10 @@ Error EditorExportPlatform::_save_pack_file(void *p_userdata, const String &p_pa
 	PackData *pd = (PackData *)p_userdata;
 
 	String simplified_path = p_path.simplify_path();
+	if (simplified_path.begins_with("uid://")) {
+		simplified_path = ResourceUID::uid_to_path(simplified_path).simplify_path();
+		print_verbose(vformat(R"(UID referenced exported file name "%s" was replaced with "%s".)", p_path, simplified_path));
+	}
 
 	SavedData sd;
 	sd.path_utf8 = simplified_path.trim_prefix("res://").utf8();
@@ -290,7 +295,7 @@ Error EditorExportPlatform::_save_pack_file(void *p_userdata, const String &p_pa
 				seed = ((seed << 5) + seed) ^ ptr[i];
 			}
 
-			RandomPCG rng = RandomPCG(seed, RandomPCG::DEFAULT_INC);
+			RandomPCG rng = RandomPCG(seed);
 			iv.resize(16);
 			for (int i = 0; i < 16; i++) {
 				iv.write[i] = rng.rand() % 256;
@@ -349,7 +354,13 @@ Error EditorExportPlatform::_save_pack_patch_file(void *p_userdata, const String
 Error EditorExportPlatform::_save_zip_file(void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total, const Vector<String> &p_enc_in_filters, const Vector<String> &p_enc_ex_filters, const Vector<uint8_t> &p_key, uint64_t p_seed) {
 	ERR_FAIL_COND_V_MSG(p_total < 1, ERR_PARAMETER_RANGE_ERROR, "Must select at least one file to export.");
 
-	String path = p_path.replace_first("res://", "");
+	String path = p_path.simplify_path();
+	if (path.begins_with("uid://")) {
+		path = ResourceUID::uid_to_path(path).simplify_path();
+		print_verbose(vformat(R"(UID referenced exported file name "%s" was replaced with "%s".)", p_path, path));
+	}
+
+	path = path.replace_first("res://", "");
 
 	ZipData *zd = (ZipData *)p_userdata;
 
@@ -1013,7 +1024,13 @@ Error EditorExportPlatform::_script_save_file(void *p_userdata, const String &p_
 	Callable cb = ((ScriptCallbackData *)p_userdata)->file_cb;
 	ERR_FAIL_COND_V(!cb.is_valid(), FAILED);
 
-	Variant path = p_path;
+	String simplified_path = p_path.simplify_path();
+	if (simplified_path.begins_with("uid://")) {
+		simplified_path = ResourceUID::uid_to_path(simplified_path).simplify_path();
+		print_verbose(vformat(R"(UID referenced exported file name "%s" was replaced with "%s".)", p_path, simplified_path));
+	}
+
+	Variant path = simplified_path;
 	Variant data = p_data;
 	Variant file = p_file;
 	Variant total = p_total;
@@ -2022,7 +2039,7 @@ Error EditorExportPlatform::save_pack(const Ref<EditorExportPreset> &p_preset, b
 				seed = ((seed << 5) + seed) ^ pd.file_ofs[i].size;
 			}
 
-			RandomPCG rng = RandomPCG(seed, RandomPCG::DEFAULT_INC);
+			RandomPCG rng = RandomPCG(seed);
 			iv.resize(16);
 			for (int i = 0; i < 16; i++) {
 				iv.write[i] = rng.rand() % 256;

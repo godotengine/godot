@@ -32,7 +32,6 @@
 
 #include "core/math/delaunay_3d.h"
 #include "core/math/face3.h"
-#include "core/object/object.h"
 #include "core/templates/local_vector.h"
 #include "core/templates/vector.h"
 

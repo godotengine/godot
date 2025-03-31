@@ -199,6 +199,14 @@ void OS::set_stderr_enabled(bool p_enabled) {
 	_stderr_enabled = p_enabled;
 }
 
+String OS::multibyte_to_string(const String &p_encoding, const PackedByteArray &p_array) const {
+	return String();
+}
+
+PackedByteArray OS::string_to_multibyte(const String &p_encoding, const String &p_string) const {
+	return PackedByteArray();
+}
+
 int OS::get_exit_code() const {
 	return _exit_code;
 }

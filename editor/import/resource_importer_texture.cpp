@@ -82,11 +82,6 @@ void ResourceImporterTexture::_texture_reimport_normal(const Ref<CompressedTextu
 	singleton->make_flags[path].flags |= MAKE_NORMAL_FLAG;
 }
 
-inline void ResourceImporterTexture::_print_callback_message(const String &p_message) {
-	EditorToaster::get_singleton()->popup_str(p_message);
-	print_line(p_message);
-}
-
 void ResourceImporterTexture::update_imports() {
 	if (EditorFileSystem::get_singleton()->is_scanning() || EditorFileSystem::get_singleton()->is_importing()) {
 		return; // Don't update when EditorFileSystem is doing something else.
@@ -110,7 +105,7 @@ void ResourceImporterTexture::update_imports() {
 		bool changed = false;
 
 		if (E.value.flags & MAKE_NORMAL_FLAG && int(cf->get_value("params", "compress/normal_map")) == 0) {
-			_print_callback_message(
+			print_line(
 					vformat(TTR("%s: Texture detected as used as a normal map in 3D. Enabling red-green texture compression to reduce memory usage (blue channel is discarded)."),
 							String(E.key)));
 
@@ -119,7 +114,7 @@ void ResourceImporterTexture::update_imports() {
 		}
 
 		if (E.value.flags & MAKE_ROUGHNESS_FLAG && int(cf->get_value("params", "roughness/mode")) == 0) {
-			_print_callback_message(
+			print_line(
 					vformat(TTR("%s: Texture detected as used as a roughness map in 3D. Enabling roughness limiter based on the detected associated normal map at %s."),
 							String(E.key), E.value.normal_path_for_roughness));
 
@@ -144,7 +139,7 @@ void ResourceImporterTexture::update_imports() {
 				compress_string = "Basis Universal";
 			}
 
-			_print_callback_message(
+			print_line(
 					vformat(TTR("%s: Texture detected as used in 3D. Enabling mipmap generation and setting the texture compression mode to %s."),
 							String(E.key), compress_string));
 

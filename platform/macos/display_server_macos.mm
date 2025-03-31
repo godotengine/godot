@@ -513,10 +513,10 @@ void DisplayServerMacOS::_update_keyboard_layouts() const {
 	for (NSUInteger i = 0; i < [list_ime count]; i++) {
 		LayoutInfo ly;
 		NSString *name = (__bridge NSString *)TISGetInputSourceProperty((__bridge TISInputSourceRef)[list_ime objectAtIndex:i], kTISPropertyLocalizedName);
-		ly.name.parse_utf8([name UTF8String]);
+		ly.name.append_utf8([name UTF8String]);
 
 		NSArray *langs = (__bridge NSArray *)TISGetInputSourceProperty((__bridge TISInputSourceRef)[list_ime objectAtIndex:i], kTISPropertyInputSourceLanguages);
-		ly.code.parse_utf8([(NSString *)[langs objectAtIndex:0] UTF8String]);
+		ly.code.append_utf8([(NSString *)[langs objectAtIndex:0] UTF8String]);
 		kbd_layouts.push_back(ly);
 
 		if ([name isEqualToString:cur_name]) {
@@ -530,10 +530,10 @@ void DisplayServerMacOS::_update_keyboard_layouts() const {
 	for (NSUInteger i = 0; i < [list_kbd count]; i++) {
 		LayoutInfo ly;
 		NSString *name = (__bridge NSString *)TISGetInputSourceProperty((__bridge TISInputSourceRef)[list_kbd objectAtIndex:i], kTISPropertyLocalizedName);
-		ly.name.parse_utf8([name UTF8String]);
+		ly.name.append_utf8([name UTF8String]);
 
 		NSArray *langs = (__bridge NSArray *)TISGetInputSourceProperty((__bridge TISInputSourceRef)[list_kbd objectAtIndex:i], kTISPropertyInputSourceLanguages);
-		ly.code.parse_utf8([(NSString *)[langs objectAtIndex:0] UTF8String]);
+		ly.code.append_utf8([(NSString *)[langs objectAtIndex:0] UTF8String]);
 		kbd_layouts.push_back(ly);
 
 		if ([name isEqualToString:cur_name]) {
@@ -678,6 +678,38 @@ void DisplayServerMacOS::release_pressed_events() {
 	_THREAD_SAFE_METHOD_
 	if (Input::get_singleton()) {
 		Input::get_singleton()->release_pressed_events();
+	}
+}
+
+void DisplayServerMacOS::sync_mouse_state() {
+	_THREAD_SAFE_METHOD_
+	if (Input::get_singleton()) {
+		Vector2i pos = Input::get_singleton()->get_mouse_position();
+		BitField<MouseButtonMask> in_mask = Input::get_singleton()->get_mouse_button_mask();
+		BitField<MouseButtonMask> ds_mask = mouse_get_button_state();
+		for (int btn = (int)MouseButton::LEFT; btn <= (int)MouseButton::MB_XBUTTON2; btn++) {
+			MouseButtonMask mbm = mouse_button_to_mask(MouseButton(btn));
+			if (in_mask.has_flag(mbm) && !ds_mask.has_flag(mbm)) {
+				Ref<InputEventMouseButton> mb;
+				mb.instantiate();
+				mb->set_button_index(MouseButton(btn));
+				mb->set_pressed(false);
+				mb->set_position(pos);
+				mb->set_global_position(pos);
+				mb->set_button_mask(ds_mask);
+				Input::get_singleton()->parse_input_event(mb);
+			}
+			if (!in_mask.has_flag(mbm) && ds_mask.has_flag(mbm)) {
+				Ref<InputEventMouseButton> mb;
+				mb.instantiate();
+				mb->set_button_index(MouseButton(btn));
+				mb->set_pressed(true);
+				mb->set_position(pos);
+				mb->set_global_position(pos);
+				mb->set_button_mask(ds_mask);
+				Input::get_singleton()->parse_input_event(mb);
+			}
+		}
 	}
 }
 
@@ -1054,7 +1086,7 @@ Error DisplayServerMacOS::_file_dialog_with_options_show(const String &p_title, 
 				// Callback.
 				Vector<String> files;
 				String url;
-				url.parse_utf8([[[panel URL] path] UTF8String]);
+				url.append_utf8([[[panel URL] path] UTF8String]);
 				files.push_back(url);
 				if (callback.is_valid()) {
 					if (p_options_in_cb) {
@@ -1173,7 +1205,7 @@ Error DisplayServerMacOS::_file_dialog_with_options_show(const String &p_title, 
 				Vector<String> files;
 				for (NSUInteger i = 0; i != [urls count]; ++i) {
 					String url;
-					url.parse_utf8([[[urls objectAtIndex:i] path] UTF8String]);
+					url.append_utf8([[[urls objectAtIndex:i] path] UTF8String]);
 					files.push_back(url);
 				}
 				if (callback.is_valid()) {
@@ -1271,7 +1303,7 @@ Error DisplayServerMacOS::dialog_input_text(String p_title, String p_description
 	[window runModal];
 
 	String ret;
-	ret.parse_utf8([[input stringValue] UTF8String]);
+	ret.append_utf8([[input stringValue] UTF8String]);
 
 	if (p_callback.is_valid()) {
 		Variant v_result = ret;
@@ -1555,7 +1587,7 @@ String DisplayServerMacOS::clipboard_get() const {
 	NSString *string = [objectsToPaste objectAtIndex:0];
 
 	String ret;
-	ret.parse_utf8([string UTF8String]);
+	ret.append_utf8([string UTF8String]);
 	return ret;
 }
 
@@ -1900,6 +1932,11 @@ DisplayServer::WindowID DisplayServerMacOS::create_sub_window(WindowMode p_mode,
 
 void DisplayServerMacOS::show_window(WindowID p_id) {
 	WindowData &wd = windows[p_id];
+
+	if (p_id == MAIN_WINDOW_ID) {
+		[NSApp setActivationPolicy:NSApplicationActivationPolicyRegular];
+		static_cast<OS_MacOS *>(OS::get_singleton())->activate();
+	}
 
 	popup_open(p_id);
 	if ([wd.window_object isMiniaturized]) {
@@ -3204,20 +3241,26 @@ void DisplayServerMacOS::show_emoji_and_symbol_picker() const {
 }
 
 void DisplayServerMacOS::process_events() {
+	_process_events(true);
+}
+
+void DisplayServerMacOS::_process_events(bool p_pump) {
 	ERR_FAIL_COND(!Thread::is_main_thread());
 
-	while (true) {
-		NSEvent *event = [NSApp
-				nextEventMatchingMask:NSEventMaskAny
-							untilDate:[NSDate distantPast]
-							   inMode:NSDefaultRunLoopMode
-							  dequeue:YES];
+	if (p_pump) {
+		while (true) {
+			NSEvent *event = [NSApp
+					nextEventMatchingMask:NSEventMaskAny
+								untilDate:[NSDate distantPast]
+								   inMode:NSDefaultRunLoopMode
+								  dequeue:YES];
 
-		if (event == nil) {
-			break;
+			if (event == nil) {
+				break;
+			}
+
+			[NSApp sendEvent:event];
 		}
-
-		[NSApp sendEvent:event];
 	}
 
 	// Process "menu_callback"s.

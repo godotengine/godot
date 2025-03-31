@@ -31,7 +31,6 @@
 #pragma once
 
 #include "core/crypto/crypto.h"
-#include "core/error/error_list.h"
 #include "core/io/packet_peer.h"
 
 class WebSocketPeer : public PacketPeer {

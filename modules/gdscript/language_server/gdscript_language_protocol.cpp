@@ -61,7 +61,7 @@ Error GDScriptLanguageProtocol::LSPeer::handle_data() {
 			if (l > 3 && r[l] == '\n' && r[l - 1] == '\r' && r[l - 2] == '\n' && r[l - 3] == '\r') {
 				r[l - 3] = '\0'; // Null terminate to read string
 				String header;
-				header.parse_utf8(r);
+				header.append_utf8(r);
 				content_length = header.substr(16).to_int();
 				has_header = true;
 				req_pos = 0;
@@ -88,7 +88,7 @@ Error GDScriptLanguageProtocol::LSPeer::handle_data() {
 
 		// Parse data
 		String msg;
-		msg.parse_utf8((const char *)req_buf, req_pos);
+		msg.append_utf8((const char *)req_buf, req_pos);
 
 		// Reset to read again
 		req_pos = 0;
@@ -171,7 +171,7 @@ void GDScriptLanguageProtocol::_bind_methods() {
 }
 
 Dictionary GDScriptLanguageProtocol::initialize(const Dictionary &p_params) {
-	lsp::InitializeResult ret;
+	LSP::InitializeResult ret;
 
 	String root_uri = p_params["rootUri"];
 	String root = p_params["rootPath"];
@@ -213,11 +213,11 @@ Dictionary GDScriptLanguageProtocol::initialize(const Dictionary &p_params) {
 }
 
 void GDScriptLanguageProtocol::initialized(const Variant &p_params) {
-	lsp::GodotCapabilities capabilities;
+	LSP::GodotCapabilities capabilities;
 
 	DocTools *doc = EditorHelp::get_doc_data();
 	for (const KeyValue<String, DocData::ClassDoc> &E : doc->class_list) {
-		lsp::GodotNativeClassInfo gdclass;
+		LSP::GodotNativeClassInfo gdclass;
 		gdclass.name = E.value.name;
 		gdclass.class_doc = &(E.value);
 		if (ClassDB::ClassInfo *ptr = ClassDB::classes.getptr(StringName(E.value.name))) {

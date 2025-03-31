@@ -176,6 +176,10 @@ class TextServerAdvanced : public TextServerExtension {
 	mutable USpoofChecker *sc_spoof = nullptr;
 	mutable USpoofChecker *sc_conf = nullptr;
 
+	mutable HashMap<String, UBreakIterator *> line_break_iterators_per_language;
+
+	UBreakIterator *_create_line_break_iterator_for_locale(const String &p_language, UErrorCode *r_err) const;
+
 	// Font cache data.
 
 #ifdef MODULE_FREETYPE_ENABLED
@@ -545,11 +549,6 @@ class TextServerAdvanced : public TextServerExtension {
 		bool js_ops_valid = false;
 		bool chars_valid = false;
 
-		HashMap<String, UBreakIterator *> line_break_iterators_per_language;
-
-		// Creating UBreakIterator is surprisingly costly. To improve efficiency, we cache them.
-		UBreakIterator *_get_break_iterator_for_locale(const String &p_language, UErrorCode *r_err);
-
 		~ShapedTextDataAdvanced() {
 			for (int i = 0; i < bidi_iter.size(); i++) {
 				if (bidi_iter[i]) {
@@ -561,9 +560,6 @@ class TextServerAdvanced : public TextServerExtension {
 			}
 			if (hb_buffer) {
 				hb_buffer_destroy(hb_buffer);
-			}
-			for (const KeyValue<String, UBreakIterator *> &bi : line_break_iterators_per_language) {
-				ubrk_close(bi.value);
 			}
 		}
 	};
@@ -685,7 +681,7 @@ class TextServerAdvanced : public TextServerExtension {
 	Glyph _shape_single_glyph(ShapedTextDataAdvanced *p_sd, char32_t p_char, hb_script_t p_script, hb_direction_t p_direction, const RID &p_font, int64_t p_font_size);
 	_FORCE_INLINE_ RID _find_sys_font_for_text(const RID &p_fdef, const String &p_script_code, const String &p_language, const String &p_text);
 
-	_FORCE_INLINE_ void _add_featuers(const Dictionary &p_source, Vector<hb_feature_t> &r_ftrs);
+	_FORCE_INLINE_ void _add_features(const Dictionary &p_source, Vector<hb_feature_t> &r_ftrs);
 
 	Mutex ft_mutex;
 
