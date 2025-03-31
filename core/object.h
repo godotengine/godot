@@ -262,6 +262,16 @@ public:                                                             \
                                                                     \
 private:
 
+// This is a barebones version of GDCLASS,
+// only intended for simple classes deriving from Object
+// so that they can support the `Object::cast_to()` method.
+#define GDSOFTCLASS(m_class, m_inherits)                                                                                                \
+public:                                                                                                                                 \
+	typedef m_class self_type;                                                                                                          \
+	virtual bool is_class_ptr(void *p_ptr) const { return (p_ptr == get_class_ptr_static()) ? true : m_inherits::is_class_ptr(p_ptr); } \
+                                                                                                                                        \
+private:
+
 #define GDCLASS(m_class, m_inherits)                                                                                                    \
 private:                                                                                                                                \
 	void operator=(const m_class &p_rval) {}                                                                                            \
@@ -609,30 +619,26 @@ public:
 
 	template <class T>
 	static T *cast_to(Object *p_object) {
-#ifndef NO_SAFE_CAST
-		return dynamic_cast<T *>(p_object);
-#else
+		static_assert(std::is_base_of<Object, T>::value, "T must be derived from Object");
+		static_assert(std::is_same<std::decay_t<T>, typename T::self_type>::value, "T must use GDCLASS or GDSOFTCLASS");
 		if (!p_object)
 			return NULL;
 		if (p_object->is_class_ptr(T::get_class_ptr_static()))
 			return static_cast<T *>(p_object);
 		else
 			return NULL;
-#endif
 	}
 
 	template <class T>
 	static const T *cast_to(const Object *p_object) {
-#ifndef NO_SAFE_CAST
-		return dynamic_cast<const T *>(p_object);
-#else
+		static_assert(std::is_base_of<Object, T>::value, "T must be derived from Object");
+		static_assert(std::is_same<std::decay_t<T>, typename T::self_type>::value, "T must use GDCLASS or GDSOFTCLASS");
 		if (!p_object)
 			return NULL;
 		if (p_object->is_class_ptr(T::get_class_ptr_static()))
 			return static_cast<const T *>(p_object);
 		else
 			return NULL;
-#endif
 	}
 
 	enum {
