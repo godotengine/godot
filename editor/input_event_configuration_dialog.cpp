@@ -674,7 +674,6 @@ InputEventConfigurationDialog::InputEventConfigurationDialog() {
 
 	input_list_tree = memnew(Tree);
 	input_list_tree->set_auto_translate_mode(AUTO_TRANSLATE_MODE_DISABLED);
-	input_list_tree->set_custom_minimum_size(Size2(0, 300 * EDSCALE)); // Min height for tree
 	input_list_tree->connect("item_activated", callable_mp(this, &InputEventConfigurationDialog::_input_list_item_activated));
 	input_list_tree->connect(SceneStringName(item_selected), callable_mp(this, &InputEventConfigurationDialog::_input_list_item_selected));
 	input_list_tree->set_v_size_flags(Control::SIZE_EXPAND_FILL);
