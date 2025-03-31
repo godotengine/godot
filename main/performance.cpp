@@ -183,7 +183,7 @@ String Performance::get_monitor_name(Monitor p_monitor) const {
 		PNAME("navigation_2d/edges_connected"),
 		PNAME("navigation_2d/edges_free"),
 		PNAME("navigation_2d/obstacles"),
-		PNAME("navigation_2d/active_maps"),
+		PNAME("navigation_3d/active_maps"),
 		PNAME("navigation_3d/regions"),
 		PNAME("navigation_3d/agents"),
 		PNAME("navigation_3d/links"),
