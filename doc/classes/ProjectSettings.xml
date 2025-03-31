@@ -418,7 +418,7 @@
 		</member>
 		<member name="audio/general/3d_panning_strength" type="float" setter="" getter="" default="0.5">
 			The base strength of the panning effect for all [AudioStreamPlayer3D] nodes. The panning strength can be further scaled on each Node using [member AudioStreamPlayer3D.panning_strength]. A value of [code]0.0[/code] disables stereo panning entirely, leaving only volume attenuation in place. A value of [code]1.0[/code] completely mutes one of the channels if the sound is located exactly to the left (or right) of the listener.
-			The default value of [code]0.5[/code] is tuned for headphones. When using speakers, you may find lower values to sound better as speakers have a lower stereo separation compared to headphones.
+			The default value of [code]0.5[/code] is tuned for headphones which means that the opposite side channel goes no lower than 50% of the volume of the nearside channel. You may find that you can set this value higher for speakers to have the same effect since both ears can hear from each speaker.
 		</member>
 		<member name="audio/general/default_playback_type" type="int" setter="" getter="" default="0" experimental="">
 			Specifies the default playback type of the platform.
