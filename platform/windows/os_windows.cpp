@@ -1654,10 +1654,7 @@ Vector<String> OS_Windows::get_system_fonts() const {
 	return ret;
 }
 
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wnon-virtual-dtor"
-#endif
+GODOT_GCC_WARNING_PUSH_AND_IGNORE("-Wnon-virtual-dtor") // Silence warning due to a COM API weirdness.
 
 class FallbackTextAnalysisSource : public IDWriteTextAnalysisSource {
 	LONG _cRef = 1;
@@ -1741,9 +1738,7 @@ public:
 	virtual ~FallbackTextAnalysisSource() {}
 };
 
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic pop
-#endif
+GODOT_GCC_WARNING_POP
 
 String OS_Windows::_get_default_fontname(const String &p_font_name) const {
 	String font_name = p_font_name;

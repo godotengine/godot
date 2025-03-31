@@ -49,11 +49,7 @@ class VMap;
 
 static_assert(std::is_trivially_destructible_v<std::atomic<uint64_t>>);
 
-// Silence a false positive warning (see GH-52119).
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wplacement-new"
-#endif
+GODOT_GCC_WARNING_PUSH_AND_IGNORE("-Wplacement-new") // Silence a false positive warning (see GH-52119).
 
 template <typename T>
 class CowData {
@@ -460,9 +456,7 @@ CowData<T>::CowData(std::initializer_list<T> p_init) {
 	}
 }
 
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic pop
-#endif
+GODOT_GCC_WARNING_POP
 
 // Zero-constructing CowData initializes _ptr to nullptr (and thus empty).
 template <typename T>

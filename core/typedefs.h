@@ -344,3 +344,46 @@ struct is_zero_constructible<const volatile T> : is_zero_constructible<T> {};
 
 template <typename T>
 inline constexpr bool is_zero_constructible_v = is_zero_constructible<T>::value;
+
+// Warning suppression helper macros.
+#if defined(__clang__)
+#define GODOT_CLANG_PRAGMA(m_content) _Pragma(#m_content)
+#define GODOT_CLANG_WARNING_PUSH GODOT_CLANG_PRAGMA(clang diagnostic push)
+#define GODOT_CLANG_WARNING_IGNORE(m_warning) GODOT_CLANG_PRAGMA(clang diagnostic ignored m_warning)
+#define GODOT_CLANG_WARNING_POP GODOT_CLANG_PRAGMA(clang diagnostic pop)
+#define GODOT_CLANG_WARNING_PUSH_AND_IGNORE(m_warning) GODOT_CLANG_WARNING_PUSH GODOT_CLANG_WARNING_IGNORE(m_warning)
+#else
+#define GODOT_CLANG_PRAGMA(m_content)
+#define GODOT_CLANG_WARNING_PUSH
+#define GODOT_CLANG_WARNING_IGNORE(m_warning)
+#define GODOT_CLANG_WARNING_POP
+#define GODOT_CLANG_WARNING_PUSH_AND_IGNORE(m_warning)
+#endif
+
+#if defined(__GNUC__) && !defined(__clang__)
+#define GODOT_GCC_PRAGMA(m_content) _Pragma(#m_content)
+#define GODOT_GCC_WARNING_PUSH GODOT_GCC_PRAGMA(GCC diagnostic push)
+#define GODOT_GCC_WARNING_IGNORE(m_warning) GODOT_GCC_PRAGMA(GCC diagnostic ignored m_warning)
+#define GODOT_GCC_WARNING_POP GODOT_GCC_PRAGMA(GCC diagnostic pop)
+#define GODOT_GCC_WARNING_PUSH_AND_IGNORE(m_warning) GODOT_GCC_WARNING_PUSH GODOT_GCC_WARNING_IGNORE(m_warning)
+#else
+#define GODOT_GCC_PRAGMA(m_content)
+#define GODOT_GCC_WARNING_PUSH
+#define GODOT_GCC_WARNING_IGNORE(m_warning)
+#define GODOT_GCC_WARNING_POP
+#define GODOT_GCC_WARNING_PUSH_AND_IGNORE(m_warning)
+#endif
+
+#if defined(_MSC_VER) && !defined(__clang__)
+#define GODOT_MSVC_PRAGMA(m_command) __pragma(m_command)
+#define GODOT_MSVC_WARNING_PUSH GODOT_MSVC_PRAGMA(warning(push))
+#define GODOT_MSVC_WARNING_IGNORE(m_warning) GODOT_MSVC_PRAGMA(warning(disable : m_warning))
+#define GODOT_MSVC_WARNING_POP GODOT_MSVC_PRAGMA(warning(pop))
+#define GODOT_MSVC_WARNING_PUSH_AND_IGNORE(m_warning) GODOT_MSVC_WARNING_PUSH GODOT_MSVC_WARNING_IGNORE(m_warning)
+#else
+#define GODOT_MSVC_PRAGMA(m_command)
+#define GODOT_MSVC_WARNING_PUSH
+#define GODOT_MSVC_WARNING_IGNORE(m_warning)
+#define GODOT_MSVC_WARNING_POP
+#define GODOT_MSVC_WARNING_PUSH_AND_IGNORE(m_warning)
+#endif

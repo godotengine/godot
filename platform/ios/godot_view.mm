@@ -82,10 +82,9 @@ static const float earth_gravity = 9.80665;
 		layer = [GodotMetalLayer layer];
 #endif
 	} else if ([driverName isEqualToString:@"opengl3"]) {
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations" // OpenGL is deprecated in iOS 12.0
+		GODOT_CLANG_WARNING_PUSH_AND_IGNORE("-Wdeprecated-declarations") // OpenGL is deprecated in iOS 12.0.
 		layer = [GodotOpenGLLayer layer];
-#pragma clang diagnostic pop
+		GODOT_CLANG_WARNING_POP
 	} else {
 		return nil;
 	}
