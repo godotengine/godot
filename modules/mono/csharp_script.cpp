@@ -490,7 +490,6 @@ String CSharpLanguage::debug_get_stack_level_source(int p_level) const {
 }
 
 Vector<ScriptLanguage::StackInfo> CSharpLanguage::debug_get_current_stack_info() {
-#ifdef DEBUG_ENABLED
 	// Printing an error here will result in endless recursion, so we must be careful
 	static thread_local bool _recursion_flag_ = false;
 	if (_recursion_flag_) {
@@ -512,9 +511,6 @@ Vector<ScriptLanguage::StackInfo> CSharpLanguage::debug_get_current_stack_info()
 	}
 
 	return si;
-#else
-	return Vector<StackInfo>();
-#endif
 }
 
 void CSharpLanguage::post_unsafe_reference(Object *p_obj) {
