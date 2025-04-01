@@ -109,6 +109,8 @@ void PluginConfigDialog::_on_canceled() {
 void PluginConfigDialog::_on_required_text_changed() {
 	if (name_edit->get_text().is_empty()) {
 		validation_panel->set_message(MSG_ID_PLUGIN, TTR("Plugin name cannot be blank."), EditorValidationPanel::MSG_ERROR);
+	} else if (name_edit->get_text().contains("/") || name_edit->get_text().contains("\\")) {
+		validation_panel->set_message(MSG_ID_PLUGIN, TTR("Plugin name is invalid."), EditorValidationPanel::MSG_ERROR);
 	}
 	if (subfolder_edit->is_visible()) {
 		if (!subfolder_edit->get_text().is_empty() && !subfolder_edit->get_text().is_valid_filename()) {
@@ -131,6 +133,8 @@ void PluginConfigDialog::_on_required_text_changed() {
 	String ext = language->get_extension();
 	if ((!script_edit->get_text().get_extension().is_empty() && script_edit->get_text().get_extension() != ext) || script_edit->get_text().ends_with(".")) {
 		validation_panel->set_message(MSG_ID_SCRIPT, vformat(TTR("Script extension must match chosen language extension (.%s)."), ext), EditorValidationPanel::MSG_ERROR);
+	} else if (script_edit->get_text().contains("/") || script_edit->get_text().contains("\\")) {
+		validation_panel->set_message(MSG_ID_SCRIPT, TTR("Script name is invalid."), EditorValidationPanel::MSG_ERROR);
 	}
 	if (active_edit->is_visible()) {
 		if (language->get_name() == "C#") {
