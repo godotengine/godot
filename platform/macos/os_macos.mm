@@ -42,6 +42,7 @@
 #include "core/crypto/crypto_core.h"
 #include "core/version_generated.gen.h"
 #include "main/main.h"
+#include "main/profiling/profiling.h"
 
 #include <dlfcn.h>
 #include <libproc.h>
@@ -1038,6 +1039,8 @@ static void handle_interrupt(int sig) {
 }
 
 void OS_MacOS_NSApp::start_main() {
+	godot_init_profiler();
+
 	Error err;
 	@autoreleasepool {
 		err = Main::setup(execpath, argc, argv);
