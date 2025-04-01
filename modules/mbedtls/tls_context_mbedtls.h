@@ -56,7 +56,7 @@ public:
 	void clear();
 
 	CookieContextMbedTLS();
-	~CookieContextMbedTLS();
+	~CookieContextMbedTLS() override;
 };
 
 class TLSContextMbedTLS : public RefCounted {
@@ -83,5 +83,5 @@ public:
 	mbedtls_ssl_context *get_context();
 
 	TLSContextMbedTLS();
-	~TLSContextMbedTLS();
+	~TLSContextMbedTLS() override;
 };
