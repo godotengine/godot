@@ -256,7 +256,7 @@ void NavMeshQueries2D::_query_task_find_start_end_positions(NavMeshPathQueryTask
 			}
 
 			// For each triangle check the distance between the origin/destination.
-			for (size_t point_id = 2; point_id < p.points.size(); point_id++) {
+			for (uint32_t point_id = 2; point_id < p.points.size(); point_id++) {
 				const Triangle2 triangle(p.points[0].pos, p.points[point_id - 1].pos, p.points[point_id].pos);
 
 				Vector2 point = triangle.get_closest_point_to(p_query_task.start_position);
@@ -372,7 +372,7 @@ void NavMeshQueries2D::_query_task_build_path_corridor(NavMeshPathQueryTask2D &p
 			// Set as end point the furthest reachable point.
 			end_poly = reachable_end;
 			real_t end_d = FLT_MAX;
-			for (size_t point_id = 2; point_id < end_poly->points.size(); point_id++) {
+			for (uint32_t point_id = 2; point_id < end_poly->points.size(); point_id++) {
 				Triangle2 t(end_poly->points[0].pos, end_poly->points[point_id - 1].pos, end_poly->points[point_id].pos);
 				Vector2 spoint = t.get_closest_point_to(p_target_position);
 				real_t dpoint = spoint.distance_squared_to(p_target_position);
@@ -384,7 +384,7 @@ void NavMeshQueries2D::_query_task_build_path_corridor(NavMeshPathQueryTask2D &p
 
 			// Search all faces of start polygon as well.
 			bool closest_point_on_start_poly = false;
-			for (size_t point_id = 2; point_id < begin_poly->points.size(); point_id++) {
+			for (uint32_t point_id = 2; point_id < begin_poly->points.size(); point_id++) {
 				Triangle2 t(begin_poly->points[0].pos, begin_poly->points[point_id - 1].pos, begin_poly->points[point_id].pos);
 				Vector2 spoint = t.get_closest_point_to(p_target_position);
 				real_t dpoint = spoint.distance_squared_to(p_target_position);
@@ -443,7 +443,7 @@ void NavMeshQueries2D::_query_task_build_path_corridor(NavMeshPathQueryTask2D &p
 	if (!found_route) {
 		real_t end_d = FLT_MAX;
 		// Search all faces of the start polygon for the closest point to our target position.
-		for (size_t point_id = 2; point_id < begin_poly->points.size(); point_id++) {
+		for (uint32_t point_id = 2; point_id < begin_poly->points.size(); point_id++) {
 			Triangle2 t(begin_poly->points[0].pos, begin_poly->points[point_id - 1].pos, begin_poly->points[point_id].pos);
 			Vector2 spoint = t.get_closest_point_to(p_target_position);
 			real_t dpoint = spoint.distance_squared_to(p_target_position);
@@ -743,7 +743,7 @@ ClosestPointQueryResult NavMeshQueries2D::map_iteration_get_closest_point_info(c
 			real_t closest = FLT_MAX;
 			bool inside = true;
 			Vector2 previous = polygon.points[polygon.points.size() - 1].pos;
-			for (size_t point_id = 0; point_id < polygon.points.size(); ++point_id) {
+			for (uint32_t point_id = 0; point_id < polygon.points.size(); ++point_id) {
 				Vector2 edge = polygon.points[point_id].pos - previous;
 				Vector2 to_point = p_point - previous;
 				real_t edge_to_point_cross = edge.cross(to_point);
@@ -875,7 +875,7 @@ ClosestPointQueryResult NavMeshQueries2D::polygons_get_closest_point_info(const 
 		real_t closest = FLT_MAX;
 		bool inside = true;
 		Vector2 previous = polygon.points[polygon.points.size() - 1].pos;
-		for (size_t point_id = 0; point_id < polygon.points.size(); ++point_id) {
+		for (uint32_t point_id = 0; point_id < polygon.points.size(); ++point_id) {
 			Vector2 edge = polygon.points[point_id].pos - previous;
 			Vector2 to_point = p_point - previous;
 			real_t edge_to_point_cross = edge.cross(to_point);
