@@ -1,0 +1,69 @@
+#!/usr/bin/env python
+from misc.utility.scons_hints import *
+
+import pathlib
+from typing import Tuple
+
+import profiling_builders
+
+Import("env")
+
+env.add_source_files(env.core_sources, "*.cpp")
+
+
+def get_profiler_and_path_from_path(path: pathlib.Path) -> Tuple[str, pathlib.Path]:
+    if not path.is_dir():
+        print("profiler_path must be empty or point to a directory.")
+        Exit(255)
+
+    if (path / "sdk" / "perfetto.cc").is_file():
+        # perfetto root directory.
+        return "perfetto", path / "sdk"
+    if (path / "perfetto.cc").is_file():
+        # perfetto sdk directory.
+        return "perfetto", path
+
+    if (path / "public" / "TracyClient.cpp").is_file():
+        # tracy root directory
+        return "tracy", path / "public"
+    if (path / "TracyClient.cpp").is_file():
+        # tracy public directory
+        return "tracy", path
+
+    print("Unrecognized profiler_path option. Please set a path to either tracy or perfetto.")
+    Exit(255)
+
+
+env["profiler"] = None
+if env["profiler_path"]:
+    profiler_name, profiler_path = get_profiler_and_path_from_path(pathlib.Path(env["profiler_path"]))
+    env["profiler"] = profiler_name
+
+    if profiler_name == "tracy":
+        env.Prepend(CPPPATH=[str(profiler_path.absolute())])
+
+        env_tracy = env.Clone()
+        env_tracy.Append(CPPDEFINES=["TRACY_ENABLE"])
+        if env["profiler_sample_callstack"]:
+            if env["platform"] not in ("windows", "linux", "android"):
+                # Reference the feature matrix in the tracy documentation.
+                print("Tracy does not support call stack sampling on this platform. Aborting.")
+                Exit(255)
+
+            # 62 is the maximum supported callstack depth reported by the tracy docs.
+            env_tracy.Append(CPPDEFINES=[("TRACY_CALLSTACK", 62)])
+        env_tracy.disable_warnings()
+        env_tracy.add_source_files(env.core_sources, str((profiler_path / "TracyClient.cpp").absolute()))
+    elif profiler_name == "perfetto":
+        env.Prepend(CPPPATH=[str(profiler_path.absolute())])
+
+        env_perfetto = env.Clone()
+        if env["profiler_sample_callstack"]:
+            print("Perfetto does not support call stack sampling. Aborting.")
+            Exit(255)
+        env_perfetto.disable_warnings()
+        env_perfetto.Prepend(CPPPATH=[str(profiler_path.absolute())])
+        env_perfetto.add_source_files(env.core_sources, str((profiler_path / "perfetto.cc").absolute()))
+
+
+env.CommandNoCache("profiling.gen.h", [env.Value(env["profiler"])], env.Run(profiling_builders.profiler_gen_builder))
