@@ -192,6 +192,7 @@ class FontFile : public Font {
 	int fixed_size = 0;
 	TextServer::FixedSizeScaleMode fixed_size_scale_mode = TextServer::FIXED_SIZE_SCALE_DISABLE;
 	bool force_autohinter = false;
+	bool modulate_color_glyphs = false;
 	bool allow_system_fallback = true;
 	TextServer::Hinting hinting = TextServer::HINTING_LIGHT;
 	TextServer::SubpixelPositioning subpixel_positioning = TextServer::SUBPIXEL_POSITIONING_AUTO;
@@ -272,6 +273,9 @@ public:
 
 	virtual void set_force_autohinter(bool p_force_autohinter);
 	virtual bool is_force_autohinter() const;
+
+	virtual void set_modulate_color_glyphs(bool p_modulate);
+	virtual bool is_modulate_color_glyphs() const;
 
 	virtual void set_hinting(TextServer::Hinting p_hinting);
 	virtual TextServer::Hinting get_hinting() const;
@@ -479,6 +483,7 @@ class SystemFont : public Font {
 	bool mipmaps = false;
 	bool disable_embedded_bitmaps = true;
 	bool force_autohinter = false;
+	bool modulate_color_glyphs = false;
 	bool allow_system_fallback = true;
 	TextServer::Hinting hinting = TextServer::HINTING_LIGHT;
 	TextServer::SubpixelPositioning subpixel_positioning = TextServer::SUBPIXEL_POSITIONING_AUTO;
@@ -514,6 +519,9 @@ public:
 
 	virtual void set_force_autohinter(bool p_force_autohinter);
 	virtual bool is_force_autohinter() const;
+
+	virtual void set_modulate_color_glyphs(bool p_modulate);
+	virtual bool is_modulate_color_glyphs() const;
 
 	virtual void set_hinting(TextServer::Hinting p_hinting);
 	virtual TextServer::Hinting get_hinting() const;

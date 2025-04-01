@@ -318,6 +318,9 @@ public:
 	virtual void font_set_force_autohinter(const RID &p_font_rid, bool p_force_autohinter) = 0;
 	virtual bool font_is_force_autohinter(const RID &p_font_rid) const = 0;
 
+	virtual void font_set_modulate_color_glyphs(const RID &p_font_rid, bool p_modulate) = 0;
+	virtual bool font_is_modulate_color_glyphs(const RID &p_font_rid) const = 0;
+
 	virtual void font_set_hinting(const RID &p_font_rid, Hinting p_hinting) = 0;
 	virtual Hinting font_get_hinting(const RID &p_font_rid) const = 0;
 
