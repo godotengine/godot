@@ -149,12 +149,12 @@ void AudioStreamPlayer3D::_calc_output_vol(const Vector3 &source_dir, real_t tig
 // set the volume to cosine of half the angle from the source to the left/right speaker direction ignoring elevation
 // panning_strength<1 moves the cosx value towards 0 till the ratio of the speakers equals it
 AudioFrame AudioStreamPlayer3D::_calc_output_vol_stereo(const Vector3 &source_dir, real_t panning_strength) {
-	double flatrad = sqrt(source_dir.x*source_dir.x + source_dir.z*source_dir.z);
-	double g = CLAMP((1.0 - panning_strength)*(1.0 - panning_strength), 0.0, 1.0);
-	double f = (1.0 - g)/(1.0 + g);
-	double cosx = CLAMP(source_dir.x/(flatrad == 0.0 ? 1.0 : flatrad), -1.0, 1.0);
-	double fcosx = cosx*f;
-	return AudioFrame(sqrt((-fcosx + 1.0)/2.0), sqrt((fcosx + 1.0)/2.0));
+	double flatrad = sqrt(source_dir.x * source_dir.x + source_dir.z * source_dir.z);
+	double g = CLAMP((1.0 - panning_strength) * (1.0 - panning_strength), 0.0, 1.0);
+	double f = (1.0 - g) / (1.0 + g);
+	double cosx = CLAMP(source_dir.x / (flatrad == 0.0 ? 1.0 : flatrad), -1.0, 1.0);
+	double fcosx = cosx * f;
+	return AudioFrame(sqrt((-fcosx + 1.0) / 2.0), sqrt((fcosx + 1.0) / 2.0));
 }
 
 #ifndef PHYSICS_3D_DISABLED
@@ -465,7 +465,7 @@ Vector<AudioFrame> AudioStreamPlayer3D::_update_panning() {
 		
 		
 		if (AudioServer::get_singleton()->get_speaker_mode() == AudioServer::SPEAKER_MODE_STEREO) {
-			output_volume_vector.write[0] = _calc_output_vol_stereo(local_pos, cached_global_panning_strength*panning_strength);
+			output_volume_vector.write[0] = _calc_output_vol_stereo(local_pos, cached_global_panning_strength * panning_strength);
 			output_volume_vector.write[1] = AudioFrame(0, 0);
 			output_volume_vector.write[2] = AudioFrame(0, 0);
 			output_volume_vector.write[3] = AudioFrame(0, 0);
