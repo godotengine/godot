@@ -42,6 +42,7 @@
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
 #include "core/io/file_access_pack.h"
+#include "core/profiling.h"
 #include "drivers/unix/syslog_logger.h"
 #include "main/main.h"
 
@@ -204,6 +205,9 @@ bool OS_AppleEmbedded::iterate() {
 	if (!main_loop) {
 		return true;
 	}
+
+	GodotProfileFrameMark;
+	GodotProfileZone("OS_AppleEmbedded::iterate");
 
 	if (DisplayServer::get_singleton()) {
 		DisplayServer::get_singleton()->process_events();

@@ -30,7 +30,13 @@
 
 #include "profiling.h"
 
-#ifdef GODOT_USE_PERFETTO
+#if defined(GODOT_USE_TRACY)
+void godot_init_profiler() {
+	// Send our first event to tracy; otherwise it doesn't start collecting data.
+	// FrameMark is kind of fitting because it communicates "this is where we started tracing".
+	FrameMark;
+}
+#elif defined(GODOT_USE_PERFETTO)
 PERFETTO_TRACK_EVENT_STATIC_STORAGE();
 
 void godot_init_profiler() {
@@ -41,5 +47,8 @@ void godot_init_profiler() {
 	perfetto::Tracing::Initialize(args);
 	perfetto::TrackEvent::Register();
 }
-
+#else
+void godot_init_profiler() {
+	// Stub
+}
 #endif
