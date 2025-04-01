@@ -571,6 +571,13 @@
 				Returns [code]true[/code], if font supports given language ([url=https://en.wikipedia.org/wiki/ISO_639-1]ISO 639[/url] code).
 			</description>
 		</method>
+		<method name="font_is_modulate_color_glyphs" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="font_rid" type="RID" />
+			<description>
+				Returns [code]true[/code], if color modulation is applied when drawing colored glyphs.
+			</description>
+		</method>
 		<method name="font_is_multichannel_signed_distance_field" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="font_rid" type="RID" />
@@ -856,6 +863,14 @@
 			<param index="2" name="supported" type="bool" />
 			<description>
 				Adds override for [method font_is_language_supported].
+			</description>
+		</method>
+		<method name="font_set_modulate_color_glyphs">
+			<return type="void" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="force_autohinter" type="bool" />
+			<description>
+				If set to [code]true[/code], color modulation is applied when drawing colored glyphs, otherwise it's applied to the monochrome glyphs only.
 			</description>
 		</method>
 		<method name="font_set_msdf_pixel_range">
