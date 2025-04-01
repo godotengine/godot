@@ -1360,7 +1360,14 @@ void EditorPropertyDictionary::update_property() {
 
 			Variant value;
 			object->get_by_property_name(slot.prop_name, value);
-			Variant::Type value_type = value.get_type();
+
+			Variant::Type value_type;
+
+			if (dict.is_typed_value() && slot.prop_key) {
+				value_type = value_subtype;
+			} else {
+				value_type = value.get_type();
+			}
 
 			// Check if the editor property needs to be updated.
 			bool value_as_id = Object::cast_to<EncodedObjectAsID>(value);
