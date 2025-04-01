@@ -70,11 +70,8 @@ struct [[nodiscard]] Color {
 		return components[p_idx];
 	}
 
-	constexpr bool operator==(const Color &p_color) const {
+	bool operator==(const Color &p_color) const {
 		return (r == p_color.r && g == p_color.g && b == p_color.b && a == p_color.a);
-	}
-	constexpr bool operator!=(const Color &p_color) const {
-		return (r != p_color.r || g != p_color.g || b != p_color.b || a != p_color.a);
 	}
 
 	constexpr Color operator+(const Color &p_color) const;

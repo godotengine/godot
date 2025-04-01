@@ -205,8 +205,8 @@ struct [[nodiscard]] Rect2 {
 	bool is_same(const Rect2 &p_rect) const;
 	bool is_finite() const;
 
-	constexpr bool operator==(const Rect2 &p_rect) const { return position == p_rect.position && size == p_rect.size; }
-	constexpr bool operator!=(const Rect2 &p_rect) const { return position != p_rect.position || size != p_rect.size; }
+	bool operator==(const Rect2 &p_rect) const = default;
+	bool operator==(const Rect2i &p_recti) const;
 
 	inline Rect2 grow(real_t p_amount) const {
 		Rect2 g = *this;

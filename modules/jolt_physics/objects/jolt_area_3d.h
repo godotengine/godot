@@ -59,9 +59,7 @@ private:
 			return hash_fmix32(hash);
 		}
 
-		friend bool operator==(const ShapeIDPair &p_lhs, const ShapeIDPair &p_rhs) {
-			return (p_lhs.other == p_rhs.other) && (p_lhs.self == p_rhs.self);
-		}
+		friend bool operator==(const ShapeIDPair &p_lhs, const ShapeIDPair &p_rhs) = default;
 	};
 
 	struct ShapeIndexPair {
@@ -73,9 +71,7 @@ private:
 		ShapeIndexPair(int p_other, int p_self) :
 				other(p_other), self(p_self) {}
 
-		friend bool operator==(const ShapeIndexPair &p_lhs, const ShapeIndexPair &p_rhs) {
-			return (p_lhs.other == p_rhs.other) && (p_lhs.self == p_rhs.self);
-		}
+		friend bool operator==(const ShapeIndexPair &p_lhs, const ShapeIndexPair &p_rhs) = default;
 	};
 
 	struct Overlap {

@@ -109,8 +109,7 @@ struct [[nodiscard]] Transform2D {
 
 	Transform2D looking_at(const Vector2 &p_target) const;
 
-	constexpr bool operator==(const Transform2D &p_transform) const;
-	constexpr bool operator!=(const Transform2D &p_transform) const;
+	bool operator==(const Transform2D &p_transform) const = default;
 
 	void operator*=(const Transform2D &p_transform);
 	Transform2D operator*(const Transform2D &p_transform) const;
@@ -148,26 +147,6 @@ struct [[nodiscard]] Transform2D {
 
 	Transform2D() = default;
 };
-
-constexpr bool Transform2D::operator==(const Transform2D &p_transform) const {
-	for (int i = 0; i < 3; i++) {
-		if (columns[i] != p_transform.columns[i]) {
-			return false;
-		}
-	}
-
-	return true;
-}
-
-constexpr bool Transform2D::operator!=(const Transform2D &p_transform) const {
-	for (int i = 0; i < 3; i++) {
-		if (columns[i] != p_transform.columns[i]) {
-			return true;
-		}
-	}
-
-	return false;
-}
 
 constexpr void Transform2D::operator*=(real_t p_val) {
 	columns[0] *= p_val;

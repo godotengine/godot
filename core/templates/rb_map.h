@@ -112,8 +112,7 @@ public:
 			return *this;
 		}
 
-		_FORCE_INLINE_ bool operator==(const Iterator &p_it) const { return E == p_it.E; }
-		_FORCE_INLINE_ bool operator!=(const Iterator &p_it) const { return E != p_it.E; }
+		_FORCE_INLINE_ bool operator==(const Iterator &p_it) const = default;
 		explicit operator bool() const {
 			return E != nullptr;
 		}
@@ -144,8 +143,7 @@ public:
 			return *this;
 		}
 
-		_FORCE_INLINE_ bool operator==(const ConstIterator &p_it) const { return E == p_it.E; }
-		_FORCE_INLINE_ bool operator!=(const ConstIterator &p_it) const { return E != p_it.E; }
+		_FORCE_INLINE_ bool operator==(const ConstIterator &p_it) const = default;
 		explicit operator bool() const {
 			return E != nullptr;
 		}

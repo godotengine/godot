@@ -77,8 +77,7 @@ struct [[nodiscard]] Transform3D {
 	bool is_same(const Transform3D &p_transform) const;
 	bool is_finite() const;
 
-	constexpr bool operator==(const Transform3D &p_transform) const;
-	constexpr bool operator!=(const Transform3D &p_transform) const;
+	bool operator==(const Transform3D &p_transform) const = default;
 
 	_FORCE_INLINE_ Vector3 xform(const Vector3 &p_vector) const;
 	_FORCE_INLINE_ AABB xform(const AABB &p_aabb) const;
@@ -135,14 +134,6 @@ struct [[nodiscard]] Transform3D {
 			basis(p_xx, p_xy, p_xz, p_yx, p_yy, p_yz, p_zx, p_zy, p_zz),
 			origin(p_ox, p_oy, p_oz) {}
 };
-
-constexpr bool Transform3D::operator==(const Transform3D &p_transform) const {
-	return (basis == p_transform.basis && origin == p_transform.origin);
-}
-
-constexpr bool Transform3D::operator!=(const Transform3D &p_transform) const {
-	return (basis != p_transform.basis || origin != p_transform.origin);
-}
 
 constexpr void Transform3D::operator*=(real_t p_val) {
 	origin *= p_val;

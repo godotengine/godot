@@ -118,7 +118,6 @@ public:
 	const Callable *get_base_comparator() const; //used for bind/unbind to do less precise comparisons (ignoring binds) in signal connect/disconnect
 
 	bool operator==(const Callable &p_callable) const;
-	bool operator!=(const Callable &p_callable) const;
 	bool operator<(const Callable &p_callable) const;
 
 	void operator=(const Callable &p_callable);
@@ -186,8 +185,7 @@ public:
 	ObjectID get_object_id() const;
 	StringName get_name() const;
 
-	bool operator==(const Signal &p_signal) const;
-	bool operator!=(const Signal &p_signal) const;
+	bool operator==(const Signal &p_signal) const = default;
 	bool operator<(const Signal &p_signal) const;
 
 	operator String() const;

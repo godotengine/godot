@@ -407,35 +407,7 @@ public:
 		bool is_resolve_buffer = false;
 		bool is_discardable = false;
 
-		bool operator==(const TextureFormat &b) const {
-			if (format != b.format) {
-				return false;
-			} else if (width != b.width) {
-				return false;
-			} else if (height != b.height) {
-				return false;
-			} else if (depth != b.depth) {
-				return false;
-			} else if (array_layers != b.array_layers) {
-				return false;
-			} else if (mipmaps != b.mipmaps) {
-				return false;
-			} else if (texture_type != b.texture_type) {
-				return false;
-			} else if (samples != b.samples) {
-				return false;
-			} else if (usage_bits != b.usage_bits) {
-				return false;
-			} else if (shareable_formats != b.shareable_formats) {
-				return false;
-			} else if (is_resolve_buffer != b.is_resolve_buffer) {
-				return false;
-			} else if (is_discardable != b.is_discardable) {
-				return false;
-			} else {
-				return true;
-			}
-		}
+		bool operator==(const TextureFormat &b) const = default;
 	};
 
 	enum TextureSwizzle {
@@ -964,10 +936,6 @@ public:
 		uint32_t binding = 0;
 		BitField<ShaderStage> stages;
 		uint32_t length = 0; // Size of arrays (in total elements), or ubos (in bytes * total elements).
-
-		bool operator!=(const ShaderUniform &p_other) const {
-			return binding != p_other.binding || type != p_other.type || writable != p_other.writable || stages != p_other.stages || length != p_other.length;
-		}
 
 		bool operator<(const ShaderUniform &p_other) const {
 			if (binding != p_other.binding) {

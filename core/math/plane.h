@@ -76,8 +76,7 @@ struct [[nodiscard]] Plane {
 	bool is_equal_approx_any_side(const Plane &p_plane) const;
 	bool is_finite() const;
 
-	constexpr bool operator==(const Plane &p_plane) const;
-	constexpr bool operator!=(const Plane &p_plane) const;
+	bool operator==(const Plane &p_plane) const = default;
 	operator String() const;
 
 	Plane() = default;
@@ -123,14 +122,6 @@ Plane::Plane(const Vector3 &p_point1, const Vector3 &p_point2, const Vector3 &p_
 
 	normal.normalize();
 	d = normal.dot(p_point1);
-}
-
-constexpr bool Plane::operator==(const Plane &p_plane) const {
-	return normal == p_plane.normal && d == p_plane.d;
-}
-
-constexpr bool Plane::operator!=(const Plane &p_plane) const {
-	return normal != p_plane.normal || d != p_plane.d;
 }
 
 template <>
