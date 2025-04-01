@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="AnimationNodeEvent" inherits="Resource" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="animation_node" type="AnimationNode" setter="set_animation_node" getter="get_animation_node">
+		</member>
+		<member name="animation_node_path" type="String" setter="set_animation_node_path" getter="get_animation_node_path" default="&quot;&quot;">
+		</member>
+		<member name="animation_tree" type="AnimationTree" setter="set_animation_tree" getter="get_animation_tree">
+		</member>
+		<member name="finishing" type="bool" setter="set_finishing" getter="is_finishing" default="false">
+		</member>
+		<member name="starting" type="bool" setter="set_starting" getter="is_starting" default="false">
+		</member>
+	</members>
+</class>

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="AnimationNodeTransitionEvent" inherits="AnimationNodeEvent" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="next_state" type="String" setter="set_next_state" getter="get_next_state" default="&quot;&quot;">
+		</member>
+		<member name="previous_state" type="String" setter="set_previous_state" getter="get_previous_state" default="&quot;&quot;">
+		</member>
+	</members>
+</class>

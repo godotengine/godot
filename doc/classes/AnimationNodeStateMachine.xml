@@ -183,11 +183,5 @@
 		<constant name="STATE_MACHINE_TYPE_GROUPED" value="2" enum="StateMachineType">
 			This is a grouped state machine that can be controlled from a parent state machine. It does not work independently. There must be a state machine with [member state_machine_type] of [constant STATE_MACHINE_TYPE_ROOT] or [constant STATE_MACHINE_TYPE_NESTED] in the parent or ancestor.
 		</constant>
-		<constant name="ANIMATION_NODE_NOTIFICATION_STATE_MACHINE_STARTED" value="2000">
-			The state machine has started playback.
-		</constant>
-		<constant name="ANIMATION_NODE_NOTIFICATION_STATE_MACHINE_FINISHED" value="2001">
-			The state machine has finished playback. This is emitted if the terminal state is reached or if playback is manually stopped, but not if the state machine is stuck in a non-terminal state.
-		</constant>
 	</constants>
 </class>

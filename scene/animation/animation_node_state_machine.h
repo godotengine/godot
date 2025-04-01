@@ -105,6 +105,24 @@ VARIANT_ENUM_CAST(AnimationNodeStateMachineTransition::AdvanceMode)
 
 class AnimationNodeStateMachinePlayback;
 
+class AnimationNodeStateMachineEvent : public AnimationNodeEvent {
+	GDCLASS(AnimationNodeStateMachineEvent, AnimationNodeEvent);
+
+	Ref<AnimationNodeStateMachinePlayback> playback;
+
+protected:
+	static void _bind_methods();
+
+public:
+	void set_playback(Ref<AnimationNodeStateMachinePlayback> p_playback) {
+		playback = p_playback;
+	}
+
+	Ref<AnimationNodeStateMachinePlayback> get_playback() const {
+		return playback;
+	}
+};
+
 class AnimationNodeStateMachine : public AnimationRootNode {
 	GDCLASS(AnimationNodeStateMachine, AnimationRootNode);
 
@@ -113,11 +131,6 @@ public:
 		STATE_MACHINE_TYPE_ROOT,
 		STATE_MACHINE_TYPE_NESTED,
 		STATE_MACHINE_TYPE_GROUPED,
-	};
-
-	enum {
-		ANIMATION_NODE_NOTIFICATION_STATE_MACHINE_STARTED = 2000,
-		ANIMATION_NODE_NOTIFICATION_STATE_MACHINE_FINISHED = 2001
 	};
 
 private:
@@ -147,6 +160,7 @@ private:
 
 	Vector2 graph_offset;
 
+	void _create_event(bool p_starting, bool p_finishing, AnimationNodeStateMachinePlayback *p_playback);
 	void _remove_transition(const Ref<AnimationNodeStateMachineTransition> p_transition);
 	void _rename_transitions(const StringName &p_name, const StringName &p_new_name);
 	bool _can_connect(const StringName &p_name);

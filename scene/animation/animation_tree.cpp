@@ -34,6 +34,25 @@
 #include "animation_blend_tree.h"
 #include "scene/animation/animation_player.h"
 
+void AnimationNodeEvent::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_starting", "starting"), &AnimationNodeEvent::set_starting);
+	ClassDB::bind_method(D_METHOD("is_starting"), &AnimationNodeEvent::is_starting);
+	ClassDB::bind_method(D_METHOD("set_finishing", "finishing"), &AnimationNodeEvent::set_finishing);
+	ClassDB::bind_method(D_METHOD("is_finishing"), &AnimationNodeEvent::is_finishing);
+	ClassDB::bind_method(D_METHOD("set_animation_tree", "tree"), &AnimationNodeEvent::set_animation_tree);
+	ClassDB::bind_method(D_METHOD("get_animation_tree"), &AnimationNodeEvent::get_animation_tree);
+	ClassDB::bind_method(D_METHOD("set_animation_node", "node"), &AnimationNodeEvent::set_animation_node);
+	ClassDB::bind_method(D_METHOD("get_animation_node"), &AnimationNodeEvent::get_animation_node);
+	ClassDB::bind_method(D_METHOD("set_animation_node_path", "path"), &AnimationNodeEvent::set_animation_node_path);
+	ClassDB::bind_method(D_METHOD("get_animation_node_path"), &AnimationNodeEvent::get_animation_node_path);
+
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "starting"), "set_starting", "is_starting");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "finishing"), "set_finishing", "is_finishing");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "animation_tree"), "set_animation_tree", "get_animation_tree");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "animation_node"), "set_animation_node", "get_animation_node");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "animation_node_path"), "set_animation_node_path", "get_animation_node_path");
+}
+
 void AnimationNode::get_parameter_list(List<PropertyInfo> *r_list) const {
 	Array parameters;
 
@@ -408,6 +427,14 @@ bool AnimationNode::is_filter_enabled() const {
 	return filter_enabled;
 }
 
+void AnimationNode::set_events_enabled(bool p_enable) {
+	events_enabled = p_enable;
+}
+
+bool AnimationNode::are_events_enabled() const {
+	return events_enabled;
+}
+
 void AnimationNode::set_deletable(bool p_closable) {
 	closable = p_closable;
 }
@@ -551,6 +578,9 @@ void AnimationNode::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_filter_enabled", "enable"), &AnimationNode::set_filter_enabled);
 	ClassDB::bind_method(D_METHOD("is_filter_enabled"), &AnimationNode::is_filter_enabled);
 
+	ClassDB::bind_method(D_METHOD("set_events_enabled", "enable"), &AnimationNode::set_events_enabled);
+	ClassDB::bind_method(D_METHOD("are_events_enabled"), &AnimationNode::are_events_enabled);
+
 	ClassDB::bind_method(D_METHOD("get_processing_animation_tree_instance_id"), &AnimationNode::get_processing_animation_tree_instance_id);
 
 	ClassDB::bind_method(D_METHOD("is_process_testing"), &AnimationNode::is_process_testing);
@@ -565,6 +595,7 @@ void AnimationNode::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_parameter", "name", "value"), &AnimationNode::set_parameter);
 	ClassDB::bind_method(D_METHOD("get_parameter", "name"), &AnimationNode::get_parameter);
 
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "events_enabled"), "set_events_enabled", "are_events_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "filter_enabled", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_filter_enabled", "is_filter_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "filters", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_filters", "_get_filters");
 
@@ -587,10 +618,17 @@ void AnimationNode::_bind_methods() {
 	BIND_ENUM_CONSTANT(FILTER_BLEND);
 }
 
-void AnimationNode::_animation_tree_notify(int p_what) {
+bool AnimationNode::_should_use_events() const {
+	return process_state && process_state->tree && events_enabled;
+}
+
+void AnimationNode::_push_animation_node_event(Ref<AnimationNodeEvent> p_event) const {
 	ERR_FAIL_NULL(process_state);
 	ERR_FAIL_NULL(process_state->tree);
-	process_state->tree->emit_signal(SceneStringName(animation_node_notification), process_state->tree->property_reference_map[get_instance_id()], p_what);
+	p_event->set_animation_tree(process_state->tree);
+	p_event->set_animation_node((AnimationNode *)this);
+	p_event->set_animation_node_path(get_node_state_base_path());
+	process_state->tree->emit_signal(SceneStringName(animation_node_event), p_event);
 }
 
 AnimationNode::AnimationNode() {
@@ -995,7 +1033,7 @@ void AnimationTree::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "anim_player", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "AnimationPlayer"), "set_animation_player", "get_animation_player");
 
 	ADD_SIGNAL(MethodInfo(SNAME("animation_player_changed")));
-	ADD_SIGNAL(MethodInfo(SceneStringName(animation_node_notification), PropertyInfo(Variant::STRING_NAME, "animation_node_path"), PropertyInfo(Variant::INT, "what")));
+	ADD_SIGNAL(MethodInfo(SceneStringName(animation_node_event), PropertyInfo(Variant::OBJECT, "event")));
 }
 
 AnimationTree::AnimationTree() {
