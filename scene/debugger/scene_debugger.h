@@ -41,8 +41,11 @@
 #endif // _3D_DISABLED
 
 class CanvasItem;
+class LiveEditor;
 class PopupMenu;
+class RuntimeNodeSelect;
 class Script;
+class SceneTree;
 #ifndef _3D_DISABLED
 class Node3D;
 #endif // _3D_DISABLED
@@ -68,6 +71,56 @@ private:
 	static void _set_object_property(ObjectID p_id, const String &p_property, const Variant &p_value, const String &p_field = "");
 	static void _send_object_ids(const Vector<ObjectID> &p_ids, bool p_update_selection);
 	static void _next_frame();
+
+	/// Message handler function for parse_message.
+	typedef Error (*ParseMessageFunc)(const Array &p_args, SceneTree *p_scene_tree, LiveEditor *p_live_editor, RuntimeNodeSelect *p_runtime_node_select);
+	static HashMap<String, ParseMessageFunc> parse_message_handlers;
+	static void _init_parse_message_handlers();
+
+#define HANDLER(name) static Error _msg_##name(const Array &p_args, SceneTree *p_scene_tree, LiveEditor *p_live_editor, RuntimeNodeSelect *p_runtime_node_select)
+
+	HANDLER(setup_scene);
+	HANDLER(request_scene_tree);
+	HANDLER(save_node);
+	HANDLER(inspect_objects);
+	HANDLER(clear_selection);
+	HANDLER(suspend_changed);
+	HANDLER(next_frame);
+	HANDLER(debug_mute_audio);
+	HANDLER(override_cameras);
+	HANDLER(transform_camera_2d);
+#ifndef _3D_DISABLED
+	HANDLER(transform_camera_3d);
+#endif
+	HANDLER(set_object_property);
+	HANDLER(set_object_property_field);
+	HANDLER(reload_cached_files);
+	HANDLER(live_set_root);
+	HANDLER(live_node_path);
+	HANDLER(live_res_path);
+	HANDLER(live_node_prop_res);
+	HANDLER(live_node_prop);
+	HANDLER(live_res_prop_res);
+	HANDLER(live_res_prop);
+	HANDLER(live_node_call);
+	HANDLER(live_res_call);
+	HANDLER(live_create_node);
+	HANDLER(live_instantiate_node);
+	HANDLER(live_remove_node);
+	HANDLER(live_remove_and_keep_node);
+	HANDLER(live_restore_node);
+	HANDLER(live_duplicate_node);
+	HANDLER(live_reparent_node);
+	HANDLER(runtime_node_select_setup);
+	HANDLER(runtime_node_select_set_type);
+	HANDLER(runtime_node_select_set_mode);
+	HANDLER(runtime_node_select_set_visible);
+	HANDLER(runtime_node_select_reset_camera_2d);
+#ifndef _3D_DISABLED
+	HANDLER(runtime_node_select_reset_camera_3d);
+#endif
+
+#undef HANDLER
 
 public:
 	static Error parse_message(void *p_user, const String &p_msg, const Array &p_args, bool &r_captured);
