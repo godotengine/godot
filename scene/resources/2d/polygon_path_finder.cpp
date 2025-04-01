@@ -141,12 +141,9 @@ Vector<Vector2> PolygonPathFinder::find_path(const Vector2 &p_from, const Vector
 
 		for (const Edge &E : edges) {
 			const Edge &e = E;
-			Vector2 seg[2] = {
-				points[e.points[0]].pos,
-				points[e.points[1]].pos
-			};
-
-			Vector2 closest = Geometry2D::get_closest_point_to_segment(from, seg);
+			const Vector2 segment_a = points[e.points[0]].pos;
+			const Vector2 segment_b = points[e.points[1]].pos;
+			Vector2 closest = Geometry2D::get_closest_point_to_segment(from, segment_a, segment_b);
 			float d = from.distance_squared_to(closest);
 
 			if (d < closest_dist) {
@@ -165,12 +162,9 @@ Vector<Vector2> PolygonPathFinder::find_path(const Vector2 &p_from, const Vector
 
 		for (const Edge &E : edges) {
 			const Edge &e = E;
-			Vector2 seg[2] = {
-				points[e.points[0]].pos,
-				points[e.points[1]].pos
-			};
-
-			Vector2 closest = Geometry2D::get_closest_point_to_segment(to, seg);
+			const Vector2 segment_a = points[e.points[0]].pos;
+			const Vector2 segment_b = points[e.points[1]].pos;
+			Vector2 closest = Geometry2D::get_closest_point_to_segment(to, segment_a, segment_b);
 			float d = to.distance_squared_to(closest);
 
 			if (d < closest_dist) {
@@ -493,12 +487,9 @@ Vector2 PolygonPathFinder::get_closest_point(const Vector2 &p_point) const {
 
 	for (const Edge &E : edges) {
 		const Edge &e = E;
-		Vector2 seg[2] = {
-			points[e.points[0]].pos,
-			points[e.points[1]].pos
-		};
-
-		Vector2 closest = Geometry2D::get_closest_point_to_segment(p_point, seg);
+		const Vector2 segment_a = points[e.points[0]].pos;
+		const Vector2 segment_b = points[e.points[1]].pos;
+		Vector2 closest = Geometry2D::get_closest_point_to_segment(p_point, segment_a, segment_b);
 		float d = p_point.distance_squared_to(closest);
 
 		if (d < closest_dist) {

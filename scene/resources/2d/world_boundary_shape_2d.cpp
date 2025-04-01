@@ -35,16 +35,21 @@
 #include "servers/rendering_server.h"
 
 bool WorldBoundaryShape2D::_edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const {
-	Vector2 point = distance * normal;
-	Vector2 l[2][2] = { { point - normal.orthogonal() * 100, point + normal.orthogonal() * 100 }, { point, point + normal * 30 } };
-
-	for (int i = 0; i < 2; i++) {
-		Vector2 closest = Geometry2D::get_closest_point_to_segment(p_point, l[i]);
-		if (p_point.distance_to(closest) < p_tolerance) {
-			return true;
-		}
+	const Vector2 shape_center = distance * normal;
+	// Orthogonal part of the shape editor gizmo (the flat line).
+	const Vector2 ortho_segment_a = shape_center - normal.orthogonal() * 100;
+	const Vector2 ortho_segment_b = shape_center + normal.orthogonal() * 100;
+	const Vector2 ortho_closest = Geometry2D::get_closest_point_to_segment(p_point, ortho_segment_a, ortho_segment_b);
+	if (p_point.distance_to(ortho_closest) < p_tolerance) {
+		return true;
 	}
-
+	// Normal part of the shape editor gizmo (the arrow).
+	const Vector2 normal_segment_a = shape_center;
+	const Vector2 normal_segment_b = shape_center + normal * 30;
+	const Vector2 normal_closest = Geometry2D::get_closest_point_to_segment(p_point, normal_segment_a, normal_segment_b);
+	if (p_point.distance_to(normal_closest) < p_tolerance) {
+		return true;
+	}
 	return false;
 }
 
