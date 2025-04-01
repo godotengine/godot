@@ -6,6 +6,7 @@ Import("env")
 import main_builders
 
 env.main_sources = []
+SConscript("profiling/SCsub")
 
 env_main = env.Clone()
 
