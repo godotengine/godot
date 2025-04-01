@@ -29,6 +29,7 @@
 /**************************************************************************/
 
 #include "jsonrpc.h"
+#include "jsonrpc.compat.inc"
 
 #include "core/io/json.h"
 
@@ -39,7 +40,7 @@ JSONRPC::~JSONRPC() {
 }
 
 void JSONRPC::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("set_scope", "scope", "target"), &JSONRPC::set_scope);
+	ClassDB::bind_method(D_METHOD("set_method", "name", "callback"), &JSONRPC::set_method);
 	ClassDB::bind_method(D_METHOD("process_action", "action", "recurse"), &JSONRPC::process_action, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("process_string", "action"), &JSONRPC::process_string);
 
@@ -113,12 +114,6 @@ Variant JSONRPC::process_action(const Variant &p_action, bool p_process_arr_elem
 			}
 		}
 
-		Object *object = this;
-		if (method_scopes.has(method.get_base_dir())) {
-			object = method_scopes[method.get_base_dir()];
-			method = method.get_file();
-		}
-
 		Variant id;
 		if (dict.has("id")) {
 			id = dict["id"];
@@ -129,13 +124,13 @@ Variant JSONRPC::process_action(const Variant &p_action, bool p_process_arr_elem
 			}
 		}
 
-		if (object == nullptr || !object->has_method(method)) {
-			ret = make_response_error(JSONRPC::METHOD_NOT_FOUND, "Method not found: " + method, id);
-		} else {
-			Variant call_ret = object->callv(method, args);
+		if (methods.has(method)) {
+			Variant call_ret = methods[method].callv(args);
 			if (id.get_type() != Variant::NIL) {
 				ret = make_response(call_ret, id);
 			}
+		} else {
+			ret = make_response_error(JSONRPC::METHOD_NOT_FOUND, "Method not found: " + method, id);
 		}
 	} else if (p_action.get_type() == Variant::ARRAY && p_process_arr_elements) {
 		Array arr = p_action;
@@ -175,6 +170,6 @@ String JSONRPC::process_string(const String &p_input) {
 	return ret.to_json_string();
 }
 
-void JSONRPC::set_scope(const String &p_scope, Object *p_obj) {
-	method_scopes[p_scope] = p_obj;
+void JSONRPC::set_method(const String &p_name, const Callable &p_callback) {
+	methods[p_name] = p_callback;
 }
