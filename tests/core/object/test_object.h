@@ -464,72 +464,75 @@ TEST_CASE("[Object] Signals") {
 	}
 }
 
-class NotificationObject1 : public Object {
-	GDCLASS(NotificationObject1, Object);
+class NotificationObjectSuperclass : public Object {
+	GDCLASS(NotificationObjectSuperclass, Object);
 
 protected:
 	void _notification(int p_what) {
-		switch (p_what) {
-			case 12345: {
-				order_internal1 = order_global++;
-			} break;
-		}
+		order_superclass = ++order_global;
 	}
 
 public:
-	static int order_global;
-	int order_internal1 = -1;
-
-	void reset_order() {
-		order_internal1 = -1;
-		order_global = 1;
-	}
+	static inline int order_global = 0;
+	int order_superclass = -1;
 };
 
-int NotificationObject1::order_global = 1;
-
-class NotificationObject2 : public NotificationObject1 {
-	GDCLASS(NotificationObject2, NotificationObject1);
+class NotificationObjectSubclass : public NotificationObjectSuperclass {
+	GDCLASS(NotificationObjectSubclass, NotificationObjectSuperclass);
 
 protected:
 	void _notification(int p_what) {
-		switch (p_what) {
-			case 12345: {
-				order_internal2 = order_global++;
-			} break;
-		}
+		order_subclass = ++order_global;
 	}
 
 public:
-	int order_internal2 = -1;
-	void reset_order() {
-		NotificationObject1::reset_order();
-		order_internal2 = -1;
+	int order_subclass = -1;
+};
+
+class NotificationScriptInstance : public _MockScriptInstance {
+	void notification(int p_notification, bool p_reversed) override {
+		order_script = ++NotificationObjectSuperclass::order_global;
 	}
+
+public:
+	int order_script = -1;
 };
 
 TEST_CASE("[Object] Notification order") { // GH-52325
-	NotificationObject2 *test_notification_object = memnew(NotificationObject2);
+	NotificationObjectSubclass *object = memnew(NotificationObjectSubclass);
+
+	NotificationScriptInstance *script = memnew(NotificationScriptInstance);
+	object->set_script_instance(script);
 
 	SUBCASE("regular order") {
-		test_notification_object->notification(12345, false);
+		NotificationObjectSubclass::order_global = 0;
+		object->order_superclass = -1;
+		object->order_subclass = -1;
+		script->order_script = -1;
+		object->notification(12345, false);
 
-		CHECK_EQ(test_notification_object->order_internal1, 1);
-		CHECK_EQ(test_notification_object->order_internal2, 2);
-
-		test_notification_object->reset_order();
+		CHECK_EQ(object->order_superclass, 1);
+		CHECK_EQ(object->order_subclass, 2);
+		// TODO If an extension is attached, it should come here.
+		CHECK_EQ(script->order_script, 3);
+		CHECK_EQ(NotificationObjectSubclass::order_global, 3);
 	}
 
 	SUBCASE("reverse order") {
-		test_notification_object->notification(12345, true);
+		NotificationObjectSubclass::order_global = 0;
+		object->order_superclass = -1;
+		object->order_subclass = -1;
+		script->order_script = -1;
+		object->notification(12345, true);
 
-		CHECK_EQ(test_notification_object->order_internal1, 2);
-		CHECK_EQ(test_notification_object->order_internal2, 1);
-
-		test_notification_object->reset_order();
+		CHECK_EQ(script->order_script, 1);
+		// TODO If an extension is attached, it should come here.
+		CHECK_EQ(object->order_subclass, 2);
+		CHECK_EQ(object->order_superclass, 3);
+		CHECK_EQ(NotificationObjectSubclass::order_global, 3);
 	}
 
-	memdelete(test_notification_object);
+	memdelete(object);
 }
 
 TEST_CASE("[Object] Destruction at the end of the call chain is safe") {
