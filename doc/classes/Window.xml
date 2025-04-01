@@ -734,7 +734,7 @@
 		<signal name="dpi_changed">
 			<description>
 				Emitted when the [Window]'s DPI changes as a result of OS-level changes (e.g. moving the window from a Retina display to a lower resolution one).
-				[b]Note:[/b] Only implemented on macOS.
+				[b]Note:[/b] Only implemented on macOS and Linux (Wayland).
 			</description>
 		</signal>
 		<signal name="files_dropped">
