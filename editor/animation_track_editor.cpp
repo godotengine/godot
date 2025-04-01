@@ -4593,12 +4593,6 @@ PropertyInfo AnimationTrackEditor::_find_hint_for_track(int p_idx, NodePath &r_b
 		}
 	}
 
-	if (property_info_base.is_null()) {
-		WARN_PRINT(vformat("Could not determine track hint for '%s:%s' because its base property is null.",
-				String(path.get_concatenated_names()), String(path.get_concatenated_subnames())));
-		return PropertyInfo();
-	}
-
 	List<PropertyInfo> pinfo;
 	property_info_base.get_property_list(&pinfo);
 
@@ -4607,6 +4601,9 @@ PropertyInfo AnimationTrackEditor::_find_hint_for_track(int p_idx, NodePath &r_b
 			return E;
 		}
 	}
+
+	WARN_PRINT(vformat("Could not determine track hint for '%s:%s' because its base property is null.",
+			String(path.get_concatenated_names()), String(path.get_concatenated_subnames())));
 
 	return PropertyInfo();
 }
