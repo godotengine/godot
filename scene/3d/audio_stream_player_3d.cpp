@@ -462,8 +462,7 @@ Vector<AudioFrame> AudioStreamPlayer3D::_update_panning() {
 		for (Ref<AudioStreamPlayback> &playback : internal->stream_playbacks) {
 			AudioServer::get_singleton()->set_playback_highshelf_params(playback, linear_attenuation, attenuation_filter_cutoff_hz);
 		}
-		
-		
+
 		if (AudioServer::get_singleton()->get_speaker_mode() == AudioServer::SPEAKER_MODE_STEREO) {
 			output_volume_vector.write[0] = _calc_output_vol_stereo(local_pos, cached_global_panning_strength * panning_strength);
 			output_volume_vector.write[1] = AudioFrame(0, 0);
@@ -475,7 +474,7 @@ Vector<AudioFrame> AudioStreamPlayer3D::_update_panning() {
 			tightness *= panning_strength;
 			_calc_output_vol(local_pos.normalized(), tightness, output_volume_vector);
 		}
-	
+
 		for (unsigned int k = 0; k < 4; k++) {
 			output_volume_vector.write[k] = multiplier * output_volume_vector[k];
 		}
