@@ -4576,7 +4576,7 @@ PropertyInfo AnimationTrackEditor::_find_hint_for_track(int p_idx, NodePath &r_b
 
 	// Hack for the fact that bezier tracks leftover paths can reference
 	// the individual components for types like vectors.
-	if (property_info_base.is_null()) {
+	if (animation->track_get_type(p_idx) == Animation::TYPE_BEZIER && property_info_base.is_null()) {
 		if (res.is_valid()) {
 			property_info_base = res;
 		} else if (node) {
