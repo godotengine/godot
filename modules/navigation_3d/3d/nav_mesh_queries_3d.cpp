@@ -255,7 +255,7 @@ void NavMeshQueries3D::_query_task_find_start_end_positions(NavMeshPathQueryTask
 			}
 
 			// For each face check the distance between the origin/destination.
-			for (size_t point_id = 2; point_id < p.points.size(); point_id++) {
+			for (uint32_t point_id = 2; point_id < p.points.size(); point_id++) {
 				const Face3 face(p.points[0].pos, p.points[point_id - 1].pos, p.points[point_id].pos);
 
 				Vector3 point = face.get_closest_point_to(p_query_task.start_position);
@@ -370,7 +370,7 @@ void NavMeshQueries3D::_query_task_build_path_corridor(NavMeshPathQueryTask3D &p
 			// Set as end point the furthest reachable point.
 			end_poly = reachable_end;
 			real_t end_d = FLT_MAX;
-			for (size_t point_id = 2; point_id < end_poly->points.size(); point_id++) {
+			for (uint32_t point_id = 2; point_id < end_poly->points.size(); point_id++) {
 				Face3 f(end_poly->points[0].pos, end_poly->points[point_id - 1].pos, end_poly->points[point_id].pos);
 				Vector3 spoint = f.get_closest_point_to(p_target_position);
 				real_t dpoint = spoint.distance_squared_to(p_target_position);
@@ -382,7 +382,7 @@ void NavMeshQueries3D::_query_task_build_path_corridor(NavMeshPathQueryTask3D &p
 
 			// Search all faces of start polygon as well.
 			bool closest_point_on_start_poly = false;
-			for (size_t point_id = 2; point_id < begin_poly->points.size(); point_id++) {
+			for (uint32_t point_id = 2; point_id < begin_poly->points.size(); point_id++) {
 				Face3 f(begin_poly->points[0].pos, begin_poly->points[point_id - 1].pos, begin_poly->points[point_id].pos);
 				Vector3 spoint = f.get_closest_point_to(p_target_position);
 				real_t dpoint = spoint.distance_squared_to(p_target_position);
@@ -441,7 +441,7 @@ void NavMeshQueries3D::_query_task_build_path_corridor(NavMeshPathQueryTask3D &p
 	if (!found_route) {
 		real_t end_d = FLT_MAX;
 		// Search all faces of the start polygon for the closest point to our target position.
-		for (size_t point_id = 2; point_id < begin_poly->points.size(); point_id++) {
+		for (uint32_t point_id = 2; point_id < begin_poly->points.size(); point_id++) {
 			Face3 f(begin_poly->points[0].pos, begin_poly->points[point_id - 1].pos, begin_poly->points[point_id].pos);
 			Vector3 spoint = f.get_closest_point_to(p_target_position);
 			real_t dpoint = spoint.distance_squared_to(p_target_position);
@@ -726,7 +726,7 @@ Vector3 NavMeshQueries3D::map_iteration_get_closest_point_to_segment(const NavMa
 	for (const NavRegionIteration3D &region : regions) {
 		for (const Polygon &polygon : region.get_navmesh_polygons()) {
 			// For each face check the distance to the segment.
-			for (size_t point_id = 2; point_id < polygon.points.size(); point_id += 1) {
+			for (uint32_t point_id = 2; point_id < polygon.points.size(); point_id += 1) {
 				const Face3 face(polygon.points[0].pos, polygon.points[point_id - 1].pos, polygon.points[point_id].pos);
 				Vector3 intersection_point;
 				if (face.intersects_segment(p_from, p_to, &intersection_point)) {
@@ -759,7 +759,7 @@ Vector3 NavMeshQueries3D::map_iteration_get_closest_point_to_segment(const NavMa
 			}
 			// Finally, check for a case when shortest distance is between some point located on a face's edge and some point located on a line segment.
 			if (!use_collision) {
-				for (size_t point_id = 0; point_id < polygon.points.size(); point_id += 1) {
+				for (uint32_t point_id = 0; point_id < polygon.points.size(); point_id += 1) {
 					Vector3 a, b;
 
 					Geometry3D::get_closest_points_between_segments(
@@ -810,7 +810,7 @@ ClosestPointQueryResult NavMeshQueries3D::map_iteration_get_closest_point_info(c
 			real_t closest = FLT_MAX;
 			bool inside = true;
 			Vector3 previous = polygon.points[polygon.points.size() - 1].pos;
-			for (size_t point_id = 0; point_id < polygon.points.size(); ++point_id) {
+			for (uint32_t point_id = 0; point_id < polygon.points.size(); ++point_id) {
 				Vector3 edge = polygon.points[point_id].pos - previous;
 				Vector3 to_point = p_point - previous;
 				Vector3 edge_to_point_pormal = edge.cross(to_point);
@@ -941,7 +941,7 @@ Vector3 NavMeshQueries3D::polygons_get_closest_point_to_segment(const LocalVecto
 
 	for (const Polygon &polygon : p_polygons) {
 		// For each face check the distance to the segment.
-		for (size_t point_id = 2; point_id < polygon.points.size(); point_id += 1) {
+		for (uint32_t point_id = 2; point_id < polygon.points.size(); point_id += 1) {
 			const Face3 face(polygon.points[0].pos, polygon.points[point_id - 1].pos, polygon.points[point_id].pos);
 			Vector3 intersection_point;
 			if (face.intersects_segment(p_from, p_to, &intersection_point)) {
@@ -974,7 +974,7 @@ Vector3 NavMeshQueries3D::polygons_get_closest_point_to_segment(const LocalVecto
 		}
 		// Finally, check for a case when shortest distance is between some point located on a face's edge and some point located on a line segment.
 		if (!use_collision) {
-			for (size_t point_id = 0; point_id < polygon.points.size(); point_id += 1) {
+			for (uint32_t point_id = 0; point_id < polygon.points.size(); point_id += 1) {
 				Vector3 a, b;
 
 				Geometry3D::get_closest_points_between_segments(
@@ -1017,7 +1017,7 @@ ClosestPointQueryResult NavMeshQueries3D::polygons_get_closest_point_info(const 
 		real_t closest = FLT_MAX;
 		bool inside = true;
 		Vector3 previous = polygon.points[polygon.points.size() - 1].pos;
-		for (size_t point_id = 0; point_id < polygon.points.size(); ++point_id) {
+		for (uint32_t point_id = 0; point_id < polygon.points.size(); ++point_id) {
 			Vector3 edge = polygon.points[point_id].pos - previous;
 			Vector3 to_point = p_point - previous;
 			Vector3 edge_to_point_pormal = edge.cross(to_point);
