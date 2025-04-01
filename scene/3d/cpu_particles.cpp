@@ -639,7 +639,7 @@ void CPUParticles::_particles_process(float p_delta) {
 	Transform emission_xform;
 	Basis velocity_xform;
 	if (!local_coords) {
-		emission_xform = get_global_transform();
+		emission_xform = get_global_transform_interpolated();
 		velocity_xform = emission_xform.basis;
 	}
 
@@ -1207,6 +1207,9 @@ void CPUParticles::_refresh_interpolation_state() {
 		return;
 	}
 	bool interpolated = is_physics_interpolated_and_enabled();
+
+	// New SceneTreeFTI force CPUParticles to always update on the frame.
+	interpolated = false;
 
 	if (_interpolated == interpolated) {
 		return;
