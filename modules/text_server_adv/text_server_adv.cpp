@@ -60,23 +60,17 @@ using namespace godot;
 // Built-in ICU data.
 
 #ifdef ICU_STATIC_DATA
-#include "icudata.gen.h"
+#include <icudata.gen.h>
 #endif
 
 // Thirdparty headers.
 
 #ifdef MODULE_MSDFGEN_ENABLED
-#ifdef _MSC_VER
-#pragma warning(disable : 4458)
-#endif
 #include <core/EdgeHolder.h>
 #include <core/ShapeDistanceFinder.h>
 #include <core/contour-combiners.h>
 #include <core/edge-selectors.h>
 #include <msdfgen.h>
-#ifdef _MSC_VER
-#pragma warning(default : 4458)
-#endif
 #endif
 
 #ifdef MODULE_SVG_ENABLED
