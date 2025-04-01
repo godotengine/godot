@@ -503,7 +503,13 @@ void JoypadApple::add_joypad(GCController *p_controller) {
 	}
 
 	// Tell Godot about our new controller.
-	Input::get_singleton()->joy_connection_changed(joy_id, true, String::utf8(p_controller.vendorName.UTF8String));
+	char const *device_name;
+	if (@available(macOS 10.15, iOS 13.0, tvOS 13.0, *)) {
+		device_name = p_controller.productCategory.UTF8String;
+	} else {
+		device_name = p_controller.vendorName.UTF8String;
+	}
+	Input::get_singleton()->joy_connection_changed(joy_id, true, String::utf8(device_name));
 
 	// Assign our player index.
 	joypads.insert(joy_id, memnew(GameController(joy_id, p_controller)));
