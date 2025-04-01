@@ -32,6 +32,7 @@
 
 #include "core/config/project_settings.h"
 #include "core/string/translation_server.h"
+#include "editor/editor_settings.h"
 #include "editor/editor_translation_parser.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/filesystem_dock.h"
@@ -400,6 +401,7 @@ void LocalizationEditor::_pot_add_builtin_toggled() {
 }
 
 void LocalizationEditor::_pot_generate(const String &p_file) {
+	EditorSettings::get_singleton()->set_project_metadata("pot_generator", "last_pot_path", p_file);
 	POTGenerator::get_singleton()->generate_pot(p_file);
 }
 
@@ -761,6 +763,7 @@ LocalizationEditor::LocalizationEditor() {
 
 		pot_generate_dialog = memnew(EditorFileDialog);
 		pot_generate_dialog->set_file_mode(EditorFileDialog::FILE_MODE_SAVE_FILE);
+		pot_generate_dialog->set_current_path(EditorSettings::get_singleton()->get_project_metadata("pot_generator", "last_pot_path", String()));
 		pot_generate_dialog->connect("file_selected", callable_mp(this, &LocalizationEditor::_pot_generate));
 		add_child(pot_generate_dialog);
 
