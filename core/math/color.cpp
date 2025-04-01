@@ -316,47 +316,38 @@ Color Color::inverted() const {
 }
 
 Color Color::html(const String &p_rgba) {
-	String color = p_rgba;
-	if (color.length() == 0) {
+	if (p_rgba.is_empty()) {
 		return Color();
 	}
-	if (color[0] == '#') {
-		color = color.substr(1);
-	}
 
-	// If enabled, use 1 hex digit per channel instead of 2.
-	// Other sizes aren't in the HTML/CSS spec but we could add them if desired.
-	bool is_shorthand = color.length() < 5;
-	bool alpha = false;
+	const int current_pos = (p_rgba[0] == '#') ? 1 : 0;
+	const int num_of_digits = p_rgba.length() - current_pos;
 
-	if (color.length() == 8) {
-		alpha = true;
-	} else if (color.length() == 6) {
-		alpha = false;
-	} else if (color.length() == 4) {
-		alpha = true;
-	} else if (color.length() == 3) {
-		alpha = false;
+	float r, g, b, a = 1.0f;
+
+	if (num_of_digits == 3) {
+		// #rgb
+		r = _parse_col4(p_rgba, current_pos) / 15.0f;
+		g = _parse_col4(p_rgba, current_pos + 1) / 15.0f;
+		b = _parse_col4(p_rgba, current_pos + 2) / 15.0f;
+	} else if (num_of_digits == 4) {
+		r = _parse_col4(p_rgba, current_pos) / 15.0f;
+		g = _parse_col4(p_rgba, current_pos + 1) / 15.0f;
+		b = _parse_col4(p_rgba, current_pos + 2) / 15.0f;
+		a = _parse_col4(p_rgba, current_pos + 3) / 15.0f;
+	} else if (num_of_digits == 6) {
+		r = _parse_col8(p_rgba, current_pos) / 255.0f;
+		g = _parse_col8(p_rgba, current_pos + 2) / 255.0f;
+		b = _parse_col8(p_rgba, current_pos + 4) / 255.0f;
+	} else if (num_of_digits == 8) {
+		r = _parse_col8(p_rgba, current_pos) / 255.0f;
+		g = _parse_col8(p_rgba, current_pos + 2) / 255.0f;
+		b = _parse_col8(p_rgba, current_pos + 4) / 255.0f;
+		a = _parse_col8(p_rgba, current_pos + 6) / 255.0f;
 	} else {
 		ERR_FAIL_V_MSG(Color(), "Invalid color code: " + p_rgba + ".");
 	}
 
-	float r, g, b, a = 1.0f;
-	if (is_shorthand) {
-		r = _parse_col4(color, 0) / 15.0f;
-		g = _parse_col4(color, 1) / 15.0f;
-		b = _parse_col4(color, 2) / 15.0f;
-		if (alpha) {
-			a = _parse_col4(color, 3) / 15.0f;
-		}
-	} else {
-		r = _parse_col8(color, 0) / 255.0f;
-		g = _parse_col8(color, 2) / 255.0f;
-		b = _parse_col8(color, 4) / 255.0f;
-		if (alpha) {
-			a = _parse_col8(color, 6) / 255.0f;
-		}
-	}
 	ERR_FAIL_COND_V_MSG(r < 0.0f, Color(), "Invalid color code: " + p_rgba + ".");
 	ERR_FAIL_COND_V_MSG(g < 0.0f, Color(), "Invalid color code: " + p_rgba + ".");
 	ERR_FAIL_COND_V_MSG(b < 0.0f, Color(), "Invalid color code: " + p_rgba + ".");
@@ -372,9 +363,9 @@ bool Color::html_is_valid(const String &p_color) {
 		return false;
 	}
 
-	int current_pos = (color[0] == '#') ? 1 : 0;
-	int len = color.length();
-	int num_of_digits = len - current_pos;
+	const int current_pos = (color[0] == '#') ? 1 : 0;
+	const int len = color.length();
+	const int num_of_digits = len - current_pos;
 	if (!(num_of_digits == 3 || num_of_digits == 4 || num_of_digits == 6 || num_of_digits == 8)) {
 		return false;
 	}
