@@ -102,6 +102,7 @@ void XRVRS::set_vrs_render_region(const Rect2i &p_vrs_render_region) {
 }
 
 RID XRVRS::make_vrs_texture(const Size2 &p_target_size, const PackedVector2Array &p_eye_foci) {
+#ifdef RD_ENABLED
 	ERR_FAIL_COND_V(p_eye_foci.is_empty(), RID());
 
 	Size2i texel_size = RD::get_singleton()->vrs_get_texel_size();
@@ -176,4 +177,7 @@ RID XRVRS::make_vrs_texture(const Size2 &p_target_size, const PackedVector2Array
 	}
 
 	return vrs_texture;
+#else
+	return RID();
+#endif // RD_ENABLED
 }
