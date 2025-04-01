@@ -113,47 +113,21 @@ static Vector<String> _get_hierarchy(const String &p_class_name) {
 void ScriptCreateDialog::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
-			String last_language = EditorSettings::get_singleton()->get_project_metadata("script_setup", "last_selected_language", "");
-			if (!last_language.is_empty()) {
-				for (int i = 0; i < language_menu->get_item_count(); i++) {
-					if (language_menu->get_item_text(i) == last_language) {
-						language_menu->select(i);
-						break;
-					}
-				}
-			} else {
-				language_menu->select(default_language);
-			}
+			_set_last_selected_language();
 			is_using_templates = EDITOR_GET("_script_setup_use_script_templates");
 			use_templates->set_pressed(is_using_templates);
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
-			const int icon_size = get_theme_constant(SNAME("class_icon_size"), EditorStringName(Editor));
-
-			EditorData &ed = EditorNode::get_editor_data();
-
-			for (int i = 0; i < ScriptServer::get_language_count(); i++) {
-				// Check if the extension has an icon first.
-				String script_type = ScriptServer::get_language(i)->get_type();
-				Ref<Texture2D> language_icon = get_editor_theme_icon(script_type);
-				if (language_icon.is_null() || language_icon == ThemeDB::get_singleton()->get_fallback_icon()) {
-					// The theme doesn't have an icon for this language, ask the extensions.
-					Ref<Texture2D> extension_language_icon = ed.extension_class_get_icon(script_type);
-					if (extension_language_icon.is_valid()) {
-						language_menu->get_popup()->set_item_icon_max_width(i, icon_size);
-						language_icon = extension_language_icon;
-					}
-				}
-
-				if (language_icon.is_valid()) {
-					language_menu->set_item_icon(i, language_icon);
-				}
-			}
-
 			path_button->set_button_icon(get_editor_theme_icon(SNAME("Folder")));
 			parent_browse_button->set_button_icon(get_editor_theme_icon(SNAME("Folder")));
 			parent_search_button->set_button_icon(get_editor_theme_icon(SNAME("ClassList")));
+		} break;
+
+		case NOTIFICATION_VISIBILITY_CHANGED: {
+			if (is_visible()) {
+				_update_languages();
+			}
 		} break;
 	}
 }
@@ -203,7 +177,8 @@ void ScriptCreateDialog::config(const String &p_base_name, const String &p_base_
 	built_in_enabled = p_built_in_enabled;
 	load_enabled = p_load_enabled;
 
-	_language_changed(language_menu->get_selected());
+	int last_selected_index = _get_last_selected_language_index();
+	_language_changed(last_selected_index == -1 ? 0 : last_selected_index);
 
 	if (_can_be_built_in()) {
 		built_in->set_pressed(EditorSettings::get_singleton()->get_project_metadata("script_setup", "create_built_in_script", false));
@@ -411,6 +386,15 @@ void ScriptCreateDialog::_load_exist() {
 }
 
 void ScriptCreateDialog::_language_changed(int l) {
+	// Guard against language being removed while dialog is open
+	int language_index = MIN(ScriptServer::get_language_count() - 1, l);
+	if (language_index != l) {
+		// Fallback to default language in this case.
+		// When language list is updated, this method is called
+		_update_languages(true);
+		return;
+	}
+
 	language = ScriptServer::get_language(l);
 
 	can_inherit_from_file = language->can_inherit_from_file();
@@ -424,8 +408,7 @@ void ScriptCreateDialog::_language_changed(int l) {
 	_path_changed(path);
 	file_path->set_text(path);
 
-	EditorSettings::get_singleton()->set_project_metadata("script_setup", "last_selected_language", language_menu->get_item_text(language_menu->get_selected()));
-
+	EditorSettings::get_singleton()->set_project_metadata("script_setup", "last_selected_language", language->get_name());
 	_parent_name_changed(parent_name->get_text());
 	validation_panel->update();
 }
@@ -710,6 +693,65 @@ void ScriptCreateDialog::_update_dialog() {
 	}
 }
 
+void ScriptCreateDialog::_update_languages(bool p_select_default) {
+	const int icon_size = get_theme_constant(SNAME("class_icon_size"), EditorStringName(Editor));
+	EditorData &ed = EditorNode::get_editor_data();
+
+	language_menu->clear();
+	for (int i = 0; i < ScriptServer::get_language_count(); i++) {
+		ScriptLanguage *lang = ScriptServer::get_language(i);
+		String script_type = lang->get_type();
+		String language_name = lang->get_name();
+
+		language_menu->add_item(language_name);
+
+		Ref<Texture2D> language_icon = get_editor_theme_icon(script_type);
+		if (language_icon.is_null() || language_icon == ThemeDB::get_singleton()->get_fallback_icon()) {
+			// The theme doesn't have an icon for this language, ask the extensions.
+			Ref<Texture2D> extension_language_icon = ed.extension_class_get_icon(script_type);
+			if (extension_language_icon.is_valid()) {
+				language_menu->get_popup()->set_item_icon_max_width(i, icon_size);
+				language_icon = extension_language_icon;
+			}
+		}
+
+		if (language_icon.is_valid()) {
+			language_menu->set_item_icon(i, language_icon);
+		}
+	}
+
+	// Because the language list is refreshed when dialog's visibility changes
+	if (!p_select_default) {
+		_set_last_selected_language();
+	} else if (default_language >= 0) {
+		language_menu->select(default_language);
+	}
+}
+
+int ScriptCreateDialog::_get_last_selected_language_index() const {
+	String last_language = EditorSettings::get_singleton()->get_project_metadata("script_setup", "last_selected_language", "");
+	if (!last_language.is_empty()) {
+		for (int i = 0; i < language_menu->get_item_count(); i++) {
+			if (language_menu->get_item_text(i) == last_language) {
+				return i;
+			}
+		}
+	}
+
+	return default_language;
+}
+
+void ScriptCreateDialog::_set_last_selected_language() {
+	int last_selection = _get_last_selected_language_index();
+	ERR_FAIL_COND_MSG(last_selection == -1, "Cannot set last selected language");
+
+	if (last_selection < language_menu->get_item_count()) {
+		language_menu->select(last_selection);
+	} else {
+		language_menu->select(0);
+	}
+}
+
 ScriptLanguage::ScriptTemplate ScriptCreateDialog::_get_current_template() const {
 	int selected_index = template_menu->get_selected();
 	for (const ScriptLanguage::ScriptTemplate &t : template_list) {
@@ -896,9 +938,6 @@ ScriptCreateDialog::ScriptCreateDialog() {
 		if (lang == "GDScript") {
 			default_language = i;
 		}
-	}
-	if (default_language >= 0) {
-		language_menu->select(default_language);
 	}
 
 	language_menu->connect(SceneStringName(item_selected), callable_mp(this, &ScriptCreateDialog::_language_changed));
