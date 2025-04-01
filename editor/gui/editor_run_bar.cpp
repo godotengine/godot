@@ -38,6 +38,7 @@
 #include "editor/editor_run_native.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
+#include "editor/editor_undo_redo_manager.h"
 #include "editor/gui/editor_bottom_panel.h"
 #include "editor/gui/editor_quick_open_dialog.h"
 #include "editor/gui/editor_toaster.h"
@@ -192,7 +193,24 @@ void EditorRunBar::_movie_dropdown_toggled(bool p_enabled) {
 }
 
 void EditorRunBar::_movie_popup_close_requested() {
+	// TODO: Immediately save the project settings value.
 	movie_dropdown_button->set_pressed(false);
+}
+
+void EditorRunBar::_movie_popup_path_edit_focus_exited() {
+	// TODO: Start (or reset) timer. When timer times out, save the text in the box
+	// to the ProjectSettings.
+}
+
+void EditorRunBar::_movie_popup_path_edit_text_submitted(const String &p_new_text) {
+	// Immediately save the project settings value.
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+
+	undo_redo->create_action(TTR("Set movie_file"));
+	undo_redo->add_do_property(ProjectSettings::get_singleton(), "editor/movie_writer/movie_file", p_new_text);
+	undo_redo->add_undo_property(ProjectSettings::get_singleton(), "editor/movie_writer/movie_file", GLOBAL_GET("editor/movie_writer/movie_file"));
+	undo_redo->add_undo_property(movie_popup_path_edit, "text", GLOBAL_GET("editor/movie_writer/movie_file"));
+	undo_redo->commit_action();
 }
 
 Vector<String> EditorRunBar::_get_xr_mode_play_args(int p_xr_mode_id) {
@@ -723,7 +741,10 @@ EditorRunBar::EditorRunBar() {
 
 	// TODO: look at EditorPropertyPath
 	movie_popup_path_edit = memnew(LineEdit);
+	movie_popup_path_edit->set_structured_text_bidi_override(TextServer::STRUCTURED_TEXT_FILE);
 	movie_popup_path_container->add_child(movie_popup_path_edit);
+	movie_popup_path_edit->connect("text_submitted", callable_mp(this, &EditorRunBar::_movie_popup_path_edit_text_submitted));
+	movie_popup_path_edit->connect(SceneStringName(focus_exited), callable_mp(this, &EditorRunBar::_movie_popup_path_edit_focus_exited));
 
 	movie_popup->hide();
 }

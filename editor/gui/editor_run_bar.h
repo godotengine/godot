@@ -96,6 +96,8 @@ class EditorRunBar : public MarginContainer {
 	void _write_movie_toggled(bool p_enabled);
 	void _movie_dropdown_toggled(bool p_enabled);
 	void _movie_popup_close_requested();
+	void _movie_popup_path_edit_focus_exited();
+	void _movie_popup_path_edit_text_submitted(const String &p_new_text);
 	void _quick_run_selected(const String &p_file_path, int p_id = -1);
 
 	void _play_current_pressed(int p_id = -1);
