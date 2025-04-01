@@ -299,8 +299,7 @@ Error GLTFDocument::_parse_json(const String &p_path, Ref<GLTFState> p_state) {
 	Vector<uint8_t> array;
 	array.resize(file->get_length());
 	file->get_buffer(array.ptrw(), array.size());
-	String text;
-	text.append_utf8((const char *)array.ptr(), array.size());
+	String text = String::utf8((const char *)array.ptr(), array.size());
 
 	JSON json;
 	err = json.parse(text);
@@ -330,8 +329,7 @@ Error GLTFDocument::_parse_glb(Ref<FileAccess> p_file, Ref<GLTFState> p_state) {
 	uint32_t len = p_file->get_buffer(json_data.ptrw(), chunk_length);
 	ERR_FAIL_COND_V(len != chunk_length, ERR_FILE_CORRUPT);
 
-	String text;
-	text.append_utf8((const char *)json_data.ptr(), json_data.size());
+	String text = String::utf8((const char *)json_data.ptr(), json_data.size());
 
 	JSON json;
 	Error err = json.parse(text);
@@ -3834,10 +3832,9 @@ Error GLTFDocument::_serialize_images(Ref<GLTFState> p_state) {
 		if (p_state->filename.to_lower().ends_with("gltf")) {
 			String img_name = p_state->images[i]->get_name();
 			if (img_name.is_empty()) {
-				img_name = itos(i);
+				img_name = itos(i).pad_zeros(3);
 			}
 			img_name = _gen_unique_name(p_state, img_name);
-			img_name = img_name.pad_zeros(3);
 			String relative_texture_dir = "textures";
 			String full_texture_dir = p_state->base_path.path_join(relative_texture_dir);
 			Ref<DirAccess> da = DirAccess::open(p_state->base_path);

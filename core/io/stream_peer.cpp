@@ -383,9 +383,7 @@ String StreamPeer::get_utf8_string(int p_bytes) {
 	err = get_data(buf.ptrw(), p_bytes);
 	ERR_FAIL_COND_V(err != OK, String());
 
-	String ret;
-	ret.append_utf8((const char *)buf.ptr(), buf.size());
-	return ret;
+	return String::utf8((const char *)buf.ptr(), buf.size());
 }
 
 Variant StreamPeer::get_var(bool p_allow_objects) {
