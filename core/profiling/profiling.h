@@ -53,11 +53,7 @@
 	static constexpr tracy::SourceLocationData TracyConcat(__tracy_source_location, TracyLine){ m_zone_name, TracyFunction, TracyFile, (uint32_t)TracyLine, 0 }; \
 	new (&__godot_tracy_zone_##m_group_name) tracy::ScopedZone(&TracyConcat(__tracy_source_location, TracyLine), TRACY_CALLSTACK, true)
 
-static void godot_init_profiler() {
-	// Send our first event to tracy; otherwise it doesn't start collecting data.
-	// FrameMark is kind of fitting because it communicates "this is where we started tracing".
-	FrameMark;
-}
+void godot_init_profiler();
 
 #elif defined(GODOT_USE_PERFETTO)
 // Use the perfetto profiler.
@@ -94,8 +90,7 @@ void godot_init_profiler();
 #else
 // No profiling; all macros are stubs.
 
-static void godot_init_profiler() {
-}
+void godot_init_profiler();
 
 #define GodotProfileFrameMark
 #define GodotProfileZone(m_zone_name)
