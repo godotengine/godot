@@ -153,12 +153,11 @@ struct [[nodiscard]] Vector2 {
 	constexpr Vector2 operator-() const;
 
 	constexpr bool operator==(const Vector2 &p_vec2) const;
-	constexpr bool operator!=(const Vector2 &p_vec2) const;
-
 	constexpr bool operator<(const Vector2 &p_vec2) const { return x == p_vec2.x ? (y < p_vec2.y) : (x < p_vec2.x); }
 	constexpr bool operator>(const Vector2 &p_vec2) const { return x == p_vec2.x ? (y > p_vec2.y) : (x > p_vec2.x); }
 	constexpr bool operator<=(const Vector2 &p_vec2) const { return x == p_vec2.x ? (y <= p_vec2.y) : (x < p_vec2.x); }
 	constexpr bool operator>=(const Vector2 &p_vec2) const { return x == p_vec2.x ? (y >= p_vec2.y) : (x > p_vec2.x); }
+	bool operator==(const Vector2i &p_vector2i) const;
 
 	real_t angle() const;
 	static Vector2 from_angle(real_t p_angle);
@@ -249,10 +248,6 @@ constexpr bool Vector2::operator==(const Vector2 &p_vec2) const {
 	return x == p_vec2.x && y == p_vec2.y;
 }
 
-constexpr bool Vector2::operator!=(const Vector2 &p_vec2) const {
-	return x != p_vec2.x || y != p_vec2.y;
-}
-
 Vector2 Vector2::lerp(const Vector2 &p_to, real_t p_weight) const {
 	Vector2 res = *this;
 	res.x = Math::lerp(res.x, p_to.x, p_weight);
@@ -263,7 +258,7 @@ Vector2 Vector2::lerp(const Vector2 &p_to, real_t p_weight) const {
 Vector2 Vector2::slerp(const Vector2 &p_to, real_t p_weight) const {
 	real_t start_length_sq = length_squared();
 	real_t end_length_sq = p_to.length_squared();
-	if (unlikely(start_length_sq == 0.0f || end_length_sq == 0.0f)) {
+	if (start_length_sq == 0.0f || end_length_sq == 0.0f) [[unlikely]] {
 		// Zero length vectors have no angle, so the best we can do is either lerp or throw an error.
 		return lerp(p_to, p_weight);
 	}

@@ -630,7 +630,7 @@ _ALWAYS_INLINE_ bool is_same(float p_left, float p_right) {
 
 _ALWAYS_INLINE_ double smoothstep(double p_from, double p_to, double p_s) {
 	if (is_equal_approx(p_from, p_to)) {
-		if (likely(p_from <= p_to)) {
+		if (p_from <= p_to) [[likely]] {
 			return p_s <= p_from ? 0.0 : 1.0;
 		} else {
 			return p_s <= p_to ? 1.0 : 0.0;
@@ -641,7 +641,7 @@ _ALWAYS_INLINE_ double smoothstep(double p_from, double p_to, double p_s) {
 }
 _ALWAYS_INLINE_ float smoothstep(float p_from, float p_to, float p_s) {
 	if (is_equal_approx(p_from, p_to)) {
-		if (likely(p_from <= p_to)) {
+		if (p_from <= p_to) [[likely]] {
 			return p_s <= p_from ? 0.0f : 1.0f;
 		} else {
 			return p_s <= p_to ? 1.0f : 0.0f;

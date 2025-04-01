@@ -216,7 +216,7 @@ public:
 		} else {
 			ma = max_alloc;
 		}
-		if (unlikely(idx >= ma)) {
+		if (idx >= ma) [[unlikely]] {
 			return nullptr;
 		}
 
@@ -242,18 +242,18 @@ public:
 #endif
 		}
 
-		if (unlikely(p_initialize)) {
-			if (unlikely(!(c.validator & 0x80000000))) {
+		if (p_initialize) [[unlikely]] {
+			if (!(c.validator & 0x80000000)) [[unlikely]] {
 				ERR_FAIL_V_MSG(nullptr, "Initializing already initialized RID");
 			}
 
-			if (unlikely((c.validator & 0x7FFFFFFF) != validator)) {
+			if ((c.validator & 0x7FFFFFFF) != validator) [[unlikely]] {
 				ERR_FAIL_V_MSG(nullptr, "Attempting to initialize the wrong RID");
 			}
 
 			c.validator &= 0x7FFFFFFF; //initialized
 
-		} else if (unlikely(c.validator != validator)) {
+		} else if (c.validator != validator) [[unlikely]] {
 			if ((c.validator & 0x80000000) && c.validator != 0xFFFFFFFF) {
 				ERR_FAIL_V_MSG(nullptr, "Attempting to use an uninitialized RID");
 			}
@@ -317,7 +317,7 @@ public:
 
 		uint64_t id = p_rid.get_id();
 		uint32_t idx = uint32_t(id & 0xFFFFFFFF);
-		if (unlikely(idx >= max_alloc)) {
+		if (idx >= max_alloc) [[unlikely]] {
 			if constexpr (THREAD_SAFE) {
 				mutex.unlock();
 			}
@@ -345,7 +345,7 @@ public:
 
 		uint64_t id = p_rid.get_id();
 		uint32_t idx = uint32_t(id & 0xFFFFFFFF);
-		if (unlikely(idx >= max_alloc)) {
+		if (idx >= max_alloc) [[unlikely]] {
 			if constexpr (THREAD_SAFE) {
 				mutex.unlock();
 			}
@@ -356,12 +356,12 @@ public:
 		uint32_t idx_element = idx % elements_in_chunk;
 
 		uint32_t validator = uint32_t(id >> 32);
-		if (unlikely(chunks[idx_chunk][idx_element].validator & 0x80000000)) {
+		if (chunks[idx_chunk][idx_element].validator & 0x80000000) [[unlikely]] {
 			if constexpr (THREAD_SAFE) {
 				mutex.unlock();
 			}
 			ERR_FAIL_MSG("Attempted to free an uninitialized or invalid RID");
-		} else if (unlikely(chunks[idx_chunk][idx_element].validator != validator)) {
+		} else if (chunks[idx_chunk][idx_element].validator != validator) [[unlikely]] {
 			if constexpr (THREAD_SAFE) {
 				mutex.unlock();
 			}
@@ -482,7 +482,7 @@ public:
 
 	_FORCE_INLINE_ T *get_or_null(const RID &p_rid) {
 		T **ptr = alloc.get_or_null(p_rid);
-		if (unlikely(!ptr)) {
+		if (!ptr) [[unlikely]] {
 			return nullptr;
 		}
 		return *ptr;

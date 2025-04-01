@@ -936,7 +936,7 @@ void ResourceLoader::resource_changed_connect(Resource *p_source, const Callable
 	MutexLock lock(thread_load_mutex);
 
 	for (const ThreadLoadTask::ResourceChangedConnection &rcc : curr_load_task->resource_changed_connections) {
-		if (unlikely(rcc.source == p_source && rcc.callable == p_callable)) {
+		if (rcc.source == p_source && rcc.callable == p_callable) [[unlikely]] {
 			return;
 		}
 	}
@@ -955,7 +955,7 @@ void ResourceLoader::resource_changed_disconnect(Resource *p_source, const Calla
 
 	for (uint32_t i = 0; i < curr_load_task->resource_changed_connections.size(); ++i) {
 		const ThreadLoadTask::ResourceChangedConnection &rcc = curr_load_task->resource_changed_connections[i];
-		if (unlikely(rcc.source == p_source && rcc.callable == p_callable)) {
+		if (rcc.source == p_source && rcc.callable == p_callable) [[unlikely]] {
 			curr_load_task->resource_changed_connections.remove_at_unordered(i);
 			return;
 		}
@@ -968,7 +968,7 @@ void ResourceLoader::resource_changed_emit(Resource *p_source) {
 	MutexLock lock(thread_load_mutex);
 
 	for (const ThreadLoadTask::ResourceChangedConnection &rcc : curr_load_task->resource_changed_connections) {
-		if (unlikely(rcc.source == p_source)) {
+		if (rcc.source == p_source) [[unlikely]] {
 			rcc.callable.call();
 		}
 	}

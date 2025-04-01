@@ -1925,7 +1925,7 @@ void ScriptEditorDebugger::toggle_profiler(const String &p_profiler, bool p_enab
 }
 
 ScriptEditorDebugger::ScriptEditorDebugger() {
-	if (unlikely(parse_message_handlers.is_empty())) {
+	if (parse_message_handlers.is_empty()) [[unlikely]] {
 		_init_parse_message_handlers();
 	}
 

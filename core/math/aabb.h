@@ -61,9 +61,6 @@ struct [[nodiscard]] AABB {
 	constexpr bool operator==(const AABB &p_rval) const {
 		return position == p_rval.position && size == p_rval.size;
 	}
-	constexpr bool operator!=(const AABB &p_rval) const {
-		return position != p_rval.position || size != p_rval.size;
-	}
 
 	bool is_equal_approx(const AABB &p_aabb) const;
 	bool is_same(const AABB &p_aabb) const;
@@ -142,7 +139,7 @@ struct [[nodiscard]] AABB {
 
 inline bool AABB::intersects(const AABB &p_aabb) const {
 #ifdef MATH_CHECKS
-	if (unlikely(size.x < 0 || size.y < 0 || size.z < 0 || p_aabb.size.x < 0 || p_aabb.size.y < 0 || p_aabb.size.z < 0)) {
+	if (size.x < 0 || size.y < 0 || size.z < 0 || p_aabb.size.x < 0 || p_aabb.size.y < 0 || p_aabb.size.z < 0) [[unlikely]] {
 		ERR_PRINT("AABB size is negative, this is not supported. Use AABB.abs() to get an AABB with a positive size.");
 	}
 #endif
@@ -170,7 +167,7 @@ inline bool AABB::intersects(const AABB &p_aabb) const {
 
 inline bool AABB::intersects_inclusive(const AABB &p_aabb) const {
 #ifdef MATH_CHECKS
-	if (unlikely(size.x < 0 || size.y < 0 || size.z < 0 || p_aabb.size.x < 0 || p_aabb.size.y < 0 || p_aabb.size.z < 0)) {
+	if (size.x < 0 || size.y < 0 || size.z < 0 || p_aabb.size.x < 0 || p_aabb.size.y < 0 || p_aabb.size.z < 0) [[unlikely]] {
 		ERR_PRINT("AABB size is negative, this is not supported. Use AABB.abs() to get an AABB with a positive size.");
 	}
 #endif
@@ -198,7 +195,7 @@ inline bool AABB::intersects_inclusive(const AABB &p_aabb) const {
 
 inline bool AABB::encloses(const AABB &p_aabb) const {
 #ifdef MATH_CHECKS
-	if (unlikely(size.x < 0 || size.y < 0 || size.z < 0 || p_aabb.size.x < 0 || p_aabb.size.y < 0 || p_aabb.size.z < 0)) {
+	if (size.x < 0 || size.y < 0 || size.z < 0 || p_aabb.size.x < 0 || p_aabb.size.y < 0 || p_aabb.size.z < 0) [[unlikely]] {
 		ERR_PRINT("AABB size is negative, this is not supported. Use AABB.abs() to get an AABB with a positive size.");
 	}
 #endif
@@ -316,7 +313,7 @@ bool AABB::inside_convex_shape(const Plane *p_planes, int p_plane_count) const {
 
 bool AABB::has_point(const Vector3 &p_point) const {
 #ifdef MATH_CHECKS
-	if (unlikely(size.x < 0 || size.y < 0 || size.z < 0)) {
+	if (size.x < 0 || size.y < 0 || size.z < 0) [[unlikely]] {
 		ERR_PRINT("AABB size is negative, this is not supported. Use AABB.abs() to get an AABB with a positive size.");
 	}
 #endif
@@ -344,7 +341,7 @@ bool AABB::has_point(const Vector3 &p_point) const {
 
 inline void AABB::expand_to(const Vector3 &p_vector) {
 #ifdef MATH_CHECKS
-	if (unlikely(size.x < 0 || size.y < 0 || size.z < 0)) {
+	if (size.x < 0 || size.y < 0 || size.z < 0) [[unlikely]] {
 		ERR_PRINT("AABB size is negative, this is not supported. Use AABB.abs() to get an AABB with a positive size.");
 	}
 #endif
@@ -415,7 +412,7 @@ inline real_t AABB::get_shortest_axis_size() const {
 
 bool AABB::smits_intersect_ray(const Vector3 &p_from, const Vector3 &p_dir, real_t p_t0, real_t p_t1) const {
 #ifdef MATH_CHECKS
-	if (unlikely(size.x < 0 || size.y < 0 || size.z < 0)) {
+	if (size.x < 0 || size.y < 0 || size.z < 0) [[unlikely]] {
 		ERR_PRINT("AABB size is negative, this is not supported. Use AABB.abs() to get an AABB with a positive size.");
 	}
 #endif

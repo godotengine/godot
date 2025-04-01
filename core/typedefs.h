@@ -36,9 +36,9 @@
 
 // IWYU pragma: always_keep
 
-// Ensure that C++ standard is at least C++17.
+// Ensure that C++ standard is at least C++20.
 // If on MSVC, also ensures that the `Zc:__cplusplus` flag is present.
-static_assert(__cplusplus >= 201703L, "Minimum of C++17 required.");
+static_assert(__cplusplus >= 202002L, "Minimum of C++20 required.");
 
 // IWYU pragma: begin_exports
 
@@ -281,14 +281,6 @@ struct _GlobalLock {
 };
 
 #define GLOBAL_LOCK_FUNCTION _GlobalLock _global_lock_;
-
-#if defined(__GNUC__)
-#define likely(x) __builtin_expect(!!(x), 1)
-#define unlikely(x) __builtin_expect(!!(x), 0)
-#else
-#define likely(x) x
-#define unlikely(x) x
-#endif
 
 #if defined(__GNUC__)
 #define _PRINTF_FORMAT_ATTRIBUTE_2_0 __attribute__((format(printf, 2, 0)))

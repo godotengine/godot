@@ -307,7 +307,7 @@ Ref<Script> PropertyUtils::get_custom_type_script(const Object *p_object) {
 	}
 #endif
 	ResourceUID::ID id = ResourceUID::get_singleton()->text_to_id(custom_script);
-	if (unlikely(id == ResourceUID::INVALID_ID || !ResourceUID::get_singleton()->has_id(id))) {
+	if (id == ResourceUID::INVALID_ID || !ResourceUID::get_singleton()->has_id(id)) [[unlikely]] {
 		const_cast<Object *>(p_object)->remove_meta(SceneStringName(_custom_type_script));
 		ERR_FAIL_V_MSG(Ref<Script>(), vformat("Invalid custom type script UID: %s. Removing.", custom_script.operator String()));
 	} else {

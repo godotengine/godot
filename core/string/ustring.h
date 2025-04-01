@@ -121,7 +121,7 @@ public:
 			_cowdata(p_other._cowdata) {}
 
 	_FORCE_INLINE_ operator T() const {
-		if (unlikely(_index == _cowdata.size())) {
+		if (_index == _cowdata.size()) [[unlikely]] {
 			return _null;
 		}
 
@@ -162,7 +162,7 @@ public:
 	_FORCE_INLINE_ char16_t get(int p_index) const { return _cowdata.get(p_index); }
 	_FORCE_INLINE_ void set(int p_index, const char16_t &p_elem) { _cowdata.set(p_index, p_elem); }
 	_FORCE_INLINE_ const char16_t &operator[](int p_index) const {
-		if (unlikely(p_index == _cowdata.size())) {
+		if (p_index == _cowdata.size()) [[unlikely]] {
 			return _null;
 		}
 
@@ -209,7 +209,7 @@ public:
 	_FORCE_INLINE_ char get(int p_index) const { return _cowdata.get(p_index); }
 	_FORCE_INLINE_ void set(int p_index, const char &p_elem) { _cowdata.set(p_index, p_elem); }
 	_FORCE_INLINE_ const char &operator[](int p_index) const {
-		if (unlikely(p_index == _cowdata.size())) {
+		if (p_index == _cowdata.size()) [[unlikely]] {
 			return _null;
 		}
 
@@ -302,7 +302,7 @@ public:
 	Error resize(int p_size) { return _cowdata.resize(p_size); }
 
 	_FORCE_INLINE_ const char32_t &operator[](int p_index) const {
-		if (unlikely(p_index == _cowdata.size())) {
+		if (p_index == _cowdata.size()) [[unlikely]] {
 			return _null;
 		}
 
@@ -313,7 +313,6 @@ public:
 	/* Compatibility Operators */
 
 	bool operator==(const String &p_str) const;
-	bool operator!=(const String &p_str) const;
 	String operator+(const String &p_str) const;
 	String operator+(const char *p_char) const;
 	String operator+(const wchar_t *p_char) const;
@@ -330,10 +329,6 @@ public:
 	bool operator==(const wchar_t *p_str) const;
 	bool operator==(const char32_t *p_str) const;
 	bool operator==(const Span<char32_t> &p_str_range) const;
-
-	bool operator!=(const char *p_str) const;
-	bool operator!=(const wchar_t *p_str) const;
-	bool operator!=(const char32_t *p_str) const;
 
 	bool operator<(const char32_t *p_str) const;
 	bool operator<(const char *p_str) const;
@@ -649,11 +644,6 @@ public:
 // Zero-constructing String initializes _cowdata.ptr() to nullptr and thus empty.
 template <>
 struct is_zero_constructible<String> : std::true_type {};
-
-bool operator==(const char *p_chr, const String &p_str);
-bool operator==(const wchar_t *p_chr, const String &p_str);
-bool operator!=(const char *p_chr, const String &p_str);
-bool operator!=(const wchar_t *p_chr, const String &p_str);
 
 String operator+(const char *p_chr, const String &p_str);
 String operator+(const wchar_t *p_chr, const String &p_str);
