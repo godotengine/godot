@@ -103,12 +103,4 @@
 			[b]Note:[/b] [AnimationNodeTransition] transitions the current state immediately after the start of the fading. The precise remaining time can only be inferred from the main animation. When [AnimationNodeOutput] is considered as the most upstream, so the [member xfade_time] is not scaled depending on the downstream delta. See also [member AnimationNodeOneShot.fadeout_time].
 		</member>
 	</members>
-	<constants>
-		<constant name="ANIMATION_NODE_NOTIFICATION_TRANSITION_STARTED" value="3000">
-			The node has started transitioning to the next state. This is emitted immediately before the current state changes to the requested state.
-		</constant>
-		<constant name="ANIMATION_NODE_NOTIFICATION_TRANSITION_FINISHED" value="3001">
-			The node has finished transitioning to the next state.
-		</constant>
-	</constants>
 </class>

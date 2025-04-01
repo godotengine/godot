@@ -121,6 +121,34 @@ public:
 	AnimationNodeSync();
 };
 
+class AnimationNodeOneShotEvent : public AnimationNodeEvent {
+	GDCLASS(AnimationNodeOneShotEvent, AnimationNodeEvent);
+
+private:
+	bool fadein_finishing;
+	bool fadeout_starting;
+
+protected:
+	static void _bind_methods();
+
+public:
+	bool is_fadein_finishing() const {
+		return fadein_finishing;
+	}
+
+	void set_fadein_finishing(bool p_fadein_finishing) {
+		fadein_finishing = p_fadein_finishing;
+	}
+
+	bool is_fadeout_starting() const {
+		return fadeout_starting;
+	}
+
+	void set_fadeout_starting(bool p_fadeout_starting) {
+		fadeout_starting = p_fadeout_starting;
+	}
+};
+
 class AnimationNodeOneShot : public AnimationNodeSync {
 	GDCLASS(AnimationNodeOneShot, AnimationNodeSync);
 
@@ -135,13 +163,6 @@ public:
 	enum MixMode {
 		MIX_MODE_BLEND,
 		MIX_MODE_ADD
-	};
-
-	enum {
-		ANIMATION_NODE_NOTIFICATION_ONESHOT_STARTED = 1000,
-		ANIMATION_NODE_NOTIFICATION_ONESHOT_FINISHED = 1001,
-		ANIMATION_NODE_NOTIFICATION_ONESHOT_FADEIN_FINISHED = 1002,
-		ANIMATION_NODE_NOTIFICATION_ONESHOT_FADEOUT_STARTED = 1003
 	};
 
 private:
@@ -331,6 +352,33 @@ public:
 	AnimationNodeTimeSeek();
 };
 
+class AnimationNodeTransitionEvent : public AnimationNodeEvent {
+	GDCLASS(AnimationNodeTransitionEvent, AnimationNodeEvent);
+
+	String prev_state;
+	String next_state;
+
+protected:
+	static void _bind_methods();
+
+public:
+	String get_previous_state() const {
+		return prev_state;
+	}
+
+	void set_previous_state(const String &p_state) {
+		prev_state = p_state;
+	}
+
+	String get_next_state() const {
+		return next_state;
+	}
+
+	void set_next_state(const String &p_state) {
+		next_state = p_state;
+	}
+};
+
 class AnimationNodeTransition : public AnimationNodeSync {
 	GDCLASS(AnimationNodeTransition, AnimationNodeSync);
 
@@ -356,6 +404,8 @@ class AnimationNodeTransition : public AnimationNodeSync {
 
 	bool pending_update = false;
 
+	void _create_event(bool p_starting, const String &p_previous, const String &p_next);
+
 protected:
 	bool _get(const StringName &p_path, Variant &r_ret) const;
 	bool _set(const StringName &p_path, const Variant &p_value);
@@ -363,11 +413,6 @@ protected:
 	void _get_property_list(List<PropertyInfo> *p_list) const;
 
 public:
-	enum {
-		ANIMATION_NODE_NOTIFICATION_TRANSITION_STARTED = 3000,
-		ANIMATION_NODE_NOTIFICATION_TRANSITION_FINISHED = 3001
-	};
-
 	virtual void get_parameter_list(List<PropertyInfo> *r_list) const override;
 	virtual Variant get_parameter_default_value(const StringName &p_parameter) const override;
 	virtual bool is_parameter_read_only(const StringName &p_parameter) const override;

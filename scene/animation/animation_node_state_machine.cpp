@@ -493,7 +493,7 @@ void AnimationNodeStateMachinePlayback::_start(AnimationNodeStateMachine *p_stat
 	start_request = StringName();
 	// Only emit the started signal if currently configured for playback
 	if (!p_test_only && p_state_machine->process_state) {
-		p_state_machine->_animation_tree_notify(AnimationNodeStateMachine::ANIMATION_NODE_NOTIFICATION_STATE_MACHINE_STARTED);
+		p_state_machine->_create_event(true, false, this);
 	}
 }
 
@@ -724,7 +724,7 @@ AnimationNode::NodeTimeInfo AnimationNodeStateMachinePlayback::_process(const St
 		start_request = StringName();
 		travel_request = StringName();
 		path.clear();
-		p_state_machine->_animation_tree_notify(AnimationNodeStateMachine::ANIMATION_NODE_NOTIFICATION_STATE_MACHINE_FINISHED);
+		p_state_machine->_create_event(false, true, this);
 		return AnimationNode::NodeTimeInfo();
 	}
 
@@ -890,12 +890,12 @@ AnimationNode::NodeTimeInfo AnimationNodeStateMachinePlayback::_process(const St
 		// There is no next transition.
 		if (fading_from != StringName()) {
 			if (MAX(current_nti.get_remain(), fadeing_from_nti.get_remain()) <= 0) {
-				p_state_machine->_animation_tree_notify(AnimationNodeStateMachine::ANIMATION_NODE_NOTIFICATION_STATE_MACHINE_FINISHED);
+				p_state_machine->_create_event(false, true, this);
 			}
 			return Animation::is_greater_approx(current_nti.get_remain(), fadeing_from_nti.get_remain()) ? current_nti : fadeing_from_nti;
 		}
 		if (current_nti.get_remain() <= 0) {
-			p_state_machine->_animation_tree_notify(AnimationNodeStateMachine::ANIMATION_NODE_NOTIFICATION_STATE_MACHINE_FINISHED);
+			p_state_machine->_create_event(false, true, this);
 		}
 		return current_nti;
 	}
@@ -1218,6 +1218,13 @@ AnimationNodeStateMachinePlayback::AnimationNodeStateMachinePlayback() {
 }
 
 ///////////////////////////////////////////////////////
+
+void AnimationNodeStateMachineEvent::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_playback", "playback"), &AnimationNodeStateMachineEvent::set_playback);
+	ClassDB::bind_method(D_METHOD("get_playback"), &AnimationNodeStateMachineEvent::get_playback);
+
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "playback"), "set_playback", "get_playback");
+}
 
 void AnimationNodeStateMachine::get_parameter_list(List<PropertyInfo> *r_list) const {
 	AnimationNode::get_parameter_list(r_list);
@@ -1840,9 +1847,6 @@ void AnimationNodeStateMachine::_bind_methods() {
 	BIND_ENUM_CONSTANT(STATE_MACHINE_TYPE_ROOT);
 	BIND_ENUM_CONSTANT(STATE_MACHINE_TYPE_NESTED);
 	BIND_ENUM_CONSTANT(STATE_MACHINE_TYPE_GROUPED);
-
-	BIND_CONSTANT(ANIMATION_NODE_NOTIFICATION_STATE_MACHINE_STARTED);
-	BIND_CONSTANT(ANIMATION_NODE_NOTIFICATION_STATE_MACHINE_FINISHED);
 }
 
 Vector<StringName> AnimationNodeStateMachine::get_nodes_with_transitions_from(const StringName &p_node) const {
@@ -1863,6 +1867,17 @@ Vector<StringName> AnimationNodeStateMachine::get_nodes_with_transitions_to(cons
 		}
 	}
 	return result;
+}
+
+void AnimationNodeStateMachine::_create_event(bool p_starting, bool p_finishing, AnimationNodeStateMachinePlayback *p_playback) {
+	if (_should_use_events()) {
+		Ref<AnimationNodeStateMachineEvent> event;
+		event.instantiate();
+		event->set_starting(p_starting);
+		event->set_finishing(p_finishing);
+		event->set_playback(p_playback);
+		_push_animation_node_event(event);
+	}
 }
 
 AnimationNodeStateMachine::AnimationNodeStateMachine() {
