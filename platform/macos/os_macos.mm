@@ -42,6 +42,7 @@
 #include "core/version_generated.gen.h"
 #include "drivers/apple/os_log_logger.h"
 #include "main/main.h"
+#include "main/profiling/profiling.h"
 
 #ifdef SDL_ENABLED
 #include "drivers/sdl/joypad_sdl.h"
@@ -1065,6 +1066,8 @@ static void handle_interrupt(int sig) {
 }
 
 void OS_MacOS_NSApp::start_main() {
+	godot_init_profiler();
+
 	Error err;
 	@autoreleasepool {
 		err = Main::setup(execpath, argc, argv);
