@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef OPENXR_VISIBILITY_MASK_EXTENSION_H
-#define OPENXR_VISIBILITY_MASK_EXTENSION_H
+#pragma once
 
 #include "../util.h"
 
@@ -48,6 +47,11 @@
 // https://registry.khronos.org/OpenXR/specs/1.0/html/xrspec.html#XR_KHR_visibility_mask
 
 class OpenXRVisibilityMaskExtension : public OpenXRExtensionWrapper {
+	GDCLASS(OpenXRVisibilityMaskExtension, OpenXRExtensionWrapper);
+
+protected:
+	static void _bind_methods() {}
+
 public:
 	static OpenXRVisibilityMaskExtension *get_singleton();
 
@@ -91,5 +95,3 @@ private:
 	// OpenXR API call wrappers
 	EXT_PROTO_XRRESULT_FUNC5(xrGetVisibilityMaskKHR, (XrSession), session, (XrViewConfigurationType), viewConfigurationType, (uint32_t), viewIndex, (XrVisibilityMaskTypeKHR), visibilityMaskType, (XrVisibilityMaskKHR *), visibilityMask);
 };
-
-#endif // OPENXR_VISIBILITY_MASK_EXTENSION_H

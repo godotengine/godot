@@ -66,8 +66,6 @@
 #include "editor/node_dock.h"
 #endif
 
-#include <stdint.h>
-
 // Types that will be skipped over (in favor of their base types) when setting up instance bindings.
 // This must be a superset of `ignored_types` in bindings_generator.cpp.
 const Vector<String> ignored_types = {};
@@ -615,7 +613,7 @@ bool CSharpLanguage::is_assembly_reloading_needed() {
 			return false; // Already up to date
 		}
 	} else {
-		String assembly_name = path::get_csharp_project_name();
+		String assembly_name = Path::get_csharp_project_name();
 
 		assembly_path = GodotSharpDirs::get_res_temp_assemblies_dir()
 								.path_join(assembly_name + ".dll");
@@ -1059,7 +1057,7 @@ void CSharpLanguage::_editor_init_callback() {
 	const void **interop_funcs = godotsharp::get_editor_interop_funcs(interop_funcs_size);
 
 	Object *editor_plugin_obj = GDMono::get_singleton()->get_plugin_callbacks().LoadToolsAssemblyCallback(
-			GodotSharpDirs::get_data_editor_tools_dir().path_join("GodotTools.dll").utf16(),
+			GodotSharpDirs::get_data_editor_tools_dir().path_join("GodotTools.dll").utf16().get_data(),
 			interop_funcs, interop_funcs_size);
 	CRASH_COND(editor_plugin_obj == nullptr);
 

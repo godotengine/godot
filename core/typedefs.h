@@ -28,25 +28,31 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TYPEDEFS_H
-#define TYPEDEFS_H
-
-#include <stddef.h>
+#pragma once
 
 /**
  * Basic definitions and simple functions to be used everywhere.
  */
+
+// IWYU pragma: always_keep
+
+// Ensure that C++ standard is at least C++17.
+// If on MSVC, also ensures that the `Zc:__cplusplus` flag is present.
+static_assert(__cplusplus >= 201703L, "Minimum of C++17 required.");
+
+// IWYU pragma: begin_exports
 
 // Include first in case the platform needs to pre-define/include some things.
 #include "platform_config.h"
 
 // Should be available everywhere.
 #include "core/error/error_list.h"
+
+#include <cstddef>
 #include <cstdint>
 #include <utility>
 
-// Ensure that C++ standard is at least C++17. If on MSVC, also ensures that the `Zc:__cplusplus` flag is present.
-static_assert(__cplusplus >= 201703L);
+// IWYU pragma: end_exports
 
 // Turn argument to string constant:
 // https://gcc.gnu.org/onlinedocs/cpp/Stringizing.html#Stringizing
@@ -66,12 +72,24 @@ static_assert(__cplusplus >= 201703L);
 #endif
 #endif
 
-// Should always inline, except in dev builds because it makes debugging harder.
+// Should always inline, except in dev builds because it makes debugging harder,
+// or `size_enabled` builds where inlining is actively avoided.
 #ifndef _FORCE_INLINE_
-#ifdef DEV_ENABLED
+#if defined(DEV_ENABLED) || defined(SIZE_EXTRA)
 #define _FORCE_INLINE_ inline
 #else
 #define _FORCE_INLINE_ _ALWAYS_INLINE_
+#endif
+#endif
+
+// Should never inline.
+#ifndef _NO_INLINE_
+#if defined(__GNUC__)
+#define _NO_INLINE_ __attribute__((noinline))
+#elif defined(_MSC_VER)
+#define _NO_INLINE_ __declspec(noinline)
+#else
+#define _NO_INLINE_
 #endif
 #endif
 
@@ -96,17 +114,10 @@ static_assert(__cplusplus >= 201703L);
 #endif
 
 // Make room for our constexpr's below by overriding potential system-specific macros.
-#undef ABS
 #undef SIGN
 #undef MIN
 #undef MAX
 #undef CLAMP
-
-// Generic ABS function, for math uses please use Math::abs.
-template <typename T>
-constexpr T ABS(T m_v) {
-	return m_v < 0 ? -m_v : m_v;
-}
 
 template <typename T>
 constexpr const T SIGN(const T m_v) {
@@ -316,4 +327,20 @@ struct BuildIndexSequence<0, Is...> : IndexSequence<Is...> {};
 #define ___gd_is_defined(val) ____gd_is_defined(__GDARG_PLACEHOLDER_##val)
 #define GD_IS_DEFINED(x) ___gd_is_defined(x)
 
-#endif // TYPEDEFS_H
+// Whether the default value of a type is just all-0 bytes.
+// This can most commonly be exploited by using memset for these types instead of loop-construct.
+// Trivially constructible types are also zero-constructible.
+template <typename T>
+struct is_zero_constructible : std::is_trivially_constructible<T> {};
+
+template <typename T>
+struct is_zero_constructible<const T> : is_zero_constructible<T> {};
+
+template <typename T>
+struct is_zero_constructible<volatile T> : is_zero_constructible<T> {};
+
+template <typename T>
+struct is_zero_constructible<const volatile T> : is_zero_constructible<T> {};
+
+template <typename T>
+inline constexpr bool is_zero_constructible_v = is_zero_constructible<T>::value;

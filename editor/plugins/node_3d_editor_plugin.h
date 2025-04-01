@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef NODE_3D_EDITOR_PLUGIN_H
-#define NODE_3D_EDITOR_PLUGIN_H
+#pragma once
 
 #include "core/math/dynamic_bvh.h"
 #include "editor/plugins/editor_plugin.h"
@@ -249,7 +248,7 @@ private:
 	CheckBox *preview_camera = nullptr;
 	SubViewportContainer *subviewport_container = nullptr;
 
-	MenuButton *view_menu = nullptr;
+	MenuButton *view_display_menu = nullptr;
 	PopupMenu *display_submenu = nullptr;
 
 	Control *surface = nullptr;
@@ -524,7 +523,15 @@ private:
 	void register_shortcut_action(const String &p_path, const String &p_name, Key p_keycode, bool p_physical = false);
 	void shortcut_changed_callback(const Ref<Shortcut> p_shortcut, const String &p_shortcut_path);
 
+	// Supported rendering methods for advanced debug draw mode items.
+	enum SupportedRenderingMethods {
+		ALL,
+		FORWARD_PLUS,
+		FORWARD_PLUS_MOBILE,
+	};
+
 	void _set_lock_view_rotation(bool p_lock_rotation);
+	void _add_advanced_debug_draw_mode_item(PopupMenu *p_popup, const String &p_name, int p_value, SupportedRenderingMethods p_rendering_methods = SupportedRenderingMethods::ALL, const String &p_tooltip = "");
 
 protected:
 	void _notification(int p_what);
@@ -694,8 +701,16 @@ private:
 	real_t snap_rotate_value;
 	real_t snap_scale_value;
 
+	Ref<ArrayMesh> active_selection_box_xray;
+	Ref<ArrayMesh> active_selection_box;
 	Ref<ArrayMesh> selection_box_xray;
 	Ref<ArrayMesh> selection_box;
+
+	Ref<StandardMaterial3D> selection_box_mat = memnew(StandardMaterial3D);
+	Ref<StandardMaterial3D> selection_box_mat_xray = memnew(StandardMaterial3D);
+	Ref<StandardMaterial3D> active_selection_box_mat = memnew(StandardMaterial3D);
+	Ref<StandardMaterial3D> active_selection_box_mat_xray = memnew(StandardMaterial3D);
+
 	RID indicators;
 	RID indicators_instance;
 	RID cursor_mesh;
@@ -752,7 +767,7 @@ private:
 
 	MenuButton *transform_menu = nullptr;
 	PopupMenu *gizmos_menu = nullptr;
-	MenuButton *view_menu = nullptr;
+	MenuButton *view_layout_menu = nullptr;
 
 	AcceptDialog *accept = nullptr;
 
@@ -832,6 +847,13 @@ private:
 
 	// Preview Sun and Environment
 
+	class PreviewSunEnvPopup : public PopupPanel {
+		GDCLASS(PreviewSunEnvPopup, PopupPanel);
+
+	protected:
+		virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
+	};
+
 	uint32_t world_env_count = 0;
 	uint32_t directional_light_count = 0;
 
@@ -845,12 +867,8 @@ private:
 	EditorSpinSlider *sun_angle_azimuth = nullptr;
 	ColorPickerButton *sun_color = nullptr;
 	EditorSpinSlider *sun_energy = nullptr;
-	EditorSpinSlider *sun_max_distance = nullptr;
+	EditorSpinSlider *sun_shadow_max_distance = nullptr;
 	Button *sun_add_to_scene = nullptr;
-
-	void _sun_direction_draw();
-	void _sun_direction_input(const Ref<InputEvent> &p_event);
-	void _sun_direction_angle_set();
 
 	Vector2 sun_rotation;
 
@@ -881,6 +899,22 @@ private:
 	Ref<ProceduralSkyMaterial> sky_material;
 
 	bool sun_environ_updating = false;
+
+	void _sun_direction_draw();
+	void _sun_direction_input(const Ref<InputEvent> &p_event);
+	void _sun_direction_set_altitude(float p_altitude);
+	void _sun_direction_set_azimuth(float p_azimuth);
+	void _sun_set_color(const Color &p_color);
+	void _sun_set_energy(float p_energy);
+	void _sun_set_shadow_max_distance(float p_shadow_max_distance);
+
+	void _environ_set_sky_color(const Color &p_color);
+	void _environ_set_ground_color(const Color &p_color);
+	void _environ_set_sky_energy(float p_energy);
+	void _environ_set_ao();
+	void _environ_set_glow();
+	void _environ_set_tonemap();
+	void _environ_set_gi();
 
 	void _load_default_preview_settings();
 	void _update_preview_environment();
@@ -1014,7 +1048,7 @@ class Node3DEditorPlugin : public EditorPlugin {
 
 public:
 	Node3DEditor *get_spatial_editor() { return spatial_editor; }
-	virtual String get_plugin_name() const override { return "3D"; }
+	virtual String get_plugin_name() const override { return TTRC("3D"); }
 	bool has_main_screen() const override { return true; }
 	virtual void make_visible(bool p_visible) override;
 	virtual void edit(Object *p_object) override;
@@ -1027,7 +1061,6 @@ public:
 	virtual void edited_scene_changed() override;
 
 	Node3DEditorPlugin();
-	~Node3DEditorPlugin();
 };
 
 class ViewportNavigationControl : public Control {
@@ -1054,5 +1087,3 @@ public:
 	void set_navigation_mode(Node3DEditorViewport::NavigationMode p_nav_mode);
 	void set_viewport(Node3DEditorViewport *p_viewport);
 };
-
-#endif // NODE_3D_EDITOR_PLUGIN_H

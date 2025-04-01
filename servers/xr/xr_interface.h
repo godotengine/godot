@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef XR_INTERFACE_H
-#define XR_INTERFACE_H
+#pragma once
 
 #include "core/math/projection.h"
 #include "core/os/thread_safe.h"
@@ -77,6 +76,7 @@ public:
 		XR_PLAY_AREA_SITTING, /* Player is in seated position, limited positional tracking, fixed guardian around player */
 		XR_PLAY_AREA_ROOMSCALE, /* Player is free to move around, full positional tracking */
 		XR_PLAY_AREA_STAGE, /* Same as roomscale but origin point is fixed to the center of the physical space */
+		XR_PLAY_AREA_CUSTOM = 0x7FFFFFFF, /* Used to denote that a custom, possibly non-standard, play area is being used */
 	};
 
 	enum EnvironmentBlendMode {
@@ -168,5 +168,3 @@ VARIANT_ENUM_CAST(XRInterface::Capabilities);
 VARIANT_ENUM_CAST(XRInterface::TrackingStatus);
 VARIANT_ENUM_CAST(XRInterface::PlayAreaMode);
 VARIANT_ENUM_CAST(XRInterface::EnvironmentBlendMode);
-
-#endif // XR_INTERFACE_H

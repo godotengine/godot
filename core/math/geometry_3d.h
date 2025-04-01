@@ -28,12 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef GEOMETRY_3D_H
-#define GEOMETRY_3D_H
+#pragma once
 
 #include "core/math/delaunay_3d.h"
 #include "core/math/face3.h"
-#include "core/object/object.h"
 #include "core/templates/local_vector.h"
 #include "core/templates/vector.h"
 
@@ -420,7 +418,7 @@ public:
 
 			real_t ad = axis.dot(n2);
 
-			if (ABS(ad) > p_sphere_radius) {
+			if (Math::abs(ad) > p_sphere_radius) {
 				// No chance with this edge, too far away.
 				continue;
 			}
@@ -840,5 +838,3 @@ public:
 		return n.normalized();
 	}
 };
-
-#endif // GEOMETRY_3D_H

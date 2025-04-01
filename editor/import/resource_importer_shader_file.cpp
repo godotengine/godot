@@ -114,6 +114,3 @@ Error ResourceImporterShaderFile::import(ResourceUID::ID p_source_id, const Stri
 
 	return OK;
 }
-
-ResourceImporterShaderFile::ResourceImporterShaderFile() {
-}

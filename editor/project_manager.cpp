@@ -63,7 +63,14 @@
 #include "scene/theme/theme_db.h"
 #include "servers/display_server.h"
 #include "servers/navigation_server_3d.h"
+
+#ifndef PHYSICS_3D_DISABLED
+#include "servers/physics_server_3d.h"
+#endif // PHYSICS_3D_DISABLED
+
+#ifndef PHYSICS_2D_DISABLED
 #include "servers/physics_server_2d.h"
+#endif // PHYSICS_2D_DISABLED
 
 constexpr int GODOT4_CONFIG_VERSION = 5;
 
@@ -94,6 +101,10 @@ void ProjectManager::_notification(int p_what) {
 
 			_select_main_view(MAIN_VIEW_PROJECTS);
 			_update_list_placeholder();
+			_titlebar_resized();
+		} break;
+
+		case NOTIFICATION_TRANSLATION_CHANGED: {
 			_titlebar_resized();
 		} break;
 
@@ -142,16 +153,15 @@ void ProjectManager::_build_icon_type_cache(Ref<Theme> p_theme) {
 	}
 	List<StringName> tl;
 	p_theme->get_icon_list(EditorStringName(EditorIcons), &tl);
-	for (List<StringName>::Element *E = tl.front(); E; E = E->next()) {
-		icon_type_cache[E->get()] = p_theme->get_icon(E->get(), EditorStringName(EditorIcons));
+	for (const StringName &name : tl) {
+		icon_type_cache[name] = p_theme->get_icon(name, EditorStringName(EditorIcons));
 	}
 }
 
 // Main layout.
 
-void ProjectManager::_update_size_limits(bool p_custom_res) {
+void ProjectManager::_update_size_limits() {
 	const Size2 minimum_size = Size2(720, 450) * EDSCALE;
-	const Size2 default_size = Size2(DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT) * EDSCALE;
 
 	// Define a minimum window size to prevent UI elements from overlapping or being cut off.
 	Window *w = Object::cast_to<Window>(SceneTree::get_singleton()->get_root());
@@ -159,12 +169,6 @@ void ProjectManager::_update_size_limits(bool p_custom_res) {
 		// Calling Window methods this early doesn't sync properties with DS.
 		w->set_min_size(minimum_size);
 		DisplayServer::get_singleton()->window_set_min_size(minimum_size);
-		if (!p_custom_res) {
-			// Only set window size if it currently matches the default, which is defined in `main/main.cpp`.
-			// This allows CLI arguments to override the window size.
-			w->set_size(default_size);
-			DisplayServer::get_singleton()->window_set_size(default_size);
-		}
 	}
 	Size2 real_size = DisplayServer::get_singleton()->window_get_size();
 
@@ -174,7 +178,6 @@ void ProjectManager::_update_size_limits(bool p_custom_res) {
 		Vector2i window_position;
 		window_position.x = screen_rect.position.x + (screen_rect.size.x - real_size.x) / 2;
 		window_position.y = screen_rect.position.y + (screen_rect.size.y - real_size.y) / 2;
-		DisplayServer::get_singleton()->window_set_position(window_position);
 
 		// Limit popup menus to prevent unusably long lists.
 		// We try to set it to half the screen resolution, but no smaller than the minimum window size.
@@ -271,7 +274,8 @@ void ProjectManager::_update_theme(bool p_skip_creation) {
 			erase_missing_btn->add_theme_constant_override("h_separation", get_theme_constant(SNAME("sidebar_button_icon_separation"), SNAME("ProjectManager")));
 
 			open_btn_container->add_theme_constant_override("separation", 0);
-			open_options_popup->set_item_icon(0, get_editor_theme_icon(SNAME("NodeWarning")));
+			open_options_popup->set_item_icon(0, get_editor_theme_icon(SNAME("Notification")));
+			open_options_popup->set_item_icon(1, get_editor_theme_icon(SNAME("NodeWarning")));
 		}
 
 		// Asset library popup.
@@ -508,6 +512,10 @@ void ProjectManager::_open_selected_projects() {
 			args.push_back("--recovery-mode");
 		}
 
+		if (open_in_verbose_mode) {
+			args.push_back("--verbose");
+		}
+
 		Error err = OS::get_singleton()->create_instance(args);
 		if (err != OK) {
 			loading_label->hide();
@@ -592,7 +600,7 @@ void ProjectManager::_open_selected_projects_check_warnings() {
 				i--;
 			} else if (ProjectList::project_feature_looks_like_version(feature)) {
 				version_convert_feature = feature;
-				warning_message += vformat(TTR("Warning: This project was last edited in Godot %s. Opening will change it to Godot %s.\n\n"), Variant(feature), Variant(VERSION_BRANCH));
+				warning_message += vformat(TTR("Warning: This project was last edited in Godot %s. Opening will change it to Godot %s.\n\n"), Variant(feature), Variant(GODOT_VERSION_BRANCH));
 				unsupported_features.remove_at(i);
 				i--;
 			}
@@ -624,6 +632,7 @@ void ProjectManager::_open_selected_projects_check_recovery_mode() {
 		return;
 	}
 
+	open_in_verbose_mode = false;
 	open_in_recovery_mode = false;
 	// Check if the project failed to load during last startup.
 	if (project.recovery_mode) {
@@ -781,7 +790,11 @@ void ProjectManager::_on_projects_updated() {
 
 void ProjectManager::_on_open_options_selected(int p_option) {
 	switch (p_option) {
-		case 0: // Edit in recovery mode.
+		case 0: // Edit in verbose mode.
+			open_in_verbose_mode = true;
+			_open_selected_projects_check_warnings();
+			break;
+		case 1: // Edit in recovery mode.
 			_open_recovery_mode_ask(true);
 			break;
 	}
@@ -1159,7 +1172,7 @@ void ProjectManager::_titlebar_resized() {
 
 // Object methods.
 
-ProjectManager::ProjectManager(bool p_custom_res) {
+ProjectManager::ProjectManager() {
 	singleton = this;
 
 	// Turn off some servers we aren't going to be using in the Project Manager.
@@ -1187,7 +1200,7 @@ ProjectManager::ProjectManager(bool p_custom_res) {
 		switch (display_scale) {
 			case 0:
 				// Try applying a suitable display scale automatically.
-				EditorScale::set_scale(EditorSettings::get_singleton()->get_auto_display_scale());
+				EditorScale::set_scale(EditorSettings::get_auto_display_scale());
 				break;
 			case 1:
 				EditorScale::set_scale(0.75);
@@ -1227,7 +1240,7 @@ ProjectManager::ProjectManager(bool p_custom_res) {
 	}
 
 	// TRANSLATORS: This refers to the application where users manage their Godot projects.
-	SceneTree::get_singleton()->get_root()->set_title(VERSION_NAME + String(" - ") + TTR("Project Manager", "Application"));
+	SceneTree::get_singleton()->get_root()->set_title(GODOT_VERSION_NAME + String(" - ") + TTR("Project Manager", "Application"));
 
 	SceneTree::get_singleton()->get_root()->connect("files_dropped", callable_mp(this, &ProjectManager::_files_dropped));
 
@@ -1485,7 +1498,8 @@ ProjectManager::ProjectManager(bool p_custom_res) {
 			open_btn_container->add_child(open_options_btn);
 
 			open_options_popup = memnew(PopupMenu);
-			open_options_popup->add_item(TTR("Edit in recovery mode"));
+			open_options_popup->add_item(TTRC("Edit in verbose mode"));
+			open_options_popup->add_item(TTRC("Edit in recovery mode"));
 			open_options_popup->connect(SceneStringName(id_pressed), callable_mp(this, &ProjectManager::_on_open_options_selected));
 			open_options_btn->add_child(open_options_popup);
 
@@ -1745,7 +1759,7 @@ ProjectManager::ProjectManager(bool p_custom_res) {
 		title_bar->connect(SceneStringName(item_rect_changed), callable_mp(this, &ProjectManager::_titlebar_resized));
 	}
 
-	_update_size_limits(p_custom_res);
+	_update_size_limits();
 }
 
 ProjectManager::~ProjectManager() {

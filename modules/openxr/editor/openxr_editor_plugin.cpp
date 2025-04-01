@@ -64,6 +64,3 @@ OpenXREditorPlugin::OpenXREditorPlugin() {
 	add_control_to_container(CONTAINER_TOOLBAR, select_runtime);
 #endif
 }
-
-OpenXREditorPlugin::~OpenXREditorPlugin() {
-}

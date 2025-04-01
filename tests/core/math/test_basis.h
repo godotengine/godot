@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TEST_BASIS_H
-#define TEST_BASIS_H
+#pragma once
 
 #include "core/math/basis.h"
 #include "core/math/random_number_generator.h"
@@ -270,7 +269,7 @@ TEST_CASE("[Basis] Set axis angle") {
 }
 
 TEST_CASE("[Basis] Finite number checks") {
-	const Vector3 x(0, 1, 2);
+	constexpr Vector3 x(0, 1, 2);
 	const Vector3 infinite(NAN, NAN, NAN);
 
 	CHECK_MESSAGE(
@@ -427,5 +426,3 @@ TEST_CASE("[Basis] Is rotation checks") {
 }
 
 } // namespace TestBasis
-
-#endif // TEST_BASIS_H

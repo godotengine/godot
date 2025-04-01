@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef SORT_ARRAY_H
-#define SORT_ARRAY_H
+#pragma once
 
 #include "core/error/error_macros.h"
 #include "core/typedefs.h"
@@ -40,18 +39,13 @@
 		break;                                                        \
 	}
 
-template <typename T>
-struct _DefaultComparator {
-	_FORCE_INLINE_ bool operator()(const T &a, const T &b) const { return (a < b); }
-};
-
 #ifdef DEBUG_ENABLED
 #define SORT_ARRAY_VALIDATE_ENABLED true
 #else
 #define SORT_ARRAY_VALIDATE_ENABLED false
 #endif
 
-template <typename T, typename Comparator = _DefaultComparator<T>, bool Validate = SORT_ARRAY_VALIDATE_ENABLED>
+template <typename T, typename Comparator = Comparator<T>, bool Validate = SORT_ARRAY_VALIDATE_ENABLED>
 class SortArray {
 	enum {
 		INTROSORT_THRESHOLD = 16
@@ -316,5 +310,3 @@ public:
 		introselect(p_first, p_nth, p_last, p_array, bitlog(p_last - p_first) * 2);
 	}
 };
-
-#endif // SORT_ARRAY_H

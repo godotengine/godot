@@ -99,6 +99,18 @@ void MovieWriter::begin(const Size2i &p_movie_size, uint32_t p_fps, const String
 
 	print_line(vformat("Movie Maker mode enabled, recording movie at %d FPS...", p_fps));
 
+	// When using Display/Window/Stretch/Mode = Viewport, use the project's
+	// configured viewport size instead of the size of the window in the OS
+	Size2i actual_movie_size = p_movie_size;
+	String stretch_mode = GLOBAL_GET("display/window/stretch/mode");
+	if (stretch_mode == "viewport") {
+		actual_movie_size.width = GLOBAL_GET("display/window/size/viewport_width");
+		actual_movie_size.height = GLOBAL_GET("display/window/size/viewport_height");
+
+		print_line(vformat("Movie Maker mode using project viewport size: %dx%d",
+				actual_movie_size.width, actual_movie_size.height));
+	}
+
 	// Check for available disk space and warn the user if needed.
 	Ref<DirAccess> dir = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 	String path = p_base_path.get_basename();
@@ -125,7 +137,7 @@ void MovieWriter::begin(const Size2i &p_movie_size, uint32_t p_fps, const String
 	audio_channels = AudioDriverDummy::get_dummy_singleton()->get_channels();
 	audio_mix_buffer.resize(mix_rate * audio_channels / fps);
 
-	write_begin(p_movie_size, p_fps, p_base_path);
+	write_begin(actual_movie_size, p_fps, p_base_path);
 }
 
 void MovieWriter::_bind_methods() {
@@ -172,10 +184,12 @@ void MovieWriter::set_extensions_hint() {
 
 void MovieWriter::add_frame() {
 	const int movie_time_seconds = Engine::get_singleton()->get_frames_drawn() / fps;
-	const String movie_time = vformat("%s:%s:%s",
-			String::num(movie_time_seconds / 3600).pad_zeros(2),
-			String::num((movie_time_seconds % 3600) / 60).pad_zeros(2),
-			String::num(movie_time_seconds % 60).pad_zeros(2));
+	const int frame_remainder = Engine::get_singleton()->get_frames_drawn() % fps;
+	const String movie_time = vformat("%s:%s:%s:%s",
+			String::num(movie_time_seconds / 3600, 0).pad_zeros(2),
+			String::num((movie_time_seconds % 3600) / 60, 0).pad_zeros(2),
+			String::num(movie_time_seconds % 60, 0).pad_zeros(2),
+			String::num(frame_remainder, 0).pad_zeros(2));
 
 #ifdef DEBUG_ENABLED
 	DisplayServer::get_singleton()->window_set_title(vformat("MovieWriter: Frame %d (time: %s) - %s (DEBUG)", Engine::get_singleton()->get_frames_drawn(), movie_time, project_name));
@@ -204,7 +218,7 @@ void MovieWriter::end() {
 	write_end();
 
 	// Print a report with various statistics.
-	print_line("----------------");
+	print_line("--------------------------------------------------------------------------------");
 	String movie_path = Engine::get_singleton()->get_write_movie_path();
 	if (movie_path.is_relative_path()) {
 		// Print absolute path to make finding the file easier,
@@ -214,19 +228,21 @@ void MovieWriter::end() {
 	print_line(vformat("Done recording movie at path: %s", movie_path));
 
 	const int movie_time_seconds = Engine::get_singleton()->get_frames_drawn() / fps;
-	const String movie_time = vformat("%s:%s:%s",
-			String::num(movie_time_seconds / 3600).pad_zeros(2),
-			String::num((movie_time_seconds % 3600) / 60).pad_zeros(2),
-			String::num(movie_time_seconds % 60).pad_zeros(2));
+	const int frame_remainder = Engine::get_singleton()->get_frames_drawn() % fps;
+	const String movie_time = vformat("%s:%s:%s:%s",
+			String::num(movie_time_seconds / 3600, 0).pad_zeros(2),
+			String::num((movie_time_seconds % 3600) / 60, 0).pad_zeros(2),
+			String::num(movie_time_seconds % 60, 0).pad_zeros(2),
+			String::num(frame_remainder, 0).pad_zeros(2));
 
 	const int real_time_seconds = Time::get_singleton()->get_ticks_msec() / 1000;
 	const String real_time = vformat("%s:%s:%s",
-			String::num(real_time_seconds / 3600).pad_zeros(2),
-			String::num((real_time_seconds % 3600) / 60).pad_zeros(2),
-			String::num(real_time_seconds % 60).pad_zeros(2));
+			String::num(real_time_seconds / 3600, 0).pad_zeros(2),
+			String::num((real_time_seconds % 3600) / 60, 0).pad_zeros(2),
+			String::num(real_time_seconds % 60, 0).pad_zeros(2));
 
-	print_line(vformat("%d frames at %d FPS (movie length: %s), recorded in %s (%d%% of real-time speed).", Engine::get_singleton()->get_frames_drawn(), fps, movie_time, real_time, (float(movie_time_seconds) / real_time_seconds) * 100));
+	print_line(vformat("%d frames at %d FPS (movie length: %s), recorded in %s (%d%% of real-time speed).", Engine::get_singleton()->get_frames_drawn(), fps, movie_time, real_time, (float(MAX(1, movie_time_seconds)) / MAX(1, real_time_seconds)) * 100));
 	print_line(vformat("CPU time: %.2f seconds (average: %.2f ms/frame)", cpu_time / 1000, cpu_time / Engine::get_singleton()->get_frames_drawn()));
 	print_line(vformat("GPU time: %.2f seconds (average: %.2f ms/frame)", gpu_time / 1000, gpu_time / Engine::get_singleton()->get_frames_drawn()));
-	print_line("----------------");
+	print_line("--------------------------------------------------------------------------------");
 }

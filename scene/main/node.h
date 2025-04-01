@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef NODE_H
-#define NODE_H
+#pragma once
 
 #include "core/string/node_path.h"
 #include "core/variant/typed_array.h"
@@ -239,8 +238,6 @@ private:
 		// RenderingServer, and specify the mesh in world space.
 		bool use_identity_transform : 1;
 
-		bool parent_owned : 1;
-		bool in_constructor : 1;
 		bool use_placeholder : 1;
 
 		bool display_folded : 1;
@@ -487,6 +484,7 @@ public:
 	}
 
 	_FORCE_INLINE_ bool is_inside_tree() const { return data.inside_tree; }
+	bool is_internal() const { return data.internal_mode != INTERNAL_MODE_DISABLED; }
 
 	bool is_ancestor_of(const Node *p_node) const;
 	bool is_greater_than(const Node *p_node) const;
@@ -706,8 +704,6 @@ public:
 	//hacks for speed
 	static void init_node_hrcr();
 
-	void force_parent_owned() { data.parent_owned = true; } //hack to avoid duplicate nodes
-
 	void set_import_path(const NodePath &p_import_path); //path used when imported, used by scene editors to keep tracking
 	NodePath get_import_path() const;
 
@@ -865,5 +861,3 @@ Error Node::rpc_id(int p_peer_id, const StringName &p_method, VarArgs... p_args)
 // Add these macro to your class's 'get_configuration_warnings' function to have warnings show up in the scene tree inspector.
 #define DEPRECATED_NODE_WARNING warnings.push_back(RTR("This node is marked as deprecated and will be removed in future versions.\nPlease check the Godot documentation for information about migration."));
 #define EXPERIMENTAL_NODE_WARNING warnings.push_back(RTR("This node is marked as experimental and may be subject to removal or major changes in future versions."));
-
-#endif // NODE_H

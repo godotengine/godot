@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef ANIMATION_STATE_MACHINE_EDITOR_H
-#define ANIMATION_STATE_MACHINE_EDITOR_H
+#pragma once
 
 #include "editor/plugins/animation_tree_editor_plugin.h"
 #include "scene/animation/animation_node_state_machine.h"
@@ -327,8 +326,4 @@ protected:
 
 public:
 	void add_transition(const StringName &p_from, const StringName &p_to, Ref<AnimationNodeStateMachineTransition> p_transition);
-
-	EditorAnimationMultiTransitionEdit() {}
 };
-
-#endif // ANIMATION_STATE_MACHINE_EDITOR_H

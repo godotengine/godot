@@ -299,7 +299,7 @@ Rect2i PopupPanel::_popup_adjust_rect() const {
 	_update_child_rects();
 
 	if (is_layout_rtl()) {
-		current.position -= Vector2(ABS(panel->get_offset(SIDE_RIGHT)), panel->get_offset(SIDE_TOP)) * get_content_scale_factor();
+		current.position -= Vector2(Math::abs(panel->get_offset(SIDE_RIGHT)), panel->get_offset(SIDE_TOP)) * get_content_scale_factor();
 	} else {
 		current.position -= Vector2(panel->get_offset(SIDE_LEFT), panel->get_offset(SIDE_TOP)) * get_content_scale_factor();
 	}

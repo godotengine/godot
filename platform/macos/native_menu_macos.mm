@@ -28,11 +28,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "native_menu_macos.h"
+#import "native_menu_macos.h"
 
-#include "display_server_macos.h"
-#include "godot_menu_item.h"
-#include "key_mapping_macos.h"
+#import "display_server_macos.h"
+#import "godot_menu_item.h"
+#import "key_mapping_macos.h"
 
 #include "scene/resources/image_texture.h"
 
@@ -294,6 +294,9 @@ void NativeMenuMacOS::popup(const RID &p_rid, const Vector2i &p_position) {
 		position /= ds->screen_get_max_scale();
 
 		[md->menu popUpMenuPositioningItem:nil atLocation:NSMakePoint(position.x, position.y - 5) inView:nil]; // Menu vertical position doesn't include rounded corners, add `5` display pixels to better align it with Godot buttons.
+
+		ds->release_pressed_events(); // Note: context menu block main loop and consume events, pressed keys and mouse buttons should be released manually.
+		ds->sync_mouse_state();
 	}
 }
 

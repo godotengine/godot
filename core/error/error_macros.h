@@ -28,15 +28,14 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef ERROR_MACROS_H
-#define ERROR_MACROS_H
+#pragma once
 
-#include "core/object/object_id.h"
 #include "core/typedefs.h"
 
-#include <atomic> // We'd normally use safe_refcount.h, but that would cause circular includes.
+#include <atomic> // IWYU pragma: keep // Used in macro. We'd normally use `safe_refcount.h`, but that would cause circular includes.
 
 class String;
+class ObjectID;
 
 enum ErrorHandlerType {
 	ERR_HANDLER_ERROR,
@@ -62,16 +61,16 @@ void add_error_handler(ErrorHandlerList *p_handler);
 void remove_error_handler(const ErrorHandlerList *p_handler);
 
 // Functions used by the error macros.
-void _err_print_error(const char *p_function, const char *p_file, int p_line, const char *p_error, bool p_editor_notify = false, ErrorHandlerType p_type = ERR_HANDLER_ERROR);
-void _err_print_error(const char *p_function, const char *p_file, int p_line, const String &p_error, bool p_editor_notify = false, ErrorHandlerType p_type = ERR_HANDLER_ERROR);
-void _err_print_error(const char *p_function, const char *p_file, int p_line, const char *p_error, const char *p_message, bool p_editor_notify = false, ErrorHandlerType p_type = ERR_HANDLER_ERROR);
-void _err_print_error(const char *p_function, const char *p_file, int p_line, const String &p_error, const char *p_message, bool p_editor_notify = false, ErrorHandlerType p_type = ERR_HANDLER_ERROR);
-void _err_print_error(const char *p_function, const char *p_file, int p_line, const char *p_error, const String &p_message, bool p_editor_notify = false, ErrorHandlerType p_type = ERR_HANDLER_ERROR);
-void _err_print_error(const char *p_function, const char *p_file, int p_line, const String &p_error, const String &p_message, bool p_editor_notify = false, ErrorHandlerType p_type = ERR_HANDLER_ERROR);
+_NO_INLINE_ void _err_print_error(const char *p_function, const char *p_file, int p_line, const char *p_error, bool p_editor_notify = false, ErrorHandlerType p_type = ERR_HANDLER_ERROR);
+_NO_INLINE_ void _err_print_error(const char *p_function, const char *p_file, int p_line, const String &p_error, bool p_editor_notify = false, ErrorHandlerType p_type = ERR_HANDLER_ERROR);
+_NO_INLINE_ void _err_print_error(const char *p_function, const char *p_file, int p_line, const char *p_error, const char *p_message, bool p_editor_notify = false, ErrorHandlerType p_type = ERR_HANDLER_ERROR);
+_NO_INLINE_ void _err_print_error(const char *p_function, const char *p_file, int p_line, const String &p_error, const char *p_message, bool p_editor_notify = false, ErrorHandlerType p_type = ERR_HANDLER_ERROR);
+_NO_INLINE_ void _err_print_error(const char *p_function, const char *p_file, int p_line, const char *p_error, const String &p_message, bool p_editor_notify = false, ErrorHandlerType p_type = ERR_HANDLER_ERROR);
+_NO_INLINE_ void _err_print_error(const char *p_function, const char *p_file, int p_line, const String &p_error, const String &p_message, bool p_editor_notify = false, ErrorHandlerType p_type = ERR_HANDLER_ERROR);
 void _err_print_error_asap(const String &p_error, ErrorHandlerType p_type = ERR_HANDLER_ERROR);
-void _err_print_index_error(const char *p_function, const char *p_file, int p_line, int64_t p_index, int64_t p_size, const char *p_index_str, const char *p_size_str, const char *p_message = "", bool p_editor_notify = false, bool fatal = false);
-void _err_print_index_error(const char *p_function, const char *p_file, int p_line, int64_t p_index, int64_t p_size, const char *p_index_str, const char *p_size_str, const String &p_message, bool p_editor_notify = false, bool fatal = false);
-void _err_flush_stdout();
+_NO_INLINE_ void _err_print_index_error(const char *p_function, const char *p_file, int p_line, int64_t p_index, int64_t p_size, const char *p_index_str, const char *p_size_str, const char *p_message = "", bool p_editor_notify = false, bool fatal = false);
+_NO_INLINE_ void _err_print_index_error(const char *p_function, const char *p_file, int p_line, int64_t p_index, int64_t p_size, const char *p_index_str, const char *p_size_str, const String &p_message, bool p_editor_notify = false, bool fatal = false);
+_NO_INLINE_ void _err_flush_stdout();
 
 void _physics_interpolation_warning(const char *p_function, const char *p_file, int p_line, ObjectID p_id, const char *p_warn_string);
 
@@ -845,5 +844,3 @@ void _physics_interpolation_warning(const char *p_function, const char *p_file, 
 
 #define PHYSICS_INTERPOLATION_WARNING(m_string) \
 	_physics_interpolation_warning(FUNCTION_STR, __FILE__, __LINE__, ObjectID(UINT64_MAX), m_string)
-
-#endif // ERROR_MACROS_H

@@ -236,10 +236,11 @@ Error EditorExportPlatformWeb::_build_pwa(const Ref<EditorExportPreset> &p_prese
 	replaces["___GODOT_ENSURE_CROSSORIGIN_ISOLATION_HEADERS___"] = ensure_crossorigin_isolation_headers ? "true" : "false";
 
 	// Files cached during worker install.
-	Array cache_files;
-	cache_files.push_back(name + ".html");
-	cache_files.push_back(name + ".js");
-	cache_files.push_back(name + ".offline.html");
+	Array cache_files = {
+		name + ".html",
+		name + ".js",
+		name + ".offline.html"
+	};
 	if (p_preset->get("html/export_icon")) {
 		cache_files.push_back(name + ".icon.png");
 		cache_files.push_back(name + ".apple-touch-icon.png");
@@ -250,9 +251,10 @@ Error EditorExportPlatformWeb::_build_pwa(const Ref<EditorExportPreset> &p_prese
 	replaces["___GODOT_CACHE___"] = Variant(cache_files).to_json_string();
 
 	// Heavy files that are cached on demand.
-	Array opt_cache_files;
-	opt_cache_files.push_back(name + ".wasm");
-	opt_cache_files.push_back(name + ".pck");
+	Array opt_cache_files = {
+		name + ".wasm",
+		name + ".pck"
+	};
 	if (extensions) {
 		opt_cache_files.push_back(name + ".side.wasm");
 		for (int i = 0; i < p_shared_objects.size(); i++) {

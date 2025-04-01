@@ -62,6 +62,15 @@
 #include "editor/editor_file_system.h"
 #endif
 
+#include "modules/modules_enabled.gen.h" // For csg, gridmap.
+
+#ifdef MODULE_CSG_ENABLED
+#include "modules/csg/csg_shape.h"
+#endif
+#ifdef MODULE_GRIDMAP_ENABLED
+#include "modules/gridmap/grid_map.h"
+#endif
+
 // FIXME: Hardcoded to avoid editor dependency.
 #define GLTF_IMPORT_GENERATE_TANGENT_ARRAYS 8
 #define GLTF_IMPORT_USE_NAMED_SKIN_BINDS 16
@@ -70,7 +79,6 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <cstdint>
 
 constexpr int COMPONENT_COUNT_FOR_ACCESSOR_TYPE[7] = {
 	1, 2, 3, 4, 4, 9, 16
@@ -291,8 +299,7 @@ Error GLTFDocument::_parse_json(const String &p_path, Ref<GLTFState> p_state) {
 	Vector<uint8_t> array;
 	array.resize(file->get_length());
 	file->get_buffer(array.ptrw(), array.size());
-	String text;
-	text.parse_utf8((const char *)array.ptr(), array.size());
+	String text = String::utf8((const char *)array.ptr(), array.size());
 
 	JSON json;
 	err = json.parse(text);
@@ -322,8 +329,7 @@ Error GLTFDocument::_parse_glb(Ref<FileAccess> p_file, Ref<GLTFState> p_state) {
 	uint32_t len = p_file->get_buffer(json_data.ptrw(), chunk_length);
 	ERR_FAIL_COND_V(len != chunk_length, ERR_FILE_CORRUPT);
 
-	String text;
-	text.parse_utf8((const char *)json_data.ptr(), json_data.size());
+	String text = String::utf8((const char *)json_data.ptr(), json_data.size());
 
 	JSON json;
 	Error err = json.parse(text);
@@ -3185,9 +3191,11 @@ Error GLTFDocument::_serialize_meshes(Ref<GLTFState> p_state) {
 			primitives.push_back(primitive);
 		}
 
-		Dictionary e;
-		e["targetNames"] = target_names;
-		gltf_mesh["extras"] = e;
+		if (!target_names.is_empty()) {
+			Dictionary e;
+			e["targetNames"] = target_names;
+			gltf_mesh["extras"] = e;
+		}
 		_attach_meta_to_extras(import_mesh, gltf_mesh);
 
 		weights.resize(target_names.size());
@@ -3824,10 +3832,9 @@ Error GLTFDocument::_serialize_images(Ref<GLTFState> p_state) {
 		if (p_state->filename.to_lower().ends_with("gltf")) {
 			String img_name = p_state->images[i]->get_name();
 			if (img_name.is_empty()) {
-				img_name = itos(i);
+				img_name = itos(i).pad_zeros(3);
 			}
 			img_name = _gen_unique_name(p_state, img_name);
-			img_name = img_name.pad_zeros(3);
 			String relative_texture_dir = "textures";
 			String full_texture_dir = p_state->base_path.path_join(relative_texture_dir);
 			Ref<DirAccess> da = DirAccess::open(p_state->base_path);
@@ -4396,12 +4403,8 @@ Error GLTFDocument::_serialize_materials(Ref<GLTFState> p_state) {
 
 		Dictionary mr;
 		{
-			Array arr;
 			const Color c = base_material->get_albedo().srgb_to_linear();
-			arr.push_back(c.r);
-			arr.push_back(c.g);
-			arr.push_back(c.b);
-			arr.push_back(c.a);
+			Array arr = { c.r, c.g, c.b, c.a };
 			mr["baseColorFactor"] = arr;
 		}
 		if (_image_format != "None") {
@@ -4607,10 +4610,7 @@ Error GLTFDocument::_serialize_materials(Ref<GLTFState> p_state) {
 
 		if (base_material->get_feature(BaseMaterial3D::FEATURE_EMISSION)) {
 			const Color c = base_material->get_emission().linear_to_srgb();
-			Array arr;
-			arr.push_back(c.r);
-			arr.push_back(c.g);
-			arr.push_back(c.b);
+			Array arr = { c.r, c.g, c.b };
 			d["emissiveFactor"] = arr;
 		}
 
@@ -5912,10 +5912,12 @@ void GLTFDocument::_convert_scene_node(Ref<GLTFState> p_state, Node *p_current, 
 	}
 }
 
-#ifdef MODULE_CSG_ENABLED
 void GLTFDocument::_convert_csg_shape_to_gltf(CSGShape3D *p_current, GLTFNodeIndex p_gltf_parent, Ref<GLTFNode> p_gltf_node, Ref<GLTFState> p_state) {
+#ifndef MODULE_CSG_ENABLED
+	ERR_FAIL_MSG("csg module is disabled.");
+#else
 	CSGShape3D *csg = p_current;
-	csg->call("_update_shape");
+	csg->update_shape();
 	Array meshes = csg->get_meshes();
 	if (meshes.size() != 2) {
 		return;
@@ -5964,8 +5966,8 @@ void GLTFDocument::_convert_csg_shape_to_gltf(CSGShape3D *p_current, GLTFNodeInd
 	p_gltf_node->transform = csg->get_transform();
 	p_gltf_node->set_original_name(csg->get_name());
 	p_gltf_node->set_name(_gen_unique_name(p_state, csg->get_name()));
-}
 #endif // MODULE_CSG_ENABLED
+}
 
 void GLTFDocument::_check_visibility(Node *p_node, bool &r_retflag) {
 	r_retflag = true;
@@ -5996,8 +5998,10 @@ void GLTFDocument::_convert_light_to_gltf(Light3D *light, Ref<GLTFState> p_state
 	}
 }
 
-#ifdef MODULE_GRIDMAP_ENABLED
 void GLTFDocument::_convert_grid_map_to_gltf(GridMap *p_grid_map, GLTFNodeIndex p_parent_node_index, GLTFNodeIndex p_root_node_index, Ref<GLTFNode> p_gltf_node, Ref<GLTFState> p_state) {
+#ifndef MODULE_GRIDMAP_ENABLED
+	ERR_FAIL_MSG("gridmap module is disabled.");
+#else
 	Array cells = p_grid_map->get_used_cells();
 	for (int32_t k = 0; k < cells.size(); k++) {
 		GLTFNode *new_gltf_node = memnew(GLTFNode);
@@ -6025,8 +6029,8 @@ void GLTFDocument::_convert_grid_map_to_gltf(GridMap *p_grid_map, GLTFNodeIndex 
 		new_gltf_node->set_original_name(p_grid_map->get_mesh_library()->get_item_name(cell));
 		new_gltf_node->set_name(_gen_unique_name(p_state, p_grid_map->get_mesh_library()->get_item_name(cell)));
 	}
-}
 #endif // MODULE_GRIDMAP_ENABLED
+}
 
 void GLTFDocument::_convert_multi_mesh_instance_to_gltf(
 		MultiMeshInstance3D *p_multi_mesh_instance,
@@ -8067,15 +8071,15 @@ Dictionary GLTFDocument::_serialize_texture_transform_uv2(Ref<BaseMaterial3D> p_
 
 Error GLTFDocument::_serialize_asset_header(Ref<GLTFState> p_state) {
 	const String version = "2.0";
-	p_state->major_version = version.get_slice(".", 0).to_int();
-	p_state->minor_version = version.get_slice(".", 1).to_int();
+	p_state->major_version = version.get_slicec('.', 0).to_int();
+	p_state->minor_version = version.get_slicec('.', 1).to_int();
 	Dictionary asset;
 	asset["version"] = version;
 	if (!p_state->copyright.is_empty()) {
 		asset["copyright"] = p_state->copyright;
 	}
-	String hash = String(VERSION_HASH);
-	asset["generator"] = String(VERSION_FULL_NAME) + String("@") + (hash.is_empty() ? String("unknown") : hash);
+	String hash = String(GODOT_VERSION_HASH);
+	asset["generator"] = String(GODOT_VERSION_FULL_NAME) + String("@") + (hash.is_empty() ? String("unknown") : hash);
 	p_state->json["asset"] = asset;
 	ERR_FAIL_COND_V(!asset.has("version"), Error::FAILED);
 	ERR_FAIL_COND_V(!p_state->json.has("asset"), Error::FAILED);
@@ -8349,8 +8353,8 @@ Error GLTFDocument::_parse_asset_header(Ref<GLTFState> p_state) {
 		return ERR_PARSE_ERROR;
 	}
 	String version = asset["version"];
-	p_state->major_version = version.get_slice(".", 0).to_int();
-	p_state->minor_version = version.get_slice(".", 1).to_int();
+	p_state->major_version = version.get_slicec('.', 0).to_int();
+	p_state->minor_version = version.get_slicec('.', 1).to_int();
 	if (asset.has("copyright")) {
 		p_state->copyright = asset["copyright"];
 	}
@@ -8540,18 +8544,16 @@ Error GLTFDocument::append_from_scene(Node *p_node, Ref<GLTFState> p_state, uint
 	// Add the root node(s) and their descendants to the state.
 	if (_root_node_mode == RootNodeMode::ROOT_NODE_MODE_MULTI_ROOT) {
 		const int child_count = p_node->get_child_count();
-		if (child_count > 0) {
-			for (int i = 0; i < child_count; i++) {
-				_convert_scene_node(state, p_node->get_child(i), -1, -1);
-			}
-			state->scene_name = p_node->get_name();
-			return OK;
+		for (int i = 0; i < child_count; i++) {
+			_convert_scene_node(state, p_node->get_child(i), -1, -1);
 		}
+		state->scene_name = p_node->get_name();
+	} else {
+		if (_root_node_mode == RootNodeMode::ROOT_NODE_MODE_SINGLE_ROOT) {
+			state->extensions_used.append("GODOT_single_root");
+		}
+		_convert_scene_node(state, p_node, -1, -1);
 	}
-	if (_root_node_mode == RootNodeMode::ROOT_NODE_MODE_SINGLE_ROOT) {
-		state->extensions_used.append("GODOT_single_root");
-	}
-	_convert_scene_node(state, p_node, -1, -1);
 	// Run post-convert for each extension, in case an extension needs to do something after converting the scene.
 	for (Ref<GLTFDocumentExtension> ext : document_extensions) {
 		ERR_CONTINUE(ext.is_null());

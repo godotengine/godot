@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef EDITOR_EXPORT_PLATFORM_H
-#define EDITOR_EXPORT_PLATFORM_H
+#pragma once
 
 class EditorFileSystemDirectory;
 struct EditorProgress;
@@ -337,11 +336,7 @@ public:
 	virtual void resolve_platform_feature_priorities(const Ref<EditorExportPreset> &p_preset, HashSet<String> &p_features) {}
 	virtual String get_debug_protocol() const { return "tcp://"; }
 	virtual HashMap<String, Variant> get_custom_project_settings(const Ref<EditorExportPreset> &p_preset) const { return HashMap<String, Variant>(); }
-
-	EditorExportPlatform();
 };
 
 VARIANT_ENUM_CAST(EditorExportPlatform::ExportMessageType)
 VARIANT_BITFIELD_CAST(EditorExportPlatform::DebugFlags);
-
-#endif // EDITOR_EXPORT_PLATFORM_H

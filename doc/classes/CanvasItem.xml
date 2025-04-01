@@ -416,19 +416,20 @@
 		<method name="force_update_transform">
 			<return type="void" />
 			<description>
-				Forces the transform to update. Transform changes in physics are not instant for performance reasons. Transforms are accumulated and then set. Use this if you need an up-to-date transform when doing physics operations.
+				Forces the node's transform to update. Fails if the node is not inside the tree. See also [method get_transform].
+				[b]Note:[/b] For performance reasons, transform changes are usually accumulated and applied [i]once[/i] at the end of the frame. The update propagates through [CanvasItem] children, as well. Therefore, use this method only when you need an up-to-date transform (such as during physics operations).
 			</description>
 		</method>
 		<method name="get_canvas" qualifiers="const">
 			<return type="RID" />
 			<description>
-				Returns the [RID] of the [World2D] canvas where this item is in.
+				Returns the [RID] of the [World2D] canvas where this node is registered to, used by the [RenderingServer].
 			</description>
 		</method>
 		<method name="get_canvas_item" qualifiers="const">
 			<return type="RID" />
 			<description>
-				Returns the canvas item RID used by [RenderingServer] for this item.
+				Returns the internal canvas item [RID] used by the [RenderingServer] for this node.
 			</description>
 		</method>
 		<method name="get_canvas_layer_node" qualifiers="const">
@@ -440,13 +441,13 @@
 		<method name="get_canvas_transform" qualifiers="const">
 			<return type="Transform2D" />
 			<description>
-				Returns the transform from the coordinate system of the canvas, this item is in, to the [Viewport]s coordinate system.
+				Returns the transform of this node, converted from its registered canvas's coordinate system to its viewport's coordinate system. See also [method Node.get_viewport].
 			</description>
 		</method>
 		<method name="get_global_mouse_position" qualifiers="const">
 			<return type="Vector2" />
 			<description>
-				Returns the mouse's position in the [CanvasLayer] that this [CanvasItem] is in using the coordinate system of the [CanvasLayer].
+				Returns mouse cursor's global position relative to the [CanvasLayer] that contains this node.
 				[b]Note:[/b] For screen-space coordinates (e.g. when using a non-embedded [Popup]), you can use [method DisplayServer.mouse_get_position].
 			</description>
 		</method>
@@ -485,32 +486,33 @@
 		<method name="get_transform" qualifiers="const">
 			<return type="Transform2D" />
 			<description>
-				Returns the transform matrix of this item.
+				Returns the transform matrix of this [CanvasItem].
 			</description>
 		</method>
 		<method name="get_viewport_rect" qualifiers="const">
 			<return type="Rect2" />
 			<description>
-				Returns the viewport's boundaries as a [Rect2].
+				Returns this node's viewport boundaries as a [Rect2]. See also [method Node.get_viewport].
 			</description>
 		</method>
 		<method name="get_viewport_transform" qualifiers="const">
 			<return type="Transform2D" />
 			<description>
-				Returns the transform from the coordinate system of the canvas, this item is in, to the [Viewport]s embedders coordinate system.
+				Returns the transform of this node, converted from its registered canvas's coordinate system to its viewport embedder's coordinate system. See also [method Viewport.get_final_transform] and [method Node.get_viewport].
 			</description>
 		</method>
 		<method name="get_visibility_layer_bit" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="layer" type="int" />
 			<description>
-				Returns an individual bit on the rendering visibility layer.
+				Returns [code]true[/code] if the layer at the given index is set in [member visibility_layer].
 			</description>
 		</method>
 		<method name="get_world_2d" qualifiers="const">
 			<return type="World2D" />
 			<description>
-				Returns the [World2D] where this item is in.
+				Returns the [World2D] this node is registered to.
+				Usually, this is the same as this node's viewport (see [method Node.get_viewport] and [method Viewport.find_world_2d]).
 			</description>
 		</method>
 		<method name="hide">
@@ -522,13 +524,13 @@
 		<method name="is_local_transform_notification_enabled" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Returns [code]true[/code] if local transform notifications are communicated to children.
+				Returns [code]true[/code] if the node receives [constant NOTIFICATION_LOCAL_TRANSFORM_CHANGED] whenever its local transform changes. This is enabled with [method set_notify_local_transform].
 			</description>
 		</method>
 		<method name="is_transform_notification_enabled" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Returns [code]true[/code] if global transform notifications are communicated to children.
+				Returns [code]true[/code] if the node receives [constant NOTIFICATION_TRANSFORM_CHANGED] whenever its global transform changes. This is enabled with [method set_notify_transform].
 			</description>
 		</method>
 		<method name="is_visible_in_tree" qualifiers="const">
@@ -554,14 +556,13 @@
 			<return type="InputEvent" />
 			<param index="0" name="event" type="InputEvent" />
 			<description>
-				Transformations issued by [param event]'s inputs are applied in local space instead of global space.
+				Returns a copy of the given [param event] with its coordinates converted from global space to this [CanvasItem]'s local space. If not possible, returns the same [InputEvent] unchanged.
 			</description>
 		</method>
 		<method name="move_to_front">
 			<return type="void" />
 			<description>
-				Moves this node to display on top of its siblings.
-				Internally, the node is moved to the bottom of parent's child list. The method has no effect on nodes without a parent.
+				Moves this node below its siblings, usually causing the node to draw on top of its siblings. Does nothing if this node does not have a parent. See also [method Node.move_child].
 			</description>
 		</method>
 		<method name="queue_redraw">
@@ -584,14 +585,16 @@
 			<return type="void" />
 			<param index="0" name="enable" type="bool" />
 			<description>
-				If [param enable] is [code]true[/code], this node will receive [constant NOTIFICATION_LOCAL_TRANSFORM_CHANGED] when its local transform changes.
+				If [code]true[/code], the node will receive [constant NOTIFICATION_LOCAL_TRANSFORM_CHANGED] whenever its local transform changes.
+				[b]Note:[/b] Many canvas items such as [Bone2D] or [CollisionShape2D] automatically enable this in order to function correctly.
 			</description>
 		</method>
 		<method name="set_notify_transform">
 			<return type="void" />
 			<param index="0" name="enable" type="bool" />
 			<description>
-				If [param enable] is [code]true[/code], this node will receive [constant NOTIFICATION_TRANSFORM_CHANGED] when its global transform changes.
+				If [code]true[/code], the node will receive [constant NOTIFICATION_TRANSFORM_CHANGED] whenever global transform changes.
+				[b]Note:[/b] Many canvas items such as [Camera2D] or [Light2D] automatically enable this in order to function correctly.
 			</description>
 		</method>
 		<method name="set_visibility_layer_bit">
@@ -605,14 +608,15 @@
 		<method name="show">
 			<return type="void" />
 			<description>
-				Show the [CanvasItem] if it's currently hidden. This is equivalent to setting [member visible] to [code]true[/code]. For controls that inherit [Popup], the correct way to make them visible is to call one of the multiple [code]popup*()[/code] functions instead.
+				Show the [CanvasItem] if it's currently hidden. This is equivalent to setting [member visible] to [code]true[/code].
+				[b]Note:[/b] For controls that inherit [Popup], the correct way to make them visible is to call one of the multiple [code]popup*()[/code] functions instead.
 			</description>
 		</method>
 	</methods>
 	<members>
 		<member name="clip_children" type="int" setter="set_clip_children_mode" getter="get_clip_children_mode" enum="CanvasItem.ClipChildrenMode" default="0">
-			Allows the current node to clip child nodes, essentially acting as a mask.
-			[b]Note:[/b] Clipping nodes cannot be nested or placed within [CanvasGroup]s. If an ancestor of this node clips its children or is a [CanvasGroup], then this node's clip mode should be set to [constant CLIP_CHILDREN_DISABLED] to avoid unexpected behavior.
+			The mode in which this node clips its children, acting as a mask.
+			[b]Note:[/b] Clipping nodes cannot be nested or placed within a [CanvasGroup]. If an ancestor of this node clips its children or is a [CanvasGroup], then this node's clip mode should be set to [constant CLIP_CHILDREN_DISABLED] to avoid unexpected behavior.
 		</member>
 		<member name="light_mask" type="int" setter="set_light_mask" getter="get_light_mask" default="1">
 			The rendering layers in which this [CanvasItem] responds to [Light2D] nodes.
@@ -625,22 +629,22 @@
 		</member>
 		<member name="self_modulate" type="Color" setter="set_self_modulate" getter="get_self_modulate" default="Color(1, 1, 1, 1)">
 			The color applied to this [CanvasItem]. This property does [b]not[/b] affect child [CanvasItem]s, unlike [member modulate] which affects both the node itself and its children.
-			[b]Note:[/b] Internal children (e.g. sliders in [ColorPicker] or tab bar in [TabContainer]) are also not affected by this property (see [code]include_internal[/code] parameter of [method Node.get_child] and other similar methods).
+			[b]Note:[/b] Internal children are also not affected by this property (see the [code]include_internal[/code] parameter in [method Node.add_child]). For built-in nodes this includes sliders in [ColorPicker], and the tab bar in [TabContainer].
 		</member>
 		<member name="show_behind_parent" type="bool" setter="set_draw_behind_parent" getter="is_draw_behind_parent_enabled" default="false">
-			If [code]true[/code], the object draws behind its parent.
+			If [code]true[/code], this node draws behind its parent.
 		</member>
 		<member name="texture_filter" type="int" setter="set_texture_filter" getter="get_texture_filter" enum="CanvasItem.TextureFilter" default="0">
-			The texture filtering mode to use on this [CanvasItem].
+			The filtering mode used to render this [CanvasItem]'s texture(s).
 		</member>
 		<member name="texture_repeat" type="int" setter="set_texture_repeat" getter="get_texture_repeat" enum="CanvasItem.TextureRepeat" default="0">
-			The texture repeating mode to use on this [CanvasItem].
+			The repeating mode used to render this [CanvasItem]'s texture(s).
 		</member>
 		<member name="top_level" type="bool" setter="set_as_top_level" getter="is_set_as_top_level" default="false">
 			If [code]true[/code], this [CanvasItem] will [i]not[/i] inherit its transform from parent [CanvasItem]s. Its draw order will also be changed to make it draw on top of other [CanvasItem]s that do not have [member top_level] set to [code]true[/code]. The [CanvasItem] will effectively act as if it was placed as a child of a bare [Node].
 		</member>
 		<member name="use_parent_material" type="bool" setter="set_use_parent_material" getter="get_use_parent_material" default="false">
-			If [code]true[/code], the parent [CanvasItem]'s [member material] property is used as this one's material.
+			If [code]true[/code], the parent [CanvasItem]'s [member material] is used as this node's material.
 		</member>
 		<member name="visibility_layer" type="int" setter="set_visibility_layer" getter="get_visibility_layer" default="1">
 			The rendering layer in which this [CanvasItem] is rendered by [Viewport] nodes. A [Viewport] will render a [CanvasItem] if it and all its parents share a layer with the [Viewport]'s canvas cull mask.
@@ -655,11 +659,12 @@
 			Nodes sort relative to each other only if they are on the same [member z_index].
 		</member>
 		<member name="z_as_relative" type="bool" setter="set_z_as_relative" getter="is_z_relative" default="true">
-			If [code]true[/code], the node's Z index is relative to its parent's Z index. If this node's Z index is 2 and its parent's effective Z index is 3, then this node's effective Z index will be 2 + 3 = 5.
+			If [code]true[/code], this node's final Z index is relative to its parent's Z index.
+			For example, if [member z_index] is [code]2[/code] and its parent's final Z index is [code]3[/code], then this node's final Z index will be [code]5[/code] ([code]2 + 3[/code]).
 		</member>
 		<member name="z_index" type="int" setter="set_z_index" getter="get_z_index" default="0">
-			Controls the order in which the nodes render. A node with a higher Z index will display in front of others. Must be between [constant RenderingServer.CANVAS_ITEM_Z_MIN] and [constant RenderingServer.CANVAS_ITEM_Z_MAX] (inclusive).
-			[b]Note:[/b] Changing the Z index of a [Control] only affects the drawing order, not the order in which input events are handled. This can be useful to implement certain UI animations, e.g. a menu where hovered items are scaled and should overlap others.
+			The order in which this node is drawn. A node with a higher Z index will display in front of others. Must be between [constant RenderingServer.CANVAS_ITEM_Z_MIN] and [constant RenderingServer.CANVAS_ITEM_Z_MAX] (inclusive).
+			[b]Note:[/b] The Z index does [b]not[/b] affect the order in which [CanvasItem] nodes are processed or the way input events are handled. This is especially important to keep in mind for [Control] nodes.
 		</member>
 	</members>
 	<signals>
@@ -671,7 +676,7 @@
 		</signal>
 		<signal name="hidden">
 			<description>
-				Emitted when the [CanvasItem] is hidden, i.e. it's no longer visible in the tree (see [method is_visible_in_tree]).
+				Emitted when this node becomes hidden, i.e. it's no longer visible in the tree (see [method is_visible_in_tree]).
 			</description>
 		</signal>
 		<signal name="item_rect_changed">
@@ -682,21 +687,25 @@
 		<signal name="visibility_changed">
 			<description>
 				Emitted when the [CanvasItem]'s visibility changes, either because its own [member visible] property changed or because its visibility in the tree changed (see [method is_visible_in_tree]).
+				This signal is emitted [i]after[/i] the related [constant NOTIFICATION_VISIBILITY_CHANGED] notification.
 			</description>
 		</signal>
 	</signals>
 	<constants>
 		<constant name="NOTIFICATION_TRANSFORM_CHANGED" value="2000">
-			The [CanvasItem]'s global transform has changed. This notification is only received if enabled by [method set_notify_transform].
+			Notification received when this node's global transform changes, if [method is_transform_notification_enabled] is [code]true[/code]. See also [method set_notify_transform] and [method get_transform].
+			[b]Note:[/b] Many canvas items such as [Camera2D] or [CollisionObject2D] automatically enable this in order to function correctly.
 		</constant>
 		<constant name="NOTIFICATION_LOCAL_TRANSFORM_CHANGED" value="35">
-			The [CanvasItem]'s local transform has changed. This notification is only received if enabled by [method set_notify_local_transform].
+			Notification received when this node's transform changes, if [method is_local_transform_notification_enabled] is [code]true[/code]. This is not received when a parent [Node2D]'s transform changes. See also [method set_notify_local_transform].
+			[b]Note:[/b] Many canvas items such as [Camera2D] or [CollisionShape2D] automatically enable this in order to function correctly.
 		</constant>
 		<constant name="NOTIFICATION_DRAW" value="30">
 			The [CanvasItem] is requested to draw (see [method _draw]).
 		</constant>
 		<constant name="NOTIFICATION_VISIBILITY_CHANGED" value="31">
-			The [CanvasItem]'s visibility has changed.
+			Notification received when this node's visibility changes (see [member visible] and [method is_visible_in_tree]).
+			This notification is received [i]before[/i] the related [signal visibility_changed] signal.
 		</constant>
 		<constant name="NOTIFICATION_ENTER_CANVAS" value="32">
 			The [CanvasItem] has entered the canvas.
@@ -705,7 +714,7 @@
 			The [CanvasItem] has exited the canvas.
 		</constant>
 		<constant name="NOTIFICATION_WORLD_2D_CHANGED" value="36">
-			The [CanvasItem]'s active [World2D] changed.
+			Notification received when this [CanvasItem] is registered to a new [World2D] (see [method get_world_2d]).
 		</constant>
 		<constant name="TEXTURE_FILTER_PARENT_NODE" value="0" enum="TextureFilter">
 			The [CanvasItem] will inherit the filter from its parent.
@@ -739,25 +748,25 @@
 			The [CanvasItem] will inherit the filter from its parent.
 		</constant>
 		<constant name="TEXTURE_REPEAT_DISABLED" value="1" enum="TextureRepeat">
-			Texture will not repeat.
+			The texture does not repeat.
 		</constant>
 		<constant name="TEXTURE_REPEAT_ENABLED" value="2" enum="TextureRepeat">
-			Texture will repeat normally.
+			The texture repeats when exceeding the texture's size.
 		</constant>
 		<constant name="TEXTURE_REPEAT_MIRROR" value="3" enum="TextureRepeat">
-			Texture will repeat in a 2×2 tiled mode, where elements at even positions are mirrored.
+			The texture repeats when the exceeding the texture's size in a "2×2 tiled mode". Repeated textures at even positions are mirrored.
 		</constant>
 		<constant name="TEXTURE_REPEAT_MAX" value="4" enum="TextureRepeat">
 			Represents the size of the [enum TextureRepeat] enum.
 		</constant>
 		<constant name="CLIP_CHILDREN_DISABLED" value="0" enum="ClipChildrenMode">
-			Child draws over parent and is not clipped.
+			Children are drawn over this node and are not clipped.
 		</constant>
 		<constant name="CLIP_CHILDREN_ONLY" value="1" enum="ClipChildrenMode">
-			Parent is used for the purposes of clipping only. Child is clipped to the parent's visible area, parent is not drawn.
+			This node is used as a mask and is [b]not[/b] drawn. The mask is based on this node's alpha channel: Opaque pixels are kept, transparent pixels are discarded, and semi-transparent pixels are blended in according to their opacity. Children are clipped to this node's drawn area.
 		</constant>
 		<constant name="CLIP_CHILDREN_AND_DRAW" value="2" enum="ClipChildrenMode">
-			Parent is used for clipping child, but parent is also drawn underneath child as normal before clipping child to its visible area.
+			This node is used as a mask and is also drawn. The mask is based on this node's alpha channel: Opaque pixels are kept, transparent pixels are discarded, and semi-transparent pixels are blended in according to their opacity. Children are clipped to the parent's drawn area.
 		</constant>
 		<constant name="CLIP_CHILDREN_MAX" value="3" enum="ClipChildrenMode">
 			Represents the size of the [enum ClipChildrenMode] enum.

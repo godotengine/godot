@@ -34,6 +34,7 @@
 #include "hb-open-type.hh"
 #include "hb-set.hh"
 #include "hb-bimap.hh"
+#include "hb-cache.hh"
 
 #include "OT/Layout/Common/Coverage.hh"
 #include "OT/Layout/types.hh"
@@ -2076,6 +2077,15 @@ struct ClassDef
     default:return 0;
     }
   }
+  unsigned int get_class (hb_codepoint_t glyph_id,
+			  hb_ot_lookup_cache_t *cache) const
+  {
+    unsigned klass;
+    if (cache && cache->get (glyph_id, &klass)) return klass;
+    klass = get_class (glyph_id);
+    if (cache) cache->set (glyph_id, klass);
+    return klass;
+  }
 
   unsigned get_population () const
   {
@@ -3137,23 +3147,14 @@ struct MultiVarData
   {
     auto &deltaSets = StructAfter<decltype (deltaSetsX)> (regionIndices);
 
-    auto values_iter = deltaSets[inner];
-
+    auto values_iter = deltaSets.fetcher (inner);
     unsigned regionCount = regionIndices.len;
-    unsigned count = out.length;
     for (unsigned regionIndex = 0; regionIndex < regionCount; regionIndex++)
     {
       float scalar = regions.evaluate (regionIndices.arrayZ[regionIndex],
 				       coords, coord_count,
 				       cache);
-      if (scalar == 1.f)
-	for (unsigned i = 0; i < count; i++)
-	  out.arrayZ[i] += *values_iter++;
-      else if (scalar)
-	for (unsigned i = 0; i < count; i++)
-	  out.arrayZ[i] += *values_iter++ * scalar;
-      else
-        values_iter += count;
+      values_iter.add_to (out, scalar);
     }
   }
 
@@ -3439,7 +3440,7 @@ struct MultiItemVariationStore
 {
   using cache_t = SparseVarRegionList::cache_t;
 
-  cache_t *create_cache () const
+  cache_t *create_cache (hb_array_t<float> static_cache = hb_array_t<float> ()) const
   {
 #ifdef HB_NO_VAR
     return nullptr;
@@ -3447,8 +3448,14 @@ struct MultiItemVariationStore
     auto &r = this+regions;
     unsigned count = r.regions.len;
 
-    float *cache = (float *) hb_malloc (sizeof (float) * count);
-    if (unlikely (!cache)) return nullptr;
+    float *cache;
+    if (count <= static_cache.length)
+      cache = static_cache.arrayZ;
+    else
+    {
+      cache = (float *) hb_malloc (sizeof (float) * count);
+      if (unlikely (!cache)) return nullptr;
+    }
 
     for (unsigned i = 0; i < count; i++)
       cache[i] = REGION_CACHE_ITEM_CACHE_INVALID;
@@ -3456,7 +3463,12 @@ struct MultiItemVariationStore
     return cache;
   }
 
-  static void destroy_cache (cache_t *cache) { hb_free (cache); }
+  static void destroy_cache (cache_t *cache,
+			     hb_array_t<float> static_cache = hb_array_t<float> ())
+  {
+    if (cache != static_cache.arrayZ)
+      hb_free (cache);
+  }
 
   private:
   void get_delta (unsigned int outer, unsigned int inner,
@@ -3731,11 +3743,13 @@ struct ItemVarStoreInstancer
 
   float operator() (uint32_t varIdx, unsigned short offset = 0) const
   {
+   if (!coords || varIdx == VarIdx::NO_VARIATION)
+     return 0.f;
+
+    varIdx += offset;
     if (varIdxMap)
-      varIdx = varIdxMap->map (VarIdx::add (varIdx, offset));
-    else
-      varIdx += offset;
-    return coords ? varStore->get_delta (varIdx, coords, cache) : 0.f;
+      varIdx = varIdxMap->map (varIdx);
+    return varStore->get_delta (varIdx, coords, cache);
   }
 
   const ItemVariationStore *varStore;
@@ -3767,12 +3781,11 @@ struct MultiItemVarStoreInstancer
 
   void operator() (hb_array_t<float> out, uint32_t varIdx, unsigned short offset = 0) const
   {
-    if (coords)
+    if (coords && varIdx != VarIdx::NO_VARIATION)
     {
+      varIdx += offset;
       if (varIdxMap)
-	varIdx = varIdxMap->map (VarIdx::add (varIdx, offset));
-      else
-	varIdx += offset;
+	varIdx = varIdxMap->map (varIdx);
       varStore->get_delta (varIdx, coords, out, cache);
     }
     else
@@ -3890,8 +3903,8 @@ struct ConditionAxisRange
     {
       // add axisIndex->value into the hashmap so we can check if the record is
       // unique with variations
-      int16_t int_filter_max_val = filterRangeMaxValue.to_int ();
-      int16_t int_filter_min_val = filterRangeMinValue.to_int ();
+      uint16_t int_filter_max_val = (uint16_t) filterRangeMaxValue.to_int ();
+      uint16_t int_filter_min_val = (uint16_t) filterRangeMinValue.to_int ();
       hb_codepoint_t val = (int_filter_max_val << 16) + int_filter_min_val;
 
       condition_map->set (axisIndex, val);

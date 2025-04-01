@@ -453,7 +453,7 @@ THE SOFTWARE.
                   FT_UInt       glyph_index,
                   FT_Int32      load_flags )
   {
-    PCF_Face    face   = (PCF_Face)FT_SIZE_FACE( size );
+    PCF_Face    face   = (PCF_Face)size->face;
     FT_Stream   stream;
     FT_Error    error  = FT_Err_Ok;
     FT_Bitmap*  bitmap = &slot->bitmap;

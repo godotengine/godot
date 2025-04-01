@@ -151,7 +151,7 @@ Error WSLPeer::accept_stream(Ref<StreamPeer> p_stream) {
 }
 
 bool WSLPeer::_parse_client_request() {
-	Vector<String> psa = String((const char *)handshake_buffer->get_data_array().ptr(), handshake_buffer->get_position() - 4).split("\r\n");
+	Vector<String> psa = String::ascii(Span((const char *)handshake_buffer->get_data_array().ptr(), handshake_buffer->get_position() - 4)).split("\r\n");
 	int len = psa.size();
 	ERR_FAIL_COND_V_MSG(len < 4, false, "Not enough response headers, got: " + itos(len) + ", expected >= 4.");
 
@@ -416,7 +416,7 @@ void WSLPeer::_do_client_handshake() {
 }
 
 bool WSLPeer::_verify_server_response() {
-	Vector<String> psa = String((const char *)handshake_buffer->get_data_array().ptr(), handshake_buffer->get_position() - 4).split("\r\n");
+	Vector<String> psa = String::ascii(Span((const char *)handshake_buffer->get_data_array().ptr(), handshake_buffer->get_position() - 4)).split("\r\n");
 	int len = psa.size();
 	ERR_FAIL_COND_V_MSG(len < 4, false, "Not enough response headers. Got: " + itos(len) + ", expected >= 4.");
 
@@ -646,9 +646,9 @@ void WSLPeer::_wsl_msg_recv_callback(wslay_event_context_ptr ctx, const struct w
 		// Close request or confirmation.
 		peer->close_code = arg->status_code;
 		size_t len = arg->msg_length;
-		peer->close_reason = "";
+		peer->close_reason.clear();
 		if (len > 2 /* first 2 bytes = close code */) {
-			peer->close_reason.parse_utf8((char *)arg->msg + 2, len - 2);
+			peer->close_reason.append_utf8((char *)arg->msg + 2, len - 2);
 		}
 		if (peer->ready_state == STATE_OPEN) {
 			peer->ready_state = STATE_CLOSING;

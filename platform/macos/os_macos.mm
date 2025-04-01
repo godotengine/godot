@@ -28,13 +28,13 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "os_macos.h"
+#import "os_macos.h"
 
-#include "dir_access_macos.h"
-#include "display_server_macos.h"
-#include "godot_application.h"
-#include "godot_application_delegate.h"
-#include "macos_terminal_logger.h"
+#import "dir_access_macos.h"
+#import "display_server_macos.h"
+#import "godot_application.h"
+#import "godot_application_delegate.h"
+#import "macos_terminal_logger.h"
 
 #include "core/crypto/crypto_core.h"
 #include "core/version_generated.gen.h"
@@ -42,19 +42,30 @@
 
 #include <dlfcn.h>
 #include <libproc.h>
-#include <mach-o/dyld.h>
+#import <mach-o/dyld.h>
 #include <os/log.h>
 #include <sys/sysctl.h>
 
 void OS_MacOS::pre_wait_observer_cb(CFRunLoopObserverRef p_observer, CFRunLoopActivity p_activiy, void *p_context) {
-	// Prevent main loop from sleeping and redraw window during modal popup display.
-	// Do not redraw when rendering is done from the separate thread, it will conflict with the OpenGL context updates.
+	OS_MacOS *os = static_cast<OS_MacOS *>(OS::get_singleton());
 
-	DisplayServerMacOS *ds = (DisplayServerMacOS *)DisplayServer::get_singleton();
-	if (get_singleton()->get_main_loop() && ds && !get_singleton()->is_separate_thread_rendering_enabled() && !ds->get_is_resizing()) {
-		Main::force_redraw();
-		if (!Main::is_iterating()) { // Avoid cyclic loop.
-			Main::iteration();
+	@autoreleasepool {
+		@try {
+			// Get rid of pending events.
+			DisplayServer *ds = DisplayServer::get_singleton();
+			DisplayServerMacOS *ds_mac = Object::cast_to<DisplayServerMacOS>(ds);
+			if (ds_mac) {
+				ds_mac->_process_events(false);
+			} else if (ds) {
+				ds->process_events();
+			}
+			os->joypad_apple->process_joypads();
+
+			if (Main::iteration()) {
+				os->terminate();
+			}
+		} @catch (NSException *exception) {
+			ERR_PRINT("NSException: " + String::utf8([exception reason].UTF8String));
 		}
 	}
 
@@ -99,8 +110,7 @@ Vector<String> OS_MacOS::get_granted_permissions() const {
 			BOOL isStale = NO;
 			NSURL *url = [NSURL URLByResolvingBookmarkData:bookmark options:NSURLBookmarkResolutionWithSecurityScope relativeToURL:nil bookmarkDataIsStale:&isStale error:&error];
 			if (!error && !isStale) {
-				String url_string;
-				url_string.parse_utf8([[url path] UTF8String]);
+				String url_string = String::utf8([[url path] UTF8String]);
 				ret.push_back(url_string);
 			}
 		}
@@ -322,7 +332,7 @@ String OS_MacOS::get_bundle_resource_dir() const {
 	NSBundle *main = [NSBundle mainBundle];
 	if (main) {
 		NSString *resource_path = [main resourcePath];
-		ret.parse_utf8([resource_path UTF8String]);
+		ret.append_utf8([resource_path UTF8String]);
 	}
 	return ret;
 }
@@ -334,7 +344,7 @@ String OS_MacOS::get_bundle_icon_path() const {
 	if (main) {
 		NSString *icon_path = [[main infoDictionary] objectForKey:@"CFBundleIconFile"];
 		if (icon_path) {
-			ret.parse_utf8([icon_path UTF8String]);
+			ret.append_utf8([icon_path UTF8String]);
 		}
 	}
 	return ret;
@@ -342,7 +352,7 @@ String OS_MacOS::get_bundle_icon_path() const {
 
 // Get properly capitalized engine name for system paths
 String OS_MacOS::get_godot_dir_name() const {
-	return String(VERSION_SHORT_NAME).capitalize();
+	return String(GODOT_VERSION_SHORT_NAME).capitalize();
 }
 
 String OS_MacOS::get_system_dir(SystemDir p_dir, bool p_shared_storage) const {
@@ -377,7 +387,7 @@ String OS_MacOS::get_system_dir(SystemDir p_dir, bool p_shared_storage) const {
 	if (found) {
 		NSArray *paths = NSSearchPathForDirectoriesInDomains(id, NSUserDomainMask, YES);
 		if (paths && [paths count] >= 1) {
-			ret.parse_utf8([[paths firstObject] UTF8String]);
+			ret.append_utf8([[paths firstObject] UTF8String]);
 		}
 	}
 
@@ -544,23 +554,26 @@ Vector<String> OS_MacOS::get_system_font_path_for_text(const String &p_font_name
 	CTFontDescriptorRef font = CTFontDescriptorCreateWithAttributes(attributes);
 	if (font) {
 		CTFontRef family = CTFontCreateWithFontDescriptor(font, 0, nullptr);
-		CFStringRef string = CFStringCreateWithCString(kCFAllocatorDefault, p_text.utf8().get_data(), kCFStringEncodingUTF8);
-		CFRange range = CFRangeMake(0, CFStringGetLength(string));
-		CTFontRef fallback_family = CTFontCreateForString(family, string, range);
-		if (fallback_family) {
-			CTFontDescriptorRef fallback_font = CTFontCopyFontDescriptor(fallback_family);
-			if (fallback_font) {
-				CFURLRef url = (CFURLRef)CTFontDescriptorCopyAttribute(fallback_font, kCTFontURLAttribute);
-				if (url) {
-					NSString *font_path = [NSString stringWithString:[(__bridge NSURL *)url path]];
-					ret.push_back(String::utf8([font_path UTF8String]));
-					CFRelease(url);
+		if (family) {
+			CFStringRef string = CFStringCreateWithCString(kCFAllocatorDefault, p_text.utf8().get_data(), kCFStringEncodingUTF8);
+			CFRange range = CFRangeMake(0, CFStringGetLength(string));
+			CTFontRef fallback_family = CTFontCreateForString(family, string, range);
+			if (fallback_family) {
+				CTFontDescriptorRef fallback_font = CTFontCopyFontDescriptor(fallback_family);
+				if (fallback_font) {
+					CFURLRef url = (CFURLRef)CTFontDescriptorCopyAttribute(fallback_font, kCTFontURLAttribute);
+					if (url) {
+						NSString *font_path = [NSString stringWithString:[(__bridge NSURL *)url path]];
+						ret.push_back(String::utf8([font_path UTF8String]));
+						CFRelease(url);
+					}
+					CFRelease(fallback_font);
 				}
-				CFRelease(fallback_font);
+				CFRelease(fallback_family);
 			}
-			CFRelease(fallback_family);
+			CFRelease(string);
+			CFRelease(family);
 		}
-		CFRelease(string);
 		CFRelease(font);
 	}
 
@@ -637,10 +650,7 @@ String OS_MacOS::get_executable_path() const {
 	if (ret <= 0) {
 		return OS::get_executable_path();
 	} else {
-		String path;
-		path.parse_utf8(pathbuf);
-
-		return path;
+		return String::utf8(pathbuf);
 	}
 }
 
@@ -710,8 +720,7 @@ Error OS_MacOS::create_instance(const List<String> &p_arguments, ProcessID *r_ch
 	// If executable is bundled, always execute editor instances as an app bundle to ensure app window is registered and activated correctly.
 	NSString *nsappname = [[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleName"];
 	if (nsappname != nil) {
-		String path;
-		path.parse_utf8([[[NSBundle mainBundle] bundlePath] UTF8String]);
+		String path = String::utf8([[[NSBundle mainBundle] bundlePath] UTF8String]);
 		return create_process(path, p_arguments, r_child_id, false);
 	} else {
 		return create_process(get_executable_path(), p_arguments, r_child_id, false);
@@ -745,7 +754,7 @@ String OS_MacOS::get_unique_id() const {
 		}
 
 		if (serial_number_ns_string) {
-			serial_number.parse_utf8([serial_number_ns_string UTF8String]);
+			serial_number.append_utf8([serial_number_ns_string UTF8String]);
 		}
 	}
 
@@ -806,7 +815,8 @@ String OS_MacOS::get_system_ca_certificates() {
 		Error err = CryptoCore::b64_encode(pba.ptrw(), pba.size(), &b64len, (unsigned char *)CFDataGetBytePtr(der), derlen);
 		CFRelease(der);
 		ERR_CONTINUE(err != OK);
-		certs += "-----BEGIN CERTIFICATE-----\n" + String((char *)pba.ptr(), b64len) + "\n-----END CERTIFICATE-----\n";
+		// Certificate is bas64 encoded, aka ascii.
+		certs += "-----BEGIN CERTIFICATE-----\n" + String::ascii(Span((char *)pba.ptr(), b64len)) + "\n-----END CERTIFICATE-----\n";
 	}
 	CFRelease(result);
 	return certs;
@@ -819,36 +829,73 @@ OS::PreferredTextureFormat OS_MacOS::get_preferred_texture_format() const {
 }
 
 void OS_MacOS::run() {
-	if (!main_loop) {
-		return;
-	}
-
-	@autoreleasepool {
-		main_loop->initialize();
-	}
-
-	bool quit = false;
-	while (!quit) {
-		@autoreleasepool {
-			@try {
-				if (DisplayServer::get_singleton()) {
-					DisplayServer::get_singleton()->process_events(); // Get rid of pending events.
-				}
-				joypad_apple->process_joypads();
-
-				if (Main::iteration()) {
-					quit = true;
-				}
-			} @catch (NSException *exception) {
-				ERR_PRINT("NSException: " + String::utf8([exception reason].UTF8String));
-			}
-		}
-	}
-
-	main_loop->finalize();
+	[NSApp run];
 }
 
-OS_MacOS::OS_MacOS() {
+void OS_MacOS::start_main() {
+	Error err;
+	@autoreleasepool {
+		err = Main::setup(execpath, argc, argv);
+	}
+
+	if (err == OK) {
+		main_stared = true;
+
+		int ret;
+		@autoreleasepool {
+			ret = Main::start();
+		}
+		if (ret == EXIT_SUCCESS) {
+			if (main_loop) {
+				@autoreleasepool {
+					main_loop->initialize();
+				}
+				pre_wait_observer = CFRunLoopObserverCreate(kCFAllocatorDefault, kCFRunLoopBeforeWaiting, true, 0, &pre_wait_observer_cb, nullptr);
+				CFRunLoopAddObserver(CFRunLoopGetCurrent(), pre_wait_observer, kCFRunLoopCommonModes);
+				return;
+			}
+		} else {
+			set_exit_code(EXIT_FAILURE);
+		}
+	} else if (err == ERR_HELP) { // Returned by --help and --version, so success.
+		set_exit_code(EXIT_SUCCESS);
+	} else {
+		set_exit_code(EXIT_FAILURE);
+	}
+
+	terminate();
+}
+
+void OS_MacOS::activate() {
+	[delegate activate];
+}
+
+void OS_MacOS::terminate() {
+	if (pre_wait_observer) {
+		CFRunLoopRemoveObserver(CFRunLoopGetCurrent(), pre_wait_observer, kCFRunLoopCommonModes);
+		CFRelease(pre_wait_observer);
+		pre_wait_observer = nil;
+	}
+
+	should_terminate = true;
+	[NSApp terminate:nil];
+}
+
+void OS_MacOS::cleanup() {
+	if (main_loop) {
+		main_loop->finalize();
+	}
+	if (main_stared) {
+		@autoreleasepool {
+			Main::cleanup();
+		}
+	}
+}
+
+OS_MacOS::OS_MacOS(const char *p_execpath, int p_argc, char **p_argv) {
+	execpath = p_execpath;
+	argc = p_argc;
+	argv = p_argv;
 	if (is_sandboxed()) {
 		// Load security-scoped bookmarks, request access, remove stale or invalid bookmarks.
 		NSArray *bookmarks = [[NSUserDefaults standardUserDefaults] arrayForKey:@"sec_bookmarks"];
@@ -882,7 +929,7 @@ OS_MacOS::OS_MacOS() {
 	[GodotApplication sharedApplication];
 
 	// In case we are unbundled, make us a proper UI application.
-	[NSApp setActivationPolicy:NSApplicationActivationPolicyRegular];
+	[NSApp setActivationPolicy:NSApplicationActivationPolicyAccessory];
 
 	// Menu bar setup must go between sharedApplication above and
 	// finishLaunching below, in order to properly emulate the behavior
@@ -890,35 +937,13 @@ OS_MacOS::OS_MacOS() {
 
 	NSMenu *main_menu = [[NSMenu alloc] initWithTitle:@""];
 	[NSApp setMainMenu:main_menu];
-	[NSApp finishLaunching];
 
-	id delegate = [[GodotApplicationDelegate alloc] init];
+	delegate = [[GodotApplicationDelegate alloc] init];
 	ERR_FAIL_NULL(delegate);
 	[NSApp setDelegate:delegate];
 	[NSApp registerUserInterfaceItemSearchHandler:delegate];
-
-	pre_wait_observer = CFRunLoopObserverCreate(kCFAllocatorDefault, kCFRunLoopBeforeWaiting, true, 0, &pre_wait_observer_cb, nullptr);
-	CFRunLoopAddObserver(CFRunLoopGetCurrent(), pre_wait_observer, kCFRunLoopCommonModes);
-
-	// Process application:openFile: event.
-	while (true) {
-		NSEvent *event = [NSApp
-				nextEventMatchingMask:NSEventMaskAny
-							untilDate:[NSDate distantPast]
-							   inMode:NSDefaultRunLoopMode
-							  dequeue:YES];
-
-		if (event == nil) {
-			break;
-		}
-
-		[NSApp sendEvent:event];
-	}
-
-	[NSApp activateIgnoringOtherApps:YES];
 }
 
 OS_MacOS::~OS_MacOS() {
-	CFRunLoopRemoveObserver(CFRunLoopGetCurrent(), pre_wait_observer, kCFRunLoopCommonModes);
-	CFRelease(pre_wait_observer);
+	// NOP
 }

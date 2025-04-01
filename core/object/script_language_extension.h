@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef SCRIPT_LANGUAGE_EXTENSION_H
-#define SCRIPT_LANGUAGE_EXTENSION_H
+#pragma once
 
 #include "core/extension/ext_wrappers.gen.inc"
 #include "core/object/gdvirtual.gen.inc"
@@ -193,10 +192,8 @@ public:
 	virtual void get_constants(HashMap<StringName, Variant> *p_constants) override {
 		Dictionary constants;
 		GDVIRTUAL_CALL(_get_constants, constants);
-		List<Variant> keys;
-		constants.get_key_list(&keys);
-		for (const Variant &K : keys) {
-			p_constants->insert(K, constants[K]);
+		for (const KeyValue<Variant, Variant> &kv : constants) {
+			p_constants->insert(kv.key, kv.value);
 		}
 	}
 	GDVIRTUAL0RC_REQUIRED(TypedArray<StringName>, _get_members)
@@ -970,5 +967,3 @@ public:
 #pragma GCC diagnostic pop
 #endif
 };
-
-#endif // SCRIPT_LANGUAGE_EXTENSION_H

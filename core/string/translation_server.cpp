@@ -138,7 +138,7 @@ TranslationServer::Locale::Locale(const TranslationServer &p_server, const Strin
 	String univ_locale = p_locale.replace("-", "_");
 
 	// Extract locale elements.
-	Vector<String> locale_elements = univ_locale.get_slice("@", 0).split("_");
+	Vector<String> locale_elements = univ_locale.get_slicec('@', 0).split("_");
 	language = locale_elements[0];
 	if (locale_elements.size() >= 2) {
 		if (locale_elements[1].length() == 4 && is_ascii_upper_case(locale_elements[1][0]) && is_ascii_lower_case(locale_elements[1][1]) && is_ascii_lower_case(locale_elements[1][2]) && is_ascii_lower_case(locale_elements[1][3])) {
@@ -162,7 +162,7 @@ TranslationServer::Locale::Locale(const TranslationServer &p_server, const Strin
 	}
 
 	// Try extract script and variant from the extra part.
-	Vector<String> script_extra = univ_locale.get_slice("@", 1).split(";");
+	Vector<String> script_extra = univ_locale.get_slicec('@', 1).split(";");
 	for (int i = 0; i < script_extra.size(); i++) {
 		if (script_extra[i].to_lower() == "cyrillic") {
 			script = "Cyrl";
@@ -504,10 +504,10 @@ String TranslationServer::get_tool_locale() {
 #ifdef TOOLS_ENABLED
 	if (Engine::get_singleton()->is_editor_hint() || Engine::get_singleton()->is_project_manager_hint()) {
 		const PackedStringArray &locales = editor_domain->get_loaded_locales();
-		if (locales.is_empty()) {
-			return "en";
+		if (locales.has(locale)) {
+			return locale;
 		}
-		return locales[0];
+		return "en";
 	} else {
 #else
 	{

@@ -741,11 +741,12 @@ _FORCE_INLINE_ bool TextServerFallback::_ensure_glyph(FontFallback *p_font_data,
 			} break;
 		}
 
+		FT_GlyphSlot slot = fd->face->glyph;
+		bool from_svg = (slot->format == FT_GLYPH_FORMAT_SVG); // Need to check before FT_Render_Glyph as it will change format to bitmap.
 		if (!outline) {
 			if (!p_font_data->msdf) {
-				error = FT_Render_Glyph(fd->face->glyph, aa_mode);
+				error = FT_Render_Glyph(slot, aa_mode);
 			}
-			FT_GlyphSlot slot = fd->face->glyph;
 			if (!error) {
 				if (p_font_data->msdf) {
 #ifdef MODULE_MSDFGEN_ENABLED
@@ -786,6 +787,7 @@ _FORCE_INLINE_ bool TextServerFallback::_ensure_glyph(FontFallback *p_font_data,
 		cleanup_stroker:
 			FT_Stroker_Done(stroker);
 		}
+		gl.from_svg = from_svg;
 		E = fd->glyph_map.insert(p_glyph, gl);
 		r_glyph = E->value;
 		return gl.found;
@@ -875,10 +877,10 @@ _FORCE_INLINE_ bool TextServerFallback::_ensure_cache_for_size(FontFallback *p_f
 
 		if (FT_HAS_COLOR(fd->face) && fd->face->num_fixed_sizes > 0) {
 			int best_match = 0;
-			int diff = ABS(fd->size.x - ((int64_t)fd->face->available_sizes[0].width));
+			int diff = Math::abs(fd->size.x - ((int64_t)fd->face->available_sizes[0].width));
 			fd->scale = double(fd->size.x * fd->oversampling) / fd->face->available_sizes[0].width;
 			for (int i = 1; i < fd->face->num_fixed_sizes; i++) {
-				int ndiff = ABS(fd->size.x - ((int64_t)fd->face->available_sizes[i].width));
+				int ndiff = Math::abs(fd->size.x - ((int64_t)fd->face->available_sizes[i].width));
 				if (ndiff < diff) {
 					best_match = i;
 					diff = ndiff;
@@ -918,12 +920,14 @@ _FORCE_INLINE_ bool TextServerFallback::_ensure_cache_for_size(FontFallback *p_f
 
 					switch (sfnt_name.platform_id) {
 						case TT_PLATFORM_APPLE_UNICODE: {
-							p_font_data->font_name.parse_utf16((const char16_t *)sfnt_name.string, sfnt_name.string_len / 2, false);
+							p_font_data->font_name.clear();
+							p_font_data->font_name.append_utf16((const char16_t *)sfnt_name.string, sfnt_name.string_len / 2, false);
 						} break;
 
 						case TT_PLATFORM_MICROSOFT: {
 							if (sfnt_name.encoding_id == TT_MS_ID_UNICODE_CS || sfnt_name.encoding_id == TT_MS_ID_UCS_4) {
-								p_font_data->font_name.parse_utf16((const char16_t *)sfnt_name.string, sfnt_name.string_len / 2, false);
+								p_font_data->font_name.clear();
+								p_font_data->font_name.append_utf16((const char16_t *)sfnt_name.string, sfnt_name.string_len / 2, false);
 							}
 						} break;
 					}
@@ -2290,6 +2294,10 @@ RID TextServerFallback::_font_get_glyph_texture_rid(const RID &p_font_rid, const
 			if (ffsd->textures[fgl.texture_idx].dirty) {
 				ShelfPackTexture &tex = ffsd->textures.write[fgl.texture_idx];
 				Ref<Image> img = tex.image;
+				if (fgl.from_svg) {
+					// Same as the "fix alpha border" process option when importing SVGs
+					img->fix_alpha_edges();
+				}
 				if (fd->mipmaps && !img->has_mipmaps()) {
 					img = tex.image->duplicate();
 					img->generate_mipmaps();
@@ -2338,6 +2346,10 @@ Size2 TextServerFallback::_font_get_glyph_texture_size(const RID &p_font_rid, co
 			if (ffsd->textures[fgl.texture_idx].dirty) {
 				ShelfPackTexture &tex = ffsd->textures.write[fgl.texture_idx];
 				Ref<Image> img = tex.image;
+				if (fgl.from_svg) {
+					// Same as the "fix alpha border" process option when importing SVGs
+					img->fix_alpha_edges();
+				}
 				if (fd->mipmaps && !img->has_mipmaps()) {
 					img = tex.image->duplicate();
 					img->generate_mipmaps();
@@ -2729,7 +2741,7 @@ void TextServerFallback::_font_draw_glyph(const RID &p_font_rid, const RID &p_ca
 		if (fgl.texture_idx != -1) {
 			Color modulate = p_color;
 #ifdef MODULE_FREETYPE_ENABLED
-			if (ffsd->face && ffsd->textures[fgl.texture_idx].image.is_valid() && (ffsd->textures[fgl.texture_idx].image->get_format() == Image::FORMAT_RGBA8) && !lcd_aa && !fd->msdf) {
+			if (!fgl.from_svg && ffsd->face && ffsd->textures[fgl.texture_idx].image.is_valid() && (ffsd->textures[fgl.texture_idx].image->get_format() == Image::FORMAT_RGBA8) && !lcd_aa && !fd->msdf) {
 				modulate.r = modulate.g = modulate.b = 1.0;
 			}
 #endif
@@ -2737,6 +2749,10 @@ void TextServerFallback::_font_draw_glyph(const RID &p_font_rid, const RID &p_ca
 				if (ffsd->textures[fgl.texture_idx].dirty) {
 					ShelfPackTexture &tex = ffsd->textures.write[fgl.texture_idx];
 					Ref<Image> img = tex.image;
+					if (fgl.from_svg) {
+						// Same as the "fix alpha border" process option when importing SVGs
+						img->fix_alpha_edges();
+					}
 					if (fd->mipmaps && !img->has_mipmaps()) {
 						img = tex.image->duplicate();
 						img->generate_mipmaps();

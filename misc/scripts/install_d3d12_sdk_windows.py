@@ -8,7 +8,7 @@ import urllib.request
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../"))
 
-from misc.utility.color import Ansi
+from misc.utility.color import Ansi, color_print
 
 # Base Godot dependencies path
 # If cross-compiling (no LOCALAPPDATA), we install in `bin`
@@ -42,7 +42,7 @@ if not os.path.exists(deps_folder):
     os.makedirs(deps_folder)
 
 # Mesa NIR
-print(f"{Ansi.BOLD}[1/3] Mesa NIR{Ansi.RESET}")
+color_print(f"{Ansi.BOLD}[1/3] Mesa NIR")
 if os.path.isfile(mesa_archive):
     os.remove(mesa_archive)
 print(f"Downloading Mesa NIR {mesa_filename} ...")
@@ -69,7 +69,7 @@ if dlltool == "":
     dlltool = shutil.which("x86_64-w64-mingw32-dlltool") or ""
 has_mingw = gendef != "" and dlltool != ""
 
-print(f"{Ansi.BOLD}[2/3] WinPixEventRuntime{Ansi.RESET}")
+color_print(f"{Ansi.BOLD}[2/3] WinPixEventRuntime")
 if os.path.isfile(pix_archive):
     os.remove(pix_archive)
 print(f"Downloading WinPixEventRuntime {pix_version} ...")
@@ -100,7 +100,7 @@ else:
 print(f"WinPixEventRuntime {pix_version} installed successfully.\n")
 
 # DirectX 12 Agility SDK
-print(f"{Ansi.BOLD}[3/3] DirectX 12 Agility SDK{Ansi.RESET}")
+color_print(f"{Ansi.BOLD}[3/3] DirectX 12 Agility SDK")
 if os.path.isfile(agility_sdk_archive):
     os.remove(agility_sdk_archive)
 print(f"Downloading DirectX 12 Agility SDK {agility_sdk_version} ...")
@@ -116,5 +116,5 @@ os.remove(agility_sdk_archive)
 print(f"DirectX 12 Agility SDK {agility_sdk_version} installed successfully.\n")
 
 # Complete message
-print(f'{Ansi.GREEN}All Direct3D 12 SDK components were installed to "{deps_folder}" successfully!{Ansi.RESET}')
-print(f'{Ansi.GREEN}You can now build Godot with Direct3D 12 support enabled by running "scons d3d12=yes".{Ansi.RESET}')
+color_print(f'{Ansi.GREEN}All Direct3D 12 SDK components were installed to "{deps_folder}" successfully!')
+color_print(f'{Ansi.GREEN}You can now build Godot with Direct3D 12 support enabled by running "scons d3d12=yes".')

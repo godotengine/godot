@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef CALLABLE_H
-#define CALLABLE_H
+#pragma once
 
 #include "core/object/object_id.h"
 #include "core/string/string_name.h"
@@ -136,6 +135,10 @@ public:
 	~Callable();
 };
 
+// Zero-constructing Callable initializes method and object to 0 (and thus empty).
+template <>
+struct is_zero_constructible<Callable> : std::true_type {};
+
 class CallableCustom {
 	friend class Callable;
 	SafeRefCount ref_count;
@@ -201,10 +204,12 @@ public:
 	Signal() {}
 };
 
+// Zero-constructing Signal initializes name and object to 0 (and thus empty).
+template <>
+struct is_zero_constructible<Signal> : std::true_type {};
+
 struct CallableComparator {
 	const Callable &func;
 
 	bool operator()(const Variant &p_l, const Variant &p_r) const;
 };
-
-#endif // CALLABLE_H

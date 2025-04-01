@@ -251,18 +251,16 @@ static bool _thread_pool_init_fn(void *user, ufbx_thread_pool_context ctx, const
 	return true;
 }
 
-static bool _thread_pool_run_fn(void *user, ufbx_thread_pool_context ctx, uint32_t group, uint32_t start_index, uint32_t count) {
+static void _thread_pool_run_fn(void *user, ufbx_thread_pool_context ctx, uint32_t group, uint32_t start_index, uint32_t count) {
 	ThreadPoolFBX *pool = (ThreadPoolFBX *)user;
 	ThreadPoolFBX::Group &pool_group = pool->groups[group];
 	pool_group.start_index = start_index;
 	pool_group.task_id = pool->pool->add_native_group_task(_thread_pool_task, &pool_group, (int)count, -1, true, "ufbx");
-	return true;
 }
 
-static bool _thread_pool_wait_fn(void *user, ufbx_thread_pool_context ctx, uint32_t group, uint32_t max_index) {
+static void _thread_pool_wait_fn(void *user, ufbx_thread_pool_context ctx, uint32_t group, uint32_t max_index) {
 	ThreadPoolFBX *pool = (ThreadPoolFBX *)user;
 	pool->pool->wait_for_group_task_completion(pool->groups[group].task_id);
-	return true;
 }
 
 String FBXDocument::_gen_unique_name(HashSet<String> &unique_names, const String &p_name) {
@@ -1658,8 +1656,7 @@ void FBXDocument::_generate_scene_node(Ref<FBXState> p_state, const GLTFNodeInde
 	// Add the node we generated and set the owner to the scene root.
 	p_scene_parent->add_child(current_node, true);
 	if (current_node != p_scene_root) {
-		Array args;
-		args.append(p_scene_root);
+		Array args = { p_scene_root };
 		current_node->propagate_call(StringName("set_owner"), args);
 	}
 	current_node->set_transform(fbx_node->transform);
@@ -1746,8 +1743,7 @@ void FBXDocument::_generate_skeleton_bone_node(Ref<FBXState> p_state, const GLTF
 		// Add the node we generated and set the owner to the scene root.
 		p_scene_parent->add_child(current_node, true);
 		if (current_node != p_scene_root) {
-			Array args;
-			args.append(p_scene_root);
+			Array args = { p_scene_root };
 			current_node->propagate_call(StringName("set_owner"), args);
 		}
 		// Do not set transform here. Transform is already applied to our bone.

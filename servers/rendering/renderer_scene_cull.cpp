@@ -2167,7 +2167,7 @@ void RendererSceneCull::_update_instance_lightmap_captures(Instance *p_instance)
 
 		Vector3 inner_pos = ((lm_pos - bounds.position) / bounds.size) * 2.0 - Vector3(1.0, 1.0, 1.0);
 
-		real_t blend = MAX(ABS(inner_pos.x), MAX(ABS(inner_pos.y), ABS(inner_pos.z)));
+		real_t blend = MAX(Math::abs(inner_pos.x), MAX(Math::abs(inner_pos.y), Math::abs(inner_pos.z)));
 		//make blend more rounded
 		blend = Math::lerp(inner_pos.length(), blend, blend);
 		blend *= blend;
@@ -2726,6 +2726,7 @@ void RendererSceneCull::render_camera(const Ref<RenderSceneBuffers> &p_render_bu
 		}
 
 		camera_data.set_camera(transform, projection, is_orthogonal, is_frustum, vaspect, jitter, taa_frame_count, camera->visible_layers);
+#ifndef XR_DISABLED
 	} else {
 		XRServer *xr_server = XRServer::get_singleton();
 
@@ -2763,6 +2764,7 @@ void RendererSceneCull::render_camera(const Ref<RenderSceneBuffers> &p_render_bu
 		} else {
 			// this won't be called (see fail check above) but keeping this comment to indicate we may support more then 2 views in the future...
 		}
+#endif // XR_DISABLED
 	}
 
 	RID environment = _render_get_environment(p_camera, p_scenario);
@@ -3665,7 +3667,7 @@ bool RendererSceneCull::_render_reflection_probe_step(Instance *p_instance, int 
 		float mesh_lod_threshold = RSG::light_storage->reflection_probe_get_mesh_lod_threshold(p_instance->base) / atlas_size;
 
 		Vector3 edge = view_normals[p_step] * probe_size / 2;
-		float distance = ABS(view_normals[p_step].dot(edge) - view_normals[p_step].dot(origin_offset)); //distance from origin offset to actual view distance limit
+		float distance = Math::abs(view_normals[p_step].dot(edge) - view_normals[p_step].dot(origin_offset)); //distance from origin offset to actual view distance limit
 
 		max_distance = MAX(max_distance, distance);
 

@@ -215,7 +215,7 @@
 			Texture that specifies how much surface emits light at a given point.
 		</member>
 		<member name="fixed_size" type="bool" setter="set_flag" getter="get_flag" default="false">
-			If [code]true[/code], the object is rendered at the same size regardless of distance.
+			If [code]true[/code], the object is rendered at the same size regardless of distance. The object's size on screen is the same as if the camera was [code]1.0[/code] units away from the object's origin, regardless of the actual distance from the camera. The [Camera3D]'s field of view (or [member Camera3D.size] when in orthogonal/frustum mode) still affects the size the object is drawn at.
 		</member>
 		<member name="grow" type="bool" setter="set_grow_enabled" getter="is_grow_enabled" default="false">
 			If [code]true[/code], enables the vertex grow setting. This can be used to create mesh-based outlines using a second material pass and its [member cull_mode] set to [constant CULL_FRONT]. See also [member grow_amount].

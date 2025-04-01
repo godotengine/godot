@@ -1522,7 +1522,7 @@ void RendererCanvasCull::canvas_item_add_texture_rect(RID p_item, const Rect2 &p
 	if (p_tile) {
 		rect->flags |= RendererCanvasRender::CANVAS_RECT_TILE;
 		rect->flags |= RendererCanvasRender::CANVAS_RECT_REGION;
-		rect->source = Rect2(0, 0, ABS(p_rect.size.width), ABS(p_rect.size.height));
+		rect->source = Rect2(0, 0, Math::abs(p_rect.size.width), Math::abs(p_rect.size.height));
 	}
 
 	if (p_rect.size.x < 0) {

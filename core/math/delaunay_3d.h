@@ -28,17 +28,15 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef DELAUNAY_3D_H
-#define DELAUNAY_3D_H
+#pragma once
 
-#include "core/io/file_access.h"
 #include "core/math/aabb.h"
 #include "core/math/projection.h"
 #include "core/math/vector3.h"
+#include "core/templates/list.h"
 #include "core/templates/local_vector.h"
 #include "core/templates/oa_hash_map.h"
 #include "core/templates/vector.h"
-#include "core/variant/variant.h"
 
 #include "thirdparty/misc/r128.h"
 
@@ -187,7 +185,7 @@ class Delaunay3D {
 			Plane p(p_points[p_simplex.points[i]], p_points[p_simplex.points[(i + 1) % 4]], p_points[p_simplex.points[(i + 2) % 4]]);
 			// This tolerance should not be smaller than the one used with
 			// Plane::has_point() when creating the LightmapGI probe BSP tree.
-			if (ABS(p.distance_to(p_points[p_simplex.points[(i + 3) % 4]])) < 0.001) {
+			if (Math::abs(p.distance_to(p_points[p_simplex.points[(i + 3) % 4]])) < 0.001) {
 				return true;
 			}
 		}
@@ -389,5 +387,3 @@ public:
 		return ret_simplices;
 	}
 };
-
-#endif // DELAUNAY_3D_H

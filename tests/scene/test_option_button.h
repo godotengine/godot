@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TEST_OPTION_BUTTON_H
-#define TEST_OPTION_BUTTON_H
+#pragma once
 
 #include "scene/gui/option_button.h"
 
@@ -83,7 +82,7 @@ TEST_CASE("[SceneTree][OptionButton] Single item") {
 	memdelete(test_opt);
 }
 
-TEST_CASE("[SceneTree][OptionButton] Complex structure") {
+TEST_CASE("[SceneTree][OptionButton] Many items") {
 	OptionButton *test_opt = memnew(OptionButton);
 
 	SUBCASE("Creating a complex structure and checking getters") {
@@ -128,9 +127,32 @@ TEST_CASE("[SceneTree][OptionButton] Complex structure") {
 		CHECK(test_opt->get_item_count() == 1);
 	}
 
+	SUBCASE("Getters and setters not related to structure") {
+		test_opt->add_item("regular", 2019);
+
+		Ref<Texture2D> test_icon = memnew(Texture2D);
+		test_opt->add_icon_item(test_icon, "icon", 3092);
+
+		// item_text.
+		test_opt->set_item_text(0, "example text");
+		CHECK(test_opt->get_item_text(0) == "example text");
+
+		// item_metadata.
+		Dictionary m;
+		m["bool"] = true;
+		m["String"] = "yes";
+		test_opt->set_item_metadata(1, m);
+		CHECK(test_opt->get_item_metadata(1) == m);
+
+		// item_tooltip.
+		test_opt->set_item_tooltip(0, "tooltip guide");
+		CHECK(test_opt->get_item_tooltip(0) == "tooltip guide");
+
+		test_opt->remove_item(1);
+		test_opt->remove_item(0);
+	}
+
 	memdelete(test_opt);
 }
 
 } // namespace TestOptionButton
-
-#endif // TEST_OPTION_BUTTON_H

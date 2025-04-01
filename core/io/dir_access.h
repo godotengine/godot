@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef DIR_ACCESS_H
-#define DIR_ACCESS_H
+#pragma once
 
 #include "core/object/ref_counted.h"
 #include "core/string/ustring.h"
@@ -169,10 +168,9 @@ public:
 
 	virtual bool is_case_sensitive(const String &p_path) const;
 	virtual bool is_bundle(const String &p_file) const { return false; }
+	virtual bool is_equivalent(const String &p_path_a, const String &p_path_b) const;
 
 public:
 	DirAccess() {}
 	virtual ~DirAccess();
 };
-
-#endif // DIR_ACCESS_H

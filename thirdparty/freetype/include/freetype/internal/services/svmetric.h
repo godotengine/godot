@@ -4,7 +4,7 @@
  *
  *   The FreeType services for metrics variations (specification).
  *
- * Copyright (C) 2016-2023 by
+ * Copyright (C) 2016-2024 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
  *
  * This file is part of the FreeType project, and may only be used,

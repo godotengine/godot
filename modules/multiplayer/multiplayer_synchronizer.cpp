@@ -100,7 +100,7 @@ void MultiplayerSynchronizer::_update_process() {
 }
 
 Node *MultiplayerSynchronizer::get_root_node() {
-	return root_node_cache.is_valid() ? Object::cast_to<Node>(ObjectDB::get_instance(root_node_cache)) : nullptr;
+	return root_node_cache.is_valid() ? ObjectDB::get_instance<Node>(root_node_cache) : nullptr;
 }
 
 void MultiplayerSynchronizer::reset() {

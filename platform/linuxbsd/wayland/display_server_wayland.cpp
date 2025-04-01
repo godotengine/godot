@@ -222,6 +222,9 @@ bool DisplayServerWayland::has_feature(Feature p_feature) const {
 		case FEATURE_NATIVE_DIALOG_FILE_MIME: {
 			return (portal_desktop && portal_desktop->is_supported() && portal_desktop->is_file_chooser_supported());
 		} break;
+		case FEATURE_NATIVE_COLOR_PICKER: {
+			return (portal_desktop && portal_desktop->is_supported() && portal_desktop->is_screenshot_supported());
+		} break;
 #endif
 
 #ifdef SPEECHD_ENABLED
@@ -302,11 +305,15 @@ bool DisplayServerWayland::is_dark_mode() const {
 	}
 }
 
+Color DisplayServerWayland::get_accent_color() const {
+	return portal_desktop->get_appearance_accent_color();
+}
+
 void DisplayServerWayland::set_system_theme_change_callback(const Callable &p_callable) {
 	portal_desktop->set_system_theme_change_callback(p_callable);
 }
 
-Error DisplayServerWayland::file_dialog_show(const String &p_title, const String &p_current_directory, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const Callable &p_callback) {
+Error DisplayServerWayland::file_dialog_show(const String &p_title, const String &p_current_directory, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const Callable &p_callback, WindowID p_window_id) {
 	WindowID window_id = MAIN_WINDOW_ID;
 	// TODO: Use window IDs for multiwindow support.
 
@@ -314,7 +321,7 @@ Error DisplayServerWayland::file_dialog_show(const String &p_title, const String
 	return portal_desktop->file_dialog_show(window_id, (ws ? ws->exported_handle : String()), p_title, p_current_directory, String(), p_filename, p_mode, p_filters, TypedArray<Dictionary>(), p_callback, false);
 }
 
-Error DisplayServerWayland::file_dialog_with_options_show(const String &p_title, const String &p_current_directory, const String &p_root, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const TypedArray<Dictionary> &p_options, const Callable &p_callback) {
+Error DisplayServerWayland::file_dialog_with_options_show(const String &p_title, const String &p_current_directory, const String &p_root, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const TypedArray<Dictionary> &p_options, const Callable &p_callback, WindowID p_window_id) {
 	WindowID window_id = MAIN_WINDOW_ID;
 	// TODO: Use window IDs for multiwindow support.
 
@@ -1165,6 +1172,14 @@ Key DisplayServerWayland::keyboard_get_keycode_from_physical(Key p_keycode) cons
 	return key;
 }
 
+bool DisplayServerWayland::color_picker(const Callable &p_callback) {
+	WindowID window_id = MAIN_WINDOW_ID;
+	// TODO: Use window IDs for multiwindow support.
+
+	WaylandThread::WindowState *ws = wayland_thread.wl_surface_get_window_state(wayland_thread.window_get_wl_surface(window_id));
+	return portal_desktop->color_picker((ws ? ws->exported_handle : String()), p_callback);
+}
+
 void DisplayServerWayland::try_suspend() {
 	// Due to various reasons, we manually handle display synchronization by
 	// waiting for a frame event (request to draw) or, if available, the actual
@@ -1325,7 +1340,7 @@ void DisplayServerWayland::process_events() {
 
 #ifdef DBUS_ENABLED
 	if (portal_desktop) {
-		portal_desktop->process_file_dialog_callbacks();
+		portal_desktop->process_callbacks();
 	}
 #endif
 

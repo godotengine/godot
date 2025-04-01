@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TEST_CALLABLE_H
-#define TEST_CALLABLE_H
+#pragma once
 
 #include "core/object/class_db.h"
 #include "core/object/object.h"
@@ -155,11 +154,7 @@ public:
 	}
 
 	static String get_output(const Callable &p_callable) {
-		Array effective_args;
-		effective_args.push_back(7);
-		effective_args.push_back(8);
-		effective_args.push_back(9);
-
+		Array effective_args = { 7, 8, 9 };
 		effective_args.resize(3 - p_callable.get_unbound_arguments_count());
 		effective_args.append_array(p_callable.get_bound_arguments());
 
@@ -200,5 +195,3 @@ TEST_CASE("[Callable] Bound and unbound argument count") {
 }
 
 } // namespace TestCallable
-
-#endif // TEST_CALLABLE_H

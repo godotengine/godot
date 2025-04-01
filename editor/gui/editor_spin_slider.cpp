@@ -95,7 +95,7 @@ void EditorSpinSlider::gui_input(const Ref<InputEvent> &p_event) {
 			}
 			grabbing_spinner_dist_cache += diff_x * grabbing_spinner_speed;
 
-			if (!grabbing_spinner && ABS(grabbing_spinner_dist_cache) > 4 * grabbing_spinner_speed * EDSCALE) {
+			if (!grabbing_spinner && Math::abs(grabbing_spinner_dist_cache) > 4 * grabbing_spinner_speed * EDSCALE) {
 				Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_CAPTURED);
 				grabbing_spinner = true;
 			}
@@ -457,6 +457,8 @@ void EditorSpinSlider::_notification(int p_what) {
 			_update_value_input_stylebox();
 		} break;
 
+		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
+		case NOTIFICATION_TRANSLATION_CHANGED:
 		case NOTIFICATION_THEME_CHANGED: {
 			_update_value_input_stylebox();
 		} break;

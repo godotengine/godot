@@ -89,11 +89,35 @@ float CalcMSLE(float3 a, float3 b) {
 
 	return result;
 }
+
+// Adapt the log function to make sense when a < 0
+float3 customLog2(float3 a) {
+	return float3(
+			a.x >= 0 ? log2(a.x + 1.0f) : -log2(-a.x + 1.0f),
+			a.y >= 0 ? log2(a.y + 1.0f) : -log2(-a.y + 1.0f),
+			a.z >= 0 ? log2(a.z + 1.0f) : -log2(-a.z + 1.0f));
+}
+
+// Inverse of customLog2()
+float3 customExp2(float3 a) {
+	return float3(
+			a.x >= 0 ? exp2(a.x) - 1.0f : -(exp2(-a.x) - 1.0f),
+			a.y >= 0 ? exp2(a.y) - 1.0f : -(exp2(-a.y) - 1.0f),
+			a.z >= 0 ? exp2(a.z) - 1.0f : -(exp2(-a.z) - 1.0f));
+}
 #else
 float CalcMSLE(float3 a, float3 b) {
 	float3 err = log2((b + 1.0f) / (a + 1.0f));
 	err = err * err;
 	return err.x + err.y + err.z;
+}
+
+float3 customLog2(float3 a) {
+	return log2(a + 1.0f);
+}
+
+float3 customExp2(float3 a) {
+	return exp2(a) - 1.0f;
 }
 #endif
 
@@ -272,15 +296,15 @@ void EncodeP1(inout uint4 block, inout float blockMSLE, float3 texels[16]) {
 		refinedBlockMax = max(refinedBlockMax, texels[i] == blockMax ? refinedBlockMax : texels[i]);
 	}
 
-	float3 logBlockMax = log2(blockMax + 1.0f);
-	float3 logBlockMin = log2(blockMin + 1.0f);
-	float3 logRefinedBlockMax = log2(refinedBlockMax + 1.0f);
-	float3 logRefinedBlockMin = log2(refinedBlockMin + 1.0f);
+	float3 logBlockMax = customLog2(blockMax);
+	float3 logBlockMin = customLog2(blockMin);
+	float3 logRefinedBlockMax = customLog2(refinedBlockMax);
+	float3 logRefinedBlockMin = customLog2(refinedBlockMin);
 	float3 logBlockMaxExt = (logBlockMax - logBlockMin) * (1.0f / 32.0f);
 	logBlockMin += min(logRefinedBlockMin - logBlockMin, logBlockMaxExt);
 	logBlockMax -= min(logBlockMax - logRefinedBlockMax, logBlockMaxExt);
-	blockMin = exp2(logBlockMin) - 1.0f;
-	blockMax = exp2(logBlockMax) - 1.0f;
+	blockMin = customExp2(logBlockMin);
+	blockMax = customExp2(logBlockMax);
 
 	float3 blockDir = blockMax - blockMin;
 	blockDir = blockDir / (blockDir.x + blockDir.y + blockDir.z);

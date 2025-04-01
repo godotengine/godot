@@ -173,11 +173,9 @@ int AudioStreamInteractive::get_clip_auto_advance_next_clip(int p_clip) const {
 // TRANSITIONS
 
 void AudioStreamInteractive::_set_transitions(const Dictionary &p_transitions) {
-	List<Variant> keys;
-	p_transitions.get_key_list(&keys);
-	for (const Variant &K : keys) {
-		Vector2i k = K;
-		Dictionary data = p_transitions[K];
+	for (const KeyValue<Variant, Variant> &kv : p_transitions) {
+		Vector2i k = kv.key;
+		Dictionary data = kv.value;
 		ERR_CONTINUE(!data.has("from_time"));
 		ERR_CONTINUE(!data.has("to_time"));
 		ERR_CONTINUE(!data.has("fade_mode"));

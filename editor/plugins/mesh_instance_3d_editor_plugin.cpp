@@ -133,7 +133,7 @@ void MeshInstance3DEditor::_create_collision_shape() {
 			break;
 	}
 
-	List<Node *> selection = editor_selection->get_selected_node_list();
+	List<Node *> selection = editor_selection->get_top_selected_node_list();
 
 	bool verbose = false;
 	if (selection.is_empty()) {
@@ -729,7 +729,4 @@ MeshInstance3DEditorPlugin::MeshInstance3DEditorPlugin() {
 	EditorNode::get_singleton()->get_gui_base()->add_child(mesh_editor);
 
 	mesh_editor->options->hide();
-}
-
-MeshInstance3DEditorPlugin::~MeshInstance3DEditorPlugin() {
 }

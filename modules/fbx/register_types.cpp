@@ -61,10 +61,6 @@ void initialize_fbx_module(ModuleInitializationLevel p_level) {
 
 #ifdef TOOLS_ENABLED
 	if (p_level == MODULE_INITIALIZATION_LEVEL_EDITOR) {
-		// Editor-specific API.
-		ClassDB::APIType prev_api = ClassDB::get_current_api();
-		ClassDB::set_current_api(ClassDB::API_EDITOR);
-
 		GDREGISTER_CLASS(EditorSceneFormatImporterUFBX);
 
 		GLOBAL_DEF_RST_BASIC("filesystem/import/fbx2gltf/enabled", true);
@@ -72,7 +68,6 @@ void initialize_fbx_module(ModuleInitializationLevel p_level) {
 		GLOBAL_DEF_RST("filesystem/import/fbx2gltf/enabled.android", false);
 		GLOBAL_DEF_RST("filesystem/import/fbx2gltf/enabled.web", false);
 
-		ClassDB::set_current_api(prev_api);
 		EditorNode::add_init_callback(_editor_init);
 	}
 #endif // TOOLS_ENABLED

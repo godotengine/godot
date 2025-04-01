@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TEXT_SERVER_H
-#define TEXT_SERVER_H
+#pragma once
 
 #include "core/io/image.h"
 #include "core/object/ref_counted.h"
@@ -109,8 +108,16 @@ public:
 		BREAK_WORD_BOUND = 1 << 1,
 		BREAK_GRAPHEME_BOUND = 1 << 2,
 		BREAK_ADAPTIVE = 1 << 3,
+#ifndef DISABLE_DEPRECATED
 		BREAK_TRIM_EDGE_SPACES = 1 << 4,
+#else
+	// RESERVED = 1 << 4,
+#endif
 		BREAK_TRIM_INDENT = 1 << 5,
+		BREAK_TRIM_START_EDGE_SPACES = 1 << 6,
+		BREAK_TRIM_END_EDGE_SPACES = 1 << 7,
+
+		BREAK_TRIM_MASK = BREAK_TRIM_INDENT | BREAK_TRIM_START_EDGE_SPACES | BREAK_TRIM_END_EDGE_SPACES,
 	};
 
 	enum OverrunBehavior {
@@ -119,6 +126,8 @@ public:
 		OVERRUN_TRIM_WORD,
 		OVERRUN_TRIM_ELLIPSIS,
 		OVERRUN_TRIM_WORD_ELLIPSIS,
+		OVERRUN_TRIM_ELLIPSIS_FORCE,
+		OVERRUN_TRIM_WORD_ELLIPSIS_FORCE,
 	};
 
 	enum TextOverrunFlag {
@@ -668,5 +677,3 @@ VARIANT_ENUM_CAST(TextServer::FixedSizeScaleMode);
 
 GDVIRTUAL_NATIVE_PTR(Glyph);
 GDVIRTUAL_NATIVE_PTR(CaretInfo);
-
-#endif // TEXT_SERVER_H

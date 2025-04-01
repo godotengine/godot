@@ -699,24 +699,12 @@ bool Basis::is_equal_approx(const Basis &p_basis) const {
 	return rows[0].is_equal_approx(p_basis.rows[0]) && rows[1].is_equal_approx(p_basis.rows[1]) && rows[2].is_equal_approx(p_basis.rows[2]);
 }
 
+bool Basis::is_same(const Basis &p_basis) const {
+	return rows[0].is_same(p_basis.rows[0]) && rows[1].is_same(p_basis.rows[1]) && rows[2].is_same(p_basis.rows[2]);
+}
+
 bool Basis::is_finite() const {
 	return rows[0].is_finite() && rows[1].is_finite() && rows[2].is_finite();
-}
-
-bool Basis::operator==(const Basis &p_matrix) const {
-	for (int i = 0; i < 3; i++) {
-		for (int j = 0; j < 3; j++) {
-			if (rows[i][j] != p_matrix.rows[i][j]) {
-				return false;
-			}
-		}
-	}
-
-	return true;
-}
-
-bool Basis::operator!=(const Basis &p_matrix) const {
-	return (!(*this == p_matrix));
 }
 
 Basis::operator String() const {

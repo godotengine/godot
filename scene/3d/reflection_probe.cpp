@@ -105,7 +105,7 @@ void ReflectionProbe::set_size(const Vector3 &p_size) {
 			half_size = 0.01;
 		}
 
-		if (half_size - 0.01 < ABS(origin_offset[i])) {
+		if (half_size - 0.01 < Math::abs(origin_offset[i])) {
 			origin_offset[i] = SIGN(origin_offset[i]) * (half_size - 0.01);
 		}
 	}
@@ -125,7 +125,7 @@ void ReflectionProbe::set_origin_offset(const Vector3 &p_offset) {
 
 	for (int i = 0; i < 3; i++) {
 		float half_size = size[i] / 2;
-		if (half_size - 0.01 < ABS(origin_offset[i])) {
+		if (half_size - 0.01 < Math::abs(origin_offset[i])) {
 			origin_offset[i] = SIGN(origin_offset[i]) * (half_size - 0.01);
 		}
 	}

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef DISPLAY_SERVER_MACOS_H
-#define DISPLAY_SERVER_MACOS_H
+#pragma once
 
 #include "core/input/input.h"
 #include "servers/display_server.h"
@@ -39,16 +38,16 @@
 #include "gl_manager_macos_legacy.h"
 #endif // GLES3_ENABLED
 
-#include "native_menu_macos.h"
+#import "native_menu_macos.h"
 
 #if defined(RD_ENABLED)
 #include "servers/rendering/rendering_device.h"
 
 #if defined(VULKAN_ENABLED)
-#include "rendering_context_driver_vulkan_macos.h"
+#import "rendering_context_driver_vulkan_macos.h"
 #endif // VULKAN_ENABLED
 #if defined(METAL_ENABLED)
-#include "drivers/metal/rendering_context_driver_metal.h"
+#import "drivers/metal/rendering_context_driver_metal.h"
 #endif
 #endif // RD_ENABLED
 
@@ -65,7 +64,7 @@
 #undef CursorShape
 
 class DisplayServerMacOS : public DisplayServer {
-	// No need to register with GDCLASS, it's platform-specific and nothing is added.
+	GDCLASS(DisplayServerMacOS, DisplayServer); // Note: required for Object::cast_to.
 
 	_THREAD_SAFE_CLASS_
 
@@ -236,7 +235,7 @@ private:
 
 	static NSCursor *_cursor_from_selector(SEL p_selector, SEL p_fallback = nil);
 
-	Error _file_dialog_with_options_show(const String &p_title, const String &p_current_directory, const String &p_root, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const TypedArray<Dictionary> &p_options, const Callable &p_callback, bool p_options_in_cb);
+	Error _file_dialog_with_options_show(const String &p_title, const String &p_current_directory, const String &p_root, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const TypedArray<Dictionary> &p_options, const Callable &p_callback, bool p_options_in_cb, WindowID p_window_id);
 
 public:
 	void menu_callback(id p_sender);
@@ -254,6 +253,7 @@ public:
 	void send_event(NSEvent *p_event);
 	void send_window_event(const WindowData &p_wd, WindowEvent p_event);
 	void release_pressed_events();
+	void sync_mouse_state();
 	void get_key_modifier_state(unsigned int p_macos_state, Ref<InputEventWithModifiers> r_state) const;
 	void update_mouse_pos(WindowData &p_wd, NSPoint p_location_in_window);
 	void push_to_key_event_buffer(const KeyEvent &p_event);
@@ -303,8 +303,8 @@ public:
 	virtual Error dialog_show(String p_title, String p_description, Vector<String> p_buttons, const Callable &p_callback) override;
 	virtual Error dialog_input_text(String p_title, String p_description, String p_partial, const Callable &p_callback) override;
 
-	virtual Error file_dialog_show(const String &p_title, const String &p_current_directory, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const Callable &p_callback) override;
-	virtual Error file_dialog_with_options_show(const String &p_title, const String &p_current_directory, const String &p_root, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const TypedArray<Dictionary> &p_options, const Callable &p_callback) override;
+	virtual Error file_dialog_show(const String &p_title, const String &p_current_directory, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const Callable &p_callback, WindowID p_window_id) override;
+	virtual Error file_dialog_with_options_show(const String &p_title, const String &p_current_directory, const String &p_root, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const TypedArray<Dictionary> &p_options, const Callable &p_callback, WindowID p_window_id) override;
 
 	virtual void beep() const override;
 
@@ -442,6 +442,7 @@ public:
 	virtual Key keyboard_get_label_from_physical(Key p_keycode) const override;
 	virtual void show_emoji_and_symbol_picker() const override;
 
+	void _process_events(bool p_pump);
 	virtual void process_events() override;
 	virtual void force_process_and_drop_events() override;
 
@@ -469,5 +470,3 @@ public:
 	DisplayServerMacOS(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, int64_t p_parent_window, Error &r_error);
 	~DisplayServerMacOS();
 };
-
-#endif // DISPLAY_SERVER_MACOS_H

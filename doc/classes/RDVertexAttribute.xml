@@ -9,7 +9,7 @@
 	<tutorials>
 	</tutorials>
 	<members>
-		<member name="format" type="int" setter="set_format" getter="get_format" enum="RenderingDevice.DataFormat" default="218">
+		<member name="format" type="int" setter="set_format" getter="get_format" enum="RenderingDevice.DataFormat" default="232">
 			The way that this attribute's data is interpreted when sent to a shader.
 		</member>
 		<member name="frequency" type="int" setter="set_frequency" getter="get_frequency" enum="RenderingDevice.VertexFrequency" default="0">

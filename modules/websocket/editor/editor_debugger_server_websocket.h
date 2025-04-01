@@ -28,10 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef EDITOR_DEBUGGER_SERVER_WEBSOCKET_H
-#define EDITOR_DEBUGGER_SERVER_WEBSOCKET_H
-
-#ifdef TOOLS_ENABLED
+#pragma once
 
 #include "../websocket_peer.h"
 
@@ -64,7 +61,3 @@ public:
 	EditorDebuggerServerWebSocket();
 	~EditorDebuggerServerWebSocket();
 };
-
-#endif // TOOLS_ENABLED
-
-#endif // EDITOR_DEBUGGER_SERVER_WEBSOCKET_H

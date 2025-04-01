@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef DOC_TOOLS_H
-#define DOC_TOOLS_H
+#pragma once
 
 #include "core/doc_data.h"
 #include "core/templates/rb_set.h"
@@ -45,6 +44,7 @@ public:
 	void merge_from(const DocTools &p_data);
 	void add_doc(const DocData::ClassDoc &p_class_doc);
 	void remove_doc(const String &p_class_name);
+	void remove_script_doc_by_path(const String &p_path);
 	bool has_doc(const String &p_class_name);
 	enum GenerateFlags {
 		GENERATE_FLAG_SKIP_BASIC_TYPES = (1 << 0),
@@ -58,5 +58,3 @@ public:
 	Error load_compressed(const uint8_t *p_data, int p_compressed_size, int p_uncompressed_size);
 	Error load_xml(const uint8_t *p_data, int p_size);
 };
-
-#endif // DOC_TOOLS_H

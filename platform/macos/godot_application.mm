@@ -28,9 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "godot_application.h"
+#import "godot_application.h"
 
-#include "display_server_macos.h"
+#import "display_server_macos.h"
 
 @implementation GodotApplication
 
@@ -81,7 +81,7 @@
 		} break;
 	}
 
-	DisplayServerMacOS *ds = (DisplayServerMacOS *)DisplayServer::get_singleton();
+	DisplayServerMacOS *ds = Object::cast_to<DisplayServerMacOS>(DisplayServer::get_singleton());
 	if (ds && keycode != Key::NONE) {
 		DisplayServerMacOS::KeyEvent ke;
 
@@ -109,7 +109,7 @@
 		[self mediaKeyEvent:keyCode state:keyState repeat:keyRepeat];
 	}
 
-	DisplayServerMacOS *ds = (DisplayServerMacOS *)DisplayServer::get_singleton();
+	DisplayServerMacOS *ds = Object::cast_to<DisplayServerMacOS>(DisplayServer::get_singleton());
 	if (ds) {
 		if ([event type] == NSEventTypeLeftMouseDown || [event type] == NSEventTypeRightMouseDown || [event type] == NSEventTypeOtherMouseDown) {
 			if (ds->mouse_process_popups()) {
