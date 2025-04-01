@@ -4333,7 +4333,7 @@ static Error _refactor_rename_symbol_from_base(GDScriptParser::RefactorRenameCon
 
 						// We need to make sure that the cursor is at least on or after the
 						// local variable definition. (i.e. deal with shadowing)
-						if (start_line >= local_start_line && start_column >= local_start_column) {
+						if ((start_line > local_start_line) || (start_line == local_start_line && start_column >= local_start_column)) {
 							LocalVector<GDScriptParser::Node *> nodes;
 							suite->get_nodes(nodes);
 							for (GDScriptParser::Node *node : nodes) {
