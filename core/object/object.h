@@ -389,13 +389,29 @@ struct ObjectGDExtension {
  * much alone defines the object model.
  */
 
+// This is a barebones version of GDCLASS,
+// only intended for simple classes deriving from Object
+// so that they can support the `Object::cast_to()` method.
+#define GDSOFTCLASS(m_class, m_inherits)                                             \
+public:                                                                              \
+	typedef m_class self_type;                                                       \
+	static _FORCE_INLINE_ void *get_class_ptr_static() {                             \
+		static int ptr;                                                              \
+		return &ptr;                                                                 \
+	}                                                                                \
+	virtual bool is_class_ptr(void *p_ptr) const override {                          \
+		return (p_ptr == get_class_ptr_static()) || m_inherits::is_class_ptr(p_ptr); \
+	}                                                                                \
+                                                                                     \
+private:
+
 #define GDCLASS(m_class, m_inherits)                                                                                                        \
+	GDSOFTCLASS(m_class, m_inherits)                                                                                                        \
 private:                                                                                                                                    \
 	void operator=(const m_class &p_rval) {}                                                                                                \
 	friend class ::ClassDB;                                                                                                                 \
                                                                                                                                             \
 public:                                                                                                                                     \
-	typedef m_class self_type;                                                                                                              \
 	static constexpr bool _class_is_enabled = !bool(GD_IS_DEFINED(ClassDB_Disable_##m_class)) && m_inherits::_class_is_enabled;             \
 	virtual String get_class() const override {                                                                                             \
 		if (_get_extension()) {                                                                                                             \
@@ -409,10 +425,6 @@ public:                                                                         
 			StringName::assign_static_unique_class_name(&_class_name_static, #m_class);                                                     \
 		}                                                                                                                                   \
 		return &_class_name_static;                                                                                                         \
-	}                                                                                                                                       \
-	static _FORCE_INLINE_ void *get_class_ptr_static() {                                                                                    \
-		static int ptr;                                                                                                                     \
-		return &ptr;                                                                                                                        \
 	}                                                                                                                                       \
 	static _FORCE_INLINE_ String get_class_static() {                                                                                       \
 		return String(#m_class);                                                                                                            \
@@ -430,10 +442,6 @@ public:                                                                         
 		}                                                                                                                                   \
 		return (p_class == (#m_class)) ? true : m_inherits::is_class(p_class);                                                              \
 	}                                                                                                                                       \
-	virtual bool is_class_ptr(void *p_ptr) const override {                                                                                 \
-		return (p_ptr == get_class_ptr_static()) ? true : m_inherits::is_class_ptr(p_ptr);                                                  \
-	}                                                                                                                                       \
-                                                                                                                                            \
 	static void get_valid_parents_static(List<String> *p_parents) {                                                                         \
 		if (m_class::_get_valid_parents_static != m_inherits::_get_valid_parents_static) {                                                  \
 			m_class::_get_valid_parents_static(p_parents);                                                                                  \
@@ -443,9 +451,6 @@ public:                                                                         
 	}                                                                                                                                       \
                                                                                                                                             \
 protected:                                                                                                                                  \
-	virtual bool _derives_from(const std::type_info &p_type_info) const override {                                                          \
-		return typeid(m_class) == p_type_info || m_inherits::_derives_from(p_type_info);                                                    \
-	}                                                                                                                                       \
 	_FORCE_INLINE_ static void (*_get_bind_methods())() {                                                                                   \
 		return &m_class::_bind_methods;                                                                                                     \
 	}                                                                                                                                       \
@@ -774,12 +779,6 @@ protected:
 	mutable VirtualMethodTracker *virtual_method_list = nullptr;
 #endif
 
-	virtual bool _derives_from(const std::type_info &p_type_info) const {
-		// This could just be false because nobody would reasonably ask if an Object subclass derives from Object,
-		// but it would be wrong if somebody actually does ask. It's not too slow to check anyway.
-		return typeid(Object) == p_type_info;
-	}
-
 public: // Should be protected, but bug in clang++.
 	static void initialize_class();
 	_FORCE_INLINE_ static void register_custom_data_to_otdb() {}
@@ -802,23 +801,15 @@ public:
 		// This is like dynamic_cast, but faster.
 		// The reason is that we can assume no virtual and multiple inheritance.
 		static_assert(std::is_base_of_v<Object, T>, "T must be derived from Object");
-		if constexpr (std::is_same_v<std::decay_t<T>, typename T::self_type>) {
-			return p_object && p_object->_derives_from(typeid(T)) ? static_cast<T *>(p_object) : nullptr;
-		} else {
-			// T does not use GDCLASS, must fall back to dynamic_cast.
-			return p_object ? dynamic_cast<T *>(p_object) : nullptr;
-		}
+		static_assert(std::is_same_v<std::decay_t<T>, typename T::self_type>, "T must use GDCLASS or GDSOFTCLASS");
+		return p_object && p_object->is_class_ptr(T::get_class_ptr_static()) ? static_cast<T *>(p_object) : nullptr;
 	}
 
 	template <typename T>
 	static const T *cast_to(const Object *p_object) {
 		static_assert(std::is_base_of_v<Object, T>, "T must be derived from Object");
-		if constexpr (std::is_same_v<std::decay_t<T>, typename T::self_type>) {
-			return p_object && p_object->_derives_from(typeid(T)) ? static_cast<const T *>(p_object) : nullptr;
-		} else {
-			// T does not use GDCLASS, must fall back to dynamic_cast.
-			return p_object ? dynamic_cast<const T *>(p_object) : nullptr;
-		}
+		static_assert(std::is_same_v<std::decay_t<T>, typename T::self_type>, "T must use GDCLASS or GDSOFTCLASS");
+		return p_object && p_object->is_class_ptr(T::get_class_ptr_static()) ? static_cast<const T *>(p_object) : nullptr;
 	}
 
 	enum {

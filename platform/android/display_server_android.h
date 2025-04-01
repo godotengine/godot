@@ -38,7 +38,7 @@ class RenderingDevice;
 #endif
 
 class DisplayServerAndroid : public DisplayServer {
-	// No need to register with GDCLASS, it's platform-specific and nothing is added.
+	GDSOFTCLASS(DisplayServerAndroid, DisplayServer);
 
 	String rendering_driver;
 
