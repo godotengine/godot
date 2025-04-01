@@ -859,6 +859,8 @@ void OS_MacOS::run() {
 }
 
 void OS_MacOS::start_main() {
+	godot_init_profiler();
+
 	Error err;
 	@autoreleasepool {
 		err = Main::setup(execpath, argc, argv);
