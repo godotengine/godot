@@ -368,22 +368,20 @@ Color Color::html(const String &p_rgba) {
 bool Color::html_is_valid(const String &p_color) {
 	String color = p_color;
 
-	if (color.length() == 0) {
+	if (color.is_empty()) {
 		return false;
 	}
-	if (color[0] == '#') {
-		color = color.substr(1);
-	}
 
-	// Check if the amount of hex digits is valid.
+	int current_pos = (color[0] == '#') ? 1 : 0;
 	int len = color.length();
-	if (!(len == 3 || len == 4 || len == 6 || len == 8)) {
+	int num_of_digits = len - current_pos;
+	if (!(num_of_digits == 3 || num_of_digits == 4 || num_of_digits == 6 || num_of_digits == 8)) {
 		return false;
 	}
 
 	// Check if each hex digit is valid.
-	for (int i = 0; i < len; i++) {
-		if (_parse_col4(color, i) == -1) {
+	for (int i = current_pos; i < len; i++) {
+		if (!is_hex_digit(p_color[i])) {
 			return false;
 		}
 	}
