@@ -245,37 +245,62 @@ String DisplayServerWayland::get_name() const {
 
 #ifdef SPEECHD_ENABLED
 
+void DisplayServerWayland::initialize_tts() const {
+	const_cast<DisplayServerWayland *>(this)->tts = memnew(TTS_Linux);
+}
+
 bool DisplayServerWayland::tts_is_speaking() const {
+	if (unlikely(!tts)) {
+		initialize_tts();
+	}
 	ERR_FAIL_NULL_V(tts, false);
 	return tts->is_speaking();
 }
 
 bool DisplayServerWayland::tts_is_paused() const {
+	if (unlikely(!tts)) {
+		initialize_tts();
+	}
 	ERR_FAIL_NULL_V(tts, false);
 	return tts->is_paused();
 }
 
 TypedArray<Dictionary> DisplayServerWayland::tts_get_voices() const {
+	if (unlikely(!tts)) {
+		initialize_tts();
+	}
 	ERR_FAIL_NULL_V(tts, TypedArray<Dictionary>());
 	return tts->get_voices();
 }
 
 void DisplayServerWayland::tts_speak(const String &p_text, const String &p_voice, int p_volume, float p_pitch, float p_rate, int p_utterance_id, bool p_interrupt) {
+	if (unlikely(!tts)) {
+		initialize_tts();
+	}
 	ERR_FAIL_NULL(tts);
 	tts->speak(p_text, p_voice, p_volume, p_pitch, p_rate, p_utterance_id, p_interrupt);
 }
 
 void DisplayServerWayland::tts_pause() {
+	if (unlikely(!tts)) {
+		initialize_tts();
+	}
 	ERR_FAIL_NULL(tts);
 	tts->pause();
 }
 
 void DisplayServerWayland::tts_resume() {
+	if (unlikely(!tts)) {
+		initialize_tts();
+	}
 	ERR_FAIL_NULL(tts);
 	tts->resume();
 }
 
 void DisplayServerWayland::tts_stop() {
+	if (unlikely(!tts)) {
+		initialize_tts();
+	}
 	ERR_FAIL_NULL(tts);
 	tts->stop();
 }
@@ -1439,7 +1464,10 @@ DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, Win
 
 #ifdef SPEECHD_ENABLED
 	// Init TTS
-	tts = memnew(TTS_Linux);
+	bool tts_enabled = GLOBAL_GET("audio/general/text_to_speech");
+	if (tts_enabled) {
+		initialize_tts();
+	}
 #endif
 
 	rendering_driver = p_rendering_driver;

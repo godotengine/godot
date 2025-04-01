@@ -394,6 +394,8 @@ class DisplayServerX11 : public DisplayServer {
 	void _set_window_taskbar_pager_enabled(Window p_window, bool p_enabled);
 	Rect2i _screens_get_full_rect() const;
 
+	void initialize_tts() const;
+
 protected:
 	void _window_changed(XEvent *event);
 
