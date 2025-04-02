@@ -146,8 +146,9 @@ void AudioStreamPlayer3D::_calc_output_vol(const Vector3 &source_dir, real_t tig
 	}
 }
 
-// set the volume to cosine of half the angle from the source to the left/right speaker direction ignoring elevation
-// panning_strength<1 moves the cosx value towards 0 till the ratio of the speakers equals it
+// Set the volume to cosine of half horizontal the angle from the source to the left/right speaker direction ignoring elevation.
+// Then scale `cosx` so that greatest ratio of the speaker volumes is `1-panning_strength`.
+// See https://github.com/godotengine/godot/issues/103989 for evidence that this is the most standard implementation.
 AudioFrame AudioStreamPlayer3D::_calc_output_vol_stereo(const Vector3 &source_dir, real_t panning_strength) {
 	double flatrad = sqrt(source_dir.x * source_dir.x + source_dir.z * source_dir.z);
 	double g = CLAMP((1.0 - panning_strength) * (1.0 - panning_strength), 0.0, 1.0);
