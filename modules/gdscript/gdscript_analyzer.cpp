@@ -5793,6 +5793,8 @@ bool GDScriptAnalyzer::get_function_signature(GDScriptParser::Node *p_source, bo
 		if (native_method && r_native_class) {
 			*r_native_class = native_method->get_instance_class();
 		}
+
+		// TODO: look up base_native in here, and then its class to see if we can get its function doc?
 #endif
 		return valid;
 	}
