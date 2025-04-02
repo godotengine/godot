@@ -116,12 +116,12 @@ Error DAPeer::send_data() {
 		if (!data.has("seq")) {
 			data["seq"] = ++seq;
 		}
-		String formatted_data = format_output(data);
+		const Vector<uint8_t> &formatted_data = format_output(data);
 
 		int data_sent = 0;
-		while (data_sent < formatted_data.length()) {
+		while (data_sent < formatted_data.size()) {
 			int curr_sent = 0;
-			Error err = connection->put_partial_data((const uint8_t *)formatted_data.utf8().get_data(), formatted_data.size() - data_sent - 1, curr_sent);
+			Error err = connection->put_partial_data(formatted_data.ptr() + data_sent, formatted_data.size() - data_sent, curr_sent);
 			if (err != OK) {
 				return err;
 			}
@@ -132,15 +132,12 @@ Error DAPeer::send_data() {
 	return OK;
 }
 
-String DAPeer::format_output(const Dictionary &p_params) const {
-	String response = Variant(p_params).to_json_string();
-	String header = "Content-Length: ";
-	CharString charstr = response.utf8();
-	size_t len = charstr.length();
-	header += itos(len);
-	header += "\r\n\r\n";
+Vector<uint8_t> DAPeer::format_output(const Dictionary &p_params) const {
+	const Vector<uint8_t> &content = Variant(p_params).to_json_string().to_utf8_buffer();
+	Vector<uint8_t> response = vformat("Content-Length: %d\r\n\r\n", content.size()).to_utf8_buffer();
 
-	return header + response;
+	response.append_array(content);
+	return response;
 }
 
 Error DebugAdapterProtocol::on_client_connected() {
