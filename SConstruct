@@ -977,8 +977,8 @@ if env.editor_build:
 
 if env["disable_3d"]:
     env.Append(CPPDEFINES=["_3D_DISABLED"])
-    env["disable_physics_3d"] = True
     env["disable_navigation_3d"] = True
+    env["disable_physics_3d"] = True
     env["disable_xr"] = True
 if env["disable_advanced_gui"]:
     env.Append(CPPDEFINES=["ADVANCED_GUI_DISABLED"])
