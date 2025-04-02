@@ -55,6 +55,7 @@ class Camera2DEditor : public Control {
 protected:
 	static void _bind_methods();
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 
 public:
 	void edit(Camera2D *p_camera);

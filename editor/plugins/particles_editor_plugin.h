@@ -62,6 +62,7 @@ protected:
 	Node *edited_node = nullptr;
 
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 
 	bool need_show_lifetime_dialog(SpinBox *p_seconds);
 	virtual void _menu_callback(int p_idx);
@@ -109,6 +110,7 @@ protected:
 	void _get_base_emission_mask(PackedVector2Array &r_valid_positions, PackedVector2Array &r_valid_normals, PackedByteArray &r_valid_colors, Vector2i &r_image_size);
 	virtual void _generate_emission_mask() = 0;
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 	void _selection_changed();
 
 public:

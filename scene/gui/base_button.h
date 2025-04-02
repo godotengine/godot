@@ -84,6 +84,7 @@ protected:
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 
 	bool _was_pressed_by_mouse() const;
 

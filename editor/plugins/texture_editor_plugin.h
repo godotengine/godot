@@ -64,6 +64,7 @@ private:
 
 protected:
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 	void _update_texture_display_ratio();
 
 	void on_selected_channels_changed();

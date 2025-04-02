@@ -61,6 +61,7 @@ private:
 protected:
 	void _validate_property(PropertyInfo &p_property) const;
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 	static void _bind_methods();
 
 	bool _set(const StringName &p_name, const Variant &p_value);

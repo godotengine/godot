@@ -164,6 +164,7 @@ class DynamicFontImportSettingsDialog : public ConfirmationDialog {
 
 protected:
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 
 public:
 	void open_settings(const String &p_path);

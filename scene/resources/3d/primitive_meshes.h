@@ -624,6 +624,7 @@ private:
 protected:
 	static void _bind_methods();
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 
 	virtual void _create_mesh_array(Array &p_arr) const override;
 

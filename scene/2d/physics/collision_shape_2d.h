@@ -55,6 +55,7 @@ class CollisionShape2D : public Node2D {
 
 protected:
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 
 #ifdef DEBUG_ENABLED
 	bool _property_can_revert(const StringName &p_name) const;

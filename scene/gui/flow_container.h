@@ -70,6 +70,7 @@ protected:
 	bool is_fixed = false;
 
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 	void _validate_property(PropertyInfo &p_property) const;
 	static void _bind_methods();
 

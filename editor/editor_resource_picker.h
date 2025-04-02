@@ -119,6 +119,7 @@ protected:
 	Button *get_assign_button() { return assign_button; }
 	static void _bind_methods();
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 
 	void set_assign_button_min_size(const Size2i &p_size);
 
@@ -207,6 +208,7 @@ class EditorAudioStreamPicker : public EditorResourcePicker {
 
 protected:
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 
 public:
 	EditorAudioStreamPicker();

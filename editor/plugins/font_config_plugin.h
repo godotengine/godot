@@ -97,6 +97,7 @@ class EditorPropertyFontMetaOverride : public EditorProperty {
 
 protected:
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 	static void _bind_methods() {}
 
 	void _edit_pressed();
@@ -181,6 +182,7 @@ class EditorPropertyOTFeatures : public EditorProperty {
 
 protected:
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 	static void _bind_methods() {}
 
 	void _edit_pressed();
@@ -214,6 +216,7 @@ class FontPreview : public Control {
 
 protected:
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 	static void _bind_methods();
 
 	Ref<Font> prev_font;

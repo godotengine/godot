@@ -62,6 +62,7 @@ class WindowWrapper : public MarginContainer {
 protected:
 	static void _bind_methods();
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 
 	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
 
@@ -111,6 +112,7 @@ protected:
 	static void _bind_methods();
 
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 
 public:
 	ScreenSelect();

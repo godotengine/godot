@@ -50,6 +50,7 @@ class RemoteTransform2D : public Node2D {
 protected:
 	static void _bind_methods();
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 
 public:
 	void set_remote_node(const NodePath &p_remote_node);

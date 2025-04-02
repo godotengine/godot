@@ -58,6 +58,7 @@ protected:
 	void emit_presets_runnable_changed();
 
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 	static void _bind_methods();
 
 public:

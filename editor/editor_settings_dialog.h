@@ -86,6 +86,7 @@ class EditorSettingsDialog : public AcceptDialog {
 
 	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 	void _update_icons();
 
 	void _event_config_confirmed();

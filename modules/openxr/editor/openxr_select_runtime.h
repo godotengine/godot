@@ -40,6 +40,7 @@ public:
 
 protected:
 	void _notification(int p_notification);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 
 private:
 	void _update_items();

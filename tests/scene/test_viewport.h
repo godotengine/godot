@@ -82,6 +82,7 @@ protected:
 			} break;
 		}
 	}
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 
 public:
 	bool mouse_over = false;
@@ -135,6 +136,7 @@ protected:
 			} break;
 		}
 	}
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 
 public:
 	Variant drag_data;

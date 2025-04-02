@@ -78,6 +78,7 @@ public:
 
 protected:
 	void _notification(int p_notification);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 };
 
 class QuickOpenResultContainer : public VBoxContainer {
@@ -104,6 +105,7 @@ public:
 
 protected:
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 
 private:
 	static constexpr int MAX_HISTORY_SIZE = 20;
@@ -207,6 +209,7 @@ public:
 
 protected:
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 
 private:
 	HBoxContainer *hbc = nullptr;
@@ -232,6 +235,7 @@ public:
 
 protected:
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 
 private:
 	QuickOpenResultListItem *list_item = nullptr;

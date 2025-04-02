@@ -63,6 +63,7 @@ private:
 
 	void _update_debug_options();
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 	void _menu_option(int p_option);
 
 public:

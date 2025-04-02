@@ -70,6 +70,7 @@ class AnimationTreeEditor : public VBoxContainer {
 
 protected:
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 	void _node_removed(Node *p_node);
 
 	static AnimationTreeEditor *singleton;

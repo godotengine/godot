@@ -173,6 +173,7 @@ private:
 
 protected:
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const { return property_helper.property_get_value(p_name, r_ret); }
 	void _get_property_list(List<PropertyInfo> *p_list) const { property_helper.get_property_list(p_list); }

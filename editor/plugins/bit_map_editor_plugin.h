@@ -52,6 +52,7 @@ private:
 
 protected:
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 
 public:
 	void setup(const Ref<BitMap> &p_bitmap);

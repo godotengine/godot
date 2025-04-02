@@ -242,6 +242,7 @@ class AnimationTimelineEdit : public Range {
 protected:
 	static void _bind_methods();
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 
 public:
 	int get_name_limit() const;
@@ -366,6 +367,7 @@ class AnimationMarkerEdit : public Control {
 protected:
 	static void _bind_methods();
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 
@@ -489,6 +491,7 @@ class AnimationTrackEdit : public Control {
 protected:
 	static void _bind_methods();
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 
@@ -560,6 +563,7 @@ class AnimationTrackEditGroup : public Control {
 
 protected:
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 
@@ -865,6 +869,7 @@ class AnimationTrackEditor : public VBoxContainer {
 protected:
 	static void _bind_methods();
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 
 public:
 	// Public for use with callable_mp.

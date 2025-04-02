@@ -92,6 +92,7 @@ class BonePropertiesEditor : public VBoxContainer {
 
 protected:
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 
 public:
 	BonePropertiesEditor(Skeleton3D *p_skeleton);
@@ -216,6 +217,7 @@ class Skeleton3DEditor : public VBoxContainer {
 
 protected:
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 	void _node_removed(Node *p_node);
 
 public:

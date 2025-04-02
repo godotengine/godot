@@ -120,6 +120,7 @@ private:
 
 protected:
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 
 public:
 	// Pass an existing event to configure it. Alternatively, pass no event to start with a blank configuration.

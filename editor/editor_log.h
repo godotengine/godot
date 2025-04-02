@@ -176,6 +176,7 @@ private:
 
 protected:
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 
 public:
 	void add_message(const String &p_msg, MessageType p_type = MSG_TYPE_STD);

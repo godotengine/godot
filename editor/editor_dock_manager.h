@@ -197,6 +197,7 @@ class DockContextPopup : public PopupPanel {
 
 protected:
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 
 public:
 	void select_current_dock_in_dock_slot(int p_dock_slot);

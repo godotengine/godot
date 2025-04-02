@@ -100,6 +100,7 @@ private:
 protected:
 	Color _get_color_accum();
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 	static void _bind_methods();
 	virtual void _draw() = 0;
 	void draw_texture_rect(Ref<Texture2D> p_texture, Rect2 p_dst_rect, Rect2 p_src_rect);
@@ -251,6 +252,7 @@ protected:
 	virtual void _draw() override;
 	static void _bind_methods();
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 	void _validate_property(PropertyInfo &p_property) const;
 
 public:

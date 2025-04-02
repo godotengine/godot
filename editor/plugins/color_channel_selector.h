@@ -49,6 +49,7 @@ public:
 
 private:
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 
 	void on_channel_button_toggled(bool p_unused_pressed);
 	void create_button(unsigned int p_channel_index, const String &p_text, Control *p_parent);

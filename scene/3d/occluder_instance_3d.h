@@ -49,6 +49,7 @@ protected:
 	virtual void _update_arrays(PackedVector3Array &r_vertices, PackedInt32Array &r_indices) = 0;
 
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 
 public:
 	PackedVector3Array get_vertices() const;

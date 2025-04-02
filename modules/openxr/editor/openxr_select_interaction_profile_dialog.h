@@ -49,6 +49,7 @@ private:
 protected:
 	static void _bind_methods();
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 
 public:
 	void _on_select_interaction_profile(const String p_interaction_profile);

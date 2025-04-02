@@ -107,6 +107,7 @@ class Sprite2DEditor : public Control {
 protected:
 	void _node_removed(Node *p_node);
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 	static void _bind_methods();
 
 public:

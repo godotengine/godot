@@ -88,6 +88,7 @@ class AudioStreamImportSettingsDialog : public ConfirmationDialog {
 
 protected:
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 	void _preview_changed(ObjectID p_which);
 	void _preview_zoom_in();
 	void _preview_zoom_out();

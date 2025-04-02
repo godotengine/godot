@@ -118,6 +118,7 @@ class ParticleProcessMaterialMinMaxPropertyEditor : public EditorProperty {
 
 protected:
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 
 public:
 	void setup(float p_min, float p_max, float p_step, bool p_allow_less, bool p_allow_greater, bool p_degrees);

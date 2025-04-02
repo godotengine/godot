@@ -50,6 +50,7 @@ class InputEventConfigContainer : public VBoxContainer {
 
 protected:
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 
 public:
 	void set_event(const Ref<InputEvent> &p_event);

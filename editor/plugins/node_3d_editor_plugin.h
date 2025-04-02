@@ -90,6 +90,7 @@ class ViewportRotationControl : public Control {
 
 protected:
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 	void _draw();
 	void _draw_axis(const Axis2D &p_axis);
@@ -535,6 +536,7 @@ private:
 
 protected:
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 	static void _bind_methods();
 
 public:
@@ -620,6 +622,7 @@ private:
 
 protected:
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 
 public:
 	void set_view(View p_view);
@@ -929,6 +932,7 @@ private:
 
 protected:
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 	//void _gui_input(InputEvent p_event);
 	virtual void shortcut_input(const Ref<InputEvent> &p_event) override;
 
@@ -1077,6 +1081,7 @@ class ViewportNavigationControl : public Control {
 
 protected:
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 	void _draw();
 	void _process_click(int p_index, Vector2 p_position, bool p_pressed);

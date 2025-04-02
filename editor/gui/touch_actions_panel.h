@@ -55,6 +55,7 @@ private:
 	Vector2 drag_offset;
 
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 
 	void _simulate_editor_shortcut(const String &p_shortcut_name);
 	void _simulate_key_press(Key p_keycode);

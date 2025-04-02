@@ -78,6 +78,7 @@ protected:
 	void add_preview_overlay(Control *p_overlay);
 
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 	static void _bind_methods();
 
 public:
@@ -93,6 +94,7 @@ class DefaultThemeEditorPreview : public ThemeEditorPreview {
 
 protected:
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 
 public:
 	DefaultThemeEditorPreview();
@@ -109,6 +111,7 @@ class SceneThemeEditorPreview : public ThemeEditorPreview {
 
 protected:
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 	static void _bind_methods();
 
 public:

@@ -66,6 +66,7 @@ private:
 
 protected:
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 	virtual Size2 get_minimum_size() const override;
 	static void _bind_methods();
 #ifndef DISABLE_DEPRECATED

@@ -526,6 +526,7 @@ private:
 
 protected:
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 
 	static void _bind_methods();
 
@@ -598,6 +599,7 @@ class CanvasItemEditorPlugin : public EditorPlugin {
 
 protected:
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 
 public:
 	virtual String get_plugin_name() const override { return TTRC("2D"); }
@@ -653,6 +655,7 @@ class CanvasItemEditorViewport : public Control {
 
 protected:
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 
 public:
 	virtual bool can_drop_data(const Point2 &p_point, const Variant &p_data) const override;

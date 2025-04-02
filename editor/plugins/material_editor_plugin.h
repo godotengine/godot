@@ -103,6 +103,7 @@ class MaterialEditor : public Control {
 protected:
 	virtual void _update_theme_item_cache() override;
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 	void gui_input(const Ref<InputEvent> &p_event) override;
 	void _set_rotation(real_t p_x_degrees, real_t p_y_degrees);
 	void _store_rotation_metadata();

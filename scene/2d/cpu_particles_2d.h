@@ -215,6 +215,7 @@ private:
 protected:
 	static void _bind_methods();
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 #ifdef TOOLS_ENABLED
 	void _draw_emission_gizmo();
 #endif

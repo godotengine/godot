@@ -76,6 +76,7 @@ protected:
 	bool _get(const StringName &p_name, Variant &r_ret) const;
 
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 
 public:
 	void update_tile_set(Ref<TileSet> p_tile_set);

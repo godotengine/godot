@@ -55,6 +55,7 @@ class GotoLinePopup : public PopupPanel {
 
 protected:
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 	virtual void _input_from_window(const Ref<InputEvent> &p_event) override;
 
 public:
@@ -122,6 +123,7 @@ class FindReplaceBar : public HBoxContainer {
 
 protected:
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 
 	void _update_flags(bool p_direction_backwards);
 
@@ -232,6 +234,7 @@ protected:
 	void _text_changed();
 	void _line_col_changed();
 	void _notification(int);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 	static void _bind_methods();
 
 	bool is_warnings_panel_opened = false;

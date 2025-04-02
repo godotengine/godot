@@ -136,6 +136,7 @@ private:
 	List<EditorVCSInterface::DiffFile> diff_content;
 
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 	void _initialize_vcs();
 	void _set_vcs_ui_state(bool p_enabled);
 	void _set_credentials();

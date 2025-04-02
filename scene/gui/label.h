@@ -115,6 +115,7 @@ protected:
 	int get_layout_data(Vector2 &r_offset, int &r_last_line, int &r_line_spacing) const;
 
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 	static void _bind_methods();
 #ifndef DISABLE_DEPRECATED
 	bool _set(const StringName &p_name, const Variant &p_value);

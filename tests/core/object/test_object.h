@@ -471,6 +471,7 @@ protected:
 	void _notification(int p_what) {
 		order_superclass = ++order_global;
 	}
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 
 public:
 	static inline int order_global = 0;
@@ -484,6 +485,7 @@ protected:
 	void _notification(int p_what) {
 		order_subclass = ++order_global;
 	}
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 
 public:
 	int order_subclass = -1;

@@ -72,6 +72,7 @@ class EmbeddedProcess : public Control {
 protected:
 	static void _bind_methods();
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 
 public:
 	void embed_process(OS::ProcessID p_pid);

@@ -7618,6 +7618,7 @@ public:
 			} break;
 		}
 	}
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 
 	void _item_selected(int p_item) {
 		editor->call_deferred(SNAME("_input_select_item"), input, get_item_metadata(p_item));
@@ -7673,6 +7674,7 @@ public:
 			connect(SceneStringName(item_selected), callable_mp(this, &VisualShaderNodePluginVaryingEditor::_item_selected));
 		}
 	}
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 
 	void _item_selected(int p_item) {
 		editor->call_deferred(SNAME("_varying_select_item"), varying, get_item_metadata(p_item));
@@ -7757,6 +7759,7 @@ public:
 			} break;
 		}
 	}
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 
 	void _item_selected(int p_item) {
 		editor->call_deferred(SNAME("_parameter_ref_select_item"), parameter_ref, get_item_metadata(p_item));
