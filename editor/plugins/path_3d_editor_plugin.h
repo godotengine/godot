@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef PATH_3D_EDITOR_PLUGIN_H
-#define PATH_3D_EDITOR_PLUGIN_H
+#pragma once
 
 #include "editor/plugins/editor_plugin.h"
 #include "editor/plugins/node_3d_editor_gizmos.h"
@@ -56,10 +55,15 @@ class Path3DGizmo : public EditorNode3DGizmo {
 	};
 
 	Path3D *path = nullptr;
+	Ref<StandardMaterial3D> debug_material;
 	mutable Vector3 original;
 	mutable float orig_in_length;
 	mutable float orig_out_length;
 	mutable float disk_size = 0.8;
+
+	// Index that should have swapped control points for achieving an outwards curve.
+	int swapped_control_points_idx = -1;
+	bool control_points_overlapped = false;
 
 	// Cache information of secondary handles.
 	Vector<HandleInfo> _secondary_handles_info;
@@ -183,5 +187,3 @@ public:
 
 	Path3DEditorPlugin();
 };
-
-#endif // PATH_3D_EDITOR_PLUGIN_H

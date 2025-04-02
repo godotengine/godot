@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef LOCAL_VECTOR_H
-#define LOCAL_VECTOR_H
+#pragma once
 
 #include "core/error/error_macros.h"
 #include "core/os/memory.h"
@@ -49,13 +48,12 @@ private:
 	T *data = nullptr;
 
 public:
-	T *ptr() {
-		return data;
-	}
+	_FORCE_INLINE_ T *ptr() { return data; }
+	_FORCE_INLINE_ const T *ptr() const { return data; }
+	_FORCE_INLINE_ U size() const { return count; }
 
-	const T *ptr() const {
-		return data;
-	}
+	_FORCE_INLINE_ Span<T> span() const { return Span(data, count); }
+	_FORCE_INLINE_ operator Span<T>() const { return span(); }
 
 	// Must take a copy instead of a reference (see GH-31736).
 	_FORCE_INLINE_ void push_back(T p_elem) {
@@ -66,7 +64,7 @@ public:
 		}
 
 		if constexpr (!std::is_trivially_constructible_v<T> && !force_trivial) {
-			memnew_placement(&data[count++], T(p_elem));
+			memnew_placement(&data[count++], T(std::move(p_elem)));
 		} else {
 			data[count++] = std::move(p_elem);
 		}
@@ -100,6 +98,15 @@ public:
 		int64_t idx = find(p_val);
 		if (idx >= 0) {
 			remove_at(idx);
+			return true;
+		}
+		return false;
+	}
+
+	bool erase_unordered(const T &p_val) {
+		int64_t idx = find(p_val);
+		if (idx >= 0) {
+			remove_at_unordered(idx);
 			return true;
 		}
 		return false;
@@ -147,7 +154,6 @@ public:
 		}
 	}
 
-	_FORCE_INLINE_ U size() const { return count; }
 	void resize(U p_size) {
 		if (p_size < count) {
 			if constexpr (!std::is_trivially_destructible_v<T> && !force_trivial) {
@@ -163,9 +169,7 @@ public:
 				CRASH_COND_MSG(!data, "Out of memory");
 			}
 			if constexpr (!std::is_trivially_constructible_v<T> && !force_trivial) {
-				for (U i = count; i < p_size; i++) {
-					memnew_placement(&data[i], T);
-				}
+				memnew_arr_placement(data + count, p_size - count);
 			}
 			count = p_size;
 		}
@@ -256,13 +260,14 @@ public:
 		}
 	}
 
-	int64_t find(const T &p_val, U p_from = 0) const {
-		for (U i = p_from; i < count; i++) {
-			if (data[i] == p_val) {
-				return int64_t(i);
-			}
+	int64_t find(const T &p_val, int64_t p_from = 0) const {
+		if (p_from < 0) {
+			p_from = size() + p_from;
 		}
-		return -1;
+		if (p_from < 0 || p_from >= size()) {
+			return -1;
+		}
+		return span().find(p_val, p_from);
 	}
 
 	bool has(const T &p_val) const {
@@ -281,7 +286,7 @@ public:
 	}
 
 	void sort() {
-		sort_custom<_DefaultComparator<T>>();
+		sort_custom<Comparator<T>>();
 	}
 
 	void ordered_insert(T p_val) {
@@ -386,4 +391,6 @@ public:
 template <typename T, typename U = uint32_t, bool force_trivial = false>
 using TightLocalVector = LocalVector<T, U, force_trivial, true>;
 
-#endif // LOCAL_VECTOR_H
+// Zero-constructing LocalVector initializes count, capacity and data to 0 and thus empty.
+template <typename T, typename U, bool force_trivial, bool tight>
+struct is_zero_constructible<LocalVector<T, U, force_trivial, tight>> : std::true_type {};

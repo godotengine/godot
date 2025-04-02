@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef ANIMATION_PLAYER_EDITOR_PLUGIN_H
-#define ANIMATION_PLAYER_EDITOR_PLUGIN_H
+#pragma once
 
 #include "editor/animation_track_editor.h"
 #include "editor/plugins/animation_library_editor.h"
@@ -266,6 +265,7 @@ public:
 	AnimationTrackEditor *get_track_editor() { return track_editor; }
 	Dictionary get_state() const;
 	void set_state(const Dictionary &p_state);
+	void clear();
 
 	void ensure_visibility();
 
@@ -298,6 +298,7 @@ protected:
 public:
 	virtual Dictionary get_state() const override { return anim_editor->get_state(); }
 	virtual void set_state(const Dictionary &p_state) override { anim_editor->set_state(p_state); }
+	virtual void clear() override { anim_editor->clear(); }
 
 	virtual String get_plugin_name() const override { return "Anim"; }
 	bool has_main_screen() const override { return false; }
@@ -363,5 +364,3 @@ public:
 
 	AnimationMarkerKeyEditEditorPlugin();
 };
-
-#endif // ANIMATION_PLAYER_EDITOR_PLUGIN_H

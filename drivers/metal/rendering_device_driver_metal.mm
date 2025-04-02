@@ -53,10 +53,10 @@
 #import "pixel_formats.h"
 #import "rendering_context_driver_metal.h"
 
-#import "core/io/compression.h"
-#import "core/io/marshalls.h"
-#import "core/string/ustring.h"
-#import "core/templates/hash_map.h"
+#include "core/io/compression.h"
+#include "core/io/marshalls.h"
+#include "core/string/ustring.h"
+#include "core/templates/hash_map.h"
 
 #import <Metal/MTLTexture.h>
 #import <Metal/Metal.h>
@@ -405,6 +405,15 @@ RDD::TextureID RenderingDeviceDriverMetal::texture_create_from_extension(uint64_
 RDD::TextureID RenderingDeviceDriverMetal::texture_create_shared(TextureID p_original_texture, const TextureView &p_view) {
 	id<MTLTexture> src_texture = rid::get(p_original_texture);
 
+	NSUInteger slices = src_texture.arrayLength;
+	if (src_texture.textureType == MTLTextureTypeCube) {
+		// Metal expects Cube textures to have a slice count of 6.
+		slices = 6;
+	} else if (src_texture.textureType == MTLTextureTypeCubeArray) {
+		// Metal expects Cube Array textures to have 6 slices per layer.
+		slices *= 6;
+	}
+
 #if DEV_ENABLED
 	if (src_texture.sampleCount > 1) {
 		// TODO(sgc): is it ok to create a shared texture from a multi-sample texture?
@@ -434,7 +443,7 @@ RDD::TextureID RenderingDeviceDriverMetal::texture_create_shared(TextureID p_ori
 	id<MTLTexture> obj = [src_texture newTextureViewWithPixelFormat:format
 														textureType:src_texture.textureType
 															 levels:NSMakeRange(0, src_texture.mipmapLevelCount)
-															 slices:NSMakeRange(0, src_texture.arrayLength)
+															 slices:NSMakeRange(0, slices)
 															swizzle:swizzle];
 	ERR_FAIL_NULL_V_MSG(obj, TextureID(), "Unable to create shared texture");
 	return rid::make(obj);
@@ -566,7 +575,14 @@ void RenderingDeviceDriverMetal::texture_get_copyable_layout(TextureID p_texture
 		r_layout->size = get_image_format_required_size(format, sz.width, sz.height, sz.depth, 1, &sbw, &sbh);
 		r_layout->row_pitch = r_layout->size / ((sbh / bh) * sz.depth);
 		r_layout->depth_pitch = r_layout->size / sz.depth;
-		r_layout->layer_pitch = r_layout->size / obj.arrayLength;
+
+		uint32_t array_length = obj.arrayLength;
+		if (obj.textureType == MTLTextureTypeCube) {
+			array_length = 6;
+		} else if (obj.textureType == MTLTextureTypeCubeArray) {
+			array_length *= 6;
+		}
+		r_layout->layer_pitch = r_layout->size / array_length;
 	} else {
 		CRASH_NOW_MSG("need to calculate layout for shared texture");
 	}
@@ -974,7 +990,7 @@ RDD::SwapChainID RenderingDeviceDriverMetal::swap_chain_create(RenderingContextD
 	color_ref.aspect.set_flag(RDD::TEXTURE_ASPECT_COLOR_BIT);
 	subpass.color_references.push_back(color_ref);
 
-	RenderPassID render_pass = render_pass_create(attachment, subpass, {}, 1);
+	RenderPassID render_pass = render_pass_create(attachment, subpass, {}, 1, RDD::AttachmentReference());
 	ERR_FAIL_COND_V(!render_pass, SwapChainID());
 
 	// Create the empty swap chain until it is resized.
@@ -3104,7 +3120,7 @@ Vector<uint8_t> RenderingDeviceDriverMetal::pipeline_cache_serialize() {
 
 // ----- SUBPASS -----
 
-RDD::RenderPassID RenderingDeviceDriverMetal::render_pass_create(VectorView<Attachment> p_attachments, VectorView<Subpass> p_subpasses, VectorView<SubpassDependency> p_subpass_dependencies, uint32_t p_view_count) {
+RDD::RenderPassID RenderingDeviceDriverMetal::render_pass_create(VectorView<Attachment> p_attachments, VectorView<Subpass> p_subpasses, VectorView<SubpassDependency> p_subpass_dependencies, uint32_t p_view_count, AttachmentReference p_fragment_density_map_attachment) {
 	PixelFormats &pf = *pixel_formats;
 
 	size_t subpass_count = p_subpasses.size();
@@ -3901,16 +3917,16 @@ uint64_t RenderingDeviceDriverMetal::get_lazily_memory_used() {
 uint64_t RenderingDeviceDriverMetal::limit_get(Limit p_limit) {
 	MetalDeviceProperties const &props = (*device_properties);
 	MetalLimits const &limits = props.limits;
-
+	uint64_t safe_unbounded = ((uint64_t)1 << 30);
 #if defined(DEV_ENABLED)
 #define UNKNOWN(NAME)                                                            \
 	case NAME:                                                                   \
 		WARN_PRINT_ONCE("Returning maximum value for unknown limit " #NAME "."); \
-		return (uint64_t)1 << 30;
+		return safe_unbounded;
 #else
 #define UNKNOWN(NAME) \
 	case NAME:        \
-		return (uint64_t)1 << 30
+		return safe_unbounded
 #endif
 
 	// clang-format off
@@ -3983,6 +3999,8 @@ uint64_t RenderingDeviceDriverMetal::limit_get(Limit p_limit) {
 			return limits.maxThreadsPerThreadGroup.height;
 		case LIMIT_MAX_COMPUTE_WORKGROUP_SIZE_Z:
 			return limits.maxThreadsPerThreadGroup.depth;
+		case LIMIT_MAX_COMPUTE_SHARED_MEMORY_SIZE:
+			return limits.maxThreadGroupMemoryAllocation;
 		case LIMIT_MAX_VIEWPORT_DIMENSIONS_X:
 			return limits.maxViewportDimensionX;
 		case LIMIT_MAX_VIEWPORT_DIMENSIONS_Y:
@@ -4004,12 +4022,12 @@ uint64_t RenderingDeviceDriverMetal::limit_get(Limit p_limit) {
 			return (uint64_t)((1.0 / limits.temporalScalerInputContentMinScale) * 1000'000);
 		case LIMIT_MAX_SHADER_VARYINGS:
 			return limits.maxShaderVaryings;
-		UNKNOWN(LIMIT_VRS_TEXEL_WIDTH);
-		UNKNOWN(LIMIT_VRS_TEXEL_HEIGHT);
-		UNKNOWN(LIMIT_VRS_MAX_FRAGMENT_WIDTH);
-		UNKNOWN(LIMIT_VRS_MAX_FRAGMENT_HEIGHT);
-		default:
-			ERR_FAIL_V(0);
+		default: {
+#ifdef DEV_ENABLED
+			WARN_PRINT("Returning maximum value for unknown limit " + itos(p_limit) + ".");
+#endif
+			return safe_unbounded;
+		}
 	}
 	// clang-format on
 	return 0;
@@ -4026,17 +4044,8 @@ uint64_t RenderingDeviceDriverMetal::api_trait_get(ApiTrait p_trait) {
 
 bool RenderingDeviceDriverMetal::has_feature(Features p_feature) {
 	switch (p_feature) {
-		case SUPPORTS_MULTIVIEW:
-			return multiview_capabilities.is_supported;
 		case SUPPORTS_FSR_HALF_FLOAT:
 			return true;
-		case SUPPORTS_ATTACHMENT_VRS:
-			// TODO(sgc): Maybe supported via https://developer.apple.com/documentation/metal/render_passes/rendering_at_different_rasterization_rates?language=objc
-			// See also:
-			//
-			// * https://forum.beyond3d.com/threads/variable-rate-shading-vs-variable-rate-rasterization.62243/post-2191363
-			//
-			return false;
 		case SUPPORTS_FRAGMENT_SHADER_WITH_ONLY_SIDE_EFFECTS:
 			return true;
 		case SUPPORTS_BUFFER_DEVICE_ADDRESS:
@@ -4052,6 +4061,14 @@ bool RenderingDeviceDriverMetal::has_feature(Features p_feature) {
 
 const RDD::MultiviewCapabilities &RenderingDeviceDriverMetal::get_multiview_capabilities() {
 	return multiview_capabilities;
+}
+
+const RDD::FragmentShadingRateCapabilities &RenderingDeviceDriverMetal::get_fragment_shading_rate_capabilities() {
+	return fsr_capabilities;
+}
+
+const RDD::FragmentDensityMapCapabilities &RenderingDeviceDriverMetal::get_fragment_density_map_capabilities() {
+	return fdm_capabilities;
 }
 
 String RenderingDeviceDriverMetal::get_api_version() const {

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef SHADER_EDITOR_PLUGIN_H
-#define SHADER_EDITOR_PLUGIN_H
+#pragma once
 
 #include "editor/plugins/editor_plugin.h"
 
@@ -146,7 +145,4 @@ public:
 	virtual void apply_changes() override;
 
 	ShaderEditorPlugin();
-	~ShaderEditorPlugin();
 };
-
-#endif // SHADER_EDITOR_PLUGIN_H

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef NODE_3D_EDITOR_GIZMOS_H
-#define NODE_3D_EDITOR_GIZMOS_H
+#pragma once
 
 #include "core/math/dynamic_bvh.h"
 #include "core/templates/hash_map.h"
@@ -57,7 +56,7 @@ class EditorNode3DGizmo : public Node3DGizmo {
 	bool selected;
 
 	Vector<Vector3> collision_segments;
-	Ref<TriangleMesh> collision_mesh;
+	LocalVector<Ref<TriangleMesh>> collision_meshes;
 
 	Vector<Vector3> handles;
 	Vector<int> handle_ids;
@@ -221,5 +220,3 @@ public:
 	EditorNode3DGizmoPlugin();
 	virtual ~EditorNode3DGizmoPlugin();
 };
-
-#endif // NODE_3D_EDITOR_GIZMOS_H

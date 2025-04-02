@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef SCENE_TREE_H
-#define SCENE_TREE_H
+#pragma once
 
 #include "core/os/main_loop.h"
 #include "core/os/thread_safe.h"
@@ -188,8 +187,8 @@ private:
 	TypedArray<Node> _get_nodes_in_group(const StringName &p_group);
 
 	Node *current_scene = nullptr;
-	Node *prev_scene = nullptr;
-	Node *pending_new_scene = nullptr;
+	ObjectID prev_scene_id;
+	ObjectID pending_new_scene_id;
 
 	Color debug_collisions_color;
 	Color debug_collision_contact_color;
@@ -448,5 +447,3 @@ public:
 };
 
 VARIANT_ENUM_CAST(SceneTree::GroupCallFlags);
-
-#endif // SCENE_TREE_H

@@ -32,6 +32,16 @@ extern "C" {
 #define MBEDTLS_PSA_KEY_SLOT_COUNT 32
 #endif
 
+/* If the size of static key slots is not explicitly defined by the user, then
+ * set it to the maximum between PSA_EXPORT_KEY_PAIR_OR_PUBLIC_MAX_SIZE and
+ * PSA_CIPHER_MAX_KEY_LENGTH.
+ * See mbedtls_config.h for the definition. */
+#if !defined(MBEDTLS_PSA_STATIC_KEY_SLOT_BUFFER_SIZE)
+#define MBEDTLS_PSA_STATIC_KEY_SLOT_BUFFER_SIZE  \
+    ((PSA_EXPORT_KEY_PAIR_OR_PUBLIC_MAX_SIZE > PSA_CIPHER_MAX_KEY_LENGTH) ? \
+     PSA_EXPORT_KEY_PAIR_OR_PUBLIC_MAX_SIZE : PSA_CIPHER_MAX_KEY_LENGTH)
+#endif /* !MBEDTLS_PSA_STATIC_KEY_SLOT_BUFFER_SIZE*/
+
 /** \addtogroup attributes
  * @{
  */
@@ -572,6 +582,35 @@ psa_status_t mbedtls_psa_platform_get_builtin_key(
 #endif /* MBEDTLS_PSA_CRYPTO_BUILTIN_KEYS */
 
 /** @} */
+
+/** \defgroup psa_crypto_client Functions defined by a client provider
+ *
+ * The functions in this group are meant to be implemented by providers of
+ * the PSA Crypto client interface. They are provided by the library when
+ * #MBEDTLS_PSA_CRYPTO_C is enabled.
+ *
+ * \note All functions in this group are experimental, as using
+ *       alternative client interface providers is experimental.
+ *
+ * @{
+ */
+
+/** Check if PSA is capable of handling the specified hash algorithm.
+ *
+ * This means that PSA core was built with the corresponding PSA_WANT_ALG_xxx
+ * set and that psa_crypto_init has already been called.
+ *
+ * \note When using Mbed TLS version of PSA core (i.e. MBEDTLS_PSA_CRYPTO_C is
+ *       set) for now this function only checks the state of the driver
+ *       subsystem, not the algorithm. This might be improved in the future.
+ *
+ * \param hash_alg  The hash algorithm.
+ *
+ * \return 1 if the PSA can handle \p hash_alg, 0 otherwise.
+ */
+int psa_can_do_hash(psa_algorithm_t hash_alg);
+
+/**@}*/
 
 /** \addtogroup crypto_types
  * @{

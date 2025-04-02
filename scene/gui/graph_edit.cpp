@@ -1198,7 +1198,7 @@ bool GraphEdit::_check_clickable_control(Control *p_control, const Vector2 &mpos
 	control_rect.size *= zoom;
 	control_rect.position += p_offset;
 
-	if (!control_rect.has_point(mpos) || p_control->get_mouse_filter() == MOUSE_FILTER_IGNORE) {
+	if (!control_rect.has_point(mpos) || p_control->get_mouse_filter_with_recursive() == MOUSE_FILTER_IGNORE) {
 		// Test children.
 		for (int i = 0; i < p_control->get_child_count(); i++) {
 			Control *child_rect = Object::cast_to<Control>(p_control->get_child(i));
@@ -1663,7 +1663,7 @@ void GraphEdit::_draw_grid() {
 			for (int i = from_pos.x; i < from_pos.x + len.x; i++) {
 				Color color;
 
-				if (ABS(i) % GRID_MINOR_STEPS_PER_MAJOR_LINE == 0) {
+				if (Math::abs(i) % GRID_MINOR_STEPS_PER_MAJOR_LINE == 0) {
 					color = theme_cache.grid_major;
 				} else {
 					color = theme_cache.grid_minor;
@@ -1676,7 +1676,7 @@ void GraphEdit::_draw_grid() {
 			for (int i = from_pos.y; i < from_pos.y + len.y; i++) {
 				Color color;
 
-				if (ABS(i) % GRID_MINOR_STEPS_PER_MAJOR_LINE == 0) {
+				if (Math::abs(i) % GRID_MINOR_STEPS_PER_MAJOR_LINE == 0) {
 					color = theme_cache.grid_major;
 				} else {
 					color = theme_cache.grid_minor;
@@ -1694,7 +1694,7 @@ void GraphEdit::_draw_grid() {
 			if (transparent_grid_minor.a != 0) {
 				for (int i = from_pos.x; i < from_pos.x + len.x; i++) {
 					for (int j = from_pos.y; j < from_pos.y + len.y; j++) {
-						if (ABS(i) % GRID_MINOR_STEPS_PER_MAJOR_DOT == 0 && ABS(j) % GRID_MINOR_STEPS_PER_MAJOR_DOT == 0) {
+						if (Math::abs(i) % GRID_MINOR_STEPS_PER_MAJOR_DOT == 0 && Math::abs(j) % GRID_MINOR_STEPS_PER_MAJOR_DOT == 0) {
 							continue;
 						}
 
@@ -2329,6 +2329,24 @@ TypedArray<Dictionary> GraphEdit::_get_connections_intersecting_with_rect(const 
 	return arr;
 }
 
+TypedArray<Dictionary> GraphEdit::_get_connection_list_from_node(const StringName &p_node) const {
+	ERR_FAIL_COND_V(!connection_map.has(p_node), TypedArray<Dictionary>());
+
+	List<Ref<GraphEdit::Connection>> connections_from_node = connection_map.get(p_node);
+	TypedArray<Dictionary> connections_from_node_dict;
+
+	for (const Ref<Connection> &conn : connections_from_node) {
+		Dictionary d;
+		d["from_node"] = conn->from_node;
+		d["from_port"] = conn->from_port;
+		d["to_node"] = conn->to_node;
+		d["to_port"] = conn->to_port;
+		d["keep_alive"] = conn->keep_alive;
+		connections_from_node_dict.push_back(d);
+	}
+	return connections_from_node_dict;
+}
+
 void GraphEdit::_zoom_minus() {
 	set_zoom(zoom / zoom_step);
 }
@@ -2689,6 +2707,7 @@ void GraphEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_connection_list"), &GraphEdit::_get_connection_list);
 	ClassDB::bind_method(D_METHOD("get_connection_count", "from_node", "from_port"), &GraphEdit::get_connection_count);
 	ClassDB::bind_method(D_METHOD("get_closest_connection_at_point", "point", "max_distance"), &GraphEdit::_get_closest_connection_at_point, DEFVAL(4.0));
+	ClassDB::bind_method(D_METHOD("get_connection_list_from_node", "node"), &GraphEdit::_get_connection_list_from_node);
 	ClassDB::bind_method(D_METHOD("get_connections_intersecting_with_rect", "rect"), &GraphEdit::_get_connections_intersecting_with_rect);
 	ClassDB::bind_method(D_METHOD("clear_connections"), &GraphEdit::clear_connections);
 	ClassDB::bind_method(D_METHOD("force_connection_drag_end"), &GraphEdit::force_connection_drag_end);

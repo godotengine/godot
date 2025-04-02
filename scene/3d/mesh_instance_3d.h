@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef MESH_INSTANCE_3D_H
-#define MESH_INSTANCE_3D_H
+#pragma once
 
 #include "core/templates/local_vector.h"
 #include "scene/3d/visual_instance_3d.h"
@@ -90,6 +89,7 @@ public:
 	Ref<Material> get_surface_override_material(int p_surface) const;
 	Ref<Material> get_active_material(int p_surface) const;
 
+#ifndef PHYSICS_3D_DISABLED
 	Node *create_trimesh_collision_node();
 	void create_trimesh_collision();
 
@@ -98,6 +98,7 @@ public:
 
 	Node *create_multiple_convex_collisions_node(const Ref<MeshConvexDecompositionSettings> &p_settings = Ref<MeshConvexDecompositionSettings>());
 	void create_multiple_convex_collisions(const Ref<MeshConvexDecompositionSettings> &p_settings = Ref<MeshConvexDecompositionSettings>());
+#endif // PHYSICS_3D_DISABLED
 
 	MeshInstance3D *create_debug_tangents_node();
 	void create_debug_tangents();
@@ -120,5 +121,3 @@ public:
 	MeshInstance3D();
 	~MeshInstance3D();
 };
-
-#endif // MESH_INSTANCE_3D_H

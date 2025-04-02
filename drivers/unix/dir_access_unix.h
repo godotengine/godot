@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef DIR_ACCESS_UNIX_H
-#define DIR_ACCESS_UNIX_H
+#pragma once
 
 #if defined(UNIX_ENABLED)
 
@@ -86,6 +85,7 @@ public:
 	virtual Error create_link(String p_source, String p_target) override;
 
 	virtual bool is_case_sensitive(const String &p_path) const override;
+	virtual bool is_equivalent(const String &p_path_a, const String &p_path_b) const override;
 
 	virtual uint64_t get_space_left() override;
 
@@ -96,5 +96,3 @@ public:
 };
 
 #endif // UNIX_ENABLED
-
-#endif // DIR_ACCESS_UNIX_H

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TEST_MACROS_H
-#define TEST_MACROS_H
+#pragma once
 
 #include "display_server_mock.h"
 
@@ -277,23 +276,17 @@ private:
 	}
 
 	void _signal_callback_one(Variant p_arg1, const String &p_name) {
-		Array args;
-		args.push_back(p_arg1);
+		Array args = { p_arg1 };
 		_add_signal_entry(args, p_name);
 	}
 
 	void _signal_callback_two(Variant p_arg1, Variant p_arg2, const String &p_name) {
-		Array args;
-		args.push_back(p_arg1);
-		args.push_back(p_arg2);
+		Array args = { p_arg1, p_arg2 };
 		_add_signal_entry(args, p_name);
 	}
 
 	void _signal_callback_three(Variant p_arg1, Variant p_arg2, Variant p_arg3, const String &p_name) {
-		Array args;
-		args.push_back(p_arg1);
-		args.push_back(p_arg2);
-		args.push_back(p_arg3);
+		Array args = { p_arg1, p_arg2, p_arg3 };
 		_add_signal_entry(args, p_name);
 	}
 
@@ -478,5 +471,3 @@ public:
 			CHECK(string_list[i] == m_slices[i]);                                                \
 		}                                                                                        \
 	} while (false)
-
-#endif // TEST_MACROS_H

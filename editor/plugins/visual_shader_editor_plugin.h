@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef VISUAL_SHADER_EDITOR_PLUGIN_H
-#define VISUAL_SHADER_EDITOR_PLUGIN_H
+#pragma once
 
 #include "editor/editor_properties.h"
 #include "editor/plugins/editor_plugin.h"
@@ -179,7 +178,6 @@ public:
 	VisualShader::Type get_shader_type() const;
 
 	VisualShaderGraphPlugin();
-	~VisualShaderGraphPlugin();
 };
 
 class VisualShaderEditedProperty : public RefCounted {
@@ -194,8 +192,6 @@ protected:
 public:
 	void set_edited_property(const Variant &p_variant);
 	Variant get_edited_property() const;
-
-	VisualShaderEditedProperty() {}
 };
 
 class VisualShaderEditor : public ShaderEditor {
@@ -720,5 +716,3 @@ public:
 	virtual bool handles(const Ref<Resource> &p_resource) const override;
 	virtual Ref<Resource> convert(const Ref<Resource> &p_resource) const override;
 };
-
-#endif // VISUAL_SHADER_EDITOR_PLUGIN_H

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef RESOURCE_IMPORTER_TEXTURE_H
-#define RESOURCE_IMPORTER_TEXTURE_H
+#pragma once
 
 #include "core/io/file_access.h"
 #include "core/io/image.h"
@@ -79,7 +78,6 @@ protected:
 
 	static inline void _clamp_hdr_exposure(Ref<Image> &r_image);
 	static inline void _invert_y_channel(Ref<Image> &r_image);
-	static inline void _print_callback_message(const String &p_message);
 
 public:
 	static void save_to_ctex_format(Ref<FileAccess> f, const Ref<Image> &p_image, CompressMode p_compress_mode, Image::UsedChannels p_channels, Image::CompressMode p_compress_format, float p_lossy_quality);
@@ -115,5 +113,3 @@ public:
 	ResourceImporterTexture(bool p_singleton = false);
 	~ResourceImporterTexture();
 };
-
-#endif // RESOURCE_IMPORTER_TEXTURE_H

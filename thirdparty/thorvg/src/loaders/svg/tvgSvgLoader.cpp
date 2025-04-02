@@ -3382,6 +3382,7 @@ static void _svgLoaderParserXmlOpen(SvgLoaderData* loader, const char* content, 
         if (node->type != SvgNodeType::Defs || !empty) {
             loader->stack.push(node);
         }
+        loader->latestGradient = nullptr;
     } else if ((method = _findGraphicsFactory(tagName))) {
         if (loader->stack.count > 0) parent = loader->stack.last();
         else parent = loader->doc;
@@ -3392,6 +3393,7 @@ static void _svgLoaderParserXmlOpen(SvgLoaderData* loader, const char* content, 
             loader->stack.push(defs);
             loader->currentGraphicsNode = node;
         }
+        loader->latestGradient = nullptr;
     } else if ((gradientMethod = _findGradientFactory(tagName))) {
         SvgStyleGradient* gradient;
         gradient = gradientMethod(loader, attrs, attrsLength);
@@ -3417,8 +3419,9 @@ static void _svgLoaderParserXmlOpen(SvgLoaderData* loader, const char* content, 
         loader->svgParse->flags = SvgStopStyleFlags::StopDefault;
         simpleXmlParseAttributes(attrs, attrsLength, _attrParseStops, loader);
         loader->latestGradient->stops.push(loader->svgParse->gradStop);
-    } else if (!isIgnoreUnsupportedLogElements(tagName)) {
-        TVGLOG("SVG", "Unsupported elements used [Elements: %s]", tagName);
+    } else {
+        loader->latestGradient = nullptr;
+        if (!isIgnoreUnsupportedLogElements(tagName)) TVGLOG("SVG", "Unsupported elements used [Elements: %s]", tagName);
     }
 }
 

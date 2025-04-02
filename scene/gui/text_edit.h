@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TEXT_EDIT_H
-#define TEXT_EDIT_H
+#pragma once
 
 #include "scene/gui/control.h"
 #include "scene/gui/popup_menu.h"
@@ -160,6 +159,7 @@ private:
 			int line_count = 0;
 			int height = 0;
 			int width = 0;
+			float indent_ofs = -1.0;
 
 			Line() {
 				data_buf.instantiate();
@@ -229,6 +229,7 @@ private:
 
 		Vector<Vector2i> get_line_wrap_ranges(int p_line) const;
 		const Ref<TextParagraph> get_line_data(int p_line) const;
+		float get_indent_offset(int p_line, bool p_rtl) const;
 
 		void set(int p_line, const String &p_text, const Array &p_bidi_override);
 		void set_ime(int p_line, const String &p_text, const Array &p_bidi_override);
@@ -695,6 +696,8 @@ protected:
 	void _unhide_all_lines();
 	virtual void _unhide_carets();
 
+	int _get_wrapped_indent_level(int p_line, int &r_first_wrap) const;
+
 	// Symbol lookup.
 	String lookup_symbol_word;
 	void _set_symbol_lookup_word(const String &p_symbol);
@@ -1138,5 +1141,3 @@ VARIANT_ENUM_CAST(TextEdit::SelectionMode);
 VARIANT_ENUM_CAST(TextEdit::GutterType);
 VARIANT_ENUM_CAST(TextEdit::MenuItems);
 VARIANT_ENUM_CAST(TextEdit::SearchFlags);
-
-#endif // TEXT_EDIT_H

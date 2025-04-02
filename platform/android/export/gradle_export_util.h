@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef ANDROID_GRADLE_EXPORT_UTIL_H
-#define ANDROID_GRADLE_EXPORT_UTIL_H
+#pragma once
 
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
@@ -69,6 +68,11 @@ struct CustomExportData {
 	Vector<String> libs;
 };
 
+struct MetadataInfo {
+	String name;
+	String value;
+};
+
 int _get_android_orientation_value(DisplayServer::ScreenOrientation screen_orientation);
 
 String _get_android_orientation_label(DisplayServer::ScreenOrientation screen_orientation);
@@ -106,6 +110,4 @@ String _get_screen_sizes_tag(const Ref<EditorExportPreset> &p_preset);
 
 String _get_activity_tag(const Ref<EditorExportPlatform> &p_export_platform, const Ref<EditorExportPreset> &p_preset, bool p_debug);
 
-String _get_application_tag(const Ref<EditorExportPlatform> &p_export_platform, const Ref<EditorExportPreset> &p_preset, bool p_has_read_write_storage_permission, bool p_debug);
-
-#endif // ANDROID_GRADLE_EXPORT_UTIL_H
+String _get_application_tag(const Ref<EditorExportPlatform> &p_export_platform, const Ref<EditorExportPreset> &p_preset, bool p_has_read_write_storage_permission, bool p_debug, const Vector<MetadataInfo> &p_metadata);

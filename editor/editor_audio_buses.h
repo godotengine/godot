@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef EDITOR_AUDIO_BUSES_H
-#define EDITOR_AUDIO_BUSES_H
+#pragma once
 
 #include "editor/plugins/editor_plugin.h"
 #include "scene/gui/box_container.h"
@@ -146,9 +145,6 @@ class EditorAudioBusDrop : public Control {
 protected:
 	static void _bind_methods();
 	void _notification(int p_what);
-
-public:
-	EditorAudioBusDrop();
 };
 
 class EditorAudioBuses : public VBoxContainer {
@@ -263,9 +259,6 @@ private:
 	static void _bind_methods();
 	void _notification(int p_what);
 	void _draw_audio_notches();
-
-public:
-	EditorAudioMeterNotches() {}
 };
 
 class AudioBusesEditorPlugin : public EditorPlugin {
@@ -281,7 +274,4 @@ public:
 	virtual void make_visible(bool p_visible) override;
 
 	AudioBusesEditorPlugin(EditorAudioBuses *p_node);
-	~AudioBusesEditorPlugin();
 };
-
-#endif // EDITOR_AUDIO_BUSES_H

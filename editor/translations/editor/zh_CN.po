@@ -76,7 +76,7 @@
 # twoBornottwoB <305766341@qq.com>, 2021.
 # Magian <magian1127@gmail.com>, 2021.
 # Weiduo Xie <xwditfr@gmail.com>, 2021.
-# suplife <2634557184@qq.com>, 2021, 2022, 2023.
+# suplife <2634557184@qq.com>, 2021, 2022, 2023, 2025.
 # luoji <564144019@qq.com>, 2021.
 # zeng haochen <m18621006730@163.com>, 2021.
 # Sam Sun <oppositenormal@outlook.com>, 2021.
@@ -101,12 +101,14 @@
 # Mike Allen <itsxwz@gmail.com>, 2024.
 # Mill Xu <2733679597@qq.com>, 2024.
 # J_aphasiac <japhasiac@163.com>, 2025.
+# BuddhaGrape <3248882725@qq.com>, 2025.
+# ChenLei <falsecollector@outlook.com>, 2025.
 msgid ""
 msgstr ""
 "Project-Id-Version: Chinese (Simplified) (Godot Engine)\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: 2018-01-20 12:15+0200\n"
-"PO-Revision-Date: 2025-02-21 19:26+0000\n"
+"PO-Revision-Date: 2025-03-14 05:10+0000\n"
 "Last-Translator: Haoyu Qiu <timothyqiu32@gmail.com>\n"
 "Language-Team: Chinese (Simplified Han script) <https://hosted.weblate.org/"
 "projects/godot-engine/godot/zh_Hans/>\n"
@@ -115,7 +117,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 5.10.1-dev\n"
+"X-Generator: Weblate 5.11-dev\n"
 
 msgid "Main Thread"
 msgstr "主线程"
@@ -962,6 +964,9 @@ msgstr "AnimationPlayer 不能动画化自己，只可动画化其他 Player。"
 msgid "property '%s'"
 msgstr "属性“%s”"
 
+msgid "Nearest FPS: %d"
+msgstr "邻近 FPS：%d"
+
 msgid "Change Animation Step"
 msgstr "修改动画步长"
 
@@ -1593,6 +1598,9 @@ msgstr "解绑信号参数："
 
 msgid "Receiver Method:"
 msgstr "接收方法："
+
+msgid "Pick"
+msgstr "选取"
 
 msgid "Advanced"
 msgstr "高级"
@@ -3262,7 +3270,7 @@ msgid "This variable may be changed or removed in future versions."
 msgstr "未来版本中可能会修改或移除该变量。"
 
 msgid "TextFile"
-msgstr "TextFile"
+msgstr "文本文件"
 
 msgid "File"
 msgstr "文件"
@@ -5114,6 +5122,12 @@ msgstr "从文件安装"
 
 msgid "Install templates from a local file."
 msgstr "从本地文件安装模板。"
+
+msgid "Online mode is needed to download the templates."
+msgstr "下载模板需要在线模式。"
+
+msgid "Go Online"
+msgstr "连接网络"
 
 msgid "Cancel the download of the templates."
 msgstr "取消下载模板。"
@@ -7816,9 +7830,6 @@ msgid ""
 "over the internet."
 msgstr "资产库需要连接网络，会通过互联网传输数据。"
 
-msgid "Go Online"
-msgstr "连接网络"
-
 msgid "Failed to get repository configuration."
 msgstr "获取仓库配置失败。"
 
@@ -8819,7 +8830,7 @@ msgstr ""
 "用游戏嵌入，不影响导出后的项目。"
 
 msgid "Game embedding not available in single window mode."
-msgstr "但窗口模式下不支持游戏嵌入。"
+msgstr "单窗口模式下不支持游戏嵌入。"
 
 msgid "Suspend"
 msgstr "挂起"
@@ -8898,7 +8909,7 @@ msgid ""
 msgstr "未找到库“%s”对应 GDExtension：“%s”。当前平台可能的特性标记：%s"
 
 msgid "Multiple \"%s\" libraries found for GDExtension: \"%s\": \"%s\"."
-msgstr "找到多个库“%s”对应 GDExtension：“%s”：“%s”。"
+msgstr "找到多个“%s”库对应 GDExtension：“%s”：“%s”。"
 
 msgid "Change AudioStreamPlayer3D Emission Angle"
 msgstr "修改 AudioStreamPlayer3D 发射角"
@@ -14322,6 +14333,9 @@ msgid ""
 "single output port."
 msgstr "任意调整连接路线，可以将多个输入端口连接到单个输出端口。"
 
+msgid "[None]"
+msgstr "[无]"
+
 msgid "Edit Visual Property: %s"
 msgstr "编辑可视属性：%s"
 
@@ -15135,9 +15149,6 @@ msgstr "特性标签"
 msgid "Pick Root Node Type"
 msgstr "选取根节点类型"
 
-msgid "Pick"
-msgstr "选取"
-
 msgid "Scene name is empty."
 msgstr "场景名称为空。"
 
@@ -15797,33 +15808,18 @@ msgstr "正在更新脚本 UID"
 
 msgid ""
 "As of Godot 4.4, scenes and resources use UIDs to reference scripts and "
-"shaders.\n"
+"shaders. Upgrades apply on the next save of each scene/resource.\n"
 "\n"
-"Normally, this update is applied to a single scene or resource once you save "
-"it in Godot 4.4 for the first time. If you have a lot of scenes and/or "
-"resources, doing this manually may be time-consuming. This tool will update "
-"all of the project's scenes and resources at once.\n"
-"\n"
-"Click \"Restart & Upgrade\" to restart the editor and update all of the "
-"scenes and resources in this project. Depending on the project size, it may "
-"take several minutes.\n"
-"\n"
-"Note: Please make sure you have your project backed up before running the "
-"tool, to avoid the possibility of data loss. Additionally, make sure to "
-"commit all .uid files into version control (and do not add them to ignore-"
-"lists like .gitignore)."
+"To save time, this tool can open and save each of these files. Depending on "
+"the project size, it may take several minutes."
 msgstr ""
-"从 Godot 4.4 开始，场景和资源会使用 UID 来引用脚本和着色器。\n"
+"截至 Godot 4.4，场景和资源使用 UID 来引用脚本和着色器。升级将在各个场景/资源下"
+"次保存时应用。\n"
 "\n"
-"正常情况下，场景和资源文件只有在第一次使用 Godot 4.4 进行保存时才会发生更新。"
-"如果你有很多场景和资源，手动进行此类更新可能非常耗时。这一工具会将项目中的所有"
-"场景和资源一起进行更新。\n"
-"\n"
-"点击“重启并升级”会重启编辑器并更新此项目中的所有场景和资源。这一过程可能持续若"
-"干分钟，取决于项目的大小。\n"
-"\n"
-"注意：在运行工具前，请确认已备份该项目，避免可能的数据丢失。此外，请确保将所"
-"有 .uid 文件都提交进版本控制系统（请勿将其加入 .gitignore 等忽略列表）。"
+"为了节省时间，该工具可以打开并保存每个文件。根据项目的大小，这可能需要几分钟。"
+
+msgid "Re-save all scenes and resources to use UIDs"
+msgstr "使用 UID 重新保存所有场景和资源"
 
 msgid "Learn More"
 msgstr "了解更多"
@@ -18811,14 +18807,14 @@ msgstr ""
 "为了保持最小的代码改动，你可以在着色器顶部附近添加“uniform sampler2D %s : "
 "hint_%s, filter_linear_mipmap;”。"
 
+msgid "Can't use function as identifier: '%s'."
+msgstr "不能使用函数作为标识符：“%s”。"
+
 msgid "Varying with '%s' data type may only be used in the '%s' function."
 msgstr "数据类型为“%s”的 Varying 不能在“%s”函数中使用。"
 
 msgid "Varying '%s' must be assigned in the '%s' function first."
 msgstr "Varying“%s”必须先在“%s”函数中赋值。"
-
-msgid "Can't use function as identifier: '%s'."
-msgstr "不能使用函数作为标识符：“%s”。"
 
 msgid "Only integer expressions are allowed for indexing."
 msgstr "只允许使用整数表达式进行索引。"

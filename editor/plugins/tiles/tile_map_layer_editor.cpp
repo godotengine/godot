@@ -44,10 +44,28 @@
 
 #include "core/input/input.h"
 #include "core/math/geometry_2d.h"
+#include "core/math/random_pcg.h"
 #include "core/os/keyboard.h"
 
 TileMapLayer *TileMapLayerSubEditorPlugin::_get_edited_layer() const {
-	return Object::cast_to<TileMapLayer>(ObjectDB::get_instance(edited_tile_map_layer_id));
+	return ObjectDB::get_instance<TileMapLayer>(edited_tile_map_layer_id);
+}
+
+void TileMapLayerSubEditorPlugin::draw_tile_coords_over_viewport(Control *p_overlay, const TileMapLayer *p_edited_layer, Ref<TileSet> p_tile_set, bool p_show_rectangle_size, const Vector2i &p_rectangle_origin) {
+	Point2 msgpos = Point2(20 * EDSCALE, p_overlay->get_size().y - 20 * EDSCALE);
+	String text = p_tile_set->local_to_map(p_edited_layer->get_local_mouse_position());
+
+	if (p_show_rectangle_size) {
+		Vector2i rect_size = p_tile_set->local_to_map(p_edited_layer->get_local_mouse_position()) - p_tile_set->local_to_map(p_rectangle_origin);
+		text += vformat(" %s (%dx%d)", TTR("Drawing Rect:"), Math::abs(rect_size.x) + 1, Math::abs(rect_size.y) + 1);
+	}
+
+	Ref<Font> font = p_overlay->get_theme_font(SceneStringName(font), SNAME("Label"));
+	int font_size = p_overlay->get_theme_font_size(SceneStringName(font_size), SNAME("Label"));
+
+	p_overlay->draw_string(font, msgpos + Point2(1, 1), text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, Color(0, 0, 0, 0.8));
+	p_overlay->draw_string(font, msgpos + Point2(-1, -1), text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, Color(0, 0, 0, 0.8));
+	p_overlay->draw_string(font, msgpos, text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, Color(1, 1, 1, 1));
 }
 
 void TileMapLayerEditorTilesPlugin::tile_set_changed() {
@@ -66,7 +84,7 @@ void TileMapLayerEditorTilesPlugin::_on_scattering_spinbox_changed(double p_valu
 }
 
 void TileMapLayerEditorTilesPlugin::_update_toolbar() {
-	// Stop draggig if needed.
+	// Stop dragging if needed.
 	_stop_dragging();
 
 	// Hide all settings.
@@ -783,7 +801,7 @@ bool TileMapLayerEditorTilesPlugin::forward_canvas_gui_input(const Ref<InputEven
 }
 
 void TileMapLayerEditorTilesPlugin::forward_canvas_draw_over_viewport(Control *p_overlay) {
-	TileMapLayer *edited_layer = _get_edited_layer();
+	const TileMapLayer *edited_layer = _get_edited_layer();
 	if (!edited_layer) {
 		return;
 	}
@@ -1000,19 +1018,7 @@ void TileMapLayerEditorTilesPlugin::forward_canvas_draw_over_viewport(Control *p
 			}
 		}
 
-		Ref<Font> font = p_overlay->get_theme_font(SceneStringName(font), SNAME("Label"));
-		int font_size = p_overlay->get_theme_font_size(SceneStringName(font_size), SNAME("Label"));
-		Point2 msgpos = Point2(20 * EDSCALE, p_overlay->get_size().y - 20 * EDSCALE);
-
-		String text = tile_set->local_to_map(edited_layer->get_local_mouse_position());
-		if (drawing_rect) {
-			Vector2i size = tile_set->local_to_map(edited_layer->get_local_mouse_position()) - tile_set->local_to_map(drag_start_mouse_pos);
-			text += vformat(" %s (%dx%d)", TTR("Drawing Rect:"), ABS(size.x) + 1, ABS(size.y) + 1);
-		}
-
-		p_overlay->draw_string(font, msgpos + Point2(1, 1), text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, Color(0, 0, 0, 0.8));
-		p_overlay->draw_string(font, msgpos + Point2(-1, -1), text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, Color(0, 0, 0, 0.8));
-		p_overlay->draw_string(font, msgpos, text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, Color(1, 1, 1, 1));
+		draw_tile_coords_over_viewport(p_overlay, edited_layer, tile_set, drawing_rect, drag_start_mouse_pos);
 	}
 }
 
@@ -2171,7 +2177,7 @@ void TileMapLayerEditorTilesPlugin::edit(ObjectID p_tile_map_layer_id) {
 		}
 	}
 
-	TileMapLayer *new_tile_map_layer = Object::cast_to<TileMapLayer>(ObjectDB::get_instance(edited_tile_map_layer_id));
+	TileMapLayer *new_tile_map_layer = ObjectDB::get_instance<TileMapLayer>(edited_tile_map_layer_id);
 	Ref<TileSet> new_tile_set;
 	if (new_tile_map_layer) {
 		new_tile_set = new_tile_map_layer->get_tile_set();
@@ -2371,6 +2377,7 @@ TileMapLayerEditorTilesPlugin::TileMapLayerEditorTilesPlugin() {
 
 	missing_source_label = memnew(Label);
 	missing_source_label->set_text(TTR("This TileMap's TileSet has no Tile Source configured. Go to the TileSet bottom panel to add one."));
+	missing_source_label->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
 	missing_source_label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	missing_source_label->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	missing_source_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
@@ -2489,15 +2496,13 @@ TileMapLayerEditorTilesPlugin::TileMapLayerEditorTilesPlugin() {
 
 	patterns_help_label = memnew(Label);
 	patterns_help_label->set_text(TTR("Drag and drop or paste a TileMap selection here to store a pattern."));
+	patterns_help_label->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
 	patterns_help_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
-	patterns_help_label->set_anchors_and_offsets_preset(Control::PRESET_CENTER);
+	patterns_help_label->set_anchors_and_offsets_preset(Control::PRESET_HCENTER_WIDE);
 	patterns_item_list->add_child(patterns_help_label);
 
 	// Update.
 	_update_source_display();
-}
-
-TileMapLayerEditorTilesPlugin::~TileMapLayerEditorTilesPlugin() {
 }
 
 void TileMapLayerEditorTerrainsPlugin::tile_set_changed() {
@@ -3169,6 +3174,7 @@ void TileMapLayerEditorTerrainsPlugin::forward_canvas_draw_over_viewport(Control
 	Transform2D xform = CanvasItemEditor::get_singleton()->get_canvas_transform() * edited_layer->get_global_transform_with_canvas();
 	Vector2 mpos = edited_layer->get_local_mouse_position();
 	Vector2i tile_shape_size = tile_set->get_tile_size();
+	bool drawing_rect = false;
 
 	// Handle the preview of the tiles to be placed.
 	if (main_vbox_container->is_visible_in_tree() && has_mouse) { // Only if the tilemap editor is opened and the viewport is hovered.
@@ -3215,6 +3221,8 @@ void TileMapLayerEditorTerrainsPlugin::forward_canvas_draw_over_viewport(Control
 						preview.insert(Vector2i(x, y));
 					}
 				}
+
+				drawing_rect = !preview.is_empty();
 				expand_grid = true;
 			} else if (tool_buttons_group->get_pressed_button() == bucket_tool_button && drag_type == DRAG_TYPE_NONE) {
 				// Preview for a fill.
@@ -3273,6 +3281,8 @@ void TileMapLayerEditorTerrainsPlugin::forward_canvas_draw_over_viewport(Control
 				}
 			}
 		}
+
+		draw_tile_coords_over_viewport(p_overlay, edited_layer, tile_set, drawing_rect, drag_start_mouse_pos);
 	}
 }
 
@@ -3630,11 +3640,8 @@ TileMapLayerEditorTerrainsPlugin::TileMapLayerEditorTerrainsPlugin() {
 	tools_settings->add_child(bucket_contiguous_checkbox);
 }
 
-TileMapLayerEditorTerrainsPlugin::~TileMapLayerEditorTerrainsPlugin() {
-}
-
 TileMapLayer *TileMapLayerEditor::_get_edited_layer() const {
-	return Object::cast_to<TileMapLayer>(ObjectDB::get_instance(edited_tile_map_layer_id));
+	return ObjectDB::get_instance<TileMapLayer>(edited_tile_map_layer_id);
 }
 
 void TileMapLayerEditor::_find_tile_map_layers_in_scene(Node *p_current, const Node *p_owner, Vector<TileMapLayer *> &r_list) const {
@@ -4033,18 +4040,18 @@ Vector<Vector2i> TileMapLayerEditor::get_line(const TileMapLayer *p_tile_map_lay
 		}
 
 		Vector2i delta = p_to_cell - p_from_cell;
-		delta = Vector2i(2 * delta.x + ABS(p_to_cell.y % 2) - ABS(p_from_cell.y % 2), delta.y);
+		delta = Vector2i(2 * delta.x + Math::abs(p_to_cell.y % 2) - Math::abs(p_from_cell.y % 2), delta.y);
 		Vector2i sign = delta.sign();
 
 		Vector2i current = p_from_cell;
 		points.push_back(TileSet::transform_coords_layout(transposed ? Vector2i(current.y, current.x) : current, tile_set->get_tile_offset_axis(), TileSet::TILE_LAYOUT_STACKED, tile_set->get_tile_layout()));
 
 		int err = 0;
-		if (ABS(delta.y) < ABS(delta.x)) {
+		if (Math::abs(delta.y) < Math::abs(delta.x)) {
 			Vector2i err_step = 3 * delta.abs();
 			while (current != p_to_cell) {
 				err += err_step.y;
-				if (err > ABS(delta.x)) {
+				if (err > Math::abs(delta.x)) {
 					if (sign.x == 0) {
 						current += Vector2(sign.y, 0);
 					} else {
@@ -4113,6 +4120,7 @@ void TileMapLayerEditor::_tab_changed(int p_tab_id) {
 	// Graphical update.
 	tabs_data[tabs_bar->get_current_tab()].panel->queue_redraw();
 	CanvasItemEditor::get_singleton()->update_viewport();
+	_update_bottom_panel();
 }
 
 void TileMapLayerEditor::_layers_select_next_or_previous(bool p_next) {
@@ -4277,10 +4285,7 @@ void TileMapLayerEditor::forward_canvas_draw_over_viewport(Control *p_overlay) {
 
 			if (!source || !source->has_tile(tile_atlas_coords) || !source->has_alternative_tile(tile_atlas_coords, tile_alternative_tile)) {
 				// Generate a random color from the hashed identifier of the tiles.
-				Array to_hash;
-				to_hash.push_back(tile_source_id);
-				to_hash.push_back(tile_atlas_coords);
-				to_hash.push_back(tile_alternative_tile);
+				Array to_hash = { tile_source_id, tile_atlas_coords, tile_alternative_tile };
 				uint32_t hash = RandomPCG(to_hash.hash()).rand();
 
 				Color color;
@@ -4521,6 +4526,8 @@ TileMapLayerEditor::TileMapLayerEditor() {
 
 	// A label for editing errors.
 	cant_edit_label = memnew(Label);
+	cant_edit_label->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
+	cant_edit_label->set_anchors_and_offsets_preset(Control::PRESET_HCENTER_WIDE);
 	cant_edit_label->set_h_size_flags(SIZE_EXPAND_FILL);
 	cant_edit_label->set_v_size_flags(SIZE_EXPAND_FILL);
 	cant_edit_label->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);

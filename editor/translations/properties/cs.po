@@ -998,6 +998,9 @@ msgstr "Režim spánku s nízkým využitím procesoru (µs)"
 msgid "Unfocused Low Processor Mode Sleep (µsec)"
 msgstr "Nezaměřený režim spánku s nízkým využitím procesoru (µs)"
 
+msgid "V-Sync Mode"
+msgstr "Režim V-Sync"
+
 msgid "Update Continuously"
 msgstr "Aktualizovat průběžně"
 
@@ -1057,6 +1060,9 @@ msgstr "Motiv"
 
 msgid "Icon and Font Color"
 msgstr "Barva ikon a fontů"
+
+msgid "Contrast"
+msgstr "Kontrast"
 
 msgid "Draw Extra Borders"
 msgstr "Kreslit dodatečné okraje"
@@ -1243,6 +1249,9 @@ msgstr "Editor textu"
 
 msgid "Line Spacing"
 msgstr "Řádkování"
+
+msgid "Color Theme"
+msgstr "Barevný motiv"
 
 msgid "Appearance"
 msgstr "Vzhled"
@@ -1775,9 +1784,6 @@ msgstr "Obnovit shadery při načtení"
 msgid "Visual Editors"
 msgstr "Vizuální editory"
 
-msgid "Color Theme"
-msgstr "Barevný motiv"
-
 msgid "Minimap Opacity"
 msgstr "Průhlednost minimapy"
 
@@ -1805,8 +1811,14 @@ msgstr "SCP"
 msgid "Window Placement"
 msgstr "Umístění okna"
 
+msgid "Rect"
+msgstr "Obdélník"
+
 msgid "Rect Custom Position"
 msgstr "Vlastní pozice obdélníku"
+
+msgid "Screen"
+msgstr "Obrazovka"
 
 msgid "Auto Save"
 msgstr "Automatické ukládání"
@@ -1816,6 +1828,9 @@ msgstr "Uložit před spuštěním"
 
 msgid "Output"
 msgstr "Výstup"
+
+msgid "Font Size"
+msgstr "Velikost fontu"
 
 msgid "Always Clear Output on Play"
 msgstr "Vždy promazat výstup při spuštění"
@@ -1840,6 +1855,9 @@ msgstr "Host"
 
 msgid "Editor TLS Certificates"
 msgstr "TLS certifikáty editoru"
+
+msgid "Enable TLS V 1"
+msgstr "Povolit TLS V 1"
 
 msgid "Remote Host"
 msgstr "Vzdálený host"
@@ -2868,9 +2886,6 @@ msgstr "Ruční"
 msgid "Orientation"
 msgstr "Orientace"
 
-msgid "V-Sync Mode"
-msgstr "Režim V-Sync"
-
 msgid "Output Latency"
 msgstr "Latence výstupu"
 
@@ -3828,9 +3843,6 @@ msgstr "Odstranění šumu"
 msgid "Denoiser"
 msgstr "Odstraňovač šumu"
 
-msgid "Enable TLS V 1"
-msgstr "Povolit TLS V 1"
-
 msgid "BPM"
 msgstr "Tempo (BPM)"
 
@@ -4307,9 +4319,6 @@ msgstr "Gesto"
 
 msgid "Swipe to Dismiss"
 msgstr "Zavřít přejetím prstu"
-
-msgid "Screen"
-msgstr "Obrazovka"
 
 msgid "Immersive Mode"
 msgstr "Imerzivní režim"
@@ -4916,9 +4925,6 @@ msgstr "Maximální polyfonie"
 
 msgid "Copy Mode"
 msgstr "Režim kopírování"
-
-msgid "Rect"
-msgstr "Obdélník"
 
 msgid "Anchor Mode"
 msgstr "Režim ukotvení"
@@ -5767,9 +5773,6 @@ msgstr "Priorita vykreslování"
 
 msgid "Text"
 msgstr "Text"
-
-msgid "Font Size"
-msgstr "Velikost fontu"
 
 msgid "Horizontal Alignment"
 msgstr "Horizontální zarovnání"
@@ -7087,9 +7090,6 @@ msgstr "Zdroj"
 
 msgid "Mix"
 msgstr "Mix"
-
-msgid "Contrast"
-msgstr "Kontrast"
 
 msgid "Features"
 msgstr "Vlastnosti"

@@ -28,17 +28,16 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef COWDATA_H
-#define COWDATA_H
+#pragma once
 
 #include "core/error/error_macros.h"
 #include "core/os/memory.h"
 #include "core/templates/safe_refcount.h"
+#include "core/templates/span.h"
 
 #include <string.h>
 #include <initializer_list>
 #include <type_traits>
-#include <utility>
 
 template <typename T>
 class Vector;
@@ -249,9 +248,8 @@ public:
 		return OK;
 	}
 
-	Size find(const T &p_val, Size p_from = 0) const;
-	Size rfind(const T &p_val, Size p_from = -1) const;
-	Size count(const T &p_val) const;
+	_FORCE_INLINE_ operator Span<T>() const { return Span<T>(ptr(), size()); }
+	_FORCE_INLINE_ Span<T> span() const { return operator Span<T>(); }
 
 	_FORCE_INLINE_ CowData() {}
 	_FORCE_INLINE_ ~CowData() { _unref(); }
@@ -386,14 +384,7 @@ Error CowData<T>::resize(Size p_size) {
 		}
 
 		// construct the newly created elements
-
-		if constexpr (!std::is_trivially_constructible_v<T>) {
-			for (Size i = *_get_size(); i < p_size; i++) {
-				memnew_placement(&_ptr[i], T);
-			}
-		} else if (p_ensure_zero) {
-			memset((void *)(_ptr + current_size), 0, (p_size - current_size) * sizeof(T));
-		}
+		memnew_arr_placement<p_ensure_zero>(_ptr + current_size, p_size - current_size);
 
 		*_get_size() = p_size;
 
@@ -435,54 +426,6 @@ Error CowData<T>::_realloc(Size p_alloc_size) {
 }
 
 template <typename T>
-typename CowData<T>::Size CowData<T>::find(const T &p_val, Size p_from) const {
-	Size ret = -1;
-
-	if (p_from < 0 || size() == 0) {
-		return ret;
-	}
-
-	for (Size i = p_from; i < size(); i++) {
-		if (get(i) == p_val) {
-			ret = i;
-			break;
-		}
-	}
-
-	return ret;
-}
-
-template <typename T>
-typename CowData<T>::Size CowData<T>::rfind(const T &p_val, Size p_from) const {
-	const Size s = size();
-
-	if (p_from < 0) {
-		p_from = s + p_from;
-	}
-	if (p_from < 0 || p_from >= s) {
-		p_from = s - 1;
-	}
-
-	for (Size i = p_from; i >= 0; i--) {
-		if (get(i) == p_val) {
-			return i;
-		}
-	}
-	return -1;
-}
-
-template <typename T>
-typename CowData<T>::Size CowData<T>::count(const T &p_val) const {
-	Size amount = 0;
-	for (Size i = 0; i < size(); i++) {
-		if (get(i) == p_val) {
-			amount++;
-		}
-	}
-	return amount;
-}
-
-template <typename T>
 void CowData<T>::_ref(const CowData *p_from) {
 	_ref(*p_from);
 }
@@ -521,4 +464,6 @@ CowData<T>::CowData(std::initializer_list<T> p_init) {
 #pragma GCC diagnostic pop
 #endif
 
-#endif // COWDATA_H
+// Zero-constructing CowData initializes _ptr to nullptr (and thus empty).
+template <typename T>
+struct is_zero_constructible<CowData<T>> : std::true_type {};

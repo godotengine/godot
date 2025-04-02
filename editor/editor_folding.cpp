@@ -65,7 +65,7 @@ void EditorFolding::_set_unfolds(Object *p_object, const Vector<String> &p_unfol
 	const String *r = p_unfolds.ptr();
 	p_object->editor_clear_section_folding();
 	for (int i = 0; i < uc; i++) {
-		p_object->editor_set_section_unfold(r[i], true);
+		p_object->editor_set_section_unfold(r[i], true, true);
 	}
 }
 
@@ -293,7 +293,4 @@ void EditorFolding::_do_node_unfolds(Node *p_root, Node *p_node, HashSet<Ref<Res
 void EditorFolding::unfold_scene(Node *p_scene) {
 	HashSet<Ref<Resource>> resources;
 	_do_node_unfolds(p_scene, p_scene, resources);
-}
-
-EditorFolding::EditorFolding() {
 }

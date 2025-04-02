@@ -1110,8 +1110,10 @@ void WaylandThread::_wl_output_on_geometry(void *data, struct wl_output *wl_outp
 	ss->pending_data.physical_size.width = physical_width;
 	ss->pending_data.physical_size.height = physical_height;
 
-	ss->pending_data.make.parse_utf8(make);
-	ss->pending_data.model.parse_utf8(model);
+	ss->pending_data.make.clear();
+	ss->pending_data.make.append_utf8(make);
+	ss->pending_data.model.clear();
+	ss->pending_data.model.append_utf8(model);
 
 	// `wl_output::done` is a version 2 addition. We'll directly update the data
 	// for compatibility.
@@ -3730,12 +3732,12 @@ void WaylandThread::window_set_title(DisplayServer::WindowID p_window_id, const 
 
 #ifdef LIBDECOR_ENABLED
 	if (ws.libdecor_frame) {
-		libdecor_frame_set_title(ws.libdecor_frame, p_title.utf8());
+		libdecor_frame_set_title(ws.libdecor_frame, p_title.utf8().get_data());
 	}
 #endif // LIBDECOR_ENABLE
 
 	if (ws.xdg_toplevel) {
-		xdg_toplevel_set_title(ws.xdg_toplevel, p_title.utf8());
+		xdg_toplevel_set_title(ws.xdg_toplevel, p_title.utf8().get_data());
 	}
 }
 
@@ -3745,13 +3747,13 @@ void WaylandThread::window_set_app_id(DisplayServer::WindowID p_window_id, const
 
 #ifdef LIBDECOR_ENABLED
 	if (ws.libdecor_frame) {
-		libdecor_frame_set_app_id(ws.libdecor_frame, p_app_id.utf8());
+		libdecor_frame_set_app_id(ws.libdecor_frame, p_app_id.utf8().get_data());
 		return;
 	}
 #endif // LIBDECOR_ENABLED
 
 	if (ws.xdg_toplevel) {
-		xdg_toplevel_set_app_id(ws.xdg_toplevel, p_app_id.utf8());
+		xdg_toplevel_set_app_id(ws.xdg_toplevel, p_app_id.utf8().get_data());
 		return;
 	}
 }
@@ -4138,10 +4140,7 @@ String WaylandThread::keyboard_get_layout_name(int p_index) const {
 	SeatState *ss = wl_seat_get_seat_state(wl_seat_current);
 
 	if (ss && ss->xkb_keymap) {
-		String ret;
-		ret.parse_utf8(xkb_keymap_layout_get_name(ss->xkb_keymap, p_index));
-
-		return ret;
+		return String::utf8(xkb_keymap_layout_get_name(ss->xkb_keymap, p_index));
 	}
 
 	return "";
@@ -4240,7 +4239,7 @@ Vector<uint8_t> WaylandThread::selection_get_mime(const String &p_mime) const {
 		return Vector<uint8_t>();
 	}
 
-	return _wl_data_offer_read(wl_display, p_mime.utf8(), ss->wl_data_offer_selection);
+	return _wl_data_offer_read(wl_display, p_mime.utf8().get_data(), ss->wl_data_offer_selection);
 }
 
 bool WaylandThread::primary_has_mime(const String &p_mime) const {
@@ -4283,7 +4282,7 @@ Vector<uint8_t> WaylandThread::primary_get_mime(const String &p_mime) const {
 		return Vector<uint8_t>();
 	}
 
-	return _wp_primary_selection_offer_read(wl_display, p_mime.utf8(), ss->wp_primary_selection_offer);
+	return _wp_primary_selection_offer_read(wl_display, p_mime.utf8().get_data(), ss->wp_primary_selection_offer);
 }
 
 void WaylandThread::primary_set_text(const String &p_text) {

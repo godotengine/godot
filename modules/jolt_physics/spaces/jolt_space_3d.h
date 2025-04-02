@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef JOLT_SPACE_3D_H
-#define JOLT_SPACE_3D_H
+#pragma once
 
 #include "jolt_body_accessor_3d.h"
 
@@ -44,8 +43,6 @@
 #include "Jolt/Physics/Collision/NarrowPhaseQuery.h"
 #include "Jolt/Physics/Constraints/Constraint.h"
 #include "Jolt/Physics/PhysicsSystem.h"
-
-#include <stdint.h>
 
 class JoltArea3D;
 class JoltBody3D;
@@ -162,5 +159,3 @@ public:
 	void set_max_debug_contacts(int p_count);
 #endif
 };
-
-#endif // JOLT_SPACE_3D_H

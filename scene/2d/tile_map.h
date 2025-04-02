@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TILE_MAP_H
-#define TILE_MAP_H
+#pragma once
 
 #include "scene/2d/tile_map_layer.h"
 #include "scene/property_list_helper.h"
@@ -208,10 +207,12 @@ public:
 	virtual void set_texture_filter(CanvasItem::TextureFilter p_texture_filter) override;
 	virtual void set_texture_repeat(CanvasItem::TextureRepeat p_texture_repeat) override;
 
+#ifndef PHYSICS_2D_DISABLED
 	// For finding tiles from collision.
 	Vector2i get_coords_for_body_rid(RID p_physics_body);
 	// For getting their layers as well.
 	int get_layer_for_body_rid(RID p_physics_body);
+#endif // PHYSICS_2D_DISABLED
 
 	// Fixing and clearing methods.
 	void fix_invalid_tiles();
@@ -251,5 +252,3 @@ public:
 };
 
 VARIANT_ENUM_CAST(TileMap::VisibilityMode);
-
-#endif // TILE_MAP_H

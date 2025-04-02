@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef OS_H
-#define OS_H
+#pragma once
 
 #include "core/config/engine.h"
 #include "core/io/logger.h"
@@ -266,6 +265,9 @@ public:
 	virtual void set_crash_handler_silent() { _silent_crash_handler = true; }
 	virtual bool is_crash_handler_silent() { return _silent_crash_handler; }
 
+	virtual String multibyte_to_string(const String &p_encoding, const PackedByteArray &p_array) const;
+	virtual PackedByteArray string_to_multibyte(const String &p_encoding, const String &p_string) const;
+
 	virtual void disable_crash_handler() {}
 	virtual bool is_disable_crash_handler() const { return false; }
 	virtual void initialize_debugging() {}
@@ -362,12 +364,10 @@ public:
 	// This is invoked by the GDExtensionManager after loading GDExtensions specified by the project.
 	virtual void load_platform_gdextensions() const {}
 
-	// Windows only. Tests OpenGL context and Rendering Device simultaneous creation. This function is expected to crash on some NVIDIA drivers.
-	virtual bool _test_create_rendering_device_and_gl() const { return true; }
-	virtual bool _test_create_rendering_device() const { return true; }
+	// Tests OpenGL context and Rendering Device simultaneous creation. This function is expected to crash on some NVIDIA drivers.
+	virtual bool _test_create_rendering_device_and_gl(const String &p_display_driver) const { return true; }
+	virtual bool _test_create_rendering_device(const String &p_display_driver) const { return true; }
 
 	OS();
 	virtual ~OS();
 };
-
-#endif // OS_H

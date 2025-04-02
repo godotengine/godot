@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef CAMERA_3D_H
-#define CAMERA_3D_H
+#pragma once
 
 #include "scene/3d/node_3d.h"
 #include "scene/3d/velocity_tracker_3d.h"
@@ -95,8 +94,10 @@ private:
 	DopplerTracking doppler_tracking = DOPPLER_TRACKING_DISABLED;
 	Ref<VelocityTracker3D> velocity_tracker;
 
+#ifndef PHYSICS_3D_DISABLED
 	RID pyramid_shape;
 	Vector<Vector3> pyramid_shape_points;
+#endif // PHYSICS_3D_DISABLED
 
 	///////////////////////////////////////////////////////
 	// INTERPOLATION FUNCTIONS
@@ -218,7 +219,9 @@ public:
 
 	Vector3 get_doppler_tracked_velocity() const;
 
+#ifndef PHYSICS_3D_DISABLED
 	RID get_pyramid_shape_rid();
+#endif // PHYSICS_3D_DISABLED
 
 	Camera3D();
 	~Camera3D();
@@ -227,5 +230,3 @@ public:
 VARIANT_ENUM_CAST(Camera3D::ProjectionType);
 VARIANT_ENUM_CAST(Camera3D::KeepAspect);
 VARIANT_ENUM_CAST(Camera3D::DopplerTracking);
-
-#endif // CAMERA_3D_H

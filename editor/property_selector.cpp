@@ -180,7 +180,7 @@ void PropertySelector::_update_search() {
 			Variant::construct(type, v, nullptr, 0, ce);
 			v.get_method_list(&methods);
 		} else {
-			Ref<Script> script_ref = Object::cast_to<Script>(ObjectDB::get_instance(script));
+			Ref<Script> script_ref = ObjectDB::get_ref<Script>(script);
 			if (script_ref.is_valid()) {
 				if (script_ref->is_built_in()) {
 					script_ref->reload(true);
@@ -226,7 +226,7 @@ void PropertySelector::_update_search() {
 
 				Ref<Texture2D> icon;
 				script_methods = false;
-				String rep = mi.name.replace("*", "");
+				String rep = mi.name.remove_char('*');
 				if (mi.name == "*Script Methods") {
 					icon = search_options->get_editor_theme_icon(SNAME("Script"));
 					script_methods = true;
@@ -238,7 +238,7 @@ void PropertySelector::_update_search() {
 				continue;
 			}
 
-			String name = mi.name.get_slice(":", 0);
+			String name = mi.name.get_slicec(':', 0);
 			if (!script_methods && name.begins_with("_") && !(mi.flags & METHOD_FLAG_VIRTUAL)) {
 				continue;
 			}
@@ -259,8 +259,8 @@ void PropertySelector::_update_search() {
 
 			String desc;
 			if (mi.name.contains_char(':')) {
-				desc = mi.name.get_slice(":", 1) + " ";
-				mi.name = mi.name.get_slice(":", 0);
+				desc = mi.name.get_slicec(':', 1) + " ";
+				mi.name = mi.name.get_slicec(':', 0);
 			} else if (mi.return_val.type != Variant::NIL) {
 				desc = Variant::get_type_name(mi.return_val.type);
 			} else {
@@ -269,20 +269,21 @@ void PropertySelector::_update_search() {
 
 			desc += vformat(" %s(", mi.name);
 
-			for (List<PropertyInfo>::Iterator arg_itr = mi.arguments.begin(); arg_itr != mi.arguments.end(); ++arg_itr) {
-				if (arg_itr != mi.arguments.begin()) {
+			for (int64_t i = 0; i < mi.arguments.size(); ++i) {
+				PropertyInfo &arg = mi.arguments.write[i];
+				if (i > 0) {
 					desc += ", ";
 				}
 
-				desc += arg_itr->name;
+				desc += arg.name;
 
-				if (arg_itr->type == Variant::NIL) {
+				if (arg.type == Variant::NIL) {
 					desc += ": Variant";
-				} else if (arg_itr->name.contains_char(':')) {
-					desc += vformat(": %s", arg_itr->name.get_slice(":", 1));
-					arg_itr->name = arg_itr->name.get_slice(":", 0);
+				} else if (arg.name.contains_char(':')) {
+					desc += vformat(": %s", arg.name.get_slicec(':', 1));
+					arg.name = arg.name.get_slicec(':', 0);
 				} else {
-					desc += vformat(": %s", Variant::get_type_name(arg_itr->type));
+					desc += vformat(": %s", Variant::get_type_name(arg.type));
 				}
 			}
 

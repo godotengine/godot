@@ -28,10 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "godot_content_view.h"
+#import "godot_content_view.h"
 
-#include "display_server_macos.h"
-#include "key_mapping_macos.h"
+#import "display_server_macos.h"
+#import "key_mapping_macos.h"
 
 #include "main/main.h"
 
@@ -270,8 +270,7 @@
 	text.resize([characters length] + 1);
 	[characters getCharacters:(unichar *)text.ptrw() range:NSMakeRange(0, [characters length])];
 
-	String u32text;
-	u32text.parse_utf16(text.ptr(), text.length());
+	String u32text = String::utf16(text.ptr(), text.length());
 
 	for (int i = 0; i < u32text.length(); i++) {
 		const char32_t codepoint = u32text[i];
@@ -622,7 +621,7 @@
 		[self removeTrackingArea:tracking_area];
 	}
 
-	NSTrackingAreaOptions options = NSTrackingMouseEnteredAndExited | NSTrackingActiveInKeyWindow | NSTrackingCursorUpdate | NSTrackingInVisibleRect;
+	NSTrackingAreaOptions options = NSTrackingMouseEnteredAndExited | NSTrackingActiveWhenFirstResponder | NSTrackingCursorUpdate | NSTrackingInVisibleRect;
 	tracking_area = [[NSTrackingArea alloc] initWithRect:[self bounds] options:options owner:self userInfo:nil];
 
 	[self addTrackingArea:tracking_area];
@@ -652,8 +651,7 @@
 			text.resize([characters length] + 1);
 			[characters getCharacters:(unichar *)text.ptrw() range:NSMakeRange(0, [characters length])];
 
-			String u32text;
-			u32text.parse_utf16(text.ptr(), text.length());
+			String u32text = String::utf16(text.ptr(), text.length());
 
 			DisplayServerMacOS::KeyEvent ke;
 			ke.window_id = window_id;
