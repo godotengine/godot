@@ -44,6 +44,10 @@
 #include "core/templates/hash_map.h"
 #include "scene/main/node.h"
 
+#ifdef DEBUG_ENABLED
+#include "editor/editor_help.h"
+#endif
+
 #if defined(TOOLS_ENABLED) && !defined(DISABLE_DEPRECATED)
 #define SUGGEST_GODOT4_RENAMES
 #include "editor/renames_map_3_to_4.h"
@@ -5794,7 +5798,13 @@ bool GDScriptAnalyzer::get_function_signature(GDScriptParser::Node *p_source, bo
 			*r_native_class = native_method->get_instance_class();
 		}
 
-		// TODO: look up base_native in here, and then its class to see if we can get its function doc?
+		auto method_list = EditorHelp::get_doc_data()->class_list[base_native].methods;
+		for (int i = 0; i < method_list.size(); i++) {
+			if (method_list[i].name == function_name && method_list[i].is_deprecated) {
+				parser->push_warning(p_source, GDScriptWarning::DEPRECATED_IDENTIFIER);
+				break;
+			}
+		}
 #endif
 		return valid;
 	}
