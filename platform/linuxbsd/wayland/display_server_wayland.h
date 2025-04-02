@@ -165,6 +165,8 @@ class DisplayServerWayland : public DisplayServer {
 
 	void try_suspend();
 
+	void initialize_tts() const;
+
 public:
 	virtual bool has_feature(Feature p_feature) const override;
 
