@@ -472,18 +472,22 @@
 			<return type="int" enum="OS.StdHandleType" />
 			<description>
 				Returns type of the standard error device.
+				[b]Note:[/b] This method is implemented on Linux, macOS, and Windows.
 			</description>
 		</method>
 		<method name="get_stdin_type" qualifiers="const">
 			<return type="int" enum="OS.StdHandleType" />
 			<description>
 				Returns type of the standard input device.
+				[b]Note:[/b] This method is implemented on Linux, macOS, and Windows.
+				[b]Note:[/b] On exported Windows builds, run the console wrapper executable to access the standard input. If you need a single executable with full console support, use a custom build compiled with the [code]windows_subsystem=console[/code] flag.
 			</description>
 		</method>
 		<method name="get_stdout_type" qualifiers="const">
 			<return type="int" enum="OS.StdHandleType" />
 			<description>
 				Returns type of the standard output device.
+				[b]Note:[/b] This method is implemented on Linux, macOS, and Windows.
 			</description>
 		</method>
 		<method name="get_system_ca_certificates">
