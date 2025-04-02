@@ -174,7 +174,7 @@ class EditorAudioBuses : public VBoxContainer {
 
 	void _add_bus();
 	void _delete_bus(Object *p_which);
-	void _duplicate_bus(int p_which);
+	void _duplicate_bus(int p_which, bool make_effects_unique = false);
 	void _reset_bus_volume(Object *p_which);
 
 	void _request_drop_end();
