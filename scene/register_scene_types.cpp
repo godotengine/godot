@@ -523,7 +523,12 @@ void register_scene_types() {
 
 	bool swap_cancel_ok = false;
 	if (DisplayServer::get_singleton()) {
-		swap_cancel_ok = GLOBAL_DEF_NOVAL("gui/common/swap_cancel_ok", bool(DisplayServer::get_singleton()->get_swap_cancel_ok()));
+		String swap_cancel_ok_str = GLOBAL_DEF(PropertyInfo(Variant::STRING, "gui/common/swap_cancel_ok", PROPERTY_HINT_ENUM, "auto,yes,no"), "auto");
+		if (swap_cancel_ok_str == "auto") {
+			swap_cancel_ok = DisplayServer::get_singleton()->get_swap_cancel_ok();
+		} else {
+			swap_cancel_ok = (swap_cancel_ok_str == "yes");
+		}
 	}
 	AcceptDialog::set_swap_cancel_ok(swap_cancel_ok);
 #endif
