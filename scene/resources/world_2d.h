@@ -44,10 +44,12 @@ class World2D : public Resource {
 	GDCLASS(World2D, Resource);
 
 	RID canvas;
-	mutable RID space;
 #ifndef NAVIGATION_2D_DISABLED
 	mutable RID navigation_map;
 #endif // NAVIGATION_2D_DISABLED
+#ifndef PHYSICS_2D_DISABLED
+	mutable RID space;
+#endif // PHYSICS_2D_DISABLED
 
 	HashSet<Viewport *> viewports;
 
