@@ -45,7 +45,7 @@ void GroupSettingsEditor::_notification(int p_what) {
 			update_groups();
 		} break;
 		case NOTIFICATION_THEME_CHANGED: {
-			add_button->set_icon(get_editor_theme_icon(SNAME("Add")));
+			add_button->set_button_icon(get_editor_theme_icon(SNAME("Add")));
 		} break;
 	}
 }
@@ -500,7 +500,7 @@ GroupSettingsEditor::GroupSettingsEditor() {
 	group_name->set_h_size_flags(SIZE_EXPAND_FILL);
 	group_name->set_clear_button_enabled(true);
 	group_name->connect(SceneStringName(text_changed), callable_mp(this, &GroupSettingsEditor::_group_name_text_changed));
-	group_name->connect("text_submitted", callable_mp(this, &GroupSettingsEditor::_text_submitted));
+	group_name->connect(SceneStringName(text_submitted), callable_mp(this, &GroupSettingsEditor::_text_submitted));
 	hbc->add_child(group_name);
 
 	l = memnew(Label);
@@ -510,7 +510,7 @@ GroupSettingsEditor::GroupSettingsEditor() {
 	group_description = memnew(LineEdit);
 	group_description->set_clear_button_enabled(true);
 	group_description->set_h_size_flags(SIZE_EXPAND_FILL);
-	group_description->connect("text_submitted", callable_mp(this, &GroupSettingsEditor::_text_submitted));
+	group_description->connect(SceneStringName(text_submitted), callable_mp(this, &GroupSettingsEditor::_text_submitted));
 	hbc->add_child(group_description);
 
 	add_button = memnew(Button);

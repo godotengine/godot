@@ -219,7 +219,7 @@ Error GDExtensionLibraryLoader::initialize(GDExtensionInterfaceGetProcAddress p_
 	Error err = OS::get_singleton()->get_dynamic_library_symbol_handle(library, entry_symbol, entry_funcptr, false);
 
 	if (err != OK) {
-		ERR_PRINT("GDExtension entry point '" + entry_symbol + "' not found in library " + library_path);
+		ERR_PRINT(vformat("GDExtension entry point '%s' not found in library %s.", entry_symbol, library_path));
 		return err;
 	}
 
@@ -230,7 +230,7 @@ Error GDExtensionLibraryLoader::initialize(GDExtensionInterfaceGetProcAddress p_
 	if (ret) {
 		return OK;
 	} else {
-		ERR_PRINT("GDExtension initialization function '" + entry_symbol + "' returned an error.");
+		ERR_PRINT(vformat("GDExtension initialization function '%s' returned an error.", entry_symbol));
 		return FAILED;
 	}
 }
@@ -259,6 +259,10 @@ bool GDExtensionLibraryLoader::has_library_changed() const {
 	return false;
 }
 
+bool GDExtensionLibraryLoader::library_exists() const {
+	return FileAccess::exists(resource_path);
+}
+
 Error GDExtensionLibraryLoader::parse_gdextension_file(const String &p_path) {
 	resource_path = p_path;
 
@@ -268,12 +272,12 @@ Error GDExtensionLibraryLoader::parse_gdextension_file(const String &p_path) {
 	Error err = config->load(p_path);
 
 	if (err != OK) {
-		ERR_PRINT("Error loading GDExtension configuration file: " + p_path);
+		ERR_PRINT(vformat("Error loading GDExtension configuration file: '%s'.", p_path));
 		return err;
 	}
 
 	if (!config->has_section_key("configuration", "entry_symbol")) {
-		ERR_PRINT("GDExtension configuration file must contain a \"configuration/entry_symbol\" key: " + p_path);
+		ERR_PRINT(vformat("GDExtension configuration file must contain a \"configuration/entry_symbol\" key: '%s'.", p_path));
 		return ERR_INVALID_DATA;
 	}
 
@@ -292,7 +296,7 @@ Error GDExtensionLibraryLoader::parse_gdextension_file(const String &p_path) {
 			}
 		}
 	} else {
-		ERR_PRINT("GDExtension configuration file must contain a \"configuration/compatibility_minimum\" key: " + p_path);
+		ERR_PRINT(vformat("GDExtension configuration file must contain a \"configuration/compatibility_minimum\" key: '%s'.", p_path));
 		return ERR_INVALID_DATA;
 	}
 
@@ -303,12 +307,12 @@ Error GDExtensionLibraryLoader::parse_gdextension_file(const String &p_path) {
 
 	bool compatible = true;
 	// Check version lexicographically.
-	if (VERSION_MAJOR != compatibility_minimum[0]) {
-		compatible = VERSION_MAJOR > compatibility_minimum[0];
-	} else if (VERSION_MINOR != compatibility_minimum[1]) {
-		compatible = VERSION_MINOR > compatibility_minimum[1];
+	if (GODOT_VERSION_MAJOR != compatibility_minimum[0]) {
+		compatible = GODOT_VERSION_MAJOR > compatibility_minimum[0];
+	} else if (GODOT_VERSION_MINOR != compatibility_minimum[1]) {
+		compatible = GODOT_VERSION_MINOR > compatibility_minimum[1];
 	} else {
-		compatible = VERSION_PATCH >= compatibility_minimum[2];
+		compatible = GODOT_VERSION_PATCH >= compatibility_minimum[2];
 	}
 	if (!compatible) {
 		ERR_PRINT(vformat("GDExtension only compatible with Godot version %d.%d.%d or later: %s", compatibility_minimum[0], compatibility_minimum[1], compatibility_minimum[2], p_path));
@@ -330,15 +334,15 @@ Error GDExtensionLibraryLoader::parse_gdextension_file(const String &p_path) {
 		}
 
 		compatible = true;
-		if (VERSION_MAJOR != compatibility_maximum[0]) {
-			compatible = VERSION_MAJOR < compatibility_maximum[0];
-		} else if (VERSION_MINOR != compatibility_maximum[1]) {
-			compatible = VERSION_MINOR < compatibility_maximum[1];
+		if (GODOT_VERSION_MAJOR != compatibility_maximum[0]) {
+			compatible = GODOT_VERSION_MAJOR < compatibility_maximum[0];
+		} else if (GODOT_VERSION_MINOR != compatibility_maximum[1]) {
+			compatible = GODOT_VERSION_MINOR < compatibility_maximum[1];
 		}
-#if VERSION_PATCH
+#if GODOT_VERSION_PATCH
 		// #if check to avoid -Wtype-limits warning when 0.
 		else {
-			compatible = VERSION_PATCH <= compatibility_maximum[2];
+			compatible = GODOT_VERSION_PATCH <= compatibility_maximum[2];
 		}
 #endif
 

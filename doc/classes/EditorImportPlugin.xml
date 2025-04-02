@@ -63,7 +63,7 @@
 
 		    public override string[] _GetRecognizedExtensions()
 		    {
-		        return new string[] { "special", "spec" };
+		        return ["special", "spec"];
 		    }
 
 		    public override string _GetSaveExtension()
@@ -88,14 +88,14 @@
 
 		    public override Godot.Collections.Array&lt;Godot.Collections.Dictionary&gt; _GetImportOptions(string path, int presetIndex)
 		    {
-		        return new Godot.Collections.Array&lt;Godot.Collections.Dictionary&gt;
-		        {
+		        return
+		        [
 		            new Godot.Collections.Dictionary
 		            {
 		                { "name", "myOption" },
 		                { "default_value", false },
-		            }
-		        };
+		            },
+		        ];
 		    }
 
 		    public override Error _Import(string sourceFile, string savePath, Godot.Collections.Dictionary options, Godot.Collections.Array&lt;string&gt; platformVariants, Godot.Collections.Array&lt;string&gt; genFiles)
@@ -124,7 +124,14 @@
 			<return type="bool" />
 			<description>
 				Tells whether this importer can be run in parallel on threads, or, on the contrary, it's only safe for the editor to call it from the main thread, for one file at a time.
-				If this method is not overridden, it will return [code]true[/code] by default (i.e., safe for parallel importing).
+				If this method is not overridden, it will return [code]false[/code] by default.
+				If this importer's implementation is thread-safe and can be run in parallel, override this with [code]true[/code] to optimize for concurrency.
+			</description>
+		</method>
+		<method name="_get_format_version" qualifiers="virtual const">
+			<return type="int" />
+			<description>
+				Gets the format version of this importer. Increment this version when making incompatible changes to the format of the imported resources.
 			</description>
 		</method>
 		<method name="_get_import_options" qualifiers="virtual const">
@@ -153,7 +160,7 @@
 			<param index="1" name="option_name" type="StringName" />
 			<param index="2" name="options" type="Dictionary" />
 			<description>
-				This method can be overridden to hide specific import options if conditions are met. This is mainly useful for hiding options that depend on others if one of them is disabled. For example:
+				This method can be overridden to hide specific import options if conditions are met. This is mainly useful for hiding options that depend on others if one of them is disabled.
 				[codeblocks]
 				[gdscript]
 				func _get_option_visibility(option, options):

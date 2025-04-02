@@ -37,9 +37,9 @@
 #include "editor/themes/editor_scale.h"
 #endif
 
-#ifdef TOOLS_ENABLED
+#ifdef DEBUG_ENABLED
 Rect2 Path2D::_edit_get_rect() const {
-	if (!curve.is_valid() || curve->get_point_count() == 0) {
+	if (curve.is_null() || curve->get_point_count() == 0) {
 		return Rect2(0, 0, 0, 0);
 	}
 
@@ -66,19 +66,18 @@ bool Path2D::_edit_is_selected_on_click(const Point2 &p_point, double p_toleranc
 	}
 
 	for (int i = 0; i < curve->get_point_count(); i++) {
-		Vector2 s[2];
-		s[0] = curve->get_point_position(i);
+		Vector2 segment_a = curve->get_point_position(i);
 
 		for (int j = 1; j <= 8; j++) {
 			real_t frac = j / 8.0;
-			s[1] = curve->sample(i, frac);
+			const Vector2 segment_b = curve->sample(i, frac);
 
-			Vector2 p = Geometry2D::get_closest_point_to_segment(p_point, s);
+			Vector2 p = Geometry2D::get_closest_point_to_segment(p_point, segment_a, segment_b);
 			if (p.distance_to(p_point) <= p_tolerance) {
 				return true;
 			}
 
-			s[0] = s[1];
+			segment_a = segment_b;
 		}
 	}
 
@@ -90,7 +89,7 @@ void Path2D::_notification(int p_what) {
 	switch (p_what) {
 		// Draw the curve if path debugging is enabled.
 		case NOTIFICATION_DRAW: {
-			if (!curve.is_valid()) {
+			if (curve.is_null()) {
 				break;
 			}
 
@@ -138,13 +137,14 @@ void Path2D::_notification(int p_what) {
 					draw_polyline(v2p, get_tree()->get_debug_paths_color(), line_width, false);
 				}
 
-				// Draw fish bones
+				// Draw fish bone every 4 points to reduce visual noise and performance impact
+				// (compared to drawing it for every point).
 				{
 					PackedVector2Array v2p;
 					v2p.resize(3);
 					Vector2 *w = v2p.ptrw();
 
-					for (int i = 0; i < sample_count; i++) {
+					for (int i = 0; i < sample_count; i += 4) {
 						const Vector2 p = r[i].get_origin();
 						const Vector2 side = r[i].columns[1];
 						const Vector2 forward = r[i].columns[0];
@@ -167,16 +167,15 @@ void Path2D::_curve_changed() {
 		return;
 	}
 
-	if (!Engine::get_singleton()->is_editor_hint() && !get_tree()->is_debugging_paths_hint()) {
-		return;
-	}
-
-	queue_redraw();
 	for (int i = 0; i < get_child_count(); i++) {
 		PathFollow2D *follow = Object::cast_to<PathFollow2D>(get_child(i));
 		if (follow) {
 			follow->path_changed();
 		}
+	}
+
+	if (Engine::get_singleton()->is_editor_hint() || get_tree()->is_debugging_paths_hint()) {
+		queue_redraw();
 	}
 }
 
@@ -221,7 +220,7 @@ void PathFollow2D::_update_transform() {
 	}
 
 	Ref<Curve2D> c = path->get_curve();
-	if (!c.is_valid()) {
+	if (c.is_null()) {
 		return;
 	}
 

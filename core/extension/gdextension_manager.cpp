@@ -30,8 +30,8 @@
 
 #include "gdextension_manager.h"
 
-#include "core/extension/gdextension_compat_hashes.h"
 #include "core/extension/gdextension_library_loader.h"
+#include "core/extension/gdextension_special_compat_hashes.h"
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
 #include "core/object/script_language.h"
@@ -84,6 +84,10 @@ GDExtensionManager::LoadStatus GDExtensionManager::_unload_extension_internal(co
 }
 
 GDExtensionManager::LoadStatus GDExtensionManager::load_extension(const String &p_path) {
+	if (Engine::get_singleton()->is_recovery_mode_hint()) {
+		return LOAD_STATUS_FAILED;
+	}
+
 	Ref<GDExtensionLibraryLoader> loader;
 	loader.instantiate();
 	return GDExtensionManager::get_singleton()->load_extension_with_loader(p_path, loader);
@@ -118,6 +122,10 @@ GDExtensionManager::LoadStatus GDExtensionManager::reload_extension(const String
 	ERR_FAIL_V_MSG(LOAD_STATUS_FAILED, "GDExtensions can only be reloaded in an editor build.");
 #else
 	ERR_FAIL_COND_V_MSG(!Engine::get_singleton()->is_extension_reloading_enabled(), LOAD_STATUS_FAILED, "GDExtension reloading is disabled.");
+
+	if (Engine::get_singleton()->is_recovery_mode_hint()) {
+		return LOAD_STATUS_FAILED;
+	}
 
 	if (!gdextension_map.has(p_path)) {
 		return LOAD_STATUS_NOT_LOADED;
@@ -161,6 +169,10 @@ GDExtensionManager::LoadStatus GDExtensionManager::reload_extension(const String
 }
 
 GDExtensionManager::LoadStatus GDExtensionManager::unload_extension(const String &p_path) {
+	if (Engine::get_singleton()->is_recovery_mode_hint()) {
+		return LOAD_STATUS_FAILED;
+	}
+
 	if (!gdextension_map.has(p_path)) {
 		return LOAD_STATUS_NOT_LOADED;
 	}
@@ -207,14 +219,28 @@ String GDExtensionManager::class_get_icon_path(const String &p_class) const {
 }
 
 void GDExtensionManager::initialize_extensions(GDExtension::InitializationLevel p_level) {
+	if (Engine::get_singleton()->is_recovery_mode_hint()) {
+		return;
+	}
+
 	ERR_FAIL_COND(int32_t(p_level) - 1 != level);
 	for (KeyValue<String, Ref<GDExtension>> &E : gdextension_map) {
 		E.value->initialize_library(p_level);
+
+		if (p_level == GDExtension::INITIALIZATION_LEVEL_EDITOR) {
+			for (const KeyValue<String, String> &kv : E.value->class_icon_paths) {
+				gdextension_class_icon_paths[kv.key] = kv.value;
+			}
+		}
 	}
 	level = p_level;
 }
 
 void GDExtensionManager::deinitialize_extensions(GDExtension::InitializationLevel p_level) {
+	if (Engine::get_singleton()->is_recovery_mode_hint()) {
+		return;
+	}
+
 	ERR_FAIL_COND(int32_t(p_level) != level);
 	for (KeyValue<String, Ref<GDExtension>> &E : gdextension_map) {
 		E.value->deinitialize_library(p_level);
@@ -253,12 +279,16 @@ void GDExtensionManager::_reload_all_scripts() {
 #endif // TOOLS_ENABLED
 
 void GDExtensionManager::load_extensions() {
+	if (Engine::get_singleton()->is_recovery_mode_hint()) {
+		return;
+	}
+
 	Ref<FileAccess> f = FileAccess::open(GDExtension::get_extension_list_config_file(), FileAccess::READ);
 	while (f.is_valid() && !f->eof_reached()) {
 		String s = f->get_line().strip_edges();
 		if (!s.is_empty()) {
 			LoadStatus err = load_extension(s);
-			ERR_CONTINUE_MSG(err == LOAD_STATUS_FAILED, "Error loading extension: " + s);
+			ERR_CONTINUE_MSG(err == LOAD_STATUS_FAILED, vformat("Error loading extension: '%s'.", s));
 		}
 	}
 
@@ -267,6 +297,9 @@ void GDExtensionManager::load_extensions() {
 
 void GDExtensionManager::reload_extensions() {
 #ifdef TOOLS_ENABLED
+	if (Engine::get_singleton()->is_recovery_mode_hint()) {
+		return;
+	}
 	bool reloaded = false;
 	for (const KeyValue<String, Ref<GDExtension>> &E : gdextension_map) {
 		if (!E.value->is_reloadable()) {
@@ -302,7 +335,8 @@ bool GDExtensionManager::ensure_extensions_loaded(const HashSet<String> &p_exten
 	for (const String &loaded_extension : loaded_extensions) {
 		if (!p_extensions.has(loaded_extension)) {
 			// The extension may not have a .gdextension file.
-			if (!FileAccess::exists(loaded_extension)) {
+			const Ref<GDExtension> extension = GDExtensionManager::get_singleton()->get_extension(loaded_extension);
+			if (!extension->get_loader()->library_exists()) {
 				extensions_removed.push_back(loaded_extension);
 			}
 		}
@@ -384,7 +418,7 @@ GDExtensionManager::GDExtensionManager() {
 	singleton = this;
 
 #ifndef DISABLE_DEPRECATED
-	GDExtensionCompatHashes::initialize();
+	GDExtensionSpecialCompatHashes::initialize();
 #endif
 }
 
@@ -393,6 +427,6 @@ GDExtensionManager::~GDExtensionManager() {
 		singleton = nullptr;
 	}
 #ifndef DISABLE_DEPRECATED
-	GDExtensionCompatHashes::finalize();
+	GDExtensionSpecialCompatHashes::finalize();
 #endif
 }

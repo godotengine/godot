@@ -28,14 +28,15 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef POPUP_MENU_H
-#define POPUP_MENU_H
+#pragma once
 
 #include "core/input/shortcut.h"
 #include "scene/gui/popup.h"
 #include "scene/gui/scroll_container.h"
 #include "scene/property_list_helper.h"
 #include "scene/resources/text_line.h"
+
+class PanelContainer;
 
 class PopupMenu : public Popup {
 	GDCLASS(PopupMenu, Popup);
@@ -53,6 +54,7 @@ class PopupMenu : public Popup {
 
 		String language;
 		Control::TextDirection text_direction = Control::TEXT_DIRECTION_AUTO;
+		AutoTranslateMode auto_translate_mode = AUTO_TRANSLATE_MODE_INHERIT;
 
 		bool checked = false;
 		enum {
@@ -94,6 +96,9 @@ class PopupMenu : public Popup {
 		Item(bool p_dummy) {}
 	};
 
+	mutable Rect2i pre_popup_rect;
+	void _update_shadow_offsets() const;
+
 	static inline PropertyListHelper base_property_helper;
 	PropertyListHelper property_helper;
 
@@ -112,7 +117,7 @@ class PopupMenu : public Popup {
 	Timer *minimum_lifetime_timer = nullptr;
 	Timer *submenu_timer = nullptr;
 	List<Rect2> autohide_areas;
-	Vector<Item> items;
+	mutable Vector<Item> items;
 	BitField<MouseButtonMask> initial_button_mask;
 	bool during_grabbed_click = false;
 	bool is_scrolling = false;
@@ -127,7 +132,7 @@ class PopupMenu : public Popup {
 	int _get_items_total_height() const;
 	Size2 _get_item_icon_size(int p_idx) const;
 
-	void _shape_item(int p_idx);
+	void _shape_item(int p_idx) const;
 
 	void _activate_submenu(int p_over, bool p_by_keyboard = false);
 	void _submenu_timeout();
@@ -149,6 +154,7 @@ class PopupMenu : public Popup {
 	uint64_t search_time_msec = 0;
 	String search_string = "";
 
+	PanelContainer *panel = nullptr;
 	ScrollContainer *scroll_container = nullptr;
 	Control *control = nullptr;
 
@@ -209,8 +215,12 @@ class PopupMenu : public Popup {
 	bool _set_item_accelerator(int p_index, const Ref<InputEventKey> &p_ie);
 	void _set_item_checkable_type(int p_index, int p_checkable_type);
 	int _get_item_checkable_type(int p_index) const;
+	void _native_popup(const Rect2i &p_rect);
+	String _atr(int p_idx, const String &p_text) const;
 
 protected:
+	virtual Rect2i _popup_adjust_rect() const override;
+
 	virtual void add_child_notify(Node *p_child) override;
 	virtual void remove_child_notify(Node *p_child) override;
 	virtual void _input_from_window(const Ref<InputEvent> &p_event) override;
@@ -271,6 +281,7 @@ public:
 
 	void set_item_text_direction(int p_idx, Control::TextDirection p_text_direction);
 	void set_item_language(int p_idx, const String &p_language);
+	void set_item_auto_translate_mode(int p_idx, AutoTranslateMode p_mode);
 	void set_item_icon(int p_idx, const Ref<Texture2D> &p_icon);
 	void set_item_icon_max_width(int p_idx, int p_width);
 	void set_item_icon_modulate(int p_idx, const Color &p_modulate);
@@ -298,6 +309,7 @@ public:
 	String get_item_xl_text(int p_idx) const;
 	Control::TextDirection get_item_text_direction(int p_idx) const;
 	String get_item_language(int p_idx) const;
+	AutoTranslateMode get_item_auto_translate_mode(int p_idx) const;
 	int get_item_idx_from_text(const String &text) const;
 	Ref<Texture2D> get_item_icon(int p_idx) const;
 	int get_item_icon_max_width(int p_idx) const;
@@ -348,6 +360,10 @@ public:
 
 	virtual String get_tooltip(const Point2 &p_pos) const;
 
+#ifdef TOOLS_ENABLED
+	PackedStringArray get_configuration_warnings() const override;
+#endif
+
 	void add_autohide_area(const Rect2 &p_area);
 	void clear_autohide_areas();
 
@@ -372,5 +388,3 @@ public:
 	PopupMenu();
 	~PopupMenu();
 };
-
-#endif // POPUP_MENU_H

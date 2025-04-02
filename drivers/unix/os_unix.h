@@ -28,13 +28,27 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef OS_UNIX_H
-#define OS_UNIX_H
+#pragma once
 
 #ifdef UNIX_ENABLED
 
 #include "core/os/os.h"
 #include "drivers/unix/ip_unix.h"
+
+#ifdef __GLIBC__
+#include <iconv.h>
+#include <langinfo.h>
+#define gd_iconv_t iconv_t
+#define gd_iconv_open iconv_open
+#define gd_iconv iconv
+#define gd_iconv_close iconv_close
+#else
+typedef void *gd_iconv_t;
+typedef gd_iconv_t (*PIConvOpen)(const char *, const char *);
+typedef size_t (*PIConv)(gd_iconv_t, char **, size_t *, char **, size_t *);
+typedef int (*PIConvClose)(gd_iconv_t);
+typedef const char *(*PIConvLocaleCharset)(void);
+#endif
 
 class OS_Unix : public OS {
 	struct ProcessInfo {
@@ -43,6 +57,19 @@ class OS_Unix : public OS {
 	};
 	HashMap<ProcessID, ProcessInfo> *process_map = nullptr;
 	Mutex process_map_mutex;
+
+#ifdef __GLIBC__
+	bool _iconv_ok = true;
+#else
+	bool _iconv_ok = false;
+
+	PIConvOpen gd_iconv_open = nullptr;
+	PIConv gd_iconv = nullptr;
+	PIConvClose gd_iconv_close = nullptr;
+	PIConvLocaleCharset gd_locale_charset = nullptr;
+
+	void _load_iconv();
+#endif
 
 protected:
 	// UNIX only handles the core functions.
@@ -58,7 +85,11 @@ public:
 
 	virtual Vector<String> get_video_adapter_driver_info() const override;
 
-	virtual String get_stdin_string() override;
+	virtual String get_stdin_string(int64_t p_buffer_size = 1024) override;
+	virtual PackedByteArray get_stdin_buffer(int64_t p_buffer_size = 1024) override;
+	virtual StdHandleType get_stdin_type() const override;
+	virtual StdHandleType get_stdout_type() const override;
+	virtual StdHandleType get_stderr_type() const override;
 
 	virtual Error get_entropy(uint8_t *r_buffer, int p_bytes) override;
 
@@ -72,6 +103,8 @@ public:
 	virtual String get_distribution_name() const override;
 	virtual String get_version() const override;
 
+	virtual String get_temp_path() const override;
+
 	virtual DateTime get_datetime(bool p_utc) const override;
 	virtual TimeZoneInfo get_time_zone_info() const override;
 
@@ -81,6 +114,9 @@ public:
 	virtual uint64_t get_ticks_usec() const override;
 
 	virtual Dictionary get_memory_info() const override;
+
+	virtual String multibyte_to_string(const String &p_encoding, const PackedByteArray &p_array) const override;
+	virtual PackedByteArray string_to_multibyte(const String &p_encoding, const String &p_string) const override;
 
 	virtual Error execute(const String &p_path, const List<String> &p_arguments, String *r_pipe = nullptr, int *r_exitcode = nullptr, bool read_stderr = false, Mutex *p_pipe_mutex = nullptr, bool p_open_console = false) override;
 	virtual Dictionary execute_with_pipe(const String &p_path, const List<String> &p_arguments, bool p_blocking = true) override;
@@ -100,7 +136,7 @@ public:
 	virtual void initialize_debugging() override;
 
 	virtual String get_executable_path() const override;
-	virtual String get_user_data_dir() const override;
+	virtual String get_user_data_dir(const String &p_user_dir) const override;
 };
 
 class UnixTerminalLogger : public StdLogger {
@@ -110,5 +146,3 @@ public:
 };
 
 #endif // UNIX_ENABLED
-
-#endif // OS_UNIX_H

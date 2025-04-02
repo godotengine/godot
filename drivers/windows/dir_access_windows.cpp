@@ -220,7 +220,7 @@ String DirAccessWindows::get_current_dir(bool p_include_drive) const {
 	if (!base.is_empty()) {
 		String bd = cdir.replace_first(base, "");
 		if (bd.begins_with("/")) {
-			return _get_root_string() + bd.substr(1, bd.length());
+			return _get_root_string() + bd.substr(1);
 		} else {
 			return _get_root_string() + bd;
 		}
@@ -230,7 +230,7 @@ String DirAccessWindows::get_current_dir(bool p_include_drive) const {
 		return cdir;
 	} else {
 		if (_get_root_string().is_empty()) {
-			int pos = cdir.find(":");
+			int pos = cdir.find_char(':');
 			if (pos != -1) {
 				return cdir.substr(pos + 1);
 			}
@@ -282,7 +282,7 @@ Error DirAccessWindows::rename(String p_path, String p_new_path) {
 		uint64_t id = OS::get_singleton()->get_ticks_usec();
 		while (true) {
 			tmpfile_utf16 = (path + itos(id++) + ".tmp").utf16();
-			HANDLE handle = CreateFileW((LPCWSTR)tmpfile_utf16.get_data(), GENERIC_WRITE, 0, NULL, CREATE_NEW, FILE_ATTRIBUTE_NORMAL, 0);
+			HANDLE handle = CreateFileW((LPCWSTR)tmpfile_utf16.get_data(), GENERIC_WRITE, 0, nullptr, CREATE_NEW, FILE_ATTRIBUTE_NORMAL, nullptr);
 			if (handle != INVALID_HANDLE_VALUE) {
 				CloseHandle(handle);
 				break;
@@ -344,7 +344,7 @@ String DirAccessWindows::get_filesystem_type() const {
 		return "Network Share";
 	}
 
-	int unit_end = path.find(":");
+	int unit_end = path.find_char(':');
 	ERR_FAIL_COND_V(unit_end == -1, String());
 	String unit = path.substr(0, unit_end + 1) + "\\";
 
@@ -389,6 +389,38 @@ bool DirAccessWindows::is_case_sensitive(const String &p_path) const {
 	} else {
 		return false;
 	}
+}
+
+typedef struct {
+	ULONGLONG LowPart;
+	ULONGLONG HighPart;
+} GD_FILE_ID_128;
+
+typedef struct {
+	ULONGLONG VolumeSerialNumber;
+	GD_FILE_ID_128 FileId;
+} GD_FILE_ID_INFO;
+
+bool DirAccessWindows::is_equivalent(const String &p_path_a, const String &p_path_b) const {
+	String f1 = fix_path(p_path_a);
+	GD_FILE_ID_INFO st1;
+	HANDLE h1 = ::CreateFileW((LPCWSTR)(f1.utf16().get_data()), FILE_READ_ATTRIBUTES, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, nullptr, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, nullptr);
+	if (h1 == INVALID_HANDLE_VALUE) {
+		return DirAccess::is_equivalent(p_path_a, p_path_b);
+	}
+	::GetFileInformationByHandleEx(h1, (FILE_INFO_BY_HANDLE_CLASS)0x12 /*FileIdInfo*/, &st1, sizeof(st1));
+	::CloseHandle(h1);
+
+	String f2 = fix_path(p_path_b);
+	GD_FILE_ID_INFO st2;
+	HANDLE h2 = ::CreateFileW((LPCWSTR)(f2.utf16().get_data()), FILE_READ_ATTRIBUTES, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, nullptr, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, nullptr);
+	if (h2 == INVALID_HANDLE_VALUE) {
+		return DirAccess::is_equivalent(p_path_a, p_path_b);
+	}
+	::GetFileInformationByHandleEx(h2, (FILE_INFO_BY_HANDLE_CLASS)0x12 /*FileIdInfo*/, &st2, sizeof(st2));
+	::CloseHandle(h2);
+
+	return (st1.VolumeSerialNumber == st2.VolumeSerialNumber) && (st1.FileId.LowPart == st2.FileId.LowPart) && (st1.FileId.HighPart == st2.FileId.HighPart);
 }
 
 bool DirAccessWindows::is_link(String p_file) {

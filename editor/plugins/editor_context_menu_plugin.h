@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef EDITOR_CONTEXT_MENU_PLUGIN_H
-#define EDITOR_CONTEXT_MENU_PLUGIN_H
+#pragma once
 
 #include "core/object/gdvirtual.gen.inc"
 #include "core/object/ref_counted.h"
@@ -52,6 +51,9 @@ public:
 		CONTEXT_SLOT_FILESYSTEM,
 		CONTEXT_SLOT_SCRIPT_EDITOR,
 		CONTEXT_SLOT_FILESYSTEM_CREATE,
+		CONTEXT_SLOT_SCRIPT_EDITOR_CODE,
+		CONTEXT_SLOT_SCENE_TABS,
+		CONTEXT_SLOT_2D_EDITOR,
 	};
 	inline static constexpr int BASE_ID = 2000;
 
@@ -65,6 +67,7 @@ public:
 		Callable callable;
 		Ref<Texture2D> icon;
 		Ref<Shortcut> shortcut;
+		PopupMenu *submenu = nullptr;
 	};
 	HashMap<String, ContextMenuItem> context_menu_items;
 	HashMap<Ref<Shortcut>, Callable> context_menu_shortcuts;
@@ -80,6 +83,7 @@ public:
 	void add_menu_shortcut(const Ref<Shortcut> &p_shortcut, const Callable &p_callable);
 	void add_context_menu_item(const String &p_name, const Callable &p_callable, const Ref<Texture2D> &p_texture);
 	void add_context_menu_item_from_shortcut(const String &p_name, const Ref<Shortcut> &p_shortcut, const Ref<Texture2D> &p_texture);
+	void add_context_submenu_item(const String &p_name, PopupMenu *p_menu, const Ref<Texture2D> &p_texture);
 };
 
 VARIANT_ENUM_CAST(EditorContextMenuPlugin::ContextMenuSlot);
@@ -98,6 +102,7 @@ public:
 	void add_plugin(ContextMenuSlot p_slot, const Ref<EditorContextMenuPlugin> &p_plugin);
 	void remove_plugin(const Ref<EditorContextMenuPlugin> &p_plugin);
 
+	bool has_plugins_for_slot(ContextMenuSlot p_slot);
 	void add_options_from_plugins(PopupMenu *p_popup, ContextMenuSlot p_slot, const Vector<String> &p_paths);
 	Callable match_custom_shortcut(ContextMenuSlot p_slot, const Ref<InputEvent> &p_event);
 	bool activate_custom_option(ContextMenuSlot p_slot, int p_option, const Variant &p_arg);
@@ -107,5 +112,3 @@ public:
 	static void create();
 	static void cleanup();
 };
-
-#endif // EDITOR_CONTEXT_MENU_PLUGIN_H

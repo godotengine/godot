@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TEXT_EDITOR_H
-#define TEXT_EDITOR_H
+#pragma once
 
 #include "script_editor_plugin.h"
 
@@ -53,7 +52,7 @@ private:
 	PopupMenu *bookmarks_menu = nullptr;
 	PopupMenu *context_menu = nullptr;
 
-	GotoLineDialog *goto_line_dialog = nullptr;
+	GotoLinePopup *goto_line_popup = nullptr;
 
 	enum {
 		EDIT_UNDO,
@@ -91,6 +90,7 @@ private:
 		BOOKMARK_GOTO_NEXT,
 		BOOKMARK_GOTO_PREV,
 		BOOKMARK_REMOVE_ALL,
+		EDIT_EMOJI_AND_SYMBOL,
 	};
 
 protected:
@@ -127,8 +127,8 @@ public:
 	virtual Variant get_navigation_state() override;
 	virtual Vector<String> get_functions() override;
 	virtual PackedInt32Array get_breakpoints() override;
-	virtual void set_breakpoint(int p_line, bool p_enabled) override{};
-	virtual void clear_breakpoints() override{};
+	virtual void set_breakpoint(int p_line, bool p_enabled) override {}
+	virtual void clear_breakpoints() override {}
 	virtual void goto_line(int p_line, int p_column = 0) override;
 	void goto_line_selection(int p_line, int p_begin, int p_end);
 	virtual void set_executing_line(int p_line) override;
@@ -161,5 +161,3 @@ public:
 	TextEditor();
 	~TextEditor();
 };
-
-#endif // TEXT_EDITOR_H

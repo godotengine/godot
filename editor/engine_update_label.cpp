@@ -31,12 +31,8 @@
 #include "engine_update_label.h"
 
 #include "core/io/json.h"
-#include "core/os/time.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
-#include "editor/themes/editor_scale.h"
-#include "scene/gui/box_container.h"
-#include "scene/gui/button.h"
 #include "scene/main/http_request.h"
 
 bool EngineUpdateLabel::_can_check_updates() const {
@@ -65,9 +61,8 @@ void EngineUpdateLabel::_http_request_completed(int p_result, int p_response_cod
 
 	Array version_array;
 	{
-		String s;
 		const uint8_t *r = p_body.ptr();
-		s.parse_utf8((const char *)r, p_body.size());
+		String s = String::utf8((const char *)r, p_body.size());
 
 		Variant result = JSON::parse_string(s);
 		if (result == Variant()) {
@@ -240,8 +235,8 @@ EngineUpdateLabel::VersionType EngineUpdateLabel::_get_version_type(const String
 }
 
 String EngineUpdateLabel::_extract_sub_string(const String &p_line) const {
-	int j = p_line.find("\"") + 1;
-	return p_line.substr(j, p_line.find("\"", j) - j);
+	int j = p_line.find_char('"') + 1;
+	return p_line.substr(j, p_line.find_char('"', j) - j);
 }
 
 void EngineUpdateLabel::_notification(int p_what) {

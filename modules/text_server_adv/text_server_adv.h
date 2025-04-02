@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TEXT_SERVER_ADV_H
-#define TEXT_SERVER_ADV_H
+#pragma once
 
 /*************************************************************************/
 /* ICU/HarfBuzz/Graphite backed Text Server implementation with BiDi,    */
@@ -83,7 +82,6 @@ using namespace godot;
 // Headers for building as built-in module.
 
 #include "core/extension/ext_wrappers.gen.inc"
-#include "core/object/worker_thread_pool.h"
 #include "core/templates/hash_map.h"
 #include "core/templates/rid_owner.h"
 #include "core/templates/safe_refcount.h"
@@ -95,6 +93,11 @@ using namespace godot;
 #endif
 
 // Thirdparty headers.
+
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wshadow"
+#endif
 
 #include <unicode/ubidi.h>
 #include <unicode/ubrk.h>
@@ -108,6 +111,10 @@ using namespace godot;
 #include <unicode/uspoof.h>
 #include <unicode/ustring.h>
 #include <unicode/utypes.h>
+
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 
 #ifdef MODULE_FREETYPE_ENABLED
 #include <ft2build.h>
@@ -139,7 +146,8 @@ class TextServerAdvanced : public TextServerExtension {
 		HashSet<StringName> lang;
 		String digits;
 		String percent_sign;
-		String exp;
+		String exp_l;
+		String exp_u;
 	};
 
 	Vector<NumSystemData> num_systems;
@@ -167,6 +175,10 @@ class TextServerAdvanced : public TextServerExtension {
 	mutable USet *allowed = nullptr;
 	mutable USpoofChecker *sc_spoof = nullptr;
 	mutable USpoofChecker *sc_conf = nullptr;
+
+	mutable HashMap<String, UBreakIterator *> line_break_iterators_per_language;
+
+	UBreakIterator *_create_line_break_iterator_for_locale(const String &p_language, UErrorCode *r_err) const;
 
 	// Font cache data.
 
@@ -263,6 +275,7 @@ class TextServerAdvanced : public TextServerExtension {
 		Rect2 rect;
 		Rect2 uv_rect;
 		Vector2 advance;
+		bool from_svg = false;
 	};
 
 	struct FontForSizeAdvanced {
@@ -317,8 +330,10 @@ class TextServerAdvanced : public TextServerExtension {
 		int fixed_size = 0;
 		bool allow_system_fallback = true;
 		bool force_autohinter = false;
+		bool modulate_color_glyphs = false;
 		TextServer::Hinting hinting = TextServer::HINTING_LIGHT;
 		TextServer::SubpixelPositioning subpixel_positioning = TextServer::SUBPIXEL_POSITIONING_AUTO;
+		bool keep_rounding_remainders = true;
 		Dictionary variation_coordinates;
 		double oversampling = 0.0;
 		double embolden = 0.0;
@@ -365,7 +380,8 @@ class TextServerAdvanced : public TextServerExtension {
 	_FORCE_INLINE_ FontGlyph rasterize_bitmap(FontForSizeAdvanced *p_data, int p_rect_margin, FT_Bitmap p_bitmap, int p_yofs, int p_xofs, const Vector2 &p_advance, bool p_bgra) const;
 #endif
 	_FORCE_INLINE_ bool _ensure_glyph(FontAdvanced *p_font_data, const Vector2i &p_size, int32_t p_glyph, FontGlyph &r_glyph) const;
-	_FORCE_INLINE_ bool _ensure_cache_for_size(FontAdvanced *p_font_data, const Vector2i &p_size, FontForSizeAdvanced *&r_cache_for_size) const;
+	_FORCE_INLINE_ bool _ensure_cache_for_size(FontAdvanced *p_font_data, const Vector2i &p_size, FontForSizeAdvanced *&r_cache_for_size, bool p_silent = false) const;
+	_FORCE_INLINE_ bool _font_validate(const RID &p_font_rid) const;
 	_FORCE_INLINE_ void _font_clear_cache(FontAdvanced *p_font_data);
 	static void _generateMTSDF_threaded(void *p_td, uint32_t p_y);
 
@@ -393,7 +409,7 @@ class TextServerAdvanced : public TextServerExtension {
 	_FORCE_INLINE_ Variant::Type _get_tag_type(int64_t p_tag) const;
 	_FORCE_INLINE_ bool _get_tag_hidden(int64_t p_tag) const;
 	_FORCE_INLINE_ int _font_get_weight_by_name(const String &p_sty_name) const {
-		String sty_name = p_sty_name.replace(" ", "").replace("-", "");
+		String sty_name = p_sty_name.remove_chars(" -");
 		if (sty_name.contains("thin") || sty_name.contains("hairline")) {
 			return 100;
 		} else if (sty_name.contains("extralight") || sty_name.contains("ultralight")) {
@@ -420,7 +436,7 @@ class TextServerAdvanced : public TextServerExtension {
 		return 400;
 	}
 	_FORCE_INLINE_ int _font_get_stretch_by_name(const String &p_sty_name) const {
-		String sty_name = p_sty_name.replace(" ", "").replace("-", "");
+		String sty_name = p_sty_name.remove_chars(" -");
 		if (sty_name.contains("ultracondensed")) {
 			return 50;
 		} else if (sty_name.contains("extracondensed")) {
@@ -479,6 +495,8 @@ class TextServerAdvanced : public TextServerExtension {
 			Variant meta;
 		};
 		Vector<Span> spans;
+		int first_span = 0; // First span in the parent ShapedTextData.
+		int last_span = 0;
 
 		struct EmbeddedObject {
 			int start = -1;
@@ -578,6 +596,7 @@ class TextServerAdvanced : public TextServerExtension {
 		int fixed_size = 0;
 		TextServer::Hinting hinting = TextServer::HINTING_LIGHT;
 		TextServer::SubpixelPositioning subpixel_positioning = TextServer::SUBPIXEL_POSITIONING_AUTO;
+		bool keep_rounding_remainders = true;
 		Dictionary variation_coordinates;
 		double oversampling = 0.0;
 		double embolden = 0.0;
@@ -586,7 +605,7 @@ class TextServerAdvanced : public TextServerExtension {
 		double baseline_offset = 0.0;
 
 		bool operator==(const SystemFontKey &p_b) const {
-			return (font_name == p_b.font_name) && (antialiasing == p_b.antialiasing) && (italic == p_b.italic) && (disable_embedded_bitmaps == p_b.disable_embedded_bitmaps) && (mipmaps == p_b.mipmaps) && (msdf == p_b.msdf) && (force_autohinter == p_b.force_autohinter) && (weight == p_b.weight) && (stretch == p_b.stretch) && (msdf_range == p_b.msdf_range) && (msdf_source_size == p_b.msdf_source_size) && (fixed_size == p_b.fixed_size) && (hinting == p_b.hinting) && (subpixel_positioning == p_b.subpixel_positioning) && (variation_coordinates == p_b.variation_coordinates) && (oversampling == p_b.oversampling) && (embolden == p_b.embolden) && (transform == p_b.transform) && (extra_spacing[SPACING_TOP] == p_b.extra_spacing[SPACING_TOP]) && (extra_spacing[SPACING_BOTTOM] == p_b.extra_spacing[SPACING_BOTTOM]) && (extra_spacing[SPACING_SPACE] == p_b.extra_spacing[SPACING_SPACE]) && (extra_spacing[SPACING_GLYPH] == p_b.extra_spacing[SPACING_GLYPH]) && (baseline_offset == p_b.baseline_offset);
+			return (font_name == p_b.font_name) && (antialiasing == p_b.antialiasing) && (italic == p_b.italic) && (disable_embedded_bitmaps == p_b.disable_embedded_bitmaps) && (mipmaps == p_b.mipmaps) && (msdf == p_b.msdf) && (force_autohinter == p_b.force_autohinter) && (weight == p_b.weight) && (stretch == p_b.stretch) && (msdf_range == p_b.msdf_range) && (msdf_source_size == p_b.msdf_source_size) && (fixed_size == p_b.fixed_size) && (hinting == p_b.hinting) && (subpixel_positioning == p_b.subpixel_positioning) && (keep_rounding_remainders == p_b.keep_rounding_remainders) && (variation_coordinates == p_b.variation_coordinates) && (oversampling == p_b.oversampling) && (embolden == p_b.embolden) && (transform == p_b.transform) && (extra_spacing[SPACING_TOP] == p_b.extra_spacing[SPACING_TOP]) && (extra_spacing[SPACING_BOTTOM] == p_b.extra_spacing[SPACING_BOTTOM]) && (extra_spacing[SPACING_SPACE] == p_b.extra_spacing[SPACING_SPACE]) && (extra_spacing[SPACING_GLYPH] == p_b.extra_spacing[SPACING_GLYPH]) && (baseline_offset == p_b.baseline_offset);
 		}
 
 		SystemFontKey(const String &p_font_name, bool p_italic, int p_weight, int p_stretch, RID p_font, const TextServerAdvanced *p_fb) {
@@ -604,6 +623,7 @@ class TextServerAdvanced : public TextServerExtension {
 			force_autohinter = p_fb->_font_is_force_autohinter(p_font);
 			hinting = p_fb->_font_get_hinting(p_font);
 			subpixel_positioning = p_fb->_font_get_subpixel_positioning(p_font);
+			keep_rounding_remainders = p_fb->_font_get_keep_rounding_remainders(p_font);
 			variation_coordinates = p_fb->_font_get_variation_coordinates(p_font);
 			oversampling = p_fb->_font_get_oversampling(p_font);
 			embolden = p_fb->_font_get_embolden(p_font);
@@ -646,7 +666,7 @@ class TextServerAdvanced : public TextServerExtension {
 			hash = hash_murmur3_one_32(p_a.extra_spacing[SPACING_SPACE], hash);
 			hash = hash_murmur3_one_32(p_a.extra_spacing[SPACING_GLYPH], hash);
 			hash = hash_murmur3_one_double(p_a.baseline_offset, hash);
-			return hash_fmix32(hash_murmur3_one_32(((int)p_a.mipmaps) | ((int)p_a.msdf << 1) | ((int)p_a.italic << 2) | ((int)p_a.force_autohinter << 3) | ((int)p_a.hinting << 4) | ((int)p_a.subpixel_positioning << 8) | ((int)p_a.antialiasing << 12) | ((int)p_a.disable_embedded_bitmaps << 14), hash));
+			return hash_fmix32(hash_murmur3_one_32(((int)p_a.mipmaps) | ((int)p_a.msdf << 1) | ((int)p_a.italic << 2) | ((int)p_a.force_autohinter << 3) | ((int)p_a.hinting << 4) | ((int)p_a.subpixel_positioning << 8) | ((int)p_a.antialiasing << 12) | ((int)p_a.disable_embedded_bitmaps << 14) | ((int)p_a.keep_rounding_remainders << 15), hash));
 		}
 	};
 	mutable HashMap<SystemFontKey, SystemFontCache, SystemFontKeyHasher> system_fonts;
@@ -662,7 +682,7 @@ class TextServerAdvanced : public TextServerExtension {
 	Glyph _shape_single_glyph(ShapedTextDataAdvanced *p_sd, char32_t p_char, hb_script_t p_script, hb_direction_t p_direction, const RID &p_font, int64_t p_font_size);
 	_FORCE_INLINE_ RID _find_sys_font_for_text(const RID &p_fdef, const String &p_script_code, const String &p_language, const String &p_text);
 
-	_FORCE_INLINE_ void _add_featuers(const Dictionary &p_source, Vector<hb_feature_t> &r_ftrs);
+	_FORCE_INLINE_ void _add_features(const Dictionary &p_source, Vector<hb_feature_t> &r_ftrs);
 
 	Mutex ft_mutex;
 
@@ -705,7 +725,7 @@ class TextServerAdvanced : public TextServerExtension {
 	};
 
 protected:
-	static void _bind_methods(){};
+	static void _bind_methods() {}
 
 	void full_copy(ShapedTextDataAdvanced *p_shaped);
 	void invalidate(ShapedTextDataAdvanced *p_shaped, bool p_text = false);
@@ -722,6 +742,7 @@ public:
 	MODBIND0RC(String, get_support_data_filename);
 	MODBIND0RC(String, get_support_data_info);
 	MODBIND1RC(bool, save_support_data, const String &);
+	MODBIND0RC(PackedByteArray, get_support_data);
 
 	MODBIND1RC(bool, is_locale_right_to_left, const String &);
 
@@ -787,8 +808,14 @@ public:
 	MODBIND2(font_set_force_autohinter, const RID &, bool);
 	MODBIND1RC(bool, font_is_force_autohinter, const RID &);
 
+	MODBIND2(font_set_modulate_color_glyphs, const RID &, bool);
+	MODBIND1RC(bool, font_is_modulate_color_glyphs, const RID &);
+
 	MODBIND2(font_set_subpixel_positioning, const RID &, SubpixelPositioning);
 	MODBIND1RC(SubpixelPositioning, font_get_subpixel_positioning, const RID &);
+
+	MODBIND2(font_set_keep_rounding_remainders, const RID &, bool);
+	MODBIND1RC(bool, font_get_keep_rounding_remainders, const RID &);
 
 	MODBIND2(font_set_embolden, const RID &, double);
 	MODBIND1RC(double, font_get_embolden, const RID &);
@@ -941,6 +968,7 @@ public:
 
 	MODBIND1RC(int64_t, shaped_get_span_count, const RID &);
 	MODBIND2RC(Variant, shaped_get_span_meta, const RID &, int64_t);
+	MODBIND2RC(Variant, shaped_get_span_embedded_object, const RID &, int64_t);
 	MODBIND5(shaped_set_span_update_font, const RID &, int64_t, const TypedArray<RID> &, int64_t, const Dictionary &);
 
 	MODBIND3RC(RID, shaped_text_substr, const RID &, int64_t, int64_t);
@@ -1005,5 +1033,3 @@ public:
 	TextServerAdvanced();
 	~TextServerAdvanced();
 };
-
-#endif // TEXT_SERVER_ADV_H

@@ -28,15 +28,13 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef EMWS_PEER_H
-#define EMWS_PEER_H
+#pragma once
 
 #ifdef WEB_ENABLED
 
 #include "packet_buffer.h"
 #include "websocket_peer.h"
 
-#include "core/error/error_list.h"
 #include "core/io/packet_peer.h"
 #include "core/templates/ring_buffer.h"
 
@@ -84,7 +82,7 @@ public:
 	virtual int get_available_packet_count() const override;
 	virtual Error get_packet(const uint8_t **r_buffer, int &r_buffer_size) override;
 	virtual Error put_packet(const uint8_t *p_buffer, int p_buffer_size) override;
-	virtual int get_max_packet_size() const override { return packet_buffer.size(); };
+	virtual int get_max_packet_size() const override { return packet_buffer.size(); }
 
 	// WebSocketPeer
 	virtual Error send(const uint8_t *p_buffer, int p_buffer_size, WriteMode p_mode) override;
@@ -111,5 +109,3 @@ public:
 };
 
 #endif // WEB_ENABLED
-
-#endif // EMWS_PEER_H

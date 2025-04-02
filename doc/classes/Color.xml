@@ -19,7 +19,7 @@
 			<return type="Color" />
 			<description>
 				Constructs a default [Color] from opaque black. This is the same as [constant BLACK].
-				[b]Note:[/b] in C#, constructs an empty color with all of its components set to [code]0.0[/code] (transparent black).
+				[b]Note:[/b] In C#, this constructs a [Color] with all of its components set to [code]0.0[/code] (transparent black).
 			</description>
 		</constructor>
 		<constructor name="Color">
@@ -175,6 +175,22 @@
 				var color = Color.FromOkHsl(0.58f, 0.5f, 0.79f, 0.8f);
 				[/csharp]
 				[/codeblocks]
+			</description>
+		</method>
+		<method name="from_rgba8" qualifiers="static">
+			<return type="Color" />
+			<param index="0" name="r8" type="int" />
+			<param index="1" name="g8" type="int" />
+			<param index="2" name="b8" type="int" />
+			<param index="3" name="a8" type="int" default="255" />
+			<description>
+				Returns a [Color] constructed from red ([param r8]), green ([param g8]), blue ([param b8]), and optionally alpha ([param a8]) integer channels, each divided by [code]255.0[/code] for their final value.
+				[codeblock]
+				var red = Color.from_rgba8(255, 0, 0)             # Same as Color(1, 0, 0).
+				var dark_blue = Color.from_rgba8(0, 0, 51)        # Same as Color(0, 0, 0.2).
+				var my_color = Color.from_rgba8(306, 255, 0, 102) # Same as Color(1.2, 1, 0, 0.4).
+				[/codeblock]
+				[b]Note:[/b] Due to the lower precision of [method from_rgba8] compared to the standard [Color] constructor, a color created with [method from_rgba8] will generally not be equal to the same color created with the standard [Color] constructor. Use [method is_equal_approx] for comparisons to avoid issues with floating-point precision error.
 			</description>
 		</method>
 		<method name="from_rgbe9995" qualifiers="static">
@@ -494,6 +510,15 @@
 		</member>
 		<member name="h" type="float" setter="" getter="" default="0.0">
 			The HSV hue of this color, on the range 0 to 1.
+		</member>
+		<member name="ok_hsl_h" type="float" setter="" getter="" default="0.0">
+			The OKHSL hue of this color, on the range 0 to 1.
+		</member>
+		<member name="ok_hsl_l" type="float" setter="" getter="" default="0.0">
+			The OKHSL lightness of this color, on the range 0 to 1.
+		</member>
+		<member name="ok_hsl_s" type="float" setter="" getter="" default="0.0">
+			The OKHSL saturation of this color, on the range 0 to 1.
 		</member>
 		<member name="r" type="float" setter="" getter="" default="0.0">
 			The color's red component, typically on the range of 0 to 1.

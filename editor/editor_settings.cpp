@@ -50,10 +50,12 @@
 #include "editor/editor_property_name_processor.h"
 #include "editor/editor_translation.h"
 #include "editor/engine_update_label.h"
+#include "modules/regex/regex.h"
 #include "scene/gui/color_picker.h"
 #include "scene/main/node.h"
 #include "scene/main/scene_tree.h"
 #include "scene/main/window.h"
+#include "scene/resources/animation.h"
 
 // PRIVATE METHODS
 
@@ -67,7 +69,18 @@ bool EditorSettings::_set(const StringName &p_name, const Variant &p_value) {
 	bool changed = _set_only(p_name, p_value);
 	if (changed && initialized) {
 		changed_settings.insert(p_name);
+		if (p_name == SNAME("text_editor/external/exec_path")) {
+			const StringName exec_args_name = "text_editor/external/exec_flags";
+			const String exec_args_value = _guess_exec_args_for_extenal_editor(p_value);
+			if (!exec_args_value.is_empty() && _set_only(exec_args_name, exec_args_value)) {
+				changed_settings.insert(exec_args_name);
+			}
+		}
 		emit_signal(SNAME("settings_changed"));
+
+		if (p_name == SNAME("interface/editor/editor_language")) {
+			setup_language();
+		}
 	}
 	return true;
 }
@@ -182,6 +195,11 @@ bool EditorSettings::_get(const StringName &p_name, Variant &r_ret) const {
 	} else if (p_name == "builtin_action_overrides") {
 		Array actions_arr;
 		for (const KeyValue<String, List<Ref<InputEvent>>> &action_override : builtin_action_overrides) {
+			const List<Ref<InputEvent>> *defaults = InputMap::get_singleton()->get_builtins().getptr(action_override.key);
+			if (!defaults) {
+				continue;
+			}
+
 			List<Ref<InputEvent>> events = action_override.value;
 
 			Dictionary action_dict;
@@ -197,8 +215,7 @@ bool EditorSettings::_get(const StringName &p_name, Variant &r_ret) const {
 			}
 
 			Array defaults_arr;
-			List<Ref<InputEvent>> defaults = InputMap::get_singleton()->get_builtins()[action_override.key];
-			for (const Ref<InputEvent> &default_input_event : defaults) {
+			for (const Ref<InputEvent> &default_input_event : *defaults) {
 				if (default_input_event.is_valid()) {
 					defaults_arr.append(default_input_event);
 				}
@@ -221,7 +238,6 @@ bool EditorSettings::_get(const StringName &p_name, Variant &r_ret) const {
 
 	const VariantContainer *v = props.getptr(p_name);
 	if (!v) {
-		WARN_PRINT("EditorSettings::_get - Property not found: " + String(p_name));
 		return false;
 	}
 	r_ret = v->variant;
@@ -390,7 +406,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 		for (const String &locale : get_editor_locales()) {
 			// Skip locales which we can't render properly (see above comment).
 			// Test against language code without regional variants (e.g. ur_PK).
-			String lang_code = locale.get_slice("_", 0);
+			String lang_code = locale.get_slicec('_', 0);
 			if (locales_to_skip.has(lang_code)) {
 				continue;
 			}
@@ -426,16 +442,35 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	EDITOR_SETTING_USAGE(Variant::INT, PROPERTY_HINT_ENUM, "interface/editor/display_scale", 0, display_scale_hint_string, PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED | PROPERTY_USAGE_EDITOR_BASIC_SETTING)
 	EDITOR_SETTING_USAGE(Variant::FLOAT, PROPERTY_HINT_RANGE, "interface/editor/custom_display_scale", 1.0, "0.5,3,0.01", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED | PROPERTY_USAGE_EDITOR_BASIC_SETTING)
 
-	String ed_screen_hints = "Screen With Mouse Pointer:-4,Screen With Keyboard Focus:-3,Primary Screen:-2"; // Note: Main Window Screen:-1 is not used for the main window.
+	String ed_screen_hints = "Auto (Remembers last position):-5,Screen With Mouse Pointer:-4,Screen With Keyboard Focus:-3,Primary Screen:-2";
 	for (int i = 0; i < DisplayServer::get_singleton()->get_screen_count(); i++) {
 		ed_screen_hints += ",Screen " + itos(i + 1) + ":" + itos(i);
 	}
-	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "interface/editor/editor_screen", -2, ed_screen_hints)
-	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "interface/editor/project_manager_screen", -2, ed_screen_hints)
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "interface/editor/editor_screen", EditorSettings::InitialScreen::INITIAL_SCREEN_AUTO, ed_screen_hints)
+
+#ifdef WINDOWS_ENABLED
+	String tablet_hints = "Use Project Settings:-1";
+	for (int i = 0; i < DisplayServer::get_singleton()->tablet_get_driver_count(); i++) {
+		String drv_name = DisplayServer::get_singleton()->tablet_get_driver_name(i);
+		if (EditorPropertyNameProcessor::get_singleton()) {
+			drv_name = EditorPropertyNameProcessor::get_singleton()->process_name(drv_name, EditorPropertyNameProcessor::STYLE_CAPITALIZED); // Note: EditorPropertyNameProcessor is not available when doctool is used, but this value is not part of docs.
+		}
+		tablet_hints += vformat(",%s:%d", drv_name, i);
+	}
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "interface/editor/tablet_driver", -1, tablet_hints);
+#else
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "interface/editor/tablet_driver", -1, "Default:-1");
+#endif
+
+	String project_manager_screen_hints = "Screen With Mouse Pointer:-4,Screen With Keyboard Focus:-3,Primary Screen:-2";
+	for (int i = 0; i < DisplayServer::get_singleton()->get_screen_count(); i++) {
+		project_manager_screen_hints += ",Screen " + itos(i + 1) + ":" + itos(i);
+	}
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "interface/editor/project_manager_screen", EditorSettings::InitialScreen::INITIAL_SCREEN_PRIMARY, project_manager_screen_hints)
 
 	{
 		EngineUpdateLabel::UpdateMode default_update_mode = EngineUpdateLabel::UpdateMode::NEWEST_UNSTABLE;
-		if (String(VERSION_STATUS) == String("stable")) {
+		if (String(GODOT_VERSION_STATUS) == String("stable")) {
 			default_update_mode = EngineUpdateLabel::UpdateMode::NEWEST_STABLE;
 		}
 		EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_ENUM, "network/connection/engine_version_update_mode", int(default_update_mode), "Disable Update Checks,Check Newest Preview,Check Newest Stable,Check Newest Patch"); // Uses EngineUpdateLabel::UpdateMode.
@@ -466,7 +501,6 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("interface/editor/separate_distraction_mode", false, true);
 	_initial_set("interface/editor/automatically_open_screenshots", true, true);
 	EDITOR_SETTING_USAGE(Variant::BOOL, PROPERTY_HINT_NONE, "interface/editor/single_window_mode", false, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED | PROPERTY_USAGE_EDITOR_BASIC_SETTING)
-	_initial_set("interface/editor/remember_window_size_and_position", true, true);
 	_initial_set("interface/editor/mouse_extra_buttons_navigate_history", true);
 	_initial_set("interface/editor/save_each_scene_on_quit", true, true); // Regression
 	EDITOR_SETTING_BASIC(Variant::BOOL, PROPERTY_HINT_NONE, "interface/editor/save_on_focus_loss", false, "")
@@ -598,6 +632,14 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "filesystem/file_dialog/display_mode", 0, "Thumbnails,List")
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_RANGE, "filesystem/file_dialog/thumbnail_size", 64, "32,128,16")
 
+	// Quick Open dialog
+	EDITOR_SETTING_USAGE(Variant::INT, PROPERTY_HINT_RANGE, "filesystem/quick_open_dialog/max_results", 100, "0,10000,1", PROPERTY_USAGE_DEFAULT)
+	_initial_set("filesystem/quick_open_dialog/show_search_highlight", true);
+	_initial_set("filesystem/quick_open_dialog/enable_fuzzy_matching", true);
+	EDITOR_SETTING_USAGE(Variant::INT, PROPERTY_HINT_RANGE, "filesystem/quick_open_dialog/max_fuzzy_misses", 2, "0,10,1", PROPERTY_USAGE_DEFAULT)
+	_initial_set("filesystem/quick_open_dialog/include_addons", false);
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "filesystem/quick_open_dialog/default_display_mode", 0, "Adaptive,Last Used")
+
 	// Import (for glft module)
 	EDITOR_SETTING_USAGE(Variant::STRING, PROPERTY_HINT_GLOBAL_FILE, "filesystem/import/blender/blender_path", "", "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED | PROPERTY_USAGE_EDITOR_BASIC_SETTING)
 	EDITOR_SETTING_USAGE(Variant::INT, PROPERTY_HINT_RANGE, "filesystem/import/blender/rpc_port", 6011, "0,65535,1", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED)
@@ -614,6 +656,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("docks/scene_tree/start_create_dialog_fully_expanded", false);
 	_initial_set("docks/scene_tree/auto_expand_to_selected", true);
 	_initial_set("docks/scene_tree/center_node_on_reparent", false);
+	_initial_set("docks/scene_tree/hide_filtered_out_parents", true);
 
 	// FileSystem
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_RANGE, "docks/filesystem/thumbnail_size", 64, "32,128,16")
@@ -668,6 +711,9 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_RANGE, "text_editor/appearance/whitespace/line_spacing", 4, "0,50,1")
 
 	// Behavior
+	// Behavior: General
+	_initial_set("text_editor/behavior/general/empty_selection_clipboard", true);
+
 	// Behavior: Navigation
 	_initial_set("text_editor/behavior/navigation/move_caret_on_right_click", true, true);
 	_initial_set("text_editor/behavior/navigation/scroll_past_end_of_file", false, true);
@@ -695,12 +741,17 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("text_editor/behavior/files/auto_reload_scripts_on_external_change", false);
 	_initial_set("text_editor/behavior/files/auto_reload_and_parse_scripts_on_save", true);
 	_initial_set("text_editor/behavior/files/open_dominant_script_on_scene_change", false, true);
+	_initial_set("text_editor/behavior/files/drop_preload_resources_as_uid", true, true);
+
+	// Behavior: Documentation
+	_initial_set("text_editor/behavior/documentation/enable_tooltips", true, true);
 
 	// Script list
 	_initial_set("text_editor/script_list/show_members_overview", true, true);
 	_initial_set("text_editor/script_list/sort_members_outline_alphabetically", false, true);
 	_initial_set("text_editor/script_list/script_temperature_enabled", true);
 	_initial_set("text_editor/script_list/script_temperature_history_size", 15);
+	_initial_set("text_editor/script_list/highlight_scene_scripts", true);
 	_initial_set("text_editor/script_list/group_help_pages", true);
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "text_editor/script_list/sort_scripts_by", 0, "Name,Path,None");
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "text_editor/script_list/list_script_names_as", 0, "Name,Parent Directory And Name,Full Path");
@@ -709,6 +760,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 
 	// Completion
 	EDITOR_SETTING(Variant::FLOAT, PROPERTY_HINT_RANGE, "text_editor/completion/idle_parse_delay", 1.5, "0.1,10,0.01")
+	EDITOR_SETTING(Variant::FLOAT, PROPERTY_HINT_RANGE, "text_editor/completion/idle_parse_delay_with_errors_found", 0.5, "0.1,5,0.01")
 	_initial_set("text_editor/completion/auto_brace_complete", true, true);
 	_initial_set("text_editor/completion/code_complete_enabled", true, true);
 	EDITOR_SETTING(Variant::FLOAT, PROPERTY_HINT_RANGE, "text_editor/completion/code_complete_delay", 0.3, "0.01,5,0.01,or_greater")
@@ -736,19 +788,17 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 
 	// GridMap
 	// GridMapEditor
-	_initial_set("editors/grid_map/pick_distance", 5000.0);
-	_initial_set("editors/grid_map/palette_min_width", 230);
-	set_restart_if_changed("editors/grid_map/palette_min_width", true);
-	_initial_set("editors/grid_map/preview_size", 64);
-	// GridMapEditorPlugin
-	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "editors/grid_map/editor_side", 1, "Left,Right");
+	EDITOR_SETTING(Variant::FLOAT, PROPERTY_HINT_RANGE, "editors/grid_map/pick_distance", 5000.0, "1,8192,0.1,or_greater");
+	EDITOR_SETTING_USAGE(Variant::INT, PROPERTY_HINT_RANGE, "editors/grid_map/palette_min_width", 230, "100,500,1", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED);
+	EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_RANGE, "editors/grid_map/preview_size", 64, "16,128,1")
 
 	// 3D
 	EDITOR_SETTING_BASIC(Variant::COLOR, PROPERTY_HINT_NONE, "editors/3d/primary_grid_color", Color(0.56, 0.56, 0.56, 0.5), "")
 	EDITOR_SETTING_BASIC(Variant::COLOR, PROPERTY_HINT_NONE, "editors/3d/secondary_grid_color", Color(0.38, 0.38, 0.38, 0.5), "")
 
 	// Use a similar color to the 2D editor selection.
-	EDITOR_SETTING_USAGE(Variant::COLOR, PROPERTY_HINT_NONE, "editors/3d/selection_box_color", Color(1.0, 0.5, 0), "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED)
+	EDITOR_SETTING_USAGE(Variant::COLOR, PROPERTY_HINT_NONE, "editors/3d/selection_box_color", Color(1.0, 0.5, 0), "", PROPERTY_USAGE_DEFAULT)
+	EDITOR_SETTING_USAGE(Variant::COLOR, PROPERTY_HINT_NONE, "editors/3d/active_selection_box_color", Color(1.5, 0.75, 0, 1.0), "", PROPERTY_USAGE_DEFAULT)
 	EDITOR_SETTING_USAGE(Variant::COLOR, PROPERTY_HINT_NONE, "editors/3d_gizmos/gizmo_colors/instantiated", Color(0.7, 0.7, 0.7, 0.6), "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED)
 	EDITOR_SETTING_USAGE(Variant::COLOR, PROPERTY_HINT_NONE, "editors/3d_gizmos/gizmo_colors/joint", Color(0.5, 0.8, 1), "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED)
 	EDITOR_SETTING_USAGE(Variant::COLOR, PROPERTY_HINT_NONE, "editors/3d_gizmos/gizmo_colors/aabb", Color(0.28, 0.8, 0.82), "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED)
@@ -771,6 +821,10 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	EDITOR_SETTING_USAGE(Variant::COLOR, PROPERTY_HINT_NONE, "editors/3d_gizmos/gizmo_colors/skeleton", Color(1, 0.8, 0.4), "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED)
 	EDITOR_SETTING_USAGE(Variant::COLOR, PROPERTY_HINT_NONE, "editors/3d_gizmos/gizmo_colors/selected_bone", Color(0.8, 0.3, 0.0), "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED)
 	EDITOR_SETTING_USAGE(Variant::COLOR, PROPERTY_HINT_NONE, "editors/3d_gizmos/gizmo_colors/csg", Color(0.0, 0.4, 1, 0.15), "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED)
+	EDITOR_SETTING(Variant::COLOR, PROPERTY_HINT_NONE, "editors/3d_gizmos/gizmo_colors/gridmap_grid", Color(0.8, 0.5, 0.1), "")
+	EDITOR_SETTING_USAGE(Variant::COLOR, PROPERTY_HINT_NONE, "editors/3d_gizmos/gizmo_colors/spring_bone_joint", Color(0.8, 0.9, 0.6), "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED)
+	EDITOR_SETTING_USAGE(Variant::COLOR, PROPERTY_HINT_NONE, "editors/3d_gizmos/gizmo_colors/spring_bone_collision", Color(0.6, 0.8, 0.9), "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED)
+	EDITOR_SETTING_USAGE(Variant::COLOR, PROPERTY_HINT_NONE, "editors/3d_gizmos/gizmo_colors/spring_bone_inside_collision", Color(0.9, 0.6, 0.8), "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED)
 	_initial_set("editors/3d_gizmos/gizmo_settings/bone_axis_length", (float)0.1);
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "editors/3d_gizmos/gizmo_settings/bone_shape", 1, "Wire,Octahedron");
 	EDITOR_SETTING_USAGE(Variant::FLOAT, PROPERTY_HINT_NONE, "editors/3d_gizmos/gizmo_settings/path3d_tilt_disk_size", 0.8, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED)
@@ -801,18 +855,19 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	// 3D: Navigation
 	_initial_set("editors/3d/navigation/invert_x_axis", false, true);
 	_initial_set("editors/3d/navigation/invert_y_axis", false, true);
-	EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_ENUM, "editors/3d/navigation/navigation_scheme", 0, "Godot,Maya,Modo,Custom")
-	EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_ENUM, "editors/3d/navigation/orbit_mouse_button", 1, "Left Mouse,Middle Mouse,Right Mouse")
-	EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_ENUM, "editors/3d/navigation/pan_mouse_button", 1, "Left Mouse,Middle Mouse,Right Mouse")
-	EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_ENUM, "editors/3d/navigation/zoom_mouse_button", 1, "Left Mouse,Middle Mouse,Right Mouse")
+	EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_ENUM, "editors/3d/navigation/navigation_scheme", 0, "Godot:0,Maya:1,Modo:2,Tablet/Trackpad:4,Custom:3")
+	EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_ENUM, "editors/3d/navigation/orbit_mouse_button", 1, "Left Mouse,Middle Mouse,Right Mouse,Mouse Button 4,Mouse Button 5")
+	EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_ENUM, "editors/3d/navigation/pan_mouse_button", 1, "Left Mouse,Middle Mouse,Right Mouse,Mouse Button 4,Mouse Button 5")
+	EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_ENUM, "editors/3d/navigation/zoom_mouse_button", 1, "Left Mouse,Middle Mouse,Right Mouse,Mouse Button 4,Mouse Button 5")
 	EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_ENUM, "editors/3d/navigation/zoom_style", 0, "Vertical,Horizontal")
 
-	_initial_set("editors/3d/navigation/emulate_numpad", false, true);
+	_initial_set("editors/3d/navigation/emulate_numpad", true, true);
 	_initial_set("editors/3d/navigation/emulate_3_button_mouse", false, true);
 	_initial_set("editors/3d/navigation/warped_mouse_panning", true, true);
 
 	// 3D: Navigation feel
-	EDITOR_SETTING_BASIC(Variant::FLOAT, PROPERTY_HINT_RANGE, "editors/3d/navigation_feel/orbit_sensitivity", 0.25, "0.01,2,0.001")
+	EDITOR_SETTING(Variant::FLOAT, PROPERTY_HINT_RANGE, "editors/3d/navigation_feel/orbit_sensitivity", 0.25, "0.01,20,0.001")
+	EDITOR_SETTING(Variant::FLOAT, PROPERTY_HINT_RANGE, "editors/3d/navigation_feel/translation_sensitivity", 1.0, "0.01,20,0.001")
 	EDITOR_SETTING(Variant::FLOAT, PROPERTY_HINT_RANGE, "editors/3d/navigation_feel/orbit_inertia", 0.0, "0,1,0.001")
 	EDITOR_SETTING(Variant::FLOAT, PROPERTY_HINT_RANGE, "editors/3d/navigation_feel/translation_inertia", 0.05, "0,1,0.001")
 	EDITOR_SETTING(Variant::FLOAT, PROPERTY_HINT_RANGE, "editors/3d/navigation_feel/zoom_inertia", 0.05, "0,1,0.001")
@@ -872,6 +927,9 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	EDITOR_SETTING(Variant::FLOAT, PROPERTY_HINT_RANGE, "editors/polygon_editor/auto_bake_delay", 1.5, "-1.0,10.0,0.01");
 
 	// Animation
+	EDITOR_SETTING(Variant::FLOAT, PROPERTY_HINT_RANGE, "editors/animation/default_animation_step", Animation::DEFAULT_STEP, "0.0,10.0,0.00000001");
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "editors/animation/default_fps_mode", 0, "Seconds,FPS");
+	_initial_set("editors/animation/default_fps_compatibility", true);
 	_initial_set("editors/animation/autorename_animation_tracks", true);
 	_initial_set("editors/animation/confirm_insert_track", true, true);
 	_initial_set("editors/animation/default_create_bezier_tracks", false, true);
@@ -909,15 +967,20 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("run/window_placement/rect_custom_position", Vector2());
 	EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_ENUM, "run/window_placement/screen", -5, screen_hints)
 #endif
-	// Should match the ANDROID_WINDOW_* constants in 'platform/android/java/editor/src/main/java/org/godotengine/editor/GodotEditor.kt'
-	String android_window_hints = "Auto (based on screen size):0,Same as Editor:1,Side-by-side with Editor:2,Launch in PiP mode:3";
+	// Should match the ANDROID_WINDOW_* constants in 'platform/android/java/editor/src/main/java/org/godotengine/editor/BaseGodotEditor.kt'.
+	String android_window_hints = "Auto (based on screen size):0,Same as Editor:1,Side-by-side with Editor:2";
 	EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_ENUM, "run/window_placement/android_window", 0, android_window_hints)
 
-	int default_play_window_pip_mode = 0;
+	String game_embed_mode_hints = "Disabled:-1,Use Per-Project Configuration:0,Embed Game:1,Make Game Workspace Floating:2";
 #ifdef ANDROID_ENABLED
-	default_play_window_pip_mode = 2;
+	if (OS::get_singleton()->has_feature("xr_editor")) {
+		game_embed_mode_hints = "Disabled:-1";
+	} else {
+		game_embed_mode_hints = "Disabled:-1,Auto (based on screen size):0,Enabled:1";
+	}
 #endif
-	EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_ENUM, "run/window_placement/play_window_pip_mode", default_play_window_pip_mode, "Disabled:0,Enabled:1,Enabled when Play window is same as Editor:2")
+	int default_game_embed_mode = OS::get_singleton()->has_feature("xr_editor") ? -1 : 0;
+	EDITOR_SETTING_BASIC(Variant::INT, PROPERTY_HINT_ENUM, "run/window_placement/game_embed_mode", default_game_embed_mode, game_embed_mode_hints);
 
 	// Auto save
 	_initial_set("run/auto_save/save_before_running", true, true);
@@ -947,6 +1010,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 
 	// SSL
 	EDITOR_SETTING_USAGE(Variant::STRING, PROPERTY_HINT_GLOBAL_FILE, "network/tls/editor_tls_certificates", _SYSTEM_CERTS_PATH, "*.crt,*.pem", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED);
+	EDITOR_SETTING_BASIC(Variant::BOOL, PROPERTY_HINT_NONE, "network/tls/enable_tls_v1.3", true, "")
 
 	// Debug
 	_initial_set("network/debug/remote_host", "127.0.0.1"); // Hints provided in setup_network
@@ -955,6 +1019,8 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	/* Debugger/profiler */
 
 	EDITOR_SETTING_BASIC(Variant::BOOL, PROPERTY_HINT_NONE, "debugger/auto_switch_to_remote_scene_tree", false, "")
+	EDITOR_SETTING_BASIC(Variant::BOOL, PROPERTY_HINT_NONE, "debugger/auto_switch_to_stack_trace", true, "")
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_RANGE, "debugger/max_node_selection", 20, "1,100,1")
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_RANGE, "debugger/profiler_frame_history_size", 3600, "60,10000,1")
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_RANGE, "debugger/profiler_frame_max_functions", 64, "16,512,1")
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_RANGE, "debugger/profiler_target_fps", 60, "1,1000,1")
@@ -1045,6 +1111,7 @@ void EditorSettings::_load_godot2_text_editor_theme() {
 	_initial_set("text_editor/theme/highlighting/function_color", Color(0.4, 0.64, 0.81), true);
 	_initial_set("text_editor/theme/highlighting/member_variable_color", Color(0.9, 0.31, 0.35), true);
 	_initial_set("text_editor/theme/highlighting/mark_color", Color(1.0, 0.4, 0.4, 0.4), true);
+	_initial_set("text_editor/theme/highlighting/warning_color", Color(1.0, 0.8, 0.4, 0.1), true);
 	_initial_set("text_editor/theme/highlighting/bookmark_color", Color(0.08, 0.49, 0.98));
 	_initial_set("text_editor/theme/highlighting/breakpoint_color", Color(0.9, 0.29, 0.3));
 	_initial_set("text_editor/theme/highlighting/executing_line_color", Color(0.98, 0.89, 0.27));
@@ -1076,6 +1143,40 @@ void EditorSettings::_load_default_visual_shader_editor_theme() {
 	_initial_set("editors/visual_editors/category_colors/vector_color", Color(0.2, 0.2, 0.5));
 	_initial_set("editors/visual_editors/category_colors/special_color", Color(0.098, 0.361, 0.294));
 	_initial_set("editors/visual_editors/category_colors/particle_color", Color(0.12, 0.358, 0.8));
+}
+
+String EditorSettings::_guess_exec_args_for_extenal_editor(const String &p_path) {
+	Ref<RegEx> regex;
+	regex.instantiate();
+
+	const String editor_pattern = R"([\\/]((?:jetbrains\s*)?rider(?:\s*(eap|\d{4}\.\d+|\d{4}\.\d+\s*dev)?)?|visual\s*studio\s*code|subl(ime\s*text)?|sublime_text|(g)?vim|emacs|atom|geany|kate|code|(vs)?codium)(?:\.app|\.exe|\.bat|\.sh)?)";
+	regex->compile(editor_pattern);
+	Ref<RegExMatch> editor_match = regex->search(p_path.to_lower());
+
+	if (editor_match.is_null()) {
+		return String();
+	}
+
+	const String editor = editor_match->get_string(1).to_lower();
+	String new_exec_flags = "{file}";
+
+	if (editor.begins_with("rider")) {
+		new_exec_flags = "{project} --line {line} {file}";
+	} else if (editor == "subl" || editor == "sublime text" || editor == "sublime_text") {
+		new_exec_flags = "{project} {file}:{line}:{column}";
+	} else if (editor == "vim" || editor == "gvim") {
+		new_exec_flags = "\"+call cursor({line}, {col})\" {file}";
+	} else if (editor == "emacs") {
+		new_exec_flags = "emacs +{line}:{col} {file}";
+	} else if (editor == "atom") {
+		new_exec_flags = "{file}:{line}";
+	} else if (editor == "geany" || editor == "kate") {
+		new_exec_flags = "{file} --line {line} --column {col}";
+	} else if (editor == "code" || editor == "visual studio code" || editor == "codium" || editor == "vscodium") {
+		new_exec_flags = "{project} --goto {file}:{line}:{col}";
+	}
+
+	return new_exec_flags;
 }
 
 bool EditorSettings::_save_text_editor_theme(const String &p_file) {
@@ -1124,16 +1225,16 @@ EditorSettings *EditorSettings::get_singleton() {
 
 String EditorSettings::get_existing_settings_path() {
 	const String config_dir = EditorPaths::get_singleton()->get_config_dir();
-	int minor = VERSION_MINOR;
+	int minor = GODOT_VERSION_MINOR;
 	String filename;
 
 	do {
-		if (VERSION_MAJOR == 4 && minor < 3) {
+		if (GODOT_VERSION_MAJOR == 4 && minor < 3) {
 			// Minor version is used since 4.3, so special case to load older settings.
-			filename = vformat("editor_settings-%d.tres", VERSION_MAJOR);
+			filename = vformat("editor_settings-%d.tres", GODOT_VERSION_MAJOR);
 			minor = -1;
 		} else {
-			filename = vformat("editor_settings-%d.%d.tres", VERSION_MAJOR, minor);
+			filename = vformat("editor_settings-%d.%d.tres", GODOT_VERSION_MAJOR, minor);
 			minor--;
 		}
 	} while (minor >= 0 && !FileAccess::exists(config_dir.path_join(filename)));
@@ -1141,7 +1242,7 @@ String EditorSettings::get_existing_settings_path() {
 }
 
 String EditorSettings::get_newest_settings_path() {
-	const String config_file_name = vformat("editor_settings-%d.%d.tres", VERSION_MAJOR, VERSION_MINOR);
+	const String config_file_name = vformat("editor_settings-%d.%d.tres", GODOT_VERSION_MAJOR, GODOT_VERSION_MINOR);
 	return EditorPaths::get_singleton()->get_config_dir().path_join(config_file_name);
 }
 
@@ -1215,7 +1316,7 @@ fail:
 		extra_config->set_value("init_projects", "list", list);
 	}
 
-	singleton = Ref<EditorSettings>(memnew(EditorSettings));
+	singleton.instantiate();
 	singleton->set_path(config_file_path, true);
 	singleton->save_changed_setting = true;
 	singleton->_load_defaults(extra_config);
@@ -1226,7 +1327,9 @@ fail:
 
 void EditorSettings::setup_language() {
 	String lang = get("interface/editor/editor_language");
+
 	if (lang == "en") {
+		TranslationServer::get_singleton()->set_locale(lang);
 		return; // Default, nothing to do.
 	}
 	// Load editor translation for configured/detected locale.
@@ -1238,6 +1341,8 @@ void EditorSettings::setup_language() {
 
 	// Load extractable translation for projects.
 	load_extractable_translations(lang);
+
+	TranslationServer::get_singleton()->set_locale(lang);
 }
 
 void EditorSettings::setup_network() {
@@ -1412,24 +1517,20 @@ Variant _EDITOR_GET(const String &p_setting) {
 }
 
 bool EditorSettings::_property_can_revert(const StringName &p_name) const {
-	if (!props.has(p_name)) {
-		return false;
+	const VariantContainer *property = props.getptr(p_name);
+	if (property) {
+		return property->has_default_value;
 	}
-
-	if (!props[p_name].has_default_value) {
-		return false;
-	}
-
-	return props[p_name].initial != props[p_name].variant;
+	return false;
 }
 
 bool EditorSettings::_property_get_revert(const StringName &p_name, Variant &r_property) const {
-	if (!props.has(p_name) || !props[p_name].has_default_value) {
-		return false;
+	const VariantContainer *value = props.getptr(p_name);
+	if (value && value->has_default_value) {
+		r_property = value->initial;
+		return true;
 	}
-
-	r_property = props[p_name].initial;
-	return true;
+	return false;
 }
 
 void EditorSettings::add_property_hint(const PropertyInfo &p_hint) {
@@ -1484,8 +1585,24 @@ void EditorSettings::set_favorites(const Vector<String> &p_favorites) {
 	}
 }
 
+void EditorSettings::set_favorite_properties(const HashMap<String, PackedStringArray> &p_favorite_properties) {
+	favorite_properties = p_favorite_properties;
+	String favorite_properties_file = EditorPaths::get_singleton()->get_project_settings_dir().path_join("favorite_properties");
+
+	Ref<ConfigFile> cf;
+	cf.instantiate();
+	for (const KeyValue<String, PackedStringArray> &kv : p_favorite_properties) {
+		cf->set_value(kv.key, "properties", kv.value);
+	}
+	cf->save(favorite_properties_file);
+}
+
 Vector<String> EditorSettings::get_favorites() const {
 	return favorites;
+}
+
+HashMap<String, PackedStringArray> EditorSettings::get_favorite_properties() const {
+	return favorite_properties;
 }
 
 void EditorSettings::set_recent_dirs(const Vector<String> &p_recent_dirs) {
@@ -1510,22 +1627,50 @@ Vector<String> EditorSettings::get_recent_dirs() const {
 
 void EditorSettings::load_favorites_and_recent_dirs() {
 	String favorites_file;
+	String favorite_properties_file;
 	String recent_dirs_file;
 	if (Engine::get_singleton()->is_project_manager_hint()) {
 		favorites_file = EditorPaths::get_singleton()->get_config_dir().path_join("favorite_dirs");
+		favorite_properties_file = EditorPaths::get_singleton()->get_config_dir().path_join("favorite_properties");
 		recent_dirs_file = EditorPaths::get_singleton()->get_config_dir().path_join("recent_dirs");
 	} else {
 		favorites_file = EditorPaths::get_singleton()->get_project_settings_dir().path_join("favorites");
+		favorite_properties_file = EditorPaths::get_singleton()->get_project_settings_dir().path_join("favorite_properties");
 		recent_dirs_file = EditorPaths::get_singleton()->get_project_settings_dir().path_join("recent_dirs");
 	}
+
+	/// File Favorites
+
 	Ref<FileAccess> f = FileAccess::open(favorites_file, FileAccess::READ);
 	if (f.is_valid()) {
 		String line = f->get_line().strip_edges();
 		while (!line.is_empty()) {
-			favorites.push_back(line);
+			favorites.append(line);
 			line = f->get_line().strip_edges();
 		}
 	}
+
+	/// Inspector Favorites
+
+	Ref<ConfigFile> cf;
+	cf.instantiate();
+	if (cf->load(favorite_properties_file) == OK) {
+		List<String> secs;
+		cf->get_sections(&secs);
+
+		for (String &E : secs) {
+			PackedStringArray properties = PackedStringArray(cf->get_value(E, "properties"));
+			if (EditorNode::get_editor_data().is_type_recognized(E) || ResourceLoader::exists(E, "Script")) {
+				for (const String &property : properties) {
+					if (!favorite_properties[E].has(property)) {
+						favorite_properties[E].push_back(property);
+					}
+				}
+			}
+		}
+	}
+
+	/// Recent Directories
 
 	f = FileAccess::open(recent_dirs_file, FileAccess::READ);
 	if (f.is_valid()) {
@@ -1677,7 +1822,7 @@ String EditorSettings::get_editor_layouts_config() const {
 	return EditorPaths::get_singleton()->get_config_dir().path_join("editor_layouts.cfg");
 }
 
-float EditorSettings::get_auto_display_scale() const {
+float EditorSettings::get_auto_display_scale() {
 #ifdef LINUXBSD_ENABLED
 	if (DisplayServer::get_singleton()->get_name() == "Wayland") {
 		float main_window_scale = DisplayServer::get_singleton()->screen_get_scale(DisplayServer::SCREEN_OF_MAIN_WINDOW);
@@ -1790,7 +1935,7 @@ Ref<Shortcut> ED_GET_SHORTCUT(const String &p_path) {
 
 	Ref<Shortcut> sc = EditorSettings::get_singleton()->get_shortcut(p_path);
 
-	ERR_FAIL_COND_V_MSG(!sc.is_valid(), sc, "Used ED_GET_SHORTCUT with invalid shortcut: " + p_path);
+	ERR_FAIL_COND_V_MSG(sc.is_null(), sc, "Used ED_GET_SHORTCUT with invalid shortcut: " + p_path);
 
 	return sc;
 }
@@ -1801,7 +1946,7 @@ void ED_SHORTCUT_OVERRIDE(const String &p_path, const String &p_feature, Key p_k
 	}
 
 	Ref<Shortcut> sc = EditorSettings::get_singleton()->get_shortcut(p_path);
-	ERR_FAIL_COND_MSG(!sc.is_valid(), "Used ED_SHORTCUT_OVERRIDE with invalid shortcut: " + p_path);
+	ERR_FAIL_COND_MSG(sc.is_null(), "Used ED_SHORTCUT_OVERRIDE with invalid shortcut: " + p_path);
 
 	PackedInt32Array arr;
 	arr.push_back((int32_t)p_keycode);
@@ -1815,7 +1960,7 @@ void ED_SHORTCUT_OVERRIDE_ARRAY(const String &p_path, const String &p_feature, c
 	}
 
 	Ref<Shortcut> sc = EditorSettings::get_singleton()->get_shortcut(p_path);
-	ERR_FAIL_COND_MSG(!sc.is_valid(), "Used ED_SHORTCUT_OVERRIDE_ARRAY with invalid shortcut: " + p_path);
+	ERR_FAIL_COND_MSG(sc.is_null(), "Used ED_SHORTCUT_OVERRIDE_ARRAY with invalid shortcut: " + p_path);
 
 	// Only add the override if the OS supports the provided feature.
 	if (!OS::get_singleton()->has_feature(p_feature)) {
@@ -1987,7 +2132,6 @@ void EditorSettings::notify_changes() {
 	root->propagate_notification(NOTIFICATION_EDITOR_SETTINGS_CHANGED);
 }
 
-#ifdef TOOLS_ENABLED
 void EditorSettings::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
 	const String pf = p_function;
 	if (p_idx == 0) {
@@ -2014,7 +2158,6 @@ void EditorSettings::get_argument_options(const StringName &p_function, int p_id
 	}
 	Object::get_argument_options(p_function, p_idx, r_options);
 }
-#endif
 
 void EditorSettings::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("has_setting", "name"), &EditorSettings::has_setting);

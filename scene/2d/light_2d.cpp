@@ -54,7 +54,7 @@ void Light2D::_update_light_visibility() {
 	if (editor_only) {
 		editor_ok = false;
 	}
-#endif
+#endif // TOOLS_ENABLED
 
 	RS::get_singleton()->canvas_light_set_enabled(canvas_light, enabled && is_visible_in_tree() && editor_ok);
 }
@@ -343,7 +343,6 @@ Light2D::~Light2D() {
 //////////////////////////////
 
 #ifdef TOOLS_ENABLED
-
 Dictionary PointLight2D::_edit_get_state() const {
 	Dictionary state = Node2D::_edit_get_state();
 	state["offset"] = get_texture_offset();
@@ -367,7 +366,9 @@ Point2 PointLight2D::_edit_get_pivot() const {
 bool PointLight2D::_edit_use_pivot() const {
 	return true;
 }
+#endif // TOOLS_ENABLED
 
+#ifdef DEBUG_ENABLED
 Rect2 PointLight2D::_edit_get_rect() const {
 	if (texture.is_null()) {
 		return Rect2();
@@ -378,9 +379,9 @@ Rect2 PointLight2D::_edit_get_rect() const {
 }
 
 bool PointLight2D::_edit_use_rect() const {
-	return !texture.is_null();
+	return texture.is_valid();
 }
-#endif
+#endif // DEBUG_ENABLED
 
 Rect2 PointLight2D::get_anchorable_rect() const {
 	if (texture.is_null()) {
@@ -394,6 +395,19 @@ Rect2 PointLight2D::get_anchorable_rect() const {
 void PointLight2D::set_texture(const Ref<Texture2D> &p_texture) {
 	texture = p_texture;
 	if (texture.is_valid()) {
+#ifdef DEBUG_ENABLED
+		if (
+				p_texture->is_class("AnimatedTexture") ||
+				p_texture->is_class("AtlasTexture") ||
+				p_texture->is_class("CameraTexture") ||
+				p_texture->is_class("CanvasTexture") ||
+				p_texture->is_class("MeshTexture") ||
+				p_texture->is_class("Texture2DRD") ||
+				p_texture->is_class("ViewportTexture")) {
+			WARN_PRINT(vformat("%s cannot be used as a PointLight2D texture (%s). As a workaround, assign the value returned by %s's `get_image()` instead.", p_texture->get_class(), get_path(), p_texture->get_class()));
+		}
+#endif
+
 		RS::get_singleton()->canvas_light_set_texture(_get_light(), texture->get_rid());
 	} else {
 		RS::get_singleton()->canvas_light_set_texture(_get_light(), RID());
@@ -417,9 +431,9 @@ Vector2 PointLight2D::get_texture_offset() const {
 }
 
 PackedStringArray PointLight2D::get_configuration_warnings() const {
-	PackedStringArray warnings = Node2D::get_configuration_warnings();
+	PackedStringArray warnings = Light2D::get_configuration_warnings();
 
-	if (!texture.is_valid()) {
+	if (texture.is_null()) {
 		warnings.push_back(RTR("A texture with the shape of the light must be supplied to the \"Texture\" property."));
 	}
 
@@ -461,7 +475,8 @@ void PointLight2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_texture_scale", "texture_scale"), &PointLight2D::set_texture_scale);
 	ClassDB::bind_method(D_METHOD("get_texture_scale"), &PointLight2D::get_texture_scale);
 
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_texture", "get_texture");
+	// Only allow texture types that display correctly.
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D,-AnimatedTexture,-AtlasTexture,-CameraTexture,-CanvasTexture,-MeshTexture,-Texture2DRD,-ViewportTexture"), "set_texture", "get_texture");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "offset", PROPERTY_HINT_NONE, "suffix:px"), "set_texture_offset", "get_texture_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "texture_scale", PROPERTY_HINT_RANGE, "0.01,50,0.01"), "set_texture_scale", "get_texture_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "height", PROPERTY_HINT_RANGE, "0,1024,1,or_greater,suffix:px"), "set_height", "get_height");

@@ -28,13 +28,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef RESOURCE_IMPORTER_TEXTURE_H
-#define RESOURCE_IMPORTER_TEXTURE_H
+#pragma once
 
 #include "core/io/file_access.h"
 #include "core/io/image.h"
 #include "core/io/resource_importer.h"
-#include "scene/resources/texture.h"
 #include "servers/rendering_server.h"
 
 class CompressedTexture2D;
@@ -78,6 +76,9 @@ protected:
 	void _save_editor_meta(const Dictionary &p_metadata, const String &p_to_path);
 	Dictionary _load_editor_meta(const String &p_to_path) const;
 
+	static inline void _clamp_hdr_exposure(Ref<Image> &r_image);
+	static inline void _invert_y_channel(Ref<Image> &r_image);
+
 public:
 	static void save_to_ctex_format(Ref<FileAccess> f, const Ref<Image> &p_image, CompressMode p_compress_mode, Image::UsedChannels p_channels, Image::CompressMode p_compress_format, float p_lossy_quality);
 
@@ -100,15 +101,15 @@ public:
 	virtual void get_import_options(const String &p_path, List<ImportOption> *r_options, int p_preset = 0) const override;
 	virtual bool get_option_visibility(const String &p_path, const String &p_option, const HashMap<StringName, Variant> &p_options) const override;
 
-	virtual Error import(const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files = nullptr, Variant *r_metadata = nullptr) override;
+	virtual Error import(ResourceUID::ID p_source_id, const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files = nullptr, Variant *r_metadata = nullptr) override;
+
+	virtual bool can_import_threaded() const override { return true; }
 
 	void update_imports();
 
-	virtual bool are_import_settings_valid(const String &p_path) const override;
+	virtual bool are_import_settings_valid(const String &p_path, const Dictionary &p_meta) const override;
 	virtual String get_import_settings_string() const override;
 
 	ResourceImporterTexture(bool p_singleton = false);
 	~ResourceImporterTexture();
 };
-
-#endif // RESOURCE_IMPORTER_TEXTURE_H

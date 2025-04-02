@@ -30,13 +30,12 @@
 
 package org.godotengine.godot;
 
+import org.godotengine.godot.error.Error;
 import org.godotengine.godot.input.GodotEditText;
 
 import android.app.Activity;
-import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
-import android.graphics.Point;
 import android.graphics.Rect;
 import android.net.Uri;
 import android.os.Build;
@@ -120,15 +119,27 @@ public class GodotIO {
 			}
 
 			activity.startActivity(intent);
-			return 0;
+			return Error.OK.toNativeValue();
 		} catch (Exception e) {
 			Log.e(TAG, "Unable to open uri " + uriString, e);
-			return 1;
+			return Error.FAILED.toNativeValue();
 		}
 	}
 
 	public String getCacheDir() {
 		return activity.getCacheDir().getAbsolutePath();
+	}
+
+	public String getTempDir() {
+		File tempDir = new File(getCacheDir() + "/tmp");
+
+		if (!tempDir.exists()) {
+			if (!tempDir.mkdirs()) {
+				Log.e(TAG, "Unable to create temp dir");
+			}
+		}
+
+		return tempDir.getAbsolutePath();
 	}
 
 	public String getDataDir() {
@@ -214,6 +225,14 @@ public class GodotIO {
 			result[index++] = rect.height();
 		}
 		return result;
+	}
+
+	public boolean hasHardwareKeyboard() {
+		if (edit != null) {
+			return edit.hasHardwareKeyboard();
+		} else {
+			return false;
+		}
 	}
 
 	public void showKeyboard(String p_existing_text, int p_type, int p_max_input_length, int p_cursor_start, int p_cursor_end) {

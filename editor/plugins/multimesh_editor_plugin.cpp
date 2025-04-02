@@ -110,7 +110,7 @@ void MultiMeshEditor::_populate() {
 
 	MeshInstance3D *ss_instance = Object::cast_to<MeshInstance3D>(ss_node);
 
-	if (!ss_instance || !ss_instance->get_mesh().is_valid()) {
+	if (!ss_instance || ss_instance->get_mesh().is_null()) {
 		err_dialog->set_text(TTR("Surface source is invalid (no geometry)."));
 		err_dialog->popup_centered();
 		return;
@@ -272,7 +272,7 @@ MultiMeshEditor::MultiMeshEditor() {
 	Node3DEditor::get_singleton()->add_control_to_menu_panel(options);
 
 	options->set_text("MultiMesh");
-	options->set_icon(EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("MultiMeshInstance3D"), EditorStringName(EditorIcons)));
+	options->set_button_icon(EditorNode::get_singleton()->get_editor_theme()->get_icon(SNAME("MultiMeshInstance3D"), EditorStringName(EditorIcons)));
 
 	options->get_popup()->add_item(TTR("Populate Surface"));
 	options->get_popup()->connect(SceneStringName(id_pressed), callable_mp(this, &MultiMeshEditor::_menu_option));
@@ -387,7 +387,4 @@ MultiMeshEditorPlugin::MultiMeshEditorPlugin() {
 	EditorNode::get_singleton()->get_gui_base()->add_child(multimesh_editor);
 
 	multimesh_editor->options->hide();
-}
-
-MultiMeshEditorPlugin::~MultiMeshEditorPlugin() {
 }

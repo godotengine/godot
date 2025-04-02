@@ -4,7 +4,7 @@
  *
  *   Type 42 font parser (body).
  *
- * Copyright (C) 2002-2023 by
+ * Copyright (C) 2002-2024 by
  * Roberto Alameda.
  *
  * This file is part of the FreeType project, and may only be used,
@@ -99,7 +99,7 @@
     T1_FIELD_CALLBACK( "CharStrings", t42_parse_charstrings, 0 )
     T1_FIELD_CALLBACK( "sfnts",       t42_parse_sfnts,       0 )
 
-    { 0, T1_FIELD_LOCATION_CID_INFO, T1_FIELD_TYPE_NONE, 0, 0, 0, 0, 0, 0 }
+    T1_FIELD_ZERO
   };
 
 
@@ -1195,8 +1195,6 @@
   {
     T42_Parser  parser     = &loader->parser;
     FT_Byte*    limit;
-    FT_Int      n_keywords = (FT_Int)( sizeof ( t42_keywords ) /
-                                         sizeof ( t42_keywords[0] ) );
 
 
     parser->root.cursor = base;
@@ -1273,24 +1271,20 @@
 
         if ( len > 0 && len < 22 && parser->root.cursor < limit )
         {
-          int  i;
+          T1_Field  keyword = (T1_Field)t42_keywords;
 
 
           /* now compare the immediate name to the keyword table */
-
-          /* loop through all known keywords */
-          for ( i = 0; i < n_keywords; i++ )
+          while ( keyword->len )
           {
-            T1_Field  keyword = (T1_Field)&t42_keywords[i];
-            FT_Byte   *name   = (FT_Byte*)keyword->ident;
+            FT_Byte*  name = (FT_Byte*)keyword->ident;
 
 
             if ( !name )
               continue;
 
-            if ( cur[0] == name[0]                      &&
-                 len == ft_strlen( (const char *)name ) &&
-                 ft_memcmp( cur, name, len ) == 0       )
+            if ( keyword->len == len              &&
+                 ft_memcmp( cur, name, len ) == 0 )
             {
               /* we found it -- run the parsing callback! */
               parser->root.error = t42_load_keyword( face,
@@ -1300,6 +1294,8 @@
                 return parser->root.error;
               break;
             }
+
+            keyword++;
           }
         }
       }

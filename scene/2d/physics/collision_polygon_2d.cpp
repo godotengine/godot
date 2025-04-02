@@ -36,8 +36,6 @@
 #include "scene/resources/2d/concave_polygon_shape_2d.h"
 #include "scene/resources/2d/convex_polygon_shape_2d.h"
 
-#include "thirdparty/misc/polypartition.h"
-
 void CollisionPolygon2D::_build_polygon() {
 	collision_object->shape_owner_clear_shapes(owner_id);
 
@@ -217,7 +215,7 @@ CollisionPolygon2D::BuildMode CollisionPolygon2D::get_build_mode() const {
 	return build_mode;
 }
 
-#ifdef TOOLS_ENABLED
+#ifdef DEBUG_ENABLED
 Rect2 CollisionPolygon2D::_edit_get_rect() const {
 	return aabb;
 }

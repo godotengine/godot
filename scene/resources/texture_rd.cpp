@@ -197,7 +197,7 @@ void TextureLayeredRD::_set_texture_rd_rid(RID p_texture_rd_rid) {
 
 	RS::TextureLayeredType rs_layer_type;
 	RD::TextureFormat tf = RD::get_singleton()->texture_get_format(p_texture_rd_rid);
-	ERR_FAIL_COND(tf.texture_type != RD::TEXTURE_TYPE_2D_ARRAY);
+	ERR_FAIL_COND(tf.texture_type != RD::TEXTURE_TYPE_2D_ARRAY && tf.texture_type != RD::TEXTURE_TYPE_CUBE && tf.texture_type != RD::TEXTURE_TYPE_CUBE_ARRAY);
 	ERR_FAIL_COND(tf.depth > 1);
 	switch (layer_type) {
 		case LAYERED_TYPE_2D_ARRAY: {

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef SKELETON_3D_EDITOR_PLUGIN_H
-#define SKELETON_3D_EDITOR_PLUGIN_H
+#pragma once
 
 #include "editor/add_metadata_dialog.h"
 #include "editor/editor_properties.h"
@@ -228,14 +227,14 @@ public:
 
 	void move_skeleton_bone(NodePath p_skeleton_path, int32_t p_selected_boneidx, int32_t p_target_boneidx);
 
-	Skeleton3D *get_skeleton() const { return skeleton; };
+	Skeleton3D *get_skeleton() const { return skeleton; }
 
 	bool is_edit_mode() const { return edit_mode; }
 
 	void update_bone_original();
-	Vector3 get_bone_original_position() const { return bone_original_position; };
-	Quaternion get_bone_original_rotation() const { return bone_original_rotation; };
-	Vector3 get_bone_original_scale() const { return bone_original_scale; };
+	Vector3 get_bone_original_position() const { return bone_original_position; }
+	Quaternion get_bone_original_rotation() const { return bone_original_rotation; }
+	Vector3 get_bone_original_scale() const { return bone_original_scale; }
 
 	Skeleton3DEditor(EditorInspectorPluginSkeleton *e_plugin, Skeleton3D *skeleton);
 	~Skeleton3DEditor();
@@ -264,7 +263,7 @@ public:
 	bool has_main_screen() const override { return false; }
 	virtual bool handles(Object *p_object) const override;
 
-	virtual String get_name() const override { return "Skeleton3D"; }
+	virtual String get_plugin_name() const override { return "Skeleton3D"; }
 
 	Skeleton3DEditorPlugin();
 };
@@ -295,5 +294,3 @@ public:
 	Skeleton3DGizmoPlugin();
 	~Skeleton3DGizmoPlugin();
 };
-
-#endif // SKELETON_3D_EDITOR_PLUGIN_H

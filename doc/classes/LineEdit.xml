@@ -6,11 +6,11 @@
 	<description>
 		[LineEdit] provides an input field for editing a single line of text.
 		- When the [LineEdit] control is focused using the keyboard arrow keys, it will only gain focus and not enter edit mode.
-		- To enter edit mode, click on the control with the mouse or press the "ui_text_submit" action (default: [kbd]Enter[/kbd] or [kbd]Kp Enter[/kbd]).
-		- To exit edit mode, press "ui_text_submit" or "ui_cancel" (default: [kbd]Escape[/kbd]) actions.
-		- Check [method is_editing] and [signal editing_toggled] for more information.
+		- To enter edit mode, click on the control with the mouse, see also [member keep_editing_on_text_submit].
+		- To exit edit mode, press [code]ui_text_submit[/code] or [code]ui_cancel[/code] (by default [kbd]Escape[/kbd]) actions.
+		- Check [method edit], [method unedit], [method is_editing], and [signal editing_toggled] for more information.
 		[b]Important:[/b]
-		- Focusing the [LineEdit] with "ui_focus_next" (default: [kbd]Tab[/kbd]) or "ui_focus_prev" (default: [kbd]Shift + Tab[/kbd]) or [method Control.grab_focus] still enters edit mode (for compatibility).
+		- Focusing the [LineEdit] with [code]ui_focus_next[/code] (by default [kbd]Tab[/kbd]) or [code]ui_focus_prev[/code] (by default [kbd]Shift + Tab[/kbd]) or [method Control.grab_focus] still enters edit mode (for compatibility).
 		[LineEdit] features many built-in shortcuts that are always available ([kbd]Ctrl[/kbd] here maps to [kbd]Cmd[/kbd] on macOS):
 		- [kbd]Ctrl + C[/kbd]: Copy
 		- [kbd]Ctrl + X[/kbd]: Cut
@@ -33,6 +33,7 @@
 		- [kbd]Cmd + E[/kbd]: Same as [kbd]End[/kbd], move the caret to the end of the line
 		- [kbd]Cmd + Left Arrow[/kbd]: Same as [kbd]Home[/kbd], move the caret to the beginning of the line
 		- [kbd]Cmd + Right Arrow[/kbd]: Same as [kbd]End[/kbd], move the caret to the end of the line
+		[b]Note:[/b] Caret movement shortcuts listed above are not affected by [member shortcut_keys_enabled].
 	</description>
 	<tutorials>
 	</tutorials>
@@ -73,6 +74,13 @@
 			<return type="void" />
 			<description>
 				Clears the current selection.
+			</description>
+		</method>
+		<method name="edit">
+			<return type="void" />
+			<description>
+				Allows entering edit mode whether the [LineEdit] is focused or not.
+				See also [member keep_editing_on_text_submit].
 			</description>
 		</method>
 		<method name="get_menu" qualifiers="const">
@@ -151,10 +159,22 @@
 				Returns [code]true[/code] if the user has text in the [url=https://en.wikipedia.org/wiki/Input_method]Input Method Editor[/url] (IME).
 			</description>
 		</method>
+		<method name="has_redo" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if a "redo" action is available.
+			</description>
+		</method>
 		<method name="has_selection" qualifiers="const">
 			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if the user has selected text.
+			</description>
+		</method>
+		<method name="has_undo" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if an "undo" action is available.
 			</description>
 		</method>
 		<method name="insert_text_at_caret">
@@ -211,6 +231,12 @@
 				Selects the whole [String].
 			</description>
 		</method>
+		<method name="unedit">
+			<return type="void" />
+			<description>
+				Allows exiting edit mode while preserving focus.
+			</description>
+		</method>
 	</methods>
 	<members>
 		<member name="alignment" type="int" setter="set_horizontal_alignment" getter="get_horizontal_alignment" enum="HorizontalAlignment" default="0">
@@ -226,7 +252,7 @@
 			The caret's column position inside the [LineEdit]. When set, the text may scroll to accommodate it.
 		</member>
 		<member name="caret_force_displayed" type="bool" setter="set_caret_force_displayed" getter="is_caret_force_displayed" default="false">
-			If [code]true[/code], the [LineEdit] will always show the caret, even if focus is lost.
+			If [code]true[/code], the [LineEdit] will always show the caret, even if not editing or focus is lost.
 		</member>
 		<member name="caret_mid_grapheme" type="bool" setter="set_caret_mid_grapheme_enabled" getter="is_caret_mid_grapheme_enabled" default="false">
 			Allow moving caret, selecting and removing the individual composite character components.
@@ -250,6 +276,9 @@
 		<member name="editable" type="bool" setter="set_editable" getter="is_editable" default="true" keywords="readonly, disabled, enabled">
 			If [code]false[/code], existing text cannot be modified and new text cannot be added.
 		</member>
+		<member name="emoji_menu_enabled" type="bool" setter="set_emoji_menu_enabled" getter="is_emoji_menu_enabled" default="true">
+			If [code]true[/code], "Emoji and Symbols" menu is enabled.
+		</member>
 		<member name="expand_to_text_length" type="bool" setter="set_expand_to_text_length_enabled" getter="is_expand_to_text_length_enabled" default="false">
 			If [code]true[/code], the [LineEdit] width will increase to stay longer than the [member text]. It will [b]not[/b] compress if the [member text] is shortened.
 		</member>
@@ -257,6 +286,9 @@
 			If [code]true[/code], the [LineEdit] doesn't display decoration.
 		</member>
 		<member name="focus_mode" type="int" setter="set_focus_mode" getter="get_focus_mode" overrides="Control" enum="Control.FocusMode" default="2" />
+		<member name="keep_editing_on_text_submit" type="bool" setter="set_keep_editing_on_text_submit" getter="is_editing_kept_on_text_submit" default="false">
+			If [code]true[/code], the [LineEdit] will not exit edit mode when text is submitted by pressing [code]ui_text_submit[/code] action (by default: [kbd]Enter[/kbd] or [kbd]Kp Enter[/kbd]).
+		</member>
 		<member name="language" type="String" setter="set_language" getter="get_language" default="&quot;&quot;">
 			Language code used for line-breaking and text shaping algorithms. If left empty, current locale is used instead.
 		</member>
@@ -309,7 +341,7 @@
 			If [code]false[/code], it's impossible to select the text using mouse nor keyboard.
 		</member>
 		<member name="shortcut_keys_enabled" type="bool" setter="set_shortcut_keys_enabled" getter="is_shortcut_keys_enabled" default="true">
-			If [code]false[/code], using shortcuts will be disabled.
+			If [code]true[/code], shortcut keys for context menu items are enabled, even if the context menu is disabled.
 		</member>
 		<member name="structured_text_bidi_override" type="int" setter="set_structured_text_bidi_override" getter="get_structured_text_bidi_override" enum="TextServer.StructuredTextParser" default="0">
 			Set BiDi algorithm override for the structured text.
@@ -353,7 +385,7 @@
 		<signal name="text_submitted">
 			<param index="0" name="new_text" type="String" />
 			<description>
-				Emitted when the user presses [constant KEY_ENTER] on the [LineEdit].
+				Emitted when the user presses the [code]ui_text_submit[/code] action (by default: [kbd]Enter[/kbd] or [kbd]Kp Enter[/kbd]) while the [LineEdit] has focus.
 			</description>
 		</signal>
 	</signals>
@@ -449,7 +481,10 @@
 		<constant name="MENU_INSERT_SHY" value="29" enum="MenuItems">
 			Inserts soft hyphen (SHY) character.
 		</constant>
-		<constant name="MENU_MAX" value="30" enum="MenuItems">
+		<constant name="MENU_EMOJI_AND_SYMBOL" value="30" enum="MenuItems">
+			Opens system emoji and symbol picker.
+		</constant>
+		<constant name="MENU_MAX" value="31" enum="MenuItems">
 			Represents the size of the [enum MenuItems] enum.
 		</constant>
 		<constant name="KEYBOARD_TYPE_DEFAULT" value="0" enum="VirtualKeyboardType">

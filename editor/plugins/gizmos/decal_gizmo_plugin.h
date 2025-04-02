@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef DECAL_GIZMO_PLUGIN_H
-#define DECAL_GIZMO_PLUGIN_H
+#pragma once
 
 #include "editor/plugins/node_3d_editor_gizmos.h"
 
@@ -53,7 +52,4 @@ public:
 	void commit_handle(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary, const Variant &p_restore, bool p_cancel = false) override;
 
 	DecalGizmoPlugin();
-	~DecalGizmoPlugin();
 };
-
-#endif // DECAL_GIZMO_PLUGIN_H

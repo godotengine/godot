@@ -780,8 +780,8 @@ THE SOFTWARE.
                   FT_UInt       glyph_index,
                   FT_Int32      load_flags )
   {
-    BDF_Face     bdf    = (BDF_Face)FT_SIZE_FACE( size );
-    FT_Face      face   = FT_FACE( bdf );
+    FT_Face      face   = size->face;
+    BDF_Face     bdf    = (BDF_Face)face;
     FT_Error     error  = FT_Err_Ok;
     FT_Bitmap*   bitmap = &slot->bitmap;
     bdf_glyph_t  glyph;

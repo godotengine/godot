@@ -28,14 +28,15 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TEXTURE_3D_EDITOR_PLUGIN_H
-#define TEXTURE_3D_EDITOR_PLUGIN_H
+#pragma once
 
 #include "editor/editor_inspector.h"
 #include "editor/plugins/editor_plugin.h"
 #include "scene/gui/spin_box.h"
 #include "scene/resources/shader.h"
 #include "scene/resources/texture.h"
+
+class ColorChannelSelector;
 
 class Texture3DEditor : public Control {
 	GDCLASS(Texture3DEditor, Control);
@@ -48,6 +49,8 @@ class Texture3DEditor : public Control {
 	Ref<ShaderMaterial> material;
 
 	Control *texture_rect = nullptr;
+
+	ColorChannelSelector *channel_selector = nullptr;
 
 	bool setting = false;
 
@@ -66,6 +69,8 @@ class Texture3DEditor : public Control {
 
 	void _update_material(bool p_texture_changed);
 	void _update_gui();
+
+	void on_selected_channels_changed();
 
 protected:
 	void _notification(int p_what);
@@ -89,9 +94,7 @@ class Texture3DEditorPlugin : public EditorPlugin {
 	GDCLASS(Texture3DEditorPlugin, EditorPlugin);
 
 public:
-	virtual String get_name() const override { return "Texture3D"; }
+	virtual String get_plugin_name() const override { return "Texture3D"; }
 
 	Texture3DEditorPlugin();
 };
-
-#endif // TEXTURE_3D_EDITOR_PLUGIN_H

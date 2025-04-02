@@ -54,6 +54,10 @@ String EditorPaths::get_cache_dir() const {
 	return cache_dir;
 }
 
+String EditorPaths::get_temp_dir() const {
+	return temp_dir;
+}
+
 String EditorPaths::get_project_data_dir() const {
 	return project_data_dir;
 }
@@ -105,6 +109,7 @@ void EditorPaths::create() {
 void EditorPaths::free() {
 	ERR_FAIL_NULL(singleton);
 	memdelete(singleton);
+	singleton = nullptr;
 }
 
 void EditorPaths::_bind_methods() {
@@ -160,6 +165,7 @@ EditorPaths::EditorPaths() {
 		config_dir = data_dir;
 		cache_path = exe_path;
 		cache_dir = data_dir.path_join("cache");
+		temp_dir = data_dir.path_join("temp");
 	} else {
 		// Typically XDG_DATA_HOME or %APPDATA%.
 		data_path = OS::get_singleton()->get_data_path();
@@ -174,6 +180,7 @@ EditorPaths::EditorPaths() {
 		} else {
 			cache_dir = cache_path.path_join(OS::get_singleton()->get_godot_dir_name());
 		}
+		temp_dir = OS::get_singleton()->get_temp_path();
 	}
 
 	paths_valid = (!data_path.is_empty() && !config_path.is_empty() && !cache_path.is_empty());
@@ -230,6 +237,17 @@ EditorPaths::EditorPaths() {
 		}
 	}
 
+	// Temporary dir.
+	{
+		if (dir->change_dir(temp_dir) != OK) {
+			dir->make_dir_recursive(temp_dir);
+			if (dir->change_dir(temp_dir) != OK) {
+				ERR_PRINT("Could not create editor temporary directory: " + temp_dir);
+				paths_valid = false;
+			}
+		}
+	}
+
 	// Validate or create project-specific editor data dir,
 	// including shader cache subdir.
 	if (Engine::get_singleton()->is_project_manager_hint() || (Main::is_cmdline_tool() && !ProjectSettings::get_singleton()->is_project_loaded())) {
@@ -255,22 +273,6 @@ EditorPaths::EditorPaths() {
 			} else {
 				ERR_PRINT("Failed to create file " + project_data_gdignore_file_path.quote() + ".");
 			}
-		}
-
-		// Check that `.editorconfig` file exists.
-		String project_editorconfig_path = "res://.editorconfig";
-		if (!FileAccess::exists(project_editorconfig_path)) {
-			Ref<FileAccess> f = FileAccess::open(project_editorconfig_path, FileAccess::WRITE);
-			if (f.is_valid()) {
-				f->store_line("root = true");
-				f->store_line("");
-				f->store_line("[*]");
-				f->store_line("charset = utf-8");
-				f->close();
-			} else {
-				ERR_PRINT("Failed to create file " + project_editorconfig_path.quote() + ".");
-			}
-			FileAccess::set_hidden_attribute(project_editorconfig_path, true);
 		}
 
 		Engine::get_singleton()->set_shader_cache_path(project_data_dir);

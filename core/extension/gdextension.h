@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef GDEXTENSION_H
-#define GDEXTENSION_H
+#pragma once
 
 #include "core/extension/gdextension_interface.h"
 #include "core/extension/gdextension_loader.h"
@@ -72,6 +71,8 @@ class GDExtension : public Resource {
 		GDExtensionClassFreePropertyList free_property_list_func = nullptr;
 		GDExtensionClassCreateInstance create_instance_func = nullptr;
 		GDExtensionClassGetRID get_rid_func = nullptr;
+		GDExtensionClassGetVirtual get_virtual_func = nullptr;
+		GDExtensionClassGetVirtualCallData get_virtual_call_data_func = nullptr;
 #endif // DISABLE_DEPRECATED
 	};
 
@@ -92,6 +93,7 @@ class GDExtension : public Resource {
 	static void _register_extension_class_signal(GDExtensionClassLibraryPtr p_library, GDExtensionConstStringNamePtr p_class_name, GDExtensionConstStringNamePtr p_signal_name, const GDExtensionPropertyInfo *p_argument_info, GDExtensionInt p_argument_count);
 	static void _unregister_extension_class(GDExtensionClassLibraryPtr p_library, GDExtensionConstStringNamePtr p_class_name);
 	static void _get_library_path(GDExtensionClassLibraryPtr p_library, GDExtensionStringPtr r_path);
+	static void _register_get_classes_used_callback(GDExtensionClassLibraryPtr p_library, GDExtensionEditorGetClassesUsedCallback p_callback);
 
 	GDExtensionInitialization initialization;
 	int32_t level_initialized = -1;
@@ -100,6 +102,7 @@ class GDExtension : public Resource {
 	bool is_reloading = false;
 	Vector<GDExtensionMethodBind *> invalid_methods;
 	Vector<ObjectID> instance_bindings;
+	GDExtensionEditorGetClassesUsedCallback get_classes_used_callback = nullptr;
 
 	static void _track_instance(void *p_user_data, void *p_instance);
 	static void _untrack_instance(void *p_user_data, void *p_instance);
@@ -154,6 +157,8 @@ public:
 
 	void track_instance_binding(Object *p_object);
 	void untrack_instance_binding(Object *p_object);
+
+	PackedStringArray get_classes_used() const;
 #endif
 
 	InitializationLevel get_minimum_library_initialization_level() const;
@@ -224,5 +229,3 @@ public:
 };
 
 #endif // TOOLS_ENABLED
-
-#endif // GDEXTENSION_H

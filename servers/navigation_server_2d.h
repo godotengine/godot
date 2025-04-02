@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef NAVIGATION_SERVER_2D_H
-#define NAVIGATION_SERVER_2D_H
+#pragma once
 
 #include "core/object/class_db.h"
 #include "core/templates/rid.h"
@@ -43,13 +42,16 @@
 class NavMeshGenerator2D;
 #endif // CLIPPER2_ENABLED
 
+struct NavMeshGeometryParser2D {
+	RID self;
+	Callable callback;
+};
+
 // This server exposes the `NavigationServer3D` features in the 2D world.
 class NavigationServer2D : public Object {
 	GDCLASS(NavigationServer2D, Object);
 
 	static NavigationServer2D *singleton;
-
-	void _emit_map_changed(RID p_map);
 
 protected:
 	static void _bind_methods();
@@ -91,7 +93,7 @@ public:
 	virtual real_t map_get_link_connection_radius(RID p_map) const = 0;
 
 	/// Returns the navigation path to reach the destination from the origin.
-	virtual Vector<Vector2> map_get_path(RID p_map, Vector2 p_origin, Vector2 p_destination, bool p_optimize, uint32_t p_navigation_layers = 1) const = 0;
+	virtual Vector<Vector2> map_get_path(RID p_map, Vector2 p_origin, Vector2 p_destination, bool p_optimize, uint32_t p_navigation_layers = 1) = 0;
 
 	virtual Vector2 map_get_closest_point(RID p_map, const Vector2 &p_point) const = 0;
 	virtual RID map_get_closest_point_owner(RID p_map, const Vector2 &p_point) const = 0;
@@ -103,6 +105,9 @@ public:
 
 	virtual void map_force_update(RID p_map) = 0;
 	virtual uint32_t map_get_iteration_id(RID p_map) const = 0;
+
+	virtual void map_set_use_async_iterations(RID p_map, bool p_enabled) = 0;
+	virtual bool map_get_use_async_iterations(RID p_map) const = 0;
 
 	virtual Vector2 map_get_random_point(RID p_map, uint32_t p_navigation_layers, bool p_uniformly) const = 0;
 
@@ -151,6 +156,7 @@ public:
 
 	virtual Vector2 region_get_closest_point(RID p_region, const Vector2 &p_point) const = 0;
 	virtual Vector2 region_get_random_point(RID p_region, uint32_t p_navigation_layers, bool p_uniformly) const = 0;
+	virtual Rect2 region_get_bounds(RID p_region) const = 0;
 
 	/// Creates a new link between positions in the nav map.
 	virtual RID link_create() = 0;
@@ -293,8 +299,16 @@ public:
 	virtual uint32_t obstacle_get_avoidance_layers(RID p_obstacle) const = 0;
 
 	/// Returns a customized navigation path using a query parameters object
-	virtual void query_path(const Ref<NavigationPathQueryParameters2D> &p_query_parameters, Ref<NavigationPathQueryResult2D> p_query_result) const = 0;
+	virtual void query_path(const Ref<NavigationPathQueryParameters2D> &p_query_parameters, Ref<NavigationPathQueryResult2D> p_query_result, const Callable &p_callback = Callable()) = 0;
 
+	/// Control activation of this server.
+	virtual void set_active(bool p_active) = 0;
+
+	/// Process the collision avoidance agents.
+	/// The result of this process is needed by the physics server,
+	/// so this must be called in the main thread.
+	/// Note: This function is not thread safe.
+	virtual void process(real_t delta_time) = 0;
 	virtual void init() = 0;
 	virtual void sync() = 0;
 	virtual void finish() = 0;
@@ -307,6 +321,12 @@ public:
 	virtual void bake_from_source_geometry_data_async(const Ref<NavigationPolygon> &p_navigation_mesh, const Ref<NavigationMeshSourceGeometryData2D> &p_source_geometry_data, const Callable &p_callback = Callable()) = 0;
 	virtual bool is_baking_navigation_polygon(Ref<NavigationPolygon> p_navigation_polygon) const = 0;
 
+protected:
+	static RWLock geometry_parser_rwlock;
+	static RID_Owner<NavMeshGeometryParser2D> geometry_parser_owner;
+	static LocalVector<NavMeshGeometryParser2D *> generator_parsers;
+
+public:
 	virtual RID source_geometry_parser_create() = 0;
 	virtual void source_geometry_parser_set_callback(RID p_parser, const Callable &p_callback) = 0;
 
@@ -315,10 +335,75 @@ public:
 	NavigationServer2D();
 	~NavigationServer2D() override;
 
+	enum ProcessInfo {
+		INFO_ACTIVE_MAPS,
+		INFO_REGION_COUNT,
+		INFO_AGENT_COUNT,
+		INFO_LINK_COUNT,
+		INFO_POLYGON_COUNT,
+		INFO_EDGE_COUNT,
+		INFO_EDGE_MERGE_COUNT,
+		INFO_EDGE_CONNECTION_COUNT,
+		INFO_EDGE_FREE_COUNT,
+		INFO_OBSTACLE_COUNT,
+	};
+
+	virtual int get_process_info(ProcessInfo p_info) const = 0;
+
 	void set_debug_enabled(bool p_enabled);
 	bool get_debug_enabled() const;
 
+protected:
+#ifndef DISABLE_DEPRECATED
+	Vector<Vector2> _map_get_path_bind_compat_100129(RID p_map, Vector2 p_origin, Vector2 p_destination, bool p_optimize, uint32_t p_navigation_layers = 1) const;
+	void _query_path_bind_compat_100129(const Ref<NavigationPathQueryParameters2D> &p_query_parameters, Ref<NavigationPathQueryResult2D> p_query_result) const;
+	static void _bind_compatibility_methods();
+#endif
+
+private:
+	bool debug_enabled = false;
+
 #ifdef DEBUG_ENABLED
+	bool debug_dirty = true;
+
+	bool debug_navigation_enabled = false;
+	bool navigation_debug_dirty = true;
+	void _emit_navigation_debug_changed_signal();
+
+	bool debug_avoidance_enabled = false;
+	bool avoidance_debug_dirty = true;
+	void _emit_avoidance_debug_changed_signal();
+
+	Color debug_navigation_edge_connection_color = Color(1.0, 0.0, 1.0, 1.0);
+	Color debug_navigation_geometry_edge_color = Color(0.5, 1.0, 1.0, 1.0);
+	Color debug_navigation_geometry_face_color = Color(0.5, 1.0, 1.0, 0.4);
+	Color debug_navigation_geometry_edge_disabled_color = Color(0.5, 0.5, 0.5, 1.0);
+	Color debug_navigation_geometry_face_disabled_color = Color(0.5, 0.5, 0.5, 0.4);
+	Color debug_navigation_link_connection_color = Color(1.0, 0.5, 1.0, 1.0);
+	Color debug_navigation_link_connection_disabled_color = Color(0.5, 0.5, 0.5, 1.0);
+	Color debug_navigation_agent_path_color = Color(1.0, 0.0, 0.0, 1.0);
+
+	real_t debug_navigation_agent_path_point_size = 4.0;
+
+	Color debug_navigation_avoidance_agents_radius_color = Color(1.0, 1.0, 0.0, 0.25);
+	Color debug_navigation_avoidance_obstacles_radius_color = Color(1.0, 0.5, 0.0, 0.25);
+
+	Color debug_navigation_avoidance_static_obstacle_pushin_face_color = Color(1.0, 0.0, 0.0, 0.0);
+	Color debug_navigation_avoidance_static_obstacle_pushout_face_color = Color(1.0, 1.0, 0.0, 0.5);
+	Color debug_navigation_avoidance_static_obstacle_pushin_edge_color = Color(1.0, 0.0, 0.0, 1.0);
+	Color debug_navigation_avoidance_static_obstacle_pushout_edge_color = Color(1.0, 1.0, 0.0, 1.0);
+
+	bool debug_navigation_enable_edge_connections = true;
+	bool debug_navigation_enable_edge_lines = true;
+	bool debug_navigation_enable_geometry_face_random_color = true;
+	bool debug_navigation_enable_link_connections = true;
+	bool debug_navigation_enable_agent_paths = true;
+
+	bool debug_navigation_avoidance_enable_agents_radius = true;
+	bool debug_navigation_avoidance_enable_obstacles_radius = true;
+	bool debug_navigation_avoidance_enable_obstacles_static = true;
+
+public:
 	void set_debug_navigation_enabled(bool p_enabled);
 	bool get_debug_navigation_enabled() const;
 
@@ -391,11 +476,6 @@ public:
 	void set_debug_navigation_avoidance_enable_obstacles_static(const bool p_value);
 	bool get_debug_navigation_avoidance_enable_obstacles_static() const;
 #endif // DEBUG_ENABLED
-
-#ifdef DEBUG_ENABLED
-private:
-	void _emit_navigation_debug_changed_signal();
-#endif // DEBUG_ENABLED
 };
 
 typedef NavigationServer2D *(*NavigationServer2DCallback)();
@@ -407,6 +487,9 @@ class NavigationServer2DManager {
 public:
 	static void set_default_server(NavigationServer2DCallback p_callback);
 	static NavigationServer2D *new_default_server();
+
+	static void initialize_server();
+	static void finalize_server();
 };
 
-#endif // NAVIGATION_SERVER_2D_H
+VARIANT_ENUM_CAST(NavigationServer2D::ProcessInfo);

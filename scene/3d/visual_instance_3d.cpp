@@ -113,19 +113,6 @@ void VisualInstance3D::_notification(int p_what) {
 
 				RenderingServer::get_singleton()->instance_reset_physics_interpolation(instance);
 			}
-#if defined(DEBUG_ENABLED) && defined(TOOLS_ENABLED)
-			else if (GLOBAL_GET("debug/settings/physics_interpolation/enable_warnings")) {
-
-				String node_name = is_inside_tree() ? String(get_path()) : String(get_name());
-				if (!_is_vi_visible()) {
-					WARN_PRINT("[Physics interpolation] NOTIFICATION_RESET_PHYSICS_INTERPOLATION only works with unhidden nodes: \"" + node_name + "\".");
-				}
-				if (!is_physics_interpolated()) {
-					WARN_PRINT("[Physics interpolation] NOTIFICATION_RESET_PHYSICS_INTERPOLATION only works with interpolated nodes: \"" + node_name + "\".");
-				}
-			}
-#endif
-
 		} break;
 
 		case NOTIFICATION_EXIT_WORLD: {
@@ -454,14 +441,48 @@ AABB GeometryInstance3D::get_custom_aabb() const {
 	return custom_aabb;
 }
 
+void GeometryInstance3D::set_lightmap_texel_scale(float p_scale) {
+	lightmap_texel_scale = p_scale;
+}
+
+float GeometryInstance3D::get_lightmap_texel_scale() const {
+	return lightmap_texel_scale;
+}
+
+#ifndef DISABLE_DEPRECATED
 void GeometryInstance3D::set_lightmap_scale(LightmapScale p_scale) {
 	ERR_FAIL_INDEX(p_scale, LIGHTMAP_SCALE_MAX);
-	lightmap_scale = p_scale;
+	switch (p_scale) {
+		case GeometryInstance3D::LIGHTMAP_SCALE_1X:
+			lightmap_texel_scale = 1.0f;
+			break;
+		case GeometryInstance3D::LIGHTMAP_SCALE_2X:
+			lightmap_texel_scale = 2.0f;
+			break;
+		case GeometryInstance3D::LIGHTMAP_SCALE_4X:
+			lightmap_texel_scale = 4.0f;
+			break;
+		case GeometryInstance3D::LIGHTMAP_SCALE_8X:
+			lightmap_texel_scale = 8.0f;
+			break;
+		case GeometryInstance3D::LIGHTMAP_SCALE_MAX:
+			break; // Can't happen, but silences warning.
+	}
 }
 
 GeometryInstance3D::LightmapScale GeometryInstance3D::get_lightmap_scale() const {
-	return lightmap_scale;
+	// Return closest approximation.
+	if (lightmap_texel_scale < 1.5f) {
+		return GeometryInstance3D::LIGHTMAP_SCALE_1X;
+	} else if (lightmap_texel_scale < 3.0f) {
+		return GeometryInstance3D::LIGHTMAP_SCALE_2X;
+	} else if (lightmap_texel_scale < 6.0f) {
+		return GeometryInstance3D::LIGHTMAP_SCALE_4X;
+	}
+
+	return GeometryInstance3D::LIGHTMAP_SCALE_8X;
 }
+#endif // DISABLE_DEPRECATED
 
 void GeometryInstance3D::set_gi_mode(GIMode p_mode) {
 	switch (p_mode) {
@@ -494,6 +515,10 @@ void GeometryInstance3D::set_ignore_occlusion_culling(bool p_enabled) {
 
 bool GeometryInstance3D::is_ignoring_occlusion_culling() {
 	return ignore_occlusion_culling;
+}
+
+Ref<TriangleMesh> GeometryInstance3D::generate_triangle_mesh() const {
+	return Ref<TriangleMesh>();
 }
 
 PackedStringArray GeometryInstance3D::get_configuration_warnings() const {
@@ -565,8 +590,13 @@ void GeometryInstance3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_extra_cull_margin", "margin"), &GeometryInstance3D::set_extra_cull_margin);
 	ClassDB::bind_method(D_METHOD("get_extra_cull_margin"), &GeometryInstance3D::get_extra_cull_margin);
 
+	ClassDB::bind_method(D_METHOD("set_lightmap_texel_scale", "scale"), &GeometryInstance3D::set_lightmap_texel_scale);
+	ClassDB::bind_method(D_METHOD("get_lightmap_texel_scale"), &GeometryInstance3D::get_lightmap_texel_scale);
+
+#ifndef DISABLE_DEPRECATED
 	ClassDB::bind_method(D_METHOD("set_lightmap_scale", "scale"), &GeometryInstance3D::set_lightmap_scale);
 	ClassDB::bind_method(D_METHOD("get_lightmap_scale"), &GeometryInstance3D::get_lightmap_scale);
+#endif // DISABLE_DEPRECATED
 
 	ClassDB::bind_method(D_METHOD("set_gi_mode", "mode"), &GeometryInstance3D::set_gi_mode);
 	ClassDB::bind_method(D_METHOD("get_gi_mode"), &GeometryInstance3D::get_gi_mode);
@@ -591,7 +621,10 @@ void GeometryInstance3D::_bind_methods() {
 
 	ADD_GROUP("Global Illumination", "gi_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "gi_mode", PROPERTY_HINT_ENUM, "Disabled,Static,Dynamic"), "set_gi_mode", "get_gi_mode");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "gi_lightmap_scale", PROPERTY_HINT_ENUM, String::utf8("1×,2×,4×,8×")), "set_lightmap_scale", "get_lightmap_scale");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "gi_lightmap_texel_scale", PROPERTY_HINT_RANGE, "0.01,10,0.0001,or_greater"), "set_lightmap_texel_scale", "get_lightmap_texel_scale");
+#ifndef DISABLE_DEPRECATED
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "gi_lightmap_scale", PROPERTY_HINT_ENUM, String::utf8("1×,2×,4×,8×"), PROPERTY_USAGE_NONE), "set_lightmap_scale", "get_lightmap_scale");
+#endif // DISABLE_DEPRECATED
 
 	ADD_GROUP("Visibility Range", "visibility_range_");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "visibility_range_begin", PROPERTY_HINT_RANGE, "0.0,4096.0,0.01,or_greater,suffix:m"), "set_visibility_range_begin", "get_visibility_range_begin");

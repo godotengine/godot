@@ -28,12 +28,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef DEPENDENCY_EDITOR_H
-#define DEPENDENCY_EDITOR_H
+#pragma once
 
+#include "scene/gui/box_container.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/item_list.h"
-#include "scene/gui/tab_container.h"
 #include "scene/gui/tree.h"
 
 class EditorFileDialog;
@@ -98,6 +97,8 @@ class DependencyRemoveDialog : public ConfirmationDialog {
 
 	Label *text = nullptr;
 	Tree *owners = nullptr;
+	VBoxContainer *vb_owners = nullptr;
+	ItemList *files_to_delete_list = nullptr;
 
 	HashMap<String, String> all_remove_files;
 	Vector<String> dirs_to_delete;
@@ -118,10 +119,13 @@ class DependencyRemoveDialog : public ConfirmationDialog {
 		}
 	};
 
+	LocalVector<StringName> path_project_settings;
+
 	void _find_files_in_removed_folder(EditorFileSystemDirectory *efsd, const String &p_folder);
 	void _find_all_removed_dependencies(EditorFileSystemDirectory *efsd, Vector<RemovedDependency> &p_removed);
 	void _find_localization_remaps_of_removed_files(Vector<RemovedDependency> &p_removed);
 	void _build_removed_dependency_tree(const Vector<RemovedDependency> &p_removed);
+	void _show_files_to_delete_list();
 
 	void ok_pressed() override;
 
@@ -135,12 +139,6 @@ public:
 class DependencyErrorDialog : public ConfirmationDialog {
 	GDCLASS(DependencyErrorDialog, ConfirmationDialog);
 
-public:
-	enum Mode {
-		MODE_SCENE,
-		MODE_RESOURCE,
-	};
-
 private:
 	String for_file;
 	Mode mode;
@@ -151,7 +149,7 @@ private:
 	void custom_action(const String &) override;
 
 public:
-	void show(Mode p_mode, const String &p_for_file, const Vector<String> &report);
+	void show(const String &p_for_file, const Vector<String> &report);
 	DependencyErrorDialog();
 };
 
@@ -176,5 +174,3 @@ public:
 	void show();
 	OrphanResourcesDialog();
 };
-
-#endif // DEPENDENCY_EDITOR_H

@@ -28,11 +28,13 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef WORLD_2D_H
-#define WORLD_2D_H
+#pragma once
 
 #include "core/io/resource.h"
+
+#ifndef PHYSICS_2D_DISABLED
 #include "servers/physics_server_2d.h"
+#endif // PHYSICS_2D_DISABLED
 
 class VisibleOnScreenNotifier2D;
 class Viewport;
@@ -43,7 +45,9 @@ class World2D : public Resource {
 
 	RID canvas;
 	mutable RID space;
+#ifndef NAVIGATION_2D_DISABLED
 	mutable RID navigation_map;
+#endif // NAVIGATION_2D_DISABLED
 
 	HashSet<Viewport *> viewports;
 
@@ -53,10 +57,14 @@ protected:
 
 public:
 	RID get_canvas() const;
-	RID get_space() const;
+#ifndef NAVIGATION_2D_DISABLED
 	RID get_navigation_map() const;
+#endif // NAVIGATION_2D_DISABLED
 
+#ifndef PHYSICS_2D_DISABLED
+	RID get_space() const;
 	PhysicsDirectSpaceState2D *get_direct_space_state();
+#endif // PHYSICS_2D_DISABLED
 
 	void register_viewport(Viewport *p_viewport);
 	void remove_viewport(Viewport *p_viewport);
@@ -66,5 +74,3 @@ public:
 	World2D();
 	~World2D();
 };
-
-#endif // WORLD_2D_H

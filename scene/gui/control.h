@@ -28,12 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef CONTROL_H
-#define CONTROL_H
+#pragma once
 
 #include "core/math/transform_2d.h"
 #include "core/object/gdvirtual.gen.inc"
-#include "core/templates/rid.h"
 #include "scene/main/canvas_item.h"
 #include "scene/main/timer.h"
 #include "scene/resources/theme.h"
@@ -49,7 +47,7 @@ class Control : public CanvasItem {
 
 #ifdef TOOLS_ENABLED
 	bool saving = false;
-#endif
+#endif //TOOLS_ENABLED
 
 public:
 	enum Anchor {
@@ -67,6 +65,12 @@ public:
 		FOCUS_NONE,
 		FOCUS_CLICK,
 		FOCUS_ALL
+	};
+
+	enum RecursiveBehavior {
+		RECURSIVE_BEHAVIOR_INHERITED,
+		RECURSIVE_BEHAVIOR_DISABLED,
+		RECURSIVE_BEHAVIOR_ENABLED,
 	};
 
 	enum SizeFlags {
@@ -141,9 +145,14 @@ public:
 
 	enum LayoutDirection {
 		LAYOUT_DIRECTION_INHERITED,
-		LAYOUT_DIRECTION_LOCALE,
+		LAYOUT_DIRECTION_APPLICATION_LOCALE,
 		LAYOUT_DIRECTION_LTR,
-		LAYOUT_DIRECTION_RTL
+		LAYOUT_DIRECTION_RTL,
+		LAYOUT_DIRECTION_SYSTEM_LOCALE,
+		LAYOUT_DIRECTION_MAX,
+#ifndef DISABLE_DEPRECATED
+		LAYOUT_DIRECTION_LOCALE = LAYOUT_DIRECTION_APPLICATION_LOCALE,
+#endif // DISABLE_DEPRECATED
 	};
 
 	enum TextDirection {
@@ -187,6 +196,8 @@ private:
 		real_t offset[4] = { 0.0, 0.0, 0.0, 0.0 };
 		real_t anchor[4] = { ANCHOR_BEGIN, ANCHOR_BEGIN, ANCHOR_BEGIN, ANCHOR_BEGIN };
 		FocusMode focus_mode = FOCUS_NONE;
+		RecursiveBehavior parent_focus_recursive_behavior = RECURSIVE_BEHAVIOR_INHERITED;
+		RecursiveBehavior focus_recursive_behavior = RECURSIVE_BEHAVIOR_INHERITED;
 		GrowDirection h_grow = GROW_DIRECTION_END;
 		GrowDirection v_grow = GROW_DIRECTION_END;
 
@@ -196,8 +207,8 @@ private:
 
 		Point2 pos_cache;
 		Size2 size_cache;
-		Size2 minimum_size_cache;
-		bool minimum_size_valid = false;
+		mutable Size2 minimum_size_cache;
+		mutable bool minimum_size_valid = false;
 
 		Size2 last_minimum_size;
 		bool updating_last_minimum_size = false;
@@ -215,6 +226,8 @@ private:
 		// Input events and rendering.
 
 		MouseFilter mouse_filter = MOUSE_FILTER_STOP;
+		RecursiveBehavior parent_mouse_recursive_behavior = RECURSIVE_BEHAVIOR_INHERITED;
+		RecursiveBehavior mouse_recursive_behavior = RECURSIVE_BEHAVIOR_INHERITED;
 		bool force_pass_scroll_events = true;
 
 		bool clip_contents = false;
@@ -254,14 +267,15 @@ private:
 		// Internationalization.
 
 		LayoutDirection layout_dir = LAYOUT_DIRECTION_INHERITED;
-		bool is_rtl_dirty = true;
-		bool is_rtl = false;
+		mutable bool is_rtl_dirty = true;
+		mutable bool is_rtl = false;
 
 		bool localize_numeral_system = true;
 
 		// Extra properties.
 
 		String tooltip;
+		AutoTranslateMode tooltip_auto_translate_mode = AUTO_TRANSLATE_MODE_INHERIT;
 
 	} data;
 
@@ -294,7 +308,7 @@ private:
 	void _set_anchors_layout_preset(int p_preset);
 	int _get_anchors_layout_preset() const;
 
-	void _update_minimum_size_cache();
+	void _update_minimum_size_cache() const;
 	void _update_minimum_size();
 	void _size_changed();
 
@@ -307,10 +321,19 @@ private:
 
 	void _call_gui_input(const Ref<InputEvent> &p_event);
 
+	// Mouse Filter.
+
+	bool _is_parent_mouse_disabled() const;
+
 	// Focus.
 
-	void _window_find_focus_neighbor(const Vector2 &p_dir, Node *p_at, const Point2 *p_points, real_t p_min, real_t &r_closest_dist, Control **r_closest);
+	void _window_find_focus_neighbor(const Vector2 &p_dir, Node *p_at, const Rect2 &p_rect, const Rect2 &p_clamp, real_t p_min, real_t &r_closest_dist_squared, Control **r_closest);
 	Control *_get_focus_neighbor(Side p_side, int p_count = 0);
+	bool _is_focus_disabled_recursively() const;
+	void _propagate_focus_behavior_recursively(RecursiveBehavior p_focus_recursive_behavior, bool p_force);
+	void _propagate_mouse_behavior_recursively(RecursiveBehavior p_focus_recursive_behavior, bool p_force);
+	void _set_mouse_recursive_behavior_ignore_cache(RecursiveBehavior p_recursive_mouse_behavior);
+	void _set_focus_recursive_behavior_ignore_cache(RecursiveBehavior p_recursive_mouse_behavior);
 
 	// Theming.
 
@@ -391,8 +414,6 @@ public:
 	virtual Size2 _edit_get_scale() const override;
 
 	virtual void _edit_set_rect(const Rect2 &p_edit_rect) override;
-	virtual Rect2 _edit_get_rect() const override;
-	virtual bool _edit_use_rect() const override;
 
 	virtual void _edit_set_rotation(real_t p_rotation) override;
 	virtual real_t _edit_get_rotation() const override;
@@ -403,7 +424,13 @@ public:
 	virtual bool _edit_use_pivot() const override;
 
 	virtual Size2 _edit_get_minimum_size() const override;
-#endif
+#endif //TOOLS_ENABLED
+
+#ifdef DEBUG_ENABLED
+	virtual Rect2 _edit_get_rect() const override;
+	virtual bool _edit_use_rect() const override;
+#endif // DEBUG_ENABLED
+
 	virtual void reparent(Node *p_parent, bool p_keep_global_transform = true) override;
 
 	// Editor integration.
@@ -413,7 +440,7 @@ public:
 	PackedStringArray get_configuration_warnings() const override;
 #ifdef TOOLS_ENABLED
 	virtual void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const override;
-#endif
+#endif //TOOLS_ENABLED
 
 	virtual bool is_text_field() const;
 
@@ -507,6 +534,10 @@ public:
 
 	void set_mouse_filter(MouseFilter p_filter);
 	MouseFilter get_mouse_filter() const;
+	MouseFilter get_mouse_filter_with_recursive() const;
+
+	void set_mouse_recursive_behavior(RecursiveBehavior p_recursive_mouse_behavior);
+	RecursiveBehavior get_mouse_recursive_behavior() const;
 
 	void set_force_pass_scroll_events(bool p_force_pass_scroll_events);
 	bool is_force_pass_scroll_events() const;
@@ -531,6 +562,9 @@ public:
 
 	void set_focus_mode(FocusMode p_focus_mode);
 	FocusMode get_focus_mode() const;
+	FocusMode get_focus_mode_with_recursive() const;
+	void set_focus_recursive_behavior(RecursiveBehavior p_recursive_mouse_behavior);
+	RecursiveBehavior get_focus_recursive_behavior() const;
 	bool has_focus() const;
 	void grab_focus();
 	void grab_click_focus();
@@ -598,9 +632,10 @@ public:
 	Color get_theme_color(const StringName &p_name, const StringName &p_theme_type = StringName()) const;
 	int get_theme_constant(const StringName &p_name, const StringName &p_theme_type = StringName()) const;
 	Variant get_theme_item(Theme::DataType p_data_type, const StringName &p_name, const StringName &p_theme_type = StringName()) const;
+	Variant get_used_theme_item(const String &p_full_name, const StringName &p_theme_type = StringName()) const;
 #ifdef TOOLS_ENABLED
 	Ref<Texture2D> get_editor_theme_icon(const StringName &p_name) const;
-#endif
+#endif //TOOLS_ENABLED
 
 	bool has_theme_icon_override(const StringName &p_name) const;
 	bool has_theme_stylebox_override(const StringName &p_name) const;
@@ -632,7 +667,10 @@ public:
 #ifndef DISABLE_DEPRECATED
 	void set_auto_translate(bool p_enable);
 	bool is_auto_translating() const;
-#endif
+#endif //DISABLE_DEPRECATED
+
+	void set_tooltip_auto_translate_mode(AutoTranslateMode p_mode);
+	AutoTranslateMode get_tooltip_auto_translate_mode() const;
 
 	// Extra properties.
 
@@ -645,6 +683,7 @@ public:
 };
 
 VARIANT_ENUM_CAST(Control::FocusMode);
+VARIANT_ENUM_CAST(Control::RecursiveBehavior);
 VARIANT_BITFIELD_CAST(Control::SizeFlags);
 VARIANT_ENUM_CAST(Control::CursorShape);
 VARIANT_ENUM_CAST(Control::LayoutPreset);
@@ -661,5 +700,3 @@ VARIANT_ENUM_CAST(Control::TextDirection);
 #define SET_DRAG_FORWARDING_CDU(from, to) from->set_drag_forwarding(Callable(), callable_mp(this, &to::_can_drop_data_fw).bind(from), callable_mp(this, &to::_drop_data_fw).bind(from));
 #define SET_DRAG_FORWARDING_GCD(from, to) from->set_drag_forwarding(callable_mp(this, &to::get_drag_data_fw).bind(from), callable_mp(this, &to::can_drop_data_fw).bind(from), callable_mp(this, &to::drop_data_fw).bind(from));
 #define SET_DRAG_FORWARDING_GCDU(from, to) from->set_drag_forwarding(callable_mp(this, &to::_get_drag_data_fw).bind(from), callable_mp(this, &to::_can_drop_data_fw).bind(from), callable_mp(this, &to::_drop_data_fw).bind(from));
-
-#endif // CONTROL_H

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef METHOD_PTRCALL_H
-#define METHOD_PTRCALL_H
+#pragma once
 
 #include "core/object/object_id.h"
 #include "core/typedefs.h"
@@ -160,7 +159,7 @@ MAKE_PTRARG_BY_REFERENCE(Variant);
 template <typename T>
 struct PtrToArg<T *> {
 	_FORCE_INLINE_ static T *convert(const void *p_ptr) {
-		return likely(p_ptr) ? const_cast<T *>(*reinterpret_cast<T *const *>(p_ptr)) : nullptr;
+		return likely(p_ptr) ? *reinterpret_cast<T *const *>(p_ptr) : nullptr;
 	}
 	typedef Object *EncodeT;
 	_FORCE_INLINE_ static void encode(T *p_var, void *p_ptr) {
@@ -458,5 +457,3 @@ struct PtrToArg<const Vector<Face3> &> {
 		return ret;
 	}
 };
-
-#endif // METHOD_PTRCALL_H

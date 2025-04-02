@@ -28,20 +28,27 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef OS_MACOS_H
-#define OS_MACOS_H
+#pragma once
 
 #include "crash_handler_macos.h"
-#import "joypad_macos.h"
 
 #include "core/input/input.h"
+#import "drivers/apple/joypad_apple.h"
 #import "drivers/coreaudio/audio_driver_coreaudio.h"
 #import "drivers/coremidi/midi_driver_coremidi.h"
 #include "drivers/unix/os_unix.h"
 #include "servers/audio_server.h"
 
 class OS_MacOS : public OS_Unix {
-	JoypadMacOS *joypad_macos = nullptr;
+	const char *execpath = nullptr;
+	int argc = 0;
+	char **argv = nullptr;
+
+	id delegate = nullptr;
+	bool should_terminate = false;
+	bool main_stared = false;
+
+	JoypadApple *joypad_apple = nullptr;
 
 #ifdef COREAUDIO_ENABLED
 	AudioDriverCoreAudio audio_driver;
@@ -52,7 +59,7 @@ class OS_MacOS : public OS_Unix {
 
 	CrashHandler crash_handler;
 
-	CFRunLoopObserverRef pre_wait_observer;
+	CFRunLoopObserverRef pre_wait_observer = nil;
 
 	MainLoop *main_loop = nullptr;
 
@@ -64,6 +71,8 @@ class OS_MacOS : public OS_Unix {
 
 	static _FORCE_INLINE_ String get_framework_executable(const String &p_path);
 	static void pre_wait_observer_cb(CFRunLoopObserverRef p_observer, CFRunLoopActivity p_activiy, void *p_context);
+
+	void terminate();
 
 protected:
 	virtual void initialize_core() override;
@@ -82,6 +91,7 @@ public:
 	virtual String get_name() const override;
 	virtual String get_distribution_name() const override;
 	virtual String get_version() const override;
+	virtual String get_version_alias() const override;
 
 	virtual void alert(const String &p_alert, const String &p_title = "ALERT!") override;
 
@@ -92,6 +102,7 @@ public:
 	virtual String get_config_path() const override;
 	virtual String get_data_path() const override;
 	virtual String get_cache_path() const override;
+	virtual String get_temp_path() const override;
 	virtual String get_bundle_resource_dir() const override;
 	virtual String get_bundle_icon_path() const override;
 	virtual String get_godot_dir_name() const override;
@@ -114,6 +125,8 @@ public:
 	virtual String get_unique_id() const override;
 	virtual String get_processor_name() const override;
 
+	virtual String get_model_name() const override;
+
 	virtual bool is_sandboxed() const override;
 	virtual Vector<String> get_granted_permissions() const override;
 	virtual void revoke_granted_permissions() override;
@@ -128,10 +141,13 @@ public:
 	virtual String get_system_ca_certificates() override;
 	virtual OS::PreferredTextureFormat get_preferred_texture_format() const override;
 
-	void run();
+	void run(); // Runs macOS native event loop.
+	void start_main(); // Initializes and runs Godot main loop.
+	void activate();
+	void cleanup();
+	bool os_should_terminate() const { return should_terminate; }
+	int get_cmd_argc() const { return argc; }
 
-	OS_MacOS();
+	OS_MacOS(const char *p_execpath, int p_argc, char **p_argv);
 	~OS_MacOS();
 };
-
-#endif // OS_MACOS_H

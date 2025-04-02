@@ -30,8 +30,6 @@
 
 #include "register_types.h"
 
-#ifndef _3D_DISABLED
-
 #include "csg_shape.h"
 
 #ifdef TOOLS_ENABLED
@@ -49,6 +47,9 @@ void initialize_csg_module(ModuleInitializationLevel p_level) {
 		GDREGISTER_CLASS(CSGTorus3D);
 		GDREGISTER_CLASS(CSGPolygon3D);
 		GDREGISTER_CLASS(CSGCombiner3D);
+#ifndef NAVIGATION_3D_DISABLED
+		CSGShape3D::navmesh_parse_init();
+#endif // NAVIGATION_3D_DISABLED
 	}
 #ifdef TOOLS_ENABLED
 	if (p_level == MODULE_INITIALIZATION_LEVEL_EDITOR) {
@@ -62,5 +63,3 @@ void uninitialize_csg_module(ModuleInitializationLevel p_level) {
 		return;
 	}
 }
-
-#endif // _3D_DISABLED

@@ -117,4 +117,4 @@ return 1;
 }
 #endif  /* SUPPORT_UNICODE */
 
-/* End of pcre_ord2utf.c */
+/* End of pcre2_ord2utf.c */

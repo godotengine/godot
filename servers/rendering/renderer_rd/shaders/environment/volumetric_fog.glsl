@@ -77,9 +77,11 @@ layout(r32ui, set = 1, binding = 4) uniform volatile uimage3D light_only_map;
 #endif
 
 #ifdef MATERIAL_UNIFORMS_USED
-layout(set = 2, binding = 0, std140) uniform MaterialUniforms{
+/* clang-format off */
+layout(set = 2, binding = 0, std140) uniform MaterialUniforms {
 #MATERIAL_UNIFORMS
 } material;
+/* clang-format on */
 #endif
 
 #GLOBALS

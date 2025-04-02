@@ -26,7 +26,7 @@ extern "C" {
     ((((major) & 0xffffULL) << 48) | (((minor) & 0xffffULL) << 32) | ((patch) & 0xffffffffULL))
 
 // OpenXR current version number.
-#define XR_CURRENT_API_VERSION XR_MAKE_VERSION(1, 1, 38)
+#define XR_CURRENT_API_VERSION XR_MAKE_VERSION(1, 1, 41)
 
 // OpenXR 1.0 version number
 #define XR_API_VERSION_1_0 XR_MAKE_VERSION(1, 0, XR_VERSION_PATCH(XR_CURRENT_API_VERSION))
@@ -242,6 +242,11 @@ typedef enum XrResult {
     XR_ERROR_LOCALIZATION_MAP_PERMISSION_DENIED_ML = -1000139004,
     XR_ERROR_LOCALIZATION_MAP_ALREADY_EXISTS_ML = -1000139005,
     XR_ERROR_LOCALIZATION_MAP_CANNOT_EXPORT_CLOUD_MAP_ML = -1000139006,
+    XR_ERROR_SPATIAL_ANCHORS_PERMISSION_DENIED_ML = -1000140000,
+    XR_ERROR_SPATIAL_ANCHORS_NOT_LOCALIZED_ML = -1000140001,
+    XR_ERROR_SPATIAL_ANCHORS_OUT_OF_MAP_BOUNDS_ML = -1000140002,
+    XR_ERROR_SPATIAL_ANCHORS_SPACE_NOT_LOCATABLE_ML = -1000140003,
+    XR_ERROR_SPATIAL_ANCHORS_ANCHOR_NOT_FOUND_ML = -1000141000,
     XR_ERROR_SPATIAL_ANCHOR_NAME_NOT_FOUND_MSFT = -1000142001,
     XR_ERROR_SPATIAL_ANCHOR_NAME_INVALID_MSFT = -1000142002,
     XR_SCENE_MARKER_DATA_NOT_STRING_MSFT = 1000147000,
@@ -258,6 +263,10 @@ typedef enum XrResult {
     XR_ERROR_PLANE_DETECTION_PERMISSION_DENIED_EXT = -1000429001,
     XR_ERROR_FUTURE_PENDING_EXT = -1000469001,
     XR_ERROR_FUTURE_INVALID_EXT = -1000469002,
+    XR_ERROR_SYSTEM_NOTIFICATION_PERMISSION_DENIED_ML = -1000473000,
+    XR_ERROR_SYSTEM_NOTIFICATION_INCOMPATIBLE_SKU_ML = -1000473001,
+    XR_ERROR_WORLD_MESH_DETECTOR_PERMISSION_DENIED_ML = -1000474000,
+    XR_ERROR_WORLD_MESH_DETECTOR_SPACE_NOT_LOCATABLE_ML = -1000474001,
     XR_ERROR_EXTENSION_DEPENDENCY_NOT_ENABLED_KHR = XR_ERROR_EXTENSION_DEPENDENCY_NOT_ENABLED,
     XR_ERROR_PERMISSION_INSUFFICIENT_KHR = XR_ERROR_PERMISSION_INSUFFICIENT,
     XR_RESULT_MAX_ENUM = 0x7FFFFFFF
@@ -346,6 +355,9 @@ typedef enum XrStructureType {
     XR_TYPE_GRAPHICS_BINDING_D3D12_KHR = 1000028000,
     XR_TYPE_SWAPCHAIN_IMAGE_D3D12_KHR = 1000028001,
     XR_TYPE_GRAPHICS_REQUIREMENTS_D3D12_KHR = 1000028002,
+    XR_TYPE_GRAPHICS_BINDING_METAL_KHR = 1000029000,
+    XR_TYPE_SWAPCHAIN_IMAGE_METAL_KHR = 1000029001,
+    XR_TYPE_GRAPHICS_REQUIREMENTS_METAL_KHR = 1000029002,
     XR_TYPE_SYSTEM_EYE_GAZE_INTERACTION_PROPERTIES_EXT = 1000030000,
     XR_TYPE_EYE_GAZE_SAMPLE_TIME_EXT = 1000030001,
     XR_TYPE_VISIBILITY_MASK_KHR = 1000031000,
@@ -492,6 +504,22 @@ typedef enum XrStructureType {
     XR_TYPE_MAP_LOCALIZATION_REQUEST_INFO_ML = 1000139002,
     XR_TYPE_LOCALIZATION_MAP_IMPORT_INFO_ML = 1000139003,
     XR_TYPE_LOCALIZATION_ENABLE_EVENTS_INFO_ML = 1000139004,
+    XR_TYPE_SPATIAL_ANCHORS_CREATE_INFO_FROM_POSE_ML = 1000140000,
+    XR_TYPE_CREATE_SPATIAL_ANCHORS_COMPLETION_ML = 1000140001,
+    XR_TYPE_SPATIAL_ANCHOR_STATE_ML = 1000140002,
+    XR_TYPE_SPATIAL_ANCHORS_CREATE_STORAGE_INFO_ML = 1000141000,
+    XR_TYPE_SPATIAL_ANCHORS_QUERY_INFO_RADIUS_ML = 1000141001,
+    XR_TYPE_SPATIAL_ANCHORS_QUERY_COMPLETION_ML = 1000141002,
+    XR_TYPE_SPATIAL_ANCHORS_CREATE_INFO_FROM_UUIDS_ML = 1000141003,
+    XR_TYPE_SPATIAL_ANCHORS_PUBLISH_INFO_ML = 1000141004,
+    XR_TYPE_SPATIAL_ANCHORS_PUBLISH_COMPLETION_ML = 1000141005,
+    XR_TYPE_SPATIAL_ANCHORS_DELETE_INFO_ML = 1000141006,
+    XR_TYPE_SPATIAL_ANCHORS_DELETE_COMPLETION_ML = 1000141007,
+    XR_TYPE_SPATIAL_ANCHORS_UPDATE_EXPIRATION_INFO_ML = 1000141008,
+    XR_TYPE_SPATIAL_ANCHORS_UPDATE_EXPIRATION_COMPLETION_ML = 1000141009,
+    XR_TYPE_SPATIAL_ANCHORS_PUBLISH_COMPLETION_DETAILS_ML = 1000141010,
+    XR_TYPE_SPATIAL_ANCHORS_DELETE_COMPLETION_DETAILS_ML = 1000141011,
+    XR_TYPE_SPATIAL_ANCHORS_UPDATE_EXPIRATION_COMPLETION_DETAILS_ML = 1000141012,
     XR_TYPE_EVENT_DATA_HEADSET_FIT_CHANGED_ML = 1000472000,
     XR_TYPE_EVENT_DATA_EYE_CALIBRATION_CHANGED_ML = 1000472001,
     XR_TYPE_USER_CALIBRATION_ENABLE_EVENTS_INFO_ML = 1000472002,
@@ -599,6 +627,11 @@ typedef enum XrStructureType {
     XR_TYPE_FOVEATION_CUSTOM_MODE_INFO_HTC = 1000318002,
     XR_TYPE_SYSTEM_ANCHOR_PROPERTIES_HTC = 1000319000,
     XR_TYPE_SPATIAL_ANCHOR_CREATE_INFO_HTC = 1000319001,
+    XR_TYPE_SYSTEM_BODY_TRACKING_PROPERTIES_HTC = 1000320000,
+    XR_TYPE_BODY_TRACKER_CREATE_INFO_HTC = 1000320001,
+    XR_TYPE_BODY_JOINTS_LOCATE_INFO_HTC = 1000320002,
+    XR_TYPE_BODY_JOINT_LOCATIONS_HTC = 1000320003,
+    XR_TYPE_BODY_SKELETON_HTC = 1000320004,
     XR_TYPE_ACTIVE_ACTION_SET_PRIORITIES_EXT = 1000373000,
     XR_TYPE_SYSTEM_FORCE_FEEDBACK_CURL_PROPERTIES_MNDX = 1000375000,
     XR_TYPE_FORCE_FEEDBACK_CURL_APPLY_LOCATIONS_MNDX = 1000375001,
@@ -617,6 +650,19 @@ typedef enum XrStructureType {
     XR_TYPE_FUTURE_POLL_RESULT_EXT = 1000469003,
     XR_TYPE_EVENT_DATA_USER_PRESENCE_CHANGED_EXT = 1000470000,
     XR_TYPE_SYSTEM_USER_PRESENCE_PROPERTIES_EXT = 1000470001,
+    XR_TYPE_SYSTEM_NOTIFICATIONS_SET_INFO_ML = 1000473000,
+    XR_TYPE_WORLD_MESH_DETECTOR_CREATE_INFO_ML = 1000474001,
+    XR_TYPE_WORLD_MESH_STATE_REQUEST_INFO_ML = 1000474002,
+    XR_TYPE_WORLD_MESH_BLOCK_STATE_ML = 1000474003,
+    XR_TYPE_WORLD_MESH_STATE_REQUEST_COMPLETION_ML = 1000474004,
+    XR_TYPE_WORLD_MESH_BUFFER_RECOMMENDED_SIZE_INFO_ML = 1000474005,
+    XR_TYPE_WORLD_MESH_BUFFER_SIZE_ML = 1000474006,
+    XR_TYPE_WORLD_MESH_BUFFER_ML = 1000474007,
+    XR_TYPE_WORLD_MESH_BLOCK_REQUEST_ML = 1000474008,
+    XR_TYPE_WORLD_MESH_GET_INFO_ML = 1000474009,
+    XR_TYPE_WORLD_MESH_BLOCK_ML = 1000474010,
+    XR_TYPE_WORLD_MESH_REQUEST_COMPLETION_ML = 1000474011,
+    XR_TYPE_WORLD_MESH_REQUEST_COMPLETION_INFO_ML = 1000474012,
     XR_TYPE_GRAPHICS_BINDING_VULKAN2_KHR = XR_TYPE_GRAPHICS_BINDING_VULKAN_KHR,
     XR_TYPE_SWAPCHAIN_IMAGE_VULKAN2_KHR = XR_TYPE_SWAPCHAIN_IMAGE_VULKAN_KHR,
     XR_TYPE_GRAPHICS_REQUIREMENTS_VULKAN2_KHR = XR_TYPE_GRAPHICS_REQUIREMENTS_VULKAN_KHR,
@@ -713,6 +759,7 @@ typedef enum XrObjectType {
     XR_OBJECT_TYPE_GEOMETRY_INSTANCE_FB = 1000118004,
     XR_OBJECT_TYPE_MARKER_DETECTOR_ML = 1000138000,
     XR_OBJECT_TYPE_EXPORTED_LOCALIZATION_MAP_ML = 1000139000,
+    XR_OBJECT_TYPE_SPATIAL_ANCHORS_STORAGE_ML = 1000141000,
     XR_OBJECT_TYPE_SPATIAL_ANCHOR_STORE_CONNECTION_MSFT = 1000142000,
     XR_OBJECT_TYPE_FACE_TRACKER_FB = 1000201000,
     XR_OBJECT_TYPE_EYE_TRACKER_FB = 1000202000,
@@ -723,7 +770,9 @@ typedef enum XrObjectType {
     XR_OBJECT_TYPE_ENVIRONMENT_DEPTH_PROVIDER_META = 1000291000,
     XR_OBJECT_TYPE_ENVIRONMENT_DEPTH_SWAPCHAIN_META = 1000291001,
     XR_OBJECT_TYPE_PASSTHROUGH_HTC = 1000317000,
+    XR_OBJECT_TYPE_BODY_TRACKER_HTC = 1000320000,
     XR_OBJECT_TYPE_PLANE_DETECTOR_EXT = 1000429000,
+    XR_OBJECT_TYPE_WORLD_MESH_DETECTOR_ML = 1000474000,
     XR_OBJECT_TYPE_MAX_ENUM = 0x7FFFFFFF
 } XrObjectType;
 typedef XrFlags64 XrInstanceCreateFlags;
@@ -2184,7 +2233,7 @@ typedef struct XrEventDataMainSessionVisibilityChangedEXTX {
 
 // XR_VARJO_quad_views is a preprocessor guard. Do not pass it to API calls.
 #define XR_VARJO_quad_views 1
-#define XR_VARJO_quad_views_SPEC_VERSION  1
+#define XR_VARJO_quad_views_SPEC_VERSION  2
 #define XR_VARJO_QUAD_VIEWS_EXTENSION_NAME "XR_VARJO_quad_views"
 
 
@@ -4982,6 +5031,245 @@ XRAPI_ATTR XrResult XRAPI_CALL xrGetExportedLocalizationMapDataML(
 #endif /* !XR_NO_PROTOTYPES */
 
 
+// XR_ML_spatial_anchors is a preprocessor guard. Do not pass it to API calls.
+#define XR_ML_spatial_anchors 1
+XR_DEFINE_OPAQUE_64(XrFutureEXT)
+#define XR_ML_spatial_anchors_SPEC_VERSION 1
+#define XR_ML_SPATIAL_ANCHORS_EXTENSION_NAME "XR_ML_spatial_anchors"
+
+typedef enum XrSpatialAnchorConfidenceML {
+    XR_SPATIAL_ANCHOR_CONFIDENCE_LOW_ML = 0,
+    XR_SPATIAL_ANCHOR_CONFIDENCE_MEDIUM_ML = 1,
+    XR_SPATIAL_ANCHOR_CONFIDENCE_HIGH_ML = 2,
+    XR_SPATIAL_ANCHOR_CONFIDENCE_MAX_ENUM_ML = 0x7FFFFFFF
+} XrSpatialAnchorConfidenceML;
+typedef struct XR_MAY_ALIAS XrSpatialAnchorsCreateInfoBaseHeaderML {
+    XrStructureType             type;
+    const void* XR_MAY_ALIAS    next;
+} XrSpatialAnchorsCreateInfoBaseHeaderML;
+
+typedef struct XrSpatialAnchorsCreateInfoFromPoseML {
+    XrStructureType             type;
+    const void* XR_MAY_ALIAS    next;
+    XrSpace                     baseSpace;
+    XrPosef                     poseInBaseSpace;
+    XrTime                      time;
+} XrSpatialAnchorsCreateInfoFromPoseML;
+
+typedef struct XrCreateSpatialAnchorsCompletionML {
+    XrStructureType       type;
+    void* XR_MAY_ALIAS    next;
+    XrResult              futureResult;
+    uint32_t              spaceCount;
+    XrSpace*              spaces;
+} XrCreateSpatialAnchorsCompletionML;
+
+typedef struct XrSpatialAnchorStateML {
+    XrStructureType                type;
+    void* XR_MAY_ALIAS             next;
+    XrSpatialAnchorConfidenceML    confidence;
+} XrSpatialAnchorStateML;
+
+typedef XrResult (XRAPI_PTR *PFN_xrCreateSpatialAnchorsAsyncML)(XrSession session, const XrSpatialAnchorsCreateInfoBaseHeaderML* createInfo, XrFutureEXT* future);
+typedef XrResult (XRAPI_PTR *PFN_xrCreateSpatialAnchorsCompleteML)(XrSession session, XrFutureEXT future, XrCreateSpatialAnchorsCompletionML* completion);
+typedef XrResult (XRAPI_PTR *PFN_xrGetSpatialAnchorStateML)(XrSpace anchor, XrSpatialAnchorStateML* state);
+
+#ifndef XR_NO_PROTOTYPES
+#ifdef XR_EXTENSION_PROTOTYPES
+XRAPI_ATTR XrResult XRAPI_CALL xrCreateSpatialAnchorsAsyncML(
+    XrSession                                   session,
+    const XrSpatialAnchorsCreateInfoBaseHeaderML* createInfo,
+    XrFutureEXT*                                future);
+
+XRAPI_ATTR XrResult XRAPI_CALL xrCreateSpatialAnchorsCompleteML(
+    XrSession                                   session,
+    XrFutureEXT                                 future,
+    XrCreateSpatialAnchorsCompletionML*         completion);
+
+XRAPI_ATTR XrResult XRAPI_CALL xrGetSpatialAnchorStateML(
+    XrSpace                                     anchor,
+    XrSpatialAnchorStateML*                     state);
+#endif /* XR_EXTENSION_PROTOTYPES */
+#endif /* !XR_NO_PROTOTYPES */
+
+
+// XR_ML_spatial_anchors_storage is a preprocessor guard. Do not pass it to API calls.
+#define XR_ML_spatial_anchors_storage 1
+XR_DEFINE_HANDLE(XrSpatialAnchorsStorageML)
+#define XR_ML_spatial_anchors_storage_SPEC_VERSION 1
+#define XR_ML_SPATIAL_ANCHORS_STORAGE_EXTENSION_NAME "XR_ML_spatial_anchors_storage"
+typedef struct XrSpatialAnchorsCreateStorageInfoML {
+    XrStructureType             type;
+    const void* XR_MAY_ALIAS    next;
+} XrSpatialAnchorsCreateStorageInfoML;
+
+typedef struct XR_MAY_ALIAS XrSpatialAnchorsQueryInfoBaseHeaderML {
+    XrStructureType             type;
+    const void* XR_MAY_ALIAS    next;
+} XrSpatialAnchorsQueryInfoBaseHeaderML;
+
+typedef struct XrSpatialAnchorsQueryInfoRadiusML {
+    XrStructureType             type;
+    const void* XR_MAY_ALIAS    next;
+    XrSpace                     baseSpace;
+    XrVector3f                  center;
+    XrTime                      time;
+    float                       radius;
+} XrSpatialAnchorsQueryInfoRadiusML;
+
+typedef struct XrSpatialAnchorsQueryCompletionML {
+    XrStructureType       type;
+    void* XR_MAY_ALIAS    next;
+    XrResult              futureResult;
+    uint32_t              uuidCapacityInput;
+    uint32_t              uuidCountOutput;
+    XrUuidEXT*            uuids;
+} XrSpatialAnchorsQueryCompletionML;
+
+typedef struct XrSpatialAnchorsCreateInfoFromUuidsML {
+    XrStructureType              type;
+    const void* XR_MAY_ALIAS     next;
+    XrSpatialAnchorsStorageML    storage;
+    uint32_t                     uuidCount;
+    const XrUuidEXT*             uuids;
+} XrSpatialAnchorsCreateInfoFromUuidsML;
+
+typedef struct XrSpatialAnchorsPublishInfoML {
+    XrStructureType             type;
+    const void* XR_MAY_ALIAS    next;
+    uint32_t                    anchorCount;
+    const XrSpace*              anchors;
+    uint64_t                    expiration;
+} XrSpatialAnchorsPublishInfoML;
+
+typedef struct XrSpatialAnchorsPublishCompletionML {
+    XrStructureType       type;
+    void* XR_MAY_ALIAS    next;
+    XrResult              futureResult;
+    uint32_t              uuidCount;
+    XrUuidEXT*            uuids;
+} XrSpatialAnchorsPublishCompletionML;
+
+typedef struct XrSpatialAnchorsDeleteInfoML {
+    XrStructureType             type;
+    const void* XR_MAY_ALIAS    next;
+    uint32_t                    uuidCount;
+    const XrUuidEXT*            uuids;
+} XrSpatialAnchorsDeleteInfoML;
+
+typedef struct XrSpatialAnchorsDeleteCompletionML {
+    XrStructureType       type;
+    void* XR_MAY_ALIAS    next;
+    XrResult              futureResult;
+} XrSpatialAnchorsDeleteCompletionML;
+
+typedef struct XrSpatialAnchorsUpdateExpirationInfoML {
+    XrStructureType             type;
+    const void* XR_MAY_ALIAS    next;
+    uint32_t                    uuidCount;
+    const XrUuidEXT*            uuids;
+    uint64_t                    expiration;
+} XrSpatialAnchorsUpdateExpirationInfoML;
+
+typedef struct XrSpatialAnchorsUpdateExpirationCompletionML {
+    XrStructureType       type;
+    void* XR_MAY_ALIAS    next;
+    XrResult              futureResult;
+} XrSpatialAnchorsUpdateExpirationCompletionML;
+
+typedef struct XrSpatialAnchorCompletionResultML {
+    XrUuidEXT    uuid;
+    XrResult     result;
+} XrSpatialAnchorCompletionResultML;
+
+// XrSpatialAnchorsPublishCompletionDetailsML extends XrSpatialAnchorsPublishCompletionML
+typedef struct XrSpatialAnchorsPublishCompletionDetailsML {
+    XrStructureType                       type;
+    void* XR_MAY_ALIAS                    next;
+    uint32_t                              resultCount;
+    XrSpatialAnchorCompletionResultML*    results;
+} XrSpatialAnchorsPublishCompletionDetailsML;
+
+// XrSpatialAnchorsDeleteCompletionDetailsML extends XrSpatialAnchorsDeleteCompletionML
+typedef struct XrSpatialAnchorsDeleteCompletionDetailsML {
+    XrStructureType                       type;
+    void* XR_MAY_ALIAS                    next;
+    uint32_t                              resultCount;
+    XrSpatialAnchorCompletionResultML*    results;
+} XrSpatialAnchorsDeleteCompletionDetailsML;
+
+// XrSpatialAnchorsUpdateExpirationCompletionDetailsML extends XrSpatialAnchorsUpdateExpirationCompletionML
+typedef struct XrSpatialAnchorsUpdateExpirationCompletionDetailsML {
+    XrStructureType                       type;
+    void* XR_MAY_ALIAS                    next;
+    uint32_t                              resultCount;
+    XrSpatialAnchorCompletionResultML*    results;
+} XrSpatialAnchorsUpdateExpirationCompletionDetailsML;
+
+typedef XrResult (XRAPI_PTR *PFN_xrCreateSpatialAnchorsStorageML)(XrSession session, const XrSpatialAnchorsCreateStorageInfoML* createInfo, XrSpatialAnchorsStorageML* storage);
+typedef XrResult (XRAPI_PTR *PFN_xrDestroySpatialAnchorsStorageML)(XrSpatialAnchorsStorageML storage);
+typedef XrResult (XRAPI_PTR *PFN_xrQuerySpatialAnchorsAsyncML)(XrSpatialAnchorsStorageML storage, const XrSpatialAnchorsQueryInfoBaseHeaderML* queryInfo, XrFutureEXT* future);
+typedef XrResult (XRAPI_PTR *PFN_xrQuerySpatialAnchorsCompleteML)(XrSpatialAnchorsStorageML storage, XrFutureEXT future, XrSpatialAnchorsQueryCompletionML* completion);
+typedef XrResult (XRAPI_PTR *PFN_xrPublishSpatialAnchorsAsyncML)(XrSpatialAnchorsStorageML storage, const XrSpatialAnchorsPublishInfoML* publishInfo, XrFutureEXT* future);
+typedef XrResult (XRAPI_PTR *PFN_xrPublishSpatialAnchorsCompleteML)(XrSpatialAnchorsStorageML storage, XrFutureEXT future, XrSpatialAnchorsPublishCompletionML* completion);
+typedef XrResult (XRAPI_PTR *PFN_xrDeleteSpatialAnchorsAsyncML)(XrSpatialAnchorsStorageML storage, const XrSpatialAnchorsDeleteInfoML* deleteInfo, XrFutureEXT* future);
+typedef XrResult (XRAPI_PTR *PFN_xrDeleteSpatialAnchorsCompleteML)(XrSpatialAnchorsStorageML storage, XrFutureEXT future, XrSpatialAnchorsDeleteCompletionML* completion);
+typedef XrResult (XRAPI_PTR *PFN_xrUpdateSpatialAnchorsExpirationAsyncML)(XrSpatialAnchorsStorageML storage, const XrSpatialAnchorsUpdateExpirationInfoML* updateInfo, XrFutureEXT* future);
+typedef XrResult (XRAPI_PTR *PFN_xrUpdateSpatialAnchorsExpirationCompleteML)(XrSpatialAnchorsStorageML storage, XrFutureEXT future, XrSpatialAnchorsUpdateExpirationCompletionML* completion);
+
+#ifndef XR_NO_PROTOTYPES
+#ifdef XR_EXTENSION_PROTOTYPES
+XRAPI_ATTR XrResult XRAPI_CALL xrCreateSpatialAnchorsStorageML(
+    XrSession                                   session,
+    const XrSpatialAnchorsCreateStorageInfoML*  createInfo,
+    XrSpatialAnchorsStorageML*                  storage);
+
+XRAPI_ATTR XrResult XRAPI_CALL xrDestroySpatialAnchorsStorageML(
+    XrSpatialAnchorsStorageML                   storage);
+
+XRAPI_ATTR XrResult XRAPI_CALL xrQuerySpatialAnchorsAsyncML(
+    XrSpatialAnchorsStorageML                   storage,
+    const XrSpatialAnchorsQueryInfoBaseHeaderML* queryInfo,
+    XrFutureEXT*                                future);
+
+XRAPI_ATTR XrResult XRAPI_CALL xrQuerySpatialAnchorsCompleteML(
+    XrSpatialAnchorsStorageML                   storage,
+    XrFutureEXT                                 future,
+    XrSpatialAnchorsQueryCompletionML*          completion);
+
+XRAPI_ATTR XrResult XRAPI_CALL xrPublishSpatialAnchorsAsyncML(
+    XrSpatialAnchorsStorageML                   storage,
+    const XrSpatialAnchorsPublishInfoML*        publishInfo,
+    XrFutureEXT*                                future);
+
+XRAPI_ATTR XrResult XRAPI_CALL xrPublishSpatialAnchorsCompleteML(
+    XrSpatialAnchorsStorageML                   storage,
+    XrFutureEXT                                 future,
+    XrSpatialAnchorsPublishCompletionML*        completion);
+
+XRAPI_ATTR XrResult XRAPI_CALL xrDeleteSpatialAnchorsAsyncML(
+    XrSpatialAnchorsStorageML                   storage,
+    const XrSpatialAnchorsDeleteInfoML*         deleteInfo,
+    XrFutureEXT*                                future);
+
+XRAPI_ATTR XrResult XRAPI_CALL xrDeleteSpatialAnchorsCompleteML(
+    XrSpatialAnchorsStorageML                   storage,
+    XrFutureEXT                                 future,
+    XrSpatialAnchorsDeleteCompletionML*         completion);
+
+XRAPI_ATTR XrResult XRAPI_CALL xrUpdateSpatialAnchorsExpirationAsyncML(
+    XrSpatialAnchorsStorageML                   storage,
+    const XrSpatialAnchorsUpdateExpirationInfoML* updateInfo,
+    XrFutureEXT*                                future);
+
+XRAPI_ATTR XrResult XRAPI_CALL xrUpdateSpatialAnchorsExpirationCompleteML(
+    XrSpatialAnchorsStorageML                   storage,
+    XrFutureEXT                                 future,
+    XrSpatialAnchorsUpdateExpirationCompletionML* completion);
+#endif /* XR_EXTENSION_PROTOTYPES */
+#endif /* !XR_NO_PROTOTYPES */
+
+
 // XR_MSFT_spatial_anchor_persistence is a preprocessor guard. Do not pass it to API calls.
 #define XR_MSFT_spatial_anchor_persistence 1
 XR_DEFINE_HANDLE(XrSpatialAnchorStoreConnectionMSFT)
@@ -7052,6 +7340,131 @@ XRAPI_ATTR XrResult XRAPI_CALL xrGetSpatialAnchorNameHTC(
 #endif /* !XR_NO_PROTOTYPES */
 
 
+// XR_HTC_body_tracking is a preprocessor guard. Do not pass it to API calls.
+#define XR_HTC_body_tracking 1
+
+#define XR_BODY_JOINT_COUNT_HTC 26
+
+XR_DEFINE_HANDLE(XrBodyTrackerHTC)
+#define XR_HTC_body_tracking_SPEC_VERSION 1
+#define XR_HTC_BODY_TRACKING_EXTENSION_NAME "XR_HTC_body_tracking"
+
+typedef enum XrBodyJointHTC {
+    XR_BODY_JOINT_PELVIS_HTC = 0,
+    XR_BODY_JOINT_LEFT_HIP_HTC = 1,
+    XR_BODY_JOINT_LEFT_KNEE_HTC = 2,
+    XR_BODY_JOINT_LEFT_ANKLE_HTC = 3,
+    XR_BODY_JOINT_LEFT_FEET_HTC = 4,
+    XR_BODY_JOINT_RIGHT_HIP_HTC = 5,
+    XR_BODY_JOINT_RIGHT_KNEE_HTC = 6,
+    XR_BODY_JOINT_RIGHT_ANKLE_HTC = 7,
+    XR_BODY_JOINT_RIGHT_FEET_HTC = 8,
+    XR_BODY_JOINT_WAIST_HTC = 9,
+    XR_BODY_JOINT_SPINE_LOWER_HTC = 10,
+    XR_BODY_JOINT_SPINE_MIDDLE_HTC = 11,
+    XR_BODY_JOINT_SPINE_HIGH_HTC = 12,
+    XR_BODY_JOINT_CHEST_HTC = 13,
+    XR_BODY_JOINT_NECK_HTC = 14,
+    XR_BODY_JOINT_HEAD_HTC = 15,
+    XR_BODY_JOINT_LEFT_CLAVICLE_HTC = 16,
+    XR_BODY_JOINT_LEFT_SCAPULA_HTC = 17,
+    XR_BODY_JOINT_LEFT_ARM_HTC = 18,
+    XR_BODY_JOINT_LEFT_ELBOW_HTC = 19,
+    XR_BODY_JOINT_LEFT_WRIST_HTC = 20,
+    XR_BODY_JOINT_RIGHT_CLAVICLE_HTC = 21,
+    XR_BODY_JOINT_RIGHT_SCAPULA_HTC = 22,
+    XR_BODY_JOINT_RIGHT_ARM_HTC = 23,
+    XR_BODY_JOINT_RIGHT_ELBOW_HTC = 24,
+    XR_BODY_JOINT_RIGHT_WRIST_HTC = 25,
+    XR_BODY_JOINT_MAX_ENUM_HTC = 0x7FFFFFFF
+} XrBodyJointHTC;
+
+typedef enum XrBodyJointSetHTC {
+    XR_BODY_JOINT_SET_FULL_HTC = 0,
+    XR_BODY_JOINT_SET_MAX_ENUM_HTC = 0x7FFFFFFF
+} XrBodyJointSetHTC;
+
+typedef enum XrBodyJointConfidenceHTC {
+    XR_BODY_JOINT_CONFIDENCE_NONE_HTC = 0,
+    XR_BODY_JOINT_CONFIDENCE_LOW_HTC = 1,
+    XR_BODY_JOINT_CONFIDENCE_HIGH_HTC = 2,
+    XR_BODY_JOINT_CONFIDENCE_MAX_ENUM_HTC = 0x7FFFFFFF
+} XrBodyJointConfidenceHTC;
+// XrSystemBodyTrackingPropertiesHTC extends XrSystemProperties
+typedef struct XrSystemBodyTrackingPropertiesHTC {
+    XrStructureType       type;
+    void* XR_MAY_ALIAS    next;
+    XrBool32              supportsBodyTracking;
+} XrSystemBodyTrackingPropertiesHTC;
+
+typedef struct XrBodyTrackerCreateInfoHTC {
+    XrStructureType             type;
+    const void* XR_MAY_ALIAS    next;
+    XrBodyJointSetHTC           bodyJointSet;
+} XrBodyTrackerCreateInfoHTC;
+
+typedef struct XrBodyJointsLocateInfoHTC {
+    XrStructureType             type;
+    const void* XR_MAY_ALIAS    next;
+    XrSpace                     baseSpace;
+    XrTime                      time;
+} XrBodyJointsLocateInfoHTC;
+
+typedef struct XrBodyJointLocationHTC {
+    XrSpaceLocationFlags    locationFlags;
+    XrPosef                 pose;
+} XrBodyJointLocationHTC;
+
+typedef struct XrBodyJointLocationsHTC {
+    XrStructureType             type;
+    void* XR_MAY_ALIAS          next;
+    XrSpaceLocationFlags        combinedLocationFlags;
+    XrBodyJointConfidenceHTC    confidenceLevel;
+    uint32_t                    jointLocationCount;
+    XrBodyJointLocationHTC*     jointLocations;
+    uint32_t                    skeletonGenerationId;
+} XrBodyJointLocationsHTC;
+
+typedef struct XrBodySkeletonJointHTC {
+    XrPosef    pose;
+} XrBodySkeletonJointHTC;
+
+typedef struct XrBodySkeletonHTC {
+    XrStructureType            type;
+    void* XR_MAY_ALIAS         next;
+    uint32_t                   jointCount;
+    XrBodySkeletonJointHTC*    joints;
+} XrBodySkeletonHTC;
+
+typedef XrResult (XRAPI_PTR *PFN_xrCreateBodyTrackerHTC)(XrSession session, const XrBodyTrackerCreateInfoHTC* createInfo, XrBodyTrackerHTC* bodyTracker);
+typedef XrResult (XRAPI_PTR *PFN_xrDestroyBodyTrackerHTC)(XrBodyTrackerHTC bodyTracker);
+typedef XrResult (XRAPI_PTR *PFN_xrLocateBodyJointsHTC)(XrBodyTrackerHTC bodyTracker, const XrBodyJointsLocateInfoHTC* locateInfo, XrBodyJointLocationsHTC* locations);
+typedef XrResult (XRAPI_PTR *PFN_xrGetBodySkeletonHTC)(XrBodyTrackerHTC bodyTracker, XrSpace baseSpace, uint32_t skeletonGenerationId, XrBodySkeletonHTC* skeleton);
+
+#ifndef XR_NO_PROTOTYPES
+#ifdef XR_EXTENSION_PROTOTYPES
+XRAPI_ATTR XrResult XRAPI_CALL xrCreateBodyTrackerHTC(
+    XrSession                                   session,
+    const XrBodyTrackerCreateInfoHTC*           createInfo,
+    XrBodyTrackerHTC*                           bodyTracker);
+
+XRAPI_ATTR XrResult XRAPI_CALL xrDestroyBodyTrackerHTC(
+    XrBodyTrackerHTC                            bodyTracker);
+
+XRAPI_ATTR XrResult XRAPI_CALL xrLocateBodyJointsHTC(
+    XrBodyTrackerHTC                            bodyTracker,
+    const XrBodyJointsLocateInfoHTC*            locateInfo,
+    XrBodyJointLocationsHTC*                    locations);
+
+XRAPI_ATTR XrResult XRAPI_CALL xrGetBodySkeletonHTC(
+    XrBodyTrackerHTC                            bodyTracker,
+    XrSpace                                     baseSpace,
+    uint32_t                                    skeletonGenerationId,
+    XrBodySkeletonHTC*                          skeleton);
+#endif /* XR_EXTENSION_PROTOTYPES */
+#endif /* !XR_NO_PROTOTYPES */
+
+
 // XR_EXT_active_action_set_priority is a preprocessor guard. Do not pass it to API calls.
 #define XR_EXT_active_action_set_priority 1
 #define XR_EXT_active_action_set_priority_SPEC_VERSION 1
@@ -7313,7 +7726,6 @@ XRAPI_ATTR XrResult XRAPI_CALL xrGetPlanePolygonBufferEXT(
 
 // XR_EXT_future is a preprocessor guard. Do not pass it to API calls.
 #define XR_EXT_future 1
-XR_DEFINE_OPAQUE_64(XrFutureEXT)
 #define XR_EXT_future_SPEC_VERSION        1
 #define XR_EXT_FUTURE_EXTENSION_NAME      "XR_EXT_future"
 #define XR_NULL_FUTURE_EXT                0
@@ -7438,6 +7850,232 @@ XRAPI_ATTR XrResult XRAPI_CALL xrEnableUserCalibrationEventsML(
     const XrUserCalibrationEnableEventsInfoML*  enableInfo);
 #endif /* XR_EXTENSION_PROTOTYPES */
 #endif /* !XR_NO_PROTOTYPES */
+
+
+// XR_ML_system_notifications is a preprocessor guard. Do not pass it to API calls.
+#define XR_ML_system_notifications 1
+#define XR_ML_system_notifications_SPEC_VERSION 1
+#define XR_ML_SYSTEM_NOTIFICATIONS_EXTENSION_NAME "XR_ML_system_notifications"
+typedef struct XrSystemNotificationsSetInfoML {
+    XrStructureType             type;
+    const void* XR_MAY_ALIAS    next;
+    XrBool32                    suppressNotifications;
+} XrSystemNotificationsSetInfoML;
+
+typedef XrResult (XRAPI_PTR *PFN_xrSetSystemNotificationsML)(XrInstance instance, const XrSystemNotificationsSetInfoML* info);
+
+#ifndef XR_NO_PROTOTYPES
+#ifdef XR_EXTENSION_PROTOTYPES
+XRAPI_ATTR XrResult XRAPI_CALL xrSetSystemNotificationsML(
+    XrInstance                                  instance,
+    const XrSystemNotificationsSetInfoML*       info);
+#endif /* XR_EXTENSION_PROTOTYPES */
+#endif /* !XR_NO_PROTOTYPES */
+
+
+// XR_ML_world_mesh_detection is a preprocessor guard. Do not pass it to API calls.
+#define XR_ML_world_mesh_detection 1
+XR_DEFINE_HANDLE(XrWorldMeshDetectorML)
+#define XR_ML_world_mesh_detection_SPEC_VERSION 1
+#define XR_ML_WORLD_MESH_DETECTION_EXTENSION_NAME "XR_ML_world_mesh_detection"
+
+typedef enum XrWorldMeshDetectorLodML {
+    XR_WORLD_MESH_DETECTOR_LOD_MINIMUM_ML = 0,
+    XR_WORLD_MESH_DETECTOR_LOD_MEDIUM_ML = 1,
+    XR_WORLD_MESH_DETECTOR_LOD_MAXIMUM_ML = 2,
+    XR_WORLD_MESH_DETECTOR_LOD_MAX_ENUM_ML = 0x7FFFFFFF
+} XrWorldMeshDetectorLodML;
+
+typedef enum XrWorldMeshBlockStatusML {
+    XR_WORLD_MESH_BLOCK_STATUS_NEW_ML = 0,
+    XR_WORLD_MESH_BLOCK_STATUS_UPDATED_ML = 1,
+    XR_WORLD_MESH_BLOCK_STATUS_DELETED_ML = 2,
+    XR_WORLD_MESH_BLOCK_STATUS_UNCHANGED_ML = 3,
+    XR_WORLD_MESH_BLOCK_STATUS_MAX_ENUM_ML = 0x7FFFFFFF
+} XrWorldMeshBlockStatusML;
+
+typedef enum XrWorldMeshBlockResultML {
+    XR_WORLD_MESH_BLOCK_RESULT_SUCCESS_ML = 0,
+    XR_WORLD_MESH_BLOCK_RESULT_FAILED_ML = 1,
+    XR_WORLD_MESH_BLOCK_RESULT_PENDING_ML = 2,
+    XR_WORLD_MESH_BLOCK_RESULT_PARTIAL_UPDATE_ML = 3,
+    XR_WORLD_MESH_BLOCK_RESULT_MAX_ENUM_ML = 0x7FFFFFFF
+} XrWorldMeshBlockResultML;
+typedef XrFlags64 XrWorldMeshDetectorFlagsML;
+
+// Flag bits for XrWorldMeshDetectorFlagsML
+static const XrWorldMeshDetectorFlagsML XR_WORLD_MESH_DETECTOR_POINT_CLOUD_BIT_ML = 0x00000001;
+static const XrWorldMeshDetectorFlagsML XR_WORLD_MESH_DETECTOR_COMPUTE_NORMALS_BIT_ML = 0x00000002;
+static const XrWorldMeshDetectorFlagsML XR_WORLD_MESH_DETECTOR_COMPUTE_CONFIDENCE_BIT_ML = 0x00000004;
+static const XrWorldMeshDetectorFlagsML XR_WORLD_MESH_DETECTOR_PLANARIZE_BIT_ML = 0x00000008;
+static const XrWorldMeshDetectorFlagsML XR_WORLD_MESH_DETECTOR_REMOVE_MESH_SKIRT_BIT_ML = 0x00000010;
+static const XrWorldMeshDetectorFlagsML XR_WORLD_MESH_DETECTOR_INDEX_ORDER_CW_BIT_ML = 0x00000020;
+
+typedef struct XrWorldMeshDetectorCreateInfoML {
+    XrStructureType             type;
+    const void* XR_MAY_ALIAS    next;
+} XrWorldMeshDetectorCreateInfoML;
+
+typedef struct XrWorldMeshBlockStateML {
+    XrStructureType             type;
+    void* XR_MAY_ALIAS          next;
+    XrUuidEXT                   uuid;
+    XrPosef                     meshBoundingBoxCenter;
+    XrExtent3DfEXT              meshBoundingBoxExtents;
+    XrTime                      lastUpdateTime;
+    XrWorldMeshBlockStatusML    status;
+} XrWorldMeshBlockStateML;
+
+typedef struct XrWorldMeshStateRequestInfoML {
+    XrStructureType             type;
+    const void* XR_MAY_ALIAS    next;
+    XrSpace                     baseSpace;
+    XrTime                      time;
+    XrPosef                     boundingBoxCenter;
+    XrExtent3DfEXT              boundingBoxExtents;
+} XrWorldMeshStateRequestInfoML;
+
+typedef struct XrWorldMeshStateRequestCompletionML {
+    XrStructureType             type;
+    void* XR_MAY_ALIAS          next;
+    XrResult                    futureResult;
+    XrTime                      timestamp;
+    uint32_t                    meshBlockStateCapacityInput;
+    uint32_t                    meshBlockStateCountOutput;
+    XrWorldMeshBlockStateML*    meshBlockStates;
+} XrWorldMeshStateRequestCompletionML;
+
+typedef struct XrWorldMeshBufferRecommendedSizeInfoML {
+    XrStructureType             type;
+    const void* XR_MAY_ALIAS    next;
+    uint32_t                    maxBlockCount;
+} XrWorldMeshBufferRecommendedSizeInfoML;
+
+typedef struct XrWorldMeshBufferSizeML {
+    XrStructureType       type;
+    void* XR_MAY_ALIAS    next;
+    uint32_t              size;
+} XrWorldMeshBufferSizeML;
+
+typedef struct XrWorldMeshBufferML {
+    XrStructureType       type;
+    void* XR_MAY_ALIAS    next;
+    uint32_t              bufferSize;
+    void* XR_MAY_ALIAS    buffer;
+} XrWorldMeshBufferML;
+
+typedef struct XrWorldMeshBlockRequestML {
+    XrStructureType             type;
+    void* XR_MAY_ALIAS          next;
+    XrUuidEXT                   uuid;
+    XrWorldMeshDetectorLodML    lod;
+} XrWorldMeshBlockRequestML;
+
+typedef struct XrWorldMeshGetInfoML {
+    XrStructureType               type;
+    const void* XR_MAY_ALIAS      next;
+    XrWorldMeshDetectorFlagsML    flags;
+    float                         fillHoleLength;
+    float                         disconnectedComponentArea;
+    uint32_t                      blockCount;
+    XrWorldMeshBlockRequestML*    blocks;
+} XrWorldMeshGetInfoML;
+
+typedef struct XrWorldMeshBlockML {
+    XrStructureType               type;
+    void* XR_MAY_ALIAS            next;
+    XrUuidEXT                     uuid;
+    XrWorldMeshBlockResultML      blockResult;
+    XrWorldMeshDetectorLodML      lod;
+    XrWorldMeshDetectorFlagsML    flags;
+    uint32_t                      indexCount;
+    uint16_t*                     indexBuffer;
+    uint32_t                      vertexCount;
+    XrVector3f*                   vertexBuffer;
+    uint32_t                      normalCount;
+    XrVector3f*                   normalBuffer;
+    uint32_t                      confidenceCount;
+    float*                        confidenceBuffer;
+} XrWorldMeshBlockML;
+
+typedef struct XrWorldMeshRequestCompletionInfoML {
+    XrStructureType             type;
+    const void* XR_MAY_ALIAS    next;
+    XrSpace                     meshSpace;
+    XrTime                      meshSpaceLocateTime;
+} XrWorldMeshRequestCompletionInfoML;
+
+typedef struct XrWorldMeshRequestCompletionML {
+    XrStructureType        type;
+    void* XR_MAY_ALIAS     next;
+    XrResult               futureResult;
+    uint32_t               blockCount;
+    XrWorldMeshBlockML*    blocks;
+} XrWorldMeshRequestCompletionML;
+
+typedef XrResult (XRAPI_PTR *PFN_xrCreateWorldMeshDetectorML)(XrSession session, const XrWorldMeshDetectorCreateInfoML* createInfo, XrWorldMeshDetectorML* detector);
+typedef XrResult (XRAPI_PTR *PFN_xrDestroyWorldMeshDetectorML)(XrWorldMeshDetectorML detector);
+typedef XrResult (XRAPI_PTR *PFN_xrRequestWorldMeshStateAsyncML)(XrWorldMeshDetectorML detector, const XrWorldMeshStateRequestInfoML* stateRequest, XrFutureEXT* future);
+typedef XrResult (XRAPI_PTR *PFN_xrRequestWorldMeshStateCompleteML)(XrWorldMeshDetectorML detector, XrFutureEXT future, XrWorldMeshStateRequestCompletionML* completion);
+typedef XrResult (XRAPI_PTR *PFN_xrGetWorldMeshBufferRecommendSizeML)(XrWorldMeshDetectorML detector, const XrWorldMeshBufferRecommendedSizeInfoML* sizeInfo, XrWorldMeshBufferSizeML* size);
+typedef XrResult (XRAPI_PTR *PFN_xrAllocateWorldMeshBufferML)(XrWorldMeshDetectorML detector, const XrWorldMeshBufferSizeML* size, XrWorldMeshBufferML* buffer);
+typedef XrResult (XRAPI_PTR *PFN_xrFreeWorldMeshBufferML)(XrWorldMeshDetectorML detector, const XrWorldMeshBufferML* buffer);
+typedef XrResult (XRAPI_PTR *PFN_xrRequestWorldMeshAsyncML)(XrWorldMeshDetectorML detector, const XrWorldMeshGetInfoML* getInfo, XrWorldMeshBufferML* buffer, XrFutureEXT* future);
+typedef XrResult (XRAPI_PTR *PFN_xrRequestWorldMeshCompleteML)(XrWorldMeshDetectorML detector, const XrWorldMeshRequestCompletionInfoML* completionInfo, XrFutureEXT future, XrWorldMeshRequestCompletionML* completion);
+
+#ifndef XR_NO_PROTOTYPES
+#ifdef XR_EXTENSION_PROTOTYPES
+XRAPI_ATTR XrResult XRAPI_CALL xrCreateWorldMeshDetectorML(
+    XrSession                                   session,
+    const XrWorldMeshDetectorCreateInfoML*      createInfo,
+    XrWorldMeshDetectorML*                      detector);
+
+XRAPI_ATTR XrResult XRAPI_CALL xrDestroyWorldMeshDetectorML(
+    XrWorldMeshDetectorML                       detector);
+
+XRAPI_ATTR XrResult XRAPI_CALL xrRequestWorldMeshStateAsyncML(
+    XrWorldMeshDetectorML                       detector,
+    const XrWorldMeshStateRequestInfoML*        stateRequest,
+    XrFutureEXT*                                future);
+
+XRAPI_ATTR XrResult XRAPI_CALL xrRequestWorldMeshStateCompleteML(
+    XrWorldMeshDetectorML                       detector,
+    XrFutureEXT                                 future,
+    XrWorldMeshStateRequestCompletionML*        completion);
+
+XRAPI_ATTR XrResult XRAPI_CALL xrGetWorldMeshBufferRecommendSizeML(
+    XrWorldMeshDetectorML                       detector,
+    const XrWorldMeshBufferRecommendedSizeInfoML* sizeInfo,
+    XrWorldMeshBufferSizeML*                    size);
+
+XRAPI_ATTR XrResult XRAPI_CALL xrAllocateWorldMeshBufferML(
+    XrWorldMeshDetectorML                       detector,
+    const XrWorldMeshBufferSizeML*              size,
+    XrWorldMeshBufferML*                        buffer);
+
+XRAPI_ATTR XrResult XRAPI_CALL xrFreeWorldMeshBufferML(
+    XrWorldMeshDetectorML                       detector,
+    const XrWorldMeshBufferML*                  buffer);
+
+XRAPI_ATTR XrResult XRAPI_CALL xrRequestWorldMeshAsyncML(
+    XrWorldMeshDetectorML                       detector,
+    const XrWorldMeshGetInfoML*                 getInfo,
+    XrWorldMeshBufferML*                        buffer,
+    XrFutureEXT*                                future);
+
+XRAPI_ATTR XrResult XRAPI_CALL xrRequestWorldMeshCompleteML(
+    XrWorldMeshDetectorML                       detector,
+    const XrWorldMeshRequestCompletionInfoML*   completionInfo,
+    XrFutureEXT                                 future,
+    XrWorldMeshRequestCompletionML*             completion);
+#endif /* XR_EXTENSION_PROTOTYPES */
+#endif /* !XR_NO_PROTOTYPES */
+
+
+// XR_ML_view_configuration_depth_range_change is a preprocessor guard. Do not pass it to API calls.
+#define XR_ML_view_configuration_depth_range_change 1
+#define XR_ML_view_configuration_depth_range_change_SPEC_VERSION 1
+#define XR_ML_VIEW_CONFIGURATION_DEPTH_RANGE_CHANGE_EXTENSION_NAME "XR_ML_view_configuration_depth_range_change"
 
 
 // XR_YVR_controller_interaction is a preprocessor guard. Do not pass it to API calls.

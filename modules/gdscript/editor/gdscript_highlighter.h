@@ -28,11 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef GDSCRIPT_HIGHLIGHTER_H
-#define GDSCRIPT_HIGHLIGHTER_H
+#pragma once
 
 #include "editor/plugins/script_editor_plugin.h"
-#include "scene/gui/text_edit.h"
 
 class GDScriptSyntaxHighlighter : public EditorSyntaxHighlighter {
 	GDCLASS(GDScriptSyntaxHighlighter, EditorSyntaxHighlighter)
@@ -117,5 +115,3 @@ public:
 
 	virtual Ref<EditorSyntaxHighlighter> _create() const override;
 };
-
-#endif // GDSCRIPT_HIGHLIGHTER_H

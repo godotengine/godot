@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef MESH_STORAGE_H
-#define MESH_STORAGE_H
+#pragma once
 
 #include "servers/rendering_server.h"
 #include "utilities.h"
@@ -74,6 +73,7 @@ public:
 
 	virtual void mesh_set_shadow_mesh(RID p_mesh, RID p_shadow_mesh) = 0;
 
+	virtual void mesh_surface_remove(RID p_mesh, int p_surface) = 0;
 	virtual void mesh_clear(RID p_mesh) = 0;
 
 	virtual bool mesh_needs_instance(RID p_mesh, bool p_has_skeleton) = 0;
@@ -120,7 +120,7 @@ public:
 	virtual void multimesh_initialize(RID p_rid);
 	virtual void multimesh_free(RID p_rid);
 
-	virtual void multimesh_allocate_data(RID p_multimesh, int p_instances, RS::MultimeshTransformFormat p_transform_format, bool p_use_colors = false, bool p_use_custom_data = false);
+	virtual void multimesh_allocate_data(RID p_multimesh, int p_instances, RS::MultimeshTransformFormat p_transform_format, bool p_use_colors = false, bool p_use_custom_data = false, bool p_use_indirect = false);
 
 	virtual int multimesh_get_instance_count(RID p_multimesh) const;
 
@@ -141,6 +141,8 @@ public:
 	virtual Color multimesh_instance_get_custom_data(RID p_multimesh, int p_index) const;
 
 	virtual void multimesh_set_buffer(RID p_multimesh, const Vector<float> &p_buffer);
+	virtual RID multimesh_get_command_buffer_rd_rid(RID p_multimesh) const;
+	virtual RID multimesh_get_buffer_rd_rid(RID p_multimesh) const;
 	virtual Vector<float> multimesh_get_buffer(RID p_multimesh) const;
 
 	virtual void multimesh_set_buffer_interpolated(RID p_multimesh, const Vector<float> &p_buffer, const Vector<float> &p_buffer_prev);
@@ -157,7 +159,7 @@ public:
 	virtual void _multimesh_initialize(RID p_rid) = 0;
 	virtual void _multimesh_free(RID p_rid) = 0;
 
-	virtual void _multimesh_allocate_data(RID p_multimesh, int p_instances, RS::MultimeshTransformFormat p_transform_format, bool p_use_colors = false, bool p_use_custom_data = false) = 0;
+	virtual void _multimesh_allocate_data(RID p_multimesh, int p_instances, RS::MultimeshTransformFormat p_transform_format, bool p_use_colors = false, bool p_use_custom_data = false, bool p_use_indirect = false) = 0;
 
 	virtual int _multimesh_get_instance_count(RID p_multimesh) const = 0;
 
@@ -178,6 +180,8 @@ public:
 	virtual Color _multimesh_instance_get_custom_data(RID p_multimesh, int p_index) const = 0;
 
 	virtual void _multimesh_set_buffer(RID p_multimesh, const Vector<float> &p_buffer) = 0;
+	virtual RID _multimesh_get_command_buffer_rd_rid(RID p_multimesh) const = 0;
+	virtual RID _multimesh_get_buffer_rd_rid(RID p_multimesh) const = 0;
 	virtual Vector<float> _multimesh_get_buffer(RID p_multimesh) const = 0;
 
 	virtual void _multimesh_set_visible_instances(RID p_multimesh, int p_visible) = 0;
@@ -222,5 +226,3 @@ public:
 	void update_interpolation_tick(bool p_process = true);
 	void update_interpolation_frame(bool p_process = true);
 };
-
-#endif // MESH_STORAGE_H

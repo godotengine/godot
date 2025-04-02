@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef MATERIAL_EDITOR_PLUGIN_H
-#define MATERIAL_EDITOR_PLUGIN_H
+#pragma once
 
 #include "editor/editor_inspector.h"
 #include "editor/plugins/editor_plugin.h"
@@ -62,6 +61,7 @@ class MaterialEditor : public Control {
 	Node3D *rotation = nullptr;
 	MeshInstance3D *sphere_instance = nullptr;
 	MeshInstance3D *box_instance = nullptr;
+	MeshInstance3D *quad_instance = nullptr;
 	DirectionalLight3D *light1 = nullptr;
 	DirectionalLight3D *light2 = nullptr;
 	Camera3D *camera = nullptr;
@@ -69,6 +69,7 @@ class MaterialEditor : public Control {
 
 	Ref<SphereMesh> sphere_mesh;
 	Ref<BoxMesh> box_mesh;
+	Ref<QuadMesh> quad_mesh;
 
 	VBoxContainer *layout_error = nullptr;
 	Label *error_label = nullptr;
@@ -80,6 +81,7 @@ class MaterialEditor : public Control {
 
 	Button *sphere_switch = nullptr;
 	Button *box_switch = nullptr;
+	Button *quad_switch = nullptr;
 	Button *light_1_switch = nullptr;
 	Button *light_2_switch = nullptr;
 
@@ -88,6 +90,7 @@ class MaterialEditor : public Control {
 		Ref<Texture2D> light_2_icon;
 		Ref<Texture2D> sphere_icon;
 		Ref<Texture2D> box_icon;
+		Ref<Texture2D> quad_icon;
 		Ref<Texture2D> checkerboard;
 	} theme_cache;
 
@@ -95,11 +98,14 @@ class MaterialEditor : public Control {
 	void _on_light_2_switch_pressed();
 	void _on_sphere_switch_pressed();
 	void _on_box_switch_pressed();
+	void _on_quad_switch_pressed();
 
 protected:
 	virtual void _update_theme_item_cache() override;
 	void _notification(int p_what);
 	void gui_input(const Ref<InputEvent> &p_event) override;
+	void _set_rotation(real_t p_x_degrees, real_t p_y_degrees);
+	void _store_rotation_metadata();
 	void _update_rotation();
 
 public:
@@ -124,7 +130,7 @@ class MaterialEditorPlugin : public EditorPlugin {
 	GDCLASS(MaterialEditorPlugin, EditorPlugin);
 
 public:
-	virtual String get_name() const override { return "Material"; }
+	virtual String get_plugin_name() const override { return "Material"; }
 
 	MaterialEditorPlugin();
 };
@@ -200,5 +206,3 @@ public:
 	virtual bool handles(const Ref<Resource> &p_resource) const override;
 	virtual Ref<Resource> convert(const Ref<Resource> &p_resource) const override;
 };
-
-#endif // MATERIAL_EDITOR_PLUGIN_H

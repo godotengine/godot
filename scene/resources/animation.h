@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef ANIMATION_H
-#define ANIMATION_H
+#pragma once
 
 #include "core/io/resource.h"
 #include "core/templates/local_vector.h"
@@ -44,6 +43,7 @@ public:
 	typedef uint32_t TypeHash;
 
 	static inline String PARAMETERS_BASE_PATH = "parameters/";
+	static inline constexpr real_t DEFAULT_STEP = 1.0 / 30;
 
 	enum TrackType : uint8_t {
 		TYPE_VALUE, // Set a value in a property, can be interpolated.
@@ -237,13 +237,26 @@ private:
 		}
 	};
 
-	Vector<Track *> tracks;
+	/* Marker */
 
-	template <typename T>
-	void _clear(T &p_keys);
+	struct MarkerKey {
+		double time;
+		StringName name;
+		MarkerKey(double p_time, const StringName &p_name) :
+				time(p_time), name(p_name) {}
+		MarkerKey() = default;
+	};
+
+	Vector<MarkerKey> marker_names; // time -> name
+	HashMap<StringName, double> marker_times; // name -> time
+	HashMap<StringName, Color> marker_colors; // name -> color
+
+	Vector<Track *> tracks;
 
 	template <typename T, typename V>
 	int _insert(double p_time, T &p_keys, const V &p_value);
+
+	int _marker_insert(double p_time, Vector<MarkerKey> &p_keys, const MarkerKey &p_value);
 
 	template <typename K>
 
@@ -268,7 +281,7 @@ private:
 	_FORCE_INLINE_ void _track_get_key_indices_in_range(const Vector<T> &p_array, double from_time, double to_time, List<int> *p_indices, bool p_is_backward) const;
 
 	double length = 1.0;
-	real_t step = 1.0 / 30;
+	real_t step = DEFAULT_STEP;
 	LoopMode loop_mode = LOOP_NONE;
 	bool capture_included = false;
 	void _check_capture_included();
@@ -361,8 +374,8 @@ private:
 	// bind helpers
 private:
 	bool _float_track_optimize_key(const TKey<float> t0, const TKey<float> t1, const TKey<float> t2, real_t p_allowed_velocity_err, real_t p_allowed_precision_error);
-	bool _vector2_track_optimize_key(const TKey<Vector2> t0, const TKey<Vector2> t1, const TKey<Vector2> t2, real_t p_alowed_velocity_err, real_t p_allowed_angular_error, real_t p_allowed_precision_error);
-	bool _vector3_track_optimize_key(const TKey<Vector3> t0, const TKey<Vector3> t1, const TKey<Vector3> t2, real_t p_alowed_velocity_err, real_t p_allowed_angular_error, real_t p_allowed_precision_error);
+	bool _vector2_track_optimize_key(const TKey<Vector2> t0, const TKey<Vector2> t1, const TKey<Vector2> t2, real_t p_allowed_velocity_err, real_t p_allowed_angular_error, real_t p_allowed_precision_error);
+	bool _vector3_track_optimize_key(const TKey<Vector3> t0, const TKey<Vector3> t1, const TKey<Vector3> t2, real_t p_allowed_velocity_err, real_t p_allowed_angular_error, real_t p_allowed_precision_error);
 	bool _quaternion_track_optimize_key(const TKey<Quaternion> t0, const TKey<Quaternion> t1, const TKey<Quaternion> t2, real_t p_allowed_velocity_err, real_t p_allowed_angular_error, real_t p_allowed_precision_error);
 
 	void _position_track_optimize(int p_idx, real_t p_allowed_velocity_err, real_t p_allowed_angular_err, real_t p_allowed_precision_error);
@@ -501,6 +514,17 @@ public:
 
 	void track_get_key_indices_in_range(int p_track, double p_time, double p_delta, List<int> *p_indices, Animation::LoopedFlag p_looped_flag = Animation::LOOPED_FLAG_NONE) const;
 
+	void add_marker(const StringName &p_name, double p_time);
+	void remove_marker(const StringName &p_name);
+	bool has_marker(const StringName &p_name) const;
+	StringName get_marker_at_time(double p_time) const;
+	StringName get_next_marker(double p_time) const;
+	StringName get_prev_marker(double p_time) const;
+	double get_marker_time(const StringName &p_time) const;
+	PackedStringArray get_marker_names() const;
+	Color get_marker_color(const StringName &p_name) const;
+	void set_marker_color(const StringName &p_name, const Color &p_color);
+
 	void set_length(real_t p_length);
 	real_t get_length() const;
 
@@ -562,5 +586,3 @@ VARIANT_ENUM_CAST(Animation::FindMode);
 VARIANT_ENUM_CAST(Animation::HandleMode);
 VARIANT_ENUM_CAST(Animation::HandleSetMode);
 #endif // TOOLS_ENABLED
-
-#endif // ANIMATION_H

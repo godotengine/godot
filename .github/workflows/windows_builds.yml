@@ -5,20 +5,15 @@ on:
 # Global Settings
 # SCONS_CACHE for windows must be set in the build environment
 env:
-  # Used for the cache key. Add version suffix to force clean build.
-  GODOT_BASE_BRANCH: master
   SCONSFLAGS: verbose=yes warnings=extra werror=yes module_text_server_fb_enabled=yes d3d12=yes strict_checks=yes "angle_libs=${{ github.workspace }}/"
   SCONS_CACHE_MSVC_CONFIG: true
-
-concurrency:
-  group: ci-${{ github.actor }}-${{ github.head_ref || github.run_number }}-${{ github.ref }}-windows
-  cancel-in-progress: true
 
 jobs:
   build-windows:
     # Windows 10 with latest image
     runs-on: windows-latest
     name: ${{ matrix.name }}
+    timeout-minutes: 120
     strategy:
       fail-fast: false
       matrix:
@@ -30,7 +25,7 @@ jobs:
             # Skip debug symbols, they're way too big with MSVC.
             sconsflags: debug_symbols=no vsproj=yes vsproj_gen_only=no windows_subsystem=console
             bin: ./bin/godot.windows.editor.x86_64.exe
-            artifact: true
+            compiler: msvc
 
           - name: Editor w/ clang-cl (target=editor, tests=yes, use_llvm=yes)
             cache-name: windows-editor-clang
@@ -38,6 +33,7 @@ jobs:
             tests: true
             sconsflags: debug_symbols=no windows_subsystem=console use_llvm=yes
             bin: ./bin/godot.windows.editor.x86_64.llvm.exe
+            compiler: clang
 
           - name: Template (target=template_release, tests=yes)
             cache-name: windows-template
@@ -45,7 +41,16 @@ jobs:
             tests: true
             sconsflags: debug_symbols=no
             bin: ./bin/godot.windows.template_release.x86_64.console.exe
-            artifact: true
+            compiler: msvc
+
+          - name: Template w/ GCC (target=template_release, tests=yes, use_mingw=yes)
+            cache-name: windows-template-gcc
+            # MinGW takes MUCH longer to compile; save time by only targeting Template.
+            target: template_release
+            tests: true
+            sconsflags: debug_symbols=no use_mingw=yes
+            bin: ./bin/godot.windows.template_release.x86_64.console.exe
+            compiler: gcc
 
     steps:
       - name: Checkout
@@ -69,15 +74,12 @@ jobs:
         uses: dsaltares/fetch-gh-release-asset@1.1.2
         with:
           repo: godotengine/godot-angle-static
-          version: tags/chromium/6029
-          file: Windows.6029-1.MSVC_17.x86_64.x86_32.zip
+          version: tags/chromium/6601.2
+          file: godot-angle-static-x86_64-${{ matrix.compiler == 'gcc' && 'gcc' || 'msvc' }}-release.zip
           target: angle/angle.zip
 
       - name: Extract pre-built ANGLE static libraries
         run: Expand-Archive -Force angle/angle.zip ${{ github.workspace }}/
-
-      - name: Setup MSVC problem matcher
-        uses: ammaraskar/msvc-problem-matcher@master
 
       - name: Compilation
         uses: ./.github/actions/godot-build
@@ -94,12 +96,12 @@ jobs:
         continue-on-error: true
 
       - name: Prepare artifact
-        if: ${{ matrix.artifact }}
+        if: matrix.compiler == 'msvc'
         run: |
           Remove-Item bin/* -Include *.exp,*.lib,*.pdb -Force
 
       - name: Upload artifact
-        if: ${{ matrix.artifact }}
+        if: matrix.compiler == 'msvc'
         uses: ./.github/actions/upload-artifact
         with:
           name: ${{ matrix.cache-name }}

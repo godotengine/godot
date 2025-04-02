@@ -132,6 +132,13 @@ void ProjectDialog::_validate_path() {
 				ERR_FAIL_COND_MSG(ret != UNZ_OK, "Failed to get current file info.");
 
 				String name = String::utf8(fname);
+
+				// Skip the __MACOSX directory created by macOS's built-in file zipper.
+				if (name.begins_with("__MACOSX")) {
+					ret = unzGoToNextFile(pkg);
+					continue;
+				}
+
 				if (name.get_file() == "project.godot") {
 					break; // ret == UNZ_OK.
 				}
@@ -369,7 +376,7 @@ void ProjectDialog::_browse_project_path() {
 	if (mode == MODE_IMPORT) {
 		fdialog_project->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_ANY);
 		fdialog_project->clear_filters();
-		fdialog_project->add_filter("project.godot", vformat("%s %s", VERSION_NAME, TTR("Project")));
+		fdialog_project->add_filter("project.godot", vformat("%s %s", GODOT_VERSION_NAME, TTR("Project")));
 		fdialog_project->add_filter("*.zip", TTR("ZIP File"));
 	} else {
 		fdialog_project->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_DIR);
@@ -488,12 +495,14 @@ void ProjectDialog::ok_pressed() {
 	// Before we create a project, check that the target folder is empty.
 	// If not, we need to ask the user if they're sure they want to do this.
 	if (!is_folder_empty) {
-		ConfirmationDialog *cd = memnew(ConfirmationDialog);
-		cd->set_title(TTR("Warning: This folder is not empty"));
-		cd->set_text(TTR("You are about to create a Godot project in a non-empty folder.\nThe entire contents of this folder will be imported as project resources!\n\nAre you sure you wish to continue?"));
-		cd->get_ok_button()->connect(SceneStringName(pressed), callable_mp(this, &ProjectDialog::_nonempty_confirmation_ok_pressed));
-		get_parent()->add_child(cd);
-		cd->popup_centered();
+		if (!nonempty_confirmation) {
+			nonempty_confirmation = memnew(ConfirmationDialog);
+			nonempty_confirmation->set_title(TTR("Warning: This folder is not empty"));
+			nonempty_confirmation->set_text(TTR("You are about to create a Godot project in a non-empty folder.\nThe entire contents of this folder will be imported as project resources!\n\nAre you sure you wish to continue?"));
+			nonempty_confirmation->get_ok_button()->connect(SceneStringName(pressed), callable_mp(this, &ProjectDialog::_nonempty_confirmation_ok_pressed));
+			add_child(nonempty_confirmation);
+		}
+		nonempty_confirmation->popup_centered();
 		return;
 	}
 
@@ -552,6 +561,21 @@ void ProjectDialog::ok_pressed() {
 		fa_icon->store_string(get_default_project_icon());
 
 		EditorVCSInterface::create_vcs_metadata_files(EditorVCSInterface::VCSMetadata(vcs_metadata_selection->get_selected()), path);
+
+		// Ensures external editors and IDEs use UTF-8 encoding.
+		const String editor_config_path = path.path_join(".editorconfig");
+		Ref<FileAccess> f = FileAccess::open(editor_config_path, FileAccess::WRITE);
+		if (f.is_null()) {
+			// .editorconfig isn't so critical.
+			ERR_PRINT("Couldn't create .editorconfig in project path.");
+		} else {
+			f->store_line("root = true");
+			f->store_line("");
+			f->store_line("[*]");
+			f->store_line("charset = utf-8");
+			f->close();
+			FileAccess::set_hidden_attribute(editor_config_path, true);
+		}
 	}
 
 	// Two cases for importing a ZIP.
@@ -587,6 +611,13 @@ void ProjectDialog::ok_pressed() {
 				ERR_FAIL_COND_MSG(ret != UNZ_OK, "Failed to get current file info.");
 
 				String name = String::utf8(fname);
+
+				// Skip the __MACOSX directory created by macOS's built-in file zipper.
+				if (name.begins_with("__MACOSX")) {
+					ret = unzGoToNextFile(pkg);
+					continue;
+				}
+
 				if (name.get_file() == "project.godot") {
 					zip_root = name.get_base_dir();
 					break;
@@ -619,7 +650,15 @@ void ProjectDialog::ok_pressed() {
 				ret = unzGetCurrentFileInfo(pkg, &info, fname, 16384, nullptr, 0, nullptr, 0);
 				ERR_FAIL_COND_MSG(ret != UNZ_OK, "Failed to get current file info.");
 
-				String rel_path = String::utf8(fname).trim_prefix(zip_root);
+				String name = String::utf8(fname);
+
+				// Skip the __MACOSX directory created by macOS's built-in file zipper.
+				if (name.begins_with("__MACOSX")) {
+					ret = unzGoToNextFile(pkg);
+					continue;
+				}
+
+				String rel_path = name.trim_prefix(zip_root);
 				if (rel_path.is_empty()) { // Root.
 				} else if (rel_path.ends_with("/")) { // Directory.
 					Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
@@ -686,7 +725,7 @@ void ProjectDialog::ok_pressed() {
 
 	hide();
 	if (mode == MODE_NEW || mode == MODE_IMPORT || mode == MODE_INSTALL) {
-		emit_signal(SNAME("project_created"), path);
+		emit_signal(SNAME("project_created"), path, edit_check_box->is_pressed());
 	} else if (mode == MODE_RENAME) {
 		emit_signal(SNAME("projects_updated"));
 	}
@@ -728,6 +767,7 @@ void ProjectDialog::show_dialog(bool p_reset_name) {
 		create_dir->hide();
 		project_status_rect->hide();
 		project_browse->hide();
+		edit_check_box->hide();
 
 		name_container->show();
 		install_path_container->hide();
@@ -743,6 +783,7 @@ void ProjectDialog::show_dialog(bool p_reset_name) {
 		project_path->set_editable(true);
 
 		String fav_dir = EDITOR_GET("filesystem/directories/default_project_path");
+		fav_dir = fav_dir.simplify_path();
 		if (!fav_dir.is_empty()) {
 			project_path->set_text(fav_dir);
 			install_path->set_text(fav_dir);
@@ -757,10 +798,11 @@ void ProjectDialog::show_dialog(bool p_reset_name) {
 		create_dir->show();
 		project_status_rect->show();
 		project_browse->show();
+		edit_check_box->show();
 
 		if (mode == MODE_IMPORT) {
 			set_title(TTR("Import Existing Project"));
-			set_ok_button_text(TTR("Import & Edit"));
+			set_ok_button_text(TTR("Import"));
 
 			name_container->hide();
 			install_path_container->hide();
@@ -770,7 +812,7 @@ void ProjectDialog::show_dialog(bool p_reset_name) {
 			// Project path dialog is also opened; no need to change focus.
 		} else if (mode == MODE_NEW) {
 			set_title(TTR("Create New Project"));
-			set_ok_button_text(TTR("Create & Edit"));
+			set_ok_button_text(TTR("Create"));
 
 			name_container->show();
 			install_path_container->hide();
@@ -781,7 +823,7 @@ void ProjectDialog::show_dialog(bool p_reset_name) {
 			callable_mp(project_name, &LineEdit::select_all).call_deferred();
 		} else if (mode == MODE_INSTALL) {
 			set_title(TTR("Install Project:") + " " + zip_title);
-			set_ok_button_text(TTR("Install & Edit"));
+			set_ok_button_text(TTR("Install"));
 
 			project_name->set_text(zip_title);
 
@@ -810,9 +852,9 @@ void ProjectDialog::show_dialog(bool p_reset_name) {
 void ProjectDialog::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
-			create_dir->set_icon(get_editor_theme_icon(SNAME("FolderCreate")));
-			project_browse->set_icon(get_editor_theme_icon(SNAME("FolderBrowse")));
-			install_browse->set_icon(get_editor_theme_icon(SNAME("FolderBrowse")));
+			create_dir->set_button_icon(get_editor_theme_icon(SNAME("FolderCreate")));
+			project_browse->set_button_icon(get_editor_theme_icon(SNAME("FolderBrowse")));
+			install_browse->set_button_icon(get_editor_theme_icon(SNAME("FolderBrowse")));
 		} break;
 		case NOTIFICATION_READY: {
 			fdialog_project = memnew(EditorFileDialog);
@@ -931,7 +973,7 @@ ProjectDialog::ProjectDialog() {
 		default_renderer_type = EditorSettings::get_singleton()->get_setting("project_manager/default_renderer");
 	}
 
-	rendering_device_supported = DisplayServer::can_create_rendering_device();
+	rendering_device_supported = DisplayServer::is_rendering_device_supported();
 
 	if (!rendering_device_supported) {
 		default_renderer_type = "gl_compatibility";
@@ -986,7 +1028,7 @@ ProjectDialog::ProjectDialog() {
 	rvb->add_child(renderer_info);
 
 	rd_not_supported = memnew(Label);
-	rd_not_supported->set_text(TTR("Rendering Device backend not available. Please use the Compatibility renderer."));
+	rd_not_supported->set_text(vformat(TTR("RenderingDevice-based methods not available on this GPU:\n%s\nPlease use the Compatibility renderer."), RenderingServer::get_singleton()->get_video_adapter_name()));
 	rd_not_supported->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	rd_not_supported->set_custom_minimum_size(Size2(200, 0) * EDSCALE);
 	rd_not_supported->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
@@ -1023,9 +1065,25 @@ ProjectDialog::ProjectDialog() {
 	fdialog_install->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
 	add_child(fdialog_install);
 
+	Control *spacer2 = memnew(Control);
+	spacer2->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	vb->add_child(spacer2);
+
+	edit_check_box = memnew(CheckBox);
+	edit_check_box->set_text(TTR("Edit Now"));
+	edit_check_box->set_h_size_flags(Control::SIZE_SHRINK_CENTER);
+	edit_check_box->set_pressed(true);
+	vb->add_child(edit_check_box);
+
 	project_name->connect(SceneStringName(text_changed), callable_mp(this, &ProjectDialog::_project_name_changed).unbind(1));
+	project_name->connect(SceneStringName(text_submitted), callable_mp(this, &ProjectDialog::ok_pressed).unbind(1));
+
 	project_path->connect(SceneStringName(text_changed), callable_mp(this, &ProjectDialog::_project_path_changed).unbind(1));
+	project_path->connect(SceneStringName(text_submitted), callable_mp(this, &ProjectDialog::ok_pressed).unbind(1));
+
 	install_path->connect(SceneStringName(text_changed), callable_mp(this, &ProjectDialog::_install_path_changed).unbind(1));
+	install_path->connect(SceneStringName(text_submitted), callable_mp(this, &ProjectDialog::ok_pressed).unbind(1));
+
 	fdialog_install->connect("dir_selected", callable_mp(this, &ProjectDialog::_install_path_selected));
 	fdialog_install->connect("file_selected", callable_mp(this, &ProjectDialog::_install_path_selected));
 

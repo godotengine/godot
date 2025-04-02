@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TEST_VARIANT_H
-#define TEST_VARIANT_H
+#pragma once
 
 #include "core/variant/variant.h"
 #include "core/variant/variant_parser.h"
@@ -1737,6 +1736,24 @@ TEST_CASE("[Variant] Assignment To Color from Bool,Int,Float,String,Vec2,Vec2i,V
 	CHECK(object_v.get_type() == Variant::COLOR);
 }
 
+TEST_CASE("[Variant] array initializer list") {
+	Variant arr_v = { 0, 1, "test", true, { 0.0, 1.0 } };
+	CHECK(arr_v.get_type() == Variant::ARRAY);
+	Array arr = (Array)arr_v;
+	CHECK(arr.size() == 5);
+	CHECK(arr[0] == Variant(0));
+	CHECK(arr[1] == Variant(1));
+	CHECK(arr[2] == Variant("test"));
+	CHECK(arr[3] == Variant(true));
+	CHECK(arr[4] == Variant({ 0.0, 1.0 }));
+
+	PackedInt32Array packed_arr = { 2, 1, 0 };
+	CHECK(packed_arr.size() == 3);
+	CHECK(packed_arr[0] == 2);
+	CHECK(packed_arr[1] == 1);
+	CHECK(packed_arr[2] == 0);
+}
+
 TEST_CASE("[Variant] Writer and parser array") {
 	Array a = build_array(1, String("hello"), build_array(Variant()));
 	String a_str;
@@ -1804,6 +1821,14 @@ TEST_CASE("[Variant] Writer and parser dictionary") {
 	VariantParser::parse(&ss, d_parsed, errs, line);
 
 	CHECK_MESSAGE(d_parsed == Variant(d), "Should parse back.");
+}
+
+TEST_CASE("[Variant] Writer key sorting") {
+	Dictionary d = build_dictionary(StringName("C"), 3, "A", 1, StringName("B"), 2, "D", 4);
+	String d_str;
+	VariantWriter::write_to_string(d, d_str);
+
+	CHECK_EQ(d_str, "{\n\"A\": 1,\n&\"B\": 2,\n&\"C\": 3,\n\"D\": 4\n}");
 }
 
 TEST_CASE("[Variant] Writer recursive dictionary") {
@@ -2209,5 +2234,3 @@ TEST_CASE("[Variant] Operator NOT") {
 }
 
 } // namespace TestVariant
-
-#endif // TEST_VARIANT_H

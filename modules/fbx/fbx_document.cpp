@@ -251,18 +251,16 @@ static bool _thread_pool_init_fn(void *user, ufbx_thread_pool_context ctx, const
 	return true;
 }
 
-static bool _thread_pool_run_fn(void *user, ufbx_thread_pool_context ctx, uint32_t group, uint32_t start_index, uint32_t count) {
+static void _thread_pool_run_fn(void *user, ufbx_thread_pool_context ctx, uint32_t group, uint32_t start_index, uint32_t count) {
 	ThreadPoolFBX *pool = (ThreadPoolFBX *)user;
 	ThreadPoolFBX::Group &pool_group = pool->groups[group];
 	pool_group.start_index = start_index;
 	pool_group.task_id = pool->pool->add_native_group_task(_thread_pool_task, &pool_group, (int)count, -1, true, "ufbx");
-	return true;
 }
 
-static bool _thread_pool_wait_fn(void *user, ufbx_thread_pool_context ctx, uint32_t group, uint32_t max_index) {
+static void _thread_pool_wait_fn(void *user, ufbx_thread_pool_context ctx, uint32_t group, uint32_t max_index) {
 	ThreadPoolFBX *pool = (ThreadPoolFBX *)user;
 	pool->pool->wait_for_group_task_completion(pool->groups[group].task_id);
-	return true;
 }
 
 String FBXDocument::_gen_unique_name(HashSet<String> &unique_names, const String &p_name) {
@@ -369,21 +367,25 @@ Error FBXDocument::_parse_nodes(Ref<FBXState> p_state) {
 				// all skin clusters connected to the bone.
 				for (const ufbx_connection &child_conn : fbx_node->element.connections_src) {
 					ufbx_skin_cluster *child_cluster = ufbx_as_skin_cluster(child_conn.dst);
-					if (!child_cluster)
+					if (!child_cluster) {
 						continue;
+					}
 					ufbx_skin_deformer *child_deformer = _find_skin_deformer(child_cluster);
-					if (!child_deformer)
+					if (!child_deformer) {
 						continue;
+					}
 
 					// Found a skin cluster: Now iterate through all the skin clusters of the parent and
 					// try to find one that used by the same deformer.
 					for (const ufbx_connection &parent_conn : fbx_node->parent->element.connections_src) {
 						ufbx_skin_cluster *parent_cluster = ufbx_as_skin_cluster(parent_conn.dst);
-						if (!parent_cluster)
+						if (!parent_cluster) {
 							continue;
+						}
 						ufbx_skin_deformer *parent_deformer = _find_skin_deformer(parent_cluster);
-						if (parent_deformer != child_deformer)
+						if (parent_deformer != child_deformer) {
 							continue;
+						}
 
 						// Success: Found two skin clusters from the same deformer, now we can resolve the
 						// local bind pose from the difference between the two world-space bind poses.
@@ -1389,7 +1391,7 @@ Error FBXDocument::_parse_animations(Ref<FBXState> p_state) {
 
 		for (const ufbx_baked_node &fbx_baked_node : fbx_baked_anim->nodes) {
 			const GLTFNodeIndex node = fbx_baked_node.typed_id;
-			GLTFAnimation::Track &track = animation->get_tracks()[node];
+			GLTFAnimation::NodeTrack &track = animation->get_node_tracks()[node];
 
 			for (const ufbx_baked_vec3 &key : fbx_baked_node.translation_keys) {
 				track.position_track.times.push_back(float(key.time));
@@ -1654,8 +1656,7 @@ void FBXDocument::_generate_scene_node(Ref<FBXState> p_state, const GLTFNodeInde
 	// Add the node we generated and set the owner to the scene root.
 	p_scene_parent->add_child(current_node, true);
 	if (current_node != p_scene_root) {
-		Array args;
-		args.append(p_scene_root);
+		Array args = { p_scene_root };
 		current_node->propagate_call(StringName("set_owner"), args);
 	}
 	current_node->set_transform(fbx_node->transform);
@@ -1742,8 +1743,7 @@ void FBXDocument::_generate_skeleton_bone_node(Ref<FBXState> p_state, const GLTF
 		// Add the node we generated and set the owner to the scene root.
 		p_scene_parent->add_child(current_node, true);
 		if (current_node != p_scene_root) {
-			Array args;
-			args.append(p_scene_root);
+			Array args = { p_scene_root };
 			current_node->propagate_call(StringName("set_owner"), args);
 		}
 		// Do not set transform here. Transform is already applied to our bone.
@@ -1779,8 +1779,8 @@ void FBXDocument::_import_animation(Ref<FBXState> p_state, AnimationPlayer *p_an
 
 	double anim_start_offset = p_trimming ? double(additional_animation_data["time_begin"]) : 0.0;
 
-	for (const KeyValue<int, GLTFAnimation::Track> &track_i : anim->get_tracks()) {
-		const GLTFAnimation::Track &track = track_i.value;
+	for (const KeyValue<int, GLTFAnimation::NodeTrack> &track_i : anim->get_node_tracks()) {
+		const GLTFAnimation::NodeTrack &track = track_i.value;
 		//need to find the path: for skeletons, weight tracks will affect the mesh
 		NodePath node_path;
 		//for skeletons, transform tracks always affect bones

@@ -31,7 +31,17 @@
 #include "polygon_2d.h"
 
 #include "core/math/geometry_2d.h"
+#ifndef NAVIGATION_2D_DISABLED
+#include "scene/resources/2d/navigation_mesh_source_geometry_data_2d.h"
+#include "scene/resources/2d/navigation_polygon.h"
+#include "servers/navigation_server_2d.h"
+#endif // NAVIGATION_2D_DISABLED
 #include "skeleton_2d.h"
+
+#ifndef NAVIGATION_2D_DISABLED
+Callable Polygon2D::_navmesh_source_geometry_parsing_callback;
+RID Polygon2D::_navmesh_source_geometry_parser;
+#endif // NAVIGATION_2D_DISABLED
 
 #ifdef TOOLS_ENABLED
 Dictionary Polygon2D::_edit_get_state() const {
@@ -57,7 +67,9 @@ Point2 Polygon2D::_edit_get_pivot() const {
 bool Polygon2D::_edit_use_pivot() const {
 	return true;
 }
+#endif // TOOLS_ENABLED
 
+#ifdef DEBUG_ENABLED
 Rect2 Polygon2D::_edit_get_rect() const {
 	if (rect_cache_dirty) {
 		int l = polygon.size();
@@ -88,7 +100,7 @@ bool Polygon2D::_edit_is_selected_on_click(const Point2 &p_point, double p_toler
 	}
 	return Geometry2D::is_point_in_polygon(p_point - get_offset(), polygon2d);
 }
-#endif
+#endif // DEBUG_ENABLED
 
 void Polygon2D::_validate_property(PropertyInfo &p_property) const {
 	if (!invert && p_property.name == "invert_border") {
@@ -601,6 +613,38 @@ void Polygon2D::set_skeleton(const NodePath &p_skeleton) {
 NodePath Polygon2D::get_skeleton() const {
 	return skeleton;
 }
+
+#ifndef NAVIGATION_2D_DISABLED
+void Polygon2D::navmesh_parse_init() {
+	ERR_FAIL_NULL(NavigationServer2D::get_singleton());
+	if (!_navmesh_source_geometry_parser.is_valid()) {
+		_navmesh_source_geometry_parsing_callback = callable_mp_static(&Polygon2D::navmesh_parse_source_geometry);
+		_navmesh_source_geometry_parser = NavigationServer2D::get_singleton()->source_geometry_parser_create();
+		NavigationServer2D::get_singleton()->source_geometry_parser_set_callback(_navmesh_source_geometry_parser, _navmesh_source_geometry_parsing_callback);
+	}
+}
+
+void Polygon2D::navmesh_parse_source_geometry(const Ref<NavigationPolygon> &p_navigation_mesh, Ref<NavigationMeshSourceGeometryData2D> p_source_geometry_data, Node *p_node) {
+	Polygon2D *polygon_2d = Object::cast_to<Polygon2D>(p_node);
+
+	if (polygon_2d == nullptr) {
+		return;
+	}
+
+	NavigationPolygon::ParsedGeometryType parsed_geometry_type = p_navigation_mesh->get_parsed_geometry_type();
+
+	if (parsed_geometry_type == NavigationPolygon::PARSED_GEOMETRY_MESH_INSTANCES || parsed_geometry_type == NavigationPolygon::PARSED_GEOMETRY_BOTH) {
+		const Transform2D polygon_2d_xform = p_source_geometry_data->root_node_transform * polygon_2d->get_global_transform();
+
+		Vector<Vector2> shape_outline = polygon_2d->get_polygon();
+		for (int i = 0; i < shape_outline.size(); i++) {
+			shape_outline.write[i] = polygon_2d_xform.xform(shape_outline[i]);
+		}
+
+		p_source_geometry_data->add_obstruction_outline(shape_outline);
+	}
+}
+#endif // NAVIGATION_2D_DISABLED
 
 void Polygon2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_polygon", "polygon"), &Polygon2D::set_polygon);

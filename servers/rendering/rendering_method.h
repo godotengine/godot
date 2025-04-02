@@ -28,19 +28,18 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef RENDERING_METHOD_H
-#define RENDERING_METHOD_H
+#pragma once
 
 #include "servers/rendering/storage/render_scene_buffers.h"
 #include "servers/rendering_server.h"
 
-#ifdef _3D_DISABLED
+#ifdef XR_DISABLED
 // RendererSceneCull::render_camera is empty when 3D is disabled, but
 // it and RenderingMethod::render_camera have a parameter for XRInterface.
 #define XRInterface RefCounted
-#else // 3D enabled
+#else
 #include "servers/xr/xr_interface.h"
-#endif // _3D_DISABLED
+#endif // XR_DISABLED
 
 class RenderingMethod {
 public:
@@ -118,6 +117,11 @@ public:
 	virtual Variant instance_geometry_get_shader_parameter(RID p_instance, const StringName &p_parameter) const = 0;
 	virtual Variant instance_geometry_get_shader_parameter_default_value(RID p_instance, const StringName &p_parameter) const = 0;
 
+	/* PIPELINES */
+
+	virtual void mesh_generate_pipelines(RID p_mesh, bool p_background_compilation) = 0;
+	virtual uint32_t get_pipeline_compilations(RS::PipelineSource p_source) = 0;
+
 	/* SKY API */
 
 	virtual RID sky_allocate() = 0;
@@ -163,6 +167,7 @@ public:
 	virtual void environment_set_bg_energy(RID p_env, float p_multiplier, float p_exposure_value) = 0;
 	virtual void environment_set_canvas_max_layer(RID p_env, int p_max_layer) = 0;
 	virtual void environment_set_ambient_light(RID p_env, const Color &p_color, RS::EnvironmentAmbientSource p_ambient = RS::ENV_AMBIENT_SOURCE_BG, float p_energy = 1.0, float p_sky_contribution = 0.0, RS::EnvironmentReflectionSource p_reflection_source = RS::ENV_REFLECTION_SOURCE_BG) = 0;
+	virtual void environment_set_camera_feed_id(RID p_env, int p_camera_feed_id) = 0;
 
 	virtual RS::EnvironmentBG environment_get_background(RID p_Env) const = 0;
 	virtual RID environment_get_sky(RID p_env) const = 0;
@@ -366,5 +371,3 @@ public:
 	RenderingMethod();
 	virtual ~RenderingMethod();
 };
-
-#endif // RENDERING_METHOD_H

@@ -30,6 +30,9 @@
 
 #include "plist.h"
 
+#include "core/crypto/crypto_core.h"
+#include "core/os/time.h"
+
 PList::PLNodeType PListNode::get_type() const {
 	return data_type;
 }
@@ -380,14 +383,16 @@ void PListNode::store_text(String &p_stream, uint8_t p_indent) const {
 			p_stream += String("\t").repeat(p_indent);
 			p_stream += "<data>\n";
 			p_stream += String("\t").repeat(p_indent);
-			p_stream += data_string + "\n";
+			// Data should be Base64 (i.e. ASCII only).
+			p_stream += String::ascii(data_string) + "\n";
 			p_stream += String("\t").repeat(p_indent);
 			p_stream += "</data>\n";
 		} break;
 		case PList::PLNodeType::PL_NODE_TYPE_DATE: {
 			p_stream += String("\t").repeat(p_indent);
 			p_stream += "<date>";
-			p_stream += data_string;
+			// Data should be ISO 8601 (i.e. ASCII only).
+			p_stream += String::ascii(data_string);
 			p_stream += "</date>\n";
 		} break;
 		case PList::PLNodeType::PL_NODE_TYPE_STRING: {
@@ -450,7 +455,7 @@ PList::PList() {
 PList::PList(const String &p_string) {
 	String err_str;
 	bool ok = load_string(p_string, err_str);
-	ERR_FAIL_COND_MSG(!ok, "PList: " + err_str);
+	ERR_FAIL_COND_MSG(!ok, vformat("PList: %s.", err_str));
 }
 
 uint64_t PList::read_bplist_var_size_int(Ref<FileAccess> p_file, uint8_t p_size) {
@@ -626,7 +631,7 @@ bool PList::load_file(const String &p_filename) {
 	unsigned char magic[8];
 	fb->get_buffer(magic, 8);
 
-	if (String((const char *)magic, 8) == "bplist00") {
+	if (String::ascii(Span((const char *)magic, 8)) == "bplist00") {
 		fb->seek_end(-26);
 		trailer.offset_size = fb->get_8();
 		trailer.ref_size = fb->get_8();
@@ -642,10 +647,8 @@ bool PList::load_file(const String &p_filename) {
 		Vector<uint8_t> array = FileAccess::get_file_as_bytes(p_filename, &err);
 		ERR_FAIL_COND_V(err != OK, false);
 
-		String ret;
-		ret.parse_utf8((const char *)array.ptr(), array.size());
 		String err_str;
-		bool ok = load_string(ret, err_str);
+		bool ok = load_string(String::utf8((const char *)array.ptr(), array.size()), err_str);
 		ERR_FAIL_COND_V_MSG(!ok, false, "PList: " + err_str);
 
 		return true;
@@ -661,12 +664,12 @@ bool PList::load_string(const String &p_string, String &r_err_out) {
 	List<Ref<PListNode>> stack;
 	String key;
 	while (pos >= 0) {
-		int open_token_s = p_string.find("<", pos);
+		int open_token_s = p_string.find_char('<', pos);
 		if (open_token_s == -1) {
 			r_err_out = "Unexpected end of data. No tags found.";
 			return false;
 		}
-		int open_token_e = p_string.find(">", open_token_s);
+		int open_token_e = p_string.find_char('>', open_token_s);
 		pos = open_token_e;
 
 		String token = p_string.substr(open_token_s + 1, open_token_e - open_token_s - 1);
@@ -676,7 +679,7 @@ bool PList::load_string(const String &p_string, String &r_err_out) {
 		}
 		String value;
 		if (token[0] == '?' || token[0] == '!') { // Skip <?xml ... ?> and <!DOCTYPE ... >
-			int end_token_e = p_string.find(">", open_token_s);
+			int end_token_e = p_string.find_char('>', open_token_s);
 			pos = end_token_e;
 			continue;
 		}
@@ -708,7 +711,7 @@ bool PList::load_string(const String &p_string, String &r_err_out) {
 				stack.push_back(dict);
 			} else {
 				// Add root node.
-				if (!root.is_null()) {
+				if (root.is_valid()) {
 					r_err_out = "Root node already set.";
 					return false;
 				}
@@ -740,7 +743,7 @@ bool PList::load_string(const String &p_string, String &r_err_out) {
 				stack.push_back(arr);
 			} else {
 				// Add root node.
-				if (!root.is_null()) {
+				if (root.is_valid()) {
 					r_err_out = "Root node already set.";
 					return false;
 				}
@@ -769,7 +772,7 @@ bool PList::load_string(const String &p_string, String &r_err_out) {
 				r_err_out = vformat("Mismatched <%s> tag.", token);
 				return false;
 			}
-			int end_token_e = p_string.find(">", end_token_s);
+			int end_token_e = p_string.find_char('>', end_token_s);
 			pos = end_token_e;
 			String end_token = p_string.substr(end_token_s + 2, end_token_e - end_token_s - 2);
 			if (end_token != token) {

@@ -30,8 +30,8 @@
 
 #include "node_dock.h"
 
+#include "core/io/config_file.h"
 #include "editor/connections_dialog.h"
-#include "editor/editor_node.h"
 #include "editor/themes/editor_scale.h"
 
 void NodeDock::show_groups() {
@@ -48,17 +48,40 @@ void NodeDock::show_connections() {
 	connections->show();
 }
 
+void NodeDock::_save_layout_to_config(Ref<ConfigFile> p_layout, const String &p_section) const {
+	p_layout->set_value(p_section, "dock_node_current_tab", int(groups_button->is_pressed()));
+}
+
+void NodeDock::_load_layout_from_config(Ref<ConfigFile> p_layout, const String &p_section) {
+	const int current_tab = p_layout->get_value(p_section, "dock_node_current_tab", 0);
+	if (select_a_node->is_visible()) {
+		if (current_tab == 0) {
+			groups_button->set_pressed_no_signal(false);
+			connections_button->set_pressed_no_signal(true);
+		} else if (current_tab == 1) {
+			groups_button->set_pressed_no_signal(true);
+			connections_button->set_pressed_no_signal(false);
+		}
+	} else if (current_tab == 0) {
+		show_connections();
+	} else if (current_tab == 1) {
+		show_groups();
+	}
+}
+
 void NodeDock::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE:
 		case NOTIFICATION_THEME_CHANGED: {
-			connections_button->set_icon(get_editor_theme_icon(SNAME("Signals")));
-			groups_button->set_icon(get_editor_theme_icon(SNAME("Groups")));
+			connections_button->set_button_icon(get_editor_theme_icon(SNAME("Signals")));
+			groups_button->set_button_icon(get_editor_theme_icon(SNAME("Groups")));
 		} break;
 	}
 }
 
-NodeDock *NodeDock::singleton = nullptr;
+void NodeDock::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("_save_layout_to_config"), &NodeDock::_save_layout_to_config);
+	ClassDB::bind_method(D_METHOD("_load_layout_from_config"), &NodeDock::_load_layout_from_config);
+}
 
 void NodeDock::update_lists() {
 	connections->update_tree();
@@ -94,8 +117,8 @@ NodeDock::NodeDock() {
 	mode_hb->hide();
 
 	connections_button = memnew(Button);
-	connections_button->set_theme_type_variation("FlatButton");
-	connections_button->set_text(TTR("Signals"));
+	connections_button->set_theme_type_variation(SceneStringName(FlatButton));
+	connections_button->set_text(TTRC("Signals"));
 	connections_button->set_toggle_mode(true);
 	connections_button->set_pressed(true);
 	connections_button->set_h_size_flags(SIZE_EXPAND_FILL);
@@ -104,8 +127,8 @@ NodeDock::NodeDock() {
 	connections_button->connect(SceneStringName(pressed), callable_mp(this, &NodeDock::show_connections));
 
 	groups_button = memnew(Button);
-	groups_button->set_theme_type_variation("FlatButton");
-	groups_button->set_text(TTR("Groups"));
+	groups_button->set_theme_type_variation(SceneStringName(FlatButton));
+	groups_button->set_text(TTRC("Groups"));
 	groups_button->set_toggle_mode(true);
 	groups_button->set_pressed(false);
 	groups_button->set_h_size_flags(SIZE_EXPAND_FILL);
@@ -124,7 +147,7 @@ NodeDock::NodeDock() {
 	groups->hide();
 
 	select_a_node = memnew(Label);
-	select_a_node->set_text(TTR("Select a single node to edit its signals and groups."));
+	select_a_node->set_text(TTRC("Select a single node to edit its signals and groups."));
 	select_a_node->set_custom_minimum_size(Size2(100 * EDSCALE, 0));
 	select_a_node->set_v_size_flags(SIZE_EXPAND_FILL);
 	select_a_node->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);

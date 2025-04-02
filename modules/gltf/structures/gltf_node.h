@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef GLTF_NODE_H
-#define GLTF_NODE_H
+#pragma once
 
 #include "../gltf_defines.h"
 
@@ -103,7 +102,8 @@ public:
 	void set_light(GLTFLightIndex p_light);
 
 	Variant get_additional_data(const StringName &p_extension_name);
+	bool has_additional_data(const StringName &p_extension_name);
 	void set_additional_data(const StringName &p_extension_name, Variant p_additional_data);
-};
 
-#endif // GLTF_NODE_H
+	NodePath get_scene_node_path(Ref<GLTFState> p_state, bool p_handle_skeletons = true);
+};

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef IMAGE_COMPRESS_BASISU_H
-#define IMAGE_COMPRESS_BASISU_H
+#pragma once
 
 #include "core/io/image.h"
 
@@ -39,15 +38,22 @@ enum BasisDecompressFormat {
 	BASIS_DECOMPRESS_RGBA,
 	BASIS_DECOMPRESS_RG_AS_RA,
 	BASIS_DECOMPRESS_R,
+	BASIS_DECOMPRESS_HDR_RGB,
+	BASIS_DECOMPRESS_MAX
 };
 
 void basis_universal_init();
 
 #ifdef TOOLS_ENABLED
+struct BasisRGBAF {
+	uint32_t r;
+	uint32_t g;
+	uint32_t b;
+	uint32_t a;
+};
+
 Vector<uint8_t> basis_universal_packer(const Ref<Image> &p_image, Image::UsedChannels p_channels);
 #endif
 
 Ref<Image> basis_universal_unpacker_ptr(const uint8_t *p_data, int p_size);
 Ref<Image> basis_universal_unpacker(const Vector<uint8_t> &p_buffer);
-
-#endif // IMAGE_COMPRESS_BASISU_H

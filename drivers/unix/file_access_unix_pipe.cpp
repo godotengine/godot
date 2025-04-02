@@ -37,6 +37,7 @@
 
 #include <errno.h>
 #include <fcntl.h>
+#include <sys/ioctl.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
@@ -67,10 +68,12 @@ Error FileAccessUnixPipe::open_internal(const String &p_path, int p_mode_flags) 
 	ERR_FAIL_COND_V_MSG(fd[0] >= 0 || fd[1] >= 0, ERR_ALREADY_IN_USE, "Pipe is already in use.");
 
 	path = String("/tmp/") + p_path.replace("pipe://", "").replace("/", "_");
+	const CharString path_utf8 = path.utf8();
+
 	struct stat st = {};
-	int err = stat(path.utf8().get_data(), &st);
+	int err = stat(path_utf8.get_data(), &st);
 	if (err) {
-		if (mkfifo(path.utf8().get_data(), 0666) != 0) {
+		if (mkfifo(path_utf8.get_data(), 0600) != 0) {
 			last_error = ERR_FILE_CANT_OPEN;
 			return last_error;
 		}
@@ -79,7 +82,7 @@ Error FileAccessUnixPipe::open_internal(const String &p_path, int p_mode_flags) 
 		ERR_FAIL_COND_V_MSG(!S_ISFIFO(st.st_mode), ERR_ALREADY_IN_USE, "Pipe name is already used by file.");
 	}
 
-	int f = ::open(path.utf8().get_data(), O_RDWR | O_CLOEXEC | O_NONBLOCK);
+	int f = ::open(path_utf8.get_data(), O_RDWR | O_CLOEXEC | O_NONBLOCK);
 	if (f < 0) {
 		switch (errno) {
 			case ENOENT: {
@@ -130,6 +133,14 @@ String FileAccessUnixPipe::get_path_absolute() const {
 	return path_src;
 }
 
+uint64_t FileAccessUnixPipe::get_length() const {
+	ERR_FAIL_COND_V_MSG(fd[0] < 0, 0, "Pipe must be opened before use.");
+
+	int buf_rem = 0;
+	ERR_FAIL_COND_V(ioctl(fd[0], FIONREAD, &buf_rem) != 0, 0);
+	return buf_rem;
+}
+
 uint64_t FileAccessUnixPipe::get_buffer(uint8_t *p_dst, uint64_t p_length) const {
 	ERR_FAIL_COND_V_MSG(fd[0] < 0, -1, "Pipe must be opened before use.");
 	ERR_FAIL_COND_V(!p_dst && p_length > 0, -1);
@@ -150,14 +161,16 @@ Error FileAccessUnixPipe::get_error() const {
 	return last_error;
 }
 
-void FileAccessUnixPipe::store_buffer(const uint8_t *p_src, uint64_t p_length) {
-	ERR_FAIL_COND_MSG(fd[1] < 0, "Pipe must be opened before use.");
-	ERR_FAIL_COND(!p_src && p_length > 0);
+bool FileAccessUnixPipe::store_buffer(const uint8_t *p_src, uint64_t p_length) {
+	ERR_FAIL_COND_V_MSG(fd[1] < 0, false, "Pipe must be opened before use.");
+	ERR_FAIL_COND_V(!p_src && p_length > 0, false);
 
 	if (::write(fd[1], p_src, p_length) != (ssize_t)p_length) {
 		last_error = ERR_FILE_CANT_WRITE;
+		return false;
 	} else {
 		last_error = OK;
+		return true;
 	}
 }
 

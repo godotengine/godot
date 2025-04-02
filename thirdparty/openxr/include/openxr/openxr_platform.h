@@ -356,6 +356,43 @@ XRAPI_ATTR XrResult XRAPI_CALL xrGetD3D12GraphicsRequirementsKHR(
 #endif /* !XR_NO_PROTOTYPES */
 #endif /* XR_USE_GRAPHICS_API_D3D12 */
 
+#ifdef XR_USE_GRAPHICS_API_METAL
+
+// XR_KHR_metal_enable is a preprocessor guard. Do not pass it to API calls.
+#define XR_KHR_metal_enable 1
+#define XR_KHR_metal_enable_SPEC_VERSION  1
+#define XR_KHR_METAL_ENABLE_EXTENSION_NAME "XR_KHR_metal_enable"
+// XrGraphicsBindingMetalKHR extends XrSessionCreateInfo
+typedef struct XrGraphicsBindingMetalKHR {
+    XrStructureType             type;
+    const void* XR_MAY_ALIAS    next;
+    void* XR_MAY_ALIAS          commandQueue;
+} XrGraphicsBindingMetalKHR;
+
+typedef struct XrSwapchainImageMetalKHR {
+    XrStructureType             type;
+    const void* XR_MAY_ALIAS    next;
+    void* XR_MAY_ALIAS          texture;
+} XrSwapchainImageMetalKHR;
+
+typedef struct XrGraphicsRequirementsMetalKHR {
+    XrStructureType       type;
+    void* XR_MAY_ALIAS    next;
+    void* XR_MAY_ALIAS    metalDevice;
+} XrGraphicsRequirementsMetalKHR;
+
+typedef XrResult (XRAPI_PTR *PFN_xrGetMetalGraphicsRequirementsKHR)(XrInstance instance, XrSystemId systemId, XrGraphicsRequirementsMetalKHR* graphicsRequirements);
+
+#ifndef XR_NO_PROTOTYPES
+#ifdef XR_EXTENSION_PROTOTYPES
+XRAPI_ATTR XrResult XRAPI_CALL xrGetMetalGraphicsRequirementsKHR(
+    XrInstance                                  instance,
+    XrSystemId                                  systemId,
+    XrGraphicsRequirementsMetalKHR*             graphicsRequirements);
+#endif /* XR_EXTENSION_PROTOTYPES */
+#endif /* !XR_NO_PROTOTYPES */
+#endif /* XR_USE_GRAPHICS_API_METAL */
+
 #ifdef XR_USE_PLATFORM_WIN32
 
 // XR_KHR_win32_convert_performance_counter_time is a preprocessor guard. Do not pass it to API calls.

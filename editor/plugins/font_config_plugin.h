@@ -28,10 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef FONT_CONFIG_PLUGIN_H
-#define FONT_CONFIG_PLUGIN_H
+#pragma once
 
-#include "core/io/marshalls.h"
 #include "editor/editor_properties.h"
 #include "editor/editor_properties_array_dict.h"
 #include "editor/plugins/editor_plugin.h"
@@ -50,8 +48,6 @@ protected:
 public:
 	void set_dict(const Dictionary &p_dict);
 	Dictionary get_dict();
-
-	EditorPropertyFontMetaObject(){};
 };
 
 /*************************************************************************/
@@ -74,8 +70,6 @@ public:
 
 	void set_defaults(const Dictionary &p_dict);
 	Dictionary get_defaults();
-
-	EditorPropertyFontOTObject(){};
 };
 
 /*************************************************************************/
@@ -103,7 +97,7 @@ class EditorPropertyFontMetaOverride : public EditorProperty {
 
 protected:
 	void _notification(int p_what);
-	static void _bind_methods(){};
+	static void _bind_methods() {}
 
 	void _edit_pressed();
 	void _page_changed(int p_page);
@@ -138,7 +132,7 @@ class EditorPropertyOTVariation : public EditorProperty {
 	EditorPaginator *paginator = nullptr;
 
 protected:
-	static void _bind_methods(){};
+	static void _bind_methods() {}
 
 	void _edit_pressed();
 	void _page_changed(int p_page);
@@ -187,7 +181,7 @@ class EditorPropertyOTFeatures : public EditorProperty {
 
 protected:
 	void _notification(int p_what);
-	static void _bind_methods(){};
+	static void _bind_methods() {}
 
 	void _edit_pressed();
 	void _page_changed(int p_page);
@@ -230,8 +224,6 @@ public:
 	virtual Size2 get_minimum_size() const override;
 
 	void set_data(const Ref<Font> &p_f);
-
-	FontPreview();
 };
 
 /*************************************************************************/
@@ -256,7 +248,7 @@ protected:
 	virtual void _add_element() override;
 
 	void _add_font(int p_option);
-	static void _bind_methods(){};
+	static void _bind_methods() {}
 
 public:
 	EditorPropertyFontNamesArray();
@@ -280,7 +272,5 @@ class FontEditorPlugin : public EditorPlugin {
 public:
 	FontEditorPlugin();
 
-	virtual String get_name() const override { return "Font"; }
+	virtual String get_plugin_name() const override { return "Font"; }
 };
-
-#endif // FONT_CONFIG_PLUGIN_H

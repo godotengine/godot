@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef TEST_DICTIONARY_H
-#define TEST_DICTIONARY_H
+#pragma once
 
 #include "core/variant/typed_dictionary.h"
 #include "tests/test_macros.h"
@@ -93,6 +92,27 @@ TEST_CASE("[Dictionary] Assignment using bracket notation ([])") {
 	map.make_read_only();
 	CHECK(int(map["This key does not exist"].get_type()) == Variant::NIL);
 	CHECK(map.size() == length);
+}
+
+TEST_CASE("[Dictionary] List init") {
+	Dictionary dict{
+		{ 0, "int" },
+		{ "packed_string_array", PackedStringArray({ "array", "of", "values" }) },
+		{ "key", Dictionary({ { "nested", 200 } }) },
+		{ Vector2(), "v2" },
+	};
+	CHECK(dict.size() == 4);
+	CHECK(dict[0] == "int");
+	CHECK(PackedStringArray(dict["packed_string_array"])[2] == "values");
+	CHECK(Dictionary(dict["key"])["nested"] == Variant(200));
+	CHECK(dict[Vector2()] == "v2");
+
+	TypedDictionary<double, double> tdict{
+		{ 0.0, 1.0 },
+		{ 5.0, 2.0 },
+	};
+	CHECK_EQ(tdict[0.0], Variant(1.0));
+	CHECK_EQ(tdict[5.0], Variant(2.0));
 }
 
 TEST_CASE("[Dictionary] get_key_lists()") {
@@ -525,11 +545,7 @@ TEST_CASE("[Dictionary] Order and find") {
 	d[12] = "twelve";
 	d["4"] = "four";
 
-	Array keys;
-	keys.append(4);
-	keys.append(8);
-	keys.append(12);
-	keys.append("4");
+	Array keys = { 4, 8, 12, "4" };
 
 	CHECK_EQ(d.keys(), keys);
 	CHECK_EQ(d.find_key("four"), Variant(4));
@@ -573,6 +589,21 @@ TEST_CASE("[Dictionary] Typed copying") {
 	d6.clear();
 }
 
-} // namespace TestDictionary
+TEST_CASE("[Dictionary] Iteration") {
+	Dictionary a1 = build_dictionary(1, 2, 3, 4, 5, 6);
+	Dictionary a2 = build_dictionary(1, 2, 3, 4, 5, 6);
 
-#endif // TEST_DICTIONARY_H
+	int idx = 0;
+
+	for (const KeyValue<Variant, Variant> &kv : (const Dictionary &)a1) {
+		CHECK_EQ(int(a2[kv.key]), int(kv.value));
+		idx++;
+	}
+
+	CHECK_EQ(idx, a1.size());
+
+	a1.clear();
+	a2.clear();
+}
+
+} // namespace TestDictionary

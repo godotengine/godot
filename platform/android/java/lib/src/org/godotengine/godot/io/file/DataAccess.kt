@@ -132,6 +132,24 @@ internal abstract class DataAccess {
 			}
 		}
 
+		fun fileLastAccessed(storageScope: StorageScope, context: Context, path: String): Long {
+			return when(storageScope) {
+				StorageScope.APP -> FileData.fileLastAccessed(path)
+				StorageScope.ASSETS -> AssetData.fileLastAccessed(path)
+				StorageScope.SHARED -> MediaStoreData.fileLastAccessed(context, path)
+				StorageScope.UNKNOWN -> 0L
+			}
+		}
+
+		fun fileSize(storageScope: StorageScope, context: Context, path: String): Long {
+			return when(storageScope) {
+				StorageScope.APP -> FileData.fileSize(path)
+				StorageScope.ASSETS -> AssetData.fileSize(path)
+				StorageScope.SHARED -> MediaStoreData.fileSize(context, path)
+				StorageScope.UNKNOWN -> -1L
+			}
+		}
+
 		fun removeFile(storageScope: StorageScope, context: Context, path: String): Boolean {
 			return when(storageScope) {
 				StorageScope.APP -> FileData.delete(path)
@@ -169,7 +187,7 @@ internal abstract class DataAccess {
 	abstract fun position(): Long
 	abstract fun size(): Long
 	abstract fun read(buffer: ByteBuffer): Int
-	abstract fun write(buffer: ByteBuffer)
+	abstract fun write(buffer: ByteBuffer): Boolean
 
 	fun seekFromEnd(positionFromEnd: Long) {
 		val positionFromBeginning = max(0, size() - positionFromEnd)
@@ -254,14 +272,16 @@ internal abstract class DataAccess {
 			}
 		}
 
-		override fun write(buffer: ByteBuffer) {
+		override fun write(buffer: ByteBuffer): Boolean {
 			try {
 				val writtenBytes = fileChannel.write(buffer)
 				if (writtenBytes > 0) {
 					endOfFile = false
 				}
+				return true
 			} catch (e: IOException) {
 				Log.w(TAG, "Exception while writing to file $filePath.", e)
+				return false
 			}
 		}
 	}

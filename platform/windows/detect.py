@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 
 import methods
 from methods import print_error, print_warning
-from platform_methods import detect_arch
+from platform_methods import detect_arch, validate_arch
 
 if TYPE_CHECKING:
     from SCons.Script.SConscript import SConsEnvironment
@@ -47,14 +47,6 @@ def try_cmd(test, prefix, arch, check_clang=False):
 def can_build():
     if os.name == "nt":
         # Building natively on Windows
-        # If VCINSTALLDIR is set in the OS environ, use traditional Godot logic to set up MSVC
-        if os.getenv("VCINSTALLDIR"):  # MSVC, manual setup
-            return True
-
-        # Otherwise, let SCons find MSVC if installed, or else MinGW.
-        # Since we're just returning True here, if there's no compiler
-        # installed, we'll get errors when it tries to build with the
-        # null compiler.
         return True
 
     if os.name == "posix":
@@ -68,23 +60,23 @@ def can_build():
 
 
 def get_mingw_bin_prefix(prefix, arch):
-    if not prefix:
-        mingw_bin_prefix = ""
-    elif prefix[-1] != "/":
-        mingw_bin_prefix = prefix + "/bin/"
-    else:
-        mingw_bin_prefix = prefix + "bin/"
+    bin_prefix = (os.path.normpath(os.path.join(prefix, "bin")) + os.sep) if prefix else ""
+    ARCH_PREFIXES = {
+        "x86_64": "x86_64-w64-mingw32-",
+        "x86_32": "i686-w64-mingw32-",
+        "arm32": "armv7-w64-mingw32-",
+        "arm64": "aarch64-w64-mingw32-",
+    }
+    arch_prefix = ARCH_PREFIXES[arch] if arch else ""
+    return bin_prefix + arch_prefix
 
-    if arch == "x86_64":
-        mingw_bin_prefix += "x86_64-w64-mingw32-"
-    elif arch == "x86_32":
-        mingw_bin_prefix += "i686-w64-mingw32-"
-    elif arch == "arm32":
-        mingw_bin_prefix += "armv7-w64-mingw32-"
-    elif arch == "arm64":
-        mingw_bin_prefix += "aarch64-w64-mingw32-"
 
-    return mingw_bin_prefix
+def get_detected(env: "SConsEnvironment", tool: str) -> str:
+    checks = [
+        get_mingw_bin_prefix(env["mingw_prefix"], env["arch"]) + tool,
+        get_mingw_bin_prefix(env["mingw_prefix"], "") + tool,
+    ]
+    return str(env.Detect(checks))
 
 
 def detect_build_env_arch():
@@ -155,6 +147,18 @@ def detect_build_env_arch():
     return ""
 
 
+def get_tools(env: "SConsEnvironment"):
+    from SCons.Tool.MSCommon import msvc_exists
+
+    if os.name != "nt" or env.get("use_mingw") or not msvc_exists():
+        return ["mingw"]
+    else:
+        msvc_arch_aliases = {"x86_32": "x86", "arm32": "arm"}
+        env["TARGET_ARCH"] = msvc_arch_aliases.get(env["arch"], env["arch"])
+        env["MSVC_VERSION"] = env["MSVS_VERSION"] = env.get("msvc_version")
+        return ["msvc", "mslink", "mslib"]
+
+
 def get_opts():
     from SCons.Variables import BoolVariable, EnumVariable
 
@@ -187,11 +191,7 @@ def get_opts():
             "0x0601",
         ),
         EnumVariable("windows_subsystem", "Windows subsystem", "gui", ("gui", "console")),
-        (
-            "msvc_version",
-            "MSVC version to use. Ignored if VCINSTALLDIR is set in shell env.",
-            None,
-        ),
+        ("msvc_version", "MSVC version to use. Handled automatically by SCons if omitted.", ""),
         BoolVariable("use_mingw", "Use the Mingw compiler, even if MSVC is installed.", False),
         BoolVariable("use_llvm", "Use the LLVM compiler", False),
         BoolVariable("use_static_cpp", "Link MinGW/MSVC C++ runtime libraries statically", True),
@@ -245,126 +245,7 @@ def get_flags():
     }
 
 
-def build_res_file(target, source, env: "SConsEnvironment"):
-    arch_aliases = {
-        "x86_32": "pe-i386",
-        "x86_64": "pe-x86-64",
-        "arm32": "armv7-w64-mingw32",
-        "arm64": "aarch64-w64-mingw32",
-    }
-    cmdbase = "windres --include-dir . --target=" + arch_aliases[env["arch"]]
-
-    mingw_bin_prefix = get_mingw_bin_prefix(env["mingw_prefix"], env["arch"])
-
-    for x in range(len(source)):
-        ok = True
-        # Try prefixed executable (MinGW on Linux).
-        cmd = mingw_bin_prefix + cmdbase + " -i " + str(source[x]) + " -o " + str(target[x])
-        try:
-            out = subprocess.Popen(cmd, shell=True, stderr=subprocess.PIPE).communicate()
-            if len(out[1]):
-                ok = False
-        except Exception:
-            ok = False
-
-        # Try generic executable (MSYS2).
-        if not ok:
-            cmd = cmdbase + " -i " + str(source[x]) + " -o " + str(target[x])
-            try:
-                out = subprocess.Popen(cmd, shell=True, stderr=subprocess.PIPE).communicate()
-                if len(out[1]):
-                    return -1
-            except Exception:
-                return -1
-
-    return 0
-
-
-def setup_msvc_manual(env: "SConsEnvironment"):
-    """Running from VCVARS environment"""
-
-    env_arch = detect_build_env_arch()
-    if env["arch"] != env_arch:
-        print_error(
-            "Arch argument (%s) is not matching Native/Cross Compile Tools Prompt/Developer Console (or Visual Studio settings) that is being used to run SCons (%s).\n"
-            "Run SCons again without arch argument (example: scons p=windows) and SCons will attempt to detect what MSVC compiler will be executed and inform you."
-            % (env["arch"], env_arch)
-        )
-        sys.exit(255)
-
-    print("Using VCVARS-determined MSVC, arch %s" % (env_arch))
-
-
-def setup_msvc_auto(env: "SConsEnvironment"):
-    """Set up MSVC using SCons's auto-detection logic"""
-
-    # If MSVC_VERSION is set by SCons, we know MSVC is installed.
-    # But we may want a different version or target arch.
-
-    # Valid architectures for MSVC's TARGET_ARCH:
-    # ['amd64', 'emt64', 'i386', 'i486', 'i586', 'i686', 'ia64', 'itanium', 'x86', 'x86_64', 'arm', 'arm64', 'aarch64']
-    # Our x86_64 and arm64 are the same, and we need to map the 32-bit
-    # architectures to other names since MSVC isn't as explicit.
-    # The rest we don't need to worry about because they are
-    # aliases or aren't supported by Godot (itanium & ia64).
-    msvc_arch_aliases = {"x86_32": "x86", "arm32": "arm"}
-    if env["arch"] in msvc_arch_aliases.keys():
-        env["TARGET_ARCH"] = msvc_arch_aliases[env["arch"]]
-    else:
-        env["TARGET_ARCH"] = env["arch"]
-
-    # The env may have already been set up with default MSVC tools, so
-    # reset a few things so we can set it up with the tools we want.
-    # (Ideally we'd decide on the tool config before configuring any
-    # environment, and just set the env up once, but this function runs
-    # on an existing env so this is the simplest way.)
-    env["MSVC_SETUP_RUN"] = False  # Need to set this to re-run the tool
-    env["MSVS_VERSION"] = None
-    env["MSVC_VERSION"] = None
-
-    if "msvc_version" in env:
-        env["MSVC_VERSION"] = env["msvc_version"]
-    env.Tool("msvc")
-    env.Tool("mssdk")  # we want the MS SDK
-
-    # Re-add potentially overwritten flags.
-    env.AppendUnique(CCFLAGS=env.get("ccflags", "").split())
-    env.AppendUnique(CXXFLAGS=env.get("cxxflags", "").split())
-    env.AppendUnique(CFLAGS=env.get("cflags", "").split())
-    env.AppendUnique(RCFLAGS=env.get("rcflags", "").split())
-
-    # Note: actual compiler version can be found in env['MSVC_VERSION'], e.g. "14.1" for VS2015
-    print("Using SCons-detected MSVC version %s, arch %s" % (env["MSVC_VERSION"], env["arch"]))
-
-
-def setup_mingw(env: "SConsEnvironment"):
-    """Set up env for use with mingw"""
-
-    env_arch = detect_build_env_arch()
-    if os.getenv("MSYSTEM") == "MSYS":
-        print_error(
-            "Running from base MSYS2 console/environment, use target specific environment instead (e.g., mingw32, mingw64, clang32, clang64)."
-        )
-        sys.exit(255)
-
-    if env_arch != "" and env["arch"] != env_arch:
-        print_error(
-            "Arch argument (%s) is not matching MSYS2 console/environment that is being used to run SCons (%s).\n"
-            "Run SCons again without arch argument (example: scons p=windows) and SCons will attempt to detect what MSYS2 compiler will be executed and inform you."
-            % (env["arch"], env_arch)
-        )
-        sys.exit(255)
-
-    if not try_cmd("gcc --version", env["mingw_prefix"], env["arch"]) and not try_cmd(
-        "clang --version", env["mingw_prefix"], env["arch"]
-    ):
-        print_error("No valid compilers found, use MINGW_PREFIX environment variable to set MinGW path.")
-        sys.exit(255)
-
-    print("Using MinGW, arch %s" % (env["arch"]))
-
-
-def configure_msvc(env: "SConsEnvironment", vcvars_msvc_config):
+def configure_msvc(env: "SConsEnvironment"):
     """Configure env to work with MSVC"""
 
     ## Build type
@@ -390,13 +271,16 @@ def configure_msvc(env: "SConsEnvironment", vcvars_msvc_config):
         env.AppendUnique(CPPDEFINES=["R128_STDC_ONLY"])
         env.extra_suffix = ".llvm" + env.extra_suffix
 
-    env["MAXLINELENGTH"] = 8192  # Windows Vista and beyond, so always applicable.
+        # Ensure intellisense tools like `compile_commands.json` play nice with MSVC syntax.
+        env["CPPDEFPREFIX"] = "-D"
+        env["INCPREFIX"] = "-I"
+        env.AppendUnique(CPPDEFINES=[("alloca", "_alloca")])
 
     if env["silence_msvc"] and not env.GetOption("clean"):
         from tempfile import mkstemp
 
         # Ensure we have a location to write captured output to, in case of false positives.
-        capture_path = methods.base_folder_path + "platform/windows/msvc_capture.log"
+        capture_path = methods.base_folder / "platform" / "windows" / "msvc_capture.log"
         with open(capture_path, "wt", encoding="utf-8"):
             pass
 
@@ -479,15 +363,7 @@ def configure_msvc(env: "SConsEnvironment", vcvars_msvc_config):
     # for notes on why this shouldn't be enabled for gcc
     env.AppendUnique(CCFLAGS=["/bigobj"])
 
-    if vcvars_msvc_config:  # should be automatic if SCons found it
-        if os.getenv("WindowsSdkDir") is not None:
-            env.Prepend(CPPPATH=[str(os.getenv("WindowsSdkDir")) + "/Include"])
-        else:
-            print_warning("Missing environment variable: WindowsSdkDir")
-
-    if int(env["target_win_version"], 16) < 0x0601:
-        print_error("`target_win_version` should be 0x0601 or higher (Windows 7).")
-        sys.exit(255)
+    validate_win_version(env)
 
     env.AppendUnique(
         CPPDEFINES=[
@@ -551,15 +427,7 @@ def configure_msvc(env: "SConsEnvironment", vcvars_msvc_config):
             LIBS += ["vulkan"]
 
     if env["d3d12"]:
-        # Check whether we have d3d12 dependencies installed.
-        if not os.path.exists(env["mesa_libs"]):
-            print_error(
-                "The Direct3D 12 rendering driver requires dependencies to be installed.\n"
-                "You can install them by running `python misc\\scripts\\install_d3d12_sdk_windows.py`.\n"
-                "See the documentation for more information:\n\t"
-                "https://docs.godotengine.org/en/latest/contributing/development/compiling/compiling_for_windows.html"
-            )
-            sys.exit(255)
+        check_d3d12_installed(env)
 
         env.AppendUnique(CPPDEFINES=["D3D12_ENABLED", "RD_ENABLED"])
         LIBS += ["dxgi", "dxguid"]
@@ -603,12 +471,6 @@ def configure_msvc(env: "SConsEnvironment", vcvars_msvc_config):
 
     env.Append(LINKFLAGS=[p + env["LIBSUFFIX"] for p in LIBS])
 
-    if vcvars_msvc_config:
-        if os.getenv("WindowsSdkDir") is not None:
-            env.Append(LIBPATH=[str(os.getenv("WindowsSdkDir")) + "/Lib"])
-        else:
-            print_warning("Missing environment variable: WindowsSdkDir")
-
     ## LTO
 
     if env["lto"] == "auto":  # No LTO by default for MSVC, doesn't help.
@@ -620,26 +482,16 @@ def configure_msvc(env: "SConsEnvironment", vcvars_msvc_config):
                 print("ThinLTO is only compatible with LLVM, use `use_llvm=yes` or `lto=full`.")
                 sys.exit(255)
 
-            env.Append(CCFLAGS=["-flto=thin"])
-            env.Append(LINKFLAGS=["-flto=thin"])
+            env.AppendUnique(CCFLAGS=["-flto=thin"])
         elif env["use_llvm"]:
-            env.Append(CCFLAGS=["-flto"])
-            env.Append(LINKFLAGS=["-flto"])
+            env.AppendUnique(CCFLAGS=["-flto"])
         else:
             env.AppendUnique(CCFLAGS=["/GL"])
-            env.AppendUnique(ARFLAGS=["/LTCG"])
-            if env["progress"]:
-                env.AppendUnique(LINKFLAGS=["/LTCG:STATUS"])
-            else:
-                env.AppendUnique(LINKFLAGS=["/LTCG"])
-
-    if vcvars_msvc_config:
-        env.Prepend(CPPPATH=[p for p in str(os.getenv("INCLUDE")).split(";")])
-        env.Append(LIBPATH=[p for p in str(os.getenv("LIB")).split(";")])
-
-    # Incremental linking fix
-    env["BUILDERS"]["ProgramOriginal"] = env["BUILDERS"]["Program"]
-    env["BUILDERS"]["Program"] = methods.precious_program
+        if env["progress"]:
+            env.AppendUnique(LINKFLAGS=["/LTCG:STATUS"])
+        else:
+            env.AppendUnique(LINKFLAGS=["/LTCG"])
+        env.AppendUnique(ARFLAGS=["/LTCG"])
 
     env.Append(LINKFLAGS=["/NATVIS:platform\\windows\\godot.natvis"])
 
@@ -666,7 +518,7 @@ def get_ar_version(env):
         print_warning("Couldn't check version of `ar`.")
         return ret
 
-    match = re.search(r"GNU ar \(GNU Binutils\) (\d+)\.(\d+)(?:\.(\d+))?", output)
+    match = re.search(r"GNU ar(?: \(GNU Binutils\)| version) (\d+)\.(\d+)(?:\.(\d+))?", output)
     if match:
         ret["major"] = int(match[1])
         ret["minor"] = int(match[2])
@@ -704,10 +556,54 @@ def get_is_ar_thin_supported(env):
     return False
 
 
+WINPATHSEP_RE = re.compile(r"\\([^\"'\\]|$)")
+
+
+def tempfile_arg_esc_func(arg):
+    from SCons.Subst import quote_spaces
+
+    arg = quote_spaces(arg)
+    # GCC requires double Windows slashes, let's use UNIX separator
+    return WINPATHSEP_RE.sub(r"/\1", arg)
+
+
 def configure_mingw(env: "SConsEnvironment"):
+    if os.getenv("MSYSTEM") == "MSYS":
+        print_error(
+            "Running from base MSYS2 console/environment, use target specific environment instead (e.g., mingw32, mingw64, clang32, clang64)."
+        )
+        sys.exit(255)
+
+    if (env_arch := detect_build_env_arch()) and env["arch"] != env_arch:
+        print_error(
+            f"Arch argument ({env['arch']}) is not matching MSYS2 console/environment that is being used to run SCons ({env_arch}).\n"
+            "Run SCons again without arch argument (example: scons p=windows) and SCons will attempt to detect what MSYS2 compiler will be executed and inform you."
+        )
+        sys.exit(255)
+
+    if not try_cmd("gcc --version", env["mingw_prefix"], env["arch"]) and not try_cmd(
+        "clang --version", env["mingw_prefix"], env["arch"]
+    ):
+        print_error("No valid compilers found, use MINGW_PREFIX environment variable to set MinGW path.")
+        sys.exit(255)
+
     # Workaround for MinGW. See:
     # https://www.scons.org/wiki/LongCmdLinesOnWin32
     env.use_windows_spawn_fix()
+
+    # HACK: For some reason, Windows-native shells have their MinGW tools
+    # frequently fail as a result of parsing path separators incorrectly.
+    # For some other reason, this issue is circumvented entirely if the
+    # `mingw_prefix` bin is prepended to PATH.
+    if os.sep == "\\":
+        env.PrependENVPath("PATH", os.path.join(env["mingw_prefix"], "bin"))
+
+    # In case the command line to AR is too long, use a response file.
+    env["ARCOM_ORIG"] = env["ARCOM"]
+    env["ARCOM"] = "${TEMPFILE('$ARCOM_ORIG', '$ARCOMSTR')}"
+    env["TEMPFILESUFFIX"] = ".rsp"
+    if os.name == "nt":
+        env["TEMPFILEARGESCFUNC"] = tempfile_arg_esc_func
 
     ## Build type
 
@@ -721,11 +617,7 @@ def configure_mingw(env: "SConsEnvironment"):
         print("Detected GCC to be a wrapper for Clang.")
         env["use_llvm"] = True
 
-    # TODO: Re-evaluate the need for this / streamline with common config.
-    if env["target"] == "template_release":
-        if env["arch"] != "arm64":
-            env.Append(CCFLAGS=["-msse2"])
-    elif env.dev_build:
+    if env.dev_build:
         # Allow big objects. It's supposed not to have drawbacks but seems to break
         # GCC LTO, so enabling for debug builds only (which are not built with LTO
         # and are the only ones with too big objects).
@@ -739,9 +631,6 @@ def configure_mingw(env: "SConsEnvironment"):
 
     ## Compiler configuration
 
-    if os.name != "nt":
-        env["PROGSUFFIX"] = env["PROGSUFFIX"] + ".exe"  # for linux cross-compilation
-
     if env["arch"] == "x86_32":
         if env["use_static_cpp"]:
             env.Append(LINKFLAGS=["-static"])
@@ -751,38 +640,41 @@ def configure_mingw(env: "SConsEnvironment"):
         if env["use_static_cpp"]:
             env.Append(LINKFLAGS=["-static"])
 
-    if env["arch"] in ["x86_32", "x86_64"]:
+    if env["arch"] == "x86_32":
         env["x86_libtheora_opt_gcc"] = True
 
     env.Append(CCFLAGS=["-ffp-contract=off"])
 
-    mingw_bin_prefix = get_mingw_bin_prefix(env["mingw_prefix"], env["arch"])
-
     if env["use_llvm"]:
-        env["CC"] = mingw_bin_prefix + "clang"
-        env["CXX"] = mingw_bin_prefix + "clang++"
-        if try_cmd("as --version", env["mingw_prefix"], env["arch"]):
-            env["AS"] = mingw_bin_prefix + "as"
-            env.Append(ASFLAGS=["-c"])
-        if try_cmd("ar --version", env["mingw_prefix"], env["arch"]):
-            env["AR"] = mingw_bin_prefix + "ar"
-        if try_cmd("ranlib --version", env["mingw_prefix"], env["arch"]):
-            env["RANLIB"] = mingw_bin_prefix + "ranlib"
+        env["CC"] = get_detected(env, "clang")
+        env["CXX"] = get_detected(env, "clang++")
+        env["AR"] = get_detected(env, "ar")
+        env["RANLIB"] = get_detected(env, "ranlib")
+        env.Append(ASFLAGS=["-c"])
         env.extra_suffix = ".llvm" + env.extra_suffix
     else:
-        env["CC"] = mingw_bin_prefix + "gcc"
-        env["CXX"] = mingw_bin_prefix + "g++"
-        if try_cmd("as --version", env["mingw_prefix"], env["arch"]):
-            env["AS"] = mingw_bin_prefix + "as"
-        if try_cmd("gcc-ar --version", env["mingw_prefix"], env["arch"]):
-            env["AR"] = mingw_bin_prefix + "gcc-ar"
-        if try_cmd("gcc-ranlib --version", env["mingw_prefix"], env["arch"]):
-            env["RANLIB"] = mingw_bin_prefix + "gcc-ranlib"
+        env["CC"] = get_detected(env, "gcc")
+        env["CXX"] = get_detected(env, "g++")
+        env["AR"] = get_detected(env, "gcc-ar" if os.name != "nt" else "ar")
+        env["RANLIB"] = get_detected(env, "gcc-ranlib")
+
+    env["RC"] = get_detected(env, "windres")
+    ARCH_TARGETS = {
+        "x86_32": "pe-i386",
+        "x86_64": "pe-x86-64",
+        "arm32": "armv7-w64-mingw32",
+        "arm64": "aarch64-w64-mingw32",
+    }
+    env.AppendUnique(RCFLAGS=f"--target={ARCH_TARGETS[env['arch']]}")
+
+    env["AS"] = get_detected(env, "as")
+    env["OBJCOPY"] = get_detected(env, "objcopy")
+    env["STRIP"] = get_detected(env, "strip")
 
     ## LTO
 
-    if env["lto"] == "auto":  # Full LTO for production with MinGW.
-        env["lto"] = "full"
+    if env["lto"] == "auto":  # Enable LTO for production with MinGW.
+        env["lto"] = "thin" if env["use_llvm"] else "full"
 
     if env["lto"] != "none":
         if env["lto"] == "thin":
@@ -797,6 +689,10 @@ def configure_mingw(env: "SConsEnvironment"):
         else:
             env.Append(CCFLAGS=["-flto"])
             env.Append(LINKFLAGS=["-flto"])
+        if not env["use_llvm"]:
+            # For mingw-gcc LTO, disable linker plugin and enable whole program to work around GH-102867.
+            env.Append(CCFLAGS=["-fno-use-linker-plugin", "-fwhole-program"])
+            env.Append(LINKFLAGS=["-fno-use-linker-plugin", "-fwhole-program"])
 
     if env["use_asan"]:
         env.Append(LINKFLAGS=["-Wl,--stack," + str(STACK_SIZE_SANITIZERS)])
@@ -805,9 +701,7 @@ def configure_mingw(env: "SConsEnvironment"):
 
     ## Compile flags
 
-    if int(env["target_win_version"], 16) < 0x0601:
-        print_error("`target_win_version` should be 0x0601 or higher (Windows 7).")
-        sys.exit(255)
+    validate_win_version(env)
 
     if not env["use_llvm"]:
         env.Append(CCFLAGS=["-mwindows"])
@@ -832,9 +726,6 @@ def configure_mingw(env: "SConsEnvironment"):
         env.Append(CFLAGS=san_flags)
         env.Append(CCFLAGS=san_flags)
         env.Append(LINKFLAGS=san_flags)
-
-    if env["use_llvm"] and os.name == "nt" and methods._colorize:
-        env.Append(CCFLAGS=["$(-fansi-escape-codes$)", "$(-fcolor-diagnostics$)"])
 
     if get_is_ar_thin_supported(env):
         env.Append(ARFLAGS=["--thin"])
@@ -885,15 +776,7 @@ def configure_mingw(env: "SConsEnvironment"):
             env.Append(LIBS=["vulkan"])
 
     if env["d3d12"]:
-        # Check whether we have d3d12 dependencies installed.
-        if not os.path.exists(env["mesa_libs"]):
-            print_error(
-                "The Direct3D 12 rendering driver requires dependencies to be installed.\n"
-                "You can install them by running `python misc\\scripts\\install_d3d12_sdk_windows.py`.\n"
-                "See the documentation for more information:\n\t"
-                "https://docs.godotengine.org/en/latest/contributing/development/compiling/compiling_for_windows.html"
-            )
-            sys.exit(255)
+        check_d3d12_installed(env)
 
         env.AppendUnique(CPPDEFINES=["D3D12_ENABLED", "RD_ENABLED"])
         env.Append(LIBS=["dxgi", "dxguid"])
@@ -929,43 +812,34 @@ def configure_mingw(env: "SConsEnvironment"):
 
     env.Append(CPPDEFINES=["MINGW_ENABLED", ("MINGW_HAS_SECURE_API", 1)])
 
-    # resrc
-    env.Append(BUILDERS={"RES": env.Builder(action=build_res_file, suffix=".o", src_suffix=".rc")})
-
 
 def configure(env: "SConsEnvironment"):
     # Validate arch.
     supported_arches = ["x86_32", "x86_64", "arm32", "arm64"]
-    if env["arch"] not in supported_arches:
-        print_error(
-            'Unsupported CPU architecture "%s" for Windows. Supported architectures are: %s.'
-            % (env["arch"], ", ".join(supported_arches))
-        )
-        sys.exit(255)
+    validate_arch(env["arch"], get_name(), supported_arches)
 
     # At this point the env has been set up with basic tools/compilers.
     env.Prepend(CPPPATH=["#platform/windows"])
 
-    if os.name == "nt":
-        env["ENV"] = os.environ  # this makes build less repeatable, but simplifies some things
-        env["ENV"]["TMP"] = os.environ["TMP"]
-
-    # First figure out which compiler, version, and target arch we're using
-    if os.getenv("VCINSTALLDIR") and detect_build_env_arch() and not env["use_mingw"]:
-        setup_msvc_manual(env)
-        env.msvc = True
-        vcvars_msvc_config = True
-    elif env.get("MSVC_VERSION", "") and not env["use_mingw"]:
-        setup_msvc_auto(env)
-        env.msvc = True
-        vcvars_msvc_config = False
-    else:
-        setup_mingw(env)
-        env.msvc = False
-
-    # Now set compiler/linker flags
+    env.msvc = "mingw" not in env["TOOLS"]
     if env.msvc:
-        configure_msvc(env, vcvars_msvc_config)
-
-    else:  # MinGW
+        configure_msvc(env)
+    else:
         configure_mingw(env)
+
+
+def check_d3d12_installed(env):
+    if not os.path.exists(env["mesa_libs"]):
+        print_error(
+            "The Direct3D 12 rendering driver requires dependencies to be installed.\n"
+            "You can install them by running `python misc\\scripts\\install_d3d12_sdk_windows.py`.\n"
+            "See the documentation for more information:\n\t"
+            "https://docs.godotengine.org/en/latest/contributing/development/compiling/compiling_for_windows.html"
+        )
+        sys.exit(255)
+
+
+def validate_win_version(env):
+    if int(env["target_win_version"], 16) < 0x0601:
+        print_error("`target_win_version` should be 0x0601 or higher (Windows 7).")
+        sys.exit(255)

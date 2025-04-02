@@ -54,3 +54,21 @@ df61dc4b2bd54a5a40c515493c76f5a458e5b541
 
 # Enforce template syntax `typename` over `class`
 9903e6779b70fc03aae70a37b9cf053f4f355b91
+
+# Style: Apply new `clang-format` fixes
+b37fc1014abf7adda70dc30b0822d775b3a4433f
+
+# Set clang-format `RemoveSemicolon` rule to `true`
+0d350e71086fffce0553811739aae9f6ad66136c
+
+# Style: Apply clang-tidy fixes (superficial)
+bb5f390fb9b466be35a5df7651323d7e66afca31
+
+# Style: Enforce `AllowShortFunctionsOnASingleLine`
+e06d83860d798b6766b23d6eae48557387a7db85
+
+# Style: Enforce trailing newlines on svgs
+7e5baa042639ffa835271703c720e2595e90afb8
+
+# Style: Replace header guards with `#pragma once`
+324512e11c1b7663c3cf47bec6ddbe65c6b8db2b

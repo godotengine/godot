@@ -52,7 +52,7 @@ Error RenderingContextDriverMetal::initialize() {
 	}
 #endif
 	device.type = DEVICE_TYPE_INTEGRATED_GPU;
-	device.vendor = VENDOR_APPLE;
+	device.vendor = Vendor::VENDOR_APPLE;
 	device.workarounds = Workarounds();
 
 	MetalDeviceProperties props(metal_device);
@@ -79,7 +79,7 @@ void RenderingContextDriverMetal::driver_free(RenderingDeviceDriver *p_driver) {
 	memdelete(p_driver);
 }
 
-class API_AVAILABLE(macos(11.0), ios(14.0)) SurfaceLayer : public RenderingContextDriverMetal::Surface {
+class API_AVAILABLE(macos(11.0), ios(14.0), tvos(14.0)) SurfaceLayer : public RenderingContextDriverMetal::Surface {
 	CAMetalLayer *__unsafe_unretained layer = nil;
 	LocalVector<MDFrameBuffer> frame_buffers;
 	LocalVector<id<MTLDrawable>> drawables;
@@ -134,7 +134,7 @@ public:
 		frame_buffers.resize(p_desired_framebuffer_count);
 		for (uint32_t i = 0; i < p_desired_framebuffer_count; i++) {
 			// Reserve space for the drawable texture.
-			frame_buffers[i].textures.resize(1);
+			frame_buffers[i].set_texture_count(1);
 		}
 
 		return OK;
@@ -154,7 +154,7 @@ public:
 		id<CAMetalDrawable> drawable = layer.nextDrawable;
 		ERR_FAIL_NULL_V_MSG(drawable, RDD::FramebufferID(), "no drawable available");
 		drawables[rear] = drawable;
-		frame_buffer.textures.write[0] = drawable.texture;
+		frame_buffer.set_texture(0, drawable.texture);
 
 		return RDD::FramebufferID(&frame_buffer);
 	}
@@ -165,14 +165,18 @@ public:
 		}
 
 		// Release texture and drawable.
-		frame_buffers[front].textures.write[0] = nil;
+		frame_buffers[front].unset_texture(0);
 		id<MTLDrawable> drawable = drawables[front];
 		drawables[front] = nil;
 
 		count--;
 		front = (front + 1) % frame_buffers.size();
 
-		[p_cmd_buffer->get_command_buffer() presentDrawable:drawable];
+		if (vsync_mode != DisplayServer::VSYNC_DISABLED) {
+			[p_cmd_buffer->get_command_buffer() presentDrawable:drawable afterMinimumDuration:present_minimum_duration];
+		} else {
+			[p_cmd_buffer->get_command_buffer() presentDrawable:drawable];
+		}
 	}
 };
 

@@ -50,8 +50,6 @@
 #include "core/config/project_settings.h"
 #include "core/core_constants.h"
 #include "core/io/file_access.h"
-#include "core/io/file_access_encrypted.h"
-#include "core/os/os.h"
 
 #include "scene/resources/packed_scene.h"
 #include "scene/scene_string_names.h"
@@ -60,8 +58,6 @@
 #include "core/extension/gdextension_manager.h"
 #include "editor/editor_paths.h"
 #endif
-
-#include <stdint.h>
 
 ///////////////////////////
 
@@ -76,9 +72,16 @@ bool GDScriptNativeClass::_get(const StringName &p_name, Variant &r_ret) const {
 	if (ok) {
 		r_ret = v;
 		return true;
-	} else {
-		return false;
 	}
+
+	MethodBind *method = ClassDB::get_method(name, p_name);
+	if (method && method->is_static()) {
+		// Native static method.
+		r_ret = Callable(this, p_name);
+		return true;
+	}
+
+	return false;
 }
 
 void GDScriptNativeClass::_bind_methods() {
@@ -249,7 +252,7 @@ Variant GDScript::_new(const Variant **p_args, int p_argcount, Callable::CallErr
 
 bool GDScript::can_instantiate() const {
 #ifdef TOOLS_ENABLED
-	return valid && (tool || ScriptServer::is_scripting_enabled());
+	return valid && (tool || ScriptServer::is_scripting_enabled()) && !Engine::get_singleton()->is_recovery_mode_hint();
 #else
 	return valid;
 #endif
@@ -472,23 +475,25 @@ void GDScript::_update_exports_values(HashMap<StringName, Variant> &values, List
 	}
 }
 
-void GDScript::_add_doc(const DocData::ClassDoc &p_inner_class) {
-	if (_owner) { // Only the top-level class stores doc info
-		_owner->_add_doc(p_inner_class);
-	} else { // Remove old docs, add new
+void GDScript::_add_doc(const DocData::ClassDoc &p_doc) {
+	doc_class_name = p_doc.name;
+	if (_owner) { // Only the top-level class stores doc info.
+		_owner->_add_doc(p_doc);
+	} else { // Remove old docs, add new.
 		for (int i = 0; i < docs.size(); i++) {
-			if (docs[i].name == p_inner_class.name) {
+			if (docs[i].name == p_doc.name) {
 				docs.remove_at(i);
 				break;
 			}
 		}
-		docs.append(p_inner_class);
+		docs.append(p_doc);
 	}
 }
 
 void GDScript::_clear_doc() {
-	docs.clear();
+	doc_class_name = StringName();
 	doc = DocData::ClassDoc();
+	docs.clear();
 }
 
 String GDScript::get_class_icon_path() const {
@@ -693,9 +698,15 @@ void GDScript::_static_default_init() {
 			continue;
 		}
 		if (type.builtin_type == Variant::ARRAY && type.has_container_element_type(0)) {
+			const GDScriptDataType element_type = type.get_container_element_type(0);
 			Array default_value;
-			const GDScriptDataType &element_type = type.get_container_element_type(0);
 			default_value.set_typed(element_type.builtin_type, element_type.native_type, element_type.script_type);
+			static_variables.write[E.value.index] = default_value;
+		} else if (type.builtin_type == Variant::DICTIONARY && type.has_container_element_types()) {
+			const GDScriptDataType key_type = type.get_container_element_type_or_variant(0);
+			const GDScriptDataType value_type = type.get_container_element_type_or_variant(1);
+			Dictionary default_value;
+			default_value.set_typed(key_type.builtin_type, key_type.native_type, key_type.script_type, value_type.builtin_type, value_type.native_type, value_type.script_type);
 			static_variables.write[E.value.index] = default_value;
 		} else {
 			Variant default_value;
@@ -1110,7 +1121,7 @@ Error GDScript::load_source_code(const String &p_path) {
 	w[len] = 0;
 
 	String s;
-	if (s.parse_utf8((const char *)w) != OK) {
+	if (s.append_utf8((const char *)w, len) != OK) {
 		ERR_FAIL_V_MSG(ERR_INVALID_DATA, "Script '" + p_path + "' contains invalid unicode (UTF-8), so it was not loaded. Please ensure that scripts are saved in valid UTF-8 unicode.");
 	}
 
@@ -1801,7 +1812,7 @@ bool GDScriptInstance::get(const StringName &p_name, Variant &r_ret) const {
 				const Variant *args[1] = { &name };
 
 				Callable::CallError err;
-				Variant ret = const_cast<GDScriptFunction *>(E->value)->call(const_cast<GDScriptInstance *>(this), (const Variant **)args, 1, err);
+				Variant ret = E->value->call(const_cast<GDScriptInstance *>(this), (const Variant **)args, 1, err);
 				if (err.error == Callable::CallError::CALL_OK && ret.get_type() != Variant::NIL) {
 					r_ret = ret;
 					return true;
@@ -1829,14 +1840,14 @@ Variant::Type GDScriptInstance::get_property_type(const StringName &p_name, bool
 }
 
 void GDScriptInstance::validate_property(PropertyInfo &p_property) const {
-	Variant property = (Dictionary)p_property;
-	const Variant *args[1] = { &property };
-
 	const GDScript *sptr = script.ptr();
 	while (sptr) {
 		if (likely(sptr->valid)) {
 			HashMap<StringName, GDScriptFunction *>::ConstIterator E = sptr->member_functions.find(GDScriptLanguage::get_singleton()->strings._validate_property);
 			if (E) {
+				Variant property = (Dictionary)p_property;
+				const Variant *args[1] = { &property };
+
 				Callable::CallError err;
 				Variant ret = E->value->call(const_cast<GDScriptInstance *>(this), args, 1, err);
 				if (err.error == Callable::CallError::CALL_OK) {
@@ -1860,7 +1871,7 @@ void GDScriptInstance::get_property_list(List<PropertyInfo> *p_properties) const
 			HashMap<StringName, GDScriptFunction *>::ConstIterator E = sptr->member_functions.find(GDScriptLanguage::get_singleton()->strings._get_property_list);
 			if (E) {
 				Callable::CallError err;
-				Variant ret = const_cast<GDScriptFunction *>(E->value)->call(const_cast<GDScriptInstance *>(this), nullptr, 0, err);
+				Variant ret = E->value->call(const_cast<GDScriptInstance *>(this), nullptr, 0, err);
 				if (err.error == Callable::CallError::CALL_OK) {
 					ERR_FAIL_COND_MSG(ret.get_type() != Variant::ARRAY, "Wrong type for _get_property_list, must be an array of dictionaries.");
 
@@ -2540,11 +2551,11 @@ void GDScriptLanguage::reload_all_scripts() {
 				}
 			}
 		}
-#endif
+#endif // TOOLS_ENABLED
 	}
 
 	reload_scripts(scripts, true);
-#endif
+#endif // DEBUG_ENABLED
 }
 
 void GDScriptLanguage::reload_scripts(const Array &p_scripts, bool p_soft_reload) {
@@ -2614,7 +2625,7 @@ void GDScriptLanguage::reload_scripts(const Array &p_scripts, bool p_soft_reload
 				}
 			}
 
-#endif
+#endif // TOOLS_ENABLED
 
 			for (const KeyValue<ObjectID, List<Pair<StringName, Variant>>> &F : scr->pending_reload_state) {
 				map[F.key] = F.value; //pending to reload, use this one instead
@@ -2682,18 +2693,15 @@ void GDScriptLanguage::reload_scripts(const Array &p_scripts, bool p_soft_reload
 		//if instance states were saved, set them!
 	}
 
-#endif
+#endif // DEBUG_ENABLED
 }
 
 void GDScriptLanguage::reload_tool_script(const Ref<Script> &p_script, bool p_soft_reload) {
-	Array scripts;
-	scripts.push_back(p_script);
+	Array scripts = { p_script };
 	reload_scripts(scripts, p_soft_reload);
 }
 
 void GDScriptLanguage::frame() {
-	calls = 0;
-
 #ifdef DEBUG_ENABLED
 	if (profiling) {
 		MutexLock lock(mutex);
@@ -2800,7 +2808,7 @@ bool GDScriptLanguage::handles_global_class_type(const String &p_type) const {
 	return p_type == "GDScript";
 }
 
-String GDScriptLanguage::get_global_class_name(const String &p_path, String *r_base_type, String *r_icon_path) const {
+String GDScriptLanguage::get_global_class_name(const String &p_path, String *r_base_type, String *r_icon_path, bool *r_is_abstract, bool *r_is_tool) const {
 	Error err;
 	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ, &err);
 	if (err) {
@@ -2901,13 +2909,18 @@ String GDScriptLanguage::get_global_class_name(const String &p_path, String *r_b
 	if (r_icon_path) {
 		*r_icon_path = c->simplified_icon_path;
 	}
+	if (r_is_abstract) {
+		*r_is_abstract = false;
+	}
+	if (r_is_tool) {
+		*r_is_tool = parser.is_tool();
+	}
 	return c->identifier != nullptr ? String(c->identifier->name) : String();
 }
 
 thread_local GDScriptLanguage::CallStack GDScriptLanguage::_call_stack;
 
 GDScriptLanguage::GDScriptLanguage() {
-	calls = 0;
 	ERR_FAIL_COND(singleton);
 	singleton = this;
 	strings._init = StaticCString::create("_init");
@@ -2942,6 +2955,7 @@ GDScriptLanguage::GDScriptLanguage() {
 #ifdef DEBUG_ENABLED
 	GLOBAL_DEF("debug/gdscript/warnings/enable", true);
 	GLOBAL_DEF("debug/gdscript/warnings/exclude_addons", true);
+	GLOBAL_DEF("debug/gdscript/warnings/renamed_in_godot_4_hint", true);
 	for (int i = 0; i < (int)GDScriptWarning::WARNING_MAX; i++) {
 		GDScriptWarning::Code code = (GDScriptWarning::Code)i;
 		Variant default_enabled = GDScriptWarning::get_default_value(code);
@@ -3046,6 +3060,62 @@ void ResourceFormatLoaderGDScript::get_dependencies(const String &p_path, List<S
 
 	for (const String &E : parser.get_dependencies()) {
 		p_dependencies->push_back(E);
+	}
+}
+
+void ResourceFormatLoaderGDScript::get_classes_used(const String &p_path, HashSet<StringName> *r_classes) {
+	Ref<GDScript> scr = ResourceLoader::load(p_path);
+	if (scr.is_null()) {
+		return;
+	}
+
+	const String source = scr->get_source_code();
+	GDScriptTokenizerText tokenizer;
+	tokenizer.set_source_code(source);
+	GDScriptTokenizer::Token current = tokenizer.scan();
+	while (current.type != GDScriptTokenizer::Token::TK_EOF) {
+		if (!current.is_identifier()) {
+			current = tokenizer.scan();
+			continue;
+		}
+
+		int insert_idx = 0;
+		for (int i = 0; i < current.start_line - 1; i++) {
+			insert_idx = source.find("\n", insert_idx) + 1;
+		}
+		// Insert the "cursor" character, needed for the lookup to work.
+		const String source_with_cursor = source.insert(insert_idx + current.start_column, String::chr(0xFFFF));
+
+		ScriptLanguage::LookupResult result;
+		if (scr->get_language()->lookup_code(source_with_cursor, current.get_identifier(), p_path, nullptr, result) == OK) {
+			if (!result.class_name.is_empty() && ClassDB::class_exists(result.class_name)) {
+				r_classes->insert(result.class_name);
+			}
+
+			if (result.type == ScriptLanguage::LOOKUP_RESULT_CLASS_PROPERTY) {
+				PropertyInfo prop;
+				if (ClassDB::get_property_info(result.class_name, result.class_member, &prop)) {
+					if (!prop.class_name.is_empty() && ClassDB::class_exists(prop.class_name)) {
+						r_classes->insert(prop.class_name);
+					}
+					if (!prop.hint_string.is_empty() && ClassDB::class_exists(prop.hint_string)) {
+						r_classes->insert(prop.hint_string);
+					}
+				}
+			} else if (result.type == ScriptLanguage::LOOKUP_RESULT_CLASS_METHOD) {
+				MethodInfo met;
+				if (ClassDB::get_method_info(result.class_name, result.class_member, &met)) {
+					if (!met.return_val.class_name.is_empty() && ClassDB::class_exists(met.return_val.class_name)) {
+						r_classes->insert(met.return_val.class_name);
+					}
+					if (!met.return_val.hint_string.is_empty() && ClassDB::class_exists(met.return_val.hint_string)) {
+						r_classes->insert(met.return_val.hint_string);
+					}
+				}
+			}
+		}
+
+		current = tokenizer.scan();
 	}
 }
 

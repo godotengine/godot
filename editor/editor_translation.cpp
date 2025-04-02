@@ -42,7 +42,7 @@
 Vector<String> get_editor_locales() {
 	Vector<String> locales;
 
-	EditorTranslationList *etl = _editor_translations;
+	const EditorTranslationList *etl = _editor_translations;
 	while (etl->data) {
 		const String &locale = etl->lang;
 		locales.push_back(locale);
@@ -54,7 +54,9 @@ Vector<String> get_editor_locales() {
 }
 
 void load_editor_translations(const String &p_locale) {
-	EditorTranslationList *etl = _editor_translations;
+	const Ref<TranslationDomain> domain = TranslationServer::get_singleton()->get_or_add_domain("godot.editor");
+
+	const EditorTranslationList *etl = _editor_translations;
 	while (etl->data) {
 		if (etl->lang == p_locale) {
 			Vector<uint8_t> data;
@@ -70,7 +72,7 @@ void load_editor_translations(const String &p_locale) {
 
 			if (tr.is_valid()) {
 				tr->set_locale(etl->lang);
-				TranslationServer::get_singleton()->set_tool_translation(tr);
+				domain->add_translation(tr);
 				break;
 			}
 		}
@@ -80,7 +82,9 @@ void load_editor_translations(const String &p_locale) {
 }
 
 void load_property_translations(const String &p_locale) {
-	PropertyTranslationList *etl = _property_translations;
+	const Ref<TranslationDomain> domain = TranslationServer::get_singleton()->get_or_add_domain("godot.properties");
+
+	const PropertyTranslationList *etl = _property_translations;
 	while (etl->data) {
 		if (etl->lang == p_locale) {
 			Vector<uint8_t> data;
@@ -96,7 +100,7 @@ void load_property_translations(const String &p_locale) {
 
 			if (tr.is_valid()) {
 				tr->set_locale(etl->lang);
-				TranslationServer::get_singleton()->set_property_translation(tr);
+				domain->add_translation(tr);
 				break;
 			}
 		}
@@ -106,7 +110,9 @@ void load_property_translations(const String &p_locale) {
 }
 
 void load_doc_translations(const String &p_locale) {
-	DocTranslationList *dtl = _doc_translations;
+	const Ref<TranslationDomain> domain = TranslationServer::get_singleton()->get_or_add_domain("godot.documentation");
+
+	const DocTranslationList *dtl = _doc_translations;
 	while (dtl->data) {
 		if (dtl->lang == p_locale) {
 			Vector<uint8_t> data;
@@ -122,7 +128,7 @@ void load_doc_translations(const String &p_locale) {
 
 			if (tr.is_valid()) {
 				tr->set_locale(dtl->lang);
-				TranslationServer::get_singleton()->set_doc_translation(tr);
+				domain->add_translation(tr);
 				break;
 			}
 		}
@@ -132,7 +138,9 @@ void load_doc_translations(const String &p_locale) {
 }
 
 void load_extractable_translations(const String &p_locale) {
-	ExtractableTranslationList *etl = _extractable_translations;
+	const Ref<TranslationDomain> domain = TranslationServer::get_singleton()->get_or_add_domain("godot.editor");
+
+	const ExtractableTranslationList *etl = _extractable_translations;
 	while (etl->data) {
 		if (etl->lang == p_locale) {
 			Vector<uint8_t> data;
@@ -148,7 +156,7 @@ void load_extractable_translations(const String &p_locale) {
 
 			if (tr.is_valid()) {
 				tr->set_locale(etl->lang);
-				TranslationServer::get_singleton()->set_extractable_translation(tr);
+				domain->add_translation(tr);
 				break;
 			}
 		}
@@ -158,7 +166,7 @@ void load_extractable_translations(const String &p_locale) {
 }
 
 Vector<Vector<String>> get_extractable_message_list() {
-	ExtractableTranslationList *etl = _extractable_translations;
+	const ExtractableTranslationList *etl = _extractable_translations;
 	Vector<Vector<String>> list;
 
 	while (etl->data) {
@@ -227,7 +235,7 @@ Vector<Vector<String>> get_extractable_message_list() {
 						list.push_back(msgs);
 					}
 					msg_context = "";
-					l = l.substr(7, l.length()).strip_edges();
+					l = l.substr(7).strip_edges();
 					status = STATUS_READING_CONTEXT;
 					entered_context = true;
 				}
@@ -236,7 +244,7 @@ Vector<Vector<String>> get_extractable_message_list() {
 					if (status != STATUS_READING_ID) {
 						ERR_FAIL_V_MSG(Vector<Vector<String>>(), "Unexpected 'msgid_plural', was expecting 'msgid' before 'msgid_plural' while parsing: " + path + ":" + itos(line));
 					}
-					l = l.substr(12, l.length()).strip_edges();
+					l = l.substr(12).strip_edges();
 					status = STATUS_READING_PLURAL;
 				} else if (l.begins_with("msgid")) {
 					ERR_FAIL_COND_V_MSG(status == STATUS_READING_ID, Vector<Vector<String>>(), "Unexpected 'msgid', was expecting 'msgstr' while parsing: " + path + ":" + itos(line));
@@ -249,7 +257,7 @@ Vector<Vector<String>> get_extractable_message_list() {
 						list.push_back(msgs);
 					}
 
-					l = l.substr(5, l.length()).strip_edges();
+					l = l.substr(5).strip_edges();
 					status = STATUS_READING_ID;
 					// If we did not encounter msgctxt, we reset context to empty to reset it.
 					if (!entered_context) {
@@ -263,11 +271,11 @@ Vector<Vector<String>> get_extractable_message_list() {
 				if (l.begins_with("msgstr[")) {
 					ERR_FAIL_COND_V_MSG(status != STATUS_READING_PLURAL, Vector<Vector<String>>(),
 							"Unexpected 'msgstr[]', was expecting 'msgid_plural' before 'msgstr[]' while parsing: " + path + ":" + itos(line));
-					l = l.substr(9, l.length()).strip_edges();
+					l = l.substr(9).strip_edges();
 				} else if (l.begins_with("msgstr")) {
 					ERR_FAIL_COND_V_MSG(status != STATUS_READING_ID, Vector<Vector<String>>(),
 							"Unexpected 'msgstr', was expecting 'msgid' before 'msgstr' while parsing: " + path + ":" + itos(line));
-					l = l.substr(6, l.length()).strip_edges();
+					l = l.substr(6).strip_edges();
 					status = STATUS_READING_STRING;
 				}
 
@@ -278,7 +286,7 @@ Vector<Vector<String>> get_extractable_message_list() {
 
 				ERR_FAIL_COND_V_MSG(!l.begins_with("\"") || status == STATUS_NONE, Vector<Vector<String>>(), "Invalid line '" + l + "' while parsing: " + path + ":" + itos(line));
 
-				l = l.substr(1, l.length());
+				l = l.substr(1);
 				// Find final quote, ignoring escaped ones (\").
 				// The escape_next logic is necessary to properly parse things like \\"
 				// where the backslash is the one being escaped, not the quote.

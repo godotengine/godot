@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef INPUT_EVENT_EDITOR_PLUGIN_H
-#define INPUT_EVENT_EDITOR_PLUGIN_H
+#pragma once
 
 #include "editor/action_map_editor.h"
 #include "editor/editor_inspector.h"
@@ -70,9 +69,7 @@ class InputEventEditorPlugin : public EditorPlugin {
 	GDCLASS(InputEventEditorPlugin, EditorPlugin);
 
 public:
-	virtual String get_name() const override { return "InputEvent"; }
+	virtual String get_plugin_name() const override { return "InputEvent"; }
 
 	InputEventEditorPlugin();
 };
-
-#endif // INPUT_EVENT_EDITOR_PLUGIN_H

@@ -43,8 +43,6 @@
 #include "scene/resources/packed_scene.h"
 #include "viewport.h"
 
-#include <stdint.h>
-
 int Node::orphan_node_count = 0;
 
 thread_local Node *Node::current_process_thread_group = nullptr;
@@ -111,6 +109,7 @@ void Node::_notification(int p_notification) {
 				data.auto_translate_mode = AUTO_TRANSLATE_MODE_ALWAYS;
 			}
 			data.is_auto_translate_dirty = true;
+			data.is_translation_domain_dirty = true;
 
 #ifdef TOOLS_ENABLED
 			// Don't translate UI elements when they're being edited.
@@ -118,10 +117,6 @@ void Node::_notification(int p_notification) {
 				set_message_translation(false);
 			}
 #endif
-
-			if (data.auto_translate_mode != AUTO_TRANSLATE_MODE_DISABLED) {
-				notification(NOTIFICATION_TRANSLATION_CHANGED);
-			}
 
 			if (data.input) {
 				add_to_group("_vp_input" + itos(get_viewport()->get_instance_id()));
@@ -143,6 +138,12 @@ void Node::_notification(int p_notification) {
 			// (this is to save the user from doing this manually each time).
 			if (get_tree()->is_physics_interpolation_enabled()) {
 				_set_physics_interpolation_reset_requested(true);
+			}
+		} break;
+
+		case NOTIFICATION_POST_ENTER_TREE: {
+			if (data.auto_translate_mode != AUTO_TRANSLATE_MODE_DISABLED) {
+				notification(NOTIFICATION_TRANSLATION_CHANGED);
 			}
 		} break;
 
@@ -183,6 +184,7 @@ void Node::_notification(int p_notification) {
 			}
 		} break;
 
+		case NOTIFICATION_SUSPENDED:
 		case NOTIFICATION_PAUSED: {
 			if (is_physics_interpolated_and_enabled() && is_inside_tree()) {
 				reset_physics_interpolation();
@@ -221,10 +223,6 @@ void Node::_notification(int p_notification) {
 			}
 
 			GDVIRTUAL_CALL(_ready);
-		} break;
-
-		case NOTIFICATION_POSTINITIALIZE: {
-			data.in_constructor = false;
 		} break;
 
 		case NOTIFICATION_PREDELETE: {
@@ -674,6 +672,8 @@ void Node::set_process_mode(ProcessMode p_mode) {
 	if (Engine::get_singleton()->is_editor_hint()) {
 		get_tree()->emit_signal(SNAME("tree_process_mode_changed"));
 	}
+
+	_emit_editor_state_changed();
 #endif
 }
 
@@ -690,6 +690,16 @@ void Node::_propagate_pause_notification(bool p_enable) {
 	data.blocked++;
 	for (KeyValue<StringName, Node *> &K : data.children) {
 		K.value->_propagate_pause_notification(p_enable);
+	}
+	data.blocked--;
+}
+
+void Node::_propagate_suspend_notification(bool p_enable) {
+	notification(p_enable ? NOTIFICATION_SUSPENDED : NOTIFICATION_UNSUSPENDED);
+
+	data.blocked++;
+	for (KeyValue<StringName, Node *> &KV : data.children) {
+		KV.value->_propagate_suspend_notification(p_enable);
 	}
 	data.blocked--;
 }
@@ -849,7 +859,7 @@ bool Node::can_process_notification(int p_what) const {
 
 bool Node::can_process() const {
 	ERR_FAIL_COND_V(!is_inside_tree(), false);
-	return _can_process(get_tree()->is_paused());
+	return !get_tree()->is_suspended() && _can_process(get_tree()->is_paused());
 }
 
 bool Node::_can_process(bool p_paused) const {
@@ -905,12 +915,12 @@ void Node::set_physics_interpolation_mode(PhysicsInterpolationMode p_mode) {
 		} break;
 	}
 
-	// If swapping from interpolated to non-interpolated, use this as an extra means to cause a reset.
-	if (is_physics_interpolated() && !interpolate && is_inside_tree()) {
+	_propagate_physics_interpolated(interpolate);
+
+	// Auto-reset on changing interpolation mode.
+	if (is_physics_interpolated() && is_inside_tree()) {
 		propagate_notification(NOTIFICATION_RESET_PHYSICS_INTERPOLATION);
 	}
-
-	_propagate_physics_interpolated(interpolate);
 }
 
 void Node::reset_physics_interpolation() {
@@ -1320,6 +1330,54 @@ bool Node::can_auto_translate() const {
 	return data.is_auto_translating;
 }
 
+StringName Node::get_translation_domain() const {
+	ERR_READ_THREAD_GUARD_V(StringName());
+
+	if (data.is_translation_domain_inherited && data.is_translation_domain_dirty) {
+		const_cast<Node *>(this)->_translation_domain = data.parent ? data.parent->get_translation_domain() : StringName();
+		data.is_translation_domain_dirty = false;
+	}
+	return _translation_domain;
+}
+
+void Node::set_translation_domain(const StringName &p_domain) {
+	ERR_THREAD_GUARD
+
+	if (!data.is_translation_domain_inherited && _translation_domain == p_domain) {
+		return;
+	}
+
+	_translation_domain = p_domain;
+	data.is_translation_domain_inherited = false;
+	data.is_translation_domain_dirty = false;
+	_propagate_translation_domain_dirty();
+}
+
+void Node::set_translation_domain_inherited() {
+	ERR_THREAD_GUARD
+
+	if (data.is_translation_domain_inherited) {
+		return;
+	}
+	data.is_translation_domain_inherited = true;
+	data.is_translation_domain_dirty = true;
+	_propagate_translation_domain_dirty();
+}
+
+void Node::_propagate_translation_domain_dirty() {
+	for (KeyValue<StringName, Node *> &K : data.children) {
+		Node *child = K.value;
+		if (child->data.is_translation_domain_inherited) {
+			child->data.is_translation_domain_dirty = true;
+			child->_propagate_translation_domain_dirty();
+		}
+	}
+
+	if (is_inside_tree() && data.auto_translate_mode != AUTO_TRANSLATE_MODE_DISABLED) {
+		notification(NOTIFICATION_TRANSLATION_CHANGED);
+	}
+}
+
 StringName Node::get_name() const {
 	return data.name;
 }
@@ -1576,8 +1634,6 @@ void Node::_add_child_nocheck(Node *p_child, const StringName &p_name, InternalM
 	}
 
 	/* Notify */
-	//recognize children created in this node constructor
-	p_child->data.parent_owned = data.in_constructor;
 	add_child_notify(p_child);
 	notification(NOTIFICATION_CHILD_ORDER_CHANGED);
 	emit_signal(SNAME("child_order_changed"));
@@ -1896,6 +1952,7 @@ void Node::reparent(Node *p_parent, bool p_keep_global_transform) {
 	ERR_THREAD_GUARD
 	ERR_FAIL_NULL(p_parent);
 	ERR_FAIL_NULL_MSG(data.parent, "Node needs a parent to be reparented.");
+	ERR_FAIL_COND_MSG(p_parent == this, vformat("Can't reparent '%s' to itself.", p_parent->get_name()));
 
 	if (p_parent == data.parent) {
 		return;
@@ -2104,6 +2161,7 @@ void Node::set_unique_name_in_owner(bool p_enabled) {
 	}
 
 	update_configuration_warnings();
+	_emit_editor_state_changed();
 }
 
 bool Node::is_unique_name_in_owner() const {
@@ -2141,6 +2199,8 @@ void Node::set_owner(Node *p_owner) {
 	if (data.unique_name_in_owner) {
 		_acquire_unique_name_in_owner();
 	}
+
+	_emit_editor_state_changed();
 }
 
 Node *Node::get_owner() const {
@@ -2324,6 +2384,9 @@ void Node::add_to_group(const StringName &p_identifier, bool p_persistent) {
 	gd.persistent = p_persistent;
 
 	data.grouped[p_identifier] = gd;
+	if (p_persistent) {
+		_emit_editor_state_changed();
+	}
 }
 
 void Node::remove_from_group(const StringName &p_identifier) {
@@ -2334,11 +2397,21 @@ void Node::remove_from_group(const StringName &p_identifier) {
 		return;
 	}
 
+#ifdef TOOLS_ENABLED
+	bool persistent = E->value.persistent;
+#endif
+
 	if (data.tree) {
 		data.tree->remove_from_group(E->key, this);
 	}
 
 	data.grouped.remove(E);
+
+#ifdef TOOLS_ENABLED
+	if (persistent) {
+		_emit_editor_state_changed();
+	}
+#endif
 }
 
 TypedArray<StringName> Node::_get_groups() const {
@@ -2501,6 +2574,7 @@ Ref<Tween> Node::create_tween() {
 void Node::set_scene_file_path(const String &p_scene_file_path) {
 	ERR_THREAD_GUARD
 	data.scene_file_path = p_scene_file_path;
+	_emit_editor_state_changed();
 }
 
 String Node::get_scene_file_path() const {
@@ -2533,6 +2607,8 @@ void Node::set_editable_instance(Node *p_node, bool p_editable) {
 	} else {
 		p_node->data.editable_instance = true;
 	}
+
+	p_node->_emit_editor_state_changed();
 }
 
 bool Node::is_editable_instance(const Node *p_node) const {
@@ -2603,11 +2679,11 @@ bool Node::is_part_of_edited_scene() const {
 
 void Node::get_storable_properties(HashSet<StringName> &r_storable_properties) const {
 	ERR_THREAD_GUARD
-	List<PropertyInfo> pi;
-	get_property_list(&pi);
-	for (List<PropertyInfo>::Element *E = pi.front(); E; E = E->next()) {
-		if ((E->get().usage & PROPERTY_USAGE_STORAGE)) {
-			r_storable_properties.insert(E->get().name);
+	List<PropertyInfo> property_list;
+	get_property_list(&property_list);
+	for (const PropertyInfo &pi : property_list) {
+		if ((pi.usage & PROPERTY_USAGE_STORAGE)) {
+			r_storable_properties.insert(pi.name);
 		}
 	}
 }
@@ -2643,6 +2719,7 @@ Ref<SceneState> Node::get_scene_instance_state() const {
 void Node::set_scene_inherited_state(const Ref<SceneState> &p_state) {
 	ERR_THREAD_GUARD
 	data.inherited_state = p_state;
+	_emit_editor_state_changed();
 }
 
 Ref<SceneState> Node::get_scene_inherited_state() const {
@@ -2711,12 +2788,8 @@ Node *Node::_duplicate(int p_flags, HashMap<const Node *, Node *> *r_duplimap) c
 		instance_roots.push_back(this);
 
 		for (List<const Node *>::Element *N = node_tree.front(); N; N = N->next()) {
-			for (int i = 0; i < N->get()->get_child_count(); ++i) {
-				Node *descendant = N->get()->get_child(i);
-
-				if (!descendant->get_owner()) {
-					continue; // Internal nodes or nodes added by scripts.
-				}
+			for (int i = 0; i < N->get()->get_child_count(false); ++i) {
+				Node *descendant = N->get()->get_child(i, false);
 
 				// Skip nodes not really belonging to the instantiated hierarchy; they'll be processed normally later
 				// but remember non-instantiated nodes that are hidden below instantiated ones
@@ -2760,10 +2833,7 @@ Node *Node::_duplicate(int p_flags, HashMap<const Node *, Node *> *r_duplimap) c
 		}
 	}
 
-	for (int i = 0; i < get_child_count(); i++) {
-		if (get_child(i)->data.parent_owned) {
-			continue;
-		}
+	for (int i = 0; i < get_child_count(false); i++) {
 		if (instantiated && get_child(i)->data.owner == this) {
 			continue; //part of instance
 		}
@@ -2891,6 +2961,14 @@ void Node::remap_nested_resources(Ref<Resource> p_resource, const HashMap<Ref<Re
 		}
 	}
 }
+
+void Node::_emit_editor_state_changed() {
+	// This is required for the SceneTreeEditor to properly keep track of when an update is needed.
+	// This signal might be expensive and not needed for anything outside of the editor.
+	if (Engine::get_singleton()->is_editor_hint()) {
+		emit_signal(SNAME("editor_state_changed"));
+	}
+}
 #endif
 
 // Duplicate node's properties.
@@ -2949,10 +3027,10 @@ void Node::_duplicate_properties(const Node *p_root, const Node *p_original, Nod
 		}
 	}
 
-	for (int i = 0; i < p_original->get_child_count(); i++) {
-		Node *copy_child = p_copy->get_child(i);
+	for (int i = 0; i < p_original->get_child_count(false); i++) {
+		Node *copy_child = p_copy->get_child(i, false);
 		ERR_FAIL_NULL_MSG(copy_child, "Child node disappeared while duplicating.");
-		_duplicate_properties(p_root, p_original->get_child(i), copy_child, p_flags);
+		_duplicate_properties(p_root, p_original->get_child(i, false), copy_child, p_flags);
 	}
 }
 
@@ -2983,7 +3061,11 @@ void Node::_duplicate_signals(const Node *p_original, Node *p_copy) const {
 				if (!target) {
 					continue;
 				}
+
 				NodePath ptarget = p_original->get_path_to(target);
+				if (ptarget.is_empty()) {
+					continue;
+				}
 
 				Node *copytarget = target;
 
@@ -2998,11 +3080,12 @@ void Node::_duplicate_signals(const Node *p_original, Node *p_copy) const {
 				if (copy && copytarget && E.callable.get_method() != StringName()) {
 					Callable copy_callable = Callable(copytarget, E.callable.get_method());
 					if (!copy->is_connected(E.signal.get_name(), copy_callable)) {
-						int arg_count = E.callable.get_bound_arguments_count();
-						if (arg_count > 0) {
+						int unbound_arg_count = E.callable.get_unbound_arguments_count();
+						if (unbound_arg_count > 0) {
+							copy_callable = copy_callable.unbind(unbound_arg_count);
+						}
+						if (E.callable.get_bound_arguments_count() > 0) {
 							copy_callable = copy_callable.bindv(E.callable.get_bound_arguments());
-						} else if (arg_count < 0) {
-							copy_callable = copy_callable.unbind(-arg_count);
 						}
 						copy->connect(E.signal.get_name(), copy_callable, E.flags);
 					}
@@ -3068,8 +3151,8 @@ void Node::replace_by(Node *p_node, bool p_keep_groups) {
 	while (get_child_count()) {
 		Node *child = get_child(0);
 		remove_child(child);
-		if (!child->is_owned_by_parent()) {
-			// add the custom children to the p_node
+		if (!child->is_internal()) {
+			// Add the custom children to the p_node.
 			Node *child_owner = child->get_owner() == this ? p_node : child->get_owner();
 			child->set_owner(nullptr);
 			p_node->add_child(child);
@@ -3347,10 +3430,6 @@ void Node::update_configuration_warnings() {
 #endif
 }
 
-bool Node::is_owned_by_parent() const {
-	return data.parent_owned;
-}
-
 void Node::set_display_folded(bool p_folded) {
 	ERR_THREAD_GUARD
 	data.display_folded = p_folded;
@@ -3610,6 +3689,7 @@ void Node::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_auto_translate_mode", "mode"), &Node::set_auto_translate_mode);
 	ClassDB::bind_method(D_METHOD("get_auto_translate_mode"), &Node::get_auto_translate_mode);
+	ClassDB::bind_method(D_METHOD("set_translation_domain_inherited"), &Node::set_translation_domain_inherited);
 
 	ClassDB::bind_method(D_METHOD("get_window"), &Node::get_window);
 	ClassDB::bind_method(D_METHOD("get_last_exclusive_window"), &Node::get_last_exclusive_window);
@@ -3665,8 +3745,13 @@ void Node::_bind_methods() {
 
 		mi.name = "rpc";
 		ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "rpc", &Node::_rpc_bind, mi);
+	}
 
-		mi.arguments.push_front(PropertyInfo(Variant::INT, "peer_id"));
+	{
+		MethodInfo mi;
+
+		mi.arguments.push_back(PropertyInfo(Variant::INT, "peer_id"));
+		mi.arguments.push_back(PropertyInfo(Variant::STRING_NAME, "method"));
 
 		mi.name = "rpc_id";
 		ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "rpc_id", &Node::_rpc_id_bind, mi);
@@ -3729,6 +3814,7 @@ void Node::_bind_methods() {
 	BIND_CONSTANT(NOTIFICATION_WM_DPI_CHANGE);
 	BIND_CONSTANT(NOTIFICATION_VP_MOUSE_ENTER);
 	BIND_CONSTANT(NOTIFICATION_VP_MOUSE_EXIT);
+	BIND_CONSTANT(NOTIFICATION_WM_POSITION_CHANGED);
 	BIND_CONSTANT(NOTIFICATION_OS_MEMORY_WARNING);
 	BIND_CONSTANT(NOTIFICATION_TRANSLATION_CHANGED);
 	BIND_CONSTANT(NOTIFICATION_WM_ABOUT);
@@ -3782,6 +3868,7 @@ void Node::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("child_order_changed"));
 	ADD_SIGNAL(MethodInfo("replacing_by", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT, "Node")));
 	ADD_SIGNAL(MethodInfo("editor_description_changed", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT, "Node")));
+	ADD_SIGNAL(MethodInfo("editor_state_changed"));
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "name", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_name", "get_name");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "unique_name_in_owner", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_unique_name_in_owner", "is_unique_name_in_owner");
@@ -3858,8 +3945,6 @@ Node::Node() {
 	data.physics_interpolated_client_side = false;
 	data.use_identity_transform = false;
 
-	data.parent_owned = false;
-	data.in_constructor = true;
 	data.use_placeholder = false;
 
 	data.display_folded = false;
@@ -3905,11 +3990,13 @@ bool Node::has_meta(const StringName &p_name) const {
 void Node::set_meta(const StringName &p_name, const Variant &p_value) {
 	ERR_THREAD_GUARD;
 	Object::set_meta(p_name, p_value);
+	_emit_editor_state_changed();
 }
 
 void Node::remove_meta(const StringName &p_name) {
 	ERR_THREAD_GUARD;
 	Object::remove_meta(p_name);
+	_emit_editor_state_changed();
 }
 
 Variant Node::get_meta(const StringName &p_name, const Variant &p_default) const {
@@ -3959,17 +4046,43 @@ void Node::get_signals_connected_to_this(List<Connection> *p_connections) const 
 
 Error Node::connect(const StringName &p_signal, const Callable &p_callable, uint32_t p_flags) {
 	ERR_THREAD_GUARD_V(ERR_INVALID_PARAMETER);
-	return Object::connect(p_signal, p_callable, p_flags);
+
+	Error retval = Object::connect(p_signal, p_callable, p_flags);
+#ifdef TOOLS_ENABLED
+	if (p_flags & CONNECT_PERSIST) {
+		_emit_editor_state_changed();
+	}
+#endif
+
+	return retval;
 }
 
 void Node::disconnect(const StringName &p_signal, const Callable &p_callable) {
 	ERR_THREAD_GUARD;
+
+#ifdef TOOLS_ENABLED
+	// Already under thread guard, don't check again.
+	int old_connection_count = Object::get_persistent_signal_connection_count();
+#endif
+
 	Object::disconnect(p_signal, p_callable);
+
+#ifdef TOOLS_ENABLED
+	int new_connection_count = Object::get_persistent_signal_connection_count();
+	if (old_connection_count != new_connection_count) {
+		_emit_editor_state_changed();
+	}
+#endif
 }
 
 bool Node::is_connected(const StringName &p_signal, const Callable &p_callable) const {
 	ERR_THREAD_GUARD_V(false);
 	return Object::is_connected(p_signal, p_callable);
+}
+
+bool Node::has_connections(const StringName &p_signal) const {
+	ERR_THREAD_GUARD_V(false);
+	return Object::has_connections(p_signal);
 }
 
 #endif

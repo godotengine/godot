@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef RESOURCE_IMPORTER_H
-#define RESOURCE_IMPORTER_H
+#pragma once
 
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
@@ -46,10 +45,10 @@ class ResourceFormatImporter : public ResourceFormatLoader {
 		String importer;
 		String group_file;
 		Variant metadata;
-		uint64_t uid = ResourceUID::INVALID_ID;
+		ResourceUID::ID uid = ResourceUID::INVALID_ID;
 	};
 
-	Error _get_path_and_type(const String &p_path, PathAndType &r_path_and_type, bool *r_valid = nullptr) const;
+	Error _get_path_and_type(const String &p_path, PathAndType &r_path_and_type, bool p_load, bool *r_valid = nullptr) const;
 
 	static ResourceFormatImporter *singleton;
 
@@ -70,6 +69,7 @@ public:
 	virtual bool handles_type(const String &p_type) const override;
 	virtual String get_resource_type(const String &p_path) const override;
 	virtual ResourceUID::ID get_resource_uid(const String &p_path) const override;
+	virtual bool has_custom_uid_support() const override;
 	virtual Variant get_resource_metadata(const String &p_path) const;
 	virtual bool is_import_valid(const String &p_path) const override;
 	virtual void get_dependencies(const String &p_path, List<String> *p_dependencies, bool p_add_types = false) override;
@@ -147,13 +147,13 @@ public:
 	virtual void handle_compatibility_options(HashMap<StringName, Variant> &p_import_params) const {}
 	virtual String get_option_group_file() const { return String(); }
 
-	virtual Error import(const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files = nullptr, Variant *r_metadata = nullptr) = 0;
-	virtual bool can_import_threaded() const { return true; }
+	virtual Error import(ResourceUID::ID p_source_id, const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files = nullptr, Variant *r_metadata = nullptr) = 0;
+	virtual bool can_import_threaded() const { return false; }
 	virtual void import_threaded_begin() {}
 	virtual void import_threaded_end() {}
 
 	virtual Error import_group_file(const String &p_group_file, const HashMap<String, HashMap<StringName, Variant>> &p_source_file_options, const HashMap<String, String> &p_base_paths) { return ERR_UNAVAILABLE; }
-	virtual bool are_import_settings_valid(const String &p_path) const { return true; }
+	virtual bool are_import_settings_valid(const String &p_path, const Dictionary &p_meta) const { return true; }
 	virtual String get_import_settings_string() const { return String(); }
 };
 
@@ -165,5 +165,3 @@ class ResourceFormatImporterSaver : public ResourceFormatSaver {
 public:
 	virtual Error set_uid(const String &p_path, ResourceUID::ID p_uid) override;
 };
-
-#endif // RESOURCE_IMPORTER_H

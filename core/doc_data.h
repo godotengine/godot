@@ -28,21 +28,10 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef DOC_DATA_H
-#define DOC_DATA_H
+#pragma once
 
 #include "core/io/xml_parser.h"
 #include "core/variant/variant.h"
-
-struct ScriptMemberInfo {
-	PropertyInfo propinfo;
-	String doc_string;
-	StringName setter;
-	StringName getter;
-
-	bool has_default_value = false;
-	Variant default_value;
-};
 
 class DocData {
 public:
@@ -276,6 +265,7 @@ public:
 		String name;
 		String value;
 		bool is_value_valid = false;
+		String type;
 		String enumeration;
 		bool is_bitfield = false;
 		String description;
@@ -300,6 +290,10 @@ public:
 
 			if (p_dict.has("is_value_valid")) {
 				doc.is_value_valid = p_dict["is_value_valid"];
+			}
+
+			if (p_dict.has("type")) {
+				doc.type = p_dict["type"];
 			}
 
 			if (p_dict.has("enumeration")) {
@@ -351,6 +345,8 @@ public:
 			}
 
 			dict["is_value_valid"] = p_doc.is_value_valid;
+
+			dict["type"] = p_doc.type;
 
 			if (!p_doc.enumeration.is_empty()) {
 				dict["enumeration"] = p_doc.enumeration;
@@ -981,10 +977,5 @@ public:
 
 	static void return_doc_from_retinfo(DocData::MethodDoc &p_method, const PropertyInfo &p_retinfo);
 	static void argument_doc_from_arginfo(DocData::ArgumentDoc &p_argument, const PropertyInfo &p_arginfo);
-	static void property_doc_from_scriptmemberinfo(DocData::PropertyDoc &p_property, const ScriptMemberInfo &p_memberinfo);
 	static void method_doc_from_methodinfo(DocData::MethodDoc &p_method, const MethodInfo &p_methodinfo, const String &p_desc);
-	static void constant_doc_from_variant(DocData::ConstantDoc &p_const, const StringName &p_name, const Variant &p_value, const String &p_desc);
-	static void signal_doc_from_methodinfo(DocData::MethodDoc &p_signal, const MethodInfo &p_methodinfo, const String &p_desc);
 };
-
-#endif // DOC_DATA_H

@@ -37,6 +37,7 @@ import org.godotengine.godot.GodotLib;
 import org.godotengine.godot.GodotRenderView;
 
 import android.content.Context;
+import android.content.res.Configuration;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -58,6 +59,7 @@ import androidx.annotation.NonNull;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Handles input related events for the {@link GodotRenderView} view.
@@ -82,9 +84,12 @@ public class GodotInputHandler implements InputManager.InputDeviceListener, Sens
 	/**
 	 * Used to decide whether mouse capture can be enabled.
 	 */
-	private int lastSeenToolType = MotionEvent.TOOL_TYPE_UNKNOWN;
+	private AtomicInteger lastSeenToolType = new AtomicInteger(MotionEvent.TOOL_TYPE_UNKNOWN);
 
 	private int rotaryInputAxis = ROTARY_INPUT_VERTICAL_AXIS;
+
+	private int cachedRotation = -1;
+	private boolean overrideVolumeButtons = false;
 
 	public GodotInputHandler(Context context, Godot godot) {
 		this.godot = godot;
@@ -133,6 +138,10 @@ public class GodotInputHandler implements InputManager.InputDeviceListener, Sens
 		rotaryInputAxis = axis;
 	}
 
+	public void setOverrideVolumeButtons(boolean value) {
+		overrideVolumeButtons = value;
+	}
+
 	boolean hasHardwareKeyboard() {
 		return !mHardwareKeyboardIds.isEmpty();
 	}
@@ -146,7 +155,8 @@ public class GodotInputHandler implements InputManager.InputDeviceListener, Sens
 	}
 
 	public boolean canCapturePointer() {
-		return lastSeenToolType == MotionEvent.TOOL_TYPE_MOUSE;
+		return lastSeenToolType.get() == MotionEvent.TOOL_TYPE_MOUSE ||
+				lastSeenToolType.get() == MotionEvent.TOOL_TYPE_UNKNOWN;
 	}
 
 	public void onPointerCaptureChange(boolean hasCapture) {
@@ -154,14 +164,6 @@ public class GodotInputHandler implements InputManager.InputDeviceListener, Sens
 	}
 
 	public boolean onKeyUp(final int keyCode, KeyEvent event) {
-		if (keyCode == KeyEvent.KEYCODE_BACK) {
-			return true;
-		}
-
-		if (keyCode == KeyEvent.KEYCODE_VOLUME_UP || keyCode == KeyEvent.KEYCODE_VOLUME_DOWN) {
-			return false;
-		}
-
 		int source = event.getSource();
 		if (isKeyEventGameDevice(source)) {
 			// Check if the device exists
@@ -179,21 +181,14 @@ public class GodotInputHandler implements InputManager.InputDeviceListener, Sens
 			handleKeyEvent(physical_keycode, unicode, key_label, false, event.getRepeatCount() > 0);
 		};
 
+		if (keyCode == KeyEvent.KEYCODE_VOLUME_UP || keyCode == KeyEvent.KEYCODE_VOLUME_DOWN) {
+			return overrideVolumeButtons;
+		}
+
 		return true;
 	}
 
 	public boolean onKeyDown(final int keyCode, KeyEvent event) {
-		if (keyCode == KeyEvent.KEYCODE_BACK) {
-			godot.onBackPressed();
-			// press 'back' button should not terminate program
-			//normal handle 'back' event in game logic
-			return true;
-		}
-
-		if (keyCode == KeyEvent.KEYCODE_VOLUME_UP || keyCode == KeyEvent.KEYCODE_VOLUME_DOWN) {
-			return false;
-		}
-
 		int source = event.getSource();
 
 		final int deviceId = event.getDeviceId();
@@ -214,11 +209,15 @@ public class GodotInputHandler implements InputManager.InputDeviceListener, Sens
 			handleKeyEvent(physical_keycode, unicode, key_label, true, event.getRepeatCount() > 0);
 		}
 
+		if (keyCode == KeyEvent.KEYCODE_VOLUME_UP || keyCode == KeyEvent.KEYCODE_VOLUME_DOWN) {
+			return overrideVolumeButtons;
+		}
+
 		return true;
 	}
 
 	public boolean onTouchEvent(final MotionEvent event) {
-		lastSeenToolType = getEventToolType(event);
+		lastSeenToolType.set(getEventToolType(event));
 
 		this.scaleGestureDetector.onTouchEvent(event);
 		if (this.gestureDetector.onTouchEvent(event)) {
@@ -244,7 +243,7 @@ public class GodotInputHandler implements InputManager.InputDeviceListener, Sens
 	}
 
 	public boolean onGenericMotionEvent(MotionEvent event) {
-		lastSeenToolType = getEventToolType(event);
+		lastSeenToolType.set(getEventToolType(event));
 
 		if (event.isFromSource(InputDevice.SOURCE_JOYSTICK) && event.getActionMasked() == MotionEvent.ACTION_MOVE) {
 			// Check if the device exists
@@ -752,10 +751,14 @@ public class GodotInputHandler implements InputManager.InputDeviceListener, Sens
 			return;
 		}
 
+		if (cachedRotation == -1) {
+			updateCachedRotation();
+		}
+
 		float rotatedValue0 = 0f;
 		float rotatedValue1 = 0f;
 		float rotatedValue2 = 0f;
-		switch (windowManager.getDefaultDisplay().getRotation()) {
+		switch (cachedRotation) {
 			case Surface.ROTATION_0:
 				rotatedValue0 = values[0];
 				rotatedValue1 = values[1];
@@ -787,4 +790,12 @@ public class GodotInputHandler implements InputManager.InputDeviceListener, Sens
 
 	@Override
 	public void onAccuracyChanged(Sensor sensor, int accuracy) {}
+
+	private void updateCachedRotation() {
+		cachedRotation = windowManager.getDefaultDisplay().getRotation();
+	}
+
+	public void onConfigurationChanged(Configuration newConfig) {
+		updateCachedRotation();
+	}
 }

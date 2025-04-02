@@ -3,8 +3,8 @@ import platform
 import sys
 from typing import TYPE_CHECKING
 
-from methods import get_compiler_version, print_error, print_warning, using_gcc
-from platform_methods import detect_arch
+from methods import get_compiler_version, print_error, print_info, print_warning, using_gcc
+from platform_methods import detect_arch, validate_arch
 
 if TYPE_CHECKING:
     from SCons.Script.SConscript import SConsEnvironment
@@ -73,13 +73,8 @@ def get_flags():
 
 def configure(env: "SConsEnvironment"):
     # Validate arch.
-    supported_arches = ["x86_32", "x86_64", "arm32", "arm64", "rv64", "ppc32", "ppc64"]
-    if env["arch"] not in supported_arches:
-        print_error(
-            'Unsupported CPU architecture "%s" for Linux / *BSD. Supported architectures are: %s.'
-            % (env["arch"], ", ".join(supported_arches))
-        )
-        sys.exit(255)
+    supported_arches = ["x86_32", "x86_64", "arm32", "arm64", "rv64", "ppc32", "ppc64", "loongarch64"]
+    validate_arch(env["arch"], get_name(), supported_arches)
 
     ## Build type
 
@@ -128,10 +123,16 @@ def configure(env: "SConsEnvironment"):
                         found_wrapper = True
                         break
                 if not found_wrapper:
-                    print_error(
-                        "Couldn't locate mold installation path. Make sure it's installed in /usr or /usr/local."
-                    )
-                    sys.exit(255)
+                    for path in os.environ["PATH"].split(os.pathsep):
+                        if os.path.isfile(path + "/ld.mold"):
+                            env.Append(LINKFLAGS=["-B" + path])
+                            found_wrapper = True
+                            break
+                    if not found_wrapper:
+                        print_error(
+                            "Couldn't locate mold installation path. Make sure it's installed in /usr, /usr/local or in PATH environment variable."
+                        )
+                        sys.exit(255)
             else:
                 env.Append(LINKFLAGS=["-fuse-ld=mold"])
         else:
@@ -183,8 +184,8 @@ def configure(env: "SConsEnvironment"):
 
     # LTO
 
-    if env["lto"] == "auto":  # Full LTO for production.
-        env["lto"] = "full"
+    if env["lto"] == "auto":  # Enable LTO for production.
+        env["lto"] = "thin" if env["use_llvm"] else "full"
 
     if env["lto"] != "none":
         if env["lto"] == "thin":
@@ -221,23 +222,6 @@ def configure(env: "SConsEnvironment"):
 
     # FIXME: Check for existence of the libs before parsing their flags with pkg-config
 
-    # freetype depends on libpng and zlib, so bundling one of them while keeping others
-    # as shared libraries leads to weird issues. And graphite and harfbuzz need freetype.
-    ft_linked_deps = [
-        env["builtin_freetype"],
-        env["builtin_libpng"],
-        env["builtin_zlib"],
-        env["builtin_graphite"],
-        env["builtin_harfbuzz"],
-    ]
-    if (not all(ft_linked_deps)) and any(ft_linked_deps):  # All or nothing.
-        print_error(
-            "These libraries should be either all builtin, or all system provided:\n"
-            "freetype, libpng, zlib, graphite, harfbuzz.\n"
-            "Please specify `builtin_<name>=no` for all of them, or none."
-        )
-        sys.exit(255)
-
     if not env["builtin_freetype"]:
         env.ParseConfig("pkg-config freetype2 --cflags --libs")
 
@@ -250,15 +234,16 @@ def configure(env: "SConsEnvironment"):
     if not env["builtin_harfbuzz"]:
         env.ParseConfig("pkg-config harfbuzz harfbuzz-icu --cflags --libs")
 
+    if not env["builtin_icu4c"] or not env["builtin_harfbuzz"]:
+        print_warning(
+            "System-provided icu4c or harfbuzz cause known issues for GDExtension (see GH-91401 and GH-100301)."
+        )
+
     if not env["builtin_libpng"]:
         env.ParseConfig("pkg-config libpng16 --cflags --libs")
 
     if not env["builtin_enet"]:
         env.ParseConfig("pkg-config libenet --cflags --libs")
-
-    if not env["builtin_squish"]:
-        # libsquish doesn't reliably install its .pc file, so some distros lack it.
-        env.Append(LIBS=["libsquish"])
 
     if not env["builtin_zstd"]:
         env.ParseConfig("pkg-config libzstd --cflags --libs")
@@ -288,16 +273,18 @@ def configure(env: "SConsEnvironment"):
         env.ParseConfig("pkg-config libwebp --cflags --libs")
 
     if not env["builtin_mbedtls"]:
-        # mbedTLS does not provide a pkgconfig config yet. See https://github.com/ARMmbed/mbedtls/issues/228
-        env.Append(LIBS=["mbedtls", "mbedcrypto", "mbedx509"])
+        # mbedTLS only provides a pkgconfig file since 3.6.0, but we still support 2.28.x,
+        # so fallback to manually specifying LIBS if it fails.
+        if os.system("pkg-config --exists mbedtls") == 0:  # 0 means found
+            env.ParseConfig("pkg-config mbedtls mbedcrypto mbedx509 --cflags --libs")
+        else:
+            env.Append(LIBS=["mbedtls", "mbedcrypto", "mbedx509"])
 
     if not env["builtin_wslay"]:
         env.ParseConfig("pkg-config libwslay --cflags --libs")
 
     if not env["builtin_miniupnpc"]:
-        # No pkgconfig file so far, hardcode default paths.
-        env.Prepend(CPPPATH=["/usr/include/miniupnpc"])
-        env.Append(LIBS=["miniupnpc"])
+        env.ParseConfig("pkg-config miniupnpc --cflags --libs")
 
     # On Linux wchar_t should be 32-bits
     # 16-bit library shouldn't be required due to compiler optimizations
@@ -468,11 +455,14 @@ def configure(env: "SConsEnvironment"):
                 print_error("Wayland EGL library not found. Aborting.")
                 sys.exit(255)
             env.ParseConfig("pkg-config wayland-egl --cflags --libs")
+        else:
+            env.Prepend(CPPPATH=["#thirdparty/linuxbsd_headers/wayland/"])
+            if env["libdecor"]:
+                env.Prepend(CPPPATH=["#thirdparty/linuxbsd_headers/libdecor-0/"])
 
         if env["libdecor"]:
             env.Append(CPPDEFINES=["LIBDECOR_ENABLED"])
 
-        env.Prepend(CPPPATH=["#platform/linuxbsd", "#thirdparty/linuxbsd_headers/wayland/"])
         env.Append(CPPDEFINES=["WAYLAND_ENABLED"])
         env.Append(LIBS=["rt"])  # Needed by glibc, used by _allocate_shm_file
 
@@ -499,7 +489,7 @@ def configure(env: "SConsEnvironment"):
         else:
             # The default crash handler depends on glibc, so if the host uses
             # a different libc (BSD libc, musl), libexecinfo is required.
-            print("Note: Using `execinfo=no` disables the crash handler on platforms where glibc is missing.")
+            print_info("Using `execinfo=no` disables the crash handler on platforms where glibc is missing.")
     else:
         env.Append(CPPDEFINES=["CRASH_HANDLER_ENABLED"])
 

@@ -31,7 +31,8 @@
 #include "project_settings_editor.h"
 
 #include "core/config/project_settings.h"
-#include "editor/editor_log.h"
+#include "core/input/input_map.h"
+#include "editor/editor_inspector.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_string_names.h"
@@ -75,7 +76,15 @@ void ProjectSettingsEditor::popup_project_settings(bool p_clear_filter) {
 }
 
 void ProjectSettingsEditor::queue_save() {
+	settings_changed = true;
 	timer->start();
+}
+
+void ProjectSettingsEditor::_save() {
+	settings_changed = false;
+	if (ps) {
+		ps->save();
+	}
 }
 
 void ProjectSettingsEditor::set_plugins_page() {
@@ -104,9 +113,9 @@ void ProjectSettingsEditor::_update_advanced(bool p_is_advanced) {
 }
 
 void ProjectSettingsEditor::_advanced_toggled(bool p_button_pressed) {
-	EditorSettings::get_singleton()->set_project_metadata("project_settings", "advanced_mode", p_button_pressed);
+	EditorSettings::get_singleton()->set("_project_settings_advanced_mode", p_button_pressed);
+	EditorSettings::get_singleton()->save();
 	_update_advanced(p_button_pressed);
-	general_settings_inspector->set_restrict_to_basic_settings(!p_button_pressed);
 }
 
 void ProjectSettingsEditor::_setting_selected(const String &p_path) {
@@ -138,7 +147,7 @@ void ProjectSettingsEditor::_add_setting() {
 	undo_redo->add_undo_method(this, "queue_save");
 	undo_redo->commit_action();
 
-	general_settings_inspector->set_current_section(setting.get_slice("/", 1));
+	general_settings_inspector->set_current_section(setting.get_slicec('/', 1));
 	add_button->release_focus();
 }
 
@@ -267,7 +276,7 @@ void ProjectSettingsEditor::shortcut_input(const Ref<InputEvent> &p_event) {
 
 String ProjectSettingsEditor::_get_setting_name() const {
 	String name = property_box->get_text().strip_edges();
-	if (!name.contains("/")) {
+	if (!name.begins_with("_") && !name.contains_char('/')) {
 		name = "global/" + name;
 	}
 	return name;
@@ -390,7 +399,7 @@ void ProjectSettingsEditor::_action_added(const String &p_name) {
 
 	Dictionary action;
 	action["events"] = Array();
-	action["deadzone"] = 0.5f;
+	action["deadzone"] = InputMap::DEFAULT_DEADZONE;
 
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(TTR("Add Input Action"));
@@ -576,10 +585,10 @@ void ProjectSettingsEditor::_update_action_map_editor() {
 }
 
 void ProjectSettingsEditor::_update_theme() {
-	add_button->set_icon(get_editor_theme_icon(SNAME("Add")));
-	del_button->set_icon(get_editor_theme_icon(SNAME("Remove")));
+	add_button->set_button_icon(get_editor_theme_icon(SNAME("Add")));
+	del_button->set_button_icon(get_editor_theme_icon(SNAME("Remove")));
 	search_box->set_right_icon(get_editor_theme_icon(SNAME("Search")));
-	restart_close_button->set_icon(get_editor_theme_icon(SNAME("Close")));
+	restart_close_button->set_button_icon(get_editor_theme_icon(SNAME("Close")));
 	restart_container->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SceneStringName(panel), SNAME("Tree")));
 	restart_icon->set_texture(get_editor_theme_icon(SNAME("StatusWarning")));
 	restart_label->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
@@ -600,6 +609,10 @@ void ProjectSettingsEditor::_notification(int p_what) {
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			if (!is_visible()) {
 				EditorSettings::get_singleton()->set_project_metadata("dialog_bounds", "project_settings", Rect2(get_position(), get_size()));
+				if (settings_changed) {
+					timer->stop();
+					_save();
+				}
 			}
 		} break;
 
@@ -652,7 +665,6 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 
 	advanced = memnew(CheckButton);
 	advanced->set_text(TTR("Advanced Settings"));
-	advanced->connect(SceneStringName(toggled), callable_mp(this, &ProjectSettingsEditor::_advanced_toggled));
 	search_bar->add_child(advanced);
 
 	custom_properties = memnew(HBoxContainer);
@@ -688,6 +700,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	general_settings_inspector = memnew(SectionedInspector);
 	general_settings_inspector->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	general_settings_inspector->register_search_box(search_box);
+	general_settings_inspector->register_advanced_toggle(advanced);
 	general_settings_inspector->get_inspector()->set_use_filter(true);
 	general_settings_inspector->get_inspector()->connect("property_selected", callable_mp(this, &ProjectSettingsEditor::_setting_selected));
 	general_settings_inspector->get_inspector()->connect("property_edited", callable_mp(this, &ProjectSettingsEditor::_setting_edited));
@@ -761,21 +774,20 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 
 	timer = memnew(Timer);
 	timer->set_wait_time(1.5);
-	timer->connect("timeout", callable_mp(ps, &ProjectSettings::save));
+	timer->connect("timeout", callable_mp(this, &ProjectSettingsEditor::_save));
 	timer->set_one_shot(true);
 	add_child(timer);
 
 	set_ok_button_text(TTR("Close"));
 	set_hide_on_ok(true);
 
-	bool use_advanced = EditorSettings::get_singleton()->get_project_metadata("project_settings", "advanced_mode", false);
-
+	bool use_advanced = EDITOR_DEF("_project_settings_advanced_mode", false);
 	if (use_advanced) {
 		advanced->set_pressed(true);
 	}
+	advanced->connect(SceneStringName(toggled), callable_mp(this, &ProjectSettingsEditor::_advanced_toggled));
 
 	_update_advanced(use_advanced);
-	general_settings_inspector->set_restrict_to_basic_settings(!use_advanced);
 
 	import_defaults_editor = memnew(ImportDefaultsEditor);
 	import_defaults_editor->set_name(TTR("Import Defaults"));

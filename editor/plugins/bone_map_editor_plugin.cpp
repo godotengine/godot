@@ -41,6 +41,8 @@
 #include "scene/gui/separator.h"
 #include "scene/gui/texture_rect.h"
 
+#include "modules/regex/regex.h"
+
 void BoneMapperButton::fetch_textures() {
 	if (selected) {
 		set_texture_normal(get_editor_theme_icon(SNAME("BoneMapperHandleSelected")));
@@ -102,9 +104,6 @@ BoneMapperButton::BoneMapperButton(const StringName &p_profile_bone_name, bool p
 	selected = p_selected;
 }
 
-BoneMapperButton::~BoneMapperButton() {
-}
-
 void BoneMapperItem::create_editor() {
 	HBoxContainer *hbox = memnew(HBoxContainer);
 	add_child(hbox);
@@ -119,7 +118,7 @@ void BoneMapperItem::create_editor() {
 	hbox->add_child(skeleton_bone_selector);
 
 	picker_button = memnew(Button);
-	picker_button->set_icon(get_editor_theme_icon(SNAME("ClassList")));
+	picker_button->set_button_icon(get_editor_theme_icon(SNAME("ClassList")));
 	picker_button->connect(SceneStringName(pressed), callable_mp(this, &BoneMapperItem::_open_picker));
 	hbox->add_child(picker_button);
 
@@ -147,7 +146,7 @@ void BoneMapperItem::_notification(int p_what) {
 			bone_map->connect("bone_map_updated", callable_mp(this, &BoneMapperItem::_update_property));
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
-			if (!bone_map.is_null() && bone_map->is_connected("bone_map_updated", callable_mp(this, &BoneMapperItem::_update_property))) {
+			if (bone_map.is_valid() && bone_map->is_connected("bone_map_updated", callable_mp(this, &BoneMapperItem::_update_property))) {
 				bone_map->disconnect("bone_map_updated", callable_mp(this, &BoneMapperItem::_update_property));
 			}
 		} break;
@@ -161,9 +160,6 @@ void BoneMapperItem::_bind_methods() {
 BoneMapperItem::BoneMapperItem(Ref<BoneMap> &p_bone_map, const StringName &p_profile_bone_name) {
 	bone_map = p_bone_map;
 	profile_bone_name = p_profile_bone_name;
-}
-
-BoneMapperItem::~BoneMapperItem() {
 }
 
 void BonePicker::create_editors() {
@@ -264,9 +260,6 @@ BonePicker::BonePicker(Skeleton3D *p_skeleton) {
 	skeleton = p_skeleton;
 }
 
-BonePicker::~BonePicker() {
-}
-
 void BoneMapper::create_editor() {
 	// Create Bone picker.
 	picker = memnew(BonePicker(skeleton));
@@ -296,7 +289,7 @@ void BoneMapper::create_editor() {
 	group_hbox->add_child(profile_group_selector);
 
 	clear_mapping_button = memnew(Button);
-	clear_mapping_button->set_icon(get_editor_theme_icon(SNAME("Clear")));
+	clear_mapping_button->set_button_icon(get_editor_theme_icon(SNAME("Clear")));
 	clear_mapping_button->set_tooltip_text(TTR("Clear mappings in current group."));
 	clear_mapping_button->connect(SceneStringName(pressed), callable_mp(this, &BoneMapper::_clear_mapping_current_group));
 	group_hbox->add_child(clear_mapping_button);
@@ -327,7 +320,7 @@ void BoneMapper::create_editor() {
 }
 
 void BoneMapper::update_group_idx() {
-	if (!bone_map->get_profile().is_valid()) {
+	if (bone_map->get_profile().is_null()) {
 		return;
 	}
 
@@ -412,7 +405,7 @@ void BoneMapper::recreate_editor() {
 		profile_texture->set_texture(Ref<Texture2D>());
 	}
 
-	if (!profile.is_valid()) {
+	if (profile.is_null()) {
 		return;
 	}
 
@@ -531,10 +524,9 @@ void BoneMapper::_clear_mapping_current_group() {
 	}
 }
 
-#ifdef MODULE_REGEX_ENABLED
 bool BoneMapper::is_match_with_bone_name(const String &p_bone_name, const String &p_word) {
 	RegEx re = RegEx(p_word);
-	return !re.search(p_bone_name.to_lower()).is_null();
+	return re.search(p_bone_name.to_lower()).is_valid();
 }
 
 int BoneMapper::search_bone_by_name(Skeleton3D *p_skeleton, const Vector<String> &p_picklist, BoneSegregation p_segregation, int p_parent, int p_child, int p_children_count) {
@@ -628,11 +620,11 @@ BoneMapper::BoneSegregation BoneMapper::guess_bone_segregation(const String &p_b
 
 	for (uint32_t i = 0; i < left_words.size(); i++) {
 		RegEx re_l = RegEx(left_words[i]);
-		if (!re_l.search(fixed_bn).is_null()) {
+		if (re_l.search(fixed_bn).is_valid()) {
 			return BONE_SEGREGATION_LEFT;
 		}
 		RegEx re_r = RegEx(right_words[i]);
-		if (!re_r.search(fixed_bn).is_null()) {
+		if (re_r.search(fixed_bn).is_valid()) {
 			return BONE_SEGREGATION_RIGHT;
 		}
 	}
@@ -681,7 +673,7 @@ void BoneMapper::auto_mapping_process(Ref<BoneMap> &p_bone_map) {
 		bool found = false;
 		for (int i = 0; i < search_path.size(); i++) {
 			RegEx re = RegEx("root");
-			if (!re.search(skeleton->get_bone_name(search_path[i]).to_lower()).is_null()) {
+			if (re.search(skeleton->get_bone_name(search_path[i]).to_lower()).is_valid()) {
 				bone_idx = search_path[i]; // Name match is preferred.
 				found = true;
 				break;
@@ -859,7 +851,7 @@ void BoneMapper::auto_mapping_process(Ref<BoneMap> &p_bone_map) {
 
 	// 4-1. Guess Finger
 	int tips_index = -1;
-	bool thumb_tips_size = 0;
+	bool thumb_tips_size = false;
 	bool named_finger_is_found = false;
 	LocalVector<String> fingers;
 	fingers.push_back("thumb|pollex");
@@ -948,7 +940,7 @@ void BoneMapper::auto_mapping_process(Ref<BoneMap> &p_bone_map) {
 			Vector<String> finger_names;
 			for (int i = 0; i < search_path.size(); i++) {
 				String bn = skeleton->get_bone_name(search_path[i]);
-				if (!finger_re.search(bn.to_lower()).is_null()) {
+				if (finger_re.search(bn.to_lower()).is_valid()) {
 					finger_names.push_back(bn);
 				}
 			}
@@ -994,7 +986,7 @@ void BoneMapper::auto_mapping_process(Ref<BoneMap> &p_bone_map) {
 	}
 
 	tips_index = -1;
-	thumb_tips_size = 0;
+	thumb_tips_size = false;
 	named_finger_is_found = false;
 	if (right_hand_or_palm != -1) {
 		LocalVector<LocalVector<String>> right_fingers_map;
@@ -1077,7 +1069,7 @@ void BoneMapper::auto_mapping_process(Ref<BoneMap> &p_bone_map) {
 			Vector<String> finger_names;
 			for (int i = 0; i < search_path.size(); i++) {
 				String bn = skeleton->get_bone_name(search_path[i]);
-				if (!finger_re.search(bn.to_lower()).is_null()) {
+				if (finger_re.search(bn.to_lower()).is_valid()) {
 					finger_names.push_back(bn);
 				}
 			}
@@ -1352,7 +1344,6 @@ void BoneMapper::auto_mapping_process(Ref<BoneMap> &p_bone_map) {
 
 	WARN_PRINT("Finish auto mapping.");
 }
-#endif // MODULE_REGEX_ENABLED
 
 void BoneMapper::_value_changed(const String &p_property, const Variant &p_value, const String &p_name, bool p_changing) {
 	set(p_property, p_value);
@@ -1367,9 +1358,7 @@ void BoneMapper::_profile_changed(const String &p_property, const Variant &p_val
 	if (profile.is_valid()) {
 		SkeletonProfileHumanoid *hmn = Object::cast_to<SkeletonProfileHumanoid>(profile.ptr());
 		if (hmn) {
-#ifdef MODULE_REGEX_ENABLED
 			_run_auto_mapping();
-#endif // MODULE_REGEX_ENABLED
 		}
 	}
 }
@@ -1392,7 +1381,7 @@ void BoneMapper::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
 			clear_items();
-			if (!bone_map.is_null()) {
+			if (bone_map.is_valid()) {
 				if (bone_map->is_connected("bone_map_updated", callable_mp(this, &BoneMapper::_update_state))) {
 					bone_map->disconnect("bone_map_updated", callable_mp(this, &BoneMapper::_update_state));
 				}
@@ -1407,9 +1396,6 @@ void BoneMapper::_notification(int p_what) {
 BoneMapper::BoneMapper(Skeleton3D *p_skeleton, Ref<BoneMap> &p_bone_map) {
 	skeleton = p_skeleton;
 	bone_map = p_bone_map;
-}
-
-BoneMapper::~BoneMapper() {
 }
 
 void BoneMapEditor::create_editors() {
@@ -1457,9 +1443,6 @@ void BoneMapEditor::_notification(int p_what) {
 
 BoneMapEditor::BoneMapEditor(Ref<BoneMap> &p_bone_map) {
 	bone_map = p_bone_map;
-}
-
-BoneMapEditor::~BoneMapEditor() {
 }
 
 bool EditorInspectorPluginBoneMap::can_handle(Object *p_object) {
