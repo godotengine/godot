@@ -78,6 +78,7 @@ void ResourceImporterOggVorbis::get_import_options(const String &p_path, List<Im
 	r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "bpm", PROPERTY_HINT_RANGE, "0,400,0.01,or_greater"), 0));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "beat_count", PROPERTY_HINT_RANGE, "0,512,or_greater"), 0));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "bar_beats", PROPERTY_HINT_RANGE, "2,32,or_greater"), 4));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "edit/volume_db", PROPERTY_HINT_RANGE, "-24,24,0.001,or_greater,or_less,exp,suffix:db"), 0.0));
 }
 
 #ifdef TOOLS_ENABLED
@@ -99,6 +100,7 @@ Error ResourceImporterOggVorbis::import(ResourceUID::ID p_source_id, const Strin
 	double bpm = p_options["bpm"];
 	int beat_count = p_options["beat_count"];
 	int bar_beats = p_options["bar_beats"];
+	float volume_db = p_options["edit/volume_db"];
 
 	Ref<AudioStreamOggVorbis> ogg_vorbis_stream = AudioStreamOggVorbis::load_from_file(p_source_file);
 	if (ogg_vorbis_stream.is_null()) {
@@ -110,6 +112,7 @@ Error ResourceImporterOggVorbis::import(ResourceUID::ID p_source_id, const Strin
 	ogg_vorbis_stream->set_bpm(bpm);
 	ogg_vorbis_stream->set_beat_count(beat_count);
 	ogg_vorbis_stream->set_bar_beats(bar_beats);
+	ogg_vorbis_stream->set_volume_db(volume_db);
 
 	return ResourceSaver::save(ogg_vorbis_stream, p_save_path + ".oggvorbisstr");
 }
