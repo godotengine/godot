@@ -182,7 +182,7 @@ void Polygon2DEditor::_sync_bones() {
 				}
 			}
 
-			if (weights.size() == 0) { //create them
+			if (weights.is_empty()) { //create them
 				weights.resize(wc);
 				float *w = weights.ptrw();
 				for (int j = 0; j < wc; j++) {
@@ -311,7 +311,7 @@ void Polygon2DEditor::_edit_menu_option(int p_option) {
 	switch (p_option) {
 		case MENU_POLYGON_TO_UV: {
 			Vector<Vector2> points = node->get_polygon();
-			if (points.size() == 0) {
+			if (points.is_empty()) {
 				break;
 			}
 			Vector<Vector2> uvs = node->get_uv();
@@ -323,7 +323,7 @@ void Polygon2DEditor::_edit_menu_option(int p_option) {
 		case MENU_UV_TO_POLYGON: {
 			Vector<Vector2> points = node->get_polygon();
 			Vector<Vector2> uvs = node->get_uv();
-			if (uvs.size() == 0) {
+			if (uvs.is_empty()) {
 				break;
 			}
 
@@ -334,7 +334,7 @@ void Polygon2DEditor::_edit_menu_option(int p_option) {
 		} break;
 		case MENU_UV_CLEAR: {
 			Vector<Vector2> uvs = node->get_uv();
-			if (uvs.size() == 0) {
+			if (uvs.is_empty()) {
 				break;
 			}
 			undo_redo->create_action(TTR("Create UV Map"));

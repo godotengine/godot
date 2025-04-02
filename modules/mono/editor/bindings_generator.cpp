@@ -249,7 +249,7 @@ String BindingsGenerator::bbcode_to_text(const String &p_bbcode, const TypeInter
 
 			const Vector<String> link_target_parts = link_target.split(".");
 
-			if (link_target_parts.size() <= 0 || link_target_parts.size() > 2) {
+			if (link_target_parts.is_empty() || link_target_parts.size() > 2) {
 				ERR_PRINT("Invalid reference format: '" + tag + "'.");
 
 				output.append(tag);
@@ -561,7 +561,7 @@ String BindingsGenerator::bbcode_to_xml(const String &p_bbcode, const TypeInterf
 
 			const Vector<String> link_target_parts = link_target.split(".");
 
-			if (link_target_parts.size() <= 0 || link_target_parts.size() > 2) {
+			if (link_target_parts.is_empty() || link_target_parts.size() > 2) {
 				ERR_PRINT("Invalid reference format: '" + tag + "'.");
 
 				xml_output.append("<c>");
@@ -3200,7 +3200,7 @@ Error BindingsGenerator::_generate_cs_signal(const BindingsGenerator::TypeInterf
 
 	// Generate signal
 	{
-		bool is_parameterless = p_isignal.arguments.size() == 0;
+		bool is_parameterless = p_isignal.arguments.is_empty();
 
 		// Delegate name is [SignalName]EventHandler
 		String delegate_name = is_parameterless ? "Action" : p_isignal.proxy_name + "EventHandler";

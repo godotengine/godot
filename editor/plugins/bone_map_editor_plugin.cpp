@@ -665,7 +665,7 @@ void BoneMapper::auto_mapping_process(Ref<BoneMap> &p_bone_map) {
 		search_path.push_back(bone_idx);
 		bone_idx = skeleton->get_bone_parent(bone_idx);
 	}
-	if (search_path.size() == 0) {
+	if (search_path.is_empty()) {
 		bone_idx = -1;
 	} else if (search_path.size() == 1) {
 		bone_idx = search_path[0]; // It is only one bone which can be root.
@@ -1329,7 +1329,7 @@ void BoneMapper::auto_mapping_process(Ref<BoneMap> &p_bone_map) {
 		bone_idx = skeleton->get_bone_parent(bone_idx);
 	}
 	search_path.reverse();
-	if (search_path.size() == 0) {
+	if (search_path.is_empty()) {
 		p_bone_map->_set_skeleton_bone_name("Spine", skeleton->get_bone_name(chest_or_upper_chest)); // Maybe chibi model...?
 	} else if (search_path.size() == 1) {
 		p_bone_map->_set_skeleton_bone_name("Spine", skeleton->get_bone_name(search_path[0]));

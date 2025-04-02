@@ -120,7 +120,7 @@ void MultiMeshEditor::_populate() {
 
 	Vector<Face3> geometry = ss_instance->get_mesh()->get_faces();
 
-	if (geometry.size() == 0) {
+	if (geometry.is_empty()) {
 		err_dialog->set_text(TTR("Surface source is invalid (no faces)."));
 		err_dialog->popup_centered();
 		return;
