@@ -56,6 +56,7 @@ cpp_files = [
     "kernels/common/geometry.cpp",
     "kernels/common/scene_triangle_mesh.cpp",
     "kernels/geometry/primitive4.cpp",
+    "kernels/geometry/primitive8.cpp",
     "kernels/builders/primrefgen.cpp",
     "kernels/bvh/bvh.cpp",
     "kernels/bvh/bvh_statistics.cpp",
@@ -72,7 +73,13 @@ cpp_files = [
     "kernels/bvh/bvh_builder_twolevel.cpp",
     "kernels/bvh/bvh_intersector1.cpp",
     "kernels/bvh/bvh_intersector1_bvh4.cpp",
+    "kernels/bvh/bvh_intersector1_bvh8.cpp",
     "kernels/bvh/bvh_intersector_hybrid4_bvh4.cpp",
+    "kernels/bvh/bvh_intersector_hybrid4_bvh8.cpp",
+    "kernels/bvh/bvh_intersector_hybrid8_bvh4.cpp",
+    "kernels/bvh/bvh_intersector_hybrid8_bvh8.cpp",
+    "kernels/bvh/bvh_intersector_hybrid16_bvh4.cpp",
+    "kernels/bvh/bvh_intersector_hybrid16_bvh8.cpp",
     "kernels/bvh/bvh_intersector_hybrid.cpp",
 ]
 
