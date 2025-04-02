@@ -4571,7 +4571,7 @@ bool ScriptEditorPlugin::handles(Object *p_object) const {
 		return true;
 	}
 
-	return p_object->is_class("Script");
+	return p_object->is_class<Script>();
 }
 
 void ScriptEditorPlugin::make_visible(bool p_visible) {

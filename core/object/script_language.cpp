@@ -829,7 +829,7 @@ void PlaceHolderScriptInstance::property_set_fallback(const StringName &p_name, 
 		if (!found) {
 			PropertyHint hint = PROPERTY_HINT_NONE;
 			const Object *obj = p_value.get_validated_object();
-			if (obj && obj->is_class("Node")) {
+			if (obj && obj->is_class_by_name("Node")) {
 				hint = PROPERTY_HINT_NODE_TYPE;
 			}
 			properties.push_back(PropertyInfo(p_value.get_type(), p_name, hint, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_SCRIPT_VARIABLE));

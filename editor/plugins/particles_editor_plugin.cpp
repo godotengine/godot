@@ -105,7 +105,7 @@ void ParticlesEditorPlugin::edit(Object *p_object) {
 }
 
 bool ParticlesEditorPlugin::handles(Object *p_object) const {
-	return p_object->is_class(handled_type);
+	return p_object->is_class_by_name(handled_type);
 }
 
 void ParticlesEditorPlugin::make_visible(bool p_visible) {
@@ -644,7 +644,7 @@ void Particles3DEditorPlugin::_node_selected(const NodePath &p_path) {
 		return;
 	}
 
-	if (!sel->is_class("Node3D")) {
+	if (!sel->is_class<Node3D>()) {
 		EditorNode::get_singleton()->show_warning(vformat(TTR("\"%s\" doesn't inherit from Node3D."), sel->get_name()));
 		return;
 	}

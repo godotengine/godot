@@ -147,7 +147,7 @@ void EditorObjectSelector::update_path() {
 				if (name.is_empty()) {
 					name = r->get_class();
 				}
-			} else if (obj->is_class("EditorDebuggerRemoteObjects")) {
+			} else if (obj->is_class_by_name("EditorDebuggerRemoteObjects")) {
 				name = obj->call("get_title");
 			} else if (Object::cast_to<Node>(obj)) {
 				name = Object::cast_to<Node>(obj)->get_name();

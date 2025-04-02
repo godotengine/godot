@@ -94,7 +94,7 @@ Error Callable::rpcp(int p_id, const Variant **p_arguments, int p_argcount, Call
 	} else if (!is_custom()) {
 		Object *obj = ObjectDB::get_instance(ObjectID(object));
 #ifdef DEBUG_ENABLED
-		if (!obj || !obj->is_class("Node")) {
+		if (!obj || !obj->is_class_by_name("Node")) {
 			r_call_error.error = CallError::CALL_ERROR_INSTANCE_IS_NULL;
 			r_call_error.argument = 0;
 			r_call_error.expected = 0;

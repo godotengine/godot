@@ -397,13 +397,13 @@ void PointLight2D::set_texture(const Ref<Texture2D> &p_texture) {
 	if (texture.is_valid()) {
 #ifdef DEBUG_ENABLED
 		if (
-				p_texture->is_class("AnimatedTexture") ||
-				p_texture->is_class("AtlasTexture") ||
-				p_texture->is_class("CameraTexture") ||
-				p_texture->is_class("CanvasTexture") ||
-				p_texture->is_class("MeshTexture") ||
-				p_texture->is_class("Texture2DRD") ||
-				p_texture->is_class("ViewportTexture")) {
+				p_texture->is_class_by_name("AnimatedTexture") ||
+				p_texture->is_class_by_name("AtlasTexture") ||
+				p_texture->is_class_by_name("CameraTexture") ||
+				p_texture->is_class_by_name("CanvasTexture") ||
+				p_texture->is_class_by_name("MeshTexture") ||
+				p_texture->is_class_by_name("Texture2DRD") ||
+				p_texture->is_class_by_name("ViewportTexture")) {
 			WARN_PRINT(vformat("%s cannot be used as a PointLight2D texture (%s). As a workaround, assign the value returned by %s's `get_image()` instead.", p_texture->get_class(), get_path(), p_texture->get_class()));
 		}
 #endif

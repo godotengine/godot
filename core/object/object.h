@@ -436,11 +436,11 @@ public:                                                                         
 		m_inherits::get_inheritance_list_static(p_inheritance_list);                                                                        \
 		p_inheritance_list->push_back(String(#m_class));                                                                                    \
 	}                                                                                                                                       \
-	virtual bool is_class(const String &p_class) const override {                                                                           \
+	virtual bool is_class_by_name(const String &p_class) const override {                                                                   \
 		if (_get_extension() && _get_extension()->is_class(p_class)) {                                                                      \
 			return true;                                                                                                                    \
 		}                                                                                                                                   \
-		return (p_class == (#m_class)) ? true : m_inherits::is_class(p_class);                                                              \
+		return (p_class == (#m_class)) ? true : m_inherits::is_class_by_name(p_class);                                                      \
 	}                                                                                                                                       \
 	static void get_valid_parents_static(List<String> *p_parents) {                                                                         \
 		if (m_class::_get_valid_parents_static != m_inherits::_get_valid_parents_static) {                                                  \
@@ -805,16 +805,12 @@ public:
 	static T *cast_to(Object *p_object) {
 		// This is like dynamic_cast, but faster.
 		// The reason is that we can assume no virtual and multiple inheritance.
-		static_assert(std::is_base_of_v<Object, T>, "T must be derived from Object");
-		static_assert(std::is_same_v<std::decay_t<T>, typename T::self_type>, "T must use GDCLASS or GDSOFTCLASS");
-		return p_object && p_object->is_class_ptr(T::get_class_ptr_static()) ? static_cast<T *>(p_object) : nullptr;
+		return p_object && p_object->is_class<T>() ? static_cast<T *>(p_object) : nullptr;
 	}
 
 	template <typename T>
 	static const T *cast_to(const Object *p_object) {
-		static_assert(std::is_base_of_v<Object, T>, "T must be derived from Object");
-		static_assert(std::is_same_v<std::decay_t<T>, typename T::self_type>, "T must use GDCLASS or GDSOFTCLASS");
-		return p_object && p_object->is_class_ptr(T::get_class_ptr_static()) ? static_cast<const T *>(p_object) : nullptr;
+		return p_object && p_object->is_class<T>() ? static_cast<const T *>(p_object) : nullptr;
 	}
 
 	enum {
@@ -839,7 +835,14 @@ public:
 	}
 	virtual String get_save_class() const { return get_class(); } //class stored when saving
 
-	virtual bool is_class(const String &p_class) const {
+	template <typename T>
+	_FORCE_INLINE_ bool is_class() const {
+		static_assert(std::is_base_of_v<Object, T>, "T must be derived from Object");
+		static_assert(std::is_same_v<std::decay_t<T>, typename T::self_type>, "T must use GDCLASS or GDSOFTCLASS");
+		return is_class_ptr(T::get_class_ptr_static());
+	}
+
+	virtual bool is_class_by_name(const String &p_class) const {
 		if (_extension && _extension->is_class(p_class)) {
 			return true;
 		}

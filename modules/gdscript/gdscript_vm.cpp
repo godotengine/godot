@@ -70,7 +70,7 @@ static String _get_var_type(const Variant *p_var) {
 				basestr = "null instance";
 			}
 		} else {
-			if (bobj->is_class_ptr(GDScriptNativeClass::get_class_ptr_static())) {
+			if (bobj->is_class<GDScriptNativeClass>()) {
 				basestr = Object::cast_to<GDScriptNativeClass>(bobj)->get_name();
 			} else {
 				basestr = bobj->get_class();
@@ -1908,7 +1908,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 						bool was_freed = false;
 						Object *obj = ret->get_validated_object_with_check(was_freed);
 
-						if (obj && obj->is_class_ptr(GDScriptFunctionState::get_class_ptr_static())) {
+						if (obj && obj->is_class<GDScriptFunctionState>()) {
 							err_text = R"(Trying to call an async function without "await".)";
 							OPCODE_BREAK;
 						}
@@ -2510,7 +2510,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 
 						// Is this even possible to be null at this point?
 						if (obj) {
-							if (obj->is_class_ptr(GDScriptFunctionState::get_class_ptr_static())) {
+							if (obj->is_class<GDScriptFunctionState>()) {
 								result = Signal(obj, "completed");
 							}
 						}

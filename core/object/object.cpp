@@ -548,7 +548,7 @@ void Object::get_property_list(List<PropertyInfo> *p_list, bool p_reversed) cons
 
 	_get_property_listv(p_list, p_reversed);
 
-	if (!is_class("Script")) { // can still be set, but this is for user-friendliness
+	if (!is_class<Script>()) { // can still be set, but this is for user-friendliness
 		p_list->push_back(PropertyInfo(Variant::OBJECT, "script", PROPERTY_HINT_RESOURCE_TYPE, "Script", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_NEVER_DUPLICATE));
 	}
 
@@ -1707,7 +1707,7 @@ void Object::notify_property_list_changed() {
 
 void Object::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_class"), &Object::get_class);
-	ClassDB::bind_method(D_METHOD("is_class", "class"), &Object::is_class);
+	ClassDB::bind_method(D_METHOD("is_class", "class"), &Object::is_class_by_name);
 	ClassDB::bind_method(D_METHOD("set", "property", "value"), &Object::_set_bind);
 	ClassDB::bind_method(D_METHOD("get", "property"), &Object::_get_bind);
 	ClassDB::bind_method(D_METHOD("set_indexed", "property_path", "value"), &Object::_set_indexed_bind);
@@ -2411,10 +2411,10 @@ void ObjectDB::cleanup() {
 					Object *obj = object_slots[i].object;
 
 					String extra_info;
-					if (obj->is_class("Node")) {
+					if (obj->is_class_by_name("Node")) {
 						extra_info = " - Node path: " + String(node_get_path->call(obj, nullptr, 0, call_error));
 					}
-					if (obj->is_class("Resource")) {
+					if (obj->is_class_by_name("Resource")) {
 						extra_info = " - Resource path: " + String(resource_get_path->call(obj, nullptr, 0, call_error));
 					}
 

@@ -158,7 +158,7 @@ void EditorResourcePicker::_file_selected(const String &p_path) {
 		for (int i = 0; i < base_type.get_slice_count(","); i++) {
 			String base = base_type.get_slicec(',', i);
 
-			any_type_matches = is_global_class ? EditorNode::get_editor_data().script_class_is_parent(res_type, base) : loaded_resource->is_class(base);
+			any_type_matches = is_global_class ? EditorNode::get_editor_data().script_class_is_parent(res_type, base) : loaded_resource->is_class_by_name(base);
 
 			if (any_type_matches) {
 				break;

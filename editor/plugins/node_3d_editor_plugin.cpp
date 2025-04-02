@@ -1106,7 +1106,7 @@ void Node3DEditorViewport::_select_region() {
 		}
 
 		// Replace the node by the group if grouped
-		if (node->is_class("Node3D")) {
+		if (node->is_class<Node3D>()) {
 			Node3D *sel = Object::cast_to<Node3D>(node);
 			while (node && node != EditorNode::get_singleton()->get_edited_scene()->get_parent()) {
 				Node3D *selected_tmp = Object::cast_to<Node3D>(node);
@@ -4400,7 +4400,7 @@ void _insert_rid_recursive(Node *node, HashSet<RID> &rids) {
 
 	if (co) {
 		rids.insert(co->get_rid());
-	} else if (node->is_class("CSGShape3D")) { // HACK: We should avoid referencing module logic.
+	} else if (node->is_class_by_name("CSGShape3D")) { // HACK: We should avoid referencing module logic.
 		rids.insert(node->call("_get_root_collision_instance"));
 	}
 
@@ -9729,7 +9729,7 @@ void Node3DEditorPlugin::edit(Object *p_object) {
 }
 
 bool Node3DEditorPlugin::handles(Object *p_object) const {
-	return p_object->is_class("Node3D");
+	return p_object->is_class<Node3D>();
 }
 
 Dictionary Node3DEditorPlugin::get_state() const {

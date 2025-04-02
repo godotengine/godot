@@ -1925,7 +1925,7 @@ TypedArray<Node> Node::find_children(const String &p_pattern, const String &p_ty
 		}
 
 		if (p_pattern.is_empty() || cptr[i]->data.name.operator String().match(p_pattern)) {
-			if (p_type.is_empty() || cptr[i]->is_class(p_type)) {
+			if (p_type.is_empty() || cptr[i]->is_class_by_name(p_type)) {
 				ret.append(cptr[i]);
 			} else if (cptr[i]->get_script_instance()) {
 				Ref<Script> scr = cptr[i]->get_script_instance()->get_script();
