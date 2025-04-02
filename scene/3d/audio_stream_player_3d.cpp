@@ -273,8 +273,8 @@ void AudioStreamPlayer3D::_notification(int p_what) {
 
 			if (setplayback.is_valid() && setplay.get() >= 0) {
 				internal->active.set();
-				HashMap<StringName, Vector<AudioFrame>> bus_map;
-				bus_map[_get_actual_bus()] = volume_vector;
+				HashMap<StringName, Vector<AudioFrame>> bus_map = _get_bus_vectors(volume_vector);
+				//bus_map[_get_actual_bus()] = volume_vector;
 				AudioServer::get_singleton()->start_playback_stream(setplayback, bus_map, setplay.get(), actual_pitch_scale, linear_attenuation, attenuation_filter_cutoff_hz);
 				setplayback.unref();
 				setplay.set(-1);
@@ -339,6 +339,29 @@ StringName AudioStreamPlayer3D::_get_actual_bus() {
 #endif // PHYSICS_3D_DISABLED
 	return internal->bus;
 }
+
+void AudioStreamPlayer3D::remove_bus_route(const StringName &p_bus){
+	internal->remove_bus_route(p_bus);
+}
+float AudioStreamPlayer3D::get_bus_volume_linear(const StringName &p_bus){
+	return internal->get_bus_volume(p_bus);
+}
+float AudioStreamPlayer3D::get_bus_volume_db(const StringName &p_bus){
+	return Math::linear_to_db(internal->get_bus_volume(p_bus));
+}
+void AudioStreamPlayer3D::set_bus_volume_linear(const StringName &p_bus, float p_volume_linear){
+	internal->set_bus_volume(p_bus, p_volume_linear);			
+}
+void AudioStreamPlayer3D::set_bus_volume_db(const StringName &p_bus, float p_volume_db){
+	set_bus_volume_linear(p_bus, Math::db_to_linear(p_volume_db));	
+}
+HashMap<StringName, Vector<AudioFrame>> AudioStreamPlayer3D::_get_bus_vectors( Vector<AudioFrame> output_volume_vector){ 
+	return internal->get_bus_vectors( output_volume_vector );
+}
+Dictionary AudioStreamPlayer3D::get_buses_as_dictionary(){
+	return internal->get_buses_as_dictionary();
+}
+
 
 // Interacts with PhysicsServer3D, so can only be called during _physics_process.
 Vector<AudioFrame> AudioStreamPlayer3D::_update_panning() {
@@ -417,10 +440,17 @@ Vector<AudioFrame> AudioStreamPlayer3D::_update_panning() {
 #endif // PHYSICS_3D_DISABLED
 			if (dist > total_max || total_max > max_distance) {
 				if (!was_further_than_max_distance_last_frame) {
-					HashMap<StringName, Vector<AudioFrame>> bus_volumes;
+					//HashMap<StringName, Vector<AudioFrame>> bus_volumes;					
 					for (Ref<AudioStreamPlayback> &playback : internal->stream_playbacks) {
 						// So the player gets muted and mostly stops mixing when out of range.
-						AudioServer::get_singleton()->set_playback_bus_volumes_linear(playback, bus_volumes);
+						if (internal->get_bus_volumes().size()>1){			
+							//Send audio to multiple buses
+							AudioServer::get_singleton()->set_playback_bus_volumes_linear(playback, _get_bus_vectors(output_volume_vector)); //bus_volumes);
+						}else{
+							//Use the legacy system that uses only 1 bus
+							HashMap<StringName, Vector<AudioFrame>> bus_map;
+							bus_map[_get_actual_bus()] = output_volume_vector;
+						}
 					}
 					was_further_than_max_distance_last_frame = true; // Cache so we don't set the volume over and over.
 				}
@@ -475,7 +505,11 @@ Vector<AudioFrame> AudioStreamPlayer3D::_update_panning() {
 		} else
 #endif // PHYSICS_3D_DISABLED
 		{
-			bus_volumes[internal->bus] = output_volume_vector;
+			if (internal->get_bus_volumes().size()>1){			
+				bus_volumes = _get_bus_vectors(output_volume_vector);
+			}else{			
+				bus_volumes[internal->bus] = output_volume_vector;
+			}
 		}
 
 		for (Ref<AudioStreamPlayback> &playback : internal->stream_playbacks) {
@@ -789,6 +823,13 @@ void AudioStreamPlayer3D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_volume_linear", "volume_linear"), &AudioStreamPlayer3D::set_volume_linear);
 	ClassDB::bind_method(D_METHOD("get_volume_linear"), &AudioStreamPlayer3D::get_volume_linear);
+
+	ClassDB::bind_method(D_METHOD("get_bus_volume_db", "bus_name"), &AudioStreamPlayer3D::get_bus_volume_db);
+	ClassDB::bind_method(D_METHOD("get_bus_volume_linear", "bus_name"), &AudioStreamPlayer3D::get_bus_volume_linear);
+	ClassDB::bind_method(D_METHOD("set_bus_volume_db", "bus_name", "volume_db"), &AudioStreamPlayer3D::set_bus_volume_db);
+	ClassDB::bind_method(D_METHOD("set_bus_volume_linear", "bus_name", "volume_linear"), &AudioStreamPlayer3D::set_bus_volume_linear);
+	ClassDB::bind_method(D_METHOD("remove_bus", "bus_name"), &AudioStreamPlayer3D::remove_bus_route);
+	ClassDB::bind_method(D_METHOD("get_buses_as_dictionary"), &AudioStreamPlayer3D::get_buses_as_dictionary);
 
 	ClassDB::bind_method(D_METHOD("set_unit_size", "unit_size"), &AudioStreamPlayer3D::set_unit_size);
 	ClassDB::bind_method(D_METHOD("get_unit_size"), &AudioStreamPlayer3D::get_unit_size);

@@ -58,12 +58,35 @@ Ref<AudioStream> AudioStreamPlayer::get_stream() const {
 	return internal->stream;
 }
 
+void AudioStreamPlayer::remove_bus_route(const StringName &p_bus){
+	internal->remove_bus_route(p_bus);
+}
+float AudioStreamPlayer::get_bus_volume_linear(const StringName &p_bus){
+	return internal->get_bus_volume(p_bus);
+}
+float AudioStreamPlayer::get_bus_volume_db(const StringName &p_bus){
+	return Math::linear_to_db(internal->get_bus_volume(p_bus));
+}
+void AudioStreamPlayer::set_bus_volume_linear(const StringName &p_bus, float p_volume_linear){
+	internal->set_bus_volume(p_bus, p_volume_linear);		
+	for (const Ref<AudioStreamPlayback> &playback : internal->stream_playbacks) {
+		AudioServer::get_singleton()->set_playback_bus_volumes_linear(playback, _get_bus_vectors() );
+	}
+}
+void AudioStreamPlayer::set_bus_volume_db(const StringName &p_bus, float p_volume_db){
+	set_bus_volume_linear(p_bus, Math::db_to_linear(p_volume_db));	
+}
+
+Dictionary AudioStreamPlayer::get_buses_as_dictionary(){
+	return internal->get_buses_as_dictionary();
+}
+
 void AudioStreamPlayer::set_volume_db(float p_volume) {
 	ERR_FAIL_COND_MSG(Math::is_nan(p_volume), "Volume can't be set to NaN.");
 	internal->volume_db = p_volume;
 
 	Vector<AudioFrame> volume_vector = _get_volume_vector();
-	for (Ref<AudioStreamPlayback> &playback : internal->stream_playbacks) {
+	for (Ref<AudioStreamPlayback> &playback : internal->stream_playbacks) {		
 		AudioServer::get_singleton()->set_playback_all_bus_volumes_linear(playback, volume_vector);
 	}
 }
@@ -71,7 +94,6 @@ void AudioStreamPlayer::set_volume_db(float p_volume) {
 float AudioStreamPlayer::get_volume_db() const {
 	return internal->volume_db;
 }
-
 void AudioStreamPlayer::set_volume_linear(float p_volume) {
 	set_volume_db(Math::linear_to_db(p_volume));
 }
@@ -101,9 +123,14 @@ void AudioStreamPlayer::play(float p_from_pos) {
 	if (stream_playback.is_null()) {
 		return;
 	}
-	AudioServer::get_singleton()->start_playback_stream(stream_playback, internal->bus, _get_volume_vector(), p_from_pos, internal->pitch_scale);
-	internal->ensure_playback_limit();
-
+	
+	if (internal->get_bus_volumes().size()>1){	
+		AudioServer::get_singleton()->start_playback_stream(stream_playback, _get_bus_vectors(), p_from_pos, internal->pitch_scale);
+	}else{		
+		//If user hasn't set bus volume, use the legacy system that only allows for one bus
+		AudioServer::get_singleton()->start_playback_stream(stream_playback, internal->bus, _get_volume_vector(), p_from_pos, internal->pitch_scale);
+		internal->ensure_playback_limit();
+	}
 	// Sample handling.
 	if (stream_playback->get_is_sample() && stream_playback->get_sample_playback().is_valid()) {
 		Ref<AudioSamplePlayback> sample_playback = stream_playback->get_sample_playback();
@@ -172,8 +199,8 @@ bool AudioStreamPlayer::get_stream_paused() const {
 
 Vector<AudioFrame> AudioStreamPlayer::_get_volume_vector() {
 	Vector<AudioFrame> volume_vector;
-	// We need at most four stereo pairs (for 7.1 systems).
-	volume_vector.resize(4);
+	// We need at most four stereo pairs (for 7.1 systems).	
+	volume_vector.resize(AudioServer::MAX_CHANNELS_PER_BUS);
 
 	// Initialize the volume vector to zero.
 	for (AudioFrame &channel_volume_db : volume_vector) {
@@ -207,6 +234,11 @@ Vector<AudioFrame> AudioStreamPlayer::_get_volume_vector() {
 	return volume_vector;
 }
 
+HashMap<StringName, Vector<AudioFrame>> AudioStreamPlayer::_get_bus_vectors() {					
+	return internal->get_bus_vectors(_get_volume_vector() );	
+}
+
+
 void AudioStreamPlayer::_validate_property(PropertyInfo &p_property) const {
 	internal->validate_property(p_property);
 }
@@ -237,6 +269,13 @@ void AudioStreamPlayer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_volume_linear", "volume_linear"), &AudioStreamPlayer::set_volume_linear);
 	ClassDB::bind_method(D_METHOD("get_volume_linear"), &AudioStreamPlayer::get_volume_linear);
 
+	ClassDB::bind_method(D_METHOD("get_bus_volume_db", "bus_name"), &AudioStreamPlayer::get_bus_volume_db);
+	ClassDB::bind_method(D_METHOD("get_bus_volume_linear", "bus_name"), &AudioStreamPlayer::get_bus_volume_linear);
+	ClassDB::bind_method(D_METHOD("set_bus_volume_db", "bus_name", "volume_db"), &AudioStreamPlayer::set_bus_volume_db);
+	ClassDB::bind_method(D_METHOD("set_bus_volume_linear", "bus_name", "volume_linear"), &AudioStreamPlayer::set_bus_volume_linear);
+	ClassDB::bind_method(D_METHOD("remove_bus", "bus_name"), &AudioStreamPlayer::remove_bus_route);	
+	ClassDB::bind_method(D_METHOD("get_buses_as_dictionary"), &AudioStreamPlayer::get_buses_as_dictionary);
+	
 	ClassDB::bind_method(D_METHOD("set_pitch_scale", "pitch_scale"), &AudioStreamPlayer::set_pitch_scale);
 	ClassDB::bind_method(D_METHOD("get_pitch_scale"), &AudioStreamPlayer::get_pitch_scale);
 
@@ -269,7 +308,7 @@ void AudioStreamPlayer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_playback_type", "playback_type"), &AudioStreamPlayer::set_playback_type);
 	ClassDB::bind_method(D_METHOD("get_playback_type"), &AudioStreamPlayer::get_playback_type);
-
+	
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "stream", PROPERTY_HINT_RESOURCE_TYPE, "AudioStream"), "set_stream", "get_stream");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "volume_db", PROPERTY_HINT_RANGE, "-80,24,suffix:dB"), "set_volume_db", "get_volume_db");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "volume_linear", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_volume_linear", "get_volume_linear");

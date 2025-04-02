@@ -91,6 +91,8 @@ private:
 	void _set_playing(bool p_enable);
 	bool _is_active() const;
 	StringName _get_actual_bus();
+	HashMap<StringName, Vector<AudioFrame>> _get_bus_vectors(Vector<AudioFrame> output_volume_vector);	
+
 #ifndef PHYSICS_3D_DISABLED
 	Area3D *_get_overriding_area();
 #endif // PHYSICS_3D_DISABLED
@@ -161,6 +163,13 @@ public:
 
 	void set_bus(const StringName &p_bus);
 	StringName get_bus() const;
+
+	void remove_bus_route(const StringName &p_bus);
+	float get_bus_volume_linear(const StringName &p_bus);
+	float get_bus_volume_db(const StringName &p_bus);
+	void set_bus_volume_linear(const StringName &p_bus, float p_volume_linear);	
+	void set_bus_volume_db(const StringName &p_bus, float p_volume_db);		
+	Dictionary get_buses_as_dictionary();
 
 	void set_max_polyphony(int p_max_polyphony);
 	int get_max_polyphony() const;

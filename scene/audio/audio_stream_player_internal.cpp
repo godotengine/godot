@@ -348,6 +348,48 @@ StringName AudioStreamPlayerInternal::get_bus() const {
 	return SceneStringName(Master);
 }
 
+void AudioStreamPlayerInternal::remove_bus_route(const StringName &p_bus){
+	if (bus_volumes.has(p_bus))
+		bus_volumes.erase(p_bus);	
+}
+float AudioStreamPlayerInternal::get_bus_volume(const StringName &p_bus){
+	if (bus_volumes.has(p_bus)) return bus_volumes[p_bus];
+	return -1;
+}
+void AudioStreamPlayerInternal::set_bus_volume(const StringName &p_bus, float p_volume){	
+	bus_volumes[p_bus] = p_volume;	
+}
+HashMap<StringName, float> AudioStreamPlayerInternal::get_bus_volumes(){
+	StringName default_bus = "Master";
+	if (bus_volumes.size() == 0) bus_volumes[default_bus] = 1.0f;
+	return bus_volumes;	
+}
+HashMap<StringName, Vector<AudioFrame>> AudioStreamPlayerInternal::get_bus_vectors(Vector<AudioFrame> volume_vector){	
+	HashMap<StringName, Vector<AudioFrame>> result;		
+	int channel_count = volume_vector.size();
+	for (KeyValue<StringName, float> pair : bus_volumes) {
+		if (pair.key != StringName("Master") && AudioServer::get_singleton()->thread_find_bus_index(pair.key)==0){
+			print_line( vformat("Skipping Audio Bus because name does not exist: %s", String(pair.key)));
+			continue;		
+		}
+		Vector<AudioFrame> bus_vector;		
+		for (int i=0; i< channel_count; i++){			
+			AudioFrame a = AudioFrame(volume_vector[i].l * pair.value,volume_vector[i].r * pair.value);
+			bus_vector.push_back(a);		
+		}		
+		result[pair.key] = bus_vector;									
+	}		
+	return result;
+}
+
+Dictionary AudioStreamPlayerInternal::get_buses_as_dictionary(){
+	Dictionary dict;
+	for (KeyValue<StringName, float> pair : bus_volumes) {		
+		dict[pair.key] = pair.value;	
+	}
+	return dict;
+}
+
 AudioStreamPlayerInternal::AudioStreamPlayerInternal(Node *p_node, const Callable &p_play_callable, const Callable &p_stop_callable, bool p_physical) {
 	node = p_node;
 	play_callable = p_play_callable;

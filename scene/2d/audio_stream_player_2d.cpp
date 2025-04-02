@@ -63,8 +63,14 @@ void AudioStreamPlayer2D::_notification(int p_what) {
 			}
 
 			if (setplayback.is_valid() && setplay.get() >= 0) {
-				internal->active.set();
-				AudioServer::get_singleton()->start_playback_stream(setplayback, _get_actual_bus(), volume_vector, setplay.get(), internal->pitch_scale);
+				internal->active.set();			
+				if (internal->get_bus_volumes().size()>1){	
+					//Send audio to multiple buses
+					AudioServer::get_singleton()->start_playback_stream(setplayback, _get_bus_vectors(), setplay.get(), internal->pitch_scale);
+				}else{		
+					//Use the legacy system that uses only 1 bus
+					AudioServer::get_singleton()->start_playback_stream(setplayback, _get_actual_bus(), volume_vector, setplay.get(), internal->pitch_scale);				
+				}
 				setplayback.unref();
 				setplay.set(-1);
 			}
@@ -180,13 +186,18 @@ void AudioStreamPlayer2D::_update_panning() {
 		const AudioFrame &prev_sample = volume_vector[0];
 		AudioFrame new_sample = AudioFrame(l, r) * multiplier;
 
-		volume_vector.write[0] = AudioFrame(MAX(prev_sample[0], new_sample[0]), MAX(prev_sample[1], new_sample[1]));
+		volume_vector.write[0] = AudioFrame(MAX(prev_sample[0], new_sample[0]), MAX(prev_sample[1], new_sample[1]));		
 	}
-
 	for (const Ref<AudioStreamPlayback> &playback : internal->stream_playbacks) {
-		AudioServer::get_singleton()->set_playback_bus_exclusive(playback, actual_bus, volume_vector);
-	}
-
+		if (internal->get_bus_volumes().size()>1){			
+			//Send audio to multiple buses					
+			AudioServer::get_singleton()->set_playback_bus_volumes_linear(playback, _get_bus_vectors());
+		}else{
+			//Use the legacy system that uses only 1 bus
+			AudioServer::get_singleton()->set_playback_bus_exclusive(playback, actual_bus, volume_vector);
+		}
+	}		
+	
 	for (const Ref<AudioStreamPlayback> &playback : internal->stream_playbacks) {
 		AudioServer::get_singleton()->set_playback_pitch_scale(playback, internal->pitch_scale);
 		if (playback->get_is_sample() && playback->get_sample_playback().is_valid()) {
@@ -278,6 +289,28 @@ void AudioStreamPlayer2D::set_bus(const StringName &p_bus) {
 
 StringName AudioStreamPlayer2D::get_bus() const {
 	return internal->get_bus();
+}
+
+void AudioStreamPlayer2D::remove_bus_route(const StringName &p_bus){
+	internal->remove_bus_route(p_bus);
+}
+float AudioStreamPlayer2D::get_bus_volume_linear(const StringName &p_bus){
+	return internal->get_bus_volume(p_bus);
+}
+float AudioStreamPlayer2D::get_bus_volume_db(const StringName &p_bus){
+	return Math::linear_to_db(internal->get_bus_volume(p_bus));
+}
+void AudioStreamPlayer2D::set_bus_volume_linear(const StringName &p_bus, float p_volume_linear){
+	internal->set_bus_volume(p_bus, p_volume_linear);			
+}
+void AudioStreamPlayer2D::set_bus_volume_db(const StringName &p_bus, float p_volume_db){
+	set_bus_volume_linear(p_bus, Math::db_to_linear(p_volume_db));	
+}
+HashMap<StringName, Vector<AudioFrame>> AudioStreamPlayer2D::_get_bus_vectors(){ 
+	return internal->get_bus_vectors( volume_vector );
+}
+Dictionary AudioStreamPlayer2D::get_buses_as_dictionary(){
+	return internal->get_buses_as_dictionary();
 }
 
 void AudioStreamPlayer2D::set_autoplay(bool p_enable) {
@@ -383,6 +416,13 @@ void AudioStreamPlayer2D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_volume_linear", "volume_linear"), &AudioStreamPlayer2D::set_volume_linear);
 	ClassDB::bind_method(D_METHOD("get_volume_linear"), &AudioStreamPlayer2D::get_volume_linear);
+
+	ClassDB::bind_method(D_METHOD("get_bus_volume_db", "bus_name"), &AudioStreamPlayer2D::get_bus_volume_db);
+	ClassDB::bind_method(D_METHOD("get_bus_volume_linear", "bus_name"), &AudioStreamPlayer2D::get_bus_volume_linear);
+	ClassDB::bind_method(D_METHOD("set_bus_volume_db", "bus_name", "volume_db"), &AudioStreamPlayer2D::set_bus_volume_db);
+	ClassDB::bind_method(D_METHOD("set_bus_volume_linear", "bus_name", "volume_linear"), &AudioStreamPlayer2D::set_bus_volume_linear);
+	ClassDB::bind_method(D_METHOD("remove_bus", "bus_name"), &AudioStreamPlayer2D::remove_bus_route);
+	ClassDB::bind_method(D_METHOD("get_buses_as_dictionary"), &AudioStreamPlayer2D::get_buses_as_dictionary);
 
 	ClassDB::bind_method(D_METHOD("set_pitch_scale", "pitch_scale"), &AudioStreamPlayer2D::set_pitch_scale);
 	ClassDB::bind_method(D_METHOD("get_pitch_scale"), &AudioStreamPlayer2D::get_pitch_scale);

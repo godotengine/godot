@@ -70,6 +70,8 @@ private:
 	bool _is_active() const;
 
 	StringName _get_actual_bus();
+	HashMap<StringName, Vector<AudioFrame>> _get_bus_vectors();
+	
 	void _update_panning();
 
 	static void _listener_changed_cb(void *self) { reinterpret_cast<AudioStreamPlayer2D *>(self)->force_update_panning = true; }
@@ -117,6 +119,13 @@ public:
 
 	void set_bus(const StringName &p_bus);
 	StringName get_bus() const;
+	
+	void remove_bus_route(const StringName &p_bus);
+	float get_bus_volume_linear(const StringName &p_bus);
+	float get_bus_volume_db(const StringName &p_bus);
+	void set_bus_volume_linear(const StringName &p_bus, float p_volume_linear);	
+	void set_bus_volume_db(const StringName &p_bus, float p_volume_db);		
+	Dictionary get_buses_as_dictionary();
 
 	void set_autoplay(bool p_enable);
 	bool is_autoplay_enabled() const;

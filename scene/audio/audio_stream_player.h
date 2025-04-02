@@ -57,6 +57,7 @@ private:
 	bool _is_active() const;
 
 	Vector<AudioFrame> _get_volume_vector();
+	HashMap<StringName, Vector<AudioFrame>> _get_bus_vectors();
 
 protected:
 	void _validate_property(PropertyInfo &p_property) const;
@@ -78,6 +79,13 @@ public:
 
 	void set_volume_db(float p_volume);
 	float get_volume_db() const;
+	
+	void remove_bus_route(const StringName &p_bus);
+	float get_bus_volume_linear(const StringName &p_bus);
+	float get_bus_volume_db(const StringName &p_bus);
+	void set_bus_volume_linear(const StringName &p_bus, float p_volume_linear);	
+	void set_bus_volume_db(const StringName &p_bus, float p_volume_db);	
+	Dictionary get_buses_as_dictionary();
 
 	void set_volume_linear(float p_volume);
 	float get_volume_linear() const;

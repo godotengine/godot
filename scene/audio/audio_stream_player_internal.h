@@ -65,6 +65,10 @@ private:
 		return (AudioServer::get_singleton()->get_default_playback_type() == AudioServer::PlaybackType::PLAYBACK_TYPE_SAMPLE && get_playback_type() == AudioServer::PlaybackType::PLAYBACK_TYPE_DEFAULT) || get_playback_type() == AudioServer::PlaybackType::PLAYBACK_TYPE_SAMPLE;
 	}
 
+protected:
+	HashMap<StringName, float> bus_volumes;
+	Vector<StringName> active_buses;
+
 public:
 	Vector<Ref<AudioStreamPlayback>> stream_playbacks;
 	Ref<AudioStream> stream;
@@ -72,11 +76,17 @@ public:
 	SafeFlag active;
 
 	float pitch_scale = 1.0;
-	float volume_db = 0.0;
+	float volume_db = 0.0;	
 	bool autoplay = false;
-	StringName bus;
+	StringName bus;	// DEPRECATING...
 	int max_polyphony = 1;
-
+			
+	void remove_bus_route(const StringName &p_bus);
+	void set_bus_volume(const StringName &p_bus, float p_volume);
+	float get_bus_volume(const StringName &p_bus);
+	HashMap<StringName, float> get_bus_volumes();
+	Dictionary get_buses_as_dictionary();
+	HashMap<StringName, Vector<AudioFrame>> get_bus_vectors(Vector<AudioFrame> volume_vector);
 	void process();
 	void ensure_playback_limit();
 
