@@ -288,11 +288,9 @@ bool PackedSourcePCK::try_open_pack(const String &p_path, bool p_replace_files, 
 		fae.instantiate();
 		ERR_FAIL_COND_V_MSG(fae.is_null(), false, "Can't open encrypted pack directory.");
 
-		Vector<uint8_t> key;
-		key.resize(32);
-		for (int i = 0; i < key.size(); i++) {
-			key.write[i] = script_encryption_key[i];
-		}
+		salt = vformat("GODOT PCK:%d.%d.%d", version, ver_major, ver_minor);
+		key = CryptoCore::pbkdf2_sha256(script_encryption_key, 32, (const uint8_t *)salt.utf8().get_data(), salt.utf8().length(), 500000, 32);
+		ERR_FAIL_COND_V_MSG(key.size() != 32, false, "Can't open encrypted pack directory.");
 
 		Error err = fae->open_and_parse(f, key, FileAccessEncrypted::MODE_READ, false);
 		ERR_FAIL_COND_V_MSG(err, false, "Can't open encrypted pack directory.");
@@ -476,13 +474,16 @@ FileAccessPack::FileAccessPack(const String &p_path, const PackedData::PackedFil
 		fae.instantiate();
 		ERR_FAIL_COND_MSG(fae.is_null(), vformat("Can't open encrypted pack-referenced file '%s'.", String(pf.pack)));
 
-		Vector<uint8_t> key;
-		key.resize(32);
-		for (int i = 0; i < key.size(); i++) {
-			key.write[i] = script_encryption_key[i];
+		PackedSourcePCK *pck = static_cast<PackedSourcePCK *>(pf.src);
+		ERR_FAIL_COND_MSG(!pck, vformat("Can't open pack-referenced file '%s'.", String(pf.pack)));
+
+		if (pck->key.is_empty()) {
+			pck->key = CryptoCore::pbkdf2_sha256(script_encryption_key, 32, (const uint8_t *)pck->salt.utf8().get_data(), pck->salt.utf8().length(), 500000, 32);
 		}
 
-		Error err = fae->open_and_parse(f, key, FileAccessEncrypted::MODE_READ, false);
+		ERR_FAIL_COND_MSG(pck->key.size() != 32, vformat("Can't open encrypted pack-referenced file '%s'.", String(pf.pack)));
+
+		Error err = fae->open_and_parse(f, pck->key, FileAccessEncrypted::MODE_READ, false);
 		ERR_FAIL_COND_MSG(err, vformat("Can't open encrypted pack-referenced file '%s'.", String(pf.pack)));
 		f = fae;
 		off = 0;

@@ -57,30 +57,36 @@ Error PCKPacker::pck_start(const String &p_pck_path, int p_alignment, const Stri
 	ERR_FAIL_COND_V_MSG((p_key.is_empty() || !p_key.is_valid_hex_number(false) || p_key.length() != 64), ERR_CANT_CREATE, "Invalid Encryption Key (must be 64 characters long).");
 	ERR_FAIL_COND_V_MSG(p_alignment <= 0, ERR_CANT_CREATE, "Invalid alignment, must be greater then 0.");
 
-	String _key = p_key.to_lower();
-	key.resize(32);
-	for (int i = 0; i < 32; i++) {
-		int v = 0;
-		if (i * 2 < _key.length()) {
-			char32_t ct = _key[i * 2];
-			if (is_digit(ct)) {
-				ct = ct - '0';
-			} else if (ct >= 'a' && ct <= 'f') {
-				ct = 10 + ct - 'a';
-			}
-			v |= ct << 4;
-		}
+	{
+		String _key = p_key.to_lower();
 
-		if (i * 2 + 1 < _key.length()) {
-			char32_t ct = _key[i * 2 + 1];
-			if (is_digit(ct)) {
-				ct = ct - '0';
-			} else if (ct >= 'a' && ct <= 'f') {
-				ct = 10 + ct - 'a';
+		Vector<uint8_t> pkey;
+		pkey.resize(32);
+		for (int i = 0; i < 32; i++) {
+			int v = 0;
+			if (i * 2 < _key.length()) {
+				char32_t ct = _key[i * 2];
+				if (is_digit(ct)) {
+					ct = ct - '0';
+				} else if (ct >= 'a' && ct <= 'f') {
+					ct = 10 + ct - 'a';
+				}
+				v |= ct << 4;
 			}
-			v |= ct;
+
+			if (i * 2 + 1 < _key.length()) {
+				char32_t ct = _key[i * 2 + 1];
+				if (is_digit(ct)) {
+					ct = ct - '0';
+				} else if (ct >= 'a' && ct <= 'f') {
+					ct = 10 + ct - 'a';
+				}
+				v |= ct;
+			}
+			pkey.write[i] = v;
 		}
-		key.write[i] = v;
+		String salt = vformat("GODOT PCK:%d.%d.%d", PACK_FORMAT_VERSION, GODOT_VERSION_MAJOR, GODOT_VERSION_MINOR);
+		key = CryptoCore::pbkdf2_sha256(pkey.ptr(), 32, (const uint8_t *)salt.utf8().get_data(), salt.utf8().length(), 500000, 32);
 	}
 	enc_dir = p_encrypt_directory;
 
