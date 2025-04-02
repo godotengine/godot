@@ -97,6 +97,8 @@ public:
 	virtual RID get_rid() const override;
 
 	virtual bool has_alpha() const override;
+	virtual bool has_mipmaps() const override;
+	virtual Image::Format get_format() const override;
 
 	virtual Ref<Image> get_image() const override;
 
