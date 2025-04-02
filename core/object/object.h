@@ -442,13 +442,6 @@ public:                                                                         
 		}                                                                                                                                   \
 		return (p_class == (#m_class)) ? true : m_inherits::is_class(p_class);                                                              \
 	}                                                                                                                                       \
-	static void get_valid_parents_static(List<String> *p_parents) {                                                                         \
-		if (m_class::_get_valid_parents_static != m_inherits::_get_valid_parents_static) {                                                  \
-			m_class::_get_valid_parents_static(p_parents);                                                                                  \
-		}                                                                                                                                   \
-                                                                                                                                            \
-		m_inherits::get_valid_parents_static(p_parents);                                                                                    \
-	}                                                                                                                                       \
                                                                                                                                             \
 protected:                                                                                                                                  \
 	_FORCE_INLINE_ static void (*_get_bind_methods())() {                                                                                   \
@@ -749,8 +742,6 @@ protected:
 	_FORCE_INLINE_ void (Object::*_get_notification() const)(int) {
 		return &Object::_notification;
 	}
-	static void get_valid_parents_static(List<String> *p_parents);
-	static void _get_valid_parents_static(List<String> *p_parents);
 
 	Variant _call_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
 	Variant _call_deferred_bind(const Variant **p_args, int p_argcount, Callable::CallError &r_error);
