@@ -135,9 +135,6 @@
 #include "tests/scene/test_parallax_2d.h"
 #include "tests/scene/test_path_2d.h"
 #include "tests/scene/test_path_follow_2d.h"
-#ifndef PHYSICS_3D_DISABLED
-#include "tests/scene/test_physics_material.h"
-#endif // PHYSICS_3D_DISABLED
 #include "tests/scene/test_sprite_frames.h"
 #include "tests/scene/test_style_box_texture.h"
 #include "tests/scene/test_texture_progress_bar.h"
@@ -163,27 +160,10 @@
 #include "tests/scene/test_tree.h"
 #endif // ADVANCED_GUI_DISABLED
 
-#ifdef MODULE_NAVIGATION_2D_ENABLED
-#include "tests/scene/test_navigation_agent_2d.h"
-#include "tests/scene/test_navigation_obstacle_2d.h"
-#include "tests/scene/test_navigation_region_2d.h"
-#include "tests/servers/test_navigation_server_2d.h"
-#endif // MODULE_NAVIGATION_2D_ENABLED
-
 #ifndef _3D_DISABLED
-#ifdef MODULE_NAVIGATION_3D_ENABLED
-#include "tests/scene/test_navigation_agent_3d.h"
-#include "tests/scene/test_navigation_obstacle_3d.h"
-#include "tests/scene/test_navigation_region_3d.h"
-#include "tests/servers/test_navigation_server_3d.h"
-#endif // MODULE_NAVIGATION_3D_ENABLED
-
 #include "tests/scene/test_arraymesh.h"
 #include "tests/scene/test_camera_3d.h"
 #include "tests/scene/test_gltf_document.h"
-#ifndef PHYSICS_3D_DISABLED
-#include "tests/scene/test_height_map_shape_3d.h"
-#endif // PHYSICS_3D_DISABLED
 #include "tests/scene/test_path_3d.h"
 #include "tests/scene/test_path_follow_3d.h"
 #include "tests/scene/test_primitives.h"
@@ -191,16 +171,39 @@
 #include "tests/scene/test_sky.h"
 #endif // _3D_DISABLED
 
+#ifndef PHYSICS_3D_DISABLED
+#include "tests/scene/test_height_map_shape_3d.h"
+#include "tests/scene/test_physics_material.h"
+#endif // PHYSICS_3D_DISABLED
+
+#ifdef MODULE_NAVIGATION_2D_ENABLED
+#include "tests/scene/test_navigation_agent_2d.h"
+#include "tests/scene/test_navigation_obstacle_2d.h"
+#include "tests/scene/test_navigation_region_2d.h"
+#include "tests/servers/test_navigation_server_2d.h"
+#endif // MODULE_NAVIGATION_2D_ENABLED
+
+#ifdef MODULE_NAVIGATION_3D_ENABLED
+#include "tests/scene/test_navigation_agent_3d.h"
+#include "tests/scene/test_navigation_obstacle_3d.h"
+#include "tests/scene/test_navigation_region_3d.h"
+#include "tests/servers/test_navigation_server_3d.h"
+#endif // MODULE_NAVIGATION_3D_ENABLED
+
 #include "modules/modules_tests.gen.h"
 
 #include "tests/display_server_mock.h"
 #include "tests/test_macros.h"
 
 #include "scene/theme/theme_db.h"
+
+#ifndef NAVIGATION_2D_DISABLED
 #include "servers/navigation_server_2d.h"
-#ifndef _3D_DISABLED
+#endif // NAVIGATION_2D_DISABLED
+#ifndef NAVIGATION_3D_DISABLED
 #include "servers/navigation_server_3d.h"
-#endif // _3D_DISABLED
+#endif // NAVIGATION_3D_DISABLED
+
 #ifndef PHYSICS_2D_DISABLED
 #include "servers/physics_server_2d.h"
 #include "servers/physics_server_2d_dummy.h"
@@ -209,6 +212,7 @@
 #include "servers/physics_server_3d.h"
 #include "servers/physics_server_3d_dummy.h"
 #endif // PHYSICS_3D_DISABLED
+
 #include "servers/rendering/rendering_server_default.h"
 
 int test_main(int argc, char *argv[]) {
@@ -289,10 +293,13 @@ struct GodotTestCaseListener : public doctest::IReporter {
 #ifndef PHYSICS_3D_DISABLED
 	PhysicsServer3D *physics_server_3d = nullptr;
 #endif // PHYSICS_3D_DISABLED
-#ifndef _3D_DISABLED
-	NavigationServer3D *navigation_server_3d = nullptr;
-#endif // _3D_DISABLED
+
+#ifndef NAVIGATION_2D_DISABLED
 	NavigationServer2D *navigation_server_2d = nullptr;
+#endif // NAVIGATION_2D_DISABLED
+#ifndef NAVIGATION_3D_DISABLED
+	NavigationServer3D *navigation_server_3d = nullptr;
+#endif // NAVIGATION_3D_DISABLED
 
 	void test_case_start(const doctest::TestCaseData &p_in) override {
 		reinitialize();
@@ -341,10 +348,12 @@ struct GodotTestCaseListener : public doctest::IReporter {
 #endif // PHYSICS_2D_DISABLED
 
 			ERR_PRINT_OFF;
-#ifndef _3D_DISABLED
+#ifndef NAVIGATION_3D_DISABLED
 			navigation_server_3d = NavigationServer3DManager::new_default_server();
-#endif // _3D_DISABLED
+#endif // NAVIGATION_3D_DISABLED
+#ifndef NAVIGATION_2D_DISABLED
 			navigation_server_2d = NavigationServer2DManager::new_default_server();
+#endif // NAVIGATION_2D_DISABLED
 			ERR_PRINT_ON;
 
 			memnew(InputMap);
@@ -376,21 +385,23 @@ struct GodotTestCaseListener : public doctest::IReporter {
 			return;
 		}
 
-#ifndef _3D_DISABLED
+#ifndef NAVIGATION_3D_DISABLED
 		if (suite_name.contains("[Navigation3D]") && navigation_server_3d == nullptr) {
 			ERR_PRINT_OFF;
 			navigation_server_3d = NavigationServer3DManager::new_default_server();
 			ERR_PRINT_ON;
 			return;
 		}
-#endif // _3D_DISABLED
+#endif // NAVIGATION_3D_DISABLED
 
+#ifndef NAVIGATION_2D_DISABLED
 		if (suite_name.contains("[Navigation2D]") && navigation_server_2d == nullptr) {
 			ERR_PRINT_OFF;
 			navigation_server_2d = NavigationServer2DManager::new_default_server();
 			ERR_PRINT_ON;
 			return;
 		}
+#endif // NAVIGATION_2D_DISABLED
 	}
 
 	void test_case_end(const doctest::CurrentTestCaseStats &) override {
@@ -420,17 +431,19 @@ struct GodotTestCaseListener : public doctest::IReporter {
 			memdelete(SceneTree::get_singleton());
 		}
 
-#ifndef _3D_DISABLED
+#ifndef NAVIGATION_3D_DISABLED
 		if (navigation_server_3d) {
 			memdelete(navigation_server_3d);
 			navigation_server_3d = nullptr;
 		}
-#endif // _3D_DISABLED
+#endif // NAVIGATION_3D_DISABLED
 
+#ifndef NAVIGATION_2D_DISABLED
 		if (navigation_server_2d) {
 			memdelete(navigation_server_2d);
 			navigation_server_2d = nullptr;
 		}
+#endif // NAVIGATION_2D_DISABLED
 
 #ifndef PHYSICS_3D_DISABLED
 		if (physics_server_3d) {

@@ -30,7 +30,7 @@
 
 #pragma once
 
-#include "scene/3d/navigation_obstacle_3d.h"
+#include "scene/3d/navigation/navigation_obstacle_3d.h"
 #include "scene/main/window.h"
 
 #include "tests/test_macros.h"
