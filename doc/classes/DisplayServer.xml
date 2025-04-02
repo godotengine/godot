@@ -857,6 +857,7 @@
 			<return type="int" />
 			<description>
 				Returns the index of the screen containing the window with the keyboard focus, or the primary screen if there's no focused window.
+				[b]Note:[/b] This method is implemented on Linux/X11, macOS, and Windows. On other platforms, this method always returns the primary screen.
 			</description>
 		</method>
 		<method name="get_name" qualifiers="const">
@@ -870,19 +871,21 @@
 			<return type="int" />
 			<description>
 				Returns index of the primary screen.
+				[b]Note:[/b] This method is implemented on Linux/X11, macOS, and Windows. On other platforms, this method always returns [code]0[/code].
 			</description>
 		</method>
 		<method name="get_screen_count" qualifiers="const">
 			<return type="int" />
 			<description>
 				Returns the number of displays available.
+				[b]Note:[/b] This method is implemented on Linux (X11 and Wayland), macOS, and Windows. On other platforms, this method always returns [code]1[/code].
 			</description>
 		</method>
 		<method name="get_screen_from_rect" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="rect" type="Rect2" />
 			<description>
-				Returns the index of the screen that overlaps the most with the given rectangle. Returns [code]-1[/code] if the rectangle doesn't overlap with any screen or has no area.
+				Returns the index of the screen that overlaps the most with the given rectangle. Returns [constant INVALID_SCREEN] if the rectangle doesn't overlap with any screen or has no area.
 			</description>
 		</method>
 		<method name="get_swap_cancel_ok">
@@ -1694,7 +1697,8 @@
 			<return type="int" />
 			<param index="0" name="screen" type="int" default="-1" />
 			<description>
-				Returns the dots per inch density of the specified screen. If [param screen] is [constant SCREEN_OF_MAIN_WINDOW] (the default value), a screen with the main window will be used.
+				Returns the dots per inch density of the specified screen. Returns platform specific default value if [param screen] is invalid.
+				[b]Note:[/b] One of the following constants can be used as [param screen]: [constant SCREEN_OF_MAIN_WINDOW], [constant SCREEN_PRIMARY], [constant SCREEN_WITH_MOUSE_FOCUS], or [constant SCREEN_WITH_KEYBOARD_FOCUS].
 				[b]Note:[/b] On macOS, returned value is inaccurate if fractional display scaling mode is used.
 				[b]Note:[/b] On Android devices, the actual screen densities are grouped into six generalized densities:
 				[codeblock lang=text]
@@ -1705,15 +1709,16 @@
 				 xxhdpi - 480 dpi
 				xxxhdpi - 640 dpi
 				[/codeblock]
-				[b]Note:[/b] This method is implemented on Android, Linux (X11/Wayland), macOS and Windows. Returns [code]72[/code] on unsupported platforms.
+				[b]Note:[/b] This method is implemented on Android, iOS, Linux (X11/Wayland), macOS, Web, and Windows. On other platforms, this method always returns [code]72[/code].
 			</description>
 		</method>
 		<method name="screen_get_image" qualifiers="const">
 			<return type="Image" />
 			<param index="0" name="screen" type="int" default="-1" />
 			<description>
-				Returns a screenshot of the [param screen].
-				[b]Note:[/b] This method is implemented on Linux (X11), macOS, and Windows.
+				Returns a screenshot of the [param screen]. Returns [code]null[/code] if [param screen] is invalid or the [DisplayServer] fails to capture screenshot.
+				[b]Note:[/b] One of the following constants can be used as [param screen]: [constant SCREEN_OF_MAIN_WINDOW], [constant SCREEN_PRIMARY], [constant SCREEN_WITH_MOUSE_FOCUS], or [constant SCREEN_WITH_KEYBOARD_FOCUS].
+				[b]Note:[/b] This method is implemented on Linux (X11, excluding XWayland), macOS, and Windows. On other platforms, this method always returns [code]null[/code].
 				[b]Note:[/b] On macOS, this method requires the "Screen Recording" permission. If permission is not granted, this method returns a screenshot that will not include other application windows or OS elements not related to the application.
 			</description>
 		</method>
@@ -1721,8 +1726,8 @@
 			<return type="Image" />
 			<param index="0" name="rect" type="Rect2i" />
 			<description>
-				Returns a screenshot of the screen region defined by [param rect].
-				[b]Note:[/b] This method is implemented on macOS and Windows.
+				Returns a screenshot of the screen region defined by [param rect]. Returns [code]null[/code] if [param rect] is outside screen bounds or the [DisplayServer] fails to capture screenshot.
+				[b]Note:[/b] This method is implemented on macOS and Windows. On other platforms, this method always returns [code]null[/code].
 				[b]Note:[/b] On macOS, this method requires the "Screen Recording" permission. If permission is not granted, this method returns a screenshot that will not include other application windows or OS elements not related to the application.
 			</description>
 		</method>
@@ -1738,8 +1743,9 @@
 			<return type="int" enum="DisplayServer.ScreenOrientation" />
 			<param index="0" name="screen" type="int" default="-1" />
 			<description>
-				Returns the [param screen]'s current orientation. See also [method screen_set_orientation].
-				[b]Note:[/b] This method is implemented on Android and iOS.
+				Returns the [param screen]'s current orientation. See also [method screen_set_orientation]. Returns [constant SCREEN_LANDSCAPE] if [param screen] is invalid.
+				[b]Note:[/b] One of the following constants can be used as [param screen]: [constant SCREEN_OF_MAIN_WINDOW], [constant SCREEN_PRIMARY], [constant SCREEN_WITH_MOUSE_FOCUS], or [constant SCREEN_WITH_KEYBOARD_FOCUS].
+				[b]Note:[/b] This method is implemented on Android and iOS. On other platforms, this method always returns [constant SCREEN_LANDSCAPE].
 			</description>
 		</method>
 		<method name="screen_get_pixel" qualifiers="const">
@@ -1747,15 +1753,15 @@
 			<param index="0" name="position" type="Vector2i" />
 			<description>
 				Returns color of the display pixel at the [param position].
-				[b]Note:[/b] This method is implemented on Linux (X11), macOS, and Windows.
-				[b]Note:[/b] On macOS, this method requires "Screen Recording" permission, if permission is not granted it will return desktop wallpaper color.
+				[b]Note:[/b] This method is implemented on Linux (X11, excluding XWayland), macOS, and Windows. On other platforms, this method always returns [Color].
+				[b]Note:[/b] On macOS, this method requires the "Screen Recording" permission. If permission is not granted, this method returns a screenshot that will only contain the desktop wallpaper, the current application's window, and other related UI elements.
 			</description>
 		</method>
 		<method name="screen_get_position" qualifiers="const">
 			<return type="Vector2i" />
 			<param index="0" name="screen" type="int" default="-1" />
 			<description>
-				Returns the screen's top-left corner position in pixels. On multi-monitor setups, the screen position is relative to the virtual desktop area. On multi-monitor setups with different screen resolutions or orientations, the origin may be located outside any display like this:
+				Returns the screen's top-left corner position in pixels. Returns [constant Vector2i.ZERO] if [param screen] is invalid. On multi-monitor setups, the screen position is relative to the virtual desktop area. On multi-monitor setups with different screen resolutions or orientations, the origin might be located outside any display like this:
 				[codeblock lang=text]
 				* (0, 0)        +-------+
 				                |       |
@@ -1765,38 +1771,41 @@
 				+-------------+ +-------+
 				[/codeblock]
 				See also [method screen_get_size].
-				[b]Note:[/b] On Linux (Wayland) this method always returns [code](0, 0)[/code].
+				[b]Note:[/b] One of the following constants can be used as [param screen]: [constant SCREEN_OF_MAIN_WINDOW], [constant SCREEN_PRIMARY], [constant SCREEN_WITH_MOUSE_FOCUS], or [constant SCREEN_WITH_KEYBOARD_FOCUS].
 			</description>
 		</method>
 		<method name="screen_get_refresh_rate" qualifiers="const">
 			<return type="float" />
 			<param index="0" name="screen" type="int" default="-1" />
 			<description>
-				Returns the current refresh rate of the specified screen. If [param screen] is [constant SCREEN_OF_MAIN_WINDOW] (the default value), a screen with the main window will be used.
-				[b]Note:[/b] Returns [code]-1.0[/code] if the DisplayServer fails to find the refresh rate for the specified screen. On Web, [method screen_get_refresh_rate] will always return [code]-1.0[/code] as there is no way to retrieve the refresh rate on that platform.
+				Returns the current refresh rate of the specified screen. Returns [code]-1.0[/code] if [param screen] is invalid or the [DisplayServer] fails to find the refresh rate for the specified screen.
 				To fallback to a default refresh rate if the method fails, try:
 				[codeblock]
 				var refresh_rate = DisplayServer.screen_get_refresh_rate()
 				if refresh_rate &lt; 0:
 				    refresh_rate = 60.0
 				[/codeblock]
+				[b]Note:[/b] One of the following constants can be used as [param screen]: [constant SCREEN_OF_MAIN_WINDOW], [constant SCREEN_PRIMARY], [constant SCREEN_WITH_MOUSE_FOCUS], or [constant SCREEN_WITH_KEYBOARD_FOCUS].
+				[b]Note:[/b] This method is implemented on Android, iOS, macOS, Linux (X11 and Wayland), and Windows. On other platforms, this method always returns [code]-1.0[/code].
 			</description>
 		</method>
 		<method name="screen_get_scale" qualifiers="const">
 			<return type="float" />
 			<param index="0" name="screen" type="int" default="-1" />
 			<description>
-				Returns the scale factor of the specified screen by index.
+				Returns the scale factor of the specified screen by index. Returns [code]1.0[/code] if [param screen] is invalid.
+				[b]Note:[/b] One of the following constants can be used as [param screen]: [constant SCREEN_OF_MAIN_WINDOW], [constant SCREEN_PRIMARY], [constant SCREEN_WITH_MOUSE_FOCUS], or [constant SCREEN_WITH_KEYBOARD_FOCUS].
 				[b]Note:[/b] On macOS, the returned value is [code]2.0[/code] for hiDPI (Retina) screens, and [code]1.0[/code] for all other cases.
 				[b]Note:[/b] On Linux (Wayland), the returned value is accurate only when [param screen] is [constant SCREEN_OF_MAIN_WINDOW]. Due to API limitations, passing a direct index will return a rounded-up integer, if the screen has a fractional scale (e.g. [code]1.25[/code] would get rounded up to [code]2.0[/code]).
-				[b]Note:[/b] This method is implemented on Android, iOS, Web, macOS, and Linux (Wayland).
+				[b]Note:[/b] This method is implemented on Android, iOS, Web, macOS, and Linux (Wayland). On other platforms, this method always returns [code]1.0[/code].
 			</description>
 		</method>
 		<method name="screen_get_size" qualifiers="const">
 			<return type="Vector2i" />
 			<param index="0" name="screen" type="int" default="-1" />
 			<description>
-				Returns the screen's size in pixels. See also [method screen_get_position] and [method screen_get_usable_rect].
+				Returns the screen's size in pixels. See also [method screen_get_position] and [method screen_get_usable_rect]. Returns [constant Vector2i.ZERO] if [param screen] is invalid.
+				[b]Note:[/b] One of the following constants can be used as [param screen]: [constant SCREEN_OF_MAIN_WINDOW], [constant SCREEN_PRIMARY], [constant SCREEN_WITH_MOUSE_FOCUS], or [constant SCREEN_WITH_KEYBOARD_FOCUS].
 			</description>
 		</method>
 		<method name="screen_get_usable_rect" qualifiers="const">
@@ -1804,6 +1813,8 @@
 			<param index="0" name="screen" type="int" default="-1" />
 			<description>
 				Returns the portion of the screen that is not obstructed by a status bar in pixels. See also [method screen_get_size].
+				[b]Note:[/b] One of the following constants can be used as [param screen]: [constant SCREEN_OF_MAIN_WINDOW], [constant SCREEN_PRIMARY], [constant SCREEN_WITH_MOUSE_FOCUS], or [constant SCREEN_WITH_KEYBOARD_FOCUS].
+				[b]Note:[/b] This method is implemented on Linux/X11, macOS, and Windows. On other platforms, this method always returns [code]Rect2i(screen_get_position(screen), screen_get_size(screen))[/code].
 			</description>
 		</method>
 		<method name="screen_is_kept_on" qualifiers="const">
@@ -1825,6 +1836,8 @@
 			<param index="1" name="screen" type="int" default="-1" />
 			<description>
 				Sets the [param screen]'s [param orientation]. See also [method screen_get_orientation].
+				[b]Note:[/b] One of the following constants can be used as [param screen]: [constant SCREEN_OF_MAIN_WINDOW], [constant SCREEN_PRIMARY], [constant SCREEN_WITH_MOUSE_FOCUS], or [constant SCREEN_WITH_KEYBOARD_FOCUS].
+				[b]Note:[/b] This method is implemented on Android and iOS.
 				[b]Note:[/b] On iOS, this method has no effect if [member ProjectSettings.display/window/handheld/orientation] is not set to [constant SCREEN_SENSOR].
 			</description>
 		</method>
@@ -2105,7 +2118,8 @@
 			<return type="int" />
 			<param index="0" name="window_id" type="int" default="0" />
 			<description>
-				Returns the screen the window specified by [param window_id] is currently positioned on. If the screen overlaps multiple displays, the screen where the window's center is located is returned. See also [method window_set_current_screen].
+				Returns the screen the window specified by [param window_id] is currently positioned on. If the screen overlaps multiple displays, the screen where the window's center is located is returned. See also [method window_set_current_screen]. Returns [constant INVALID_SCREEN] if [param window_id] is invalid.
+				[b]Note:[/b] This method is implemented on Linux/X11, macOS, and Windows. On other platforms, this method always returns [code]0[/code].
 			</description>
 		</method>
 		<method name="window_get_flag" qualifiers="const">
@@ -2252,6 +2266,8 @@
 			<param index="1" name="window_id" type="int" default="0" />
 			<description>
 				Moves the window specified by [param window_id] to the specified [param screen]. See also [method window_get_current_screen].
+				[b]Note:[/b] One of the following constants can be used as [param screen]: [constant SCREEN_OF_MAIN_WINDOW], [constant SCREEN_PRIMARY], [constant SCREEN_WITH_MOUSE_FOCUS], or [constant SCREEN_WITH_KEYBOARD_FOCUS].
+				[b]Note:[/b] This method is implemented on Linux/X11, macOS, and Windows.
 			</description>
 		</method>
 		<method name="window_set_drop_files_callback">
@@ -2882,21 +2898,24 @@
 		<constant name="MOUSE_MODE_MAX" value="5" enum="MouseMode">
 			Max value of the [enum MouseMode].
 		</constant>
+		<constant name="INVALID_SCREEN" value="-1">
+			The ID that refers to a screen that does not exist. This is returned by some [DisplayServer] methods if no screen matches the requested result.
+		</constant>
 		<constant name="SCREEN_WITH_MOUSE_FOCUS" value="-4">
 			Represents the screen containing the mouse pointer.
-			[b]Note:[/b] On Linux (Wayland), this constant always represents the screen at index [code]0[/code].
+			[b]Note:[/b] On Android, iOS, Web, and Linux (Wayland), this constant always represents the screen at index [code]0[/code].
 		</constant>
 		<constant name="SCREEN_WITH_KEYBOARD_FOCUS" value="-3">
 			Represents the screen containing the window with the keyboard focus.
-			[b]Note:[/b] On Linux (Wayland), this constant always represents the screen at index [code]0[/code].
+			[b]Note:[/b] On Android, iOS, Web, and Linux (Wayland), this constant always represents the screen at index [code]0[/code].
 		</constant>
 		<constant name="SCREEN_PRIMARY" value="-2">
 			Represents the primary screen.
-			[b]Note:[/b] On Linux (Wayland), this constant always represents the screen at index [code]0[/code].
+			[b]Note:[/b] On Android, iOS, Web, and Linux (Wayland), this constant always represents the screen at index [code]0[/code].
 		</constant>
 		<constant name="SCREEN_OF_MAIN_WINDOW" value="-1">
 			Represents the screen where the main window is located. This is usually the default value in functions that allow specifying one of several screens.
-			[b]Note:[/b] On Linux (Wayland), this constant always represents the screen at index [code]0[/code].
+			[b]Note:[/b] On Android, iOS, Web, and Linux (Wayland), this constant always represents the screen at index [code]0[/code].
 		</constant>
 		<constant name="MAIN_WINDOW_ID" value="0">
 			The ID of the main window spawned by the engine, which can be passed to methods expecting a [code]window_id[/code].
