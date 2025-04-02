@@ -3298,7 +3298,7 @@ int String::findmk(const Vector<String> &p_keys, int p_from, int *r_key) const {
 	if (p_from < 0) {
 		return -1;
 	}
-	if (p_keys.size() == 0) {
+	if (p_keys.is_empty()) {
 		return -1;
 	}
 

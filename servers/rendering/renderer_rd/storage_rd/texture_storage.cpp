@@ -3717,7 +3717,7 @@ RID TextureStorage::render_target_get_rd_texture_slice(RID p_render_target, uint
 		return rt->color;
 	} else {
 		ERR_FAIL_UNSIGNED_INDEX_V(p_layer, rt->view_count, RID());
-		if (rt->color_slices.size() == 0) {
+		if (rt->color_slices.is_empty()) {
 			for (uint32_t v = 0; v < rt->view_count; v++) {
 				RID slice = RD::get_singleton()->texture_create_shared_from_slice(RD::TextureView(), rt->color, v, 0);
 				rt->color_slices.push_back(slice);

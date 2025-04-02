@@ -302,7 +302,7 @@ void TileSetScenesCollectionSourceEditor::_update_tile_inspector() {
 
 void TileSetScenesCollectionSourceEditor::_update_action_buttons() {
 	Vector<int> selected_indices = scene_tiles_list->get_selected_items();
-	scene_tile_delete_button->set_disabled(selected_indices.size() <= 0 || read_only);
+	scene_tile_delete_button->set_disabled(selected_indices.is_empty() || read_only);
 }
 
 void TileSetScenesCollectionSourceEditor::_update_scenes_list() {
@@ -483,7 +483,7 @@ bool TileSetScenesCollectionSourceEditor::_can_drop_data_fw(const Point2 &p_poin
 		if (String(d["type"]) == "files") {
 			Vector<String> files = d["files"];
 
-			if (files.size() == 0) {
+			if (files.is_empty()) {
 				return false;
 			}
 

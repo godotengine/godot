@@ -621,7 +621,7 @@ Variant EditorAutoloadSettings::get_drag_data_fw(const Point2 &p_point, Control 
 		next = tree->get_next_selected(next);
 	}
 
-	if (autoloads.size() == 0 || autoloads.size() == autoload_cache.size()) {
+	if (autoloads.is_empty() || autoloads.size() == autoload_cache.size()) {
 		return Variant();
 	}
 

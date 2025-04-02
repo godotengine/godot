@@ -2846,7 +2846,7 @@ String GDScriptLanguage::get_global_class_name(const String &p_path, String *r_b
 		while (subclass) {
 			if (subclass->extends_used) {
 				if (!subclass->extends_path.is_empty()) {
-					if (subclass->extends.size() == 0) {
+					if (subclass->extends.is_empty()) {
 						get_global_class_name(subclass->extends_path, r_base_type);
 						subclass = nullptr;
 						break;

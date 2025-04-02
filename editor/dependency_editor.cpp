@@ -613,7 +613,7 @@ void DependencyRemoveDialog::ok_pressed() {
 		ProjectSettings::get_singleton()->save();
 	}
 
-	if (dirs_to_delete.size() == 0) {
+	if (dirs_to_delete.is_empty()) {
 		// If we only deleted files we should only need to tell the file system about the files we touched.
 		for (int i = 0; i < files_to_delete.size(); ++i) {
 			EditorFileSystem::get_singleton()->update_file(files_to_delete[i]);

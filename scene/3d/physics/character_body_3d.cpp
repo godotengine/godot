@@ -717,7 +717,7 @@ Ref<KinematicCollision3D> CharacterBody3D::_get_slide_collision(int p_bounce) {
 }
 
 Ref<KinematicCollision3D> CharacterBody3D::_get_last_slide_collision() {
-	if (motion_results.size() == 0) {
+	if (motion_results.is_empty()) {
 		return Ref<KinematicCollision3D>();
 	}
 	return _get_slide_collision(motion_results.size() - 1);
