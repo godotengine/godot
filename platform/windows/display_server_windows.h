@@ -687,6 +687,8 @@ class DisplayServerWindows : public DisplayServer {
 
 	HWND _find_window_from_process_id(OS::ProcessID p_pid, HWND p_current_hwnd);
 
+	void initialize_tts() const;
+
 public:
 	LRESULT WndProcFileDialog(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 	LRESULT WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);

@@ -35,7 +35,9 @@
 #include "scene/resources/2d/tile_set.h"
 
 class Control;
+#ifndef NAVIGATION_2D_DISABLED
 class NavigationMeshSourceGeometryData2D;
+#endif // NAVIGATION_2D_DISABLED
 class TileMapLayer;
 class TerrainConstraint;
 
@@ -58,8 +60,6 @@ public:
 	};
 
 private:
-	friend class TileSetPlugin;
-
 	// A compatibility enum to specify how is the data if formatted.
 	mutable TileMapDataFormat format = TileMapDataFormat::TILE_MAP_DATA_FORMAT_3;
 
@@ -68,7 +68,9 @@ private:
 	int rendering_quadrant_size = 16;
 	bool collision_animatable = false;
 	VisibilityMode collision_visibility_mode = VISIBILITY_MODE_DEFAULT;
+#ifndef NAVIGATION_2D_DISABLED
 	VisibilityMode navigation_visibility_mode = VISIBILITY_MODE_DEFAULT;
+#endif // NAVIGATION_2D_DISABLED
 
 	// Layers.
 	LocalVector<TileMapLayer *> layers;
@@ -104,7 +106,9 @@ protected:
 	void _set_quadrant_size_compat_81070(int p_quadrant_size);
 	int _get_quadrant_size_compat_81070() const;
 	VisibilityMode _get_collision_visibility_mode_bind_compat_87115();
+#ifndef NAVIGATION_2D_DISABLED
 	VisibilityMode _get_navigation_visibility_mode_bind_compat_87115();
+#endif // NAVIGATION_2D_DISABLED
 
 	static void _bind_compatibility_methods();
 #endif // DISABLE_DEPRECATED
@@ -143,10 +147,12 @@ public:
 	int get_layer_y_sort_origin(int p_layer) const;
 	void set_layer_z_index(int p_layer, int p_z_index);
 	int get_layer_z_index(int p_layer) const;
+#ifndef NAVIGATION_2D_DISABLED
 	void set_layer_navigation_enabled(int p_layer, bool p_enabled);
 	bool is_layer_navigation_enabled(int p_layer) const;
 	void set_layer_navigation_map(int p_layer, RID p_map);
 	RID get_layer_navigation_map(int p_layer) const;
+#endif // NAVIGATION_2D_DISABLED
 
 	void set_collision_animatable(bool p_collision_animatable);
 	bool is_collision_animatable() const;
@@ -155,8 +161,10 @@ public:
 	void set_collision_visibility_mode(VisibilityMode p_show_collision);
 	VisibilityMode get_collision_visibility_mode() const;
 
+#ifndef NAVIGATION_2D_DISABLED
 	void set_navigation_visibility_mode(VisibilityMode p_show_navigation);
 	VisibilityMode get_navigation_visibility_mode() const;
+#endif // NAVIGATION_2D_DISABLED
 
 	// Cells accessors.
 	void set_cell(int p_layer, const Vector2i &p_coords, int p_source_id = TileSet::INVALID_SOURCE, const Vector2i p_atlas_coords = TileSetSource::INVALID_ATLAS_COORDS, int p_alternative_tile = 0);
@@ -240,13 +248,17 @@ public:
 	// Configuration warnings.
 	PackedStringArray get_configuration_warnings() const override;
 
+#ifndef NAVIGATION_2D_DISABLED
 private:
 	static Callable _navmesh_source_geometry_parsing_callback;
 	static RID _navmesh_source_geometry_parser;
+#endif // NAVIGATION_2D_DISABLED
 
+#ifndef NAVIGATION_2D_DISABLED
 public:
 	static void navmesh_parse_init();
 	static void navmesh_parse_source_geometry(const Ref<NavigationPolygon> &p_navigation_mesh, Ref<NavigationMeshSourceGeometryData2D> p_source_geometry_data, Node *p_node);
+#endif // NAVIGATION_2D_DISABLED
 
 	TileMap();
 };
