@@ -1660,13 +1660,16 @@ int DisplayServerMacOS::get_primary_screen() const {
 
 int DisplayServerMacOS::get_keyboard_focus_screen() const {
 	const NSUInteger index = [[NSScreen screens] indexOfObject:[NSScreen mainScreen]];
-	return (index == NSNotFound) ? 0 : index;
+	return (index == NSNotFound) ? get_primary_screen() : index;
 }
 
 Point2i DisplayServerMacOS::screen_get_position(int p_screen) const {
 	_THREAD_SAFE_METHOD_
 
 	p_screen = _get_screen_index(p_screen);
+	int screen_count = get_screen_count();
+	ERR_FAIL_INDEX_V(p_screen, screen_count, Point2i());
+
 	Point2i position = _get_native_screen_position(p_screen) - _get_screens_origin();
 	// macOS native y-coordinate relative to _get_screens_origin() is negative,
 	// Godot expects a positive value.
@@ -1678,6 +1681,9 @@ Size2i DisplayServerMacOS::screen_get_size(int p_screen) const {
 	_THREAD_SAFE_METHOD_
 
 	p_screen = _get_screen_index(p_screen);
+	int screen_count = get_screen_count();
+	ERR_FAIL_INDEX_V(p_screen, screen_count, Size2i());
+
 	NSArray *screenArray = [NSScreen screens];
 	if ((NSUInteger)p_screen < [screenArray count]) {
 		// Note: Use frame to get the whole screen size.
@@ -1692,6 +1698,9 @@ int DisplayServerMacOS::screen_get_dpi(int p_screen) const {
 	_THREAD_SAFE_METHOD_
 
 	p_screen = _get_screen_index(p_screen);
+	int screen_count = get_screen_count();
+	ERR_FAIL_INDEX_V(p_screen, screen_count, 72);
+
 	NSArray *screenArray = [NSScreen screens];
 	if ((NSUInteger)p_screen < [screenArray count]) {
 		NSDictionary *description = [[screenArray objectAtIndex:p_screen] deviceDescription];
@@ -1713,6 +1722,9 @@ float DisplayServerMacOS::screen_get_scale(int p_screen) const {
 	_THREAD_SAFE_METHOD_
 
 	p_screen = _get_screen_index(p_screen);
+	int screen_count = get_screen_count();
+	ERR_FAIL_INDEX_V(p_screen, screen_count, 1.0f);
+
 	if (OS::get_singleton()->is_hidpi_allowed()) {
 		NSArray *screenArray = [NSScreen screens];
 		if ((NSUInteger)p_screen < [screenArray count]) {
@@ -1736,6 +1748,9 @@ Rect2i DisplayServerMacOS::screen_get_usable_rect(int p_screen) const {
 	_THREAD_SAFE_METHOD_
 
 	p_screen = _get_screen_index(p_screen);
+	int screen_count = get_screen_count();
+	ERR_FAIL_INDEX_V(p_screen, screen_count, Rect2i());
+
 	NSArray *screenArray = [NSScreen screens];
 	if ((NSUInteger)p_screen < [screenArray count]) {
 		const float scale = screen_get_max_scale();
@@ -1792,7 +1807,9 @@ Color DisplayServerMacOS::screen_get_pixel(const Point2i &p_position) const {
 }
 
 Ref<Image> DisplayServerMacOS::screen_get_image(int p_screen) const {
-	ERR_FAIL_INDEX_V(p_screen, get_screen_count(), Ref<Image>());
+	p_screen = _get_screen_index(p_screen);
+	int screen_count = get_screen_count();
+	ERR_FAIL_INDEX_V(p_screen, screen_count, Ref<Image>());
 
 	HashSet<CGWindowID> exclude_windows;
 	for (HashMap<WindowID, WindowData>::ConstIterator E = windows.begin(); E; ++E) {
@@ -1893,6 +1910,9 @@ float DisplayServerMacOS::screen_get_refresh_rate(int p_screen) const {
 	_THREAD_SAFE_METHOD_
 
 	p_screen = _get_screen_index(p_screen);
+	int screen_count = get_screen_count();
+	ERR_FAIL_INDEX_V(p_screen, screen_count, SCREEN_REFRESH_RATE_FALLBACK);
+
 	NSArray *screenArray = [NSScreen screens];
 	if ((NSUInteger)p_screen < [screenArray count]) {
 		NSDictionary *description = [[screenArray objectAtIndex:p_screen] deviceDescription];
@@ -2086,7 +2106,7 @@ void DisplayServerMacOS::window_set_mouse_passthrough(const Vector<Vector2> &p_r
 
 int DisplayServerMacOS::window_get_current_screen(WindowID p_window) const {
 	_THREAD_SAFE_METHOD_
-	ERR_FAIL_COND_V(!windows.has(p_window), -1);
+	ERR_FAIL_COND_V(!windows.has(p_window), INVALID_SCREEN);
 	const WindowData &wd = windows[p_window];
 
 	const NSUInteger index = [[NSScreen screens] indexOfObject:[wd.window_object screen]];
@@ -2097,11 +2117,15 @@ void DisplayServerMacOS::window_set_current_screen(int p_screen, WindowID p_wind
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND(!windows.has(p_window));
-	WindowData &wd = windows[p_window];
+
+	p_screen = _get_screen_index(p_screen);
+	int screen_count = get_screen_count();
+	ERR_FAIL_INDEX(p_screen, screen_count);
 
 	if (window_get_current_screen(p_window) == p_screen) {
 		return;
 	}
+	WindowData &wd = windows[p_window];
 
 	bool was_fullscreen = false;
 	if (wd.fullscreen) {
