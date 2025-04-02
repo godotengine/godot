@@ -82,23 +82,26 @@
 #include "servers/navigation_server_2d.h"
 #include "servers/navigation_server_2d_dummy.h"
 #endif // NAVIGATION_2D_DISABLED
+
 #ifndef PHYSICS_2D_DISABLED
 #include "servers/physics_server_2d.h"
 #include "servers/physics_server_2d_dummy.h"
 #endif // PHYSICS_2D_DISABLED
 
 // 3D
-#ifndef PHYSICS_3D_DISABLED
-#include "servers/physics_server_3d.h"
-#include "servers/physics_server_3d_dummy.h"
-#endif // PHYSICS_3D_DISABLED
 #ifndef NAVIGATION_3D_DISABLED
 #include "servers/navigation_server_3d.h"
 #include "servers/navigation_server_3d_dummy.h"
 #endif // NAVIGATION_3D_DISABLED
-#ifndef _3D_DISABLED
+
+#ifndef PHYSICS_3D_DISABLED
+#include "servers/physics_server_3d.h"
+#include "servers/physics_server_3d_dummy.h"
+#endif // PHYSICS_3D_DISABLED
+
+#ifndef XR_DISABLED
 #include "servers/xr_server.h"
-#endif // _3D_DISABLED
+#endif // XR_DISABLED
 
 #ifdef TESTS_ENABLED
 #include "tests/test_main.h"
