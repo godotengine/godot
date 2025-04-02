@@ -34,6 +34,7 @@
 #include "core/math/math_defs.h"
 #include "core/math/quat.h"
 #include "core/math/transform.h"
+#include "core/math/vector2.h"
 #include "core/math/vector3.h"
 
 // Keep all the functions for fixed timestep interpolation together.
@@ -47,6 +48,7 @@
 // than performing every frame.
 
 struct Transform2D;
+struct Vector2;
 
 class TransformInterpolator {
 public:
@@ -84,6 +86,15 @@ public:
 
 	static real_t checksum_transform(const Transform &p_transform);
 	static Method find_method(const Basis &p_a, const Basis &p_b);
+
+	// Wrappers for InterpolatedProperty, so it can use various standard interpolation methods and reduce boilerplate.
+	static float interpolated_property_lerp(float p_a, float p_b, float p_fraction) {
+		return Math::lerp(p_a, p_b, p_fraction);
+	}
+
+	static Vector2 interpolated_property_lerp(const Vector2 &p_a, const Vector2 &p_b, float p_fraction) {
+		return p_a.linear_interpolate(p_b, p_fraction);
+	}
 };
 
 #endif // TRANSFORM_INTERPOLATOR_H
