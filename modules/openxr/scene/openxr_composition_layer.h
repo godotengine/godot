@@ -112,6 +112,7 @@ protected:
 	static void _bind_methods();
 
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 	void _get_property_list(List<PropertyInfo> *p_property_list) const;
 	bool _get(const StringName &p_property, Variant &r_value) const;
 	bool _set(const StringName &p_property, const Variant &p_value);

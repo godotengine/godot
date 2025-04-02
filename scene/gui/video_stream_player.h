@@ -79,6 +79,7 @@ class VideoStreamPlayer : public Control {
 protected:
 	static void _bind_methods();
 	void _notification(int p_notification);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 	void _validate_property(PropertyInfo &p_property) const;
 
 public:

@@ -90,6 +90,7 @@ class EditorPropertyMultilineText : public EditorProperty {
 protected:
 	virtual void _set_read_only(bool p_read_only) override;
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 
 public:
 	virtual void update_property() override;
@@ -124,6 +125,7 @@ class EditorPropertyTextEnum : public EditorProperty {
 protected:
 	virtual void _set_read_only(bool p_read_only) override;
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 
 public:
 	void setup(const Vector<String> &p_options, bool p_string_name = false, bool p_loose_mode = false);
@@ -152,6 +154,7 @@ class EditorPropertyPath : public EditorProperty {
 protected:
 	virtual void _set_read_only(bool p_read_only) override;
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 
 public:
 	void setup(const Vector<String> &p_extensions, bool p_folder, bool p_global);
@@ -172,6 +175,7 @@ class EditorPropertyLocale : public EditorProperty {
 
 protected:
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 
 public:
 	void setup(const String &p_hit_string);
@@ -273,6 +277,7 @@ private:
 
 protected:
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 	static void _bind_methods();
 
 public:
@@ -318,6 +323,7 @@ private:
 
 protected:
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 	virtual void _set_read_only(bool p_read_only) override;
 
 public:
@@ -424,6 +430,7 @@ class EditorPropertyEasing : public EditorProperty {
 	void _spin_focus_exited();
 
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 
 protected:
 	virtual void _set_read_only(bool p_read_only) override;
@@ -442,6 +449,7 @@ class EditorPropertyRect2 : public EditorProperty {
 protected:
 	virtual void _set_read_only(bool p_read_only) override;
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 
 public:
 	virtual void update_property() override;
@@ -457,6 +465,7 @@ class EditorPropertyRect2i : public EditorProperty {
 protected:
 	virtual void _set_read_only(bool p_read_only) override;
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 
 public:
 	virtual void update_property() override;
@@ -472,6 +481,7 @@ class EditorPropertyPlane : public EditorProperty {
 protected:
 	virtual void _set_read_only(bool p_read_only) override;
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 
 public:
 	virtual void update_property() override;
@@ -504,6 +514,7 @@ class EditorPropertyQuaternion : public EditorProperty {
 protected:
 	virtual void _set_read_only(bool p_read_only) override;
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 
 public:
 	virtual void update_property() override;
@@ -519,6 +530,7 @@ class EditorPropertyAABB : public EditorProperty {
 protected:
 	virtual void _set_read_only(bool p_read_only) override;
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 
 public:
 	virtual void update_property() override;
@@ -534,6 +546,7 @@ class EditorPropertyTransform2D : public EditorProperty {
 protected:
 	virtual void _set_read_only(bool p_read_only) override;
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 
 public:
 	virtual void update_property() override;
@@ -549,6 +562,7 @@ class EditorPropertyBasis : public EditorProperty {
 protected:
 	virtual void _set_read_only(bool p_read_only) override;
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 
 public:
 	virtual void update_property() override;
@@ -564,6 +578,7 @@ class EditorPropertyTransform3D : public EditorProperty {
 protected:
 	virtual void _set_read_only(bool p_read_only) override;
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 
 public:
 	virtual void update_property() override;
@@ -580,6 +595,7 @@ class EditorPropertyProjection : public EditorProperty {
 protected:
 	virtual void _set_read_only(bool p_read_only) override;
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 
 public:
 	virtual void update_property() override;
@@ -603,6 +619,7 @@ class EditorPropertyColor : public EditorProperty {
 protected:
 	virtual void _set_read_only(bool p_read_only) override;
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 
 public:
 	virtual void update_property() override;
@@ -650,6 +667,7 @@ class EditorPropertyNodePath : public EditorProperty {
 protected:
 	virtual void _set_read_only(bool p_read_only) override;
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 
 public:
 	virtual void update_property() override;
@@ -693,6 +711,7 @@ class EditorPropertyResource : public EditorProperty {
 protected:
 	virtual void _set_read_only(bool p_read_only) override;
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 	static void _bind_methods();
 
 public:

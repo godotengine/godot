@@ -44,6 +44,7 @@ class StatusIndicator : public Node {
 
 protected:
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 	static void _bind_methods();
 
 	void _callback(MouseButton p_index, const Point2i &p_pos);

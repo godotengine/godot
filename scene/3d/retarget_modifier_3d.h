@@ -90,6 +90,7 @@ protected:
 
 	static void _bind_methods();
 	virtual void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 
 	virtual void add_child_notify(Node *p_child) override;
 	virtual void move_child_notify(Node *p_child) override;

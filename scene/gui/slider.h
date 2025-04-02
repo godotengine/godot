@@ -72,6 +72,7 @@ protected:
 
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 	static void _bind_methods();
 
 public:

@@ -66,6 +66,7 @@ class FindBar : public HBoxContainer {
 
 protected:
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 
 	bool _search(bool p_search_previous = false);
 
@@ -223,6 +224,7 @@ protected:
 	virtual void _update_theme_item_cache() override;
 
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 	static void _bind_methods();
 
 public:
@@ -346,6 +348,7 @@ class EditorHelpBit : public VBoxContainer {
 protected:
 	static void _bind_methods();
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 
 public:
 	void parse_symbol(const String &p_symbol, const String &p_prologue = String());
@@ -375,6 +378,7 @@ class EditorHelpBitTooltip : public PopupPanel {
 
 protected:
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 
 public:
 	static Control *show_tooltip(Control *p_target, const String &p_symbol, const String &p_prologue = String(), bool p_use_class_prefix = false);

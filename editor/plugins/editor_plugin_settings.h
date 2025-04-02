@@ -66,6 +66,7 @@ class EditorPluginSettings : public VBoxContainer {
 
 protected:
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 
 public:
 	void update_plugins();

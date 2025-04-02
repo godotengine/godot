@@ -47,6 +47,7 @@ protected:
 	virtual void _screen_exit() {}
 
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 	static void _bind_methods();
 
 public:
@@ -77,6 +78,7 @@ protected:
 	NodePath enable_node_path = NodePath("..");
 
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 	static void _bind_methods();
 
 	void _update_enable_mode(bool p_enable);

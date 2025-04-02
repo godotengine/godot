@@ -77,6 +77,7 @@ class ShaderTextEditor : public CodeTextEditor {
 
 protected:
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 	static void _bind_methods();
 	virtual void _load_theme_settings() override;
 
@@ -180,6 +181,7 @@ class TextShaderEditor : public ShaderEditor {
 
 protected:
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 	static void _bind_methods();
 	void _make_context_menu(bool p_selection, Vector2 p_position);
 	void _text_edit_gui_input(const Ref<InputEvent> &p_ev);

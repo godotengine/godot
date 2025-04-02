@@ -156,6 +156,7 @@ class ScriptEditorQuickOpen : public ConfirmationDialog {
 
 protected:
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 	static void _bind_methods();
 
 public:
@@ -540,6 +541,7 @@ class ScriptEditor : public PanelContainer {
 
 protected:
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 	static void _bind_methods();
 
 public:
@@ -619,6 +621,7 @@ class ScriptEditorPlugin : public EditorPlugin {
 
 protected:
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 
 public:
 	virtual String get_plugin_name() const override { return TTRC("Script"); }

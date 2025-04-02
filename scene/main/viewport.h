@@ -500,6 +500,7 @@ protected:
 	bool _is_size_allocated() const;
 
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 #if !defined(PHYSICS_2D_DISABLED) || !defined(PHYSICS_3D_DISABLED)
 	void _process_picking();
 #endif // !defined(PHYSICS_2D_DISABLED) || !defined(PHYSICS_3D_DISABLED)
@@ -860,6 +861,7 @@ protected:
 	static void _bind_methods();
 	virtual DisplayServer::WindowID get_window_id() const override;
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 
 public:
 	void set_size(const Size2i &p_size);

@@ -65,6 +65,7 @@ class ColorPresetButton : public BaseButton {
 
 protected:
 	void _notification(int);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 	static void _bind_methods();
 
 public:
@@ -345,6 +346,7 @@ protected:
 	virtual void _update_theme_item_cache() override;
 
 	void _notification(int);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 	static void _bind_methods();
 
 public:
@@ -458,6 +460,7 @@ class ColorPickerButton : public Button {
 
 protected:
 	void _notification(int);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 	static void _bind_methods();
 
 public:

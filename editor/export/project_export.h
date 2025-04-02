@@ -60,6 +60,7 @@ class ProjectExportTextureFormatError : public HBoxContainer {
 protected:
 	static void _bind_methods();
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 
 public:
 	void show_for_texture_format(const String &p_friendly_name, const String &p_setting_identifier);
@@ -208,6 +209,7 @@ class ProjectExportDialog : public ConfirmationDialog {
 
 protected:
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 	static void _bind_methods();
 
 public:

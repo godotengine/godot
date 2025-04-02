@@ -93,6 +93,7 @@ class ProgressDialog : public CenterContainer {
 
 protected:
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 
 public:
 	static ProgressDialog *get_singleton() { return singleton; }

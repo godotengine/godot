@@ -172,6 +172,7 @@ class ThemeItemImportTree : public VBoxContainer {
 
 protected:
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 	static void _bind_methods();
 
 public:
@@ -276,6 +277,7 @@ class ThemeItemEditorDialog : public AcceptDialog {
 
 protected:
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 	static void _bind_methods();
 
 public:
@@ -312,6 +314,7 @@ class ThemeTypeDialog : public ConfirmationDialog {
 
 protected:
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 	static void _bind_methods();
 
 public:
@@ -413,6 +416,7 @@ class ThemeTypeEditor : public MarginContainer {
 
 protected:
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 	static void _bind_methods();
 
 public:
@@ -457,6 +461,7 @@ class ThemeEditor : public VBoxContainer {
 
 protected:
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 
 public:
 	void edit(const Ref<Theme> &p_theme);

@@ -100,6 +100,7 @@ private:
 			} break;
 		}
 	}
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 
 	void update_preview() {
 		if (MIN(_preview_texture_size.width, _preview_texture_size.height) > 0) {

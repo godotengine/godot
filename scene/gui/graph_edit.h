@@ -375,6 +375,7 @@ protected:
 	virtual void remove_child_notify(Node *p_child) override;
 
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 	static void _bind_methods();
 #ifndef DISABLE_DEPRECATED
 	static void _bind_compatibility_methods();

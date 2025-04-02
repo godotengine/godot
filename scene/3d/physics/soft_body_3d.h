@@ -122,6 +122,7 @@ protected:
 	bool _get_property_pinned_points(int p_item, const String &p_what, Variant &r_ret) const;
 
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 	static void _bind_methods();
 
 #ifndef DISABLE_DEPRECATED

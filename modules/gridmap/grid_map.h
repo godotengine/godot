@@ -231,6 +231,7 @@ protected:
 	void _get_property_list(List<PropertyInfo> *p_list) const;
 
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 	void _update_visibility();
 	static void _bind_methods();
 

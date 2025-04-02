@@ -60,6 +60,7 @@ private:
 protected:
 	static void _bind_methods();
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 
 	// used for undo/redo
 	void _do_set_name(const String p_new_text);

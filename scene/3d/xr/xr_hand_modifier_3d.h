@@ -57,6 +57,7 @@ public:
 	PackedStringArray get_configuration_warnings() const override;
 
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 
 protected:
 	static void _bind_methods();

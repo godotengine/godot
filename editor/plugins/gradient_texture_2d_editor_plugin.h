@@ -70,6 +70,7 @@ class GradientTexture2DEdit : public Control {
 
 protected:
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 
 public:
 	void set_texture(Ref<GradientTexture2D> &p_texture);
@@ -95,6 +96,7 @@ class GradientTexture2DEditor : public VBoxContainer {
 
 protected:
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 
 public:
 	static const int DEFAULT_SNAP;

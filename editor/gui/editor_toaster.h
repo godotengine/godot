@@ -109,6 +109,7 @@ protected:
 	static EditorToaster *singleton;
 
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 
 public:
 	static EditorToaster *get_singleton();

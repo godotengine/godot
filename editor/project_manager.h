@@ -246,6 +246,7 @@ class ProjectManager : public Control {
 
 protected:
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 
 public:
 	static ProjectManager *get_singleton() { return singleton; }

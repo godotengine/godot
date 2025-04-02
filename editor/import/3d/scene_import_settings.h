@@ -239,6 +239,7 @@ class SceneImportSettingsDialog : public ConfirmationDialog {
 protected:
 	virtual void _update_theme_item_cache() override;
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 
 public:
 	bool is_editing_animation() const { return editing_animation; }

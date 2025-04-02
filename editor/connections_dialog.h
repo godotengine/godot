@@ -159,6 +159,7 @@ private:
 protected:
 	virtual void _post_popup() override;
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 	static void _bind_methods();
 
 public:
@@ -261,6 +262,7 @@ class ConnectionsDock : public VBoxContainer {
 protected:
 	void _connect_pressed();
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 	static void _bind_methods();
 
 public:

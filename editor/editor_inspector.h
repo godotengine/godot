@@ -146,6 +146,7 @@ protected:
 	bool has_borders = false;
 
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 	static void _bind_methods();
 	virtual void _set_read_only(bool p_read_only);
 
@@ -312,6 +313,7 @@ class EditorInspectorCategory : public Control {
 
 protected:
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 
 public:
@@ -346,6 +348,7 @@ protected:
 	VBoxContainer *vbox = nullptr;
 
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 	static void _bind_methods();
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 
@@ -464,6 +467,7 @@ class EditorInspectorArray : public EditorInspectorSection {
 
 protected:
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 	static void _bind_methods();
 
 public:
@@ -494,6 +498,7 @@ class EditorPaginator : public HBoxContainer {
 
 protected:
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 	static void _bind_methods();
 
 public:
@@ -637,6 +642,7 @@ class EditorInspector : public ScrollContainer {
 protected:
 	static void _bind_methods();
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 
 public:
 	static void add_inspector_plugin(const Ref<EditorInspectorPlugin> &p_plugin);

@@ -154,6 +154,7 @@ protected:
 	virtual String get_export_option_warning(const EditorExportPreset *p_preset, const StringName &p_name) const override;
 
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 
 public:
 	virtual String get_name() const override { return "iOS"; }

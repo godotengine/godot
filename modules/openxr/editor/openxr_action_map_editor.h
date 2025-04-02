@@ -93,6 +93,7 @@ private:
 protected:
 	static void _bind_methods();
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 
 	void _clear_action_map();
 

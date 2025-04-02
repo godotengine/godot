@@ -186,6 +186,7 @@ protected:
 	void _warning_clicked(const Variant &p_line);
 
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 
 	HashMap<String, Ref<EditorSyntaxHighlighter>> highlighters;
 	void _change_syntax_highlighter(int p_idx);

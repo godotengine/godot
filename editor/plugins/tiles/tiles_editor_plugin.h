@@ -128,6 +128,7 @@ class TileMapEditorPlugin : public EditorPlugin {
 
 protected:
 	void _notification(int p_notification);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 
 public:
 	virtual void edit(Object *p_object) override;

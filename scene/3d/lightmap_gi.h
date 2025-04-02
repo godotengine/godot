@@ -278,6 +278,7 @@ protected:
 	void _validate_property(PropertyInfo &p_property) const;
 	static void _bind_methods();
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 
 public:
 	void set_light_data(const Ref<LightmapGIData> &p_data);

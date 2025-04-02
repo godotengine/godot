@@ -60,6 +60,7 @@ public:
 
 protected:
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 
 	static void _bind_methods();
 
@@ -118,6 +119,7 @@ public:
 
 protected:
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 
 	void _visibility_changed();
 	void custom_action(const String &p_action) override;
@@ -174,6 +176,7 @@ protected:
 	static void _bind_methods();
 
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 
 private:
 	void _on_button_clicked(TreeItem *p_item, int p_column, int p_id, int p_mouse_button_index);

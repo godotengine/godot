@@ -394,7 +394,8 @@ struct ObjectGDExtension {
 // so that they can support the `Object::cast_to()` method.
 #define GDSOFTCLASS(m_class, m_inherits)                                             \
 public:                                                                              \
-	typedef m_class self_type;                                                       \
+	using self_type = m_class;                                                       \
+	using super_type = m_inherits;                                                   \
 	static _FORCE_INLINE_ void *get_class_ptr_static() {                             \
 		static int ptr;                                                              \
 		return &ptr;                                                                 \
@@ -549,23 +550,18 @@ protected:                                                                      
 		}                                                                                                                                   \
 		return m_inherits::_property_get_revertv(p_name, r_ret);                                                                            \
 	}                                                                                                                                       \
-	_FORCE_INLINE_ void (Object::*_get_notification() const)(int) {                                                                         \
-		return (void(Object::*)(int)) & m_class::_notification;                                                                             \
-	}                                                                                                                                       \
-	virtual void _notification_forwardv(int p_notification) override {                                                                      \
-		m_inherits::_notification_forwardv(p_notification);                                                                                 \
-		if (m_class::_get_notification() != m_inherits::_get_notification()) {                                                              \
-			_notification(p_notification);                                                                                                  \
-		}                                                                                                                                   \
-	}                                                                                                                                       \
-	virtual void _notification_backwardv(int p_notification) override {                                                                     \
-		if (m_class::_get_notification() != m_inherits::_get_notification()) {                                                              \
-			_notification(p_notification);                                                                                                  \
-		}                                                                                                                                   \
-		m_inherits::_notification_backwardv(p_notification);                                                                                \
-	}                                                                                                                                       \
                                                                                                                                             \
 private:
+
+#define GDCLASS_RECEIVE_NOTIFICATIONS(m_function_name)                  \
+	virtual void _notification_forwardv(int p_notification) override {  \
+		super_type::_notification_forwardv(p_notification);             \
+		this->m_function_name(p_notification);                          \
+	}                                                                   \
+	virtual void _notification_backwardv(int p_notification) override { \
+		this->m_function_name(p_notification);                          \
+		super_type::_notification_backwardv(p_notification);            \
+	}
 
 #define OBJ_SAVE_TYPE(m_class)                       \
 public:                                              \
@@ -720,7 +716,6 @@ protected:
 	void _validate_property(PropertyInfo &p_property) const {}
 	bool _property_can_revert(const StringName &p_name) const { return false; }
 	bool _property_get_revert(const StringName &p_name, Variant &r_property) const { return false; }
-	void _notification(int p_notification) {}
 
 	_FORCE_INLINE_ static void (*_get_bind_methods())() {
 		return &Object::_bind_methods;
@@ -745,9 +740,6 @@ protected:
 	}
 	_FORCE_INLINE_ bool (Object::*_get_property_get_revert() const)(const StringName &p_name, Variant &) const {
 		return &Object::_property_get_revert;
-	}
-	_FORCE_INLINE_ void (Object::*_get_notification() const)(int) {
-		return &Object::_notification;
 	}
 	static void get_valid_parents_static(List<String> *p_parents);
 	static void _get_valid_parents_static(List<String> *p_parents);

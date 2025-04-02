@@ -116,6 +116,7 @@ public:
 
 protected:
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 	void _draw();
 
 	static void _bind_methods();

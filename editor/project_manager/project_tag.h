@@ -44,6 +44,7 @@ class ProjectTag : public HBoxContainer {
 
 protected:
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 
 public:
 	void connect_button_to(const Callable &p_callable);

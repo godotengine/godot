@@ -44,6 +44,7 @@ class Path2D : public Node2D {
 
 protected:
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 	static void _bind_methods();
 
 public:
@@ -79,6 +80,7 @@ protected:
 	void _validate_property(PropertyInfo &p_property) const;
 
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 	static void _bind_methods();
 
 public:

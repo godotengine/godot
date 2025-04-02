@@ -61,6 +61,7 @@ protected:
 	virtual void _input_from_window(const Ref<InputEvent> &p_event) override;
 
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 	void _validate_property(PropertyInfo &p_property) const;
 	static void _bind_methods();
 
@@ -95,6 +96,7 @@ protected:
 	void _update_child_rects() const;
 
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 	static void _bind_methods();
 
 	virtual Size2 _get_contents_minimum_size() const override;

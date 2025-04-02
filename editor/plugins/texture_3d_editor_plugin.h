@@ -74,6 +74,7 @@ class Texture3DEditor : public Control {
 
 protected:
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 
 public:
 	void edit(Ref<Texture3D> p_texture);

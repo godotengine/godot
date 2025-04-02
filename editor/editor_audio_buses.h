@@ -126,6 +126,7 @@ class EditorAudioBus : public PanelContainer {
 protected:
 	static void _bind_methods();
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 
 public:
 	void update_bus();
@@ -145,6 +146,7 @@ class EditorAudioBusDrop : public Control {
 protected:
 	static void _bind_methods();
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 };
 
 class EditorAudioBuses : public VBoxContainer {
@@ -196,6 +198,7 @@ class EditorAudioBuses : public VBoxContainer {
 protected:
 	static void _bind_methods();
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 
 public:
 	void open_layout(const String &p_path);
@@ -258,6 +261,7 @@ private:
 
 	static void _bind_methods();
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 	void _draw_audio_notches();
 };
 

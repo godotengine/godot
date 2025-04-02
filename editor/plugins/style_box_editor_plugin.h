@@ -50,6 +50,7 @@ class StyleBoxPreview : public TextureRect {
 
 protected:
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 
 public:
 	void edit(const Ref<StyleBox> &p_stylebox);

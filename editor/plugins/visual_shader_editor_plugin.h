@@ -84,6 +84,7 @@ class VSRerouteNode : public VSGraphNode {
 
 protected:
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 
 	virtual void draw_port(int p_slot_index, Point2i p_pos, bool p_left, const Color &p_color) override;
 
@@ -635,6 +636,7 @@ class VisualShaderEditor : public ShaderEditor {
 
 protected:
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 	static void _bind_methods();
 
 public:
@@ -702,6 +704,7 @@ class VisualShaderNodePortPreview : public Control {
 	void _shader_changed(); //must regen
 protected:
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 
 public:
 	virtual Size2 get_minimum_size() const override;

@@ -111,6 +111,7 @@ public:
 	BoneUpdate get_bone_update() const;
 
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 };
 
 VARIANT_ENUM_CAST(OpenXRHand::Hands)

@@ -64,6 +64,7 @@ protected:
 	bool surface_index_0 = false;
 
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 	static void _bind_methods();
 
 	bool _property_can_revert(const StringName &p_name) const;

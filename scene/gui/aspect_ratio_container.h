@@ -37,6 +37,7 @@ class AspectRatioContainer : public Container {
 
 protected:
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 	static void _bind_methods();
 	virtual Size2 get_minimum_size() const override;
 

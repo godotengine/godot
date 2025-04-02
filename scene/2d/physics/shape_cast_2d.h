@@ -63,6 +63,7 @@ class ShapeCast2D : public Node2D {
 
 protected:
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 	void _update_shapecast_state();
 	static void _bind_methods();
 

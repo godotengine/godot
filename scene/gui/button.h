@@ -117,6 +117,7 @@ protected:
 	Ref<StyleBox> _get_current_stylebox() const;
 	Size2 _get_largest_stylebox_size() const;
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 	static void _bind_methods();
 
 public:

@@ -50,6 +50,7 @@ class GDScriptLanguageServer : public EditorPlugin {
 
 private:
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 
 public:
 	static int port_override;

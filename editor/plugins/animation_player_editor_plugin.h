@@ -246,6 +246,7 @@ class AnimationPlayerEditor : public VBoxContainer {
 
 protected:
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 	void _node_removed(Node *p_node);
 	static void _bind_methods();
 
@@ -290,6 +291,7 @@ class AnimationPlayerEditorPlugin : public EditorPlugin {
 
 protected:
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 
 	void _property_keyed(const String &p_keyed, const Variant &p_value, bool p_advance);
 	void _transform_key_request(Object *sp, const String &p_sub, const Transform3D &p_key);

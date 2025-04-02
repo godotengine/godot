@@ -54,6 +54,7 @@ protected:
 	void _removed_tracker(const StringName &p_tracker_name, int p_tracker_type);
 	void _pose_changed(const Ref<XRPose> &p_pose);
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 
 public:
 	PackedStringArray get_configuration_warnings() const override;
@@ -99,6 +100,7 @@ protected:
 
 	void _update_visibility();
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 
 public:
 	void _validate_property(PropertyInfo &p_property) const;
@@ -200,6 +202,7 @@ private:
 
 protected:
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 	static void _bind_methods();
 	virtual void _physics_interpolated_changed() override;
 

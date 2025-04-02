@@ -48,6 +48,7 @@ protected:
 	void set_instance_use_identity_transform(bool p_enable);
 
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 	static void _bind_methods();
 	void _validate_property(PropertyInfo &p_property) const;
 

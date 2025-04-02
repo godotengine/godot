@@ -339,6 +339,7 @@ protected:
 	void _unblock() { data.blocked--; }
 
 	void _notification(int p_notification);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 
 	virtual void _physics_interpolated_changed();
 

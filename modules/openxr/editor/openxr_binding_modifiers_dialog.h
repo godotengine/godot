@@ -66,6 +66,7 @@ protected:
 
 	static void _bind_methods();
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 
 	// used for undo/redo
 	void _do_add_binding_modifier_editor(OpenXRBindingModifierEditor *p_binding_modifier_editor);

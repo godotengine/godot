@@ -204,6 +204,7 @@ class GameView : public VBoxContainer {
 
 protected:
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 
 public:
 	void set_state(const Dictionary &p_state);
@@ -236,6 +237,7 @@ class GameViewPlugin : public EditorPlugin {
 
 protected:
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 
 public:
 	virtual String get_plugin_name() const override { return TTRC("Game"); }

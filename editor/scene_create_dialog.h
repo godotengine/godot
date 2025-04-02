@@ -87,6 +87,7 @@ private:
 
 protected:
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 
 public:
 	void config(const String &p_dir);

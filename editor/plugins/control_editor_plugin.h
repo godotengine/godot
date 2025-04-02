@@ -69,6 +69,7 @@ class ControlPositioningWarning : public MarginContainer {
 
 protected:
 	void _notification(int p_notification);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 
 public:
 	void set_control(Control *p_node);
@@ -149,6 +150,7 @@ class ControlEditorPopupButton : public Button {
 
 protected:
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 
 public:
 	virtual Size2 get_minimum_size() const override;
@@ -179,6 +181,7 @@ class AnchorPresetPicker : public ControlEditorPresetPicker {
 
 protected:
 	void _notification(int p_notification);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 	static void _bind_methods();
 
 public:
@@ -197,6 +200,7 @@ class SizeFlagPresetPicker : public ControlEditorPresetPicker {
 
 protected:
 	void _notification(int p_notification);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 	static void _bind_methods();
 
 public:
@@ -233,6 +237,7 @@ class ControlEditorToolbar : public HBoxContainer {
 
 protected:
 	void _notification(int p_notification);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 
 	static ControlEditorToolbar *singleton;
 

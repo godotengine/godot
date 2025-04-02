@@ -62,6 +62,7 @@ protected:
 			} break;
 		}
 	}
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 
 	static void _bind_methods() {
 		ClassDB::bind_method(D_METHOD("set_exported_node", "node"), &TestNode::set_exported_node);

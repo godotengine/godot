@@ -159,6 +159,7 @@ class SceneTreeEditor : public Control {
 
 	TreeItem *_find(TreeItem *p_node, const NodePath &p_path);
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 	void _selected_changed();
 	void _deselect_items();
 
@@ -280,6 +281,7 @@ class SceneTreeDialog : public ConfirmationDialog {
 protected:
 	void _update_valid_type_icons();
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 	static void _bind_methods();
 
 public:

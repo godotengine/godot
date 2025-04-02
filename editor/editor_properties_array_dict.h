@@ -147,6 +147,7 @@ protected:
 	bool dropping = false;
 
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 
 	virtual void _add_element();
 	virtual void _length_changed(double p_page);
@@ -259,6 +260,7 @@ class EditorPropertyDictionary : public EditorProperty {
 
 protected:
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 
 public:
 	void setup(PropertyHint p_hint, const String &p_hint_string = "");
@@ -296,6 +298,7 @@ class EditorPropertyLocalizableString : public EditorProperty {
 
 protected:
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 
 public:
 	virtual void update_property() override;

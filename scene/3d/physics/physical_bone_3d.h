@@ -199,6 +199,7 @@ protected:
 	bool _get(const StringName &p_name, Variant &r_ret) const;
 	void _get_property_list(List<PropertyInfo> *p_list) const;
 	void _notification(int p_what);
+	GDCLASS_RECEIVE_NOTIFICATIONS(_notification);
 	GDVIRTUAL1(_integrate_forces, PhysicsDirectBodyState3D *)
 	static void _body_state_changed_callback(void *p_instance, PhysicsDirectBodyState3D *p_state);
 	void _body_state_changed(PhysicsDirectBodyState3D *p_state);
