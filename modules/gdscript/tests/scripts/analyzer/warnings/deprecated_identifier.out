@@ -1,0 +1,32 @@
+GDTEST_OK
+~~ WARNING at line 19: (DEPRECATED_IDENTIFIER) The property or variable "deprecated_property_2" is deprecated. See its documentation for more information and alternatives.
+~~ WARNING at line 87: (DEPRECATED_IDENTIFIER) The function "deprecated_function" is deprecated. See its documentation for more information and alternatives.
+~~ WARNING at line 88: (DEPRECATED_IDENTIFIER) The function "inner_dep_function" is deprecated. See its documentation for more information and alternatives.
+~~ WARNING at line 96: (DEPRECATED_IDENTIFIER) The class "InnerDeprecatedClass" is deprecated. See its documentation for more information and alternatives.
+~~ WARNING at line 97: (DEPRECATED_IDENTIFIER) The class "InnerDeprecatedClass" is deprecated. See its documentation for more information and alternatives.
+~~ WARNING at line 104: (DEPRECATED_IDENTIFIER) The constant "DEPRECATED_CONST" is deprecated. See its documentation for more information and alternatives.
+~~ WARNING at line 105: (DEPRECATED_IDENTIFIER) The constant "INNER_DEPRECATED_CONST" is deprecated. See its documentation for more information and alternatives.
+~~ WARNING at line 110: (DEPRECATED_IDENTIFIER) The constant "DEPRECATED_LOCAL_CONST" is deprecated. See its documentation for more information and alternatives.
+~~ WARNING at line 114: (DEPRECATED_IDENTIFIER) The enum "DeprecatedEnum" is deprecated. See its documentation for more information and alternatives.
+~~ WARNING at line 115: (DEPRECATED_IDENTIFIER) The enum "InnerDeprecatedEnum" is deprecated. See its documentation for more information and alternatives.
+~~ WARNING at line 116: (DEPRECATED_IDENTIFIER) The enum "InnerDeprecatedEnum" is deprecated. See its documentation for more information and alternatives.
+~~ WARNING at line 119: (DEPRECATED_IDENTIFIER) The enum value "ANONYMOUS_TWO" is deprecated. See its documentation for more information and alternatives.
+~~ WARNING at line 120: (DEPRECATED_IDENTIFIER) The enum value "ONE" is deprecated. See its documentation for more information and alternatives.
+~~ WARNING at line 136: (DEPRECATED_IDENTIFIER) The property or variable "dep_local" is deprecated. See its documentation for more information and alternatives.
+~~ WARNING at line 139: (DEPRECATED_IDENTIFIER) The property or variable "deprecated_property" is deprecated. See its documentation for more information and alternatives.
+~~ WARNING at line 140: (DEPRECATED_IDENTIFIER) The property or variable "deprecated_property_2" is deprecated. See its documentation for more information and alternatives.
+~~ WARNING at line 141: (DEPRECATED_IDENTIFIER) The property or variable "inner_deprecated_property" is deprecated. See its documentation for more information and alternatives.
+~~ WARNING at line 147: (DEPRECATED_IDENTIFIER) The signal "deprecated_signal" is deprecated. See its documentation for more information and alternatives.
+~~ WARNING at line 147: (RETURN_VALUE_DISCARDED) The function "connect()" returns a value that will be discarded if not used.
+~~ WARNING at line 148: (DEPRECATED_IDENTIFIER) The signal "inner_deprecated_signal" is deprecated. See its documentation for more information and alternatives.
+~~ WARNING at line 148: (RETURN_VALUE_DISCARDED) The function "connect()" returns a value that will be discarded if not used.
+~~ WARNING at line 151: (RETURN_VALUE_DISCARDED) The function "connect()" returns a value that will be discarded if not used.
+I'm deprecated
+hello
+3
+3
+3
+1.0
+2.23606797749979
+3
+(0, 0)
