@@ -1217,30 +1217,54 @@ int DisplayServerWeb::get_primary_screen() const {
 }
 
 Point2i DisplayServerWeb::screen_get_position(int p_screen) const {
-	return Point2i(); // TODO offsetX/Y?
+	p_screen = _get_screen_index(p_screen);
+	int screen_count = get_screen_count();
+	ERR_FAIL_INDEX_V(p_screen, screen_count, Point2i());
+
+	return Point2i(0, 0); // TODO offsetX/Y?
 }
 
 Size2i DisplayServerWeb::screen_get_size(int p_screen) const {
+	p_screen = _get_screen_index(p_screen);
+	int screen_count = get_screen_count();
+	ERR_FAIL_INDEX_V(p_screen, screen_count, Size2i());
+
 	int size[2];
 	godot_js_display_screen_size_get(size, size + 1);
 	return Size2(size[0], size[1]);
 }
 
 Rect2i DisplayServerWeb::screen_get_usable_rect(int p_screen) const {
+	p_screen = _get_screen_index(p_screen);
+	int screen_count = get_screen_count();
+	ERR_FAIL_INDEX_V(p_screen, screen_count, Rect2i());
+
 	int size[2];
 	godot_js_display_window_size_get(size, size + 1);
 	return Rect2i(0, 0, size[0], size[1]);
 }
 
 int DisplayServerWeb::screen_get_dpi(int p_screen) const {
+	p_screen = _get_screen_index(p_screen);
+	int screen_count = get_screen_count();
+	ERR_FAIL_INDEX_V(p_screen, screen_count, 72);
+
 	return godot_js_display_screen_dpi_get();
 }
 
 float DisplayServerWeb::screen_get_scale(int p_screen) const {
+	p_screen = _get_screen_index(p_screen);
+	int screen_count = get_screen_count();
+	ERR_FAIL_INDEX_V(p_screen, screen_count, 1.0f);
+
 	return godot_js_display_pixel_ratio_get();
 }
 
 float DisplayServerWeb::screen_get_refresh_rate(int p_screen) const {
+	p_screen = _get_screen_index(p_screen);
+	int screen_count = get_screen_count();
+	ERR_FAIL_INDEX_V(p_screen, screen_count, SCREEN_REFRESH_RATE_FALLBACK);
+
 	return SCREEN_REFRESH_RATE_FALLBACK; // Web doesn't have much of a need for the screen refresh rate, and there's no native way to do so.
 }
 
@@ -1287,7 +1311,8 @@ void DisplayServerWeb::window_set_title(const String &p_title, WindowID p_window
 }
 
 int DisplayServerWeb::window_get_current_screen(WindowID p_window) const {
-	return 1;
+	ERR_FAIL_COND_V(p_window != MAIN_WINDOW_ID, INVALID_SCREEN);
+	return 0;
 }
 
 void DisplayServerWeb::window_set_current_screen(int p_screen, WindowID p_window) {

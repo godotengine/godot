@@ -585,7 +585,7 @@ bool DisplayServer::screen_is_kept_on() const {
 
 int DisplayServer::get_screen_from_rect(const Rect2 &p_rect) const {
 	int nearest_area = 0;
-	int pos_screen = -1;
+	int pos_screen = INVALID_SCREEN;
 	for (int i = 0; i < get_screen_count(); i++) {
 		Rect2i r;
 		r.position = screen_get_position(i);
@@ -1758,6 +1758,7 @@ void DisplayServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(MOUSE_MODE_CONFINED_HIDDEN);
 	BIND_ENUM_CONSTANT(MOUSE_MODE_MAX);
 
+	BIND_CONSTANT(INVALID_SCREEN);
 	BIND_CONSTANT(SCREEN_WITH_MOUSE_FOCUS);
 	BIND_CONSTANT(SCREEN_WITH_KEYBOARD_FOCUS);
 	BIND_CONSTANT(SCREEN_PRIMARY);
