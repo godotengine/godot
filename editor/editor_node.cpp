@@ -3786,7 +3786,7 @@ void EditorNode::add_extension_editor_plugin(const StringName &p_class_name) {
 	ERR_FAIL_COND_MSG(!ClassDB::is_parent_class(p_class_name, SNAME("EditorPlugin")), vformat("Class is not an editor plugin: %s", p_class_name));
 	ERR_FAIL_COND_MSG(singleton->editor_data.has_extension_editor_plugin(p_class_name), vformat("Editor plugin already added for class: %s", p_class_name));
 
-	EditorPlugin *plugin = Object::cast_to<EditorPlugin>(ClassDB::instantiate(p_class_name));
+	EditorPlugin *plugin = Object::cast_to<EditorPlugin>(ClassDB::_instantiate_allow_unexposed(p_class_name));
 	singleton->editor_data.add_extension_editor_plugin(p_class_name, plugin);
 	add_editor_plugin(plugin);
 }
