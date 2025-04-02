@@ -19,5 +19,10 @@ class ChildCompletelySafe extends ParentSafe:
         pass
 
 
+class ChildOverrideInexistentMethod extends ParentSafe:
+    @override func test_():
+        pass
+
+
 func test():
     pass

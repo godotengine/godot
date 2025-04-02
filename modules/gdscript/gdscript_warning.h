@@ -91,6 +91,7 @@ public:
 		ONREADY_WITH_EXPORT, // The `@onready` annotation will set the value after `@export` which is likely not intended.
 		OVERRIDE_NON_VIRTUAL_METHOD, // The class method overrides a non-virtual one, which would cause potential problems.
 		OVERRIDE_WITHOUT_OVERRIDE_ANNOTATION, // The class method overrides a virtual one without the `@override` annotation.
+		OVERRIDE_INEXISTENT_METHOD_FROM_BASE, // The class method overrides a non-existent method from the base class.
 #ifndef DISABLE_DEPRECATED
 		PROPERTY_USED_AS_FUNCTION, // Function not found, but there's a property with the same name.
 		CONSTANT_USED_AS_FUNCTION, // Function not found, but there's a constant with the same name.
@@ -150,6 +151,7 @@ public:
 		ERROR, // ONREADY_WITH_EXPORT // May not work as expected.
 		WARN, // OVERRIDE_NON_VIRTUAL_METHOD
 		WARN, // OVERRIDE_WITHOUT_OVERRIDE_ANNOTATION
+		ERROR, // OVERRIDE_INEXISTENT_METHOD_FROM_BASE
 #ifndef DISABLE_DEPRECATED
 		WARN, // PROPERTY_USED_AS_FUNCTION
 		WARN, // CONSTANT_USED_AS_FUNCTION
