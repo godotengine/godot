@@ -216,7 +216,7 @@ void TextEditor::_update_bookmark_list() {
 	bookmarks_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/goto_previous_bookmark"), BOOKMARK_GOTO_PREV);
 
 	PackedInt32Array bookmark_list = code_editor->get_text_editor()->get_bookmarked_lines();
-	if (bookmark_list.size() == 0) {
+	if (bookmark_list.is_empty()) {
 		return;
 	}
 

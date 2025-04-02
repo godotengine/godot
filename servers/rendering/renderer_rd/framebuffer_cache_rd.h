@@ -207,7 +207,7 @@ public:
 			const Cache *c = hash_table[table_idx];
 
 			while (c) {
-				if (c->hash == h && c->passes.size() == 0 && c->textures.size() == sizeof...(Args) && c->views == 1 && _compare_args(0, c->textures, args...)) {
+				if (c->hash == h && c->passes.is_empty() && c->textures.size() == sizeof...(Args) && c->views == 1 && _compare_args(0, c->textures, args...)) {
 					return c->cache;
 				}
 				c = c->next;
@@ -235,7 +235,7 @@ public:
 			const Cache *c = hash_table[table_idx];
 
 			while (c) {
-				if (c->hash == h && c->passes.size() == 0 && c->textures.size() == sizeof...(Args) && c->views == p_views && _compare_args(0, c->textures, args...)) {
+				if (c->hash == h && c->passes.is_empty() && c->textures.size() == sizeof...(Args) && c->views == p_views && _compare_args(0, c->textures, args...)) {
 					return c->cache;
 				}
 				c = c->next;

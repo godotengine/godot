@@ -103,7 +103,7 @@ void PrimitiveMesh::_update() const {
 		Vector<Vector2> uv = arr[RS::ARRAY_TEX_UV];
 		Vector<Vector2> uv2 = arr[RS::ARRAY_TEX_UV2];
 
-		if (uv.size() > 0 && uv2.size() == 0) {
+		if (uv.size() > 0 && uv2.is_empty()) {
 			Vector2 uv2_scale = get_uv2_scale();
 			uv2.resize(uv.size());
 
@@ -2972,7 +2972,7 @@ void TextMesh::_generate_glyph_mesh_data(const GlyphMeshKey &p_key, const Glyph 
 	PackedInt32Array contours = d["contours"];
 	bool orientation = d["orientation"];
 
-	if (points.size() < 3 || contours.size() < 1) {
+	if (points.size() < 3 || contours.is_empty()) {
 		return; // No full contours, only glyph control points (or nothing), ignore.
 	}
 

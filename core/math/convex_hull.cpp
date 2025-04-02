@@ -2237,7 +2237,7 @@ real_t ConvexHullComputer::compute(const Vector3 *p_coords, int32_t p_count, rea
 Error ConvexHullComputer::convex_hull(const Vector<Vector3> &p_points, Geometry3D::MeshData &r_mesh) {
 	r_mesh = Geometry3D::MeshData(); // clear
 
-	if (p_points.size() == 0) {
+	if (p_points.is_empty()) {
 		return FAILED; // matches QuickHull
 	}
 

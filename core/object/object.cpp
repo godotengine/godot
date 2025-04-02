@@ -1900,7 +1900,7 @@ Variant::Type Object::get_static_property_type(const StringName &p_property, boo
 }
 
 Variant::Type Object::get_static_property_type_indexed(const Vector<StringName> &p_path, bool *r_valid) const {
-	if (p_path.size() == 0) {
+	if (p_path.is_empty()) {
 		if (r_valid) {
 			*r_valid = false;
 		}

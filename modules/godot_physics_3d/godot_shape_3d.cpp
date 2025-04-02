@@ -838,7 +838,7 @@ void GodotConvexPolygonShape3D::project_range(const Vector3 &p_normal, const Tra
 
 Vector3 GodotConvexPolygonShape3D::get_support(const Vector3 &p_normal) const {
 	// Skip if there are no vertices in the mesh
-	if (mesh.vertices.size() == 0) {
+	if (mesh.vertices.is_empty()) {
 		return Vector3();
 	}
 
@@ -1369,7 +1369,7 @@ void GodotConcavePolygonShape3D::_cull_segment(int p_idx, _SegmentCullParams *p_
 }
 
 bool GodotConcavePolygonShape3D::intersect_segment(const Vector3 &p_begin, const Vector3 &p_end, Vector3 &r_result, Vector3 &r_normal, int &r_face_index, bool p_hit_back_faces) const {
-	if (faces.size() == 0) {
+	if (faces.is_empty()) {
 		return false;
 	}
 
@@ -1449,7 +1449,7 @@ bool GodotConcavePolygonShape3D::_cull(int p_idx, _CullParams *p_params) const {
 
 void GodotConcavePolygonShape3D::cull(const AABB &p_local_aabb, QueryCallback p_callback, void *p_userdata, bool p_invert_backface_collision) const {
 	// make matrix local to concave
-	if (faces.size() == 0) {
+	if (faces.is_empty()) {
 		return;
 	}
 

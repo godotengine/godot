@@ -650,7 +650,7 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 
 		for (SelfList<CSharpScript> *elem = script_list.first(); elem; elem = elem->next()) {
 			// Do not reload scripts with only non-collectible instances to avoid disrupting event subscriptions and such.
-			bool is_reloadable = elem->self()->instances.size() == 0;
+			bool is_reloadable = elem->self()->instances.is_empty();
 			for (Object *obj : elem->self()->instances) {
 				ERR_CONTINUE(!obj->get_script_instance());
 				CSharpInstance *csi = static_cast<CSharpInstance *>(obj->get_script_instance());
