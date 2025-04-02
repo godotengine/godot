@@ -33,6 +33,8 @@
 #include "core/object/property_info.h"
 #include "core/variant/variant.h"
 
+#include "modules/regex/regex.h"
+
 #ifdef DEBUG_ENABLED
 
 String GDScriptWarning::get_message() const {
@@ -165,6 +167,72 @@ String GDScriptWarning::get_message() const {
 			return vformat(R"*(The default value uses "%s" which won't return nodes in the scene tree before "_ready()" is called. Use the "@onready" annotation to solve this.)*", symbols[0]);
 		case ONREADY_WITH_EXPORT:
 			return R"("@onready" will set the default value after "@export" takes effect and will override it.)";
+		case DEPRECATED_USAGE: {
+			CHECK_SYMBOLS(3);
+			String symbol_type = symbols[0];
+			String name;
+			if (symbols[1].length() > 0) {
+				name = vformat(R"( "%s")", symbols[1]);
+			}
+
+			String deprecated_message = symbols[2];
+			if (deprecated_message.length() > 0) {
+				// These documentation tags contain information inside, which needs to be preserved
+				// when we strip the BBCode.
+				RegEx special_tag_re(R"(\[(?:annotation|constant|enum|member|method|constructor|operator|signal|theme_item|param) (.*?)\])");
+				TypedArray<RegExMatch> matches = special_tag_re.search_all(deprecated_message);
+				for (int i = matches.size() - 1; i >= 0; i--) {
+					RegExMatch *m = Object::cast_to<RegExMatch>(matches[i]);
+					if (!m) {
+						continue;
+					}
+					PackedStringArray strings = m->get_strings();
+					if (strings.size() < 2) {
+						continue;
+					}
+					String bbcode_ver = strings[0];
+					String stripped_ver = strings[1];
+					deprecated_message = deprecated_message.replace(bbcode_ver, stripped_ver);
+				}
+
+				// Completely remove other tags (except for class ones - for those
+				// we want to keep the inner content but remove the brackets).
+				RegEx other_tag_re(R"(\[(.*?)\])");
+				matches = other_tag_re.search_all(deprecated_message);
+				for (int i = matches.size() - 1; i >= 0; i--) {
+					RegExMatch *m = Object::cast_to<RegExMatch>(matches[i]);
+					if (!m) {
+						continue;
+					}
+					PackedStringArray strings = m->get_strings();
+					if (strings.size() < 1) {
+						continue;
+					}
+					String bbcode_ver = strings[0];
+					String tag_body = strings[1];
+
+					// All closing tags can be removed.
+					// Additionally, known BBCode opening tags can be removed.
+					if (tag_body.begins_with("/") || tag_body == "br" || tag_body == "lb" || tag_body == "rb" || tag_body == "b" ||
+							tag_body == "i" || tag_body == "u" || tag_body == "s" || tag_body.begins_with("color=") ||
+							tag_body.begins_with("font=") || tag_body == "img" || tag_body.begins_with("img ") ||
+							tag_body == "url" || tag_body.begins_with("url=") || tag_body == "center" ||
+							tag_body == "kbd" || tag_body == "code" || tag_body.begins_with("code ") || tag_body == "codeblock") {
+						deprecated_message = deprecated_message.replace(bbcode_ver, "");
+					} else {
+						// The tag isn't a known BBCode tag, so it must be a class?
+						// While we could check against EditorHelp::get_doc_data()
+						// to verify this, that would mean bringing in EditorHelp
+						// as a dependency and wrapping things in TOOLS_ENABLED checks.
+						deprecated_message = deprecated_message.replace(bbcode_ver, tag_body);
+					}
+				}
+
+				return vformat(R"(The %s%s is deprecated: "%s")", symbol_type, name, deprecated_message);
+			} else {
+				return vformat(R"(The %s%s is deprecated. See its documentation for more information and alternatives.)", symbol_type, name);
+			}
+		}
 #ifndef DISABLE_DEPRECATED
 		// Never produced. These warnings migrated from 3.x by mistake.
 		case PROPERTY_USED_AS_FUNCTION: // There is already an error.
@@ -242,6 +310,7 @@ String GDScriptWarning::get_name_from_code(Code p_code) {
 		PNAME("NATIVE_METHOD_OVERRIDE"),
 		PNAME("GET_NODE_DEFAULT_WITHOUT_ONREADY"),
 		PNAME("ONREADY_WITH_EXPORT"),
+		PNAME("DEPRECATED_USAGE"),
 #ifndef DISABLE_DEPRECATED
 		"PROPERTY_USED_AS_FUNCTION",
 		"CONSTANT_USED_AS_FUNCTION",
