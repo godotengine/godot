@@ -2205,7 +2205,7 @@
 		</constant>
 		<constant name="WINDOW_EVENT_DPI_CHANGE" value="6" enum="WindowEvent">
 			Sent when the window is moved to the display with different DPI, or display DPI is changed.
-			[b]Note:[/b] This flag is implemented only on macOS.
+			[b]Note:[/b] This flag is implemented only on macOS and Linux (Wayland).
 		</constant>
 		<constant name="WINDOW_EVENT_TITLEBAR_CHANGE" value="7" enum="WindowEvent">
 			Sent when the window title bar decoration is changed (e.g. [constant WINDOW_FLAG_EXTEND_TO_TITLE] is set or window entered/exited full screen mode).
