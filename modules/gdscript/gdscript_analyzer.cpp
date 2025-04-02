@@ -5744,6 +5744,12 @@ bool GDScriptAnalyzer::get_function_signature(GDScriptParser::Node *p_source, bo
 		r_return_type.is_meta_type = false;
 		r_return_type.is_coroutine = found_function->is_coroutine;
 
+		// For user-defined methods.
+#ifdef DEBUG_ENABLED
+		if (found_function->doc_data.is_deprecated) {
+			parser->push_warning(p_source, GDScriptWarning::DEPRECATED_IDENTIFIER);
+		}
+#endif
 		return true;
 	}
 
