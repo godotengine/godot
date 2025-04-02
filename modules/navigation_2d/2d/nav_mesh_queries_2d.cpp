@@ -329,8 +329,7 @@ void NavMeshQueries2D::_query_task_build_path_corridor(NavMeshPathQueryTask2D &p
 					continue;
 				}
 
-				Vector2 pathway[2] = { connection.pathway_start, connection.pathway_end };
-				const Vector2 new_entry = Geometry2D::get_closest_point_to_segment(least_cost_poly.entry, pathway);
+				const Vector2 new_entry = Geometry2D::get_closest_point_to_segment(least_cost_poly.entry, connection.pathway_start, connection.pathway_end);
 				const real_t new_traveled_distance = least_cost_poly.entry.distance_to(new_entry) * poly_travel_cost + poly_enter_cost + least_cost_poly.traveled_distance;
 
 				// Check if the neighbor polygon has already been processed.
@@ -585,8 +584,7 @@ void NavMeshQueries2D::_query_task_post_process_corridorfunnel(NavMeshPathQueryT
 	// Set the apex poly/point to the end point.
 	NavigationPoly *apex_poly = &navigation_polys[least_cost_id];
 
-	Vector2 back_pathway[2] = { apex_poly->back_navigation_edge_pathway_start, apex_poly->back_navigation_edge_pathway_end };
-	const Vector2 back_edge_closest_point = Geometry2D::get_closest_point_to_segment(end_point, back_pathway);
+	const Vector2 back_edge_closest_point = Geometry2D::get_closest_point_to_segment(end_point, apex_poly->back_navigation_edge_pathway_start, apex_poly->back_navigation_edge_pathway_end);
 	if (end_point.is_equal_approx(back_edge_closest_point)) {
 		// The end point is basically on top of the last crossed edge, funneling around the corners would at best do nothing.
 		// At worst it would add an unwanted path point before the last point due to precision issues so skip to the next polygon.
@@ -1037,15 +1035,13 @@ LocalVector<uint32_t> NavMeshQueries2D::get_simplified_path_indices(const LocalV
 }
 
 void NavMeshQueries2D::simplify_path_segment(int p_start_inx, int p_end_inx, const LocalVector<Vector2> &p_points, real_t p_epsilon, LocalVector<uint32_t> &r_simplified_path_indices) {
-	Vector2 path_segment[2] = { p_points[p_start_inx], p_points[p_end_inx] };
-
 	real_t point_max_distance = 0.0;
 	int point_max_index = 0;
 
 	for (int i = p_start_inx; i < p_end_inx; i++) {
 		const Vector2 &checked_point = p_points[i];
 
-		const Vector2 closest_point = Geometry2D::get_closest_point_to_segment(checked_point, path_segment);
+		const Vector2 closest_point = Geometry2D::get_closest_point_to_segment(checked_point, p_points[p_start_inx], p_points[p_end_inx]);
 		real_t distance_squared = closest_point.distance_squared_to(checked_point);
 
 		if (distance_squared > point_max_distance) {
