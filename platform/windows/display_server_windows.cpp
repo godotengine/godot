@@ -1172,6 +1172,9 @@ Point2i DisplayServerWindows::screen_get_position(int p_screen) const {
 	_THREAD_SAFE_METHOD_
 
 	p_screen = _get_screen_index(p_screen);
+	int screen_count = get_screen_count();
+	ERR_FAIL_INDEX_V(p_screen, screen_count, Point2i());
+
 	EnumPosData data = { 0, p_screen, Point2() };
 	EnumDisplayMonitors(nullptr, nullptr, _MonitorEnumProcPos, (LPARAM)&data);
 	return data.pos - _get_screens_origin();
@@ -1212,6 +1215,9 @@ Size2i DisplayServerWindows::screen_get_size(int p_screen) const {
 	_THREAD_SAFE_METHOD_
 
 	p_screen = _get_screen_index(p_screen);
+	int screen_count = get_screen_count();
+	ERR_FAIL_INDEX_V(p_screen, screen_count, Size2i());
+
 	EnumSizeData data = { 0, p_screen, Size2() };
 	EnumDisplayMonitors(nullptr, nullptr, _MonitorEnumProcSize, (LPARAM)&data);
 	return data.size;
@@ -1277,6 +1283,9 @@ Rect2i DisplayServerWindows::screen_get_usable_rect(int p_screen) const {
 	_THREAD_SAFE_METHOD_
 
 	p_screen = _get_screen_index(p_screen);
+	int screen_count = get_screen_count();
+	ERR_FAIL_INDEX_V(p_screen, screen_count, Rect2i());
+
 	EnumRectData data = { 0, p_screen, Rect2i() };
 	EnumDisplayMonitors(nullptr, nullptr, _MonitorEnumProcUsableSize, (LPARAM)&data);
 	data.rect.position -= _get_screens_origin();
@@ -1355,6 +1364,9 @@ int DisplayServerWindows::screen_get_dpi(int p_screen) const {
 	_THREAD_SAFE_METHOD_
 
 	p_screen = _get_screen_index(p_screen);
+	int screen_count = get_screen_count();
+	ERR_FAIL_INDEX_V(p_screen, screen_count, 72);
+
 	EnumDpiData data = { 0, p_screen, 72 };
 	EnumDisplayMonitors(nullptr, nullptr, _MonitorEnumProcDpi, (LPARAM)&data);
 	return data.dpi;
@@ -1383,18 +1395,9 @@ Color DisplayServerWindows::screen_get_pixel(const Point2i &p_position) const {
 }
 
 Ref<Image> DisplayServerWindows::screen_get_image(int p_screen) const {
-	ERR_FAIL_INDEX_V(p_screen, get_screen_count(), Ref<Image>());
-
-	switch (p_screen) {
-		case SCREEN_PRIMARY: {
-			p_screen = get_primary_screen();
-		} break;
-		case SCREEN_OF_MAIN_WINDOW: {
-			p_screen = window_get_current_screen(MAIN_WINDOW_ID);
-		} break;
-		default:
-			break;
-	}
+	p_screen = _get_screen_index(p_screen);
+	int screen_count = get_screen_count();
+	ERR_FAIL_INDEX_V(p_screen, screen_count, Ref<Image>());
 
 	Point2i pos = screen_get_position(p_screen) + _get_screens_origin();
 	Size2i size = screen_get_size(p_screen);
@@ -1511,6 +1514,9 @@ float DisplayServerWindows::screen_get_refresh_rate(int p_screen) const {
 	_THREAD_SAFE_METHOD_
 
 	p_screen = _get_screen_index(p_screen);
+	int screen_count = get_screen_count();
+	ERR_FAIL_INDEX_V(p_screen, screen_count, SCREEN_REFRESH_RATE_FALLBACK);
+
 	EnumRefreshRateData data = { Vector<DISPLAYCONFIG_PATH_INFO>(), Vector<DISPLAYCONFIG_MODE_INFO>(), 0, p_screen, SCREEN_REFRESH_RATE_FALLBACK };
 
 	uint32_t path_count = 0;
@@ -1982,7 +1988,7 @@ void DisplayServerWindows::_update_window_mouse_passthrough(WindowID p_window) {
 int DisplayServerWindows::window_get_current_screen(WindowID p_window) const {
 	_THREAD_SAFE_METHOD_
 
-	ERR_FAIL_COND_V(!windows.has(p_window), -1);
+	ERR_FAIL_COND_V(!windows.has(p_window), INVALID_SCREEN);
 
 	EnumScreenData data = { 0, 0, MonitorFromWindow(windows[p_window].hWnd, MONITOR_DEFAULTTONEAREST) };
 	EnumDisplayMonitors(nullptr, nullptr, _MonitorEnumProcScreen, (LPARAM)&data);
@@ -1993,12 +1999,16 @@ void DisplayServerWindows::window_set_current_screen(int p_screen, WindowID p_wi
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND(!windows.has(p_window));
-	ERR_FAIL_INDEX(p_screen, get_screen_count());
+
+	p_screen = _get_screen_index(p_screen);
+	int screen_count = get_screen_count();
+	ERR_FAIL_INDEX(p_screen, screen_count);
 
 	if (window_get_current_screen(p_window) == p_screen) {
 		return;
 	}
 	const WindowData &wd = windows[p_window];
+
 	if (wd.parent_hwnd) {
 		print_line("Embedded window can't be moved to another screen.");
 		return;
