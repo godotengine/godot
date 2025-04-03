@@ -2251,13 +2251,13 @@ void GDScriptLanguage::init() {
 	//populate global constants
 	int gcc = CoreConstants::get_global_constant_count();
 	for (int i = 0; i < gcc; i++) {
-		_add_global(StaticCString::create(CoreConstants::get_global_constant_name(i)), CoreConstants::get_global_constant_value(i));
+		_add_global(StringName(CoreConstants::get_global_constant_name(i)), CoreConstants::get_global_constant_value(i));
 	}
 
-	_add_global(StaticCString::create("PI"), Math::PI);
-	_add_global(StaticCString::create("TAU"), Math::TAU);
-	_add_global(StaticCString::create("INF"), Math::INF);
-	_add_global(StaticCString::create("NAN"), Math::NaN);
+	_add_global(StringName("PI"), Math::PI);
+	_add_global(StringName("TAU"), Math::TAU);
+	_add_global(StringName("INF"), Math::INF);
+	_add_global(StringName("NAN"), Math::NaN);
 
 	//populate native classes
 
@@ -2930,16 +2930,16 @@ thread_local GDScriptLanguage::CallStack GDScriptLanguage::_call_stack;
 GDScriptLanguage::GDScriptLanguage() {
 	ERR_FAIL_COND(singleton);
 	singleton = this;
-	strings._init = StaticCString::create("_init");
-	strings._static_init = StaticCString::create("_static_init");
-	strings._notification = StaticCString::create("_notification");
-	strings._set = StaticCString::create("_set");
-	strings._get = StaticCString::create("_get");
-	strings._get_property_list = StaticCString::create("_get_property_list");
-	strings._validate_property = StaticCString::create("_validate_property");
-	strings._property_can_revert = StaticCString::create("_property_can_revert");
-	strings._property_get_revert = StaticCString::create("_property_get_revert");
-	strings._script_source = StaticCString::create("script/source");
+	strings._init = StringName("_init");
+	strings._static_init = StringName("_static_init");
+	strings._notification = StringName("_notification");
+	strings._set = StringName("_set");
+	strings._get = StringName("_get");
+	strings._get_property_list = StringName("_get_property_list");
+	strings._validate_property = StringName("_validate_property");
+	strings._property_can_revert = StringName("_property_can_revert");
+	strings._property_get_revert = StringName("_property_get_revert");
+	strings._script_source = StringName("script/source");
 	_debug_parse_err_line = -1;
 	_debug_parse_err_file = "";
 
