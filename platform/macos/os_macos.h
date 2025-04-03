@@ -33,6 +33,7 @@
 #include "crash_handler_macos.h"
 
 #include "core/input/input.h"
+#include "core/io/image.h"
 #import "drivers/apple/joypad_apple.h"
 #import "drivers/coreaudio/audio_driver_coreaudio.h"
 #import "drivers/coremidi/midi_driver_coremidi.h"
@@ -140,6 +141,8 @@ public:
 
 	virtual String get_system_ca_certificates() override;
 	virtual OS::PreferredTextureFormat get_preferred_texture_format() const override;
+
+	virtual Error send_notification(const String &p_title, const String &p_message, const Callable &p_callback = Callable(), const Ref<Image> &p_icon = Ref<Image>(), int p_duration = -1) override;
 
 	void run(); // Runs macOS native event loop.
 	void start_main(); // Initializes and runs Godot main loop.
