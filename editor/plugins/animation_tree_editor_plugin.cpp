@@ -282,7 +282,7 @@ void AnimationTreeEditorPlugin::edit(Object *p_object) {
 }
 
 bool AnimationTreeEditorPlugin::handles(Object *p_object) const {
-	return p_object->is_class("AnimationTree");
+	return Object::is_class<AnimationTree>(p_object);
 }
 
 void AnimationTreeEditorPlugin::make_visible(bool p_visible) {

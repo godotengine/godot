@@ -665,7 +665,7 @@ void Sprite2DEditorPlugin::edit(Object *p_object) {
 }
 
 bool Sprite2DEditorPlugin::handles(Object *p_object) const {
-	return p_object->is_class("Sprite2D");
+	return Object::is_class<Sprite2D>(p_object);
 }
 
 void Sprite2DEditorPlugin::make_visible(bool p_visible) {

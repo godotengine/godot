@@ -201,13 +201,13 @@ TEST_CASE("[SceneTree][GLTFDocument] Load cube.gltf") {
 	Node *node = gltf_document->generate_scene(gltf_state);
 
 	// Check the loaded scene.
-	CHECK(node->is_class("Node3D"));
+	CHECK(Object::is_class<Node3D>(node));
 	CHECK(node->get_name() == "cube");
 
-	CHECK(node->get_child(0)->is_class("MeshInstance3D"));
+	CHECK(Object::is_class<MeshInstance3D>(node->get_child(0)));
 	CHECK(node->get_child(0)->get_name() == "Cube");
 
-	CHECK(node->get_child(1)->is_class("AnimationPlayer"));
+	CHECK(Object::is_class<AnimationPlayer>(node->get_child(1)));
 	CHECK(node->get_child(1)->get_name() == "AnimationPlayer");
 
 	test_gltf_save(node);
@@ -229,13 +229,13 @@ TEST_CASE("[SceneTree][GLTFDocument] Load suzanne.glb") {
 	Node *node = gltf_document->generate_scene(gltf_state);
 
 	// Check the loaded scene.
-	CHECK(node->is_class("Node3D"));
+	CHECK(Object::is_class<Node3D>(node));
 	CHECK(node->get_name() == "suzanne");
 
-	CHECK(node->get_child(0)->is_class("MeshInstance3D"));
+	CHECK(Object::is_class<MeshInstance3D>(node->get_child(0)));
 	CHECK(node->get_child(0)->get_name() == "Suzanne");
 
-	CHECK(node->get_child(1)->is_class("Camera3D"));
+	CHECK(Object::is_class<Camera3D>(node->get_child(1)));
 	CHECK(node->get_child(1)->get_name() == "Camera");
 
 	test_gltf_save(node);

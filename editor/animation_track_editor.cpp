@@ -5263,12 +5263,12 @@ void AnimationTrackEditor::_new_track_node_selected(NodePath p_path) {
 	ERR_FAIL_NULL(node);
 	NodePath path_to = root->get_path_to(node, true);
 
-	if (adding_track_type == Animation::TYPE_BLEND_SHAPE && !node->is_class("MeshInstance3D")) {
+	if (adding_track_type == Animation::TYPE_BLEND_SHAPE && !Object::is_class<MeshInstance3D>(node)) {
 		EditorNode::get_singleton()->show_warning(TTR("Blend Shape tracks only apply to MeshInstance3D nodes."));
 		return;
 	}
 
-	if ((adding_track_type == Animation::TYPE_POSITION_3D || adding_track_type == Animation::TYPE_ROTATION_3D || adding_track_type == Animation::TYPE_SCALE_3D) && !node->is_class("Node3D")) {
+	if ((adding_track_type == Animation::TYPE_POSITION_3D || adding_track_type == Animation::TYPE_ROTATION_3D || adding_track_type == Animation::TYPE_SCALE_3D) && !Object::is_class<Node3D>(node)) {
 		EditorNode::get_singleton()->show_warning(TTR("Position/Rotation/Scale 3D tracks only apply to 3D-based nodes."));
 		return;
 	}
@@ -5327,7 +5327,7 @@ void AnimationTrackEditor::_new_track_node_selected(NodePath p_path) {
 
 		} break;
 		case Animation::TYPE_ANIMATION: {
-			if (!node->is_class("AnimationPlayer")) {
+			if (!Object::is_class<AnimationPlayer>(node)) {
 				EditorNode::get_singleton()->show_warning(TTR("Animation tracks can only point to AnimationPlayer nodes."));
 				return;
 			}

@@ -164,7 +164,7 @@ void MultiplayerEditorPlugin::edit(Object *p_object) {
 }
 
 bool MultiplayerEditorPlugin::handles(Object *p_object) const {
-	return p_object->is_class("MultiplayerSynchronizer");
+	return Object::is_class<MultiplayerSynchronizer>(p_object);
 }
 
 void MultiplayerEditorPlugin::make_visible(bool p_visible) {

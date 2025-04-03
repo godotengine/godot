@@ -1424,7 +1424,7 @@ EditorPlugin::AfterGUIInput Skeleton3DEditorPlugin::forward_3d_gui_input(Camera3
 }
 
 bool Skeleton3DEditorPlugin::handles(Object *p_object) const {
-	return p_object->is_class("Skeleton3D");
+	return Object::is_class<Skeleton3D>(p_object);
 }
 
 void Skeleton3DEditor::_bone_enabled_changed(const int p_bone_id) {

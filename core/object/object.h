@@ -789,19 +789,22 @@ public:
 	_FORCE_INLINE_ ObjectID get_instance_id() const { return _instance_id; }
 
 	template <typename T>
+	static bool is_class(const Object *p_object) {
+		static_assert(std::is_base_of_v<Object, T>, "T must be derived from Object");
+		static_assert(std::is_same_v<std::decay_t<T>, typename T::self_type>, "T must use GDCLASS or GDSOFTCLASS");
+		return p_object && p_object->is_class_ptr(T::get_class_ptr_static());
+	}
+
+	template <typename T>
 	static T *cast_to(Object *p_object) {
 		// This is like dynamic_cast, but faster.
 		// The reason is that we can assume no virtual and multiple inheritance.
-		static_assert(std::is_base_of_v<Object, T>, "T must be derived from Object");
-		static_assert(std::is_same_v<std::decay_t<T>, typename T::self_type>, "T must use GDCLASS or GDSOFTCLASS");
-		return p_object && p_object->is_class_ptr(T::get_class_ptr_static()) ? static_cast<T *>(p_object) : nullptr;
+		return Object::is_class<T>(p_object) ? static_cast<T *>(p_object) : nullptr;
 	}
 
 	template <typename T>
 	static const T *cast_to(const Object *p_object) {
-		static_assert(std::is_base_of_v<Object, T>, "T must be derived from Object");
-		static_assert(std::is_same_v<std::decay_t<T>, typename T::self_type>, "T must use GDCLASS or GDSOFTCLASS");
-		return p_object && p_object->is_class_ptr(T::get_class_ptr_static()) ? static_cast<const T *>(p_object) : nullptr;
+		return Object::is_class<T>(p_object) ? static_cast<const T *>(p_object) : nullptr;
 	}
 
 	enum {

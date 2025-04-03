@@ -542,7 +542,7 @@ void Object::get_property_list(List<PropertyInfo> *p_list, bool p_reversed) cons
 
 	_get_property_listv(p_list, p_reversed);
 
-	if (!is_class("Script")) { // can still be set, but this is for user-friendliness
+	if (!Object::is_class<Script>(this)) { // can still be set, but this is for user-friendliness
 		p_list->push_back(PropertyInfo(Variant::OBJECT, "script", PROPERTY_HINT_RESOURCE_TYPE, "Script", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_NEVER_DUPLICATE));
 	}
 
@@ -1701,7 +1701,8 @@ void Object::notify_property_list_changed() {
 
 void Object::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_class"), &Object::get_class);
-	ClassDB::bind_method(D_METHOD("is_class", "class"), &Object::is_class);
+	bool (Object::*is_class_function)(const String &) const = &Object::is_class;
+	ClassDB::bind_method(D_METHOD("is_class", "class"), is_class_function);
 	ClassDB::bind_method(D_METHOD("set", "property", "value"), &Object::_set_bind);
 	ClassDB::bind_method(D_METHOD("get", "property"), &Object::_get_bind);
 	ClassDB::bind_method(D_METHOD("set_indexed", "property_path", "value"), &Object::_set_indexed_bind);

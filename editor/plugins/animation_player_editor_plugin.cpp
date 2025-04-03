@@ -1921,7 +1921,7 @@ AnimationMixer *AnimationPlayerEditor::fetch_mixer_for_library() const {
 		return nullptr;
 	}
 	// Does AnimationTree have AnimationPlayer?
-	if (original_node->is_class("AnimationTree")) {
+	if (Object::is_class<AnimationTree>(original_node)) {
 		AnimationTree *src_tree = Object::cast_to<AnimationTree>(original_node);
 		Node *src_player = src_tree->get_node_or_null(src_tree->get_animation_player());
 		if (src_player) {
@@ -2322,7 +2322,7 @@ void AnimationPlayerEditorPlugin::edit(Object *p_object) {
 
 	AnimationMixer *src_node = Object::cast_to<AnimationMixer>(p_object);
 	bool is_dummy = false;
-	if (!p_object->is_class("AnimationPlayer")) {
+	if (!Object::is_class<AnimationPlayer>(p_object)) {
 		// If it needs dummy AnimationPlayer, assign original AnimationMixer to LibraryEditor.
 		_update_dummy_player(src_node);
 
@@ -2392,7 +2392,7 @@ void AnimationPlayerEditorPlugin::_update_dummy_player(AnimationMixer *p_mixer) 
 }
 
 bool AnimationPlayerEditorPlugin::handles(Object *p_object) const {
-	return p_object->is_class("AnimationPlayer") || p_object->is_class("AnimationTree") || p_object->is_class("AnimationMixer");
+	return Object::is_class<AnimationPlayer>(p_object) || Object::is_class<AnimationTree>(p_object) || Object::is_class<AnimationMixer>(p_object);
 }
 
 void AnimationPlayerEditorPlugin::make_visible(bool p_visible) {
@@ -2434,7 +2434,7 @@ AnimationTrackKeyEditEditorPlugin::AnimationTrackKeyEditEditorPlugin() {
 }
 
 bool AnimationTrackKeyEditEditorPlugin::handles(Object *p_object) const {
-	return p_object->is_class("AnimationTrackKeyEdit");
+	return Object::is_class<AnimationTrackKeyEdit>(p_object);
 }
 
 bool EditorInspectorPluginAnimationMarkerKeyEdit::can_handle(Object *p_object) {
@@ -2455,5 +2455,5 @@ AnimationMarkerKeyEditEditorPlugin::AnimationMarkerKeyEditEditorPlugin() {
 }
 
 bool AnimationMarkerKeyEditEditorPlugin::handles(Object *p_object) const {
-	return p_object->is_class("AnimationMarkerKeyEdit");
+	return Object::is_class<AnimationMarkerKeyEdit>(p_object);
 }

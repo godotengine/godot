@@ -132,6 +132,9 @@ TEST_CASE("[Object] Core getters") {
 			object.is_class("Object"),
 			"is_class() should return the expected value.");
 	CHECK_MESSAGE(
+			Object::is_class<Object>(&object),
+			"Object::is_class() should return the expected value.");
+	CHECK_MESSAGE(
 			object.get_class() == "Object",
 			"The returned class should match the expected value.");
 	CHECK_MESSAGE(

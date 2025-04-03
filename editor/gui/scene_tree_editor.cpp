@@ -133,7 +133,7 @@ void SceneTreeEditor::_cell_button_pressed(Object *p_item, int p_column, int p_i
 		undo_redo->add_undo_method(this, "emit_signal", "node_changed");
 		undo_redo->commit_action();
 	} else if (p_id == BUTTON_PIN) {
-		if (n->is_class("AnimationMixer")) {
+		if (Object::is_class<AnimationMixer>(n)) {
 			AnimationPlayerEditor::get_singleton()->unpin();
 			_update_tree();
 		}
@@ -141,7 +141,7 @@ void SceneTreeEditor::_cell_button_pressed(Object *p_item, int p_column, int p_i
 	} else if (p_id == BUTTON_GROUP) {
 		undo_redo->create_action(TTR("Ungroup Children"));
 
-		if (n->is_class("CanvasItem") || n->is_class("Node3D")) {
+		if (Object::is_class<CanvasItem>(n) || Object::is_class<Node3D>(n)) {
 			undo_redo->add_do_method(n, "remove_meta", "_edit_group_");
 			undo_redo->add_undo_method(n, "set_meta", "_edit_group_", true);
 			undo_redo->add_do_method(this, "_update_tree");
@@ -606,7 +606,7 @@ void SceneTreeEditor::_update_node(Node *p_node, TreeItem *p_item, bool p_part_o
 			_update_visibility_color(p_node, p_item);
 		}
 
-		if (p_node->is_class("AnimationMixer")) {
+		if (Object::is_class<AnimationMixer>(p_node)) {
 			bool is_pinned = AnimationPlayerEditor::get_singleton()->get_editing_node() == p_node && AnimationPlayerEditor::get_singleton()->is_pinned();
 
 			if (is_pinned) {
@@ -707,7 +707,7 @@ void SceneTreeEditor::_node_visibility_changed(Node *p_node) {
 
 	if (p_node->has_method("is_visible")) {
 		node_visible = p_node->call("is_visible");
-		if (p_node->is_class("CanvasItem") || p_node->is_class("CanvasLayer") || p_node->is_class("Window")) {
+		if (Object::is_class<CanvasItem>(p_node) || p_node->is_class("CanvasLayer") || Object::is_class<Window>(p_node)) {
 			CanvasItemEditor::get_singleton()->get_viewport_control()->queue_redraw();
 		}
 	}
