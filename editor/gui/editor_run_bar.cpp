@@ -182,7 +182,7 @@ void EditorRunBar::_movie_dropdown_toggled(bool p_enabled) {
 		// Populate the field with the current Movie Maker path.
 		Variant current_path_variant = ProjectSettings::get_singleton()->get("editor/movie_writer/movie_file");
 		String current_path = current_path_variant;
-		movie_popup_path_edit->set_text(current_path);
+		movie_filepath_select->get_edit()->set_text(current_path);
 
 		print_line("Show Movie Maker settings dropdown");
 		movie_popup->show();
@@ -209,7 +209,7 @@ void EditorRunBar::_movie_popup_path_edit_text_submitted(const String &p_new_tex
 	undo_redo->create_action(TTR("Set movie_file"));
 	undo_redo->add_do_property(ProjectSettings::get_singleton(), "editor/movie_writer/movie_file", p_new_text);
 	undo_redo->add_undo_property(ProjectSettings::get_singleton(), "editor/movie_writer/movie_file", GLOBAL_GET("editor/movie_writer/movie_file"));
-	undo_redo->add_undo_property(movie_popup_path_edit, "text", GLOBAL_GET("editor/movie_writer/movie_file"));
+	undo_redo->add_undo_property(movie_filepath_select->get_edit(), "text", GLOBAL_GET("editor/movie_writer/movie_file"));
 	undo_redo->commit_action();
 }
 
@@ -739,12 +739,10 @@ EditorRunBar::EditorRunBar() {
 	movie_popup_path_container->add_child(movie_popup_path_label);
 	movie_popup_path_label->set_text("Output path");
 
-	// TODO: look at EditorPropertyPath
-	movie_popup_path_edit = memnew(LineEdit);
-	movie_popup_path_edit->set_structured_text_bidi_override(TextServer::STRUCTURED_TEXT_FILE);
-	movie_popup_path_container->add_child(movie_popup_path_edit);
-	movie_popup_path_edit->connect("text_submitted", callable_mp(this, &EditorRunBar::_movie_popup_path_edit_text_submitted));
-	movie_popup_path_edit->connect(SceneStringName(focus_exited), callable_mp(this, &EditorRunBar::_movie_popup_path_edit_focus_exited));
+	// NOTE: Use EditorPropertyPath as reference.
+	movie_filepath_select = memnew(EditorFilepathSelect);
+	movie_popup_parts_container->add_child(movie_filepath_select);
+	movie_filepath_select->get_edit()->connect("text_submitted", callable_mp(this, &EditorRunBar::_movie_popup_path_edit_text_submitted));
 
 	movie_popup->hide();
 }

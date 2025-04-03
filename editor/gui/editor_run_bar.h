@@ -32,6 +32,7 @@
 
 #include "editor/editor_run.h"
 #include "editor/export/editor_export.h"
+#include "editor/gui/editor_filepath_select.h"
 #include "scene/gui/margin_container.h"
 
 class Button;
@@ -83,8 +84,8 @@ class EditorRunBar : public MarginContainer {
 	VBoxContainer *movie_popup_parts_container = nullptr;
 
 	Label *movie_popup_path_label = nullptr;
-	LineEdit *movie_popup_path_edit = nullptr;
 	VBoxContainer *movie_popup_path_container = nullptr;
+	EditorFilepathSelect *movie_filepath_select = nullptr;
 
 	RunMode current_mode = RunMode::STOPPED;
 	String run_custom_filename;
