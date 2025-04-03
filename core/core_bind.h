@@ -129,8 +129,10 @@ protected:
 	static OS *singleton;
 
 #ifndef DISABLE_DEPRECATED
+	int _execute_bind_compat_102943(const String &p_path, const Vector<String> &p_arguments, Array r_output, bool p_read_stderr, bool p_open_console);
+	Dictionary _execute_with_pipe_bind_compat_102943(const String &p_path, const Vector<String> &p_arguments, bool p_blocking);
+	int _create_process_bind_compat_102943(const String &p_path, const Vector<String> &p_arguments, bool p_open_console);
 	Dictionary _execute_with_pipe_bind_compat_94434(const String &p_path, const Vector<String> &p_arguments);
-
 	String _read_string_from_stdin_bind_compat_91201();
 	static void _bind_compatibility_methods();
 #endif
@@ -181,9 +183,9 @@ public:
 	StdHandleType get_stdout_type() const;
 	StdHandleType get_stderr_type() const;
 
-	int execute(const String &p_path, const Vector<String> &p_arguments, Array r_output = ClassDB::default_array_arg, bool p_read_stderr = false, bool p_open_console = false);
-	Dictionary execute_with_pipe(const String &p_path, const Vector<String> &p_arguments, bool p_blocking = true);
-	int create_process(const String &p_path, const Vector<String> &p_arguments, bool p_open_console = false);
+	int execute(const String &p_path, const Vector<String> &p_arguments, Array r_output = ClassDB::default_array_arg, bool p_read_stderr = false, bool p_open_console = false, const String &p_working_dir = String(), const Dictionary &p_env = Dictionary());
+	Dictionary execute_with_pipe(const String &p_path, const Vector<String> &p_arguments, bool p_blocking = true, const String &p_working_dir = String(), const Dictionary &p_env = Dictionary());
+	int create_process(const String &p_path, const Vector<String> &p_arguments, bool p_open_console = false, const String &p_working_dir = String(), const Dictionary &p_env = Dictionary());
 	int create_instance(const Vector<String> &p_arguments);
 	Error kill(int p_pid);
 	Error shell_open(const String &p_uri);

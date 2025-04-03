@@ -326,14 +326,14 @@ OS::StdHandleType OS::get_stderr_type() const {
 	return (OS::StdHandleType)::OS::get_singleton()->get_stderr_type();
 }
 
-int OS::execute(const String &p_path, const Vector<String> &p_arguments, Array r_output, bool p_read_stderr, bool p_open_console) {
+int OS::execute(const String &p_path, const Vector<String> &p_arguments, Array r_output, bool p_read_stderr, bool p_open_console, const String &p_working_dir, const Dictionary &p_env) {
 	List<String> args;
 	for (const String &arg : p_arguments) {
 		args.push_back(arg);
 	}
 	String pipe;
 	int exitcode = 0;
-	Error err = ::OS::get_singleton()->execute(p_path, args, &pipe, &exitcode, p_read_stderr, nullptr, p_open_console);
+	Error err = ::OS::get_singleton()->execute(p_path, args, &pipe, &exitcode, p_read_stderr, nullptr, p_open_console, p_working_dir, p_env);
 	// Default array should never be modified, it causes the hash of the method to change.
 	if (!ClassDB::is_default_array_arg(r_output)) {
 		r_output.push_back(pipe);
@@ -344,12 +344,12 @@ int OS::execute(const String &p_path, const Vector<String> &p_arguments, Array r
 	return exitcode;
 }
 
-Dictionary OS::execute_with_pipe(const String &p_path, const Vector<String> &p_arguments, bool p_blocking) {
+Dictionary OS::execute_with_pipe(const String &p_path, const Vector<String> &p_arguments, bool p_blocking, const String &p_working_dir, const Dictionary &p_env) {
 	List<String> args;
 	for (const String &arg : p_arguments) {
 		args.push_back(arg);
 	}
-	return ::OS::get_singleton()->execute_with_pipe(p_path, args, p_blocking);
+	return ::OS::get_singleton()->execute_with_pipe(p_path, args, p_blocking, p_working_dir, p_env);
 }
 
 int OS::create_instance(const Vector<String> &p_arguments) {
@@ -365,13 +365,13 @@ int OS::create_instance(const Vector<String> &p_arguments) {
 	return pid;
 }
 
-int OS::create_process(const String &p_path, const Vector<String> &p_arguments, bool p_open_console) {
+int OS::create_process(const String &p_path, const Vector<String> &p_arguments, bool p_open_console, const String &p_working_dir, const Dictionary &p_env) {
 	List<String> args;
 	for (const String &arg : p_arguments) {
 		args.push_back(arg);
 	}
 	::OS::ProcessID pid = 0;
-	Error err = ::OS::get_singleton()->create_process(p_path, args, &pid, p_open_console);
+	Error err = ::OS::get_singleton()->create_process(p_path, args, &pid, p_open_console, p_working_dir, p_env);
 	if (err != OK) {
 		return -1;
 	}
@@ -663,9 +663,9 @@ void OS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_stdout_type"), &OS::get_stdout_type);
 	ClassDB::bind_method(D_METHOD("get_stderr_type"), &OS::get_stderr_type);
 
-	ClassDB::bind_method(D_METHOD("execute", "path", "arguments", "output", "read_stderr", "open_console"), &OS::execute, DEFVAL_ARRAY, DEFVAL(false), DEFVAL(false));
-	ClassDB::bind_method(D_METHOD("execute_with_pipe", "path", "arguments", "blocking"), &OS::execute_with_pipe, DEFVAL(true));
-	ClassDB::bind_method(D_METHOD("create_process", "path", "arguments", "open_console"), &OS::create_process, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("execute", "path", "arguments", "output", "read_stderr", "open_console", "working_dir", "env"), &OS::execute, DEFVAL_ARRAY, DEFVAL(false), DEFVAL(false), DEFVAL(String()), DEFVAL(Dictionary()));
+	ClassDB::bind_method(D_METHOD("execute_with_pipe", "path", "arguments", "blocking", "working_dir", "env"), &OS::execute_with_pipe, DEFVAL(true), DEFVAL(String()), DEFVAL(Dictionary()));
+	ClassDB::bind_method(D_METHOD("create_process", "path", "arguments", "open_console", "working_dir", "env"), &OS::create_process, DEFVAL(false), DEFVAL(String()), DEFVAL(Dictionary()));
 	ClassDB::bind_method(D_METHOD("create_instance", "arguments"), &OS::create_instance);
 	ClassDB::bind_method(D_METHOD("kill", "pid"), &OS::kill);
 	ClassDB::bind_method(D_METHOD("shell_open", "uri"), &OS::shell_open);

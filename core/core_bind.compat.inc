@@ -44,6 +44,18 @@ void Semaphore::_bind_compatibility_methods() {
 
 // OS
 
+int OS::_execute_bind_compat_102943(const String &p_path, const Vector<String> &p_arguments, Array r_output, bool p_read_stderr, bool p_open_console) {
+	return execute(p_path, p_arguments, r_output, p_read_stderr, p_open_console, String(), Dictionary());
+}
+
+Dictionary OS::_execute_with_pipe_bind_compat_102943(const String &p_path, const Vector<String> &p_arguments, bool p_blocking) {
+	return execute_with_pipe(p_path, p_arguments, p_blocking, String(), Dictionary());
+}
+
+int OS::_create_process_bind_compat_102943(const String &p_path, const Vector<String> &p_arguments, bool p_open_console) {
+	return create_process(p_path, p_arguments, p_open_console, String(), Dictionary());
+}
+
 String OS::_read_string_from_stdin_bind_compat_91201() {
 	return read_string_from_stdin(1024);
 }
@@ -57,6 +69,9 @@ void OS::_bind_compatibility_methods() {
 	ClassDB::bind_compatibility_method(D_METHOD("read_buffer_from_stdin", "buffer_size"), &OS::read_buffer_from_stdin);
 	ClassDB::bind_compatibility_method(D_METHOD("read_string_from_stdin"), &OS::_read_string_from_stdin_bind_compat_91201);
 	ClassDB::bind_compatibility_method(D_METHOD("execute_with_pipe", "path", "arguments"), &OS::_execute_with_pipe_bind_compat_94434);
+	ClassDB::bind_compatibility_method(D_METHOD("execute", "path", "arguments", "output", "read_stderr", "open_console"), &OS::_execute_bind_compat_102943, DEFVAL_ARRAY, DEFVAL(false), DEFVAL(false));
+	ClassDB::bind_compatibility_method(D_METHOD("execute_with_pipe", "path", "arguments", "blocking"), &OS::_execute_with_pipe_bind_compat_102943, DEFVAL(true));
+	ClassDB::bind_compatibility_method(D_METHOD("create_process", "path", "arguments", "open_console"), &OS::_create_process_bind_compat_102943, DEFVAL(false));
 }
 
 } // namespace CoreBind
