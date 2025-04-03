@@ -39,10 +39,10 @@
 
 MethodDefinition D_METHODP(const char *p_name, const char *const **p_args, uint32_t p_argcount) {
 	MethodDefinition md;
-	md.name = StaticCString::create(p_name);
+	md.name = StringName(p_name);
 	md.args.resize(p_argcount);
 	for (uint32_t i = 0; i < p_argcount; i++) {
-		md.args.write[i] = StaticCString::create(*p_args[i]);
+		md.args.write[i] = StringName(*p_args[i]);
 	}
 	return md;
 }
@@ -1932,7 +1932,7 @@ MethodBind *ClassDB::bind_methodfi(uint32_t p_flags, MethodBind *p_bind, bool p_
 	StringName mdname = method_name.name;
 #else
 MethodBind *ClassDB::bind_methodfi(uint32_t p_flags, MethodBind *p_bind, bool p_compatibility, const char *method_name, const Variant **p_defs, int p_defcount) {
-	StringName mdname = StaticCString::create(method_name);
+	StringName mdname = StringName(method_name);
 #endif
 
 	Locker::Lock lock(Locker::STATE_WRITE);

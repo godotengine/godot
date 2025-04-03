@@ -44,45 +44,45 @@ public:
 
 	_FORCE_INLINE_ static CoreStringNames *get_singleton() { return singleton; }
 
-	const StringName free_ = StaticCString::create("free"); // free would conflict with C++ keyword.
-	const StringName changed = StaticCString::create("changed");
-	const StringName script = StaticCString::create("script");
-	const StringName script_changed = StaticCString::create("script_changed");
-	const StringName _iter_init = StaticCString::create("_iter_init");
-	const StringName _iter_next = StaticCString::create("_iter_next");
-	const StringName _iter_get = StaticCString::create("_iter_get");
-	const StringName get_rid = StaticCString::create("get_rid");
-	const StringName _to_string = StaticCString::create("_to_string");
-	const StringName _custom_features = StaticCString::create("_custom_features");
+	const StringName free_ = StringName("free"); // free would conflict with C++ keyword.
+	const StringName changed = StringName("changed");
+	const StringName script = StringName("script");
+	const StringName script_changed = StringName("script_changed");
+	const StringName _iter_init = StringName("_iter_init");
+	const StringName _iter_next = StringName("_iter_next");
+	const StringName _iter_get = StringName("_iter_get");
+	const StringName get_rid = StringName("get_rid");
+	const StringName _to_string = StringName("_to_string");
+	const StringName _custom_features = StringName("_custom_features");
 
-	const StringName x = StaticCString::create("x");
-	const StringName y = StaticCString::create("y");
-	const StringName z = StaticCString::create("z");
-	const StringName w = StaticCString::create("w");
-	const StringName r = StaticCString::create("r");
-	const StringName g = StaticCString::create("g");
-	const StringName b = StaticCString::create("b");
-	const StringName a = StaticCString::create("a");
-	const StringName position = StaticCString::create("position");
-	const StringName size = StaticCString::create("size");
-	const StringName end = StaticCString::create("end");
-	const StringName basis = StaticCString::create("basis");
-	const StringName origin = StaticCString::create("origin");
-	const StringName normal = StaticCString::create("normal");
-	const StringName d = StaticCString::create("d");
-	const StringName h = StaticCString::create("h");
-	const StringName s = StaticCString::create("s");
-	const StringName v = StaticCString::create("v");
-	const StringName r8 = StaticCString::create("r8");
-	const StringName g8 = StaticCString::create("g8");
-	const StringName b8 = StaticCString::create("b8");
-	const StringName a8 = StaticCString::create("a8");
+	const StringName x = StringName("x");
+	const StringName y = StringName("y");
+	const StringName z = StringName("z");
+	const StringName w = StringName("w");
+	const StringName r = StringName("r");
+	const StringName g = StringName("g");
+	const StringName b = StringName("b");
+	const StringName a = StringName("a");
+	const StringName position = StringName("position");
+	const StringName size = StringName("size");
+	const StringName end = StringName("end");
+	const StringName basis = StringName("basis");
+	const StringName origin = StringName("origin");
+	const StringName normal = StringName("normal");
+	const StringName d = StringName("d");
+	const StringName h = StringName("h");
+	const StringName s = StringName("s");
+	const StringName v = StringName("v");
+	const StringName r8 = StringName("r8");
+	const StringName g8 = StringName("g8");
+	const StringName b8 = StringName("b8");
+	const StringName a8 = StringName("a8");
 
-	const StringName call = StaticCString::create("call");
-	const StringName call_deferred = StaticCString::create("call_deferred");
-	const StringName bind = StaticCString::create("bind");
-	const StringName notification = StaticCString::create("notification");
-	const StringName property_list_changed = StaticCString::create("property_list_changed");
+	const StringName call = StringName("call");
+	const StringName call_deferred = StringName("call_deferred");
+	const StringName bind = StringName("bind");
+	const StringName notification = StringName("notification");
+	const StringName property_list_changed = StringName("property_list_changed");
 };
 
 #define CoreStringName(m_name) CoreStringNames::get_singleton()->m_name

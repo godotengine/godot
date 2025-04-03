@@ -124,21 +124,21 @@ struct ExposedClass {
 };
 
 struct NamesCache {
-	StringName variant_type = StaticCString::create("Variant");
-	StringName object_class = StaticCString::create("Object");
-	StringName ref_counted_class = StaticCString::create("RefCounted");
-	StringName string_type = StaticCString::create("String");
-	StringName string_name_type = StaticCString::create("StringName");
-	StringName node_path_type = StaticCString::create("NodePath");
-	StringName bool_type = StaticCString::create("bool");
-	StringName int_type = StaticCString::create("int");
-	StringName float_type = StaticCString::create("float");
-	StringName void_type = StaticCString::create("void");
-	StringName vararg_stub_type = StaticCString::create("@VarArg@");
-	StringName vector2_type = StaticCString::create("Vector2");
-	StringName rect2_type = StaticCString::create("Rect2");
-	StringName vector3_type = StaticCString::create("Vector3");
-	StringName vector4_type = StaticCString::create("Vector4");
+	StringName variant_type = StringName("Variant");
+	StringName object_class = StringName("Object");
+	StringName ref_counted_class = StringName("RefCounted");
+	StringName string_type = StringName("String");
+	StringName string_name_type = StringName("StringName");
+	StringName node_path_type = StringName("NodePath");
+	StringName bool_type = StringName("bool");
+	StringName int_type = StringName("int");
+	StringName float_type = StringName("float");
+	StringName void_type = StringName("void");
+	StringName vararg_stub_type = StringName("@VarArg@");
+	StringName vector2_type = StringName("Vector2");
+	StringName rect2_type = StringName("Rect2");
+	StringName vector3_type = StringName("Vector3");
+	StringName vector4_type = StringName("Vector4");
 
 	// Object not included as it must be checked for all derived classes
 	static constexpr int nullable_types_count = 18;
@@ -147,21 +147,21 @@ struct NamesCache {
 		string_name_type,
 		node_path_type,
 
-		StaticCString::create(_STR(Array)),
-		StaticCString::create(_STR(Dictionary)),
-		StaticCString::create(_STR(Callable)),
-		StaticCString::create(_STR(Signal)),
+		StringName(_STR(Array)),
+		StringName(_STR(Dictionary)),
+		StringName(_STR(Callable)),
+		StringName(_STR(Signal)),
 
-		StaticCString::create(_STR(PackedByteArray)),
-		StaticCString::create(_STR(PackedInt32Array)),
-		StaticCString::create(_STR(PackedInt64rray)),
-		StaticCString::create(_STR(PackedFloat32Array)),
-		StaticCString::create(_STR(PackedFloat64Array)),
-		StaticCString::create(_STR(PackedStringArray)),
-		StaticCString::create(_STR(PackedVector2Array)),
-		StaticCString::create(_STR(PackedVector3Array)),
-		StaticCString::create(_STR(PackedColorArray)),
-		StaticCString::create(_STR(PackedVector4Array)),
+		StringName(_STR(PackedByteArray)),
+		StringName(_STR(PackedInt32Array)),
+		StringName(_STR(PackedInt64rray)),
+		StringName(_STR(PackedFloat32Array)),
+		StringName(_STR(PackedFloat64Array)),
+		StringName(_STR(PackedStringArray)),
+		StringName(_STR(PackedVector2Array)),
+		StringName(_STR(PackedVector3Array)),
+		StringName(_STR(PackedColorArray)),
+		StringName(_STR(PackedVector4Array)),
 	};
 
 	bool is_nullable_type(const StringName &p_type) const {
