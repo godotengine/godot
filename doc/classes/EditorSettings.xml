@@ -805,7 +805,7 @@
 		</member>
 		<member name="interface/editor/accept_dialog_cancel_ok_buttons" type="int" setter="" getter="">
 			How to position the Cancel and OK buttons in the editor's [AcceptDialog]s. Different platforms have different standard behaviors for this, which can be overridden using this setting. This is useful if you use Godot both on Windows and macOS/Linux and your Godot muscle memory is stronger than your OS specific one.
-			- [b]Auto[/b] follows the platform convention: Cancel first on macOS and Linux, OK first on Windows.
+			- [b]Auto[/b] follows the platform convention: OK first on Windows, KDE, and LXQt, Cancel first on macOS and other Linux desktop environments.
 			- [b]Cancel First[/b] forces the ordering Cancel/OK.
 			- [b]OK First[/b] forces the ordering OK/Cancel.
 		</member>

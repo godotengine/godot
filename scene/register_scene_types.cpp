@@ -521,11 +521,11 @@ void register_scene_types() {
 
 	OS::get_singleton()->yield(); // may take time to init
 
-	bool swap_cancel_ok = false;
-	if (DisplayServer::get_singleton()) {
-		swap_cancel_ok = GLOBAL_DEF_NOVAL("gui/common/swap_cancel_ok", bool(DisplayServer::get_singleton()->get_swap_cancel_ok()));
+	int swap_cancel_ok = GLOBAL_DEF(PropertyInfo(Variant::INT, "gui/common/swap_cancel_ok", PROPERTY_HINT_ENUM, "Auto,Cancel First,OK First"), 0);
+	if (DisplayServer::get_singleton() && swap_cancel_ok == 0) {
+		swap_cancel_ok = DisplayServer::get_singleton()->get_swap_cancel_ok() ? 2 : 1;
 	}
-	AcceptDialog::set_swap_cancel_ok(swap_cancel_ok);
+	AcceptDialog::set_swap_cancel_ok(swap_cancel_ok == 2);
 #endif
 
 	int root_dir = GLOBAL_GET("internationalization/rendering/root_node_layout_direction");

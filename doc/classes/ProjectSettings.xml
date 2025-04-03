@@ -1125,8 +1125,11 @@
 		<member name="gui/common/snap_controls_to_pixels" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], snaps [Control] node vertices to the nearest pixel to ensure they remain crisp even when the camera moves or zooms.
 		</member>
-		<member name="gui/common/swap_cancel_ok" type="bool" setter="" getter="">
-			If [code]true[/code], swaps [b]Cancel[/b] and [b]OK[/b] buttons in dialogs on Windows to follow interface conventions. [method DisplayServer.get_swap_cancel_ok] can be used to query whether buttons are swapped at run-time.
+		<member name="gui/common/swap_cancel_ok" type="int" setter="" getter="" default="0">
+			How to position the Cancel and OK buttons in the project's [AcceptDialog]s. Different platforms have different standard behaviors for this, which can be overridden using this setting.
+			- [b]Auto[/b] ([code]0[/code]) follows the platform convention: OK first on Windows, KDE, and LXQt, Cancel first on macOS and other Linux desktop environments. [method DisplayServer.get_swap_cancel_ok] can be used to query whether buttons are swapped at run-time.
+			- [b]Cancel First[/b] ([code]1[/code]) forces the ordering Cancel/OK.
+			- [b]OK First[/b] ([code]2[/code]) forces the ordering OK/Cancel.
 			[b]Note:[/b] This doesn't affect native dialogs such as the ones spawned by [method DisplayServer.dialog_show].
 		</member>
 		<member name="gui/common/text_edit_undo_stack_max_size" type="int" setter="" getter="" default="1024">
