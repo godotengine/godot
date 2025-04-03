@@ -41,7 +41,11 @@
 void BitMapEditor::setup(const Ref<BitMap> &p_bitmap) {
 	Ref<ImageTexture> bitmap_texture = ImageTexture::create_from_image(p_bitmap->convert_to_image());
 	texture_rect->set_texture(bitmap_texture);
-	centering_container->set_ratio(bitmap_texture->get_size().aspect());
+	if (bitmap_texture.is_valid()) {
+		centering_container->set_custom_minimum_size(Size2(0, 250) * EDSCALE);
+		centering_container->set_ratio(bitmap_texture->get_size().aspect());
+		outline_overlay->connect(SceneStringName(draw), callable_mp(this, &BitMapEditor::_draw_outline));
+	}
 	size_label->set_text(vformat(U"%s×%s", p_bitmap->get_size().width, p_bitmap->get_size().height));
 }
 
@@ -70,7 +74,6 @@ BitMapEditor::BitMapEditor() {
 	add_child(margin_container);
 
 	centering_container = memnew(AspectRatioContainer);
-	centering_container->set_custom_minimum_size(Size2(0, 250) * EDSCALE);
 	margin_container->add_child(centering_container);
 
 	texture_rect = memnew(TextureRect);
@@ -79,7 +82,6 @@ BitMapEditor::BitMapEditor() {
 	centering_container->add_child(texture_rect);
 
 	outline_overlay = memnew(Control);
-	outline_overlay->connect(SceneStringName(draw), callable_mp(this, &BitMapEditor::_draw_outline));
 	centering_container->add_child(outline_overlay);
 
 	size_label = memnew(Label);
