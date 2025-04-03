@@ -668,6 +668,7 @@
 			<param index="1" name="shape_idx" type="int" />
 			<param index="2" name="enable" type="bool" />
 			<param index="3" name="margin" type="float" />
+			<param index="4" name="direction" type="Vector2" />
 			<description>
 				Overridable version of [method PhysicsServer2D.body_set_shape_as_one_way_collision].
 			</description>
