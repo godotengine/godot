@@ -124,6 +124,11 @@ static Image::Format get_texture_2d_format(const Ref<Texture2D> &p_texture) {
 		return compressed_texture->get_format();
 	}
 
+	const Ref<PortableCompressedTexture2D> portable_compressed_texture = p_texture;
+	if (portable_compressed_texture.is_valid()) {
+		return portable_compressed_texture->get_format();
+	}
+
 	// AtlasTexture?
 
 	// Unknown
