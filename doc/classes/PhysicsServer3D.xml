@@ -1617,7 +1617,7 @@
 		<constant name="G6DOF_JOINT_FLAG_MAX" value="6" enum="G6DOFJointAxisFlag">
 			Represents the size of the [enum G6DOFJointAxisFlag] enum.
 		</constant>
-		<constant name="DISTANCE_JOINT_LIMITS_SPRING_FREQUENCY" value="0" enum="DistanceJointParam">
+		<constant name="DISTANCE_JOINT_LIMITS_SPRING_STIFFNESS" value="0" enum="DistanceJointParam">
 			The strength of the spring pulling the bodies together. Increase this value to pull the bodies together faster. Set to zero if you don't want to pull the bodies together with a spring.
 		</constant>
 		<constant name="DISTANCE_JOINT_LIMITS_SPRING_DAMPING" value="1" enum="DistanceJointParam">

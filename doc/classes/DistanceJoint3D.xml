@@ -64,12 +64,12 @@
 		<member name="spring/damping" type="float" setter="set_param" getter="get_param" default="0.0">
 			The damping of the spring pulling the bodies together. (0 = no damping, 1 = critical damping). Set to zero if you don't want to pull the bodies together with a spring.
 		</member>
-		<member name="spring/frequency" type="float" setter="set_param" getter="get_param" default="0.0">
+		<member name="spring/stiffness" type="float" setter="set_param" getter="get_param" default="0.0">
 			The strength of the spring pulling the bodies together. Increase this value to pull the bodies together faster. Set to zero if you don't want to pull the bodies together with a spring.
 		</member>
 	</members>
 	<constants>
-		<constant name="PARAM_LIMITS_SPRING_FREQUENCY" value="0" enum="Param">
+		<constant name="PARAM_LIMITS_SPRING_STIFFNESS" value="0" enum="Param">
 			The strength of the spring pulling the bodies together. Increase this value to pull the bodies together faster. Set to zero if you don't want to pull the bodies together with a spring.
 		</constant>
 		<constant name="PARAM_LIMITS_SPRING_DAMPING" value="1" enum="Param">

@@ -54,7 +54,7 @@ JoltDistanceJoint3D::JoltDistanceJoint3D(
 double JoltDistanceJoint3D::get_jolt_param(Param p_param) const {
 	switch (p_param) {
 		case JoltPhysicsServer3D::DISTANCE_JOINT_LIMITS_SPRING_STIFFNESS: {
-			return limit_spring_frequency;
+			return limit_spring_stiffness;
 		} break;
 		case JoltPhysicsServer3D::DISTANCE_JOINT_LIMITS_SPRING_DAMPING: {
 			return limit_spring_damping;
@@ -74,7 +74,7 @@ double JoltDistanceJoint3D::get_jolt_param(Param p_param) const {
 void JoltDistanceJoint3D::set_jolt_param(Param p_param, double p_value) {
 	switch (p_param) {
 		case JoltPhysicsServer3D::DISTANCE_JOINT_LIMITS_SPRING_STIFFNESS: {
-			limit_spring_frequency = p_value;
+			limit_spring_stiffness = p_value;
 			_limit_spring_changed();
 		} break;
 		case JoltPhysicsServer3D::DISTANCE_JOINT_LIMITS_SPRING_DAMPING: {
@@ -140,7 +140,7 @@ JPH::Constraint *JoltDistanceJoint3D::_build_constraint(
 	constraint_settings.mPoint2 = to_jolt_r(p_shifted_ref_b.origin);
 	constraint_settings.mMinDistance = (float)distance_min;
 	constraint_settings.mMaxDistance = (float)distance_max;
-	constraint_settings.mLimitsSpringSettings.mFrequency = (float)limit_spring_frequency;
+	constraint_settings.mLimitsSpringSettings.mStiffness = (float)limit_spring_stiffness;
 	constraint_settings.mLimitsSpringSettings.mDamping = (float)limit_spring_damping;
 
 	if (p_jolt_body_a == nullptr) {
