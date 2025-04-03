@@ -668,41 +668,41 @@ class BindingsGenerator {
 	void _initialize_compat_singletons();
 
 	struct NameCache {
-		StringName type_void = StaticCString::create("void");
-		StringName type_Variant = StaticCString::create("Variant");
-		StringName type_VarArg = StaticCString::create("VarArg");
-		StringName type_Object = StaticCString::create("Object");
-		StringName type_RefCounted = StaticCString::create("RefCounted");
-		StringName type_RID = StaticCString::create("RID");
-		StringName type_Callable = StaticCString::create("Callable");
-		StringName type_Signal = StaticCString::create("Signal");
-		StringName type_String = StaticCString::create("String");
-		StringName type_StringName = StaticCString::create("StringName");
-		StringName type_NodePath = StaticCString::create("NodePath");
-		StringName type_Array_generic = StaticCString::create("Array_@generic");
-		StringName type_Dictionary_generic = StaticCString::create("Dictionary_@generic");
-		StringName type_at_GlobalScope = StaticCString::create("@GlobalScope");
-		StringName enum_Error = StaticCString::create("Error");
+		StringName type_void = "void";
+		StringName type_Variant = "Variant";
+		StringName type_VarArg = "VarArg";
+		StringName type_Object = "Object";
+		StringName type_RefCounted = "RefCounted";
+		StringName type_RID = "RID";
+		StringName type_Callable = "Callable";
+		StringName type_Signal = "Signal";
+		StringName type_String = "String";
+		StringName type_StringName = "StringName";
+		StringName type_NodePath = "NodePath";
+		StringName type_Array_generic = "Array_@generic";
+		StringName type_Dictionary_generic = "Dictionary_@generic";
+		StringName type_at_GlobalScope = "@GlobalScope";
+		StringName enum_Error = "Error";
 
-		StringName type_sbyte = StaticCString::create("sbyte");
-		StringName type_short = StaticCString::create("short");
-		StringName type_int = StaticCString::create("int");
-		StringName type_byte = StaticCString::create("byte");
-		StringName type_ushort = StaticCString::create("ushort");
-		StringName type_uint = StaticCString::create("uint");
-		StringName type_long = StaticCString::create("long");
-		StringName type_ulong = StaticCString::create("ulong");
+		StringName type_sbyte = "sbyte";
+		StringName type_short = "short";
+		StringName type_int = "int";
+		StringName type_byte = "byte";
+		StringName type_ushort = "ushort";
+		StringName type_uint = "uint";
+		StringName type_long = "long";
+		StringName type_ulong = "ulong";
 
-		StringName type_bool = StaticCString::create("bool");
-		StringName type_float = StaticCString::create("float");
-		StringName type_double = StaticCString::create("double");
+		StringName type_bool = "bool";
+		StringName type_float = "float";
+		StringName type_double = "double";
 
-		StringName type_Vector2 = StaticCString::create("Vector2");
-		StringName type_Rect2 = StaticCString::create("Rect2");
-		StringName type_Vector3 = StaticCString::create("Vector3");
-		StringName type_Vector3i = StaticCString::create("Vector3i");
-		StringName type_Vector4 = StaticCString::create("Vector4");
-		StringName type_Vector4i = StaticCString::create("Vector4i");
+		StringName type_Vector2 = "Vector2";
+		StringName type_Rect2 = "Rect2";
+		StringName type_Vector3 = "Vector3";
+		StringName type_Vector3i = "Vector3i";
+		StringName type_Vector4 = "Vector4";
+		StringName type_Vector4i = "Vector4i";
 
 		// Object not included as it must be checked for all derived classes
 		static constexpr int nullable_types_count = 19;
@@ -713,21 +713,21 @@ class BindingsGenerator {
 
 			type_Array_generic,
 			type_Dictionary_generic,
-			StaticCString::create(_STR(Array)),
-			StaticCString::create(_STR(Dictionary)),
-			StaticCString::create(_STR(Callable)),
-			StaticCString::create(_STR(Signal)),
+			StringName(_STR(Array)),
+			StringName(_STR(Dictionary)),
+			StringName(_STR(Callable)),
+			StringName(_STR(Signal)),
 
-			StaticCString::create(_STR(PackedByteArray)),
-			StaticCString::create(_STR(PackedInt32Array)),
-			StaticCString::create(_STR(PackedInt64Array)),
-			StaticCString::create(_STR(PackedFloat32Array)),
-			StaticCString::create(_STR(PackedFloat64Array)),
-			StaticCString::create(_STR(PackedStringArray)),
-			StaticCString::create(_STR(PackedVector2Array)),
-			StaticCString::create(_STR(PackedVector3Array)),
-			StaticCString::create(_STR(PackedColorArray)),
-			StaticCString::create(_STR(PackedVector4Array)),
+			StringName(_STR(PackedByteArray)),
+			StringName(_STR(PackedInt32Array)),
+			StringName(_STR(PackedInt64Array)),
+			StringName(_STR(PackedFloat32Array)),
+			StringName(_STR(PackedFloat64Array)),
+			StringName(_STR(PackedStringArray)),
+			StringName(_STR(PackedVector2Array)),
+			StringName(_STR(PackedVector3Array)),
+			StringName(_STR(PackedColorArray)),
+			StringName(_STR(PackedVector4Array)),
 		};
 
 		bool is_nullable_type(const StringName &p_type) const {
