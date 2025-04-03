@@ -5798,13 +5798,17 @@ bool GDScriptAnalyzer::get_function_signature(GDScriptParser::Node *p_source, bo
 			*r_native_class = native_method->get_instance_class();
 		}
 
-		auto method_list = EditorHelp::get_doc_data()->class_list[base_native].methods;
-		for (int i = 0; i < method_list.size(); i++) {
-			if (method_list[i].name == function_name && method_list[i].is_deprecated) {
-				parser->push_warning(p_source, GDScriptWarning::DEPRECATED_IDENTIFIER);
-				break;
+		auto dd = EditorHelp::get_doc_data();
+		if (dd) {
+			auto method_list = dd->class_list[base_native].methods;
+			for (int i = 0; i < method_list.size(); i++) {
+				if (method_list[i].name == function_name && method_list[i].is_deprecated) {
+					parser->push_warning(p_source, GDScriptWarning::DEPRECATED_IDENTIFIER);
+					break;
+				}
 			}
 		}
+
 #endif
 		return valid;
 	}
