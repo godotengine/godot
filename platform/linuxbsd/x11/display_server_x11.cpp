@@ -3395,6 +3395,10 @@ void DisplayServerX11::cursor_set_custom_image(const Ref<Resource> &p_cursor, Cu
 	}
 }
 
+bool DisplayServerX11::get_swap_cancel_ok() {
+	return swap_cancel_ok;
+}
+
 int DisplayServerX11::keyboard_get_layout_count() const {
 	int _group_count = 0;
 	XkbDescRec *kbd = XkbAllocKeyboard();
@@ -6515,8 +6519,12 @@ static ::XIMStyle _get_best_xim_style(const ::XIMStyle &p_style_a, const ::XIMSt
 DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, int64_t p_parent_window, Error &r_error) {
 	KeyMappingX11::initialize();
 
+	String current_desk = OS::get_singleton()->get_environment("XDG_CURRENT_DESKTOP").to_lower();
+	String session_desk = OS::get_singleton()->get_environment("XDG_SESSION_DESKTOP").to_lower();
+	swap_cancel_ok = (current_desk.contains("kde") || session_desk.contains("kde") || current_desk.contains("lxqt") || session_desk.contains("lxqt"));
+
 	xwayland = OS::get_singleton()->get_environment("XDG_SESSION_TYPE").to_lower() == "wayland";
-	kde5_embed_workaround = OS::get_singleton()->get_environment("XDG_CURRENT_DESKTOP").to_lower() == "kde" && OS::get_singleton()->get_environment("KDE_SESSION_VERSION") == "5";
+	kde5_embed_workaround = current_desk == "kde" && OS::get_singleton()->get_environment("KDE_SESSION_VERSION") == "5";
 
 	native_menu = memnew(NativeMenu);
 	context = p_context;
