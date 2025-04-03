@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  jolt_distance_constraint_3d.cpp                                       */
+/*  jolt_distance_joint_3d.cpp                                       */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,15 +28,15 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "jolt_distance_constraint_3d.h"
+#include "jolt_distance_joint_3d.h"
 
 #include "../misc/jolt_type_conversions.h"
 #include "../objects/jolt_body_3d.h"
 #include "../spaces/jolt_space_3d.h"
 
-#include "Jolt/Physics/Constraints/DistanceConstraint.h"
+#include "Jolt/Physics/Constraints/DistanceJoint.h"
 
-JoltDistanceConstraint3D::JoltDistanceConstraint3D(
+JoltDistanceJoint3D::JoltDistanceJoint3D(
 		const JoltJoint3D &p_old_joint,
 		JoltBody3D *p_body_a,
 		JoltBody3D *p_body_b,
@@ -51,18 +51,18 @@ JoltDistanceConstraint3D::JoltDistanceConstraint3D(
 	rebuild();
 }
 
-double JoltDistanceConstraint3D::get_jolt_param(Param p_param) const {
+double JoltDistanceJoint3D::get_jolt_param(Param p_param) const {
 	switch (p_param) {
-		case JoltPhysicsServer3D::DISTANCE_CONSTRAINT_LIMITS_SPRING_FREQUENCY: {
+		case JoltPhysicsServer3D::DISTANCE_JOINT_LIMITS_SPRING_FREQUENCY: {
 			return limit_spring_frequency;
 		} break;
-		case JoltPhysicsServer3D::DISTANCE_CONSTRAINT_LIMITS_SPRING_DAMPING: {
+		case JoltPhysicsServer3D::DISTANCE_JOINT_LIMITS_SPRING_DAMPING: {
 			return limit_spring_damping;
 		} break;
-		case JoltPhysicsServer3D::DISTANCE_CONSTRAINT_DISTANCE_MIN: {
+		case JoltPhysicsServer3D::DISTANCE_JOINT_DISTANCE_MIN: {
 			return distance_min;
 		} break;
-		case JoltPhysicsServer3D::DISTANCE_CONSTRAINT_DISTANCE_MAX: {
+		case JoltPhysicsServer3D::DISTANCE_JOINT_DISTANCE_MAX: {
 			return distance_max;
 		} break;
 		default: {
@@ -71,21 +71,21 @@ double JoltDistanceConstraint3D::get_jolt_param(Param p_param) const {
 	}
 }
 
-void JoltDistanceConstraint3D::set_jolt_param(Param p_param, double p_value) {
+void JoltDistanceJoint3D::set_jolt_param(Param p_param, double p_value) {
 	switch (p_param) {
-		case JoltPhysicsServer3D::DISTANCE_CONSTRAINT_LIMITS_SPRING_FREQUENCY: {
+		case JoltPhysicsServer3D::DISTANCE_JOINT_LIMITS_SPRING_FREQUENCY: {
 			limit_spring_frequency = p_value;
 			_limit_spring_changed();
 		} break;
-		case JoltPhysicsServer3D::DISTANCE_CONSTRAINT_LIMITS_SPRING_DAMPING: {
+		case JoltPhysicsServer3D::DISTANCE_JOINT_LIMITS_SPRING_DAMPING: {
 			limit_spring_damping = p_value;
 			_limit_spring_changed();
 		} break;
-		case JoltPhysicsServer3D::DISTANCE_CONSTRAINT_DISTANCE_MIN: {
+		case JoltPhysicsServer3D::DISTANCE_JOINT_DISTANCE_MIN: {
 			distance_min = p_value;
 			_distance_changed();
 		} break;
-		case JoltPhysicsServer3D::DISTANCE_CONSTRAINT_DISTANCE_MAX: {
+		case JoltPhysicsServer3D::DISTANCE_JOINT_DISTANCE_MAX: {
 			distance_max = p_value;
 			_distance_changed();
 		} break;
@@ -95,7 +95,7 @@ void JoltDistanceConstraint3D::set_jolt_param(Param p_param, double p_value) {
 	}
 }
 
-void JoltDistanceConstraint3D::rebuild() {
+void JoltDistanceJoint3D::rebuild() {
 	destroy();
 
 	JoltSpace3D *space = get_space();
@@ -129,7 +129,7 @@ void JoltDistanceConstraint3D::rebuild() {
 	_update_iterations();
 }
 
-JPH::Constraint *JoltDistanceConstraint3D::_build_constraint(
+JPH::Constraint *JoltDistanceJoint3D::_build_constraint(
 		JPH::Body *p_jolt_body_a,
 		JPH::Body *p_jolt_body_b,
 		const Transform3D &p_shifted_ref_a,
@@ -152,17 +152,17 @@ JPH::Constraint *JoltDistanceConstraint3D::_build_constraint(
 	}
 }
 
-void JoltDistanceConstraint3D::_limit_spring_changed() {
+void JoltDistanceJoint3D::_limit_spring_changed() {
 	rebuild();
 	_wake_up_bodies();
 }
 
-void JoltDistanceConstraint3D::_limit_distance_changed() {
+void JoltDistanceJoint3D::_limit_distance_changed() {
 	rebuild();
 	_wake_up_bodies();
 }
 
-void JoltDistanceConstraint3D::_distance_changed() {
+void JoltDistanceJoint3D::_distance_changed() {
 	rebuild();
 	_wake_up_bodies();
 }

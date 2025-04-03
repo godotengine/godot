@@ -745,13 +745,13 @@
 			<description>
 			</description>
 		</method>
-		<method name="distance_constraint_set_param">
+		<method name="distance_joint_set_param">
 			<return type="void" />
 			<param index="0" name="joint" type="RID" />
-			<param index="1" name="param" type="int" enum="PhysicsServer3D.DistanceConstraintParam" />
+			<param index="1" name="param" type="int" enum="PhysicsServer3D.DistanceJointParam" />
 			<param index="2" name="value" type="float" />
 			<description>
-				Sets a distance_constraint parameter (see [enum DistanceConstraintParam] constants).
+				Sets a distance_joint parameter (see [enum DistanceJointParam] constants).
 			</description>
 		</method>
 		<method name="free_rid">
@@ -895,7 +895,7 @@
 			<description>
 			</description>
 		</method>
-		<method name="joint_make_distance_constraint">
+		<method name="joint_make_distance">
 			<return type="void" />
 			<param index="0" name="joint" type="RID" />
 			<param index="1" name="body_A" type="RID" />
@@ -903,7 +903,7 @@
 			<param index="3" name="body_B" type="RID" />
 			<param index="4" name="local_ref_B" type="Vector3" />
 			<description>
-				Make the joint a distance constraint. Use [method distance_constraint_set_param] to set the joint's parameters.
+				Make the joint a distance constraint. Use [method distance_joint_set_param] to set the joint's parameters.
 			</description>
 		</method>
 		<method name="joint_make_generic_6dof">
@@ -1400,8 +1400,8 @@
 		<constant name="JOINT_TYPE_6DOF" value="4" enum="JointType">
 			The [Joint3D] is a [Generic6DOFJoint3D].
 		</constant>
-		<constant name="JOINT_TYPE_DISTANCE_CONSTRAINT" value="5" enum="JointType">
-			The [Joint3D] is a [DistanceConstraint3D]. Note: This only works with Jolt Physics engine.
+		<constant name="JOINT_TYPE_DISTANCE_JOINT" value="5" enum="JointType">
+			The [Joint3D] is a [DistanceJoint3D]. Note: This only works with Jolt Physics engine.
 		</constant>
 		<constant name="JOINT_TYPE_MAX" value="6" enum="JointType">
 			Represents the size of the [enum JointType] enum.
@@ -1617,16 +1617,16 @@
 		<constant name="G6DOF_JOINT_FLAG_MAX" value="6" enum="G6DOFJointAxisFlag">
 			Represents the size of the [enum G6DOFJointAxisFlag] enum.
 		</constant>
-		<constant name="DISTANCE_CONSTRAINT_LIMITS_SPRING_FREQUENCY" value="0" enum="DistanceConstraintParam">
+		<constant name="DISTANCE_JOINT_LIMITS_SPRING_FREQUENCY" value="0" enum="DistanceJointParam">
 			The strength of the spring pulling the bodies together. Increase this value to pull the bodies together faster. Set to zero if you don't want to pull the bodies together with a spring.
 		</constant>
-		<constant name="DISTANCE_CONSTRAINT_LIMITS_SPRING_DAMPING" value="1" enum="DistanceConstraintParam">
+		<constant name="DISTANCE_JOINT_LIMITS_SPRING_DAMPING" value="1" enum="DistanceJointParam">
 			The damping of the spring pulling the bodies together. (0 = no damping, 1 = critical damping). Set to zero if you don't want to pull the bodies together with a spring.
 		</constant>
-		<constant name="DISTANCE_CONSTRAINT_DISTANCE_MIN" value="2" enum="DistanceConstraintParam">
+		<constant name="DISTANCE_JOINT_DISTANCE_MIN" value="2" enum="DistanceJointParam">
 			The minimum distance of the constraint.
 		</constant>
-		<constant name="DISTANCE_CONSTRAINT_DISTANCE_MAX" value="3" enum="DistanceConstraintParam">
+		<constant name="DISTANCE_JOINT_DISTANCE_MAX" value="3" enum="DistanceJointParam">
 			The maximum distance of the constraint.
 		</constant>
 		<constant name="SHAPE_WORLD_BOUNDARY" value="0" enum="ShapeType">

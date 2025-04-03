@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  distance_constraint_3d.cpp                                            */
+/*  distance_joint_3d.cpp                                            */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,14 +28,14 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#include "distance_constraint_3d.h"
+#include "distance_joint_3d.h"
 
-void DistanceConstraint3D::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("set_param", "param", "value"), &DistanceConstraint3D::set_param);
-	ClassDB::bind_method(D_METHOD("get_param", "param"), &DistanceConstraint3D::get_param);
-	ClassDB::bind_method(D_METHOD("set_point_param", "point", "value"), &DistanceConstraint3D::set_point_param);
-	ClassDB::bind_method(D_METHOD("get_point_param", "point"), &DistanceConstraint3D::get_point_param);
-	ClassDB::bind_method(D_METHOD("get_global_point", "point"), &DistanceConstraint3D::get_global_point);
+void DistanceJoint3D::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_param", "param", "value"), &DistanceJoint3D::set_param);
+	ClassDB::bind_method(D_METHOD("get_param", "param"), &DistanceJoint3D::get_param);
+	ClassDB::bind_method(D_METHOD("set_point_param", "point", "value"), &DistanceJoint3D::set_point_param);
+	ClassDB::bind_method(D_METHOD("get_point_param", "point"), &DistanceJoint3D::get_point_param);
+	ClassDB::bind_method(D_METHOD("get_global_point", "point"), &DistanceJoint3D::get_global_point);
 
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "spring/frequency"), "set_param", "get_param", PARAM_LIMITS_SPRING_FREQUENCY);
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "spring/damping"), "set_param", "get_param", PARAM_LIMITS_SPRING_DAMPING);
@@ -56,20 +56,20 @@ void DistanceConstraint3D::_bind_methods() {
 	BIND_ENUM_CONSTANT(POINT_PARAM_B);
 }
 
-void DistanceConstraint3D::set_param(Param p_param, real_t p_value) {
+void DistanceJoint3D::set_param(Param p_param, real_t p_value) {
 	ERR_FAIL_INDEX(p_param, PARAM_MAX);
 	params[p_param] = p_value;
 	if (is_configured()) {
-		PhysicsServer3D::get_singleton()->distance_constraint_set_param(get_rid(), PhysicsServer3D::DistanceConstraintParam(p_param), p_value);
+		PhysicsServer3D::get_singleton()->distance_joint_set_param(get_rid(), PhysicsServer3D::DistanceJointParam(p_param), p_value);
 	}
 }
 
-real_t DistanceConstraint3D::get_param(Param p_param) const {
+real_t DistanceJoint3D::get_param(Param p_param) const {
 	ERR_FAIL_INDEX_V(p_param, PARAM_MAX, 0);
 	return params[p_param];
 }
 
-void DistanceConstraint3D::set_point_param(PointParam p_param, const Vector3 &p_value) {
+void DistanceJoint3D::set_point_param(PointParam p_param, const Vector3 &p_value) {
 	ERR_FAIL_INDEX(p_param, POINT_PARAM_MAX);
 	point_params[p_param] = p_value;
 	if (is_configured()) {
@@ -78,12 +78,12 @@ void DistanceConstraint3D::set_point_param(PointParam p_param, const Vector3 &p_
 	}
 }
 
-Vector3 DistanceConstraint3D::get_point_param(PointParam p_param) const {
+Vector3 DistanceJoint3D::get_point_param(PointParam p_param) const {
 	ERR_FAIL_INDEX_V(p_param, POINT_PARAM_MAX, Vector3());
 	return point_params[p_param];
 }
 
-Vector3 DistanceConstraint3D::get_global_point(PointParam p_param) const {
+Vector3 DistanceJoint3D::get_global_point(PointParam p_param) const {
 	const PhysicsBody3D *body = _get_body_from_param(p_param);
 	const Vector3 local_point = get_point_param(p_param);
 	if (body == nullptr) {
@@ -92,13 +92,13 @@ Vector3 DistanceConstraint3D::get_global_point(PointParam p_param) const {
 	return body->to_global(local_point);
 }
 
-PhysicsBody3D *DistanceConstraint3D::_get_body_from_param(PointParam p_param) const {
+PhysicsBody3D *DistanceJoint3D::_get_body_from_param(PointParam p_param) const {
 	const NodePath node_path = p_param == POINT_PARAM_A ? get_node_a() : get_node_b();
 	Node *node = get_node_or_null(node_path);
 	return Object::cast_to<PhysicsBody3D>(node);
 }
 
-void DistanceConstraint3D::_configure_joint(RID p_joint, PhysicsBody3D *p_body_a, PhysicsBody3D *p_body_b) {
+void DistanceJoint3D::_configure_joint(RID p_joint, PhysicsBody3D *p_body_a, PhysicsBody3D *p_body_b) {
 	PhysicsServer3D *physics_server = PhysicsServer3D::get_singleton();
 	ERR_FAIL_NULL(physics_server);
 
@@ -110,7 +110,7 @@ void DistanceConstraint3D::_configure_joint(RID p_joint, PhysicsBody3D *p_body_a
 	const Vector3 p_body_a_point = are_bodies_switched ? point_b : point_a;
 	const Vector3 p_body_b_point = are_bodies_switched ? point_a : point_b;
 
-	physics_server->joint_make_distance_constraint(
+	physics_server->joint_make_distance(
 			p_joint,
 			p_body_a->get_rid(),
 			p_body_a_point,
@@ -118,21 +118,21 @@ void DistanceConstraint3D::_configure_joint(RID p_joint, PhysicsBody3D *p_body_a
 			p_body_b != nullptr ? p_body_b_point : global_position);
 
 	for (int i = 0; i < PARAM_MAX; i++) {
-		physics_server->distance_constraint_set_param(p_joint, PhysicsServer3D::DistanceConstraintParam(i), params[i]);
+		physics_server->distance_joint_set_param(p_joint, PhysicsServer3D::DistanceJointParam(i), params[i]);
 	}
 }
 
-PackedStringArray DistanceConstraint3D::get_configuration_warnings() const {
+PackedStringArray DistanceJoint3D::get_configuration_warnings() const {
 	PackedStringArray warnings = Joint3D::get_configuration_warnings();
 
 	JoltPhysicsServer3D *jolt_physics_server = JoltPhysicsServer3D::get_singleton();
 	if (!jolt_physics_server) {
-		warnings.push_back(RTR("DistanceConstraint3D is only compatible with Jolt Physics. Please change your Physics Engine in Project Settings."));
+		warnings.push_back(RTR("DistanceJoint3D is only compatible with Jolt Physics. Please change your Physics Engine in Project Settings."));
 	}
 	return warnings;
 }
 
-DistanceConstraint3D::DistanceConstraint3D() {
+DistanceJoint3D::DistanceJoint3D() {
 	params[PARAM_LIMITS_SPRING_FREQUENCY] = 0.0;
 	params[PARAM_LIMITS_SPRING_DAMPING] = 0.0;
 	params[PARAM_DISTANCE_MIN] = 0.0;

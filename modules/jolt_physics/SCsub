@@ -91,7 +91,7 @@ thirdparty_sources = [
     "Jolt/Physics/Constraints/Constraint.cpp",
     "Jolt/Physics/Constraints/ConstraintManager.cpp",
     "Jolt/Physics/Constraints/ContactConstraintManager.cpp",
-    "Jolt/Physics/Constraints/DistanceConstraint.cpp",
+    "Jolt/Physics/Constraints/DistanceJoint.cpp",
     "Jolt/Physics/Constraints/FixedConstraint.cpp",
     "Jolt/Physics/Constraints/GearConstraint.cpp",
     "Jolt/Physics/Constraints/HingeConstraint.cpp",

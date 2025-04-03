@@ -33,7 +33,7 @@
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
 #include "scene/3d/physics/joints/cone_twist_joint_3d.h"
-#include "scene/3d/physics/joints/distance_constraint_3d.h"
+#include "scene/3d/physics/joints/distance_joint_3d.h"
 #include "scene/3d/physics/joints/generic_6dof_joint_3d.h"
 #include "scene/3d/physics/joints/hinge_joint_3d.h"
 #include "scene/3d/physics/joints/pin_joint_3d.h"
@@ -469,15 +469,15 @@ void Joint3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 		p_gizmo->add_lines(body_b_points, body_b_material);
 	}
 
-	DistanceConstraint3D *dist = Object::cast_to<DistanceConstraint3D>(joint);
+	DistanceJoint3D *dist = Object::cast_to<DistanceJoint3D>(joint);
 	if (dist) {
-		CreateGenericDistanceConstraintGizmo(
+		CreateGenericDistanceJointGizmo(
 				Transform3D(),
 				dist->get_global_transform(),
-				dist->get_global_point(DistanceConstraint3D::POINT_PARAM_A),
-				dist->get_global_point(DistanceConstraint3D::POINT_PARAM_B),
-				dist->get_param(DistanceConstraint3D::PARAM_DISTANCE_MIN),
-				dist->get_param(DistanceConstraint3D::PARAM_DISTANCE_MAX),
+				dist->get_global_point(DistanceJoint3D::POINT_PARAM_A),
+				dist->get_global_point(DistanceJoint3D::POINT_PARAM_B),
+				dist->get_param(DistanceJoint3D::PARAM_DISTANCE_MIN),
+				dist->get_param(DistanceJoint3D::PARAM_DISTANCE_MAX),
 				points,
 				body_a_points,
 				body_b_points);
@@ -749,7 +749,7 @@ void Joint3DGizmoPlugin::CreateGeneric6DOFJointGizmo(
 #undef ADD_VTX
 }
 
-void Joint3DGizmoPlugin::CreateGenericDistanceConstraintGizmo(const Transform3D &p_offset,
+void Joint3DGizmoPlugin::CreateGenericDistanceJointGizmo(const Transform3D &p_offset,
 		const Transform3D &p_trs_joint,
 		const Vector3 &p_vec_global_a,
 		const Vector3 &p_vec_global_b,

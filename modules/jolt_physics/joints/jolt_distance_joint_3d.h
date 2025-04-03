@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  distance_constraint_3d.h                                              */
+/*  jolt_distance_joint_3d.h                                         */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -30,48 +30,46 @@
 
 #pragma once
 
-#include "scene/3d/physics/joints/joint_3d.h"
+#include "../jolt_physics_server_3d.h"
+#include "jolt_joint_3d.h"
 
-#include "modules/jolt_physics/jolt_physics_server_3d.h"
+#include "Jolt/Jolt.h"
 
-class DistanceConstraint3D : public Joint3D {
-	GDCLASS(DistanceConstraint3D, Joint3D);
+#include "Jolt/Physics/Body/Body.h"
 
-public:
-	enum Param {
-		PARAM_LIMITS_SPRING_FREQUENCY = PhysicsServer3D::DISTANCE_CONSTRAINT_LIMITS_SPRING_FREQUENCY,
-		PARAM_LIMITS_SPRING_DAMPING = PhysicsServer3D::DISTANCE_CONSTRAINT_LIMITS_SPRING_DAMPING,
-		PARAM_DISTANCE_MIN = PhysicsServer3D::DISTANCE_CONSTRAINT_DISTANCE_MIN,
-		PARAM_DISTANCE_MAX = PhysicsServer3D::DISTANCE_CONSTRAINT_DISTANCE_MAX,
-		PARAM_MAX
-	};
+class JoltDistanceJoint3D final : public JoltJoint3D {
+	typedef PhysicsServer3D::DistanceJointParam Param;
 
-	enum PointParam {
-		POINT_PARAM_A,
-		POINT_PARAM_B,
-		POINT_PARAM_MAX
-	};
+	JPH::Constraint *_build_constraint(
+			JPH::Body *p_jolt_body_a,
+			JPH::Body *p_jolt_body_b,
+			const Transform3D &p_shifted_ref_a,
+			const Transform3D &p_shifted_ref_b);
 
-protected:
-	real_t params[PARAM_MAX];
-	Vector3 point_params[POINT_PARAM_MAX];
+	void _limit_spring_changed();
+	void _limit_distance_changed();
+	void _distance_changed();
 
-	void _configure_joint(RID p_joint, PhysicsBody3D *p_body_a, PhysicsBody3D *p_body_b) override;
-	static void _bind_methods();
-	PhysicsBody3D *_get_body_from_param(PointParam p_param) const;
+	double limit_spring_frequency = 0.0;
+	double limit_spring_damping = 0.0;
+	double distance_min = 0.0;
+	double distance_max = INFINITY;
 
 public:
-	void set_param(Param p_param, real_t p_value);
-	real_t get_param(Param p_param) const;
+	JoltDistanceJoint3D(
+			const JoltJoint3D &p_old_joint,
+			JoltBody3D *p_body_a,
+			JoltBody3D *p_body_b,
+			const Vector3 &p_local_a,
+			const Vector3 &p_local_b);
 
-	void set_point_param(PointParam p_param, const Vector3 &p_value);
-	Vector3 get_point_param(PointParam p_param) const;
-	Vector3 get_global_point(PointParam p_param) const;
+	virtual PhysicsServer3D::JointType get_type() const override { return PhysicsServer3D::JOINT_TYPE_DISTANCE_JOINT; }
 
-	PackedStringArray get_configuration_warnings() const override;
+	double get_jolt_param(Param p_param) const;
+	void set_jolt_param(Param p_param, double p_value);
 
-	DistanceConstraint3D();
+	Vector3 get_local_a() const { return local_ref_a.origin; }
+	Vector3 get_local_b() const { return local_ref_b.origin; }
+
+	virtual void rebuild() override;
 };
-
-VARIANT_ENUM_CAST(DistanceConstraint3D::Param);
-VARIANT_ENUM_CAST(DistanceConstraint3D::PointParam);

@@ -629,7 +629,7 @@ public:
 		JOINT_TYPE_SLIDER,
 		JOINT_TYPE_CONE_TWIST,
 		JOINT_TYPE_6DOF,
-		JOINT_TYPE_DISTANCE_CONSTRAINT,
+		JOINT_TYPE_DISTANCE_JOINT,
 		JOINT_TYPE_MAX,
 	};
 
@@ -780,16 +780,16 @@ public:
 	virtual void generic_6dof_joint_set_flag(RID p_joint, Vector3::Axis, G6DOFJointAxisFlag p_flag, bool p_enable) = 0;
 	virtual bool generic_6dof_joint_get_flag(RID p_joint, Vector3::Axis, G6DOFJointAxisFlag p_flag) const = 0;
 
-	enum DistanceConstraintParam {
-		DISTANCE_CONSTRAINT_LIMITS_SPRING_FREQUENCY,
-		DISTANCE_CONSTRAINT_LIMITS_SPRING_DAMPING,
-		DISTANCE_CONSTRAINT_DISTANCE_MIN,
-		DISTANCE_CONSTRAINT_DISTANCE_MAX,
+	enum DistanceJointParam {
+		DISTANCE_JOINT_LIMITS_SPRING_FREQUENCY,
+		DISTANCE_JOINT_LIMITS_SPRING_DAMPING,
+		DISTANCE_JOINT_DISTANCE_MIN,
+		DISTANCE_JOINT_DISTANCE_MAX,
 	};
 
-	virtual void joint_make_distance_constraint(RID p_joint, RID p_body_a, const Vector3 &p_local_a, RID p_body_b, const Vector3 &p_local_b) = 0;
+	virtual void joint_make_distance(RID p_joint, RID p_body_a, const Vector3 &p_local_a, RID p_body_b, const Vector3 &p_local_b) = 0;
 
-	virtual void distance_constraint_set_param(RID p_joint, DistanceConstraintParam p_param, real_t p_value) = 0;
+	virtual void distance_joint_set_param(RID p_joint, DistanceJointParam p_param, real_t p_value) = 0;
 
 	/* QUERY API */
 
@@ -1062,7 +1062,7 @@ VARIANT_ENUM_CAST(PhysicsServer3D::SliderJointParam);
 VARIANT_ENUM_CAST(PhysicsServer3D::ConeTwistJointParam);
 VARIANT_ENUM_CAST(PhysicsServer3D::G6DOFJointAxisParam);
 VARIANT_ENUM_CAST(PhysicsServer3D::G6DOFJointAxisFlag);
-VARIANT_ENUM_CAST(PhysicsServer3D::DistanceConstraintParam);
+VARIANT_ENUM_CAST(PhysicsServer3D::DistanceJointParam);
 VARIANT_ENUM_CAST(PhysicsServer3D::AreaBodyStatus);
 VARIANT_ENUM_CAST(PhysicsServer3D::ProcessInfo);
 

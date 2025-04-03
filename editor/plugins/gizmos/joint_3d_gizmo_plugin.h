@@ -76,7 +76,7 @@ public:
 			Vector<Vector3> &r_points,
 			Vector<Vector3> *r_body_a_points,
 			Vector<Vector3> *r_body_b_points);
-	void CreateGenericDistanceConstraintGizmo(const Transform3D &p_offset,
+	void CreateGenericDistanceJointGizmo(const Transform3D &p_offset,
 			const Transform3D &p_trs_joint,
 			const Vector3 &p_vec_global_a,
 			const Vector3 &p_vec_global_b,
