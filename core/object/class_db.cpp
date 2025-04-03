@@ -533,19 +533,21 @@ StringName ClassDB::get_compatibility_class(const StringName &p_class) {
 	return StringName();
 }
 
-Object *ClassDB::_instantiate_internal(const StringName &p_class, bool p_require_real_class, bool p_notify_postinitialize) {
+Object *ClassDB::_instantiate_internal(const StringName &p_class, bool p_require_real_class, bool p_notify_postinitialize, bool p_exposed_only) {
 	ClassInfo *ti;
 	{
 		Locker::Lock lock(Locker::STATE_READ);
 		ti = classes.getptr(p_class);
-		if (!_can_instantiate(ti)) {
+		if (!_can_instantiate(ti, p_exposed_only)) {
 			if (compat_classes.has(p_class)) {
 				ti = classes.getptr(compat_classes[p_class]);
 			}
 		}
 		ERR_FAIL_NULL_V_MSG(ti, nullptr, vformat("Cannot get class '%s'.", String(p_class)));
 		ERR_FAIL_COND_V_MSG(ti->disabled, nullptr, vformat("Class '%s' is disabled.", String(p_class)));
-		ERR_FAIL_COND_V_MSG(!ti->exposed, nullptr, vformat("Class '%s' isn't exposed.", String(p_class)));
+		if (p_exposed_only) {
+			ERR_FAIL_COND_V_MSG(!ti->exposed, nullptr, vformat("Class '%s' isn't exposed.", String(p_class)));
+		}
 		ERR_FAIL_NULL_V_MSG(ti->creation_func, nullptr, vformat("Class '%s' or its base class cannot be instantiated.", String(p_class)));
 	}
 
@@ -597,12 +599,16 @@ Object *ClassDB::_instantiate_internal(const StringName &p_class, bool p_require
 	}
 }
 
-bool ClassDB::_can_instantiate(ClassInfo *p_class_info) {
+bool ClassDB::_can_instantiate(ClassInfo *p_class_info, bool p_exposed_only) {
 	if (!p_class_info) {
 		return false;
 	}
 
-	if (p_class_info->disabled || !p_class_info->exposed || !p_class_info->creation_func) {
+	if (p_exposed_only && !p_class_info->exposed) {
+		return false;
+	}
+
+	if (p_class_info->disabled || !p_class_info->creation_func) {
 		return false;
 	}
 
@@ -2335,6 +2341,10 @@ String ClassDB::get_native_struct_code(const StringName &p_name) {
 uint64_t ClassDB::get_native_struct_size(const StringName &p_name) {
 	ERR_FAIL_COND_V(!native_structs.has(p_name), 0);
 	return native_structs[p_name].struct_size;
+}
+
+Object *ClassDB::_instantiate_allow_unexposed(const StringName &p_class) {
+	return _instantiate_internal(p_class, false, true, false);
 }
 
 void ClassDB::cleanup_defaults() {
