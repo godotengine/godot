@@ -781,7 +781,7 @@ public:
 	virtual bool generic_6dof_joint_get_flag(RID p_joint, Vector3::Axis, G6DOFJointAxisFlag p_flag) const = 0;
 
 	enum DistanceJointParam {
-		DISTANCE_JOINT_LIMITS_SPRING_FREQUENCY,
+		DISTANCE_JOINT_LIMITS_SPRING_STIFFNESS,
 		DISTANCE_JOINT_LIMITS_SPRING_DAMPING,
 		DISTANCE_JOINT_DISTANCE_MIN,
 		DISTANCE_JOINT_DISTANCE_MAX,

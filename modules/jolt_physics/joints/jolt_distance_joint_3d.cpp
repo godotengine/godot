@@ -34,7 +34,7 @@
 #include "../objects/jolt_body_3d.h"
 #include "../spaces/jolt_space_3d.h"
 
-#include "Jolt/Physics/Constraints/DistanceJoint.h"
+#include "Jolt/Physics/Constraints/DistanceConstraint.h"
 
 JoltDistanceJoint3D::JoltDistanceJoint3D(
 		const JoltJoint3D &p_old_joint,
@@ -53,7 +53,7 @@ JoltDistanceJoint3D::JoltDistanceJoint3D(
 
 double JoltDistanceJoint3D::get_jolt_param(Param p_param) const {
 	switch (p_param) {
-		case JoltPhysicsServer3D::DISTANCE_JOINT_LIMITS_SPRING_FREQUENCY: {
+		case JoltPhysicsServer3D::DISTANCE_JOINT_LIMITS_SPRING_STIFFNESS: {
 			return limit_spring_frequency;
 		} break;
 		case JoltPhysicsServer3D::DISTANCE_JOINT_LIMITS_SPRING_DAMPING: {
@@ -73,7 +73,7 @@ double JoltDistanceJoint3D::get_jolt_param(Param p_param) const {
 
 void JoltDistanceJoint3D::set_jolt_param(Param p_param, double p_value) {
 	switch (p_param) {
-		case JoltPhysicsServer3D::DISTANCE_JOINT_LIMITS_SPRING_FREQUENCY: {
+		case JoltPhysicsServer3D::DISTANCE_JOINT_LIMITS_SPRING_STIFFNESS: {
 			limit_spring_frequency = p_value;
 			_limit_spring_changed();
 		} break;

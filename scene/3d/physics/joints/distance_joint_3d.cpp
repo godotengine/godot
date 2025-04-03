@@ -37,7 +37,7 @@ void DistanceJoint3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_point_param", "point"), &DistanceJoint3D::get_point_param);
 	ClassDB::bind_method(D_METHOD("get_global_point", "point"), &DistanceJoint3D::get_global_point);
 
-	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "spring/frequency"), "set_param", "get_param", PARAM_LIMITS_SPRING_FREQUENCY);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "spring/frequency"), "set_param", "get_param", PARAM_LIMITS_SPRING_STIFFNESS);
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "spring/damping"), "set_param", "get_param", PARAM_LIMITS_SPRING_DAMPING);
 
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "distance/min"), "set_param", "get_param", PARAM_DISTANCE_MIN);
@@ -46,7 +46,7 @@ void DistanceJoint3D::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::VECTOR3, "anchor/a"), "set_point_param", "get_point_param", POINT_PARAM_A);
 	ADD_PROPERTYI(PropertyInfo(Variant::VECTOR3, "anchor/b"), "set_point_param", "get_point_param", POINT_PARAM_B);
 
-	BIND_ENUM_CONSTANT(PARAM_LIMITS_SPRING_FREQUENCY);
+	BIND_ENUM_CONSTANT(PARAM_LIMITS_SPRING_STIFFNESS);
 	BIND_ENUM_CONSTANT(PARAM_LIMITS_SPRING_DAMPING);
 	BIND_ENUM_CONSTANT(PARAM_DISTANCE_MIN);
 	BIND_ENUM_CONSTANT(PARAM_DISTANCE_MAX);
@@ -133,7 +133,7 @@ PackedStringArray DistanceJoint3D::get_configuration_warnings() const {
 }
 
 DistanceJoint3D::DistanceJoint3D() {
-	params[PARAM_LIMITS_SPRING_FREQUENCY] = 0.0;
+	params[PARAM_LIMITS_SPRING_STIFFNESS] = 0.0;
 	params[PARAM_LIMITS_SPRING_DAMPING] = 0.0;
 	params[PARAM_DISTANCE_MIN] = 0.0;
 	params[PARAM_DISTANCE_MAX] = INFINITY;

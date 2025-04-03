@@ -1030,7 +1030,7 @@ void PhysicsServer3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("generic_6dof_joint_set_flag", "joint", "axis", "flag", "enable"), &PhysicsServer3D::generic_6dof_joint_set_flag);
 	ClassDB::bind_method(D_METHOD("generic_6dof_joint_get_flag", "joint", "axis", "flag"), &PhysicsServer3D::generic_6dof_joint_get_flag);
 
-	BIND_ENUM_CONSTANT(DISTANCE_JOINT_LIMITS_SPRING_FREQUENCY);
+	BIND_ENUM_CONSTANT(DISTANCE_JOINT_LIMITS_SPRING_STIFFNESS);
 	BIND_ENUM_CONSTANT(DISTANCE_JOINT_LIMITS_SPRING_DAMPING);
 	BIND_ENUM_CONSTANT(DISTANCE_JOINT_DISTANCE_MIN);
 	BIND_ENUM_CONSTANT(DISTANCE_JOINT_DISTANCE_MAX);
