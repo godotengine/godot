@@ -104,16 +104,16 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 	void _update_preset_status();
 #endif
 
-	String get_project_name(const String &p_name) const;
+	String get_project_name(const Ref<EditorExportPreset> &p_preset, const String &p_name) const;
 
-	String get_package_name(const String &p_package) const;
+	String get_package_name(const Ref<EditorExportPreset> &p_preset, const String &p_package) const;
 
-	String get_valid_basename() const;
+	String get_valid_basename(const Ref<EditorExportPreset> &p_preset) const;
 
 	String get_assets_directory(const Ref<EditorExportPreset> &p_preset, int p_export_format) const;
 
-	bool is_package_name_valid(const String &p_package, String *r_error = nullptr) const;
-	bool is_project_name_valid() const;
+	bool is_package_name_valid(const Ref<EditorExportPreset> &p_preset, const String &p_package, String *r_error = nullptr) const;
+	bool is_project_name_valid(const Ref<EditorExportPreset> &p_preset) const;
 
 	static bool _should_compress_asset(const String &p_path, const Vector<uint8_t> &p_data);
 
@@ -189,7 +189,7 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 
 	static Vector<ABI> get_enabled_abis(const Ref<EditorExportPreset> &p_preset);
 
-	static bool _uses_vulkan();
+	bool _uses_vulkan(const Ref<EditorExportPreset> &p_preset) const;
 
 protected:
 	void _notification(int p_what);
