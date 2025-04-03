@@ -31,6 +31,8 @@
 #include "input_map.h"
 #include "input_map.compat.inc"
 
+#include "editor/editor_settings_dialog.h"
+
 #include "core/config/project_settings.h"
 #include "core/input/input.h"
 #include "core/os/keyboard.h"
@@ -295,6 +297,8 @@ const HashMap<StringName, InputMap::Action> &InputMap::get_action_map() const {
 
 void InputMap::load_from_project_settings() {
 	input_map.clear();
+
+	EditorSettingsDialog::update_navigation_preset();
 
 	List<PropertyInfo> pinfo;
 	ProjectSettings::get_singleton()->get_property_list(&pinfo);
