@@ -334,13 +334,50 @@ bool GDScriptLanguageProtocol::is_goto_native_symbols_enabled() const {
 	return bool(_EDITOR_GET("network/language_server/show_native_symbols_in_editor"));
 }
 
+// clang-format off
+#define SET_DOCUMENT_METHOD(m_method) set_method(_STR(textDocument/m_method), callable_mp(text_document.ptr(), &GDScriptTextDocument::m_method))
+#define SET_COMPLETION_METHOD(m_method) set_method(_STR(completionItem/m_method), callable_mp(text_document.ptr(), &GDScriptTextDocument::m_method))
+#define SET_WORKSPACE_METHOD(m_method) set_method(_STR(workspace/m_method), callable_mp(workspace.ptr(), &GDScriptWorkspace::m_method))
+// clang-format on
+
 GDScriptLanguageProtocol::GDScriptLanguageProtocol() {
 	server.instantiate();
 	singleton = this;
 	workspace.instantiate();
 	text_document.instantiate();
-	set_scope("textDocument", text_document.ptr());
-	set_scope("completionItem", text_document.ptr());
-	set_scope("workspace", workspace.ptr());
+
+	SET_DOCUMENT_METHOD(didOpen);
+	SET_DOCUMENT_METHOD(didClose);
+	SET_DOCUMENT_METHOD(didChange);
+	SET_DOCUMENT_METHOD(willSaveWaitUntil);
+	SET_DOCUMENT_METHOD(didSave);
+
+	SET_DOCUMENT_METHOD(documentSymbol);
+	SET_DOCUMENT_METHOD(completion);
+	SET_DOCUMENT_METHOD(rename);
+	SET_DOCUMENT_METHOD(prepareRename);
+	SET_DOCUMENT_METHOD(references);
+	SET_DOCUMENT_METHOD(foldingRange);
+	SET_DOCUMENT_METHOD(codeLens);
+	SET_DOCUMENT_METHOD(documentLink);
+	SET_DOCUMENT_METHOD(colorPresentation);
+	SET_DOCUMENT_METHOD(hover);
+	SET_DOCUMENT_METHOD(definition);
+	SET_DOCUMENT_METHOD(declaration);
+	SET_DOCUMENT_METHOD(signatureHelp);
+
+	SET_DOCUMENT_METHOD(nativeSymbol); // Custom method.
+
+	SET_COMPLETION_METHOD(resolve);
+
+	SET_WORKSPACE_METHOD(didDeleteFiles);
+
+	set_method("initialize", callable_mp(this, &GDScriptLanguageProtocol::initialize));
+	set_method("initialized", callable_mp(this, &GDScriptLanguageProtocol::initialized));
+
 	workspace->root = ProjectSettings::get_singleton()->get_resource_path();
 }
+
+#undef SET_DOCUMENT_METHOD
+#undef SET_COMPLETION_METHOD
+#undef SET_WORKSPACE_METHOD

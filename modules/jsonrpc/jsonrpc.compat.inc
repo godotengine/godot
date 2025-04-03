@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  gl_manager_macos_legacy.h                                             */
+/*  jsonrpc.compat.inc                                                    */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,66 +28,14 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#pragma once
+#ifndef DISABLE_DEPRECATED
 
-#if defined(MACOS_ENABLED) && defined(GLES3_ENABLED)
+void JSONRPC::_set_scope_bind_compat_104890(const String &p_scope, Object *p_obj) {
+	ERR_PRINT("JSONRPC::set_scope is not supported anymore. Upgrade to JSONRPC::set_method.");
+}
 
-#include "core/os/os.h"
-#include "core/templates/local_vector.h"
-#include "servers/display_server.h"
+void JSONRPC::_bind_compatibility_methods() {
+	ClassDB::bind_compatibility_method(D_METHOD("set_scope", "scope", "target"), &JSONRPC::_set_scope_bind_compat_104890);
+}
 
-#import <AppKit/AppKit.h>
-#import <ApplicationServices/ApplicationServices.h>
-#import <CoreVideo/CoreVideo.h>
-
-GODOT_CLANG_WARNING_PUSH_AND_IGNORE("-Wdeprecated-declarations") // OpenGL is deprecated in macOS 10.14.
-
-typedef CGLError (*CGLEnablePtr)(CGLContextObj ctx, CGLContextEnable pname);
-typedef CGLError (*CGLSetParameterPtr)(CGLContextObj ctx, CGLContextParameter pname, const GLint *params);
-typedef CGLContextObj (*CGLGetCurrentContextPtr)(void);
-
-class GLManagerLegacy_MacOS {
-	struct GLWindow {
-		id window_view = nullptr;
-		NSOpenGLContext *context = nullptr;
-	};
-
-	RBMap<DisplayServer::WindowID, GLWindow> windows;
-
-	NSOpenGLContext *shared_context = nullptr;
-	DisplayServer::WindowID current_window = DisplayServer::INVALID_WINDOW_ID;
-
-	Error create_context(GLWindow &win);
-
-	bool framework_loaded = false;
-	bool use_vsync = false;
-	CGLEnablePtr CGLEnable = nullptr;
-	CGLSetParameterPtr CGLSetParameter = nullptr;
-	CGLGetCurrentContextPtr CGLGetCurrentContext = nullptr;
-
-public:
-	Error window_create(DisplayServer::WindowID p_window_id, id p_view, int p_width, int p_height);
-	void window_destroy(DisplayServer::WindowID p_window_id);
-	void window_resize(DisplayServer::WindowID p_window_id, int p_width, int p_height);
-
-	void release_current();
-	void swap_buffers();
-
-	void window_make_current(DisplayServer::WindowID p_window_id);
-
-	void window_set_per_pixel_transparency_enabled(DisplayServer::WindowID p_window_id, bool p_enabled);
-
-	Error initialize();
-
-	void set_use_vsync(bool p_use);
-	bool is_using_vsync() const;
-
-	NSOpenGLContext *get_context(DisplayServer::WindowID p_window_id);
-
-	GLManagerLegacy_MacOS();
-	~GLManagerLegacy_MacOS();
-};
-
-GODOT_CLANG_WARNING_PUSH
-
-#endif // MACOS_ENABLED && GLES3_ENABLED
+#endif

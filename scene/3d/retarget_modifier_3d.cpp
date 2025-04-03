@@ -370,7 +370,7 @@ void RetargetModifier3D::_retarget_pose() {
 	}
 }
 
-void RetargetModifier3D::_process_modification() {
+void RetargetModifier3D::_process_modification(double p_delta) {
 	if (use_global_pose) {
 		_retarget_global_pose();
 	} else {

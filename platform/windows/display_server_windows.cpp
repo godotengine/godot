@@ -322,11 +322,7 @@ Error DisplayServerWindows::file_dialog_with_options_show(const String &p_title,
 	return _file_dialog_with_options_show(p_title, p_current_directory, p_root, p_filename, p_show_hidden, p_mode, p_filters, p_options, p_callback, true, p_window_id);
 }
 
-// Silence warning due to a COM API weirdness.
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wnon-virtual-dtor"
-#endif
+GODOT_GCC_WARNING_PUSH_AND_IGNORE("-Wnon-virtual-dtor") // Silence warning due to a COM API weirdness.
 
 class FileDialogEventHandler : public IFileDialogEvents, public IFileDialogControlEvents {
 	LONG ref_count = 1;
@@ -445,9 +441,7 @@ public:
 	virtual ~FileDialogEventHandler() {}
 };
 
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic pop
-#endif
+GODOT_GCC_WARNING_POP
 
 LRESULT CALLBACK WndProcFileDialog(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
 	DisplayServerWindows *ds_win = static_cast<DisplayServerWindows *>(DisplayServer::get_singleton());
