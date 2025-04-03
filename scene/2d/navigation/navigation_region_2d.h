@@ -111,7 +111,7 @@ public:
 	PackedStringArray get_configuration_warnings() const override;
 
 	void bake_navigation_polygon(bool p_on_thread);
-	void _bake_finished(Ref<NavigationPolygon> p_navigation_polygon);
+	void _bake_finished();
 	bool is_baking() const;
 
 	Rect2 get_bounds() const { return bounds; }
