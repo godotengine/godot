@@ -123,6 +123,7 @@ class DisplayServerWayland : public DisplayServer {
 	WaylandThread wayland_thread;
 
 	Context context;
+	bool swap_cancel_ok = false;
 
 	String ime_text;
 	Vector2i ime_selection;
@@ -294,6 +295,8 @@ public:
 	virtual void cursor_set_shape(CursorShape p_shape) override;
 	virtual CursorShape cursor_get_shape() const override;
 	virtual void cursor_set_custom_image(const Ref<Resource> &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot) override;
+
+	virtual bool get_swap_cancel_ok() override;
 
 	virtual int keyboard_get_layout_count() const override;
 	virtual int keyboard_get_current_layout() const override;
