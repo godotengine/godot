@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef RENDERING_SHADER_CONTAINER_D3D12_H
-#define RENDERING_SHADER_CONTAINER_D3D12_H
+#pragma once
 
 #include "servers/rendering/rendering_shader_container.h"
 
@@ -179,5 +178,3 @@ public:
 	RenderingShaderContainerFormatD3D12();
 	virtual ~RenderingShaderContainerFormatD3D12();
 };
-
-#endif // RENDERING_SHADER_CONTAINER_D3D12_H

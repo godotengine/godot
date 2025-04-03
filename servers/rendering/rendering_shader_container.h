@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef RENDERING_SHADER_CONTAINER_H
-#define RENDERING_SHADER_CONTAINER_H
+#pragma once
 
 #include "core/object/ref_counted.h"
 #include "servers/rendering/rendering_device_commons.h"
@@ -155,5 +154,3 @@ public:
 	virtual ShaderLanguageVersion get_shader_language_version() const = 0;
 	virtual ShaderSpirvVersion get_shader_spirv_version() const = 0;
 };
-
-#endif // RENDERING_SHADER_CONTAINER_H

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef SHADER_BAKER_EXPORT_PLUGIN_PLATFORM_D3D12_H
-#define SHADER_BAKER_EXPORT_PLUGIN_PLATFORM_D3D12_H
+#pragma once
 
 #include "editor/plugins/shader_baker_export_plugin.h"
 
@@ -44,5 +43,3 @@ public:
 	virtual bool matches_driver(const String &p_driver) override;
 	virtual ~ShaderBakerExportPluginPlatformD3D12() override;
 };
-
-#endif // SHADER_BAKER_EXPORT_PLUGIN_PLATFORM_D3D12_H

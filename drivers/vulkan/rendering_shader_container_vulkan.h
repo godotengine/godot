@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef RENDERING_SHADER_CONTAINER_VULKAN_H
-#define RENDERING_SHADER_CONTAINER_VULKAN_H
+#pragma once
 
 #include "servers/rendering/rendering_shader_container.h"
 
@@ -56,5 +55,3 @@ public:
 	RenderingShaderContainerFormatVulkan();
 	virtual ~RenderingShaderContainerFormatVulkan();
 };
-
-#endif // RENDERING_SHADER_CONTAINER_VULKAN_H

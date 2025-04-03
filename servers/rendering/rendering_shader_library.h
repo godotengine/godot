@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef RENDERING_SHADER_LIBRARY_H
-#define RENDERING_SHADER_LIBRARY_H
+#pragma once
 
 class RenderingShaderLibrary {
 public:
@@ -44,5 +43,3 @@ public:
 
 	virtual ~RenderingShaderLibrary() {}
 };
-
-#endif // RENDERING_SHADER_LIBRARY_H

@@ -28,8 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef SHADER_BAKER_EXPORT_PLUGIN_H
-#define SHADER_BAKER_EXPORT_PLUGIN_H
+#pragma once
 
 #include "editor/export/editor_export_plugin.h"
 #include "servers/rendering/renderer_rd/shader_rd.h"
@@ -95,5 +94,3 @@ public:
 	void add_platform(Ref<ShaderBakerExportPluginPlatform> p_platform);
 	void remove_platform(Ref<ShaderBakerExportPluginPlatform> p_platform);
 };
-
-#endif // SHADER_BAKER_EXPORT_PLUGIN_H
