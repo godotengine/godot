@@ -203,7 +203,7 @@ Error AudioDriverPulseAudio::init_output_device() {
 	pa_channels = pa_map.channels;
 	if (GLOBAL_GET("audio/driver/override_channels") && (pa_map.channels == 2)) {
 		pa_channels = GLOBAL_GET("audio/driver/override_speaker_channels");
-		pa_channel0 = GLOBAL_GET("audio/driver/override_channel_out");
+		pa_channel0 = CLAMP((unsigned int)(GLOBAL_GET("audio/driver/override_channel_out")), 0, pa_channels - 2);
 		print_verbose("PulseAudio: forcing " + itos(pa_channels) + " output channels, but outputting to " + itos(pa_channel0) + "," + itos(pa_channel0 + 1));
 	}
 
