@@ -50,6 +50,7 @@ enum GlobalMenuCheckType {
 	Callable key_callback;
 	Callable hover_callback;
 	Variant meta;
+	Key accel;
 	GlobalMenuCheckType checkable_type;
 	bool checked;
 	int max_states;
