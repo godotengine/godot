@@ -54,6 +54,10 @@ void EditorFilepathSelect::_path_pressed() {
 
 void EditorFilepathSelect::_dialog_path_selected(const String &p_path) {
 	edit->set_text(p_path);
+
+	// TODO: Make a different signal, instead of manually emitting the LineEdit's
+	// signal?
+	edit->emit_signal("text_submitted", p_path);
 }
 
 EditorFilepathSelect::EditorFilepathSelect() {
