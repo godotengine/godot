@@ -432,10 +432,6 @@ public:                                                                         
 	static _FORCE_INLINE_ String get_parent_class_static() {                                                                                \
 		return m_inherits::get_class_static();                                                                                              \
 	}                                                                                                                                       \
-	static void get_inheritance_list_static(List<String> *p_inheritance_list) {                                                             \
-		m_inherits::get_inheritance_list_static(p_inheritance_list);                                                                        \
-		p_inheritance_list->push_back(String(#m_class));                                                                                    \
-	}                                                                                                                                       \
 	virtual bool is_class(const String &p_class) const override {                                                                           \
 		if (_get_extension() && _get_extension()->is_class(p_class)) {                                                                      \
 			return true;                                                                                                                    \
@@ -817,8 +813,6 @@ public:
 	};
 
 	/* TYPE API */
-	static void get_inheritance_list_static(List<String> *p_inheritance_list) { p_inheritance_list->push_back("Object"); }
-
 	static String get_class_static() { return "Object"; }
 	static String get_parent_class_static() { return String(); }
 
