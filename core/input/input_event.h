@@ -532,10 +532,35 @@ public:
 };
 
 class InputEventMIDI : public InputEvent {
+private:
 	GDCLASS(InputEventMIDI, InputEvent);
 
+public:
+	enum Message {
+		MESSAGE_NONE = (int)MIDIMessage::NONE,
+		MESSAGE_NOTE_OFF = (int)MIDIMessage::NOTE_OFF,
+		MESSAGE_NOTE_ON = (int)MIDIMessage::NOTE_ON,
+		MESSAGE_AFTERTOUCH = (int)MIDIMessage::AFTERTOUCH,
+		MESSAGE_CONTROL_CHANGE = (int)MIDIMessage::CONTROL_CHANGE,
+		MESSAGE_PROGRAM_CHANGE = (int)MIDIMessage::PROGRAM_CHANGE,
+		MESSAGE_CHANNEL_PRESSURE = (int)MIDIMessage::CHANNEL_PRESSURE,
+		MESSAGE_PITCH_BEND = (int)MIDIMessage::PITCH_BEND,
+		MESSAGE_SYSTEM_EXCLUSIVE = (int)MIDIMessage::SYSTEM_EXCLUSIVE,
+		MESSAGE_QUARTER_FRAME = (int)MIDIMessage::QUARTER_FRAME,
+		MESSAGE_SONG_POSITION_POINTER = (int)MIDIMessage::SONG_POSITION_POINTER,
+		MESSAGE_SONG_SELECT = (int)MIDIMessage::SONG_SELECT,
+		MESSAGE_TUNE_REQUEST = (int)MIDIMessage::TUNE_REQUEST,
+		MESSAGE_TIMING_CLOCK = (int)MIDIMessage::TIMING_CLOCK,
+		MESSAGE_START = (int)MIDIMessage::START,
+		MESSAGE_CONTINUE = (int)MIDIMessage::CONTINUE,
+		MESSAGE_STOP = (int)MIDIMessage::STOP,
+		MESSAGE_ACTIVE_SENSING = (int)MIDIMessage::ACTIVE_SENSING,
+		MESSAGE_SYSTEM_RESET = (int)MIDIMessage::SYSTEM_RESET,
+	};
+
+private:
 	int channel = 0;
-	MIDIMessage message = MIDIMessage::NONE;
+	Message message = Message::MESSAGE_NONE;
 	int pitch = 0;
 	int velocity = 0;
 	int instrument = 0;
@@ -546,12 +571,18 @@ class InputEventMIDI : public InputEvent {
 protected:
 	static void _bind_methods();
 
+#ifndef DISABLE_DEPRECATED
+	void _set_message_bind_compat_86716(const MIDIMessage p_message);
+	MIDIMessage _get_message_bind_compat_86716() const;
+	static void _bind_compatibility_methods();
+#endif // DISABLE_DEPRECATED
+
 public:
 	void set_channel(const int p_channel);
 	int get_channel() const;
 
-	void set_message(const MIDIMessage p_message);
-	MIDIMessage get_message() const;
+	void set_message(const Message p_message);
+	Message get_message() const;
 
 	void set_pitch(const int p_pitch);
 	int get_pitch() const;
@@ -576,6 +607,7 @@ public:
 
 	InputEventMIDI() {}
 };
+VARIANT_ENUM_CAST(InputEventMIDI::Message);
 
 class InputEventShortcut : public InputEvent {
 	GDCLASS(InputEventShortcut, InputEvent);

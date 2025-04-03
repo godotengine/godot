@@ -2546,66 +2546,66 @@
 		<constant name="JOY_AXIS_MAX" value="10" enum="JoyAxis">
 			The maximum number of game controller axes: OpenVR supports up to 5 Joysticks making a total of 10 axes.
 		</constant>
-		<constant name="MIDI_MESSAGE_NONE" value="0" enum="MIDIMessage">
+		<constant name="MIDI_MESSAGE_NONE" value="0" enum="MIDIMessage" deprecated="Use [constant InputEventMIDI.MESSAGE_NONE] instead.">
 			Does not correspond to any MIDI message. This is the default value of [member InputEventMIDI.message].
 		</constant>
-		<constant name="MIDI_MESSAGE_NOTE_OFF" value="8" enum="MIDIMessage">
+		<constant name="MIDI_MESSAGE_NOTE_OFF" value="8" enum="MIDIMessage" deprecated="Use [constant InputEventMIDI.MESSAGE_NOTE_OFF] instead.">
 			MIDI message sent when a note is released.
 			[b]Note:[/b] Not all MIDI devices send this message; some may send [constant MIDI_MESSAGE_NOTE_ON] with [member InputEventMIDI.velocity] set to [code]0[/code].
 		</constant>
-		<constant name="MIDI_MESSAGE_NOTE_ON" value="9" enum="MIDIMessage">
+		<constant name="MIDI_MESSAGE_NOTE_ON" value="9" enum="MIDIMessage" deprecated="Use [constant InputEventMIDI.MESSAGE_NOTE_ON] instead.">
 			MIDI message sent when a note is pressed.
 		</constant>
-		<constant name="MIDI_MESSAGE_AFTERTOUCH" value="10" enum="MIDIMessage">
+		<constant name="MIDI_MESSAGE_AFTERTOUCH" value="10" enum="MIDIMessage" deprecated="Use [constant InputEventMIDI.MESSAGE_AFTERTOUCH] instead.">
 			MIDI message sent to indicate a change in pressure while a note is being pressed down, also called aftertouch.
 		</constant>
-		<constant name="MIDI_MESSAGE_CONTROL_CHANGE" value="11" enum="MIDIMessage">
+		<constant name="MIDI_MESSAGE_CONTROL_CHANGE" value="11" enum="MIDIMessage" deprecated="Use [constant InputEventMIDI.MESSAGE_CONTROL_CHANGE] instead.">
 			MIDI message sent when a controller value changes. In a MIDI device, a controller is any input that doesn't play notes. These may include sliders for volume, balance, and panning, as well as switches and pedals. See the [url=https://en.wikipedia.org/wiki/General_MIDI#Controller_events]General MIDI specification[/url] for a small list.
 		</constant>
-		<constant name="MIDI_MESSAGE_PROGRAM_CHANGE" value="12" enum="MIDIMessage">
+		<constant name="MIDI_MESSAGE_PROGRAM_CHANGE" value="12" enum="MIDIMessage" deprecated="Use [constant InputEventMIDI.MESSAGE_PROGRAM_CHANGE] instead.">
 			MIDI message sent when the MIDI device changes its current instrument (also called [i]program[/i] or [i]preset[/i]).
 		</constant>
-		<constant name="MIDI_MESSAGE_CHANNEL_PRESSURE" value="13" enum="MIDIMessage">
+		<constant name="MIDI_MESSAGE_CHANNEL_PRESSURE" value="13" enum="MIDIMessage" deprecated="Use [constant InputEventMIDI.MESSAGE_CHANNEL_PRESSURE] instead.">
 			MIDI message sent to indicate a change in pressure for the whole channel. Some MIDI devices may send this instead of [constant MIDI_MESSAGE_AFTERTOUCH].
 		</constant>
-		<constant name="MIDI_MESSAGE_PITCH_BEND" value="14" enum="MIDIMessage">
+		<constant name="MIDI_MESSAGE_PITCH_BEND" value="14" enum="MIDIMessage" deprecated="Use [constant InputEventMIDI.MESSAGE_PITCH_BEND] instead.">
 			MIDI message sent when the value of the pitch bender changes, usually a wheel on the MIDI device.
 		</constant>
-		<constant name="MIDI_MESSAGE_SYSTEM_EXCLUSIVE" value="240" enum="MIDIMessage">
+		<constant name="MIDI_MESSAGE_SYSTEM_EXCLUSIVE" value="240" enum="MIDIMessage" deprecated="Use [constant InputEventMIDI.MESSAGE_SYSTEM_EXCLUSIVE] instead.">
 			MIDI system exclusive (SysEx) message. This type of message is not standardized and it's highly dependent on the MIDI device sending it.
 			[b]Note:[/b] Getting this message's data from [InputEventMIDI] is not implemented.
 		</constant>
-		<constant name="MIDI_MESSAGE_QUARTER_FRAME" value="241" enum="MIDIMessage">
+		<constant name="MIDI_MESSAGE_QUARTER_FRAME" value="241" enum="MIDIMessage" deprecated="Use [constant InputEventMIDI.MESSAGE_QUARTER_FRAME] instead.">
 			MIDI message sent every quarter frame to keep connected MIDI devices synchronized. Related to [constant MIDI_MESSAGE_TIMING_CLOCK].
 			[b]Note:[/b] Getting this message's data from [InputEventMIDI] is not implemented.
 		</constant>
-		<constant name="MIDI_MESSAGE_SONG_POSITION_POINTER" value="242" enum="MIDIMessage">
+		<constant name="MIDI_MESSAGE_SONG_POSITION_POINTER" value="242" enum="MIDIMessage" deprecated="Use [constant InputEventMIDI.MESSAGE_SONG_POSITION_POINTER] instead.">
 			MIDI message sent to jump onto a new position in the current sequence or song.
 			[b]Note:[/b] Getting this message's data from [InputEventMIDI] is not implemented.
 		</constant>
-		<constant name="MIDI_MESSAGE_SONG_SELECT" value="243" enum="MIDIMessage">
+		<constant name="MIDI_MESSAGE_SONG_SELECT" value="243" enum="MIDIMessage" deprecated="Use [constant InputEventMIDI.MESSAGE_SONG_SELECT] instead.">
 			MIDI message sent to select a sequence or song to play.
 			[b]Note:[/b] Getting this message's data from [InputEventMIDI] is not implemented.
 		</constant>
-		<constant name="MIDI_MESSAGE_TUNE_REQUEST" value="246" enum="MIDIMessage">
+		<constant name="MIDI_MESSAGE_TUNE_REQUEST" value="246" enum="MIDIMessage" deprecated="Use [constant InputEventMIDI.MESSAGE_TUNE_REQUEST] instead.">
 			MIDI message sent to request a tuning calibration. Used on analog synthesizers. Most modern MIDI devices do not need this message.
 		</constant>
-		<constant name="MIDI_MESSAGE_TIMING_CLOCK" value="248" enum="MIDIMessage">
+		<constant name="MIDI_MESSAGE_TIMING_CLOCK" value="248" enum="MIDIMessage" deprecated="Use [constant InputEventMIDI.MESSAGE_TIMING_CLOCK] instead.">
 			MIDI message sent 24 times after [constant MIDI_MESSAGE_QUARTER_FRAME], to keep connected MIDI devices synchronized.
 		</constant>
-		<constant name="MIDI_MESSAGE_START" value="250" enum="MIDIMessage">
+		<constant name="MIDI_MESSAGE_START" value="250" enum="MIDIMessage" deprecated="Use [constant InputEventMIDI.MESSAGE_START] instead.">
 			MIDI message sent to start the current sequence or song from the beginning.
 		</constant>
-		<constant name="MIDI_MESSAGE_CONTINUE" value="251" enum="MIDIMessage">
+		<constant name="MIDI_MESSAGE_CONTINUE" value="251" enum="MIDIMessage" deprecated="Use [constant InputEventMIDI.MESSAGE_CONTINUE] instead.">
 			MIDI message sent to resume from the point the current sequence or song was paused.
 		</constant>
-		<constant name="MIDI_MESSAGE_STOP" value="252" enum="MIDIMessage">
+		<constant name="MIDI_MESSAGE_STOP" value="252" enum="MIDIMessage" deprecated="Use [constant InputEventMIDI.MESSAGE_STOP] instead.">
 			MIDI message sent to pause the current sequence or song.
 		</constant>
-		<constant name="MIDI_MESSAGE_ACTIVE_SENSING" value="254" enum="MIDIMessage">
+		<constant name="MIDI_MESSAGE_ACTIVE_SENSING" value="254" enum="MIDIMessage" deprecated="Use [constant InputEventMIDI.MESSAGE_ACTIVE_SENSING] instead.">
 			MIDI message sent repeatedly while the MIDI device is idle, to tell the receiver that the connection is alive. Most MIDI devices do not send this message.
 		</constant>
-		<constant name="MIDI_MESSAGE_SYSTEM_RESET" value="255" enum="MIDIMessage">
+		<constant name="MIDI_MESSAGE_SYSTEM_RESET" value="255" enum="MIDIMessage" deprecated="Use [constant InputEventMIDI.MESSAGE_SYSTEM_RESET] instead.">
 			MIDI message sent to reset a MIDI device to its default state, as if it was just turned on. It should not be sent when the MIDI device is being turned on.
 		</constant>
 		<constant name="OK" value="0" enum="Error">

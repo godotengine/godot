@@ -24,3 +24,12 @@ Validate extension JSON: Error: Field 'classes/OpenXRAPIExtension/methods/regist
 Validate extension JSON: Error: Field 'classes/OpenXRAPIExtension/methods/unregister_projection_views_extension/arguments/0': type changed value in new API, from "OpenXRExtensionWrapperExtension" to "OpenXRExtensionWrapper".
 
 Switched from `OpenXRExtensionWrapperExtension` to parent `OpenXRExtensionWrapper`. Compatibility methods registered.
+
+
+GH-86716
+---------
+Validate extension JSON: Error: Field 'classes/InputEventMIDI/properties/message': type changed value in new API, from "enum::MIDIMessage" to "enum::InputEventMIDI.Message".
+Validate extension JSON: Error: Field 'classes/InputEventMIDI/methods/get_message/return_value': type changed value in new API, from "enum::MIDIMessage" to "enum::InputEventMIDI.Message".
+Validate extension JSON: Error: Field 'classes/InputEventMIDI/methods/set_message/arguments/0': type changed value in new API, from "enum::MIDIMessage" to "enum::InputEventMIDI.Message".
+
+Moved MIDI message constants from the global scope to InputEventMIDI. `InputEventMIDI.message`'s type changed accordingly.
