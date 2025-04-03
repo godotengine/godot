@@ -24,3 +24,15 @@ Validate extension JSON: Error: Field 'classes/OpenXRAPIExtension/methods/regist
 Validate extension JSON: Error: Field 'classes/OpenXRAPIExtension/methods/unregister_projection_views_extension/arguments/0': type changed value in new API, from "OpenXRExtensionWrapperExtension" to "OpenXRExtensionWrapper".
 
 Switched from `OpenXRExtensionWrapperExtension` to parent `OpenXRExtensionWrapper`. Compatibility methods registered.
+
+
+GH-92175
+--------
+Validate extension JSON: Error: Field 'classes/EditorImportPlugin/methods/_import/arguments': size changed value in new API, from 5 to 3.
+Validate extension JSON: Error: Field 'classes/EditorImportPlugin/methods/_import/return_value': type changed value in new API, from "enum::Error" to "Dictionary".
+Validate extension JSON: Error: Field 'classes/EditorResourcePreviewGenerator/methods/_generate/arguments': size changed value in new API, from 3 to 2.
+Validate extension JSON: Error: Field 'classes/EditorResourcePreviewGenerator/methods/_generate/return_value': type changed value in new API, from "Texture2D" to "Dictionary".
+Validate extension JSON: Error: Field 'classes/EditorResourcePreviewGenerator/methods/_generate_from_path/arguments': size changed value in new API, from 3 to 2.
+Validate extension JSON: Error: Field 'classes/EditorResourcePreviewGenerator/methods/_generate_from_path/return_value': type changed value in new API, from "Texture2D" to "Dictionary".
+
+Return values were passed in constant reference arguments. Changed to using a return Dictionary. Compatibility methods registered.
