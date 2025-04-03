@@ -82,7 +82,7 @@ void VisualInstance::set_instance_use_identity_transform(bool p_enable) {
 	}
 }
 
-void VisualInstance::fti_update_servers() {
+void VisualInstance::fti_update_servers_xform() {
 	if (!_is_using_identity_transform()) {
 		VisualServer::get_singleton()->instance_set_transform(get_instance(), _get_cached_global_transform_interpolated());
 	}

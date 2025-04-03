@@ -38,12 +38,16 @@
 #include "scene/3d/spatial.h"
 #include "scene/3d/visual_instance.h"
 
+// Uncomment this to enable some slow extra DEV_ENABLED
+// checks to ensure there aren't more than one object added to the lists.
+// #define GODOT_SCENE_TREE_FTI_EXTRA_CHECKS
+
 void SceneTreeFTI::_reset_flags(Node *p_node) {
 	Spatial *s = Object::cast_to<Spatial>(p_node);
 
 	if (s) {
-		s->data.fti_on_frame_list = false;
-		s->data.fti_on_tick_list = false;
+		s->data.fti_on_frame_xform_list = false;
+		s->data.fti_on_tick_xform_list = false;
 
 		// In most cases the later  NOTIFICATION_RESET_PHYSICS_INTERPOLATION
 		// will reset this, but this should help cover hidden nodes.
@@ -60,8 +64,8 @@ void SceneTreeFTI::set_enabled(Node *p_root, bool p_enabled) {
 		return;
 	}
 
-	data.spatial_tick_list[0].clear();
-	data.spatial_tick_list[1].clear();
+	data.tick_xform_list[0].clear();
+	data.tick_xform_list[1].clear();
 
 	// Spatial flags must be reset.
 	if (p_root) {
@@ -79,25 +83,57 @@ void SceneTreeFTI::tick_update() {
 	uint32_t curr_mirror = data.mirror;
 	uint32_t prev_mirror = curr_mirror ? 0 : 1;
 
-	LocalVector<Spatial *> &curr = data.spatial_tick_list[curr_mirror];
-	LocalVector<Spatial *> &prev = data.spatial_tick_list[prev_mirror];
+	LocalVector<Spatial *> &curr = data.tick_xform_list[curr_mirror];
+	LocalVector<Spatial *> &prev = data.tick_xform_list[prev_mirror];
 
 	// First detect on the previous list but not on this tick list.
 	for (uint32_t n = 0; n < prev.size(); n++) {
 		Spatial *s = prev[n];
-		if (!s->data.fti_on_tick_list) {
+		if (!s->data.fti_on_tick_xform_list) {
 			// Needs a reset so jittering will stop.
-			s->fti_pump();
+			s->fti_pump_xform();
 
 			// This may not get updated so set it to the same as global xform.
 			// TODO: double check this is the best value.
 			s->data.global_transform_interpolated = s->get_global_transform();
 
 			// Remove from interpolation list.
-			if (s->data.fti_on_frame_list) {
-				s->data.fti_on_frame_list = false;
+			if (s->data.fti_on_frame_xform_list) {
+				s->data.fti_on_frame_xform_list = false;
 			}
 		}
+	}
+
+	LocalVector<Spatial *> &curr_prop = data.tick_property_list[curr_mirror];
+	LocalVector<Spatial *> &prev_prop = data.tick_property_list[prev_mirror];
+
+	// Detect on the previous property list but not on this tick list.
+	for (uint32_t n = 0; n < prev_prop.size(); n++) {
+		Spatial *s = prev_prop[n];
+
+		if (!s->data.fti_on_tick_property_list) {
+			// Needs a reset so jittering will stop.
+			s->fti_pump_xform();
+
+			// Remove from interpolation list.
+			if (s->data.fti_on_frame_property_list) {
+				s->data.fti_on_frame_property_list = false;
+				data.frame_property_list.erase_unordered(s);
+
+#ifdef GODOT_SCENE_TREE_FTI_EXTRA_CHECKS
+				DEV_CHECK_ONCE(data.frame_property_list.find(s) == -1);
+#endif
+			}
+		}
+	}
+
+	// Pump all on the property list that are NOT on the tick list.
+	for (uint32_t n = 0; n < curr_prop.size(); n++) {
+		Spatial *s = curr_prop[n];
+
+		// Reset, needs to be marked each tick.
+		s->data.fti_on_tick_property_list = false;
+		s->fti_pump_property();
 	}
 
 	// Now pump all on the current list.
@@ -105,31 +141,67 @@ void SceneTreeFTI::tick_update() {
 		Spatial *s = curr[n];
 
 		// Reset, needs to be marked each tick.
-		s->data.fti_on_tick_list = false;
+		s->data.fti_on_tick_xform_list = false;
 
 		// Pump.
-		s->fti_pump();
+		s->fti_pump_xform();
 	}
 
 	// Clear previous list and flip.
 	prev.clear();
+	prev_prop.clear();
+
 	data.mirror = prev_mirror;
 }
 
-void SceneTreeFTI::_spatial_notify_set_transform(Spatial &r_spatial) {
-	// This may be checked by the calling routine already,
-	// but needs to be double checked for custom SceneTrees.
-	if (!data.enabled || !r_spatial.is_physics_interpolated()) {
+void SceneTreeFTI::_spatial_notify_set_property(Spatial &r_spatial) {
+	if (!r_spatial.is_physics_interpolated()) {
 		return;
 	}
 
-	if (!r_spatial.data.fti_on_tick_list) {
-		r_spatial.data.fti_on_tick_list = true;
-		data.spatial_tick_list[data.mirror].push_back(&r_spatial);
+	DEV_CHECK_ONCE(data.enabled);
+
+	// Note that a Spatial can be on BOTH the transform list and the property list.
+	if (!r_spatial.data.fti_on_tick_property_list) {
+		r_spatial.data.fti_on_tick_property_list = true;
+
+		// Should only appear once in the property list.
+#ifdef GODOT_SCENE_TREE_FTI_EXTRA_CHECKS
+		DEV_CHECK_ONCE(data.tick_property_list[data.mirror].find(&r_spatial) == -1);
+#endif
+		data.tick_property_list[data.mirror].push_back(&r_spatial);
 	}
 
-	if (!r_spatial.data.fti_on_frame_list) {
-		r_spatial.data.fti_on_frame_list = true;
+	if (!r_spatial.data.fti_on_frame_property_list) {
+		r_spatial.data.fti_on_frame_property_list = true;
+
+		// Should only appear once in the property frame list.
+#ifdef GODOT_SCENE_TREE_FTI_EXTRA_CHECKS
+		DEV_CHECK_ONCE(data.frame_property_list.find(&r_spatial) == -1);
+#endif
+		data.frame_property_list.push_back(&r_spatial);
+	}
+}
+
+void SceneTreeFTI::_spatial_notify_set_xform(Spatial &r_spatial) {
+	if (!r_spatial.is_physics_interpolated()) {
+		return;
+	}
+
+	DEV_CHECK_ONCE(data.enabled);
+
+	if (!r_spatial.data.fti_on_tick_xform_list) {
+		r_spatial.data.fti_on_tick_xform_list = true;
+
+		// Should only appear once in the xform list.
+#ifdef GODOT_SCENE_TREE_FTI_EXTRA_CHECKS
+		DEV_CHECK_ONCE(data.tick_xform_list[data.mirror].find(&r_spatial) == -1);
+#endif
+		data.tick_xform_list[data.mirror].push_back(&r_spatial);
+	}
+
+	if (!r_spatial.data.fti_on_frame_xform_list) {
+		r_spatial.data.fti_on_frame_xform_list = true;
 	}
 }
 
@@ -138,14 +210,33 @@ void SceneTreeFTI::spatial_notify_delete(Spatial *p_spatial) {
 		return;
 	}
 
-	if (p_spatial->data.fti_on_frame_list) {
-		p_spatial->data.fti_on_frame_list = false;
+	ERR_FAIL_NULL(p_spatial);
+
+	if (p_spatial->data.fti_on_frame_xform_list) {
+		p_spatial->data.fti_on_frame_xform_list = false;
 	}
 
 	// This can potentially be optimized for large scenes with large churn,
 	// as it will be doing a linear search through the lists.
-	data.spatial_tick_list[0].erase_unordered(p_spatial);
-	data.spatial_tick_list[1].erase_unordered(p_spatial);
+	data.tick_xform_list[0].erase_unordered(p_spatial);
+	data.tick_xform_list[1].erase_unordered(p_spatial);
+
+	data.tick_property_list[0].erase_unordered(p_spatial);
+	data.tick_property_list[1].erase_unordered(p_spatial);
+
+	data.frame_property_list.erase_unordered(p_spatial);
+
+#ifdef GODOT_SCENE_TREE_FTI_EXTRA_CHECKS
+	// There should only be one occurrence on the lists.
+	// Check this in DEV_ENABLED builds.
+	DEV_CHECK_ONCE(data.tick_xform_list[0].find(p_spatial) == -1);
+	DEV_CHECK_ONCE(data.tick_xform_list[1].find(p_spatial) == -1);
+
+	DEV_CHECK_ONCE(data.tick_property_list[0].find(p_spatial) == -1);
+	DEV_CHECK_ONCE(data.tick_property_list[1].find(p_spatial) == -1);
+
+	DEV_CHECK_ONCE(data.frame_property_list.find(p_spatial) == -1);
+#endif
 }
 
 void SceneTreeFTI::_update_dirty_spatials(Node *p_node, uint32_t p_current_frame, float p_interpolation_fraction, bool p_active, const Transform *p_parent_global_xform, int p_depth) {
@@ -176,7 +267,7 @@ void SceneTreeFTI::_update_dirty_spatials(Node *p_node, uint32_t p_current_frame
 	if (!p_active) {
 		if (data.frame_start) {
 			// On the frame start, activate whenever we hit something that requests interpolation.
-			if (s->data.fti_on_frame_list) {
+			if (s->data.fti_on_frame_xform_list) {
 				p_active = true;
 			}
 		} else {
@@ -236,7 +327,7 @@ void SceneTreeFTI::_update_dirty_spatials(Node *p_node, uint32_t p_current_frame
 		}
 
 		// Upload to VisualServer the interpolated global xform.
-		s->fti_update_servers();
+		s->fti_update_servers_xform();
 
 	} // if active.
 
@@ -283,6 +374,15 @@ void SceneTreeFTI::frame_update(Node *p_root, bool p_frame_start) {
 		print_line("Took " + itos(after - before) + " usec " + (data.frame_start ? "start" : "end"));
 	}
 #endif
+
+	// Update the properties once off at the end of the frame.
+	// No need for two passes for properties.
+	if (!p_frame_start) {
+		for (uint32_t n = 0; n < data.frame_property_list.size(); n++) {
+			Spatial *s = data.frame_property_list[n];
+			s->fti_update_servers_property();
+		}
+	}
 }
 
 #endif // ndef _3D_DISABLED

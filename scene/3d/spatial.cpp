@@ -181,13 +181,13 @@ void Spatial::_notification(int p_what) {
 
 			if (is_physics_interpolated_and_enabled()) {
 				// Always reset FTI when entering tree.
-				fti_pump();
+				fti_pump_xform();
 
 				// No need to interpolate as we are doing a reset.
 				data.global_transform_interpolated = get_global_transform();
 
 				// Make sure servers are up to date.
-				fti_update_servers();
+				fti_update_servers_xform();
 			}
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
@@ -266,7 +266,14 @@ void Spatial::_notification(int p_what) {
 			if (data.client_physics_interpolation_data) {
 				data.client_physics_interpolation_data->global_xform_prev = data.client_physics_interpolation_data->global_xform_curr;
 			}
-			data.local_transform_prev = data.local_transform;
+
+			// In most cases, nodes derived from Spatial will have to
+			// already have reset code available for SceneTreeFTI,
+			// so it makes sense for them to reuse this method
+			// rather than respond individually to NOTIFICATION_RESET_PHYSICS_INTERPOLATION,
+			// unless they need to perform specific tasks (like changing process modes).
+			fti_pump_xform();
+			fti_pump_property();
 		} break;
 
 		case NOTIFICATION_PAUSED: {
@@ -302,7 +309,7 @@ void Spatial::set_global_rotation(const Vector3 &p_euler_rad) {
 	set_global_transform(transform);
 }
 
-void Spatial::fti_pump() {
+void Spatial::fti_pump_xform() {
 	if (data.dirty & DIRTY_LOCAL) {
 		_update_local_transform();
 	}
@@ -310,9 +317,9 @@ void Spatial::fti_pump() {
 	data.local_transform_prev = data.local_transform;
 }
 
-void Spatial::fti_notify_node_changed() {
+void Spatial::fti_notify_node_changed(bool p_transform_changed) {
 	if (is_inside_tree()) {
-		get_tree()->get_scene_tree_fti().spatial_notify_set_transform(*this);
+		get_tree()->get_scene_tree_fti().spatial_notify_changed(*this, p_transform_changed);
 	}
 }
 
@@ -1107,8 +1114,10 @@ Spatial::Spatial() :
 	data.vi_visible = true;
 	data.merging_allowed = true;
 
-	data.fti_on_frame_list = false;
-	data.fti_on_tick_list = false;
+	data.fti_on_frame_xform_list = false;
+	data.fti_on_frame_property_list = false;
+	data.fti_on_tick_xform_list = false;
+	data.fti_on_tick_property_list = false;
 	data.fti_global_xform_interp_set = false;
 
 	data.merging_mode = MERGING_MODE_INHERIT;
