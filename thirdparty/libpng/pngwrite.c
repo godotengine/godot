@@ -157,8 +157,30 @@ png_write_info_before_PLTE(png_structrp png_ptr, png_const_inforp info_ptr)
     * space priority.  As above it therefore behooves libpng to write the colour
     * space chunks in the priority order so that a streaming app need not buffer
     * them.
+    *
+    * PNG v3: Chunks mDCV and cLLI provide ancillary information for the
+    * interpretation of the colourspace chunkgs but do not require support for
+    * those chunks so are outside the "COLORSPACE" check but before the write of
+    * the colourspace chunks themselves.
     */
-#ifdef PNG_COLORSPACE_SUPPORTED
+#ifdef PNG_WRITE_cLLI_SUPPORTED
+   if ((info_ptr->valid & PNG_INFO_cLLI) != 0)
+   {
+      png_write_cLLI_fixed(png_ptr, info_ptr->maxCLL, info_ptr->maxFALL);
+   }
+#endif
+#ifdef PNG_WRITE_mDCV_SUPPORTED
+   if ((info_ptr->valid & PNG_INFO_mDCV) != 0)
+   {
+      png_write_mDCV_fixed(png_ptr,
+         info_ptr->mastering_red_x, info_ptr->mastering_red_y,
+         info_ptr->mastering_green_x, info_ptr->mastering_green_y,
+         info_ptr->mastering_blue_x, info_ptr->mastering_blue_y,
+         info_ptr->mastering_white_x, info_ptr->mastering_white_y,
+         info_ptr->mastering_maxDL, info_ptr->mastering_minDL);
+   }
+#endif
+
 #  ifdef PNG_WRITE_cICP_SUPPORTED /* Priority 4 */
    if ((info_ptr->valid & PNG_INFO_cICP) != 0)
       {
@@ -170,50 +192,28 @@ png_write_info_before_PLTE(png_structrp png_ptr, png_const_inforp info_ptr)
       }
 #  endif
 
-      /* PNG v3 change: it is now permitted to write both sRGB and ICC profiles,
-       * however because the libpng code auto-generates an sRGB for the
-       * corresponding ICC profiles and because PNG v2 disallowed this we need
-       * to only write one.
-       *
-       * Remove the PNG v2 warning about writing an sRGB ICC profile as well
-       * because it's invalid with PNG v3.
-       */
 #  ifdef PNG_WRITE_iCCP_SUPPORTED /* Priority 3 */
-         if ((info_ptr->colorspace.flags & PNG_COLORSPACE_INVALID) == 0 &&
-             (info_ptr->valid & PNG_INFO_iCCP) != 0)
+         if ((info_ptr->valid & PNG_INFO_iCCP) != 0)
          {
             png_write_iCCP(png_ptr, info_ptr->iccp_name,
-                info_ptr->iccp_profile);
+                info_ptr->iccp_profile, info_ptr->iccp_proflen);
          }
-#     ifdef PNG_WRITE_sRGB_SUPPORTED
-         else
-#     endif
 #  endif
 
 #  ifdef PNG_WRITE_sRGB_SUPPORTED /* Priority 2 */
-         if ((info_ptr->colorspace.flags & PNG_COLORSPACE_INVALID) == 0 &&
-             (info_ptr->valid & PNG_INFO_sRGB) != 0)
-            png_write_sRGB(png_ptr, info_ptr->colorspace.rendering_intent);
+         if ((info_ptr->valid & PNG_INFO_sRGB) != 0)
+            png_write_sRGB(png_ptr, info_ptr->rendering_intent);
 #  endif /* WRITE_sRGB */
-#endif /* COLORSPACE */
 
-#ifdef PNG_GAMMA_SUPPORTED
 #  ifdef PNG_WRITE_gAMA_SUPPORTED /* Priority 1 */
-      if ((info_ptr->colorspace.flags & PNG_COLORSPACE_INVALID) == 0 &&
-          (info_ptr->colorspace.flags & PNG_COLORSPACE_FROM_gAMA) != 0 &&
-          (info_ptr->valid & PNG_INFO_gAMA) != 0)
-         png_write_gAMA_fixed(png_ptr, info_ptr->colorspace.gamma);
+      if ((info_ptr->valid & PNG_INFO_gAMA) != 0)
+         png_write_gAMA_fixed(png_ptr, info_ptr->gamma);
 #  endif
-#endif
 
-#ifdef PNG_COLORSPACE_SUPPORTED
 #  ifdef PNG_WRITE_cHRM_SUPPORTED /* Also priority 1 */
-         if ((info_ptr->colorspace.flags & PNG_COLORSPACE_INVALID) == 0 &&
-             (info_ptr->colorspace.flags & PNG_COLORSPACE_FROM_cHRM) != 0 &&
-             (info_ptr->valid & PNG_INFO_cHRM) != 0)
-            png_write_cHRM_fixed(png_ptr, &info_ptr->colorspace.end_points_xy);
+         if ((info_ptr->valid & PNG_INFO_cHRM) != 0)
+            png_write_cHRM_fixed(png_ptr, &info_ptr->cHRM);
 #  endif
-#endif
 
       png_ptr->mode |= PNG_WROTE_INFO_BEFORE_PLTE;
    }

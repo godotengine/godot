@@ -115,10 +115,19 @@ TypedArray<Dictionary> convert_property_list(const List<PropertyInfo> *p_list) {
 	return va;
 }
 
+TypedArray<Dictionary> convert_property_list(const Vector<PropertyInfo> &p_vector) {
+	TypedArray<Dictionary> va;
+	for (const PropertyInfo &E : p_vector) {
+		va.push_back(Dictionary(E));
+	}
+
+	return va;
+}
+
 MethodInfo::operator Dictionary() const {
 	Dictionary d;
 	d["name"] = name;
-	d["args"] = convert_property_list(&arguments);
+	d["args"] = convert_property_list(arguments);
 	Array da;
 	for (int i = 0; i < default_arguments.size(); i++) {
 		da.push_back(default_arguments[i]);
@@ -247,12 +256,6 @@ void Object::_initialize() {
 
 void Object::_postinitialize() {
 	notification(NOTIFICATION_POSTINITIALIZE);
-}
-
-void Object::get_valid_parents_static(List<String> *p_parents) {
-}
-
-void Object::_get_valid_parents_static(List<String> *p_parents) {
 }
 
 void Object::set(const StringName &p_name, const Variant &p_value, bool *r_valid) {
@@ -902,18 +905,14 @@ Variant Object::call_const(const StringName &p_method, const Variant **p_args, i
 	return ret;
 }
 
-void Object::notification(int p_notification, bool p_reversed) {
-	if (p_reversed) {
-		if (script_instance) {
-			script_instance->notification(p_notification, p_reversed);
-		}
-	} else {
-		_notificationv(p_notification, p_reversed);
-	}
+void Object::_notification_forward(int p_notification) {
+	// Notify classes starting with Object and ending with most derived subclass.
+	// e.g. Object -> Node -> Node3D
+	_notification_forwardv(p_notification);
 
 	if (_extension) {
 		if (_extension->notification2) {
-			_extension->notification2(_extension_instance, p_notification, static_cast<GDExtensionBool>(p_reversed));
+			_extension->notification2(_extension_instance, p_notification, static_cast<GDExtensionBool>(false));
 #ifndef DISABLE_DEPRECATED
 		} else if (_extension->notification) {
 			_extension->notification(_extension_instance, p_notification);
@@ -921,13 +920,29 @@ void Object::notification(int p_notification, bool p_reversed) {
 		}
 	}
 
-	if (p_reversed) {
-		_notificationv(p_notification, p_reversed);
-	} else {
-		if (script_instance) {
-			script_instance->notification(p_notification, p_reversed);
+	if (script_instance) {
+		script_instance->notification(p_notification, false);
+	}
+}
+
+void Object::_notification_backward(int p_notification) {
+	if (script_instance) {
+		script_instance->notification(p_notification, true);
+	}
+
+	if (_extension) {
+		if (_extension->notification2) {
+			_extension->notification2(_extension_instance, p_notification, static_cast<GDExtensionBool>(true));
+#ifndef DISABLE_DEPRECATED
+		} else if (_extension->notification) {
+			_extension->notification(_extension_instance, p_notification);
+#endif // DISABLE_DEPRECATED
 		}
 	}
+
+	// Notify classes starting with most derived subclass and ending in Object.
+	// e.g. Node3D -> Node -> Object
+	_notification_backwardv(p_notification);
 }
 
 String Object::to_string() {
@@ -1080,8 +1095,8 @@ TypedArray<Dictionary> Object::_get_method_list_bind() const {
 	get_method_list(&ml);
 	TypedArray<Dictionary> ret;
 
-	for (List<MethodInfo>::Element *E = ml.front(); E; E = E->next()) {
-		Dictionary d = E->get();
+	for (const MethodInfo &mi : ml) {
+		Dictionary d = mi;
 		//va.push_back(d);
 		ret.push_back(d);
 	}
@@ -1640,12 +1655,10 @@ void Object::_clear_internal_resource_paths(const Variant &p_var) {
 		} break;
 		case Variant::DICTIONARY: {
 			Dictionary d = p_var;
-			List<Variant> keys;
-			d.get_key_list(&keys);
 
-			for (const Variant &E : keys) {
-				_clear_internal_resource_paths(E);
-				_clear_internal_resource_paths(d[E]);
+			for (const KeyValue<Variant, Variant> &kv : d) {
+				_clear_internal_resource_paths(kv.key);
+				_clear_internal_resource_paths(kv.value);
 			}
 		} break;
 		default: {
@@ -1881,7 +1894,7 @@ Variant::Type Object::get_static_property_type(const StringName &p_property, boo
 }
 
 Variant::Type Object::get_static_property_type_indexed(const Vector<StringName> &p_path, bool *r_valid) const {
-	if (p_path.size() == 0) {
+	if (p_path.is_empty()) {
 		if (r_valid) {
 			*r_valid = false;
 		}

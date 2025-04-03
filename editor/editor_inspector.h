@@ -183,6 +183,7 @@ public:
 		ERR_FAIL_NULL_V(object, Variant());
 		return object->get(property);
 	}
+	Variant get_edited_property_display_value() const;
 	EditorInspector *get_parent_inspector() const;
 
 	void set_doc_path(const String &p_doc_path);
@@ -357,6 +358,7 @@ public:
 	void unfold();
 	void fold();
 	void set_bg_color(const Color &p_bg_color);
+	void reset_timer();
 
 	bool has_revertable_properties() const;
 	void property_can_revert_changed(const String &p_path, bool p_can_revert);

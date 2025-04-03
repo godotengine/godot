@@ -200,13 +200,11 @@ EditorPlugin::AfterGUIInput Polygon3DEditor::forward_3d_gui_input(Camera3D *p_ca
 							Vector2 closest_pos;
 							real_t closest_dist = 1e10;
 							for (int i = 0; i < poly.size(); i++) {
-								Vector2 points[2] = {
-									p_camera->unproject_position(gt.xform(Vector3(poly[i].x, poly[i].y, depth))),
-									p_camera->unproject_position(gt.xform(Vector3(poly[(i + 1) % poly.size()].x, poly[(i + 1) % poly.size()].y, depth)))
-								};
+								const Vector2 segment_a = p_camera->unproject_position(gt.xform(Vector3(poly[i].x, poly[i].y, depth)));
+								const Vector2 segment_b = p_camera->unproject_position(gt.xform(Vector3(poly[(i + 1) % poly.size()].x, poly[(i + 1) % poly.size()].y, depth)));
 
-								Vector2 cp = Geometry2D::get_closest_point_to_segment(gpoint, points);
-								if (cp.distance_squared_to(points[0]) < CMP_EPSILON2 || cp.distance_squared_to(points[1]) < CMP_EPSILON2) {
+								Vector2 cp = Geometry2D::get_closest_point_to_segment(gpoint, segment_a, segment_b);
+								if (cp.distance_squared_to(segment_a) < CMP_EPSILON2 || cp.distance_squared_to(segment_b) < CMP_EPSILON2) {
 									continue; //not valid to reuse point
 								}
 
@@ -464,7 +462,7 @@ void Polygon3DEditor::_polygon_draw() {
 
 	imesh->surface_end();
 
-	if (poly.size() == 0) {
+	if (poly.is_empty()) {
 		return;
 	}
 
@@ -475,7 +473,7 @@ void Polygon3DEditor::_polygon_draw() {
 		va.resize(poly.size());
 		Vector3 *w = va.ptrw();
 		for (int i = 0; i < poly.size(); i++) {
-			Vector2 p, p2;
+			Vector2 p;
 			p = i == edited_point ? edited_point_pos : poly[i];
 
 			Vector3 point = Vector3(p.x, p.y, depth);
@@ -610,7 +608,4 @@ Polygon3DEditorPlugin::Polygon3DEditorPlugin() {
 	Node3DEditor::get_singleton()->add_control_to_menu_panel(polygon_editor);
 
 	polygon_editor->hide();
-}
-
-Polygon3DEditorPlugin::~Polygon3DEditorPlugin() {
 }

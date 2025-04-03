@@ -571,6 +571,13 @@
 				Returns [code]true[/code], if font supports given language ([url=https://en.wikipedia.org/wiki/ISO_639-1]ISO 639[/url] code).
 			</description>
 		</method>
+		<method name="font_is_modulate_color_glyphs" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="font_rid" type="RID" />
+			<description>
+				Returns [code]true[/code], if color modulation is applied when drawing colored glyphs.
+			</description>
+		</method>
 		<method name="font_is_multichannel_signed_distance_field" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="font_rid" type="RID" />
@@ -856,6 +863,14 @@
 			<param index="2" name="supported" type="bool" />
 			<description>
 				Adds override for [method font_is_language_supported].
+			</description>
+		</method>
+		<method name="font_set_modulate_color_glyphs">
+			<return type="void" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="force_autohinter" type="bool" />
+			<description>
+				If set to [code]true[/code], color modulation is applied when drawing colored glyphs, otherwise it's applied to the monochrome glyphs only.
 			</description>
 		</method>
 		<method name="font_set_msdf_pixel_range">
@@ -1938,11 +1953,19 @@
 		<constant name="BREAK_ADAPTIVE" value="8" enum="LineBreakFlag" is_bitfield="true">
 			Should be used only in conjunction with [constant BREAK_WORD_BOUND], break the line between any unconnected graphemes, if it's impossible to break it between the words.
 		</constant>
-		<constant name="BREAK_TRIM_EDGE_SPACES" value="16" enum="LineBreakFlag" is_bitfield="true">
+		<constant name="BREAK_TRIM_EDGE_SPACES" value="16" enum="LineBreakFlag" is_bitfield="true" deprecated="Use [code]BREAK_TRIM_START_EDGE_SPACES | BREAK_TRIM_END_EDGE_SPACES[/code] instead.">
 			Remove edge spaces from the broken line segments.
 		</constant>
 		<constant name="BREAK_TRIM_INDENT" value="32" enum="LineBreakFlag" is_bitfield="true">
 			Subtract first line indentation width from all lines after the first one.
+		</constant>
+		<constant name="BREAK_TRIM_START_EDGE_SPACES" value="64" enum="LineBreakFlag" is_bitfield="true">
+			Remove spaces and line break characters from the start of broken line segments.
+			E.g, after line breaking, the second segment of the following text [code]test  \n  next[/code], is [code]next[/code] if the flag is set, and [code]  next[/code] if it is not.
+		</constant>
+		<constant name="BREAK_TRIM_END_EDGE_SPACES" value="128" enum="LineBreakFlag" is_bitfield="true">
+			Remove spaces and line break characters from the end of broken line segments.
+			E.g, after line breaking, the first segment of the following text [code]test  \n  next[/code], is [code]test[/code] if the flag is set, and [code]test  \n[/code] if it is not.
 		</constant>
 		<constant name="VC_CHARS_BEFORE_SHAPING" value="0" enum="VisibleCharactersBehavior">
 			Trims text before the shaping. e.g, increasing [member Label.visible_characters] or [member RichTextLabel.visible_characters] value is visually identical to typing the text.

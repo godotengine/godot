@@ -36,6 +36,7 @@ class CheckBox;
 class ConfirmationDialog;
 class EditorFileDialog;
 class GPUParticles2D;
+class CPUParticles2D;
 class HBoxContainer;
 class MenuButton;
 class OptionButton;
@@ -86,6 +87,8 @@ protected:
 		MENU_LOAD_EMISSION_MASK = 100,
 	};
 
+	List<Node *> selected_particles;
+
 	enum EmissionMode {
 		EMISSION_MODE_SOLID,
 		EMISSION_MODE_BORDER,
@@ -105,6 +108,8 @@ protected:
 	void _file_selected(const String &p_file);
 	void _get_base_emission_mask(PackedVector2Array &r_valid_positions, PackedVector2Array &r_valid_normals, PackedByteArray &r_valid_colors, Vector2i &r_image_size);
 	virtual void _generate_emission_mask() = 0;
+	void _notification(int p_what);
+	void _selection_changed();
 
 public:
 	Particles2DEditorPlugin();
@@ -117,17 +122,12 @@ class GPUParticles2DEditorPlugin : public Particles2DEditorPlugin {
 		MENU_GENERATE_VISIBILITY_RECT = 200,
 	};
 
-	List<GPUParticles2D *> selected_particles;
-
 	ConfirmationDialog *generate_visibility_rect = nullptr;
 	SpinBox *generate_seconds = nullptr;
 
-	void _selection_changed();
 	void _generate_visibility_rect();
 
 protected:
-	void _notification(int p_what);
-
 	void _menu_callback(int p_idx) override;
 	void _add_menu_options(PopupMenu *p_menu) override;
 

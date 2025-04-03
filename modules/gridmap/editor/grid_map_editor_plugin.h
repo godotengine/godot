@@ -30,8 +30,6 @@
 
 #pragma once
 
-#ifdef TOOLS_ENABLED
-
 #include "../grid_map.h"
 
 #include "editor/plugins/editor_plugin.h"
@@ -294,9 +292,4 @@ public:
 	Array get_selected_cells() const;
 	void set_selected_palette_item(int p_item) const;
 	int get_selected_palette_item() const;
-
-	GridMapEditorPlugin();
-	~GridMapEditorPlugin();
 };
-
-#endif // TOOLS_ENABLED

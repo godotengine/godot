@@ -244,7 +244,7 @@ Variant VariantUtilityFunctions::abs(const Variant &x, Callable::CallError &r_er
 	r_error.error = Callable::CallError::CALL_OK;
 	switch (x.get_type()) {
 		case Variant::INT: {
-			return ABS(VariantInternalAccessor<int64_t>::get(&x));
+			return Math::abs(VariantInternalAccessor<int64_t>::get(&x));
 		} break;
 		case Variant::FLOAT: {
 			return Math::absd(VariantInternalAccessor<double>::get(&x));
@@ -281,7 +281,7 @@ double VariantUtilityFunctions::absf(double x) {
 }
 
 int64_t VariantUtilityFunctions::absi(int64_t x) {
-	return ABS(x);
+	return Math::abs(x);
 }
 
 Variant VariantUtilityFunctions::sign(const Variant &x, Callable::CallError &r_error) {

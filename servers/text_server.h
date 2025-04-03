@@ -108,8 +108,16 @@ public:
 		BREAK_WORD_BOUND = 1 << 1,
 		BREAK_GRAPHEME_BOUND = 1 << 2,
 		BREAK_ADAPTIVE = 1 << 3,
+#ifndef DISABLE_DEPRECATED
 		BREAK_TRIM_EDGE_SPACES = 1 << 4,
+#else
+	// RESERVED = 1 << 4,
+#endif
 		BREAK_TRIM_INDENT = 1 << 5,
+		BREAK_TRIM_START_EDGE_SPACES = 1 << 6,
+		BREAK_TRIM_END_EDGE_SPACES = 1 << 7,
+
+		BREAK_TRIM_MASK = BREAK_TRIM_INDENT | BREAK_TRIM_START_EDGE_SPACES | BREAK_TRIM_END_EDGE_SPACES,
 	};
 
 	enum OverrunBehavior {
@@ -309,6 +317,9 @@ public:
 
 	virtual void font_set_force_autohinter(const RID &p_font_rid, bool p_force_autohinter) = 0;
 	virtual bool font_is_force_autohinter(const RID &p_font_rid) const = 0;
+
+	virtual void font_set_modulate_color_glyphs(const RID &p_font_rid, bool p_modulate) = 0;
+	virtual bool font_is_modulate_color_glyphs(const RID &p_font_rid) const = 0;
 
 	virtual void font_set_hinting(const RID &p_font_rid, Hinting p_hinting) = 0;
 	virtual Hinting font_get_hinting(const RID &p_font_rid) const = 0;

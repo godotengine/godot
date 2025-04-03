@@ -349,11 +349,7 @@ void EditorAutoloadSettings::_autoload_activated() {
 }
 
 void EditorAutoloadSettings::_autoload_open(const String &fpath) {
-	if (ResourceLoader::get_resource_type(fpath) == "PackedScene") {
-		EditorNode::get_singleton()->open_request(fpath);
-	} else {
-		EditorNode::get_singleton()->load_resource(fpath);
-	}
+	EditorNode::get_singleton()->load_scene_or_resource(fpath);
 	ProjectSettingsEditor::get_singleton()->hide();
 }
 
@@ -625,7 +621,7 @@ Variant EditorAutoloadSettings::get_drag_data_fw(const Point2 &p_point, Control 
 		next = tree->get_next_selected(next);
 	}
 
-	if (autoloads.size() == 0 || autoloads.size() == autoload_cache.size()) {
+	if (autoloads.is_empty() || autoloads.size() == autoload_cache.size()) {
 		return Variant();
 	}
 

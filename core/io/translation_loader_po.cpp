@@ -76,14 +76,17 @@ Ref<Resource> TranslationLoaderPO::load_translation(Ref<FileAccess> f, Error *r_
 				bool is_plural = false;
 				for (uint32_t j = 0; j < str_len + 1; j++) {
 					if (data[j] == 0x04) {
-						msg_context.parse_utf8((const char *)data.ptr(), j);
+						msg_context.clear();
+						msg_context.append_utf8((const char *)data.ptr(), j);
 						str_start = j + 1;
 					}
 					if (data[j] == 0x00) {
 						if (is_plural) {
-							msg_id_plural.parse_utf8((const char *)(data.ptr() + str_start), j - str_start);
+							msg_id_plural.clear();
+							msg_id_plural.append_utf8((const char *)(data.ptr() + str_start), j - str_start);
 						} else {
-							msg_id.parse_utf8((const char *)(data.ptr() + str_start), j - str_start);
+							msg_id.clear();
+							msg_id.append_utf8((const char *)(data.ptr() + str_start), j - str_start);
 							is_plural = true;
 						}
 						str_start = j + 1;

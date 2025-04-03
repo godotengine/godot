@@ -152,15 +152,7 @@ TEST_CASE("[JSON] Parsing escape sequences") {
 
 	JSON json;
 
-	TypedArray<String> valid_escapes;
-	valid_escapes.push_back("\";\"");
-	valid_escapes.push_back("\\;\\");
-	valid_escapes.push_back("/;/");
-	valid_escapes.push_back("b;\b");
-	valid_escapes.push_back("f;\f");
-	valid_escapes.push_back("n;\n");
-	valid_escapes.push_back("r;\r");
-	valid_escapes.push_back("t;\t");
+	TypedArray<String> valid_escapes = { "\";\"", "\\;\\", "/;/", "b;\b", "f;\f", "n;\n", "r;\r", "t;\t" };
 
 	SUBCASE("Basic valid escape sequences") {
 		for (int i = 0; i < valid_escapes.size(); i++) {

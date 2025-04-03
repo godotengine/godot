@@ -83,6 +83,13 @@ struct hb_transform_t
 		  float x0, float y0) :
     xx (xx), yx (yx), xy (xy), yy (yy), x0 (x0), y0 (y0) {}
 
+  bool is_identity () const
+  {
+    return xx == 1.f && yx == 0.f &&
+	   xy == 0.f && yy == 1.f &&
+	   x0 == 0.f && y0 == 0.f;
+  }
+
   void multiply (const hb_transform_t &o)
   {
     /* Copied from cairo, with "o" being "a" there and "this" being "b" there. */
@@ -200,6 +207,8 @@ struct hb_transform_t
   float x0 = 0.f;
   float y0 = 0.f;
 };
+
+#define HB_TRANSFORM_IDENTITY hb_transform_t{1.f, 0.f, 0.f, 1.f, 0.f, 0.f}
 
 struct hb_bounds_t
 {

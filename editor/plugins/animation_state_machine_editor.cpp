@@ -232,11 +232,7 @@ void AnimationNodeStateMachineEditor::_state_machine_gui_input(const Ref<InputEv
 
 		// First find closest lines using point-to-segment distance.
 		for (int i = 0; i < transition_lines.size(); i++) {
-			Vector2 s[2] = {
-				transition_lines[i].from,
-				transition_lines[i].to
-			};
-			Vector2 cpoint = Geometry2D::get_closest_point_to_segment(mb->get_position(), s);
+			Vector2 cpoint = Geometry2D::get_closest_point_to_segment(mb->get_position(), transition_lines[i].from, transition_lines[i].to);
 			float d = cpoint.distance_to(mb->get_position());
 
 			if (d > transition_lines[i].width) {
@@ -464,14 +460,14 @@ void AnimationNodeStateMachineEditor::_state_machine_gui_input(const Ref<InputEv
 				}
 				Vector2 npos = state_machine->get_node_position(E);
 
-				float d_x = ABS(npos.x - cpos.x);
+				float d_x = Math::abs(npos.x - cpos.x);
 				if (d_x < MIN(5, best_d_x)) {
 					drag_ofs.x -= cpos.x - npos.x;
 					best_d_x = d_x;
 					snap_x = E;
 				}
 
-				float d_y = ABS(npos.y - cpos.y);
+				float d_y = Math::abs(npos.y - cpos.y);
 				if (d_y < MIN(5, best_d_y)) {
 					drag_ofs.y -= cpos.y - npos.y;
 					best_d_y = d_y;
@@ -545,11 +541,7 @@ void AnimationNodeStateMachineEditor::_state_machine_gui_input(const Ref<InputEv
 			int closest = -1;
 			float closest_d = 1e20;
 			for (int i = 0; i < transition_lines.size(); i++) {
-				Vector2 s[2] = {
-					transition_lines[i].from,
-					transition_lines[i].to
-				};
-				Vector2 cpoint = Geometry2D::get_closest_point_to_segment(mm->get_position(), s);
+				Vector2 cpoint = Geometry2D::get_closest_point_to_segment(mm->get_position(), transition_lines[i].from, transition_lines[i].to);
 				float d = cpoint.distance_to(mm->get_position());
 				if (d > transition_lines[i].width) {
 					continue;
@@ -643,14 +635,14 @@ void AnimationNodeStateMachineEditor::_open_menu(const Vector2 &p_position) {
 	ClassDB::get_inheriters_from_class("AnimationRootNode", &classes);
 	classes.sort_custom<StringName::AlphCompare>();
 
-	for (List<StringName>::Element *E = classes.front(); E; E = E->next()) {
-		String name = String(E->get()).replace_first("AnimationNode", "");
+	for (const StringName &class_name : classes) {
+		String name = String(class_name).replace_first("AnimationNode", "");
 		if (name == "Animation" || name == "StartState" || name == "EndState") {
 			continue; // nope
 		}
 		int idx = menu->get_item_count();
 		menu->add_item(vformat(TTR("Add %s"), name), idx);
-		menu->set_item_metadata(idx, E->get());
+		menu->set_item_metadata(idx, class_name);
 	}
 	Ref<AnimationNode> clipb = EditorSettings::get_singleton()->get_resource_clipboard();
 
@@ -2019,16 +2011,16 @@ void EditorAnimationMultiTransitionEdit::_get_property_list(List<PropertyInfo> *
 		prop_transition_path.name = itos(i) + "/" + "transition_path";
 		p_list->push_back(prop_transition_path);
 
-		for (List<PropertyInfo>::Element *F = plist.front(); F; F = F->next()) {
-			if (F->get().name == "script" || F->get().name == "resource_name" || F->get().name == "resource_path" || F->get().name == "resource_local_to_scene") {
+		for (const PropertyInfo &pi : plist) {
+			if (pi.name == "script" || pi.name == "resource_name" || pi.name == "resource_path" || pi.name == "resource_local_to_scene") {
 				continue;
 			}
 
-			if (F->get().usage != PROPERTY_USAGE_DEFAULT) {
+			if (pi.usage != PROPERTY_USAGE_DEFAULT) {
 				continue;
 			}
 
-			PropertyInfo prop = F->get();
+			PropertyInfo prop = pi;
 			prop.name = itos(i) + "/" + prop.name;
 
 			p_list->push_back(prop);

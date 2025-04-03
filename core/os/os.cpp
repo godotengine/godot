@@ -199,6 +199,14 @@ void OS::set_stderr_enabled(bool p_enabled) {
 	_stderr_enabled = p_enabled;
 }
 
+String OS::multibyte_to_string(const String &p_encoding, const PackedByteArray &p_array) const {
+	return String();
+}
+
+PackedByteArray OS::string_to_multibyte(const String &p_encoding, const String &p_string) const {
+	return PackedByteArray();
+}
+
 int OS::get_exit_code() const {
 	return _exit_code;
 }
@@ -274,7 +282,7 @@ String OS::get_safe_dir_name(const String &p_dir_name, bool p_allow_paths) const
 // Get properly capitalized engine name for system paths
 String OS::get_godot_dir_name() const {
 	// Default to lowercase, so only override when different case is needed
-	return String(VERSION_SHORT_NAME).to_lower();
+	return String(GODOT_VERSION_SHORT_NAME).to_lower();
 }
 
 // OS equivalent of XDG_DATA_HOME

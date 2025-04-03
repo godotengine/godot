@@ -63,13 +63,13 @@ PackedStringArray SceneTreeEditor::_get_node_configuration_warnings(Node *p_node
 		if (node_2d) {
 			// Note: Warn for Node2D but not all CanvasItems, don't warn for Control nodes.
 			// Control nodes may have reasons to use a transformed root node like anchors.
-			if (!node_2d->get_transform().is_equal_approx(Transform2D())) {
+			if (!node_2d->get_position().is_zero_approx()) {
 				warnings.append(TTR("The root node of a scene is recommended to not be transformed, since instances of the scene will usually override this. Reset the transform and reload the scene to remove this warning."));
 			}
 		}
 		Node3D *node_3d = Object::cast_to<Node3D>(p_node);
 		if (node_3d) {
-			if (!node_3d->get_transform().is_equal_approx(Transform3D())) {
+			if (!node_3d->get_position().is_zero_approx()) {
 				warnings.append(TTR("The root node of a scene is recommended to not be transformed, since instances of the scene will usually override this. Reset the transform and reload the scene to remove this warning."));
 			}
 		}
@@ -112,7 +112,7 @@ void SceneTreeEditor::_cell_button_pressed(Object *p_item, int p_column, int p_i
 	} else if (p_id == BUTTON_VISIBILITY) {
 		undo_redo->create_action(TTR("Toggle Visible"));
 		_toggle_visible(n);
-		List<Node *> selection = editor_selection->get_selected_node_list();
+		List<Node *> selection = editor_selection->get_top_selected_node_list();
 		if (selection.size() > 1 && selection.find(n) != nullptr) {
 			for (Node *nv : selection) {
 				ERR_FAIL_NULL(nv);
@@ -447,7 +447,7 @@ void SceneTreeEditor::_update_node(Node *p_node, TreeItem *p_item, bool p_part_o
 			_set_item_custom_color(p_item, accent);
 		}
 	} else if (p_part_of_subscene) {
-		if (valid_types.size() == 0) {
+		if (valid_types.is_empty()) {
 			_set_item_custom_color(p_item, get_theme_color(SNAME("warning_color"), EditorStringName(Editor)));
 		}
 	} else if (marked.has(p_node)) {
@@ -512,8 +512,7 @@ void SceneTreeEditor::_update_node(Node *p_node, TreeItem *p_item, bool p_part_o
 
 		String msg_temp;
 		if (num_connections >= 1) {
-			Array arr;
-			arr.push_back(num_connections);
+			Array arr = { num_connections };
 			msg_temp += TTRN("Node has one connection.", "Node has {num} connections.", num_connections).format(arr, "{num}");
 			if (num_groups >= 1) {
 				msg_temp += "\n";
@@ -1291,7 +1290,7 @@ void SceneTreeEditor::_cell_multi_selected(Object *p_object, int p_cell, bool p_
 
 void SceneTreeEditor::_tree_scroll_to_item(ObjectID p_item_id) {
 	ERR_FAIL_NULL(tree);
-	TreeItem *item = Object::cast_to<TreeItem>(ObjectDB::get_instance(p_item_id));
+	TreeItem *item = ObjectDB::get_instance<TreeItem>(p_item_id);
 	if (item) {
 		tree->scroll_to_item(item, true);
 	}
@@ -1866,7 +1865,7 @@ bool SceneTreeEditor::can_drop_data_fw(const Point2 &p_point, const Variant &p_d
 	if (String(d["type"]) == "files") {
 		Vector<String> files = d["files"];
 
-		if (files.size() == 0) {
+		if (files.is_empty()) {
 			return false; // TODO Weird?
 		}
 
@@ -2339,9 +2338,6 @@ SceneTreeDialog::SceneTreeDialog() {
 	// Disable the OK button when no node is selected.
 	get_ok_button()->set_disabled(!tree->get_selected());
 	tree->connect("node_selected", callable_mp(this, &SceneTreeDialog::_selected_changed));
-}
-
-SceneTreeDialog::~SceneTreeDialog() {
 }
 
 /******** CACHE *********/

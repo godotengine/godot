@@ -44,8 +44,6 @@
 #include "Jolt/Physics/Constraints/Constraint.h"
 #include "Jolt/Physics/PhysicsSystem.h"
 
-#include <stdint.h>
-
 class JoltArea3D;
 class JoltBody3D;
 class JoltContactListener3D;

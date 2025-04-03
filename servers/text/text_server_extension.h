@@ -204,6 +204,11 @@ public:
 	GDVIRTUAL2(_font_set_force_autohinter, RID, bool);
 	GDVIRTUAL1RC(bool, _font_is_force_autohinter, RID);
 
+	virtual void font_set_modulate_color_glyphs(const RID &p_font_rid, bool p_modulate) override;
+	virtual bool font_is_modulate_color_glyphs(const RID &p_font_rid) const override;
+	GDVIRTUAL2(_font_set_modulate_color_glyphs, RID, bool);
+	GDVIRTUAL1RC(bool, _font_is_modulate_color_glyphs, RID);
+
 	virtual void font_set_hinting(const RID &p_font_rid, Hinting p_hinting) override;
 	virtual Hinting font_get_hinting(const RID &p_font_rid) const override;
 	GDVIRTUAL2(_font_set_hinting, RID, Hinting);

@@ -103,7 +103,7 @@ void PrimitiveMesh::_update() const {
 		Vector<Vector2> uv = arr[RS::ARRAY_TEX_UV];
 		Vector<Vector2> uv2 = arr[RS::ARRAY_TEX_UV2];
 
-		if (uv.size() > 0 && uv2.size() == 0) {
+		if (uv.size() > 0 && uv2.is_empty()) {
 			Vector2 uv2_scale = get_uv2_scale();
 			uv2.resize(uv.size());
 
@@ -2972,7 +2972,7 @@ void TextMesh::_generate_glyph_mesh_data(const GlyphMeshKey &p_key, const Glyph 
 	PackedInt32Array contours = d["contours"];
 	bool orientation = d["orientation"];
 
-	if (points.size() < 3 || contours.size() < 1) {
+	if (points.size() < 3 || contours.is_empty()) {
 		return; // No full contours, only glyph control points (or nothing), ignore.
 	}
 
@@ -3105,14 +3105,13 @@ void TextMesh::_generate_glyph_mesh_data(const GlyphMeshKey &p_key, const Glyph 
 		ERR_FAIL_MSG("Convex decomposing failed. Make sure the font doesn't contain self-intersecting lines, as these are not supported in TextMesh.");
 	}
 	List<TPPLPoly> out_tris;
-	for (List<TPPLPoly>::Element *I = out_poly.front(); I; I = I->next()) {
-		if (tpart.Triangulate_OPT(&(I->get()), &out_tris) == 0) {
+	for (TPPLPoly &tp : out_poly) {
+		if (tpart.Triangulate_OPT(&tp, &out_tris) == 0) {
 			ERR_FAIL_MSG("Triangulation failed. Make sure the font doesn't contain self-intersecting lines, as these are not supported in TextMesh.");
 		}
 	}
 
-	for (List<TPPLPoly>::Element *I = out_tris.front(); I; I = I->next()) {
-		TPPLPoly &tp = I->get();
+	for (const TPPLPoly &tp : out_tris) {
 		ERR_FAIL_COND(tp.GetNumPoints() != 3); // Triangles only.
 
 		for (int i = 0; i < 3; i++) {

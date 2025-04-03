@@ -186,26 +186,34 @@ void WorkerThreadPool::_thread_function(void *p_user) {
 	while (true) {
 		Task *task_to_process = nullptr;
 		{
+			// Create the lock outside the inner loop so it isn't needlessly unlocked and relocked
+			//  when no task was found to process, and the loop is re-entered.
 			MutexLock lock(thread_data->pool->task_mutex);
 
-			bool exit = thread_data->pool->_handle_runlevel(thread_data, lock);
-			if (unlikely(exit)) {
-				break;
-			}
+			while (true) {
+				bool exit = thread_data->pool->_handle_runlevel(thread_data, lock);
+				if (unlikely(exit)) {
+					return;
+				}
 
-			thread_data->signaled = false;
+				thread_data->signaled = false;
 
-			if (thread_data->pool->task_queue.first()) {
+				if (!thread_data->pool->task_queue.first()) {
+					// There wasn't a task available yet.
+					// Let's wait for the next notification, then recheck.
+					thread_data->cond_var.wait(lock);
+					continue;
+				}
+
+				// Got a task to process! Remove it from the queue, then break into the task handling section.
 				task_to_process = thread_data->pool->task_queue.first()->self();
 				thread_data->pool->task_queue.remove(thread_data->pool->task_queue.first());
-			} else {
-				thread_data->cond_var.wait(lock);
+				break;
 			}
 		}
 
-		if (task_to_process) {
-			thread_data->pool->_process_task(task_to_process);
-		}
+		DEV_ASSERT(task_to_process);
+		thread_data->pool->_process_task(task_to_process);
 	}
 }
 
@@ -213,7 +221,7 @@ void WorkerThreadPool::_post_tasks(Task **p_tasks, uint32_t p_count, bool p_high
 	// Fall back to processing on the calling thread if there are no worker threads.
 	// Separated into its own variable to make it easier to extend this logic
 	// in custom builds.
-	bool process_on_calling_thread = threads.size() == 0;
+	bool process_on_calling_thread = threads.is_empty();
 	if (process_on_calling_thread) {
 		p_lock.temp_unlock();
 		for (uint32_t i = 0; i < p_count; i++) {
@@ -781,7 +789,7 @@ void WorkerThreadPool::init(int p_thread_count, float p_low_priority_task_ratio)
 }
 
 void WorkerThreadPool::exit_languages_threads() {
-	if (threads.size() == 0) {
+	if (threads.is_empty()) {
 		return;
 	}
 
@@ -801,7 +809,7 @@ void WorkerThreadPool::exit_languages_threads() {
 }
 
 void WorkerThreadPool::finish() {
-	if (threads.size() == 0) {
+	if (threads.is_empty()) {
 		return;
 	}
 

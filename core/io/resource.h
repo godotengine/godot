@@ -71,6 +71,12 @@ private:
 	String import_path;
 #endif
 
+	enum EmitChangedState {
+		EMIT_CHANGED_UNBLOCKED,
+		EMIT_CHANGED_BLOCKED,
+		EMIT_CHANGED_BLOCKED_PENDING_EMIT,
+	};
+	EmitChangedState emit_changed_state = EMIT_CHANGED_UNBLOCKED;
 	bool local_to_scene = false;
 	friend class SceneState;
 	Node *local_scene = nullptr;
@@ -83,6 +89,9 @@ private:
 protected:
 	virtual void _resource_path_changed();
 	static void _bind_methods();
+
+	void _block_emit_changed();
+	void _unblock_emit_changed();
 
 	void _set_path(const String &p_path);
 	void _take_over_path(const String &p_path);

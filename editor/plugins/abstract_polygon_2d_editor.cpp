@@ -423,7 +423,7 @@ bool AbstractPolygon2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) 
 			//Move the point in a single axis. Should only work when editing a polygon and while holding shift.
 			if (mode == MODE_EDIT && mm->is_shift_pressed()) {
 				Vector2 old_point = pre_move_edit.get(selected_point.vertex);
-				if (ABS(cpoint.x - old_point.x) > ABS(cpoint.y - old_point.y)) {
+				if (Math::abs(cpoint.x - old_point.x) > Math::abs(cpoint.y - old_point.y)) {
 					cpoint.y = old_point.y;
 				} else {
 					cpoint.x = old_point.x;
@@ -707,12 +707,12 @@ AbstractPolygon2DEditor::PosVertex AbstractPolygon2DEditor::closest_edge_point(c
 		const int n_segments = n_points - (_is_line() ? 1 : 0);
 
 		for (int i = 0; i < n_segments; i++) {
-			Vector2 segment[2] = { xform.xform(points[i] + offset),
-				xform.xform(points[(i + 1) % n_points] + offset) };
+			const Vector2 segment_a = xform.xform(points[i] + offset);
+			const Vector2 segment_b = xform.xform(points[(i + 1) % n_points] + offset);
 
-			Vector2 cp = Geometry2D::get_closest_point_to_segment(p_pos, segment);
+			Vector2 cp = Geometry2D::get_closest_point_to_segment(p_pos, segment_a, segment_b);
 
-			if (cp.distance_squared_to(segment[0]) < eps2 || cp.distance_squared_to(segment[1]) < eps2) {
+			if (cp.distance_squared_to(segment_a) < eps2 || cp.distance_squared_to(segment_b) < eps2) {
 				continue; //not valid to reuse point
 			}
 
@@ -782,7 +782,4 @@ AbstractPolygon2DEditorPlugin::AbstractPolygon2DEditorPlugin(AbstractPolygon2DEd
 		klass(p_class) {
 	CanvasItemEditor::get_singleton()->add_control_to_menu_panel(polygon_editor);
 	polygon_editor->hide();
-}
-
-AbstractPolygon2DEditorPlugin::~AbstractPolygon2DEditorPlugin() {
 }

@@ -135,10 +135,7 @@ Error EditorRunNative::start_run_native(int p_id) {
 		bool is_arch_enabled = preset->get(preset_arch);
 
 		if (!is_arch_enabled) {
-			String warning_message = vformat(TTR("Warning: The CPU architecture \"%s\" is not active in your export preset.\n\n"), Variant(architecture));
-			warning_message += TTR("Run \"Remote Deploy\" anyway?");
-
-			run_native_confirm->set_text(warning_message);
+			run_native_confirm->set_text(vformat(TTR("Warning: The CPU architecture \"%s\" is not active in your export preset.\n\nRun \"Remote Deploy\" anyway?"), architecture));
 			run_native_confirm->popup_centered();
 			return OK;
 		}

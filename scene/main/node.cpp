@@ -43,8 +43,6 @@
 #include "scene/resources/packed_scene.h"
 #include "viewport.h"
 
-#include <stdint.h>
-
 int Node::orphan_node_count = 0;
 
 thread_local Node *Node::current_process_thread_group = nullptr;
@@ -2681,11 +2679,11 @@ bool Node::is_part_of_edited_scene() const {
 
 void Node::get_storable_properties(HashSet<StringName> &r_storable_properties) const {
 	ERR_THREAD_GUARD
-	List<PropertyInfo> pi;
-	get_property_list(&pi);
-	for (List<PropertyInfo>::Element *E = pi.front(); E; E = E->next()) {
-		if ((E->get().usage & PROPERTY_USAGE_STORAGE)) {
-			r_storable_properties.insert(E->get().name);
+	List<PropertyInfo> property_list;
+	get_property_list(&property_list);
+	for (const PropertyInfo &pi : property_list) {
+		if ((pi.usage & PROPERTY_USAGE_STORAGE)) {
+			r_storable_properties.insert(pi.name);
 		}
 	}
 }
@@ -3063,7 +3061,11 @@ void Node::_duplicate_signals(const Node *p_original, Node *p_copy) const {
 				if (!target) {
 					continue;
 				}
+
 				NodePath ptarget = p_original->get_path_to(target);
+				if (ptarget.is_empty()) {
+					continue;
+				}
 
 				Node *copytarget = target;
 
@@ -3743,8 +3745,13 @@ void Node::_bind_methods() {
 
 		mi.name = "rpc";
 		ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "rpc", &Node::_rpc_bind, mi);
+	}
 
-		mi.arguments.push_front(PropertyInfo(Variant::INT, "peer_id"));
+	{
+		MethodInfo mi;
+
+		mi.arguments.push_back(PropertyInfo(Variant::INT, "peer_id"));
+		mi.arguments.push_back(PropertyInfo(Variant::STRING_NAME, "method"));
 
 		mi.name = "rpc_id";
 		ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "rpc_id", &Node::_rpc_id_bind, mi);
@@ -3807,6 +3814,7 @@ void Node::_bind_methods() {
 	BIND_CONSTANT(NOTIFICATION_WM_DPI_CHANGE);
 	BIND_CONSTANT(NOTIFICATION_VP_MOUSE_ENTER);
 	BIND_CONSTANT(NOTIFICATION_VP_MOUSE_EXIT);
+	BIND_CONSTANT(NOTIFICATION_WM_POSITION_CHANGED);
 	BIND_CONSTANT(NOTIFICATION_OS_MEMORY_WARNING);
 	BIND_CONSTANT(NOTIFICATION_TRANSLATION_CHANGED);
 	BIND_CONSTANT(NOTIFICATION_WM_ABOUT);

@@ -60,23 +60,17 @@ using namespace godot;
 // Built-in ICU data.
 
 #ifdef ICU_STATIC_DATA
-#include "icudata.gen.h"
+#include <icudata.gen.h>
 #endif
 
 // Thirdparty headers.
 
 #ifdef MODULE_MSDFGEN_ENABLED
-#ifdef _MSC_VER
-#pragma warning(disable : 4458)
-#endif
 #include <core/EdgeHolder.h>
 #include <core/ShapeDistanceFinder.h>
 #include <core/contour-combiners.h>
 #include <core/edge-selectors.h>
 #include <msdfgen.h>
-#ifdef _MSC_VER
-#pragma warning(default : 4458)
-#endif
 #endif
 
 #ifdef MODULE_SVG_ENABLED
@@ -1419,25 +1413,17 @@ _FORCE_INLINE_ bool TextServerAdvanced::_ensure_cache_for_size(FontAdvanced *p_f
 			fargs.flags = FT_OPEN_MEMORY;
 			fargs.stream = &fd->stream;
 
-			int max_index = 0;
-			FT_Face tmp_face = nullptr;
-			error = FT_Open_Face(ft_library, &fargs, -1, &tmp_face);
-			if (tmp_face && error == 0) {
-				max_index = tmp_face->num_faces - 1;
-			}
-			if (tmp_face) {
-				FT_Done_Face(tmp_face);
-			}
-
-			error = FT_Open_Face(ft_library, &fargs, CLAMP(p_font_data->face_index, 0, max_index), &fd->face);
+			error = FT_Open_Face(ft_library, &fargs, p_font_data->face_index, &fd->face);
 			if (error) {
-				FT_Done_Face(fd->face);
-				fd->face = nullptr;
+				if (fd->face) {
+					FT_Done_Face(fd->face);
+					fd->face = nullptr;
+				}
 				memdelete(fd);
 				if (p_silent) {
 					return false;
 				} else {
-					ERR_FAIL_V_MSG(false, "FreeType: Error loading font: '" + String(FT_Error_String(error)) + "'.");
+					ERR_FAIL_V_MSG(false, "FreeType: Error loading font: '" + String(FT_Error_String(error)) + "' (face_index=" + String::num_int64(p_font_data->face_index) + ").");
 				}
 			}
 		}
@@ -1453,10 +1439,10 @@ _FORCE_INLINE_ bool TextServerAdvanced::_ensure_cache_for_size(FontAdvanced *p_f
 
 		if (FT_HAS_COLOR(fd->face) && fd->face->num_fixed_sizes > 0) {
 			int best_match = 0;
-			int diff = ABS(fd->size.x - ((int64_t)fd->face->available_sizes[0].width));
+			int diff = Math::abs(fd->size.x - ((int64_t)fd->face->available_sizes[0].width));
 			fd->scale = double(fd->size.x * fd->oversampling) / fd->face->available_sizes[0].width;
 			for (int i = 1; i < fd->face->num_fixed_sizes; i++) {
-				int ndiff = ABS(fd->size.x - ((int64_t)fd->face->available_sizes[i].width));
+				int ndiff = Math::abs(fd->size.x - ((int64_t)fd->face->available_sizes[i].width));
 				if (ndiff < diff) {
 					best_match = i;
 					diff = ndiff;
@@ -2446,6 +2432,24 @@ bool TextServerAdvanced::_font_is_force_autohinter(const RID &p_font_rid) const 
 
 	MutexLock lock(fd->mutex);
 	return fd->force_autohinter;
+}
+
+void TextServerAdvanced::_font_set_modulate_color_glyphs(const RID &p_font_rid, bool p_modulate) {
+	FontAdvanced *fd = _get_font_data(p_font_rid);
+	ERR_FAIL_NULL(fd);
+
+	MutexLock lock(fd->mutex);
+	if (fd->modulate_color_glyphs != p_modulate) {
+		fd->modulate_color_glyphs = p_modulate;
+	}
+}
+
+bool TextServerAdvanced::_font_is_modulate_color_glyphs(const RID &p_font_rid) const {
+	FontAdvanced *fd = _get_font_data(p_font_rid);
+	ERR_FAIL_NULL_V(fd, false);
+
+	MutexLock lock(fd->mutex);
+	return fd->modulate_color_glyphs;
 }
 
 void TextServerAdvanced::_font_set_hinting(const RID &p_font_rid, TextServer::Hinting p_hinting) {
@@ -3808,7 +3812,7 @@ void TextServerAdvanced::_font_draw_glyph(const RID &p_font_rid, const RID &p_ca
 		if (fgl.texture_idx != -1) {
 			Color modulate = p_color;
 #ifdef MODULE_FREETYPE_ENABLED
-			if (!fgl.from_svg && ffsd->face && ffsd->textures[fgl.texture_idx].image.is_valid() && (ffsd->textures[fgl.texture_idx].image->get_format() == Image::FORMAT_RGBA8) && !lcd_aa && !fd->msdf) {
+			if (!fd->modulate_color_glyphs && ffsd->face && ffsd->textures[fgl.texture_idx].image.is_valid() && (ffsd->textures[fgl.texture_idx].image->get_format() == Image::FORMAT_RGBA8) && !lcd_aa && !fd->msdf) {
 				modulate.r = modulate.g = modulate.b = 1.0;
 			}
 #endif
@@ -5664,8 +5668,13 @@ bool TextServerAdvanced::_shaped_text_update_breaks(const RID &p_shaped) {
 				i++;
 			}
 			int r_end = sd->spans[i].end;
-			UBreakIterator *bi = ubrk_open(UBRK_LINE, (language.is_empty()) ? TranslationServer::get_singleton()->get_tool_locale().ascii().get_data() : language.ascii().get_data(), data + _convert_pos_inv(sd, r_start), _convert_pos_inv(sd, r_end - r_start), &err);
-			if (U_FAILURE(err)) {
+			UBreakIterator *bi = _create_line_break_iterator_for_locale(language, &err);
+
+			if (!U_FAILURE(err) && bi) {
+				ubrk_setText(bi, data + _convert_pos_inv(sd, r_start), _convert_pos_inv(sd, r_end - r_start), &err);
+			}
+
+			if (U_FAILURE(err) || !bi) {
 				// No data loaded - use fallback.
 				for (int j = r_start; j < r_end; j++) {
 					char32_t c = sd->text[j - sd->start];
@@ -5693,8 +5702,8 @@ bool TextServerAdvanced::_shaped_text_update_breaks(const RID &p_shaped) {
 						sd->break_inserts++;
 					}
 				}
+				ubrk_close(bi);
 			}
-			ubrk_close(bi);
 			i++;
 		}
 		sd->break_ops_valid = true;
@@ -6122,17 +6131,15 @@ Glyph TextServerAdvanced::_shape_single_glyph(ShapedTextDataAdvanced *p_sd, char
 	return gl;
 }
 
-_FORCE_INLINE_ void TextServerAdvanced::_add_featuers(const Dictionary &p_source, Vector<hb_feature_t> &r_ftrs) {
-	Array keys = p_source.keys();
-	Array values = p_source.values();
-	for (int i = 0; i < keys.size(); i++) {
-		int32_t value = values[i];
+_FORCE_INLINE_ void TextServerAdvanced::_add_features(const Dictionary &p_source, Vector<hb_feature_t> &r_ftrs) {
+	for (const KeyValue<Variant, Variant> &key_value : p_source) {
+		int32_t value = key_value.value;
 		if (value >= 0) {
 			hb_feature_t feature;
-			if (keys[i].is_string()) {
-				feature.tag = _name_to_tag(keys[i]);
+			if (key_value.key.is_string()) {
+				feature.tag = _name_to_tag(key_value.key);
 			} else {
-				feature.tag = keys[i];
+				feature.tag = key_value.key;
 			}
 			feature.value = value;
 			feature.start = 0;
@@ -6140,6 +6147,24 @@ _FORCE_INLINE_ void TextServerAdvanced::_add_featuers(const Dictionary &p_source
 			r_ftrs.push_back(feature);
 		}
 	}
+}
+
+UBreakIterator *TextServerAdvanced::_create_line_break_iterator_for_locale(const String &p_language, UErrorCode *r_err) const {
+	// Creating UBreakIterator (ubrk_open) is surprisingly costly.
+	// However, cloning (ubrk_clone) is cheaper, so we keep around blueprints to accelerate creating new ones.
+
+	const String language = p_language.is_empty() ? TranslationServer::get_singleton()->get_tool_locale() : p_language;
+	_THREAD_SAFE_METHOD_
+	const HashMap<String, UBreakIterator *>::Iterator key_value = line_break_iterators_per_language.find(language);
+	if (key_value) {
+		return ubrk_clone(key_value->value, r_err);
+	}
+	UBreakIterator *bi = ubrk_open(UBRK_LINE, language.ascii().get_data(), nullptr, 0, r_err);
+	if (U_FAILURE(*r_err) || !bi) {
+		return nullptr;
+	}
+	line_break_iterators_per_language.insert(language, bi);
+	return ubrk_clone(bi, r_err);
 }
 
 void TextServerAdvanced::_shape_run(ShapedTextDataAdvanced *p_sd, int64_t p_start, int64_t p_end, hb_script_t p_script, hb_direction_t p_direction, TypedArray<RID> p_fonts, int64_t p_span, int64_t p_fb_index, int64_t p_prev_start, int64_t p_prev_end, RID p_prev_font) {
@@ -6285,8 +6310,8 @@ void TextServerAdvanced::_shape_run(ShapedTextDataAdvanced *p_sd, int64_t p_star
 	hb_buffer_add_utf32(p_sd->hb_buffer, (const uint32_t *)p_sd->text.ptr(), p_sd->text.length(), p_start, p_end - p_start);
 
 	Vector<hb_feature_t> ftrs;
-	_add_featuers(_font_get_opentype_feature_overrides(f), ftrs);
-	_add_featuers(p_sd->spans[p_span].features, ftrs);
+	_add_features(_font_get_opentype_feature_overrides(f), ftrs);
+	_add_features(p_sd->spans[p_span].features, ftrs);
 
 	hb_shape(hb_font, p_sd->hb_buffer, ftrs.is_empty() ? nullptr : &ftrs[0], ftrs.size());
 
@@ -7716,6 +7741,9 @@ TextServerAdvanced::~TextServerAdvanced() {
 	if (allowed != nullptr) {
 		uset_close(allowed);
 		allowed = nullptr;
+	}
+	for (const KeyValue<String, UBreakIterator *> &bi : line_break_iterators_per_language) {
+		ubrk_close(bi.value);
 	}
 
 	std::atexit(u_cleanup);

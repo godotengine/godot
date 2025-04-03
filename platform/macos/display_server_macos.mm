@@ -265,9 +265,15 @@ void DisplayServerMacOS::set_window_per_pixel_transparency_enabled(bool p_enable
 		return;
 	}
 	if (p_enabled) {
-		[wd.window_object setBackgroundColor:[NSColor clearColor]];
 		[wd.window_object setOpaque:NO];
-		[wd.window_object setHasShadow:NO];
+		if (wd.borderless) {
+			[wd.window_object setBackgroundColor:[NSColor clearColor]];
+			[wd.window_object setHasShadow:NO];
+		} else {
+			// Note: transparent and not borderless - set alpha to non-zero value to ensure window shadow is rendered correctly.
+			[wd.window_object setBackgroundColor:[NSColor colorWithCalibratedRed:0 green:0 blue:0 alpha:0.004f]];
+			[wd.window_object setHasShadow:YES];
+		}
 		CALayer *layer = [(NSView *)wd.window_view layer];
 		if (layer) {
 			[layer setBackgroundColor:[NSColor clearColor].CGColor];
@@ -286,7 +292,9 @@ void DisplayServerMacOS::set_window_per_pixel_transparency_enabled(bool p_enable
 		}
 		[wd.window_object setBackgroundColor:bg_color];
 		[wd.window_object setOpaque:YES];
-		[wd.window_object setHasShadow:YES];
+		if (!wd.borderless) {
+			[wd.window_object setHasShadow:YES];
+		}
 		CALayer *layer = [(NSView *)wd.window_view layer];
 		if (layer) {
 			[layer setBackgroundColor:bg_color.CGColor];
@@ -505,10 +513,10 @@ void DisplayServerMacOS::_update_keyboard_layouts() const {
 	for (NSUInteger i = 0; i < [list_ime count]; i++) {
 		LayoutInfo ly;
 		NSString *name = (__bridge NSString *)TISGetInputSourceProperty((__bridge TISInputSourceRef)[list_ime objectAtIndex:i], kTISPropertyLocalizedName);
-		ly.name.parse_utf8([name UTF8String]);
+		ly.name.append_utf8([name UTF8String]);
 
 		NSArray *langs = (__bridge NSArray *)TISGetInputSourceProperty((__bridge TISInputSourceRef)[list_ime objectAtIndex:i], kTISPropertyInputSourceLanguages);
-		ly.code.parse_utf8([(NSString *)[langs objectAtIndex:0] UTF8String]);
+		ly.code.append_utf8([(NSString *)[langs objectAtIndex:0] UTF8String]);
 		kbd_layouts.push_back(ly);
 
 		if ([name isEqualToString:cur_name]) {
@@ -522,10 +530,10 @@ void DisplayServerMacOS::_update_keyboard_layouts() const {
 	for (NSUInteger i = 0; i < [list_kbd count]; i++) {
 		LayoutInfo ly;
 		NSString *name = (__bridge NSString *)TISGetInputSourceProperty((__bridge TISInputSourceRef)[list_kbd objectAtIndex:i], kTISPropertyLocalizedName);
-		ly.name.parse_utf8([name UTF8String]);
+		ly.name.append_utf8([name UTF8String]);
 
 		NSArray *langs = (__bridge NSArray *)TISGetInputSourceProperty((__bridge TISInputSourceRef)[list_kbd objectAtIndex:i], kTISPropertyInputSourceLanguages);
-		ly.code.parse_utf8([(NSString *)[langs objectAtIndex:0] UTF8String]);
+		ly.code.append_utf8([(NSString *)[langs objectAtIndex:0] UTF8String]);
 		kbd_layouts.push_back(ly);
 
 		if ([name isEqualToString:cur_name]) {
@@ -670,6 +678,38 @@ void DisplayServerMacOS::release_pressed_events() {
 	_THREAD_SAFE_METHOD_
 	if (Input::get_singleton()) {
 		Input::get_singleton()->release_pressed_events();
+	}
+}
+
+void DisplayServerMacOS::sync_mouse_state() {
+	_THREAD_SAFE_METHOD_
+	if (Input::get_singleton()) {
+		Vector2i pos = Input::get_singleton()->get_mouse_position();
+		BitField<MouseButtonMask> in_mask = Input::get_singleton()->get_mouse_button_mask();
+		BitField<MouseButtonMask> ds_mask = mouse_get_button_state();
+		for (int btn = (int)MouseButton::LEFT; btn <= (int)MouseButton::MB_XBUTTON2; btn++) {
+			MouseButtonMask mbm = mouse_button_to_mask(MouseButton(btn));
+			if (in_mask.has_flag(mbm) && !ds_mask.has_flag(mbm)) {
+				Ref<InputEventMouseButton> mb;
+				mb.instantiate();
+				mb->set_button_index(MouseButton(btn));
+				mb->set_pressed(false);
+				mb->set_position(pos);
+				mb->set_global_position(pos);
+				mb->set_button_mask(ds_mask);
+				Input::get_singleton()->parse_input_event(mb);
+			}
+			if (!in_mask.has_flag(mbm) && ds_mask.has_flag(mbm)) {
+				Ref<InputEventMouseButton> mb;
+				mb.instantiate();
+				mb->set_button_index(MouseButton(btn));
+				mb->set_pressed(true);
+				mb->set_position(pos);
+				mb->set_global_position(pos);
+				mb->set_button_mask(ds_mask);
+				Input::get_singleton()->parse_input_event(mb);
+			}
+		}
 	}
 }
 
@@ -818,38 +858,63 @@ Callable DisplayServerMacOS::_help_get_action_callback() const {
 	return help_action_callback;
 }
 
+void DisplayServerMacOS::initialize_tts() const {
+	const_cast<DisplayServerMacOS *>(this)->tts = [[TTS_MacOS alloc] init];
+}
+
 bool DisplayServerMacOS::tts_is_speaking() const {
-	ERR_FAIL_NULL_V_MSG(tts, false, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
+	if (unlikely(!tts)) {
+		initialize_tts();
+	}
+	ERR_FAIL_NULL_V(tts, false);
 	return [tts isSpeaking];
 }
 
 bool DisplayServerMacOS::tts_is_paused() const {
-	ERR_FAIL_NULL_V_MSG(tts, false, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
+	if (unlikely(!tts)) {
+		initialize_tts();
+	}
+	ERR_FAIL_NULL_V(tts, false);
 	return [tts isPaused];
 }
 
 TypedArray<Dictionary> DisplayServerMacOS::tts_get_voices() const {
-	ERR_FAIL_NULL_V_MSG(tts, Array(), "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
+	if (unlikely(!tts)) {
+		initialize_tts();
+	}
+	ERR_FAIL_NULL_V(tts, TypedArray<Dictionary>());
 	return [tts getVoices];
 }
 
 void DisplayServerMacOS::tts_speak(const String &p_text, const String &p_voice, int p_volume, float p_pitch, float p_rate, int p_utterance_id, bool p_interrupt) {
-	ERR_FAIL_NULL_MSG(tts, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
+	if (unlikely(!tts)) {
+		initialize_tts();
+	}
+	ERR_FAIL_NULL(tts);
 	[tts speak:p_text voice:p_voice volume:p_volume pitch:p_pitch rate:p_rate utterance_id:p_utterance_id interrupt:p_interrupt];
 }
 
 void DisplayServerMacOS::tts_pause() {
-	ERR_FAIL_NULL_MSG(tts, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
+	if (unlikely(!tts)) {
+		initialize_tts();
+	}
+	ERR_FAIL_NULL(tts);
 	[tts pauseSpeaking];
 }
 
 void DisplayServerMacOS::tts_resume() {
-	ERR_FAIL_NULL_MSG(tts, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
+	if (unlikely(!tts)) {
+		initialize_tts();
+	}
+	ERR_FAIL_NULL(tts);
 	[tts resumeSpeaking];
 }
 
 void DisplayServerMacOS::tts_stop() {
-	ERR_FAIL_NULL_MSG(tts, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
+	if (unlikely(!tts)) {
+		initialize_tts();
+	}
+	ERR_FAIL_NULL(tts);
 	[tts stopSpeaking];
 }
 
@@ -1046,7 +1111,7 @@ Error DisplayServerMacOS::_file_dialog_with_options_show(const String &p_title, 
 				// Callback.
 				Vector<String> files;
 				String url;
-				url.parse_utf8([[[panel URL] path] UTF8String]);
+				url.append_utf8([[[panel URL] path] UTF8String]);
 				files.push_back(url);
 				if (callback.is_valid()) {
 					if (p_options_in_cb) {
@@ -1165,7 +1230,7 @@ Error DisplayServerMacOS::_file_dialog_with_options_show(const String &p_title, 
 				Vector<String> files;
 				for (NSUInteger i = 0; i != [urls count]; ++i) {
 					String url;
-					url.parse_utf8([[[urls objectAtIndex:i] path] UTF8String]);
+					url.append_utf8([[[urls objectAtIndex:i] path] UTF8String]);
 					files.push_back(url);
 				}
 				if (callback.is_valid()) {
@@ -1263,7 +1328,7 @@ Error DisplayServerMacOS::dialog_input_text(String p_title, String p_description
 	[window runModal];
 
 	String ret;
-	ret.parse_utf8([[input stringValue] UTF8String]);
+	ret.append_utf8([[input stringValue] UTF8String]);
 
 	if (p_callback.is_valid()) {
 		Variant v_result = ret;
@@ -1547,7 +1612,7 @@ String DisplayServerMacOS::clipboard_get() const {
 	NSString *string = [objectsToPaste objectAtIndex:0];
 
 	String ret;
-	ret.parse_utf8([string UTF8String]);
+	ret.append_utf8([string UTF8String]);
 	return ret;
 }
 
@@ -1893,6 +1958,11 @@ DisplayServer::WindowID DisplayServerMacOS::create_sub_window(WindowMode p_mode,
 void DisplayServerMacOS::show_window(WindowID p_id) {
 	WindowData &wd = windows[p_id];
 
+	if (p_id == MAIN_WINDOW_ID) {
+		[NSApp setActivationPolicy:NSApplicationActivationPolicyRegular];
+		static_cast<OS_MacOS *>(OS::get_singleton())->activate();
+	}
+
 	popup_open(p_id);
 	if ([wd.window_object isMiniaturized]) {
 		return;
@@ -1913,6 +1983,8 @@ void DisplayServerMacOS::delete_sub_window(WindowID p_id) {
 
 	[wd.window_object setContentView:nil];
 	[wd.window_object close];
+
+	mouse_enter_window(get_window_at_screen_position(mouse_get_position()));
 }
 
 void DisplayServerMacOS::window_set_rect_changed_callback(const Callable &p_callable, WindowID p_window) {
@@ -2622,12 +2694,17 @@ void DisplayServerMacOS::window_set_flag(WindowFlags p_flag, bool p_enabled, Win
 			wd.borderless = p_enabled;
 			if (p_enabled) {
 				[wd.window_object setStyleMask:NSWindowStyleMaskBorderless];
-			} else {
+				[wd.window_object setHasShadow:NO];
 				if (wd.layered_window) {
-					wd.layered_window = false;
-					set_window_per_pixel_transparency_enabled(false, p_window);
+					[wd.window_object setBackgroundColor:[NSColor clearColor]];
 				}
+			} else {
 				[wd.window_object setStyleMask:NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable | (wd.extend_to_title ? NSWindowStyleMaskFullSizeContentView : 0) | (wd.resize_disabled ? 0 : NSWindowStyleMaskResizable)];
+				[wd.window_object setHasShadow:YES];
+				if (wd.layered_window) {
+					// Note: transparent and not borderless - set alpha to non-zero value to ensure window shadow is rendered correctly.
+					[wd.window_object setBackgroundColor:[NSColor colorWithCalibratedRed:0 green:0 blue:0 alpha:0.004f]];
+				}
 				// Force update of the window styles.
 				NSRect frameRect = [wd.window_object frame];
 				[wd.window_object setFrame:NSMakeRect(frameRect.origin.x, frameRect.origin.y, frameRect.size.width + 1, frameRect.size.height) display:NO];
@@ -2658,11 +2735,6 @@ void DisplayServerMacOS::window_set_flag(WindowFlags p_flag, bool p_enabled, Win
 		case WINDOW_FLAG_TRANSPARENT: {
 			if (wd.fullscreen) {
 				return;
-			}
-			if (p_enabled) {
-				[wd.window_object setStyleMask:NSWindowStyleMaskBorderless]; // Force borderless.
-			} else if (!wd.borderless) {
-				[wd.window_object setStyleMask:NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable | (wd.extend_to_title ? NSWindowStyleMaskFullSizeContentView : 0) | (wd.resize_disabled ? 0 : NSWindowStyleMaskResizable)];
 			}
 			wd.layered_window = p_enabled;
 			set_window_per_pixel_transparency_enabled(p_enabled, p_window);
@@ -3194,20 +3266,26 @@ void DisplayServerMacOS::show_emoji_and_symbol_picker() const {
 }
 
 void DisplayServerMacOS::process_events() {
+	_process_events(true);
+}
+
+void DisplayServerMacOS::_process_events(bool p_pump) {
 	ERR_FAIL_COND(!Thread::is_main_thread());
 
-	while (true) {
-		NSEvent *event = [NSApp
-				nextEventMatchingMask:NSEventMaskAny
-							untilDate:[NSDate distantPast]
-							   inMode:NSDefaultRunLoopMode
-							  dequeue:YES];
+	if (p_pump) {
+		while (true) {
+			NSEvent *event = [NSApp
+					nextEventMatchingMask:NSEventMaskAny
+								untilDate:[NSDate distantPast]
+								   inMode:NSDefaultRunLoopMode
+								  dequeue:YES];
 
-		if (event == nil) {
-			break;
+			if (event == nil) {
+				break;
+			}
+
+			[NSApp sendEvent:event];
 		}
-
-		[NSApp sendEvent:event];
 	}
 
 	// Process "menu_callback"s.
@@ -3700,7 +3778,7 @@ DisplayServerMacOS::DisplayServerMacOS(const String &p_rendering_driver, WindowM
 	// Init TTS
 	bool tts_enabled = GLOBAL_GET("audio/general/text_to_speech");
 	if (tts_enabled) {
-		tts = [[TTS_MacOS alloc] init];
+		initialize_tts();
 	}
 
 	native_menu = memnew(NativeMenuMacOS);
@@ -3894,7 +3972,6 @@ DisplayServerMacOS::DisplayServerMacOS(const String &p_rendering_driver, WindowM
 			window_set_flag(WindowFlags(i), true, main_window);
 		}
 	}
-	show_window(MAIN_WINDOW_ID);
 	force_process_and_drop_events();
 
 #if defined(GLES3_ENABLED)

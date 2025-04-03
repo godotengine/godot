@@ -149,9 +149,9 @@ void ShaderRD::setup(const char *p_vertex_code, const char *p_fragment_code, con
 
 	StringBuilder tohash;
 	tohash.append("[GodotVersionNumber]");
-	tohash.append(VERSION_NUMBER);
+	tohash.append(GODOT_VERSION_NUMBER);
 	tohash.append("[GodotVersionHash]");
-	tohash.append(VERSION_HASH);
+	tohash.append(GODOT_VERSION_HASH);
 	tohash.append("[SpirvCacheKey]");
 	tohash.append(RenderingDevice::get_singleton()->shader_get_spirv_cache_key());
 	tohash.append("[BinaryCacheKey]");
@@ -187,8 +187,7 @@ void ShaderRD::_initialize_version(Version *p_version) {
 
 	p_version->variants.resize_zeroed(variant_defines.size());
 	p_version->variant_data.resize(variant_defines.size());
-	p_version->group_compilation_tasks.resize(group_enabled.size());
-	p_version->group_compilation_tasks.fill(0);
+	p_version->group_compilation_tasks.resize_zeroed(group_enabled.size());
 }
 
 void ShaderRD::_clear_version(Version *p_version) {
@@ -283,7 +282,7 @@ void ShaderRD::_compile_variant(uint32_t p_variant, CompileData p_data) {
 		current_source = builder.as_string();
 		RD::ShaderStageSPIRVData stage;
 		stage.spirv = RD::get_singleton()->shader_compile_spirv_from_source(RD::SHADER_STAGE_VERTEX, current_source, RD::SHADER_LANGUAGE_GLSL, &error);
-		if (stage.spirv.size() == 0) {
+		if (stage.spirv.is_empty()) {
 			build_ok = false;
 		} else {
 			stage.shader_stage = RD::SHADER_STAGE_VERTEX;
@@ -301,7 +300,7 @@ void ShaderRD::_compile_variant(uint32_t p_variant, CompileData p_data) {
 		current_source = builder.as_string();
 		RD::ShaderStageSPIRVData stage;
 		stage.spirv = RD::get_singleton()->shader_compile_spirv_from_source(RD::SHADER_STAGE_FRAGMENT, current_source, RD::SHADER_LANGUAGE_GLSL, &error);
-		if (stage.spirv.size() == 0) {
+		if (stage.spirv.is_empty()) {
 			build_ok = false;
 		} else {
 			stage.shader_stage = RD::SHADER_STAGE_FRAGMENT;
@@ -320,7 +319,7 @@ void ShaderRD::_compile_variant(uint32_t p_variant, CompileData p_data) {
 
 		RD::ShaderStageSPIRVData stage;
 		stage.spirv = RD::get_singleton()->shader_compile_spirv_from_source(RD::SHADER_STAGE_COMPUTE, current_source, RD::SHADER_LANGUAGE_GLSL, &error);
-		if (stage.spirv.size() == 0) {
+		if (stage.spirv.is_empty()) {
 			build_ok = false;
 		} else {
 			stage.shader_stage = RD::SHADER_STAGE_COMPUTE;

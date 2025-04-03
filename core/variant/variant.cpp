@@ -984,34 +984,34 @@ bool Variant::is_zero() const {
 
 		// Arrays.
 		case PACKED_BYTE_ARRAY: {
-			return PackedArrayRef<uint8_t>::get_array(_data.packed_array).size() == 0;
+			return PackedArrayRef<uint8_t>::get_array(_data.packed_array).is_empty();
 		}
 		case PACKED_INT32_ARRAY: {
-			return PackedArrayRef<int32_t>::get_array(_data.packed_array).size() == 0;
+			return PackedArrayRef<int32_t>::get_array(_data.packed_array).is_empty();
 		}
 		case PACKED_INT64_ARRAY: {
-			return PackedArrayRef<int64_t>::get_array(_data.packed_array).size() == 0;
+			return PackedArrayRef<int64_t>::get_array(_data.packed_array).is_empty();
 		}
 		case PACKED_FLOAT32_ARRAY: {
-			return PackedArrayRef<float>::get_array(_data.packed_array).size() == 0;
+			return PackedArrayRef<float>::get_array(_data.packed_array).is_empty();
 		}
 		case PACKED_FLOAT64_ARRAY: {
-			return PackedArrayRef<double>::get_array(_data.packed_array).size() == 0;
+			return PackedArrayRef<double>::get_array(_data.packed_array).is_empty();
 		}
 		case PACKED_STRING_ARRAY: {
-			return PackedArrayRef<String>::get_array(_data.packed_array).size() == 0;
+			return PackedArrayRef<String>::get_array(_data.packed_array).is_empty();
 		}
 		case PACKED_VECTOR2_ARRAY: {
-			return PackedArrayRef<Vector2>::get_array(_data.packed_array).size() == 0;
+			return PackedArrayRef<Vector2>::get_array(_data.packed_array).is_empty();
 		}
 		case PACKED_VECTOR3_ARRAY: {
-			return PackedArrayRef<Vector3>::get_array(_data.packed_array).size() == 0;
+			return PackedArrayRef<Vector3>::get_array(_data.packed_array).is_empty();
 		}
 		case PACKED_COLOR_ARRAY: {
-			return PackedArrayRef<Color>::get_array(_data.packed_array).size() == 0;
+			return PackedArrayRef<Color>::get_array(_data.packed_array).is_empty();
 		}
 		case PACKED_VECTOR4_ARRAY: {
-			return PackedArrayRef<Vector4>::get_array(_data.packed_array).size() == 0;
+			return PackedArrayRef<Vector4>::get_array(_data.packed_array).is_empty();
 		}
 		default: {
 		}
@@ -1654,15 +1654,13 @@ String Variant::stringify(int recursion_count) const {
 			// Add leading and trailing space to Dictionary printing. This distinguishes it
 			// from array printing on fonts that have similar-looking {} and [] characters.
 			String str("{ ");
-			List<Variant> keys;
-			d.get_key_list(&keys);
 
 			Vector<_VariantStrPair> pairs;
 
-			for (List<Variant>::Element *E = keys.front(); E; E = E->next()) {
+			for (const KeyValue<Variant, Variant> &kv : d) {
 				_VariantStrPair sp;
-				sp.key = stringify_variant_clean(E->get(), recursion_count);
-				sp.value = stringify_variant_clean(d[E->get()], recursion_count);
+				sp.key = stringify_variant_clean(kv.key, recursion_count);
+				sp.value = stringify_variant_clean(kv.value, recursion_count);
 
 				pairs.push_back(sp);
 			}
@@ -2529,6 +2527,11 @@ Variant::Variant(const Dictionary &p_dictionary) :
 		type(DICTIONARY) {
 	memnew_placement(_data._mem, Dictionary(p_dictionary));
 	static_assert(sizeof(Dictionary) <= sizeof(_data._mem));
+}
+
+Variant::Variant(std::initializer_list<Variant> p_init) :
+		type(ARRAY) {
+	memnew_placement(_data._mem, Array(p_init));
 }
 
 Variant::Variant(const Array &p_array) :
@@ -3406,6 +3409,26 @@ bool StringLikeVariantComparator::compare(const Variant &p_lhs, const Variant &p
 		return *VariantInternal::get_string_name(&p_lhs) == *VariantInternal::get_string(&p_rhs);
 	}
 	return false;
+}
+
+bool StringLikeVariantOrder::compare(const Variant &p_lhs, const Variant &p_rhs) {
+	if (p_lhs.get_type() == Variant::STRING) {
+		const String &lhs = *VariantInternal::get_string(&p_lhs);
+		if (p_rhs.get_type() == Variant::STRING) {
+			return StringName::AlphCompare::compare(lhs, *VariantInternal::get_string(&p_rhs));
+		} else if (p_rhs.get_type() == Variant::STRING_NAME) {
+			return StringName::AlphCompare::compare(lhs, *VariantInternal::get_string_name(&p_rhs));
+		}
+	} else if (p_lhs.get_type() == Variant::STRING_NAME) {
+		const StringName &lhs = *VariantInternal::get_string_name(&p_lhs);
+		if (p_rhs.get_type() == Variant::STRING) {
+			return StringName::AlphCompare::compare(lhs, *VariantInternal::get_string(&p_rhs));
+		} else if (p_rhs.get_type() == Variant::STRING_NAME) {
+			return StringName::AlphCompare::compare(lhs, *VariantInternal::get_string_name(&p_rhs));
+		}
+	}
+
+	return p_lhs < p_rhs;
 }
 
 bool Variant::is_ref_counted() const {

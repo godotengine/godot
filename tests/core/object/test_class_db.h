@@ -414,6 +414,9 @@ void validate_argument(const Context &p_context, const ExposedClass &p_class, co
 #ifdef DEBUG_METHODS_ENABLED
 	TEST_COND((p_arg.name.is_empty() || p_arg.name.begins_with("_unnamed_arg")),
 			vformat("Unnamed argument in position %d of %s '%s.%s'.", p_arg.position, p_owner_type, p_class.name, p_owner_name));
+
+	TEST_FAIL_COND((p_arg.name != "@varargs@" && !p_arg.name.is_valid_ascii_identifier()),
+			vformat("Invalid argument name '%s' of %s '%s.%s'.", p_arg.name, p_owner_type, p_class.name, p_owner_name));
 #endif // DEBUG_METHODS_ENABLED
 
 	const ExposedClass *arg_class = p_context.find_exposed_class(p_arg.type);
@@ -657,9 +660,8 @@ void add_exposed_classes(Context &r_context) {
 				method.return_type.name = Variant::get_type_name(return_info.type);
 			}
 
-			int i = 0;
-			for (List<PropertyInfo>::ConstIterator itr = method_info.arguments.begin(); itr != method_info.arguments.end(); ++itr, ++i) {
-				const PropertyInfo &arg_info = *itr;
+			for (int64_t i = 0; i < method_info.arguments.size(); ++i) {
+				const PropertyInfo &arg_info = method_info.arguments[i];
 
 				String orig_arg_name = arg_info.name;
 
@@ -731,9 +733,8 @@ void add_exposed_classes(Context &r_context) {
 			TEST_FAIL_COND(!String(signal.name).is_valid_ascii_identifier(),
 					"Signal name is not a valid identifier: '", exposed_class.name, ".", signal.name, "'.");
 
-			int i = 0;
-			for (List<PropertyInfo>::ConstIterator itr = method_info.arguments.begin(); itr != method_info.arguments.end(); ++itr, ++i) {
-				const PropertyInfo &arg_info = *itr;
+			for (int64_t i = 0; i < method_info.arguments.size(); ++i) {
+				const PropertyInfo &arg_info = method_info.arguments[i];
 
 				String orig_arg_name = arg_info.name;
 

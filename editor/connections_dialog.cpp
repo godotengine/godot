@@ -282,10 +282,11 @@ List<MethodInfo> ConnectDialog::_filter_method_list(const List<MethodInfo> &p_me
 	bool check_signal = compatible_methods_only->is_pressed();
 	List<MethodInfo> ret;
 
-	List<Pair<Variant::Type, StringName>> effective_args;
+	LocalVector<Pair<Variant::Type, StringName>> effective_args;
 	int unbind = get_unbinds();
-	for (int i = 0; i < p_signal.arguments.size() - unbind; i++) {
-		PropertyInfo pi = p_signal.arguments.get(i);
+	effective_args.reserve(p_signal.arguments.size() - unbind);
+	for (int64_t i = 0; i < p_signal.arguments.size() - unbind; i++) {
+		PropertyInfo pi = p_signal.arguments[i];
 		effective_args.push_back(Pair(pi.type, pi.class_name));
 	}
 	if (unbind == 0) {
@@ -312,17 +313,16 @@ List<MethodInfo> ConnectDialog::_filter_method_list(const List<MethodInfo> &p_me
 			}
 
 			bool type_mismatch = false;
-			const List<Pair<Variant::Type, StringName>>::Element *E = effective_args.front();
-			for (const List<PropertyInfo>::Element *F = mi.arguments.front(); F; F = F->next(), E = E->next()) {
-				Variant::Type stype = E->get().first;
-				Variant::Type mtype = F->get().type;
+			for (int64_t i = 0; i < mi.arguments.size(); ++i) {
+				Variant::Type stype = effective_args[i].first;
+				Variant::Type mtype = mi.arguments[i].type;
 
 				if (stype != Variant::NIL && mtype != Variant::NIL && stype != mtype) {
 					type_mismatch = true;
 					break;
 				}
 
-				if (stype == Variant::OBJECT && mtype == Variant::OBJECT && !ClassDB::is_parent_class(E->get().second, F->get().class_name)) {
+				if (stype == Variant::OBJECT && mtype == Variant::OBJECT && !ClassDB::is_parent_class(effective_args[i].second, mi.arguments[i].class_name)) {
 					type_mismatch = true;
 					break;
 				}
@@ -453,7 +453,13 @@ void ConnectDialog::_update_ok_enabled() {
 }
 
 void ConnectDialog::_update_warning_label() {
-	Ref<Script> scr = source->get_node(dst_path)->get_script();
+	Node *dst = source->get_node(dst_path);
+	if (dst == nullptr) {
+		warning_label->set_visible(false);
+		return;
+	}
+
+	Ref<Script> scr = dst->get_script();
 	if (scr.is_null()) {
 		warning_label->set_visible(false);
 		return;
@@ -546,13 +552,12 @@ String ConnectDialog::get_signature(const MethodInfo &p_method, PackedStringArra
 	signature.append(p_method.name);
 	signature.append("(");
 
-	int i = 0;
-	for (List<PropertyInfo>::ConstIterator itr = p_method.arguments.begin(); itr != p_method.arguments.end(); ++itr, ++i) {
-		if (itr != p_method.arguments.begin()) {
+	for (int64_t i = 0; i < p_method.arguments.size(); ++i) {
+		if (i > 0) {
 			signature.append(", ");
 		}
 
-		const PropertyInfo &pi = *itr;
+		const PropertyInfo &pi = p_method.arguments[i];
 		String type_name;
 		switch (pi.type) {
 			case Variant::NIL:
@@ -865,9 +870,8 @@ ConnectDialog::ConnectDialog() {
 	hbc_method->add_child(dst_method);
 	register_text_enter(dst_method);
 
-	open_method_tree = memnew(Button);
+	open_method_tree = memnew(Button(TTRC("Pick")));
 	hbc_method->add_child(open_method_tree);
-	open_method_tree->set_text("Pick");
 	open_method_tree->connect(SceneStringName(pressed), callable_mp(this, &ConnectDialog::_open_method_popup));
 
 	advanced = memnew(CheckButton(TTR("Advanced")));
@@ -1459,8 +1463,8 @@ void ConnectionsDock::update_tree() {
 				List<MethodInfo> base_signals;
 				base->get_script_signal_list(&base_signals);
 				HashSet<String> base_signal_names;
-				for (List<MethodInfo>::Element *F = base_signals.front(); F; F = F->next()) {
-					base_signal_names.insert(F->get().name);
+				for (const MethodInfo &signal : base_signals) {
+					base_signal_names.insert(signal.name);
 				}
 				for (List<MethodInfo>::Element *F = class_signals.front(); F; F = F->next()) {
 					if (base_signal_names.has(F->get().name)) {
@@ -1657,7 +1661,4 @@ ConnectionsDock::ConnectionsDock() {
 	tree->connect(SceneStringName(gui_input), callable_mp(this, &ConnectionsDock::_tree_gui_input));
 
 	add_theme_constant_override("separation", 3 * EDSCALE);
-}
-
-ConnectionsDock::~ConnectionsDock() {
 }

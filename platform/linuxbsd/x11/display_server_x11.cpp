@@ -111,8 +111,7 @@ struct Hints {
 static String get_atom_name(Display *p_disp, Atom p_atom) {
 	char *name = XGetAtomName(p_disp, p_atom);
 	ERR_FAIL_NULL_V_MSG(name, String(), "Atom is invalid.");
-	String ret;
-	ret.parse_utf8(name);
+	String ret = String::utf8(name);
 	XFree(name);
 	return ret;
 }
@@ -155,6 +154,9 @@ bool DisplayServerX11::has_feature(Feature p_feature) const {
 		case FEATURE_NATIVE_DIALOG_FILE_EXTRA:
 		case FEATURE_NATIVE_DIALOG_FILE_MIME: {
 			return (portal_desktop && portal_desktop->is_supported() && portal_desktop->is_file_chooser_supported());
+		} break;
+		case FEATURE_NATIVE_COLOR_PICKER: {
+			return (portal_desktop && portal_desktop->is_supported() && portal_desktop->is_screenshot_supported());
 		} break;
 #endif
 		case FEATURE_SCREEN_CAPTURE: {
@@ -338,38 +340,63 @@ void DisplayServerX11::_flush_mouse_motion() {
 
 #ifdef SPEECHD_ENABLED
 
+void DisplayServerX11::initialize_tts() const {
+	const_cast<DisplayServerX11 *>(this)->tts = memnew(TTS_Linux);
+}
+
 bool DisplayServerX11::tts_is_speaking() const {
-	ERR_FAIL_NULL_V_MSG(tts, false, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
+	if (unlikely(!tts)) {
+		initialize_tts();
+	}
+	ERR_FAIL_NULL_V(tts, false);
 	return tts->is_speaking();
 }
 
 bool DisplayServerX11::tts_is_paused() const {
-	ERR_FAIL_NULL_V_MSG(tts, false, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
+	if (unlikely(!tts)) {
+		initialize_tts();
+	}
+	ERR_FAIL_NULL_V(tts, false);
 	return tts->is_paused();
 }
 
 TypedArray<Dictionary> DisplayServerX11::tts_get_voices() const {
-	ERR_FAIL_NULL_V_MSG(tts, TypedArray<Dictionary>(), "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
+	if (unlikely(!tts)) {
+		initialize_tts();
+	}
+	ERR_FAIL_NULL_V(tts, TypedArray<Dictionary>());
 	return tts->get_voices();
 }
 
 void DisplayServerX11::tts_speak(const String &p_text, const String &p_voice, int p_volume, float p_pitch, float p_rate, int p_utterance_id, bool p_interrupt) {
-	ERR_FAIL_NULL_MSG(tts, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
+	if (unlikely(!tts)) {
+		initialize_tts();
+	}
+	ERR_FAIL_NULL(tts);
 	tts->speak(p_text, p_voice, p_volume, p_pitch, p_rate, p_utterance_id, p_interrupt);
 }
 
 void DisplayServerX11::tts_pause() {
-	ERR_FAIL_NULL_MSG(tts, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
+	if (unlikely(!tts)) {
+		initialize_tts();
+	}
+	ERR_FAIL_NULL(tts);
 	tts->pause();
 }
 
 void DisplayServerX11::tts_resume() {
-	ERR_FAIL_NULL_MSG(tts, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
+	if (unlikely(!tts)) {
+		initialize_tts();
+	}
+	ERR_FAIL_NULL(tts);
 	tts->resume();
 }
 
 void DisplayServerX11::tts_stop() {
-	ERR_FAIL_NULL_MSG(tts, "Enable the \"audio/general/text_to_speech\" project setting to use text-to-speech.");
+	if (unlikely(!tts)) {
+		initialize_tts();
+	}
+	ERR_FAIL_NULL(tts);
 	tts->stop();
 }
 
@@ -398,6 +425,10 @@ bool DisplayServerX11::is_dark_mode() const {
 	}
 }
 
+Color DisplayServerX11::get_accent_color() const {
+	return portal_desktop->get_appearance_accent_color();
+}
+
 void DisplayServerX11::set_system_theme_change_callback(const Callable &p_callable) {
 	portal_desktop->set_system_theme_change_callback(p_callable);
 }
@@ -405,7 +436,7 @@ void DisplayServerX11::set_system_theme_change_callback(const Callable &p_callab
 Error DisplayServerX11::file_dialog_show(const String &p_title, const String &p_current_directory, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const Callable &p_callback, WindowID p_window_id) {
 	WindowID window_id = p_window_id;
 
-	if (!windows.has(window_id) && !windows[window_id].is_popup) {
+	if (!windows.has(window_id) || windows[window_id].is_popup) {
 		window_id = MAIN_WINDOW_ID;
 	}
 
@@ -416,7 +447,7 @@ Error DisplayServerX11::file_dialog_show(const String &p_title, const String &p_
 Error DisplayServerX11::file_dialog_with_options_show(const String &p_title, const String &p_current_directory, const String &p_root, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const TypedArray<Dictionary> &p_options, const Callable &p_callback, WindowID p_window_id) {
 	WindowID window_id = p_window_id;
 
-	if (!windows.has(window_id) && !windows[window_id].is_popup) {
+	if (!windows.has(window_id) || windows[window_id].is_popup) {
 		window_id = MAIN_WINDOW_ID;
 	}
 
@@ -759,7 +790,7 @@ String DisplayServerX11::_clipboard_get_impl(Atom p_source, Window x11_window, A
 			}
 
 			if (success && (data_size > 0)) {
-				ret.parse_utf8((const char *)incr_data.ptr(), data_size);
+				ret.append_utf8((const char *)incr_data.ptr(), data_size);
 			}
 		} else if (bytes_left > 0) {
 			// Data is ready and can be processed all at once.
@@ -769,7 +800,7 @@ String DisplayServerX11::_clipboard_get_impl(Atom p_source, Window x11_window, A
 					&len, &dummy, &data);
 
 			if (result == Success) {
-				ret.parse_utf8((const char *)data);
+				ret.append_utf8((const char *)data);
 			} else {
 				print_verbose("Failed to get selection data.");
 			}
@@ -2061,7 +2092,7 @@ void DisplayServerX11::_update_window_mouse_passthrough(WindowID p_window) {
 			Region region = XCreateRegion();
 			XShapeCombineRegion(x11_display, windows[p_window].x11_window, ShapeInput, 0, 0, region, ShapeSet);
 			XDestroyRegion(region);
-		} else if (region_path.size() == 0) {
+		} else if (region_path.is_empty()) {
 			XShapeCombineMask(x11_display, windows[p_window].x11_window, ShapeInput, 0, 0, None, ShapeSet);
 		} else {
 			XPoint *points = (XPoint *)memalloc(sizeof(XPoint) * region_path.size());
@@ -2338,6 +2369,7 @@ void DisplayServerX11::window_set_position(const Point2i &p_position, WindowID p
 		return;
 	}
 
+	wd.position = p_position;
 	int x = 0;
 	int y = 0;
 	if (!window_get_flag(WINDOW_FLAG_BORDERLESS, p_window)) {
@@ -3363,6 +3395,10 @@ void DisplayServerX11::cursor_set_custom_image(const Ref<Resource> &p_cursor, Cu
 	}
 }
 
+bool DisplayServerX11::get_swap_cancel_ok() {
+	return swap_cancel_ok;
+}
+
 int DisplayServerX11::keyboard_get_layout_count() const {
 	int _group_count = 0;
 	XkbDescRec *kbd = XkbAllocKeyboard();
@@ -3502,6 +3538,17 @@ Key DisplayServerX11::keyboard_get_label_from_physical(Key p_keycode) const {
 		return p_keycode;
 	}
 	return (Key)(key | modifiers);
+}
+
+bool DisplayServerX11::color_picker(const Callable &p_callback) {
+	WindowID window_id = last_focused_window;
+
+	if (!windows.has(window_id)) {
+		window_id = MAIN_WINDOW_ID;
+	}
+
+	String xid = vformat("x11:%x", (uint64_t)windows[window_id].x11_window);
+	return portal_desktop->color_picker(xid, p_callback);
 }
 
 DisplayServerX11::Property DisplayServerX11::_read_property(Display *p_display, Window p_window, Atom p_property) {
@@ -3665,8 +3712,7 @@ void DisplayServerX11::_handle_key_event(WindowID p_window, XKeyEvent *p_event, 
 				keycode -= 'a' - 'A';
 			}
 
-			String tmp;
-			tmp.parse_utf8(utf8string, utf8bytes);
+			String tmp = String::utf8(utf8string, utf8bytes);
 			for (int i = 0; i < tmp.length(); i++) {
 				Ref<InputEventKey> k;
 				k.instantiate();
@@ -3746,8 +3792,7 @@ void DisplayServerX11::_handle_key_event(WindowID p_window, XKeyEvent *p_event, 
 				char str_xkb[256] = {};
 				int str_xkb_size = xkb_compose_state_get_utf8(wd.xkb_state, str_xkb, 255);
 
-				String tmp;
-				tmp.parse_utf8(str_xkb, str_xkb_size);
+				String tmp = String::utf8(str_xkb, str_xkb_size);
 				for (int i = 0; i < tmp.length(); i++) {
 					Ref<InputEventKey> k;
 					k.instantiate();
@@ -4102,7 +4147,7 @@ void DisplayServerX11::_xim_preedit_draw_callback(::XIM xim, ::XPointer client_d
 			if (xim_text->encoding_is_wchar) {
 				changed_text = String(xim_text->string.wide_char);
 			} else {
-				changed_text.parse_utf8(xim_text->string.multi_byte);
+				changed_text.append_utf8(xim_text->string.multi_byte);
 			}
 
 			if (call_data->chg_length < 0) {
@@ -5393,7 +5438,7 @@ void DisplayServerX11::process_events() {
 
 #ifdef DBUS_ENABLED
 	if (portal_desktop) {
-		portal_desktop->process_file_dialog_callbacks();
+		portal_desktop->process_callbacks();
 	}
 #endif
 
@@ -6474,8 +6519,12 @@ static ::XIMStyle _get_best_xim_style(const ::XIMStyle &p_style_a, const ::XIMSt
 DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, int64_t p_parent_window, Error &r_error) {
 	KeyMappingX11::initialize();
 
+	String current_desk = OS::get_singleton()->get_environment("XDG_CURRENT_DESKTOP").to_lower();
+	String session_desk = OS::get_singleton()->get_environment("XDG_SESSION_DESKTOP").to_lower();
+	swap_cancel_ok = (current_desk.contains("kde") || session_desk.contains("kde") || current_desk.contains("lxqt") || session_desk.contains("lxqt"));
+
 	xwayland = OS::get_singleton()->get_environment("XDG_SESSION_TYPE").to_lower() == "wayland";
-	kde5_embed_workaround = OS::get_singleton()->get_environment("XDG_CURRENT_DESKTOP").to_lower() == "kde" && OS::get_singleton()->get_environment("KDE_SESSION_VERSION") == "5";
+	kde5_embed_workaround = current_desk == "kde" && OS::get_singleton()->get_environment("KDE_SESSION_VERSION") == "5";
 
 	native_menu = memnew(NativeMenu);
 	context = p_context;
@@ -6765,7 +6814,7 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 	// Init TTS
 	bool tts_enabled = GLOBAL_GET("audio/general/text_to_speech");
 	if (tts_enabled) {
-		tts = memnew(TTS_Linux);
+		initialize_tts();
 	}
 #endif
 
@@ -6939,7 +6988,6 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 			window_set_flag(WindowFlags(i), true, main_window);
 		}
 	}
-	show_window(main_window);
 
 #if defined(RD_ENABLED)
 	if (rendering_context) {

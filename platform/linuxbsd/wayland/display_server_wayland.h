@@ -123,6 +123,7 @@ class DisplayServerWayland : public DisplayServer {
 	WaylandThread wayland_thread;
 
 	Context context;
+	bool swap_cancel_ok = false;
 
 	String ime_text;
 	Vector2i ime_selection;
@@ -165,6 +166,8 @@ class DisplayServerWayland : public DisplayServer {
 
 	void try_suspend();
 
+	void initialize_tts() const;
+
 public:
 	virtual bool has_feature(Feature p_feature) const override;
 
@@ -184,6 +187,7 @@ public:
 #ifdef DBUS_ENABLED
 	virtual bool is_dark_mode_supported() const override;
 	virtual bool is_dark_mode() const override;
+	virtual Color get_accent_color() const override;
 	virtual void set_system_theme_change_callback(const Callable &p_callable) override;
 
 	virtual Error file_dialog_show(const String &p_title, const String &p_current_directory, const String &p_filename, bool p_show_hidden, FileDialogMode p_mode, const Vector<String> &p_filters, const Callable &p_callback, WindowID p_window_id) override;
@@ -292,12 +296,16 @@ public:
 	virtual CursorShape cursor_get_shape() const override;
 	virtual void cursor_set_custom_image(const Ref<Resource> &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot) override;
 
+	virtual bool get_swap_cancel_ok() override;
+
 	virtual int keyboard_get_layout_count() const override;
 	virtual int keyboard_get_current_layout() const override;
 	virtual void keyboard_set_current_layout(int p_index) override;
 	virtual String keyboard_get_layout_language(int p_index) const override;
 	virtual String keyboard_get_layout_name(int p_index) const override;
 	virtual Key keyboard_get_keycode_from_physical(Key p_keycode) const override;
+
+	virtual bool color_picker(const Callable &p_callback) override;
 
 	virtual void process_events() override;
 

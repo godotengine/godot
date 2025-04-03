@@ -43,7 +43,6 @@
 #include "Jolt/Physics/Collision/ContactListener.h"
 #include "Jolt/Physics/SoftBody/SoftBodyContactListener.h"
 
-#include <stdint.h>
 #include <new>
 
 class JoltShapedObject3D;

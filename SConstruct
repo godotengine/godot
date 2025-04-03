@@ -14,6 +14,8 @@ from importlib.util import module_from_spec, spec_from_file_location
 from types import ModuleType
 
 from SCons import __version__ as scons_raw_version
+from SCons.Builder import ListEmitter
+from SCons.Util import CLVar
 
 # Explicitly resolve the helper modules, this is done to avoid clash with
 # modules of the same name that might be randomly added (e.g. someone adding
@@ -57,7 +59,7 @@ import gles3_builders
 import glsl_builders
 import methods
 import scu_builders
-from misc.utility.color import STDERR_COLOR, print_error, print_info, print_warning
+from misc.utility.color import is_stderr_color, print_error, print_info, print_warning
 from platform_methods import architecture_aliases, architectures, compatibility_platform_aliases
 
 if ARGUMENTS.get("target", "editor") == "editor":
@@ -166,7 +168,7 @@ opts.Add(
         "optimize",
         "Optimization level (by default inferred from 'target' and 'dev_build')",
         "auto",
-        ("auto", "none", "custom", "debug", "speed", "speed_trace", "size"),
+        ("auto", "none", "custom", "debug", "speed", "speed_trace", "size", "size_extra"),
     )
 )
 opts.Add(BoolVariable("debug_symbols", "Build with debugging symbols", False))
@@ -219,6 +221,10 @@ opts.Add("vsproj_name", "Name of the Visual Studio solution", "godot")
 opts.Add("import_env_vars", "A comma-separated list of environment variables to copy from the outer environment.", "")
 opts.Add(BoolVariable("disable_3d", "Disable 3D nodes for a smaller executable", False))
 opts.Add(BoolVariable("disable_advanced_gui", "Disable advanced GUI nodes and behaviors", False))
+opts.Add(BoolVariable("disable_physics_2d", "Disable 2D physics nodes and server", False))
+opts.Add(BoolVariable("disable_physics_3d", "Disable 3D physics nodes and server", False))
+opts.Add(BoolVariable("disable_navigation_2d", "Disable 2D navigation features", False))
+opts.Add(BoolVariable("disable_navigation_3d", "Disable 3D navigation features", False))
 opts.Add(BoolVariable("disable_xr", "Disable XR nodes and server", False))
 opts.Add("build_profile", "Path to a file containing a feature build profile", "")
 opts.Add(BoolVariable("modules_enabled_by_default", "If no, disable all modules except ones explicitly enabled", True))
@@ -236,6 +242,13 @@ opts.Add(BoolVariable("engine_update_check", "Enable engine update checks in the
 opts.Add(BoolVariable("steamapi", "Enable minimal SteamAPI integration for usage time tracking (editor only)", False))
 opts.Add("cache_path", "Path to a directory where SCons cache files will be stored. No value disables the cache.", "")
 opts.Add("cache_limit", "Max size (in GiB) for the SCons cache. 0 means no limit.", "0")
+opts.Add(
+    BoolVariable(
+        "redirect_build_objects",
+        "Enable redirecting built objects/libraries to `bin/obj/` to declutter the repository.",
+        True,
+    )
+)
 
 # Thirdparty libraries
 opts.Add(BoolVariable("builtin_brotli", "Use the built-in Brotli library", True))
@@ -433,9 +446,18 @@ for tool in custom_tools:
     env.Tool(tool)
 
 
-# add default include paths
-
+# Add default include paths.
 env.Prepend(CPPPATH=["#"])
+
+# Allow marking includes as external/system to avoid raising warnings.
+env["_CCCOMCOM"] += " $_CPPEXTINCFLAGS"
+env["CPPEXTPATH"] = CLVar("")
+if env.scons_version < (4, 2):
+    env["_CPPEXTINCFLAGS"] = "${_concat(EXTINCPREFIX, CPPEXTPATH, EXTINCSUFFIX, __env__, RDirs, TARGET, SOURCE)}"
+else:
+    env["_CPPEXTINCFLAGS"] = (
+        "${_concat(EXTINCPREFIX, CPPEXTPATH, EXTINCSUFFIX, __env__, RDirs, TARGET, SOURCE, affect_signature=False)}"
+    )
 
 # configure ENV for platform
 env.platform_exporters = platform_exporters
@@ -696,9 +718,9 @@ if env["arch"] == "x86_32":
 
 # Explicitly specify colored output.
 if methods.using_gcc(env):
-    env.AppendUnique(CCFLAGS=["-fdiagnostics-color" if STDERR_COLOR else "-fno-diagnostics-color"])
+    env.AppendUnique(CCFLAGS=["-fdiagnostics-color" if is_stderr_color() else "-fno-diagnostics-color"])
 elif methods.using_clang(env) or methods.using_emcc(env):
-    env.AppendUnique(CCFLAGS=["-fcolor-diagnostics" if STDERR_COLOR else "-fno-color-diagnostics"])
+    env.AppendUnique(CCFLAGS=["-fcolor-diagnostics" if is_stderr_color() else "-fno-color-diagnostics"])
     if sys.platform == "win32":
         env.AppendUnique(CCFLAGS=["-fansi-escape-codes"])
 
@@ -717,9 +739,11 @@ if env.msvc:
         env.Append(LINKFLAGS=["/OPT:REF"])
         if env["optimize"] == "speed_trace":
             env.Append(LINKFLAGS=["/OPT:NOICF"])
-    elif env["optimize"] == "size":
+    elif env["optimize"].startswith("size"):
         env.Append(CCFLAGS=["/O1"])
         env.Append(LINKFLAGS=["/OPT:REF"])
+        if env["optimize"] == "size_extra":
+            env.Append(CPPDEFINES=["SIZE_EXTRA"])
     elif env["optimize"] == "debug" or env["optimize"] == "none":
         env.Append(CCFLAGS=["/Od"])
 else:
@@ -764,9 +788,11 @@ else:
     elif env["optimize"] == "speed_trace":
         env.Append(CCFLAGS=["-O2"])
         env.Append(LINKFLAGS=["-O2"])
-    elif env["optimize"] == "size":
+    elif env["optimize"].startswith("size"):
         env.Append(CCFLAGS=["-Os"])
         env.Append(LINKFLAGS=["-Os"])
+        if env["optimize"] == "size_extra":
+            env.Append(CPPDEFINES=["SIZE_EXTRA"])
     elif env["optimize"] == "debug":
         env.Append(CCFLAGS=["-Og"])
         env.Append(LINKFLAGS=["-Og"])
@@ -876,7 +902,7 @@ else:  # GCC, Clang
                     "-Wstringop-overflow=4",
                 ]
             )
-            env.Append(CXXFLAGS=["-Wplacement-new=1"])
+            env.Append(CXXFLAGS=["-Wplacement-new=1", "-Wvirtual-inheritance"])
             # Need to fix a warning with AudioServer lambdas before enabling.
             # if cc_version_major != 9:  # GCC 9 had a regression (GH-36325).
             #    env.Append(CXXFLAGS=["-Wnoexcept"])
@@ -895,6 +921,17 @@ else:  # GCC, Clang
 
     if env["werror"]:
         env.Append(CCFLAGS=["-Werror"])
+
+# Configure external includes.
+if env.msvc:
+    if cc_version_major < 16 or (cc_version_major == 16 and cc_version_minor < 10):
+        env.AppendUnique(CCFLAGS=["/experimental:external"])
+    env.AppendUnique(CCFLAGS=["/external:W0"])
+    env["EXTINCPREFIX"] = "/external:I"
+    env["EXTINCSUFFIX"] = ""
+else:
+    env["EXTINCPREFIX"] = "-isystem "
+    env["EXTINCSUFFIX"] = ""
 
 if hasattr(detect, "get_program_suffix"):
     suffix = "." + detect.get_program_suffix()
@@ -917,6 +954,51 @@ suffix += env.extra_suffix
 
 sys.path.remove(tmppath)
 sys.modules.pop("detect")
+
+if env.editor_build:
+    unsupported_opts = []
+    for disable_opt in [
+        "disable_3d",
+        "disable_advanced_gui",
+        "disable_physics_2d",
+        "disable_physics_3d",
+        "disable_navigation_2d",
+        "disable_navigation_3d",
+    ]:
+        if env[disable_opt]:
+            unsupported_opts.append(disable_opt)
+    if unsupported_opts != []:
+        print_error(
+            "The following build option(s) cannot be used for editor builds, but only for export template builds: {}.".format(
+                ", ".join(unsupported_opts)
+            )
+        )
+        Exit(255)
+
+if env["disable_3d"]:
+    env.Append(CPPDEFINES=["_3D_DISABLED"])
+    env["disable_navigation_3d"] = True
+    env["disable_physics_3d"] = True
+    env["disable_xr"] = True
+if env["disable_advanced_gui"]:
+    env.Append(CPPDEFINES=["ADVANCED_GUI_DISABLED"])
+if env["disable_physics_2d"]:
+    env.Append(CPPDEFINES=["PHYSICS_2D_DISABLED"])
+if env["disable_physics_3d"]:
+    env.Append(CPPDEFINES=["PHYSICS_3D_DISABLED"])
+if env["disable_navigation_2d"]:
+    env.Append(CPPDEFINES=["NAVIGATION_2D_DISABLED"])
+if env["disable_navigation_3d"]:
+    env.Append(CPPDEFINES=["NAVIGATION_3D_DISABLED"])
+if env["disable_xr"]:
+    env.Append(CPPDEFINES=["XR_DISABLED"])
+if env["minizip"]:
+    env.Append(CPPDEFINES=["MINIZIP_ENABLED"])
+if env["brotli"]:
+    env.Append(CPPDEFINES=["BROTLI_ENABLED"])
+
+if not env["verbose"]:
+    methods.no_verbose(env)
 
 modules_enabled = OrderedDict()
 env.module_dependencies = {}
@@ -968,8 +1050,6 @@ if env.editor_build:
         print_error("Not all modules required by editor builds are enabled.")
         Exit(255)
 
-env.version_info = methods.get_version_info(env.module_version_string)
-
 env["PROGSUFFIX_WRAP"] = suffix + env.module_version_string + ".console" + env["PROGSUFFIX"]
 env["PROGSUFFIX"] = suffix + env.module_version_string + env["PROGSUFFIX"]
 env["OBJSUFFIX"] = suffix + env["OBJSUFFIX"]
@@ -988,31 +1068,6 @@ env["SHLIBSUFFIX"] = suffix + env["SHLIBSUFFIX"]
 
 env["OBJPREFIX"] = env["object_prefix"]
 env["SHOBJPREFIX"] = env["object_prefix"]
-
-if env["disable_3d"]:
-    if env.editor_build:
-        print_error("Build option `disable_3d=yes` cannot be used for editor builds, only for export template builds.")
-        Exit(255)
-    else:
-        env.Append(CPPDEFINES=["_3D_DISABLED"])
-        env["disable_xr"] = True
-if env["disable_advanced_gui"]:
-    if env.editor_build:
-        print_error(
-            "Build option `disable_advanced_gui=yes` cannot be used for editor builds, only for export template builds."
-        )
-        Exit(255)
-    else:
-        env.Append(CPPDEFINES=["ADVANCED_GUI_DISABLED"])
-if env["disable_xr"]:
-    env.Append(CPPDEFINES=["XR_DISABLED"])
-if env["minizip"]:
-    env.Append(CPPDEFINES=["MINIZIP_ENABLED"])
-if env["brotli"]:
-    env.Append(CPPDEFINES=["BROTLI_ENABLED"])
-
-if not env["verbose"]:
-    methods.no_verbose(env)
 
 GLSL_BUILDERS = {
     "RD_GLSL": env.Builder(
@@ -1053,6 +1108,14 @@ if env["ninja"]:
 # Threads
 if env["threads"]:
     env.Append(CPPDEFINES=["THREADS_ENABLED"])
+
+# Ensure build objects are put in their own folder if `redirect_build_objects` is enabled.
+env.Prepend(LIBEMITTER=[methods.redirect_emitter])
+env.Prepend(SHLIBEMITTER=[methods.redirect_emitter])
+for key in (emitters := env.StaticObject.builder.emitter):
+    emitters[key] = ListEmitter([methods.redirect_emitter] + env.Flatten(emitters[key]))
+for key in (emitters := env.SharedObject.builder.emitter):
+    emitters[key] = ListEmitter([methods.redirect_emitter] + env.Flatten(emitters[key]))
 
 # Build subdirs, the build order is dependent on link order.
 Export("env")
