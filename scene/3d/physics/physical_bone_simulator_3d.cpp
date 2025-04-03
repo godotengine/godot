@@ -364,7 +364,7 @@ void PhysicalBoneSimulator3D::set_bone_global_pose(int p_bone, const Transform3D
 	bones.write[p_bone].global_pose = p_pose;
 }
 
-void PhysicalBoneSimulator3D::_process_modification() {
+void PhysicalBoneSimulator3D::_process_modification(double p_delta) {
 	Skeleton3D *skeleton = get_skeleton();
 	if (!skeleton) {
 		return;
