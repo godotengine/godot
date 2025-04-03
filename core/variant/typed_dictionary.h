@@ -189,6 +189,13 @@ struct GetTypeInfo<const TypedDictionary<K, V> &> {
 		_FORCE_INLINE_ TypedDictionary() {                                                                                                         \
 			set_typed(m_variant_type, StringName(), Variant(), Variant::OBJECT, T::get_class_static(), Variant());                                 \
 		}                                                                                                                                          \
+		_FORCE_INLINE_ TypedDictionary(std::initializer_list<KeyValue<m_type, T>> p_init) :                                                        \
+				Dictionary() {                                                                                                                     \
+			set_typed(m_variant_type, StringName(), Variant(), Variant::OBJECT, std::remove_pointer<T>::type::get_class_static(), Variant());      \
+			for (const KeyValue<m_type, T> &E : p_init) {                                                                                          \
+				operator[](E.key) = E.value;                                                                                                       \
+			}                                                                                                                                      \
+		}                                                                                                                                          \
 	};                                                                                                                                             \
 	template <typename T>                                                                                                                          \
 	struct GetTypeInfo<TypedDictionary<m_type, T>> {                                                                                               \
