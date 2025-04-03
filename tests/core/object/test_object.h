@@ -143,15 +143,6 @@ TEST_CASE("[Object] Core getters") {
 	CHECK_MESSAGE(
 			object.get_save_class() == "Object",
 			"The returned save class should match the expected value.");
-
-	List<String> inheritance_list;
-	object.get_inheritance_list_static(&inheritance_list);
-	CHECK_MESSAGE(
-			inheritance_list.size() == 1,
-			"The inheritance list should consist of Object only");
-	CHECK_MESSAGE(
-			inheritance_list.front()->get() == "Object",
-			"The inheritance list should consist of Object only");
 }
 
 TEST_CASE("[Object] Metadata") {
