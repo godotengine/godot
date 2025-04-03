@@ -4,8 +4,8 @@
 		A physics constraint which moves two bodies such that their distance is between a minimum and maximum distance.
 	</brief_description>
 	<description>
-		A physics constraint which moves two bodies such that their distance is between a minimum and maximum distance. For example  Body A can be a [StaticBody3D] representing a ceiling and [RigidBody3D] representing a hanging chandelier which can swing when hit.
-		Note: This constraint is only supported by the Jolt Physics engine.
+		A physics constraint which moves two bodies such that their distance is between a minimum and maximum distance. For example, "Body A" can be a [StaticBody3D] representing a ceiling while "Body B" can be a [RigidBody3D] representing a hanging chandelier which can swing when hit.
+		[b]Note:[/b] This constraint is only supported by the Jolt Physics engine. To switch to Jolt Physics, set [member ProjectSettings.physics/3d/physics_engine] to [b]Jolt Physics[/b].
 	</description>
 	<tutorials>
 	</tutorials>
