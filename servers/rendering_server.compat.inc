@@ -50,12 +50,17 @@ void RenderingServer::_canvas_item_add_circle_bind_compat_84523(RID p_item, cons
 	canvas_item_add_circle(p_item, p_pos, p_radius, p_color, false);
 }
 
+void RenderingServer::_instance_geometry_set_lightmap_bind_compat_97755(RID p_instance, RID p_lightmap, const Rect2 &p_lightmap_uv_scale, int p_slice_index) {
+	instance_geometry_set_lightmap(p_instance, p_lightmap, p_lightmap_uv_scale, p_slice_index, -1);
+}
+
 void RenderingServer::_bind_compatibility_methods() {
 	ClassDB::bind_compatibility_method(D_METHOD("multimesh_allocate_data", "multimesh", "instances", "transform_format", "color_format", "custom_data_format"), &RenderingServer::_multimesh_allocate_data_bind_compat_99455, DEFVAL(false), DEFVAL(false));
 	ClassDB::bind_compatibility_method(D_METHOD("environment_set_fog", "env", "enable", "light_color", "light_energy", "sun_scatter", "density", "height", "height_density", "aerial_perspective", "sky_affect"), &RenderingServer::_environment_set_fog_bind_compat_84792);
 	ClassDB::bind_compatibility_method(D_METHOD("canvas_item_add_multiline", "item", "points", "colors", "width"), &RenderingServer::_canvas_item_add_multiline_bind_compat_84523, DEFVAL(-1.0));
 	ClassDB::bind_compatibility_method(D_METHOD("canvas_item_add_rect", "item", "rect", "color"), &RenderingServer::_canvas_item_add_rect_bind_compat_84523);
 	ClassDB::bind_compatibility_method(D_METHOD("canvas_item_add_circle", "item", "pos", "radius", "color"), &RenderingServer::_canvas_item_add_circle_bind_compat_84523);
+	ClassDB::bind_compatibility_method(D_METHOD("instance_geometry_set_lightmap", "instance", "lightmap", "lightmap_uv_scale", "lightmap_slice"), &RenderingServer::_instance_geometry_set_lightmap_bind_compat_97755);
 }
 
 #endif
