@@ -171,6 +171,7 @@ void PortableCompressedTexture2D::create_from_image(const Ref<Image> &p_image, C
 			}
 		} break;
 		case COMPRESSION_MODE_BASIS_UNIVERSAL: {
+			ERR_FAIL_COND(p_image->is_compressed());
 			encode_uint16(DATA_FORMAT_BASIS_UNIVERSAL, buffer.ptrw() + 2);
 			Image::UsedChannels uc = p_image->detect_used_channels(p_normal_map ? Image::COMPRESS_SOURCE_NORMAL : Image::COMPRESS_SOURCE_GENERIC);
 			Vector<uint8_t> budata = Image::basis_universal_packer(p_image, uc);
@@ -180,6 +181,7 @@ void PortableCompressedTexture2D::create_from_image(const Ref<Image> &p_image, C
 		case COMPRESSION_MODE_S3TC:
 		case COMPRESSION_MODE_ETC2:
 		case COMPRESSION_MODE_BPTC: {
+			ERR_FAIL_COND(p_image->is_compressed());
 			encode_uint16(DATA_FORMAT_IMAGE, buffer.ptrw() + 2);
 			Ref<Image> copy = p_image->duplicate();
 			switch (p_compression_mode) {
@@ -195,7 +197,7 @@ void PortableCompressedTexture2D::create_from_image(const Ref<Image> &p_image, C
 				default: {
 				};
 			}
-
+			encode_uint32(copy->get_format(), buffer.ptrw() + 4);
 			buffer.append_array(copy->get_data());
 
 		} break;
