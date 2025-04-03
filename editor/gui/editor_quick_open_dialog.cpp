@@ -343,18 +343,31 @@ void QuickOpenResultContainer::init(const Vector<StringName> &p_base_types) {
 		// Load history when opening for the first time.
 		file_type_icons.insert(SNAME("__default_icon"), get_editor_theme_icon(SNAME("Object")));
 
+		bool history_modified = false;
 		List<String> history_keys;
 		history_file->get_section_keys("selected_history", &history_keys);
 		for (const String &type : history_keys) {
 			const StringName type_name = type;
 			const PackedStringArray paths = history_file->get_value("selected_history", type);
 
+			PackedStringArray cleaned_paths;
+			cleaned_paths.resize(paths.size());
+
 			Vector<QuickOpenResultCandidate> loaded_candidates;
 			loaded_candidates.resize(paths.size());
 			{
 				QuickOpenResultCandidate *candidates_write = loaded_candidates.ptrw();
+				String *cleanup_write = cleaned_paths.ptrw();
 				int i = 0;
-				for (const String &path : paths) {
+				for (String path : paths) {
+					if (path.begins_with("uid://")) {
+						ResourceUID::ID id = ResourceUID::get_singleton()->text_to_id(path);
+						if (!ResourceUID::get_singleton()->has_id(id)) {
+							continue;
+						}
+						path = ResourceUID::get_singleton()->get_id_path(id);
+					}
+
 					if (!ResourceLoader::exists(path)) {
 						continue;
 					}
@@ -363,13 +376,29 @@ void QuickOpenResultContainer::init(const Vector<StringName> &p_base_types) {
 					QuickOpenResultCandidate candidate;
 					_setup_candidate(candidate, path);
 					candidates_write[i] = candidate;
+					cleanup_write[i] = path;
 					i++;
 				}
 				loaded_candidates.resize(i);
+				cleaned_paths.resize(i);
 				selected_history.insert(type, loaded_candidates);
+
+				if (i < paths.size()) {
+					// Some paths removed, need to update history.
+					if (i == 0) {
+						history_file->erase_section_key("selected_history", type);
+					} else {
+						history_file->set_value("selected_history", type, cleaned_paths);
+					}
+					history_modified = true;
+				}
 			}
 		}
+		if (history_modified) {
+			history_file->save(_get_cache_file_path());
+		}
 	}
+
 	_create_initial_results();
 }
 
