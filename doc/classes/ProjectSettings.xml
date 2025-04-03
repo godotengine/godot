@@ -1187,6 +1187,15 @@
 		<member name="gui/timers/tooltip_delay_sec.editor_hint" type="float" setter="" getter="" default="0.5">
 			Delay for tooltips in the editor.
 		</member>
+		<member name="input/keyboard_player_id_override" type="int" setter="" getter="">
+			The player id the keyboard is assigned to.
+		</member>
+		<member name="input/mouse_player_id_override" type="int" setter="" getter="">
+			The player id the mouse is assigned to.
+		</member>
+		<member name="input/touch_player_id_override" type="int" setter="" getter="">
+			The player id the touch events are assigned to.
+		</member>
 		<member name="input/ui_accept" type="Dictionary" setter="" getter="">
 			Default [InputEventAction] to confirm a focused button, menu or list item, or validate input.
 			[b]Note:[/b] Default [code]ui_*[/code] actions cannot be removed as they are necessary for the internal logic of several [Control]s. The events assigned to the action can however be modified.
@@ -2200,6 +2209,30 @@
 		</member>
 		<member name="layer_names/avoidance/layer_32" type="String" setter="" getter="" default="&quot;&quot;">
 			Optional name for the navigation avoidance layer 32. If left empty, the layer will display as "Layer 32".
+		</member>
+		<member name="layer_names/player_mask/layer_1" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the player mask layer 1. If left empty, the layer will display as "Layer 1".
+		</member>
+		<member name="layer_names/player_mask/layer_2" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the player mask layer 2. If left empty, the layer will display as "Layer 2".
+		</member>
+		<member name="layer_names/player_mask/layer_3" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the player mask layer 3. If left empty, the layer will display as "Layer 3".
+		</member>
+		<member name="layer_names/player_mask/layer_4" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the player mask layer 4. If left empty, the layer will display as "Layer 4".
+		</member>
+		<member name="layer_names/player_mask/layer_5" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the player mask layer 5. If left empty, the layer will display as "Layer 5".
+		</member>
+		<member name="layer_names/player_mask/layer_6" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the player mask layer 6. If left empty, the layer will display as "Layer 6".
+		</member>
+		<member name="layer_names/player_mask/layer_7" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the player mask layer 7. If left empty, the layer will display as "Layer 7".
+		</member>
+		<member name="layer_names/player_mask/layer_8" type="String" setter="" getter="" default="&quot;&quot;">
+			Optional name for the player mask layer 8. If left empty, the layer will display as "Layer 8".
 		</member>
 		<member name="memory/limits/message_queue/max_size_mb" type="int" setter="" getter="" default="32">
 			Godot uses a message queue to defer some function calls. If you run out of space on it (you will see an error), you can increase the size here.

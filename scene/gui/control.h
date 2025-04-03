@@ -241,6 +241,9 @@ private:
 		NodePath focus_next;
 		NodePath focus_prev;
 
+		// Accept inputs from all players by default.
+		BitField<PlayerMask> player_mask = PLAYER_ALL;
+
 		ObjectID shortcut_context;
 
 		// Theming.
@@ -328,7 +331,7 @@ private:
 	// Focus.
 
 	void _window_find_focus_neighbor(const Vector2 &p_dir, Node *p_at, const Rect2 &p_rect, const Rect2 &p_clamp, real_t p_min, real_t &r_closest_dist_squared, Control **r_closest);
-	Control *_get_focus_neighbor(Side p_side, int p_count = 0);
+	Control *_get_focus_neighbor(Side p_side, int p_count = 0, PlayerId p_player_id = PlayerId::P1);
 	bool _is_focus_disabled_recursively() const;
 	void _propagate_focus_behavior_recursively(RecursiveBehavior p_focus_recursive_behavior, bool p_force);
 	void _propagate_mouse_behavior_recursively(RecursiveBehavior p_focus_recursive_behavior, bool p_force);
@@ -348,6 +351,16 @@ private:
 	String get_tooltip_text() const;
 
 protected:
+#ifndef DISABLE_DEPRECATED
+	bool _has_focus_bind_compat_102412() const;
+	void _grab_focus_bind_compat_102412();
+	void _release_focus_bind_compat_102412();
+	Control *_find_next_valid_focus_bind_compat_102412() const;
+	Control *_find_prev_valid_focus_bind_compat_102412() const;
+	Control *_find_valid_focus_neighbor_bind_compat_102412(Side p_size) const;
+	static void _bind_compatibility_methods();
+#endif // DISABLE_DEPRECATED
+
 	// Dynamic properties.
 
 	bool _set(const StringName &p_name, const Variant &p_value);
@@ -565,14 +578,15 @@ public:
 	FocusMode get_focus_mode_with_recursive() const;
 	void set_focus_recursive_behavior(RecursiveBehavior p_recursive_mouse_behavior);
 	RecursiveBehavior get_focus_recursive_behavior() const;
-	bool has_focus() const;
-	void grab_focus();
+	TypedArray<int> get_focused_players_id() const;
+	bool has_focus(PlayerId p_player_id = PlayerId::P1) const;
+	void grab_focus(PlayerId p_player_id = PlayerId::P1);
 	void grab_click_focus();
-	void release_focus();
+	void release_focus(PlayerId p_player_id = PlayerId::P1);
 
-	Control *find_next_valid_focus() const;
-	Control *find_prev_valid_focus() const;
-	Control *find_valid_focus_neighbor(Side p_size) const;
+	Control *find_next_valid_focus(PlayerId p_player_id = PlayerId::P1) const;
+	Control *find_prev_valid_focus(PlayerId p_player_id = PlayerId::P1) const;
+	Control *find_valid_focus_neighbor(Side p_size, PlayerId p_player_id = PlayerId::P1) const;
 
 	void set_focus_neighbor(Side p_side, const NodePath &p_neighbor);
 	NodePath get_focus_neighbor(Side p_side) const;
@@ -581,6 +595,10 @@ public:
 	NodePath get_focus_next() const;
 	void set_focus_previous(const NodePath &p_prev);
 	NodePath get_focus_previous() const;
+
+	void set_player_mask(BitField<PlayerMask> p_player_mask);
+	BitField<PlayerMask> get_player_mask() const;
+	BitField<PlayerMask> calculate_ancestral_player_mask() const;
 
 	// Rendering.
 

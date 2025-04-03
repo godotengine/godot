@@ -53,8 +53,16 @@ class InputEvent : public Resource {
 	GDCLASS(InputEvent, Resource);
 
 	int device = 0;
+	PlayerId player = PlayerId::P1;
 
 protected:
+#ifndef DISABLE_DEPRECATED
+	bool _is_action_pressed_bind_compat_102412(const StringName &p_action, bool p_allow_echo = false, bool p_exact_match = false) const;
+	bool _is_action_released_bind_compat_102412(const StringName &p_action, bool p_exact_match = false) const;
+	float _get_action_strength_bind_compat_102412(const StringName &p_action, bool p_exact_match = false) const;
+	static void _bind_compatibility_methods();
+#endif // DISABLE_DEPRECATED
+
 	bool canceled = false;
 	bool pressed = false;
 
@@ -67,11 +75,15 @@ public:
 	void set_device(int p_device);
 	int get_device() const;
 
+	void set_player(PlayerId p_player);
+	PlayerId get_player() const;
+	void set_player_from_device();
+
 	bool is_action(const StringName &p_action, bool p_exact_match = false) const;
-	bool is_action_pressed(const StringName &p_action, bool p_allow_echo = false, bool p_exact_match = false) const;
-	bool is_action_released(const StringName &p_action, bool p_exact_match = false) const;
-	float get_action_strength(const StringName &p_action, bool p_exact_match = false) const;
-	float get_action_raw_strength(const StringName &p_action, bool p_exact_match = false) const;
+	bool is_action_pressed(const StringName &p_action, bool p_allow_echo = false, bool p_exact_match = false, PlayerId p_player_id = PlayerId::P1) const;
+	bool is_action_released(const StringName &p_action, bool p_exact_match = false, PlayerId p_player_id = PlayerId::P1) const;
+	float get_action_strength(const StringName &p_action, bool p_exact_match = false, PlayerId p_player_id = PlayerId::P1) const;
+	float get_action_raw_strength(const StringName &p_action, bool p_exact_match = false, PlayerId p_player_id = PlayerId::P1) const;
 
 	bool is_canceled() const;
 	bool is_pressed() const;
