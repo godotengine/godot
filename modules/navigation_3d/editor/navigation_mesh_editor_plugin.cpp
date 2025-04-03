@@ -152,7 +152,7 @@ void NavigationMeshEditorPlugin::edit(Object *p_object) {
 }
 
 bool NavigationMeshEditorPlugin::handles(Object *p_object) const {
-	return p_object->is_class("NavigationRegion3D");
+	return p_object->is_class<NavigationRegion3D>();
 }
 
 void NavigationMeshEditorPlugin::make_visible(bool p_visible) {

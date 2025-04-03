@@ -765,7 +765,7 @@ void AbstractPolygon2DEditorPlugin::edit(Object *p_object) {
 }
 
 bool AbstractPolygon2DEditorPlugin::handles(Object *p_object) const {
-	return p_object->is_class(klass);
+	return p_object->is_class_by_name(klass);
 }
 
 void AbstractPolygon2DEditorPlugin::make_visible(bool p_visible) {

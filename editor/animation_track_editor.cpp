@@ -5263,12 +5263,12 @@ void AnimationTrackEditor::_new_track_node_selected(NodePath p_path) {
 	ERR_FAIL_NULL(node);
 	NodePath path_to = root->get_path_to(node, true);
 
-	if (adding_track_type == Animation::TYPE_BLEND_SHAPE && !node->is_class("MeshInstance3D")) {
+	if (adding_track_type == Animation::TYPE_BLEND_SHAPE && !node->is_class<MeshInstance3D>()) {
 		EditorNode::get_singleton()->show_warning(TTR("Blend Shape tracks only apply to MeshInstance3D nodes."));
 		return;
 	}
 
-	if ((adding_track_type == Animation::TYPE_POSITION_3D || adding_track_type == Animation::TYPE_ROTATION_3D || adding_track_type == Animation::TYPE_SCALE_3D) && !node->is_class("Node3D")) {
+	if ((adding_track_type == Animation::TYPE_POSITION_3D || adding_track_type == Animation::TYPE_ROTATION_3D || adding_track_type == Animation::TYPE_SCALE_3D) && !node->is_class<Node3D>()) {
 		EditorNode::get_singleton()->show_warning(TTR("Position/Rotation/Scale 3D tracks only apply to 3D-based nodes."));
 		return;
 	}
@@ -5313,7 +5313,7 @@ void AnimationTrackEditor::_new_track_node_selected(NodePath p_path) {
 			prop_selector->select_property_from_instance(node);
 		} break;
 		case Animation::TYPE_AUDIO: {
-			if (!node->is_class("AudioStreamPlayer") && !node->is_class("AudioStreamPlayer2D") && !node->is_class("AudioStreamPlayer3D")) {
+			if (!node->is_class_by_name("AudioStreamPlayer") && !node->is_class_by_name("AudioStreamPlayer2D") && !node->is_class_by_name("AudioStreamPlayer3D")) {
 				EditorNode::get_singleton()->show_warning(TTR("Audio tracks can only point to nodes of type:\n-AudioStreamPlayer\n-AudioStreamPlayer2D\n-AudioStreamPlayer3D"));
 				return;
 			}
@@ -5327,7 +5327,7 @@ void AnimationTrackEditor::_new_track_node_selected(NodePath p_path) {
 
 		} break;
 		case Animation::TYPE_ANIMATION: {
-			if (!node->is_class("AnimationPlayer")) {
+			if (!node->is_class<AnimationPlayer>()) {
 				EditorNode::get_singleton()->show_warning(TTR("Animation tracks can only point to AnimationPlayer nodes."));
 				return;
 			}

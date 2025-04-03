@@ -3278,7 +3278,7 @@ bool SceneTreeDock::_check_node_recursive(Variant &r_variant, Node *p_node, Node
 	switch (r_variant.get_type()) {
 		case Variant::OBJECT: {
 			if (p_node == r_variant) {
-				if (p_by_node->is_class(type_hint) || EditorNode::get_singleton()->is_object_of_custom_type(p_by_node, type_hint)) {
+				if (p_by_node->is_class_by_name(type_hint) || EditorNode::get_singleton()->is_object_of_custom_type(p_by_node, type_hint)) {
 					r_variant = p_by_node;
 				} else {
 					r_variant = memnew(Object);
@@ -4066,7 +4066,7 @@ void SceneTreeDock::_focus_node() {
 	Node *node = scene_tree->get_selected();
 	ERR_FAIL_NULL(node);
 
-	if (node->is_class("CanvasItem")) {
+	if (node->is_class<CanvasItem>()) {
 		CanvasItemEditorPlugin *editor = Object::cast_to<CanvasItemEditorPlugin>(editor_data->get_editor_by_name("2D"));
 		editor->get_canvas_item_editor()->focus_selection();
 	} else {
