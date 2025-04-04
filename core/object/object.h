@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include "core/disabled_classes.gen.h"
 #include "core/extension/gdextension_interface.h"
 #include "core/object/message_queue.h"
 #include "core/object/object_id.h"
@@ -130,6 +131,9 @@ enum PropertyUsageFlags {
 	PROPERTY_USAGE_DEFAULT = PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_EDITOR,
 	PROPERTY_USAGE_NO_EDITOR = PROPERTY_USAGE_STORAGE,
 };
+
+// Respective values are defined by disabled_classes.gen.h
+#define GD_IS_CLASS_ENABLED(m_class) m_class::_class_is_enabled
 
 #define ADD_SIGNAL(m_signal) ::ClassDB::add_signal(get_class_static(), m_signal)
 #define ADD_PROPERTY(m_property, m_setter, m_getter) ::ClassDB::add_property(get_class_static(), m_property, _scs_create(m_setter), _scs_create(m_getter))
