@@ -33,9 +33,9 @@
 #include "../storage_rd/texture_storage.h"
 #include "../uniform_set_cache_rd.h"
 
-#ifndef _3D_DISABLED
+#ifndef XR_DISABLED
 #include "servers/xr_server.h"
-#endif // _3D_DISABLED
+#endif // XR_DISABLED
 
 using namespace RendererRD;
 

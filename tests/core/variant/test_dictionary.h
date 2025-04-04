@@ -606,4 +606,28 @@ TEST_CASE("[Dictionary] Iteration") {
 	a2.clear();
 }
 
+TEST_CASE("[Dictionary] Object value init") {
+	Object *a = memnew(Object);
+	Object *b = memnew(Object);
+	TypedDictionary<double, Object *> tdict = {
+		{ 0.0, a },
+		{ 5.0, b },
+	};
+	CHECK_EQ(tdict[0.0], Variant(a));
+	CHECK_EQ(tdict[5.0], Variant(b));
+	memdelete(a);
+	memdelete(b);
+}
+
+TEST_CASE("[Dictionary] RefCounted value init") {
+	Ref<RefCounted> a = memnew(RefCounted);
+	Ref<RefCounted> b = memnew(RefCounted);
+	TypedDictionary<double, Ref<RefCounted>> tdict = {
+		{ 0.0, a },
+		{ 5.0, b },
+	};
+	CHECK_EQ(tdict[0.0], Variant(a));
+	CHECK_EQ(tdict[5.0], Variant(b));
+}
+
 } // namespace TestDictionary

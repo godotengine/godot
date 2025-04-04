@@ -1370,11 +1370,10 @@ bool DisplayServer::is_rendering_device_supported() {
 #endif
 #ifdef METAL_ENABLED
 	if (rcd == nullptr) {
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunguarded-availability"
+		GODOT_CLANG_WARNING_PUSH_AND_IGNORE("-Wunguarded-availability")
 		// Eliminate "RenderingContextDriverMetal is only available on iOS 14.0 or newer".
 		rcd = memnew(RenderingContextDriverMetal);
-#pragma clang diagnostic pop
+		GODOT_CLANG_WARNING_POP
 	}
 #endif
 
@@ -1453,11 +1452,10 @@ bool DisplayServer::can_create_rendering_device() {
 #endif
 #ifdef METAL_ENABLED
 	if (rcd == nullptr) {
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunguarded-availability"
+		GODOT_CLANG_WARNING_PUSH_AND_IGNORE("-Wunguarded-availability")
 		// Eliminate "RenderingContextDriverMetal is only available on iOS 14.0 or newer".
 		rcd = memnew(RenderingContextDriverMetal);
-#pragma clang diagnostic pop
+		GODOT_CLANG_WARNING_POP
 	}
 #endif
 

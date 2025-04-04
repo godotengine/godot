@@ -1068,6 +1068,19 @@ void EditorFileSystem::scan() {
 	// to be loaded to continue the scan and reimportations.
 	if (first_scan) {
 		_first_scan_filesystem();
+#ifdef ANDROID_ENABLED
+		const String nomedia_file_path = ProjectSettings::get_singleton()->get_resource_path().path_join(".nomedia");
+		if (!FileAccess::exists(nomedia_file_path)) {
+			// Create a .nomedia file to hide assets from media apps on Android.
+			Ref<FileAccess> f = FileAccess::open(nomedia_file_path, FileAccess::WRITE);
+			if (f.is_null()) {
+				// .nomedia isn't so critical.
+				ERR_PRINT("Couldn't create .nomedia in project path.");
+			} else {
+				f->close();
+			}
+		}
+#endif
 	}
 
 	_update_extensions();

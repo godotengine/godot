@@ -67,7 +67,7 @@ struct DAPeer : RefCounted {
 
 	Error handle_data();
 	Error send_data();
-	String format_output(const Dictionary &p_params) const;
+	Vector<uint8_t> format_output(const Dictionary &p_params) const;
 };
 
 class DebugAdapterProtocol : public Object {
