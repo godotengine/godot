@@ -7955,7 +7955,10 @@ EditorNode::EditorNode() {
 
 #ifdef ANDROID_ENABLED
 	// Add TouchActionsPanel node.
-	add_child(memnew(TouchActionsPanel));
+	bool is_enabled = EDITOR_GET("interface/touchscreen/enable_touch_actions_panel");
+	if (is_enabled) {
+		add_child(memnew(TouchActionsPanel));
+	}
 #endif
 
 	// Bottom panels.
