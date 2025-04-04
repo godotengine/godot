@@ -845,14 +845,10 @@ _FORCE_INLINE_ TextServerAdvanced::FontTexturePosition TextServerAdvanced::find_
 
 	if (ret.index == -1) {
 		// Could not find texture to fit, create one.
-		int texsize = MAX(p_data->size.x * p_data->oversampling * 8, 256);
-
+		int texsize = MAX(p_data->size.x * p_data->oversampling * 16, 1 << (int)GLOBAL_GET("gui/fonts/min_atlas_texture_size"));
 		texsize = next_power_of_2(texsize);
-		if (p_msdf) {
-			texsize = MIN(texsize, 2048);
-		} else {
-			texsize = MIN(texsize, 1024);
-		}
+		texsize = MIN(texsize, 1 << (int)GLOBAL_GET("gui/fonts/max_atlas_texture_size"));
+
 		if (mw > texsize) { // Special case, adapt to it?
 			texsize = next_power_of_2(mw);
 		}

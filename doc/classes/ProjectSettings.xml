@@ -1137,6 +1137,12 @@
 		</member>
 		<member name="gui/fonts/dynamic_fonts/use_oversampling" type="bool" setter="" getter="" default="true">
 		</member>
+		<member name="gui/fonts/max_atlas_texture_size" type="int" setter="" getter="" default="11">
+			Minimum font atlas texture size, specified as a power of two.
+		</member>
+		<member name="gui/fonts/min_atlas_texture_size" type="int" setter="" getter="" default="8">
+			Maximum font atlas texture size, specified as a power of two.
+		</member>
 		<member name="gui/theme/custom" type="String" setter="" getter="" default="&quot;&quot;">
 			Path to a custom [Theme] resource file to use for the project ([code].theme[/code] or generic [code].tres[/code]/[code].res[/code] extension).
 		</member>
