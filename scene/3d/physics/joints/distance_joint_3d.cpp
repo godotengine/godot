@@ -37,11 +37,11 @@ void DistanceJoint3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_point_param", "point"), &DistanceJoint3D::get_point_param);
 	ClassDB::bind_method(D_METHOD("get_global_point", "point"), &DistanceJoint3D::get_global_point);
 
-	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "spring/stiffness", PROPERTY_HINT_RANGE, "0,100,or_greater"), "set_param", "get_param", PARAM_LIMITS_SPRING_STIFFNESS);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "spring/stiffness", PROPERTY_HINT_RANGE, "0,100,or_greater,suffix:N/m"), "set_param", "get_param", PARAM_LIMITS_SPRING_STIFFNESS);
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "spring/damping", PROPERTY_HINT_RANGE, "0,2,or_greater"), "set_param", "get_param", PARAM_LIMITS_SPRING_DAMPING);
 
-	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "distance/min", PROPERTY_HINT_RANGE, "0,100,or_greater"), "set_param", "get_param", PARAM_DISTANCE_MIN);
-	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "distance/max", PROPERTY_HINT_RANGE, "0,100,or_greater"), "set_param", "get_param", PARAM_DISTANCE_MAX);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "distance/min", PROPERTY_HINT_RANGE, "0,100,or_greater,suffix:m"), "set_param", "get_param", PARAM_DISTANCE_MIN);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "distance/max", PROPERTY_HINT_RANGE, "0,100,or_greater,suffix:m"), "set_param", "get_param", PARAM_DISTANCE_MAX);
 
 	ADD_PROPERTYI(PropertyInfo(Variant::VECTOR3, "anchor/a"), "set_point_param", "get_point_param", POINT_PARAM_A);
 	ADD_PROPERTYI(PropertyInfo(Variant::VECTOR3, "anchor/b"), "set_point_param", "get_point_param", POINT_PARAM_B);
