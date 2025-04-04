@@ -451,19 +451,23 @@ PackedVector2Array AudioStreamPlaybackMicrophone::get_microphone_buffer(int p_fr
 
 	unsigned int input_position = AudioDriver::get_singleton()->get_input_position();
 	Vector<int32_t> &buf = AudioDriver::get_singleton()->get_input_buffer();
-	if (input_position < input_ofs)
+	if (input_position < input_ofs) {
 		input_position += buf.size();
-	if (p_frames == -1)
+	}
+	if (p_frames == -1) {
 		p_frames = (input_position - input_ofs) / 2;
+	}
 	if (input_ofs + p_frames * 2 <= input_position) {
 		ret.resize(p_frames);
 		for (int i = 0; i < p_frames; i++) { // inline of _mix_internal()
 			float l = (buf[input_ofs++] >> 16) / 32768.f;
-			if (input_ofs >= buf.size())
+			if (input_ofs >= buf.size()) {
 				input_ofs = 0;
+			}
 			float r = (buf[input_ofs++] >> 16) / 32768.f;
-			if (input_ofs >= buf.size())
+			if (input_ofs >= buf.size()) {
 				input_ofs = 0;
+			}
 			ret.write[i] = Vector2(l, r);
 		}
 	}
@@ -584,8 +588,9 @@ void AudioStreamPlaybackMicrophone::_bind_methods() {
 }
 
 AudioStreamPlaybackMicrophone::~AudioStreamPlaybackMicrophone() {
-	if (!microphone.is_null())
+	if (!microphone.is_null()) {
 		microphone->playbacks.erase(this);
+	}
 	stop();
 }
 
