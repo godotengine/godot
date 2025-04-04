@@ -19,7 +19,7 @@
 		<method name="is_interpolating" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Returns whether the time-based interpolation is running or not. If [code]true[/code], it is equivalent to [method get_interpolation_remaining] being [code]0[/code].
+				Returns [code]true[/code] if time-based interpolation is running. If [code]true[/code], it is equivalent to [method get_interpolation_remaining] returning [code]0.0[/code].
 				This is useful to determine whether a [LookAtModifier3D] can be removed safely.
 			</description>
 		</method>

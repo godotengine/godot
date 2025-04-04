@@ -850,7 +850,7 @@
 			Translations are provided by the community. If you spot a mistake, [url=$DOCS_URL/contributing/documentation/editor_and_docs_localization.html]contribute to editor translations on Weblate![/url]
 		</member>
 		<member name="interface/editor/editor_screen" type="int" setter="" getter="">
-			The preferred monitor to display the editor. If [b]Auto[/b], the editor will remember the last screen it was displayed on across restarts.
+			The preferred monitor to display the editor. If [b]Auto[/b], the editor will remember the last screen it was displayed on across multiple sessions.
 		</member>
 		<member name="interface/editor/expand_to_title" type="bool" setter="" getter="">
 			Expanding main editor window content to the title, if supported by [DisplayServer]. See [constant DisplayServer.WINDOW_FLAG_EXTEND_TO_TITLE].
@@ -1193,7 +1193,7 @@
 		</member>
 		<member name="run/window_placement/rect" type="int" setter="" getter="">
 			The window mode to use to display the project when starting the project from the editor.
-			[b]Note:[/b] Game embedding is not available for "Force Maximized" or "Force Fullscreen."
+			[b]Note:[/b] Game embedding is not available for [b]"Force Maximized"[/b] or [b]"Force Fullscreen"[/b].
 		</member>
 		<member name="run/window_placement/rect_custom_position" type="Vector2" setter="" getter="">
 			The custom position to use when starting the project from the editor (in pixels from the top-left corner). Only effective if [member run/window_placement/rect] is set to [b]Custom Position[/b].

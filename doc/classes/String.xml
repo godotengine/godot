@@ -727,7 +727,7 @@
 				GD.Print(n.ToString("e1")); // Prints -5.2e+008
 				[/csharp]
 				[/codeblocks]
-				[b]Note:[/b] In C#, this method is not implemented. To achieve similar results, see C#'s [url=https://learn.microsoft.com/en-us/dotnet/standard/base-types/standard-numeric-format-strings]Standard numeric format strings[/url]
+				[b]Note:[/b] In C#, this method is not implemented. To achieve similar results, see C#'s [url=https://learn.microsoft.com/en-us/dotnet/standard/base-types/standard-numeric-format-strings]Standard numeric format strings[/url].
 			</description>
 		</method>
 		<method name="num_uint64" qualifiers="static">

@@ -205,7 +205,6 @@
 			<param index="0" name="iter" type="Array" />
 			<description>
 				Initializes the iterator. [param iter] stores the iteration state. Since GDScript does not support passing arguments by reference, a single-element array is used as a wrapper. Returns [code]true[/code] so long as the iterator has not reached the end.
-				Example:
 				[codeblock]
 				class MyRange:
 				    var _from
