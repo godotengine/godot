@@ -15,7 +15,6 @@ from types import ModuleType
 
 from SCons import __version__ as scons_raw_version
 from SCons.Builder import ListEmitter
-from SCons.Util import CLVar
 
 # Explicitly resolve the helper modules, this is done to avoid clash with
 # modules of the same name that might be randomly added (e.g. someone adding
@@ -451,7 +450,7 @@ env.Prepend(CPPPATH=["#"])
 
 # Allow marking includes as external/system to avoid raising warnings.
 env["_CCCOMCOM"] += " $_CPPEXTINCFLAGS"
-env["CPPEXTPATH"] = CLVar("")
+env["CPPEXTPATH"] = []
 if env.scons_version < (4, 2):
     env["_CPPEXTINCFLAGS"] = "${_concat(EXTINCPREFIX, CPPEXTPATH, EXTINCSUFFIX, __env__, RDirs, TARGET, SOURCE)}"
 else:
@@ -727,78 +726,75 @@ elif methods.using_clang(env) or methods.using_emcc(env):
 # Set optimize and debug_symbols flags.
 # "custom" means do nothing and let users set their own optimization flags.
 # Needs to happen after configure to have `env.msvc` defined.
+env.AppendUnique(CCFLAGS=["$OPTIMIZELEVEL"])
 if env.msvc:
     if env["debug_symbols"]:
-        env.Append(CCFLAGS=["/Zi", "/FS"])
-        env.Append(LINKFLAGS=["/DEBUG:FULL"])
+        env.AppendUnique(CCFLAGS=["/Zi", "/FS"])
+        env.AppendUnique(LINKFLAGS=["/DEBUG:FULL"])
     else:
-        env.Append(LINKFLAGS=["/DEBUG:NONE"])
+        env.AppendUnique(LINKFLAGS=["/DEBUG:NONE"])
 
     if env["optimize"].startswith("speed"):
-        env.Append(CCFLAGS=["/O2"])
-        env.Append(LINKFLAGS=["/OPT:REF"])
+        env["OPTIMIZELEVEL"] = "/O2"
+        env.AppendUnique(LINKFLAGS=["/OPT:REF"])
         if env["optimize"] == "speed_trace":
-            env.Append(LINKFLAGS=["/OPT:NOICF"])
+            env.AppendUnique(LINKFLAGS=["/OPT:NOICF"])
     elif env["optimize"].startswith("size"):
-        env.Append(CCFLAGS=["/O1"])
-        env.Append(LINKFLAGS=["/OPT:REF"])
+        env["OPTIMIZELEVEL"] = "/O1"
+        env.AppendUnique(LINKFLAGS=["/OPT:REF"])
         if env["optimize"] == "size_extra":
-            env.Append(CPPDEFINES=["SIZE_EXTRA"])
+            env.AppendUnique(CPPDEFINES=["SIZE_EXTRA"])
     elif env["optimize"] == "debug" or env["optimize"] == "none":
-        env.Append(CCFLAGS=["/Od"])
+        env["OPTIMIZELEVEL"] = "/Od"
 else:
     if env["debug_symbols"]:
         if env["platform"] == "windows":
             if methods.using_clang(env):
-                env.Append(CCFLAGS=["-gdwarf-4"])  # clang dwarf-5 symbols are broken on Windows.
+                env.AppendUnique(CCFLAGS=["-gdwarf-4"])  # clang dwarf-5 symbols are broken on Windows.
             else:
-                env.Append(CCFLAGS=["-gdwarf-5"])  # For gcc, only dwarf-5 symbols seem usable by libbacktrace.
+                env.AppendUnique(CCFLAGS=["-gdwarf-5"])  # For gcc, only dwarf-5 symbols seem usable by libbacktrace.
         else:
             # Adding dwarf-4 explicitly makes stacktraces work with clang builds,
             # otherwise addr2line doesn't understand them
-            env.Append(CCFLAGS=["-gdwarf-4"])
+            env.AppendUnique(CCFLAGS=["-gdwarf-4"])
         if methods.using_emcc(env):
             # Emscripten only produces dwarf symbols when using "-g3".
-            env.Append(CCFLAGS=["-g3"])
+            env.AppendUnique(CCFLAGS=["-g3"])
             # Emscripten linker needs debug symbols options too.
-            env.Append(LINKFLAGS=["-gdwarf-4"])
-            env.Append(LINKFLAGS=["-g3"])
+            env.AppendUnique(LINKFLAGS=["-gdwarf-4"])
+            env.AppendUnique(LINKFLAGS=["-g3"])
         elif env.dev_build:
-            env.Append(CCFLAGS=["-g3"])
+            env.AppendUnique(CCFLAGS=["-g3"])
         else:
-            env.Append(CCFLAGS=["-g2"])
+            env.AppendUnique(CCFLAGS=["-g2"])
         if env["debug_paths_relative"]:
             # Remap absolute paths to relative paths for debug symbols.
             project_path = Dir("#").abspath
-            env.Append(CCFLAGS=[f"-ffile-prefix-map={project_path}=."])
+            env.AppendUnique(CCFLAGS=[f"-ffile-prefix-map={project_path}=."])
     else:
         if methods.is_apple_clang(env):
             # Apple Clang, its linker doesn't like -s.
-            env.Append(LINKFLAGS=["-Wl,-S", "-Wl,-x", "-Wl,-dead_strip"])
+            env.AppendUnique(LINKFLAGS=["-Wl,-S", "-Wl,-x", "-Wl,-dead_strip"])
         else:
-            env.Append(LINKFLAGS=["-s"])
+            env.AppendUnique(LINKFLAGS=["-s"])
 
     # Linker needs optimization flags too, at least for Emscripten.
     # For other toolchains, this _may_ be useful for LTO too to disambiguate.
+    env.AppendUnique(LINKFLAGS=["$OPTIMIZELEVEL"])
 
     if env["optimize"] == "speed":
-        env.Append(CCFLAGS=["-O3"])
-        env.Append(LINKFLAGS=["-O3"])
+        env["OPTIMIZELEVEL"] = "-O3"
     # `-O2` is friendlier to debuggers than `-O3`, leading to better crash backtraces.
     elif env["optimize"] == "speed_trace":
-        env.Append(CCFLAGS=["-O2"])
-        env.Append(LINKFLAGS=["-O2"])
+        env["OPTIMIZELEVEL"] = "-O2"
     elif env["optimize"].startswith("size"):
-        env.Append(CCFLAGS=["-Os"])
-        env.Append(LINKFLAGS=["-Os"])
+        env["OPTIMIZELEVEL"] = "-Os"
         if env["optimize"] == "size_extra":
-            env.Append(CPPDEFINES=["SIZE_EXTRA"])
+            env.AppendUnique(CPPDEFINES=["SIZE_EXTRA"])
     elif env["optimize"] == "debug":
-        env.Append(CCFLAGS=["-Og"])
-        env.Append(LINKFLAGS=["-Og"])
+        env["OPTIMIZELEVEL"] = "-Og"
     elif env["optimize"] == "none":
-        env.Append(CCFLAGS=["-O0"])
-        env.Append(LINKFLAGS=["-O0"])
+        env["OPTIMIZELEVEL"] = "-O0"
 
 # Needs to happen after configure to handle "auto".
 if env["lto"] != "none":
@@ -839,6 +835,7 @@ elif env.msvc:
     env.Append(CXXFLAGS=["/EHsc"])
 
 # Configure compiler warnings
+env.AppendUnique(CCFLAGS=["$WARNLEVEL"])
 if env.msvc and not methods.using_clang(env):  # MSVC
     # Disable warnings which we don't plan to fix.
     disabled_warnings = [
@@ -856,19 +853,23 @@ if env.msvc and not methods.using_clang(env):  # MSVC
     ]
 
     if env["warnings"] == "extra":
-        env.Append(CCFLAGS=["/W4"] + disabled_warnings)
+        env["WARNLEVEL"] = "/W4"
+        env.AppendUnique(CCFLAGS=disabled_warnings)
     elif env["warnings"] == "all":
+        env["WARNLEVEL"] = "/W3"
         # C4458 is like -Wshadow. Part of /W4 but let's apply it for the default /W3 too.
-        env.Append(CCFLAGS=["/W3", "/w34458"] + disabled_warnings)
+        env.AppendUnique(CCFLAGS=["/w34458"] + disabled_warnings)
     elif env["warnings"] == "moderate":
-        env.Append(CCFLAGS=["/W2"] + disabled_warnings)
+        env["WARNLEVEL"] = "/W2"
+        env.AppendUnique(CCFLAGS=disabled_warnings)
     else:  # 'no'
+        env["WARNLEVEL"] = "/w"
         # C4267 is particularly finicky & needs to be explicitly disabled.
-        env.Append(CCFLAGS=["/w", "/wd4267"])
+        env.AppendUnique(CCFLAGS=["/wd4267"])
 
     if env["werror"]:
-        env.Append(CCFLAGS=["/WX"])
-        env.Append(LINKFLAGS=["/WX"])
+        env.AppendUnique(CCFLAGS=["/WX"])
+        env.AppendUnique(LINKFLAGS=["/WX"])
 
 else:  # GCC, Clang
     common_warnings = []
@@ -887,14 +888,14 @@ else:  # GCC, Clang
         # for putting them in `Set` or `Map`. We don't mind about unreliable ordering.
         common_warnings += ["-Wno-ordered-compare-function-pointers"]
 
-    # clang-cl will interpret `-Wall` as `-Weverything`, workaround with compatibility cast
-    W_ALL = "-Wall" if not env.msvc else "-W3"
+    # clang-cl will interpret `-Wall` as `-Weverything`, workaround with compatibility cast.
+    env["WARNLEVEL"] = "-Wall" if not env.msvc else "-W3"
 
     if env["warnings"] == "extra":
-        env.Append(CCFLAGS=[W_ALL, "-Wextra", "-Wwrite-strings", "-Wno-unused-parameter"] + common_warnings)
-        env.Append(CXXFLAGS=["-Wctor-dtor-privacy", "-Wnon-virtual-dtor"])
+        env.AppendUnique(CCFLAGS=["-Wextra", "-Wwrite-strings", "-Wno-unused-parameter"] + common_warnings)
+        env.AppendUnique(CXXFLAGS=["-Wctor-dtor-privacy", "-Wnon-virtual-dtor"])
         if methods.using_gcc(env):
-            env.Append(
+            env.AppendUnique(
                 CCFLAGS=[
                     "-Walloc-zero",
                     "-Wduplicated-branches",
@@ -902,30 +903,32 @@ else:  # GCC, Clang
                     "-Wstringop-overflow=4",
                 ]
             )
-            env.Append(CXXFLAGS=["-Wplacement-new=1", "-Wvirtual-inheritance"])
+            env.AppendUnique(CXXFLAGS=["-Wplacement-new=1", "-Wvirtual-inheritance"])
             # Need to fix a warning with AudioServer lambdas before enabling.
             # if cc_version_major != 9:  # GCC 9 had a regression (GH-36325).
             #    env.Append(CXXFLAGS=["-Wnoexcept"])
             if cc_version_major >= 9:
-                env.Append(CCFLAGS=["-Wattribute-alias=2"])
+                env.AppendUnique(CCFLAGS=["-Wattribute-alias=2"])
             if cc_version_major >= 11:  # Broke on MethodBind templates before GCC 11.
-                env.Append(CCFLAGS=["-Wlogical-op"])
+                env.AppendUnique(CCFLAGS=["-Wlogical-op"])
         elif methods.using_clang(env) or methods.using_emcc(env):
-            env.Append(CCFLAGS=["-Wimplicit-fallthrough"])
+            env.AppendUnique(CCFLAGS=["-Wimplicit-fallthrough"])
     elif env["warnings"] == "all":
-        env.Append(CCFLAGS=[W_ALL] + common_warnings)
+        env.AppendUnique(CCFLAGS=common_warnings)
     elif env["warnings"] == "moderate":
-        env.Append(CCFLAGS=[W_ALL, "-Wno-unused"] + common_warnings)
+        env.AppendUnique(CCFLAGS=["-Wno-unused"] + common_warnings)
     else:  # 'no'
-        env.Append(CCFLAGS=["-w"])
+        env["WARNLEVEL"] = "-w"
 
     if env["werror"]:
-        env.Append(CCFLAGS=["-Werror"])
+        env.AppendUnique(CCFLAGS=["-Werror"])
 
 # Configure external includes.
 if env.msvc:
-    if cc_version_major < 16 or (cc_version_major == 16 and cc_version_minor < 10):
-        env.AppendUnique(CCFLAGS=["/experimental:external"])
+    if not methods.using_clang(env):
+        if cc_version_major < 16 or (cc_version_major == 16 and cc_version_minor < 10):
+            env.AppendUnique(CCFLAGS=["/experimental:external"])
+        env.AppendUnique(CCFLAGS=["/external:anglebrackets"])
     env.AppendUnique(CCFLAGS=["/external:W0"])
     env["EXTINCPREFIX"] = "/external:I"
     env["EXTINCSUFFIX"] = ""
