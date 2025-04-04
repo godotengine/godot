@@ -454,7 +454,7 @@ public:                                                                         
 			return;                                                                                                                         \
 		}                                                                                                                                   \
 		m_inherits::initialize_class();                                                                                                     \
-		::ClassDB::_add_class<m_class>();                                                                                                   \
+		_add_class_to_classdb(get_class_static(), get_parent_class_static());                                                               \
 		if (m_class::_get_bind_methods() != m_inherits::_get_bind_methods()) {                                                              \
 			_bind_methods();                                                                                                                \
 		}                                                                                                                                   \
@@ -499,7 +499,7 @@ protected:                                                                      
 			m_inherits::_get_property_listv(p_list, p_reversed);                                                                            \
 		}                                                                                                                                   \
 		p_list->push_back(PropertyInfo(Variant::NIL, get_class_static(), PROPERTY_HINT_NONE, get_class_static(), PROPERTY_USAGE_CATEGORY)); \
-		::ClassDB::get_property_list(#m_class, p_list, true, this);                                                                         \
+		_get_property_list_from_classdb(#m_class, p_list, true, this);                                                                      \
 		if (m_class::_get_get_property_list() != m_inherits::_get_get_property_list()) {                                                    \
 			_get_property_list(p_list);                                                                                                     \
 		}                                                                                                                                   \
@@ -758,6 +758,9 @@ protected:
 
 	friend class ClassDB;
 	friend class PlaceholderExtensionInstance;
+
+	static void _add_class_to_classdb(const StringName &p_class, const StringName &p_inherits);
+	static void _get_property_list_from_classdb(const StringName &p_class, List<PropertyInfo> *p_list, bool p_no_inheritance, const Object *p_validator);
 
 	bool _disconnect(const StringName &p_signal, const Callable &p_callable, bool p_force = false);
 
