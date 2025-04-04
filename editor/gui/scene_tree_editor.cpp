@@ -1839,7 +1839,7 @@ Variant SceneTreeEditor::get_drag_data_fw(const Point2 &p_point, Control *p_from
 }
 
 bool SceneTreeEditor::_is_script_type(const StringName &p_type) const {
-	return (script_types->find(p_type));
+	return (script_types->has(p_type));
 }
 
 bool SceneTreeEditor::can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const {
@@ -2144,8 +2144,8 @@ SceneTreeEditor::SceneTreeEditor(bool p_label, bool p_can_rename, bool p_can_ope
 	ask_before_revoke_checkbox->set_tooltip_text(TTR("This dialog can also be enabled/disabled in the Editor Settings: Docks > Scene Tree > Ask Before Revoking Unique Name."));
 	vb->add_child(ask_before_revoke_checkbox);
 
-	script_types = memnew(List<StringName>);
-	ClassDB::get_inheriters_from_class("Script", script_types);
+	script_types = memnew(LocalVector<StringName>);
+	ClassDB::get_inheriters_from_class("Script", *script_types);
 }
 
 SceneTreeEditor::~SceneTreeEditor() {
