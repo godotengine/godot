@@ -2084,6 +2084,10 @@ void RuntimeNodeSelect::_update_selection() {
 			continue;
 		}
 
+		if (!ci->is_inside_tree()) {
+			continue;
+		}
+
 		Transform2D xform;
 		// Cameras (overridden or not) don't affect `CanvasLayer`s.
 		if (root->is_canvas_transform_override_enabled() && !(ci->get_canvas_layer_node() && !ci->get_canvas_layer_node()->is_following_viewport())) {
@@ -2129,6 +2133,10 @@ void RuntimeNodeSelect::_update_selection() {
 		if (!node_3d) {
 			selected_3d_nodes.erase(id);
 			--KV;
+			continue;
+		}
+
+		if (!node_3d->is_inside_tree()) {
 			continue;
 		}
 
