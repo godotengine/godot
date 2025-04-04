@@ -89,6 +89,7 @@ class DisplayServerAndroid : public DisplayServer {
 	Callable rect_changed_callback;
 
 	Callable system_theme_changed;
+	Callable hardware_keyboard_connection_changed;
 
 	Callable dialog_callback;
 	Callable input_dialog_callback;
@@ -114,11 +115,10 @@ public:
 	virtual void tts_resume() override;
 	virtual void tts_stop() override;
 
-	void emit_system_theme_changed();
-
 	virtual bool is_dark_mode_supported() const override;
 	virtual bool is_dark_mode() const override;
 	virtual void set_system_theme_change_callback(const Callable &p_callable) override;
+	void emit_system_theme_changed();
 
 	virtual void clipboard_set(const String &p_text) override;
 	virtual String clipboard_get() const override;
@@ -159,6 +159,8 @@ public:
 	virtual void virtual_keyboard_hide() override;
 	virtual int virtual_keyboard_get_height() const override;
 	virtual bool has_hardware_keyboard() const override;
+	virtual void set_hardware_keyboard_connection_change_callback(const Callable &p_callable) override;
+	void emit_hardware_keyboard_connection_changed(bool p_connected);
 
 	virtual void window_set_window_event_callback(const Callable &p_callable, WindowID p_window = MAIN_WINDOW_ID) override;
 	virtual void window_set_input_event_callback(const Callable &p_callable, WindowID p_window = MAIN_WINDOW_ID) override;

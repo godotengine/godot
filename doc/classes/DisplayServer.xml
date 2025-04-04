@@ -1204,6 +1204,14 @@
 				[b]Note:[/b] On iOS, this method has no effect if [member ProjectSettings.display/window/handheld/orientation] is not set to [constant SCREEN_SENSOR].
 			</description>
 		</method>
+		<method name="set_hardware_keyboard_connection_change_callback">
+			<return type="void" />
+			<param index="0" name="callable" type="Callable" />
+			<description>
+				Sets the [param callable] that should be called when hardware keyboard is connected/disconnected. [param callable] should accept a single [bool] parameter indicating whether the keyboard is connected (true) or disconnected (false).
+				[b]Note:[/b] This method is only implemented on Android.
+			</description>
+		</method>
 		<method name="set_icon">
 			<return type="void" />
 			<param index="0" name="image" type="Image" />
