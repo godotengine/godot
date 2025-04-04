@@ -4176,6 +4176,11 @@ void GDScriptAnalyzer::reduce_identifier_from_base(GDScriptParser::IdentifierNod
 						p_identifier->source = member.variable->is_static ? GDScriptParser::IdentifierNode::STATIC_VARIABLE : GDScriptParser::IdentifierNode::MEMBER_VARIABLE;
 						p_identifier->variable_source = member.variable;
 						member.variable->usages += 1;
+#if DEBUG_ENABLED
+						if (member.variable->doc_data.is_deprecated) {
+							parser->push_warning(p_identifier, GDScriptWarning::DEPRECATED_IDENTIFIER);
+						}
+#endif
 						return;
 					}
 				} break;
