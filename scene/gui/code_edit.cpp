@@ -1644,12 +1644,12 @@ bool CodeEdit::can_fold_line(int p_line) const {
 		if (delimiter_end_line == p_line) {
 			/* Check we are the start of the block. */
 			if (p_line - 1 >= 0) {
-				if ((in_string != -1 && is_in_string(p_line - 1) != -1) || (in_comment != -1 && is_in_comment(p_line - 1) != -1)) {
+				if ((in_string != -1 && is_in_string(p_line - 1) != -1) || (in_comment != -1 && is_in_comment(p_line - 1) != -1 && !is_line_code_region_start(p_line - 1) && !is_line_code_region_end(p_line - 1))) {
 					return false;
 				}
 			}
 			/* Check it continues for at least one line. */
-			return ((in_string != -1 && is_in_string(p_line + 1) != -1) || (in_comment != -1 && is_in_comment(p_line + 1) != -1));
+			return ((in_string != -1 && is_in_string(p_line + 1) != -1) || (in_comment != -1 && is_in_comment(p_line + 1) != -1 && !is_line_code_region_start(p_line + 1) && !is_line_code_region_end(p_line + 1)));
 		}
 		return ((in_string != -1 && is_in_string(delimiter_end_line) != -1) || (in_comment != -1 && is_in_comment(delimiter_end_line) != -1));
 	}
@@ -1702,6 +1702,10 @@ void CodeEdit::fold_line(int p_line) {
 			if (end_line == p_line) {
 				for (int i = p_line + 1; i <= line_count; i++) {
 					if ((in_string != -1 && is_in_string(i) == -1) || (in_comment != -1 && is_in_comment(i) == -1)) {
+						break;
+					}
+					if (in_comment != -1 && (is_line_code_region_start(i) || is_line_code_region_end(i))) {
+						// A code region tag should split a comment block, ending it early.
 						break;
 					}
 					end_line = i;
