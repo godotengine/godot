@@ -4149,6 +4149,11 @@ void GDScriptAnalyzer::reduce_identifier_from_base(GDScriptParser::IdentifierNod
 					p_identifier->is_constant = true;
 					p_identifier->reduced_value = member.enum_value.value;
 					p_identifier->source = GDScriptParser::IdentifierNode::MEMBER_CONSTANT;
+#if DEBUG_ENABLED
+					if (member.enum_value.doc_data.is_deprecated) {
+						parser->push_warning(p_identifier, GDScriptWarning::DEPRECATED_IDENTIFIER);
+					}
+#endif
 					return;
 				}
 
@@ -4157,6 +4162,11 @@ void GDScriptAnalyzer::reduce_identifier_from_base(GDScriptParser::IdentifierNod
 					p_identifier->is_constant = true;
 					p_identifier->reduced_value = member.m_enum->dictionary;
 					p_identifier->source = GDScriptParser::IdentifierNode::MEMBER_CONSTANT;
+#if DEBUG_ENABLED
+					if (member.m_enum->doc_data.is_deprecated) {
+						parser->push_warning(p_identifier, GDScriptWarning::DEPRECATED_IDENTIFIER);
+					}
+#endif
 					return;
 				}
 
