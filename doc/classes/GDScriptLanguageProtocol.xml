@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="GDScriptLanguageProtocol" inherits="JSONRPC" experimental="" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_text_document">
+			<return type="GDScriptTextDocument" />
+			<description>
+			</description>
+		</method>
+		<method name="get_workspace">
+			<return type="GDScriptWorkspace" />
+			<description>
+			</description>
+		</method>
+		<method name="initialize" deprecated="Accessing LSP endpoints directly is deprecated and might lead to unwanted side effects. Connect to the server via TCP.">
+			<return type="Dictionary" />
+			<param index="0" name="params" type="Dictionary" />
+			<description>
+			</description>
+		</method>
+		<method name="initialized" deprecated="Accessing LSP endpoints directly is deprecated and might lead to unwanted side effects. Connect to the server via TCP.">
+			<return type="void" />
+			<param index="0" name="params" type="Variant" />
+			<description>
+			</description>
+		</method>
+		<method name="is_initialized" qualifiers="const">
+			<return type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="is_smart_resolve_enabled" qualifiers="const">
+			<return type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="notify_client" deprecated="Might result in unwanted side effects for connected clients.">
+			<return type="void" />
+			<param index="0" name="method" type="String" />
+			<param index="1" name="params" type="Variant" default="null" />
+			<param index="2" name="client_id" type="int" default="-1" />
+			<description>
+			</description>
+		</method>
+		<method name="on_client_connected" deprecated="Might result in unwanted side effects for connected clients.">
+			<return type="int" enum="Error" />
+			<description>
+			</description>
+		</method>
+		<method name="on_client_disconnected" deprecated="Might result in unwanted side effects for connected clients.">
+			<return type="void" />
+			<param index="0" name="client_id" type="int" />
+			<description>
+			</description>
+		</method>
+	</methods>
+</class>
