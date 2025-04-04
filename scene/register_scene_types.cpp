@@ -645,16 +645,15 @@ void register_scene_types() {
 	GDREGISTER_CLASS(RootMotionView);
 	GDREGISTER_VIRTUAL_CLASS(SkeletonModifier3D);
 	GDREGISTER_CLASS(RetargetModifier3D);
-
-	OS::get_singleton()->yield(); // may take time to init
-
-#ifndef PHYSICS_3D_DISABLED
 	GDREGISTER_CLASS(SpringBoneSimulator3D);
 	GDREGISTER_VIRTUAL_CLASS(SpringBoneCollision3D);
 	GDREGISTER_CLASS(SpringBoneCollisionSphere3D);
 	GDREGISTER_CLASS(SpringBoneCollisionCapsule3D);
 	GDREGISTER_CLASS(SpringBoneCollisionPlane3D);
 
+	OS::get_singleton()->yield(); // may take time to init
+
+#ifndef PHYSICS_3D_DISABLED
 	GDREGISTER_ABSTRACT_CLASS(CollisionObject3D);
 	GDREGISTER_ABSTRACT_CLASS(PhysicsBody3D);
 	GDREGISTER_CLASS(StaticBody3D);
