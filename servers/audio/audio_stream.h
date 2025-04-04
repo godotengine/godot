@@ -260,7 +260,8 @@ public:
 	void stop_microphone();
 	PackedVector2Array get_microphone_buffer(int p_frames);
 
-	// not able to implement function to fill an existing array
+	// The GDExtension interface does not allow for functions to fill an existing array which would be
+	// more efficient as it would not put memory on the heap every frame.
 	// bool mix_microphone(GDExtensionPtr<AudioFrame> p_buffer, int p_frames);
 
 	virtual int get_loop_count() const override; //times it looped

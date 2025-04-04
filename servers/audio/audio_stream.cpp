@@ -472,7 +472,7 @@ PackedVector2Array AudioStreamPlaybackMicrophone::get_microphone_buffer(int p_fr
 }
 
 /*
-// not able to implement filling an array, instead having to return an array by value as above
+// Not able to implement filling an array, instead having to return an array by value as above.
 bool AudioStreamPlaybackMicrophone::mix_microphone(GDExtensionPtr<AudioFrame> p_buffer, int p_frames) {
 	DEV_ASSERT(p_buffer != nullptr);
 	if (!microphone.is_null())
