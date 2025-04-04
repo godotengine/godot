@@ -147,6 +147,7 @@ private:
 	RenderingDevice *rendering_device = nullptr;
 #endif
 	String rendering_driver;
+	Vector<String> tested_drivers;
 
 	struct WarpEvent {
 		NSTimeInterval timestamp;
@@ -466,6 +467,8 @@ public:
 
 	static DisplayServer *create_func(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, int64_t p_parent_window, Error &r_error);
 	static Vector<String> get_rendering_drivers_func();
+
+	String get_readable_driver_name(const String &p_driver) const override;
 
 	static void register_macos_driver();
 

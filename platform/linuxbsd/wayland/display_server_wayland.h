@@ -132,6 +132,7 @@ class DisplayServerWayland : public DisplayServer {
 	bool emulate_vsync = false;
 
 	String rendering_driver;
+	Vector<String> tested_drivers;
 
 #ifdef RD_ENABLED
 	RenderingContextDriver *rendering_context = nullptr;
@@ -320,6 +321,8 @@ public:
 	static Vector<String> get_rendering_drivers_func();
 
 	static void register_wayland_driver();
+
+	String get_readable_driver_name(const String &p_driver) const override;
 
 	DisplayServerWayland(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i &p_resolution, Context p_context, int64_t p_parent_window, Error &r_error);
 	~DisplayServerWayland();

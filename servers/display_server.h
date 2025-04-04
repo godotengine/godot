@@ -647,6 +647,8 @@ public:
 	void unregister_additional_output(Object *p_output);
 	bool has_additional_outputs() const { return additional_outputs.size() > 0; }
 
+	virtual String get_readable_driver_name(const String &p_driver) const { return p_driver; }
+
 	static void register_create_function(const char *p_name, CreateFunction p_function, GetRenderingDriversFunction p_get_drivers);
 	static int get_create_function_count();
 	static const char *get_create_function_name(int p_index);

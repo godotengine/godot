@@ -41,6 +41,7 @@ class DisplayServerAndroid : public DisplayServer {
 	GDSOFTCLASS(DisplayServerAndroid, DisplayServer);
 
 	String rendering_driver;
+	Vector<String> tested_drivers;
 
 	// https://developer.android.com/reference/android/view/PointerIcon
 	// mapping between Godot's cursor shape to Android's'
@@ -252,6 +253,8 @@ public:
 
 	virtual void set_native_icon(const String &p_filename) override;
 	virtual void set_icon(const Ref<Image> &p_icon) override;
+
+	String get_readable_driver_name(const String &p_driver) const override;
 
 	DisplayServerAndroid(const String &p_rendering_driver, WindowMode p_mode, DisplayServer::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Context p_context, int64_t p_parent_window, Error &r_error);
 	~DisplayServerAndroid();

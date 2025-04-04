@@ -70,7 +70,6 @@ public:
 	static int test_entrypoint(int argc, char *argv[], bool &tests_need_run);
 	static Error setup(const char *execpath, int argc, char *argv[], bool p_second_phase = true);
 	static Error setup2(bool p_show_boot_logo = true); // The thread calling setup2() will effectively become the main thread.
-	static String get_rendering_driver_name();
 	static void setup_boot_logo();
 #ifdef TESTS_ENABLED
 	static Error test_setup();

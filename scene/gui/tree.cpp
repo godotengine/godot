@@ -4232,10 +4232,20 @@ void Tree::set_editor_selection(int p_from_line, int p_to_line, int p_from_colum
 	}
 }
 
+Size2 Tree::get_background_size() const {
+	const Ref<StyleBox> background = theme_cache.panel_style;
+
+	// This is the background stylebox's content rect.
+	const real_t width = background->get_margin(SIDE_LEFT) + background->get_margin(SIDE_RIGHT);
+	const real_t height = background->get_margin(SIDE_TOP) + background->get_margin(SIDE_BOTTOM);
+	return Size2(width, height);
+}
+
 Size2 Tree::get_internal_min_size() const {
 	Size2i size;
 	if (root) {
 		size.height += get_item_height(root);
+		size.height -= theme_cache.v_separation;
 	}
 	for (int i = 0; i < columns.size(); i++) {
 		size.width += get_column_minimum_width(i);
