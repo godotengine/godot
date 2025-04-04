@@ -574,6 +574,9 @@ class TextServerAdvanced : public TextServerExtension {
 	mutable RID_PtrOwner<FontAdvanced> font_owner;
 	mutable RID_PtrOwner<ShapedTextDataAdvanced> shaped_owner;
 
+	int min_atlas_texture_size = 8;
+	int max_atlas_texture_size = 11;
+
 	_FORCE_INLINE_ FontAdvanced *_get_font_data(const RID &p_font_rid) const {
 		RID rid = p_font_rid;
 		FontAdvancedLinkedVariation *fdv = font_var_owner.get_or_null(rid);
