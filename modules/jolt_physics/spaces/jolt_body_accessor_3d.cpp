@@ -99,9 +99,9 @@ const JPH::BodyID *JoltBodyAccessor3D::get_ids() const {
 
 	return std::visit(
 			VariantVisitors{
-					[](const JPH::BodyID &p_id) { return &p_id; },
-					[](const JPH::BodyIDVector &p_vector) { return p_vector.data(); },
-					[](const BodyIDSpan &p_span) { return p_span.ptr; } },
+					[](const JPH::BodyID &p_id) noexcept { return &p_id; },
+					[](const JPH::BodyIDVector &p_vector) noexcept { return p_vector.data(); },
+					[](const BodyIDSpan &p_span) noexcept { return p_span.ptr; } },
 			ids);
 }
 
@@ -110,9 +110,9 @@ int JoltBodyAccessor3D::get_count() const {
 
 	return std::visit(
 			VariantVisitors{
-					[](const JPH::BodyID &p_id) { return 1; },
-					[](const JPH::BodyIDVector &p_vector) { return (int)p_vector.size(); },
-					[](const BodyIDSpan &p_span) { return p_span.count; } },
+					[](const JPH::BodyID &p_id) noexcept { return 1; },
+					[](const JPH::BodyIDVector &p_vector) noexcept { return (int)p_vector.size(); },
+					[](const BodyIDSpan &p_span) noexcept { return p_span.count; } },
 			ids);
 }
 

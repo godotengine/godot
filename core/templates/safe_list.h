@@ -56,7 +56,7 @@ class SafeList {
 		// to the previous list item in time that was also logically deleted.
 		std::atomic<SafeListNode *> graveyard_next = nullptr;
 
-		std::function<void(T)> deletion_fn = [](T t) { return; };
+		std::function<void(T)> deletion_fn = [](T t) noexcept { return; };
 
 		T val;
 	};
@@ -147,7 +147,7 @@ public:
 
 	void erase(T p_value) {
 		Iterator tmp = find(p_value);
-		erase(tmp, [](T t) { return; });
+		erase(tmp, [](T t) noexcept { return; });
 	}
 
 	void erase(Iterator &p_iterator, std::function<void(T)> p_deletion_fn) {
