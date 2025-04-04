@@ -269,6 +269,11 @@ public class GodotLib {
 	public static native void onNightModeChanged();
 
 	/**
+	 * Invoked on the hardware keyboard connected/disconnected.
+	 */
+	public static native void hardwareKeyboardConnected(boolean connected);
+
+	/**
 	 * Invoked on the file picker closed.
 	 */
 	public static native void filePickerCallback(boolean p_ok, String[] p_selected_paths);
