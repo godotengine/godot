@@ -18,7 +18,7 @@ DebugRenderer *DebugRenderer::sInstance = nullptr;
 static const int sMaxLevel = 4;
 
 // Distance for each LOD level, these are tweaked for an object of approx. size 1. Use the lod scale to scale these distances.
-static const float sLODDistanceForLevel[] = { 5.0f, 10.0f, 40.0f, FLT_MAX };
+static const float sLODDistanceForLevel[] = { 5.0f, 10.0f, 40.0f, cLargeFloat };
 
 DebugRenderer::Triangle::Triangle(Vec3Arg inV1, Vec3Arg inV2, Vec3Arg inV3, ColorArg inColor)
 {

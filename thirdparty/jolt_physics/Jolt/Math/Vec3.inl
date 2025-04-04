@@ -122,6 +122,11 @@ Vec3 Vec3::sReplicate(float inV)
 #endif
 }
 
+Vec3 Vec3::sOne()
+{
+	return sReplicate(1.0f);
+}
+
 Vec3 Vec3::sNaN()
 {
 	return sReplicate(numeric_limits<float>::quiet_NaN());
@@ -584,7 +589,7 @@ Vec3 Vec3::Abs() const
 
 Vec3 Vec3::Reciprocal() const
 {
-	return sReplicate(1.0f) / mValue;
+	return sOne() / mValue;
 }
 
 Vec3 Vec3::Cross(Vec3Arg inV2) const
