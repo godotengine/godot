@@ -166,6 +166,7 @@ public:
 		FEATURE_NATIVE_DIALOG_FILE_MIME,
 		FEATURE_EMOJI_AND_SYMBOL_PICKER,
 		FEATURE_NATIVE_COLOR_PICKER,
+		FEATURE_SELF_FITTING_WINDOWS,
 	};
 
 	virtual bool has_feature(Feature p_feature) const = 0;
@@ -406,6 +407,7 @@ public:
 		WINDOW_FLAG_MOUSE_PASSTHROUGH,
 		WINDOW_FLAG_SHARP_CORNERS,
 		WINDOW_FLAG_EXCLUDE_FROM_CAPTURE,
+		WINDOW_FLAG_POPUP_WM_HINT,
 		WINDOW_FLAG_MAX,
 	};
 
@@ -421,6 +423,7 @@ public:
 		WINDOW_FLAG_MOUSE_PASSTHROUGH_BIT = (1 << WINDOW_FLAG_MOUSE_PASSTHROUGH),
 		WINDOW_FLAG_SHARP_CORNERS_BIT = (1 << WINDOW_FLAG_SHARP_CORNERS),
 		WINDOW_FLAG_EXCLUDE_FROM_CAPTURE_BIT = (1 << WINDOW_FLAG_EXCLUDE_FROM_CAPTURE),
+		WINDOW_FLAG_POPUP_WM_HINT_BIT = (1 << WINDOW_FLAG_POPUP_WM_HINT),
 	};
 
 	virtual WindowID create_sub_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect = Rect2i(), bool p_exclusive = false, WindowID p_transient_parent = INVALID_WINDOW_ID);
@@ -449,6 +452,7 @@ public:
 		WINDOW_EVENT_GO_BACK_REQUEST,
 		WINDOW_EVENT_DPI_CHANGE,
 		WINDOW_EVENT_TITLEBAR_CHANGE,
+		WINDOW_EVENT_FORCE_CLOSE,
 	};
 	virtual void window_set_window_event_callback(const Callable &p_callable, WindowID p_window = MAIN_WINDOW_ID) = 0;
 	virtual void window_set_input_event_callback(const Callable &p_callable, WindowID p_window = MAIN_WINDOW_ID) = 0;
