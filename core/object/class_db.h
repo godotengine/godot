@@ -78,6 +78,8 @@ MethodDefinition D_METHOD(const char *p_name, const VarArgs... p_args) {
 #endif
 
 class ClassDB {
+	friend class Object;
+
 public:
 	enum APIType {
 		API_CORE,
@@ -193,7 +195,7 @@ public:
 	static APIType current_api;
 	static HashMap<APIType, uint32_t> api_hashes_cache;
 
-	static void _add_class2(const StringName &p_class, const StringName &p_inherits);
+	static void _add_class(const StringName &p_class, const StringName &p_inherits);
 
 	static HashMap<StringName, HashMap<StringName, Variant>> default_values;
 	static HashSet<StringName> default_values_cached;
@@ -221,12 +223,6 @@ private:
 	static bool _can_instantiate(ClassInfo *p_class_info, bool p_exposed_only = true);
 
 public:
-	// DO NOT USE THIS!!!!!! NEEDS TO BE PUBLIC BUT DO NOT USE NO MATTER WHAT!!!
-	template <typename T>
-	static void _add_class() {
-		_add_class2(T::get_class_static(), T::get_parent_class_static());
-	}
-
 	template <typename T>
 	static void register_class(bool p_virtual = false) {
 		Locker::Lock lock(Locker::STATE_WRITE);
