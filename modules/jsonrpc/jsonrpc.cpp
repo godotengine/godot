@@ -100,9 +100,6 @@ Variant JSONRPC::process_action(const Variant &p_action, bool p_process_arr_elem
 	if (p_action.get_type() == Variant::DICTIONARY) {
 		Dictionary dict = p_action;
 		String method = dict.get("method", "");
-		if (method.begins_with("$/")) {
-			return ret;
-		}
 
 		Array args;
 		if (dict.has("params")) {
@@ -114,8 +111,11 @@ Variant JSONRPC::process_action(const Variant &p_action, bool p_process_arr_elem
 			}
 		}
 
+		/// A Notification is a Request object without an "id" member.
+		bool is_notification = !dict.has("id");
+
 		Variant id;
-		if (dict.has("id")) {
+		if (!is_notification) {
 			id = dict["id"];
 
 			// Account for implementations that discern between int and float on the json serialization level, by using an int if there is a .0 fraction. See #100914
@@ -126,23 +126,33 @@ Variant JSONRPC::process_action(const Variant &p_action, bool p_process_arr_elem
 
 		if (methods.has(method)) {
 			Variant call_ret = methods[method].callv(args);
-			if (id.get_type() != Variant::NIL) {
-				ret = make_response(call_ret, id);
-			}
+			ret = make_response(call_ret, id);
 		} else {
 			ret = make_response_error(JSONRPC::METHOD_NOT_FOUND, "Method not found: " + method, id);
 		}
+
+		/// The Server MUST NOT reply to a Notification
+		if (is_notification) {
+			ret = Variant();
+		}
 	} else if (p_action.get_type() == Variant::ARRAY && p_process_arr_elements) {
 		Array arr = p_action;
-		int size = arr.size();
-		if (size) {
+		if (!arr.is_empty()) {
 			Array arr_ret;
-			for (int i = 0; i < size; i++) {
-				const Variant &var = arr.get(i);
-				arr_ret.push_back(process_action(var));
+			for (const Variant &var : arr) {
+				Variant res = process_action(var);
+
+				if (res.get_type() != Variant::NIL) {
+					arr_ret.push_back(res);
+				}
 			}
-			ret = arr_ret;
+
+			/// If there are no Response objects contained within the Response array as it is to be sent to the client, the server MUST NOT return an empty Array and should return nothing at all.
+			if (!arr_ret.is_empty()) {
+				ret = arr_ret;
+			}
 		} else {
+			/// If the batch rpc call itself fails to be recognized ... as an Array with at least one value, the response from the Server MUST be a single Response object.
 			ret = make_response_error(JSONRPC::INVALID_REQUEST, "Invalid Request");
 		}
 	} else {
