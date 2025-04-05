@@ -15,57 +15,65 @@ script_has_method = """ScriptInstance *_script_instance = ((Object *)(this))->ge
 		}"""
 
 proto = """#define GDVIRTUAL$VER($ALIAS $RET m_name $ARG)\\
-	StringName _gdvirtual_##$VARNAME##_sn = #m_name;\\
-	mutable bool _gdvirtual_##$VARNAME##_initialized = false;\\
 	mutable void *_gdvirtual_##$VARNAME = nullptr;\\
 	_FORCE_INLINE_ bool _gdvirtual_##$VARNAME##_call($CALLARGS) $CONST {\\
+		static const StringName _gdvirtual_##$VARNAME##_sn = _scs_create(#m_name, true);\\
 		$SCRIPTCALL\\
-		if (unlikely(_get_extension() && !_gdvirtual_##$VARNAME##_initialized)) {\\
-			MethodInfo mi = _gdvirtual_##$VARNAME##_get_method_info();\\
-			uint32_t hash = mi.get_compatibility_hash();\\
-			_gdvirtual_##$VARNAME = nullptr;\\
-			if (_get_extension()->get_virtual_call_data2 && _get_extension()->call_virtual_with_data) {\\
-				_gdvirtual_##$VARNAME = _get_extension()->get_virtual_call_data2(_get_extension()->class_userdata, &_gdvirtual_##$VARNAME##_sn, hash);\\
-			} else if (_get_extension()->get_virtual2) {\\
-				_gdvirtual_##$VARNAME = (void *)_get_extension()->get_virtual2(_get_extension()->class_userdata, &_gdvirtual_##$VARNAME##_sn, hash);\\
+		if (_get_extension()) {\\
+			if (unlikely(!_gdvirtual_##$VARNAME)) {\\
+				MethodInfo mi = _gdvirtual_##$VARNAME##_get_method_info();\\
+				uint32_t hash = mi.get_compatibility_hash();\\
+				_gdvirtual_##$VARNAME = nullptr;\\
+				if (_get_extension()->get_virtual_call_data2 && _get_extension()->call_virtual_with_data) {\\
+					_gdvirtual_##$VARNAME = _get_extension()->get_virtual_call_data2(_get_extension()->class_userdata, &_gdvirtual_##$VARNAME##_sn, hash);\\
+				} else if (_get_extension()->get_virtual2) {\\
+					_gdvirtual_##$VARNAME = (void *)_get_extension()->get_virtual2(_get_extension()->class_userdata, &_gdvirtual_##$VARNAME##_sn, hash);\\
+				}\\
+				_GDVIRTUAL_GET_DEPRECATED(_gdvirtual_##$VARNAME, _gdvirtual_##$VARNAME##_sn, $COMPAT)\\
+				_GDVIRTUAL_TRACK(_gdvirtual_##$VARNAME);\\
+				if (_gdvirtual_##$VARNAME == nullptr) {\\
+					_gdvirtual_##$VARNAME = reinterpret_cast<void*>(_INVALID_GDVIRTUAL_FUNC_ADDR);\\
+				}\\
 			}\\
-			_GDVIRTUAL_GET_DEPRECATED(_gdvirtual_##$VARNAME, _gdvirtual_##$VARNAME##_sn, $COMPAT)\\
-			_GDVIRTUAL_TRACK(_gdvirtual_##$VARNAME, _gdvirtual_##$VARNAME##_initialized);\\
-			_gdvirtual_##$VARNAME##_initialized = true;\\
-		}\\
-		if (_gdvirtual_##$VARNAME) {\\
-			$CALLPTRARGS\\
-			$CALLPTRRETDEF\\
-			if (_get_extension()->call_virtual_with_data) {\\
-				_get_extension()->call_virtual_with_data(_get_extension_instance(), &_gdvirtual_##$VARNAME##_sn, _gdvirtual_##$VARNAME, $CALLPTRARGPASS, $CALLPTRRETPASS);\\
-				$CALLPTRRET\\
-			} else {\\
-				((GDExtensionClassCallVirtual)_gdvirtual_##$VARNAME)(_get_extension_instance(), $CALLPTRARGPASS, $CALLPTRRETPASS);\\
-				$CALLPTRRET\\
+			if (_gdvirtual_##$VARNAME != reinterpret_cast<void*>(_INVALID_GDVIRTUAL_FUNC_ADDR)) {\\
+				$CALLPTRARGS\\
+				$CALLPTRRETDEF\\
+				if (_get_extension()->call_virtual_with_data) {\\
+					_get_extension()->call_virtual_with_data(_get_extension_instance(), &_gdvirtual_##$VARNAME##_sn, _gdvirtual_##$VARNAME, $CALLPTRARGPASS, $CALLPTRRETPASS);\\
+					$CALLPTRRET\\
+				} else {\\
+					((GDExtensionClassCallVirtual)_gdvirtual_##$VARNAME)(_get_extension_instance(), $CALLPTRARGPASS, $CALLPTRRETPASS);\\
+					$CALLPTRRET\\
+				}\\
+				return true;\\
 			}\\
-			return true;\\
 		}\\
 		$REQCHECK\\
 		$RVOID\\
 		return false;\\
 	}\\
 	_FORCE_INLINE_ bool _gdvirtual_##$VARNAME##_overridden() const {\\
+		static const StringName _gdvirtual_##$VARNAME##_sn = _scs_create(#m_name, true);\\
 		$SCRIPTHASMETHOD\\
-		if (unlikely(_get_extension() && !_gdvirtual_##$VARNAME##_initialized)) {\\
-			MethodInfo mi = _gdvirtual_##$VARNAME##_get_method_info();\\
-			uint32_t hash = mi.get_compatibility_hash();\\
-			_gdvirtual_##$VARNAME = nullptr;\\
-			if (_get_extension()->get_virtual_call_data2 && _get_extension()->call_virtual_with_data) {\\
-				_gdvirtual_##$VARNAME = _get_extension()->get_virtual_call_data2(_get_extension()->class_userdata, &_gdvirtual_##$VARNAME##_sn, hash);\\
-			} else if (_get_extension()->get_virtual2) {\\
-				_gdvirtual_##$VARNAME = (void *)_get_extension()->get_virtual2(_get_extension()->class_userdata, &_gdvirtual_##$VARNAME##_sn, hash);\\
+		if (_get_extension()) {\\
+			if (unlikely(!_gdvirtual_##$VARNAME)) {\\
+				MethodInfo mi = _gdvirtual_##$VARNAME##_get_method_info();\\
+				uint32_t hash = mi.get_compatibility_hash();\\
+				_gdvirtual_##$VARNAME = nullptr;\\
+				if (_get_extension()->get_virtual_call_data2 && _get_extension()->call_virtual_with_data) {\\
+					_gdvirtual_##$VARNAME = _get_extension()->get_virtual_call_data2(_get_extension()->class_userdata, &_gdvirtual_##$VARNAME##_sn, hash);\\
+				} else if (_get_extension()->get_virtual2) {\\
+					_gdvirtual_##$VARNAME = (void *)_get_extension()->get_virtual2(_get_extension()->class_userdata, &_gdvirtual_##$VARNAME##_sn, hash);\\
+				}\\
+				_GDVIRTUAL_GET_DEPRECATED(_gdvirtual_##$VARNAME, _gdvirtual_##$VARNAME##_sn, $COMPAT)\\
+				_GDVIRTUAL_TRACK(_gdvirtual_##$VARNAME);\\
+				if (_gdvirtual_##$VARNAME == nullptr) {\\
+					_gdvirtual_##$VARNAME = reinterpret_cast<void*>(_INVALID_GDVIRTUAL_FUNC_ADDR);\\
+				}\\
 			}\\
-			_GDVIRTUAL_GET_DEPRECATED(_gdvirtual_##$VARNAME, _gdvirtual_##$VARNAME##_sn, $COMPAT)\\
-			_GDVIRTUAL_TRACK(_gdvirtual_##$VARNAME, _gdvirtual_##$VARNAME##_initialized);\\
-			_gdvirtual_##$VARNAME##_initialized = true;\\
-		}\\
-		if (_gdvirtual_##$VARNAME) {\\
-			return true;\\
+			if (_gdvirtual_##$VARNAME != reinterpret_cast<void*>(_INVALID_GDVIRTUAL_FUNC_ADDR)) {\\
+				return true;\\
+			}\\
 		}\\
 		return false;\\
 	}\\
@@ -211,17 +219,18 @@ def run(target, source, env):
 
 #include "core/object/script_instance.h"
 
+inline constexpr uintptr_t _INVALID_GDVIRTUAL_FUNC_ADDR = static_cast<uintptr_t>(-1);
+
 #ifdef TOOLS_ENABLED
-#define _GDVIRTUAL_TRACK(m_virtual, m_initialized)\\
+#define _GDVIRTUAL_TRACK(m_virtual)\\
 	if (_get_extension()->reloadable) {\\
 		VirtualMethodTracker *tracker = memnew(VirtualMethodTracker);\\
 		tracker->method = (void **)&m_virtual;\\
-		tracker->initialized = &m_initialized;\\
 		tracker->next = virtual_method_list;\\
 		virtual_method_list = tracker;\\
 	}
 #else
-#define _GDVIRTUAL_TRACK(m_virtual, m_initialized)
+#define _GDVIRTUAL_TRACK(m_virtual)
 #endif
 
 #ifndef DISABLE_DEPRECATED
