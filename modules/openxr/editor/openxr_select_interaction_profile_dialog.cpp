@@ -33,6 +33,8 @@
 #include "../action_map/openxr_interaction_profile_metadata.h"
 #include "../openxr_api.h"
 
+#include "editor/themes/editor_scale.h"
+
 void OpenXRSelectInteractionProfileDialog::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("interaction_profile_selected", PropertyInfo(Variant::STRING, "interaction_profile")));
 }
@@ -116,7 +118,7 @@ OpenXRSelectInteractionProfileDialog::OpenXRSelectInteractionProfileDialog() {
 	set_title(TTR("Select an interaction profile"));
 
 	scroll = memnew(ScrollContainer);
-	scroll->set_custom_minimum_size(Size2(600.0, 400.0));
+	scroll->set_custom_minimum_size(Size2(600.0 * EDSCALE, 400.0 * EDSCALE));
 	add_child(scroll);
 
 	main_vb = memnew(VBoxContainer);
