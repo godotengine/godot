@@ -491,33 +491,43 @@ public:
 			_call_stack.levels = memnew_arr(CallLevel, _debug_max_call_stack + 1);
 		}
 
-		if (EngineDebugger::get_script_debugger()->get_lines_left() > 0 && EngineDebugger::get_script_debugger()->get_depth() >= 0) {
-			EngineDebugger::get_script_debugger()->set_depth(EngineDebugger::get_script_debugger()->get_depth() + 1);
+		ScriptDebugger *script_debugger = EngineDebugger::get_script_debugger();
+		if (script_debugger != nullptr && script_debugger->get_lines_left() > 0 && script_debugger->get_depth() >= 0) {
+			script_debugger->set_depth(script_debugger->get_depth() + 1);
 		}
 
-		if (_call_stack.stack_pos >= _debug_max_call_stack) {
-			//stack overflow
+		if (unlikely(_call_stack.stack_pos >= _debug_max_call_stack)) {
 			_debug_error = vformat("Stack overflow (stack size: %s). Check for infinite recursion in your script.", _debug_max_call_stack);
-			EngineDebugger::get_script_debugger()->debug(this);
+
+			if (script_debugger != nullptr) {
+				script_debugger->debug(this);
+			}
+
 			return;
 		}
 
-		_call_stack.levels[_call_stack.stack_pos].stack = p_stack;
-		_call_stack.levels[_call_stack.stack_pos].instance = p_instance;
-		_call_stack.levels[_call_stack.stack_pos].function = p_function;
-		_call_stack.levels[_call_stack.stack_pos].ip = p_ip;
-		_call_stack.levels[_call_stack.stack_pos].line = p_line;
+		CallLevel &call_level = _call_stack.levels[_call_stack.stack_pos];
+		call_level.stack = p_stack;
+		call_level.instance = p_instance;
+		call_level.function = p_function;
+		call_level.ip = p_ip;
+		call_level.line = p_line;
 		_call_stack.stack_pos++;
 	}
 
 	_FORCE_INLINE_ void exit_function() {
-		if (EngineDebugger::get_script_debugger()->get_lines_left() > 0 && EngineDebugger::get_script_debugger()->get_depth() >= 0) {
-			EngineDebugger::get_script_debugger()->set_depth(EngineDebugger::get_script_debugger()->get_depth() - 1);
+		ScriptDebugger *script_debugger = EngineDebugger::get_script_debugger();
+		if (script_debugger != nullptr && script_debugger->get_lines_left() > 0 && script_debugger->get_depth() >= 0) {
+			script_debugger->set_depth(script_debugger->get_depth() - 1);
 		}
 
-		if (_call_stack.stack_pos == 0) {
+		if (unlikely(_call_stack.stack_pos == 0)) {
 			_debug_error = "Stack Underflow (Engine Bug)";
-			EngineDebugger::get_script_debugger()->debug(this);
+
+			if (script_debugger != nullptr) {
+				script_debugger->debug(this);
+			}
+
 			return;
 		}
 

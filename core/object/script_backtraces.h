@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  macos_terminal_logger.h                                               */
+/*  script_backtraces.h                                                   */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -30,13 +30,75 @@
 
 #pragma once
 
-#ifdef MACOS_ENABLED
+#include "core/io/resource.h"
 
-#include "core/io/logger.h"
+class ScriptBacktrace : public Resource {
+	GDCLASS(ScriptBacktrace, Resource);
 
-class MacOSTerminalLogger : public StdLogger {
+	friend class ScriptBacktraces;
+
+	struct StackVariable {
+		String name;
+		String value;
+	};
+
+	struct StackFrame {
+		LocalVector<StackVariable> local_variables;
+		LocalVector<StackVariable> member_variables;
+		String function;
+		String file;
+		int line = 0;
+	};
+
+	LocalVector<StackFrame> stack_frames;
+	LocalVector<StackVariable> global_variables;
+	String language_name;
+
+	static void _store_variables(const List<String> &p_names, const List<Variant> &p_values, LocalVector<StackVariable> &r_variables);
+
+protected:
+	static void _bind_methods();
+
 public:
-	virtual void log_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, bool p_editor_notify = false, ErrorType p_type = ERR_ERROR, const Ref<ScriptBacktraces> &p_script_backtraces = Ref<ScriptBacktraces>()) override;
+	ScriptBacktrace() = default;
+	ScriptBacktrace(ScriptLanguage *p_language, bool p_include_variables);
+
+	String get_language_name() const { return language_name; }
+
+	int get_frame_count() const { return stack_frames.size(); }
+	String get_frame_function(int p_index) const;
+	String get_frame_file(int p_index) const;
+	int get_frame_line(int p_index) const;
+
+	int get_global_variable_count() const { return global_variables.size(); }
+	String get_global_variable_name(int p_variable_index) const;
+	String get_global_variable_value(int p_variable_index) const;
+
+	int get_local_variable_count(int p_frame_index) const;
+	String get_local_variable_name(int p_frame_index, int p_variable_index) const;
+	String get_local_variable_value(int p_frame_index, int p_variable_index) const;
+
+	int get_member_variable_count(int p_frame_index) const;
+	String get_member_variable_name(int p_frame_index, int p_variable_index) const;
+	String get_member_variable_value(int p_frame_index, int p_variable_index) const;
+
+	virtual String to_string() override;
 };
 
-#endif // MACOS_ENABLED
+class ScriptBacktraces : public Resource {
+	GDCLASS(ScriptBacktraces, Resource);
+
+	LocalVector<Ref<ScriptBacktrace>> backtraces;
+
+protected:
+	static void _bind_methods();
+
+public:
+	ScriptBacktraces() = default;
+	ScriptBacktraces(bool p_include_variables);
+
+	int get_backtrace_count() const { return backtraces.size(); }
+	Ref<ScriptBacktrace> get_backtrace(int p_index) const;
+
+	virtual String to_string() override;
+};

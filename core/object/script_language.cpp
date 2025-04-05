@@ -535,6 +535,10 @@ void ScriptServer::save_global_classes() {
 	ProjectSettings::get_singleton()->store_global_class_list(gcarr);
 }
 
+Ref<ScriptBacktraces> ScriptServer::capture_script_backtraces(bool p_include_variables) {
+	return memnew(ScriptBacktraces(p_include_variables));
+}
+
 ////////////////////
 
 ScriptCodeCompletionCache *ScriptCodeCompletionCache::singleton = nullptr;
