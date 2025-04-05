@@ -65,6 +65,16 @@
 		<member name="mipmaps/limit" type="int" setter="" getter="" default="-1">
 			Unimplemented. This currently has no effect when changed.
 		</member>
+		<member name="mipmaps/preserve_alpha_test_coverage" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], automatically adjusts alpha values to maintain consistent coverage when alpha testing is used. This is especially useful for hair, foliage, or other alpha-tested materials, as it prevents fading or popping artifacts across mipmap levels (LODs).
+		</member>
+		<member name="mipmaps/target_coverage" type="float" setter="" getter="" default="0.5">
+			The fraction of pixels (0.0 to 1.0) that should pass the alpha test at full resolution (mip 0). For example:
+			- [b]0.5[/b] (default) - 50% of pixels pass, balancing detail and smooth transitions.
+			- [b]Higher values[/b] (e.g., 0.7) - Preserve more fine details (e.g., thin hair strands).
+			- [b]Lower values[/b] (e.g., 0.3) - Softer edges, but may lose small features.
+			The alpha channel is scaled uniformly across all mipmaps to approximate this coverage, ensuring consistent visuals at different distances.
+		</member>
 		<member name="process/fix_alpha_border" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], puts pixels of the same surrounding color in transition from transparent to opaque areas. For textures displayed with bilinear filtering, this helps to reduce the outline effect when exporting images from an image editor.
 			It's recommended to leave this enabled (as it is by default), unless this causes issues for a particular image.
