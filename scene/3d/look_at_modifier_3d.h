@@ -105,6 +105,8 @@ protected:
 	virtual PackedStringArray get_configuration_warnings() const override;
 	void _validate_property(PropertyInfo &p_property) const;
 
+	virtual void _validate_bone_names() override;
+
 	static void _bind_methods();
 
 	virtual void _process_modification(double p_delta) override;
