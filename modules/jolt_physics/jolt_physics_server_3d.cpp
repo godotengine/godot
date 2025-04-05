@@ -308,6 +308,7 @@ void JoltPhysicsServer3D::soft_body_apply_central_impulse(RID p_body, const Vect
 
 	body->apply_central_impulse(p_impulse);
 }
+
 void JoltPhysicsServer3D::soft_body_apply_central_force(RID p_body, const Vector3 p_force) {
 	JoltSoftBody3D *body = soft_body_owner.get_or_null(p_body);
 	ERR_FAIL_NULL(body);
