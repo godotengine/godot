@@ -2729,18 +2729,22 @@ void fragment_shader(in SceneData scene_data) {
 //nothing happens, so a tree-ssa optimizer will result in no fragment shader :)
 #else
 
+	ao = unpackUnorm4x8(orms).x;
+	metallic = unpackUnorm4x8(orms).z;
+
+	// when custom post light func isn't applicable, use the default way
+#if !defined(POST_LIGHT_CODE_USED) || defined(MODE_SEPARATE_SPECULAR)
 	// multiply by albedo
 	diffuse_light *= albedo; // ambient must be multiplied by albedo at the end
 
 	// apply direct light AO
-	ao = unpackUnorm4x8(orms).x;
 	specular_light *= ao;
 	diffuse_light *= ao;
 
 	// apply metallic
-	metallic = unpackUnorm4x8(orms).z;
 	diffuse_light *= 1.0 - metallic;
 	ambient_light *= 1.0 - metallic;
+#endif
 
 #ifndef FOG_DISABLED
 	//restore fog
@@ -2771,12 +2775,24 @@ void fragment_shader(in SceneData scene_data) {
 
 	alpha *= scene_data.pass_alpha_multiplier;
 
+#if defined(POST_LIGHT_CODE_USED)
+	vec3 out_color = emission + ambient_light + (diffuse_light + specular_light) * ao * (1.0 - metallic);
+
+	{
+#CODE : POST_LIGHT
+	}
+
+	frag_color = vec4(out_color, alpha);
+#else // !POST_LIGHT_CODE_USED
+
 #ifdef MODE_UNSHADED
 	frag_color = vec4(albedo, alpha);
 #else
 	frag_color = vec4(emission + ambient_light + diffuse_light + specular_light, alpha);
 //frag_color = vec4(1.0);
 #endif //USE_NO_SHADING
+
+#endif //POST_LIGHT_CODE_USED
 
 #ifndef FOG_DISABLED
 	// Draw "fixed" fog before volumetric fog to ensure volumetric fog can appear in front of the sky.

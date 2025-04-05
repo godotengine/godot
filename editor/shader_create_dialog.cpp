@@ -167,6 +167,11 @@ void fragment() {
 //	// Called for every pixel for every light affecting the material.
 //	// Uncomment to replace the default light processing function with this one.
 //}
+
+//void post_light() {
+//	// Called after all lights are handled and the final color is being calculated
+//	// Uncomment to replace the default post light processing function with this one.
+//}
 )";
 						break;
 					case Shader::MODE_CANVAS_ITEM:
