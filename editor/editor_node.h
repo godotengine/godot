@@ -273,12 +273,6 @@ private:
 
 	Control *gui_base = nullptr;
 	VBoxContainer *main_vbox = nullptr;
-	OptionButton *renderer = nullptr;
-
-	ConfirmationDialog *video_restart_dialog = nullptr;
-
-	int renderer_current = 0;
-	String renderer_request;
 
 	// Split containers.
 	DockSplitContainer *left_l_hsplit = nullptr;
@@ -588,11 +582,6 @@ private:
 	void _update_vsync_mode();
 	void _update_from_settings();
 	void _gdextensions_reloaded();
-
-	void _renderer_selected(int);
-	void _update_renderer_color();
-	void _add_renderer_entry(const String &p_renderer_name, bool p_mark_overridden);
-	void _set_renderer_name_save_and_restart();
 
 	void _exit_editor(int p_exit_code);
 
