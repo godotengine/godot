@@ -424,7 +424,7 @@ bool JoltSoftBody3D::is_sleeping() const {
 	return !body->IsActive();
 }
 
-void JoltSoftBody3D::apply_node_impulse(int p_index, const Vector3 &p_impulse) {
+void JoltSoftBody3D::apply_vertex_impulse(int p_index, const Vector3 &p_impulse) {
 	ERR_FAIL_COND_MSG(!in_space(), vformat("Failed to apply impulse to '%s'. Doing so without a physics space is not supported when using Jolt Physics. If this relates to a node, try adding the node to a scene tree first.", to_string()));
 
 	ERR_FAIL_NULL(shared);
@@ -448,16 +448,13 @@ void JoltSoftBody3D::apply_node_impulse(int p_index, const Vector3 &p_impulse) {
 	JPH::Array<JPH::SoftBodyVertex> &physics_vertices = motion_properties.GetVertices();
 	JPH::SoftBodyVertex &physics_vertex = physics_vertices[physics_index];
 
-	const JPH::Vec3 impulse = to_jolt(p_impulse);
-	physics_vertex.mVelocity += impulse * physics_vertex.mInvMass;
+	physics_vertex.mVelocity += to_jolt(p_impulse) * physics_vertex.mInvMass;
 }
 
 void JoltSoftBody3D::apply_node_force(int p_index, const Vector3 &p_force) {
 	ERR_FAIL_COND_MSG(!in_space(), vformat("Failed to apply force to '%s'. Doing so without a physics space is not supported when using Jolt Physics. If this relates to a node, try adding the node to a scene tree first.", to_string()));
 
-	const float last_step = space->get_last_step();
-	const Vector3 impulse = p_force * last_step;
-	apply_node_impulse(p_index, impulse);
+	apply_node_impulse(p_index, p_force * space->get_last_step());
 }
 
 void JoltSoftBody3D::apply_central_impulse(const Vector3 &p_impulse) {
@@ -495,16 +492,9 @@ void JoltSoftBody3D::apply_central_force(const Vector3 &p_force) {
 	ERR_FAIL_COND_MSG(!in_space(), vformat("Failed to apply central force to '%s'. Doing so without a physics space is not supported when using Jolt Physics. If this relates to a node, try adding the node to a scene tree first.", to_string()));
 	ERR_FAIL_NULL(shared);
 
-	const float last_step = space->get_last_step();
-	if (unlikely(last_step == 0.0f)) {
-		return;
-	}
-
 	JPH::BodyInterface &body_iface = space->get_body_iface();
 
-	const JPH::Vec3 force = to_jolt(p_force);
-
-	body_iface.AddForce(jolt_id, force, JPH::EActivation::Activate);
+	body_iface.AddForce(jolt_id, to_jolt(p_force), JPH::EActivation::Activate);
 }
 
 void JoltSoftBody3D::set_is_sleeping(bool p_enabled) {

@@ -736,28 +736,28 @@ void GodotPhysicsServer3D::body_apply_force(RID p_body, const Vector3 &p_force, 
 	body->apply_force(p_force, p_position);
 	body->wakeup();
 }
-void GodotPhysicsServer3D::soft_body_apply_point_impulse(RID p_body, const Vector3 p_impulse, int point_index) {
+void GodotPhysicsServer3D::soft_body_apply_point_impulse(RID p_body, int point_index, const Vector3 &p_impulse) {
 	GodotSoftBody3D *soft_body = soft_body_owner.get_or_null(p_body);
 	ERR_FAIL_NULL(soft_body);
 
 	soft_body->apply_node_impulse(point_index, p_impulse);
 }
 
-void GodotPhysicsServer3D::soft_body_apply_point_force(RID p_body, const Vector3 p_force, int point_index) {
+void GodotPhysicsServer3D::soft_body_apply_point_force(RID p_body, int point_index, const Vector3 &p_force) {
 	GodotSoftBody3D *soft_body = soft_body_owner.get_or_null(p_body);
 	ERR_FAIL_NULL(soft_body);
 
 	soft_body->apply_node_force(point_index, p_force);
 }
 
-void GodotPhysicsServer3D::soft_body_apply_central_impulse(RID p_body, const Vector3 p_impulse) {
+void GodotPhysicsServer3D::soft_body_apply_central_impulse(RID p_body, const Vector3 &p_impulse) {
 	GodotSoftBody3D *soft_body = soft_body_owner.get_or_null(p_body);
 	ERR_FAIL_NULL(soft_body);
 
 	soft_body->apply_central_impulse(p_impulse);
 }
 
-void GodotPhysicsServer3D::soft_body_apply_central_force(RID p_body, const Vector3 p_force) {
+void GodotPhysicsServer3D::soft_body_apply_central_force(RID p_body, const Vector3 &p_force) {
 	GodotSoftBody3D *soft_body = soft_body_owner.get_or_null(p_body);
 	ERR_FAIL_NULL(soft_body);
 
