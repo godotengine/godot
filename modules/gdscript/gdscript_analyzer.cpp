@@ -4536,6 +4536,14 @@ void GDScriptAnalyzer::reduce_identifier(GDScriptParser::IdentifierNode *p_ident
 
 	if (ScriptServer::is_global_class(name)) {
 		p_identifier->set_datatype(make_global_class_meta_type(name, p_identifier));
+#if DEBUG_ENABLED
+		DocTools *dd = EditorHelp::get_doc_data();
+		if (dd && dd->class_list.has(name)) {
+			if (dd->class_list[name].is_deprecated) {
+				parser->push_warning(p_identifier, GDScriptWarning::DEPRECATED_IDENTIFIER);
+			}
+		}
+#endif
 		return;
 	}
 
