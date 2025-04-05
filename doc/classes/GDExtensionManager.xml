@@ -9,7 +9,7 @@
 	</description>
 	<tutorials>
 		<link title="GDExtension overview">$DOCS_URL/tutorials/scripting/gdextension/what_is_gdextension.html</link>
-		<link title="GDExtension example in C++">$DOCS_URL/tutorials/scripting/gdextension/gdextension_cpp_example.html</link>
+		<link title="GDExtension example in C++">$DOCS_URL/tutorials/scripting/cpp/gdextension_cpp_example.html</link>
 	</tutorials>
 	<methods>
 		<method name="get_extension">
