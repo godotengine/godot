@@ -915,6 +915,8 @@ void reflection_process(uint ref_index, vec3 vertex, vec3 ref_vec, vec3 normal, 
 
 		vec3 local_ref_vec = (reflections.data[ref_index].local_matrix * vec4(ref_vec, 0.0)).xyz;
 
+		float distance_to_hit_point = 0.0;
+		float mip = sqrt(roughness) * MAX_ROUGHNESS_LOD;
 		if (reflections.data[ref_index].box_project) { //box project
 
 			vec3 nrdir = normalize(local_ref_vec);
@@ -922,16 +924,22 @@ void reflection_process(uint ref_index, vec3 vertex, vec3 ref_vec, vec3 normal, 
 			vec3 rbmin = (-box_extents - local_pos) / nrdir;
 
 			vec3 rbminmax = mix(rbmin, rbmax, greaterThan(nrdir, vec3(0.0, 0.0, 0.0)));
+			distance_to_hit_point = min(min(rbminmax.x, rbminmax.y), rbminmax.z);
 
 			float fa = min(min(rbminmax.x, rbminmax.y), rbminmax.z);
 			vec3 posonbox = local_pos + nrdir * fa;
 			local_ref_vec = posonbox - reflections.data[ref_index].box_offset;
+
+			// This clamp helps to make sure that when a fragment is far away, the mip level doesn't climb to a high value and look weird.
+			float mip_offset = clamp(distance_to_hit_point, 0.0, MAX_ROUGHNESS_LOD);
+			// Compute new mip level based on the mip offset value (this is mostly arbitrary).
+			mip = mix(0.0, mip, mip_offset / MAX_ROUGHNESS_LOD);
 		}
 
 		vec4 reflection;
 		float reflection_blend = max(0.0, blend - reflection_accum.a);
 
-		reflection.rgb = textureLod(samplerCubeArray(reflection_atlas, DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), vec4(local_ref_vec, reflections.data[ref_index].index), sqrt(roughness) * MAX_ROUGHNESS_LOD).rgb * sc_luminance_multiplier();
+		reflection.rgb = textureLod(samplerCubeArray(reflection_atlas, DEFAULT_SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP), vec4(local_ref_vec, reflections.data[ref_index].index), mip).rgb * sc_luminance_multiplier();
 		reflection.rgb *= reflections.data[ref_index].exposure_normalization;
 		reflection.a = reflection_blend;
 
