@@ -4646,13 +4646,6 @@ bool Main::iteration() {
 	XRServer::get_singleton()->_process();
 #endif // XR_DISABLED
 
-#ifndef NAVIGATION_2D_DISABLED
-	NavigationServer2D::get_singleton()->sync();
-#endif // NAVIGATION_2D_DISABLED
-#ifndef NAVIGATION_3D_DISABLED
-	NavigationServer3D::get_singleton()->sync();
-#endif // NAVIGATION_3D_DISABLED
-
 	for (int iters = 0; iters < advance.physics_steps; ++iters) {
 		if (Input::get_singleton()->is_agile_input_event_flushing()) {
 			Input::get_singleton()->flush_buffered_events();
